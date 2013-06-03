@@ -1,0 +1,354 @@
+#include <QUdpSocket>
+
+#include "ReceiverThread.h"
+#include "FramebuilderThread.h"
+#include "mpx3conf.h"
+
+#define byteswap(x) ((((x) & 0xFF00) >> 8) | (((x) & 0x00FF) << 8))
+
+// ----------------------------------------------------------------------------
+
+ReceiverThread::ReceiverThread( int *ipaddr,
+				int  port,
+				QObject *parent )
+  : QThread( parent ),
+    _sock( 0 ),
+    _port( port ),
+    _stop( false ),
+    _frameBuilder( 0 ),
+    _spidrController( 0 ),
+    _expFrameSize( MPX3_12BIT_RAW_SIZE ),
+    _expPayloadSize( 0 - SPIDR_HEADER_SIZE ),
+    _expPacketsPerFrame( 999 ),
+    _currShutterCnt( 0 ),
+    _expSequenceNr( 0 ),
+    _copySpidrHeader( true ),
+    _framesReceived( 0 ),
+    _framesLost( 0 ),
+    _packetsReceived( 0 ),
+    _packetsLost( 0 ),
+    _head( 0 ),
+    _tail( 0 ),
+    _empty( true ),
+    _currFrameBuffer( _frameBuffer[0] ),
+    _recvTimeoutCount( 0 )
+{
+  _spidrHeader = (SpidrHeader_t *) _recvBuffer;
+  _addr = (QString::number( ipaddr[3] ) + '.' +
+	   QString::number( ipaddr[2] ) + '.' +
+	   QString::number( ipaddr[1] ) + '.' +
+	   QString::number( ipaddr[0] ));
+  for( u32 i=0; i<NR_OF_FRAMEBUFS; ++i )
+    {
+      _packetsLostFrame[i] = 9999;
+      _timeStamp[i] = QDateTime();
+      // Initialize the frame buffers
+      memset( _frameBuffer[i], 0xFF, sizeof(_frameBuffer[0]) );
+    }
+  this->start();
+}
+
+// ----------------------------------------------------------------------------
+
+ReceiverThread::~ReceiverThread()
+{
+  // In case still running...
+  this->stop();
+}
+
+// ----------------------------------------------------------------------------
+
+void ReceiverThread::stop()
+{
+  if( this->isRunning() )
+    {
+      _stop = true;
+      //this->exit(); // Stop this thread's event loop
+      this->wait(); // Wait until this thread (i.e. function run()) exits
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+void ReceiverThread::run()
+{
+  _sock = new QUdpSocket();
+  if( !_sock->bind( QHostAddress(_addr), _port ) )
+    {
+      _errString = QString("Failed to bind to adapter/port ") + _addr +
+	QString(": ") + _sock->errorString();
+      _stop = true;
+    }
+  // ### Cannot get this to work in combination with exec() below?
+  //     (and with a QCoreApplication in SpidrDaq)
+  //connect( _sock, SIGNAL( readyRead() ), this, SLOT( readDatagrams() ) );
+
+  while( !_stop )
+    {
+      //this->exec(); // Start an event loop // ### Cannot get this to work?
+      // I think we need a QCoreApplication::exec() as well
+
+      if( _sock->waitForReadyRead( 100 ) )
+	this->readDatagrams();
+      else
+	this->handleFrameTimeout();
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+void ReceiverThread::readDatagrams()
+{
+  int recvd_sz, sequence_nr, shutter_cnt;
+
+  while( _sock->hasPendingDatagrams() )
+    {
+      recvd_sz = _sock->readDatagram( _recvBuffer, RECV_BUF_SIZE );
+      if( recvd_sz <= 0 ) continue;
+
+      // Process the received packet
+      ++_packetsReceived;
+      sequence_nr = byteswap( _spidrHeader->sequenceNr ) - 1; // NB: minus 1..
+      shutter_cnt = byteswap( _spidrHeader->shutterCnt );
+
+      // Initialize shutter counter if necessary and determine
+      // the expected number of packets per frame
+      if( _currShutterCnt == 0 )
+	{
+	  _currShutterCnt = shutter_cnt;
+
+	  // Determine the used payload size
+	  _expPayloadSize = recvd_sz - SPIDR_HEADER_SIZE;
+
+	  // ..and from that the expected number of packets per frame
+	  // (including a last packet that may contain less data)
+	  _expPacketsPerFrame = ((_expFrameSize + (_expPayloadSize-1)) /
+				 _expPayloadSize);
+
+	  // Need to initialize the first loss count(down)!
+	  // (subsequent counters are initialized in nextFrameBuffer())
+	  _packetsLostFrame[0] = _expPacketsPerFrame;
+	}
+
+      if( shutter_cnt != _currShutterCnt ||
+	  // Another frame with the same shutter counter as previously
+	  // (happens e.g. with auto-trigger with just 1 trigger per sequence)
+	  sequence_nr < _expSequenceNr )
+	{
+	  _currShutterCnt = shutter_cnt;
+
+	  if( _expSequenceNr != _expPacketsPerFrame )
+	    {
+	      // Starting a new frame/image, but prematurely apparently;
+	      // it wasn't complete yet...
+	      // (see further down for a properly completed frame)
+	      ++_framesReceived;
+	      this->nextFrameBuffer();
+	    }
+
+	  // Any final packets lost in the previous sequence
+	  // or any lost packets at the start of this new sequence ?
+	  _packetsLost += (_expPacketsPerFrame - _expSequenceNr + sequence_nr);
+	}
+      else if( sequence_nr > _expSequenceNr )
+	{
+	  // One or more packets lost in the ongoing sequence
+	  _packetsLost += sequence_nr - _expSequenceNr;
+	}
+
+      // Next expected sequence number (NB: minus 1 when compared to SPIDR)
+      _expSequenceNr = sequence_nr + 1;
+
+      // Copy the packet's payload to its proper location in the frame buffer
+      // (but only when the sequence number is valid..)
+      if( sequence_nr < _expPacketsPerFrame )
+	{
+	  memcpy( &_currFrameBuffer[sequence_nr * _expPayloadSize],
+		  &_recvBuffer[SPIDR_HEADER_SIZE],
+		  recvd_sz - SPIDR_HEADER_SIZE );
+	  --_packetsLostFrame[_head]; // Is a countdown counter...
+	}
+
+      if( _copySpidrHeader )
+	{
+	  // Copy the SPIDR header
+	  memcpy( _headerBuffer[_head], _recvBuffer, SPIDR_HEADER_SIZE );
+	  _copySpidrHeader = false;
+	}
+
+      if( _expSequenceNr == _expPacketsPerFrame )
+	{
+	  // The current frame is complete so go for a new frame/image
+	  ++_framesReceived;
+	  this->nextFrameBuffer();
+	}
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+void ReceiverThread::handleFrameTimeout()
+{
+  // Handle the case where the last packet(s) of the last frame
+  // (since a while) has/have been lost, by means of a time-out (defined by
+  // a multiple of the time-out in _sock->waitForReadyRead() above)
+  if( _currShutterCnt != 0 && _expSequenceNr != _expPacketsPerFrame )
+    {
+      ++_recvTimeoutCount;
+      if( _recvTimeoutCount == 2 )
+	{
+	  // Most probably we lost the last packet(s) for this frame,
+	  // declare the frame complete, count the loss and continue...
+	  ++_framesReceived;
+	  this->nextFrameBuffer();
+
+	  _expSequenceNr = _expPacketsPerFrame; // Don't count losses again
+	  _recvTimeoutCount = 0;
+	}
+    }
+  else
+    {
+      _recvTimeoutCount = 0;
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+void ReceiverThread::nextFrameBuffer()
+{
+  // Time-stamp the completion of a frame
+  // (only done by the receiver that has and notifies a 'framebuilder')
+  if( _frameBuilder ) _timeStamp[_head] = QDateTime::currentDateTime();
+
+  // Update the frame buffer management
+  _mutex.lock();
+  _head = (_head + 1) & (NR_OF_FRAMEBUFS-1);
+  _empty = false;
+  if( _head == _tail )
+    {
+      // Oops, no more buffers: going to overwrite the last frame received...
+      ++_framesLost;
+      if( _head == 0 )
+	_head = NR_OF_FRAMEBUFS - 1;
+      else
+	--_head;
+    }
+  _mutex.unlock();
+
+  if( _frameBuilder )
+    {
+      // Notify the framebuilder new data is available
+      _frameBuilder->inputNotification();
+
+      // Reset time-stamp to an invalid datetime for the next frame
+      _timeStamp[_head] = QDateTime();
+    }
+
+  // Set pointer to the now active frame buffer
+  _currFrameBuffer = _frameBuffer[_head];
+
+  // Initialize the data in this frame buffer
+  // (to be able to distinguish lost packets/data)
+  memset( _currFrameBuffer, 0xFF, _expFrameSize );
+
+  // Get the SPIDR's header from the first packet arriving
+  _copySpidrHeader = true;
+
+  // Initialize the number of lost packets for this frame
+  _packetsLostFrame[_head] = _expPacketsPerFrame;
+}
+
+// ----------------------------------------------------------------------------
+
+void ReceiverThread::releaseFrame()
+{
+  // Release the next frame buffer processed by the consumer:
+  // update the frame buffer management
+  _mutex.lock();
+  _tail = (_tail + 1) & (NR_OF_FRAMEBUFS-1);
+  if( _tail == _head ) _empty = true;
+  _mutex.unlock();
+}
+
+// ----------------------------------------------------------------------------
+
+i64 ReceiverThread::timeStampFrame()
+{
+  // Return the time in (milli)seconds since 1970-01-01T00:00:00,
+  // Coordinated Universal Time
+#if QT_VERSION >= 0x040700
+  if( _timeStamp[_tail].isValid() )
+    return _timeStamp[_tail].toMSecsSinceEpoch();
+  else
+    return 0;
+#else
+  return _timeStamp[_tail].toTime_t();
+#endif
+}
+
+// ----------------------------------------------------------------------------
+
+i64 ReceiverThread::timeStampFrame( int i )
+{
+  // Return the time in (milli)seconds since 1970-01-01T00:00:00,
+  // Coordinated Universal Time
+#if QT_VERSION >= 0x040700
+  if( _timeStamp[i].isValid() )
+    return _timeStamp[i].toMSecsSinceEpoch();
+  else
+    return 0;
+#else
+  return _timeStamp[i].toTime_t();
+#endif
+}
+
+// ----------------------------------------------------------------------------
+
+i64 ReceiverThread::timeStampFrameSpidr()
+{
+  SpidrHeader_t *spidrhdr = (SpidrHeader_t *) _headerBuffer[_tail];
+  i64 ts = (((i64) spidrhdr->timeLo) |
+	    (((i64) spidrhdr->timeMi) << 16) |
+	    (((i64) spidrhdr->timeHi) << 32));
+  return ts;
+}
+
+// ----------------------------------------------------------------------------
+
+void ReceiverThread::setPixelDepth( int nbits )
+{
+  // Determine the expected frame size in bytes
+  // according to the selected pixel counter depth
+  if( nbits == 1  ||
+      nbits == 4  || // MPX3 only
+      nbits == 6  || // MPX3-RX only
+      nbits == 12 ||
+      nbits == 24 )
+    {
+      _expFrameSize = (MPX_PIXELS * nbits) / 8;
+    }
+  else
+    {
+      // Illegal number of bits, set frame size to some value
+      _expFrameSize = MPX3_12BIT_RAW_SIZE;
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+std::string ReceiverThread::ipAddressString()
+{
+  QString qs = _addr + ':' + QString::number( _port );
+  return qs.toStdString();
+}
+
+// ----------------------------------------------------------------------------
+
+std::string ReceiverThread::errString()
+{
+  if( _errString.isEmpty() ) return std::string( "" );
+  QString qs = "Port " + QString::number( _port ) + ": " + _errString;
+  return qs.toStdString();
+}
+
+// ----------------------------------------------------------------------------

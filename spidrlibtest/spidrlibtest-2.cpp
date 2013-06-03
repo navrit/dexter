@@ -1,0 +1,151 @@
+#include <windows.h>
+#include <iostream>
+using namespace std;
+
+#include "SpidrController.h"
+#include "SpidrDaq.h"
+#include "mpx3conf.h"
+
+#define WITH_SPIDRDAQ
+
+int main( int argc, char *argv[] )
+{
+  SpidrController spidrcontrol( 192, 168, 1, 10 );
+
+  // Check if we are properly connected to the SPIDR module
+  if( spidrcontrol.isConnected() )
+    {
+      cout << "Connected to SPIDR: " << spidrcontrol.ipAddressString();
+      int ipaddr;
+      if( spidrcontrol.getIpAddrDest( &ipaddr ) )
+	cout << ", IP dest: "
+	     << ((ipaddr>>24) & 0xFF) << "."
+	     << ((ipaddr>>16) & 0xFF) << "."
+	     << ((ipaddr>> 8) & 0xFF) << "."
+	     << ((ipaddr>> 0) & 0xFF);
+      cout <<  endl;
+    }
+  else
+    {
+      cout << spidrcontrol.connectionStateString() << ": "
+	   << spidrcontrol.connectionErrString() << endl;
+      //return 1;
+    }
+
+#ifdef WITH_SPIDRDAQ
+  //SpidrDaq spidrdaq( 192, 168, 1, 1, &spidrcontrol );
+  SpidrDaq spidrdaq( &spidrcontrol );
+  //SpidrDaq spidrdaq( 0 );
+  cout << "SpidrDaq: ";
+  for( int i=0; i<4; ++i ) cout << spidrdaq.ipAddressString( i ) << " ";
+  cout << endl;
+  Sleep( 1000 );
+  cout << spidrdaq.errString() << endl;
+
+  if( spidrdaq.openFile( "test.dat", true ) )
+    cout << "Opened file" << endl;
+  else
+    cout << "Failed to open file: " << spidrdaq.errString() << endl;
+#endif
+
+#ifdef DONT_USE
+  // Create a (new) pixel configuration (for a Medipix3 device)
+  int devtype = MPX_TYPE_NC;
+  spidrcontrol.getDeviceType( 0, &devtype );
+  spidrcontrol.resetPixelConfig();
+  int col;
+  if( devtype == MPX_TYPE_MPX31 )
+    {
+      cout << "MPX31 pixel config" << endl;
+      // Mask a number of pixel columns...
+      for( col=32; col<64; ++col )
+	if( !spidrcontrol.maskPixelMpx3( col, ALL_PIXELS ) )
+	  cout << "### Pixel mask " << col << endl;
+      // Upload the pixel configuration
+      if( !spidrcontrol.writePixelConfigMpx3( 0, false ) )
+	cout << "### Pixel config: " << spidrcontrol.errString() << endl;
+    }
+  else if( devtype == MPX_TYPE_MPX3RX )
+    {
+      cout << "MPX3RX pixel config" << endl;
+      // Mask a number of pixel columns...
+      for( col=64; col<92; ++col )
+	if( !spidrcontrol.maskPixelMpx3rx( col, ALL_PIXELS ) )
+	  cout << "### Pixel mask " << col << endl;
+      // Upload the pixel configuration
+      if( !spidrcontrol.writePixelConfigMpx3rx( 0, false ) )
+	cout << "### Pixel config: " << spidrcontrol.errString() << endl;
+    }
+  else
+    {
+      cout << "### No device type, no pixel configuration upload" << endl;
+    }
+#endif
+
+  spidrcontrol.setPixelDepth( 12 );
+#ifdef WITH_SPIDRDAQ
+  spidrdaq.setPixelDepth( 12 );
+#endif
+  spidrcontrol.setMaxPacketSize( 1024 );
+
+  /*
+  cout << "Before" << endl;
+  int dacnr, dacval;
+  for( dacnr=0; dacnr<30; ++dacnr )
+    {
+      spidrcontrol.getDac( 0, dacnr, &dacval );
+      cout << dacnr << ": " << dacval << endl;
+    }
+  spidrcontrol.writeDacs( 0 );
+  //spidrcontrol.writeDacsDflt( 0 );
+  cout << "After" << endl;
+  for( dacnr=0; dacnr<30; ++dacnr )
+    {
+      spidrcontrol.getDac( 0, dacnr, &dacval );
+      cout << dacnr << ": " << dacval << endl;
+    }
+  */
+
+  int trig_mode      = 4;      // Auto-trigger mode
+  int trig_period_us = 100000; // 100 ms
+  int trig_freq_hz   = 5;
+  int nr_of_triggers = 2;
+  int trig_pulse_count;
+  spidrcontrol.setTriggerConfig( trig_mode, trig_period_us,
+				 trig_freq_hz, nr_of_triggers );
+  int i;
+  for( i=0; i<10; ++i )
+    //for( i=0; i<1; ++i )
+    {
+      cout << "Auto-trig " << i << endl;
+      if( 1 )//i==4 )
+	{
+	  spidrcontrol.setDac( 0, 0, i*51 );
+	  spidrcontrol.writeDacs( 0 );
+	}
+      spidrcontrol.startAutoTrigger();
+      Sleep( 1000 );
+#ifdef WITH_SPIDRDAQ
+      cout << "DAQ frames: " << spidrdaq.framesCount() << ", lost "
+	   << spidrdaq.framesLostCount() << ", lost pkts "
+	   << spidrdaq.packetsLostCount() << endl;
+#endif
+    }
+
+#ifdef WITH_SPIDRDAQ
+  cout << "DAQ frames: " << spidrdaq.framesCount() << " (file: "
+       << spidrdaq.framesWrittenCount() << "), lost "
+       << spidrdaq.framesLostCount() << ", lost pkts "
+       << spidrdaq.packetsLostCount() << " (file: "
+       << spidrdaq.packetsLostCountFile() << "), pkt size "
+       << spidrdaq.packetSize() << endl;
+  cout << "Lost/frame: ";
+  for( i=0; i<8; ++i )
+    cout << i << "=" << spidrdaq.packetsLostCountFrame( 0, i ) << ", ";
+  cout << endl;
+
+  spidrdaq.stop();
+#endif    
+
+  return 0;
+}
