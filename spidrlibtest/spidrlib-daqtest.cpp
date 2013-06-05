@@ -6,7 +6,8 @@ using namespace std;
 
 int main( int argc, char *argv[] )
 {
-  // Open a control connection to SPIDR module with address 192.168.1.10, port 50000 (default)
+  // Open a control connection to SPIDR module with address 192.168.1.10,
+  // port 50000 (default)
   SpidrControl spidr( 192, 168, 1, 10 );
 
   // Check if we are properly connected to the SPIDR module
@@ -20,7 +21,7 @@ int main( int argc, char *argv[] )
   // Start frame-acquisition on interface 192.168.1.1, port 8192 (default)
   SpidrDaq spidrdaq( 192, 168, 1, 1 );
 
-  spidrdaq.openFile( "test.dat" ); // To be implemented...
+  spidrdaq.openFile( "test.dat" );
 
   // Configure the trigger, then generate some triggers
   spidr.configTrigger( 4, 100000, 3, 2 );
@@ -30,7 +31,7 @@ int main( int argc, char *argv[] )
       Sleep( 2000 );
     }
 
-  spidrdaq.closeFile(); // To be implemented...
+  spidrdaq.closeFile();
 
   cout << "DAQ frames: " << spidrdaq.framesCount() << ", "
        << spidrdaq.framesLostCount() << ", "
