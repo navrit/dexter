@@ -14,6 +14,7 @@ class SpidrMon : public QDialog, Ui_SpidrMonDialog
 
  private slots:
   void connectOrDisconnect();
+  void updateLedOff();
 
  private:
   SpidrController *_spidrController;

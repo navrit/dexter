@@ -1,11 +1,12 @@
 #include <QIntValidator>
 #include <QMessageBox>
 #include <QString>
+#include <QTimer>
 
 #include "SpidrMon.h"
 #include "SpidrController.h"
 
-QString VERSION( "v1.0.0   18-Mar-2013" );
+QString VERSION( "v1.0.1  05-Jun-2013" );
 
 // ----------------------------------------------------------------------------
 
@@ -29,6 +30,9 @@ SpidrMon::SpidrMon()
 
   _ipPortValidator = new QIntValidator( 1, 65535, this );
   _lineEditPort->setValidator( _ipPortValidator );
+
+  // Data update 'LED'
+  _leUpdateLed->hide();
 }
 
 // ----------------------------------------------------------------------------
@@ -156,6 +160,9 @@ void SpidrMon::timerEvent(QTimerEvent *)
       _lineEditVddMamp->setText( "----" );
       _lineEditVddMwatt->setText( "----" );
     }
+
+  _leUpdateLed->show();
+  QTimer::singleShot( 200, this, SLOT(updateLedOff()) );
 }
 
 // ----------------------------------------------------------------------------
@@ -173,6 +180,13 @@ void SpidrMon::initDataDisplay()
   _lineEditVddMvolt->setText( "----" );
   _lineEditVddMamp->setText( "----" );
   _lineEditVddMwatt->setText( "----" );
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrMon::updateLedOff()
+{
+  _leUpdateLed->hide();
 }
 
 // ----------------------------------------------------------------------------
