@@ -156,11 +156,12 @@ class MY_LIB_API SpidrController
   bool getDvdd              ( int *mvolt, int *mamp, int *mwatt );
   bool getVdd               ( int *mvolt, int *mamp, int *mwatt );
 
-  // Other // ###TODO: all
-  bool displayInfo  (); // In the currently open telnet window or USB terminal
-  bool setDebugLevel( int level );
-  bool setTimeOfDay (); // Set the SPIDR processor clock time
-  
+  // Other
+  bool setLogLevel          ( int level );
+  // ###TODO:
+  bool setTimeOfDay         (); // Set the SPIDR processor clock time
+  bool displayInfo          (); // In the currently open telnet window
+                                // or (USB) console
  private:
   bool maskPixel            ( int x, int y, int maskbit );
   bool get3Ints             ( int cmd, int *data0, int *data1, int *data2 );

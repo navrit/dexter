@@ -16,7 +16,7 @@ using namespace std;
 #include "spidrcmds.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x13041200;
+const int VERSION_ID = 0x13060500;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor / info
@@ -221,7 +221,7 @@ void SpidrController::clearBusyRequest()
 
 bool SpidrController::getDeviceId( int dev_nr, int *id )
 {
-  *id = 9999; // Debug value
+  *id = 0;
   return this->requestGetInt( CMD_GET_DEVICEID, dev_nr, id );
 }
 
@@ -236,7 +236,7 @@ bool SpidrController::getDeviceIds( int *id )
 
 bool SpidrController::getDeviceType( int dev_nr, int *type )
 {
-  *type = 55667788; // Debug value
+  *type = 0;
   return this->requestGetInt( CMD_GET_DEVICETYPE, dev_nr, type );
 }
 
@@ -251,7 +251,7 @@ bool SpidrController::setDeviceType( int dev_nr, int type )
 
 bool SpidrController::getDevicePort( int dev_nr, int *port_nr )
 {
-  *port_nr = 44332211; // Debug value
+  *port_nr = 0;
   return this->requestGetInt( CMD_GET_DEVICEPORT, dev_nr, port_nr );
 }
 
@@ -273,7 +273,7 @@ bool SpidrController::setDevicePort( int dev_nr, int port_nr )
 
 bool SpidrController::getServerPort( int dev_nr, int *port_nr )
 {
-  *port_nr = 11223344; // Debug value
+  *port_nr = 0;
   return this->requestGetInt( CMD_GET_SERVERPORT, dev_nr, port_nr );
 }
 
@@ -872,7 +872,7 @@ bool SpidrController::triggerOneReadout()
 
 bool SpidrController::getAdc( int dev_nr, int *adc_val )
 {
-  *adc_val = 1234;
+  *adc_val = 0;
   return this->requestGetInt( CMD_GET_ADC, dev_nr, adc_val );
 }
 
@@ -881,7 +881,7 @@ bool SpidrController::getAdc( int dev_nr, int *adc_val )
 bool SpidrController::getRemoteTemp( int *mdegrees )
 {
   int dummy = 0;
-  *mdegrees = 4321;
+  *mdegrees = 0;
   return this->requestGetInt( CMD_GET_REMOTETEMP, dummy, mdegrees );
 }
 
@@ -890,7 +890,7 @@ bool SpidrController::getRemoteTemp( int *mdegrees )
 bool SpidrController::getLocalTemp( int *mdegrees )
 {
   int dummy = 0;
-  *mdegrees = 8765;
+  *mdegrees = 0;
   return this->requestGetInt( CMD_GET_LOCALTEMP, dummy, mdegrees );
 }
 
@@ -913,6 +913,15 @@ bool SpidrController::getDvdd( int *mvolt, int *mamp, int *mwatt )
 bool SpidrController::getVdd( int *mvolt, int *mamp, int *mwatt )
 {
   return this->get3Ints( CMD_GET_VDD, mvolt, mamp, mwatt );
+}
+
+// ----------------------------------------------------------------------------
+// Other
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setLogLevel( int level )
+{
+  return this->requestSetInt( CMD_SET_LOGLEVEL, 0, level );
 }
 
 // ----------------------------------------------------------------------------

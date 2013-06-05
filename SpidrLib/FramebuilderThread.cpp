@@ -324,7 +324,7 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
   // as we only use '|' (OR) in the assignments below
   memset( static_cast<void *> (pixels), 0, MPX_PIXELS * sizeof(int) );
 
-  // Data arrives as: all bits n+1 from 1 row of pixels,
+  // Raw data arrives as: all bits n+1 from 1 row of pixels,
   // followed by all bits n from the same row of pixels, etc.
   // (so bit 'counter-bits-1', the highest bit comes first),
   // until all bits of this pixel row have arrived,
@@ -435,7 +435,7 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
   
   // Compress 4- and 6-bit frames into 1 byte per pixel
   // and 12-bit frames into 2 bytes per pixel (1-bit frames already
-  // 'compressed' into 1 bit per pixel into array 'pixels' above)
+  // available 'compressed' into 1 bit per pixel in array 'raw_bytes')
   if( counter_depth == 12 )
     {
       u16 *pixels16 = (u16 *) pixels;
@@ -454,7 +454,7 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
     }
   else if( counter_depth == 1 )
     {
-      // 1-bit frame: just copy the frame over into array 'pixels'
+      // 1-bit frame: just copy the raw frame over into array 'pixels'
       // so that it becomes a 'decoded' and 'compressed' frame
       memcpy( (void *) pixels, (void *) raw_bytes, MPX_PIXELS/8 );
       size = (MPX_PIXELS / 8);
