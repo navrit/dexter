@@ -275,7 +275,7 @@ int spidrGetDevInfo( int id, DevInfo *dev_info )
 {
   LOGFUNCNAME();
   SpidrInfo *spidrinfo = SpidrMgr::instance()->info( id );
-  if( !info ) return 1;
+  if( !spidrinfo ) return 1;
 
   // Fill in the DevInfo struct
   dev_info->pixCount = spidrinfo->chipCount * MPX_PIXELS;
