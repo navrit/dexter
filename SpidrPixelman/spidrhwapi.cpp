@@ -274,48 +274,57 @@ int spidrSetHwInfo( int id, int index, void *data, int sz )
 int spidrGetDevInfo( int id, DevInfo *dev_info )
 {
   LOGFUNCNAME();
-  SpidrInfo *info = SpidrMgr::instance()->info( id );
+  SpidrInfo *spidrinfo = SpidrMgr::instance()->info( id );
   if( !info ) return 1;
 
   // Fill in the DevInfo struct
-  dev_info->pixCount = info->chipCount * MPX_PIXELS;
-  if( info->chipCount == 4 )
+  dev_info->pixCount = spidrinfo->chipCount * MPX_PIXELS;
+
+  if( spidrinfo->chipCount == 4 )
     dev_info->rowLen = MPX_PIXEL_ROWS * 2;
   else
     dev_info->rowLen = MPX_PIXEL_ROWS;
-  dev_info->numberOfChips = info->chipCount;
-  if( info->chipCount == 4 )
+
+  dev_info->numberOfChips = spidrinfo->chipCount;
+
+  if( spidrinfo->chipCount == 4 )
     dev_info->numberOfRows = 2;
   else
     dev_info->numberOfRows = 1;
-  dev_info->mpxType = MPX_3;
-  string name = info->ipAddrString;
+
+  if( spidrinfo->chipType == MPX_TYPE_MPX31 )
+    dev_info->mpxType = MPX_3;
+  else
+    dev_info->mpxType = MPX_3RX;
+
+  string name = spidrinfo->ipAddrString;
   strncpy( dev_info->chipboardID, name.c_str(), MPX_MAX_CHBID );
-  dev_info->ifaceName   = "SPIDR";
-  dev_info->ifaceType   = 63;     // Undefined
-  dev_info->ifaceVendor = 4095;   // Undefined
-  dev_info->ifaceSerial = 262143; // Undefined
+
+  dev_info->ifaceName       = "SPIDR";
+  dev_info->ifaceType       = 63;     // Undefined
+  dev_info->ifaceVendor     = 4095;   // Undefined
+  dev_info->ifaceSerial     = 262143; // Undefined
   dev_info->chipboardSerial = 0;
 
-  dev_info->suppAcqModes = (ACQMODE_ACQSTART_TIMERSTOP |
-			    ACQMODE_HWTRIGSTART_TIMERSTOP |
-			    ACQMODE_EXTSHUTTER);
-  dev_info->suppCallback = FALSE;
+  dev_info->suppAcqModes    = (ACQMODE_ACQSTART_TIMERSTOP |
+			       ACQMODE_HWTRIGSTART_TIMERSTOP |
+			       ACQMODE_EXTSHUTTER);
+  dev_info->suppCallback    = FALSE;
 
-  dev_info->clockReadout = 125.0;
-  dev_info->clockTimepix = 125.0;
+  dev_info->clockReadout    = 125.0;
+  dev_info->clockTimepix    = 125.0;
 
-  dev_info->timerMinVal  = 0.000000008; // 8 ns
-  dev_info->timerMaxVal  = 34.35973836; // 32-bits * 8 ns
-  dev_info->timerStep    = 0.000000008; // 8 ns
+  dev_info->timerMinVal     = 0.000000008; // 8 ns
+  dev_info->timerMaxVal     = 34.35973836; // 32-bits * 8 ns
+  dev_info->timerStep       = 0.000000008; // 8 ns
 
-  dev_info->maxPulseCount  = (u32) 0xFFFFFFFF;
-  dev_info->maxPulseHeight = 1.0;
-  dev_info->maxPulsePeriod = 34.35973836; // 32-bits * 8 ns
+  dev_info->maxPulseCount   = (u32) 0xFFFFFFFF;
+  dev_info->maxPulseHeight  = 1.0;
+  dev_info->maxPulsePeriod  = 34.35973836; // 32-bits * 8 ns
 
-  dev_info->extDacMinV = 0.0;
-  dev_info->extDacMaxV = 0.0;
-  dev_info->extDacStep = 0.0;
+  dev_info->extDacMinV      = 0.0;
+  dev_info->extDacMaxV      = 0.0;
+  dev_info->extDacStep      = 0.0;
 
   return 0;
 }
@@ -444,7 +453,7 @@ int spidrSetExtDac( int id, int code, double val )
 
 int spidrSetPixelsCfg( int id, byte cfgs[], u32 sz )
 {
-  LOGFUNCNAME();
+  LOGFUNCPAR(sz);
   GETCONTROLLER( id );
   SpidrInfo *spidrinfo = SpidrMgr::instance()->info( id );
 
@@ -460,6 +469,9 @@ int spidrSetPixelsCfg( int id, byte cfgs[], u32 sz )
       if( chips_todo > spidrinfo->chipCount )
 	chips_todo = spidrinfo->chipCount;
     }
+  for( i=0; i<16; ++i )
+    LOGGER() << (unsigned int) cfgs[i] << " ";
+  LOGGER() << endl;
 
   for( chip=0; chip<chips_todo; ++chip )
     {
