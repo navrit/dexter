@@ -9,6 +9,7 @@
 #define EXP_PACKETS   ((RAW_DATA_SIZE + (PAYLOAD_SIZE-1)) / PAYLOAD_SIZE)
 #endif // OLD_CODE
 
+#ifdef WIN32
 #pragma pack(push)
 #pragma pack(1)
 struct Packet
@@ -24,6 +25,17 @@ struct Packet
 #endif // OLD_CODE
 };
 #pragma pack(pop)
+#else
+struct Packet
+{
+  unsigned short triggerCnt;
+  unsigned short shutterCnt;
+  unsigned short sequenceNr;
+  unsigned short timeLo;
+  unsigned short timeMi;
+  unsigned short timeHi;
+};
+#endif // WIN32
 
 // Byte index to payload
 #define PAYLOAD_I  12
@@ -32,7 +44,7 @@ struct Packet
 #define byteswap(x) ((((x) & 0xFF00) >> 8) | (((x) & 0x00FF) << 8))
 
 // ----------------------------------------------------------------------------
-
+#ifdef WIN32
 void __cdecl odprintf( const char *format, ... )
 {
   char    buf[4096], *p = buf;
@@ -55,7 +67,7 @@ void __cdecl odprintf( const char *format, ... )
 
   OutputDebugStringA(buf);
 }
-
+#endif // WIN32
 // ----------------------------------------------------------------------------
 
 ReceiverThread::ReceiverThread( QString        adapter,
