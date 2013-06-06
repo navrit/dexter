@@ -1,5 +1,7 @@
 #include "ReceiverThread.h"
-#include "Windows.h"
+#ifdef WIN32
+#include "windows.h"
+#endif
 
 #ifdef OLD_CODE
 #define PAYLOAD_SIZE  512
