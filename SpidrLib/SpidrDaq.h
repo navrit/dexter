@@ -18,9 +18,10 @@
 
 class SpidrController;
 class ReceiverThread;
-//class FramebuilderThread;
+class FramebuilderThread;
 //class QCoreApplication;
-#include "FramebuilderThread.h"
+
+typedef void (*CallbackFunc)( int id );
 
 class MY_LIB_API SpidrDaq
 {
