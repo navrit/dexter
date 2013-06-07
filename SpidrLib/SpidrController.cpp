@@ -66,6 +66,7 @@ int SpidrController::classVersion()
 bool SpidrController::getSoftwVersion( int *version )
 {
   int dummy = 0;
+  *version = 0;
   return this->requestGetInt( CMD_GET_SOFTWVERSION, dummy, version );
 }
 
@@ -74,6 +75,7 @@ bool SpidrController::getSoftwVersion( int *version )
 bool SpidrController::getFirmwVersion( int *version )
 {
   int dummy = 0;
+  *version = 0;
   return this->requestGetInt( CMD_GET_FIRMWVERSION, dummy, version );
 }
 
@@ -1121,18 +1123,18 @@ bool SpidrController::request( int cmd,     int dev_nr,
 		 << reply_len << " expected " << exp_reply_len;
       return false;
     }
+  int err = ntohl( _replyMsg[2] ); // (Check 'err' before 'reply')
+  if( err != 0 )
+    {
+      this->clearErrString();
+      _errString << "Error from SPIDR: 0x" << hex << err;
+      return false;
+    }
   int reply = ntohl( _replyMsg[0] );
   if( reply != (cmd | CMD_REPLY) )
     {
       this->clearErrString();
       _errString << "Unexpected reply: 0x" << hex << reply;
-      return false;
-    }
-  int err = ntohl( _replyMsg[2] );
-  if( err != 0 )
-    {
-      this->clearErrString();
-      _errString << "Error from SPIDR: 0x" << hex << err;
       return false;
     }
   if( ntohl( _replyMsg[3] ) != dev_nr )
