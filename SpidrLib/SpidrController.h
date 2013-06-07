@@ -10,7 +10,7 @@
  #endif
  //#include "stdint.h"
 #else
-// For Linux
+ // For Linux
  #define MY_LIB_API
  //#include <stdint.h>
 #endif // WIN32
