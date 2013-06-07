@@ -2,6 +2,7 @@
 #define SPIDRCMDS_H
 
 // Command identifiers in messages to (and from) the SPIDR module
+#define CMD_NOP              0x000
 
 // General: module
 #define CMD_GET_SOFTWVERSION 0x901
