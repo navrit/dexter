@@ -4,9 +4,15 @@ using namespace std;
 
 #include "SpidrController.h"
 
+int my_atoi( const char *c );
+
+// ----------------------------------------------------------------------------
+
 int main( int argc, char *argv[] )
 {
-  int log_level = 1;
+  int log_level = 0;
+
+  if( argc > 1 ) log_level = my_atoi( argv[1] );
 
   SpidrController spidrcontrol( 192, 168, 1, 10 );
 
@@ -34,3 +40,19 @@ int main( int argc, char *argv[] )
 
   return 0;
 }
+
+// ----------------------------------------------------------------------------
+
+int my_atoi( const char *c )
+{
+  int value = 0;
+  while( *c >= '0' && *c <= '9' )
+    {
+      value *= 10;
+      value += (int) (*c-'0');
+      ++c;
+    }
+  return value;
+}
+
+// ----------------------------------------------------------------------------
