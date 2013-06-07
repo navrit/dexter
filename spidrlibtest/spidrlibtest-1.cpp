@@ -1,28 +1,39 @@
+#ifdef WIN32
 #include <windows.h>
+#else
+#include <unistd.h>
+#define Sleep(ms) usleep(ms*1000)
+#endif
+
 #include <iostream>
+#include <iomanip>
 using namespace std;
 
-#include "SpidrControl.h"
+#include "SpidrController.h"
 #include "dacsdefs.h"
+#include "mpx3conf.h"
 
 int main( int argc, char *argv[] )
 {
-  SpidrControl spidr( 192, 168, 1, 10 );
+  // Open a control connection to SPIDR module with address 192.168.1.10,
+  // port 50000 (default)
+  SpidrController spidr( 192, 168, 1, 10 );
 
-  // Check if we are properly connected to the SPIDR module
-  if( spidr.isConnected() )
+  // Check the connection to the SPIDR module
+  if( !spidr.isConnected() )
     {
-      cout << "Connected to SPIDR: " << spidr.ipAddressString() <<  endl;
+      // No ?
+      cout << spidr.connectionStateString() << ": "
+           << spidr.connectionErrString() << endl;
+      return 1;
     }
   else
     {
-      cout << spidr.connectionStateString() << ": "
-	   << spidr.connectionErrString() << endl;
-      return 1;
+      cout << "Connected to SPIDR: " << spidr.ipAddressString() <<  endl;
     }
 
   // Get version numbers
-  cout << "SpidrControl class: "
+  cout << "SpidrController class: "
        << spidr.versionToString( spidr.classVersion() ) << endl;
   int version;
   if( spidr.getFirmwVersion( &version ) )
@@ -48,9 +59,8 @@ int main( int argc, char *argv[] )
     cout << "getAcqEnable: " << mask << endl;
 
   int dac_nr, dac_value;
-#ifdef DO_DAC_READ
   // Get the DAC values from Medipix device 0 and display them
-  if( !spidr.readDacs( dev_nr ) )
+  if( !spidr.readDacs( 0 ) )
     cout << "### readDacs: " << spidr.errString() << endl;
   dev_nr = 0;
   for( dac_nr=0; dac_nr<MPX3_DAC_COUNT; ++dac_nr )
@@ -61,7 +71,6 @@ int main( int argc, char *argv[] )
 	cout << "DAC " << dac_nr << " ("<< spidr.dacNameMpx3( dac_nr )
 	     << "): " << dac_value << endl;
     }
-#endif
 
 #ifdef DO_DAC_SCAN
   // Perform a DAC scan (on a single DAC..), displaying the ADC values
@@ -83,45 +92,64 @@ int main( int argc, char *argv[] )
       if( !spidr.getAdc( dev_nr, &adc_value ) )
 	cout << "### getAdc: " << spidr.errString() << endl;
       else
-	cout << dac_value << ": " << adc_value << endl;
+	cout << setw(3) << dac_value << ": " << adc_value << endl;
     }
   return 0;
 #endif
 
-  //dac_nr = MPX3_DAC_THRESH_0;
-  //spidr.setDac( dev_nr, dac_nr, 0 );
-  //spidr.writeDacs( dev_nr );
-
   // Create a (new) pixel configuration (for a Medipix3 device)
-  spidr.resetPixelConfig();
   dev_nr = 0;
+  int devtype = MPX_TYPE_NC;
+  spidr.getDeviceType( 0, &devtype );
+  spidr.resetPixelConfig();
   int col;
   // Mask a number of pixel columns...
-  for( col=128; col<192; ++col )
-    if( !spidr.maskPixelMpx3( col, ALL_PIXELS ) )
-      cout << "### Pixel mask " << col << endl;
-  // Upload the pixel configuration
-  if( !spidr.writePixelConfigMpx3( dev_nr ) )
-    cout << "### Pixel config: " << spidr.errString() << endl;
+  if( devtype == MPX_TYPE_MPX31 )
+    {
+      cout << "MPX31 pixel config" << endl;
+      // Mask a number of pixel columns...
+      for( col=128; col<192; ++col )
+	if( !spidr.maskPixelMpx3( col, ALL_PIXELS ) )
+	  cout << "### Pixel mask " << col << endl;
+      // Upload the pixel configuration
+      if( !spidr.writePixelConfigMpx3( dev_nr ) )
+	cout << "### Pixel config: " << spidr.errString() << endl;
+      else
+	cout << "Pixel config uploaded" << endl;
+    }
+  else if( devtype == MPX_TYPE_MPX3RX )
+    {
+      cout << "MPX3RX pixel config" << endl;
+      // Mask a number of pixel columns...
+      for( col=64; col<92; ++col )
+	if( !spidr.maskPixelMpx3rx( col, ALL_PIXELS ) )
+	  cout << "### Pixel mask " << col << endl;
+      // Upload the pixel configuration
+      if( !spidr.writePixelConfigMpx3rx( dev_nr ) )
+	cout << "### Pixel config: " << spidr.errString() << endl;
+      else
+	cout << "Pixel config uploaded" << endl;
+    }
+  else
+    {
+      cout << "### No device type, no pixel configuration upload" << endl;
+    }
 
+  // Configure the trigger, then generate some triggers
+  // (there is no SpidrDaq object, so look at the frames e.g. with SpidrTV
+  int trig_mode      = 4;
+  int trig_period_us = 100000; // 100 ms
+  int trig_freq_hz   = 3;
+  int nr_of_triggers = 2;
+  spidr.setTriggerConfig( trig_mode, trig_period_us,
+			  trig_freq_hz, nr_of_triggers );
   int i;
-  spidr.configTrigger( 4, 100000, 3, 2 );
-  for( i=0; i<10; ++i )
+  for( i=0; i<5; ++i )
     {
       cout << "Auto-trig " << i << endl;
       spidr.startAutoTrigger();
       Sleep( 2000 );
     }
-
-#ifdef TEST_
-  trig_mode = 0;
-  trig_period_us = 0;
-  spidrcontrol.getTriggerConfig( &trig_mode, &trig_period_us,
-				 &trig_freq_hz, &nr_of_triggers,
-				 &trig_pulse_count );
-  cout << "mode=" << trig_mode << ", period=" << trig_period_us << endl;
-  return 0;
-#endif // TEST_
 
   return 0;
 }

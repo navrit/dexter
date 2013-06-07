@@ -10,32 +10,26 @@ using namespace std;
 
 int main( int argc, char *argv[] )
 {
+  // Open a control connection to SPIDR module with address 192.168.1.10,
+  // port 50000 (default)
   SpidrController spidrcontrol( 192, 168, 1, 10 );
 
-  // Check if we are properly connected to the SPIDR module
-  if( spidrcontrol.isConnected() )
+  // Check the connection to the SPIDR module
+  if( !spidrcontrol.isConnected() )
     {
-      cout << "Connected to SPIDR: " << spidrcontrol.ipAddressString();
-      int ipaddr;
-      if( spidrcontrol.getIpAddrDest( &ipaddr ) )
-	cout << ", IP dest: "
-	     << ((ipaddr>>24) & 0xFF) << "."
-	     << ((ipaddr>>16) & 0xFF) << "."
-	     << ((ipaddr>> 8) & 0xFF) << "."
-	     << ((ipaddr>> 0) & 0xFF);
-      cout <<  endl;
+      // No ?
+      cout << spidrcontrol.connectionStateString() << ": "
+           << spidrcontrol.connectionErrString() << endl;
+      return 1;
     }
   else
     {
-      cout << spidrcontrol.connectionStateString() << ": "
-	   << spidrcontrol.connectionErrString() << endl;
-      //return 1;
+      cout << "Connected to SPIDR: "
+	   << spidrcontrol.ipAddressString() <<  endl;
     }
 
 #ifdef WITH_SPIDRDAQ
-  //SpidrDaq spidrdaq( 192, 168, 1, 1, &spidrcontrol );
   SpidrDaq spidrdaq( &spidrcontrol );
-  //SpidrDaq spidrdaq( 0 );
   cout << "SpidrDaq: ";
   for( int i=0; i<4; ++i ) cout << spidrdaq.ipAddressString( i ) << " ";
   cout << endl;
