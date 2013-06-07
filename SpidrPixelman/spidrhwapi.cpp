@@ -3,6 +3,12 @@
 
 #include "mpx3conf.h"
 
+#ifndef WIN32
+#include <string.h>
+#include <time.h>
+#include <sys/time.h>
+#endif
+
 // Some convenient macros
 #define GETCONTROLLER( id ) \
     SpidrController *spidrctrl = SpidrMgr::instance()->controller( id ); \
@@ -879,15 +885,27 @@ int spidrSaveCfgData( int id, byte *data, u32 sz )
 
 static string time_str()
 {
+  ostringstream oss;
+#ifdef WIN32
   // Using Windows-specific 'GetSystemTime()' function for time
   SYSTEMTIME st;
   GetSystemTime( &st );
-  ostringstream oss;
   oss << setfill('0')
       << setw(2) << st.wHour << ":"
       << setw(2) << st.wMinute << ":"
       << setw(2) << st.wSecond << ":"
       << setw(3) << st.wMilliseconds << " ";
+#else
+  struct timeval tv;
+  gettimeofday( &tv, 0 );
+  struct tm tim;
+  localtime_r( &tv.tv_sec, &tim );
+  oss << setfill('0')
+      << setw(2) << tim.tm_hour << ":"
+      << setw(2) << tim.tm_min << ":"
+      << setw(2) << tim.tm_sec << ":"
+      << setw(3) << tv.tv_usec/1000 << " ";
+#endif // WIN32
   return oss.str();
 }
 

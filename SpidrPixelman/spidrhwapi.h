@@ -4,11 +4,17 @@
 #include "mpx3hw.h"
 #include "mpxerrors.h"
 
-#ifdef MY_LIB_EXPORT
-#define MY_LIB_API __declspec(dllexport)
+#ifdef WIN32
+ // Differentiate between building the DLL or using it
+ #ifdef MY_LIB_EXPORT
+ #define MY_LIB_API __declspec(dllexport)
 #else
-#define MY_LIB_API __declspec(dllimport)
+ #define MY_LIB_API __declspec(dllimport)
 #endif
+#else
+ // For Linux
+ #define MY_LIB_API
+#endif // WIN32
 
 // ----------------------------------------------------------------------------
 // MPX2 Interface
