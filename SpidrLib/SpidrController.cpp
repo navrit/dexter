@@ -564,6 +564,10 @@ bool SpidrController::writePixelConfigMpx3( int dev_nr, bool with_replies )
 		}
 	    }
 
+	  // Even with 'with_replies' false, acknowledge first and last message
+	  // (###NB: something goes wrong with uIP on SPIDR without it)
+	  if( row == 0 || row == 255 ) cmd &= ~CMD_NOREPLY;
+
 	  // Send this row of formatted configuration data to the SPIDR module
 	  if( this->requestSetIntAndBytes( cmd, dev_nr,
 					   row, // Sequence number
@@ -1099,6 +1103,9 @@ bool SpidrController::request( int cmd,     int dev_nr,
       _errString << "Time-out sending command";
       return false;
     }
+
+  // Reply expected ?
+  if( cmd & CMD_NOREPLY ) return true;
 
   if( !_sock->waitForReadyRead( 1000 ) )
     {
