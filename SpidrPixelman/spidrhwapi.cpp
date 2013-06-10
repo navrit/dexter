@@ -9,6 +9,8 @@
 #include <sys/time.h>
 #endif
 
+const char *LIB_VERSION_STR = "SpidrPixelman v1.0.0, 10 Jun 2013";
+
 // Some convenient macros
 #define GETCONTROLLER( id ) \
     SpidrController *spidrctrl = SpidrMgr::instance()->controller( id ); \
@@ -157,7 +159,7 @@ int spidrSetCallbackData( int id, INTPTR data )
 int spidrGetHwInfoCount()
 {
   LOGFUNCNAME();
-  return 4;
+  return 5;
 }
 
 // ----------------------------------------------------------------------------
@@ -174,6 +176,7 @@ int spidrGetHwInfoFlags( int id, int index, u32 *flags )
     case 1:
     case 2:
     case 3:
+    case 4:
       break;
     default:
       return 1;
@@ -195,6 +198,17 @@ int spidrGetHwInfo( int id, int index, HwInfoItem *hw_info, int *sz )
   switch( index )
     {
     case 0:
+      // SPIDR Pixelman library version
+      hw_info->name  = "SpidrPixmanLibVersion";
+      hw_info->descr = "SPIDR Pixelman lib version";
+      hw_info->type  = TYPE_CHAR;
+      hw_info->flags = 0;
+      str = string( LIB_VERSION_STR );
+      memcpy( data, str.c_str(), str.length() + 1 );
+      hw_info->count = str.length() + 1;
+      break;
+
+    case 1:
       // SPIDR firmware version
       hw_info->name  = "SpidrFwVersion";
       hw_info->descr = "SPIDR firmware version";
@@ -205,7 +219,7 @@ int spidrGetHwInfo( int id, int index, HwInfoItem *hw_info, int *sz )
       hw_info->count = str.length() + 1;
       break;
 
-    case 1:
+    case 2:
       // SPIDR software version
       hw_info->name  = "SpidrSwVersion";
       hw_info->descr = "SPIDR software version";
@@ -216,7 +230,7 @@ int spidrGetHwInfo( int id, int index, HwInfoItem *hw_info, int *sz )
       hw_info->count = str.length() + 1;
       break;
 
-    case 2:
+    case 3:
       // Chip IDs
       hw_info->name  = "Mpx3ChipIds";
       hw_info->descr = "Medipix3 chip IDs";
@@ -226,7 +240,7 @@ int spidrGetHwInfo( int id, int index, HwInfoItem *hw_info, int *sz )
       for( int i=0; i<4; ++i ) data32[i] = spidrinfo->chipIds[i];
       break;
 
-    case 3:
+    case 4:
       // Chip mapping
       hw_info->name  = "Mpx3ChipMap";
       hw_info->descr = "Medipix3 chip order";
@@ -463,7 +477,7 @@ int spidrSetPixelsCfg( int id, byte cfgs[], u32 sz )
   GETCONTROLLER( id );
   SpidrInfo *spidrinfo = SpidrMgr::instance()->info( id );
 
-  unsigned short pixman_pixcfg;
+  unsigned int pixman_pixcfg;
   int chip, i, x, y;
   int chips_todo = sz / MPX_PIXELS;
   if( chips_todo != spidrinfo->chipCount )
@@ -491,19 +505,26 @@ int spidrSetPixelsCfg( int id, byte cfgs[], u32 sz )
       if( spidrinfo->chipType == MPX_TYPE_MPX31 )
 	{
 	  // Medipix3.1 device
-	  int  configtha, configthb;
-	  bool configtha4, configthb4, gainmode, testbit;
+	  int  configtha = 0, configthb = 0;
+	  bool configtha4 = false, configthb4 = false;
+	  bool gainmode = false, testbit = false, maskbit = false;
 	  for( i=0; i<MPX_PIXELS; ++i )
 	    {
-	      // Depending on what Pixelman provides...
-	      pixman_pixcfg = ((unsigned short) cfgs[i] |
-			       (((unsigned short) cfgs[i+1]) << 8));
+	      // Depending on what Pixelman provides...:
+	      // assume 'typedef struct _Mpx3PixCfg' in common.h
+	      pixman_pixcfg = ((unsigned int) cfgs[i] |
+			       (((unsigned int) cfgs[i+1]) << 8));
 
-	      // .....
-
-	      configtha=0; configthb=0;
-	      configtha4=false; configthb4=false;
-	      gainmode=false; testbit=false;
+	      //maskbit  = ((pixman_pixcfg & 0x0001) != 0);
+	      /*
+	      testbit    = ((pixman_pixcfg & 0x0002) != 0);
+	      gainmode   = ((pixman_pixcfg & 0x0004) != 0);
+	      configtha  = ((pixman_pixcfg & 0x0078) >> 3);
+	      configtha4 = ((pixman_pixcfg & 0x0080) != 0);
+	      configthb  = ((pixman_pixcfg & 0x0F00) >> 8);
+	      configthb4 = ((pixman_pixcfg & 0x1000) != 0);
+	      */
+	      if( maskbit ) spidrctrl->maskPixelMpx3( x, y );
 	      spidrctrl->configPixelMpx3( x, y,
 					  configtha, configthb,
 					  configtha4, configthb4,
@@ -527,10 +548,36 @@ int spidrSetPixelsCfg( int id, byte cfgs[], u32 sz )
 	{
 	  // Medipix3RX device
 	  int  discl = 0, disch = 0;
-	  bool testbit = false;
+	  bool testbit = false, maskbit = false;
 	  for( i=0; i<MPX_PIXELS; i+=2 )
 	    {
-	      // .....
+	      // Depending on what Pixelman provides...:
+	      // assume 'typedef struct _Mpx3RxPixCfg' in common.h
+	      pixman_pixcfg = ((unsigned int) cfgs[i] |
+			       (((unsigned int) cfgs[i+1]) << 8));
+
+	      //maskbit  = ((pixman_pixcfg & 0x0001) != 0);
+	      /*
+	      testbit = ((pixman_pixcfg & 0x0002) != 0);
+	      discl   = ((pixman_pixcfg & 0x00F8) >> 3);
+	      disch   = ((pixman_pixcfg & 0x1F00) >> 8);
+	      */
+	      if( maskbit ) spidrctrl->maskPixelMpx3rx( x, y );
+	      spidrctrl->configPixelMpx3rx( x, y,
+					    discl, disch, testbit );
+	      ++x;
+	      if( x == MPX_PIXEL_COLUMNS )
+		{
+		  ++y; x = 0;
+		}
+	    }
+	  // Upload the configuration for this chip
+	  if( !spidrctrl->writePixelConfigMpx3rx( spidrinfo->chipMap[chip] ) )
+	    {
+	      LOGGER() << "### writePixelConfigMpx3rx( "
+		       << spidrinfo->chipMap[chip] << " ): "
+		       << spidrctrl->errString() << endl;
+	      return 1;
 	    }
 	}
       else

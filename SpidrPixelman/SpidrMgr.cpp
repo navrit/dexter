@@ -6,7 +6,7 @@
 // Static member: the one and only instance of this manager
 SpidrMgr *SpidrMgr::_inst = 0;
 
-static const char *VERSION_STR = "SpidrPixelman v1.0.0, 11 Apr 2013";
+extern const char *LIB_VERSION_STR;
 
 // ----------------------------------------------------------------------------
 
@@ -16,7 +16,7 @@ SpidrMgr::SpidrMgr()
   _fLog.open( "logs/SpidrPixelman.log" );
   if( !_fLog.is_open() ) _fLog.open( "SpidrPixelman.log" );
 
-  _fLog << VERSION_STR << endl;
+  _fLog << LIB_VERSION_STR << endl;
   _fLog << fixed << setprecision(3); // Configuration for float/double output
 }
 
