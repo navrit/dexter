@@ -674,6 +674,11 @@ bool SpidrController::writePixelConfigMpx3rx( int dev_nr, bool with_replies )
 	    }
 	}
 
+      // Even with 'with_replies' false, acknowledge first and last message
+      // (###NB: something goes wrong with uIP on SPIDR without it:
+      //         to be investigated... )
+      if( row == 0 || row == 255 ) cmd &= ~CMD_NOREPLY;
+
       // Send this row of formatted configuration data to the SPIDR module
       if( this->requestSetIntAndBytes( cmd, dev_nr,
 				       row, // Sequence number
