@@ -35,7 +35,7 @@ class MY_LIB_API SpidrDaq
   void stop();
 
   // General
-  int classVersion(); // Version of this class
+  int         classVersion(); // Version of this class
   std::string ipAddressString( int index = 0 );
   std::string errString();
 
@@ -47,15 +47,15 @@ class MY_LIB_API SpidrDaq
   bool closeFile();
 
   // Acquisition
-  bool   hasFrame();
-  int   *frameData( int dev_nr, int *size_in_bytes );
+  bool      hasFrame();
+  int      *frameData( int dev_nr, int *size_in_bytes );
   long long frameTimestamp();
   long long frameTimestamp( int buf_i );              // For debugging
   long long frameTimestampSpidr();
-  double frameTimestampDouble();                      // For Pixelman
-  void   releaseFrame();
-  void   setCallbackId( int id );                     // For Pixelman
-  void   setCallback( CallbackFunc cbf );             // For Pixelman
+  double    frameTimestampDouble();                   // For Pixelman
+  void      releaseFrame();
+  void      setCallbackId( int id );                  // For Pixelman
+  void      setCallback( CallbackFunc cbf );          // For Pixelman
 
   // Statistics and info
   int  framesWrittenCount();
