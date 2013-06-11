@@ -533,7 +533,10 @@ bool SpidrController::writePixelConfigMpx3( int dev_nr, bool with_replies )
       int hi_bit = 11 + counter*12;
       int lo_bit = counter*12;
       int cmd    = CMD_PIXCONF_MPX3_0 + counter;
-      if( !with_replies ) cmd |= CMD_NOREPLY;
+      // ### Without replies doesn't work (yet) because -I think- TCP packets
+      //     are concatenated at the receiver end and need to be interpreted;
+      //     to be investigated...
+      //if( !with_replies ) cmd |= CMD_NOREPLY;
 
       // Convert the data in _pixelConfig row-by-row into the format
       // as required by the Medipix device
@@ -565,9 +568,12 @@ bool SpidrController::writePixelConfigMpx3( int dev_nr, bool with_replies )
 	    }
 
 	  // Even with 'with_replies' false, acknowledge first and last message
-	  // (###NB: something goes wrong with uIP on SPIDR without it)
-	  if( row == 0 || row == 255 ) cmd &= ~CMD_NOREPLY;
-
+	  /*
+	  if( row == 0 || row == 255 )
+	    cmd &= ~CMD_NOREPLY;
+	  else if( !with_replies )
+	    cmd |= CMD_NOREPLY;
+	  */
 	  // Send this row of formatted configuration data to the SPIDR module
 	  if( this->requestSetIntAndBytes( cmd, dev_nr,
 					   row, // Sequence number
@@ -643,7 +649,10 @@ bool SpidrController::writePixelConfigMpx3rx( int dev_nr, bool with_replies )
   unsigned char  *prow;
   unsigned char   byte, bitmask;
   int             cmd = CMD_PIXCONF_MPX3RX;
-  if( !with_replies ) cmd |= CMD_NOREPLY;
+  // ### Without replies doesn't work (yet) because -I think- TCP packets
+  //     are concatenated at the receiver end and need to be interpreted
+  //     to be investigated...
+  //if( !with_replies ) cmd |= CMD_NOREPLY;
 
   // Convert the data in _pixelConfig row-by-row into the format
   // as required by the Medipix device
@@ -675,10 +684,12 @@ bool SpidrController::writePixelConfigMpx3rx( int dev_nr, bool with_replies )
 	}
 
       // Even with 'with_replies' false, acknowledge first and last message
-      // (###NB: something goes wrong with uIP on SPIDR without it:
-      //         to be investigated... )
-      if( row == 0 || row == 255 ) cmd &= ~CMD_NOREPLY;
-
+      /*
+      if( row == 0 || row == 255 )
+	cmd &= ~CMD_NOREPLY;
+      else if( !with_replies )
+	cmd |= CMD_NOREPLY;
+      */
       // Send this row of formatted configuration data to the SPIDR module
       if( this->requestSetIntAndBytes( cmd, dev_nr,
 				       row, // Sequence number
