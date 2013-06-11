@@ -473,6 +473,8 @@ int spidrSetExtDac( int id, int code, double val )
 
 int spidrSetPixelsCfg( int id, byte cfgs[], u32 sz )
 {
+  // NB: 'sz' indicates the number of pixels, not bytes
+  //     (from email from Daniel Turecek, 11 Jun 2013)
   LOGFUNCPAR(sz);
   GETCONTROLLER( id );
   SpidrInfo *spidrinfo = SpidrMgr::instance()->info( id );
@@ -507,7 +509,7 @@ int spidrSetPixelsCfg( int id, byte cfgs[], u32 sz )
 	  // Medipix3.1 device
 	  int  configtha = 0, configthb = 0;
 	  bool configtha4 = false, configthb4 = false;
-	  bool gainmode = false, testbit = false, maskbit = false;
+	  bool gainmode = false, test_it = false, mask_it = false;
 	  for( i=0; i<MPX_PIXELS; ++i )
 	    {
 	      // Depending on what Pixelman provides...:
@@ -515,20 +517,20 @@ int spidrSetPixelsCfg( int id, byte cfgs[], u32 sz )
 	      pixman_pixcfg = ((unsigned int) cfgs[i] |
 			       (((unsigned int) cfgs[i+1]) << 8));
 
-	      //maskbit  = ((pixman_pixcfg & 0x0001) != 0);
-	      /*
-	      testbit    = ((pixman_pixcfg & 0x0002) != 0);
+	      mask_it    = ((pixman_pixcfg & 0x0001) == 0); // NB: 0=active
+	      test_it    = ((pixman_pixcfg & 0x0002) == 0); // NB: 0=active
 	      gainmode   = ((pixman_pixcfg & 0x0004) != 0);
 	      configtha  = ((pixman_pixcfg & 0x0078) >> 3);
 	      configtha4 = ((pixman_pixcfg & 0x0080) != 0);
 	      configthb  = ((pixman_pixcfg & 0x0F00) >> 8);
 	      configthb4 = ((pixman_pixcfg & 0x1000) != 0);
-	      */
-	      if( maskbit ) spidrctrl->maskPixelMpx3( x, y );
+
+	      if( mask_it ) spidrctrl->maskPixelMpx3( x, y );
+
 	      spidrctrl->configPixelMpx3( x, y,
 					  configtha, configthb,
 					  configtha4, configthb4,
-					  gainmode, testbit );
+					  gainmode, test_it );
 	      ++x;
 	      if( x == MPX_PIXEL_COLUMNS )
 		{
@@ -548,7 +550,7 @@ int spidrSetPixelsCfg( int id, byte cfgs[], u32 sz )
 	{
 	  // Medipix3RX device
 	  int  discl = 0, disch = 0;
-	  bool testbit = false, maskbit = false;
+	  bool test_it = false, mask_it = false;
 	  for( i=0; i<MPX_PIXELS; i+=2 )
 	    {
 	      // Depending on what Pixelman provides...:
@@ -556,15 +558,15 @@ int spidrSetPixelsCfg( int id, byte cfgs[], u32 sz )
 	      pixman_pixcfg = ((unsigned int) cfgs[i] |
 			       (((unsigned int) cfgs[i+1]) << 8));
 
-	      //maskbit  = ((pixman_pixcfg & 0x0001) != 0);
-	      /*
-	      testbit = ((pixman_pixcfg & 0x0002) != 0);
+	      mask_it = ((pixman_pixcfg & 0x0001) == 0); // NB: 0=active
+	      test_it = ((pixman_pixcfg & 0x0002) == 0); // NB: 0=active
 	      discl   = ((pixman_pixcfg & 0x00F8) >> 3);
 	      disch   = ((pixman_pixcfg & 0x1F00) >> 8);
-	      */
-	      if( maskbit ) spidrctrl->maskPixelMpx3rx( x, y );
-	      spidrctrl->configPixelMpx3rx( x, y,
-					    discl, disch, testbit );
+
+	      if( mask_it ) spidrctrl->maskPixelMpx3rx( x, y );
+
+	      spidrctrl->configPixelMpx3rx( x, y, discl, disch, test_it );
+
 	      ++x;
 	      if( x == MPX_PIXEL_COLUMNS )
 		{
