@@ -41,7 +41,7 @@ typedef struct DevHeader
 
 typedef struct SpidrHeader
 {
-  // NB: values are stored big-endian
+  // NB: copy of header produced by the SPIDR module; values are big-endian
   u16 triggerCnt;
   u16 shutterCnt;
   u16 sequenceNr;
