@@ -143,6 +143,7 @@ int main( int argc, char *argv[] )
   int nr_of_triggers = 2;
   spidr.setTriggerConfig( trig_mode, trig_period_us,
 			  trig_freq_hz, nr_of_triggers );
+  spidr.clearBusy();
   int i;
   for( i=0; i<5; ++i )
     {

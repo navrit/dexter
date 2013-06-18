@@ -41,6 +41,7 @@ int main( int argc, char *argv[] )
   int nr_of_triggers = 2;
   spidrctrl.setTriggerConfig( trig_mode, trig_period_us,
 			      trig_freq_hz, nr_of_triggers );
+  spidrctrl.clearBusy();
   for( int i=0; i<5; ++i )
     {
       spidrctrl.startAutoTrigger();

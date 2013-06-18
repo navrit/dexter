@@ -107,6 +107,7 @@ int main( int argc, char *argv[] )
   int trig_pulse_count;
   spidrcontrol.setTriggerConfig( trig_mode, trig_period_us,
 				 trig_freq_hz, nr_of_triggers );
+  spidrcontrol.clearBusy();
   int i;
   for( i=0; i<10; ++i )
     //for( i=0; i<1; ++i )
