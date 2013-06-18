@@ -37,6 +37,7 @@ int main( int argc, char *argv[] )
     {
       cout << "### Failed to set SPIDR loglevel to " << log_level << endl;
     }
+  spidrcontrol.displayInfo();
 
   return 0;
 }
