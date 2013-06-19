@@ -16,7 +16,7 @@ using namespace std;
 #include "spidrcmds.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x13060500;
+const int VERSION_ID = 0x13061800;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor / info
@@ -215,6 +215,20 @@ void SpidrController::clearBusyRequest()
   // To be used by the receiver threads
   --_busyRequests;
   if( _busyRequests == 0 ) this->clearBusy();
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setLogLevel( int level )
+{
+  return this->requestSetInt( CMD_SET_LOGLEVEL, 0, level );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::displayInfo()
+{
+  return this->requestSetInt( CMD_DISPLAY_INFO, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -935,15 +949,6 @@ bool SpidrController::getDvdd( int *mvolt, int *mamp, int *mwatt )
 bool SpidrController::getVdd( int *mvolt, int *mamp, int *mwatt )
 {
   return this->get3Ints( CMD_GET_VDD, mvolt, mamp, mwatt );
-}
-
-// ----------------------------------------------------------------------------
-// Other
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setLogLevel( int level )
-{
-  return this->requestSetInt( CMD_SET_LOGLEVEL, 0, level );
 }
 
 // ----------------------------------------------------------------------------

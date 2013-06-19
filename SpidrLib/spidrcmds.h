@@ -15,6 +15,8 @@
 #define CMD_SET_BUSY         0x908
 #define CMD_CLEAR_BUSY       0x909
 #define CMD_SET_LOGLEVEL     0x90A
+#define CMD_DISPLAY_INFO     0x90B
+#define CMD_SET_TIMEOFDAY    0x90C
 
 // Configuration: devices
 #define CMD_GET_DEVICEID     0x110
@@ -92,8 +94,8 @@ static char *CMD_STR[] =
     "SET_BUSY        ", // 0x908
     "CLEAR_BUSY      ", // 0x909
     "SET_LOGLEVEL    ", // 0x90A
-    "-----",            // 0x90B
-    "-----",            // 0x90C
+    "DISPLAY_INFO    ", // 0x90B
+    "SET_TIMEOFDAY   ", // 0x90C
     "-----",            // 0x90D
     "-----",            // 0x90E
     "-----",            // 0x90F
