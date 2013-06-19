@@ -28,7 +28,7 @@ class MY_LIB_API SpidrDaq
  public:
   // C'tor, d'tor
   SpidrDaq( int ipaddr3, int ipaddr2, int ipaddr1, int ipaddr0,
-	    SpidrController *spidrctrl = 0 );
+            SpidrController *spidrctrl = 0 );
   SpidrDaq( SpidrController *spidrctrl );
   ~SpidrDaq();
 
@@ -76,12 +76,12 @@ class MY_LIB_API SpidrDaq
 
   // Init function for use in c'tors
   void init( int *ipaddr,
-	     int *devport,
-	     int *devid,
-	     int *devtype,
-	     SpidrController *spidrctrl );
+             int *devport,
+             int *devid,
+             int *devtype,
+             SpidrController *spidrctrl );
   void getIdsPortsTypes( SpidrController *spidrctrl,
-			 int *id, int *port, int *type );
+                         int *id, int *port, int *type );
 };
 
 #endif // SPIDRDAQ_H
