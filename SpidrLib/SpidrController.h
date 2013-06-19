@@ -49,8 +49,13 @@ class MY_LIB_API SpidrController
   bool        reset                ();
   bool        setBusy              ();
   bool        clearBusy            ();
-  void        setBusyRequest       ();
-  void        clearBusyRequest     ();
+  void        setBusyRequest       (); // For internal use
+  void        clearBusyRequest     (); // For internal use
+  bool        setLogLevel          ( int level );
+  bool        displayInfo          (); // In the currently open telnet window
+                                       // or (USB) console
+  // ###TODO:
+  bool        setTimeOfDay         (); // Set the SPIDR processor clock time
 
   // Configuration: devices
   bool        getDeviceId   ( int dev_nr, int *id );
@@ -126,10 +131,10 @@ class MY_LIB_API SpidrController
                               int srvport1    = 8193,
                               int srvport2    = 8194,
                               int srvport3    = 8195,
-			      int devport0    = 4096,
-			      int devport1    = 4097,
-			      int devport2    = 4098,
-			      int devport3    = 4099 );
+                              int devport0    = 4096,
+                              int devport1    = 4097,
+                              int devport2    = 4098,
+                              int devport3    = 4099 );
   bool storeDacs            ( int dev_nr );             // ###TODO
   bool storePixelConfig     ( int dev_nr );             // ###TODO
 
@@ -157,11 +162,6 @@ class MY_LIB_API SpidrController
   bool getVdd               ( int *mvolt, int *mamp, int *mwatt );
 
   // Other
-  bool setLogLevel          ( int level );
-  // ###TODO:
-  bool setTimeOfDay         (); // Set the SPIDR processor clock time
-  bool displayInfo          (); // In the currently open telnet window
-                                // or (USB) console
  private:
   bool maskPixel            ( int x, int y, int maskbit );
   bool get3Ints             ( int cmd, int *data0, int *data1, int *data2 );
