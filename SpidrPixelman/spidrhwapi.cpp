@@ -9,7 +9,7 @@
 #include <sys/time.h>
 #endif
 
-const char *LIB_VERSION_STR = "SpidrPixelman v1.0.0, 10 Jun 2013";
+const char *LIB_VERSION_STR = "SpidrPixelman v1.0.0, 19 Jun 2013";
 
 // Some convenient macros
 #define GETCONTROLLER( id ) \
@@ -385,9 +385,10 @@ int spidrSetDacs( int id, DACTYPE dac_vals[], int sz )
 
   int chips_todo = sz / dac_cnt;
   if( chips_todo != spidrinfo->chipCount )
-    LOGGER() << "WARN SetDacs(): DAC vals size " << sz
-	     << "does not match chip count " << spidrinfo->chipCount
-	     << "(type=" << spidrinfo->chipType << ")" << endl;
+    LOGGER() << "+++ WARN SetDacs(): DAC array size " << sz
+	     << " does not match (#chips=" << spidrinfo->chipCount
+	     << ",type=" << spidrinfo->chipType << ",DACs="
+	     << dac_cnt << ")" << endl;
   int i = 0;
   for( int chip=0; chip<chips_todo; ++chip )
     {
@@ -484,7 +485,7 @@ int spidrSetPixelsCfg( int id, byte cfgs[], u32 sz )
   int chips_todo = sz / MPX_PIXELS;
   if( chips_todo != spidrinfo->chipCount )
     {
-      LOGGER() << "WARN spidrSetPixelsCfg(): config size " << sz
+      LOGGER() << "+++ WARN spidrSetPixelsCfg(): config size " << sz
 	       << " does not match chip count "
 	       << spidrinfo->chipCount << endl;
       // Adjust...
@@ -936,9 +937,9 @@ static string time_str()
 {
   ostringstream oss;
 #ifdef WIN32
-  // Using Windows-specific 'GetSystemTime()' function for time
+  // Using Windows-specific 'GetLocalTime()' function for time
   SYSTEMTIME st;
-  GetSystemTime( &st );
+  GetLocalTime( &st );
   oss << setfill('0')
       << setw(2) << st.wHour << ":"
       << setw(2) << st.wMinute << ":"
