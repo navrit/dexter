@@ -14,7 +14,7 @@ SpidrTv::SpidrTv()
 
   _lbVersion->setText( VERSION );
 
-  connect( this->tbOn, SIGNAL(clicked()), this, SLOT(onOff()) );
+  connect( _tbOn, SIGNAL(clicked()), this, SLOT(onOff()) );
 
   connect( _cbCounterDepth, SIGNAL(currentIndexChanged(int)),
 	   this, SLOT(changeCounterDepth()) );
@@ -171,7 +171,7 @@ void SpidrTv::decodeAndDisplay()
 	}
       line += 12 * 32;
     }
-  this->lbView->setPixmap( QPixmap::fromImage(_image) );
+  _lbView->setPixmap( QPixmap::fromImage(_image) );
 }
 #endif // OLD_CODE
 // ----------------------------------------------------------------------------
@@ -199,7 +199,7 @@ void SpidrTv::decodeAndDisplay()
     }
 
   // Display the image
-  this->lbView->setPixmap( QPixmap::fromImage(_image) );
+  _lbView->setPixmap( QPixmap::fromImage(_image) );
 }
 
 // ----------------------------------------------------------------------------
@@ -406,7 +406,7 @@ void SpidrTv::timerEvent(QTimerEvent *)
       else
 	{
 	  this->statusBar()->showMessage( _recvr->error() );
-	  tbOn->setText("On");
+	  _tbOn->setText("On");
 	  _recvr->stop();
 	  _recvr->setParent(0);
 	  delete _recvr;
@@ -421,13 +421,13 @@ void SpidrTv::onOff()
 {
   if( _recvr == 0 )
     {
-      this->tbOn->setText( "Off" );
+      _tbOn->setText( "Off" );
       _recvr = new ReceiverThread( _leAdapter->text(), _sbPort->value(),
 				   _counterDepth, this );
     }
   else
     {
-      this->tbOn->setText( "On" );
+      _tbOn->setText( "On" );
       _recvr->stop();
       _recvr->setParent(0);
       delete _recvr;
