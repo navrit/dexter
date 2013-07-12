@@ -20,7 +20,6 @@ CONFIG(debug, debug|release) {
   MOC_DIR     = debug
   UI_DIR      = debug
   DESTDIR     = ../Debug
-  LIBS       += -L../SpidrLib/debug
 }
 
 CONFIG(release, debug|release) {
@@ -28,7 +27,6 @@ CONFIG(release, debug|release) {
   MOC_DIR     = release
   UI_DIR      = release
   DESTDIR     = ../Release
-  LIBS       += -L../SpidrLib/release
 }
 
 win32 {
