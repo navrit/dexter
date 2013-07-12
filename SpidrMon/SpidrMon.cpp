@@ -33,6 +33,7 @@ SpidrMon::SpidrMon()
 
   // Data update 'LED'
   _leUpdateLed->hide();
+  _labelDisconnected->hide();
 }
 
 // ----------------------------------------------------------------------------
@@ -46,17 +47,6 @@ SpidrMon::~SpidrMon()
 
 void SpidrMon::connectOrDisconnect()
 {
-  if( _lineEditAddr3->text().isEmpty() ||
-      _lineEditAddr2->text().isEmpty() ||
-      _lineEditAddr1->text().isEmpty() ||
-      _lineEditAddr0->text().isEmpty() ||
-      _lineEditPort->text().isEmpty() )
-    {
-      QMessageBox::warning( this, "Connecting to SPIDR",
-			    "Provide a full IP address and port number" );
-      return;
-    }
-
   if( _spidrController )
     {
       this->killTimer( _timerId );
@@ -66,6 +56,20 @@ void SpidrMon::connectOrDisconnect()
     }
   else
     {
+      _labelDisconnected->hide();
+
+      if( _lineEditAddr3->text().isEmpty() ||
+	  _lineEditAddr2->text().isEmpty() ||
+	  _lineEditAddr1->text().isEmpty() ||
+	  _lineEditAddr0->text().isEmpty() ||
+	  _lineEditPort->text().isEmpty() )
+	{
+	  QMessageBox::warning( this, "Connecting to SPIDR",
+				"Provide a complete IP address "
+				"and a port number" );
+	  return;
+	}
+
       QApplication::setOverrideCursor( Qt::WaitCursor );
 
       _spidrController =
@@ -97,6 +101,14 @@ void SpidrMon::connectOrDisconnect()
 void SpidrMon::timerEvent(QTimerEvent *)
 {
   if( _spidrController == 0 ) return;
+
+  if( !_spidrController->isConnected() )
+    {
+      // Got disconnected ?
+      this->connectOrDisconnect();
+      _labelDisconnected->show();
+      return;
+    }
 
   int mdegrees;
   if( _spidrController->getRemoteTemp( &mdegrees ) )
@@ -143,9 +155,9 @@ void SpidrMon::timerEvent(QTimerEvent *)
     }
   else
     {
-      _lineEditVddMvolt->setText( "----" );
-      _lineEditVddMamp->setText( "----" );
-      _lineEditVddMwatt->setText( "----" );
+      _lineEditDvddMvolt->setText( "----" );
+      _lineEditDvddMamp->setText( "----" );
+      _lineEditDvddMwatt->setText( "----" );
     }
   if( _spidrController->getVdd( &mvolt, &mamp, &mwatt ) )
     {
