@@ -1,0 +1,204 @@
+#include "mpx3conf.h"
+#include "SpidrMpx3Tv.h"
+#include "SpidrController.h"
+#include "SpidrDaq.h"
+
+#include <QHostAddress>
+
+QString VERSION( "v2.0.0   12-Jul-2013" );
+
+// ----------------------------------------------------------------------------
+
+SpidrMpx3Tv::SpidrMpx3Tv()
+  : QMainWindow(),
+    _controller( 0 ), _daq( 0 ),
+    _image( QSize(256,256), QImage::Format_Indexed8 )
+{
+  this->setupUi(this);
+
+  _lbVersion->setText( VERSION );
+
+  connect( _actionExit, SIGNAL(activated()), this, SLOT(close()) );
+
+  connect( _tbOn, SIGNAL(clicked()), this, SLOT(onOff()) );
+
+  connect( _cbCounterDepth, SIGNAL(currentIndexChanged(int)),
+	   this, SLOT(changeCounterDepth()) );
+
+  // Initializes _counterDepth
+  this->changeCounterDepth();
+
+  startTimer( 50 );
+}
+
+// ----------------------------------------------------------------------------
+
+SpidrMpx3Tv::~SpidrMpx3Tv()
+{
+  if( _controller ) this->onOff();
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrMpx3Tv::decodeAndDisplay()
+{
+  // The (decoded) frame data
+  int size;
+  int *pixeldata = _daq->frameData( 0, &size );
+
+  // Convert the pixel data to QImage bytes
+  int    max = _sbMaxValue->value();
+  int    min = _sbMinValue->value();
+  uchar *img = _image.bits();
+  int    val;
+  for( int i=0; i<256*256; ++i, ++img, ++pixeldata )
+    {
+      val = *pixeldata;
+      if( val >= max )
+	*img = 255;
+      else if( val <= min )
+	*img = 0;
+      else
+	*img = (unsigned char) ((255 * (val-min)) / (max-min));
+    }
+  _daq->releaseFrame();
+
+  // Display the image
+  _lbView->setPixmap( QPixmap::fromImage(_image) );
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrMpx3Tv::timerEvent( QTimerEvent * )
+{
+  if( !_daq ) return;
+
+  if( _daq->errString().empty() )
+    {
+      //this->statusBar()->clearMessage();
+
+      _lbFramesSkipped->setText( QString::number(_daq->framesLostCount()) );
+      _lbFramesRecv->setText( QString::number(_daq->framesCount()) );
+      _lbPacketsRecv->setText( QString::number(_daq->packetsReceivedCount()) );
+      //_lbDebugCounter->setText( QString::number(_recvr->debugCounter()) );
+      _lbPacketsLost->setText( QString::number(_daq->packetsLostCount()) );
+      /*
+	this->lbShutterCount->
+	setText( QString::number(_recvr->lastShutterCount()) );
+	this->lbFrameCount->
+	setText( QString::number(_recvr->lastTriggerCount()) );
+	this->lbSeqNumber->
+	setText( QString::number(_recvr->lastSequenceNr()) );
+      */
+      if( _daq->hasFrame() )
+	{
+	  this->decodeAndDisplay();
+	}
+    }
+  else
+    {
+      this->statusBar()->
+	showMessage( QString::fromStdString(_daq->errString()) );
+      _tbOn->setText( "On" );
+      _daq->stop();
+      delete _daq;
+      _daq = 0;
+      delete _controller;
+      _controller = 0;
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrMpx3Tv::onOff()
+{
+  if( !_controller )
+    {
+      _tbOn->setText( "Off" );
+      QHostAddress qha( _leAdapter->text() );
+      unsigned int addr = qha.toIPv4Address();
+      _controller = new SpidrController( (addr>>24)&0xFF,
+					 (addr>>16)&0xFF,
+					 (addr>> 8)&0xFF,
+					 (addr>> 0)&0xFF );
+      _daq = new SpidrDaq( _controller );
+
+      // Get the server port it uses, to display
+      int port;
+      if( _controller->getServerPort( 0, &port ) )
+	_sbPort->setValue( port );
+      else
+	_sbPort->setValue( 0 );
+
+      // Get the device type, to display
+      int type;
+      if( _controller->getDeviceType( 0, &type ) )
+	{
+	  if( type == MPX_TYPE_MPX31 )
+	    _cbDeviceType->setCurrentIndex( 0 );
+	  else
+	    _cbDeviceType->setCurrentIndex( 1 );
+	}
+      else
+	{
+	  _cbDeviceType->setCurrentIndex( 0 );
+	}
+      this->adjustDeviceType();
+
+      // Set the selected pixel counterdepth
+      _controller->setPixelDepth( _counterDepth );
+      _daq->setPixelDepth( _counterDepth );
+
+      // Let SpidrDaq decode the frame data (otherwise it will simply absorb
+      // all frames when no output file is set..)
+      _daq->setDecodeFrames( true );
+    }
+  else
+    {
+      _tbOn->setText( "On" );
+      _daq->stop();
+      delete _daq;
+      _daq = 0;
+      delete _controller;
+      _controller = 0;
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrMpx3Tv::changeCounterDepth()
+{
+  _counterDepth = _cbCounterDepth->currentText().toInt();
+
+  _sbMinValue->setMaximum( (1<<_counterDepth)-1 );
+  _sbMaxValue->setMaximum( (1<<_counterDepth)-1 );
+
+  _sbMaxValue->setValue( (1<<_counterDepth)-1 );
+
+  if( _sbMinValue->value() > _sbMaxValue->value() )
+    _sbMinValue->setValue( 0 );
+
+  if( _controller ) _controller->setPixelDepth( _counterDepth );
+  if( _daq )        _daq->setPixelDepth( _counterDepth );
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrMpx3Tv::adjustDeviceType()
+{
+  int index = _cbDeviceType->currentIndex();
+  if( index == 0 ) // Medipix3.1
+    {
+      int i = _cbCounterDepth->findText( "6" );
+      if( i > -1 ) _cbCounterDepth->setItemText( i, "4" );
+    }
+  else
+    {
+      // Medipix3RX
+      int i = _cbCounterDepth->findText( "4" );
+      if( i > -1 ) _cbCounterDepth->setItemText( i, "6" );
+    }
+  _counterDepth = _cbCounterDepth->currentText().toInt();
+}
+
+// ----------------------------------------------------------------------------
