@@ -13,7 +13,7 @@ using namespace std;
 #include "dacsdefs.h"
 #include "dacsdescr.h"
 #include "mpx3conf.h"
-#include "spidrcmds.h"
+#include "spidrmpx3cmds.h"
 
 // Version identifier: year, month, day, release number
 const int VERSION_ID = 0x13061800;

@@ -1,7 +1,7 @@
-#ifndef SPIDRCMDS_H
-#define SPIDRCMDS_H
+#ifndef SPIDRMPX3CMDS_H
+#define SPIDRMPX3CMDS_H
 
-// Command identifiers in messages to (and from) the SPIDR module
+// Command identifiers in messages to (and from) the SPIDR-MPX3 module
 #define CMD_NOP              0x000
 
 // General: module
@@ -198,4 +198,4 @@ static char *ERR_STR[] =
     "ERR_ILLEGAL_PAR"
   };
 
-#endif // SPIDRCMDS_H
+#endif // SPIDRMPX3CMDS_H
