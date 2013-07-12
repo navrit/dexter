@@ -34,10 +34,12 @@ ReceiverThread::ReceiverThread( int *ipaddr,
     _recvTimeoutCount( 0 )
 {
   _spidrHeader = (SpidrHeader_t *) _recvBuffer;
-  _addr = (QString::number( ipaddr[3] ) + '.' +
-	   QString::number( ipaddr[2] ) + '.' +
-	   QString::number( ipaddr[1] ) + '.' +
-	   QString::number( ipaddr[0] ));
+  _addr = (((ipaddr[3] & 0xFF) << 24) | ((ipaddr[2] & 0xFF) << 16) |
+	   ((ipaddr[1] & 0xFF) << 8) | ((ipaddr[0] & 0xFF) << 0));
+  _addrStr = (QString::number( ipaddr[3] ) + '.' +
+	      QString::number( ipaddr[2] ) + '.' +
+	      QString::number( ipaddr[1] ) + '.' +
+	      QString::number( ipaddr[0] ));
   for( u32 i=0; i<NR_OF_FRAMEBUFS; ++i )
     {
       _packetsLostFrame[i] = 9999;
@@ -75,7 +77,7 @@ void ReceiverThread::run()
   _sock = new QUdpSocket();
   if( !_sock->bind( QHostAddress(_addr), _port ) )
     {
-      _errString = QString("Failed to bind to adapter/port ") + _addr +
+      _errString = QString("Failed to bind to adapter/port ") + _addrStr +
 	QString(": ") + _sock->errorString();
       _stop = true;
     }
@@ -93,6 +95,8 @@ void ReceiverThread::run()
       else
 	this->handleFrameTimeout();
     }
+  _sock->close();
+  delete _sock;
 }
 
 // ----------------------------------------------------------------------------
@@ -338,7 +342,7 @@ void ReceiverThread::setPixelDepth( int nbits )
 
 std::string ReceiverThread::ipAddressString()
 {
-  QString qs = _addr + ':' + QString::number( _port );
+  QString qs = _addrStr + ':' + QString::number( _port );
   return qs.toStdString();
 }
 

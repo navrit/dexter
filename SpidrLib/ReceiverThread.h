@@ -73,7 +73,8 @@ class ReceiverThread : public QThread
 
  private:
   QUdpSocket *_sock;
-  QString     _addr;
+  quint32     _addr;
+  QString     _addrStr;
   int         _port;
   bool        _stop;
   FramebuilderThread *_frameBuilder;

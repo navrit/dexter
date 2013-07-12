@@ -349,6 +349,14 @@ int SpidrDaq::framesLostCount( int index )
 
 // ----------------------------------------------------------------------------
 
+int SpidrDaq::packetsReceivedCount( int index )
+{
+  if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
+  return _frameReceivers[index]->packetsReceived();
+}
+
+// ----------------------------------------------------------------------------
+
 int SpidrDaq::packetsLostCount( int index )
 {
   if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;

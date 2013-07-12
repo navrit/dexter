@@ -1118,7 +1118,7 @@ bool SpidrController::request( int cmd,     int dev_nr,
 			       int req_len, int exp_reply_len )
 {
   _sock->write( (const char *) _reqMsg, req_len );
-  if( !_sock->waitForBytesWritten( 1000 ) )
+  if( !_sock->waitForBytesWritten( 400 ) )
     {
       this->clearErrString();
       _errString << "Time-out sending command";
@@ -1128,7 +1128,7 @@ bool SpidrController::request( int cmd,     int dev_nr,
   // Reply expected ?
   if( cmd & CMD_NOREPLY ) return true;
 
-  if( !_sock->waitForReadyRead( 1000 ) )
+  if( !_sock->waitForReadyRead( 400 ) )
     {
       this->clearErrString();
       _errString << "Time-out receiving reply";
