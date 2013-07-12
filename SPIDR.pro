@@ -17,11 +17,12 @@ TEMPLATE = subdirs
 
 # Libraries
 SUBDIRS += SpidrLib/SpidrLib.pro
+SUBDIRS += SpidrPixelman/SpidrPixelman.pro
 
 # Executables
+SUBDIRS += SpidrMpx3TV/SpidrMTV.pro
 SUBDIRS += SpidrTV/SpidrTV.pro
 SUBDIRS += SpidrMon/SpidrMon.pro
-SUBDIRS += SpidrPixelman/SpidrPixelman.pro
 SUBDIRS += spidrloglevel/spidrloglevel.pro
 SUBDIRS += spidrlibtest/spidrlibtest.pro
-SUBDIRS += filereader/filereader.pro
+#SUBDIRS += filereader/filereader.pro
