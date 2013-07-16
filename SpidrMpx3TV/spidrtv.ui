@@ -81,7 +81,7 @@
     <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
    </property>
    <property name="windowTitle">
-    <string>Remote</string>
+    <string/>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -112,13 +112,27 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="_leAdapter">
+      <widget class="QLineEdit" name="_leSpidrIpAddr">
        <property name="text">
         <string>192.168.1.10</string>
        </property>
       </widget>
      </item>
      <item row="2" column="0">
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>Host IP addr</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="_leHostIpAddr">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
       <widget class="QLabel" name="label">
        <property name="toolTip">
         <string>(Port)</string>
@@ -128,30 +142,14 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QSpinBox" name="_sbPort">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="minimum">
-        <number>1</number>
-       </property>
-       <property name="maximum">
-        <number>65535</number>
-       </property>
-       <property name="value">
-        <number>65535</number>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
+     <item row="6" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Min value</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="6" column="1">
       <widget class="QSpinBox" name="_sbMinValue">
        <property name="maximum">
         <number>4095</number>
@@ -161,14 +159,14 @@
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Max value</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
+     <item row="7" column="1">
       <widget class="QSpinBox" name="_sbMaxValue">
        <property name="maximum">
         <number>16777215</number>
@@ -181,14 +179,14 @@
        </property>
       </widget>
      </item>
-     <item row="5" column="0">
+     <item row="8" column="0">
       <widget class="QLabel" name="label_17">
        <property name="text">
         <string>Counter depth</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
+     <item row="8" column="1">
       <widget class="QComboBox" name="_cbCounterDepth">
        <property name="currentIndex">
         <number>2</number>
@@ -215,14 +213,51 @@
        </item>
       </widget>
      </item>
-     <item row="7" column="0" colspan="2">
+     <item row="9" column="0">
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>Device type</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="1">
+      <widget class="QComboBox" name="_cbDeviceType">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="currentIndex">
+        <number>3</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>Medipix3.1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Medipix3RX</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>&lt;UNKNOWN&gt;</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>&lt;NONE&gt;</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="10" column="0" colspan="2">
       <widget class="Line" name="line">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
-     <item row="10" column="0">
+     <item row="13" column="0">
       <widget class="QLabel" name="label_4">
        <property name="font">
         <font>
@@ -235,132 +270,14 @@
        </property>
       </widget>
      </item>
-     <item row="19" column="0">
-      <spacer name="verticalSpacer">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="20" column="0">
-      <spacer name="verticalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="21" column="0">
-      <spacer name="verticalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="22" column="0">
-      <spacer name="verticalSpacer_4">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="23" column="0">
-      <spacer name="verticalSpacer_5">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="24" column="0" colspan="2">
-      <widget class="QLabel" name="label_16">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="pixmap">
-        <pixmap resource="spidrtv.qrc">:/default/NIKHEF-logo-transparent.png</pixmap>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item row="25" column="0" colspan="2">
-      <widget class="QLabel" name="_lbVersion">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>V0.0.0   09-Dec-2012</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QComboBox" name="_cbDeviceType">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <item>
-        <property name="text">
-         <string>Medipix3.1</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Medipix3RX</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLabel" name="label_10">
-       <property name="text">
-        <string>Device type</string>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="0">
+     <item row="14" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>Packets received</string>
        </property>
       </widget>
      </item>
-     <item row="11" column="1">
+     <item row="14" column="1">
       <widget class="QLabel" name="_lbPacketsRecv">
        <property name="frameShape">
         <enum>QFrame::WinPanel</enum>
@@ -376,14 +293,14 @@
        </property>
       </widget>
      </item>
-     <item row="12" column="0">
+     <item row="15" column="0">
       <widget class="QLabel" name="label_6">
        <property name="text">
         <string>Packets lost</string>
        </property>
       </widget>
      </item>
-     <item row="12" column="1">
+     <item row="15" column="1">
       <widget class="QLabel" name="_lbPacketsLost">
        <property name="frameShape">
         <enum>QFrame::WinPanel</enum>
@@ -399,14 +316,14 @@
        </property>
       </widget>
      </item>
-     <item row="13" column="0">
+     <item row="16" column="0">
       <widget class="QLabel" name="label_7">
        <property name="text">
         <string>Frames received</string>
        </property>
       </widget>
      </item>
-     <item row="13" column="1">
+     <item row="16" column="1">
       <widget class="QLabel" name="_lbFramesRecv">
        <property name="frameShape">
         <enum>QFrame::WinPanel</enum>
@@ -422,14 +339,14 @@
        </property>
       </widget>
      </item>
-     <item row="14" column="0">
+     <item row="17" column="0">
       <widget class="QLabel" name="label_8">
        <property name="text">
         <string>Frames skipped</string>
        </property>
       </widget>
      </item>
-     <item row="14" column="1">
+     <item row="17" column="1">
       <widget class="QLabel" name="_lbFramesSkipped">
        <property name="frameShape">
         <enum>QFrame::WinPanel</enum>
@@ -445,14 +362,14 @@
        </property>
       </widget>
      </item>
-     <item row="15" column="0">
+     <item row="18" column="0">
       <widget class="QLabel" name="label_9">
        <property name="text">
         <string>Frames per second</string>
        </property>
       </widget>
      </item>
-     <item row="15" column="1">
+     <item row="18" column="1">
       <widget class="QLabel" name="_lbFramesPerSec">
        <property name="frameShape">
         <enum>QFrame::WinPanel</enum>
@@ -468,14 +385,14 @@
        </property>
       </widget>
      </item>
-     <item row="16" column="0">
+     <item row="19" column="0">
       <widget class="QLabel" name="label_15">
        <property name="text">
         <string>Debug counter</string>
        </property>
       </widget>
      </item>
-     <item row="16" column="1">
+     <item row="19" column="1">
       <widget class="QLabel" name="_lbDebugCounter">
        <property name="frameShape">
         <enum>QFrame::WinPanel</enum>
@@ -485,6 +402,94 @@
        </property>
        <property name="text">
         <string>&lt;unknown&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item row="22" column="0">
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="23" column="0">
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="24" column="0">
+      <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="25" column="0">
+      <spacer name="verticalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="26" column="0" colspan="2">
+      <widget class="QLabel" name="label_16">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="pixmap">
+        <pixmap resource="spidrtv.qrc">:/default/NIKHEF-logo-transparent.png</pixmap>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="27" column="0" colspan="2">
+      <widget class="QLabel" name="_lbVersion">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>V0.0.0   09-Dec-2012</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="_lePort">
+       <property name="readOnly">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

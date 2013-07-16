@@ -18,6 +18,7 @@ TEMPLATE = subdirs
 # Libraries
 SUBDIRS += SpidrLib/SpidrLib.pro
 SUBDIRS += SpidrPixelman/SpidrPixelman.pro
+SUBDIRS += SpidrTpx3Lib/SpidrTpx3Lib.pro
 
 # Executables
 SUBDIRS += SpidrMpx3TV/SpidrMTV.pro

@@ -5,7 +5,7 @@
 
 #include <QHostAddress>
 
-QString VERSION( "v2.0.0   12-Jul-2013" );
+QString VERSION( "v2.0.0   16-Jul-2013" );
 
 // ----------------------------------------------------------------------------
 
@@ -98,7 +98,8 @@ void SpidrMpx3Tv::timerEvent( QTimerEvent * )
   else
     {
       this->statusBar()->
-	showMessage( QString::fromStdString(_daq->errString()) );
+	showMessage( QString("ERROR: ") +
+		     QString::fromStdString(_daq->errString()) );
       _tbOn->setText( "On" );
       _daq->stop();
       delete _daq;
@@ -114,21 +115,46 @@ void SpidrMpx3Tv::onOff()
 {
   if( !_controller )
     {
+      this->statusBar()->showMessage( "Connecting...." );
+      QApplication::setOverrideCursor( Qt::WaitCursor );
+      QApplication::processEvents();
+
       _tbOn->setText( "Off" );
-      QHostAddress qha( _leAdapter->text() );
+      QHostAddress qha( _leSpidrIpAddr->text() );
       unsigned int addr = qha.toIPv4Address();
       _controller = new SpidrController( (addr>>24)&0xFF,
 					 (addr>>16)&0xFF,
 					 (addr>> 8)&0xFF,
 					 (addr>> 0)&0xFF );
+      QApplication::restoreOverrideCursor();
+      if( _controller->isConnected() )
+	this->statusBar()->showMessage( "Connected" );
+      else
+	this->statusBar()->
+	  showMessage( QString("ERROR: ") +
+		       QString::fromStdString(_controller->
+					      connectionErrString()) );
+
       _daq = new SpidrDaq( _controller );
 
-      // Get the server port it uses, to display
+      // Get the host adapter IP address SPIDR uses, to display
+      int ipaddr;
+      if( _controller->getIpAddrDest( &ipaddr ) )
+	{
+	  qha.setAddress( ipaddr );
+	  _leHostIpAddr->setText( qha.toString() );
+	}
+      else
+	{
+	  _leHostIpAddr->setText( "" );
+	}
+
+      // Get the server port SPIDR uses, to display
       int port;
       if( _controller->getServerPort( 0, &port ) )
-	_sbPort->setValue( port );
+	_lePort->setText( QString::number(port) );
       else
-	_sbPort->setValue( 0 );
+	_lePort->setText( "" );
 
       // Get the device type, to display
       int type;
@@ -136,12 +162,14 @@ void SpidrMpx3Tv::onOff()
 	{
 	  if( type == MPX_TYPE_MPX31 )
 	    _cbDeviceType->setCurrentIndex( 0 );
-	  else
+	  else if( type == MPX_TYPE_MPX3RX )
 	    _cbDeviceType->setCurrentIndex( 1 );
+	  else
+	    _cbDeviceType->setCurrentIndex( 2 ); // "UNKNOWN DEVICE"
 	}
       else
 	{
-	  _cbDeviceType->setCurrentIndex( 0 );
+	  _cbDeviceType->setCurrentIndex( 3 );  // "NO DEVICE"
 	}
       this->adjustDeviceType();
 
@@ -150,17 +178,21 @@ void SpidrMpx3Tv::onOff()
       _daq->setPixelDepth( _counterDepth );
 
       // Let SpidrDaq decode the frame data (otherwise it will simply absorb
-      // all frames when no output file is set..)
+      // all frames when no output file is opened..)
       _daq->setDecodeFrames( true );
     }
   else
     {
       _tbOn->setText( "On" );
+      _leHostIpAddr->setText( "" );
+      _lePort->setText( "" );
+      _cbDeviceType->setCurrentIndex( 3 );  // "NO DEVICE"
       _daq->stop();
       delete _daq;
       _daq = 0;
       delete _controller;
       _controller = 0;
+      this->statusBar()->clearMessage();
     }
 }
 

@@ -33,7 +33,7 @@ SpidrDaq::SpidrDaq( int ipaddr3,
   int ids[4]    = { 0, 0, 0, 0 };
   int ports[4]  = { 8192, 0, 0, 0 };
   int types[4]  = { 0, 0, 0, 0 };
-  if ( spidrctrl ) this->getIdsPortsTypes( spidrctrl, ids, ports, types );
+  if( spidrctrl ) this->getIdsPortsTypes( spidrctrl, ids, ports, types );
   this->init( ipaddr, ports, ids, types, spidrctrl );
 }
 
@@ -48,7 +48,7 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl )
   int ids[4]    = { 0, 0, 0, 0 };
   int ports[4]  = { 8192, 0, 0, 0 };
   int types[4]  = { 0, 0, 0, 0 };
-  if ( spidrctrl )
+  if( spidrctrl )
     {
       // Get the IP destination address (this host network interface)
       // from the SPIDR module
@@ -82,8 +82,8 @@ void SpidrDaq::getIdsPortsTypes( SpidrController *spidrctrl,
     {
       if( ids[i] != 0 )
 	{
-	  if( !spidrctrl->getServerPort( i, &ports[i] ) ) ports[i] = 0;
-	  if( !spidrctrl->getDeviceType( i, &types[i] ) ) types[i] = 0;
+	  spidrctrl->getServerPort( i, &ports[i] );
+	  spidrctrl->getDeviceType( i, &types[i] );
 	}
     }
 }
