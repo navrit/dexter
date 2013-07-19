@@ -34,7 +34,7 @@ SpidrDaq::SpidrDaq( int ipaddr3,
   int ports[4]  = { 8192, 0, 0, 0 };
   int types[4]  = { 0, 0, 0, 0 };
   if( spidrctrl ) this->getIdsPortsTypes( spidrctrl, ids, ports, types );
-  this->init( ipaddr, ports, ids, types, spidrctrl );
+  this->init( ipaddr, ids, ports, types, spidrctrl );
 }
 
 // ----------------------------------------------------------------------------
@@ -63,13 +63,15 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl )
 
       this->getIdsPortsTypes( spidrctrl, ids, ports, types );
     }
-  this->init( ipaddr, ports, ids, types, spidrctrl );
+  this->init( ipaddr, ids, ports, types, spidrctrl );
 }
 
 // ----------------------------------------------------------------------------
 
 void SpidrDaq::getIdsPortsTypes( SpidrController *spidrctrl,
-				 int *ids, int *ports, int *types )
+				 int             *ids,
+				 int             *ports,
+				 int             *types )
 {
   if( !spidrctrl ) return;
 
@@ -85,20 +87,26 @@ void SpidrDaq::getIdsPortsTypes( SpidrController *spidrctrl,
 	  spidrctrl->getServerPort( i, &ports[i] );
 	  spidrctrl->getDeviceType( i, &types[i] );
 	}
+      else
+	{
+	  ports[i] = 0; types[i] = 0;
+	}
     }
 }
 
 // ----------------------------------------------------------------------------
 
-void SpidrDaq::init( int *ipaddr,
-		     int *ports,
-		     int *devids,
-		     int *devtypes,
+void SpidrDaq::init( int             *ipaddr,
+		     int             *ids,
+		     int             *ports,
+		     int             *types,
 		     SpidrController *spidrctrl )
 {
   _frameBuilder = 0;
 
   ReceiverThread *recvr;
+  // Use ports[] to determine what's there, in case we want
+  // to start with default parameters (which includes ID=0)
   if( ports[0] != 0 )
     {
       recvr = new ReceiverThread( ipaddr, ports[0] );
@@ -141,8 +149,8 @@ void SpidrDaq::init( int *ipaddr,
   _frameBuilder->setAddrInfo( ipaddr, ports );
 
   // The device IDs and types
-  _frameBuilder->setDeviceIds( devids );
-  _frameBuilder->setDeviceTypes( devtypes );
+  _frameBuilder->setDeviceIds( ids );
+  _frameBuilder->setDeviceTypes( types );
 }
 
 // ----------------------------------------------------------------------------
