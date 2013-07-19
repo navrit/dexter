@@ -243,9 +243,9 @@ bool SpidrController::getDeviceId( int dev_nr, int *id )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getDeviceIds( int *id )
+bool SpidrController::getDeviceIds( int *ids )
 {
-  return this->requestGetInts( CMD_GET_DEVICEIDS, 0, 4, id );
+  return this->requestGetInts( CMD_GET_DEVICEIDS, 0, 4, ids );
 }
 
 // ----------------------------------------------------------------------------
@@ -273,9 +273,9 @@ bool SpidrController::getDevicePort( int dev_nr, int *port_nr )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getDevicePorts( int *port_nr )
+bool SpidrController::getDevicePorts( int *port_nrs )
 {
-  return this->requestGetInts( CMD_GET_DEVICEPORTS, 0, 4, port_nr );
+  return this->requestGetInts( CMD_GET_DEVICEPORTS, 0, 4, port_nrs );
 }
 
 // ----------------------------------------------------------------------------
@@ -295,9 +295,9 @@ bool SpidrController::getServerPort( int dev_nr, int *port_nr )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getServerPorts( int *port_nr )
+bool SpidrController::getServerPorts( int *port_nrs )
 {
-  return this->requestGetInts( CMD_GET_SERVERPORTS, 0, 4, port_nr );
+  return this->requestGetInts( CMD_GET_SERVERPORTS, 0, 4, port_nrs );
 }
 
 // ----------------------------------------------------------------------------

@@ -75,14 +75,16 @@ class MY_LIB_API SpidrDaq
 
   //static QCoreApplication *App;
 
-  // Init function for use in c'tors
-  void init( int *ipaddr,
-             int *devport,
-             int *devid,
-             int *devtype,
-             SpidrController *spidrctrl );
+  // Functions used in c'tors
   void getIdsPortsTypes( SpidrController *spidrctrl,
-                         int *id, int *port, int *type );
+                         int             *ids,
+			 int             *ports,
+			 int             *types );
+  void init( int             *ipaddr,
+             int             *ids,
+             int             *ports,
+             int             *types,
+             SpidrController *spidrctrl );
 };
 
 #endif // SPIDRDAQ_H

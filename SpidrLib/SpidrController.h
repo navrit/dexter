@@ -53,38 +53,38 @@ class MY_LIB_API SpidrController
   void        clearBusyRequest     (); // For internal use
   bool        setLogLevel          ( int level );
   bool        displayInfo          (); // In the currently open telnet window
-                                       // or (USB) console
+                                       // or (USB/UART) console
   // ###TODO:
   bool        setTimeOfDay         (); // Set the SPIDR processor clock time
 
   // Configuration: devices
-  bool        getDeviceId   ( int dev_nr, int *id );
-  bool        getDeviceIds  ( int *id );
-  bool        getDeviceType ( int dev_nr, int *type );
-  bool        setDeviceType ( int dev_nr, int  type );
-  bool        getServerPort ( int dev_nr, int *port_nr );
-  bool        getServerPorts( int *port_nr );
-  bool        setServerPort ( int dev_nr, int  port_nr );
-  bool        getDevicePort ( int dev_nr, int *port_nr );
-  bool        getDevicePorts( int *port_nr );
-  bool        setDevicePort ( int dev_nr, int  port_nr );
-  bool        getDac        ( int dev_nr, int  dac_nr, int *dac_val );
-  bool        setDac        ( int dev_nr, int  dac_nr, int dac_val );
-  bool        setDacs       ( int dev_nr, int  nr_of_dacs, int *dac_val );
-  bool        readDacs      ( int dev_nr );
-  bool        writeDacs     ( int dev_nr );
-  bool        writeDacsDflt ( int dev_nr );
-  bool        setCtpr       ( int dev_nr, int column, int val );
-  bool        writeCtpr     ( int dev_nr );
+  bool        getDeviceId   ( int  dev_nr, int *id );
+  bool        getDeviceIds  ( int *ids );
+  bool        getDeviceType ( int  dev_nr, int *type );
+  bool        setDeviceType ( int  dev_nr, int  type );
+  bool        getServerPort ( int  dev_nr, int *port_nr );
+  bool        getServerPorts( int *port_nrs );
+  bool        setServerPort ( int  dev_nr, int  port_nr );
+  bool        getDevicePort ( int  dev_nr, int *port_nr );
+  bool        getDevicePorts( int *port_nrs );
+  bool        setDevicePort ( int  dev_nr, int  port_nr );
+  bool        getDac        ( int  dev_nr, int  dac_nr, int *dac_val );
+  bool        setDac        ( int  dev_nr, int  dac_nr, int dac_val );
+  bool        setDacs       ( int  dev_nr, int  nr_of_dacs, int *dac_val );
+  bool        readDacs      ( int  dev_nr );
+  bool        writeDacs     ( int  dev_nr );
+  bool        writeDacsDflt ( int  dev_nr );
+  bool        setCtpr       ( int  dev_nr, int column, int val );
+  bool        writeCtpr     ( int  dev_nr );
   bool        getAcqEnable  ( int *mask );
-  bool        setAcqEnable  ( int mask );
-  bool        resetDevice   ( int dev_nr );
+  bool        setAcqEnable  ( int  mask );
+  bool        resetDevice   ( int  dev_nr );
   bool        resetDevices  ();
   bool        setReady      ();
-  std::string dacNameMpx3   ( int index );
-  std::string dacNameMpx3rx ( int index );
-  int         dacMaxMpx3    ( int index );
-  int         dacMaxMpx3rx  ( int index );
+  std::string dacNameMpx3   ( int  index );
+  std::string dacNameMpx3rx ( int  index );
+  int         dacMaxMpx3    ( int  index );
+  int         dacMaxMpx3rx  ( int  index );
 
   // Configuration: pixels
   void resetPixelConfig     ();
@@ -139,11 +139,11 @@ class MY_LIB_API SpidrController
   bool storePixelConfig     ( int dev_nr );             // ###TODO
 
   // Trigger
-  bool setTriggerConfig     ( int trig_mode,
-                              int trig_period_us,
-                              int trig_freq_hz,
-                              int nr_of_triggers,
-                              int trig_pulse_count = 0 );
+  bool setTriggerConfig     ( int  trig_mode,
+                              int  trig_period_us,
+                              int  trig_freq_hz,
+                              int  nr_of_triggers,
+                              int  trig_pulse_count = 0 );
   bool getTriggerConfig     ( int *trig_mode,
                               int *trig_period_us,
                               int *trig_freq_hz,
@@ -154,7 +154,7 @@ class MY_LIB_API SpidrController
   bool triggerOneReadout    ();
 
   // Monitoring
-  bool getAdc               ( int dev_nr, int *adc_val );
+  bool getAdc               ( int  dev_nr, int *adc_val );
   bool getRemoteTemp        ( int *mdegrees );
   bool getLocalTemp         ( int *mdegrees );
   bool getAvdd              ( int *mvolt, int *mamp, int *mwatt );
@@ -163,21 +163,21 @@ class MY_LIB_API SpidrController
 
   // Other
  private:
-  bool maskPixel            ( int x, int y, int maskbit );
-  bool get3Ints             ( int cmd, int *data0, int *data1, int *data2 );
-  bool validXandY           ( int x,       int y,
+  bool maskPixel            ( int  x, int y, int maskbit );
+  bool get3Ints             ( int  cmd, int *data0, int *data1, int *data2 );
+  bool validXandY           ( int  x,       int y,
                               int *xstart, int *xend,
                               int *ystart, int *yend );
-  bool requestGetInt        ( int cmd, int dev_nr, int *dataword );
-  bool requestGetInts       ( int cmd, int dev_nr,
-                              int expected_ints, int *datawords );
-  bool requestSetInt        ( int cmd, int dev_nr, int dataword );
-  bool requestSetInts       ( int cmd, int dev_nr,
-                              int nwords, int *datawords );
-  bool requestSetIntAndBytes( int cmd, int dev_nr, int dataword,
-                              int nbytes, unsigned char *bytes );
-  bool request              ( int cmd, int dev_nr,
-                              int req_len, int exp_reply_len );
+  bool requestGetInt        ( int  cmd, int dev_nr, int *dataword );
+  bool requestGetInts       ( int  cmd, int dev_nr,
+                              int  expected_ints, int *datawords );
+  bool requestSetInt        ( int  cmd, int dev_nr, int dataword );
+  bool requestSetInts       ( int  cmd, int dev_nr,
+                              int  nwords, int *datawords );
+  bool requestSetIntAndBytes( int  cmd, int dev_nr, int dataword,
+                              int  nbytes, unsigned char *bytes );
+  bool request              ( int  cmd, int dev_nr,
+                              int  req_len, int exp_reply_len );
 
  private:
   // Socket connecting to the SPIDR module
