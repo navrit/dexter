@@ -26,4 +26,5 @@ SUBDIRS += SpidrTV/SpidrTV.pro
 SUBDIRS += SpidrMon/SpidrMon.pro
 SUBDIRS += spidrloglevel/spidrloglevel.pro
 SUBDIRS += spidrlibtest/spidrlibtest.pro
+SUBDIRS += spidrtpx3libtest/spidrtpx3libtest.pro
 #SUBDIRS += filereader/filereader.pro
