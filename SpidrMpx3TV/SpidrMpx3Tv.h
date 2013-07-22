@@ -27,5 +27,4 @@ class SpidrMpx3Tv : public QMainWindow, Ui_SpidrTv
   int              _counterDepth;
 
   void decodeAndDisplay();
-  void adjustDeviceType();
 };

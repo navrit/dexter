@@ -42,7 +42,7 @@ SpidrMpx3Tv::~SpidrMpx3Tv()
 
 void SpidrMpx3Tv::decodeAndDisplay()
 {
-  // The (decoded) frame data
+  // The (decoded) frame data (from the first device present, so index 0)
   int size;
   int *pixeldata = _daq->frameData( 0, &size );
 
@@ -73,7 +73,8 @@ void SpidrMpx3Tv::timerEvent( QTimerEvent * )
 {
   if( !_daq ) return;
 
-  if( _daq->errString().empty() )
+  std::string str = _daq->errString();
+  if( str.empty() )
     {
       //this->statusBar()->clearMessage();
 
@@ -98,8 +99,7 @@ void SpidrMpx3Tv::timerEvent( QTimerEvent * )
   else
     {
       this->statusBar()->
-	showMessage( QString("ERROR: ") +
-		     QString::fromStdString(_daq->errString()) );
+	showMessage( QString("ERROR: ") + QString::fromStdString( str ) );
       _tbOn->setText( "On" );
       _daq->stop();
       delete _daq;
@@ -119,7 +119,6 @@ void SpidrMpx3Tv::onOff()
       QApplication::setOverrideCursor( Qt::WaitCursor );
       QApplication::processEvents();
 
-      _tbOn->setText( "Off" );
       QHostAddress qha( _leSpidrIpAddr->text() );
       unsigned int addr = qha.toIPv4Address();
       _controller = new SpidrController( (addr>>24)&0xFF,
@@ -128,14 +127,35 @@ void SpidrMpx3Tv::onOff()
 					 (addr>> 0)&0xFF );
       QApplication::restoreOverrideCursor();
       if( _controller->isConnected() )
-	this->statusBar()->showMessage( "Connected" );
+	{
+	  this->statusBar()->showMessage( "Connected" );
+	}
       else
-	this->statusBar()->
-	  showMessage( QString("ERROR: ") +
-		       QString::fromStdString(_controller->
-					      connectionErrString()) );
+	{
+	  this->statusBar()->
+	    showMessage( QString("ERROR: ") +
+			 QString::fromStdString(_controller->
+						connectionErrString()) );
+	  delete _controller;
+	  _controller = 0;
+	  return;
+	}
 
       _daq = new SpidrDaq( _controller );
+      std::string str = _daq->errString();
+      if( !str.empty() )
+	{
+	  this->statusBar()->
+	    showMessage( QString("ERROR: ") + QString::fromStdString( str ) );
+	  _daq->stop();
+	  delete _daq;
+	  _daq = 0;
+	  delete _controller;
+	  _controller = 0;
+	  return;
+	}
+
+      _tbOn->setText( "Off" );
 
       // Get the host adapter IP address SPIDR uses, to display
       int ipaddr;
@@ -149,29 +169,51 @@ void SpidrMpx3Tv::onOff()
 	  _leHostIpAddr->setText( "" );
 	}
 
-      // Get the server port SPIDR uses, to display
+      // Find the first occupied device position
+      int ids[4];
+      _controller->getDeviceIds( ids );
+      int devnr = 0;
+      for( int i=0; i<4; ++i )
+	if( ids[i] != 0 )
+	  {
+	    devnr = i;
+	    break;
+	  }
+
+      // Get the server port SPIDR uses for its first device, to display
       int port;
-      if( _controller->getServerPort( 0, &port ) )
+      if( _controller->getServerPort( devnr, &port ) )
 	_lePort->setText( QString::number(port) );
       else
 	_lePort->setText( "" );
 
-      // Get the device type, to display
+      // Get the device type of its first device, to display
       int type;
-      if( _controller->getDeviceType( 0, &type ) )
+      if( _controller->getDeviceType( devnr, &type ) )
 	{
 	  if( type == MPX_TYPE_MPX31 )
-	    _cbDeviceType->setCurrentIndex( 0 );
+	    {
+	      _cbDeviceType->setCurrentIndex( 0 );
+	      // Medipix3.1 features a 4-bit option
+	      int i = _cbCounterDepth->findText( "6" );
+	      if( i > -1 ) _cbCounterDepth->setItemText( i, "4" );
+	    }
 	  else if( type == MPX_TYPE_MPX3RX )
-	    _cbDeviceType->setCurrentIndex( 1 );
+	    {
+	      _cbDeviceType->setCurrentIndex( 1 );
+	      // Medipix3RX features a 6-bit option
+	      int i = _cbCounterDepth->findText( "4" );
+	      if( i > -1 ) _cbCounterDepth->setItemText( i, "6" );
+	    }
 	  else
-	    _cbDeviceType->setCurrentIndex( 2 ); // "UNKNOWN DEVICE"
+	    {
+	      _cbDeviceType->setCurrentIndex( 2 ); // "UNKNOWN DEVICE"
+	    }
 	}
       else
 	{
 	  _cbDeviceType->setCurrentIndex( 3 );  // "NO DEVICE"
 	}
-      this->adjustDeviceType();
 
       // Set the selected pixel counterdepth
       _controller->setPixelDepth( _counterDepth );
@@ -212,25 +254,6 @@ void SpidrMpx3Tv::changeCounterDepth()
 
   if( _controller ) _controller->setPixelDepth( _counterDepth );
   if( _daq )        _daq->setPixelDepth( _counterDepth );
-}
-
-// ----------------------------------------------------------------------------
-
-void SpidrMpx3Tv::adjustDeviceType()
-{
-  int index = _cbDeviceType->currentIndex();
-  if( index == 0 ) // Medipix3.1
-    {
-      int i = _cbCounterDepth->findText( "6" );
-      if( i > -1 ) _cbCounterDepth->setItemText( i, "4" );
-    }
-  else
-    {
-      // Medipix3RX
-      int i = _cbCounterDepth->findText( "4" );
-      if( i > -1 ) _cbCounterDepth->setItemText( i, "6" );
-    }
-  _counterDepth = _cbCounterDepth->currentText().toInt();
 }
 
 // ----------------------------------------------------------------------------
