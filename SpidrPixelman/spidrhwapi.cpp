@@ -795,8 +795,9 @@ int spidrReadMatrix( int id, u32 *data, u32 sz )
   int chip, size_in_bytes;
   for( chip=0; chip<chips_todo; ++chip )
     {
-      int *frame_data = spidrdaq->frameData( spidrinfo->chipMap[chip],
-					     &size_in_bytes );
+      // NB: SpidrDaq orders devices in 'mapped' fashion, so don't use the map
+      //int *frame_data = spidrdaq->frameData( spidrinfo->chipMap[chip], NO!
+      int *frame_data = spidrdaq->frameData( chip, &size_in_bytes );
       memcpy( (void *) data, (void *) frame_data, size_in_bytes );
       data += MPX_PIXELS;
     }
