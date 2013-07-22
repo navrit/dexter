@@ -39,5 +39,5 @@ win32 {
 SOURCES += SpidrController.cpp
 
 HEADERS += SpidrController.h
-HEADERS += dacsdefs.h
+HEADERS += tpx3defs.h dacsdescr.h
 HEADERS += spidrtpx3cmds.h

@@ -9,22 +9,13 @@ using namespace std;
 #endif
 
 #include "SpidrController.h"
-
-#include "dacsdefs.h"
 #include "spidrtpx3cmds.h"
+#include "tpx3defs.h"
+
+#include "dacsdescr.h" // Depends on tpx3defs.h
 
 // Version identifier: year, month, day, release number
 const int VERSION_ID = 0x13071600;
-
-// Timepix3 pixel configuration definitions
-// (Note that the 'threshold' (4 bits) is stored inverted)
-#define TPX3_PIXCFG_BITS            6
-#define TPX3_PIXCFG_MASKBIT         0
-#define TPX3_PIXCFG_THRESHBIT3      1
-#define TPX3_PIXCFG_THRESHBIT2      2
-#define TPX3_PIXCFG_THRESHBIT1      3
-#define TPX3_PIXCFG_THRESHBIT0      4
-#define TPX3_PIXCFG_TESTBIT         5
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor / info
