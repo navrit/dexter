@@ -42,7 +42,7 @@ class FramebuilderThread : public QThread
   void writeRawFrameToFile();
   void writeDecodedFrameToFile();
   bool hasDecodedFrame() { return _hasDecodedFrame; }
-  int *decodedFrameData( int dev_nr, int *size );
+  int *decodedFrameData( int index, int *size );
   void releaseDecodedFrame();
   i64    decodedFrameTimestamp();
   double decodedFrameTimestampDouble();

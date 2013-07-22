@@ -48,7 +48,7 @@ class MY_LIB_API SpidrDaq
 
   // Acquisition
   bool      hasFrame();
-  int      *frameData( int dev_nr, int *size_in_bytes );
+  int      *frameData( int index, int *size_in_bytes );
   long long frameTimestamp();
   long long frameTimestamp( int buf_i );              // For debugging
   long long frameTimestampSpidr();

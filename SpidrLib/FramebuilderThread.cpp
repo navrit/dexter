@@ -464,13 +464,13 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
 
 // ----------------------------------------------------------------------------
 
-int *FramebuilderThread::decodedFrameData( int dev_nr, int *size )
+int *FramebuilderThread::decodedFrameData( int index, int *size )
 {
   if( _hasDecodedFrame )
-    *size = _frameSz[dev_nr];
+    *size = _frameSz[index];
   else
     *size = 0;
-  return &_decodedFrame[dev_nr][0];
+  return &_decodedFrame[index][0];
 }
 
 // ----------------------------------------------------------------------------

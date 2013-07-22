@@ -269,9 +269,9 @@ bool SpidrDaq::hasFrame()
 
 // ----------------------------------------------------------------------------
 
-int *SpidrDaq::frameData( int dev_nr, int *size_in_bytes )
+int *SpidrDaq::frameData( int index, int *size_in_bytes )
 {
-  return _frameBuilder->decodedFrameData( dev_nr, size_in_bytes );
+  return _frameBuilder->decodedFrameData( index, size_in_bytes );
 }
 
 // ----------------------------------------------------------------------------
