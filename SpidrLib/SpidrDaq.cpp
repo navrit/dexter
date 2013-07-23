@@ -349,10 +349,30 @@ int SpidrDaq::framesCount( int index )
 
 // ----------------------------------------------------------------------------
 
+int SpidrDaq::framesCount()
+{
+  int count = 0;
+  for( int i=0; i<(int) _frameReceivers.size(); ++i )
+    count += _frameReceivers[i]->framesReceived();
+  return count;
+}
+
+// ----------------------------------------------------------------------------
+
 int SpidrDaq::framesLostCount( int index )
 {
   if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
   return _frameReceivers[index]->framesLost();
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrDaq::framesLostCount()
+{
+  int count = 0;
+  for( int i=0; i<(int) _frameReceivers.size(); ++i )
+    count += _frameReceivers[i]->framesLost();
+  return count;
 }
 
 // ----------------------------------------------------------------------------
@@ -365,6 +385,16 @@ int SpidrDaq::packetsReceivedCount( int index )
 
 // ----------------------------------------------------------------------------
 
+int SpidrDaq::packetsReceivedCount()
+{
+  int count = 0;
+  for( int i=0; i<(int) _frameReceivers.size(); ++i )
+    count += _frameReceivers[i]->packetsReceived();
+  return count;
+}
+
+// ----------------------------------------------------------------------------
+
 int SpidrDaq::packetsLostCount( int index )
 {
   if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
@@ -373,9 +403,19 @@ int SpidrDaq::packetsLostCount( int index )
 
 // ----------------------------------------------------------------------------
 
+int SpidrDaq::packetsLostCount()
+{
+  int count = 0;
+  for( int i=0; i<(int) _frameReceivers.size(); ++i )
+    count += _frameReceivers[i]->packetsLost();
+  return count;
+}
+
+// ----------------------------------------------------------------------------
+
 int SpidrDaq::packetsLostCountFile()
 {
-  // The number of lost packets detected in the frames written
+  // The total number of lost packets detected in the frames written
   // to the current or last closed file
   return _frameBuilder->packetsLost();
 }

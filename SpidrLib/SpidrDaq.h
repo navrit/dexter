@@ -35,39 +35,45 @@ class MY_LIB_API SpidrDaq
   void stop();
 
   // General
-  int         classVersion(); // Version of this class
-  std::string ipAddressString( int index = 0 );
-  std::string errString();
+  int         classVersion      (); // Version of this class
+  std::string ipAddressString   ( int index );
+  std::string errString         ();
 
   // Configuration
-  void setPixelDepth( int nbits );
-  void setDecodeFrames( bool decode );
-  void setCompressFrames( bool compress );
-  bool openFile( std::string filename, bool overwrite = false );
-  bool closeFile();
+  void setPixelDepth            ( int nbits );
+  void setDecodeFrames          ( bool decode );
+  void setCompressFrames        ( bool compress );
+  bool openFile                 ( std::string filename,
+                                  bool overwrite = false );
+  bool closeFile                ();
 
   // Acquisition
-  bool      hasFrame();
-  int      *frameData( int index, int *size_in_bytes );
-  long long frameTimestamp();
-  long long frameTimestamp( int buf_i );              // For debugging
-  long long frameTimestampSpidr();
+  bool      hasFrame            ();
+  int      *frameData           ( int  index,
+                                  int *size_in_bytes );
+  long long frameTimestamp      ();
+  long long frameTimestamp      ( int buf_i );        // For debugging
+  long long frameTimestampSpidr ();
   double    frameTimestampDouble();                   // For Pixelman
-  void      releaseFrame();
-  void      setCallbackId( int id );                  // For Pixelman
-  void      setCallback( CallbackFunc cbf );          // For Pixelman
+  void      releaseFrame        ();
+  void      setCallbackId       ( int id );           // For Pixelman
+  void      setCallback         ( CallbackFunc cbf ); // For Pixelman
 
   // Statistics and info
-  int  framesWrittenCount();
-  int  framesProcessedCount();
-  int  framesCount( int index = 0 );
-  int  framesLostCount( int index = 0 );
-  int  packetsReceivedCount( int index = 0 );
-  int  packetsLostCount( int index = 0 );
-  int  packetsLostCountFile();
-  int  packetsLostCountFrame( int index, int buf_i ); // For debugging
-  int  packetSize( int index = 0 );                   // For debugging
-  int  expSequenceNr( int index = 0 );                // For debugging
+  int  framesWrittenCount       ();
+  int  framesProcessedCount     ();
+  int  framesCount              ( int index );
+  int  framesCount              ();
+  int  framesLostCount          ( int index );
+  int  framesLostCount          ();
+  int  packetsReceivedCount     ( int index );
+  int  packetsReceivedCount     ();
+  int  packetsLostCount         ( int index );
+  int  packetsLostCount         ();
+  int  packetsLostCountFile     ();
+  int  packetsLostCountFrame    ( int index, int buf_i ); // For debugging
+  int  packetSize               ( int index );            // For debugging
+  int  expSequenceNr            ( int index );            // For debugging
 
  private:
   std::vector<ReceiverThread *> _frameReceivers;
@@ -78,8 +84,8 @@ class MY_LIB_API SpidrDaq
   // Functions used in c'tors
   void getIdsPortsTypes( SpidrController *spidrctrl,
                          int             *ids,
-			 int             *ports,
-			 int             *types );
+                         int             *ports,
+                         int             *types );
   void init( int             *ipaddr,
              int             *ids,
              int             *ports,
