@@ -5,14 +5,16 @@
 
 #include <QHostAddress>
 
-QString VERSION( "v2.0.0   16-Jul-2013" );
+QString VERSION( "v2.0.0   22-Jul-2013" );
 
 // ----------------------------------------------------------------------------
 
 SpidrMpx3Tv::SpidrMpx3Tv()
   : QMainWindow(),
     _controller( 0 ), _daq( 0 ),
-    _image( QSize(256,256), QImage::Format_Indexed8 )
+    _image1( QSize(256,256), QImage::Format_Indexed8 ),
+    _image4( QSize(512,512), QImage::Format_Indexed8 ),
+    _deviceCount( 0 )
 {
   this->setupUi(this);
 
@@ -43,28 +45,67 @@ SpidrMpx3Tv::~SpidrMpx3Tv()
 void SpidrMpx3Tv::decodeAndDisplay()
 {
   // The (decoded) frame data (from the first device present, so index 0)
-  int size;
-  int *pixeldata = _daq->frameData( 0, &size );
+  int  size;
+  int *pixeldata;
 
-  // Convert the pixel data to QImage bytes
-  int    max = _sbMaxValue->value();
-  int    min = _sbMinValue->value();
-  uchar *img = _image.bits();
-  int    val;
-  for( int i=0; i<256*256; ++i, ++img, ++pixeldata )
+  int  max = _sbMaxValue->value();
+  int  min = _sbMinValue->value();
+
+  if( _deviceCount == 1 )
     {
-      val = *pixeldata;
-      if( val >= max )
-	*img = 255;
-      else if( val <= min )
-	*img = 0;
-      else
-	*img = (unsigned char) ((255 * (val-min)) / (max-min));
+      // Convert the pixel data to QImage bytes
+      uchar *img = _image1.bits();
+      int    val;
+      pixeldata = _daq->frameData( 0, &size );
+      for( int i=0; i<256*256; ++i, ++img, ++pixeldata )
+	{
+	  val = *pixeldata;
+	  if( val >= max )
+	    *img = 255;
+	  else if( val <= min )
+	    *img = 0;
+	  else
+	    *img = (unsigned char) ((255 * (val-min)) / (max-min));
+	}
+    }
+  else
+    {
+      uchar *img;
+      int dev, x_offs, y_offs, x, y, val;
+      for( dev=0; dev<_deviceCount; ++dev )
+	{
+	  // A device frame covers one 4th of the resulting image
+	  // (the 512x512 image being divided into four 256x256 squares)
+	  pixeldata = _daq->frameData( dev, &size );
+	  x_offs = 0;
+	  y_offs = 0;
+	  if( dev & 1 ) x_offs = 256;
+	  if( dev & 2 ) y_offs = 256;
+	  img = _image4.bits();
+	  img += y_offs*512 + x_offs;
+	  for( y=0; y<256; ++y )
+	    {
+	      for( x=0; x<256; ++x, ++img, ++pixeldata )
+		{
+		  val = *pixeldata;
+		  if( val >= max )
+		    *img = 255;
+		  else if( val <= min )
+		    *img = 0;
+		  else
+		    *img = (unsigned char) ((255 * (val-min)) / (max-min));
+		}
+	      img += 256;
+	    }
+	}
     }
   _daq->releaseFrame();
 
   // Display the image
-  _lbView->setPixmap( QPixmap::fromImage(_image) );
+  if( _deviceCount == 1 )
+    _lbView->setPixmap( QPixmap::fromImage(_image1) );
+  else
+    _lbView->setPixmap( QPixmap::fromImage(_image4) );
 }
 
 // ----------------------------------------------------------------------------
@@ -169,51 +210,67 @@ void SpidrMpx3Tv::onOff()
 	  _leHostIpAddr->setText( "" );
 	}
 
-      // Find the first occupied device position
+      // Determine the number of devices
       int ids[4];
       _controller->getDeviceIds( ids );
-      int devnr = 0;
+      _deviceCount = 0;
+      for( int i=0; i<4; ++i )
+	if( ids[i] != 0 ) ++_deviceCount;
+      if( _deviceCount > 1 )
+	_lbPorts->setText( "Data IP ports" );
+      else
+	_lbPorts->setText( "Data IP port" );
+
+      // Get the server ports SPIDR uses for its devices, to display
+      int port;
+      QString qs;
       for( int i=0; i<4; ++i )
 	if( ids[i] != 0 )
 	  {
-	    devnr = i;
+	    if( _controller->getServerPort( i, &port ) )
+	      {
+		if( !qs.isEmpty() ) qs += QString( ", " );
+		qs += QString::number( port );
+	      }
+	  }
+      _lePort->setText( qs );
+
+      // Get the device type of its first device, to display
+      for( int i=0; i<4; ++i )
+	if( ids[i] != 0 )
+	  {
+	    int type;
+	    if( _controller->getDeviceType( i, &type ) )
+	      {
+		if( type == MPX_TYPE_MPX31 )
+		  {
+		    _cbDeviceType->setCurrentIndex( 0 );
+		    // Medipix3.1 features a 4-bit option
+		    int i = _cbCounterDepth->findText( "6" );
+		    if( i > -1 ) _cbCounterDepth->setItemText( i, "4" );
+		  }
+		else if( type == MPX_TYPE_MPX3RX )
+		  {
+		    _cbDeviceType->setCurrentIndex( 1 );
+		    // Medipix3RX features a 6-bit option
+		    int i = _cbCounterDepth->findText( "4" );
+		    if( i > -1 ) _cbCounterDepth->setItemText( i, "6" );
+		  }
+		else
+		  {
+		    _cbDeviceType->setCurrentIndex( 2 ); // "UNKNOWN DEVICE"
+		  }
+	      }
+	    else
+	      {
+		_cbDeviceType->setCurrentIndex( 3 );  // "NO DEVICE"
+	      }
 	    break;
 	  }
 
-      // Get the server port SPIDR uses for its first device, to display
-      int port;
-      if( _controller->getServerPort( devnr, &port ) )
-	_lePort->setText( QString::number(port) );
-      else
-	_lePort->setText( "" );
-
-      // Get the device type of its first device, to display
-      int type;
-      if( _controller->getDeviceType( devnr, &type ) )
-	{
-	  if( type == MPX_TYPE_MPX31 )
-	    {
-	      _cbDeviceType->setCurrentIndex( 0 );
-	      // Medipix3.1 features a 4-bit option
-	      int i = _cbCounterDepth->findText( "6" );
-	      if( i > -1 ) _cbCounterDepth->setItemText( i, "4" );
-	    }
-	  else if( type == MPX_TYPE_MPX3RX )
-	    {
-	      _cbDeviceType->setCurrentIndex( 1 );
-	      // Medipix3RX features a 6-bit option
-	      int i = _cbCounterDepth->findText( "4" );
-	      if( i > -1 ) _cbCounterDepth->setItemText( i, "6" );
-	    }
-	  else
-	    {
-	      _cbDeviceType->setCurrentIndex( 2 ); // "UNKNOWN DEVICE"
-	    }
-	}
-      else
-	{
-	  _cbDeviceType->setCurrentIndex( 3 );  // "NO DEVICE"
-	}
+      int size;
+      if( _controller->getMaxPacketSize( &size ) )
+	_lePacketSize->setText( QString::number(size) );
 
       // Set the selected pixel counterdepth
       _controller->setPixelDepth( _counterDepth );
@@ -228,6 +285,7 @@ void SpidrMpx3Tv::onOff()
       _tbOn->setText( "On" );
       _leHostIpAddr->setText( "" );
       _lePort->setText( "" );
+      _lePacketSize->setText( "" );
       _cbDeviceType->setCurrentIndex( 3 );  // "NO DEVICE"
       _daq->stop();
       delete _daq;
@@ -235,6 +293,7 @@ void SpidrMpx3Tv::onOff()
       delete _controller;
       _controller = 0;
       this->statusBar()->clearMessage();
+      _deviceCount = 0;
     }
 }
 
