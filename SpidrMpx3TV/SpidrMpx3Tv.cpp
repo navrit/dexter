@@ -75,12 +75,14 @@ void SpidrMpx3Tv::decodeAndDisplay()
       for( dev=0; dev<_deviceCount; ++dev )
 	{
 	  // A device frame covers one 4th of the resulting image
-	  // (the 512x512 image being divided into four 256x256 squares)
+	  // (the 512x512 image being divided into four 256x256 squares,
+	  //  device numbers in a 'quad' are as follows: 0 1
+	  //                                             3 2
 	  pixeldata = _daq->frameData( dev, &size );
 	  x_offs = 0;
 	  y_offs = 0;
-	  if( dev & 1 ) x_offs = 256;
-	  if( dev & 2 ) y_offs = 256;
+	  if( dev == 1 || dev == 2 ) x_offs = 256;
+	  if( dev == 2 || dev == 3 ) y_offs = 256;
 	  img = _image4.bits();
 	  img += y_offs*512 + x_offs;
 	  for( y=0; y<256; ++y )
