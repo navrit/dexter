@@ -112,23 +112,19 @@ void FramebuilderThread::run()
 	    while( !(_receivers[i]->hasFrame() || _abortFrame) );
 
 	  if( _fileOpen )
-	    {
-	      this->writeFrameToFile();
-
-	      // Release this frame buffer on all receivers
-	      // (###NB: how do we prevent 1 receiver to start filling
-	      //  the newly released buffer while another receiver
-	      //  still has a full buffer and starts (again) overwriting
-	      //  its last received frame, potentially causing desynchronized
-	      //  event buffers in the various receivers?
-	      //  A task for a busy/inhibit mechanism?: set busy before
-	      //  filling up the buffers)
-	      for( i=0; i<_n; ++i ) _receivers[i]->releaseFrame();
-	    }
+	    this->writeFrameToFile();
 	  else
-	    {
-	      this->processFrame();
-	    }
+	    this->processFrame();
+
+	  // Release this frame buffer on all receivers
+	  // (###NB: how do we prevent 1 receiver to start filling
+	  //  the newly released buffer while another receiver
+	  //  still has a full buffer and starts (again) overwriting
+	  //  its last received frame, potentially causing desynchronized
+	  //  event buffers in the various receivers?
+	  //  A task for a busy/inhibit mechanism?: set busy before
+	  //  filling up any buffer)
+	  for( i=0; i<_n; ++i ) _receivers[i]->releaseFrame();
 
 	  ++_framesReceived;
 	}
@@ -197,9 +193,6 @@ void FramebuilderThread::processFrame()
 
       //if( _callbackFunc ) _callbackFunc( _id );
     }
-
-  // Release this frame buffer on all receivers
-  for( i=0; i<_n; ++i ) _receivers[i]->releaseFrame();
 }
 
 // ----------------------------------------------------------------------------
