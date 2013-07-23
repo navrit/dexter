@@ -57,15 +57,23 @@ int main( int argc, char *argv[] )
   int trig_pulse_count;
   spidrcontrol.setTriggerConfig( trig_mode, trig_period_us,
 				 trig_freq_hz, nr_of_triggers );
+
+  int dac_index = 0;
+  for( int dev=0; dev<4; ++dev )
+    {
+      spidrcontrol.setDac( dev, dac_index, 0 );
+      spidrcontrol.writeDacs( dev );
+    }
+
   int i;
   for( i=0; i<10; ++i )
     //for( i=0; i<1; ++i )
     {
       cout << "Auto-trig " << i << endl;
-      if( 0 ) //1 )//i==4 )
+      if( i==4 )
 	{
-	  spidrcontrol.setDac( 0, 0, i*51 );
-	  spidrcontrol.writeDacs( 0 );
+	  spidrcontrol.setDac( 3, dac_index, i*51 );
+	  spidrcontrol.writeDacs( 3 );
 	}
       spidrcontrol.startAutoTrigger();
       Sleep( 1000 );
@@ -86,8 +94,8 @@ int main( int argc, char *argv[] )
 	}
       cout << "DAQ frames: " << spidrdaq.framesCount() << ", lost "
 	   << spidrdaq.framesLostCount() << ", lost pkts "
-	   << spidrdaq.packetsLostCount() << ", exp seqnr "
-	   << spidrdaq.expSequenceNr() << endl;
+	   << spidrdaq.packetsLostCount() << ", exp seqnr (dev 0) "
+	   << spidrdaq.expSequenceNr( 0 ) << endl;
     }
 
   cout << "DAQ frames: " << spidrdaq.framesCount() << " (file: "
@@ -96,7 +104,7 @@ int main( int argc, char *argv[] )
        << spidrdaq.framesLostCount() << ", lost pkts "
        << spidrdaq.packetsLostCount() << " (file: "
        << spidrdaq.packetsLostCountFile() << "), pkt size "
-       << spidrdaq.packetSize() << endl;
+       << spidrdaq.packetSize( 0 ) << endl;
   cout << "Lost/frame: ";
   for( i=0; i<8; ++i )
     cout << i << "=" << spidrdaq.packetsLostCountFrame( 0, i ) << ", ";
