@@ -43,7 +43,7 @@ class ReceiverThread : public QThread
   void handleFrameTimeout();
   void nextFrameBuffer();
   void releaseFrame();
-  bool hasFrame()         { return( !_empty ); }
+  bool hasFrame();
   i64  timeStampFrame();
   i64  timeStampFrameSpidr();
   u32  dataSizeFrame()    { return _expFrameSize; }

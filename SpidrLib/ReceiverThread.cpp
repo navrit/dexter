@@ -277,6 +277,15 @@ void ReceiverThread::releaseFrame()
 
 // ----------------------------------------------------------------------------
 
+bool ReceiverThread::hasFrame()
+{
+  // NB: if this function is inlined it's no longer working properly
+  //     e.g. in a while-loop probably due to optimization by the compiler...
+  return( !_empty );
+}
+
+// ----------------------------------------------------------------------------
+
 i64 ReceiverThread::timeStampFrame()
 {
   // Return the time in (milli)seconds since 1970-01-01T00:00:00,
