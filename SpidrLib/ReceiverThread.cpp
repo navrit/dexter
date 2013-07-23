@@ -266,6 +266,7 @@ void ReceiverThread::nextFrameBuffer()
 
 void ReceiverThread::releaseFrame()
 {
+  if( _empty ) return; // Safe-guard
   // Release the next frame buffer processed by the consumer:
   // update the frame buffer management
   _mutex.lock();
