@@ -183,7 +183,9 @@ bool SpidrController::getMaxPacketSize( int *size )
       //                 ----
       //                  54 bytes
       *size += 54;
+      return true;
     }
+  return false;
 }
 
 // ----------------------------------------------------------------------------
