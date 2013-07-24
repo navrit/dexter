@@ -16,7 +16,7 @@ using namespace std;
 #include "spidrmpx3cmds.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x13061800;
+const int VERSION_ID = 0x13072400;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor / info

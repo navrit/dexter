@@ -6,7 +6,7 @@
 #include "FramebuilderThread.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x13041200;
+const int VERSION_ID = 0x13072400;
 
 // At least one argument needed for QCoreApplication
 //int   Argc = 1;
