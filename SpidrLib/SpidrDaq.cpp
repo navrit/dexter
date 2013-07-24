@@ -133,7 +133,7 @@ void SpidrDaq::init( int             *ipaddr,
   _frameBuilder = new FramebuilderThread( _frameReceivers );
 
   // Let the first receiver notify the file writer about new data
-  if( _frameReceivers[0] )
+  if( _frameReceivers.size() > 0 )
     _frameReceivers[0]->setFramebuilder( _frameBuilder );
 
   // Provide the receivers with the possibility to control the module,
