@@ -168,13 +168,34 @@ bool SpidrController::setIpAddrDest( int ipaddr )
 
 bool SpidrController::getMaxPacketSize( int *size )
 {
-  return this->requestGetInt( CMD_GET_UDPPACKET_SZ, 0, size );
+  // The returned size is the total size of the Ethernet packets
+  // with Medipix3 frame data, including all headers
+  // (since this is the value limited/set by a network interface card)
+  *size = 0;
+  if( this->requestGetInt( CMD_GET_UDPPACKET_SZ, 0, size ) )
+    {
+      // Adjust the received value for the additional header sizes
+      // not included by the SPIDR register in question, i.e.
+      // SPIDR header   : 12 bytes
+      // UDP header     :  8 bytes
+      // IP  header     : 20 bytes
+      // Ethernet header: 14 bytes
+      //                 ----
+      //                  54 bytes
+      *size += 54;
+    }
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setMaxPacketSize( int size )
 {
+  // Set the maximum packet size of the Ethernet packets
+  // carrying Medipix3 frame data, so including all headers (see above)
+  if( size < 54 )
+    size = 0;
+  else
+    size -= 54;
   return this->requestSetInt( CMD_SET_UDPPACKET_SZ, 0, size );
 }
 
