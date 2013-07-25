@@ -38,17 +38,17 @@ class MY_LIB_API SpidrDaq
 
   // Configuration
   void setAcqMode( int mode );
-  bool openFile( std::string filename, bool overwrite = false );
-  bool closeFile();
+  bool openFile  ( std::string filename, bool overwrite = false );
+  bool closeFile ();
 
-  // Acquisition
-  int *frameData( int *size_in_bytes );
+  // Frame building
+  int *frameData ( int *size_in_bytes );
   void resetFrame();
 
   // Statistics and info
-  int  packetsWrittenCount();
+  int  packetsWrittenCount  ();
   int  packetsProcessedCount();
-  int  packetsReceivedCount();
+  int  packetsReceivedCount ();
 
  private:
   ReceiverThread     *_packetReceiver;
@@ -56,11 +56,13 @@ class MY_LIB_API SpidrDaq
   FramebuilderThread *_frameBuilder;
 
   // Init function for use in c'tors
-  void init( int *ipaddr,
-             int *devport,
-             int *devid,
-             SpidrController *spidrctrl );
-  void getIdsPorts( SpidrController *spidrctrl, int *id, int *port );
+  void init       ( int             *ipaddr,
+                    int             *devport,
+                    int             *devid,
+                    SpidrController *spidrctrl );
+  void getIdsPorts( SpidrController *spidrctrl,
+                    int             *ids,
+                    int             *ports );
 };
 
 #endif // SPIDRDAQ_H

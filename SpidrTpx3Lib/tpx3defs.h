@@ -36,7 +36,7 @@ History:
 #define TPX3_HDR_EFUSEREAD          (TPX3_HDR_ANALOGPERIPHERY | 0x9)
 #define TPX3_HDR_TP_PERIOD_PHASE    (TPX3_HDR_ANALOGPERIPHERY | 0xC)
 #define TPX3_HDR_TP_PULSENUMBER     (TPX3_HDR_ANALOGPERIPHERY | 0xD)
-#define TPX3_HDR_TP_CONFIG_READ_EN  (TPX3_HDR_ANALOGPERIPHERY | 0xE)
+#define TPX3_HDR_TP_CONFIG_READ     (TPX3_HDR_ANALOGPERIPHERY | 0xE)
 #define TPX3_HDR_TP_INTERN_FINISHED (TPX3_HDR_ANALOGPERIPHERY | 0xF)
 
 // Output block configuration
@@ -88,6 +88,7 @@ History:
 #define TPX3_ADDR_PIX_MASK          0x0007
 
 // ----------------------------------------------------------------------------
+// Timepix3 DACs
 
 // Number of DACs
 #define TPX3_DAC_COUNT              23
@@ -119,6 +120,23 @@ History:
 #define TPX3_IBIAS_DAC_CAS         31
 
 #define TPX3_SENSEOFF              0
+
+// ----------------------------------------------------------------------------
+// Timepix3 General Configuration register
+
+#define TPX3_POLARITY_EMIN         0x000
+#define TPX3_POLARITY_HPLUS        0x001
+#define TPX3_ACQMODE_TOA_TOT       0x000
+#define TPX3_ACQMODE_TOA           0x002
+#define TPX3_ACQMODE_EVT_ITOT      0x004
+#define TPX3_GRAYCOUNT_ENA         0x008
+#define TPX3_ACKCOMMAND_ENA        0x010
+#define TPX3_TESTPULSE_ENA         0x020
+#define TPX3_FASTLO_ENA            0x040
+#define TPX3_TIMER_OVERFL_CTRL     0x080
+#define TPX3_SELECTTP_DIG_ANALOG   0x100
+#define TPX3_SELECTTP_EXT_INT      0x200
+#define TPX3_SELECT_TOA_CLK        0x400
 
 // ----------------------------------------------------------------------------
 #endif // TPX3DEFS_H_

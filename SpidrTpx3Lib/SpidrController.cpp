@@ -359,6 +359,44 @@ bool SpidrController::setDacsDflt( int dev_nr )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::getTpPeriodPhase( int dev_nr, int *period, int *phase )
+{
+  int tp_data;
+  if( this->requestGetInt( CMD_GET_TPPERIODPHASE, dev_nr, &tp_data ) )
+    {
+      // Extract period and phase values
+      *period = (tp_data & 0xFFFF);
+      *phase  = ((tp_data >> 16) & 0xFFFF);
+      return true;
+    }
+  return false;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setTpPeriodPhase( int dev_nr, int period, int phase )
+{
+  // Combine period and phase into a single int
+  int tp_data = ((phase & 0xFFFF) << 16) | (period & 0xFFFF);
+  return this->requestSetInt( CMD_SET_TPPERIODPHASE, dev_nr, tp_data );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getTpNumber( int dev_nr, int *number )
+{
+  return this->requestGetInt( CMD_GET_TPNUMBER, dev_nr, number );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setTpNumber( int dev_nr, int number )
+{
+  return this->requestSetInt( CMD_SET_TPNUMBER, dev_nr, number );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::getGenConfig( int dev_nr, int *config )
 {
   return this->requestGetInt( CMD_GET_GENCONFIG, dev_nr, config );
