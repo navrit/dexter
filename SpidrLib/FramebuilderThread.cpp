@@ -32,6 +32,8 @@ FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
   _evtHdr.format     = EVT_HEADER_VERSION;
   for( i=0; i<sizeof(_evtHdr.unused)/sizeof(u32); ++i )
     _evtHdr.unused[i] = HEADER_FILLER_WORD;
+  for( i=0; i<sizeof(_evtHdr.triggerConfig)/sizeof(u32); ++i )
+    _evtHdr.triggerConfig[i] = 0xAAAAAAAA; // ### Not yet implemented
   for( i=0; i<4; ++i )
     {
       _devHdr[i].headerId   = DEV_HEADER_ID;
@@ -215,7 +217,7 @@ void FramebuilderThread::writeRawFrameToFile()
   // Get and format the data for this frame from all receivers
   u32 i, sz, evt_sz;
 
-  // Get the frame data sizes
+  // Fill the headers with the frame data sizes
   // (NB: in fact the size is known beforehand from the selected pixel depth)
   evt_sz = _n * DEV_HEADER_SIZE;
   for( i=0; i<_n; ++i )
@@ -240,13 +242,14 @@ void FramebuilderThread::writeRawFrameToFile()
       p_devhdr = &_devHdr[i];
       p_devhdr->lostPackets = _receivers[i]->packetsLostFrame();
       _packetsLost += p_devhdr->lostPackets;
+
       // Copy the saved SPIDR 'header' (6 short ints)
       memcpy( (void *) p_devhdr->spidrHeader,
 	      (void *) _receivers[i]->spidrHeaderFrame(),
 	      SPIDR_HEADER_SIZE );
       _file.write( (const char *) p_devhdr, DEV_HEADER_SIZE );
 
-      // Write the device frame data
+      // Write the raw frame data of this device
       _file.write( (const char *) _receivers[i]->frameData(),
 		   p_devhdr->dataSize );
     }
@@ -268,9 +271,14 @@ void FramebuilderThread::writeDecodedFrameToFile()
 					_devHdr[i].deviceType,
 					_compress );
 
-  _evtHdr.dataSize = _n * DEV_HEADER_SIZE;
+  // Fill the headers with the frame data sizes
+  int evt_sz = _n * DEV_HEADER_SIZE;
   for( i=0; i<_n; ++i )
-    _evtHdr.dataSize += frame_sz[i];
+    {
+      _devHdr[i].dataSize = frame_sz[i];
+      evt_sz += frame_sz[i];
+    }
+  _evtHdr.dataSize = evt_sz;
 
   // Fill in the rest of the event header and write it
   i64 timestamp = _receivers[0]->timeStampFrame();
@@ -286,13 +294,14 @@ void FramebuilderThread::writeDecodedFrameToFile()
       p_devhdr = &_devHdr[i];
       p_devhdr->lostPackets = _receivers[i]->packetsLostFrame();
       _packetsLost += p_devhdr->lostPackets;
+
       // Copy the saved SPIDR 'header' (6 short ints)
       memcpy( (void *) p_devhdr->spidrHeader,
 	      (void *) _receivers[i]->spidrHeaderFrame(),
 	      SPIDR_HEADER_SIZE );
       _file.write( (const char *) p_devhdr, DEV_HEADER_SIZE );
 
-      // Write the decoded frame data
+      // Write the decoded frame data of this device
       _file.write( (const char *) _decodedFrame[i], frame_sz[i] );
     }
 }
