@@ -29,21 +29,19 @@ class MY_LIB_API SpidrController
                    int port = 50000 );
   ~SpidrController();
 
-  // Versions
+  // Version information
   int         classVersion();                  // Version of this class
   bool        getSoftwVersion( int *version ); // SPIDR LEON3 software version
   bool        getFirmwVersion( int *version ); // SPIDR FPGA firmware version
   std::string versionToString( int  version ); // Utility function
 
-  // General and module configuration
+  // General module configuration
   bool        isConnected          ();
   std::string connectionStateString();
   std::string connectionErrString  ();
   std::string ipAddressString      ();
   std::string errString            ();
   void        clearErrString       ();
-  bool        getIpAddrDest        ( int *ipaddr );
-  bool        setIpAddrDest        ( int  ipaddr );
   bool        getMaxPacketSize     ( int *size ); // Max UDP data packet size
   bool        setMaxPacketSize     ( int  size );
   bool        reset                ();
@@ -57,17 +55,21 @@ class MY_LIB_API SpidrController
   // ###TODO:
   bool        setTimeOfDay         (); // Set the SPIDR processor clock time
 
-  // Configuration: devices
-  bool        getDeviceId   ( int  dev_nr, int *id );
-  bool        getDeviceIds  ( int *ids );
-  bool        getDeviceType ( int  dev_nr, int *type );
-  bool        setDeviceType ( int  dev_nr, int  type );
+  // Configuration: module/devices interface
+  bool        getIpAddrDest ( int *ipaddr );
+  bool        setIpAddrDest ( int  ipaddr );
   bool        getServerPort ( int  dev_nr, int *port_nr );
   bool        getServerPorts( int *port_nrs );
   bool        setServerPort ( int  dev_nr, int  port_nr );
   bool        getDevicePort ( int  dev_nr, int *port_nr );
   bool        getDevicePorts( int *port_nrs );
   bool        setDevicePort ( int  dev_nr, int  port_nr );
+
+  // Configuration: devices
+  bool        getDeviceId   ( int  dev_nr, int *id );
+  bool        getDeviceIds  ( int *ids );
+  bool        getDeviceType ( int  dev_nr, int *type );
+  bool        setDeviceType ( int  dev_nr, int  type );
   bool        getDac        ( int  dev_nr, int  dac_nr, int *dac_val );
   bool        setDac        ( int  dev_nr, int  dac_nr, int dac_val );
   bool        setDacs       ( int  dev_nr, int  nr_of_dacs, int *dac_val );

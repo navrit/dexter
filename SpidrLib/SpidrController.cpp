@@ -19,7 +19,7 @@ using namespace std;
 const int VERSION_ID = 0x13072400;
 
 // ----------------------------------------------------------------------------
-// Constructor / destructor / info
+// Constructor / destructor
 // ----------------------------------------------------------------------------
 
 SpidrController::SpidrController( int ipaddr3,
@@ -55,6 +55,8 @@ SpidrController::~SpidrController()
 }
 
 // ----------------------------------------------------------------------------
+// Version information
+// ----------------------------------------------------------------------------
 
 int SpidrController::classVersion()
 {
@@ -89,7 +91,7 @@ std::string SpidrController::versionToString( int version )
 }
 
 // ----------------------------------------------------------------------------
-// General
+// General module configuration
 // ----------------------------------------------------------------------------
 
 bool SpidrController::isConnected()
@@ -148,20 +150,6 @@ std::string SpidrController::errString()
 void SpidrController::clearErrString()
 {
   _errString.str( "" );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::getIpAddrDest( int *ipaddr )
-{
-  return this->requestGetInt( CMD_GET_IPADDR_DEST, 0, ipaddr );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setIpAddrDest( int ipaddr )
-{
-  return this->requestSetInt( CMD_SET_IPADDR_DEST, 0, ipaddr );
 }
 
 // ----------------------------------------------------------------------------
@@ -255,35 +243,19 @@ bool SpidrController::displayInfo()
 }
 
 // ----------------------------------------------------------------------------
-// Configuration: devices
+// Configuration: module/devices interface
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getDeviceId( int dev_nr, int *id )
+bool SpidrController::getIpAddrDest( int *ipaddr )
 {
-  *id = 0;
-  return this->requestGetInt( CMD_GET_DEVICEID, dev_nr, id );
+  return this->requestGetInt( CMD_GET_IPADDR_DEST, 0, ipaddr );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getDeviceIds( int *ids )
+bool SpidrController::setIpAddrDest( int ipaddr )
 {
-  return this->requestGetInts( CMD_GET_DEVICEIDS, 0, 4, ids );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::getDeviceType( int dev_nr, int *type )
-{
-  *type = 0;
-  return this->requestGetInt( CMD_GET_DEVICETYPE, dev_nr, type );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setDeviceType( int dev_nr, int type )
-{
-  return this->requestSetInt( CMD_SET_DEVICETYPE, dev_nr, type );
+  return this->requestSetInt( CMD_SET_IPADDR_DEST, 0, ipaddr );
 }
 
 // ----------------------------------------------------------------------------
@@ -328,6 +300,38 @@ bool SpidrController::getServerPorts( int *port_nrs )
 bool SpidrController::setServerPort( int dev_nr, int port_nr )
 {
   return this->requestSetInt( CMD_SET_SERVERPORT, dev_nr, port_nr );
+}
+
+// ----------------------------------------------------------------------------
+// Configuration: devices
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getDeviceId( int dev_nr, int *id )
+{
+  *id = 0;
+  return this->requestGetInt( CMD_GET_DEVICEID, dev_nr, id );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getDeviceIds( int *ids )
+{
+  return this->requestGetInts( CMD_GET_DEVICEIDS, 0, 4, ids );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getDeviceType( int dev_nr, int *type )
+{
+  *type = 0;
+  return this->requestGetInt( CMD_GET_DEVICETYPE, dev_nr, type );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setDeviceType( int dev_nr, int type )
+{
+  return this->requestSetInt( CMD_SET_DEVICETYPE, dev_nr, type );
 }
 
 // ----------------------------------------------------------------------------
