@@ -35,15 +35,13 @@ class MY_LIB_API SpidrController
   bool        getFirmwVersion( int *version ); // SPIDR FPGA firmware version
   std::string versionToString( int  version ); // Utility function
 
-  // General and module configuration
+  // General module configuration
   bool        isConnected          ();
   std::string connectionStateString();
   std::string connectionErrString  ();
   std::string ipAddressString      ();
   std::string errString            ();
   void        clearErrString       ();
-  bool        getIpAddrDest        ( int port_index, int *ipaddr );
-  bool        setIpAddrDest        ( int port_index, int  ipaddr );
   bool        reset                ();
   bool        setBusy              ();
   bool        clearBusy            ();
@@ -58,36 +56,42 @@ class MY_LIB_API SpidrController
   // ###TODO:
   bool        setTimeOfDay         (); // Set the SPIDR processor clock time
 
-  // Configuration: devices
-  bool        getDeviceId     ( int  dev_nr, int *id );
-  bool        getDeviceIds    ( int *ids );
+  // Configuration: module/device interface
+  bool        getIpAddrDest   ( int port_index, int *ipaddr );
+  bool        setIpAddrDest   ( int port_index, int  ipaddr );
   bool        getServerPort   ( int  dev_nr, int *port_nr );
   bool        getServerPorts  ( int *port_nrs );
   bool        setServerPort   ( int  dev_nr, int  port_nr );
   bool        getDevicePort   ( int  dev_nr, int *port_nr );
   bool        getDevicePorts  ( int *port_nrs );
   bool        setDevicePort   ( int  dev_nr, int  port_nr );
+
+  // Configuration: device
+  bool        getDeviceId     ( int  dev_nr, int *id );
+  bool        getDeviceIds    ( int *ids );
   bool        setSenseDac     ( int  dev_nr, int  dac_code );
   bool        setExtDac       ( int  dev_nr, int  dac_code );
   bool        getDac          ( int  dev_nr, int  dac_code, int *dac_val );
   bool        setDac          ( int  dev_nr, int  dac_code, int  dac_val );
   bool        setDacsDflt     ( int  dev_nr );
-  bool        getTpPeriodPhase( int  dev_nr, int *period, int *phase );
-  bool        setTpPeriodPhase( int  dev_nr, int  period, int  phase );
-  bool        getTpNumber     ( int  dev_nr, int *number );
-  bool        setTpNumber     ( int  dev_nr, int  number );
   bool        getGenConfig    ( int  dev_nr, int *config );
   bool        setGenConfig    ( int  dev_nr, int  config );
   bool        getPllConfig    ( int  dev_nr, int *config );
   bool        setPllConfig    ( int  dev_nr, int  config );
-  bool        configCtpr      ( int  dev_nr, int  column, int val );
-  bool        setCtpr         ( int  dev_nr );
   bool        resetDevice     ( int  dev_nr );
   bool        resetDevices    ();
   std::string dacName         ( int  dac_code );
   int         dacMax          ( int  dac_code );
 
-  // Configuration: pixels
+  // Configuration: device test pulses
+  bool        getTpPeriodPhase( int  dev_nr, int *period, int *phase );
+  bool        setTpPeriodPhase( int  dev_nr, int  period, int  phase );
+  bool        getTpNumber     ( int  dev_nr, int *number );
+  bool        setTpNumber     ( int  dev_nr, int  number );
+  bool        configCtpr      ( int  dev_nr, int  column, int val );
+  bool        setCtpr         ( int  dev_nr );
+
+  // Configuration: device pixels
   void resetPixelConfig       ();
   bool configPixel            ( int  x,
                                 int  y,
@@ -109,17 +113,19 @@ class MY_LIB_API SpidrController
   bool setTriggerConfig       ( int trig_mode,
                                 int trig_period_us,
                                 int trig_freq_hz,
-                                int nr_of_triggers,
-                                int trig_pulse_count = 0 );
+                                int nr_of_triggers );
   bool getTriggerConfig       ( int *trig_mode,
                                 int *trig_period_us,
                                 int *trig_freq_hz,
-                                int *nr_of_triggers,
-                                int *trig_pulse_count );
+                                int *nr_of_triggers );
   bool startAutoTrigger       ();
   bool stopAutoTrigger        ();
   bool triggerOneReadout      ();
-  bool pauseReadout           ();
+
+  // Data-acquisition
+  bool sequentialReadout      ( int dev_nr );
+  bool datadrivenReadout      ( int dev_nr );
+  bool pauseReadout           ( int dev_nr );
 
   // Monitoring
   bool getAdc                 ( int dev_nr, int *adc_val );

@@ -12,13 +12,13 @@ using namespace std;
 #include "spidrtpx3cmds.h"
 #include "tpx3defs.h"
 
-#include "dacsdescr.h" // Depends on tpx3defs.h
+#include "dacsdescr.h" // Depends on tpx3defs.h included first
 
 // Version identifier: year, month, day, release number
 const int VERSION_ID = 0x13071600;
 
 // ----------------------------------------------------------------------------
-// Constructor / destructor / info
+// Constructor / destructor
 // ----------------------------------------------------------------------------
 
 SpidrController::SpidrController( int ipaddr3,
@@ -54,6 +54,8 @@ SpidrController::~SpidrController()
 }
 
 // ----------------------------------------------------------------------------
+// Version information
+// ----------------------------------------------------------------------------
 
 int SpidrController::classVersion()
 {
@@ -88,7 +90,7 @@ std::string SpidrController::versionToString( int version )
 }
 
 // ----------------------------------------------------------------------------
-// General
+// General module configuration
 // ----------------------------------------------------------------------------
 
 bool SpidrController::isConnected()
@@ -147,20 +149,6 @@ std::string SpidrController::errString()
 void SpidrController::clearErrString()
 {
   _errString.str( "" );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::getIpAddrDest( int port_index, int *ipaddr )
-{
-  return this->requestGetInt( CMD_GET_IPADDR_DEST, port_index, ipaddr );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setIpAddrDest( int port_index, int ipaddr )
-{
-  return this->requestSetInt( CMD_SET_IPADDR_DEST, port_index, ipaddr );
 }
 
 // ----------------------------------------------------------------------------
@@ -231,25 +219,19 @@ bool SpidrController::getDeviceCount( int *devices )
 }
 
 // ----------------------------------------------------------------------------
-// Configuration: devices
+// Configuration: module/device interface
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getDeviceId( int dev_nr, int *id )
+bool SpidrController::getIpAddrDest( int port_index, int *ipaddr )
 {
-  *id = 0;
-  return this->requestGetInt( CMD_GET_DEVICEID, dev_nr, id );
+  return this->requestGetInt( CMD_GET_IPADDR_DEST, port_index, ipaddr );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getDeviceIds( int *ids )
+bool SpidrController::setIpAddrDest( int port_index, int ipaddr )
 {
-  int nr_of_devices;
-  *ids = 0;
-  if( this->getDeviceCount( &nr_of_devices ) )
-    return this->requestGetInts( CMD_GET_DEVICEIDS, 0,
-				 nr_of_devices, ids );
-  return false;
+  return this->requestSetInt( CMD_SET_IPADDR_DEST, port_index, ipaddr );
 }
 
 // ----------------------------------------------------------------------------
@@ -307,6 +289,28 @@ bool SpidrController::setServerPort( int dev_nr, int port_nr )
 }
 
 // ----------------------------------------------------------------------------
+// Configuration: device
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getDeviceId( int dev_nr, int *id )
+{
+  *id = 0;
+  return this->requestGetInt( CMD_GET_DEVICEID, dev_nr, id );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getDeviceIds( int *ids )
+{
+  int nr_of_devices;
+  *ids = 0;
+  if( this->getDeviceCount( &nr_of_devices ) )
+    return this->requestGetInts( CMD_GET_DEVICEIDS, 0,
+				 nr_of_devices, ids );
+  return false;
+}
+
+// ----------------------------------------------------------------------------
 
 bool SpidrController::setSenseDac( int dev_nr, int dac_code )
 {
@@ -359,6 +363,70 @@ bool SpidrController::setDacsDflt( int dev_nr )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::getGenConfig( int dev_nr, int *config )
+{
+  return this->requestGetInt( CMD_GET_GENCONFIG, dev_nr, config );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setGenConfig( int dev_nr, int config )
+{
+  return this->requestSetInt( CMD_SET_GENCONFIG, dev_nr, config );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getPllConfig( int dev_nr, int *config )
+{
+  return this->requestGetInt( CMD_GET_PLLCONFIG, dev_nr, config );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setPllConfig( int dev_nr, int config )
+{
+  return this->requestSetInt( CMD_SET_PLLCONFIG, dev_nr, config );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::resetDevice( int dev_nr )
+{
+  int dummy = 0;
+  return this->requestSetInt( CMD_RESET_DEVICE, dev_nr, dummy );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::resetDevices()
+{
+  int dummy = 0;
+  return this->requestSetInt( CMD_RESET_DEVICES, dummy, dummy );
+}
+
+// ----------------------------------------------------------------------------
+
+std::string SpidrController::dacName( int dac_code )
+{
+  int index = this->dacIndex( dac_code );
+  if( index < 0 ) return string( "????" ); 
+  return string( TPX3_DAC_TABLE[index].name );
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrController::dacMax( int dac_code )
+{
+  int index = this->dacIndex( dac_code );
+  if( index < 0 ) return 0;
+  return( (1<<TPX3_DAC_TABLE[index].bits) - 1 );
+}
+
+// ----------------------------------------------------------------------------
+// Configuration: device test pulses
+// ----------------------------------------------------------------------------
+
 bool SpidrController::getTpPeriodPhase( int dev_nr, int *period, int *phase )
 {
   int tp_data;
@@ -397,34 +465,6 @@ bool SpidrController::setTpNumber( int dev_nr, int number )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getGenConfig( int dev_nr, int *config )
-{
-  return this->requestGetInt( CMD_GET_GENCONFIG, dev_nr, config );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setGenConfig( int dev_nr, int config )
-{
-  return this->requestSetInt( CMD_SET_GENCONFIG, dev_nr, config );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::getPllConfig( int dev_nr, int *config )
-{
-  return this->requestGetInt( CMD_GET_PLLCONFIG, dev_nr, config );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setPllConfig( int dev_nr, int config )
-{
-  return this->requestSetInt( CMD_SET_PLLCONFIG, dev_nr, config );
-}
-
-// ----------------------------------------------------------------------------
-
 bool SpidrController::configCtpr( int dev_nr, int column, int val )
 {
   // Combine column and val into a single int
@@ -438,40 +478,6 @@ bool SpidrController::setCtpr( int dev_nr )
 {
   int dummy = 0;
   return this->requestSetInt( CMD_SET_CTPR, dev_nr, dummy );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::resetDevice( int dev_nr )
-{
-  int dummy = 0;
-  return this->requestSetInt( CMD_RESET_DEVICE, dev_nr, dummy );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::resetDevices()
-{
-  int dummy = 0;
-  return this->requestSetInt( CMD_RESET_DEVICES, dummy, dummy );
-}
-
-// ----------------------------------------------------------------------------
-
-std::string SpidrController::dacName( int dac_code )
-{
-  int index = this->dacIndex( dac_code );
-  if( index < 0 ) return string( "????" ); 
-  return string( TPX3_DAC_TABLE[index].name );
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrController::dacMax( int dac_code )
-{
-  int index = this->dacIndex( dac_code );
-  if( index < 0 ) return 0;
-  return( (1<<TPX3_DAC_TABLE[index].bits) - 1 );
 }
 
 // ----------------------------------------------------------------------------
@@ -588,16 +594,14 @@ bool SpidrController::setPixelConfig( int dev_nr )
 bool SpidrController::setTriggerConfig( int trigger_mode,
 					int trigger_period_us,
 					int trigger_freq_hz,
-					int nr_of_triggers,
-					int trigger_pulse_count )
+					int nr_of_triggers )
 {
-  int datawords[5];
+  int datawords[4];
   datawords[0] = trigger_mode;
   datawords[1] = trigger_period_us;
   datawords[2] = trigger_freq_hz;
   datawords[3] = nr_of_triggers;
-  datawords[4] = trigger_pulse_count;
-  return this->requestSetInts( CMD_SET_TRIGCONFIG, 0, 5, datawords );
+  return this->requestSetInts( CMD_SET_TRIGCONFIG, 0, 4, datawords );
 }
 
 // ----------------------------------------------------------------------------
@@ -605,18 +609,16 @@ bool SpidrController::setTriggerConfig( int trigger_mode,
 bool SpidrController::getTriggerConfig( int *trigger_mode,
 					int *trigger_period_us,
 					int *trigger_freq_hz,
-					int *nr_of_triggers,
-					int *trigger_pulse_count )
+					int *nr_of_triggers )
 {
-  int data[5];
+  int data[4];
   int dummy = 0;
-  if( !this->requestGetInts( CMD_GET_TRIGCONFIG, dummy, 5, data ) )
+  if( !this->requestGetInts( CMD_GET_TRIGCONFIG, dummy, 4, data ) )
     return false;
   *trigger_mode        = data[0];
   *trigger_period_us   = data[1];
   *trigger_freq_hz     = data[2];
   *nr_of_triggers      = data[3];
-  *trigger_pulse_count = data[4];
   return true;
 }
 
@@ -645,11 +647,29 @@ bool SpidrController::triggerOneReadout()
 }
 
 // ----------------------------------------------------------------------------
+// Data-acquisition
+// ----------------------------------------------------------------------------
 
-bool SpidrController::pauseReadout()
+bool SpidrController::sequentialReadout( int dev_nr )
 {
-  int dummy1 = 0, dummy2 = 0;
-  return this->requestSetInt( CMD_PAUSE_READOUT, dummy1, dummy2 );
+  int dummy = 0;
+  return this->requestSetInt( CMD_SEQ_READOUT, dev_nr, dummy );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::datadrivenReadout( int dev_nr )
+{
+  int dummy = 0;
+  return this->requestSetInt( CMD_DD_READOUT, dev_nr, dummy );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::pauseReadout( int dev_nr )
+{
+  int dummy = 0;
+  return this->requestSetInt( CMD_PAUSE_READOUT, dev_nr, dummy );
 }
 
 // ----------------------------------------------------------------------------
