@@ -62,7 +62,11 @@
 #define CMD_AUTOTRIG_START     0x442
 #define CMD_AUTOTRIG_STOP      0x443
 #define CMD_TRIGGER_READOUT    0x444
-#define CMD_PAUSE_READOUT      0x445
+
+// Data-acquisition
+#define CMD_SEQ_READOUT        0x445
+#define CMD_DD_READOUT         0x446
+#define CMD_PAUSE_READOUT      0x447
 
 // Monitoring
 #define CMD_GET_ADC            0x548
@@ -148,9 +152,9 @@ static char *CMD_STR[] =
     "AUTOTRIG_START   ", // 0x442
     "AUTOTRIG_STOP    ", // 0x443
     "TRIGGER_READOUT  ", // 0x444
-    "PAUSE_READOUT    ", // 0x445
-    "-----",             // 0x446
-    "-----",             // 0x447
+    "SEQ_READOUT      ", // 0x445
+    "DD_READOUT       ", // 0x446
+    "PAUSE_READOUT    ", // 0x447
 
     "GET_ADC          ", // 0x548
     "GET_REMOTETEMP   ", // 0x549
