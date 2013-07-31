@@ -32,23 +32,23 @@ class MY_LIB_API SpidrDaq
   void stop();
 
   // General
-  int         classVersion(); // Version of this class
+  int         classVersion   (); // Version of this class
   std::string ipAddressString( int index = 0 );
-  std::string errString();
+  std::string errString      ();
 
   // Configuration
-  void setAcqMode( int mode );
-  bool openFile  ( std::string filename, bool overwrite = false );
-  bool closeFile ();
+  void setAcqMode            ( int mode );
+  bool openFile              ( std::string filename, bool overwrite = false );
+  bool closeFile             ();
 
   // Frame building
-  int *frameData ( int *size_in_bytes );
-  void resetFrame();
+  int *frameData             ( int *size_in_bytes );
+  void resetFrame            ();
 
   // Statistics and info
-  int  packetsWrittenCount  ();
-  int  packetsProcessedCount();
-  int  packetsReceivedCount ();
+  int  packetsWrittenCount   ();
+  int  packetsProcessedCount ();
+  int  packetsReceivedCount  ();
 
  private:
   ReceiverThread     *_packetReceiver;

@@ -130,7 +130,7 @@ std::string SpidrController::connectionErrString()
 
 std::string SpidrController::ipAddressString()
 {
-  // Return a string like: "192.168.1.10:50000"
+  // Return a string like: "192.168.100.10:50000"
   QString qs = _sock->peerName();
   qs += ':';
   qs += QString::number( _sock->peerPort() );
