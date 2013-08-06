@@ -35,6 +35,9 @@ CONFIG(release, debug|release) {
 win32 {
   LIBS += -lWs2_32
 }
+unix {
+  DEFINES -= WIN32
+}
 
 SOURCES += SpidrController.cpp
 SOURCES += SpidrDaq.cpp
