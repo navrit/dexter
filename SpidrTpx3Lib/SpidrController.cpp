@@ -12,10 +12,10 @@ using namespace std;
 #include "spidrtpx3cmds.h"
 #include "tpx3defs.h"
 
-#include "dacsdescr.h" // Depends on tpx3defs.h included first
+#include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x13071600;
+const int VERSION_ID = 0x13080200;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor
@@ -40,6 +40,7 @@ SpidrController::SpidrController( int ipaddr3,
   this->resetPixelConfig();
 
   _busyRequests = 0;
+  _errId = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -139,16 +140,23 @@ std::string SpidrController::ipAddressString()
 
 // ----------------------------------------------------------------------------
 
-std::string SpidrController::errString()
+std::string SpidrController::errorString()
 {
   return _errString.str();
 }
 
 // ----------------------------------------------------------------------------
 
-void SpidrController::clearErrString()
+void SpidrController::clearErrorString()
 {
   _errString.str( "" );
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrController::errorId()
+{
+  return _errId;
 }
 
 // ----------------------------------------------------------------------------
@@ -334,7 +342,7 @@ bool SpidrController::getDac( int dev_nr, int dac_code, int *dac_val )
       // Extract dac_nr and dac_val
       if( (dac_data >> 16) != dac_code )
 	{
-	  this->clearErrString();
+	  this->clearErrorString();
 	  _errString << "DAC code mismatch in reply";
 	  return false;
 	}
@@ -421,6 +429,16 @@ int SpidrController::dacMax( int dac_code )
   int index = this->dacIndex( dac_code );
   if( index < 0 ) return 0;
   return( (1<<TPX3_DAC_TABLE[index].bits) - 1 );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::uploadPacket( int            dev_nr,
+				    unsigned char *packet,
+				    int            size )
+{
+  return this->requestSetIntAndBytes( CMD_UPLOAD_PACKET, dev_nr,
+				      size, size, packet );
 }
 
 // ----------------------------------------------------------------------------
@@ -511,7 +529,7 @@ bool SpidrController::configPixel( int  x,
   if( threshold < 0 || threshold > 15 ) invalid_parameter = true;
   if( invalid_parameter )
     {
-      this->clearErrString();
+      this->clearErrorString();
       _errString << "Invalid pixel config parameter";
       return false;
     }
@@ -749,7 +767,7 @@ bool SpidrController::validXandY( int x,       int y,
 	}
       else
 	{
-	  this->clearErrString();
+	  this->clearErrorString();
 	  _errString << "Invalid x coordinate: " << x;
 	  return false;
 	}
@@ -768,7 +786,7 @@ bool SpidrController::validXandY( int x,       int y,
 	}
       else
 	{
-	  this->clearErrString();
+	  this->clearErrorString();
 	  _errString << "Invalid y coordinate: " << y;
 	  return false;
 	}
@@ -883,7 +901,7 @@ bool SpidrController::request( int cmd,     int dev_nr,
   _sock->write( (const char *) _reqMsg, req_len );
   if( !_sock->waitForBytesWritten( 400 ) )
     {
-      this->clearErrString();
+      this->clearErrorString();
       _errString << "Time-out sending command";
       return false;
     }
@@ -893,7 +911,7 @@ bool SpidrController::request( int cmd,     int dev_nr,
 
   if( !_sock->waitForReadyRead( 400 ) )
     {
-      this->clearErrString();
+      this->clearErrorString();
       _errString << "Time-out receiving reply";
       return false;
     }
@@ -901,7 +919,7 @@ bool SpidrController::request( int cmd,     int dev_nr,
   int reply_len = _sock->read( (char *) _replyMsg, sizeof(_replyMsg) );
   if( reply_len < 0 )
     {
-      this->clearErrString();
+      this->clearErrorString();
       _errString << "Failed to read reply";
       return false;
     }
@@ -909,28 +927,29 @@ bool SpidrController::request( int cmd,     int dev_nr,
   // Various checks on the received reply
   if( reply_len < exp_reply_len )
     {
-      this->clearErrString();
+      this->clearErrorString();
       _errString << "Unexpected reply length, got "
 		 << reply_len << " expected " << exp_reply_len;
       return false;
     }
   int err = ntohl( _replyMsg[2] ); // (Check 'err' before 'reply')
+  _errId = err;
   if( err != 0 )
     {
-      this->clearErrString();
+      this->clearErrorString();
       _errString << "Error from SPIDR: 0x" << hex << err;
       return false;
     }
   int reply = ntohl( _replyMsg[0] );
   if( reply != (cmd | CMD_REPLY) )
     {
-      this->clearErrString();
+      this->clearErrorString();
       _errString << "Unexpected reply: 0x" << hex << reply;
       return false;
     }
   if( ntohl( _replyMsg[3] ) != dev_nr )
     {
-      this->clearErrString();
+      this->clearErrorString();
       _errString << "Unexpected device number in reply: " << _replyMsg[3];
       return false;
     }

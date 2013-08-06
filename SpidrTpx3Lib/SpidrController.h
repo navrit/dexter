@@ -40,8 +40,9 @@ class MY_LIB_API SpidrController
   std::string connectionStateString();
   std::string connectionErrString  ();
   std::string ipAddressString      ();
-  std::string errString            ();
-  void        clearErrString       ();
+  std::string errorString          ();
+  void        clearErrorString     ();
+  int         errorId              ();
   bool        reset                ();
   bool        setBusy              ();
   bool        clearBusy            ();
@@ -82,6 +83,7 @@ class MY_LIB_API SpidrController
   bool        resetDevices    ();
   std::string dacName         ( int  dac_code );
   int         dacMax          ( int  dac_code );
+  bool        uploadPacket    ( int  dev_nr, unsigned char *packet, int size );
 
   // Configuration: device test pulses
   bool        getTpPeriodPhase( int  dev_nr, int *period, int *phase );
@@ -106,14 +108,14 @@ class MY_LIB_API SpidrController
                                 int *srvports,
                                 int *devports,
                                 int  controlport = 50000 );
-  bool storeDacs              ( int dev_nr );             // ###TODO
-  bool storePixelConfig       ( int dev_nr );             // ###TODO
+  bool storeDacs              ( int  dev_nr );            // ###TODO
+  bool storePixelConfig       ( int  dev_nr );            // ###TODO
 
   // Trigger
-  bool setTriggerConfig       ( int trig_mode,
-                                int trig_period_us,
-                                int trig_freq_hz,
-                                int nr_of_triggers );
+  bool setTriggerConfig       ( int  trig_mode,
+                                int  trig_period_us,
+                                int  trig_freq_hz,
+                                int  nr_of_triggers );
   bool getTriggerConfig       ( int *trig_mode,
                                 int *trig_period_us,
                                 int *trig_freq_hz,
@@ -128,7 +130,7 @@ class MY_LIB_API SpidrController
   bool pauseReadout           ( int dev_nr );
 
   // Monitoring
-  bool getAdc                 ( int dev_nr, int *adc_val );
+  bool getAdc                 ( int  dev_nr, int *adc_val );
   bool getRemoteTemp          ( int *mdegrees );
   bool getLocalTemp           ( int *mdegrees );
   bool getAvdd                ( int *mvolt, int *mamp, int *mwatt );
@@ -172,6 +174,9 @@ class MY_LIB_API SpidrController
 
   // String providing a description of the last error that occurred
   std::ostringstream _errString;
+
+  // Error identifier from the SPIDR-TPX3 module, from the last operation
+  int _errId;
 };
 
 #endif // SPIDRCONTROLLER_H
