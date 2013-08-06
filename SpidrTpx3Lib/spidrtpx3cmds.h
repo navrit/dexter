@@ -175,13 +175,14 @@ static char *CMD_STR[] =
 #define CMD_MASK             0x0000FFFF
 
 // Error identifiers in replies from the SPIDR module
+// (in first byte; 2nd to 4th byte can be used for additional info)
 #define ERR_NONE             0x00000000
-#define ERR_UNKNOWN_CMD      0x80000001
-#define ERR_HARDWARE         0x80000002
-#define ERR_MSG_LENGTH       0x80000003
-#define ERR_SEQUENCE         0x80000004
-#define ERR_ILLEGAL_PAR      0x80000005
-#define ERR_NOT_IMPLEMENTED  0x80000006
+#define ERR_UNKNOWN_CMD      0x00000001
+#define ERR_HARDWARE         0x00000002
+#define ERR_MSG_LENGTH       0x00000003
+#define ERR_SEQUENCE         0x00000004
+#define ERR_ILLEGAL_PAR      0x00000005
+#define ERR_NOT_IMPLEMENTED  0x00000006
 
 // Short strings describing the errors
 // (indexed by the lower byte of the error identifier)
