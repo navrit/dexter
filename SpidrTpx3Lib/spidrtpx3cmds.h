@@ -55,6 +55,7 @@
 #define CMD_SET_PLLCONFIG      0x337
 #define CMD_SET_SENSEDAC       0x338
 #define CMD_SET_EXTDAC         0x33A
+#define CMD_UPLOAD_PACKET      0x33B
 
 // Trigger
 #define CMD_GET_TRIGCONFIG     0x440
@@ -141,7 +142,7 @@ static char *CMD_STR[] =
     "SET_SENSEDAC     ", // 0x338
     "-----",             // 0x339
     "SET_EXTDAC       ", // 0x33A
-    "-----",             // 0x33B
+    "UPLOAD_PACKET    ", // 0x33B
     "-----",             // 0x33C
     "-----",             // 0x33D
     "-----",             // 0x33E
