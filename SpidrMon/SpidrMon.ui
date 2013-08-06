@@ -292,6 +292,9 @@
     <string>Monitoring info</string>
    </property>
    <widget class="QLineEdit" name="_lineEditRemoteTemp">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>82</x>
@@ -308,6 +311,9 @@
     </property>
    </widget>
    <widget class="QLineEdit" name="_lineEditLocalTemp">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>82</x>
@@ -324,6 +330,9 @@
     </property>
    </widget>
    <widget class="QLineEdit" name="_lineEditAvddMvolt">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -340,6 +349,9 @@
     </property>
    </widget>
    <widget class="QLineEdit" name="_lineEditAvddMamp">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>82</x>
@@ -356,6 +368,9 @@
     </property>
    </widget>
    <widget class="QLineEdit" name="_lineEditAvddMwatt">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>144</x>
@@ -436,6 +451,9 @@
     </property>
    </widget>
    <widget class="QLineEdit" name="_lineEditDvddMwatt">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>144</x>
@@ -452,6 +470,9 @@
     </property>
    </widget>
    <widget class="QLineEdit" name="_lineEditDvddMvolt">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -468,6 +489,9 @@
     </property>
    </widget>
    <widget class="QLineEdit" name="_lineEditDvddMamp">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>82</x>
@@ -484,6 +508,9 @@
     </property>
    </widget>
    <widget class="QLineEdit" name="_lineEditVddMwatt">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>144</x>
@@ -500,6 +527,9 @@
     </property>
    </widget>
    <widget class="QLineEdit" name="_lineEditVddMvolt">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -516,6 +546,9 @@
     </property>
    </widget>
    <widget class="QLineEdit" name="_lineEditVddMamp">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>82</x>

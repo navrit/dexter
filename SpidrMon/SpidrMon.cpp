@@ -53,6 +53,18 @@ void SpidrMon::connectOrDisconnect()
       delete _spidrController;
       _spidrController = 0;
       _pushButtonConnectOrDisconnect->setText( "Connect" );
+
+      _lineEditRemoteTemp->setEnabled( false );
+      _lineEditLocalTemp->setEnabled( false );
+      _lineEditAvddMvolt->setEnabled( false );
+      _lineEditAvddMamp->setEnabled( false );
+      _lineEditAvddMwatt->setEnabled( false );
+      _lineEditDvddMvolt->setEnabled( false );
+      _lineEditDvddMamp->setEnabled( false );
+      _lineEditDvddMwatt->setEnabled( false );
+      _lineEditVddMvolt->setEnabled( false );
+      _lineEditVddMamp->setEnabled( false );
+      _lineEditVddMwatt->setEnabled( false );
     }
   else
     {
@@ -82,6 +94,19 @@ void SpidrMon::connectOrDisconnect()
 	{
 	  _pushButtonConnectOrDisconnect->setText( "Disconnect" );
 	  QApplication::restoreOverrideCursor();
+
+	  _lineEditRemoteTemp->setEnabled( true );
+	  _lineEditLocalTemp->setEnabled( true );
+	  _lineEditAvddMvolt->setEnabled( true );
+	  _lineEditAvddMamp->setEnabled( true );
+	  _lineEditAvddMwatt->setEnabled( true );
+	  _lineEditDvddMvolt->setEnabled( true );
+	  _lineEditDvddMamp->setEnabled( true );
+	  _lineEditDvddMwatt->setEnabled( true );
+	  _lineEditVddMvolt->setEnabled( true );
+	  _lineEditVddMamp->setEnabled( true );
+	  _lineEditVddMwatt->setEnabled( true );
+
 	  _timerId = this->startTimer( 1000 );
 	}
       else
