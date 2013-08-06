@@ -40,7 +40,7 @@ INCLUDEPATH += ../SpidrLib
 LIBS += -lSpidrLib
 
 FORMS     += SpidrMon.ui
-#RESOURCES += spidrmon.qrc
+RESOURCES += spidrmon.qrc
 
 SOURCES   += main.cpp
 SOURCES   += SpidrMon.cpp

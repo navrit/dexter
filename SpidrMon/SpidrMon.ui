@@ -25,6 +25,10 @@
   <property name="windowTitle">
    <string>SPIDR-MON</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="spidrmon.qrc">
+    <normaloff>:/icon/spidrmon.ico</normaloff>:/icon/spidrmon.ico</iconset>
+  </property>
   <widget class="QGroupBox" name="groupBoxSpidr">
    <property name="geometry">
     <rect>
@@ -699,6 +703,8 @@
    </widget>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="spidrmon.qrc"/>
+ </resources>
  <connections/>
 </ui>
