@@ -11,10 +11,24 @@ int my_atoi( const char *c );
 int main( int argc, char *argv[] )
 {
   int log_level = 0;
+  int addr_byte = 1;
 
-  if( argc > 1 ) log_level = my_atoi( argv[1] );
+  if( argc > 2 )
+    {
+      addr_byte = my_atoi( argv[1] );
+      log_level = my_atoi( argv[2] );
+    }
+  else if( argc > 1 )
+    {
+      log_level = my_atoi( argv[1] );
+    }
+  else
+    {
+      cout << "Usage: spidrloglevel <ipaddr1> <level>" << endl;
+      return 0;
+    }
 
-  SpidrController spidrcontrol( 192, 168, 1, 10 );
+  SpidrController spidrcontrol( 192, 168, addr_byte, 10 );
 
   // Check if we are properly connected to the SPIDR module
   if( spidrcontrol.isConnected() )
@@ -24,7 +38,8 @@ int main( int argc, char *argv[] )
     }
   else
     {
-      cout << spidrcontrol.connectionStateString() << ": "
+      cout << spidrcontrol.ipAddressString() << " "
+	   << spidrcontrol.connectionStateString() << ", "
 	   << spidrcontrol.connectionErrString() << endl;
       return 1;
     }
