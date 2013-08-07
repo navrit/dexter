@@ -6,7 +6,9 @@
 #include "SpidrMon.h"
 #include "SpidrController.h"
 
-QString VERSION( "v1.0.1  05-Jun-2013" );
+QString VERSION( "v1.0.2  07-Aug-2013" );
+
+const int UPDATE_INTERVAL_MS = 500;
 
 // ----------------------------------------------------------------------------
 
@@ -107,7 +109,7 @@ void SpidrMon::connectOrDisconnect()
 	  _lineEditVddMamp->setEnabled( true );
 	  _lineEditVddMwatt->setEnabled( true );
 
-	  _timerId = this->startTimer( 1000 );
+	  _timerId = this->startTimer( UPDATE_INTERVAL_MS );
 	}
       else
 	{
@@ -199,7 +201,7 @@ void SpidrMon::timerEvent(QTimerEvent *)
     }
 
   _leUpdateLed->show();
-  QTimer::singleShot( 200, this, SLOT(updateLedOff()) );
+  QTimer::singleShot( UPDATE_INTERVAL_MS/4, this, SLOT(updateLedOff()) );
 }
 
 // ----------------------------------------------------------------------------
