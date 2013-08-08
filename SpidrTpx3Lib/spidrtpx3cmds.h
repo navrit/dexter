@@ -8,8 +8,8 @@
 // General: module
 #define CMD_GET_SOFTWVERSION   0x901
 #define CMD_GET_FIRMWVERSION   0x902
-#define CMD_SET_IPADDR_DEST    0x903
-#define CMD_GET_IPADDR_DEST    0x904
+#define CMD_GET_IPADDR_DEST    0x903
+#define CMD_SET_IPADDR_DEST    0x904
 
 #define CMD_RESET_MODULE       0x907
 #define CMD_SET_BUSY           0x908
