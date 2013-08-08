@@ -37,7 +37,13 @@ win32 {
 }
 
 SOURCES += SpidrController.cpp
+SOURCES += SpidrDaq.cpp
+SOURCES += ReceiverThread.cpp
+SOURCES += FilewriterThread.cpp
 
 HEADERS += SpidrController.h
 HEADERS += tpx3defs.h dacsdescr.h
 HEADERS += spidrtpx3cmds.h
+HEADERS += SpidrDaq.h
+HEADERS += ReceiverThread.h
+HEADERS += FilewriterThread.h

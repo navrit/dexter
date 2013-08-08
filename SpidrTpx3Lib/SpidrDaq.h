@@ -18,7 +18,8 @@
 
 class SpidrController;
 class ReceiverThread;
-class FramebuilderThread;
+class FilewriterThread;
+//class FramebuilderThread;
 
 class MY_LIB_API SpidrDaq
 {
@@ -33,36 +34,49 @@ class MY_LIB_API SpidrDaq
 
   // General
   int         classVersion   (); // Version of this class
-  std::string ipAddressString( int index = 0 );
-  std::string errString      ();
+  std::string ipAddressString();
+  std::string errorString    ();
 
   // Configuration
-  void setAcqMode            ( int mode );
-  bool openFile              ( std::string filename, bool overwrite = false );
-  bool closeFile             ();
+  void setDecodeFrames          ( bool decode );
+  void setAcqMode               ( int mode );
+  bool openFile                 ( std::string filename,
+				  bool overwrite = false );
+  bool closeFile                ();
+
+  // Acquisition
+  bool      bufferFull          ();
+  bool      bufferFullOccurred  ();
+  void      resetBufferFullOccurred();
+  char     *dataBuffer          ();
 
   // Frame building
-  int *frameData             ( int *size_in_bytes );
-  void resetFrame            ();
+  int      *frameData           ( int *size_in_bytes );
+  void      resetFrame          ();
 
   // Statistics and info
-  int  packetsWrittenCount   ();
-  int  packetsProcessedCount ();
-  int  packetsReceivedCount  ();
+  int       packetsReceivedCount();
+  int       packetsLostCount    ();
+  int       lastPacketSize      ();
+  long long bytesReceivedCount  ();
+  long long bytesLostCount      ();
+  long long bytesWrittenCount   ();
+  long long bytesFlushedCount   ();
+  int       bufferWrapCount     ();
 
  private:
   ReceiverThread     *_packetReceiver;
   FilewriterThread   *_fileWriter;
-  FramebuilderThread *_frameBuilder;
+  //FramebuilderThread *_frameBuilder;
 
   // Init function for use in c'tors
-  void init       ( int             *ipaddr,
-                    int             *devport,
-                    int             *devid,
-                    SpidrController *spidrctrl );
-  void getIdsPorts( SpidrController *spidrctrl,
-                    int             *ids,
-                    int             *ports );
+  void init        ( int             *ipaddr,
+		     int              port,
+		     int              id,
+		     SpidrController *spidrctrl );
+  void getIdAndPort( SpidrController *spidrctrl,
+		     int             *id,
+		     int             *port );
 };
 
 #endif // SPIDRDAQ_H
