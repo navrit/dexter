@@ -34,6 +34,7 @@ class FilewriterThread : public QThread
   // File operations
   bool openFile( std::string filename, bool overwrite = false );
   bool closeFile();
+  void setFlush( bool flush ) { _flush = flush; }
 
   // Statistics
   long long bytesWritten()  { return _bytesWritten; }
@@ -53,6 +54,7 @@ class FilewriterThread : public QThread
 
   QFile _file;
   bool  _fileOpen;
+  bool  _flush; // Flush or not, when no file is open
 
   // String containing a description of the last error that occurred
   QString _errString;

@@ -25,8 +25,7 @@ class MY_LIB_API SpidrDaq
 {
  public:
   // C'tor, d'tor
-  SpidrDaq( int ipaddr3, int ipaddr2, int ipaddr1, int ipaddr0,
-            SpidrController *spidrctrl = 0 );
+  SpidrDaq( int ipaddr3, int ipaddr2, int ipaddr1, int ipaddr0, int port );
   SpidrDaq( SpidrController *spidrctrl );
   ~SpidrDaq();
 
@@ -38,11 +37,12 @@ class MY_LIB_API SpidrDaq
   std::string errorString    ();
 
   // Configuration
-  void setDecodeFrames          ( bool decode );
-  void setAcqMode               ( int mode );
   bool openFile                 ( std::string filename,
 				  bool overwrite = false );
   bool closeFile                ();
+  void setFlush                 ( bool flush );
+  //void setDecodeFrames        ( bool decode );
+  //void setAcqMode             ( int mode );
 
   // Acquisition
   bool      bufferFull          ();
@@ -50,7 +50,7 @@ class MY_LIB_API SpidrDaq
   void      resetBufferFullOccurred();
   char     *dataBuffer          ();
 
-  // Frame building
+  // Frame building (### TODO)
   int      *frameData           ( int *size_in_bytes );
   void      resetFrame          ();
 
@@ -72,7 +72,6 @@ class MY_LIB_API SpidrDaq
   // Init function for use in c'tors
   void init        ( int             *ipaddr,
 		     int              port,
-		     int              id,
 		     SpidrController *spidrctrl );
   void getIdAndPort( SpidrController *spidrctrl,
 		     int             *id,

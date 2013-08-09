@@ -17,7 +17,8 @@ FilewriterThread::FilewriterThread( ReceiverThread *recvr,
     _stop( false ),
     _bytesWritten( 0 ),
     _bytesFlushed( 0 ),
-    _fileOpen( false )
+    _fileOpen( false ),
+    _flush( true )
 {
   // Start the thread (see run())
   this->start();
@@ -65,15 +66,18 @@ void FilewriterThread::run()
 	    }
 	  else
 	    {
-	      // Flush the data...
-	      bytes = _receiver->bytesAvailable();
-	      _receiver->updateBytesConsumed( bytes );
-	      _bytesFlushed += bytes;
+	      if( _flush )
+		{
+		  // Flush the data...
+		  bytes = _receiver->bytesAvailable();
+		  _receiver->updateBytesConsumed( bytes );
+		  _bytesFlushed += bytes;
+		}
 	    }
 	}
       else
 	{
-	  // Doze off for a short while, while waiting for new data...
+	  // Doze off briefly, while waiting for new data...
 	  Sleep( 50 );
 	}
     }
@@ -101,6 +105,7 @@ bool FilewriterThread::openFile( std::string filename, bool overwrite )
       _fileOpen = true;
       return true;
     }
+  _errString = "Failed to open file \"" + fname + "\"";  
   return false;
 }
 

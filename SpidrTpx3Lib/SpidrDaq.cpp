@@ -14,29 +14,25 @@ SpidrDaq::SpidrDaq( int ipaddr3,
 		    int ipaddr2,
 		    int ipaddr1,
 		    int ipaddr0,
-		    SpidrController *spidrctrl /* = 0 */ )
+		    int port )
 {
-  // If a SpidrController object is provided use it to find out the SPIDR's
-  // Medipix device configuration, or else assume a single device
-  // with a default port number
+  // Start data-acquisition on the interface
+  // with the given IP address and port number
   int ipaddr[4] = { ipaddr0, ipaddr1, ipaddr2, ipaddr3 };
-  int id        = 0;
-  int port      = 8192;
-  if( spidrctrl ) this->getIdAndPort( spidrctrl, &id, &port );
-  this->init( ipaddr, id, port, spidrctrl );
+  this->init( ipaddr, port, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 SpidrDaq::SpidrDaq( SpidrController *spidrctrl )
 {
-  // If a SpidrController object is provided use it to find out the SPIDR's
-  // Medipix device configuration and IP destination address, or else assume
-  // a default IP address and a single device with a default port number
-  //int ipaddr[4] = { 1, 100, 168, 192 };
-  int ipaddr[4] = { 1, 1, 168, 192 };
+  // If the SpidrController parameter is provided use it to find out
+  // the SPIDR's Medipix/Timepix device configuration and
+  // IP destination address, or else assume a default IP address and
+  // a single device with a default port number
+  int ipaddr[4] = { 1, 100, 168, 192 };
   int id        = 0;
-  int port      = 0xABCD;//8192;
+  int port      = 8192;
   if( spidrctrl )
     {
       // Get the IP destination address (this host network interface)
@@ -52,7 +48,7 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl )
 
       this->getIdAndPort( spidrctrl, &id, &port );
     }
-  this->init( ipaddr, id, port, spidrctrl );
+  this->init( ipaddr, port, spidrctrl );
 }
 
 // ----------------------------------------------------------------------------
@@ -66,18 +62,18 @@ void SpidrDaq::getIdAndPort( SpidrController *spidrctrl,
   // Get the device IDs from the SPIDR module
   spidrctrl->getDeviceId( 0, id );
 
-  // Get the device port number from the SPIDR module
-  if( *id != 0 )
-    spidrctrl->getServerPort( 0, port );
-  else
-    *port = 8192;
+  // Get the device port number from the SPIDR-TPX3 module
+  // provided a sensible chip-ID was obtained
+  //if( *id != 0 )
+  spidrctrl->getServerPort( 0, port );
+  //else
+  //*port = 8192;
 }
 
 // ----------------------------------------------------------------------------
 
 void SpidrDaq::init( int             *ipaddr,
-		     int             id,
-		     int             port,
+		     int              port,
 		     SpidrController *spidrctrl )
 {
   _packetReceiver = new ReceiverThread( ipaddr, port );
@@ -162,13 +158,6 @@ std::string SpidrDaq::errorString()
 // Configuration
 // ----------------------------------------------------------------------------
 
-void SpidrDaq::setDecodeFrames( bool decode )
-{
-  //_frameBuilder->setDecodeFrames( decode );
-}
-
-// ----------------------------------------------------------------------------
-
 bool SpidrDaq::openFile( std::string filename, bool overwrite /* = false */ )
 {
   return _fileWriter->openFile( filename, overwrite );
@@ -181,6 +170,20 @@ bool SpidrDaq::closeFile()
   return _fileWriter->closeFile();
 }
 
+// ----------------------------------------------------------------------------
+
+void SpidrDaq::setFlush( bool flush )
+{
+  _fileWriter->setFlush( flush );
+}
+
+// ----------------------------------------------------------------------------
+/*
+void SpidrDaq::setDecodeFrames( bool decode )
+{
+  //_frameBuilder->setDecodeFrames( decode );
+}
+*/
 // ----------------------------------------------------------------------------
 // Acquisition
 // ----------------------------------------------------------------------------

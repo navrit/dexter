@@ -15,6 +15,7 @@ typedef uint16_t u16;
 typedef uint8_t  u8;
 
 //#define RECV_BUF_SIZE  0x001000000 //   16 MByte
+//#define RECV_BUF_SIZE  0x010000000 //  256 MByte
 #define RECV_BUF_SIZE    0x020000000 //  512 MByte
 //#define RECV_BUF_SIZE  0x040000000 // 1024 MByte
 
