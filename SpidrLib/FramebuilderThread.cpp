@@ -596,6 +596,7 @@ bool FramebuilderThread::openFile( std::string filename, bool overwrite )
       _fileOpen = true;
       return true;
     }
+  _errString = "Failed to open file \"" + fname + "\"";  
   return false;
 }
 
