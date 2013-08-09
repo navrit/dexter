@@ -15,7 +15,7 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x13080200;
+const int VERSION_ID = 0x13080800;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor
