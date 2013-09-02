@@ -40,6 +40,7 @@ int main( int argc, char *argv[] )
     cout << "### SpidrDaq: " << errstr << endl;
   cout << "Addr : " << spidrdaq.ipAddressString() << endl;
 
+#define TEST_ONE_FULL_BUFFER
 #ifdef TEST_ONE_FULL_BUFFER
   spidrdaq.setFlush( false );
 #else
@@ -73,10 +74,43 @@ int main( int argc, char *argv[] )
       Sleep( 1000 );
       //if( spidrdaq.bufferFullOccurred() ) spidrdaq.closeFile();
 #ifdef TEST_ONE_FULL_BUFFER
+      /*
       if( cnt == 20 )
 	{
 	  if( !spidrdaq.openFile( "test.dat", true ) )
 	    cout << "### " << spidrdaq.errorString() << endl;
+	}
+      */
+      if( spidrdaq.bufferFullOccurred() )
+	{
+	  if( !spidrdaq.openFile( "test.dat", true ) )
+	    cout << "### " << spidrdaq.errorString() << endl;
+	  Sleep( 5000 );
+	  spidrdaq.closeFile();
+
+	  // Check if the counter increments properly
+	  long long i, size = spidrdaq.bytesReceivedCount();
+	  unsigned char *data = (unsigned char *) spidrdaq.dataBuffer();
+	  unsigned int exp_count = 0, count;
+	  char ch;
+	  for( i=0; i<size; i+=8 )
+	    {
+	      count = ((unsigned int) data[i] <<8) | (unsigned int) data[i+1];
+	      if( count != exp_count )
+		{
+		  cout << hex << setw(8) << i << dec
+		       << ": ### " << count << ", exp " << exp_count
+		       << " missed " << (count-exp_count)*8 << " bytes" << endl;
+		  cin >> ch;
+		  //Sleep( 500 );
+		}
+	      else
+		{
+		  cout << hex << setw(8) << i << endl;
+		  //cout << i/8 << endl;
+		}
+	      exp_count = (count + 1) & 0xFFFF;
+	    }
 	}
 #endif
     }
