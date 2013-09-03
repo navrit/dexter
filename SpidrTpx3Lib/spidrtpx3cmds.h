@@ -56,6 +56,8 @@
 #define CMD_SET_SENSEDAC       0x338
 #define CMD_SET_EXTDAC         0x33A
 #define CMD_UPLOAD_PACKET      0x33B
+#define CMD_GET_OUTBLOCKCONFIG 0x33C
+#define CMD_SET_OUTBLOCKCONFIG 0x33D
 
 // Trigger
 #define CMD_GET_TRIGCONFIG     0x440
@@ -143,8 +145,8 @@ static char *CMD_STR[] =
     "-----",             // 0x339
     "SET_EXTDAC       ", // 0x33A
     "UPLOAD_PACKET    ", // 0x33B
-    "-----",             // 0x33C
-    "-----",             // 0x33D
+    "GET_OUTBLOKCONFIG", // 0x33C
+    "SET_OUTBLOKCONFIG", // 0x33D
     "-----",             // 0x33E
     "-----",             // 0x33F
 

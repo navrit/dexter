@@ -79,6 +79,8 @@ class MY_LIB_API SpidrController
   bool        setGenConfig    ( int  dev_nr, int  config );
   bool        getPllConfig    ( int  dev_nr, int *config );
   bool        setPllConfig    ( int  dev_nr, int  config );
+  bool        getOutBlockConfig( int  dev_nr, int *config );
+  bool        setOutBlockConfig( int  dev_nr, int  config );
   bool        resetDevice     ( int  dev_nr );
   bool        resetDevices    ();
   std::string dacName         ( int  dac_code );

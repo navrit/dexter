@@ -399,6 +399,20 @@ bool SpidrController::setPllConfig( int dev_nr, int config )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::getOutBlockConfig( int dev_nr, int *config )
+{
+  return this->requestGetInt( CMD_GET_OUTBLOCKCONFIG, dev_nr, config );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setOutBlockConfig( int dev_nr, int config )
+{
+  return this->requestSetInt( CMD_SET_OUTBLOCKCONFIG, dev_nr, config );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::resetDevice( int dev_nr )
 {
   int dummy = 0;
