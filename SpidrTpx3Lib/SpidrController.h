@@ -58,103 +58,109 @@ class MY_LIB_API SpidrController
   bool        setTimeOfDay         (); // Set the SPIDR processor clock time
 
   // Configuration: module/device interface
-  bool        getIpAddrDest   ( int port_index, int *ipaddr );
-  bool        setIpAddrDest   ( int port_index, int  ipaddr );
-  bool        getServerPort   ( int  dev_nr, int *port_nr );
-  bool        getServerPorts  ( int *port_nrs );
-  bool        setServerPort   ( int  dev_nr, int  port_nr );
-  bool        getDevicePort   ( int  dev_nr, int *port_nr );
-  bool        getDevicePorts  ( int *port_nrs );
-  bool        setDevicePort   ( int  dev_nr, int  port_nr );
+  bool        getIpAddrDest    ( int  port_index, int *ipaddr );
+  bool        setIpAddrDest    ( int  port_index, int  ipaddr );
+  bool        getServerPort    ( int  dev_nr, int *port_nr );
+  bool        getServerPorts   ( int *port_nrs );
+  bool        setServerPort    ( int  dev_nr, int  port_nr );
+  bool        getDevicePort    ( int  dev_nr, int *port_nr );
+  bool        getDevicePorts   ( int *port_nrs );
+  bool        setDevicePort    ( int  dev_nr, int  port_nr );
+  bool        getHeaderFilter  ( int  dev_nr, int *eth_mask, int *cpu_mask );
+  bool        setHeaderFilter  ( int  dev_nr, int  eth_mask, int  cpu_mask );
 
   // Configuration: device
-  bool        getDeviceId     ( int  dev_nr, int *id );
-  bool        getDeviceIds    ( int *ids );
-  bool        setSenseDac     ( int  dev_nr, int  dac_code );
-  bool        setExtDac       ( int  dev_nr, int  dac_code );
-  bool        getDac          ( int  dev_nr, int  dac_code, int *dac_val );
-  bool        setDac          ( int  dev_nr, int  dac_code, int  dac_val );
-  bool        setDacsDflt     ( int  dev_nr );
-  bool        getGenConfig    ( int  dev_nr, int *config );
-  bool        setGenConfig    ( int  dev_nr, int  config );
-  bool        getPllConfig    ( int  dev_nr, int *config );
-  bool        setPllConfig    ( int  dev_nr, int  config );
+  bool        getDeviceId      ( int  dev_nr, int *id );
+  bool        getDeviceIds     ( int *ids );
+  bool        setSenseDac      ( int  dev_nr, int  dac_code );
+  bool        setExtDac        ( int  dev_nr, int  dac_code );
+  bool        getDac           ( int  dev_nr, int  dac_code, int *dac_val );
+  bool        setDac           ( int  dev_nr, int  dac_code, int  dac_val );
+  bool        setDacsDflt      ( int  dev_nr );
+  bool        getGenConfig     ( int  dev_nr, int *config );
+  bool        setGenConfig     ( int  dev_nr, int  config );
+  bool        getPllConfig     ( int  dev_nr, int *config );
+  bool        setPllConfig     ( int  dev_nr, int  config );
   bool        getOutBlockConfig( int  dev_nr, int *config );
   bool        setOutBlockConfig( int  dev_nr, int  config );
-  bool        resetDevice     ( int  dev_nr );
-  bool        resetDevices    ();
-  std::string dacName         ( int  dac_code );
-  int         dacMax          ( int  dac_code );
-  bool        uploadPacket    ( int  dev_nr, unsigned char *packet, int size );
+  bool        resetDevice      ( int  dev_nr );
+  bool        resetDevices     ();
+  std::string dacName          ( int  dac_code );
+  int         dacMax           ( int  dac_code );
+  bool        uploadPacket     ( int  dev_nr, unsigned char *packet, int size );
 
   // Configuration: device test pulses
-  bool        getTpPeriodPhase( int  dev_nr, int *period, int *phase );
-  bool        setTpPeriodPhase( int  dev_nr, int  period, int  phase );
-  bool        getTpNumber     ( int  dev_nr, int *number );
-  bool        setTpNumber     ( int  dev_nr, int  number );
-  bool        configCtpr      ( int  dev_nr, int  column, int val );
-  bool        setCtpr         ( int  dev_nr );
+  bool        getTpPeriodPhase ( int  dev_nr, int *period, int *phase );
+  bool        setTpPeriodPhase ( int  dev_nr, int  period, int  phase );
+  bool        getTpNumber      ( int  dev_nr, int *number );
+  bool        setTpNumber      ( int  dev_nr, int  number );
+  bool        configCtpr       ( int  dev_nr, int  column, int val );
+  bool        setCtpr          ( int  dev_nr );
+  bool        getCtpr          ( int  dev_nr, unsigned char **ctpr );
 
   // Configuration: device pixels
-  void resetPixelConfig       ();
-  bool configPixel            ( int  x,
-                                int  y,
-                                int  threshold,
-                                bool testbit = false );
-  bool maskPixel              ( int x = ALL_PIXELS, int y = ALL_PIXELS );
-  bool setPixelConfig         ( int dev_nr );
+  void resetPixelConfig        ();
+  bool configPixel             ( int  x,
+                                 int  y,
+                                 int  threshold,
+                                 bool testbit = false );
+  bool maskPixel               ( int x = ALL_PIXELS, int y = ALL_PIXELS );
+  bool setPixelConfig          ( int dev_nr );
+  bool getPixelConfig          ( int dev_nr, unsigned int **config );
 
   // Configuration: onboard storage
-  bool storeAddrAndPorts      ( int  ipaddr_src,          // ###TODO
-                                int  ipaddr_dst,
-                                int *srvports,
-                                int *devports,
-                                int  controlport = 50000 );
-  bool storeDacs              ( int  dev_nr );            // ###TODO
-  bool storePixelConfig       ( int  dev_nr );            // ###TODO
+  bool storeAddrAndPorts       ( int  ipaddr_src,          // ###TODO
+                                 int  ipaddr_dst,
+                                 int *srvports,
+                                 int *devports,
+                                 int  controlport = 50000 );
+  bool storeDacs               ( int  dev_nr );            // ###TODO
+  bool storePixelConfig        ( int  dev_nr );            // ###TODO
 
   // Trigger
-  bool setTriggerConfig       ( int  trig_mode,
-                                int  trig_period_us,
-                                int  trig_freq_hz,
-                                int  nr_of_triggers );
-  bool getTriggerConfig       ( int *trig_mode,
-                                int *trig_period_us,
-                                int *trig_freq_hz,
-                                int *nr_of_triggers );
-  bool startAutoTrigger       ();
-  bool stopAutoTrigger        ();
-  bool triggerOneReadout      ();
+  bool setTriggerConfig        ( int  trig_mode,
+                                 int  trig_period_us,
+                                 int  trig_freq_hz,
+                                 int  nr_of_triggers );
+  bool getTriggerConfig        ( int *trig_mode,
+                                 int *trig_period_us,
+                                 int *trig_freq_hz,
+                                 int *nr_of_triggers );
+  bool startAutoTrigger        ();
+  bool stopAutoTrigger         ();
+  bool triggerOneReadout       ();
 
   // Data-acquisition
-  bool sequentialReadout      ( int dev_nr );
-  bool datadrivenReadout      ( int dev_nr );
-  bool pauseReadout           ( int dev_nr );
+  bool sequentialReadout       ( int dev_nr );
+  bool datadrivenReadout       ( int dev_nr );
+  bool pauseReadout            ( int dev_nr );
 
   // Monitoring
-  bool getAdc                 ( int  dev_nr, int *adc_val );
-  bool getRemoteTemp          ( int *mdegrees );
-  bool getLocalTemp           ( int *mdegrees );
-  bool getAvdd                ( int *mvolt, int *mamp, int *mwatt );
-  bool getDvdd                ( int *mvolt, int *mamp, int *mwatt );
+  bool getAdc                  ( int  dev_nr, int *adc_val );
+  bool getRemoteTemp           ( int *mdegrees );
+  bool getLocalTemp            ( int *mdegrees );
+  bool getAvdd                 ( int *mvolt, int *mamp, int *mwatt );
+  bool getDvdd                 ( int *mvolt, int *mamp, int *mwatt );
 
   // Other
  private:
-  bool get3Ints               ( int cmd, int *data0, int *data1, int *data2 );
-  bool validXandY             ( int x,       int y,
-                                int *xstart, int *xend,
-                                int *ystart, int *yend );
-  bool requestGetInt          ( int cmd, int dev_nr, int *dataword );
-  bool requestGetInts         ( int cmd, int dev_nr,
-                                int expected_ints, int *datawords );
-  bool requestSetInt          ( int cmd, int dev_nr, int dataword );
-  bool requestSetInts         ( int cmd, int dev_nr,
-                                int nwords, int *datawords );
-  bool requestSetIntAndBytes  ( int cmd, int dev_nr, int dataword,
-                                int nbytes, unsigned char *bytes );
-  bool request                ( int cmd, int dev_nr,
-                                int req_len, int exp_reply_len );
-  int  dacIndex               ( int dac_code );
+  bool get3Ints                ( int cmd, int *data0, int *data1, int *data2 );
+  bool validXandY              ( int x,       int y,
+                                 int *xstart, int *xend,
+                                 int *ystart, int *yend );
+  bool requestGetInt           ( int cmd, int dev_nr, int *dataword );
+  bool requestGetInts          ( int cmd, int dev_nr,
+                                 int expected_ints, int *datawords );
+  bool requestGetBytes         ( int cmd, int dev_nr,
+				 int expected_bytes, unsigned char *databytes );
+  bool requestSetInt           ( int cmd, int dev_nr, int dataword );
+  bool requestSetInts          ( int cmd, int dev_nr,
+                                 int nwords, int *datawords );
+  bool requestSetIntAndBytes   ( int cmd, int dev_nr, int dataword,
+                                 int nbytes, unsigned char *bytes );
+  bool request                 ( int cmd, int dev_nr,
+                                 int req_len, int exp_reply_len );
+  int  dacIndex                ( int dac_code );
 
  private:
   // Socket connecting to the SPIDR module
@@ -173,6 +179,9 @@ class MY_LIB_API SpidrController
   //  onboard the SPIDR module processor by the LEON3 software)
   // NB: here the dimensions are y and x, or columns and rows resp.:
   unsigned int _pixelConfig[256][256];
+
+  // Storage for one 256-bit CTPR
+  unsigned char _ctpr[256/8];
 
   // String providing a description of the last error that occurred
   std::ostringstream _errString;

@@ -297,6 +297,31 @@ bool SpidrController::setServerPort( int dev_nr, int port_nr )
 }
 
 // ----------------------------------------------------------------------------
+
+bool SpidrController::getHeaderFilter( int  dev_nr,
+				       int *eth_mask, int *cpu_mask )
+{
+  int mask;
+  if( this->requestGetInt( CMD_GET_HEADERFILTER, dev_nr, &mask ) )
+    {
+      *eth_mask = (mask & 0xFFFF);
+      *cpu_mask = ((mask >> 16) & 0xFFFF);
+      return true;
+    }
+  return false;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setHeaderFilter( int dev_nr,
+				       int eth_mask, int cpu_mask )
+{
+  return this->requestSetInt( CMD_SET_HEADERFILTER, dev_nr,
+			      (eth_mask | 0xFFFF) |
+			      ((cpu_mask & 0xFFFF) << 16) );
+}
+
+// ----------------------------------------------------------------------------
 // Configuration: device
 // ----------------------------------------------------------------------------
 
@@ -513,6 +538,15 @@ bool SpidrController::setCtpr( int dev_nr )
 }
 
 // ----------------------------------------------------------------------------
+
+bool SpidrController::getCtpr( int dev_nr, unsigned char **ctpr )
+{
+  *ctpr = _ctpr;
+  if( this->requestGetBytes( CMD_GET_CTPR, dev_nr, 256/8, _ctpr ) )
+    return false;
+}
+
+// ----------------------------------------------------------------------------
 // Configuration: pixels
 // ----------------------------------------------------------------------------
 
@@ -617,6 +651,14 @@ bool SpidrController::setPixelConfig( int dev_nr )
     }
 
   return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getPixelConfig( int dev_nr, unsigned int **config )
+{
+  *config = &_pixelConfig[0][0];
+  return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -817,7 +859,7 @@ bool SpidrController::requestGetInt( int cmd, int dev_nr, int *dataword )
   _reqMsg[1] = htonl( len );
   _reqMsg[2] = 0; // Dummy for now; reply uses this location for error status
   _reqMsg[3] = htonl( dev_nr );
-  _reqMsg[4] = htonl( *dataword ); // May contain an additional parameter
+  _reqMsg[4] = htonl( *dataword ); // May contain an additional parameter!
   int expected_len = 5 * 4;
   if( this->request( cmd, dev_nr, len, expected_len ) )
     {
@@ -854,6 +896,33 @@ bool SpidrController::requestGetInts( int cmd, int dev_nr,
     {
       int i;
       for( i=0; i<expected_ints; ++i ) datawords[i] = 0;
+    }
+ return false;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::requestGetBytes( int cmd, int dev_nr,
+				       int expected_bytes,
+				       unsigned char *databytes )
+{
+  int len = (4+1)*4;
+  _reqMsg[0] = htonl( cmd );
+  _reqMsg[1] = htonl( len );
+  _reqMsg[2] = 0; // Dummy for now; reply uses this location for error status
+  _reqMsg[3] = htonl( dev_nr );
+  _reqMsg[4] = 0;
+  int expected_len = (4*4) + expected_bytes;
+  if( this->request( cmd, dev_nr, len, expected_len ) )
+    {
+      memcpy( static_cast<void *> (databytes),
+	      static_cast<void *> (&_reqMsg[4]), expected_bytes );
+      return true;
+    }
+  else
+    {
+      int i;
+      for( i=0; i<expected_bytes; ++i ) databytes[i] = 0;
     }
  return false;
 }
