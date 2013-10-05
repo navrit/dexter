@@ -45,6 +45,10 @@ class MY_LIB_API SpidrDaq
   //void setAcqMode             ( int mode );
 
   // Acquisition
+  long long bufferSize          ();
+  bool      setBufferSize       ( long long size );
+  long long maxBufferSize       ();
+  bool      bufferEmpty         ();
   bool      bufferFull          ();
   bool      bufferFullOccurred  ();
   void      resetBufferFullOccurred();

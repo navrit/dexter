@@ -4,7 +4,7 @@
 #include "FilewriterThread.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x13080800;
+const int VERSION_ID = 0x13100300;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor / info
@@ -186,6 +186,34 @@ void SpidrDaq::setDecodeFrames( bool decode )
 */
 // ----------------------------------------------------------------------------
 // Acquisition
+// ----------------------------------------------------------------------------
+
+long long SpidrDaq::bufferSize()
+{
+  return _packetReceiver->bufferSize();
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrDaq::setBufferSize( long long size )
+{
+  return _packetReceiver->setBufferSize( size );
+}
+
+// ----------------------------------------------------------------------------
+
+long long SpidrDaq::maxBufferSize()
+{
+  return _packetReceiver->maxBufferSize();
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrDaq::bufferEmpty()
+{
+  return _packetReceiver->empty();
+}
+
 // ----------------------------------------------------------------------------
 
 bool SpidrDaq::bufferFull()
