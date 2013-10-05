@@ -40,6 +40,7 @@ void FilewriterThread::stop()
     {
       _stop = true;
       this->wait(); // Wait until this thread (i.e. function run()) exits
+      this->closeFile(); // In case a file is opened
     }
 }
 
@@ -66,9 +67,9 @@ void FilewriterThread::run()
 	    }
 	  else
 	    {
+	      // Flush the data, if enabled...
 	      if( _flush )
 		{
-		  // Flush the data...
 		  bytes = _receiver->bytesAvailable();
 		  _receiver->updateBytesConsumed( bytes );
 		  _bytesFlushed += bytes;
