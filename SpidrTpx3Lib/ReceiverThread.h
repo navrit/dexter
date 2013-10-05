@@ -40,11 +40,15 @@ class ReceiverThread : public QThread
   char *data()              { return &_recvBuffer[_tail]; }
   long long bytesAvailable();
   void  updateBytesConsumed( long long bytes );
+  bool  empty()             { return ( _head == _tail && !_full ); }
   bool  full()              { return _full; }
   bool  fullOccurred()      { return _fullOccurred; }
   void  resetFullOccurred() { _fullOccurred = false; }
   char *buffer()            { return _recvBuffer; } 
   void  reset();
+  bool  setBufferSize( long long size );
+  long long bufferSize()    { return _bufferSize; }
+  long long maxBufferSize() { return RECV_BUF_SIZE; }
 
   std::string ipAddressString();
   std::string errorString();
@@ -64,6 +68,7 @@ class ReceiverThread : public QThread
   quint32     _addr;
   QString     _addrStr;
   int         _port;
+  bool        _suspend, _suspended;
   bool        _stop;
 
   // Statistics
@@ -76,6 +81,7 @@ class ReceiverThread : public QThread
   QString   _errString;
 
   // Buffer administration
+  long long _bufferSize;
   long long _head, _tail, _headEnd;
   bool      _full, _fullOccurred;
 

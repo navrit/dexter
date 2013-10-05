@@ -17,6 +17,7 @@ ReceiverThread::ReceiverThread( int *ipaddr,
     _bytesLost( 0 ),
     _lastPacketSize( 0 ),
     _bufferWraps( 0 ),
+    _bufferSize( RECV_BUF_SIZE ),
     _head( 0 ),
     _tail( 0 ),
     _headEnd( 0 ),
@@ -74,6 +75,11 @@ void ReceiverThread::run()
     {
       if( _sock->waitForReadyRead( 100 ) )
 	this->readDatagrams();
+
+      // Synchronize with reset and set-buffersize actions
+      // (but it doesn't protect us from calls to updateBytesConsumed()
+      //  which may arrive after _suspend has been reset to false)
+      if( _suspend && !_suspended ) _suspended = true;
     }
   _sock->close();
   delete _sock;
@@ -89,10 +95,10 @@ void ReceiverThread::readDatagrams()
     {
       // After 'full buffer' occurred all subsequent data is flushed
       // until this state is explicitly reset (by resetFullBufferOccured())
-      if( _fullOccurred )
+      if( _fullOccurred || _suspended )
 	{
 	  recvd_sz = _sock->readDatagram( _flushBuffer, 16384 ) ;
-	  if( recvd_sz <= 0 ) continue;
+	  if( recvd_sz <= 0 || _suspended ) continue;
 
 	  ++_packetsLost;
 	  _bytesLost += recvd_sz;
@@ -105,7 +111,7 @@ void ReceiverThread::readDatagrams()
       tmphead = _head + recvd_sz;
 
       // Wrap-around the end of the buffer (with some spare space)
-      if( tmphead + 16384 > RECV_BUF_SIZE )
+      if( tmphead + 16384 > _bufferSize )
 	{
 	  // Remember position of last byte near the end of the buffer !
 	  _headEnd = tmphead;
@@ -160,6 +166,8 @@ long long ReceiverThread::bytesAvailable()
 
 void ReceiverThread::updateBytesConsumed( long long bytes )
 {
+  if( _suspend ) return;
+
   // An amount of 'bytes' bytes have been consumed: update the tail pointer
   long long t = _tail + bytes;
   // Wrap-around the end of the buffer when appropriate
@@ -172,8 +180,10 @@ void ReceiverThread::updateBytesConsumed( long long bytes )
 
 void ReceiverThread::reset()
 {
-  _fullOccurred = true;
-  // Should wait to make sure the thread takes _fullOccurred into account...
+  // Prevent thread from writing anything more into the buffer
+  _suspend = true;
+  // Now wait to make sure the thread takes _suspend into account...
+  while( !_suspended );
 
   _packetsReceived = 0;
   _packetsLost     = 0;
@@ -184,6 +194,21 @@ void ReceiverThread::reset()
   _tail            = 0;
   _full            = false;
   _fullOccurred    = false;
+
+  _suspend         = false;
+  _suspended       = false;
+}
+
+// ----------------------------------------------------------------------------
+
+bool ReceiverThread::setBufferSize( long long size )
+{
+  if( size < 1 || size > RECV_BUF_SIZE ) return false;
+
+  this->reset();
+  _bufferSize = size;
+
+  return true;
 }
 
 // ----------------------------------------------------------------------------
