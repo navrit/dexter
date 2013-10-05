@@ -11,6 +11,9 @@
 #define CMD_GET_IPADDR_DEST    0x903
 #define CMD_SET_IPADDR_DEST    0x904
 
+#define CMD_GET_HEADERFILTER   0x905
+#define CMD_SET_HEADERFILTER   0x906
+
 #define CMD_RESET_MODULE       0x907
 #define CMD_SET_BUSY           0x908
 #define CMD_CLEAR_BUSY         0x909
@@ -43,6 +46,7 @@
 
 // Configuration: pixels
 #define CMD_SET_PIXCONF        0x22A
+#define CMD_GET_PIXCONF        0x22D
 
 // Configuration: devices (continued)
 #define CMD_GET_TPPERIODPHASE  0x330
@@ -87,8 +91,8 @@ static char *CMD_STR[] =
     "GET_FIRMWVERSION ", // 0x902
     "GET_IPADDR_DEST  ", // 0x903
     "SET_IPADDR_DEST  ", // 0x904
-    "-----",             // 0x905
-    "-----",             // 0x906
+    "GET_HEADERFILTER ", // 0x905
+    "SET_HEADERFILTER ", // 0x906
     "RESET_MODULE     ", // 0x907
     "SET_BUSY         ", // 0x908
     "CLEAR_BUSY       ", // 0x909
@@ -129,7 +133,7 @@ static char *CMD_STR[] =
     "SET_PIXCONF      ", // 0x22A
     "-----",             // 0x22B
     "-----",             // 0x22C
-    "-----",             // 0x22D
+    "GET_PIXCONF      ", // 0x22D
     "-----",             // 0x22E
     "-----",             // 0x22F
 

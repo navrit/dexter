@@ -92,7 +92,7 @@ History:
 
 // Number of DACs
 #define TPX3_DAC_COUNT              23
-#define TPX3_DAC_COUNT_TO_SENSE     18
+#define TPX3_DAC_COUNT_TO_SENSE     17
 
 // Timepix3 DAC codes
 #define TPX3_IBIAS_PREAMP_ON        1
@@ -122,8 +122,8 @@ History:
 #define TPX3_SENSEOFF              0
 
 // ----------------------------------------------------------------------------
-// Timepix3 General Configuration register
 
+// Timepix3 General Configuration register
 #define TPX3_POLARITY_EMIN         0x000
 #define TPX3_POLARITY_HPLUS        0x001
 #define TPX3_ACQMODE_TOA_TOT       0x000
@@ -137,6 +137,38 @@ History:
 #define TPX3_SELECTTP_DIG_ANALOG   0x100
 #define TPX3_SELECTTP_EXT_INT      0x200
 #define TPX3_SELECT_TOA_CLK        0x400
+
+// Timepix3 Output Block Configuration register
+#define TPX3_OUTPORT_MASK          0x00FF
+#define TPX3_CLK_SRC_160_320       0x0100
+#define TPX3_CLK_SRC_80_160        0x0200
+#define TPX3_CLK_SRC_40_80         0x0300
+#define TPX3_CLK_SRC_20_40         0x0400
+#define TPX3_CLK_SRC_EXT           0x0500
+#define TPX3_8B10B_ENA             0x0800
+#define TPX3_CLK_FAST_OUT_ENA      0x1000
+#define TPX3_CLKOUT_SRC_160_320    0x2000
+#define TPX3_CLKOUT_SRC_80_160     0x4000
+#define TPX3_CLKOUT_SRC_40_80      0x6000
+#define TPX3_CLKOUT_SRC_20_40      0x8000
+#define TPX3_CLKOUT_SRC_EXT        0xA000
+
+// Timepix3 PLL Configuration register
+#define TPX3_PLL_BYPASSED          0x0001
+#define TPX3_PLL_RUN               0x0002
+#define TPX3_VCNTRL_PLL            0x0004
+#define TPX3_DUALEDGE_CLK          0x0008
+#define TPX3_PHASESHIFT_DIV_16     0x0000
+#define TPX3_PHASESHIFT_DIV_8      0x0010
+#define TPX3_PHASESHIFT_DIV_4      0x0020
+#define TPX3_PHASESHIFT_DIV_2      0x0030
+#define TPX3_PHASESHIFT_NR_1       0x0000
+#define TPX3_PHASESHIFT_NR_2       0x0040
+#define TPX3_PHASESHIFT_NR_4       0x0080
+#define TPX3_PHASESHIFT_NR_8       0x00C0
+#define TPX3_PHASESHIFT_NR_16      0x0100
+#define TPX3_PLLOUT_CONFIG_MASK    0x3E00
+#define TPX3_PLLOUT_CONFIG_SHIFT   9
 
 // ----------------------------------------------------------------------------
 #endif // TPX3DEFS_H_
