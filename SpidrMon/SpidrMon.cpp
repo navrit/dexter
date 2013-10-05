@@ -14,7 +14,8 @@ const int UPDATE_INTERVAL_MS = 500;
 
 SpidrMon::SpidrMon()
   : QDialog(),
-    _spidrController( 0 )
+    _spidrController( 0 ),
+    _skipVdd( false )
 {
   this->setupUi(this);
 
@@ -186,18 +187,22 @@ void SpidrMon::timerEvent(QTimerEvent *)
       _lineEditDvddMamp->setText( "----" );
       _lineEditDvddMwatt->setText( "----" );
     }
-  if( _spidrController->getVdd( &mvolt, &mamp, &mwatt ) )
+  if( !_skipVdd )
     {
-      _lineEditVddMvolt->setText( QString::number( mvolt ) );
-      _lineEditVddMwatt->setText( QString::number( mwatt ) );
-      QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
-      _lineEditVddMamp->setText( qs );
-    }
-  else
-    {
-      _lineEditVddMvolt->setText( "----" );
-      _lineEditVddMamp->setText( "----" );
-      _lineEditVddMwatt->setText( "----" );
+      if( _spidrController->getVdd( &mvolt, &mamp, &mwatt ) )
+	{
+	  _lineEditVddMvolt->setText( QString::number( mvolt ) );
+	  _lineEditVddMwatt->setText( QString::number( mwatt ) );
+	  QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
+	  _lineEditVddMamp->setText( qs );
+	}
+      else
+	{
+	  _skipVdd = true; // SPIDR-TPX3 does not have VDD
+	  _lineEditVddMvolt->setText( "----" );
+	  _lineEditVddMamp->setText( "----" );
+	  _lineEditVddMwatt->setText( "----" );
+	}
     }
 
   _leUpdateLed->show();

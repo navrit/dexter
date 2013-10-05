@@ -24,6 +24,8 @@ class SpidrMon : public QDialog, Ui_SpidrMonDialog
 
   int              _timerId;
 
+  bool             _skipVdd;
+
   void timerEvent( QTimerEvent * );
   void initDataDisplay();
 };
