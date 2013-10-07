@@ -47,6 +47,7 @@
 // Configuration: pixels
 #define CMD_SET_PIXCONF        0x22A
 #define CMD_GET_PIXCONF        0x22D
+#define CMD_RESET_PIXELS       0x22E
 
 // Configuration: devices (continued)
 #define CMD_GET_TPPERIODPHASE  0x330
@@ -62,6 +63,8 @@
 #define CMD_UPLOAD_PACKET      0x33B
 #define CMD_GET_OUTBLOCKCONFIG 0x33C
 #define CMD_SET_OUTBLOCKCONFIG 0x33D
+#define CMD_GET_SLVSCONFIG     0x33E
+#define CMD_SET_SLVSCONFIG     0x33F
 
 // Trigger
 #define CMD_GET_TRIGCONFIG     0x440
@@ -72,7 +75,7 @@
 
 // Data-acquisition
 #define CMD_SEQ_READOUT        0x445
-#define CMD_DD_READOUT         0x446
+#define CMD_DDRIVEN_READOUT    0x446
 #define CMD_PAUSE_READOUT      0x447
 
 // Monitoring
@@ -81,6 +84,13 @@
 #define CMD_GET_LOCALTEMP      0x54A
 #define CMD_GET_AVDD           0x54B
 #define CMD_GET_DVDD           0x54C
+
+// Configuration: devices (continued)
+#define CMD_RESET_TIMER        0x550
+#define CMD_GET_TIMER          0x551
+#define CMD_SET_TIMER          0x552
+#define CMD_GET_SHUTTER_START  0x553
+#define CMD_GET_SHUTTER_END    0x554
 
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
@@ -134,7 +144,7 @@ static char *CMD_STR[] =
     "-----",             // 0x22B
     "-----",             // 0x22C
     "GET_PIXCONF      ", // 0x22D
-    "-----",             // 0x22E
+    "RESET_PIXELS     ", // 0x22E
     "-----",             // 0x22F
 
     "GET_TPPERIODPHASE", // 0x330
@@ -151,8 +161,8 @@ static char *CMD_STR[] =
     "UPLOAD_PACKET    ", // 0x33B
     "GET_OUTBLOKCONFIG", // 0x33C
     "SET_OUTBLOKCONFIG", // 0x33D
-    "-----",             // 0x33E
-    "-----",             // 0x33F
+    "GET_SLVSCONFIG   ", // 0x33E
+    "SET_SLVSCONFIG   ", // 0x33F
 
     "GET_TRIGCONFIG   ", // 0x440
     "SET_TRIGCONFIG   ", // 0x441
@@ -160,14 +170,20 @@ static char *CMD_STR[] =
     "AUTOTRIG_STOP    ", // 0x443
     "TRIGGER_READOUT  ", // 0x444
     "SEQ_READOUT      ", // 0x445
-    "DD_READOUT       ", // 0x446
+    "DDRIVEN_READOUT  ", // 0x446
     "PAUSE_READOUT    ", // 0x447
 
     "GET_ADC          ", // 0x548
     "GET_REMOTETEMP   ", // 0x549
     "GET_LOCALTEMP    ", // 0x54A
     "GET_AVDD         ", // 0x54B
-    "GET_DVDD         "  // 0x54C
+    "GET_DVDD         ", // 0x54C
+
+    "RESET_TIMER      ", // 0x550
+    "GET_TIMER        ", // 0x551
+    "SET_TIMER        ", // 0x552
+    "GET_SHUTTER_START", // 0x553
+    "GET_SHUTTER_END  "  // 0x554
   };
 
 // Reply bit: set in the reply message in the command identifier
