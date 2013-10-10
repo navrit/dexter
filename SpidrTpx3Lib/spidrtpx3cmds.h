@@ -86,11 +86,12 @@
 #define CMD_GET_DVDD           0x54C
 
 // Configuration: devices (continued)
-#define CMD_RESET_TIMER        0x550
-#define CMD_GET_TIMER          0x551
-#define CMD_SET_TIMER          0x552
-#define CMD_GET_SHUTTER_START  0x553
-#define CMD_GET_SHUTTER_END    0x554
+#define CMD_RESTART_TIMER      0x550
+#define CMD_RESET_TIMER        0x551
+#define CMD_GET_TIMER          0x552
+#define CMD_SET_TIMER          0x553
+#define CMD_GET_SHUTTER_START  0x554
+#define CMD_GET_SHUTTER_END    0x555
 
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
@@ -179,11 +180,12 @@ static char *CMD_STR[] =
     "GET_AVDD         ", // 0x54B
     "GET_DVDD         ", // 0x54C
 
-    "RESET_TIMER      ", // 0x550
-    "GET_TIMER        ", // 0x551
-    "SET_TIMER        ", // 0x552
-    "GET_SHUTTER_START", // 0x553
-    "GET_SHUTTER_END  "  // 0x554
+    "RESTART_TIMER    ", // 0x550
+    "RESET_TIMER      ", // 0x551
+    "GET_TIMER        ", // 0x552
+    "SET_TIMER        ", // 0x553
+    "GET_SHUTTER_START", // 0x554
+    "GET_SHUTTER_END  "  // 0x555
   };
 
 // Reply bit: set in the reply message in the command identifier
