@@ -438,6 +438,20 @@ bool SpidrController::setOutBlockConfig( int dev_nr, int config )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::getSlvsConfig( int dev_nr, int *config )
+{
+  return this->requestGetInt( CMD_GET_SLVSCONFIG, dev_nr, config );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setSlvsConfig( int dev_nr, int config )
+{
+  return this->requestSetInt( CMD_SET_SLVSCONFIG, dev_nr, config );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::resetDevice( int dev_nr )
 {
   int dummy = 0;
@@ -542,8 +556,7 @@ bool SpidrController::setCtpr( int dev_nr )
 bool SpidrController::getCtpr( int dev_nr, unsigned char **ctpr )
 {
   *ctpr = _ctpr;
-  if( this->requestGetBytes( CMD_GET_CTPR, dev_nr, 256/8, _ctpr ) )
-    return false;
+  return this->requestGetBytes( CMD_GET_CTPR, dev_nr, 256/8, _ctpr );
 }
 
 // ----------------------------------------------------------------------------
@@ -584,13 +597,13 @@ bool SpidrController::configPixel( int  x,
 
   // Set or reset the configuration bits in the requested pixels
   int xi, yi;
-  unsigned int *pcfg;
+  unsigned char *pcfg;
   for( yi=ystart; yi<yend; ++yi )
     for( xi=xstart; xi<xend; ++xi )
       {
 	pcfg = &_pixelConfig[yi][xi];
 	*pcfg &= TPX3_PIXCFG_MASKBIT;
-	*pcfg |= TPX3_THRESH_CONV_TABLE[threshold];
+	*pcfg |= (TPX3_THRESH_CONV_TABLE[threshold] << 1);
 	if( testbit ) *pcfg |= TPX3_PIXCFG_TESTBIT;
       }
 
@@ -619,46 +632,67 @@ bool SpidrController::maskPixel( int x, int y )
 
 bool SpidrController::setPixelConfig( int dev_nr )
 {
-  // Space for one column (256 pixels) of Timepix3-formatted
-  // pixel configuration data (6 bits/pixel)
-  unsigned char pixelcol[(256*6)/8];
-  int bit_i, byt_i;
-
-  int col, y, pixcnf, bitmask, bit;
-  for( col=0; col<256; ++col )
+  // Space for one column (256 pixels) pixel configuration data
+  // in the shape of 1 byte/pixel
+  unsigned char pixelcol[256];
+  int x, y;
+  for( x=0; x<256; ++x )
     {
       // Compile a pixel configuration column
-      bit_i = 0;
-      byt_i = 0;
+      // from the pixel configuration data stored in _pixelConfig
       for( y=0; y<256; ++y )
-	{
-	  pixcnf = _pixelConfig[y][col];
-	  bitmask = 0x01;
-	  for( bit=0; bit<6; ++bit, bitmask<<=1, ++bit_i )
-	    {
-	      if( pixcnf & bitmask )
-		pixelcol[byt_i] |= (1 << (bit_i & 0x7));
-	      if( (bit_i & 0x7) == 7 ) ++byt_i;
-	    }
-	}
+	pixelcol[y] = _pixelConfig[y][x];
 
-      // Send this column
-      if( this->requestSetIntAndBytes( CMD_SET_PIXCONF, dev_nr,
-				       col, // Sequence number
-				       sizeof( pixelcol ),
-				       pixelcol ) == false )
+      // Send this column of pixel configuration data
+      if( !this->requestSetIntAndBytes( CMD_SET_PIXCONF, dev_nr,
+					x, // Sequence number (column)
+					sizeof( pixelcol ),
+					pixelcol ) )
 	return false;
     }
-
   return true;
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getPixelConfig( int dev_nr, unsigned int **config )
+bool SpidrController::getPixelConfig( int dev_nr )
 {
-  *config = &_pixelConfig[0][0];
-  return false;
+  this->resetPixelConfig();
+
+  // Space for one column (256 pixels) pixel configuration data
+  // in the shape of 1 byte/pixel
+  unsigned char pixelcol[256];
+  int x, y, xcopy;
+  for( x=0; x<256; ++x )
+    {
+      // Get this column of pixel configuration data
+      // (returned as 1 byte per pixel)
+      xcopy = x; // The column number is required too
+      if( !this->requestGetIntAndBytes( CMD_GET_PIXCONF, dev_nr,
+					&xcopy,
+					256, pixelcol ) )
+	return false;
+
+      // Copy the column to the pixel configuration data into _pixelConfig
+      for( y=0; y<256; ++y )
+	_pixelConfig[y][x] = pixelcol[y];
+    }
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::resetPixels( int dev_nr )
+{
+  int dummy = 0;
+  return this->requestSetInt( CMD_RESET_PIXELS, dev_nr, dummy );
+}
+
+// ----------------------------------------------------------------------------
+
+unsigned char *SpidrController::pixelConfig()
+{
+  return &_pixelConfig[0][0];
 }
 
 // ----------------------------------------------------------------------------
@@ -735,7 +769,7 @@ bool SpidrController::sequentialReadout( int dev_nr )
 bool SpidrController::datadrivenReadout( int dev_nr )
 {
   int dummy = 0;
-  return this->requestSetInt( CMD_DD_READOUT, dev_nr, dummy );
+  return this->requestSetInt( CMD_DDRIVEN_READOUT, dev_nr, dummy );
 }
 
 // ----------------------------------------------------------------------------
@@ -744,6 +778,78 @@ bool SpidrController::pauseReadout( int dev_nr )
 {
   int dummy = 0;
   return this->requestSetInt( CMD_PAUSE_READOUT, dev_nr, dummy );
+}
+
+// ----------------------------------------------------------------------------
+// Timer
+// ----------------------------------------------------------------------------
+
+bool SpidrController::restartTimers()
+{
+  int dummy1 = 0, dummy2 = 0;
+  return this->requestSetInt( CMD_RESTART_TIMERS, dummy1, dummy2 );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::resetTimer( int dev_nr )
+{
+  int dummy = 0;
+  return this->requestSetInt( CMD_RESET_TIMER, dev_nr, dummy );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getTimer( int dev_nr,
+				unsigned int *timer_lo,
+				unsigned int *timer_hi )
+{
+  int data[2];
+  if( !this->requestGetInts( CMD_GET_TIMER, dev_nr, 2, data ) )
+    return false;
+  *timer_lo = data[0];
+  *timer_hi = data[1];
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setTimer( int dev_nr,
+				unsigned int timer_lo,
+				unsigned int timer_hi )
+{
+  int datawords[2];
+  datawords[0] = timer_lo;
+  datawords[1] = timer_hi;
+  return this->requestSetInts( CMD_SET_TIMER, dev_nr, 2, datawords );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getShutterStart( int dev_nr,
+				       unsigned int *timer_lo,
+				       unsigned int *timer_hi )
+{
+  int data[2];
+  if( !this->requestGetInts( CMD_GET_SHUTTERSTART, dev_nr, 2, data ) )
+    return false;
+  *timer_lo = data[0];
+  *timer_hi = data[1];
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getShutterEnd( int dev_nr,
+				     unsigned int *timer_lo,
+				     unsigned int *timer_hi )
+{
+  int data[2];
+  if( !this->requestGetInts( CMD_GET_SHUTTEREND, dev_nr, 2, data ) )
+    return false;
+  *timer_lo = data[0];
+  *timer_hi = data[1];
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -855,10 +961,6 @@ bool SpidrController::validXandY( int x,       int y,
 bool SpidrController::requestGetInt( int cmd, int dev_nr, int *dataword )
 {
   int len = (4+1)*4;
-  _reqMsg[0] = htonl( cmd );
-  _reqMsg[1] = htonl( len );
-  _reqMsg[2] = 0; // Dummy for now; reply uses this location for error status
-  _reqMsg[3] = htonl( dev_nr );
   _reqMsg[4] = htonl( *dataword ); // May contain an additional parameter!
   int expected_len = 5 * 4;
   if( this->request( cmd, dev_nr, len, expected_len ) )
@@ -879,10 +981,6 @@ bool SpidrController::requestGetInts( int cmd, int dev_nr,
 				      int expected_ints, int *datawords )
 {
   int len = (4+1)*4;
-  _reqMsg[0] = htonl( cmd );
-  _reqMsg[1] = htonl( len );
-  _reqMsg[2] = 0; // Dummy for now; reply uses this location for error status
-  _reqMsg[3] = htonl( dev_nr );
   _reqMsg[4] = 0;
   int expected_len = (4 + expected_ints) * 4;
   if( this->request( cmd, dev_nr, len, expected_len ) )
@@ -907,16 +1005,39 @@ bool SpidrController::requestGetBytes( int cmd, int dev_nr,
 				       unsigned char *databytes )
 {
   int len = (4+1)*4;
-  _reqMsg[0] = htonl( cmd );
-  _reqMsg[1] = htonl( len );
-  _reqMsg[2] = 0; // Dummy for now; reply uses this location for error status
-  _reqMsg[3] = htonl( dev_nr );
   _reqMsg[4] = 0;
   int expected_len = (4*4) + expected_bytes;
   if( this->request( cmd, dev_nr, len, expected_len ) )
     {
       memcpy( static_cast<void *> (databytes),
-	      static_cast<void *> (&_reqMsg[4]), expected_bytes );
+	      static_cast<void *> (&_replyMsg[4]), expected_bytes );
+      return true;
+    }
+  else
+    {
+      int i;
+      for( i=0; i<expected_bytes; ++i ) databytes[i] = 0;
+    }
+ return false;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::requestGetIntAndBytes( int cmd, int dev_nr,
+					     int *dataword,
+					     int expected_bytes,
+					     unsigned char *databytes )
+{
+  // Send a message with 1 dataword, expect a reply with a dataword
+  // and a number of bytes
+  int len = (4+1)*4;
+  _reqMsg[4] = htonl( *dataword ); // May contain an additional parameter!
+  int expected_len = (4+1)*4 + expected_bytes;
+  if( this->request( cmd, dev_nr, len, expected_len ) )
+    {
+      *dataword = ntohl( _replyMsg[4] );
+      memcpy( static_cast<void *> (databytes),
+	      static_cast<void *> (&_replyMsg[5]), expected_bytes );
       return true;
     }
   else
@@ -932,10 +1053,6 @@ bool SpidrController::requestGetBytes( int cmd, int dev_nr,
 bool SpidrController::requestSetInt( int cmd, int dev_nr, int dataword )
 {
   int len = (4+1)*4;
-  _reqMsg[0] = htonl( cmd );
-  _reqMsg[1] = htonl( len );
-  _reqMsg[2] = 0; // Dummy for now; reply uses this location for error status
-  _reqMsg[3] = htonl( dev_nr );
   _reqMsg[4] = htonl( dataword );
   int expected_len = 5 * 4;
   return this->request( cmd, dev_nr, len, expected_len );
@@ -947,10 +1064,6 @@ bool SpidrController::requestSetInts( int cmd, int dev_nr,
 				      int nwords, int *datawords )
 {
   int len = (4 + nwords)*4;
-  _reqMsg[0] = htonl( cmd );
-  _reqMsg[1] = htonl( len );
-  _reqMsg[2] = 0; // Dummy for now; reply uses this location for error status
-  _reqMsg[3] = htonl( dev_nr );
   for( int i=0; i<nwords; ++i )
     _reqMsg[4+i] = htonl( datawords[i] );
   int expected_len = 5 * 4;
@@ -965,10 +1078,6 @@ bool SpidrController::requestSetIntAndBytes( int cmd, int dev_nr,
 					     unsigned char *bytes )
 {
   int len = (4+1)*4 + nbytes;
-  _reqMsg[0] = htonl( cmd );
-  _reqMsg[1] = htonl( len );
-  _reqMsg[2] = 0; // Dummy for now; reply uses this location for error status
-  _reqMsg[3] = htonl( dev_nr );
   _reqMsg[4] = htonl( dataword );
   memcpy( static_cast<void *> (&_reqMsg[5]),
 	  static_cast<void *> (bytes), nbytes );
@@ -981,6 +1090,11 @@ bool SpidrController::requestSetIntAndBytes( int cmd, int dev_nr,
 bool SpidrController::request( int cmd,     int dev_nr,
 			       int req_len, int exp_reply_len )
 {
+  _reqMsg[0] = htonl( cmd );
+  _reqMsg[1] = htonl( req_len );
+  _reqMsg[2] = 0; // Dummy for now; reply uses it to return an error status
+  _reqMsg[3] = htonl( dev_nr );
+
   _sock->write( (const char *) _reqMsg, req_len );
   if( !_sock->waitForBytesWritten( 400 ) )
     {

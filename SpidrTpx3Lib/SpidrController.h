@@ -83,6 +83,8 @@ class MY_LIB_API SpidrController
   bool        setPllConfig     ( int  dev_nr, int  config );
   bool        getOutBlockConfig( int  dev_nr, int *config );
   bool        setOutBlockConfig( int  dev_nr, int  config );
+  bool        getSlvsConfig    ( int  dev_nr, int *config );
+  bool        setSlvsConfig    ( int  dev_nr, int  config );
   bool        resetDevice      ( int  dev_nr );
   bool        resetDevices     ();
   std::string dacName          ( int  dac_code );
@@ -106,7 +108,9 @@ class MY_LIB_API SpidrController
                                  bool testbit = false );
   bool maskPixel               ( int x = ALL_PIXELS, int y = ALL_PIXELS );
   bool setPixelConfig          ( int dev_nr );
-  bool getPixelConfig          ( int dev_nr, unsigned int **config );
+  bool getPixelConfig          ( int dev_nr );
+  bool resetPixels             ( int dev_nr );
+  unsigned char *pixelConfig   ();
 
   // Configuration: onboard storage
   bool storeAddrAndPorts       ( int  ipaddr_src,          // ###TODO
@@ -135,6 +139,18 @@ class MY_LIB_API SpidrController
   bool datadrivenReadout       ( int dev_nr );
   bool pauseReadout            ( int dev_nr );
 
+  // Timer
+  bool restartTimers           ();
+  bool resetTimer              ( int dev_nr );
+  bool getTimer                ( int dev_nr, unsigned int *timer_lo,
+				 unsigned int *timer_hi );
+  bool setTimer                ( int dev_nr, unsigned int timer_lo,
+				 unsigned int timer_hi );
+  bool getShutterStart         ( int dev_nr, unsigned int *timer_lo,
+				 unsigned int *timer_hi );
+  bool getShutterEnd           ( int dev_nr, unsigned int *timer_lo,
+				 unsigned int *timer_hi );
+
   // Monitoring
   bool getAdc                  ( int  dev_nr, int *adc_val );
   bool getRemoteTemp           ( int *mdegrees );
@@ -152,6 +168,8 @@ class MY_LIB_API SpidrController
   bool requestGetInts          ( int cmd, int dev_nr,
                                  int expected_ints, int *datawords );
   bool requestGetBytes         ( int cmd, int dev_nr,
+				 int expected_bytes, unsigned char *databytes );
+  bool requestGetIntAndBytes   ( int cmd, int dev_nr, int *dataword,
 				 int expected_bytes, unsigned char *databytes );
   bool requestSetInt           ( int cmd, int dev_nr, int dataword );
   bool requestSetInts          ( int cmd, int dev_nr,
@@ -177,8 +195,8 @@ class MY_LIB_API SpidrController
   // A device's pixel configuration is compiled locally before uploading
   // (unlike the CTPR register, which is maintained
   //  onboard the SPIDR module processor by the LEON3 software)
-  // NB: here the dimensions are y and x, or columns and rows resp.:
-  unsigned int _pixelConfig[256][256];
+  // NB: here the dimensions are y and x, or row and column number resp.:
+  unsigned char _pixelConfig[256][256];
 
   // Storage for one 256-bit CTPR
   unsigned char _ctpr[256/8];

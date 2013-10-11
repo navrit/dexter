@@ -57,7 +57,15 @@ History:
 // Timer
 #define TPX3_HDR_RESETTIMER         (TPX3_HDR_TIMER           | 0x0)
 #define TPX3_HDR_SETTIMER_15_0      (TPX3_HDR_TIMER           | 0x1)
-// ....more
+#define TPX3_HDR_SETTIMER_31_16     (TPX3_HDR_TIMER           | 0x2)
+#define TPX3_HDR_SETTIMER_47_32     (TPX3_HDR_TIMER           | 0x3)
+#define TPX3_HDR_TIMERVAL_LO        (TPX3_HDR_TIMER           | 0x4)
+#define TPX3_HDR_TIMERVAL_HI        (TPX3_HDR_TIMER           | 0x5)
+#define TPX3_HDR_SHUTTERSTART_LO    (TPX3_HDR_TIMER           | 0x6)
+#define TPX3_HDR_SHUTTERSTART_HI    (TPX3_HDR_TIMER           | 0x7)
+#define TPX3_HDR_SHUTTEREND_LO      (TPX3_HDR_TIMER           | 0x8)
+#define TPX3_HDR_SHUTTEREND_HI      (TPX3_HDR_TIMER           | 0x9)
+#define TPX3_HDR_T0SYNC_CMD         (TPX3_HDR_TIMER           | 0xA)
 
 // Control operation
 #define TPX3_HDR_ACKNOWLEDGE        (TPX3_HDR_CONTROLOP       | 0x0)
@@ -70,12 +78,12 @@ History:
 // (Note that the 'threshold' (4 bits) is stored inverted)
 
 #define TPX3_PIXCFG_BITS            6
-#define TPX3_PIXCFG_MASKBIT         0
-#define TPX3_PIXCFG_THRESHBIT3      1
-#define TPX3_PIXCFG_THRESHBIT2      2
-#define TPX3_PIXCFG_THRESHBIT1      3
-#define TPX3_PIXCFG_THRESHBIT0      4
-#define TPX3_PIXCFG_TESTBIT         5
+#define TPX3_PIXCFG_MASKBIT         (1 << 0)
+#define TPX3_PIXCFG_THRESHBIT3      (1 << 1)
+#define TPX3_PIXCFG_THRESHBIT2      (1 << 2)
+#define TPX3_PIXCFG_THRESHBIT1      (1 << 3)
+#define TPX3_PIXCFG_THRESHBIT0      (1 << 4)
+#define TPX3_PIXCFG_TESTBIT         (1 << 5)
 
 // ----------------------------------------------------------------------------
 // Timepix3 pixel address (16 bits), expressed in x,y
@@ -124,8 +132,8 @@ History:
 // ----------------------------------------------------------------------------
 
 // Timepix3 General Configuration register
-#define TPX3_POLARITY_EMIN         0x000
-#define TPX3_POLARITY_HPLUS        0x001
+#define TPX3_POLARITY_EMIN         0x001
+#define TPX3_POLARITY_HPLUS        0x000
 #define TPX3_ACQMODE_TOA_TOT       0x000
 #define TPX3_ACQMODE_TOA           0x002
 #define TPX3_ACQMODE_EVT_ITOT      0x004
