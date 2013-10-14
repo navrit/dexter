@@ -19,7 +19,14 @@ class tpx3packet:
   def pack3(self):
     self.str="unimplemented"
   def pack4(self):
-    self.str="unimplemented"
+    if self.b0==0x44   :
+      val= self.b5 | self.b4<<8 | self.b3<<16 | self.b2<<24 ;
+      self.str="Timer low %d"%val
+    elif self.b0==0x45   :
+      val= self.b5 | self.b4<<8 | self.b3<<16 | self.b2<<24 ;
+      self.str="Timer high %d"%val
+    else:
+      self.str="unimplemented"
   def pack5(self):
     self.str="unimplemented"
   def pack6(self):
@@ -34,6 +41,10 @@ class tpx3packet:
         self.str="EoC SLVS Config"
       elif self.b1==0xD0:
         self.str="EoR"
+      elif self.b1==0x44:
+        self.str="EoC 0x44 (Timer Low)"
+      elif self.b1==0x45:
+        self.str="EoC 0x44 (Timer High)"
       elif self.b1==0x8F:
         self.str="EoC 0x8 (Load Matrix)"
       elif self.b1==0x9F:
@@ -74,7 +85,11 @@ class tpx3packet:
   def packD(self):
     self.addr=(self.b0&0xF)<<3 | (self.b1>>5)
     self.ctpr=self.b5&0x3
-    self.str="Read CTPR adr:%03d ctpr:%01x"%(self.addr, self.ctpr)
+
+    self.toa=((self.b3&0xf) <<10) | (self.b3<<2) | (self.b4>>6)&0x3
+    self.eoc_fifo=(self.b4>>2)&0xf
+
+    self.str="Read CTPR adr:%03d ctpr:%01x toa:%x  eoc_fifo:%x"%(self.addr, self.ctpr,self.toa, self.eoc_fifo)
   def packE(self):
     self.str="unimplemented"
   def packF(self):
