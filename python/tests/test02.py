@@ -1,0 +1,38 @@
+from tpx3_test import tpx3_test
+
+class test02(tpx3_test):
+  """Default register values"""
+
+  def _execute(self):
+    r,v=self.tpx.ctrl.getDeviceId(self.tpx.id)
+    self._assert_true(r,"Reading device ID")
+    DEF_DEVIDE_ID=0
+    self._assert_true((v==DEF_DEVIDE_ID),"Device ID 0x%0X"%v)
+
+    r,v=self.tpx.ctrl.getGenConfig(self.tpx.id)
+    self._assert_true(r,"Reading General Config")
+    GEN_CONFIG_DEFAULT_VALUE=1
+    self._assert_true((v==GEN_CONFIG_DEFAULT_VALUE),"General Config value 0x%0X"%v)
+
+    r,v=self.tpx.ctrl.getPllConfig(self.tpx.id)
+    self._assert_true(r,"Reading PLL Config")
+    PLL_CONFIG_DEFAULT_VALUE=0xE
+    self._assert_true((v==PLL_CONFIG_DEFAULT_VALUE),"PLL Config value 0x%0X"%v)
+
+    r,v=self.tpx.ctrl.getOutBlockConfig(self.tpx.id)
+    self._assert_true(r,"Reading Output Block Config")
+    OUT_BLOCK_CONFIG_DEFAULT_VALUE=0x9FF
+    self._assert_true((v==OUT_BLOCK_CONFIG_DEFAULT_VALUE),"Output Block value 0x%0X"%v)
+
+    r,v1,v2=self.tpx.ctrl.getTpPeriodPhase(self.tpx.id)
+    self._assert_true(r,"Reading TP Period & Phase")
+    TP_PERIOD_DEFAULT_VALUE=0x0
+    TP_PHASE_DEFAULT_VALUE=0x0
+    self._assert_true((v1==TP_PERIOD_DEFAULT_VALUE),"TP period value 0x%0X"%v1)
+    self._assert_true((v2==TP_PHASE_DEFAULT_VALUE),"TP phase value 0x%0X"%v2)
+
+    r,v=self.tpx.ctrl.getTpNumber(self.tpx.id)
+    self._assert_true(r,"Reading TP Number")
+    TP_NUMBER_DEFAULT_VALUE=0x0
+    self._assert_true((v==TP_NUMBER_DEFAULT_VALUE),"TP number value 0x%0X"%v)
+
