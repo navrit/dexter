@@ -7,8 +7,8 @@ class test03(tpx3_test):
 
   def _execute(self):
     results=[]
-    def_step=8
-    meas_per_code=1
+    def_step=1
+    meas_per_code=64
     logging.info("DAC scan settings:")
     logging.info("default step size: %d"%def_step)
     logging.info("measurements per code: %d"%meas_per_code)
@@ -28,16 +28,20 @@ class test03(tpx3_test):
                        'VFBK',       'VTHR_FIN',  'VTHR_COA',      'IB_DIS1_ON',
                        'IB_DIS1_OFF','IB_DIS2_ON','IB_DIS2_OFF',   'IB_PIXDAC',
                        'IB_TPBIN',   'IB_TPBOUT', 'VTP_COA',       'VTP_FINE',
-                       'IB_CP_PLL']
+                       'IB_CP_PLL','PLL_VCNTRL']
     fsr=  [(0,0),    (0.3,0.4),(0.1,0.2),  (0.9,1.2),  (0.3,0.4),
                      (0.9,1.2),(0.2,0.3),  (1.0,1.2),  (0.5,0.6),
                      (0.15,0.25),(0.25,0.35),(0.1,0.2),  (0.35,0.45),   
                      (0.3,0.4),(0.4,0.5),  (0.9,1.2),  (0.9,1.2),
-                     (0.4,0.5)]
+                     (0.4,0.5),(0,1.2)]
     codes=[]
     tab=dict()
     retdict={}
-    for dac_id in range(1,18):
+    for dac_id in range(1,19):
+      if dac_id==18:
+        r,pll_conf=self.tpx.ctrl.getPllConfig(self.tpx.id)
+        self.tpx.ctrl.setPllConfig(self.tpx.id,pll_conf&~(0x4))
+        print "~~~~~~~~~ PLL %x -> %x"%(pll_conf,pll_conf&~(0x4))
       self.tpx.ctrl.setSenseDac(self.tpx.id,dac_id)
       name=dac_name[dac_id]
       max_code=self.tpx.ctrl.dacMax(dac_id)
@@ -93,18 +97,23 @@ class test03(tpx3_test):
 
       self._assert_in_range(abs(fs),fsr[dac_id][0],fsr[dac_id][1],"DAC %s FS range %.3f V"%(name,abs(fs)))
       self._assert_true((mono=="YES"),"DAC %s monotonicity %s"%(name,mono))
-      
+      if dac_id==18:
+        self.tpx.ctrl.setPllConfig(self.tpx.id,pll_conf)
     g("set terminal png size 450,370 small")
     fn='%s.png'%self.fname
     g("set output '%s'"%fn)
     g.refresh() 
     logging.info("Plot saved to %s"%fn)
     logging.debug("Details:")
+    l="code | "
+    for dac_id in range(1,19):
+      l+="%-11s | "%dac_name[dac_id]
+    logging.debug(l)
     for c in sorted(codes):
-     l="%3d | "%c
-     for dac_id in range(1,18):
-       if c in tab[dac_id]: l+= "%5.3f | "%tab[dac_id][c]
-       else:l+="      | "
+     l=" %3d | "%c
+     for dac_id in range(1,19):
+       if c in tab[dac_id]: l+= "%11.6f | "%tab[dac_id][c]
+       else:l+="            | "
      logging.debug(l)
 
     return retdict

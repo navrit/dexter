@@ -202,7 +202,7 @@
 	void SynchronizedQueue<T>::waitAndPop(T& element)
 	{
 
-boost::system_time const timeout=boost::get_system_time()+ boost::posix_time::milliseconds(1000);
+boost::system_time const timeout=boost::get_system_time()+ boost::posix_time::milliseconds(2000);
 
 
 		//try to lock the mutex

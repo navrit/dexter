@@ -36,6 +36,11 @@ class test01_bias(tpx3_test):
   """Biasing values test"""
 
   def _execute(self):
+
+    self.tpx.ctrl.setSenseDac(0,0x1B)
+    v=self.tpx.get_adc(4)
+    self._assert_in_range(v,0.2,1.0,"PLL Control Voltage %.3f V"%v)
+
     
     self.tpx.ctrl.setSenseDac(0,0x1C)
     v=self.tpx.get_adc(4)
