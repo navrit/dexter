@@ -747,14 +747,6 @@ bool SpidrController::stopAutoTrigger()
 }
 
 // ----------------------------------------------------------------------------
-
-bool SpidrController::triggerOneReadout()
-{
-  int dummy1 = 0, dummy2 = 0;
-  return this->requestSetInt( CMD_TRIGGER_READOUT, dummy1, dummy2 );
-}
-
-// ----------------------------------------------------------------------------
 // Data-acquisition
 // ----------------------------------------------------------------------------
 

@@ -100,7 +100,7 @@ History:
 
 // Number of DACs
 #define TPX3_DAC_COUNT              23
-#define TPX3_DAC_COUNT_TO_SENSE     17
+#define TPX3_DAC_COUNT_TO_SET       18
 
 // Timepix3 DAC codes
 #define TPX3_IBIAS_PREAMP_ON        1
@@ -120,8 +120,8 @@ History:
 #define TPX3_VTP_COARSE            15
 #define TPX3_VTP_FINE              16
 #define TPX3_IBIAS_CP_PLL          17
-
 #define TPX3_PLL_VCNTRL            18
+
 #define TPX3_BANDGAP_OUTPUT        28
 #define TPX3_BANDGAP_TEMP          29
 #define TPX3_IBIAS_DAC             30
@@ -142,9 +142,9 @@ History:
 #define TPX3_TESTPULSE_ENA         0x020
 #define TPX3_FASTLO_ENA            0x040
 #define TPX3_TIMER_OVERFL_CTRL     0x080
-#define TPX3_SELECTTP_DIG_ANALOG   0x100
-#define TPX3_SELECTTP_EXT_INT      0x200
-#define TPX3_SELECT_TOA_CLK        0x400
+#define TPX3_SELECTTP_DIG_ANALOG   0x200
+#define TPX3_SELECTTP_EXT_INT      0x400
+#define TPX3_SELECT_TOA_CLK        0x800
 
 // Timepix3 Output Block Configuration register
 #define TPX3_OUTPORT_MASK          0x00FF

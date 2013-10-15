@@ -132,7 +132,6 @@ class MY_LIB_API SpidrController
                                  int *nr_of_triggers );
   bool startAutoTrigger        ();
   bool stopAutoTrigger         ();
-  bool triggerOneReadout       ();
 
   // Data-acquisition
   bool sequentialReadout       ( int dev_nr );

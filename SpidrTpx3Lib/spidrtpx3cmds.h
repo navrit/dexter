@@ -71,7 +71,6 @@
 #define CMD_SET_TRIGCONFIG     0x441
 #define CMD_AUTOTRIG_START     0x442
 #define CMD_AUTOTRIG_STOP      0x443
-#define CMD_TRIGGER_READOUT    0x444
 
 // Data-acquisition
 #define CMD_SEQ_READOUT        0x445
@@ -169,7 +168,7 @@ static char *CMD_STR[] =
     "SET_TRIGCONFIG   ", // 0x441
     "AUTOTRIG_START   ", // 0x442
     "AUTOTRIG_STOP    ", // 0x443
-    "TRIGGER_READOUT  ", // 0x444
+    "-----",             // 0x444
     "SEQ_READOUT      ", // 0x445
     "DDRIVEN_READOUT  ", // 0x446
     "PAUSE_READOUT    ", // 0x447

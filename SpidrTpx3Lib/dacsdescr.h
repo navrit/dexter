@@ -38,8 +38,8 @@ static const dac_t TPX3_DAC_TABLE[TPX3_DAC_COUNT] =
   { TPX3_VTP_COARSE,       "Vtp_coarse",        8, 128 },
   { TPX3_VTP_FINE,         "Vtp_fine",          9, 256 },
   { TPX3_IBIAS_CP_PLL,     "Ibias_CP_PLL",      8, 128 },
+  { TPX3_PLL_VCNTRL,       "Pll_Vcntrl",        8, 128 },
 
-  { TPX3_PLL_VCNTRL,       "Pll_Vcntrl",        0, 0   },
   { TPX3_BANDGAP_OUTPUT,   "BandGap_output",    0, 0   },
   { TPX3_BANDGAP_TEMP,     "BandGap_Temp",      0, 0   },
   { TPX3_IBIAS_DAC,        "Ibias_dac",         0, 0   },
