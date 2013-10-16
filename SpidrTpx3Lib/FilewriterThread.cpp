@@ -61,7 +61,7 @@ void FilewriterThread::run()
 	      // Write data to file
 	      bytes = _file.write( _receiver->data(),
 				   _receiver->bytesAvailable() );
-	      // Update the receiver's data buffer
+	      // Update the receiver's data buffer administration
 	      _receiver->updateBytesConsumed( bytes );
 	      _bytesWritten += bytes;
 	    }
@@ -102,7 +102,6 @@ bool FilewriterThread::openFile( std::string filename, bool overwrite )
   if( _file.isOpen() )
     {
       _bytesWritten = 0;
-      _bytesFlushed = 0;
       _fileOpen = true;
       return true;
     }

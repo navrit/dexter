@@ -85,9 +85,11 @@ class ReceiverThread : public QThread
   long long _head, _tail, _headEnd;
   bool      _full, _fullOccurred;
 
+  // Buffer to dump data blocks into when necessary (e.g. when buffer is full)
+  char      _flushBuffer[16384];
+
   // Receive buffer
   char      _recvBuffer[RECV_BUF_SIZE];
-  char      _flushBuffer[16384];
 };
 
 #endif // RECEIVERTHREAD_H

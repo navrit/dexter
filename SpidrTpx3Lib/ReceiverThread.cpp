@@ -182,7 +182,7 @@ void ReceiverThread::reset()
 {
   // Prevent thread from writing anything more into the buffer
   _suspend = true;
-  // Now wait to make sure the thread takes _suspend into account...
+  // Now wait to make sure this thread takes '_suspend' into account...
   while( !_suspended );
 
   _packetsReceived = 0;
