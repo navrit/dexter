@@ -182,7 +182,7 @@ static char *CMD_STR[] =
     "-----",             // 0x54E
     "-----",             // 0x54F
 
-    "RESTART_TIMER    ", // 0x550
+    "RESTART_TIMERS   ", // 0x550
     "RESET_TIMER      ", // 0x551
     "GET_TIMER        ", // 0x552
     "SET_TIMER        ", // 0x553
