@@ -178,6 +178,9 @@ static char *CMD_STR[] =
     "GET_LOCALTEMP    ", // 0x54A
     "GET_AVDD         ", // 0x54B
     "GET_DVDD         ", // 0x54C
+    "-----",             // 0x54D
+    "-----",             // 0x54E
+    "-----",             // 0x54F
 
     "RESTART_TIMER    ", // 0x550
     "RESET_TIMER      ", // 0x551
