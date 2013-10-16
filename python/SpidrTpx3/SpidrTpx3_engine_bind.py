@@ -35,13 +35,40 @@ c2.add_method('setPixelConfig',        'bool',        [param('int', 'dev_nr')])
 c2.add_method('getDeviceId',           'bool',        [param('int', 'dev_nr'),param('int*', 'id', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 c2.add_method('getDac',                'bool',        [param('int', 'dev_nr'),param('int', 'dac_code'),param('int*', 'dac_val', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 c2.add_method('getGenConfig',          'bool',        [param('int', 'dev_nr'),param('int*', 'config', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+c2.add_method('setGenConfig',          'bool',        [param('int', 'dev_nr'),param('int', 'config')])
 c2.add_method('getPllConfig',          'bool',        [param('int', 'dev_nr'),param('int*', 'config', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 c2.add_method('setPllConfig',          'bool',        [param('int', 'dev_nr'),param('int', 'config')])
 c2.add_method('getOutBlockConfig',     'bool',        [param('int', 'dev_nr'),param('int*', 'config', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 c2.add_method('getTpPeriodPhase',      'bool',        [param('int', 'dev_nr'),param('int*', 'period', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),param('int*', 'phase', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+c2.add_method('setTpPeriodPhase',      'bool',        [param('int', 'dev_nr'),param('int', 'period'), param('int', 'phase')])
 c2.add_method('getTpNumber',           'bool',        [param('int', 'dev_nr'),param('int*', 'number', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+c2.add_method('setTpNumber',           'bool',        [param('int', 'dev_nr'),param('int', 'number')])
 c2.add_method('uploadPacket',          'bool',        [param('int', 'dev_nr'),param('unsigned char*', 'packet', transfer_ownership=False,direction = Parameter.DIRECTION_IN,array_length=256),param('int', 'size')])
 
+
+c2.add_method('getShutterStart',       'bool',        [param('int', 'dev_nr'),param('unsigned int*', 'timer_lo', transfer_ownership=False,direction = Parameter.DIRECTION_OUT), 
+                                                                              param('unsigned int*', 'timer_hi', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+
+c2.add_method('getShutterEnd',       'bool',        [param('int', 'dev_nr'),param('unsigned int*', 'timer_lo', transfer_ownership=False,direction = Parameter.DIRECTION_OUT), 
+                                                                              param('unsigned int*', 'timer_hi', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+
+c2.add_method('flushFifoIn',       'bool',        [param('int', 'dev_nr')])
+
+c2.add_method('resetPixelConfig',      None,        [])
+c2.add_method('configPixel',           'bool',      [param('int', 'x'),param('int', 'y'),param('int', 'threshold'), param('int', 'testbit')])
+c2.add_method('maskPixel',             'bool',      [param('int', 'x'),param('int', 'y')])
+c2.add_method('unmaskPixel',           'bool',      [param('int', 'x'),param('int', 'y')])
+c2.add_method('setPixelConfig',        'bool',      [param('int', 'dev_nr')])
+c2.add_method('getPixelConfig',        'bool',      [param('int', 'dev_nr')])
+c2.add_method('resetPixels',           'bool',      [param('int', 'dev_nr')])
+
+c2.add_method('configCtpr',           'bool',       [param('int', 'dev_nr'),param('int', 'column'),param('int', 'val')])
+c2.add_method('setCtpr',              'bool',       [param('int', 'dev_nr')])
+
+c2.add_method('sequentialReadout',    'bool',       [param('int', 'dev_nr')])
+c2.add_method('datadrivenReadout',    'bool',       [param('int', 'dev_nr')])
+c2.add_method('openShutter',          'bool',       [param('int', 'dev_nr'),param('int', 'len')])
+c2.add_method('errorString',          'std::string',       [])
   
 mod.add_enum('DAC_code', ['TPX3_IBIAS_PREAMP_ON','TPX3_IBIAS_PREAMP_OFF','TPX3_VPREAMP_NCAS','TPX3_IBIAS_IKRUM','TPX3_VFBK',
                           'TPX3_VTHRESH_FINE','TPX3_VTHRESH_COARSE','TPX3_IBIAS_DISCS1_ON','TPX3_IBIAS_DISCS1_OFF',

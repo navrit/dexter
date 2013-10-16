@@ -9,6 +9,25 @@ import time
 import sys
 from struct import *
 
+def load_lut(fname):
+      f=open(fname)
+      lut={}
+
+      for l in f.readlines()[3:]:
+        if l.find("--")>=0:break
+        ll=l.split("|")
+        num_in=int(ll[1],16)
+        num_out=int(ll[2],10)
+        lut[num_in]=num_out
+      return lut
+
+
+evn4=load_lut("event_count_4b_LUT.txt")
+itot14=load_lut("itot_14b_LUT.txt")
+toa14=load_lut("toa_gray_count_14b_LUT.txt")
+tote10=load_lut("tot_event_count_10b_LUT.txt")
+
+
 class tpx3packet:
   def pack0(self):
     self.str="unimplemented"
@@ -25,6 +44,12 @@ class tpx3packet:
     elif self.b0==0x45   :
       val= self.b5 | self.b4<<8 | self.b3<<16 | self.b2<<24 ;
       self.str="Timer high %d"%val
+    if self.b0==0x46   :
+      self.val= self.raw&0xFFFFFFFF ;
+      self.str="Timer shutter rise low %d"%self.val
+    elif self.b0==0x47   :
+      self.val= self.raw&0xFFFFFFFF ;
+      self.str="Timer shutter rise high %d"%self.val
     else:
       self.str="unimplemented"
   def pack5(self):
@@ -45,8 +70,24 @@ class tpx3packet:
         self.str="EoC 0x44 (Timer Low)"
       elif self.b1==0x45:
         self.str="EoC 0x44 (Timer High)"
+      elif self.b1==0x0d:
+        self.str="EoC 0x0d (TP_PulseNumber)"
+      elif self.b1==0x0c:
+        self.str="EoC 0x0c (TP_Period)"
+      elif self.b1==0xcf:
+        self.str="EoC 0xcf (Set ctpr)"
+      elif self.b1==0x31:
+        self.str="EoC 0xcf (Read GeneralConfig)"
+      elif self.b1==0x46:
+        self.str="EoC 0x46 (Req Rising Shutter Low)"
+      elif self.b1==0x47:
+        self.str="EoC 0x47 (Req Rising Shutter High)"
+      elif self.b1==0x30:
+        self.str="EoC 0xcf (Set GeneralConfig)"
       elif self.b1==0x8F:
         self.str="EoC 0x8 (Load Matrix)"
+      elif self.b1==0x0F:
+        self.str="EoC 0x0F (Internal TestPulseFinished)"
       elif self.b1==0x9F:
         self.str="EoC 0x9 (Read Config Matrix)"
       elif self.b1==0xAF:
@@ -56,7 +97,11 @@ class tpx3packet:
       elif self.b1==0xFF:
         self.str="EoC 0xF (Stop Matrix Command)"
       elif self.b1==0xA0:
-        self.str="EoR"
+        self.str="EoR readout seq"
+      elif self.b1==0xBF:
+        self.str="EoC 0xB (Read Data Driven)"
+      elif self.b1==0xB0:
+        self.str="EoR Data driven"
     else :
       self.str="unimplemented"
   def pack8(self):
@@ -69,7 +114,6 @@ class tpx3packet:
 
      self.col=self.col_address*2
      if self.pixel_address&0x4 : self.col+=1
-        
      self.row=self.sp_address*4
      self.row+= (self.pixel_address&0x3)
 
@@ -79,7 +123,23 @@ class tpx3packet:
   def packA(self):
     self.str="unimplemented"
   def packB(self):
-    self.str="unimplemented"
+     self.col_address=((self.b0<<3)&0x78) | ((self.b1>>5)&0x7) 
+     self.sp_address= ((self.b1<<1)&0x3E) | ((self.b2>>7)&0x1) 
+     self.pixel_address=((self.b2>>4)&0x07)
+     self.col=self.col_address*2
+     if self.pixel_address&0x4 : self.col+=1
+     self.row=self.sp_address*4
+     self.row+= (self.pixel_address&0x3)
+
+     self.ftoa=self.raw&0xF
+     self.tot=(self.raw>>4)&0x3FF
+
+     self.toa=(self.raw>>14)&0x3FFF
+     self.toa=toa14[self.toa]
+     self.tot=tote10[self.tot]
+     self.str="DataDriven (%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d ftoa=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address, self.toa,self.tot, self.ftoa)
+
+
   def packC(self):
     self.str="unimplemented"
   def packD(self):
@@ -103,6 +163,7 @@ class tpx3packet:
     self.b4=(data>>32)&0xFF
     self.b5=(data>>40)&0xFF
     self.type=self.b0>>4
+    self.raw=self.b5 | (self.b4<<8) | (self.b3<<16)  | (self.b2<<24) | (self.b1<<32)  | (self.b0<<40)
     self.str='-'
     self.pack_interpreter[self.type](self)
   def __repr__(self):
@@ -232,6 +293,107 @@ class TPX3:
       p=tpx3packet(pck_num)
       ret.append(p)
     return ret
+    
+  def _log_ctrl_cmd(self,msg,result):
+    if result:
+      logging.info("%-80s [  OK  ]"%msg)
+    else:
+      logging.error("%-80s [FAILED] (%s)"%(msg,self.ctrl.errorString()))
+
+  def setTpPeriodPhase(self,period, phase):
+    r=self.ctrl.setTpPeriodPhase(self.id,period,phase)
+    self._log_ctrl_cmd("setTpPeriodPhase(%d,%d) "%(period,phase),r)
+
+  def setTpNumber(self,number):
+    r=self.ctrl.setTpNumber(self.id,number)
+    self._log_ctrl_cmd("setTpNumber(%d) "%(number),r)
+
+  def configPixel(self,x,y,threshold, testbit=False):
+    r=self.ctrl.configPixel(x,y,threshold, testbit)
+    self._log_ctrl_cmd("configPixel(%d,%d,%d,%d) "%(x,y,threshold, testbit),r)
+
+  def resetPixelConfig(self):
+    r=self.ctrl.resetPixelConfig()
+    self._log_ctrl_cmd("resetPixelConfig() ",True)
+
+  def maskPixel(self,x,y):
+    r=self.ctrl.maskPixel(x,y)
+    self._log_ctrl_cmd("maskPixel(%d,%d) "%(x,y),r)
+
+  def unmaskPixel(self,x,y):
+    r=self.ctrl.unmaskPixel(x,y)
+    self._log_ctrl_cmd("unmaskPixel(%d,%d) "%(x,y),r)
+
+  def setPixelConfig(self):
+    r=self.ctrl.setPixelConfig(self.id)
+    self._log_ctrl_cmd("setPixelConfig() ",r)
+
+  def getPixelConfig(self):
+    r=self.ctrl.getPixelConfig(self.id)
+    self._log_ctrl_cmd("getPixelConfig() ",r)
+
+  def resetPixels(self):
+    r=self.ctrl.resetPixels(self.id)
+    self._log_ctrl_cmd("resetPixels() ",r)
+    
+  def configCtpr(self,column,val):
+    r=self.ctrl.configCtpr(self.id,column,val)
+    self._log_ctrl_cmd("configCtpr(%d,%d) "%(column,val),r)
+  
+  def setCtpr(self):
+    r=self.ctrl.setCtpr(self.id)
+    self._log_ctrl_cmd("setCtpr() ",r)
+
+  def sequentialReadout(self):
+    r=self.ctrl.sequentialReadout(self.id)
+    self._log_ctrl_cmd("sequentialReadout() ",r)
+    
+    
+  def datadrivenReadout(self):
+    r=self.ctrl.datadrivenReadout(self.id)
+    self._log_ctrl_cmd("datadrivenReadout() ",r)
+    
+
+  def openShutter(self,l):
+    r=self.ctrl.openShutter(self.id,l)
+    self._log_ctrl_cmd("openShutter(%d) "%(l),r)
+
+  def setDac(self,code,val):
+    r=self.ctrl.setDac(self.id,code,val)
+    self._log_ctrl_cmd("setDac(%d,%d) "%(code,val),r)
+
+  def setGenConfig(self,l):
+    r=self.ctrl.setGenConfig(self.id,l)
+    self._log_ctrl_cmd("setGenConfig(%04x) "%(l),r)
+
+  def getGenConfig(self):
+    r,val=self.ctrl.getGenConfig(self.id)
+    self._log_ctrl_cmd("getGenConfig()=%02x"%(val),r)
+    return val
+
+  def getShutterStart(self):
+#    r,lo,hi=self.ctrl.getShutterStart(self.id)
+#    self._log_ctrl_cmd("getShutterStart()=%x %x"%(hi,lo),r)
+    self.send(0x46,0,0)
+    resp=self.recv_mask(0x4671,0xFFFF)
+    for p in resp:
+      if p.b0==0x46: low=p.val
+    self.send(0x47,0,0)
+    resp=self.recv_mask(0x4771,0xFFFF)
+    for p in resp:
+      if p.b0==0x47: high=p.val
+    v=low+(high<<32)
+    self._log_ctrl_cmd("getShutterStart()=%d"%(v),True)
+    return v
+
+  def flushFifoIn(self):
+    r=self.ctrl.flushFifoIn(self.id)
+    self._log_ctrl_cmd("flushFifoIn()",r)
+    return 
+    
+#c2.add_method('getTpNumber',           'bool',        [param('int', 'dev_nr'),param('int*', 'number', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+#c2.add_method('setTpNumber',           'bool',        [param('int', 'dev_nr'),param('int', 'number')])
+
 
   def recv_mask(self,val,mask):
     r=self.udp.getH(val,mask,debug=0)
