@@ -23,15 +23,16 @@ class test07_clock_phasing(tpx3_test):
 #    gc=self.tpx.getGenConfig()
     self.tpx.setGenConfig(0x268)
 
-    pll=self.tpx.getGenConfig()
-    self.tpx.setGenConfig(pll|0x100)
+    self.tpx.setPllConfig(0x11E)
+    pll=self.tpx.getPllConfig()
 
    
     result={}
-    for x in range(16):
+    if 1:
         self.tpx.resetPixelConfig()
-        result[x]={}
-        for y in range(256):
+        for x in range(256):
+         result[x]={}
+         for y in range(256):
           self.tpx.configPixel(x,y,threshold=0, testbit=True)
         self.tpx.setPixelConfig()
         self.tpx.send(0x40,0,0)#reset timer
@@ -42,11 +43,15 @@ class test07_clock_phasing(tpx3_test):
         data=self.tpx.recv_mask(0x1111,0xFFFF)
         self.tpx.flushFifoIn()
         shutter=self.tpx.getShutterStart()
-        
+        cnt=0
         for pck in data:
           if pck.type==0xB:
-            v=float(pck.toa-(shutter&0x2FFF)) - float(pck.ftoa)/16
-            result[x][pck.row]=v
+            cnt+=1
+            v=float(pck.toa-(shutter&0x3FFF)) 
+            if v<0: v+=0x4000
+            v-=float(pck.ftoa)/16
+            result[pck.col][pck.row]=v
+        print "Total pck count ",cnt
     fn=self.fname+'.map'
     
     logging.info("Plot saved to %s"%fn)

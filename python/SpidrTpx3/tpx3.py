@@ -121,7 +121,17 @@ class tpx3packet:
 
     
   def packA(self):
-    self.str="unimplemented"
+     self.col_address=((self.b0<<3)&0x78) | ((self.b1>>5)&0x7) 
+     self.sp_address= ((self.b1<<1)&0x3E) | ((self.b2>>7)&0x1) 
+     self.pixel_address=((self.b2>>4)&0x07)
+     self.col=self.col_address*2
+     if self.pixel_address&0x4 : self.col+=1
+     self.row=self.sp_address*4
+     self.row+= (self.pixel_address&0x3)
+     self.cnt=tote10[(self.raw>>4)&0x3FF]
+     self.str="DataSeq (%3d,%3d) dc=%3d sp=%3d pix=%3d cnt=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address, self.cnt)
+
+    
   def packB(self):
      self.col_address=((self.b0<<3)&0x78) | ((self.b1>>5)&0x7) 
      self.sp_address= ((self.b1<<1)&0x3E) | ((self.b2>>7)&0x1) 
@@ -310,7 +320,7 @@ class TPX3:
 
   def configPixel(self,x,y,threshold, testbit=False):
     r=self.ctrl.configPixel(x,y,threshold, testbit)
-    self._log_ctrl_cmd("configPixel(%d,%d,%d,%d) "%(x,y,threshold, testbit),r)
+#    self._log_ctrl_cmd("configPixel(%d,%d,%d,%d) "%(x,y,threshold, testbit),r)
 
   def resetPixelConfig(self):
     r=self.ctrl.resetPixelConfig()
@@ -318,11 +328,11 @@ class TPX3:
 
   def maskPixel(self,x,y):
     r=self.ctrl.maskPixel(x,y)
-    self._log_ctrl_cmd("maskPixel(%d,%d) "%(x,y),r)
+#    self._log_ctrl_cmd("maskPixel(%d,%d) "%(x,y),r)
 
   def unmaskPixel(self,x,y):
     r=self.ctrl.unmaskPixel(x,y)
-    self._log_ctrl_cmd("unmaskPixel(%d,%d) "%(x,y),r)
+#    self._log_ctrl_cmd("unmaskPixel(%d,%d) "%(x,y),r)
 
   def setPixelConfig(self):
     r=self.ctrl.setPixelConfig(self.id)
@@ -371,6 +381,15 @@ class TPX3:
     self._log_ctrl_cmd("getGenConfig()=%02x"%(val),r)
     return val
 
+  def setPllConfig(self,l):
+    r=self.ctrl.setPllConfig(self.id,l)
+    self._log_ctrl_cmd("setPllConfig(%04x) "%(l),r)
+
+  def getPllConfig(self):
+    r,val=self.ctrl.getPllConfig(self.id)
+    self._log_ctrl_cmd("getPllConfig()=%02x"%(val),r)
+    return val
+    
   def getShutterStart(self):
 #    r,lo,hi=self.ctrl.getShutterStart(self.id)
 #    self._log_ctrl_cmd("getShutterStart()=%x %x"%(hi,lo),r)
