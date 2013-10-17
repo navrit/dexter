@@ -964,7 +964,7 @@ bool SpidrController::requestGetInt( int cmd, int dev_nr, int *dataword )
     {
       *dataword = 0;
     }
- return false;
+  return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -987,7 +987,7 @@ bool SpidrController::requestGetInts( int cmd, int dev_nr,
       int i;
       for( i=0; i<expected_ints; ++i ) datawords[i] = 0;
     }
- return false;
+  return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -1010,7 +1010,7 @@ bool SpidrController::requestGetBytes( int cmd, int dev_nr,
       int i;
       for( i=0; i<expected_bytes; ++i ) databytes[i] = 0;
     }
- return false;
+  return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -1037,7 +1037,7 @@ bool SpidrController::requestGetIntAndBytes( int cmd, int dev_nr,
       int i;
       for( i=0; i<expected_bytes; ++i ) databytes[i] = 0;
     }
- return false;
+  return false;
 }
 
 // ----------------------------------------------------------------------------

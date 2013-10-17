@@ -19,7 +19,7 @@
 class SpidrController;
 class ReceiverThread;
 class FilewriterThread;
-//class FramebuilderThread;
+class FramesamplerThread;
 
 class MY_LIB_API SpidrDaq
 {
@@ -40,7 +40,8 @@ class MY_LIB_API SpidrDaq
   bool openFile                 ( std::string filename,
 				  bool overwrite = false );
   bool closeFile                ();
-  void setFlush                 ( bool flush );
+  void setFlush                 ( bool enable );
+  void setSampling              ( bool enable );
   //void setDecodeFrames        ( bool decode );
   //void setAcqMode             ( int mode );
 
@@ -54,9 +55,11 @@ class MY_LIB_API SpidrDaq
   void      resetBufferFullOccurred();
   char     *dataBuffer          ();
 
-  // Frame building (### TODO)
-  int      *frameData           ( int *size_in_bytes );
-  void      resetFrame          ();
+  // Frame sampling
+  bool      getFrame            ( int timeout_ms );
+  void      freeFrame           ();
+  char     *frameData           ( int *size_in_bytes );
+  bool      nextFramePixel      ( int *x, int *y, int *data, int *timestamp );
 
   // Statistics and info
   int       packetsReceivedCount();
@@ -70,8 +73,8 @@ class MY_LIB_API SpidrDaq
 
  private:
   ReceiverThread     *_packetReceiver;
-  FilewriterThread   *_fileWriter;
-  //FramebuilderThread *_frameBuilder;
+  //FilewriterThread   *_fileWriter;
+  FramesamplerThread *_fileWriter;
 
   // Init function for use in c'tors
   void init        ( int             *ipaddr,

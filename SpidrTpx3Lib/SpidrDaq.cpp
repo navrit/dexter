@@ -1,7 +1,7 @@
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 #include "ReceiverThread.h"
-#include "FilewriterThread.h"
+#include "FramesamplerThread.h"
 
 // Version identifier: year, month, day, release number
 const int VERSION_ID = 0x13100300;
@@ -78,9 +78,9 @@ void SpidrDaq::init( int             *ipaddr,
 {
   _packetReceiver = new ReceiverThread( ipaddr, port );
 
-  // Create the file writer thread, providing it with a link to
+  // Create the sampler/file-writer thread, providing it with a link to
   // the packet reader thread
-  _fileWriter = new FilewriterThread( _packetReceiver );
+  _fileWriter = new FramesamplerThread( _packetReceiver );
 
   // Provide the receiver with the possibility to control the module,
   // for example to set and clear a busy/inhibit/throttle signal
@@ -172,9 +172,16 @@ bool SpidrDaq::closeFile()
 
 // ----------------------------------------------------------------------------
 
-void SpidrDaq::setFlush( bool flush )
+void SpidrDaq::setFlush( bool enable )
 {
-  _fileWriter->setFlush( flush );
+  _fileWriter->setFlush( enable );
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDaq::setSampling( bool enable )
+{
+  _fileWriter->setSampling( enable );
 }
 
 // ----------------------------------------------------------------------------
@@ -244,20 +251,33 @@ char *SpidrDaq::dataBuffer()
 }
 
 // ----------------------------------------------------------------------------
-// Frame building
+// Frame sampling
 // ----------------------------------------------------------------------------
 
-int *SpidrDaq::frameData( int *size_in_bytes )
+bool SpidrDaq::getFrame( int timeout_ms )
 {
-  //return _frameBuilder->frameData( size_in_bytes );
-  return 0;
+  return _fileWriter->getFrame( timeout_ms );
 }
 
 // ----------------------------------------------------------------------------
 
-void SpidrDaq::resetFrame()
+void SpidrDaq::freeFrame()
 {
-  //_frameBuilder->resetFrame();
+  _fileWriter->freeFrame();
+}
+
+// ----------------------------------------------------------------------------
+
+char *SpidrDaq::frameData( int *size_in_bytes )
+{
+  return _fileWriter->frameData( size_in_bytes );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrDaq::nextFramePixel( int *x, int *y, int *data, int *timestamp )
+{
+  return _fileWriter->nextFramePixel( x, y, data, timestamp );
 }
 
 // ----------------------------------------------------------------------------
