@@ -8,7 +8,7 @@ class test03(tpx3_test):
   def _execute(self):
     results=[]
     def_step=1
-    meas_per_code=64
+    meas_per_code=1
     logging.info("DAC scan settings:")
     logging.info("default step size: %d"%def_step)
     logging.info("measurements per code: %d"%meas_per_code)

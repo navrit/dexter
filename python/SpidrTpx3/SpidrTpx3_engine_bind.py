@@ -96,7 +96,7 @@ c3 = mod.add_class('UDPServer')
 c3.add_constructor([])
 c3.add_method('start', None, [param ('unsigned int', 'port')])
 c3.add_method('getN', 'std::list<unsigned long>',[param('unsigned int', 'N'),param('unsigned int', 'debug')])
-c3.add_method('getH', 'std::list<unsigned long>',[param('unsigned int', 'val'),param('unsigned int', 'mask'),param('unsigned int', 'debug')])
+c3.add_method('getH', 'std::list<unsigned long>',[param('unsigned long int', 'val'),param('unsigned long int', 'mask'),param('unsigned int', 'debug')])
 
 
 

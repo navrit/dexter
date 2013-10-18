@@ -107,6 +107,29 @@ std::list<unsigned long> UDPServer::getN(unsigned int N, unsigned int debug)
   return l;
 }
 
+unsigned long flipbytes(unsigned long b)
+{
+  unsigned long b0=b&0xFF;
+  b>>=8;
+  unsigned long b1=b&0xFF;
+  b>>=8;
+  unsigned long b2=b&0xFF;
+  b>>=8;
+  unsigned long b3=b&0xFF;
+  b>>=8;
+  unsigned long b4=b&0xFF;
+  b>>=8;
+  unsigned long b5=b&0xFF;
+  b>>=8;
+  unsigned long b6=b&0xFF;
+  b>>=8;
+  unsigned long b7=b&0xFF;
+
+  unsigned long bo= b0<<56 | b1<<48 | b2<<40 | b3<<32 | b4<<24 | b5<<16 | b6<<8 | b7 ;
+  return bo;
+  
+}
+
 std::list<unsigned long> UDPServer::getH(unsigned long val, unsigned long mask, unsigned int debug)
 {
   std::list<unsigned long> l;
@@ -114,16 +137,18 @@ std::list<unsigned long> UDPServer::getH(unsigned long val, unsigned long mask, 
   unsigned long pck;
 //  printf("-> %16lx %16lx\n",val,mask);
 
+  
   while(1)
   {
     pck=0;
     data.waitAndPop(pck);
     if (pck==0) //timeout
       return l;
+    pck=flipbytes(pck);
     unsigned long pmasked=pck&mask;
     if (debug)
     {
-      printf("%c%d %16lx",13,i,pck);
+      printf("\n%c%d %16lx %16lx %16lx",13,i,pck,pmasked,mask);
       fflush(stdout);
     }
     l.push_back(pck);
