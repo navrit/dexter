@@ -26,7 +26,7 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  //SpidrDaq spidrdaq( 192, 168, 100, 1, 8192 );
+  // Interface to Timepix3 pixel data acquisition
   SpidrDaq spidrdaq( &spidrctrl );
   string errstr = spidrdaq.errorString();
   if( !errstr.empty() ) cout << "### SpidrDaq: " << errstr << endl;
@@ -85,39 +85,39 @@ int main( int argc, char *argv[] )
 			       TPX3_SELECTTP_DIG_ANALOG ) )
     cout << "###setGenCfg: " << spidrctrl.errorString() << endl;
 
-  // Start acquisition
+  // Set Timepix3 into acquisition mode
   if( !spidrctrl.datadrivenReadout( device_nr ) )
     cout << "###ddrivenReadout: " << spidrctrl.errorString() << endl;
 
   // ----------------------------------------------------------
 
-  // Configure shutter trigger
+  // Configure the shutter trigger
   int trig_mode      = 4; //SPIDR_TRIG_AUTO;
-  int trig_period_us = 500000; // 500 ms
+  int trig_period_us = 100000; // 100 ms
   int trig_freq_hz   = 1;
   int nr_of_trigs    = 10;
   if( !spidrctrl.setTriggerConfig( trig_mode, trig_period_us,
 				   trig_freq_hz, nr_of_trigs ) )
     cout << "###setTriggerConfig: " << spidrctrl.errorString() << endl;
 
-  // Sample frames
+  // Sample 'frames' as well as write to file
   spidrdaq.setSampling( true );
   spidrdaq.openFile( "test.dat", true );
 
   // ----------------------------------------------------------
-  // Get and display frames
+  // Get and display frames (data up to the next End-of-Readout packet)
 
   // Start triggers
   if( !spidrctrl.startAutoTrigger() )
     cout << "###startAutoTrigger: " << spidrctrl.errorString() << endl;
 
-  int cnt = 0, size, x, y, pixdata, timestamp;
+  int   cnt = 0, size, x, y, pixdata, timestamp;
   char *frame;
-  bool got_frame = true;
-  while( got_frame )
+  bool  next_frame = true;
+  while( next_frame )
     {
-      got_frame = spidrdaq.getFrame( 3000 );
-      if( got_frame )
+      next_frame = spidrdaq.getFrame( 3000 );
+      if( next_frame )
 	{
 	  ++cnt;
 	  frame = spidrdaq.frameData( &size );
