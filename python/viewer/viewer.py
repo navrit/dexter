@@ -100,16 +100,19 @@ class HistPanel(wx.Panel):
 
 
 class TestPanel(wx.Panel):
-    def __init__(self, parent,fname):
+    def __init__(self, parent,fname=None):
         wx.Panel.__init__(self, parent, size=(512,512))
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.grid=0
         self.PPP=2 #on screen pixels per one pixel data
         self.MAX_PPP=64
-        self.data=np.loadtxt(fname)
-        self.mmin=np.amin(self.data)
-        self.mmax=np.amax(self.data)
-
+        if fname:
+          self.open(fname)
+        else:
+          self.data=np.zeros( (256,256) )
+          self.mmin=0.0
+          self.mmax=1.0
+        
         self.Bind(wx.EVT_LEFT_DOWN, self.OnMouseEvent)
         self.Bind(wx.EVT_LEFT_UP, self.OnMouseEvent)
         self.Bind(wx.EVT_MOTION, self.OnMouseEvent)
@@ -131,6 +134,11 @@ class TestPanel(wx.Panel):
         self.update_stats=None
         self.hst_panel=None
         self.change_cm('jet')
+
+    def open(self,fname):
+        self.data=np.loadtxt(fname)
+        self.mmin=np.amin(self.data)
+        self.mmax=np.amax(self.data)
 
     def change_cm(self,new_cm):
         self.cm=cm.get_cmap(new_cm)
@@ -377,6 +385,7 @@ class TestPanel(wx.Panel):
         f.write("set output '%s'\n"%fpng)
         f.write("set grid\n")
         f.write("set xlabel 'X'\n")
+        f.write("set xra [%.3e:%.3e]\n"%(self.mmin,self.mmax))
         f.write("set ylabel 'Counts'\n")
         f.write("plot '%s' w l t ''\n"%fhist)
         f.close()
@@ -467,11 +476,15 @@ ico = PyEmbeddedImage(
 
 class MyForm(wx.Frame):
   def __init__(self,fname):
-     wx.Frame.__init__(self, None, wx.ID_ANY, "openPIXel", size=(920,615),style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
+     wx.Frame.__init__(self, None, wx.ID_ANY, "openPIXEL", size=(920,615),style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
 #     self.Bind(wx.EVT_CHAR, self.OnChar)
 #     sizer = wx.BoxSizer(wx.VERTICAL)
-     self.tp=TestPanel(self,fname)
+     self.tp=TestPanel(self)
 
+
+     self.filehistory = wx.FileHistory(8)
+     self.config = wx.Config("openPIXEL", style=wx.CONFIG_USE_LOCAL_FILE)
+     self.filehistory.Load(self.config)
      #sizer.Add(self.tp)
      #self.SetMinSize((600,600))
      #self.SetSizer(sizer, wx.EXPAND)
@@ -499,7 +512,7 @@ class MyForm(wx.Frame):
      self.cb_min.SetValue(False)
      sizer_min.Add(self.cb_min)
 #     sizer_min.AddSpacer(10)
-     self.spin_min = FS.FloatSpin(self, -1, min_val=mmin, max_val=mmax,
+     self.spin_min = FS.FloatSpin(self, -1, min_val=None, max_val=None,
                                        increment=inc, value=mmin, size=(150,-1),agwStyle=FS.FS_LEFT)
      self.spin_min.SetFormat("%f")
      self.spin_min.SetDigits(3)
@@ -517,7 +530,7 @@ class MyForm(wx.Frame):
      self.cb_max.SetValue(False)
      sizer_max.Add(self.cb_max)
 #     sizer_max.AddSpacer(10)
-     self.spin_max = FS.FloatSpin(self, -1, min_val=mmin, max_val=mmax,
+     self.spin_max = FS.FloatSpin(self, -1, min_val=None, max_val=None,
                                        increment=inc, value=mmax, size=(150,-1), agwStyle=FS.FS_LEFT)
      self.spin_max.SetFormat("%f")
      self.spin_max.SetDigits(3)
@@ -600,9 +613,15 @@ class MyForm(wx.Frame):
      menubar = wx.MenuBar()
 
      fileMenu = wx.Menu()
-     fileMenu = wx.Menu()
+
      file_open=fileMenu.Append(wx.ID_OPEN, '&Open')
      file_save=fileMenu.Append(wx.ID_SAVE, '&Save plots')
+
+     recent = wx.Menu()
+     self.filehistory.UseMenu(recent)
+     self.filehistory.AddFilesToMenu()
+     file_recent=fileMenu.AppendMenu(wx.ID_ANY, "&Recent Files",recent)
+     self.Bind(wx.EVT_MENU_RANGE, self.on_file_history, id=wx.ID_FILE1, id2=wx.ID_FILE9)
      fileMenu.AppendSeparator()
      file_exit = fileMenu.Append(wx.ID_EXIT, '&Quit')
 
@@ -613,6 +632,13 @@ class MyForm(wx.Frame):
      self.SetMenuBar(menubar)
 
      viewMenu = wx.Menu()
+     view_zoom_fit=viewMenu.Append(wx.ID_ZOOM_FIT, 'Zoom &fit')
+     view_zoom_in=viewMenu.Append(wx.ID_ZOOM_IN, 'Zoom &in')
+     view_zoom_out=viewMenu.Append(wx.ID_ZOOM_IN, 'Zoom &out')
+     viewMenu.AppendSeparator()
+     self.Bind(wx.EVT_MENU, self.OnZoomFit, view_zoom_fit)
+     self.Bind(wx.EVT_MENU, self.OnZoomIn, view_zoom_in)
+     self.Bind(wx.EVT_MENU, self.OnZoomOut, view_zoom_out)
      self.shst = viewMenu.Append(wx.ID_ANY, 'Show statubar', 
             'Show Statusbar', kind=wx.ITEM_CHECK)
      self.statusbar = self.CreateStatusBar()
@@ -627,6 +653,10 @@ class MyForm(wx.Frame):
      menubar.Append(helpMenu, '&Help')
         
      self.Centre()
+     
+     if fname:
+       self.open(fname)
+
      self.Show(True)
      
   def ToggleStatusBar(self, e):
@@ -634,6 +664,38 @@ class MyForm(wx.Frame):
         self.statusbar.Show()
     else:
         self.statusbar.Hide()
+  def OnZoomFit(self, e):
+    pass
+  def OnZoomIn(self, e):
+    pass
+  def OnZoomOut(self, e):
+    pass
+    
+  def on_file_history(self, event):
+        fileNum = event.GetId() - wx.ID_FILE1
+        path = self.filehistory.GetHistoryFile(fileNum)
+        self.filehistory.AddFileToHistory(path)
+        self.open(path)
+        
+  def open(self,fn):
+    print "Open ",fn
+    self.tp.open(fn)
+    self.spin_min.SetValue(self.tp.mmin)
+    self.spin_max.SetValue(self.tp.mmax)
+    dv=(self.tp.mmax-self.tp.mmin)/100
+    self.spin_min.SetIncrement(dv) 
+    self.spin_max.SetIncrement(dv) 
+    self.tp.refresh()
+    
+    self.filehistory.AddFileToHistory(fn)
+    self.filehistory.Save(self.config)
+    self.config.Flush()
+
+  def OnMinSpin(self, event):
+#        print self.spin_min.GetValue(), self.spin_max.GetValue(),"->",
+        if self.spin_min.GetValue()>=self.spin_max.GetValue():
+          self.spin_min.SetValue(self.spin_max.GetValue())
+
   def OnOpen(self, e):
         """ File|Open event - Open dialog box. """
         dirName=''
@@ -641,33 +703,16 @@ class MyForm(wx.Frame):
         dlg = wx.FileDialog(self, "Open", dirName, fileName,
                            "Dat Files (*.dat)|*.dat|Text Files (*.txt)|*.txt|All Files|*.*", wx.OPEN)
         if (dlg.ShowModal() == wx.ID_OK):
-            self.fileName = dlg.GetFilename()
-            self.dirName = dlg.GetDirectory()
-
-            ### - this will read in Unicode files (since I'm using Unicode wxPython
-            #if self.rtb.LoadFile(os.path.join(self.dirName, self.fileName)):
-            #    self.SetStatusText("Opened file: " + str(self.rtb.GetLastPosition()) + 
-            #                       " characters.", SB_INFO)
-            #    self.ShowPos()
-            #else:
-            #    self.SetStatusText("Error in opening file.", SB_INFO)
-
-            ### - but we want just plain ASCII files, so:
-            try:
-                f = file(os.path.join(self.dirName, self.fileName), 'r')
-                self.rtb.SetValue(f.read())
-                self.SetTitle(APP_NAME + " - [" + self.fileName + "]")
-                self.SetStatusText("Opened file: " + str(self.rtb.GetLastPosition()) +
-                                   " characters.", SB_INFO)
-                self.ShowPos()
-                f.close()
-            except:
-                self.PushStatusText("Error in opening file.", SB_INFO)
+            fileName = dlg.GetFilename()
+            dirName = dlg.GetDirectory()
+            fn=os.path.join(dirName, fileName)
+            self.open(str(fn))
+            self.SetStatusText("Opened file: " + fn)
         dlg.Destroy()
   def OnHelpAbout(self, e):
         """ Help|About event """
         title = self.GetTitle()
-        d = wx.MessageDialog(self, "OpenPixel v0.1\nAuthor: Szymon Kulis\n2013 CERN","About" , wx.ICON_INFORMATION | wx.OK)
+        d = wx.MessageDialog(self, "openPIXEL v0.1\nAuthor: Szymon Kulis\n2013 CERN","About" , wx.ICON_INFORMATION | wx.OK)
         d.ShowModal()
         d.Destroy()
   def OnFileSaveAs(self, e):
