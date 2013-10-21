@@ -102,7 +102,7 @@ class test08_equalization(tpx3_test):
 
     
 
-    for cdac in range(0,16,15):
+    for cdac in range(0,16,1):
       logdir=self.fname+"/0x%0X/"%cdac
       mkdir(logdir)
 
@@ -254,7 +254,7 @@ class test08_equalization_test(tpx3_test):
 
   
       mask=0
-      for i in range(0,512,1):
+      for i in range(150,450,1):
         self.tpx.setDac(TPX3_VTHRESH_FINE,i)
         self.tpx.openShutter(500)
 #        time.sleep(0.001)
@@ -274,7 +274,7 @@ class test08_equalization_test(tpx3_test):
           elif d.type!=0x7:
             logging.warning("Unexpected packet %s"%str(d))
 
-        if  mask>1000:
+        if  mask>1200:
           logging.info("Masking %d pixels"%mask)
           self.tpx.flushFifoIn()
           self.tpx.setPixelConfig()
@@ -314,7 +314,7 @@ class test08_equalization_test(tpx3_test):
 
       for seq in range(16):
         self.tpx.resetPixelConfig()
-        self.tpx.load_equalization("logs/F3_default_ikrum15/test08_equalization/eq.codes")
+        self.tpx.load_equalization("logs/F3_default_eq_bruteforce/test08_equalization/eq_codes.dat")
         self.tpx.maskPixel(ALL_PIXELS,ALL_PIXELS)
         on=0
         for x in range(256):

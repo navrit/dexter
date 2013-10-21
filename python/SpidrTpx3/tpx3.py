@@ -26,10 +26,10 @@ def load_lut(fname):
       return lut
 
 
-evn4=load_lut("event_count_4b_LUT.txt")
-itot14=load_lut("itot_14b_LUT.txt")
-toa14=load_lut("toa_gray_count_14b_LUT.txt")
-tote10=load_lut("tot_event_count_10b_LUT.txt")
+evn4=load_lut("SpidrTpx3/luts/event_count_4b_LUT.txt")
+itot14=load_lut("SpidrTpx3/luts/itot_14b_LUT.txt")
+toa14=load_lut("SpidrTpx3/luts/toa_gray_count_14b_LUT.txt")
+tote10=load_lut("SpidrTpx3/luts/tot_event_count_10b_LUT.txt")
 
 
 class tpx3packet:
