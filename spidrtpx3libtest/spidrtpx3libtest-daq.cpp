@@ -21,8 +21,8 @@ int main( int argc, char *argv[] )
   // Are we connected to the SPIDR-TPX3 module?
   if( !spidrctrl.isConnected() ) {
     cout << spidrctrl.ipAddressString() << ": "
-	 << spidrctrl.connectionStateString() << ", "
-	 << spidrctrl.connectionErrString() << endl;
+         << spidrctrl.connectionStateString() << ", "
+         << spidrctrl.connectionErrString() << endl;
     return 1;
   }
 
@@ -77,12 +77,12 @@ int main( int argc, char *argv[] )
 
   // Set Timepix3 acquisition mode
   if( !spidrctrl.setGenConfig( device_nr,
-			       TPX3_POLARITY_HPLUS |
-			       TPX3_ACQMODE_TOA_TOT |
-			       TPX3_GRAYCOUNT_ENA |
-			       TPX3_TESTPULSE_ENA |
-			       TPX3_FASTLO_ENA |
-			       TPX3_SELECTTP_DIG_ANALOG ) )
+                               TPX3_POLARITY_HPLUS |
+                               TPX3_ACQMODE_TOA_TOT |
+                               TPX3_GRAYCOUNT_ENA |
+                               TPX3_TESTPULSE_ENA |
+                               TPX3_FASTLO_ENA |
+                               TPX3_SELECTTP_DIG_ANALOG ) )
     cout << "###setGenCfg: " << spidrctrl.errorString() << endl;
 
   // Set Timepix3 into acquisition mode
@@ -92,43 +92,58 @@ int main( int argc, char *argv[] )
   // ----------------------------------------------------------
 
   // Configure the shutter trigger
-  int trig_mode      = 4; //SPIDR_TRIG_AUTO;
+  int trig_mode      = 4;      // SPIDR_TRIG_AUTO;
   int trig_period_us = 100000; // 100 ms
-  int trig_freq_hz   = 1;
-  int nr_of_trigs    = 10;
+  int trig_freq_hz   = 1;      // 1 Hz
+  int nr_of_trigs    = 10;     // 10 triggers
   if( !spidrctrl.setTriggerConfig( trig_mode, trig_period_us,
-				   trig_freq_hz, nr_of_trigs ) )
+                                   trig_freq_hz, nr_of_trigs ) )
     cout << "###setTriggerConfig: " << spidrctrl.errorString() << endl;
 
-  // Sample 'frames' as well as write to file
+  // Sample 'frames' as well as write pixel data to file
   spidrdaq.setSampling( true );
   spidrdaq.openFile( "test.dat", true );
 
   // ----------------------------------------------------------
-  // Get and display frames (data up to the next End-of-Readout packet)
+  // Get frames (data up to the next End-of-Readout packet)
+  // and display some pixel data details
 
   // Start triggers
   if( !spidrctrl.startAutoTrigger() )
     cout << "###startAutoTrigger: " << spidrctrl.errorString() << endl;
 
-  int   cnt = 0, size, x, y, pixdata, timestamp;
+  int   framecnt = 0, size, x, y, pixdata, timestamp;
   char *frame;
   bool  next_frame = true;
   while( next_frame )
     {
       next_frame = spidrdaq.getFrame( 3000 );
       if( next_frame )
-	{
-	  ++cnt;
-	  frame = spidrdaq.frameData( &size );
-	  cout << "Frame " << cnt << " size=" << size << endl;
-	  while( spidrdaq.nextFramePixel( &x, &y, &pixdata, &timestamp ) )
-	    cout << x << "," << y << ": " << hex << pixdata << dec << endl;
-	}
+        {
+          ++framecnt;
+          frame = spidrdaq.frameData( &size );
+	  int pixcnt = 0;
+	  /*
+          while( spidrdaq.nextPixel( &x, &y, &pixdata, &timestamp ) )
+	    {
+	      cout << x << "," << y << ": " << hex << pixdata << dec << endl;
+	      ++pixcnt;
+	    }
+	  */
+	  unsigned long long pixel;
+          while( (pixel = spidrdaq.nextPixel()) != 0 && pixcnt < 5 )
+	    {
+	      cout << pixcnt << ": " << hex << pixel << dec << endl;
+	      ++pixcnt;
+	    }
+          cout << "Frame " << framecnt << " size=" << size << ": "
+	       << pixcnt <<" pixels" << endl;	  
+        }
       else
-	{
-	  cout << "### Timeout --> finish" << endl;
-	}
+        {
+          cout << "### Timeout -> finish after " << framecnt
+	       << " frames" << endl;
+        }
     }
 
   // ----------------------------------------------------------
