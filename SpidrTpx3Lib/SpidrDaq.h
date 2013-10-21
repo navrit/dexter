@@ -55,11 +55,12 @@ class MY_LIB_API SpidrDaq
   void      resetBufferFullOccurred();
   char     *dataBuffer          ();
 
-  // Frame sampling
+  // Pixel data sampling
   bool      getFrame            ( int timeout_ms );
   void      freeFrame           ();
   char     *frameData           ( int *size_in_bytes );
-  bool      nextFramePixel      ( int *x, int *y, int *data, int *timestamp );
+  bool      nextPixel           ( int *x, int *y, int *data, int *timestamp );
+  unsigned long long nextPixel  ();
 
   // Statistics and info
   int       packetsReceivedCount();

@@ -251,7 +251,7 @@ char *SpidrDaq::dataBuffer()
 }
 
 // ----------------------------------------------------------------------------
-// Frame sampling
+// Pixel data sampling
 // ----------------------------------------------------------------------------
 
 bool SpidrDaq::getFrame( int timeout_ms )
@@ -275,9 +275,16 @@ char *SpidrDaq::frameData( int *size_in_bytes )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrDaq::nextFramePixel( int *x, int *y, int *data, int *timestamp )
+bool SpidrDaq::nextPixel( int *x, int *y, int *data, int *timestamp )
 {
-  return _fileWriter->nextFramePixel( x, y, data, timestamp );
+  return _fileWriter->nextPixel( x, y, data, timestamp );
+}
+
+// ----------------------------------------------------------------------------
+
+unsigned long long SpidrDaq::nextPixel()
+{
+  return _fileWriter->nextPixel();
 }
 
 // ----------------------------------------------------------------------------

@@ -747,6 +747,47 @@ bool SpidrController::stopAutoTrigger()
 }
 
 // ----------------------------------------------------------------------------
+
+bool SpidrController::openShutter()
+{
+  // Set to auto-trigger mode with number of triggers set to 0
+  // and the frequency (10Hz) lower than the trigger period (200ms) allows
+  if( !this->setTriggerConfig( 4, 200000, 10, 0 ) ) return false;
+  return this->startAutoTrigger();
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::closeShutter()
+{
+  // Set to auto-trigger mode (just in case), and to default trigger settings
+  if( !this->setTriggerConfig( 4, 100000, 1, 1 ) ) return false;
+  return this->stopAutoTrigger();
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getShutterCounter( int *cntr )
+{
+  return this->requestGetInt( CMD_GET_SHUTTERCNTR, 0, cntr );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getTriggerCounter( int *cntr )
+{
+  return this->requestGetInt( CMD_GET_TRIGGERCNTR, 0, cntr );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::resetCounters()
+{
+  int dummy = 0;
+  return this->requestSetInt( CMD_RESET_COUNTERS, 0, dummy );
+}
+
+// ----------------------------------------------------------------------------
 // Data-acquisition
 // ----------------------------------------------------------------------------
 
