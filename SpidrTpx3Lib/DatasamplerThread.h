@@ -1,5 +1,5 @@
-#ifndef FRAMESAMPLERTHREAD_H
-#define FRAMESAMPLERTHREAD_H
+#ifndef DATASAMPLERTHREAD_H
+#define DATASAMPLERTHREAD_H
 
 #include <QFile>
 #include <QSemaphore>
@@ -23,14 +23,14 @@ typedef uint8_t  u8;
 
 class ReceiverThread;
 
-class FramesamplerThread : public QThread
+class DatasamplerThread : public QThread
 {
   Q_OBJECT
 
  public:
-  FramesamplerThread( ReceiverThread *recvr,
+  DatasamplerThread( ReceiverThread *recvr,
 		      QObject *parent = 0 );
-  ~FramesamplerThread();
+  ~DatasamplerThread();
 
   void stop();
   void run();
@@ -95,4 +95,4 @@ class FramesamplerThread : public QThread
   char *_sampleBuffer;
 };
 
-#endif // FRAMESAMPLERTHREAD_H
+#endif // DATASAMPLERTHREAD_H

@@ -5,12 +5,12 @@
 #define Sleep(ms) usleep(1000*ms)
 #endif
 
-#include "FramesamplerThread.h"
+#include "DatasamplerThread.h"
 #include "ReceiverThread.h"
 
 // ----------------------------------------------------------------------------
 
-FramesamplerThread::FramesamplerThread( ReceiverThread *recvr,
+DatasamplerThread::DatasamplerThread( ReceiverThread *recvr,
 				    QObject *parent /* = 0 */ )
   : QThread( parent ),
     _receiver( recvr ),
@@ -33,7 +33,7 @@ FramesamplerThread::FramesamplerThread( ReceiverThread *recvr,
 
 // ----------------------------------------------------------------------------
 
-FramesamplerThread::~FramesamplerThread()
+DatasamplerThread::~DatasamplerThread()
 {
   // In case the thread is still running...
   this->stop();
@@ -41,7 +41,7 @@ FramesamplerThread::~FramesamplerThread()
 
 // ----------------------------------------------------------------------------
 
-void FramesamplerThread::stop()
+void DatasamplerThread::stop()
 {
   if( this->isRunning() )
     {
@@ -52,7 +52,7 @@ void FramesamplerThread::stop()
 
 // ----------------------------------------------------------------------------
 
-void FramesamplerThread::run()
+void DatasamplerThread::run()
 {
   long long bytes;
 
@@ -115,7 +115,7 @@ void FramesamplerThread::run()
 
 // ----------------------------------------------------------------------------
 
-bool FramesamplerThread::getFrame( int timeout_ms )
+bool DatasamplerThread::getFrame( int timeout_ms )
 {
   this->freeSample();
 
@@ -128,7 +128,7 @@ bool FramesamplerThread::getFrame( int timeout_ms )
 
 // ----------------------------------------------------------------------------
 
-void FramesamplerThread::freeSample()
+void DatasamplerThread::freeSample()
 {
   if( _sampleBufferEmpty.available() == 0 )
     {
@@ -139,7 +139,7 @@ void FramesamplerThread::freeSample()
 
 // ----------------------------------------------------------------------------
 
-char *FramesamplerThread::sampleData( int *size )
+char *DatasamplerThread::sampleData( int *size )
 {
   *size = _bufIndex;
   return _sampleBuffer;
@@ -147,7 +147,7 @@ char *FramesamplerThread::sampleData( int *size )
 
 // ----------------------------------------------------------------------------
 /*
-bool FramesamplerThread::nextPixel( int *x, int *y,
+bool DatasamplerThread::nextPixel( int *x, int *y,
 				    int *data, int *timestamp )
 {
   u32 addr, header, dcol, spix, pix;
@@ -187,7 +187,7 @@ bool FramesamplerThread::nextPixel( int *x, int *y,
 */
 // ----------------------------------------------------------------------------
 
-bool FramesamplerThread::nextPixel( int *x,
+bool DatasamplerThread::nextPixel( int *x,
 				    int *y,
 				    int *data,
 				    int *timestamp )
@@ -235,7 +235,7 @@ bool FramesamplerThread::nextPixel( int *x,
 
 // ----------------------------------------------------------------------------
 
-u64 FramesamplerThread::nextPixel()
+u64 DatasamplerThread::nextPixel()
 {
   u64 pixdata, header;
   while( _pixIndex < _bufIndex )
@@ -270,7 +270,7 @@ u64 FramesamplerThread::nextPixel()
 
 // ----------------------------------------------------------------------------
 
-int FramesamplerThread::copyFrameToBuffer()
+int DatasamplerThread::copyFrameToBuffer()
 {
   // Collect pixel data into the sample buffer up to an End-of-Readout packet
   long long bytes = _receiver->bytesAvailable();
@@ -324,7 +324,7 @@ int FramesamplerThread::copyFrameToBuffer()
 
 // ----------------------------------------------------------------------------
 
-bool FramesamplerThread::openFile( std::string filename, bool overwrite )
+bool DatasamplerThread::openFile( std::string filename, bool overwrite )
 {
   this->closeFile();
 
@@ -349,7 +349,7 @@ bool FramesamplerThread::openFile( std::string filename, bool overwrite )
 
 // ----------------------------------------------------------------------------
 
-bool FramesamplerThread::closeFile()
+bool DatasamplerThread::closeFile()
 {
   _fileOpen = false;
   if( _file.isOpen() )
@@ -362,10 +362,10 @@ bool FramesamplerThread::closeFile()
 
 // ----------------------------------------------------------------------------
 
-std::string FramesamplerThread::errorString()
+std::string DatasamplerThread::errorString()
 {
   if( _errString.isEmpty() ) return std::string( "" );
-  QString qs = "Framesampler: " + _errString;
+  QString qs = "Datasampler: " + _errString;
   return qs.toStdString();
 }
 

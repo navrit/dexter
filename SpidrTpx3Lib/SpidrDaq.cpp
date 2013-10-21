@@ -1,7 +1,7 @@
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 #include "ReceiverThread.h"
-#include "FramesamplerThread.h"
+#include "DatasamplerThread.h"
 
 // Version identifier: year, month, day, release number
 const int VERSION_ID = 0x13100300;
@@ -80,7 +80,7 @@ void SpidrDaq::init( int             *ipaddr,
 
   // Create the sampler/file-writer thread, providing it with a link to
   // the packet reader thread
-  _fileWriter = new FramesamplerThread( _packetReceiver );
+  _fileWriter = new DatasamplerThread( _packetReceiver );
 
   // Provide the receiver with the possibility to control the module,
   // for example to set and clear a busy/inhibit/throttle signal
@@ -105,14 +105,6 @@ void SpidrDaq::stop()
       delete _fileWriter;
       _fileWriter = 0;
     }
-  /*
-  if( _frameBuilder )
-    {
-      _frameBuilder->stop();
-      delete _frameBuilder;
-      _frameBuilder = 0;
-    }
-  */
   if( _packetReceiver )
     {
       _packetReceiver->stop();
@@ -184,13 +176,6 @@ void SpidrDaq::setSampling( bool enable )
   _fileWriter->setSampling( enable );
 }
 
-// ----------------------------------------------------------------------------
-/*
-void SpidrDaq::setDecodeFrames( bool decode )
-{
-  //_frameBuilder->setDecodeFrames( decode );
-}
-*/
 // ----------------------------------------------------------------------------
 // Acquisition
 // ----------------------------------------------------------------------------

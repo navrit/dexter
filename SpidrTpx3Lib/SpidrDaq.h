@@ -18,8 +18,7 @@
 
 class SpidrController;
 class ReceiverThread;
-class FilewriterThread;
-class FramesamplerThread;
+class DatasamplerThread;
 
 class MY_LIB_API SpidrDaq
 {
@@ -42,8 +41,6 @@ class MY_LIB_API SpidrDaq
   bool closeFile                ();
   void setFlush                 ( bool enable );
   void setSampling              ( bool enable );
-  //void setDecodeFrames        ( bool decode );
-  //void setAcqMode             ( int mode );
 
   // Acquisition
   long long bufferSize          ();
@@ -73,9 +70,8 @@ class MY_LIB_API SpidrDaq
   int       bufferWrapCount     ();
 
  private:
-  ReceiverThread     *_packetReceiver;
-  //FilewriterThread   *_fileWriter;
-  FramesamplerThread *_fileWriter;
+  ReceiverThread    *_packetReceiver;
+  DatasamplerThread *_fileWriter;
 
   // Init function for use in c'tors
   void init        ( int             *ipaddr,
