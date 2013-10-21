@@ -84,13 +84,18 @@
 #define CMD_GET_AVDD           0x54B
 #define CMD_GET_DVDD           0x54C
 
-// Configuration: devices (continued)
+// Configuration: timer
 #define CMD_RESTART_TIMERS     0x550
 #define CMD_RESET_TIMER        0x551
 #define CMD_GET_TIMER          0x552
 #define CMD_SET_TIMER          0x553
+
+// Trigger (continued)
 #define CMD_GET_SHUTTERSTART   0x554
 #define CMD_GET_SHUTTEREND     0x555
+#define CMD_GET_SHUTTERCNTR    0x556
+#define CMD_GET_TRIGGERCNTR    0x557
+#define CMD_RESET_COUNTERS     0x558
 
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
@@ -186,8 +191,12 @@ static char *CMD_STR[] =
     "RESET_TIMER      ", // 0x551
     "GET_TIMER        ", // 0x552
     "SET_TIMER        ", // 0x553
-    "GET_SHUTTER_START", // 0x554
-    "GET_SHUTTER_END  "  // 0x555
+
+    "GET_SHUTTERSTART ", // 0x554
+    "GET_SHUTTEREND   ", // 0x555
+    "GET_SHUTTERCNTR  ", // 0x556
+    "GET_TRIGGERCNTR  ", // 0x557
+    "RESET_COUNTERS   "  // 0x558
   };
 
 // Reply bit: set in the reply message in the command identifier
