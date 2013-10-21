@@ -11,6 +11,8 @@ import matplotlib.cm as cm
 import matplotlib
 from wx.lib.embeddedimage import PyEmbeddedImage
 import pycallgraph
+import os
+
 try:
     from agw import floatspin as FS
 except ImportError: # if it's not there locally, try the wxPython lib.
@@ -353,6 +355,33 @@ class TestPanel(wx.Panel):
 #        print mmin
         self.mmin=float(mmin)
         self.refresh()
+    def save(self,fname):
+        print "PNG->",fname
+        image = wx.ImageFromBitmap(self.bmp)
+        image = image.Scale(1024, 1024, wx.IMAGE_QUALITY_NORMAL)
+        bmp = wx.BitmapFromImage(image)
+        bmp.SaveFile(fname,wx.BITMAP_TYPE_PNG)
+
+        fhist=fname[:-4]+"_hst.dat"
+        fgnu=fname[:-4]+"_hst.gnu"
+        fpng=fname[:-4]+"_hst.png"
+        print "PNG->",fhist
+        counts,bins= self.hst
+        f=open(fhist,"w")
+        for i in range(counts.shape[0]):
+          f.write("%.4e %.3e\n"%(bins[i],counts[i]))
+          f.write("%.4e %.3e\n"%(bins[i+1],counts[i]))
+        f.close()
+        f=open(fgnu,"w")
+        f.write("set terminal png\n")
+        f.write("set output '%s'\n"%fpng)
+        f.write("set grid\n")
+        f.write("set xlabel 'X'\n")
+        f.write("set ylabel 'Counts'\n")
+        f.write("plot '%s' w l t ''\n"%fhist)
+        f.close()
+        os.system("gnuplot %s"%fgnu)
+
 
     def make_bitmap(self):
 #        X,Y=self.data.shape
@@ -386,11 +415,14 @@ class TestPanel(wx.Panel):
           rms+=pow(centers[i]-avr,2.0)*counts[i]
         N=np.sum(counts)
         rms=sqrt(rms/N)
+        
         if self.update_stats!=None:
            msg="Zoom:%d"%self.PPP
            msg+="\nAVR:%.3f"%(avr)
            msg+="\nRMS:%.3f"%(rms)
            msg+="\nPoints:%d"%(N)
+           D=256*256-np.count_nonzero(self.data) 
+           msg+="\nDead:%d"%(D)
            self.update_stats(msg)
 
 
@@ -435,7 +467,7 @@ ico = PyEmbeddedImage(
 
 class MyForm(wx.Frame):
   def __init__(self,fname):
-     wx.Frame.__init__(self, None, wx.ID_ANY, "openPIXel", size=(920,565),style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
+     wx.Frame.__init__(self, None, wx.ID_ANY, "openPIXel", size=(920,615),style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
 #     self.Bind(wx.EVT_CHAR, self.OnChar)
 #     sizer = wx.BoxSizer(wx.VERTICAL)
      self.tp=TestPanel(self,fname)
@@ -526,7 +558,7 @@ class MyForm(wx.Frame):
 
      stats_box = wx.StaticBox(self, -1, "Stats")
      stats_sizer = wx.StaticBoxSizer(stats_box, wx.VERTICAL)
-     self.stats_info = wx.TextCtrl(self, style=wx.TE_MULTILINE |  wx.TE_READONLY,size=(150,94))
+     self.stats_info = wx.TextCtrl(self, style=wx.TE_MULTILINE |  wx.TE_READONLY,size=(150,89))
      stats_sizer.Add(self.stats_info)
      self.tp.update_stats=self.update_stats
      self.update_stats("-")
@@ -562,7 +594,100 @@ class MyForm(wx.Frame):
      
 #     icon.CopyFromBitmap(ico)
      self.SetIcon(ico.GetIcon()) 
-     self.Show()
+
+
+     
+     menubar = wx.MenuBar()
+
+     fileMenu = wx.Menu()
+     fileMenu = wx.Menu()
+     file_open=fileMenu.Append(wx.ID_OPEN, '&Open')
+     file_save=fileMenu.Append(wx.ID_SAVE, '&Save plots')
+     fileMenu.AppendSeparator()
+     file_exit = fileMenu.Append(wx.ID_EXIT, '&Quit')
+
+     self.Bind(wx.EVT_MENU, self.OnOpen, file_open)
+     self.Bind(wx.EVT_MENU, self.OnFileSaveAs, file_save)
+     self.Bind(wx.EVT_MENU, self.OnQuit, file_exit)
+     menubar.Append(fileMenu, '&File')
+     self.SetMenuBar(menubar)
+
+     viewMenu = wx.Menu()
+     self.shst = viewMenu.Append(wx.ID_ANY, 'Show statubar', 
+            'Show Statusbar', kind=wx.ITEM_CHECK)
+     self.statusbar = self.CreateStatusBar()
+     self.statusbar.SetStatusText('File %s loaded.'%fname)
+     viewMenu.Check(self.shst.GetId(), True)
+     self.Bind(wx.EVT_MENU, self.ToggleStatusBar, self.shst)
+     menubar.Append(viewMenu, '&View')
+     
+     helpMenu = wx.Menu()
+     file_about=helpMenu.Append(wx.ID_ABOUT, "&About", "Display information about the program")
+     self.Bind(wx.EVT_MENU, self.OnHelpAbout, file_about)
+     menubar.Append(helpMenu, '&Help')
+        
+     self.Centre()
+     self.Show(True)
+     
+  def ToggleStatusBar(self, e):
+    if self.shst.IsChecked():
+        self.statusbar.Show()
+    else:
+        self.statusbar.Hide()
+  def OnOpen(self, e):
+        """ File|Open event - Open dialog box. """
+        dirName=''
+        fileName=''
+        dlg = wx.FileDialog(self, "Open", dirName, fileName,
+                           "Dat Files (*.dat)|*.dat|Text Files (*.txt)|*.txt|All Files|*.*", wx.OPEN)
+        if (dlg.ShowModal() == wx.ID_OK):
+            self.fileName = dlg.GetFilename()
+            self.dirName = dlg.GetDirectory()
+
+            ### - this will read in Unicode files (since I'm using Unicode wxPython
+            #if self.rtb.LoadFile(os.path.join(self.dirName, self.fileName)):
+            #    self.SetStatusText("Opened file: " + str(self.rtb.GetLastPosition()) + 
+            #                       " characters.", SB_INFO)
+            #    self.ShowPos()
+            #else:
+            #    self.SetStatusText("Error in opening file.", SB_INFO)
+
+            ### - but we want just plain ASCII files, so:
+            try:
+                f = file(os.path.join(self.dirName, self.fileName), 'r')
+                self.rtb.SetValue(f.read())
+                self.SetTitle(APP_NAME + " - [" + self.fileName + "]")
+                self.SetStatusText("Opened file: " + str(self.rtb.GetLastPosition()) +
+                                   " characters.", SB_INFO)
+                self.ShowPos()
+                f.close()
+            except:
+                self.PushStatusText("Error in opening file.", SB_INFO)
+        dlg.Destroy()
+  def OnHelpAbout(self, e):
+        """ Help|About event """
+        title = self.GetTitle()
+        d = wx.MessageDialog(self, "OpenPixel v0.1\nAuthor: Szymon Kulis\n2013 CERN","About" , wx.ICON_INFORMATION | wx.OK)
+        d.ShowModal()
+        d.Destroy()
+  def OnFileSaveAs(self, e):
+        """ File|SaveAs event - Prompt for File Name. """
+        ret = False
+        dirName='.'
+        fileName='plots'
+        dlg = wx.FileDialog(self, "Save As", dirName, fileName,
+                           "PNG Files (*.png)|*.png|All Files|*.*", wx.SAVE)
+        if (dlg.ShowModal() == wx.ID_OK):
+            fileName = dlg.GetFilename()
+            dirName = dlg.GetDirectory()
+            if fileName[-4:].lower()!='.png':
+              fileName+='.png'
+            self.tp.save(dirName+"/"+fileName)
+            ret = True
+        dlg.Destroy()
+        return ret
+  def OnQuit(self, e):
+        self.Close()
   def EvtColorComboBox(self,event):
     cb = event.GetEventObject()
 #    data = cb.GetClientData()
