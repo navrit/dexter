@@ -1,4 +1,5 @@
-all:test08_th_scan_noise.so
+all:
+
 
 %.so:%.o
 	gcc -shared $< -o $@

@@ -382,3 +382,127 @@ class test08_equalization_test(tpx3_test):
         f[1].close()
 
 
+
+class test08_equalization_hitrate_seqread(tpx3_test):
+  """Threshold scan over noise and measture hit rate (sequential readout)"""
+
+  def _execute(self):
+    self.tpx.resetPixels()
+    self.tpx.setDacsDflt()
+    self.tpx.setDac(TPX3_IBIAS_IKRUM,15)
+    self.tpx.setDac(TPX3_VTP_COARSE,50)
+    self.tpx.setDac(TPX3_VTP_FINE,112) # (0e-) slope 44.5e/LSB -> (112=1000e-)  (135=2000e-)
+    self.tpx.setDac(TPX3_VTHRESH_COARSE,7) 
+    self.tpx.setDac(TPX3_VFBK,143) 
+    self.tpx.setDac(TPX3_IBIAS_PREAMP_ON,150)
+    self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,100)
+
+    self.tpx.setGenConfig(0x04)
+    self.tpx.setPllConfig(0x291E) 
+    self.tpx.getGenConfig()
+
+    for c in range(256):
+        self.tpx.configCtpr(c,0)
+    self.tpx.setCtpr()
+
+
+    mkdir(self.fname)
+    self.tpx.flush_udp_fifo()
+
+    
+    res={}
+    self.tpx.resetPixelConfig()
+    self.tpx.load_equalization("logs/F3_default_eq_bruteforce/test08_equalization/eq_codes.dat")
+    to_be_masked=[]# [(23L, 69L), (49L, 94L), (50L, 94L), (89L, 46L), (90L, 46L), (105L, 139L), (106L, 139L), (107L, 138L), (112L, 5L), (115L, 196L), (116L, 196L), (135L, 122L), (136L, 122L), (175L, 7L), (176L, 7L), (205L, 27L), (207L, 51L), (247L, 218L)]
+    for x,y in to_be_masked:
+       self.tpx.maskPixel(x,y)
+    logging.info("Pixels masked %d)"%(len(to_be_masked)))
+    self.tpx.setPixelConfig()
+    
+    to_be_masked=[]
+    mask=0
+    for i in range(0,350,1):
+        self.tpx.setDac(TPX3_VTHRESH_FINE,i)
+        self.tpx.openShutter(500)
+        self.tpx.sequentialReadout()
+        data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
+        pixels=0
+        for d in data:
+          if d.type==0xA:
+             pixels+=1
+             if i==247:
+                   to_be_masked.append( (d.col,d.row) )
+
+          elif d.type!=0x7:
+             logging.warning("Unexpected packet %s"%str(d))
+        logging.info("Packets received %d (pixels %d)"%(len(data),pixels))
+        res[i]=pixels
+    f=open(self.fname+"/rate.dat","w")
+    for x in sorted(res):
+      f.write("%d %d\n"%(x,res[x]))
+    f.close()
+    print to_be_masked
+    
+    
+
+class test08_equalization_hitrate_datadriven(tpx3_test):
+  """Threshold scan over noise and measture hit rate (data driven)"""
+
+  def _execute(self):
+    self.tpx.resetPixels()
+    self.tpx.setDacsDflt()
+    self.tpx.setDac(TPX3_IBIAS_IKRUM,15)
+    self.tpx.setDac(TPX3_VTP_COARSE,50)
+    self.tpx.setDac(TPX3_VTP_FINE,112) # (0e-) slope 44.5e/LSB -> (112=1000e-)  (135=2000e-)
+    self.tpx.setDac(TPX3_VTHRESH_COARSE,7) 
+    self.tpx.setDac(TPX3_VFBK,143) 
+    self.tpx.setDac(TPX3_IBIAS_PREAMP_ON,150)
+    self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,100)
+
+    self.tpx.setGenConfig(0x00)
+    self.tpx.setPllConfig(0x291E) 
+
+    for c in range(256):
+        self.tpx.configCtpr(c,0)
+    self.tpx.setCtpr()
+
+
+    mkdir(self.fname)
+    self.tpx.flush_udp_fifo()
+    self.tpx.getGenConfig()
+
+    
+    res={}
+    self.tpx.resetPixelConfig()
+    self.tpx.load_equalization("logs/F3_default_eq_bruteforce/test08_equalization/eq_codes.dat")
+    to_be_masked= [(23L, 69L), (49L, 94L), (50L, 94L), (89L, 46L), (90L, 46L), (105L, 139L), (106L, 139L), (107L, 138L), (112L, 5L), (115L, 196L), (116L, 196L), (135L, 122L), (136L, 122L), (175L, 7L), (176L, 7L), (205L, 27L), (207L, 51L), (247L, 218L)]
+    for x,y in to_be_masked:
+       self.tpx.maskPixel(x,y)
+    logging.info("Pixels masked %d)"%(len(to_be_masked)))
+    self.tpx.setPixelConfig()
+    
+    to_be_masked=[]
+    mask=0
+    self.tpx.datadrivenReadout()
+
+    for i in range(0,350,1):
+        self.tpx.setDac(TPX3_VTHRESH_FINE,i)
+        self.tpx.openShutter(500)
+        data=self.tpx.recv_mask(0x71B0000000000000, 0xFFFF000000000000)
+        pixels={}
+        for d in data:
+#          print d
+          if d.type==0xB:
+             addr=d.col*256+d.row
+             if not addr in pixels:
+               pixels[addr]=0
+             pixels[addr]+=1
+          elif d.type!=0x7:
+             logging.warning("Unexpected packet %s"%str(d))
+        logging.info("Packets received %d (pixels %d)"%(len(data),len(pixels)))
+        res[i]=len(pixels)
+    f=open(self.fname+"/rate.dat","w")
+    for x in sorted(res):
+      f.write("%d %d\n"%(x,res[x]))
+    f.close()
+    print to_be_masked

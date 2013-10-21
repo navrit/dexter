@@ -33,6 +33,7 @@ tote10=load_lut("SpidrTpx3/luts/tot_event_count_10b_LUT.txt")
 
 
 class tpx3packet:
+  mode=0
   def pack0(self):
     self.str="unimplemented"
   def pack1(self):
@@ -40,7 +41,19 @@ class tpx3packet:
   def pack2(self):
     self.str="unimplemented"
   def pack3(self):
-    self.str="unimplemented"
+    self.reg= self.raw>>40&0xF
+    if self.reg==1:
+      raw=self.raw
+      self.pol=raw&0x1
+      raw>>=1
+      self.mode=raw&0x3
+      tpx3packet.mode=self.mode
+      raw>>=2
+      self.str="Read General Config (pol=%d, mode=%d)"%(self.pol,self.mode)
+    else:
+      self.str="unimplemented"
+    
+    
   def pack4(self):
     b0=(self.raw>>40)&0xFF
     if b0==0x44   :
@@ -90,6 +103,8 @@ class tpx3packet:
         self.str="EoC 0x46 (Req Rising Shutter Low)"
       elif b1==0x47:
         self.str="EoC 0x47 (Req Rising Shutter High)"
+      elif b1==0x02:
+        self.str="EoC 0x02 (SetDac)"
       elif b1==0x30:
         self.str="EoC 0xcf (Set GeneralConfig)"
       elif b1==0x8F:
@@ -106,6 +121,8 @@ class tpx3packet:
         self.str="EoC 0xF (Stop Matrix Command)"
       elif b1==0xA0:
         self.str="EoR readout seq"
+      elif b1==0xB0:
+        self.str="EoR data driven"
       elif b1==0xBF:
         self.str="EoC 0xB (Read Data Driven)"
       elif b1==0xB0:
@@ -156,39 +173,35 @@ class tpx3packet:
 
     
   def packB(self):
-#     self.col_address=((self.b0<<3)&0x78) | ((self.b1>>5)&0x7) 
-#     self.sp_address= ((self.b1<<1)&0x3E) | ((self.b2>>7)&0x1) 
-#     self.pixel_address=((self.b2>>4)&0x07)
-#     self.col=self.col_address*2
-#     if self.pixel_address&0x4 : self.col+=1
-#     self.row=self.sp_address*4
-#     self.row+= (self.pixel_address&0x3)
+     self.str="DataDriven "
+     if tpx3packet.mode==0:
+       self.mode0()
+     else:
+       self.str+="Not parsed"
 
-#     self.ftoa=self.raw&0xF
-#     self.tot=(self.raw>>4)&0x3FF
-
-#     self.toa=(self.raw>>14)&0x3FFF
-#     self.toa=toa14[self.toa]
-#     self.tot=tote10[self.tot]
-#     self.str="DataDriven (%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d ftoa=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address, self.toa,self.tot, self.ftoa)
-     raw=self.raw>>4
-     EventNounter=raw&0x3FF
+  def mode0(self):
+     raw=self.raw
+     self.ftoa=raw&0xf
+     raw>>=4
+     self.tot=raw&0x3FF
      raw>>=10
-     iTOT=raw&0x3FFF
+     self.toa=raw&0x3FFF
      raw>>=14
      self.pixel_address=raw&0x7
      raw>>=3
      self.sp_address  = raw&0x3F
      raw>>=6
      self.col_address = raw&0x7F
-     
+
      self.col=self.col_address*2
-     #self.col+= (self.pixel_address&0x4)>>2
      if self.pixel_address&0x4 : self.col+=1
      self.row=self.sp_address*4
      self.row+= (self.pixel_address&0x3)
      
-     self.cnt=tote10[(self.raw>>4)&0x3FF]
+     self.tot=tote10[self.tot]
+     self.toa=toa14[self.toa]
+     
+     self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d ftoa=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address,  self.toa,self.tot,self.ftoa)
 
   def packC(self):
     self.str="unimplemented"

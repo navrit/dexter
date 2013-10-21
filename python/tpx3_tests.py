@@ -84,10 +84,10 @@ class TPX_tests:
 
   def list(self):
    avaliable_tests=tests.get_tests()
-   print "%-20s | %s"%("Test name", "Test description")
+   print "%-40s | %s"%("Test name", "Test description")
    print "-"*80
    for test_name in sorted(avaliable_tests):
-     print "%-20s | %s"%(test_name, avaliable_tests[test_name].__doc__)
+     print "%-40s | %s"%(test_name, avaliable_tests[test_name].__doc__)
 
 
 def main():
