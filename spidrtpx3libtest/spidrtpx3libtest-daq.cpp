@@ -2,6 +2,7 @@
 #include <windows.h>
 #else
 #include <unistd.h>
+#define Sleep(ms) usleep(1000*ms)
 #endif
 #include <iostream>
 #include <iomanip>
@@ -86,7 +87,8 @@ int main( int argc, char *argv[] )
     cout << "###setGenCfg: " << spidrctrl.errorString() << endl;
 
   // Set Timepix3 into acquisition mode
-  if( !spidrctrl.datadrivenReadout( device_nr ) )
+  //if( !spidrctrl.datadrivenReadout() )
+  if( !spidrctrl.sequentialReadout() )
     cout << "###ddrivenReadout: " << spidrctrl.errorString() << endl;
 
   // ----------------------------------------------------------
@@ -94,7 +96,7 @@ int main( int argc, char *argv[] )
   // Configure the shutter trigger
   int trig_mode      = 4;      // SPIDR_TRIG_AUTO;
   int trig_period_us = 100000; // 100 ms
-  int trig_freq_hz   = 1;      // 1 Hz
+  int trig_freq_hz   = 3;      // 3 Hz
   int nr_of_trigs    = 10;     // 10 triggers
   if( !spidrctrl.setTriggerConfig( trig_mode, trig_period_us,
                                    trig_freq_hz, nr_of_trigs ) )
@@ -145,6 +147,10 @@ int main( int argc, char *argv[] )
 	       << " frames" << endl;
         }
     }
+
+  if( !spidrctrl.pauseReadout() )
+    cout << "###pauseReadout: " << spidrctrl.errorString() << endl;
+  Sleep(100);
 
   // ----------------------------------------------------------
   return 0;
