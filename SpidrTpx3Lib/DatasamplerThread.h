@@ -39,6 +39,7 @@ class DatasamplerThread : public QThread
 
   // Data sampling: 'frames' or data blocks
   void  setSampling  ( bool enable )     { _sampling = enable; }
+  void  setSampleAll ( bool enable )     { _sampleAll = enable; }
   bool  getFrame     ( int timeout_ms );
   void  freeFrame    ()                  { freeSample(); }
   char *frameData    ( int *size )       { return sampleData( size ); }
@@ -72,7 +73,7 @@ class DatasamplerThread : public QThread
   long long _framesSampled;
   long long _bytesWritten,_bytesFlushed;
 
-  bool  _sampling;
+  bool  _sampling, _sampleAll;
   QFile _file;
   bool  _fileOpen;
   bool  _flush; // Flush or not,

@@ -19,11 +19,12 @@ DatasamplerThread::DatasamplerThread( ReceiverThread *recvr,
     _bytesWritten( 0 ),
     _bytesFlushed( 0 ),
     _sampling( false ),
+    _sampleAll( true ),
     _fileOpen( false ),
     _flush( true ),
     _bufIndex( 0 ),
     _pixIndex( 0 ),
-    _bigEndian( true )
+    _bigEndian( false )
 {
   _sampleBuffer = (char *) _sampleBufferUlong;
 
@@ -66,18 +67,40 @@ void DatasamplerThread::run()
 	    {
 	      if( _sampling )
 		{
-		  // Wait until the data buffer is free
-		  if( _sampleBufferEmpty.tryAcquire( 1, 50 ) )
+		  if( _sampleAll )
 		    {
+		      // No data to be lost for sampling...
+		      // Wait until the sample buffer is free
+		      if( _sampleBufferEmpty.tryAcquire( 1, 50 ) )
+			{
+			  bytes = this->copyFrameToBuffer();
+
+			  // Write the sampled data to file too if appropriate
+			  if( _fileOpen )
+			    // ###NB: what to do if not all bytes are written
+			    // but we did copy them to the sample buffer?
+			    _file.write( _receiver->data(), bytes );
+
+			  // Notify the receiver
+			  _receiver->updateBytesConsumed( bytes );
+			  _bytesWritten += bytes;
+			}
+		    }
+		  else if( _sampleBufferEmpty.available() )
+		    {
+		      // Sample as often as we can,
+		      // i.e. copy data only when the data buffer is free
+		      _sampleBufferEmpty.acquire();
+
 		      bytes = this->copyFrameToBuffer();
 
-		      // Write the frame data to file too if appropriate
+		      // Write the sampled data to file too if appropriate
 		      if( _fileOpen )
-			// ###NB: what to do if not all bytes are written?
-			//        (and we did copy them to the sample buffer)
+			// ###NB: what to do if not all bytes are written
+			// but we did copy them to the sample buffer?
 			_file.write( _receiver->data(), bytes );
 
-		      // Update the receiver's data buffer administration
+		      // Notify the receiver
 		      _receiver->updateBytesConsumed( bytes );
 		      _bytesWritten += bytes;
 		    }
@@ -88,7 +111,7 @@ void DatasamplerThread::run()
 		  bytes = _file.write( _receiver->data(),
 				       _receiver->bytesAvailable() );
 
-		  // Update the receiver's data buffer administration
+		  // Notify the receiver
 		  _receiver->updateBytesConsumed( bytes );
 		  _bytesWritten += bytes;
 		}
@@ -188,10 +211,12 @@ bool DatasamplerThread::nextPixel( int *x, int *y,
 // ----------------------------------------------------------------------------
 
 bool DatasamplerThread::nextPixel( int *x,
-				    int *y,
-				    int *data,
-				    int *timestamp )
+				   int *y,
+				   int *data,
+				   int *timestamp )
 {
+  // Extract data from the next 64-bit/8-byte pixel data packet
+  // in the sample buffer and return them in the given pointer locations
   u64 pixdata, header, dcol, spix, pix;
   while( _pixIndex < _bufIndex )
     {
@@ -237,6 +262,7 @@ bool DatasamplerThread::nextPixel( int *x,
 
 u64 DatasamplerThread::nextPixel()
 {
+  // Return the next 64-bit/8-byte pixel data packet in the sample buffer
   u64 pixdata, header;
   while( _pixIndex < _bufIndex )
     {
@@ -275,12 +301,23 @@ int DatasamplerThread::copyFrameToBuffer()
   // Collect pixel data into the sample buffer up to an End-of-Readout packet
   long long bytes = _receiver->bytesAvailable();
   char     *data  = _receiver->data();
+  char      hdr1, hdr2;
   int       size  = 0;
   // Find the first End-of-Readout Timepix3 packet
   while( size < bytes )
     {
-      if( *data == (char) 0x71 &&
-	  (*(data+1) == (char) 0xA0 || *(data+1) == (char) 0xB0 ) )
+      if( _bigEndian )
+	{
+	  hdr1 = *data;
+	  hdr2 = *(data+1);
+	}
+      else
+	{
+	  hdr1 = *(data+7);
+	  hdr2 = *(data+6);
+	}
+      if( hdr1 == (char) 0x71 &&
+	  (hdr2 == (char) 0xA0 || hdr2 == (char) 0xB0 ) )
 	{
 	  // EoR found...
 
@@ -301,7 +338,7 @@ int DatasamplerThread::copyFrameToBuffer()
 		      static_cast<void *> (_receiver->data()), size );
 	      _bufIndex += size;
 
-	      // Okay, a frame is now available in the frame buffer
+	      // Okay, a frame is now available in the sample buffer
 	      _sampleAvailable.release();
 	    }
 	  return size;
@@ -315,7 +352,7 @@ int DatasamplerThread::copyFrameToBuffer()
 	  static_cast<void *> (_receiver->data()), size );
   _bufIndex += size;
 
-  // Allow another access to the frame buffer to continue filling it
+  // Allow another access to the sample buffer to continue filling it
   if( _sampleBufferEmpty.available() == 0 )
     _sampleBufferEmpty.release();
 
