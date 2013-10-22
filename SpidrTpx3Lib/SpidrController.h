@@ -139,9 +139,9 @@ class MY_LIB_API SpidrController
   bool resetCounters           ();
 
   // Data-acquisition
-  bool sequentialReadout       ( int dev_nr );
-  bool datadrivenReadout       ( int dev_nr );
-  bool pauseReadout            ( int dev_nr );
+  bool sequentialReadout       ();
+  bool datadrivenReadout       ();
+  bool pauseReadout            ();
 
   // Timer
   bool restartTimers           ();

@@ -791,26 +791,26 @@ bool SpidrController::resetCounters()
 // Data-acquisition
 // ----------------------------------------------------------------------------
 
-bool SpidrController::sequentialReadout( int dev_nr )
+bool SpidrController::sequentialReadout()
 {
   int dummy = 0;
-  return this->requestSetInt( CMD_SEQ_READOUT, dev_nr, dummy );
+  return this->requestSetInt( CMD_SEQ_READOUT, 0, dummy );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::datadrivenReadout( int dev_nr )
+bool SpidrController::datadrivenReadout()
 {
   int dummy = 0;
-  return this->requestSetInt( CMD_DDRIVEN_READOUT, dev_nr, dummy );
+  return this->requestSetInt( CMD_DDRIVEN_READOUT, 0, dummy );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::pauseReadout( int dev_nr )
+bool SpidrController::pauseReadout()
 {
   int dummy = 0;
-  return this->requestSetInt( CMD_PAUSE_READOUT, dev_nr, dummy );
+  return this->requestSetInt( CMD_PAUSE_READOUT, 0, dummy );
 }
 
 // ----------------------------------------------------------------------------
