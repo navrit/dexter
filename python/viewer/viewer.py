@@ -10,7 +10,6 @@ import matplotlib.colors as colors
 import matplotlib.cm as cm
 import matplotlib
 from wx.lib.embeddedimage import PyEmbeddedImage
-import pycallgraph
 import os
 
 try:
