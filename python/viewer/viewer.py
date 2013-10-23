@@ -19,15 +19,175 @@ except ImportError: # if it's not there locally, try the wxPython lib.
     import wx.lib.agw.floatspin as FS
 DIM=256
 
+class OPException(Exception):
+    pass
+    
 
+class DataMap(object):
+    def __init__(self, fname=""):
+      if fname!="":
+        self.load(fname)
+      self.data=np.zeros( (1,1) )
+      self.mmin=0.0
+      self.mmax=1.0
+      self.nice_inc=1.0
+      self.nice_min=self.mmin
+      self.nice_max=self.mmax
+      self.N=1
+      self.update_stats=None
+      self.change_cm('jet')
+#      self.process()
+      
+    def load(self,fname):
+      self.fname=fname
+      data=np.loadtxt(fname)
+      X,Y=data.shape
+      if X!=Y:
+        raise OPException("File doesn't contain a square matrix")
+      self.data=data
+      self.mmin=np.amin(self.data)
+      self.mmax=np.amax(self.data)
+      
+      mean=self.data.mean()
+      std=self.data.std()
+
+      self.nice_min=max(self.mmin,mean-3*std)
+      self.nice_max=min(self.mmax,mean+3*std)
+      self.mmin=self.nice_min
+      self.mmax=self.nice_max
+      
+      self.nice_inc=max((self.mmax-self.mmin)/100,0.001)
+#      print self.nice_min, self.nice_max,self.nice_inc
+      self.N=X
+      self.process()
+
+    def cmaps_list(names=None):
+      """display all colormaps included in the names list. If names is None, all
+         defined colormaps will be shown."""
+      matplotlib.rc('text', usetex=False)
+      # get list of all colormap names
+      # this only obtains names of built-in colormaps:
+      maps = [m for m in cm.datad if not m.endswith("_r")]
+      # use undocumented cmap_d dictionary instead
+      #maps = [m for m in cm.cmap_d if not m.endswith("_r")]
+      maps.sort()
+      return maps
+    def set_max(self,mmax):
+        self.mmax=float(mmax)
+        self.process()
+        
+    def set_min(self,mmin):
+        self.mmin=float(mmin)
+        self.process()
+
+    def change_cm(self,new_cm):
+        self.cm=cm.get_cmap(new_cm)
+        self.cm.set_over(color=[1,0,0])
+        self.cm.set_under(color=[0,0,1])
+        transform = cm.ScalarMappable(cmap=self.cm)
+        CBARLEL=256 #self.matrix_size[0]
+        data=np.zeros((CBARLEL,1))
+        for i in range(CBARLEL):
+          data[i][0]=float(i)/CBARLEL
+        cdata=transform.to_rgba(data,bytes=True)
+        self.cm_bmp = wx.BitmapFromBufferRGBA(cdata.shape[0],cdata.shape[1], cdata)
+        image = wx.ImageFromBitmap(self.cm_bmp)
+        image = image.Scale(CBARLEL,10, wx.IMAGE_QUALITY_NORMAL)
+        self.cm_bmp = wx.BitmapFromImage(image)
+        self.process()
+
+    def getVal(self,col,row):
+        return self.data[col][row]
+
+    def save(self,fname):
+        print "PNG->",fname
+        image = wx.ImageFromBitmap(self.bmp)
+        image = image.Scale(1024, 1024, wx.IMAGE_QUALITY_NORMAL)
+        bmp = wx.BitmapFromImage(image)
+        bmp.SaveFile(fname,wx.BITMAP_TYPE_PNG)
+
+        fhist=fname[:-4]+"_hst.dat"
+        fgnu=fname[:-4]+"_hst.gnu"
+        fpng=fname[:-4]+"_hst.png"
+        print "PNG->",fhist
+        counts,bins= self.hst
+        f=open(fhist,"w")
+        for i in range(counts.shape[0]):
+          f.write("%.4e %.3e\n"%(bins[i],counts[i]))
+          f.write("%.4e %.3e\n"%(bins[i+1],counts[i]))
+        f.close()
+        f=open(fgnu,"w")
+        f.write("set terminal png\n")
+        f.write("set output '%s'\n"%fpng)
+        f.write("set grid\n")
+        f.write("set xlabel 'X'\n")
+        f.write("set xra [%.3e:%.3e]\n"%(self.mmin,self.mmax))
+        f.write("set ylabel 'Counts'\n")
+        f.write("plot '%s' w l t ''\n"%fhist)
+        f.close()
+        os.system("gnuplot %s"%fgnu)
+
+
+
+    def process(self):
+        color_norm  = colors.Normalize(vmin=self.mmin, vmax=self.mmax)
+        transform = cm.ScalarMappable(norm=color_norm, cmap=self.cm)
+        cdata=transform.to_rgba(self.data,bytes=True)
+        self.bmp = wx.BitmapFromBufferRGBA(cdata.shape[0],cdata.shape[1], cdata)
+        self.hst=np.histogram(self.data, bins=64, range=(self.mmin,self.mmax))
+        
+#        m1 = self.data > self.mmax 
+#        m2 = self.data < self.mmin
+#        m=m1|m2
+
+        amasked = np.ma.masked_outside(self.data, self.mmin, self.mmax)
+        self.sat=np.ma.count_masked(amasked)
+        #array(self.data,mask=m)
+        self.mean=amasked.mean()
+        self.std=amasked.std()
+
+        self.col_profile=np.mean(amasked, axis=0)
+        self.row_profile=np.mean(amasked, axis=1)
+        
+        col_cdata=transform.to_rgba(self.col_profile,bytes=True)
+        self.col_bmp = wx.BitmapFromBufferRGBA(col_cdata.shape[0],1, col_cdata)
+
+        row_cdata=transform.to_rgba(self.row_profile,bytes=True)
+        self.row_bmp = wx.BitmapFromBufferRGBA(1,row_cdata.shape[0], row_cdata)
+
+        
+#print  numpy.mean(amasked, axis=1, dtype=None, out=None)
+
+#        counts,bins= self.hst
+#        centers=np.zeros((counts.shape[0]))
+#        for i in range(counts.shape[0]):
+#          centers[i]=(bins[i]+bins[i+1])/2
+
+        
+#        avr=np.average(centers, weights=counts)
+#        rms=0.0
+#        for i in range(counts.shape[0]):
+#          rms+=pow(centers[i]-avr,2.0)*counts[i]
+#        N=np.sum(counts)
+#        rms=sqrt(rms/N)
+        
+        if  self.update_stats!=None:
+           msg="AVR:%.3f\n"%(self.mean)
+           msg+="RMS:%.3f\n"%(self.std)
+           msg+="Saturated:%d"%(self.sat)
+#           D=256*256-np.count_nonzero(self.data) 
+#           msg+="\nDead:%d"%(D)
+           self.update_stats(msg)
+           
 
 
 class HistPanel(wx.Panel):
-    def __init__(self, parent,size):
+    def __init__(self, parent,size,data_map):
         wx.Panel.__init__(self, parent, size=size)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.grid=0
-        self.hst=None
+        self.data_map=data_map
+        
     def OnPaint(self, evt):
         dc = wx.PaintDC(self)
         wbrush = wx.Brush(wx.Colour(255,255,255), wx.SOLID)
@@ -39,7 +199,6 @@ class HistPanel(wx.Panel):
         self.y0=10
         X,Y=self.GetSize()
         Y=Y-40
-
         X=512.0/2
         dc.DrawRectangle(self.x0,self.y0,X,Y)         
 
@@ -58,8 +217,8 @@ class HistPanel(wx.Panel):
         dc.SetBrush(wbrush)
         dc.SetPen(wpen)
 
-        if self.hst:
-          counts,bins= self.hst
+        if 1:
+          counts,bins= self.data_map.hst
           BINSLEN=bins.shape[0]
           GAINBIN=bins[BINSLEN-1]-bins[0]
 #          dx=X/(bins.shape[0]-1)
@@ -75,10 +234,10 @@ class HistPanel(wx.Panel):
              if i==BINSLEN-2:dx=4
              dc.DrawRectangle(self.x0+x0,self.y0+Y-v,dx,v) 
              
-        if self.cm_bmp:
-          dc.DrawBitmap(self.cm_bmp, self.x0, self.y0+Y, False)
+        if 1:#self.cm_bmp:
+          dc.DrawBitmap(self.data_map.cm_bmp, self.x0, self.y0+Y, False)
           CM_TICS=4
-          CM_LEN=self.cm_bmp.GetSize()[0]
+          CM_LEN=self.data_map.cm_bmp.GetSize()[0]
           mmax=bins[BINSLEN-1]
           mmin=bins[0]
 
@@ -97,27 +256,22 @@ class HistPanel(wx.Panel):
 
 
         dc.EndDrawing()
+    def refresh(self):
+        self.Refresh()
 
-
-class TestPanel(wx.Panel):
-    def __init__(self, parent,fname=None):
+class MapPanel(wx.Panel):
+    def __init__(self, parent,data_map):
         wx.Panel.__init__(self, parent, size=(512,512))
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.grid=0
         self.PPP=2 #on screen pixels per one pixel data
         self.MAX_PPP=64
-        if fname:
-          self.open(fname)
-        else:
-          self.data=np.zeros( (256,256) )
-          self.mmin=0.0
-          self.mmax=1.0
         
         self.Bind(wx.EVT_LEFT_DOWN, self.OnMouseEvent)
         self.Bind(wx.EVT_LEFT_UP, self.OnMouseEvent)
         self.Bind(wx.EVT_MOTION, self.OnMouseEvent)
         self.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
-
+        self.data_map=data_map
         self.m_stpoint=wx.Point(0,0)
         # mouse selection end point
         self.m_endpoint=wx.Point(0,0)
@@ -131,34 +285,13 @@ class TestPanel(wx.Panel):
         self.matrix_size=(512,512)
         self.p0=[0,0]
         self.update_pixinfo=None
-        self.update_stats=None
-        self.hst_panel=None
-        self.change_cm('jet')
 
-    def open(self,fname):
-        self.data=np.loadtxt(fname)
-        self.mmin=np.amin(self.data)
-        self.mmax=np.amax(self.data)
-
-    def change_cm(self,new_cm):
-        self.cm=cm.get_cmap(new_cm)
-        self.cm.set_over(color=[1,0,0])
-        self.cm.set_under(color=[0,0,1])
-        transform = cm.ScalarMappable(cmap=self.cm)
-        CBARLEL=256 #self.matrix_size[0]
-        data=np.zeros((CBARLEL,1))
-        for i in range(CBARLEL):
-          data[i][0]=float(i)/CBARLEL
-        cdata=transform.to_rgba(data,bytes=True)
-        self.cm_bmp = wx.BitmapFromBufferRGBA(cdata.shape[0],cdata.shape[1], cdata)
-
-        image = wx.ImageFromBitmap(self.cm_bmp)
-        image = image.Scale(CBARLEL,10, wx.IMAGE_QUALITY_NORMAL)
-        self.cm_bmp = wx.BitmapFromImage(image)
-        if self.hst_panel:
-          self.hst_panel.cm_bmp=self.cm_bmp
         self.refresh()
-
+        self.show_avr=True
+    def set_show_avr(self,b):
+        self.show_avr=b
+        self.refresh()
+        
     def mouse_pos_to_pixels(self,pos):
        px,py=pos
        px-=self.x0
@@ -169,16 +302,16 @@ class TestPanel(wx.Panel):
        py=int(py)
        if px<0:px=0
        if py<0:py=0
-       MX,MY=self.data.shape
-       if px>MX-1:px=MX-1
-       if py>MY-1:py=MY-1
+       N=self.data_map.N
+       if px>N-1:px=N-1
+       if py>N-1:py=N-1
        return px,py
     def OnMouseEvent(self, event):
         """ This function manages mouse events """
         if event:
             pixpos=self.mouse_pos_to_pixels( event.GetPositionTuple() )
             rpx,rpy=self.p0[0]+pixpos[0], self.p0[1]+pixpos[1]
-            val=self.data[rpy][rpx]
+            val=self.data_map.getVal(rpy,rpx)
             if self.update_pixinfo: self.update_pixinfo("[%d,%d]\n%.3f"%(rpx,rpy,val))
             # set mouse cursor
             self.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
@@ -273,34 +406,23 @@ class TestPanel(wx.Panel):
             if self.p0[1]<0: self.p0[1]=0
 #            print self.p0
 
-            self.update_zoom()
-            self.Refresh()
+            self.refresh()
 #            print cx,cy,w,h
-    def cmaps_list(names=None):
-      """display all colormaps included in the names list. If names is None, all
-         defined colormaps will be shown."""
-      matplotlib.rc('text', usetex=False)
-      # get list of all colormap names
-      # this only obtains names of built-in colormaps:
-      maps = [m for m in cm.datad if not m.endswith("_r")]
-      # use undocumented cmap_d dictionary instead
-      #maps = [m for m in cm.cmap_d if not m.endswith("_r")]
-      maps.sort()
-      return maps
 #      for m in maps:
 #        print m
 #     plt.imshow(a,aspect='auto',cmap=cm.get_cmap(m),origin="lower")
 
-    def refresh(self):
-#        pycallgraph.start_trace()
-        self.make_bitmap()
-        self.Refresh()
 #        pycallgraph.make_dot_graph('test.png')
     def OnPaint(self, evt):
         dc = wx.PaintDC(self)
 #        gc = wx.GraphicsContext.Create(dc)
         #gc.DrawBitmap(self.bmp, 00, 00, self.bmp.Width,self.bmp.Height)
-        dc.DrawBitmap(self.bmp2, self.x0, self.y0, False)
+        dc.DrawBitmap(self.map_bmp, self.x0, self.y0, False)
+        if self.show_avr:
+          avrs=3
+          dc.DrawBitmap(self.col_bmp, self.x0, self.y0+512+avrs, False)
+          dc.DrawBitmap(self.row_bmp, self.x0+512+avrs, self.y0, False)
+
         cm_offset=550
         wbrush = wx.Brush(wx.Colour(255,255,255), wx.TRANSPARENT)
 #        dc.DrawRectangle(self.x0-1, self.y0+cm_offset-1,self.cm_bmp.GetSize()[0]+2,self.cm_bmp.GetSize()[1]+2) 
@@ -322,117 +444,56 @@ class TestPanel(wx.Panel):
             dc.DrawLine(self.x0+i,self.y0+0,self.x0+i,    self.y0+512+1)
             dc.DrawLine(self.x0+0,self.y0+i,self.x0+512+1,self.y0+i)
 
+        if self.show_avr:
+            rs=10,512
+            dc.DrawLine(self.x0+512+rs[0]+avrs,self.y0+0,  self.x0+512+rs[0]+avrs,    self.y0+512+1)
+            dc.DrawLine(self.x0+512+avrs,      self.y0,    self.x0+512+rs[0]+avrs,    self.y0)
+            dc.DrawLine(self.x0+512+avrs,      self.y0+512,self.x0+512+rs[0]+avrs,    self.y0+512)
+            dc.DrawLine(self.x0+512+avrs,      self.y0+0,  self.x0+512+avrs,          self.y0+512+1)
+
+            cs=512,10
+            dc.DrawLine(self.x0,    self.y0+512+cs[1]+avrs,self.x0+512,    self.y0+512+cs[1]+avrs)
+            dc.DrawLine(self.x0,    self.y0+512+avrs,      self.x0+512,    self.y0+512+avrs)
+            dc.DrawLine(self.x0,    self.y0+512 +avrs,     self.x0,        self.y0+512+cs[1]+avrs)
+            dc.DrawLine(self.x0+512,self.y0+512 +avrs,     self.x0+512,    self.y0+512+cs[1]+avrs)
+
+
+
         for i in range(0,8):
+          avr_offset=0
+          if self.show_avr: avr_offset=11+3
           lbl="%d"%(self.p0[1]+256*i/4/self.PPP)
           w,h = dc.GetTextExtent(lbl)
           dc.DrawText( lbl, self.x0-2-w,                   self.y0+(i)*64+self.PPP/2-h/2) 
-          dc.DrawText( lbl, self.x0+512+2,                 self.y0+(i)*64+self.PPP/2-h/2) 
+          dc.DrawText( lbl, self.x0+512+2+avr_offset,                 self.y0+(i)*64+self.PPP/2-h/2) 
 
           lbl="%d"%(self.p0[0]+256*i/4/self.PPP)
           w,h = dc.GetTextExtent(lbl)
           dc.DrawText( lbl, self.x0+(i)*64+self.PPP/2-w/2, self.y0-2-h) 
-          dc.DrawText( lbl, self.x0+(i)*64+self.PPP/2-w/2, self.y0+514) 
+          dc.DrawText( lbl, self.x0+(i)*64+self.PPP/2-w/2, self.y0+514+avr_offset) 
 
         dc.EndDrawing()
     def OnMouseWheel(self,event):
       if event.AltDown():
           dx=event.GetWheelRotation()/event.GetWheelDelta() 
           self.p0[0]+=dx
-          self.update_zoom()
           self.refresh()
       elif event.ControlDown():
           dy=event.GetWheelRotation()/event.GetWheelDelta() 
           self.p0[1]+=dy
-          self.update_zoom()
           self.refresh()
       else:
         if event.GetWheelRotation() > 0:
           pixpos=self.mouse_pos_to_pixels( event.GetPositionTuple() )
           self.zoom_at_point(pixpos,ppp_scale=2.0)
-          self.update_zoom()
           self.refresh()
         elif event.GetWheelRotation() < 0:
           pixpos=self.mouse_pos_to_pixels( event.GetPositionTuple() )
           self.zoom_at_point(pixpos,ppp_scale=0.5)
-          self.update_zoom()
           self.refresh()
-    def set_max(self,mmax):
-        self.mmax=float(mmax)
-        self.refresh()
-    def set_min(self,mmin):
-#        print mmin
-        self.mmin=float(mmin)
-        self.refresh()
-    def save(self,fname):
-        print "PNG->",fname
-        image = wx.ImageFromBitmap(self.bmp)
-        image = image.Scale(1024, 1024, wx.IMAGE_QUALITY_NORMAL)
-        bmp = wx.BitmapFromImage(image)
-        bmp.SaveFile(fname,wx.BITMAP_TYPE_PNG)
-
-        fhist=fname[:-4]+"_hst.dat"
-        fgnu=fname[:-4]+"_hst.gnu"
-        fpng=fname[:-4]+"_hst.png"
-        print "PNG->",fhist
-        counts,bins= self.hst
-        f=open(fhist,"w")
-        for i in range(counts.shape[0]):
-          f.write("%.4e %.3e\n"%(bins[i],counts[i]))
-          f.write("%.4e %.3e\n"%(bins[i+1],counts[i]))
-        f.close()
-        f=open(fgnu,"w")
-        f.write("set terminal png\n")
-        f.write("set output '%s'\n"%fpng)
-        f.write("set grid\n")
-        f.write("set xlabel 'X'\n")
-        f.write("set xra [%.3e:%.3e]\n"%(self.mmin,self.mmax))
-        f.write("set ylabel 'Counts'\n")
-        f.write("plot '%s' w l t ''\n"%fhist)
-        f.close()
-        os.system("gnuplot %s"%fgnu)
 
 
-    def make_bitmap(self):
-#        X,Y=self.data.shape
-#        PPP=2
-#        arr = np.empty((X*PPP+1,Y*PPP+1, 4), np.uint8) #makeByteArray( (DIM,DIM, 4) )
-#        fs=self.mmax-self.mmin
-        # just some indexes to keep track of which byte is which
-#        R, G, B, A = range(4)
-        # initialize all pixel values to the values passed in
-#        arr[:,:,A] = wx.ALPHA_OPAQUE
 
-        color_norm  = colors.Normalize(vmin=self.mmin, vmax=self.mmax)
-        transform = cm.ScalarMappable(norm=color_norm, cmap=self.cm)
-        cdata=transform.to_rgba(self.data,bytes=True)
-        self.bmp = wx.BitmapFromBufferRGBA(cdata.shape[0],cdata.shape[1], cdata)
-        self.hst=np.histogram(self.data, bins=64, range=(self.mmin,self.mmax))
-        counts,bins= self.hst
-
-        if self.hst_panel!=None:
-          self.hst_panel.hst=self.hst
-          self.hst_panel.Refresh()
-#          print self.mmin,self.mmax, bins[0],bins[1],bins[100]
-        centers=np.zeros((counts.shape[0]))
-        for i in range(counts.shape[0]):
-          centers[i]=(bins[i]+bins[i+1])/2
-        
-        self.update_zoom()
-        avr=np.average(centers, weights=counts)
-        rms=0.0
-        for i in range(counts.shape[0]):
-          rms+=pow(centers[i]-avr,2.0)*counts[i]
-        N=np.sum(counts)
-        rms=sqrt(rms/N)
-        
-        if self.update_stats!=None:
-           msg="Zoom:%d"%self.PPP
-           msg+="\nAVR:%.3f"%(avr)
-           msg+="\nRMS:%.3f"%(rms)
-           msg+="\nPoints:%d"%(N)
-           D=256*256-np.count_nonzero(self.data) 
-           msg+="\nDead:%d"%(D)
-           self.update_stats(msg)
 
 
 #for v in np.arange(-10,10,0.1):
@@ -446,23 +507,40 @@ class TestPanel(wx.Panel):
         if self.PPP<2:
            self.PPP=2
         self.PPP=int(self.PPP)
-        self.update_zoom()
-        self.Refresh()
-    def update_zoom(self):
+        self.refresh()
+
+
+
+    def refresh(self):
         ptpx,ptpy=self.matrix_size[0]/self.PPP,self.matrix_size[1]/self.PPP
 #        print ptpx,ptpy
-        MX,MY=self.data.shape
-        if self.p0[0]+ptpx>=MX:self.p0[0]=MX-ptpx
-        if self.p0[1]+ptpy>=MY:self.p0[1]=MY-ptpy
+        N=self.data_map.N
+        if self.p0[0]+ptpx>=N:self.p0[0]=N-ptpx
+        if self.p0[1]+ptpy>=N:self.p0[1]=N-ptpy
         if self.p0[0]<0:self.p0[0]=0
         if self.p0[1]<0:self.p0[1]=0
 
         # finally, use the array to create a bitmap
         r=wx.Rect(self.p0[0],self.p0[1],ptpx,ptpy)
-        
-        image = wx.ImageFromBitmap(self.bmp.GetSubBitmap( r ) )
+        image = wx.ImageFromBitmap(self.data_map.bmp.GetSubBitmap( r ) )
         image = image.Scale(self.matrix_size[0], self.matrix_size[1], wx.IMAGE_QUALITY_NORMAL)
-        self.bmp2 = wx.BitmapFromImage(image)
+        self.map_bmp = wx.BitmapFromImage(image)
+
+        # finally, use the array to create a bitmap
+        r=wx.Rect(self.p0[0],0,ptpx,1)
+        image = wx.ImageFromBitmap(self.data_map.col_bmp.GetSubBitmap( r ) )
+        image = image.Scale(self.matrix_size[0], 10, wx.IMAGE_QUALITY_NORMAL)
+        self.col_bmp = wx.BitmapFromImage(image)
+
+        r=wx.Rect(0,self.p0[1],1,ptpy)
+        image = wx.ImageFromBitmap(self.data_map.row_bmp.GetSubBitmap( r ) )
+        image = image.Scale(10,self.matrix_size[1], wx.IMAGE_QUALITY_NORMAL)
+        self.row_bmp = wx.BitmapFromImage(image)
+
+
+        self.Refresh()
+
+
 #        print self.bmp.Width,self.bmp.Size
            
         
@@ -476,30 +554,14 @@ ico = PyEmbeddedImage(
 
 class MyForm(wx.Frame):
   def __init__(self,fname):
-     wx.Frame.__init__(self, None, wx.ID_ANY, "openPIXEL", size=(920,615),style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
-#     self.Bind(wx.EVT_CHAR, self.OnChar)
-#     sizer = wx.BoxSizer(wx.VERTICAL)
-     self.tp=TestPanel(self)
+     wx.Frame.__init__(self, None, wx.ID_ANY, "openPIXEL", size=(925,625),style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
 
+     self.data_map=DataMap()
+     self.map_panel=MapPanel(self, data_map=self.data_map)
 
      self.filehistory = wx.FileHistory(8)
      self.config = wx.Config("openPIXEL", style=wx.CONFIG_USE_LOCAL_FILE)
      self.filehistory.Load(self.config)
-     #sizer.Add(self.tp)
-     #self.SetMinSize((600,600))
-     #self.SetSizer(sizer, wx.EXPAND)
-     #self.Show()
-#     bsizer.Add(t, 0, wx.TOP|wx.LEFT, 10)
-
-#     border = wx.BoxSizer()
-#     border.Add(bsizer, 1, wx.EXPAND|wx.ALL, 25)
-#     self.SetSizer(border)
-
-     mmin=np.amin(self.tp.data)
-     mmax=np.amax(self.tp.data)
-     spread=(mmax-mmin)*100
-     inc=float(int(spread))/10000
-
 
      topsizer= wx.BoxSizer(wx.HORIZONTAL) # left controls, right image output
      ctrlsizer= wx.BoxSizer(wx.VERTICAL)
@@ -508,18 +570,16 @@ class MyForm(wx.Frame):
      box_min = wx.StaticBox(self, -1, "Min Value")
      sizer_min = wx.StaticBoxSizer(box_min, wx.VERTICAL)
         
-     self.cb_min = wx.CheckBox(self, -1, "auto")#, (65, 60), (150, 20), wx.NO_BORDER)
+     self.cb_min = wx.CheckBox(self, -1, "auto")
      self.cb_min.SetValue(False)
      sizer_min.Add(self.cb_min)
-#     sizer_min.AddSpacer(10)
      self.spin_min = FS.FloatSpin(self, -1, min_val=None, max_val=None,
-                                       increment=inc, value=mmin, size=(150,-1),agwStyle=FS.FS_LEFT)
+                                       increment=1.0, value=0.0, size=(150,-1),agwStyle=FS.FS_LEFT)
      self.spin_min.SetFormat("%f")
      self.spin_min.SetDigits(3)
      self.spin_min.Bind(FS.EVT_FLOATSPIN, self.OnMinSpin)
 
      sizer_min.Add(self.spin_min)
-#     sizer_min.AddSpacer(15)
      val_sizer.Add(sizer_min, 0, wx.ALL, 2)
 
 
@@ -531,7 +591,7 @@ class MyForm(wx.Frame):
      sizer_max.Add(self.cb_max)
 #     sizer_max.AddSpacer(10)
      self.spin_max = FS.FloatSpin(self, -1, min_val=None, max_val=None,
-                                       increment=inc, value=mmax, size=(150,-1), agwStyle=FS.FS_LEFT)
+                                       increment=1.0, value=0.0, size=(150,-1), agwStyle=FS.FS_LEFT)
      self.spin_max.SetFormat("%f")
      self.spin_max.SetDigits(3)
      self.spin_max.Bind(FS.EVT_FLOATSPIN, self.OnMaxSpin)
@@ -550,11 +610,11 @@ class MyForm(wx.Frame):
      pixinfo_sizer.Add(self.pix_info)
      self.update_pixinfo("-")
      txt2_sizer.Add(pixinfo_sizer, 0, wx.ALL, 2)
-     self.tp.update_pixinfo=self.update_pixinfo
+     self.map_panel.update_pixinfo=self.update_pixinfo
 
      color_box = wx.StaticBox(self, -1, "Colors")
      color_sizer = wx.StaticBoxSizer(color_box, wx.VERTICAL)
-     sampleList = self.tp. cmaps_list()
+     sampleList = self.data_map. cmaps_list()
      # This combobox is created with a preset list of values.
      self.color_combo = wx.ComboBox(self, 500, "jet", (90, 50), 
                          (150, -1), sampleList,
@@ -573,7 +633,7 @@ class MyForm(wx.Frame):
      stats_sizer = wx.StaticBoxSizer(stats_box, wx.VERTICAL)
      self.stats_info = wx.TextCtrl(self, style=wx.TE_MULTILINE |  wx.TE_READONLY,size=(150,89))
      stats_sizer.Add(self.stats_info)
-     self.tp.update_stats=self.update_stats
+     self.data_map.update_stats=self.update_stats
      self.update_stats("-")
      txt_sizer.Add(stats_sizer, 0, wx.ALL, 2)
 
@@ -584,16 +644,16 @@ class MyForm(wx.Frame):
 
      hist_box = wx.StaticBox(self, -1, "Histogram")
      hist_sizer = wx.StaticBoxSizer(hist_box, wx.VERTICAL)
-     self.hist_panel= HistPanel(self, size=(317,330))
+     self.hist_panel= HistPanel(self, size=(317,330),data_map=self.data_map)
      hist_sizer.Add(self.hist_panel)
      ctrlsizer.Add(hist_sizer, 0, wx.ALL, 2)
 
-     self.tp.hst_panel= self.hist_panel
+     self.map_panel.hst_panel= self.hist_panel
 
-     self.tp.change_cm('jet')#refresh()
+     self.data_map.change_cm('jet')
       
      topsizer.Add(ctrlsizer, 0, wx.ALL, 2)
-     topsizer.Add(self.tp, 1, wx.EXPAND)
+     topsizer.Add(self.map_panel, 1, wx.EXPAND)
     
      self.SetSizer(topsizer)
      topsizer.Layout()
@@ -641,10 +701,16 @@ class MyForm(wx.Frame):
      self.Bind(wx.EVT_MENU, self.OnZoomOut, view_zoom_out)
      self.shst = viewMenu.Append(wx.ID_ANY, 'Show statubar', 
             'Show Statusbar', kind=wx.ITEM_CHECK)
+     self.Bind(wx.EVT_MENU, self.ToggleStatusBar, self.shst)
+     viewMenu.Check(self.shst.GetId(), True)
+
+     self.savr = viewMenu.Append(wx.ID_ANY, 'Show averages', 
+            'Show Averages', kind=wx.ITEM_CHECK)
+     self.Bind(wx.EVT_MENU, self.ToggleShowAvr, self.savr)
+     viewMenu.Check(self.savr.GetId(), True)
+
      self.statusbar = self.CreateStatusBar()
      self.statusbar.SetStatusText('File %s loaded.'%fname)
-     viewMenu.Check(self.shst.GetId(), True)
-     self.Bind(wx.EVT_MENU, self.ToggleStatusBar, self.shst)
      menubar.Append(viewMenu, '&View')
      
      helpMenu = wx.Menu()
@@ -658,7 +724,10 @@ class MyForm(wx.Frame):
        self.open(fname)
 
      self.Show(True)
-     
+
+  def ToggleShowAvr(self,e):
+        self.map_panel.set_show_avr(self.savr.IsChecked())
+  
   def ToggleStatusBar(self, e):
     if self.shst.IsChecked():
         self.statusbar.Show()
@@ -679,22 +748,18 @@ class MyForm(wx.Frame):
         
   def open(self,fn):
     print "Open ",fn
-    self.tp.open(fn)
-    self.spin_min.SetValue(self.tp.mmin)
-    self.spin_max.SetValue(self.tp.mmax)
-    dv=(self.tp.mmax-self.tp.mmin)/100
+    self.data_map.load(fn)
+    self.spin_min.SetValue(self.data_map.nice_min)
+    self.spin_max.SetValue(self.data_map.nice_max)
+    dv=self.data_map.nice_inc
     self.spin_min.SetIncrement(dv) 
     self.spin_max.SetIncrement(dv) 
-    self.tp.refresh()
+    self.map_panel.refresh()
     
     self.filehistory.AddFileToHistory(fn)
     self.filehistory.Save(self.config)
     self.config.Flush()
 
-  def OnMinSpin(self, event):
-#        print self.spin_min.GetValue(), self.spin_max.GetValue(),"->",
-        if self.spin_min.GetValue()>=self.spin_max.GetValue():
-          self.spin_min.SetValue(self.spin_max.GetValue())
 
   def OnOpen(self, e):
         """ File|Open event - Open dialog box. """
@@ -727,17 +792,18 @@ class MyForm(wx.Frame):
             dirName = dlg.GetDirectory()
             if fileName[-4:].lower()!='.png':
               fileName+='.png'
-            self.tp.save(dirName+"/"+fileName)
+            self.map_panel.save(dirName+"/"+fileName)
             ret = True
         dlg.Destroy()
         return ret
   def OnQuit(self, e):
         self.Close()
-  def EvtColorComboBox(self,event):
-    cb = event.GetEventObject()
-#    data = cb.GetClientData()
-    self.tp.change_cm(event.GetString())
 
+  def EvtColorComboBox(self,event):
+     cb = event.GetEventObject()
+     self.data_map.change_cm(event.GetString())
+     self.refresh()
+     
   def update_pixinfo(self,msg):
      self.pix_info.SetValue(msg)
 
@@ -746,19 +812,21 @@ class MyForm(wx.Frame):
      self.stats_info.SetValue(msg)
 
 
+
+  def refresh(self):
+        self.map_panel.refresh()
+        self.hist_panel.refresh()
+
   def OnMaxSpin(self, event):
         if self.spin_max.GetValue()<=self.spin_min.GetValue():
           self.spin_max.SetValue(self.spin_min.GetValue())
-        self.tp.set_max(self.spin_max.GetValue())
-        self.Refresh()
-
+        self.data_map.set_max(self.spin_max.GetValue())
+        self.refresh()
   def OnMinSpin(self, event):
-#        print self.spin_min.GetValue(), self.spin_max.GetValue(),"->",
         if self.spin_min.GetValue()>=self.spin_max.GetValue():
           self.spin_min.SetValue(self.spin_max.GetValue())
-        self.tp.set_min(self.spin_min.GetValue())
-        self.Refresh()
-#        print self.spin_min.GetValue(), self.spin_max.GetValue()
+        self.data_map.set_min(self.spin_min.GetValue())
+        self.refresh()
 
 
   def OnChar(self, evt):
