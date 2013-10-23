@@ -196,7 +196,7 @@ class TestPanel(wx.Panel):
             # dont do any filling of the dc. It is set just for 
             # the sake of completion.
 
-            wbrush = wx.Brush(wx.Colour(255,255,255), wx.SOLID)
+            wbrush = wx.Brush(wx.Colour(128,255,128), wx.SOLID)
             wpen = wx.Pen(wx.Colour(200, 200, 200), 1, wx.SOLID)
             dc.SetBrush(wbrush)
             dc.SetPen(wpen)

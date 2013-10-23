@@ -459,7 +459,7 @@ class test08_equalization_hitrate_datadriven(tpx3_test):
     self.tpx.setDac(TPX3_IBIAS_PREAMP_ON,150)
     self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,100)
 
-    self.tpx.setGenConfig(0x00)
+    self.tpx.setGenConfig(0x48)
     self.tpx.setPllConfig(0x291E) 
 
     for c in range(256):
@@ -475,7 +475,7 @@ class test08_equalization_hitrate_datadriven(tpx3_test):
     res={}
     self.tpx.resetPixelConfig()
     self.tpx.load_equalization("logs/F3_default_eq_bruteforce/test08_equalization/eq_codes.dat")
-    to_be_masked= [(23L, 69L), (49L, 94L), (50L, 94L), (89L, 46L), (90L, 46L), (105L, 139L), (106L, 139L), (107L, 138L), (112L, 5L), (115L, 196L), (116L, 196L), (135L, 122L), (136L, 122L), (175L, 7L), (176L, 7L), (205L, 27L), (207L, 51L), (247L, 218L)]
+    to_be_masked=[]# [(23L, 69L), (49L, 94L), (50L, 94L), (89L, 46L), (90L, 46L), (105L, 139L), (106L, 139L), (107L, 138L), (112L, 5L), (115L, 196L), (116L, 196L), (135L, 122L), (136L, 122L), (175L, 7L), (176L, 7L), (205L, 27L), (207L, 51L), (247L, 218L)]
     for x,y in to_be_masked:
        self.tpx.maskPixel(x,y)
     logging.info("Pixels masked %d)"%(len(to_be_masked)))

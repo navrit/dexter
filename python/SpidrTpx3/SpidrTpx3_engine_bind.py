@@ -2,6 +2,7 @@
 
 from pybindgen import *
 import sys
+from defines import load_defines
 
 mod = Module('SpidrTpx3_engine')
 mod.add_include('"../../SpidrTpx3Lib/SpidrDaq.h"')
@@ -75,6 +76,23 @@ mod.add_enum('DAC_code', ['TPX3_IBIAS_PREAMP_ON','TPX3_IBIAS_PREAMP_OFF','TPX3_V
                           'TPX3_IBIAS_DISCS2_ON','TPX3_IBIAS_DISCS2_OFF','TPX3_IBIAS_PIXELDAC','TPX3_IBIAS_TPBUFIN',
                           'TPX3_IBIAS_TPBUFOUT','TPX3_VTP_COARSE','TPX3_VTP_FINE','TPX3_IBIAS_CP_PLL'])
 mod.add_enum('Defines', ['ALL_PIXELS'])
+
+mod.add_enum('tpx3_defs',load_defines('../SpidrTpx3Lib/tpx3defs.h'))
+#define TPX3_PLL_BYPASSED          0x0001
+#define TPX3_PLL_RUN               0x0002
+#define TPX3_VCNTRL_PLL            0x0004
+#define TPX3_DUALEDGE_CLK          0x0008
+#define TPX3_PHASESHIFT_DIV_16     0x0000
+#define TPX3_PHASESHIFT_DIV_8      0x0010
+#define TPX3_PHASESHIFT_DIV_4      0x0020
+#define TPX3_PHASESHIFT_DIV_2      0x0030
+#define TPX3_PHASESHIFT_NR_1       0x0000
+#define TPX3_PHASESHIFT_NR_2       0x0040
+#define TPX3_PHASESHIFT_NR_4       0x0080
+#define TPX3_PHASESHIFT_NR_8       0x00C0
+#define TPX3_PHASESHIFT_NR_16      0x0100
+#define TPX3_PLLOUT_CONFIG_MASK    0x3E00
+#define TPX3_PLLOUT_CONFIG_SHIFT   9
 
 c = mod.add_class('SpidrDaq')
 c.add_constructor([param('int', 'ipaddr3'),param('int', 'ipaddr2'),param('int', 'ipaddr1'),param('int', 'ipaddr0'),param('int', 'port')])

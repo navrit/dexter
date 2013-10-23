@@ -55,17 +55,16 @@ class tpx3packet:
     
     
   def pack4(self):
-    b0=(self.raw>>40)&0xFF
-    if b0==0x44   :
+    if self.b0==0x44   :
       self.val= self.raw&0xFFFFFFFF ;
       self.str="Timer low %d"%self.val
-    elif b0==0x45   :
+    elif self.b0==0x45   :
       self.val= self.raw&0xFFFFFFFF ;
       self.str="Timer high %d"%self.val
-    if b0==0x46   :
+    if self.b0==0x46   :
       self.val= self.raw&0xFFFFFFFF ;
       self.str="Timer shutter rise low %d"%self.val
-    elif b0==0x47   :
+    elif self.b0==0x47   :
       self.val= self.raw&0xFFFFFFFF ;
       self.str="Timer shutter rise high %d"%self.val
     else:
@@ -150,11 +149,30 @@ class tpx3packet:
 
     
   def packA(self):
-     #event count and iTOT
+     self.str="DataSeq "
+     if tpx3packet.mode==0:
+       self.mode0()
+     elif tpx3packet.mode==2:
+       self.mode2()
+     else:
+       self.str+="Not parsed"
+
+    
+  def packB(self):
+     self.str="DataDriven "
+     if tpx3packet.mode==0:
+       self.mode0()
+     elif tpx3packet.mode==2:
+       self.mode2()
+     else:
+       self.str+="Not parsed"
+
+  def mode2(self):
+       #event count and iTOT
      raw=self.raw>>4
-     EventNounter=raw&0x3FF
+     self.event_counter=raw&0x3FF
      raw>>=10
-     iTOT=raw&0x3FFF
+     self.itot=raw&0x3FFF
      raw>>=14
      self.pixel_address=raw&0x7
      raw>>=3
@@ -168,16 +186,10 @@ class tpx3packet:
      self.row=self.sp_address*4
      self.row+= (self.pixel_address&0x3)
      
-     self.cnt=tote10[(self.raw>>4)&0x3FF]
-     self.str="DataSeq (%3d,%3d) dc=%3d sp=%3d pix=%3d cnt=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address, self.cnt)
+     self.event_counter=tote10[self.event_counter]
+     self.itot=itot14[self.itot]
+     self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d evn_cnt=%d itot=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address, self.event_counter, self.itot)
 
-    
-  def packB(self):
-     self.str="DataDriven "
-     if tpx3packet.mode==0:
-       self.mode0()
-     else:
-       self.str+="Not parsed"
 
   def mode0(self):
      raw=self.raw
@@ -233,6 +245,7 @@ class tpx3packet:
 #    self.b4=(data>>32)&0xFF
 #    self.b5=(data>>40)&0xFF
 #    self.raw=self.b5 | (self.b4<<8) | (self.b3<<16)  | (self.b2<<24) | (self.b1<<32)  | (self.b0<<40)
+    self.b0=(self.raw>>40)&0xFF
 
     self.type=(self.raw>>44)&0xf
     self.str='-'
@@ -481,11 +494,12 @@ class TPX3:
 #    r,lo,hi=self.ctrl.getShutterStart(self.id)
 #    self._log_ctrl_cmd("getShutterStart()=%x %x"%(hi,lo),r)
     self.send(0x46,0,0)
-    resp=self.recv_mask(0x4671,0xFFFF)
+    resp=self.recv_mask(0x7146000000000000,0xFFFF000000000000)
     for p in resp:
+#      print p
       if p.b0==0x46: low=p.val
     self.send(0x47,0,0)
-    resp=self.recv_mask(0x4771,0xFFFF)
+    resp=self.recv_mask(0x7147000000000000,0xFFFF000000000000)
     for p in resp:
       if p.b0==0x47: high=p.val
     v=low+(high<<32)
