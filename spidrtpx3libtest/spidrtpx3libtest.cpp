@@ -28,6 +28,10 @@ int main( int argc, char *argv[] )
 
   int mdegrees, mvolt, mamp, mwatt;
 
+
+  if( !spidrctrl.restartTimers() )
+    cout << "###restartTimers: " << spidrctrl.errorString() << endl;
+
   if( !spidrctrl.getDeviceId( device_nr, &id ) )
     cout << "###getDevId: " << spidrctrl.errorString() << endl;
   //Sleep( 50 );
@@ -40,10 +44,18 @@ int main( int argc, char *argv[] )
     cout << "###getLt: " << spidrctrl.errorString() << endl;
   else
     cout << "ltemp=" << mdegrees << endl;
+
   //Sleep( 50 );
   unsigned int timer_lo, timer_hi;
   if( !spidrctrl.getTimer( device_nr, &timer_lo, &timer_hi ) )
     cout << "###getTimer: " << spidrctrl.errorString() << endl;
+  else
+    cout << "Timer = " << timer_lo << ", " << timer_hi <<endl;
+  if( !spidrctrl.getShutterStart( device_nr, &timer_lo, &timer_hi ) )
+    cout << "###getShutterShart: " << spidrctrl.errorString() << endl;
+  else
+    cout << "Start = " << timer_lo << ", " << timer_hi <<endl;
+
   if( !spidrctrl.getDeviceId( device_nr, &id ) )
     cout << "###getDevId: " << spidrctrl.errorString() << endl;
   //Sleep( 50 );
@@ -70,7 +82,7 @@ int main( int argc, char *argv[] )
 
   // Create and upload a Timepix3 pixel configuration
   spidrctrl.resetPixelConfig();          // Reset all values to zero
-  spidrctrl.maskPixel( 254,2 );          // Mask pixel column 34
+  spidrctrl.setPixelMask( 254,2 );       // Mask pixel column 34
   spidrctrl.setPixelConfig( device_nr ); // Upload the pixel configuration
 
   unsigned char *pixconf = spidrctrl.pixelConfig();
@@ -103,7 +115,7 @@ int main( int argc, char *argv[] )
     cout << "###setGenCfg: " << spidrctrl.errorString() << endl;
 
   // Start acquisition
-  if( !spidrctrl.datadrivenReadout( device_nr ) )
+  if( !spidrctrl.datadrivenReadout() )
     cout << "###ddrivenReadout: " << spidrctrl.errorString() << endl;
 
   return 0;
