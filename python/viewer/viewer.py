@@ -158,11 +158,9 @@ class DataMap(object):
         self.row_bmp = wx.BitmapFromBufferRGBA(1,row_cdata.shape[0], row_cdata)
         
         self.moddata=np.zeros( (self.mod_rows,self.mod_cols) )
-        print self.moddata.shape
         for r in range(self.mod_rows):
           for c in range(self.mod_cols):
              self.moddata[r][c]=amasked[r::self.mod_rows, c::self.mod_cols ].mean()
-#        print self.moddata
         cdata=transform.to_rgba(self.moddata,bytes=True)
 
         self.mod_bmp = wx.BitmapFromBufferRGBA(cdata.shape[1],cdata.shape[0], cdata)

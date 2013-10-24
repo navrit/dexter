@@ -84,7 +84,7 @@ for c in range(256):
   for r in range(256):
     cc=c%32
     rr=r%16
-    v=cc+rr#+random.randint(-20,20)
+    v=cc+rr+random.randint(-20,20)
     a[c][r]=v
 numpy.savetxt("test08.dat", a.transpose() , fmt="%3d")
 
@@ -94,5 +94,16 @@ for r in range(256):
  a[0][r]=1
 for c in range(256):
  a[c][0]=2
-
 numpy.savetxt("test09.dat", a.transpose() , fmt="%1d"  )
+
+
+a=numpy.zeros( (256,256) )
+for c in range(256):
+  for r in range(256):
+      
+    v=random.random()
+
+    if c%2==0 and r%8==0:
+      v+=0.5
+    a[c][r]=v
+numpy.savetxt("test10.dat", a.transpose() , fmt="%.3f")
