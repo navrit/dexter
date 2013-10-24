@@ -11,6 +11,7 @@ import matplotlib.cm as cm
 import matplotlib
 from wx.lib.embeddedimage import PyEmbeddedImage
 import os
+from modulo_window import ModuloWindow
 
 try:
     from agw import floatspin as FS
@@ -26,16 +27,18 @@ class DataMap(object):
     def __init__(self, fname=""):
       if fname!="":
         self.load(fname)
-      self.data=np.zeros( (1,1) )
+      self.data=np.zeros( (256,256) )
       self.mmin=0.0
       self.mmax=1.0
       self.nice_inc=1.0
       self.nice_min=self.mmin
       self.nice_max=self.mmax
-      self.N=1
+      self.N=256
       self.update_stats=None
-      self.change_cm('jet')
 #      self.process()
+      self.mod_cols=4
+      self.mod_rows=4
+      self.change_cm('jet')
       
     def load(self,fname):
       self.fname=fname
@@ -153,8 +156,18 @@ class DataMap(object):
 
         row_cdata=transform.to_rgba(self.row_profile,bytes=True)
         self.row_bmp = wx.BitmapFromBufferRGBA(1,row_cdata.shape[0], row_cdata)
-
         
+        self.moddata=np.zeros( (self.mod_rows,self.mod_cols) )
+        print self.moddata.shape
+        for r in range(self.mod_rows):
+          for c in range(self.mod_cols):
+             self.moddata[r][c]=amasked[r::self.mod_rows, c::self.mod_cols ].mean()
+#        print self.moddata
+        cdata=transform.to_rgba(self.moddata,bytes=True)
+
+        self.mod_bmp = wx.BitmapFromBufferRGBA(cdata.shape[1],cdata.shape[0], cdata)
+        
+             #self.data[c::self.mod_cols, r::self.mod_rows].mean()
 #print  numpy.mean(amasked, axis=1, dtype=None, out=None)
 
 #        counts,bins= self.hst
@@ -178,6 +191,7 @@ class DataMap(object):
 #           msg+="\nDead:%d"%(D)
            self.update_stats(msg)
            
+
 
 
 class HistPanel(wx.Panel):
@@ -708,6 +722,17 @@ class MyForm(wx.Frame):
      self.Bind(wx.EVT_MENU, self.ToggleShowAvr, self.savr)
      viewMenu.Check(self.savr.GetId(), True)
 
+
+#     show_mod_win=viewMenu.Append(wx.ID_ZOOM_IN, 'Show &modulo window')
+#     self.Bind(wx.EVT_MENU, self.OnZoomFit, view_zoom_fit)
+
+
+     self.smodwin = viewMenu.Append(wx.ID_ANY, 'Show modulo window', 
+            'Show Modulo window', kind=wx.ITEM_CHECK)
+     self.Bind(wx.EVT_MENU, self.ToggleModWin, self.smodwin)
+     viewMenu.Check(self.smodwin.GetId(), False)
+
+
      self.statusbar = self.CreateStatusBar()
      self.statusbar.SetStatusText('File %s loaded.'%fname)
      menubar.Append(viewMenu, '&View')
@@ -723,7 +748,14 @@ class MyForm(wx.Frame):
        self.open(fname)
 
      self.Show(True)
+     self.mw=ModuloWindow(self.data_map)
 
+  def ToggleModWin(self,e):
+    if self.smodwin.IsChecked():
+        self.mw.Show()
+    else:
+        self.mw.Hide()
+          
   def ToggleShowAvr(self,e):
         self.map_panel.set_show_avr(self.savr.IsChecked())
   
@@ -815,7 +847,7 @@ class MyForm(wx.Frame):
   def refresh(self):
         self.map_panel.refresh()
         self.hist_panel.refresh()
-
+        self.mw.refresh()
   def OnMaxSpin(self, event):
         if self.spin_max.GetValue()<=self.spin_min.GetValue():
           self.spin_max.SetValue(self.spin_min.GetValue())

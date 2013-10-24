@@ -75,3 +75,24 @@ for y in range(256):
 f.close()
 
 
+from math import cos
+import random
+import numpy
+
+a=numpy.zeros( (256,256) )
+for c in range(256):
+  for r in range(256):
+    cc=c%32
+    rr=r%16
+    v=cc+rr#+random.randint(-20,20)
+    a[c][r]=v
+numpy.savetxt("test08.dat", a.transpose() , fmt="%3d")
+
+
+a=numpy.zeros( (256,256) )
+for r in range(256):
+ a[0][r]=1
+for c in range(256):
+ a[c][0]=2
+
+numpy.savetxt("test09.dat", a.transpose() , fmt="%1d"  )
