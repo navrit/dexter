@@ -48,7 +48,7 @@ int main( int argc, char *argv[] )
 
   // Enable test-bit in all pixels
   spidrctrl.resetPixelConfig();
-  spidrctrl.configPixel( ALL_PIXELS, ALL_PIXELS, 0, true );
+  spidrctrl.setPixelTestEna( ALL_PIXELS, ALL_PIXELS );
   if( !spidrctrl.setPixelConfig( device_nr ) )
     cout << "###setPixelConfig: " << spidrctrl.errorString() << endl;
 
