@@ -102,11 +102,11 @@ class MY_LIB_API SpidrController
 
   // Configuration: device pixels
   void resetPixelConfig        ();
-  bool configPixel             ( int  x,
+  bool setPixelThreshold       ( int  x,
                                  int  y,
-                                 int  threshold,
-                                 bool testbit = false );
-  bool maskPixel               ( int x = ALL_PIXELS, int y = ALL_PIXELS );
+                                 int  threshold );
+  bool setPixelTestEna         ( int x = ALL_PIXELS, int y = ALL_PIXELS );
+  bool setPixelMask            ( int x = ALL_PIXELS, int y = ALL_PIXELS );
   bool setPixelConfig          ( int dev_nr );
   bool getPixelConfig          ( int dev_nr );
   bool resetPixels             ( int dev_nr );
@@ -164,6 +164,7 @@ class MY_LIB_API SpidrController
 
   // Other
  private:
+  bool setPixelBit             ( int x, int y, unsigned char bitmask );
   bool get3Ints                ( int cmd, int *data0, int *data1, int *data2 );
   bool validXandY              ( int x,       int y,
                                  int *xstart, int *xend,

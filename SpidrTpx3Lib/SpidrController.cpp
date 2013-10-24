@@ -575,17 +575,16 @@ const unsigned int TPX3_THRESH_CONV_TABLE[16] =
   { 0x0, 0x8, 0x4, 0xC, 0x2, 0xA, 0x6, 0xE,
     0x1, 0x9, 0x5, 0xD, 0x3, 0xB, 0x7, 0xF };
 
-bool SpidrController::configPixel( int  x,
-				   int  y,
-				   int  threshold,
-				   bool testbit )
+bool SpidrController::setPixelThreshold( int  x,
+					 int  y,
+					 int  threshold )
 {
   int xstart, xend;
   int ystart, yend;
   if( !this->validXandY( x, y, &xstart, &xend, &ystart, &yend ) )
     return false;
 
-  // Check other parameters
+  // Check threshold value parameter
   bool invalid_parameter = false;
   if( threshold < 0 || threshold > 15 ) invalid_parameter = true;
   if( invalid_parameter )
@@ -595,7 +594,7 @@ bool SpidrController::configPixel( int  x,
       return false;
     }
 
-  // Set or reset the configuration bits in the requested pixels
+  // Set or reset the 'threshold DAC tuning' bits in the requested pixels
   int xi, yi;
   unsigned char *pcfg;
   for( yi=ystart; yi<yend; ++yi )
@@ -604,7 +603,6 @@ bool SpidrController::configPixel( int  x,
 	pcfg = &_pixelConfig[yi][xi];
 	*pcfg &= TPX3_PIXCFG_MASKBIT;
 	*pcfg |= (TPX3_THRESH_CONV_TABLE[threshold] << 1);
-	if( testbit ) *pcfg |= TPX3_PIXCFG_TESTBIT;
       }
 
   return true;
@@ -612,7 +610,21 @@ bool SpidrController::configPixel( int  x,
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::maskPixel( int x, int y )
+bool SpidrController::setPixelTestEna( int x, int y )
+{
+  return this->setPixelBit( x, y, TPX3_PIXCFG_TESTBIT );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setPixelMask( int x, int y )
+{
+  return this->setPixelBit( x, y, TPX3_PIXCFG_MASKBIT );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setPixelBit( int x, int y, unsigned char bitmask )
 {
   int xstart, xend;
   int ystart, yend;
@@ -623,13 +635,38 @@ bool SpidrController::maskPixel( int x, int y )
   int xi, yi;
   for( yi=ystart; yi<yend; ++yi )
     for( xi=xstart; xi<xend; ++xi )
-      _pixelConfig[yi][xi] |= TPX3_PIXCFG_MASKBIT;
+      _pixelConfig[yi][xi] |= bitmask;
 
   return true;
 }
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::setPixelConfig( int dev_nr )
+{
+  // Space for four columns (256 pixels each) pixel configuration data
+  // in the shape of 1 byte/pixel
+  unsigned char pixelcol[256*4];
+  int x, y, col;
+  for( x=0; x<256; x+=4 )
+    {
+      // Compile a pixel configuration column
+      // from the pixel configuration data stored in _pixelConfig
+      for( col=0; col<4; ++col )
+	for( y=0; y<256; ++y )
+	  pixelcol[col*256+y] = _pixelConfig[y][x+col];
+
+      // Send this column of pixel configuration data
+      if( !this->requestSetIntAndBytes( CMD_SET_PIXCONF, dev_nr,
+					x, // Sequence number (column)
+					sizeof( pixelcol ),
+					pixelcol ) )
+	return false;
+    }
+  return true;
+}
+/*
+// SINGLE COLUMN UPLOAD:
 bool SpidrController::setPixelConfig( int dev_nr )
 {
   // Space for one column (256 pixels) pixel configuration data
@@ -652,7 +689,7 @@ bool SpidrController::setPixelConfig( int dev_nr )
     }
   return true;
 }
-
+*/
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getPixelConfig( int dev_nr )
