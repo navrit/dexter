@@ -828,10 +828,9 @@ bool SpidrController::resetCounters()
 // Data-acquisition
 // ----------------------------------------------------------------------------
 
-bool SpidrController::sequentialReadout()
+bool SpidrController::sequentialReadout( int tokens )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_SEQ_READOUT, 0, dummy );
+  return this->requestSetInt( CMD_SEQ_READOUT, 0, tokens );
 }
 
 // ----------------------------------------------------------------------------
