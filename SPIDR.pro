@@ -23,6 +23,7 @@ SUBDIRS += SpidrTpx3Lib/SpidrTpx3Lib.pro
 # Executables
 SUBDIRS += SpidrMpx3TV/SpidrMTV.pro
 SUBDIRS += SpidrTV/SpidrTV.pro
+SUBDIRS += SpidrDacs/SpidrDacs.pro
 SUBDIRS += SpidrMon/SpidrMon.pro
 SUBDIRS += spidrloglevel/spidrloglevel.pro
 SUBDIRS += spidrlibtest/spidrlibtest.pro
