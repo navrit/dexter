@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>559</width>
+    <width>719</width>
     <height>481</height>
    </rect>
   </property>
@@ -285,7 +285,7 @@
       </property>
       <property name="geometry">
        <rect>
-        <x>450</x>
+        <x>419</x>
         <y>30</y>
         <width>75</width>
         <height>21</height>
@@ -295,7 +295,26 @@
        <enum>Qt::ClickFocus</enum>
       </property>
       <property name="text">
-       <string>Read DACs</string>
+       <string>Reread DACs</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="_pushButtonSetDacsDefaults">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>505</x>
+        <y>31</y>
+        <width>75</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::ClickFocus</enum>
+      </property>
+      <property name="text">
+       <string>Set DACs dflt</string>
       </property>
      </widget>
     </widget>

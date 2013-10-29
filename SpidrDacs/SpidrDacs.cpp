@@ -21,7 +21,8 @@ const int CHECK_INTERVAL_MS = 1000;
 
 SpidrDacs::SpidrDacs()
   : QDialog(),
-    _spidrController( 0 )
+    _spidrController( 0 ),
+    _disableSetDac( false )
 {
   this->setupUi(this);
 
@@ -32,6 +33,8 @@ SpidrDacs::SpidrDacs()
 	   this, SLOT( connectOrDisconnect() ) );
   connect( _pushButtonReadDacs, SIGNAL( clicked() ),
 	   this, SLOT( readDacs() ) );
+  connect( _pushButtonSetDacsDefaults, SIGNAL( clicked() ),
+	   this, SLOT( setDacsDefaults() ) );
 
   _ipAddrValidator = new QIntValidator( 1, 255, this );
   _lineEditAddr3->setValidator( _ipAddrValidator );
@@ -43,6 +46,10 @@ SpidrDacs::SpidrDacs()
   _lineEditPort->setValidator( _ipPortValidator );
 
   _labelDisconnected->hide();
+
+  _qpOkay  = this->palette();
+  _qpError = _qpOkay;
+  _qpError.setColor( QPalette::Base, QColor("yellow") ); // Text entry backgr
 
   _signalMapper = new QSignalMapper( this );
 
@@ -85,7 +92,8 @@ SpidrDacs::SpidrDacs()
       slidr = new QSlider( this );
       slidr->setTracking( true );
       slidr->setRange( 0, (1<<TPX3_DAC_TABLE[i].bits)-1 );
-      if( slidr->maximum() < 200 ) slidr->setTickInterval( 10 );
+      if( slidr->maximum() < 20 ) slidr->setTickInterval( 1 );
+      else if( slidr->maximum() < 200 ) slidr->setTickInterval( 10 );
       else if( slidr->maximum() < 300 ) slidr->setTickInterval( 20 );
       else slidr->setTickInterval( 50 );
       slidr->setTickPosition( QSlider::TicksLeft );
@@ -135,6 +143,7 @@ void SpidrDacs::connectOrDisconnect()
       _spidrController = 0;
       _pushButtonConnectOrDisconnect->setText( "Connect" );
       _pushButtonReadDacs->setEnabled( false );
+      _pushButtonSetDacsDefaults->setEnabled( false );
     }
   else
     {
@@ -166,6 +175,7 @@ void SpidrDacs::connectOrDisconnect()
 	  QApplication::restoreOverrideCursor();
 
 	  _pushButtonReadDacs->setEnabled( true );
+	  _pushButtonSetDacsDefaults->setEnabled( true );
 
 	  _timerId = this->startTimer( CHECK_INTERVAL_MS );
 	}
@@ -188,14 +198,32 @@ void SpidrDacs::readDacs()
   if( !_spidrController || !_spidrController->isConnected() ) return;
 
   // Get the current DAC settings and display them
+  // without triggering DAC-set commands
+  _disableSetDac = true;
   int dac_val;
   for( int i=0; i<_slidrs.size(); ++i )
     {
       if( _spidrController->getDac( 0, TPX3_DAC_TABLE[i].code, &dac_val ) )
-	_slidrs[i]->setValue( dac_val );
+	{
+	  _slidrs[i]->setValue( dac_val );
+	  _spboxs[i]->setPalette( _qpOkay );
+	}
       else
-	_slidrs[i]->setValue( 0 );
+	{
+	  //_slidrs[i]->setValue( 0 );
+	  _spboxs[i]->setPalette( _qpError );
+	}
     }
+  _disableSetDac = false;
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDacs::setDacsDefaults()
+{
+  if( !_spidrController || !_spidrController->isConnected() ) return;
+
+  if( _spidrController->setDacsDflt( 0 ) ) this->readDacs();
 }
 
 // ----------------------------------------------------------------------------
@@ -203,9 +231,13 @@ void SpidrDacs::readDacs()
 void SpidrDacs::dacChanged( int index )
 {
   if( !_spidrController || !_spidrController->isConnected() ) return;
+  if( _disableSetDac ) return;
 
-  _spidrController->setDac( 0, TPX3_DAC_TABLE[index].code,
-			    _spboxs[index]->value() );
+  if( _spidrController->setDac( 0, TPX3_DAC_TABLE[index].code,
+				_spboxs[index]->value() ) )
+    _spboxs[index]->setPalette( _qpOkay );
+  else
+    _spboxs[index]->setPalette( _qpError );
 }
 
 // ----------------------------------------------------------------------------

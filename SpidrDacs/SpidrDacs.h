@@ -1,5 +1,6 @@
 #include "ui_SpidrDacs.h"
 #include <QDialog>
+#include <QPalette>
 #include <QVector>
 
 class SpidrController;
@@ -20,6 +21,7 @@ class SpidrDacs : public QDialog, Ui_SpidrDacsDialog
  public slots:
   void connectOrDisconnect();
   void readDacs();
+  void setDacsDefaults();
   void dacChanged( int index );
   void adjustLayout();
 
@@ -36,6 +38,10 @@ class SpidrDacs : public QDialog, Ui_SpidrDacsDialog
   QIntValidator   *_ipPortValidator;
 
   int              _timerId;
+
+  bool             _disableSetDac;
+
+  QPalette         _qpOkay, _qpError;
 
   void timerEvent( QTimerEvent * );
   void initDacs();
