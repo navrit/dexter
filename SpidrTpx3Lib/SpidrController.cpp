@@ -601,7 +601,7 @@ bool SpidrController::setPixelThreshold( int  x,
     for( xi=xstart; xi<xend; ++xi )
       {
 	pcfg = &_pixelConfig[yi][xi];
-	*pcfg &= TPX3_PIXCFG_MASKBIT;
+	*pcfg &= ~TPX3_PIXCFG_THRESH_MASK;
 	*pcfg |= (TPX3_THRESH_CONV_TABLE[threshold] << 1);
       }
 

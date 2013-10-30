@@ -84,6 +84,7 @@ History:
 #define TPX3_PIXCFG_THRESHBIT1      (1 << 3)
 #define TPX3_PIXCFG_THRESHBIT0      (1 << 4)
 #define TPX3_PIXCFG_TESTBIT         (1 << 5)
+#define TPX3_PIXCFG_THRESH_MASK     0x01E
 
 // ----------------------------------------------------------------------------
 // Timepix3 pixel address (16 bits), expressed in x,y
