@@ -610,32 +610,41 @@ bool SpidrController::setPixelThreshold( int  x,
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setPixelTestEna( int x, int y )
+bool SpidrController::setPixelTestEna( int x, int y, bool b )
 {
-  return this->setPixelBit( x, y, TPX3_PIXCFG_TESTBIT );
+  return this->setPixelBit( x, y, TPX3_PIXCFG_TESTBIT, b );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setPixelMask( int x, int y )
+bool SpidrController::setPixelMask( int x, int y, bool b )
 {
-  return this->setPixelBit( x, y, TPX3_PIXCFG_MASKBIT );
+  return this->setPixelBit( x, y, TPX3_PIXCFG_MASKBIT, b );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setPixelBit( int x, int y, unsigned char bitmask )
+bool SpidrController::setPixelBit( int x, int y, unsigned char bitmask, bool b )
 {
   int xstart, xend;
   int ystart, yend;
   if( !this->validXandY( x, y, &xstart, &xend, &ystart, &yend ) )
     return false;
 
-  // Set the mask bit in the requested pixels
+  // Set or unset the bit(s) in the requested pixels
   int xi, yi;
-  for( yi=ystart; yi<yend; ++yi )
-    for( xi=xstart; xi<xend; ++xi )
-      _pixelConfig[yi][xi] |= bitmask;
+  if( b )
+    {
+      for( yi=ystart; yi<yend; ++yi )
+	for( xi=xstart; xi<xend; ++xi )
+	  _pixelConfig[yi][xi] |= bitmask;
+    }
+  else
+    {
+      for( yi=ystart; yi<yend; ++yi )
+	for( xi=xstart; xi<xend; ++xi )
+	  _pixelConfig[yi][xi] &= ~bitmask;
+    }
 
   return true;
 }
@@ -1203,7 +1212,8 @@ bool SpidrController::request( int cmd,     int dev_nr,
   if( err != 0 )
     {
       this->clearErrorString();
-      _errString << "Error from SPIDR: 0x" << hex << err;
+      _errString << "Error from SPIDR: " << this->spidrErrString( err )
+		 << " (0x" << hex << err << ")";
       return false;
     }
   int reply = ntohl( _replyMsg[0] );
@@ -1230,6 +1240,46 @@ int SpidrController::dacIndex( int dac_code )
   for( i=0; i<TPX3_DAC_COUNT; ++i )
     if( TPX3_DAC_TABLE[i].code == dac_code ) return i;
   return -1;
+}
+
+// ----------------------------------------------------------------------------
+
+static char *TPX3_ERR_STR[] =
+  {
+    "no error",
+    "TPX3_ERR_SC_ILLEGAL",
+    "TPX3_ERR_SC_STATE",
+    "TPX3_ERR_SC_ERRSTATE",
+    "TPX3_ERR_SC_WORDS",
+    "TPX3_ERR_TX_TIMEOUT",
+    "TPX3_ERR_EMPTY",
+    "TPX3_ERR_NOTEMPTY",
+    "TPX3_ERR_FULL",
+    "TPX3_ERR_UNEXP_REPLY",
+    "TPX3_ERR_UNEXP_HEADER"
+  };
+
+std::string SpidrController::spidrErrString( int err )
+{
+  std::string errstr;
+  int errid = err & 0xFF;
+  
+  if( errid >= (sizeof(ERR_STR)/sizeof(char*)) )
+    errstr = "<unknown>";
+  else
+    errstr = ERR_STR[errid];
+
+  if( errid == ERR_HARDWARE )
+    {
+      errid = (err & 0xFF00) >> 8;
+      errstr += ", ";
+      if( errid >= (sizeof(TPX3_ERR_STR)/sizeof(char*)) )
+	errstr += "<unknown>";
+      else
+	errstr += TPX3_ERR_STR[errid];
+    }
+
+  return errstr;
 }
 
 // ----------------------------------------------------------------------------

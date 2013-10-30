@@ -105,11 +105,13 @@ class MY_LIB_API SpidrController
   bool setPixelThreshold       ( int  x,
                                  int  y,
                                  int  threshold );
-  bool setPixelTestEna         ( int x = ALL_PIXELS, int y = ALL_PIXELS );
-  bool setPixelMask            ( int x = ALL_PIXELS, int y = ALL_PIXELS );
-  bool setPixelConfig          ( int dev_nr );
-  bool getPixelConfig          ( int dev_nr );
-  bool resetPixels             ( int dev_nr );
+  bool setPixelTestEna         ( int  x = ALL_PIXELS, int y = ALL_PIXELS,
+                                 bool b = true );
+  bool setPixelMask            ( int  x = ALL_PIXELS, int y = ALL_PIXELS,
+                                 bool b = true );
+  bool setPixelConfig          ( int  dev_nr );
+  bool getPixelConfig          ( int  dev_nr );
+  bool resetPixels             ( int  dev_nr );
   unsigned char *pixelConfig   ();
 
   // Configuration: onboard storage
@@ -164,7 +166,7 @@ class MY_LIB_API SpidrController
 
   // Other
  private:
-  bool setPixelBit             ( int x, int y, unsigned char bitmask );
+  bool setPixelBit             ( int x, int y, unsigned char bitmask, bool b );
   bool get3Ints                ( int cmd, int *data0, int *data1, int *data2 );
   bool validXandY              ( int x,       int y,
                                  int *xstart, int *xend,
@@ -184,6 +186,7 @@ class MY_LIB_API SpidrController
   bool request                 ( int cmd, int dev_nr,
                                  int req_len, int exp_reply_len );
   int  dacIndex                ( int dac_code );
+  std::string spidrErrString   ( int err );
 
  private:
   // Socket connecting to the SPIDR module
