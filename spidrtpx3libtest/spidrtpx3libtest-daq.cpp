@@ -62,10 +62,12 @@ int main( int argc, char *argv[] )
     cout << "###setTpNumber: " << spidrctrl.errorString() << endl;
 
   // Enable test-pulses for some columns
+  //spidrctrl.setCtprBits( 0 );
   int col;
   for( col=0; col<256; ++col )
-    if( col >= 10 && col < 11 )
-      spidrctrl.configCtpr( device_nr, col, 1 );
+    if( col >= 9 && col < 11 )
+      //spidrctrl.configCtpr( device_nr, col, 1 );
+      spidrctrl.setCtprBit( col );
 
   if( !spidrctrl.setCtpr( device_nr ) )
     cout << "###setCtpr: " << spidrctrl.errorString() << endl;
@@ -125,19 +127,20 @@ int main( int argc, char *argv[] )
           ++framecnt;
           frame = spidrdaq.frameData( &size );
 	  int pixcnt = 0;
-	  /*
-          while( spidrdaq.nextPixel( &x, &y, &pixdata, &timestamp ) )
+          while( spidrdaq.nextPixel( &x, &y, &pixdata, &timestamp )
+		 && pixcnt < 5 )
 	    {
 	      cout << x << "," << y << ": " << hex << pixdata << dec << endl;
 	      ++pixcnt;
 	    }
-	  */
+	  /*
 	  unsigned long long pixel;
           while( (pixel = spidrdaq.nextPixel()) != 0 && pixcnt < 5 )
 	    {
 	      cout << pixcnt << ": " << hex << pixel << dec << endl;
 	      ++pixcnt;
 	    }
+	  */
           cout << "Frame " << framecnt << " size=" << size << ": "
 	       << pixcnt <<" pixels" << endl;	  
         }
