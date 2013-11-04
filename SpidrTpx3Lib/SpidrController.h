@@ -96,8 +96,11 @@ class MY_LIB_API SpidrController
   bool        setTpPeriodPhase ( int  dev_nr, int  period, int  phase );
   bool        getTpNumber      ( int  dev_nr, int *number );
   bool        setTpNumber      ( int  dev_nr, int  number );
-  bool        configCtpr       ( int  dev_nr, int  column, int val );
+  //bool      configCtpr       ( int  dev_nr, int  column, int val );
+  bool        setCtprBit       ( int column, int val = 1 );
+  bool        setCtprBits      ( int val = 1 );
   bool        setCtpr          ( int  dev_nr );
+  //bool      setCtprLeon      ( int  dev_nr );
   bool        getCtpr          ( int  dev_nr, unsigned char **ctpr );
 
   // Configuration: device pixels
@@ -167,6 +170,9 @@ class MY_LIB_API SpidrController
   // Other
  private:
   bool setPixelBit             ( int x, int y, unsigned char bitmask, bool b );
+  void setBitsBigEndianReversed( unsigned char *buffer,
+				 int pos, int nbits, unsigned int value,
+				 int array_size_in_bits );
   bool get3Ints                ( int cmd, int *data0, int *data1, int *data2 );
   bool validXandY              ( int x,       int y,
                                  int *xstart, int *xend,

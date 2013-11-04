@@ -15,7 +15,7 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x13080800;
+const int VERSION_ID = 0x13110100;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor
@@ -37,7 +37,11 @@ SpidrController::SpidrController( int ipaddr3,
 
   _sock->waitForConnected( 5000 );
 
+  // Initialize the local pixel configuration data array to all zeroes
   this->resetPixelConfig();
+
+  // Initialize the local CTPR to all zeroes
+  memset( static_cast<void *> (_ctpr), 0, sizeof(_ctpr) );
 
   _busyRequests = 0;
   _errId = 0;
@@ -535,22 +539,54 @@ bool SpidrController::setTpNumber( int dev_nr, int number )
 }
 
 // ----------------------------------------------------------------------------
-
+/*
 bool SpidrController::configCtpr( int dev_nr, int column, int val )
 {
   // Combine column and val into a single int
   int ctpr = ((column & 0xFFFF) << 16) | (val & 0x0001);
   return this->requestSetInt( CMD_CONFIG_CTPR, dev_nr, ctpr );
 }
+*/
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setCtprBit( int column, int val )
+{
+  if( column < 0 || column > 255 ) return false;
+  if( !(val == 0 || val == 1) ) return false;
+  this->setBitsBigEndianReversed( _ctpr, column, 1, val, 256 );
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setCtprBits( int val )
+{
+  // Set all bits in _ctpr to 0 or 1
+  if( !(val == 0 || val == 1) ) return false;
+  if( val == 1 ) val = 0xFFFFFFFF;
+  int i;
+  for( i=0; i<(256/8)/4; ++i )
+    this->setBitsBigEndianReversed( _ctpr, i*32, 32, val, 256 );
+  return true;
+}
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setCtpr( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_SET_CTPR, dev_nr, dummy );
+  return this->requestSetIntAndBytes( CMD_SET_CTPR, dev_nr,
+				      0, // Not used for now
+				      sizeof( _ctpr ), _ctpr );
 }
 
+// ----------------------------------------------------------------------------
+/*
+bool SpidrController::setCtprLeon( int dev_nr )
+{
+  int dummy = 0;
+  return this->requestSetInt( CMD_SET_CTPR_LEON, dev_nr, dummy );
+}
+*/
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getCtpr( int dev_nr, unsigned char **ctpr )
@@ -620,33 +656,6 @@ bool SpidrController::setPixelTestEna( int x, int y, bool b )
 bool SpidrController::setPixelMask( int x, int y, bool b )
 {
   return this->setPixelBit( x, y, TPX3_PIXCFG_MASKBIT, b );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setPixelBit( int x, int y, unsigned char bitmask, bool b )
-{
-  int xstart, xend;
-  int ystart, yend;
-  if( !this->validXandY( x, y, &xstart, &xend, &ystart, &yend ) )
-    return false;
-
-  // Set or unset the bit(s) in the requested pixels
-  int xi, yi;
-  if( b )
-    {
-      for( yi=ystart; yi<yend; ++yi )
-	for( xi=xstart; xi<xend; ++xi )
-	  _pixelConfig[yi][xi] |= bitmask;
-    }
-  else
-    {
-      for( yi=ystart; yi<yend; ++yi )
-	for( xi=xstart; xi<xend; ++xi )
-	  _pixelConfig[yi][xi] &= ~bitmask;
-    }
-
-  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -974,6 +983,76 @@ bool SpidrController::getDvdd( int *mvolt, int *mamp, int *mwatt )
 
 // ----------------------------------------------------------------------------
 // Private functions
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setPixelBit( int x, int y, unsigned char bitmask, bool b )
+{
+  int xstart, xend;
+  int ystart, yend;
+  if( !this->validXandY( x, y, &xstart, &xend, &ystart, &yend ) )
+    return false;
+
+  // Set or unset the bit(s) in the requested pixels
+  int xi, yi;
+  if( b )
+    {
+      for( yi=ystart; yi<yend; ++yi )
+	for( xi=xstart; xi<xend; ++xi )
+	  _pixelConfig[yi][xi] |= bitmask;
+    }
+  else
+    {
+      for( yi=ystart; yi<yend; ++yi )
+	for( xi=xstart; xi<xend; ++xi )
+	  _pixelConfig[yi][xi] &= ~bitmask;
+    }
+
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrController::setBitsBigEndianReversed( unsigned char *buffer,
+						int pos,
+						int nbits,
+						unsigned int value,
+						int array_size_in_bits )
+{
+  // Store bits 'big-endian': highest position first
+  // but reversed within the bytes, i.e. the most-significant bit
+  // is stored in bit position 0 of byte 0 (for SPIDR-TPX3).
+  // This function stores up to 32 bits from 'value'.
+  int bytpos, bitmask;
+  unsigned char *byt;
+
+  // Position counted from the end of the bit array
+  pos     = array_size_in_bits - pos - 1;
+  bytpos  = pos >> 3;
+  byt     = &buffer[bytpos];
+  bitmask = 1 << (7-(pos & 0x7)); // Reversed within a byte...
+
+  while( nbits > 0 )
+    {
+      // Clear or set the bit
+      if( value & 0x1 )
+	//buffer[bytpos] |= bitmask;
+	*byt |= bitmask;
+      else
+	//buffer[bytpos] &= ~bitmask;
+	*byt &= ~bitmask;
+
+      bitmask <<= 1;
+      if( (bitmask & 0xFF) == 0 )
+	{
+	  bitmask = 0x01;
+	  //--bytpos;
+	  --byt;
+	}
+      value >>= 1;
+      --nbits;
+    }
+}
+
 // ----------------------------------------------------------------------------
 
 bool SpidrController::get3Ints( int cmd, int *data0, int *data1, int *data2 )

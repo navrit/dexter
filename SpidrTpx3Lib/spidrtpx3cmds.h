@@ -40,6 +40,7 @@
 #define CMD_CONFIG_CTPR        0x120
 #define CMD_SET_CTPR           0x121
 #define CMD_GET_CTPR           0x122
+#define CMD_SET_CTPR_LEON      0x123
 
 #define CMD_RESET_DEVICE       0x124
 #define CMD_RESET_DEVICES      0x125
@@ -137,7 +138,7 @@ static char *CMD_STR[] =
     "CONFIG_CTPR      ", // 0x120
     "SET_CTPR         ", // 0x121
     "GET_CTPR         ", // 0x122
-    "-----",             // 0x123
+    "SET_CTPR_LEON    ", // 0x123
     "RESET_DEVICE     ", // 0x124
     "RESET_DEVICES    ", // 0x125
     "-----",             // 0x126
