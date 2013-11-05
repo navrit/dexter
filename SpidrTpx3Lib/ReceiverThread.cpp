@@ -66,6 +66,8 @@ void ReceiverThread::stop()
       _stop = true;
       //this->exit(); // Stop this thread's event loop
       this->wait(); // Wait until this thread (i.e. function run()) exits
+      _sock->close();
+      delete _sock;
     }
 }
 
@@ -83,15 +85,13 @@ void ReceiverThread::run()
       //  which may arrive after _suspend has been reset to false)
       if( _suspend && !_suspended ) _suspended = true;
     }
-  _sock->close();
-  delete _sock;
 }
 
 // ----------------------------------------------------------------------------
 
 void ReceiverThread::readDatagrams()
 {
-  int recvd_sz, space, tmphead;
+  long long recvd_sz, space, tmphead;
 
   while( _sock->hasPendingDatagrams() )
     {
