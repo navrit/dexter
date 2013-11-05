@@ -35,17 +35,16 @@ class DatasamplerThread : public QThread
   void stop();
   void run();
 
-  void setFlush      ( bool enable )     { _flush = enable; }
+  void setFlush      ( bool enable ) { _flush = enable; }
 
-  // Data sampling: 'frames' or data blocks
-  void  setSampling  ( bool enable )     { _sampling = enable; }
-  void  setSampleAll ( bool enable )     { _sampleAll = enable; }
+  // Data sampling: pixel data blocks ('samples') or 'frames'
+  void  setSampling  ( bool enable ) { _sampling = enable; }
+  void  setSampleAll ( bool enable ) { _sampleAll = enable; }
+  bool  getSample    ( int max_size, int timeout_ms );
   bool  getFrame     ( int timeout_ms );
-  void  freeFrame    ()                  { freeSample(); }
-  char *frameData    ( int *size )       { return sampleData( size ); }
   void  freeSample   ();
   char *sampleData   ( int *size );
-  bool  nextPixel    ( int *x, int *y, int *data, int *timestamp );
+  bool  nextPixel    ( int *x, int *y, int *data = 0, int *timestamp = 0 );
   u64   nextPixel    ();
 
   // File operations
@@ -55,6 +54,7 @@ class DatasamplerThread : public QThread
   // Statistics
   long long framesSampled() { return _framesSampled; }
   long long bytesWritten()  { return _bytesWritten; }
+  long long bytesSampled()  { return _bytesSampled; }
   long long bytesFlushed()  { return _bytesFlushed; }
 
   // Error
@@ -62,6 +62,7 @@ class DatasamplerThread : public QThread
   void clearErrorString()   { _errString.clear(); };
 
  private:
+  int copySampleToBuffer();
   int copyFrameToBuffer();
 
  private:
@@ -71,9 +72,13 @@ class DatasamplerThread : public QThread
   bool _stop;
 
   long long _framesSampled;
-  long long _bytesWritten,_bytesFlushed;
+  long long _bytesWritten;
+  long long _bytesSampled;
+  long long _bytesFlushed;
 
-  bool  _sampling, _sampleAll;
+  bool      _sampling, _sampleAll, _requestFrame;
+  long long _requestedSize;
+
   QFile _file;
   bool  _fileOpen;
   bool  _flush; // Flush or not,

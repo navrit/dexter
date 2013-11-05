@@ -15,11 +15,14 @@ DatasamplerThread::DatasamplerThread( ReceiverThread *recvr,
   : QThread( parent ),
     _receiver( recvr ),
     _stop( false ),
+    _sampling( false ),
+    _sampleAll( false ),
+    _requestFrame( false ),
+    _requestedSize( 0 ),
     _framesSampled( 0 ),
     _bytesWritten( 0 ),
+    _bytesSampled( 0 ),
     _bytesFlushed( 0 ),
-    _sampling( false ),
-    _sampleAll( true ),
     _fileOpen( false ),
     _flush( true ),
     _bufIndex( 0 ),
@@ -59,6 +62,9 @@ void DatasamplerThread::run()
 
   if( !_receiver ) _stop = true;
 
+  // Sample buffer initially available
+  this->freeSample();
+
   while( !_stop )
     {
       if( _receiver->hasData() )
@@ -73,41 +79,89 @@ void DatasamplerThread::run()
 		      // Wait until the sample buffer is free
 		      if( _sampleBufferEmpty.tryAcquire( 1, 50 ) )
 			{
-			  bytes = this->copyFrameToBuffer();
+			  if( _requestFrame )
+			    bytes = this->copyFrameToBuffer();
+			  else
+			    bytes = this->copySampleToBuffer();
 
-			  // Write the sampled data to file too if appropriate
+			  // Write the sampled data to file too if open
 			  if( _fileOpen )
-			    // ###NB: what to do if not all bytes are written
-			    // but we did copy them to the sample buffer?
-			    _file.write( _receiver->data(), bytes );
+			    {
+			      // ###NB: what to do if not all bytes are written
+			      // but we did copy them to the sample buffer?
+			      _file.write( _receiver->data(), bytes );
+			      _bytesWritten += bytes;
+			    }
 
 			  // Notify the receiver
 			  _receiver->updateBytesConsumed( bytes );
-			  _bytesWritten += bytes;
+			  _bytesSampled += bytes;
 			}
 		    }
-		  else if( _sampleBufferEmpty.available() )
+		  else
 		    {
 		      // Sample as often as we can,
 		      // i.e. copy data only when the data buffer is free
-		      _sampleBufferEmpty.acquire();
+		      // (but it does mean that we may start sampling
+		      //  in the middle of a frame... ###DO SOMETHING?
+		      //  e.g. to skip everything up to the next EoR and
+		      //  start sampling from there? but then we'll never
+		      //  sample if the frames come at a low rate)
+		      if( _sampleBufferEmpty.available() )
+			{
+			  _sampleBufferEmpty.acquire();
 
-		      bytes = this->copyFrameToBuffer();
+			  if( _requestFrame )
+			    bytes = this->copyFrameToBuffer();
+			  else
+			    bytes = this->copySampleToBuffer();
 
-		      // Write the sampled data to file too if appropriate
+			  _bytesSampled += bytes;
+			}
+		      else
+			{
+			  bytes = 0;
+			}
+
+		      // Write the data (sampled or not) to file if open
 		      if( _fileOpen )
-			// ###NB: what to do if not all bytes are written
-			// but we did copy them to the sample buffer?
-			_file.write( _receiver->data(), bytes );
+			{
+			  if( bytes == 0 )
+			    bytes = _file.write( _receiver->data(),
+						 _receiver->bytesAvailable() );
+			  else
+			    // ###NB: what to do if not all bytes are written
+			    // but we did copy them to the sample buffer?
+			    // Note that we do not write more than the bytes
+			    // sampled, since we may be in the process of
+			    // collecting a frame
+			    _file.write( _receiver->data(), bytes );
 
-		      // Notify the receiver
-		      _receiver->updateBytesConsumed( bytes );
-		      _bytesWritten += bytes;
+			  _bytesWritten += bytes;
+			}
+
+		      if( bytes == 0 )
+			{
+			  // If nothing sampled and not writing to file
+			  // flush the data if flushing is enabled,
+			  // otherwise keep it stored in buffer...
+			  if( _flush )
+			    {
+			      bytes = _receiver->bytesAvailable();
+			      _receiver->updateBytesConsumed( bytes );
+			      _bytesFlushed += bytes;
+			    }
+			}
+		      else
+			{
+			  // Notify the receiver
+			  _receiver->updateBytesConsumed( bytes );
+			}
 		    }
 		}
 	      else
 		{
-		  // Write data to file
+		  // File is open: write data to file
 		  bytes = _file.write( _receiver->data(),
 				       _receiver->bytesAvailable() );
 
@@ -118,7 +172,8 @@ void DatasamplerThread::run()
 	    }
 	  else
 	    {
-	      // Flush the data, if enabled...
+	      // If not sampling or writing to file flush the data
+	      // if flushing is enabled, otherwise keep it stored in buffer
 	      if( _flush )
 		{
 		  bytes = _receiver->bytesAvailable();
@@ -138,13 +193,30 @@ void DatasamplerThread::run()
 
 // ----------------------------------------------------------------------------
 
-bool DatasamplerThread::getFrame( int timeout_ms )
+bool DatasamplerThread::getSample( int max_size, int timeout_ms )
 {
-  this->freeSample();
-
   _pixIndex = 0;
 
   if( !_sampling ) return false;
+
+  _requestFrame = false;
+  // Round up to next multiple of 8 bytes
+  _requestedSize = ((max_size+7)/8)*8;
+  // Can not request more data in a sample than fits in the buffer
+  if( _requestedSize > FRAME_BUF_SIZE ) _requestedSize = FRAME_BUF_SIZE;
+
+  return _sampleAvailable.tryAcquire( 1, timeout_ms );
+}
+
+// ----------------------------------------------------------------------------
+
+bool DatasamplerThread::getFrame( int timeout_ms )
+{
+  _pixIndex = 0;
+
+  if( !_sampling ) return false;
+
+  _requestFrame = true;
 
   return _sampleAvailable.tryAcquire( 1, timeout_ms );
 }
@@ -173,6 +245,7 @@ char *DatasamplerThread::sampleData( int *size )
 bool DatasamplerThread::nextPixel( int *x, int *y,
 				    int *data, int *timestamp )
 {
+// Extract data from the pixel data in a byte-wise manner...
   u32 addr, header, dcol, spix, pix;
   u8 *pixel = (u8 *) &_sampleBuffer[_pixIndex];
   while( _pixIndex < _bufIndex )
@@ -217,6 +290,7 @@ bool DatasamplerThread::nextPixel( int *x,
 {
   // Extract data from the next 64-bit/8-byte pixel data packet
   // in the sample buffer and return them in the given pointer locations
+  // (if 'data' and 'timestamp' are NULL, return x and y only)
   u64 pixdata, header, dcol, spix, pix;
   while( _pixIndex < _bufIndex )
     {
@@ -232,6 +306,8 @@ bool DatasamplerThread::nextPixel( int *x,
 	{
 	  pixdata = _sampleBufferUlong[_pixIndex/8];
 	}
+
+      // Data-driven or sequential readout pixel data header ?
       header = pixdata & 0xF000000000000000;
       if( header == 0xB000000000000000 || header == 0xA000000000000000 )
 	{
@@ -243,15 +319,17 @@ bool DatasamplerThread::nextPixel( int *x,
 	  pix   = ((pixdata & 0x0000700000000000) >> 44); //(16+28)
 	  *x    = (int) (dcol + pix/4);
 	  *y    = (int) (spix + (pix & 0x3));
-	  *data = (int) ((pixdata & 0x00000FFFFFFF0000) >> 16);
-	  *timestamp = (int) (pixdata & 0x000000000000FFFF);
-	  // Next pixel data
+	  if( data )
+	    *data = (int) ((pixdata & 0x00000FFFFFFF0000) >> 16);
+	  if( timestamp )
+	    *timestamp = (int) (pixdata & 0x000000000000FFFF);
+	  // Next Timepix3 packet
 	  _pixIndex += 8;
 	  return true;
 	}
       else
 	{
-	  // Next pixel data
+	  // Skip non-pixel Timepix3 data packet, go to next packet
 	  _pixIndex += 8;
 	}
     }
@@ -278,20 +356,41 @@ u64 DatasamplerThread::nextPixel()
 	{
 	  pixdata = _sampleBufferUlong[_pixIndex/8];
 	}
+
+      // Data-driven or sequential readout pixel data header ?
       header = pixdata & 0xF000000000000000;
       if( header == 0xB000000000000000 || header == 0xA000000000000000 )
 	{
-	  // Next pixel data
+	  // Next Timepix3 packet
 	  _pixIndex += 8;
 	  return pixdata;
 	}
       else
 	{
-	  // Next pixel data
+	  // Skip non-pixel Timepix3 data packet, go to next packet
 	  _pixIndex += 8;
 	}
     }
   return 0;
+}
+
+// ----------------------------------------------------------------------------
+
+int DatasamplerThread::copySampleToBuffer()
+{
+  // Collect pixel data into the sample buffer up to a maximum size
+  long long bytes = _receiver->bytesAvailable();
+  if( bytes > _requestedSize ) bytes = _requestedSize;
+
+  // Copy the data to the sample buffer
+  memcpy( static_cast<void *> (&_sampleBuffer[_bufIndex]),
+	  static_cast<void *> (_receiver->data()), bytes );
+  _bufIndex += bytes;
+
+  // Okay, a data sample is now available in the sample buffer
+  _sampleAvailable.release();
+
+  return bytes;
 }
 
 // ----------------------------------------------------------------------------
@@ -337,6 +436,7 @@ int DatasamplerThread::copyFrameToBuffer()
 	      memcpy( static_cast<void *> (&_sampleBuffer[_bufIndex]),
 		      static_cast<void *> (_receiver->data()), size );
 	      _bufIndex += size;
+	      ++_framesSampled;
 
 	      // Okay, a frame is now available in the sample buffer
 	      _sampleAvailable.release();
@@ -347,12 +447,15 @@ int DatasamplerThread::copyFrameToBuffer()
       size += 8;
     }
 
+  // EoR not (yet) found
+
   // Copy the data up to this point (but the frame is not yet complete!)
   memcpy( static_cast<void *> (&_sampleBuffer[_bufIndex]),
 	  static_cast<void *> (_receiver->data()), size );
   _bufIndex += size;
 
   // Allow another access to the sample buffer to continue filling it
+  // until an EoR is found
   if( _sampleBufferEmpty.available() == 0 )
     _sampleBufferEmpty.release();
 
