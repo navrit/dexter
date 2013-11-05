@@ -177,6 +177,13 @@ void SpidrDaq::setSampling( bool enable )
 }
 
 // ----------------------------------------------------------------------------
+
+void SpidrDaq::setSampleAll( bool enable )
+{
+  _fileWriter->setSampleAll( enable );
+}
+
+// ----------------------------------------------------------------------------
 // Acquisition
 // ----------------------------------------------------------------------------
 
@@ -239,6 +246,27 @@ char *SpidrDaq::dataBuffer()
 // Pixel data sampling
 // ----------------------------------------------------------------------------
 
+bool SpidrDaq::getSample( int max_size, int timeout_ms )
+{
+  return _fileWriter->getSample( max_size, timeout_ms );
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDaq::freeSample()
+{
+  _fileWriter->freeSample();
+}
+
+// ----------------------------------------------------------------------------
+
+char *SpidrDaq::frameData( int *size_in_bytes )
+{
+  return _fileWriter->sampleData( size_in_bytes );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrDaq::getFrame( int timeout_ms )
 {
   return _fileWriter->getFrame( timeout_ms );
@@ -248,14 +276,14 @@ bool SpidrDaq::getFrame( int timeout_ms )
 
 void SpidrDaq::freeFrame()
 {
-  _fileWriter->freeFrame();
+  _fileWriter->freeSample();
 }
 
 // ----------------------------------------------------------------------------
 
-char *SpidrDaq::frameData( int *size_in_bytes )
+char *SpidrDaq::sampleData( int *size_in_bytes )
 {
-  return _fileWriter->frameData( size_in_bytes );
+  return _fileWriter->sampleData( size_in_bytes );
 }
 
 // ----------------------------------------------------------------------------
@@ -314,6 +342,13 @@ long long SpidrDaq::bytesLostCount()
 long long SpidrDaq::bytesWrittenCount()
 {
   return _fileWriter->bytesWritten();
+}
+
+// ----------------------------------------------------------------------------
+
+long long SpidrDaq::bytesSampledCount()
+{
+  return _fileWriter->bytesSampled();
 }
 
 // ----------------------------------------------------------------------------

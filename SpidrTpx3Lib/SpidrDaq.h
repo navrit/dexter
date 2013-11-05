@@ -41,6 +41,7 @@ class MY_LIB_API SpidrDaq
   bool closeFile                ();
   void setFlush                 ( bool enable );
   void setSampling              ( bool enable );
+  void setSampleAll             ( bool enable );
 
   // Acquisition
   long long bufferSize          ();
@@ -53,10 +54,14 @@ class MY_LIB_API SpidrDaq
   char     *dataBuffer          ();
 
   // Pixel data sampling
-  bool      getFrame            ( int timeout_ms );
+  bool      getSample           ( int max_size, int timeout_ms = 0 );
+  void      freeSample          ();
+  char     *sampleData          ( int *size_in_bytes );
+  bool      getFrame            ( int timeout_ms = 0 );
   void      freeFrame           ();
   char     *frameData           ( int *size_in_bytes );
-  bool      nextPixel           ( int *x, int *y, int *data, int *timestamp );
+  bool      nextPixel           ( int *x, int *y,
+				  int *data = 0, int *timestamp = 0 );
   unsigned long long nextPixel  ();
 
   // Statistics and info
@@ -66,6 +71,7 @@ class MY_LIB_API SpidrDaq
   long long bytesReceivedCount  ();
   long long bytesLostCount      ();
   long long bytesWrittenCount   ();
+  long long bytesSampledCount   ();
   long long bytesFlushedCount   ();
   int       bufferWrapCount     ();
 
