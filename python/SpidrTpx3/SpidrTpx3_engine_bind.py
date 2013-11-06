@@ -29,7 +29,7 @@ c2.add_method('resetDevice',           'bool',        [param('int', 'dev_nr')])
 c2.add_method('resetDevices',           'bool',       [])
   
 c2.add_method('resetPixelConfig',      None,          [])
-c2.add_method('configPixel',           'bool',        [param('int', 'x'),param('int', 'y'),param('int', 'threshold'),param('int', 'testbit')])
+#c2.add_method('configPixel',           'bool',        [param('int', 'x'),param('int', 'y'),param('int', 'threshold'),param('int', 'testbit')])
 c2.add_method('setPixelConfig',        'bool',        [param('int', 'dev_nr')])
 #c2.add_method('getPixelConfig',        'bool',        [param('int', 'dev_nr'),param('int**', 'config')])
 
@@ -53,23 +53,34 @@ c2.add_method('getShutterStart',       'bool',        [param('int', 'dev_nr'),pa
 c2.add_method('getShutterEnd',       'bool',        [param('int', 'dev_nr'),param('unsigned int*', 'timer_lo', transfer_ownership=False,direction = Parameter.DIRECTION_OUT), 
                                                                               param('unsigned int*', 'timer_hi', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 
-c2.add_method('flushFifoIn',       'bool',        [param('int', 'dev_nr')])
+#c2.add_method('flushFifoIn',       'bool',        [param('int', 'dev_nr')])
 
 c2.add_method('resetPixelConfig',      None,        [])
-c2.add_method('configPixel',           'bool',      [param('int', 'x'),param('int', 'y'),param('int', 'threshold'), param('int', 'testbit')])
-c2.add_method('maskPixel',             'bool',      [param('int', 'x'),param('int', 'y')])
-c2.add_method('unmaskPixel',           'bool',      [param('int', 'x'),param('int', 'y')])
+#c2.add_method('configPixel',           'bool',      [param('int', 'x'),param('int', 'y'),param('int', 'threshold'), param('int', 'testbit')])
+#c2.add_method('maskPixel',             'bool',      [param('int', 'x'),param('int', 'y')])
+#c2.add_method('unmaskPixel',           'bool',      [param('int', 'x'),param('int', 'y')])
+c2.add_method('setPixelThreshold',      'bool',      [param('int', 'x'),param('int', 'y'), param('int', 'threshold')])
+c2.add_method('setPixelTestEna',        'bool',      [param('int', 'x'),param('int', 'y'), param('int', 'b')])
+c2.add_method('setPixelMask',           'bool',      [param('int', 'x'),param('int', 'y'), param('int', 'b')])
+
+
 c2.add_method('setPixelConfig',        'bool',      [param('int', 'dev_nr')])
 c2.add_method('getPixelConfig',        'bool',      [param('int', 'dev_nr')])
 c2.add_method('resetPixels',           'bool',      [param('int', 'dev_nr')])
 
-c2.add_method('configCtpr',           'bool',       [param('int', 'dev_nr'),param('int', 'column'),param('int', 'val')])
-c2.add_method('setCtpr',              'bool',       [param('int', 'dev_nr')])
+c2.add_method('setCtprBit',            'bool',       [param('int', 'column'),param('int', 'val')])
+c2.add_method('setCtprBits',           'bool',       [param('int', 'val')])
+c2.add_method('setCtpr',               'bool',       [param('int', 'dev_nr')])
 
-c2.add_method('sequentialReadout',    'bool',       [param('int', 'dev_nr')])
-c2.add_method('datadrivenReadout',    'bool',       [param('int', 'dev_nr')])
-c2.add_method('openShutter',          'bool',       [param('int', 'dev_nr'),param('int', 'len')])
+c2.add_method('sequentialReadout',    'bool',       [param('int', 'tokens')])
+c2.add_method('datadrivenReadout',    'bool',       [])
+#c2.add_method('openShutter',          'bool',       [param('int', 'dev_nr'),param('int', 'len')])
 c2.add_method('errorString',          'std::string',       [])
+
+c2.add_method('setTriggerConfig',     'bool',       [param('int', 'trigger_mode'),param('int', 'trigger_period_us'),param('int', 'trigger_freq_hz'),param('int', 'nr_of_triggers')])
+c2.add_method('startAutoTrigger',     'bool',       [])
+c2.add_method('stopAutoTrigger',      'bool',       [])
+
   
 mod.add_enum('DAC_code', ['TPX3_IBIAS_PREAMP_ON','TPX3_IBIAS_PREAMP_OFF','TPX3_VPREAMP_NCAS','TPX3_IBIAS_IKRUM','TPX3_VFBK',
                           'TPX3_VTHRESH_FINE','TPX3_VTHRESH_COARSE','TPX3_IBIAS_DISCS1_ON','TPX3_IBIAS_DISCS1_OFF',

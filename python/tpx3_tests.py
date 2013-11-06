@@ -11,15 +11,17 @@ import tests
 import pycallgraph
 import logging
 from optparse import OptionParser
-
+import datetime
 
 def mkdir(d):
   if not os.path.exists(d):
     os.makedirs(d)  
-      
+
+today=datetime.datetime.now().strftime("%Y%m%d")
+
 class TPX_tests:
   def __init__(self,name):
-    self.dlogdir="logs/%s/"%name
+    self.dlogdir="logs/%s/%s/"%(name,today)
     self.name=name
     mkdir(self.dlogdir)
     
@@ -93,9 +95,11 @@ class TPX_tests:
 def main():
   usage = "usage: %prog [options] assembly_name [test]"
   parser = OptionParser(usage=usage,version="%prog 0.01")
-  parser.add_option("-i", "--ip",                              dest="ip",        default="192.168.1.10:50000", help="IP address of SPIDR TPX3 Controller")
-  parser.add_option("-d", "--dump-all",   action="store_true", dest="dump_all",  default=False,   help="Dump all Timepix3 messages")
+  parser.add_option("-i", "--ip",                              dest="ip",         default="192.168.100.10:50000", help="IP address of SPIDR TPX3 Controller")
+  parser.add_option("-p", "--prefix",                          dest="prefix",     default="", help="prefix")
+  parser.add_option("-d", "--dump-all",   action="store_true", dest="dump_all",   default=False,   help="Dump all Timepix3 messages")
   parser.add_option("-l", "--list-tests", action="store_true", dest="list_tests", default=False,  help="List all avaliable tests")
+  parser.add_option("-v", "--verbose",    action="store_true", dest="verbose",    default=False,  help="Verbose output in console (debug log level)")
 
   (options, args) = parser.parse_args()
 
@@ -109,16 +113,23 @@ def main():
     parser.error("You have to specify assembly name")
   name=args[0]
     #set up logger
+  run_name="%s"%today
+  if options.prefix!="":
+    run_name+="_"+options.prefix
+  mkdir("logs/%s/%s/"%(name,run_name))
+  logname='logs/%s/%s/log.txt'%(name,run_name)
   logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)6s] [%(relativeCreated)5d] %(message)s',
-                    datefmt='%M:%S',filename='logs/%s.log'%name, filemode='w')
+                    datefmt='%M:%S',filename=logname, filemode='w')
   formatter = logging.Formatter('[%(levelname)6s] [%(relativeCreated)5d] %(message)s')
   consoleHandler = logging.StreamHandler()
   consoleHandler.setFormatter(formatter)
   consoleHandler.setLevel(logging.INFO)
-
+  if options.verbose:
+    consoleHandler.setLevel(logging.DEBUG)
+  
   logging.getLogger('').addHandler(consoleHandler)
-
+  logging.info("Log will be stored to %s"%logname)
 
   test_list=[]
   if len(args)>1:

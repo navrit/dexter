@@ -386,11 +386,14 @@ class TPX3:
     return ret
 
   def flush_udp_fifo(self):
-    return self.recv_mask(0x1234000000000000, 0xFFFF000000000000)
+    data = self.recv_mask(0x1234000000000000, 0xFFFF000000000000)
+    for d in data:
+      logging.debug("FLUSH : %s"%(str(d)))
+    
 
   def _log_ctrl_cmd(self,msg,result):
     if result:
-      logging.info("%-80s [  OK  ]"%msg)
+      logging.debug("%-80s [  OK  ]"%msg)
     else:
       logging.error("%-80s [FAILED] (%s)"%(msg,self.ctrl.errorString()))
 
@@ -402,14 +405,11 @@ class TPX3:
     r=self.ctrl.setTpNumber(self.id,number)
     self._log_ctrl_cmd("setTpNumber(%d) "%(number),r)
 
-  def configPixel(self,x,y,dac, testbit=False):
-    self.dacs[x][y]=dac
-    self.tpena[x][y]=testbit
-    r=self.ctrl.configPixel(x,y,dac, testbit)
+  def setPixelThreshold(self,x,y,dac):
+    r=self.ctrl.setPixelThreshold(x,y,dac)
 
-  def configPixelTpEna(self,x,y, testbit=False):
-    self.tpena[x][y]=testbit
-    r=self.ctrl.configPixel(x,y,self.dacs[x][y], testbit)
+  def setPixelTestEna(self,x,y, testbit=False):
+    r=self.ctrl.setPixelTestEna(x,y, testbit)
 
 #    self._log_ctrl_cmd("configPixel(%d,%d,%d,%d) "%(x,y,threshold, testbit),r)
 
@@ -417,16 +417,12 @@ class TPX3:
     r=self.ctrl.resetPixelConfig()
     self._log_ctrl_cmd("resetPixelConfig() ",True)
 
-  def maskPixel(self,x,y):
-    r=self.ctrl.maskPixel(x,y)
-#    self._log_ctrl_cmd("maskPixel(%d,%d) "%(x,y),r)
-
-  def unmaskPixel(self,x,y):
-    r=self.ctrl.unmaskPixel(x,y)
-#    self._log_ctrl_cmd("unmaskPixel(%d,%d) "%(x,y),r)
+  def setPixelMask(self,x,y,v):
+    r=self.ctrl.setPixelMask(x,y,v)
 
   def setPixelConfig(self):
     r=self.ctrl.setPixelConfig(self.id)
+    time.sleep(1)
     self._log_ctrl_cmd("setPixelConfig() ",r)
 
   def getPixelConfig(self):
@@ -437,27 +433,38 @@ class TPX3:
     r=self.ctrl.resetPixels(self.id)
     self._log_ctrl_cmd("resetPixels() ",r)
     
-  def configCtpr(self,column,val):
-    r=self.ctrl.configCtpr(self.id,column,val)
-    self._log_ctrl_cmd("configCtpr(%d,%d) "%(column,val),r)
+  def setCtprBit(self,column,val):
+    r=self.ctrl.setCtprBit(column,val)
+    self._log_ctrl_cmd("setCtprBit(%d,%d) "%(column,val),r)
+
+  def setCtprBits(self,val):
+    r=self.ctrl.setCtprBits(val)
+    self._log_ctrl_cmd("setCtprBits(%d) "%(val),r)
+
   
   def setCtpr(self):
     r=self.ctrl.setCtpr(self.id)
     self._log_ctrl_cmd("setCtpr() ",r)
 
-  def sequentialReadout(self):
-    r=self.ctrl.sequentialReadout(self.id)
-    self._log_ctrl_cmd("sequentialReadout() ",r)
+  def sequentialReadout(self,tokens=128):
+    r=self.ctrl.sequentialReadout(tokens)
+    self._log_ctrl_cmd("sequentialReadout(tokens=%d) "%tokens,r)
     
     
   def datadrivenReadout(self):
-    r=self.ctrl.datadrivenReadout(self.id)
+    r=self.ctrl.datadrivenReadout()
     self._log_ctrl_cmd("datadrivenReadout() ",r)
+
+  def setShutterLen(self,l):
+    r=self.ctrl.setTriggerConfig(4,l,1,1)
+    self._log_ctrl_cmd("Config shutter (%d) "%(l),r)
     
 
   def openShutter(self,l):
-    r=self.ctrl.openShutter(self.id,l)
-    self._log_ctrl_cmd("openShutter(%d) "%(l),r)
+    r=self.ctrl.startAutoTrigger()
+#c2.add_method('stopAutoTrigger',      'bool',       [])
+#    r=self.ctrl.openShutter(self.id,l)
+    self._log_ctrl_cmd("Start shutter() ",r)
     
   def setSenseDac(self,code):
     r=self.ctrl.setSenseDac(self.id,code)
@@ -468,6 +475,11 @@ class TPX3:
     r=self.ctrl.setDac(self.id,code,val)
     self._log_ctrl_cmd("setDac(%d,%d) "%(code,val),r)
 
+  def getDac(self,code):
+    r,v=self.ctrl.getDac(self.id,code)
+    self._log_ctrl_cmd("getDac(%d)=%d "%(code,v),r)
+    return v
+ 
   def setGenConfig(self,l):
     r=self.ctrl.setGenConfig(self.id,l)
     self._log_ctrl_cmd("setGenConfig(%04x) "%(l),r)
@@ -506,10 +518,10 @@ class TPX3:
     self._log_ctrl_cmd("getShutterStart()=%d"%(v),True)
     return v
 
-  def flushFifoIn(self):
-    r=self.ctrl.flushFifoIn(self.id)
-    self._log_ctrl_cmd("flushFifoIn()",r)
-    return 
+#  def flushFifoIn(self):
+#    r=self.ctrl.flushFifoIn(self.id)
+#    self._log_ctrl_cmd("flushFifoIn()",r)
+#    return 
     
 #c2.add_method('getTpNumber',           'bool',        [param('int', 'dev_nr'),param('int*', 'number', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 #c2.add_method('setTpNumber',           'bool',        [param('int', 'dev_nr'),param('int', 'number')])
@@ -521,6 +533,7 @@ class TPX3:
     for pck_num in r:
       p=tpx3packet(pck_num)
       ret.append(p)
+#      print p
       if self.log_packets : logging.debug(p)
     return ret
     

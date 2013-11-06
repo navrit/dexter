@@ -144,7 +144,7 @@ std::list<unsigned long> UDPServer::getH(unsigned long val, unsigned long mask, 
     data.waitAndPop(pck);
     if (pck==0) //timeout
       return l;
-    pck=flipbytes(pck);
+//    pck=flipbytes(pck);
     unsigned long pmasked=pck&mask;
     if (debug)
     {
