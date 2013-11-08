@@ -27,11 +27,6 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  // Interface to Timepix3 pixel data acquisition
-  SpidrDaq spidrdaq( &spidrctrl );
-  string errstr = spidrdaq.errorString();
-  if( !errstr.empty() ) cout << "### SpidrDaq: " << errstr << endl;
-
   int device_nr = 0;
 
   // ----------------------------------------------------------
@@ -65,7 +60,7 @@ int main( int argc, char *argv[] )
   //spidrctrl.setCtprBits( 0 );
   int col;
   for( col=0; col<256; ++col )
-    //if( col >= 9 && col < 11 )
+    //if( (col >= 10 && col < 12) || (col >= 100 && col < 102) )
       spidrctrl.setCtprBit( col );
 
   if( !spidrctrl.setCtpr( device_nr ) )
@@ -88,8 +83,8 @@ int main( int argc, char *argv[] )
     cout << "###setGenCfg: " << spidrctrl.errorString() << endl;
 
   // Set Timepix3 into acquisition mode
-  //if( !spidrctrl.datadrivenReadout() )
-  if( !spidrctrl.sequentialReadout() )
+  if( !spidrctrl.datadrivenReadout() )
+  //if( !spidrctrl.sequentialReadout( 127 ) )
     cout << "###xxxxReadout: " << spidrctrl.errorString() << endl;
 
   // ----------------------------------------------------------
@@ -98,14 +93,21 @@ int main( int argc, char *argv[] )
   int trig_mode      = 4;      // SPIDR_TRIG_AUTO;
   int trig_period_us = 100000; // 100 ms
   int trig_freq_hz   = 3;      // 3 Hz
-  int nr_of_trigs    = 10;     // 10 triggers
+  //int nr_of_trigs    = 10;     // 10 triggers
+  int nr_of_trigs    = 1;
   if( !spidrctrl.setTriggerConfig( trig_mode, trig_period_us,
                                    trig_freq_hz, nr_of_trigs ) )
     cout << "###setTriggerConfig: " << spidrctrl.errorString() << endl;
 
+  // Interface to Timepix3 pixel data acquisition
+  SpidrDaq spidrdaq( &spidrctrl );
+  string errstr = spidrdaq.errorString();
+  if( !errstr.empty() ) cout << "### SpidrDaq: " << errstr << endl;
+
   // Sample 'frames' as well as write pixel data to file
   spidrdaq.setSampling( true );
-  spidrdaq.openFile( "test.dat", true );
+  spidrdaq.setSampleAll( true );
+  //spidrdaq.openFile( "test.dat", true );
 
   // ----------------------------------------------------------
   // Get frames (data up to the next End-of-Readout packet)
@@ -115,24 +117,28 @@ int main( int argc, char *argv[] )
   if( !spidrctrl.startAutoTrigger() )
     cout << "###startAutoTrigger: " << spidrctrl.errorString() << endl;
 
-  int   framecnt = 0, size, x, y, pixdata, timestamp;
+  int   framecnt = 0;
+  int   total_size = 0, total_pixcnt = 0;
+  int   size, x, y, pixdata, timestamp;
   char *frame;
   bool  next_frame = true;
   while( next_frame )
     {
-      //next_frame = spidrdaq.getSample( 2*256*256*8, 3000 );
-      next_frame = spidrdaq.getFrame( 3000 );
+      next_frame = spidrdaq.getSample( 2*256*256*8, 3000 );
+      //next_frame = spidrdaq.getFrame( 3000 );
       if( next_frame )
         {
           ++framecnt;
-          frame = spidrdaq.frameData( &size );
+	  size  = spidrdaq.frameSize();
+          frame = spidrdaq.frameData();
 	  int pixcnt = 0;
-          while( spidrdaq.nextPixel( &x, &y, &pixdata, &timestamp )
-		 && pixcnt < 5 )
+          while( spidrdaq.nextPixel( &x, &y, &pixdata, &timestamp ) )
 	    {
-	      cout << x << "," << y << ": " << hex << pixdata << dec << endl;
+	      //if( pixcnt < 5 )
+	      //cout << x << "," << y << ": " << hex << pixdata << dec << endl;
 	      ++pixcnt;
 	    }
+	  total_pixcnt += pixcnt;
 	  /*
 	  unsigned long long pixel;
           while( (pixel = spidrdaq.nextPixel()) != 0 && pixcnt < 5 )
@@ -141,15 +147,20 @@ int main( int argc, char *argv[] )
 	      ++pixcnt;
 	    }
 	  */
-          cout << "Frame " << framecnt << " size=" << size << ": "
-	       << pixcnt <<" pixels" << endl;
-
 	  spidrdaq.freeSample();
+
+	  total_size += size;
+	  if( pixcnt > 0 )
+	    cout << "Frame " << framecnt << " size=" << size << " (total="
+		 << total_size << "): " << pixcnt <<" pixels" << endl;
         }
       else
         {
           cout << "### Timeout -> finish after " << framecnt
-	       << " frames" << endl;
+	       << " samples, " << total_pixcnt
+	       << " pix, bytes r=" << spidrdaq.bytesReceivedCount()
+	       << ", s=" << spidrdaq.bytesSampledCount()
+	       << ", w=" << spidrdaq.bytesWrittenCount() << endl;
         }
     }
 
