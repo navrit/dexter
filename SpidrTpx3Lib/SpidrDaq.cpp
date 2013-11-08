@@ -260,9 +260,16 @@ void SpidrDaq::freeSample()
 
 // ----------------------------------------------------------------------------
 
-char *SpidrDaq::frameData( int *size_in_bytes )
+int SpidrDaq::sampleSize()
 {
-  return _fileWriter->sampleData( size_in_bytes );
+  return _fileWriter->sampleSize();
+}
+
+// ----------------------------------------------------------------------------
+
+char *SpidrDaq::sampleData()
+{
+  return _fileWriter->sampleData();
 }
 
 // ----------------------------------------------------------------------------
@@ -281,9 +288,16 @@ void SpidrDaq::freeFrame()
 
 // ----------------------------------------------------------------------------
 
-char *SpidrDaq::sampleData( int *size_in_bytes )
+int SpidrDaq::frameSize()
 {
-  return _fileWriter->sampleData( size_in_bytes );
+  return _fileWriter->sampleSize();
+}
+
+// ----------------------------------------------------------------------------
+
+char *SpidrDaq::frameData()
+{
+  return _fileWriter->sampleData();
 }
 
 // ----------------------------------------------------------------------------

@@ -56,10 +56,12 @@ class MY_LIB_API SpidrDaq
   // Pixel data sampling
   bool      getSample           ( int max_size, int timeout_ms = 0 );
   void      freeSample          ();
-  char     *sampleData          ( int *size_in_bytes );
+  int       sampleSize          ();
+  char     *sampleData          ();
   bool      getFrame            ( int timeout_ms = 0 );
   void      freeFrame           ();
-  char     *frameData           ( int *size_in_bytes );
+  int       frameSize           ();
+  char     *frameData           ();
   bool      nextPixel           ( int *x, int *y,
 				  int *data = 0, int *timestamp = 0 );
   unsigned long long nextPixel  ();
