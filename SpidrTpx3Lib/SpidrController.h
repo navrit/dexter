@@ -112,7 +112,7 @@ class MY_LIB_API SpidrController
                                  bool b = true );
   bool setPixelMask            ( int  x = ALL_PIXELS, int y = ALL_PIXELS,
                                  bool b = true );
-  bool setPixelConfig          ( int  dev_nr );
+  bool setPixelConfig          ( int  dev_nr, int cols_per_packet = 4 );
   bool getPixelConfig          ( int  dev_nr );
   bool resetPixels             ( int  dev_nr );
   unsigned char *pixelConfig   ();

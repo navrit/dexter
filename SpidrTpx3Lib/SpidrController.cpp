@@ -660,24 +660,30 @@ bool SpidrController::setPixelMask( int x, int y, bool b )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setPixelConfig( int dev_nr )
+bool SpidrController::setPixelConfig( int dev_nr, int cols_per_packet )
 {
-  // Space for four columns (256 pixels each) pixel configuration data
+  // Space for up to four columns (256 pixels each) pixel configuration data
   // in the shape of 1 byte/pixel
   unsigned char pixelcol[256*4];
   int x, y, col;
-  for( x=0; x<256; x+=4 )
+
+  if( cols_per_packet < 1 )
+    cols_per_packet = 1;
+  else if( cols_per_packet > 4 )
+    cols_per_packet = 4;
+
+  for( x=0; x<256; x+=cols_per_packet )
     {
       // Compile a pixel configuration column
       // from the pixel configuration data stored in _pixelConfig
-      for( col=0; col<4; ++col )
+      for( col=0; col<cols_per_packet; ++col )
 	for( y=0; y<256; ++y )
 	  pixelcol[col*256+y] = _pixelConfig[y][x+col];
 
       // Send this column of pixel configuration data
       if( !this->requestSetIntAndBytes( CMD_SET_PIXCONF, dev_nr,
 					x, // Sequence number (column)
-					sizeof( pixelcol ),
+					cols_per_packet * 256,
 					pixelcol ) )
 	return false;
     }
