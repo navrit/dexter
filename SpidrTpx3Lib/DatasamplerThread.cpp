@@ -25,7 +25,7 @@ DatasamplerThread::DatasamplerThread( ReceiverThread *recvr,
     _bytesFlushed( 0 ),
     _fileOpen( false ),
     _flush( true ),
-    _bufIndex( 0 ),
+    _sampleIndex( 0 ),
     _pixIndex( 0 ),
     _bigEndian( false )
 {
@@ -62,7 +62,7 @@ void DatasamplerThread::run()
 
   if( !_receiver ) _stop = true;
 
-  // Sample buffer initially available
+  // Sample buffer is initialized to 'available'
   this->freeSample();
 
   while( !_stop )
@@ -203,8 +203,21 @@ bool DatasamplerThread::getSample( int max_size, int timeout_ms )
   // Round up to next multiple of 8 bytes
   _requestedSize = ((max_size+7)/8)*8;
   // Can not request more data in a sample than fits in the buffer
-  if( _requestedSize > FRAME_BUF_SIZE ) _requestedSize = FRAME_BUF_SIZE;
+  if( _requestedSize > FRAME_BUF_SIZE )
+    _requestedSize = FRAME_BUF_SIZE;
 
+  if( timeout_ms == 0 )
+    {
+      if( _sampleAvailable.available() )
+	{
+	  _sampleAvailable.acquire();
+	  return true;
+	}
+      else
+	{
+	  return false;
+	}
+    }
   return _sampleAvailable.tryAcquire( 1, timeout_ms );
 }
 
@@ -227,17 +240,9 @@ void DatasamplerThread::freeSample()
 {
   if( _sampleBufferEmpty.available() == 0 )
     {
-      _bufIndex = 0;
+      _sampleIndex = 0;
       _sampleBufferEmpty.release();
     }
-}
-
-// ----------------------------------------------------------------------------
-
-char *DatasamplerThread::sampleData( int *size )
-{
-  *size = _bufIndex;
-  return _sampleBuffer;
 }
 
 // ----------------------------------------------------------------------------
@@ -248,7 +253,7 @@ bool DatasamplerThread::nextPixel( int *x, int *y,
 // Extract data from the pixel data in a byte-wise manner...
   u32 addr, header, dcol, spix, pix;
   u8 *pixel = (u8 *) &_sampleBuffer[_pixIndex];
-  while( _pixIndex < _bufIndex )
+  while( _pixIndex < _sampleIndex )
     {
       addr = (((u32) pixel[0] << 16) |
 	      ((u32) pixel[1] << 8) |
@@ -292,7 +297,7 @@ bool DatasamplerThread::nextPixel( int *x,
   // in the sample buffer and return them in the given pointer locations
   // (if 'data' and 'timestamp' are NULL, return x and y only)
   u64 pixdata, header, dcol, spix, pix;
-  while( _pixIndex < _bufIndex )
+  while( _pixIndex < _sampleIndex )
     {
       if( _bigEndian )
 	{
@@ -342,7 +347,7 @@ u64 DatasamplerThread::nextPixel()
 {
   // Return the next 64-bit/8-byte pixel data packet in the sample buffer
   u64 pixdata, header;
-  while( _pixIndex < _bufIndex )
+  while( _pixIndex < _sampleIndex )
     {
       if( _bigEndian )
 	{
@@ -383,9 +388,9 @@ int DatasamplerThread::copySampleToBuffer()
   if( bytes > _requestedSize ) bytes = _requestedSize;
 
   // Copy the data to the sample buffer
-  memcpy( static_cast<void *> (&_sampleBuffer[_bufIndex]),
+  memcpy( static_cast<void *> (&_sampleBuffer[_sampleIndex]),
 	  static_cast<void *> (_receiver->data()), bytes );
-  _bufIndex += bytes;
+  _sampleIndex += bytes;
 
   // Okay, a data sample is now available in the sample buffer
   _sampleAvailable.release();
@@ -423,19 +428,19 @@ int DatasamplerThread::copyFrameToBuffer()
 	  // Include the EoR
 	  size += 8;
 
-	  if( _bufIndex + size > FRAME_BUF_SIZE )
+	  if( _sampleIndex + size > FRAME_BUF_SIZE )
 	    {
 	      // It's not going to fit, so skip this frame...
-	      _bufIndex = 0;
+	      _sampleIndex = 0;
 	      if( _sampleBufferEmpty.available() == 0 )
 		_sampleBufferEmpty.release();
 	    }
 	  else
 	    {
 	      // Copy the data up to and including the EoR-packet
-	      memcpy( static_cast<void *> (&_sampleBuffer[_bufIndex]),
+	      memcpy( static_cast<void *> (&_sampleBuffer[_sampleIndex]),
 		      static_cast<void *> (_receiver->data()), size );
-	      _bufIndex += size;
+	      _sampleIndex += size;
 	      ++_framesSampled;
 
 	      // Okay, a frame is now available in the sample buffer
@@ -450,9 +455,9 @@ int DatasamplerThread::copyFrameToBuffer()
   // EoR not (yet) found
 
   // Copy the data up to this point (but the frame is not yet complete!)
-  memcpy( static_cast<void *> (&_sampleBuffer[_bufIndex]),
+  memcpy( static_cast<void *> (&_sampleBuffer[_sampleIndex]),
 	  static_cast<void *> (_receiver->data()), size );
-  _bufIndex += size;
+  _sampleIndex += size;
 
   // Allow another access to the sample buffer to continue filling it
   // until an EoR is found

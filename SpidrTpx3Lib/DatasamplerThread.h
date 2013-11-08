@@ -29,7 +29,7 @@ class DatasamplerThread : public QThread
 
  public:
   DatasamplerThread( ReceiverThread *recvr,
-		      QObject *parent = 0 );
+		     QObject *parent = 0 );
   ~DatasamplerThread();
 
   void stop();
@@ -43,7 +43,8 @@ class DatasamplerThread : public QThread
   bool  getSample    ( int max_size, int timeout_ms );
   bool  getFrame     ( int timeout_ms );
   void  freeSample   ();
-  char *sampleData   ( int *size );
+  int   sampleSize   ()              { return _sampleIndex; }
+  char *sampleData   ()              { return _sampleBuffer; }
   bool  nextPixel    ( int *x, int *y, int *data = 0, int *timestamp = 0 );
   u64   nextPixel    ();
 
@@ -90,7 +91,7 @@ class DatasamplerThread : public QThread
   // Semaphores to indicate the availability of sampled data in the buffer
   QSemaphore _sampleBufferEmpty, _sampleAvailable;
 
-  int _bufIndex;
+  int _sampleIndex;
   int _pixIndex;
 
   bool _bigEndian;
