@@ -81,7 +81,7 @@
 
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
-static char *CMD_STR[] =
+static const char *CMD_STR[] =
   {
     "-----",            // 0x900
     "GET_SOFTWVERSION", // 0x901
@@ -188,7 +188,7 @@ static char *CMD_STR[] =
 
 // Short strings describing the errors
 // (indexed by the lower byte of the error identifier)
-static char *ERR_STR[] =
+static const char *ERR_STR[] =
   {
     "no error",
     "ERR_UNKNOWN_CMD",
