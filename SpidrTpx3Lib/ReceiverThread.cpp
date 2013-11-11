@@ -46,7 +46,7 @@ ReceiverThread::ReceiverThread( int *ipaddr,
     }
 
   // Start the thread (see run())
-  this->start();
+  this->start( QThread::TimeCriticalPriority );
 }
 
 // ----------------------------------------------------------------------------

@@ -96,11 +96,9 @@ class MY_LIB_API SpidrController
   bool        setTpPeriodPhase ( int  dev_nr, int  period, int  phase );
   bool        getTpNumber      ( int  dev_nr, int *number );
   bool        setTpNumber      ( int  dev_nr, int  number );
-  //bool      configCtpr       ( int  dev_nr, int  column, int val );
-  bool        setCtprBit       ( int column, int val = 1 );
-  bool        setCtprBits      ( int val = 1 );
+  bool        setCtprBit       ( int  column, int val = 1 );
+  bool        setCtprBits      ( int  val = 1 );
   bool        setCtpr          ( int  dev_nr );
-  //bool      setCtprLeon      ( int  dev_nr );
   bool        getCtpr          ( int  dev_nr, unsigned char **ctpr );
 
   // Configuration: device pixels
@@ -112,7 +110,7 @@ class MY_LIB_API SpidrController
                                  bool b = true );
   bool setPixelMask            ( int  x = ALL_PIXELS, int y = ALL_PIXELS,
                                  bool b = true );
-  bool setPixelConfig          ( int  dev_nr, int cols_per_packet = 4 );
+  bool setPixelConfig          ( int  dev_nr, int cols_per_packet = 2 );
   bool getPixelConfig          ( int  dev_nr );
   bool resetPixels             ( int  dev_nr );
   unsigned char *pixelConfig   ();
@@ -120,11 +118,14 @@ class MY_LIB_API SpidrController
   // Configuration: onboard storage
   bool storeAddrAndPorts       ( int  ipaddr_src,          // ###TODO
                                  int  ipaddr_dst,
-                                 int *srvports,
-                                 int *devports,
+                                 int *srvports = 0,
+                                 int *devports = 0,
                                  int  controlport = 50000 );
   bool storeDacs               ( int  dev_nr );            // ###TODO
   bool storePixelConfig        ( int  dev_nr );            // ###TODO
+  bool eraseAddrAndPorts       ();                         // ###TODO
+  bool eraseDacs               ( int  dev_nr );            // ###TODO
+  bool erasePixelConfig        ( int  dev_nr );            // ###TODO
 
   // Trigger
   bool setTriggerConfig        ( int  trig_mode,
@@ -151,13 +152,17 @@ class MY_LIB_API SpidrController
   // Timer
   bool restartTimers           ();
   bool resetTimer              ( int dev_nr );
-  bool getTimer                ( int dev_nr, unsigned int *timer_lo,
+  bool getTimer                ( int dev_nr,
+				 unsigned int *timer_lo,
 				 unsigned int *timer_hi );
-  bool setTimer                ( int dev_nr, unsigned int timer_lo,
+  bool setTimer                ( int dev_nr,
+				 unsigned int timer_lo,
 				 unsigned int timer_hi );
-  bool getShutterStart         ( int dev_nr, unsigned int *timer_lo,
+  bool getShutterStart         ( int dev_nr,
+				 unsigned int *timer_lo,
 				 unsigned int *timer_hi );
-  bool getShutterEnd           ( int dev_nr, unsigned int *timer_lo,
+  bool getShutterEnd           ( int dev_nr,
+				 unsigned int *timer_lo,
 				 unsigned int *timer_hi );
 
   // Monitoring
@@ -206,13 +211,11 @@ class MY_LIB_API SpidrController
   int _reqMsg[512];
   int _replyMsg[512];
 
-  // A device's pixel configuration is compiled locally before uploading
-  // (unlike the CTPR register, which is maintained
-  //  onboard the SPIDR module processor by the LEON3 software)
+  // A device's pixel configuration is compiled locally before upload
   // NB: here the dimensions are y and x, or row and column number resp.:
   unsigned char _pixelConfig[256][256];
 
-  // Storage for one 256-bit CTPR
+  // Storage for one 256-bit CTPR which is compiled locally before upload
   unsigned char _ctpr[256/8];
 
   // String providing a description of the last error that occurred

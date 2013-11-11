@@ -100,7 +100,7 @@
 
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
-static char *CMD_STR[] =
+static const char *CMD_STR[] =
   {
     "-----",             // 0x900
     "GET_SOFTWVERSION ", // 0x901
@@ -214,23 +214,29 @@ static char *CMD_STR[] =
 // (in first byte; 2nd to 4th byte can be used for additional info)
 #define ERR_NONE             0x00000000
 #define ERR_UNKNOWN_CMD      0x00000001
-#define ERR_HARDWARE         0x00000002
-#define ERR_MSG_LENGTH       0x00000003
-#define ERR_SEQUENCE         0x00000004
-#define ERR_ILLEGAL_PAR      0x00000005
-#define ERR_NOT_IMPLEMENTED  0x00000006
+#define ERR_MSG_LENGTH       0x00000002
+#define ERR_SEQUENCE         0x00000003
+#define ERR_ILLEGAL_PAR      0x00000004
+#define ERR_NOT_IMPLEMENTED  0x00000005
+#define ERR_TPX3_HARDW       0x00000006
+#define ERR_ADC_HARDW        0x00000007
+#define ERR_MON_HARDW        0x00000008
+#define ERR_FLASH_HARDW      0x00000009
 
 // Short strings describing the errors
 // (indexed by the lower byte of the error identifier)
-static char *ERR_STR[] =
+static const char *ERR_STR[] =
   {
     "no error",
     "ERR_UNKNOWN_CMD",
-    "ERR_HARDWARE",
     "ERR_MSG_LENGTH",
     "ERR_SEQUENCE",
     "ERR_ILLEGAL_PAR",
-    "ERR_NOT_IMPLEMENTED"
+    "ERR_NOT_IMPLEMENTED",
+    "ERR_TPX3_HARDW",
+    "ERR_ADC_HARDW",
+    "ERR_MON_HARDW",
+    "ERR_FLASH_HARDW"
   };
 
 #endif // SPIDRTPX3CMDS_H

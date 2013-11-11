@@ -664,6 +664,8 @@ bool SpidrController::setPixelConfig( int dev_nr, int cols_per_packet )
 {
   // Space for up to four columns (256 pixels each) pixel configuration data
   // in the shape of 1 byte/pixel
+  // NB: under Linux the resulting packets get split into 2 parts(?), which
+  //     cannot be handled by the LEON software, so use cols_per_packet=2
   unsigned char pixelcol[256*4];
   int x, y, col;
 
@@ -1354,7 +1356,7 @@ std::string SpidrController::spidrErrString( int err )
   else
     errstr = ERR_STR[errid];
 
-  if( errid == ERR_HARDWARE )
+  if( errid == ERR_TPX3_HARDW )
     {
       errid = (err & 0xFF00) >> 8;
       errstr += ", ";
