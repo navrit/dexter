@@ -4,7 +4,7 @@
 #include "DatasamplerThread.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x13100300;
+const int VERSION_ID = 0x13110600;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor / info
@@ -248,7 +248,14 @@ char *SpidrDaq::dataBuffer()
 
 bool SpidrDaq::getSample( int max_size, int timeout_ms )
 {
-  return _fileWriter->getSample( max_size, timeout_ms );
+  return _fileWriter->getSample( 0, max_size, timeout_ms );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrDaq::getSampleMin( int min_size, int max_size, int timeout_ms )
+{
+  return _fileWriter->getSample( min_size, max_size, timeout_ms );
 }
 
 // ----------------------------------------------------------------------------

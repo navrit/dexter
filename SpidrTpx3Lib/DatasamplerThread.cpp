@@ -18,7 +18,8 @@ DatasamplerThread::DatasamplerThread( ReceiverThread *recvr,
     _sampling( false ),
     _sampleAll( false ),
     _requestFrame( false ),
-    _requestedSize( 0 ),
+    _requestedMinSize( 0 ),
+    _requestedMaxSize( 0 ),
     _framesSampled( 0 ),
     _bytesWritten( 0 ),
     _bytesSampled( 0 ),
@@ -193,21 +194,29 @@ void DatasamplerThread::run()
 
 // ----------------------------------------------------------------------------
 
-bool DatasamplerThread::getSample( int max_size, int timeout_ms )
+bool DatasamplerThread::getSample( int min_size, int max_size, int timeout_ms )
 {
   _pixIndex = 0;
 
   if( !_sampling ) return false;
 
   _requestFrame = false;
+
   // Round up to next multiple of 8 bytes
-  _requestedSize = ((max_size+7)/8)*8;
+  _requestedMinSize = ((min_size+7)/8)*8;
+  _requestedMaxSize = ((max_size+7)/8)*8;
+
   // Can not request more data in a sample than fits in the buffer
-  if( _requestedSize > FRAME_BUF_SIZE )
-    _requestedSize = FRAME_BUF_SIZE;
+  if( _requestedMaxSize > FRAME_BUF_SIZE )
+    _requestedMaxSize = FRAME_BUF_SIZE;
+
+  // Minimum size cannot be larger than maximum size
+  if( _requestedMinSize > _requestedMaxSize )
+    _requestedMinSize = 0;
 
   if( timeout_ms == 0 )
     {
+      // Return immediately
       if( _sampleAvailable.available() )
 	{
 	  _sampleAvailable.acquire();
@@ -218,6 +227,7 @@ bool DatasamplerThread::getSample( int max_size, int timeout_ms )
 	  return false;
 	}
     }
+  // Wait for a sample to become available
   return _sampleAvailable.tryAcquire( 1, timeout_ms );
 }
 
@@ -231,6 +241,7 @@ bool DatasamplerThread::getFrame( int timeout_ms )
 
   _requestFrame = true;
 
+  // Wait for a frame to become available
   return _sampleAvailable.tryAcquire( 1, timeout_ms );
 }
 
@@ -385,15 +396,25 @@ int DatasamplerThread::copySampleToBuffer()
 {
   // Collect pixel data into the sample buffer up to a maximum size
   long long bytes = _receiver->bytesAvailable();
-  if( bytes > _requestedSize ) bytes = _requestedSize;
+  if( bytes > _requestedMaxSize ) bytes = _requestedMaxSize;
 
   // Copy the data to the sample buffer
   memcpy( static_cast<void *> (&_sampleBuffer[_sampleIndex]),
 	  static_cast<void *> (_receiver->data()), bytes );
   _sampleIndex += bytes;
 
-  // Okay, a data sample is now available in the sample buffer
-  _sampleAvailable.release();
+  if( _sampleIndex >= _requestedMinSize )
+    {
+      // Okay, a data sample is now available in the sample buffer
+      _sampleAvailable.release();
+    }
+  else
+    {
+      // Allow another access to the sample buffer to continue filling it
+      // until the minimum requested sample size is obtained
+      if( _sampleBufferEmpty.available() == 0 )
+	_sampleBufferEmpty.release();
+    }
 
   return bytes;
 }

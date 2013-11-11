@@ -40,7 +40,7 @@ class DatasamplerThread : public QThread
   // Data sampling: pixel data blocks ('samples') or 'frames'
   void  setSampling  ( bool enable ) { _sampling = enable; }
   void  setSampleAll ( bool enable ) { _sampleAll = enable; }
-  bool  getSample    ( int max_size, int timeout_ms );
+  bool  getSample    ( int min_size, int max_size, int timeout_ms );
   bool  getFrame     ( int timeout_ms );
   void  freeSample   ();
   int   sampleSize   ()              { return _sampleIndex; }
@@ -78,7 +78,7 @@ class DatasamplerThread : public QThread
   long long _bytesFlushed;
 
   bool      _sampling, _sampleAll, _requestFrame;
-  long long _requestedSize;
+  long long _requestedMinSize, _requestedMaxSize;
 
   QFile _file;
   bool  _fileOpen;

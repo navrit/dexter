@@ -55,6 +55,8 @@ class MY_LIB_API SpidrDaq
 
   // Pixel data sampling
   bool      getSample           ( int max_size, int timeout_ms = 0 );
+  bool      getSampleMin        ( int min_size, int max_size,
+				  int timeout_ms );
   void      freeSample          ();
   int       sampleSize          ();
   char     *sampleData          ();
