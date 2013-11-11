@@ -72,13 +72,13 @@ class DatasamplerThread : public QThread
 
   bool _stop;
 
+  bool      _sampling, _sampleAll, _requestFrame;
+  long long _requestedMinSize, _requestedMaxSize;
+
   long long _framesSampled;
   long long _bytesWritten;
   long long _bytesSampled;
   long long _bytesFlushed;
-
-  bool      _sampling, _sampleAll, _requestFrame;
-  long long _requestedMinSize, _requestedMaxSize;
 
   QFile _file;
   bool  _fileOpen;

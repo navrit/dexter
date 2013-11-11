@@ -1310,7 +1310,7 @@ bool SpidrController::request( int cmd,     int dev_nr,
       _errString << "Unexpected reply: 0x" << hex << reply;
       return false;
     }
-  if( ntohl( _replyMsg[3] ) != dev_nr )
+  if( ntohl( _replyMsg[3] ) != (unsigned int) dev_nr )
     {
       this->clearErrorString();
       _errString << "Unexpected device number in reply: " << _replyMsg[3];
@@ -1331,7 +1331,7 @@ int SpidrController::dacIndex( int dac_code )
 
 // ----------------------------------------------------------------------------
 
-static char *TPX3_ERR_STR[] =
+static const char *TPX3_ERR_STR[] =
   {
     "no error",
     "TPX3_ERR_SC_ILLEGAL",
@@ -1349,7 +1349,7 @@ static char *TPX3_ERR_STR[] =
 std::string SpidrController::spidrErrString( int err )
 {
   std::string errstr;
-  int errid = err & 0xFF;
+  unsigned int errid = err & 0xFF;
   
   if( errid >= (sizeof(ERR_STR)/sizeof(char*)) )
     errstr = "<unknown>";
