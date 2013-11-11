@@ -12,7 +12,10 @@ using namespace std;
 #include "SpidrDaq.h"
 #include "tpx3defs.h"
 
-int main( int argc, char *argv[] )
+#define error_out(str) cout<<str<<": "<<spidrctrl.errorString()<<endl
+
+//int main( int argc, char *argv[] )
+int main()
 {
   // ----------------------------------------------------------
   // Open a control connection to SPIDR-TPX3 module
@@ -33,28 +36,29 @@ int main( int argc, char *argv[] )
   // DACs configuration
 
   //if( !spidrctrl.setDacsDflt( device_nr ) )
-  //  cout << "###setDacsDflt: " << spidrctrl.errorString() << endl;
+  //  error_out( "###setDacsDflt" );
 
   // ----------------------------------------------------------
   // Pixel configuration
 
   if( !spidrctrl.resetPixels( device_nr ) )
-    cout << "###resetPixels: " << spidrctrl.errorString() << endl;
+    error_out( "###resetPixels" );
 
   spidrctrl.resetPixelConfig();
   spidrctrl.setPixelTestEna( ALL_PIXELS, ALL_PIXELS );
   if( !spidrctrl.setPixelConfig( device_nr ) )
-    cout << "###setPixelConfig: " << spidrctrl.errorString() << endl;
+    error_out( "###setPixelConfig" );
 
   // ----------------------------------------------------------
   // Test pulse and CTPR configuration
 
   // Timepix3 test pulse configuration
-  if( !spidrctrl.setTpPeriodPhase( device_nr, 10, 0 ) )
-    cout << "###setTpPeriodPhase: " << spidrctrl.errorString() << endl;
-  //if( !spidrctrl.setTpNumber( device_nr, 50000 ) )
+  if( !spidrctrl.setTpPeriodPhase( device_nr, 100, 0 ) )
+    error_out( "###setTpPeriodPhase" );
+
+  //if( !spidrctrl.setTpNumber( device_nr, 5000 ) )
   if( !spidrctrl.setTpNumber( device_nr, 1 ) )
-    cout << "###setTpNumber: " << spidrctrl.errorString() << endl;
+    error_out( "###setTpNumber" );
 
   // Enable test-pulses for (some or all) columns
   int col;
@@ -64,7 +68,7 @@ int main( int argc, char *argv[] )
       spidrctrl.setCtprBit( col );
 
   if( !spidrctrl.setCtpr( device_nr ) )
-    cout << "###setCtpr: " << spidrctrl.errorString() << endl;
+    error_out( "###setCtpr" );
 
   // ----------------------------------------------------------
 
@@ -76,13 +80,13 @@ int main( int argc, char *argv[] )
   int nr_of_trigs    = 1;
   if( !spidrctrl.setTriggerConfig( trig_mode, trig_period_us,
                                    trig_freq_hz, nr_of_trigs ) )
-    cout << "###setTriggerConfig: " << spidrctrl.errorString() << endl;
+    error_out( "###setTriggerConfig" );
 
   // ----------------------------------------------------------
 
   // SPIDR-TPX3 and Timepix3 timers
   if( !spidrctrl.restartTimers() )
-    cout << "###restartTimers: " << spidrctrl.errorString() << endl;
+    error_out( "###restartTimers" );
 
   /*
   // Set Timepix3 acquisition mode: ToA-ToT
@@ -100,12 +104,12 @@ int main( int argc, char *argv[] )
                                TPX3_TESTPULSE_ENA |
                                TPX3_FASTLO_ENA |
 			       TPX3_SELECTTP_DIG_ANALOG ) )
-    cout << "###setGenCfg: " << spidrctrl.errorString() << endl;
+    error_out( "###setGenCfg" );
 
   // Set Timepix3 into acquisition mode
   //if( !spidrctrl.sequentialReadout() )
   if( !spidrctrl.datadrivenReadout() )
-    cout << "###ddrivenReadout: " << spidrctrl.errorString() << endl;
+    error_out( "###ddrivenReadout" );
 
   // ----------------------------------------------------------
 
@@ -115,7 +119,7 @@ int main( int argc, char *argv[] )
   // OR
   // Start triggers
   if( !spidrctrl.startAutoTrigger() )
-    cout << "###startAutoTrigger: " << spidrctrl.errorString() << endl;
+    error_out( "###startAutoTrigger" );
 
   cout << "Type any to continue..." << endl;
   char ch;
@@ -123,7 +127,7 @@ int main( int argc, char *argv[] )
 
   // Close the shutter
   if( !spidrctrl.closeShutter() )
-    cout << "###closeShutter: " << spidrctrl.errorString() << endl;
+    error_out( "###closeShutter" );
 
   // ----------------------------------------------------------
   return 0;
