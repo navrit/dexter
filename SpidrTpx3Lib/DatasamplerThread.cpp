@@ -310,6 +310,7 @@ bool DatasamplerThread::nextPixel( int *x,
   u64 pixdata, header, dcol, spix, pix;
   while( _pixIndex < _sampleIndex )
     {
+#ifdef USE_BIGENDIAN
       if( _bigEndian )
 	{
 	  // Reverse the byte order
@@ -322,6 +323,9 @@ bool DatasamplerThread::nextPixel( int *x,
 	{
 	  pixdata = _sampleBufferUlong[_pixIndex/8];
 	}
+#else
+      pixdata = _sampleBufferUlong[_pixIndex/8];
+#endif
 
       // Data-driven or sequential readout pixel data header ?
       header = pixdata & 0xF000000000000000;
@@ -360,6 +364,7 @@ u64 DatasamplerThread::nextPixel()
   u64 pixdata, header;
   while( _pixIndex < _sampleIndex )
     {
+#ifdef USE_BIGENDIAN
       if( _bigEndian )
 	{
 	  // Reverse the byte order
@@ -372,6 +377,9 @@ u64 DatasamplerThread::nextPixel()
 	{
 	  pixdata = _sampleBufferUlong[_pixIndex/8];
 	}
+#else
+      pixdata = _sampleBufferUlong[_pixIndex/8];
+#endif
 
       // Data-driven or sequential readout pixel data header ?
       header = pixdata & 0xF000000000000000;
@@ -431,6 +439,7 @@ int DatasamplerThread::copyFrameToBuffer()
   // Find the first End-of-Readout Timepix3 packet
   while( size < bytes )
     {
+#ifdef USE_BIGENDIAN
       if( _bigEndian )
 	{
 	  hdr1 = *data;
@@ -441,6 +450,10 @@ int DatasamplerThread::copyFrameToBuffer()
 	  hdr1 = *(data+7);
 	  hdr2 = *(data+6);
 	}
+#else
+      hdr1 = *(data+7);
+      hdr2 = *(data+6);
+#endif
       if( hdr1 == (char) 0x71 &&
 	  (hdr2 == (char) 0xA0 || hdr2 == (char) 0xB0 ) )
 	{
