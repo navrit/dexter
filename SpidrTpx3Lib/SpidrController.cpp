@@ -15,7 +15,7 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x13110100;
+const int VERSION_ID = 0x13111100;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor
@@ -165,9 +165,9 @@ int SpidrController::errorId()
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::reset()
+bool SpidrController::reset( int *errorstat )
 {
-  return this->requestSetInt( CMD_RESET_MODULE, 0, 0 );
+  return this->requestGetInt( CMD_RESET_MODULE, 0, errorstat );
 }
 
 // ----------------------------------------------------------------------------
@@ -356,9 +356,12 @@ bool SpidrController::setSenseDac( int dev_nr, int dac_code )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setExtDac( int dev_nr, int dac_code )
+bool SpidrController::setExtDac( int dev_nr, int dac_code, int dac_val )
 {
-  return this->requestSetInt( CMD_SET_EXTDAC, dev_nr, dac_code );
+  // Combine dac_code and dac_val into a single int
+  // (the DAC to set is the SPIDR-TPX3 DAC)
+  int dac_data = ((dac_code & 0xFFFF) << 16) | (dac_val & 0xFFFF);
+  return this->requestSetInt( CMD_SET_EXTDAC, dev_nr, dac_data );
 }
 
 // ----------------------------------------------------------------------------
@@ -1346,6 +1349,28 @@ static const char *TPX3_ERR_STR[] =
     "TPX3_ERR_UNEXP_HEADER"
   };
 
+static const char *MON_ERR_STR[] =
+  {
+    "MON_ERR_MAX6642_DAQ",
+    "MON_ERR_INA219_0_DAQ",
+    "ERR_INA219_1_DAQ",
+    "<unknown>",
+    "MON_ERR_MAX6642_INIT",
+    "MON_ERR_INA219_0_INIT",
+    "MON_ERR_INA219_1_INIT",
+    "<unknown>"
+  };
+
+static const char *STG_ERR_STR[] =
+  {
+    "no error",
+    "STG_ERR_TPX",
+    "STG_ERR_WRITE",
+    "STG_ERR_READ",
+    "STG_ERR_UNMATCHED_ID",
+    "STG_ERR_NOFLASH"
+  };
+
 std::string SpidrController::spidrErrString( int err )
 {
   std::string errstr;
@@ -1360,10 +1385,33 @@ std::string SpidrController::spidrErrString( int err )
     {
       errid = (err & 0xFF00) >> 8;
       errstr += ", ";
+      // Error identifier is a number
       if( errid >= (sizeof(TPX3_ERR_STR)/sizeof(char*)) )
 	errstr += "<unknown>";
       else
 	errstr += TPX3_ERR_STR[errid];
+    }
+  else if( errid == ERR_MON_HARDW )
+    {
+      errid = (err & 0xFF00) >> 8;
+      errstr += ", ";
+      // Error identifier is a bitmask
+      for( int bit=0; bit<8; ++bit )
+	if( errid & (1<<bit) )
+	  {
+	    errstr += MON_ERR_STR[bit];
+	    errstr += " ";
+	  }
+    }
+  else if( errid == ERR_FLASH_STORAGE )
+    {
+      errid = (err & 0xFF00) >> 8;
+      errstr += ", ";
+      // Error identifier is a number
+      if( errid >= (sizeof(STG_ERR_STR)/sizeof(char*)) )
+	errstr += "<unknown>";
+      else
+	errstr += STG_ERR_STR[errid];
     }
 
   return errstr;

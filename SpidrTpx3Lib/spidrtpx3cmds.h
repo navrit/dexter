@@ -220,8 +220,9 @@ static const char *CMD_STR[] =
 #define ERR_NOT_IMPLEMENTED  0x00000005
 #define ERR_TPX3_HARDW       0x00000006
 #define ERR_ADC_HARDW        0x00000007
-#define ERR_MON_HARDW        0x00000008
-#define ERR_FLASH_HARDW      0x00000009
+#define ERR_DAC_HARDW        0x00000008
+#define ERR_MON_HARDW        0x00000009
+#define ERR_FLASH_STORAGE    0x0000000A
 
 // Short strings describing the errors
 // (indexed by the lower byte of the error identifier)
@@ -235,8 +236,9 @@ static const char *ERR_STR[] =
     "ERR_NOT_IMPLEMENTED",
     "ERR_TPX3_HARDW",
     "ERR_ADC_HARDW",
+    "ERR_DAC_HARDW",
     "ERR_MON_HARDW",
-    "ERR_FLASH_HARDW"
+    "ERR_FLASH_STORAGE"
   };
 
 #endif // SPIDRTPX3CMDS_H

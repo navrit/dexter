@@ -43,7 +43,7 @@ class MY_LIB_API SpidrController
   std::string errorString          ();
   void        clearErrorString     ();
   int         errorId              ();
-  bool        reset                ();
+  bool        reset                ( int *errorstat );
   bool        setBusy              ();
   bool        clearBusy            ();
   void        setBusyRequest       (); // For internal use
@@ -73,7 +73,7 @@ class MY_LIB_API SpidrController
   bool        getDeviceId      ( int  dev_nr, int *id );
   bool        getDeviceIds     ( int *ids );
   bool        setSenseDac      ( int  dev_nr, int  dac_code );
-  bool        setExtDac        ( int  dev_nr, int  dac_code );
+  bool        setExtDac        ( int  dev_nr, int  dac_code, int  dac_val );
   bool        getDac           ( int  dev_nr, int  dac_code, int *dac_val );
   bool        setDac           ( int  dev_nr, int  dac_code, int  dac_val );
   bool        setDacsDflt      ( int  dev_nr );
@@ -126,6 +126,9 @@ class MY_LIB_API SpidrController
   bool eraseAddrAndPorts       ();                         // ###TODO
   bool eraseDacs               ( int  dev_nr );            // ###TODO
   bool erasePixelConfig        ( int  dev_nr );            // ###TODO
+  bool validAddrAndPorts       ();                         // ###TODO
+  bool validDacs               ( int  dev_nr );            // ###TODO
+  bool validPixelConfig        ( int  dev_nr );            // ###TODO
 
   // Trigger
   bool setTriggerConfig        ( int  trig_mode,
