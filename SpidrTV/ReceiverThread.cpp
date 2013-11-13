@@ -80,8 +80,8 @@ ReceiverThread::ReceiverThread( QString        adapter,
     _framesReceived(0),
     _packetsLost(0),
     _packetsReceived(0),
-    _debugCounter(0),
-    _frameIndex(0)
+    _frameIndex(0),
+    _debugCounter(0)
 {
   _port = port;
   _adapter = adapter;
@@ -173,9 +173,9 @@ void ReceiverThread::run()
   int expShutter = 0;
 
   // Expected sequence counter value, starts at 1, but we will subtract 1..
-  int expSequence = 0;
+  int expSequenceNr = 0;
 
-  int recvSize, payloadSize, expPackets;
+  int recvSize, payloadSize = 0, expPackets = 1;
   int sequenceNr, shutterCnt;
 
   while( !_stop )
@@ -204,11 +204,11 @@ void ReceiverThread::run()
 
       if( shutterCnt != expShutter ||
 	  // Another frame with the same shutter counter as previously
-	  sequenceNr < expSequence )
+	  sequenceNr < expSequenceNr )
 	{
 	  expShutter = shutterCnt;
 
-	  if( expSequence != expPackets )
+	  if( expSequenceNr != expPackets )
 	    {
 	      // Starting a new frame/image, prematurely apparently...
 	      // (see further down for a properly completed frame)
@@ -218,16 +218,16 @@ void ReceiverThread::run()
 
 	  // Any last packets lost in the previous sequence
 	  // or any lost packets at the start of this new sequence ?
-	  _packetsLost += (expPackets - expSequence + sequenceNr);
+	  _packetsLost += (expPackets - expSequenceNr + sequenceNr);
 	}
-      else if( sequenceNr > expSequence )
+      else if( sequenceNr > expSequenceNr )
 	{
 	  // Packets lost in the ongoing sequence
-	  _packetsLost += sequenceNr - expSequence;
+	  _packetsLost += sequenceNr - expSequenceNr;
 	}
 
       // Next sequence number (minus 1!) to expect
-      expSequence = sequenceNr + 1;
+      expSequenceNr = sequenceNr + 1;
 
       if( sequenceNr < expPackets ) // Safeguard against funny seq numbers
 	// Copy the packet's payload to the proper location
@@ -236,7 +236,7 @@ void ReceiverThread::run()
 		//&buffer[PAYLOAD_I], payloadSize );
 		&buffer[PAYLOAD_I], recvSize - PAYLOAD_I );
 
-      if( expSequence == expPackets )
+      if( expSequenceNr == expPackets )
 	{
 	  // We can assume the frame is complete
 	  // so starting a new frame/image
