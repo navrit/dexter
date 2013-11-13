@@ -21,6 +21,7 @@ SUBDIRS += SpidrPixelman/SpidrPixelman.pro
 SUBDIRS += SpidrTpx3Lib/SpidrTpx3Lib.pro
 
 # Executables
+SUBDIRS += SpidrTpx3TV/SpidrTTV.pro
 SUBDIRS += SpidrMpx3TV/SpidrMTV.pro
 SUBDIRS += SpidrTV/SpidrTV.pro
 SUBDIRS += SpidrDacs/SpidrDacs.pro
@@ -28,4 +29,3 @@ SUBDIRS += SpidrMon/SpidrMon.pro
 SUBDIRS += spidrloglevel/spidrloglevel.pro
 SUBDIRS += spidrlibtest/spidrlibtest.pro
 SUBDIRS += spidrtpx3libtest/spidrtpx3libtest.pro
-#SUBDIRS += filereader/filereader.pro
