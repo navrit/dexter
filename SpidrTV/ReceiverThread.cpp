@@ -76,11 +76,11 @@ ReceiverThread::ReceiverThread( QString        adapter,
 				QObject       *parent )
   : QThread(parent),
     _stop(false),
+    _frameIndex(0),
     _framesSkipped(0),
     _framesReceived(0),
     _packetsLost(0),
     _packetsReceived(0),
-    _frameIndex(0),
     _debugCounter(0)
 {
   _port = port;
