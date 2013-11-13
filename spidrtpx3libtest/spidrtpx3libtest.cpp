@@ -93,8 +93,10 @@ int main( int argc, char *argv[] )
 	for( x=0; x<256; ++x )
 	  if( pixconf[y*256+x] != 0 )
 	    {
-	      printf( "%d,%d: %02X\n", y, x,
-		      (unsigned int) pixconf[y*256+x] );
+	      cout << x << ',' << y << ": " << hex << setw(2) << setfill('0')
+		   << (unsigned int) pixconf[y*256+x] << dec << endl;
+	      //printf( "%d,%d: %02X\n", y, x,
+	      //      (unsigned int) pixconf[y*256+x] );
 	      ++cnt;
 	    }
       cout << "cnt = " << cnt << endl;
