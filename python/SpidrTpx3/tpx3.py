@@ -8,7 +8,6 @@ import Gnuplot, Gnuplot.funcutils
 import time
 import sys
 from struct import *
-from bitstring import BitArray
 import cython
 import numpy
 
@@ -460,7 +459,7 @@ class TPX3:
     self._log_ctrl_cmd("Config shutter (%d) "%(l),r)
     
 
-  def openShutter(self,l):
+  def openShutter(self):
     r=self.ctrl.startAutoTrigger()
 #c2.add_method('stopAutoTrigger',      'bool',       [])
 #    r=self.ctrl.openShutter(self.id,l)

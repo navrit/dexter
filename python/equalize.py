@@ -29,6 +29,6 @@ def eq_broute_force(fbase):
   numpy.savetxt(fbase+"eq_bl.dat",bestv,fmt="%.2f")
   numpy.savetxt(fbase+"eq_codes.dat",bestcode,fmt="%.0f")
 def main():
-   eq_broute_force("logs/F3_default_eq_bruteforce/test08_equalization/")
+   eq_broute_force("logs/f3_ikrum15/20131105/test08_equalization/")
 if __name__=="__main__":
   main()
