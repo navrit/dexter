@@ -64,7 +64,7 @@ class test08_equalization(tpx3_test):
           for d in data:
             logging.warning("after setdac %s"%(str(d)))
 
-        self.tpx.openShutter(500)
+        self.tpx.openShutter()
         if 1:
           print "%c %s %d/%d"%(13,anim[i%len(anim)],i,512),
           sys.stdout.flush()
