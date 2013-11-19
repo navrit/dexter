@@ -103,7 +103,7 @@ int main()
                                TPX3_GRAYCOUNT_ENA |
                                TPX3_TESTPULSE_ENA |
                                TPX3_FASTLO_ENA |
-			       TPX3_SELECTTP_DIG_ANALOG ) )
+			       TPX3_SELECTTP_DIGITAL ) )
     error_out( "###setGenCfg" );
 
   // Set Timepix3 into acquisition mode
