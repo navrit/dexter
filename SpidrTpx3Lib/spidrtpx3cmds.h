@@ -98,11 +98,30 @@
 #define CMD_GET_TRIGGERCNTR    0x557
 #define CMD_RESET_COUNTERS     0x558
 
+// Configuration: devices (continued)
+#define CMD_GET_PWRPULSECONFIG 0x55B
+#define CMD_SET_PWRPULSECONFIG 0x55C
+#define CMD_PWRPULSE_ENA       0x55D
+
+// Configuration: permanent onboard storage
+#define CMD_STORE_ADDRPORTS    0x660
+#define CMD_STORE_DACS         0x661
+#define CMD_STORE_REGISTERS    0x662
+#define CMD_STORE_PIXCONF      0x663
+#define CMD_ERASE_ADDRPORTS    0x664
+#define CMD_ERASE_DACS         0x665
+#define CMD_ERASE_REGISTERS    0x666
+#define CMD_ERASE_PIXCONF      0x667
+#define CMD_VALID_ADDRPORTS    0x668
+#define CMD_VALID_DACS         0x669
+#define CMD_VALID_REGISTERS    0x66A
+#define CMD_VALID_PIXCONF      0x66B
+
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
 static const char *CMD_STR[] =
   {
-    "-----",             // 0x900
+    "<no operation>   ", // 0x900
     "GET_SOFTWVERSION ", // 0x901
     "GET_FIRMWVERSION ", // 0x902
     "GET_IPADDR_DEST  ", // 0x903
@@ -197,7 +216,28 @@ static const char *CMD_STR[] =
     "GET_SHUTTEREND   ", // 0x555
     "GET_SHUTTERCNTR  ", // 0x556
     "GET_TRIGGERCNTR  ", // 0x557
-    "RESET_COUNTERS   "  // 0x558
+    "RESET_COUNTERS   ", // 0x558
+    "-----",             // 0x559
+    "-----",             // 0x55A
+
+    "GET_PWRPULSECONF ", // 0x55B
+    "SET_PWRPULSECONF ", // 0x55C
+    "PWRPULSE_ENA     ", // 0x55D
+    "-----",             // 0x55E
+    "-----",             // 0x55F
+
+    "STORE_ADDRPORTS  ", // 0x660
+    "STORE_DACS       ", // 0x661
+    "STORE_REGISTERS  ", // 0x662
+    "STORE_PIXCONF    ", // 0x663
+    "ERASE_ADDRPORTS  ", // 0x664
+    "ERASE_DACS       ", // 0x665
+    "ERASE_REGISTERS  ", // 0x666
+    "ERASE_PIXCONF    ", // 0x667
+    "VALID_ADDRPORTS  ", // 0x668
+    "VALID_DACS       ", // 0x669
+    "VALID_REGISTERS  ", // 0x66A
+    "VALID_PIXCONF    "  // 0x66B
   };
 
 // Reply bit: set in the reply message in the command identifier

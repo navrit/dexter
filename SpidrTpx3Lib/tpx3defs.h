@@ -52,7 +52,8 @@ History:
 #define TPX3_HDR_GENCONFIG_READ     (TPX3_HDR_GENERALCONFIG   | 0x1)
 #define TPX3_HDR_SLVSCONFIG_WRITE   (TPX3_HDR_GENERALCONFIG   | 0x4)
 #define TPX3_HDR_SLVSCONFIG_READ    (TPX3_HDR_GENERALCONFIG   | 0x5)
-// ....more
+#define TPX3_HDR_PPULSECONFIG_WRITE (TPX3_HDR_GENERALCONFIG   | 0xC)
+#define TPX3_HDR_PPULSECONFIG_READ  (TPX3_HDR_GENERALCONFIG   | 0xD)
 
 // Timer
 #define TPX3_HDR_RESETTIMER         (TPX3_HDR_TIMER           | 0x0)
@@ -143,7 +144,7 @@ History:
 #define TPX3_TESTPULSE_ENA         0x020
 #define TPX3_FASTLO_ENA            0x040
 #define TPX3_TIMER_OVERFL_CTRL     0x080
-#define TPX3_SELECTTP_DIG_ANALOG   0x200
+#define TPX3_SELECTTP_DIGITAL      0x200
 #define TPX3_SELECTTP_EXT_INT      0x400
 #define TPX3_SELECT_TOA_CLK        0x800
 
@@ -178,6 +179,17 @@ History:
 #define TPX3_PHASESHIFT_NR_16      0x0100
 #define TPX3_PLLOUT_CONFIG_MASK    0x3E00
 #define TPX3_PLLOUT_CONFIG_SHIFT   9
+
+// Timepix3 SLVS Configuration register
+#define TPX3_SLVS_TXCURRENT_MASK   0x0F
+#define TPX3_SLVS_TERMINATION      0x10
+
+// Timepix3 Powerpulsing Configuration register
+#define TPX3_PP_CLOCKDIV_ON_MASK  0x0007
+#define TPX3_PP_COLUMNS_ON_MASK   0x0038
+#define TPX3_PP_CLOCKDIV_OFF_MASK 0x01C0
+#define TPX3_PP_COLUMNS_OFF_MASK  0x0E00
+#define TPX3_PP_DIGITAL           0x1000
 
 // ----------------------------------------------------------------------------
 #endif // TPX3DEFS_H_

@@ -15,7 +15,7 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x13111100;
+const int VERSION_ID = 0x13111900;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor
@@ -455,6 +455,27 @@ bool SpidrController::getSlvsConfig( int dev_nr, int *config )
 bool SpidrController::setSlvsConfig( int dev_nr, int config )
 {
   return this->requestSetInt( CMD_SET_SLVSCONFIG, dev_nr, config );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getPwrPulseConfig( int dev_nr, int *config )
+{
+  return this->requestGetInt( CMD_GET_PWRPULSECONFIG, dev_nr, config );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setPwrPulseConfig( int dev_nr, int config )
+{
+  return this->requestSetInt( CMD_SET_PWRPULSECONFIG, dev_nr, config );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setPwrPulseEna( bool enable )
+{
+  return this->requestSetInt( CMD_PWRPULSE_ENA, 0, (int) enable );
 }
 
 // ----------------------------------------------------------------------------

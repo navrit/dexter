@@ -35,15 +35,13 @@ class MY_LIB_API SpidrDaq
   std::string ipAddressString();
   std::string errorString    ();
 
-  // Configuration
-  bool openFile                 ( std::string filename,
-				  bool overwrite = false );
-  bool closeFile                ();
-  void setFlush                 ( bool enable );
-  void setSampling              ( bool enable );
-  void setSampleAll             ( bool enable );
-
   // Acquisition
+  bool      openFile            ( std::string filename,
+				  bool overwrite = false );
+  bool      closeFile           ();
+  void      setFlush            ( bool enable );
+  void      setSampling         ( bool enable );
+  void      setSampleAll        ( bool enable );
   long long bufferSize          ();
   bool      setBufferSize       ( long long size );
   long long maxBufferSize       ();
@@ -60,10 +58,12 @@ class MY_LIB_API SpidrDaq
   void      freeSample          ();
   int       sampleSize          ();
   char     *sampleData          ();
+  // Pixel data sampling ('frame' mode)
   bool      getFrame            ( int timeout_ms = 0 );
   void      freeFrame           ();
   int       frameSize           ();
   char     *frameData           ();
+
   bool      nextPixel           ( int *x, int *y,
 				  int *data = 0, int *timestamp = 0 );
   unsigned long long nextPixel  ();

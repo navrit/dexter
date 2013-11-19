@@ -85,6 +85,9 @@ class MY_LIB_API SpidrController
   bool        setOutBlockConfig( int  dev_nr, int  config );
   bool        getSlvsConfig    ( int  dev_nr, int *config );
   bool        setSlvsConfig    ( int  dev_nr, int  config );
+  bool        getPwrPulseConfig( int  dev_nr, int *config );
+  bool        setPwrPulseConfig( int  dev_nr, int  config );
+  bool        setPwrPulseEna   ( bool enable );
   bool        resetDevice      ( int  dev_nr );
   bool        resetDevices     ();
   std::string dacName          ( int  dac_code );
@@ -115,19 +118,22 @@ class MY_LIB_API SpidrController
   bool resetPixels             ( int  dev_nr );
   unsigned char *pixelConfig   ();
 
-  // Configuration: onboard storage
+  // Configuration: permanent onboard storage
   bool storeAddrAndPorts       ( int  ipaddr_src,          // ###TODO
                                  int  ipaddr_dst,
                                  int *srvports = 0,
                                  int *devports = 0,
                                  int  controlport = 50000 );
   bool storeDacs               ( int  dev_nr );            // ###TODO
+  bool storeRegisters          ( int  dev_nr );            // ###TODO
   bool storePixelConfig        ( int  dev_nr );            // ###TODO
   bool eraseAddrAndPorts       ();                         // ###TODO
   bool eraseDacs               ( int  dev_nr );            // ###TODO
+  bool eraseRegisters          ( int  dev_nr );            // ###TODO
   bool erasePixelConfig        ( int  dev_nr );            // ###TODO
   bool validAddrAndPorts       ();                         // ###TODO
   bool validDacs               ( int  dev_nr );            // ###TODO
+  bool validRegisters          ( int  dev_nr );            // ###TODO
   bool validPixelConfig        ( int  dev_nr );            // ###TODO
 
   // Trigger

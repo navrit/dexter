@@ -147,7 +147,7 @@ std::string SpidrDaq::errorString()
 }
 
 // ----------------------------------------------------------------------------
-// Configuration
+// Acquisition
 // ----------------------------------------------------------------------------
 
 bool SpidrDaq::openFile( std::string filename, bool overwrite /* = false */ )
@@ -183,8 +183,6 @@ void SpidrDaq::setSampleAll( bool enable )
   _fileWriter->setSampleAll( enable );
 }
 
-// ----------------------------------------------------------------------------
-// Acquisition
 // ----------------------------------------------------------------------------
 
 long long SpidrDaq::bufferSize()
