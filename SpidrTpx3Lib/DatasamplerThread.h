@@ -63,8 +63,9 @@ class DatasamplerThread : public QThread
   void clearErrorString()   { _errString.clear(); };
 
  private:
-  int copySampleToBuffer();
-  int copyFrameToBuffer();
+  void handleSampleAbort();
+  int  copySampleToBuffer();
+  int  copyFrameToBuffer();
 
  private:
   // Pointer to receiver
@@ -72,8 +73,8 @@ class DatasamplerThread : public QThread
 
   bool _stop;
 
-  bool      _sampling, _sampleAll, _requestFrame;
-  long long _requestedMinSize, _requestedMaxSize;
+  bool      _sampling, _sampleAll, _abortSample, _requestFrame;
+  long long _sampleMinSize, _sampleMaxSize;
 
   long long _framesSampled;
   long long _bytesWritten;

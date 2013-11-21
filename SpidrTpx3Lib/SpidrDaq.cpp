@@ -258,13 +258,6 @@ bool SpidrDaq::getSampleMin( int min_size, int max_size, int timeout_ms )
 
 // ----------------------------------------------------------------------------
 
-void SpidrDaq::freeSample()
-{
-  _fileWriter->freeSample();
-}
-
-// ----------------------------------------------------------------------------
-
 int SpidrDaq::sampleSize()
 {
   return _fileWriter->sampleSize();
@@ -282,13 +275,6 @@ char *SpidrDaq::sampleData()
 bool SpidrDaq::getFrame( int timeout_ms )
 {
   return _fileWriter->getFrame( timeout_ms );
-}
-
-// ----------------------------------------------------------------------------
-
-void SpidrDaq::freeFrame()
-{
-  _fileWriter->freeSample();
 }
 
 // ----------------------------------------------------------------------------

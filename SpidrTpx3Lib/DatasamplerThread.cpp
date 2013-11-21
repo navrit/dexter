@@ -2,7 +2,7 @@
 #include <windows.h>
 #else
 #include <unistd.h>
-#define Sleep(ms) usleep(1000*ms)
+#define Sleep(ms) usleep(1000*(ms))
 #endif
 
 #include "DatasamplerThread.h"
@@ -17,9 +17,10 @@ DatasamplerThread::DatasamplerThread( ReceiverThread *recvr,
     _stop( false ),
     _sampling( false ),
     _sampleAll( false ),
+    _abortSample( false ),
     _requestFrame( false ),
-    _requestedMinSize( 0 ),
-    _requestedMaxSize( 0 ),
+    _sampleMinSize( 0 ),
+    _sampleMaxSize( 0 ),
     _framesSampled( 0 ),
     _bytesWritten( 0 ),
     _bytesSampled( 0 ),
@@ -64,10 +65,12 @@ void DatasamplerThread::run()
   if( !_receiver ) _stop = true;
 
   // Sample buffer is initialized to 'available'
-  this->freeSample();
+  //this->freeSample();
 
   while( !_stop )
     {
+      if( _abortSample ) this->handleSampleAbort();
+
       if( _receiver->hasData() )
 	{
 	  if( _sampling || _fileOpen )
@@ -77,8 +80,10 @@ void DatasamplerThread::run()
 		  if( _sampleAll )
 		    {
 		      // No data to be lost for sampling...
-		      // Wait until the sample buffer is free
-		      if( _sampleBufferEmpty.tryAcquire( 1, 50 ) )
+		      // Wait until there is a request
+		      // and the sample buffer is free
+		      if( _sampleMaxSize > 0 &&
+			  _sampleBufferEmpty.tryAcquire( 1, 50 ) )
 			{
 			  if( _requestFrame )
 			    bytes = this->copyFrameToBuffer();
@@ -102,13 +107,17 @@ void DatasamplerThread::run()
 		  else
 		    {
 		      // Sample as often as we can,
-		      // i.e. copy data only when the data buffer is free
-		      // (but it does mean that we may start sampling
-		      //  in the middle of a frame... ###DO SOMETHING?
+		      // i.e. sample data only when there is a request
+		      // and the data buffer is free
+		      // (but it does mean that in frame-mode we may start
+		      //  sampling in the middle of a frame in frame-mode
+		      //  ###DO SOMETHING?
 		      //  e.g. to skip everything up to the next EoR and
 		      //  start sampling from there? but then we'll never
-		      //  sample if the frames come at a low rate)
-		      if( _sampleBufferEmpty.available() )
+		      //  sample if the frames come at a low rate because
+		      //  we'll time out)
+		      if( _sampleMaxSize > 0 &&
+			  _sampleBufferEmpty.available() )
 			{
 			  _sampleBufferEmpty.acquire();
 
@@ -143,7 +152,7 @@ void DatasamplerThread::run()
 
 		      if( bytes == 0 )
 			{
-			  // If nothing sampled and not writing to file
+			  // If nothing was sampled and not writing to file
 			  // flush the data if flushing is enabled,
 			  // otherwise keep it stored in buffer...
 			  if( _flush )
@@ -196,53 +205,68 @@ void DatasamplerThread::run()
 
 bool DatasamplerThread::getSample( int min_size, int max_size, int timeout_ms )
 {
-  _pixIndex = 0;
-
   if( !_sampling ) return false;
+  if( min_size < 0 ) return false;
+  if( max_size < 1 ) return false;
+  if( timeout_ms < 1 ) return false;
 
+  // If necessary wait for the sample buffer clean-up (by the thread)
+  volatile bool b = _abortSample;
+  while( b ) b = _abortSample;
+
+  this->freeSample();
+
+  _pixIndex = 0;
   _requestFrame = false;
 
-  // Round up to next multiple of 8 bytes
-  _requestedMinSize = ((min_size+7)/8)*8;
-  _requestedMaxSize = ((max_size+7)/8)*8;
+  // Round up to the next multiple of 8 bytes (Timepix3 pixel data packet size)
+  min_size = ((min_size+7)/8)*8;
+  max_size = ((max_size+7)/8)*8;
 
   // Can not request more data in a sample than fits in the buffer
-  if( _requestedMaxSize > FRAME_BUF_SIZE )
-    _requestedMaxSize = FRAME_BUF_SIZE;
+  if( max_size > FRAME_BUF_SIZE )
+    max_size = FRAME_BUF_SIZE;
 
   // Minimum size cannot be larger than maximum size
-  if( _requestedMinSize > _requestedMaxSize )
-    _requestedMinSize = 0;
+  if( min_size > max_size )
+    min_size = 0;
 
-  if( timeout_ms == 0 )
-    {
-      // Return immediately
-      if( _sampleAvailable.available() )
-	{
-	  _sampleAvailable.acquire();
-	  return true;
-	}
-      else
-	{
-	  return false;
-	}
-    }
-  // Wait for a sample to become available
-  return _sampleAvailable.tryAcquire( 1, timeout_ms );
+  // _sampleMinSize and _sampleMaxSize are used in the thread
+  // so update them only here in a single operation;
+  // setting _sampleMaxSize unequal to zero is necessary to start sampling
+  _sampleMinSize = min_size;
+  _sampleMaxSize = max_size;
+
+  // Wait for a sample to become available or time out
+  if( _sampleAvailable.tryAcquire( 1, timeout_ms ) )
+    return true;
+  _abortSample = true;
+  return false;
 }
 
 // ----------------------------------------------------------------------------
 
 bool DatasamplerThread::getFrame( int timeout_ms )
 {
-  _pixIndex = 0;
-
   if( !_sampling ) return false;
 
+  // If necessary wait for the sample buffer clean-up (by the thread)
+  volatile bool b = _abortSample;
+  while( b ) b = _abortSample;
+
+  this->freeSample();
+
+  _pixIndex = 0;
   _requestFrame = true;
 
-  // Wait for a frame to become available
-  return _sampleAvailable.tryAcquire( 1, timeout_ms );
+  // Setting _sampleMaxSize unequal to zero is necessary to start sampling
+  _sampleMaxSize = 256*256*8;
+
+  // Wait for a frame to become available or time out
+  if( _sampleAvailable.tryAcquire( 1, timeout_ms ) )
+    return true;
+  _abortSample = true;
+  return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -254,6 +278,19 @@ void DatasamplerThread::freeSample()
       _sampleIndex = 0;
       _sampleBufferEmpty.release();
     }
+}
+
+// ----------------------------------------------------------------------------
+
+void DatasamplerThread::handleSampleAbort()
+{
+  // Clean up an ongoing sample operation after a time-out occurred
+  // (this function is only to be called from the thread)
+  if( _sampleBufferEmpty.available() == 0 ) _sampleBufferEmpty.release();
+  _sampleIndex = 0;
+  _sampleMaxSize = 0;
+  _requestFrame = false;
+  _abortSample = false;
 }
 
 // ----------------------------------------------------------------------------
@@ -404,17 +441,20 @@ int DatasamplerThread::copySampleToBuffer()
 {
   // Collect pixel data into the sample buffer up to a maximum size
   long long bytes = _receiver->bytesAvailable();
-  if( bytes > _requestedMaxSize ) bytes = _requestedMaxSize;
+  if( bytes > _sampleMaxSize ) bytes = _sampleMaxSize;
 
   // Copy the data to the sample buffer
   memcpy( static_cast<void *> (&_sampleBuffer[_sampleIndex]),
 	  static_cast<void *> (_receiver->data()), bytes );
   _sampleIndex += bytes;
 
-  if( _sampleIndex >= _requestedMinSize )
+  if( _sampleIndex >= _sampleMinSize )
     {
       // Okay, a data sample is now available in the sample buffer
       _sampleAvailable.release();
+
+      // No further sampling until getSample() is called again
+      _sampleMaxSize = 0;
     }
   else
     {
@@ -479,6 +519,9 @@ int DatasamplerThread::copyFrameToBuffer()
 
 	      // Okay, a frame is now available in the sample buffer
 	      _sampleAvailable.release();
+
+	      // No further sampling until getSample/Frame() is called again
+	      _sampleMaxSize = 0;
 	    }
 	  return size;
 	}

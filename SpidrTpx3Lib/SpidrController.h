@@ -137,14 +137,14 @@ class MY_LIB_API SpidrController
   bool validPixelConfig        ( int  dev_nr );            // ###TODO
 
   // Trigger
-  bool setTriggerConfig        ( int  trig_mode,
-                                 int  trig_period_us,
-                                 int  trig_freq_hz,
-                                 int  nr_of_triggers );
-  bool getTriggerConfig        ( int *trig_mode,
-                                 int *trig_period_us,
-                                 int *trig_freq_hz,
-                                 int *nr_of_triggers );
+  bool setTriggerConfig        ( int  trigger_mode,
+                                 int  trigger_length_us,
+                                 int  trigger_freq_hz,
+                                 int  trigger_count );
+  bool getTriggerConfig        ( int *triger_mode,
+                                 int *triger_length_us,
+                                 int *triger_freq_hz,
+                                 int *trigger_count );
   bool startAutoTrigger        ();
   bool stopAutoTrigger         ();
   bool openShutter             ();
@@ -158,7 +158,7 @@ class MY_LIB_API SpidrController
   bool datadrivenReadout       ();
   bool pauseReadout            ();
 
-  // Timer
+  // Timers
   bool restartTimers           ();
   bool resetTimer              ( int dev_nr );
   bool getTimer                ( int dev_nr,

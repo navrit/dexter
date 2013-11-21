@@ -185,7 +185,8 @@ void ReceiverThread::reset()
   // Prevent thread from writing anything more into the buffer
   _suspend = true;
   // Now wait to make sure this thread takes '_suspend' into account...
-  while( !_suspended );
+  volatile bool b = _suspended;
+  while( !b ) b = _suspended;
 
   _packetsReceived = 0;
   _packetsLost     = 0;

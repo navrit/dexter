@@ -787,33 +787,33 @@ unsigned char *SpidrController::pixelConfig()
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setTriggerConfig( int trigger_mode,
-					int trigger_period_us,
+					int trigger_length_us,
 					int trigger_freq_hz,
-					int nr_of_triggers )
+					int trigger_count )
 {
   int datawords[4];
   datawords[0] = trigger_mode;
-  datawords[1] = trigger_period_us;
+  datawords[1] = trigger_length_us;
   datawords[2] = trigger_freq_hz;
-  datawords[3] = nr_of_triggers;
+  datawords[3] = trigger_count;
   return this->requestSetInts( CMD_SET_TRIGCONFIG, 0, 4, datawords );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getTriggerConfig( int *trigger_mode,
-					int *trigger_period_us,
+					int *trigger_length_us,
 					int *trigger_freq_hz,
-					int *nr_of_triggers )
+					int *trigger_count )
 {
   int data[4];
   int dummy = 0;
   if( !this->requestGetInts( CMD_GET_TRIGCONFIG, dummy, 4, data ) )
     return false;
-  *trigger_mode        = data[0];
-  *trigger_period_us   = data[1];
-  *trigger_freq_hz     = data[2];
-  *nr_of_triggers      = data[3];
+  *trigger_mode      = data[0];
+  *trigger_length_us = data[1];
+  *trigger_freq_hz   = data[2];
+  *trigger_count     = data[3];
   return true;
 }
 
@@ -900,7 +900,7 @@ bool SpidrController::pauseReadout()
 }
 
 // ----------------------------------------------------------------------------
-// Timer
+// Timers
 // ----------------------------------------------------------------------------
 
 bool SpidrController::restartTimers()

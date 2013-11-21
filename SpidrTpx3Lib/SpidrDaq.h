@@ -35,7 +35,7 @@ class MY_LIB_API SpidrDaq
   std::string ipAddressString();
   std::string errorString    ();
 
-  // Acquisition
+  // Data acquisition
   bool      openFile            ( std::string filename,
 				  bool overwrite = false );
   bool      closeFile           ();
@@ -51,16 +51,14 @@ class MY_LIB_API SpidrDaq
   void      resetBufferFullOccurred();
   char     *dataBuffer          ();
 
-  // Pixel data sampling
-  bool      getSample           ( int max_size, int timeout_ms = 0 );
+  // Data sampling
+  bool      getSample           ( int max_size, int timeout_ms );
   bool      getSampleMin        ( int min_size, int max_size,
 				  int timeout_ms );
-  void      freeSample          ();
   int       sampleSize          ();
   char     *sampleData          ();
-  // Pixel data sampling ('frame' mode)
-  bool      getFrame            ( int timeout_ms = 0 );
-  void      freeFrame           ();
+  // Data sampling ('frame' mode)
+  bool      getFrame            ( int timeout_ms );
   int       frameSize           ();
   char     *frameData           ();
 
