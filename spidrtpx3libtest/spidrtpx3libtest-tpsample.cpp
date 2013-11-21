@@ -93,19 +93,19 @@ int main()
 
   // Set Timepix3 into acquisition mode
   if( !spidrctrl.datadrivenReadout() )
-  //if( !spidrctrl.sequentialReadout( 127 ) )
+  //if( !spidrctrl.sequentialReadout( 1 ) )
     error_out( "###xxxxReadout" );
 
   // ----------------------------------------------------------
 
   // Configure the shutter trigger
   int trig_mode      = 4;      // SPIDR_TRIG_AUTO;
-  int trig_period_us = 100000; // 100 ms
+  int trig_length_us = 100000; // 100 ms
   int trig_freq_hz   = 3;      // 3 Hz
-  //int nr_of_trigs    = 10;     // 10 triggers
-  int nr_of_trigs    = 1;
-  if( !spidrctrl.setTriggerConfig( trig_mode, trig_period_us,
-                                   trig_freq_hz, nr_of_trigs ) )
+  //int trig_count   = 10;     // 10 triggers
+  int trig_count     = 1;
+  if( !spidrctrl.setTriggerConfig( trig_mode, trig_length_us,
+                                   trig_freq_hz, trig_count ) )
     error_out( "###setTriggerConfig" );
 
   // Interface to Timepix3 pixel data acquisition
@@ -160,7 +160,7 @@ int main()
 
 	  total_size += size;
 	  if( pixcnt > 0 )
-	    cout << "Frame " << framecnt << " size=" << size << " (total="
+	    cout << "Sample " << framecnt << " size=" << size << " (total="
 		 << total_size << "): " << pixcnt <<" pixels" << endl;
         }
       else
