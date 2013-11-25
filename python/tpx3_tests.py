@@ -12,6 +12,7 @@ import pycallgraph
 import logging
 from optparse import OptionParser
 import datetime
+import shlex
 
 def mkdir(d):
   if not os.path.exists(d):
@@ -78,9 +79,16 @@ class TPX_tests:
      test_list=sorted(test_list)
 
    for test_name in test_list:
+     params={}
+     if test_name.find("(")>=0:
+       if test_name.find(")")>=0:
+          args=test_name[test_name.find("(")+1:test_name.find(")")]
+          test_name=test_name[:test_name.find("(")]
+          params=dict(token.split('=') for token in shlex.split(args))    
+     
      if test_name in avaliable_tests:
        test=avaliable_tests[test_name](tpx=self.tpx,fname=self.dlogdir+test_name)
-       test.execute()
+       test.execute(**params)
      else:
        print "Unknown test %s"%test_name
 
@@ -89,9 +97,38 @@ class TPX_tests:
    print "%-40s | %s"%("Test name", "Test description")
    print "-"*80
    for test_name in sorted(avaliable_tests):
-     print "%-40s | %s"%(test_name, avaliable_tests[test_name].__doc__)
+     print "%-40s |"%(test_name),
+     for i,l in enumerate(avaliable_tests[test_name].__doc__.split('\n')):
+       if i>0:print "%-40s |"%(""),
+       print l
 
-
+def env_check():
+  import netifaces as ni
+  good_iface=None
+  for iface  in ni.interfaces():
+    if ni.AF_INET in ni.ifaddresses(iface):
+      for va in range(len(ni.ifaddresses(iface)[ni.AF_INET])):
+        if not 'broadcast' in ni.ifaddresses(iface)[ni.AF_INET][va]: continue
+        if ni.ifaddresses(iface)[ni.AF_INET][va]['broadcast']=='192.168.100.255':
+          good_iface=iface
+  if good_iface==None:
+    logging.error("Unable to find properly configured ethernet interface")
+    return False
+  
+  def get_mtu(iface):
+    #linux specific code !!
+    import subprocess
+    proc = subprocess.Popen(["ifconfig %s"%good_iface], stdout=subprocess.PIPE, shell=True)
+    (out, err) = proc.communicate()
+    if out.find("MTU:")>=0:
+        return int(out[out.find("MTU:")+4:].split()[0])
+        
+  if get_mtu(good_iface)!=9000:
+    logging.error("Wrong MTU for interface %s"%good_iface)
+    logging.error("sudo ifconfig %s mtu 9000"%good_iface)
+    return False
+  return True
+  
 def main():
   usage = "usage: %prog [options] assembly_name [test]"
   parser = OptionParser(usage=usage,version="%prog 0.01")
@@ -119,14 +156,16 @@ def main():
   mkdir("logs/%s/%s/"%(name,run_name))
   logname='logs/%s/%s/log.txt'%(name,run_name)
   logging.basicConfig(level=logging.DEBUG,
-                    format='[%(levelname)6s] [%(relativeCreated)5d] %(message)s',
+                    format='[%(levelname)7s] [%(relativeCreated)5d] %(message)s',
                     datefmt='%M:%S',filename=logname, filemode='w')
-  formatter = logging.Formatter('[%(levelname)6s] [%(relativeCreated)5d] %(message)s')
+  formatter = logging.Formatter('[%(levelname)7s] [%(relativeCreated)5d] %(message)s')
   consoleHandler = logging.StreamHandler()
   consoleHandler.setFormatter(formatter)
-  consoleHandler.setLevel(logging.INFO)
   if options.verbose:
     consoleHandler.setLevel(logging.DEBUG)
+  else:
+    consoleHandler.setLevel(logging.INFO)
+
   
   logging.getLogger('').addHandler(consoleHandler)
   logging.info("Log will be stored to %s"%logname)
@@ -134,16 +173,17 @@ def main():
   test_list=[]
   if len(args)>1:
     test_list=args[1:]
-    
-  try:
-    tests=TPX_tests(name)
-    tests.connect(options.ip)
+
+  if env_check():
+    try:
+      tests=TPX_tests(name)
+      tests.connect(options.ip)
   
-    if options.dump_all:
-      tests.tpx.log_packets=True
-    tests.execute(test_list)
-  except RuntimeError as e:
-    logging.critical(e)
+      if options.dump_all:
+        tests.tpx.log_packets=True
+      tests.execute(test_list)
+    except RuntimeError as e:
+      logging.critical(e)
 
 if __name__=="__main__":
   main()

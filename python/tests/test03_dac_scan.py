@@ -2,16 +2,27 @@ from tpx3_test import tpx3_test
 import logging
 import Gnuplot, Gnuplot.funcutils
 
-class test03(tpx3_test):
-  """DAC scan"""
+class test03_dac_scan(tpx3_test):
+  """DAC scan. 
+Parameters:
+  step - step size (integer), default 4 
+  mpc  - measurements per code (integer), default 1
+Example:
+  test03_dac_scan(step=1 mpc=64) <- precise scan"""
 
-  def _execute(self):
+  def _execute(self,**keywords):
     results=[]
     def_step=1
     meas_per_code=1
     logging.info("DAC scan settings:")
-    logging.info("default step size: %d"%def_step)
-    logging.info("measurements per code: %d"%meas_per_code)
+    if 'step' in keywords:
+      def_step=int(keywords['step'])
+    logging.info("Step size: %d"%def_step)
+    if 'mpc' in keywords:
+      meas_per_code=int(keywords['mpc'])
+
+    logging.info("Measurements per code: %d"%meas_per_code)
+    
     
     g = Gnuplot.Gnuplot(debug=0)
     g('set xlabel "Code / Max Code')

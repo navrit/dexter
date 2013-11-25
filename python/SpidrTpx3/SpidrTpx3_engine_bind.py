@@ -64,7 +64,7 @@ c2.add_method('setPixelTestEna',        'bool',      [param('int', 'x'),param('i
 c2.add_method('setPixelMask',           'bool',      [param('int', 'x'),param('int', 'y'), param('int', 'b')])
 
 
-c2.add_method('setPixelConfig',        'bool',      [param('int', 'dev_nr')])
+c2.add_method('setPixelConfig',        'bool',      [param('int', 'dev_nr') , param('int', 'cols_per_packet') ])
 c2.add_method('getPixelConfig',        'bool',      [param('int', 'dev_nr')])
 c2.add_method('resetPixels',           'bool',      [param('int', 'dev_nr')])
 

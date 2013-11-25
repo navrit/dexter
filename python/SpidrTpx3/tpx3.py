@@ -420,7 +420,7 @@ class TPX3:
     r=self.ctrl.setPixelMask(x,y,v)
 
   def setPixelConfig(self):
-    r=self.ctrl.setPixelConfig(self.id)
+    r=self.ctrl.setPixelConfig(self.id, cols_per_packet=2)
     time.sleep(1)
     self._log_ctrl_cmd("setPixelConfig() ",r)
 
