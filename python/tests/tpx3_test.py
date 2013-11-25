@@ -21,7 +21,7 @@ class tpx3_test(object):
     logging.info("#"*89)
     self._execute()
 
-  def _execute(self):
+  def _execute(self,**keywords):
     print "Virtual !!"
     
   def _assert_true(self,val,msg):

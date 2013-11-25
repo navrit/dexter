@@ -60,19 +60,18 @@ class test08_equalization(tpx3_test):
 
         self.tpx.setDac(TPX3_VTHRESH_FINE,i)
         data=self.tpx.recv_mask(0x7102000000000000, 0xFFFF000000000000)
-        if len(data)>1:
+        if 0 and len(data)>1:
           for d in data:
+            
             logging.warning("after setdac %s"%(str(d)))
 
         self.tpx.openShutter()
-        if 1:
-          print "%c %s %d/%d"%(13,anim[i%len(anim)],i,512),
-          sys.stdout.flush()
 #        self.tpx.sequentialReadout()
         
         tries=2
         data=[]
         while tries:
+#        if 1:
           ndata=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
           data+=ndata
           if len(data)==0 or data[-1].raw!=0x71A000000000:
@@ -80,7 +79,7 @@ class test08_equalization(tpx3_test):
              time.sleep(0.002)
           else:
              break
-
+          
         logging.debug("Packets received %d (to be masked %d)"%(len(data),mask))
 
         if len(data)==0:
@@ -89,6 +88,11 @@ class test08_equalization(tpx3_test):
         elif data[-1].raw!=0x71A000000000:
              logging.error("Last packet %s"%(str(data[-1])))
              logging.error("Packets received %d (to be masked %d)"%(len(data),mask))
+
+
+        if 1:
+          print "%c %s %d/%d (packets %d)"%(13,anim[i%len(anim)],i,512,len(data)),
+          sys.stdout.flush()
 
         
         for d in data:
@@ -104,6 +108,8 @@ class test08_equalization(tpx3_test):
               peak[d.col][d.row]=2
           elif d.type!=0x7:
             logging.warning("Unexpected packet %s"%str(d))
+
+
 
         if mask>4000:
           logging.debug("Masking %d pixels"%mask)
