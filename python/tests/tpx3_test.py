@@ -18,11 +18,14 @@ class tpx3_test(object):
     logging.info("# %-85s #"%self.__doc__.split('\n')[0])
     m="%s@%s"%(self.__class__.__name__ ,inspect.getfile(self.__class__))
     logging.info("# %-85s #"%m)
+    
     if len(keywords)>0:
       logging.info("# %-85s #"%"Run time parameters:")
       for key, value in keywords.iteritems():
         l=" %s = %s"% (key, value)
+        self.fname+="_%s%s"%(key, value)
         logging.info("# %-85s #"%l)
+    logging.info("# %-85s #"%("Deafult filename : %s"%self.fname))
     logging.info("#"*89)
     self._execute(**keywords)
 

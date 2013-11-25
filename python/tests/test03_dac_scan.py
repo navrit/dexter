@@ -18,12 +18,12 @@ Example:
     if 'step' in keywords:
       def_step=int(keywords['step'])
     logging.info("Step size: %d"%def_step)
+
     if 'mpc' in keywords:
       meas_per_code=int(keywords['mpc'])
-
     logging.info("Measurements per code: %d"%meas_per_code)
     
-    
+   
     g = Gnuplot.Gnuplot(debug=0)
     g('set xlabel "Code / Max Code')
     g('set ylabel "Voltage [V]"')
@@ -52,7 +52,6 @@ Example:
       if dac_id==18:
         r,pll_conf=self.tpx.ctrl.getPllConfig(self.tpx.id)
         self.tpx.ctrl.setPllConfig(self.tpx.id,pll_conf&~(0x4))
-        print "~~~~~~~~~ PLL %x -> %x"%(pll_conf,pll_conf&~(0x4))
       self.tpx.ctrl.setSenseDac(self.tpx.id,dac_id)
       name=dac_name[dac_id]
       max_code=self.tpx.ctrl.dacMax(dac_id)
@@ -60,7 +59,6 @@ Example:
       y=[]
       val=0
       self.tpx.ctrl.setDacsDflt(self.tpx.id)
-#      f=open(self.dlogdir+"%s.txt"%name,"w")
       step=def_step
       if max_code<255:
         step=1
@@ -68,35 +66,23 @@ Example:
       for code in range(0,max_code+1,step):
         steps.append(code)
       if steps[-1]!=max_code:steps.append(max_code)
-#      logging.info("DAC %s scan details:"%name)
       tab[dac_id]={}
       for code in steps:
         if not code in codes: codes.append(code)
         r=self.tpx.ctrl.setDac(self.tpx.id,dac_id,code)
-#        print r
         val=self.tpx.get_adc(meas_per_code)
-
-
-#        print "%c%20s [%03d/%03d] %0.3f"%(13,name,code,max_code, val),
-#        sys.stdout.flush()
         x.append(float(code)/max_code)
         y.append(val)
         tab[dac_id][code]=val
-#        logging.info("  %03d %6.4f"%(code,val))
-#        f.write("%03d %6.4f\n"%(code,val))
-#      f.close()
       fs=y[-1]-y[0]
       mono="YES"
       sigma=0.002
       for i in range(3,len(y)-3):
         if (y[i]>y[i-1]+sigma) and fs<0:
           mono="NO"
-#          print '\n',name,i,y[i-1],y[i]
         if (y[i]<y[i-1]-sigma) and fs>0:
           mono="NO"
-#          print '\n',name,i,y[i-1],y[i]
       
-#      print "FS: %.3f Mono: %s"%(abs(fs),mono)
       fsstr=name+"_FS"
       retdict[fsstr]="%.3f"%abs(fs)
       monostr=name+"_MONO"
@@ -116,6 +102,7 @@ Example:
     g.refresh() 
     logging.info("Plot saved to %s"%fn)
     logging.debug("Details:")
+
     l="code | "
     for dac_id in range(1,19):
       l+="%-11s | "%dac_name[dac_id]
@@ -126,5 +113,21 @@ Example:
        if c in tab[dac_id]: l+= "%11.6f | "%tab[dac_id][c]
        else:l+="            | "
      logging.debug(l)
+
+    #save data to file
+    fn=self.fname+".dat"
+    f=open(fn,"w")
+    l="#code  "
+    for dac_id in range(1,19):
+      l+="%-11s "%dac_name[dac_id]
+    f.write(l+"\n")
+    for c in sorted(codes):
+      l="%3d "%c
+      for dac_id in range(1,19):
+        if c in tab[dac_id]: l+= "%11.6f "%tab[dac_id][c]
+        else:l+="            "
+      f.write(l+"\n")
+    f.close()
+    logging.info("Data saved to %s"%fn)
 
     return retdict
