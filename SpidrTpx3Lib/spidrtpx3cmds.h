@@ -85,6 +85,8 @@
 #define CMD_GET_AVDD           0x54B
 #define CMD_GET_DVDD           0x54C
 
+#define CMD_GET_SPIDR_ADC      0x54E
+
 // Configuration: timer
 #define CMD_RESTART_TIMERS     0x550
 #define CMD_RESET_TIMER        0x551
@@ -103,7 +105,7 @@
 #define CMD_SET_PWRPULSECONFIG 0x55C
 #define CMD_PWRPULSE_ENA       0x55D
 #define CMD_TPX_POWER_ENA      0x55E
-#define CMD_BIAS_SUPPLY_ENA    0x55F
+#define CMD_BIAS_ADJUST_ENA    0x55F
 #define CMD_SET_BIAS_ADJUST    0x560
 
 // Configuration: non-volatile onboard storage
@@ -207,7 +209,7 @@ static const char *CMD_STR[] =
     "GET_AVDD         ", // 0x54B
     "GET_DVDD         ", // 0x54C
     "-----",             // 0x54D
-    "-----",             // 0x54E
+    "GET_SPIDR_ADC    ", // 0x54E
     "-----",             // 0x54F
 
     "RESTART_TIMERS   ", // 0x550
@@ -227,8 +229,8 @@ static const char *CMD_STR[] =
     "SET_PWRPULSECONF ", // 0x55C
     "PWRPULSE_ENA     ", // 0x55D
     "TPX_POWER_ENA    ", // 0x55E
-    "BIAS_SUPPLY_ENA  ", // 0x55F
-    "SET_BIAS_SUPPLY  ", // 0x560
+    "BIAS_ADJUST_ENA  ", // 0x55F
+    "SET_BIAS_ADJUST  ", // 0x560
     "-----",             // 0x561
     "-----",             // 0x562
     "-----",             // 0x563

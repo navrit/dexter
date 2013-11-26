@@ -89,6 +89,8 @@ class MY_LIB_API SpidrController
   bool        setPwrPulseConfig( int  dev_nr, int  config );
   bool        setPwrPulseEna   ( bool enable );
   bool        setTpxPowerEna   ( bool enable );
+  bool        setBiasAdjustEna ( bool enable );
+  bool        setBiasVoltage   ( int  volts );
   bool        resetDevice      ( int  dev_nr );
   bool        resetDevices     ();
   std::string dacName          ( int  dac_code );
@@ -179,8 +181,10 @@ class MY_LIB_API SpidrController
   bool getAdc                  ( int  dev_nr, int *adc_val );
   bool getRemoteTemp           ( int *mdegrees );
   bool getLocalTemp            ( int *mdegrees );
-  bool getAvdd                 ( int *mvolt, int *mamp, int *mwatt );
-  bool getDvdd                 ( int *mvolt, int *mamp, int *mwatt );
+  bool getAvdd                 ( int *mvolts, int *mamps, int *mwatts );
+  bool getDvdd                 ( int *mvolts, int *mamps, int *mwatts );
+  bool getBiasVoltage          ( int *volts );
+  bool getVdda                 ( int *mvolts );
 
   // Other
  private:

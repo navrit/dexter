@@ -487,6 +487,28 @@ bool SpidrController::setTpxPowerEna( bool enable )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::setBiasAdjustEna( bool enable )
+{
+  return this->requestSetInt( CMD_BIAS_ADJUST_ENA, 0, (int) enable );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setBiasVoltage( int volts )
+{
+  // Parameter 'volts' should be between 12 and 104 Volts
+  // (which is the range SPIDR-TPX3 can set)
+  if( volts < 12 ) volts = 12;
+  if( volts > 104 ) volts = 104;
+
+  // Convert the volts to the appropriate DAC value
+  int dac_val = ((volts - 12)*4095)/(104 - 12);
+
+  return this->requestSetInt( CMD_SET_BIAS_ADJUST, 0, dac_val );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::resetDevice( int dev_nr )
 {
   int dummy = 0;
@@ -1008,16 +1030,48 @@ bool SpidrController::getLocalTemp( int *mdegrees )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getAvdd( int *mvolt, int *mamp, int *mwatt )
+bool SpidrController::getAvdd( int *mvolts, int *mamps, int *mwatts )
 {
-  return this->get3Ints( CMD_GET_AVDD, mvolt, mamp, mwatt );
+  return this->get3Ints( CMD_GET_AVDD, mvolts, mamps, mwatts );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getDvdd( int *mvolt, int *mamp, int *mwatt )
+bool SpidrController::getDvdd( int *mvolts, int *mamps, int *mwatts )
 {
-  return this->get3Ints( CMD_GET_DVDD, mvolt, mamp, mwatt );
+  return this->get3Ints( CMD_GET_DVDD, mvolts, mamps, mwatts );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getBiasVoltage( int *volts )
+{
+  int chan = 1; // SPIDR-TPX3 ADC input
+  int adc_data = chan;
+  if( this->requestGetInt( CMD_GET_SPIDR_ADC, 0, &adc_data ) )
+    {
+      // Full-scale is 1.5V = 1500mV
+      // and 0.01V represents approximately 1V bias voltage
+      *volts = (((adc_data & 0xFFF)*1500 + 4095) / 4096) / 10;
+      return true;
+    }
+  return false;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getVdda( int *mvolts )
+{
+  int chan = 2; // SPIDR-TPX3 ADC input
+  int adc_data = chan;
+  if( this->requestGetInt( CMD_GET_SPIDR_ADC, 0, &adc_data ) )
+    {
+      // Full-scale is 1.5V = 1500mV;
+      // this channel has a 1:2 voltage-divider
+      *mvolts = (((adc_data & 0xFFF)*1500 + 4095) / 4096) * 2;
+      return true;
+    }
+  return false;
 }
 
 // ----------------------------------------------------------------------------
