@@ -76,7 +76,7 @@ void SpidrTpx3Tv::timerEvent( QTimerEvent * )
       _lbPacketsReceived->setText( QString::number(_daq->packetsReceivedCount()) );
       _lbLastPacketSize->setText( QString::number(_daq->lastPacketSize()) );
 
-      if( _daq->getSample( 0x100000 ) )
+      if( _daq->getSample( 0x100000, 20 ) )
 	{
 	  // Update the pixel counters with the sampled pixel data
 	  int cnt = 0, x, y;
@@ -89,8 +89,6 @@ void SpidrTpx3Tv::timerEvent( QTimerEvent * )
 
 	  //_lbSampleSize->setText( QString::number(cnt) );
 	  _lbSampleSize->setText( QString::number(size) );
-
-	  _daq->freeSample();
 
 	  // Update the displayed image (if there was a minimum of activity)
 	  if( cnt > 5 )
