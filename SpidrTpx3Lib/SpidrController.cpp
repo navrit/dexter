@@ -480,6 +480,13 @@ bool SpidrController::setPwrPulseEna( bool enable )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::setTpxPowerEna( bool enable )
+{
+  return this->requestSetInt( CMD_TPX_POWER_ENA, 0, (int) enable );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::resetDevice( int dev_nr )
 {
   int dummy = 0;

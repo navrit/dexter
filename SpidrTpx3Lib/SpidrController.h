@@ -88,6 +88,7 @@ class MY_LIB_API SpidrController
   bool        getPwrPulseConfig( int  dev_nr, int *config );
   bool        setPwrPulseConfig( int  dev_nr, int  config );
   bool        setPwrPulseEna   ( bool enable );
+  bool        setTpxPowerEna   ( bool enable );
   bool        resetDevice      ( int  dev_nr );
   bool        resetDevices     ();
   std::string dacName          ( int  dac_code );
@@ -154,7 +155,7 @@ class MY_LIB_API SpidrController
   bool resetCounters           ();
 
   // Data-acquisition
-  bool sequentialReadout       ( int tokens = 1 );
+  bool sequentialReadout       ( int tokens = 128 );
   bool datadrivenReadout       ();
   bool pauseReadout            ();
 
