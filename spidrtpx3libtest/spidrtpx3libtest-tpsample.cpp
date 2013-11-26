@@ -138,8 +138,8 @@ int main()
       if( next_frame )
         {
           ++framecnt;
-	  size  = spidrdaq.frameSize();
-          frame = spidrdaq.frameData();
+	  size  = spidrdaq.sampleSize();
+          frame = spidrdaq.sampleData();
 	  int pixcnt = 0;
           while( spidrdaq.nextPixel( &x, &y, &pixdata, &timestamp ) )
 	    {
@@ -156,7 +156,6 @@ int main()
 	      ++pixcnt;
 	    }
 	  */
-	  spidrdaq.freeSample();
 
 	  total_size += size;
 	  if( pixcnt > 0 )
