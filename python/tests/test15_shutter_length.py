@@ -34,28 +34,32 @@ class test15_shutter_length(tpx3_test):
 
 
     params['gen_config'] = TPX3_ACQMODE_EVT_ITOT|TPX3_TESTPULSE_ENA |TPX3_GRAYCOUNT_ENA 
-    params['pll_config'] = TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_16
+    params['pll_config'] = TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_16 | 0x14<<9
 
     self.tpx.setGenConfig(params['gen_config'])
     self.tpx.setPllConfig(params['pll_config'])
     shutter_len=1.0
     f=open(self.fname+".dat","w")
+
+    self.tpx.send(0x40,0,0)#reset timer
+    self.tpx.send(0x4A,0,0)#t0sync
+
+    shutter_len=10000.0
     
     while shutter_len<1000000:
     
-      self.tpx.send(0x40,0,0)#reset timer
-      self.tpx.send(0x4A,0,0)#t0sync
       shutter_len_int=int(shutter_len)
       self.tpx.setShutterLen(shutter_len_int)
       self.tpx.openShutter()
-#      time.sleep(shutter_len*1e-8)
+      time.sleep(shutter_len*1e-6)
+      logging.info("Shutter time %d us"%shutter_len)
       self.tpx.flush_udp_fifo(0x71AF000000000000)
       start=self.tpx.getShutterStart()
       stop=self.tpx.getShutterEnd()
       slm=stop-start
-
       f.write("%.9e %.9e\n"%(shutter_len_int*1e-6, slm*25e-9))
-      shutter_len*=1.5
+      time.sleep(shutter_len*1e-6)
+#      shutter_len*=1.5
     f.close()
 
     g=sGnuplot(self.fname+".png")
