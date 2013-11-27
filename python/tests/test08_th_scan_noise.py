@@ -120,7 +120,7 @@ class test08_equalization(tpx3_test):
 
       return res
 
-  def _execute(self):
+  def _execute(self,**keywords):
     self.tpx.resetPixels()
     dac_defaults(self.tpx)
 

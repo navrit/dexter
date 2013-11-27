@@ -3,7 +3,7 @@ from tpx3_test import tpx3_test
 class test02(tpx3_test):
   """Default register values"""
 
-  def _execute(self):
+  def _execute(self,**keywords):
     r,v=self.tpx.ctrl.getDeviceId(self.tpx.id)
     self._assert_true(r,"Reading device ID")
     DEF_DEVIDE_ID=0

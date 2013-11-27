@@ -46,7 +46,7 @@ class test09_gain_map(tpx3_test):
       return res
 
 
-  def _execute(self):
+  def _execute(self,**keywords):
     self.tpx.resetPixels()
     self.tpx.setDacsDflt()
     self.tpx.setDac(TPX3_IBIAS_IKRUM,15)

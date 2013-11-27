@@ -63,6 +63,12 @@ class tpx3_test(object):
     self.log(msg,ok)
     if not ok:
       self.errors.append(msg)
+      
+  def mkdir(self,d):
+    if not os.path.exists(d):
+      os.makedirs(d)  
+      logging.info("Creating directory '%s'"%d)
+
   def wiki_banner(self,**keywords):
     if "wiki" in keywords and keywords["wiki"] :
       dac_name=  ['none','IB_PRE_ON',  'IB_PRE_OFF','VPRE_NCAS',     'IB_IKRUM',

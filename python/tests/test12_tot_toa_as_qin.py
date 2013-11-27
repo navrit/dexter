@@ -21,16 +21,14 @@ def gauss(x, *p):
     A, mu, sigma = p
     return A*numpy.exp(-(x-mu)**2/(2.*sigma**2))
 
-def mkdir(d):
-  if not os.path.exists(d):
-    os.makedirs(d)  
+
     
 class test12_tot_toa_as_qin(tpx3_test):
   """TOT and TOA scan vs Qin (diagonal)"""
 
 
 
-  def _execute(self):
+  def _execute(self,**keywords):
     self.tpx.resetPixels()
     self.tpx.setDacsDflt()
     self.tpx.setDac(TPX3_IBIAS_IKRUM,15)

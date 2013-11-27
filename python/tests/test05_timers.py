@@ -6,7 +6,7 @@ import logging
 class test05_timers(tpx3_test):
   """Data Links and periphery timers"""
 
-  def _execute(self):
+  def _execute(self,**keywords):
   
     #tot & toa mode + gray counters
     self.tpx.send_byte_array([0x30,0,0x08])

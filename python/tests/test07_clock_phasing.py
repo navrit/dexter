@@ -7,7 +7,7 @@ from SpidrTpx3_engine import ALL_PIXELS, TPX3_VTHRESH_COARSE
 class test07_clock_phasing(tpx3_test):
   """Pixel matrix VCO and clock phasing in TOT&TOA mode"""
 
-  def _execute(self):
+  def _execute(self,**keywords):
     self.tpx.setTpNumber(1)
     self.tpx.flushFifoIn()
     self.tpx.resetPixels()

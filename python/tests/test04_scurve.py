@@ -16,16 +16,7 @@ def errorf(x, *p):
 #    print x
     return 0.5*a*(1.0+erf((x-mu)/sigma))
 
-# Define model function to be used to fit to the data above:
-def gauss(x, *p):
-    A, mu, sigma = p
-    return A*numpy.exp(-(x-mu)**2/(2.*sigma**2))
 
-def mkdir(d):
-  if not os.path.exists(d):
-    os.makedirs(d)  
-    
-    
 class sGnuplot:
     def __init__(self,fname):
         self.fout=fname
@@ -84,7 +75,7 @@ th_step   - threshold step size [LSB] (defult 4)"""
     self.tpx.flush_udp_fifo(0x71CF000000000000)
     self.wiki_banner(**keywords)
 
-    mkdir(self.fname)
+    self.mkdir(self.fname)
     
     for amp in range(4):
       dv=0
