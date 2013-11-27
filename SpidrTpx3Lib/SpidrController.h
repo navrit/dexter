@@ -70,6 +70,8 @@ class MY_LIB_API SpidrController
   bool        setHeaderFilter  ( int  dev_nr, int  eth_mask, int  cpu_mask );
 
   // Configuration: device
+  bool        resetDevice      ( int  dev_nr );
+  bool        resetDevices     ();
   bool        getDeviceId      ( int  dev_nr, int *id );
   bool        getDeviceIds     ( int *ids );
   bool        setSenseDac      ( int  dev_nr, int  dac_code );
@@ -91,8 +93,8 @@ class MY_LIB_API SpidrController
   bool        setTpxPowerEna   ( bool enable );
   bool        setBiasAdjustEna ( bool enable );
   bool        setBiasVoltage   ( int  volts );
-  bool        resetDevice      ( int  dev_nr );
-  bool        resetDevices     ();
+  bool        setLfsrDecoderEna( bool enable );
+  bool        setGrayDecoderEna( bool enable );
   std::string dacName          ( int  dac_code );
   int         dacMax           ( int  dac_code );
   bool        uploadPacket     ( int  dev_nr, unsigned char *packet, int size );
@@ -121,7 +123,7 @@ class MY_LIB_API SpidrController
   bool resetPixels             ( int  dev_nr );
   unsigned char *pixelConfig   ();
 
-  // Configuration: permanent onboard storage
+  // Configuration: non-volatile onboard storage
   bool storeAddrAndPorts       ( int  ipaddr_src,          // ###TODO
                                  int  ipaddr_dst,
                                  int *srvports = 0,

@@ -15,7 +15,7 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x13111900;
+const int VERSION_ID = 0x13112700;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor
@@ -329,6 +329,22 @@ bool SpidrController::setHeaderFilter( int dev_nr,
 // Configuration: device
 // ----------------------------------------------------------------------------
 
+bool SpidrController::resetDevice( int dev_nr )
+{
+  int dummy = 0;
+  return this->requestSetInt( CMD_RESET_DEVICE, dev_nr, dummy );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::resetDevices()
+{
+  int dummy = 0;
+  return this->requestSetInt( CMD_RESET_DEVICES, dummy, dummy );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::getDeviceId( int dev_nr, int *id )
 {
   *id = 0;
@@ -509,18 +525,16 @@ bool SpidrController::setBiasVoltage( int volts )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::resetDevice( int dev_nr )
+bool SpidrController::setLfsrDecoderEna( bool enable )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_RESET_DEVICE, dev_nr, dummy );
+  return this->requestSetInt( CMD_LFSR_DECODER_ENA, 0, (int) enable );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::resetDevices()
+bool SpidrController::setGrayDecoderEna( bool enable )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_RESET_DEVICES, dummy, dummy );
+  return this->requestSetInt( CMD_GRAY_DECODER_ENA, 0, (int) enable );
 }
 
 // ----------------------------------------------------------------------------

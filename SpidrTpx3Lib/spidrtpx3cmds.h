@@ -107,6 +107,8 @@
 #define CMD_TPX_POWER_ENA      0x55E
 #define CMD_BIAS_ADJUST_ENA    0x55F
 #define CMD_SET_BIAS_ADJUST    0x560
+#define CMD_LFSR_DECODER_ENA   0x561
+#define CMD_GRAY_DECODER_ENA   0x562
 
 // Configuration: non-volatile onboard storage
 #define CMD_STORE_ADDRPORTS    0x664
@@ -231,9 +233,8 @@ static const char *CMD_STR[] =
     "TPX_POWER_ENA    ", // 0x55E
     "BIAS_ADJUST_ENA  ", // 0x55F
     "SET_BIAS_ADJUST  ", // 0x560
-    "-----",             // 0x561
-    "-----",             // 0x562
-    "-----",             // 0x563
+    "LFSR_DECODER_ENA ", // 0x561
+    "GRAY_DECODER_ENA ", // 0x562
 
     "STORE_ADDRPORTS  ", // 0x664
     "STORE_DACS       ", // 0x665
