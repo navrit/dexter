@@ -126,14 +126,13 @@ th_step   - threshold step size [LSB] (defult 4)"""
                     res[d.col][d.row][threshold]=d.event_counter
                 elif d.type!=0x7:
                   logging.warning("Unexpected packet %s"%str(d))
-            logging.debug("Last packet %s"%(data[-1]))
 
       w2f=True
       if 1: #fitting
         if w2f:
           dn=self.fname+"/amp%02d/"%(amp)
           logging.info("Saving files to %s"%dn)
-          mkdir(dn)
+          self.mkdir(dn)
           g=sGnuplot(dn+"plot.png")
           g("set terminal png size 800,600","set grid", "set xlabel 'Threshold[LSB]'", "set ylabel 'Counts'" )#, "set key out top cent samp 0.1"
           pcmd='plot '
@@ -153,5 +152,6 @@ th_step   - threshold step size [LSB] (defult 4)"""
                  pcmd+="'%s' w l t '' "%(fn)
           g(pcmd)
           g.run()
+          logging.info("Saving plot to %s"%g.fout)
 
 

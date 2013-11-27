@@ -1,6 +1,7 @@
 import inspect
 import logging
 from SpidrTpx3_engine import *
+import os
 #logging.basicConfig(format='[%(levelname)6s] [%(asctime)s] %(message)s',level=logging.DEBUG)
 
 class tpx3_test(object):
