@@ -383,9 +383,9 @@ class TPX3:
       p=tpx3packet(pck_num)
       ret.append(p)
     return ret
-
-  def flush_udp_fifo(self):
-    data = self.recv_mask(0x1234000000000000, 0xFFFF000000000000)
+                                                       
+  def flush_udp_fifo(self,val=0x1234000000000000, mask=0xFFFF000000000000):
+    data = self.recv_mask(val,mask)
     for d in data:
       logging.debug("FLUSH : %s"%(str(d)))
     
@@ -481,6 +481,8 @@ class TPX3:
  
   def setGenConfig(self,l):
     r=self.ctrl.setGenConfig(self.id,l)
+    tpx3packet.mode=(l>>1)&0x3
+
     self._log_ctrl_cmd("setGenConfig(%04x) "%(l),r)
     
   def setDacsDflt(self):
@@ -504,19 +506,46 @@ class TPX3:
   def getShutterStart(self):
 #    r,lo,hi=self.ctrl.getShutterStart(self.id)
 #    self._log_ctrl_cmd("getShutterStart()=%x %x"%(hi,lo),r)
-    self.send(0x46,0,0)
-    resp=self.recv_mask(0x7146000000000000,0xFFFF000000000000)
-    for p in resp:
-#      print p
-      if p.b0==0x46: low=p.val
-    self.send(0x47,0,0)
-    resp=self.recv_mask(0x7147000000000000,0xFFFF000000000000)
-    for p in resp:
-      if p.b0==0x47: high=p.val
-    v=low+(high<<32)
+#    self.send(0x46,0,0)
+#    resp=self.recv_mask(0x7146000000000000,0xFFFF000000000000)
+
+#    for p in resp:
+#      print "ST",p,">> %02x"%p.b0
+#      if p.b0==0x46: 
+#        low=p.val
+#    self.send(0x47,0,0)
+#    resp=self.recv_mask(0x7147000000000000,0xFFFF000000000000)
+#    for p in resp:
+#      print "ST",p
+#      if p.b0==0x47: high=p.val
+#    v=low+(high<<32)
+    r,lo,hi=self.ctrl.getShutterStart(self.id)
+    v=lo + (hi<<32)
+#    print r,lo,hi
     self._log_ctrl_cmd("getShutterStart()=%d"%(v),True)
     return v
 
+  def getShutterEnd(self):
+#    r,lo,hi=self.ctrl.getShutterStart(self.id)
+#    self._log_ctrl_cmd("getShutterStart()=%x %x"%(hi,lo),r)
+#    self.send(0x46,0,0)
+#    resp=self.recv_mask(0x7146000000000000,0xFFFF000000000000)
+
+#    for p in resp:
+#      print "ST",p,">> %02x"%p.b0
+#      if p.b0==0x46: 
+#        low=p.val
+#    self.send(0x47,0,0)
+#    resp=self.recv_mask(0x7147000000000000,0xFFFF000000000000)
+#    for p in resp:
+#      print "ST",p
+#      if p.b0==0x47: high=p.val
+#    v=low+(high<<32)
+    r,lo,hi=self.ctrl.getShutterEnd(self.id)
+    v=lo + (hi<<32)
+    self._log_ctrl_cmd("getShutterEnd()=%d"%(v),True)
+    return v
+    
 #  def flushFifoIn(self):
 #    r=self.ctrl.flushFifoIn(self.id)
 #    self._log_ctrl_cmd("flushFifoIn()",r)

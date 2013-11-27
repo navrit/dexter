@@ -14,6 +14,7 @@ from optparse import OptionParser
 import datetime
 import shlex
 
+
 def mkdir(d):
   if not os.path.exists(d):
     os.makedirs(d)  
@@ -69,7 +70,7 @@ class TPX_tests:
     logging.info("Host                : %s"%self.get_host_name())
     self.tpx.info()
 
-  def execute(self,test_list=[]):
+  def execute(self,test_list=[],wiki=False):
   
    self.prepare()
    avaliable_tests=tests.get_tests()
@@ -79,7 +80,7 @@ class TPX_tests:
      test_list=sorted(test_list)
 
    for test_name in test_list:
-     params={}
+     params={'wiki':wiki}
      if test_name.find("(")>=0:
        if test_name.find(")")>=0:
           args=test_name[test_name.find("(")+1:test_name.find(")")]
@@ -132,11 +133,12 @@ def env_check():
 def main():
   usage = "usage: %prog [options] assembly_name [test]"
   parser = OptionParser(usage=usage,version="%prog 0.01")
-  parser.add_option("-i", "--ip",                              dest="ip",         default="192.168.100.10:50000", help="IP address of SPIDR TPX3 Controller")
+  parser.add_option("-i", "--ip",                              dest="ip",         default="192.168.101.10:50000", help="IP address of SPIDR TPX3 Controller")
   parser.add_option("-p", "--prefix",                          dest="prefix",     default="", help="prefix")
   parser.add_option("-d", "--dump-all",   action="store_true", dest="dump_all",   default=False,   help="Dump all Timepix3 messages")
   parser.add_option("-l", "--list-tests", action="store_true", dest="list_tests", default=False,  help="List all avaliable tests")
   parser.add_option("-v", "--verbose",    action="store_true", dest="verbose",    default=False,  help="Verbose output in console (debug log level)")
+  parser.add_option("-w", "--wiki",       action="store_true", dest="wiki",       default=False,  help="Add wiki banner (and log file)")
 
   (options, args) = parser.parse_args()
 
@@ -144,7 +146,6 @@ def main():
     tests=TPX_tests("null")
     tests.list()
     return
-
 
   if len(args)<1:
     parser.error("You have to specify assembly name")
@@ -181,7 +182,7 @@ def main():
   
       if options.dump_all:
         tests.tpx.log_packets=True
-      tests.execute(test_list)
+      tests.execute(test_list,wiki=options.wiki)
     except RuntimeError as e:
       logging.critical(e)
 
