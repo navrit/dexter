@@ -26,21 +26,8 @@ def gauss(x, *p):
     A, mu, sigma = p
     return A*numpy.exp(-(x-mu)**2/(2.*sigma**2))
 
-def mkdir(d):
-  if not os.path.exists(d):
-    os.makedirs(d)
     
-def load(fn):
-  f=open(fn,"r")
-  ret=[]
-  for l in f.readlines():
-    ll=[]
-    for n in l.split():
-      n=int(n)
-      ll.append(n)
-    ret.append(ll)
-  f.close()
-  return ret
+
 
 class test08_equalization(tpx3_test):
   """Threshold scan over noise"""
@@ -129,28 +116,22 @@ class test08_equalization(tpx3_test):
 #    self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,128)
 
 
-    self.tpx.setGenConfig(0x04)
-    self.tpx.getGenConfig()
-
-
-    self.tpx.setPllConfig(  (TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_16 | 0x14<<TPX3_PLLOUT_CONFIG_SHIFT) )
-    self.tpx.getPllConfig()
-    
-#    self.tpx.setPllConfig(0x0E) 
-
+    self.tpx.setGenConfig( TPX3_ACQMODE_EVT_ITOT )
+    self.tpx.setPllConfig( (TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_16 | 0x14<<TPX3_PLLOUT_CONFIG_SHIFT) )
     self.tpx.setCtprBits(0)
     self.tpx.setCtpr()
 
 
-    mkdir(self.fname)
+    self.mkdir(self.fname)
 
     self.tpx.setShutterLen(500)
-
+    self.tpx.sequentialReadout()
+    self.wiki_banner(**keywords)
 
     for cdac in range(0,16,1):
       logdir=self.fname+"/0x%0X/"%cdac
       logging.info("DACs %0x (logdir:%s)"%(cdac,logdir))
-      mkdir(logdir)
+      self.mkdir(logdir)
 
       res={}
       for x in range(256):
@@ -182,7 +163,7 @@ class test08_equalization(tpx3_test):
         fit_res={}
         for col in range(256):
           fit_res[col]={}
-          if w2f:mkdir(logdir+"/%03d"%col)
+          if w2f:self.mkdir(logdir+"/%03d"%col)
           if col in res:
             logging.info("Fitting col %d"%col)
           else:
@@ -244,28 +225,4 @@ class test08_equalization(tpx3_test):
           zipdir(aname,logdir)
           shutil.rmtree(logdir)
 
-
-
-    if 0:#equalize
-      low,la=load(self.fname+'/dacs0_bl.dat')
-      high,ha=load(self.fname+'/dacsF_bl.dat')
-  
-      target=(la+ha)/2.0
-      print la,ha,target
-  
-      f=open(self.fname+"/eq.codes","w")
-      for y in range(256):
-        for x in range(256):
-          l=low[x][y]
-          h=high[x][y]
-          if target<l:
-            code=0
-          elif target>h:
-            code=0xF
-          else:
-            dx=target-l
-            fs=h-l
-            code=int(dx/fs*15 +0.5)
-          f.write("%2d "%code)
-        f.write("\n")
 
