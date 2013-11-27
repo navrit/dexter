@@ -63,6 +63,7 @@ class DatasamplerThread : public QThread
   void clearErrorString()   { _errString.clear(); };
 
  private:
+  bool abortSample();
   void handleSampleAbort();
   int  copySampleToBuffer();
   int  copyFrameToBuffer();

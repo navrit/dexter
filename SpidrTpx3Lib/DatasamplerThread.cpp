@@ -212,7 +212,7 @@ bool DatasamplerThread::getSample( int min_size, int max_size, int timeout_ms )
 
   // If necessary wait for the sample buffer clean-up (by the thread)
   volatile bool b = _abortSample;
-  while( b ) b = _abortSample;
+  while( b ) b = this->abortSample();
 
   this->freeSample();
 
@@ -278,6 +278,13 @@ void DatasamplerThread::freeSample()
       _sampleIndex = 0;
       _sampleBufferEmpty.release();
     }
+}
+
+// ----------------------------------------------------------------------------
+
+bool DatasamplerThread::abortSample()
+{
+  return _abortSample;
 }
 
 // ----------------------------------------------------------------------------
