@@ -64,6 +64,9 @@ class ReceiverThread : public QThread
   int bufferWraps()         { return _bufferWraps; }
 
  private:
+  bool suspended();
+
+ private:
   QUdpSocket *_sock;
   quint32     _addr;
   QString     _addrStr;

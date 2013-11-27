@@ -186,7 +186,7 @@ void ReceiverThread::reset()
   _suspend = true;
   // Now wait to make sure this thread takes '_suspend' into account...
   volatile bool b = _suspended;
-  while( !b ) b = _suspended;
+  while( !b ) b = this->suspended();
 
   _packetsReceived = 0;
   _packetsLost     = 0;
@@ -229,6 +229,15 @@ std::string ReceiverThread::errorString()
   if( _errString.isEmpty() ) return std::string( "" );
   QString qs = "Port " + QString::number( _port ) + ": " + _errString;
   return qs.toStdString();
+}
+
+// ----------------------------------------------------------------------------
+
+bool ReceiverThread::suspended()
+{
+  // This function was only added to prevent the compiler from optimizing
+  // a while-loop (see reset()) on the _suspended variable!
+  return _suspended;
 }
 
 // ----------------------------------------------------------------------------

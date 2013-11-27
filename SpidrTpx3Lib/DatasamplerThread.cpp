@@ -66,6 +66,8 @@ void DatasamplerThread::run()
 
   // Sample buffer is initialized to 'available'
   //this->freeSample();
+  // NO: sampling only starts for real (_sampleMaxSize > 0)
+  // after a request (getSample) has been made
 
   while( !_stop )
     {
@@ -195,7 +197,7 @@ void DatasamplerThread::run()
       else
 	{
 	  // Doze off briefly, while waiting for new data...
-	  Sleep( 50 );
+	  Sleep( 20 );
 	}
     }
   this->closeFile(); // In case a file is opened
@@ -210,7 +212,8 @@ bool DatasamplerThread::getSample( int min_size, int max_size, int timeout_ms )
   if( max_size < 1 ) return false;
   if( timeout_ms < 1 ) return false;
 
-  // If necessary wait for the sample buffer clean-up (by the thread)
+  // If necessary wait for the sample buffer clean-up (by the thread),
+  // after an earlier time-out
   volatile bool b = _abortSample;
   while( b ) b = this->abortSample();
 
@@ -250,9 +253,10 @@ bool DatasamplerThread::getFrame( int timeout_ms )
 {
   if( !_sampling ) return false;
 
-  // If necessary wait for the sample buffer clean-up (by the thread)
+  // If necessary wait for the sample buffer clean-up (by the thread),
+  // after an earlier time-out
   volatile bool b = _abortSample;
-  while( b ) b = _abortSample;
+  while( b ) b = this->abortSample();
 
   this->freeSample();
 
@@ -284,6 +288,8 @@ void DatasamplerThread::freeSample()
 
 bool DatasamplerThread::abortSample()
 {
+  // This function was only added to prevent the compiler from optimizing
+  // a while-loop (see getSample/Frame()) on the _abortSample variable!
   return _abortSample;
 }
 
