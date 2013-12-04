@@ -130,6 +130,43 @@ def env_check():
     return False
   return True
   
+
+def start_pcap(iface,fname):  
+  import threading
+  import pcap
+
+  class pcapThread (threading.Thread):
+    def __init__(self, iface,fname):
+        threading.Thread.__init__(self)
+        self.iface=iface
+        self.exitFlag=False
+        
+        self.p = pcap.pcapObject()
+        self.p.open_live(iface, 100, 0, 100)
+        self.p.dump_open(fname)
+        self.p.setnonblock(1)
+
+    def exit(self):
+       self.exitFlag=True
+
+       return  self.p.stats()
+       
+    def run(self):
+        while not self.exitFlag:
+           self.p.dispatch(0, None)
+           time.sleep(0.001)
+  user = os.getuid()
+  if user != 0:
+    print "This program requires root privileges. Run as root using 'sudo'."
+    print "Rerunning the script with sudo."
+    cmd="sudo "+" ".join(sys.argv)
+    os.system( cmd)
+    sys.exit()
+  CaptureThread=pcapThread(iface,fname)
+  CaptureThread.start()
+  return CaptureThread
+           
+
 def main():
   usage = "usage: %prog [options] assembly_name [test[(parameter=value parameter2=value)]"
   parser = OptionParser(usage=usage,version="%prog 0.01")
@@ -139,6 +176,7 @@ def main():
   parser.add_option("-l", "--list-tests", action="store_true", dest="list_tests", default=False,  help="List all avaliable tests")
   parser.add_option("-v", "--verbose",    action="store_true", dest="verbose",    default=False,  help="Verbose output in console (debug log level)")
   parser.add_option("-w", "--wiki",       action="store_true", dest="wiki",       default=False,  help="Add wiki banner (and log file)")
+  parser.add_option("",   "--pcap",       action="store_true", dest="pcap",       default=False,  help="Store all Ethernet comunication in *.pcap file")
 
   (options, args) = parser.parse_args()
 
@@ -146,7 +184,7 @@ def main():
     tests=TPX_tests("null")
     tests.list()
     return
-
+    
   if len(args)<1:
     parser.error("You have to specify assembly name")
   name=args[0]
@@ -167,9 +205,16 @@ def main():
   else:
     consoleHandler.setLevel(logging.INFO)
 
+
   
   logging.getLogger('').addHandler(consoleHandler)
   logging.info("Log will be stored to %s"%logname)
+
+  if options.pcap:
+    pcapname='logs/%s/%s/log.pcap'%(name,run_name)
+    logging.info("Storring pcap log to %s"%pcapname)
+    CaptureThread=start_pcap("eth3",pcapname)
+
 
   test_list=[]
   if len(args)>1:
@@ -185,6 +230,8 @@ def main():
       tests.execute(test_list,wiki=options.wiki)
     except RuntimeError as e:
       logging.critical(e)
-
+  if options.pcap:
+    stat=CaptureThread.exit()
+    logging.info('PCAP log : %d packets received, %d packets dropped, %d packets dropped by interface' % stat)
 if __name__=="__main__":
   main()

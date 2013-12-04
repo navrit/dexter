@@ -556,7 +556,17 @@ class TPX3:
     v=lo + (hi<<32)
     self._log_ctrl_cmd("getShutterEnd()=%d"%(v),True)
     return v
-    
+
+  def getHeaderFilter(self):
+    r,eth,cpu=self.ctrl.getHeaderFilter(self.id)
+    self._log_ctrl_cmd("getHeaderFilter()=0x%04X,0x%04X"%(eth,cpu),r)
+    return eth,cpu
+
+  def setHeaderFilter(self,eth,cpu):
+    r=self.ctrl.setHeaderFilter(self.id,eth,cpu)
+    self._log_ctrl_cmd("setHeaderFilter(0x%04X,0x%04X)"%(eth,cpu),r)
+
+  
 #  def flushFifoIn(self):
 #    r=self.ctrl.flushFifoIn(self.id)
 #    self._log_ctrl_cmd("flushFifoIn()",r)

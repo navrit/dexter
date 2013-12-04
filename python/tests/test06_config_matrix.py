@@ -5,7 +5,7 @@ import logging
 class test06_config_matrix(tpx3_test):
   """Configure / Verify matrix configuration"""
 
-  def _execute(self):
+  def _execute(self,**keywords):
 #    pycallgraph.start_trace()
 
        

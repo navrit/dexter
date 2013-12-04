@@ -54,8 +54,14 @@ c2.add_method('getTimer',              'bool',        [param('int', 'dev_nr'),pa
 c2.add_method('getShutterStart',       'bool',        [param('int', 'dev_nr'),param('unsigned int*', 'timer_lo', transfer_ownership=False,direction = Parameter.DIRECTION_OUT), 
                                                                               param('unsigned int*', 'timer_hi', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 
-c2.add_method('getShutterEnd',       'bool',        [param('int', 'dev_nr'),param('unsigned int*', 'timer_lo', transfer_ownership=False,direction = Parameter.DIRECTION_OUT), 
+c2.add_method('getShutterEnd',       'bool',          [param('int', 'dev_nr'),param('unsigned int*', 'timer_lo', transfer_ownership=False,direction = Parameter.DIRECTION_OUT), 
                                                                               param('unsigned int*', 'timer_hi', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+
+c2.add_method('getHeaderFilter',     'bool',          [param('int', 'dev_nr'),param('int*', 'eth_mask', transfer_ownership=False,direction = Parameter.DIRECTION_OUT), 
+                                                                              param('int*', 'cpu_mask', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+
+c2.add_method('setHeaderFilter',     'bool',          [param('int', 'dev_nr'),param('int', 'eth_mask'), 
+                                                                              param('int', 'cpu_mask')])
 
 #c2.add_method('flushFifoIn',       'bool',        [param('int', 'dev_nr')])
 

@@ -23,7 +23,9 @@ class test05_global_timer(tpx3_test):
     gen_config = TPX3_ACQMODE_EVT_ITOT|TPX3_TESTPULSE_ENA | TPX3_GRAYCOUNT_ENA
     self.tpx.setGenConfig(gen_config)
 
-
+    eth_filter,cpu_filter=self.tpx.getHeaderFilter()
+    self.tpx.setHeaderFilter(eth_filter,cpu_filter|0x2000) #accept 0xD
+  
     self.tpx.send(0x4A,0,0) #Start T0_Sync_command
     
     ctpr=[]
@@ -47,7 +49,6 @@ class test05_global_timer(tpx3_test):
     toa={}
     data=self.tpx.recv_mask(0x71D0000000000000, 0xFFFF000000000000)
     for d in data:
-      print d
       if d.type==0xD:
         if dcol[d.addr]: 
           logging.warning("Multiple packets for double column %d"%(d.addr))
