@@ -12,7 +12,7 @@ Example:
 
   def _execute(self,**keywords):
     results=[]
-    def_step=1
+    def_step=8
     meas_per_code=1
     logging.info("DAC scan settings:")
     if 'step' in keywords:

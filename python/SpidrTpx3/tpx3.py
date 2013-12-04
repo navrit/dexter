@@ -221,9 +221,9 @@ class tpx3packet:
     self.ctpr=raw&0x3
     raw>>=(2+8)
     self.eoc_fifo=raw&0xf
-    raw>>(4+9)
-    self.toa=raw&0x3FFF
-    raw>>=14
+    raw>>=(4)
+    self.toa=toa14[raw&0x3FFF]
+    raw>>=(14+9)
     self.addr=raw&0x7F
     self.str="Read CTPR adr:%03d ctpr:%01x toa:%x  eoc_fifo:%x"%(self.addr, self.ctpr,self.toa, self.eoc_fifo)
   def packE(self):
@@ -458,6 +458,10 @@ class TPX3:
     r=self.ctrl.setTriggerConfig(4,l,1,1)
     self._log_ctrl_cmd("Config shutter (%d) "%(l),r)
     
+  def resetTimer(self):
+    r=self.ctrl.resetTimer(self.id)
+    self._log_ctrl_cmd("resetTimer() ",r)
+
 
   def openShutter(self):
     r=self.ctrl.startAutoTrigger()
@@ -502,7 +506,14 @@ class TPX3:
     r,val=self.ctrl.getPllConfig(self.id)
     self._log_ctrl_cmd("getPllConfig()=%02x"%(val),r)
     return val
-    
+
+  def getTimer(self):
+    r,lo,hi=self.ctrl.getTimer(self.id)
+    v=lo + (hi<<32)
+#    print r,lo,hi
+    self._log_ctrl_cmd("getTimer()=%d"%(v),True)
+    return v
+  
   def getShutterStart(self):
 #    r,lo,hi=self.ctrl.getShutterStart(self.id)
 #    self._log_ctrl_cmd("getShutterStart()=%x %x"%(hi,lo),r)

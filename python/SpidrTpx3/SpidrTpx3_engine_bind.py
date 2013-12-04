@@ -47,6 +47,10 @@ c2.add_method('setTpNumber',           'bool',        [param('int', 'dev_nr'),pa
 c2.add_method('uploadPacket',          'bool',        [param('int', 'dev_nr'),param('unsigned char*', 'packet', transfer_ownership=False,direction = Parameter.DIRECTION_IN,array_length=256),param('int', 'size')])
 
 
+c2.add_method('resetTimer',            'bool',        [param('int', 'dev_nr')])
+c2.add_method('getTimer',              'bool',        [param('int', 'dev_nr'),param('unsigned int*', 'timer_lo', transfer_ownership=False,direction = Parameter.DIRECTION_OUT), 
+                                                                              param('unsigned int*', 'timer_hi', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+
 c2.add_method('getShutterStart',       'bool',        [param('int', 'dev_nr'),param('unsigned int*', 'timer_lo', transfer_ownership=False,direction = Parameter.DIRECTION_OUT), 
                                                                               param('unsigned int*', 'timer_hi', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 

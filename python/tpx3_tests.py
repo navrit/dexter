@@ -131,9 +131,9 @@ def env_check():
   return True
   
 def main():
-  usage = "usage: %prog [options] assembly_name [test]"
+  usage = "usage: %prog [options] assembly_name [test[(parameter=value parameter2=value)]"
   parser = OptionParser(usage=usage,version="%prog 0.01")
-  parser.add_option("-i", "--ip",                              dest="ip",         default="192.168.100.10:50000", help="IP address of SPIDR TPX3 Controller")
+  parser.add_option("-i", "--ip",                              dest="ip",         default="192.168.101.10:50000", help="IP address of SPIDR TPX3 Controller")
   parser.add_option("-p", "--prefix",                          dest="prefix",     default="", help="prefix")
   parser.add_option("-d", "--dump-all",   action="store_true", dest="dump_all",   default=False,   help="Dump all Timepix3 messages")
   parser.add_option("-l", "--list-tests", action="store_true", dest="list_tests", default=False,  help="List all avaliable tests")
@@ -175,7 +175,7 @@ def main():
   if len(args)>1:
     test_list=args[1:]
 
-  if env_check():
+  if 1 : #env_check():
     try:
       tests=TPX_tests(name)
       tests.connect(options.ip)
