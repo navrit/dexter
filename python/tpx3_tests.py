@@ -154,7 +154,7 @@ def start_pcap(iface,fname):
     def run(self):
         while not self.exitFlag:
            self.p.dispatch(0, None)
-           time.sleep(0.001)
+           time.sleep(0.0001)
   user = os.getuid()
   if user != 0:
     print "This program requires root privileges. Run as root using 'sudo'."
