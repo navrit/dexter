@@ -2,6 +2,7 @@ from tpx3_test import tpx3_test
 import random
 import logging
 import numpy
+import time
 
 class test06_config_matrix(tpx3_test):
   """Configure / Verify matrix configuration"""
@@ -22,24 +23,46 @@ class test06_config_matrix(tpx3_test):
     self.tpx.setPixelConfig()
 
     eth_filter,cpu_filter=self.tpx.getHeaderFilter()
-    self.tpx.setHeaderFilter(eth_filter,cpu_filter|0x0200)
+    self.tpx.setHeaderFilter(0xffff,cpu_filter&(~0x0200)) # cpu should not see 0x90 packets
 
     self.tpx.send_byte_array([0x90]+[0x00]*(256/8)) 
-    self.tpx.sequentialReadout()
-#    self.tpx.getPixelConfig()
-    pix=0
-    data=self.tpx.recv_mask(0x11D0000000000000, 0xFFFF000000000000)
-    print len(data)
+    print "sleep"
+    time.sleep(50)
+    print "read"
+    self.tpx.sequentialReadout(tokens=32)
+
+    valid_pixels=0
+
+    data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
     valid=numpy.zeros((256,256))
     for d in data:
       if d.type==0x9:
         valid[d.col][d.row]+=1
-        pix+=1
-    for x in range(256):
-      for y in range(256):
-        if valid[x][y]==0:
-           print "Missing:",x,y
-    print pix
+        valid_pixels+=1
+            
+    if valid_pixels==256*256:
+      logging.info("All pixels were correcly configured and readout")
+    else:
+      logging.info("Only %d pixels were correcly configured and readout (problem with %d pixels)"%(valid_pixels,256*256-valid_pixels))
+      displayed=0
+      bad=""
+      fn=self.fname+".bad"
+      f=open(fn,"w")
+      for x in range(256):
+        for y in range(256):
+          if valid[x][y]==0:
+            f.write("1 ")
+            if displayed<20:
+              bad+="(%d,%d) "%(x,y)
+              displayed+=1
+          else:
+            f.write("0 ")
+        f.write("\n")
+      if displayed==20: bad+="..."
+      logging.info("Bad pixels: %s"%bad)
+      logging.info("Storring bad pixel map to %s"%fn)
+
+
 #        if dcol[d.addr]: 
 #          logging.warning("Multiple packets for double column %d"%(d.addr))
 #        else:

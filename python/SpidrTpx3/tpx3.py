@@ -577,13 +577,21 @@ class TPX3:
 
 
   def recv_mask(self,val,mask):
-    r=self.udp.getH(val,mask,debug=0)
+    ok=False
+    cnt=2
     ret=[]
-    for pck_num in r:
-      p=tpx3packet(pck_num)
-      ret.append(p)
-#      print p
-      if self.log_packets : logging.debug(p)
+    last=0
+    while cnt>0 and not ok:
+      r=self.udp.getH(val,mask,debug=0)
+      for pck_num in r:
+        p=tpx3packet(pck_num)
+        ret.append(p)
+        if self.log_packets : logging.debug(p)
+        last=pck_num
+      cnt-=1
+      if (last&mask)==val: ok=True
+    if not ok:
+      logging.warning("Timeout ;/ (last packet : %16X while expecting %016X)"%(last,val))
     return ret
     
   def __del__(self):
