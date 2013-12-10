@@ -948,8 +948,8 @@ bool SpidrController::pauseReadout()
 
 bool SpidrController::restartTimers()
 {
-  int dummy1 = 0, dummy2 = 0;
-  return this->requestSetInt( CMD_RESTART_TIMERS, dummy1, dummy2 );
+  int dummy = 0;
+  return this->requestSetInt( CMD_RESTART_TIMERS, 0, dummy );
 }
 
 // ----------------------------------------------------------------------------
@@ -1015,12 +1015,19 @@ bool SpidrController::getShutterEnd( int dev_nr,
 }
 
 // ----------------------------------------------------------------------------
+
+bool SpidrController::t0Sync( int dev_nr )
+{
+  return this->requestSetInt( CMD_T0_SYNC, dev_nr, 0 );
+}
+
+// ----------------------------------------------------------------------------
 // Monitoring
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getAdc( int dev_nr, int *adc_val )
+bool SpidrController::getAdc( int dev_nr, int *adc_val, int nr_of_samples )
 {
-  *adc_val = 0;
+  *adc_val = nr_of_samples;
   return this->requestGetInt( CMD_GET_ADC, dev_nr, adc_val );
 }
 

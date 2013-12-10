@@ -110,6 +110,9 @@
 #define CMD_LFSR_DECODER_ENA   0x561
 #define CMD_GRAY_DECODER_ENA   0x562
 
+// Configuration: timer (continued)
+#define CMD_T0_SYNC            0x563
+
 // Configuration: non-volatile onboard storage
 #define CMD_STORE_ADDRPORTS    0x664
 #define CMD_STORE_DACS         0x665
@@ -235,6 +238,7 @@ static const char *CMD_STR[] =
     "SET_BIAS_ADJUST  ", // 0x560
     "LFSR_DECODER_ENA ", // 0x561
     "GRAY_DECODER_ENA ", // 0x562
+    "T0_SYNC          ", // 0x563
 
     "STORE_ADDRPORTS  ", // 0x664
     "STORE_DACS       ", // 0x665

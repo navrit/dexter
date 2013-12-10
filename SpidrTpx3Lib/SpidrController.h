@@ -178,9 +178,11 @@ class MY_LIB_API SpidrController
   bool getShutterEnd           ( int dev_nr,
 				 unsigned int *timer_lo,
 				 unsigned int *timer_hi );
+  bool t0Sync                  ( int  dev_nr );
 
   // Monitoring
-  bool getAdc                  ( int  dev_nr, int *adc_val );
+  bool getAdc                  ( int  dev_nr, int *adc_val,
+				 int  nr_of_samples = 1 );
   bool getRemoteTemp           ( int *mdegrees );
   bool getLocalTemp            ( int *mdegrees );
   bool getAvdd                 ( int *mvolts, int *mamps, int *mwatts );
