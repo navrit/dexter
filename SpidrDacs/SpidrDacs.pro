@@ -13,6 +13,9 @@ TARGET   = SpidrDacs
 
 # Create a Qt app
 QT += network
+contains(QT_MAJOR_VERSION,5) {
+  QT += widgets
+}
 CONFIG += qt thread warn_on exceptions debug_and_release
 
 CONFIG(debug, debug|release) {
