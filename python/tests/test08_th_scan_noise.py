@@ -115,7 +115,7 @@ class test08_equalization(tpx3_test):
 #    self.tpx.setDac(TPX3_IBIAS_PREAMP_ON,128)
 #    self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,128)
 
-
+    eth_filter,cpu_filter=self.tpx.getHeaderFilter()
     self.tpx.setGenConfig( TPX3_ACQMODE_EVT_ITOT )
     self.tpx.setPllConfig( (TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_16 | 0x14<<TPX3_PLLOUT_CONFIG_SHIFT) )
     self.tpx.setCtprBits(0)
@@ -127,6 +127,11 @@ class test08_equalization(tpx3_test):
     self.tpx.setShutterLen(500)
     self.tpx.sequentialReadout()
     self.wiki_banner(**keywords)
+
+    self.tpx.sequentialReadout()
+
+    logging.info("Filters eth %04x cpu %04x"%(eth_filter,cpu_filter))
+
 
     for cdac in range(0,16,1):
       logdir=self.fname+"/0x%0X/"%cdac
@@ -152,8 +157,8 @@ class test08_equalization(tpx3_test):
               self.tpx.setPixelThreshold(x,y,cdac)
 
         self.tpx.setPixelConfig()
-        self.tpx.sequentialReadout()
-        self.tpx.flush_udp_fifo()
+        self.tpx.flush_udp_fifo(0x718F000000000000)#flush until load matrix
+        
         res=self.threshold_scan(res)
         
         
