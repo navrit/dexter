@@ -26,10 +26,11 @@ class test06_config_matrix(tpx3_test):
     self.tpx.setHeaderFilter(0xffff,cpu_filter&(~0x0200)) # cpu should not see 0x90 packets
 
     self.tpx.send_byte_array([0x90]+[0x00]*(256/8)) 
-    print "sleep"
-    time.sleep(50)
-    print "read"
-    self.tpx.sequentialReadout(tokens=32)
+    if 0:
+      print "sleep"
+      time.sleep(50)
+      print "read"
+    self.tpx.sequentialReadout(tokens=1)
 
     valid_pixels=0
 

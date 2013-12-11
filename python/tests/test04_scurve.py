@@ -72,10 +72,13 @@ th_step   - threshold step size [LSB] (defult 4)"""
     self.tpx.setCtprBits(1)
     self.tpx.setCtpr()
     self.tpx.sequentialReadout()
+
     self.tpx.flush_udp_fifo(0x71CF000000000000)
+
     self.wiki_banner(**keywords)
 
     self.mkdir(self.fname)
+
     
     for amp in range(4):
       dv=0
@@ -113,6 +116,7 @@ th_step   - threshold step size [LSB] (defult 4)"""
             self.tpx.openShutter()
             time.sleep(0.001)
 #            data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
+            
             data=self.tpx.recv_mask(0x71AF000000000000, 0xFFFF000000000000)
 
             logging.debug("Packets received %d"%(len(data)))
