@@ -79,6 +79,7 @@ class test08_equalization(tpx3_test):
 
         if 1:
           print "%c %s %d/%d (packets %d)"%(13,anim[i%len(anim)],i,512,len(data)),
+          if i==511:print
           sys.stdout.flush()
 
         
@@ -98,11 +99,16 @@ class test08_equalization(tpx3_test):
 
 
 
-        if mask>4000:
+        if mask>5000:
           logging.debug("Masking %d pixels"%mask)
 #          self.tpx.flushFifoIn()
+          self.tpx.pauseReadout()
           self.tpx.setPixelConfig()
-          data=self.tpx.recv_mask(0x718F000000000000, 0xFFFF000000000000)
+          self.tpx.sequentialReadout()
+#          data=self.tpx.recv_mask(0x718F000000000000, 0xFFFF000000000000)# EoC load 
+#          data=self.tpx.recv_mask(0x71FF000000000000, 0xFFFF000000000000)# EoC load 
+          self.tpx.flush_udp_fifo(0x71FF000000000000)#flush until load matrix
+
           mask=0
 
       return res
@@ -127,8 +133,6 @@ class test08_equalization(tpx3_test):
     self.tpx.setShutterLen(500)
     self.tpx.sequentialReadout()
     self.wiki_banner(**keywords)
-
-    self.tpx.sequentialReadout()
 
     logging.info("Filters eth %04x cpu %04x"%(eth_filter,cpu_filter))
 
@@ -156,8 +160,10 @@ class test08_equalization(tpx3_test):
               self.tpx.setPixelMask(x,y,0)
               self.tpx.setPixelThreshold(x,y,cdac)
 
+        self.tpx.pauseReadout()
         self.tpx.setPixelConfig()
-        self.tpx.flush_udp_fifo(0x718F000000000000)#flush until load matrix
+        self.tpx.sequentialReadout()
+        self.tpx.flush_udp_fifo(0x71FF000000000000)#flush until load matrix
         
         res=self.threshold_scan(res)
         

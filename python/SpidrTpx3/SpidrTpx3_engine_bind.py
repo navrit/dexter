@@ -84,6 +84,7 @@ c2.add_method('setCtpr',               'bool',       [param('int', 'dev_nr')])
 
 c2.add_method('sequentialReadout',    'bool',       [param('int', 'tokens')])
 c2.add_method('datadrivenReadout',    'bool',       [])
+c2.add_method('pauseReadout',         'bool',       [])
 #c2.add_method('openShutter',          'bool',       [param('int', 'dev_nr'),param('int', 'len')])
 c2.add_method('errorString',          'std::string',       [])
 

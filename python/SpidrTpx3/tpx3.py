@@ -416,6 +416,10 @@ class TPX3:
     r=self.ctrl.resetPixelConfig()
     self._log_ctrl_cmd("resetPixelConfig() ",True)
 
+  def pauseReadout(self):
+    r=self.ctrl.pauseReadout()
+    self._log_ctrl_cmd("pauseReadout() ",True)
+  
   def setPixelMask(self,x,y,v):
     r=self.ctrl.setPixelMask(x,y,v)
 
