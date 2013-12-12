@@ -23,6 +23,7 @@ class SpidrMon : public QDialog, Ui_SpidrMonDialog
   QIntValidator   *_ipPortValidator;
 
   int              _timerId;
+  int              _dacCode;
 
   void timerEvent( QTimerEvent * );
   void initDataDisplay();

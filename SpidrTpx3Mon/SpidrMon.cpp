@@ -5,8 +5,9 @@
 
 #include "SpidrMon.h"
 #include "SpidrController.h"
+#include "tpx3defs.h"
 
-QString VERSION( "v2.0.0  26-Nov-2013" );
+QString VERSION( "v2.0.0  12-Dec-2013" );
 
 const int UPDATE_INTERVAL_MS = 750;
 
@@ -14,7 +15,8 @@ const int UPDATE_INTERVAL_MS = 750;
 
 SpidrMon::SpidrMon()
   : QDialog(),
-    _spidrController( 0 )
+    _spidrController( 0 ),
+    _dacCode( TPX3_BANDGAP_OUTPUT )
 {
   this->setupUi(this);
 
@@ -53,6 +55,9 @@ void SpidrMon::connectOrDisconnect()
   if( _spidrController )
     {
       this->killTimer( _timerId );
+
+      _spidrController->setSenseDac( 0, TPX3_SENSEOFF );
+
       delete _spidrController;
       _spidrController = 0;
       _pushButtonConnectOrDisconnect->setText( "Connect" );
@@ -67,6 +72,11 @@ void SpidrMon::connectOrDisconnect()
       _lineEditDvddMwatt->setEnabled( false );
       _lineEditVdda->setEnabled( false );
       _lineEditBias->setEnabled( false );
+      _lineEditDac1->setEnabled( false );
+      _lineEditDac2->setEnabled( false );
+      _lineEditDac3->setEnabled( false );
+      _lineEditDac4->setEnabled( false );
+      _dacCode = TPX3_BANDGAP_OUTPUT;
     }
   else
     {
@@ -107,6 +117,15 @@ void SpidrMon::connectOrDisconnect()
 	  _lineEditDvddMwatt->setEnabled( true );
 	  _lineEditVdda->setEnabled( true );
 	  _lineEditBias->setEnabled( true );
+	  //_lineEditDac1->setEnabled( true );
+	  //_lineEditDac2->setEnabled( true );
+	  //_lineEditDac3->setEnabled( true );
+	  //_lineEditDac4->setEnabled( true );
+
+	  if( _cbMonitorTpx->isChecked() )
+	    // Set output of Timepix3 SenseDAC
+	    // in preparation for the first ADC reading
+	    _spidrController->setSenseDac( 0, _dacCode );
 
 	  _timerId = this->startTimer( UPDATE_INTERVAL_MS );
 	}
@@ -195,6 +214,51 @@ void SpidrMon::timerEvent(QTimerEvent *)
     _lineEditVdda->setText( QString::number( mvolt ) );
   else
     _lineEditVdda->setText( "----" );
+
+  if( _cbMonitorTpx->isChecked() )
+    {
+      QString qs("--.---");
+      int adc_val;
+      if( _spidrController->getAdc( 0, &adc_val ) )
+	// Full-scale is 1.5V = 1500mV
+	qs = QString("%1.%2").arg( ((adc_val*1500)/4096)/1000 )
+	  .arg( ((adc_val*1500)/4096)%1000, 3, 10, QChar('0') );
+      if( _dacCode == TPX3_BANDGAP_OUTPUT )
+	{
+	  _lineEditDac1->setText( qs );
+	  _lineEditDac1->setEnabled( true );
+	}
+      else if( _dacCode == TPX3_BANDGAP_TEMP )
+	{
+	  _lineEditDac2->setText( qs );
+	  _lineEditDac2->setEnabled( true );
+	}
+      else if( _dacCode == TPX3_IBIAS_DAC )
+	{
+	  _lineEditDac3->setText( qs );
+	  _lineEditDac3->setEnabled( true );
+	}
+      else if( _dacCode == TPX3_IBIAS_DAC_CAS )
+	{
+	  _lineEditDac4->setText( qs );
+	  _lineEditDac4->setEnabled( true );
+	}
+      // Next time next 'DAC'
+      if( _dacCode != TPX3_IBIAS_DAC_CAS )
+	++_dacCode;
+      else
+	_dacCode = TPX3_BANDGAP_OUTPUT;
+      // Set output of Timepix3 SenseDAC in preparation
+      // for the next ADC reading
+      _spidrController->setSenseDac( 0, _dacCode );
+    }
+  else
+    {
+      _lineEditDac1->setEnabled( false );
+      _lineEditDac2->setEnabled( false );
+      _lineEditDac3->setEnabled( false );
+      _lineEditDac4->setEnabled( false );
+    }
 
   _leUpdateSpidrLed->show();
   QTimer::singleShot( UPDATE_INTERVAL_MS/4, this, SLOT(updateLedOff()) );

@@ -6,20 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>382</width>
-    <height>367</height>
+    <width>381</width>
+    <height>357</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>0</width>
-    <height>0</height>
+    <width>381</width>
+    <height>357</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>1380</width>
-    <height>1290</height>
+    <width>381</width>
+    <height>357</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,7 @@
      <x>8</x>
      <y>4</y>
      <width>365</width>
-     <height>95</height>
+     <height>79</height>
     </rect>
    </property>
    <property name="title">
@@ -44,7 +44,7 @@
    <widget class="QLabel" name="labelPeriod">
     <property name="geometry">
      <rect>
-      <x>46</x>
+      <x>130</x>
       <y>34</y>
       <width>16</width>
       <height>16</height>
@@ -66,7 +66,7 @@
    <widget class="QLineEdit" name="_lineEditAddr0">
     <property name="geometry">
      <rect>
-      <x>132</x>
+      <x>216</x>
       <y>30</y>
       <width>31</width>
       <height>20</height>
@@ -82,7 +82,7 @@
    <widget class="QLineEdit" name="_lineEditAddr2">
     <property name="geometry">
      <rect>
-      <x>56</x>
+      <x>140</x>
       <y>30</y>
       <width>31</width>
       <height>20</height>
@@ -98,8 +98,8 @@
    <widget class="QPushButton" name="_pushButtonConnectOrDisconnect">
     <property name="geometry">
      <rect>
-      <x>16</x>
-      <y>60</y>
+      <x>15</x>
+      <y>29</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -111,7 +111,7 @@
    <widget class="QLineEdit" name="_lineEditAddr1">
     <property name="geometry">
      <rect>
-      <x>94</x>
+      <x>178</x>
       <y>30</y>
       <width>31</width>
       <height>20</height>
@@ -127,7 +127,7 @@
    <widget class="QLabel" name="labelPeriod_3">
     <property name="geometry">
      <rect>
-      <x>122</x>
+      <x>206</x>
       <y>34</y>
       <width>16</width>
       <height>16</height>
@@ -149,7 +149,7 @@
    <widget class="QLabel" name="labelIpAddr">
     <property name="geometry">
      <rect>
-      <x>58</x>
+      <x>142</x>
       <y>14</y>
       <width>69</width>
       <height>16</height>
@@ -165,7 +165,7 @@
    <widget class="QLabel" name="labelPort">
     <property name="geometry">
      <rect>
-      <x>184</x>
+      <x>268</x>
       <y>14</y>
       <width>53</width>
       <height>16</height>
@@ -181,7 +181,7 @@
    <widget class="QLabel" name="labelPeriod_2">
     <property name="geometry">
      <rect>
-      <x>84</x>
+      <x>168</x>
       <y>34</y>
       <width>16</width>
       <height>16</height>
@@ -203,7 +203,7 @@
    <widget class="QLineEdit" name="_lineEditAddr3">
     <property name="geometry">
      <rect>
-      <x>18</x>
+      <x>102</x>
       <y>30</y>
       <width>31</width>
       <height>20</height>
@@ -219,7 +219,7 @@
    <widget class="QLineEdit" name="_lineEditPort">
     <property name="geometry">
      <rect>
-      <x>186</x>
+      <x>270</x>
       <y>30</y>
       <width>51</width>
       <height>20</height>
@@ -235,8 +235,8 @@
    <widget class="QLabel" name="_labelDisconnected">
     <property name="geometry">
      <rect>
-      <x>102</x>
-      <y>64</y>
+      <x>17</x>
+      <y>55</y>
       <width>91</width>
       <height>16</height>
      </rect>
@@ -287,7 +287,7 @@
    <property name="geometry">
     <rect>
      <x>8</x>
-     <y>104</y>
+     <y>90</y>
      <width>366</width>
      <height>159</height>
     </rect>
@@ -735,7 +735,7 @@
    <property name="geometry">
     <rect>
      <x>9</x>
-     <y>270</y>
+     <y>256</y>
      <width>365</width>
      <height>90</height>
     </rect>
@@ -749,8 +749,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>17</x>
-      <y>50</y>
+      <x>18</x>
+      <y>42</y>
       <width>55</width>
       <height>20</height>
      </rect>
@@ -768,8 +768,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>102</x>
-      <y>50</y>
+      <x>103</x>
+      <y>42</y>
       <width>55</width>
       <height>20</height>
      </rect>
@@ -787,8 +787,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>189</x>
-      <y>50</y>
+      <x>190</x>
+      <y>42</y>
       <width>55</width>
       <height>20</height>
      </rect>
@@ -806,8 +806,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>276</x>
-      <y>50</y>
+      <x>277</x>
+      <y>42</y>
       <width>55</width>
       <height>20</height>
      </rect>
@@ -870,6 +870,83 @@
     </property>
     <property name="readOnly">
      <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="_cbMonitorTpx">
+    <property name="geometry">
+     <rect>
+      <x>52</x>
+      <y>18</y>
+      <width>135</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Enable monitoring</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelBgOut">
+    <property name="geometry">
+     <rect>
+      <x>9</x>
+      <y>63</y>
+      <width>72</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>BG output</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelBgTemp">
+    <property name="geometry">
+     <rect>
+      <x>93</x>
+      <y>63</y>
+      <width>72</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>BG output</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelIbiasDac">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>63</y>
+      <width>72</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Ibias-DAC</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelIbiasDacCas">
+    <property name="geometry">
+     <rect>
+      <x>269</x>
+      <y>62</y>
+      <width>72</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Ibias-DAC-CAS</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>
