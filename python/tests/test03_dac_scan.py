@@ -12,8 +12,8 @@ Example:
 
   def _execute(self,**keywords):
     results=[]
-    def_step=8
-    meas_per_code=1
+    def_step=4
+    meas_per_code=16
     logging.info("DAC scan settings:")
     if 'step' in keywords:
       def_step=int(keywords['step'])
@@ -40,11 +40,11 @@ Example:
                        'IB_DIS1_OFF','IB_DIS2_ON','IB_DIS2_OFF',   'IB_PIXDAC',
                        'IB_TPBIN',   'IB_TPBOUT', 'VTP_COA',       'VTP_FINE',
                        'IB_CP_PLL','PLL_VCNTRL']
-    fsr=  [(0,0),    (0.3,0.4),(0.1,0.2),  (0.9,1.2),  (0.3,0.4),
-                     (0.9,1.2),(0.2,0.3),  (1.0,1.2),  (0.5,0.6),
+    fsr=  [(0,0),    (0.3,0.4),  (0.1,0.2),  (0.9,1.2),  (0.3,0.4),
+                     (0.9,1.2),  (0.2,0.3),  (1.0,1.2),  (0.5,0.6),
                      (0.15,0.25),(0.25,0.35),(0.1,0.2),  (0.35,0.45),   
-                     (0.3,0.4),(0.4,0.5),  (0.9,1.2),  (0.9,1.2),
-                     (0.4,0.5),(0,1.2)]
+                     (0.3,0.4),  (0.4,0.5),  (0.9,1.2),  (0.9,1.2),
+                     (0.4,0.5),  (0.0,1.25)]
     codes=[]
     tab=dict()
     retdict={}
@@ -76,7 +76,7 @@ Example:
         tab[dac_id][code]=val
       fs=y[-1]-y[0]
       mono="YES"
-      sigma=0.002
+      sigma=1.5/256
       for i in range(3,len(y)-3):
         if (y[i]>y[i-1]+sigma) and fs<0:
           mono="NO"

@@ -315,12 +315,12 @@ class TPX3:
   def get_adc(self,measurements=1):
     vv=[]
     ret=True
-    for i in range(measurements):
-      ret,val=self.ctrl.getAdc(self.id)
-      if not ret:
-        break
-      vv.append(float(val))
-    val=sum(vv)/len(vv)
+#    for i in range(measurements):
+    ret,val=self.ctrl.getAdc(self.id,measurements)
+#      if not ret:
+#        break
+#      vv.append(float(val))
+    val=float(val)/measurements
     val=1.5*val/4096
 #    self._log_ctrl_cmd("ADC measurement %.4f"%val,ret)
     return val
