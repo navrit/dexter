@@ -472,6 +472,12 @@ class TPX3:
 #c2.add_method('stopAutoTrigger',      'bool',       [])
 #    r=self.ctrl.openShutter(self.id,l)
     self._log_ctrl_cmd("Start shutter() ",r)
+
+  def t0Sync(self):
+    r=self.ctrl.t0Sync(self.id)
+    self._log_ctrl_cmd("t0Sync() ",r)
+    
+    
     
   def setSenseDac(self,code):
     r=self.ctrl.setSenseDac(self.id,code)

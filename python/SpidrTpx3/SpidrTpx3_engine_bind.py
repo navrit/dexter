@@ -65,6 +65,7 @@ c2.add_method('setHeaderFilter',     'bool',          [param('int', 'dev_nr'),pa
                                                                               param('int', 'cpu_mask')])
 
 #c2.add_method('flushFifoIn',       'bool',        [param('int', 'dev_nr')])
+c2.add_method('t0Sync',            'bool',        [param('int', 'dev_nr')])
 
 c2.add_method('resetPixelConfig',      None,        [])
 #c2.add_method('configPixel',           'bool',      [param('int', 'x'),param('int', 'y'),param('int', 'threshold'), param('int', 'testbit')])

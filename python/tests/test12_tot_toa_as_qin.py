@@ -26,8 +26,6 @@ def gauss(x, *p):
 class test12_tot_toa_as_qin(tpx3_test):
   """TOT and TOA scan vs Qin (diagonal)"""
 
-
-
   def _execute(self,**keywords):
     self.tpx.resetPixels()
     self.tpx.setDacsDflt()
@@ -72,7 +70,6 @@ class test12_tot_toa_as_qin(tpx3_test):
     amp_vols={}
 
     self.tpx.setDac(TPX3_VTHRESH_FINE,240)
-
     for amp in range(90,512,1):
 
       self.tpx.setDac(TPX3_VTP_FINE,amp)
@@ -151,5 +148,132 @@ class test12_tot_toa_as_qin(tpx3_test):
            for tot in totl:
              f.write(" %d "%tot )
            f.write("\n")
+            
+
+
+class test12_tot_toa_as_th(tpx3_test):
+  """TOT and TOA scan vs threshold (diagonal)"""
+
+  def _execute(self,**keywords):
+    self.tpx.resetPixels()
+    self.tpx.setDacsDflt()
+    self.tpx.setDac(TPX3_IBIAS_IKRUM,6)
+    self.tpx.setDac(TPX3_VTP_COARSE,50)
+    self.tpx.setDac(TPX3_VTHRESH_COARSE,7) 
+    self.tpx.setDac(TPX3_VFBK,143) 
+    self.tpx.setDac(TPX3_IBIAS_PREAMP_ON,150)
+    self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,100)
+
+    self.tpx.setGenConfig(TPX3_POLARITY_HPLUS | TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA | TPX3_TESTPULSE_ENA | TPX3_FASTLO_ENA)
+    self.tpx.getGenConfig()
+    self.tpx.setPllConfig(TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_16)
+    
+    self.tpx.setTpPeriodPhase(0xF,0)
+    self.tpx.setTpNumber(1)
+
+    self.mkdir(self.fname)
+
+
+    self.tpx.resetPixelConfig()
+    self.tpx.setPixelMask(ALL_PIXELS,ALL_PIXELS,1)
+    for col in range(0,256,32):
+       self.tpx.setPixelMask(col,col,0)
+       self.tpx.setPixelTestEna(col,col, testbit=True)
+    self.tpx.setPixelConfig()
+
+    self.tpx.setCtprBits(1)
+    self.tpx.setCtpr()
+
+
+
+
+    self.tpx.setShutterLen(100)
+
+    self.tpx.setDac(TPX3_VTP_FINE,124)
+    self.tpx.setSenseDac(TPX3_VTP_COARSE)
+    coarse=self.tpx.get_adc(64)
+    self.tpx.setSenseDac(TPX3_VTP_FINE)
+    fine=self.tpx.get_adc(64)
+    dv=1000.0*abs(fine-coarse)
+    electrons=20.0*dv
+    logging.info("Test pulse voltage %.4f mv (~ %.0f e-)"%(dv,electrons))
+
+    self.tpx.sequentialReadout()
+    self.tpx.flush_udp_fifo(0x71A0000000000000)
+
+    for ikrum in [1,2,4,8,16,32,64,100,128,255]:
+     result={}
+     self.tpx.setDac(TPX3_IBIAS_IKRUM,ikrum)
+     self.tpx.flush_udp_fifo(0x1234000000000000)
+
+     for threshold in range(0,250,1):
+      self.tpx.setDac(TPX3_VTHRESH_FINE,threshold)
+      tot=[]
+      toa=[]
+      print "ikrum %d threshold %d"%(ikrum,threshold)
+      for loop in range(100):
+        self.tpx.resetTimer()#reset timer
+#        self.tpx.send(0x40,0,0)#reset timer
+#        self.tpx.send(0x4A,0,0)#t0sync
+        self.tpx.t0Sync()
+        
+        self.tpx.openShutter()
+        time.sleep(0.001)
+        data=self.tpx.recv_mask(0x71A0000000000000,0xFFFF000000000000)
+        shutter=self.tpx.getShutterStart()
+        cnt=0
+#        logging.info("threshold %d packets:%d shutter: %d shutterM: %d "%(threshold,len(data),shutter,shutter&0x3FFF))
+        for pck in data:
+          if pck.type==0xA :
+            if not pck.col in result:
+              result[pck.col]={}
+            if not pck.row in result[pck.col]:
+              result[pck.col][pck.row]={}
+            if not threshold  in result[pck.col][pck.row]:
+              result[pck.col][pck.row][threshold]=[]
+
+            v=(pck.toa-(shutter&0x3FFF)) 
+            if v<0:v+=16384
+#            print "(%d,%d) %d"%(pck.col,pck.row,v)
+            v*=16
+            v-=float(pck.ftoa)
+            tot.append(pck.tot)
+            toa.append(v)
+            result[pck.col][pck.row][threshold].append( (v,pck.tot) )
+          elif pck.type!=0x7:
+            logging.warning("Unexpected packet %s"%str(pck))
+
+     for col in range(256):
+         row=col
+         print "(%d,%d)"%(col,row),
+         if col not in result:
+#           logging.error("No data for column %d"%col)
+           continue
+         if row not in result[col]:
+#           logging.error("No data for row %d in column %d"%(row,col))
+           continue
+         f=open(self.fname+"/%03d_%03d_ikrum%03d.dat"%(col,row,ikrum),"w")
+
+         for th in sorted(result[col][row]):
+           toal=[]
+           totl=[]
+           for toa,tot in result[col][row][th]:
+             toal.append(float(toa))
+             totl.append(float(tot))
+           tota=numpy.array(totl)
+           toaa=numpy.array(toal)
+           
+           f.write("%3d  %12.5e %12.5e %5d %5d %12.5e %12.5e %5d %5d "%(th,numpy.mean(toaa), numpy.std(toaa),numpy.min(toaa), numpy.max(toaa), numpy.mean(tota), numpy.std(tota), numpy.min(tota), numpy.max(tota) ) )
+
+           f.write("%3d \n"%len(result[col][row][th]) )
+
+#           f.write("toa:" )
+#           for toa in toal:
+#             f.write(" %d "%toa )
+
+#           f.write("tot:" )
+#           for tot in totl:
+#             f.write(" %d "%tot )
+#           f.write("\n")
             
 
