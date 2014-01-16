@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x13112700;
+const int VERSION_ID = 0x14011600;
+//const int VERSION_ID = 0x13112700;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor
@@ -503,9 +504,9 @@ bool SpidrController::setTpxPowerEna( bool enable )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setBiasAdjustEna( bool enable )
+bool SpidrController::setBiasSupplyEna( bool enable )
 {
-  return this->requestSetInt( CMD_BIAS_ADJUST_ENA, 0, (int) enable );
+  return this->requestSetInt( CMD_BIAS_SUPPLY_ENA, 0, (int) enable );
 }
 
 // ----------------------------------------------------------------------------
@@ -525,16 +526,9 @@ bool SpidrController::setBiasVoltage( int volts )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setLfsrDecoderEna( bool enable )
+bool SpidrController::setDecodersEna( bool enable )
 {
-  return this->requestSetInt( CMD_LFSR_DECODER_ENA, 0, (int) enable );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setGrayDecoderEna( bool enable )
-{
-  return this->requestSetInt( CMD_GRAY_DECODER_ENA, 0, (int) enable );
+  return this->requestSetInt( CMD_DECODERS_ENA, 0, (int) enable );
 }
 
 // ----------------------------------------------------------------------------
@@ -1035,18 +1029,24 @@ bool SpidrController::getAdc( int dev_nr, int *adc_val, int nr_of_samples )
 
 bool SpidrController::getRemoteTemp( int *mdegrees )
 {
-  int dummy = 0;
   *mdegrees = 0;
-  return this->requestGetInt( CMD_GET_REMOTETEMP, dummy, mdegrees );
+  return this->requestGetInt( CMD_GET_REMOTETEMP, 0, mdegrees );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getLocalTemp( int *mdegrees )
 {
-  int dummy = 0;
   *mdegrees = 0;
-  return this->requestGetInt( CMD_GET_LOCALTEMP, dummy, mdegrees );
+  return this->requestGetInt( CMD_GET_LOCALTEMP, 0, mdegrees );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getFpgaTemp( int *mdegrees )
+{
+  *mdegrees = 0;
+  return this->requestGetInt( CMD_GET_FPGATEMP, 0, mdegrees );
 }
 
 // ----------------------------------------------------------------------------
@@ -1093,6 +1093,22 @@ bool SpidrController::getVdda( int *mvolts )
       return true;
     }
   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getFanSpeed( int *rpm )
+{
+  *rpm = 0; // Indicates which fan speed to return (SPIDR or VC707)
+  return this->requestGetInt( CMD_GET_FANSPEED, 0, rpm );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getFanSpeedVC707( int *rpm )
+{
+  *rpm = 1; // Indicates which fan speed to return (SPIDR or VC707)
+  return this->requestGetInt( CMD_GET_FANSPEED, 0, rpm );
 }
 
 // ----------------------------------------------------------------------------

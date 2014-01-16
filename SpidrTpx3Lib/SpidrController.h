@@ -91,10 +91,9 @@ class MY_LIB_API SpidrController
   bool        setPwrPulseConfig( int  dev_nr, int  config );
   bool        setPwrPulseEna   ( bool enable );
   bool        setTpxPowerEna   ( bool enable );
-  bool        setBiasAdjustEna ( bool enable );
+  bool        setBiasSupplyEna ( bool enable );
   bool        setBiasVoltage   ( int  volts );
-  bool        setLfsrDecoderEna( bool enable );
-  bool        setGrayDecoderEna( bool enable );
+  bool        setDecodersEna   ( bool enable );
   std::string dacName          ( int  dac_code );
   int         dacMax           ( int  dac_code );
   bool        uploadPacket     ( int  dev_nr, unsigned char *packet, int size );
@@ -185,10 +184,13 @@ class MY_LIB_API SpidrController
 				 int  nr_of_samples = 1 );
   bool getRemoteTemp           ( int *mdegrees );
   bool getLocalTemp            ( int *mdegrees );
+  bool getFpgaTemp             ( int *mdegrees );
   bool getAvdd                 ( int *mvolts, int *mamps, int *mwatts );
   bool getDvdd                 ( int *mvolts, int *mamps, int *mwatts );
   bool getBiasVoltage          ( int *volts );
   bool getVdda                 ( int *mvolts );
+  bool getFanSpeed             ( int *rpm );
+  bool getFanSpeedVC707        ( int *rpm );
 
   // Other
  private:

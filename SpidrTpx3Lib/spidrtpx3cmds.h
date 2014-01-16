@@ -105,27 +105,31 @@
 #define CMD_SET_PWRPULSECONFIG 0x55C
 #define CMD_PWRPULSE_ENA       0x55D
 #define CMD_TPX_POWER_ENA      0x55E
-#define CMD_BIAS_ADJUST_ENA    0x55F
+#define CMD_BIAS_SUPPLY_ENA    0x55F
 #define CMD_SET_BIAS_ADJUST    0x560
-#define CMD_LFSR_DECODER_ENA   0x561
-#define CMD_GRAY_DECODER_ENA   0x562
+#define CMD_DECODERS_ENA       0x561
 
 // Configuration: timer (continued)
 #define CMD_T0_SYNC            0x563
 
+// Monitoring (continued)
+#define CMD_GET_FPGATEMP       0x568
+#define CMD_GET_FANSPEED       0x569
+#define CMD_SET_FANSPEED       0x56A
+
 // Configuration: non-volatile onboard storage
-#define CMD_STORE_ADDRPORTS    0x664
-#define CMD_STORE_DACS         0x665
-#define CMD_STORE_REGISTERS    0x666
-#define CMD_STORE_PIXCONF      0x667
-#define CMD_ERASE_ADDRPORTS    0x668
-#define CMD_ERASE_DACS         0x669
-#define CMD_ERASE_REGISTERS    0x66A
-#define CMD_ERASE_PIXCONF      0x66B
-#define CMD_VALID_ADDRPORTS    0x66C
-#define CMD_VALID_DACS         0x66D
-#define CMD_VALID_REGISTERS    0x66E
-#define CMD_VALID_PIXCONF      0x66F
+#define CMD_STORE_ADDRPORTS    0x670
+#define CMD_STORE_DACS         0x671
+#define CMD_STORE_REGISTERS    0x672
+#define CMD_STORE_PIXCONF      0x673
+#define CMD_ERASE_ADDRPORTS    0x674
+#define CMD_ERASE_DACS         0x675
+#define CMD_ERASE_REGISTERS    0x676
+#define CMD_ERASE_PIXCONF      0x677
+#define CMD_VALID_ADDRPORTS    0x678
+#define CMD_VALID_DACS         0x679
+#define CMD_VALID_REGISTERS    0x67A
+#define CMD_VALID_PIXCONF      0x67B
 
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
@@ -234,24 +238,37 @@ static const char *CMD_STR[] =
     "SET_PWRPULSECONF ", // 0x55C
     "PWRPULSE_ENA     ", // 0x55D
     "TPX_POWER_ENA    ", // 0x55E
-    "BIAS_ADJUST_ENA  ", // 0x55F
+    "BIAS_SUPPLY_ENA  ", // 0x55F
     "SET_BIAS_ADJUST  ", // 0x560
-    "LFSR_DECODER_ENA ", // 0x561
-    "GRAY_DECODER_ENA ", // 0x562
+    "DECODERS_ENA     ", // 0x561
+    "-----",             // 0x562
     "T0_SYNC          ", // 0x563
+    "-----",             // 0x564
+    "-----",             // 0x565
+    "-----",             // 0x566
+    "-----",             // 0x567
 
-    "STORE_ADDRPORTS  ", // 0x664
-    "STORE_DACS       ", // 0x665
-    "STORE_REGISTERS  ", // 0x666
-    "STORE_PIXCONF    ", // 0x667
-    "ERASE_ADDRPORTS  ", // 0x668
-    "ERASE_DACS       ", // 0x669
-    "ERASE_REGISTERS  ", // 0x66A
-    "ERASE_PIXCONF    ", // 0x66B
-    "VALID_ADDRPORTS  ", // 0x66C
-    "VALID_DACS       ", // 0x66D
-    "VALID_REGISTERS  ", // 0x66E
-    "VALID_PIXCONF    "  // 0x66F
+    "GET_FPGATEMP     ", // 0x568
+    "GET_FANSPEED     ", // 0x569
+    "SET_FANSPEED     ", // 0x56A
+    "-----",             // 0x56B
+    "-----",             // 0x56C
+    "-----",             // 0x56D
+    "-----",             // 0x56E
+    "-----",             // 0x56F
+
+    "STORE_ADDRPORTS  ", // 0x670
+    "STORE_DACS       ", // 0x671
+    "STORE_REGISTERS  ", // 0x672
+    "STORE_PIXCONF    ", // 0x673
+    "ERASE_ADDRPORTS  ", // 0x674
+    "ERASE_DACS       ", // 0x675
+    "ERASE_REGISTERS  ", // 0x676
+    "ERASE_PIXCONF    ", // 0x677
+    "VALID_ADDRPORTS  ", // 0x678
+    "VALID_DACS       ", // 0x679
+    "VALID_REGISTERS  ", // 0x67A
+    "VALID_PIXCONF    "  // 0x67B
   };
 
 // Reply bit: set in the reply message in the command identifier
