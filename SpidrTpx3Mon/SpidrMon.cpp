@@ -7,9 +7,10 @@
 #include "SpidrController.h"
 #include "tpx3defs.h"
 
-QString VERSION( "v2.0.0  12-Dec-2013" );
+QString VERSION( "v2.1.0  16-Jan-2014" );
 
-const int UPDATE_INTERVAL_MS = 750;
+//const int UPDATE_INTERVAL_MS = 750;
+const int UPDATE_INTERVAL_MS = 2000;
 
 // ----------------------------------------------------------------------------
 
@@ -35,9 +36,10 @@ SpidrMon::SpidrMon()
   _ipPortValidator = new QIntValidator( 1, 65535, this );
   _lineEditPort->setValidator( _ipPortValidator );
 
-  // Data update 'LED'
+  // Data update 'LED's
   _leUpdateSpidrLed->hide();
   _leUpdateTpxLed->hide();
+
   _labelDisconnected->hide();
 }
 
@@ -64,6 +66,7 @@ void SpidrMon::connectOrDisconnect()
 
       _lineEditRemoteTemp->setEnabled( false );
       _lineEditLocalTemp->setEnabled( false );
+      _lineEditFpgaTemp->setEnabled( false );
       _lineEditAvddMvolt->setEnabled( false );
       _lineEditAvddMamp->setEnabled( false );
       _lineEditAvddMwatt->setEnabled( false );
@@ -72,6 +75,8 @@ void SpidrMon::connectOrDisconnect()
       _lineEditDvddMwatt->setEnabled( false );
       _lineEditVdda->setEnabled( false );
       _lineEditBias->setEnabled( false );
+      _lineEditFanSpidr->setEnabled( false );
+      _lineEditFanVc707->setEnabled( false );
       _lineEditDac1->setEnabled( false );
       _lineEditDac2->setEnabled( false );
       _lineEditDac3->setEnabled( false );
@@ -94,6 +99,8 @@ void SpidrMon::connectOrDisconnect()
 	  return;
 	}
 
+      this->initDataDisplay();
+
       QApplication::setOverrideCursor( Qt::WaitCursor );
 
       _spidrController =
@@ -109,6 +116,7 @@ void SpidrMon::connectOrDisconnect()
 
 	  _lineEditRemoteTemp->setEnabled( true );
 	  _lineEditLocalTemp->setEnabled( true );
+	  _lineEditFpgaTemp->setEnabled( true );
 	  _lineEditAvddMvolt->setEnabled( true );
 	  _lineEditAvddMamp->setEnabled( true );
 	  _lineEditAvddMwatt->setEnabled( true );
@@ -117,6 +125,8 @@ void SpidrMon::connectOrDisconnect()
 	  _lineEditDvddMwatt->setEnabled( true );
 	  _lineEditVdda->setEnabled( true );
 	  _lineEditBias->setEnabled( true );
+	  _lineEditFanSpidr->setEnabled( true );
+	  _lineEditFanVc707->setEnabled( true );
 	  //_lineEditDac1->setEnabled( true );
 	  //_lineEditDac2->setEnabled( true );
 	  //_lineEditDac3->setEnabled( true );
@@ -127,6 +137,8 @@ void SpidrMon::connectOrDisconnect()
 	    // in preparation for the first ADC reading
 	    _spidrController->setSenseDac( 0, _dacCode );
 
+	  QTimerEvent te(1);
+	  this->timerEvent( &te );
 	  _timerId = this->startTimer( UPDATE_INTERVAL_MS );
 	}
       else
@@ -137,7 +149,6 @@ void SpidrMon::connectOrDisconnect()
 	  QMessageBox::warning( this, "Connecting to SPIDR-TPX3",
 				"Failed to connect!" );
 	}
-      this->initDataDisplay();
     }
 }
 
@@ -175,6 +186,16 @@ void SpidrMon::timerEvent(QTimerEvent *)
   else
     {
       _lineEditLocalTemp->setText( "--.---" );
+    }
+  if( _spidrController->getFpgaTemp( &mdegrees ) )
+    {
+      QString qs = QString("%1.%2").arg( mdegrees/1000 ).
+	arg( mdegrees%1000, 3, 10, QChar('0') );
+      _lineEditFpgaTemp->setText( qs );
+    }
+  else
+    {
+      _lineEditFpgaTemp->setText( "--.---" );
     }
 
   int mvolt, mamp, mwatt;
@@ -214,6 +235,16 @@ void SpidrMon::timerEvent(QTimerEvent *)
     _lineEditVdda->setText( QString::number( mvolt ) );
   else
     _lineEditVdda->setText( "----" );
+
+  int rpm;
+  if( _spidrController->getFanSpeed( &rpm ) )
+    _lineEditFanSpidr->setText( QString::number( rpm ) );
+  else
+    _lineEditFanSpidr->setText( "----" );
+  if( _spidrController->getFanSpeedVC707( &rpm ) )
+    _lineEditFanVc707->setText( QString::number( rpm ) );
+  else
+    _lineEditFanVc707->setText( "----" );
 
   if( _cbMonitorTpx->isChecked() )
     {
@@ -270,6 +301,7 @@ void SpidrMon::initDataDisplay()
 {
   _lineEditRemoteTemp->setText( "--.---" );
   _lineEditLocalTemp->setText( "--.---" );
+  _lineEditFpgaTemp->setText( "--.---" );
   _lineEditAvddMvolt->setText( "----" );
   _lineEditAvddMamp->setText( "----" );
   _lineEditAvddMwatt->setText( "----" );
@@ -278,6 +310,8 @@ void SpidrMon::initDataDisplay()
   _lineEditDvddMwatt->setText( "----" );
   _lineEditVdda->setText( "----" );
   _lineEditBias->setText( "----" );
+  _lineEditFanSpidr->setText( "----" );
+  _lineEditFanVc707->setText( "----" );
 }
 
 // ----------------------------------------------------------------------------
