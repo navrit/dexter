@@ -13,109 +13,131 @@ from wx.lib.embeddedimage import PyEmbeddedImage
 import os
 
 
+class WaferNumberValidator(wx.PyValidator):
+     def __init__(self):
+         wx.PyValidator.__init__(self)
+
+     def Clone(self):
+         return WaferNumberValidator()
+
+     def Validate(self, win):
+         textCtrl = self.GetWindow()
+         text = textCtrl.GetValue()
+
+         if len(text) == 0:
+             wx.MessageBox("Wafer number can not be empty!", "Error")
+             textCtrl.SetBackgroundColour("pink")
+             textCtrl.SetFocus()
+             textCtrl.Refresh()
+             return False
+
+         try:
+             numeric=int(text)
+         except:
+             wx.MessageBox("Wafer number should be an integer!", "Error")
+             textCtrl.SetBackgroundColour("pink")
+             textCtrl.SetFocus()
+             textCtrl.Refresh()
+             return False
+         #if everything went ok
+         textCtrl.SetBackgroundColour(
+           wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+         textCtrl.Refresh()
+         return True
+
+     def TransferToWindow(self):
+         return True # Prevent wxDialog from complaining.
 
 
-class NewWafer(wx.Panel):
-    def __init__(self, parent,data_map):
-        wx.Panel.__init__(self, parent, size=(320,320))
-        self.Bind(wx.EVT_PAINT, self.OnPaint)
-        self.data_map=data_map
-        self.x0=0
-        self.y0=0
-        self.refresh()
+     def TransferFromWindow(self):
+         return True # Prevent wxDialog from complaining.
 
-    def OnPaint(self, evt):
-        dc = wx.PaintDC(self)
-        PX,PY=self.GetSize() 
-        BX,BY=self.mod_bmp.GetSize()
+class WaferNameValidator(wx.PyValidator):
+     def __init__(self):
+         wx.PyValidator.__init__(self)
 
-        self.x0=(PX-BX)/2
-        self.y0=(PY-BY)/2
-        dc.DrawBitmap(self.mod_bmp, self.x0, self.y0, False)
-        # To erase previous rectangle
-        DX,DY=self.data_map.mod_bmp.GetSize()
+     def Clone(self):
+         return WaferNameValidator()
 
-        ls=BX
-        ps=BX/DX
-        if ps>=16: ls=ps
-        for i in range(0,BX+1,ls):
-            dc.DrawLine(self.x0+i,self.y0+0,self.x0+i,    self.y0+BY+1)
+     def Validate(self, win):
+         textCtrl = self.GetWindow()
+         text = textCtrl.GetValue()
 
-        ls=BY
-        ps=BY/DY
-        if ps>=16: ls=ps
+         if len(text) <7 :
+             wx.MessageBox("Wafer name should have at least 7 characters!", "Error")
+             textCtrl.SetBackgroundColour("pink")
+             textCtrl.SetFocus()
+             textCtrl.Refresh()
+             return False
+         else:
+           #if everything went ok
+           textCtrl.SetBackgroundColour(
+             wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW))
+           textCtrl.Refresh()
+           return True
 
-        for i in range(0,BY+1,ls):
-            dc.DrawLine(self.x0+0,self.y0+i,self.x0+BX+1,self.y0+i)
+     def TransferToWindow(self):
+         return True # Prevent wxDialog from complaining.
 
-        dc.EndDrawing()
 
-    def refresh(self):
-        X,Y=self.data_map.mod_bmp.GetSize()
-        N=max( (X,Y) )
+     def TransferFromWindow(self):
+         return True # Prevent wxDialog from complaining.
+
+
+class NewWafer(wx.Dialog):
+    def __init__(self, wafer_types,*args, **kw):
+#        super(NewWafer, self).__init__(*args, **kw) 
+        wx.Dialog.__init__(self, None,*args, **kw)
+
+        self.SetSize((250, 220))
+        self.SetTitle("Create new wafer")
+        self.wafer_types=wafer_types
+        self._InitUI()
+          
         
-        s=256/N
-        image = wx.ImageFromBitmap(self.data_map.mod_bmp )
-        image = image.Scale(X*s, Y*s, wx.IMAGE_QUALITY_NORMAL)
-        self.mod_bmp = wx.BitmapFromImage(image)
-        self.Refresh()
+    def _InitUI(self):
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        wname_box         = wx.StaticBox(self, wx.ID_ANY, "Wafer name")
+        wname_sizer       = wx.StaticBoxSizer(wname_box, wx.VERTICAL)
+        self.wname_info   = wx.TextCtrl(self,value="JOWLTH8G",validator=WaferNameValidator())
+        wafer_font = wx.Font(25, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL)
+        self.wname_info.SetFont(wafer_font)
+        wname_sizer.Add(self.wname_info, 1,  wx.GROW|wx.EXPAND, 1)
+
+        wnumber_box       = wx.StaticBox(self, wx.ID_ANY, "Wafer number")
+        wnumber_sizer     = wx.StaticBoxSizer(wnumber_box, wx.VERTICAL)
+        self.wnumber_info = wx.TextCtrl(self,value="000", validator=WaferNumberValidator())
+        wnumber_sizer.Add(self.wnumber_info, 1,  wx.GROW|wx.EXPAND, 1)
+        self.wnumber_info.SetFont(wafer_font)
+
+        wafertype_box       = wx.StaticBox(self, wx.ID_ANY, "Wafer type")
+        wafertype_sizer     = wx.StaticBoxSizer(wafertype_box, wx.VERTICAL)
+        self.wafertype      = wx.ComboBox(self, -1, value=self.wafer_types[0], choices=self.wafer_types, style=wx.CB_READONLY)
+        wafertype_sizer.Add(self.wafertype, 1,  wx.GROW|wx.EXPAND, 1)
+        self.wafertype.SetFont(wafer_font)
 
 
-class ModuloWindow(wx.Frame):
-    def __init__(self,data_map, size=(427,349)):
-       wx.Frame.__init__(self, None, wx.ID_ANY, 'Modulo viewer', size=size,style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
-       self.data_map=data_map
-
-       topsizer= wx.BoxSizer(wx.HORIZONTAL) # left controls, right image output
-       ctrlsizer= wx.BoxSizer(wx.VERTICAL)
- 
-       col_box = wx.StaticBox(self, -1, "Columns")
-       col_sizer = wx.StaticBoxSizer(col_box, wx.VERTICAL)
-       # This combobox is created with a preset list of values.
-       mod_list=["2","4","8","16","32","64","128"]
-       self.mod_col_combo = wx.ComboBox(self, 500, "4", (30, 50), 
-                         (70, -1), mod_list,
-                         wx.CB_DROPDOWN
-                         | wx.TE_PROCESS_ENTER
-                         | wx.CB_SORT
-                         )
-       self.mod_col_combo.Bind(wx.EVT_COMBOBOX, self.EvtModCol)
-       col_sizer.Add(self.mod_col_combo , 0, wx.ALL, 2)
-       ctrlsizer.Add(col_sizer)
-
-       row_box = wx.StaticBox(self, -1, "Rows")
-       row_sizer = wx.StaticBoxSizer(row_box, wx.VERTICAL)
-       self.mod_row_combo = wx.ComboBox(self, 500, "4", (90, 50), 
-                         (70, -1), mod_list,
-                         wx.CB_DROPDOWN
-                         | wx.TE_PROCESS_ENTER
-                         | wx.CB_SORT
-                         )
-       self.mod_row_combo.Bind(wx.EVT_COMBOBOX, self.EvtModRol)
-       row_sizer.Add(self.mod_row_combo , 0, wx.ALL, 2)
-       ctrlsizer.Add(row_sizer)
+        vbox.Add(wname_sizer, 1, wx.ALL|wx.GROW| wx.EXPAND, 2)
+        vbox.Add(wnumber_sizer, 1, wx.ALL|wx.GROW|wx.EXPAND, 2)
+        vbox.Add(wafertype_sizer, 0, wx.ALL|wx.GROW|wx.EXPAND, 2)
 
 
-       mod_box = wx.StaticBox(self, -1, "Modulo plot")
-       mod_sizer = wx.StaticBoxSizer(mod_box, wx.VERTICAL)
-       self.panel=ModPanel(self, data_map=self.data_map)
+        hbox2 = wx.BoxSizer(wx.HORIZONTAL)
+        okButton = wx.Button(self, wx.ID_OK, label='Ok')
+        cancelButton = wx.Button(self, wx.ID_CANCEL,label='Cancel')
+        hbox2.Add(okButton)
+        hbox2.Add(cancelButton, flag=wx.LEFT, border=5)
 
-       mod_sizer.Add(self.panel , 0, wx.ALL, 2)
-       
-       topsizer.Add(ctrlsizer, 0, wx.ALL, 2)
-       topsizer.Add(mod_sizer,0 ,  wx.ALL,2 )
-       self.SetSizer(topsizer)
-       topsizer.Layout()
-    def refresh(self):
-       self.panel.refresh()
-    def EvtModCol(self,event):
-#       cb = event.GetEventObject()
-       self.data_map.mod_cols=int( event.GetString())
-       self.data_map.process()
-       self.refresh()
-    def EvtModRol(self,event):
-#       cb = event.GetEventObject()
-       self.data_map.mod_rows=int( event.GetString())
-       self.data_map.process()
-       self.refresh()
+        vbox.Add(hbox2, flag=wx.ALIGN_CENTER|wx.TOP|wx.BOTTOM, border=10)
+
+        self.SetSizer(vbox)
+
+    def GetName(self):
+      return self.wname_info.GetValue()
+
+    def GetNumber(self):
+      return self.wnumber_info.GetValue()
+    def GetType(self):
+      return self.wafertype.GetValue()
 

@@ -15,15 +15,12 @@ import random
 import wx.lib.agw.buttonpanel as bp
 import icons
 from WaferMap import *
+from NewWafer import NewWafer
+import glob
 
 class OPException(Exception):
     pass
 
-
-
-#        print self.bmp.Width,self.bmp.Size
-           
-        
 ico = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlw"
     "SFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA"
@@ -32,14 +29,15 @@ ico = PyEmbeddedImage(
     "LK1DrQf+oBeofQVVt5Ax4lKpIIu/CWyF1CCifjgjEIWWkxzce96PK33U8up02QgKf0Fmmdhy"
     "0gFPdTrZvNYDy8kubLUE5tEumTU58NE5JDVfI9osXTfTOocAAAAASUVORK5CYII=")
 
+
 class WaferTester(wx.Frame):
-  def __init__(self,fname):
+  def __init__(self,fname=None):
      wx.Frame.__init__(self, None, wx.ID_ANY, "waferTESTER", size=(800,870))#,style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
 
-     self.map_panel=MapPanel(self, fname=fname)
+     self.map_panel=MapPanel(self)
 
      self.filehistory = wx.FileHistory(8)
-     self.config = wx.Config("openPIXEL", style=wx.CONFIG_USE_LOCAL_FILE)
+     self.config = wx.Config("waferprober", style=wx.CONFIG_USE_LOCAL_FILE)
      self.filehistory.Load(self.config)
 
 
@@ -52,7 +50,7 @@ class WaferTester(wx.Frame):
      self.button_handlers=dict()
 
      self.buttons=(
-          (icons.compfile.GetBitmap(),   wx.ID_OPEN,     'New wafer',      self.OnOpen,'Open file'       ,'Normal'),
+          (icons.compfile.GetBitmap(),   wx.ID_NEW,     'New wafer',      self.OnNewWafer,'New wafer'       ,'Normal'),
           (icons.settings.GetBitmap(),   wx.ID_OPEN,     'Settings',  self.OnSettings,'Settings'        ,'Normal'),
           (icons.start.GetBitmap(),   wx.ID_OPEN,        'Start',     self.OnStart,'Open file'       ,'Normal'),
           (None,   wx.ID_OPEN,       'Home',      self.OnStart,'Home'       ,'Normal'),
@@ -63,9 +61,8 @@ class WaferTester(wx.Frame):
           (icons.rightarrow.GetBitmap(),   wx.ID_OPEN,    'Step Right', self.OnStart,'Open file'       ,'Normal'),
           (icons.uparrow.GetBitmap(),   wx.ID_OPEN,    'Step Up', self.OnStart,'Open file'       ,'Normal'),
           (icons.downarrow.GetBitmap(),   wx.ID_OPEN,    'Step Down', self.OnStart,'Open file'       ,'Normal'),
-
-
         )
+
      for icon_png, wxid,short_help,handler, long_help,status  in self.buttons:
             if not icon_png:
               self.titleBar.AddSeparator()
@@ -89,20 +86,20 @@ class WaferTester(wx.Frame):
      
      wname_box         = wx.StaticBox(self, wx.ID_ANY, "Wafer name")
      wname_sizer       = wx.StaticBoxSizer(wname_box, wx.VERTICAL)
-     self.wname_info   = wx.TextCtrl(self,value="WFR123S")
+     self.wname_info   = wx.TextCtrl(self,value="-------",style=wx.TE_READONLY)
 
      wafer_font = wx.Font(20, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL)
      self.wname_info.SetFont(wafer_font)
 
 
 
-     wname_sizer.Add(self.wname_info, 1,  wx.GROW|wx.EXPAND, 1)
+     wname_sizer.Add(self.wname_info, 3,  wx.GROW|wx.EXPAND, 3)
      
 #     wafer_cnf_sizer.Add(wname_box, 1, wx.LEFT|wx.GROW| wx.EXPAND, 1)
      
      wnumber_box       = wx.StaticBox(self, wx.ID_ANY, "Wafer number")
      wnumber_sizer     = wx.StaticBoxSizer(wnumber_box, wx.VERTICAL)
-     self.wnumber_info = wx.TextCtrl(self,value="000")
+     self.wnumber_info = wx.TextCtrl(self,value="-",style=wx.TE_READONLY)
      wnumber_sizer.Add(self.wnumber_info, 1,  wx.GROW|wx.EXPAND, 1)
 
      self.wnumber_info.SetFont(wafer_font)
@@ -119,37 +116,30 @@ class WaferTester(wx.Frame):
 #     mainsizer.Add(self.titleBar, 0, wx.EXPAND, border=0)
      
      mainsizer.Add(wafer_cnf_sizer, 0,  wx.GROW|wx.EXPAND, 1)
-
 #     self.titleBar.AddControl(wafer_cnf_sizer,1,flag=wx.EXPAND)
-     
-
 #     self.titleBar.SetAlignment(bp.BP_ALIGN_RIGHT)
-
-
      mainsizer.Add(self.map_panel, 1,  wx.EXPAND, 1)
-
 #     mainsizer.Fit(self)
-
-        
      self.SetIcon(ico.GetIcon()) 
      
      menubar = wx.MenuBar()
-
      fileMenu = wx.Menu()
 
+     file_new=fileMenu.Append(wx.ID_NEW, '&New Wafer')
+     self.Bind(wx.EVT_MENU, self.OnNewWafer, file_new)
+
      file_open=fileMenu.Append(wx.ID_OPEN, '&Open')
-     file_save=fileMenu.Append(wx.ID_SAVE, '&Save plots')
 
      recent = wx.Menu()
      self.filehistory.UseMenu(recent)
      self.filehistory.AddFilesToMenu()
-     file_recent=fileMenu.AppendMenu(wx.ID_ANY, "&Recent Files",recent)
-     self.Bind(wx.EVT_MENU_RANGE, self.on_file_history, id=wx.ID_FILE1, id2=wx.ID_FILE9)
+     file_recent=fileMenu.AppendMenu(wx.ID_ANY, "&Recent Wafers",recent)
+     self.Bind(wx.EVT_MENU_RANGE, self.OnWaferHistory, id=wx.ID_FILE1, id2=wx.ID_FILE9)
      fileMenu.AppendSeparator()
      file_exit = fileMenu.Append(wx.ID_EXIT, '&Quit')
 
      self.Bind(wx.EVT_MENU, self.OnOpen, file_open)
-     self.Bind(wx.EVT_MENU, self.OnFileSaveAs, file_save)
+#     self.Bind(wx.EVT_MENU, self.OnFileSaveAs, file_save)
      self.Bind(wx.EVT_MENU, self.OnQuit, file_exit)
      menubar.Append(fileMenu, '&File')
      self.SetMenuBar(menubar)
@@ -158,26 +148,18 @@ class WaferTester(wx.Frame):
      view_zoom_fit=viewMenu.Append(wx.ID_ZOOM_FIT, 'Zoom &fit')
      view_zoom_in=viewMenu.Append(wx.ID_ZOOM_IN, 'Zoom &in')
      view_zoom_out=viewMenu.Append(wx.ID_ZOOM_IN, 'Zoom &out')
-     viewMenu.AppendSeparator()
-     self.Bind(wx.EVT_MENU, self.OnZoomFit, view_zoom_fit)
-     self.Bind(wx.EVT_MENU, self.OnZoomIn, view_zoom_in)
-     self.Bind(wx.EVT_MENU, self.OnZoomOut, view_zoom_out)
-
-     self.savr = viewMenu.Append(wx.ID_ANY, 'Show averages', 
-            'Show Averages', kind=wx.ITEM_CHECK)
-     self.Bind(wx.EVT_MENU, self.ToggleShowAvr, self.savr)
+     self.savr = viewMenu.Append(wx.ID_ANY, 'Show averages', 'Show Averages', kind=wx.ITEM_CHECK)
+#     self.Bind(wx.EVT_MENU, self.ToggleShowAvr, self.savr)
      viewMenu.Check(self.savr.GetId(), True)
-
 
 #     show_mod_win=viewMenu.Append(wx.ID_ZOOM_IN, 'Show &modulo window')
 #     self.Bind(wx.EVT_MENU, self.OnZoomFit, view_zoom_fit)
 
 
-     self.smodwin = viewMenu.Append(wx.ID_ANY, 'Show modulo window', 
-            'Show Modulo window', kind=wx.ITEM_CHECK)
-     self.Bind(wx.EVT_MENU, self.ToggleModWin, self.smodwin)
-     viewMenu.Check(self.smodwin.GetId(), False)
-
+#     self.smodwin = viewMenu.Append(wx.ID_ANY, 'Show modulo window', 
+#            'Show Modulo window', kind=wx.ITEM_CHECK)
+#     self.Bind(wx.EVT_MENU, self.ToggleModWin, self.smodwin)
+#     viewMenu.Check(self.smodwin.GetId(), False)
 
      menubar.Append(viewMenu, '&View')
      
@@ -186,30 +168,21 @@ class WaferTester(wx.Frame):
      self.Bind(wx.EVT_MENU, self.OnHelpAbout, file_about)
      menubar.Append(helpMenu, '&Help')
 
-
-     
      if fname:
-       self.open(fname)
+       self.OpenWafer(fname)
 
 
-     self.Thaw()
-
-     self.SetSizer(mainsizer)
      mainsizer.Layout()
-     
-#     self.SetMinSize(self.GetSize())
-     self.Show(True)
+     self.SetSizer(mainsizer)
+
      self.Refresh()
-
      self.SetMinSize(self.GetEffectiveMinSize())
+     self._wafer_dir="./wafers"
+     self.Update()
+     self.Refresh()
+     self.Show(True)
+     wx.Yield()
 
-
-     
-#  def _onSize(self, event):
-#        event.Skip()
-#        self.map_panel.SetSize(self.GetClientSizeTuple())
-#        print ">>",self.GetClientSizeTuple()
-#        self.map_panel.Update()
   def OnSettings(self,e):
     pass
     
@@ -217,79 +190,83 @@ class WaferTester(wx.Frame):
     if not self.map_panel.stepNext():
       self.timer.Stop()
 
+  def OpenWafer(self,fname):
+    self.map_panel.load(fname)
+    self.Refresh()
+    self.filehistory.AddFileToHistory(fname)
+    self.filehistory.Save(self.config)
+    self.config.Flush()
 
   def OnStart(self,e):
-
     TIMER_ID = 100  # pick a number
     self.timer = wx.Timer(self, TIMER_ID)  # message will be sent to the panel
     self.timer.Start(500)  # x100 milliseconds
     wx.EVT_TIMER(self, TIMER_ID, self.on_timer)  # call the on_timer function
     self.map_panel.goFirst()
-  def ToggleModWin(self,e):
-    if self.smodwin.IsChecked():
-        self.mw.Show()
-    else:
-        self.mw.Hide()
           
-  def ToggleShowAvr(self,e):
-        self.map_panel.set_show_avr(self.savr.IsChecked())
-  
-  def OnZoomFit(self, e):
-    pass
-  def OnZoomIn(self, e):
-    pass
-  def OnZoomOut(self, e):
-    pass
     
-  def on_file_history(self, event):
+  def OnWaferHistory(self, event):
         fileNum = event.GetId() - wx.ID_FILE1
         path = self.filehistory.GetHistoryFile(fileNum)
         self.filehistory.AddFileToHistory(path)
-        self.open(path)
+        self.OpenWafer(path)
         
-  def open(self,fn):
-    print "Open ",fn
     
-    self.filehistory.AddFileToHistory(fn)
-    self.filehistory.Save(self.config)
-    self.config.Flush()
+  def mkdir(self,d):
+    if not os.path.exists(d):
+      os.makedirs(d)  
+#      logging.info("Creating directory '%s'"%d)
+
+  def OnNewWafer(self,e):
+     from glob import glob
+     import shutil
+     templates=[]
+     for fn in glob("templates/*.xml"):
+       die=os.path.splitext(os.path.basename(fn))[0]
+       templates.append(die)
+     dlg=NewWafer(wafer_types=templates)
+     if dlg.ShowModal()== wx.ID_OK:
+       wname     = "%03d_%s"%(int(dlg.GetNumber()),dlg.GetName())
+       wafer_dir = os.path.join(self._wafer_dir,wname)
+       self.mkdir(wafer_dir)
+       wafer_file=os.path.join(wafer_dir,wname+'.xml')
+       tname="templates/%s.xml"%dlg.GetType()
+       shutil.copyfile(tname,wafer_file)
+       self.OpenWafer(wafer_file)
+     dlg.Destroy()
 
 
   def OnOpen(self, e):
+#        """ File|Open event - Open dialog box. """
+#        dirName=self._wafer_dir
+#        dlg = wx.DirDialog(self, "Open Wafer", dirName, style= wx.OPEN)
+#        if (dlg.ShowModal() == wx.ID_OK):
+#            dirName = dlg.GetPath()
+#            print dirName
+#            self.OpenWafer(dirName)
+#        dlg.Destroy()
+        
         """ File|Open event - Open dialog box. """
-        dirName=''
+        dirName=self._wafer_dir
         fileName=''
         dlg = wx.FileDialog(self, "Open", dirName, fileName,
-                           "Dat Files (*.dat)|*.dat|Text Files (*.txt)|*.txt|All Files|*.*", wx.OPEN)
+                           "Wafer Description (*.xml)|*.xml|All Files|*.*", wx.OPEN)
         if (dlg.ShowModal() == wx.ID_OK):
             fileName = dlg.GetFilename()
             dirName = dlg.GetDirectory()
             fn=os.path.join(dirName, fileName)
-            self.open(str(fn))
-            self.SetStatusText("Opened file: " + fn)
+            self.OpenWafer(str(fn))
         dlg.Destroy()
+
+
+
   def OnHelpAbout(self, e):
         """ Help|About event """
         title = self.GetTitle()
         d = wx.MessageDialog(self, "waferTESTER v0.1\nAuthor: Szymon Kulis\n2014 CERN","About" , wx.ICON_INFORMATION | wx.OK)
         d.ShowModal()
         d.Destroy()
-  def OnFileSaveAs(self, e):
-        """ File|SaveAs event - Prompt for File Name. """
-        ret = False
-        dirName='.'
-        fileName='plots'
-        dlg = wx.FileDialog(self, "Save As", dirName, fileName,
-                           "PNG Files (*.png)|*.png|All Files|*.*", wx.SAVE)
-        if (dlg.ShowModal() == wx.ID_OK):
-            fileName = dlg.GetFilename()
-            dirName = dlg.GetDirectory()
-            if fileName[-4:].lower()!='.png':
-              fileName+='.png'
-            self.map_panel.save(dirName+"/"+fileName)
-            ret = True
-        dlg.Destroy()
-        return ret
+
   def OnQuit(self, e):
         self.Close()
 
@@ -298,38 +275,13 @@ class WaferTester(wx.Frame):
      self.data_map.change_cm(event.GetString())
      self.refresh()
      
-  def update_pixinfo(self,msg):
-     self.pix_info.SetValue(msg)
-
-  def update_stats(self,msg):
-
-     self.stats_info.SetValue(msg)
-
-
 
   def refresh(self):
         self.map_panel.refresh()
         self.hist_panel.refresh()
         self.mw.refresh()
-  def OnMaxSpin(self, event):
-        if self.spin_max.GetValue()<=self.spin_min.GetValue():
-          self.spin_max.SetValue(self.spin_min.GetValue())
-        self.data_map.set_max(self.spin_max.GetValue())
-        self.refresh()
-  def OnMinSpin(self, event):
-        if self.spin_min.GetValue()>=self.spin_max.GetValue():
-          self.spin_min.SetValue(self.spin_max.GetValue())
-        self.data_map.set_min(self.spin_min.GetValue())
-        self.refresh()
 
 
-  def OnChar(self, evt):
-        keycode =evt.GetKeyCode()
-        print "GRID!"
-        if keycode==ord('g'):
-          self.grid=~self.grid
-          self.refresh()
- 
 
 
 

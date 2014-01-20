@@ -58,18 +58,19 @@ class MapPanel(wx.Panel):
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.grid=0
         self.dies=[]
-        self.load(fname)
         self.diameter=100.0
-#        self.Refresh()
         self.Bind(wx.EVT_SIZE, self.OnSize)
-
         self.Bind(wx.EVT_RIGHT_DOWN, self.onContext)
         self.chuck_pos=(-90,-90)
-        self.scale=0
+        self.scale=1.0
         self.x0=0
         self.y0=0
         self.rclic_die=None
         self.dieno=0
+        self.notch={'angle':0.0,  'len':5.0}
+        if fname:
+          self.load(fname)
+
     def goToDieNo(self,no):
           d=self.dies[self.dieno]
           x,y=(d['x']+d['w']/4,d['y']+d['h']*3/4)
@@ -159,13 +160,14 @@ class MapPanel(wx.Panel):
         self.Refresh()
         
     def load(self,fname):
+      print "->load",fname
       xmldoc = minidom.parse(fname)
       waferlist = xmldoc.getElementsByTagName('wafer') 
       if len(waferlist)!=1:
         print "No wafer defined."
         return
       if 'diameter' in waferlist[0].attributes.keys():
-        self.diameter=waferlist[0].attributes['diameter']
+        self.diameter=float(waferlist[0].attributes['diameter'].value)
       else:
         print "No diameter defined!"
         return
@@ -194,7 +196,6 @@ class MapPanel(wx.Panel):
         return
       self.notch={'angle':float(notchlist[0].attributes['angle'].value),
                   'len':float(notchlist[0].attributes['length'].value)}
-      print self.notch
     
     def die2screen(self,pos):
         x,y=pos
@@ -219,7 +220,9 @@ class MapPanel(wx.Panel):
         dc.BeginDrawing()
         self.x0=MX/2
         self.y0=MY/2
-        self.scale=0.95*min ( (MX,MY) )/2.0/self.diameter
+
+        self.scale=0.95*min ( (MX,MY) )/self.diameter
+        print MX,MY,self.diameter, self.scale
 
 #        print MX,MY,x0,y0
 #        print (x0,y0,self.diameter*SCALE)
@@ -231,13 +234,13 @@ class MapPanel(wx.Panel):
                         wx.Colour(200,200,220), wx.Colour(240,240,240) ) )
         def drawCircle( x, y, r ):
             gc.DrawEllipse( x - r, y - r, r * 2, r * 2 )
-        drawCircle (self.x0,self.y0,self.diameter*self.scale)
+        drawCircle (self.x0,self.y0,self.diameter/2.0*self.scale)
 
         dc.SetBrush( wx.Brush(wx.Colour(230,230,230),wx.TRANSPARENT) )
 
 
-        dc.DrawCircle (self.x0,self.y0,self.diameter*self.scale)
-        dc.DrawCircle (self.x0,self.y0,self.diameter*self.scale*0.995)
+        dc.DrawCircle (self.x0,self.y0,self.diameter/2*self.scale)
+        dc.DrawCircle (self.x0,self.y0,self.diameter/2*self.scale*0.995)
 
         wbrush = {'?':wx.Brush(wx.Colour(220,220,220))}
         
@@ -297,14 +300,14 @@ class MapPanel(wx.Panel):
         dc.SetPen(wpen)
 
         x0=0.0
-        y0=-(self.diameter-self.notch['len'])
+        y0=-(self.diameter/2-self.notch['len'])
         a=self.notch['angle']/180*3.1415
         x1_=-self.notch['len']/2
-        y1_=-(self.diameter)
+        y1_=-(self.diameter/2)
         x0,y0=self.die2screen((x0,y0))
         x1,y1=self.die2screen((x1_,y1_))
         x2_=self.notch['len']/2
-        y2_=-(self.diameter)
+        y2_=-(self.diameter/2)
         x2,y2=self.die2screen((x2_,y2_))
 
         dc.DrawLine(x0,y0,x1,y1)

@@ -6,7 +6,12 @@ def main():
     import sys,os
     app = wx.App( redirect=False )
 
-    frame = WaferTester(fname="timepix3.xml")
+    fname=None
+    if len(sys.argv)>1:
+      fname=sys.argv[1]
+      
+    
+    frame = WaferTester(fname=fname)
     if 0:
         from wx.lib.inspection import InspectionTool
         inspTool = InspectionTool()
