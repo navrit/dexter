@@ -30,10 +30,11 @@ class test06_config_matrix(tpx3_test):
       print "sleep"
       time.sleep(50)
       print "read"
+
+    self.tpx.setShutterLen(1)
+    self.tpx.openShutter()
     self.tpx.sequentialReadout(tokens=1)
-
     valid_pixels=0
-
     data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
     valid=numpy.zeros((256,256))
     for d in data:

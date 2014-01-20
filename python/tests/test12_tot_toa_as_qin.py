@@ -192,7 +192,7 @@ class test12_tot_toa_as_th(tpx3_test):
     self.tpx.sequentialReadout()
     self.tpx.flush_udp_fifo(0x71A0000000000000)
 
-    for amp in [112,124,135]:
+    for amp in [112,124]:
       self.tpx.setDac(TPX3_VTP_FINE,amp)
       self.tpx.setSenseDac(TPX3_VTP_COARSE)
       coarse=self.tpx.get_adc(64)
@@ -202,7 +202,7 @@ class test12_tot_toa_as_th(tpx3_test):
       electrons=20.0*dv
       logging.info("Test pulse voltage %d LSB %.4f mv (~ %.0f e-) "%(amp,dv,electrons))
 
-      for ikrum in [1,2,4,8,16,32,64,96,128,160,192,255]:
+      for ikrum in range(1,65):#[1,2,4,8,16,32,64,96,128,160,192,255]:
         result={}
         self.tpx.setDac(TPX3_IBIAS_IKRUM,ikrum)
         self.tpx.flush_udp_fifo(0x1234000000000000)
@@ -213,6 +213,8 @@ class test12_tot_toa_as_th(tpx3_test):
          toa=[]
          print "ikrum %d threshold %d"%(ikrum,threshold)
          for loop in range(100):
+           self.tpx.setTpPeriodPhase(10+loop,0)
+
            self.tpx.resetTimer()#reset timer
 #        self.tpx.send(0x40,0,0)#reset timer
 #        self.tpx.send(0x4A,0,0)#t0sync
