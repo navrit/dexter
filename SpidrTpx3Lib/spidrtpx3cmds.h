@@ -108,9 +108,10 @@
 #define CMD_BIAS_SUPPLY_ENA    0x55F
 #define CMD_SET_BIAS_ADJUST    0x560
 #define CMD_DECODERS_ENA       0x561
+#define CMD_SET_OUTPUTMASK     0x562
 
 // Configuration: timer (continued)
-#define CMD_T0_SYNC            0x563
+#define CMD_T0_SYNC            0x565
 
 // Monitoring (continued)
 #define CMD_GET_FPGATEMP       0x568
@@ -241,10 +242,10 @@ static const char *CMD_STR[] =
     "BIAS_SUPPLY_ENA  ", // 0x55F
     "SET_BIAS_ADJUST  ", // 0x560
     "DECODERS_ENA     ", // 0x561
-    "-----",             // 0x562
-    "T0_SYNC          ", // 0x563
+    "SET_OUTPUTMASK   ", // 0x562
+    "-----",             // 0x563
     "-----",             // 0x564
-    "-----",             // 0x565
+    "T0_SYNC          ", // 0x565
     "-----",             // 0x566
     "-----",             // 0x567
 

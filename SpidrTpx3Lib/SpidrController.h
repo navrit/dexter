@@ -85,6 +85,7 @@ class MY_LIB_API SpidrController
   bool        setPllConfig     ( int  dev_nr, int  config );
   bool        getOutBlockConfig( int  dev_nr, int *config );
   bool        setOutBlockConfig( int  dev_nr, int  config );
+  bool        setOutputMask    ( int  dev_nr, int  mask );
   bool        getSlvsConfig    ( int  dev_nr, int *config );
   bool        setSlvsConfig    ( int  dev_nr, int  config );
   bool        getPwrPulseConfig( int  dev_nr, int *config );

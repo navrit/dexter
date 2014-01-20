@@ -462,6 +462,13 @@ bool SpidrController::setOutBlockConfig( int dev_nr, int config )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::setOutputMask( int dev_nr, int mask )
+{
+  return this->requestSetInt( CMD_SET_OUTPUTMASK, dev_nr, mask );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::getSlvsConfig( int dev_nr, int *config )
 {
   return this->requestGetInt( CMD_GET_SLVSCONFIG, dev_nr, config );
