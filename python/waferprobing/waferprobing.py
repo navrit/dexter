@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import wx
-from viewer import WaferTester
+from WaferTester import WaferTester
 
 def main():
     import sys,os
