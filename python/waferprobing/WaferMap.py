@@ -14,6 +14,11 @@ import os
 import random
 import wx.lib.agw.buttonpanel as bp
 import icons
+import xml.etree.cElementTree as ET
+import time
+import ast
+from xml.dom import minidom
+
 
 class ProbeStation:
     def __init__(self,address=22):
@@ -50,8 +55,18 @@ class WaferMap(object):
       self.N=X
       self.process()
 
-from xml.dom import minidom
 
+class LogViewer(wx.Dialog):
+    def __init__(self, parent, fname):
+        wx.Dialog.__init__(self, parent, title=fname, size=(400,500),style=wx.DEFAULT_DIALOG_STYLE|wx.OK|wx.RESIZE_BORDER)
+        self.txt = wx.TextCtrl(self, style=wx.TE_MULTILINE|wx.TE_READONLY)
+        f=open(fname,'r')
+        self.txt.SetValue(f.read())
+        f.close()
+        self.SetMinSize( (300,100))
+        self.Show(True)
+        
+        
 class MapPanel(wx.Panel):
     def __init__(self, parent,fname=None):
         wx.Panel.__init__(self, parent, size=(512,512),style= wx.NO_BORDER)
@@ -68,36 +83,18 @@ class MapPanel(wx.Panel):
         self.rclic_die=None
         self.dieno=0
         self.notch={'angle':0.0,  'len':5.0}
+        self.name=None
+        self.number=None
         if fname:
           self.load(fname)
 
-    def goToDieNo(self,no):
-          d=self.dies[self.dieno]
+    def goToDieNo(self,dieno):
+          d=self.dies[dieno]
           x,y=(d['x']+d['w']/4,d['y']+d['h']*3/4)
           self.chuck_pos=(x,y)
-    
-    def goFirst(self):
-        self.dieno=0
+          self.Refresh()
 
-        self.goToDieNo(self.dieno)
-        statuses=['A','B','C','D','E','F']
-        self.dies[self.dieno]["status"]=statuses[random.randint(0,len(statuses)-1)]
-        self.Refresh()
-        
-    def stepNext(self):
-        while self.dieno<len(self.dies):
-          self.dieno+=1
-          if self.dieno<len(self.dies):
-            die=self.dies[self.dieno]
-            statuses=['A','B','C','D','E','F']
-            self.Refresh()
-            if 'skip' in die and die['skip']: continue
-            self.goToDieNo(self.dieno)
-            die["status"]=statuses[random.randint(0,len(statuses)-1)]
-            return True
-          else:
-            return False
-     
+
          
     def onContext( self, event ):
         """
@@ -106,61 +103,169 @@ class MapPanel(wx.Panel):
         x,y= event.GetPosition()
         x=(x-self.x0)/self.scale
         y=(y-self.y0)/self.scale
-        print x,y
+#        print x,y
         die=None
         for d in self.dies:
           if x>d['x'] and x<d['x']+d['w'] and \
              y>d['y'] and y<d['y']+d['h']:
              die=d
-             print die
+#             print die
         # only do this part the first time so the events are only bound once 
-        if not hasattr(self, "popupID1"):
+        if not hasattr(self, "popup_name"):
             self.popup_name = wx.NewId()
             self.popup_goto = wx.NewId()
             self.popup_test = wx.NewId()
             self.popup_skip = wx.NewId()
+            self.Bind(wx.EVT_MENU, self.OnGoTo, id=self.popup_goto)
+            self.Bind(wx.EVT_MENU, self.OnSkipDie, id=self.popup_skip)
+            self.Bind(wx.EVT_MENU, self.OnTestDie, id=self.popup_test)
+
+
             self.popup_logs = wx.NewId()
+            self.popup_logs_entries=[]
+            for i in range(32):
+              self.popup_logs_entries.append(wx.NewId())
+              self.Bind(wx.EVT_MENU, self.OnLogEntry, id=self.popup_logs_entries[-1])
             
-            self.Bind(wx.EVT_MENU, self.RclicGoTo, id=self.popup_goto)
-            self.Bind(wx.EVT_MENU, self.SkipDie, id=self.popup_skip)
 #            self.Bind(wx.EVT_MENU, self.onExit, id=self.itemThreeId)
 
         if die!=None:
           # build the menu
           menu = wx.Menu()
-          print die['name']
           self.rclic_die=die
           itemOne = menu.Append(self.popup_name, die['name'])
           menu.Enable(self.popup_name, 0) 
           menu.AppendSeparator()
-          itemTwo = menu.Append(self.popup_goto, "go to")
-          itemTwo = menu.Append(self.popup_skip, "skip")
+          menu.Append(self.popup_goto, "go to")
+          if die['skip']:
+            menu.Append(self.popup_skip, "Don't skip")
+          else:
+            menu.Append(self.popup_skip, "skip")
+
           itemThree = menu.Append(self.popup_test, "test")
 
           logs_menu = wx.Menu()
-          logs_menu.Append(wx.ID_ANY, '1) 2014/01/22 23:22')
-          logs_menu.Append(wx.ID_ANY, '2) 2014/01/23 13:22')
-          logs_menu.Append(wx.ID_ANY, '1) 2014/01/24 23:22')
+          if 'tests' in die:
+            for i,test in enumerate(die['tests']):
+              logs_menu.Append(self.popup_logs_entries[i], '%d) %s Result:%s'%(test['id'],test['date'],test['result'] ))
+              
           menu.AppendMenu(self.popup_logs, '&Logs', logs_menu)
 #          menu.Enable(self.popup_logs, 0) 
           
           # show the popup menu
           self.PopupMenu(menu)
           menu.Destroy()
-    def SkipDie(self,event):
-        self.rclic_die['skip']=True
-        self.Refresh()
 
-    
-    def RclicGoTo(self,event):
-        print self.rclic_die
-        self.chuck_pos= (self.rclic_die['x']+self.rclic_die['w']/2,self.rclic_die['y']+self.rclic_die['h']/2)
-        self.Refresh()
-    def OnSize(self, event):
+    def _get_die_by_name(self,die_name):
+        for die in self.dies:
+          if die['name']==die_name:
+             return die
+        return None
+
+    def _get_die_id_by_name(self,die_name):
+        for i,die in enumerate(self.dies):
+          if die['name']==die_name:
+             return i
+        return None
+
+    def _test_die(self,die_name):
+        print "-> test",die_name
+        did=self._get_die_id_by_name(die_name)
+        self.goToDieNo(did)
+        
+        die=self._get_die_by_name(die_name)
+        if not 'tests' in die:
+          die['tests']=[]
+        max_test=-1
+        for test in die['tests']:
+          max_test= max ( (max_test,test['id']) )
+        test_id=max_test+1
+        test_fname="logs/dddd"
+        dir_name=os.path.dirname(self.fname)
+        dir_name=os.path.join(dir_name,die['name'])
+        if not os.path.exists(dir_name):
+          os.makedirs(dir_name)
+        test_result='A'
+        
+        statuses=['A','B','C','D','E','F']
+        test_result=statuses[random.randint(0,len(statuses)-1)]
+        die["status"]=test_result
+
+        test_date=time.strftime('%Y/%m/%d %H:%M:%S')
+        test_date_fname=time.strftime('%Y%m%d_%H%M%S')
+
+        test_fname=os.path.join(dir_name,"%s_%03d_%s.txt"%(die['name'],test_id,test_date_fname))
+        
+        f=open(test_fname,"w")
+        f.write("DIE   : %s\n"%die['name'])
+        f.write("DATE  : %s\n"%test_date)
+        f.write("RESULT: %s\n"%test_result)
+        f.write("\n\nDetails:\n")
+        for i in range(256):
+          f.write(" result %d\n"%i)
+        f.close()
+        
+        die['tests'].append( {'id':test_id, 'fname':test_fname, 'date':test_date,'result': test_result})
+#        dlg=LogViewer(None,test_fname)
+#        dlg.ShowModal()
+#        dlg.Destroy()
+        self.save()
         self.Refresh()
         
+    def OnTestDie(self,event):
+        self._test_die(self.rclic_die['name'])
+
+    def OnSkipDie(self,event):
+        self.rclic_die['skip']=not self.rclic_die['skip']
+        self.save()
+        self.Refresh()
+
+    def OnLogEntry(self, event):
+        log_id = self.popup_logs_entries.index(event.GetId())
+#        print self.rclic_die['tests'][log_id]
+        fname=self.rclic_die['tests'][log_id]['fname']
+        dlg=LogViewer(None,fname)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+#        path = self.filehistory.GetHistoryFile(fileNum)
+#        self.filehistory.AddFileToHistory(path)
+#        self.OpenWafer(path)
+#        print log_id
+        
+    def SetName(self,name):
+        self.name=name
+
+    def SetNumber(self,number):
+        self.number=number
+
+
+    def OnGoTo(self,event):
+        did=self._get_die_id_by_name(self.rclic_die['name'])
+        self.goToDieNo(did)
+
+    def OnSize(self, event):
+        self.Refresh()
+
+    def save(self):
+      root = ET.Element("wafer")
+      root.set("diameter", "%.3f"%self.diameter)
+
+      for die in self.dies:
+        d = ET.SubElement(root, "die")
+        for k in die.keys():
+          d.set(k, str(die[k]))
+      if self.notch:
+        d = ET.SubElement(root, "notch")
+        for k in self.notch:
+          d.set(k, str(self.notch[k]))
+
+      tree = ET.ElementTree(root)
+      tree.write(self.fname)
+
     def load(self,fname):
       print "->load",fname
+      self.fname=fname
       xmldoc = minidom.parse(fname)
       waferlist = xmldoc.getElementsByTagName('wafer') 
       if len(waferlist)!=1:
@@ -171,6 +276,14 @@ class MapPanel(wx.Panel):
       else:
         print "No diameter defined!"
         return
+
+      notchlist = xmldoc.getElementsByTagName('notch') 
+      if len(notchlist)!=1:
+        print "No notch found."
+        return
+      self.notch={'angle':float(notchlist[0].attributes['angle'].value),
+                  'length':float(notchlist[0].attributes['length'].value)}
+
 
       dielist = xmldoc.getElementsByTagName('die') 
       if len(dielist)<1:
@@ -183,26 +296,71 @@ class MapPanel(wx.Panel):
              'x':float(s.attributes['x'].value),
              'y':float(s.attributes['y'].value),
              'w':float(s.attributes['w'].value),
-             'h':float(s.attributes['h'].value),
-             'status':'?'#statuses[random.randint(0,len(statuses)-1)
+             'h':float(s.attributes['h'].value)
              }
-#        print die
+        if 'status' in s.attributes.keys():
+           die['status']=s.attributes['status'].value
+        else:
+           die['status']='?'
+        def str2bool(s):
+          if s.lower() in ['true', '1', 't', 'y', 'yes']:
+            return True
+          return False
+        if 'skip' in s.attributes.keys():
+           die['skip']=str2bool(s.attributes['skip'].value)
+        else:
+           die['skip']=False
+
+        if 'tests' in s.attributes.keys():
+           die['tests']=ast.literal_eval(s.attributes['tests'].value)
+        else:
+           die['tests']=[]
         self.dies.append(die)
+        
       print "Loaded dies",len(self.dies)
 
-      notchlist = xmldoc.getElementsByTagName('notch') 
-      if len(notchlist)!=1:
-        print "No notch found."
-        return
-      self.notch={'angle':float(notchlist[0].attributes['angle'].value),
-                  'len':float(notchlist[0].attributes['length'].value)}
     
     def die2screen(self,pos):
         x,y=pos
         x=self.x0+x*self.scale
         y=self.y0+y*self.scale
         return (x,y)
+    def _dies_to_scan(self):
+        i=0
+        for d in self.dies:
+          if d['skip']: continue
+          i+=1
+        return i
         
+    def _first_die_to_scan(self):
+        self.dieno=0
+        while self.dies[self.dieno]['skip']:
+          self.dieno+=1
+        return self.dieno
+        
+
+     
+     
+    def ScanAll(self):
+        progressMax = self._dies_to_scan()
+        
+        dialog = wx.ProgressDialog("Wafer scanning", "Time remaining", progressMax,
+                                   style=wx.PD_CAN_ABORT | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME)
+        dialog.Centre()
+        keepGoing = True
+        count = 0
+        did=self._first_die_to_scan()
+        scanned=0
+        while keepGoing and did<len(self.dies):
+          self._test_die(self.dies[did]['name'])
+          keepGoing, skip = dialog.Update(scanned,"%d/%d %s"%(scanned,progressMax,self.dies[did]['name']))
+          scanned+=1
+          did+=1
+          while did<len(self.dies) and self.dies[did]['skip']:
+            did+=1
+          wx.MilliSleep(10)
+        dialog.Destroy()
+
     def OnPaint(self, evt):
         dc = wx.PaintDC(self)
 #        dc.SetBackground(wx.Brush((250,250,250))) 
@@ -222,7 +380,7 @@ class MapPanel(wx.Panel):
         self.y0=MY/2
 
         self.scale=0.95*min ( (MX,MY) )/self.diameter
-        print MX,MY,self.diameter, self.scale
+#        print MX,MY,self.diameter, self.scale
 
 #        print MX,MY,x0,y0
 #        print (x0,y0,self.diameter*SCALE)
@@ -300,13 +458,13 @@ class MapPanel(wx.Panel):
         dc.SetPen(wpen)
 
         x0=0.0
-        y0=-(self.diameter/2-self.notch['len'])
+        y0=-(self.diameter/2-self.notch['length'])
         a=self.notch['angle']/180*3.1415
-        x1_=-self.notch['len']/2
+        x1_=-self.notch['length']/2
         y1_=-(self.diameter/2)
         x0,y0=self.die2screen((x0,y0))
         x1,y1=self.die2screen((x1_,y1_))
-        x2_=self.notch['len']/2
+        x2_=self.notch['length']/2
         y2_=-(self.diameter/2)
         x2,y2=self.die2screen((x2_,y2_))
 

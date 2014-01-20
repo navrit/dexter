@@ -40,27 +40,23 @@ class WaferTester(wx.Frame):
      self.config = wx.Config("waferprober", style=wx.CONFIG_USE_LOCAL_FILE)
      self.filehistory.Load(self.config)
 
-
      mainsizer= wx.BoxSizer(wx.VERTICAL) # left controls, right image output
-     
-     
      
      self.titleBar  = bp.ButtonPanel(self, -1,  agwStyle=wx.NO_BORDER)
      self.indices = []
      self.button_handlers=dict()
 
      self.buttons=(
-          (icons.compfile.GetBitmap(),   wx.ID_NEW,     'New wafer',      self.OnNewWafer,'New wafer'       ,'Normal'),
-          (icons.settings.GetBitmap(),   wx.ID_OPEN,     'Settings',  self.OnSettings,'Settings'        ,'Normal'),
-          (icons.start.GetBitmap(),   wx.ID_OPEN,        'Start',     self.OnStart,'Open file'       ,'Normal'),
+          (icons.compfile.GetBitmap(),    wx.ID_NEW,     'New wafer', self.OnNewWafer,'New wafer'       ,'Normal'),
+          (icons.settings.GetBitmap(),    wx.NewId(),    'Settings',  self.OnSettings,'Settings'        ,'Normal'),
+          (icons.start.GetBitmap(),       wx.NewId(),    'Start',     self.OnStart,'Open file'       ,'Normal'),
           (None,   wx.ID_OPEN,       'Home',      self.OnStart,'Home'       ,'Normal'),
-          
-          (icons.gohome.GetBitmap(),   wx.ID_OPEN,       'Home',      self.OnStart,'Home'       ,'Normal'),
-          (icons.player_eject.GetBitmap(),   wx.ID_OPEN, 'Eject',     self.OnStart,'Eject'       ,'Normal'),
-          (icons.leftarrow.GetBitmap(),   wx.ID_OPEN,    'Step Left', self.OnStart,'Open file'       ,'Normal'),
-          (icons.rightarrow.GetBitmap(),   wx.ID_OPEN,    'Step Right', self.OnStart,'Open file'       ,'Normal'),
-          (icons.uparrow.GetBitmap(),   wx.ID_OPEN,    'Step Up', self.OnStart,'Open file'       ,'Normal'),
-          (icons.downarrow.GetBitmap(),   wx.ID_OPEN,    'Step Down', self.OnStart,'Open file'       ,'Normal'),
+          (icons.gohome.GetBitmap(),      wx.NewId(),    'Home',      self.OnStart,'Home'       ,'Normal'),
+          (icons.player_eject.GetBitmap(),wx.NewId(),    'Eject',     self.OnStart,'Eject'       ,'Normal'),
+          (icons.leftarrow.GetBitmap(),   wx.NewId(),    'Step Left', self.OnStart,'Open file'       ,'Normal'),
+          (icons.rightarrow.GetBitmap(),  wx.NewId(),    'Step Right',self.OnStart,'Open file'       ,'Normal'),
+          (icons.uparrow.GetBitmap(),     wx.NewId(),    'Step Up',   self.OnStart,'Open file'       ,'Normal'),
+          (icons.downarrow.GetBitmap(),   wx.NewId(),    'Step Down', self.OnStart,'Open file'       ,'Normal'),
         )
 
      for icon_png, wxid,short_help,handler, long_help,status  in self.buttons:
@@ -198,43 +194,44 @@ class WaferTester(wx.Frame):
     self.config.Flush()
 
   def OnStart(self,e):
-    TIMER_ID = 100  # pick a number
-    self.timer = wx.Timer(self, TIMER_ID)  # message will be sent to the panel
-    self.timer.Start(500)  # x100 milliseconds
-    wx.EVT_TIMER(self, TIMER_ID, self.on_timer)  # call the on_timer function
-    self.map_panel.goFirst()
-          
+#    TIMER_ID = 100  # pick a number
+#    self.timer = wx.Timer(self, TIMER_ID)  # message will be sent to the panel
+#    self.timer.Start(500)  # x100 milliseconds
+#    wx.EVT_TIMER(self, TIMER_ID, self.on_timer)  # call the on_timer function
+    
+    self.map_panel.ScanAll()
+
+ 
+
     
   def OnWaferHistory(self, event):
-        fileNum = event.GetId() - wx.ID_FILE1
-        path = self.filehistory.GetHistoryFile(fileNum)
-        self.filehistory.AddFileToHistory(path)
-        self.OpenWafer(path)
-        
-    
+    fileNum = event.GetId() - wx.ID_FILE1
+    path = self.filehistory.GetHistoryFile(fileNum)
+    self.filehistory.AddFileToHistory(path)
+    self.OpenWafer(path)
+
+
   def mkdir(self,d):
     if not os.path.exists(d):
       os.makedirs(d)  
-#      logging.info("Creating directory '%s'"%d)
 
   def OnNewWafer(self,e):
-     from glob import glob
-     import shutil
-     templates=[]
-     for fn in glob("templates/*.xml"):
-       die=os.path.splitext(os.path.basename(fn))[0]
-       templates.append(die)
-     dlg=NewWafer(wafer_types=templates)
-     if dlg.ShowModal()== wx.ID_OK:
-       wname     = "%03d_%s"%(int(dlg.GetNumber()),dlg.GetName())
-       wafer_dir = os.path.join(self._wafer_dir,wname)
-       self.mkdir(wafer_dir)
-       wafer_file=os.path.join(wafer_dir,wname+'.xml')
-       tname="templates/%s.xml"%dlg.GetType()
-       shutil.copyfile(tname,wafer_file)
-       self.OpenWafer(wafer_file)
-     dlg.Destroy()
-
+    from glob import glob
+    import shutil
+    templates=[]
+    for fn in glob("templates/*.xml"):
+      die=os.path.splitext(os.path.basename(fn))[0]
+      templates.append(die)
+    dlg=NewWafer(wafer_types=templates)
+    if dlg.ShowModal()== wx.ID_OK:
+      wname     = "%03d_%s"%(int(dlg.GetNumber()),dlg.GetName())
+      wafer_dir = os.path.join(self._wafer_dir,wname)
+      self.mkdir(wafer_dir)
+      wafer_file=os.path.join(wafer_dir,wname+'.xml')
+      tname="templates/%s.xml"%dlg.GetType()
+      shutil.copyfile(tname,wafer_file)
+      self.OpenWafer(wafer_file)
+    dlg.Destroy()
 
   def OnOpen(self, e):
 #        """ File|Open event - Open dialog box. """
@@ -245,7 +242,6 @@ class WaferTester(wx.Frame):
 #            print dirName
 #            self.OpenWafer(dirName)
 #        dlg.Destroy()
-        
         """ File|Open event - Open dialog box. """
         dirName=self._wafer_dir
         fileName=''
@@ -261,25 +257,25 @@ class WaferTester(wx.Frame):
 
 
   def OnHelpAbout(self, e):
-        """ Help|About event """
-        title = self.GetTitle()
-        d = wx.MessageDialog(self, "waferTESTER v0.1\nAuthor: Szymon Kulis\n2014 CERN","About" , wx.ICON_INFORMATION | wx.OK)
-        d.ShowModal()
-        d.Destroy()
+    """ Help|About event """
+    title = self.GetTitle()
+    d = wx.MessageDialog(self, "waferTESTER v0.1\nAuthor: Szymon Kulis\n2014 CERN","About" , wx.ICON_INFORMATION | wx.OK)
+    d.ShowModal()
+    d.Destroy()
 
   def OnQuit(self, e):
-        self.Close()
+    self.Close()
 
   def EvtColorComboBox(self,event):
-     cb = event.GetEventObject()
-     self.data_map.change_cm(event.GetString())
-     self.refresh()
+    cb = event.GetEventObject()
+    self.data_map.change_cm(event.GetString())
+    self.refresh()
      
 
   def refresh(self):
-        self.map_panel.refresh()
-        self.hist_panel.refresh()
-        self.mw.refresh()
+    self.map_panel.refresh()
+    self.hist_panel.refresh()
+    self.mw.refresh()
 
 
 
