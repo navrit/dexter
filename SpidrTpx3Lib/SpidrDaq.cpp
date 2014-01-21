@@ -24,7 +24,7 @@ SpidrDaq::SpidrDaq( int ipaddr3,
 
 // ----------------------------------------------------------------------------
 
-SpidrDaq::SpidrDaq( SpidrController *spidrctrl )
+SpidrDaq::SpidrDaq( SpidrController *spidrctrl, int device_nr )
 {
   // If the SpidrController parameter is provided use it to find out
   // the SPIDR's Medipix/Timepix device configuration and
@@ -32,13 +32,13 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl )
   // a single device with a default port number
   int ipaddr[4] = { 1, 100, 168, 192 };
   int id        = 0;
-  int port      = 8192;
+  int port      = 8192+device_nr;
   if( spidrctrl )
     {
       // Get the IP destination address (this host network interface)
       // from the SPIDR module
       int addr = 0;
-      if( spidrctrl->getIpAddrDest( 0, &addr ) )
+      if( spidrctrl->getIpAddrDest( device_nr, &addr ) )
 	{
 	  ipaddr[3] = (addr >> 24) & 0xFF;
 	  ipaddr[2] = (addr >> 16) & 0xFF;
@@ -46,7 +46,7 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl )
 	  ipaddr[0] = (addr >>  0) & 0xFF;
 	}
 
-      this->getIdAndPort( spidrctrl, &id, &port );
+      this->getIdAndPort( spidrctrl, device_nr, &id, &port );
     }
   this->init( ipaddr, port, spidrctrl );
 }
@@ -54,20 +54,21 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl )
 // ----------------------------------------------------------------------------
 
 void SpidrDaq::getIdAndPort( SpidrController *spidrctrl,
+			     int              device_nr,
 			     int             *id,
 			     int             *port )
 {
   if( !spidrctrl ) return;
 
   // Get the device IDs from the SPIDR module
-  spidrctrl->getDeviceId( 0, id );
+  spidrctrl->getDeviceId( device_nr, id );
 
   // Get the device port number from the SPIDR-TPX3 module
   // provided a sensible chip-ID was obtained
   //if( *id != 0 )
-  spidrctrl->getServerPort( 0, port );
+  spidrctrl->getServerPort( device_nr, port );
   //else
-  //*port = 8192;
+  //*port = 8192 + device_nr;
 }
 
 // ----------------------------------------------------------------------------

@@ -25,7 +25,7 @@ class MY_LIB_API SpidrDaq
  public:
   // C'tor, d'tor
   SpidrDaq( int ipaddr3, int ipaddr2, int ipaddr1, int ipaddr0, int port );
-  SpidrDaq( SpidrController *spidrctrl );
+  SpidrDaq( SpidrController *spidrctrl, int device_nr = 0 );
   ~SpidrDaq();
 
   void stop();
@@ -86,6 +86,7 @@ class MY_LIB_API SpidrDaq
 		     int              port,
 		     SpidrController *spidrctrl );
   void getIdAndPort( SpidrController *spidrctrl,
+		     int              device_nr,
 		     int             *id,
 		     int             *port );
 };
