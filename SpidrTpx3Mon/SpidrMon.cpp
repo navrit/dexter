@@ -132,7 +132,7 @@ void SpidrMon::connectOrDisconnect()
 	  //_lineEditDac3->setEnabled( true );
 	  //_lineEditDac4->setEnabled( true );
 
-	  if( _cbMonitorTpx->isChecked() )
+	  //if( _cbMonitorTpx->isChecked() )
 	    // Set output of Timepix3 SenseDAC
 	    // in preparation for the first ADC reading
 	    _spidrController->setSenseDac( 0, _dacCode );
