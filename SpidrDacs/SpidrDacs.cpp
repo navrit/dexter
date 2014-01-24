@@ -122,7 +122,7 @@ SpidrDacs::SpidrDacs()
 
   // Column width equalization can only be done after the widget has been shown
   // (see adjustLayout() below and Qt documentation on QGridLayout::cellRect)
-  QTimer::singleShot( 200, this, SLOT( adjustLayout() ) );
+  QTimer::singleShot( 0, this, SLOT( adjustLayout() ) );
 }
 
 // ----------------------------------------------------------------------------
