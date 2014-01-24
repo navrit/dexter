@@ -9,7 +9,7 @@
 # (or start from the 'SUBDIRS' .pro file to recursively generate the projects)
 #
 TEMPLATE = app
-TARGET   = SpidrMon
+TARGET   = SpidrMMon
 
 # Create a Qt app
 QT += network

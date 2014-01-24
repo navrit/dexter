@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>SPIDR-MON</string>
+   <string>SPIDR-MPX3-MON</string>
   </property>
   <property name="windowIcon">
    <iconset resource="spidrmon.qrc">
