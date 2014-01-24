@@ -60,5 +60,6 @@ typedef struct SpidrHeader
 
 #define EVT_HEADER_ID        0x52445053 // Represents "SPDR"
 #define DEV_HEADER_ID        0x3358504D // Represents "MPX3"
+#define HEADER_FILLER_WORD   0xDDDDDDDD // For unused words in headers
 
 #endif // SPIDRDATA_H

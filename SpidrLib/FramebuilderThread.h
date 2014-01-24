@@ -49,8 +49,7 @@ class FramebuilderThread : public QThread
   i64    decodedFrameTimestampSpidr();
 
   void setAddrInfo( int *ipaddr, int *ports );
-  void setDeviceIds( int *ids );
-  void setDeviceTypes( int *types );
+  void setDeviceIdsAndTypes( int *ids, int *types );
   void setPixelDepth( int nbits );
   void setDecodeFrames( bool decode );
   void setCompressFrames( bool compress );

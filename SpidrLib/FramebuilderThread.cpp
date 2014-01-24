@@ -2,8 +2,6 @@
 #include "ReceiverThread.h"
 #include "mpx3conf.h"
 
-#define HEADER_FILLER_WORD 0xDDDDDDDD
-
 // ----------------------------------------------------------------------------
 
 FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
@@ -526,17 +524,18 @@ void FramebuilderThread::setAddrInfo( int *ipaddr,
 
 // ----------------------------------------------------------------------------
 
-void FramebuilderThread::setDeviceIds( int *ids )
+void FramebuilderThread::setDeviceIdsAndTypes( int *ids, int *types )
 {
-  for( u32 i=0; i<4; ++i )
-    if( ids[i] != 0 ) _devHdr[i].deviceId = ids[i];
-}
-
-// ----------------------------------------------------------------------------
-
-void FramebuilderThread::setDeviceTypes( int *types )
-{
-  for( u32 i=0; i<4; ++i ) _devHdr[i].deviceType = types[i];
+  // _devHdr is only used for as many devices as there are,
+  // irrespective of their position 'i'
+  int i, index = 0;
+  for( i=0; i<4; ++i )
+    if( ids[i] != 0 )
+      {
+	_devHdr[index].deviceId   = ids[i];
+	_devHdr[index].deviceType = types[i];
+	++index;
+      }
 }
 
 // ----------------------------------------------------------------------------

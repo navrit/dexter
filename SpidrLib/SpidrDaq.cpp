@@ -6,7 +6,7 @@
 #include "FramebuilderThread.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x13072400;
+const int VERSION_ID = 0x14012400;
 
 // At least one argument needed for QCoreApplication
 //int   Argc = 1;
@@ -79,19 +79,15 @@ void SpidrDaq::getIdsPortsTypes( SpidrController *spidrctrl,
   spidrctrl->getDeviceIds( ids );
 
   // Get the device port numbers from the SPIDR module
-  // but only for devices whose ID could be determined
-  for( u32 i=0; i<4; ++i )
-    {
-      if( ids[i] != 0 )
-	{
-	  spidrctrl->getServerPort( i, &ports[i] );
-	  spidrctrl->getDeviceType( i, &types[i] );
-	}
-      else
-	{
-	  ports[i] = 0; types[i] = 0;
-	}
-    }
+  // but only for devices whose ID could be determined (i.e. is unequal to 0)
+  int i;
+  for( i=0; i<4; ++i ) { ports[i] = 0; types[i] = 0; }
+  for( i=0; i<4; ++i )
+    if( ids[i] != 0 )
+      {
+	spidrctrl->getServerPort( i, &ports[i] );
+	spidrctrl->getDeviceType( i, &types[i] );
+      }
 }
 
 // ----------------------------------------------------------------------------
@@ -149,8 +145,7 @@ void SpidrDaq::init( int             *ipaddr,
   _frameBuilder->setAddrInfo( ipaddr, ports );
 
   // The device IDs and types
-  _frameBuilder->setDeviceIds( ids );
-  _frameBuilder->setDeviceTypes( types );
+  _frameBuilder->setDeviceIdsAndTypes( ids, types );
 }
 
 // ----------------------------------------------------------------------------
