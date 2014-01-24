@@ -58,14 +58,12 @@ class MY_LIB_API SpidrController
   bool        setTimeOfDay         (); // Set the SPIDR processor clock time
 
   // Configuration: module/device interface
-  bool        getIpAddrDest    ( int  port_index, int *ipaddr );
-  bool        setIpAddrDest    ( int  port_index, int  ipaddr );
-  bool        getServerPort    ( int  dev_nr, int *port_nr );
-  bool        getServerPorts   ( int *port_nrs );
-  bool        setServerPort    ( int  dev_nr, int  port_nr );
-  bool        getDevicePort    ( int  dev_nr, int *port_nr );
-  bool        getDevicePorts   ( int *port_nrs );
-  bool        setDevicePort    ( int  dev_nr, int  port_nr );
+  bool        getIpAddrSrc     ( int  index,  int *ipaddr );
+  bool        setIpAddrSrc     ( int  index,  int  ipaddr );
+  bool        getIpAddrDest    ( int  index,  int *ipaddr );
+  bool        setIpAddrDest    ( int  index,  int  ipaddr );
+  bool        getServerPort    ( int  index,  int *port_nr );
+  bool        setServerPort    ( int  index,  int  port_nr );
   bool        getHeaderFilter  ( int  dev_nr, int *eth_mask, int *cpu_mask );
   bool        setHeaderFilter  ( int  dev_nr, int  eth_mask, int  cpu_mask );
 
@@ -124,22 +122,19 @@ class MY_LIB_API SpidrController
   unsigned char *pixelConfig   ();
 
   // Configuration: non-volatile onboard storage
-  bool storeAddrAndPorts       ( int  ipaddr_src,          // ###TODO
-                                 int  ipaddr_dst,
-                                 int *srvports = 0,
-                                 int *devports = 0,
-                                 int  controlport = 50000 );
-  bool storeDacs               ( int  dev_nr );            // ###TODO
-  bool storeRegisters          ( int  dev_nr );            // ###TODO
-  bool storePixelConfig        ( int  dev_nr );            // ###TODO
-  bool eraseAddrAndPorts       ();                         // ###TODO
-  bool eraseDacs               ( int  dev_nr );            // ###TODO
-  bool eraseRegisters          ( int  dev_nr );            // ###TODO
-  bool erasePixelConfig        ( int  dev_nr );            // ###TODO
-  bool validAddrAndPorts       ();                         // ###TODO
-  bool validDacs               ( int  dev_nr );            // ###TODO
-  bool validRegisters          ( int  dev_nr );            // ###TODO
-  bool validPixelConfig        ( int  dev_nr );            // ###TODO
+  bool storeAddrAndPorts       ( int  ipaddr = 0,
+                                 int  ipport = 0 );
+  bool storeDacs               ( int  dev_nr );
+  bool storeRegisters          ( int  dev_nr );              // ###TODO
+  bool storePixelConfig        ( int  dev_nr );              // ###TODO
+  bool eraseAddrAndPorts       ();
+  bool eraseDacs               ( int  dev_nr );
+  bool eraseRegisters          ( int  dev_nr );              // ###TODO
+  bool erasePixelConfig        ( int  dev_nr );              // ###TODO
+  bool validAddrAndPorts       ( bool *valid );
+  bool validDacs               ( int  dev_nr, bool *valid );
+  bool validRegisters          ( int  dev_nr, bool *valid ); // ###TODO
+  bool validPixelConfig        ( int  dev_nr, bool *valid ); // ###TODO
 
   // Trigger
   bool setTriggerConfig        ( int  trigger_mode,

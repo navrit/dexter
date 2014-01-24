@@ -235,24 +235,39 @@ bool SpidrController::getDeviceCount( int *devices )
 // Configuration: module/device interface
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getIpAddrDest( int port_index, int *ipaddr )
+bool SpidrController::getIpAddrSrc( int index, int *ipaddr )
 {
-  return this->requestGetInt( CMD_GET_IPADDR_DEST, port_index, ipaddr );
+  return this->requestGetInt( CMD_GET_IPADDR_SRC, index, ipaddr );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setIpAddrDest( int port_index, int ipaddr )
+bool SpidrController::setIpAddrSrc( int index, int ipaddr )
 {
-  return this->requestSetInt( CMD_SET_IPADDR_DEST, port_index, ipaddr );
+  return this->requestSetInt( CMD_SET_IPADDR_SRC, index, ipaddr );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getDevicePort( int dev_nr, int *port_nr )
+bool SpidrController::getIpAddrDest( int index, int *ipaddr )
+{
+  return this->requestGetInt( CMD_GET_IPADDR_DEST, index, ipaddr );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setIpAddrDest( int index, int ipaddr )
+{
+  return this->requestSetInt( CMD_SET_IPADDR_DEST, index, ipaddr );
+}
+
+// ----------------------------------------------------------------------------
+/*
+### Probably won't be used, so outcommented, at least for now (Jan 2014)
+bool SpidrController::getDevicePort( int index, int *port_nr )
 {
   *port_nr = 0;
-  return this->requestGetInt( CMD_GET_DEVICEPORT, dev_nr, port_nr );
+  return this->requestGetInt( CMD_GET_DEVICEPORT, index, port_nr );
 }
 
 // ----------------------------------------------------------------------------
@@ -269,21 +284,21 @@ bool SpidrController::getDevicePorts( int *port_nrs )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setDevicePort( int dev_nr, int port_nr )
+bool SpidrController::setDevicePort( int index, int port_nr )
 {
-  return this->requestSetInt( CMD_SET_DEVICEPORT, dev_nr, port_nr );
+  return this->requestSetInt( CMD_SET_DEVICEPORT, index, port_nr );
 }
-
+*/
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getServerPort( int dev_nr, int *port_nr )
+bool SpidrController::getServerPort( int index, int *port_nr )
 {
   *port_nr = 0;
-  return this->requestGetInt( CMD_GET_SERVERPORT, dev_nr, port_nr );
+  return this->requestGetInt( CMD_GET_SERVERPORT, index, port_nr );
 }
 
 // ----------------------------------------------------------------------------
-
+/*
 bool SpidrController::getServerPorts( int *port_nrs )
 {
   int nr_of_ports;
@@ -293,18 +308,19 @@ bool SpidrController::getServerPorts( int *port_nrs )
 				 nr_of_ports, port_nrs );
   return false;
 }
-
+*/
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setServerPort( int dev_nr, int port_nr )
+bool SpidrController::setServerPort( int index, int port_nr )
 {
-  return this->requestSetInt( CMD_SET_SERVERPORT, dev_nr, port_nr );
+  return this->requestSetInt( CMD_SET_SERVERPORT, index, port_nr );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getHeaderFilter( int  dev_nr,
-				       int *eth_mask, int *cpu_mask )
+				       int *eth_mask,
+				       int *cpu_mask )
 {
   int mask;
   if( this->requestGetInt( CMD_GET_HEADERFILTER, dev_nr, &mask ) )
@@ -319,7 +335,8 @@ bool SpidrController::getHeaderFilter( int  dev_nr,
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setHeaderFilter( int dev_nr,
-				       int eth_mask, int cpu_mask )
+				       int eth_mask,
+				       int cpu_mask )
 {
   return this->requestSetInt( CMD_SET_HEADERFILTER, dev_nr,
 			      (eth_mask | 0xFFFF) |
@@ -824,6 +841,76 @@ bool SpidrController::resetPixels( int dev_nr )
 unsigned char *SpidrController::pixelConfig()
 {
   return &_pixelConfig[0][0];
+}
+
+// ----------------------------------------------------------------------------
+// Configuration: non-volatile storage
+// ----------------------------------------------------------------------------
+
+bool SpidrController::storeAddrAndPorts( int ipaddr_src,
+					 int ipport )
+{
+  // Store SPIDR controller and devices addresses and ports
+  // to onboard non-volatile memory; at the same time changes
+  // the controller's IP-address and/or port if the corresponding
+  // parameter values are unequal to zero, but these values become
+  // current only *after* the next hard reset or power-up
+  int datawords[2];
+  datawords[0] = ipaddr_src;
+  datawords[1] = ipport;
+  return this->requestSetInts( CMD_STORE_ADDRPORTS, 0, 2, datawords );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::eraseAddrAndPorts()
+{
+  int dummy = 0;
+  return this->requestSetInt( CMD_ERASE_ADDRPORTS, 0, dummy );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::validAddrAndPorts( bool *valid )
+{
+  int result = 0;
+  *valid = false;
+  if( this->requestGetInt( CMD_VALID_ADDRPORTS, 0, &result ) )
+    {
+      if( result ) *valid = true;
+      return true;
+    }
+  return false;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::storeDacs( int dev_nr )
+{
+  int dummy = 0;
+  return this->requestSetInt( CMD_STORE_DACS, dev_nr, dummy );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::eraseDacs( int dev_nr )
+{
+  int dummy = 0;
+  return this->requestSetInt( CMD_ERASE_DACS, dev_nr, dummy );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::validDacs( int dev_nr, bool *valid )
+{
+  int result = 0;
+  *valid = false;
+  if( this->requestGetInt( CMD_VALID_DACS, dev_nr, &result ) )
+    {
+      if( result ) *valid = true;
+      return true;
+    }
+  return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -1487,14 +1574,15 @@ static const char *MON_ERR_STR[] =
     "<unknown>"
   };
 
-static const char *STG_ERR_STR[] =
+static const char *STORE_ERR_STR[] =
   {
     "no error",
-    "STG_ERR_TPX",
-    "STG_ERR_WRITE",
-    "STG_ERR_READ",
-    "STG_ERR_UNMATCHED_ID",
-    "STG_ERR_NOFLASH"
+    "STORE_ERR_TPX",
+    "STORE_ERR_WRITE",
+    "STORE_ERR_WRITE_CHECK",
+    "STORE_ERR_READ",
+    "STORE_ERR_UNMATCHED_ID",
+    "STORE_ERR_NOFLASH"
   };
 
 std::string SpidrController::spidrErrString( int err )
@@ -1534,10 +1622,10 @@ std::string SpidrController::spidrErrString( int err )
       errid = (err & 0xFF00) >> 8;
       errstr += ", ";
       // Error identifier is a number
-      if( errid >= (sizeof(STG_ERR_STR)/sizeof(char*)) )
+      if( errid >= (sizeof(STORE_ERR_STR)/sizeof(char*)) )
 	errstr += "<unknown>";
       else
-	errstr += STG_ERR_STR[errid];
+	errstr += STORE_ERR_STR[errid];
     }
 
   return errstr;

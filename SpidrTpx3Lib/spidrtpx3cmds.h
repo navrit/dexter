@@ -8,8 +8,6 @@
 // General: module
 #define CMD_GET_SOFTWVERSION   0x901
 #define CMD_GET_FIRMWVERSION   0x902
-#define CMD_GET_IPADDR_DEST    0x903
-#define CMD_SET_IPADDR_DEST    0x904
 
 #define CMD_GET_HEADERFILTER   0x905
 #define CMD_SET_HEADERFILTER   0x906
@@ -26,12 +24,15 @@
 // Configuration: devices
 #define CMD_GET_DEVICEID       0x110
 #define CMD_GET_DEVICEIDS      0x111
-
-#define CMD_GET_DEVICEPORT     0x114
-#define CMD_GET_DEVICEPORTS    0x115
-#define CMD_SET_DEVICEPORT     0x116
+#define CMD_GET_IPADDR_SRC     0x112
+#define CMD_SET_IPADDR_SRC     0x113
+#define CMD_GET_IPADDR_DEST    0x114
+#define CMD_SET_IPADDR_DEST    0x115
+//#define CMD_GET_DEVICEPORT   0x114
+//#define CMD_GET_DEVICEPORTS  0x115
+//#define CMD_SET_DEVICEPORT   0x116
 #define CMD_GET_SERVERPORT     0x117
-#define CMD_GET_SERVERPORTS    0x118
+//#define CMD_GET_SERVERPORTS  0x118
 #define CMD_SET_SERVERPORT     0x119
 #define CMD_GET_DAC            0x11A
 #define CMD_SET_DAC            0x11B
@@ -139,8 +140,8 @@ static const char *CMD_STR[] =
     "<no operation>   ", // 0x900
     "GET_SOFTWVERSION ", // 0x901
     "GET_FIRMWVERSION ", // 0x902
-    "GET_IPADDR_DEST  ", // 0x903
-    "SET_IPADDR_DEST  ", // 0x904
+    "-----",             // 0x903
+    "-----",             // 0x904
     "GET_HEADERFILTER ", // 0x905
     "SET_HEADERFILTER ", // 0x906
     "RESET_MODULE     ", // 0x907
@@ -155,13 +156,13 @@ static const char *CMD_STR[] =
 
     "GET_DEVICEID     ", // 0x110
     "GET_DEVICEIDS    ", // 0x111
-    "-----",             // 0x112
-    "-----",             // 0x113
-    "GET_DEVICEPORT   ", // 0x114
-    "GET_DEVICEPORTS  ", // 0x115
-    "SET_DEVICEPORT   ", // 0x116
+    "GET_IPADDR_SRC   ", // 0x112
+    "SET_IPADDR_SRC   ", // 0x113
+    "GET_IPADDR_DEST  ", // 0x114
+    "SET_IPADDR_DEST  ", // 0x115
+    "-----",             // 0x116
     "GET_SERVERPORT   ", // 0x117
-    "GET_SERVERPORTS  ", // 0x118
+    "-----",             // 0x118
     "SET_SERVERPORT   ", // 0x119
     "GET_DAC          ", // 0x11A
     "SET_DAC          ", // 0x11B
