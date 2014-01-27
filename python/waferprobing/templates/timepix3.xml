@@ -106,4 +106,5 @@
   <die name="H1" x="  7.100" y=" 75.105" w="14.200" h="16.690"/>
 <notch angle="180.0" length="5.0"/>
 <chuck x="-100" y="-100"/>
+<home name="G11"/>
 </wafer>

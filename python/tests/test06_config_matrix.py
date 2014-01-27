@@ -20,8 +20,9 @@ class test06_config_matrix(tpx3_test):
         self.tpx.setPixelThreshold(x,y,dac)
         self.tpx.setPixelTestEna(x,y, tb)
         self.tpx.setPixelMask(x,y,mask)
+    logging.info("Set1")
     self.tpx.setPixelConfig()
-
+    logging.info("Set2")
     eth_filter,cpu_filter=self.tpx.getHeaderFilter()
     self.tpx.setHeaderFilter(0xffff,cpu_filter&(~0x0200)) # cpu should not see 0x90 packets
 
@@ -35,6 +36,7 @@ class test06_config_matrix(tpx3_test):
     self.tpx.openShutter()
     self.tpx.sequentialReadout(tokens=1)
     valid_pixels=0
+    logging.info("Read")
     data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
     valid=numpy.zeros((256,256))
     for d in data:

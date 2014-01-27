@@ -32,6 +32,7 @@ for YM in range(1,11+1):
 
 f.write('<notch angle="180.0" length="5.0"/>\n')
 f.write('<chuck x="-100" y="-100"/>\n')
+f.write('<home name="G11"/>\n')
 
 f.write('</wafer>\n')
 print j

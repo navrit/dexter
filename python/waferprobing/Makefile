@@ -13,4 +13,7 @@ icons.py:Makefile
 	img2py -n leftarrow    -i -a icons/1leftarrow.png   icons.py
 	img2py -n rightarrow   -i -a icons/1rightarrow.png  icons.py
 	img2py -n uparrow      -i -a icons/1uparrow.png     icons.py
-
+	img2py -n top          -i -a icons/top.png          icons.py
+	img2py -n bottom       -i -a icons/bottom.png       icons.py
+	img2py -n edit         -i -a icons/edit.png         icons.py
+	img2py -n cd           -i -a icons/cd.png           icons.py

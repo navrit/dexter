@@ -82,7 +82,9 @@ class MapPanel(wx.Panel):
         self.y0=0
         self.rclic_die=None
         self.dieno=0
-        self.notch={'angle':0.0,  'len':5.0}
+        self.home=""
+        
+        self.notch={'angle':0.0,  'length':5.0}
         self.name=None
         self.number=None
         if fname:
@@ -94,8 +96,20 @@ class MapPanel(wx.Panel):
           self.chuck_pos=(x,y)
           self.Refresh()
 
+    def CreateNewFromTemplate(self, wafer_name, wafer_number, template, directory=""):
 
-         
+        import shutil
+        wname     = "%03d_%s"%(int(wafer_number),wafer_name)
+        wafer_dir = os.path.join(directory,wname)
+        if not os.path.exists(wafer_dir):
+          os.makedirs(wafer_dir)  
+        wafer_file=os.path.join(wafer_dir,wname+'.xml')
+        shutil.copyfile(template,wafer_file)
+        #self.OpenWafer(wafer_file)
+        self.load(wafer_file)
+        self.Refresh()
+        return None
+
     def onContext( self, event ):
         """
         Create and show a Context Menu
@@ -116,9 +130,11 @@ class MapPanel(wx.Panel):
             self.popup_goto = wx.NewId()
             self.popup_test = wx.NewId()
             self.popup_skip = wx.NewId()
+            self.popup_sethome = wx.NewId()
             self.Bind(wx.EVT_MENU, self.OnGoTo, id=self.popup_goto)
             self.Bind(wx.EVT_MENU, self.OnSkipDie, id=self.popup_skip)
             self.Bind(wx.EVT_MENU, self.OnTestDie, id=self.popup_test)
+            self.Bind(wx.EVT_MENU, self.OnSetHome, id=self.popup_sethome)
 
 
             self.popup_logs = wx.NewId()
@@ -137,11 +153,14 @@ class MapPanel(wx.Panel):
           menu.Enable(self.popup_name, 0) 
           menu.AppendSeparator()
           menu.Append(self.popup_goto, "go to")
+          
           if die['skip']:
             menu.Append(self.popup_skip, "Don't skip")
           else:
             menu.Append(self.popup_skip, "skip")
 
+          menu.Append(self.popup_sethome, "set as home")
+          
           itemThree = menu.Append(self.popup_test, "test")
 
           logs_menu = wx.Menu()
@@ -167,6 +186,12 @@ class MapPanel(wx.Panel):
           if die['name']==die_name:
              return i
         return None
+
+    def GoHome(self):
+        hid=self._get_die_id_by_name(self.home)
+        self.goToDieNo(hid)
+        self.Refresh()
+
 
     def _test_die(self,die_name):
         print "-> test",die_name
@@ -219,7 +244,13 @@ class MapPanel(wx.Panel):
         self.rclic_die['skip']=not self.rclic_die['skip']
         self.save()
         self.Refresh()
+    def OnSetHome(self,event):
+        self.home=self.rclic_die['name']
+        print self.home
+        self.save()
+        self.Refresh()
 
+    
     def OnLogEntry(self, event):
         log_id = self.popup_logs_entries.index(event.GetId())
 #        print self.rclic_die['tests'][log_id]
@@ -260,6 +291,9 @@ class MapPanel(wx.Panel):
         for k in self.notch:
           d.set(k, str(self.notch[k]))
 
+      d = ET.SubElement(root, "home")
+      d.set("name",self.home)
+      
       tree = ET.ElementTree(root)
       tree.write(self.fname)
 
@@ -283,6 +317,13 @@ class MapPanel(wx.Panel):
         return
       self.notch={'angle':float(notchlist[0].attributes['angle'].value),
                   'length':float(notchlist[0].attributes['length'].value)}
+
+      homelist = xmldoc.getElementsByTagName('home') 
+      if len(homelist)!=1:
+        print "No home found."
+      else:
+        self.home=homelist[0].attributes['name'].value
+
 
 
       dielist = xmldoc.getElementsByTagName('die') 
@@ -345,7 +386,7 @@ class MapPanel(wx.Panel):
         progressMax = self._dies_to_scan()
         
         dialog = wx.ProgressDialog("Wafer scanning", "Time remaining", progressMax,
-                                   style=wx.PD_CAN_ABORT | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME)
+                                   style=wx.PD_APP_MODAL|wx.PD_CAN_ABORT | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME)
         dialog.Centre()
         keepGoing = True
         count = 0
@@ -360,7 +401,7 @@ class MapPanel(wx.Panel):
             did+=1
           wx.MilliSleep(10)
         dialog.Destroy()
-
+        
     def OnPaint(self, evt):
         dc = wx.PaintDC(self)
 #        dc.SetBackground(wx.Brush((250,250,250))) 
@@ -443,6 +484,16 @@ class MapPanel(wx.Panel):
             
             dc.DrawLine(x0+2,y0+2,x1-2,y1-2)
             dc.DrawLine(x0+2,y1-2,x1-2,y0+2)
+            
+          if self.home==die['name']:
+            dc.SetBrush(wx.Brush(wx.Colour(0,0,255)) )
+            dc.SetPen(wx.Pen(wx.Colour(0,0,120), 1, wx.SOLID))
+            x0,y0=die['x']+die['w'],die['y']
+            x0,y0=self.die2screen( (x0,y0) )
+            x0-=7
+            y0+=5
+            dc.DrawCircle (x0,y0,2)
+            dc.SetBrush( wx.Brush(wx.Colour(230,230,230),wx.TRANSPARENT) )
 
 
         #draw chuch position
