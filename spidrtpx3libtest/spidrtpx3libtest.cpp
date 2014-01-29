@@ -28,7 +28,6 @@ int main( int argc, char *argv[] )
 
   int mdegrees, mvolt, mamp, mwatt;
 
-
   if( !spidrctrl.restartTimers() )
     cout << "###restartTimers: " << spidrctrl.errorString() << endl;
 

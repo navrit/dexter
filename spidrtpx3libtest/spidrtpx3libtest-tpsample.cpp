@@ -42,6 +42,11 @@ int main()
 
   if( !spidrctrl.setDacsDflt( device_nr ) )
     error_out( "###setDacsDflt" );
+  // The following setting is necessary (in combination with
+  // the setGenConfig() setting EMIN or HPLUS) in order to prevent
+  // noisy pixels also generating pixel data!
+  if( !spidrctrl.setDac( device_nr, TPX3_VTHRESH_COARSE, 9 ) )
+    error_out( "###setDac" );
 
   // ----------------------------------------------------------
   // Pixel configuration
@@ -49,9 +54,15 @@ int main()
   if( !spidrctrl.resetPixels( device_nr ) )
     error_out( "###resetPixels" );
 
-  // Enable test-bit in all pixels
+  // Enable test-bit in pixels
   spidrctrl.resetPixelConfig();
-  spidrctrl.setPixelTestEna( ALL_PIXELS, ALL_PIXELS );
+  //spidrctrl.setPixelTestEna();
+  int i;
+  for( i=0; i<250; ++i )
+    {
+      spidrctrl.setPixelTestEna( 0, i );
+      spidrctrl.setPixelTestEna( 1, i );
+    }
   if( !spidrctrl.setPixelConfig( device_nr ) )
     error_out( "###setPixelConfig" );
 
@@ -59,7 +70,7 @@ int main()
   // Test pulse and CTPR configuration
 
   // Timepix3 test pulse configuration
-  if( !spidrctrl.setTpPeriodPhase( device_nr, 100, 0 ) )
+  if( !spidrctrl.setTpPeriodPhase( device_nr, 10, 0 ) )
     error_out( "###setTpPeriodPhase" );
 
   if( !spidrctrl.setTpNumber( device_nr, 1 ) )
@@ -70,7 +81,7 @@ int main()
   int col;
   for( col=0; col<256; ++col )
     //if( (col >= 10 && col < 12) || (col >= 100 && col < 102) )
-      spidrctrl.setCtprBit( col );
+    spidrctrl.setCtprBit( col );
 
   if( !spidrctrl.setCtpr( device_nr ) )
     error_out( "###setCtpr" );
@@ -83,7 +94,7 @@ int main()
 
   // Set Timepix3 acquisition mode
   if( !spidrctrl.setGenConfig( device_nr,
-                               TPX3_POLARITY_HPLUS |
+                               TPX3_POLARITY_EMIN |
                                TPX3_ACQMODE_TOA_TOT |
                                TPX3_GRAYCOUNT_ENA |
                                TPX3_TESTPULSE_ENA |
@@ -100,7 +111,7 @@ int main()
 
   // Configure the shutter trigger
   int trig_mode      = 4;      // SPIDR_TRIG_AUTO;
-  int trig_length_us = 100000; // 100 ms
+  int trig_length_us = 10000;  // 10 ms
   int trig_freq_hz   = 3;      // 3 Hz
   //int trig_count   = 10;     // 10 triggers
   int trig_count     = 1;

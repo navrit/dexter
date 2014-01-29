@@ -74,10 +74,11 @@ int main()
 
   // Configure the shutter trigger
   int trig_mode      = 4;      // SPIDR_TRIG_AUTO;
-  int trig_length_us = 500000; // 500 ms
-  int trig_freq_hz   = 1;      // Hz
-  //int trig_count   = 200;
-  int trig_count     = 1;
+  //int trig_length_us = 500000; // 500 ms
+  int trig_length_us = 1000; // 1 ms
+  int trig_freq_hz   = 5;      // Hz
+  int trig_count   = 200;
+  //int trig_count     = 1;
   if( !spidrctrl.setTriggerConfig( trig_mode, trig_length_us,
                                    trig_freq_hz, trig_count ) )
     error_out( "###setTriggerConfig" );
