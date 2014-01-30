@@ -449,7 +449,7 @@ class TPX3:
     r=self.ctrl.setCtpr(self.id)
     self._log_ctrl_cmd("setCtpr() ",r)
 
-  def sequentialReadout(self,tokens=128):
+  def sequentialReadout(self,tokens=2):
     r=self.ctrl.sequentialReadout(tokens)
     self._log_ctrl_cmd("sequentialReadout(tokens=%d) "%tokens,r)
     
@@ -623,7 +623,7 @@ class TPX3:
     self.resetPixelConfig()
     for x in range(256):
       for y in range(256):
-          self.configPixel(x,y,eq[y][x],False)
+          self.configPixel(x,y,eq[y][x])
 #    self.setPixelConfig()
     
 def main():

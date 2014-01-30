@@ -55,7 +55,8 @@ class test06_config_matrix(tpx3_test):
 
       self.tpx.setShutterLen(1)
 #    self.tpx.openShutter()
-      self.tpx.sequentialReadout(tokens=120)
+      self.tpx.sequentialReadout(tokens=4)
+
       data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
 #      valid=numpy.zeros((256,256))
       
