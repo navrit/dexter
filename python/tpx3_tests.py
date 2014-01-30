@@ -8,7 +8,7 @@ import socket
 import os
 import getpass
 import tests
-import pycallgraph
+#import pycallgraph
 import logging
 from optparse import OptionParser
 import datetime

@@ -7,7 +7,6 @@ from SpidrTpx3_engine import *
 import numpy
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
-import pycallgraph
 from scipy.special import erf
 import numpy as np
 from dac_defaults import dac_defaults
