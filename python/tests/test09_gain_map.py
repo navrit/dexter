@@ -33,14 +33,14 @@ class test09_gain_map(tpx3_test):
       mask=0
       for i in range(start,stop):
         self.tpx.setDac(TPX3_VTHRESH_FINE,i)
-        self.tpx.openShutter(15000)
+        self.tpx.openShutter()
         time.sleep(0.016)
         self.tpx.sequentialReadout()
         data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
         logging.info("Packets received %d (to be masked %d)"%(len(data),mask))
         for d in data:
           if d.type==0xA:
-            res[d.col][d.row][i-start]=d.cnt
+            res[d.col][d.row][i-start]=d.event_counter
           elif d.type!=0x7:
             logging.warning("Unexpected packet %s"%str(d))
       return res
@@ -57,7 +57,7 @@ class test09_gain_map(tpx3_test):
     self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,100)
     
 
-        
+    self.tpx.setShutterLen(15000)
     self.tpx.setGenConfig(0x04|0x20)
     self.tpx.setPllConfig(0x291E)
     
@@ -93,18 +93,18 @@ class test09_gain_map(tpx3_test):
       for seq in range(16):
         self.tpx.resetPixelConfig()
         self.tpx.load_equalization("logs/F3_default_eq_bruteforce/test08_equalization/eq_codes.dat")
-        self.tpx.maskPixel(ALL_PIXELS,ALL_PIXELS)
+        self.tpx.setPixelMask(ALL_PIXELS,ALL_PIXELS,1)
         on=0
         for x in range(256):
           for y in range(256):
             if x%4==int(seq/4) and y%4==seq%4:
-              self.tpx.unmaskPixel(x,y)
-              self.tpx.configPixelTpEna(x,y, testbit=True)
+              self.tpx.setPixelMask(x,y,0)
+              self.tpx.setPixelTestEna(x,y, testbit=True)
         for x in range(256):
           if x%4==int(seq/4):
-            self.tpx.configCtpr(x,1)
+            self.tpx.setCtprBit(x,1)
           else:
-            self.tpx.configCtpr(x,0)
+            self.tpx.setCtprBit(x,0)
         self.tpx.setCtpr()
 
         self.tpx.setPixelConfig()
