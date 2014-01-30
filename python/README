@@ -1,2 +1,6 @@
+Instalation:
+sudo apt-get install cython libboost-all-dev libboost-python-dev libboost-signals-dev libboost-thread-dev libboost-filesystem-dev libboost-system-dev libboost-iostreams-dev python-gnuplot gnuplot gnuplot-x11  python-scipy python-sciscipy python-numpy python-matplotlib
+
+Running
 1) make
 2) ./tpx_tests.py chipname
