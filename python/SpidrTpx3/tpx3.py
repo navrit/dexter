@@ -467,6 +467,25 @@ class TPX3:
     self._log_ctrl_cmd("resetTimer() ",r)
 
 
+  def resetDevice(self):
+    r=self.ctrl.resetDevice(self.id)
+    self._log_ctrl_cmd("resetDevice() ",r)
+
+  def reinitDevice(self):
+    r=self.ctrl.reinitDevice(self.id)
+    self._log_ctrl_cmd("reinitDevice() ",r)
+
+  def readEfuse(self):
+    r,v=self.ctrl.readEfuse(self.id)
+    self._log_ctrl_cmd("readEfuse()=%08x"%v,r)
+    return v
+
+  def burnEfuse(self, selection,program_width=0):
+    r=self.ctrl.burnEfuse(self.id,program_width,selection)
+    self._log_ctrl_cmd("burnEfuse(%d,%d) "%(program_width,selection),r)
+
+
+
   def openShutter(self):
     r=self.ctrl.startAutoTrigger()
 #c2.add_method('stopAutoTrigger',      'bool',       [])

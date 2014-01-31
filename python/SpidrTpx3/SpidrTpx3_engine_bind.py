@@ -5,6 +5,7 @@ import sys
 from defines import load_defines
 
 mod = Module('SpidrTpx3_engine')
+print "#define CERN_PROBESTATION"
 mod.add_include('"../../SpidrTpx3Lib/SpidrDaq.h"')
 mod.add_include('"../../SpidrTpx3Lib/SpidrController.h"')
 mod.add_include('"../../SpidrTpx3Lib/tpx3defs.h"')
@@ -27,7 +28,9 @@ c2.add_method('getAvdd',               'bool',        [param('int*', 'mvolt', tr
 c2.add_method('getDvdd',               'bool',        [param('int*', 'mvolt', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),param('int*', 'mamp', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),param('int*', 'mwatt', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 c2.add_method('setDacsDflt',           'bool',        [param('int', 'dev_nr')])
 c2.add_method('resetDevice',           'bool',        [param('int', 'dev_nr')])
-c2.add_method('resetDevices',           'bool',       [])
+c2.add_method('resetDevices',          'bool',        [])
+c2.add_method('reinitDevice',          'bool',        [param('int', 'dev_nr')])
+c2.add_method('reinitDevices',         'bool',        [])
   
 c2.add_method('resetPixelConfig',      None,          [])
 #c2.add_method('configPixel',           'bool',        [param('int', 'x'),param('int', 'y'),param('int', 'threshold'),param('int', 'testbit')])
@@ -47,6 +50,9 @@ c2.add_method('getTpNumber',           'bool',        [param('int', 'dev_nr'),pa
 c2.add_method('setTpNumber',           'bool',        [param('int', 'dev_nr'),param('int', 'number')])
 c2.add_method('uploadPacket',          'bool',        [param('int', 'dev_nr'),param('unsigned char*', 'packet', transfer_ownership=False,direction = Parameter.DIRECTION_IN,array_length=256),param('int', 'size')])
 
+
+c2.add_method('readEfuse',             'bool',        [param('int', 'dev_nr'),param('int*', 'efuses', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+c2.add_method('burnEfuse',             'bool',        [param('int', 'dev_nr'),param('int', 'program_width'),param('int', 'selection')])
 
 c2.add_method('resetTimer',            'bool',        [param('int', 'dev_nr')])
 c2.add_method('getTimer',              'bool',        [param('int', 'dev_nr'),param('unsigned int*', 'timer_lo', transfer_ownership=False,direction = Parameter.DIRECTION_OUT), 
