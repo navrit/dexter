@@ -479,7 +479,17 @@ class TPX3:
     r,v=self.ctrl.readEfuse(self.id)
     self._log_ctrl_cmd("readEfuse()=%08x"%v,r)
     return v
-
+  def readName(self):
+    fuses=self.readEfuse()
+    if fuses==0:
+      return '-'
+    x=fuses&0xF
+    y=(fuses>>4)&0xF
+    XMAP=['-','A','B','C','D','E','F','G','H','I','J','K','L','M','-','-']
+    xstr=XMAP[x]
+    w=(fuses>>8)&0xFFF
+    return "W%03d_%s%d"%(w,xstr,y)
+  
   def burnEfuse(self, selection,program_width=0):
     r=self.ctrl.burnEfuse(self.id,program_width,selection)
     self._log_ctrl_cmd("burnEfuse(%d,%d) "%(program_width,selection),r)
