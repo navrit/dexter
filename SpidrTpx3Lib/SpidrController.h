@@ -70,6 +70,8 @@ class MY_LIB_API SpidrController
   // Configuration: device
   bool        resetDevice      ( int  dev_nr );
   bool        resetDevices     ();
+  bool        reinitDevice     ( int  dev_nr );
+  bool        reinitDevices    ();
   bool        getDeviceId      ( int  dev_nr, int *id );
   bool        getDeviceIds     ( int *ids );
   bool        setSenseDac      ( int  dev_nr, int  dac_code );
@@ -96,6 +98,10 @@ class MY_LIB_API SpidrController
   std::string dacName          ( int  dac_code );
   int         dacMax           ( int  dac_code );
   bool        uploadPacket     ( int  dev_nr, unsigned char *packet, int size );
+#ifdef CERN_PROBESTATION
+  bool        burnEfuse        ( int device_nr, int program_width, int selection );
+#endif
+  bool        readEfuse        ( int device_nr, int *efuses );
 
   // Configuration: device test pulses
   bool        getTpPeriodPhase ( int  dev_nr, int *period, int *phase );

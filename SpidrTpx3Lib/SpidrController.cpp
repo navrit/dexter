@@ -363,6 +363,22 @@ bool SpidrController::resetDevices()
 
 // ----------------------------------------------------------------------------
 
+bool  SpidrController::reinitDevice ( int  dev_nr )
+{
+  int dummy = 0;
+  return this->requestSetInt( CMD_REINIT_DEVICE, dev_nr, dummy );
+}
+
+// ----------------------------------------------------------------------------
+
+bool  SpidrController::reinitDevices()
+{
+  int dummy = 0;
+  return this->requestSetInt( CMD_REINIT_DEVICES, dummy, dummy );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::getDeviceId( int dev_nr, int *id )
 {
   *id = 0;
@@ -583,6 +599,25 @@ bool SpidrController::uploadPacket( int            dev_nr,
 				      size, size, packet );
 }
 
+
+#ifdef CERN_PROBESTATION
+// ----------------------------------------------------------------------------
+bool SpidrController::burnEfuse( int device_nr, 
+                                 int program_width, 
+                                 int selection )
+{
+  int dword= (selection & 0x1F)<<6 | (program_width & 0x3F);
+  return this->requestSetInt( CMD_BURN_EFUSE , device_nr, dword );
+}
+#endif
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::readEfuse( int device_nr, int *efuses )
+{
+  return this->requestGetInt( CMD_GET_EFUSES, device_nr, efuses );
+}
+  
 // ----------------------------------------------------------------------------
 // Configuration: device test pulses
 // ----------------------------------------------------------------------------
