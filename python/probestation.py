@@ -23,7 +23,7 @@ class ProbeStation:
     m=gpib.read(self.dev,l)
     print "RD:",m.rstrip()
     return m
-
+ 
   def qr(self,m,l=256):
     self.wr(m)
     return self.rd(l)
@@ -38,18 +38,29 @@ class ProbeStation:
     r=self.qr("StepNextDie %d %d"%(x,y))
     rr=r.split()
     return (rr[0],rr[1],rr[2])
+
+  def GoToXY(self,x,y,):
+    r=self.qr("StepNextDie %d %d"%(x,y))
+    rr=r.split()
+    return (rr[0],rr[1],rr[2])
+  def Contact(self):
+    r=self.qr("MoveChuckContact")
+  def Align(self):
+    r=self.qr("MoveChuckAlign")
+
 def test():
   ps=ProbeStation()
   ps.connect()
-  ps.StepFirstDie()
+#  ps.StepFirstDie()
   if 0:
    for die in range(105):
     print "## DIE %d ##"%die
     ps.StepNextDie()
-  ps.GoToXY(5,5)
-  ps.GoToXY(5,5)
-  ps.GoToXY(4,4)
-  ps.GoToXY(9,9)
-  ps.GoToXY(5,5)
+#  ps.GoToXY(5,5)
+#  ps.GoToXY(5,5)
+#  ps.GoToXY(4,4)
+#  ps.GoToXY(9,9)
+  ps.GoToXY(7,2)
+  ps.Align()
 if __name__=="__main__":
   test()
