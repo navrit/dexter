@@ -507,7 +507,10 @@ class TPX3:
     self._log_ctrl_cmd("t0Sync() ",r)
     
     
-    
+  def setLogLevel(self,lvl):
+    r=self.ctrl.setLogLevel(lvl)
+    self._log_ctrl_cmd("setLogLevel(%d) "%(lvl),r)
+
   def setSenseDac(self,code):
     r=self.ctrl.setSenseDac(self.id,code)
     self._log_ctrl_cmd("setSenseDac(%d) "%(code),r)

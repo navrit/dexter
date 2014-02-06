@@ -71,7 +71,6 @@ class TPX_tests:
     self.tpx.info()
 
   def execute(self,test_list=[],wiki=False):
-  
    self.prepare()
    avaliable_tests=tests.get_tests()
    if len(test_list)==0:
@@ -86,12 +85,11 @@ class TPX_tests:
           args=test_name[test_name.find("(")+1:test_name.find(")")]
           test_name=test_name[:test_name.find("(")]
           params=dict(token.split('=') for token in shlex.split(args))    
-     
      if test_name in avaliable_tests:
        test=avaliable_tests[test_name](tpx=self.tpx,fname=self.dlogdir+test_name)
        test.execute(**params)
      else:
-       print "Unknown test %s"%test_name
+       logging.warning( "Unknown test %s"%test_name)
 
   def list(self):
    avaliable_tests=tests.get_tests()
@@ -224,7 +222,6 @@ def main():
     try:
       tests=TPX_tests(name)
       tests.connect(options.ip)
-  
       if options.dump_all:
         tests.tpx.log_packets=True
       tests.execute(test_list,wiki=options.wiki)

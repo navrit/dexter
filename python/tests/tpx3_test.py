@@ -17,21 +17,34 @@ class tpx3_test(object):
   def execute(self,**keywords):
     BLEN=100
     BSPACERLEN=BLEN+4
-    
-    logging.info("#"*BSPACERLEN)
-    logging.info("# %-100s #"%self.__doc__.split('\n')[0])
+
+    self.mkdir(self.fname)
+    logname='%s/log.txt'%(self.fname)
+    self.logging = logging.getLogger(self.__class__.__name__)
+    self.logging.setLevel(logging.DEBUG)
+    fh = logging.FileHandler(logname,mode='w')
+    fh.setLevel(logging.INFO)
+    formatter = logging.Formatter( '[%(levelname)7s] [%(relativeCreated)5d] %(message)s',  datefmt='%M:%S')
+    fh.setFormatter(formatter)
+    self.logging.addHandler(fh)
+
+
+    self.logging.info("#"*BSPACERLEN)
+    self.logging.info("# %-100s #"%self.__doc__.split('\n')[0])
     m="%s@%s"%(self.__class__.__name__ ,inspect.getfile(self.__class__))
-    logging.info("# %-100s #"%m)
+    self.logging.info("# %-100s #"%m)
     
     if len(keywords)>0:
-      logging.info("# %-100s #"%"Run time parameters:")
+      self.logging.info("# %-100s #"%"Run time parameters:")
       for key, value in keywords.iteritems():
         l=" %s = %s"% (key, value)
         if not key in ['wiki']:
           self.fname+="_%s%s"%(key, value)
-        logging.info("# %-100s #"%l)
-    logging.info("# %-100s #"%("Deafult filename : %s"%self.fname))
-    logging.info("#"*BSPACERLEN)
+        self.logging.info("# %-100s #"%l)
+    self.logging.info("# %-100s #"%("Data directory : %s"%self.fname))
+    self.logging.info("# %-100s #"%("Log file : %s"%logname))
+    self.logging.info("#"*BSPACERLEN)
+
     self._execute(**keywords)
 
   def _execute(self,**keywords):
@@ -39,9 +52,9 @@ class tpx3_test(object):
     
   def _assert_true(self,val,msg):
     if val:
-      logging.info("%-95s [  OK  ]"%msg)
+      self.logging.info("%-95s [  OK  ]"%msg)
     else:
-      logging.error("%-95s [FAILED]"%msg)
+      self.logging.error("%-95s [FAILED]"%msg)
 
     if not val:
       self.errors.append(msg)
@@ -50,9 +63,9 @@ class tpx3_test(object):
     ok=False
     if val>=min and val<=max:
       ok=True
-      logging.info("%-95s [  OK  ]"%msg)
+      self.logging.info("%-95s [  OK  ]"%msg)
     else:
-      logging.error("%-95s [FAILED]"%msg)
+      self.logging.error("%-95s [FAILED]"%msg)
     
     if not ok:
       self.errors.append(msg)
@@ -68,7 +81,7 @@ class tpx3_test(object):
   def mkdir(self,d):
     if not os.path.exists(d):
       os.makedirs(d)  
-      logging.info("Creating directory '%s'"%d)
+#      self.logging.info("Creating directory '%s'"%d)
 
   def wiki_banner(self,**keywords):
     if "wiki" in keywords and keywords["wiki"] :
@@ -123,8 +136,8 @@ class tpx3_test(object):
 
       gc_line+=")"
       
-      logging.info("# %-100s #"%gc_line)
-      logging.info("# %-100s #"%"PLL Config 0x%04x"%pll)
-      logging.info("#"*104)
+      self.logging.info("# %-100s #"%gc_line)
+      self.logging.info("# %-100s #"%"PLL Config 0x%04x"%pll)
+      self.logging.info("#"*104)
 
 

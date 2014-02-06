@@ -43,26 +43,21 @@ class test01_bias(tpx3_test):
     self.tpx.ctrl.setSenseDac(0,0x1B)
     v=self.tpx.get_adc(4)
     self._assert_in_range(v,0.2,1.0,"PLL Control Voltage %.3f V"%v)
-
     
     self.tpx.ctrl.setSenseDac(0,0x1C)
     v=self.tpx.get_adc(4)
     self._assert_in_range(v,0.6,0.7,"Bandgap voltage %.3f V"%v)
-#    self.data['VBDG']="%.3f"%v
     
     self.tpx.ctrl.setSenseDac(0,0x1D)
     v=self.tpx.get_adc(4)
     self._assert_in_range(v,0.6,0.7,"Temperature voltage %.3f V"%v)
-#    self.data['VTEMP']="%.3f"%v
     
     self.tpx.ctrl.setSenseDac(0,0x1E)
     v=self.tpx.get_adc(4)
     self._assert_in_range(v,1.1,1.2,"IBias DAC voltage %.3f V"%v)
-#    self.data['IB_DAC']="%.3f"%v
 
     self.tpx.ctrl.setSenseDac(0,0x1F)
     v=self.tpx.get_adc(4)
     self._assert_in_range(v,0.9,1.1,"IBias DAC cascode voltage %.3f V"%v)
-#    self.data['DAC_CAS']=v
 
 

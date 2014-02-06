@@ -3,17 +3,19 @@ import random
 import time
 import logging
 import numpy as np
+from Gnuplot import Gnuplot
 from scipy import  sqrt, stats
 from SpidrTpx3_engine import ALL_PIXELS, TPX3_VTHRESH_COARSE
+
 
 class test07_clock_phasing(tpx3_test):
   """Pixel matrix VCO and clock phasing in TOT&TOA mode"""
 
   def _execute(self,**keywords):
+    self.tpx.reinitDevice()
     self.tpx.setTpNumber(1)
     self.tpx.resetPixels()
     self.tpx.resetPixelConfig()
-    self.tpx.setTpPeriodPhase(1,1)
     self.tpx.setTpNumber(1)
     self.tpx.setDac(TPX3_VTHRESH_COARSE, 0)
 
@@ -21,82 +23,124 @@ class test07_clock_phasing(tpx3_test):
     self.tpx.setCtpr()
     
 #    gc=self.tpx.getGenConfig()
+#    pll=self.tpx.getPllConfig()
     self.tpx.setGenConfig(0x268)
+    self.tpx.setPllConfig(0x11E| 0x15<<9)
 
-    self.tpx.setPllConfig(0x11E)
-    pll=self.tpx.getPllConfig()
-
-   
-#    self.tpx.flush_udp_fifo()
     self.tpx.setShutterLen(1000)
+    eth_filter,cpu_filter=self.tpx.getHeaderFilter()
+    self.tpx.setHeaderFilter(0x0c80,cpu_filter) # 
+    eth_filter,cpu_filter=self.tpx.getHeaderFilter()
 
     self.tpx.resetPixelConfig()
     self.tpx.setPixelTestEna(ALL_PIXELS,ALL_PIXELS, testbit=True)
     self.tpx.setPixelConfig()
-
-    self.tpx.send(0x40,0,0)#reset timer
-    self.tpx.send(0x4A,0,0)#t0sync
-
-    self.tpx.datadrivenReadout()
-#    self.tpx.sequentialReadout(tokens=4)
-#    data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
-
-    self.tpx.openShutter()
-#       data=self.tpx.recv_mask(0x1111,0xFFFF)
-    logging.info("Wait for data")
-    data=self.tpx.recv_mask(0x71B0000000000000, 0xFFFF000000000000)
-    logging.info("Reveiced %d packets"%(len(data)))
-    shutter=self.tpx.getShutterStart()
-    cnt=0
-    result={}
-    for col in range(256):
-      result[col]={}
-      for row in range(256):
-        result[col][row]=None
-
-    for pck in data:
-         if pck.type==0xB:
-            cnt+=1
-            v=float(pck.toa-(shutter&0x3FFF)) 
-            if v<0: v+=0x4000
-            v-=float(pck.ftoa)/16
-            result[pck.col][pck.row]=v
-
-    print "Total pck count ",cnt
-    fn=self.fname+'.cols'
-    logging.info("Cols saved to %s"%fn)
-    f=open(fn,"w")
-    for col in range(256):
-      x=[]
-      y=[]
-      if not col in result:
-         logging.warrning("No data for column %d"%col)
-         continue
-      mis=0
-      for row in range(256):
-        if not row in result[col] : 
-           logging.warning("No data for pixel (%d,%d)"%(col,row))
-           mis+=1
-           continue
-        x.append(row)
-        y.append(result[col][row])
-#      z = np.polyfit(x, y, 1)
-      (a_s,b_s,r,tt,stderr)=stats.linregress(x,y)
-      f.write("%3d %.6f %.6f %.6f %d\n" % (col, a_s,b_s,stderr,mis))
-  
-#      print col,z
-    f.close()
+    g=Gnuplot()
+    g("set terminal png")
+    g("set grid")
+    g("set xlabel 'Time error [LSB/1.56ns]'")
+    g("set ylabel 'Entries'")
+    g("set output '%s/hist.png"%self.fname)
+    pstr=""
+#    min_toa,max_toa
+#    self.tpx.datadrivenReadout()
+    self.tpx.sequentialReadout(tokens=2)
+    data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
     
-    
-    fn=self.fname+'.map'
-    logging.info("Plot saved to %s"%fn)
-    f=open(fn,"w")
-    for row in range(256):
+    for seq,phase in enumerate( (0,8) ):
+      self.tpx.setTpPeriodPhase(1,phase)
+
+      self.tpx.send(0x40,0,0)#reset timer
+      self.tpx.send(0x4A,0,0)#t0sync
+
+      self.tpx.openShutter()
+      self.tpx.flush_udp_fifo(val=0x714A000000000000, mask=0xFFFF000000000000)
+
+      self.logging.info("Wait for data")
+      data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
+      self.logging.info("Reveiced %d packets"%(len(data)))
+      shutter=self.tpx.getShutterStart()
+
+      cnt=0
+      result={}
       for col in range(256):
-        if col in result and row in result[col] : f.write("%.2f "%result[col][row])
-        else: f.write("0 ")
-      f.write("\n")
-    f.close()
+        result[col]={}
+        for row in range(256):
+          result[col][row]=0.0
+
+      for pck in data:
+         if pck.type in (0xB,0xA):
+           cnt+=1
+           v=float(pck.toa-(shutter&0x3FFF)) 
+           if v<0: v+=0x4000
+         
+           v=v*16 - float(pck.ftoa)
+           result[pck.col][pck.row]=v
+         elif pck.type !=0x7:
+           self.logging.warning("Unexpeced packet %s"%str(pck))
+
+      self.logging.info("Pixel packets received: %d"%(cnt))
+      fn=self.fname+'/phase%02x.cols'%phase
+      self.logging.info("Cols saved to %s"%fn)
+      f=open(fn,"w")
+      diffs=[]
+      for col in range(256):
+        x=[]
+        y=[]
+        if not col in result:
+           self.logging.warrning("No data for column %d"%col)
+           continue
+        mis=0
+        for row in range(256):
+          if not row in result[col] : 
+             self.logging.warning("No data for pixel (%d,%d)"%(col,row))
+             mis+=1
+             continue
+          x.append(row)
+          y.append(result[col][row])
+        (a_s,b_s,r,tt,stderr)=stats.linregress(x,y)
+        f.write("%3d %.6f %.6f %.6f %d\n" % (col, a_s,b_s,stderr,mis))
+        for row in range(256):
+          if not row in result[col] : 
+             continue
+          fit=row*a_s+b_s
+          diffs.append(fit-result[col][row])
+      if mis>0:
+        self.logging.warning("Pixels missing: %d"%(mis))
+
+      f.close()
+      hist, bin_edges=np.histogram(diffs, range=(-16,16),bins=320)
+      fn=self.fname+'/phase%02x.hst'%phase
+      def save_hist(fname,hist,bin_edges):
+        f=open(fname,"w")
+        for i in range(len(bin_edges)-1):
+          f.write("%.4e %d\n"%(bin_edges[i],hist[i]))
+          f.write("%.4e %d\n"%(bin_edges[i+1],hist[i]))
+        f.close()
+      save_hist(fn,hist,bin_edges)
+      
+      g("plot '%s' w lp t 'phase=0x%0x'"%(fn,phase))
+      self.logging.info("Errors saved to %s"%fn)
+      stddev=np.std(diffs)
+      self.logging.info("Std. dev. %.3f"%stddev)
+      l5s=0
+      h5s=0
+      sd5=stddev*6.0
+      for d in diffs:
+        if d>sd5: h5s+=1
+        if d<-sd5: l5s+=1
+      self.logging.info("Higher > 6*sigma : %d"%h5s)
+      self.logging.info("Lower < -6*sigma : %d"%l5s)
+
+      fn=self.fname+'/phase%02x.map'%phase
+      self.logging.info("Plot saved to %s"%fn)
+      f=open(fn,"w")
+      for row in range(256):
+        for col in range(256):
+          if col in result and row in result[col] : f.write("%.2f "%result[col][row])
+          else: f.write("0 ")
+        f.write("\n")
+      f.close()
 
 
 

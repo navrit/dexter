@@ -6,9 +6,12 @@ class test02(tpx3_test):
   def _execute(self,**keywords):
     r,v=self.tpx.ctrl.getDeviceId(self.tpx.id)
     self._assert_true(r,"Reading device ID")
-    DEF_DEVIDE_ID=0
-    self._assert_true((v==DEF_DEVIDE_ID),"Device ID 0x%0X"%v)
-
+#    DEF_DEVIDE_ID=0
+#    self._assert_true((v==DEF_DEVIDE_ID),"Device ID 0x%0X"%v)
+    self.logging.info("Device ID 0x%08X"%v)
+    self.logging.info("Device name %s"%self.tpx.readName())
+    
+    
     r,v=self.tpx.ctrl.getGenConfig(self.tpx.id)
     self._assert_true(r,"Reading General Config")
     GEN_CONFIG_DEFAULT_VALUE=1
@@ -16,12 +19,12 @@ class test02(tpx3_test):
 
     r,v=self.tpx.ctrl.getPllConfig(self.tpx.id)
     self._assert_true(r,"Reading PLL Config")
-    PLL_CONFIG_DEFAULT_VALUE=0xE
+    PLL_CONFIG_DEFAULT_VALUE=0x1E
     self._assert_true((v==PLL_CONFIG_DEFAULT_VALUE),"PLL Config value 0x%0X"%v)
 
     r,v=self.tpx.ctrl.getOutBlockConfig(self.tpx.id)
     self._assert_true(r,"Reading Output Block Config")
-    OUT_BLOCK_CONFIG_DEFAULT_VALUE=0x9FF
+    OUT_BLOCK_CONFIG_DEFAULT_VALUE=0x7B01#0x9FF
     self._assert_true((v==OUT_BLOCK_CONFIG_DEFAULT_VALUE),"Output Block value 0x%0X"%v)
 
     r,v1,v2=self.tpx.ctrl.getTpPeriodPhase(self.tpx.id)
