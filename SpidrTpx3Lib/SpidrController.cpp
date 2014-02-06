@@ -339,7 +339,7 @@ bool SpidrController::setHeaderFilter( int dev_nr,
 				       int cpu_mask )
 {
   return this->requestSetInt( CMD_SET_HEADERFILTER, dev_nr,
-			      (eth_mask | 0xFFFF) |
+			      (eth_mask & 0xFFFF) |
 			      ((cpu_mask & 0xFFFF) << 16) );
 }
 
