@@ -45,6 +45,8 @@
 
 #define CMD_RESET_DEVICE       0x124
 #define CMD_RESET_DEVICES      0x125
+#define CMD_REINIT_DEVICE      0x126
+#define CMD_REINIT_DEVICES     0x127
 
 // Configuration: pixels
 #define CMD_SET_PIXCONF        0x22A
@@ -67,6 +69,10 @@
 #define CMD_SET_OUTBLOCKCONFIG 0x33D
 #define CMD_GET_SLVSCONFIG     0x33E
 #define CMD_SET_SLVSCONFIG     0x33F
+#ifdef CERN_PROBESTATION
+#define CMD_BURN_EFUSE         0x340
+#endif
+#define CMD_GET_EFUSES         0x341
 
 // Trigger
 #define CMD_GET_TRIGCONFIG     0x440
