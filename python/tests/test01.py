@@ -3,6 +3,8 @@ from SpidrTpx3_engine import *
 import time
 import os
 import sys
+
+
 class test01_supply(tpx3_test):
   """Power supply test"""
 
@@ -13,8 +15,8 @@ class test01_supply(tpx3_test):
       i=float(i)/10000
       p=float(p)/1000
       return (r,v,i,p)
+    self.tpx.reinitDevice()
     ret_values={}
-
     r,v,i,p=conv(self.tpx.ctrl.getDvdd())
     self._assert_true(r,"Reading digial power consumption")
     self._assert_in_range(v,1.4,1.6,"Digital supply voltage %.3f V"%v)
@@ -34,30 +36,41 @@ class test01_supply(tpx3_test):
     ret_values['IDDA']="%.3f"%i
     ret_values['PDDA']="%.3f"%p
 
-
+    fn=self.fname+"/results.txt"
+    self.dict2file(fn,ret_values)
+    self.logging.info("Results stored to %s"%fn)
+    
+    
 class test01_bias(tpx3_test):
   """Biasing values test"""
 
   def _execute(self,**keywords):
-
+    ret_values={}
     self.tpx.ctrl.setSenseDac(0,0x1B)
     v=self.tpx.get_adc(4)
     self._assert_in_range(v,0.2,1.0,"PLL Control Voltage %.3f V"%v)
+    ret_values['PLL_CONTROL']="%.4f"%v
     
     self.tpx.ctrl.setSenseDac(0,0x1C)
     v=self.tpx.get_adc(4)
     self._assert_in_range(v,0.6,0.7,"Bandgap voltage %.3f V"%v)
+    ret_values['BANDGAP']="%.4f"%v
     
     self.tpx.ctrl.setSenseDac(0,0x1D)
     v=self.tpx.get_adc(4)
     self._assert_in_range(v,0.6,0.7,"Temperature voltage %.3f V"%v)
+    ret_values['TEMPERATURE']="%.4f"%v
     
     self.tpx.ctrl.setSenseDac(0,0x1E)
     v=self.tpx.get_adc(4)
     self._assert_in_range(v,1.1,1.2,"IBias DAC voltage %.3f V"%v)
+    ret_values['IBIAS_DAC']="%.4f"%v
 
     self.tpx.ctrl.setSenseDac(0,0x1F)
     v=self.tpx.get_adc(4)
     self._assert_in_range(v,0.9,1.1,"IBias DAC cascode voltage %.3f V"%v)
+    ret_values['IBIAS_DAC_CASCODE']="%.4f"%v
 
-
+    fn=self.fname+"/results.txt"
+    self.dict2file(fn,ret_values)
+    self.logging.info("Results stored to %s"%fn)

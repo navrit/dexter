@@ -11,17 +11,18 @@ Example:
   test03_dac_scan(step=1 mpc=64) <- precise scan"""
 
   def _execute(self,**keywords):
+    self.tpx.reinitDevice()
     results=[]
     def_step=4
     meas_per_code=16
-    logging.info("DAC scan settings:")
+    self.logging.info("DAC scan settings:")
     if 'step' in keywords:
       def_step=int(keywords['step'])
-    logging.info("Step size: %d"%def_step)
+    self.logging.info("Step size: %d"%def_step)
 
     if 'mpc' in keywords:
       meas_per_code=int(keywords['mpc'])
-    logging.info("Measurements per code: %d"%meas_per_code)
+    self.logging.info("Measurements per code: %d"%meas_per_code)
     
    
     g = Gnuplot.Gnuplot(debug=0)
@@ -48,6 +49,8 @@ Example:
     codes=[]
     tab=dict()
     retdict={}
+    details=self.fname+'/details/'
+    self.mkdir(details)
     for dac_id in range(1,19):
       if dac_id==18:
         r,pll_conf=self.tpx.ctrl.getPllConfig(self.tpx.id)
@@ -67,6 +70,8 @@ Example:
         steps.append(code)
       if steps[-1]!=max_code:steps.append(max_code)
       tab[dac_id]={}
+      f=open(details+"%s.dat"%name,"w")
+      f.write("# %s\n"%name)
       for code in steps:
         if not code in codes: codes.append(code)
         r=self.tpx.ctrl.setDac(self.tpx.id,dac_id,code)
@@ -74,6 +79,8 @@ Example:
         x.append(float(code)/max_code)
         y.append(val)
         tab[dac_id][code]=val
+        f.write("%d %.4f\n"%(code,val))
+      f.close()
       fs=y[-1]-y[0]
       mono="YES"
       sigma=1.5/256
@@ -89,33 +96,33 @@ Example:
       retdict[monostr]=mono
       d = Gnuplot.Data(x, y,   title=name,    with_='lp pt 5 ps 0.2')
       g._add_to_queue([d])
-      logging.info("  Measured full scale %.3f"%(abs(fs)))
-      logging.info("  Acceptance range [%.3f,%3f]"%fsr[dac_id])
+      self.logging.info("  Measured full scale %.3f"%(abs(fs)))
+      self.logging.info("  Acceptance range [%.3f,%3f]"%fsr[dac_id])
 
       self._assert_in_range(abs(fs),fsr[dac_id][0],fsr[dac_id][1],"DAC %s FS range %.3f V"%(name,abs(fs)))
       self._assert_true((mono=="YES"),"DAC %s monotonicity %s"%(name,mono))
       if dac_id==18:
         self.tpx.ctrl.setPllConfig(self.tpx.id,pll_conf)
     g("set terminal png size 450,370 small")
-    fn='%s.png'%self.fname
+    fn='%s/dacscan.png'%self.fname
     g("set output '%s'"%fn)
     g.refresh() 
-    logging.info("Plot saved to %s"%fn)
-    logging.debug("Details:")
+    self.logging.info("Plot saved to %s"%fn)
 
-    l="code | "
-    for dac_id in range(1,19):
-      l+="%-11s | "%dac_name[dac_id]
-    logging.debug(l)
-    for c in sorted(codes):
-     l=" %3d | "%c
-     for dac_id in range(1,19):
-       if c in tab[dac_id]: l+= "%11.6f | "%tab[dac_id][c]
-       else:l+="            | "
-     logging.debug(l)
+#    self.logging.debug("Details:")
+#    l="code | "
+#    for dac_id in range(1,19):
+#      l+="%-11s | "%dac_name[dac_id]
+#    self.logging.debug(l)
+#    for c in sorted(codes):
+#     l=" %3d | "%c
+#     for dac_id in range(1,19):
+#       if c in tab[dac_id]: l+= "%11.6f | "%tab[dac_id][c]
+#       else:l+="            | "
+#     self.logging.debug(l)
 
     #save data to file
-    fn=self.fname+".dat"
+    fn=self.fname+"/dacscan.dat"
     f=open(fn,"w")
     l="#code  "
     for dac_id in range(1,19):
@@ -128,6 +135,6 @@ Example:
         else:l+="            "
       f.write(l+"\n")
     f.close()
-    logging.info("Data saved to %s"%fn)
+    self.logging.info("Data saved to %s"%fn)
 
     return retdict

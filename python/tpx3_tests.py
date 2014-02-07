@@ -192,7 +192,7 @@ def main():
     run_name+="_"+options.prefix
   mkdir("logs/%s/%s/"%(name,run_name))
   logname='logs/%s/%s/log.txt'%(name,run_name)
-  logging.basicConfig(level=logging.DEBUG,
+  logging.basicConfig(level=logging.INFO,
                     format='[%(levelname)7s] [%(relativeCreated)5d] %(message)s',
                     datefmt='%M:%S',filename=logname, filemode='w')
   formatter = logging.Formatter('[%(levelname)7s] [%(relativeCreated)5d] %(message)s')

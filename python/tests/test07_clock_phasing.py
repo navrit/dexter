@@ -46,7 +46,7 @@ class test07_clock_phasing(tpx3_test):
 #    self.tpx.datadrivenReadout()
     self.tpx.sequentialReadout(tokens=2)
     data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
-    
+    ret_values={}
     for seq,phase in enumerate( (0,8) ):
       self.tpx.setTpPeriodPhase(1,phase)
 
@@ -87,6 +87,7 @@ class test07_clock_phasing(tpx3_test):
       for col in range(256):
         x=[]
         y=[]
+        dcol=int(col/2)
         if not col in result:
            self.logging.warrning("No data for column %d"%col)
            continue
@@ -97,14 +98,26 @@ class test07_clock_phasing(tpx3_test):
              mis+=1
              continue
           x.append(row)
-          y.append(result[col][row])
+          offset=0
+          if dcol%16!=0:
+            offset=(15-(dcol-1)%16)
+          yy=result[col][row]-offset
+          y.append(yy)
+          
         (a_s,b_s,r,tt,stderr)=stats.linregress(x,y)
         f.write("%3d %.6f %.6f %.6f %d\n" % (col, a_s,b_s,stderr,mis))
         for row in range(256):
           if not row in result[col] : 
              continue
           fit=row*a_s+b_s
-          diffs.append(fit-result[col][row])
+          offset=0
+          if dcol%16!=0:
+            offset=(15-(dcol-1)%16)
+          y=result[col][row]-offset
+
+          diffs.append(fit-y)
+
+#      f2.close()
       if mis>0:
         self.logging.warning("Pixels missing: %d"%(mis))
 
@@ -122,15 +135,18 @@ class test07_clock_phasing(tpx3_test):
       g("plot '%s' w lp t 'phase=0x%0x'"%(fn,phase))
       self.logging.info("Errors saved to %s"%fn)
       stddev=np.std(diffs)
+      ret_values['PHASE%0x_STDDEV'%phase]="%.4f"%stddev
       self.logging.info("Std. dev. %.3f"%stddev)
       l5s=0
       h5s=0
-      sd5=stddev*6.0
+      sd5=3.0#stddev*.0
       for d in diffs:
         if d>sd5: h5s+=1
         if d<-sd5: l5s+=1
-      self.logging.info("Higher > 6*sigma : %d"%h5s)
-      self.logging.info("Lower < -6*sigma : %d"%l5s)
+      self.logging.info("Higher > 3 LSB : %d"%h5s)
+      self.logging.info("Lower < -3 LSB : %d"%l5s)
+      ret_values['PHASE%0x_HIGHER'%phase]="%d"%h5s
+      ret_values['PHASE%0x_LOWER'%phase]="%d"%l5s
 
       fn=self.fname+'/phase%02x.map'%phase
       self.logging.info("Plot saved to %s"%fn)
@@ -141,7 +157,10 @@ class test07_clock_phasing(tpx3_test):
           else: f.write("0 ")
         f.write("\n")
       f.close()
-
+      
+    fn=self.fname+"/results.txt"
+    self.dict2file(fn,ret_values)
+    self.logging.info("Results stored to %s"%fn)
 
 
 #(0x44) and High (0x45)

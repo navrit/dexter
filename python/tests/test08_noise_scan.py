@@ -11,6 +11,9 @@ from dac_defaults import dac_defaults
 import zipfile
 import shutil
 import sys
+from Gnuplot import Gnuplot
+
+
 def zipdir(fname,path):
     zip = zipfile.ZipFile(fname, 'w')
     for root, dirs, files in os.walk(path):
@@ -93,7 +96,7 @@ class test08_noise_scan(tpx3_test):
     self.tpx.setPllConfig( (TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_16 | 0x14<<TPX3_PLLOUT_CONFIG_SHIFT) )
     self.tpx.setCtprBits(0)
     self.tpx.setCtpr()
-    self.tpx.setShutterLen(500)
+    self.tpx.setShutterLen(400)
     self.tpx.sequentialReadout()
     self.tpx.setLogLevel(2)#LVL_WARNING
 
@@ -219,8 +222,14 @@ class test08_noise_scan(tpx3_test):
       bl_rms=numpy.std(mean_values)
       noise_mean=numpy.mean(rms_values)
       noise_rms=numpy.std(rms_values)
-      self.logging.info("Baseline %.1f +/- %.1f"%(bl_mean,bl_rms))
-      self.logging.info("Noise    %.1f +/- %.1f"%(noise_mean,noise_rms))
+      ret_values={}
+      ret_values["BL_MEAN"]=bl_mean
+      ret_values["BL_RMS"]=bl_rms
+      ret_values["NOISE_MEAN"]=noise_mean
+      ret_values["NOISE_RMS"]=noise_rms
+      self.logging.info("")
+      self.logging.info("Baseline %3.2f std.dev. %3.2f"%(bl_mean,bl_rms))
+      self.logging.info("Noise    %3.2f std.dev. %3.2f"%(noise_mean,noise_rms))
       fn=(self.fname+"/bl.map",self.fname+"/rms.map",self.fname+"/problematic.map")
       f=(open(fn[0],"w"),open(fn[1],"w"),open(fn[2],"w"))
       
@@ -238,7 +247,7 @@ class test08_noise_scan(tpx3_test):
               if bl>0 and (bl>bl_mean+6.0*bl_rms  or bl<bl_mean-6.0*bl_rms) : 
                  bl_off_pixels.append( (col,row) )
                  problem=1
-              if noise>0 and (noise>noise_mean+6.0*noise_rms or noise<noise_mean-6.0*noise_rms) : 
+              if noise>0 and (noise>noise_mean*1.3 or noise<noise_mean*0.7) : 
                  noise_off_pixels.append( (col,row) )
                  problem=1
               if bl<0 or noise<0:
@@ -254,17 +263,64 @@ class test08_noise_scan(tpx3_test):
       for i in range(3):
         f[i].close()
 
+      self.logging.info("")
       self.logging.info("Missing pixels (%d) : %s"%(len(missing_pixels),str(missing_pixels) ))
       self.logging.info("Pixels with distant baseline (%d) : %s"%(len(bl_off_pixels),str(bl_off_pixels) ))
-      self.logging.info("Pixels with distant noise (%d) : %s"%(len(bl_off_pixels),str(bl_off_pixels) ))
-      self.logging.info("")
+      self.logging.info("Pixels with distant noise (%d) : %s"%(len(noise_off_pixels),str(noise_off_pixels) ))
 
+      ret_values["MISSING"]=len(missing_pixels)
+      ret_values["DISTANT_BASELINE"]=len(bl_off_pixels)
+      ret_values["DISTANT_NOISE"]=len(noise_off_pixels)
+
+
+
+      self.logging.info("")
       self.logging.info("Saving baseline map to %s"%fn[0])
       self.logging.info("Saving noise map to %s"%fn[1])
       self.logging.info("Saving bad pixels map to %s"%fn[2])
+      
       self.logging.info("")
+      if len(bl_off_pixels)>0:
+        g=Gnuplot()
+        g("set terminal png")
+        fn="%s/thscan_bad_bl.png"%self.fname
+        g("set output '%s'"%fn)
+        g("set grid ")
+        g("set xti 32")
+        g("set xlabel 'Threshold [LSB]'")
+        g("set ylabel 'Counts'")
+        g("set key out horiz cent top samp 1")
+        pcmd="plot "
+        for i,p in enumerate(bl_off_pixels):
+          col,row=p
+          if i>0: pcmd+=','
+          pname=logdir+"/%03d/%03d_%03d.dat"%(col,col,row)
+          pcmd+="'%s' w l t '(%d,%d)'"%(pname,col,row)
+        g(pcmd)
+        self.logging.info("Saving bad baseline scans to %s"%fn)
 
-      self.logging.info("")
+        g=Gnuplot()
+        g("set terminal png")
+        fn="%s/thscan_bad_noise.png"%self.fname
+        g("set output '%s'"%fn)
+        g("set grid ")
+        g("set xti 32")
+        g("set xlabel 'Threshold [LSB]'")
+        g("set ylabel 'Counts'")
+        g("set key out horiz cent top samp 1")
+        pcmd="plot "
+        for i,p in enumerate(noise_off_pixels):
+          col,row=p
+          if i>0: pcmd+=','
+          pname=logdir+"/%03d/%03d_%03d.dat"%(col,col,row)
+          pcmd+="'%s' w l t '(%d,%d)'"%(pname,col,row)
+        g(pcmd)
+        self.logging.info("Saving bad noise scans to %s"%fn)
+
+      fn=self.fname+"/results.txt"
+      self.dict2file(fn,ret_values)
+      self.logging.info("Results stored to %s"%fn)
+    
       if w2f:
         aname=logdir[:-1]+".zip"
         logging.info("Creating arhive %s"%aname)

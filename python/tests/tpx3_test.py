@@ -23,12 +23,13 @@ class tpx3_test(object):
     self.logging = logging.getLogger(self.__class__.__name__)
     self.logging.setLevel(logging.DEBUG)
     fh = logging.FileHandler(logname,mode='w')
-    fh.setLevel(logging.INFO)
+    fh.setLevel(logging.DEBUG)
     formatter = logging.Formatter( '[%(levelname)7s] [%(relativeCreated)5d] %(message)s',  datefmt='%M:%S')
     fh.setFormatter(formatter)
     self.logging.addHandler(fh)
 
 
+    self.logging.info("")
     self.logging.info("#"*BSPACERLEN)
     self.logging.info("# %-100s #"%self.__doc__.split('\n')[0])
     m="%s@%s"%(self.__class__.__name__ ,inspect.getfile(self.__class__))
@@ -83,6 +84,14 @@ class tpx3_test(object):
       os.makedirs(d)  
 #      self.logging.info("Creating directory '%s'"%d)
 
+  def dict2file(self,fname,d):
+    f=open(fname,"w")
+    for k in d.keys():
+      f.write("%s %s\n"%(k,d[k]))
+    f.close()
+
+    
+    
   def wiki_banner(self,**keywords):
     if "wiki" in keywords and keywords["wiki"] :
       dac_name=  ['none','IB_PRE_ON',  'IB_PRE_OFF','VPRE_NCAS',     'IB_IKRUM',
