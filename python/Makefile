@@ -10,8 +10,12 @@ all: $(TMP_DIR)/SpidrTpx3_engine.so subdirs
 $(TMP_DIR)/udp_server.o:$(SRC_DIR)/udp_server.cpp
 	$(CXX) $(CFLAGS) -c $< -o $@
 
+PYTHON_PARAMS=
+ifdef CERN_PROBESTATION
+PYTHON_PARAMS=" CERN_PROBESTATION"
+endif
 $(TMP_DIR)/SpidrTpx3_engine.c:$(SRC_DIR)/SpidrTpx3_engine_bind.py
-	PYTHONPATH=$(PWD) python $< > $@
+	PYTHONPATH=$(PWD) python  $<  $(PYTHON_PARAMS) > $@
 
 $(TMP_DIR)/SpidrTpx3_engine.o:$(TMP_DIR)/SpidrTpx3_engine.c
 	$(CXX) $(CFLAGS) -c $< -o $@
@@ -31,6 +35,7 @@ subdirs:
 
 ls clean:
 	rm -rf tmp/*
+	rm $(TMP_DIR)/SpidrTpx3_engine.c
 	find . -name '*.pyc' -exec rm -f {} \;
 	
 fresh:

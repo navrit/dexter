@@ -4,8 +4,13 @@ from pybindgen import *
 import sys
 from defines import load_defines
 
+CERN_PROBESTATION=0
+for a in sys.argv:
+  if a.strip()=="CERN_PROBESTATION":CERN_PROBESTATION=1
+ 
 mod = Module('SpidrTpx3_engine')
-print "#define CERN_PROBESTATION"
+if CERN_PROBESTATION:
+  print "#define CERN_PROBESTATION"
 mod.add_include('"../../SpidrTpx3Lib/SpidrDaq.h"')
 mod.add_include('"../../SpidrTpx3Lib/SpidrController.h"')
 mod.add_include('"../../SpidrTpx3Lib/tpx3defs.h"')
@@ -53,7 +58,8 @@ c2.add_method('uploadPacket',          'bool',        [param('int', 'dev_nr'),pa
 
 c2.add_method('setLogLevel',           'bool',        [param('int', 'level')])
 c2.add_method('readEfuse',             'bool',        [param('int', 'dev_nr'),param('int*', 'efuses', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
-c2.add_method('burnEfuse',             'bool',        [param('int', 'dev_nr'),param('int', 'program_width'),param('int', 'selection')])
+if CERN_PROBESTATION:
+  c2.add_method('burnEfuse',             'bool',        [param('int', 'dev_nr'),param('int', 'program_width'),param('int', 'selection')])
 
 c2.add_method('resetTimer',            'bool',        [param('int', 'dev_nr')])
 c2.add_method('getTimer',              'bool',        [param('int', 'dev_nr'),param('unsigned int*', 'timer_lo', transfer_ownership=False,direction = Parameter.DIRECTION_OUT), 
