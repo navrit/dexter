@@ -40,6 +40,7 @@ th_stop   - threshold stop [LSB] (defult 511)
 th_step   - threshold step size [LSB] (defult 4)"""
 
   def _execute(self,**keywords):
+    self.tpx.reinitDevice()
     self.tpx.resetPixels()
     params={}
     params['electrons']=False

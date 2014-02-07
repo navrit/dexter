@@ -70,6 +70,9 @@ class test07_clock_phasing(tpx3_test):
 
       for pck in data:
          if pck.type in (0xB,0xA):
+           if not pck.tot in (64,65):
+             self.logging.warning("Unexpected TOT value %d for pixel (%d,%d)"%(pck.tot,pck.col,pck.row))
+           
            cnt+=1
            v=float(pck.toa-(shutter&0x3FFF)) 
            if v<0: v+=0x4000

@@ -10,12 +10,11 @@ class test06_config_matrix(tpx3_test):
 
   def _execute(self,**keywords):
 #    pycallgraph.start_trace()
-    self.tpx.resetPixels()
     rnd = random.Random()
-    self.mkdir(self.fname)
-
     rnd.seed(0)
     for pattern in ['zeros','ones','random',]:
+      self.tpx.reinitDevice()
+      self.tpx.resetPixels()
       logging.info(" ")
       logging.info("Digital patern being used during the test '%s'"%pattern)
       self.tpx.resetPixelConfig()
@@ -100,22 +99,22 @@ class test06_config_matrix(tpx3_test):
           for y in range(256):
             if stimulus[x][y]['received']<1:
               fmap.write("1 ")
-              fdet.write("(%3d,%3d) - missing\n"%(x,y))
+              fdet.write("( %3d , %3d ) - missing\n"%(x,y))
               if missing_displayed<20:
                 missing+="(%d,%d) "%(x,y)
                 missing_displayed+=1
             elif stimulus[x][y]['ok']!=1:
               fmap.write("1 ")
-              fdet.write("(%3d,%3d) - bad conf %02x insted of %02x\n"%(x,y,stimulus[d.col][d.row]['err'], stimulus[d.col][d.row]['config']))
-              if bad_displayed<20:
-                bad+="(%d,%d %02x!=%02x) "%(x,y, stimulus[d.col][d.row]['config'], stimulus[d.col][d.row]['err'])
+              fdet.write("( %3d , %3d ) - bad conf %02x insted of %02x\n"%(x,y,stimulus[x][y]['err'], stimulus[x][y]['config']))
+              if bad_displayed<10:
+                bad+="(%d,%d %02x!=%02x) "%(x,y, stimulus[x][y]['config'], stimulus[x][y]['err'])
                 bad_displayed+=1
             else:
               fmap.write("0 ")
           fmap.write("\n")
         fmap.close()
         fdet.close()
-        if bad_displayed==20: bad+="..."
+        if bad_displayed==10: bad+="..."
         if missing_displayed==20: missing+="..."
         if bad_displayed>0: logging.info("Bad pixels: %s"%bad)
         if missing_displayed>0: logging.info("Missing pixels: %s"%missing)

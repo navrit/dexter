@@ -185,8 +185,17 @@ class tpx3packet:
      self.row=self.sp_address*4
      self.row+= (self.pixel_address&0x3)
      
-     self.event_counter=tote10[self.event_counter]
-     self.itot=itot14[self.itot]
+     if self.event_counter in tote10:
+       self.event_counter=tote10[self.event_counter]
+     else:
+       logging.warning("Packet decode: Invalid event_counter value = %0x [%012X] %s"%(self.event_counter,self.raw))
+       self.event_counter=0
+     
+     if self.itot in itot14:
+       self.itot=itot14[self.itot]
+     else:
+       logging.warning("Packet decode: Invalid itot value = %0x [%012X]"%(self.itot,self.raw))
+       self.itot=0
      self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d evn_cnt=%d itot=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address, self.event_counter, self.itot)
 
 
@@ -626,6 +635,9 @@ class TPX3:
     while cnt>0 and not ok:
       r=self.udp.getH(val,mask,debug=0)
       for pck_num in r:
+        if pck_num==0:
+          logging.warning("Received 0x0 packet !")
+          continue
         p=tpx3packet(pck_num)
         ret.append(p)
         if self.log_packets : logging.debug(p)
