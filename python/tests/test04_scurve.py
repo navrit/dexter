@@ -44,12 +44,12 @@ th_step   - threshold step size [LSB] (defult 4)"""
     params={}
     params['electrons']=False
     if 'electrons' in keywords :     params['electrons']=True
-    params['amps']=[0,112,124,135]
+    params['amps']=[0,1000,2000]
     params['shutter_len']=15000
     params['shutter_len_noise']=500
     params['th_start']=0
     params['th_stop']=511
-    params['th_step']=4
+    params['th_step']=2
     if 'th_start' in keywords : params['th_start' ]=int(keywords['th_start'])
     if 'th_stop' in keywords : params['th_stop' ]=int(keywords['th_stop'])
     if 'th_step' in keywords : params['th_step' ]=int(keywords['th_step'])
@@ -58,7 +58,8 @@ th_step   - threshold step size [LSB] (defult 4)"""
     params['pll_config'] = TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_16
 
 
-    dac_defaults(self.tpx)
+
+
     if params['electrons']:
        params['gen_config']|=TPX3_POLARITY_EMIN
        params['shutter_len']=params['shutter_len']
@@ -72,25 +73,74 @@ th_step   - threshold step size [LSB] (defult 4)"""
     self.tpx.setCtpr()
     self.tpx.sequentialReadout()
 
-#    self.tpx.flush_udp_fifo(0x71CF000000000000)
+
+
+    self.logging.info("Optimization of DC operating point")
+#    dac_defaults(self.tpx)
+    self.tpx.setDac(TPX3_IBIAS_IKRUM,15)
+    self.tpx.setDac(TPX3_VTHRESH_FINE,256)
+    self.tpx.setDac(TPX3_VTHRESH_COARSE,7) 
+
+    self.tpx.setSenseDac(TPX3_VTHRESH_COARSE)
+    vthcorse=self.tpx.get_adc(1)
+    time.sleep(0.001)
+    vthcorse=self.tpx.get_adc(64)
+    self.logging.info("  TPX3_VTHRESH_COARSE code=7 voltage=%.1f mV"%(1000.0*vthcorse))
+
+    best_vfbk_val=0
+    best_vfbk_code=0
+    self.tpx.setSenseDac(TPX3_VFBK)
+    for code in range(64,192):
+      self.tpx.setDac(TPX3_VFBK,code) 
+      vfbk=self.tpx.get_adc(1)
+      time.sleep(0.001)
+      vfbk=self.tpx.get_adc(16)
+      if abs(vfbk-vthcorse)<abs(best_vfbk_val-vthcorse):
+        best_vfbk_val=vfbk
+        best_vfbk_code=code
+    self.tpx.setDac(TPX3_VFBK,best_vfbk_code) 
+    vfbk=self.tpx.get_adc(1)
+    time.sleep(0.001)
+    vfbk=self.tpx.get_adc(8)
+    self.logging.info("  TPX3_VFBK code=%d voltage=%.1f mV"%(best_vfbk_code,(1000.0*vfbk)))
+
 
     self.wiki_banner(**keywords)
 
-    self.mkdir(self.fname)
+    self.tpx.setDac(TPX3_VTP_COARSE,64)
+    self.tpx.setSenseDac(TPX3_VTP_COARSE)
+    coarse=self.tpx.get_adc(32)
 
-    
-    for amp in range(4):
+    for amp in range(len(params['amps'])):
       dv=0
       electrons=0
       if amp>0:
-        self.tpx.setDac(TPX3_VTP_FINE,params['amps'][amp]) # (0e-) slope 44.5e/LSB -> (112=1000e-)  (135=2000e-)
-        self.tpx.setSenseDac(TPX3_VTP_COARSE)
-        coarse=self.tpx.get_adc(64)
         self.tpx.setSenseDac(TPX3_VTP_FINE)
+        time.sleep(0.1)
+        best_vtpfine_diff=1e3
+        best_vtpfine_code=0
+        for code in range(64,512):
+          self.tpx.setDac(TPX3_VTP_FINE,code) # (0e-) slope 44.5e/LSB -> (112=1000e-)  (135=2000e-)
+          time.sleep(0.001)
+          fine=self.tpx.get_adc(8)
+          dv=1000.0*(fine-coarse)
+          electrons=20.0*abs(dv)
+          diff=params['amps'][amp]-electrons
+#          print "%d %6.4f %6.4f dv %6.4f el %6.1f"%(code, fine, coarse,dv,electrons)
+          if diff>0: break
+          diff=abs(diff)
+          if diff<best_vtpfine_diff:
+            best_vtpfine_diff=diff
+            best_vtpfine_code=code
+        self.tpx.setDac(TPX3_VTP_FINE,best_vtpfine_code) 
         fine=self.tpx.get_adc(64)
         dv=1000.0*abs(fine-coarse)
         electrons=20.0*dv
+        logging.info("  TPX3_VTP_FINE code=%d voltage=%.1f"%(best_vtpfine_code,fine*1000.0))
+
         logging.info("Test pulse voltage %.4f mv (~ %.0f e-)"%(dv,electrons))
+        
+
       else:
         logging.info("Test pulse voltage 0.0 mv (0 e-)")
 
@@ -99,6 +149,8 @@ th_step   - threshold step size [LSB] (defult 4)"""
       if 1:
         self.tpx.resetPixelConfig()
         self.tpx.setPixelMask(ALL_PIXELS,ALL_PIXELS,1)
+        self.tpx.setPixelThreshold(ALL_PIXELS,ALL_PIXELS,8)
+                          
         for x in range(256):
             self.tpx.setPixelMask(x,x, 0)
             if amp>0:
@@ -138,7 +190,7 @@ th_step   - threshold step size [LSB] (defult 4)"""
           logging.info("Saving files to %s"%dn)
           self.mkdir(dn)
           g=sGnuplot(dn+"plot.png")
-          g("set terminal png size 800,600","set grid", "set xlabel 'Threshold[LSB]'", "set ylabel 'Counts'" )#, "set key out top cent samp 0.1"
+          g("set terminal png size 800,600","set grid","set xtic 64", "set xlabel 'Threshold[LSB]'", "set ylabel 'Counts'" )#, "set key out top cent samp 0.1"
           pcmd='plot '
           for col in res:
             for row in res[col]:
