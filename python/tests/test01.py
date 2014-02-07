@@ -45,6 +45,7 @@ class test01_bias(tpx3_test):
   """Biasing values test"""
 
   def _execute(self,**keywords):
+    self.tpx.reinitDevice()
     ret_values={}
     self.tpx.ctrl.setSenseDac(0,0x1B)
     v=self.tpx.get_adc(4)
