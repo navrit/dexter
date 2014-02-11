@@ -9,14 +9,20 @@ class test06_config_matrix(tpx3_test):
   """Configure / Verify matrix configuration"""
 
   def _execute(self,**keywords):
-#    pycallgraph.start_trace()
+    cat=keywords['category']
+    mask_pixels=keywords['mask_pixels']
     rnd = random.Random()
     rnd.seed(0)
+    missing_pixels=[]
+    dead_pixels=[]
+#    self.tpx.setShutterLen(1)
+#    self.tpx.openShutter()
+
     for pattern in ['zeros','ones','random',]:
       self.tpx.reinitDevice()
       self.tpx.resetPixels()
       logging.info(" ")
-      logging.info("Digital patern being used during the test '%s'"%pattern)
+      logging.info("Digital pattern being used during the test '%s'"%pattern)
       self.tpx.resetPixelConfig()
       stimulus={}
       for x in range(256):
@@ -47,13 +53,7 @@ class test06_config_matrix(tpx3_test):
       self.tpx.setHeaderFilter(0xffff,cpu_filter&(~0x0200)) # cpu should not see 0x90 packets
 
       self.tpx.send_byte_array([0x90]+[0x00]*(256/8)) 
-      if 0:
-        print "sleep"
-        time.sleep(50)
-        print "read"
 
-      self.tpx.setShutterLen(1)
-#    self.tpx.openShutter()
       self.tpx.sequentialReadout(tokens=4)
 
       data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
@@ -67,7 +67,6 @@ class test06_config_matrix(tpx3_test):
           else:
             stimulus[d.col][d.row]['err']=d.config
 
-
       valid_pixels=0
       for x in range(256):
         for y in range(256):
@@ -79,16 +78,15 @@ class test06_config_matrix(tpx3_test):
 
       fn=self.fname+".bad"
       if valid_pixels==256*256:
-        logging.info("All pixels were correcly configured and readout")
+        logging.info("All pixels were correctly configured and readout")
       else:
-        logging.info("Only %d pixels were correcly configured and readout (problem with %d pixels)"%(valid_pixels,256*256-valid_pixels))
         fn=self.fname+"/%s.map"%pattern
         fmap=open(fn,"w")
-        logging.info("Storring bad pixel map to %s"%fn)
+        logging.warning("Storing bad pixel map to %s"%fn)
 
         fn=self.fname+"/%s.details"%pattern
         fdet=open(fn,"w")
-        logging.info("Storring bad details list to %s"%fn)
+        logging.warning("Storing bad details list to %s"%fn)
 
         missing=""
         missing_displayed=0
@@ -105,10 +103,12 @@ class test06_config_matrix(tpx3_test):
                 missing_displayed+=1
             elif stimulus[x][y]['ok']!=1:
               fmap.write("1 ")
-              fdet.write("( %3d , %3d ) - bad conf %02x insted of %02x\n"%(x,y,stimulus[x][y]['err'], stimulus[x][y]['config']))
+              fdet.write("( %3d , %3d ) - bad conf %02x instead of %02x\n"%(x,y,stimulus[x][y]['err'], stimulus[x][y]['config']))
               if bad_displayed<10:
                 bad+="(%d,%d %02x!=%02x) "%(x,y, stimulus[x][y]['config'], stimulus[x][y]['err'])
                 bad_displayed+=1
+              if not (x,y) in mask_pixels and not (x,y) in dead_pixels :
+                dead_pixels.append( (x,y) )
             else:
               fmap.write("0 ")
           fmap.write("\n")
@@ -116,7 +116,19 @@ class test06_config_matrix(tpx3_test):
         fdet.close()
         if bad_displayed==10: bad+="..."
         if missing_displayed==20: missing+="..."
-        if bad_displayed>0: logging.info("Bad pixels: %s"%bad)
-        if missing_displayed>0: logging.info("Missing pixels: %s"%missing)
+        if bad_displayed>0:     
+          self.logging.warning("Bad pixels: %s"%bad)
+        if missing_displayed>0: 
+          self.logging.warning("Missing pixels: %s"%missing)
+          self.logging.warning("TODO: These missing pixels are assumed to be lost in FPGA. In future this test should be corrected ! ")
 
+    ret_values={}
+    ret_values["DEAD_PIXELS"]=len(dead_pixels)
+    fn=self.fname+"/results.txt"
+    self.dict2file(fn,ret_values)
+    self.logging.info("Results stored to %s"%fn)
+    
+    if len(dead_pixels)>0:
+       cat='B_deadpixel'
+    return {'category':cat,'info':keywords['info'], 'continue':True, 'mask_pixels':dead_pixels}
 

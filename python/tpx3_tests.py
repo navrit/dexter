@@ -71,25 +71,36 @@ class TPX_tests:
     self.tpx.info()
 
   def execute(self,test_list=[],wiki=False):
-   self.prepare()
-   avaliable_tests=tests.get_tests()
-   if len(test_list)==0:
-     for test_name in sorted(avaliable_tests):
-       test_list.append(test_name)
-     test_list=sorted(test_list)
+    self.prepare()
+    avaliable_tests=tests.get_tests()
+    if len(test_list)==0:
+      for test_name in sorted(avaliable_tests):
+        test_list.append(test_name)
+      test_list=sorted(test_list)
 
-   for test_name in test_list:
-     params={'wiki':wiki}
-     if test_name.find("(")>=0:
-       if test_name.find(")")>=0:
+    params={'wiki':wiki,"category":"A", "info":"", "mask_pixels":[]}
+    for test_name in test_list:
+      if test_name.find("(")>=0:
+        if test_name.find(")")>=0:
           args=test_name[test_name.find("(")+1:test_name.find(")")]
           test_name=test_name[:test_name.find("(")]
           params=dict(token.split('=') for token in shlex.split(args))    
-     if test_name in avaliable_tests:
-       test=avaliable_tests[test_name](tpx=self.tpx,fname=self.dlogdir+test_name)
-       test.execute(**params)
-     else:
-       logging.warning( "Unknown test %s"%test_name)
+          
+      if test_name in avaliable_tests:
+        test=avaliable_tests[test_name](tpx=self.tpx,fname=self.dlogdir+test_name)
+        result=test.execute(**params)
+        params['category']=result['category']
+        if not result['continue']: 
+          logging.info( "Test %s decided that there is no point in continuing further tests."%(test_name))
+          break
+        for p in result['mask_pixels']:
+          if not p in params['mask_pixels']: 
+            params['mask_pixels'].append(p)
+      else:
+        logging.warning( "Unknown test %s"%test_name)
+    logging.info("")
+    logging.info("Chip category %s"%params["category"])
+    logging.info("Problematic pixels : %d"%len(params["mask_pixels"]))
 
   def list(self):
    avaliable_tests=tests.get_tests()

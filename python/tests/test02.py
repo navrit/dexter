@@ -4,6 +4,7 @@ class test02(tpx3_test):
   """Default register values"""
 
   def _execute(self,**keywords):
+    cat=keywords['category']
     self.tpx.reinitDevice()
     r,v=self.tpx.ctrl.getDeviceId(self.tpx.id)
     self._assert_true(r,"Reading device ID")
@@ -39,4 +40,4 @@ class test02(tpx3_test):
     self._assert_true(r,"Reading TP Number")
     TP_NUMBER_DEFAULT_VALUE=0x0
     self._assert_true((v==TP_NUMBER_DEFAULT_VALUE),"TP number value 0x%0X"%v)
-
+    return {'category':cat,'info':keywords['info'], 'continue':True}

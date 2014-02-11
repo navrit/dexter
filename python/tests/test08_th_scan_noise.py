@@ -45,6 +45,7 @@ class test08_equalization(tpx3_test):
       for i in range(0,512,1):
 
         self.tpx.setDac(TPX3_VTHRESH_FINE,i)
+        self.tpx.resetPixels()
         data=self.tpx.recv_mask(0x7102000000000000, 0xFFFF000000000000)
         if 0 and len(data)>1:
           for d in data:

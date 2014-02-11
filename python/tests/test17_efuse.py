@@ -47,7 +47,9 @@ class test17_efuse(tpx3_test):
     name
     efuses=self.tpx.readEfuse()
     bname=self.tpx.readName()
-    
+
+    ret_values={}
+
     logging.info( "Efuses value : 0x%08x"%efuses)
     logging.info( "Chip name    : %s"%bname)
     if name!=None and bname=='-':
@@ -90,8 +92,10 @@ class test17_efuse(tpx3_test):
               bname_final=self.tpx.readName()
               logging.info( "Efuses value : 0x%08x"%efuses_final)
               logging.info( "Chip name    : %s"%bname_final)
+              ret_values['EFUSES']=efuses_final
               if efuses_final==efuses:
                 logging.info( "Burning efuses succeded")
+                ret_values['NAME']=bname_final
               else:
                 logging.error( "Burning efuses failed (is:0x%08x, should be:0x%08x)"%(efuses_final,efuses))
               
@@ -102,3 +106,9 @@ class test17_efuse(tpx3_test):
       if err:
         logging.error(err)
 
+
+    fn=self.fname+"/results.txt"
+    self.dict2file(fn,ret_values)
+    self.logging.info("Results stored to %s"%fn)
+
+    return {'category':'A','info':keywords['info'], 'continue':True}

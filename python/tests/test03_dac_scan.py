@@ -41,16 +41,17 @@ Example:
                        'IB_DIS1_OFF','IB_DIS2_ON','IB_DIS2_OFF',   'IB_PIXDAC',
                        'IB_TPBIN',   'IB_TPBOUT', 'VTP_COA',       'VTP_FINE',
                        'IB_CP_PLL','PLL_VCNTRL']
-    fsr=  [(0,0),    (0.3,0.4),  (0.1,0.2),  (0.9,1.2),  (0.3,0.4),
-                     (0.9,1.2),  (0.2,0.3),  (1.0,1.2),  (0.5,0.6),
-                     (0.15,0.25),(0.25,0.35),(0.1,0.2),  (0.35,0.45),   
-                     (0.3,0.4),  (0.4,0.5),  (0.9,1.2),  (0.9,1.2),
-                     (0.4,0.5),  (0.0,1.25)]
+    fsr=  [(0,0),    (0.0,1.5),  (0.0,1.5),  (0.0,1.5),  (0.0,1.5),
+                     (0.0,1.5),  (0.0,1.5),  (0.0,1.5),  (0.0,1.5),
+                     (0.0,1.5),  (0.0,1.5),  (0.0,1.5),  (0.0,1.5),   
+                     (0.0,1.5),  (0.0,1.5),  (0.0,1.5),  (0.0,1.5),
+                     (0.0,1.5),  (0.0,1.5)]
     codes=[]
     tab=dict()
-    retdict={}
     details=self.fname+'/details/'
     self.mkdir(details)
+    ret_values={}
+        
     for dac_id in range(1,19):
       if dac_id==18:
         r,pll_conf=self.tpx.ctrl.getPllConfig(self.tpx.id)
@@ -91,13 +92,14 @@ Example:
           mono="NO"
       
       fsstr=name+"_FS"
-      retdict[fsstr]="%.3f"%abs(fs)
+      ret_values[fsstr]="%.3f"%abs(fs)
       monostr=name+"_MONO"
-      retdict[monostr]=mono
+      ret_values[monostr]=mono
+      
       d = Gnuplot.Data(x, y,   title=name,    with_='lp pt 5 ps 0.2')
       g._add_to_queue([d])
-      self.logging.info("  Measured full scale %.3f"%(abs(fs)))
-      self.logging.info("  Acceptance range [%.3f,%3f]"%fsr[dac_id])
+#      self.logging.info("  Measured full scale %.3f"%(abs(fs)))
+#      self.logging.info("  Acceptance range [%.3f,%3f]"%fsr[dac_id])
 
       self._assert_in_range(abs(fs),fsr[dac_id][0],fsr[dac_id][1],"DAC %s FS range %.3f V"%(name,abs(fs)))
       self._assert_true((mono=="YES"),"DAC %s monotonicity %s"%(name,mono))
@@ -137,4 +139,10 @@ Example:
     f.close()
     self.logging.info("Data saved to %s"%fn)
 
-    return retdict
+    fn=self.fname+"/results.txt"
+    self.dict2file(fn,ret_values)
+    self.logging.info("Results stored to %s"%fn)
+
+
+
+    return {'category':'A','info':keywords['info'], 'continue':True}

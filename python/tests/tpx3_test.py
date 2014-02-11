@@ -39,15 +39,37 @@ class tpx3_test(object):
       self.logging.info("# %-100s #"%"Run time parameters:")
       for key, value in keywords.iteritems():
         l=" %s = %s"% (key, value)
-        if not key in ['wiki']:
-          self.fname+="_%s%s"%(key, value)
-        self.logging.info("# %-100s #"%l)
+        if not key in ['wiki','category', 'info', 'mask_pixels','continue']:
+          if str(value)!="":
+            self.fname+="_%s%s"%(key, value)
+        if not key in ['mask_pixels']:
+          self.logging.info("# %-100s #"%l)
+        else:
+          lb=" %s : "% (key)
+          l=lb
+          for i,p in enumerate(value):
+            l+="(%3d,%3d) "%p
+            if (i)%8==7:
+              self.logging.info("# %-100s #"%l)
+              l=" "*len(lb)
+          if len(l)>len(lb):
+            self.logging.info("# %-100s #"%l)
+
     self.logging.info("# %-100s #"%("Data directory : %s"%self.fname))
     self.logging.info("# %-100s #"%("Log file : %s"%logname))
     self.logging.info("#"*BSPACERLEN)
 
-    self._execute(**keywords)
-
+    result=self._execute(**keywords)
+    if not result:
+       logging.warning("Test didn't return any result!")
+       result={'category':'Z','continue':False}
+    if not 'category' in result: 
+       logging.warning("Test should return category!")
+    if not 'continue' in result: 
+       logging.warning("Test should return continue flag!")
+    if not 'mask_pixels' in result: 
+       result['mask_pixels']=[]
+    return result
   def _execute(self,**keywords):
     print "Virtual !!"
     
@@ -61,23 +83,15 @@ class tpx3_test(object):
       self.errors.append(msg)
 
   def _assert_in_range(self,val,min,max,msg):
-    ok=False
     if val>=min and val<=max:
-      ok=True
       self.logging.info("%-95s [  OK  ]"%msg)
+      return True
     else:
       self.logging.error("%-95s [FAILED]"%msg)
+      return False
     
-    if not ok:
-      self.errors.append(msg)
 
-  def _assert_equal(self,val,min,max,msg):
-    ok=False
-    if val>=min and val<=max:
-      ok=True
-    self.log(msg,ok)
-    if not ok:
-      self.errors.append(msg)
+
       
   def mkdir(self,d):
     if not os.path.exists(d):

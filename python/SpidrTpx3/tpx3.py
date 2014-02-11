@@ -188,7 +188,7 @@ class tpx3packet:
      if self.event_counter in tote10:
        self.event_counter=tote10[self.event_counter]
      else:
-       logging.warning("Packet decode: Invalid event_counter value = %0x [%012X] %s"%(self.event_counter,self.raw))
+       logging.warning("Packet decode: Invalid event_counter value = %0x [%012X]"%(self.event_counter,self.raw))
        self.event_counter=0
      
      if self.itot in itot14:
@@ -295,6 +295,7 @@ class TPX3:
     v=float(v)/1000
     i=float(i)/10
     p=float(p)/1000
+    if p>100:p=0
     return "%.3f V %.1f mA %.3f W"%(v,i,p)
 
   def get_dvdd_v(self):
@@ -431,6 +432,10 @@ class TPX3:
   
   def setPixelMask(self,x,y,v):
     r=self.ctrl.setPixelMask(x,y,v)
+
+  def MaskPixels(self,l,mask=True):
+    for c,r in l:
+      self.setPixelMask(c,r,mask)
 
   def setPixelConfig(self):
     r=self.ctrl.setPixelConfig(self.id, cols_per_packet=2)

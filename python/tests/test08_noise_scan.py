@@ -37,19 +37,11 @@ class test08_noise_scan(tpx3_test):
       anim=['|','/','-','\\','|','/','-','\\']
       for i in range(0,512,1):
         self.tpx.setDac(TPX3_VTHRESH_FINE,i)
+#        self.tpx.resetPixels()
         data=self.tpx.recv_mask(0x7102000000000000, 0xFFFF000000000000)
+
         self.tpx.openShutter()
-        tries=2
-        data=[]
-        while tries:
-          ndata=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
-          data+=ndata
-          if len(data)==0 or data[-1].raw&0xFFFF00000000!=0x71A000000000:
-             tries-=1
-             time.sleep(0.002)
-          else:
-             break
-#        logging.debug("Packets received %d (to be masked %d)"%(len(data),mask))
+        data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
 
         #sanity check
         if len(data)==0:
@@ -83,11 +75,14 @@ class test08_noise_scan(tpx3_test):
           self.tpx.pauseReadout()
           self.tpx.setPixelConfig()
           self.tpx.sequentialReadout()
+#          self.tpx.resetPixels()
           self.tpx.flush_udp_fifo(0x71FF000000000000)#flush until load matrix
           mask=0
       return res
 
   def _execute(self,**keywords):
+    cat=keywords['category']
+    mask_pixels=keywords['mask_pixels']
     self.tpx.reinitDevice()
     self.tpx.resetPixels()
     eth_filter,cpu_filter=self.tpx.getHeaderFilter()
@@ -143,7 +138,7 @@ class test08_noise_scan(tpx3_test):
     for seq in range(4):
       logging.info("  seq %0x/4"%seq)
       cdac=8
-      self.tpx.resetPixelConfig()
+#      self.tpx.resetPixelConfig()
       self.tpx.setPixelMask(ALL_PIXELS,ALL_PIXELS,1)
       self.tpx.setPixelThreshold(ALL_PIXELS,ALL_PIXELS,cdac)
       on=0
@@ -151,6 +146,7 @@ class test08_noise_scan(tpx3_test):
         for y in range(256):
           if x%2==int(seq/2) and y%2==seq%2:
             self.tpx.setPixelMask(x,y,0)
+      self.tpx.MaskPixels(mask_pixels)
 
       self.tpx.pauseReadout()
       self.tpx.setPixelConfig()
@@ -212,8 +208,9 @@ class test08_noise_scan(tpx3_test):
               except:
                 pass
             else:
-              self.logging.warning("No hits for pixel (%d,%d)"%(col,row))
-              missing_pixels.append( (col,row) )
+              if not (col,row) in mask_pixels:
+                self.logging.warning("No hits for pixel (%d,%d)"%(col,row))
+                missing_pixels.append( (col,row) )
             if w2f:
               f.write("# avr:%.3f rms:%.3f\n"%(fit_res[col][row][1],fit_res[col][row][2]))
               f.close()
@@ -247,11 +244,11 @@ class test08_noise_scan(tpx3_test):
               if bl>0 and (bl>bl_mean+6.0*bl_rms  or bl<bl_mean-6.0*bl_rms) : 
                  bl_off_pixels.append( (col,row) )
                  problem=1
-              if noise>0 and (noise>noise_mean*1.3 or noise<noise_mean*0.7) : 
+              if noise>0 and (noise>noise_mean*1.5 or noise<noise_mean*0.5) : 
                  noise_off_pixels.append( (col,row) )
-                 problem=1
+                 problem=2
               if bl<0 or noise<0:
-                 problem=1
+                 problem=3
 
               f[0].write("%.3f "%bl)
               f[1].write("%.3f "%noise)
@@ -264,15 +261,21 @@ class test08_noise_scan(tpx3_test):
         f[i].close()
 
       self.logging.info("")
-      self.logging.info("Missing pixels (%d) : %s"%(len(missing_pixels),str(missing_pixels) ))
-      self.logging.info("Pixels with distant baseline (%d) : %s"%(len(bl_off_pixels),str(bl_off_pixels) ))
-      self.logging.info("Pixels with distant noise (%d) : %s"%(len(noise_off_pixels),str(noise_off_pixels) ))
+      mask_pixels=[]
+      if len(missing_pixels)>0:
+        self.logging.warning("Missing pixels (very distant baseline?) (%d) : %s"%(len(missing_pixels),str(missing_pixels) ))
+        mask_pixels+=missing_pixels
 
+      if len(bl_off_pixels)>0:
+        self.logging.warning("Pixels with distant baseline (%d) : %s"%(len(bl_off_pixels),str(bl_off_pixels) ))
+        mask_pixels+=bl_off_pixels
+
+      if len(noise_off_pixels)>0:
+        self.logging.warning("Pixels with distant noise (%d) : %s"%(len(noise_off_pixels),str(noise_off_pixels) ))
+  
       ret_values["MISSING"]=len(missing_pixels)
       ret_values["DISTANT_BASELINE"]=len(bl_off_pixels)
       ret_values["DISTANT_NOISE"]=len(noise_off_pixels)
-
-
 
       self.logging.info("")
       self.logging.info("Saving baseline map to %s"%fn[0])
@@ -327,4 +330,4 @@ class test08_noise_scan(tpx3_test):
         zipdir(aname,logdir)
         shutil.rmtree(logdir)
 
-
+    return {'category':cat,'info':keywords['info'], 'continue':True, 'mask_pixels':mask_pixels}
