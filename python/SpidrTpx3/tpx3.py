@@ -218,8 +218,19 @@ class tpx3packet:
      self.row=self.sp_address*4
      self.row+= (self.pixel_address&0x3)
      
-     self.tot=tote10[self.tot]
-     self.toa=toa14[self.toa]
+
+     if self.tot in tote10:
+       self.tot=tote10[self.tot]
+     else:
+       logging.warning("Packet decode: Invalid tot value = %0x [%012X]"%(self.tot,self.raw))
+       self.tot=0
+     
+     if self.toa in toa14:
+       self.toa=toa14[self.toa]
+     else:
+       logging.warning("Packet decode: Invalid itot value = %0x [%012X]"%(self.toa,self.raw))
+       self.toa=0
+
      
      self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d ftoa=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address,  self.toa,self.tot,self.ftoa)
 
@@ -349,7 +360,7 @@ class TPX3:
     return self._temp2str(self.ctrl.getLocalTemp()[1])
     
   def info(self):
-    
+    time.sleep(0.1)
     logging.info( "Controller IP       : %s"%self.ctrl.ipAddressString())
     if "daq" in self.__dict__:
       print "DAQ Class version   : %08x"%self.daq.classVersion()
@@ -637,18 +648,26 @@ class TPX3:
     cnt=2
     ret=[]
     last=0
+    vomit=0
     while cnt>0 and not ok:
       r=self.udp.getH(val,mask,debug=0)
       for pck_num in r:
+#        print pck_num,self.log_packets
         if pck_num==0:
           logging.warning("Received 0x0 packet !")
           continue
+        if pck_num==1:
+          logging.warning("Chip is vomiting! (%d)"%len(ret))
+          self.reinitDevice()
+          vomit=1
+          break
         p=tpx3packet(pck_num)
         ret.append(p)
-        if self.log_packets : logging.debug(p)
+        if self.log_packets : logging.info(p)
         last=pck_num
       cnt-=1
       if (last&mask)==val: ok=True
+      if vomit:break
     if not ok:
       logging.warning("Timeout ;/ (last packet : %16X while expecting %016X)"%(last,val))
     return ret

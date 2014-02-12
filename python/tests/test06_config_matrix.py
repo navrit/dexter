@@ -10,6 +10,7 @@ class test06_config_matrix(tpx3_test):
 
   def _execute(self,**keywords):
     cat=keywords['category']
+    cont=True
     mask_pixels=keywords['mask_pixels']
     rnd = random.Random()
     rnd.seed(0)
@@ -57,6 +58,14 @@ class test06_config_matrix(tpx3_test):
       self.tpx.sequentialReadout(tokens=4)
 
       data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
+      if len(data)>256*(256+1):
+        self.logging.error("Vomiting chip.")
+        self.logging.error("Last packets")
+        for d in data[-15:]:
+          self.logging.error(" %s"%str(d))
+        cat="V"
+        cont=False
+        break
 #      valid=numpy.zeros((256,256))
       
       for d in data:
@@ -130,5 +139,5 @@ class test06_config_matrix(tpx3_test):
     
     if len(dead_pixels)>0:
        cat='B_deadpixel'
-    return {'category':cat,'info':keywords['info'], 'continue':True, 'mask_pixels':dead_pixels}
+    return {'category':cat,'info':keywords['info'], 'continue':cont, 'mask_pixels':dead_pixels}
 

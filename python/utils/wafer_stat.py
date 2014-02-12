@@ -3,7 +3,7 @@ import sys
 import glob
 import numpy as np
 def main():
-  WAFER=0
+  WAFER=1
   basedir='../logs'
   dies=[]
   keys=[]
@@ -17,7 +17,7 @@ def main():
       f=open(test,"r")
       for l in f.readlines():
         k,v=l.split()
-        if k in ['NOISE_RMS','NOISE_MEAN','BL_RMS','BL_MEAN']:
+        if k in ['NOISE_RMS','NOISE_MEAN','BL_RMS','BL_MEAN', 'GAIN_MEAN', 'GAIN_RMS']:
           v="%.3f"%float(v)
           
         die[k]=v

@@ -57,6 +57,10 @@
 	void push_pre();
 	void push_post();
 
+	void pop_pre();
+	bool pop_fast(T& element);
+	void pop_post();
+
 };
 
 	/**
@@ -170,6 +174,39 @@
 	    return true;
 
 	};
+
+	template<class T>
+	void SynchronizedQueue<T>::pop_pre()
+	{
+		io_mutex_.lock();
+	};
+
+	template<class T>
+	bool SynchronizedQueue<T>::pop_fast(T& element)
+	{
+	//get the last inserted element
+		if (SynchronizedQueue::sQueue.empty())
+		{
+			return false;
+		}
+
+	    element = SynchronizedQueue::sQueue.front();
+	    //remove the last inserted element, since we have a copy in element
+	    SynchronizedQueue::sQueue.pop();
+	    return true;
+
+	};
+
+	template<class T>
+	void SynchronizedQueue<T>::pop_post()
+	{
+		//Now we need to unlock the mutex otherwise waiting threads will not be able to wake and lock the
+		//mutex by time before push is locking again
+	    io_mutex_.unlock();
+		//notifiy waiting thread they can pop/push now
+	    waitCondition.notify_one();
+	};
+
 
 
 	/**

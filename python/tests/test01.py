@@ -18,12 +18,14 @@ class test01_supply(tpx3_test):
     cat=keywords['category']
     cont=True
     self.tpx.reinitDevice()
+    r,v,i,p=conv(self.tpx.ctrl.getDvdd())
+    time.sleep(0.5)
     ret_values={}
     r,v,i,p=conv(self.tpx.ctrl.getDvdd())
     self._assert_true(r,"Reading digial power consumption")
     r1=self._assert_in_range(v,1.4,1.6,"Digital supply voltage %.3f V"%v)
-    r2=self._assert_in_range(i,0.1,0.3,"Digital supply current %.3f A"%i)
-    self._assert_in_range(p,0.1,0.5,"Digital power consumption %.3f W"%p)
+    r2=self._assert_in_range(i,0.0,1.0,"Digital supply current %.3f A"%i)
+    self._assert_in_range(p,0.0,0.5,"Digital power consumption %.3f W"%p)
     
     if not r1 or not r2:
       self.logging.error("Digital power consumption out of spec")
@@ -36,8 +38,8 @@ class test01_supply(tpx3_test):
     r,v,i,p=conv(self.tpx.ctrl.getAvdd())
     self._assert_true(r,"Reading analog power consumption")
     r1=self._assert_in_range(v,1.4,1.6,"Analog supply voltage %.3f V"%v)
-    r2=self._assert_in_range(i,0.4,0.6,"Analog supply current %.3f A"%i)
-    self._assert_in_range(p,0.6,0.8,"Analog power consumption %.3f W"%p)
+    r2=self._assert_in_range(i,0.0,1.0,"Analog supply current %.3f A"%i)
+    self._assert_in_range(p,0.0,2.8,"Analog power consumption %.3f W"%p)
     if not r1 or not r2:
       self.logging.error("Analog power consumption out of spec")
       cat='F_a'
@@ -83,7 +85,7 @@ class test01_bias(tpx3_test):
     
     self.tpx.ctrl.setSenseDac(0,0x1D)
     v=self.tpx.get_adc(4)
-    self._assert_in_range(v,0.6,0.7,"Temperature voltage %.3f V"%v)
+    self._assert_in_range(v,0.6,0.8,"Temperature voltage %.3f V"%v)
     ret_values['VOL_TEMPERATURE']="%.4f"%v
     tempv=v
 

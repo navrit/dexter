@@ -32,12 +32,20 @@ class ProbeStation:
     self.qr("StepFirstDie")
 
   def StepNextDie(self):
-    self.qr("StepNextDie")
+    r=self.qr("StepNextDie")
+    rr=r.split()
+    if int(rr[0])!=0:
+      print "ERRRRRRRRRROR!!!!!!!!"
+      print r
+    return (int(rr[1]),int(rr[2]),rr[3])
 
   def GoToXY(self,x,y,):
     r=self.qr("StepNextDie %d %d"%(x,y))
     rr=r.split()
-    return (rr[0],rr[1],rr[2])
+    if int(rr[0])!=0:
+      print "ERRRRRRRRRROR!!!!!!!!"
+      print r
+    return (rr[1],rr[2],rr[3])
 
   def GoToXY(self,x,y,):
     r=self.qr("StepNextDie %d %d"%(x,y))

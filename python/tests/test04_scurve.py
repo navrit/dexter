@@ -243,7 +243,7 @@ th_step   - threshold step size [LSB] (defult 4)"""
                     vals.append(val)
                     avr+=code*val
                     N+=val
-                fit_res[amp][col] =[-1.0,-1.0,-1.0]
+                fit_res[amp][col] =-1.0
                 if N>2:
                   avr=avr/N
                   try:
@@ -267,7 +267,7 @@ th_step   - threshold step size [LSB] (defult 4)"""
                     vals.append(val)
                     avr+=code*val
                     N+=val
-                fit_res[amp][col] =[-1.0,-1.0,-1.0]
+                fit_res[amp][col] =-1.0
                 if N>2:
                   avr=avr/N
                   try:
@@ -289,9 +289,18 @@ th_step   - threshold step size [LSB] (defult 4)"""
           logging.info("Saving plot to %s"%g.fout)
     gains=[]
     for col in range(256):
+      
+      if not col in fit_res[0] or fit_res[0][col]<0:
+         logging.info("No baseline point for pixel (%d,%d)"%(col,col))
+         continue
       Y=[0.0]
       for amp in range(1,len(params['amps'])):
+        if not col in fit_res[0] or fit_res[0][col]<0.0:
+          logging.info("No amplitude %d point for pixel (%d,%d)"%(amp,col,col))
+          continue
         Y.append(-fit_res[amp][col]+fit_res[0][col])
+
+      if len(Y)!=len(amp_meas): continue
       p0 = [Y[-1]/amp_meas[-1],]
       coeff, var_matrix = curve_fit(line, amp_meas, Y, p0=p0)
       gains.append(coeff[0])
@@ -300,7 +309,8 @@ th_step   - threshold step size [LSB] (defult 4)"""
     ret_values['GAIN_RMS']=numpy.std(gains)
     proc=100.0*ret_values['GAIN_RMS']/ret_values['GAIN_MEAN']
     self.logging.info("")
-    self.logging.info("Gain mean %.3f +/- %.3f LSB/mV (~%.1f%%)"%(ret_values['GAIN_MEAN'],ret_values['GAIN_RMS'],proc))
+    electrons=20.0/ret_values['GAIN_MEAN']
+    self.logging.info("Gain mean %.3f +/- %.3f LSB/mV (~%.1f%%)  [~%.1f e- / TH LSB]"%(ret_values['GAIN_MEAN'],ret_values['GAIN_RMS'],proc,electrons))
 
     
     fn=self.fname+"/results.txt"

@@ -4,7 +4,7 @@ from pybindgen import *
 import sys
 from defines import load_defines
 
-CERN_PROBESTATION=0
+CERN_PROBESTATION=1
 for a in sys.argv:
   if a.strip()=="CERN_PROBESTATION":CERN_PROBESTATION=1
  

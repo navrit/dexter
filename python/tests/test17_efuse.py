@@ -111,4 +111,4 @@ class test17_efuse(tpx3_test):
     self.dict2file(fn,ret_values)
     self.logging.info("Results stored to %s"%fn)
 
-    return {'category':'A','info':keywords['info'], 'continue':True}
+    return {'category':'A','mask_pixels':[],'continue':True}

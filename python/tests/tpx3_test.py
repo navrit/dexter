@@ -39,7 +39,7 @@ class tpx3_test(object):
       self.logging.info("# %-100s #"%"Run time parameters:")
       for key, value in keywords.iteritems():
         l=" %s = %s"% (key, value)
-        if not key in ['wiki','category', 'info', 'mask_pixels','continue']:
+        if not key in ['wiki','category', 'info', 'mask_pixels','continue','name']:
           if str(value)!="":
             self.fname+="_%s%s"%(key, value)
         if not key in ['mask_pixels']:

@@ -116,19 +116,18 @@ class test07_clock_phasing(tpx3_test):
             offset=(15-(dcol-1)%16)
           yy=result[col][row]-offset
           y.append(yy)
-          
-        (a_s,b_s,r,tt,stderr)=stats.linregress(x,y)
-        f.write("%3d %.6f %.6f %.6f %d\n" % (col, a_s,b_s,stderr,mis))
-        for row in range(256):
-          if not row in result[col] or (col,row) in mask_pixels: 
-             continue
-          fit=row*a_s+b_s
-          offset=0
-          if dcol%16!=0:
-            offset=(15-(dcol-1)%16)
-          y=result[col][row]-offset
-
-          diffs.append(fit-y)
+        if len(x)> 1 and len(y)>1:
+          (a_s,b_s,r,tt,stderr)=stats.linregress(x,y)
+          f.write("%3d %.6f %.6f %.6f %d\n" % (col, a_s,b_s,stderr,mis))
+          for row in range(256):
+            if not row in result[col] or (col,row) in mask_pixels: 
+               continue
+            fit=row*a_s+b_s
+            offset=0
+            if dcol%16!=0:
+              offset=(15-(dcol-1)%16)
+            y=result[col][row]-offset
+            diffs.append(fit-y)
 
       if mis>0:
         self.logging.warning("Pixels missing: %d"%(mis))
@@ -154,8 +153,8 @@ class test07_clock_phasing(tpx3_test):
       for d in diffs:
         if d>3.0: 
           h3lsb+=1
-          print d,h3lsb
-        if d<-3.0: l3lsb+=1
+        if d<-3.0: 
+          l3lsb+=1
       self.logging.info("Higher > 3 LSB : %d"%h3lsb)
       self.logging.info("Lower < -3 LSB : %d"%l3lsb)
       problems+=h3lsb+l3lsb
