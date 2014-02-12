@@ -47,6 +47,10 @@
 #define CMD_RESET_DEVICES      0x125
 #define CMD_REINIT_DEVICE      0x126
 #define CMD_REINIT_DEVICES     0x127
+#define CMD_GET_EFUSES         0x128
+#ifdef CERN_PROBESTATION
+#define CMD_BURN_EFUSE         0x129
+#endif
 
 // Configuration: pixels
 #define CMD_SET_PIXCONF        0x22A
@@ -69,10 +73,6 @@
 #define CMD_SET_OUTBLOCKCONFIG 0x33D
 #define CMD_GET_SLVSCONFIG     0x33E
 #define CMD_SET_SLVSCONFIG     0x33F
-#ifdef CERN_PROBESTATION
-#define CMD_BURN_EFUSE         0x340
-#endif
-#define CMD_GET_EFUSES         0x341
 
 // Trigger
 #define CMD_GET_TRIGCONFIG     0x440
@@ -91,8 +91,9 @@
 #define CMD_GET_LOCALTEMP      0x54A
 #define CMD_GET_AVDD           0x54B
 #define CMD_GET_DVDD           0x54C
-
-#define CMD_GET_SPIDR_ADC      0x54E
+#define CMD_GET_AVDD_NOW       0x54D
+#define CMD_GET_DVDD_NOW       0x54E
+#define CMD_GET_SPIDR_ADC      0x54F
 
 // Configuration: timer
 #define CMD_RESTART_TIMERS     0x550
@@ -139,6 +140,10 @@
 #define CMD_VALID_REGISTERS    0x67A
 #define CMD_VALID_PIXCONF      0x67B
 
+// Other
+#define CMD_GET_GPIO           0x780
+#define CMD_SET_GPIO           0x781
+
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
 static const char *CMD_STR[] =
@@ -182,10 +187,14 @@ static const char *CMD_STR[] =
     "SET_CTPR_LEON    ", // 0x123
     "RESET_DEVICE     ", // 0x124
     "RESET_DEVICES    ", // 0x125
-    "-----",             // 0x126
-    "-----",             // 0x127
-    "-----",             // 0x128
+    "REINIT_DEVICE    ", // 0x126
+    "REINIT_DEVICES   ", // 0x127
+    "GET_EFUSES       ", // 0x128
+#ifdef CERN_PROBESTATION
+    "BURN_EFUSE       ", // 0x129
+#else
     "-----",             // 0x129
+#endif
 
     "SET_PIXCONF      ", // 0x22A
     "-----",             // 0x22B
@@ -225,9 +234,9 @@ static const char *CMD_STR[] =
     "GET_LOCALTEMP    ", // 0x54A
     "GET_AVDD         ", // 0x54B
     "GET_DVDD         ", // 0x54C
-    "-----",             // 0x54D
-    "GET_SPIDR_ADC    ", // 0x54E
-    "-----",             // 0x54F
+    "GET_AVDD_NOW     ", // 0x54D
+    "GET_DVDD_NOW     ", // 0x54E
+    "GET_SPIDR_ADC    ", // 0x54F
 
     "RESTART_TIMERS   ", // 0x550
     "RESET_TIMER      ", // 0x551
@@ -276,7 +285,14 @@ static const char *CMD_STR[] =
     "VALID_ADDRPORTS  ", // 0x678
     "VALID_DACS       ", // 0x679
     "VALID_REGISTERS  ", // 0x67A
-    "VALID_PIXCONF    "  // 0x67B
+    "VALID_PIXCONF    ", // 0x67B
+    "-----",             // 0x67C
+    "-----",             // 0x67D
+    "-----",             // 0x67E
+    "-----",             // 0x67F
+
+    "GET_GPIO         ", // 0x780
+    "SET_GPIO         "  // 0x781
   };
 
 // Reply bit: set in the reply message in the command identifier
