@@ -1667,3 +1667,20 @@ std::string SpidrController::spidrErrString( int err )
 }
 
 // ----------------------------------------------------------------------------
+
+bool SpidrController::setGPIO ( int gpio_pin, int state )
+{
+  int dword= (gpio_pin & 0xFFFF)<<16 | (state & 0xFFFF);
+  return this->requestSetInt( CMD_SET_GPIO , 0, dword );
+}
+
+// ----------------------------------------------------------------------------
+
+
+bool SpidrController::getGPIO ( int gpio_pin, int *state )
+{
+  *state = (gpio_pin & 0xFFFF)<<16;
+ return this->requestGetInt( CMD_GET_GPIO, 0, state );
+}
+
+// ----------------------------------------------------------------------------

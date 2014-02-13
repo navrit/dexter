@@ -195,6 +195,9 @@ class MY_LIB_API SpidrController
   bool getFanSpeedVC707        ( int *rpm );
 
   // Other
+  bool setGPIO                 ( int gpio_pin, int state );
+  bool getGPIO                 ( int gpio_pin, int *state );
+
  private:
   bool setPixelBit             ( int x, int y, unsigned char bitmask, bool b );
   void setBitsBigEndianReversed( unsigned char *buffer,
