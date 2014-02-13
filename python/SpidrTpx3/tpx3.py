@@ -474,6 +474,16 @@ class TPX3:
     r=self.ctrl.setCtpr(self.id)
     self._log_ctrl_cmd("setCtpr() ",r)
 
+  def setGPIO(self, pin, state):
+    r=self.ctrl.setGPIO(pin,state)
+    self._log_ctrl_cmd("setGPIO(%d,%d) "%(pin,state),r)
+
+
+  def getGPIO(self, pin):
+    r,state=self.ctrl.getGPIO(pin)
+    self._log_ctrl_cmd("getGPIO(%d)=%d "%(pin,state),r)
+    return state
+
   def sequentialReadout(self,tokens=2):
     r=self.ctrl.sequentialReadout(tokens)
     self._log_ctrl_cmd("sequentialReadout(tokens=%d) "%tokens,r)
@@ -504,17 +514,60 @@ class TPX3:
     r,v=self.ctrl.readEfuse(self.id)
     self._log_ctrl_cmd("readEfuse()=%08x"%v,r)
     return v
+    
+
   def readName(self):
     fuses=self.readEfuse()
     if fuses==0:
       return '-'
     x=fuses&0xF
     y=(fuses>>4)&0xF
-    XMAP=['-','A','B','C','D','E','F','G','H','I','J','K','L','M','-','-']
-    xstr=XMAP[x]
     w=(fuses>>8)&0xFFF
-    return "W%03d_%s%d"%(w,xstr,y)
-  
+    mod=(fuses>>20)&0x3
+    mod_val=(fuses>>22)&0x3FF
+    return self.generate_die_name(w,x,y,mod,mod_val)
+
+  def decode_die_name(self, name):
+     if len(name.split("_"))!=2 : 
+       logging.error("Inforect die name")
+       return 
+     try:
+       wnum=int(name.split("_")[0][1:])
+       xs=name.split("_")[1][0]
+       x=(ord(xs)-ord('A') +1)&0xf
+       y=int(name.split("_")[1][1:])
+       if (xs=='A' and y>=5 and y<=7) or\
+           (xs=='B' and y>=4 and y<=9) or\
+           (xs=='C' and y>=3 and y<=10) or\
+           (xs=='D' and y>=2 and y<=10) or\
+           (xs=='E' and y>=2 and y<=11) or\
+           (xs=='F' and y>=1 and y<=11) or\
+           (xs=='G' and y>=1 and y<=11) or\
+           (xs=='H' and y>=1 and y<=11) or\
+           (xs=='I' and y>=2 and y<=11) or\
+           (xs=='J' and y>=2 and y<=10) or\
+           (xs=='K' and y>=3 and y<=10) or\
+           (xs=='L' and y>=4 and y<=9) or\
+           (xs=='M' and y>=5 and y<=7) :
+            return (wnum,x,y)
+       else:
+         logging.error("Inforect die name")
+         return
+     except:
+       return None
+       
+
+  def generate_die_name(self, wno, x,y,mod=0,mod_val=0):
+      if mod==1:
+        x=mod_val&0xf
+      elif mod==2:
+        y=mod_val&0xf
+      elif mod==3:
+        wno=wno & ~(0x3FF)
+        wno|=(mod_val&0x3FF)
+      xs=chr(ord('A')+x-1)
+      return "W%d_%s%d"%(wno,xs,y)
+
   def burnEfuse(self, selection,program_width=0):
     r=self.ctrl.burnEfuse(self.id,program_width,selection)
     self._log_ctrl_cmd("burnEfuse(%d,%d) "%(program_width,selection),r)

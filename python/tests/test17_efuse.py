@@ -1,7 +1,7 @@
 from tpx3_test import tpx3_test
 import logging
 import Gnuplot, Gnuplot.funcutils
-
+import time
 
 import sys
 
@@ -37,78 +37,139 @@ def query_yes_no(question, default="yes"):
             sys.stdout.write("Please respond with 'yes' or 'no' \
                              (or 'y' or 'n').\n")
 
+SPIDR_3V3_ENA_PIN=0
+
+def transitions(prev,next):
+  zero2one=0
+  one2zero=0
+  while prev>0 or next>0:
+    pbit=prev&0x1
+    nbit=next&0x1
+    if pbit==0 and nbit==1: zero2one+=1
+    if pbit==1 and nbit==0: one2zero+=1
+    prev>>=1
+    next>>=1
+  mod=0
+  if one2zero>0:mod=1
+  
+  return {'zero2one':zero2one,'one2zero':one2zero, 'mod':mod}
+  
 class test17_efuse(tpx3_test):
   """Efuse test"""
 
   def _execute(self,**keywords):
+
+    cat=keywords['category']
     self.tpx.reinitDevice()
+    
     name=None
     if 'name' in keywords :  name=keywords['name'].upper()
-    name
+
     efuses=self.tpx.readEfuse()
-    bname=self.tpx.readName()
+    self.logging.info( "Efuses value : 0x%08x"%efuses)
+    bname= self.tpx.readName()
+    self.logging.info( "Chip name    : %s"%bname)
 
-    ret_values={}
+    ret_values={'EFUSES':"%08x"%efuses, "NAME":bname}
+    
+    if name!=None :
+      r=self.tpx.decode_die_name(name)
+      if r==None:
+        self.logging.error("Provided name to burn is incorect")
+      else:
+        name=self.tpx.generate_die_name(*r)
+        if name!=bname:
+          r=list(r)
+          burned_x=efuses&0xf
+          burned_y=(efuses>>4)&0xf
+          burned_wnum=(efuses>>8)&0xfff
+          burned_mod=(efuses>>20)&0x3
+          burned_mod_val=(efuses>>22)&0x3FF
+          new_wnum , new_x , new_y = r
+          desired_efuses = new_x | new_y<<4 | new_wnum<<8
 
-    logging.info( "Efuses value : 0x%08x"%efuses)
-    logging.info( "Chip name    : %s"%bname)
-    if name!=None and bname=='-':
-      err=None
-      if (name[0] != 'W' ) or len(name.split("_"))!=2:
-        err="Wrong wafer name format (e.g. W000_D5)"
-      if not err:
-        wnum=int(name.split("_")[0][1:])
-        xs=name.split("_")[1][0]
-        x=(ord(xs)-ord('A') +1)&0xf
-        y=int(name.split("_")[1][1:])
-        if (xs=='A' and y>=5 and y<=7) or\
-           (xs=='B' and y>=4 and y<=9) or\
-           (xs=='C' and y>=3 and y<=10) or\
-           (xs=='D' and y>=2 and y<=10) or\
-           (xs=='E' and y>=2 and y<=11) or\
-           (xs=='F' and y>=1 and y<=11) or\
-           (xs=='G' and y>=1 and y<=11) or\
-           (xs=='H' and y>=1 and y<=11) or\
-           (xs=='I' and y>=2 and y<=11) or\
-           (xs=='J' and y>=2 and y<=10) or\
-           (xs=='K' and y>=3 and y<=10) or\
-           (xs=='L' and y>=4 and y<=9) or\
-           (xs=='M' and y>=5 and y<=7) :
-            logging.info( "Wafer number : %d"%wnum)
-            logging.info( "X            : %s (%d)"%(xs,x))
-            logging.info( "Y            : %d"%(y))
-            efuses=x | y<<4 | wnum<<8
-            logging.info( "Going to burn 0x%08x"%(efuses))
+          self.logging.info( "Trying to burn : %s"%name)
+          self.logging.info( "Burned  efuses : %08x (wnum:%03x x:%0x y:%0x mod:%x mod_val:%x)"%(efuses,burned_wnum , burned_x , burned_y, burned_mod, burned_mod_val ) )
+          self.logging.info( "Desired efuses : %08x (wnum:%03x x:%0x y:%0x)"%(desired_efuses,new_wnum , new_x , new_y ) )
+          
+          xt=transitions(burned_x, new_x)
+          yt=transitions(burned_y, new_y)
+          wnumt=transitions(burned_wnum, new_wnum)
+          fields_to_replace=xt['mod']+yt['mod']+wnumt['mod']
+          if fields_to_replace>0 and burned_mod:
+            msg="Unable to burn fuses. Modification field is alread used"
+            self.logging.error(msg)
+            cat='F_fuse'
+          elif fields_to_replace>1:
+            msg="Unable to burn fuses, more then one field has to be replaced ("
+            if wnumt['mod'] : msg+="wnum "
+            if xt['mod'] : msg+="x "
+            if yt['mod'] : msg+="y "
+            msg=msg[:-1]+")"
+            self.logging.error(msg)
+            cat='F_fuse'
+          else:
+            self.logging.error("Look like burning is possible")
+            if xt['one2zero'] :
+              self.logging.info("Using modification field for x")
+              desired_efuses &=  ~ (0xF)
+              desired_efuses |=  (1<<20) | (new_x<<22) 
+              
+            if yt['one2zero'] :
+              desired_efuses &=  ~ (0xF<<4)
+              self.logging.info("Using modification field for y")
+              desired_efuses |=  (2<<20) | (new_y<<22)
+            if wnumt['one2zero'] :
+              desired_efuses &=  ~ (0x3FF<<8)
+              self.logging.info("Using modification field for wnum")
+              desired_efuses |=  (3<<20) | ( (new_wnum&0x3FF) <<22)
+
+            new_mod=(desired_efuses>>20)&0x3
+            new_mod_val=(desired_efuses>>22)&0x3FF
+            self.logging.info( "Desired efuses  (after mod): %08x (wnum:%03x x:%0x y:%0x mod:%x mod_val:%x)"%(desired_efuses,new_wnum , new_x , new_y, new_mod, new_mod_val ) )
+            final=transitions(efuses,desired_efuses)
+            self.logging.info( "  Zero -> one : %d"%( final['zero2one']) )
+            self.logging.info( "  One -> zero : %d"%( final['one2zero']) )
+            
+            bit_pos=0
+            val=desired_efuses
+            pval=efuses
+            bits_to_burn=[]
+            while val>0:
+              if val&0x1 and (not pval&0x1):
+                bits_to_burn.append(bit_pos)
+              val>>=1
+              pval>>=1
+              bit_pos+=1
+            self.logging.info( "Going to burn : %s"%str(bits_to_burn) )
+
             burn_ok=query_yes_no("Burn ?!",default="no")
             if burn_ok:
-              for bit in range(20):
-                if 1<<bit & efuses :
-#                  print "burn bit no.",bit
-                  self.tpx.burnEfuse(bit,program_width=1)
-                  x=self.tpx.readEfuse()
-                  logging.info( " %d) efuses : 0x%08x"%(bit,x))
+              self.tpx.setGPIO(SPIDR_3V3_ENA_PIN,1)
+              time.sleep(0.02)
+              for fuse in bits_to_burn:
+                self.logging.info( "  Burning efuse %d"%(fuse) )
+                rd=self.tpx.readEfuse()
+                if not rd&(1<<fuse): 
+                  self.logging.error( "  Problem with burning efuse %d. Ending ..."%(bit_pos))
+                  cat='F_fuse'
+                  break
+              self.tpx.setGPIO(SPIDR_3V3_ENA_PIN,0)
+              time.sleep(0.01)
+              efuses=self.tpx.readEfuse()
+              self.logging.info( "Efuses value : 0x%08x"%efuses)
+              bname= self.tpx.readName()
+              self.logging.info( "Chip name    : %s"%bname)
 
-              efuses_final=self.tpx.readEfuse()
-              bname_final=self.tpx.readName()
-              logging.info( "Efuses value : 0x%08x"%efuses_final)
-              logging.info( "Chip name    : %s"%bname_final)
-              ret_values['EFUSES']=efuses_final
-              if efuses_final==efuses:
-                logging.info( "Burning efuses succeded")
-                ret_values['NAME']=bname_final
-              else:
-                logging.error( "Burning efuses failed (is:0x%08x, should be:0x%08x)"%(efuses_final,efuses))
-              
+              ret_values['EFUSES']="%08x"%efuses
+              ret_values['NAME']=bname
 
-        else:
-          err="Wrong die specification (e.g. W000_D5)"
-        
-      if err:
-        logging.error(err)
-
-
+            else:
+              self.logging.warning( "Operation canceled by user")
+            
     fn=self.fname+"/results.txt"
     self.dict2file(fn,ret_values)
     self.logging.info("Results stored to %s"%fn)
 
-    return {'category':'A','mask_pixels':[],'continue':True}
+    return {'category':cat,'mask_pixels':[],'continue':True}
+    

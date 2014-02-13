@@ -55,6 +55,9 @@ c2.add_method('getTpNumber',           'bool',        [param('int', 'dev_nr'),pa
 c2.add_method('setTpNumber',           'bool',        [param('int', 'dev_nr'),param('int', 'number')])
 c2.add_method('uploadPacket',          'bool',        [param('int', 'dev_nr'),param('unsigned char*', 'packet', transfer_ownership=False,direction = Parameter.DIRECTION_IN,array_length=256),param('int', 'size')])
 
+c2.add_method('setGPIO',               'bool',        [param('int', 'gpio_pin'), param('int', 'state')] )
+c2.add_method('getGPIO',               'bool',        [param('int', 'gpio_pin'), param('int*', 'state', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)] )
+
 
 c2.add_method('setLogLevel',           'bool',        [param('int', 'level')])
 c2.add_method('readEfuse',             'bool',        [param('int', 'dev_nr'),param('int*', 'efuses', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])

@@ -26,8 +26,8 @@ class test02(tpx3_test):
 
     r,v=self.tpx.ctrl.getOutBlockConfig(self.tpx.id)
     self._assert_true(r,"Reading Output Block Config")
-    OUT_BLOCK_CONFIG_DEFAULT_VALUE=0x7BFF#0x7B01#0x9FF
-    self._assert_true((v==OUT_BLOCK_CONFIG_DEFAULT_VALUE),"Output Block value 0x%0X"%v)
+    OUT_BLOCK_CONFIG_DEFAULT_VALUE=[0x7BFF, 0x903, 0x901, 0x9FF]#0x7B01#0x9FF
+    self._assert_true((v in OUT_BLOCK_CONFIG_DEFAULT_VALUE),"Output Block value 0x%0X"%v)
 
     r,v1,v2=self.tpx.ctrl.getTpPeriodPhase(self.tpx.id)
     self._assert_true(r,"Reading TP Period & Phase")
