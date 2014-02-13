@@ -14,6 +14,13 @@ from optparse import OptionParser
 import datetime
 import shlex
 
+def dict2file(fname,d):
+    f=open(fname,"w")
+    for k in d.keys():
+      f.write("%s %s\n"%(k,d[k]))
+    f.close()
+
+
 
 def mkdir(d):
   if not os.path.exists(d):
@@ -84,8 +91,9 @@ class TPX_tests:
         if test_name.find(")")>=0:
           args=test_name[test_name.find("(")+1:test_name.find(")")]
           test_name=test_name[:test_name.find("(")]
-          params=dict(token.split('=') for token in shlex.split(args))    
-          
+          params_new=dict(token.split('=') for token in shlex.split(args))    
+          for k in params_new:
+            params[k]=params_new[k]
       if test_name in avaliable_tests:
         test=avaliable_tests[test_name](tpx=self.tpx,fname=self.dlogdir+test_name)
         result=test.execute(**params)
@@ -101,6 +109,16 @@ class TPX_tests:
     logging.info("")
     logging.info("Chip category %s"%params["category"])
     logging.info("Problematic pixels : %d"%len(params["mask_pixels"]))
+
+    cat=params['category']
+    mask_pixels=params['mask_pixels']
+    ret_values={'CATEGORY':cat,'BAD_PIXELS':len(mask_pixels)}
+    fn=self.dlogdir+"/result.dat"
+    dict2file(fn,ret_values)
+    logging.info("Results stored to %s"%fn)
+
+    return 
+
 
   def list(self):
    avaliable_tests=tests.get_tests()
@@ -214,8 +232,6 @@ def main():
   else:
     consoleHandler.setLevel(logging.INFO)
 
-
-  
   logging.getLogger('').addHandler(consoleHandler)
   logging.info("Log will be stored to %s"%logname)
 
