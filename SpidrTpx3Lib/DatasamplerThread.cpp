@@ -5,6 +5,8 @@
 #define Sleep(ms) usleep(1000*(ms))
 #endif
 
+#define RETURN_AVAILABLE_SAMPLE
+
 #include "DatasamplerThread.h"
 #include "ReceiverThread.h"
 
@@ -17,7 +19,7 @@ DatasamplerThread::DatasamplerThread( ReceiverThread *recvr,
     _stop( false ),
     _sampling( false ),
     _sampleAll( false ),
-    _abortSample( false ),
+    _timeOut( false ),
     _requestFrame( false ),
     _sampleMinSize( 0 ),
     _sampleMaxSize( 0 ),
@@ -71,7 +73,7 @@ void DatasamplerThread::run()
 
   while( !_stop )
     {
-      if( _abortSample ) this->handleSampleAbort();
+      if( _timeOut ) this->handleTimeOut();
 
       if( _receiver->hasData() )
 	{
@@ -214,8 +216,8 @@ bool DatasamplerThread::getSample( int min_size, int max_size, int timeout_ms )
 
   // If necessary wait for the sample buffer clean-up (by the thread),
   // after an earlier time-out
-  volatile bool b = _abortSample;
-  while( b ) b = this->abortSample();
+  volatile bool b = _timeOut;
+  while( b ) b = this->timeOut();
 
   this->freeSample();
 
@@ -243,7 +245,31 @@ bool DatasamplerThread::getSample( int min_size, int max_size, int timeout_ms )
   // Wait for a sample to become available or time out
   if( _sampleAvailable.tryAcquire( 1, timeout_ms ) )
     return true;
-  _abortSample = true;
+
+  // Timed out !
+#ifdef RETURN_AVAILABLE_SAMPLE
+  // We're still interested in anything sampled, even if it is
+  // not the minimum size we requested; let the thread handle this
+  // properly in handleTimeOut()
+  if( _sampleIndex > 0 )
+    {
+      // Wait for the thread by means of handleTimeOut()
+      // to properly hand over the sample data in the buffer..
+      _mutex.lock();
+      _timeOut = true;
+      _condition.wait( &_mutex );
+      _mutex.unlock();
+      // The sample data should've been made available
+      if( _sampleAvailable.tryAcquire() )
+	return true;
+      else
+	return false;
+    }
+  else
+#endif // RETURN_AVAILABLE_SAMPLE
+    {
+      _timeOut = true;
+    }
   return false;
 }
 
@@ -255,8 +281,8 @@ bool DatasamplerThread::getFrame( int timeout_ms )
 
   // If necessary wait for the sample buffer clean-up (by the thread),
   // after an earlier time-out
-  volatile bool b = _abortSample;
-  while( b ) b = this->abortSample();
+  volatile bool b = _timeOut;
+  while( b ) b = this->timeOut();
 
   this->freeSample();
 
@@ -269,7 +295,9 @@ bool DatasamplerThread::getFrame( int timeout_ms )
   // Wait for a frame to become available or time out
   if( _sampleAvailable.tryAcquire( 1, timeout_ms ) )
     return true;
-  _abortSample = true;
+
+  // Timed out !
+  _timeOut = true;
   return false;
 }
 
@@ -286,24 +314,57 @@ void DatasamplerThread::freeSample()
 
 // ----------------------------------------------------------------------------
 
-bool DatasamplerThread::abortSample()
+bool DatasamplerThread::timeOut()
 {
   // This function was only added to prevent the compiler from optimizing
-  // a while-loop (see getSample/Frame()) on the _abortSample variable!
-  return _abortSample;
+  // a while-loop (see getSample/Frame()) on the _timeOut variable!
+  return _timeOut;
 }
 
 // ----------------------------------------------------------------------------
 
-void DatasamplerThread::handleSampleAbort()
+void DatasamplerThread::handleTimeOut()
 {
   // Clean up an ongoing sample operation after a time-out occurred
-  // (this function is only to be called from the thread)
-  if( _sampleBufferEmpty.available() == 0 ) _sampleBufferEmpty.release();
-  _sampleIndex = 0;
-  _sampleMaxSize = 0;
-  _requestFrame = false;
-  _abortSample = false;
+  // (this function is to be called from within the thread only)
+
+#ifdef RETURN_AVAILABLE_SAMPLE
+  // But still return any sample data available..
+  if( _sampleIndex > 0 )
+    {
+      // Okay, a data sample is now available in the sample buffer
+      // (eventhough it is less than the requested minimum size)
+
+      // Indicate the sample buffer can not be filled any further
+      if( _sampleBufferEmpty.available() )
+	_sampleBufferEmpty.acquire();
+
+      // Indicate a sample is available
+      if( _sampleAvailable.available() == 0 )
+	_sampleAvailable.release();
+
+      // No further sampling until getSample() is called again
+      _sampleMaxSize = 0;
+
+      // getSample() to return with data after all, despite a time-out
+      _mutex.lock();
+      _condition.wakeOne();
+      _mutex.unlock();
+    }
+  else
+#endif // RETURN_AVAILABLE_SAMPLE
+    {
+      // Just in case a sample has become available right after we timed out...
+      if( _sampleAvailable.available() ) _sampleAvailable.acquire();
+
+      if( _sampleBufferEmpty.available() == 0 ) _sampleBufferEmpty.release();
+      _sampleIndex = 0;
+      _sampleMaxSize = 0;
+      _requestFrame = false;
+    }
+
+  // Reset the time-out boolean
+  _timeOut = false;
 }
 
 // ----------------------------------------------------------------------------
@@ -454,7 +515,8 @@ int DatasamplerThread::copySampleToBuffer()
 {
   // Collect pixel data into the sample buffer up to a maximum size
   long long bytes = _receiver->bytesAvailable();
-  if( bytes > _sampleMaxSize ) bytes = _sampleMaxSize;
+  if( bytes + _sampleIndex > _sampleMaxSize )
+    bytes = _sampleMaxSize - _sampleIndex;
 
   // Copy the data to the sample buffer
   memcpy( static_cast<void *> (&_sampleBuffer[_sampleIndex]),

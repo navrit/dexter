@@ -144,7 +144,7 @@ void ReceiverThread::readDatagrams()
 long long ReceiverThread::bytesAvailable()
 {
   // Return the number of data bytes available for processing at this time
-  // without passing the end of the buffer
+  // without going past the end of the buffer (no wrap-around)
   long long bytes;
   long long t = _tail;
   long long h = _head;

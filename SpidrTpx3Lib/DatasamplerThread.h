@@ -2,9 +2,11 @@
 #define DATASAMPLERTHREAD_H
 
 #include <QFile>
+#include <QMutex>
 #include <QSemaphore>
 #include <QString>
 #include <QThread>
+#include <QWaitCondition>
 
 #include <vector>
 
@@ -63,8 +65,8 @@ class DatasamplerThread : public QThread
   void clearErrorString()   { _errString.clear(); };
 
  private:
-  bool abortSample();
-  void handleSampleAbort();
+  bool timeOut();
+  void handleTimeOut();
   int  copySampleToBuffer();
   int  copyFrameToBuffer();
 
@@ -74,7 +76,7 @@ class DatasamplerThread : public QThread
 
   bool _stop;
 
-  bool      _sampling, _sampleAll, _abortSample, _requestFrame;
+  bool      _sampling, _sampleAll, _timeOut, _requestFrame;
   long long _sampleMinSize, _sampleMaxSize;
 
   long long _framesSampled;
@@ -92,6 +94,11 @@ class DatasamplerThread : public QThread
 
   // Semaphores to indicate the availability of sampled data in the buffer
   QSemaphore _sampleBufferEmpty, _sampleAvailable;
+
+  // Additional mutex and condition used after a time-out during sampling
+  // (see handleTimeOut())
+  QMutex         _mutex;
+  QWaitCondition _condition;
 
   int _sampleIndex;
   int _pixIndex;
