@@ -58,7 +58,6 @@ class test17_efuse(tpx3_test):
   """Efuse test"""
 
   def _execute(self,**keywords):
-
     cat=keywords['category']
     self.tpx.reinitDevice()
     
@@ -149,6 +148,7 @@ class test17_efuse(tpx3_test):
               time.sleep(0.02)
               for fuse in bits_to_burn:
                 self.logging.info( "  Burning efuse %d"%(fuse) )
+                rd=self.tpx.burnEfuse(selection=fuse,program_width=1)
                 rd=self.tpx.readEfuse()
                 if not rd&(1<<fuse): 
                   self.logging.error( "  Problem with burning efuse %d. Ending ..."%(bit_pos))
