@@ -98,10 +98,11 @@ class MY_LIB_API SpidrController
   std::string dacName          ( int  dac_code );
   int         dacMax           ( int  dac_code );
   bool        uploadPacket     ( int  dev_nr, unsigned char *packet, int size );
+  bool        readEfuse        ( int  device_nr, int *efuses );
 #ifdef CERN_PROBESTATION
-  bool        burnEfuse        ( int device_nr, int program_width, int selection );
+  bool        burnEfuse        ( int  device_nr,
+				 int  program_width, int selection );
 #endif
-  bool        readEfuse        ( int device_nr, int *efuses );
 
   // Configuration: device test pulses
   bool        getTpPeriodPhase ( int  dev_nr, int *period, int *phase );
@@ -189,14 +190,17 @@ class MY_LIB_API SpidrController
   bool getFpgaTemp             ( int *mdegrees );
   bool getAvdd                 ( int *mvolts, int *mamps, int *mwatts );
   bool getDvdd                 ( int *mvolts, int *mamps, int *mwatts );
+  bool getAvddNow              ( int *mvolts, int *mamps, int *mwatts );
+  bool getDvddNow              ( int *mvolts, int *mamps, int *mwatts );
   bool getBiasVoltage          ( int *volts );
   bool getVdda                 ( int *mvolts );
   bool getFanSpeed             ( int *rpm );
   bool getFanSpeedVC707        ( int *rpm );
 
   // Other
-  bool setGPIO                 ( int gpio_pin, int state );
-  bool getGPIO                 ( int gpio_pin, int *state );
+  bool getGpio                 ( int *gpio_in );
+  bool setGpio                 ( int  gpio_out );
+  bool setGpioPin              ( int  pin_nr, int state );
 
  private:
   bool setPixelBit             ( int x, int y, unsigned char bitmask, bool b );

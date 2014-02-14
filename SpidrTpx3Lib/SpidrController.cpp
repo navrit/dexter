@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14011600;
+const int VERSION_ID = 0x14021400;
+//const int VERSION_ID = 0x14011600;
 //const int VERSION_ID = 0x13112700;
 
 // ----------------------------------------------------------------------------
@@ -1194,6 +1195,20 @@ bool SpidrController::getDvdd( int *mvolts, int *mamps, int *mwatts )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::getAvddNow( int *mvolts, int *mamps, int *mwatts )
+{
+  return this->get3Ints( CMD_GET_AVDD_NOW, mvolts, mamps, mwatts );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getDvddNow( int *mvolts, int *mamps, int *mwatts )
+{
+  return this->get3Ints( CMD_GET_DVDD_NOW, mvolts, mamps, mwatts );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::getBiasVoltage( int *volts )
 {
   int chan = 1; // SPIDR-TPX3 ADC input
@@ -1238,6 +1253,28 @@ bool SpidrController::getFanSpeedVC707( int *rpm )
 {
   *rpm = 1; // Indicates which fan speed to return (SPIDR or VC707)
   return this->requestGetInt( CMD_GET_FANSPEED, 0, rpm );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getGpio( int *gpio_in )
+{
+  return this->requestGetInt( CMD_GET_GPIO, 0, gpio_in );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setGpio( int gpio_out )
+{
+  return this->requestSetInt( CMD_SET_GPIO , 0, gpio_out );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setGpioPin( int pin_nr, int state )
+{
+  int dword= ((pin_nr & 0xFFFF) << 16) | (state & 0xFFFF);
+  return this->requestSetInt( CMD_SET_GPIO_PIN, 0, dword );
 }
 
 // ----------------------------------------------------------------------------
@@ -1664,23 +1701,6 @@ std::string SpidrController::spidrErrString( int err )
     }
 
   return errstr;
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setGPIO ( int gpio_pin, int state )
-{
-  int dword= (gpio_pin & 0xFFFF)<<16 | (state & 0xFFFF);
-  return this->requestSetInt( CMD_SET_GPIO , 0, dword );
-}
-
-// ----------------------------------------------------------------------------
-
-
-bool SpidrController::getGPIO ( int gpio_pin, int *state )
-{
-  *state = (gpio_pin & 0xFFFF)<<16;
- return this->requestGetInt( CMD_GET_GPIO, 0, state );
 }
 
 // ----------------------------------------------------------------------------
