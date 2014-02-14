@@ -31,6 +31,7 @@ public:
   void start(unsigned int port);
   std::list<unsigned long> getN(unsigned int N, unsigned int debug);
   std::list<unsigned long> getH(unsigned long val,unsigned long mask, unsigned int debug);
+  void flush();
   
   static void *receive_helper(void *context)
   {

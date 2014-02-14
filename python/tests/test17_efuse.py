@@ -58,7 +58,6 @@ class test17_efuse(tpx3_test):
   """Efuse test"""
 
   def _execute(self,**keywords):
-    cat=keywords['category']
     self.tpx.reinitDevice()
     
     name=None
@@ -69,7 +68,7 @@ class test17_efuse(tpx3_test):
     bname= self.tpx.readName()
     self.logging.info( "Chip name    : %s"%bname)
 
-    ret_values={'EFUSES':"%08x"%efuses, "NAME":bname}
+    self.results={'EFUSES':"%08x"%efuses, "NAME":bname}
     
     if name!=None :
       r=self.tpx.decode_die_name(name)
@@ -98,7 +97,7 @@ class test17_efuse(tpx3_test):
           if fields_to_replace>0 and burned_mod:
             msg="Unable to burn fuses. Modification field is alread used"
             self.logging.error(msg)
-            cat='F_fuse'
+            self.update_category('F_fuse')
           elif fields_to_replace>1:
             msg="Unable to burn fuses, more then one field has to be replaced ("
             if wnumt['mod'] : msg+="wnum "
@@ -106,7 +105,7 @@ class test17_efuse(tpx3_test):
             if yt['mod'] : msg+="y "
             msg=msg[:-1]+")"
             self.logging.error(msg)
-            cat='F_fuse'
+            self.update_category('F_fuse')
           else:
             self.logging.error("Look like burning is possible")
             if xt['one2zero'] :
@@ -152,7 +151,7 @@ class test17_efuse(tpx3_test):
                 rd=self.tpx.readEfuse()
                 if not rd&(1<<fuse): 
                   self.logging.error( "  Problem with burning efuse %d. Ending ..."%(bit_pos))
-                  cat='F_fuse'
+                  self.update_category('F_fuse')
                   break
               self.tpx.setGPIO(SPIDR_3V3_ENA_PIN,0)
               time.sleep(0.01)
@@ -161,15 +160,12 @@ class test17_efuse(tpx3_test):
               bname= self.tpx.readName()
               self.logging.info( "Chip name    : %s"%bname)
 
-              ret_values['EFUSES']="%08x"%efuses
-              ret_values['NAME']=bname
+              self.results['EFUSES']="%08x"%efuses
+              self.results['NAME']=bname
 
             else:
               self.logging.warning( "Operation canceled by user")
             
-    fn=self.fname+"/results.txt"
-    self.dict2file(fn,ret_values)
-    self.logging.info("Results stored to %s"%fn)
 
-    return {'category':cat,'mask_pixels':[],'continue':True}
+    return 
     

@@ -12,8 +12,6 @@ class test04_pixel_kidnapper(tpx3_test):
   """Pixel kidnaper test"""
 
   def _execute(self,**keywords):
-    cat=keywords['category']
-    mask_pixels=keywords['mask_pixels']
     self.tpx.reinitDevice()
     self.tpx.setTpNumber(1)
     self.tpx.resetPixels()
@@ -37,71 +35,71 @@ class test04_pixel_kidnapper(tpx3_test):
     
     self.tpx.sequentialReadout(tokens=4)
     data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
-    ret_values={}
+    self.results={}
 
     self.tpx.setTpPeriodPhase(1,0)
     bad_tot=[]
     kidnappers=[]
+    missing=set()
+    received=(np.zeros((256,256)) , np.zeros((256,256)))
     for seq in range(2):
       self.logging.info("Round %d"%seq)
       self.tpx.openShutter()
       data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
       self.logging.info("Reveiced %d packets"%(len(data)))
-      shutter=self.tpx.getShutterStart()
       cnt=0
-      result={}
+      
       for pck in data:
          if pck.type in (0xB,0xA):
+           received[seq][pck.col][pck.row]=1
            if seq==0 and (not pck.tot in (64,65,66)):
              self.logging.warning("Unexpected TOT value %d for pixel (%d,%d)"%(pck.tot,pck.col,pck.row))
-             if not (pck.col,pck.row) in mask_pixels:
+             if not (pck.col,pck.row) in self.bad_pixels:
                bad_tot.append( (pck.col,pck.row) )
-           cnt+=1
-           if not pck.col in result:
-             result[pck.col]={}
-
-           result[pck.col][pck.row]=1
          elif pck.type !=0x7:
            self.logging.warning("Unexpeced packet %s"%str(pck))
 
+      cnt=np.sum(received[seq])
       self.logging.info("Pixel packets received: %d"%(cnt))
       if cnt!=65536:
         self.logging.warning("Missing pixel packets : %d"%(65536-cnt))
         if seq==0:
-          self.logging.warning("Problems already in the first round !! Probably the rest of this test is urMissing pixel packets : %d"%(65536-cnt))
+          self.logging.warning("Problems already in the first round !! Results may be unreliable")
 
-      if seq==0 and len(bad_tot):
-        cols = {}
-        for col,row in bad_tot:
-          if not col in cols: cols[col]=0
-          cols[col]+=1
-        self.logging.warning("There are pixels with bad TOT values (most likely there are nois packets received): %d"%(len(bad_tot)))
-        for col in sorted(cols.keys()):
-          self.logging.warning("Column %3d bad pixels: %d"%(col,cols[col]))
-        cat="B_badcol%d"%(len(cols.keys()))
           
-      for col in range(256):
-        for row in range(256):
-          if (not col in result) or (not row in result[col]) or  (not result[col][row]):
-            self.logging.warning("Missing pixel data (%d,%d) during round %d"%(col,row,seq))
-            if not (col,row) in mask_pixels:
-               kidnappers.append( (col,row) )
-      ret_values["MISSING_PACKETS"]=65536-cnt
+    for col in range(256):
+      for row in range(256):
+        if not received[0][col][row] and not received[1][col][row]:
+          self.logging.warning("Missing pixel (%d,%d) (in both rounds)"%(col,row))
+          missing.add( (col,row) )
+        elif  received[0][col][row] and not received[1][col][row]:
+          self.logging.warning("Kidnapper pixel (%d,%d)"%(col,row))
+          if not (col,row) in self.bad_pixels:
+             kidnappers.append( (col,row) )
 
-    mask_pixels=bad_tot+kidnappers
+
+#    mask_pixels=bad_tot+kidnappers
+    for p in kidnappers:
+      self.bad_pixels.add( p )
+
+    for p in bad_tot:
+      self.bad_pixels.add( p )
+
     if len(kidnappers)>0:
-       self.logging.warning("Kidnappers %d"%(len(kidnappers)))
-       if cat=='A':
-         cat='B_kidnapper'
-       elif cat[0]=='B':
-         cat+='_kidnapper'
+       self.update_category("K")
 
-    ret_values['KIDNAPPERS']=len(kidnappers)
-    ret_values['BAD_TOT']=len(bad_tot)
+    self.results['KID_TEST_KIDNAPPERS']=len(kidnappers)
+    self.results['KID_TEST_BAD_TOT']=len(bad_tot)
+    self.results["KID_TEST_MISSING_PACKETS"]=len(missing)
 
-    fn=self.fname+"/results.txt"
-    self.dict2file(fn,ret_values)
-    self.logging.info("Results stored to %s"%fn)
+    self.logging.info("")
+
+    self.warn_info("Kidnapper pixels    : %d"%(len(kidnappers)), len(kidnappers)>0)
+    self.warn_info("Pixels with bad tot : %d"%(len(bad_tot)), len(bad_tot)>0)
+    self.warn_info("Missing pixels      : %d"%(len(missing)), len(missing)>0)
+
+
     
-    return {'category':cat,'info':keywords['info'], 'continue':True, 'mask_pixels':mask_pixels}
+    
+    return 
 #(0x44) and High (0x45)

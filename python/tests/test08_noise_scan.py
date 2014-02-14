@@ -81,8 +81,6 @@ class test08_noise_scan(tpx3_test):
       return res
 
   def _execute(self,**keywords):
-    cat=keywords['category']
-    mask_pixels=keywords['mask_pixels']
     self.tpx.reinitDevice()
     self.tpx.resetPixels()
     eth_filter,cpu_filter=self.tpx.getHeaderFilter()
@@ -146,7 +144,7 @@ class test08_noise_scan(tpx3_test):
         for y in range(256):
           if x%2==int(seq/2) and y%2==seq%2:
             self.tpx.setPixelMask(x,y,0)
-      self.tpx.MaskPixels(mask_pixels)
+      self.mask_bad_pixels()
 
       self.tpx.pauseReadout()
       self.tpx.setPixelConfig()
@@ -172,7 +170,7 @@ class test08_noise_scan(tpx3_test):
           sys.stdout.flush()
           
         else:
-          self.logging.info("No hits in col %d"%col)
+          self.logging.warning("No hits in col %d"%col)
           for row in range(256):
             missing_pixels.append( (col,row) )
             fit_res[col][row] =[-1.0,-1.0,-1.0]
@@ -202,13 +200,22 @@ class test08_noise_scan(tpx3_test):
               try:
                 p0 = [max(vals), avr, 6.]
                 coeff, var_matrix = curve_fit(gauss, codes, vals, p0=p0)
-                mean_values.append(coeff[1])
-                rms_values.append(coeff[2])
+                mean=coeff[1]
+                rms=coeff[2]
+                if mean<0 or mean>512:
+                  mean=256.0
+                  bl_off_pixels.add( (col,row) )
+                if rms<2 or rms>30:
+                  mean=6.0
+                  noise_off_pixels.add( (col,row) )
+
+                mean_values.append(mean)
+                rms_values.append(rms)
                 fit_res[col][row] =coeff
               except:
                 pass
             else:
-              if not (col,row) in mask_pixels:
+              if not (col,row) in self.bad_pixels:
                 self.logging.warning("No hits for pixel (%d,%d)"%(col,row))
                 missing_pixels.append( (col,row) )
             if w2f:
@@ -219,14 +226,16 @@ class test08_noise_scan(tpx3_test):
       bl_rms=numpy.std(mean_values)
       noise_mean=numpy.mean(rms_values)
       noise_rms=numpy.std(rms_values)
-      ret_values={}
-      ret_values["BL_MEAN"]=bl_mean
-      ret_values["BL_RMS"]=bl_rms
-      ret_values["NOISE_MEAN"]=noise_mean
-      ret_values["NOISE_RMS"]=noise_rms
+      
+      self.results["BL_MEAN"]=bl_mean
+      self.results["BL_RMS"]=bl_rms
+      self.results["NOISE_MEAN"]=noise_mean
+      self.results["NOISE_RMS"]=noise_rms
+      
       self.logging.info("")
       self.logging.info("Baseline %3.2f std.dev. %3.2f"%(bl_mean,bl_rms))
       self.logging.info("Noise    %3.2f std.dev. %3.2f"%(noise_mean,noise_rms))
+      
       fn=(self.fname+"/bl.map",self.fname+"/rms.map",self.fname+"/problematic.map")
       f=(open(fn[0],"w"),open(fn[1],"w"),open(fn[2],"w"))
       
@@ -261,21 +270,18 @@ class test08_noise_scan(tpx3_test):
         f[i].close()
 
       self.logging.info("")
-      mask_pixels=[]
-      if len(missing_pixels)>0:
-        self.logging.warning("Missing pixels (very distant baseline?) (%d) : %s"%(len(missing_pixels),str(missing_pixels) ))
-        mask_pixels+=missing_pixels
+      self.warn_info( "Missing pixels (very distant baseline?) (%d) : %s"%(len(missing_pixels),str(missing_pixels)) , len(missing_pixels)>0 )
+      self.warn_info("Pixels with distant baseline (%d) : %s"%(len(bl_off_pixels),str(bl_off_pixels) ) , len(bl_off_pixels)>0 )
+      self.warn_info("Pixels with distant noise (%d) : %s"%(len(noise_off_pixels),str(noise_off_pixels) ) , len(noise_off_pixels)>0 )
 
-      if len(bl_off_pixels)>0:
-        self.logging.warning("Pixels with distant baseline (%d) : %s"%(len(bl_off_pixels),str(bl_off_pixels) ))
-        mask_pixels+=bl_off_pixels
 
-      if len(noise_off_pixels)>0:
-        self.logging.warning("Pixels with distant noise (%d) : %s"%(len(noise_off_pixels),str(noise_off_pixels) ))
+      self.add_bad_pixels(missing_pixels)
+      self.add_bad_pixels(bl_off_pixels)
+      self.add_bad_pixels(noise_off_pixels)
   
-      ret_values["MISSING"]=len(missing_pixels)
-      ret_values["DISTANT_BASELINE"]=len(bl_off_pixels)
-      ret_values["DISTANT_NOISE"]=len(noise_off_pixels)
+      self.results["MISSING"]=len(missing_pixels)
+      self.results["DISTANT_BASELINE"]=len(bl_off_pixels)
+      self.results["DISTANT_NOISE"]=len(noise_off_pixels)
 
       self.logging.info("")
       self.logging.info("Saving baseline map to %s"%fn[0])
@@ -283,51 +289,56 @@ class test08_noise_scan(tpx3_test):
       self.logging.info("Saving bad pixels map to %s"%fn[2])
       
       self.logging.info("")
-      if len(bl_off_pixels)>0:
-        g=Gnuplot()
-        g("set terminal png")
-        fn="%s/thscan_bad_bl.png"%self.fname
-        g("set output '%s'"%fn)
-        g("set grid ")
-        g("set xti 32")
-        g("set xlabel 'Threshold [LSB]'")
-        g("set ylabel 'Counts'")
-        g("set key out horiz cent top samp 1")
-        pcmd="plot "
-        for i,p in enumerate(bl_off_pixels):
-          col,row=p
-          if i>0: pcmd+=','
-          pname=logdir+"/%03d/%03d_%03d.dat"%(col,col,row)
-          pcmd+="'%s' w l t '(%d,%d)'"%(pname,col,row)
-        g(pcmd)
-        self.logging.info("Saving bad baseline scans to %s"%fn)
 
-        g=Gnuplot()
-        g("set terminal png")
-        fn="%s/thscan_bad_noise.png"%self.fname
-        g("set output '%s'"%fn)
-        g("set grid ")
-        g("set xti 32")
-        g("set xlabel 'Threshold [LSB]'")
-        g("set ylabel 'Counts'")
-        g("set key out horiz cent top samp 1")
-        pcmd="plot "
-        for i,p in enumerate(noise_off_pixels):
-          col,row=p
-          if i>0: pcmd+=','
-          pname=logdir+"/%03d/%03d_%03d.dat"%(col,col,row)
-          pcmd+="'%s' w l t '(%d,%d)'"%(pname,col,row)
-        g(pcmd)
-        self.logging.info("Saving bad noise scans to %s"%fn)
-
-      fn=self.fname+"/results.txt"
-      self.dict2file(fn,ret_values)
-      self.logging.info("Results stored to %s"%fn)
-    
       if w2f:
         aname=logdir[:-1]+".zip"
         logging.info("Creating arhive %s"%aname)
         zipdir(aname,logdir)
         shutil.rmtree(logdir)
 
-    return {'category':cat,'info':keywords['info'], 'continue':True, 'mask_pixels':mask_pixels}
+    return
+
+
+
+
+
+
+
+
+
+#      if len(bl_off_pixels)>0:
+#        g=Gnuplot()
+#        g("set terminal png")
+#        fn="%s/thscan_bad_bl.png"%self.fname
+#        g("set output '%s'"%fn)
+#        g("set grid ")
+#        g("set xti 32")
+#        g("set xlabel 'Threshold [LSB]'")
+#        g("set ylabel 'Counts'")
+#        g("set key out horiz cent top samp 1")
+#        pcmd="plot "
+#        for i,p in enumerate(bl_off_pixels):
+#          col,row=p
+#          if i>0: pcmd+=','
+#          pname=logdir+"/%03d/%03d_%03d.dat"%(col,col,row)
+#          pcmd+="'%s' w l t '(%d,%d)'"%(pname,col,row)
+#        g(pcmd)
+#        self.logging.info("Saving bad baseline scans to %s"%fn)
+
+#        g=Gnuplot()
+#        g("set terminal png")
+#        fn="%s/thscan_bad_noise.png"%self.fname
+#        g("set output '%s'"%fn)
+#        g("set grid ")
+#        g("set xti 32")
+#        g("set xlabel 'Threshold [LSB]'")
+#        g("set ylabel 'Counts'")
+#        g("set key out horiz cent top samp 1")
+#        pcmd="plot "
+#        for i,p in enumerate(noise_off_pixels):
+#          col,row=p
+#          if i>0: pcmd+=','
+#          pname=logdir+"/%03d/%03d_%03d.dat"%(col,col,row)
+#          pcmd+="'%s' w l t '(%d,%d)'"%(pname,col,row)
+#        g(pcmd)
+#        self.logging.info("Saving bad noise scans to %s"%fn)

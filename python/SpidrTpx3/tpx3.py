@@ -297,7 +297,9 @@ class TPX3:
     self.log_packets=False
     self.dacs=numpy.zeros((256,256), int)
     self.tpena=numpy.zeros((256,256), int)
-    
+    self.reinitDevice()
+    self.flush_udp_fifo(val=0)
+
   def stop(self):
 #    self.daq.stop()
     pass
@@ -406,9 +408,12 @@ class TPX3:
     return ret
                                                        
   def flush_udp_fifo(self,val=0x1234000000000000, mask=0xFFFF000000000000):
-    data = self.recv_mask(val,mask)
-    for d in data:
-      logging.debug("FLUSH : %s"%(str(d)))
+    if val==0:
+      self.udp.flush()
+    else:
+      data = self.recv_mask(val,mask)
+      for d in data:
+        logging.debug("FLUSH : %s"%(str(d)))
     
 
   def _log_ctrl_cmd(self,msg,result):
@@ -475,7 +480,7 @@ class TPX3:
     self._log_ctrl_cmd("setCtpr() ",r)
 
   def setGPIO(self, pin, state):
-    r=self.ctrl.setGPIO(pin,state)
+    r=self.ctrl.setGpioPin(pin,state)
     self._log_ctrl_cmd("setGPIO(%d,%d) "%(pin,state),r)
 
 
@@ -702,25 +707,29 @@ class TPX3:
     ret=[]
     last=0
     vomit=0
+    ERRORS=(0,1)
     while cnt>0 and not ok:
-      r=self.udp.getH(val,mask,debug=0)
-      for pck_num in r:
-#        print pck_num,self.log_packets
-        if pck_num==0:
+      r=list(self.udp.getH(val,mask,debug=0))
+      cnt-=1
+      if len(r)==0: continue
+      pck_num=r[-1]
+      if pck_num in ERRORS:
+        if pck_num ==0:
           logging.warning("Received 0x0 packet !")
           continue
         if pck_num==1:
           logging.warning("Chip is vomiting! (%d)"%len(ret))
           self.reinitDevice()
+          print len(r), r[0], r[-1]
           vomit=1
-          break
+          
+      for pck_num in r:
         p=tpx3packet(pck_num)
         ret.append(p)
         if self.log_packets : logging.info(p)
-        last=pck_num
-      cnt-=1
+      last=r[-1]
       if (last&mask)==val: ok=True
-      if vomit:break
+      if vomit: break
     if not ok:
       logging.warning("Timeout ;/ (last packet : %16X while expecting %016X)"%(last,val))
     return ret

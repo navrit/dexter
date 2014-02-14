@@ -31,6 +31,10 @@ c2.add_method('getRemoteTemp',         'bool',        [param('int*', 'mdegrees',
 c2.add_method('getLocalTemp',          'bool',        [param('int*', 'mdegrees', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 c2.add_method('getAvdd',               'bool',        [param('int*', 'mvolt', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),param('int*', 'mamp', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),param('int*', 'mwatt', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 c2.add_method('getDvdd',               'bool',        [param('int*', 'mvolt', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),param('int*', 'mamp', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),param('int*', 'mwatt', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+
+c2.add_method('getAvddNow',            'bool',        [param('int*', 'mvolt', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),param('int*', 'mamp', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),param('int*', 'mwatt', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+c2.add_method('getDvddNow',            'bool',        [param('int*', 'mvolt', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),param('int*', 'mamp', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),param('int*', 'mwatt', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+
 c2.add_method('setDacsDflt',           'bool',        [param('int', 'dev_nr')])
 c2.add_method('resetDevice',           'bool',        [param('int', 'dev_nr')])
 c2.add_method('resetDevices',          'bool',        [])
@@ -55,9 +59,7 @@ c2.add_method('getTpNumber',           'bool',        [param('int', 'dev_nr'),pa
 c2.add_method('setTpNumber',           'bool',        [param('int', 'dev_nr'),param('int', 'number')])
 c2.add_method('uploadPacket',          'bool',        [param('int', 'dev_nr'),param('unsigned char*', 'packet', transfer_ownership=False,direction = Parameter.DIRECTION_IN,array_length=256),param('int', 'size')])
 
-c2.add_method('setGPIO',               'bool',        [param('int', 'gpio_pin'), param('int', 'state')] )
-c2.add_method('getGPIO',               'bool',        [param('int', 'gpio_pin'), param('int*', 'state', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)] )
-
+c2.add_method('setGpioPin',            'bool',        [param('int', 'pin_nr'), param('int', 'state')] )
 
 c2.add_method('setLogLevel',           'bool',        [param('int', 'level')])
 c2.add_method('readEfuse',             'bool',        [param('int', 'dev_nr'),param('int*', 'efuses', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
@@ -155,6 +157,7 @@ c3.add_constructor([])
 c3.add_method('start', None, [param ('unsigned int', 'port')])
 c3.add_method('getN', 'std::list<unsigned long>',[param('unsigned int', 'N'),param('unsigned int', 'debug')])
 c3.add_method('getH', 'std::list<unsigned long>',[param('unsigned long int', 'val'),param('unsigned long int', 'mask'),param('unsigned int', 'debug')])
+c3.add_method('flush', None,[])
 
 
 

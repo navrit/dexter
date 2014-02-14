@@ -2,6 +2,9 @@ import inspect
 import logging
 from SpidrTpx3_engine import *
 import os
+import sys
+import traceback
+import numpy as np
 #logging.basicConfig(format='[%(levelname)6s] [%(asctime)s] %(message)s',level=logging.DEBUG)
 
 class tpx3_test(object):
@@ -12,12 +15,19 @@ class tpx3_test(object):
     self.console=80
     self.errors=[]
     self.fname=fname
+    self.cont=True
 
-    
+  def set_atribute(self,k,v):
+    self.__setattr__(k, v)
+
+  def get_atribute(self,k):
+    return self. __getattribute__(k)
+
   def execute(self,**keywords):
     BLEN=100
     BSPACERLEN=BLEN+4
-
+    self.results={}
+    
     self.mkdir(self.fname)
     logname='%s/log.txt'%(self.fname)
     self.logging = logging.getLogger(self.__class__.__name__)
@@ -28,6 +38,7 @@ class tpx3_test(object):
     fh.setFormatter(formatter)
     self.logging.addHandler(fh)
 
+    self.tpx.setLogLevel(2)#LVL_WARNING
 
     self.logging.info("")
     self.logging.info("#"*BSPACERLEN)
@@ -35,44 +46,67 @@ class tpx3_test(object):
     m="%s@%s"%(self.__class__.__name__ ,inspect.getfile(self.__class__))
     self.logging.info("# %-100s #"%m)
     
-    if len(keywords)>0:
+    if len(keywords)>1:
       self.logging.info("# %-100s #"%"Run time parameters:")
       for key, value in keywords.iteritems():
         l=" %s = %s"% (key, value)
-        if not key in ['wiki','category', 'info', 'mask_pixels','continue','name']:
+        if not key in ['wiki','name']:
           if str(value)!="":
             self.fname+="_%s%s"%(key, value)
-        if not key in ['mask_pixels']:
+
+    self.logging.info("# %-100s #"%("Initial category : %s"%self.category))
+
+    if len(self.bad_pixels)>0:
+      lb=" Bad pixels : "
+      l=lb
+      for i,p in enumerate(self.bad_pixels):
+        l+="(%3d,%3d) "%p
+        if (i)%8==7:
           self.logging.info("# %-100s #"%l)
-        else:
-          lb=" %s : "% (key)
-          l=lb
-          for i,p in enumerate(value):
-            l+="(%3d,%3d) "%p
-            if (i)%8==7:
-              self.logging.info("# %-100s #"%l)
-              l=" "*len(lb)
-          if len(l)>len(lb):
-            self.logging.info("# %-100s #"%l)
+          l=" "*len(lb)
+      if len(l)>len(lb):
+        self.logging.info("# %-100s #"%l)
 
     self.logging.info("# %-100s #"%("Data directory : %s"%self.fname))
     self.logging.info("# %-100s #"%("Log file : %s"%logname))
     self.logging.info("#"*BSPACERLEN)
 
-    result=self._execute(**keywords)
-    if not result:
-       logging.warning("Test didn't return any result!")
-       result={'category':'Z','continue':False}
-    if not 'category' in result: 
-       logging.warning("Test should return category!")
-    if not 'continue' in result: 
-       logging.warning("Test should return continue flag!")
-    if not 'mask_pixels' in result: 
-       result['mask_pixels']=[]
-    return result
+    self.tpx.flush_udp_fifo(val=0)
+    try:
+      self._execute(**keywords)
+    except KeyboardInterrupt:
+        raise
+    except :
+      exc_type, exc_value, exc_traceback = sys.exc_info()
+      self.logging.critical("")
+      self.logging.critical("Exception during test execution")
+      for msg in traceback.format_exception(exc_type, exc_value, exc_traceback):
+        for l in msg.rstrip().split('\n'):
+          self.logging.critical("  %s"%l.rstrip())
+      self.logging.critical("")
+      self.results['ERROR']=1
+    fn=self.fname+"/results.txt"
+    self.dict2file(fn,self.results)
+    self.logging.info("")
+    self.logging.info("Results stored to %s"%fn)
+    self.logging.info("Category %s"%self.category)
+    
+    return
+
   def _execute(self,**keywords):
     print "Virtual !!"
-    
+
+  def save_np_array(self,a,fn="map.dat", info="Saving map to file %s",fmt="%d"):
+      self.logging.info(info%fn)
+#      np.savetxt(fn,np.transpose(a),fmt=fmt)
+      f=open(fn,"w")
+      size=a.shape
+      for row in range(size[1]):
+        for col in range(size[0]):
+          f.write(fmt%a[col][row]+" ")
+        f.write("\n")
+      f.close()
+ 
   def _assert_true(self,val,msg):
     if val:
       self.logging.info("%-95s [  OK  ]"%msg)
@@ -89,22 +123,46 @@ class tpx3_test(object):
     else:
       self.logging.error("%-95s [FAILED]"%msg)
       return False
-    
 
-
-      
   def mkdir(self,d):
     if not os.path.exists(d):
       os.makedirs(d)  
 #      self.logging.info("Creating directory '%s'"%d)
 
+  def mask_bad_pixels(self):
+    for col,row in self.bad_pixels:
+       self.tpx.setPixelMask(col,row, 0)
+
+
+  def warn_info(self,txt,cond):
+    if cond>0:
+      self.logging.warning(txt)
+    else:
+      self.logging.info(txt)
+
+  def add_bad_pixels(self,s):
+    for c,r in s:
+       self.bad_pixels.add ( (c,r) )
+
+  def add_bad_columns(self,s):
+    for c,r in s:
+       self.bad_columns.add ( (c,r) )
+
   def dict2file(self,fname,d):
     f=open(fname,"w")
-    for k in d.keys():
+    for k in sorted(d.keys()):
       f.write("%s %s\n"%(k,d[k]))
     f.close()
 
+  def update_category(self,newcat):
     
+    if ord(newcat[0])>ord(self.category[0]):
+      self.logging.info("Changing category from %s to %s",self.category,newcat)
+      self.category=newcat
+      if self.category[0]=="V":
+        self.cont=False
+    else:
+      self.logging.warning("Can't change category from %s to %s",self.category,newcat)
     
   def wiki_banner(self,**keywords):
     if "wiki" in keywords and keywords["wiki"] :

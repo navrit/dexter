@@ -129,6 +129,11 @@ unsigned long flipbytes(unsigned long b)
   return bo;
   
 }
+void UDPServer::flush()
+{
+  data.flush();
+}
+
 
 #define MAX_QUEUE_LEN (256*256*2)
 std::list<unsigned long> UDPServer::getH(unsigned long val, unsigned long mask, unsigned int debug)
@@ -155,10 +160,12 @@ std::list<unsigned long> UDPServer::getH(unsigned long val, unsigned long mask, 
     l.push_back(pck);
     if(pmasked==val) break;
 //    std::cout << data.sizeOfQueue() << std::endl;
-    if (data.sizeOfQueue()>MAX_QUEUE_LEN) //vomiting
+
+    if (data.sizeOfQueue()>0) //vomiting
     {
+      int cnt=1024;
       data.pop_pre();
-      while(data.pop_fast(pck))
+      while(cnt-- && data.pop_fast(pck))
         l.push_back(pck);
       data.pop_post();
     }

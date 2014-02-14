@@ -12,7 +12,7 @@ Example:
 
   def _execute(self,**keywords):
     self.tpx.reinitDevice()
-    results=[]
+
     def_step=4
     meas_per_code=16
     self.logging.info("DAC scan settings:")
@@ -91,10 +91,11 @@ Example:
         if (y[i]<y[i-1]-sigma) and fs>0:
           mono="NO"
       
-      fsstr=name+"_FS"
-      ret_values[fsstr]="%.3f"%abs(fs)
-      monostr=name+"_MONO"
-      ret_values[monostr]=mono
+      self.results[name+"_FS"]="%.3f"%abs(fs)
+      self.results[name+"_MIN"]="%.3f"%abs(min(y))
+      self.results[name+"_MAX"]="%.3f"%abs(max(y))
+      self.results[name+"_MONO"]=mono
+      
       
       d = Gnuplot.Data(x, y,   title=name,    with_='lp pt 5 ps 0.2')
       g._add_to_queue([d])
@@ -110,18 +111,6 @@ Example:
     g("set output '%s'"%fn)
     g.refresh() 
     self.logging.info("Plot saved to %s"%fn)
-
-#    self.logging.debug("Details:")
-#    l="code | "
-#    for dac_id in range(1,19):
-#      l+="%-11s | "%dac_name[dac_id]
-#    self.logging.debug(l)
-#    for c in sorted(codes):
-#     l=" %3d | "%c
-#     for dac_id in range(1,19):
-#       if c in tab[dac_id]: l+= "%11.6f | "%tab[dac_id][c]
-#       else:l+="            | "
-#     self.logging.debug(l)
 
     #save data to file
     fn=self.fname+"/dacscan.dat"
@@ -139,10 +128,5 @@ Example:
     f.close()
     self.logging.info("Data saved to %s"%fn)
 
-    fn=self.fname+"/results.txt"
-    self.dict2file(fn,ret_values)
-    self.logging.info("Results stored to %s"%fn)
 
-
-
-    return {'category':'A','info':keywords['info'], 'continue':True}
+    return 

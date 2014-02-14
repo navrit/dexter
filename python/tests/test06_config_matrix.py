@@ -1,7 +1,7 @@
 from tpx3_test import tpx3_test
 import random
 import logging
-import numpy
+import numpy 
 import time
 import random
 
@@ -9,16 +9,12 @@ class test06_config_matrix(tpx3_test):
   """Configure / Verify matrix configuration"""
 
   def _execute(self,**keywords):
-    cat=keywords['category']
-    cont=True
-    mask_pixels=keywords['mask_pixels']
     rnd = random.Random()
     rnd.seed(0)
-    missing_pixels=[]
-    dead_pixels=[]
-#    self.tpx.setShutterLen(1)
-#    self.tpx.openShutter()
 
+    missing_pixels=set()
+    bad_pixel_config=set()
+    vomiting_pixels=set()
     for pattern in ['zeros','ones','random',]:
       self.tpx.reinitDevice()
       self.tpx.resetPixels()
@@ -55,18 +51,18 @@ class test06_config_matrix(tpx3_test):
 
       self.tpx.send_byte_array([0x90]+[0x00]*(256/8)) 
 
-      self.tpx.sequentialReadout(tokens=4)
-
+      self.tpx.sequentialReadout(tokens=2)
       data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
       if len(data)>256*(256+1):
+        print len(data)
         self.logging.error("Vomiting chip.")
         self.logging.error("Last packets")
         for d in data[-15:]:
-          self.logging.error(" %s"%str(d))
-        cat="V"
-        cont=False
+          if d.type==0x9:
+            self.logging.error(" %s"%str(d))
+            vomiting_pixels.add( (d.col, d.row) )
+        self.update_category("V")
         break
-#      valid=numpy.zeros((256,256))
       
       for d in data:
         if d.type==0x9:
@@ -79,11 +75,13 @@ class test06_config_matrix(tpx3_test):
       valid_pixels=0
       for x in range(256):
         for y in range(256):
+          if not stimulus[x][y]['received']:
+            missing_pixels.add( (x,y) )
           if stimulus[x][y]['received']==1 and stimulus[x][y]['ok']==1:
             valid_pixels+=1
-#          else:
-#            print x,y,stimulus[x][y]['received'],stimulus[x][y]['ok']
-
+          else:
+            self.logging.warning(" Pixel (%d,%d) received %d times, received value 0x%2x, expected value 0x%2x"%(x,y,stimulus[x][y]['received'],stimulus[x][y]['err'],stimulus[x][y]['config']))
+            bad_pixel_config.add( (x,y) )
 
       fn=self.fname+".bad"
       if valid_pixels==256*256:
@@ -92,52 +90,40 @@ class test06_config_matrix(tpx3_test):
         fn=self.fname+"/%s.map"%pattern
         fmap=open(fn,"w")
         logging.warning("Storing bad pixel map to %s"%fn)
-
-        fn=self.fname+"/%s.details"%pattern
-        fdet=open(fn,"w")
-        logging.warning("Storing bad details list to %s"%fn)
-
-        missing=""
-        missing_displayed=0
-
-        bad=""
-        bad_displayed=0
-        for x in range(256):
-          for y in range(256):
-            if stimulus[x][y]['received']<1:
+        for y in range(256):
+          for x in range(256):
+            if (x,y) in missing_pixels:
               fmap.write("1 ")
-              fdet.write("( %3d , %3d ) - missing\n"%(x,y))
-              if missing_displayed<20:
-                missing+="(%d,%d) "%(x,y)
-                missing_displayed+=1
-            elif stimulus[x][y]['ok']!=1:
-              fmap.write("1 ")
-              fdet.write("( %3d , %3d ) - bad conf %02x instead of %02x\n"%(x,y,stimulus[x][y]['err'], stimulus[x][y]['config']))
-              if bad_displayed<10:
-                bad+="(%d,%d %02x!=%02x) "%(x,y, stimulus[x][y]['config'], stimulus[x][y]['err'])
-                bad_displayed+=1
-              if not (x,y) in mask_pixels and not (x,y) in dead_pixels :
-                dead_pixels.append( (x,y) )
+            elif (x,y) in bad_pixel_config:
+              fmap.write("2 ")
             else:
               fmap.write("0 ")
           fmap.write("\n")
         fmap.close()
-        fdet.close()
-        if bad_displayed==10: bad+="..."
-        if missing_displayed==20: missing+="..."
-        if bad_displayed>0:     
-          self.logging.warning("Bad pixels: %s"%bad)
-        if missing_displayed>0: 
-          self.logging.warning("Missing pixels: %s"%missing)
-          self.logging.warning("TODO: These missing pixels are assumed to be lost in FPGA. In future this test should be corrected ! ")
 
-    ret_values={}
-    ret_values["DEAD_PIXELS"]=len(dead_pixels)
-    fn=self.fname+"/results.txt"
-    self.dict2file(fn,ret_values)
-    self.logging.info("Results stored to %s"%fn)
-    
-    if len(dead_pixels)>0:
-       cat='B_deadpixel'
-    return {'category':cat,'info':keywords['info'], 'continue':cont, 'mask_pixels':dead_pixels}
+
+    bc=0
+    for col in range(256):
+       bp=0
+       for row in range(256):
+          if (col,row) in bad_pixel_config:
+            bp+=1
+       if bp>8:
+          self.logging.warning("Bad column: %d. Problem with %d pixels"%(col,bp))
+#          self.bad_columns.add(col)
+          bc+=1
+
+    self.add_bad_pixels(bad_pixel_config)
+
+    self.results["CNF_BAD_PIXELS"]=len(bad_pixel_config)
+    self.results["CNF_MISSING_PIXELS"]=len(missing_pixels)
+    self.results["CNF_VOM_PIXELS"]=len(vomiting_pixels)
+    self.results["CNF_BAD_COLUMNS"]=bc
+
+    self.logging.info("")
+    self.warn_info("Bad pixels: %s"%len(bad_pixel_config), len(bad_pixel_config)>0 )
+    self.warn_info("Bad columns: %s"%bc, bc>0)
+    self.warn_info("Missing pixels: %s"%len(missing_pixels), len(missing_pixels)>0 )
+
+    return
 

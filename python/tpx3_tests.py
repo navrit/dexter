@@ -17,7 +17,7 @@ import shlex
 def dict2file(fname,d):
     f=open(fname,"w")
     for k in d.keys():
-      f.write("%s %s\n"%(k,d[k]))
+      f.write("%s %s\n"%(k.upper(),d[k]))
     f.close()
 
 
@@ -85,7 +85,9 @@ class TPX_tests:
         test_list.append(test_name)
       test_list=sorted(test_list)
 
-    params={'wiki':wiki,"category":"A", "info":"", "mask_pixels":[]}
+    params={'wiki':wiki}
+    result={'category':'A','bad_pixels':set()}
+    
     for test_name in test_list:
       if test_name.find("(")>=0:
         if test_name.find(")")>=0:
@@ -94,30 +96,93 @@ class TPX_tests:
           params_new=dict(token.split('=') for token in shlex.split(args))    
           for k in params_new:
             params[k]=params_new[k]
+
       if test_name in avaliable_tests:
         test=avaliable_tests[test_name](tpx=self.tpx,fname=self.dlogdir+test_name)
-        result=test.execute(**params)
-        params['category']=result['category']
-        if not result['continue']: 
-          logging.info( "Test %s decided that there is no point in continuing further tests."%(test_name))
+
+        for k in result:
+          test.set_atribute(k, result[k])
+
+        test.execute(**params)
+
+        for k in result:
+          result[k]= test.get_atribute(k)
+
+        for k in test.results:
+          result[k]= test.results[k]
+
+        if not test.cont : 
           break
-        for p in result['mask_pixels']:
-          if not p in params['mask_pixels']: 
-            params['mask_pixels'].append(p)
       else:
         logging.warning( "Unknown test %s"%test_name)
-    logging.info("")
-    logging.info("Chip category %s"%params["category"])
-    logging.info("Problematic pixels : %d"%len(params["mask_pixels"]))
+        
 
-    cat=params['category']
-    mask_pixels=params['mask_pixels']
-    ret_values={'CATEGORY':cat,'BAD_PIXELS':len(mask_pixels)}
-    fn=self.dlogdir+"/result.dat"
-    dict2file(fn,ret_values)
+    logging.info("")
+    logging.info("Final categorization")
+    bad_pix=len(result["bad_pixels"])
+
+    bad_col=0
+    for c in range(256):
+      bp=0
+      for r in range(256):
+        if (c,r) in result["bad_pixels"]:
+          bp+=1
+      if bp>8:
+        logging.info("  Found %d bad pixels in column %d"%(bp,c))
+        bad_col+=1
+
+    bad_sp=0
+    for dc in range(128):
+      for sp in range(32):
+        bp=0
+        for c in range(2*dc,2*(dc+1)):
+          for r in range(sp*4,(sp+1)*4):
+            if (c,r) in result["bad_pixels"]:
+              bp+=1
+        if bp>4:
+           logging.info("  Found %d bad pixels in super pixel dc=%d sp=%d"%(bp,dc,sp))
+           bad_sp+=1
+
+    logging.info("Problematic pixels : %d"%bad_pix)
+    logging.info("Bad columns : %d"%bad_col)
+    logging.info("Bad super pixels : %d"%bad_sp)
+    
+    if result["category"]=='A':
+      if bad_sp>1 or bad_col>1 or bad_pix>256:
+        result["category"]='C'
+      elif (bad_sp==0) and (bad_col==0) and bad_pix<=30:
+        result["category"]='A'
+      else:
+        result["category"]='B'
+    logging.info("Chip category %s"%result["category"])
+
+    fn=self.dlogdir+"result.bad"
+    logging.info("Map of bad pixels stored to %s"%fn)
+    f=open(fn,"w")
+    for r in range(256):
+      for c in range(256):
+        if (c,r) in result["bad_pixels"]:
+          f.write("1 ")
+        else:
+          f.write("0 ")
+      f.write("\n")
+    f.close()
+
+
+#    for k in ('bad_pixels','bad_columns','bad_superpixels'):
+    result['bad_pixels']=bad_pix
+    result['bad_columns']=bad_col
+    result['bad_superpixels']=bad_sp
+
+      
+    fn=self.dlogdir+"result.dat"
+    dict2file(fn,result)
     logging.info("Results stored to %s"%fn)
 
+
     return 
+
+
 
 
   def list(self):
