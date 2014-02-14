@@ -92,8 +92,8 @@
 #define CMD_GET_AVDD           0x54B
 #define CMD_GET_DVDD           0x54C
 #define CMD_GET_AVDD_NOW       0x54D
-#define CMD_GET_DVDD_NOW       0x54E
-#define CMD_GET_SPIDR_ADC      0x54F
+#define CMD_GET_SPIDR_ADC      0x54E
+#define CMD_GET_DVDD_NOW       0x54F
 
 // Configuration: timer
 #define CMD_RESTART_TIMERS     0x550
@@ -143,6 +143,7 @@
 // Other
 #define CMD_GET_GPIO           0x780
 #define CMD_SET_GPIO           0x781
+#define CMD_SET_GPIO_PIN       0x782
 
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
@@ -235,8 +236,8 @@ static const char *CMD_STR[] =
     "GET_AVDD         ", // 0x54B
     "GET_DVDD         ", // 0x54C
     "GET_AVDD_NOW     ", // 0x54D
-    "GET_DVDD_NOW     ", // 0x54E
-    "GET_SPIDR_ADC    ", // 0x54F
+    "GET_SPIDR_ADC    ", // 0x54E
+    "GET_DVDD_NOW     ", // 0x54F
 
     "RESTART_TIMERS   ", // 0x550
     "RESET_TIMER      ", // 0x551
@@ -292,7 +293,8 @@ static const char *CMD_STR[] =
     "-----",             // 0x67F
 
     "GET_GPIO         ", // 0x780
-    "SET_GPIO         "  // 0x781
+    "SET_GPIO         ", // 0x781
+    "SET_GPIO_PIN     "  // 0x782
   };
 
 // Reply bit: set in the reply message in the command identifier
