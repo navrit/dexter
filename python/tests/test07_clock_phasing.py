@@ -119,6 +119,7 @@ class test07_clock_phasing(tpx3_test):
             y=toa[col][row]-offset
             diffs[col][row]=(fit-y)
       f.close()
+
       mean=np.mean(diffs)
       stddev=np.std(diffs)
       l3lsb=0
@@ -155,6 +156,10 @@ class test07_clock_phasing(tpx3_test):
         for r in range(256):
           if (c,r) in missing_pixels:
             toa_diff[c][r]=8
+          if toa_diff[c][r]<0 or toa_diff[c][r]>16: 
+            toa_diff[c][r]=8
+            outliers.add( (c,r) )
+
       dmean=np.mean(toa_diff)
       dstd=np.std(toa_diff)
       l3lsb=0
