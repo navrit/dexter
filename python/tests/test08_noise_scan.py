@@ -46,7 +46,6 @@ class test08_noise_scan(tpx3_test):
         #sanity check
         if len(data)==0:
              self.logging.error("No data !!")
-             tries-=1
         elif data[-1].raw&0xFFFF00000000!=0x71A000000000:
              self.logging.error("Last packet %s"%(str(data[-1])))
              self.logging.error("Packets received %d (to be masked %d)"%(len(data),mask))
