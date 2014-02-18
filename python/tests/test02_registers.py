@@ -1,6 +1,6 @@
 from tpx3_test import tpx3_test
 
-class test02(tpx3_test):
+class test02_registers(tpx3_test):
   """Default register values"""
 
   def _execute(self,**keywords):
