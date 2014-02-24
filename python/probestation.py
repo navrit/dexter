@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import gpib
 import time
-import time
+import os
+
 class ProbeStation:
   def __init__(self,address=22):
     self.address=address
@@ -29,13 +30,20 @@ class ProbeStation:
     return self.rd(l)
 
   def StepFirstDie(self):
-    self.qr("StepFirstDie")
+    r=self.qr("StepFirstDie")
+    rr=r.split()
+    if int(rr[0])!=0:
+      print "ERRRRRRRRRROR!!!!!!!!"
+      os._exit(-1)
+      print r
+    return (int(rr[1]),int(rr[2]),rr[3])
 
   def StepNextDie(self):
     r=self.qr("StepNextDie")
     rr=r.split()
     if int(rr[0])!=0:
       print "ERRRRRRRRRROR!!!!!!!!"
+      os._exit(-1)
       print r
     return (int(rr[1]),int(rr[2]),rr[3])
 

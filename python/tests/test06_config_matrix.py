@@ -66,7 +66,7 @@ class test06_config_matrix(tpx3_test):
       
       for d in data:
         if d.type==0x9:
-          stimulus[d.col][d.row]['received']+=1
+          stimulus[d.col][d.row]['received']=1
           if d.config==stimulus[d.col][d.row]['config']: 
             stimulus[d.col][d.row]['ok']=1
           else:
@@ -77,7 +77,7 @@ class test06_config_matrix(tpx3_test):
         for y in range(256):
           if not stimulus[x][y]['received']:
             missing_pixels.add( (x,y) )
-          if stimulus[x][y]['received']==1 and stimulus[x][y]['ok']==1:
+          elif stimulus[x][y]['received']==1 and stimulus[x][y]['ok']==1:
             valid_pixels+=1
           else:
             self.logging.warning(" Pixel (%d,%d) received %d times, received value 0x%2x, expected value 0x%2x"%(x,y,stimulus[x][y]['received'],stimulus[x][y]['err'],stimulus[x][y]['config']))
