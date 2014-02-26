@@ -3,7 +3,7 @@
 
 UDPServer::UDPServer()
 {
-
+sockfd =0;
 }
 
 
@@ -40,12 +40,14 @@ void*   UDPServer::receive()
      if ((sockfd = socket(p->ai_family, p->ai_socktype,  p->ai_protocol)) == -1) 
      {
         perror("listener: socket");
+        sockfd=0;
         continue;
      }
 
      if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) 
      {
        close(sockfd);
+       sockfd=0;
        perror("listener: bind");
        continue;
      }
@@ -134,6 +136,11 @@ void UDPServer::flush()
   data.flush();
 }
 
+  bool UDPServer::isStarted()
+  {
+    return (sockfd!=0);
+  }
+  
 
 #define MAX_QUEUE_LEN (256*256*2)
 std::list<unsigned long> UDPServer::getH(unsigned long val, unsigned long mask, unsigned int debug)
@@ -160,7 +167,6 @@ std::list<unsigned long> UDPServer::getH(unsigned long val, unsigned long mask, 
     l.push_back(pck);
     if(pmasked==val) break;
 //    std::cout << data.sizeOfQueue() << std::endl;
-
     if (data.sizeOfQueue()>0) //vomiting
     {
       int cnt=1024;

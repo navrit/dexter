@@ -29,6 +29,7 @@ public:
     close(sockfd);
   }
   void start(unsigned int port);
+  bool isStarted();
   std::list<unsigned long> getN(unsigned int N, unsigned int debug);
   std::list<unsigned long> getH(unsigned long val,unsigned long mask, unsigned int debug);
   void flush();
