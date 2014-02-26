@@ -291,6 +291,9 @@ class TPX3:
       raise RuntimeError("Unable to connect")
     self.udp=UDPServer()
     self.udp.start(8192)
+    if  not self.udp.isStarted():
+      raise RuntimeError("Problem with UDP server. Unable to connect")
+
 #    self.daq=SpidrDaq( self.ctrl )
 #    self.daq.setFlush(False)
     self.id=0
