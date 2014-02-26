@@ -4,6 +4,7 @@
 UDPServer::UDPServer()
 {
 sockfd =0;
+err=0;
 }
 
 
@@ -40,18 +41,17 @@ void*   UDPServer::receive()
      if ((sockfd = socket(p->ai_family, p->ai_socktype,  p->ai_protocol)) == -1) 
      {
         perror("listener: socket");
-        sockfd=0;
+        err=1;
         continue;
      }
 
      if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) 
      {
        close(sockfd);
-       sockfd=0;
+       err=1;
        perror("listener: bind");
        continue;
      }
-
      break;
   }
 
@@ -138,7 +138,7 @@ void UDPServer::flush()
 
   bool UDPServer::isStarted()
   {
-    return (sockfd!=0);
+    return (err==0);
   }
   
 

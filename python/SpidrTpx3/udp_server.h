@@ -47,6 +47,7 @@ public:
 private:
   pthread_t recv_thread;
   int sockfd;
+  int err;
 
 /*  
  
