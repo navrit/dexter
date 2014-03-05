@@ -1,6 +1,43 @@
-Instalation:
-sudo apt-get install cython libboost-all-dev libboost-python-dev libboost-signals-dev libboost-thread-dev libboost-filesystem-dev libboost-system-dev libboost-iostreams-dev python-gnuplot gnuplot gnuplot-x11  python-scipy python-sciscipy python-numpy python-matplotlib
+1) Instalation of required software packets on Ubuntu 12.04:
 
-Running
-1) make
-2) ./tpx_tests.py chipname
+sudo apt-get install cython libboost-all-dev libboost-python-dev \
+                     libboost-signals-dev libboost-thread-dev\
+                     libboost-filesystem-dev libboost-system-dev \
+                     libboost-iostreams-dev python-gnuplot gnuplot \
+                     gnuplot-x11  python-scipy python-sciscipy python-numpy \
+                     python-matplotlib
+
+2) Building python bindings
+
+make
+
+3) Testing the chip
+
+./do.py chipname
+
+
+
+
+
+4) To enable efuse burning you have to:
+
+!! WARNING: I2C address of current monitor is different than on NIKHEF board !!
+  
+a) build SpidrTpx3Lib with different flags:
+   cd spidr/software/trunk
+   qmake SPIDR-TPX3-PROBESTATION.pro
+   make
+b) build python binding
+   cd spidr/software/trunk/python
+   make CERN_PROBESTATION=1
+c) to read efuses you can:
+   ./tpx3_tests.py chipname test17_efuse
+d) to write efuses you can:
+   ./tpx3_tests.py chipname "test17_efuse(name='W0_J4')"
+   
+
+
+
+5) Changing linux UDP buffers:
+  sudo sysctl -w net.core.rmem_max=33554432
+  sudo sysctl -w net.core.rmem_default=33554432
