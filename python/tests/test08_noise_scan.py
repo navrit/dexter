@@ -31,8 +31,9 @@ class test08_noise_scan(tpx3_test):
 
   """Threshold scan over noise"""
   def threshold_scan(self,res=None):
-      peak=numpy.zeros((256,256), int)
+      self.warning_detailed_restart()
 
+      peak=numpy.zeros((256,256), int)
       mask=0
       anim=['|','/','-','\\','|','/','-','\\']
       for i in range(0,512,1):
@@ -59,6 +60,10 @@ class test08_noise_scan(tpx3_test):
         for d in data:
 #          logging.debug(str(d))
           if d.type==0xA:
+            if d.itot<0:
+              self.warning_detailed("Bad itot : "+str(d))
+            if d.event_counter<0:
+              self.warning_detailed("Bad event counter : "+str(d))
             res[d.col][d.row][i]=d.event_counter
             if  d.event_counter>=200 and peak[d.col][d.row]==0: 
               peak[d.col][d.row]=1
@@ -77,6 +82,7 @@ class test08_noise_scan(tpx3_test):
 #          self.tpx.resetPixels()
           self.tpx.flush_udp_fifo(0x71FF000000000000)#flush until load matrix
           mask=0
+      self.warning_detailed_summary()
       return res
 
   def _execute(self,**keywords):
@@ -161,6 +167,7 @@ class test08_noise_scan(tpx3_test):
       fit_res={}
       mean_values=[]
       rms_values=[]
+      self.warning_detailed_restart()
       for col in range(256):
         fit_res[col]={}
         if w2f:self.mkdir(logdir+"/%03d"%col)
@@ -169,7 +176,7 @@ class test08_noise_scan(tpx3_test):
           sys.stdout.flush()
           
         else:
-          self.logging.warning("No hits in col %d"%col)
+          self.warning_detailed("No hits in col %d"%col)
           for row in range(256):
             missing_pixels.append( (col,row) )
             fit_res[col][row] =[-1.0,-1.0,-1.0]
@@ -215,11 +222,12 @@ class test08_noise_scan(tpx3_test):
                 pass
             else:
               if not (col,row) in self.bad_pixels:
-                self.logging.warning("No hits for pixel (%d,%d)"%(col,row))
+                self.warning_detailed("No hits for pixel (%d,%d)"%(col,row))
                 missing_pixels.append( (col,row) )
             if w2f:
               f.write("# avr:%.3f rms:%.3f\n"%(fit_res[col][row][1],fit_res[col][row][2]))
               f.close()
+      self.warning_detailed_summary()
 
       bl_mean=numpy.mean(mean_values)
       bl_rms=numpy.std(mean_values)

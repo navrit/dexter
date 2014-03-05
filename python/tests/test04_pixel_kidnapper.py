@@ -32,17 +32,20 @@ class test04_pixel_kidnapper(tpx3_test):
     self.tpx.setPixelTestEna(ALL_PIXELS,ALL_PIXELS, testbit=True)
     self.tpx.setPixelMask(ALL_PIXELS,ALL_PIXELS, True)
     self.tpx.setPixelConfig()
+
+    self.tpx.setTpPeriodPhase(1,0)
     
     self.tpx.sequentialReadout(tokens=4)
     data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
     self.results={}
 
-    self.tpx.setTpPeriodPhase(1,0)
     bad_tot=[]
     kidnappers=[]
     missing=set()
     received=(np.zeros((256,256)) , np.zeros((256,256)))
     for seq in range(2):
+
+      self.warning_detailed_restart()
       self.logging.info("Round %d"%seq)
       self.tpx.openShutter()
       data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
@@ -53,11 +56,11 @@ class test04_pixel_kidnapper(tpx3_test):
          if pck.type in (0xB,0xA):
            received[seq][pck.col][pck.row]=1
            if seq==0 and (not pck.tot in (64,65,66)):
-             self.logging.warning("Unexpected TOT value %d for pixel (%d,%d)"%(pck.tot,pck.col,pck.row))
+             self.warning_detailed("Unexpected TOT value %d for pixel (%d,%d)"%(pck.tot,pck.col,pck.row))
              if not (pck.col,pck.row) in self.bad_pixels:
                bad_tot.append( (pck.col,pck.row) )
          elif pck.type !=0x7:
-           self.logging.warning("Unexpeced packet %s"%str(pck))
+           self.warning_detailed("Unexpeced packet %s"%str(pck))
 
       cnt=np.sum(received[seq])
       self.logging.info("Pixel packets received: %d"%(cnt))
@@ -66,16 +69,19 @@ class test04_pixel_kidnapper(tpx3_test):
         if seq==0:
           self.logging.warning("Problems already in the first round !! Results may be unreliable")
 
-          
+      self.warning_detailed_summary()
+
+    self.warning_detailed_restart()
     for col in range(256):
       for row in range(256):
         if not received[0][col][row] and not received[1][col][row]:
-          self.logging.warning("Missing pixel (%d,%d) (in both rounds)"%(col,row))
+          self.warning_detailed("Missing pixel (%d,%d) (in both rounds)"%(col,row))
           missing.add( (col,row) )
         elif  received[0][col][row] and not received[1][col][row]:
-          self.logging.warning("Kidnapper pixel (%d,%d)"%(col,row))
+          self.warning_detailed("Kidnapper pixel (%d,%d)"%(col,row))
           if not (col,row) in self.bad_pixels:
              kidnappers.append( (col,row) )
+    self.warning_detailed_summary()
 
 
 #    mask_pixels=bad_tot+kidnappers

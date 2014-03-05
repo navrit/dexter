@@ -67,6 +67,7 @@ class test07_clock_phasing(tpx3_test):
             if not pck.tot in (64,65,66) and not (pck.col,pck.row) in self.bad_pixels:
               self.logging.warning("Unexpected TOT value %d for pixel (%d,%d)"%(pck.tot,pck.col,pck.row))
               bad_tot[pck.col][pck.row]=1
+              self.bad_pixels.add( (pck.col,pck.row) )
             v=float(pck.toa-(shutter&0x3FFF)) 
             if v<0: v+=0x4000
             v=v*16 - float(pck.ftoa)
@@ -82,7 +83,8 @@ class test07_clock_phasing(tpx3_test):
           for r in range (256):
             if not received[c][r] : missing_pixels.add( (c,r) )
       
-      
+      self.save_np_array(toa, fn=self.fname+'/phase%02x.map'%phase, info="  TOA Map saved to %s")
+
       fn=self.fname+'/phase%02x.cols'%phase
       self.logging.info("Cols saved to %s"%fn)
       f=open(fn,"w")
@@ -100,17 +102,24 @@ class test07_clock_phasing(tpx3_test):
           if not received[col][row] : 
              self.logging.warning("No data for pixel (%d,%d)"%(col,row))
              continue
-          x.append(row)
           offset=0
           if dcol%16!=0:
             offset=(15-(dcol-1)%16)
           yy=toa[col][row]-offset
+          if yy<910 or yy>970:
+            outliers.add( (col,row) )
+            self.logging.warning("TOA+FTOA for pixel (%d,%d) is %d. Classifying pixel as outlier."%(col,row,yy))
+            continue
+          x.append(row)
           y.append(yy)
         if len(x)> 1 and len(y)>1:
           (a_s,b_s,r,tt,stderr)=stats.linregress(x,y)
           f.write("%3d %.6f %.6f %.6f\n" % (col, a_s,b_s,stderr))
           for row in range(256):
-            if not received[col][row] or (col,row) in self.bad_pixels or (col,row) in missing_pixels:  
+            if   (not received[col][row]) \
+               or ((col,row) in self.bad_pixels) \
+               or ((col,row) in outliers) \
+               or ((col,row) in missing_pixels) :  
                continue
             fit=row*a_s+b_s
             offset=0
@@ -147,11 +156,29 @@ class test07_clock_phasing(tpx3_test):
       self.results['TOA_TEST_PHASE%0x_HIGHER'%phase]="%d"%h3lsb
       self.results['TOA_TEST_PHASE%0x_LOWER'%phase]="%d"%l3lsb
 
-      self.save_np_array(toa, fn=self.fname+'/phase%02x.map'%phase, info="  TOA Map saved to %s")
       toa_results.append(toa)
+
+
 
     if len(toa_results)==2:
       toa_diff=toa_results[0]-toa_results[1]
+      self.save_np_array(toa_diff, fn=self.fname+'/diff.map', info="  TOA diff map saved to %s")
+
+      l3lsb=0
+      h3lsb=0
+      HLIMIT=int(8+3.0)
+      LLIMIT=int(8-3.0)
+      
+      for c in range(256):
+        for r in range(256):
+          if (c,r) in missing_pixels: continue
+          if toa_diff[c][r]>HLIMIT: 
+            h3lsb+=1
+            outliers.add( (c,r) )
+          if toa_diff[c][r]<LLIMIT: 
+            l3lsb+=1            
+            outliers.add( (c,r) )
+
       for c in range(256):
         for r in range(256):
           if (c,r) in missing_pixels:
@@ -162,21 +189,7 @@ class test07_clock_phasing(tpx3_test):
 
       dmean=np.mean(toa_diff)
       dstd=np.std(toa_diff)
-      l3lsb=0
-      h3lsb=0
-      HLIMIT=int(dmean+3.0+0.5)
-      LLIMIT=int(dmean-3.0)
-      
-      for c in range(256):
-        for r in range(256):
-          if (c,r) in missing_pixels: continue
-          
-          if toa_diff[c][r]>HLIMIT: 
-            h3lsb+=1
-            outliers.add( (c,r) )            
-          if toa_diff[c][r]<LLIMIT: 
-            l3lsb+=1            
-            outliers.add( (c,r) )            
+
 
       self.logging.info("")
       self.logging.info("Difference")
@@ -189,7 +202,6 @@ class test07_clock_phasing(tpx3_test):
       self.results['TOA_TEST_DIFF_STDDEV']="%.3f"%dstd
       self.results['TOA_TEST_DIFF_HIGHER']="%d"%h3lsb
       self.results['TOA_TEST_DIFF_LOWER']="%d"%l3lsb
-      self.save_np_array(toa_diff, fn=self.fname+'/diff.map', info="  TOA diff map saved to %s")
 
 
     self.add_bad_pixels(outliers)

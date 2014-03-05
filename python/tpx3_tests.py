@@ -16,7 +16,7 @@ import shlex
 
 def dict2file(fname,d):
     f=open(fname,"w")
-    for k in d.keys():
+    for k in sorted(d.keys()):
       f.write("%s %s\n"%(k.upper(),d[k]))
     f.close()
 
@@ -143,12 +143,14 @@ class TPX_tests:
            logging.info("  Found %d bad pixels in super pixel dc=%d sp=%d"%(bp,dc,sp))
            bad_sp+=1
 
-    logging.info("Problematic pixels : %d"%bad_pix)
+    logging.info("Bad pixels : %d"%bad_pix)
     logging.info("Bad columns : %d"%bad_col)
     logging.info("Bad super pixels : %d"%bad_sp)
     
     if result["category"]=='A':
-      if bad_sp>1 or bad_col>1 or bad_pix>256:
+      if bad_pix>1024:
+        result["category"]='D'
+      elif bad_sp>1 or bad_col>1 or bad_pix>256:
         result["category"]='C'
       elif (bad_sp==0) and (bad_col==0) and bad_pix<=30:
         result["category"]='A'

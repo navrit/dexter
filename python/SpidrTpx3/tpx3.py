@@ -188,14 +188,14 @@ class tpx3packet:
      if self.event_counter in tote10:
        self.event_counter=tote10[self.event_counter]
      else:
-       logging.warning("Packet decode: Invalid event_counter value = %0x [%012X]"%(self.event_counter,self.raw))
-       self.event_counter=0
+#       logging.warning("Packet decode: Invalid event_counter value = %0x [%012X]"%(self.event_counter,self.raw))
+       self.event_counter=-1
      
      if self.itot in itot14:
        self.itot=itot14[self.itot]
      else:
-       logging.warning("Packet decode: Invalid itot value = %0x [%012X]"%(self.itot,self.raw))
-       self.itot=0
+#       logging.warning("Packet decode: Invalid itot value = %0x [%012X]"%(self.itot,self.raw))
+       self.itot=-1
      self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d evn_cnt=%d itot=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address, self.event_counter, self.itot)
 
 
@@ -222,14 +222,14 @@ class tpx3packet:
      if self.tot in tote10:
        self.tot=tote10[self.tot]
      else:
-       logging.warning("Packet decode: Invalid tot value = %0x [%012X]"%(self.tot,self.raw))
-       self.tot=0
+#       logging.warning("Packet decode: Invalid tot value = %0x [%012X]"%(self.tot,self.raw))
+       self.tot=-1
      
      if self.toa in toa14:
        self.toa=toa14[self.toa]
      else:
-       logging.warning("Packet decode: Invalid itot value = %0x [%012X]"%(self.toa,self.raw))
-       self.toa=0
+#       logging.warning("Packet decode: Invalid toa value = %0x [%012X]"%(self.toa,self.raw))
+       self.toa=-1
 
      
      self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d ftoa=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address,  self.toa,self.tot,self.ftoa)

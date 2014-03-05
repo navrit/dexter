@@ -107,7 +107,7 @@ class test17_efuse(tpx3_test):
             self.logging.error(msg)
             self.update_category('F_fuse')
           else:
-            self.logging.error("Look like burning is possible")
+            self.logging.info("Look like burning is possible")
             if xt['one2zero'] :
               self.logging.info("Using modification field for x")
               desired_efuses &=  ~ (0xF)
@@ -141,7 +141,7 @@ class test17_efuse(tpx3_test):
               bit_pos+=1
             self.logging.info( "Going to burn : %s"%str(bits_to_burn) )
 
-            burn_ok=query_yes_no("Burn ?!",default="no")
+            burn_ok=True#query_yes_no("Burn ?!",default="no")
             if burn_ok:
               self.tpx.setGPIO(SPIDR_3V3_ENA_PIN,1)
               time.sleep(0.02)

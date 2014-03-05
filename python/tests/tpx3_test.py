@@ -16,6 +16,9 @@ class tpx3_test(object):
     self.errors=[]
     self.fname=fname
     self.cont=True
+    self.details_printed=0
+    self.max_details=64
+    self.details_skipped=0
 
   def set_atribute(self,k,v):
     self.__setattr__(k, v)
@@ -133,6 +136,22 @@ class tpx3_test(object):
     for col,row in self.bad_pixels:
        self.tpx.setPixelMask(col,row, 0)
 
+  def warning_detailed(self,txt):
+    if self.details_printed< self.max_details:
+      self.logging.warning(txt)
+      self.details_printed+=1
+    else:
+      self.details_skipped+=1
+
+  def warning_detailed_restart(self):
+    self.details_printed=0
+    self.details_skipped=0
+
+  def warning_detailed_summary(self):
+    if self.details_skipped>0 :
+      self.logging.warning(" ... %d warning messages skipped"%self.details_skipped)
+  
+
 
   def warn_info(self,txt,cond):
     if cond>0:
@@ -140,6 +159,23 @@ class tpx3_test(object):
     else:
       self.logging.info(txt)
 
+  def warn_info_pixel_list(self,txt,pixel_list):
+    DISP=10
+    cond=False
+    lst=""
+    if len(pixel_list):
+      lst="["
+      i=0
+      for p in pixel_list:
+        lst+= "(%d,%d) "%p
+        if i>DISP:
+          lst+="..."
+          break
+        i+=1
+      lst+="]"
+      cond=True
+    self.warn_info(txt+lst,cond)
+ 
   def add_bad_pixels(self,s):
     for c,r in s:
        self.bad_pixels.add ( (c,r) )
@@ -159,7 +195,8 @@ class tpx3_test(object):
     if ord(newcat[0])>ord(self.category[0]):
       self.logging.info("Changing category from %s to %s",self.category,newcat)
       self.category=newcat
-      if self.category[0]=="V":
+      if self.category[0].lower() in ("v","k","m"):
+        self.logging.info("No reason to continue ...")
         self.cont=False
     else:
       self.logging.warning("Can't change category from %s to %s",self.category,newcat)

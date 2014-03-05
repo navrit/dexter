@@ -13,9 +13,13 @@ class test06_config_matrix(tpx3_test):
     rnd.seed(0)
 
     missing_pixels=set()
+    multiple_pixels=set()
     bad_pixel_config=set()
     vomiting_pixels=set()
     for pattern in ['zeros','ones','random',]:
+      self.warning_detailed_restart()
+      _missing_pixels=set()
+      _multiple_pixels=set()
       self.tpx.reinitDevice()
       self.tpx.resetPixels()
       logging.info(" ")
@@ -51,7 +55,7 @@ class test06_config_matrix(tpx3_test):
 
       self.tpx.send_byte_array([0x90]+[0x00]*(256/8)) 
 
-      self.tpx.sequentialReadout(tokens=2)
+      self.tpx.sequentialReadout(tokens=120)
       data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
       if len(data)>256*(256+1):
         print len(data)
@@ -63,10 +67,12 @@ class test06_config_matrix(tpx3_test):
             vomiting_pixels.add( (d.col, d.row) )
         self.update_category("V")
         break
-      
+
+      received=0
       for d in data:
         if d.type==0x9:
-          stimulus[d.col][d.row]['received']=1
+          stimulus[d.col][d.row]['received']+=1
+          received+=1
           if d.config==stimulus[d.col][d.row]['config']: 
             stimulus[d.col][d.row]['ok']=1
           else:
@@ -76,12 +82,20 @@ class test06_config_matrix(tpx3_test):
       for x in range(256):
         for y in range(256):
           if not stimulus[x][y]['received']:
-            missing_pixels.add( (x,y) )
-          elif stimulus[x][y]['received']==1 and stimulus[x][y]['ok']==1:
-            valid_pixels+=1
+            _missing_pixels.add( (x,y) )
+            self.warning_detailed(" Pixel (%d,%d) not received!"%(x,y))
+          elif stimulus[x][y]['received']==1 :
+            if stimulus[x][y]['ok']==1:
+              valid_pixels+=1
+            else:
+              self.warning_detailed(" Pixel (%d,%d) received %d times, received value 0x%2x, expected value 0x%2x"%(x,y,stimulus[x][y]['received'],stimulus[x][y]['err'],stimulus[x][y]['config']))
+              bad_pixel_config.add( (x,y) )
           else:
-            self.logging.warning(" Pixel (%d,%d) received %d times, received value 0x%2x, expected value 0x%2x"%(x,y,stimulus[x][y]['received'],stimulus[x][y]['err'],stimulus[x][y]['config']))
-            bad_pixel_config.add( (x,y) )
+              self.warning_detailed(" Pixel (%d,%d) received %d times!"%(x,y,stimulus[x][y]['received']))
+              _multiple_pixels.add( (x,y) )
+      self.warning_detailed_summary()
+
+
 
       fn=self.fname+".bad"
       if valid_pixels==256*256:
@@ -89,18 +103,24 @@ class test06_config_matrix(tpx3_test):
       else:
         fn=self.fname+"/%s.map"%pattern
         fmap=open(fn,"w")
+        logging.warning("Received %d pixels (missing %d)"%(received,256*256-received))
         logging.warning("Storing bad pixel map to %s"%fn)
         for y in range(256):
           for x in range(256):
-            if (x,y) in missing_pixels:
+            if (x,y) in _missing_pixels:
               fmap.write("1 ")
-            elif (x,y) in bad_pixel_config:
+            elif (x,y) in _multiple_pixels:
               fmap.write("2 ")
+            elif (x,y) in bad_pixel_config:
+              fmap.write("3 ")
             else:
               fmap.write("0 ")
           fmap.write("\n")
         fmap.close()
-
+        for pix in _missing_pixels:
+          missing_pixels.add(pix)
+        for pix in _multiple_pixels:
+          multiple_pixels.add(pix)
 
     bc=0
     for col in range(256):
@@ -123,7 +143,28 @@ class test06_config_matrix(tpx3_test):
     self.logging.info("")
     self.warn_info("Bad pixels: %s"%len(bad_pixel_config), len(bad_pixel_config)>0 )
     self.warn_info("Bad columns: %s"%bc, bc>0)
-    self.warn_info("Missing pixels: %s"%len(missing_pixels), len(missing_pixels)>0 )
+    self.warn_info_pixel_list("Missing pixels: %s"%len(missing_pixels), missing_pixels)
+    self.warn_info_pixel_list("Pixels received multiple times: %s"%len(multiple_pixels), multiple_pixels)
 
+    if len(bad_pixel_config) or len(missing_pixels):
+        fn=self.fname+"/results.map"
+        fmap=open(fn,"w")
+        logging.warning("Storing bad pixel map to %s"%fn)
+        for y in range(256):
+          for x in range(256):
+            if (x,y) in _missing_pixels:
+              fmap.write("1 ")
+            elif (x,y) in bad_pixel_config:
+              fmap.write("2 ")
+            else:
+              fmap.write("0 ")
+          fmap.write("\n")
+        fmap.close()
+
+    if len(multiple_pixels)>0:
+       self.update_category('M')
+
+#    if len(missing_pixels)>0:
+#       self.update_category('Kcnf')
     return
 

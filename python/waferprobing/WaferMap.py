@@ -213,8 +213,17 @@ class MapPanel(wx.Panel):
         test_result='A'
         
         statuses=['A','B','C','D','E','F']
-        test_result=statuses[random.randint(0,len(statuses)-1)]
-        die["status"]=test_result
+        
+        r=random.randint(0,100)
+        if r<60:
+#        test_result=statuses[]
+          die["status"]='A'
+        elif r<80:
+          die["status"]='B'
+        elif r<90:
+          die["status"]='C'
+        else:
+          die["status"]='F'
 
         test_date=time.strftime('%Y/%m/%d %H:%M:%S')
         test_date_fname=time.strftime('%Y%m%d_%H%M%S')
