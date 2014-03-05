@@ -3,11 +3,18 @@
 from pybindgen import *
 import sys
 from defines import load_defines
+import getpass
 
 CERN_PROBESTATION=1
+
+    
+    
 for a in sys.argv:
   if a.strip()=="CERN_PROBESTATION":CERN_PROBESTATION=1
  
+if getpass.getuser()=='skulis':
+  CERN_PROBESTATION=1
+
 mod = Module('SpidrTpx3_engine')
 if CERN_PROBESTATION:
   print "#define CERN_PROBESTATION"
