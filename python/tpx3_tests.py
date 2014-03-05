@@ -86,7 +86,7 @@ class TPX_tests:
       test_list=sorted(test_list)
 
     params={'wiki':wiki}
-    result={'category':'A','bad_pixels':set()}
+    result={'category':'A','bad_pixels':set(),'timeouts':0}
     
     for test_name in test_list:
       if test_name.find("(")>=0:
@@ -118,6 +118,9 @@ class TPX_tests:
         
 
     logging.info("")
+    logging.info("Total number of timeouts : %d"%result["timeouts"])
+    logging.info("")
+
     logging.info("Final categorization")
     bad_pix=len(result["bad_pixels"])
 

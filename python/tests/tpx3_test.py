@@ -90,7 +90,11 @@ class tpx3_test(object):
       self.results['ERROR']=1
     fn=self.fname+"/results.txt"
     self.dict2file(fn,self.results)
+
+  
     self.logging.info("")
+    self.warn_info("Timeouts during test : %d"%self.tpx.timeouts,self.tpx.timeouts>0)
+    self.results['timeouts']=+self.tpx.timeouts
     self.logging.info("Results stored to %s"%fn)
     self.logging.info("Category %s"%self.category)
     

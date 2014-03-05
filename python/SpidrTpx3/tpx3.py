@@ -302,7 +302,8 @@ class TPX3:
     self.tpena=numpy.zeros((256,256), int)
     self.reinitDevice()
     self.flush_udp_fifo(val=0)
-
+    self.timeouts=0
+    self.bad_counters=0
   def stop(self):
 #    self.daq.stop()
     pass
@@ -734,7 +735,9 @@ class TPX3:
       if (last&mask)==val: ok=True
       if vomit: break
     if not ok:
-      logging.warning("Timeout ;/ (last packet : %16X while expecting %016X)"%(last,val))
+      self.timeouts+=1
+      if self.timeouts<64:
+        logging.warning("Timeout ;/ (last packet : %16X while expecting %016X)"%(last,val))
     return ret
     
   def __del__(self):
