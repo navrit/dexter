@@ -135,8 +135,11 @@ class TPX_tests:
         bad_col+=1
 
     bad_sp=0
-    for dc in range(128):
-      for sp in range(32):
+    DOUBLE_COLUMNS=256/2
+    SP_PER_COL=256/4
+    
+    for dc in range(DOUBLE_COLUMNS):
+      for sp in range(SP_PER_COL):
         bp=0
         for c in range(2*dc,2*(dc+1)):
           for r in range(sp*4,(sp+1)*4):
@@ -150,15 +153,20 @@ class TPX_tests:
     logging.info("Bad columns : %d"%bad_col)
     logging.info("Bad super pixels : %d"%bad_sp)
     
+    new_cat='D'
+    if (bad_sp==0) and (bad_col==0) and bad_pix<=64:
+      new_cat='A'
+    elif (bad_sp==1 or bad_col==1) and bad_pix<=256:
+      new_cat='B'
+    elif (bad_sp<=2 or bad_col<=2) and bad_pix<=1024:
+      new_cat='C'
+    else:
+      new_cat='D'
+      
     if result["category"]=='A':
-      if bad_pix>1024:
-        result["category"]='D'
-      elif bad_sp>1 or bad_col>1 or bad_pix>256:
-        result["category"]='C'
-      elif (bad_sp==0) and (bad_col==0) and bad_pix<=30:
-        result["category"]='A'
-      else:
-        result["category"]='B'
+      result["category"]=new_cat
+    else:
+      logging.info("Based on missing pixels, chip category would be %s"%new_cat)
     logging.info("Chip category %s"%result["category"])
 
     fn=self.dlogdir+"result.bad"
