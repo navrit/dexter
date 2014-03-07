@@ -22,8 +22,8 @@ class test06_config_matrix(tpx3_test):
       _multiple_pixels=set()
       self.tpx.reinitDevice()
       self.tpx.resetPixels()
-      logging.info(" ")
-      logging.info("Digital pattern being used during the test '%s'"%pattern)
+      self.logging.info(" ")
+      self.logging.info("Digital pattern being used during the test '%s'"%pattern)
       self.tpx.resetPixelConfig()
       stimulus={}
       for x in range(256):
@@ -77,7 +77,8 @@ class test06_config_matrix(tpx3_test):
             stimulus[d.col][d.row]['ok']=1
           else:
             stimulus[d.col][d.row]['err']=d.config
-
+          if d.col==203 and d.row==244:
+            print d
       valid_pixels=0
       for x in range(256):
         for y in range(256):
@@ -99,12 +100,12 @@ class test06_config_matrix(tpx3_test):
 
       fn=self.fname+".bad"
       if valid_pixels==256*256:
-        logging.info("All pixels were correctly configured and readout")
+        self.logging.info("All pixels were correctly configured and readout")
       else:
         fn=self.fname+"/%s.map"%pattern
         fmap=open(fn,"w")
-        logging.warning("Received %d pixels (missing %d)"%(received,256*256-received))
-        logging.warning("Storing bad pixel map to %s"%fn)
+        self.logging.warning("Received %d pixels (missing %d)"%(received,256*256-received))
+        self.logging.warning("Storing bad pixel map to %s"%fn)
         for y in range(256):
           for x in range(256):
             if (x,y) in _missing_pixels:
@@ -149,7 +150,7 @@ class test06_config_matrix(tpx3_test):
     if len(bad_pixel_config) or len(missing_pixels):
         fn=self.fname+"/results.map"
         fmap=open(fn,"w")
-        logging.warning("Storing bad pixel map to %s"%fn)
+        self.logging.warning("Storing bad pixel map to %s"%fn)
         for y in range(256):
           for x in range(256):
             if (x,y) in _missing_pixels:

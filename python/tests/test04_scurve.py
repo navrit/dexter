@@ -51,9 +51,6 @@ th_stop   - threshold stop [LSB] (defult 511)
 th_step   - threshold step size [LSB] (defult 4)"""
 
   def _execute(self,**keywords):
-
-    self.tpx.reinitDevice()
-    self.tpx.resetPixels()
     params={}
     params['electrons']=False
     if 'electrons' in keywords :     params['electrons']=True
@@ -122,7 +119,10 @@ th_step   - threshold step size [LSB] (defult 4)"""
     
     self.tpx.sequentialReadout()
 
+    logdir=self.fname+"/details/"
+
     for amp in range(len(params['amps'])):
+      self.warning_detailed_restart()
       fit_res[amp]={}
       dv=0
       electrons=0
@@ -149,10 +149,10 @@ th_step   - threshold step size [LSB] (defult 4)"""
         dv=1000.0*abs(fine-coarse)
         amp_meas.append(dv)
         electrons=20.0*dv
-        logging.info("  TPX3_VTP_FINE code=%d voltage=%.1f"%(best_vtpfine_code,fine*1000.0))
-        logging.info("Test pulse voltage %.4f mv (~ %.0f e-)"%(dv,electrons))
+        self.logging.info("  TPX3_VTP_FINE code=%d voltage=%.1f"%(best_vtpfine_code,fine*1000.0))
+        self.logging.info("Test pulse voltage %.4f mv (~ %.0f e-)"%(dv,electrons))
       else:
-        logging.info("Test pulse voltage 0.0 mv (0 e-)")
+        self.logging.info("Test pulse voltage 0.0 mv (0 e-)")
 
       M=(params['th_stop']+1-params['th_start'])
       res={}
@@ -177,10 +177,8 @@ th_step   - threshold step size [LSB] (defult 4)"""
         
         for threshold in range(params['th_start'],params['th_stop']+1,params['th_step']):
             self.tpx.setDac(TPX3_VTHRESH_FINE,threshold)
-#            data=self.tpx.recv_mask(0x7102000000000000, 0xFFFF000000000000)
             self.tpx.openShutter()
             data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
-            
             for d in data:
                 if d.type==0xA:
                   if d.col==d.row:
@@ -190,17 +188,18 @@ th_step   - threshold step size [LSB] (defult 4)"""
                         res[d.col][d.row]={}
                     res[d.col][d.row][threshold]=d.event_counter
                   elif not (d.col, d.row) in self.bad_pixels: #suppres information about the pixels which are know be be bad/noisy/...
-                    self.logging.warning("Unexpected packet %s"%str(d))
+                    self.warning_detailed("Unexpected packet %s"%str(d))
                 elif d.type!=0x7:
-                  self.logging.warning("Unexpected packet %s"%str(d))
+                  self.warning_detailed("Unexpected packet %s"%str(d))
+      self.warning_detailed_summary()
 
       w2f=True
       fit=True
 
       if 1: #fitting
         if w2f:
-          dn=self.fname+"/amp%02d/"%(amp)
-          logging.info("Saving files to %s"%dn)
+          dn=logdir+"amp%02d/"%(amp)
+          self.logging.info("Saving files to %s"%dn)
           self.mkdir(dn)
           g=sGnuplot(dn+"plot.png")
           g("set terminal png size 800,600","set grid","set xtic 64","set xr [0:512]","set yr [0:1024]","set ytic 128", "set xlabel 'Threshold[LSB]'", "set ylabel 'Counts'" )#, "set key out top cent samp 0.1"
@@ -280,16 +279,16 @@ th_step   - threshold step size [LSB] (defult 4)"""
                     self.logging.warning("No hits for pixel (%d,%d)"%(col,row))
           g(pcmd)
           g.run()
-          logging.info("Saving plot to %s"%g.fout)
+          self.logging.info("Saving plot to %s"%g.fout)
     gains=[]
     for col in range(256):
       if not col in fit_res[0] or fit_res[0][col]<0:
-         logging.info("No baseline point for pixel (%d,%d)"%(col,col))
+         self.logging.info("No baseline point for pixel (%d,%d)"%(col,col))
          continue
       Y=[0.0]
       for amp in range(1,len(params['amps'])):
         if not col in fit_res[0] or fit_res[0][col]<0.0:
-          logging.info("No amplitude %d point for pixel (%d,%d)"%(amp,col,col))
+          self.logging.info("No amplitude %d point for pixel (%d,%d)"%(amp,col,col))
           continue
         Y.append(-fit_res[amp][col]+fit_res[0][col])
 
@@ -307,6 +306,10 @@ th_step   - threshold step size [LSB] (defult 4)"""
     self.results['GAIN_RMS']="%.3f"%grms
     self.results['GAIN_SPREAD']="%.1f"%proc
     self.logging.info("Gain mean %.3f +/- %.3f LSB/mV (~%.1f%%)  [~%.1f e- / TH LSB]"%(gmean,grms,proc,electrons))
+
+    aname=logdir[:-1]+".zip"
+    self.logging.info("Creating arhive %s"%aname)
+    self.zipdir(aname,logdir)
 
     return 
 

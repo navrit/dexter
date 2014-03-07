@@ -8,19 +8,12 @@ import numpy
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 from dac_defaults import dac_defaults
-import zipfile
-import shutil
+
 import sys
 from Gnuplot import Gnuplot
 
 
-def zipdir(fname,path):
-    zip = zipfile.ZipFile(fname, 'w')
-    for root, dirs, files in os.walk(path):
-        for file in files:
-#            print file
-            zip.write(os.path.join(root, file))
-    zip.close()
+
             
 # Define model function to be used to fit to the data above:
 def gauss(x, *p):
@@ -30,9 +23,8 @@ def gauss(x, *p):
 class test08_noise_scan(tpx3_test):
 
   """Threshold scan over noise"""
-  def threshold_scan(self,res=None):
+  def threshold_scan(self,res=None,seq=0):
       self.warning_detailed_restart()
-
       peak=numpy.zeros((256,256), int)
       mask=0
       anim=['|','/','-','\\','|','/','-','\\']
@@ -58,12 +50,14 @@ class test08_noise_scan(tpx3_test):
 
         #data analisis
         for d in data:
-#          logging.debug(str(d))
+#          self.logging.debug(str(d))
           if d.type==0xA:
             if d.itot<0:
               self.warning_detailed("Bad itot : "+str(d))
             if d.event_counter<0:
               self.warning_detailed("Bad event counter : "+str(d))
+            if d.col%2!=int(seq/2) and d.row%2!=seq%2:
+              self.warning_detailed("Unexpected pixel (%d,%d) in seq %d"%(d.col,d.row,seq))
             res[d.col][d.row][i]=d.event_counter
             if  d.event_counter>=200 and peak[d.col][d.row]==0: 
               peak[d.col][d.row]=1
@@ -72,10 +66,10 @@ class test08_noise_scan(tpx3_test):
               mask+=1
               peak[d.col][d.row]=2
           elif d.type!=0x7:
-            logging.warning("Unexpected packet %s"%str(d))
+            self.logging.warning("Unexpected packet %s"%str(d))
 
         if mask>7500:
-          logging.debug("Masking %d pixels"%mask)
+          self.logging.debug("Masking %d pixels"%mask)
           self.tpx.pauseReadout()
           self.tpx.setPixelConfig()
           self.tpx.sequentialReadout()
@@ -86,8 +80,6 @@ class test08_noise_scan(tpx3_test):
       return res
 
   def _execute(self,**keywords):
-    self.tpx.reinitDevice()
-    self.tpx.resetPixels()
     eth_filter,cpu_filter=self.tpx.getHeaderFilter()
     self.tpx.setHeaderFilter(0x0c80,cpu_filter) # 
     self.tpx.setGenConfig( TPX3_ACQMODE_EVT_ITOT )
@@ -139,7 +131,7 @@ class test08_noise_scan(tpx3_test):
     
     #performe noise scans in 4 steps (one pixel out of 4 active at the time)
     for seq in range(4):
-      logging.info("  seq %0x/4"%seq)
+      self.logging.info("  seq %0x/4"%seq)
       cdac=8
 #      self.tpx.resetPixelConfig()
       self.tpx.setPixelMask(ALL_PIXELS,ALL_PIXELS,1)
@@ -156,7 +148,7 @@ class test08_noise_scan(tpx3_test):
       self.tpx.sequentialReadout()
       self.tpx.flush_udp_fifo(0x71FF000000000000)#flush until load matrix
         
-      res=self.threshold_scan(res)
+      res=self.threshold_scan(res,seq)
         
     do_fit=1
     w2f=True
@@ -299,9 +291,8 @@ class test08_noise_scan(tpx3_test):
 
       if w2f:
         aname=logdir[:-1]+".zip"
-        logging.info("Creating arhive %s"%aname)
-        zipdir(aname,logdir)
-        shutil.rmtree(logdir)
+        self.logging.info("Creating arhive %s"%aname)
+        self.zipdir(aname,logdir)
 
     return
 

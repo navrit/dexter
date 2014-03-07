@@ -13,6 +13,7 @@ import logging
 from optparse import OptionParser
 import datetime
 import shlex
+import glob
 
 def dict2file(fname,d):
     f=open(fname,"w")
@@ -26,11 +27,10 @@ def mkdir(d):
   if not os.path.exists(d):
     os.makedirs(d)  
 
-today=datetime.datetime.now().strftime("%Y%m%d")
 
 class TPX_tests:
-  def __init__(self,name):
-    self.dlogdir="logs/%s/%s/"%(name,today)
+  def __init__(self,name,logdir=""):
+    self.dlogdir=logdir
     self.name=name
     mkdir(self.dlogdir)
     
@@ -86,7 +86,7 @@ class TPX_tests:
       test_list=sorted(test_list)
 
     params={'wiki':wiki}
-    result={'category':'A','bad_pixels':set(),'timeouts':0}
+    result={'category':'A','bad_pixels':set(),'timeouts':0,'reinit_problem':0}
     
     for test_name in test_list:
       if test_name.find("(")>=0:
@@ -271,6 +271,17 @@ def start_pcap(iface,fname):
   CaptureThread.start()
   return CaptureThread
            
+def get_run_name(die_name):
+  id_list=[-1]
+  for dname in glob.glob("logs/%s/*"%die_name):
+    name=os.path.basename(dname)
+    if len(name.split("_"))==3:
+      i=int(name.split("_")[0])
+      id_list.append(i)
+  new_id = max(id_list)+1
+  now=datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+  run_name="%02d_%s"%(new_id,now)
+  return run_name
 
 def main():
   usage = "usage: %prog [options] assembly_name [test[(parameter=value parameter2=value)]"
@@ -286,7 +297,7 @@ def main():
   (options, args) = parser.parse_args()
 
   if options.list_tests:
-    tests=TPX_tests("null")
+    tests=TPX_tests("null",logdir="logs/null/")
     tests.list()
     return
     
@@ -294,11 +305,21 @@ def main():
     parser.error("You have to specify assembly name")
   name=args[0]
     #set up logger
-  run_name="%s"%today
+
+  run_name=get_run_name(die_name=name)
   if options.prefix!="":
     run_name+="_"+options.prefix
-  mkdir("logs/%s/%s/"%(name,run_name))
-  logname='logs/%s/%s/log.txt'%(name,run_name)
+  odir="logs/%s/%s"%(name,run_name)
+  mkdir(odir)
+  
+  
+  last="logs/%s/last"%(name)
+  if os.path.islink(last):
+    os.unlink(last)
+  os.symlink(run_name, last)
+
+
+  logname='%s/log.txt'%(odir)
   logging.basicConfig(level=logging.INFO,
                     format='[%(levelname)7s] [%(relativeCreated)5d] %(message)s',
                     datefmt='%M:%S',filename=logname, filemode='w')
@@ -318,14 +339,13 @@ def main():
     logging.info("Storring pcap log to %s"%pcapname)
     CaptureThread=start_pcap("eth3",pcapname)
 
-
   test_list=[]
   if len(args)>1:
     test_list=args[1:]
 
   if 1 : #env_check():
     try:
-      tests=TPX_tests(name)
+      tests=TPX_tests(name,logdir=odir+"/")
       tests.connect(options.ip)
       if options.dump_all:
         tests.tpx.log_packets=True

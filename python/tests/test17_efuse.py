@@ -53,15 +53,18 @@ def transitions(prev,next):
   if one2zero>0:mod=1
   
   return {'zero2one':zero2one,'one2zero':one2zero, 'mod':mod}
-  
+
+def str2bool(s):
+  return s.lower() in ['true', '1', 't', 'y', 'yes']
+
 class test17_efuse(tpx3_test):
   """Efuse test"""
 
   def _execute(self,**keywords):
-    self.tpx.reinitDevice()
-    
     name=None
+    force=False
     if 'name' in keywords :  name=keywords['name'].upper()
+    if 'force' in keywords :  force=str2bool(keywords['force'])
 
     efuses=self.tpx.readEfuse()
     self.logging.info( "Efuses value : 0x%08x"%efuses)
@@ -141,7 +144,10 @@ class test17_efuse(tpx3_test):
               bit_pos+=1
             self.logging.info( "Going to burn : %s"%str(bits_to_burn) )
 
-            burn_ok=True#query_yes_no("Burn ?!",default="no")
+            burn_ok=True
+            if not force:
+              burn_ok=query_yes_no("Burn ?!",default="no")
+
             if burn_ok:
               self.tpx.setGPIO(SPIDR_3V3_ENA_PIN,1)
               time.sleep(0.02)

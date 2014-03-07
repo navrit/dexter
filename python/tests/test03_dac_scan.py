@@ -11,8 +11,6 @@ Example:
   test03_dac_scan(step=1 mpc=64) <- precise scan"""
 
   def _execute(self,**keywords):
-    self.tpx.reinitDevice()
-
     def_step=4
     meas_per_code=16
     self.logging.info("DAC scan settings:")
@@ -51,7 +49,9 @@ Example:
     details=self.fname+'/details/'
     self.mkdir(details)
     ret_values={}
-        
+
+
+
     for dac_id in range(1,19):
       if dac_id==18:
         r,pll_conf=self.tpx.ctrl.getPllConfig(self.tpx.id)
@@ -128,5 +128,9 @@ Example:
     f.close()
     self.logging.info("Data saved to %s"%fn)
 
+
+    aname=details[:-1]+".zip"
+    self.logging.info("Creating arhive %s"%aname)
+    self.zipdir(aname,details)
 
     return 

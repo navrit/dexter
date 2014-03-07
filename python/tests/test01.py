@@ -15,7 +15,6 @@ class test01_supply(tpx3_test):
       i=float(i)/10000
       p=float(p)/1000
       return (r,v,i,p)
-    self.tpx.reinitDevice()
     r,v,i,p=conv(self.tpx.ctrl.getDvddNow())
     r,v,i,p=conv(self.tpx.ctrl.getAvddNow())
     time.sleep(0.5)
@@ -51,8 +50,6 @@ class test01_bias(tpx3_test):
   """Biasing values test"""
 
   def _execute(self,**keywords):
-    self.tpx.reinitDevice()
-
     self.tpx.ctrl.setSenseDac(0,0x1B)
     v=self.tpx.get_adc(4)
     r=self._assert_in_range(v,0.2,1.2,"PLL Control Voltage %.3f V"%v)

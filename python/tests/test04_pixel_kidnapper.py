@@ -12,9 +12,7 @@ class test04_pixel_kidnapper(tpx3_test):
   """Pixel kidnaper test"""
 
   def _execute(self,**keywords):
-    self.tpx.reinitDevice()
     self.tpx.setTpNumber(1)
-    self.tpx.resetPixels()
 
     self.tpx.setCtprBits(1)
     self.tpx.setCtpr()

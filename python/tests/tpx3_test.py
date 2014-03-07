@@ -6,6 +6,8 @@ import sys
 import traceback
 import numpy as np
 #logging.basicConfig(format='[%(levelname)6s] [%(asctime)s] %(message)s',level=logging.DEBUG)
+import zipfile
+import shutil
 
 class tpx3_test(object):
   """ Abstract tpx3 test object"""
@@ -53,7 +55,7 @@ class tpx3_test(object):
       self.logging.info("# %-100s #"%"Run time parameters:")
       for key, value in keywords.iteritems():
         l=" %s = %s"% (key, value)
-        if not key in ['wiki','name']:
+        if not key in ['wiki','name','force']:
           if str(value)!="":
             self.fname+="_%s%s"%(key, value)
 
@@ -75,27 +77,36 @@ class tpx3_test(object):
     self.logging.info("#"*BSPACERLEN)
 
     self.tpx.flush_udp_fifo(val=0)
-    try:
-      self._execute(**keywords)
-    except KeyboardInterrupt:
-        raise
-    except :
-      exc_type, exc_value, exc_traceback = sys.exc_info()
-      self.logging.critical("")
-      self.logging.critical("Exception during test execution")
-      for msg in traceback.format_exception(exc_type, exc_value, exc_traceback):
-        for l in msg.rstrip().split('\n'):
-          self.logging.critical("  %s"%l.rstrip())
-      self.logging.critical("")
-      self.results['ERROR']=1
-    fn=self.fname+"/results.txt"
-    self.dict2file(fn,self.results)
 
-  
+    
+
+    if self.tpx.reinitDevice():
+      try:
+        self.tpx.resetPixels()
+        self._execute(**keywords)
+      except KeyboardInterrupt:
+          raise
+      except :
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        self.logging.critical("")
+        self.logging.critical("Exception during test execution")
+        for msg in traceback.format_exception(exc_type, exc_value, exc_traceback):
+          for l in msg.rstrip().split('\n'):
+            self.logging.critical("  %s"%l.rstrip())
+        self.logging.critical("")
+        self.results['ERROR']=1
+      fn=self.fname+"/results.txt"
+      self.dict2file(fn,self.results)
+      self.warn_info("Timeouts during test : %d"%self.tpx.timeouts,self.tpx.timeouts>0)
+      self.results['timeouts']=+self.tpx.timeouts
+      self.logging.info("Results stored to %s"%fn)
+
+    else:
+        self.logging.critical("Unable to reinit tpx3 device. Test will not be executed!.")
+        self.results['reinit_problem']=+1
+        self.update_category('R')
+        
     self.logging.info("")
-    self.warn_info("Timeouts during test : %d"%self.tpx.timeouts,self.tpx.timeouts>0)
-    self.results['timeouts']=+self.tpx.timeouts
-    self.logging.info("Results stored to %s"%fn)
     self.logging.info("Category %s"%self.category)
     
     return
@@ -199,7 +210,7 @@ class tpx3_test(object):
     if ord(newcat[0])>ord(self.category[0]):
       self.logging.info("Changing category from %s to %s",self.category,newcat)
       self.category=newcat
-      if self.category[0].lower() in ("v","k","m"):
+      if self.category[0].lower() in ("v","k","m",'r'):
         self.logging.info("No reason to continue ...")
         self.cont=False
     else:
@@ -262,4 +273,12 @@ class tpx3_test(object):
       self.logging.info("# %-100s #"%"PLL Config 0x%04x"%pll)
       self.logging.info("#"*104)
 
+  def zipdir(self,fname,path):
+    zip = zipfile.ZipFile(fname, 'w')
+    for root, dirs, files in os.walk(path):
+        for file in files:
+#            print file
+            zip.write(os.path.join(root, file))
+    zip.close()
+    shutil.rmtree(path)
 

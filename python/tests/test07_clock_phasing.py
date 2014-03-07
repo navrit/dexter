@@ -12,11 +12,8 @@ class test07_clock_phasing(tpx3_test):
   """Pixel matrix VCO and clock phasing in TOT&TOA mode"""
 
   def _execute(self,**keywords):
-    self.tpx.reinitDevice()
-    self.tpx.setTpNumber(1)
-    self.tpx.resetPixels()
 
-    
+    self.tpx.setTpNumber(1)
     self.tpx.setGenConfig(0x268)
     self.tpx.setPllConfig(0x11E| 0x15<<9)
 
@@ -38,6 +35,7 @@ class test07_clock_phasing(tpx3_test):
     outliers=set()
     toa_results=[]
     for seq,phase in enumerate( (0,8) ):
+      self.warning_detailed_restart()
       received=np.zeros((256,256), int)
       toa=np.zeros((256,256), int)
       bad_tot=np.zeros((256,256), int)
@@ -65,7 +63,7 @@ class test07_clock_phasing(tpx3_test):
           if pck.type in (0xB,0xA):
             received[pck.col][pck.row]=1
             if not pck.tot in (64,65,66) and not (pck.col,pck.row) in self.bad_pixels:
-              self.logging.warning("Unexpected TOT value %d for pixel (%d,%d)"%(pck.tot,pck.col,pck.row))
+              self.warning_detailed("Unexpected TOT value %d for pixel (%d,%d)"%(pck.tot,pck.col,pck.row))
               bad_tot[pck.col][pck.row]=1
               self.bad_pixels.add( (pck.col,pck.row) )
             v=float(pck.toa-(shutter&0x3FFF)) 
@@ -73,7 +71,7 @@ class test07_clock_phasing(tpx3_test):
             v=v*16 - float(pck.ftoa)
             toa[pck.col][pck.row]=v
           elif not pck.type in (0x7,0x4):
-            self.logging.warning("Unexpeced packet %s"%str(pck))
+            self.warning_detailed("Unexpeced packet %s"%str(pck))
 
       cnt=np.sum(received)
       self.logging.info("Pixel packets received: %d"%(cnt))
@@ -94,13 +92,13 @@ class test07_clock_phasing(tpx3_test):
         y=[]
         dcol=int(col/2)
         if np.sum(received[col])==0:
-           self.logging.warning("No data for column %d"%col)
+           self.warning_detailed("No data for column %d"%col)
            continue
 
         for row in range(256):
           if (col,row) in self.bad_pixels: continue
           if not received[col][row] : 
-             self.logging.warning("No data for pixel (%d,%d)"%(col,row))
+             self.warning_detailed("No data for pixel (%d,%d)"%(col,row))
              continue
           offset=0
           if dcol%16!=0:
@@ -108,7 +106,7 @@ class test07_clock_phasing(tpx3_test):
           yy=toa[col][row]-offset
           if yy<910 or yy>970:
             outliers.add( (col,row) )
-            self.logging.warning("TOA+FTOA for pixel (%d,%d) is %d. Classifying pixel as outlier."%(col,row,yy))
+            self.warning_detailed("TOA+FTOA for pixel (%d,%d) is %d. Classifying pixel as outlier."%(col,row,yy))
             continue
           x.append(row)
           y.append(yy)
@@ -157,6 +155,7 @@ class test07_clock_phasing(tpx3_test):
       self.results['TOA_TEST_PHASE%0x_LOWER'%phase]="%d"%l3lsb
 
       toa_results.append(toa)
+      self.warning_detailed_summary()
 
 
 

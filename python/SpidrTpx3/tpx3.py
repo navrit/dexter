@@ -518,6 +518,7 @@ class TPX3:
   def reinitDevice(self):
     r=self.ctrl.reinitDevice(self.id)
     self._log_ctrl_cmd("reinitDevice() ",r)
+    return r
 
   def readEfuse(self):
     r,v=self.ctrl.readEfuse(self.id)

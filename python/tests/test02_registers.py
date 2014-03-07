@@ -5,7 +5,6 @@ class test02_registers(tpx3_test):
 
   def _execute(self,**keywords):
 
-    self.tpx.reinitDevice()
     r,v=self.tpx.ctrl.getDeviceId(self.tpx.id)
     self._assert_true(r,"Reading device ID")
     self.logging.info("Device ID 0x%08X"%v)
@@ -25,7 +24,7 @@ class test02_registers(tpx3_test):
 
     r,v=self.tpx.ctrl.getOutBlockConfig(self.tpx.id)
     self._assert_true(r,"Reading Output Block Config")
-    OUT_BLOCK_CONFIG_DEFAULT_VALUE=[0x7BFF, 0x903, 0x901, 0x9FF]#0x7B01#0x9FF
+    OUT_BLOCK_CONFIG_DEFAULT_VALUE=[0x7BFF, 0x901, 0x9FF]#0x7B01#0x9FF
     self._assert_true((v in OUT_BLOCK_CONFIG_DEFAULT_VALUE),"Output Block value 0x%0X"%v)
     self.results['REG_OUT_BLOCK_CONFIG']=v
 
