@@ -31,10 +31,10 @@ class test08_noise_scan(tpx3_test):
       for i in range(0,512,1):
         self.tpx.setDac(TPX3_VTHRESH_FINE,i)
 #        self.tpx.resetPixels()
-        data=self.tpx.recv_mask(0x7102000000000000, 0xFFFF000000000000)
+#        data=self.tpx.recv_mask(0x7102000000000000, 0xFFFF000000000000)
 
         self.tpx.openShutter()
-        data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
+        data=self.tpx.get_frame()
 
         #sanity check
         if len(data)==0:
@@ -121,6 +121,7 @@ class test08_noise_scan(tpx3_test):
 
     self.wiki_banner(**keywords)
 
+    self.tpx.sequentialReadout()
 
     #prepare result dictionary
     res={}

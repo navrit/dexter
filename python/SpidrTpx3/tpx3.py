@@ -269,6 +269,7 @@ class tpx3packet:
     self.type=(self.raw>>44)&0xf
     self.str='-'
     self.pack_interpreter[self.type](self)
+    self.shutter_len=1e-6
 #    print self.str
   def __repr__(self):
     return "[%012X] %s"%(self.raw, self.str)
@@ -282,7 +283,7 @@ class TPX3:
     if len(ip.split(":")):
       port=int(ip.split(":")[1])
       ip=ip.split(":")[0]
-
+    self.readout='seq'
     ip0,ip1,ip2,ip3=map(int,ip.split('.'))
 
     self.ctrl=SpidrController( ip0,ip1,ip2,ip3,port)
@@ -494,15 +495,18 @@ class TPX3:
     return state
 
   def sequentialReadout(self,tokens=2):
+    self.readout='seq'
     r=self.ctrl.sequentialReadout(tokens)
     self._log_ctrl_cmd("sequentialReadout(tokens=%d) "%tokens,r)
     
     
   def datadrivenReadout(self):
+    self.readout='dd'
     r=self.ctrl.datadrivenReadout()
     self._log_ctrl_cmd("datadrivenReadout() ",r)
 
   def setShutterLen(self,l):
+    self.shutter_len=float(l)/1e6
     r=self.ctrl.setTriggerConfig(4,l,1,1)
     self._log_ctrl_cmd("Config shutter (%d) "%(l),r)
     
@@ -589,6 +593,8 @@ class TPX3:
 #c2.add_method('stopAutoTrigger',      'bool',       [])
 #    r=self.ctrl.openShutter(self.id,l)
     self._log_ctrl_cmd("Start shutter() ",r)
+    time.sleep(self.shutter_len)
+    return r
 
   def t0Sync(self):
     r=self.ctrl.t0Sync(self.id)
@@ -705,7 +711,12 @@ class TPX3:
 #c2.add_method('getTpNumber',           'bool',        [param('int', 'dev_nr'),param('int*', 'number', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 #c2.add_method('setTpNumber',           'bool',        [param('int', 'dev_nr'),param('int', 'number')])
 
-
+  def get_frame(self):
+    if self.readout=='dd':
+      return self.recv_mask(0x71B0000000000000, 0xFFFF000000000000)
+    else:
+      return self.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
+    
   def recv_mask(self,val,mask):
     ok=False
     cnt=2

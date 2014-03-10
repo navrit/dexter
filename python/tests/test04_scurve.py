@@ -55,7 +55,7 @@ th_step   - threshold step size [LSB] (defult 4)"""
     params['electrons']=False
     if 'electrons' in keywords :     params['electrons']=True
     params['amps']=[0,1000,2000]
-    params['shutter_len']=5000
+    params['shutter_len']=15000
     params['shutter_len_noise']=400
     params['th_start']=0
     params['th_stop']=511
@@ -117,7 +117,7 @@ th_step   - threshold step size [LSB] (defult 4)"""
     fit_res={}
     amp_meas=[0.0]
     
-    self.tpx.sequentialReadout()
+
 
     logdir=self.fname+"/details/"
 
@@ -166,19 +166,19 @@ th_step   - threshold step size [LSB] (defult 4)"""
             if amp>0:
                 self.tpx.setPixelTestEna(col,row, testbit=True)
         self.mask_bad_pixels()
+        self.tpx.pauseReadout()
         self.tpx.setPixelConfig()
-
-
+        self.tpx.sequentialReadout()
+       
         st=params['shutter_len']
         if amp==0:
             st=params['shutter_len_noise']
         self.tpx.setShutterLen(st)
-        self.tpx.flush_udp_fifo(0x718F000000000000)
         
         for threshold in range(params['th_start'],params['th_stop']+1,params['th_step']):
             self.tpx.setDac(TPX3_VTHRESH_FINE,threshold)
             self.tpx.openShutter()
-            data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
+            data=self.tpx.get_frame()
             for d in data:
                 if d.type==0xA:
                   if d.col==d.row:

@@ -143,51 +143,70 @@ void UDPServer::flush()
   
 
 #define MAX_QUEUE_LEN (256*256*2)
+#undef DEBUG_UDP 0
 std::list<unsigned long> UDPServer::getH(unsigned long val, unsigned long mask, unsigned int debug)
 {
   std::list<unsigned long> l;
   unsigned int i=0;
   unsigned long pck;
-//  printf("-> %16lx %16lx\n",val,mask);
+  unsigned long pmasked;
 
-  
+//  printf("-> %16lx %16lx\n",val,mask);
+  debug=0;
+#ifdef DEBUG_UDP
+    std::cout << "GO!" << std::endl;
+#endif
   while(1)
   {
     pck=0;
+    
     data.waitAndPop(pck);
     if (pck==0) //timeout
-      return l;
+      break;
 
-    unsigned long pmasked=pck&mask;
+#ifdef DEBUG_UDP
+    if ( debug)
+    {
+      printf("\n%c%d %16lx %16lx %16lx",13,i,pck,pmasked,mask);
+      fflush(stdout);
+    }
+#endif
+
+    l.push_back(pck);
+    pmasked=pck&mask;
+    if(pmasked==val) break;
+
+    if (data.sizeOfQueue()>0) //vomiting
+    {
+      int cnt=256*256;
+      data.pop_pre();
+      while(cnt-- && data.pop_fast(pck))
+      {
+        l.push_back(pck);
+#ifdef DEBUG_UDP
     if (debug)
     {
       printf("\n%c%d %16lx %16lx %16lx",13,i,pck,pmasked,mask);
       fflush(stdout);
     }
-    l.push_back(pck);
-    if(pmasked==val) break;
-//    std::cout << data.sizeOfQueue() << std::endl;
-
-    if (data.sizeOfQueue()>0) //vomiting
-    {
-      int cnt=1024;
-      data.pop_pre();
-      while(cnt-- && data.pop_fast(pck))
-      {
-        l.push_back(pck);
-        unsigned long pmasked=pck&mask;
+#endif
+        pmasked=pck&mask;
         if(pmasked==val) break;
       }
       data.pop_post();
+      if(pmasked==val) break;
     }
-      if (l.size()>MAX_QUEUE_LEN)
-      {
-        l.push_back(1);
-        return l;
-      }
 
+    if (l.size()>MAX_QUEUE_LEN)
+    {
+      l.push_back(1);
+      return l;
+    }
   }
-  
+#ifdef DEBUG_UDP
+  if ( debug)  
+    std::cout << "\nEND "<<l.size()<<"!" << std::endl;
+#endif
   return l;
 
 }
