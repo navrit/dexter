@@ -57,6 +57,11 @@ c2.add_method('getGenConfig',          'bool',        [param('int', 'dev_nr'),pa
 c2.add_method('setGenConfig',          'bool',        [param('int', 'dev_nr'),param('int', 'config')])
 c2.add_method('getPllConfig',          'bool',        [param('int', 'dev_nr'),param('int*', 'config', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 c2.add_method('setPllConfig',          'bool',        [param('int', 'dev_nr'),param('int', 'config')])
+
+c2.add_method('getSlvsConfig',          'bool',        [param('int', 'dev_nr'),param('int*', 'config', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+c2.add_method('setSlvsConfig',          'bool',        [param('int', 'dev_nr'),param('int', 'config')])
+
+  
 c2.add_method('getOutBlockConfig',     'bool',        [param('int', 'dev_nr'),param('int*', 'config', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 c2.add_method('getTpPeriodPhase',      'bool',        [param('int', 'dev_nr'),param('int*', 'period', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),param('int*', 'phase', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 c2.add_method('setTpPeriodPhase',      'bool',        [param('int', 'dev_nr'),param('int', 'period'), param('int', 'phase')])

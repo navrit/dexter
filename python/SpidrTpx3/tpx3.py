@@ -643,6 +643,16 @@ class TPX3:
     self._log_ctrl_cmd("getPllConfig()=%02x"%(val),r)
     return val
 
+
+  def setSlvsConfig(self,l):
+    r=self.ctrl.setSlvsConfig(self.id,l)
+    self._log_ctrl_cmd("setSlvsConfig(%04x) "%(l),r)
+
+  def getSlvsConfig(self):
+    r,val=self.ctrl.getSlvsConfig(self.id)
+    self._log_ctrl_cmd("getSlvsConfig()=%02x"%(val),r)
+    return val
+    
   def getTimer(self):
     r,lo,hi=self.ctrl.getTimer(self.id)
     v=lo + (hi<<32)
