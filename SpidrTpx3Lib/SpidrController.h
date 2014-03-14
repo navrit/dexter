@@ -131,16 +131,16 @@ class MY_LIB_API SpidrController
   // Configuration: non-volatile onboard storage
   bool storeAddrAndPorts       ( int  ipaddr = 0,
                                  int  ipport = 0 );
-  bool storeDacs               ( int  dev_nr );
-  bool storeRegisters          ( int  dev_nr );              // ###TODO
-  bool storePixelConfig        ( int  dev_nr );              // ###TODO
   bool eraseAddrAndPorts       ();
-  bool eraseDacs               ( int  dev_nr );
-  bool eraseRegisters          ( int  dev_nr );              // ###TODO
-  bool erasePixelConfig        ( int  dev_nr );              // ###TODO
   bool validAddrAndPorts       ( bool *valid );
+  bool storeDacs               ( int  dev_nr );
+  bool eraseDacs               ( int  dev_nr );
   bool validDacs               ( int  dev_nr, bool *valid );
+  bool storeRegisters          ( int  dev_nr );              // ###TODO
+  bool eraseRegisters          ( int  dev_nr );              // ###TODO
   bool validRegisters          ( int  dev_nr, bool *valid ); // ###TODO
+  bool storePixelConfig        ( int  dev_nr );              // ###TODO
+  bool erasePixelConfig        ( int  dev_nr );              // ###TODO
   bool validPixelConfig        ( int  dev_nr, bool *valid ); // ###TODO
 
   // Trigger
@@ -241,7 +241,7 @@ class MY_LIB_API SpidrController
   int _replyMsg[512];
 
   // A device's pixel configuration is compiled locally before upload
-  // NB: here the dimensions are y and x, or row and column number resp.:
+  // NB: here the dimensions represent y and x, or row and column number resp:
   unsigned char _pixelConfig[256][256];
 
   // Storage for one 256-bit CTPR which is compiled locally before upload
