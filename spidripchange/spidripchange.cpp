@@ -22,7 +22,7 @@ spidripchange <ipaddr> dest [<ipaddr_dst>]
 spidripchange <ipaddr> port [<portnr_dst>]
    Display or set SPIDR devices server IP port number(s).
      <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10
-     <portnr_dst>: new devices IP destination port, e.g. 8192
+     <portnr_dst>: new devices IP destination port (incrementing), e.g. 8192
 
 History:
 27MAR2014; HenkB; Created.
@@ -225,10 +225,11 @@ int main( int argc, char *argv[] )
 
 	  if( !show_only )
 	    {
-	      cout << "change to: " << portnr_new << endl;
+	      cout << "change to: " << portnr_new << " (incrementing)" << endl;
 
+	      // Set incrementing port number
 	      for( i=0; i<ports; ++i )
-		if( !spidrctrl.setServerPort( i, portnr_new+i ) )
+		if( !spidrctrl.setServerPort( i, portnr_new + i ) )
 		  {
 		    cout << "### Error setting IP port nr " << i
 			 << ", aborting..." << endl;
@@ -353,7 +354,8 @@ void usage()
        << endl
        << "     <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10"
        << endl
-       << "     <portnr_dst>: new devices IP destination port, e.g. 8192"
+       << "     <portnr_dst>: new devices IP destination port "
+       << "(incrementing), e.g. 8192"
        << endl;
 }
 
