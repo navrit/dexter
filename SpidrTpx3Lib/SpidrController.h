@@ -196,11 +196,14 @@ class MY_LIB_API SpidrController
   bool getVdda                 ( int *mvolts );
   bool getFanSpeed             ( int *rpm );
   bool getFanSpeedVC707        ( int *rpm );
+  bool selectChipBoard         ( int  board_nr );
 
   // Other
   bool getGpio                 ( int *gpio_in );
   bool setGpio                 ( int  gpio_out );
   bool setGpioPin              ( int  pin_nr, int state );
+  bool getSpidrReg             ( int  addr, int *val );
+  bool setSpidrReg             ( int  addr, int  val );
 
  private:
   bool setPixelBit             ( int x, int y, unsigned char bitmask, bool b );

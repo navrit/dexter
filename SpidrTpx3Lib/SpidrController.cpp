@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14021400;
+const int VERSION_ID = 0x14032400;
+//const int VERSION_ID = 0x14021400;
 //const int VERSION_ID = 0x14011600;
 //const int VERSION_ID = 0x13112700;
 
@@ -974,8 +975,7 @@ bool SpidrController::getTriggerConfig( int *trigger_mode,
 					int *trigger_count )
 {
   int data[4];
-  int dummy = 0;
-  if( !this->requestGetInts( CMD_GET_TRIGCONFIG, dummy, 4, data ) )
+  if( !this->requestGetInts( CMD_GET_TRIGCONFIG, 0, 4, data ) )
     return false;
   *trigger_mode      = data[0];
   *trigger_length_us = data[1];
@@ -1093,8 +1093,9 @@ bool SpidrController::getTimer( int dev_nr,
   int data[2];
   if( !this->requestGetInts( CMD_GET_TIMER, dev_nr, 2, data ) )
     return false;
-  *timer_lo = data[0];
-  *timer_hi = data[1];
+  unsigned int *d = (unsigned int *) data;
+  *timer_lo = d[0];
+  *timer_hi = d[1];
   return true;
 }
 
@@ -1104,10 +1105,10 @@ bool SpidrController::setTimer( int dev_nr,
 				unsigned int timer_lo,
 				unsigned int timer_hi )
 {
-  int datawords[2];
-  datawords[0] = timer_lo;
-  datawords[1] = timer_hi;
-  return this->requestSetInts( CMD_SET_TIMER, dev_nr, 2, datawords );
+  int data[2];
+  data[0] = timer_lo;
+  data[1] = timer_hi;
+  return this->requestSetInts( CMD_SET_TIMER, dev_nr, 2, data );
 }
 
 // ----------------------------------------------------------------------------
@@ -1119,8 +1120,9 @@ bool SpidrController::getShutterStart( int dev_nr,
   int data[2];
   if( !this->requestGetInts( CMD_GET_SHUTTERSTART, dev_nr, 2, data ) )
     return false;
-  *timer_lo = data[0];
-  *timer_hi = data[1];
+  unsigned int *d = (unsigned int *) data;
+  *timer_lo = d[0];
+  *timer_hi = d[1];
   return true;
 }
 
@@ -1133,8 +1135,9 @@ bool SpidrController::getShutterEnd( int dev_nr,
   int data[2];
   if( !this->requestGetInts( CMD_GET_SHUTTEREND, dev_nr, 2, data ) )
     return false;
-  *timer_lo = data[0];
-  *timer_hi = data[1];
+  unsigned int *d = (unsigned int *) data;
+  *timer_lo = d[0];
+  *timer_hi = d[1];
   return true;
 }
 
@@ -1257,6 +1260,15 @@ bool SpidrController::getFanSpeedVC707( int *rpm )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::selectChipBoard( int board_nr )
+{
+  return this->requestSetInt( CMD_SELECT_CHIPBOARD, 0, board_nr );
+}
+
+// ----------------------------------------------------------------------------
+// Other
+// ----------------------------------------------------------------------------
+
 bool SpidrController::getGpio( int *gpio_in )
 {
   return this->requestGetInt( CMD_GET_GPIO, 0, gpio_in );
@@ -1273,8 +1285,32 @@ bool SpidrController::setGpio( int gpio_out )
 
 bool SpidrController::setGpioPin( int pin_nr, int state )
 {
-  int dword= ((pin_nr & 0xFFFF) << 16) | (state & 0xFFFF);
+  int dword = ((pin_nr & 0xFFFF) << 16) | (state & 0xFFFF);
   return this->requestSetInt( CMD_SET_GPIO_PIN, 0, dword );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getSpidrReg( int addr, int *val )
+{
+  int data[2];
+  data[0] = addr;
+  if( !this->requestGetInts( CMD_GET_SPIDRREG, 0, 2, data ) )
+    return false;
+  if( data[0] != addr )
+    return false;
+  *val = data[1];
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setSpidrReg( int addr, int val )
+{
+  int data[2];
+  data[0] = addr;
+  data[1] = val;
+  return this->requestSetInts( CMD_SET_SPIDRREG, 0, 2, data );
 }
 
 // ----------------------------------------------------------------------------
@@ -1413,10 +1449,10 @@ bool SpidrController::validXandY( int x,       int y,
 
 bool SpidrController::requestGetInt( int cmd, int dev_nr, int *dataword )
 {
-  int len = (4+1)*4;
+  int req_len = (4+1)*4;
   _reqMsg[4] = htonl( *dataword ); // May contain an additional parameter!
-  int expected_len = 5 * 4;
-  if( this->request( cmd, dev_nr, len, expected_len ) )
+  int expected_len = (4+1)*4;
+  if( this->request( cmd, dev_nr, req_len, expected_len ) )
     {
       *dataword = ntohl( _replyMsg[4] );
       return true;
@@ -1433,10 +1469,10 @@ bool SpidrController::requestGetInt( int cmd, int dev_nr, int *dataword )
 bool SpidrController::requestGetInts( int cmd, int dev_nr,
 				      int expected_ints, int *datawords )
 {
-  int len = (4+1)*4;
-  _reqMsg[4] = 0;
+  int req_len = (4+1)*4;
+  _reqMsg[4] = htonl( *datawords ); // May contain an additional parameter!
   int expected_len = (4 + expected_ints) * 4;
-  if( this->request( cmd, dev_nr, len, expected_len ) )
+  if( this->request( cmd, dev_nr, req_len, expected_len ) )
     {
       int i;
       for( i=0; i<expected_ints; ++i )
@@ -1457,10 +1493,10 @@ bool SpidrController::requestGetBytes( int cmd, int dev_nr,
 				       int expected_bytes,
 				       unsigned char *databytes )
 {
-  int len = (4+1)*4;
+  int req_len = (4+1)*4;
   _reqMsg[4] = 0;
   int expected_len = (4*4) + expected_bytes;
-  if( this->request( cmd, dev_nr, len, expected_len ) )
+  if( this->request( cmd, dev_nr, req_len, expected_len ) )
     {
       memcpy( static_cast<void *> (databytes),
 	      static_cast<void *> (&_replyMsg[4]), expected_bytes );
@@ -1483,10 +1519,10 @@ bool SpidrController::requestGetIntAndBytes( int cmd, int dev_nr,
 {
   // Send a message with 1 dataword, expect a reply with a dataword
   // and a number of bytes
-  int len = (4+1)*4;
+  int req_len = (4+1)*4;
   _reqMsg[4] = htonl( *dataword ); // May contain an additional parameter!
   int expected_len = (4+1)*4 + expected_bytes;
-  if( this->request( cmd, dev_nr, len, expected_len ) )
+  if( this->request( cmd, dev_nr, req_len, expected_len ) )
     {
       *dataword = ntohl( _replyMsg[4] );
       memcpy( static_cast<void *> (databytes),
@@ -1505,10 +1541,10 @@ bool SpidrController::requestGetIntAndBytes( int cmd, int dev_nr,
 
 bool SpidrController::requestSetInt( int cmd, int dev_nr, int dataword )
 {
-  int len = (4+1)*4;
+  int req_len = (4+1)*4;
   _reqMsg[4] = htonl( dataword );
-  int expected_len = 5 * 4;
-  return this->request( cmd, dev_nr, len, expected_len );
+  int expected_len = (4+1)*4;
+  return this->request( cmd, dev_nr, req_len, expected_len );
 }
 
 // ----------------------------------------------------------------------------
@@ -1516,11 +1552,11 @@ bool SpidrController::requestSetInt( int cmd, int dev_nr, int dataword )
 bool SpidrController::requestSetInts( int cmd, int dev_nr,
 				      int nwords, int *datawords )
 {
-  int len = (4 + nwords)*4;
+  int req_len = (4 + nwords)*4;
   for( int i=0; i<nwords; ++i )
     _reqMsg[4+i] = htonl( datawords[i] );
-  int expected_len = 5 * 4;
-  return this->request( cmd, dev_nr, len, expected_len );
+  int expected_len = (4+1)*4;
+  return this->request( cmd, dev_nr, req_len, expected_len );
 }
 
 // ----------------------------------------------------------------------------
@@ -1530,12 +1566,12 @@ bool SpidrController::requestSetIntAndBytes( int cmd, int dev_nr,
 					     int nbytes,
 					     unsigned char *bytes )
 {
-  int len = (4+1)*4 + nbytes;
+  int req_len = (4+1)*4 + nbytes;
   _reqMsg[4] = htonl( dataword );
   memcpy( static_cast<void *> (&_reqMsg[5]),
 	  static_cast<void *> (bytes), nbytes );
-  int expected_len = 5 * 4;
-  return this->request( cmd, dev_nr, len, expected_len );
+  int expected_len = (4+1)*4;
+  return this->request( cmd, dev_nr, req_len, expected_len );
 }
 
 // ----------------------------------------------------------------------------

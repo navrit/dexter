@@ -125,6 +125,7 @@
 #define CMD_GET_FPGATEMP       0x568
 #define CMD_GET_FANSPEED       0x569
 #define CMD_SET_FANSPEED       0x56A
+#define CMD_SELECT_CHIPBOARD   0x56B
 
 // Configuration: non-volatile onboard storage
 #define CMD_STORE_ADDRPORTS    0x670
@@ -144,6 +145,8 @@
 #define CMD_GET_GPIO           0x780
 #define CMD_SET_GPIO           0x781
 #define CMD_SET_GPIO_PIN       0x782
+#define CMD_GET_SPIDRREG       0x783
+#define CMD_SET_SPIDRREG       0x784
 
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
@@ -269,7 +272,7 @@ static const char *CMD_STR[] =
     "GET_FPGATEMP     ", // 0x568
     "GET_FANSPEED     ", // 0x569
     "SET_FANSPEED     ", // 0x56A
-    "-----",             // 0x56B
+    "SELECT_CHIPBOARD ", // 0x56B
     "-----",             // 0x56C
     "-----",             // 0x56D
     "-----",             // 0x56E
@@ -294,7 +297,9 @@ static const char *CMD_STR[] =
 
     "GET_GPIO         ", // 0x780
     "SET_GPIO         ", // 0x781
-    "SET_GPIO_PIN     "  // 0x782
+    "SET_GPIO_PIN     ", // 0x782
+    "GET_SPIDRREG     ", // 0x783
+    "SET_SPIDRREG     "  // 0x784
   };
 
 // Reply bit: set in the reply message in the command identifier
