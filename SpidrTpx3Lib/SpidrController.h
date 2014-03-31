@@ -62,6 +62,7 @@ class MY_LIB_API SpidrController
   bool        setIpAddrSrc     ( int  index,  int  ipaddr );
   bool        getIpAddrDest    ( int  index,  int *ipaddr );
   bool        setIpAddrDest    ( int  index,  int  ipaddr );
+  bool        getDevicePort    ( int  index,  int *port_nr );
   bool        getServerPort    ( int  index,  int *port_nr );
   bool        setServerPort    ( int  index,  int  port_nr );
   bool        getHeaderFilter  ( int  dev_nr, int *eth_mask, int *cpu_mask );

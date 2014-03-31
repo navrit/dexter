@@ -28,9 +28,9 @@
 #define CMD_SET_IPADDR_SRC     0x113
 #define CMD_GET_IPADDR_DEST    0x114
 #define CMD_SET_IPADDR_DEST    0x115
-//#define CMD_GET_DEVICEPORT   0x114
 //#define CMD_GET_DEVICEPORTS  0x115
 //#define CMD_SET_DEVICEPORT   0x116
+#define CMD_GET_DEVICEPORT     0x116
 #define CMD_GET_SERVERPORT     0x117
 //#define CMD_GET_SERVERPORTS  0x118
 #define CMD_SET_SERVERPORT     0x119
@@ -175,7 +175,7 @@ static const char *CMD_STR[] =
     "SET_IPADDR_SRC   ", // 0x113
     "GET_IPADDR_DEST  ", // 0x114
     "SET_IPADDR_DEST  ", // 0x115
-    "-----",             // 0x116
+    "GET_DEVICEPORT   ", // 0x116
     "GET_SERVERPORT   ", // 0x117
     "-----",             // 0x118
     "SET_SERVERPORT   ", // 0x119

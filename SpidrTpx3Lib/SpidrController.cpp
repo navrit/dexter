@@ -264,8 +264,7 @@ bool SpidrController::setIpAddrDest( int index, int ipaddr )
 }
 
 // ----------------------------------------------------------------------------
-/*
-### Probably won't be used, so outcommented, at least for now (Jan 2014)
+
 bool SpidrController::getDevicePort( int index, int *port_nr )
 {
   *port_nr = 0;
@@ -273,7 +272,8 @@ bool SpidrController::getDevicePort( int index, int *port_nr )
 }
 
 // ----------------------------------------------------------------------------
-
+/*
+### Probably won't be used, so outcommented, at least for now (Jan 2014)
 bool SpidrController::getDevicePorts( int *port_nrs )
 {
   int nr_of_ports;
