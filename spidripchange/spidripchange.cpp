@@ -128,6 +128,7 @@ int main( int argc, char *argv[] )
   else if( QString(argv[2]) == QString("show") )
     {
       addr_curr = get_addr( argv[1] );
+      show_only = true;
 
       if( argc == 4 )
 	{
@@ -139,10 +140,6 @@ int main( int argc, char *argv[] )
 	      usage();
 	      return 0;
 	    }
-	}
-      else
-	{
-	  show_only = true;
 	}
     }
   else
@@ -225,7 +222,8 @@ int main( int argc, char *argv[] )
 	{
 	  if( !spidrctrl.getIpAddrDest( i, &ipaddr ) )
 	    {
-	      cout << "### Error getting IP dest addr " << i
+	      cout << endl
+		   << "### Error getting IP dest addr " << i
 		   << ", aborting..." << endl;
 	      return 0;
 	    }
@@ -247,7 +245,8 @@ int main( int argc, char *argv[] )
 	  for( i=0; i<ports; ++i )
 	    if( !spidrctrl.setIpAddrDest( i, *paddr_new_i ) )
 	      {
-		cout << "### Error setting IP dest addr " << i
+		cout << endl
+		     << "### Error setting IP dest addr " << i
 		     << ", aborting..." << endl;
 		return 0;
 	      }
@@ -274,7 +273,8 @@ int main( int argc, char *argv[] )
 	{
 	  if( !spidrctrl.getServerPort( i, &ipport ) )
 	    {
-	      cout << "### Error getting IP port nr " << i
+	      cout << endl
+		   << "### Error getting IP port nr " << i
 		   << ", aborting..." << endl;
 	      return 0;
 	    }
@@ -294,7 +294,8 @@ int main( int argc, char *argv[] )
 	  for( i=0; i<ports; ++i )
 	    if( !spidrctrl.setServerPort( i, portnr_new + i ) )
 	      {
-		cout << "### Error setting IP port nr " << i
+		cout << endl
+		     << "### Error setting IP port nr " << i
 		     << ", aborting..." << endl;
 		return 0;
 	      }
@@ -324,25 +325,27 @@ int main( int argc, char *argv[] )
 	      // IP addresses
 	      if( !spidrctrl.getIpAddrSrc( i, &ipaddr ) )
 		{
-		  cout << "### Error getting IP src addr"
+		  cout << endl
+		       << "### Error getting IP src addr"
 		       << ", aborting..." << endl;
 		  return 0;
 		}
 	      else
 		{
-		  cout << "addr dst ";
+		  cout << "addr src ";
 		  qaddr.setAddress( *qi );
 		  cout << qaddr.toString().toAscii().constData();
 		}
 	      if( !spidrctrl.getIpAddrDest( i, &ipaddr ) )
 		{
-		  cout << "### Error getting IP dst addr"
+		  cout << endl
+		       << "### Error getting IP dst addr"
 		       << ", aborting..." << endl;
 		  return 0;
 		}
 	      else
 		{
-		  cout << ", addr src ";
+		  cout << ", addr dst ";
 		  qaddr.setAddress( *qi );
 		  cout << qaddr.toString().toAscii().constData();
 		}
@@ -350,7 +353,8 @@ int main( int argc, char *argv[] )
 	      // IP ports
 	      if( !spidrctrl.getServerPort( i, &portnr ) )
 		{
-		  cout << "### Error getting device IP dest port"
+		  cout << endl
+		       << "### Error getting device IP dest port"
 		       << ", aborting..." << endl;
 		  return 0;
 		}
@@ -360,7 +364,8 @@ int main( int argc, char *argv[] )
 		}
 	      if( !spidrctrl.getDevicePort( i, &portnr ) )
 		{
-		  cout << "### Error getting device IP src port"
+		  cout << endl
+		       << "### Error getting device IP src port"
 		       << ", aborting..." << endl;
 		  return 0;
 		}
@@ -382,7 +387,8 @@ int main( int argc, char *argv[] )
 	    {
 	      if( !spidrctrl.getIpAddrSrc( i, &ipaddr ) )
 		{
-		  cout << "### Error getting IP src addr " << i
+		  cout << endl
+		       << "### Error getting IP src addr " << i
 		       << ", aborting..." << endl;
 		  return 0;
 		}
@@ -400,7 +406,8 @@ int main( int argc, char *argv[] )
 	  for( i=0; i<ports; ++i )
 	    if( !spidrctrl.setIpAddrSrc( i, *paddr_new_i ) )
 	      {
-		cout << "### Error setting IP src addr " << i
+		cout << endl
+		     << "### Error setting IP src addr " << i
 		     << ", aborting..." << endl;
 		return 0;
 	      }
