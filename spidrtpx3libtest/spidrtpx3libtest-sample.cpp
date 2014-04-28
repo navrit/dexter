@@ -21,6 +21,7 @@ int main()
   // Open a control connection to SPIDR-TPX3 module
   // with address 192.168.100.10, default port number 50000
   SpidrController spidrctrl( 192, 168, 100, 10 );
+  //SpidrController spidrctrl( 192, 168, 1, 10 );
 
   // Are we connected to the SPIDR-TPX3 module?
   if( !spidrctrl.isConnected() ) {
@@ -129,7 +130,8 @@ int main()
   // Sample 'frames' as well as write pixel data to file
   spidrdaq.setSampling( true );
   spidrdaq.setSampleAll( true );
-  //spidrdaq.openFile( "test.dat", true );
+  if( !spidrdaq.startRecording( "test" ) )
+    cout << "###SpidrDaq.startRecording: " << spidrdaq.errorString() << endl;
 
   // ----------------------------------------------------------
   // Get frames (data up to the next End-of-Readout packet)
