@@ -2,7 +2,7 @@
 File   : spidrid.cpp
 
 Descr  : Commandline tool to display and/or set a SPIDR module's identifier
-         or serial number.
+         (serial number).
 
 Usage  :
 spidrid <ipaddr> [id_new]
@@ -32,7 +32,7 @@ void    usage();
 
 int main( int argc, char *argv[] )
 {
-  bool         show_only = false; // Show curr SPIDR identifier
+  bool         show_only = false;
   quint32      addr_curr = 0;
   QHostAddress qaddr;
   int          id_curr, id_new;
@@ -49,7 +49,11 @@ int main( int argc, char *argv[] )
   if( argc == 3 )
     {
       bool ok;
-      id_new = QString(argv[2]).toUInt( &ok );
+      // Hex or decimal
+      if( argv[2][0] == '0' && (argv[2][1] == 'x' || argv[2][1] == 'X') )
+	id_new = QString(argv[2]).toUInt( &ok, 16 );
+      else
+	id_new = QString(argv[2]).toUInt( &ok );
       if( !ok )
 	{
 	  cout << "### Invalid ID: " << string(argv[2]) << endl;
