@@ -39,7 +39,6 @@ History:
 using namespace std;
 
 #include "SpidrController.h"
-#include "SpidrDaq.h"
 
 #include <QHostAddress>
 #include <QString>
@@ -65,7 +64,7 @@ int main( int argc, char *argv[] )
   QHostAddress qaddr;
 
   // Check argument count
-  if( !(argc ==3 || argc == 4 || argc == 5) )
+  if( !(argc == 3 || argc == 4 || argc == 5) )
     {
       usage();
       return 0;
