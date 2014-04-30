@@ -5,10 +5,14 @@
 #define Sleep(ms) usleep(1000*(ms))
 #endif
 
+#include <QDateTime>
+#include <QDir>
+
 #define RETURN_AVAILABLE_SAMPLE
 
 #include "DatasamplerThread.h"
 #include "ReceiverThread.h"
+#include "SpidrController.h"
 
 // ----------------------------------------------------------------------------
 
@@ -17,22 +21,48 @@ DatasamplerThread::DatasamplerThread( ReceiverThread *recvr,
   : QThread( parent ),
     _receiver( recvr ),
     _stop( false ),
+    _fileDirName( "." ),
+    _fileBaseName( "tpx" ),
+    _fileName( "" ),
+    _fileExt( "dat" ),
+    _fileCntr( 1 ),
+    _fileOpen( false ),
+    _recording( false ),
+    _flush( true ),
+    _fileChunkSize( 0x1000000 ), // 16 MB max per write operation
+    _fileMaxSize( 0x40000000 ),  // 1 GB file size
+    _runNr( 0 ),
     _sampling( false ),
     _sampleAll( false ),
     _timeOut( false ),
     _requestFrame( false ),
     _sampleMinSize( 0 ),
     _sampleMaxSize( 0 ),
+    _sampleIndex( 0 ),
+    _pixIndex( 0 ),
+    _bigEndian( false ),
     _framesSampled( 0 ),
     _bytesWritten( 0 ),
     _bytesSampled( 0 ),
-    _bytesFlushed( 0 ),
-    _fileOpen( false ),
-    _flush( true ),
-    _sampleIndex( 0 ),
-    _pixIndex( 0 ),
-    _bigEndian( false )
+    _bytesFlushed( 0 )
 {
+  // Initialize the (SPIDR-TPX3) file header
+  memset( static_cast<void *> (&_fileHdr), 0, SPIDRTPX3_HEADER_SIZE );
+  memset( static_cast<void *> (&_fileHdr.unused), HEADER_FILLER,
+	  sizeof(_fileHdr.unused) );
+  _fileHdr.headerId        = SPIDRTPX3_HEADER_ID;
+  // To be adjusted if pixel config is added:
+  _fileHdr.headerSizeTotal = SPIDRTPX3_HEADER_SIZE;// Increase if pixconf added
+  _fileHdr.headerSize      = SPIDRTPX3_HEADER_SIZE - TPX3_HEADER_SIZE;
+  _fileHdr.format          = SPIDRTPX3_HEADER_VERSION;
+  Tpx3Header_t *thdr = &_fileHdr.devHeader;
+  memset( static_cast<void *> (&thdr->unused), HEADER_FILLER,
+	  sizeof(thdr->unused) );
+  thdr->headerId           = TPX3_HEADER_ID;
+  thdr->headerSizeTotal    = TPX3_HEADER_SIZE; // Increase if pixconf added
+  thdr->headerSize         = TPX3_HEADER_SIZE;
+  thdr->format             = TPX3_HEADER_VERSION;
+
   _sampleBuffer = (char *) _sampleBufferUlong;
 
   // Start the thread (see run())
@@ -73,6 +103,19 @@ void DatasamplerThread::run()
 
   while( !_stop )
     {
+      // Handle file opening and closing
+      if( _recording )
+	{
+	  if( !_fileOpen || _bytesWritten > _fileMaxSize )
+	    this->openFilePrivate();
+	}
+      else
+	{
+	  if( _fileOpen )
+	    this->closeFilePrivate();
+	}
+
+      // Handle time-out on getting the requested data sample
       if( _timeOut ) this->handleTimeOut();
 
       if( _receiver->hasData() )
@@ -141,8 +184,13 @@ void DatasamplerThread::run()
 		      if( _fileOpen )
 			{
 			  if( bytes == 0 )
-			    bytes = _file.write( _receiver->data(),
-						 _receiver->bytesAvailable() );
+			    {
+			      // Adhere to file-write chunk size
+			      bytes = _receiver->bytesAvailable();
+			      if( bytes > _fileChunkSize )
+				bytes = _fileChunkSize;
+			      bytes = _file.write( _receiver->data(), bytes );
+			    }
 			  else
 			    // ###NB: what to do if not all bytes are written
 			    // but we did copy them to the sample buffer?
@@ -176,8 +224,12 @@ void DatasamplerThread::run()
 	      else
 		{
 		  // File is open: write data to file
-		  bytes = _file.write( _receiver->data(),
-				       _receiver->bytesAvailable() );
+
+		  // Adhere to file-write chunk size
+		  bytes = _receiver->bytesAvailable();
+		  if( bytes > _fileChunkSize )
+		    bytes = _fileChunkSize;
+		  bytes = _file.write( _receiver->data(), bytes );
 
 		  // Notify the receiver
 		  _receiver->updateBytesConsumed( bytes );
@@ -202,7 +254,7 @@ void DatasamplerThread::run()
 	  Sleep( 20 );
 	}
     }
-  this->closeFile(); // In case a file is opened
+  this->closeFilePrivate(); // In case a file is still open
 }
 
 // ----------------------------------------------------------------------------
@@ -316,7 +368,7 @@ void DatasamplerThread::freeSample()
 
 bool DatasamplerThread::timeOut()
 {
-  // This function was only added to prevent the compiler from optimizing
+  // This function was only added here to prevent the compiler from optimizing
   // a while-loop (see getSample/Frame()) on the _timeOut variable!
   return _timeOut;
 }
@@ -518,6 +570,11 @@ int DatasamplerThread::copySampleToBuffer()
   if( bytes + _sampleIndex > _sampleMaxSize )
     bytes = _sampleMaxSize - _sampleIndex;
 
+  // Adhere to the maximum file-write chunk size
+  // (data is being sampled synchronously with writing to file, if enabled)
+  if( bytes > _fileChunkSize )
+    bytes = _fileChunkSize;
+
   // Copy the data to the sample buffer
   memcpy( static_cast<void *> (&_sampleBuffer[_sampleIndex]),
 	  static_cast<void *> (_receiver->data()), bytes );
@@ -621,9 +678,137 @@ int DatasamplerThread::copyFrameToBuffer()
 
 // ----------------------------------------------------------------------------
 
-bool DatasamplerThread::openFile( std::string filename, bool overwrite )
+bool DatasamplerThread::startRecording( std::string filename,
+					int         runnr )
 {
-  this->closeFile();
+  if( !this->stopRecording() ) return false;
+
+  // Separate given name in a path (optional), a file name and
+  // an extension (optional)
+  int last_i;
+  QString fname = QString::fromStdString( filename );
+  fname.replace( QChar('\\'), QChar('/') );
+  if( fname.contains( QChar('/') ) ) // Path name present?
+    {
+      last_i        = fname.lastIndexOf( QChar('/') );
+      _fileDirName  = fname.left( last_i );
+      _fileBaseName = fname.right( fname.size() - last_i - 1 );
+    }
+  else
+    {
+      _fileDirName  = QString(".");
+      _fileBaseName = fname;
+    }
+  if( _fileBaseName.contains( QChar('.') ) ) // Extension present?
+    {
+      last_i        = fname.lastIndexOf( QChar('.') );
+      _fileExt      = fname.right( fname.size() - last_i - 1 );
+      _fileBaseName = fname.left( last_i );
+    }
+  else
+    {
+      _fileExt = QString("dat");
+    }
+
+  // Check existence of the directory and create if necessary
+  // (empty _fileDirName equals ".")
+  QDir qd;
+  if( !_fileDirName.isEmpty() && !qd.exists(_fileDirName) )
+    {
+      if( !qd.mkpath(_fileDirName) )
+	{
+	  _errString = "Failed to create dir \"" + _fileDirName + "\"";  
+	  return false;
+	}
+    }
+
+  // Remember run number (for file names)
+  _runNr = runnr;
+
+  // Instruct the thread to open a file
+  _recording = true;
+
+  // Wait for file opened, with time-out
+  int cnt = 0;
+  while( !_fileOpen && cnt < 200 )
+    {
+      Sleep( 10 );
+      ++cnt;
+    }
+  if( cnt == 200 )
+    {
+      _errString = "Time-out opening file in dir \"" + _fileDirName + "\"";  
+      return false;
+    }
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool DatasamplerThread::stopRecording()
+{
+  // Return false only in case of time-out on closing the file
+
+  if( !_recording ) return true;
+
+  // Instruct the thread to close any open file
+  _recording = false;
+
+  // Wait for file closed, with time-out
+  int cnt = 0;
+  while( _fileOpen && cnt < 100 )
+    {
+      Sleep( 10 );
+      ++cnt;
+    }
+  if( cnt == 100 )
+    {
+      _errString = "Time-out closing file";  
+      return false;
+    }
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool DatasamplerThread::openFilePrivate()
+{
+  // Open file function called by thread
+  // (this function is to be called from within the thread only)
+  this->closeFilePrivate();
+
+  _fileName = this->makeFileName();
+  _file.setFileName( _fileName );
+  _file.open( QIODevice::WriteOnly );
+  if( _file.isOpen() )
+    {
+      // Write the file header to the file
+      _file.write( reinterpret_cast<char *>(&_fileHdr), SPIDRTPX3_HEADER_SIZE );
+
+      _bytesWritten = 0;
+      _fileOpen = true;
+      return true;
+    }
+  _errString = "Failed to open file \"" + _fileName + "\"";  
+  return false;
+}
+
+// ----------------------------------------------------------------------------
+
+void DatasamplerThread::closeFilePrivate()
+{
+  // Close file function called by thread
+  // (this function is to be called from within the thread only)
+  if( _file.isOpen() ) _file.close();
+  _fileOpen = false;
+}
+
+// ----------------------------------------------------------------------------
+
+bool DatasamplerThread::openFileOld( std::string filename, bool overwrite )
+{
+  //this->closeFile();
+  this->closeFilePrivate();
 
   QString fname = QString::fromStdString( filename );
   if( QFile::exists( fname ) && !overwrite )
@@ -646,15 +831,49 @@ bool DatasamplerThread::openFile( std::string filename, bool overwrite )
 
 // ----------------------------------------------------------------------------
 
-bool DatasamplerThread::closeFile()
+QString DatasamplerThread::makeFileName()
 {
-  _fileOpen = false;
-  if( _file.isOpen() )
-    {
-      _file.close();
-      return true;
-    }
-  return false;
+  // File name is composed like this:
+  // "<dir>/<basename>-<year><month><day>-<hour><min><sec>-<runnr>-<cnt>.<ext>"
+
+  // The directory
+  QString qs = _fileDirName;
+  if( _fileDirName.length() > 0 ) qs += '/';
+  qs += _fileBaseName;
+
+  // Add date and time
+  QDateTime dt = QDateTime::currentDateTime();
+  qs += dt.toString( QString("-yyMMdd-hhmmss-") );
+
+  // Update parts of the file header
+  _fileHdr.seqNr = _fileCntr;
+  QDate da = dt.date();
+  int y = da.year();
+  _fileHdr.yyyyMmDd = (y/1000) << 28;
+  y = y - (y/1000)*1000;
+  _fileHdr.yyyyMmDd |= (y/100) << 24;
+  y = y - (y/100)*100;
+  _fileHdr.yyyyMmDd |= ((y/10) << 20) | ((y%10) << 16);
+  _fileHdr.yyyyMmDd |= (da.month()/10) << 12 | ((da.month()%10) << 8);
+  _fileHdr.yyyyMmDd |= (da.day()/10) << 4 | ((da.day()%10) << 0);
+  QTime tm = dt.time();
+  _fileHdr.hhMmSsMs  = (tm.hour()/10) << 28 | ((tm.hour()%10) << 24);
+  _fileHdr.hhMmSsMs |= (tm.minute()/10) << 20 | ((tm.minute()%10) << 16);
+  _fileHdr.hhMmSsMs |= (tm.second()/10) << 12 | ((tm.second()%10) << 8);
+  int hsec = tm.msec()/10;
+  _fileHdr.hhMmSsMs |= (hsec/10) << 4 | ((hsec%10) << 0);
+
+  if( _runNr != 0 )
+    // Add run number, a counter and the extension
+    qs += QString( "%1-%2.%3").arg( _runNr ).arg( _fileCntr ).arg( _fileExt );
+  else
+    // Add a counter and the extension
+    qs += QString( "%2.%3").arg( _fileCntr ).arg( _fileExt );
+
+  ++_fileCntr;
+
+  _fileName = qs;
+  return qs;
 }
 
 // ----------------------------------------------------------------------------

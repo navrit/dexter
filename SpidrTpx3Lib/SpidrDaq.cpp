@@ -3,8 +3,11 @@
 #include "ReceiverThread.h"
 #include "DatasamplerThread.h"
 
+#include "tpx3defs.h"
+#include "dacsdescr.h"
+
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x13110600;
+const int VERSION_ID = 0x14043000;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor / info
@@ -15,24 +18,44 @@ SpidrDaq::SpidrDaq( int ipaddr3,
 		    int ipaddr1,
 		    int ipaddr0,
 		    int port )
+  : _packetReceiver( 0 ),
+    _fileWriter( 0 ),
+    _spidrCtrl( 0 ),
+    _ipAddr( 0 ),
+    _ipPort( 0 ),
+    _deviceNr( 0 )
 {
   // Start data-acquisition on the interface
   // with the given IP address and port number
   int ipaddr[4] = { ipaddr0, ipaddr1, ipaddr2, ipaddr3 };
-  this->init( ipaddr, port, 0 );
+
+  _ipAddr   = (((ipaddr[0] & 0xFF) << 0) | ((ipaddr[1] & 0xFF) << 8) |
+	       ((ipaddr[2] & 0xFF) << 16) | ((ipaddr[3] & 0xFF) << 24));
+  _ipPort   = port;
+
+  _packetReceiver = new ReceiverThread( ipaddr, port );
+
+  // Create the sampler/file-writer thread, providing it with a link to
+  // the packet reader thread
+  _fileWriter = new DatasamplerThread( _packetReceiver );
 }
 
 // ----------------------------------------------------------------------------
 
 SpidrDaq::SpidrDaq( SpidrController *spidrctrl, int device_nr )
+  : _packetReceiver( 0 ),
+    _fileWriter( 0 ),
+    _spidrCtrl( 0 ),
+    _ipAddr( 0 ),
+    _ipPort( 0 ),
+    _deviceNr( 0 )
 {
   // If the SpidrController parameter is provided use it to find out
   // the SPIDR's Medipix/Timepix device configuration and
   // IP destination address, or else assume a default IP address and
   // a single device with a default port number
   int ipaddr[4] = { 1, 100, 168, 192 };
-  int id        = 0;
-  int port      = 8192+device_nr;
+  int port      = 8192 + device_nr;
   if( spidrctrl )
     {
       // Get the IP destination address (this host network interface)
@@ -46,37 +69,15 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl, int device_nr )
 	  ipaddr[0] = (addr >>  0) & 0xFF;
 	}
 
-      this->getIdAndPort( spidrctrl, device_nr, &id, &port );
+      if( !spidrctrl->getServerPort( device_nr, &port ) )
+	port = 8192 + device_nr;
     }
-  this->init( ipaddr, port, spidrctrl );
-}
 
-// ----------------------------------------------------------------------------
+  _ipAddr   = (((ipaddr[0] & 0xFF) << 0) | ((ipaddr[1] & 0xFF) << 8) |
+	       ((ipaddr[2] & 0xFF) << 16) | ((ipaddr[3] & 0xFF) << 24));
+  _ipPort   = port;
+  _deviceNr = device_nr;
 
-void SpidrDaq::getIdAndPort( SpidrController *spidrctrl,
-			     int              device_nr,
-			     int             *id,
-			     int             *port )
-{
-  if( !spidrctrl ) return;
-
-  // Get the device IDs from the SPIDR module
-  spidrctrl->getDeviceId( device_nr, id );
-
-  // Get the device port number from the SPIDR-TPX3 module
-  // provided a sensible chip-ID was obtained
-  //if( *id != 0 )
-  spidrctrl->getServerPort( device_nr, port );
-  //else
-  //*port = 8192 + device_nr;
-}
-
-// ----------------------------------------------------------------------------
-
-void SpidrDaq::init( int             *ipaddr,
-		     int              port,
-		     SpidrController *spidrctrl )
-{
   _packetReceiver = new ReceiverThread( ipaddr, port );
 
   // Create the sampler/file-writer thread, providing it with a link to
@@ -84,9 +85,12 @@ void SpidrDaq::init( int             *ipaddr,
   _fileWriter = new DatasamplerThread( _packetReceiver );
 
   // Provide the receiver with the possibility to control the module,
-  // for example to set and clear a busy/inhibit/throttle signal
-  //if( spidrctrl )
-  //  _packetReceiver->setController( spidrctrl );
+  // i.e. to set and clear a busy/inhibit/throttle signal
+  if( spidrctrl )
+    {
+      _packetReceiver->setController( spidrctrl );
+      _spidrCtrl = spidrctrl;
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -151,16 +155,162 @@ std::string SpidrDaq::errorString()
 // Acquisition
 // ----------------------------------------------------------------------------
 
-bool SpidrDaq::openFile( std::string filename, bool overwrite /* = false */ )
+#define INVALID_VAL 0xFFFFFFFF
+
+bool SpidrDaq::startRecording( std::string filename,
+			       int         runnr,
+			       std::string descr )
 {
-  return _fileWriter->openFile( filename, overwrite );
+  // Fill in the file and device header with the current settings
+  SpidrTpx3Header_t *fhdr = _fileWriter->fileHdr();
+
+  // Run number
+  fhdr->runNr = runnr;
+
+  // (Re)set description string
+  memset( static_cast<void *>(&fhdr->descr), 0, sizeof(fhdr->descr) );
+  if( !descr.empty() )
+    {
+      u32 sz = descr.length();
+      if( sz > sizeof(fhdr->descr)-1 )
+	sz = sizeof(fhdr->descr)-1;
+
+      // Copy string into the file header
+      descr.copy( fhdr->descr, sz );
+    }
+
+  // Fill in the rest of the file header
+  fhdr->ipAddress  = _ipAddr;
+  fhdr->ipPort     = _ipPort;
+  fhdr->libVersion = this->classVersion();
+  if( _spidrCtrl )
+    {
+      int val;
+      if( _spidrCtrl->getSpidrId( &val ) )
+	fhdr->spidrId = val;
+      else
+	fhdr->spidrId = INVALID_VAL;
+
+      if( _spidrCtrl->getSoftwVersion( &val ) )
+	fhdr->softwVersion = val;
+      else
+	fhdr->softwVersion = INVALID_VAL;
+
+      if( _spidrCtrl->getFirmwVersion( &val ) )
+	fhdr->firmwVersion = val;
+      else
+	fhdr->firmwVersion = INVALID_VAL;
+
+      // SPIDR configuration: trigger mode, decoder on/off, ...
+      // Trigger control register (lower 12 bits):
+      if( _spidrCtrl->getSpidrReg( 0x290, &val ) )
+	fhdr->spidrConfig |= (val & 0xFFF);
+      // Decoder control register (LSB nibble shifted to bit 16):
+      if( _spidrCtrl->getSpidrReg( 0x2A8, &val ) )
+	fhdr->spidrConfig |= (val & 0xF) << 16;
+
+      // Header filter (16 bits value)
+      int cpu_filter;
+      if( _spidrCtrl->getHeaderFilter( _deviceNr, &val, &cpu_filter ) )
+	fhdr->spidrFilter = val;
+      else
+	fhdr->spidrFilter = INVALID_VAL;
+
+      // Bias voltage
+      if( _spidrCtrl->getBiasVoltage( &val ) )
+	fhdr->spidrBiasVoltage = val;
+      else
+	fhdr->spidrBiasVoltage = INVALID_VAL;
+    }
+
+  // Fill in the rest of the device header
+  if( _spidrCtrl )
+    {
+      int val;
+      Tpx3Header_t *thdr = &fhdr->devHeader;
+      if( _spidrCtrl->getDeviceId( _deviceNr, &val ) )
+	thdr->deviceId = val;
+      else
+	thdr->deviceId = INVALID_VAL;
+
+      if( _spidrCtrl->getGenConfig( _deviceNr, &val ) )
+	thdr->genConfig = val;
+      else
+	thdr->genConfig = INVALID_VAL;
+
+      if( _spidrCtrl->getOutBlockConfig( _deviceNr, &val ) )
+	thdr->outblockConfig = val;
+      else
+	thdr->outblockConfig = INVALID_VAL;
+
+      if( _spidrCtrl->getPllConfig( _deviceNr, &val ) )
+	thdr->pllConfig = val;
+      else
+	thdr->pllConfig = INVALID_VAL;
+
+      if( _spidrCtrl->getSlvsConfig( _deviceNr, &val ) )
+	thdr->slvsConfig = val;
+      else
+	thdr->slvsConfig = INVALID_VAL;
+
+      if( _spidrCtrl->getPwrPulseConfig( _deviceNr, &val ) )
+	thdr->pwrPulseConfig = val;
+      else
+	thdr->pwrPulseConfig = INVALID_VAL;
+
+      {
+	// Test pulse configuration
+	int period = INVALID_VAL, phase = INVALID_VAL, number = INVALID_VAL;
+	_spidrCtrl->getTpPeriodPhase( _deviceNr, &period, &phase );
+	_spidrCtrl->getTpNumber( _deviceNr, &number );
+
+	// Recreate layout from returned Timepix3 periphery data...
+	thdr->testPulseConfig = (phase << 24) | (period << 16) | number;
+      }
+
+      // (Re)set DAC values
+      memset( static_cast<void *>(&thdr->dac), 0, sizeof(thdr->dac) );
+      int i, code;
+      for( i=0; i<TPX3_DAC_COUNT; ++i )
+	{
+	  code = TPX3_DAC_TABLE[i].code;
+	  if( _spidrCtrl->getDac( _deviceNr, code, &val ) )
+	    thdr->dac[code] = val;
+	  else
+	    thdr->dac[code] = INVALID_VAL;
+	}
+
+      // (Re)set CTPR values
+      memset( static_cast<void *>(&thdr->ctpr), 0, sizeof(thdr->ctpr) );
+      unsigned char *pctpr;
+      if( _spidrCtrl->getCtpr( _deviceNr, &pctpr ) )
+	memcpy( thdr->ctpr, pctpr, sizeof(thdr->ctpr) );
+      else
+	memset( static_cast<void *>(&thdr->ctpr), 0xAA, sizeof(thdr->ctpr) );
+    }
+
+  return _fileWriter->startRecording( filename, runnr );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrDaq::closeFile()
+bool SpidrDaq::stopRecording()
 {
-  return _fileWriter->closeFile();
+  return _fileWriter->stopRecording();
+}
+
+// ----------------------------------------------------------------------------
+
+long long SpidrDaq::fileMaxSize()
+{
+  return _fileWriter->fileMaxSize();
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDaq::setFileMaxSize( long long size )
+{
+  _fileWriter->setFileMaxSize( size );
 }
 
 // ----------------------------------------------------------------------------

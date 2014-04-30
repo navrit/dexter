@@ -36,9 +36,12 @@ class MY_LIB_API SpidrDaq
   std::string errorString    ();
 
   // Data acquisition
-  bool      openFile            ( std::string filename,
-				  bool overwrite = false );
-  bool      closeFile           ();
+  bool      startRecording      ( std::string filename,
+				  int         runnr = 0,
+				  std::string descr = std::string() );
+  bool      stopRecording       ();
+  long long fileMaxSize         ();
+  void      setFileMaxSize      ( long long size );
   void      setFlush            ( bool enable );
   void      setSampling         ( bool enable );
   void      setSampleAll        ( bool enable );
@@ -80,15 +83,10 @@ class MY_LIB_API SpidrDaq
  private:
   ReceiverThread    *_packetReceiver;
   DatasamplerThread *_fileWriter;
-
-  // Init function for use in c'tors
-  void init        ( int             *ipaddr,
-		     int              port,
-		     SpidrController *spidrctrl );
-  void getIdAndPort( SpidrController *spidrctrl,
-		     int              device_nr,
-		     int             *id,
-		     int             *port );
+  SpidrController   *_spidrCtrl;
+  int                _ipAddr;
+  int                _ipPort;
+  int                _deviceNr;
 };
 
 #endif // SPIDRDAQ_H
