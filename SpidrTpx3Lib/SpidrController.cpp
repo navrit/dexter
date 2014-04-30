@@ -234,6 +234,20 @@ bool SpidrController::getDeviceCount( int *devices )
 }
 
 // ----------------------------------------------------------------------------
+
+bool SpidrController::getSpidrId( int *id )
+{
+  return this->requestGetInt( CMD_GET_SPIDRID, 0, id );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setSpidrId( int id )
+{
+  return this->requestSetInt( CMD_SET_SPIDRID, 0, id );
+}
+
+// ----------------------------------------------------------------------------
 // Configuration: module/device interface
 // ----------------------------------------------------------------------------
 

@@ -20,6 +20,7 @@
 #define CMD_SET_TIMEOFDAY      0x90C
 #define CMD_GET_DEVICECOUNT    0x90D
 #define CMD_GET_PORTCOUNT      0x90E
+#define CMD_GET_SPIDRID        0x90F
 
 // Configuration: devices
 #define CMD_GET_DEVICEID       0x110
@@ -147,6 +148,7 @@
 #define CMD_SET_GPIO_PIN       0x782
 #define CMD_GET_SPIDRREG       0x783
 #define CMD_SET_SPIDRREG       0x784
+#define CMD_SET_SPIDRID        0x785
 
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
@@ -167,7 +169,7 @@ static const char *CMD_STR[] =
     "SET_TIMEOFDAY    ", // 0x90C
     "GET_DEVICECOUNT  ", // 0x90D
     "GET_PORTCOUNT    ", // 0x90E
-    "-----",             // 0x90F
+    "GET_SPIDRID      ", // 0x90F
 
     "GET_DEVICEID     ", // 0x110
     "GET_DEVICEIDS    ", // 0x111
@@ -299,7 +301,8 @@ static const char *CMD_STR[] =
     "SET_GPIO         ", // 0x781
     "SET_GPIO_PIN     ", // 0x782
     "GET_SPIDRREG     ", // 0x783
-    "SET_SPIDRREG     "  // 0x784
+    "SET_SPIDRREG     ", // 0x784
+    "SET_SPIDRID      "  // 0x785
   };
 
 // Reply bit: set in the reply message in the command identifier

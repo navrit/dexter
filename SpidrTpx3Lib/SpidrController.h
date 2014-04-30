@@ -53,6 +53,8 @@ class MY_LIB_API SpidrController
                                        // or (USB/UART) console
   bool        getPortCount         ( int *ports );
   bool        getDeviceCount       ( int *devices );
+  bool        getSpidrId           ( int *id );
+  bool        setSpidrId           ( int  id );
 
   // ###TODO:
   bool        setTimeOfDay         (); // Set the SPIDR processor clock time
