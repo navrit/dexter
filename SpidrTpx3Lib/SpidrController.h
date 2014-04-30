@@ -151,9 +151,9 @@ class MY_LIB_API SpidrController
                                  int  trigger_length_us,
                                  int  trigger_freq_hz,
                                  int  trigger_count );
-  bool getTriggerConfig        ( int *triger_mode,
-                                 int *triger_length_us,
-                                 int *triger_freq_hz,
+  bool getTriggerConfig        ( int *trigger_mode,
+                                 int *trigger_length_us,
+                                 int *trigger_freq_hz,
                                  int *trigger_count );
   bool startAutoTrigger        ();
   bool stopAutoTrigger         ();
