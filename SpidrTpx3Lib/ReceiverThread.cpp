@@ -1,6 +1,7 @@
 #include <QUdpSocket>
 
 #include "ReceiverThread.h"
+#include "SpidrController.h"
 
 // ----------------------------------------------------------------------------
 
@@ -13,6 +14,8 @@ ReceiverThread::ReceiverThread( int *ipaddr,
     _suspend( false ),
     _suspended( false ),
     _stop( false ),
+    _spidrCtrl( 0 ),
+    _spidrBusy( false ),
     _packetsReceived( 0 ),
     _packetsLost( 0 ),
     _bytesReceived( 0 ),
@@ -34,7 +37,7 @@ ReceiverThread::ReceiverThread( int *ipaddr,
 	      QString::number( ipaddr[0] ));
 
   // Initialize the buffer
-  memset( _recvBuffer, 0xFF, sizeof(_recvBuffer) );
+  memset( static_cast<void *> (_recvBuffer), 0xFF, sizeof(_recvBuffer) );
 
   // Create and connect the socket
   _sock = new QUdpSocket();
@@ -127,6 +130,11 @@ void ReceiverThread::readDatagrams()
       space = _tail - tmphead;
       if( space >= 0 && space < 16384 )
 	{
+	  if( _spidrCtrl )
+	    {
+	      _spidrCtrl->setBusy();
+	      _spidrBusy = true;
+	    }
 	  _full = true;
 	  _fullOccurred = true;
 	}
@@ -174,6 +182,11 @@ void ReceiverThread::updateBytesConsumed( long long bytes )
   long long t = _tail + bytes;
   // Wrap-around the end of the buffer when appropriate
   if( t == _headEnd ) t = 0;
+  if( _spidrBusy && _spidrCtrl )
+    {
+      _spidrCtrl->clearBusy();
+      _spidrBusy = false;
+    }
   _full = false;
   _tail = t;
 }

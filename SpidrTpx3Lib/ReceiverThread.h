@@ -20,6 +20,7 @@ typedef uint8_t  u8;
 //#define RECV_BUF_SIZE  0x040000000 // 1024 MByte
 
 class QUdpSocket;
+class SpidrController;
 
 class ReceiverThread : public QThread
 {
@@ -34,6 +35,8 @@ class ReceiverThread : public QThread
   void  stop();
 
   void  run();
+
+  void  setController( SpidrController *sc ) { _spidrCtrl = sc; }
 
   void  readDatagrams();
   bool  hasData()           { return( _head != _tail || _full ); }
@@ -73,6 +76,9 @@ class ReceiverThread : public QThread
   int         _port;
   bool        _suspend, _suspended;
   bool        _stop;
+
+  SpidrController *_spidrCtrl;
+  bool        _spidrBusy;
 
   // Statistics
   int       _packetsReceived, _packetsLost;
