@@ -23,6 +23,8 @@ ReceiverThread::ReceiverThread( int *ipaddr,
     _lastPacketSize( 0 ),
     _bufferWraps( 0 ),
     _bufferSize( RECV_BUF_SIZE ),
+    _freeSpace( RECV_BUF_SIZE ),
+    _freeSpaceMin( RECV_BUF_SIZE/256 ),
     _head( 0 ),
     _tail( 0 ),
     _headEnd( 0 ),
@@ -115,7 +117,8 @@ void ReceiverThread::readDatagrams()
       if( recvd_sz <= 0 ) continue;
       tmphead = _head + recvd_sz;
 
-      // Wrap-around the end of the buffer (with some spare space)
+      // Wrap-around the end of the buffer
+      // (with some spare space to prevent writing past the end of the buffer)
       if( tmphead + 16384 > _bufferSize )
 	{
 	  // Remember position of last byte near the end of the buffer !
@@ -128,11 +131,12 @@ void ReceiverThread::readDatagrams()
 
       // Check buffer space left
       space = _tail - tmphead;
-      if( space >= 0 && space < 16384 )
+      if( space >= 0 && space < _freeSpaceMin )
 	{
 	  if( _spidrCtrl )
 	    {
 	      _spidrCtrl->setBusy();
+	      _freeSpace = space;
 	      _spidrBusy = true;
 	    }
 	  _full = true;
@@ -184,8 +188,13 @@ void ReceiverThread::updateBytesConsumed( long long bytes )
   if( t == _headEnd ) t = 0;
   if( _spidrBusy && _spidrCtrl )
     {
-      _spidrCtrl->clearBusy();
-      _spidrBusy = false;
+      // Remove BUSY when the minimum required buffer space is available
+      _freeSpace += bytes;
+      if( _freeSpace > _freeSpaceMin )
+	{
+	  _spidrCtrl->clearBusy();
+	  _spidrBusy = false;
+	}
     }
   _full = false;
   _tail = t;
@@ -223,6 +232,9 @@ bool ReceiverThread::setBufferSize( long long size )
 
   this->reset();
   _bufferSize = size;
+
+  _freeSpaceMin = _bufferSize/256;
+  if( _freeSpaceMin < 16384 ) _freeSpaceMin = 16384;
 
   return true;
 }

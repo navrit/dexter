@@ -14,6 +14,7 @@ typedef uint32_t u32;
 typedef uint16_t u16;
 typedef uint8_t  u8;
 
+// Receiver buffer size
 //#define RECV_BUF_SIZE  0x001000000 //   16 MByte
 //#define RECV_BUF_SIZE  0x010000000 //  256 MByte
 #define RECV_BUF_SIZE    0x020000000 //  512 MByte
@@ -91,6 +92,8 @@ class ReceiverThread : public QThread
 
   // Buffer administration
   long long _bufferSize;
+  long long _freeSpace;
+  long long _freeSpaceMin;
   long long _head, _tail, _headEnd;
   bool      _full, _fullOccurred;
 
