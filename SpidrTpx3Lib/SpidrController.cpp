@@ -620,7 +620,7 @@ bool SpidrController::uploadPacket( int            dev_nr,
 
 bool SpidrController::readEfuses( int dev_nr, int *efuses )
 {
-  return this->requestGetInt( CMD_GET_EFUSES, device_nr, efuses );
+  return this->requestGetInt( CMD_GET_EFUSES, dev_nr, efuses );
 }
   
 // ----------------------------------------------------------------------------
