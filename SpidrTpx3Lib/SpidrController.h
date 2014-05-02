@@ -101,10 +101,9 @@ class MY_LIB_API SpidrController
   std::string dacName          ( int  dac_code );
   int         dacMax           ( int  dac_code );
   bool        uploadPacket     ( int  dev_nr, unsigned char *packet, int size );
-  bool        readEfuse        ( int  device_nr, int *efuses );
+  bool        readEfuses       ( int  dev_nr, int *efuses );
 #ifdef CERN_PROBESTATION
-  bool        burnEfuse        ( int  device_nr,
-				 int  program_width, int selection );
+  bool        burnEfuse        ( int  dev_nr, int prog_width, int selection );
 #endif
 
   // Configuration: device test pulses

@@ -616,24 +616,25 @@ bool SpidrController::uploadPacket( int            dev_nr,
 }
 
 
-#ifdef CERN_PROBESTATION
-// ----------------------------------------------------------------------------
-bool SpidrController::burnEfuse( int device_nr, 
-                                 int program_width, 
-                                 int selection )
-{
-  int dword= (selection & 0x1F)<<6 | (program_width & 0x3F);
-  return this->requestSetInt( CMD_BURN_EFUSE , device_nr, dword );
-}
-#endif
-
 // ----------------------------------------------------------------------------
 
-bool SpidrController::readEfuse( int device_nr, int *efuses )
+bool SpidrController::readEfuses( int dev_nr, int *efuses )
 {
   return this->requestGetInt( CMD_GET_EFUSES, device_nr, efuses );
 }
   
+// ----------------------------------------------------------------------------
+
+#ifdef CERN_PROBESTATION
+bool SpidrController::burnEfuse( int dev_nr, 
+                                 int prog_width, 
+                                 int selection )
+{
+  int dword = ((selection & 0x1F) << 6) | (prog_width & 0x3F);
+  return this->requestSetInt( CMD_BURN_EFUSE, device_nr, dword );
+}
+#endif // CERN_PROBESTATION
+
 // ----------------------------------------------------------------------------
 // Configuration: device test pulses
 // ----------------------------------------------------------------------------
