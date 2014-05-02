@@ -252,8 +252,13 @@ int main( int argc, char *argv[] )
 	}
 
       // And now store it all
-      if( !show_only && spidrctrl.storeAddrAndPorts() )
-	cout << "==> New settings stored." << endl;
+      if( !show_only )
+	{
+	  if( spidrctrl.storeAddrAndPorts() )
+	    cout << "==> New settings stored." << endl;
+	  else
+	    error_out( "### Error storing new settings" );
+	}
     }
   else if( prt )
     {
@@ -301,8 +306,13 @@ int main( int argc, char *argv[] )
 	}
 
       // And now store it all
-      if( !show_only && spidrctrl.storeAddrAndPorts() )
-	cout << "==> New settings stored." << endl;
+      if( !show_only )
+	{
+	  if( spidrctrl.storeAddrAndPorts() )
+	    cout << "==> New settings stored." << endl;
+	  else
+	    error_out( "### Error storing new settings" );
+	}
     }
   else
     {
@@ -416,6 +426,8 @@ int main( int argc, char *argv[] )
 	  if( spidrctrl.storeAddrAndPorts( *paddr_new_i, portnr_new ) )
 	    cout << "==> New settings stored: "
 		 << "reset/powercycle SPIDR." << endl;
+	  else
+	    error_out( "### Error storing new settings" );
 	}
     }
 
