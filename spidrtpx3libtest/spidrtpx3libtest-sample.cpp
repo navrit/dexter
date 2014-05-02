@@ -83,7 +83,7 @@ int main()
   //spidrctrl.setCtprBits( 0 );
   int col;
   for( col=0; col<256; ++col )
-    //if( (col >= 10 && col < 12) || (col >= 100 && col < 102) )
+    if( !((col >= 10 && col < 12) || (col >= 100 && col < 102)) )
     spidrctrl.setCtprBit( col );
 
   if( !spidrctrl.setCtpr( device_nr ) )
@@ -117,7 +117,7 @@ int main()
   int trig_length_us = 10000;  // 10 ms
   int trig_freq_hz   = 3;      // 3 Hz
   //int trig_count   = 10;     // 10 triggers
-  int trig_count     = 1;
+  int trig_count     = 2;
   if( !spidrctrl.setTriggerConfig( trig_mode, trig_length_us,
                                    trig_freq_hz, trig_count ) )
     error_out( "###setTriggerConfig" );
@@ -130,7 +130,7 @@ int main()
   // Sample 'frames' as well as write pixel data to file
   spidrdaq.setSampling( true );
   spidrdaq.setSampleAll( true );
-  if( !spidrdaq.startRecording( "test" ) )
+  if( !spidrdaq.startRecording( "test.dt", 123, "Eerste testje" ) )
     cout << "###SpidrDaq.startRecording: " << spidrdaq.errorString() << endl;
 
   // ----------------------------------------------------------
@@ -152,7 +152,8 @@ int main()
       pix[x][y] = false;
   while( next_frame )
     {
-      next_frame = spidrdaq.getSampleMin( 256*256*8, 2*256*256*8, 1000 );
+      next_frame = spidrdaq.getSampleMin( 256*8, 2*256*256*8, 1000 );
+      //next_frame = spidrdaq.getSampleMin( 256*256*8, 2*256*256*8, 1000 );
       //next_frame = spidrdaq.getFrame( 3000 );
       if( next_frame )
         {
@@ -162,8 +163,8 @@ int main()
 	  int pixcnt = 0;
           while( spidrdaq.nextPixel( &x, &y, &pixdata, &timestamp ) )
 	    {
-	      //if( pixcnt < 5 )
-	      //cout << x << "," << y << ": " << hex << pixdata << dec << endl;
+	      if( pixcnt < 5 )
+	       cout << x << "," << y << ": " << hex << pixdata << dec << endl;
 	      pix[x][y] = true;
 	      ++pixcnt;
 	    }
