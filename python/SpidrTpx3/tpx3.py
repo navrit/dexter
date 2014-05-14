@@ -524,9 +524,9 @@ class TPX3:
     self._log_ctrl_cmd("reinitDevice() ",r)
     return r
 
-  def readEfuse(self):
-    r,v=self.ctrl.readEfuse(self.id)
-    self._log_ctrl_cmd("readEfuse()=%08x"%v,r)
+  def readEfuses(self):
+    r,v=self.ctrl.readEfuses(self.id)
+    self._log_ctrl_cmd("readEfuses()=%08x"%v,r)
     return v
     
 
@@ -595,6 +595,19 @@ class TPX3:
     self._log_ctrl_cmd("Start shutter() ",r)
     time.sleep(self.shutter_len)
     return r
+
+  def shutterOn(self):
+    r=self.ctrl.setTriggerConfig(4,0,1,0)
+    self._log_ctrl_cmd("setTriggerConfig ",r)
+    r=self.ctrl.startAutoTrigger()
+    self._log_ctrl_cmd("Shutter on ",r)
+    return r
+    
+  def shutterOff(self):
+    r=self.ctrl.stopAutoTrigger()
+    self._log_ctrl_cmd("Shutter off ",r)
+    return r
+
 
   def t0Sync(self):
     r=self.ctrl.t0Sync(self.id)

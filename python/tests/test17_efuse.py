@@ -154,14 +154,14 @@ class test17_efuse(tpx3_test):
               for fuse in bits_to_burn:
                 self.logging.info( "  Burning efuse %d"%(fuse) )
                 rd=self.tpx.burnEfuse(selection=fuse,program_width=1)
-                rd=self.tpx.readEfuse()
+                rd=self.tpx.readEfuses()
                 if not rd&(1<<fuse): 
                   self.logging.error( "  Problem with burning efuse %d. Ending ..."%(bit_pos))
                   self.update_category('F_fuse')
                   break
               self.tpx.setGPIO(SPIDR_3V3_ENA_PIN,0)
               time.sleep(0.01)
-              efuses=self.tpx.readEfuse()
+              efuses=self.tpx.readEfuses()
               self.logging.info( "Efuses value : 0x%08x"%efuses)
               bname= self.tpx.readName()
               self.logging.info( "Chip name    : %s"%bname)
