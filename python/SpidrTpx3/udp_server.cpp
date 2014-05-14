@@ -143,7 +143,7 @@ void UDPServer::flush()
   
 
 #define MAX_QUEUE_LEN (256*256*2)
-#undef DEBUG_UDP 0
+#undef DEBUG_UDP
 std::list<unsigned long> UDPServer::getH(unsigned long val, unsigned long mask, unsigned int debug)
 {
   std::list<unsigned long> l;

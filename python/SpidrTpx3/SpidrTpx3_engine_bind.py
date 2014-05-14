@@ -5,8 +5,17 @@ import sys
 from defines import load_defines
 import getpass
 
+def check_makefile_for_probestation(fname):
+  f=open(fname,"r")
+  for l in f.readlines():
+    if l.find("PROBESTATION.pro")>=0:
+      return True
+  f.close()
+  return False
+
 CERN_PROBESTATION=0
     
+if check_makefile_for_probestation('../Makefile'):CERN_PROBESTATION=1
 for a in sys.argv:
   if a.strip()=="CERN_PROBESTATION":CERN_PROBESTATION=1
  
@@ -72,7 +81,7 @@ c2.add_method('uploadPacket',          'bool',        [param('int', 'dev_nr'),pa
 c2.add_method('setGpioPin',            'bool',        [param('int', 'pin_nr'), param('int', 'state')] )
 
 c2.add_method('setLogLevel',           'bool',        [param('int', 'level')])
-c2.add_method('readEfuse',             'bool',        [param('int', 'dev_nr'),param('int*', 'efuses', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+c2.add_method('readEfuses',             'bool',        [param('int', 'dev_nr'),param('int*', 'efuses', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 if CERN_PROBESTATION:
   c2.add_method('burnEfuse',             'bool',        [param('int', 'dev_nr'),param('int', 'program_width'),param('int', 'selection')])
 
@@ -152,8 +161,8 @@ c.add_constructor([param('SpidrController *', 'spidrctrl', transfer_ownership=Fa
 c.add_method('classVersion',    'int',         [])
 c.add_method('ipAddressString', 'std::string', [])
 c.add_method('errorString',     'std::string', [])
-c.add_method('openFile',        'bool',        [param('std::string', 'filename'),param('bool', 'overwrite') ] )
-c.add_method('closeFile',       'bool',        [])
+#c.add_method('openFile',        'bool',        [param('std::string', 'filename'),param('bool', 'overwrite') ] )
+#c.add_method('closeFile',       'bool',        [])
 c.add_method('setFlush',        None,          [param('bool', 'flush')])
 c.add_method('stop',            None,          [])
 
