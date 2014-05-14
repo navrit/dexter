@@ -537,7 +537,7 @@ class TPX3:
 
   def presetFPGAFilters(self):
     eth,cpu=self.getHeaderFilter()
-    self.setHeaderFilter(eth|0x0080,cpu)
+    self.setHeaderFilter(eth|0x0C80,cpu)
 
   def readName(self):
     fuses=self.readEfuse()
@@ -739,7 +739,6 @@ class TPX3:
     r=self.ctrl.setHeaderFilter(self.id,eth,cpu)
     self._log_ctrl_cmd("setHeaderFilter(0x%04X,0x%04X)"%(eth,cpu),r)
 
-  
 #  def flushFifoIn(self):
 #    r=self.ctrl.flushFifoIn(self.id)
 #    self._log_ctrl_cmd("flushFifoIn()",r)
