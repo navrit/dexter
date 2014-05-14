@@ -109,7 +109,7 @@ class test22_cosmic(tpx3_test):
     while not finish:
       time_now = time.time()
       time_elapsed = time_now - time_start
-      if time_elapsed>10:
+      if time_elapsed>1200:
         self.tpx.shutterOff()
         time.sleep(0.001)
         data=self.tpx.get_frame()
