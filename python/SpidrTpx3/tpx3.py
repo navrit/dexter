@@ -534,7 +534,10 @@ class TPX3:
     r,v=self.ctrl.readEfuses(self.id)
     self._log_ctrl_cmd("readEfuses()=%08x"%v,r)
     return v
-    
+
+  def presetFPGAFilters(self):
+    eth,cpu=self.getHeaderFilter()
+    self.setHeaderFilter(eth|0x0080,cpu)
 
   def readName(self):
     fuses=self.readEfuse()
