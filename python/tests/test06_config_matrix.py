@@ -77,8 +77,6 @@ class test06_config_matrix(tpx3_test):
             stimulus[d.col][d.row]['ok']=1
           else:
             stimulus[d.col][d.row]['err']=d.config
-          if d.col==203 and d.row==244:
-            print d
       valid_pixels=0
       for x in range(256):
         for y in range(256):

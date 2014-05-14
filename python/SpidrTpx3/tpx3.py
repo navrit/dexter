@@ -25,11 +25,11 @@ def load_lut(fname):
         lut[num_in]=num_out
       return lut
 
-
-evn4=load_lut("SpidrTpx3/luts/event_count_4b_LUT.txt")
-itot14=load_lut("SpidrTpx3/luts/itot_14b_LUT.txt")
-toa14=load_lut("SpidrTpx3/luts/toa_gray_count_14b_LUT.txt")
-tote10=load_lut("SpidrTpx3/luts/tot_event_count_10b_LUT.txt")
+d='../'
+evn4=load_lut(d+"SpidrTpx3/luts/event_count_4b_LUT.txt")
+itot14=load_lut(d+"SpidrTpx3/luts/itot_14b_LUT.txt")
+toa14=load_lut(d+"SpidrTpx3/luts/toa_gray_count_14b_LUT.txt")
+tote10=load_lut(d+"SpidrTpx3/luts/tot_event_count_10b_LUT.txt")
 
 
 class tpx3packet:
@@ -125,8 +125,6 @@ class tpx3packet:
         self.str="EoR data driven"
       elif b1==0xBF:
         self.str="EoC 0xB (Read Data Driven)"
-      elif b1==0xB0:
-        self.str="EoR Data driven"
     else :
       self.str="unimplemented"
   def pack8(self):
@@ -799,6 +797,7 @@ class TPX3:
   def get_N_raw(self,N):
      r=list(self.udp.getN(N,debug=0))
      return r
+
 
 
   def __del__(self):
