@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #import SpidrTpx3
 import  SpidrTpx3
-from SpidrTpx3_engine import SpidrController,SpidrDaq,UDPServer
+from SpidrTpx3_engine import *
+#SpidrController,SpidrDaq,UDPServer
 import logging
 import random
 import Gnuplot, Gnuplot.funcutils
@@ -33,6 +34,7 @@ tote10=load_lut("SpidrTpx3/luts/tot_event_count_10b_LUT.txt")
 
 class tpx3packet:
   mode=0
+  pileup_decode=0
   def pack0(self):
     self.str="unimplemented"
   def pack1(self):
@@ -232,7 +234,11 @@ class tpx3packet:
        self.toa=-1
 
      
-     self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d ftoa=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address,  self.toa,self.tot,self.ftoa)
+     if self.pileup_decode:
+       self.pileup=evn4[self.ftoa]
+       self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d pileup=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address,  self.toa,self.tot,self.pileup)
+     else:
+       self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d ftoa=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address,  self.toa,self.tot,self.ftoa)
 
   def packC(self):
     self.str="unimplemented"
@@ -588,12 +594,13 @@ class TPX3:
 
 
 
-  def openShutter(self):
+  def openShutter(self,sleep=True):
     r=self.ctrl.startAutoTrigger()
 #c2.add_method('stopAutoTrigger',      'bool',       [])
 #    r=self.ctrl.openShutter(self.id,l)
     self._log_ctrl_cmd("Start shutter() ",r)
-    time.sleep(self.shutter_len)
+    if sleep:
+      time.sleep(self.shutter_len)
     return r
 
   def shutterOn(self):
@@ -635,7 +642,11 @@ class TPX3:
   def setGenConfig(self,l):
     r=self.ctrl.setGenConfig(self.id,l)
     tpx3packet.mode=(l>>1)&0x3
-
+    #if fast local oscilator is disabled we have to devode pileup counter
+    if l & TPX3_FASTLO_ENA :
+      tpx3packet.pileup_decode = False
+    else:
+      tpx3packet.pileup_decode = True
     self._log_ctrl_cmd("setGenConfig(%04x) "%(l),r)
     
   def setDacsDflt(self):
@@ -774,11 +785,24 @@ class TPX3:
       if self.timeouts<64:
         logging.warning("Timeout ;/ (last packet : %16X while expecting %016X)"%(last,val))
     return ret
-    
+
+  def get_N_packets(self,N):
+     r=list(self.udp.getN(N,debug=0))
+     ret=[]
+     for pck_num in r:
+       p=tpx3packet(pck_num)
+       ret.append(p)
+     return ret
+
+  def get_N_raw(self,N):
+     r=list(self.udp.getN(N,debug=0))
+     return r
+
+
   def __del__(self):
     pass
 
-  def load_equalization(self,fname):
+  def load_equalization(self,fname,maskname=""):
     def load(fn):
       f=open(fn,"r")
       ret=[]
@@ -790,12 +814,14 @@ class TPX3:
         ret.append(ll)
       f.close()
       return ret
-    eq=load('logs/thscan1/test08_th_scan_noise/eq.codes')
+    eq=load(fname)
+    if maskname : mask=load(maskname)
     self.resetPixelConfig()
     for x in range(256):
       for y in range(256):
-          self.configPixel(x,y,eq[y][x])
-#    self.setPixelConfig()
+          self.setPixelThreshold(x,y,eq[y][x])
+          if maskname and mask[y][x]: 
+            self.setPixelMask(x,y,mask[y][x])
     
 def main():
   tpx=TPX3()
