@@ -25,7 +25,9 @@ def load_lut(fname):
         lut[num_in]=num_out
       return lut
 
-d='../'
+#d='../'
+d=''
+#print d,__file__
 evn4=load_lut(d+"SpidrTpx3/luts/event_count_4b_LUT.txt")
 itot14=load_lut(d+"SpidrTpx3/luts/itot_14b_LUT.txt")
 toa14=load_lut(d+"SpidrTpx3/luts/toa_gray_count_14b_LUT.txt")
