@@ -38,7 +38,14 @@ class test22_cosmic(tpx3_test):
 
   def _execute(self,**keywords):
     self.tpx.resetPixels()
-    dac_defaults(self.tpx)
+    self.tpx.setDacsDflt()
+    self.tpx.setDac(TPX3_IBIAS_IKRUM,15)
+    self.tpx.setDac(TPX3_VTP_COARSE,50)
+    self.tpx.setDac(TPX3_VTP_FINE,112) # (0e-) slope 44.5e/LSB -> (112=1000e-)  (135=2000e-)
+    self.tpx.setDac(TPX3_VTHRESH_COARSE,7) 
+    self.tpx.setDac(TPX3_VFBK,143) 
+    self.tpx.setDac(TPX3_IBIAS_PREAMP_ON,150)
+    self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,100)
 
     self.tpx.setDac(TPX3_IBIAS_IKRUM,15)
     self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,128)
@@ -71,11 +78,11 @@ class test22_cosmic(tpx3_test):
       return ret
     self.tpx.resetPixelConfig()
 
-    self.tpx.load_equalization('calib/eq_codes.dat',\
-                      maskname='calib/eq_mask.dat')
+    self.tpx.load_equalization('logs/sen1/equalization/eq_codes.dat',\
+                      maskname='logs/sen1/equalization/eq_mask.dat')
 
 
-    self.tpx.setPixelMask(142,170,1)
+    self.tpx.setPixelMask(95,108,1)
     self.tpx.setPixelConfig()
     self.mkdir(self.fname)
     #self.tpx.setShutterLen(shutter_length)
@@ -101,6 +108,8 @@ class test22_cosmic(tpx3_test):
     self.tpx.presetFPGAFilters()
     data=self.tpx.get_N_packets(1024*64)
 
+    tot=np.zeros((256,256), int)
+
     self.tpx.shutterOn()
     time_start = time.time()
     time_elapsed = 0.0
@@ -109,7 +118,7 @@ class test22_cosmic(tpx3_test):
     while not finish:
       time_now = time.time()
       time_elapsed = time_now - time_start
-      if time_elapsed>1200:
+      if time_elapsed>300:
         self.tpx.shutterOff()
         time.sleep(0.001)
         data=self.tpx.get_frame()
@@ -124,6 +133,7 @@ class test22_cosmic(tpx3_test):
             line="%d\t%d\t%d\t%d\t%d\t%d"%(event_counter,pck.col,pck.row,pck.toa,pck.tot,pck.ftoa)
             sys.stdout.write("\n %s"%line)
             event_counter+=1
+            tot[pck.col][pck.row]=pck.tot
             f=open(self.fname+'/cosmic_data.dat',"a")
             f.write(line+"\n")
             f.close()
@@ -132,5 +142,6 @@ class test22_cosmic(tpx3_test):
         sys.stdout.write("\n")
       sys.stdout.flush()
     self.logging.info("Events colected %d"%event_counter)
+    self.save_np_array(tot, fn=self.fname+'/tot.map', info="  TOA Map saved to %s")
 
 

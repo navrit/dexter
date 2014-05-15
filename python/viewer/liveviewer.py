@@ -12,8 +12,13 @@ import matplotlib
 from wx.lib.embeddedimage import PyEmbeddedImage
 import os
 from modulo_window import ModuloWindow
-from SpidrTpx3 import TPX3
 import logging
+import sys
+import SpidrTpx3
+from SpidrTpx3 import TPX3
+
+from SpidrTpx3_engine import *
+import time
 
 try:
     from agw import floatspin as FS
@@ -565,7 +570,121 @@ ico = PyEmbeddedImage(
     "+v75EVWlBJG5BcaDkW+Kt1eMwA34RL0OoJaA3+VXVA8rgUhOnsHDlB02GXmGriTLVkjlGYaE"
     "LK1DrQf+oBeofQVVt5Ax4lKpIIu/CWyF1CCifjgjEIWWkxzce96PK33U8up02QgKf0Fmmdhy"
     "0gFPdTrZvNYDy8kubLUE5tEumTU58NE5JDVfI9osXTfTOocAAAAASUVORK5CYII=")
+    
 
+from threading import *
+import wx
+
+# Button definitions
+ID_START = wx.NewId()
+ID_STOP = wx.NewId()
+
+# Define notification event for thread completion
+EVT_RESULT_ID = wx.NewId()
+
+def EVT_RESULT(win, func):
+    """Define Result Event."""
+    win.Connect(-1, -1, EVT_RESULT_ID, func)
+
+class ResultEvent(wx.PyEvent):
+    """Simple event to carry arbitrary result data."""
+    def __init__(self, data):
+        """Init Result Event."""
+        wx.PyEvent.__init__(self)
+        self.SetEventType(EVT_RESULT_ID)
+        self.data = data
+        
+import numpy as np
+class WorkerThread(Thread):
+    """Worker Thread Class."""
+    def __init__(self, notify_window,tpx,datamap):
+        """Init Worker Thread Class."""
+        Thread.__init__(self)
+        self._notify_window = notify_window
+        self._want_abort = 0
+        self.tpx=tpx
+        self.data_map=datamap
+        # This starts the thread running on creation, but you could
+        # also make the GUI thread responsible for calling this
+
+    def run(self):
+      """Run Worker Thread."""
+        # This is the code executing in the new thread. Simulation of
+        # a long process (well, 10s here) as a simple loop - you will
+        # need to structure your processing so that you periodically
+        # peek at the abort variable
+
+
+      tot=np.zeros((256,256), int)
+      data=self.tpx.get_N_packets(1024*65)
+      self.tpx.shutterOn()
+      time_start = time.time()
+      time_elapsed = 0.0
+      finish=False
+      event_counter=0
+      self.fname="/tmp"
+      while not finish:
+        time.sleep(0.001)
+        time_now = time.time()
+        time_elapsed = time_now - time_start
+        if time_elapsed>300:
+          self.tpx.shutterOff()
+          time.sleep(0.001)
+          data=self.tpx.get_frame()
+          finish=True
+        else:
+          data=self.tpx.get_N_packets(1024)
+        sys.stdout.write('%c Time: %.3f s Packet counter: %d'%(13,time_elapsed, event_counter))
+        if len(data):
+          
+          for pck in data:
+
+            if pck.type==0xB:
+              line="%d\t%d\t%d\t%d\t%d\t%d"%(event_counter,pck.col,pck.row,pck.toa,pck.tot,pck.ftoa)
+              sys.stdout.write("\n %s"%line)
+              event_counter+=1
+              tot[pck.col][pck.row]=pck.tot
+              self.data_map.data[pck.col][pck.row]=pck.tot
+              f=open(self.fname+'/cosmic_data.dat',"a")
+              f.write(line+"\n")
+              f.close()
+            else:
+              print pck
+          print "!"
+          self.data_map.mmin=np.amin(self.data_map.data)
+          self.data_map.mmax=np.amax(self.data_map.data)
+          print self.data_map.mmin,self.data_map.mmax,self.data_map.data.shape
+          self.data_map.process()
+          print "!"
+#          wx.PostEvent(self._notify_window, ResultEvent(1))
+          sys.stdout.write("\n")
+        sys.stdout.flush()
+      logging.info("Events colected %d"%event_counter)
+
+  #    self.save_np_array(tot, fn=self.fname+'/tot.map', info="  TOA Map saved to %s")
+
+
+#        for i in range(10):
+#            time.sleep(1)
+#            print i
+#            if self._want_abort:
+#                # Use a result of None to acknowledge the abort (of
+#                # course you can use whatever you'd like or even
+#                # a separate event type)
+#                wx.PostEvent(self._notify_window, ResultEvent(None))
+#                return
+#        # Here's where the result would be returned (this is an
+#        # example fixed result of the number 10, but it could be
+#        # any Python object)
+
+#      wx.PostEvent(self._notify_window, ResultEvent(10))
+
+    def abort(self):
+        """abort worker thread."""
+        # Method for use by main thread to signal an abort
+        self._want_abort = 1
+        
+        
 class MyForm(wx.Frame):
   def __init__(self,fname):
      wx.Frame.__init__(self, None, wx.ID_ANY, "openPIXEL", size=(925,625),style= wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
@@ -742,8 +861,12 @@ class MyForm(wx.Frame):
      
 
      tpx3Menu = wx.Menu()
-     tpx3_connect=tpx3Menu.Append(wx.ID_ZOOM_FIT, 'Connect')
+     tpx3_connect=tpx3Menu.Append(wx.ID_ANY, 'Connect')
+     tpx3_start=tpx3Menu.Append(wx.ID_ANY, 'Start')
+     tpx3_stop=tpx3Menu.Append(wx.ID_ANY, 'Stop')
      self.Bind(wx.EVT_MENU, self.OnConnect, tpx3_connect)
+     self.Bind(wx.EVT_MENU, self.OnStart, tpx3_start)
+     self.Bind(wx.EVT_MENU, self.OnStop, tpx3_stop)
      menubar.Append(tpx3Menu, '&Timepix3')
 
 
@@ -759,7 +882,9 @@ class MyForm(wx.Frame):
 
      self.Show(True)
      self.mw=ModuloWindow(self.data_map)
-
+     self.worker = None
+     EVT_RESULT(self,self.OnResult)
+     
   def ToggleModWin(self,e):
     if self.smodwin.IsChecked():
         self.mw.Show()
@@ -869,6 +994,15 @@ class MyForm(wx.Frame):
         self.data_map.set_min(self.spin_min.GetValue())
         self.refresh()
 
+    
+  def OnChar(self, evt):
+        keycode =evt.GetKeyCode()
+        print "GRID!"
+        if keycode==ord('g'):
+          self.grid=~self.grid
+          self.refresh()
+
+
   def OnConnect(self, event):
     logname='tpx3.txt'
     logging.basicConfig(level=logging.INFO,
@@ -882,13 +1016,114 @@ class MyForm(wx.Frame):
     self.tpx=TPX3(ip)
     print self.tpx
     print self.tpx.info()
-  def OnChar(self, evt):
-        keycode =evt.GetKeyCode()
-        print "GRID!"
-        if keycode==ord('g'):
-          self.grid=~self.grid
-          self.refresh()
- 
+
+    self.tpx3run()
+    
+  def SetThreshold(self,dac_value=1000):
+    i=0
+    coarse_found=0
+    fine_found=352
+    for coarse in range(16):
+       for fine in range(352,512,1):
+          if dac_value==i:
+             coarse_found=coarse
+             fine_found=fine
+          i+=1
+    self.tpx.setDac(TPX3_VTHRESH_COARSE,coarse_found)
+    self.tpx.setDac(TPX3_VTHRESH_FINE,fine_found)
+    #print "%d %d %d \n"%(i,coarse_found,fine_found)
+
+  def tpx3run(self):
+    self.tpx.resetPixels()
+    self.tpx.setDacsDflt()
+    self.tpx.setDac(TPX3_IBIAS_IKRUM,15)
+    self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,128)
+    self.tpx.setDac(TPX3_IBIAS_DISCS2_ON,32)
+    self.tpx.setDac(TPX3_IBIAS_PREAMP_ON,128)    
+    self.tpx.setDac(TPX3_IBIAS_PIXELDAC,128)
+    self.tpx.setDac(TPX3_VTHRESH_COARSE,5) 
+    self.tpx.setDac(TPX3_VFBK,164) 
+    self.tpx.setDac(TPX3_VTHRESH_FINE,256)
+
+    
+    self.tpx.setPllConfig( (TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_1 | 0x14<<TPX3_PLLOUT_CONFIG_SHIFT) )
+    
+    polarity=True
+    genConfig_register=TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA | TPX3_FASTLO_ENA #TPX3_ACQMODE_EVT_ITOT 
+    if not polarity: genConfig_register|=TPX3_POLARITY_EMIN
+    self.tpx.setGenConfig( genConfig_register)
+    self.tpx.setCtprBits(0)
+    self.tpx.setCtpr()
+    def load(fn):
+      f=open(fn,"r")
+      ret=[]
+      for l in f.readlines():
+        ll=[]
+        for n in l.split():
+          n=int(n)
+          ll.append(n)
+        ret.append(ll)
+      f.close()
+      return ret
+    self.tpx.resetPixelConfig()
+
+    self.tpx.load_equalization('logs/sen1/equalization/eq_codes.dat',\
+                      maskname='logs/sen1/equalization/eq_mask.dat')
 
 
+    self.tpx.setPixelMask(95,108,1)
+    self.tpx.setPixelMask(132,45,1)
+    self.tpx.setPixelConfig()
+    self.fname="/tmp/"
+    #self.tpx.setShutterLen(shutter_length)
+    #self.tpx.sequentialReadout(tokens=1)
+    self.tpx.datadrivenReadout()
+
+    self.tpx.setSenseDac(TPX3_VFBK)
+    v_fbk=self.tpx.get_adc(32)
+    self.tpx.resetTimer()
+    self.tpx.t0Sync()
+
+    anim=['|','/','-','\\','|','/','-','\\']
+    f=open(self.fname+'/cosmic_data.dat',"w")
+    f.close()
+    event_counter=0
+#   for thr in range(1000,1210,5):
+
+
+    thr =1150
+    self.tpx.setSenseDac(TPX3_VTHRESH_FINE)
+    self.SetThreshold(thr)
+
+    self.tpx.presetFPGAFilters()
+
+  def OnStart(self, event):
+        """Start Computation."""
+        print "x"
+        # Trigger the worker thread unless it's already busy
+        if not self.worker:
+            print "y"
+            self.SetStatusText('Starting computation')
+            self.worker = WorkerThread(self,self.tpx,self.data_map)
+            
+            self.worker.start()
+
+  def OnStop(self, event):
+        """Stop Computation."""
+        # Flag the worker thread to stop if running
+        if self.worker:
+            self.SetStatusText('Trying to abort computation')
+            self.worker.abort()
+
+  def OnResult(self, event):
+        """Show Result status."""
+        self.refresh()
+#        if event.data is None:
+#            # Thread aborted (using our convention of None return)
+#            self.SetStatusText('Computation aborted')
+#        else:
+#            # Process results here
+#            self.SetStatusText('Computation Result: %s' % event.data)
+#        # In either event, the worker is done
+#        self.worker = None
 

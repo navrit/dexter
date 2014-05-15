@@ -49,12 +49,12 @@ class test08_equalization_x(tpx3_test):
         self.tpx.setDac(TPX3_VTHRESH_FINE,i)
         data=self.tpx.recv_mask(0x7102000000000000, 0xFFFF000000000000)
 
-	if 0 and len(data)>1:
+        if 0 and len(data)>1:
           for d in data:          
             logging.warning("after setdac %s"%(str(d)))
 
       # self.tpx.datadrivenReadout()
-	self.tpx.openShutter_pc()
+        self.tpx.openShutter()
         data=self.tpx.get_frame()
         
         if 1:
