@@ -131,6 +131,7 @@ c2.add_method('errorString',          'std::string',       [])
 c2.add_method('setTriggerConfig',     'bool',       [param('int', 'trigger_mode'),param('int', 'trigger_period_us'),param('int', 'trigger_freq_hz'),param('int', 'nr_of_triggers')])
 c2.add_method('startAutoTrigger',     'bool',       [])
 c2.add_method('stopAutoTrigger',      'bool',       [])
+c2.add_method('setOutputMask',        'bool',       [param('int', 'dev_nr'),param('int', 'mask')])
 
   
 mod.add_enum('DAC_code', ['TPX3_IBIAS_PREAMP_ON','TPX3_IBIAS_PREAMP_OFF','TPX3_VPREAMP_NCAS','TPX3_IBIAS_IKRUM','TPX3_VFBK',

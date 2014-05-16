@@ -239,7 +239,7 @@ class tpx3packet:
        self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d pileup=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address,  self.toa,self.tot,self.pileup)
      else:
        self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d ftoa=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address,  self.toa,self.tot,self.ftoa)
-
+  
   def packC(self):
     self.str="unimplemented"
   def packD(self):
@@ -256,7 +256,10 @@ class tpx3packet:
     self.str="unimplemented"
   def packF(self):
     self.str="unimplemented"
-    
+  def isData(self):
+    if self.type in (0xA,0xB):
+      return True
+    return False
   @cython.locals(raw=cython.long)
   def __init__(self,data):
     self.raw=data>>16
@@ -503,12 +506,14 @@ class TPX3:
   def sequentialReadout(self,tokens=2):
     self.readout='seq'
     r=self.ctrl.sequentialReadout(tokens)
+    self.presetFPGAFilters()
     self._log_ctrl_cmd("sequentialReadout(tokens=%d) "%tokens,r)
     
     
   def datadrivenReadout(self):
     self.readout='dd'
     r=self.ctrl.datadrivenReadout()
+    self.presetFPGAFilters()
     self._log_ctrl_cmd("datadrivenReadout() ",r)
 
   def setShutterLen(self,l):
@@ -595,7 +600,9 @@ class TPX3:
     r=self.ctrl.burnEfuse(self.id,program_width,selection)
     self._log_ctrl_cmd("burnEfuse(%d,%d) "%(program_width,selection),r)
 
-
+  def setOutputMask(self, mask=0xff):
+    r=self.ctrl.setOutputMask(self.id,mask)
+    self._log_ctrl_cmd("setOutputMask(0x%02x) "%(mask),r)
 
   def openShutter(self,sleep=True):
     r=self.ctrl.startAutoTrigger()
@@ -825,7 +832,28 @@ class TPX3:
           self.setPixelThreshold(x,y,eq[y][x])
           if maskname and mask[y][x]: 
             self.setPixelMask(x,y,mask[y][x])
-    
+            
+  def getTpix3Temp(self):
+    self.setSenseDac(TPX3_BANDGAP_TEMP)
+    v_bg_temp=self.tpx.get_adc(32)
+    self.setSenseDac(TPX3_BANDGAP_OUTPUT)
+    v_bg=self.tpx.get_adc(32)
+    return 88.75-607.3*(v_bg_temp-v_bg)     #Mpix3 extracted
+
+  def setThreshold(self,dac_value=1000):
+    """ Xavi's treshold """
+    i=0
+    coarse_found=0
+    fine_found=352
+    for coarse in range(16):
+       for fine in range(352,512,1):
+          if dac_value==i:
+             coarse_found=coarse
+             fine_found=fine
+          i+=1
+    self.setDac(TPX3_VTHRESH_COARSE,coarse_found)
+    self.setDac(TPX3_VTHRESH_FINE,fine_found)
+
 def main():
   tpx=TPX3()
   tpx.info()

@@ -13,41 +13,13 @@ import shutil
 import sys
 
 class test22_cosmic(tpx3_test):
-  """cosmic"""
-
-  def tpix3_temp(self):
-    self.tpx.setSenseDac(TPX3_BANDGAP_TEMP)
-    v_bg_temp=self.tpx.get_adc(32)
-    self.tpx.setSenseDac(TPX3_BANDGAP_OUTPUT)
-    v_bg=self.tpx.get_adc(32)
-    return 88.75-607.3*(v_bg_temp-v_bg)     #Mpix3 extracted
-
-  def SetThreshold(self,dac_value=1000):
-    i=0
-    coarse_found=0
-    fine_found=352
-    for coarse in range(16):
-       for fine in range(352,512,1):
-          if dac_value==i:
-             coarse_found=coarse
-             fine_found=fine
-          i+=1
-    self.tpx.setDac(TPX3_VTHRESH_COARSE,coarse_found)
-    self.tpx.setDac(TPX3_VTHRESH_FINE,fine_found)
-    #print "%d %d %d \n"%(i,coarse_found,fine_found)
-
+  """Take cosmic run"""
   def _execute(self,**keywords):
     self.tpx.resetPixels()
     self.tpx.setDacsDflt()
     self.tpx.setDac(TPX3_IBIAS_IKRUM,15)
     self.tpx.setDac(TPX3_VTP_COARSE,50)
-    self.tpx.setDac(TPX3_VTP_FINE,112) # (0e-) slope 44.5e/LSB -> (112=1000e-)  (135=2000e-)
-    self.tpx.setDac(TPX3_VTHRESH_COARSE,7) 
-    self.tpx.setDac(TPX3_VFBK,143) 
-    self.tpx.setDac(TPX3_IBIAS_PREAMP_ON,150)
-    self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,100)
-
-    self.tpx.setDac(TPX3_IBIAS_IKRUM,15)
+    self.tpx.setDac(TPX3_VTP_FINE,112) 
     self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,128)
     self.tpx.setDac(TPX3_IBIAS_DISCS2_ON,32)
     self.tpx.setDac(TPX3_IBIAS_PREAMP_ON,128)    
@@ -56,69 +28,53 @@ class test22_cosmic(tpx3_test):
     self.tpx.setDac(TPX3_VFBK,164) 
     self.tpx.setDac(TPX3_VTHRESH_FINE,256)
 
-    
-    self.tpx.setPllConfig( (TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_1 | 0x14<<TPX3_PLLOUT_CONFIG_SHIFT) )
-    
-    polarity=True
-    genConfig_register=TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA | TPX3_FASTLO_ENA #TPX3_ACQMODE_EVT_ITOT 
-    if not polarity: genConfig_register|=TPX3_POLARITY_EMIN
-    self.tpx.setGenConfig( genConfig_register)
+    self.tpx.setPllConfig( TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK \
+                         | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_1 \
+                         | 0x14<<TPX3_PLLOUT_CONFIG_SHIFT )
+
+    self.tpx.setOutputMask(0x03)
+
+    self.tpx.setGenConfig( TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA | TPX3_FASTLO_ENA)
+
     self.tpx.setCtprBits(0)
     self.tpx.setCtpr()
-    def load(fn):
-      f=open(fn,"r")
-      ret=[]
-      for l in f.readlines():
-        ll=[]
-        for n in l.split():
-          n=int(n)
-          ll.append(n)
-        ret.append(ll)
-      f.close()
-      return ret
-    self.tpx.resetPixelConfig()
 
+    self.tpx.resetPixelConfig()
+   
     self.tpx.load_equalization('logs/sen1/equalization/eq_codes.dat',\
                       maskname='logs/sen1/equalization/eq_mask.dat')
 
-
     self.tpx.setPixelMask(95,108,1)
     self.tpx.setPixelConfig()
-    self.mkdir(self.fname)
-    #self.tpx.setShutterLen(shutter_length)
-    #self.tpx.sequentialReadout(tokens=1)
+
     self.tpx.datadrivenReadout()
 
-    self.tpx.setSenseDac(TPX3_VFBK)
-    v_fbk=self.tpx.get_adc(32)
     self.tpx.resetTimer()
     self.tpx.t0Sync()
 
-    anim=['|','/','-','\\','|','/','-','\\']
-    f=open(self.fname+'/cosmic_data.dat',"w")
-    f.close()
-    event_counter=0
-#   for thr in range(1000,1210,5):
-
-
-    thr =1150
-    self.tpx.setSenseDac(TPX3_VTHRESH_FINE)
-    self.SetThreshold(thr)
-
-    self.tpx.presetFPGAFilters()
+    self.tpx.setThreshold(1150)
+    #flush any remaing data
     data=self.tpx.get_N_packets(1024*64)
 
+    self.mkdir(self.fname)
+    fout_name=self.fname+'/cosmic_data.dat'
+    f=open(fout_name,"w")
+    self.logging.info("Storing raw hits to %s"%fout_name)
+    f.write("#seq\tpix_col\tpix_row\ttoa\ttot\tftoa\n")
     tot=np.zeros((256,256), int)
+    toa=np.zeros((256,256), int)
 
-    self.tpx.shutterOn()
+    event_counter=0
     time_start = time.time()
     time_elapsed = 0.0
-#   v_thr=self.tpx.get_adc(8)
     finish=False
+
+    self.tpx.shutterOn()
+
     while not finish:
       time_now = time.time()
       time_elapsed = time_now - time_start
-      if time_elapsed>300:
+      if time_elapsed>10:
         self.tpx.shutterOff()
         time.sleep(0.001)
         data=self.tpx.get_frame()
@@ -126,22 +82,22 @@ class test22_cosmic(tpx3_test):
       else:
         data=self.tpx.get_N_packets(1024)
       sys.stdout.write('%c Time: %.3f s Packet counter: %d'%(13,time_elapsed, event_counter))
-#      print '\n',len(data)
       if len(data):
+        f.write("# %.6f s\n"%time_elapsed)
         for pck in data:
-          if pck.type==0xB:
+          if pck.isData():
             line="%d\t%d\t%d\t%d\t%d\t%d"%(event_counter,pck.col,pck.row,pck.toa,pck.tot,pck.ftoa)
             sys.stdout.write("\n %s"%line)
             event_counter+=1
             tot[pck.col][pck.row]=pck.tot
-            f=open(self.fname+'/cosmic_data.dat',"a")
+            toa[pck.col][pck.row]=pck.toa
             f.write(line+"\n")
-            f.close()
-          else:
-            print pck
+        f.flush()
         sys.stdout.write("\n")
       sys.stdout.flush()
+    f.close()
     self.logging.info("Events colected %d"%event_counter)
-    self.save_np_array(tot, fn=self.fname+'/tot.map', info="  TOA Map saved to %s")
+    self.save_np_array(tot, fn=self.fname+'/tot.map', info="  TOT Map saved to %s")
+    self.save_np_array(tot, fn=self.fname+'/toa.map', info="  TOA Map saved to %s")
 
 
