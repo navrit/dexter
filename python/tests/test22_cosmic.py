@@ -32,7 +32,7 @@ class test22_cosmic(tpx3_test):
                          | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_1 \
                          | 0x14<<TPX3_PLLOUT_CONFIG_SHIFT )
 
-    self.tpx.setOutputMask(0x03)
+    self.tpx.setOutputMask(0x84)
 
     self.tpx.setGenConfig( TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA | TPX3_FASTLO_ENA)
 
@@ -41,8 +41,8 @@ class test22_cosmic(tpx3_test):
 
     self.tpx.resetPixelConfig()
    
-    self.tpx.load_equalization('logs/sen1/equalization/eq_codes.dat',\
-                      maskname='logs/sen1/equalization/eq_mask.dat')
+    self.tpx.load_equalization('calib/eq_codes_finestep9.dat',\
+                      maskname='calib/eq_mask_finestep9.dat')
 
     self.tpx.setPixelMask(95,108,1)
     self.tpx.setPixelConfig()

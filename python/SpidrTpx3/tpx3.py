@@ -241,7 +241,10 @@ class tpx3packet:
 
      if self.pileup_decode:
          if not self.hw_dec_ena:
-           self.pileup=evn4[self.ftoa]
+           if self.ftoa in evn4:
+             self.pileup=evn4[self.ftoa]
+           else:
+             self.pileup=-1
          else:
            self.pileup=self.ftoa
          self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d pileup=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address,  self.toa,self.tot,self.pileup)
@@ -268,11 +271,15 @@ class tpx3packet:
     if self.type in (0xA,0xB):
       return True
     return 
+  def isEoR(self):
+    if self.raw&0xFFFF00000000 in (0x71b000000000,0x71b000000000):
+      return True 
+    else:
+      return False
   @cython.locals(raw=cython.long)
   def __init__(self,data):
     if self.hw_dec_ena:
       self.ext_toa=data&0xFFFF
-      print "%04x"%self.ext_toa
     else:
       self.ext_toa=None
 
