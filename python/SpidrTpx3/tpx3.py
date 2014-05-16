@@ -220,6 +220,11 @@ class tpx3packet:
      self.row=self.sp_address*4
      self.row+= (self.pixel_address&0x3)
      
+     if self.hw_dec_ena:
+       self.toa=self.ext_toa<<14
+     else:
+       self.toa=0
+       
      if not self.hw_dec_ena:
 
        if self.tot in tote10:
@@ -265,6 +270,12 @@ class tpx3packet:
     return 
   @cython.locals(raw=cython.long)
   def __init__(self,data):
+    if self.hw_dec_ena:
+      self.ext_toa=data&0xFFFF
+      print "%04x"%self.ext_toa
+    else:
+      self.ext_toa=None
+
     self.raw=data>>16
 #    print "%016x"%data
 #    self.ba= BitArray(uint=(data>>16)&0xffffffffffff, length=48)
