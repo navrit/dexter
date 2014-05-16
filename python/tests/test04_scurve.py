@@ -116,7 +116,6 @@ th_step   - threshold step size [LSB] (defult 4)"""
     coarse=self.tpx.get_adc(32)
     fit_res={}
     amp_meas=[0.0]
-    
 
 
     logdir=self.fname+"/details/"

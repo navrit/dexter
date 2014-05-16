@@ -132,8 +132,8 @@ c2.add_method('setTriggerConfig',     'bool',       [param('int', 'trigger_mode'
 c2.add_method('startAutoTrigger',     'bool',       [])
 c2.add_method('stopAutoTrigger',      'bool',       [])
 c2.add_method('setOutputMask',        'bool',       [param('int', 'dev_nr'),param('int', 'mask')])
+c2.add_method('setDecodersEna',       'bool',       [param('bool', 'enable')])
 
-  
 mod.add_enum('DAC_code', ['TPX3_IBIAS_PREAMP_ON','TPX3_IBIAS_PREAMP_OFF','TPX3_VPREAMP_NCAS','TPX3_IBIAS_IKRUM','TPX3_VFBK',
                           'TPX3_VTHRESH_FINE','TPX3_VTHRESH_COARSE','TPX3_IBIAS_DISCS1_ON','TPX3_IBIAS_DISCS1_OFF',
                           'TPX3_IBIAS_DISCS2_ON','TPX3_IBIAS_DISCS2_OFF','TPX3_IBIAS_PIXELDAC','TPX3_IBIAS_TPBUFIN',

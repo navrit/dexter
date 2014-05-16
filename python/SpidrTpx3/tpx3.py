@@ -37,6 +37,7 @@ tote10=load_lut(d+"SpidrTpx3/luts/tot_event_count_10b_LUT.txt")
 class tpx3packet:
   mode=0
   pileup_decode=0
+  hw_dec_ena=0
   def pack0(self):
     self.str="unimplemented"
   def pack1(self):
@@ -187,17 +188,16 @@ class tpx3packet:
      self.row=self.sp_address*4
      self.row+= (self.pixel_address&0x3)
      
-     if self.event_counter in tote10:
-       self.event_counter=tote10[self.event_counter]
-     else:
-#       logging.warning("Packet decode: Invalid event_counter value = %0x [%012X]"%(self.event_counter,self.raw))
-       self.event_counter=-1
+     if not self.hw_dec_ena:
+       if self.event_counter in tote10:
+         self.event_counter=tote10[self.event_counter]
+       else:
+         self.event_counter=-1
      
-     if self.itot in itot14:
-       self.itot=itot14[self.itot]
-     else:
-#       logging.warning("Packet decode: Invalid itot value = %0x [%012X]"%(self.itot,self.raw))
-       self.itot=-1
+       if self.itot in itot14:
+         self.itot=itot14[self.itot]
+       else:
+         self.itot=-1
      self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d evn_cnt=%d itot=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address, self.event_counter, self.itot)
 
 
@@ -220,25 +220,28 @@ class tpx3packet:
      self.row=self.sp_address*4
      self.row+= (self.pixel_address&0x3)
      
+     if not self.hw_dec_ena:
 
-     if self.tot in tote10:
-       self.tot=tote10[self.tot]
-     else:
-#       logging.warning("Packet decode: Invalid tot value = %0x [%012X]"%(self.tot,self.raw))
-       self.tot=-1
+       if self.tot in tote10:
+         self.tot=tote10[self.tot]
+       else:
+#         logging.warning("Packet decode: Invalid tot value = %0x [%012X]"%(self.tot,self.raw))
+         self.tot=-1
      
-     if self.toa in toa14:
-       self.toa=toa14[self.toa]
-     else:
+       if self.toa in toa14:
+         self.toa=toa14[self.toa]
+       else:
 #       logging.warning("Packet decode: Invalid toa value = %0x [%012X]"%(self.toa,self.raw))
-       self.toa=-1
+         self.toa=-1
 
-     
      if self.pileup_decode:
-       self.pileup=evn4[self.ftoa]
-       self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d pileup=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address,  self.toa,self.tot,self.pileup)
+         if not self.hw_dec_ena:
+           self.pileup=evn4[self.ftoa]
+         else:
+           self.pileup=self.ftoa
+         self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d pileup=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address,  self.toa,self.tot,self.pileup)
      else:
-       self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d ftoa=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address,  self.toa,self.tot,self.ftoa)
+         self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d ftoa=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address,  self.toa,self.tot,self.ftoa)
   
   def packC(self):
     self.str="unimplemented"
@@ -259,7 +262,7 @@ class tpx3packet:
   def isData(self):
     if self.type in (0xA,0xB):
       return True
-    return False
+    return 
   @cython.locals(raw=cython.long)
   def __init__(self,data):
     self.raw=data>>16
@@ -653,12 +656,19 @@ class TPX3:
     r=self.ctrl.setGenConfig(self.id,l)
     tpx3packet.mode=(l>>1)&0x3
     #if fast local oscilator is disabled we have to devode pileup counter
-    if l & TPX3_FASTLO_ENA :
-      tpx3packet.pileup_decode = False
-    else:
-      tpx3packet.pileup_decode = True
+    if r :
+      if l & TPX3_FASTLO_ENA :
+        tpx3packet.pileup_decode = False
+      else:
+        tpx3packet.pileup_decode = True
     self._log_ctrl_cmd("setGenConfig(%04x) "%(l),r)
-    
+
+  def setDecodersEna(self,enable=True):
+    r=self.ctrl.setDecodersEna(enable)
+    self._log_ctrl_cmd("setDecodersEna(%d) "%(enable),r)
+    if r:
+      tpx3packet.hw_dec_ena=enable
+  
   def setDacsDflt(self):
     r=self.ctrl.setDacsDflt(self.id)
     self._log_ctrl_cmd("setDacsDflt()",r)
@@ -693,7 +703,8 @@ class TPX3:
 #    print r,lo,hi
     self._log_ctrl_cmd("getTimer()=%d"%(v),True)
     return v
-  
+
+
   def getShutterStart(self):
 #    r,lo,hi=self.ctrl.getShutterStart(self.id)
 #    self._log_ctrl_cmd("getShutterStart()=%x %x"%(hi,lo),r)
@@ -839,6 +850,8 @@ class TPX3:
     self.setSenseDac(TPX3_BANDGAP_OUTPUT)
     v_bg=self.tpx.get_adc(32)
     return 88.75-607.3*(v_bg_temp-v_bg)     #Mpix3 extracted
+
+
 
   def setThreshold(self,dac_value=1000):
     """ Xavi's treshold """

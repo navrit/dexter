@@ -51,7 +51,8 @@ class test22_cosmic(tpx3_test):
 
     self.tpx.resetTimer()
     self.tpx.t0Sync()
-
+    self.tpx.setDecodersEna()
+    
     self.tpx.setThreshold(1150)
     #flush any remaing data
     data=self.tpx.get_N_packets(1024*64)
@@ -84,6 +85,7 @@ class test22_cosmic(tpx3_test):
       sys.stdout.write('%c Time: %.3f s Packet counter: %d'%(13,time_elapsed, event_counter))
       if len(data):
         f.write("# %.6f s\n"%time_elapsed)
+        sys.stdout.write("\n#seq\tpix_col\tpix_row\ttoa\ttot\tftoa")
         for pck in data:
           if pck.isData():
             line="%d\t%d\t%d\t%d\t%d\t%d"%(event_counter,pck.col,pck.row,pck.toa,pck.tot,pck.ftoa)
