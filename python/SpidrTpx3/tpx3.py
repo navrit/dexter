@@ -864,9 +864,9 @@ class TPX3:
             
   def getTpix3Temp(self):
     self.setSenseDac(TPX3_BANDGAP_TEMP)
-    v_bg_temp=self.tpx.get_adc(32)
+    v_bg_temp=self.get_adc(64)
     self.setSenseDac(TPX3_BANDGAP_OUTPUT)
-    v_bg=self.tpx.get_adc(32)
+    v_bg=self.get_adc(64)
     return 88.75-607.3*(v_bg_temp-v_bg)     #Mpix3 extracted
 
 
