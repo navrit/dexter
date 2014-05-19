@@ -182,128 +182,50 @@ class test08_equalization_x(tpx3_test):
         for y in range(256):
           res[x][y]=0
 
-      for seq in range(1):
-        logging.info("  seq %0x/4"%seq)
-        self.tpx.resetPixelConfig()
-        self.tpx.setPixelMask(ALL_PIXELS,ALL_PIXELS,1)
-        self.tpx.setPixelThreshold(ALL_PIXELS,ALL_PIXELS,cdac)
-        
-        #for x in range(256):
-        #  for y in range(256):
-        #    if x%2==int(seq/2) and y%2==seq%2:
-        #      self.tpx.setPixelMask(x,y,0)
-        #      self.tpx.setPixelThreshold(x,y,cdac)
+      self.logging.info("DAC=0x%X"%cdac)
 
-        for x in range(256):
-          for y in range(256):
-              self.tpx.setPixelMask(x,y,0)
-              self.tpx.setPixelThreshold(x,y,cdac)
+      self.tpx.resetPixelConfig()
+      self.tpx.setPixelMask(ALL_PIXELS,ALL_PIXELS,0)
+      self.tpx.setPixelThreshold(ALL_PIXELS,ALL_PIXELS,cdac)
 
-	
-	self.tpx.pauseReadout()
-        self.tpx.setPixelConfig()
-        self.tpx.sequentialReadout(tokens=4)
-        self.tpx.flush_udp_fifo(0x71FF000000000000)#flush until load matrix
-    	
-        res=self.threshold_scan_x()
-        
-        
-      if 0: #fitting
-        bad_pixels=[]
-        w2f=True
-        fit_res={}
-        for col in range(256):
-          fit_res[col]={}
-          if w2f:self.mkdir(logdir+"/%03d"%col)
-          if col in res:
-            logging.info("Fitting col %d"%col)
-          else:
-            logging.info("No hits in col %d"%col)
-            continue
-          for row in range(256):
-            if col in res and row in res[col]:
-              if w2f:fn=logdir+"/%03d/%03d_%03d.dat"%(col,col,row)
-              if w2f:f=open(fn,"w")
-              codes=[]
-              vals=[]
-              avr=0.0
-              N=0
-              for code in sorted(res[col][row]):
-                 val=res[col][row][code]
-                 if w2f and val>0:
-                   f.write("%d %d\n"%(code,val))
-                 if val>2:
-                   codes.append(code)
-                   vals.append(val)
-                   avr+=code*val
-                   N+=val
-              if N>2:
-                avr=avr/N
-                try:
-#                  hist, bin_edges = numpy.histogram(codes,bins=int(max(codes)-min(codes)+1),range=(-0.5+min(codes), 0.5+max(codes)), weights=vals)
-#                  bin_centres = (bin_edges[:-1] + bin_edges[1:])/2
-                  # p0 is the initial guess for the fitting coefficients (A, mu and sigma above)
-                  p0 = [max(vals), avr, 8.]
-                  coeff, var_matrix = curve_fit(gauss, codes, vals, p0=p0)
-                except:
-                  coeff=[0.0,0.0,0.0]
-                fit_res[col][row] =coeff
-              else:
-                fit_res[col][row] =[0.0,0.0,0.0]
-                logging.warning("No hits for pixel (%d,%d)"%(col,row))
-                bad_pixels.append( (col,row) )
-              if w2f:
-                f.write("# %.3f %.3f\n"%(fit_res[col][row][1],fit_res[col][row][2]))
-                f.close()
+      self.tpx.pauseReadout()
+      self.tpx.setPixelConfig()
+      self.tpx.sequentialReadout(tokens=4)
+      self.tpx.flush_udp_fifo(0x71FF000000000000)#flush until load matrix
 
-        
-	  
-	     
-        fn=(self.fname+"/dacs%X_bl.dat"%cdac,self.fname+"/dacs%X_rms.dat"%cdac)
-        f=(open(fn[0],"w"),open(fn[1],"w"))
-        for row in range(256):
-          for col in range(256):
-            for i in range(2):
-              if col in fit_res and row in fit_res[col]:
-                f[i].write("%.3f "%abs(fit_res[col][row][1+i]))
-              else:
-                f[i].write("0 ")
-          for i in range(2):
-            f[i].write("\n")
-        f[0].close()
-        f[1].close()
-        logging.info("Bad pixels for DAC=0x%X : %s"%(cdac,str(bad_pixels) ))
-        if w2f:
-          aname=logdir[:-1]+".zip"
-          logging.info("Creating arhive %s"%aname)
-          zipdir(aname,logdir)
-          shutil.rmtree(logdir)
+      res=self.threshold_scan_x()
 
-      if 1: #ThrFinder by threshold only Count>100
-	  thr_level_array=[]
+      #ThrFinder by threshold only Count>100
+      thr_level_array=[]
           
-	  for col in range(256):  
-	    for row in range(256):
- 	        #logging.info("%d %d %d %d"%(col,row,code,res[col][row][code]))
-		if res[col][row] > 0:
-		  thr_level_array.append(res[col][row])
-		  #print "FOUND: %d %d %d %d"%(col,row,res[col][row][code],thr_level[col][row])     
-		  
-	  print "DAC=0x%X MEAN=%.2f STDEV=%.2f %d"%(cdac,numpy.mean(thr_level_array),numpy.std(thr_level_array),len(thr_level_array))
-	  fn=(self.fname+"/dacs%X_bl_thr.dat"%cdac)
-	  f=open(fn,"w")
-	  for col in range(256):
-            for row in range(256):
-              f.write("%d "%(res[row][col]))
-	    f.write("\n")  
-	  f.close()
-	  
-# Equalization
+      for col in range(256):  
+        for row in range(256):
+          #logging.info("%d %d %d %d"%(col,row,code,res[col][row][code]))
+          if res[col][row] > 0:
+            thr_level_array.append(res[col][row])
+            #print "FOUND: %d %d %d %d"%(col,row,res[col][row][code],thr_level[col][row])     
+ 
+#        print "DAC=0x%X MEAN=%.2f STDEV=%.2f %d"%(cdac,numpy.mean(thr_level_array),numpy.std(thr_level_array),len(thr_level_array))
+      self.logging.info("          MEAN   = %.2f"%(numpy.mean(thr_level_array)))
+      self.logging.info("          STDEV  = %.2f"%(numpy.std(thr_level_array)))
+      fn=(self.fname+"/dacs%X_bl_thr.dat"%cdac)
+      f=open(fn,"w")
+      for col in range(256):
+          for row in range(256):
+            f.write("%d "%(res[row][col]))
+          f.write("\n")  
+      f.close()
+
+    # Equalization
     eq_broute_force(self.fname)
-	 
-    eq_codes=numpy.loadtxt(self.fname+"/eq_codes.dat", dtype=int)
-    eq_mask=numpy.loadtxt(self.fname+"/eq_mask.dat", dtype=int)
-	  
+    fn=self.fname+"/eq_codes.dat"
+    self.logging.info("Storing measured codes to %s"%fn)
+    eq_codes=numpy.loadtxt(fn, dtype=int)
+    
+    fn=self.fname+"/eq_mask.dat"
+    self.logging.info("Storing mask to %s"%fn)
+    eq_mask=numpy.loadtxt(fn, dtype=int)
+
     res={}
     for x in range(256):
       res[x]={}
@@ -329,17 +251,20 @@ class test08_equalization_x(tpx3_test):
   
         res=self.threshold_scan_x(res, fromThr=200, toThr=300)
     
-    
-    fn=(self.fname+"/eq_bl_measured.dat")
+    fn=self.fname+"/eq_bl_measured.dat"
+    self.logging.info("Storing measured baseline to %s"%fn)
     f=open(fn,"w")
     thr_level_array=[]
     for col in range(256):
       for row in range(256):
         if res[row][col] > 0 and eq_mask[row][col]==0:
-	  thr_level_array.append(res[row][col])
-	f.write("%d "%(res[row][col]))
-      f.write("\n")  
+          thr_level_array.append(res[row][col])
+        f.write("%d "%(res[row][col]))
+      f.write("\n")
     f.close()
-    print "EQUALIZED!!! MEAN=%.2f STDEV=%.2f MASKED=%d"%(numpy.mean(thr_level_array),numpy.std(thr_level_array),65536-len(thr_level_array))
+    self.logging.info("Equalized")
+    self.logging.info("          MEAN   = %.2f"%(numpy.mean(thr_level_array)))
+    self.logging.info("          STDEV  = %.2f"%(numpy.std(thr_level_array)))
+    self.logging.info("          MASKED = %d"  %(65536-len(thr_level_array)))
 	  
 	  

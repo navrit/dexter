@@ -220,13 +220,7 @@ class tpx3packet:
      self.row=self.sp_address*4
      self.row+= (self.pixel_address&0x3)
      
-     if self.hw_dec_ena:
-       self.toa=self.ext_toa<<14
-     else:
-       self.toa=0
-       
      if not self.hw_dec_ena:
-
        if self.tot in tote10:
          self.tot=tote10[self.tot]
        else:
@@ -238,7 +232,13 @@ class tpx3packet:
        else:
 #       logging.warning("Packet decode: Invalid toa value = %0x [%012X]"%(self.toa,self.raw))
          self.toa=-1
+#     else: # self.hw_dec_ena:
 
+     self.abs_toa= (self.ext_toa<<14) + self.toa - self.ftoa
+     if not self.pileup_decode:
+       self.abs_toa -= self.ftoa
+     self.abs_toa *= 25e-9
+     
      if self.pileup_decode:
          if not self.hw_dec_ena:
            if self.ftoa in evn4:
@@ -277,11 +277,9 @@ class tpx3packet:
     else:
       return False
   @cython.locals(raw=cython.long)
+
   def __init__(self,data):
-    if self.hw_dec_ena:
-      self.ext_toa=data&0xFFFF
-    else:
-      self.ext_toa=None
+    self.ext_toa=data&0xFFFF
 
     self.raw=data>>16
 #    print "%016x"%data

@@ -41,16 +41,14 @@ class test22_cosmic(tpx3_test):
 
     self.tpx.resetPixelConfig()
    
-    self.tpx.load_equalization('calib/eq_codes_finestep9.dat',\
-                      maskname='calib/eq_mask_finestep9.dat')
+    self.tpx.load_equalization('calib/eq_codes.dat',\
+                      maskname='calib/eq_mask.dat')
 
     self.tpx.setPixelMask(95,108,1)
     self.tpx.setPixelConfig()
 
     self.tpx.datadrivenReadout()
 
-    self.tpx.resetTimer()
-    self.tpx.t0Sync()
     self.tpx.setDecodersEna()
     
     self.tpx.setThreshold(1150)
@@ -70,12 +68,15 @@ class test22_cosmic(tpx3_test):
     time_elapsed = 0.0
     finish=False
 
+
+    self.tpx.resetTimer()
+    self.tpx.t0Sync()
     self.tpx.shutterOn()
 
     while not finish:
       time_now = time.time()
       time_elapsed = time_now - time_start
-      if time_elapsed>10:
+      if time_elapsed>60:
         self.tpx.shutterOff()
         time.sleep(0.001)
         data=self.tpx.get_frame()
@@ -85,10 +86,11 @@ class test22_cosmic(tpx3_test):
       sys.stdout.write('%c Time: %.3f s Packet counter: %d'%(13,time_elapsed, event_counter))
       if len(data):
         f.write("# %.6f s\n"%time_elapsed)
-        sys.stdout.write("\n#seq\tpix_col\tpix_row\ttoa\ttot\tftoa")
+        sys.stdout.write("\n#seq\tpix_col\tpix_row\ttot\text_toa\ttoa\tftoa\tabs_toa [s]")
         for pck in data:
           if pck.isData():
-            line="%d\t%d\t%d\t%d\t%d\t%d"%(event_counter,pck.col,pck.row,pck.toa,pck.tot,pck.ftoa)
+
+            line="%d\t%d\t%d\t%d\t%d\t%d\t%d\t%15.10f"%(event_counter,pck.col,pck.row,pck.tot,pck.ext_toa,pck.toa,pck.ftoa,pck.abs_toa)
             sys.stdout.write("\n %s"%line)
             event_counter+=1
             tot[pck.col][pck.row]=pck.tot
