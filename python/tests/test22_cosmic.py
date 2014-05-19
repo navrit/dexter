@@ -49,7 +49,7 @@ class test22_cosmic(tpx3_test):
 
     self.tpx.datadrivenReadout()
 
-    self.tpx.setDecodersEna()
+
     
     self.tpx.setThreshold(1150)
     #flush any remaing data

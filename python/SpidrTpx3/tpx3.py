@@ -34,6 +34,7 @@ toa14=load_lut(d+"SpidrTpx3/luts/toa_gray_count_14b_LUT.txt")
 tote10=load_lut(d+"SpidrTpx3/luts/tot_event_count_10b_LUT.txt")
 
 
+
 class tpx3packet:
   mode=0
   pileup_decode=0
@@ -198,7 +199,7 @@ class tpx3packet:
          self.itot=itot14[self.itot]
        else:
          self.itot=-1
-     self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d evn_cnt=%d itot=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address, self.event_counter, self.itot)
+     self.str+="(%3d,%3d)  evn_cnt=%d itot=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address, self.event_counter, self.itot)
 
 
   def mode0(self):
@@ -250,6 +251,7 @@ class tpx3packet:
          self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d pileup=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address,  self.toa,self.tot,self.pileup)
      else:
          self.str+="(%3d,%3d) dc=%3d sp=%3d pix=%3d toa=%d tot=%d ftoa=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address,  self.toa,self.tot,self.ftoa)
+
   
   def packC(self):
     self.str="unimplemented"
@@ -304,6 +306,90 @@ class tpx3packet:
   pack_interpreter=[pack0,pack1,pack2,pack3,pack4,pack5,pack6,pack7,
                     pack8,pack9,packA,packB,packC,packD,packE,packF]
 
+
+#pixel lookup address
+address_loopup_list=[]
+for raw in range(256*256):
+   pixel_address=raw&0x7
+   raw>>=3
+   sp_address  = raw&0x3F
+   raw>>=6
+   col_address = raw&0x7F
+   col=col_address*2
+   if pixel_address&0x4 : col+=1
+   row=sp_address*4
+   row+= (pixel_address&0x3)
+   address_loopup_list.append( (col,row) )
+     
+
+
+#higher performance (no string generation online)
+class tpx3packet_hp:
+  mode=0
+  pileup_decode=0
+  hw_dec_ena=0
+
+  def isData(self):
+    if self.type in (0xA,0xB):
+      return True
+    return 
+  def isEoR(self):
+    if self.raw&0xFFFF00000000 in (0x71b000000000,0x71b000000000):
+      return True 
+    else:
+      return False
+
+  @cython.locals(raw=cython.long)
+
+  def __init__(self,data):
+    self.ext_toa=data&0xFFFF
+    self.raw=data>>16
+    self.type=(self.raw>>44)&0xf
+    self.str='-'
+    if self.isData():
+      if tpx3packet_hp.mode==0:
+        raw=self.raw
+        self.ftoa=raw&0xf
+        raw>>=4
+        self.tot=raw&0x3FF
+        raw>>=10
+        self.toa=raw&0x3FFF
+        raw>>=14
+        self.pixel_address=raw&0xFFFF
+        self.col,self.row=address_loopup_list[self.pixel_address]
+     
+        self.abs_toa= (self.ext_toa<<14) + self.toa - self.ftoa
+        if not self.pileup_decode:
+          self.abs_toa -= self.ftoa
+        self.abs_toa *= 25e-9
+     
+        if self.pileup_decode:
+           self.pileup=self.ftoa
+
+      elif tpx3packet_hp.mode==2:
+        #event count and iTOT
+        raw=self.raw>>4
+        self.event_counter=raw&0x3FF
+        raw>>=10
+        self.itot=raw&0x3FFF
+        raw>>=14
+        self.pixel_address=raw&0xFFFF
+        self.col,self.row=address_loopup_list[self.pixel_address]
+
+      else:
+        pass
+
+  def __repr__(self):
+    self.str="-"
+    if self.isData():
+      if tpx3packet_hp.mode==0:
+        if self.pileup_decode:
+            self.str+="(%3d,%3d) toa=%d tot=%d pileup=%d"%(self.col,self.row, self.toa,self.tot,self.pileup)
+        else:
+            self.str+="(%3d,%3d) toa=%d tot=%d ftoa=%d"%(self.col,self.row, self.toa,self.tot,self.ftoa)
+      elif tpx3packet_hp.mode==2:
+        self.str+="(%3d,%3d)  evn_cnt=%d itot=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address, self.event_counter, self.itot)
+    return "[%012X] %s"%(self.raw, self.str)
 
 class TPX3:
   def __init__(self,ip):
@@ -670,13 +756,14 @@ class TPX3:
  
   def setGenConfig(self,l):
     r=self.ctrl.setGenConfig(self.id,l)
-    tpx3packet.mode=(l>>1)&0x3
+    tpx3packet_hp.mode=(l>>1)&0x3
     #if fast local oscilator is disabled we have to devode pileup counter
     if r :
       if l & TPX3_FASTLO_ENA :
-        tpx3packet.pileup_decode = False
+        tpx3packet_hp.pileup_decode = False
       else:
-        tpx3packet.pileup_decode = True
+        tpx3packet_hp.pileup_decode = True
+    self.setDecodersEna()        
     self._log_ctrl_cmd("setGenConfig(%04x) "%(l),r)
 
   def setDecodersEna(self,enable=True):
@@ -810,7 +897,7 @@ class TPX3:
           vomit=1
           
       for pck_num in r:
-        p=tpx3packet(pck_num)
+        p=tpx3packet_hp(pck_num)
         ret.append(p)
         if self.log_packets : logging.info(p)
       last=r[-1]
@@ -826,7 +913,7 @@ class TPX3:
      r=list(self.udp.getN(N,debug=0))
      ret=[]
      for pck_num in r:
-       p=tpx3packet(pck_num)
+       p=tpx3packet_hp(pck_num)
        ret.append(p)
      return ret
 
