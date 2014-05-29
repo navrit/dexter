@@ -1,15 +1,15 @@
 #
-# Project file for the spidripchange testprogram
+# Project file for the spidripconfig testprogram
 #
 # To generate a Visual Studio project:
-#   qmake -t vcapp spidripchange.pro
+#   qmake -t vcapp spidripconfig.pro
 # To generate a Makefile:
-#   qmake spidripchange.pro
+#   qmake spidripconfig.pro
 #
 # (or start from the 'SUBDIRS' .pro file to recursively generate the projects)
 #
 TEMPLATE = app
-TARGET   = spidripchange
+TARGET   = spidripconfig
 
 # Create a console app
 QT -= gui
@@ -36,4 +36,4 @@ LIBS += -lSpidrTpx3Lib
 
 INCLUDEPATH += ../SpidrTpx3Lib
 
-SOURCES += spidripchange.cpp
+SOURCES += spidripconfig.cpp

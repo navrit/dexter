@@ -23,5 +23,5 @@ SUBDIRS += SpidrDacs/SpidrDacs.pro
 SUBDIRS += SpidrTpx3Mon/SpidrMon.pro
 SUBDIRS += SpidrTpx3TV/SpidrTTV.pro
 SUBDIRS += spidrtpx3libtest/spidrtpx3libtest.pro
-SUBDIRS += spidripchange/spidripchange.pro
+SUBDIRS += spidripconfig/spidripconfig.pro
 SUBDIRS += DummyGen/DummyGen.pro

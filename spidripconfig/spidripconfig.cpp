@@ -1,18 +1,18 @@
 /* ----------------------------------------------------------------------------
-File   : spidripchange.cpp
+File   : spidripconfig.cpp
 
 Descr  : Commandline tool to configure IP on a SPIDR module.
 
 Usage  :
-spidripchange <ipaddr> defaults
+spidripconfig <ipaddr> defaults
    Go back to default settings (erase stored IP addresses and ports).
      <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10
 
-spidripchange <ipaddr> show [<portnr_cmd>]
+spidripconfig <ipaddr> show [<portnr_cmd>]
    Display devices' IP addresses and ports for the SPIDR module
    with the given address/port.
 
-spidripchange <ipaddr> <ipaddr_new> [<portnr_cmd>] [<portnr_new>]
+spidripconfig <ipaddr> <ipaddr_new> [<portnr_cmd>] [<portnr_new>]
    Set new IP source address for SPIDR *and* its devices
    and optionally a new command & control port number.
      <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10
@@ -20,12 +20,12 @@ spidripchange <ipaddr> <ipaddr_new> [<portnr_cmd>] [<portnr_new>]
      <portnr_cmd>: current IP port for SPIDR command & control, default 50000
      <portnr_new>: new IP port for SPIDR command & control
 
-spidripchange <ipaddr> dest [<ipaddr_dst>]
+spidripconfig <ipaddr> dest [<ipaddr_dst>]
    Display or set SPIDR devices' destination IP address(es).
      <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10
      <ipaddr_dst>: new devices' IP destination, e.g. 192.168.101.1
 
-spidripchange <ipaddr> port [<portnr_dst>]
+spidripconfig <ipaddr> port [<portnr_dst>]
    Display or set SPIDR devices' server IP port number(s).
      <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10
      <portnr_dst>: new devices' IP destination port (incrementing), e.g. 8192
@@ -148,7 +148,7 @@ int main( int argc, char *argv[] )
       //  with a different IP address / subnet mask).
       // Note that this action also changes the SPIDR's devices'
       // IP destination (server) addresses to the same value;
-      // use "spidripchange <ipaddr> dest [<ipaddr_dst>]" to change them
+      // use "spidripconfig <ipaddr> dest [<ipaddr_dst>]" to change them
       // to another value if necessary.
       addr_curr = get_addr( argv[1] );
       addr_new  = get_addr( argv[2] );
@@ -453,20 +453,20 @@ quint32 get_addr( const char *str )
 void usage()
 {
   cout << endl << "Usage:" << endl
-       << "spidripchange <ipaddr> defaults"
+       << "spidripconfig <ipaddr> defaults"
        << endl
        << "   Go back to default settings "
        << "(erase stored IP addresses and ports)."
        << endl
        << "     <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10"
        << endl << endl
-       << "spidripchange <ipaddr> show [<portnr_cmd>]"
+       << "spidripconfig <ipaddr> show [<portnr_cmd>]"
        << endl
        << "   Display devices' IP addresses and ports for the SPIDR module "
        << endl
        << "   with the given address/port."
        << endl << endl
-       << "spidripchange <ipaddr> <ipaddr_new> [<portnr_cmd>] [portnr_new]"
+       << "spidripconfig <ipaddr> <ipaddr_new> [<portnr_cmd>] [portnr_new]"
        << endl
        << "   Set new IP source address for SPIDR *and* its devices"
        << endl
@@ -481,7 +481,7 @@ void usage()
        << endl
        << "     <portnr_new>: new IP port for SPIDR command & control"
        << endl << endl
-       << "spidripchange <ipaddr> dest [<ipaddr_dst>]"
+       << "spidripconfig <ipaddr> dest [<ipaddr_dst>]"
        << endl
        << "   Display or set SPIDR devices' destination IP address(es)."
        << endl
@@ -489,7 +489,7 @@ void usage()
        << endl
        << "     <ipaddr_dst>: new devices IP destination, e.g. 192.168.101.1"
        << endl << endl
-       << "spidripchange <ipaddr> port [<portnr_dst>]"
+       << "spidripconfig <ipaddr> port [<portnr_dst>]"
        << endl
        << "   Display or set SPIDR devices' server IP port number(s)."
        << endl
