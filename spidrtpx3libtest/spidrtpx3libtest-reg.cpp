@@ -45,10 +45,30 @@ int main( int argc, char *argv[] )
   else
     cout << "GenConfig=" << hex << config << endl;
 
+  // --------------------
+
+  int stat;
+  spidrctrl.reset( &stat );
+  cout << "reset: stat=" << stat << endl;
+
   if( !spidrctrl.getOutBlockConfig( device_nr, &config ) )
     cout << "###getOutBlockConfig: " << spidrctrl.errorString() << endl;
   else
     cout << "OutConfig=" << hex << config << endl;
+
+  config &= ~0xFE;
+  //if( !spidrctrl.setOutBlockConfig( device_nr, config ) )
+  if( !spidrctrl.setOutputMask( device_nr, config ) )
+    cout << "###setOutBlockConfig: " << spidrctrl.errorString() << endl;
+  else
+    cout << "OutConfig=" << hex << config << endl;
+
+  if( !spidrctrl.getOutBlockConfig( device_nr, &config ) )
+    cout << "###getOutBlockConfig: " << spidrctrl.errorString() << endl;
+  else
+    cout << "OutConfig=" << hex << config << endl;
+
+  // --------------------
 
   if( !spidrctrl.getPllConfig( device_nr, &config ) )
     cout << "###getPllConfig: " << spidrctrl.errorString() << endl;
