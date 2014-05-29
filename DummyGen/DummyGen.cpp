@@ -6,9 +6,12 @@
 #include "SpidrController.h"
 #include "tpx3defs.h"
 
-QString VERSION( "v1.0.0  21-Mar-2014" );
+// Added UDP packet counter monitoring/reset
+QString VERSION( "v1.1.0  29-May-2014" );
+//QString VERSION( "v1.0.0  21-Mar-2014" );
 
 const int SPIDR_TPX_FE_CONFIG_I      = 0x0210;
+const int SPIDR_UDP_PKTCOUNTER_I     = 0x0384;
 const int SPIDR_DUMMYGEN_ENA         = 0x00000002;
 const int SPIDR_DUMMYGEN_DELAY_MASK  = 0x000003FC;
 const int SPIDR_DUMMYGEN_FRAMES_MASK = 0x0003FC00;
@@ -31,6 +34,8 @@ DummyGen::DummyGen()
 	   this, SLOT( connectOrDisconnect() ) );
   connect( _pushButtonStartOrStop, SIGNAL( clicked() ),
 	   this, SLOT( startOrStop() ) );
+  connect( _pushButtonResetPacketCounter, SIGNAL( clicked() ),
+	   this, SLOT( resetPacketCounter() ) );
 
   _ipAddrValidator = new QIntValidator( 1, 255, this );
   _lineEditAddr3->setValidator( _ipAddrValidator );
@@ -77,8 +82,10 @@ void DummyGen::connectOrDisconnect()
       for( int hdr=0; hdr<0x10; ++hdr )
 	_comboBoxHeader->removeItem( 0xF - hdr );
       _lineEditFeBlockControl->setText( "" );
+      _lineEditPacketCounter->setText( "" );
 
       _pushButtonStartOrStop->setEnabled( false );
+      _pushButtonResetPacketCounter->setEnabled( false );
     }
   else
     {
@@ -108,6 +115,7 @@ void DummyGen::connectOrDisconnect()
 	{
 	  _pushButtonConnectOrDisconnect->setText( "Disconnect" );
 	  _pushButtonStartOrStop->setEnabled( true );
+	  _pushButtonResetPacketCounter->setEnabled( true );
 	  _spinBoxDelay->setSpecialValueText( "" );
 	  _spinBoxFrames->setSpecialValueText( "" );
 	  // Populate the Header combobox
@@ -205,6 +213,15 @@ void DummyGen::startOrStop()
 
 // ----------------------------------------------------------------------------
 
+void DummyGen::resetPacketCounter()
+{
+  if( _spidrController == 0 ) return;
+
+  _spidrController->setSpidrReg( SPIDR_UDP_PKTCOUNTER_I, 0 );
+}
+
+// ----------------------------------------------------------------------------
+
 void DummyGen::timerEvent(QTimerEvent *)
 {
   if( _spidrController == 0 ) return;
@@ -238,6 +255,15 @@ void DummyGen::timerEvent(QTimerEvent *)
       _lineEditFeBlockControl->setText( "--------" );
     }
 
+  if( _spidrController->getSpidrReg( SPIDR_UDP_PKTCOUNTER_I, &regval ) )
+    {
+      QString qs = QString("%1").arg( regval );
+      _lineEditPacketCounter->setText( qs );
+    }
+  else
+    {
+      _lineEditPacketCounter->setText( "--------" );
+    }
 }
 
 // ----------------------------------------------------------------------------
