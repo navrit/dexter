@@ -9,6 +9,7 @@
 #include <QDir>
 
 #define RETURN_AVAILABLE_SAMPLE
+#define USE_BIGENDIAN
 
 #include "DatasamplerThread.h"
 #include "ReceiverThread.h"
@@ -692,7 +693,7 @@ bool DatasamplerThread::startRecording( std::string filename,
     {
       last_i        = fname.lastIndexOf( QChar('/') );
       _fileDirName  = fname.left( last_i );
-      _fileBaseName = fname.right( fname.size() - last_i - 1 );
+      _fileBaseName = fname.right( fname.size() - last_i-1 );
     }
   else
     {
@@ -701,9 +702,9 @@ bool DatasamplerThread::startRecording( std::string filename,
     }
   if( _fileBaseName.contains( QChar('.') ) ) // Extension present?
     {
-      last_i        = fname.lastIndexOf( QChar('.') );
-      _fileExt      = fname.right( fname.size() - last_i - 1 );
-      _fileBaseName = fname.left( last_i );
+      last_i        = _fileBaseName.lastIndexOf( QChar('.') );
+      _fileExt      = _fileBaseName.right( _fileBaseName.size() - last_i-1 );
+      _fileBaseName = _fileBaseName.left( last_i );
     }
   else
     {
@@ -881,7 +882,7 @@ QString DatasamplerThread::makeFileName()
 std::string DatasamplerThread::errorString()
 {
   if( _errString.isEmpty() ) return std::string( "" );
-  QString qs = "Datasampler: " + _errString;
+  QString qs = "Datawriter/sampler: " + _errString;
   return qs.toStdString();
 }
 

@@ -51,6 +51,7 @@ class DatasamplerThread : public QThread
   char *sampleData   ()              { return _sampleBuffer; }
   bool  nextPixel    ( int *x, int *y, int *data = 0, int *timestamp = 0 );
   u64   nextPixel    ();
+  void  setBigEndian ( bool enable ) { _bigEndian = enable; }
 
   // File operations
   bool startRecording( std::string filename, int runnr );
