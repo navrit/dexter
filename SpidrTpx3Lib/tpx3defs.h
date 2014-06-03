@@ -33,6 +33,9 @@ History:
 #define TPX3_HDR_EXTDACSEL          (TPX3_HDR_ANALOGPERIPHERY | 0x1)
 #define TPX3_HDR_SETDAC             (TPX3_HDR_ANALOGPERIPHERY | 0x2)
 #define TPX3_HDR_READDAC            (TPX3_HDR_ANALOGPERIPHERY | 0x3)
+#ifdef CERN_PROBESTATION
+#define TPX3_HDR_EFUSEBURN          (TPX3_HDR_ANALOGPERIPHERY | 0x8)
+#endif
 #define TPX3_HDR_EFUSEREAD          (TPX3_HDR_ANALOGPERIPHERY | 0x9)
 #define TPX3_HDR_TP_PERIOD_PHASE    (TPX3_HDR_ANALOGPERIPHERY | 0xC)
 #define TPX3_HDR_TP_PULSENUMBER     (TPX3_HDR_ANALOGPERIPHERY | 0xD)
@@ -139,6 +142,7 @@ History:
 #define TPX3_ACQMODE_TOA_TOT       0x000
 #define TPX3_ACQMODE_TOA           0x002
 #define TPX3_ACQMODE_EVT_ITOT      0x004
+#define TPX3_ACQMODE_MASK          0x006
 #define TPX3_GRAYCOUNT_ENA         0x008
 #define TPX3_ACKCOMMAND_ENA        0x010
 #define TPX3_TESTPULSE_ENA         0x020
@@ -150,6 +154,7 @@ History:
 
 // Timepix3 Output Block Configuration register
 #define TPX3_OUTPORT_MASK          0x00FF
+#define TPX3_CLK_SRC_MASK          0x0700
 #define TPX3_CLK_SRC_160_320       0x0100
 #define TPX3_CLK_SRC_80_160        0x0200
 #define TPX3_CLK_SRC_40_80         0x0300
