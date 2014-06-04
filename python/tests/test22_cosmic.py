@@ -32,7 +32,7 @@ class test22_cosmic(tpx3_test):
                          | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_1 \
                          | 0x14<<TPX3_PLLOUT_CONFIG_SHIFT )
 
-    self.tpx.setOutputMask(0x84)
+    self.tpx.setOutputMask(0xFF)
 
     self.tpx.setGenConfig( TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA | TPX3_FASTLO_ENA)
 

@@ -140,7 +140,10 @@ mod.add_enum('DAC_code', ['TPX3_IBIAS_PREAMP_ON','TPX3_IBIAS_PREAMP_OFF','TPX3_V
                           'TPX3_IBIAS_TPBUFOUT','TPX3_VTP_COARSE','TPX3_VTP_FINE','TPX3_IBIAS_CP_PLL'])
 mod.add_enum('Defines', ['ALL_PIXELS'])
 
-mod.add_enum('tpx3_defs',load_defines('../SpidrTpx3Lib/tpx3defs.h'))
+defs=[]
+if CERN_PROBESTATION:
+  defs.append("CERN_PROBESTATION")
+mod.add_enum('tpx3_defs',load_defines('../SpidrTpx3Lib/tpx3defs.h',defs=defs))
 #define TPX3_PLL_BYPASSED          0x0001
 #define TPX3_PLL_RUN               0x0002
 #define TPX3_VCNTRL_PLL            0x0004

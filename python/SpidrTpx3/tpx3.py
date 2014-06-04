@@ -388,7 +388,7 @@ class tpx3packet_hp:
         else:
             self.str+="(%3d,%3d) toa=%d tot=%d ftoa=%d"%(self.col,self.row, self.toa,self.tot,self.ftoa)
       elif tpx3packet_hp.mode==2:
-        self.str+="(%3d,%3d)  evn_cnt=%d itot=%d"%(self.col,self.row, self.col_address,self.sp_address,self.pixel_address, self.event_counter, self.itot)
+        self.str+="(%3d,%3d)  evn_cnt=%d itot=%d"%(self.col,self.row, self.event_counter, self.itot)
     return "[%012X] %s"%(self.raw, self.str)
 
 class TPX3:
