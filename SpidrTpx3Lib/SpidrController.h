@@ -36,28 +36,28 @@ class MY_LIB_API SpidrController
   std::string versionToString( int  version ); // Utility function
 
   // General module configuration
-  bool        isConnected          ();
-  std::string connectionStateString();
-  std::string connectionErrString  ();
-  std::string ipAddressString      ();
-  std::string errorString          ();
-  void        clearErrorString     ();
-  int         errorId              ();
+  bool        isConnected          ( );
+  std::string connectionStateString( );
+  std::string connectionErrString  ( );
+  std::string ipAddressString      ( );
+  std::string errorString          ( );
+  void        clearErrorString     ( );
+  int         errorId              ( );
   bool        reset                ( int *errorstat );
-  bool        setBusy              ();
-  bool        clearBusy            ();
-  void        setBusyRequest       (); // For internal use
-  void        clearBusyRequest     (); // For internal use
+  bool        setBusy              ( );
+  bool        clearBusy            ( );
+  void        setBusyRequest       ( ); // For internal use
+  void        clearBusyRequest     ( ); // For internal use
   bool        setLogLevel          ( int level );
-  bool        displayInfo          (); // In the currently open telnet window
-                                       // or (USB/UART) console
+  bool        displayInfo          ( ); // In the currently open telnet window
+                                        // or (USB/UART) console
   bool        getPortCount         ( int *ports );
   bool        getDeviceCount       ( int *devices );
   bool        getSpidrId           ( int *id );
   bool        setSpidrId           ( int  id );
 
   // ###TODO:
-  bool        setTimeOfDay         (); // Set the SPIDR processor clock time
+  bool        setTimeOfDay         ( ); // Set the SPIDR processor clock time
 
   // Configuration: module/device interface
   bool        getIpAddrSrc     ( int  index,  int *ipaddr );
@@ -117,7 +117,7 @@ class MY_LIB_API SpidrController
   bool        getCtpr          ( int  dev_nr, unsigned char **ctpr );
 
   // Configuration: device pixels
-  void resetPixelConfig        ();
+  void resetPixelConfig        ( );
   bool setPixelThreshold       ( int  x,
                                  int  y,
                                  int  threshold );
@@ -128,12 +128,12 @@ class MY_LIB_API SpidrController
   bool setPixelConfig          ( int  dev_nr, int cols_per_packet = 2 );
   bool getPixelConfig          ( int  dev_nr );
   bool resetPixels             ( int  dev_nr );
-  unsigned char *pixelConfig   ();
+  unsigned char *pixelConfig   ( );
 
   // Configuration: non-volatile onboard storage
   bool storeAddrAndPorts       ( int  ipaddr = 0,
                                  int  ipport = 0 );
-  bool eraseAddrAndPorts       ();
+  bool eraseAddrAndPorts       ( );
   bool validAddrAndPorts       ( bool *valid );
   bool storeDacs               ( int  dev_nr );
   bool eraseDacs               ( int  dev_nr );
@@ -154,21 +154,21 @@ class MY_LIB_API SpidrController
                                  int *trigger_length_us,
                                  int *trigger_freq_hz,
                                  int *trigger_count );
-  bool startAutoTrigger        ();
-  bool stopAutoTrigger         ();
-  bool openShutter             ();
-  bool closeShutter            ();
+  bool startAutoTrigger        ( );
+  bool stopAutoTrigger         ( );
+  bool openShutter             ( );
+  bool closeShutter            ( );
   bool getShutterCounter       ( int *cntr );
   bool getTriggerCounter       ( int *cntr );
-  bool resetCounters           ();
+  bool resetCounters           ( );
 
   // Data-acquisition
   bool sequentialReadout       ( int tokens = 128 );
-  bool datadrivenReadout       ();
-  bool pauseReadout            ();
+  bool datadrivenReadout       ( );
+  bool pauseReadout            ( );
 
   // Timers
-  bool restartTimers           ();
+  bool restartTimers           ( );
   bool resetTimer              ( int dev_nr );
   bool getTimer                ( int dev_nr,
 				 unsigned int *timer_lo,
@@ -199,6 +199,9 @@ class MY_LIB_API SpidrController
   bool getFanSpeed             ( int *rpm );
   bool getFanSpeedVC707        ( int *rpm );
   bool selectChipBoard         ( int  board_nr );
+  bool getDataPacketCounter    ( int *cntr );
+  bool getMonPacketCounter     ( int *cntr );
+  bool resetPacketCounters     ( );
 
   // Other
   bool getGpio                 ( int *gpio_in );

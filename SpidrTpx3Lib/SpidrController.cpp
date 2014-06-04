@@ -1281,6 +1281,30 @@ bool SpidrController::selectChipBoard( int board_nr )
 }
 
 // ----------------------------------------------------------------------------
+
+bool SpidrController::getDataPacketCounter( int *cntr )
+{
+  return this->getSpidrReg( 0x0384, cntr );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getMonPacketCounter( int *cntr )
+{
+  return this->getSpidrReg( 0x0388, cntr );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::resetPacketCounters( )
+{
+  bool result = true;
+  if( !this->setSpidrReg( 0x0384, 0 ) ) result = false;
+  if( !this->setSpidrReg( 0x0388, 0 ) ) result = false;
+  return result;
+}
+
+// ----------------------------------------------------------------------------
 // Other
 // ----------------------------------------------------------------------------
 
