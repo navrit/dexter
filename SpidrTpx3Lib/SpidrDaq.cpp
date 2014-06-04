@@ -7,7 +7,7 @@
 #include "dacsdescr.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14050100;
+const int VERSION_ID = 0x14060400;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor / info
@@ -33,6 +33,7 @@ SpidrDaq::SpidrDaq( int ipaddr3,
 	       ((ipaddr[2] & 0xFF) << 16) | ((ipaddr[3] & 0xFF) << 24));
   _ipPort   = port;
 
+  // Allocate default buffer size
   _packetReceiver = new ReceiverThread( ipaddr, port );
 
   // Create the sampler/file-writer thread, providing it with a link to
@@ -42,7 +43,9 @@ SpidrDaq::SpidrDaq( int ipaddr3,
 
 // ----------------------------------------------------------------------------
 
-SpidrDaq::SpidrDaq( SpidrController *spidrctrl, int device_nr )
+SpidrDaq::SpidrDaq( SpidrController *spidrctrl,
+		    long long        bufsize,
+		    int              device_nr )
   : _packetReceiver( 0 ),
     _fileWriter( 0 ),
     _spidrCtrl( 0 ),
@@ -78,13 +81,13 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl, int device_nr )
   _ipPort   = port;
   _deviceNr = device_nr;
 
-  _packetReceiver = new ReceiverThread( ipaddr, port );
+  _packetReceiver = new ReceiverThread( ipaddr, port, bufsize );
 
   // Create the sampler/file-writer thread, providing it with a link to
-  // the packet reader thread
+  // the packet receiver thread
   _fileWriter = new DatasamplerThread( _packetReceiver );
 
-  // Provide the receiver with the possibility to control the module,
+  // Provide the receiver thread with the possibility to control the module,
   // i.e. to set and clear a busy/inhibit/throttle signal
   if( spidrctrl )
     {
@@ -183,6 +186,7 @@ bool SpidrDaq::startRecording( std::string filename,
   fhdr->ipAddress  = _ipAddr;
   fhdr->ipPort     = _ipPort;
   fhdr->libVersion = this->classVersion();
+  int eth_filter, cpu_filter;
   if( _spidrCtrl )
     {
       int val;
@@ -210,8 +214,7 @@ bool SpidrDaq::startRecording( std::string filename,
 	fhdr->spidrConfig |= (val & 0xF) << 16;
 
       // Header filter (16 bits value)
-      int cpu_filter;
-      if( _spidrCtrl->getHeaderFilter( _deviceNr, &val, &cpu_filter ) )
+      if( _spidrCtrl->getHeaderFilter( _deviceNr, &eth_filter, &cpu_filter ) )
 	fhdr->spidrFilter = val;
       else
 	fhdr->spidrFilter = INVALID_VAL;
@@ -226,6 +229,12 @@ bool SpidrDaq::startRecording( std::string filename,
   // Fill in the rest of the device header
   if( _spidrCtrl )
     {
+      // If set, temporarily disable Timepix3
+      // periphery reply packets in UDP stream
+      if( eth_filter & 0x0080 )
+	_spidrCtrl->setHeaderFilter( _deviceNr,
+				     eth_filter & ~0x0080, cpu_filter );
+
       int val;
       Tpx3Header_t *thdr = &fhdr->devHeader;
       if( _spidrCtrl->getDeviceId( _deviceNr, &val ) )
@@ -287,6 +296,11 @@ bool SpidrDaq::startRecording( std::string filename,
 	memcpy( thdr->ctpr, pctpr, sizeof(thdr->ctpr) );
       else
 	memset( static_cast<void *>(&thdr->ctpr), 0xAA, sizeof(thdr->ctpr) );
+
+      // If set, reenable Timepix3 periphery reply packets in UDP stream
+      // (was disabled further up)
+      if( eth_filter & 0x0080 )
+	_spidrCtrl->setHeaderFilter( _deviceNr, eth_filter, cpu_filter );
     }
 
   return _fileWriter->startRecording( filename, runnr );
@@ -297,6 +311,13 @@ bool SpidrDaq::startRecording( std::string filename,
 bool SpidrDaq::stopRecording()
 {
   return _fileWriter->stopRecording();
+}
+
+// ----------------------------------------------------------------------------
+
+std::string SpidrDaq::fileName()
+{
+  return _fileWriter->fileName();
 }
 
 // ----------------------------------------------------------------------------
@@ -346,13 +367,6 @@ long long SpidrDaq::bufferSize()
 bool SpidrDaq::setBufferSize( long long size )
 {
   return _packetReceiver->setBufferSize( size );
-}
-
-// ----------------------------------------------------------------------------
-
-long long SpidrDaq::maxBufferSize()
-{
-  return _packetReceiver->maxBufferSize();
 }
 
 // ----------------------------------------------------------------------------
@@ -454,6 +468,13 @@ bool SpidrDaq::nextPixel( int *x, int *y, int *data, int *timestamp )
 unsigned long long SpidrDaq::nextPixel()
 {
   return _fileWriter->nextPixel();
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDaq::setBigEndian( bool b )
+{
+  _fileWriter->setBigEndian( b );
 }
 
 // ----------------------------------------------------------------------------

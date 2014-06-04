@@ -1,3 +1,5 @@
+#include <new>
+#include <exception>
 #include <QUdpSocket>
 
 #include "ReceiverThread.h"
@@ -5,9 +7,10 @@
 
 // ----------------------------------------------------------------------------
 
-ReceiverThread::ReceiverThread( int *ipaddr,
-				int  port,
-				QObject *parent )
+ReceiverThread::ReceiverThread( int      *ipaddr,
+				int       port,
+				long long bufsize,
+				QObject  *parent )
   : QThread( parent ),
     _sock( 0 ),
     _port( port ),
@@ -22,14 +25,15 @@ ReceiverThread::ReceiverThread( int *ipaddr,
     _bytesLost( 0 ),
     _lastPacketSize( 0 ),
     _bufferWraps( 0 ),
-    _bufferSize( RECV_BUF_SIZE ),
-    _freeSpace( RECV_BUF_SIZE ),
-    _freeSpaceMin( RECV_BUF_SIZE/256 ),
+    _bufferSize( 0 ),
+    _freeSpace( 0 ),
+    _freeSpaceMin( 0 ),
     _head( 0 ),
     _tail( 0 ),
     _headEnd( 0 ),
     _full( false ),
-    _fullOccurred( false )
+    _fullOccurred( false ),
+    _recvBuffer( 0 )
 {
   _addr = (((ipaddr[3] & 0xFF) << 24) | ((ipaddr[2] & 0xFF) << 16) |
 	   ((ipaddr[1] & 0xFF) << 8) | ((ipaddr[0] & 0xFF) << 0));
@@ -38,8 +42,30 @@ ReceiverThread::ReceiverThread( int *ipaddr,
 	      QString::number( ipaddr[1] ) + '.' +
 	      QString::number( ipaddr[0] ));
 
-  // Initialize the buffer
-  memset( static_cast<void *> (_recvBuffer), 0xFF, sizeof(_recvBuffer) );
+  if( bufsize > 0 )
+    {
+      try {
+	// Allocate a buffer of the requested size
+	_recvBuffer = new char[bufsize];
+      }
+      catch( std::exception& e ) {
+	_errString = e.what();
+      }
+      if( _recvBuffer )
+	{
+	  // Initialize the buffer
+	  memset( static_cast<void *> (_recvBuffer), 0xFF, bufsize );
+	  _bufferSize   = bufsize;
+	  _freeSpace    = bufsize;
+	  _freeSpaceMin = bufsize/256;
+	  if( _freeSpaceMin < 16384 ) _freeSpaceMin = 16384;
+	}
+      else
+	{
+	  _errString += QString("; Failed to allocate requested buffer size");
+	  _stop = true;
+	}
+    }
 
   // Create and connect the socket
   _sock = new QUdpSocket();
@@ -50,8 +76,11 @@ ReceiverThread::ReceiverThread( int *ipaddr,
       _stop = true;
     }
 
-  // Start the thread (see run())
-  this->start( QThread::TimeCriticalPriority );
+  // Don't start the thread until a buffer has been allocated
+  // (see setBufferSize)
+  if( _recvBuffer )
+    // Start the thread (see run())
+    this->start( QThread::TimeCriticalPriority );
 }
 
 // ----------------------------------------------------------------------------
@@ -102,7 +131,9 @@ void ReceiverThread::readDatagrams()
     {
       // After 'full buffer' occurred all subsequent data is flushed
       // until this state is explicitly reset (by resetFullBufferOccured())
-      if( _fullOccurred || _suspended )
+      // 4 June 2014: change this to flush only while 'full'
+      //if( _fullOccurred || _suspended )
+      if( _full || _suspended )
 	{
 	  recvd_sz = _sock->readDatagram( _flushBuffer, 16384 ) ;
 	  if( recvd_sz <= 0 || _suspended ) continue;
@@ -204,11 +235,14 @@ void ReceiverThread::updateBytesConsumed( long long bytes )
 
 void ReceiverThread::reset()
 {
-  // Prevent thread from writing anything more into the buffer
-  _suspend = true;
-  // Now wait to make sure this thread takes '_suspend' into account...
-  volatile bool b = _suspended;
-  while( !b ) b = this->suspended();
+  if( this->isRunning() )
+    {
+      // Prevent thread from writing anything more into the buffer
+      _suspend = true;
+      // Now wait to make sure this thread takes '_suspend' into account...
+      volatile bool b = _suspended;
+      while( !b ) b = this->suspended(); // Function to prevent optimization
+    }
 
   _packetsReceived = 0;
   _packetsLost     = 0;
@@ -228,13 +262,49 @@ void ReceiverThread::reset()
 
 bool ReceiverThread::setBufferSize( long long size )
 {
-  if( size < 1 || size > RECV_BUF_SIZE ) return false;
+  // Demand a certain minimum size...
+  if( size < 2*16384 ) return false;
+
+  // Already allocated ?
+  if( size == _bufferSize ) return true;
 
   this->reset();
-  _bufferSize = size;
 
-  _freeSpaceMin = _bufferSize/256;
-  if( _freeSpaceMin < 16384 ) _freeSpaceMin = 16384;
+  // Delete existing buffer if any
+  if( _recvBuffer ) delete [] _recvBuffer;
+  _recvBuffer = 0;
+  _bufferSize = 0;
+  _freeSpace  = 0;
+
+  try {
+    // Allocate a new buffer of the requested size
+    _recvBuffer = new char[size];
+  }
+  catch( std::exception& e ) {
+    _errString = e.what();
+  }
+  if( _recvBuffer )
+    {
+      // Initialize the buffer
+      memset( static_cast<void *> (_recvBuffer), 0xFF, size );
+      _bufferSize   = size;
+      _freeSpace    = size;
+      _freeSpaceMin = size/256;
+      if( _freeSpaceMin < 16384 ) _freeSpaceMin = 16384;
+
+      if( !this->isRunning() )
+	{
+	  // Start the thread now that a buffer has been allocated
+	  _stop = false;
+	  this->start( QThread::TimeCriticalPriority );
+	}
+    }
+  else
+    {
+      _errString += QString("; Failed to allocate requested buffer size");
+      _stop = true;
+      return false;
+    }
 
   return true;
 }
@@ -252,7 +322,7 @@ std::string ReceiverThread::ipAddressString()
 std::string ReceiverThread::errorString()
 {
   if( _errString.isEmpty() ) return std::string( "" );
-  QString qs = "Port " + QString::number( _port ) + ": " + _errString;
+  QString qs = "Receiver@port" + QString::number( _port ) + ": " + _errString;
   return qs.toStdString();
 }
 

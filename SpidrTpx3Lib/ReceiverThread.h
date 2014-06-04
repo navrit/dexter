@@ -15,10 +15,10 @@ typedef uint16_t u16;
 typedef uint8_t  u8;
 
 // Receiver buffer size
-//#define RECV_BUF_SIZE  0x001000000 //   16 MByte
-//#define RECV_BUF_SIZE  0x010000000 //  256 MByte
-#define RECV_BUF_SIZE    0x020000000 //  512 MByte
-//#define RECV_BUF_SIZE  0x040000000 // 1024 MByte
+//#define DFLT_RECV_BUF_SIZE  0x001000000 //   16 MByte
+//#define DFLT_RECV_BUF_SIZE  0x010000000 //  256 MByte
+#define DFLT_RECV_BUF_SIZE    0x020000000 //  512 MByte
+//#define DFLT_RECV_BUF_SIZE  0x040000000 // 1024 MByte
 
 class QUdpSocket;
 class SpidrController;
@@ -28,9 +28,10 @@ class ReceiverThread : public QThread
   Q_OBJECT
 
  public:
-  ReceiverThread( int     *ipaddr,
-		  int      port = 8192,
-		  QObject *parent = 0 );
+  ReceiverThread( int      *ipaddr,
+		  int       port    = 8192,
+		  long long bufsize = DFLT_RECV_BUF_SIZE,
+		  QObject  *parent  = 0 );
   ~ReceiverThread();
   
   void  stop();
@@ -52,7 +53,6 @@ class ReceiverThread : public QThread
   void  reset();
   bool  setBufferSize( long long size );
   long long bufferSize()    { return _bufferSize; }
-  long long maxBufferSize() { return RECV_BUF_SIZE; }
 
   std::string ipAddressString();
   std::string errorString();
@@ -97,11 +97,11 @@ class ReceiverThread : public QThread
   long long _head, _tail, _headEnd;
   bool      _full, _fullOccurred;
 
+  // Pointer to dynamically allocated receive buffer
+  char     *_recvBuffer;
+
   // Buffer to dump data blocks into when necessary (e.g. when buffer is full)
   char      _flushBuffer[16384];
-
-  // Receive buffer
-  char      _recvBuffer[RECV_BUF_SIZE];
 };
 
 #endif // RECEIVERTHREAD_H
