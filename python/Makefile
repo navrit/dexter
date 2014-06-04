@@ -1,8 +1,7 @@
-PYTHON_INCLUDEDIR=/usr/include/python2.7
-
+PYTHON_INCLUDEDIR=$(shell pkg-config --cflags  python2)
 TMP_DIR=tmp
 SRC_DIR=SpidrTpx3
-CFLAGS=-fPIC  -I${PYTHON_INCLUDEDIR}
+CFLAGS=-fPIC  ${PYTHON_INCLUDEDIR}
 CXX=g++
 $(PWD) := $(shell pwd)
 LDFLAGS=-shared -Wl,-rpath=$(PWD)/../Release
