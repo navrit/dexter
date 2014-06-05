@@ -1,15 +1,15 @@
 #
-# Project file for the spidripconfig program
+# Project file for the spidrreset program
 #
 # To generate a Visual Studio project:
-#   qmake -t vcapp spidripconfig.pro
+#   qmake -t vcapp spidrreset.pro
 # To generate a Makefile:
-#   qmake spidripconfig.pro
+#   qmake spidrreset.pro
 #
 # (or start from the 'SUBDIRS' .pro file to recursively generate the projects)
 #
 TEMPLATE = app
-TARGET   = spidripconfig
+TARGET   = spidrreset
 
 # Create a console app
 QT -= gui
@@ -36,4 +36,4 @@ LIBS += -lSpidrTpx3Lib
 
 INCLUDEPATH += ../SpidrTpx3Lib
 
-SOURCES += spidripconfig.cpp
+SOURCES += spidrreset.cpp

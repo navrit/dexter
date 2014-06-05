@@ -1,37 +1,25 @@
 /* ----------------------------------------------------------------------------
-File   : spidripconfig.cpp
+File   : spidripmonconfig.cpp
 
-Descr  : Commandline tool to configure IP on a SPIDR module.
+Descr  : Commandline tool to configure monitor-stream IP on a SPIDR module.
 
 Usage  :
-spidripconfig <ipaddr> defaults
-   Go back to default settings (erase stored IP addresses and ports).
-     <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10
-
-spidripconfig <ipaddr> show [<portnr_cmd>]
+spidripmonconfig <ipaddr> show [<portnr_cmd>]
    Display devices' IP addresses and ports for the SPIDR module
-   with the given address/port.
+   with the given (Controller) address/port.
 
-spidripconfig <ipaddr> <ipaddr_new> [<portnr_cmd>] [<portnr_new>]
-   Set new IP source address for SPIDR *and* its devices
-   and optionally a new command & control port number.
-     <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10
-     <ipaddr_new>: new SPIDR IP address, e.g. 192.168.101.10
-     <portnr_cmd>: current IP port for SPIDR command & control, default 50000
-     <portnr_new>: new IP port for SPIDR command & control
+spidripmonconfig <ipaddr> dest [<ipaddr_dst>]
+   Display or set SPIDR devices' monitor-data destination IP address(es).
+     <ipaddr>    : SPIDR Controller IP address, e.g. 192.168.100.10
+     <ipaddr_dst>: new devices' IP destination, e.g. 192.168.2.10
 
-spidripconfig <ipaddr> dest [<ipaddr_dst>]
-   Display or set SPIDR devices' destination IP address(es).
-     <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10
-     <ipaddr_dst>: new devices' IP destination, e.g. 192.168.101.1
-
-spidripconfig <ipaddr> port [<portnr_dst>]
-   Display or set SPIDR devices' server IP port number(s).
-     <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10
+spidripmonconfig <ipaddr> port [<portnr_dst>]
+   Display or set SPIDR devices' monitor-data server IP port number(s).
+     <ipaddr>    : SPIDR Controller IP address, e.g. 192.168.100.10
      <portnr_dst>: new devices' IP destination port (incrementing), e.g. 8192
 
 History:
-27MAR2014; HenkB; Created.
+05JUN2014; HenkB; Created, modified copy of spidripconfig.cpp.
 ---------------------------------------------------------------------------- */
 
 #include <iostream>
@@ -43,6 +31,8 @@ using namespace std;
 #include <QHostAddress>
 #include <QString>
 
+#define SPIDR_IPMON_OFFS  16
+
 #define error_out(str) cout<<str<<": "<<spidrctrl.errorString()<<endl
 
 quint32 get_addr( const char *str );
@@ -52,7 +42,6 @@ void    usage();
 
 int main( int argc, char *argv[] )
 {
-  bool         dflts     = false; // Set all to default
   bool         dst       = false; // Set UDP port destination address(es)
   bool         prt       = false; // Set UDP port port number(s)
   bool         show_only = false; // Show curr destination IP or port addresses
@@ -64,20 +53,14 @@ int main( int argc, char *argv[] )
   QHostAddress qaddr;
 
   // Check argument count
-  if( !(argc == 3 || argc == 4 || argc == 5) )
+  if( !(argc == 3 || argc == 4) )
     {
       usage();
       return 0;
     }
   else
     {
-      if( QString(argv[2]) == QString("defaults") && argc > 3 )
-	{
-	  cout << "### Argument count" << endl;
-	  usage();
-	  return 0;
-	}
-      else if( (QString(argv[2]) == QString("dest") ||
+      if( (QString(argv[2]) == QString("dest") ||
 		QString(argv[2]) == QString("port") ||
 		QString(argv[2]) == QString("show")) && argc > 4 )
 	{
@@ -88,12 +71,7 @@ int main( int argc, char *argv[] )
     }
 
   // Check arguments
-  if( QString(argv[2]) == QString("defaults") )
-    {
-      dflts = true;
-      addr_cmd = get_addr( argv[1] );
-    }
-  else if( QString(argv[2]) == QString("dest") )
+  if( QString(argv[2]) == QString("dest") )
     {
       dst = true;
       addr_cmd = get_addr( argv[1] );
@@ -143,40 +121,9 @@ int main( int argc, char *argv[] )
     }
   else
     {
-      // Set a new command & control IP address on the SPIDR
-      // (e.g. when you need to move the SPIDR to a network interface
-      //  with a different IP address / subnet mask).
-      // Note that this action also changes the SPIDR's devices'
-      // IP destination (server) addresses to the same value;
-      // use "spidripconfig <ipaddr> dest [<ipaddr_dst>]"
-      // to change those addresses independently.
-      addr_cmd = get_addr( argv[1] );
-      addr_new = get_addr( argv[2] );
-
-      // An optional port number (SPIDR's current port number)
-      if( argc >= 4 )
-	{
-	  bool ok;
-	  portnr_cmd = QString(argv[3]).toUInt( &ok );
-	  if( !ok )
-	    {
-	      cout << "### Invalid IP port: " << string(argv[3]) << endl;
-	      usage();
-	      return 0;
-	    }
-
-	  if( argc == 5 )
-	    {
-	      bool ok;
-	      portnr_new = QString(argv[4]).toUInt( &ok );
-	      if( !ok )
-		{
-		  cout << "### Invalid IP port: " << string(argv[4]) << endl;
-		  usage();
-		  return 0;
-		}
-	    }
-	}
+      cout << "### Invalid 2nd argument" << endl;
+      usage();
+      return 0;
     }
 
   // Open a control connection to SPIDR-TPX3 module
@@ -195,15 +142,7 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
-  if( dflts )
-    {
-      if( !spidrctrl.eraseAddrAndPorts() )
-	error_out( "### Error erasing configuration" );
-      else
-	cout << "==> Default settings restored: "
-	     << "reset/powercycle SPIDR" << endl;
-    }
-  else if( dst )
+  if( dst )
     {
       // Display all the Medipix3/Timepix3 device destination IP addresses
       // and optionally set to a new value...
@@ -216,10 +155,10 @@ int main( int argc, char *argv[] )
 
       int      i, ipaddr;
       quint32 *qi = (quint32 *) &ipaddr;
-      cout << "UDP port IP destination addresses: ";
+      cout << "UDP port IP destination addresses (monitor stream): ";
       for( i=0; i<ports; ++i )
 	{
-	  if( !spidrctrl.getIpAddrDest( i, &ipaddr ) )
+	  if( !spidrctrl.getIpAddrDest( i + SPIDR_IPMON_OFFS, &ipaddr ) )
 	    {
 	      cout << endl
 		   << "### Error getting IP dest addr " << i
@@ -242,7 +181,8 @@ int main( int argc, char *argv[] )
 	  cout << qaddr.toString().toAscii().constData() << endl;
 
 	  for( i=0; i<ports; ++i )
-	    if( !spidrctrl.setIpAddrDest( i, *paddr_new_i ) )
+	    if( !spidrctrl.setIpAddrDest( i + SPIDR_IPMON_OFFS,
+					  *paddr_new_i ) )
 	      {
 		cout << endl
 		     << "### Error setting IP dest addr " << i
@@ -272,10 +212,10 @@ int main( int argc, char *argv[] )
 	}
 
       int      i, ipport;
-      cout << "UDP port IP server ports: ";
+      cout << "UDP port IP server ports (monitor stream): ";
       for( i=0; i<ports; ++i )
 	{
-	  if( !spidrctrl.getServerPort( i, &ipport ) )
+	  if( !spidrctrl.getServerPort( i + SPIDR_IPMON_OFFS, &ipport ) )
 	    {
 	      cout << endl
 		   << "### Error getting IP port nr " << i
@@ -296,7 +236,8 @@ int main( int argc, char *argv[] )
 
 	  // Set incrementing port number
 	  for( i=0; i<ports; ++i )
-	    if( !spidrctrl.setServerPort( i, portnr_new + i ) )
+	    if( !spidrctrl.setServerPort( i + SPIDR_IPMON_OFFS,
+					  portnr_new + i ) )
 	      {
 		cout << endl
 		     << "### Error setting IP port nr " << i
@@ -329,10 +270,10 @@ int main( int argc, char *argv[] )
 	  quint32 *qi = (quint32 *) &ipaddr;
 	  for( i=0; i<ports; ++i )
 	    {
-	      cout << "UDP port " << i << ":" << endl;
+	      cout << "UDP monitor port " << i << ":" << endl;
 
 	      // IP addresses
-	      if( !spidrctrl.getIpAddrSrc( i, &ipaddr ) )
+	      if( !spidrctrl.getIpAddrSrc( i + SPIDR_IPMON_OFFS, &ipaddr ) )
 		{
 		  cout << endl
 		       << "### Error getting IP src addr"
@@ -345,7 +286,7 @@ int main( int argc, char *argv[] )
 		  qaddr.setAddress( *qi );
 		  cout << qaddr.toString().toAscii().constData();
 		}
-	      if( !spidrctrl.getIpAddrDest( i, &ipaddr ) )
+	      if( !spidrctrl.getIpAddrDest( i + SPIDR_IPMON_OFFS, &ipaddr ) )
 		{
 		  cout << endl
 		       << "### Error getting IP dst addr"
@@ -360,7 +301,7 @@ int main( int argc, char *argv[] )
 		}
 
 	      // IP ports
-	      if( !spidrctrl.getServerPort( i, &portnr ) )
+	      if( !spidrctrl.getServerPort( i + SPIDR_IPMON_OFFS, &portnr ) )
 		{
 		  cout << endl
 		       << "### Error getting device IP dest port"
@@ -371,7 +312,7 @@ int main( int argc, char *argv[] )
 		{
 		  cout << ", server port " << portnr;
 		}
-	      if( !spidrctrl.getDevicePort( i, &portnr ) )
+	      if( !spidrctrl.getDevicePort( i + SPIDR_IPMON_OFFS, &portnr ) )
 		{
 		  cout << endl
 		       << "### Error getting device IP src port"
@@ -394,7 +335,7 @@ int main( int argc, char *argv[] )
 	  cout << "UDP port IP source addresses: ";
 	  for( i=0; i<ports; ++i )
 	    {
-	      if( !spidrctrl.getIpAddrSrc( i, &ipaddr ) )
+	      if( !spidrctrl.getIpAddrSrc( i + SPIDR_IPMON_OFFS, &ipaddr ) )
 		{
 		  cout << endl
 		       << "### Error getting IP src addr " << i
@@ -413,7 +354,7 @@ int main( int argc, char *argv[] )
 	  cout << qaddr.toString().toAscii().constData() << endl;
 
 	  for( i=0; i<ports; ++i )
-	    if( !spidrctrl.setIpAddrSrc( i, *paddr_new_i ) )
+	    if( !spidrctrl.setIpAddrSrc( i + SPIDR_IPMON_OFFS, *paddr_new_i ) )
 	      {
 		cout << endl
 		     << "### Error setting IP src addr " << i
@@ -421,9 +362,8 @@ int main( int argc, char *argv[] )
 		return 0;
 	      }
 
-	  // And now change the SPIDR's IP (source) address,
-	  // and -optionally- port number, and store it all
-	  if( spidrctrl.storeAddrAndPorts( *paddr_new_i, portnr_new ) )
+	  // And now store it all
+	  if( spidrctrl.storeAddrAndPorts() )
 	    cout << "==> New settings stored: "
 		 << "reset/powercycle SPIDR." << endl;
 	  else
@@ -453,47 +393,25 @@ quint32 get_addr( const char *str )
 void usage()
 {
   cout << endl << "Usage:" << endl
-       << "spidripconfig <ipaddr> defaults"
-       << endl
-       << "   Go back to default settings "
-       << "(erase stored IP addresses and ports)."
-       << endl
-       << "     <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10"
-       << endl << endl
-       << "spidripconfig <ipaddr> show [<portnr_cmd>]"
+       << "spidripmonconfig <ipaddr> show [<portnr_cmd>]"
        << endl
        << "   Display devices' IP addresses and ports for the SPIDR module "
        << endl
        << "   with the given address/port."
        << endl << endl
-       << "spidripconfig <ipaddr> <ipaddr_new> [<portnr_cmd>] [portnr_new]"
-       << endl
-       << "   Set new IP source address for SPIDR *and* its devices"
-       << endl
-       << "   and optionally a new command & control port number."
-       << endl
-       << "     <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10"
-       << endl
-       << "     <ipaddr_new>: new SPIDR IP address, e.g. 192.168.101.10"
-       << endl
-       << "     <portnr_cmd>: current IP port for SPIDR command & control, "
-       << "default 50000"
-       << endl
-       << "     <portnr_new>: new IP port for SPIDR command & control"
-       << endl << endl
-       << "spidripconfig <ipaddr> dest [<ipaddr_dst>]"
+       << "spidripmonconfig <ipaddr> dest [<ipaddr_dst>]"
        << endl
        << "   Display or set SPIDR devices' destination IP address(es)."
        << endl
-       << "     <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10"
+       << "     <ipaddr>    : SPIDR controller IP address, e.g. 192.168.100.10"
        << endl
-       << "     <ipaddr_dst>: new devices' IP destination, e.g. 192.168.101.1"
+       << "     <ipaddr_dst>: new devices' IP destination, e.g. 192.168.2.1"
        << endl << endl
-       << "spidripconfig <ipaddr> port [<portnr_dst>]"
+       << "spidripmonconfig <ipaddr> port [<portnr_dst>]"
        << endl
        << "   Display or set SPIDR devices' server IP port number(s)."
        << endl
-       << "     <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10"
+       << "     <ipaddr>    : SPIDR controller IP address, e.g. 192.168.100.10"
        << endl
        << "     <portnr_dst>: new devices' IP destination port "
        << "(incrementing), e.g. 8192"
