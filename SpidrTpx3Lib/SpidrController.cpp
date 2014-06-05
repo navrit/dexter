@@ -1021,7 +1021,9 @@ bool SpidrController::openShutter()
 {
   // Set to auto-trigger mode with number of triggers set to 0
   // and the frequency (10Hz) lower than the trigger period (200ms) allows
-  if( !this->setTriggerConfig( 4, 200000, 10, 0 ) ) return false;
+  //if( !this->setTriggerConfig( 4, 200000, 10, 0 ) ) return false;
+  // It is sufficient to set the trigger period to zero (June 2014)
+  if( !this->setTriggerConfig( 4, 0, 10, 1 ) ) return false;
   return this->startAutoTrigger();
 }
 
@@ -1029,9 +1031,10 @@ bool SpidrController::openShutter()
 
 bool SpidrController::closeShutter()
 {
+  if( !this->stopAutoTrigger() ) return false;
   // Set to auto-trigger mode (just in case), and to default trigger settings
   if( !this->setTriggerConfig( 4, 100000, 1, 1 ) ) return false;
-  return this->stopAutoTrigger();
+  return true;
 }
 
 // ----------------------------------------------------------------------------
