@@ -71,11 +71,11 @@ int main()
   // Enable test-pulses for (some or all) columns
   int col;
   for( col=0; col<256; ++col )
-    //if( col >= 10 && col < 11 )
-    //spidrctrl.configCtpr( device_nr, col, 1 );
-    spidrctrl.setCtprBit( col );
+    if( col >= 10 && col < 11 )
+      //spidrctrl.configCtpr( device_nr, col, 1 );
+      spidrctrl.setCtprBit( col );
 
-  spidrctrl.setCtprBits( 0 );
+  //spidrctrl.setCtprBits( 0 );
   if( !spidrctrl.setCtpr( device_nr ) )
     error_out( "###setCtpr" );
 
