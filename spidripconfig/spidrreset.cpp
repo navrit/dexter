@@ -70,7 +70,7 @@ int main( int argc, char *argv[] )
   }
 
   int errstat;
-  if( 1 ) //spidrctrl.reset( &errstat ) )
+  if( spidrctrl.reset( &errstat ) )
     {
       cout << "==> Reset done, error=" << hex << errstat << endl;
       spidrctrl.displayInfo();
