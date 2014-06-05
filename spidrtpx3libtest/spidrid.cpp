@@ -32,7 +32,7 @@ void    usage();
 
 int main( int argc, char *argv[] )
 {
-  bool         show_only = false;
+  bool         modify = false;
   quint32      addr_curr = 0;
   QHostAddress qaddr;
   int          id_curr, id_new;
@@ -60,10 +60,7 @@ int main( int argc, char *argv[] )
 	  usage();
 	  return 0;
 	}
-    }
-  else
-    {
-      show_only = true;
+      modify = true;
     }
 
   // Open a control connection to SPIDR-TPX3 module
@@ -89,7 +86,7 @@ int main( int argc, char *argv[] )
   cout << "Current SPIDR ID: "
        << hex << setw(8) << setfill('0') << id_curr << dec << endl;
 
-  if( !show_only )
+  if( modify )
     { 
       if( !spidrctrl.setSpidrId( id_new ) )
 	{

@@ -21,7 +21,6 @@ int main()
   // Open a control connection to SPIDR-TPX3 module
   // with address 192.168.100.10, default port number 50000
   SpidrController spidrctrl( 192, 168, 100, 10 );
-  //SpidrController spidrctrl( 192, 168, 1, 10 );
 
   // Are we connected to the SPIDR-TPX3 module?
   if( !spidrctrl.isConnected() ) {
@@ -35,6 +34,8 @@ int main()
   if( spidrctrl.reset( &errstat ) ) {
     cout << "errorstat " << hex << errstat << dec << endl;
   }
+  // Temporary, to be done as part of reset() above:
+  spidrctrl.resetPacketCounters();
 
   int device_nr = 0;
 
@@ -65,9 +66,9 @@ int main()
       spidrctrl.setPixelTestEna( 0, i );
       spidrctrl.setPixelTestEna( 1, i );
     }
+  */
   if( !spidrctrl.setPixelConfig( device_nr ) )
     error_out( "###setPixelConfig" );
-  */
 
   // ----------------------------------------------------------
   // Test pulse and CTPR configuration
@@ -79,7 +80,7 @@ int main()
   if( !spidrctrl.setTpNumber( device_nr, 1 ) )
     error_out( "###setTpNumber" );
 
-  // Enable test-pulses for (some) columns
+  // Enable test-pulses for (some or all) columns
   //spidrctrl.setCtprBits( 0 );
   int col;
   for( col=0; col<256; ++col )
@@ -106,8 +107,8 @@ int main()
     error_out( "###setGenCfg" );
 
   // Set Timepix3 into acquisition mode
-  if( !spidrctrl.datadrivenReadout() )
-  //if( !spidrctrl.sequentialReadout( 1 ) )
+  //if( !spidrctrl.datadrivenReadout() )
+  if( !spidrctrl.sequentialReadout( 1 ) )
     error_out( "###xxxxReadout" );
 
   // ----------------------------------------------------------
@@ -117,21 +118,35 @@ int main()
   int trig_length_us = 10000;  // 10 ms
   int trig_freq_hz   = 3;      // 3 Hz
   //int trig_count   = 10;     // 10 triggers
-  int trig_count     = 2;
+  int trig_count     = 1;
   if( !spidrctrl.setTriggerConfig( trig_mode, trig_length_us,
                                    trig_freq_hz, trig_count ) )
     error_out( "###setTriggerConfig" );
+
+  // ----------------------------------------------------------
 
   // Interface to Timepix3 pixel data acquisition
   SpidrDaq spidrdaq( &spidrctrl );
   string errstr = spidrdaq.errorString();
   if( !errstr.empty() ) cout << "###SpidrDaq: " << errstr << endl;
-
+  cout << "bufsize=" << spidrdaq.bufferSize() << endl;
+  /*
+  spidrdaq.setBufferSize( 0x080000000 );
+  errstr = spidrdaq.errorString();
+  if( !errstr.empty() ) cout << "###SpidrDaq: " << errstr << endl;
+  cout << "bufsize=" << spidrdaq.bufferSize() << endl;
+  spidrdaq.setBufferSize( 0x010000000 );
+  errstr = spidrdaq.errorString();
+  if( !errstr.empty() ) cout << "###SpidrDaq: " << errstr << endl;
+  cout << "bufsize=" << spidrdaq.bufferSize() << endl;
+  */
   // Sample 'frames' as well as write pixel data to file
   spidrdaq.setSampling( true );
   spidrdaq.setSampleAll( true );
-  if( !spidrdaq.startRecording( "test.dt", 123, "Eerste testje" ) )
+  if( !spidrdaq.startRecording( "test/mon/test.dt", 123, "Eerste testjes" ) )
     cout << "###SpidrDaq.startRecording: " << spidrdaq.errorString() << endl;
+
+  cout << "Filename: " << spidrdaq.fileName() << endl;
 
   // ----------------------------------------------------------
   // Get frames (data up to the next End-of-Readout packet)
@@ -210,10 +225,18 @@ int main()
 	}
     }
 
+  int cntr;
+  spidrctrl.getDataPacketCounter( &cntr );
+  cout << "SPIDR packet cntr   : " << cntr << endl;
+  cout << "SpidrDaq packet cntr: " << spidrdaq.packetsReceivedCount() << endl;
+
   if( !spidrctrl.pauseReadout() )
     error_out( "###pauseReadout" );
   Sleep(100);
 
+  // Revert changes made due to sequentialReadout()
+  if( !spidrctrl.setHeaderFilter( device_nr, 0x0C00, 0xF3FF ) )
+    error_out( "###setHeaderFilter" );
   // ----------------------------------------------------------
   return 0;
 }
