@@ -17,6 +17,17 @@
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout_2">
+      <item row="4" column="0">
+       <widget class="ScrolledPixBitmap" name="viewer">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <zorder>tabWidget</zorder>
+       </widget>
+      </item>
       <item row="2" column="0">
        <widget class="QTabWidget" name="tabWidget">
         <property name="sizePolicy">
@@ -26,7 +37,7 @@
          </sizepolicy>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>3</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -884,9 +895,15 @@
              </widget>
             </item>
             <item>
-             <widget class="QSlider" name="horizontalSlider">
+             <widget class="QSlider" name="sliderThreshold">
               <property name="enabled">
                <bool>false</bool>
+              </property>
+              <property name="maximum">
+               <number>2000</number>
+              </property>
+              <property name="value">
+               <number>1150</number>
               </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -894,7 +911,11 @@
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="spinBox"/>
+             <widget class="QLabel" name="labelThreshold">
+              <property name="text">
+               <string>TextLabel</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -951,6 +972,13 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="labelRate">
+            <property name="text">
+             <string>Rate : &lt;b&gt;-&lt;/b&gt; Hz</string>
+            </property>
+           </widget>
           </item>
           <item>
            <spacer name="verticalSpacer_4">
@@ -1198,16 +1226,6 @@
           </item>
          </layout>
         </widget>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="ScrolledPixBitmap" name="viewer">
-        <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
-        </property>
        </widget>
       </item>
      </layout>

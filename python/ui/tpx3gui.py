@@ -6,9 +6,11 @@ import sys
 from SpidrTpx3_engine import *
 import numpy as np
 import scipy.ndimage as ndi
-import time
 import random
 import os
+import time
+
+
 
 class DaqThread(QThread):
     def __init__(self, parent=None):
@@ -23,16 +25,27 @@ class DaqThread(QThread):
         #self.mutex.unlock()
         #self.wait()
     def run(self):
+
+        total_hits=0
+        last_time=time.time()
         while True:
             if self.abort:
                 return
 
-            next_frame=self.parent.spidrDaq.getSample(1024*64,10)
-            self.data*=0.99
+            next_frame=self.parent.spidrDaq.getSample(1024*128,1)
+            self.data*=0.98
+
             if next_frame:
-                #print "Size",self.parent.spidrDaq.sampleSize()
+                hits=self.parent.spidrDaq.sampleSize()/8
+                now=time.time()
+                dt=float(now-last_time)
+                last_time=now
+                rate=float(hits)/dt
+                total_hits+=hits
+                self.parent.labelRate.setText("Rate : <b>%.1f</b> Hz (total hits %d)"%(rate,total_hits))
+
                 while True:
-                    r,x,y,data,time=self.parent.spidrDaq.nextPixel()
+                    r,x,y,data,tstp=self.parent.spidrDaq.nextPixel()
                     if not r: break
                     data>>=4
                     data&=0x2FF
@@ -56,7 +69,7 @@ class DaqThread(QThread):
                 #         self.data[px][py-1]+=amp/2
 
             if self.parent:
-                self.parent.updateViewer()
+               self.parent.updateViewer()
             #self.daqThread.data=
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -95,6 +108,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.connect(self.buttonConfigure ,SIGNAL("clicked()"), self.matrixConfigure)
         self.connect(self.buttonDefaults ,SIGNAL("clicked()"), self.defaults)
 
+        self.sliderThreshold.valueChanged.connect(self.thresholdSliderMoved)
+
+
         for dn in self.all_dacs:
             dac=getattr(self,dn)
             tpx_dn="TPX3_"+dn[4:].upper()
@@ -121,6 +137,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
               self.spidrController.setPixelThreshold(x,y,eq[y][x])
               if maskname and mask[y][x]:
                 self.spidrController.setPixelMask(x,y,mask[y][x])
+
+    def thresholdSliderMoved(self):
+        nth=self.sliderThreshold.value()
+        self.labelThreshold.setText(str(nth))
+        self.setThreshold(nth)
+
     def setThreshold(self,dac_value=1000):
         """ Xavi's treshold """
         i=0
@@ -132,8 +154,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                  coarse_found=coarse
                  fine_found=fine
               i+=1
-        self.spidrController.setDac(self.devid,TPX3_VTHRESH_COARSE,coarse_found)
-        self.spidrController.setDac(self.devid,TPX3_VTHRESH_FINE,fine_found)
+#        self.spidrController.setDac(self.devid,TPX3_VTHRESH_COARSE,coarse_found)
+#        self.spidrController.setDac(self.devid,TPX3_VTHRESH_FINE,fine_found)
+        self.updateDacWithoutSignal("VTHRESH_COARSE",coarse_found)
+        self.updateDacWithoutSignal("VTHRESH_FINE",fine_found)
+
+    def updateDacWithoutSignal(self,dacname,value):
+        dac=getattr(self,"dac_"+dacname.lower())
+        tpx_dn="TPX3_"+dacname.upper()
+        oldState = dac.blockSignals(True)
+        dac.setProperty("value", value)
+        self.spidrController.setDac(self.devid,eval(tpx_dn),value)
+        dac.blockSignals(oldState)
 
 
     def matrixConfigure(self):
@@ -142,7 +174,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def defaults(self):
         self.spidrController.resetPixels(self.devid)
         self.spidrController.setDacsDflt(self.devid)
-        self.spidrController.setDac(self.devid,TPX3_IBIAS_IKRUM,15)
+        self.updateDacWithoutSignal("IBIAS_IKRUM",15)
         self.spidrController.setDac(self.devid,TPX3_VTP_COARSE,50)
         self.spidrController.setDac(self.devid,TPX3_VTP_FINE,112)
         self.spidrController.setDac(self.devid,TPX3_IBIAS_DISCS1_ON,128)
@@ -161,6 +193,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.load_equalization('../calib/eq_codes.dat',\
                       maskname='../calib/eq_mask.dat')
         self.spidrController.setPixelMask(95,108,1)
+        self.spidrController.setPixelMask(85,153,1)
+        self.spidrController.setPixelMask(108,161,1)
+        self.spidrController.setPixelMask(45,132,1)
         self.spidrController.setPixelConfig(self.devid)
         self.spidrController.setDecodersEna(True)
         self.setThreshold(1150)
@@ -255,6 +290,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 dac.setEnabled(True)
                 maxval=self.spidrController.dacMax(eval(tpx_dn))
                 dac.setMaximum(maxval)
+        self.sliderThreshold.setEnabled(True)
+
     def readoutChanged(self):
         self.spidrController.pauseReadout()
 
@@ -300,6 +337,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.initAfterConnect()
                 self.updateDisplays()
                 self.spidrDaq=SpidrDaq(self.spidrController)
+                if self.spidrDaq.errorString():
+                    print self.spidrDaq.errorString()
                 self.spidrDaq.setSampling(True)
                 self.spidrDaq.setSampleAll(True )
                 self.matrix = np.zeros( shape=(256,256))
@@ -316,7 +355,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 if __name__=="__main__":
     app = QApplication(sys.argv)
-    
+
     form=MainWindow()
     form.show()
     app.exec_()
