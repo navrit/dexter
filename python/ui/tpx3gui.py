@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from PySide.QtCore import *
 from PySide.QtGui import *
 from MainWnd import Ui_MainWindow
@@ -312,7 +313,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 s="<font color='red'> %s : %s<font>"%(self.spidrController.connectionStateString(),self.spidrController.connectionErrString())
                 self.spidrController=None
             self.connectrionMessage.setText(s)
-app = QApplication(sys.argv)
-form=MainWindow()
-form.show()
-app.exec_()
+
+if __name__=="__main__":
+    app = QApplication(sys.argv)
+    
+    form=MainWindow()
+    form.show()
+    app.exec_()
