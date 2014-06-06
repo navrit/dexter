@@ -42,6 +42,9 @@ SpidrTpx3/tpx3.o:SpidrTpx3/tpx3.c
 SpidrTpx3/tpx3.c: SpidrTpx3/tpx3.py
 	cython $<
 
+gui: ui/MainWnd.ui
+	pyside-uic ui/MainWnd.ui -o ui/MainWnd.py
+	pyside-uic ui/BitmapForm.ui -o ui/BitmapForm.py
 
 ls clean:
 	@rm -rf tmp/* SpidrTpx3/tpx3.o SpidrTpx3/tpx3.c SpidrTpx3/tpx3.so

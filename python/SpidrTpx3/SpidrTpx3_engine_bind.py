@@ -170,9 +170,18 @@ c.add_method('errorString',     'std::string', [])
 #c.add_method('closeFile',       'bool',        [])
 c.add_method('setFlush',        None,          [param('bool', 'flush')])
 c.add_method('stop',            None,          [])
+c.add_method('setSampling',        None,          [param('bool', 'flush')])
+c.add_method('setSampleAll',        None,          [param('bool', 'flush')])
+c.add_method('getSample',        'bool',          [param('int', 'max_size'),param('int', 'timeout_ms')])
 
+c.add_method('sampleData',        'char *',       [])
+c.add_method('sampleSize',        'int',          [])
 
-
+c.add_method('nextPixel',        'bool',          [param('int*', 'x', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),
+                                                   param('int*', 'y', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),
+                                                   param('int*', 'data', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),
+                                                   param('int*', 'timestamp', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+  
 mod.add_include('"../SpidrTpx3/udp_server.h"')
 mod.add_container('std::list<unsigned long>', 'unsigned long', 'list') # declare a container only once
 
