@@ -78,15 +78,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.spidrController=None
         self.connect(self.buttonConnect,SIGNAL("clicked()"), self.connectOrDisconnect)
-        self.genConfigTP.currentIndexChanged['QString'].connect(self.gcrChanged)
+     #   self.genConfigTP.currentIndexChanged['QString'].connect(self.gcrChanged)
         self.genConfigPolarity.currentIndexChanged['QString'].connect(self.gcrChanged)
-        self.genConfigAckCmd.currentIndexChanged['QString'].connect(self.gcrChanged)
+#        self.genConfigAckCmd.currentIndexChanged['QString'].connect(self.gcrChanged)
         self.genConfigFastLo.currentIndexChanged['QString'].connect(self.gcrChanged)
         self.genConfigGrayCnt.currentIndexChanged['QString'].connect(self.gcrChanged)
         self.genConfigMode.currentIndexChanged['QString'].connect(self.gcrChanged)
-        self.genConfigSelectTP.currentIndexChanged['QString'].connect(self.gcrChanged)
+     #   self.genConfigSelectTP.currentIndexChanged['QString'].connect(self.gcrChanged)
         self.genConfigTimeroverflow .currentIndexChanged['QString'].connect(self.gcrChanged)
-        self.genConfigTpSource.currentIndexChanged['QString'].connect(self.gcrChanged)
+        #self.TPSource.currentIndexChanged['QString'].connect(self.gcrChanged)
         self.connect(self.buttonShutter ,SIGNAL("clicked()"), self.shutterOnOff)
         self.outputMask0.stateChanged.connect(self.outputMaskChanged)
         self.outputMask1.stateChanged.connect(self.outputMaskChanged)
@@ -107,15 +107,43 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                      "dac_ibias_tpbufout","dac_vtp_coarse","dac_vtp_fine"]
         self.connect(self.buttonConfigure ,SIGNAL("clicked()"), self.matrixConfigure)
         self.connect(self.buttonDefaults ,SIGNAL("clicked()"), self.defaults)
-
-        self.sliderThreshold.valueChanged.connect(self.thresholdSliderMoved)
-
+        self.TPInternalDetails.setVisible(False)
+        self.TPEnable.stateChanged.connect(self.TPEnableChanged)
+        self.TPSource.currentIndexChanged.connect(self.TPSourceChanged)
+        #self.sliderThreshold.valueChanged.connect(self.thresholdSliderMoved)
+        #self.groupBox.setVisible(False)
 
         for dn in self.all_dacs:
             dac=getattr(self,dn)
             tpx_dn="TPX3_"+dn[4:].upper()
             dac.valueChanged.connect(lambda :self.onDacChanged(eval(tpx_dn)))
         self.daqThread = DaqThread(self)
+
+        self.actionTestpulses.triggered.connect(self.dockTP.toggleVisibility)
+        self.actionOthers.triggered.connect(self.dockOthers.toggleVisibility)
+        self.actionDACs.triggered.connect(self.dockDACs.toggleVisibility)
+        self.actionGeneral.triggered.connect(self.dockGeneral.toggleVisibility)
+        self.actionShutter.triggered.connect(self.dockShutter.toggleVisibility)
+
+        self.dockGeneral.setAssociatedCheckbox(self.actionGeneral)
+        self.dockDACs.setAssociatedCheckbox(self.actionDACs)
+        self.dockTP.setAssociatedCheckbox(self.actionTestpulses)
+        self.dockOthers.setAssociatedCheckbox(self.actionOthers)
+        self.dockShutter.setAssociatedCheckbox(self.actionShutter)
+
+        self.dockOthers.hide()
+        self.dockDACs.hide()
+
+    def TPEnableChanged(self):
+        print "Changed"
+
+
+    def TPSourceChanged(self):
+        if self.TPSource.currentIndex()==0:
+            self.TPInternalDetails.setVisible(True)
+        else:
+            self.TPInternalDetails.setVisible(False)
+        self.dockTP.adjustSize()
 
     def load_equalization(self,fname,maskname=""):
         def load(fn):
@@ -290,7 +318,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 dac.setEnabled(True)
                 maxval=self.spidrController.dacMax(eval(tpx_dn))
                 dac.setMaximum(maxval)
-        self.sliderThreshold.setEnabled(True)
+        #self.sliderThreshold.setEnabled(True)
 
     def readoutChanged(self):
         self.spidrController.pauseReadout()
