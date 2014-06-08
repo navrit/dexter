@@ -9,8 +9,10 @@ import scipy.ndimage as ndi
 import random
 import os
 import time
+from equalize import EqualizeDlg
 
-
+QCoreApplication.setOrganizationName("CERN");
+QCoreApplication.setApplicationName("t3g");
 
 class DaqThread(QThread):
     def __init__(self, parent=None):
@@ -131,11 +133,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dockOthers.setAssociatedCheckbox(self.actionOthers)
         self.dockShutter.setAssociatedCheckbox(self.actionShutter)
 
-        self.dockOthers.hide()
-        self.dockDACs.hide()
+        self.dockGeneral.setName("General",1)
+        self.dockDACs.setName("DACs",0)
+        self.dockTP.setName("TP",1)
+        self.dockOthers.setName("Others",0)
+        self.dockShutter.setName("Shutter",1)
+
+
+        settings = QSettings()
+
+        settings.beginGroup("MainWindow")
+        self.resize(settings.value("size", QSize(400, 400)))
+        self.move(settings.value("pos", QPoint(200, 200)))
+        settings.endGroup()
+
+        settings.setValue("runs", int(settings.value("runs", 0))+1)
+        self.action_Equalize.triggered.connect(self.onEqualize)
 
     def TPEnableChanged(self):
         print "Changed"
+
+    def onEqualize(self):
+        #EqualizeWnd
+        dlg=EqualizeDlg(None)
 
 
     def TPSourceChanged(self):
@@ -351,6 +371,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def updateViewer(self):
         self.viewer._regenerate_bitmap();
+
+    def closeEvent(self,event):
+        settings=QSettings();
+        settings.beginGroup("MainWindow");
+        settings.setValue("size", self.size());
+        settings.setValue("pos", self.pos());
+        settings.endGroup();
 
     def connectOrDisconnect(self):
         if self.spidrController:

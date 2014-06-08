@@ -139,6 +139,8 @@ class PixBitmap(QWidget):
         self.update()
 
     def on_context_menu(self, point):
+        if self.data==None: return
+
         pix=self._point_to_pixel(point)
 
         # create context menu
@@ -168,6 +170,7 @@ class PixBitmap(QWidget):
 
 
     def mouseMoveEvent(self, event):
+        if self.data==None: return
         #print dir(event)
         self.zoom_p2=event.pos()
         self.update()
@@ -238,10 +241,12 @@ class PixBitmap(QWidget):
         self.parent._update_sliders()
 
     def wheelEvent (self,event):
+        if self.data==None: return
         self.zooming=False
         self.zoom_delta_pos(event.delta(),event.pos())
 
     def mouseReleaseEvent(self, event):
+        if self.data==None: return
         #print event
         if event.button() == Qt.LeftButton and self.zooming:
             self.zooming=False
@@ -255,6 +260,7 @@ class PixBitmap(QWidget):
 
 
     def mousePressEvent(self, event):
+        if self.data==None: return
         if event.button() == Qt.LeftButton:
             #self.moveSlider(event.x())
             self.zooming=True

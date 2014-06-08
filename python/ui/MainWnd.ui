@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>889</width>
+    <width>848</width>
     <height>798</height>
    </rect>
   </property>
@@ -36,7 +36,7 @@
          </sizepolicy>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -335,7 +335,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>889</width>
+     <width>848</width>
      <height>21</height>
     </rect>
    </property>
@@ -363,8 +363,43 @@
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuMatrix">
+    <property name="title">
+     <string>&amp;Matrix</string>
+    </property>
+    <widget class="QMenu" name="menu_Mask">
+     <property name="title">
+      <string>&amp;Mask</string>
+     </property>
+     <addaction name="action_Mask_all"/>
+     <addaction name="action_Unmask_all"/>
+     <addaction name="action_Load_2"/>
+    </widget>
+    <widget class="QMenu" name="menuTrim_DACs">
+     <property name="title">
+      <string>Trim &amp;DACs</string>
+     </property>
+     <addaction name="actionReset"/>
+     <addaction name="action_Set_All"/>
+     <addaction name="action_Load"/>
+    </widget>
+    <widget class="QMenu" name="menu_Test_pulses">
+     <property name="title">
+      <string>&amp;Test pulses</string>
+     </property>
+     <addaction name="action_Enable_all"/>
+     <addaction name="action_Disable_all"/>
+     <addaction name="action_Load_3"/>
+    </widget>
+    <addaction name="menuTrim_DACs"/>
+    <addaction name="menu_Mask"/>
+    <addaction name="menu_Test_pulses"/>
+    <addaction name="separator"/>
+    <addaction name="action_Equalize"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuOperation"/>
+   <addaction name="menuMatrix"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -377,8 +412,8 @@
    </property>
    <property name="minimumSize">
     <size>
-     <width>244</width>
-     <height>260</height>
+     <width>268</width>
+     <height>100</height>
     </size>
    </property>
    <property name="windowTitle">
@@ -391,6 +426,13 @@
     <layout class="QVBoxLayout" name="verticalLayout_10">
      <item>
       <layout class="QGridLayout" name="gridLayout_5">
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Gray count</string>
+         </property>
+        </widget>
+       </item>
        <item row="3" column="1">
         <widget class="QSpinBox" name="dac_vthresh_fine">
          <property name="enabled">
@@ -416,18 +458,25 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Mode</string>
-         </property>
-        </widget>
-       </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label_24">
          <property name="text">
           <string>VTHRESH_COARSE</string>
          </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="comboBox_4">
+         <item>
+          <property name="text">
+           <string>SEQ</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>DD</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item row="0" column="1">
@@ -452,10 +501,10 @@
          </item>
         </widget>
        </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_23">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>VTHRESH_FINE </string>
+          <string>Mode</string>
          </property>
         </widget>
        </item>
@@ -476,10 +525,34 @@
          </item>
         </widget>
        </item>
+       <item row="6" column="1">
+        <widget class="QComboBox" name="genConfigGrayCnt">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <item>
+          <property name="text">
+           <string>Disable</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Enable</string>
+          </property>
+         </item>
+        </widget>
+       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_29">
          <property name="text">
           <string>Readout</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Fast_lo_en</string>
          </property>
         </widget>
        </item>
@@ -508,48 +581,10 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_6">
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_23">
          <property name="text">
-          <string>Gray count</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="comboBox_4">
-         <item>
-          <property name="text">
-           <string>SEQ</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>DD</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QComboBox" name="genConfigGrayCnt">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <item>
-          <property name="text">
-           <string>Disable</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Enable</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_9">
-         <property name="text">
-          <string>Fast_lo_en</string>
+          <string>VTHRESH_FINE </string>
          </property>
         </widget>
        </item>
@@ -1457,6 +1492,56 @@
    </property>
    <property name="text">
     <string>Others</string>
+   </property>
+  </action>
+  <action name="action_Equalize">
+   <property name="text">
+    <string>&amp;Equalize</string>
+   </property>
+  </action>
+  <action name="actionReset">
+   <property name="text">
+    <string>&amp;Reset</string>
+   </property>
+  </action>
+  <action name="action_Set_All">
+   <property name="text">
+    <string>&amp;Set All</string>
+   </property>
+  </action>
+  <action name="action_Load">
+   <property name="text">
+    <string>&amp;Load</string>
+   </property>
+  </action>
+  <action name="action_Mask_all">
+   <property name="text">
+    <string>&amp;Mask all</string>
+   </property>
+  </action>
+  <action name="action_Unmask_all">
+   <property name="text">
+    <string>&amp;Unmask all</string>
+   </property>
+  </action>
+  <action name="action_Load_2">
+   <property name="text">
+    <string>&amp;Load</string>
+   </property>
+  </action>
+  <action name="action_Enable_all">
+   <property name="text">
+    <string>&amp;Enable all</string>
+   </property>
+  </action>
+  <action name="action_Disable_all">
+   <property name="text">
+    <string>&amp;Disable all</string>
+   </property>
+  </action>
+  <action name="action_Load_3">
+   <property name="text">
+    <string>&amp;Load</string>
    </property>
   </action>
  </widget>
