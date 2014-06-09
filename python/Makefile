@@ -1,10 +1,15 @@
-PYTHON_INCLUDEDIR=$(shell pkg-config --cflags  python2)
+PYTHON_INCLUDEDIR=$(shell  python2.7-config --cflags)
+#python2.7-dbg-config
 TMP_DIR=tmp
 SRC_DIR=SpidrTpx3
-CFLAGS=-fPIC  ${PYTHON_INCLUDEDIR}
+CFLAGS=-fPIC  ${PYTHON_INCLUDEDIR} 
+#-ggdb -I/usr/lib/debug/usr/lib/python2.7/dist-packages/numpy/core
+#/usr/lib/python2.7/dist-packages/numpy/core/include/
+
 CXX=g++
 $(PWD) := $(shell pwd)
-LDFLAGS=-shared -Wl,-rpath=$(PWD)/../Release
+LDFLAGS=-shared -Wl,-rpath=$(PWD)/../Release 
+#-L/usr/lib/python2.7/dist-packages/numpy/core/
 
 all: $(TMP_DIR)/SpidrTpx3_engine.so SpidrTpx3/tpx3.so
 

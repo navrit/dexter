@@ -298,6 +298,7 @@ class CustomFunctionWrapper(Function):
     def generate(self, code_sink, dummy_wrapper_name=None, extra_wrapper_params=()):
         assert extra_wrapper_params == ["PyObject **return_exception"]
         if self.wrapper_body is not None:
+            print "sink"
             code_sink.writeln(self.wrapper_body)
         else:
             self.generate_declaration(code_sink, extra_wrapper_parameters=extra_wrapper_params)

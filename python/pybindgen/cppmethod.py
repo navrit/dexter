@@ -1112,14 +1112,16 @@ class CustomCppMethodWrapper(CppMethod):
 
 
     def generate(self, code_sink, dummy_wrapper_name=None, extra_wrapper_params=()):
-        assert extra_wrapper_params == ["PyObject **return_exception"]
+        #assert extra_wrapper_params == ["PyObject **return_exception"]
 
-        self.wrapper_args = ["%s *self" % self.class_.pystruct, "PyObject *args", "PyObject *kwargs", "PyObject **return_exception"]
+#        self.wrapper_args = ["%s *self" % self.class_.pystruct, "PyObject *args", "PyObject *kwargs", "PyObject **return_exception"]
+        self.wrapper_args = ["%s *self" % self.class_.pystruct, "PyObject *args", "PyObject *kwargs"] #kulis
         self.wrapper_return = "PyObject *"
         if self.wrapper_body is not None:
             code_sink.writeln(self.wrapper_body)
         else:
-            self.generate_declaration(code_sink, extra_wrapper_parameters=extra_wrapper_params)
+            #self.generate_declaration(code_sink, extra_wrapper_parameters=extra_wrapper_params)
+            self.generate_declaration(code_sink, extra_wrapper_parameters=()) #kulis
 
     def generate_declaration(self, code_sink, extra_wrapper_parameters=()):
         assert isinstance(self.wrapper_return, str)

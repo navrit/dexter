@@ -16,7 +16,7 @@ class ColorMap:
         self.parent=parent
         self.min=min
         self.max=max
-        self.changeColorMap('RdYlBu')
+        self.changeColorMap('gray')#RdYlBu')
 
     def generateMenu(self):
         cmMenu=QtGui.QMenu('Color',None)
@@ -39,11 +39,10 @@ class ColorMap:
           return maps
 
     def changeColorMap(self,new_cm):
-        print "New colormap", new_cm
+        #print "New colormap", new_cm
         self.cm=cm.get_cmap(new_cm)
-        self.cm.set_over(color=[1,0,0])
-        self.cm.set_under(color=[0,0,1])
-        transform = cm.ScalarMappable(cmap=self.cm)
+        self.cm.set_over(color=[1,1,0])
+        self.cm.set_under(color=[0,1,1])
         self.generateColorBar()
         if self.parent:
             self.parent._regenerate_bitmap()
@@ -67,7 +66,7 @@ class ColorMap:
     def processData(self,data):
         #self.min=np.min(data)
         #self.max=np.max(data)
-        #print self.min, self.max
+        #print self.min, self.max,np.min(data),np.max(data)
         color_norm  = colors.Normalize(vmin=self.min, vmax=self.max)
         transform = cm.ScalarMappable(norm=color_norm, cmap=self.cm)
         cdata=transform.to_rgba(data,bytes=True)

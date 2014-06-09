@@ -13,73 +13,206 @@ from equalize import EqualizeDlg
 
 QCoreApplication.setOrganizationName("CERN");
 QCoreApplication.setApplicationName("t3g");
+import scipy.ndimage as ndi
+import random
+import os
+import time
+from hitratedock import HitRateDock
+
+class MySignal(QObject):
+    sig = Signal(str)
+
+
+class DummyDaq:
+    def __init__(self):
+        self.name="Dummy"
+        self.n=0
+        self.x=0
+        self.y=0
+        self.data=[]
+        self.rate=1
+        self.n=1.0
+    def errorString(self):
+        return ""
+
+    def setSampling(self,b=False):
+        pass
+
+    def setSampleAll(self,b=False):
+        pass
+
+    def getSample(self,n,timeout):
+
+        def line(x0, y0, x1, y1):
+            "Bresenham's line algorithm"
+            dx = abs(x1 - x0)
+            dy = abs(y1 - y0)
+            x, y = x0, y0
+            sx = -1 if x0 > x1 else 1
+            sy = -1 if y0 > y1 else 1
+            if dx > dy:
+                err = dx / 2.0
+                while x != x1:
+                    yield (x, y)
+                    err -= dy
+                    if err < 0:
+                        y += sy
+                        err += dx
+                    x += sx
+            else:
+                err = dy / 2.0
+                while y != y1:
+                    yield (x, y)
+                    err -= dx
+                    if err < 0:
+                        x += sx
+                        err += dy
+                    y += sy
+            yield (x, y)
+        time.sleep(float(timeout)/1e3)
+        self.n+=(float(self.rate)/100)
+
+        while int(self.n)>0:
+
+            t=random.randint(0,1)
+
+
+            if t==0:
+                px=random.randint(2,253)
+                py=random.randint(2,253)
+                amp=random.randint(10,1000)
+
+                self.data.append( (px,py,amp))
+                self.data.append( (px+1,py,amp/2))
+                self.data.append( (px-1,py,amp/2))
+                self.data.append( (px,py-1,amp/2))
+                self.data.append( (px,py+1,amp/2))
+
+                self.data.append( (px+2,py,amp/5))
+                self.data.append( (px-2,py,amp/5))
+                self.data.append( (px,py-2,amp/5))
+                self.data.append( (px,py+2,amp/5))
+
+                self.data.append( (px+1,py+1,amp/4))
+                self.data.append( (px+1,py-1,amp/4))
+                self.data.append( (px-1,py+1,amp/4))
+                self.data.append( (px-1,py-1,amp/4))
+            elif t==1:
+                px1=random.randint(2,253)
+                py1=random.randint(2,253)
+                py2=py1+60-random.randint(0,40)
+                if py2>255:py2=255
+                px2=px1+10-random.randint(0,20)
+                px2=max((min((px2,255)) , 0))
+                amp=random.randint(50,500)
+                for x,y in line(px1,py1,px2,py2):
+                  self.data.append( (y,x,amp))
+                  amp+=random.randint(-10,40)
+
+            self.n-=1
+
+        if len(self.data)>0:
+            return True
+        else:
+            return False
+
+    def sampleSize(self):
+
+        return len(self.data)*8
+
+    def nextPixel(self):
+        if len(self.data)>0:
+            x,y,d=self.data.pop(0)
+            return True,x,y,d<<4,0
+        else:
+            return False,0,0,0,0
+
+
+class Rate():
+    def __init__(self,refresh=0.02,updateRateSignal=None,refreshDisplaySignal=None):
+        self.refresh=refresh
+        self.total_events=0
+        self.new_events=0
+        self.last_ref_time=time.time()
+        self.last_s_time=self.last_ref_time
+        self.updateRateSignal=updateRateSignal
+        self.refreshDisplaySignal=refreshDisplaySignal
+    def processed(self, events):
+        now=time.time()
+        self.new_events+=events
+
+        # refresh
+        dt=now-self.last_ref_time
+        if dt>self.refresh and self.refreshDisplaySignal:
+            self.last_ref_time=now
+            self.refreshDisplaySignal.sig.emit("Now")
+        # report rate
+        dt=now-self.last_s_time
+        if dt>1.0 and self.updateRateSignal:
+            rate=self.new_events/dt
+            self.total_events+=self.new_events
+            self.last_s_time=now
+            self.new_events=0
+            self.updateRateSignal.sig.emit("%.3f"%rate)
 
 class DaqThread(QThread):
     def __init__(self, parent=None):
-        QThread.__init__(self, parent)
+        QThread.__init__(self)
         self.parent=parent
         self.abort = False
         self.data=None
+        self.updateRate = MySignal()
+        self.refreshDisplay = MySignal()
+        self.rate=Rate(refresh=0.05,updateRateSignal=self.updateRate, refreshDisplaySignal=self.refreshDisplay)
     def stop(self):
         #self.mutex.lock()
         self.abort = True
         #self.condition.wakeOne()
         #self.mutex.unlock()
         #self.wait()
-    def run(self):
+    def __del__(self):
+        print "Wating ..."
+        self.wait()
 
-        total_hits=0
-        last_time=time.time()
+    def run(self):
+#        total_hits=0
+#        last_time=time.time()
+#        ref_last=time.time()
+        print "Starting data taking thread"
+        #prev_ref=0
+        #msg=""
         while True:
             if self.abort:
                 return
 
-            next_frame=self.parent.spidrDaq.getSample(1024*128,1)
             self.data*=0.98
-
+        #if 0:
+            next_frame=self.parent.spidrDaq.getSample(8*1024,10)
+            #next_frame=self.parent.spidrDaq.getSample(100,10)
+            time.sleep(0.01)
+            self.rate.processed(0)
+            #print next_frame
             if next_frame:
-                hits=self.parent.spidrDaq.sampleSize()/8
-                now=time.time()
-                dt=float(now-last_time)
-                last_time=now
-                rate=float(hits)/dt
-                total_hits+=hits
-                self.parent.labelRate.setText("Rate : <b>%.1f</b> Hz (total hits %d)"%(rate,total_hits))
+               #hits=self.parent.spidrDaq.sampleSize()/8
+#               print hits
+               hits=0
+               while True:
+                   r,x,y,data,tstp=self.parent.spidrDaq.nextPixel()
+                   if not r: break
+                   data>>=4
+                   data&=0x2FF
+#                   print x,y,data
+                   self.data[x][y]+=data
+                   hits+=1
+               self.rate.processed(hits)
 
-                while True:
-                    r,x,y,data,tstp=self.parent.spidrDaq.nextPixel()
-                    if not r: break
-                    data>>=4
-                    data&=0x2FF
-                    #print x,y,data
-                    self.data[x][y]+=data
-                    #print x,y,data
-                # if 0:
-                #    for i in range(10):
-                #     px=random.randint(2,253)
-                #     py=random.randint(2,253)
-                #     amp=random.randint(50,500)
-                #     if self.data!=None:
-                #         self.data[px][py]+=amp
-                #         self.data[px-1][py-1]+=amp/3
-                #         self.data[px-1][py+1]+=amp/3
-                #         self.data[px+1][py-1]+=amp/3
-                #         self.data[px+1][py+1]+=amp/3
-                #         self.data[px-1][py]+=amp/2
-                #         self.data[px+1][py]+=amp/2
-                #         self.data[px][py+1]+=amp/2
-                #         self.data[px][py-1]+=amp/2
-
-            if self.parent:
-               self.parent.updateViewer()
-            #self.daqThread.data=
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self,parent=None):
         super(MainWindow, self).__init__(parent)
         self.setupUi(self)
         self.spidrController=None
-        self.connect(self.buttonConnect,SIGNAL("clicked()"), self.connectOrDisconnect)
+#        self.connect(self.buttonConnect,SIGNAL("clicked()"), self.connectOrDisconnect)
      #   self.genConfigTP.currentIndexChanged['QString'].connect(self.gcrChanged)
         self.genConfigPolarity.currentIndexChanged['QString'].connect(self.gcrChanged)
 #        self.genConfigAckCmd.currentIndexChanged['QString'].connect(self.gcrChanged)
@@ -119,25 +252,36 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             dac=getattr(self,dn)
             tpx_dn="TPX3_"+dn[4:].upper()
             dac.valueChanged.connect(lambda :self.onDacChanged(eval(tpx_dn)))
-        self.daqThread = DaqThread(self)
 
+
+        self.actionConnectDemo.triggered.connect(self.onConnectDemo)
+        self.actionConnectSPIDR.triggered.connect(self.onConnectSPIDR)
+
+        self.dockHitRate = HitRateDock(self)
+        self.addDockWidget(Qt.DockWidgetArea(1), self.dockHitRate)
         self.actionTestpulses.triggered.connect(self.dockTP.toggleVisibility)
         self.actionOthers.triggered.connect(self.dockOthers.toggleVisibility)
         self.actionDACs.triggered.connect(self.dockDACs.toggleVisibility)
         self.actionGeneral.triggered.connect(self.dockGeneral.toggleVisibility)
         self.actionShutter.triggered.connect(self.dockShutter.toggleVisibility)
+        self.actionHitRate.triggered.connect(self.dockHitRate.toggleVisibility)
+        self.actionDemoConfig.triggered.connect(self.dockDemoConfig.toggleVisibility)
 
         self.dockGeneral.setAssociatedCheckbox(self.actionGeneral)
         self.dockDACs.setAssociatedCheckbox(self.actionDACs)
         self.dockTP.setAssociatedCheckbox(self.actionTestpulses)
         self.dockOthers.setAssociatedCheckbox(self.actionOthers)
         self.dockShutter.setAssociatedCheckbox(self.actionShutter)
+        self.dockDemoConfig.setAssociatedCheckbox(self.actionDemoConfig)
+        self.dockHitRate.setAssociatedCheckbox(self.actionHitRate)
 
         self.dockGeneral.setName("General",1)
         self.dockDACs.setName("DACs",0)
         self.dockTP.setName("TP",1)
         self.dockOthers.setName("Others",0)
         self.dockShutter.setName("Shutter",1)
+        self.dockDemoConfig.setName("DemoConfig",0)
+        self.dockHitRate.setName("HitRate",0)
 
 
         settings = QSettings()
@@ -149,6 +293,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         settings.setValue("runs", int(settings.value("runs", 0))+1)
         self.action_Equalize.triggered.connect(self.onEqualize)
+
+        self.daqThread = DaqThread(self)
+        self.daqThread.updateRate.sig.connect(self.dockHitRate.UpdateRate)
+        self.daqThread.refreshDisplay.sig.connect(self.daqThreadrefreshDisplay)
+
+    def daqThreadrefreshDisplay(self,data):
+        self.updateViewer()
 
     def TPEnableChanged(self):
         print "Changed"
@@ -379,7 +530,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         settings.setValue("pos", self.pos());
         settings.endGroup();
 
-    def connectOrDisconnect(self):
+    #def connectOrDisconnect(self):
+
+    def onConnectDemo(self):
+                self.spidrDaq=DummyDaq()
+                if self.spidrDaq.errorString():
+                    print self.spidrDaq.errorString()
+                self.spidrDaq.setSampling(True)
+                self.spidrDaq.setSampleAll(True )
+                self.matrix = np.zeros( shape=(256,256))
+                self.viewer.setData(self.matrix)
+                self.viewer.cm.min=0
+                self.viewer.cm.max=1024
+                self.daqThread.data=self.matrix
+                self.daqThread.start()
+                self.spinDemoGenRate.valueChanged.connect(self.onSpinDemoGenRateChanged)
+                self.spinDemoGenRate.setEnabled(True)
+    def onSpinDemoGenRateChanged(self):
+        self.spidrDaq.rate=self.spinDemoGenRate.value()
+
+    def onConnectSPIDR(self):
         if self.spidrController:
             pass
         else:
@@ -400,8 +570,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.viewer.setData(self.matrix)
                 self.viewer.cm.min=0
                 self.viewer.cm.max=50
-                self.daqThread.start()
                 self.daqThread.data=self.matrix
+                self.daqThread.start()
 
             else:
                 s="<font color='red'> %s : %s<font>"%(self.spidrController.connectionStateString(),self.spidrController.connectionErrString())

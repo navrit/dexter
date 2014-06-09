@@ -29,7 +29,6 @@ class QDockWidgetClose(QDockWidget):
             settings.setValue(self.name+"_pos", self.pos())
             settings.setValue(self.name+"_size", self.size())
             settings.setValue(self.name+"_floating", int(self.isFloating()))
-            print "s"
     def setName(self,n,visibility=True):
         self.name=n
         self.vis=visibility
@@ -53,7 +52,7 @@ class QDockWidgetClose(QDockWidget):
             self._cb.setChecked(False)
         settings = QSettings()
         settings.beginGroup("DockWidgets")
-        settings.setValue(self.name, 0)
+        v=int(settings.value(self.name+"_isVisible", 0))
         QDockWidget.closeEvent(self,*args, **kwargs)
 
 
