@@ -16,7 +16,7 @@ class DummyGen : public QDialog, Ui_SpidrDummyGenDialog
  private slots:
   void connectOrDisconnect();
   void startOrStop();
-  void resetPacketCounter();
+  void resetPacketCounters();
 
  private:
   SpidrController *_spidrController;

@@ -287,9 +287,9 @@
    <property name="geometry">
     <rect>
      <x>8</x>
-     <y>90</y>
+     <y>87</y>
      <width>354</width>
-     <height>159</height>
+     <height>166</height>
     </rect>
    </property>
    <property name="title">
@@ -299,7 +299,7 @@
     <property name="geometry">
      <rect>
       <x>23</x>
-      <y>120</y>
+      <y>130</y>
       <width>93</width>
       <height>20</height>
      </rect>
@@ -317,8 +317,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>178</x>
-      <y>35</y>
+      <x>218</x>
+      <y>25</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -330,8 +330,8 @@
    <widget class="QLabel" name="labelRegVal">
     <property name="geometry">
      <rect>
-      <x>123</x>
-      <y>119</y>
+      <x>27</x>
+      <y>111</y>
       <width>92</width>
       <height>20</height>
      </rect>
@@ -396,7 +396,7 @@
      <rect>
       <x>95</x>
       <y>85</y>
-      <width>92</width>
+      <width>73</width>
       <height>20</height>
      </rect>
     </property>
@@ -451,8 +451,8 @@
    <widget class="QLabel" name="_labelFailed">
     <property name="geometry">
      <rect>
-      <x>180</x>
-      <y>60</y>
+      <x>220</x>
+      <y>50</y>
       <width>72</width>
       <height>16</height>
      </rect>
@@ -501,11 +501,11 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLineEdit" name="_lineEditPacketCounter">
+   <widget class="QLineEdit" name="_lineEditDataPktCntr">
     <property name="geometry">
      <rect>
-      <x>222</x>
-      <y>118</y>
+      <x>212</x>
+      <y>91</y>
       <width>93</width>
       <height>20</height>
      </rect>
@@ -523,8 +523,8 @@
    <widget class="QLabel" name="labelPacketCounter">
     <property name="geometry">
      <rect>
-      <x>226</x>
-      <y>100</y>
+      <x>213</x>
+      <y>72</y>
       <width>96</width>
       <height>20</height>
      </rect>
@@ -533,20 +533,20 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>Packet Counter</string>
+     <string>Packet Counters</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="QPushButton" name="_pushButtonResetPacketCounter">
+   <widget class="QPushButton" name="_pushButtonResetPacketCounters">
     <property name="enabled">
      <bool>false</bool>
     </property>
     <property name="geometry">
      <rect>
       <x>310</x>
-      <y>117</y>
+      <y>110</y>
       <width>34</width>
       <height>22</height>
      </rect>
@@ -555,6 +555,119 @@
      <string>Rst</string>
     </property>
    </widget>
+   <widget class="QLineEdit" name="_lineEditMonPktCntr">
+    <property name="geometry">
+     <rect>
+      <x>212</x>
+      <y>111</y>
+      <width>93</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="_lineEditPausePktCntr">
+    <property name="geometry">
+     <rect>
+      <x>212</x>
+      <y>131</y>
+      <width>93</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelData">
+    <property name="geometry">
+     <rect>
+      <x>143</x>
+      <y>91</y>
+      <width>65</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
+    </property>
+    <property name="text">
+     <string>Data</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelMonitor">
+    <property name="geometry">
+     <rect>
+      <x>144</x>
+      <y>110</y>
+      <width>65</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
+    </property>
+    <property name="text">
+     <string>Monitor</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="labelPause">
+    <property name="geometry">
+     <rect>
+      <x>143</x>
+      <y>129</y>
+      <width>65</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
+    </property>
+    <property name="text">
+     <string>Pause</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <zorder>_lineEditFeBlockControl</zorder>
+   <zorder>_pushButtonStartOrStop</zorder>
+   <zorder>labelRegVal</zorder>
+   <zorder>_comboBoxHeader</zorder>
+   <zorder>_spinBoxDelay</zorder>
+   <zorder>_spinBoxFrames</zorder>
+   <zorder>labelHeader</zorder>
+   <zorder>labelFrames</zorder>
+   <zorder>labelDelay</zorder>
+   <zorder>_labelFailed</zorder>
+   <zorder>_lineEditDataPktCntr</zorder>
+   <zorder>labelPacketCounter</zorder>
+   <zorder>_lineEditMonPktCntr</zorder>
+   <zorder>_lineEditPausePktCntr</zorder>
+   <zorder>_pushButtonResetPacketCounters</zorder>
+   <zorder>labelData</zorder>
+   <zorder>labelMonitor</zorder>
+   <zorder>labelPause</zorder>
   </widget>
  </widget>
  <resources>
