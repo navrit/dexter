@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>942</width>
+    <width>875</width>
     <height>364</height>
    </rect>
   </property>
@@ -874,7 +874,7 @@
         <widget class="QGroupBox" name="_groupBoxSpidr_2">
          <property name="minimumSize">
           <size>
-           <width>457</width>
+           <width>390</width>
            <height>159</height>
           </size>
          </property>
@@ -1545,7 +1545,7 @@
         <widget class="QGroupBox" name="_groupBoxTpx_2">
          <property name="minimumSize">
           <size>
-           <width>457</width>
+           <width>390</width>
            <height>90</height>
           </size>
          </property>
