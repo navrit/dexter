@@ -347,7 +347,7 @@ class PixBitmap(QWidget):
         for y in range(0,self.visibleRegion.height(),vertLabelStep):
             txt=str(self.visibleRegion.top()+y)
             txtw = metrics.width(txt) # text width
-            txtp = QPoint( self.p0.x() -txtw/2 - MAX_TEXT_LEN, self.p0.y() +(0.5+y)*self.pixelsPerPoint.height() + singleStrHeight/2.0) #text ploting point
+            txtp = QPoint( self.p0.x() -txtw -2 , self.p0.y() +(0.5+y)*self.pixelsPerPoint.height() + singleStrHeight/2.0) #text ploting point
             qp.drawText(txtp, txt)
 
         # draw horizontal legend
@@ -420,7 +420,7 @@ class PixHist(QWidget):
         hist_width=64
         color_width=32
 
-        hist,edges=np.histogram(self.data,bins=BINS)
+        hist,edges=np.histogram(self.data,bins=BINS,range=(self.cm.min,self.cm.max))
         MAX_BIN=max(hist[1:])
         #print "MAX_BIN",MAX_BIN
         metrics = qp.fontMetrics()

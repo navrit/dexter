@@ -190,6 +190,9 @@ class DaqThread(QThread):
 
             self.data*=0.98
         #if 0:
+            low_values_indices = self.data < 1.0  # Where values are low
+            self.data[low_values_indices] = 0  # All low values set to 0
+
             next_frame=self.parent.spidrDaq.getSample2(8*1024,10)
             #next_frame=self.parent.spidrDaq.getSample(100,10)
             time.sleep(0.01)
@@ -247,19 +250,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #self.sliderThreshold.valueChanged.connect(self.thresholdSliderMoved)
         #self.groupBox.setVisible(False)
 
-#        for dn in self.all_dacs:
-#            dac=getattr(self,dn)
-#            tpx_dn="TPX3_"+dn[4:].upper()
-#            dacn=int(eval(tpx_dn))
-#            dac.valueChanged.connect(lambda z:self.onDacChanged(dacn,z))
-
-        self.dac_vthresh_coarse.valueChanged.connect(lambda z:self.onDacChanged(TPX3_VTHRESH_COARSE,z))
-        self.dac_vthresh_fine.valueChanged.connect(lambda z:self.onDacChanged(TPX3_VTHRESH_FINE,z))
-        #self.updateDacWithoutSignal("VTHRESH_COARSE",coarse_found)
-        #self.updateDacWithoutSignal("VTHRESH_FINE",fine_found)
+        for dn in self.all_dacs:
+            dac=getattr(self,dn)
+            tpx_dn="TPX3_"+dn[4:].upper()
+            dac.valueChanged.connect(lambda val,dacn=int(eval(tpx_dn)):self.onDacChanged(dacn,val))
 
         self.actionConnectDemo.triggered.connect(self.onConnectDemo)
         self.actionConnectSPIDR.triggered.connect(self.onConnectSPIDR)
+        self.actionClose.triggered.connect(QCoreApplication.instance().quit)
 
         self.dockHitRate = HitRateDock(self)
         self.addDockWidget(Qt.DockWidgetArea(1), self.dockHitRate)

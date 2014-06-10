@@ -4,6 +4,8 @@ from PySide.QtGui import *
 from PySide import QtGui
 from QDockWidgetClose import QDockWidgetClose
 
+from kutils import n2h
+
 class RateDrawer(QFrame):
     def __init__(self,parent=None):
         QFrame.__init__(self, parent)
@@ -36,7 +38,7 @@ class RateDrawer(QFrame):
         # draw border
         pen = QPen(QColor(20, 20, 20), 1,  Qt.SolidLine)
         qp.setPen(pen)
-        qp.setBrush(Qt.NoBrush)
+        qp.setBrush(QColor(255,255,255))
         qp.drawRect(QRect(self.p0,size))
         dx=float(size.width())/(len(self.data)-1)
         mmax=1.0
@@ -54,6 +56,8 @@ class RateDrawer(QFrame):
             y2=self.p0.y()+size.height()-self.data[d]*dy
             points.append(QPoint(x2,y2))
         points.append(QPoint(x2,y1))
+        qp.setBrush(QColor(200,200,200))
+
         qp.drawPolygon ( points)
 
 class HitRateDock(QDockWidgetClose):
@@ -69,7 +73,8 @@ class HitRateDock(QDockWidgetClose):
         self.verticalLayout_7.addWidget(self.labelRate)
         self.area = RateDrawer(self.Contents)
         self.area.setObjectName("area")
-
+        self.area.setMinimumSize(QSize(100, 50))
+        self.labelRate.setAlignment(Qt.AlignCenter)
         self.verticalLayout_7.addWidget(self.area,1)
         self.setWidget(self.Contents)
         self.history=[0.0]*60
@@ -78,7 +83,8 @@ class HitRateDock(QDockWidgetClose):
 
     def UpdateRate(self,data):
         self.history.pop(0)
-        self.labelRate.setText(str(data))
         self.history.append(float(data))
+        s="Rate : <b>%s Hz</b> Max : <b>%s Hz</b>"%(n2h(float(data)),n2h(max(self.history)))
+        self.labelRate.setText(s)
         self.area.update()
 
