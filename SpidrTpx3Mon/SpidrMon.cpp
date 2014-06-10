@@ -26,6 +26,8 @@ SpidrMon::SpidrMon()
 
   connect( _pushButtonConnectOrDisconnect, SIGNAL( clicked() ),
 	   this, SLOT( connectOrDisconnect() ) );
+  connect( _checkBoxSpidrX2, SIGNAL( stateChanged(int) ),
+           this, SLOT( doubleSpidrModeChanged() ) );
 
   _ipAddrValidator = new QIntValidator( 1, 255, this );
   _lineEditAddr3->setValidator( _ipAddrValidator );
@@ -36,11 +38,17 @@ SpidrMon::SpidrMon()
   _ipPortValidator = new QIntValidator( 1, 65535, this );
   _lineEditPort->setValidator( _ipPortValidator );
 
+  _labelDisconnected->hide();
+
   // Data update 'LED's
   _leUpdateSpidrLed->hide();
   _leUpdateTpxLed->hide();
+  _leUpdateSpidrLed_2->hide();
+  _leUpdateTpxLed_2->hide();
 
-  _labelDisconnected->hide();
+  _groupBoxSpidr_2->hide();
+  _groupBoxTpx_2->hide();
+  this->resize( this->minimumSize() );
 }
 
 // ----------------------------------------------------------------------------
@@ -59,6 +67,8 @@ void SpidrMon::connectOrDisconnect()
       this->killTimer( _timerId );
 
       _spidrController->setSenseDac( 0, TPX3_SENSEOFF );
+      if( _cbMonitorTpx->isChecked() )
+	_spidrController->setSenseDac( 1, TPX3_SENSEOFF );
 
       delete _spidrController;
       _spidrController = 0;
@@ -81,6 +91,22 @@ void SpidrMon::connectOrDisconnect()
       _lineEditDac2->setEnabled( false );
       _lineEditDac3->setEnabled( false );
       _lineEditDac4->setEnabled( false );
+
+      _lineEditRemoteTemp_2->setEnabled( false );
+      _lineEditLocalTemp_2->setEnabled( false );
+      _lineEditAvddMvolt_2->setEnabled( false );
+      _lineEditAvddMamp_2->setEnabled( false );
+      _lineEditAvddMwatt_2->setEnabled( false );
+      _lineEditDvddMvolt_2->setEnabled( false );
+      _lineEditDvddMamp_2->setEnabled( false );
+      _lineEditDvddMwatt_2->setEnabled( false );
+      _lineEditVdda_2->setEnabled( false );
+      _lineEditBias_2->setEnabled( false );
+      _lineEditDac1_2->setEnabled( false );
+      _lineEditDac2_2->setEnabled( false );
+      _lineEditDac3_2->setEnabled( false );
+      _lineEditDac4_2->setEnabled( false );
+
       _dacCode = TPX3_BANDGAP_OUTPUT;
     }
   else
@@ -132,10 +158,23 @@ void SpidrMon::connectOrDisconnect()
 	  //_lineEditDac3->setEnabled( true );
 	  //_lineEditDac4->setEnabled( true );
 
+	  _lineEditRemoteTemp_2->setEnabled( true );
+	  _lineEditLocalTemp_2->setEnabled( true );
+	  _lineEditAvddMvolt_2->setEnabled( true );
+	  _lineEditAvddMamp_2->setEnabled( true );
+	  _lineEditAvddMwatt_2->setEnabled( true );
+	  _lineEditDvddMvolt_2->setEnabled( true );
+	  _lineEditDvddMamp_2->setEnabled( true );
+	  _lineEditDvddMwatt_2->setEnabled( true );
+	  _lineEditVdda_2->setEnabled( true );
+	  _lineEditBias_2->setEnabled( true );
+
 	  //if( _cbMonitorTpx->isChecked() )
 	    // Set output of Timepix3 SenseDAC
 	    // in preparation for the first ADC reading
-	    _spidrController->setSenseDac( 0, _dacCode );
+	  _spidrController->setSenseDac( 0, _dacCode );
+	  if( _cbMonitorTpx->isChecked() )
+	    _spidrController->setSenseDac( 1, _dacCode );
 
 	  QTimerEvent te(1);
 	  this->timerEvent( &te );
@@ -199,7 +238,7 @@ void SpidrMon::timerEvent(QTimerEvent *)
     }
 
   int mvolt, mamp, mwatt;
-  if( _spidrController->getAvdd( &mvolt, &mamp, &mwatt ) )
+  if( _spidrController->getAvddNow( &mvolt, &mamp, &mwatt ) )
     {
       _lineEditAvddMvolt->setText( QString::number( mvolt ) );
       _lineEditAvddMwatt->setText( QString::number( mwatt ) );
@@ -212,7 +251,7 @@ void SpidrMon::timerEvent(QTimerEvent *)
       _lineEditAvddMamp->setText( "----" );
       _lineEditAvddMwatt->setText( "----" );
     }
-  if( _spidrController->getDvdd( &mvolt, &mamp, &mwatt ) )
+  if( _spidrController->getDvddNow( &mvolt, &mamp, &mwatt ) )
     {
       _lineEditDvddMvolt->setText( QString::number( mvolt ) );
       _lineEditDvddMwatt->setText( QString::number( mwatt ) );
@@ -274,14 +313,6 @@ void SpidrMon::timerEvent(QTimerEvent *)
 	  _lineEditDac4->setText( qs );
 	  _lineEditDac4->setEnabled( true );
 	}
-      // Next time next 'DAC'
-      if( _dacCode != TPX3_IBIAS_DAC_CAS )
-	++_dacCode;
-      else
-	_dacCode = TPX3_BANDGAP_OUTPUT;
-      // Set output of Timepix3 SenseDAC in preparation
-      // for the next ADC reading
-      _spidrController->setSenseDac( 0, _dacCode );
     }
   else
     {
@@ -293,6 +324,142 @@ void SpidrMon::timerEvent(QTimerEvent *)
 
   _leUpdateSpidrLed->show();
   QTimer::singleShot( UPDATE_INTERVAL_MS/4, this, SLOT(updateLedOff()) );
+
+  if( !_doubleSpidr )
+    {
+      if( _cbMonitorTpx->isChecked() )
+	{
+	  // Next time next 'DAC'
+	  if( _dacCode != TPX3_IBIAS_DAC_CAS )
+	    ++_dacCode;
+	  else
+	    _dacCode = TPX3_BANDGAP_OUTPUT;
+	  // Set output of Timepix3 SenseDAC in preparation
+	  // for the next ADC reading
+	  _spidrController->setSenseDac( 0, _dacCode );
+	}
+      return;
+    }
+
+  // Select 2nd SPIDR board's I2C
+  if( !_spidrController->selectChipBoard( 2 ) )
+    {
+      // .....
+      return;
+    }
+
+  if( _spidrController->getRemoteTemp( &mdegrees ) )
+    {
+      QString qs = QString("%1.%2").arg( mdegrees/1000 ).
+	arg( mdegrees%1000, 3, 10, QChar('0') );
+      _lineEditRemoteTemp_2->setText( qs );
+    }
+  else
+    {
+      _lineEditRemoteTemp_2->setText( "--.---" );
+    }
+  if( _spidrController->getLocalTemp( &mdegrees ) )
+    {
+      QString qs = QString("%1.%2").arg( mdegrees/1000 ).
+	arg( mdegrees%1000, 3, 10, QChar('0') );
+      _lineEditLocalTemp_2->setText( qs );
+    }
+  else
+    {
+      _lineEditLocalTemp_2->setText( "--.---" );
+    }
+
+  if( _spidrController->getAvddNow( &mvolt, &mamp, &mwatt ) )
+    {
+      _lineEditAvddMvolt_2->setText( QString::number( mvolt ) );
+      _lineEditAvddMwatt_2->setText( QString::number( mwatt ) );
+      QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
+      _lineEditAvddMamp_2->setText( qs );
+    }
+  else
+    {
+      _lineEditAvddMvolt_2->setText( "----" );
+      _lineEditAvddMamp_2->setText( "----" );
+      _lineEditAvddMwatt_2->setText( "----" );
+    }
+  if( _spidrController->getDvddNow( &mvolt, &mamp, &mwatt ) )
+    {
+      _lineEditDvddMvolt_2->setText( QString::number( mvolt ) );
+      _lineEditDvddMwatt_2->setText( QString::number( mwatt ) );
+      QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
+      _lineEditDvddMamp_2->setText( qs );
+    }
+  else
+    {
+      _lineEditDvddMvolt_2->setText( "----" );
+      _lineEditDvddMamp_2->setText( "----" );
+      _lineEditDvddMwatt_2->setText( "----" );
+    }
+
+  if( _spidrController->getBiasVoltage( &mvolt ) )
+    _lineEditBias_2->setText( QString::number( mvolt ) );
+  else
+    _lineEditBias_2->setText( "----" );
+
+  if( _spidrController->getVdda( &mvolt ) )
+    _lineEditVdda_2->setText( QString::number( mvolt ) );
+  else
+    _lineEditVdda_2->setText( "----" );
+
+  if( _cbMonitorTpx->isChecked() )
+    {
+      QString qs("--.---");
+      int adc_val;
+      if( _spidrController->getAdc( 1, &adc_val ) )
+	// Full-scale is 1.5V = 1500mV
+	qs = QString("%1.%2").arg( ((adc_val*1500)/4096)/1000 )
+	  .arg( ((adc_val*1500)/4096)%1000, 3, 10, QChar('0') );
+      if( _dacCode == TPX3_BANDGAP_OUTPUT )
+	{
+	  _lineEditDac1_2->setText( qs );
+	  _lineEditDac1_2->setEnabled( true );
+	}
+      else if( _dacCode == TPX3_BANDGAP_TEMP )
+	{
+	  _lineEditDac2_2->setText( qs );
+	  _lineEditDac2_2->setEnabled( true );
+	}
+      else if( _dacCode == TPX3_IBIAS_DAC )
+	{
+	  _lineEditDac3_2->setText( qs );
+	  _lineEditDac3_2->setEnabled( true );
+	}
+      else if( _dacCode == TPX3_IBIAS_DAC_CAS )
+	{
+	  _lineEditDac4_2->setText( qs );
+	  _lineEditDac4_2->setEnabled( true );
+	}
+    }
+  else
+    {
+      _lineEditDac1_2->setEnabled( false );
+      _lineEditDac2_2->setEnabled( false );
+      _lineEditDac3_2->setEnabled( false );
+      _lineEditDac4_2->setEnabled( false );
+    }
+
+  if( _cbMonitorTpx->isChecked() )
+    {
+      // Next time next 'DAC'
+      if( _dacCode != TPX3_IBIAS_DAC_CAS )
+	++_dacCode;
+      else
+	_dacCode = TPX3_BANDGAP_OUTPUT;
+      // Set output of Timepix3 SenseDAC in preparation
+      // for the next ADC reading
+      _spidrController->setSenseDac( 0, _dacCode );
+      _spidrController->setSenseDac( 1, _dacCode );
+    }
+
+  // Switch (I2C) back to 1st SPIDR board
+  _spidrController->selectChipBoard( 1 );
+
+  _leUpdateSpidrLed_2->show();
 }
 
 // ----------------------------------------------------------------------------
@@ -320,6 +487,36 @@ void SpidrMon::updateLedOff()
 {
   _leUpdateSpidrLed->hide();
   _leUpdateTpxLed->hide();
+
+  _leUpdateSpidrLed_2->hide();
+  _leUpdateTpxLed_2->hide();
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrMon::doubleSpidrModeChanged()
+{
+  if( _checkBoxSpidrX2->isChecked() )
+    {
+      _doubleSpidr = true;
+      _groupBoxSpidr_2->show();
+      _groupBoxTpx_2->show();
+    }
+  else
+    {
+      _doubleSpidr = false;
+      _groupBoxSpidr_2->hide();
+      _groupBoxTpx_2->hide();
+      // Can't do the resize here, doesn't work (?)
+      QTimer::singleShot( 0, this, SLOT(myResize()) );
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrMon::myResize()
+{
+  this->resize( this->minimumSize() );
 }
 
 // ----------------------------------------------------------------------------
