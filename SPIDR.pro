@@ -15,6 +15,8 @@
 
 TEMPLATE = subdirs
 
+CONFIG += debug_and_release
+
 # Libraries
 SUBDIRS += SpidrLib/SpidrLib.pro
 SUBDIRS += SpidrPixelman/SpidrPixelman.pro

@@ -15,6 +15,8 @@
 
 TEMPLATE = subdirs
 
+CONFIG += debug_and_release
+
 # Libraries
 SUBDIRS += SpidrTpx3Lib/SpidrTpx3Lib.pro
 
