@@ -1,4 +1,11 @@
+#DEBUG=0
+ifdef DEBUG
+PYTHON_INCLUDEDIR=$(shell  python2.7-dbg-config --cflags)
+LDFLAGS=-shared -Wl,-rpath=$(PWD)/../Debug  -L../Debug
+else
 PYTHON_INCLUDEDIR=$(shell  python2.7-config --cflags)
+LDFLAGS=-shared -Wl,-rpath=$(PWD)/../Release  -L../Release
+endif
 #python2.7-dbg-config
 TMP_DIR=tmp
 SRC_DIR=SpidrTpx3
@@ -8,7 +15,7 @@ CFLAGS=-fPIC  ${PYTHON_INCLUDEDIR}
 
 CXX=g++
 $(PWD) := $(shell pwd)
-LDFLAGS=-shared -Wl,-rpath=$(PWD)/../Release 
+
 #-L/usr/lib/python2.7/dist-packages/numpy/core/
 
 all: $(TMP_DIR)/SpidrTpx3_engine.so SpidrTpx3/tpx3.so
@@ -31,7 +38,7 @@ $(TMP_DIR)/SpidrTpx3_engine.o:$(TMP_DIR)/SpidrTpx3_engine.c
 	
 $(TMP_DIR)/SpidrTpx3_engine.so:$(TMP_DIR)/SpidrTpx3_engine.o $(TMP_DIR)/udp_server.o
 
-	$(CXX) $(LDFLAGS) -L../Release -o $(TMP_DIR)/SpidrTpx3_engine.so $(TMP_DIR)/SpidrTpx3_engine.o $(TMP_DIR)/udp_server.o -lSpidrTpx3Lib -lboost_thread -lboost_serialization -lboost_iostreams -lboost_filesystem -lboost_system
+	$(CXX) $(LDFLAGS)  -o $(TMP_DIR)/SpidrTpx3_engine.so $(TMP_DIR)/SpidrTpx3_engine.o $(TMP_DIR)/udp_server.o -lSpidrTpx3Lib -lboost_thread -lboost_serialization -lboost_iostreams -lboost_filesystem -lboost_system
 
 # -lboost_thread -lboost_serialization -lboost_iostreams -lboost_filesystem -lboost_system
 

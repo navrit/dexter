@@ -181,10 +181,36 @@ c.add_method('nextPixel',        'bool',          [param('int*', 'x', transfer_o
                                                    param('int*', 'y', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),
                                                    param('int*', 'data', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),
                                                    param('int*', 'timestamp', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
-c.add_custom_method_wrapper( method_name="getSampleToTNDArray", wrapper_name="getSampleToTNDArray_imp", wrapper_body="""
+
+if 1:
+  c.add_custom_method_wrapper( method_name="getSample2", wrapper_name="getSample2_imp", wrapper_body="""
+PyObject *
+getSample2_imp(PySpidrDaq *self, PyObject *args, PyObject *kwargs, PyObject **return_exception)
+{
+    PyObject *py_retval;
+    bool retval;
+    int max_size;
+    int timeout_ms;
+    const char *keywords[] = {"max_size", "timeout_ms", NULL};
+	
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char *) "ii", (char **) keywords, &max_size, &timeout_ms)) {
+        return NULL;
+    }
+    *(return_exception)=NULL;
+    Py_BEGIN_ALLOW_THREADS
+    retval = self->obj->getSample(max_size, timeout_ms);
+	Py_END_ALLOW_THREADS
+    py_retval = Py_BuildValue((char *) "N", PyBool_FromLong(retval));
+    return py_retval;
+}
+""")
+
+
+if 0:
+  c.add_custom_method_wrapper( method_name="getSampleToTNDArray", wrapper_name="getSampleToTNDArray_imp", wrapper_body="""
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include "numpy/arrayobject.h"
-PyObject * getSampleToTNDArray_imp(PySpidrDaq *self, PyObject *args, PyObject *kwargs, PyObject **return_exception)
+ PyObject * getSampleToTNDArray_imp(PySpidrDaq *self, PyObject *args, PyObject *kwargs, PyObject **return_exception)
 {
     PyObject *py_retval;
     bool retval;

@@ -41,6 +41,9 @@ class DummyDaq:
     def setSampleAll(self,b=False):
         pass
 
+    def getSample2(self,n,timeout):
+        return self.getSample(n,timeout)
+    
     def getSample(self,n,timeout):
 
         def line(x0, y0, x1, y1):
@@ -187,7 +190,7 @@ class DaqThread(QThread):
 
             self.data*=0.98
         #if 0:
-            next_frame=self.parent.spidrDaq.getSample(8*1024,10)
+            next_frame=self.parent.spidrDaq.getSample2(8*1024,10)
             #next_frame=self.parent.spidrDaq.getSample(100,10)
             time.sleep(0.01)
             self.rate.processed(0)
@@ -239,16 +242,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                      "dac_ibias_tpbufout","dac_vtp_coarse","dac_vtp_fine"]
         self.connect(self.buttonDefaults ,SIGNAL("clicked()"), self.defaults)
         self.TPInternalDetails.setVisible(False)
-        self.TPEnable.stateChanged.connect(self.TPEnableChanged)
+        self.genConfigTP.stateChanged.connect(self.TPEnableChanged)
         self.TPSource.currentIndexChanged.connect(self.TPSourceChanged)
         #self.sliderThreshold.valueChanged.connect(self.thresholdSliderMoved)
         #self.groupBox.setVisible(False)
 
-        for dn in self.all_dacs:
-            dac=getattr(self,dn)
-            tpx_dn="TPX3_"+dn[4:].upper()
-            dac.valueChanged.connect(lambda :self.onDacChanged(eval(tpx_dn)))
+#        for dn in self.all_dacs:
+#            dac=getattr(self,dn)
+#            tpx_dn="TPX3_"+dn[4:].upper()
+#            dacn=int(eval(tpx_dn))
+#            dac.valueChanged.connect(lambda z:self.onDacChanged(dacn,z))
 
+        self.dac_vthresh_coarse.valueChanged.connect(lambda z:self.onDacChanged(TPX3_VTHRESH_COARSE,z))
+        self.dac_vthresh_fine.valueChanged.connect(lambda z:self.onDacChanged(TPX3_VTHRESH_FINE,z))
+        #self.updateDacWithoutSignal("VTHRESH_COARSE",coarse_found)
+        #self.updateDacWithoutSignal("VTHRESH_FINE",fine_found)
 
         self.actionConnectDemo.triggered.connect(self.onConnectDemo)
         self.actionConnectSPIDR.triggered.connect(self.onConnectSPIDR)
@@ -397,6 +405,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.spidrController.setPixelConfig(self.devid)
         self.spidrController.setDecodersEna(True)
         self.setThreshold(1150)
+        self.spidrController.datadrivenReadout()
         print "Done"
     def gcrChanged(self,index):
         gcr=0
@@ -407,13 +416,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.spidrController.isConnected():
             r,gcr=self.spidrController.getGenConfig(self.devid)
             if r:
-                self.genConfigValue.setText("0x%04X"%gcr)
+#                self.genConfigValue.setText("0x%04X"%gcr)
                 self.genConfigPolarity.setEnabled(True)
                 self.genConfigPolarity.setCurrentIndex(gcr&TPX3_POLARITY_EMIN)
                 self.genConfigMode.setEnabled(True)
                 self.genConfigMode.setCurrentIndex(gcr&TPX3_ACQMODE_MASK>>1)
-                self.genConfigTP.setEnabled(True)
-                self.genConfigTP.setCurrentIndex( gcr&TPX3_TESTPULSE_ENA != 0 )
+                self.genConfigTP.setChecked (gcr&TPX3_TESTPULSE_ENA != 0 )
 
     def outputMaskChanged(self):
         om=0
@@ -447,7 +455,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.outputMask5.setChecked(cnf & (1<<5))
             self.outputMask6.setChecked(cnf & (1<<6))
             self.outputMask7.setChecked(cnf & (1<<7))
-            self.outputMaskTxt.setText("0x%02X"%(cnf&TPX3_OUTPORT_MASK))
+#            self.outputMaskTxt.setText("0x%02X"%(cnf&TPX3_OUTPORT_MASK))
             print cnf
 
     def updateShutter(self):
@@ -469,10 +477,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.shutter=1
         self.updateShutter()
 
-    def onDacChanged(self, n):
-        print('DAC %d changed to '%(n))
-        val=0
-        self.spidrController.setDac(n,val)
+    def onDacChanged(self, n,val):
+        print('DAC %d changed to %d'%(n,val))
+        self.spidrController.setDac(self.devid,n,val)
 
     def updateDacs(self):
         for dn in self.all_dacs:
@@ -499,17 +506,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.spidrController.sequentialReadout(32)
         else:
             pass
-    def updateReadout(self):
-        self.radioReadoutDataDriven.setEnabled(True)
-        self.radioReadoutSeq.setEnabled(True)
-        self.radioReadoutOff.setEnabled(True)
 
     def updateDisplays(self):
         self.updateGcr()
         self.updateShutter()
         self.updateOutputLinks()
         self.updateDacs()
-        self.updateReadout()
+
     def initAfterConnect(self):
         self.spidrController.setTriggerConfig(4,0,1,0)
         self.shutter=0

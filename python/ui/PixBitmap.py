@@ -41,8 +41,8 @@ class ColorMap:
     def changeColorMap(self,new_cm):
         #print "New colormap", new_cm
         self.cm=cm.get_cmap(new_cm)
-        self.cm.set_over(color=[1,1,0])
-        self.cm.set_under(color=[0,1,1])
+        self.cm.set_over( 'blue')
+        self.cm.set_under('red')
         self.generateColorBar()
         if self.parent:
             self.parent._regenerate_bitmap()
@@ -68,9 +68,10 @@ class ColorMap:
         #self.max=np.max(data)
         #print self.min, self.max,np.min(data),np.max(data)
         color_norm  = colors.Normalize(vmin=self.min, vmax=self.max)
+        color_norm.clip=False
         transform = cm.ScalarMappable(norm=color_norm, cmap=self.cm)
         cdata=transform.to_rgba(data,bytes=True)
-
+        #print self.min, self.max
         image=QImage(cdata,cdata.shape[0],cdata.shape[1], cdata.shape[0]*4, QImage.Format_ARGB32 )
         return image.copy()
 
