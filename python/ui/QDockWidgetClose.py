@@ -52,8 +52,12 @@ class QDockWidgetClose(QDockWidget):
             self._cb.setChecked(False)
         settings = QSettings()
         settings.beginGroup("DockWidgets")
+        print self.name+"_isVisible", 0
         v=int(settings.value(self.name+"_isVisible", 0))
+        settings.sync()
         QDockWidget.closeEvent(self,*args, **kwargs)
+        self.hide()
+        self.changed()
 
 
     def toggleVisibility(self):

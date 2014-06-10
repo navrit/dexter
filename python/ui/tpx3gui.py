@@ -30,7 +30,7 @@ class DummyDaq:
         self.x=0
         self.y=0
         self.data=[]
-        self.rate=1
+        self.rate=10
         self.n=1.0
     def errorString(self):
         return ""
@@ -231,16 +231,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.outputMask5.stateChanged.connect(self.outputMaskChanged)
         self.outputMask6.stateChanged.connect(self.outputMaskChanged)
         self.outputMask7.stateChanged.connect(self.outputMaskChanged)
-        self.connect(self.radioReadoutSeq ,SIGNAL("clicked()"), self.readoutChanged)
-        self.connect(self.radioReadoutDataDriven ,SIGNAL("clicked()"), self.readoutChanged)
-        self.connect(self.radioReadoutOff ,SIGNAL("clicked()"), self.readoutChanged)
         self.devid=0
         self.shutter=0
         self.all_dacs=["dac_ibias_preamp_on","dac_ibias_preamp_off","dac_vpreamp_ncas","dac_ibias_ikrum","dac_vfbk",\
                      "dac_vthresh_fine","dac_vthresh_coarse","dac_ibias_discs1_on","dac_ibias_discs1_off",\
                      "dac_ibias_discs2_on","dac_ibias_discs2_off","dac_ibias_pixeldac","dac_ibias_tpbufin",\
                      "dac_ibias_tpbufout","dac_vtp_coarse","dac_vtp_fine"]
-        self.connect(self.buttonConfigure ,SIGNAL("clicked()"), self.matrixConfigure)
         self.connect(self.buttonDefaults ,SIGNAL("clicked()"), self.defaults)
         self.TPInternalDetails.setVisible(False)
         self.TPEnable.stateChanged.connect(self.TPEnableChanged)
@@ -266,6 +262,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionShutter.triggered.connect(self.dockShutter.toggleVisibility)
         self.actionHitRate.triggered.connect(self.dockHitRate.toggleVisibility)
         self.actionDemoConfig.triggered.connect(self.dockDemoConfig.toggleVisibility)
+        self.actionOutputs.triggered.connect(self.dockOutputs.toggleVisibility)
 
         self.dockGeneral.setAssociatedCheckbox(self.actionGeneral)
         self.dockDACs.setAssociatedCheckbox(self.actionDACs)
@@ -274,6 +271,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dockShutter.setAssociatedCheckbox(self.actionShutter)
         self.dockDemoConfig.setAssociatedCheckbox(self.actionDemoConfig)
         self.dockHitRate.setAssociatedCheckbox(self.actionHitRate)
+        self.dockOutputs.setAssociatedCheckbox(self.actionOutputs)
 
         self.dockGeneral.setName("General",1)
         self.dockDACs.setName("DACs",0)
@@ -282,6 +280,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dockShutter.setName("Shutter",1)
         self.dockDemoConfig.setName("DemoConfig",0)
         self.dockHitRate.setName("HitRate",0)
+        self.dockOutputs.setName("Outputs",0)
 
 
         settings = QSettings()
@@ -553,8 +552,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.spidrController:
             pass
         else:
-            ip_list=self.ipAddress.text().split('.')
-            port=self.port.text()
+            ip_list="192.168.100.10".split('.')
+            port="50000"
             self.spidrController=SpidrController(int(ip_list[0]),int(ip_list[1]),int(ip_list[2]),int(ip_list[3]),int(port))
             s=""
             if self.spidrController.isConnected():
@@ -563,7 +562,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.updateDisplays()
                 self.spidrDaq=SpidrDaq(self.spidrController)
                 if self.spidrDaq.errorString():
-                    print self.spidrDaq.errorString()
+                    self.connectrionMessage.setText(self.spidrDaq.errorString())
                 self.spidrDaq.setSampling(True)
                 self.spidrDaq.setSampleAll(True )
                 self.matrix = np.zeros( shape=(256,256))
