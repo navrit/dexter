@@ -24,24 +24,26 @@ class SpidrDacs : public QDialog, Ui_SpidrDacsDialog
   void setDacsDefaults();
   void dacChanged( int index );
   void adjustLayout();
+  void changeDeviceIndex( int index );
 
  private:
-  SpidrController *_spidrController;
+  SpidrController    *_spidrController;
+  int _deviceIndex;
 
   QVector<QSlider *>  _slidrs;
   QVector<QSpinBox *> _spboxs;
   QVector<QLabel *>   _labels;
 
-  QSignalMapper   *_signalMapper;
+  QSignalMapper      *_signalMapper;
 
-  QIntValidator   *_ipAddrValidator;
-  QIntValidator   *_ipPortValidator;
+  QIntValidator      *_ipAddrValidator;
+  QIntValidator      *_ipPortValidator;
 
-  int              _timerId;
+  int                 _timerId;
 
-  bool             _disableSetDac;
+  bool                _disableSetDac;
 
-  QPalette         _qpOkay, _qpError;
+  QPalette            _qpOkay, _qpError;
 
   void timerEvent( QTimerEvent * );
   void initDacs();

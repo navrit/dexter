@@ -22,6 +22,7 @@ const int CHECK_INTERVAL_MS = 1000;
 SpidrDacs::SpidrDacs()
   : QDialog(),
     _spidrController( 0 ),
+    _deviceIndex( 0 ),
     _disableSetDac( false )
 {
   this->setupUi(this);
@@ -35,6 +36,8 @@ SpidrDacs::SpidrDacs()
 	   this, SLOT( readDacs() ) );
   connect( _pushButtonSetDacsDefaults, SIGNAL( clicked() ),
 	   this, SLOT( setDacsDefaults() ) );
+  connect( _comboBoxDeviceIndex, SIGNAL( currentIndexChanged(int) ),
+	   this, SLOT( changeDeviceIndex(int) ) );
 
   _ipAddrValidator = new QIntValidator( 1, 255, this );
   _lineEditAddr3->setValidator( _ipAddrValidator );
@@ -46,6 +49,8 @@ SpidrDacs::SpidrDacs()
   _lineEditPort->setValidator( _ipPortValidator );
 
   _labelDisconnected->hide();
+
+  _comboBoxDeviceIndex->hide();
 
   _qpOkay  = this->palette();
   _qpError = _qpOkay;
@@ -177,6 +182,21 @@ void SpidrDacs::connectOrDisconnect()
 	  _pushButtonReadDacs->setEnabled( true );
 	  _pushButtonSetDacsDefaults->setEnabled( true );
 
+	  _comboBoxDeviceIndex->clear();
+	  int devices;
+	  if( _spidrController->getDeviceCount( &devices ) )
+	    {
+	      QString qs = "Device ";
+	      _comboBoxDeviceIndex->show();
+	      int i;
+	      for( i=0; i<devices; ++i )
+		_comboBoxDeviceIndex->addItem( qs + QString::number(i) );
+	    }
+	  else
+	    {
+	      _comboBoxDeviceIndex->hide();
+	    }
+
 	  _timerId = this->startTimer( CHECK_INTERVAL_MS );
 	}
       else
@@ -203,7 +223,8 @@ void SpidrDacs::readDacs()
   int dac_val;
   for( int i=0; i<_slidrs.size(); ++i )
     {
-      if( _spidrController->getDac( 0, TPX3_DAC_TABLE[i].code, &dac_val ) )
+      if( _spidrController->getDac( _deviceIndex,
+				    TPX3_DAC_TABLE[i].code, &dac_val ) )
 	{
 	  _slidrs[i]->setValue( dac_val );
 	  _spboxs[i]->setPalette( _qpOkay );
@@ -223,7 +244,7 @@ void SpidrDacs::setDacsDefaults()
 {
   if( !_spidrController || !_spidrController->isConnected() ) return;
 
-  if( _spidrController->setDacsDflt( 0 ) ) this->readDacs();
+  if( _spidrController->setDacsDflt( _deviceIndex ) ) this->readDacs();
 }
 
 // ----------------------------------------------------------------------------
@@ -233,7 +254,7 @@ void SpidrDacs::dacChanged( int index )
   if( !_spidrController || !_spidrController->isConnected() ) return;
   if( _disableSetDac ) return;
 
-  if( _spidrController->setDac( 0, TPX3_DAC_TABLE[index].code,
+  if( _spidrController->setDac( _deviceIndex, TPX3_DAC_TABLE[index].code,
 				_spboxs[index]->value() ) )
     _spboxs[index]->setPalette( _qpOkay );
   else
@@ -297,6 +318,15 @@ void SpidrDacs::adjustLayout()
   // Set equal label widths
   for( col=0; col<_labels.size(); ++col )
     _labels[col]->setMinimumWidth( min_width );
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDacs::changeDeviceIndex( int index )
+{
+  if( index < 0 ) return;
+  _deviceIndex = index;
+  this->initDacs();
 }
 
 // ----------------------------------------------------------------------------
