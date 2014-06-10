@@ -631,7 +631,7 @@ bool SpidrController::burnEfuse( int dev_nr,
                                  int selection )
 {
   int dword = ((selection & 0x1F) << 6) | (prog_width & 0x3F);
-  return this->requestSetInt( CMD_BURN_EFUSE, device_nr, dword );
+  return this->requestSetInt( CMD_BURN_EFUSE, dev_nr, dword );
 }
 #endif // CERN_PROBESTATION
 
