@@ -17,7 +17,8 @@ const int UPDATE_INTERVAL_MS = 2000;
 SpidrMon::SpidrMon()
   : QDialog(),
     _spidrController( 0 ),
-    _dacCode( TPX3_BANDGAP_OUTPUT )
+    _dacCode( TPX3_BANDGAP_OUTPUT ),
+    _doubleSpidr( false )
 {
   this->setupUi(this);
 
