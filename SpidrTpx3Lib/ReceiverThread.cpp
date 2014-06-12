@@ -89,6 +89,7 @@ ReceiverThread::~ReceiverThread()
 {
   // In case the thread is still running...
   this->stop();
+  if( _recvBuffer ) delete [] _recvBuffer;
 }
 
 // ----------------------------------------------------------------------------
