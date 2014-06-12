@@ -26,7 +26,7 @@ class MY_LIB_API SpidrDaq
   // C'tor, d'tor
   SpidrDaq( int ipaddr3, int ipaddr2, int ipaddr1, int ipaddr0, int port );
   SpidrDaq( SpidrController *spidrctrl,
-	    long long bufsize = 0x020000000, //  512 MByte
+	    long long bufsize = 0x20000000, //  512 MByte
 	    int device_nr = 0 );
   ~SpidrDaq();
 

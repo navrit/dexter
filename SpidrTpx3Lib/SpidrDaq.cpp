@@ -7,7 +7,7 @@
 #include "dacsdescr.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14060400;
+const int VERSION_ID = 0x14061100;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor / info
@@ -219,11 +219,14 @@ bool SpidrDaq::startRecording( std::string filename,
       else
 	fhdr->spidrFilter = INVALID_VAL;
 
-      // Bias voltage
+      // Bias voltage; if necessary select proper chipboard I2C-bus
+      if( _deviceNr == 1 ) _spidrCtrl->selectChipBoard( 2 );
       if( _spidrCtrl->getBiasVoltage( &val ) )
 	fhdr->spidrBiasVoltage = val;
       else
 	fhdr->spidrBiasVoltage = INVALID_VAL;
+      // If necessary deselect chipboard I2C-bus
+      if( _deviceNr == 1 ) _spidrCtrl->selectChipBoard( 1 );
     }
 
   // Fill in the rest of the device header
