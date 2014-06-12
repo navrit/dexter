@@ -70,7 +70,7 @@ class ColorMap:
         color_norm  = colors.Normalize(vmin=self.min, vmax=self.max)
         color_norm.clip=False
         transform = cm.ScalarMappable(norm=color_norm, cmap=self.cm)
-        cdata=transform.to_rgba(data,bytes=True)
+        cdata=transform.to_rgba(np.transpose(data),bytes=True)
         #print self.min, self.max
         image=QImage(cdata,cdata.shape[0],cdata.shape[1], cdata.shape[0]*4, QImage.Format_ARGB32 )
         return image.copy()
@@ -148,6 +148,9 @@ class PixBitmap(QWidget):
         pixtxt="[%d,%d]"%(pix.x(),pix.y())
         name=self.popMenu.addAction(pixtxt)
         name.setEnabled(False)
+        print self.data[pix.x()][pix.y()]
+        print self.data[pix.y()][pix.x()]
+
         pixtxt="%.3f"%(self.data[pix.x()][pix.y()])
         val=self.popMenu.addAction(pixtxt)
         val.setEnabled(False)
@@ -422,6 +425,7 @@ class PixHist(QWidget):
 
         hist,edges=np.histogram(self.data,bins=BINS,range=(self.cm.min,self.cm.max))
         MAX_BIN=max(hist[1:])
+        MAX_BIN=max((MAX_BIN,1))
         #print "MAX_BIN",MAX_BIN
         metrics = qp.fontMetrics()
         MAX_TEXT_LEN=metrics.width("256")

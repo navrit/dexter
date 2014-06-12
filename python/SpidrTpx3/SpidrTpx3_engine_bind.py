@@ -162,7 +162,7 @@ mod.add_enum('tpx3_defs',load_defines('../SpidrTpx3Lib/tpx3defs.h',defs=defs))
 
 c = mod.add_class('SpidrDaq')
 c.add_constructor([param('int', 'ipaddr3'),param('int', 'ipaddr2'),param('int', 'ipaddr1'),param('int', 'ipaddr0'),param('int', 'port')])
-c.add_constructor([param('SpidrController *', 'spidrctrl', transfer_ownership=False)])
+c.add_constructor([param('SpidrController *', 'spidrctrl', transfer_ownership=False),      param('long long', 'bufsize'),param('int','device_nr')])
 c.add_method('classVersion',    'int',         [])
 c.add_method('ipAddressString', 'std::string', [])
 c.add_method('errorString',     'std::string', [])
@@ -240,10 +240,60 @@ c3 = mod.add_class('UDPServer')
 c3.add_constructor([])
 c3.add_method('start', None, [param ('unsigned int', 'port')])
 c3.add_method('isStarted', 'bool', [])
+c3.add_instance_attribute('err', 'int')
 c3.add_method('getN', 'std::list<unsigned long>',[param('unsigned int', 'N'),param('unsigned int', 'debug')])
 c3.add_method('getH', 'std::list<unsigned long>',[param('unsigned long int', 'val'),param('unsigned long int', 'mask'),param('unsigned int', 'debug')])
 c3.add_method('flush', None,[])
+if 1:
+  c3.add_custom_method_wrapper( method_name="getH2", wrapper_name="getH2_imp", wrapper_body="""
+PyObject *
+getH2_imp(PyUDPServer *self, PyObject *args, PyObject *kwargs, PyObject **return_exception)
+{
+    PyObject *py_retval;
+    std::list< unsigned long > retval;
+    unsigned long int val;
+    unsigned long int mask;
+    unsigned int debug;
+    const char *keywords[] = {"val", "mask", "debug", NULL};
+    Pystd__list__lt__unsigned_long__gt__ *py_std__list__lt__unsigned_long__gt__;
 
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char *) "kkI", (char **) keywords, &val, &mask, &debug)) {
+        return NULL;
+    }
+    Py_BEGIN_ALLOW_THREADS
+    retval = self->obj->getH(val, mask, debug);
+    Py_END_ALLOW_THREADS
+    py_std__list__lt__unsigned_long__gt__ = PyObject_New(Pystd__list__lt__unsigned_long__gt__, &Pystd__list__lt__unsigned_long__gt___Type);
+    py_std__list__lt__unsigned_long__gt__->obj = new std::list<unsigned long>(retval);
+    py_retval = Py_BuildValue((char *) "N", py_std__list__lt__unsigned_long__gt__);
+    return py_retval;
+}
+""")
+
+if 1:
+  c3.add_custom_method_wrapper( method_name="getN2", wrapper_name="getN2_imp", wrapper_body="""
+PyObject *
+getN2_imp(PyUDPServer *self, PyObject *args, PyObject *kwargs, PyObject **return_exception)
+{
+    PyObject *py_retval;
+    std::list< unsigned long > retval;
+    unsigned int N;
+    unsigned int debug;
+    const char *keywords[] = {"N", "debug", NULL};
+    Pystd__list__lt__unsigned_long__gt__ *py_std__list__lt__unsigned_long__gt__;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char *) "II", (char **) keywords, &N, &debug)) {
+        return NULL;
+    }
+    Py_BEGIN_ALLOW_THREADS
+    retval = self->obj->getN(N, debug);
+    Py_END_ALLOW_THREADS
+    py_std__list__lt__unsigned_long__gt__ = PyObject_New(Pystd__list__lt__unsigned_long__gt__, &Pystd__list__lt__unsigned_long__gt___Type);
+    py_std__list__lt__unsigned_long__gt__->obj = new std::list<unsigned long>(retval);
+    py_retval = Py_BuildValue((char *) "N", py_std__list__lt__unsigned_long__gt__);
+    return py_retval;
+}
+""")
 
 
 #klass.add_method('getN', 'std::list<unsigned long>',[param('unsigned int', 'N')])

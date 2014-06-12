@@ -44,10 +44,11 @@ public:
 /*  void *FillMemOnce();
   void *disp();
   */
+  int err;
 private:
   pthread_t recv_thread;
   int sockfd;
-  int err;
+
 
 /*  
  

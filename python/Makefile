@@ -1,4 +1,4 @@
-#DEBUG=0
+#DEBUG=1
 ifdef DEBUG
 PYTHON_INCLUDEDIR=$(shell  python2.7-dbg-config --cflags)
 LDFLAGS=-shared -Wl,-rpath=$(PWD)/../Debug  -L../Debug

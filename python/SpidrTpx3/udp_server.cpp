@@ -58,6 +58,7 @@ void*   UDPServer::receive()
   if (p == NULL) 
   {
     fprintf(stderr, "listener: failed to bind socket\n");
+    err=1;
     return NULL;
   }
 
