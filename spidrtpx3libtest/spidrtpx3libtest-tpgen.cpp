@@ -30,6 +30,11 @@ int main()
     return 1;
   }
 
+  int errstat;
+  if( spidrctrl.reset( &errstat ) ) {
+    cout << "errorstat " << hex << errstat << dec << endl;
+  }
+
   int device_nr = 0;
 
   // ----------------------------------------------------------
@@ -45,7 +50,7 @@ int main()
     error_out( "###resetPixels" );
 
   spidrctrl.resetPixelConfig();
-  spidrctrl.setPixelTestEna( ALL_PIXELS, ALL_PIXELS );
+  spidrctrl.setPixelTestEna();
   if( !spidrctrl.setPixelConfig( device_nr ) )
     error_out( "###setPixelConfig" );
 
@@ -99,7 +104,7 @@ int main()
   */
   // Set Timepix3 acquisition mode: ToA-ToT, test-pulses, digital-in
   if( !spidrctrl.setGenConfig( device_nr,
-                               TPX3_POLARITY_HPLUS |
+                               TPX3_POLARITY_EMIN |
                                TPX3_ACQMODE_TOA_TOT |
                                TPX3_GRAYCOUNT_ENA |
                                TPX3_TESTPULSE_ENA |

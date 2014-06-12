@@ -42,8 +42,13 @@ int main()
   // ----------------------------------------------------------
   // DACs configuration
 
-  //if( !spidrctrl.setDacsDflt( device_nr ) )
-  //  error_out( "###setDacsDflt" );
+  if( !spidrctrl.setDacsDflt( device_nr ) )
+    error_out( "###setDacsDflt" );
+  // The following setting is necessary (in combination with
+  // the setGenConfig() setting EMIN or HPLUS) in order to prevent
+  // noisy pixels also generating pixel data!
+  if( !spidrctrl.setDac( device_nr, TPX3_VTHRESH_COARSE, 9 ) )
+    error_out( "###setDac" );
 
   // ----------------------------------------------------------
   // Pixel configuration
@@ -74,8 +79,8 @@ int main()
     if( col >= 10 && col < 11 )
       //spidrctrl.configCtpr( device_nr, col, 1 );
       spidrctrl.setCtprBit( col );
+  //spidrctrl.setCtprBits( 0 ); // Disable all
 
-  //spidrctrl.setCtprBits( 0 );
   if( !spidrctrl.setCtpr( device_nr ) )
     error_out( "###setCtpr" );
 
@@ -101,17 +106,19 @@ int main()
                                TPX3_GRAYCOUNT_ENA |
                                TPX3_TESTPULSE_ENA |
                                TPX3_FASTLO_ENA |
-			               TPX3_SELECTTP_DIGITAL ) )
+                               TPX3_SELECTTP_DIGITAL ) )
     error_out( "###setGenCfg" );
 
   // Set Timepix3 into acquisition mode
   //if( !spidrctrl.datadrivenReadout() )
-  if( !spidrctrl.sequentialReadout( ) )
+  if( !spidrctrl.sequentialReadout( 1 ) )
     error_out( "###xxxxReadout" );
 
   // ----------------------------------------------------------
 
   // Configure the shutter trigger
+  // (irrelevant when using openShutter() below)
+  /*
   int trig_mode      = 4;      // SPIDR_TRIG_AUTO;
   int trig_length_us = 200000; // 200 ms
   int trig_freq_hz   = 1;      // Hz
@@ -120,6 +127,7 @@ int main()
   if( !spidrctrl.setTriggerConfig( trig_mode, trig_length_us,
                                    trig_freq_hz, trig_cnt ) )
     error_out( "###setTriggerConfig" );
+  */
 
   // ----------------------------------------------------------
 
@@ -144,6 +152,11 @@ int main()
     error_out( "###getOutBlockConfig" );
   else
     cout << "OutConfig=" << hex << config << endl;
+  if( !spidrctrl.getGenConfig( device_nr, &config ) )
+    error_out( "###getGenConfig" );
+  else
+    cout << "GenConfig=" << hex << config << endl;
+
   int eth_mask, cpu_mask;
   if( !spidrctrl.getHeaderFilter( device_nr, &eth_mask, &cpu_mask ) )
     error_out( "###getHeaderFilter" );
