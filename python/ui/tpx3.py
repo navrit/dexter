@@ -64,23 +64,21 @@ class DaqThread(QThread):
         self.rate=Rate(refresh=0.05,updateRateSignal=self.updateRate, refreshDisplaySignal=self.refreshDisplay)
 
     def stop(self):
-        #self.mutex.lock()
         self.abort = True
-        #self.condition.wakeOne()
-        #self.mutex.unlock()
-        #self.wait()
+        self.parent.pauseReadout()
+        self.parent.resetPixels()
+        print "stoping daq thread"
     def __del__(self):
         print "Wating ..."
         self.wait()
 
     def run(self):
-#        total_hits=0
-#        last_time=time.time()
-#        ref_last=time.time()
         print "Starting data taking thread"
         #prev_ref=0
         #msg=""
         self.abort=False
+        self.parent.resetPixels()
+        self.parent.datadrivenReadout()
         while True:
             if self.abort:
                 return
@@ -106,7 +104,8 @@ class DaqThread(QThread):
                    data>>=4
                    data&=0x2FF
 #                   print x,y,data
-                   self.data[x][y]+=data
+                   self.data[x,y]+=data
+                   self.parent.matrixCounts[x,y]+=1
                    hits+=1
                self.rate.processed(hits)
 
@@ -466,7 +465,16 @@ class TPX3:
       self.setPixelMask(c,r,mask)
 
   def setPixelConfig(self):
+    restart=0
+    if self.daqThread.isRunning():
+        self.daqThread.stop()
+        self.daqThread.wait()
+        restart=1
     r=self.ctrl.setPixelConfig(self.id, cols_per_packet=2)
+    if restart:
+        self.daqThread.start()
+        print "x"
+
     self._log_ctrl_cmd("setPixelConfig() ",r)
 
   def getPixelConfig(self):

@@ -220,7 +220,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_Equalize.triggered.connect(self.onEqualize)
 
     def onTabPageChange(self):
-        print self.tabsMain.currentIndex()
+        if self.tabsMain.currentIndex()==0:
+            self.viewerTOT._regenerate_bitmap()
+        if self.tabsMain.currentIndex()==1:
+            self.viewerCounts._regenerate_bitmap()
+
         if self.tabsMain.currentIndex()==2:
             self.viewerDACs._regenerate_bitmap()
         if self.tabsMain.currentIndex()==3:
@@ -228,7 +232,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def daqThreadrefreshDisplay(self,data):
-        self.updateViewer()
+        if self.tabsMain.currentIndex()==0:
+            self.viewerTOT._regenerate_bitmap();
+        if self.tabsMain.currentIndex()==1:
+            self.viewerCounts._regenerate_bitmap();
 
     def TPEnableChanged(self):
         print "Changed"
@@ -409,8 +416,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tpx.stopAutoTrigger()
             self.shutter=0
 
-    def updateViewer(self):
-        self.viewerTOT._regenerate_bitmap();
+
 
     def closeEvent(self,event):
         settings=QSettings();
@@ -458,14 +464,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.viewerTOT.setData(self.tpx.matrixTOT)
                     self.viewerTOT.cm.min=0
                     self.viewerTOT.cm.max=50
+                    self.viewerTOT.tpx=self.tpx
 
                     self.viewerMask.setData(self.tpx.matrixMask)
                     self.viewerMask.cm.min=0
                     self.viewerMask.cm.max=1
+                    self.viewerMask.tpx=self.tpx
 
                     self.viewerDACs.setData(self.tpx.matrixDACs)
                     self.viewerDACs.cm.min=0
                     self.viewerDACs.cm.max=15
+                    self.viewerDACs.tpx=self.tpx
+
+                    self.viewerCounts.setData(self.tpx.matrixCounts)
+                    self.viewerCounts.cm.min=0
+                    self.viewerCounts.cm.max=50
+                    self.viewerCounts.tpx=self.tpx
 
                     self.tpx.daqThread.start()
 

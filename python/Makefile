@@ -47,17 +47,30 @@ $(TMP_DIR)/SpidrTpx3_engine.so:$(TMP_DIR)/SpidrTpx3_engine.o $(TMP_DIR)/udp_serv
 
 SpidrTpx3/tpx3.so:SpidrTpx3/tpx3.o
 	$(CXX) -shared $< -o $@
-
 SpidrTpx3/tpx3.o:SpidrTpx3/tpx3.c
 	$(CXX) -c $(CFLAGS) $< -o $@
-
 SpidrTpx3/tpx3.c: SpidrTpx3/tpx3.py
 	cython $<
+
+ui/tpx3.so:ui/tpx3.py
+	cython $<
+	$(CXX) -c $(CFLAGS) ui/tpx3.c -o ui/tpx3.so
+	$(CXX) -shared ui/tpx3.so -o $@
+
+ui/PixBitmap.so:ui/PixBitmap.py
+	cython $<
+	$(CXX) -c $(CFLAGS) ui/PixBitmap.c -o ui/PixBitmap.o
+	$(CXX) -shared ui/PixBitmap.o -o $@
+
+
 
 gui: ui/MainWnd.ui
 	pyside-uic ui/MainWnd.ui -o ui/MainWnd.py
 	pyside-uic ui/BitmapForm.ui -o ui/BitmapForm.py
 	pyside-uic ui/EqualizeForm.ui -o ui/EqualizeForm.py
+
+gui_fast:ui/tpx3.so ui/PixBitmap.so
+	
 
 ls clean:
 	@rm -rf tmp/* SpidrTpx3/tpx3.o SpidrTpx3/tpx3.c SpidrTpx3/tpx3.so

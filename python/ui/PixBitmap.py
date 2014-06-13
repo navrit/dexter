@@ -9,7 +9,10 @@ from math import copysign
 
 import sys
 
-
+UPDATE_RECT=0
+UPDATE_ROWS=1
+UPDATE_COLUMNS=2
+UPDATE_RECT_OUT=3
 
 class ColorMap:
     def __init__(self,parent=None,min=0.0,max=0.0):
@@ -85,10 +88,14 @@ class PixBitmap(QWidget):
         self.zooming=False
         self.zoom_p1=QPoint(0,0) #in screen coordinates
         self.zoom_p2=QPoint(0,0)
+        self.selecting=False
+        self.select_p1=QPoint(0,0) #in screen coordinates
+        self.select_p2=QPoint(0,0)
         self.force_square=False
 
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.connect(self, QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'), self.on_context_menu)
+        #self.connect(self, QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'), self.on_context_menu)
+
         self._popmenu_pos=[0,0]
         self.scale=0.2
         self.visibleRegion=QRect (0,0,0,0)
@@ -138,44 +145,15 @@ class PixBitmap(QWidget):
         self.force_square=not self.force_square
         self.update()
 
-    def on_context_menu(self, point):
-        if self.data==None: return
 
-        pix=self._point_to_pixel(point)
-
-        # create context menu
-        self.popMenu = QtGui.QMenu(self)
-        pixtxt="[%d,%d]"%(pix.x(),pix.y())
-        name=self.popMenu.addAction(pixtxt)
-        name.setEnabled(False)
-        print self.data[pix.x()][pix.y()]
-        print self.data[pix.y()][pix.x()]
-
-        pixtxt="%.3f"%(self.data[pix.x()][pix.y()])
-        val=self.popMenu.addAction(pixtxt)
-        val.setEnabled(False)
-
-        self.popMenu.addSeparator()
-#        self.popMenu.addAction(QtGui.QAction('S&qare', self,triggered=self.action_square))
-#        self.popMenu.addSeparator()
-        zoomMenu = QtGui.QMenu("Zoom")
-        self.popMenu.addMenu(zoomMenu)
-
-        zoomMenu.addAction(QtGui.QAction('Zoom fit', self,triggered=self.action_zoom_fit))
-        zoomMenu.addAction(QtGui.QAction('Zoom in',  self,triggered=lambda :self.action_zoom(1)))
-        zoomMenu.addAction(QtGui.QAction('Zoom out', self,triggered=lambda :self.action_zoom(-1)))
-
-        self.popMenu.addSeparator()
-        self.popMenu.addMenu(self.cm.generateMenu())
-        # show context menu
-        self._popmenu_pos=point
-        self.popMenu.exec_(self.mapToGlobal(point))
 
 
     def mouseMoveEvent(self, event):
         if self.data==None: return
-        #print dir(event)
-        self.zoom_p2=event.pos()
+        if self.zooming:
+            self.zoom_p2=event.pos()
+        if self.selecting:
+            self.select_p2=event.pos()
         self.update()
 
     def _point_to_pixel(self,p):
@@ -246,28 +224,126 @@ class PixBitmap(QWidget):
     def wheelEvent (self,event):
         if self.data==None: return
         self.zooming=False
+        self.selecting=False
         self.zoom_delta_pos(event.delta(),event.pos())
 
     def mouseReleaseEvent(self, event):
         if self.data==None: return
-        #print event
         if event.button() == Qt.LeftButton and self.zooming:
             self.zooming=False
             p1=self._point_to_pixel( self.zoom_p1 )
             p2=self._point_to_pixel( self.zoom_p2 )
             self._zoom_update_ranges(p1,p2)
             event.accept()
+        elif event.button() == Qt.RightButton and self.selecting:
+            self.selecting=False
+            #self._zoom_update_ranges(p1,p2)
+            self.on_select(event.pos())
+            event.accept()
 
         else:
             QWidget.mousePressEvent(self, event)
 
+    def on_select(self, point):
+        if self.data==None: return
+        p1=self._point_to_pixel( self.select_p1)
+        p2=self._point_to_pixel( self.select_p2)
+
+        # create context menu
+        self.popMenu = QtGui.QMenu(self)
+        if p1==p2:
+           pixtxt="[%d,%d]"%(p1.x(),p1.y())
+           pixval="Value:%.3f"%(self.data[p1.x()][p1.y()])
+        else:
+           pixtxt="[%d,%d] - [%d,%d] (%dx%d)"%(p1.x(),p1.y(),p2.x(),p2.y(), abs(p1.x()-p2.x())+1,abs(p2.y()-p1.y())+1)
+           x_min=min((p1.x(),p2.x()))
+           x_max=max((p1.x(),p2.x()))+1
+           y_min=min((p1.y(),p2.y()))
+           y_max=max((p1.y(),p2.y()))+1
+           print x_min,x_max,y_min,y_max
+           a=np.mean(self.data[x_min:x_max,y_min:y_max])
+           s=np.std(self.data[x_min:x_max,y_min:y_max])
+           pixval="Mean:%.3f RMS:%.3f"%(a,s)
+
+        name=self.popMenu.addAction(pixtxt)
+        name.setEnabled(False)
+
+        val=self.popMenu.addAction(pixval)
+        val.setEnabled(False)
+
+        self.popMenu.addSeparator()
+        zoomMenu = QtGui.QMenu("Zoom")
+        self.popMenu.addMenu(zoomMenu)
+        zoomMenu.addAction(QtGui.QAction('Zoom fit', self,triggered=self.action_zoom_fit))
+        zoomMenu.addAction(QtGui.QAction('Zoom in',  self,triggered=lambda :self.action_zoom(1)))
+        zoomMenu.addAction(QtGui.QAction('Zoom out', self,triggered=lambda :self.action_zoom(-1)))
+
+        self.popMenu.addSeparator()
+        self.popMenu.addMenu(self.cm.generateMenu())
+        self.popMenu.addSeparator()
+
+        maskMenu = QtGui.QMenu("Mask")
+        self.popMenu.addMenu(maskMenu)
+        maskMenu.addAction(QtGui.QAction('Selected', self,triggered=lambda:self.action_mask(UPDATE_RECT)))
+        maskMenu.addAction(QtGui.QAction('Columns',  self,triggered=lambda:self.action_mask(UPDATE_COLUMNS)))
+        maskMenu.addAction(QtGui.QAction('Rows', self,triggered=lambda:self.action_mask(UPDATE_ROWS)))
+        maskMenu.addAction(QtGui.QAction('Outside', self,triggered=lambda:self.action_mask(UPDATE_RECT_OUT)))
+
+        self._popmenu_pos=point
+        self.popMenu.exec_(self.mapToGlobal(point))
+
+
+    def action_mask(self,type):
+        p1=self._point_to_pixel( self.select_p1)
+        p2=self._point_to_pixel( self.select_p2)
+        x_min=min((p1.x(),p2.x()))
+        x_max=max((p1.x(),p2.x()))+1
+        y_min=min((p1.y(),p2.y()))
+        y_max=max((p1.y(),p2.y()))+1
+        i=0
+        if type==UPDATE_RECT:
+            for x in range(x_min,x_max):
+                for y in range(y_min,y_max):
+                    self.parent.tpx.setPixelMask(x,y,1)
+                    i+=1
+        elif type==UPDATE_COLUMNS:
+            for x in range(x_min,x_max):
+                for y in range(0,256):
+                    self.parent.tpx.setPixelMask(x,y,1)
+                    i+=1
+        elif type==UPDATE_ROWS:
+            for x in range(0,256):
+                for y in range(y_min,y_max):
+                    self.parent.tpx.setPixelMask(x,y,1)
+                    i+=1
+        elif type==UPDATE_RECT_OUT:
+            for x in range(0,256):
+                for y in range(0,256):
+                    if x>=x_min and x<x_max and y>=y_min and y<y_max:
+                        pass
+                        i+=1
+                    else:
+                        self.parent.tpx.setPixelMask(x,y,1)
+
+
+        print "Masking %d pixels"%i
+        self.parent.tpx.setPixelConfig()
+        self.update()
 
     def mousePressEvent(self, event):
         if self.data==None: return
+        print event
         if event.button() == Qt.LeftButton:
             #self.moveSlider(event.x())
             self.zooming=True
             self.zoom_p1=event.pos()
+            self.zoom_p2=self.zoom_p1
+            event.accept()
+        elif event.button() == Qt.RightButton:
+            #self.moveSlider(event.x())
+            self.selecting=True
+            self.select_p1=event.pos()
+            self.select_p2=self.select_p1
             event.accept()
         else:
             QWidget.mousePressEvent(self, event)
@@ -367,6 +443,11 @@ class PixBitmap(QWidget):
             brush=QBrush(QColor(0,0,255,128))
             qp.setBrush(brush)
             qp.drawRect( QRect(self.zoom_p1,self.zoom_p2))
+
+        if self.selecting:
+            brush=QBrush(QColor(255,0,0,128))
+            qp.setBrush(brush)
+            qp.drawRect( QRect(self.select_p1,self.select_p2))
 
 import numpy as np
 
