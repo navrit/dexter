@@ -1,6 +1,13 @@
+from PySide.QtCore import *
+from PySide.QtGui import *
 from SpidrTpx3_engine import *
 import numpy as np
 import time
+
+TPX3_VTHRESH = 32
+
+class MySignal(QObject):
+    sig = Signal(str)
 
 #pixel lookup address
 address_loopup_list=[]
@@ -15,6 +22,93 @@ for raw in range(256*256):
    row=sp_address*4
    row+= (pixel_address&0x3)
    address_loopup_list.append( (col,row) )
+
+
+class Rate():
+    def __init__(self,refresh=0.02,updateRateSignal=None,refreshDisplaySignal=None):
+        self.refresh=refresh
+        self.total_events=0
+        self.new_events=0
+        self.last_ref_time=time.time()
+        self.last_s_time=self.last_ref_time
+        self.updateRateSignal=updateRateSignal
+        self.refreshDisplaySignal=refreshDisplaySignal
+    def processed(self, events):
+        now=time.time()
+        self.new_events+=events
+
+        # refresh
+        dt=now-self.last_ref_time
+        if dt>self.refresh and self.refreshDisplaySignal:
+            self.last_ref_time=now
+            self.refreshDisplaySignal.sig.emit("Now")
+        # report rate
+        dt=now-self.last_s_time
+        if dt>1.0 and self.updateRateSignal:
+            rate=self.new_events/dt
+            self.total_events+=self.new_events
+            self.last_s_time=now
+            self.new_events=0
+            self.updateRateSignal.sig.emit("%.3f"%rate)
+
+
+
+class DaqThread(QThread):
+    def __init__(self, parent=None):
+        QThread.__init__(self)
+        self.parent=parent
+        self.abort = False
+        self.data=None
+        self.updateRate = MySignal()
+        self.refreshDisplay = MySignal()
+        self.rate=Rate(refresh=0.05,updateRateSignal=self.updateRate, refreshDisplaySignal=self.refreshDisplay)
+
+    def stop(self):
+        #self.mutex.lock()
+        self.abort = True
+        #self.condition.wakeOne()
+        #self.mutex.unlock()
+        #self.wait()
+    def __del__(self):
+        print "Wating ..."
+        self.wait()
+
+    def run(self):
+#        total_hits=0
+#        last_time=time.time()
+#        ref_last=time.time()
+        print "Starting data taking thread"
+        #prev_ref=0
+        #msg=""
+        self.abort=False
+        while True:
+            if self.abort:
+                return
+
+            self.data*=0.98
+        #if 0:
+            low_values_indices = self.data < 1.0  # Where values are low
+            self.data[low_values_indices] = 0  # All low values set to 0
+
+            next_frame=self.parent.getSample(1024,10)
+            #next_frame=self.parent.spidrDaq.getSample(100,10)
+            self.rate.processed(0)
+            #print next_frame
+            if next_frame:
+               time.sleep(0.005)
+
+               #hits=self.parent.spidrDaq.sampleSize()/8
+#               print hits
+               hits=0
+               while True:
+                   r,x,y,data,tstp=self.parent.nextPixel()
+                   if not r: break
+                   data>>=4
+                   data&=0x2FF
+#                   print x,y,data
+                   self.data[x][y]+=data
+                   hits+=1
+               self.rate.processed(hits)
 
 class MyUDPServer:
     def __init__(self):
@@ -115,6 +209,20 @@ class TPX3:
         self.daq.setSampleAll(True )
     else:
         self.daq=MyUDPServer()
+
+    self.matrixTOT    = np.zeros( shape=(256,256))
+    self.matrixCounts = np.zeros( shape=(256,256))
+    self.matrixMask   = np.zeros( shape=(256,256))
+    self.matrixDACs   = np.zeros( shape=(256,256))
+
+    self.matrixMaskNeedUpdate = False
+    self.matrixDACsNeedUpdate = False
+
+
+    self.daqThread = DaqThread(self)
+
+    self.daqThread.data=self.matrixTOT
+
 #    self.reinitDevice()
 #    self.flush_udp_fifo(val=0)
 
@@ -208,12 +316,32 @@ class TPX3:
     self._log_ctrl_cmd("setSenseDac(%d) "%(code),r)
 
   def setDac(self,code,val):
-    r=self.ctrl.setDac(self.id,code,val)
-    self._log_ctrl_cmd("setDac(%d,%d) "%(code,val),r)
+    if code<32:
+        r=self.ctrl.setDac(self.id,code,val)
+        self._log_ctrl_cmd("setDac(%d,%d) "%(code,val),r)
+    elif code==TPX3_VTHRESH:
+        threshold=val
+        coarse=int(threshold/160)
+        fine=threshold-coarse*160+352
+        r=self.ctrl.setDac(self.id,TPX3_VTHRESH_FINE,fine)
+        r=self.ctrl.setDac(self.id,TPX3_VTHRESH_COARSE,coarse)
+        self._log_ctrl_cmd("setDac(%d,%d) "%(code,val),r)
+    else:
+        pass
 
   def getDac(self,code):
-    r,v=self.ctrl.getDac(self.id,code)
-    self._log_ctrl_cmd("getDac(%d)=%d "%(code,v),r)
+    if code<32:
+        r,v=self.ctrl.getDac(self.id,code)
+        self._log_ctrl_cmd("getDac(%d)=%d "%(code,v),r)
+    elif code==TPX3_VTHRESH:
+        r,coarse=self.ctrl.getDac(self.id,TPX3_VTHRESH_COARSE)
+        r,fine=self.ctrl.getDac(self.id,TPX3_VTHRESH_FINE)
+        print coarse,fine
+        v=coarse*160 +(fine-352)
+    else:
+        v=0
+        pass
+
     return v
 
   def setDacsDflt(self):
@@ -221,7 +349,12 @@ class TPX3:
     self._log_ctrl_cmd("setDacsDflt()",r)
 
   def dacMax(self,code):
-    return self.ctrl.dacMax(code)
+    if code<32:
+        return self.ctrl.dacMax(code)
+    elif code==TPX3_VTHRESH:
+        return 2559
+    else:
+        return 0
 
   def getAdcEx(self,measurements):
       ret,val=self.ctrl.getAdc(0,measurements)
@@ -229,6 +362,12 @@ class TPX3:
       val=1.5*val/4096
       return val
 
+  def getDacVoltage(self,code,loop=32):
+        self.setSenseDac(code)
+        v=self.getAdcEx(1)
+        time.sleep(0.001)
+        v=self.getAdcEx(32)
+        return v
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # DAQ
@@ -305,6 +444,7 @@ class TPX3:
 
   def setPixelThreshold(self,x,y,dac):
     r=self.ctrl.setPixelThreshold(x,y,dac)
+    self.matrixDACs[x][y]=dac
 
   def setPixelTestEna(self,x,y, testbit=False):
     r=self.ctrl.setPixelTestEna(x,y, testbit)
@@ -312,9 +452,14 @@ class TPX3:
   def resetPixelConfig(self):
     r=self.ctrl.resetPixelConfig()
     self._log_ctrl_cmd("resetPixelConfig() ",True)
+    for x in range(256):
+        for y in range(256):
+            self.matrixMask[x][y]=0
+            self.matrixDACs[x][y]=0
 
   def setPixelMask(self,x,y,v):
     r=self.ctrl.setPixelMask(x,y,v)
+    self.matrixMask[x][y]=v
 
   def MaskPixels(self,l,mask=True):
     for c,r in l:
@@ -331,6 +476,27 @@ class TPX3:
   def resetPixels(self):
     r=self.ctrl.resetPixels(self.id)
     self._log_ctrl_cmd("resetPixels() ",r)
+
+  def load_equalization(self,fname,maskname=""):
+        def load(fn):
+          f=open(fn,"r")
+          ret=[]
+          for l in f.readlines():
+            ll=[]
+            for n in l.split():
+              n=int(n)
+              ll.append(n)
+            ret.append(ll)
+          f.close()
+          return ret
+        eq=load(fname)
+        if maskname : mask=load(maskname)
+        self.resetPixelConfig()
+        for x in range(256):
+          for y in range(256):
+              self.setPixelThreshold(x,y,eq[y][x])
+              if maskname and mask[y][x]:
+                self.setPixelMask(x,y,mask[y][x])
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # Misc

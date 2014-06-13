@@ -8,6 +8,7 @@ import scipy.ndimage as ndi
 import random
 import os
 import time
+
 from tpx3 import *
 from equalize import EqualizeDlg
 
@@ -21,15 +22,6 @@ import os
 import time
 from hitratedock import HitRateDock
 
-class MySignal(QObject):
-    sig = Signal(str)
-#
-# class SpidrControllerEx(SpidrController):
-#     def getAdcEx(self,measurements):
-#         ret,val=self.getAdc(self.id,measurements)
-#         val=float(val)/measurements
-#         val=1.5*val/4096
-#         return val
 
 class DummyDaq:
     def __init__(self):
@@ -139,88 +131,7 @@ class DummyDaq:
             return False,0,0,0,0
 
 
-class Rate():
-    def __init__(self,refresh=0.02,updateRateSignal=None,refreshDisplaySignal=None):
-        self.refresh=refresh
-        self.total_events=0
-        self.new_events=0
-        self.last_ref_time=time.time()
-        self.last_s_time=self.last_ref_time
-        self.updateRateSignal=updateRateSignal
-        self.refreshDisplaySignal=refreshDisplaySignal
-    def processed(self, events):
-        now=time.time()
-        self.new_events+=events
 
-        # refresh
-        dt=now-self.last_ref_time
-        if dt>self.refresh and self.refreshDisplaySignal:
-            self.last_ref_time=now
-            self.refreshDisplaySignal.sig.emit("Now")
-        # report rate
-        dt=now-self.last_s_time
-        if dt>1.0 and self.updateRateSignal:
-            rate=self.new_events/dt
-            self.total_events+=self.new_events
-            self.last_s_time=now
-            self.new_events=0
-            self.updateRateSignal.sig.emit("%.3f"%rate)
-
-class DaqThread(QThread):
-    def __init__(self, parent=None):
-        QThread.__init__(self)
-        self.parent=parent
-        self.abort = False
-        self.data=None
-        self.updateRate = MySignal()
-        self.refreshDisplay = MySignal()
-        self.rate=Rate(refresh=0.05,updateRateSignal=self.updateRate, refreshDisplaySignal=self.refreshDisplay)
-    def stop(self):
-        #self.mutex.lock()
-        self.abort = True
-        #self.condition.wakeOne()
-        #self.mutex.unlock()
-        #self.wait()
-    def __del__(self):
-        print "Wating ..."
-        self.wait()
-
-    def run(self):
-#        total_hits=0
-#        last_time=time.time()
-#        ref_last=time.time()
-        print "Starting data taking thread"
-        #prev_ref=0
-        #msg=""
-        self.abort=False
-        while True:
-            if self.abort:
-                return
-
-            self.data*=0.98
-        #if 0:
-            low_values_indices = self.data < 1.0  # Where values are low
-            self.data[low_values_indices] = 0  # All low values set to 0
-
-            next_frame=self.parent.tpx.getSample(1024,10)
-            #next_frame=self.parent.spidrDaq.getSample(100,10)
-            self.rate.processed(0)
-            #print next_frame
-            if next_frame:
-               time.sleep(0.005)
-
-               #hits=self.parent.spidrDaq.sampleSize()/8
-#               print hits
-               hits=0
-               while True:
-                   r,x,y,data,tstp=self.parent.tpx.nextPixel()
-                   if not r: break
-                   data>>=4
-                   data&=0x2FF
-#                   print x,y,data
-                   self.data[x][y]+=data
-                   hits+=1
-               self.rate.processed(hits)
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -228,8 +139,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super(MainWindow, self).__init__(parent)
         self.setupUi(self)
         self.tpx=None
-#        self.connect(self.buttonConnect,SIGNAL("clicked()"), self.connectOrDisconnect)
-     #   self.genConfigTP.currentIndexChanged['QString'].connect(self.gcrChanged)
         self.genConfigPolarity.currentIndexChanged['QString'].connect(self.gcrChanged)
 #        self.genConfigAckCmd.currentIndexChanged['QString'].connect(self.gcrChanged)
         self.genConfigFastLo.currentIndexChanged['QString'].connect(self.gcrChanged)
@@ -250,11 +159,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.devid=0
         self.shutter=0
         self.all_dacs=["dac_ibias_preamp_on","dac_ibias_preamp_off","dac_vpreamp_ncas","dac_ibias_ikrum","dac_vfbk",\
-                     "dac_vthresh_fine","dac_vthresh_coarse","dac_ibias_discs1_on","dac_ibias_discs1_off",\
+                     "dac_vthresh","dac_ibias_discs1_on","dac_ibias_discs1_off",\
                      "dac_ibias_discs2_on","dac_ibias_discs2_off","dac_ibias_pixeldac","dac_ibias_tpbufin",\
                      "dac_ibias_tpbufout","dac_vtp_coarse","dac_vtp_fine"]
+        #"dac_vthresh_fine","dac_vthresh_coarse"
         self.connect(self.buttonDefaults ,SIGNAL("clicked()"), self.defaults)
-        self.TPInternalDetails.setVisible(False)
         self.genConfigTP.stateChanged.connect(self.TPEnableChanged)
         self.TPSource.currentIndexChanged.connect(self.TPSourceChanged)
         #self.sliderThreshold.valueChanged.connect(self.thresholdSliderMoved)
@@ -263,6 +172,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for dn in self.all_dacs:
             dac=getattr(self,dn)
             tpx_dn="TPX3_"+dn[4:].upper()
+            print dn,tpx_dn
             dac.valueChanged.connect(lambda val,dacn=int(eval(tpx_dn)):self.onDacChanged(dacn,val))
 
         self.actionConnectDemo.triggered.connect(self.onConnectDemo)
@@ -297,7 +207,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dockDemoConfig.setName("DemoConfig",0)
         self.dockHitRate.setName("HitRate",0)
         self.dockOutputs.setName("Outputs",0)
-
+        self.tabsMain.currentChanged.connect(self.onTabPageChange)
 
         settings = QSettings()
 
@@ -309,9 +219,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         settings.setValue("runs", int(settings.value("runs", 0))+1)
         self.action_Equalize.triggered.connect(self.onEqualize)
 
-        self.daqThread = DaqThread(self)
-        self.daqThread.updateRate.sig.connect(self.dockHitRate.UpdateRate)
-        self.daqThread.refreshDisplay.sig.connect(self.daqThreadrefreshDisplay)
+    def onTabPageChange(self):
+        print self.tabsMain.currentIndex()
+        if self.tabsMain.currentIndex()==2:
+            self.viewerDACs._regenerate_bitmap()
+        if self.tabsMain.currentIndex()==3:
+            self.viewerMask._regenerate_bitmap()
 
 
     def daqThreadrefreshDisplay(self,data):
@@ -319,10 +232,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def TPEnableChanged(self):
         print "Changed"
+        self.gcrChanged()
 
     def onEqualize(self):
         dlg=EqualizeDlg(self)
-
 
     def TPSourceChanged(self):
         if self.TPSource.currentIndex()==0:
@@ -331,47 +244,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.TPInternalDetails.setVisible(False)
         self.dockTP.adjustSize()
 
-    def load_equalization(self,fname,maskname=""):
-        def load(fn):
-          f=open(fn,"r")
-          ret=[]
-          for l in f.readlines():
-            ll=[]
-            for n in l.split():
-              n=int(n)
-              ll.append(n)
-            ret.append(ll)
-          f.close()
-          return ret
-        eq=load(fname)
-        if maskname : mask=load(maskname)
-        self.tpx.resetPixelConfig()
-        for x in range(256):
-          for y in range(256):
-              self.tpx.setPixelThreshold(x,y,eq[y][x])
-              if maskname and mask[y][x]:
-                self.tpx.setPixelMask(x,y,mask[y][x])
+
 
     def thresholdSliderMoved(self):
         nth=self.sliderThreshold.value()
         self.labelThreshold.setText(str(nth))
         self.setThreshold(nth)
 
-    def setThreshold(self,dac_value=1000):
-        """ Xavi's treshold """
-        i=0
-        coarse_found=0
-        fine_found=352
-        for coarse in range(16):
-           for fine in range(352,512,1):
-              if dac_value==i:
-                 coarse_found=coarse
-                 fine_found=fine
-              i+=1
-#        self.tpx.setDac(TPX3_VTHRESH_COARSE,coarse_found)
-#        self.tpx.setDac(TPX3_VTHRESH_FINE,fine_found)
-        self.updateDacWithoutSignal("VTHRESH_COARSE",coarse_found)
-        self.updateDacWithoutSignal("VTHRESH_FINE",fine_found)
 
     def updateDacWithoutSignal(self,dacname,value):
         dac=getattr(self,"dac_"+dacname.lower())
@@ -381,9 +260,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tpx.setDac(eval(tpx_dn),value)
         dac.blockSignals(oldState)
 
-
-    def matrixConfigure(self):
-        print os.getcwd()
 
     def defaults(self):
         self.tpx.resetPixels()
@@ -404,7 +280,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.tpx.setGenConfig( TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA | TPX3_FASTLO_ENA)
         self.tpx.resetPixelConfig()
-        self.load_equalization('../calib/eq_codes.dat',\
+        self.tpx.load_equalization('../calib/eq_codes.dat',\
                       maskname='../calib/eq_mask.dat')
         self.tpx.setPixelMask(95,108,1)
         self.tpx.setPixelMask(153,85,1)
@@ -412,24 +288,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tpx.setPixelMask(45,132,1)
         self.tpx.setPixelMask(132,45,1)
         self.tpx.setPixelConfig()
-        self.setThreshold(1150)
+        self.tpx.setDac(TPX3_VTHRESH,1150)
         self.tpx.datadrivenReadout()
-        print "Done"
 
-    def gcrChanged(self,index):
+        print "Done", np.sum(self.tpx.matrixMask)
+
+    def gcrChanged(self,index=False):
         gcr=0
         gcr+=self.genConfigPolarity.currentIndex()
+        if self.genConfigFastLo.currentIndex() : gcr+=TPX3_FASTLO_ENA
+        if self.genConfigGrayCnt.currentIndex() : gcr+=TPX3_GRAYCOUNT_ENA
+        if self.genConfigTP.isChecked() : gcr+=TPX3_TESTPULSE_ENA
+        self.tpx.setGenConfig(gcr)
         self.updateGcr()
 
     def updateGcr(self):
         if self.tpx.isConnected():
             gcr=self.tpx.getGenConfig()
-#                self.genConfigValue.setText("0x%04X"%gcr)
+            print "GCR 0x%08X"%gcr
             self.genConfigPolarity.setEnabled(True)
             self.genConfigPolarity.setCurrentIndex(gcr&TPX3_POLARITY_EMIN)
-            self.genConfigMode.setEnabled(True)
-            self.genConfigMode.setCurrentIndex(gcr&TPX3_ACQMODE_MASK>>1)
-            self.genConfigTP.setChecked (gcr&TPX3_TESTPULSE_ENA != 0 )
+#            self.genConfigMode.setEnabled(False)
+#            self.genConfigMode.setCurrentIndex(gcr&TPX3_ACQMODE_MASK>>1)
+            print "gcr&TPX3_FASTLO_ENA>>6",(gcr&TPX3_FASTLO_ENA)>>6
+            self.genConfigFastLo.setCurrentIndex((gcr&TPX3_FASTLO_ENA)>>6)
+            self.genConfigFastLo.setEnabled(True)
+            self.genConfigGrayCnt.setCurrentIndex((gcr&TPX3_GRAYCOUNT_ENA)>>3)
+            self.genConfigGrayCnt.setEnabled(True)
+            self.genConfigTP.setChecked ((gcr&TPX3_TESTPULSE_ENA))
 
     def outputMaskChanged(self):
         om=0
@@ -462,7 +348,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.outputMask5.setChecked(cnf & (1<<5))
         self.outputMask6.setChecked(cnf & (1<<6))
         self.outputMask7.setChecked(cnf & (1<<7))
-        print cnf
 
     def updateShutter(self):
         if self.tpx.isConnected():
@@ -495,7 +380,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             oldState = dac.blockSignals(True)
             dac.setProperty("value", dval)
             dac.blockSignals(oldState)
-            #print dn,dval
             dac.setEnabled(True)
             maxval=self.tpx.dacMax(eval(tpx_dn))
             dac.setMaximum(maxval)
@@ -526,7 +410,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.shutter=0
 
     def updateViewer(self):
-        self.viewer._regenerate_bitmap();
+        self.viewerTOT._regenerate_bitmap();
 
     def closeEvent(self,event):
         settings=QSettings();
@@ -546,7 +430,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.matrix = np.zeros( shape=(256,256))
                 self.viewer.setData(self.matrix)
                 self.viewer.cm.min=0
-                self.viewer.cm.max=1024
+                self.viewer.cm.max=128
                 self.daqThread.data=self.matrix
                 self.daqThread.start()
                 self.spinDemoGenRate.valueChanged.connect(self.onSpinDemoGenRateChanged)
@@ -567,14 +451,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     s="<font color='green'> %s<font>"%self.tpx.connectionStateString()
                     self.initAfterConnect()
                     self.updateDisplays()
-
-                    self.matrix = np.zeros( shape=(256,256))
-                    self.viewer.setData(self.matrix)
-                    self.viewer.cm.min=0
-                    self.viewer.cm.max=50
-                    self.daqThread.data=self.matrix
-                    self.daqThread.start()
                     self.connectrionMessage.setText(s)
+                    self.tpx.daqThread.updateRate.sig.connect(self.dockHitRate.UpdateRate)
+                    self.tpx.daqThread.refreshDisplay.sig.connect(self.daqThreadrefreshDisplay)
+
+                    self.viewerTOT.setData(self.tpx.matrixTOT)
+                    self.viewerTOT.cm.min=0
+                    self.viewerTOT.cm.max=50
+
+                    self.viewerMask.setData(self.tpx.matrixMask)
+                    self.viewerMask.cm.min=0
+                    self.viewerMask.cm.max=1
+
+                    self.viewerDACs.setData(self.tpx.matrixDACs)
+                    self.viewerDACs.cm.min=0
+                    self.viewerDACs.cm.max=15
+
+                    self.tpx.daqThread.start()
 
             except RuntimeError as n:
                 self.tpx=None

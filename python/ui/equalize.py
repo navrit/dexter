@@ -3,8 +3,34 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 from EqualizeForm import Ui_EqualizeForm
 import time
-from SpidrTpx3_engine import *
+import sys
+import socket
+import getpass
+from tpx3 import *
 import numpy as np
+from xml.etree import ElementTree
+from xml.dom import minidom
+from xml.etree.ElementTree import Element, SubElement, Comment
+
+def prettify(elem):
+    """Return a pretty-printed XML string for the Element.
+    """
+    rough_string = ElementTree.tostring(elem, 'utf-8')
+    reparsed = minidom.parseString(rough_string)
+    return reparsed.toprettyxml(indent="  ")
+
+def get_time():
+    return time.strftime("%H:%M:%S", time.localtime())
+
+def get_date_time():
+    return time.strftime("%Y/%m/%d %H:%M:%S", time.localtime())
+
+def get_user_name():
+    return getpass.getuser()
+
+def get_host_name():
+    return socket.gethostname()
+
 
 
 def _equalize(scans):
@@ -58,8 +84,11 @@ class EqualizeThread(QThread):
 
     def log(self,s):
         self.parent.textEdit.append(s)
+
     def run(self):
         _id=0
+        fbase=self.parent.lineDirectory.text() +QDir.separator()+self.parent.lineFileName.text()
+
         self.log("Starting...")
 
         self.tpx.resetPixels()
@@ -106,9 +135,7 @@ class EqualizeThread(QThread):
                 best_vfbk_val=vfbk
                 best_vfbk_code=code
         self.tpx.setDac(TPX3_VFBK,best_vfbk_code)
-        vfbk=self.tpx.getAdcEx(1)
-        time.sleep(0.001)
-        vfbk=self.tpx.getAdcEx(8)
+        vfbk=self.tpx.getDacVoltage(TPX3_VFBK)
         self.log("TPX3_VFBK code=%d voltage=%.1f mV"%(best_vfbk_code,(1000.0*vfbk)))
         if self.abort:  return
 
@@ -123,24 +150,21 @@ class EqualizeThread(QThread):
             best_vthfine_val=vthfine
             best_vthfine_code=code
         self.tpx.setDac(TPX3_VTHRESH_FINE,best_vthfine_code)
-        vthfine=self.tpx.getAdcEx(1)
-        time.sleep(0.001)
-        vthfine=self.tpx.getAdcEx(8)
+        vthfine=self.tpx.getDacVoltage(TPX3_VTHRESH_FINE)
         self.log("TPX3_VTHRESH_FINE code=%d voltage=%.1f mV"%(best_vthfine_code,(1000.0*vthfine)))
         if self.abort:  return
 
         self.tpx.setShutterLen(500)
         self.tpx.sequentialReadout(tokens=4)
-        ######### TTTTTTTTTT
+
         avr=[]
         std=[]
         ThrFrom=0
         ThrTo=512
-        ThrStep=1
+        ThrStep=self.parent.spinTHLStep.value()
         steps=(ThrTo-ThrFrom)/ThrStep*2
         threshold=10
         step=1
-        fbase=self.parent.lineDirectory.text() +QDir.separator()+self.parent.lineFileName.text()
 
         self.parent.progressBar.setMaximum(steps)
         scans=[]
@@ -217,19 +241,8 @@ class EqualizeThread(QThread):
                   f.close()
               scans.append(res)
 
-        # Equalization
         bestValue,bestCode,maskPixels=_equalize(scans)
-        np.savetxt(fbase+"_eq_bl.dat",np.transpose(bestValue),fmt="%.2f")
-        np.savetxt(fbase+"_eq_codes.dat",np.transpose(bestCode),fmt="%.0f")
-        np.savetxt(fbase+"_eq_mask.dat",np.transpose(maskPixels),fmt="%d")
 
-        #fn=self.fname+"/eq_codes.dat"
-        #self.logging.info("Storing measured codes to %s"%fn)
-        #eq_codes=numpy.loadtxt(fn, dtype=int)
-
-        #fn=self.fname+"/eq_mask.dat"
-        #self.logging.info("Storing mask to %s"%fn)
-        #eq_mask=numpy.loadtxt(fn, dtype=int)
 
         self.tpx.resetPixelConfig()
         self.tpx.setPixelMask(ALL_PIXELS,ALL_PIXELS,1)
@@ -243,23 +256,115 @@ class EqualizeThread(QThread):
         self.tpx.pauseReadout()
         self.tpx.resetPixels()
         self.tpx.setPixelConfig()
+        self.tpx.sequentialReadout()
         self.tpx.setDac(TPX3_VTHRESH_FINE,380)
         self.parent.buttonEqualize.setText("Done")
         self.parent.buttonEqualize.setEnabled(True)
-
-
-        self.tpx.setDac(TPX3_VFBK,164)
-        self.tpx.setDac(TPX3_VTHRESH_FINE,410)
+        vfbk_code=164
+        self.tpx.setDac(TPX3_VFBK,vfbk_code)
+        self.tpx.setDac(TPX3_VTHRESH_FINE,300)
         self.tpx.setPllConfig( TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK \
                          | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_1 \
                          | 0x14<<TPX3_PLLOUT_CONFIG_SHIFT )
+
+        self.tpx.setShutterLen(10000)
+
+        if self.parent.checkMaskNoisy.isChecked():
+            self.log("Masking noisy pixels")
+            vfbk=self.tpx.getDacVoltage(TPX3_VFBK)
+            self.log("TPX3_VFBK code=%d voltage=%.1f mV"%(vfbk_code,(1000.0*vfbk)))
+            noisy_pixels=[]
+            for th in range(414,415):
+                self.tpx.setDac(TPX3_VTHRESH_FINE,th)
+                vthfine=self.tpx.getDacVoltage(TPX3_VTHRESH_FINE)
+                dV=vthfine-vfbk
+                print th,vthfine,dV
+                self.tpx.openShutter(sleep=True)
+                r=self.tpx.getFrame()
+                print "frame"
+                while True:
+                   r,x,y,data,etoa=self.tpx.nextPixel()
+                   if not r: break
+                   noisy_pixels.append((x,y))
+                print noisy_pixels
+
+        for x,y in noisy_pixels:
+            self.tpx.setPixelMask(x,y,1)
+            self.log("Masking pixel(%d,%d)"%(x,y))
+
+        self.tpx.pauseReadout()
+        self.tpx.resetPixels()
+        self.tpx.setPixelConfig()
+        self.tpx.sequentialReadout()
+
+
+#                self.log("dV=%.1f mV"%(dV*1000))
+
         self.tpx.setGenConfig( TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA | TPX3_FASTLO_ENA)
+
+
+        if self.parent.checkStoreTxt.isChecked():
+            # Equalization
+            self.log("Results stored to TXT file")
+            fn=fbase+".inf"
+            self.log("    -> registers & info : %s"%fn)
+
+            f=open(fn,"w")
+            f.write("time %s\n"% get_date_time())
+            f.write("user %s\n"% get_user_name())
+            f.write("host %s\n"% get_host_name())
+            f.write("ibias_ikrum %s\n"%self.tpx.getDac(TPX3_IBIAS_IKRUM) )
+            f.write("vfbk %s\n"%self.tpx.getDac(TPX3_VFBK))
+
+            fn=fbase+".bl"
+            self.log("    -> basline : %s"%fn)
+            np.savetxt(fn,np.transpose(bestValue),fmt="%.2f")
+
+            fn=fbase+".cod"
+            self.log("    -> DAC codes : %s"%fn)
+            np.savetxt(fn,np.transpose(bestCode),fmt="%d")
+
+            fn=fbase+".msk"
+            self.log("    -> registers & info : %s"%fn)
+            np.savetxt(fn,np.transpose(maskPixels),fmt="%d")
+
+
+        if self.parent.checkStoreXML.isChecked():
+            root = Element("Timepix3")
+            info = SubElement(root, "info")
+            time_now = SubElement(info, "time")
+            time_now.set("time", get_date_time())
+            user = SubElement(info, "user")
+            user.set("user", get_user_name())
+            host = SubElement(info, "host")
+            host.set("host", get_host_name())
+
+            mask_str=""
+            code_str=""
+            for y in range(bestCode.shape[1]):
+                for x in range(bestCode.shape[0]):
+                    mask_str+="%d "%maskPixels[x][y]
+                    code_str+="%d "%bestCode[x][y]
+                mask_str+="\n"
+                code_str+="\n"
+
+            codes_se = SubElement(root, "codes")
+            mask_se  = SubElement(root, "mask")
+            codes_se.text=code_str
+            mask_se.text=mask_str
+
+            #time_now.text = "some vale1"
+            fn=fbase+".t3x"
+            f=open(fn,"w")
+            f.write(prettify(root))
+            f.close()
+            self.log("Results stored to XML file : %s"%fn)
+
 #        self.tpx.resetPixelConfig()
 #        self.load_equalization('../calib/eq_codes.dat',\
 #                      maskname='../calib/eq_mask.dat')
 #        self.setThreshold(1150)
         self.tpx.datadrivenReadout()
-
         self.parent.parent.daqThread.start()
 
 class EqualizeDlg(QDialog, Ui_EqualizeForm):
