@@ -40,8 +40,13 @@ int main()
   // ----------------------------------------------------------
   // DACs configuration
 
-  //if( !spidrctrl.setDacsDflt( device_nr ) )
-  //  error_out( "###setDacsDflt" );
+  if( !spidrctrl.setDacsDflt( device_nr ) )
+    error_out( "###setDacsDflt" );
+  // The following setting is necessary (in combination with
+  // the setGenConfig() setting EMIN or HPLUS) in order to prevent
+  // noisy pixels also generating pixel data!
+  if( !spidrctrl.setDac( device_nr, TPX3_VTHRESH_COARSE, 9 ) )
+    error_out( "###setDac" );
 
   // ----------------------------------------------------------
   // Pixel configuration
@@ -49,6 +54,7 @@ int main()
   if( !spidrctrl.resetPixels( device_nr ) )
     error_out( "###resetPixels" );
 
+  // Enable test-bit in pixels
   spidrctrl.resetPixelConfig();
   spidrctrl.setPixelTestEna();
   if( !spidrctrl.setPixelConfig( device_nr ) )
@@ -58,18 +64,17 @@ int main()
   // Test pulse and CTPR configuration
 
   // Timepix3 test pulse configuration
-  if( !spidrctrl.setTpPeriodPhase( device_nr, 100, 0 ) )
+  if( !spidrctrl.setTpPeriodPhase( device_nr, 10, 0 ) )
     error_out( "###setTpPeriodPhase" );
 
-  //if( !spidrctrl.setTpNumber( device_nr, 5000 ) )
   if( !spidrctrl.setTpNumber( device_nr, 1 ) )
     error_out( "###setTpNumber" );
 
   // Enable test-pulses for (some or all) columns
   int col;
   for( col=0; col<256; ++col )
-    //if( col >= 10 && col < 16 )
-    if( (col & 1) == 1 )
+    if( col >= 10 && col < 16 )
+    //if( (col & 1) == 1 )
       spidrctrl.setCtprBit( col );
 
   if( !spidrctrl.setCtpr( device_nr ) )
@@ -77,31 +82,10 @@ int main()
 
   // ----------------------------------------------------------
 
-  // Configure the shutter trigger
-  int trig_mode      = 4;      // SPIDR_TRIG_AUTO;
-  //int trig_length_us = 500000; // 500 ms
-  int trig_length_us = 1000; // 1 ms
-  int trig_freq_hz   = 5;      // Hz
-  int trig_count   = 200;
-  //int trig_count     = 1;
-  if( !spidrctrl.setTriggerConfig( trig_mode, trig_length_us,
-                                   trig_freq_hz, trig_count ) )
-    error_out( "###setTriggerConfig" );
-
-  // ----------------------------------------------------------
-
   // SPIDR-TPX3 and Timepix3 timers
   if( !spidrctrl.restartTimers() )
     error_out( "###restartTimers" );
 
-  /*
-  // Set Timepix3 acquisition mode: ToA-ToT
-  if( !spidrctrl.setGenConfig( device_nr,
-                               TPX3_POLARITY_HPLUS |
-                               TPX3_ACQMODE_TOA_TOT |
-                               TPX3_GRAYCOUNT_ENA |
-                               TPX3_FASTLO_ENA ) )
-  */
   // Set Timepix3 acquisition mode: ToA-ToT, test-pulses, digital-in
   if( !spidrctrl.setGenConfig( device_nr,
                                TPX3_POLARITY_EMIN |
@@ -115,7 +99,20 @@ int main()
   // Set Timepix3 into acquisition mode
   //if( !spidrctrl.sequentialReadout() )
   if( !spidrctrl.datadrivenReadout() )
-    error_out( "###ddrivenReadout" );
+    error_out( "###xxxxReadout" );
+
+  // ----------------------------------------------------------
+
+  // Configure the shutter trigger
+  int trig_mode      = 4;      // SPIDR_TRIG_AUTO;
+  int trig_length_us = 10000;  // 10 ms
+  int trig_freq_hz   = 1;      // 3 Hz
+  //int trig_freq_hz   = 3;      // 3 Hz
+  int trig_count   = 10;     // 10 triggers
+  //int trig_count     = 1;
+  if( !spidrctrl.setTriggerConfig( trig_mode, trig_length_us,
+                                   trig_freq_hz, trig_count ) )
+    error_out( "###setTriggerConfig" );
 
   // ----------------------------------------------------------
 
@@ -136,5 +133,9 @@ int main()
     error_out( "###closeShutter" );
 
   // ----------------------------------------------------------
+  int cntr;
+  spidrctrl.getDataPacketCounter( &cntr );
+  cout << "SPIDR packet cntr   : " << cntr << endl;
+
   return 0;
 }

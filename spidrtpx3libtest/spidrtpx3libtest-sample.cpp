@@ -34,8 +34,6 @@ int main()
   if( spidrctrl.reset( &errstat ) ) {
     cout << "errorstat " << hex << errstat << dec << endl;
   }
-  // Temporary, to be done as part of reset() above:
-  spidrctrl.resetPacketCounters();
 
   int device_nr = 0;
 
@@ -59,14 +57,6 @@ int main()
   // Enable test-bit in pixels
   spidrctrl.resetPixelConfig();
   spidrctrl.setPixelTestEna();
-  /*
-  int i;
-  for( i=0; i<250; ++i )
-    {
-      spidrctrl.setPixelTestEna( 0, i );
-      spidrctrl.setPixelTestEna( 1, i );
-    }
-  */
   if( !spidrctrl.setPixelConfig( device_nr ) )
     error_out( "###setPixelConfig" );
 
@@ -81,7 +71,6 @@ int main()
     error_out( "###setTpNumber" );
 
   // Enable test-pulses for (some or all) columns
-  //spidrctrl.setCtprBits( 0 );
   int col;
   for( col=0; col<256; ++col )
     if( !((col >= 10 && col < 12) || (col >= 100 && col < 102)) )
@@ -96,7 +85,7 @@ int main()
   if( !spidrctrl.restartTimers() )
     error_out( "###restartTimers" );
 
-  // Set Timepix3 acquisition mode
+  // Set Timepix3 acquisition mode: ToA-ToT, test-pulses, digital-in
   if( !spidrctrl.setGenConfig( device_nr,
                                TPX3_POLARITY_EMIN |
                                TPX3_ACQMODE_TOA_TOT |
@@ -107,8 +96,8 @@ int main()
     error_out( "###setGenCfg" );
 
   // Set Timepix3 into acquisition mode
-  //if( !spidrctrl.datadrivenReadout() )
-  if( !spidrctrl.sequentialReadout( 1 ) )
+  //if( !spidrctrl.sequentialReadout() )
+  if( !spidrctrl.datadrivenReadout() )
     error_out( "###xxxxReadout" );
 
   // ----------------------------------------------------------
@@ -143,7 +132,7 @@ int main()
   // Sample 'frames' as well as write pixel data to file
   spidrdaq.setSampling( true );
   spidrdaq.setSampleAll( true );
-  if( !spidrdaq.startRecording( "test/mon/test.dt", 123, "Eerste testjes" ) )
+  if( !spidrdaq.startRecording( "test/test.dt", 123, "Eerste testjes" ) )
     cout << "###SpidrDaq.startRecording: " << spidrdaq.errorString() << endl;
 
   cout << "Filename: " << spidrdaq.fileName() << endl;
@@ -225,18 +214,19 @@ int main()
 	}
     }
 
+  // ----------------------------------------------------------
   int cntr;
   spidrctrl.getDataPacketCounter( &cntr );
   cout << "SPIDR packet cntr   : " << cntr << endl;
   cout << "SpidrDaq packet cntr: " << spidrdaq.packetsReceivedCount() << endl;
 
-  if( !spidrctrl.pauseReadout() )
-    error_out( "###pauseReadout" );
-  Sleep(100);
+  //if( !spidrctrl.pauseReadout() )
+  //  error_out( "###pauseReadout" );
+  //Sleep(100);
 
   // Revert changes made due to sequentialReadout()
-  if( !spidrctrl.setHeaderFilter( device_nr, 0x0C00, 0xF3FF ) )
-    error_out( "###setHeaderFilter" );
-  // ----------------------------------------------------------
+  //if( !spidrctrl.setHeaderFilter( device_nr, 0x0C00, 0xF3FF ) )
+  //  error_out( "###setHeaderFilter" );
+
   return 0;
 }

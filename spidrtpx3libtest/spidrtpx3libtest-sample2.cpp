@@ -34,8 +34,6 @@ int main()
   if( spidrctrl.reset( &errstat ) ) {
     cout << "errorstat " << hex << errstat << dec << endl;
   }
-  // Temporary, to be done as part of reset() above:
-  spidrctrl.resetPacketCounters();
 
   int devnr;
   char ch;
@@ -139,10 +137,10 @@ int main()
       cout << "bufsize=" << spidrdaq[devnr]->bufferSize() << endl;
       
       // Sample 'frames' as well as write pixel data to file
-      spidrdaq[devnr]->setSampling( true );
-      spidrdaq[devnr]->setSampleAll( true );
+      //spidrdaq[devnr]->setSampling( true );
+      //spidrdaq[devnr]->setSampleAll( true );
       ostringstream oss;
-      oss << "test/data" << devnr;
+      oss << "test/data" << devnr; // To distinguish between 2 devices!
       if( !spidrdaq[devnr]->startRecording( oss.str(),
 					    123, "Eerste testjes" ) )
 	cout << "###SpidrDaq.startRecording: "
@@ -164,8 +162,8 @@ int main()
     cout << "restartTimers" << endl;
 
   // Set Timepix3 into acquisition mode
-  //if( !spidrctrl.datadrivenReadout() )
-  if( !spidrctrl.sequentialReadout( 1 ) )
+  if( !spidrctrl.datadrivenReadout() )
+  //if( !spidrctrl.sequentialReadout( 1 ) )
     error_out( "###xxxxReadout" );
   else
     cout << "seqReadout" << endl;
