@@ -443,7 +443,12 @@ class TPX3:
 
   def setPixelThreshold(self,x,y,dac):
     r=self.ctrl.setPixelThreshold(x,y,dac)
-    self.matrixDACs[x][y]=dac
+    if x<ALL_PIXELS and y< ALL_PIXELS:
+        self.matrixDACs[x][y]=dac
+    else:
+        for x in range(ALL_PIXELS):
+          for y in range(ALL_PIXELS):
+            self.matrixDACs[x][y]=dac
 
   def setPixelTestEna(self,x,y, testbit=False):
     r=self.ctrl.setPixelTestEna(x,y, testbit)
@@ -458,7 +463,13 @@ class TPX3:
 
   def setPixelMask(self,x,y,v):
     r=self.ctrl.setPixelMask(x,y,v)
-    self.matrixMask[x][y]=v
+    if x<ALL_PIXELS and y< ALL_PIXELS:
+        self.matrixMask[x][y]=v
+    else:
+        for x in range(ALL_PIXELS):
+          for y in range(ALL_PIXELS):
+            self.matrixMask[x][y]=v
+ 
 
   def MaskPixels(self,l,mask=True):
     for c,r in l:

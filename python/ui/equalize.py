@@ -365,7 +365,7 @@ class EqualizeThread(QThread):
 #                      maskname='../calib/eq_mask.dat')
 #        self.setThreshold(1150)
         self.tpx.datadrivenReadout()
-        self.parent.parent.daqThread.start()
+        self.tpx.daqThread.start()
 
 class EqualizeDlg(QDialog, Ui_EqualizeForm):
     def __init__(self,parent=None):
@@ -381,8 +381,8 @@ class EqualizeDlg(QDialog, Ui_EqualizeForm):
 
     def onEqualize(self):
         if self.EqualizeThread==None:
-            self.parent.daqThread.stop()
-            self.parent.daqThread.wait()
+            self.parent.tpx.daqThread.stop()
+            self.parent.tpx.daqThread.wait()
             self.buttonEqualize.setEnabled(False)
             self.EqualizeThread = EqualizeThread(self,tpx=self.parent.tpx)
             QObject.connect(self.EqualizeThread, SIGNAL("progress(int)"),self.progressBar, SLOT("setValue(int)"), Qt.QueuedConnection)

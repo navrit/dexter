@@ -18,6 +18,8 @@ def load_wafer(bd,nr):
     die={}
     n=wdir.split("/")[-1]
     nn=n.split("_")
+
+    if nn[-1]=='efuse' : continue
     n=nn[1]
     names.append(n)
     for test in glob.glob(wdir+"/*/result.dat"):

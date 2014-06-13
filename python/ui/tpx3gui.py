@@ -287,8 +287,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.tpx.setGenConfig( TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA | TPX3_FASTLO_ENA)
         self.tpx.resetPixelConfig()
-        self.tpx.load_equalization('../calib/eq_codes.dat',\
-                      maskname='../calib/eq_mask.dat')
+        self.tpx.load_equalization('x.cod',\
+                      maskname='x.msk')
         self.tpx.setPixelMask(95,108,1)
         self.tpx.setPixelMask(153,85,1)
         self.tpx.setPixelMask(161,108,1)
