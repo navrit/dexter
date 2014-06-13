@@ -6,7 +6,7 @@ import matplotlib.colors as colors
 import matplotlib.cm as cm
 import matplotlib
 from math import copysign
-
+from kutils import n2h
 import sys
 
 UPDATE_RECT=0
@@ -19,7 +19,17 @@ class ColorMap:
         self.parent=parent
         self.min=min
         self.max=max
+        self.hmin=min
+        self.hmax=max
         self.changeColorMap('gray')#RdYlBu')
+
+    def setHMax(self,max):
+        self.max=max
+        self.hmax=max
+
+    def setHMin(self,min):
+        self.min=min
+        self.hmin=min
 
     def generateMenu(self):
         cmMenu=QtGui.QMenu('Color',None)
@@ -78,6 +88,8 @@ class ColorMap:
         image=QImage(cdata,cdata.shape[0],cdata.shape[1], cdata.shape[0]*4, QImage.Format_ARGB32 )
         return image.copy()
 
+
+
 class PixBitmap(QWidget):
     def __init__(self,parent=None):
         self.parent=parent
@@ -102,37 +114,6 @@ class PixBitmap(QWidget):
     def _regenerate_bitmap(self):
         if self.data!=None:
             self.bmp= self.cm.processData(self.data)
-
-#         #self.bmp = wx.BitmapFromBufferRGBA(cdata.shape[0],cdata.shape[1], cdata)
-#
-#         #self.hst=np.histogram(self.data, bins=64, range=(self.mmin,self.mmax))
-#
-# #        m1 = self.data > self.mmax
-# #        m2 = self.data < self.mmin
-# #        m=m1|m2
-#
-#         amasked = np.ma.masked_outside(self.data, self.mmin, self.mmax)
-#         self.sat=np.ma.count_masked(amasked)
-#         #array(self.data,mask=m)
-#         self.mean=amasked.mean()
-#         self.std=amasked.std()
-#
-#         self.col_profile=np.mean(amasked, axis=0)
-#         self.row_profile=np.mean(amasked, axis=1)
-#
-#         col_cdata=transform.to_rgba(self.col_profile,bytes=True)
-#         self.col_bmp = wx.BitmapFromBufferRGBA(col_cdata.shape[0],1, col_cdata)
-#
-#         row_cdata=transform.to_rgba(self.row_profile,bytes=True)
-#         self.row_bmp = wx.BitmapFromBufferRGBA(1,row_cdata.shape[0], row_cdata)
-#
-#         self.moddata=np.zeros( (self.mod_rows,self.mod_cols) )
-#         for r in range(self.mod_rows):
-#           for c in range(self.mod_cols):
-#              self.moddata[r][c]=amasked[r::self.mod_rows, c::self.mod_cols ].mean()
-#         cdata=transform.to_rgba(self.moddata,bytes=True)
-#
-#         self.mod_bmp = wx.BitmapFromBufferRGBA(cdata.shape[1],cdata.shape[0], cdata)
 
     def action_zoom(self,delta):
         self. zoom_delta_pos(delta,self._popmenu_pos)
@@ -260,7 +241,7 @@ class PixBitmap(QWidget):
            x_max=max((p1.x(),p2.x()))+1
            y_min=min((p1.y(),p2.y()))
            y_max=max((p1.y(),p2.y()))+1
-           print x_min,x_max,y_min,y_max
+           #print x_min,x_max,y_min,y_max
            a=np.mean(self.data[x_min:x_max,y_min:y_max])
            s=np.std(self.data[x_min:x_max,y_min:y_max])
            pixval="Mean:%.3f RMS:%.3f"%(a,s)
@@ -332,7 +313,7 @@ class PixBitmap(QWidget):
 
     def mousePressEvent(self, event):
         if self.data==None: return
-        print event
+        #print event
         if event.button() == Qt.LeftButton:
             #self.moveSlider(event.x())
             self.zooming=True
@@ -450,33 +431,102 @@ class PixBitmap(QWidget):
             qp.drawRect( QRect(self.select_p1,self.select_p2))
 
 import numpy as np
-
+ZOOM_MAX=1
+ZOOM_MIN=2
 class PixHist(QWidget):
     def __init__(self,parent=None):
         self.parent=parent
         super(PixHist, self).__init__(parent)
         self.setMinimumSize(130, 256)
         self.data=None
+        self.max_pos=-1
+        self.min_pos=0
+        self.zooming=0
+        self.edge_min=0
+        self.edge_max=1
 
     def mouseMoveEvent(self, event):
-        #print dir(event)
-        #self.event.x(),event.y(),event.pos()
-        self.zoom_x1=event.x()
-        self.zoom_y1=event.y()
-        self.update()
+        if self.zooming==ZOOM_MAX:
+            self.max_pos=event.y()-self.p0.y()
+            if self.max_pos<self.min_pos+20:
+                self.max_pos=self.min_pos+20
+            if self.max_pos>self.colorBoxSize.height():
+                self.max_pos=self.colorBoxSize.height()
+        elif self.zooming==ZOOM_MIN:
+            self.min_pos=event.y()-self.p0.y()
+            if self.min_pos>self.max_pos-20:
+                self.min_pos=self.max_pos-20
+
+            if self.min_pos<0:
+                self.min_pos=0
+        self.update_cm()
 
     def setColorMap(self,cm):
         self.cm=cm
 
+    def wheelEvent (self,event):
+       max_dis=abs(self.max_pos - event.y() + self.p0.y())
+       min_dis=abs(self.min_pos - event.y() + self.p0.y())
+       delta=-copysign(1,event.delta())
+       if min_dis>max_dis:
+            self.max_pos+=delta
+            if self.max_pos<self.min_pos+20:
+                self.max_pos=self.min_pos+20
+            if self.max_pos>self.colorBoxSize.height():
+                self.max_pos=self.colorBoxSize.height()
+       else:
+            self.min_pos+=delta
+            if self.min_pos>self.max_pos-20:
+                self.min_pos=self.max_pos-20
+
+            if self.min_pos<0:
+                self.min_pos=0
+       self.update_cm()
+
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            #self.moveSlider(event.x())
-            self.zooming=True
-            self.zoom_x0=event.x()
-            self.zoom_y0=event.y()
+            if abs(self.max_pos - event.y() + self.p0.y())<20:
+                 #print "zoomin max"
+                 self.zooming=ZOOM_MAX
+            elif abs(self.min_pos - event.y() + self.p0.y())<20:
+                 #print "zoomin min"
+                 self.zooming=ZOOM_MIN
+
+            else:
+                self.zooming=0
             event.accept()
+        elif event.button() == Qt.RightButton:
+           popMenu = QtGui.QMenu(self)
+           popMenu.addAction(QtGui.QAction('Auto', self,triggered=self.action_auto))
+
+           popMenu.exec_(self.mapToGlobal(event.pos()))
         else:
             QWidget.mousePressEvent(self, event)
+
+    def update_cm(self):
+        mmin=float(self.min_pos)/self.colorBoxSize.height()
+        mmax=float(self.max_pos)/self.colorBoxSize.height()
+
+
+        _hmin=self.cm.hmin
+        _hmax=self.cm.hmax
+        g=_hmax-_hmin
+
+        self.cm.min=_hmin+mmin*g
+        self.cm.max=_hmin+mmax*g
+
+        self.cm.generateColorBar()
+        self.parent._regenerate_bitmap()
+        self.parent.update()
+        #print self.cm.min, self.cm.max
+
+
+    def action_auto(self):
+        self.min_pos=0
+        self.max_pos=self.colorBoxSize.height()
+        self.cm.setHMin(np.min(self.data))
+        self.cm.setHMax(np.max(self.data))
+        self.update_cm()
 
     def paintEvent(self, e):
         if self.data!=None:
@@ -499,12 +549,20 @@ class PixHist(QWidget):
         self.histBoxSize=QSize(100,h)
         self.p0=QPoint(margin,margin)
 
-        BINS=100
+        BINS=200
         db=float(h)/BINS
         hist_width=64
         color_width=32
+        if self.max_pos<0:
+            self.max_pos=self.colorBoxSize.height()
 
-        hist,edges=np.histogram(self.data,bins=BINS,range=(self.cm.min,self.cm.max))
+        hist,edges=np.histogram(self.data,bins=BINS, range=(self.cm.hmin,self.cm.hmax))
+
+        # print "min",np.min(self.data)
+        # print "max",np.max(self.data)
+        # print "hmin",edges[0]
+        # print "hmax",edges[-1]
+
         MAX_BIN=max(hist[1:])
         MAX_BIN=max((MAX_BIN,1))
         #print "MAX_BIN",MAX_BIN
@@ -540,6 +598,39 @@ class PixHist(QWidget):
         qp.setBrush(brush)
         qp.drawRect(QRect(self.p0,self.histBoxSize))
         qp.drawRect(QRect(self.p0+QPoint(self.histBoxSize.width(),0),self.colorBoxSize))
+
+        font = QFont('Serif', 9, QFont.Light)
+        qp.setFont(font)
+        metrics = qp.fontMetrics()
+
+        pen = QPen(Qt.red, 3,  Qt.SolidLine)
+        qp.setPen(pen)
+        qp.drawLine(self.p0+QPoint(0,self.max_pos),self.p0+QPoint(self.histBoxSize.width(),self.max_pos))
+        qp.drawLine(self.p0+QPoint(self.histBoxSize.width()/2,self.max_pos),self.p0+QPoint(self.histBoxSize.width(),self.histBoxSize.height()))
+        qp.drawLine(self.p0+QPoint(self.histBoxSize.width(),self.histBoxSize.height()),self.p0+QPoint(self.histBoxSize.width() + bmp2.width(), self.histBoxSize.height() ))
+        maxstr=n2h(self.cm.max)
+        FW=metrics.width(maxstr)
+        FH=metrics.height()
+        pen = QPen(Qt.red, 2,  Qt.SolidLine)
+        qp.setPen(pen)
+        brush=QBrush(QColor.fromRgbF(1,1,1,0.8))
+        qp.setBrush(brush)
+        qp.drawRect(QRect(self.p0+QPoint(0,self.max_pos-2-FH) ,self.p0+QPoint(0+FW+2,self.max_pos-2) ))
+        qp.drawText(self.p0+QPoint(2,self.max_pos-4), maxstr)
+
+
+        pen = QPen(Qt.blue, 3,  Qt.SolidLine)
+        qp.setPen(pen)
+        qp.drawLine(self.p0+QPoint(0,self.min_pos),self.p0+QPoint(self.histBoxSize.width(),self.min_pos))
+        qp.drawLine(self.p0+QPoint(self.histBoxSize.width()/2,self.min_pos),self.p0+QPoint(self.histBoxSize.width(),0))
+        qp.drawLine(self.p0+QPoint(self.histBoxSize.width(),0),self.p0+QPoint(self.histBoxSize.width() + bmp2.width(), 0 ))
+        #qp.drawRect(QRect(self.p0+QPoint(0,self.max_pos-2-FH) ,self.p0+QPoint(0+FW+2,self.max_pos-2) ))
+        minstr=n2h(self.cm.min)
+        FW2=metrics.width(minstr)
+        pen = QPen(Qt.blue, 2,  Qt.SolidLine)
+        qp.drawRect(QRect(self.p0+QPoint(FW+10,self.min_pos+1) ,self.p0+QPoint(FW+14+FW2,self.min_pos+FH+1) ))
+
+        qp.drawText(self.p0+QPoint(FW+12,self.min_pos+FH-1), minstr)
 
 
 class Ui_BitmapForm(object):
@@ -657,5 +748,8 @@ if __name__=="__main__":
     app = QApplication(sys.argv)
     spb=ScrolledPixBitmap()
     spb.setData(data)
+    spb.cm.setHMin(-0.5)
+    spb.cm.setHMax(0.5)
+    spb._regenerate_bitmap()
     spb.show()
     app.exec_()

@@ -1,6 +1,10 @@
 def n2h(v, unit="",len=5):
   """ number to human representation"""
   prefix=['Y','Z','E','P','T','G','M','k','','m','u','n','p','f','a','z']
+  sign=""
+  if v<=0:
+      sign="-"
+      v=abs(v)
   order=1e24
   i=0
   if v<1e-21: return str(v)
@@ -19,6 +23,7 @@ def n2h(v, unit="",len=5):
       l=f%l
       if unit!="":
         l+=" [%s]"%unit
+      l=sign+l
       return l
     order/=1e3
     i+=1

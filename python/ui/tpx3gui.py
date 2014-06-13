@@ -12,6 +12,7 @@ import time
 from tpx3 import *
 from equalize import EqualizeDlg
 
+from kutils import n2h
 
 
 QCoreApplication.setOrganizationName("CERN");
@@ -462,23 +463,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.tpx.daqThread.refreshDisplay.sig.connect(self.daqThreadrefreshDisplay)
 
                     self.viewerTOT.setData(self.tpx.matrixTOT)
-                    self.viewerTOT.cm.min=0
-                    self.viewerTOT.cm.max=50
+                    self.viewerTOT.cm.setHMin(0)
+                    self.viewerTOT.cm.setHMax(100)
                     self.viewerTOT.tpx=self.tpx
 
                     self.viewerMask.setData(self.tpx.matrixMask)
-                    self.viewerMask.cm.min=0
-                    self.viewerMask.cm.max=1
+                    self.viewerMask.cm.setHMin(0)
+                    self.viewerMask.cm.setHMax(1)
                     self.viewerMask.tpx=self.tpx
 
                     self.viewerDACs.setData(self.tpx.matrixDACs)
-                    self.viewerDACs.cm.min=0
-                    self.viewerDACs.cm.max=15
+                    self.viewerDACs.cm.setHMin(0)
+                    self.viewerDACs.cm.setHMax(15)
                     self.viewerDACs.tpx=self.tpx
 
                     self.viewerCounts.setData(self.tpx.matrixCounts)
-                    self.viewerCounts.cm.min=0
-                    self.viewerCounts.cm.max=50
+                    self.viewerCounts.cm.setHMin(0)
+                    self.viewerCounts.cm.setHMax(200)
                     self.viewerCounts.tpx=self.tpx
 
                     self.tpx.daqThread.start()

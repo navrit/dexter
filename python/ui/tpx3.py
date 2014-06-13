@@ -33,6 +33,7 @@ class Rate():
         self.last_s_time=self.last_ref_time
         self.updateRateSignal=updateRateSignal
         self.refreshDisplaySignal=refreshDisplaySignal
+
     def processed(self, events):
         now=time.time()
         self.new_events+=events
