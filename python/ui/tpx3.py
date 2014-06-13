@@ -548,3 +548,170 @@ class TPX3:
 
   def connectionErrString(self):
       return self._connectionErrString
+
+
+
+
+
+
+
+
+
+
+
+
+
+import random
+
+
+
+
+
+
+class DummyDaq:
+    def __init__(self):
+        self.name="Dummy"
+        self.n=0
+        self.x=0
+        self.y=0
+        self.data=[]
+        self.rate=10
+        self.n=1.0
+        self.img=QImage("homer_simpson_xray.jpg");
+
+    def errorString(self):
+        return ""
+
+    def setSampling(self,b=False):
+        pass
+
+    def setSampleAll(self,b=False):
+        pass
+
+    def getSample2(self,n,timeout):
+        return self.getSample(n,timeout)
+
+    def getSample(self,n,timeout):
+
+        def line(x0, y0, x1, y1):
+            "Bresenham's line algorithm"
+            dx = abs(x1 - x0)
+            dy = abs(y1 - y0)
+            x, y = x0, y0
+            sx = -1 if x0 > x1 else 1
+            sy = -1 if y0 > y1 else 1
+            if dx > dy:
+                err = dx / 2.0
+                while x != x1:
+                    yield (x, y)
+                    err -= dy
+                    if err < 0:
+                        y += sy
+                        err += dx
+                    x += sx
+            else:
+                err = dy / 2.0
+                while y != y1:
+                    yield (x, y)
+                    err -= dx
+                    if err < 0:
+                        x += sx
+                        err += dy
+                    y += sy
+            yield (x, y)
+        time.sleep(float(timeout)/1e3)
+        self.n+=(float(self.rate)/100)
+
+        while int(self.n)>0:
+
+            for i in range(100):
+                px=random.randint(0,255)
+                py=random.randint(0,255)
+                v=self.img.pixel (px,py)
+                v&=0xff
+                r=random.randint(0,256)
+                if r>v:
+                    self.data.append( (px,py,random.randint(10,50)))
+                #print px,py,"%08x"%v
+            # t=random.randint(0,1)
+            #
+            #
+            # if t==0:
+            #     px=random.randint(2,253)
+            #     py=random.randint(2,253)
+            #     amp=random.randint(10,1000)
+            #
+            #     self.data.append( (px,py,amp))
+            #     self.data.append( (px+1,py,amp/2))
+            #     self.data.append( (px-1,py,amp/2))
+            #     self.data.append( (px,py-1,amp/2))
+            #     self.data.append( (px,py+1,amp/2))
+            #
+            #     self.data.append( (px+2,py,amp/5))
+            #     self.data.append( (px-2,py,amp/5))
+            #     self.data.append( (px,py-2,amp/5))
+            #     self.data.append( (px,py+2,amp/5))
+            #
+            #     self.data.append( (px+1,py+1,amp/4))
+            #     self.data.append( (px+1,py-1,amp/4))
+            #     self.data.append( (px-1,py+1,amp/4))
+            #     self.data.append( (px-1,py-1,amp/4))
+            # elif t==1:
+            #     px1=random.randint(2,253)
+            #     py1=random.randint(2,253)
+            #     py2=py1+60-random.randint(0,40)
+            #     if py2>255:py2=255
+            #     px2=px1+10-random.randint(0,20)
+            #     px2=max((min((px2,255)) , 0))
+            #     amp=random.randint(50,500)
+            #     for x,y in line(px1,py1,px2,py2):
+            #       self.data.append( (y,x,amp))
+            #       amp+=random.randint(-10,40)
+
+            self.n-=1
+
+        if len(self.data)>0:
+            return True
+        else:
+            return False
+
+    def sampleSize(self):
+
+        return len(self.data)*8
+
+    def nextPixel(self):
+        if len(self.data)>0:
+            x,y,d=self.data.pop(0)
+            return True,x,y,d<<4,0
+        else:
+            return False,0,0,0,0
+
+
+
+class DummyTPX3:
+    def __init__(self):
+        self.matrixTOT    = np.zeros( shape=(256,256))
+        self.matrixCounts = np.zeros( shape=(256,256))
+        self.matrixMask   = np.zeros( shape=(256,256))
+        self.matrixDACs   = np.zeros( shape=(256,256))
+
+        self.matrixMaskNeedUpdate = False
+        self.matrixDACsNeedUpdate = False
+
+        self.daq=DummyDaq()
+
+        self.daqThread = DaqThread(self)
+        self.daqThread.data=self.matrixTOT
+    def resetPixels(self):
+        pass
+    def datadrivenReadout(self):
+        pass
+
+    def getFrame(self):
+        return self.daq.getFrame()
+
+    def getSample(self,size,timeout=10):
+        return self.daq.getSample2(size,timeout)
+
+    def nextPixel(self):
+        return self.daq.nextPixel()
