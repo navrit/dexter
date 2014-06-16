@@ -3,6 +3,7 @@ import sys
 import time
 from PySide.QtCore import *
 from PySide.QtGui import *
+import resources_rc
 
 import os
 pdir=os.path.dirname(os.path.abspath(__file__))+"/.."
@@ -11,7 +12,7 @@ from tpx3gui import MainWindow
 
 if __name__=="__main__":
     app = QApplication(sys.argv)
-    pixmap = QPixmap(pdir+"/ui/logo.png")
+    pixmap = QPixmap(":/logo.png")
     splash = QSplashScreen(pixmap)
     splash.show()
     app.processEvents()

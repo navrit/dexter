@@ -513,7 +513,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.shutter=0
 
     def closeEvent(self, event):
-        if self.tpx.isConnected():
+        if self.tpx and self.tpx.isConnected():
             self.tpx.shutterOff()
             print "STOP"
             self.shutter=0

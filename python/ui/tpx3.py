@@ -7,6 +7,8 @@ from xml.etree import ElementTree
 from xml.dom import minidom
 from xml.etree.ElementTree import Element, SubElement, Comment
 from kutils import *
+import resources_rc
+
 
 TPX3_VTHRESH = 32
 
@@ -713,7 +715,8 @@ class DummyDaq:
         self.rate=10
         self.n=1
         self.mode=0
-        self.img=QImage("homer_simpson_xray.jpg");
+        self.img=QPixmap(":/homer_simpson_xray.jpg").toImage()
+        #self.img.
 
     def errorString(self):
         return ""
