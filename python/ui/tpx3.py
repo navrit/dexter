@@ -573,7 +573,6 @@ class TPX3:
   def loadConfiguration(self,fname):
     print("Load config from %s"%fname)
     xmldom=parse(fname)
-    print xmldom
     all_dacs=["TPX3_IBIAS_PREAMP_ON","TPX3_IBIAS_PREAMP_OFF","TPX3_VPREAMP_NCAS","TPX3_IBIAS_IKRUM","TPX3_VFBK",\
               "TPX3_VTHRESH","TPX3_IBIAS_DISCS1_ON","TPX3_IBIAS_DISCS1_OFF",\
               "TPX3_IBIAS_DISCS2_ON","TPX3_IBIAS_DISCS2_OFF","TPX3_IBIAS_PIXELDAC","TPX3_IBIAS_TPBUFIN",\
@@ -589,26 +588,13 @@ class TPX3:
                 self.setDac(eval(dn),reg_val)
     codes=root[0].getElementsByTagName('codes')[0]
     if codes:
-       x,y=0,0
-       for v in codes.firstChild.nodeValue.split():
-           v=int(v)
-           self.setPixelThreshold(x,y,v)
-           x+=1
-           if x==256:
-               y+=1
-               x=0
+       self.dacsFromString(codes.firstChild.nodeValue)
 
     mask=root[0].getElementsByTagName('mask')[0]
     if codes:
-       x,y=0,0
-       for v in mask.firstChild.nodeValue.split():
-           v=int(v)
-           self.setPixelMask(x,y,v)
-           x+=1
-           if x==256:
-               y+=1
-               x=0
+       self.maskFromString(mask.firstChild.nodeValue)
     self.setPixelConfig()
+
 
   def saveConfiguration(self,fname):
     print("Save config to %s"%fname)
@@ -643,27 +629,46 @@ class TPX3:
     reg.set("name", "OutputBlockConfig")
     reg.set("value", "0x%08x"%self.getOutBlockConfig())
 
-
-    mask_str=""
-    code_str=""
-    for y in range(self.matrixDACs.shape[1]):
-        for x in range(self.matrixDACs.shape[0]):
-            mask_str+="%d "%self.matrixMask[x][y]
-            code_str+="%d "%self.matrixDACs[x][y]
-        mask_str+="\n"
-        code_str+="\n"
-
     codes_se = SubElement(root, "codes")
     mask_se  = SubElement(root, "mask")
-    codes_se.text=code_str
-    mask_se.text=mask_str
+    codes_se.text=self.dacsToString()
+    mask_se.text=self.maskToString()
 
     #time_now.text = "some vale1"
     f=open(fname,"w")
     f.write(prettify(root))
     f.close()
 
+  def _matrixToStr(self,m):
+    m_str=""
+    for y in range(m.shape[1]):
+        for x in range(m.shape[0]):
+            m_str+="%d "%m[x][y]
+        m_str+="\n"
+    return m_str
 
+  def _strToMatrix(self,s,fn):
+    x,y=0,0
+    for v in s.split():
+      v=int(v)
+      fn(x,y,v)
+      x+=1
+      if x==256:
+         y+=1
+         x=0
+
+
+  def maskToString(self):
+    return self._matrixToStr(self.matrixMask)
+
+  def dacsToString(self):
+    return self._matrixToStr(self.matrixDACs)
+
+  def dacsFromString(self,s):
+    self._strToMatrix(s,self.setPixelThreshold)
+
+  def maskFromString(self,s):
+    self._strToMatrix(s,self.setPixelMask)
 
 
 import random
@@ -830,16 +835,19 @@ class DummyTPX3:
         self.daqThread.data=self.matrixTOT
     def resetPixels(self):
         pass
-
+    def isConnected(self):
+        return True
     def datadrivenReadout(self):
         pass
-
+    def pauseReadout(self):
+        pass
     def getFrame(self):
         return self.daq.getFrame()
 
     def getSample(self,size,timeout=10):
         return self.daq.getSample2(size,timeout)
-
+    def shutterOff(self):
+        pass
     def nextPixel(self):
         return self.daq.nextPixel()
 

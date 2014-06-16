@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>SPIDRman</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/spider_icon.png</normaloff>:/spider_icon.png</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="1" column="0">
@@ -105,15 +109,6 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionLoadConfiguration"/>
-    <addaction name="actionSaveConfiguration"/>
-    <addaction name="separator"/>
-    <addaction name="actionClose"/>
-   </widget>
-   <widget class="QMenu" name="menuOperation">
-    <property name="title">
-     <string>&amp;Operation</string>
-    </property>
     <widget class="QMenu" name="menuConnect">
      <property name="title">
       <string>&amp;Connect</string>
@@ -122,7 +117,17 @@
      <addaction name="actionConnectDemo"/>
     </widget>
     <addaction name="menuConnect"/>
+    <addaction name="actionDisconect"/>
     <addaction name="separator"/>
+    <addaction name="actionLoadConfiguration"/>
+    <addaction name="actionSaveConfiguration"/>
+    <addaction name="separator"/>
+    <addaction name="actionClose"/>
+   </widget>
+   <widget class="QMenu" name="menuOperation">
+    <property name="title">
+     <string>&amp;Toolbars</string>
+    </property>
     <addaction name="actionGeneral"/>
     <addaction name="actionTestpulses"/>
     <addaction name="actionShutter"/>
@@ -229,10 +234,10 @@
      </item>
      <item>
       <layout class="QGridLayout" name="gridLayout_5">
-       <item row="6" column="1">
-        <widget class="QPushButton" name="buttonDefaults">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>defaults</string>
+          <string>Mode</string>
          </property>
         </widget>
        </item>
@@ -243,52 +248,18 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="comboReadout">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <item>
-          <property name="text">
-           <string>Dada Driven</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Sequential</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_5">
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_29">
          <property name="text">
-          <string>Mode</string>
+          <string>Readout</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_8">
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_24">
          <property name="text">
-          <string>Matrix</string>
+          <string>Threshold</string>
          </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QComboBox" name="genConfigFastLo">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <item>
-          <property name="text">
-           <string>Disable</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Enable</string>
-          </property>
-         </item>
         </widget>
        </item>
        <item row="5" column="1">
@@ -308,11 +279,38 @@
          </item>
         </widget>
        </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_24">
-         <property name="text">
-          <string>Threshold</string>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="comboReadout">
+         <property name="enabled">
+          <bool>false</bool>
          </property>
+         <item>
+          <property name="text">
+           <string>Dada Driven</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Sequential</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QComboBox" name="genConfigFastLo">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <item>
+          <property name="text">
+           <string>Disable</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Enable</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item row="4" column="0">
@@ -320,6 +318,28 @@
          <property name="text">
           <string>Fast_lo_en</string>
          </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="genConfigMode">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <item>
+          <property name="text">
+           <string>ToA and ToT</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>ToA</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Event and iToT</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item row="3" column="1">
@@ -345,35 +365,6 @@
          <property name="value">
           <number>1000</number>
          </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_29">
-         <property name="text">
-          <string>Readout</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="genConfigMode">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <item>
-          <property name="text">
-           <string>ToA and ToT</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>ToA</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Event and iToT</string>
-          </property>
-         </item>
         </widget>
        </item>
       </layout>
@@ -419,6 +410,9 @@
       <layout class="QGridLayout" name="gridLayout_6">
        <item row="0" column="1">
         <widget class="QCheckBox" name="genConfigTP">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -441,7 +435,7 @@
        <item row="1" column="1">
         <widget class="QComboBox" name="TPSource">
          <property name="enabled">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1633,6 +1627,24 @@
     <string>Save configuration</string>
    </property>
   </action>
+  <action name="actionDisconect">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Disconect</string>
+   </property>
+  </action>
+  <action name="actionConnectSPIDR_2">
+   <property name="text">
+    <string>SPIDR</string>
+   </property>
+  </action>
+  <action name="actionDemo">
+   <property name="text">
+    <string>Demo</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -1648,6 +1660,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

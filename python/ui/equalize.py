@@ -10,7 +10,8 @@ from tpx3 import *
 import numpy as np
 from kutils import *
 
-
+class MySignal(QObject):
+    sig = Signal(str)
 
 
 
@@ -58,6 +59,7 @@ class EqualizeThread(QThread):
         self.parent=parent
         self.abort = False
         self.tpx=tpx
+        self.done = MySignal()
 
     def stop(self):
         self.abort = True
@@ -239,8 +241,6 @@ class EqualizeThread(QThread):
         self.tpx.setPixelConfig()
         self.tpx.sequentialReadout()
         self.tpx.setDac(TPX3_VTHRESH_FINE,380)
-        self.parent.buttonEqualize.setText("Done")
-        self.parent.buttonEqualize.setEnabled(True)
         vfbk_code=164
         self.tpx.setDac(TPX3_VFBK,vfbk_code)
         self.tpx.setDac(TPX3_VTHRESH_FINE,300)
@@ -311,34 +311,8 @@ class EqualizeThread(QThread):
 
 
         if self.parent.checkStoreXML.isChecked():
-            root = Element("Timepix3")
-            info = SubElement(root, "info")
-            time_now = SubElement(info, "time")
-            time_now.set("time", get_date_time())
-            user = SubElement(info, "user")
-            user.set("user", get_user_name())
-            host = SubElement(info, "host")
-            host.set("host", get_host_name())
-
-            mask_str=""
-            code_str=""
-            for y in range(bestCode.shape[1]):
-                for x in range(bestCode.shape[0]):
-                    mask_str+="%d "%maskPixels[x][y]
-                    code_str+="%d "%bestCode[x][y]
-                mask_str+="\n"
-                code_str+="\n"
-
-            codes_se = SubElement(root, "codes")
-            mask_se  = SubElement(root, "mask")
-            codes_se.text=code_str
-            mask_se.text=mask_str
-
-            #time_now.text = "some vale1"
             fn=fbase+".t3x"
-            f=open(fn,"w")
-            f.write(prettify(root))
-            f.close()
+            self.tpx.saveConfiguration(fn)
             self.log("Results stored to XML file : %s"%fn)
 
 #        self.tpx.resetPixelConfig()
@@ -347,6 +321,7 @@ class EqualizeThread(QThread):
 #        self.setThreshold(1150)
         self.tpx.datadrivenReadout()
         self.tpx.daqThread.start()
+        self.done.sig.emit("")
 
 class EqualizeDlg(QDialog, Ui_EqualizeForm):
     def __init__(self,parent=None):
@@ -360,16 +335,22 @@ class EqualizeDlg(QDialog, Ui_EqualizeForm):
         self.exec_()
 
 
+
     def onEqualize(self):
         if self.EqualizeThread==None:
+            self.buttonEqualize.setEnabled(False)
             self.parent.tpx.daqThread.stop()
             self.parent.tpx.daqThread.wait()
-            self.buttonEqualize.setEnabled(False)
             self.EqualizeThread = EqualizeThread(self,tpx=self.parent.tpx)
             QObject.connect(self.EqualizeThread, SIGNAL("progress(int)"),self.progressBar, SLOT("setValue(int)"), Qt.QueuedConnection)
+            self.EqualizeThread.done.sig.connect(self.EqualizeThreadDone)
             self.EqualizeThread.start()
         else:
             self.close()
+
+    def EqualizeThreadDone(self):
+        self.buttonEqualize.setText("Done")
+        self.buttonEqualize.setEnabled(True)
 
     def onCancel(self):
         if self.EqualizeThread.isRunning():

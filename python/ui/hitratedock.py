@@ -70,7 +70,13 @@ class HitRateDock(QDockWidgetClose):
         self.verticalLayout_7.setObjectName("verticalLayout_7")
         self.labelRate = QtGui.QLabel(self.Contents)
         self.labelRate.setObjectName("labelRate")
+
+        self.labelEvents = QtGui.QLabel(self.Contents)
+        self.labelEvents.setObjectName("labelEvents")
+        self.labelEvents.setAlignment(Qt.AlignCenter)
+
         self.verticalLayout_7.addWidget(self.labelRate)
+        self.verticalLayout_7.addWidget(self.labelEvents)
         self.area = RateDrawer(self.Contents)
         self.area.setObjectName("area")
         self.area.setMinimumSize(QSize(100, 50))
@@ -80,11 +86,14 @@ class HitRateDock(QDockWidgetClose):
         self.history=[0.0]*60
         self.area.data=self.history
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Hit Rate", None, QtGui.QApplication.UnicodeUTF8))
-
+        self.hits=0
     def UpdateRate(self,data):
         self.history.pop(0)
         self.history.append(float(data))
+        self.hits+=float(data)
         s="Rate : <b>%s Hz</b> Max : <b>%s Hz</b>"%(n2h(float(data)),n2h(max(self.history)))
         self.labelRate.setText(s)
+        s="Events : <b>%s</b>"%(n2h(float(self.hits)))
+        self.labelEvents.setText(s)
         self.area.update()
 

@@ -54,11 +54,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                      "dac_ibias_discs2_on","dac_ibias_discs2_off","dac_ibias_pixeldac","dac_ibias_tpbufin",\
                      "dac_ibias_tpbufout","dac_vtp_coarse","dac_vtp_fine"]
         #"dac_vthresh_fine","dac_vthresh_coarse"
-        self.connect(self.buttonDefaults ,SIGNAL("clicked()"), self.defaults)
+        #self.connect(self.buttonDefaults ,SIGNAL("clicked()"), self.defaults)
         self.genConfigTP.stateChanged.connect(self.TPEnableChanged)
         self.TPSource.currentIndexChanged.connect(self.TPSourceChanged)
         #self.sliderThreshold.valueChanged.connect(self.thresholdSliderMoved)
         #self.groupBox.setVisible(False)
+
 
         for dn in self.all_dacs:
             dac=getattr(self,dn)
@@ -67,8 +68,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             dac.valueChanged.connect(lambda val,dacn=int(eval(tpx_dn)):self.onDacChanged(dacn,val))
 
         self.actionConnectDemo.triggered.connect(self.onConnectDemo)
-
         self.actionConnectSPIDR.triggered.connect(self.onConnectSPIDR)
+        self.actionDisconect.triggered.connect(self.onDisconect)
         self.actionClose.triggered.connect(QCoreApplication.instance().quit)
 
         self.dockHitRate = HitRateDock(self)
@@ -124,29 +125,97 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionLoadConfiguration.triggered.connect(self.onActionLoadConfiguration)
         self.actionSaveConfiguration.triggered.connect(self.onActionSaveConfiguration)
 
+
     def onAbout(self):
         dlg=AboutDlg()
 
     def onActionMaskAll(self):
-        pass
+        self.tpx.setPixelMask(ALL_PIXELS,ALL_PIXELS,1)
+        self.tpx.setPixelConfig()
+        self.viewerMask._regenerate_bitmap()
 
     def onActionUnmaskAll(self):
-        pass
+        self.tpx.setPixelMask(ALL_PIXELS,ALL_PIXELS,0)
+        self.tpx.setPixelConfig()
+        self.viewerMask._regenerate_bitmap()
 
     def onActionMaskLoad(self):
-        pass
+        settings=QSettings()
+        confdir=settings.value("ConfigDirectory",'.')
+        dialog = QFileDialog(self,self.tr("Load mask map"),confdir)
+        dialog.setNameFilter(self.tr("Timepix3 mask map (*.msk)"))
+        dialog.setFileMode(QFileDialog.ExistingFile)
+        if dialog.exec_():
+            fileNames = dialog.selectedFiles()
+            dir=dialog.directory().path()
+            settings.setValue("ConfigDirectory",dir)
+            settings.sync()
+            f=open(fileNames[0],"r")
+            self.tpx.maskFromString(f.read())
+            f.close()
+            self.tpx.setPixelConfig()
+            self.viewerMask._regenerate_bitmap()
+
 
     def onActionMaskSave(self):
-        pass
+        settings=QSettings()
+        confdir=settings.value("ConfigDirectory",'.')
+        dialog = QFileDialog(self,self.tr("Save mask map"),confdir)
+        dialog.setNameFilter(self.tr("Timepix3 mask map (*.msk)"))
+        dialog.setFileMode(QFileDialog.AnyFile)
+        dialog.setAcceptMode(QFileDialog.AcceptSave)
+        if dialog.exec_():
+            fileNames = dialog.selectedFiles()
+            dir=dialog.directory().path()
+            settings.setValue("ConfigDirectory",dir)
+            settings.sync()
+            try:
+                f=open(fileNames[0],"w")
+                f.write(self.tpx.maskToString())
+                f.close()
+            except:
+                print "error during writing file"
 
     def onActionTrimsLoad(self):
-        pass
+        settings=QSettings()
+        confdir=settings.value("ConfigDirectory",'.')
+        dialog = QFileDialog(self,self.tr("Load Trim DACs map"),confdir)
+        dialog.setNameFilter(self.tr("Timepix3 trim DACs map (*.cod)"))
+        dialog.setFileMode(QFileDialog.ExistingFile)
+        if dialog.exec_():
+            fileNames = dialog.selectedFiles()
+            dir=dialog.directory().path()
+            settings.setValue("ConfigDirectory",dir)
+            settings.sync()
+            f=open(fileNames[0],"r")
+            self.tpx.dacsFromString(f.read())
+            f.close()
+            self.tpx.setPixelConfig()
+            self.viewerDACs._regenerate_bitmap()
 
     def onActionTrimsSave(self):
-        pass
+        settings=QSettings()
+        confdir=settings.value("ConfigDirectory",'.')
+        dialog = QFileDialog(self,self.tr("Save Trim DACs map"),confdir)
+        dialog.setNameFilter(self.tr("Timepix3 trim DACs map (*.cod)"))
+        dialog.setFileMode(QFileDialog.AnyFile)
+        dialog.setAcceptMode(QFileDialog.AcceptSave)
+        if dialog.exec_():
+            fileNames = dialog.selectedFiles()
+            dir=dialog.directory().path()
+            settings.setValue("ConfigDirectory",dir)
+            settings.sync()
+            try:
+                f=open(fileNames[0],"w")
+                f.write(self.tpx.dacsToString())
+                f.close()
+            except:
+                print "error during writing file"
 
     def onActionTrimsReset(self):
-        pass
+        self.tpx.setPixelThreshold(ALL_PIXELS,ALL_PIXELS,0)
+        self.tpx.setPixelConfig()
+        self.viewerDACs._regenerate_bitmap()
 
     def onActionLoadConfiguration(self):
         settings=QSettings()
@@ -201,8 +270,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.gcrChanged()
 
     def onEqualize(self):
+        self.tpx.shutterOff()
+        self.shutter=0
         dlg=EqualizeDlg(self)
-
     def TPSourceChanged(self):
         if self.TPSource.currentIndex()==0:
             self.TPInternalDetails.setVisible(True)
@@ -234,7 +304,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.updateShutter()
 
     def updateShutter(self):
-        if self.tpx.isConnected():
+        if self.tpx and self.tpx.isConnected():
             self.buttonShutter.setEnabled(True)
             if not self.shutter:
                 self.buttonShutter.setText("On")
@@ -255,7 +325,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.spinShutterCount.setEnabled(False)
                 self.spinShutterLenght.setEnabled(False)
                 self.spinShutterFreq.setEnabled(False)
-
         else:
             self.buttonShutter.setEnabled(False)
             self.comboShutterType.setEnabled(False)
@@ -320,19 +389,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.updateGcr()
 
     def updateGcr(self):
-        if self.tpx.isConnected():
+        if self.tpx and self.tpx.isConnected():
             gcr=self.tpx.getGenConfig()
-            print "GCR 0x%08X"%gcr
+#            print "GCR 0x%08X"%gcr
             self.genConfigPolarity.setEnabled(True)
             self.genConfigPolarity.setCurrentIndex(gcr&TPX3_POLARITY_EMIN)
 #            self.genConfigMode.setEnabled(False)
 #            self.genConfigMode.setCurrentIndex(gcr&TPX3_ACQMODE_MASK>>1)
-            print "gcr&TPX3_FASTLO_ENA>>6",(gcr&TPX3_FASTLO_ENA)>>6
+#            print "gcr&TPX3_FASTLO_ENA>>6",(gcr&TPX3_FASTLO_ENA)>>6
             self.genConfigFastLo.setCurrentIndex((gcr&TPX3_FASTLO_ENA)>>6)
             self.genConfigFastLo.setEnabled(True)
             self.genConfigGrayCnt.setCurrentIndex((gcr&TPX3_GRAYCOUNT_ENA)>>3)
             self.genConfigGrayCnt.setEnabled(True)
             self.genConfigTP.setChecked ((gcr&TPX3_TESTPULSE_ENA))
+        else:
+            self.genConfigPolarity.setEnabled(False)
+            self.genConfigFastLo.setEnabled(False)
+            self.genConfigGrayCnt.setEnabled(False)
+            self.genConfigTP.setEnabled(False)
 
     def outputMaskChanged(self):
         om=0
@@ -348,23 +422,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.updateOutputLinks()
 
     def updateOutputLinks(self):
-        cnf=self.tpx.getOutBlockConfig()
-        self.outputMask0.setEnabled(True)
-        self.outputMask1.setEnabled(True)
-        self.outputMask2.setEnabled(True)
-        self.outputMask3.setEnabled(True)
-        self.outputMask4.setEnabled(True)
-        self.outputMask5.setEnabled(True)
-        self.outputMask6.setEnabled(True)
-        self.outputMask7.setEnabled(True)
-        self.outputMask0.setChecked(cnf & (1<<0))
-        self.outputMask1.setChecked(cnf & (1<<1))
-        self.outputMask2.setChecked(cnf & (1<<2))
-        self.outputMask3.setChecked(cnf & (1<<3))
-        self.outputMask4.setChecked(cnf & (1<<4))
-        self.outputMask5.setChecked(cnf & (1<<5))
-        self.outputMask6.setChecked(cnf & (1<<6))
-        self.outputMask7.setChecked(cnf & (1<<7))
+        if self.tpx and self.tpx.isConnected():
+            cnf=self.tpx.getOutBlockConfig()
+            self.outputMask0.setEnabled(True)
+            self.outputMask1.setEnabled(True)
+            self.outputMask2.setEnabled(True)
+            self.outputMask3.setEnabled(True)
+            self.outputMask4.setEnabled(True)
+            self.outputMask5.setEnabled(True)
+            self.outputMask6.setEnabled(True)
+            self.outputMask7.setEnabled(True)
+            self.outputMask0.setChecked(cnf & (1<<0))
+            self.outputMask1.setChecked(cnf & (1<<1))
+            self.outputMask2.setChecked(cnf & (1<<2))
+            self.outputMask3.setChecked(cnf & (1<<3))
+            self.outputMask4.setChecked(cnf & (1<<4))
+            self.outputMask5.setChecked(cnf & (1<<5))
+            self.outputMask6.setChecked(cnf & (1<<6))
+            self.outputMask7.setChecked(cnf & (1<<7))
+        else:
+            self.outputMask0.setEnabled(False)
+            self.outputMask1.setEnabled(False)
+            self.outputMask2.setEnabled(False)
+            self.outputMask3.setEnabled(False)
+            self.outputMask4.setEnabled(False)
+            self.outputMask5.setEnabled(False)
+            self.outputMask6.setEnabled(False)
+            self.outputMask7.setEnabled(False)
 
 
 
@@ -374,17 +458,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tpx.setDac(n,val)
 
     def updateDacs(self):
-        for dn in self.all_dacs:
-            dac=getattr(self,dn)
-            tpx_dn="TPX3_"+dn[4:].upper()
-            dval=self.tpx.getDac(eval(tpx_dn))
-            #dac.setValue(dval)
-            oldState = dac.blockSignals(True)
-            dac.setProperty("value", dval)
-            dac.blockSignals(oldState)
-            dac.setEnabled(True)
-            maxval=self.tpx.dacMax(eval(tpx_dn))
-            dac.setMaximum(maxval)
+        if self.tpx and self.tpx.isConnected():
+            for dn in self.all_dacs:
+                dac=getattr(self,dn)
+                tpx_dn="TPX3_"+dn[4:].upper()
+                dval=self.tpx.getDac(eval(tpx_dn))
+                #dac.setValue(dval)
+                oldState = dac.blockSignals(True)
+                dac.setProperty("value", dval)
+                dac.blockSignals(oldState)
+                dac.setEnabled(True)
+                maxval=self.tpx.dacMax(eval(tpx_dn))
+                dac.setMaximum(maxval)
+        else:
+            for dn in self.all_dacs:
+                dac=getattr(self,dn)
+                dac.setEnabled(False)
+
         #self.sliderThreshold.setEnabled(True)
 
     def readoutChanged(self):
@@ -397,13 +487,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             pass
     def updateMenu(self):
-        if self.tpx.isConnected():
+        if self.tpx and self.tpx.isConnected():
             self.actionSaveConfiguration.setEnabled(True)
             self.actionLoadConfiguration.setEnabled(True)
             self.actionEqualize.setEnabled(True)
             self.menuTrims.setEnabled(True)
             self.menuMask.setEnabled(True)
             self.actionEqualize.setEnabled(True)
+        else:
+            self.actionSaveConfiguration.setEnabled(False)
+            self.actionLoadConfiguration.setEnabled(False)
+            self.actionEqualize.setEnabled(False)
+            self.menuTrims.setEnabled(False)
+            self.menuMask.setEnabled(False)
+            self.actionEqualize.setEnabled(False)
 
     def updateDisplays(self):
         self.updateGcr()
@@ -416,9 +513,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.shutter=0
 
     def closeEvent(self, event):
-        if self.shutter:
-            self.tpx.stopAutoTrigger()
+        if self.tpx.isConnected():
+            self.tpx.shutterOff()
+            print "STOP"
             self.shutter=0
+            self.tpx.daqThread.stop()
+            self.tpx.daqThread.wait()
 
         settings=QSettings();
         settings.beginGroup("MainWindow");
@@ -430,40 +530,51 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def onComboDemoTypeChanged(self,e):
         self.tpx.setMode(e)
     def onConnectDemo(self):
-                    self.tpx=DummyTPX3()
-                    self.spinDemoGenRate.valueChanged.connect(self.onSpinDemoGenRateChanged)
-                    self.comboDemoType.currentIndexChanged['int'].connect(self.onComboDemoTypeChanged)
-                    self.onSpinDemoGenRateChanged()
+        self.tpx=DummyTPX3()
+        self.spinDemoGenRate.valueChanged.connect(self.onSpinDemoGenRateChanged)
+        self.comboDemoType.currentIndexChanged['int'].connect(self.onComboDemoTypeChanged)
+        self.onSpinDemoGenRateChanged()
 
-                    self.spinDemoGenRate.setEnabled(True)
-                    self.tpx.daqThread.updateRate.sig.connect(self.dockHitRate.UpdateRate)
-                    self.tpx.daqThread.refreshDisplay.sig.connect(self.daqThreadrefreshDisplay)
+        self.spinDemoGenRate.setEnabled(True)
+        self.tpx.daqThread.updateRate.sig.connect(self.dockHitRate.UpdateRate)
+        self.tpx.daqThread.refreshDisplay.sig.connect(self.daqThreadrefreshDisplay)
 
-                    self.viewerTOT.setData(self.tpx.matrixTOT)
-                    self.viewerTOT.cm.setHMin(0)
-                    self.viewerTOT.cm.setHMax(128)
-                    self.viewerTOT.tpx=self.tpx
+        self.viewerTOT.setData(self.tpx.matrixTOT)
+        self.viewerTOT.cm.setHMin(0)
+        self.viewerTOT.cm.setHMax(128)
+        self.viewerTOT.tpx=self.tpx
 
-                    self.viewerMask.setData(self.tpx.matrixMask)
-                    self.viewerMask.cm.setHMin(0)
-                    self.viewerMask.cm.setHMax(1)
-                    self.viewerMask.tpx=self.tpx
+        self.viewerMask.setData(self.tpx.matrixMask)
+        self.viewerMask.cm.setHMin(0)
+        self.viewerMask.cm.setHMax(1)
+        self.viewerMask.tpx=self.tpx
 
-                    self.viewerDACs.setData(self.tpx.matrixDACs)
-                    self.viewerDACs.cm.setHMin(0)
-                    self.viewerDACs.cm.setHMax(15)
-                    self.viewerDACs.tpx=self.tpx
+        self.viewerDACs.setData(self.tpx.matrixDACs)
+        self.viewerDACs.cm.setHMin(0)
+        self.viewerDACs.cm.setHMax(15)
+        self.viewerDACs.tpx=self.tpx
 
-                    self.viewerCounts.setData(self.tpx.matrixCounts)
-                    self.viewerCounts.cm.setHMin(0)
-                    self.viewerCounts.cm.setHMax(200)
-                    self.viewerCounts.tpx=self.tpx
+        self.viewerCounts.setData(self.tpx.matrixCounts)
+        self.viewerCounts.cm.setHMin(0)
+        self.viewerCounts.cm.setHMax(200)
+        self.viewerCounts.tpx=self.tpx
 
-                    self.tpx.daqThread.start()
+        self.tpx.daqThread.start()
+        self.menuConnect.setEnabled(False)
+        self.actionDisconect.setEnabled(True)
 
     def onSpinDemoGenRateChanged(self):
         self.tpx.setRate(self.spinDemoGenRate.value())
-
+    def onDisconect(self):
+        if self.tpx.isConnected():
+            self.tpx.shutterOff()
+            self.tpx.daqThread.stop()
+            self.tpx.daqThread.wait()
+            del self.tpx
+            self.tpx=None
+            self.updateDisplays()
+        self.menuConnect.setEnabled(True)
+        self.actionDisconect.setEnabled(False)
     def onConnectSPIDR(self):
         if self.tpx:
             pass
@@ -475,6 +586,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 s=""
                 if self.tpx.isConnected():
                     s="<font color='green'> %s<font>"%self.tpx.connectionStateString()
+                    self.tpx.shutterOff()
+                    self.shutter=0
                     self.initAfterConnect()
                     self.updateDisplays()
                     self.connectrionMessage.setText(s)
@@ -502,7 +615,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.viewerCounts.tpx=self.tpx
 
                     self.tpx.daqThread.start()
-
+                    self.menuConnect.setEnabled(False)
+                    self.actionDisconect.setEnabled(True)
             except RuntimeError as n:
                 self.tpx=None
                 self.connectrionMessage.setText( "<font color='red'>Unconected</font>")
