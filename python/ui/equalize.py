@@ -8,28 +8,9 @@ import socket
 import getpass
 from tpx3 import *
 import numpy as np
-from xml.etree import ElementTree
-from xml.dom import minidom
-from xml.etree.ElementTree import Element, SubElement, Comment
+from kutils import *
 
-def prettify(elem):
-    """Return a pretty-printed XML string for the Element.
-    """
-    rough_string = ElementTree.tostring(elem, 'utf-8')
-    reparsed = minidom.parseString(rough_string)
-    return reparsed.toprettyxml(indent="  ")
 
-def get_time():
-    return time.strftime("%H:%M:%S", time.localtime())
-
-def get_date_time():
-    return time.strftime("%Y/%m/%d %H:%M:%S", time.localtime())
-
-def get_user_name():
-    return getpass.getuser()
-
-def get_host_name():
-    return socket.gethostname()
 
 
 

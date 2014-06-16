@@ -3,6 +3,10 @@ from PySide.QtGui import *
 from SpidrTpx3_engine import *
 import numpy as np
 import time
+from xml.etree import ElementTree
+from xml.dom import minidom
+from xml.etree.ElementTree import Element, SubElement, Comment
+from kutils import *
 
 TPX3_VTHRESH = 32
 
@@ -90,6 +94,7 @@ class DaqThread(QThread):
             self.data[low_values_indices] = 0  # All low values set to 0
 
             next_frame=self.parent.getSample(1024,10)
+            time.sleep(0.03)
             #next_frame=self.parent.spidrDaq.getSample(100,10)
             self.rate.processed(0)
             #print next_frame
@@ -237,6 +242,13 @@ class TPX3:
   # Shutter control
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+  def setShutterConfig(self, len,freq,cnt):
+      len=int(len)
+      freq=int(freq)
+      cnt=int(cnt)
+      r=self.ctrl.setTriggerConfig(4,len,freq,cnt)
+      self._log_ctrl_cmd("setShutterConfig (%d,%d,%d) "%(len,freq,cnt),r)
+
   def setShutterLen(self,l):
     self.shutter_len=float(l)/1e6
     r=self.ctrl.setTriggerConfig(4,l,1,1)
@@ -248,6 +260,12 @@ class TPX3:
     if sleep:
       time.sleep(self.shutter_len)
     return r
+
+  def shutterStart(self):
+    r=self.ctrl.startAutoTrigger()
+    self._log_ctrl_cmd("Shutter on ",r)
+    return r
+
 
   def shutterOn(self):
     r=self.ctrl.setTriggerConfig(4,0,1,0)
@@ -336,7 +354,6 @@ class TPX3:
     elif code==TPX3_VTHRESH:
         r,coarse=self.ctrl.getDac(self.id,TPX3_VTHRESH_COARSE)
         r,fine=self.ctrl.getDac(self.id,TPX3_VTHRESH_FINE)
-        print coarse,fine
         v=coarse*160 +(fine-352)
     else:
         v=0
@@ -485,7 +502,6 @@ class TPX3:
     r=self.ctrl.setPixelConfig(self.id, cols_per_packet=2)
     if restart:
         self.daqThread.start()
-        print "x"
 
     self._log_ctrl_cmd("setPixelConfig() ",r)
 
@@ -550,13 +566,102 @@ class TPX3:
       return self._connectionErrString
 
 
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  # Loading saving conf
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+  def loadConfiguration(self,fname):
+    print("Load config from %s"%fname)
+    xmldom=parse(fname)
+    print xmldom
+    all_dacs=["TPX3_IBIAS_PREAMP_ON","TPX3_IBIAS_PREAMP_OFF","TPX3_VPREAMP_NCAS","TPX3_IBIAS_IKRUM","TPX3_VFBK",\
+              "TPX3_VTHRESH","TPX3_IBIAS_DISCS1_ON","TPX3_IBIAS_DISCS1_OFF",\
+              "TPX3_IBIAS_DISCS2_ON","TPX3_IBIAS_DISCS2_OFF","TPX3_IBIAS_PIXELDAC","TPX3_IBIAS_TPBUFIN",\
+              "TPX3_IBIAS_TPBUFOUT","TPX3_VTP_COARSE","TPX3_VTP_FINE"]
+    root=xmldom.getElementsByTagName('Timepix3')
+    if root[0].getElementsByTagName('registers'):
+        for n in root[0].getElementsByTagName('registers')[0].getElementsByTagName("reg"):
+            reg_name=n.attributes['name'].value
+            reg_val=int(n.attributes['value'].value,0)
+#            print reg_name,reg_val
+            dn=("TPX3_"+reg_name).upper()
+            if dn in all_dacs:
+                self.setDac(eval(dn),reg_val)
+    codes=root[0].getElementsByTagName('codes')[0]
+    if codes:
+       x,y=0,0
+       for v in codes.firstChild.nodeValue.split():
+           v=int(v)
+           self.setPixelThreshold(x,y,v)
+           x+=1
+           if x==256:
+               y+=1
+               x=0
+
+    mask=root[0].getElementsByTagName('mask')[0]
+    if codes:
+       x,y=0,0
+       for v in mask.firstChild.nodeValue.split():
+           v=int(v)
+           self.setPixelMask(x,y,v)
+           x+=1
+           if x==256:
+               y+=1
+               x=0
+    self.setPixelConfig()
+
+  def saveConfiguration(self,fname):
+    print("Save config to %s"%fname)
+    root = Element("Timepix3")
+    info = SubElement(root, "info")
+    time_now = SubElement(info, "time")
+    time_now.set("time", get_date_time())
+    user = SubElement(info, "user")
+    user.set("user", get_user_name())
+    host = SubElement(info, "host")
+    host.set("host", get_host_name())
+
+    regs = SubElement(root, "registers")
+    all_dacs=["TPX3_IBIAS_PREAMP_ON","TPX3_IBIAS_PREAMP_OFF","TPX3_VPREAMP_NCAS","TPX3_IBIAS_IKRUM","TPX3_VFBK",\
+              "TPX3_VTHRESH","TPX3_IBIAS_DISCS1_ON","TPX3_IBIAS_DISCS1_OFF",\
+              "TPX3_IBIAS_DISCS2_ON","TPX3_IBIAS_DISCS2_OFF","TPX3_IBIAS_PIXELDAC","TPX3_IBIAS_TPBUFIN",\
+              "TPX3_IBIAS_TPBUFOUT","TPX3_VTP_COARSE","TPX3_VTP_FINE"]
+    for dac in all_dacs:
+      reg = SubElement(regs, "reg")
+      reg.set("name", dac[5:])
+      reg.set("value", "%d"%self.getDac(eval(dac)))
+
+    reg = SubElement(regs, "reg")
+    reg.set("name", "GeneralConfig")
+    reg.set("value", "0x%08x"%self.getGenConfig())
+
+    reg = SubElement(regs, "reg")
+    reg.set("name", "PllConfig")
+    reg.set("value", "0x%08x"%self.getPllConfig())
+
+    reg = SubElement(regs, "reg")
+    reg.set("name", "OutputBlockConfig")
+    reg.set("value", "0x%08x"%self.getOutBlockConfig())
 
 
+    mask_str=""
+    code_str=""
+    for y in range(self.matrixDACs.shape[1]):
+        for x in range(self.matrixDACs.shape[0]):
+            mask_str+="%d "%self.matrixMask[x][y]
+            code_str+="%d "%self.matrixDACs[x][y]
+        mask_str+="\n"
+        code_str+="\n"
 
+    codes_se = SubElement(root, "codes")
+    mask_se  = SubElement(root, "mask")
+    codes_se.text=code_str
+    mask_se.text=mask_str
 
-
-
-
+    #time_now.text = "some vale1"
+    f=open(fname,"w")
+    f.write(prettify(root))
+    f.close()
 
 
 
@@ -564,7 +669,32 @@ class TPX3:
 import random
 
 
+A1=((0,-3,27), (1,-3,20), (2,-3,14), (-2,-2,34),
+(-1,-2,40), (0,-2,46), (1,-2,43), (2,-2,44),
+(3,-2,3), (-3,-1,20), (-2,-1,46), (-1,-1,55),
+(0,-1,80), (1,-1,82), (2,-1,38), (3,-1,38),
+(4,-1,13), (-3,0,35), (-2,0,41), (-1,0,90),
+(0,0,114), (1,0,123), (2,0,87), (3,0,44),
+(4,0,2), (-3,1,35), (-2,1,42), (-1,1,96),
+(0,1,136), (1,1,140), (3,1,48), (4,1,9),
+(-3,2,11), (-2,2,43), (-1,2,73), (0,2,97),
+(1,2,99), (3,2,41), (-2,3,24), (-1,3,37),
+(0,3,35), (1,3,34), (2,3,41), (3,3,20),
+(-1,4,8), (0,4,24), (1,4,11),)
+A2=((-1,-2,19), (0,-2,41), (1,-2,29), (2,-2,19),
+(-2,-1,2), (-1,-1,42), (0,-1,45), (1,-1,39),
+(2,-1,36), (-2,0,25), (-1,0,63), (0,0,107),
+(1,0,95), (2,0,37), (-2,1,24), (-1,1,79),
+(0,1,123), (1,1,98), (2,1,38), (-2,2,28),
+(-1,2,40), (0,2,68), (1,2,61), (2,2,42),
+(-1,3,17), (0,3,34), (1,3,34), (2,3,23),)
+A3=((0,-2,11), (-2,-1,4), (-1,-1,44), (0,-1,82),
+(1,-1,45), (-2,0,15), (-1,0,61), (0,0,96),
+(1,0,60), (2,0,12), (-2,1,5), (-1,1,23),
+(0,1,40), (1,1,24), (2,1,4), (-1,2,5),
+(0,2,5),)
 
+ALPHAS=[A1,A2,A3]
 
 
 
@@ -576,7 +706,8 @@ class DummyDaq:
         self.y=0
         self.data=[]
         self.rate=10
-        self.n=1.0
+        self.n=1
+        self.mode=0
         self.img=QImage("homer_simpson_xray.jpg");
 
     def errorString(self):
@@ -620,55 +751,50 @@ class DummyDaq:
                     y += sy
             yield (x, y)
         time.sleep(float(timeout)/1e3)
-        self.n+=(float(self.rate)/100)
+        self.n+=self.rate+random.randint(-self.rate/5,self.rate/5)
+
 
         while int(self.n)>0:
 
-            for i in range(100):
-                px=random.randint(0,255)
-                py=random.randint(0,255)
-                v=self.img.pixel (px,py)
-                v&=0xff
-                r=random.randint(0,256)
-                if r>v:
-                    self.data.append( (px,py,random.randint(10,50)))
-                #print px,py,"%08x"%v
-            # t=random.randint(0,1)
-            #
-            #
-            # if t==0:
-            #     px=random.randint(2,253)
-            #     py=random.randint(2,253)
-            #     amp=random.randint(10,1000)
-            #
-            #     self.data.append( (px,py,amp))
-            #     self.data.append( (px+1,py,amp/2))
-            #     self.data.append( (px-1,py,amp/2))
-            #     self.data.append( (px,py-1,amp/2))
-            #     self.data.append( (px,py+1,amp/2))
-            #
-            #     self.data.append( (px+2,py,amp/5))
-            #     self.data.append( (px-2,py,amp/5))
-            #     self.data.append( (px,py-2,amp/5))
-            #     self.data.append( (px,py+2,amp/5))
-            #
-            #     self.data.append( (px+1,py+1,amp/4))
-            #     self.data.append( (px+1,py-1,amp/4))
-            #     self.data.append( (px-1,py+1,amp/4))
-            #     self.data.append( (px-1,py-1,amp/4))
-            # elif t==1:
-            #     px1=random.randint(2,253)
-            #     py1=random.randint(2,253)
-            #     py2=py1+60-random.randint(0,40)
-            #     if py2>255:py2=255
-            #     px2=px1+10-random.randint(0,20)
-            #     px2=max((min((px2,255)) , 0))
-            #     amp=random.randint(50,500)
-            #     for x,y in line(px1,py1,px2,py2):
-            #       self.data.append( (y,x,amp))
-            #       amp+=random.randint(-10,40)
+            if self.mode==0:
+              if self.n>0:
+                for i in range(int(self.n)):
+                    px=random.randint(0,255)
+                    py=random.randint(0,255)
+                    v=self.img.pixel (px,py)
+                    v&=0xff
+                    r=random.randint(0,256)
+                    if r>v:
+                        self.data.append( (px,py,random.randint(10,50)))
+                        self.n-=1
+            elif self.mode==2:
 
-            self.n-=1
+                aid=random.randint(0,len(ALPHAS)-1)
+                scale=random.random()*2
+                if scale<0.5:scale=0.5
+                x0=random.randint(0,255)
+                y0=random.randint(0,255)
+                for dx,dy,v in ALPHAS[aid]:
+                  self.n-=1
+                  x=x0+dx
+                  if x<0 or x>255: continue
+                  y=y0+dy
+                  if y<0 or y>255: continue
+                  amp=int(scale*v)
+                  self.data.append( (x,y,amp))
+
+            elif self.mode==1:
+                px1=random.randint(2,253)
+                py1=random.randint(2,253)
+                py2=py1+60-random.randint(0,40)
+                if py2>255:py2=255
+                px2=px1+10-random.randint(0,20)
+                px2=max((min((px2,255)) , 0))
+                amp=random.randint(50,500)
+                for x,y in line(px1,py1,px2,py2):
+                  self.data.append( (x,y,amp))
+                  amp+=random.randint(-10,40)
+                  self.n-=1
 
         if len(self.data)>0:
             return True
@@ -704,6 +830,7 @@ class DummyTPX3:
         self.daqThread.data=self.matrixTOT
     def resetPixels(self):
         pass
+
     def datadrivenReadout(self):
         pass
 
@@ -715,3 +842,11 @@ class DummyTPX3:
 
     def nextPixel(self):
         return self.daq.nextPixel()
+
+    def setMode(self,m):
+        self.daq.mode=m
+        self.matrixTOT [:,:]= 0
+        self.matrixCounts[:,:]= 0
+
+    def setRate(self,r):
+        self.daq.rate=int(r)

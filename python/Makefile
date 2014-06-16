@@ -68,6 +68,7 @@ gui: ui/MainWnd.ui
 	pyside-uic ui/MainWnd.ui -o ui/MainWnd.py
 	pyside-uic ui/BitmapForm.ui -o ui/BitmapForm.py
 	pyside-uic ui/EqualizeForm.ui -o ui/EqualizeForm.py
+	pyside-uic ui/AboutWnd.ui -o ui/AboutWnd.py
 
 gui_fast:ui/tpx3.so ui/PixBitmap.so
 	

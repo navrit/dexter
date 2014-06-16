@@ -105,6 +105,9 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionLoadConfiguration"/>
+    <addaction name="actionSaveConfiguration"/>
+    <addaction name="separator"/>
     <addaction name="actionClose"/>
    </widget>
    <widget class="QMenu" name="menuOperation">
@@ -139,23 +142,23 @@
     <property name="title">
      <string>&amp;Matrix</string>
     </property>
-    <widget class="QMenu" name="menu_Mask">
+    <widget class="QMenu" name="menuMask">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="title">
       <string>&amp;Mask</string>
      </property>
-     <addaction name="action_Mask_all"/>
-     <addaction name="action_Unmask_all"/>
-     <addaction name="action_Load_2"/>
-    </widget>
-    <widget class="QMenu" name="menuTrim_DACs">
-     <property name="title">
-      <string>Trim &amp;DACs</string>
-     </property>
-     <addaction name="actionReset"/>
-     <addaction name="action_Set_All"/>
-     <addaction name="action_Load"/>
+     <addaction name="actionMaskAll"/>
+     <addaction name="actionUnmaskAll"/>
+     <addaction name="separator"/>
+     <addaction name="actionMaskLoad"/>
+     <addaction name="actionMaskSave"/>
     </widget>
     <widget class="QMenu" name="menu_Test_pulses">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="title">
       <string>&amp;Test pulses</string>
      </property>
@@ -163,11 +166,23 @@
      <addaction name="action_Disable_all"/>
      <addaction name="action_Load_3"/>
     </widget>
-    <addaction name="menuTrim_DACs"/>
-    <addaction name="menu_Mask"/>
+    <widget class="QMenu" name="menuTrims">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="title">
+      <string>Trim &amp;DACs</string>
+     </property>
+     <addaction name="actionTrimsReset"/>
+     <addaction name="separator"/>
+     <addaction name="actionTrimsLoad"/>
+     <addaction name="actionTrimsSave"/>
+    </widget>
+    <addaction name="menuTrims"/>
+    <addaction name="menuMask"/>
     <addaction name="menu_Test_pulses"/>
     <addaction name="separator"/>
-    <addaction name="action_Equalize"/>
+    <addaction name="actionEqualize"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuOperation"/>
@@ -662,12 +677,26 @@
        <item>
         <widget class="QLabel" name="label_49">
          <property name="text">
-          <string>TextLabel</string>
+          <string>Type</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="comboBox_3"/>
+        <widget class="QComboBox" name="comboShutterType">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <item>
+          <property name="text">
+           <string>Manual</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Automatic</string>
+          </property>
+         </item>
+        </widget>
        </item>
       </layout>
      </item>
@@ -683,25 +712,52 @@
        <item row="2" column="0">
         <widget class="QLabel" name="label_51">
          <property name="text">
-          <string>Period</string>
+          <string>Frequency [Hz]</string>
          </property>
         </widget>
        </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label_52">
          <property name="text">
-          <string>Lenght</string>
+          <string>Lenght [us]</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QSpinBox" name="spinBox_6"/>
+        <widget class="QSpinBox" name="spinShutterFreq">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="maximum">
+          <number>1000000</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+        </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QSpinBox" name="spinBox_7"/>
+        <widget class="QSpinBox" name="spinShutterCount">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="maximum">
+          <number>1000</number>
+         </property>
+        </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QSpinBox" name="spinBox_8"/>
+        <widget class="QSpinBox" name="spinShutterLenght">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="maximum">
+          <number>1000000</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -709,6 +765,9 @@
       <layout class="QGridLayout" name="gridLayout_8">
        <item row="0" column="0">
         <widget class="QPushButton" name="buttonShutter">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
           <string>Start</string>
          </property>
@@ -1223,14 +1282,14 @@
        <property name="fieldGrowthPolicy">
         <enum>QFormLayout::ExpandingFieldsGrow</enum>
        </property>
-       <item row="0" column="0">
+       <item row="1" column="0">
         <widget class="QLabel" name="label_12">
          <property name="text">
           <string>Rate</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item row="1" column="1">
         <widget class="QSpinBox" name="spinDemoGenRate">
          <property name="enabled">
           <bool>false</bool>
@@ -1243,58 +1302,46 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
+       <item row="0" column="0">
         <widget class="QLabel" name="label_13">
          <property name="text">
-          <string>Alpha</string>
+          <string>Type</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QCheckBox" name="checkDemoGenAlpha">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_30">
-         <property name="text">
-          <string>Beta</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QCheckBox" name="checkDemoGenBetta">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_31">
-         <property name="text">
-          <string>Gamma</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QCheckBox" name="checkDemoGenGamma">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="comboDemoType">
+         <item>
+          <property name="text">
+           <string>Imaging</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Cosmic</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Alphas</string>
+          </property>
+         </item>
         </widget>
        </item>
       </layout>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </widget>
@@ -1467,37 +1514,43 @@
     <string>&amp;Others</string>
    </property>
   </action>
-  <action name="action_Equalize">
+  <action name="actionEqualize">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;Equalize</string>
    </property>
   </action>
-  <action name="actionReset">
+  <action name="actionTrimsReset">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Reset</string>
    </property>
   </action>
-  <action name="action_Set_All">
+  <action name="actionTrimsSetAll">
    <property name="text">
     <string>&amp;Set All</string>
    </property>
   </action>
-  <action name="action_Load">
+  <action name="actionTrimsLoad">
    <property name="text">
     <string>&amp;Load</string>
    </property>
   </action>
-  <action name="action_Mask_all">
+  <action name="actionMaskAll">
    <property name="text">
     <string>&amp;Mask all</string>
    </property>
   </action>
-  <action name="action_Unmask_all">
+  <action name="actionUnmaskAll">
    <property name="text">
     <string>&amp;Unmask all</string>
    </property>
   </action>
-  <action name="action_Load_2">
+  <action name="actionMaskLoad">
    <property name="text">
     <string>&amp;Load</string>
    </property>
@@ -1552,6 +1605,32 @@
    </property>
    <property name="text">
     <string>&amp;Outputs</string>
+   </property>
+  </action>
+  <action name="actionMaskSave">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+  </action>
+  <action name="actionTrimsSave">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+  </action>
+  <action name="actionLoadConfiguration">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Load configuration</string>
+   </property>
+  </action>
+  <action name="actionSaveConfiguration">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Save configuration</string>
    </property>
   </action>
  </widget>

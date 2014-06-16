@@ -13,7 +13,7 @@ from tpx3 import *
 from equalize import EqualizeDlg
 
 from kutils import n2h
-
+from about import AboutDlg
 
 QCoreApplication.setOrganizationName("CERN");
 QCoreApplication.setApplicationName("t3g");
@@ -37,6 +37,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
      #   self.genConfigSelectTP.currentIndexChanged['QString'].connect(self.gcrChanged)
         self.genConfigTimeroverflow .currentIndexChanged['QString'].connect(self.gcrChanged)
         #self.TPSource.currentIndexChanged['QString'].connect(self.gcrChanged)
+        self.comboShutterType.currentIndexChanged.connect(self.onComboShutterTypeChanged)
         self.connect(self.buttonShutter ,SIGNAL("clicked()"), self.shutterOnOff)
         self.outputMask0.stateChanged.connect(self.outputMaskChanged)
         self.outputMask1.stateChanged.connect(self.outputMaskChanged)
@@ -66,6 +67,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             dac.valueChanged.connect(lambda val,dacn=int(eval(tpx_dn)):self.onDacChanged(dacn,val))
 
         self.actionConnectDemo.triggered.connect(self.onConnectDemo)
+
         self.actionConnectSPIDR.triggered.connect(self.onConnectSPIDR)
         self.actionClose.triggered.connect(QCoreApplication.instance().quit)
 
@@ -107,7 +109,74 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         settings.endGroup()
 
         settings.setValue("runs", int(settings.value("runs", 0))+1)
-        self.action_Equalize.triggered.connect(self.onEqualize)
+        self.actionEqualize.triggered.connect(self.onEqualize)
+        self.actionAbout.triggered.connect(self.onAbout)
+
+        self.actionMaskAll.triggered.connect(self.onActionMaskAll)
+        self.actionUnmaskAll.triggered.connect(self.onActionUnmaskAll)
+        self.actionMaskLoad.triggered.connect(self.onActionMaskLoad)
+        self.actionMaskSave.triggered.connect(self.onActionMaskSave)
+
+        self.actionTrimsLoad.triggered.connect(self.onActionTrimsLoad)
+        self.actionTrimsSave.triggered.connect(self.onActionTrimsSave)
+        self.actionTrimsReset.triggered.connect(self.onActionTrimsReset)
+
+        self.actionLoadConfiguration.triggered.connect(self.onActionLoadConfiguration)
+        self.actionSaveConfiguration.triggered.connect(self.onActionSaveConfiguration)
+
+    def onAbout(self):
+        dlg=AboutDlg()
+
+    def onActionMaskAll(self):
+        pass
+
+    def onActionUnmaskAll(self):
+        pass
+
+    def onActionMaskLoad(self):
+        pass
+
+    def onActionMaskSave(self):
+        pass
+
+    def onActionTrimsLoad(self):
+        pass
+
+    def onActionTrimsSave(self):
+        pass
+
+    def onActionTrimsReset(self):
+        pass
+
+    def onActionLoadConfiguration(self):
+        settings=QSettings()
+        confdir=settings.value("ConfigDirectory",'.')
+        dialog = QFileDialog(self,self.tr("Load Timepix3 configuration"),confdir)
+        dialog.setNameFilter(self.tr("Timepix3 configuration file (*.t3x)"))
+        dialog.setFileMode(QFileDialog.ExistingFile)
+        if dialog.exec_():
+            fileNames = dialog.selectedFiles()
+            dir=dialog.directory().path()
+            settings.setValue("ConfigDirectory",dir)
+            settings.sync()
+            self.tpx.loadConfiguration(fileNames[0])
+            self.viewerDACs._regenerate_bitmap()
+            self.viewerMask._regenerate_bitmap()
+            self.updateDacs()
+
+    def onActionSaveConfiguration(self):
+        settings=QSettings()
+        confdir=settings.value("ConfigDirectory",'.')
+        dialog = QFileDialog(self,self.tr("Save Timepix3 configuration"),confdir)
+        dialog.setNameFilter(self.tr("Timepix3 configuration file (*.t3x)"))
+        dialog.setFileMode(QFileDialog.AnyFile)
+        dialog.setAcceptMode(QFileDialog.AcceptSave)
+        if dialog.exec_():
+            fileNames = dialog.selectedFiles()
+            dir=dialog.directory().path()
+            settings.setValue("ConfigDirectory",dir)
+            settings.sync()
+            self.tpx.saveConfiguration(fileNames[0])
 
     def onTabPageChange(self):
         if self.tabsMain.currentIndex()==0:
@@ -141,7 +210,58 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.TPInternalDetails.setVisible(False)
         self.dockTP.adjustSize()
 
+    def onComboShutterTypeChanged(self,i):
+        self.tpx.shutterOff()
+        self.shutter=0
+        self.updateShutter()
 
+    def shutterOnOff(self):
+        if self.shutter:
+            self.tpx.shutterOff()
+            self.shutter=0
+        else:
+            self.comboShutterType.setEnabled(False)
+            self.spinShutterCount.setEnabled(False)
+            self.spinShutterFreq.setEnabled(False)
+            self.spinShutterLenght.setEnabled(False)
+
+            if self.comboShutterType.currentIndex()==0:
+                self.tpx.setShutterConfig(0, 1, 0)
+            else:
+                self.tpx.setShutterConfig(self.spinShutterLenght.value(), self.spinShutterFreq.value(), self.spinShutterCount.value())
+            self.shutter=1
+            self.tpx.shutterStart()
+        self.updateShutter()
+
+    def updateShutter(self):
+        if self.tpx.isConnected():
+            self.buttonShutter.setEnabled(True)
+            if not self.shutter:
+                self.buttonShutter.setText("On")
+                self.comboShutterType.setEnabled(True)
+
+                if self.comboShutterType.currentIndex()==0:
+                    self.spinShutterCount.setEnabled(False)
+                    self.spinShutterLenght.setEnabled(False)
+                    self.spinShutterFreq.setEnabled(False)
+                else:
+                    self.spinShutterCount.setEnabled(True)
+                    self.spinShutterFreq.setEnabled(True)
+                    self.spinShutterLenght.setEnabled(True)
+
+            else:
+                self.buttonShutter.setText("Off")
+                self.comboShutterType.setEnabled(False)
+                self.spinShutterCount.setEnabled(False)
+                self.spinShutterLenght.setEnabled(False)
+                self.spinShutterFreq.setEnabled(False)
+
+        else:
+            self.buttonShutter.setEnabled(False)
+            self.comboShutterType.setEnabled(False)
+            self.spinShutterCount.setEnabled(False)
+            self.spinShutterFreq.setEnabled(False)
+            self.spinShutterLenght.setEnabled(False)
 
     def thresholdSliderMoved(self):
         nth=self.sliderThreshold.value()
@@ -246,24 +366,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.outputMask6.setChecked(cnf & (1<<6))
         self.outputMask7.setChecked(cnf & (1<<7))
 
-    def updateShutter(self):
-        if self.tpx.isConnected():
-            self.buttonShutter.setEnabled(True)
-            if not self.shutter:
-                self.buttonShutter.setText("On")
-            else:
-                self.buttonShutter.setText("Off")
-        else:
-            self.buttonShutter.setEnabled(False)
 
-    def shutterOnOff(self):
-        if self.shutter:
-            self.tpx.shutterOff()
-            self.shutter=0
-        else:
-            self.tpx.shutterOn()
-            self.shutter=1
-        self.updateShutter()
+
+
 
     def onDacChanged(self, n,val):
         self.tpx.setDac(n,val)
@@ -291,12 +396,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tpx.sequentialReadout(32)
         else:
             pass
+    def updateMenu(self):
+        if self.tpx.isConnected():
+            self.actionSaveConfiguration.setEnabled(True)
+            self.actionLoadConfiguration.setEnabled(True)
+            self.actionEqualize.setEnabled(True)
+            self.menuTrims.setEnabled(True)
+            self.menuMask.setEnabled(True)
+            self.actionEqualize.setEnabled(True)
 
     def updateDisplays(self):
         self.updateGcr()
         self.updateShutter()
         self.updateOutputLinks()
         self.updateDacs()
+        self.updateMenu()
 
     def initAfterConnect(self):
         self.shutter=0
@@ -306,9 +420,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tpx.stopAutoTrigger()
             self.shutter=0
 
-
-
-    def closeEvent(self,event):
         settings=QSettings();
         settings.beginGroup("MainWindow");
         settings.setValue("size", self.size());
@@ -316,10 +427,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         settings.endGroup();
 
     #def connectOrDisconnect(self):
-
+    def onComboDemoTypeChanged(self,e):
+        self.tpx.setMode(e)
     def onConnectDemo(self):
                     self.tpx=DummyTPX3()
                     self.spinDemoGenRate.valueChanged.connect(self.onSpinDemoGenRateChanged)
+                    self.comboDemoType.currentIndexChanged['int'].connect(self.onComboDemoTypeChanged)
+                    self.onSpinDemoGenRateChanged()
+
                     self.spinDemoGenRate.setEnabled(True)
                     self.tpx.daqThread.updateRate.sig.connect(self.dockHitRate.UpdateRate)
                     self.tpx.daqThread.refreshDisplay.sig.connect(self.daqThreadrefreshDisplay)
@@ -347,7 +462,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.tpx.daqThread.start()
 
     def onSpinDemoGenRateChanged(self):
-        self.tpx.daq.rate=self.spinDemoGenRate.value()
+        self.tpx.setRate(self.spinDemoGenRate.value())
 
     def onConnectSPIDR(self):
         if self.tpx:
