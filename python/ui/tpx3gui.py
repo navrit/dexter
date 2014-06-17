@@ -67,6 +67,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print dn,tpx_dn
             dac.valueChanged.connect(lambda val,dacn=int(eval(tpx_dn)):self.onDacChanged(dacn,val))
 
+        self.actionFullScreen.triggered.connect(self.onFullScreen)
+
         self.actionConnectDemo.triggered.connect(self.onConnectDemo)
         self.actionConnectSPIDR.triggered.connect(self.onConnectSPIDR)
         self.actionDisconect.triggered.connect(self.onDisconect)
@@ -124,7 +126,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.actionLoadConfiguration.triggered.connect(self.onActionLoadConfiguration)
         self.actionSaveConfiguration.triggered.connect(self.onActionSaveConfiguration)
-
+        self._fullscreen=0
+    def onFullScreen(self):
+        if not self._fullscreen:
+            self.showFullScreen()
+            self._fullscreen=1
+        else:
+            self.showNormal()
+            self._fullscreen=0
 
     def onAbout(self):
         dlg=AboutDlg()
