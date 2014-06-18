@@ -44,8 +44,9 @@ public:
 /*  void *FillMemOnce();
   void *disp();
   */
-  int err;
+  volatile int err;
 private:
+  volatile bool init_finished;
   pthread_t recv_thread;
   int sockfd;
 

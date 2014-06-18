@@ -1,28 +1,27 @@
 #!/usr/bin/env python
-from PySide.QtCore import *
-from PySide.QtGui import *
-from MainWnd import Ui_MainWindow
 import sys
 import numpy as np
 import scipy.ndimage as ndi
 import random
 import os
 import time
-
-from tpx3 import *
-from equalize import EqualizeDlg
-
-from kutils import n2h
-from about import AboutDlg
-
-QCoreApplication.setOrganizationName("CERN");
-QCoreApplication.setApplicationName("t3g");
 import scipy.ndimage as ndi
 import random
 import os
 import time
+from PySide.QtCore import *
+from PySide.QtGui import *
+from MainWnd import Ui_MainWindow
+from tpx3 import *
+from equalize import EqualizeDlg
+from kutils import n2h
+from about import AboutDlg
 from hitratedock import HitRateDock
-from spidr_windows import SPIDRAboutDlg
+from spidr_windows import SPIDRAboutDlg,SPIDRSettingsDlg
+
+
+QCoreApplication.setOrganizationName("CERN");
+QCoreApplication.setApplicationName("t3g");
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self,parent=None):
@@ -131,7 +130,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._fullscreen=0
 
     def onSPIDRSettings(self):
-        pass
+        dlg=SPIDRSettingsDlg(self)
 
     def onSPIDRAbout(self):
         dlg=SPIDRAboutDlg(self)
@@ -595,10 +594,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.tpx:
             pass
         else:
-            ip_list="192.168.100.10".split('.')
-            port="50000"
             try:
-                self.tpx=TPX3(daq="custom")
+                settings = QSettings()
+                settings.beginGroup("SPIDR")
+                ip=settings.value("IP", "192.168.100.10")
+                port=settings.value("Port", "50000")
+                settings.endGroup()
+                self.tpx=TPX3(ip=ip,port=port,daq="custom")
                 s=""
                 if self.tpx.isConnected():
                     s="<font color='green'> %s<font>"%self.tpx.connectionStateString()

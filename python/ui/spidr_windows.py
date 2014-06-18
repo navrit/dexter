@@ -1,6 +1,7 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 from SPIDRAboutDlg import  Ui_SPIDRAboutDlg
+from SPIDRSettingsDlg import Ui_SPIDRSettingsDlg
 
 
 class SPIDRAboutDlg(QDialog, Ui_SPIDRAboutDlg):
@@ -14,3 +15,24 @@ class SPIDRAboutDlg(QDialog, Ui_SPIDRAboutDlg):
         self.labelFirmware.setText(parent.tpx.getFirmwVersion())
         self.labelLinks.setText(parent.tpx.getLinkSpeed())
         self.exec_()
+
+class SPIDRSettingsDlg(QDialog, Ui_SPIDRSettingsDlg):
+    def __init__(self,parent=None):
+        super(SPIDRSettingsDlg, self).__init__(parent)
+        self.parent=parent
+        self.setupUi(self)
+        settings = QSettings()
+        settings.beginGroup("SPIDR")
+        self.lineIP.setText(settings.value("IP", "192.168.100.10"))
+        self.linePort.setText(settings.value("Port", "50000"))
+        settings.endGroup()
+        self.setFixedSize(180,100)
+        self.exec_()
+    def accept(self):
+        settings = QSettings()
+        settings.beginGroup("SPIDR")
+        settings.setValue("IP", self.lineIP.text())
+        settings.setValue("Port", self.linePort.text())
+        settings.endGroup()
+
+        QDialog.accept(self)

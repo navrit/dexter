@@ -1,5 +1,5 @@
 #include "udp_server.h"
-
+#include <unistd.h>
 
 UDPServer::UDPServer()
 {
@@ -59,8 +59,10 @@ void*   UDPServer::receive()
   {
     fprintf(stderr, "listener: failed to bind socket\n");
     err=1;
+    init_finished=1;
     return NULL;
   }
+  init_finished=1;
 
   freeaddrinfo(servinfo);
 //  memory.resize(MEM_SIZE);
@@ -139,6 +141,9 @@ void UDPServer::flush()
 
   bool UDPServer::isStarted()
   {
+    while (!init_finished)
+      usleep(1000);
+
     return (err==0);
   }
   

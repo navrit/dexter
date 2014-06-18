@@ -188,7 +188,7 @@ class TPX3:
     self._isConected=True
     if  not self.ctrl.isConnected() :
       self._isConected=False
-      logging.critical("Unable to connect %s (%s)"%(self.ctrl.ipAddressString(), self.ctrl.connectionErrString()))
+      print ("Unable to connect %s (%s)"%(self.ctrl.ipAddressString(), self.ctrl.connectionErrString()))
       raise RuntimeError("Unable to connect (%s)"%str(self.ctrl.connectionErrString()))
     self._connectionStateString = self.ctrl.connectionStateString()
     self._connectionErrString=self.ctrl.connectionErrString()
