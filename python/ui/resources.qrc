@@ -1,7 +1,7 @@
  <!DOCTYPE RCC><RCC version="1.0">
  <qresource>
-     <file>spider_icon.png</file>
-     <file>homer_simpson_xray.jpg</file>
-     <file>logo.png</file>
+     <file>img/spiderhead.png</file>
+     <file>img/homer_simpson_xray.jpg</file>
+     <file>img/splash.png</file>
  </qresource>
  </RCC>

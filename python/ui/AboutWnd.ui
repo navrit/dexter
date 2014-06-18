@@ -23,7 +23,7 @@
    <string>About ...</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources.qrc">
+   <iconset>
     <normaloff>:/spider_icon.png</normaloff>:/spider_icon.png</iconset>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
@@ -55,7 +55,7 @@
     <string/>
    </property>
    <property name="pixmap">
-    <pixmap resource="resources.qrc">:/spider_icon.png</pixmap>
+    <pixmap resource="resources.qrc">:/img/spiderhead.png</pixmap>
    </property>
    <property name="scaledContents">
     <bool>true</bool>

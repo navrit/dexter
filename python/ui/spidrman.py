@@ -12,13 +12,12 @@ from tpx3gui import MainWindow
 
 if __name__=="__main__":
     app = QApplication(sys.argv)
-    pixmap = QPixmap(":/logo.png")
+    pixmap = QPixmap(":/img/splash.png")
     splash = QSplashScreen(pixmap)
     splash.show()
     app.processEvents()
     splash.update()
     splash.showMessage("")
-    time.sleep(0.1)
     form=MainWindow()
 #   for i in range(5):
 #     s="Loaded modules %s"%("."*i)
@@ -26,6 +25,6 @@ if __name__=="__main__":
 #      time.sleep(0.4)
     time.sleep(1.5)
     form.show()
-    time.sleep(0.2)
+    form.update()
     splash.finish(form)
     app.exec_()
