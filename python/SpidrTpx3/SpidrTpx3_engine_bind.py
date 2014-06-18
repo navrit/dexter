@@ -37,6 +37,12 @@ c2.add_method('connectionStateString', 'std::string', [])
 c2.add_method('connectionErrString',   'std::string', [])
 c2.add_method('ipAddressString',       'std::string', [])
 c2.add_method('errorString',           'std::string', [])
+
+c2.add_method('classVersion',          'int',         [])
+
+c2.add_method('getSoftwVersion',       'bool',        [param('int*', 'version', transfer_ownership=True,direction = Parameter.DIRECTION_OUT)])
+c2.add_method('getFirmwVersion',       'bool',        [param('int*', 'version', transfer_ownership=True,direction = Parameter.DIRECTION_OUT)])
+
 c2.add_method('setDac',                'bool',        [param('int', 'dev_nr'),param('int', 'dac_code'),param('int', 'dac_valr')])
 c2.add_method('dacMax',                'int',         [param('int', 'dac_code')])
 c2.add_method('setSenseDac',           'bool',        [param('int', 'dev_nr'),param('int', 'dac_code')])

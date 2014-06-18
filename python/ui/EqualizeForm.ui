@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Equalization</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -22,10 +22,119 @@
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
        <layout class="QGridLayout" name="gridLayout">
+        <item row="3" column="5">
+         <widget class="QSpinBox" name="spinTPSpacing">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>4</number>
+          </property>
+          <property name="value">
+           <number>2</number>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="5">
+         <widget class="QSpinBox" name="spinNoiseLevel">
+          <property name="maximum">
+           <number>2000</number>
+          </property>
+          <property name="value">
+           <number>600</number>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QSpinBox" name="spinTPNumber">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimum">
+           <number>10</number>
+          </property>
+          <property name="maximum">
+           <number>400</number>
+          </property>
+          <property name="value">
+           <number>200</number>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="5">
+         <widget class="QSpinBox" name="spinTPAmplitude">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="maximum">
+           <number>2000</number>
+          </property>
+          <property name="value">
+           <number>1000</number>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Use test pulses</string>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="0">
          <widget class="QLabel" name="label">
           <property name="text">
            <string>THL step [LSB]</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="3">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Noise level [e-]</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Mask noisy pixels</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3">
+         <widget class="QLabel" name="labelTPAmp">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Test pulse amplitude [e-]</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QCheckBox" name="checkUseTP">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="labelTPNumber">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Number of test pulses</string>
           </property>
          </widget>
         </item>
@@ -54,32 +163,42 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_5">
+        <item row="4" column="1">
+         <widget class="QCheckBox" name="checkMaskNoisy">
           <property name="text">
-           <string>Mask noisy pixels</string>
+           <string/>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
-        <item row="2" column="3">
+        <item row="3" column="3">
+         <widget class="QLabel" name="labelTPSpacing">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Test pulses spacing</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Measure</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="3">
          <widget class="QLabel" name="label_4">
           <property name="text">
-           <string>Testpulse amplitude [e-]</string>
+           <string>Measure spacing</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="5">
-         <widget class="QSpinBox" name="spinTPAmplitude">
-          <property name="maximum">
-           <number>2000</number>
-          </property>
-          <property name="value">
-           <number>1000</number>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="5">
-         <widget class="QSpinBox" name="spinIKRUM">
+        <item row="5" column="5">
+         <widget class="QSpinBox" name="spinMeasureSpacing">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -90,12 +209,15 @@
            <number>1</number>
           </property>
           <property name="maximum">
-           <number>255</number>
+           <number>4</number>
+          </property>
+          <property name="value">
+           <number>2</number>
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
-         <widget class="QCheckBox" name="checkUseTP">
+        <item row="5" column="1">
+         <widget class="QCheckBox" name="checkMeasure">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -105,46 +227,8 @@
           <property name="text">
            <string/>
           </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QCheckBox" name="checkMaskNoisy">
-          <property name="text">
-           <string/>
-          </property>
           <property name="checked">
            <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>IKRUM [LSB]</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Use testpulses</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="3">
-         <widget class="QLabel" name="label_6">
-          <property name="text">
-           <string>Noise level [e-]</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="5">
-         <widget class="QSpinBox" name="spinNoiseLevel">
-          <property name="maximum">
-           <number>2000</number>
-          </property>
-          <property name="value">
-           <number>600</number>
           </property>
          </widget>
         </item>
@@ -247,6 +331,11 @@
    </item>
    <item>
     <widget class="QTextEdit" name="textEdit">
+     <property name="font">
+      <font>
+       <family>Andale Mono</family>
+      </font>
+     </property>
      <property name="readOnly">
       <bool>true</bool>
      </property>

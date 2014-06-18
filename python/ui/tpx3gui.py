@@ -22,7 +22,7 @@ import random
 import os
 import time
 from hitratedock import HitRateDock
-
+from spidr_windows import SPIDRAboutDlg
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self,parent=None):
@@ -126,7 +126,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.actionLoadConfiguration.triggered.connect(self.onActionLoadConfiguration)
         self.actionSaveConfiguration.triggered.connect(self.onActionSaveConfiguration)
+        self.actionSPIDRAbout.triggered.connect(self.onSPIDRAbout)
+        self.actionSPIDRSettings.triggered.connect(self.onSPIDRSettings)
         self._fullscreen=0
+
+    def onSPIDRSettings(self):
+        pass
+
+    def onSPIDRAbout(self):
+        dlg=SPIDRAboutDlg(self)
+
+
     def onFullScreen(self):
         if not self._fullscreen:
             self.showFullScreen()
@@ -497,19 +507,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pass
     def updateMenu(self):
         if self.tpx and self.tpx.isConnected():
-            self.actionSaveConfiguration.setEnabled(True)
-            self.actionLoadConfiguration.setEnabled(True)
-            self.actionEqualize.setEnabled(True)
-            self.menuTrims.setEnabled(True)
-            self.menuMask.setEnabled(True)
-            self.actionEqualize.setEnabled(True)
+            state=True
         else:
-            self.actionSaveConfiguration.setEnabled(False)
-            self.actionLoadConfiguration.setEnabled(False)
-            self.actionEqualize.setEnabled(False)
-            self.menuTrims.setEnabled(False)
-            self.menuMask.setEnabled(False)
-            self.actionEqualize.setEnabled(False)
+            state=False
+        self.actionSaveConfiguration.setEnabled(state)
+        self.actionLoadConfiguration.setEnabled(state)
+        self.actionEqualize.setEnabled(state)
+        self.menuTrims.setEnabled(state)
+        self.menuMask.setEnabled(state)
+        self.actionEqualize.setEnabled(state)
+        self.actionSPIDRAbout.setEnabled(state)
 
     def updateDisplays(self):
         self.updateGcr()

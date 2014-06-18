@@ -191,9 +191,20 @@
     <addaction name="separator"/>
     <addaction name="actionEqualize"/>
    </widget>
+   <widget class="QMenu" name="menuSPIDR">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="title">
+     <string>SPIDR</string>
+    </property>
+    <addaction name="actionSPIDRSettings"/>
+    <addaction name="actionSPIDRAbout"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuOperation"/>
    <addaction name="menuMatrix"/>
+   <addaction name="menuSPIDR"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -1483,7 +1494,7 @@
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>About</string>
+    <string>About SPIDRman</string>
    </property>
   </action>
   <action name="actionClose">
@@ -1653,6 +1664,27 @@
    </property>
    <property name="text">
     <string>Full screen</string>
+   </property>
+  </action>
+  <action name="actionAboutSPIDR">
+   <property name="text">
+    <string>About SPIDR</string>
+   </property>
+  </action>
+  <action name="actionSPIDRSettings">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Settings</string>
+   </property>
+  </action>
+  <action name="actionSPIDRAbout">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;About</string>
    </property>
   </action>
  </widget>

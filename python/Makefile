@@ -69,6 +69,8 @@ gui: ui/MainWnd.ui
 	pyside-uic ui/BitmapForm.ui -o ui/BitmapForm.py
 	pyside-uic ui/EqualizeForm.ui -o ui/EqualizeForm.py
 	pyside-uic ui/AboutWnd.ui -o ui/AboutWnd.py
+	pyside-uic ui/SPIDRAboutDlg.ui -o ui/SPIDRAboutDlg.py
+	pyside-uic ui/AboutWnd.ui -o ui/AboutWnd.py
 	pyside-rcc ui/resources.qrc -o ui/resources_rc.py
 
 gui_fast:ui/tpx3.so ui/PixBitmap.so

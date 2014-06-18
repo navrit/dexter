@@ -190,7 +190,6 @@ class TPX3:
       self._isConected=False
       logging.critical("Unable to connect %s (%s)"%(self.ctrl.ipAddressString(), self.ctrl.connectionErrString()))
       raise RuntimeError("Unable to connect (%s)"%str(self.ctrl.connectionErrString()))
-
     self._connectionStateString = self.ctrl.connectionStateString()
     self._connectionErrString=self.ctrl.connectionErrString()
 #    self.udp=UDPServer()
@@ -546,6 +545,29 @@ class TPX3:
     self._log_ctrl_cmd("setDecodersEna(%d) "%(enable),r)
     #if r:
     #  tpx3packet.hw_dec_ena=enable
+  def getClassVersion(self):
+    v=self.ctrl.classVersion()
+    return "%08X"%v
+
+  def getSoftwVersion(self):
+    r,v=self.ctrl.getSoftwVersion()
+    return "%08X"%v
+
+  def getFirmwVersion(self):
+    r,v=self.ctrl.getFirmwVersion()
+    return "%08X"%v
+
+  def getLinkSpeed(self):
+    r,v=self.ctrl.getOutBlockConfig(self.id)
+    v&=TPX3_CLK_SRC_MASK
+    v>>=8
+    speed="- Mb/s"
+    if v==3:
+        speed="160 Mb/s"
+    elif v==1:
+        speed="640 Mb/s"
+    return speed
+
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # Logs
