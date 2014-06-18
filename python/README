@@ -1,4 +1,4 @@
-1) Instalation of required software packets on Ubuntu 12.04:
+1) Installation of required software packets on Ubuntu 12.04:
 
 sudo apt-get install cython libboost-all-dev libboost-python-dev \
                      libboost-signals-dev libboost-thread-dev\
@@ -7,19 +7,38 @@ sudo apt-get install cython libboost-all-dev libboost-python-dev \
                      gnuplot-x11  python-scipy python-sciscipy python-numpy \
                      python-matplotlib
 
+to run SPIRDman, you have to install (in addition to mentioned above):
+
+sudo apt-get install pyside-tools python-pyside
+
 2) Building python bindings
 
 make
 
-3) Testing the chip
+3) Building SPIDRman 
+
+make gui
+
+4) (optional) Changing Linux UDP buffers:
+  sudo sysctl -w net.core.rmem_max=134217728
+  sudo sysctl -w net.core.rmem_default=134217728
+  
+
+5) Running SPIDRman
+
+./ui/spidrman.py
+
+# - # - # - # - # - # - # - # - # - # - # - # - # - # - # - # - # - # - # - # - 
+# Wafer probing specific
+# - # - # - # - # - # - # - # - # - # - # - # - # - # - # - # - # - # - # - # - 
+
+
+98) Testing the chip
 
 ./do.py chipname
 
 
-
-
-
-4) To enable efuse burning you have to:
+99) To enable efuse burning you have to:
 
 !! WARNING: I2C address of current monitor is different than on NIKHEF board !!
   
@@ -34,12 +53,4 @@ c) to read efuses you can:
    ./tpx3_tests.py chipname test17_efuse
 d) to write efuses you can:
    ./tpx3_tests.py chipname "test17_efuse(name='W0_J4')"
-   
 
-
-
-5) Changing linux UDP buffers:
-  sudo sysctl -w net.core.rmem_max=33554432
-  sudo sysctl -w net.core.rmem_default=33554432
-  sudo sysctl -w net.core.rmem_max=134217728
-  sudo sysctl -w net.core.rmem_default=134217728
