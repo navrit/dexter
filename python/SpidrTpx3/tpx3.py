@@ -360,7 +360,7 @@ class tpx3packet_hp:
      
         self.abs_toa= (self.ext_toa<<14) + self.toa - self.ftoa
         if not self.pileup_decode:
-          self.abs_toa -= self.ftoa
+          self.abs_toa -= float(self.ftoa)/16
         self.abs_toa *= 25e-9
      
         if self.pileup_decode:
@@ -641,7 +641,7 @@ class TPX3:
     return r
 
   def readEfuses(self):
-    r,v=self.ctrl.readEfuses(self.id)
+    r,v=self.ctrl.getDeviceId(self.id)
     self._log_ctrl_cmd("readEfuses()=%08x"%v,r)
     return v
 
@@ -650,7 +650,7 @@ class TPX3:
     self.setHeaderFilter(eth|0x0C80,cpu)
 
   def readName(self):
-    fuses=self.readEfuse()
+    fuses=self.readEfuses()
     if fuses==0:
       return '-'
     x=fuses&0xF
@@ -763,7 +763,7 @@ class TPX3:
         tpx3packet_hp.pileup_decode = False
       else:
         tpx3packet_hp.pileup_decode = True
-    self.setDecodersEna()        
+    self.setDecodersEna(True)        
     self._log_ctrl_cmd("setGenConfig(%04x) "%(l),r)
 
   def setDecodersEna(self,enable=True):
