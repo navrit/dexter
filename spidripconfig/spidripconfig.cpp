@@ -54,6 +54,7 @@ int main( int argc, char *argv[] )
 {
   bool         dflts     = false; // Set all to default
   bool         dst       = false; // Set UDP port destination address(es)
+  bool 	       src	 = false; // Set UDP port source address(es)
   bool         prt       = false; // Set UDP port port number(s)
   bool         show_only = false; // Show curr destination IP or port addresses
   quint32      addr_cmd    = 0;
@@ -96,6 +97,16 @@ int main( int argc, char *argv[] )
   else if( QString(argv[2]) == QString("dest") )
     {
       dst = true;
+      addr_cmd = get_addr( argv[1] );
+
+      if( argc == 4 )
+	addr_new = get_addr( argv[3] );
+      else
+	show_only = true;
+    }
+  else if( QString(argv[2]) == QString("src") )
+    {
+      src = true;
       addr_cmd = get_addr( argv[1] );
 
       if( argc == 4 )
@@ -246,6 +257,63 @@ int main( int argc, char *argv[] )
 	      {
 		cout << endl
 		     << "### Error setting IP dest addr " << i
+		     << ", aborting..." << endl;
+		return 0;
+	      }
+	}
+
+      // And now store it all
+      if( !show_only )
+	{
+	  if( spidrctrl.storeAddrAndPorts() )
+	    cout << "==> New settings stored" << endl;
+	  else
+	    error_out( "### Error storing new settings" );
+	}
+    }
+  else if( src )
+    {
+      // Display all the Medipix3/Timepix3 device source IP addresses
+      // and optionally set to a new value...
+      int ports;
+      if( !spidrctrl.getPortCount( &ports ) )
+	{
+	  cout << "### Error reading port count, aborting..." << endl;
+	  return 0;
+	}
+
+      int      i, ipaddr;
+      quint32 *qi = (quint32 *) &ipaddr;
+      cout << "UDP port IP source addresses: ";
+      for( i=0; i<ports; ++i )
+	{
+	  if( !spidrctrl.getIpAddrSrc( i, &ipaddr ) )
+	    {
+	      cout << endl
+		   << "### Error getting IP src addr " << i
+		   << ", aborting..." << endl;
+	      return 0;
+	    }
+	  else
+	    {
+	      if( i > 0 ) cout << ", ";
+	      qaddr.setAddress( *qi );
+	      cout << qaddr.toString().toAscii().constData();
+	    }
+	}
+      cout << endl;
+
+      if( !show_only )
+	{
+	  cout << "change to: ";
+	  qaddr.setAddress( addr_new );
+	  cout << qaddr.toString().toAscii().constData() << endl;
+
+	  for( i=0; i<ports; ++i )
+	    if( !spidrctrl.setIpAddrSrc( i, *paddr_new_i ) )
+	      {
+		cout << endl
+		     << "### Error setting IP src addr " << i
 		     << ", aborting..." << endl;
 		return 0;
 	      }
@@ -488,6 +556,14 @@ void usage()
        << "     <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10"
        << endl
        << "     <ipaddr_dst>: new devices' IP destination, e.g. 192.168.101.1"
+       << endl << endl
+       << "spidripconfig <ipaddr> src [<ipaddr_dst>]"
+       << endl
+       << "   Display or set SPIDR devices' source IP address(es)."
+       << endl
+       << "     <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10"
+       << endl
+       << "     <ipaddr_dst>: new devices' IP source, e.g. 192.168.101.1"
        << endl << endl
        << "spidripconfig <ipaddr> port [<portnr_dst>]"
        << endl
