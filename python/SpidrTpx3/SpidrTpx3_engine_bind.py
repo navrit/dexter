@@ -38,6 +38,8 @@ c2.add_method('connectionErrString',   'std::string', [])
 c2.add_method('ipAddressString',       'std::string', [])
 c2.add_method('errorString',           'std::string', [])
 
+c2.add_method('getDeviceId',           'bool',        [param('int', 'dev_nr'), param('int*', 'id', transfer_ownership=True,direction = Parameter.DIRECTION_OUT)])
+  
 c2.add_method('classVersion',          'int',         [])
 
 c2.add_method('getSoftwVersion',       'bool',        [param('int*', 'version', transfer_ownership=True,direction = Parameter.DIRECTION_OUT)])

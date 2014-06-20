@@ -74,13 +74,14 @@ class DaqThread(QThread):
         self.abort = True
         self.parent.pauseReadout()
         self.parent.resetPixels()
-        print "stoping daq thread"
+        print "Stoping DAQ thread"
+
     def __del__(self):
         print "Wating ..."
         self.wait()
 
     def run(self):
-        print "Starting data taking thread"
+        print "Starting DAQ thread"
         #prev_ref=0
         #msg=""
         self.abort=False
@@ -568,6 +569,28 @@ class TPX3:
         speed="640 Mb/s"
     return speed
 
+  def chipID(self):
+    def _generate_die_name( wno, x,y,mod=0,mod_val=0):
+      if mod==1:
+        x=mod_val&0xf
+      elif mod==2:
+        y=mod_val&0xf
+      elif mod==3:
+        wno=wno & ~(0x3FF)
+        wno|=(mod_val&0x3FF)
+      xs=chr(ord('A')+x-1)
+      return "W%d_%s%d"%(wno,xs,y)
+
+    r,fuses=self.ctrl.getDeviceId(self.id)
+    if fuses==0:
+      return '-'
+    x=fuses&0xF
+    y=(fuses>>4)&0xF
+    w=(fuses>>8)&0xFFF
+    mod=(fuses>>20)&0x3
+    mod_val=(fuses>>22)&0x3FF
+    return _generate_die_name(w,x,y,mod,mod_val)
+
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # Logs
@@ -737,7 +760,7 @@ class DummyDaq:
         self.rate=10
         self.n=1
         self.mode=0
-        self.img=QPixmap(":/homer_simpson_xray.jpg").toImage()
+        self.img=QPixmap(":/img/homer_simpson_xray.jpg").toImage()
         #self.img.
 
     def errorString(self):

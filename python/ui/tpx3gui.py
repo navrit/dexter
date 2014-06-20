@@ -63,7 +63,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for dn in self.all_dacs:
             dac=getattr(self,dn)
             tpx_dn="TPX3_"+dn[4:].upper()
-            print dn,tpx_dn
             dac.valueChanged.connect(lambda val,dacn=int(eval(tpx_dn)):self.onDacChanged(dacn,val))
 
         self.actionFullScreen.triggered.connect(self.onFullScreen)
@@ -284,7 +283,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.viewerCounts._regenerate_bitmap();
 
     def TPEnableChanged(self):
-        print "Changed"
         self.gcrChanged()
 
     def onEqualize(self):
@@ -394,8 +392,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tpx.setPixelConfig()
         self.tpx.setDac(TPX3_VTHRESH,1150)
         self.tpx.datadrivenReadout()
-
-        print "Done", np.sum(self.tpx.matrixMask)
 
     def gcrChanged(self,index=False):
         gcr=0
@@ -530,7 +526,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def closeEvent(self, event):
         if self.tpx and self.tpx.isConnected():
             self.tpx.shutterOff()
-            print "STOP"
+            print "closeEvent()"
             self.shutter=0
             self.tpx.daqThread.stop()
             self.tpx.daqThread.wait()
@@ -603,6 +599,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.tpx=TPX3(ip=ip,port=port,daq="custom")
                 s=""
                 if self.tpx.isConnected():
+                    self.labelChipID.setText(self.tpx.chipID())
                     s="<font color='green'> %s<font>"%self.tpx.connectionStateString()
                     self.tpx.shutterOff()
                     self.shutter=0

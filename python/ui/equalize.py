@@ -343,15 +343,14 @@ class EqualizeThread(QThread):
         self.tpx.resetPixels()
         self.tpx.setPixelConfig()
         self.tpx.sequentialReadout()
-        self.tpx.setDac(TPX3_VTHRESH_FINE,380)
         vfbk_code=164
         self.tpx.setDac(TPX3_VFBK,vfbk_code)
-        self.tpx.setDac(TPX3_VTHRESH_FINE,300)
+
+        self.tpx.setDac(TPX3_VTHRESH,1180)
         self.tpx.setPllConfig( TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK \
                          | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_1 \
                          | 0x14<<TPX3_PLLOUT_CONFIG_SHIFT )
-
-        self.tpx.setShutterLen(10000)
+        self.tpx.setShutterLen(100000)
 
         if self.parent.checkMaskNoisy.isChecked():
             self.log("Masking noisy pixels")

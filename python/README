@@ -11,6 +11,8 @@ to run SPIRDman, you have to install (in addition to mentioned above):
 
 sudo apt-get install pyside-tools python-pyside
 
+On Ubuntu 14.04  : pyside-tools pyqt4-dev-tools
+
 2) Building python bindings
 
 make
