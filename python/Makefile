@@ -2,18 +2,18 @@
 ifdef DEBUG
 PYTHON_INCLUDEDIR=$(shell  python2.7-dbg-config --cflags)
 LDFLAGS=-shared -Wl,-rpath=$(PWD)/../Debug  -L../Debug
+CFLAGS=-fPIC -ggdb  ${PYTHON_INCLUDEDIR} 
 else
 PYTHON_INCLUDEDIR=$(shell  python2.7-config --cflags)
 LDFLAGS=-shared -Wl,-rpath=$(PWD)/../Release  -L../Release
+CFLAGS=-fPIC   ${PYTHON_INCLUDEDIR} 
 endif
-#python2.7-dbg-config
 TMP_DIR=tmp
 SRC_DIR=SpidrTpx3
-CFLAGS=-fPIC  ${PYTHON_INCLUDEDIR} 
 #-ggdb -I/usr/lib/debug/usr/lib/python2.7/dist-packages/numpy/core
 #/usr/lib/python2.7/dist-packages/numpy/core/include/
-
 CXX=g++
+
 $(PWD) := $(shell pwd)
 
 #-L/usr/lib/python2.7/dist-packages/numpy/core/

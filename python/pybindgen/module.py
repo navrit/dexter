@@ -674,7 +674,7 @@ class ModuleBase(dict):
             parent = parent.parent
         return names
 
-    def do_generate(self, out, module_file_base_name=None):
+    def do_generate(self, out, module_file_base_name=None, _append_to_init=""):
         """(internal) Generates the module."""
         assert isinstance(out, _SinkManager)
 
@@ -838,6 +838,8 @@ __attribute__ ((visibility("default")))
         if self.parent is not None:
             main_sink.writeln("return m;")
         main_sink.unindent()
+        main_sink.writeln(_append_to_init)
+        
         main_sink.writeln('}')
 
 
@@ -873,7 +875,7 @@ class Module(ModuleBase):
         """
         super(Module, self).__init__(name, docstring=docstring, cpp_namespace=cpp_namespace)
 
-    def generate(self, out, module_file_base_name=None):
+    def generate(self, out, module_file_base_name=None,_append_to_init=""):
         """Generates the module
 
         :type out: a file object, L{FileCodeSink}, or L{MultiSectionFactory}
@@ -891,7 +893,7 @@ class Module(ModuleBase):
             sink_manager = _MultiSectionSinkManager(out)
         else:
             raise TypeError
-        self.do_generate(sink_manager, module_file_base_name)
+        self.do_generate(sink_manager, module_file_base_name,_append_to_init=_append_to_init)
         sink_manager.close()
 
     def get_python_to_c_type_converter_function_name(self, value_type):

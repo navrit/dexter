@@ -38,6 +38,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #self.TPSource.currentIndexChanged['QString'].connect(self.gcrChanged)
         self.comboShutterType.currentIndexChanged.connect(self.onComboShutterTypeChanged)
         self.connect(self.buttonShutter ,SIGNAL("clicked()"), self.shutterOnOff)
+        self.connect(self.buttonDummyStart, SIGNAL("clicked()"), self.dummyOnOff)
         self.outputMask0.stateChanged.connect(self.outputMaskChanged)
         self.outputMask1.stateChanged.connect(self.outputMaskChanged)
         self.outputMask2.stateChanged.connect(self.outputMaskChanged)
@@ -48,6 +49,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.outputMask7.stateChanged.connect(self.outputMaskChanged)
         self.devid=0
         self.shutter=0
+        self.dummygen=0
         self.all_dacs=["dac_ibias_preamp_on","dac_ibias_preamp_off","dac_vpreamp_ncas","dac_ibias_ikrum","dac_vfbk",\
                      "dac_vthresh","dac_ibias_discs1_on","dac_ibias_discs1_off",\
                      "dac_ibias_discs2_on","dac_ibias_discs2_off","dac_ibias_pixeldac","dac_ibias_tpbufin",\
@@ -82,6 +84,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionHitRate.triggered.connect(self.dockHitRate.toggleVisibility)
         self.actionDemoConfig.triggered.connect(self.dockDemoConfig.toggleVisibility)
         self.actionOutputs.triggered.connect(self.dockOutputs.toggleVisibility)
+        self.actionDummyGenerator.triggered.connect(self.dockDummy.toggleVisibility)
 
         self.dockGeneral.setAssociatedCheckbox(self.actionGeneral)
         self.dockDACs.setAssociatedCheckbox(self.actionDACs)
@@ -91,6 +94,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dockDemoConfig.setAssociatedCheckbox(self.actionDemoConfig)
         self.dockHitRate.setAssociatedCheckbox(self.actionHitRate)
         self.dockOutputs.setAssociatedCheckbox(self.actionOutputs)
+        self.dockDummy.setAssociatedCheckbox(self.actionDummyGenerator)
 
         self.dockGeneral.setName("General",1)
         self.dockDACs.setName("DACs",0)
@@ -100,6 +104,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dockDemoConfig.setName("DemoConfig",0)
         self.dockHitRate.setName("HitRate",0)
         self.dockOutputs.setName("Outputs",0)
+        self.dockDummy.setName("DummyGen",0)
         self.tabsMain.currentChanged.connect(self.onTabPageChange)
 
         settings = QSettings()
@@ -296,6 +301,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.TPInternalDetails.setVisible(False)
         self.dockTP.adjustSize()
 
+    def dummyOnOff(self):
+        if self.dummygen:
+            #self.tpx.shutterOff()
+            self.tpx.setDummyGen(0)
+            self.dummygen=0
+        else:
+            self.spinDummyDelay.setEnabled(False)
+            self.spinDummyFrames.setEnabled(False)
+            delay=int(self.spinDummyDelay.value())
+            frames=int(self.spinDummyFrames.value())
+            self.tpx.setDummyGen(1, delay,frames)
+            self.dummygen=1
+        self.updateDummyGenerator()
+
+    def updateDummyGenerator(self):
+        if self.tpx and self.tpx.isConnected():
+            self.buttonDummyStart.setEnabled(True)
+            if not self.dummygen:
+                self.buttonDummyStart.setText("On")
+                self.spinDummyDelay.setEnabled(True)
+                self.spinDummyFrames.setEnabled(True)
+            else:
+                self.buttonDummyStart.setText("Off")
+                self.spinDummyDelay.setEnabled(False)
+                self.spinDummyFrames.setEnabled(False)
+        else:
+            self.buttonDummyStart.setEnabled(False)
+            self.spinDummyDelay.setEnabled(False)
+            self.spinDummyFrames.setEnabled(False)
+
+
+
     def onComboShutterTypeChanged(self,i):
         self.tpx.shutterOff()
         self.shutter=0
@@ -318,6 +355,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.shutter=1
             self.tpx.shutterStart()
         self.updateShutter()
+
+
 
     def updateShutter(self):
         if self.tpx and self.tpx.isConnected():
@@ -519,6 +558,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.updateOutputLinks()
         self.updateDacs()
         self.updateMenu()
+        self.updateDummyGenerator()
 
     def initAfterConnect(self):
         self.shutter=0
@@ -586,6 +626,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.updateDisplays()
         self.menuConnect.setEnabled(True)
         self.actionDisconect.setEnabled(False)
+
     def onConnectSPIDR(self):
         if self.tpx:
             pass
@@ -595,19 +636,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 settings.beginGroup("SPIDR")
                 ip=settings.value("IP", "192.168.100.10")
                 port=settings.value("Port", "50000")
+                daq_no=int(settings.value("DAQ", 0))
                 settings.endGroup()
-                self.tpx=TPX3(ip=ip,port=port,daq="custom")
+                if daq_no==0: daq_name="custom"
+                elif daq_no==1: daq_name="spidr"
+                else: daq_name="none"
+
+                self.tpx=TPX3(ip=ip,port=port,daq=daq_name)
                 s=""
                 if self.tpx.isConnected():
                     self.labelChipID.setText(self.tpx.chipID())
                     s="<font color='green'> %s<font>"%self.tpx.connectionStateString()
                     self.tpx.shutterOff()
+                    self.tpx.setDummyGen(0)
                     self.shutter=0
+                    self.dummygen=0
                     self.initAfterConnect()
                     self.updateDisplays()
                     self.connectrionMessage.setText(s)
-                    self.tpx.daqThread.updateRate.sig.connect(self.dockHitRate.UpdateRate)
-                    self.tpx.daqThread.refreshDisplay.sig.connect(self.daqThreadrefreshDisplay)
+                    if self.tpx.daq:
+                        self.tpx.daqThread.updateRate.sig.connect(self.dockHitRate.UpdateRate)
+                        self.tpx.daqThread.refreshDisplay.sig.connect(self.daqThreadrefreshDisplay)
 
                     self.viewerTOT.setData(self.tpx.matrixTOT)
                     self.viewerTOT.cm.setHMin(0)
@@ -629,7 +678,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.viewerCounts.cm.setHMax(200)
                     self.viewerCounts.tpx=self.tpx
 
-                    self.tpx.daqThread.start()
+                    if self.tpx.daq:
+                        self.tpx.daqThread.start()
                     self.menuConnect.setEnabled(False)
                     self.actionDisconect.setEnabled(True)
             except RuntimeError as n:

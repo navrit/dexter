@@ -29,6 +29,8 @@ for raw in range(256*256):
    row+= (pixel_address&0x3)
    address_loopup_list.append( (col,row) )
 
+SPIDR_DUMMYGEN_ENA=0x2
+SPIDR_TPX_FE_CONFIG_I       = 0x0210
 
 class Rate():
     def __init__(self,refresh=0.02,updateRateSignal=None,refreshDisplaySignal=None):
@@ -204,9 +206,8 @@ class TPX3:
     self.tpena=np.zeros((256,256), int)
     self.mask=np.zeros((256,256), int)
     if daq=="spidr":
-        self.daq=SpidrDaq(self.ctrl, 1024*1024,self.id)
+        self.daq=SpidrDaq(self.ctrl, 1024*1024*512,self.id)
         msg=str(self.daq.errorString())
-
         if msg!="":
            #self.connectrionMessage.setText(self.daq.errorString())
            self._isConected=False
@@ -214,8 +215,10 @@ class TPX3:
            raise RuntimeError("Unable to connect (%s)"%msg)
         self.daq.setSampling(True)
         self.daq.setSampleAll(True )
-    else:
+    elif daq=="custom":
         self.daq=MyUDPServer()
+    else:
+        self.daq=None
 
     self.matrixTOT    = np.zeros( shape=(256,256))
     self.matrixCounts = np.zeros( shape=(256,256))
@@ -225,10 +228,9 @@ class TPX3:
     self.matrixMaskNeedUpdate = False
     self.matrixDACsNeedUpdate = False
 
-
-    self.daqThread = DaqThread(self)
-
-    self.daqThread.data=self.matrixTOT
+    if self.daq!=None:
+        self.daqThread = DaqThread(self)
+        self.daqThread.data=self.matrixTOT
 
 #    self.reinitDevice()
 #    self.flush_udp_fifo(val=0)
@@ -456,6 +458,31 @@ class TPX3:
   def setCtpr(self):
     r=self.ctrl.setCtpr(self.id)
     self._log_ctrl_cmd("setCtpr() ",r)
+
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  # Dummy generator
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+  def setDummyGen(self,enable,delay=0,frames=1,header=0xA):
+      val=0
+      if enable:
+          val|=SPIDR_DUMMYGEN_ENA
+      val|= delay<<2
+      val|= frames<<(2+8)
+      val|= header<<(2+8+8)
+      r=self.ctrl.setSpidrReg( SPIDR_TPX_FE_CONFIG_I,val)
+
+  def getDummyGen(self):
+      r,v=self.ctrl.getSpidrReg( SPIDR_TPX_FE_CONFIG_I)
+      enable =0
+      delay=0
+      frames=0
+      if r:
+        if val&SPIDR_DUMMYGEN_ENA : enable=True
+        delay=(val>>2)&0xFF
+        frames=(val>>(2+10))&0xFF
+      return enable,delay,frames
+
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # Matrix configuration

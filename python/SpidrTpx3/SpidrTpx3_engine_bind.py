@@ -89,6 +89,10 @@ c2.add_method('uploadPacket',          'bool',        [param('int', 'dev_nr'),pa
 
 c2.add_method('setGpioPin',            'bool',        [param('int', 'pin_nr'), param('int', 'state')] )
 
+c2.add_method('setSpidrReg',           'bool',        [param('int', 'addr'), param('int', 'val')] )
+c2.add_method('getSpidrReg',           'bool',        [param('int', 'addr'), param('int*', 'val', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)] )
+
+  
 c2.add_method('setLogLevel',           'bool',        [param('int', 'level')])
 c2.add_method('readEfuses',             'bool',        [param('int', 'dev_nr'),param('int*', 'efuses', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 if CERN_PROBESTATION:
@@ -214,6 +218,52 @@ getSample2_imp(PySpidrDaq *self, PyObject *args, PyObject *kwargs, PyObject **re
 """)
 
 
+if 1:
+  c.add_custom_method_wrapper( method_name="getNumpyFrames", wrapper_name="getNumpyFrames_imp", wrapper_body="""
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include <numpy/arrayobject.h>
+
+
+PyObject * getNumpyFrames_imp(PySpidrDaq *self, PyObject *args, PyObject *kwargs, PyObject **return_exception)
+{
+  PyArrayObject *hits, *tot;
+  int dims[2]={256,256};
+  
+  const char *keywords[] = {"tot", "hits", NULL};
+  
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char *) "O!O!", (char **) keywords, &PyArray_Type, &tot, &PyArray_Type, &hits)) {
+     return NULL;
+  }
+//  std::cout << hits->dimensions[0]<<" "<< hits->dimensions[1]<<std::endl;
+//  std::cout << tot->dimensions[0]<<" "<< tot->dimensions[1]<<std::endl;
+
+  int pixcnt = 0;
+  
+  Py_BEGIN_ALLOW_THREADS
+    
+//   frame = spidrdaq.sampleData();
+   int   size, x, y, pixdata, timestamp;
+   size  = self->obj->sampleSize();
+  
+   while( self->obj->nextPixel( &x, &y, &pixdata, &timestamp ) )
+   {
+     
+     pixcnt++;
+   }
+   
+  Py_END_ALLOW_THREADS
+
+  PyObject *py_retval = Py_BuildValue((char *) "i", pixcnt);
+    
+  //bool retval=1;
+//  PyObject *py_retval = Py_BuildValue((char *) "N", PyBool_FromLong(retval));
+  return py_retval;
+    
+}
+""")
+
+
+
 if 0:
   c.add_custom_method_wrapper( method_name="getSampleToTNDArray", wrapper_name="getSampleToTNDArray_imp", wrapper_body="""
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
@@ -305,5 +355,5 @@ getN2_imp(PyUDPServer *self, PyObject *args, PyObject *kwargs, PyObject **return
 
 
 #klass.add_method('getN', 'std::list<unsigned long>',[param('unsigned int', 'N')])
-mod.generate(sys.stdout)
+mod.generate(sys.stdout,_append_to_init="import_array();\n")
 
