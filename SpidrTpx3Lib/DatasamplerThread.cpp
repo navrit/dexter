@@ -1,10 +1,3 @@
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#define Sleep(ms) usleep(1000*(ms))
-#endif
-
 #include <QDateTime>
 #include <QDir>
 
@@ -252,7 +245,7 @@ void DatasamplerThread::run()
       else
 	{
 	  // Doze off briefly, while waiting for new data...
-	  Sleep( 20 );
+	  this->msleep( 20 );
 	}
     }
   this->closeFilePrivate(); // In case a file is still open
@@ -733,7 +726,7 @@ bool DatasamplerThread::startRecording( std::string filename,
   int cnt = 0;
   while( !_fileOpen && cnt < 200 )
     {
-      Sleep( 10 );
+      this->msleep( 10 );
       ++cnt;
     }
   if( cnt == 200 )
@@ -759,7 +752,7 @@ bool DatasamplerThread::stopRecording()
   int cnt = 0;
   while( _fileOpen && cnt < 100 )
     {
-      Sleep( 10 );
+      this->msleep( 10 );
       ++cnt;
     }
   if( cnt == 100 )
