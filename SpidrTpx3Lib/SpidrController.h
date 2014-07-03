@@ -98,6 +98,8 @@ class MY_LIB_API SpidrController
   bool        setBiasSupplyEna ( bool enable );
   bool        setBiasVoltage   ( int  volts );
   bool        setDecodersEna   ( bool enable );
+  bool        setPeriphClk80Mhz( bool enable );
+  bool        setExtRefClk     ( bool enable );
   std::string dacName          ( int  dac_code );
   int         dacMax           ( int  dac_code );
   bool        uploadPacket     ( int  dev_nr, unsigned char *packet, int size );
@@ -209,6 +211,7 @@ class MY_LIB_API SpidrController
   bool setGpioPin              ( int  pin_nr, int state );
   bool getSpidrReg             ( int  addr, int *val );
   bool setSpidrReg             ( int  addr, int  val );
+  bool setSpidrRegBit          ( int addr, int bitnr, bool set = true );
 
  private:
   bool setPixelBit             ( int x, int y, unsigned char bitmask, bool b );

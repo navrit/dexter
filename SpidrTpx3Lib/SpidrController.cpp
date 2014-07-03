@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14032400;
+const int VERSION_ID = 0x14063000;
+//const int VERSION_ID = 0x14032400;
 //const int VERSION_ID = 0x14021400;
 //const int VERSION_ID = 0x14011600;
 //const int VERSION_ID = 0x13112700;
@@ -585,6 +586,22 @@ bool SpidrController::setBiasVoltage( int volts )
 bool SpidrController::setDecodersEna( bool enable )
 {
   return this->requestSetInt( CMD_DECODERS_ENA, 0, (int) enable );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setPeriphClk80Mhz( bool enable )
+{
+  // Set or reset bit 24 of the CPU-to-TPX control register...
+  return this->setSpidrRegBit( 0x01C8, 24, enable );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setExtRefClk( bool enable )
+{
+  // Set or reset bit 25 of the CPU-to-TPX control register...
+  return this->setSpidrRegBit( 0x01C8, 25, enable );
 }
 
 // ----------------------------------------------------------------------------
@@ -1353,6 +1370,21 @@ bool SpidrController::setSpidrReg( int addr, int val )
   data[0] = addr;
   data[1] = val;
   return this->requestSetInts( CMD_SET_SPIDRREG, 0, 2, data );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setSpidrRegBit( int addr, int bitnr, bool set )
+{
+  if( bitnr < 0 || bitnr > 31 ) return false;
+  int reg;
+  if( !this->getSpidrReg( addr, &reg ) ) return false;
+  // Set or reset bit 'bitnr' of the register...
+  if( set )
+    reg |= (1 << bitnr);
+  else
+    reg &= ~(1 << bitnr);
+  return this->setSpidrReg( addr, reg );
 }
 
 // ----------------------------------------------------------------------------
