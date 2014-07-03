@@ -471,10 +471,10 @@ bool DatasamplerThread::nextPixel( int *x,
       if( _bigEndian )
 	{
 	  // Reverse the byte order
-	  char bytes[8];
+	  char *bytes = (char *) &pixdata;
 	  for( int i=0; i<8; ++i )
 	    bytes[i] = _sampleBuffer[_pixIndex+7-i];
-	  pixdata = *((u64 *) bytes);
+	  //pixdata = *((u64 *) bytes);
 	}
       else
 	{
@@ -525,10 +525,9 @@ u64 DatasamplerThread::nextPixel()
       if( _bigEndian )
 	{
 	  // Reverse the byte order
-	  char bytes[8];
+	  char *bytes = (char *) &pixdata;
 	  for( int i=0; i<8; ++i )
 	    bytes[i] = _sampleBuffer[_pixIndex+7-i];
-	  pixdata = *((u64 *) bytes);
 	}
       else
 	{

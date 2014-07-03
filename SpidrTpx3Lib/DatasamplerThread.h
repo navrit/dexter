@@ -94,8 +94,8 @@ class DatasamplerThread : public QThread
   QString _fileName;      // Fully qualified current file name
   QString _fileExt;       // File extension to use
   int     _fileCntr;
-  bool    _recording;     // Whether data is written to file(s)
   bool    _fileOpen;      // A file is currently open
+  bool    _recording;     // Whether data is written to file(s)
   bool    _flush;         // Flush or not, when data sampling
                           // is not enabled or file not opened
   i64     _fileChunkSize; // Max data chunk size to write in one go
