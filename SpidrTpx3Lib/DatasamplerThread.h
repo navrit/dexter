@@ -34,52 +34,52 @@ class DatasamplerThread : public QThread
  public:
   DatasamplerThread( ReceiverThread *recvr,
 		     QObject *parent = 0 );
-  ~DatasamplerThread();
+  ~DatasamplerThread( );
 
-  void  stop();
-  void  run();
+  void  stop          ( );
+  void  run           ( );
 
   void  setFlush      ( bool enable ) { _flush = enable; }
 
   // Data sampling: pixel data blocks ('samples') or 'frames'
-  void  setSampling  ( bool enable ) { _sampling = enable; }
-  void  setSampleAll ( bool enable ) { _sampleAll = enable; }
-  bool  getSample    ( int min_size, int max_size, int timeout_ms );
-  bool  getFrame     ( int timeout_ms );
-  void  freeSample   ();
-  int   sampleSize   ()              { return _sampleIndex; }
-  char *sampleData   ()              { return _sampleBuffer; }
-  bool  nextPixel    ( int *x, int *y, int *data = 0, int *timestamp = 0 );
-  u64   nextPixel    ();
-  void  setBigEndian ( bool enable ) { _bigEndian = enable; }
+  void  setSampling   ( bool enable ) { _sampling = enable; }
+  void  setSampleAll  ( bool enable ) { _sampleAll = enable; }
+  bool  getSample     ( int min_size, int max_size, int timeout_ms );
+  bool  getFrame      ( int timeout_ms );
+  void  freeSample    ( );
+  int   sampleSize    ( )             { return _sampleIndex; }
+  char *sampleData    ( )             { return _sampleBuffer; }
+  bool  nextPixel     ( int *x, int *y, int *data = 0, int *timestamp = 0 );
+  u64   nextPixel     ( );
+  void  setBigEndian  ( bool enable ) { _bigEndian = enable; }
 
   // File operations
-  bool startRecording( std::string filename, int runnr );
-  bool stopRecording ();
-  i64  fileMaxSize   ()           { return _fileMaxSize; }
-  void setFileMaxSize( i64 size ) { if( size > 0 ) _fileMaxSize = size; }
-  std::string fileName()          { return _fileName.toStdString(); }
-  SpidrTpx3Header_t *fileHdr()    { return &_fileHdr; }
+  bool startRecording ( std::string filename, int runnr );
+  bool stopRecording  ( );
+  i64  fileMaxSize    ( )             { return _fileMaxSize; }
+  void setFileMaxSize ( i64 size )    { if( size > 0 ) _fileMaxSize = size; }
+  std::string fileName( )             { return _fileName.toStdString(); }
+  SpidrTpx3Header_t *fileHdr()        { return &_fileHdr; }
 
   // Statistics
-  i64  framesSampled() { return _framesSampled; }
-  i64  bytesWritten()  { return _bytesWritten; }
-  i64  bytesSampled()  { return _bytesSampled; }
-  i64  bytesFlushed()  { return _bytesFlushed; }
+  i64  framesSampled  ( )             { return _framesSampled; }
+  i64  bytesWritten   ( )             { return _bytesWritten; }
+  i64  bytesSampled   ( )             { return _bytesSampled; }
+  i64  bytesFlushed   ( )             { return _bytesFlushed; }
 
   // Error
-  std::string errorString();
-  void clearErrorString()   { _errString.clear(); };
+  std::string errorString( );
+  void clearErrorString( )            { _errString.clear(); };
 
  private:
-  bool    timeOut();
-  void    handleTimeOut();
-  int     copySampleToBuffer();
-  int     copyFrameToBuffer();
-  bool    openFilePrivate();
-  void    closeFilePrivate();
-  bool    openFileOld( std::string filename, bool overwrite = false );
-  QString makeFileName();
+  bool    timeOut           ( );
+  void    handleTimeOut     ( );
+  int     copySampleToBuffer( );
+  int     copyFrameToBuffer ( );
+  bool    openFilePrivate   ( );
+  void    closeFilePrivate  ( );
+  bool    openFileOld       ( std::string filename, bool overwrite = false );
+  QString makeFileName      ( );
 
  private:
   // Pointer to receiver
