@@ -49,9 +49,9 @@
 #define CMD_REINIT_DEVICE      0x126
 #define CMD_REINIT_DEVICES     0x127
 #define CMD_GET_EFUSES         0x128
-#ifdef CERN_PROBESTATION
+//#ifdef CERN_PROBESTATION
 #define CMD_BURN_EFUSE         0x129
-#endif
+//#endif
 
 // Configuration: pixels
 #define CMD_SET_PIXCONF        0x22A
@@ -105,8 +105,8 @@
 // Trigger (continued)
 #define CMD_GET_SHUTTERSTART   0x554
 #define CMD_GET_SHUTTEREND     0x555
-#define CMD_GET_SHUTTERCNTR    0x556
-#define CMD_GET_TRIGGERCNTR    0x557
+#define CMD_GET_EXTSHUTTERCNTR 0x556
+#define CMD_GET_SHUTTERCNTR    0x557
 #define CMD_RESET_COUNTERS     0x558
 
 // Configuration: devices (continued)
@@ -196,11 +196,7 @@ static const char *CMD_STR[] =
     "REINIT_DEVICE    ", // 0x126
     "REINIT_DEVICES   ", // 0x127
     "GET_EFUSES       ", // 0x128
-#ifdef CERN_PROBESTATION
     "BURN_EFUSE       ", // 0x129
-#else
-    "-----",             // 0x129
-#endif
 
     "SET_PIXCONF      ", // 0x22A
     "-----",             // 0x22B
@@ -251,8 +247,8 @@ static const char *CMD_STR[] =
 
     "GET_SHUTTERSTART ", // 0x554
     "GET_SHUTTEREND   ", // 0x555
-    "GET_SHUTTERCNTR  ", // 0x556
-    "GET_TRIGGERCNTR  ", // 0x557
+    "GET_EXTSHUTTRCNTR", // 0x556
+    "GET_SHUTTERCNTR  ", // 0x557
     "RESET_COUNTERS   ", // 0x558
     "-----",             // 0x559
     "-----",             // 0x55A
