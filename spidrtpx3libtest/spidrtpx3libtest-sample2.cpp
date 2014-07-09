@@ -117,11 +117,11 @@ int main()
   int trig_freq_hz   = 3;      // 3 Hz
   //int trig_count   = 10;     // 10 triggers
   int trig_count     = 1;
-  if( !spidrctrl.setTriggerConfig( trig_mode, trig_length_us,
-                                   trig_freq_hz, trig_count ) )
-    error_out( "###setTriggerConfig" );
+  if( !spidrctrl.setShutterTriggerConfig( trig_mode, trig_length_us,
+					  trig_freq_hz, trig_count ) )
+    error_out( "###setShutterTriggerConfig" );
   else
-    cout << "setTriggerConfig" << endl;
+    cout << "setShutterTriggerConfig" << endl;
 
   // ----------------------------------------------------------
 

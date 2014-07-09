@@ -115,9 +115,9 @@ int main()
   int trig_freq_hz   = 3;      // 3 Hz
   //int trig_count   = 10;     // 10 triggers
   int trig_count     = 1;
-  if( !spidrctrl.setTriggerConfig( trig_mode, trig_length_us,
-                                   trig_freq_hz, trig_count ) )
-    error_out( "###setTriggerConfig" );
+  if( !spidrctrl.setShutterTriggerConfig( trig_mode, trig_length_us,
+					  trig_freq_hz, trig_count ) )
+    error_out( "###setShutterTriggerConfig" );
 
   // Interface to Timepix3 pixel data acquisition
   SpidrDaq spidrdaq( &spidrctrl );
@@ -154,8 +154,8 @@ int main()
 	  int pixcnt = 0;
           while( spidrdaq.nextPixel( &x, &y, &pixdata, &timestamp ) )
 	    {
-	      //if( pixcnt < 5 )
-	      //cout << x << "," << y << ": " << hex << pixdata << dec << endl;
+	      if( pixcnt < 5 )
+		cout << x << "," << y << ": " << hex << pixdata << dec << endl;
 	      ++pixcnt;
 	    }
 	  total_pixcnt += pixcnt;

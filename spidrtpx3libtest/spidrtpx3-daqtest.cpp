@@ -44,7 +44,7 @@ int main( int argc, char *argv[] )
 #ifdef TEST_ONE_FULL_BUFFER
   spidrdaq.setFlush( false );
 #else
-  if( !spidrdaq.openFile( "test.dat", true ) )
+  if( !spidrdaq.startRecording( "test.dat" ) )
     cout << "### " << spidrdaq.errorString() << endl;
 #endif
 
@@ -72,21 +72,21 @@ int main( int argc, char *argv[] )
       last_written = written;
       ++cnt;
       Sleep( 1000 );
-      //if( spidrdaq.bufferFullOccurred() ) spidrdaq.closeFile();
+      //if( spidrdaq.bufferFullOccurred() ) spidrdaq.stopRecording();
 #ifdef TEST_ONE_FULL_BUFFER
       /*
       if( cnt == 20 )
 	{
-	  if( !spidrdaq.openFile( "test.dat", true ) )
+	  if( !spidrdaq.startRecording( "test.dat" ) )
 	    cout << "### " << spidrdaq.errorString() << endl;
 	}
       */
       if( spidrdaq.bufferFullOccurred() )
 	{
-	  if( !spidrdaq.openFile( "test.dat", true ) )
+	  if( !spidrdaq.startRecording( "test.dat" ) )
 	    cout << "### " << spidrdaq.errorString() << endl;
 	  Sleep( 5000 );
-	  spidrdaq.closeFile();
+	  spidrdaq.stopRecording();
 
 	  // Check if the counter increments properly
 	  long long i, size = spidrdaq.bytesReceivedCount();
