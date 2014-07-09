@@ -15,7 +15,7 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14063000;
+const int VERSION_ID = 0x14070800;
 //const int VERSION_ID = 0x14032400;
 //const int VERSION_ID = 0x14021400;
 //const int VERSION_ID = 0x14011600;
@@ -983,13 +983,13 @@ bool SpidrController::validDacs( int dev_nr, bool *valid )
 }
 
 // ----------------------------------------------------------------------------
-// Trigger
+// Shutter Trigger
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setTriggerConfig( int trigger_mode,
-					int trigger_length_us,
-					int trigger_freq_hz,
-					int trigger_count )
+bool SpidrController::setShutterTriggerConfig( int trigger_mode,
+					       int trigger_length_us,
+					       int trigger_freq_hz,
+					       int trigger_count )
 {
   int datawords[4];
   datawords[0] = trigger_mode;
@@ -1001,10 +1001,10 @@ bool SpidrController::setTriggerConfig( int trigger_mode,
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getTriggerConfig( int *trigger_mode,
-					int *trigger_length_us,
-					int *trigger_freq_hz,
-					int *trigger_count )
+bool SpidrController::getShutterTriggerConfig( int *trigger_mode,
+					       int *trigger_length_us,
+					       int *trigger_freq_hz,
+					       int *trigger_count )
 {
   int data[4];
   if( !this->requestGetInts( CMD_GET_TRIGCONFIG, 0, 4, data ) )
@@ -1038,9 +1038,9 @@ bool SpidrController::openShutter()
 {
   // Set to auto-trigger mode with number of triggers set to 0
   // and the frequency (10Hz) lower than the trigger period (200ms) allows
-  //if( !this->setTriggerConfig( 4, 200000, 10, 0 ) ) return false;
+  //if( !this->setShutterTriggerConfig( 4, 200000, 10, 0 ) ) return false;
   // It is sufficient to set the trigger period to zero (June 2014)
-  if( !this->setTriggerConfig( 4, 0, 10, 1 ) ) return false;
+  if( !this->setShutterTriggerConfig( 4, 0, 10, 1 ) ) return false;
   return this->startAutoTrigger();
 }
 
@@ -1050,8 +1050,15 @@ bool SpidrController::closeShutter()
 {
   if( !this->stopAutoTrigger() ) return false;
   // Set to auto-trigger mode (just in case), and to default trigger settings
-  if( !this->setTriggerConfig( 4, 100000, 1, 1 ) ) return false;
+  if( !this->setShutterTriggerConfig( 4, 100000, 1, 1 ) ) return false;
   return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getExtShutterCounter( int *cntr )
+{
+  return this->requestGetInt( CMD_GET_EXTSHUTTERCNTR, 0, cntr );
 }
 
 // ----------------------------------------------------------------------------
@@ -1059,13 +1066,6 @@ bool SpidrController::closeShutter()
 bool SpidrController::getShutterCounter( int *cntr )
 {
   return this->requestGetInt( CMD_GET_SHUTTERCNTR, 0, cntr );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::getTriggerCounter( int *cntr )
-{
-  return this->requestGetInt( CMD_GET_TRIGGERCNTR, 0, cntr );
 }
 
 // ----------------------------------------------------------------------------
@@ -1322,6 +1322,13 @@ bool SpidrController::resetPacketCounters( )
   if( !this->setSpidrReg( 0x0384, 0 ) ) result = false;
   if( !this->setSpidrReg( 0x0388, 0 ) ) result = false;
   return result;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getTdcTriggerCounter( int *cntr )
+{
+  return this->getSpidrReg( 0x02F8, cntr );
 }
 
 // ----------------------------------------------------------------------------

@@ -147,12 +147,12 @@ class MY_LIB_API SpidrController
   bool erasePixelConfig        ( int  dev_nr );              // ###TODO
   bool validPixelConfig        ( int  dev_nr, bool *valid ); // ###TODO
 
-  // Trigger
-  bool setTriggerConfig        ( int  trigger_mode,
+  // Shutter trigger
+  bool setShutterTriggerConfig ( int  trigger_mode,
                                  int  trigger_length_us,
                                  int  trigger_freq_hz,
                                  int  trigger_count );
-  bool getTriggerConfig        ( int *trigger_mode,
+  bool getShutterTriggerConfig ( int *trigger_mode,
                                  int *trigger_length_us,
                                  int *trigger_freq_hz,
                                  int *trigger_count );
@@ -160,8 +160,8 @@ class MY_LIB_API SpidrController
   bool stopAutoTrigger         ( );
   bool openShutter             ( );
   bool closeShutter            ( );
+  bool getExtShutterCounter    ( int *cntr );
   bool getShutterCounter       ( int *cntr );
-  bool getTriggerCounter       ( int *cntr );
   bool resetCounters           ( );
 
   // Data-acquisition
@@ -204,6 +204,7 @@ class MY_LIB_API SpidrController
   bool getDataPacketCounter    ( int *cntr );
   bool getMonPacketCounter     ( int *cntr );
   bool resetPacketCounters     ( );
+  bool getTdcTriggerCounter    ( int *cntr );
 
   // Other
   bool getGpio                 ( int *gpio_in );
