@@ -623,7 +623,7 @@ class TPX3:
 
   def setShutterLen(self,l):
     self.shutter_len=float(l)/1e6
-    r=self.ctrl.setTriggerConfig(4,l,1,1)
+    r=self.ctrl.setShutterTriggerConfig(4,l,1,1)
     self._log_ctrl_cmd("Config shutter (%d) "%(l),r)
     
   def resetTimer(self):
@@ -719,8 +719,8 @@ class TPX3:
     return r
 
   def shutterOn(self):
-    r=self.ctrl.setTriggerConfig(4,0,1,0)
-    self._log_ctrl_cmd("setTriggerConfig ",r)
+    r=self.ctrl.setShutterTriggerConfig(4,0,1,0)
+    self._log_ctrl_cmd("setShutterTriggerConfig ",r)
     r=self.ctrl.startAutoTrigger()
     self._log_ctrl_cmd("Shutter on ",r)
     return r

@@ -45,17 +45,20 @@ def test():
         print tpx.connectionStateString()
         #self.tpx.shutterOff()
         #self.shutter=0
-        tot=np.zeros( (256,256) )
-        hits=np.zeros( (256,256) )
+        tot=np.zeros( (256,256) , dtype =np.int)
+        hits=np.zeros( (256,256) , dtype =np.int)
 
         print "Starting DAQ thread"
         while True:
-            next_frame=tpx.getSample(1024*16*16,1)
+            next_frame=tpx.getSample(16*256*256,1)
             rate.processed(0)
 
             #print next_frame
             if next_frame:
+               s= tpx.daq.sampleSize()
                x=tpx.daq.getNumpyFrames(tot,hits)
+               #print s,np.sum(tot),np.sum(hits),float(np.sum(hits))/s
+
                #print x
 
                #hits=0

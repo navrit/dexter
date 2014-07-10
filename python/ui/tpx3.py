@@ -89,6 +89,10 @@ class DaqThread(QThread):
         self.abort=False
         self.parent.resetPixels()
         self.parent.datadrivenReadout()
+
+        tot=np.zeros( (256,256) , dtype =np.int)
+        hits=np.zeros( (256,256) , dtype =np.int)
+
         while True:
             if self.abort:
                 return
@@ -96,29 +100,29 @@ class DaqThread(QThread):
             self.data*=0.98
         #if 0:
             low_values_indices = self.data < 1.0  # Where values are low
-            self.data[low_values_indices] = 0  # All low values set to 0
-
-            next_frame=self.parent.getSample(1024,10)
-            time.sleep(0.03)
+            self.data[low_values_indices] = 0  # All low values set to 0xzcxzczxczxc
+            #print "getSample"
+            next_frame=self.parent.getSample(1024*1024,10)
+            time.sleep(0.04)
             #next_frame=self.parent.spidrDaq.getSample(100,10)
             self.rate.processed(0)
             #print next_frame
             if next_frame:
-               time.sleep(0.005)
-
-               #hits=self.parent.spidrDaq.sampleSize()/8
-#               print hits
-               hits=0
-               while True:
-                   r,x,y,data,tstp=self.parent.nextPixel()
-                   if not r: break
-                   data>>=4
-                   data&=0x2FF
-#                   print x,y,data
-                   self.data[x,y]+=data
-                   self.parent.matrixCounts[x,y]+=1
-                   hits+=1
-               self.rate.processed(hits)
+               if 0:
+                 hits_processed=self.parent.daq.getNumpyFrames(tot,hits)
+               else:
+                   time.sleep(0.005)
+                   hits_processed=0
+                   while True:
+                       r,x,y,data,tstp=self.parent.nextPixel()
+                       if not r: break
+                       data>>=4
+                       data&=0x2FF
+    #                   print x,y,data
+                       self.data[x,y]+=data
+                       self.parent.matrixCounts[x,y]+=1
+                       hits_processed+=1
+               self.rate.processed(hits_processed)
 
 class MyUDPServer:
     def __init__(self):
@@ -199,6 +203,9 @@ class TPX3:
 #    self.udp.start(8192)
 #    if  not self.udp.isStarted():
 #      raise RuntimeError("Problem with UDP server. Unable to connect")
+
+    self.shutterOff()
+    self.setDummyGen(0)
 
     self.id=0
     self.log_packets=False

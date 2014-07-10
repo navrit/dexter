@@ -647,8 +647,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if self.tpx.isConnected():
                     self.labelChipID.setText(self.tpx.chipID())
                     s="<font color='green'> %s<font>"%self.tpx.connectionStateString()
-                    self.tpx.shutterOff()
-                    self.tpx.setDummyGen(0)
                     self.shutter=0
                     self.dummygen=0
                     self.initAfterConnect()

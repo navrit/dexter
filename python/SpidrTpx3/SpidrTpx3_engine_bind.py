@@ -140,7 +140,7 @@ c2.add_method('pauseReadout',         'bool',       [])
 #c2.add_method('openShutter',          'bool',       [param('int', 'dev_nr'),param('int', 'len')])
 c2.add_method('errorString',          'std::string',       [])
 
-c2.add_method('setTriggerConfig',     'bool',       [param('int', 'trigger_mode'),param('int', 'trigger_period_us'),param('int', 'trigger_freq_hz'),param('int', 'nr_of_triggers')])
+c2.add_method('setShutterTriggerConfig',     'bool',       [param('int', 'trigger_mode'),param('int', 'trigger_period_us'),param('int', 'trigger_freq_hz'),param('int', 'nr_of_triggers')])
 c2.add_method('startAutoTrigger',     'bool',       [])
 c2.add_method('stopAutoTrigger',      'bool',       [])
 c2.add_method('setOutputMask',        'bool',       [param('int', 'dev_nr'),param('int', 'mask')])
@@ -224,16 +224,45 @@ if 1:
 #include <numpy/arrayobject.h>
 
 
+
+int **pyMatrix_to_TwoDimArrayInt(PyArrayObject *arrayin)  {
+	int **c, *a;
+	int i,n,m;
+	
+	n=arrayin->dimensions[0];
+	m=arrayin->dimensions[1];
+	
+	c=(int **)malloc((size_t) (n*sizeof(int *)));
+	if (!c)   {
+		printf("In **ptrvector. Allocation of memory for double array failed.");
+		exit(0);  
+	}
+
+	a=(int *) arrayin->data;  /* pointer to arrayin data as double */
+	for ( i=0; i<n; i++)  
+		c[i]=&a[i*m]; 
+	return c;
+}
+
 PyObject * getNumpyFrames_imp(PySpidrDaq *self, PyObject *args, PyObject *kwargs, PyObject **return_exception)
 {
-  PyArrayObject *hits, *tot;
-  int dims[2]={256,256};
+  PyArrayObject *py_hits, *py_tot;
+  //int dims[2]={256,256};
   
   const char *keywords[] = {"tot", "hits", NULL};
   
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char *) "O!O!", (char **) keywords, &PyArray_Type, &tot, &PyArray_Type, &hits)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char *) "O!O!", (char **) keywords, &PyArray_Type, &py_tot, &PyArray_Type, &py_hits)) {
      return NULL;
   }
+  
+  int mem_size= py_hits->dimensions[0]* py_hits->dimensions[0]* sizeof(int);
+  
+  int **tot =pyMatrix_to_TwoDimArrayInt(py_tot);
+  int **hits=pyMatrix_to_TwoDimArrayInt(py_hits);
+  
+  memset ( py_tot->data, 0x0,  mem_size );
+  memset ( py_hits->data, 0x0,  mem_size );
+  
 //  std::cout << hits->dimensions[0]<<" "<< hits->dimensions[1]<<std::endl;
 //  std::cout << tot->dimensions[0]<<" "<< tot->dimensions[1]<<std::endl;
 
@@ -242,12 +271,13 @@ PyObject * getNumpyFrames_imp(PySpidrDaq *self, PyObject *args, PyObject *kwargs
   Py_BEGIN_ALLOW_THREADS
     
 //   frame = spidrdaq.sampleData();
-   int   size, x, y, pixdata, timestamp;
-   size  = self->obj->sampleSize();
+   int    x, y, pixdata, timestamp;
+   //int size  = self->obj->sampleSize();
   
    while( self->obj->nextPixel( &x, &y, &pixdata, &timestamp ) )
    {
-     
+     tot[x][y]=1;
+     hits[x][y]+=1;
      pixcnt++;
    }
    
