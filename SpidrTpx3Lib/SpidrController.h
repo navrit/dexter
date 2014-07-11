@@ -187,8 +187,7 @@ class MY_LIB_API SpidrController
   bool t0Sync                  ( int  dev_nr );
 
   // Monitoring
-  bool getAdc                  ( int  dev_nr, int *adc_val,
-				 int  nr_of_samples = 1 );
+  bool getAdc                  ( int *adc_val, int nr_of_samples = 1 );
   bool getRemoteTemp           ( int *mdegrees );
   bool getLocalTemp            ( int *mdegrees );
   bool getFpgaTemp             ( int *mdegrees );

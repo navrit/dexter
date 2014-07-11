@@ -1187,10 +1187,10 @@ bool SpidrController::t0Sync( int dev_nr )
 // Monitoring
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getAdc( int dev_nr, int *adc_val, int nr_of_samples )
+bool SpidrController::getAdc( int *adc_val, int nr_of_samples )
 {
   *adc_val = nr_of_samples;
-  return this->requestGetInt( CMD_GET_ADC, dev_nr, adc_val );
+  return this->requestGetInt( CMD_GET_ADC, 0, adc_val );
 }
 
 // ----------------------------------------------------------------------------
