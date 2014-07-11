@@ -44,18 +44,18 @@ DatasamplerThread::DatasamplerThread( ReceiverThread *recvr,
   memset( static_cast<void *> (&_fileHdr), 0, SPIDRTPX3_HEADER_SIZE );
   memset( static_cast<void *> (&_fileHdr.unused), HEADER_FILLER,
 	  sizeof(_fileHdr.unused) );
-  _fileHdr.headerId        = SPIDRTPX3_HEADER_ID;
+  _fileHdr.headerId        = SPIDR_HEADER_ID;
   // To be adjusted if pixel config is added:
   _fileHdr.headerSizeTotal = SPIDRTPX3_HEADER_SIZE;// Increase if pixconf added
   _fileHdr.headerSize      = SPIDRTPX3_HEADER_SIZE - TPX3_HEADER_SIZE;
-  _fileHdr.format          = SPIDRTPX3_HEADER_VERSION;
+  _fileHdr.format          = SPIDR_HEADER_VERSION;
   Tpx3Header_t *thdr = &_fileHdr.devHeader;
   memset( static_cast<void *> (&thdr->unused), HEADER_FILLER,
 	  sizeof(thdr->unused) );
   thdr->headerId           = TPX3_HEADER_ID;
-  thdr->headerSizeTotal    = TPX3_HEADER_SIZE; // Increase if pixconf added
+  thdr->headerSizeTotal    = TPX3_HEADER_SIZE; // Increased when pixconf added
   thdr->headerSize         = TPX3_HEADER_SIZE;
-  thdr->format             = TPX3_HEADER_VERSION;
+  thdr->format             = TPX3_HEADER_VERSION | TPX3_FAMILY_TYPE;
 
   _sampleBuffer = (char *) _sampleBufferUlong;
 
