@@ -4,8 +4,16 @@
 #define SPIDRTPX3DATA_H
 
 // Format versioning
-#define SPIDRTPX3_HEADER_VERSION  0x00000001
+// -----------------
+// Common header
+#define SPIDR_HEADER_VERSION      0x00000001
+// Device header
 #define TPX3_HEADER_VERSION       0x00000001
+// Chip family type identifiers for device header
+#define TPX_FAMILY_TYPE           0x00000000
+#define MPX2_FAMILY_TYPE          0x01000000
+#define MPX3_FAMILY_TYPE          0x02000000
+#define TPX3_FAMILY_TYPE          0x03000000
 
 typedef struct Tpx3Header
 {
@@ -55,7 +63,7 @@ typedef struct SpidrTpx3Header
 #define SPIDRTPX3_HEADER_SIZE  sizeof(SpidrTpx3Header_t)
 #define TPX3_HEADER_SIZE       sizeof(Tpx3Header_t)
 
-#define SPIDRTPX3_HEADER_ID    0x33545053 // Represents "SPT3"
+#define SPIDR_HEADER_ID        0x52445053 // Represents "SPDR"
 #define TPX3_HEADER_ID         0x33585054 // Represents "TPX3"
 #define HEADER_FILLER          0xDD       // For unused space in headers
 
