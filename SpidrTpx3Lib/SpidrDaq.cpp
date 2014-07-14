@@ -215,7 +215,7 @@ bool SpidrDaq::startRecording( std::string filename,
 
       // Header filter (16 bits value)
       if( _spidrCtrl->getHeaderFilter( _deviceNr, &eth_filter, &cpu_filter ) )
-	fhdr->spidrFilter = val;
+	fhdr->spidrFilter = eth_filter | (cpu_filter << 16);
       else
 	fhdr->spidrFilter = INVALID_VAL;
 
