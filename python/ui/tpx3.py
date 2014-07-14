@@ -257,12 +257,12 @@ class TPX3:
       len=int(len)
       freq=int(freq)
       cnt=int(cnt)
-      r=self.ctrl.setTriggerConfig(4,len,freq,cnt)
+      r=self.ctrl.setShutterTriggerConfig(4,len,freq,cnt)
       self._log_ctrl_cmd("setShutterConfig (%d,%d,%d) "%(len,freq,cnt),r)
 
   def setShutterLen(self,l):
     self.shutter_len=float(l)/1e6
-    r=self.ctrl.setTriggerConfig(4,l,1,1)
+    r=self.ctrl.setShutterTriggerConfig(4,l,1,1)
     self._log_ctrl_cmd("Config shutter (%d) "%(l),r)
 
   def openShutter(self,sleep=True):
@@ -279,7 +279,7 @@ class TPX3:
 
 
   def shutterOn(self):
-    r=self.ctrl.setTriggerConfig(4,0,1,0)
+    r=self.ctrl.setShutterTriggerConfig(4,0,1,0)
     self._log_ctrl_cmd("setTriggerConfig ",r)
     r=self.ctrl.startAutoTrigger()
     self._log_ctrl_cmd("Shutter on ",r)
@@ -385,7 +385,7 @@ class TPX3:
         return 0
 
   def getAdcEx(self,measurements):
-      ret,val=self.ctrl.getAdc(0,measurements)
+      ret,val=self.ctrl.getAdc(measurements)
       val=float(val)/measurements
       val=1.5*val/4096
       return val
