@@ -48,7 +48,7 @@ c2.add_method('getFirmwVersion',       'bool',        [param('int*', 'version', 
 c2.add_method('setDac',                'bool',        [param('int', 'dev_nr'),param('int', 'dac_code'),param('int', 'dac_valr')])
 c2.add_method('dacMax',                'int',         [param('int', 'dac_code')])
 c2.add_method('setSenseDac',           'bool',        [param('int', 'dev_nr'),param('int', 'dac_code')])
-c2.add_method('getAdc',                'bool',        [param('int', 'dev_nr'),param('int*', 'adc_val', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),param('int', 'nr_of_samples')])
+c2.add_method('getAdc',                'bool',        [param('int*', 'adc_val', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),param('int', 'nr_of_samples')])
 
 c2.add_method('getRemoteTemp',         'bool',        [param('int*', 'mdegrees', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 c2.add_method('getLocalTemp',          'bool',        [param('int*', 'mdegrees', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
@@ -226,9 +226,10 @@ if 1:
 
 
 int **pyMatrix_to_TwoDimArrayInt(PyArrayObject *arrayin)  {
-	int **c, *a;
+	int **c=NULL;
+	/*
+        int *a;
 	int i,n,m;
-	
 	n=arrayin->dimensions[0];
 	m=arrayin->dimensions[1];
 	
@@ -238,19 +239,21 @@ int **pyMatrix_to_TwoDimArrayInt(PyArrayObject *arrayin)  {
 		exit(0);  
 	}
 
-	a=(int *) arrayin->data;  /* pointer to arrayin data as double */
+	a=(int *) arrayin->data;  // pointer to arrayin data as double 
 	for ( i=0; i<n; i++)  
 		c[i]=&a[i*m]; 
+*/
 	return c;
 }
 
 PyObject * getNumpyFrames_imp(PySpidrDaq *self, PyObject *args, PyObject *kwargs, PyObject **return_exception)
 {
+ /*
   PyArrayObject *py_hits, *py_tot;
   //int dims[2]={256,256};
   
   const char *keywords[] = {"tot", "hits", NULL};
-  
+ 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, (char *) "O!O!", (char **) keywords, &PyArray_Type, &py_tot, &PyArray_Type, &py_hits)) {
      return NULL;
   }
@@ -284,6 +287,8 @@ PyObject * getNumpyFrames_imp(PySpidrDaq *self, PyObject *args, PyObject *kwargs
   Py_END_ALLOW_THREADS
 
   PyObject *py_retval = Py_BuildValue((char *) "i", pixcnt);
+*/
+  PyObject *py_retval = NULL;
     
   //bool retval=1;
 //  PyObject *py_retval = Py_BuildValue((char *) "N", PyBool_FromLong(retval));
