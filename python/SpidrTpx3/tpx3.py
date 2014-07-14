@@ -378,6 +378,12 @@ class tpx3packet_hp:
 
       else:
         pass
+    elif self.type==0x9:
+     raw=self.raw>>14
+     self.config=raw&0x3F
+     raw>>=(6+8)
+     self.pixel_address=raw&0xFFFF
+     self.col,self.row=address_loopup_list[self.pixel_address]
 
   def __repr__(self):
     self.str="-"
@@ -458,7 +464,7 @@ class TPX3:
     vv=[]
     ret=True
 #    for i in range(measurements):
-    ret,val=self.ctrl.getAdc(self.id,measurements)
+    ret,val=self.ctrl.getAdc(measurements)
 #      if not ret:
 #        break
 #      vv.append(float(val))
