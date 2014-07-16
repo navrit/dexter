@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14070800;
+const int VERSION_ID = 0x14071600;
+//const int VERSION_ID = 0x14070800;
 //const int VERSION_ID = 0x14032400;
 //const int VERSION_ID = 0x14021400;
 //const int VERSION_ID = 0x14011600;
@@ -515,6 +516,13 @@ bool SpidrController::setOutBlockConfig( int dev_nr, int config )
 bool SpidrController::setOutputMask( int dev_nr, int mask )
 {
   return this->requestSetInt( CMD_SET_OUTPUTMASK, dev_nr, mask );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getLinkStatus( int dev_nr, int *status )
+{
+  return this->getSpidrReg( 0x0300+(dev_nr<<2), status );
 }
 
 // ----------------------------------------------------------------------------

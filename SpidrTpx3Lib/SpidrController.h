@@ -89,6 +89,7 @@ class MY_LIB_API SpidrController
   bool        getOutBlockConfig( int  dev_nr, int *config );
   bool        setOutBlockConfig( int  dev_nr, int  config );
   bool        setOutputMask    ( int  dev_nr, int  mask );
+  bool        getLinkStatus    ( int  dev_nr, int *status );
   bool        getSlvsConfig    ( int  dev_nr, int *config );
   bool        setSlvsConfig    ( int  dev_nr, int  config );
   bool        getPwrPulseConfig( int  dev_nr, int *config );
@@ -211,7 +212,7 @@ class MY_LIB_API SpidrController
   bool setGpioPin              ( int  pin_nr, int state );
   bool getSpidrReg             ( int  addr, int *val );
   bool setSpidrReg             ( int  addr, int  val );
-  bool setSpidrRegBit          ( int addr, int bitnr, bool set = true );
+  bool setSpidrRegBit          ( int  addr, int bitnr, bool set = true );
 
  private:
   bool setPixelBit             ( int x, int y, unsigned char bitmask, bool b );

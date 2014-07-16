@@ -213,7 +213,7 @@ bool SpidrDaq::startRecording( std::string filename,
       if( _spidrCtrl->getSpidrReg( 0x2A8, &val ) )
 	fhdr->spidrConfig |= (val & 0xF) << 16;
 
-      // Header filter (16 bits value)
+      // Header filter (two 16-bit significant values)
       if( _spidrCtrl->getHeaderFilter( _deviceNr, &eth_filter, &cpu_filter ) )
 	fhdr->spidrFilter = eth_filter | (cpu_filter << 16);
       else
