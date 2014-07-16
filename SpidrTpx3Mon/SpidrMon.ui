@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>875</width>
-    <height>364</height>
+    <width>808</width>
+    <height>442</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -36,7 +36,13 @@
       <widget class="QGroupBox" name="_groupBoxConnection">
        <property name="minimumSize">
         <size>
-         <width>457</width>
+         <width>400</width>
+         <height>79</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
          <height>79</height>
         </size>
        </property>
@@ -287,9 +293,9 @@
        <widget class="QCheckBox" name="_checkBoxSpidrX2">
         <property name="geometry">
          <rect>
-          <x>360</x>
-          <y>50</y>
-          <width>92</width>
+          <x>250</x>
+          <y>56</y>
+          <width>126</width>
           <height>17</height>
          </rect>
         </property>
@@ -300,12 +306,136 @@
       </widget>
      </item>
      <item>
+      <widget class="QGroupBox" name="_groupBoxSpidrModule">
+       <property name="minimumSize">
+        <size>
+         <width>400</width>
+         <height>60</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>60</height>
+        </size>
+       </property>
+       <property name="title">
+        <string>SPIDR</string>
+       </property>
+       <widget class="QLineEdit" name="_lineEditFpgaTemp">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>58</x>
+          <y>29</y>
+          <width>55</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelFpga">
+        <property name="geometry">
+         <rect>
+          <x>40</x>
+          <y>10</y>
+          <width>91</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>FPGA Temp [C]</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="_lineEditFanSpidr">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>160</x>
+          <y>29</y>
+          <width>55</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelFan">
+        <property name="geometry">
+         <rect>
+          <x>147</x>
+          <y>10</y>
+          <width>84</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Fan [RPM]</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="_lineEditFanVc707">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>270</x>
+          <y>28</y>
+          <width>55</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelVc707Fan">
+        <property name="geometry">
+         <rect>
+          <x>242</x>
+          <y>10</y>
+          <width>117</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>VC707 Fan [RPM]</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </widget>
+     </item>
+     <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QGroupBox" name="_groupBoxSpidr">
          <property name="minimumSize">
           <size>
-           <width>457</width>
+           <width>390</width>
            <height>159</height>
           </size>
          </property>
@@ -433,7 +563,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>Remote</string>
+           <string>Device</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -449,7 +579,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>Local</string>
+           <string>Board</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -531,14 +661,14 @@
          <widget class="QLabel" name="labelTemperatures">
           <property name="geometry">
            <rect>
-            <x>89</x>
+            <x>50</x>
             <y>20</y>
             <width>118</width>
             <height>16</height>
            </rect>
           </property>
           <property name="text">
-           <string>Temperatures [C]</string>
+           <string>Temperature [C]</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -648,7 +778,7 @@
          <widget class="QLabel" name="labelBias">
           <property name="geometry">
            <rect>
-            <x>241</x>
+            <x>254</x>
             <y>37</y>
             <width>72</width>
             <height>20</height>
@@ -667,7 +797,7 @@
           </property>
           <property name="geometry">
            <rect>
-            <x>249</x>
+            <x>262</x>
             <y>55</y>
             <width>55</width>
             <height>20</height>
@@ -686,7 +816,7 @@
           </property>
           <property name="geometry">
            <rect>
-            <x>249</x>
+            <x>262</x>
             <y>98</y>
             <width>55</width>
             <height>20</height>
@@ -702,7 +832,7 @@
          <widget class="QLabel" name="labelVdda">
           <property name="geometry">
            <rect>
-            <x>239</x>
+            <x>252</x>
             <y>80</y>
             <width>72</width>
             <height>20</height>
@@ -718,7 +848,7 @@
          <widget class="QLabel" name="labelMvolt_4">
           <property name="geometry">
            <rect>
-            <x>307</x>
+            <x>320</x>
             <y>101</y>
             <width>36</width>
             <height>16</height>
@@ -734,7 +864,7 @@
          <widget class="QLabel" name="labelMvolt_5">
           <property name="geometry">
            <rect>
-            <x>307</x>
+            <x>320</x>
             <y>56</y>
             <width>30</width>
             <height>16</height>
@@ -742,127 +872,6 @@
           </property>
           <property name="text">
            <string>[V]</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-         <widget class="QLineEdit" name="_lineEditFpgaTemp">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>173</x>
-            <y>54</y>
-            <width>55</width>
-            <height>20</height>
-           </rect>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelFpga">
-          <property name="geometry">
-           <rect>
-            <x>173</x>
-            <y>38</y>
-            <width>55</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>FPGA</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelFans">
-          <property name="geometry">
-           <rect>
-            <x>335</x>
-            <y>32</y>
-            <width>77</width>
-            <height>20</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Fans [RPM]</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-         <widget class="QLineEdit" name="_lineEditFanSpidr">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>342</x>
-            <y>55</y>
-            <width>55</width>
-            <height>20</height>
-           </rect>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelSpidr">
-          <property name="geometry">
-           <rect>
-            <x>401</x>
-            <y>56</y>
-            <width>45</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>SPIDR</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-         <widget class="QLineEdit" name="_lineEditFanVc707">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>343</x>
-            <y>98</y>
-            <width>55</width>
-            <height>20</height>
-           </rect>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelVc707">
-          <property name="geometry">
-           <rect>
-            <x>400</x>
-            <y>100</y>
-            <width>45</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>VC707</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -1002,7 +1011,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>Remote</string>
+           <string>Device</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -1018,7 +1027,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>Local</string>
+           <string>Board</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -1100,14 +1109,14 @@
          <widget class="QLabel" name="labelTemperatures_2">
           <property name="geometry">
            <rect>
-            <x>89</x>
+            <x>50</x>
             <y>20</y>
             <width>118</width>
             <height>16</height>
            </rect>
           </property>
           <property name="text">
-           <string>Temperatures [C]</string>
+           <string>Temperature [C]</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -1217,7 +1226,7 @@
          <widget class="QLabel" name="labelBias_2">
           <property name="geometry">
            <rect>
-            <x>241</x>
+            <x>254</x>
             <y>37</y>
             <width>72</width>
             <height>20</height>
@@ -1236,7 +1245,7 @@
           </property>
           <property name="geometry">
            <rect>
-            <x>249</x>
+            <x>262</x>
             <y>55</y>
             <width>55</width>
             <height>20</height>
@@ -1255,7 +1264,7 @@
           </property>
           <property name="geometry">
            <rect>
-            <x>249</x>
+            <x>262</x>
             <y>98</y>
             <width>55</width>
             <height>20</height>
@@ -1271,7 +1280,7 @@
          <widget class="QLabel" name="labelVdda_2">
           <property name="geometry">
            <rect>
-            <x>239</x>
+            <x>252</x>
             <y>80</y>
             <width>72</width>
             <height>20</height>
@@ -1287,7 +1296,7 @@
          <widget class="QLabel" name="labelMvolt_9">
           <property name="geometry">
            <rect>
-            <x>307</x>
+            <x>320</x>
             <y>101</y>
             <width>36</width>
             <height>16</height>
@@ -1303,7 +1312,7 @@
          <widget class="QLabel" name="labelMvolt_10">
           <property name="geometry">
            <rect>
-            <x>307</x>
+            <x>320</x>
             <y>56</y>
             <width>30</width>
             <height>16</height>
@@ -1326,7 +1335,7 @@
         <widget class="QGroupBox" name="_groupBoxTpx">
          <property name="minimumSize">
           <size>
-           <width>457</width>
+           <width>390</width>
            <height>90</height>
           </size>
          </property>
@@ -1467,7 +1476,7 @@
            <rect>
             <x>52</x>
             <y>18</y>
-            <width>135</width>
+            <width>159</width>
             <height>17</height>
            </rect>
           </property>
@@ -1501,7 +1510,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>BG output</string>
+           <string>BG temp</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -1528,7 +1537,7 @@
            <rect>
             <x>280</x>
             <y>62</y>
-            <width>99</width>
+            <width>104</width>
             <height>20</height>
            </rect>
           </property>
@@ -1537,6 +1546,22 @@
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+         <widget class="QLabel" name="_labelT">
+          <property name="geometry">
+           <rect>
+            <x>176</x>
+            <y>17</y>
+            <width>182</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>(T approx. [C]: --.--  )</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
           </property>
          </widget>
         </widget>
@@ -1707,7 +1732,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>BG output</string>
+           <string>BG temp</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -1734,7 +1759,7 @@
            <rect>
             <x>280</x>
             <y>62</y>
-            <width>99</width>
+            <width>105</width>
             <height>20</height>
            </rect>
           </property>
@@ -1743,6 +1768,22 @@
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+         <widget class="QLabel" name="_labelT_2">
+          <property name="geometry">
+           <rect>
+            <x>57</x>
+            <y>17</y>
+            <width>182</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>(T approx. [C]: --.--  )</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
           </property>
          </widget>
         </widget>

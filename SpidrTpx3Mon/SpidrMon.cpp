@@ -47,6 +47,11 @@ SpidrMon::SpidrMon()
   _leUpdateSpidrLed_2->hide();
   _leUpdateTpxLed_2->hide();
 
+  // Hide for the time being... (no fan)
+  labelFan->hide();
+  _lineEditFanSpidr->hide();
+
+  // Hide until '2 Chipboards' is ticked
   _groupBoxSpidr_2->hide();
   _groupBoxTpx_2->hide();
   this->resize( this->minimumSize() );
@@ -177,6 +182,9 @@ void SpidrMon::connectOrDisconnect()
 	  if( _cbMonitorTpx->isChecked() )
 	    _spidrController->setSenseDac( 1, _dacCode );
 
+	  // Just to make sure: set I2C switch to 1st SPIDR board
+	  _spidrController->selectChipBoard( 1 );
+
 	  QTimerEvent te(1);
 	  this->timerEvent( &te );
 	  _timerId = this->startTimer( UPDATE_INTERVAL_MS );
@@ -211,7 +219,10 @@ void SpidrMon::timerEvent(QTimerEvent *)
     {
       QString qs = QString("%1.%2").arg( mdegrees/1000 ).
 	arg( mdegrees%1000, 3, 10, QChar('0') );
-      _lineEditRemoteTemp->setText( qs );
+      if( mdegrees/1000 == 255 )
+	_lineEditRemoteTemp->setText( "--.--" );
+      else
+	_lineEditRemoteTemp->setText( qs );
     }
   else
     {
@@ -291,9 +302,30 @@ void SpidrMon::timerEvent(QTimerEvent *)
       QString qs("--.---");
       int adc_val;
       if( _spidrController->getAdc( &adc_val ) )
-	// Full-scale is 1.5V = 1500mV
-	qs = QString("%1.%2").arg( ((adc_val*1500)/4096)/1000 )
-	  .arg( ((adc_val*1500)/4096)%1000, 3, 10, QChar('0') );
+	{
+	  // Full-scale is 1.5V = 1500mV
+	  adc_val = (adc_val*1500) / 4096;
+	  qs = QString("%1.%2").arg( adc_val/1000 )
+	    .arg( adc_val%1000, 3, 10, QChar('0') );
+
+	  if( _dacCode == TPX3_BANDGAP_OUTPUT )
+	    {
+	      _bgOut1 = adc_val; // In mV
+	    }
+	  else if( _dacCode == TPX3_BANDGAP_TEMP )
+	    {
+	      // Apply formula from Medipix3 manual;
+	      /// display temperature as "x.yy" (hundredths)
+	      float temp = 88.75 - (607.3 * (float)(adc_val-_bgOut1))/1000.0;
+	      QString ts = QString("(T approx. [C]: %1.%2 )")
+		.arg( (int) temp ).arg( ((int)((temp*1000.0))%1000/10) );
+	      // Display only when a reasonable value is found
+	      if( temp < 0.0 || temp > 120.0 )
+		_labelT->setText( "" );
+	      else
+		_labelT->setText( ts );
+	    }
+	}
       if( _dacCode == TPX3_BANDGAP_OUTPUT )
 	{
 	  _lineEditDac1->setText( qs );
@@ -353,7 +385,10 @@ void SpidrMon::timerEvent(QTimerEvent *)
     {
       QString qs = QString("%1.%2").arg( mdegrees/1000 ).
 	arg( mdegrees%1000, 3, 10, QChar('0') );
-      _lineEditRemoteTemp_2->setText( qs );
+      if( mdegrees/1000 == 255 )
+	_lineEditRemoteTemp_2->setText( "--.--" );
+      else
+	_lineEditRemoteTemp_2->setText( qs );
     }
   else
     {
@@ -412,9 +447,30 @@ void SpidrMon::timerEvent(QTimerEvent *)
       QString qs("--.---");
       int adc_val;
       if( _spidrController->getAdc( &adc_val ) )
-	// Full-scale is 1.5V = 1500mV
-	qs = QString("%1.%2").arg( ((adc_val*1500)/4096)/1000 )
-	  .arg( ((adc_val*1500)/4096)%1000, 3, 10, QChar('0') );
+	{
+	  // Full-scale is 1.5V = 1500mV
+	  adc_val = (adc_val*1500) / 4096;
+	  qs = QString("%1.%2").arg( adc_val/1000 )
+	    .arg( adc_val%1000, 3, 10, QChar('0') );
+
+	  if( _dacCode == TPX3_BANDGAP_OUTPUT )
+	    {
+	      _bgOut2 = adc_val; // In mV
+	    }
+	  else if( _dacCode == TPX3_BANDGAP_TEMP )
+	    {
+	      // Apply formula from Medipix3 manual;
+	      /// display temperature as "x.yy" (hundredths)
+	      float temp = 88.75 - (607.3 * (float)(adc_val-_bgOut2))/1000.0;
+	      QString ts = QString("(T approx. [C]: %1.%2 )")
+		.arg( (int) temp ).arg( ((int)((temp*1000.0))%1000/10) );
+	      // Display only when a reasonable value is found
+	      if( temp < 0.0 || temp > 120.0 )
+		_labelT_2->setText( "" );
+	      else
+		_labelT_2->setText( ts );
+	    }
+	}
       if( _dacCode == TPX3_BANDGAP_OUTPUT )
 	{
 	  _lineEditDac1_2->setText( qs );
