@@ -14,7 +14,6 @@ int main( int argc, char *argv[])
     int ip[4];
     int date[3];
     int time[4];
-    int devno[3];  // wafer, y, x;
     int devid[3];
     char hdrid[5], devtypeid[5];
     
@@ -27,7 +26,8 @@ int main( int argc, char *argv[])
         return -1;
     }
 
-    fread( &hdr, sizeof(hdr), 1, fp);
+    int retval = fread( &hdr, sizeof(hdr), 1, fp);
+    if ( retval != sizeof(hdr) ) { cout << "Could not read complete header" << endl; return -2; }
 
     if (hdr.format != 0x1) { cout << " File format: 0x" << hdr.format << "   This decoder is for format: 0x1" << endl;  return -2; }
   
