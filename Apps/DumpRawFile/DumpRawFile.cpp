@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <stdio.h>
 #include <stdint.h>
-#include "typeconversion.h"
+#include "typeconversion.h"  // if compiled without Qt installed
 #include "spidrtpx3data.h"
 
 
