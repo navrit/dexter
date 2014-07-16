@@ -27,7 +27,7 @@ int main( int argc, char *argv[])
     }
 
     int retval = fread( &hdr, sizeof(hdr), 1, fp);
-    if ( retval != sizeof(hdr) ) { cout << "Could not read complete header" << endl; return -2; }
+    if ( retval != 1 ) { cout << "Could not read complete header" << endl; return -2; }
 
     if (hdr.format != 0x1) { cout << " File format: 0x" << hdr.format << "   This decoder is for format: 0x1" << endl;  return -2; }
   
