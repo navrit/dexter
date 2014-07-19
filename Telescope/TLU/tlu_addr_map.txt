@@ -1,0 +1,9 @@
+*RegName                RegAddr        RegMask       R    W
+*-------------------------------------------------------------
+FirmwareId              0x00000000     0xffffffff    1    0
+* DUT interfaces base = 0x010
+ConfBits		0x00000011	0xffffffff	1	1
+T0syncLength		0x00000012	0xffffffff	1	1
+BusyMask		0x00000013	0xffffffff	1	1
+ConfBitsR		0x00000019	0xffffffff	1	1
+BusyMaskR		0x0000001b	0xffffffff	1	1
