@@ -56,18 +56,6 @@ int main(int argc, char *argv[])
     extern char *optarg; 
     int portnumber = 51000; // for run control
 
-
-    int npackets_before;
-    int npackets_after;
-    int pc_packets_before_rec0;
-    int pc_packets_before_rec1;
-    int pc_packets_before_lost0;
-    int pc_packets_before_lost1;
-    int pc_packets_after_rec0;
-    int pc_packets_after_rec1;
-    int pc_packets_after_lost0;
-    int pc_packets_after_lost1;
-
     int my_socket,new_socket;
     int bufsize = 1024;
     int status;
@@ -265,14 +253,6 @@ int main(int argc, char *argv[])
 
                 start_time = clock();
   
-                // resetting counter for statistic of packets
-                spidrctrl->selectChipBoard(1);
-                spidrctrl->resetPacketCounters();
-                spidrctrl->getDataPacketCounter(&npackets_before);
-                pc_packets_before_rec0 = spidrdaq[0]->packetsReceivedCount();
-                pc_packets_before_rec1 = spidrdaq[1]->packetsReceivedCount();
-                pc_packets_before_lost0 = spidrdaq[0]->packetsLostCount();
-                pc_packets_before_lost1 = spidrdaq[1]->packetsLostCount();
 
                 char rundir[256];
                 sprintf( rundir, "Run%d/Run%d", run_nr, run_nr );
@@ -332,13 +312,6 @@ int main(int argc, char *argv[])
         status = configure( spidrctrl ); 
         if ( status == false ) return status;
 
-        spidrctrl->selectChipBoard(1);
-        spidrctrl->resetPacketCounters();
-        spidrctrl->getDataPacketCounter(&npackets_before);
-        pc_packets_before_rec0 = spidrdaq[0]->packetsReceivedCount();
-        pc_packets_before_rec1 = spidrdaq[1]->packetsReceivedCount();
-        pc_packets_before_lost0 = spidrdaq[0]->packetsLostCount();
-        pc_packets_before_lost1 = spidrdaq[1]->packetsLostCount();
 
  
         char prefix[256];
@@ -357,19 +330,6 @@ int main(int argc, char *argv[])
     
         stop_run ( spidrctrl, spidrdaq); 
 
-
-        spidrctrl->getDataPacketCounter(&npackets_after);
-        pc_packets_after_rec0 = spidrdaq[0]->packetsReceivedCount();
-        pc_packets_after_rec1 = spidrdaq[1]->packetsReceivedCount();
-        pc_packets_after_lost0 = spidrdaq[0]->packetsLostCount();
-        pc_packets_after_lost1 = spidrdaq[1]->packetsLostCount();
-
-        cout << "chip before " << npackets_before << " after " << npackets_after << endl;
-        cout << "daq0 before " << pc_packets_before_rec0 << " after " << pc_packets_after_rec0 << endl;
-        cout << "daq1 before " << pc_packets_before_rec1 << " after " << pc_packets_after_rec1 << endl;
-        cout << "daq0 lost before " << pc_packets_before_lost0 << " after " << pc_packets_after_lost0 << endl;
-        cout << "daq1 lost before " << pc_packets_before_lost1 << " after " << pc_packets_after_lost1 << endl;
-        cout << "difference " << npackets_after - pc_packets_after_rec0 - pc_packets_after_rec1 << endl;
 
     }
 
@@ -625,8 +585,25 @@ bool start_run( SpidrController *spidrctrl, SpidrDaq **spidrdaq, char *prefix, i
     int status = 0;
     bool retval;
     char filename[256];
+    int spidr_packets_sent;
+    int daq0_packets_rec;
+    int daq1_packets_rec;
+    int daq0_packets_lost;
+    int daq1_packets_lost;
 
+    // resetting counter for statistic of packets
+    //spidrctrl->selectChipBoard(1);
     spidrctrl->resetPacketCounters();
+    spidrctrl->getDataPacketCounter( &spidr_packets_sent );
+    daq0_packets_rec = spidrdaq[0]->packetsReceivedCount();
+    daq1_packets_rec = spidrdaq[1]->packetsReceivedCount();
+    daq0_packets_lost = spidrdaq[0]->packetsLostCount();
+    daq1_packets_lost = spidrdaq[1]->packetsLostCount();
+
+    cout << "Spidr ethernet packet count before run: " << spidr_packets_sent << endl;
+    cout << "DAQ thread 0 receive packet before after run:   " << daq0_packets_rec <<  "  ( and lost " << daq0_packets_lost << " )" << endl;
+    cout << "DAQ thread 1 receive packet count before run:   " << daq1_packets_rec <<  "  ( and lost " << daq1_packets_lost << " )" << endl;
+    cout << "Missing ethernet packets before run: " << spidr_packets_sent - daq0_packets_rec - daq1_packets_rec << endl;
 
     for (int dev=0; dev<2; dev++) 
     {
@@ -663,6 +640,11 @@ bool stop_run( SpidrController *spidrctrl, SpidrDaq **spidrdaq )
     bool status = false;
     bool retval;
     unsigned int timer_lo1, timer_lo2, timer_hi1, timer_hi2;
+    int spidr_packets_sent;
+    int daq0_packets_rec;
+    int daq1_packets_rec;
+    int daq0_packets_lost;
+    int daq1_packets_lost;
 
 
     spidrctrl->closeShutter(); 
@@ -690,6 +672,17 @@ bool stop_run( SpidrController *spidrctrl, SpidrDaq **spidrdaq )
         retval = spidrdaq[dev]->stopRecording();
         status |= retval;
     }
+
+    spidrctrl->getDataPacketCounter( &spidr_packets_sent );
+    daq0_packets_rec = spidrdaq[0]->packetsReceivedCount();
+    daq1_packets_rec = spidrdaq[1]->packetsReceivedCount();
+    daq0_packets_lost = spidrdaq[0]->packetsLostCount();
+    daq1_packets_lost = spidrdaq[1]->packetsLostCount();
+
+    cout << "Spidr ethernet packet count after run: " << spidr_packets_sent << endl;
+    cout << "DAQ thread 0 receive packet count after run:   " << daq0_packets_rec <<  "  ( and lost " << daq0_packets_lost << " )" << endl;
+    cout << "DAQ thread 1 receive packet count after run:   " << daq1_packets_rec <<  "  ( and lost " << daq1_packets_lost << " )" << endl;
+    cout << "Missing ethernet packets: " << spidr_packets_sent - daq0_packets_rec - daq1_packets_rec << endl;
  
     return status;
 }
