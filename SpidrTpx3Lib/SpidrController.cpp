@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14071600;
+const int VERSION_ID = 0x14072100;
+//const int VERSION_ID = 0x14071600;
 //const int VERSION_ID = 0x14070800;
 //const int VERSION_ID = 0x14032400;
 //const int VERSION_ID = 0x14021400;
@@ -1058,7 +1059,7 @@ bool SpidrController::closeShutter()
 {
   if( !this->stopAutoTrigger() ) return false;
   // Set to auto-trigger mode (just in case), and to default trigger settings
-  if( !this->setShutterTriggerConfig( 4, 100000, 1, 1 ) ) return false;
+  //if( !this->setShutterTriggerConfig( 4, 100000, 1, 1 ) ) return false;
   return true;
 }
 
@@ -1324,11 +1325,27 @@ bool SpidrController::getMonPacketCounter( int *cntr )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::getPausePacketCounter( int *cntr )
+{
+  return this->getSpidrReg( 0x038C, cntr );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getPixelPacketCounter( int *cntr )
+{
+  return this->getSpidrReg( 0x0390, cntr );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::resetPacketCounters( )
 {
   bool result = true;
   if( !this->setSpidrReg( 0x0384, 0 ) ) result = false;
   if( !this->setSpidrReg( 0x0388, 0 ) ) result = false;
+  if( !this->setSpidrReg( 0x038C, 0 ) ) result = false;
+  if( !this->setSpidrReg( 0x0390, 0 ) ) result = false;
   return result;
 }
 

@@ -203,6 +203,8 @@ class MY_LIB_API SpidrController
   bool selectChipBoard         ( int  board_nr );
   bool getDataPacketCounter    ( int *cntr );
   bool getMonPacketCounter     ( int *cntr );
+  bool getPausePacketCounter   ( int *cntr );
+  bool getPixelPacketCounter   ( int *cntr );
   bool resetPacketCounters     ( );
   bool getTdcTriggerCounter    ( int *cntr );
 
