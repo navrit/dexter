@@ -345,6 +345,18 @@ int main(int argc, char *argv[])
                 spidrctrl->getExtShutterCounter( &cntr);
                 cout << "ext shutter " << cntr << endl;
                 status = stop_run( spidrctrl, spidrdaq);
+
+                // put back shutter mode to 0 (closeShutter sets it to 4)
+                int trig_mode = 0; // external shutter
+                int trig_length_us = 10000; //  us
+                int trig_freq_hz = 5; // Hz
+                int nr_of_trigs = 1; // 1 triggers
+            
+                if( !spidrctrl->setShutterTriggerConfig( trig_mode, trig_length_us,
+                                                 trig_freq_hz, nr_of_trigs ) )
+                    cout << "###setTriggerConfig: " << spidrctrl->errorString() << endl;
+
+
                 if (status == 0) {
                     run_started = false;
                     sprintf(buffer,"OK run %d stopped", run_nr);
@@ -553,6 +565,7 @@ bool configure( SpidrController *spidrctrl )
             }
             fclose(fp);
 
+            spidrctrl->setPixelTestEna( 127, 127, true);
             // Write pixel config to chip
             retval = spidrctrl->setPixelConfig( dev );
             if( !retval )
@@ -574,27 +587,27 @@ bool configure( SpidrController *spidrctrl )
 
     // Test pulse and CTPR configuration
     // Timepix3 test pulse configuration
-    // for (int dev=0; dev<ndev; dev++) {
-    //     if ( dev_ena[dev] ) {
-    //         if( !spidrctrl->setTpPeriodPhase( dev, 10, 0 ) )
-    //             cout << "Dev "<< dev << " ###setTpPeriodPhase: " << spidrctrl->errorString() << endl;
-    //         if( !spidrctrl->setTpNumber( dev, 1 ) )
-    //             cout << "Dev "<< dev << " ###setTpNumber: " << spidrctrl->errorString() << endl;
-    //     }
-    // }
+     for (int dev=0; dev<ndev; dev++) {
+         if ( dev_ena[dev] ) {
+             if( !spidrctrl->setTpPeriodPhase( dev, 10, 0 ) )
+                 cout << "Dev "<< dev << " ###setTpPeriodPhase: " << spidrctrl->errorString() << endl;
+             if( !spidrctrl->setTpNumber( dev, 1 ) )
+                 cout << "Dev "<< dev << " ###setTpNumber: " << spidrctrl->errorString() << endl;
+         }
+     }
 
     // Enable test-pulses for some columns
-    // int col;
-    // for (int dev=0; dev<ndev; dev++) {
-    //     if ( dev_ena[dev] ) {
-    //         for( col=0; col<256; ++col ) {
-    //             if( col >= 10 && col < 11 )
-    //                 spidrctrl->configCtpr( dev, col, 1 );
-    //             if( !spidrctrl->setCtpr( dev ) )
-    //                cout << "Dev "<< dev << " ###setCtpr: " << spidrctrl->errorString() << endl;
-    //         }
-    //     }
-    // }
+     //int col;
+     for (int dev=0; dev<ndev; dev++) {
+         if ( dev_ena[dev] ) {
+             for( col=0; col<256; ++col ) {
+                 if( col == 127 )
+                     spidrctrl->setCtprBit( col, 1 );
+                 if( !spidrctrl->setCtpr( dev ) )
+                    cout << "Dev "<< dev << " ###setCtpr: " << spidrctrl->errorString() << endl;
+             }
+         }
+     }
 
 
     // ----------------------------------------------------------
@@ -629,9 +642,9 @@ bool configure( SpidrController *spidrctrl )
                                      TPX3_POLARITY_HPLUS |
                                      TPX3_ACQMODE_TOA_TOT |
                                      TPX3_GRAYCOUNT_ENA |
-    //                               TPX3_TESTPULSE_ENA |
-    //                               TPX3_SELECTTP_EXT_INT |
-    //                               TPX3_SELECTTP_DIGITAL
+                                   TPX3_TESTPULSE_ENA |
+                                   TPX3_SELECTTP_EXT_INT |
+                                   TPX3_SELECTTP_DIGITAL |
                                      TPX3_FASTLO_ENA
                                    ); 
     
