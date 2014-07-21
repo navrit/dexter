@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>808</width>
-    <height>442</height>
+    <height>460</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -674,7 +674,7 @@
            <set>Qt::AlignCenter</set>
           </property>
          </widget>
-         <widget class="QLabel" name="labelMvolt_2">
+         <widget class="QLabel" name="labelMamp">
           <property name="geometry">
            <rect>
             <x>116</x>
@@ -690,7 +690,7 @@
            <set>Qt::AlignCenter</set>
           </property>
          </widget>
-         <widget class="QLabel" name="labelMvolt_3">
+         <widget class="QLabel" name="labelMwatt">
           <property name="geometry">
            <rect>
             <x>178</x>
@@ -845,7 +845,7 @@
            <set>Qt::AlignCenter</set>
           </property>
          </widget>
-         <widget class="QLabel" name="labelMvolt_4">
+         <widget class="QLabel" name="labelMvolt2">
           <property name="geometry">
            <rect>
             <x>320</x>
@@ -861,7 +861,7 @@
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
           </property>
          </widget>
-         <widget class="QLabel" name="labelMvolt_5">
+         <widget class="QLabel" name="labelV">
           <property name="geometry">
            <rect>
             <x>320</x>
@@ -1033,7 +1033,7 @@
            <set>Qt::AlignCenter</set>
           </property>
          </widget>
-         <widget class="QLabel" name="labelMvolt_6">
+         <widget class="QLabel" name="labelMvolt_2">
           <property name="geometry">
            <rect>
             <x>56</x>
@@ -1122,7 +1122,7 @@
            <set>Qt::AlignCenter</set>
           </property>
          </widget>
-         <widget class="QLabel" name="labelMvolt_7">
+         <widget class="QLabel" name="labelMamp_2">
           <property name="geometry">
            <rect>
             <x>116</x>
@@ -1138,7 +1138,7 @@
            <set>Qt::AlignCenter</set>
           </property>
          </widget>
-         <widget class="QLabel" name="labelMvolt_8">
+         <widget class="QLabel" name="labelMwatt_2">
           <property name="geometry">
            <rect>
             <x>178</x>
@@ -1293,7 +1293,7 @@
            <set>Qt::AlignCenter</set>
           </property>
          </widget>
-         <widget class="QLabel" name="labelMvolt_9">
+         <widget class="QLabel" name="labelMvolt2_2">
           <property name="geometry">
            <rect>
             <x>320</x>
@@ -1309,7 +1309,7 @@
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
           </property>
          </widget>
-         <widget class="QLabel" name="labelMvolt_10">
+         <widget class="QLabel" name="labelV_2">
           <property name="geometry">
            <rect>
             <x>320</x>
@@ -1336,7 +1336,7 @@
          <property name="minimumSize">
           <size>
            <width>390</width>
-           <height>90</height>
+           <height>120</height>
           </size>
          </property>
          <property name="title">
@@ -1564,6 +1564,113 @@
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
           </property>
          </widget>
+         <widget class="QCheckBox" name="_cbOverTempProt">
+          <property name="geometry">
+           <rect>
+            <x>220</x>
+            <y>91</y>
+            <width>159</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Overtemp protection</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QSpinBox" name="_sbOverTemp">
+          <property name="geometry">
+           <rect>
+            <x>117</x>
+            <y>86</y>
+            <width>46</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>120</number>
+          </property>
+          <property name="value">
+           <number>80</number>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelC">
+          <property name="geometry">
+           <rect>
+            <x>170</x>
+            <y>90</y>
+            <width>30</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>[C]</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="_lePowerOffLed">
+          <property name="geometry">
+           <rect>
+            <x>21</x>
+            <y>84</y>
+            <width>77</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="palette">
+           <palette>
+            <active>
+             <colorrole role="Base">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+            </active>
+            <inactive>
+             <colorrole role="Base">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+            </inactive>
+            <disabled>
+             <colorrole role="Base">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>236</red>
+                <green>233</green>
+                <blue>216</blue>
+               </color>
+              </brush>
+             </colorrole>
+            </disabled>
+           </palette>
+          </property>
+          <property name="cursor">
+           <cursorShape>ArrowCursor</cursorShape>
+          </property>
+          <property name="text">
+           <string>PWR OFF</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
         </widget>
        </item>
        <item>
@@ -1786,6 +1893,17 @@
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
           </property>
          </widget>
+         <zorder>_lineEditDac1_2</zorder>
+         <zorder>_lineEditDac2_2</zorder>
+         <zorder>_lineEditDac3_2</zorder>
+         <zorder>_lineEditDac4_2</zorder>
+         <zorder>_leUpdateTpxLed_2</zorder>
+         <zorder>labelBgOut_2</zorder>
+         <zorder>labelBgTemp_2</zorder>
+         <zorder>labelIbiasDac_2</zorder>
+         <zorder>labelIbiasDacCas_2</zorder>
+         <zorder>_labelT_2</zorder>
+         <zorder>_groupBoxTpx</zorder>
         </widget>
        </item>
       </layout>

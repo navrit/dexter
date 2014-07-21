@@ -10,7 +10,7 @@
 QString VERSION( "v2.1.0  16-Jan-2014" );
 
 //const int UPDATE_INTERVAL_MS = 750;
-const int UPDATE_INTERVAL_MS = 2000;
+const int UPDATE_INTERVAL_MS = 1500;
 
 // ----------------------------------------------------------------------------
 
@@ -40,6 +40,7 @@ SpidrMon::SpidrMon()
   _lineEditPort->setValidator( _ipPortValidator );
 
   _labelDisconnected->hide();
+  _lePowerOffLed->hide();
 
   // Data update 'LED's
   _leUpdateSpidrLed->hide();
@@ -118,6 +119,7 @@ void SpidrMon::connectOrDisconnect()
   else
     {
       _labelDisconnected->hide();
+      _lePowerOffLed->hide();
 
       if( _lineEditAddr3->text().isEmpty() ||
 	  _lineEditAddr2->text().isEmpty() ||
@@ -184,6 +186,9 @@ void SpidrMon::connectOrDisconnect()
 
 	  // Just to make sure: set I2C switch to 1st SPIDR board
 	  _spidrController->selectChipBoard( 1 );
+
+	  // (Re)enable power to Timepix3
+	  _spidrController->setTpxPowerEna( true );
 
 	  QTimerEvent te(1);
 	  this->timerEvent( &te );
@@ -320,10 +325,22 @@ void SpidrMon::timerEvent(QTimerEvent *)
 	      QString ts = QString("(T approx. [C]: %1.%2 )")
 		.arg( (int) temp ).arg( ((int)((temp*1000.0))%1000/10) );
 	      // Display only when a reasonable value is found
-	      if( temp < 0.0 || temp > 120.0 )
-		_labelT->setText( "" );
+	      if( temp < -60.0 || temp > 120.0 )
+		{
+		  // Not reasonable ?
+		  _labelT->setText( "" );
+		}
 	      else
-		_labelT->setText( ts );
+		{
+		  _labelT->setText( ts );
+		  // Over-temperature protection
+		  if( _cbOverTempProt->isChecked() &&
+		      temp > (float) _sbOverTemp->value() )
+		    {
+		      _spidrController->setTpxPowerEna( false );
+		      _lePowerOffLed->show();
+		    }
+		}
 	    }
 	}
       if( _dacCode == TPX3_BANDGAP_OUTPUT )
