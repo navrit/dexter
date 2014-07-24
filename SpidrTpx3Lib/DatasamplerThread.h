@@ -54,7 +54,8 @@ class DatasamplerThread : public QThread
   void  setBigEndian  ( bool enable ) { _bigEndian = enable; }
 
   // File operations
-  bool startRecording ( std::string filename, int runnr );
+  bool startRecording ( std::string filename, int runnr,
+			unsigned char *pixelconfig = 0 );
   bool stopRecording  ( );
   i64  fileMaxSize    ( )             { return _fileMaxSize; }
   void setFileMaxSize ( i64 size )    { if( size > 0 ) _fileMaxSize = size; }
@@ -135,6 +136,9 @@ class DatasamplerThread : public QThread
 
   // File header
   SpidrTpx3Header_t _fileHdr;
+
+  // Pointer to a (optional) device pixel configuration
+  unsigned char *_pixelConfig;
 
   // Pixel data buffer: a pixel data block or one 'frame' at a time
   // is copied into this buffer on request

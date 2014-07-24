@@ -38,14 +38,15 @@ DatasamplerThread::DatasamplerThread( ReceiverThread *recvr,
     _framesSampled( 0 ),
     _bytesWritten( 0 ),
     _bytesSampled( 0 ),
-    _bytesFlushed( 0 )
+    _bytesFlushed( 0 ),
+    _pixelConfig( 0 )
 {
   // Initialize the (SPIDR-TPX3) file header
   memset( static_cast<void *> (&_fileHdr), 0, SPIDRTPX3_HEADER_SIZE );
   memset( static_cast<void *> (&_fileHdr.unused), HEADER_FILLER,
 	  sizeof(_fileHdr.unused) );
   _fileHdr.headerId        = SPIDR_HEADER_ID;
-  // To be adjusted if pixel config is added:
+  // To be adjusted if the device pixel configuration is added:
   _fileHdr.headerSizeTotal = SPIDRTPX3_HEADER_SIZE;// Increase if pixconf added
   _fileHdr.headerSize      = SPIDRTPX3_HEADER_SIZE - TPX3_HEADER_SIZE;
   _fileHdr.format          = SPIDR_HEADER_VERSION;
@@ -671,8 +672,9 @@ int DatasamplerThread::copyFrameToBuffer()
 
 // ----------------------------------------------------------------------------
 
-bool DatasamplerThread::startRecording( std::string filename,
-					int         runnr )
+bool DatasamplerThread::startRecording( std::string    filename,
+					int            runnr,
+					unsigned char *pixelconfig )
 {
   if( !this->stopRecording() ) return false;
 
@@ -717,6 +719,16 @@ bool DatasamplerThread::startRecording( std::string filename,
 
   // Remember run number (for file names)
   _runNr = runnr;
+
+  // Remember pointer to pixel configuration for inclusion in the fileheader
+  // (unless the pointer is NULL) and adjust the (total) header sizes
+  // when appropriate
+  _pixelConfig = pixelconfig;
+  if( _pixelConfig )
+    {
+      _fileHdr.headerSizeTotal += 256*256;
+      _fileHdr.devHeader.headerSizeTotal += 256*256;
+    }
 
   // Instruct the thread to open a file
   _recording = true;
@@ -777,6 +789,10 @@ bool DatasamplerThread::openFilePrivate()
     {
       // Write the file header to the file
       _file.write( reinterpret_cast<char *>(&_fileHdr), SPIDRTPX3_HEADER_SIZE );
+
+      // If provided, write the device's pixel configuration to file as well
+      if( _pixelConfig )
+	_file.write( reinterpret_cast<char *>(_pixelConfig), 256*256 );
 
       _bytesWritten = 0;
       _fileOpen = true;
