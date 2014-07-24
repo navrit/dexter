@@ -40,7 +40,8 @@ class MY_LIB_API SpidrDaq
   // Data acquisition
   bool        startRecording      ( std::string filename,
 				    int         runnr = 0,
-				    std::string descr = std::string() );
+				    std::string descr = std::string(),
+				    bool        include_pixelconfig = false );
   bool        stopRecording       ();
   std::string fileName            ();
   long long   fileMaxSize         ();

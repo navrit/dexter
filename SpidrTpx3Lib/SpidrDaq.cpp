@@ -7,7 +7,7 @@
 #include "dacsdescr.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14061100;
+const int VERSION_ID = 0x14072400;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor / info
@@ -162,10 +162,12 @@ std::string SpidrDaq::errorString()
 
 bool SpidrDaq::startRecording( std::string filename,
 			       int         runnr,
-			       std::string descr )
+			       std::string descr,
+			       bool        include_pixelconfig )
 {
   // Fill in the file and device header with the current settings
   SpidrTpx3Header_t *fhdr = _fileWriter->fileHdr();
+  unsigned char *pixelconfig = 0;
 
   // Run number
   fhdr->runNr = runnr;
@@ -189,6 +191,9 @@ bool SpidrDaq::startRecording( std::string filename,
   int eth_filter, cpu_filter;
   if( _spidrCtrl )
     {
+      if( include_pixelconfig )
+	pixelconfig = _spidrCtrl->pixelConfig();
+
       int val;
       if( _spidrCtrl->getSpidrId( &val ) )
 	fhdr->spidrId = val;
@@ -234,9 +239,9 @@ bool SpidrDaq::startRecording( std::string filename,
     {
       // If set, temporarily disable Timepix3
       // periphery reply packets in UDP stream
-      if( eth_filter & 0x0080 )
+      if( eth_filter & 0xF3FF )
 	_spidrCtrl->setHeaderFilter( _deviceNr,
-				     eth_filter & ~0x0080, cpu_filter );
+				     eth_filter & ~0xF3FF, cpu_filter );
 
       int val;
       Tpx3Header_t *thdr = &fhdr->devHeader;
@@ -302,11 +307,11 @@ bool SpidrDaq::startRecording( std::string filename,
 
       // If set, reenable Timepix3 periphery reply packets in UDP stream
       // (was disabled further up)
-      if( eth_filter & 0x0080 )
+      if( eth_filter & 0xF3FF )
 	_spidrCtrl->setHeaderFilter( _deviceNr, eth_filter, cpu_filter );
     }
 
-  return _fileWriter->startRecording( filename, runnr );
+  return _fileWriter->startRecording( filename, runnr, pixelconfig );
 }
 
 // ----------------------------------------------------------------------------
