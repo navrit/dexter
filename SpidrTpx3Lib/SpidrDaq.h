@@ -56,6 +56,8 @@ class MY_LIB_API SpidrDaq
   bool        bufferFullOccurred  ();
   void        resetBufferFullOccurred();
   char       *dataBuffer          ();
+  bool        setFileCntr( int cntr );    // MvB
+
 
   // Data sampling
   bool        getSample           ( int max_size, int timeout_ms );
