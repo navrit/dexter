@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
         else {
             cout << "[Error] connection to TLU server failed (errno " << errno << ")" << endl;
             cout << "[Error] exiting RunControl client" << endl;
-            //return -1;
+            return -1;
             tluServerActive = false;
         }
     }
@@ -183,33 +183,35 @@ int main(int argc, char *argv[])
         
     // cout<< retval<<endl;
     
-    int  msglen;
-    do{
-           cout << "available RunControl commands: " << endl;
-           cout << "    configure" << endl;
-           cout << "    start_run run_nr message_string" << endl;
-           cout << "    stop_run"  << endl;
-           //do{
-               printf("command to send: ");
-               gets( rcbuffer );
-	   // } while ( strlen(rcbuffer) < 1 );                                                                                    
+    int  msglen, statlen;
+    char cmd[128]; 
+    char retstatus[128]; 
+    char retcmd[128]; 
 
-            // part of the code should go to the start_run_button handler
+    cout << endl << "============================================" << endl;
+    cout << "available RunControl commands: " << endl;
+    cout << "    configure" << endl;
+    cout << "    start_run run_nr message_string" << endl;
+    cout << "    stop_run"  << endl;
+    cout << "============================================" << endl << endl;
+    do{
+            cout << "--------------------------------------------" << endl;
+            printf("command to send: ");
+            gets( rcbuffer );
+            cout << "--------------------------------------------" << endl;
+
+            // this part of the code should go to the start_run_button handler
            if ( strstr( rcbuffer, "start_run") ) {
            
+               cout << "[Note] RunControl: begin of start_run command" << endl;
                if ( tluServerActive ) {
                    //  setVeto
                    sprintf( tluCmd , "setVeto");
                    send( tluSockfd, tluCmd , strlen(tluCmd), 0);
                    msglen = recv( tluSockfd, buffer, buffersize, 0);
 	           buffer[msglen] = '\0';
-	           cout << "Message received from TLU: " << buffer << endl;
-
-                   // syncT0
-                   sprintf( tluCmd , "pulseT0");
-                   send( tluSockfd, tluCmd , strlen(tluCmd), 0);
-                   msglen = recv( tluSockfd, buffer, buffersize, 0);
-	           buffer[msglen] = '\0';
+                   //sscanf( buffer, "%s", retstatus);
+                   //statlen = strlen( retstatus );
 	           cout << "Message received from TLU: " << buffer << endl;
                }
 
@@ -217,11 +219,24 @@ int main(int argc, char *argv[])
                for (int i=0 ; i<numDaqConn ; i++ ) {
                    if ( daqServerActive[i] ) {
                        send( daqSockfd[i], rcbuffer , strlen(rcbuffer), 0);
-                       cout << "waiting for reply" << endl;
+                   }
+               }
+               cout << "[Note] RunControl is waiting for a replies" << endl;
+               for (int i=0 ; i<numDaqConn ; i++ ) {
+                   if ( daqServerActive[i] ) {
                        msglen = recv( daqSockfd[i], buffer, buffersize, 0);
 	               buffer[msglen] = '\0';
-	               cout << "Message received from DAQ" << i << ": " << buffer << endl;
+	               cout << "[Note] Message received from DAQ" << i << ": " << buffer << endl;
                    }
+               }
+
+               if ( tluServerActive ) {
+                   // syncT0
+                   sprintf( tluCmd , "pulseT0");
+                   send( tluSockfd, tluCmd , strlen(tluCmd), 0);
+                   msglen = recv( tluSockfd, buffer, buffersize, 0);
+	           buffer[msglen] = '\0';
+	           cout << "[Note] Message received from TLU: " << buffer << endl;
                }
                
                //  resetVeto
@@ -230,33 +245,41 @@ int main(int argc, char *argv[])
                    send( tluSockfd, tluCmd , strlen(tluCmd), 0);
                    msglen = recv( tluSockfd, buffer, buffersize, 0);
 	           buffer[msglen] = '\0';
-	           cout << "Message received from TLU: " << buffer << endl;
+	           cout << "[Note] Message received from TLU: " << buffer << endl;
                }
 
+               cout << "[Note] RunControl end of start_run command" << endl << endl;
            }
 
                         
            if ( strstr( rcbuffer, "configure") || strstr( rcbuffer, "stop_run") ) { 
+               sscanf( rcbuffer, "%s", cmd);
            
+               cout << "[Note] RunControl: begin of " << cmd << " command" << endl;
                if ( tluServerActive ) {
                    //  setVeto
                    sprintf( tluCmd , "setVeto");
                    send( tluSockfd, tluCmd , strlen(tluCmd), 0);
                    msglen = recv( tluSockfd, buffer, buffersize, 0);
 	           buffer[msglen] = '\0';
-	           cout << "Message received from TLU: " << buffer << endl;
+	           cout << "[Note] Message received from TLU: " << buffer << endl;
                }
 
                // send command (from command line) to DAQ servers
                for (int i=0 ; i<numDaqConn ; i++ ) {
                    if ( daqServerActive[i] ) {
                        send( daqSockfd[i], rcbuffer , strlen(rcbuffer), 0);
+                   }
+               }
+               for (int i=0 ; i<numDaqConn ; i++ ) {
+                   if ( daqServerActive[i] ) {
                        msglen = recv( daqSockfd[i], buffer, buffersize, 0);
 	               buffer[msglen] = '\0';
-	               cout << "Message received from DAQ" << i << ": " << buffer << endl;
+	               cout << "[Note] Message received from DAQ" << i << ": " << buffer << endl;
                    }
                }
 
+               cout << "[Note] RunControl: end of " << cmd << " command" << endl << endl;
            }
                        
             //send(sockfd, buffer, strlen(buffer), 0);
