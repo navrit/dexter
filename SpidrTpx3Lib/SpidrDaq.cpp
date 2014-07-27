@@ -551,3 +551,14 @@ int SpidrDaq::bufferWrapCount()
 }
 
 // ----------------------------------------------------------------------------
+// added by MvB
+bool SpidrDaq::setFileCntr( int cntr )
+{
+  if ( _fileWriter  && ( cntr > 0 ) )   // check if fileWriter object exists
+    {
+        _fileWriter->setFileCntr( cntr );
+        return true;
+    }
+  else return false;
+}
+
