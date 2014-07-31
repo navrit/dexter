@@ -73,6 +73,7 @@ class MY_LIB_API SpidrDaq
   bool        nextPixel           ( int *x, int *y,
 				    int *data = 0, int *timestamp = 0 );
   unsigned long long nextPixel  ();
+  unsigned long long nextPacket  ();
   void        setBigEndian        ( bool b );
 
   // Statistics and info

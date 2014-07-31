@@ -557,6 +557,36 @@ u64 DatasamplerThread::nextPixel()
 
 // ----------------------------------------------------------------------------
 
+u64 DatasamplerThread::nextPacket()
+{
+  // Return the next 64-bit/8-byte pixel data packet in the sample buffer
+  u64 pixdata=0;
+  if( _pixIndex < _sampleIndex )
+    {
+#ifdef USE_BIGENDIAN
+      if( _bigEndian )
+        {
+          // Reverse the byte order
+          char *bytes = (char *) &pixdata;
+          for( int i=0; i<8; ++i )
+            bytes[i] = _sampleBuffer[_pixIndex+7-i];
+        }
+      else
+      {
+        pixdata = _sampleBufferUlong[_pixIndex/8];
+      }
+#else
+      pixdata = _sampleBufferUlong[_pixIndex/8];
+#endif
+
+      // Next Timepix3 packet
+      _pixIndex += 8;
+    }
+  return pixdata;
+}
+
+// ----------------------------------------------------------------------------
+
 int DatasamplerThread::copySampleToBuffer()
 {
   // Collect pixel data into the sample buffer up to a maximum size

@@ -480,6 +480,13 @@ unsigned long long SpidrDaq::nextPixel()
 
 // ----------------------------------------------------------------------------
 
+unsigned long long SpidrDaq::nextPacket()
+{
+  return _fileWriter->nextPacket();
+}
+
+// ----------------------------------------------------------------------------
+
 void SpidrDaq::setBigEndian( bool b )
 {
   _fileWriter->setBigEndian( b );
