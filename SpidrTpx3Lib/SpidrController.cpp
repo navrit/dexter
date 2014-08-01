@@ -662,6 +662,34 @@ bool SpidrController::burnEfuse( int dev_nr,
 #endif // CERN_PROBESTATION
 
 // ----------------------------------------------------------------------------
+
+#ifdef TLU
+bool SpidrController::tlu_enable( int  dev_nr, int enable )
+{
+  #define SPIDR_TLU_CONTROL_I  (0x02FC)
+  #define TLU_ENABLE_bm        1
+  int tlu_reg;
+  bool result = false;
+
+  if(this->getSpidrReg( SPIDR_TLU_CONTROL_I , &tlu_reg ))
+    {
+      if(enable) 
+        tlu_reg|=TLU_ENABLE_bm;
+      else
+        tlu_reg&=~TLU_ENABLE_bm;
+      result=this->setSpidrReg( SPIDR_TLU_CONTROL_I, tlu_reg );
+      if (!result) return result;
+      int eth_mask,cpu_mask;
+      result=SpidrController::getHeaderFilter(dev_nr, &eth_mask, &cpu_mask );
+      if (!result) return result;
+      eth_mask|=0x0020; // let headers 0x5 pass through
+      result=SpidrController::setHeaderFilter( dev_nr, eth_mask, cpu_mask );
+    }
+  return result;
+}
+#endif
+
+// ----------------------------------------------------------------------------
 // Configuration: device test pulses
 // ----------------------------------------------------------------------------
 

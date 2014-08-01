@@ -216,6 +216,10 @@ class MY_LIB_API SpidrController
   bool setSpidrReg             ( int  addr, int  val );
   bool setSpidrRegBit          ( int  addr, int bitnr, bool set = true );
 
+#ifdef TLU
+  bool tlu_enable              ( int  dev_nr, int enable );
+#endif
+
  private:
   bool setPixelBit             ( int x, int y, unsigned char bitmask, bool b );
   void setBitsBigEndianReversed( unsigned char *buffer,
