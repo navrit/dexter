@@ -27,7 +27,7 @@ void Ctrack_plots::initialize(){
 	_save_file_name = _ops->save_file_name;
 	_ref_chips = _ops->ref_chips;
 
-	_nhitmap_bins = 256;
+	_nhitmap_bins = 400;
 	_tdist_nbins = 100;
 
 	_delr = 0.07;
@@ -63,7 +63,7 @@ void Ctrack_plots::finalize(){
 //-----------------------------------------------------------------------------
 
 void Ctrack_plots::show_residuals(){
-	float r, delr;
+	double r, delr;
 	std::cout<<"ChipID\t\txResolutionByRMS(um)\t\tyResolutionByRMS(um)"<<std::endl;
 	for (int i=0; i<_xresiduals.size(); i++) {
 		std::cout<<i<<"\t\t\t"<<1000*_xresiduals1[i]->GetRMS()<<"\t\t"<<1000*_yresiduals[i]->GetRMS()<<std::endl;
@@ -87,7 +87,7 @@ void Ctrack_plots::show_residuals(){
 
 //-----------------------------------------------------------------------------
 
-void Ctrack_plots::get_GaussResidual(int dir, int ichip, float & r, float & delr){
+void Ctrack_plots::get_GaussResidual(int dir, int ichip, double & r, double & delr){
 	TF1 * fit;
 
 	if (dir == 0) {
@@ -100,8 +100,8 @@ void Ctrack_plots::get_GaussResidual(int dir, int ichip, float & r, float & delr
 		fit = _yresiduals[ichip]->GetFunction("gaus");
 	}
 
-	r = (float)fit->GetParameter(2);
-	delr = (float)fit->GetParError(2);
+	r = (double)fit->GetParameter(2);
+	delr = (double)fit->GetParError(2);
 
 	delete fit;
 }
@@ -140,7 +140,17 @@ void Ctrack_plots::init_track_dists(){
 	_my_dist = new TH1F("my_dist", "my_Dist; my; N", 100, -0.05, 0.05);
 	_cx_dist = new TH1F("cx_dist", "cx_Dist; cx (/mm); N", 100, -1, 15);
 	_cy_dist = new TH1F("cy_dist", "cy_Dist; cy (/mm); N", 100, -1, 15);
-	_size_dist = new TH1F("size_dist", "size_dist; size (int); N", _ops->nchips + 2, 0, _ops->nchips + 2);
+	_size_dist = new TH1F("size_dist", "size_dist; size (int); N", _ops->nchips + 2, -0.5, _ops->nchips + 2 - 0.5);
+
+	std::string title = "ImpactAngleVsClusterSize";
+	for (int i=0; i<_ops->nchips; i++){
+		std::stringstream ss; ss<<i;
+		std::string name = "Chip" + ss.str();
+		std::string temptitle = title+ss.str();
+		_impactAngleVsClusterSize.push_back(new TH2F(name.c_str(), temptitle.c_str(), 100, 0, 0.03, 10, -0.5, 9.5));
+	}
+
+	_impactAngleVsClusterSize.push_back(new TH2F("AllChips", title.c_str(), 100, 0, 0.03, 10, -0.5, 9.5));
 }
 
 
@@ -151,17 +161,17 @@ void Ctrack_plots::init_track_dists(){
 //-----------------------------------------------------------------------------
 
 void Ctrack_plots::init_residuals(){
-	float d = 0.2;
+	double d = 0.3;
 	for (int i=0; i<_ops->nchips; i++){
 		
 		std::stringstream ss; 
 		ss<<i;
 		std::string xtitle = "xResidual_Dist" + ss.str() + "; delta x(/mm); N";
 		std::string ytitle = "yResidual_Dist" + ss.str() + "; delta y(/mm); N";
-		std::string ttitle = "tResidual_Dist" + ss.str() + "; delta t(/DAQ t units); N";
+		std::string ttitle = "tResidual_Dist" + ss.str() + "; delta t(25/16 ns); N";
 		std::string name = "Chip_" + ss.str(); 	
 
-		_tresiduals.push_back(new TH1F(name.c_str(), ttitle.c_str(), _ops->track_resolution_nbins, -30, 30));
+		_tresiduals.push_back(new TH1F(name.c_str(), ttitle.c_str(), _ops->track_resolution_nbins, -50, 50));
 		_xresiduals.push_back(new TH1F(name.c_str(), xtitle.c_str(), _ops->track_resolution_nbins, -d, d));
 		_yresiduals.push_back(new TH1F(name.c_str(), ytitle.c_str(), _ops->track_resolution_nbins, -d, d));
 		_xresiduals0.push_back(new TH1F(name.c_str(), xtitle.c_str(), 100, -10, 10));
@@ -178,18 +188,21 @@ void Ctrack_plots::init_residuals(){
 
 void Ctrack_plots::init_hitmaps(){
 	//According to z=0 (ideally reference chip[0]);
+	_track_angles = new TH2F("track_angles", "track_angles",
+		200, -0.03, 0.03, 200, -0.03, 0.03);
+
 	_track_hitmap = new TH2F("track_hitmap", "track_hitmap",
-		_nhitmap_bins, 0.0, 15, _nhitmap_bins, 0.0, 15);
+		_nhitmap_bins, -3, 17.08, _nhitmap_bins, -3, 17.08);
 	for (unsigned int i=0; i<_ops->nchips; i++) {
 		std::stringstream ss;
 		ss<<i;
 		std::string title = "TrackedClustersGlobalHitmap" + ss.str() + "; x(/mm); y(/mm)";
 		std::string name = "Chip_" + ss.str();
-		_trackedClusters.push_back(new TH2F(name.c_str(), title.c_str(), 256, 
-			0.0, 14.08, 256, 0.0, 14.08));
+		_trackedClusters.push_back(new TH2F(name.c_str(), title.c_str(), _nhitmap_bins,
+			-3, 17.08, _nhitmap_bins, -3, 17.08));
 		title = "NonTrackedClustersGlobalHitmap" + ss.str() + "; x(/mm); y(/mm)";
-		_nonTrackedClusters.push_back(new TH2F(name.c_str(), title.c_str(), 256, 
-			0.0, 14.08, 256, 0.0, 14.08));
+		_nonTrackedClusters.push_back(new TH2F(name.c_str(), title.c_str(), _nhitmap_bins,
+			-3, 17.08, _nhitmap_bins, -3, 17.08));
 	}
 }
 
@@ -212,7 +225,14 @@ void Ctrack_plots::appto_track_dists(){
 		_cx_dist->Fill((*it)->get_cx());
 		_cy_dist->Fill((*it)->get_cy());
 
-		_size_dist->Fill((float)(*it)->get_size());
+		_track_angles->Fill((*it)->get_mx(), (*it)->get_my());
+		_size_dist->Fill((double)(*it)->get_size());
+
+		for (std::vector<Ccluster*>::iterator ic = (*it)->get_clusters().begin();
+			 ic != (*it)->get_clusters().end(); ic++) {
+			_impactAngleVsClusterSize[(*ic)->get_chipID()]->Fill((*it)->get_impactAngle(), (*ic)->get_size());
+			_impactAngleVsClusterSize[_impactAngleVsClusterSize.size()-1]->Fill((*it)->get_impactAngle(), (*ic)->get_size());
+		}	
 	}
 }
 
@@ -267,20 +287,20 @@ void Ctrack_plots::appto_residuals(int ichip){
 //
 //
 //			// Find nearby clusters.
-//			std::vector<float> xresiduals;
-//			std::vector<float> yresiduals;
-//			std::vector<float> tresiduals;
+//			std::vector<double> xresiduals;
+//			std::vector<double> yresiduals;
+//			std::vector<double> tresiduals;
 //
 //
-//			float zchip = _tel->get_chip(ichip)->get_gz();
-//			//float xtrack = (*it)->gx(zchip);
+//			double zchip = _tel->get_chip(ichip)->get_gz();
+//			//double xtrack = (*it)->gx(zchip);
 //
 //			int iclust = _tel->get_chip(ichip)->glob_t_to_clustID((*it)->get_gt() - _delt);
 //			//int iclust = 0;
 //			for (; iclust < clusters.size(); iclust++){
-//				float xresidual = (*it)->gx(clusters[iclust]->get_gz()) - clusters[iclust]->get_gx();
-//				float yresidual = (*it)->gy(clusters[iclust]->get_gz()) - clusters[iclust]->get_gy();
-//				float tresidual = (*it)->get_gTOA() - clusters[iclust]->get_gt();
+//				double xresidual = (*it)->gx(clusters[iclust]->get_gz()) - clusters[iclust]->get_gx();
+//				double yresidual = (*it)->gy(clusters[iclust]->get_gz()) - clusters[iclust]->get_gy();
+//				double tresidual = (*it)->get_gTOA() - clusters[iclust]->get_gt();
 //
 //				if (fabs(xresidual) < _delr && fabs(yresidual) < _delr && fabs(tresidual) < _delt) {
 //					_xresiduals[ichip]->Fill(xresidual);
@@ -336,6 +356,7 @@ void Ctrack_plots::save_figs(){
 	if (_cx_dist!=NULL) _cx_dist->Write("", TObject::kWriteDelete);
 	if (_cy_dist!=NULL) _cy_dist->Write("", TObject::kWriteDelete);
 	if (_size_dist!=NULL) _size_dist->Write("", TObject::kWriteDelete);
+	if (_size_dist!=NULL) _track_angles->Write("", TObject::kWriteDelete);
 
 	std::string name;
 	name = temp_name + "xResiduals";
@@ -383,6 +404,12 @@ void Ctrack_plots::save_figs(){
 		_nonTrackedClusters[iplot]->Write("", TObject::kOverwrite);
 	}
 
+	name = temp_name + "ImpactAngleVsClusterSize";
+	save_file->cd(name.c_str());
+	for (int iplot = 0; iplot<_impactAngleVsClusterSize.size(); iplot++){
+		_impactAngleVsClusterSize[iplot]->Write("", TObject::kOverwrite);
+	}
+
 	save_file->Close();
 	std::cout<<"- Saved track plts -\n";
 }
@@ -413,6 +440,7 @@ void Ctrack_plots::set_directories(){
 	instance_direc->mkdir("tResiduals");
 	instance_direc->mkdir("TrackedClusters");
 	instance_direc->mkdir("NonTrackedClusters");
+	instance_direc->mkdir("ImpactAngleVsClusterSize");
 
 	save_file->cd();
 	save_file->Close();
@@ -445,6 +473,7 @@ Ctrack_plots::~Ctrack_plots(){
 //	delete _my_dist;
 //	delete _cx_dist;
 //	delete _cy_dist;
+//  delete _track_angles;
 }
 
 

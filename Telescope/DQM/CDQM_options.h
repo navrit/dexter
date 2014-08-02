@@ -16,10 +16,14 @@
 
 #include "TFile.h"
 #include "TH1F.h"
+#include <sstream>
+
 
 
 class CDQM_options{
 public:
+	bool presentDUT;
+	int eventTrackN;
 	double tEventStep;
 	int nEvents;
 	int PSNumFix;
@@ -27,7 +31,7 @@ public:
 	int nchips;
 	int nPixHitCut;
 	std::vector<int> algorithms;
-	float tcut;
+	double tcut;
 	bool truncate;
 	std::string save_file_name;
 	std::string save_file_nameLongScale;
@@ -69,17 +73,17 @@ public:
 	int pix_xup;
 	int pix_ylow;
 	int pix_yup;
-	float pix_tlow;
-	float pix_tup;
-	float pix_tbglow;
-	float pix_tbgup;
+	double pix_tlow;
+	double pix_tup;
+	double pix_tbglow;
+	double pix_tbgup;
 
 
 
 	//Clustering ______________________________________________________________
-	float clust_maker_tlow;
-	float clust_maker_tup;
-	float COGweight;
+	double clust_maker_tlow;
+	double clust_maker_tup;
+	double COGweight;
 	bool DanCorrectPosn;
 
 
@@ -96,21 +100,23 @@ public:
 
 
 	//Separation cuts (in units of pixels).
-	float clust_xlow;
-	float clust_xup;
-	float clust_ylow;
-	float clust_yup;
-	float clust_tlow;
-	float clust_tup;
-	float clust_tbglow;
-	float clust_tbgup;
+	double clust_xlow;
+	double clust_xup;
+	double clust_ylow;
+	double clust_yup;
+	double clust_tlow;
+	double clust_tup;
+	double clust_tbglow;
+	double clust_tbgup;
 
 
 
 	//Tracking ________________________________________________________________
-	float track_vol_r;
-	float track_vol_theta;
-	float track_delt;
+	double track_vol_rx;
+	double track_vol_thetax;
+	double track_vol_ry;
+	double track_vol_thetay;
+	double track_delt;
 	int minNClusterPerTrack;
 
 	int track_vol_shape;
@@ -129,13 +135,13 @@ public:
 
 	//Py Plots _________________________________________________________________
 	bool include_py_plots;
-	float Pytel_drawer_tlower;
-	float Pytel_drawer_tupper;
+	double Pytel_drawer_tlower;
+	double Pytel_drawer_tupper;
 
 
 
 	//Methods _________________________________________________________________
-	CDQM_options();
+	CDQM_options(int r=0);
 	void print_ops();
 	void save_ops();
 	void load_ops();

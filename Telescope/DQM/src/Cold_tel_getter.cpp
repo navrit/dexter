@@ -151,14 +151,14 @@ Cpix_hit * Cold_tel_getter::line_to_pixel(std::string line, int &chip_id){
 
 //-----------------------------------------------------------------------------
 
-float Cold_tel_getter::make_TOA(float TOA, int ichip){
+double Cold_tel_getter::make_TOA(double TOA, int ichip){
 	//Simulates a more realistic TOA. Say a small random jitter, and a
 	//cummulative event a-sync of 0.1 events.
 
-	float gitter = 0.01*(rand()/((float)RAND_MAX));
+	double gitter = 0.01*(rand()/((double)RAND_MAX));
 	gitter = 0.0;
-	float chip_async = 0.1*ichip;
-	//float TOA += exact_TOA + chip_async + gitter;
+	double chip_async = 0.1*ichip;
+	//double TOA += exact_TOA + chip_async + gitter;
 
 	return TOA;
 }
@@ -213,20 +213,20 @@ Cchip * Cold_tel_getter::make_chip(std::string line, int ichip){
 	//Find the chip attributes.
 	my_chip->set_name(line_bits[0]);
 	my_chip->set_ID(ichip);
-	// float temp_gposn[4] = {(float)atof(line_bits[1].c_str()),
-	// 						(float)atof(line_bits[2].c_str()),
-	// 						(float)atof(line_bits[3].c_str()), 
+	// double temp_gposn[4] = {(double)atof(line_bits[1].c_str()),
+	// 						(double)atof(line_bits[2].c_str()),
+	// 						(double)atof(line_bits[3].c_str()), 
 	// 						0.0};
 
 
-	float temp_gposn[4] = {0.0,
+	double temp_gposn[4] = {0.0,
 							0.0,
-							(float)atof(line_bits[3].c_str()), 
+							(double)atof(line_bits[3].c_str()), 
 							0.0};
 
 	my_chip->set_gposn(temp_gposn);
 
-	float temp_orientation[3] = {0.157, 0.157, 0.0};
+	double temp_orientation[3] = {0.157, 0.157, 0.0};
 	my_chip->set_orientation(temp_orientation);
 
 	my_chip->set_rotn(0.0); 

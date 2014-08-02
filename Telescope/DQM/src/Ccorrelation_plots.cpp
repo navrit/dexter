@@ -43,14 +43,14 @@ void Ccorrelation_plots::initialize(){
 
 
 	//Default histogram ranges.
-	_posn_xmin = 0.0;
-	_posn_xmax = 15.0;
+	_posn_xmin = -3;
+	_posn_xmax = 17.08;
 
-	_clust_diff_xmin = -1.8;
-	_clust_diff_xmax = 1.8;
+	_clust_diff_xmin = -5;
+	_clust_diff_xmax = 5;
 
-	_pix_diff_xmin = -6.0;
-	_pix_diff_xmax = 6.0;
+	_pix_diff_xmin = -1.5;
+	_pix_diff_xmax = 1.5;
 
 	_clust_diff_tmin = -50.0;
 	_clust_diff_tmax = 50.0;
@@ -248,10 +248,9 @@ TH1F* Ccorrelation_plots::get_empty_differences(int ichip, std::string temp_titl
 TH2F* Ccorrelation_plots::get_empty_correlation(int ichip, 
 	std::string temp_name, bool locVsGlob){
 	//Initializes a correlation plot, ready for filling.
-	float chip1_min, chip1_max, chip2_min, chip2_max;
+	double chip1_min, chip1_max, chip2_min, chip2_max;
 
 	if (_dir != 3) {
-		//Assume ok alignment.
 		chip1_min = _posn_xmin;
 		chip1_max = _posn_xmax;
 
@@ -307,7 +306,7 @@ void Ccorrelation_plots::execute(Ctel_chunk * tel){
 	appto_correlations();
 	t_end = clock();
 
-	std::cout<<"Correls time taken (s): "<<((float)t_end - (float)t_start)/CLOCKS_PER_SEC<<std::endl;
+	std::cout<<"Correls time taken (s): "<<((double)t_end - (double)t_start)/CLOCKS_PER_SEC<<std::endl;
 	appto_correlation_backgrounds();
 	do_correlations_minus_backgrounds();
 }
@@ -334,7 +333,7 @@ void Ccorrelation_plots::do_correlations_minus_backgrounds(){
 
 			//need to weight the second histo more (by the factor w), hence
 			//w<1, so the ratio of number hits in signal+back to back.
-			float w = _correlationsLocal[iplot]->GetEntries()/
+			double w = _correlationsLocal[iplot]->GetEntries()/
 					  _correlation_backgroundsLocal[iplot]->GetEntries();
 			TH2F* h = Chandy::subtract_TH2Fs(_correlationsLocal[iplot], 
 											 _correlation_backgroundsLocal[iplot],
@@ -415,7 +414,7 @@ void Ccorrelation_plots::appto_time_correlation(int ichip1, int ichip2){
 	//Its handy to pass variables in. Slight workaround i know.
 	//Fills the raw correlation plots over all chips. Contains various tricks
 	//for speed.
-	float gposn[4], lposn[4], ref_gposn[4], ref_lposn[4];
+	double gposn[4], lposn[4], ref_gposn[4], ref_lposn[4];
 	int N, Nref;
 
 
@@ -441,7 +440,7 @@ void Ccorrelation_plots::appto_time_correlation(int ichip1, int ichip2){
 		//gposn contains the x global position of the chip1 pix/clust.
 
 		int iref_start = 0;
-		//iref_start = get_xiref_start(gposn[0] + _xlow_cut, ichip2);
+		iref_start = get_xiref_start(gposn[0] + _xlow_cut, ichip2);
 
 
 		//std::cout<<iref_start<<"\t"<<i;
@@ -456,10 +455,10 @@ void Ccorrelation_plots::appto_time_correlation(int ichip1, int ichip2){
 			//Ask if too far ahead in time (ifso, break and save time).
 			
 			correlation_fill(ichip1, gposn, ref_gposn, lposn, ref_lposn);
-//			if (unsuitable_x(gposn[0], ref_gposn[0], _xup_cut)) {
-//				//std::cout<<"\t"<<iref<<std::endl;
-//				break;
-//			}
+			if (unsuitable_x(gposn[0], ref_gposn[0], _xup_cut)) {
+				//std::cout<<"\t"<<iref<<std::endl;
+				break;
+			}
 		}
 	}
 }
@@ -478,7 +477,7 @@ void Ccorrelation_plots::appto_correlation(int ichip1, int ichip2){
 	//Its handy to pass variables in. Slight workaround i know.
 	//Fills the raw correlation plots over all chips. Contains various tricks
 	//for speed.
-	float gposn[4], lposn[4], ref_gposn[4], ref_lposn[4];
+	double gposn[4], lposn[4], ref_gposn[4], ref_lposn[4];
 	int N, Nref;
 
 	//Cycle over both sets of pixels indexs.
@@ -565,7 +564,7 @@ void Ccorrelation_plots::appto_correlation_backgrounds(){
 void Ccorrelation_plots::appto_correlation_background(int ichip){
 	//Fills the raw correlation plots over all chips. Contains various tricks
 	//for speed.
-	float gposn[4], lposn[4], ref_gposn[4], ref_lposn[4];
+	double gposn[4], lposn[4], ref_gposn[4], ref_lposn[4];
 	int N, Nref;
 
 	//Cycle over both sets of pixels indexs.
@@ -619,11 +618,11 @@ void Ccorrelation_plots::appto_correlation_background(int ichip){
 
 //-----------------------------------------------------------------------------
 
-void Ccorrelation_plots::background_fill(int ichip, float gposn[4], 
-	float ref_gposn[4], float lposn[4], float ref_lposn[4]){
-	float delx = gposn[0] - ref_gposn[0];
-	float dely = gposn[1] - ref_gposn[1];
-	float delt = -(gposn[3] - ref_gposn[3]);
+void Ccorrelation_plots::background_fill(int ichip, double gposn[4], 
+	double ref_gposn[4], double lposn[4], double ref_lposn[4]){
+	double delx = gposn[0] - ref_gposn[0];
+	double dely = gposn[1] - ref_gposn[1];
+	double delt = -(gposn[3] - ref_gposn[3]);
 
 
 	//Case of making a x or y correlation.
@@ -671,16 +670,16 @@ void Ccorrelation_plots::background_fill(int ichip, float gposn[4],
 
 //-----------------------------------------------------------------------------
 
-void Ccorrelation_plots::correlation_fill(int ichip, float gposn[4], 
-	float ref_gposn[4], float lposn[4], float ref_lposn[4]){
+void Ccorrelation_plots::correlation_fill(int ichip, double gposn[4], 
+	double ref_gposn[4], double lposn[4], double ref_lposn[4]){
 
-	float delxLoc = 0.055*(ref_lposn[0] - lposn[0]);
-	float delyLoc = 0.055*(ref_lposn[1] - lposn[1]);
-	float deltLoc = ref_lposn[2] - lposn[2];
+	double delxLoc = 0.055*(ref_lposn[0] - lposn[0]);
+	double delyLoc = 0.055*(ref_lposn[1] - lposn[1]);
+	double deltLoc = ref_lposn[2] - lposn[2];
 
-	float delxGlob = ref_gposn[0] - gposn[0];
-	float delyGlob = ref_gposn[1] - gposn[1];
-	float deltGlob = ref_gposn[3] - gposn[3];
+	double delxGlob = ref_gposn[0] - gposn[0];
+	double delyGlob = ref_gposn[1] - gposn[1];
+	double deltGlob = ref_gposn[3] - gposn[3];
 
 
 	//Case of making a x or y correlation.
@@ -736,7 +735,7 @@ void Ccorrelation_plots::correlation_fill(int ichip, float gposn[4],
 
 //-----------------------------------------------------------------------------
 
-int Ccorrelation_plots::get_xiref_start(float x, int irefchip){
+int Ccorrelation_plots::get_xiref_start(double x, int irefchip){
 	//Returns the index of the pixel corresponding to the given TOA minus 
 	//the _t_bound by using the TOA_to_ID functions in the Cchip.
 
@@ -749,7 +748,7 @@ int Ccorrelation_plots::get_xiref_start(float x, int irefchip){
 	else irpix_start = _tel->get_chip(irefchip)->glob_x_to_clustID(x);
 	
 
-	// float temp_lposn[4], temp_gposn[4];
+	// double temp_lposn[4], temp_gposn[4];
 	// _tel->get_chip(irefchip)->get_pix_hits_by_glob_x()[irpix_start]->get_lposn(temp_lposn);
 	// _tel->get_chip(irefchip)->lposn_to_gposn(temp_lposn, temp_gposn);
 	// std::cout<<x<<"\t"<<temp_gposn[0]<<std::endl;
@@ -765,7 +764,7 @@ int Ccorrelation_plots::get_xiref_start(float x, int irefchip){
 
 //-----------------------------------------------------------------------------
 
-int Ccorrelation_plots::get_iref_start(float t, int irefchip){
+int Ccorrelation_plots::get_iref_start(double t, int irefchip){
 	//Returns the index of the pixel corresponding to the given TOA minus 
 	//the _t_bound by using the TOA_to_ID functions in the Cchip.
 
@@ -789,7 +788,7 @@ int Ccorrelation_plots::get_iref_start(float t, int irefchip){
 
 //-----------------------------------------------------------------------------
 
-bool Ccorrelation_plots::unsuitable_x(float x1, float x2, float x_bound){
+bool Ccorrelation_plots::unsuitable_x(double x1, double x2, double x_bound){
 	//Checks whether pixel2 is too far ahead of pixel1 in time - useful,
 	//as breaks the second pixel loop, speeding up massively.
 	//std::cout<<t1<<"\t"<<t2<<"\t"<<t2 - t1<<"\t"<<t_bound<<std::endl;
@@ -806,7 +805,7 @@ bool Ccorrelation_plots::unsuitable_x(float x1, float x2, float x_bound){
 
 //-----------------------------------------------------------------------------
 
-bool Ccorrelation_plots::unsuitable_t(float t1, float t2, float t_bound){
+bool Ccorrelation_plots::unsuitable_t(double t1, double t2, double t_bound){
 	//Checks whether pixel2 is too far ahead of pixel1 in time - useful,
 	//as breaks the second pixel loop, speeding up massively.
 	//std::cout<<t1<<"\t"<<t2<<"\t"<<t2 - t1<<"\t"<<t_bound<<std::endl;
@@ -823,7 +822,7 @@ bool Ccorrelation_plots::unsuitable_t(float t1, float t2, float t_bound){
 
 //-----------------------------------------------------------------------------
 
-bool Ccorrelation_plots::unsuitable_tbg(float t1, float t2, float t_bound){
+bool Ccorrelation_plots::unsuitable_tbg(double t1, double t2, double t_bound){
 	//Checks whether pixel 1 is 
 	if (get_dir() != 3){
 		if ((t2 - t1) > t_bound) return true;
@@ -996,7 +995,7 @@ void Ccorrelation_plots::set_directories(){
 
 void Ccorrelation_plots::align_by_pix_differences(){
 	//Sets the position of a chip to the of the highest bin.
-	float gposn[4];
+	double gposn[4];
 	double shift;
 
 
@@ -1026,18 +1025,22 @@ void Ccorrelation_plots::align_by_pix_differences(){
 
 void Ccorrelation_plots::align_by_clust_differences(){
 	//Sets the position of a chip to the of the highest bin.
-	float gposn[4];
+	double gposn[4];
 	double shift;
 
 	for (std::vector<Cchip*>::iterator ichip = _tel->get_chips().begin();
 		 ichip != _tel->get_chips().end(); ++ichip){
+		//if (!(*ichip)->get_ID()>10){
 
-		(*ichip)->get_gposn(gposn);
-		shift = _differencesGlobal[(*ichip)->get_ID()]->GetBinCenter(
-			_differencesGlobal[(*ichip)->get_ID()]->GetMaximumBin());
+			(*ichip)->get_gposn(gposn);
 
-		gposn[get_dir()] += shift;
-		(*ichip)->set_gposn(gposn);
+			_differencesGlobal[(*ichip)->get_ID()]->Fit("gaus", "Q");
+			TF1 * fit = _differencesGlobal[(*ichip)->get_ID()]->GetFunction("gaus");
+			shift = fit->GetParameter(1);
+
+			gposn[get_dir()] += shift;
+			(*ichip)->set_gposn(gposn);
+		//}
 
 		if ((*ichip)->get_ID() == _chip_loop_cut) break;
 	}
@@ -1121,7 +1124,7 @@ void Ccorrelation_plots::fill_res_vector(){
 	int N = std::min(_tel->get_nchips(), _chip_loop_cut);
 
 	//First get (2)V_Ref
-	float V_ref = 0.5*(_variance_vector[0] - _variance_vector[_variance_vector.size()-1] + _variance_vector[1]);
+	double V_ref = 0.5*(_variance_vector[0] - _variance_vector[_variance_vector.size()-1] + _variance_vector[1]);
 
 
 	//Now fill res vector, noting that the V_ref will be placed later.

@@ -98,8 +98,8 @@ void Ccorrel_aligner::align_all(){
 // //-----------------------------------------------------------------------------
 
 // void Ccorrel_aligner::ts_fill(int ichip, Cpixel* pix, Cpixel* refpix){
-// 	float pix_x = (float) pix->get_column();
-// 	float refpix_x_pred = _lines[0][ichip]->y(pix_x); //zero index since want x
+// 	double pix_x = (double) pix->get_column();
+// 	double refpix_x_pred = _lines[0][ichip]->y(pix_x); //zero index since want x
 
 // 	//std::cout<<_lines[0][ichip]->get_c_shift()<<"\t\t"<<pix_x<<"\t"<<refpix_x_pred<<"\t"<<refpix->get_column();
 
@@ -108,7 +108,7 @@ void Ccorrel_aligner::align_all(){
 // 		//std::cout<<"\tYay!";
 
 // 		//Do same in y.
-// 		float refpix_y_pred = _lines[1][ichip]->y((float) pix->get_row());
+// 		double refpix_y_pred = _lines[1][ichip]->y((double) pix->get_row());
 // 		if (fabs(refpix_y_pred - refpix->get_row()) < _correl_bound){
 // 			_t_diffs[ichip]->Fill(pix->get_TOA() - refpix->get_TOA());
 // 		}

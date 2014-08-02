@@ -40,15 +40,16 @@ Cchip::Cchip(CDQM_options * ops){
 
 	_tpixzero = 0.0;
 	_tpixstep = 100.0;
-	_num_pix_tsteps = 500;
 	nthingy = 2;
-	_num_clust_tsteps = _ops->nPixHitCut/nthingy;
+	_num_pix_tsteps = (int)_ops->nPixHitCut/nthingy;
+	
+	_num_clust_tsteps = (int)_ops->nPixHitCut/nthingy;
 
 
 
 	_xpixzero = 0.0;
 	_xpixstep = 100.0;
-	_num_pix_xsteps = _ops->nPixHitCut/nthingy;
+	_num_clust_xsteps = (int)_ops->nPixHitCut/nthingy;
 
 }
 
@@ -107,13 +108,13 @@ void Cchip::fill_glob_xs_to_clustIDs(){
 	_glob_xs_to_clustIDs.clear();
 
 	_xclustzero = _clusters_by_glob_x[0]->get_gx();
-	_xcluststep = (_clusters_by_glob_x.back()->get_gx() - _xclustzero)/(float)_num_clust_xsteps;
+	_xcluststep = (_clusters_by_glob_x.back()->get_gx() - _xclustzero)/(double)_num_clust_xsteps;
 	_glob_xs_to_clustIDs.push_back(0);
 
 
 	int istep = 1; //dummy counter.
 	//Cycle over pixels to, finding a corresponding pix_hit_ID for each tstep.
-	float x;
+	double x;
 	for (int i=1; i<_nclusters; i++){
 		while (_clusters_by_glob_x[i]->get_gx()-_xclustzero > istep*_xcluststep){ //i.e. if a new step.
 			istep++;
@@ -137,12 +138,12 @@ void Cchip::fill_glob_xs_to_pixIDs(){
 
 	//Start by getting the lower x and step width.
 	_xpixzero = get_pix_dir(_pix_hits_by_glob_x[0], 0);
-	_xpixstep = (get_pix_dir(_pix_hits_by_glob_x.back(), 0) - _xpixzero)/(float)_num_pix_xsteps;
+	_xpixstep = (get_pix_dir(_pix_hits_by_glob_x.back(), 0) - _xpixzero)/(double)_num_pix_xsteps;
 	_glob_xs_to_pixIDs.push_back(0);
 
 
 	int istep = 1; //dummy counter.
-	float x;
+	double x;
 	//Cycle over pixels to, finding a corresponding pix_hit_ID for each tstep.
 	for (int i=1; i<_npix_hits; i++){
 		x = get_pix_dir(_pix_hits_by_glob_x[i], 0);
@@ -169,7 +170,7 @@ void Cchip::fill_loc_ts_to_pixIDs(){
 	_loc_ts_to_pixIDs.clear();
 
 	_tpixzero = _pix_hits[0]->get_TOA();
-	_tpixstep = (_pix_hits.back()->get_TOA() - _tpixzero)/(float)_num_pix_tsteps;
+	_tpixstep = (_pix_hits.back()->get_TOA() - _tpixzero)/(double)_num_pix_tsteps;
 	_loc_ts_to_pixIDs.push_back(0);
 
 
@@ -195,7 +196,7 @@ void Cchip::fill_loc_ts_to_pixIDs(){
 
 //-----------------------------------------------------------------------------
 
-int Cchip::glob_t_to_pixID(float t){
+int Cchip::glob_t_to_pixID(double t){
 	//Returns the ID of a pix_hit nearest (and less than) the given time t,
 	//as long as time ordering of pix_hits is maintained.
 
@@ -224,7 +225,7 @@ void Cchip::fill_loc_ts_to_clustIDs(){
 		_loc_ts_to_clustIDs.clear();
 
 		_tclustzero = _clusters[0]->get_TOA();
-		_tcluststep = (_clusters.back()->get_TOA() - _tclustzero)/(float)_num_clust_tsteps;
+		_tcluststep = (_clusters.back()->get_TOA() - _tclustzero)/(double)_num_clust_tsteps;
 		_loc_ts_to_clustIDs.push_back(0);
 
 
@@ -251,7 +252,7 @@ void Cchip::fill_loc_ts_to_clustIDs(){
 
 //-----------------------------------------------------------------------------
 
-int Cchip::glob_t_to_clustID(float t){
+int Cchip::glob_t_to_clustID(double t){
 	//Returns the ID of a pix_hit nearest (and less than) the given time t,
 	//as long as time ordering of pix_hits is maintained.
 
@@ -271,7 +272,7 @@ int Cchip::glob_t_to_clustID(float t){
 
 //-----------------------------------------------------------------------------
 
-int Cchip::glob_x_to_pixID(float x){
+int Cchip::glob_x_to_pixID(double x){
 	//Returns the ID of a pix_hit nearest (and less than) the given time t,
 	//as long as time ordering of pix_hits is maintained.
 
@@ -291,7 +292,7 @@ int Cchip::glob_x_to_pixID(float x){
 
 //-----------------------------------------------------------------------------
 
-int Cchip::glob_x_to_clustID(float x){
+int Cchip::glob_x_to_clustID(double x){
 	//Returns the ID of a pix_hit nearest (and less than) the given time t,
 	//as long as time ordering of pix_hits is maintained.
 
@@ -510,8 +511,8 @@ void Cchip::print_details(){
 
 //-----------------------------------------------------------------------------
 
-float Cchip::get_average_cluster_ADC(){
-	float mu = 0.0;
+double Cchip::get_average_cluster_ADC(){
+	double mu = 0.0;
 	for (std::vector<Ccluster*>::iterator iclus = _clusters.begin();
 			iclus != _clusters.end(); ++iclus){
 		mu += (*iclus)->get_ADC();
@@ -529,8 +530,8 @@ float Cchip::get_average_cluster_ADC(){
 
 //-----------------------------------------------------------------------------
 
-float Cchip::get_average_pixel_ADC(){
-	float mu = 0.0;
+double Cchip::get_average_pixel_ADC(){
+	double mu = 0.0;
 	for (std::vector<Cpix_hit*>::iterator ipix = get_pix_hits().begin();
 			ipix != get_pix_hits().end(); ++ipix){
 		mu += (*ipix)->get_ADC();
@@ -548,10 +549,10 @@ float Cchip::get_average_pixel_ADC(){
 
 //-----------------------------------------------------------------------------
 
-float Cchip::get_std_cluster_ADC(){
-	float sig = 0.0;
-	float mu = get_average_cluster_ADC();
-	float my_mu_sq = mu*mu;
+double Cchip::get_std_cluster_ADC(){
+	double sig = 0.0;
+	double mu = get_average_cluster_ADC();
+	double my_mu_sq = mu*mu;
 	for (std::vector<Ccluster*>::iterator iclus = get_clusters().begin();
 			iclus != get_clusters().end(); ++iclus){
 		sig += pow((double)((*iclus)->get_ADC() - my_mu_sq), 2.0);
@@ -559,7 +560,7 @@ float Cchip::get_std_cluster_ADC(){
 
 	sig /= get_nclusters();
 	sig = pow(sig, 0.5);
-	return (float) sig;
+	return (double) sig;
 }
 
 
@@ -570,18 +571,18 @@ float Cchip::get_std_cluster_ADC(){
 
 //-----------------------------------------------------------------------------
 
-void Cchip::set_std_and_average_cluster_ADC(float & mu, float & sig){
+void Cchip::set_std_and_average_cluster_ADC(double & mu, double & sig){
 	sig = 0.0;
 	mu = get_average_cluster_ADC();
-	float my_mu_sq = mu*mu;
+	double my_mu_sq = mu*mu;
 	for (std::vector<Ccluster*>::iterator iclus = _clusters.begin();
 			iclus != _clusters.end(); ++iclus){
-		sig += (float)pow((double)((*iclus)->get_ADC() - my_mu_sq), 2.0);
+		sig += (double)pow((double)((*iclus)->get_ADC() - my_mu_sq), 2.0);
 	}
 
 	sig /= get_nclusters();
 	sig = pow(sig, 0.5);
-	sig = (float) sig;
+	sig = (double) sig;
 }
 
 
@@ -592,18 +593,18 @@ void Cchip::set_std_and_average_cluster_ADC(float & mu, float & sig){
 
 //-----------------------------------------------------------------------------
 
-void Cchip::set_std_and_average_pixel_ADC(float & mu, float & sig){
+void Cchip::set_std_and_average_pixel_ADC(double & mu, double & sig){
 	sig = 0.0;
 	mu = get_average_pixel_ADC();
-	float my_mu_sq = mu*mu;
+	double my_mu_sq = mu*mu;
 	for (std::vector<Cpix_hit*>::iterator ipix = _pix_hits.begin();
 			ipix != _pix_hits.end(); ++ipix){
-		sig += (float)pow((double)((*ipix)->get_ADC() - my_mu_sq), 2.0);
+		sig += (double)pow((double)((*ipix)->get_ADC() - my_mu_sq), 2.0);
 	}
 
 	sig /= get_npix_hits();
 	sig = pow(sig, 0.5);
-	sig = (float) sig;
+	sig = (double) sig;
 }
 
 
@@ -644,8 +645,8 @@ void Cchip::reset_pixel_IDs(){
 
 //----------------------------------------------------------------------------
 
-void Cchip::gposn_to_lposn(float gposn[4], float lposn[4]){
-	float spatial_lposn[3] = {gposn[0]-_gposn[0], gposn[1]-_gposn[1], gposn[2]-_gposn[2]};
+void Cchip::gposn_to_lposn(double gposn[4], double lposn[4]){
+	double spatial_lposn[3] = {gposn[0]-_gposn[0], gposn[1]-_gposn[1], gposn[2]-_gposn[2]};
 	Chandy::R_x(spatial_lposn, -_orientation[0]);
 	Chandy::R_y(spatial_lposn, -_orientation[1]);
 	Chandy::R_z(spatial_lposn, -_orientation[2]);
@@ -664,11 +665,11 @@ void Cchip::gposn_to_lposn(float gposn[4], float lposn[4]){
 
 //-----------------------------------------------------------------------------
 
-void Cchip::lposn_to_gposn(float lposn[4], float gposn[4]){
+void Cchip::lposn_to_gposn(double lposn[4], double gposn[4]){
 	//Returns the global position of a given posn in this local codn system.
 
 	//Start by putting lposn into a 3 vector, in l codn system, in mm.
-	float spatial_gposn[3] = {lposn[0] * get_pixel_width(),
+	double spatial_gposn[3] = {lposn[0] * get_pixel_width(),
 					  		  lposn[1] * get_pixel_height(),
 					  		  0.0}; //zposn in a chip frame is zero by definition.
 
@@ -716,7 +717,7 @@ void Cchip::x_order_pix_hits_comb(){
 	//the shrink factor is one.
 
 	int N = _npix_hits;
-	float s_factor = 1.3;
+	double s_factor = 1.3;
 	Cpix_hit* temp_pixel;
 	int gap = N / s_factor;
 	bool swapped = false;
@@ -759,7 +760,7 @@ void Cchip::x_order_clusts_comb(){
 	//the shrink factor is one.
 
 	int N = _nclusters;
-	float s_factor = 1.3;
+	double s_factor = 1.3;
 	Ccluster* temp_clust;
 	int gap = N / s_factor;
 	bool swapped = false;
@@ -801,7 +802,7 @@ void Cchip::time_order_pix_hits_comb(){
 	//the shrink factor is one.
 	if (get_npix_hits() != 0) {
 		int N = _npix_hits;
-		float s_factor = 1.3;
+		double s_factor = 1.3;
 		Cpix_hit* temp_pixel;
 		int gap = N / s_factor;
 		bool swapped = false;
@@ -847,7 +848,7 @@ void Cchip::time_order_clusts_comb(){
 	//the shrink factor is one.
 	if (get_nclusters()!=0) {
 		int N = _nclusters;
-		float s_factor = 1.3;
+		double s_factor = 1.3;
 		Ccluster* temp_clust;
 		int gap = N / s_factor;
 		bool swapped = false;
@@ -905,8 +906,8 @@ void Cchip::fill_cluster_sample(int N, std::vector<Ccluster*> & cluster_sample){
 
 //-----------------------------------------------------------------------------
 
-float Cchip::get_pix_dir(Cpix_hit * pix, int dir){
-	float temp_lposn[4], temp_gposn[4];
+double Cchip::get_pix_dir(Cpix_hit * pix, int dir){
+	double temp_lposn[4], temp_gposn[4];
 	pix->get_lposn(temp_lposn);
 	this->lposn_to_gposn(temp_lposn, temp_gposn);
 	return temp_gposn[dir];

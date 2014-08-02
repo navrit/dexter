@@ -10,6 +10,8 @@
         QLabel * plot_ops_name_box, QLabel * fit_results_box, QLabel * clicked_pos_lab,
         TH1F * h_ref){
 
+    mRubberBand = new QRubberBand(QRubberBand::Rectangle, this);
+
     _h = h;
     _sel_Qh = &sel_Qh;
     _sel_hist_widg = &sel_hist_widg;
@@ -138,6 +140,8 @@ void hist_widget::add_qh_functionality(){
 
     // connect slots that takes care that when an axis is selected, only that direction can be dragged and zoomed:
     connect(_Qh, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress(QMouseEvent*)));
+    connect(_Qh, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
+    connect(_Qh, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease(QMouseEvent*)));
     connect(_Qh, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
 
 
@@ -154,7 +158,39 @@ void hist_widget::add_qh_functionality(){
 }
 
 
+//_____________________________________________________________________________
 
+void hist_widget::mouseRelease(QMouseEvent * event)
+{
+    if (mRubberBand->isVisible())
+    {
+        const QRect & zoomRect = mRubberBand->geometry();
+        int xp1, yp1, xp2, yp2;
+        zoomRect.getCoords(&xp1, &yp1, &xp2, &yp2);
+        auto x1 = _Qh->xAxis->pixelToCoord(xp1);
+        auto x2 = _Qh->xAxis->pixelToCoord(xp2);
+        auto y1 = _Qh->yAxis->pixelToCoord(yp1);
+        auto y2 = _Qh->yAxis->pixelToCoord(yp2);
+ 
+        _Qh->xAxis->setRange(x1, x2);
+        _Qh->yAxis->setRange(y1, y2);
+ 
+        mRubberBand->hide();
+        _Qh->replot();
+    }
+    //QCustomPlot::mouseReleaseEvent(event);
+}
+
+//_____________________________________________________________________________
+
+void hist_widget::mouseMove(QMouseEvent * event)
+{
+    if (mRubberBand->isVisible())
+    {
+        mRubberBand->setGeometry(QRect(mOrigin, event->pos()).normalized());
+    }
+    //QCustomPlot::mouseMoveEvent(event);
+}
 
 
 //_____________________________________________________________________________
@@ -164,17 +200,27 @@ void hist_widget::mousePress(QMouseEvent* e){
 
     // if an axis is selected, only allow the direction of that axis to be dragged
     // if no axis is selected, both directions may be dragged
-    std::stringstream ssx, ssy;
-    if (_Qh->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    _Qh->axisRect()->setRangeDrag(_Qh->xAxis->orientation());
-    else if (_Qh->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    _Qh->axisRect()->setRangeDrag(_Qh->yAxis->orientation());
-    else {_Qh->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
-        ssx << std::setprecision(3) << _Qh->xAxis->pixelToCoord(e->x());
-        ssy << std::setprecision(3) << _Qh->yAxis->pixelToCoord(e->y());
-        _sel_x_lab->setText(QString(("x: " + ssx.str()).c_str()));
-        _sel_y_lab->setText(QString(("y: " + ssy.str()).c_str()));
-        _sel_z_lab->setText(QString(" "));
+    if (e->button() == Qt::RightButton){
+        std::cout<<"Right click"<<std::endl;
+        mOrigin = e->pos();
+        mRubberBand->setGeometry(QRect(mOrigin, QSize()));
+        mRubberBand->show();
+    }
+
+    else {
+        std::stringstream ssx, ssy;
+        if (_Qh->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
+        _Qh->axisRect()->setRangeDrag(_Qh->xAxis->orientation());
+        else if (_Qh->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+        _Qh->axisRect()->setRangeDrag(_Qh->yAxis->orientation());
+        else {
+            _Qh->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
+            ssx << std::setprecision(3) << _Qh->xAxis->pixelToCoord(e->x());
+            ssy << std::setprecision(3) << _Qh->yAxis->pixelToCoord(e->y());
+            _sel_x_lab->setText(QString(("x: " + ssx.str()).c_str()));
+            _sel_y_lab->setText(QString(("y: " + ssy.str()).c_str()));
+            _sel_z_lab->setText(QString(" "));
+        }
     }
 }
 
@@ -393,9 +439,9 @@ void hist_widget::TH1F_to_QcustomPlot(TH1F * h, QCustomPlot * Qh){
     Qh->graph(Qh->plottableCount()-1)->setData(x, y);
 
 
-    //Reduce the number of ticks.
-    Qh->xAxis->setAutoTickCount(3);
-    Qh->yAxis->setAutoTickCount(3);
+//    //Reduce the number of ticks.
+//    Qh->xAxis->setAutoTickCount(3);
+//    Qh->yAxis->setAutoTickCount(3);
     Qh->xAxis->setTickLabelFont(QFont(font().family(), 11));
     Qh->yAxis->setTickLabelFont(QFont(font().family(), 11));
     Qh->yAxis->setRange(min_y, max_y);
@@ -462,10 +508,11 @@ void hist_widget::TGraph_to_QcustomPlot(TGraph * g, QCustomPlot * Qh) {
 
 void hist_widget::add_stats_box(TH1F* h){
     // add the text label at the top:
-    std::stringstream ssup, sslow;
+    std::stringstream ssup, sslow, ssN;
+	ssN << h->GetEntries();
     sslow << h->GetBinContent(h->GetBin(0));
     ssup << h->GetBinContent(h->GetBin(h->GetNbinsX())+1);
-    std::string Statsbox_text = "<" + sslow.str() + "\n>" + ssup.str();
+    std::string Statsbox_text = "N: " + ssN.str() + "\nUF:" + sslow.str() + ", OF:" + ssup.str();
     QCPItemText * Statsbox = new QCPItemText(_Qh);
     _Qh->addItem(Statsbox);
     Statsbox->position->setType(QCPItemPosition::ptAxisRectRatio);
@@ -568,6 +615,23 @@ void hist_widget::fit_gaussian(QColor c){
         fit_pen.setWidthF(2);
         _Qh->graph(_Qh->plottableCount()-1)->setPen(fit_pen);
         _Qh->graph(_Qh->plottableCount()-1)->setData(x, y);
+
+
+        std::stringstream ssRes;
+        ssRes<<std::setprecision(3)<<(1000*_fit_parameters[2]);
+        std::string Statsbox_text = "Sigma: " + ssRes.str() + "um";
+		QCPItemText * Statsbox = new QCPItemText(_Qh);
+		_Qh->addItem(Statsbox);
+		Statsbox->position->setType(QCPItemPosition::ptAxisRectRatio);
+		Statsbox->setPositionAlignment(Qt::AlignLeft|Qt::AlignTop);
+		Statsbox->position->setCoords(0.03, 0.03); // lower right corner of axis rect
+		Statsbox->setTextAlignment(Qt::AlignLeft);
+		Statsbox->setFont(QFont(font().family(), 11));
+		Statsbox->setPadding(QMargins(2, 2, 2, 2));
+		Statsbox->setText(QString(Statsbox_text.c_str()));
+		Statsbox->setPen(QPen(Qt::black));
+		Statsbox->setBrush(QBrush(Qt::white));
+		Statsbox->setSelectable(true);
     }
 }
 

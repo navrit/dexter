@@ -21,10 +21,11 @@ public:
 	std::string					_save_file_name;
 	std::vector<int>			_ref_chips;
 	CDQM_options*				_ops;
-	float						_tcut;
+	double						_tcut;
 
 
 	TH2F*						_track_hitmap;
+	TH2F*						_track_angles;
 	int							_nhitmap_bins;
 	TH1F*						_t_dist;
 	TH1F*						_mx_dist;
@@ -39,23 +40,25 @@ public:
 
 	TH1F*						_size_dist;
 
-	float 						_delr;
-	float 						_delt;
-	float						_ADC_low;
-	float						_ADC_high;
+	double 						_delr;
+	double 						_delt;
+	double						_ADC_low;
+	double						_ADC_high;
 
 	std::vector<TH1F*>			_xresiduals;
 	std::vector<TH1F*>			_xresiduals0;
 	std::vector<TH1F*>			_xresiduals1;
 	std::vector<TH1F*>			_yresiduals;
 	std::vector<TH1F*>			_tresiduals;
+	std::vector<TH2F*>			_impactAngleVsClusterSize;
+
 
 	//Member functions --------------------------------------------------------
 	Ctrack_plots (CDQM_options*);
 	~Ctrack_plots();
 
 	void show_residuals();
-	void get_GaussResidual(int, int, float &, float &);
+	void get_GaussResidual(int, int, double &, double &);
 
 	void initialize();
 	void execute(Ctel_chunk*);
@@ -78,8 +81,6 @@ public:
 	void						set_tel(Ctel_chunk* x){_tel = x;}
 	void						set_tdist_nbins(int i){_tdist_nbins = i;}
 	void						set_nhitmap_bins(int i){_nhitmap_bins = i;}
-
-
 };
 
 #endif

@@ -25,7 +25,7 @@ void Cpixel_plots::initialize(){
 
 
 	_ADC_low = 0.0;
-	_ADC_up = 500;
+	_ADC_up = 200;
 	_ADC_nbins = _ops->pix_ToT_nbins;
 
 
@@ -366,10 +366,10 @@ void Cpixel_plots::make_pixel_t_orders(){
 		int N = pix_hits.size();
 
 		//Get xs and ys.
-		float xs[N];
-		float ys[N];
+		double xs[N];
+		double ys[N];
 		for (int ipix = 0; ipix < N; ipix++){
-			xs[ipix] = (float)ipix;
+			xs[ipix] = (double)ipix;
 			ys[ipix] = pix_hits[ipix]->get_TOA();
 		}
 
@@ -405,10 +405,10 @@ void Cpixel_plots::make_pixel_x_orders(){
 		int N = pix_hits.size();
 
 		//Get xs and ys.
-		float xs[N];
-		float ys[N];
+		double xs[N];
+		double ys[N];
 		for (int ipix = 0; ipix < N; ipix++){
-			ys[ipix] = (float)ipix;
+			ys[ipix] = (double)ipix;
 			xs[ipix] = (*ichip)->get_pix_dir(pix_hits[ipix], 0);
 		}
 

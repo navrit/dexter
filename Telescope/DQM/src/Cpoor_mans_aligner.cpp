@@ -36,9 +36,9 @@ Cpoor_mans_aligner::Cpoor_mans_aligner(Ctel_chunk * tel,
 
 //-----------------------------------------------------------------------------
 
-void Cpoor_mans_aligner::find_av_positions(Cchip* chip, float &xbar, float &ybar){
+void Cpoor_mans_aligner::find_av_positions(Cchip* chip, double &xbar, double &ybar){
 	xbar = 0.0; ybar = 0.0; //reset current values.
-	float lposn[4], gposn[4];
+	double lposn[4], gposn[4];
 
 	std::vector<Cpix_hit*>::iterator ipix;
 	for (ipix = chip->get_pix_hits().begin(); ipix != chip->get_pix_hits().end(); ipix++){
@@ -51,8 +51,8 @@ void Cpoor_mans_aligner::find_av_positions(Cchip* chip, float &xbar, float &ybar
 
 
 	//Average.
-	xbar /= (float) chip->get_npix_hits();
-	ybar /= (float) chip->get_npix_hits();
+	xbar /= (double) chip->get_npix_hits();
+	ybar /= (double) chip->get_npix_hits();
 }
 
 
@@ -95,11 +95,11 @@ void Cpoor_mans_aligner::align_all(){
 //-----------------------------------------------------------------------------
 
 void Cpoor_mans_aligner::align_chip(Cchip* chip){
-	float xbar = 0.0; float ybar = 0.0;
+	double xbar = 0.0; double ybar = 0.0;
 	find_av_positions(chip, xbar, ybar);
 
 	//set the x and y of the chip.
-	float old_posn[4], new_posn[4];
+	double old_posn[4], new_posn[4];
 	chip->get_gposn(old_posn);
 	new_posn[0] = old_posn[0] + (_ref_xbar - xbar);
 	new_posn[1] = old_posn[1] + (_ref_ybar - ybar);

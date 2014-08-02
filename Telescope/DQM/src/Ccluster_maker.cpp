@@ -50,15 +50,13 @@ void Ccluster_maker::initialize(){
  		_chips[i]->fill_loc_ts_to_clustIDs();
  		_chips[i]->setup_clusters_by_glob_x();
 
- 		std::cout<<"\nNum clusters found on chip "<<i<<": "<<_chips[i]->get_nclusters()<<std::endl;
- 		std::cout<<"cf number of pix_hits/3: "<<_chips[i]->get_npix_hits()/(float)3<<std::endl;
+ 		std::cout<<"\N clusts on chip "<<i<<": "<<_chips[i]->get_nclusters();
+ 		std::cout<<"\t cf number of pix_hits/3: "<<_chips[i]->get_npix_hits()/(double)3<<std::endl;
  		
  		if (i==_chip_loop_cut) break;
  	}
 
- 	std::cout<<"\nTotal hits clustered: "<<_tel->get_total_hits_clustered()<<std::endl;
- 	std::cout<<"cf number of pix_hits: "<<_tel->get_total_pix_hits()<<std::endl;
-	
+ 	std::cout<<"\n"<<std::endl;
 }
 
 
@@ -168,7 +166,7 @@ void Ccluster_maker::finalize(){
 
 
 	cluster->set_by_pixels(_COGweight); //sets other cluster attributes.
-	float temp_lposn[4], temp_gposn[4];
+	double temp_lposn[4], temp_gposn[4];
 	cluster->get_lposn(temp_lposn);
 	chip->lposn_to_gposn(temp_lposn, temp_gposn);
 	cluster->set_gposn(temp_gposn);
@@ -302,7 +300,6 @@ void Ccluster_maker::test_loop(std::vector<Cpix_hit*> pixs){
  			}
  		}
  	}
- 	std::cout<<"Dan! "<<num_close<<std::endl;
 }
 
 

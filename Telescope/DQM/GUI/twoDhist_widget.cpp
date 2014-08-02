@@ -1,25 +1,5 @@
 #include "twoDhist_widget.h"
 
-class hitmap_twoDhist_widget: public twoDhist_widget{
-public:
-    hitmap_twoDhist_widget(TH2F * h, int ichip, QCustomPlot* & sel_Qh,
-           int & sel_ichip, QWidget* & sel_widg, twoDhist_widget* & sel_hist_widg,
-           QLabel * plot_ops_statsbox, QLabel * sel_x_lab, QLabel * sel_y_lab,
-           QLabel * sel_z_lab, QCheckBox* xbox, QCheckBox* ybox, QCheckBox* zbox,
-           QLabel * plot_ops_name_box, QLabel * fit_results_box, QLabel * clicked_pos_lab,
-           TH1F * fit_results, int bar) : twoDhist_widget(h, ichip, sel_Qh,
-                                                          sel_ichip, sel_widg, sel_hist_widg,
-                                                          plot_ops_statsbox, sel_x_lab, sel_y_lab,
-                                                          sel_z_lab, xbox, ybox, zbox,
-                                                          plot_ops_name_box, fit_results_box, clicked_pos_lab,
-                                                          fit_results){
-        std::cout<<"Constructing a hitmap"<<std::endl;
-    }
-
-
-};
-
-
 //_____________________________________________________________________________
 
  twoDhist_widget::twoDhist_widget(TH2F * h, int ichip, QCustomPlot* & sel_Qh,
@@ -29,12 +9,15 @@ public:
         QLabel * plot_ops_name_box, QLabel * fit_results_box, QLabel * clicked_pos_lab,
         TH1F * fit_results){
 
+	 mRubberBand = new QRubberBand(QRubberBand::Rectangle, this);
+
      _ichip = ichip;
      _h = h;
 
      _x_label = "";
      _y_label = "";
      _z_label = "";
+
 
 
     //The below passed references are to objects from a higher level of
@@ -100,7 +83,8 @@ void twoDhist_widget::add_qh_functionality(){
     // connect slots that takes care that when an axis is selected, only that direction can be dragged and zoomed:
     connect(_Qh, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress(QMouseEvent*)));
     connect(_Qh, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
-
+    connect(_Qh, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease(QMouseEvent*)));
+    connect(_Qh, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
 
     // make bottom and left axes transfer their ranges to top and right axes:
     connect(_Qh->xAxis, SIGNAL(rangeChanged(QCPRange)), _Qh->xAxis2, SLOT(setRange(QCPRange)));
@@ -114,6 +98,44 @@ void twoDhist_widget::add_qh_functionality(){
 
 //_____________________________________________________________________________
 
+void twoDhist_widget::mouseRelease(QMouseEvent * event)
+{
+    if (mRubberBand->isVisible())
+    {
+        const QRect & zoomRect = mRubberBand->geometry();
+        int xp1, yp1, xp2, yp2;
+        zoomRect.getCoords(&xp1, &yp1, &xp2, &yp2);
+        auto x1 = _Qh->xAxis->pixelToCoord(xp1);
+        auto x2 = _Qh->xAxis->pixelToCoord(xp2);
+        auto y1 = _Qh->yAxis->pixelToCoord(yp1);
+        auto y2 = _Qh->yAxis->pixelToCoord(yp2);
+
+        _Qh->xAxis->setRange(x1, x2);
+        _Qh->yAxis->setRange(y1, y2);
+
+        mRubberBand->hide();
+        _Qh->replot();
+    }
+    //QCustomPlot::mouseReleaseEvent(event);
+}
+
+
+
+
+//_____________________________________________________________________________
+
+void twoDhist_widget::mouseMove(QMouseEvent * event)
+{
+    if (mRubberBand->isVisible())
+    {
+        mRubberBand->setGeometry(QRect(mOrigin, event->pos()).normalized());
+    }
+    //QCustomPlot::mouseMoveEvent(event);
+}
+
+
+//_____________________________________________________________________________
+
 void twoDhist_widget::mousePress(QMouseEvent* e){
     //As well as plot interaction, clicking on a plot should make it the
     //'selected' plot (and hence, widget). This involves changing the background
@@ -123,23 +145,31 @@ void twoDhist_widget::mousePress(QMouseEvent* e){
     //Do the 'selection'.
     if ((*_sel_Qh) != _Qh) make_selected();
 
+    if (e->button() == Qt::RightButton){
+        std::cout<<"Right click"<<std::endl;
+        mOrigin = e->pos();
+        mRubberBand->setGeometry(QRect(mOrigin, QSize()));
+        mRubberBand->show();
+    }
 
-    //Decide on the type of interaction.
-    std::stringstream ssx, ssy, ssz;
-    if (_Qh->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
-        _Qh->axisRect()->setRangeDrag(_Qh->xAxis->orientation());
+    else {
+		//Decide on the type of interaction.
+		std::stringstream ssx, ssy, ssz;
+		if (_Qh->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
+			_Qh->axisRect()->setRangeDrag(_Qh->xAxis->orientation());
 
-    else if (_Qh->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
-        _Qh->axisRect()->setRangeDrag(_Qh->yAxis->orientation());
+		else if (_Qh->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+			_Qh->axisRect()->setRangeDrag(_Qh->yAxis->orientation());
 
-    else {_Qh->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
-        ssx << std::setprecision(3) << _Qh->xAxis->pixelToCoord(e->x());
-        ssy << std::setprecision(3) << _Qh->yAxis->pixelToCoord(e->y());
-        double z = _colormap->data()->data(_Qh->xAxis->pixelToCoord(e->x()), _Qh->yAxis->pixelToCoord(e->y()));
-        ssz << std::setprecision(3) << z;
-        _sel_x_lab->setText(QString(("x: " + ssx.str()).c_str()));
-        _sel_y_lab->setText(QString(("y: " + ssy.str()).c_str()));
-        _sel_z_lab->setText(QString(("z: " + ssz.str()).c_str()));
+		else {_Qh->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
+			ssx << std::setprecision(4) << _Qh->xAxis->pixelToCoord(e->x());
+			ssy << std::setprecision(4) << _Qh->yAxis->pixelToCoord(e->y());
+			double z = _colormap->data()->data(_Qh->xAxis->pixelToCoord(e->x()), _Qh->yAxis->pixelToCoord(e->y()));
+			ssz << std::setprecision(4) << z;
+			_sel_x_lab->setText(QString(("x: " + ssx.str()).c_str()));
+			_sel_y_lab->setText(QString(("y: " + ssy.str()).c_str()));
+			_sel_z_lab->setText(QString(("z: " + ssz.str()).c_str()));
+		}
     }
 }
 
@@ -313,7 +343,6 @@ void twoDhist_widget::selectionChanged(){
 void twoDhist_widget::TH2F_to_QcustomPlot(){
     //The actual conversion. QcustomPlot requires a twoD map, which here,
     //are the heights of the bins of the TH2F.
-
     int nbinsx = _h->GetNbinsX();
     int nbinsy = _h->GetNbinsY();
 
@@ -329,29 +358,27 @@ void twoDhist_widget::TH2F_to_QcustomPlot(){
     _nonzero_ymin = ymin;
     _nonzero_xmax = xmax;
     _nonzero_ymax = ymax;
-
-
+    //std::cout<<"Hitmap size:\t"<<xmin<<"\t"<<xmax<<"\t"<<ymin<<"\t"<<ymax<<"\t"<<nbinsx<<"\t"<<nbinsy<<std::endl;
 
     //Make a QCPColorMap:
     _colormap = new QCPColorMap(_Qh->xAxis, _Qh->yAxis);
     _Qh->addPlottable(_colormap);
     _colormap->data()->setSize(nbinsx, nbinsy); // we want the color map to have 100x100 data points
-    _colormap->data()->setRange(QCPRange(xmin, xmax), QCPRange(ymin, ymax));
-
-
+    double xBinWidth = _h->GetXaxis()->GetBinWidth(1);
+    double yBinWidth = _h->GetYaxis()->GetBinWidth(1);
+    _colormap->data()->setRange(QCPRange(xmin+0.5*xBinWidth, xmax-0.5*xBinWidth), QCPRange(ymin+0.5*yBinWidth, ymax-0.5*yBinWidth));
     //Assign data, by accessing the QCPColorMapData instance of the color map.
-    for (int ix=1; ix<nbinsx-1; ++ix){
-        for (int iy=1; iy<nbinsy-1; ++iy){
+    for (int ix=1; ix<nbinsx+1; ++ix){
+        for (int iy=1; iy<nbinsy+1; ++iy){
             int ibin = _h->GetBin(ix, iy);
             int xIndex, yIndex;
             double x, y;
-            x = _h->GetXaxis()->GetBinCenter(ix);
-            y = _h->GetYaxis()->GetBinCenter(iy);
+            x = _h->GetXaxis()->GetBinLowEdge(ix);
+            y = _h->GetYaxis()->GetBinLowEdge(iy);
             _colormap->data()->coordToCell(x, y, &xIndex, &yIndex);
-            _colormap->data()->setCell(xIndex, yIndex, _h->GetBinContent(ibin));
+            _colormap->data()->setCell(ix-1, iy-1, _h->GetBinContent(ibin));
         }
     }
-
     _Qh->xAxis->setTickLabelFont(QFont(font().family(), 10));
     _Qh->yAxis->setTickLabelFont(QFont(font().family(), 10));
     _Qh->xAxis->setLabel(_x_label);
@@ -368,9 +395,10 @@ void twoDhist_widget::TH2F_to_QcustomPlot(){
     _colormap->setColorScale(colorScale); // associate the color map with the color scale
     //colorScale->axis()->setLabel("Magnetic Field Strength");
 
+
     colorScale->setBarWidth(15);
     colorScale->axis()->setPadding(2);
-    colorScale->axis()->setAutoTickCount(4);
+    //colorScale->axis()->setAutoTickCount(4);
     colorScale->axis()->setTickLabelFont(QFont(font().family(), 10));
     colorScale->axis()->setLabel(_z_label);
     colorScale->axis()->setLabelFont(QFont(font().family(), 11));
@@ -403,44 +431,16 @@ void twoDhist_widget::TH2F_to_QcustomPlot(){
 //    _Qh->xAxis->setTickLabels(false);
 //    _Qh->yAxis->setTickLabels(false);
 
-    _Qh->xAxis->setAutoTickCount(3);
-    _Qh->yAxis->setAutoTickCount(3);
-    colorScale->axis()->setAutoTickCount(3);
+//    _Qh->xAxis->setAutoTickCount(3);
+//    _Qh->yAxis->setAutoTickCount(3);
+//    colorScale->axis()->setAutoTickCount(3);
 
 
     //Range and other axis esthetics.
     _Qh->axisRect()->setupFullAxesBox(true);
-    get_nonzero_range(xmin, xmax, ymin, ymax);
+    //get_nonzero_range(xmin, xmax, ymin, ymax);
     _Qh->xAxis->setRange(xmin, xmax);
     _Qh->yAxis->setRange(ymin, ymax);
-
-    int ibintheta;
-    if (_fit_results != NULL) {
-        ibintheta = _fit_results->GetBin(1);
-        QVector<double> x1(5), y1(5);
-        //x[0] = tan(_fit_results->GetBinContent(ibintheta)) * _Qh->xAxis->range()->lower + tan(_fit_results->GetBinContent(ibintheta+2));
-        x1[0] = xmin;
-        x1[4] = xmax;
-        x1[2] = 0.5*(x1[0] + x1[4]);
-        x1[1] = 0.5*(x1[0] + x1[2]);
-        x1[3] = 0.5*(x1[4] + x1[2]);
-
-
-        y1[0] = tan(_fit_results->GetBinContent(ibintheta)) * x1[0] + _fit_results->GetBinContent(ibintheta+2);
-        y1[1] = tan(_fit_results->GetBinContent(ibintheta)) * x1[1] + _fit_results->GetBinContent(ibintheta+2);
-        y1[2] = tan(_fit_results->GetBinContent(ibintheta)) * x1[2] + _fit_results->GetBinContent(ibintheta+2);
-        y1[3] = tan(_fit_results->GetBinContent(ibintheta)) * x1[3] + _fit_results->GetBinContent(ibintheta+2);
-        y1[4] = tan(_fit_results->GetBinContent(ibintheta)) * x1[4] + _fit_results->GetBinContent(ibintheta+2);
-
-        _Qh->addGraph();
-        _Qh->graph()->setLineStyle(QCPGraph::lsNone);
-        _Qh->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 5));
-        QPen correl_pen;
-        correl_pen.setColor(QColor(0, 255, 0, 255));
-        correl_pen.setWidth(3);
-        _Qh->graph(0)->setPen(correl_pen);
-        _Qh->graph(0)->setData(x1, y1);
-    }
 }
 
 
@@ -604,16 +604,15 @@ void twoDhist_widget::toggle_axes_labels(){
 //-----------------------------------------------------------------------------
 
 void twoDhist_widget::show_axes_labels(){
-    if (_Qh->xAxis->label() != _x_label) _Qh->xAxis->setLabel(_x_label);
+    _Qh->xAxis->setLabel(_x_label);
 
-    if (_Qh->yAxis->label() != _y_label) _Qh->yAxis->setLabel(_y_label);
+    _Qh->yAxis->setLabel(_y_label);
 
-    if (_colormap->colorScale()->axis()->label() != _z_label) _colormap->colorScale()->axis()->setLabel(_z_label);
+    _colormap->colorScale()->axis()->setLabel(_z_label);
 
-    if (!_Qh->xAxis->tickLabels()){
-        _Qh->xAxis->setTickLabels(true);
-        _Qh->yAxis->setTickLabels(true);
-    }
+
+	_Qh->xAxis->setTickLabels(true);
+	_Qh->yAxis->setTickLabels(true);
 
     _Qh->replot();
 }

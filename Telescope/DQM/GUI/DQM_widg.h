@@ -29,9 +29,11 @@
 #include "qcustomplot.h"
 #include "hist_widget.h"
 #include "twoDhist_widget.h"
+#include "TASImage.h"
 #include "ui_mainwindow.h" //made by qmake.
 #include <QTimer>
 #include <QFileDialog>
+#include <QProgressBar>
 
 
 namespace Ui {
@@ -92,7 +94,7 @@ public:
 
 
     //Member functions ________________________________________________________
-    explicit            MainWindow(QWidget *parent = 0);
+    explicit            MainWindow(int r = 0);
                         ~MainWindow();
 
 
@@ -112,12 +114,14 @@ public:
     void                fill_residuals(int);
     void                fill_generalTrackPlots();
     void                fill_ResidualsVarsTab();
+    void				addChipBox(twoDhist_widget *, int, int);
+    void                fill_event_view();
 
 
 
     //Methods to get the various plot widgets.
     QCustomPlot*        get_z_dist_widget(int);
-    hist_widget*        get_track_size_widget();
+    hist_widget*        get_track_size_widget(int);
     hist_widget*        get_hitmapProj_widget(int, int);
     twoDhist_widget*    get_correl_widget(int, int, int, bool);
     twoDhist_widget*    get_hitmap_widget(int, int);

@@ -6,8 +6,8 @@
 
 
 
-Ccorrel_line_finder::Ccorrel_line_finder(TH2F* plot, float theta_lower, 
-	float theta_upper, int nproj_bins, bool save_switch, TDirectory* save_dir){
+Ccorrel_line_finder::Ccorrel_line_finder(TH2F* plot, double theta_lower, 
+	double theta_upper, int nproj_bins, bool save_switch, TDirectory* save_dir){
 	_save_dir = save_dir;
 	_save_switch = save_switch;
 	_nproj_bins = nproj_bins;
@@ -75,18 +75,18 @@ void Ccorrel_line_finder::set_line(){
 	_projections.push_back(h);
 	fill_signal_projection(_projections.size()-1);
 
-	float c = _signal_projections[_signal_projections.size()-1]->GetMean();
+	double c = _signal_projections[_signal_projections.size()-1]->GetMean();
 	_line->set_c_shift(-c/cos(_line->get_theta()));
 
-	float inner_bandN = 0;
-	float outer_bandN = 0;
+	double inner_bandN = 0;
+	double outer_bandN = 0;
 
 	//1 bin (either side, and including) about c_shift divided by 2 bins about c_shift.
 	int icbin = h->FindBin(_line->get_c_shift());
 	inner_bandN += (h->GetBinContent(icbin - 1) + h->GetBinContent(icbin) + h->GetBinContent(icbin + 1));
 	outer_bandN += (inner_bandN + h->GetBinContent(icbin - 2) + h->GetBinContent(icbin + 2));
 
-	float SN = inner_bandN/(1.0*outer_bandN);
+	double SN = inner_bandN/(1.0*outer_bandN);
 	_line->set_SN(SN);
 }
 
@@ -100,11 +100,11 @@ void Ccorrel_line_finder::set_line(){
 
 void Ccorrel_line_finder::fill_stationary_plot(){
 	_temp_theta = 0.0;
-	float temp_x = 0.0;
-	float xs[_n_projections];
-	float thetas[_n_projections];
-	float theta_step = (get_theta_upper() - get_theta_lower())/_n_projections;
-	//float shift_Cs[_n_projections];
+	double temp_x = 0.0;
+	double xs[_n_projections];
+	double thetas[_n_projections];
+	double theta_step = (get_theta_upper() - get_theta_lower())/_n_projections;
+	//double shift_Cs[_n_projections];
 
 	int dummy;
 	//cycle over projections.
@@ -135,7 +135,7 @@ void Ccorrel_line_finder::fill_signal_projection(int iproj){
 	TH1F* h = _projections[iproj];
 	//still need the bin num of the heighest.
 	int mid_bin;
-	float dummy = find_height_stationary_parameter(iproj, mid_bin);
+	double dummy = find_height_stationary_parameter(iproj, mid_bin);
 
 	//cycle over 2 bins either side - no need to do more, as signal should
 	//be inside here - and if its not, the width will be massive anyway.
@@ -184,7 +184,7 @@ void Ccorrel_line_finder::fill_signal_projection(int iproj){
 
 
 
-float Ccorrel_line_finder::find_height_stationary_parameter(
+double Ccorrel_line_finder::find_height_stationary_parameter(
 		int iproj, int & mid_bin){
 	//for now we'll use the height of the two heighest bin cause im lazy/curious.
 	//assume its 0; then iterate.
@@ -200,7 +200,7 @@ float Ccorrel_line_finder::find_height_stationary_parameter(
 			mid_bin = i;
 		}
 	}
-	return (float) height;
+	return (double) height;
 }
 
 
@@ -212,9 +212,9 @@ float Ccorrel_line_finder::find_height_stationary_parameter(
 
 
 void Ccorrel_line_finder::fill_projections(){
-	float theta_step = (get_theta_upper() - get_theta_lower())/_n_projections;
+	double theta_step = (get_theta_upper() - get_theta_lower())/_n_projections;
 
-	for (float itheta = get_theta_lower();
+	for (double itheta = get_theta_lower();
 			   itheta<get_theta_upper();
 			   itheta += theta_step){
 

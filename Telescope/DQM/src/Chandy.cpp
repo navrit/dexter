@@ -15,8 +15,8 @@
 
 class Chandy{
 public:
-	float					h_f;
-	std::vector<float>*		h_fs;
+	double					h_f;
+	std::vector<double>*		h_fs;
 
 	int						h_i;
 	std::vector<int>*		h_is;
@@ -27,15 +27,15 @@ public:
 	//without having to create an instance of the class - funky.
 	//-------------------------------------------------------------------------
 	static void dash_line_break(){
-		std::cout<<"\n\n\n\n";
+		std::cout<<"\n\n";
 		for (int i=0; i<78; i++) std::cout<<"_";
 		std::cout<<"\n";
 	}
 
 	//-------------------------------------------------------------------------
-	static std::string DFtS(float my_float){
+	static std::string DFtS(double my_double){
 		std::stringstream ss;
-		ss<<my_float;
+		ss<<my_double;
 		return ss.str();
 	}
 
@@ -49,8 +49,8 @@ public:
 
 
 	//-------------------------------------------------------------------------
-	static void R_z(float r[3], float theta){
-		float r_dash[3];
+	static void R_z(double r[3], double theta){
+		double r_dash[3];
 
 		r_dash[0] = - sin(theta) * r[1] + cos(theta)*r[0];
 		r_dash[1] = sin(theta)*r[0] + cos(theta)*r[1];
@@ -66,8 +66,8 @@ public:
 
 
 	//-------------------------------------------------------------------------
-	static void R_y(float r[3], float theta){
-		float r_dash[3];
+	static void R_y(double r[3], double theta){
+		double r_dash[3];
 		
 		r_dash[0] = cos(theta)*r[0] + sin(theta)*r[2];
 		r_dash[1] = r[1];
@@ -83,8 +83,8 @@ public:
 
 
 	//-------------------------------------------------------------------------
-	static void R_x(float r[3], float theta){
-		float r_dash[3];
+	static void R_x(double r[3], double theta){
+		double r_dash[3];
 
 		r_dash[0] = r[0];
 		r_dash[1] = cos(theta)*r[1] - sin(theta)*r[2];
@@ -112,7 +112,7 @@ public:
 
 
 	//-------------------------------------------------------------------------
-	static TH2F* subtract_TH2Fs(TH2F* h1, TH2F* h2, float weight = 1.0, bool one_switch = false,
+	static TH2F* subtract_TH2Fs(TH2F* h1, TH2F* h2, double weight = 1.0, bool one_switch = false,
 		std::string name = "h_subtracted"){
 		//Method to subtract two TH2Fs that have the same bins, with the option
 		//to weight the first over the other (like a re-norm).
@@ -138,14 +138,14 @@ public:
 
 
 	//-------------------------------------------------------------------------
-	static TH1F* project_2dhist(TH2F* h2d, float theta, int nbins, std::string n = "my_hist"){
+	static TH1F* project_2dhist(TH2F* h2d, double theta, int nbins, std::string n = "my_hist"){
 		//Method to return the projection of a 2d histogram (as a TH1F*) along
 		//the direction defined by m (note m doesnt define the axis to be
 		//projected onto - rather its perpendicular). Only need one variable.
 
 		//Line is cenetered on the plot and tilted around.
 		//Take the extremes. Let the xlow be top left extreme.
-		float axis_length = get_projected_axis_length(h2d);
+		double axis_length = get_projected_axis_length(h2d);
 		double xlow = -0.5*axis_length;
 		double xup = 0.5*axis_length;
 
@@ -156,7 +156,7 @@ public:
 
 
 	//-------------------------------------------------------------------------
-	static void projection_fill(TH2F* h2d, TH1F* h1d, float theta){
+	static void projection_fill(TH2F* h2d, TH1F* h1d, double theta){
 		//need to cycle over all bins, filling the TH1F with weights.
 		TAxis* x_axis = h2d->GetXaxis();
 		TAxis* y_axis = h2d->GetYaxis();
@@ -194,14 +194,14 @@ public:
 
 
 	//-------------------------------------------------------------------------
-	static double get_x_dash(double x, double y, float theta){
+	static double get_x_dash(double x, double y, double theta){
 		double x_dash = -sin(theta) * y + cos(theta) * x;
 		return x_dash;
 	}
 
 
 	//-------------------------------------------------------------------------
-	static float pythag(double x, double y){
+	static double pythag(double x, double y){
 		double z;
 		z = pow(pow(x, 2) + pow(y, 2), 0.5);
 		return z;
@@ -209,7 +209,7 @@ public:
 
 
 	//-------------------------------------------------------------------------
-	static float get_projected_axis_length(TH2F* h2d){
+	static double get_projected_axis_length(TH2F* h2d){
 		TAxis* x_axis = h2d->GetXaxis();
 		TAxis* y_axis = h2d->GetYaxis();
 
@@ -225,31 +225,35 @@ public:
 
 	//-------------------------------------------------------------------------
 	static std::vector<std::string> split_line(std::string line, int spacing){
+
 		//function splits a string by its spaces.
 		std::vector<std::string> line_bits;
 		//cycle through the line, looking for spaces. Never starts with a space.
-		unsigned int i = 0;
-		for (; i<line.size(); i++){
-			if (line[i] == ' '){
-				line_bits.push_back(line.substr(0, i));
-				line = line.substr(i+spacing, line.size()); //skip the space.
-				i=0;
+		//bool hitNextNumber = false;
+		for (unsigned int i=0; i<line.size(); i++){
+			if (line[i] == ' ') {
+				if (line[i-1] != ' ') {
+					line_bits.push_back(line.substr(0, i));
+					line = line.substr(i, line.size()); //skip the space.
+					i=0;
+				}
 			}
 		}
 		line_bits.push_back(line); //the last one.
+
 		return line_bits;
 	}
 
 
 	//-------------------------------------------------------------------------
-	std::vector<float>* linear_scaler(	std::vector<float>* xs,
-										float x_low, float x_up){
-		float x_max = ptrvecf_max(xs);
-		float x_min = ptrvecf_min(xs);
+	std::vector<double>* linear_scaler(	std::vector<double>* xs,
+										double x_low, double x_up){
+		double x_max = ptrvecf_max(xs);
+		double x_min = ptrvecf_min(xs);
 
 		std::cout<<x_max<<"\t"<<x_min<<std::endl;
 
-		for (std::vector<float>::iterator xptr = xs->begin();
+		for (std::vector<double>::iterator xptr = xs->begin();
 				xptr != xs->end(); ++xptr){
 			(*xptr) = ((*xptr) - x_max)/(x_max - x_min);		//scaling down.
 			(*xptr) = (*xptr) * (x_up - x_low) + x_low;			//scaling up.
@@ -260,12 +264,12 @@ public:
 
 
 	//-------------------------------------------------------------------------
-	float ptrvecf_max(std::vector<float>* xs){
+	double ptrvecf_max(std::vector<double>* xs){
 		//assume first is the lowest, then iterate.
-		float x_max = xs->operator[](0);
+		double x_max = xs->operator[](0);
 
 		//iterate over xs.
-		for (std::vector<float>::iterator xptr = xs->begin();
+		for (std::vector<double>::iterator xptr = xs->begin();
 				xptr != xs->end(); ++xptr){
 			if ((*xptr) > x_max) x_max = (*xptr);
 		}
@@ -274,10 +278,10 @@ public:
 
 
 	//-------------------------------------------------------------------------
-	float ptrvecf_min(std::vector<float>* xs){
+	double ptrvecf_min(std::vector<double>* xs){
 		//assume first is the lowest, then iterate.
-		float x_min = xs->operator[](0);
-		for (std::vector<float>::iterator xptr = xs->begin();
+		double x_min = xs->operator[](0);
+		for (std::vector<double>::iterator xptr = xs->begin();
 				xptr != xs->end(); ++xptr){
 			if ((*xptr) < x_min) x_min = (*xptr);
 		}
@@ -286,11 +290,11 @@ public:
 
 
 	//-------------------------------------------------------------------------
-	float project(float &x, float &y, float &theta, float &delX){
+	double project(double &x, double &y, double &theta, double &delX){
 		//takes a 2d co-ordinate and returns the value projected down one
 		//rotated and shifted axis. theta given in radians.
 
-		float x_dash = cos(theta) * (x + y*tan(theta) + delX);
+		double x_dash = cos(theta) * (x + y*tan(theta) + delX);
 		return x_dash;
 	}
 
@@ -321,13 +325,13 @@ public:
 
 	//Prints a simple (but awesome) histogram into the terminal. Each bin
 	//corresponds to a line in the terminal.
-	std::vector<float>* _xs;
-	float _xup;
-	float _xlow;
+	std::vector<double>* _xs;
+	double _xup;
+	double _xlow;
 	int _nbins;
 	std::vector<int> _ns;
 	Chandy* _handy;
-	float _binw; //bin width.
+	double _binw; //bin width.
 	int _nup;
 	int _nlow;
 	int _term_width;
@@ -341,8 +345,8 @@ public:
 
 
 	//constructor.
-	Cterm_hist(	std::vector<float>* xs, int nbins, float xlow = 0.2263,
-				float xup = 0.2263, int nlow = -1, int nup = -1){
+	Cterm_hist(	std::vector<double>* xs, int nbins, double xlow = 0.2263,
+				double xup = 0.2263, int nlow = -1, int nup = -1){
 		std::cout<<"Constructor of a term_hist"<<std::endl;
 		//initialize variables.
 		_xs = xs;
@@ -376,7 +380,7 @@ public:
 	void fill_ns(){
 		//cycles through xs, adding to the relevant element in ns.
 		//start by finding the index of the element.
-		for (	std::vector<float>::iterator xptr = _xs->begin();
+		for (	std::vector<double>::iterator xptr = _xs->begin();
 				xptr != _xs->end(); ++xptr){
 
 			//check not an extreme.

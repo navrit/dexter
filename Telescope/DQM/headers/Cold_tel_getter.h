@@ -26,7 +26,7 @@ class Cold_tel_getter{
 private:
 	Ctel_chunk * 			_tel;
 	CDQM_options * 			_ops;
-	float					_tcut;
+	double					_tcut;
 
 
 public:
@@ -44,7 +44,7 @@ public:
 	Cpix_hit* 				line_to_pixel(std::string, int&);
 	void 					set_npixels();
 	void 					reset_all_pixel_ids();
-	float					make_TOA(float, int); //adds prescribed errors.
+	double					make_TOA(double, int); //adds prescribed errors.
 };
 
 

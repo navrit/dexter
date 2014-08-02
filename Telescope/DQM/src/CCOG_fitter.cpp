@@ -30,7 +30,7 @@ void CCOG_fitter::initialize(){
 	_alpha_high = 2.6;
 	_nalphas = 20;
 
-	_alpha_step = (_alpha_high - _alpha_low)/(float)_nalphas;
+	_alpha_step = (_alpha_high - _alpha_low)/(double)_nalphas;
 
 	set_directories();
 }
@@ -49,7 +49,7 @@ void CCOG_fitter::execute(Ctel_chunk * tel){
 void CCOG_fitter::plot_method(){
 	fill_plot_data();
 	for (int i=0; i<_ops->nchips; i++){
-		float xs[_nalphas], ys[_nalphas], alphas[_nalphas], del_xs[_nalphas], del_ys[_nalphas], del_alphas[_nalphas];
+		double xs[_nalphas], ys[_nalphas], alphas[_nalphas], del_xs[_nalphas], del_ys[_nalphas], del_alphas[_nalphas];
 
 		for (int j=0; j<_nalphas; j++){
 			xs[j] = _xrs[j][i];
@@ -93,19 +93,19 @@ void CCOG_fitter::plot_method(){
 
 void CCOG_fitter::fill_plot_data(){
 	for (int i=0; i<_nalphas; i++){
-		float alpha = _alpha_low + i*_alpha_step;
+		double alpha = _alpha_low + i*_alpha_step;
 		set_cluster_positions(alpha);
 
-		std::vector<float> xrs; // Residuals by chip, for this alpha value.
-		std::vector<float> del_xrs;
-		std::vector<float> yrs;
-		std::vector<float> del_yrs; 
+		std::vector<double> xrs; // Residuals by chip, for this alpha value.
+		std::vector<double> del_xrs;
+		std::vector<double> yrs;
+		std::vector<double> del_yrs; 
 
 		Ctrack_plots track_plots(_ops);
 		track_plots.initialize();
 		track_plots.execute(_tel);
 
-		float r, delr;
+		double r, delr;
 		for (int i=0; i<_ops->nchips; i++){
 			track_plots.get_GaussResidual(0, i, r, delr);
 			xrs.push_back(r);
@@ -133,7 +133,7 @@ void CCOG_fitter::fill_plot_data(){
 
 //-----------------------------------------------------------------------------
 
-void CCOG_fitter::set_cluster_positions(float alpha){
+void CCOG_fitter::set_cluster_positions(double alpha){
 	for (int i=0; i<_ops->nchips; i++){
 		std::vector<Ccluster*>::iterator iclust;
 		for (iclust = _tel->get_chip(i)->get_clusters().begin() ; 
@@ -145,7 +145,7 @@ void CCOG_fitter::set_cluster_positions(float alpha){
 			(*iclust)->set_cluster_position(alpha);
 			_ops->DanCorrectPosn = OldDanCorrect;
 
-			float temp_lposn[4], temp_gposn[4];
+			double temp_lposn[4], temp_gposn[4];
 			(*iclust)->get_lposn(temp_lposn);
 			_tel->get_chip(i)->lposn_to_gposn(temp_lposn, temp_gposn);
 			(*iclust)->set_gposn(temp_gposn);

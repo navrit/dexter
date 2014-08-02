@@ -25,20 +25,20 @@ private:
 	CDQM_options * 				_ops;
 	int							_SampleNum;
 
-	float						_alpha_low;
-	float						_alpha_high;
+	double						_alpha_low;
+	double						_alpha_high;
 	int							_nalphas;
 
-	float						_alpha_step;
+	double						_alpha_step;
 
 	std::vector<TGraph*>	_gxs;
 	std::vector<TGraph*>	_gys;
 
-	std::vector<std::vector< float > > _xrs; // By alpha, then by chip.
-	std::vector<std::vector< float > > _del_xrs;
+	std::vector<std::vector< double > > _xrs; // By alpha, then by chip.
+	std::vector<std::vector< double > > _del_xrs;
 
-	std::vector<std::vector< float > > _yrs; // By alpha, then by chip.
-	std::vector<std::vector< float > > _del_yrs;
+	std::vector<std::vector< double > > _yrs; // By alpha, then by chip.
+	std::vector<std::vector< double > > _del_yrs;
 
 
 public:
@@ -52,7 +52,7 @@ public:
 	void plot_method();
 	void fill_plot_data();
 
-	void set_cluster_positions(float);
+	void set_cluster_positions(double);
 	void set_directories();
 	void save_figs();
 

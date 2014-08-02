@@ -41,36 +41,36 @@ public:
 
 
 	//Reference chip attributes.
-	float					_posn_xmin;
-	float					_posn_xmax;
-	float					_t_xmin;
-	float					_t_xmax;
+	double					_posn_xmin;
+	double					_posn_xmax;
+	double					_t_xmin;
+	double					_t_xmax;
 	int						_ref_chipID;
 
-	float					_clust_diff_xmin;
-	float					_clust_diff_xmax;
+	double					_clust_diff_xmin;
+	double					_clust_diff_xmax;
 
-	float					_pix_diff_xmin;
-	float					_pix_diff_xmax;
+	double					_pix_diff_xmin;
+	double					_pix_diff_xmax;
 
-	float					_clust_diff_tmin;
-	float					_clust_diff_tmax;
+	double					_clust_diff_tmin;
+	double					_clust_diff_tmax;
 
-	float					_pix_diff_tmin;
-	float					_pix_diff_tmax;
+	double					_pix_diff_tmin;
+	double					_pix_diff_tmax;
 
 	//General bounds on the plots.
-	float 					_xup_cut;
-	float 					_xlow_cut;
+	double 					_xup_cut;
+	double 					_xlow_cut;
 
-	float 					_yup_cut;
-	float 					_ylow_cut;
+	double 					_yup_cut;
+	double 					_ylow_cut;
 
-	float 					_tup_cut; //t cuts are on delt, which is t - ref_t.
-	float 					_tlow_cut;
+	double 					_tup_cut; //t cuts are on delt, which is t - ref_t.
+	double 					_tlow_cut;
 
-	float 					_tbgup_cut;
-	float 					_tbglow_cut;
+	double 					_tbgup_cut;
+	double 					_tbglow_cut;
 
 
 	//Plots themselves.
@@ -119,8 +119,8 @@ public:
 	void					appto_time_correlation(int, int);
 	void 					appto_correlations();
 
-	void 					correlation_fill(int ichip, float*, float*, float*, float*);
-	void 					background_fill(int ichip, float*, float*, float*, float*);
+	void 					correlation_fill(int ichip, double*, double*, double*, double*);
+	void 					background_fill(int ichip, double*, double*, double*, double*);
 	void 					appto_correlation_backgrounds();
 	void					appto_correlation_background(int);
 
@@ -129,13 +129,13 @@ public:
 
 
 	//Misc --------------------------------------------------------------------
-	bool					unsuitable_t(float, float, float);
-	bool					unsuitable_x(float, float, float);
-	bool					unsuitable_tbg(float, float, float);
+	bool					unsuitable_t(double, double, double);
+	bool					unsuitable_x(double, double, double);
+	bool					unsuitable_tbg(double, double, double);
 	bool					suitable_xt(Cpix_hit*, Cpix_hit*);
 	bool					suitable_yt(Cpix_hit*, Cpix_hit*);
-	int						get_iref_start(float, int);
-	int						get_xiref_start(float, int);
+	int						get_iref_start(double, int);
+	int						get_xiref_start(double, int);
 	void 					chip_SN_update(int, int, int);
 	void					find_chip_SNs();
 	void					align_by_differences();
@@ -163,38 +163,38 @@ public:
 	void 					set_nbins(int nbins){_nbins = nbins;}
 
 
-	float 					get_xup_cut() {return _xup_cut;}
-	void 					set_xup_cut_pixs(float x){_xup_cut = x*0.055;}
-	void 					set_xup_cut(float x){_xup_cut = x;}
+	double 					get_xup_cut() {return _xup_cut;}
+	void 					set_xup_cut_pixs(double x){_xup_cut = x*0.055;}
+	void 					set_xup_cut(double x){_xup_cut = x;}
 
-	float 					get_xlow_cut() {return _xlow_cut;}
-	void 					set_xlow_cut_pixs(float x){_xlow_cut = x*0.055;}
-	void 					set_xlow_cut(float x){_xlow_cut = x;}
-
-
-	float 					get_yup_cut() {return _yup_cut;}
-	void 					set_yup_cut_pixs(float y){_yup_cut = y*0.055;}
-	void 					set_yup_cut(float y){_yup_cut = y;}
-
-	float 					get_ylow_cut() {return _ylow_cut;}
-	void 					set_ylow_cut_pixs(float y){_ylow_cut = y*0.055;}
-	void 					set_ylow_cut(float y){_ylow_cut = y;}
+	double 					get_xlow_cut() {return _xlow_cut;}
+	void 					set_xlow_cut_pixs(double x){_xlow_cut = x*0.055;}
+	void 					set_xlow_cut(double x){_xlow_cut = x;}
 
 
-	float 					get_tup_cut() {return _tup_cut;}
-	void 					set_tup_cut(float t){_tup_cut = t;}
+	double 					get_yup_cut() {return _yup_cut;}
+	void 					set_yup_cut_pixs(double y){_yup_cut = y*0.055;}
+	void 					set_yup_cut(double y){_yup_cut = y;}
+
+	double 					get_ylow_cut() {return _ylow_cut;}
+	void 					set_ylow_cut_pixs(double y){_ylow_cut = y*0.055;}
+	void 					set_ylow_cut(double y){_ylow_cut = y;}
 
 
-	float 					get_tlow_cut() {return _tlow_cut;}
-	void 					set_tlow_cut(float t){_tlow_cut = t;}
+	double 					get_tup_cut() {return _tup_cut;}
+	void 					set_tup_cut(double t){_tup_cut = t;}
 
 
-	float 					get_tbgup_cut() {return _tbgup_cut;}
-	void 					set_tbgup_cut(float t){_tbgup_cut = t;}
+	double 					get_tlow_cut() {return _tlow_cut;}
+	void 					set_tlow_cut(double t){_tlow_cut = t;}
 
 
-	float 					get_tbglow_cut() {return _tbglow_cut;}
-	void 					set_tbglow_cut(float t){_tbglow_cut = t;}
+	double 					get_tbgup_cut() {return _tbgup_cut;}
+	void 					set_tbgup_cut(double t){_tbgup_cut = t;}
+
+
+	double 					get_tbglow_cut() {return _tbglow_cut;}
+	void 					set_tbglow_cut(double t){_tbglow_cut = t;}
 
 
 	std::vector<TH2F*> &	get_correlations(){return _correlationsGlobal;}

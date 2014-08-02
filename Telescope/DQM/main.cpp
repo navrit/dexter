@@ -16,20 +16,24 @@ int main(int argc, char *argv[]) {
 	gErrorIgnoreLevel = 5000;
 
 	//Create an instance of options.
-	CDQM_options* ops = new CDQM_options();
+	CDQM_options* ops;
+
 	std::cout<<"argc: "<<argc<<std::endl;
 	if (argc > 3) std::cout<<"Too many arguements passed! Ignoring them"<<std::endl;
     else if (argc == 2) {
-        ops->runNumber = atoi(argv[1]);
+        ops = new CDQM_options(atoi(argv[1]));
         std::cout<<"Setting default run number from command line as: "<<ops->runNumber<<std::endl;
     }
 
 	else if (argc == 3) {
-        ops->runNumber = atoi(argv[1]);
+		ops = new CDQM_options(atoi(argv[1]));
         ops->PSNumFix = atoi(argv[2]);
         std::cout<<"Setting default run number from command line as: "<<ops->runNumber<<std::endl;
         std::cout<<"Setting PSNumFix as: "<<ops->PSNumFix<<std::endl;
     }
+
+	else ops = new CDQM_options();
+
 
 	//Pass options to DQM and run.
 	CDQM my_DQM(ops);

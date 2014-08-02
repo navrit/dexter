@@ -15,30 +15,19 @@ int main(int argc, char *argv[]) {
     //Since the DQM is ran during runtime when using the GUI (as we like editing
     //the options as we go along), main just needs to open the GUI window.
 
-
+    int r;
+    if (argc == 2 || argc == 3) r = atoi(argv[1]);
+    else r = 0;
     QApplication a(argc, argv);
-    MainWindow w;
+    MainWindow w(r);
 
-    if (argc > 4) std::cout<<"Too many arguements passed! Ignoring them"<<std::endl;
+    if (argc > 3) std::cout<<"Too many arguements passed! Ignoring them"<<std::endl;
     else if (argc == 2) {
-        w._ops->runNumber = atoi(argv[1]);
-        w.ui->RunNumBox->setValue(w._ops->runNumber);
         std::cout<<"Setting default run number from command line as: "<<w._ops->runNumber<<std::endl;
     }
 
     else if (argc == 3) {
-        w._ops->runNumber = atoi(argv[1]);
-        w.ui->RunNumBox->setValue(w._ops->runNumber);
-        w._ops->PSNumFix = atoi(argv[2]);
-        std::cout<<"Setting default run number from command line as: "<<w._ops->runNumber<<std::endl;
-        std::cout<<"Setting PSNumFix as: "<<w._ops->PSNumFix<<std::endl;
-    }
-
-    else if (argc == 4) {
-        w._ops->runNumber = atoi(argv[1]);
-        w.ui->RunNumBox->setValue(w._ops->runNumber);
-        w._ops->PSNumFix = atoi(argv[2]);
-        w._ops->nPixHitCut = atoi(argv[3]);
+        w._ops->nPixHitCut = atoi(argv[2]);
         std::cout<<"Setting default run number from command line as: "<<w._ops->runNumber<<std::endl;
         std::cout<<"Setting PSNumFix as: "<<w._ops->PSNumFix<<std::endl;
         std::cout<<"Setting nPixHitCut as: "<<w._ops->nPixHitCut<<std::endl;

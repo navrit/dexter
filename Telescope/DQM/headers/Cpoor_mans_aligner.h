@@ -14,8 +14,8 @@ private:
 	int									_ref_chip;
 	int									_chip_loop_cut;
 
-	float								_ref_xbar;
-	float								_ref_ybar;
+	double								_ref_xbar;
+	double								_ref_ybar;
 
 
 
@@ -24,7 +24,7 @@ public:
 	Cpoor_mans_aligner (Ctel_chunk *, int, int chip_loop_cut = 10);
 	void								align_all();
 	void								align_chip(Cchip*);
-	void								find_av_positions(Cchip*, float&, float&);
+	void								find_av_positions(Cchip*, double&, double&);
 	void								find_ref_av_positions();
 };
 

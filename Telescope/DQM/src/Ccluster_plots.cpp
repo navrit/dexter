@@ -26,9 +26,9 @@ Ccluster_plots::Ccluster_plots(CDQM_options * ops){
 	_size_nbins = 15;
 
 	_z_distributions_initialized = false;
-	_z_low = -100;
-	_z_up = 500;
-	_z_nbins = 800;
+	_z_low = -10;
+	_z_up = 410;
+	_z_nbins = 500;
 
 	_hitmap_nbins = 256;
 	_ncluster_samples = 16;
@@ -60,6 +60,7 @@ void Ccluster_plots::initialize(){
 	init_z_dists();
 	init_hitmaps();
 	init_size_dists();
+	init_pixDeltaTs();
 	//init_sharers();
 }
 
@@ -79,6 +80,7 @@ void Ccluster_plots::execute(Ctel_chunk * tel){
 	appto_size_dists();
 	appto_z_dists();
 	appto_hitmaps();
+	appto_pixDeltaTs();
 	
 	//appto_sharers();
 
@@ -105,6 +107,28 @@ void Ccluster_plots::finalize(){
 
 
 
+//-----------------------------------------------------------------------------
+
+void Ccluster_plots::init_pixDeltaTs(){
+	std::stringstream ssChip;
+	std::string name = "Chip";
+	std::string name2;
+	std::string title1 = "PixDeltaTs; delta t (26/16 ns); N";
+	std::string title2 = "PixToT_vs_Pix_minus_CulsterTOA; ToT; delta t (26/16 ns);";
+	for (int ichip = 0; ichip<_ops->nchips; ++ichip){
+		ssChip<<ichip;
+		name2 = name + ssChip.str();
+		_pixDeltaTs.push_back(new TH1F(name2.c_str(), title1.c_str(), 300, -30, 120));
+		_pixDeltaTsVsCharge.push_back(new TH2F(name2.c_str(), title2.c_str(), 300, 0, 150, 300, -30, 120));
+	}
+
+	name2 = name + "ChipAll";
+	_pixDeltaTs.push_back(new TH1F(name2.c_str(), title1.c_str(), 300, -30, 120));
+	_pixDeltaTsVsCharge.push_back(new TH2F(name2.c_str(), title2.c_str(), 300, 0, 150, 300, -30, 120));
+}
+
+
+
 
 
 
@@ -119,28 +143,28 @@ void Ccluster_plots::init_hitmaps(){
 	for (int ichip = 0; ichip<_ops->nchips; ++ichip){
 
 		//Construct the empty histogram.
-		int nbins = 256;
+		int nbins = 400;
 		std::stringstream ss_chipid; 
 		ss_chipid << ichip;
 		std::string name = "Chip_" + ss_chipid.str();
 		std::string title = "Clusts_Hitmaps_Local" + ss_chipid.str() + "; x (/pixels); y (/pixels)";
-		TH2F* h = new TH2F(name.c_str(), title.c_str(), _hitmap_nbins, 0, nbins,
-													   _hitmap_nbins, 0, nbins);
+		TH2F* h = new TH2F(name.c_str(), title.c_str(), _hitmap_nbins, 0, 256,
+													   _hitmap_nbins, 0, 256);
 		_hitmapsLocal.push_back(h);
 
 		title = "Clusts_Hitmaps_Global" + ss_chipid.str() + "; x (/mm); y (/mm)";
-		h = new TH2F(name.c_str(), title.c_str(), _hitmap_nbins, 0, nbins*0.055,
-													   _hitmap_nbins, 0, nbins*0.055);
+		h = new TH2F(name.c_str(), title.c_str(), _hitmap_nbins, -3, 17.08,
+													   _hitmap_nbins, -3, 17.08);
 
 		_hitmapsGlobal.push_back(h);
 		TH1F* hp;
 		title = "Clusts_Global_XDist" + ss_chipid.str() + "; x (/mm); N";
-		hp = new TH1F(name.c_str(), title.c_str(), _hitmap_nbins, 0, nbins*0.055);
+		hp = new TH1F(name.c_str(), title.c_str(), _hitmap_nbins, -3, 17.08);
 
 		_hitmapsGlobalXDist.push_back(hp);
 
 		title = "Clusts_Global_YDist" + ss_chipid.str() + "; y (/mm); N";
-		hp = new TH1F(name.c_str(), title.c_str(), _hitmap_nbins, 0, nbins*0.055);
+		hp = new TH1F(name.c_str(), title.c_str(), _hitmap_nbins, -3, 17.08);
 
 		_hitmapsGlobalYDist.push_back(hp);
 
@@ -351,6 +375,48 @@ void Ccluster_plots::appto_size_dists(){
 
 //-----------------------------------------------------------------------------
 
+void Ccluster_plots::appto_pixDeltaTs(){
+	int chip;
+	//Cycle over the chips.
+	std::vector<Cchip*>::iterator ichip;
+	for (ichip = _tel->get_chips().begin();
+		 ichip != _tel->get_chips().end(); ++ichip){
+
+		chip = (*ichip)->get_ID();
+		//Fill (readymade) histograms.
+		std::vector<Ccluster*>::iterator iclust;
+		for (iclust = (*ichip)->get_clusters().begin();
+			 iclust != (*ichip)->get_clusters().end(); iclust++){
+
+			std::vector<Cpix_hit*>::iterator ipix;
+			for (ipix = (*iclust)->get_pix_hits().begin();
+				 ipix != (*iclust)->get_pix_hits().end(); ipix++){
+
+				double deltaT = (*ipix)->get_TOA() - (*iclust)->get_TOA();
+				if ((*iclust)->earliestHit() != (*ipix)) {
+					_pixDeltaTs[chip]->Fill(deltaT);
+					_pixDeltaTsVsCharge[chip]->Fill((*ipix)->get_ADC(), deltaT);
+
+					_pixDeltaTs[_pixDeltaTs.size()-1]->Fill(deltaT);
+					_pixDeltaTsVsCharge[_pixDeltaTsVsCharge.size()-1]->Fill((*ipix)->get_ADC(), deltaT);
+				}
+			}
+
+		}
+
+		if ((*ichip)->get_ID() == _chip_loop_cut) break;
+	}
+}
+
+
+
+
+
+
+
+
+//-----------------------------------------------------------------------------
+
 void Ccluster_plots::init_t_dists(){
 
 	//Cycle over the chips.
@@ -472,11 +538,11 @@ void Ccluster_plots::appto_sharers(){
 				
 				_PredictedLeftShare[(*ichip)->get_ID()]->Fill((*iclust)->pred_left_frac((*iclust)->get_row(), (*iclust)->get_column()));
 				_PredictedRightShare[(*ichip)->get_ID()]->Fill((*iclust)->pred_right_frac((*iclust)->get_row(), (*iclust)->get_column()));
-				_ActualRightShare[(*ichip)->get_ID()]->Fill(pix_right->get_ToT()/(float)(*iclust)->get_ToT());
-				_ActualLeftShare[(*ichip)->get_ID()]->Fill(pix_left->get_ToT()/(float)(*iclust)->get_ToT());
+				_ActualRightShare[(*ichip)->get_ID()]->Fill(pix_right->get_ToT()/(double)(*iclust)->get_ToT());
+				_ActualLeftShare[(*ichip)->get_ID()]->Fill(pix_left->get_ToT()/(double)(*iclust)->get_ToT());
 
-				_DiffLeftShare[(*ichip)->get_ID()]->Fill(pix_left->get_ToT()/(float)(*iclust)->get_ToT() - (*iclust)->pred_left_frac((*iclust)->get_row(), (*iclust)->get_column()));
-				_DiffRightShare[(*ichip)->get_ID()]->Fill(pix_right->get_ToT()/(float)(*iclust)->get_ToT() - (*iclust)->pred_right_frac((*iclust)->get_row(), (*iclust)->get_column()));
+				_DiffLeftShare[(*ichip)->get_ID()]->Fill(pix_left->get_ToT()/(double)(*iclust)->get_ToT() - (*iclust)->pred_left_frac((*iclust)->get_row(), (*iclust)->get_column()));
+				_DiffRightShare[(*ichip)->get_ID()]->Fill(pix_right->get_ToT()/(double)(*iclust)->get_ToT() - (*iclust)->pred_right_frac((*iclust)->get_row(), (*iclust)->get_column()));
 			}
 		}
 
@@ -506,12 +572,12 @@ void Ccluster_plots::init_z_dists(){
 
 	title = "Cluster_ZvsX_Dist; X (/mm); Z (/mm)";
 	name = "Cluster_ZvsX_Dist";
-	_zVsX_distribution = new TH2F(name, title, 5000, _z_low, _z_up, 500, -2.0, 16.0);
+	_zVsX_distribution = new TH2F(name, title, 4000, _z_low, _z_up, 400, -3.0, 17.08);
 
 
 	title = "Cluster_ZvsY_Dist; Y (/mm); Z (/mm)";
 	name = "Cluster_ZvsY_Dist";
-	_zVsY_distribution = new TH2F(name, title, 5000, _z_low, _z_up, 500, -2.0, 16.0);	
+	_zVsY_distribution = new TH2F(name, title, 4000, _z_low, _z_up, 400, -3.0, 17.08);	
 }
 
 
@@ -639,10 +705,10 @@ void Ccluster_plots::make_cluster_x_orders(){
 
 
 		//Get xs and ys.
-		float xs[N];
-		float ys[N];
+		double xs[N];
+		double ys[N];
 		for (int iclust = 0; iclust < N; iclust++){
-			ys[iclust] = (float)iclust;
+			ys[iclust] = (double)iclust;
 			xs[iclust] = clusters[iclust]->get_gx();
 		}
 
@@ -681,10 +747,10 @@ void Ccluster_plots::make_cluster_t_orders(){
 
 
 		//Get xs and ys.
-		float xs[N];
-		float ys[N];
+		double xs[N];
+		double ys[N];
 		for (int iclust = 0; iclust < N; iclust++){
-			xs[iclust] = (float)iclust;
+			xs[iclust] = (double)iclust;
 			ys[iclust] = clusters[iclust]->get_TOA();
 		}
 
@@ -827,6 +893,18 @@ void Ccluster_plots::save_figs(){
 		_cluster_samples[iplot]->Write("", TObject::kWriteDelete);
 	}
 
+	name = temp_name + "pixDeltaTs";
+	save_file->cd(name.c_str());
+	for (unsigned int iplot = 0; iplot<_pixDeltaTs.size(); iplot++){
+		_pixDeltaTs[iplot]->Write("", TObject::kWriteDelete);
+	}
+
+	name = temp_name + "pixDeltaTsVsCharge";
+	save_file->cd(name.c_str());
+	for (unsigned int iplot = 0; iplot<_pixDeltaTsVsCharge.size(); iplot++){
+		_pixDeltaTsVsCharge[iplot]->Write("", TObject::kWriteDelete);
+	}
+
 
 	// name = temp_name + "DCorrectChis";
 	// save_file->cd(name.c_str());
@@ -922,6 +1000,8 @@ void Ccluster_plots::set_directories(){
 	instance_direc->mkdir("Global_YDist");
 	instance_direc->mkdir("Local_hitmaps");
 	instance_direc->mkdir("clusteringTimeWindow_sample_hitmaps");
+	instance_direc->mkdir("pixDeltaTs");
+	instance_direc->mkdir("pixDeltaTsVsCharge");
 
 	// instance_direc->mkdir("DCorrectChis");
 	// instance_direc->mkdir("PredictedLeftShare");
@@ -995,6 +1075,11 @@ Ccluster_plots::~Ccluster_plots(){
 	for (unsigned int iplot = 0; iplot<_sampleHitmaps.size(); iplot++)
 		if (_sampleHitmaps[iplot] != NULL) delete _sampleHitmaps[iplot];
 
+	for (unsigned int iplot = 0; iplot<_pixDeltaTsVsCharge.size(); iplot++)
+		if (_pixDeltaTsVsCharge[iplot] != NULL) delete _pixDeltaTsVsCharge[iplot];
+
+	for (unsigned int iplot = 0; iplot<_pixDeltaTs.size(); iplot++)
+		if (_pixDeltaTs[iplot] != NULL) delete _pixDeltaTs[iplot];
 
 }
 

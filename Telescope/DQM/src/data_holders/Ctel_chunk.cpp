@@ -4,6 +4,7 @@
 //-----------------------------------------------------------------------------
 
 Ctel_chunk::Ctel_chunk(CDQM_options * ops){
+	isLastChunk = false;
 	_ops = ops;
 	_tzero_set = false;
 	std::cout<<"Constructor of a telescope."<<std::endl;
@@ -23,7 +24,7 @@ Ctel_chunk::Ctel_chunk(CDQM_options * ops){
 
 //-----------------------------------------------------------------------------
 
-void Ctel_chunk::rm_all_hot_pixels(float sigma_cut){
+void Ctel_chunk::rm_all_hot_pixels(double sigma_cut){
 	//cycle over chips.
 	std::cout<<"\nDisabling hot pixels."<<std::endl;
 	std::vector<Cchip*>::iterator ichip;
@@ -80,7 +81,7 @@ int Ctel_chunk::chipname_to_id(std::string chipname){
 void Ctel_chunk::time_order_pixels_comb(){
 	//Sorts the cluster TOA's using the comb sorting algorithm (which performs
 	//well if data is already partially sorted, and quicker than bubble).
-	std::cout<<"Time ordering."<<std::endl;
+	std::cout<<"\n\nTime ordering..."<<std::endl;
 
 
 	//Cycle over the chips.
@@ -219,14 +220,14 @@ void Ctel_chunk::load_alignments(std::string save_file_name) {
 	while (!myfile.eof() && ichip<_ops->nchips){
 		getline (myfile, line);
 		std::vector<std::string> line_bits = Chandy::split_line(line, 1);
-		float temp_gposn[4] = {(float)atof(line_bits[1].c_str()),
-							   (float)atof(line_bits[2].c_str()),
-							   (float)atof(line_bits[3].c_str()), 
-							   (float)atof(line_bits[7].c_str())};
+		double temp_gposn[4] = {(double)atof(line_bits[1].c_str()),
+							    (double)atof(line_bits[2].c_str()),
+							    (double)atof(line_bits[3].c_str()),
+							    0.0};
 
-		float temp_orientation[3] = {(float)atof(line_bits[4].c_str()), 
-									 (float)atof(line_bits[5].c_str()), 
-									 (float)atof(line_bits[6].c_str())};
+		double temp_orientation[3] = {(double)atof(line_bits[4].c_str()), 
+									  (double)atof(line_bits[5].c_str()),
+									  (double)atof(line_bits[6].c_str())};
 
 		
 		get_chips()[ichip]->set_orientation(temp_orientation);
@@ -281,26 +282,26 @@ void Ctel_chunk::dump_tel(bool appending, std::string save_file_name, bool check
 //-----------------------------------------------------------------------------
 
 void Ctel_chunk::dump_chips(std::string s, bool check){
-
+/*
 	std::cout<<"Dumping chips."<<std::endl;
 	TNtuple * ntuple = new TNtuple("all_chips","all_chips","ID:gx:gy:gz:gt:ox:oy:rotn:npix_hits:nclusters:pixel_width:pixel_height:chip_width:chip_height:corner1gx:corner1gy:corner1gz:corner2gx:corner2gy:corner2gz:corner3gx:corner3gy:corner3gz");
 	
-	float corner1g[4], corner2g[4], corner3g[4];
+	double corner1g[4], corner2g[4], corner3g[4];
 	//Fill Ntuple.
 	std::vector<Cchip*>::iterator i;
 	for (i = get_chips().begin(); i != get_chips().end(); ++i){
-		float corner1l[4] = {0.0, (float)(*i)->get_size_pixs()[1], 0.0, 0.0};
-		float corner2l[4] = {(float)(*i)->get_size_pixs()[0], (float)(*i)->get_size_pixs()[1], 0.0, 0.0};
-		float corner3l[4] = {(float)(*i)->get_size_pixs()[0], 0.0, 0.0, 0.0};
+		double corner1l[4] = {0.0, (double)(*i)->get_size_pixs()[1], 0.0, 0.0};
+		double corner2l[4] = {(double)(*i)->get_size_pixs()[0], (double)(*i)->get_size_pixs()[1], 0.0, 0.0};
+		double corner3l[4] = {(double)(*i)->get_size_pixs()[0], 0.0, 0.0, 0.0};
 
 		(*i)->lposn_to_gposn(corner1l, corner1g);
 		(*i)->lposn_to_gposn(corner2l, corner2g);
 		(*i)->lposn_to_gposn(corner3l, corner3g);
 
 
-		float x[23] = {(float)(*i)->get_ID(), (*i)->get_gx(), (*i)->get_gy(), (*i)->get_gz(),
-			(*i)->get_gt(), (*i)->get_ox(), (*i)->get_oy(), (*i)->get_rotn(), (float)(*i)->get_npix_hits(),
-			(float)(*i)->get_nclusters(), (*i)->get_pixel_width(), (*i)->get_pixel_height(), 
+		double x[23] = {(double)(*i)->get_ID(), (*i)->get_gx(), (*i)->get_gy(), (*i)->get_gz(),
+			(*i)->get_gt(), (*i)->get_ox(), (*i)->get_oy(), (*i)->get_rotn(), (double)(*i)->get_npix_hits(),
+			(double)(*i)->get_nclusters(), (*i)->get_pixel_width(), (*i)->get_pixel_height(), 
 			(*i)->get_chip_width(), (*i)->get_chip_height(), corner1g[0], corner1g[1], corner1g[2], 
 			corner2g[0], corner2g[1], corner2g[2], corner3g[0], corner3g[1], corner3g[2]};
 
@@ -324,7 +325,7 @@ void Ctel_chunk::dump_chips(std::string s, bool check){
 		TNtuple * ntuple = (TNtuple*)save_file->Get("all_chips");
 
 
-		float ID, gx, gy, gz, gt, ox, oy, rotn, npix_hits, nclusters, pix_w, pix_h, chip_w, chip_h;
+		double ID, gx, gy, gz, gt, ox, oy, rotn, npix_hits, nclusters, pix_w, pix_h, chip_w, chip_h;
 		ntuple->SetBranchAddress("ID", &ID);
 		ntuple->SetBranchAddress("gx", &gx);
 		ntuple->SetBranchAddress("gy", &gy);
@@ -365,6 +366,7 @@ void Ctel_chunk::dump_chips(std::string s, bool check){
 
 		save_file->Close();
 	}
+	*/
 }
 
 
@@ -396,7 +398,7 @@ void Ctel_chunk::dump_clusters(bool appending, std::string s, bool check){
 			}
 
 			//Fill tuple.
-			float x[18] = {(*ic)->get_ID(), (*ic)->get_chipID(), (*ic)->get_column(), (*ic)->get_row(), (*ic)->get_TOA(),
+			double x[18] = {(*ic)->get_ID(), (*ic)->get_chipID(), (*ic)->get_column(), (*ic)->get_row(), (*ic)->get_TOA(),
 				 (*ic)->get_gx(), (*ic)->get_gy(), (*ic)->get_gz(), (*ic)->get_gt(), (*ic)->get_ADC(),
 				 (*ic)->get_size(),(*ic)->get_tracked(), pixIDs[0], pixIDs[1], pixIDs[2], pixIDs[3], pixIDs[4], pixIDs[5]};
 			ntuple->Fill(x);
@@ -424,8 +426,8 @@ void Ctel_chunk::dump_clusters(bool appending, std::string s, bool check){
 
 
 		//Temp variables.
-		float ID, chipID, column, row, TOA, gx, gy, gz, gt, ADC, size, tracked;
-		float check_pixIDs[6];
+		double ID, chipID, column, row, TOA, gx, gy, gz, gt, ADC, size, tracked;
+		double check_pixIDs[6];
 
 
 		//Assign variables.
@@ -516,7 +518,7 @@ void Ctel_chunk::dump_tracks(bool appending, std::string s, bool check){
 		//Fill clust IDs (per chip; -1 if not found).
 		for (int ichip=0; ichip<10; ichip++) clustIDs[ichip] = (*it)->get_clustID_for_chipID(ichip);
 		//Fill
-		float x[16] = {(*it)->get_ID(), (*it)->get_mx(), (*it)->get_cx(), (*it)->get_my(), (*it)->get_cy(),
+		double x[16] = {(*it)->get_ID(), (*it)->get_mx(), (*it)->get_cx(), (*it)->get_my(), (*it)->get_cy(),
 			 (*it)->get_gTOA(), clustIDs[0], clustIDs[1], clustIDs[2], clustIDs[3], clustIDs[4], clustIDs[5],
 			 clustIDs[6], clustIDs[7], clustIDs[8], clustIDs[9]}; 
 		ntuple->Fill(x);
@@ -542,8 +544,8 @@ void Ctel_chunk::dump_tracks(bool appending, std::string s, bool check){
 
 
 		//Temp variables.
-		float ID, mx, cx, my, cy, gTOA;
-		float check_clustIDs[10];
+		double ID, mx, cx, my, cy, gTOA;
+		double check_clustIDs[10];
 
 
 		//Assign variables.

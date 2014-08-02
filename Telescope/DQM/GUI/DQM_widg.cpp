@@ -1,9 +1,11 @@
 #include "DQM_widg.h"
+#include <QPrintDialog>
+#include "TImage.h"
 
 
 //_____________________________________________________________________________
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
+MainWindow::MainWindow(int r) : QMainWindow(0),
     ui(new Ui::MainWindow){
 	this->setStyleSheet("QWidget{font-size:13px}");
 
@@ -32,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 
     //The GUI has an instance of CDQM_options which is always editable, and
     //only deleted upon closing the GUI.
-    _ops = new CDQM_options();
+    _ops = new CDQM_options(r);
 
     set_ops_tab();
 
@@ -52,7 +54,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
         timer->start(6000);
     }
 	ui->UpdatePauseBox->setEnabled(false);
-	
+    ui->init_but->setFocus();
+	ui->init_but->setAutoDefault(true);
+    ui->init_but->setDefault(true);
 }
 
 
@@ -73,7 +77,8 @@ void MainWindow::timer_update(){
 void MainWindow::on_init_but_clicked() {
     //This button is also used as the restart button - so if DQM has already
     //ran, delete the current instance.
-
+	QApplication::setOverrideCursor(Qt::WaitCursor);
+	QApplication::processEvents();
     ui->UpdatePauseBox->setChecked(true);
     if (_DQM_ran) {
         _DQM->finalize();
@@ -103,14 +108,15 @@ void MainWindow::on_init_but_clicked() {
     ui->SamplingInfoBox->setEnabled(true);
     ui->plot_ops_box->setEnabled(true);
     ui->init_but->setText(QString("Restart"));
-    ui->init_but->setEnabled(false);
-    ui->pixel_tabs->setCurrentIndex(0);
-    ui->DQM_all_tabs->setCurrentIndex(1);
+    if (_ops->algorithms_contains(12)) ui->DQM_all_tabs->setCurrentIndex(3);
+    else if (_ops->algorithms_contains(6)) ui->DQM_all_tabs->setCurrentIndex(2);
+    else ui->DQM_all_tabs->setCurrentIndex(1);
     _nsample++;
     std::stringstream ss;
     ss << _nsample;
     ui->SampleNumLab->setText(QString(ss.str().c_str()));
     ui->SampleTimeLab->setText(_DQMclock->currentDateTime().toString());
+    QApplication::restoreOverrideCursor();
 }
 
 
@@ -259,6 +265,7 @@ void MainWindow::fill_plot_tabs() {
     empty_tab(ui->TResidualsTab);
     empty_tab(ui->TResidualsTab);
     empty_tab(ui->GeneralTrackTab);
+    empty_tab(ui->eventViewTab);
 
     _ADC_distribution_hists.clear();
     _temporal_differences_hists.clear();
@@ -310,7 +317,7 @@ void MainWindow::fill_plot_tabs() {
         fill_ADC_Distributions(4);
         fill_z_distribution(1);
         fill_hitmaps(1);
-        fill_hitmaps(5);
+        fill_hitmaps(6);
         fill_hitmapsProj(0);
         fill_hitmapsProj(1);
         fill_hitmapsProj(2);
@@ -333,6 +340,8 @@ void MainWindow::fill_plot_tabs() {
     }
     if (_ops->algorithms_contains(9)) fill_temporal_differences(1);
 
+    if (_ops->algorithms_contains(11)) fill_event_view();
+
     if (_ops->algorithms_contains(12)){
         fill_generalTrackPlots();
         fill_residuals(0);
@@ -340,6 +349,7 @@ void MainWindow::fill_plot_tabs() {
         fill_residuals(2);
         fill_hitmaps(2);
         fill_hitmaps(3);
+        //ui->init_but->setEnabled(false);
     }
 
     if (_ops->algorithms_contains(15)) {
@@ -348,6 +358,85 @@ void MainWindow::fill_plot_tabs() {
 
     //fill_chip_views();
 }
+
+
+
+
+
+//_____________________________________________________________________________
+
+void MainWindow::fill_event_view() {
+    QGridLayout * l = new QGridLayout();
+    ui->eventViewTab->setLayout(l);
+    
+    twoDhist_widget * xz_prof = new twoDhist_widget(_DQM->_cluster_plots->_zVsX_distribution, 0, _sel_Q, _sel_ichip, _sel_widg,
+               _sel_twoDhist, ui->plot_ops_statsbox,  ui->clicked_x_lab,
+               ui->clicked_y_lab, ui->clicked_z_lab, ui->logx_chbox, ui->logy_chbox,
+               ui->logz_chbox, ui->plot_name_box, ui->fit_result_box, ui->clicked_pos_lab, NULL);
+
+
+
+    twoDhist_widget * yz_prof = new twoDhist_widget(_DQM->_cluster_plots->_zVsY_distribution, 0, _sel_Q, _sel_ichip, _sel_widg,
+           _sel_twoDhist, ui->plot_ops_statsbox,  ui->clicked_x_lab,
+           ui->clicked_y_lab, ui->clicked_z_lab, ui->logx_chbox, ui->logy_chbox,
+           ui->logz_chbox, ui->plot_name_box, ui->fit_result_box, ui->clicked_pos_lab, NULL);
+
+    xz_prof->_Qh->xAxis->setLabel(QString("z (mm)"));
+    xz_prof->_Qh->yAxis->setLabel(QString("x (mm)"));
+    yz_prof->_Qh->xAxis->setLabel(QString("z (mm)"));
+    yz_prof->_Qh->yAxis->setLabel(QString("y (mm)"));
+
+
+    xz_prof->_colormap->colorScale()->setDataScaleType(QCPAxis::stLogarithmic);
+	xz_prof->_logged_z = true;
+
+	yz_prof->_colormap->colorScale()->setDataScaleType(QCPAxis::stLogarithmic);
+	yz_prof->_logged_z = true;
+
+    for (int i=0; i<_ops->nchips; i++) {
+    	addChipBox(yz_prof, i, 0);
+    	addChipBox(xz_prof, i, 1);
+    }
+
+    for (int i=0; i<std::min(_ops->eventTrackN, int(_DQM->_tel->_tracks.size())); i++) {
+    	QVector<double> xs(2), ys(2), zs(2);
+
+    	zs[0] = _DQM->_tel->get_chip(0)->get_gz();
+    	zs[1] = _DQM->_tel->get_chip(_ops->nchips-1)->get_gz();
+
+    	xs[0] = _DQM->_tel->_tracks[i]->gx(zs[0]);
+    	xs[1] = _DQM->_tel->_tracks[i]->gx(zs[1]);
+
+    	ys[0] = _DQM->_tel->_tracks[i]->gy(zs[0]);
+    	ys[1] = _DQM->_tel->_tracks[i]->gy(zs[1]);
+
+		double lw = 0.2;
+		xz_prof->_Qh->addGraph();
+		xz_prof->_Qh->graph()->setData(zs, xs);
+		QPen p(Qt::SolidLine);
+		p.setColor(QColor(255,255,255,150));
+		p.setWidthF(lw);
+		xz_prof->_Qh->graph()->setPen(p);
+
+
+		yz_prof->_Qh->addGraph();
+		yz_prof->_Qh->graph()->setData(zs, ys);
+		yz_prof->_Qh->graph()->setPen(p);
+		if (i==_DQM->_tel->_tracks.size()) break;
+    }
+
+
+    l->addWidget(xz_prof, 0, 0);
+    l->addWidget(yz_prof, 1, 0);
+
+
+    // Set a screenshot for saving.
+    QPixmap pixmap(ui->eventViewTab->size());
+	ui->eventViewTab->render(&pixmap, QPoint(), QRegion(0, 0, ui->eventViewTab->size().width(), ui->eventViewTab->size().height()));
+	pixmap.save("TempDQMEventFile.jpg");
+	_DQM->_track_maker->_eventViewPic = TImage::Open("TempDQMEventFile.jpg");
+}
+
 
 
 
@@ -589,8 +678,7 @@ void MainWindow::fill_hitmaps(int kind){
     else if (kind ==1) ui->ClustHitmapsLocalXY->setLayout(hitmap_layout);
     else if (kind ==2) ui->AssociatedHitmapsTab->setLayout(hitmap_layout);
     else if (kind ==3) ui->NonAssociatedHitmapsTab->setLayout(hitmap_layout);
-    else if (kind ==5) ui->ClustHitmapsGlobalXY->setLayout(hitmap_layout);
-    else std::cout<<"wtf"<<std::endl;
+    else if (kind ==6) ui->ClustHitmapsGlobalXY->setLayout(hitmap_layout);
 
 
     //Esthetics.
@@ -733,6 +821,11 @@ void MainWindow::fill_z_distribution(int kind){
                ui->clicked_y_lab, ui->clicked_z_lab, ui->logx_chbox, ui->logy_chbox,
                ui->logz_chbox, ui->plot_name_box, ui->fit_result_box, ui->clicked_pos_lab, NULL);
 
+        xz_prof->_Qh->xAxis->setLabel(QString("z (mm)"));
+		xz_prof->_Qh->yAxis->setLabel(QString("x (mm)"));
+		yz_prof->_Qh->xAxis->setLabel(QString("z (mm)"));
+		yz_prof->_Qh->yAxis->setLabel(QString("y (mm)"));
+
         //Auto set log scale.
         xz_prof->_colormap->colorScale()->setDataScaleType(QCPAxis::stLogarithmic);
         xz_prof->_logged_z = true;
@@ -750,6 +843,11 @@ void MainWindow::fill_z_distribution(int kind){
 
         z_layout->addWidget(xz_prof, 1, 0);
         z_layout->addWidget(yz_prof, 2, 0);
+
+        for (int i=0; i<_ops->nchips; i++) {
+        	addChipBox(yz_prof, i, 0);
+        	addChipBox(xz_prof, i, 1);
+        }
     }
 
     else z_layout->addWidget(z_widget);
@@ -825,14 +923,25 @@ void MainWindow::fill_generalTrackPlots(){
 
     twoDhist_widget * hitmap = get_hitmap_widget(-1, 4);
     l->addWidget(hitmap, 1, 0);
-    hitmap->toggle_axes_labels();
+    //hitmap->toggle_axes_labels();
 
-    hist_widget * sizes = get_track_size_widget();
-    l->addWidget(sizes, 1, 1);
+    hist_widget * sizes = get_track_size_widget(0);
+    l->addWidget(sizes, 0, 0);
     sizes->toggle_axes_labels();
 
-    sizes->_Qh->graph()->setBrush(QBrush(QColor(0,180,0,255))); //green fill.
+    hist_widget * nVolDist = get_track_size_widget(1);
+    l->addWidget(nVolDist, 0, 1);
+    nVolDist->toggle_axes_labels();
+
+    twoDhist_widget * angles = get_hitmap_widget(-1, 5);
+    l->addWidget(angles, 1, 1);
+    //angles->toggle_axes_labels();
+
+    sizes->_Qh->graph()->setBrush(QBrush(QColor(0,160,0,180))); //green fill.
     sizes->_Qh->graph()->setPen(QPen(Qt::black));
+
+    nVolDist->_Qh->graph()->setBrush(QBrush(QColor(0,160,0,180))); //green fill.
+    nVolDist->_Qh->graph()->setPen(QPen(Qt::black));
 
 
 
@@ -921,7 +1030,7 @@ void MainWindow::fill_residuals(int dir){
     //Cycle over chips.
     for (int ichip = 0; ichip<_nchips; ichip++){
         hist_widget * residual_widget = get_residual(ichip, dir);
-        residual_widget->_Qh->graph()->setBrush(QBrush(QColor(0,180,0,255))); //green fill.
+        residual_widget->_Qh->graph()->setBrush(QBrush(QColor(0,160,0,180))); //green fill.
         residual_widget->_Qh->graph()->setPen(QPen(Qt::black));
         if (ui->FitResidualsBox->isChecked()) residual_widget->fit_gaussian(Qt::blue);
         residuals_layout->addWidget(residual_widget,(int)ichip/3.0, ichip%3);
@@ -1173,12 +1282,12 @@ hist_widget * MainWindow::get_ADC_widget(int ichip, int kind) {
              ui->fit_result_box, ui->clicked_pos_lab, ref_h);
 
     //h_widg->add_mean_line();
-    if (kind == -1 && ui->PixFitLandauBox->isChecked()) h_widg->fit_landau(Qt::red);
+    //if (kind == -1 && ui->PixFitLandauBox->isChecked()) h_widg->fit_landau(Qt::red);
     if (kind == 0 && ui->ClustFitLandauBox->isChecked()) h_widg->fit_landau(Qt::blue);
-    if (kind == 1 && ui->ClustFitLandauBox->isChecked()) h_widg->fit_landau(Qt::blue);
-    if (kind == 2 && ui->ClustFitLandauBox->isChecked()) h_widg->fit_landau(Qt::blue);
-    if (kind == 3 && ui->ClustFitLandauBox->isChecked()) h_widg->fit_landau(Qt::blue);
-    if (kind == 4 && ui->ClustFitLandauBox->isChecked()) h_widg->fit_landau(Qt::blue);
+//    if (kind == 1 && ui->ClustFitLandauBox->isChecked()) h_widg->fit_landau(Qt::blue);
+//    if (kind == 2 && ui->ClustFitLandauBox->isChecked()) h_widg->fit_landau(Qt::blue);
+//    if (kind == 3 && ui->ClustFitLandauBox->isChecked()) h_widg->fit_landau(Qt::blue);
+//    if (kind == 4 && ui->ClustFitLandauBox->isChecked()) h_widg->fit_landau(Qt::blue);
 
     h_widg->_x_label = QString("ToT");
     h_widg->_y_label = QString("N");
@@ -1204,17 +1313,24 @@ hist_widget * MainWindow::get_ADC_widget(int ichip, int kind) {
 
 //_____________________________________________________________________________
 
-hist_widget * MainWindow::get_track_size_widget() {
+hist_widget * MainWindow::get_track_size_widget(int kind) {
     //Returns the a hist_widget* containing a QCustomPlot version of an ADC
     //distribution, which was originally a TH1F, for the chip ID ichip.
 
 
     //Get the TH1F (naming convention in plot classes must be consistent).
     std::stringstream ss;
-    std::string direc = "Track_plots/size_dist";
+    std::string direc;
+    if (kind ==0) direc = "Track_plots/size_dist";
+    else if (kind == 1) direc = "nClustersPerVol";
+    else std::cout<<"Unknown track plot directory."<<std::endl;
+
     TH1F* h;
     if (!_liveVsSaved) h = (TH1F*) _tfile->Get(direc.c_str());
-    else h=_DQM->_track_plots->_size_dist;
+    else {
+    	if (kind ==0) h=_DQM->_track_plots->_size_dist;
+    	else if (kind ==1) h = _DQM->_track_maker->h_nClustersPerVol;
+    }
 
     int ichip = 0;
 
@@ -1223,10 +1339,9 @@ hist_widget * MainWindow::get_track_size_widget() {
              ui->logx_chbox, ui->logy_chbox, ui->logz_chbox, ui->plot_name_box,
              ui->fit_result_box, ui->clicked_pos_lab);
 
-    h_widg->_x_label = QString("Track size");
+    if (kind == 0) h_widg->_x_label = QString("Track size");
+    else if (kind == 1) h_widg->_x_label = QString("nClustersPerTrackVolume");
     h_widg->_y_label = QString("N");
-
-    _clust_size_dist_hists.push_back(h_widg);
 
     return h_widg;
 }
@@ -1561,7 +1676,7 @@ twoDhist_widget * MainWindow::get_hitmap_widget(int ichip, int kind) {
     //Returns the a twoD_widget* containing a QCustomPlot version of an correlation
     //plot, which was originally a TH2F, for the chip ID ichip in direction idir.
 
-
+	//std::cout<<ichip<<"\t"<<kind<<std::endl;
     //Get the plot (naming convention in plot classes must be consistent).
     std::stringstream ss_ichip; 
     ss_ichip<<ichip;
@@ -1571,6 +1686,7 @@ twoDhist_widget * MainWindow::get_hitmap_widget(int ichip, int kind) {
     else if (kind == 2) direc = "Track_plots/TrackedClusters/Chip_" + ss_ichip.str();
     else if (kind == 3) direc = "Track_plots/NonTrackedClusters/Chip_" + ss_ichip.str();
     else if (kind == 4) direc = "Track_plots/track_hitmap";
+    else if (kind == 5) direc = "Track_plots/track_angles";
     else direc = direc = "Cluster_plots/Global_hitmaps/Chip_" + ss_ichip.str();
 
     TH2F* h;
@@ -1581,7 +1697,9 @@ twoDhist_widget * MainWindow::get_hitmap_widget(int ichip, int kind) {
         else if (kind == 2) h = _DQM->_track_plots->_trackedClusters[ichip];
         else if (kind == 3) h = _DQM->_track_plots->_nonTrackedClusters[ichip];
         else if (kind == 4) h = _DQM->_track_plots->_track_hitmap;
-        else h = _DQM->_cluster_plots->_hitmapsGlobal[ichip];
+        else if (kind == 5) h = _DQM->_track_plots->_track_angles;
+        else if (kind == 6) h = _DQM->_cluster_plots->_hitmapsGlobal[ichip];
+        else std::cout<<"Unknown hitmap kind."<<std::endl;
     }
 
 
@@ -1603,17 +1721,92 @@ twoDhist_widget * MainWindow::get_hitmap_widget(int ichip, int kind) {
         _hitmap_hists.push_back(my_hist_widg);
     }
 
-    else {
+    else if (kind == 5){
+        my_hist_widg->_x_label = QString("mx");
+        my_hist_widg->_y_label = QString("my");
+        my_hist_widg->_z_label = QString("N");
+    }
+
+    else if (kind == 4){
+        my_hist_widg->_x_label = QString("xPlane0 (mm)");
+        my_hist_widg->_y_label = QString("yPlane0 (mm)");
+        my_hist_widg->_z_label = QString("N");
+        if (_liveVsSaved) {
+        	if (kind != 4) addChipBox(my_hist_widg, ichip, 2);
+        	else addChipBox(my_hist_widg, 0, 2);
+        }
+    }
+
+    else { //ie global.
         my_hist_widg->_x_label = QString("x (mm)");
         my_hist_widg->_y_label = QString("y (mm)");
         my_hist_widg->_z_label = QString("N");
-        _clust_hitmap_hists.push_back(my_hist_widg);
+        if (_liveVsSaved) {
+        	if (kind != 4) addChipBox(my_hist_widg, ichip, 2);
+        	else addChipBox(my_hist_widg, 0, 2);
+        }
     }
 
-
+    my_hist_widg->sizePolicy().setHeightForWidth(true);
     my_hist_widg->show_axes_labels();
     return my_hist_widg;
 }
+
+//_____________________________________________________________________________
+
+void MainWindow::addChipBox(twoDhist_widget * w, int ichip, int dir){
+	// Dir is axes projecting down.
+
+	QCPCurve * planeBox = new QCPCurve(w->_Qh->xAxis, w->_Qh->yAxis);
+	w->_Qh->addPlottable(planeBox);
+	QVector<double> xs(5), ys(5);
+	double Corner1Local[4] = {0, 0, 0, 0};
+	double Corner2Local[4] = {0, 256, 0, 0};
+	double Corner3Local[4] = {256, 256, 0, 0};
+	double Corner4Local[4] = {256, 0, 0, 0};
+
+	double Corner1Global[4], Corner2Global[4], Corner3Global[4], Corner4Global[4];
+
+	_DQM->_tel->get_chip(ichip)->lposn_to_gposn(Corner1Local, Corner1Global);
+	_DQM->_tel->get_chip(ichip)->lposn_to_gposn(Corner2Local, Corner2Global);
+	_DQM->_tel->get_chip(ichip)->lposn_to_gposn(Corner3Local, Corner3Global);
+	_DQM->_tel->get_chip(ichip)->lposn_to_gposn(Corner4Local, Corner4Global);
+
+	if (dir == 2) {
+		xs[0] = Corner1Global[0]; ys[0] = Corner1Global[1];
+		xs[1] = Corner2Global[0]; ys[1] = Corner2Global[1];
+		xs[2] = Corner3Global[0]; ys[2] = Corner3Global[1];
+		xs[3] = Corner4Global[0]; ys[3] = Corner4Global[1];
+		xs[4] = Corner1Global[0]; ys[4] = Corner1Global[1];
+	}
+
+	else if (dir == 1) {
+		//std::cout<<"Dan!\t"<<Corner1Global[3]<<std::endl;
+		// x vs z.
+		xs[0] = Corner1Global[2]; ys[0] = Corner1Global[0];
+		xs[1] = Corner2Global[2]; ys[1] = Corner2Global[0];
+		xs[2] = Corner3Global[2]; ys[2] = Corner3Global[0];
+		xs[3] = Corner4Global[2]; ys[3] = Corner4Global[0];
+		xs[4] = Corner1Global[2]; ys[4] = Corner1Global[0];
+	}
+
+	else if (dir == 0) {
+		// y vs z.
+		xs[0] = Corner1Global[2]; ys[0] = Corner1Global[1];
+		xs[1] = Corner2Global[2]; ys[1] = Corner2Global[1];
+		xs[2] = Corner3Global[2]; ys[2] = Corner3Global[1];
+		xs[3] = Corner4Global[2]; ys[3] = Corner4Global[1];
+		xs[4] = Corner1Global[2]; ys[4] = Corner1Global[1];
+	}
+
+    planeBox->setData(xs, ys);
+    QPen p(Qt::SolidLine);
+    p.setColor(Qt::white);
+    p.setWidthF(1);
+    planeBox->setPen(p);
+}
+
+
 
 
 
@@ -1630,10 +1823,7 @@ hist_widget * MainWindow::get_hitmapProj_widget(int ichip, int kind) {
     std::string direc;
     if (kind == 0) direc = "Cluster_plots/Global_XDist/Chip_"+ ss_ichip.str();
     else if (kind ==1) direc = "Cluster_plots/Global_YDist/Chip_" + ss_ichip.str();
-    else {
-        std::cout<<"Plot not supported in this DQM version nonlive mode."<<std::endl;
-        direc = "Cluster_plots/Global_YDist/Chip_" + ss_ichip.str();
-    }
+    else direc = "Cluster_plots/Global_YDist/Chip_" + ss_ichip.str();
 
 
     TH1F* h;
@@ -2028,57 +2218,56 @@ MainWindow::~MainWindow(){
 
 void MainWindow::on_togglelabBut_clicked()
 {
-    if (ui->DQM_all_tabs->currentIndex() == 1){
-        int tab_index = ui->pixel_tabs->currentIndex();
-        if (tab_index == 0) {
-            for (unsigned int i=0; i<_ADC_distribution_hists.size(); i++) _ADC_distribution_hists[i]->toggle_axes_labels();
-        }
+//    if (ui->DQM_all_tabs->currentIndex() == 1){
+//        int tab_index = ui->pixel_tabs->currentIndex();
+//        if (tab_index == 0) {
+//            for (unsigned int i=0; i<_ADC_distribution_hists.size(); i++) _ADC_distribution_hists[i]->toggle_axes_labels();
+//        }
+//
+//        else if (tab_index == 1) {
+//            for (unsigned int i=0; i<_xcorrel_hists.size(); i++) _xcorrel_hists[i]->toggle_axes_labels();
+//            for (unsigned int i=0; i<_ycorrel_hists.size(); i++) _ycorrel_hists[i]->toggle_axes_labels();
+//        }
+//
+//        else if (tab_index == 2) {
+//            for (unsigned int i=0; i<_temporal_differences_hists.size(); i++) _temporal_differences_hists[i]->toggle_axes_labels();
+//        }
+//
+//        else if (tab_index == 3) {
+//            for (unsigned int i=0; i<_hitmap_hists.size(); i++) _hitmap_hists[i]->toggle_axes_labels();
+//        }
+//    }
+//
+//
+//    else if (ui->DQM_all_tabs->currentIndex() == 2){
+//        int tab_index = ui->clust_tabs->currentIndex();
+//        if (tab_index == 0) {
+//            for (unsigned int i=0; i<_clust_ADC_distribution_hists.size(); i++) _clust_ADC_distribution_hists[i]->toggle_axes_labels();
+//        }
+//
+//        else if (tab_index == 3) {
+//            for (unsigned int i=0; i<_clust_xcorrel_hists.size(); i++) _clust_xcorrel_hists[i]->toggle_axes_labels();
+//            for (unsigned int i=0; i<_clust_ycorrel_hists.size(); i++) _clust_ycorrel_hists[i]->toggle_axes_labels();
+//        }
+//
+//        else if (tab_index == 4) {
+//            for (unsigned int i=0; i<_clust_temporal_differences_hists.size(); i++) _clust_temporal_differences_hists[i]->toggle_axes_labels();
+//        }
+//
+//        else if (tab_index == 5) {
+//            for (unsigned int i=0; i<_clust_hitmap_hists.size(); i++) _clust_hitmap_hists[i]->toggle_axes_labels();
+//        }
+//
+//        else if (tab_index == 1) {
+//            for (unsigned int i=0; i<_clust_size_dist_hists.size(); i++) _clust_size_dist_hists[i]->toggle_axes_labels();
+//        }
+//
+//        else if (tab_index == 2) {
+//            for (unsigned int i=0; i<_clust_samples_hists.size(); i++) _clust_samples_hists[i]->toggle_axes_labels();
+//        }
+//    }
 
-        else if (tab_index == 1) {
-            for (unsigned int i=0; i<_xcorrel_hists.size(); i++) _xcorrel_hists[i]->toggle_axes_labels();
-            for (unsigned int i=0; i<_ycorrel_hists.size(); i++) _ycorrel_hists[i]->toggle_axes_labels();
-        }
-
-        else if (tab_index == 2) {
-            for (unsigned int i=0; i<_temporal_differences_hists.size(); i++) _temporal_differences_hists[i]->toggle_axes_labels();
-        }
-
-        else if (tab_index == 3) {
-            for (unsigned int i=0; i<_hitmap_hists.size(); i++) _hitmap_hists[i]->toggle_axes_labels();
-        }
-    }
-
-
-    else if (ui->DQM_all_tabs->currentIndex() == 2){
-        int tab_index = ui->clust_tabs->currentIndex();
-        if (tab_index == 0) {
-            for (unsigned int i=0; i<_clust_ADC_distribution_hists.size(); i++) _clust_ADC_distribution_hists[i]->toggle_axes_labels();
-        }
-
-        else if (tab_index == 3) {
-            for (unsigned int i=0; i<_clust_xcorrel_hists.size(); i++) _clust_xcorrel_hists[i]->toggle_axes_labels();
-            for (unsigned int i=0; i<_clust_ycorrel_hists.size(); i++) _clust_ycorrel_hists[i]->toggle_axes_labels();
-        }
-
-        else if (tab_index == 4) {
-            for (unsigned int i=0; i<_clust_temporal_differences_hists.size(); i++) _clust_temporal_differences_hists[i]->toggle_axes_labels();
-        }
-
-        else if (tab_index == 5) {
-            for (unsigned int i=0; i<_clust_hitmap_hists.size(); i++) _clust_hitmap_hists[i]->toggle_axes_labels();
-        }
-
-        else if (tab_index == 1) {
-            for (unsigned int i=0; i<_clust_size_dist_hists.size(); i++) _clust_size_dist_hists[i]->toggle_axes_labels();
-        }
-
-        else if (tab_index == 2) {
-            for (unsigned int i=0; i<_clust_samples_hists.size(); i++) _clust_samples_hists[i]->toggle_axes_labels();
-        }
-    }
-
-
-
+//
 }
 
 
@@ -2165,8 +2354,8 @@ void MainWindow::on_pushButton_2_clicked()
 void MainWindow::on_pushButton_clicked()
 {
     QString label = ui->plot_name_box->text();
-    std::cout<<label.toStdString()<<std::endl;
-    if (label.contains("hitmap") || label.contains("correlation") || label.contains("sample")) { //twoD_hist.
+    //std::cout<<label.toStdString()<<std::endl;
+    if (label.contains("TH2")) { //twoD_hist.
         _sel_twoDhist->toggle_axes_labels();
     }
     else _sel_hist->toggle_axes_labels();

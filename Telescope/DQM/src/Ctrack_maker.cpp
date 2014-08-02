@@ -7,6 +7,7 @@
 Ctrack_maker::Ctrack_maker(CDQM_options * ops){
 	std::cout<<"Constructor of Ctrack_maker."<<std::endl;
 	_ops = ops;
+	_eventViewPic = NULL;
 }
 
 
@@ -22,10 +23,14 @@ void Ctrack_maker::initialize(){
 	_ref_chips = _ops->ref_chips;
 	_chip_loop_cut = _ops->chip_cut;
 	_tcut = _ops->track_delt;
-	_cyl_r = _ops->track_vol_r;
-	_theta = _ops->track_vol_theta;
+	_cyl_rx = _ops->track_vol_rx;
+	_cyl_ry = _ops->track_vol_ry;
+	_thetax = _ops->track_vol_thetax;
+	_thetay = _ops->track_vol_thetay;
 	if (_ops->track_vol_shape == 1) _track_vol_shape = "diabolo";
 	else _track_vol_shape = "cylinder";
+
+	initCheckPlots();
 }
 
 
@@ -33,6 +38,7 @@ void Ctrack_maker::initialize(){
 //-----------------------------------------------------------------------------
 
 void Ctrack_maker::finalize(){
+	saveCheckPlots();
 }
 
 
@@ -56,7 +62,7 @@ void Ctrack_maker::execute(Ctel_chunk * tel){
 	}
 
 	std::cout<<"Num tracks found: "<<_tels[0]->get_ntracks()<<
-		"\tcf ref_chip nclusters: "<<_tels[0]->get_chip(_ref_chips[0])->get_nclusters()<<std::endl;
+		"\tcf first chip nclusters: "<<_tels[0]->get_chip(0)->get_nclusters()<<std::endl;
 
 
 	_tels.clear();
@@ -83,16 +89,19 @@ void Ctrack_maker::search_chip(int ichip, int itel){
 		for (iclust = _tels[itel]->get_chip(ichip)->get_clusters().begin();
 			 iclust != _tels[itel]->get_chip(ichip)->get_clusters().end(); iclust++){
 
-			if (n/(float)_tels[itel]->get_chip(ichip)->get_nclusters() >0.01*npouts) {
+			if (n/(double)_tels[itel]->get_chip(ichip)->get_nclusters() >0.01*npouts) {
 				std::cout<<"*"<<std::flush;
 				npouts++;
 			}
 			if ((*iclust)->get_tracked() == 0){
-				Ctrack_volume * vol = new Ctrack_volume(std::min(_tels[0]->get_nchips(), _chip_loop_cut), _ops->minNClusterPerTrack);
-				vol->set_cyl_r(_cyl_r);
+				Ctrack_volume * vol = new Ctrack_volume(std::min(_tels[0]->get_nchips(), 
+					_chip_loop_cut), _ops->minNClusterPerTrack);
+				vol->set_cyl_rx(_cyl_rx);
+				vol->set_cyl_ry(_cyl_ry);
 
 				//std::cout<<_cyl_r<<"\t"<<vol->get_cyl_r()<<std::endl;
-				vol->set_theta(_theta);
+				vol->set_thetax(_thetax);
+				vol->set_thetay(_thetay);
 				vol->set_tcut(_tcut);
 				vol->set_shape(_track_vol_shape);
 
@@ -100,6 +109,8 @@ void Ctrack_maker::search_chip(int ichip, int itel){
 				fill_seeded_vol(vol);
 				vol->fit_tracks(_tels[0]->get_ntracks()); //sets the clusters too.
 				add_tracks(vol); 
+
+				fillCheckPlots(vol);
 
 				delete vol;
 			}
@@ -120,7 +131,7 @@ void Ctrack_maker::search_chip(int ichip, int itel){
 
 void Ctrack_maker::fill_seeded_vol(Ctrack_volume * vol){
  	//Fill the volume with clusters inside the volume.
-	float vol_TOA = vol->get_seed_clust()->get_gt();
+	double vol_TOA = vol->get_seed_clust()->get_gt();
 
 
 	//Search over tels.
@@ -166,13 +177,41 @@ void Ctrack_maker::fill_seeded_vol(Ctrack_volume * vol){
 
 void Ctrack_maker::add_tracks(Ctrack_volume * vol){
  	for (int i=0; i<vol->get_tracks().size(); i++){
- 		//ASSUME FIRST TEL.
  		vol->get_tracks()[i]->set_ID(_tels[0]->get_ntracks());
  		_tels[0]->add_track(vol->get_tracks()[i]);
  	}
 }
 
 
+
+
+
+//-----------------------------------------------------------------------------
+
+void Ctrack_maker::initCheckPlots(){
+	h_nClustersPerVol = new TH1F("nClustersPerVol", "nClustersPerVol; nClusters; N",
+		21,-0.5,20.5);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+
+void Ctrack_maker::fillCheckPlots(Ctrack_volume* vol){
+	h_nClustersPerVol->Fill(vol->totalNClusters());
+}
+
+
+
+//-----------------------------------------------------------------------------
+
+void Ctrack_maker::saveCheckPlots(){
+	TFile* save_file = new TFile(_ops->save_file_name.c_str(),"update");
+	if (_eventViewPic!=NULL) _eventViewPic->Write();
+	h_nClustersPerVol->Write();
+	save_file->Close();
+}
 
 
 
@@ -183,6 +222,7 @@ void Ctrack_maker::add_tracks(Ctrack_volume * vol){
 
 Ctrack_maker::~Ctrack_maker(){
  	std::cout<<"\n\nDeleting Ctrack_maker."<<std::endl;
+ 	delete h_nClustersPerVol;
  	Chandy::dash_line_break();
 }
 

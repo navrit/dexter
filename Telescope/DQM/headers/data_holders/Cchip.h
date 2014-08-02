@@ -24,9 +24,9 @@ private:
 
 
 	//Position and orientation as arrays.
-	float 					_gposn[4]; //4 alignment parameters here (time inc).
-	float 					_orientation[3]; //around x, around y, around z.
-	float 					_rotn;
+	double 					_gposn[4]; //4 alignment parameters here (time inc).
+	double 					_orientation[3]; //around x, around y, around z.
+	double 					_rotn;
 
 
 	//Detectors will always have pixels and (optionally found) clusters.
@@ -41,19 +41,19 @@ private:
 
 
 	//Dimensions of the chip.
-	float 					_pixel_width;
-	float 					_pixel_height;
-	float 					_chip_width; //both working in units of mm.
-	float 					_chip_height;
+	double 					_pixel_width;
+	double 					_pixel_height;
+	double 					_chip_width; //both working in units of mm.
+	double 					_chip_height;
 	int						_size_pixs[2]; //number of pixels across and up.
-	float					_size_mms[2]; //same, now in mms.
+	double					_size_mms[2]; //same, now in mms.
 	int						_n_pixs_side;
 
 	//ID finders.
-	float					_tpixzero;
-	float					_tpixstep;
-	float					_tclustzero;
-	float					_tcluststep;
+	double					_tpixzero;
+	double					_tpixstep;
+	double					_tclustzero;
+	double					_tcluststep;
 	int						_num_pix_tsteps;
 	//int						_num_clust_tsteps;
 
@@ -79,10 +79,10 @@ public:
 	std::vector<int> 		_glob_xs_to_pixIDs;
 	std::vector<int> 		_glob_xs_to_clustIDs;
 
-	float					_xpixzero;
-	float					_xpixstep;
-	float					_xclustzero;
-	float					_xcluststep;
+	double					_xpixzero;
+	double					_xpixstep;
+	double					_xclustzero;
+	double					_xcluststep;
 
 
 	//Function declarations.
@@ -93,12 +93,12 @@ public:
 	int 					get_max_pixel_ADC();
 	int 					get_min_cluster_ADC();
 	int 					get_max_cluster_ADC();
-	float 					get_average_cluster_ADC();
-	float 					get_average_pixel_ADC();
-	float 					get_pixel_cluster_ADC();
-	float 					get_std_cluster_ADC();
-	void 					set_std_and_average_cluster_ADC(float&, float&);
-	void 					set_std_and_average_pixel_ADC(float&, float&);
+	double 					get_average_cluster_ADC();
+	double 					get_average_pixel_ADC();
+	double 					get_pixel_cluster_ADC();
+	double 					get_std_cluster_ADC();
+	void 					set_std_and_average_cluster_ADC(double&, double&);
+	void 					set_std_and_average_pixel_ADC(double&, double&);
 	void					fill_cluster_sample(int, std::vector<Ccluster*> &);
 	void					truncate(int);
 
@@ -115,8 +115,8 @@ public:
 
 
 	//Spatial and temporal converters.
-	void 					lposn_to_gposn(float*, float*);
-	void 					gposn_to_lposn(float*, float*);
+	void 					lposn_to_gposn(double*, double*);
+	void 					gposn_to_lposn(double*, double*);
 
 	void 					fill_loc_ts_to_pixIDs();
 	void 					fill_loc_ts_to_clustIDs();
@@ -124,10 +124,10 @@ public:
 	void 					fill_glob_xs_to_pixIDs();
 	void 					fill_glob_xs_to_clustIDs();
 
-	int 					glob_t_to_pixID(float);
-	int 					glob_t_to_clustID(float);
-	int 					glob_x_to_pixID(float);
-	int 					glob_x_to_clustID(float);
+	int 					glob_t_to_pixID(double);
+	int 					glob_t_to_clustID(double);
+	int 					glob_x_to_pixID(double);
+	int 					glob_x_to_clustID(double);
 
 	void					time_order_pix_hits_comb();
 	void					x_order_pix_hits_comb();
@@ -152,46 +152,46 @@ public:
 
 	int						get_n_pixs_side() {return _n_pixs_side;}
 
-	void 					set_gposn(float gposn[4]) {
+	void 					set_gposn(double gposn[4]) {
 								_gposn[0] = gposn[0];
 								_gposn[1] = gposn[1];
 								_gposn[2] = gposn[2];
 								_gposn[3] = gposn[3];
 							}
 
-	float					get_posn_dir(int i) {return _gposn[i];}
-	void 					get_gposn(float gposn[4]) {
+	double					get_posn_dir(int i) {return _gposn[i];}
+	void 					get_gposn(double gposn[4]) {
 								gposn[0] = _gposn[0];
 								gposn[1] = _gposn[1];
 								gposn[2] = _gposn[2];
 								gposn[3] = _gposn[3];
 							}
 
-	void 					set_orientation(float orientation[3]) {
+	void 					set_orientation(double orientation[3]) {
 								_orientation[0] = orientation[0];
 								_orientation[1] = orientation[1];
 								_orientation[2] = orientation[2];
 							}
 
-	void 					get_orientation(float orientation[3]) {
+	void 					get_orientation(double orientation[3]) {
 								orientation[0] = _orientation[0];
 								orientation[1] = _orientation[1];
 								orientation[2] = _orientation[2];
 							}
 
-	void					set_ox(float ox){_orientation[0] = ox;}				
-	float					get_ox(){return _orientation[0];}
+	void					set_ox(double ox){_orientation[0] = ox;}				
+	double					get_ox(){return _orientation[0];}
 
-	void					set_oy(float oy){_orientation[1] = oy;}		
-	float					get_oy(){return _orientation[1];}
+	void					set_oy(double oy){_orientation[1] = oy;}		
+	double					get_oy(){return _orientation[1];}
 
-	void					set_oz(float oz){_orientation[2] = oz;}		
-	float					get_oz(){return _orientation[2];}
+	void					set_oz(double oz){_orientation[2] = oz;}		
+	double					get_oz(){return _orientation[2];}
 
-	void 					set_rotn(float rotn) {_rotn = rotn;}
-	float 					get_rotn() {return _rotn;}
+	void 					set_rotn(double rotn) {_rotn = rotn;}
+	double 					get_rotn() {return _rotn;}
 
-	float* 					get_size_mms() {return _size_mms;}
+	double* 					get_size_mms() {return _size_mms;}
 
 	int* 					get_size_pixs() {return _size_pixs;}
 
@@ -200,12 +200,12 @@ public:
 							//...defined in src file.
 
 
-	float					get_pix_dir(Cpix_hit*, int);
+	double					get_pix_dir(Cpix_hit*, int);
 
-	float					get_gt(){return _gposn[3];}
-	float					get_gx(){return _gposn[0];}
-	float					get_gy(){return _gposn[1];}
-	float					get_gz(){return _gposn[2];}
+	double					get_gt(){return _gposn[3];}
+	double					get_gx(){return _gposn[0];}
+	double					get_gy(){return _gposn[1];}
+	double					get_gz(){return _gposn[2];}
 
 
 
@@ -221,24 +221,24 @@ public:
 	void					add_pix_hit(Cpix_hit* pix_hit){
 								_pix_hits.push_back(pix_hit);}
 
-	void 					set_pixel_width(float pixel_width) {
+	void 					set_pixel_width(double pixel_width) {
 								_pixel_width = pixel_width;}
-	float 					get_pixel_width() {return _pixel_width;}
+	double 					get_pixel_width() {return _pixel_width;}
 
-	void 					set_pixel_height(float pixel_height) {
+	void 					set_pixel_height(double pixel_height) {
 								_pixel_height = pixel_height;}
-	float 					get_pixel_height() {return _pixel_height;}
+	double 					get_pixel_height() {return _pixel_height;}
 
 
-	void 					set_chip_width(float chip_width) {
+	void 					set_chip_width(double chip_width) {
 								_chip_width = chip_width;}
-	float 					get_chip_width() {return _chip_width;}
+	double 					get_chip_width() {return _chip_width;}
 
-	void 					set_chip_height(float chip_height) {
+	void 					set_chip_height(double chip_height) {
 								_chip_height = chip_height;}
-	float 					get_chip_height() {return _chip_height;}
+	double 					get_chip_height() {return _chip_height;}
 
-	float					get_z(){return _gposn[2];}
+	double					get_z(){return _gposn[2];}
 
 
 

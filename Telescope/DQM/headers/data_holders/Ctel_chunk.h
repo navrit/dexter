@@ -30,10 +30,12 @@
 #include "../../CDQM_options.h"
 #include <stdlib.h>
 #include <fstream>
+#include <stdint.h>
 
 
 class Ctel_chunk{
-private:
+public:
+
 	//Telescope attributes.
 	int 					_nchips;
 	std::vector<Cchip*> 	_chips;
@@ -46,10 +48,10 @@ private:
 	CDQM_options * 			_ops;
 
 
-public:
+	bool isLastChunk;
 	Chandy*					_handy;
-	//uint64_t				_tzero;
 	long long				_tzero;
+	//long long				_tzero;
 	bool					_tzero_set;
 
 
@@ -59,7 +61,7 @@ public:
 	int 					chipname_to_id(std::string);
 	void					time_order_pixels_comb();
 	void					time_order_clusters_comb();
-	void 					rm_all_hot_pixels(float);
+	void 					rm_all_hot_pixels(double);
 	void					fill_all_hit_maps();
 	int						get_total_hits_clustered();
 	int						get_total_pix_hits();

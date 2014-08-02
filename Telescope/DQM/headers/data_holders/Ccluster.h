@@ -38,6 +38,7 @@ private:
 	std::vector<Cpix_hit*>	_pix_hits;
 	int						_tracked; //0 for not tracked, 1 for part of a track, 2 for untrackable.
 	CDQM_options *			_ops;
+	Cpix_hit * 				_earlisetHit;
 
 
 
@@ -47,9 +48,9 @@ public:
 	//Member functions ________________________________________________________
 	Ccluster(CDQM_options*);
 	void					print_details();
-	void					set_by_pixels(float);
-	void					set_cluster_position(float);
-	void					fill_cog_posn(float);
+	void					set_by_pixels(double);
+	void					set_cluster_position(double);
+	void					fill_cog_posn(double);
 	void					DanCorrect();
 	void					TaylorCorrect1();
 	int						Shape();
@@ -70,13 +71,13 @@ public:
 	void 					set_chipID(int chipID) {_chipID = chipID;}
 	int						get_chipID() {return _chipID;}
 
-	void 					set_lposn(float lposn[4]) {
+	void 					set_lposn(double lposn[4]) {
 								_lposn[0] = lposn[0];
 						    	_lposn[1] = lposn[1]; 
 							    _lposn[2] = lposn[3];
 							}
 
-	void					get_lposn(float lposn[4]) {
+	void					get_lposn(double lposn[4]) {
 								lposn[0] = _lposn[0];
 							    lposn[1] = _lposn[1]; 
 							    lposn[2] = 0.0;
@@ -93,35 +94,37 @@ public:
 	int						get_size() {return _size;}
 
 	void 					set_TOA(int TOA) {_lposn[2] = TOA;}
-	float					get_TOA() {return _lposn[2];}
+	double					get_TOA() {return _lposn[2];}
 
 	void 					set_column(int column) {_lposn[0] = column;}
-	float					get_column() {return _lposn[0];}
+	double					get_column() {return _lposn[0];}
 
 	void 					set_row(int row) {_lposn[1] = row;}
-	float					get_row() {return _lposn[1];}
+	double					get_row() {return _lposn[1];}
 
-	void 					set_gposn(float gposn[4]) {
+	void 					set_gposn(double gposn[4]) {
 								_gposn[0] = gposn[0];
 						    	_gposn[1] = gposn[1]; 
 							    _gposn[2] = gposn[2];
 							    _gposn[3] = gposn[3];
 							}
 
-	void					get_gposn(float gposn[4]) {
+	void					get_gposn(double gposn[4]) {
 								gposn[0] = _gposn[0];
 							    gposn[1] = _gposn[1]; 
 							    gposn[2] = _gposn[2]; 
 							    gposn[3] = _gposn[3];
 							}
 
-    float					get_gx(){return _gposn[0];}
-    float					get_gy(){return _gposn[1];}
-    float					get_gz(){return _gposn[2];}
-    float					get_gt(){return _gposn[3];}
+    double					get_gx(){return _gposn[0];}
+    double					get_gy(){return _gposn[1];}
+    double					get_gz(){return _gposn[2];}
+    double					get_gt(){return _gposn[3];}
 
     void 					set_tracked(int tracked) {_tracked = tracked;}
 	int						get_tracked() {return _tracked;}
+
+	Cpix_hit*				earliestHit(){return _earlisetHit;}
 
 
 	//Pixel attributes ____________________

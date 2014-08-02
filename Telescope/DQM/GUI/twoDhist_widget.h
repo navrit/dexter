@@ -22,6 +22,8 @@
 #include <QLabel>
 #include <QCheckBox>
 #include <QGridLayout>
+#include <QRubberBand>
+#include <QPoint>
 
 
 class twoDhist_widget : public QWidget {
@@ -78,12 +80,19 @@ public:
     void                toggle_axes_labels();
     void                show_axes_labels();
     void                toggle_ref_plot();
+   // int					heightForWidth(int);
 
+    QRubberBand * mRubberBand;
+    QPoint mOrigin;
 
 private slots:
     void                mousePress(QMouseEvent*);
     void                mouseWheel();
     void                selectionChanged();
+
+
+    void mouseMove(QMouseEvent *);
+    void mouseRelease(QMouseEvent *);
 };
 
 #endif

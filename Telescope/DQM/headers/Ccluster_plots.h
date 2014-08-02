@@ -30,26 +30,26 @@ public:
 	std::vector<TH1F*> 			_ToT_Size2_dists;
 	std::vector<TH1F*> 			_ToT_Size3_dists;
 	std::vector<TH1F*> 			_ToT_Size4_dists;
-	float 						_ToT_low;
-	float 						_ToT_up;
+	double 						_ToT_low;
+	double 						_ToT_up;
 	int 						_ToT_nbins;
 
 	std::vector<TH1F*> 			_t_dists;
-	float 						_t_low; //safe auto.
-	float 						_t_up; //safe auto.
+	double 						_t_low; //safe auto.
+	double 						_t_up; //safe auto.
 	int							_tdist_nbins;
 
 	std::vector<TH1F*> 			_size_dists;
-	float 						_size_low; //safe auto.
-	float 						_size_up; //safe auto.
+	double 						_size_low; //safe auto.
+	double 						_size_up; //safe auto.
 	int 						_size_nbins;
 
 	TH1F *						_z_distribution;
 	TH2F*						_zVsX_distribution;
 	TH2F*						_zVsY_distribution;
 	bool						_z_distributions_initialized; //handy for singles.
-	float 						_z_low; 
-	float 						_z_up; 
+	double 						_z_low; 
+	double 						_z_up; 
 	int 						_z_nbins;
 
 
@@ -69,6 +69,9 @@ public:
 
 	std::vector<TH1F*> 			_DiffLeftShare;
 	std::vector<TH1F*> 			_DiffRightShare;
+
+	std::vector<TH1F*> 			_pixDeltaTs;
+	std::vector<TH2F*> 			_pixDeltaTsVsCharge;
 
 
 
@@ -92,7 +95,7 @@ public:
 
 	void						init_sharers();
 	void						fill_cluster_sample_h(TH2F*, std::vector<Ccluster*> &);
-	bool						cluster_close_enough(float, float, float);
+	bool						cluster_close_enough(double, double, double);
 
 	//Appendable plots (need to be init).
 	void						init_all();
@@ -110,6 +113,8 @@ public:
 	void						appto_z_dists();
 	void						appto_hitmaps();
 	void						appto_sampleHitmaps();
+	void						init_pixDeltaTs();
+	void						appto_pixDeltaTs();
 
 
 	//Replaceable plots (not init).

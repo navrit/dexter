@@ -27,7 +27,7 @@ Ctrack::Ctrack(){
 void Ctrack::set_by_clusters(std::vector<int> chip_excludes, bool excluding, int ID){
 	//Fit straight line by clusters.
 	_ID = ID;
-	float S_x = 0.0, S_y = 0.0, S_z = 0.0, S_zx = 0.0, S_zy = 0.0, S_zz = 0.0;
+	double S_x = 0.0, S_y = 0.0, S_z = 0.0, S_zx = 0.0, S_zy = 0.0, S_zz = 0.0;
 	_gTOA = 0.0;
 	//Fill them. Divide by (S=)N thing!
 	std::vector<Ccluster*>::iterator iclust;
@@ -58,10 +58,11 @@ void Ctrack::set_by_clusters(std::vector<int> chip_excludes, bool excluding, int
 			nclusters++;
 		}
 	}
-	float S = (float) nclusters;
+	double S = (double) nclusters;
 	_nclusters = nclusters;
 	_gTOA /= (double) nclusters;
-	float del = S*S_zz - S_z*S_z;
+	//_gTOA = _clusters[0]->get_TOA();
+	double del = S*S_zz - S_z*S_z;
 
 
 	//Finally.

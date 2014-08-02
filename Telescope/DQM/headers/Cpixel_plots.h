@@ -24,22 +24,22 @@ public:
 
 	//Plots (with their cuts).
 	std::vector<TH1F*> 			_ADC_dists;
-	float 						_ADC_low;
-	float 						_ADC_up;
+	double 						_ADC_low;
+	double 						_ADC_up;
 	int 						_ADC_nbins;
 
 	std::vector<TH1F*> 			_t_dists;
-	float 						_t_low; //safe auto.
-	float 						_t_up; //safe auto.
+	double 						_t_low; //safe auto.
+	double 						_t_up; //safe auto.
 
 	std::vector<TH1I*> 			_occupancies;
-	float 						_occupancy_low; //safe auto.
-	float 						_occupancy_up; //safe auto.
+	double 						_occupancy_low; //safe auto.
+	double 						_occupancy_up; //safe auto.
 
 	TH1F*						_z_distribution;
 	bool						_z_distribution_initialized; //handy for singles.
-	float 						_z_low; //safe auto.
-	float 						_z_up; //safe auto.
+	double 						_z_low; //safe auto.
+	double 						_z_up; //safe auto.
 	int 						_z_nbins;
 
 	std::vector<TGraph*> 		_t_orders; //safe auto.
@@ -80,8 +80,8 @@ public:
 
 
 	//Setters -----------------------------------------------------------------
-	void 						set_ADC_low(float x){_ADC_low = x;}
-	void 						set_ADC_up(float x){_ADC_up = x;}
+	void 						set_ADC_low(double x){_ADC_low = x;}
+	void 						set_ADC_up(double x){_ADC_up = x;}
 	void 						set_ADC_nbins(int x){_ADC_nbins = x;}
 	void 						set_hitmap_nbins(int x){_hitmap_nbins = x;}
 	void 						set_z_nbins(int x){_z_nbins = x;}

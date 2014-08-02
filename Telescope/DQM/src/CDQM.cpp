@@ -8,11 +8,12 @@
 
 CDQM::CDQM(CDQM_options* ops) {
 	Chandy::dash_line_break();
-	std::cout<<"\n================ Constructing DQM ==============="<<std::endl;
+	std::cout<<"================ Constructing DQM ==============="<<std::endl;
 	_t1 = clock();
 	_ops = ops;
-	_ops->save_ops();
 	make_new_save_file();
+	_ops->save_ops();
+
 	_tel = NULL;
 	_sampleNum = 0;
 
@@ -86,12 +87,17 @@ void CDQM::initialize(){
 
 //_____________________________________________________________________________
 void CDQM::executeEventLoop(double hr_time){
-	for (unsigned int i=0; i<_ops->nEvents; i++) {
+	unsigned int i;
+	for (i=0; i<_ops->nEvents; i++) {
 		std::cout<<"*******************************************************"<<std::endl;
 		std::cout<<"************** Executing event number: "<<i<<" **************"<<std::endl;
 		std::cout<<"*******************************************************"<<std::endl;
 		execute(hr_time);
+
+		if (_tel->isLastChunk) break;
 	}
+
+	std::cout<<"Entire file read by event number: "<<i<<std::endl;
 }
 
 
@@ -135,6 +141,7 @@ void CDQM::execute(double hr_time){
 		if ((*it) == 13) _cog_fitter->execute(_tel);
 		if ((*it) == 15) _appendLongScalePlots(hr_time);
 
+
 	}
 
 	Chandy::dash_line_break();
@@ -150,7 +157,7 @@ void CDQM::finalize(){
 	std::cout<<"\n================ Finalizing DQM ==============="<<std::endl;
 	bool pix_alignment_done = false;
 	bool clust_alignment_done = false;
-	// Initialize algorithms.
+
 	for (std::vector<int>::iterator it = _ops->algorithms.begin() ; it != _ops->algorithms.end(); ++it) {
 		if ((*it) == 0) _old_tel_getter->finalize();
 		if ((*it) == 14) _PS_tel_getter->finalize();
@@ -189,13 +196,12 @@ void CDQM::finalize(){
 		if ((*it) == 11) _track_maker->finalize();
 		if ((*it) == 12) _track_plots->finalize();
 		if ((*it) == 13) _cog_fitter->finalize();
-
-
-		
 	}
+
+
 	//_tel->dump_chips("ChipData.root", false);
 	Chandy::dash_line_break();
-	delete _tel;
+	//delete _tel;
 }
 
 

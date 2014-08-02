@@ -38,7 +38,7 @@ public:
 	void 					set_chipID(int i){_chipID = i;}
 	int 					get_chipID(){return _chipID;}
 
-	void 					set_ID(float ID) {_ID = ID;}
+	void 					set_ID(double ID) {_ID = ID;}
 	int						get_ID() {return _ID;}
 
 	void 					set_row(int row) {_row = row;}
@@ -50,13 +50,13 @@ public:
 	void 					set_tag(int tag) {_tag = tag;}
 	int						get_tag() {return _tag;}
 
-	void 					set_ADC(float ADC) {_ADC = ADC;}
+	void 					set_ADC(double ADC) {_ADC = ADC;}
 	int						get_ADC() {return _ADC;}
 
-	void 					set_ToT(float ToT) {_ADC = ToT;}
+	void 					set_ToT(double ToT) {_ADC = ToT;}
 	int						get_ToT() {return _ADC;}
 
-	void 					set_TOA(float TOA) {_TOA = TOA;}
+	void 					set_TOA(double TOA) {_TOA = TOA;}
 	double					get_TOA() {return _TOA;}
 
 	void					set_valid(bool valid){_valid = valid;}
@@ -65,9 +65,9 @@ public:
 	void					set_clustered(bool clustered){_clustered = clustered;}
 	bool					get_clustered() {return _clustered;}
 
-	void					get_lposn(float lposn[4]) {
-								lposn[0] = (float) _column;
-								lposn[1] = (float) _row;
+	void					get_lposn(double lposn[4]) {
+								lposn[0] = double(_column);
+								lposn[1] = double(_row);
 								lposn[2] = 0.0;
 								lposn[3] = _TOA;
 							}						 

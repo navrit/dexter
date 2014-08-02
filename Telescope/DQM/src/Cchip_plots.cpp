@@ -56,7 +56,7 @@ void Cchip_plots::plot_all(){
 //-----------------------------------------------------------------------------
 
 void Cchip_plots::plot_cluster_x_to_ID(){
-	float xlow, xup, xstep;
+	double xlow, xup, xstep;
 
 	for (std::vector<Cchip*>::iterator ichip = _tel->get_chips().begin();
 		ichip != _tel->get_chips().end(); ++ichip){
@@ -65,12 +65,12 @@ void Cchip_plots::plot_cluster_x_to_ID(){
 			int num_dots = (*ichip)->_glob_xs_to_clustIDs.size() * 100;
 			std::vector<Ccluster*> clusters = (*ichip)->get_clusters_by_glob_x();
 
-			float xs[num_dots];
-			float ys[num_dots];
+			double xs[num_dots];
+			double ys[num_dots];
 
 			xlow = clusters[0]->get_gx();
 			xup = clusters.back()->get_gx();
-			xstep = (xup-xlow)/(float)num_dots;
+			xstep = (xup-xlow)/(double)num_dots;
 
 			for (int i=0; i<num_dots; i++){
 				xs[i] = xlow+i*xstep;
@@ -99,7 +99,7 @@ void Cchip_plots::plot_cluster_x_to_ID(){
 //-----------------------------------------------------------------------------
 
 void Cchip_plots::plot_pix_x_to_ID(){
-	float xlow, xup, xstep;
+	double xlow, xup, xstep;
 
 	for (std::vector<Cchip*>::iterator ichip = _tel->get_chips().begin();
 		ichip != _tel->get_chips().end(); ++ichip){
@@ -108,13 +108,13 @@ void Cchip_plots::plot_pix_x_to_ID(){
 			//Setup arrays to hold the points on the plot.
 			int num_dots = (*ichip)->_glob_xs_to_pixIDs.size() * 100;
 			std::vector<Cpix_hit*> pix_hits = (*ichip)->get_pix_hits_by_glob_x();
-			float xs[num_dots];
-			float ys[num_dots];
+			double xs[num_dots];
+			double ys[num_dots];
 
 
 			xlow = (*ichip)->get_pix_dir(pix_hits[0], 0);
 			xup = (*ichip)->get_pix_dir(pix_hits[pix_hits.size()-1], 0);
-			xstep = (xup-xlow)/(float)num_dots;
+			xstep = (xup-xlow)/(double)num_dots;
 
 
 			//Now cycle over this range of xs, using the relation functions in Cchip.
@@ -148,7 +148,7 @@ void Cchip_plots::plot_pix_x_to_ID(){
 //-----------------------------------------------------------------------------
 
 void Cchip_plots::plot_cluster_t_to_ID(){
-	float tlow, tup, tstep;
+	double tlow, tup, tstep;
 
 	for (std::vector<Cchip*>::iterator ichip = _tel->get_chips().begin();
 		ichip != _tel->get_chips().end(); ++ichip){
@@ -157,12 +157,12 @@ void Cchip_plots::plot_cluster_t_to_ID(){
 			int num_dots = (*ichip)->_loc_ts_to_clustIDs.size() * 100;
 			std::vector<Ccluster*> clusters = (*ichip)->get_clusters();
 
-			float xs[num_dots];
-			float ys[num_dots];
+			double xs[num_dots];
+			double ys[num_dots];
 
 			tlow = clusters[0]->get_gt();
 			tup = clusters.back()->get_gt();
-			tstep = (tup-tlow)/(float)num_dots;
+			tstep = (tup-tlow)/(double)num_dots;
 
 			for (int i=0; i<num_dots; i++){
 				xs[i] = tlow+i*tstep;
@@ -188,7 +188,7 @@ void Cchip_plots::plot_cluster_t_to_ID(){
 //-----------------------------------------------------------------------------
 
 void Cchip_plots::plot_pix_t_to_ID(){
-	float tlow, tup, tstep;
+	double tlow, tup, tstep;
 
 	for (std::vector<Cchip*>::iterator ichip = _tel->get_chips().begin();
 		ichip != _tel->get_chips().end(); ++ichip){
@@ -197,12 +197,12 @@ void Cchip_plots::plot_pix_t_to_ID(){
 			int num_dots = (*ichip)->_glob_xs_to_pixIDs.size() * 100;
 			std::vector<Cpix_hit*> pix_hits = (*ichip)->get_pix_hits();
 
-			float xs[num_dots];
-			float ys[num_dots];
+			double xs[num_dots];
+			double ys[num_dots];
 
 			tlow = pix_hits[0]->get_TOA() - (*ichip)->get_gt();
 			tup = pix_hits[pix_hits.size()-1]->get_TOA() - (*ichip)->get_gt();
-			tstep = (tup-tlow)/(float)num_dots;
+			tstep = (tup-tlow)/(double)num_dots;
 
 			for (int i=0; i<num_dots; i++){
 				xs[i] = tlow+i*tstep;

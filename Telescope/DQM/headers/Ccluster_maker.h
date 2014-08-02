@@ -16,11 +16,11 @@ private:
 	Ctel_chunk*					_tel;
 	std::vector<Cchip*>			_chips;
 	int							_chip_loop_cut;
-	float						_tlow;
-	float						_tup;
+	double						_tlow;
+	double						_tup;
 	int							_num_pixs_not_clusted;
 	std::string 				_save_file_name;
-	float 						_COGweight;
+	double 						_COGweight;
 	CDQM_options *				_ops;
 
 
@@ -47,13 +47,13 @@ public:
 	//Setters and getters -----------------------------------------------------
 	void 						set_save_file_name(std::string s){_save_file_name = s;}
 	void						set_chips(std::vector<Cchip*> chips) {_chips = chips;}
-	void						set_COGweight(float c) {_COGweight = c;}
+	void						set_COGweight(double c) {_COGweight = c;}
 
-	void						set_tlow(float t){_tlow = t;}
-	float						get_tlow(){return _tlow;}
+	void						set_tlow(double t){_tlow = t;}
+	double						get_tlow(){return _tlow;}
 
-	void						set_tup(float t){_tlow = t;}
-	float						get_tup(){return _tup;}
+	void						set_tup(double t){_tlow = t;}
+	double						get_tup(){return _tup;}
 
 	void						set_chip_loop_cut(int n){_chip_loop_cut = n;}
 	int							get_chip_loop_cut(){return _chip_loop_cut;}

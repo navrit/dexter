@@ -113,7 +113,7 @@ void Ccluster::print_details(){
 
 //_____________________________________________________________________________
 
-void Ccluster::set_by_pixels(float COGweight){
+void Ccluster::set_by_pixels(double COGweight){
 	//Sets this clusters attributes according to the set of pixels.
 
 	this->set_ADC(0);
@@ -133,14 +133,25 @@ void Ccluster::set_by_pixels(float COGweight){
 		set_ADC(get_ADC() + (*ipix)->get_ADC());
 	}
 
-	//TOA (take average - local chip system.
-	this->_lposn[2] = 0.0;
+	int maxADC = 0;
+	int maxADCpixID = 0;
+	int pixID = 0;
+
+	_earlisetHit =  get_pix_hits()[0];
 	for (std::vector<Cpix_hit*>::iterator ipix = get_pix_hits().begin(); 
 		ipix != get_pix_hits().end(); ipix++){
-		this->_lposn[2] += (*ipix)->get_TOA();
+		if ((*ipix)->get_TOA() < _earlisetHit->get_TOA()) _earlisetHit = (*ipix);
 	}
-	this->_lposn[2] = get_pix_hits()[0]->get_TOA();
 
+	for (std::vector<Cpix_hit*>::iterator ipix = get_pix_hits().begin(); 
+		ipix != get_pix_hits().end(); ipix++){
+		if ((*ipix)->get_ADC() > maxADC) {
+			maxADC = (*ipix)->get_ADC();
+			maxADCpixID = pixID;
+		}
+		pixID++;
+	}
+	_lposn[2] = get_pix_hits()[maxADCpixID]->get_TOA();
 }
 
 
@@ -151,7 +162,7 @@ void Ccluster::set_by_pixels(float COGweight){
 
 //_____________________________________________________________________________
 
-void Ccluster::set_cluster_position(float COGweight){
+void Ccluster::set_cluster_position(double COGweight){
 	//Sets this clusters attributes according to the set of pixels.
 	fill_cog_posn(COGweight);
 	// if (_ops->DanCorrectPosn) {
@@ -257,9 +268,9 @@ int Ccluster::Shape(){
 
 //_____________________________________________________________________________
 
-void Ccluster::fill_cog_posn(float COGweight){
-	float alpha = COGweight; //nonlinear weighting on signal.
-	float tot_weighted_ADC = 0.0;
+void Ccluster::fill_cog_posn(double COGweight){
+	double alpha = COGweight; //nonlinear weighting on signal.
+	double tot_weighted_ADC = 0.0;
 
 	for (std::vector<Cpix_hit*>::iterator ipix = get_pix_hits().begin(); 
 		ipix != get_pix_hits().end(); ipix++){
@@ -319,16 +330,13 @@ double Ccluster::chi2_of_posn_sharing(double r, double c){
 
 	int i=0;
 	for (ipix = get_pix_hits().begin() ; ipix != get_pix_hits().end(); ++ipix) {
-		double pull = (*ipix)->get_ADC()/(float)get_ADC() - fracs[i]/tot;
+		double pull = (*ipix)->get_ADC()/(double)get_ADC() - fracs[i]/tot;
 		chi += pow(pull, 2);
 		i++;
 	}
 
 	return chi;
 }
-
-
-
 
 
 

@@ -26,10 +26,14 @@ class CPS_tel_getter{
 private:
 	Ctel_chunk * 			_tel;
 	CDQM_options * 			_ops;
-	float					_tcut;
+	double					_tcut;
 	unsigned int			_nPlanes;
 	std::string				_input_file_name;
 	std::vector<std::string> _input_file_names;
+	std::vector<long long>	_global_times;
+	std::vector<long long>	_lsbs;
+	std::vector<std::string> _possibleFileNames;
+
 
 
 public:
@@ -48,6 +52,13 @@ public:
 	Cpix_hit* 				line_to_pixel(long long, int);
 	void 					set_npixels();
 	void 					reset_all_pixel_ids();
+	long long				extendTimeStamp(long long, int);
+	void					addTimingPacket(long long, int);
+	void 					setTimer(long long, int);
+	std::vector<std::string> getPossibleDevDirecNames();
+	std::vector<std::string> getPossibleFileNames(std::vector<std::string>);
+	std::string				getChipFileByName(int);
+	bool					fileNameCorrespondsToChip(std::string, std::string); 
 };
 
 

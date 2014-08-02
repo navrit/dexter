@@ -4,23 +4,26 @@
 
 //_____________________________________________________________________________
 
-CDQM_options::CDQM_options(){
-	tEventStep = 5e10;
+CDQM_options::CDQM_options(int r){
+	tEventStep = 300e12;
 	nEvents = 1;
-	nPixHitCut = 60000;
-	PSNumFix = 4;
-	runNumber = 1002;
-	save_file_name = "DansPSData.root";
+	nPixHitCut = 35000;
+	eventTrackN = 1200;
+	PSNumFix = 1;
+	runNumber = r;
+	std::stringstream ssRunNumber;
+	ssRunNumber<<runNumber;
+	save_file_name = "DQM_files/DQM_OnlinePlots_PSRun" + ssRunNumber.str()+ ".root";
 	save_file_nameLongScale = "LongScale" + save_file_name;
 	replaceLongScalesFile = true;
-	alignment_save_file_name = "test_data/AlignmentPS0.dat"; 
+	alignment_save_file_name = "test_data/Alignment1146.dat";
 
 	// int arr_algorithms[] = {0, 1, 5, 6, 7, 8, 9, 11, 12};
 	//int arr_algorithms[] = {14, 1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12};
 	//int arr_algorithms[] = {14, 1, 5, 6, 7, 8, 10, 11, 12};
 	//int arr_algorithms[] = {14, 1, 5, 6, 7, 8, 11, 12};
-	int arr_algorithms[] = {14, 1, 5, 6, 7, 8}; // Default.
-	//int arr_algorithms[] = {14, 1, 5, 6, 11, 12}; // Basic track.
+	//int arr_algorithms[] = {14, 1, 5, 6, 7, 8}; // Default.
+	int arr_algorithms[] = {14, 1, 5, 6, 7, 8, 11, 12}; // Basic track.
 	for (int i=0; i<sizeof(arr_algorithms)/sizeof(int); i++) algorithms.push_back(arr_algorithms[i]);
 
 	//Prior actions____________________________________________________________
@@ -29,14 +32,14 @@ CDQM_options::CDQM_options(){
 	ref_chips.push_back(4); //extra reference chip for tracking.
 
 	// Noise pixels.
-	_MaskedPixelsX.push_back(139);
-	_MaskedPixelsY.push_back(162);
-	_MaskedPixelsChipID.push_back(0);
-
-	_MaskedPixelsX.push_back(185);
-	_MaskedPixelsY.push_back(172);
-	_MaskedPixelsChipID.push_back(0);
-
+//	_MaskedPixelsX.push_back(139);
+//	_MaskedPixelsY.push_back(162);
+//	_MaskedPixelsChipID.push_back(0);
+//
+//	_MaskedPixelsX.push_back(185);
+//	_MaskedPixelsY.push_back(172);
+//	_MaskedPixelsChipID.push_back(0);
+//
 	_MaskedPixelsX.push_back(79);
 	_MaskedPixelsY.push_back(88);
 	_MaskedPixelsChipID.push_back(3);
@@ -44,40 +47,48 @@ CDQM_options::CDQM_options(){
 	_MaskedPixelsX.push_back(77);
 	_MaskedPixelsY.push_back(92);
 	_MaskedPixelsChipID.push_back(2);
+//
+//	_MaskedPixelsX.push_back(77);
+//	_MaskedPixelsY.push_back(92);
+//	_MaskedPixelsChipID.push_back(5);
+//
+//	_MaskedPixelsX.push_back(132);
+//	_MaskedPixelsY.push_back(54);
+//	_MaskedPixelsChipID.push_back(5);
+//
+//	_MaskedPixelsX.push_back(155);
+//	_MaskedPixelsY.push_back(40);
+//	_MaskedPixelsChipID.push_back(7);
+//
+//	_MaskedPixelsX.push_back(156);
+//	_MaskedPixelsY.push_back(40);
+//	_MaskedPixelsChipID.push_back(7);
+//
+//	_MaskedPixelsX.push_back(7);
+//	_MaskedPixelsY.push_back(35);
+//	_MaskedPixelsChipID.push_back(7);
+//
+//	_MaskedPixelsX.push_back(5);
+//	_MaskedPixelsY.push_back(219);
+//	_MaskedPixelsChipID.push_back(7);
+//
+//	_MaskedPixelsX.push_back(6);
+//	_MaskedPixelsY.push_back(217);
+//	_MaskedPixelsChipID.push_back(7);
+//
+//	_MaskedPixelsX.push_back(85);
+//	_MaskedPixelsY.push_back(120);
+//	_MaskedPixelsChipID.push_back(7);
 
-	_MaskedPixelsX.push_back(155);
-	_MaskedPixelsY.push_back(39);
-	_MaskedPixelsChipID.push_back(7);
-
-	_MaskedPixelsX.push_back(155);
-	_MaskedPixelsY.push_back(40);
-	_MaskedPixelsChipID.push_back(7);
-
-	_MaskedPixelsX.push_back(156);
-	_MaskedPixelsY.push_back(40);
-	_MaskedPixelsChipID.push_back(7);
-
-	_MaskedPixelsX.push_back(7);
-	_MaskedPixelsY.push_back(35);
-	_MaskedPixelsChipID.push_back(7);
-
-	_MaskedPixelsX.push_back(5);
-	_MaskedPixelsY.push_back(219);
-	_MaskedPixelsChipID.push_back(7);
-
-	_MaskedPixelsX.push_back(6);
-	_MaskedPixelsY.push_back(217);
-	_MaskedPixelsChipID.push_back(7);
-
-	_MaskedPixelsX.push_back(85);
-	_MaskedPixelsY.push_back(120);
-	_MaskedPixelsChipID.push_back(7);
+	_MaskedPixelsX.push_back(69);
+	_MaskedPixelsY.push_back(150);
+	_MaskedPixelsChipID.push_back(4);
 
 
 
 	truncate = false;
 	tcut = 20;
-	nchips = 8;
+	nchips = 9;
 
 
 	//Options to do methods prior to filling the DQM plots (so act on a single 
@@ -110,35 +121,36 @@ CDQM_options::CDQM_options(){
 	//Clusters ________________________________________________________________
 	clust_maker_tlow = 0;
 	clust_maker_tup = 100;
-	COGweight = 1.7;
+	COGweight = 1.3;
 	DanCorrectPosn = false;
 	
 	clust_ToT_nbins = 100;
 	clust_hitmap_nbins = 256;
 
 	align_by_clust_differences = false;
-	clust_correl_xynbins = 100;
+	clust_correl_xynbins = 400;
 	clust_correl_tnbins = 100;
 
 	clust_xlow = -4;
 	clust_xup = 4;
 	clust_ylow = -4;
 	clust_yup = 4;
-	clust_tlow = -200;
-	clust_tup = 200;
+	clust_tlow = -50;
+	clust_tup = 50;
 	clust_tbglow = -2;
 	clust_tbgup = 0;
 
 
 	//Tracking ________________________________________________________________
-	track_delt = 400;
-	track_vol_shape = 0;
-	track_vol_r = 3;
-	minNClusterPerTrack = 7;
-	track_vol_theta = 0.00002;
+	track_delt = 30;
+	track_vol_shape = 1;
+	track_vol_rx = 1;
+	track_vol_ry = 1;
+	minNClusterPerTrack = 5;
+	track_vol_thetax = 0.02;
+	track_vol_thetay = 0.02;
 	track_hitmap_nbins = 256;
 	track_tdist_nbins = 100;
-	track_vol_shape = 0;
 	track_resolution_nbins = 100;
 
 
@@ -256,9 +268,9 @@ void CDQM_options::save_ops(){
 	h_ops->SetBinContent(h_ops->GetBin(n), clust_tbglow); n++;
 	h_ops->SetBinContent(h_ops->GetBin(n), clust_tbgup); n++;
 
-
-	h_ops->SetBinContent(h_ops->GetBin(n), track_vol_r); n++;
-	h_ops->SetBinContent(h_ops->GetBin(n), track_vol_theta); n++;
+//
+//	h_ops->SetBinContent(h_ops->GetBin(n), track_vol_r); n++;
+//	h_ops->SetBinContent(h_ops->GetBin(n), track_vol_theta); n++;
 	h_ops->SetBinContent(h_ops->GetBin(n), track_delt); n++;
 	h_ops->SetBinContent(h_ops->GetBin(n), track_hitmap_nbins); n++;
 	h_ops->SetBinContent(h_ops->GetBin(n), track_tdist_nbins); n++;
@@ -351,10 +363,10 @@ void CDQM_options::load_ops(){
 	clust_tup = h_ops->GetBinContent(h_ops->GetBin(n)); n++;
 	clust_tbglow = h_ops->GetBinContent(h_ops->GetBin(n)); n++;
 	clust_tbgup = h_ops->GetBinContent(h_ops->GetBin(n)); n++;
-
-
-	track_vol_r = h_ops->GetBinContent(h_ops->GetBin(n)); n++;
-	track_vol_theta = h_ops->GetBinContent(h_ops->GetBin(n)); n++;
+//
+//
+//	track_vol_r = h_ops->GetBinContent(h_ops->GetBin(n)); n++;
+//	track_vol_theta = h_ops->GetBinContent(h_ops->GetBin(n)); n++;
 	track_delt = h_ops->GetBinContent(h_ops->GetBin(n)); n++;
 	track_hitmap_nbins = h_ops->GetBinContent(h_ops->GetBin(n)); n++;
 	track_tdist_nbins = h_ops->GetBinContent(h_ops->GetBin(n)); n++;

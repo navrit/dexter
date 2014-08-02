@@ -1,5 +1,4 @@
 #include "../../headers/data_holders/Ctrack_volume.h"
-
 //Ctrack_volume.cpp - a class to store all information and some methods about a track.
 
 //Author: Dan Saunders
@@ -18,8 +17,9 @@ Ctrack_volume::Ctrack_volume(int nchips, int minNClusters){
 		std::vector<Ccluster*> dummy;
 		_clusters.push_back(dummy);
 	}
-	_theta = 0.002;
-	_cyl_r = 0.06;
+
+//	_theta = 0.002;
+//	_cyl_r = 0.06;
 	_shape = "cylinder";
 }
 
@@ -64,26 +64,51 @@ bool Ctrack_volume::cluster_inside(Ccluster * c){
 bool Ctrack_volume::cluster_inside_diabolo(Ccluster * c){
 	bool inside = false;
 
-	float r = get_delr(c);
+	//double r = get_delr(c);
+	double delx = fabs(_seed_clust->get_gx() - c->get_gx());
+	double dely = fabs(_seed_clust->get_gy() - c->get_gy());
 
 
-	if (r < diabolo_r(c->get_gz()) &&
+//	if (r < diabolo_r(c->get_gz()) &&
+//		c->get_gt() > _seed_clust->get_gt() - _tcut &&
+//		c->get_gt() < _seed_clust->get_gt() + _tcut) inside = true;
+
+	if (delx < diabolo_rx(c->get_gz()) && dely < diabolo_ry(c->get_gz()) &&
 		c->get_gt() > _seed_clust->get_gt() - _tcut &&
-		c->get_gt() < _seed_clust->get_gt() + _tcut) inside = true;
+		c->get_gt() < _seed_clust->get_gt() + _tcut)
+			inside = true;
 
 	return inside;
 }
 
 
+//
+//
+////-----------------------------------------------------------------------------
+//
+//double Ctrack_volume::diabolo_r(double z){
+//	double delz = fabs(_seed_clust->get_gz() - z); //z distance from pinch point.
+//	return delz*_theta + _cyl_r;
+//}
+//
+
 
 
 //-----------------------------------------------------------------------------
 
-float Ctrack_volume::diabolo_r(float z){
-	float delz = fabs(_seed_clust->get_gz() - z); //z distance from pinch point.
-	return delz*sin(_theta) + _cyl_r;
+double Ctrack_volume::diabolo_rx(double z){
+	double delz = fabs(_seed_clust->get_gz() - z); //z distance from pinch point.
+	return delz*_thetax + _cyl_rx;
 }
 
+
+
+//-----------------------------------------------------------------------------
+
+double Ctrack_volume::diabolo_ry(double z){
+	double delz = fabs(_seed_clust->get_gz() - z); //z distance from pinch point.
+	return delz*_thetay + _cyl_ry;
+}
 
 
 
@@ -92,15 +117,15 @@ float Ctrack_volume::diabolo_r(float z){
 //-----------------------------------------------------------------------------
 
 bool Ctrack_volume::cluster_inside_cylinder(Ccluster * c){
-	bool inside = false;
-
-	float r = get_delr(c);
-	//std::cout<<r<<"\t"<<_cyl_r<<std::endl;
-	if (r < _cyl_r &&
-		c->get_gt() > _seed_clust->get_gt() - _tcut &&
-		c->get_gt() < _seed_clust->get_gt() + _tcut) inside = true;
-
-	return inside;
+//	bool inside = false;
+//
+//	double r = get_delr(c);
+//	//std::cout<<r<<"\t"<<_cyl_r<<std::endl;
+//	if (r < _cyl_r &&
+//		c->get_gt() > _seed_clust->get_gt() - _tcut &&
+//		c->get_gt() < _seed_clust->get_gt() + _tcut) inside = true;
+//
+//	return inside;
 }
 
 
@@ -114,11 +139,7 @@ void Ctrack_volume::fit_tracks(int ID){
 	//For now, we'll take the closest on each plane, with the condition of 
 	//having all bar 1 cluster tracks.
 	//std::cout<<"\n\n"<<_seed_clust->get_gx()<<"\t"<<_seed_clust->get_gy()<<"\t"<<_seed_clust->get_gz()<<"\t"<<_seed_clust->get_gt()<<"\t"<<_seed_clust->get_chipID()<<std::endl;
-	for (int i=0; i<_nchips; i++){
-		for (int j=0; j<_clusters[i].size(); j++){
-			//std::cout<<_clusters[i][j]->get_gx()<<"\t"<<_clusters[i][j]->get_gy()<<"\t"<<_clusters[i][j]->get_gz()<<"\t"<<_clusters[i][j]->get_gt()<<"\t"<<_clusters[i][j]->get_chipID()<<std::endl;
-		}
-	}
+
 
 	int num_clusters_left = 0; //Counter to see if enough to form a track.
 	//Filter the farthest clusters until just one per chip.
@@ -151,12 +172,12 @@ void Ctrack_volume::fit_tracks(int ID){
 void Ctrack_volume::pop_far_clusters(std::vector<Ccluster*> & clusts){
 	//Assume closest is first.
 	Ccluster * c = clusts[0];
-	float closest_r = get_delr(c);
+	double closest_r = get_delr(c);
 
 
 	//Find the closest, then empty the vector, and put the closest back.
 	for (int i=1; i<clusts.size(); i++){
-		float rc = get_delr(clusts[i]);
+		double rc = get_delr(clusts[i]);
 		if (rc < closest_r){ //If closer.
 			closest_r = rc;
 			c = clusts[i];
@@ -174,11 +195,26 @@ void Ctrack_volume::pop_far_clusters(std::vector<Ccluster*> & clusts){
 
 //-----------------------------------------------------------------------------
 
-float Ctrack_volume::get_delr(Ccluster * c){
+double Ctrack_volume::get_delr(Ccluster * c){
 
-	float delx = c->get_gx() - _seed_clust->get_gx();
-	float dely = c->get_gy() - _seed_clust->get_gy();
+	double delx = c->get_gx() - _seed_clust->get_gx();
+	double dely = c->get_gy() - _seed_clust->get_gy();
 	return pow(delx*delx + dely*dely, 0.5);
+}
+
+
+
+
+
+
+//-----------------------------------------------------------------------------
+
+int Ctrack_volume::totalNClusters(){
+	int n=0;
+	for (unsigned int i=0; i<_clusters.size(); i++){
+		n+=_clusters[i].size();
+	}
+	return n;
 }
 
 
