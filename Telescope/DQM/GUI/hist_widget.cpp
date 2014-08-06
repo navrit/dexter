@@ -618,8 +618,23 @@ void hist_widget::fit_gaussian(QColor c){
 
 
         std::stringstream ssRes;
-        ssRes<<std::setprecision(3)<<(1000*_fit_parameters[2]);
-        std::string Statsbox_text = "Sigma: " + ssRes.str() + "um";
+        std::string Statsbox_text;
+        if (QString(_h->GetTitle()).contains("xResidual") || QString(_h->GetTitle()).contains("yResidual")) {
+			ssRes<<std::setprecision(3)<<1000*(_fit_parameters[2]);
+			Statsbox_text = "Sig: " + ssRes.str() + " um";
+        }
+
+        else if (QString(_h->GetTitle()).contains("tResidual")){
+        	ssRes<<std::setprecision(3)<<(_fit_parameters[2]);
+			Statsbox_text = "Sig: " + ssRes.str() + " ns";
+        }
+
+        else {
+        	ssRes<<std::setprecision(3)<<(_fit_parameters[2]);
+			Statsbox_text = "Sig: " + ssRes.str();
+        }
+
+
 		QCPItemText * Statsbox = new QCPItemText(_Qh);
 		_Qh->addItem(Statsbox);
 		Statsbox->position->setType(QCPItemPosition::ptAxisRectRatio);

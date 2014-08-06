@@ -7,16 +7,16 @@
 CDQM_options::CDQM_options(int r){
 	tEventStep = 300e12;
 	nEvents = 1;
-	nPixHitCut = 35000;
+	nPixHitCut = 150000;
 	eventTrackN = 1200;
 	PSNumFix = 1;
 	runNumber = r;
 	std::stringstream ssRunNumber;
 	ssRunNumber<<runNumber;
-	save_file_name = "DQM_files/DQM_OnlinePlots_PSRun" + ssRunNumber.str()+ ".root";
+	save_file_name = "DQM_files/DQM_OnlinePlots_PSBulkRun" + ssRunNumber.str()+ ".root";
 	save_file_nameLongScale = "LongScale" + save_file_name;
 	replaceLongScalesFile = true;
-	alignment_save_file_name = "test_data/Alignment1146.dat";
+	alignment_save_file_name = "test_data/Alignment1274.dat";
 
 	// int arr_algorithms[] = {0, 1, 5, 6, 7, 8, 9, 11, 12};
 	//int arr_algorithms[] = {14, 1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12};
@@ -29,7 +29,7 @@ CDQM_options::CDQM_options(int r){
 	//Prior actions____________________________________________________________
 	chip_cut = 10; //produce plots until reaching this cut - useful for tests.
 	ref_chips.push_back(3); //used during correlation plots for comparing two chips.
-	ref_chips.push_back(4); //extra reference chip for tracking.
+	ref_chips.push_back(5); //extra reference chip for tracking.
 
 	// Noise pixels.
 //	_MaskedPixelsX.push_back(139);
@@ -88,7 +88,7 @@ CDQM_options::CDQM_options(int r){
 
 	truncate = false;
 	tcut = 20;
-	nchips = 9;
+	nchips = 8; // also set by alignment file.
 
 
 	//Options to do methods prior to filling the DQM plots (so act on a single 
@@ -142,12 +142,12 @@ CDQM_options::CDQM_options(int r){
 
 
 	//Tracking ________________________________________________________________
-	track_delt = 30;
+	track_delt = 80;
 	track_vol_shape = 1;
-	track_vol_rx = 1;
-	track_vol_ry = 1;
-	minNClusterPerTrack = 5;
-	track_vol_thetax = 0.02;
+	track_vol_rx = 0.5;
+	track_vol_ry = 0.5;
+	minNClusterPerTrack = 6;
+	track_vol_thetax = 0.03;
 	track_vol_thetay = 0.02;
 	track_hitmap_nbins = 256;
 	track_tdist_nbins = 100;

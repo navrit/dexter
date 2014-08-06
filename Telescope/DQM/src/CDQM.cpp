@@ -96,8 +96,6 @@ void CDQM::executeEventLoop(double hr_time){
 
 		if (_tel->isLastChunk) break;
 	}
-
-	std::cout<<"Entire file read by event number: "<<i<<std::endl;
 }
 
 

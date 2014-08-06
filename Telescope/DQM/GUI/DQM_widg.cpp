@@ -57,6 +57,9 @@ MainWindow::MainWindow(int r) : QMainWindow(0),
     ui->init_but->setFocus();
 	ui->init_but->setAutoDefault(true);
     ui->init_but->setDefault(true);
+
+    // For automated mode.
+    on_init_but_clicked();
 }
 
 
@@ -103,14 +106,17 @@ void MainWindow::on_init_but_clicked() {
     //Set up the tabs with plots.
     fill_plot_tabs();
 
+    _DQM->finalize();
+    exit (EXIT_FAILURE);
+
     //Esthetics.
     ui->append_but->setEnabled(true);
     ui->SamplingInfoBox->setEnabled(true);
     ui->plot_ops_box->setEnabled(true);
     ui->init_but->setText(QString("Restart"));
-    if (_ops->algorithms_contains(12)) ui->DQM_all_tabs->setCurrentIndex(3);
-    else if (_ops->algorithms_contains(6)) ui->DQM_all_tabs->setCurrentIndex(2);
-    else ui->DQM_all_tabs->setCurrentIndex(1);
+    //if (_ops->algorithms_contains(12)) ui->DQM_all_tabs->setCurrentIndex(3);
+    if (_ops->algorithms_contains(6) && !_ops->algorithms_contains(11)) ui->DQM_all_tabs->setCurrentIndex(2);
+    else if (!_ops->algorithms_contains(11)) ui->DQM_all_tabs->setCurrentIndex(1);
     _nsample++;
     std::stringstream ss;
     ss << _nsample;
@@ -283,6 +289,11 @@ void MainWindow::fill_plot_tabs() {
     _XResidualsHists.clear();
     _YResidualsHists.clear();
 
+    if (_ops->algorithms_contains(11)) {
+    	fill_event_view();
+    	ui->DQM_all_tabs->setCurrentIndex(3);
+    }
+
     if (_ops->algorithms_contains(1)){
         fill_ADC_Distributions(-1);
         fill_z_distribution(0);
@@ -339,8 +350,6 @@ void MainWindow::fill_plot_tabs() {
         fill_differences(1, 1, false);
     }
     if (_ops->algorithms_contains(9)) fill_temporal_differences(1);
-
-    if (_ops->algorithms_contains(11)) fill_event_view();
 
     if (_ops->algorithms_contains(12)){
         fill_generalTrackPlots();
@@ -905,7 +914,7 @@ void MainWindow::fill_ADC_Distributions(int kind){
 
     //Some tab esthetics.
     int m = 0;
-    ADC_layout->setSpacing(0);
+    ADC_layout->setSpacing(2);
     ADC_layout->setContentsMargins(m, m, m, m);
 }
 
@@ -1032,7 +1041,7 @@ void MainWindow::fill_residuals(int dir){
         hist_widget * residual_widget = get_residual(ichip, dir);
         residual_widget->_Qh->graph()->setBrush(QBrush(QColor(0,160,0,180))); //green fill.
         residual_widget->_Qh->graph()->setPen(QPen(Qt::black));
-        if (ui->FitResidualsBox->isChecked()) residual_widget->fit_gaussian(Qt::blue);
+        if (ui->FitResidualsBox->isChecked()) residual_widget->fit_gaussian(Qt::red);
         residuals_layout->addWidget(residual_widget,(int)ichip/3.0, ichip%3);
     }
 

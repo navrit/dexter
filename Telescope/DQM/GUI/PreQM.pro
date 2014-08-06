@@ -11,6 +11,8 @@ TEMPLATE = app
 
 TARGET = PreQM
 
+CONFIG   += debug_and_release
+
 
 #QMAKE_CFLAGS += -mmacosx-version-min=10.6
 #QMAKE_CXXFLAGS += -mmacosx-version-min=10.6

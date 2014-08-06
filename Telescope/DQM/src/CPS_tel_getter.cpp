@@ -42,7 +42,8 @@ std::vector<std::string> CPS_tel_getter::getPossibleFileNames(std::vector<std::s
 
 		DIR* dir = opendir((*idir).c_str());
 		if (dir == NULL) {
-			std::cout<<"Unable to open data directory: "<<std::endl;
+			std::cout<<"Unable to open data directory: "<<"\t"<<(*idir).c_str()<<std::endl;
+			std::cout<<"Check alignment file has correct plane information."<<std::endl;
 			exit (EXIT_FAILURE);
 		}
 
@@ -51,6 +52,7 @@ std::vector<std::string> CPS_tel_getter::getPossibleFileNames(std::vector<std::s
 		while ((entry = readdir(dir)) != NULL) {
 			int i = strlen(entry->d_name);
 			std::string fileName = std::string(entry->d_name);
+			std::cout<<"Considering if appropriate file: "<<fileName<<std::endl;
 			if (i<7) continue;
 			if (fileName.substr(i-6, i-1) == "-1.dat") fileNames.push_back((*idir) + fileName);
 		}
@@ -76,20 +78,23 @@ std::vector<std::string> CPS_tel_getter::getPossibleDevDirecNames() {
 	DIR* dir = opendir(dataDirec.c_str());
 	if (dir == NULL) {
 		std::cout<<"Unable to open data directory."<<std::endl;
+		std::cout<<"Check alignment file has correct plane information."<<std::endl;
 		exit (EXIT_FAILURE);
 	}
 
 	// Loop over entries.
 	struct dirent* entry;
-	while ((entry = readdir(dir)) != NULL) {
+	int ichip = 0;
+	while ((entry = readdir(dir)) != NULL && ichip != _ops->nchips) {
 		int i = strlen(entry->d_name);
 		std::string devDirec = std::string(entry->d_name);
-		if (devDirec.substr(0, 3) == "Dev" && devDirec.substr(i-1, i) != "9")
+		if (devDirec.substr(0, 3) == "Dev" && devDirec.substr(i-1, i) != "9") {
 			direcNames.push_back(dataDirec + devDirec + "/Run" + ssRun.str() + "/");
+			ichip++;
+			std::cout<<devDirec<<"\t"<<ichip<<std::endl;
+		}
 	}
 
-	delete dir;
-	delete entry;
 	return direcNames;
 }
 
@@ -191,8 +196,8 @@ bool CPS_tel_getter::fileNameCorrespondsToChip(std::string fileName, std::string
 		std::cout<<fileName<<"\t"<<chipName<<std::endl;
 	}
 	else {
-		//std::cout<<"Shit."<<std::endl;
-		//std::cout<<fileName.substr(23, chipName.size())<<"\t"<<chipName<<std::endl;
+	// 	std::cout<<"Shit."<<std::endl;
+	// 	std::cout<<fileName.substr(23, chipName.size())<<"\t"<<chipName<<std::endl;
 		return false;
 	}
 }
@@ -227,7 +232,7 @@ void CPS_tel_getter::fill_pixels(){
 		if (file.is_open()) {
 			int i=0;
 			// Set up some counters, the total, and set position to start of header.
-			int c = 0;
+			int c = header_size;
 			int total = (int)file.tellg();
 			file.seekg(header_size, std::ios::beg);
 
@@ -263,11 +268,12 @@ void CPS_tel_getter::fill_pixels(){
 				// Preparation to move on.
 				file.seekg (size, std::ios::cur); // Move ahead.
 				if (c==total) _tel->isLastChunk = true;
+				//if (c%10000==0) std::cout<<c<<"\t"<<total<<std::endl;
 				c++;
 			}
 			file.close();
 		}
-		else std::cout<<"Can't open file:\t"<<_input_file_names[chip_ID]<<std::endl;
+		else std::cout<<"Can't open file:\t"<<chip_ID<<"\t"<<_input_file_names[chip_ID]<<std::endl;
 	}
 
 	set_npixels();
@@ -408,6 +414,7 @@ void CPS_tel_getter::fill_chips(){
 		chipID++;
 	}
 	_tel->set_nchips(_tel->get_chips().size());
+	_ops->nchips = _tel->get_chips().size();
 
 
 	std::cout << "Num chips created:\t"<< _tel->get_nchips() << std::endl;
