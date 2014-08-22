@@ -1,10 +1,7 @@
-// DAQ program for the Timepix3 telescope, July 2014
+// 
+// Testpulse scan for two chips
 //
-
-// TOD0
-// - check number of packets transmitted vs. packets received
-// - clean up code
-// - check all return values
+//
 
 
 #ifdef WIN32
@@ -48,7 +45,6 @@ int  ndev_active = 0;   // number of connected devices, determined by activity o
 bool dev_ena[16];  // tells if device is connected.  max 16 devices on a SPIDR, currently max 2
 int  devIds[16];
 char devIdstrings[16][16];
-bool run_control;
 int spidr_pixel_packets_sent[2] = {0,0};     // before and after
 int spidr_data_packets_sent[2] = {0,0};     // before and after
 int spidr_mon_packets_sent[2] = {0,0};      // before and after
@@ -67,6 +63,7 @@ int main(int argc, char *argv[])
     //clock_t start_time = clock();
     //clock_t cur_time = clock();
     //double sec_elapsed = 0, prev_sec_elapsed = 0;
+    bool run_control;
     extern char *optarg; 
     int portnumber = 51000; // for run control
 
@@ -79,30 +76,11 @@ int main(int argc, char *argv[])
     socklen_t addrlen;
     pthread_t ts_thread = NULL;   // thread for 1 sec timestamps
 
-    if (argc != 3) { 
-        cout << "usage: Tpx3daq <-r> <port number>" << endl;
-        cout << "       Tpx3daq <-s> <filename prefix>" << endl;
-        cout << "       -r starts TCP/IP client on port <port number>" << endl;  
-        cout << "       -s starts stand-alone DAQ and writes to file with the given filename " << endl;  
-        return -1; 
-    } 
-
-    gethostname ( hostname, 64 );
-
-    char c = getopt(argc, argv, "r:s:");
-    switch (c) { 
-        case 'r': run_control = true;
-                  sscanf( optarg, "%d", &portnumber);
-                  cout << "[Note] starting server for run control on " << hostname << ", listening on port " << portnumber << endl;
-                  break; 
-        case 's': run_control = false; 
-                  sscanf( optarg, "%s", fileprefix);
-                  cout << "[Note] starting stand-alone DAQ on " << hostname << ", with file prefix: " << fileprefix << endl;
-                  break;
-        default : run_control = false;
-                  break;
+    if (argc != 2) { 
+        cout << "usage: TpScanDual <file-prefix>" << endl;
     }
 
+    sscanf( argv[1], "%s", fileprefix );
  
     //----------------------------------------------------------
     //Open a control connection to SPIDR - TPX3 module
@@ -143,6 +121,7 @@ int main(int argc, char *argv[])
             cout << "###getDeviceCount: " << spidrctrl->errorString() << endl;
     cout << "[Note] number of devices supported by firmware: " << ndev << endl;
 
+    ndev = 1;
 
     // check link status
     int linkstatus;
@@ -188,13 +167,6 @@ int main(int argc, char *argv[])
 
      
 
-    // select whether or not the let the FPGA do the ToT/ToA decoding
-    // gray decoding (for ToA only) has priority over LFSR decoding
-    if ( !spidrctrl->setDecodersEna(true) )
-    //if ( !spidrctrl->setDecodersEna(false) )
-        cout << "###setDecodersEna: " << spidrctrl->errorString() << endl;
-
-
     // ----------------------------------------------------------
     // Interface to Timepix3 pixel data acquisition
     // ----------------------------------------------------------
@@ -207,296 +179,318 @@ int main(int argc, char *argv[])
             if (!errstr.empty()) 
                 cout << "Dev "<< dev << " ### SpidrDaq: " << errstr << endl; 
             
-            //spidrdaq[dev]->setBufferSize( 0x00001000 ); // 16 MByte
             spidrdaq[dev]->setFlush( false ); // Don't flush when no file is open
+            //spidrdaq[dev]->setFlush( true ); // Don't flush when no file is open
             
             // Sample 'frames' as well as write pixel data to file
-            spidrdaq[dev]->setSampling( false ); // no sampling
+            //spidrdaq[dev]->setSampling( true ); // no sampling
         }
     }
+
+    // select whether or not the let the FPGA do the ToT/ToA decoding
+    // gray decoding (for ToA only) has priority over LFSR decoding
+    if ( !spidrctrl->setDecodersEna(true) )
+        cout << "###setDecodersEna: " << spidrctrl->errorString() << endl;
 
     // ----------------------------------------------------------
     // SPIDR-TPX3 and Timepix3 timers
     // ----------------------------------------------------------
     // TODO: remove?, it will be replaced by external T0-sync
     //
-    if( !spidrctrl->restartTimers() )
-        cout << "###restartTimers: " << spidrctrl->errorString() << endl;
+    //if( !spidrctrl->restartTimers() )
+    //    cout << "###restartTimers: " << spidrctrl->errorString() << endl;
 
     
-    if ( run_control ) {
-
-        //----------------------------------------------------------
-        // run control via TCP/IP
-        //----------------------------------------------------------
-    
-        // create socket and start listening
-        if ((my_socket = socket( AF_INET, SOCK_STREAM, 0 ) ) > 0)
-        //if ((my_socket = socket( AF_INET, SOCK_STREAM, O_NONBLOCK ) ) > 0)
-            cout << "The socket is created" << endl;
-        address.sin_family = AF_INET;
-        address.sin_addr.s_addr = INADDR_ANY;
-        address.sin_port = htons(portnumber);
-        if ( bind(my_socket,(struct sockaddr *)&address,sizeof(address)) == 0)
-            cout << "Binding Socket" << endl;
-        else 
-            cout << "Socket binding failed" << endl;
-        listen(my_socket,3);
-     
-        addrlen = sizeof(struct sockaddr_in);
-        // wait for client to connect (blocking !)
-        new_socket = accept(my_socket,(struct sockaddr *)&address,&addrlen);
-        if (new_socket > 0) 
-            cout << "Client " << inet_ntoa(address.sin_addr) << " is connected" << endl << endl;
-        // make socket non blocking
-        //int s;
-        //int flags = fcntl( my_socket,F_GETFL,0);
-        //assert(flags != -1);
-        //fcntl( my_socket, F_SETFL, flags | O_NONBLOCK);
-     
-    
-        //----------------------------------------------------------
-        // start command loop via run_control
-        //----------------------------------------------------------
-        bool cmd_recognised = false;
-        int cmd_length = 0;
-        char dummy[32];
-        run_nr = -1;
-        prev_run_nr = -1;
-        bool run_started = false;
-        do {   
-
-            // adds timestamp every second
-            //if (run_started) {
-            //    cur_time = clock();
-            //    sec_elapsed = (cur_time - start_time) / (double) CLOCKS_PER_SEC;
-            //    if (sec_elapsed > prev_sec_elapsed) {
-            //        timestamp( spidrctrl );
-            //        prev_sec_elapsed = sec_elapsed;    
-            //    }
-            //}
-
-            cmd_length = recv(new_socket, buffer, bufsize, 0);
-            cmd_recognised = false;
-            if (cmd_length > 0) { 
-                buffer[cmd_length] = '\0';
-                cout << "------------------------------------------" << endl;
-                cout << "message received: " << buffer << endl;  // " length " << cmd_length <<  endl;
-                cout << "------------------------------------------" << endl;
-                sscanf(buffer, "%s", cmd);
-            }
-            else {
-                sprintf( cmd, "no_cmd" );
-            }
-    
-            if ( strcmp(cmd,"start_mon")==0 ) {
-                cmd_recognised = true;
-                cout << "[Note] starting monitoring " << run_nr << endl;
-                int err = pthread_create( &ts_thread, NULL, &timestamp_per_sec, (void *) spidrctrl );
-                if (err != 0)
-                    cout << "[Error] Can not create timestamp thread, error: " << strerror(err) << endl;
-                else
-                    cout << "[Note] Timestamp thread created successfully" << endl;
-
-            }
-
-            if ( strcmp(cmd,"stop_mon")==0 ) {
-                cmd_recognised = true;
-                cout << "[Note] stopping monitoring " << run_nr << endl;
-                pthread_cancel( ts_thread );
-            }
-
-            if ( strcmp(cmd,"configure")==0 ) {
-                cmd_recognised = true;
-                cout << "[Note] configuring ..." << endl;
-                status = configure( spidrctrl );
-                if (status == true) {
-                    sprintf(buffer,"OK done configuring");
-                    cout << "[Note] " << buffer << endl;
-                }
-                else {
-                    sprintf(buffer,"FAILED to configure; status %d", status);
-                    cout << "[Error] " << buffer << endl;
-                }
-            }
-    
-            if ( strcmp(cmd,"start_run")==0 ) {
-                cmd_recognised = true;
-                char run_nr_str[16];
-                sscanf(buffer, "%s %s", dummy, run_nr_str);
-                char *ptr = strstr( buffer, run_nr_str); // point to first char in run_nr
-                int len = strlen(run_nr_str);  
-                strcpy( description, ptr+len+1);  // read in rest of string as comment
-                sscanf( run_nr_str, "%d", &run_nr);
-                if ( run_nr != prev_run_nr ) { // reset fileCntr to 1
-                    for (int dev=0; dev<ndev; dev++) {
-                        if ( dev_ena[dev] ) {
-                            spidrdaq[dev]->setFileCntr( 1 );
-                        }
-                    }
-                    prev_run_nr = run_nr;
-                }
-                    
-                cout << "[Note] starting run " << run_nr << endl;
-
-                //start_time = clock();
-  
-                char rundir[256];
-                sprintf( rundir, "Run%d/", run_nr );
-                status = start_run( spidrctrl, spidrdaq, rundir, run_nr, description);
-                status = true;
-                if (status == true) {
-                    run_started = true;
-                    sprintf(buffer,"OK run %d started", run_nr);
-                    cout << "[Note] " << buffer << endl;
-                    //spidrctrl->openShutter();
-                }
-                else {
-                    status = stop_run( spidrctrl, spidrdaq);   // stop DAQ threads
-                    run_started = false;
-                    sprintf(buffer,"FAILED start run %d status %d", run_nr, status);
-                    cout << "[Error] " << buffer << endl;
-                }
-
-                // start thread for 1 sec heartbeat
-                
-                int extcntr, intcntr;
-                if ( !spidrctrl->getExtShutterCounter( &extcntr) )
-                    cout << "###getExtShutterCounter: " << spidrctrl->errorString() << endl;
-                cout << "[Note] External shutter counter: " << extcntr << endl;
-                if ( !spidrctrl->getShutterCounter( &intcntr) )
-                    cout << "###getShutterCounter: " << spidrctrl->errorString() << endl;
-                cout << "[Note] Number of shutters given " << intcntr << endl;
-                if ( extcntr != intcntr ) 
-                    cout << "[Error] mismatch in shutter counters" << endl;
-                else 
-                    cout << "[Note] shutter counters match" << endl;
- 
-
-                
-                int err = pthread_create( &ts_thread, NULL, &timestamp_per_sec, (void *) spidrctrl );
-                if (err != 0)
-                    cout << "[Error] Can not create timestamp thread, error: " << strerror(err) << endl;
-                else
-                    cout << "[Note] Timestamp thread created successfully" << endl;
-
-                
-                
-            }
-    
-            if (strcmp(cmd,"stop_run")==0) {
-                cmd_recognised = true;
-                cout << "[Note] stopping run " << run_nr << endl;
-
-                if (ts_thread) pthread_cancel( ts_thread );
-                if ( !spidrctrl->closeShutter() )
-                    cout << "###closeShutter: " << spidrctrl->errorString() << endl;
-
-                status = stop_run( spidrctrl, spidrdaq);
-
-                // put back shutter mode to 0 (closeShutter sets it to 4)
-                int trig_mode = 0; // external shutter
-                int trig_length_us = 10000; //  us
-                int trig_freq_hz = 5; // Hz
-                int nr_of_trigs = 1; // 1 triggers
-            
-                if( !spidrctrl->setShutterTriggerConfig( trig_mode, trig_length_us,
-                                                 trig_freq_hz, nr_of_trigs ) )
-                    cout << "###setTriggerConfig: " << spidrctrl->errorString() << endl;
-
-
-                if (status == 0) {
-                    run_started = false;
-                    sprintf(buffer,"OK run %d stopped", run_nr);
-                    cout << "[Note] " << buffer << endl;
-                }
-                else {
-                    sprintf(buffer,"FAILED stop run %d status %d", run_nr, status);
-                    cout << "[Error] " << buffer << endl;
-                }
-
-                int extcntr, intcntr;
-                if ( !spidrctrl->getExtShutterCounter( &extcntr) )
-                    cout << "###getExtShutterCounter: " << spidrctrl->errorString() << endl;
-                cout << "[Note] External shutter counter: " << extcntr << endl;
-                if ( !spidrctrl->getShutterCounter( &intcntr) )
-                    cout << "###getShutterCounter: " << spidrctrl->errorString() << endl;
-                cout << "[Note] Number of shutters given " << intcntr << endl;
-                if ( extcntr != intcntr ) 
-                    cout << "[Error] mismatch in shutter counters" << endl;
-                else 
-                    cout << "[Note] shutter counters match" << endl;
-
-            }
-            
-            if ( !cmd_recognised && (cmd_length>0) ) {
-                sprintf(buffer,"FAILED unknown command");
-                cout << "[Warning] " << buffer << endl;
-            }
-    
-            if (cmd_length > 0) { // send a reply
-                cout << "[Note] sending reply to client" << endl;
-                send( new_socket, buffer, strlen(buffer), 0 );
-            }
-                //send(new_socket,buffer,bufsize,0);
-
-            //usleep(500000); // slow down loop?
-    
-        } while( strcmp(buffer,"/q") ); // use /q to quit the loop
-    
-        close(new_socket);
-        close(my_socket); 
-    
-    }
-
-
     //----------------------------------------------------------
     // stand-alone
     //----------------------------------------------------------
-    if ( !run_control ) {
 
-        bool status; 
-        bool retval;
+    bool retval;
 
-        status = configure( spidrctrl ); 
- 
-        char prefix[256];
-        sprintf( prefix, "Test/%s", fileprefix );
-        sprintf(description, "test of %s", prefix);
+    status = configure( spidrctrl ); 
 
-        start_run( spidrctrl, spidrdaq, prefix, 0, description);
-        retval = spidrctrl->openShutter();
-        if ( !retval )
-        {
-            cout << "###openShutter: " << spidrctrl->errorString() << endl;
-            status &= retval;
+    char prefix[256];
+    sprintf( prefix, "TP/%s", fileprefix );
+    sprintf(description, "test of %s", prefix);
+
+    int cfg;
+    for (int dev=0; dev<ndev; dev++) {
+        if ( dev_ena[dev] ) {
+            spidrctrl->getPllConfig(dev, &cfg);
+            cout << hex << "2: PLL config " << cfg << endl;
+            cfg = 0x1E;
+            cout << hex << "3: PLL config " << cfg << endl;
+            //cfg &= 0xFFFE;
+            //cfg |= 0x100;
+            spidrctrl->setPllConfig(dev, cfg);
+            spidrctrl->getPllConfig(dev, &cfg);
+            cout << hex << "4: PLL config " << cfg << endl;
         }
-
-         
-        int maxtime = 20;
-        for (int j=0 ; j<maxtime; j++) {
-            sleep(1);
-            timestamp( spidrctrl );
-            //for (int dev=0; dev<ndev; dev++) {
-            //    if ( dev_ena[dev] ) {
-            //          spidrctrl->getTimer(dev, &timer_lo1, &timer_hi1);  // adds timestamp to datafile
-            //    }
-            //}
-            cout << "second " << j << " of " << maxtime << endl;
-        }
-    
-        retval = spidrctrl->closeShutter(); 
-        {
-            cout << "###closeShutter: " << spidrctrl->errorString() << endl;
-            status &= retval;
-        }
-        stop_run ( spidrctrl, spidrdaq); 
-
-
     }
 
 
 
+    // ----------------------------------------------------------
+    // open data files
+    // ----------------------------------------------------------
+    char filename[256];
+    char path[256];
+    int row;
+    int col;
+    int selrow;
+    int selcol;
+    int spacing=8;
+
+
+    // Mask all but selected pixels
+    for( selrow=0; selrow<spacing; ++selrow ) {
+        for( selcol=0; selcol<spacing; ++selcol ) {
+
+            // ----------------------------------------------------------
+            // TPX3 Pixel configuration + thresholds
+            // ----------------------------------------------------------
+            //int row, col;
+            int thr, mask, tp_ena;
+            char trimfile[256];
+        
+            for (int dev=0; dev<ndev; dev++) {
+                if ( dev_ena[dev] ) {
+                    // Clear pixel configuration in chip
+                    retval = spidrctrl->resetPixels( dev );
+                    if( !retval ) {
+                        cout << "Dev "<< dev << " ###resetPixels: " << spidrctrl->errorString() << endl;
+                        status &= retval;
+                    }
+                }
+            }
+
+            for (int dev=0; dev<ndev; dev++) {
+                if ( dev_ena[dev] ) {
+                    // Clear local pixel config, no return value
+                    spidrctrl->resetPixelConfig() ;
+                    // Disable all testpulse bits
+                    retval = spidrctrl->setPixelTestEna( ALL_PIXELS, ALL_PIXELS, false) ;
+                    if( !retval ) {
+                        cout << "Dev "<< dev << " ###setPixelTestEna: " << spidrctrl->errorString() << endl;
+                        status &= retval;
+                    }
+                    // Enable all pixels 
+                    retval = spidrctrl->setPixelMask( ALL_PIXELS, ALL_PIXELS, false );
+                    if( !retval ) {
+                        cout << "Dev "<< dev << " ###setPixelMask: " << spidrctrl->errorString() << endl;
+                        status &= retval;
+                    }
+        
+                    for( row=0; row<256; ++row ) {
+                        for( col=0; col<256; ++col ) {
+                            if ( (row%spacing == selrow) && (col%spacing==selcol) ) {
+                                spidrctrl->setPixelMask( col, row, false ); // enable
+                                spidrctrl->setPixelTestEna( col, row, true);
+                            }
+                            else {
+                                spidrctrl->setPixelMask( col, row, true ); // else mask
+                                spidrctrl->setPixelTestEna( col, row, false);
+                            }
+                        }
+                        if ( col%spacing==selcol ) {
+                            spidrctrl->setCtprBit( col, 1 );
+                        }
+                    }
+        
+                    // write column testpulse register
+                    spidrctrl->setCtprBits( 1 );
+                    retval = spidrctrl->setCtpr( dev );
+                    if( !retval ) {
+                        cout << "Dev "<< dev << " ###setCtpr: " << spidrctrl->errorString() << endl;
+                        status &= retval;
+       	            }
+        
+                    // read thresholds from file
+                    char *charptr; 
+                    char line[256];
+        
+                    sprintf(trimfile, "%s/%s_trimdacs.txt", CFG_PATH, devIdstrings[dev]);
+                    FILE *fp = fopen(trimfile, "r");
+                    if (fp == NULL) { 
+                        cout << "[Warning] can not open trimdac file: " << trimfile << endl;
+                        sprintf(trimfile, "%s/default_trimdacs.txt", CFG_PATH);
+                        cout << "[Warning] trying default trimdac file" << endl;
+                        fp = fopen(trimfile, "r");
+                        if (fp == NULL) {
+                             cout << "[Error] can not open trimdac file: " << trimfile << endl;
+                             return false;
+                        }
+                    }
+                    cout << "[Note] reading " << trimfile << endl; 
+                    while ( !feof(fp) ) {
+                        charptr = fgets(line, 256, fp);   
+                        //if ( charptr == NULL) 
+                        //    cout << "fgets returned NULL" << endl;
+                        if (line[0] != '#') {
+                            sscanf(line, "%d %d %d %d %d", &col, &row, &thr, &mask, &tp_ena);
+                            retval =  spidrctrl->setPixelThreshold( col, row, thr);
+                            if ( !retval ) {
+                                cout << "Dev "<< dev << " ###setPixelThreshold: " << spidrctrl->errorString() << endl;
+                                status &= retval;
+                            }
+        
+                            if (mask) {
+                                retval = spidrctrl->setPixelMask( col, row, true );
+                                if ( !retval ) {
+                                    cout << "Dev "<< dev << " ###setPixelMask: " << spidrctrl->errorString() << endl;
+                                    status &= retval;
+                                }
+                            }
+                        }
+                    }
+                    fclose(fp);
+        
+                    // Write pixel config to chip
+                    if( !spidrctrl->setPixelConfig( dev ) )
+                        cout << "###setPixelConfig: " << spidrctrl->errorString() << endl;
+                    
+        
+                }
+            }
+        
+            // ----------------------------------------------------------
+            // TPX3 Testpulse configuration
+            // ----------------------------------------------------------
+        
+            //int trig_mode = 4; // SPIDR_TRIG_AUTO;
+            int trig_mode = 4; // 0 = external shutter
+            int trig_length_us = 200000; // 100 ms
+            int trig_freq_hz = 10; // Hz
+            int nr_of_trigs = 1; // 1 triggers
+                    
+            retval = spidrctrl->setShutterTriggerConfig( trig_mode, trig_length_us,
+                                             trig_freq_hz, nr_of_trigs );
+            if ( !retval ) {
+                cout << "###setShutterTriggerConfig: " << spidrctrl->errorString() << endl;
+                status &= retval;
+            }
+        
+            for (int dev=0; dev<ndev; dev++) {
+               if ( dev_ena[dev] ) {
+                    if( !spidrctrl->setGenConfig( dev,
+                                                 //TPX3_POLARITY_EMIN |
+                                                 TPX3_POLARITY_HPLUS |
+                                                 TPX3_ACQMODE_TOA_TOT |
+                                                 TPX3_GRAYCOUNT_ENA |
+                                                 TPX3_FASTLO_ENA |
+                                                 TPX3_TESTPULSE_ENA  // | 
+                                                 //TPX3_SELECTTP_EXT_INT |
+                                                 //TPX3_SELECTTP_DIGITAL
+                                               ) )
+                    cout << "###setGenCfg: " << spidrctrl->errorString() << endl;
+                    // read back configuration
+                    int gen_cfg;
+                    if ( !spidrctrl->getGenConfig( dev, &gen_cfg) )
+                         cout << "###getGenCfg: " << spidrctrl->errorString() << endl;
+                    cout << "gen config " << hex << gen_cfg << endl;
+        
+                    spidrdaq[dev]->setSampling( true );
+                }
+            }
+        
+        
+            // Set Timepix3 into acquisition mode
+            retval = spidrctrl->datadrivenReadout();
+            if( !retval ) {
+                cout << "###ddrivenReadout: " << spidrctrl->errorString() << endl;
+                status &= retval;
+            }
+                
+            // reapply ethernet mask
+            for (int dev=0; dev<ndev; dev++) {
+                if ( dev_ena[dev] ) {
+                    retval = spidrctrl->getHeaderFilter  ( dev, &eth_mask, &cpu_mask );
+                    if( !retval ) {
+                        cout << "Dev "<< dev << " ###getHeaderFilter: " << spidrctrl->errorString() << endl;
+                        status &= retval;
+                    }
+                    //cpu_mask = 0x0080;
+                    eth_mask = 0xFFFF;
+                    retval = spidrctrl->setHeaderFilter  ( dev, eth_mask,   cpu_mask );
+                    if( !retval ) {
+                        cout << "Dev "<< dev << " ###setHeaderFilter: " << spidrctrl->errorString() << endl;
+                        status &= retval;
+                    }
+                }
+            }
+                            
+            if( !spidrctrl->restartTimers() )
+                cout << "###restartTimers: " << spidrctrl->errorString() << endl;
+        
+        
+            int thrstep_c = 16;
+            int thrstep_f = 2;
+            //for ( int thr_c = 0; thr_c<256; thr_c+=thrstep_c) {
+            for ( int thr_c = 0; thr_c<33; thr_c+=thrstep_c) {
+              for ( int thr_f = 0; thr_f<200; thr_f+=thrstep_f) {
+                for (int dev=0; dev<ndev; dev++) {
+                    if ( dev_ena[dev] ) {
+        
+                        if ( !spidrctrl->setDac( dev, TPX3_VTP_FINE, thr_f ) )
+                            cout << "###setDac: " << spidrctrl->errorString() << endl;
+                        // coarse testpulse voltage 
+                        if ( !spidrctrl->setDac( dev, TPX3_VTP_COARSE, thr_c ) )
+                            cout << "###setDac: " << spidrctrl->errorString() << endl;
+                        // configure testpulse generator 
+                        if( !spidrctrl->setTpNumber( dev, 100 ) )
+                            cout << "###setTpNumber: " << spidrctrl->errorString() << endl;
+                        if( !spidrctrl->setTpPeriodPhase( dev, 50, 0 ) )
+                            cout << "###setTpPeriodPhase: " << spidrctrl->errorString() << endl;
+        
+        
+                        //sprintf(filename, "%sCHIP%d/TestPulse/%s_thr%d.dat", path, dev, prefix, thr);
+                        sprintf(description, "testpulse data of chip %d thr_c = %d thr_f = %d", dev, thr_c, thr_f);
+                        sprintf( filename, "%s/CHIP%d/%s%s_sc%d_sr%d_thr_c%d_f%d.dat", DATA_PATH, dev, prefix, devIdstrings[dev], selcol, selrow, thr_c, thr_f );
+                        cout << "[Note] opening data file" << filename << endl;
+                        retval = spidrdaq[dev]->startRecording( filename, 0 , description );
+                        if ( !retval ) {
+                            cout << "Dev "<< dev << " ###startRecording: " << spidrctrl->errorString() << endl;
+                            status &= retval;
+                        }
+        
+        
+                    }
+                }
+        
+                // Wait for the DAC to stabilise    
+                usleep(100);
+                    
+                // Start triggers
+                cout << "[Note] starting auto trigger " << endl;
+                if( !spidrctrl->startAutoTrigger() )
+                    cout << "###startAutoTrigger: " << spidrctrl->errorString() << endl;
+                
+                int shutter_length_us = 50000;
+                usleep(shutter_length_us);
+                
+                for (int dev=0; dev<2; dev++) 
+                {
+                    if ( dev_ena[dev] ) {
+                        retval = spidrdaq[dev]->stopRecording();
+               
+                    }
+                } 
+        
+                int extcntr, intcntr;
+                if ( !spidrctrl->getExtShutterCounter( &extcntr) )
+                    cout << "###getExtShutterCounter: " << spidrctrl->errorString() << endl;
+                cout << "[Note] External shutter counter: " << extcntr << endl;
+                if ( !spidrctrl->getShutterCounter( &intcntr) )
+                    cout << "###getShutterCounter: " << spidrctrl->errorString() << endl;
+                cout << "[Note] Number of shutters given " << intcntr << endl;
+              
+              }
+        
+            }
+             
+        }
+    }
+            
     //----------------------------------------------------------
     // common closing / cleaning
     //----------------------------------------------------------
@@ -543,9 +537,6 @@ bool configure( SpidrController *spidrctrl )
 
     for (int dev=0; dev<ndev; dev++) {
         if ( dev_ena[dev] ) {
-            // if ( ( (devIds[dev] & 0xFFFFF) == 0x00000 ) || ( (devIds[dev] & 0xFFFFF) == 0xFFFFF ) ) // no chip ID
-            //      sprintf(dacfile, "%s/default_dacs.txt", CFG_PATH);
-            //else
             sprintf(dacfile, "%s/%s_dacs.txt", CFG_PATH, devIdstrings[dev]);
             FILE *fp = fopen(dacfile, "r");
             if (fp == NULL) { 
@@ -570,7 +561,6 @@ bool configure( SpidrController *spidrctrl )
                             status &= retval;
                         }
                     }
-                    //cout << dac_nr <<  "  " << dac_val << endl;
                 }
             }
             fclose(fp);
@@ -688,51 +678,11 @@ bool configure( SpidrController *spidrctrl )
     
     
     // ----------------------------------------------------------
-    // TPX3 Testpulse configuration
-    // ----------------------------------------------------------
-
-    // Test pulse and CTPR configuration
-    // Timepix3 test pulse configuration
-     for (int dev=0; dev<ndev; dev++) {
-         if ( dev_ena[dev] ) {
-             retval = spidrctrl->setTpPeriodPhase( dev, 10, 0 );
-             if( !retval ) {
-                 cout << "Dev "<< dev << " ###setTpPeriodPhase: " << spidrctrl->errorString() << endl;
-                 status &= retval;
-             }
-             retval = spidrctrl->setTpNumber( dev, 1 );
-             if( !retval ) {
-                 cout << "Dev "<< dev << " ###setTpNumber: " << spidrctrl->errorString() << endl;
-                 status &= retval;
-             }
-         }
-     }
-
-    // Enable test-pulses for some columns
-     //int col;
-     for (int dev=0; dev<ndev; dev++) {
-         if ( dev_ena[dev] ) {
-             for( col=0; col<256; ++col ) {
-                 if( col == 127 )
-                     spidrctrl->setCtprBit( col, 1 );
-                 retval = spidrctrl->setCtpr( dev );
-                 if( !retval ) {
-                     cout << "Dev "<< dev << " ###setCtpr: " << spidrctrl->errorString() << endl;
-                     status &= retval;
-                 }
-             }
-         }
-     }
-
-
-    // ----------------------------------------------------------
-    // Trigger configuration, parameter not relevant if shutter is opened/close 'manually'
-    // ----------------------------------------------------------
 
     // Configure the shutter trigger
     //int trig_mode = 4; // SPIDR_TRIG_AUTO;
-    int trig_mode = 0; // external shutter
-    int trig_length_us = 10000; //  us
+    int trig_mode = 4; // 0 = external shutter
+    int trig_length_us = 500000; // 50 ms
     int trig_freq_hz = 5; // Hz
     int nr_of_trigs = 1; // 1 triggers
     
@@ -760,13 +710,14 @@ bool configure( SpidrController *spidrctrl )
     for (int dev=0; dev<ndev; dev++) {
         if ( dev_ena[dev] ) {
             retval = spidrctrl->setGenConfig( dev,
-                                     TPX3_POLARITY_EMIN |
+                                     TPX3_POLARITY_HPLUS |
+                                     //TPX3_POLARITY_EMIN |
                                      TPX3_ACQMODE_TOA_TOT |
                                      TPX3_GRAYCOUNT_ENA |
-                                   TPX3_TESTPULSE_ENA |
-                                   TPX3_SELECTTP_EXT_INT |
-                                   TPX3_SELECTTP_DIGITAL |
-                                   TPX3_FASTLO_ENA
+                                     TPX3_TESTPULSE_ENA |
+                                     //TPX3_SELECTTP_EXT_INT |
+                                     //TPX3_SELECTTP_DIGITAL |
+                                     TPX3_FASTLO_ENA
                                    ); 
     
             if( !retval ) {
@@ -911,27 +862,25 @@ bool start_run( SpidrController *spidrctrl, SpidrDaq **spidrdaq, char *prefix, i
         }
     }
 
-    if ( run_control ) {
-        // copy trimdac settings to rundirectory
-        for (int dev=0; dev<ndev; dev++) {
-            if ( dev_ena[dev] ) {
-                sprintf(dacfile, "%s/%s_trimdacs.txt", CFG_PATH, devIdstrings[dev]);
-                FILE *fp = fopen(dacfile, "r");
-                if (fp == NULL) { 
-                    cout << "[Warning] can not open dac file: " << dacfile << endl; 
-                    sprintf(dacfile, "%s/default_trimdacs.txt", CFG_PATH);
-                }
-                sprintf(dacfile_out, "%s/CHIP%d/Run%d/%s_trimdac.txt", DATA_PATH, dev, run_nr, devIdstrings[dev]);
-                FILE *fpout = fopen(dacfile_out, "w");
-                cout << "[Note] copying " << dacfile << " to run directory" << endl;
-                while ( !feof(fp) ) {
-                    char *cptr = fgets(line, 256, fp);
-                    if (cptr != 0 ) 
-                        fputs(line, fpout);
-                }
-                fclose(fp);
-                fclose(fpout);
+    // copy trimdac settings to rundirectory
+    for (int dev=0; dev<ndev; dev++) {
+        if ( dev_ena[dev] ) {
+            sprintf(dacfile, "%s/%s_trimdacs.txt", CFG_PATH, devIdstrings[dev]);
+            FILE *fp = fopen(dacfile, "r");
+            if (fp == NULL) { 
+                cout << "[Warning] can not open dac file: " << dacfile << endl; 
+                sprintf(dacfile, "%s/default_trimdacs.txt", CFG_PATH);
             }
+            sprintf(dacfile_out, "%s/CHIP%d/Run%d/%s_trimdac.txt", DATA_PATH, dev, run_nr, devIdstrings[dev]);
+            FILE *fpout = fopen(dacfile_out, "w");
+            cout << "[Note] copying " << dacfile << " to run directory" << endl;
+            while ( !feof(fp) ) {
+                char *cptr = fgets(line, 256, fp);
+                if (cptr != 0 ) 
+                    fputs(line, fpout);
+            }
+            fclose(fp);
+            fclose(fpout);
         }
     }
    
@@ -1141,3 +1090,6 @@ bool devId_tostring ( int devId, char *devIdstring)
     sprintf(devIdstring,"W%04d_%c%02d", waferno, (char)(id_x-1) + 'A', id_y);  // make readable device identifier
     return true;
 }
+
+
+

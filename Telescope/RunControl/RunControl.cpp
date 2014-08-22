@@ -187,6 +187,8 @@ int main(int argc, char *argv[])
     char cmd[128]; 
     char retstatus[128]; 
     char retcmd[128]; 
+    int  runnr;
+    
 
     cout << endl << "============================================" << endl;
     cout << "available RunControl commands: " << endl;
@@ -202,8 +204,14 @@ int main(int argc, char *argv[])
 
             // this part of the code should go to the start_run_button handler
            if ( strstr( rcbuffer, "start_run") ) {
-           
+               int numargs = sscanf( rcbuffer, "%s %d", cmd, &runnr);
+               if ( numargs < 2 ) {
+                   cout << "[Warning] start_run needs a run number" << endl;
+                   cout << "[Warning] run not started" << endl;
+               }
+               else {
                cout << "[Note] RunControl: begin of start_run command" << endl;
+
                if ( tluServerActive ) {
                    //  setVeto
                    sprintf( tluCmd , "setVeto");
@@ -221,7 +229,7 @@ int main(int argc, char *argv[])
                        send( daqSockfd[i], rcbuffer , strlen(rcbuffer), 0);
                    }
                }
-               cout << "[Note] RunControl is waiting for a replies" << endl;
+               cout << "[Note] RunControl is waiting for replies" << endl;
                for (int i=0 ; i<numDaqConn ; i++ ) {
                    if ( daqServerActive[i] ) {
                        msglen = recv( daqSockfd[i], buffer, buffersize, 0);
@@ -249,10 +257,12 @@ int main(int argc, char *argv[])
                }
 
                cout << "[Note] RunControl end of start_run command" << endl << endl;
+             }
            }
 
                         
-           if ( strstr( rcbuffer, "configure") || strstr( rcbuffer, "stop_run") ) { 
+           if ( strstr( rcbuffer, "configure") || strstr( rcbuffer, "stop_run") ||
+                strstr( rcbuffer, "start_mon") || strstr( rcbuffer, "stop_mon") ) { 
                sscanf( rcbuffer, "%s", cmd);
            
                cout << "[Note] RunControl: begin of " << cmd << " command" << endl;
