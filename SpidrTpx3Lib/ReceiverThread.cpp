@@ -67,15 +67,6 @@ ReceiverThread::ReceiverThread( int      *ipaddr,
 	}
     }
 
-  // Create and connect the socket
-  _sock = new QUdpSocket();
-  if( !_sock->bind( QHostAddress(_addr), _port ) )
-    {
-      _errString = QString("Failed to bind to adapter/port ") + _addrStr +
-	QString(": ") + _sock->errorString();
-      _stop = true;
-    }
-
   // Don't start the thread until a buffer has been allocated
   // (see setBufferSize)
   if( _recvBuffer )
@@ -87,7 +78,8 @@ ReceiverThread::ReceiverThread( int      *ipaddr,
 
 ReceiverThread::~ReceiverThread()
 {
-  // In case the thread is still running...
+  // In case the thread is still running
+  // (but rather stop it beforehand calling stop() directly..)
   this->stop();
   if( _recvBuffer ) delete [] _recvBuffer;
 }
@@ -101,8 +93,6 @@ void ReceiverThread::stop()
       _stop = true;
       //this->exit(); // Stop this thread's event loop
       this->wait(); // Wait until this thread (i.e. function run()) exits
-      _sock->close();
-      delete _sock;
     }
 }
 
@@ -110,6 +100,15 @@ void ReceiverThread::stop()
 
 void ReceiverThread::run()
 {
+  // Create and connect the socket
+  _sock = new QUdpSocket();
+  if( !_sock->bind( QHostAddress(_addr), _port ) )
+    {
+      _errString = QString("Failed to bind to adapter/port ") + _addrStr +
+	QString(": ") + _sock->errorString();
+      _stop = true;
+    }
+
   while( !_stop )
     {
       if( _sock->waitForReadyRead( 100 ) )
@@ -120,6 +119,9 @@ void ReceiverThread::run()
       //  which may arrive after _suspend has been reset to false)
       if( _suspend && !_suspended ) _suspended = true;
     }
+
+  _sock->close();
+  delete _sock;
 }
 
 // ----------------------------------------------------------------------------
