@@ -169,7 +169,7 @@ int main( int argc, char *argv[] )
 	    {
 	      if( i > 0 ) cout << ", ";
 	      qaddr.setAddress( *qi );
-	      cout << qaddr.toString().toAscii().constData();
+	      cout << qaddr.toString().toLatin1().constData();
 	    }
 	}
       cout << endl;
@@ -178,7 +178,7 @@ int main( int argc, char *argv[] )
 	{
 	  cout << "change to: ";
 	  qaddr.setAddress( addr_new );
-	  cout << qaddr.toString().toAscii().constData() << endl;
+	  cout << qaddr.toString().toLatin1().constData() << endl;
 
 	  for( i=0; i<ports; ++i )
 	    if( !spidrctrl.setIpAddrDest( i + SPIDR_IPMON_OFFS,
@@ -284,7 +284,7 @@ int main( int argc, char *argv[] )
 		{
 		  cout << "addr src ";
 		  qaddr.setAddress( *qi );
-		  cout << qaddr.toString().toAscii().constData();
+		  cout << qaddr.toString().toLatin1().constData();
 		}
 	      if( !spidrctrl.getIpAddrDest( i + SPIDR_IPMON_OFFS, &ipaddr ) )
 		{
@@ -297,7 +297,7 @@ int main( int argc, char *argv[] )
 		{
 		  cout << ", addr dst ";
 		  qaddr.setAddress( *qi );
-		  cout << qaddr.toString().toAscii().constData();
+		  cout << qaddr.toString().toLatin1().constData();
 		}
 
 	      // IP ports
@@ -346,12 +346,12 @@ int main( int argc, char *argv[] )
 		{
 		  if( i > 0 ) cout << ", ";
 		  qaddr.setAddress( *qi );
-		  cout << qaddr.toString().toAscii().constData();
+		  cout << qaddr.toString().toLatin1().constData();
 		}
 	    }
 	  cout << endl << "change to: ";
 	  qaddr.setAddress( addr_new );
-	  cout << qaddr.toString().toAscii().constData() << endl;
+	  cout << qaddr.toString().toLatin1().constData() << endl;
 
 	  for( i=0; i<ports; ++i )
 	    if( !spidrctrl.setIpAddrSrc( i + SPIDR_IPMON_OFFS, *paddr_new_i ) )
