@@ -17,7 +17,7 @@ SpidrTpx3Tv::SpidrTpx3Tv()
 
   _lbVersion->setText( VERSION );
 
-  connect( _actionExit, SIGNAL(activated()), this, SLOT(close()) );
+  connect( _actionExit, SIGNAL(triggered()), this, SLOT(close()) );
 
   connect( _pbOn, SIGNAL(clicked()), this, SLOT(onOff()) );
   connect( _pbResetImage, SIGNAL(clicked()), this, SLOT(resetPixelCounters()) );
