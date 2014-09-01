@@ -571,7 +571,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tpx.daqThread.clear()
 
     def onSpinVisDecay(self):
-        self.tpx.daqThread.decayVal=self.spinVisDecay.getValue()
+        self.tpx.daqThread.decayVal=float(self.spinVisDecay.value())/self.spinVisDecay.maximum()
 
     def updateVisualization(self):
         state=False
@@ -692,7 +692,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                     self.viewerTOT.setData(self.tpx.matrixTOT)
                     self.viewerTOT.cm.setHMin(0)
-                    self.viewerTOT.cm.setHMax(100)
+                    self.viewerTOT.cm.setHMax(1024)
                     self.viewerTOT.tpx=self.tpx
 
                     self.viewerMask.setData(self.tpx.matrixMask)
@@ -707,7 +707,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                     self.viewerCounts.setData(self.tpx.matrixCounts)
                     self.viewerCounts.cm.setHMin(0)
-                    self.viewerCounts.cm.setHMax(200)
+                    self.viewerCounts.cm.setHMax(1000)
                     self.viewerCounts.tpx=self.tpx
 
                     if self.tpx.daq:

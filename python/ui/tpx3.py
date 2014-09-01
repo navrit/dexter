@@ -104,6 +104,7 @@ class DaqThread(QThread):
                 for x in range(self.data.shape[0]):
                     for y in range(self.data.shape[1]):
                         self.data[x,y]=0
+                        self.parent.matrixCounts[x,y]=0
                 self.__clear=False
 
             if self.abort:
@@ -114,7 +115,7 @@ class DaqThread(QThread):
             low_values_indices = self.data < 1.0  # Where values are low
             self.data[low_values_indices] = 0  # All low values set to 0xzcxzczxczxc
 
-            next_frame=self.parent.getSample(1024*1024,1)
+            next_frame=self.parent.getSample(1024*16,10)
             self.rate.processed(0)
             if next_frame:
                if 0:
@@ -123,14 +124,14 @@ class DaqThread(QThread):
                    time.sleep(0.005)
                    hits_processed=0
                    while True:
-                       r,x,y,data,tstp=self.parent.nextPixel()
+                       r,x,y,d,tstp=self.parent.nextPixel()
                        if not r: break
-                       data>>=4
-                       data&=0x2FF
+                       d=d>>4
+                       d=d&0x3FF
                        if self.displayMode==DISMODE_OVERWRITE:
-                          self.data[x,y]=data
+                          self.data[x,y]=d
                        else:
-                           self.data[x,y]+=data
+                           self.data[x,y]+=d
                        self.parent.matrixCounts[x,y]+=1
                        hits_processed+=1
                self.rate.processed(hits_processed)
