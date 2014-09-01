@@ -12,6 +12,11 @@
 # to generate a 32-bit version on a 64-bit machine:
 #   qmake -spec linux-g++-32 SPIDR-TPX3.pro -r
 #
+# To compile with TLU support run
+#  qmake "DEFINES += TLU" SPIDR-TPX3.pro -r
+# To compile with probestation support run
+#  qmake "DEFINES += CERN_PROBESTATION" SPIDR-TPX3.pro -r
+#
 
 TEMPLATE = subdirs
 
