@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1064</width>
-    <height>926</height>
+    <height>950</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -136,6 +136,7 @@
     <addaction name="actionHitRate"/>
     <addaction name="actionDemoConfig"/>
     <addaction name="actionDummyGenerator"/>
+    <addaction name="actionVisualisation"/>
     <addaction name="actionOutputs"/>
     <addaction name="separator"/>
     <addaction name="actionFullScreen"/>
@@ -1574,6 +1575,105 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QDockWidgetClose" name="dockVisualisation">
+   <property name="windowTitle">
+    <string>Visualisation</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockVisualisationContents">
+    <layout class="QVBoxLayout" name="dockVisualisationVerticalLayout">
+     <item>
+      <layout class="QFormLayout" name="formLayout_2">
+       <property name="fieldGrowthPolicy">
+        <enum>QFormLayout::ExpandingFieldsGrow</enum>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>TOT</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="comboVisMode">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <item>
+          <property name="text">
+           <string>Decay</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Integrate</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Overwrite</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="spinVisDecay">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="value">
+          <number>90</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonVisClear">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Clear</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="actionGeneral">
    <property name="checkable">
     <bool>true</bool>
@@ -1805,6 +1905,14 @@
    </property>
    <property name="text">
     <string>Dummy &amp;Generator</string>
+   </property>
+  </action>
+  <action name="actionVisualisation">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Visualisation</string>
    </property>
   </action>
  </widget>

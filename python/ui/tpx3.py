@@ -60,7 +60,9 @@ class Rate():
             self.new_events=0
             self.updateRateSignal.sig.emit("%.3f"%rate)
 
-
+DISMODE_DECAY=0
+DISMODE_INT=1
+DISMODE_OVERWRITE=2
 
 class DaqThread(QThread):
     def __init__(self, parent=None):
@@ -71,6 +73,9 @@ class DaqThread(QThread):
         self.updateRate = MySignal()
         self.refreshDisplay = MySignal()
         self.rate=Rate(refresh=0.05,updateRateSignal=self.updateRate, refreshDisplaySignal=self.refreshDisplay)
+        self.displayMode=0
+        self.decayVal=0.98
+        self.__clear=False
 
     def stop(self):
         self.abort = True
@@ -81,7 +86,8 @@ class DaqThread(QThread):
     def __del__(self):
         print "Wating ..."
         self.wait()
-
+    def clear(self):
+        self.__clear=True
     def run(self):
         print "Starting DAQ thread"
         #prev_ref=0
@@ -94,19 +100,22 @@ class DaqThread(QThread):
         hits=np.zeros( (256,256) , dtype =np.int)
 
         while True:
+            if self.__clear:
+                for x in range(self.data.shape[0]):
+                    for y in range(self.data.shape[1]):
+                        self.data[x,y]=0
+                self.__clear=False
+
             if self.abort:
                 return
+            if self.displayMode==DISMODE_DECAY:
+                self.data*=self.decayVal
 
-            self.data*=0.98
-        #if 0:
             low_values_indices = self.data < 1.0  # Where values are low
             self.data[low_values_indices] = 0  # All low values set to 0xzcxzczxczxc
-            #print "getSample"
-            next_frame=self.parent.getSample(1024*1024,10)
-            time.sleep(0.04)
-            #next_frame=self.parent.spidrDaq.getSample(100,10)
+
+            next_frame=self.parent.getSample(1024*1024,1)
             self.rate.processed(0)
-            #print next_frame
             if next_frame:
                if 0:
                  hits_processed=self.parent.daq.getNumpyFrames(tot,hits)
@@ -118,8 +127,10 @@ class DaqThread(QThread):
                        if not r: break
                        data>>=4
                        data&=0x2FF
-    #                   print x,y,data
-                       self.data[x,y]+=data
+                       if self.displayMode==DISMODE_OVERWRITE:
+                          self.data[x,y]=data
+                       else:
+                           self.data[x,y]+=data
                        self.parent.matrixCounts[x,y]+=1
                        hits_processed+=1
                self.rate.processed(hits_processed)
@@ -160,7 +171,7 @@ class MyUDPServer:
 #                print "%16X"%raw0, hdr
 
 
-    def getFrame(self):
+    def getFrame(self,timeoutms=10):
         tries=1000
         mask=0xFFFF000000000000
         val=0x71A0000000000000
@@ -221,7 +232,7 @@ class TPX3:
            self._connectionErrString=self.daq.errorString()
            raise RuntimeError("Unable to connect (%s)"%msg)
         self.daq.setSampling(True)
-        self.daq.setSampleAll(True )
+        self.daq.setSampleAll(True)
     elif daq=="custom":
         self.daq=MyUDPServer()
     else:
@@ -401,8 +412,8 @@ class TPX3:
   # DAQ
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-  def getFrame(self):
-    return self.daq.getFrame()
+  def getFrame(self,timeoutms=10):
+    return self.daq.getFrame(timeoutms)
 
   def getSample(self,size,timeout=10):
     return self.daq.getSample2(size,timeout)
@@ -531,7 +542,8 @@ class TPX3:
 
   def setPixelConfig(self):
     restart=0
-    if self.daqThread.isRunning():
+
+    if self.daq!=None and self.daqThread.isRunning():
         self.daqThread.stop()
         self.daqThread.wait()
         restart=1
@@ -618,6 +630,7 @@ class TPX3:
     r,fuses=self.ctrl.getDeviceId(self.id)
     if fuses==0:
       return '-'
+    print "%08x"%fuses
     x=fuses&0xF
     y=(fuses>>4)&0xF
     w=(fuses>>8)&0xFFF
@@ -633,12 +646,12 @@ class TPX3:
   def _log_ctrl_cmd(self,msg,result):
     if result:
 #      logging.debug("%-80s [  OK  ]"%msg)
-      #print("%-80s [  OK  ]"%msg)
-        pass
+      print("%-80s [  OK  ]"%msg)
+      #  pass
     else:
 #      logging.error("%-80s [FAILED] (%s)"%(msg,self.ctrl.errorString()))
-      #print("%-80s [FAILED] (%s)"%(msg,self.ctrl.errorString()))
-        pass
+      print("%-80s [FAILED] (%s)"%(msg,self.ctrl.errorString()))
+      #  pass
 
   def connectionStateString(self):
       return self._connectionStateString
@@ -923,7 +936,7 @@ class DummyTPX3:
         pass
     def pauseReadout(self):
         pass
-    def getFrame(self):
+    def getFrame(self,timeoutms=1):
         return self.daq.getFrame()
 
     def getSample(self,size,timeout=10):

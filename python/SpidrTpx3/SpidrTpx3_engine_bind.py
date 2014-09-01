@@ -38,7 +38,9 @@ mod.add_include('"../../SpidrTpx3Lib/tpx3defs.h"')
 mod.add_enum('Defines', ['ALL_PIXELS'])
 mod.add_enum('tpx3_defs',load_defines('../SpidrTpx3Lib/tpx3defs.h',defs=defs))
 
-
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#                                                SpidrController                                                      #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 SpidrController = mod.add_class('SpidrController')
 SpidrController.add_constructor([param('int', 'ipaddr3'),param('int', 'ipaddr2'),param('int', 'ipaddr1'),param('int', 'ipaddr0'),param('int', 'port')])
@@ -123,8 +125,9 @@ if DEFINE_CERN_PROBESTATION:
 if DEFINE_TLU:
   SpidrController.add_method('tlu_enable',            'bool',        [param('int', 'dev_nr'),param('int', 'enable')])
 
-
-
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#                                                    SpidrDaq                                                         #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 SpidrDaq = mod.add_class('SpidrDaq')
 SpidrDaq.add_constructor([param('int', 'ipaddr3'),param('int', 'ipaddr2'),param('int', 'ipaddr1'),param('int', 'ipaddr0'),param('int', 'port')])
@@ -143,6 +146,13 @@ SpidrDaq.add_method('nextPixel',       'bool',        [param('int*', 'x', transf
                                                        param('int*', 'y', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),
                                                        param('int*', 'data', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),
                                                        param('int*', 'timestamp', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+SpidrDaq.add_method('getFrame',        'bool',        [param('int', 'timeout_ms')])
+
+SpidrDaq.add_method('startRecording',  'bool',        [param('std::string', 'filename'), param('int', 'runnr'),
+                                                       param('std::string', 'descr'), param('bool', 'include_pixelconfig')])
+SpidrDaq.add_method('stopRecording',   'bool',        [])
+
+
 if 1:
   SpidrDaq.add_custom_method_wrapper( method_name="getSample2", wrapper_name="getSample2_imp", wrapper_body="""
 PyObject *

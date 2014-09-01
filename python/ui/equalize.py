@@ -115,8 +115,8 @@ class EqualizeThread(QThread):
 #                    self.emit(SIGNAL("progress(int)"), step)
                     self.tpx.setDac(TPX3_VTHRESH_FINE,i)
                     self.tpx.openShutter()
-                    r=self.tpx.getFrame()
-                    #print "Get frame",r
+                    r=self.tpx.getFrame(100)
+                    print "Get frame",r
                     ppp=0
                     while True:
                        r,x,y,data,etoa=self.tpx.nextPixel()
@@ -135,7 +135,7 @@ class EqualizeThread(QThread):
                       self.tpx.pauseReadout()
                       self.tpx.setPixelConfig()
                       self.tpx.sequentialReadout()
-                      self.tpx.flush_udp_fifo(0x71FF000000000000)#flush until load matrix
+                      #self.tpx.flush_udp_fifo(0x71FF000000000000)#flush until load matrix
                       to_mask=0
 
         _id=0
@@ -253,7 +253,7 @@ class EqualizeThread(QThread):
                   self.tpx.pauseReadout()
                   self.tpx.setPixelConfig()
                   self.tpx.sequentialReadout()
-                  self.tpx.flush_udp_fifo(0x71FF000000000000)#flush until load matrix
+#                  self.tpx.flush_udp_fifo(0x71FF000000000000)#flush until load matrix
 
                   threshold=100
                   if useTP:threshold=TESTPULSES/2
@@ -308,7 +308,7 @@ class EqualizeThread(QThread):
                 self.tpx.pauseReadout()
                 self.tpx.setPixelConfig()
                 self.tpx.sequentialReadout(tokens=4)
-                self.tpx.flush_udp_fifo(0x71FF000000000000)#flush until load matrix
+                #self.tpx.flush_udp_fifo(0x71FF000000000000)#flush until load matrix
 
                 #_threshold_scan(res, target-100, target+100, 2,threshold=10)
                 _threshold_scan(res, 0, 512, 2,threshold=10)
@@ -364,7 +364,7 @@ class EqualizeThread(QThread):
 #                print th,vthfine,dV
                 self.tpx.openShutter(sleep=True)
                 r=self.tpx.getFrame()
-#                print "frame"
+                print "frame",r
                 while True:
                    r,x,y,data,etoa=self.tpx.nextPixel()
                    if not r: break

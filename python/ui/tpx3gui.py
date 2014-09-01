@@ -74,6 +74,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionDisconect.triggered.connect(self.onDisconect)
         self.actionClose.triggered.connect(QCoreApplication.instance().quit)
 
+        self.comboVisMode.currentIndexChanged.connect(self.onComboVisMode)
+        self.buttonVisClear.clicked.connect(self.onButtonVisClear)
+        self.spinVisDecay.valueChanged.connect(self.onSpinVisDecay)
+
         self.dockHitRate = HitRateDock(self)
         self.addDockWidget(Qt.DockWidgetArea(1), self.dockHitRate)
         self.actionTestpulses.triggered.connect(self.dockTP.toggleVisibility)
@@ -85,6 +89,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionDemoConfig.triggered.connect(self.dockDemoConfig.toggleVisibility)
         self.actionOutputs.triggered.connect(self.dockOutputs.toggleVisibility)
         self.actionDummyGenerator.triggered.connect(self.dockDummy.toggleVisibility)
+        self.actionVisualisation.triggered.connect(self.dockVisualisation.toggleVisibility)
 
         self.dockGeneral.setAssociatedCheckbox(self.actionGeneral)
         self.dockDACs.setAssociatedCheckbox(self.actionDACs)
@@ -95,6 +100,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dockHitRate.setAssociatedCheckbox(self.actionHitRate)
         self.dockOutputs.setAssociatedCheckbox(self.actionOutputs)
         self.dockDummy.setAssociatedCheckbox(self.actionDummyGenerator)
+        self.dockVisualisation.setAssociatedCheckbox(self.actionVisualisation)
 
         self.dockGeneral.setName("General",1)
         self.dockDACs.setName("DACs",0)
@@ -105,6 +111,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dockHitRate.setName("HitRate",0)
         self.dockOutputs.setName("Outputs",0)
         self.dockDummy.setName("DummyGen",0)
+        self.dockVisualisation.setName("Visualisation",0)
         self.tabsMain.currentChanged.connect(self.onTabPageChange)
 
         settings = QSettings()
@@ -338,6 +345,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.shutter=0
         self.updateShutter()
 
+
+
     def shutterOnOff(self):
         if self.shutter:
             self.tpx.shutterOff()
@@ -444,7 +453,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def updateGcr(self):
         if self.tpx and self.tpx.isConnected():
             gcr=self.tpx.getGenConfig()
-#            print "GCR 0x%08X"%gcr
+            print "GCR 0x%08X"%gcr
             self.genConfigPolarity.setEnabled(True)
             self.genConfigPolarity.setCurrentIndex(gcr&TPX3_POLARITY_EMIN)
 #            self.genConfigMode.setEnabled(False)
@@ -456,6 +465,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.genConfigGrayCnt.setEnabled(True)
             self.genConfigTP.setChecked ((gcr&TPX3_TESTPULSE_ENA))
         else:
+            print "dupa"
             self.genConfigPolarity.setEnabled(False)
             self.genConfigFastLo.setEnabled(False)
             self.genConfigGrayCnt.setEnabled(False)
@@ -552,6 +562,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionEqualize.setEnabled(state)
         self.actionSPIDRAbout.setEnabled(state)
 
+
+    def onComboVisMode(self,i):
+        self.updateVisualization()
+        self.tpx.daqThread.displayMode=i%3
+        self.tpx.daqThread.clear()
+    def onButtonVisClear(self):
+        self.tpx.daqThread.clear()
+
+    def onSpinVisDecay(self):
+        self.tpx.daqThread.decayVal=self.spinVisDecay.getValue()
+
+    def updateVisualization(self):
+        state=False
+        stateSpin=False
+        if self.tpx and self.tpx.isConnected():
+            state=True
+            print "index",self.comboVisMode.currentIndex()
+            if self.comboVisMode.currentIndex()==0:
+               stateSpin=True
+        self.spinVisDecay.setEnabled(stateSpin)
+        self.buttonVisClear.setEnabled(state)
+        self.comboVisMode.setEnabled(state)
+
     def updateDisplays(self):
         self.updateGcr()
         self.updateShutter()
@@ -559,6 +592,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.updateDacs()
         self.updateMenu()
         self.updateDummyGenerator()
+        self.updateVisualization()
 
     def initAfterConnect(self):
         self.shutter=0
