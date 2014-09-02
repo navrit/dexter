@@ -126,7 +126,7 @@ class DaqThread(QThread):
                        r,x,y,d,tstp=self.parent.nextPixel()
                        if not r: break
                        tot=(d>>4)&0x3FF
-                       toa=(d>>10)&0x3FFF0 - (d&0xF)
+                       toa=((d>>10)&0x3FFF0 - (d&0xF)) | (tstp<<18)
                        #print "%08x"%d,tot,toa
                        if self.displayMode==DISMODE_OVERWRITE:
                           self.parent.matrixTOT[x,y]=tot

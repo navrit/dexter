@@ -465,10 +465,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.genConfigFastLo.setCurrentIndex((gcr&TPX3_FASTLO_ENA)>>6)
             self.genConfigFastLo.setEnabled(True)
             self.genConfigGrayCnt.setCurrentIndex((gcr&TPX3_GRAYCOUNT_ENA)>>3)
-            self.genConfigGrayCnt.setEnabled(True)
+#            self.genConfigGrayCnt.setEnabled(True)
             self.genConfigTP.setChecked ((gcr&TPX3_TESTPULSE_ENA))
         else:
-            print "dupa"
             self.genConfigPolarity.setEnabled(False)
             self.genConfigFastLo.setEnabled(False)
             self.genConfigGrayCnt.setEnabled(False)
@@ -700,7 +699,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                     self.viewerTOA.setData(self.tpx.matrixTOA)
                     self.viewerTOA.cm.setHMin(0)
-                    self.viewerTOA.cm.setHMax(262144)
+                    self.viewerTOA.cm.setHMax(17179869184) # 14 + 4 + 16
                     self.viewerTOA.setColorMap('prism')
                     self.viewerTOA.tpx=self.tpx
 
