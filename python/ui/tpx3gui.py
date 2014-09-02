@@ -279,12 +279,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def onTabPageChange(self):
         if self.tabsMain.currentIndex()==0:
             self.viewerTOT._regenerate_bitmap()
+
         if self.tabsMain.currentIndex()==1:
             self.viewerCounts._regenerate_bitmap()
 
         if self.tabsMain.currentIndex()==2:
-            self.viewerDACs._regenerate_bitmap()
+            self.viewerTOA._regenerate_bitmap()
+
+
         if self.tabsMain.currentIndex()==3:
+            self.viewerDACs._regenerate_bitmap()
+        if self.tabsMain.currentIndex()==4:
             self.viewerMask._regenerate_bitmap()
 
 
@@ -293,6 +298,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.viewerTOT._regenerate_bitmap();
         if self.tabsMain.currentIndex()==1:
             self.viewerCounts._regenerate_bitmap();
+        if self.tabsMain.currentIndex()==2:
+            self.viewerTOA._regenerate_bitmap();
+
 
     def TPEnableChanged(self):
         self.gcrChanged()
@@ -432,11 +440,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tpx.resetPixelConfig()
         self.tpx.load_equalization('x.cod',\
                       maskname='x.msk')
-        self.tpx.setPixelMask(95,108,1)
-        self.tpx.setPixelMask(153,85,1)
-        self.tpx.setPixelMask(161,108,1)
-        self.tpx.setPixelMask(45,132,1)
-        self.tpx.setPixelMask(132,45,1)
         self.tpx.setPixelConfig()
         self.tpx.setDac(TPX3_VTHRESH,1150)
         self.tpx.datadrivenReadout()
@@ -694,6 +697,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.viewerTOT.cm.setHMin(0)
                     self.viewerTOT.cm.setHMax(1024)
                     self.viewerTOT.tpx=self.tpx
+
+                    self.viewerTOA.setData(self.tpx.matrixTOA)
+                    self.viewerTOA.cm.setHMin(0)
+                    self.viewerTOA.cm.setHMax(262144)
+                    self.viewerTOA.setColorMap('prism')
+                    self.viewerTOA.tpx=self.tpx
 
                     self.viewerMask.setData(self.tpx.matrixMask)
                     self.viewerMask.cm.setHMin(0)

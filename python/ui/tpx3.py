@@ -69,7 +69,6 @@ class DaqThread(QThread):
         QThread.__init__(self)
         self.parent=parent
         self.abort = False
-        self.data=None
         self.updateRate = MySignal()
         self.refreshDisplay = MySignal()
         self.rate=Rate(refresh=0.05,updateRateSignal=self.updateRate, refreshDisplaySignal=self.refreshDisplay)
@@ -96,24 +95,24 @@ class DaqThread(QThread):
         self.parent.resetPixels()
         self.parent.datadrivenReadout()
 
-        tot=np.zeros( (256,256) , dtype =np.int)
-        hits=np.zeros( (256,256) , dtype =np.int)
+        #tot=np.zeros( (256,256) , dtype =np.int)
+        #hits=np.zeros( (256,256) , dtype =np.int)
 
         while True:
             if self.__clear:
-                for x in range(self.data.shape[0]):
-                    for y in range(self.data.shape[1]):
-                        self.data[x,y]=0
+                for x in range(self.parent.matrixTOT.shape[0]):
+                    for y in range(self.parent.matrixTOT.shape[1]):
+                        self.parent.matrixTOT[x,y]=0
+                        self.parent.matrixTOA[x,y]=0
                         self.parent.matrixCounts[x,y]=0
                 self.__clear=False
 
             if self.abort:
                 return
             if self.displayMode==DISMODE_DECAY:
-                self.data*=self.decayVal
-
-            low_values_indices = self.data < 1.0  # Where values are low
-            self.data[low_values_indices] = 0  # All low values set to 0xzcxzczxczxc
+                self.parent.matrixTOT*=self.decayVal
+                low_values_indices = self.parent.matrixTOT < 1.0  # Where values are low
+                self.parent.matrixTOT[low_values_indices] = 0  # All low values set to 0xzcxzczxczxc
 
             next_frame=self.parent.getSample(1024*16,10)
             self.rate.processed(0)
@@ -126,12 +125,14 @@ class DaqThread(QThread):
                    while True:
                        r,x,y,d,tstp=self.parent.nextPixel()
                        if not r: break
-                       d=d>>4
-                       d=d&0x3FF
+                       tot=(d>>4)&0x3FF
+                       toa=(d>>10)&0x3FFF0 - (d&0xF)
+                       #print "%08x"%d,tot,toa
                        if self.displayMode==DISMODE_OVERWRITE:
-                          self.data[x,y]=d
+                          self.parent.matrixTOT[x,y]=tot
                        else:
-                           self.data[x,y]+=d
+                           self.parent.matrixTOT[x,y]+=tot
+                       self.parent.matrixTOA[x,y]=toa
                        self.parent.matrixCounts[x,y]+=1
                        hits_processed+=1
                self.rate.processed(hits_processed)
@@ -240,6 +241,7 @@ class TPX3:
         self.daq=None
 
     self.matrixTOT    = np.zeros( shape=(256,256))
+    self.matrixTOA    = np.zeros( shape=(256,256))
     self.matrixCounts = np.zeros( shape=(256,256))
     self.matrixMask   = np.zeros( shape=(256,256))
     self.matrixDACs   = np.zeros( shape=(256,256))
@@ -249,7 +251,6 @@ class TPX3:
 
     if self.daq!=None:
         self.daqThread = DaqThread(self)
-        self.daqThread.data=self.matrixTOT
 
 #    self.reinitDevice()
 #    self.flush_udp_fifo(val=0)

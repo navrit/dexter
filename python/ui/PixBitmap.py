@@ -687,9 +687,11 @@ class ScrolledPixBitmap(QFrame, Ui_BitmapForm):
         self.verticalSlider.valueChanged.connect(self.verticalSliderMoved)
         self.cm=ColorMap(self)
 
+    def setColorMap(self,cm):
+        self.cm.changeColorMap(cm)
+
     def setData(self,data):
         self.data=data
-
         self.PixHist.setColorMap(self.cm)
         self.PixBitmap.setColorMap(self.cm)
         self.PixBitmap.setData(data)
