@@ -456,7 +456,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def updateGcr(self):
         if self.tpx and self.tpx.isConnected():
             gcr=self.tpx.getGenConfig()
-            print "GCR 0x%08X"%gcr
+#            print "GCR 0x%08X"%gcr
             self.genConfigPolarity.setEnabled(True)
             self.genConfigPolarity.setCurrentIndex(gcr&TPX3_POLARITY_EMIN)
 #            self.genConfigMode.setEnabled(False)
@@ -580,7 +580,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         stateSpin=False
         if self.tpx and self.tpx.isConnected():
             state=True
-            print "index",self.comboVisMode.currentIndex()
+            #print "index",self.comboVisMode.currentIndex()
             if self.comboVisMode.currentIndex()==0:
                stateSpin=True
         self.spinVisDecay.setEnabled(stateSpin)
@@ -683,6 +683,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if self.tpx.isConnected():
                     self.labelChipID.setText(self.tpx.chipID())
                     s="<font color='green'> %s<font>"%self.tpx.connectionStateString()
+                    self.tpx.setGenConfig( TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA | TPX3_FASTLO_ENA)
                     self.shutter=0
                     self.dummygen=0
                     self.initAfterConnect()

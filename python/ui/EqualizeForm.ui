@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>723</width>
-    <height>677</height>
+    <width>881</width>
+    <height>747</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,10 +22,23 @@
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="3" column="5">
-         <widget class="QSpinBox" name="spinTPSpacing">
-          <property name="enabled">
-           <bool>false</bool>
+        <item row="5" column="5">
+         <widget class="QSpinBox" name="spinNoiseLevel">
+          <property name="maximum">
+           <number>2000</number>
+          </property>
+          <property name="value">
+           <number>600</number>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="5">
+         <widget class="QSpinBox" name="spinMeasureSpacing">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
           <property name="minimum">
            <number>1</number>
@@ -38,108 +51,15 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="5">
-         <widget class="QSpinBox" name="spinNoiseLevel">
-          <property name="maximum">
-           <number>2000</number>
-          </property>
-          <property name="value">
-           <number>600</number>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QSpinBox" name="spinTPNumber">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="minimum">
-           <number>10</number>
-          </property>
-          <property name="maximum">
-           <number>400</number>
-          </property>
-          <property name="value">
-           <number>200</number>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="5">
-         <widget class="QSpinBox" name="spinTPAmplitude">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>2000</number>
-          </property>
-          <property name="value">
-           <number>1000</number>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Use test pulses</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
          <widget class="QLabel" name="label">
           <property name="text">
            <string>THL step [LSB]</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="3">
-         <widget class="QLabel" name="label_6">
-          <property name="text">
-           <string>Noise level [e-]</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>Mask noisy pixels</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="3">
-         <widget class="QLabel" name="labelTPAmp">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Test pulse amplitude [e-]</string>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="1">
-         <widget class="QCheckBox" name="checkUseTP">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="labelTPNumber">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Number of test pulses</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QSpinBox" name="spinTHLStep">
+         <widget class="QSpinBox" name="spinThStep">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -163,7 +83,20 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
+        <item row="3" column="5">
+         <widget class="QSpinBox" name="spinTPAmplitude">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="maximum">
+           <number>2000</number>
+          </property>
+          <property name="value">
+           <number>1000</number>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
          <widget class="QCheckBox" name="checkMaskNoisy">
           <property name="text">
            <string/>
@@ -173,7 +106,7 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="3">
+        <item row="4" column="3">
          <widget class="QLabel" name="labelTPSpacing">
           <property name="enabled">
            <bool>false</bool>
@@ -183,27 +116,94 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Measure</string>
+        <item row="4" column="1">
+         <widget class="QSpinBox" name="spinTPNumber">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimum">
+           <number>10</number>
+          </property>
+          <property name="maximum">
+           <number>400</number>
+          </property>
+          <property name="value">
+           <number>200</number>
           </property>
          </widget>
         </item>
-        <item row="5" column="3">
+        <item row="6" column="3">
          <widget class="QLabel" name="label_4">
           <property name="text">
            <string>Measure spacing</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="5">
-         <widget class="QSpinBox" name="spinMeasureSpacing">
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Use test pulses</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="labelTPNumber">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Number of test pulses</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Measure</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QCheckBox" name="checkUseTP">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="3">
+         <widget class="QLabel" name="labelTPAmp">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Test pulse amplitude [e-]</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Mask noisy pixels</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="3">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Noise level [e-]</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="5">
+         <widget class="QSpinBox" name="spinTPSpacing">
+          <property name="enabled">
+           <bool>false</bool>
           </property>
           <property name="minimum">
            <number>1</number>
@@ -216,7 +216,7 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="1">
+        <item row="6" column="1">
          <widget class="QCheckBox" name="checkMeasure">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -229,6 +229,70 @@
           </property>
           <property name="checked">
            <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>Threshold start [LSB]</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>Threshold stop [LSB]</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QSpinBox" name="spinThStart">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="specialValueText">
+           <string/>
+          </property>
+          <property name="suffix">
+           <string/>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>2000</number>
+          </property>
+          <property name="value">
+           <number>900</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="5">
+         <widget class="QSpinBox" name="spinThStop">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="specialValueText">
+           <string/>
+          </property>
+          <property name="suffix">
+           <string/>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>2000</number>
+          </property>
+          <property name="value">
+           <number>1200</number>
           </property>
          </widget>
         </item>
@@ -285,7 +349,7 @@
            <string/>
           </property>
           <property name="text">
-           <string>x</string>
+           <string>${chipid}_${date}_${time}</string>
           </property>
          </widget>
         </item>
@@ -299,7 +363,7 @@
         <item row="0" column="1">
          <widget class="QLineEdit" name="lineDirectory">
           <property name="text">
-           <string>.</string>
+           <string>config</string>
           </property>
          </widget>
         </item>
@@ -330,16 +394,42 @@
     </widget>
    </item>
    <item>
-    <widget class="QTextEdit" name="textEdit">
-     <property name="font">
-      <font>
-       <family>Andale Mono</family>
-      </font>
-     </property>
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QTextEdit" name="textEdit">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>1</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <family>Andale Mono</family>
+        </font>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="HistogramPlot" name="histogram">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>1</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -374,6 +464,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>HistogramPlot</class>
+   <extends>QFrame</extends>
+   <header>HistogramPlot</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

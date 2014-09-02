@@ -44,6 +44,15 @@ def prettify(elem):
     reparsed = minidom.parseString(rough_string)
     return reparsed.toprettyxml(indent="  ")
 
+def get_date():
+    return time.strftime("%Y/%m/%d", time.localtime())
+
+def get_date_raw():
+    return time.strftime("%Y%m%d", time.localtime())
+
+def get_time_raw():
+    return time.strftime("%H%M%S", time.localtime())
+
 def get_time():
     return time.strftime("%H:%M:%S", time.localtime())
 

@@ -1,18 +1,22 @@
 #!/usr/bin/env python
 from PySide.QtCore import *
 from PySide.QtGui import *
-from EqualizeForm import Ui_EqualizeForm
+
 import time
 import sys
 import socket
+import os
 import getpass
 from tpx3 import *
 import numpy as np
 from kutils import *
+from string import Template
 
 class MySignal(QObject):
     sig = Signal(str)
 
+
+from EqualizeForm import Ui_EqualizeForm
 
 
 def _equalize(scans):
@@ -61,6 +65,7 @@ class EqualizeThread(QThread):
         self.tpx=tpx
         self.done = MySignal()
         self.logsignal=MySignal()
+        self.updateHist=MySignal()
 
     def stop(self):
         self.abort = True
@@ -105,7 +110,7 @@ class EqualizeThread(QThread):
 
 
     def run(self):
-        def _threshold_scan(res, ThrFrom=0, ThrTo=512, ThrStep=1, threshold=10):
+        def _threshold_scan(res, ThrFrom=0, ThrTo=512, ThrStep=1, threshold=10,color=0):
               to_mask=0
               pixels=0
               for i in range(int(ThrFrom),int(ThrTo),int(ThrStep)):
@@ -113,11 +118,13 @@ class EqualizeThread(QThread):
                        return
 #                    step+=1
 #                    self.emit(SIGNAL("progress(int)"), step)
-                    self.tpx.setDac(TPX3_VTHRESH_FINE,i)
+                    #self.tpx.setDac(TPX3_VTHRESH_FINE,i)
+                    self.tpx.setDac(TPX3_VTHRESH,i)
                     self.tpx.openShutter()
                     r=self.tpx.getFrame(100)
-                    print "Get frame",r
+                    time.sleep(0.01)
                     ppp=0
+                    pixels_counted=0
                     while True:
                        r,x,y,data,etoa=self.tpx.nextPixel()
                        if not r: break
@@ -128,9 +135,11 @@ class EqualizeThread(QThread):
                           pixels+=1
                           self.tpx.setPixelMask(x,y,1)
                           to_mask+=1
-                    print i,ppp
+                          pixels_counted+=1
 
-                    if to_mask>7500:
+                    #print i,ppp,pixels_counted
+                    self.updateHist.sig.emit("%s %s %s"%(color,i,pixels_counted))
+                    if to_mask>5500:
                       print ("Masking %d pixels"%to_mask)
                       self.tpx.pauseReadout()
                       self.tpx.setPixelConfig()
@@ -139,14 +148,15 @@ class EqualizeThread(QThread):
                       to_mask=0
 
         _id=0
-        fbase=self.parent.lineDirectory.text() +QDir.separator()+self.parent.lineFileName.text()
-
+        d={"chipid":self.tpx.chipID(),"date":get_date_raw(),"time":get_time_raw()}
+        fname=Template(self.parent.lineFileName.text()).substitute(d)
+        fbase=os.path.join(self.parent.lineDirectory.text(),fname)
         self.log("Starting...")
 
         self.tpx.resetPixels()
-        self.tpx.setDacsDflt()
+        #self.tpx.setDacsDflt()
 
-        self.tpx.setDac(TPX3_IBIAS_IKRUM,15)
+#        self.tpx.setDac(TPX3_IBIAS_IKRUM,15)
         self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,128)
         self.tpx.setDac(TPX3_IBIAS_DISCS2_ON,32)
         self.tpx.setDac(TPX3_IBIAS_PREAMP_ON,128)
@@ -169,7 +179,7 @@ class EqualizeThread(QThread):
         self.tpx.setPixelConfig()
         self.log("Matrix configured ...")
 
-        self.tpx.sequentialReadout(tokens=4)
+        self.tpx.sequentialReadout(tokens=100)
         #self.tpx.flush_udp_fifo(0x71FF000000000000)#flush until load matrix
 
         self.log("DC Operating point")
@@ -221,15 +231,16 @@ class EqualizeThread(QThread):
 
         avr=[]
         std=[]
-        ThrFrom=0
-        ThrTo=512
-        ThrStep=self.parent.spinTHLStep.value()
+        ThrFrom=self.parent.spinThStart.value()
+        ThrTo=self.parent.spinThStop.value()
+        ThrStep=self.parent.spinThStep.value()
 
         steps=(ThrTo-ThrFrom)/ThrStep*2*spacing*spacing
         step=1
 
         self.parent.progressBar.setMaximum(steps)
         scans=[]
+
         for cdac in (0,15):
               logdir="./0x%0X/"%cdac
               self.log("DAC=0x%X"%cdac)
@@ -259,8 +270,9 @@ class EqualizeThread(QThread):
                   if useTP:threshold=TESTPULSES/2
 
 
-
-                  _threshold_scan(res, ThrFrom, ThrTo, ThrStep, threshold)
+                  color=0
+                  if cdac==15:color=1
+                  _threshold_scan(res, ThrFrom, ThrTo, ThrStep, threshold,color)
                   if self.abort:
                        return
 #              print "Pixels colected",pixels
@@ -311,7 +323,7 @@ class EqualizeThread(QThread):
                 #self.tpx.flush_udp_fifo(0x71FF000000000000)#flush until load matrix
 
                 #_threshold_scan(res, target-100, target+100, 2,threshold=10)
-                _threshold_scan(res, 0, 512, 2,threshold=10)
+                _threshold_scan(res, ThrFrom, ThrTo, ThrStep,threshold=10,color=2)
 
             if self.parent.checkStoreDetails.isChecked():
                 fn=fbase+".blm"
@@ -364,7 +376,6 @@ class EqualizeThread(QThread):
 #                print th,vthfine,dV
                 self.tpx.openShutter(sleep=True)
                 r=self.tpx.getFrame()
-                print "frame",r
                 while True:
                    r,x,y,data,etoa=self.tpx.nextPixel()
                    if not r: break
@@ -457,9 +468,20 @@ class EqualizeDlg(QDialog, Ui_EqualizeForm):
             QObject.connect(self.EqualizeThread, SIGNAL("progress(int)"),self.progressBar, SLOT("setValue(int)"), Qt.QueuedConnection)
             self.EqualizeThread.done.sig.connect(self.EqualizeThreadDone)
             self.EqualizeThread.logsignal.sig.connect(self.onLog)
+            self.EqualizeThread.updateHist.sig.connect(self.onUpdateHistogram)
+
+            ThrFrom=self.spinThStart.value()
+            ThrTo=self.spinThStop.value()
+            ThrStep=self.spinThStep.value()
+            self.histogram.init(ThrFrom,ThrTo,ThrStep)
             self.EqualizeThread.start()
         else:
             self.close()
+
+    def onUpdateHistogram(self,s):
+        color,th,val=s.split()
+        self.histogram.updateValue(color,th,val)
+
     def onLog(self,m):
         self.textEdit.append(m)
 

@@ -648,8 +648,8 @@ class TPX3:
   def _log_ctrl_cmd(self,msg,result):
     if result:
 #      logging.debug("%-80s [  OK  ]"%msg)
-      print("%-80s [  OK  ]"%msg)
-      #  pass
+      #print("%-80s [  OK  ]"%msg)
+      pass
     else:
 #      logging.error("%-80s [FAILED] (%s)"%(msg,self.ctrl.errorString()))
       print("%-80s [FAILED] (%s)"%(msg,self.ctrl.errorString()))
@@ -939,7 +939,9 @@ class DummyTPX3:
     def pauseReadout(self):
         pass
     def getFrame(self,timeoutms=1):
-        return self.daq.getFrame()
+        r=self.daq.getFrame()
+        self._log_ctrl_cmd("getFrame(%d) "%(timeoutms),r)
+        return r
 
     def getSample(self,size,timeout=10):
         return self.daq.getSample2(size,timeout)
