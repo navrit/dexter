@@ -95,8 +95,9 @@ class DaqThread(QThread):
         self.parent.resetPixels()
         self.parent.datadrivenReadout()
 
-        #tot=np.zeros( (256,256) , dtype =np.int)
-        #hits=np.zeros( (256,256) , dtype =np.int)
+        tot_frame =np.zeros( (256,256) , dtype =np.int)
+        hits_frame=np.zeros( (256,256) , dtype =np.int)
+        toa_frame =np.zeros( (256,256) , dtype =np.int)
 
         while True:
             if self.__clear:
@@ -117,8 +118,22 @@ class DaqThread(QThread):
             next_frame=self.parent.getSample(1024*16,10)
             self.rate.processed(0)
             if next_frame:
-               if 0:
-                 hits_processed=self.parent.daq.getNumpyFrames(tot,hits)
+               if 1:
+                       hits_processed=self.parent.daq.getNumpyFrames(tot_frame,hits_frame,toa_frame)
+                       #hits_processed=0
+                       if self.displayMode==DISMODE_OVERWRITE:
+                          nonzero_indices = tot_frame > 0
+                          self.parent.matrixTOT[nonzero_indices] = 0
+                          self.parent.matrixTOT += tot_frame
+                       else:
+                           self.parent.matrixTOT+=tot_frame
+
+                       nonzero_indices = toa_frame > 0
+                       self.parent.matrixTOA[nonzero_indices] = 0
+                       self.parent.matrixTOA+=toa_frame
+                       self.parent.matrixCounts+=hits_frame
+                       hits_processed+=hits_processed
+
                else:
                    time.sleep(0.005)
                    hits_processed=0
