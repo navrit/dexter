@@ -101,11 +101,9 @@ class DaqThread(QThread):
 
         while True:
             if self.__clear:
-                for x in range(self.parent.matrixTOT.shape[0]):
-                    for y in range(self.parent.matrixTOT.shape[1]):
-                        self.parent.matrixTOT[x,y]=0
-                        self.parent.matrixTOA[x,y]=0
-                        self.parent.matrixCounts[x,y]=0
+                self.parent.matrixTOT[:,:]=0
+                self.parent.matrixTOA[:,:]=0
+                self.parent.matrixCounts[:,:]=0
                 self.__clear=False
 
             if self.abort:
@@ -142,7 +140,7 @@ class DaqThread(QThread):
                        if not r: break
                        tot=(d>>4)&0x3FF
                        toa=((d>>10)&0x3FFF0 - (d&0xF)) | (tstp<<18)
-                       #print "%08x"%d,tot,toa
+#                       print "%08x"%d,tot,toa
                        if self.displayMode==DISMODE_OVERWRITE:
                           self.parent.matrixTOT[x,y]=tot
                        else:
