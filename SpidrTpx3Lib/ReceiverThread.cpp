@@ -62,7 +62,7 @@ ReceiverThread::ReceiverThread( int      *ipaddr,
 	}
       else
 	{
-	  _errString += QString("; Failed to allocate requested buffer size");
+	  _errString += "; Failed to allocate requested buffer size";
 	  _stop = true;
 	}
     }
@@ -104,8 +104,8 @@ void ReceiverThread::run()
   _sock = new QUdpSocket();
   if( !_sock->bind( QHostAddress(_addr), _port ) )
     {
-      _errString = QString("Failed to bind to adapter/port ") + _addrStr +
-	QString(": ") + _sock->errorString();
+      _errString = "Failed to bind to adapter/port " +
+	_addrStr + ": " + _sock->errorString();
       _stop = true;
     }
 
@@ -304,7 +304,7 @@ bool ReceiverThread::setBufferSize( long long size )
     }
   else
     {
-      _errString += QString("; Failed to allocate requested buffer size");
+      _errString += "; Failed to allocate requested buffer size";
       _stop = true;
       return false;
     }
