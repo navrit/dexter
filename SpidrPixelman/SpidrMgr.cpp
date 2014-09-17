@@ -87,7 +87,7 @@ void SpidrMgr::init()
   // Get device IDs and type
   if( !spidrctrl->getDeviceIds( info.chipIds ) )
     {
-      _fLog << "### Mgr.getDeviceIds(): " << spidrctrl->errString() << endl;
+      _fLog << "### Mgr.getDeviceIds(): " << spidrctrl->errorString() << endl;
       return;
     }
   info.chipCount    = 0;
@@ -109,15 +109,15 @@ void SpidrMgr::init()
 	if( !spidrctrl->getDeviceType( i, &info.chipType ) )
 	  {
 	    _fLog << "### Mgr.getDeviceType(): "
-		  << spidrctrl->errString() << endl;
+		  << spidrctrl->errorString() << endl;
 	    return;
 	  }
       }
   // Get software and firmware version numbers
   if( !spidrctrl->getSoftwVersion( &info.softwVersion ) )
-    _fLog << "### Mgr.getSoftwVersion(): " << spidrctrl->errString() << endl;
+    _fLog << "### Mgr.getSoftwVersion(): " << spidrctrl->errorString() << endl;
   if( !spidrctrl->getFirmwVersion( &info.firmwVersion ) )
-    _fLog << "### Mgr.getFirmwVersion(): " << spidrctrl->errString() << endl;
+    _fLog << "### Mgr.getFirmwVersion(): " << spidrctrl->errorString() << endl;
 
   // Get the module's IP address as a string
   info.ipAddrString = spidrctrl->ipAddressString();

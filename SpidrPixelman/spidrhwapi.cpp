@@ -102,12 +102,12 @@ int spidrInit( int id )
 {
   LOGFUNCNAME();
   GETCONTROLLER( id );
-  if( !spidrctrl->reset() )
+  int errorstat = 0;
+  if( !spidrctrl->reset( &errorstat ) )
     {
-      LOGGER() << "### reset(): " << spidrctrl->errString() << endl;
-      return 1;
+      LOGGER() << "### reset(): " << spidrctrl->errorString() << endl;
     }
-  return 0;
+  return errorstat;
 }
 
 // ----------------------------------------------------------------------------
@@ -357,7 +357,7 @@ int spidrReset( int id )
   GETCONTROLLER( id );
   if( !spidrctrl->resetDevices() )
     {
-      LOGGER() << "### resetDevices(): " << spidrctrl->errString() << endl;
+      LOGGER() << "### resetDevices(): " << spidrctrl->errorString() << endl;
       return 1;
     }
   return 0;
@@ -389,7 +389,7 @@ int spidrSetDacs( int id, DACTYPE dac_vals[], int sz )
 	     << " does not match (#chips=" << spidrinfo->chipCount
 	     << ",type=" << spidrinfo->chipType << ",DACs="
 	     << dac_cnt << ")" << endl;
-  int i = 0;
+
   for( int chip=0; chip<chips_todo; ++chip )
     {
 #define USE_SETDACS
@@ -401,7 +401,7 @@ int spidrSetDacs( int id, DACTYPE dac_vals[], int sz )
       if( !spidrctrl->setDacs( spidrinfo->chipMap[chip],
 			       dac_cnt, dacvals32 ) )
 	{
-	  LOGGER() << "### setDacs(): " << spidrctrl->errString() << endl;
+	  LOGGER() << "### setDacs(): " << spidrctrl->errorString() << endl;
 	  return 1;
 	}
 #else
@@ -418,7 +418,7 @@ int spidrSetDacs( int id, DACTYPE dac_vals[], int sz )
 #endif // USE_SETDACS
       if( !spidrctrl->writeDacs( spidrinfo->chipMap[chip] ) )
 	{
-	  LOGGER() << "### writeDacs(): " << spidrctrl->errString() << endl;
+	  LOGGER() << "### writeDacs(): " << spidrctrl->errorString() << endl;
 	  return 1;
 	}
     }
@@ -440,18 +440,18 @@ int spidrSenseSignal( int id, int chip_nr,
   if( !spidrctrl->setSenseDac( code ) )
   //if( !spidrctrl->setSenseDacCode( code ) )
     {
-      LOGGER() << "### setSenseDac(): " << spidrctrl->errString() << endl;
+      LOGGER() << "### setSenseDac(): " << spidrctrl->errorString() << endl;
       return 1;
     }
   if( !spidrctrl->writeOmr( chip_pos ) )
     {
-      LOGGER() << "### writeOmr(): " << spidrctrl->errString() << endl;
+      LOGGER() << "### writeOmr(): " << spidrctrl->errorString() << endl;
       return 1;
     }
   int adc_val;
   if( !spidrctrl->getAdc( chip_pos, &adc_val ) )
     {
-      LOGGER() << "### getAdc(): " << spidrctrl->errString() << endl;
+      LOGGER() << "### getAdc(): " << spidrctrl->errorString() << endl;
       return 1;
     }
   // Convert the ADC count to Volt (SPIDR ADC ref is 1.5V)
@@ -526,7 +526,7 @@ int spidrSetPixelsCfg( int id, byte cfgs[], u32 sz )
 	      configthb  = ((pixman_pixcfg & 0x0F00) >> 8);
 	      configthb4 = ((pixman_pixcfg & 0x1000) != 0);
 
-	      if( mask_it ) spidrctrl->maskPixelMpx3( x, y );
+	      if( mask_it ) spidrctrl->setPixelMaskMpx3( x, y );
 
 	      spidrctrl->configPixelMpx3( x, y,
 					  configtha, configthb,
@@ -539,11 +539,11 @@ int spidrSetPixelsCfg( int id, byte cfgs[], u32 sz )
 		}
 	    }
 	  // Upload the configuration for this chip
-	  if( !spidrctrl->writePixelConfigMpx3( spidrinfo->chipMap[chip] ) )
+	  if( !spidrctrl->setPixelConfigMpx3( spidrinfo->chipMap[chip] ) )
 	    {
 	      LOGGER() << "### writePixelConfigMpx3( "
 		       << spidrinfo->chipMap[chip] << " ): "
-		       << spidrctrl->errString() << endl;
+		       << spidrctrl->errorString() << endl;
 	      return 1;
 	    }
 	}
@@ -564,7 +564,7 @@ int spidrSetPixelsCfg( int id, byte cfgs[], u32 sz )
 	      discl   = ((pixman_pixcfg & 0x00F8) >> 3);
 	      disch   = ((pixman_pixcfg & 0x1F00) >> 8);
 
-	      if( mask_it ) spidrctrl->maskPixelMpx3rx( x, y );
+	      if( mask_it ) spidrctrl->setPixelMaskMpx3rx( x, y );
 
 	      spidrctrl->configPixelMpx3rx( x, y, discl, disch, test_it );
 
@@ -575,11 +575,11 @@ int spidrSetPixelsCfg( int id, byte cfgs[], u32 sz )
 		}
 	    }
 	  // Upload the configuration for this chip
-	  if( !spidrctrl->writePixelConfigMpx3rx( spidrinfo->chipMap[chip] ) )
+	  if( !spidrctrl->setPixelConfigMpx3rx( spidrinfo->chipMap[chip] ) )
 	    {
 	      LOGGER() << "### writePixelConfigMpx3rx( "
 		       << spidrinfo->chipMap[chip] << " ): "
-		       << spidrctrl->errString() << endl;
+		       << spidrctrl->errorString() << endl;
 	      return 1;
 	    }
 	}
@@ -624,7 +624,7 @@ int spidrSetAcqPars( int id, Mpx3AcqParams *pars )
   if( pars->polarityPositive ) polarity = true;
   if( !spidrctrl->setPolarity( polarity ) )
     {
-      LOGGER() << "### setPolarity(): " << spidrctrl->errString() << endl;
+      LOGGER() << "### setPolarity(): " << spidrctrl->errorString() << endl;
       return 1;
     }
 
@@ -685,11 +685,11 @@ int spidrSetAcqPars( int id, Mpx3AcqParams *pars )
   else
     trigger_freq_hz = 1;
   if( trigger_freq_hz > 1 ) --trigger_freq_hz;
-  if( !spidrctrl->setTriggerConfig( trigger_mode, trigger_period_us,
+  if( !spidrctrl->setShutterTriggerConfig( trigger_mode, trigger_period_us,
 				    trigger_freq_hz, nr_of_triggers,
 				    trigger_pulse_count ) )
     {
-      LOGGER() << "### setTriggerConfig(): " << spidrctrl->errString() << endl;
+      LOGGER() << "### setTriggerConfig(): " << spidrctrl->errorString() << endl;
       return 1;
     }
   LOGGER() << "SetAcqPars.setTriggerConfig(): mode=" << trigger_mode
@@ -709,7 +709,7 @@ int spidrSetAcqPars( int id, Mpx3AcqParams *pars )
   spidrdaq->setPixelDepth( pixeldepth );
   if( !spidrctrl->setPixelDepth( pixeldepth ) )
     {
-      LOGGER() << "### setPixelDepth(): " << spidrctrl->errString() << endl;
+      LOGGER() << "### setPixelDepth(): " << spidrctrl->errorString() << endl;
       return 1;
     }
 
@@ -724,12 +724,12 @@ int spidrStartAcquisition( int id )
   GETCONTROLLER( id );
   if( !spidrctrl->clearBusy() )
     {
-      LOGGER() << "### clearBusy(): " << spidrctrl->errString() << endl;
+      LOGGER() << "### clearBusy(): " << spidrctrl->errorString() << endl;
       return 1;
     }
   if( !spidrctrl->startAutoTrigger() )
     {
-      LOGGER() << "### startAutoTrigger(): " << spidrctrl->errString() << endl;
+      LOGGER() << "### startAutoTrigger(): " << spidrctrl->errorString() << endl;
       return 1;
     }
   return 0;
@@ -743,12 +743,12 @@ int spidrStopAcquisition( int id )
   GETCONTROLLER( id );
   if( !spidrctrl->stopAutoTrigger() )
     {
-      LOGGER() << "### stopAutoTrigger(): " << spidrctrl->errString() << endl;
+      LOGGER() << "### stopAutoTrigger(): " << spidrctrl->errorString() << endl;
       return 1;
     }
   if( !spidrctrl->setBusy() )
     {
-      LOGGER() << "### setBusy(): " << spidrctrl->errString() << endl;
+      LOGGER() << "### setBusy(): " << spidrctrl->errorString() << endl;
       return 1;
     }
   return 0;
@@ -829,11 +829,11 @@ int spidrSendTestPulses( int id, double charge[2], double period,
   int trigger_freq_hz     = 10;
   int nr_of_triggers      = pulse_count;
   int trigger_pulse_count = 0;
-  if( !spidrctrl->setTriggerConfig( trigger_mode, trigger_period_us,
+  if( !spidrctrl->setShutterTriggerConfig( trigger_mode, trigger_period_us,
 				    trigger_freq_hz, nr_of_triggers,
 				    trigger_pulse_count ) )
     {
-      LOGGER() << "### setTriggerConfig(): " << spidrctrl->errString() << endl;
+      LOGGER() << "### setTriggerConfig(): " << spidrctrl->errorString() << endl;
       return 1;
     }
   LOGGER() << "SendTestPulses.setTriggerConfig(): mode=" << trigger_mode
@@ -879,7 +879,7 @@ const char *spidrGetLastDevError( int id )
   LOGFUNCNAME();
   SpidrController *spidrctrl = SpidrMgr::instance()->controller( id );
   if ( !spidrctrl ) return "GetLastDevError(): see logfile";
-  return spidrctrl->errString().c_str();
+  return spidrctrl->errorString().c_str();
 }
 
 // ----------------------------------------------------------------------------
@@ -902,7 +902,7 @@ int spidrGetChipIds( int id, char *chip_ids, u32 *sz )
 				 &device_ids[chip] ) )
       {
 	LOGGER() << "### getDeviceId(" << spidrinfo->chipMap[chip]
-		 << "): " << spidrctrl->errString() << endl;
+		 << "): " << spidrctrl->errorString() << endl;
 	return 1;
       }
   memcpy( (void *) chip_ids, (void *) device_ids, *sz );

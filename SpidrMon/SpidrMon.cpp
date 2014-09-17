@@ -161,7 +161,7 @@ void SpidrMon::timerEvent(QTimerEvent *)
     }
 
   int mvolt, mamp, mwatt;
-  if( _spidrController->getAvdd( &mvolt, &mamp, &mwatt ) )
+  if( _spidrController->getAvddNow( &mvolt, &mamp, &mwatt ) )
     {
       _lineEditAvddMvolt->setText( QString::number( mvolt ) );
       _lineEditAvddMwatt->setText( QString::number( mwatt ) );
@@ -174,7 +174,7 @@ void SpidrMon::timerEvent(QTimerEvent *)
       _lineEditAvddMamp->setText( "----" );
       _lineEditAvddMwatt->setText( "----" );
     }
-  if( _spidrController->getDvdd( &mvolt, &mamp, &mwatt ) )
+  if( _spidrController->getDvddNow( &mvolt, &mamp, &mwatt ) )
     {
       _lineEditDvddMvolt->setText( QString::number( mvolt ) );
       _lineEditDvddMwatt->setText( QString::number( mwatt ) );
@@ -189,7 +189,7 @@ void SpidrMon::timerEvent(QTimerEvent *)
     }
   if( !_skipVdd )
     {
-      if( _spidrController->getVdd( &mvolt, &mamp, &mwatt ) )
+      if( _spidrController->getVddNow( &mvolt, &mamp, &mwatt ) )
 	{
 	  _lineEditVddMvolt->setText( QString::number( mvolt ) );
 	  _lineEditVddMwatt->setText( QString::number( mwatt ) );

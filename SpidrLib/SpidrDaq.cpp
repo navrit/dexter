@@ -53,7 +53,7 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl )
       // Get the IP destination address (this host network interface)
       // from the SPIDR module
       int addr = 0;
-      if( spidrctrl->getIpAddrDest( &addr ) )
+      if( spidrctrl->getIpAddrDest( 0, &addr ) )
 	{
 	  ipaddr[3] = (addr >> 24) & 0xFF;
 	  ipaddr[2] = (addr >> 16) & 0xFF;
