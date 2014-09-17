@@ -202,7 +202,7 @@ void SpidrMpx3Tv::onOff()
 
       // Get the host adapter IP address SPIDR uses, to display
       int ipaddr;
-      if( _controller->getIpAddrDest( &ipaddr ) )
+      if( _controller->getIpAddrDest( 0, &ipaddr ) )
 	{
 	  qha.setAddress( ipaddr );
 	  _leHostIpAddr->setText( qha.toString() );
