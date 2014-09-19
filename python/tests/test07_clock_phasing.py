@@ -1,4 +1,4 @@
-from tpx3_test import tpx3_test
+from tpx3_test import *#tpx3_test
 import random
 import time
 import logging
@@ -11,11 +11,25 @@ from SpidrTpx3_engine import ALL_PIXELS, TPX3_VTHRESH_COARSE
 class test07_clock_phasing(tpx3_test):
   """Pixel matrix VCO and clock phasing in TOT&TOA mode"""
 
+  def tpix3ClockPhase(self, col=0, phase_num=16):
+    if not col%2:
+        coeff=(col%(phase_num*2))/(phase_num/8.0)
+    else:
+        coeff=((col-1)%(phase_num*2))/(phase_num/8.0)
+    if coeff:
+        coeff=16-coeff
+
+    return coeff
+
   def _execute(self,**keywords):
 
     self.tpx.setTpNumber(1)
-    self.tpx.setGenConfig(0x268)
-    self.tpx.setPllConfig(0x11E| 0x15<<9)
+#    self.tpx.setGenConfig(0x268)
+    self.tpx.setGenConfig( TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA | TPX3_FASTLO_ENA | TPX3_TESTPULSE_ENA | TPX3_SELECTTP_DIGITAL )#| TPX3_SELECT_TOA_CLK)
+
+#    self.tpx.setGenConfig( TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA | TPX3_FASTLO_ENA | TPX3_TESTPULSE_ENA | TPX3_SELECTTP_DIGITAL)
+#   self.tpx.setPllConfig(0x11E| 0x15<<9)
+    self.tpx.setPllConfig((TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_16 ))#| 0x14<<TPX3_PLLOUT_CONFIG_SHIFT) )
 
     self.tpx.setShutterLen(1000)
 
@@ -27,13 +41,15 @@ class test07_clock_phasing(tpx3_test):
     self.tpx.setPixelMask(ALL_PIXELS,ALL_PIXELS, True)
     self.tpx.setPixelConfig()
     
-    self.tpx.sequentialReadout(tokens=4)
+    self.tpx.sequentialReadout(tokens=8)
     data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
     pcmd="plot "
     
     missing_pixels=set()
     outliers=set()
     toa_results=[]
+
+   
     for seq,phase in enumerate( (0,8) ):
       self.warning_detailed_restart()
       received=np.zeros((256,256), int)
@@ -50,7 +66,8 @@ class test07_clock_phasing(tpx3_test):
 
         self.tpx.resetPixels()
         self.tpx.setTpPeriodPhase(1,phase%16)
-        self.tpx.resetTimer()
+        #self.tpx.resetTimer()
+        #self.tpx.setGenConfig( TPX3_ACQMODE_TOA_TOT | TPX3_FASTLO_ENA | TPX3_TESTPULSE_ENA | TPX3_SELECTTP_DIGITAL)
         self.tpx.t0Sync()
         self.tpx.openShutter()
 #        self.logging.info("CTPR step %d, Waiting for data"%ctpr)
@@ -58,6 +75,8 @@ class test07_clock_phasing(tpx3_test):
       
         self.logging.info("CTPR step %d, reveiced %d packets"%(ctpr,len(data)))
         shutter=self.tpx.getShutterStart()
+        print "PLL=%0x"%self.tpx.getPllConfig()
+        print "GenConfig=%0x"%self.tpx.getGenConfig()
 
         for pck in data:
           if pck.type in (0xB,0xA):
@@ -68,7 +87,7 @@ class test07_clock_phasing(tpx3_test):
               self.bad_pixels.add( (pck.col,pck.row) )
             v=float(pck.toa-(shutter&0x3FFF)) 
             if v<0: v+=0x4000
-            v=v*16 - float(pck.ftoa)
+            v=v*16 - ( float(pck.ftoa) + self.tpix3ClockPhase(col=pck.col, phase_num=16))
             toa[pck.col][pck.row]=v
           elif not pck.type in (0x7,0x4):
             self.warning_detailed("Unexpeced packet %s"%str(pck))

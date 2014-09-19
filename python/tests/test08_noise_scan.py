@@ -93,6 +93,7 @@ class test08_noise_scan(tpx3_test):
     self.tpx.setDac(TPX3_IBIAS_IKRUM,15)
     self.tpx.setDac(TPX3_VTHRESH_COARSE,7) 
     self.tpx.setDac(TPX3_VTHRESH_FINE,256)
+    self.tpx.setDac(TPX3_IBIAS_DISCS2_ON,128)
 
     self.logging.info("Optimization of DC operating point")
 

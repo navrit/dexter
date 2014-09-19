@@ -17,16 +17,12 @@ class test22_cosmic(tpx3_test):
   def _execute(self,**keywords):
     self.tpx.resetPixels()
     self.tpx.setDacsDflt()
-    self.tpx.setDac(TPX3_IBIAS_IKRUM,15)
-    self.tpx.setDac(TPX3_VTP_COARSE,50)
-    self.tpx.setDac(TPX3_VTP_FINE,112) 
-    self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,128)
-    self.tpx.setDac(TPX3_IBIAS_DISCS2_ON,32)
+    self.tpx.setDac(TPX3_IBIAS_IKRUM,5)
+    self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,100)
+    self.tpx.setDac(TPX3_IBIAS_DISCS2_ON,128)
     self.tpx.setDac(TPX3_IBIAS_PREAMP_ON,128)    
     self.tpx.setDac(TPX3_IBIAS_PIXELDAC,128)
-    self.tpx.setDac(TPX3_VTHRESH_COARSE,5) 
     self.tpx.setDac(TPX3_VFBK,164) 
-    self.tpx.setDac(TPX3_VTHRESH_FINE,256)
 
     self.tpx.setPllConfig( TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK \
                          | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_1 \
@@ -41,17 +37,17 @@ class test22_cosmic(tpx3_test):
 
     self.tpx.resetPixelConfig()
    
-    self.tpx.load_equalization('calib/eq_codes.dat',\
-                      maskname='calib/eq_mask.dat')
+    self.tpx.load_equalization('calib/eq_codes_noiseFloor_ik5_w2l6_2.dat',\
+                      maskname='calib/eq_mask_noiseFloor_ik5_w2l6_2.dat')
 
-    self.tpx.setPixelMask(95,108,1)
+#    self.tpx.setPixelMask(234,197,1)
     self.tpx.setPixelConfig()
 
     self.tpx.datadrivenReadout()
 
 
     
-    self.tpx.setThreshold(1150)
+    self.tpx.setThreshold(1130)
     #flush any remaing data
     data=self.tpx.get_N_packets(1024*64)
 
@@ -76,7 +72,7 @@ class test22_cosmic(tpx3_test):
     while not finish:
       time_now = time.time()
       time_elapsed = time_now - time_start
-      if time_elapsed>60:
+      if time_elapsed>768000:
         self.tpx.shutterOff()
         time.sleep(0.001)
         data=self.tpx.get_frame()

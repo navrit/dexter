@@ -66,7 +66,7 @@ class test17_efuse(tpx3_test):
     if 'name' in keywords :  name=keywords['name'].upper()
     if 'force' in keywords :  force=str2bool(keywords['force'])
 
-    efuses=self.tpx.readEfuse()
+    efuses=self.tpx.readEfuses()
     self.logging.info( "Efuses value : 0x%08x"%efuses)
     bname= self.tpx.readName()
     self.logging.info( "Chip name    : %s"%bname)

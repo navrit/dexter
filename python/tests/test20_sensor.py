@@ -32,151 +32,133 @@ def gauss(x, *p):
 class test20_sensor(tpx3_test):
   """Threshold scan over noise data driven"""
 
-  def tpix3_temp(self,resolution=32):
-    self.tpx.setSenseDac(TPX3_BANDGAP_TEMP)
-    v_bg_temp=self.tpx.get_adc(resolution)
-    self.tpx.setSenseDac(TPX3_BANDGAP_OUTPUT)
-    v_bg=self.tpx.get_adc(resolution)
-    return 88.75-607.3*(v_bg_temp-v_bg)     #Mpix3 extracted
-
-  def SetThreshold(self,dac_value=1000):
-    i=0
-    coarse_found=0
-    fine_found=352
-    for coarse in range(16):
-       for fine in range(352,512,1):
-          if dac_value==i:
-             coarse_found=coarse
-             fine_found=fine
-          i+=1
-    self.tpx.setDac(TPX3_VTHRESH_COARSE,coarse_found)
-    self.tpx.setDac(TPX3_VTHRESH_FINE,fine_found)
-    #print "%d %d %d \n"%(i,coarse_found,fine_found)
-
-
   def _execute(self,**keywords):
     self.tpx.resetPixels()
     dac_defaults(self.tpx)
 
-    self.tpx.setDac(TPX3_IBIAS_IKRUM,15)
-    self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,128)
-    self.tpx.setDac(TPX3_IBIAS_DISCS2_ON,32)
+    self.tpx.setDac(TPX3_IBIAS_IKRUM,5)
+    self.tpx.setDac(TPX3_IBIAS_DISCS1_ON,100)
+    self.tpx.setDac(TPX3_IBIAS_DISCS2_ON,128)
     self.tpx.setDac(TPX3_IBIAS_PREAMP_ON,128)    
     self.tpx.setDac(TPX3_IBIAS_PIXELDAC,128)
-    self.tpx.setDac(TPX3_VTHRESH_COARSE,8) 
     self.tpx.setDac(TPX3_VFBK,164) 
-    self.tpx.setDac(TPX3_VTHRESH_FINE,256)
 
-    eth_filter,cpu_filter=self.tpx.getHeaderFilter()
-    self.tpx.setHeaderFilter(0x0c80,cpu_filter) # 
-    eth_filter,cpu_filter=self.tpx.getHeaderFilter()
-    
+
+    self.tpx.setDecodersEna(True)    
     self.tpx.setPllConfig( (TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_1 | 0x14<<TPX3_PLLOUT_CONFIG_SHIFT) )
     
     polarity=True
-    genConfig_register=TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA | TPX3_FASTLO_ENA #| TPX3_FASTLO_ENA#TPX3_ACQMODE_EVT_ITOT 
+    genConfig_register=TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA | TPX3_FASTLO_ENA 
     if not polarity: genConfig_register|=TPX3_POLARITY_EMIN
-    shutter_length=100000000
+    shutter_length=1000000
     self.logging.info("Shutter length %d us"%shutter_length)
     self.tpx.setGenConfig( genConfig_register)
     self.tpx.setCtprBits(0)
     self.tpx.setCtpr()
-    def load(fn):
-      f=open(fn,"r")
-      ret=[]
-      for l in f.readlines():
-        ll=[]
-        for n in l.split():
-          n=int(n)
-          ll.append(n)
-        ret.append(ll)
-      f.close()
-      return ret
     self.tpx.resetPixelConfig()
-    self.tpx.load_equalization('logs/W2H11/00_20140502_101303/test08_equalization_pixeDAC_scan/eq_code_pixelDAC_scan.dat',\
-                      maskname='logs/W2H11/00_20140502_101303/test08_equalization_pixeDAC_scan/eq_code_pixelDAC_scanMask2.dat')
-    
-    self.tpx.load_equalization('logs/W2H11/303_20140505_161145/test08_equalization_pixeDAC_scan/eq_code_pixelDAC_scan.dat',\
-                      maskname='logs/W2H11/303_20140505_161145/test08_equalization_pixeDAC_scan/eq_code_pixelDAC_scanMask2.dat')
 
-    self.tpx.load_equalization('logs/W2H09/00_20140505_171157/test08_equalization_pixeDAC_scan/eq_code_pixelDAC_scan.dat',\
-                      maskname='logs/W2H09/00_20140505_171157//test08_equalization_pixeDAC_scan/eq_code_pixelDAC_scanMask.dat')
-
-    self.tpx.load_equalization('logs/W2H11/472_20140507_103747/test08_equalization_x/eq_codes.dat',\
-                      maskname='logs/W2H11/472_20140507_103747/test08_equalization_x/eq_mask.dat')
-
-
-    self.tpx.load_equalization('logs/W2L6/20_20140514_083602/test08_equalization_x/eq_codes.dat',\
-                      maskname='logs/W2L6/20_20140514_083602/test08_equalization_x/eq_mask.dat')
-
-
-    #mask=load('logs/W2H11/00_20140502_101303/test08_equalization_pixeDAC_scan/eq_code_pixelDAC_scanMask2.dat')
-    #mask[0][1]=1
-    #f=open("logs/W2H11/00_20140502_101303/test08_equalization_pixeDAC_scan/eq_code_pixelDAC_scanMask2.dat","w")
-    #for col in range(256):
-    #  for row in range(256):
-    #     f.write("%d "%(mask[row][col]))
-    #  f.write("\n")  
-    #f.close()
-    self.tpx.setPixelMask(142,170,1)
-    #self.tpx.setPixelMask(224,89,1)
-    #self.tpx.setPixelMask(22,186,1)
-    #self.tpx.setPixelMask(ALL_PIXELS,ALL_PIXELS,1)
-    #for x in range(256):
-    #        for y in range(256):
-    #             if x>y:
-    #                self.tpx.setPixelMask(x,y,0)
+    self.tpx.load_equalization('calib/eq_codes_noiseFloor_ik5_w2l6_2.dat',\
+                      maskname='calib/eq_mask_noiseFloor_ik5_w2l6_2.dat')
+    self.tpx.setPixelMask(149,43,1)
+    self.tpx.setPixelMask(222,56,1)
+    self.tpx.setPixelMask(222,55,1)
+    self.tpx.setPixelMask(223,56,1)
+    self.tpx.setPixelMask(221,56,1)
+    self.tpx.setPixelMask(222,57,1)
+    self.tpx.setPixelMask(15,77,1)
     self.tpx.setPixelConfig()
 
-    self.tpx.flush_udp_fifo(0x718F000000000000)
     self.mkdir(self.fname)
     self.tpx.setShutterLen(shutter_length)
-    #self.tpx.sequentialReadout(tokens=4)
     self.tpx.datadrivenReadout()
-    data=self.tpx.get_frame()
     self.tpx.resetTimer()
     self.tpx.t0Sync()
-#    val=self.tpx.getTimer()
-#    print val
     self.tpx.setSenseDac(TPX3_VFBK)
     v_fbk=self.tpx.get_adc(32)
     self.tpx.setSenseDac(TPX3_VTHRESH_FINE)
     v_thr=self.tpx.get_adc(32)
 
-    if 0:
-      f=open(self.fname+"/thscan.dat","w")
-      for th in range(272,512,8):
-        self.tpx.setDac(TPX3_VTHRESH_FINE,th)
-        v_thr=self.tpx.get_adc(32)
-        self.tpx.openShutter()
-        data=self.tpx.get_frame()
-        num_pixels=0
-        total_evnt=0
-        total_itot=0
-        for d in data:
-           if d.type==0xB:
-#           if evn[d.col][d.row]: print "!!"
-             num_pixels+=1
-#             total_evnt+=d.event_counter
-#             total_itot+=d.itot
-        line="%d %d %d %d %.2f\n"%(th,num_pixels,total_evnt,total_itot,1000*(v_fbk-v_thr)*20*3.62)
-        print line,
-        f.write(line)
-      f.close()
-
-
     anim=['|','/','-','\\','|','/','-','\\']
-#    for thr in range(240,245,5):
 
+    TH_START=1130
+    TH_STOP=1210
+    TH_STEP=500
+
+    link_mask=int(pow(2,8)-1)
+    self.tpx.setOutputMask(link_mask)
+    self.tpx.datadrivenReadout()
 
 
     for frame in range(1):
+     f1=open(self.fname+'/dd_data_%d.dat'%frame,"w")
+
+     for thr in range(TH_START,TH_STOP,TH_STEP):
+        event_counter=0
+        pileup=0
+        self.tpx.setThreshold(thr)
+        v_thr=self.tpx.get_adc(8)
+        self.tpx.resetTimer()
+        self.tpx.t0Sync()
+        self.tpx.openShutter(sleep=False)
+        evn=np.zeros((256,256), int)
+        evn_total=np.zeros((256,256), int)
+
+        dd_packets=0
+        finish=0
+        ev_total=0
+        pre_pck=0
+        not_1hit=0
+        event_counter=0
+        while not finish:
+          data=self.tpx.get_N_packets(1000)
+          #print data
+          for pck in data:
+            if pck.isData():
+#              print pck
+#              print "%3d %3d %.9f"%(pck.col,pck.row,pck.abs_toa)
+              #if pre_pck:
+              #   if abs(pre_pck.col-pck.col)<4 and abs(pre_pck.row-pck.row)<4 and abs(pre_pck.abs_toa-pck.abs_toa)*1000000000<1000: 
+#                   print "%3d %3d %.9f %3d %3d %.9f | %d %d %.9f"%(pck.col,pck.row,pck.abs_toa,pre_pck.col,pre_pck.row,pre_pck.abs_toa,abs(pre_pck.col-pck.col)\
+#                                                                   ,abs(pre_pck.row-pck.row),abs(pre_pck.abs_toa-pck.abs_toa))
+              #     not_1hit+=1
+              #   else: pre_pck=pck
+              #else: pre_pck=pck
+              print "%c %s %d hits frame %d"%(13,anim[event_counter%len(anim)],event_counter, frame),
+              line="%d\t%d\t%d\t%d\t%d\n"%(pck.col,pck.row,pck.toa,pck.tot,pck.ftoa)
+              event_counter+=1
+              sys.stdout.flush()
+              f1.write(line)
+
+
+              dd_packets+=1
+              evn_total[pck.col][pck.row]+=1
+            else:
+              if pck.isEoR():
+                finish=1
+        f1.flush()
+
+#        dd_shutter_time=0
+#        while dd_shutter_time==0:
+#           shutter_start=self.tpx.getShutterStart()
+#           shutter_stop=self.tpx.getShutterEnd()
+#           dd_shutter_time=(shutter_stop-shutter_start)*0.025
+#        dd_rate=float(dd_packets)/dd_shutter_time
+
+#        l="%d (%.3f Ke-) %9d %9d %11.5f  "%(thr,(v_fbk-v_thr)*20,dd_packets,not_1hit,dd_rate)
+#        print l
+#        f.write("%s\n"%(l))
+#        f.flush()
+        #f.write("\n")
+     f1.close()   #self.save_np_array(evn_total, fn=self.fname+'/evn_dd_%d.map'%thr, info="  EVN to %s")
+
+    if 0:
+     for frame in range(1):
       f=open(self.fname+'/dd_data%d.dat'%frame,"w")
       f.close()
       event_counter=0
       pileup=0
       print frame
-      self.SetThreshold(1150)
+      self.SetThreshold(1130)
       self.tpx.openShutter()
       evn=np.zeros((256,256), int)
       pileup_m=np.zeros((256,256), int)

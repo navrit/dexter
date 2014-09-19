@@ -29,18 +29,18 @@ class test23_countrate(tpx3_test):
     self.tpx.setDac(TPX3_VFBK,164) 
     self.tpx.setDac(TPX3_VTHRESH_FINE,256)
 
-    
+    self.tpx.setDecodersEna(False)
     self.tpx.setPllConfig( (TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_16 | 0x14<<TPX3_PLLOUT_CONFIG_SHIFT) )
     
     polarity=True
-    genConfig_register=TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA #| TPX3_FASTLO_ENA #| TPX3_FASTLO_ENA#TPX3_ACQMODE_EVT_ITOT 
+    genConfig_register=TPX3_ACQMODE_TOA | TPX3_GRAYCOUNT_ENA #| TPX3_FASTLO_ENA #| TPX3_FASTLO_ENA#TPX3_ACQMODE_EVT_ITOT 
     if not polarity: genConfig_register|=TPX3_POLARITY_EMIN
     self.tpx.setGenConfig( genConfig_register)
 
-    shutter_length=1000000
+    shutter_length=200000
     self.logging.info("Shutter length %d us"%shutter_length)
     self.tpx.setShutterLen(shutter_length)
-
+     
     self.tpx.setCtprBits(0)
     self.tpx.setCtpr()
 
@@ -57,10 +57,11 @@ class test23_countrate(tpx3_test):
 
     f=open(self.fname+'/count_rate.dat',"w")
 
-    TH_START=1175
-    TH_STOP=1250
-    TH_STEP=5
-    for links in (1,2,4,8):
+    TH_START=800
+    TH_STOP=1100
+    TH_STEP=50
+    if 0:
+     for links in range(8,9):#(1,2,4,8):
       link_mask=int(pow(2,links)-1)
       self.tpx.setOutputMask(link_mask)
 
@@ -75,6 +76,7 @@ class test23_countrate(tpx3_test):
         self.tpx.datadrivenReadout()
         self.tpx.openShutter()
         temp=self.tpx.getTpix3Temp()
+        self.tpx.setSenseDac(TPX3_VTHRESH_FINE)
         evn=np.zeros((256,256), int)
         evn_total=np.zeros((256,256), int)
         pileup_m=np.zeros((256,256), int)
@@ -98,35 +100,51 @@ class test23_countrate(tpx3_test):
         dd_shutter_time=(shutter_stop-shutter_start)*0.025
         dd_rate=float(dd_packets)/dd_shutter_time
 
-        l="DD  %d %4d %9d %9d %11.5f  %6.2f"%(links,thr,dd_packets,dd_pileups,dd_rate,temp)
+        l="DD  %d %4d %9d %9d %11.5f  %6.2f %.4f"%(links,thr,dd_packets,dd_pileups,dd_rate,temp,self.tpx.get_adc(32))
         print l
         f.write("%s\n"%(l))
         f.flush()
       f.write("\n")
 
 
-    for thr in range(TH_START,TH_STOP,TH_STEP):
+    if 1:
+     for thr in range(TH_START,TH_STOP,TH_STEP):
+
+        TESTPULSES=02
+        self.tpx.setTpNumber(TESTPULSES)
+        self.tpx.setCtprBits(1)
+        self.tpx.setCtpr()
+        self.tpx.setPixelTestEna(ALL_PIXELS,ALL_PIXELS, testbit=True)
+        self.tpx.setPixelConfig()
+        self.tpx.setTpPeriodPhase(0x1,0)
+
         self.tpx.setThreshold(thr)
 
         self.tpx.pauseReadout()
-        self.tpx.sequentialReadout(tokens=1)
-        genConfig_register=TPX3_ACQMODE_EVT_ITOT 
+        self.tpx.resetPixels()
+        self.tpx.sequentialReadout(tokens=4)
+#        genConfig_register=TPX3_ACQMODE_EVT_ITOT | TPX3_TESTPULSE_ENA | TPX3_SELECTTP_DIGITAL 
+        genConfig_register=TPX3_ACQMODE_TOA_TOT | TPX3_GRAYCOUNT_ENA | TPX3_TESTPULSE_ENA | TPX3_SELECTTP_DIGITAL 
         self.tpx.setGenConfig( genConfig_register)
         self.tpx.openShutter()
         temp=self.tpx.getTpix3Temp()
+        self.tpx.setSenseDac(TPX3_VTHRESH_FINE)
         data=self.tpx.get_frame()
         shutter_start=self.tpx.getShutterStart()
         shutter_stop=self.tpx.getShutterEnd()
         seq_shutter_time=(shutter_stop-shutter_start)*0.025
 
         seq_hits=0
-
+        seq_packets=0
         for d in data:
           if d.isData():
-             seq_hits+=d.event_counter
+#             print d
+#             seq_hits+=d.event_counter
+             seq_packets+=1
+             seq_hits+=d.pileup
 
         seq_rate=float(seq_hits)/seq_shutter_time
-        l="SEQ   %4d %9d %11.5f  %6.2f"%(thr,seq_hits,seq_rate,temp)
+        l="SEQ   %4d %4d %9d %11.5f  %6.2f  %.4f"%(thr,seq_packets,seq_hits,seq_rate,temp,self.tpx.get_adc(32))
         print l
         f.write("%s\n"%(l))
         f.flush()
