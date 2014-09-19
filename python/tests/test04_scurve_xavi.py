@@ -106,13 +106,16 @@ th_step   - threshold step size [LSB] (default 4)"""
     amp_meas=[0.0]
     fbase="calib/"
 
-    if polarity:
-      codes_eq=numpy.loadtxt(fbase+"eq_codes_noiseFloor_ik15_w0c0.dat", int)
-      mask=numpy.loadtxt(fbase+     "eq_mask_noiseFloor_ik15_w0c0.dat", int)
-    else:
-      codes_eq=numpy.loadtxt(fbase+"eq_code_pixelDAC_scan_elec.dat", int)
-      mask=numpy.loadtxt(fbase+"eq_code_pixelDAC_scanMask_elec.dat", int)
+    #if polarity:
+    #  codes_eq=numpy.loadtxt(fbase+"eq_codes_noiseFloor_ik15_w0c0.dat", int)
+    #  mask=numpy.loadtxt(fbase+     "eq_mask_noiseFloor_ik15_w0c0.dat", int)
+    #else:
+    #  codes_eq=numpy.loadtxt(fbase+"eq_code_pixelDAC_scan_elec.dat", int)
+    #  mask=numpy.loadtxt(fbase+"eq_code_pixelDAC_scanMask_elec.dat", int)
 
+    codes_eq=numpy.loadtxt(fbase+"eq_codes.dat", int)
+    mask=numpy.loadtxt(fbase+"eq_mask.dat", int)
+    
     self.tpx.resetPixelConfig()
 
     for x in range(256):

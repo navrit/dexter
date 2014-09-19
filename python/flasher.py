@@ -115,7 +115,7 @@ def main():
   print "Online-builds:"
   for link,desc in get_firmwares():
     print " [%d] %s (%s)"%(id,desc,link)
-#    fnames.append(fn)
+    fnames.append(link)
     id+=1
   print 
   print "Local builds:"
@@ -130,7 +130,10 @@ def main():
   c=0
   fname=fnames[c]
   print "Flashing %d"%c,fname
-
+  dlfile(fname)
+  fname=str(fname[fname.rfind("/")+1:])
+  print fname
+   
   print "Tar contains"
   tar = tarfile.open(fname)
   id=0
