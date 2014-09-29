@@ -309,7 +309,7 @@ void SpidrMon::timerEvent(QTimerEvent *)
       if( _spidrController->getAdc( &adc_val ) )
 	{
 	  // Full-scale is 1.5V = 1500mV
-	  adc_val = (adc_val*1500) / 4096;
+	  adc_val = (adc_val*1500) / 4095;
 	  qs = QString("%1.%2").arg( adc_val/1000 )
 	    .arg( adc_val%1000, 3, 10, QChar('0') );
 
@@ -466,7 +466,7 @@ void SpidrMon::timerEvent(QTimerEvent *)
       if( _spidrController->getAdc( &adc_val ) )
 	{
 	  // Full-scale is 1.5V = 1500mV
-	  adc_val = (adc_val*1500) / 4096;
+	  adc_val = (adc_val*1500) / 4095;
 	  qs = QString("%1.%2").arg( adc_val/1000 )
 	    .arg( adc_val%1000, 3, 10, QChar('0') );
 
