@@ -15,13 +15,25 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14072100;
+const int   VERSION_ID = 0x14092900;
+//const int VERSION_ID = 0x14072100;
 //const int VERSION_ID = 0x14071600;
 //const int VERSION_ID = 0x14070800;
 //const int VERSION_ID = 0x14032400;
 //const int VERSION_ID = 0x14021400;
 //const int VERSION_ID = 0x14011600;
 //const int VERSION_ID = 0x13112700;
+
+// SPIDR register addresses (some of them)
+#define SPIDR_CPU2TPX_WR_I           0x01C8
+#define SPIDR_TDC_TRIGGERCOUNTER_I   0x02F8
+#define SPIDR_FE_GTX_CTRL_STAT_I     0x0300
+#define SPIDR_IPMUX_CONFIG_I         0x0380
+#define SPIDR_UDP_PKTCOUNTER_I       0x0384
+#define SPIDR_UDPMON_PKTCOUNTER_I    0x0388
+#define SPIDR_UDPPAUSE_PKTCOUNTER_I  0x038C
+#define SPIDR_PIXEL_PKTCOUNTER_I     0x0390
+#define SPIDR_PIXEL_FILTER_I         0x0394
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor
@@ -32,6 +44,11 @@ SpidrController::SpidrController( int ipaddr3,
 				  int ipaddr1,
 				  int ipaddr0,
 				  int port )
+  : _sock( 0 ),
+    _pixelConfigIndex( 0 ),
+    _pixelConfig( _pixelConfigData ),
+    _errId( 0 ),
+    _busyRequests( 0 )
 {
   _sock = new QTcpSocket;
 
@@ -44,13 +61,10 @@ SpidrController::SpidrController( int ipaddr3,
   _sock->waitForConnected( 5000 );
 
   // Initialize the local pixel configuration data array to all zeroes
-  this->resetPixelConfig();
+  this->resetPixelConfig( ALL_PIXELS );
 
   // Initialize the local CTPR to all zeroes
   memset( static_cast<void *> (_ctpr), 0, sizeof(_ctpr) );
-
-  _busyRequests = 0;
-  _errId = 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -523,7 +537,7 @@ bool SpidrController::setOutputMask( int dev_nr, int mask )
 
 bool SpidrController::getLinkStatus( int dev_nr, int *status )
 {
-  return this->getSpidrReg( 0x0300+(dev_nr<<2), status );
+  return this->getSpidrReg( SPIDR_FE_GTX_CTRL_STAT_I+(dev_nr<<2), status );
 }
 
 // ----------------------------------------------------------------------------
@@ -602,7 +616,7 @@ bool SpidrController::setDecodersEna( bool enable )
 bool SpidrController::setPeriphClk80Mhz( bool enable )
 {
   // Set or reset bit 24 of the CPU-to-TPX control register...
-  return this->setSpidrRegBit( 0x01C8, 24, enable );
+  return this->setSpidrRegBit( SPIDR_CPU2TPX_WR_I, 24, enable );
 }
 
 // ----------------------------------------------------------------------------
@@ -610,7 +624,7 @@ bool SpidrController::setPeriphClk80Mhz( bool enable )
 bool SpidrController::setExtRefClk( bool enable )
 {
   // Set or reset bit 25 of the CPU-to-TPX control register...
-  return this->setSpidrRegBit( 0x01C8, 25, enable );
+  return this->setSpidrRegBit( SPIDR_CPU2TPX_WR_I, 25, enable );
 }
 
 // ----------------------------------------------------------------------------
@@ -664,30 +678,32 @@ bool SpidrController::burnEfuse( int dev_nr,
 // ----------------------------------------------------------------------------
 
 #ifdef TLU
-bool SpidrController::tlu_enable( int  dev_nr, int enable )
-{
-  #define SPIDR_TLU_CONTROL_I  (0x02FC)
-  #define TLU_ENABLE_bm        1
-  int tlu_reg;
-  bool result = false;
+#define SPIDR_TLU_CONTROL_I  (0x02FC)
+#define TLU_ENABLE_bm        1
 
-  if(this->getSpidrReg( SPIDR_TLU_CONTROL_I , &tlu_reg ))
+bool SpidrController::setTluEnable( int  dev_nr, bool enable )
+{
+  int  tlu_reg;
+  bool result = false;
+  if( this->getSpidrReg( SPIDR_TLU_CONTROL_I , &tlu_reg ) )
     {
-      if(enable) 
-        tlu_reg|=TLU_ENABLE_bm;
+      if( enable )
+        tlu_reg |= TLU_ENABLE_bm;
       else
-        tlu_reg&=~TLU_ENABLE_bm;
-      result=this->setSpidrReg( SPIDR_TLU_CONTROL_I, tlu_reg );
-      if (!result) return result;
-      int eth_mask,cpu_mask;
-      result=SpidrController::getHeaderFilter(dev_nr, &eth_mask, &cpu_mask );
-      if (!result) return result;
-      eth_mask|=0x0020; // let headers 0x5 pass through
-      result=SpidrController::setHeaderFilter( dev_nr, eth_mask, cpu_mask );
+        tlu_reg &= ~TLU_ENABLE_bm;
+      if( this->setSpidrReg( SPIDR_TLU_CONTROL_I, tlu_reg ) )
+	{
+	  int eth_mask, cpu_mask;
+	  if( this->getHeaderFilter( dev_nr, &eth_mask, &cpu_mask ) )
+	    {
+	      eth_mask |= 0x0020; // Let headers 0x5 pass through
+	      result = this->setHeaderFilter( dev_nr, eth_mask, cpu_mask );
+	    }
+	}
     }
   return result;
 }
-#endif
+#endif // TLU
 
 // ----------------------------------------------------------------------------
 // Configuration: device test pulses
@@ -790,10 +806,69 @@ bool SpidrController::getCtpr( int dev_nr, unsigned char **ctpr )
 // Configuration: pixels
 // ----------------------------------------------------------------------------
 
-void SpidrController::resetPixelConfig()
+int SpidrController::pixelConfigCount()
 {
-  // Set the local pixel configuration data array to all zeroes
-  memset( static_cast<void *> (_pixelConfig), 0, sizeof(_pixelConfig) );
+  // The total number of (locally stored) pixel configuration
+  return( sizeof(_pixelConfigData)/(256*256) );
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrController::selectPixelConfig( int index )
+{
+  // Select a (locally stored) pixel configuration
+  if( index >= 0 && index < this->pixelConfigCount() )
+    {
+      _pixelConfigIndex = index;
+      _pixelConfig = &_pixelConfigData[index * 256*256];
+      return index;
+    }
+  return -1;
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrController::selectedPixelConfig()
+{
+  // What is the index of the currently selected local pixel configuration
+  return _pixelConfigIndex;
+}
+
+// ----------------------------------------------------------------------------
+
+unsigned char *SpidrController::pixelConfig( int index )
+{
+  // Return a pointer to the start of a pixel configuration array
+  if( index == -1 )
+    // Return pointer to currently active/selected pixel configuration
+    return _pixelConfig;
+  else if( index >= 0 && index < this->pixelConfigCount() )
+    // Return pointer to requested pixel configuration
+    return &_pixelConfigData[index * 256*256];
+  return 0;
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrController::resetPixelConfig( int index )
+{
+  if( index == -1 )
+    {
+      // Zero the local (active/selected) pixel configuration data array
+      memset( static_cast<void *> (_pixelConfig), 0, 256*256 );
+    }
+  else if( index == ALL_PIXELS )
+    {
+      // Zero all locally stored pixel configuration data arrays
+      memset( static_cast<void *> (_pixelConfigData), 0,
+	      sizeof(_pixelConfigData) );
+    }
+  else if( index >= 0 && index < this->pixelConfigCount() )
+    {
+      // Zero the local pixel configuration data array indicated by 'index'
+      memset( static_cast<void *> (&_pixelConfigData[index * 256*256]), 0,
+	      256*256 );
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -827,7 +902,7 @@ bool SpidrController::setPixelThreshold( int  x,
   for( yi=ystart; yi<yend; ++yi )
     for( xi=xstart; xi<xend; ++xi )
       {
-	pcfg = &_pixelConfig[yi][xi];
+	pcfg = &_pixelConfig[yi*256 + xi];
 	*pcfg &= ~TPX3_PIXCFG_THRESH_MASK;
 	*pcfg |= (TPX3_THRESH_CONV_TABLE[threshold] << 1);
       }
@@ -865,13 +940,18 @@ bool SpidrController::setPixelConfig( int dev_nr, int cols_per_packet )
   else if( cols_per_packet > 4 )
     cols_per_packet = 4;
 
+  unsigned char *p;
   for( x=0; x<256; x+=cols_per_packet )
     {
       // Compile a pixel configuration column
       // from the pixel configuration data stored in _pixelConfig
       for( col=0; col<cols_per_packet; ++col )
-	for( y=0; y<256; ++y )
-	  pixelcol[col*256+y] = _pixelConfig[y][x+col];
+	{
+	  p = & _pixelConfig[x + col];
+	  for( y=0; y<256; ++y, p+=256 ) pixelcol[col*256+y] = *p;
+	  //for( y=0; y<256; ++y )
+	  //  pixelcol[col*256+y] = _pixelConfig[y*256 + x+col];
+	}
 
       // Send this column of pixel configuration data
       if( !this->requestSetIntAndBytes( CMD_SET_PIXCONF, dev_nr,
@@ -895,7 +975,7 @@ bool SpidrController::setPixelConfig( int dev_nr )
       // Compile a pixel configuration column
       // from the pixel configuration data stored in _pixelConfig
       for( y=0; y<256; ++y )
-	pixelcol[y] = _pixelConfig[y][x];
+	pixelcol[y] = _pixelConfig[y*256 + x];
 
       // Send this column of pixel configuration data
       if( !this->requestSetIntAndBytes( CMD_SET_PIXCONF, dev_nr,
@@ -929,7 +1009,7 @@ bool SpidrController::getPixelConfig( int dev_nr )
 
       // Copy the column to the pixel configuration data into _pixelConfig
       for( y=0; y<256; ++y )
-	_pixelConfig[y][x] = pixelcol[y];
+	_pixelConfig[y*256 + x] = pixelcol[y];
     }
   return true;
 }
@@ -944,9 +1024,34 @@ bool SpidrController::resetPixels( int dev_nr )
 
 // ----------------------------------------------------------------------------
 
-unsigned char *SpidrController::pixelConfig()
+bool SpidrController::setSinglePixelFilter( int  index,
+					    int  x,
+					    int  y,
+					    bool enable )
 {
-  return &_pixelConfig[0][0];
+  // Convert x,y coordinates to double-column, superpixel and pixel numbers
+  int dcol, spix, pix;
+  dcol = x / 2;
+  spix = y / 4;
+  pix  = (x & 0x3) + (y & 0x1)*4;
+  return this->setSinglePixelFilter( index, pix, spix, dcol, enable );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setSinglePixelFilter( int  index,
+					    int  pixaddr,
+					    int  superpixaddr,
+					    int  doublecolumn,
+					    bool enable )
+{
+  // Enable or disable a single pixel filter
+  int regval = ((pixaddr & 0x7) |
+		((superpixaddr & 0x3F) << 3) |
+		((doublecolumn & 0x7F) << 9));
+  if( enable ) regval |= 0x10000; // Enable-filter bit
+  if( index < 0 || index > 3 ) return false;
+  return this->setSpidrReg( SPIDR_PIXEL_FILTER_I + (index<<2), regval );
 }
 
 // ----------------------------------------------------------------------------
@@ -1341,28 +1446,28 @@ bool SpidrController::selectChipBoard( int board_nr )
 
 bool SpidrController::getDataPacketCounter( int *cntr )
 {
-  return this->getSpidrReg( 0x0384, cntr );
+  return this->getSpidrReg( SPIDR_UDP_PKTCOUNTER_I, cntr );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getMonPacketCounter( int *cntr )
 {
-  return this->getSpidrReg( 0x0388, cntr );
+  return this->getSpidrReg( SPIDR_UDPMON_PKTCOUNTER_I, cntr );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getPausePacketCounter( int *cntr )
 {
-  return this->getSpidrReg( 0x038C, cntr );
+  return this->getSpidrReg( SPIDR_UDPPAUSE_PKTCOUNTER_I, cntr );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getPixelPacketCounter( int *cntr )
 {
-  return this->getSpidrReg( 0x0390, cntr );
+  return this->getSpidrReg( SPIDR_PIXEL_PKTCOUNTER_I, cntr );
 }
 
 // ----------------------------------------------------------------------------
@@ -1370,10 +1475,10 @@ bool SpidrController::getPixelPacketCounter( int *cntr )
 bool SpidrController::resetPacketCounters( )
 {
   bool result = true;
-  if( !this->setSpidrReg( 0x0384, 0 ) ) result = false;
-  if( !this->setSpidrReg( 0x0388, 0 ) ) result = false;
-  if( !this->setSpidrReg( 0x038C, 0 ) ) result = false;
-  if( !this->setSpidrReg( 0x0390, 0 ) ) result = false;
+  if( !this->setSpidrReg( SPIDR_UDP_PKTCOUNTER_I,      0 ) ) result = false;
+  if( !this->setSpidrReg( SPIDR_UDPMON_PKTCOUNTER_I,   0 ) ) result = false;
+  if( !this->setSpidrReg( SPIDR_UDPPAUSE_PKTCOUNTER_I, 0 ) ) result = false;
+  if( !this->setSpidrReg( SPIDR_PIXEL_PKTCOUNTER_I,    0 ) ) result = false;
   return result;
 }
 
@@ -1381,7 +1486,7 @@ bool SpidrController::resetPacketCounters( )
 
 bool SpidrController::getTdcTriggerCounter( int *cntr )
 {
-  return this->getSpidrReg( 0x02F8, cntr );
+  return this->getSpidrReg( SPIDR_TDC_TRIGGERCOUNTER_I, cntr );
 }
 
 // ----------------------------------------------------------------------------
@@ -1464,13 +1569,13 @@ bool SpidrController::setPixelBit( int x, int y, unsigned char bitmask, bool b )
     {
       for( yi=ystart; yi<yend; ++yi )
 	for( xi=xstart; xi<xend; ++xi )
-	  _pixelConfig[yi][xi] |= bitmask;
+	  _pixelConfig[yi*256 + xi] |= bitmask;
     }
   else
     {
       for( yi=ystart; yi<yend; ++yi )
 	for( xi=xstart; xi<xend; ++xi )
-	  _pixelConfig[yi][xi] &= ~bitmask;
+	  _pixelConfig[yi*256 + xi] &= ~bitmask;
     }
 
   return true;

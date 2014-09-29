@@ -25,12 +25,13 @@ class MY_LIB_API SpidrController
 {
  public:
   // C'tor, d'tor
-  SpidrController( int ipaddr3, int ipaddr2, int ipaddr1, int ipaddr0,
-                   int port = 50000 );
-  ~SpidrController();
+  SpidrController            ( int ipaddr3, int ipaddr2,
+                               int ipaddr1, int ipaddr0,
+                               int port = 50000 );
+  ~SpidrController           ( );
 
   // Version information
-  int         classVersion();                  // Version of this class
+  int         classVersion   ( );              // Version of this class
   bool        getSoftwVersion( int *version ); // SPIDR LEON3 software version
   bool        getFirmwVersion( int *version ); // SPIDR FPGA firmware version
   std::string versionToString( int  version ); // Utility function
@@ -120,7 +121,11 @@ class MY_LIB_API SpidrController
   bool        getCtpr          ( int  dev_nr, unsigned char **ctpr );
 
   // Configuration: device pixels
-  void resetPixelConfig        ( );
+  int  pixelConfigCount        ( );
+  int  selectPixelConfig       ( int  index );
+  int  selectedPixelConfig     ( );
+  unsigned char *pixelConfig   ( int  index = -1 );
+  void resetPixelConfig        ( int  index = -1 );
   bool setPixelThreshold       ( int  x,
                                  int  y,
                                  int  threshold );
@@ -131,7 +136,9 @@ class MY_LIB_API SpidrController
   bool setPixelConfig          ( int  dev_nr, int cols_per_packet = 2 );
   bool getPixelConfig          ( int  dev_nr );
   bool resetPixels             ( int  dev_nr );
-  unsigned char *pixelConfig   ( );
+  bool setSinglePixelFilter    ( int  index, int x, int y, bool enable = true );
+  bool setSinglePixelFilter    ( int  index, int pixaddr, int superpixaddr,
+                                 int  doublecolumn, bool enable = true );
 
   // Configuration: non-volatile onboard storage
   bool storeAddrAndPorts       ( int  ipaddr = 0,
@@ -174,17 +181,17 @@ class MY_LIB_API SpidrController
   bool restartTimers           ( );
   bool resetTimer              ( int dev_nr );
   bool getTimer                ( int dev_nr,
-				 unsigned int *timer_lo,
-				 unsigned int *timer_hi );
+                                 unsigned int *timer_lo,
+                                 unsigned int *timer_hi );
   bool setTimer                ( int dev_nr,
-				 unsigned int timer_lo,
-				 unsigned int timer_hi );
+                                 unsigned int timer_lo,
+                                 unsigned int timer_hi );
   bool getShutterStart         ( int dev_nr,
-				 unsigned int *timer_lo,
-				 unsigned int *timer_hi );
+                                 unsigned int *timer_lo,
+                                 unsigned int *timer_hi );
   bool getShutterEnd           ( int dev_nr,
-				 unsigned int *timer_lo,
-				 unsigned int *timer_hi );
+                                 unsigned int *timer_lo,
+                                 unsigned int *timer_hi );
   bool t0Sync                  ( int  dev_nr );
 
   // Monitoring
@@ -215,16 +222,15 @@ class MY_LIB_API SpidrController
   bool getSpidrReg             ( int  addr, int *val );
   bool setSpidrReg             ( int  addr, int  val );
   bool setSpidrRegBit          ( int  addr, int bitnr, bool set = true );
-
 #ifdef TLU
-  bool tlu_enable              ( int  dev_nr, int enable );
+  bool setTluEnable            ( int  dev_nr, bool enable );
 #endif
 
  private:
   bool setPixelBit             ( int x, int y, unsigned char bitmask, bool b );
   void setBitsBigEndianReversed( unsigned char *buffer,
-				 int pos, int nbits, unsigned int value,
-				 int array_size_in_bits );
+                                 int pos, int nbits, unsigned int value,
+                                 int array_size_in_bits );
   bool get3Ints                ( int cmd, int *data0, int *data1, int *data2 );
   bool validXandY              ( int x,       int y,
                                  int *xstart, int *xend,
@@ -235,7 +241,7 @@ class MY_LIB_API SpidrController
   bool requestGetBytes         ( int cmd, int dev_nr,
 				 int expected_bytes, unsigned char *databytes );
   bool requestGetIntAndBytes   ( int cmd, int dev_nr, int *dataword,
-				 int expected_bytes, unsigned char *databytes );
+                                 int expected_bytes, unsigned char *databytes );
   bool requestSetInt           ( int cmd, int dev_nr, int dataword );
   bool requestSetInts          ( int cmd, int dev_nr,
                                  int nwords, int *datawords );
@@ -250,17 +256,17 @@ class MY_LIB_API SpidrController
   // Socket connecting to the SPIDR module
   QTcpSocket *_sock;
 
-  // Busy request counter
-  // (busy is set and is only removed when the counter goes to zero)
-  int _busyRequests;
-
   // Message buffers for request and reply
   int _reqMsg[512];
   int _replyMsg[512];
 
-  // A device's pixel configuration is compiled locally before upload
-  // NB: here the dimensions represent y and x, or row and column number resp:
-  unsigned char _pixelConfig[256][256];
+  // A device's pixel configuration is compiled locally before upload; space is
+  // (currently statically) reserved for a number of pixel configurations,
+  // with '_pixelConfig' pointing to the start of the currently 'active'
+  // --i.e. selected by _pixelConfigIndex-- configuration array
+  int            _pixelConfigIndex;
+  unsigned char  _pixelConfigData[4*256*256];
+  unsigned char *_pixelConfig;
 
   // Storage for one 256-bit CTPR which is compiled locally before upload
   unsigned char _ctpr[256/8];
@@ -270,6 +276,10 @@ class MY_LIB_API SpidrController
 
   // Error identifier from the SPIDR-TPX3 module, from the last operation
   int _errId;
+
+  // Busy request counter
+  // (busy is set and is only removed when the counter goes to zero)
+  int _busyRequests;
 };
 
 #endif // SPIDRCONTROLLER_H
