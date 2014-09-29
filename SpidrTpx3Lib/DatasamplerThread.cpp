@@ -747,6 +747,9 @@ bool DatasamplerThread::startRecording( std::string    filename,
 	}
     }
 
+  // Initialize file counter when the run number changes
+  if( runnr != _runNr ) _fileCntr = 1;
+
   // Remember run number (for file names)
   _runNr = runnr;
 
