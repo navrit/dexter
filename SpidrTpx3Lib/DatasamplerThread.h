@@ -62,7 +62,7 @@ class DatasamplerThread : public QThread
   void setFileMaxSize ( i64 size )    { if( size > 0 ) _fileMaxSize = size; }
   std::string fileName( )             { return _fileName.toStdString(); }
   SpidrTpx3Header_t *fileHdr()        { return &_fileHdr; }
-  void setFileCntr    ( int cntr )    { if ( cntr > 0) _fileCntr = cntr; }   // MvB  
+  void setFileCntr    ( int cntr )    { if( cntr > 0) _fileCntr = cntr; } // MvB
 
   // Statistics
   i64  framesSampled  ( )             { return _framesSampled; }
