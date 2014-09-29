@@ -7,7 +7,8 @@
 #include "dacsdescr.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14072400;
+const   int VERSION_ID = 0x14092900;
+//const int VERSION_ID = 0x14072400;
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor / info
@@ -163,7 +164,8 @@ std::string SpidrDaq::errorString()
 bool SpidrDaq::startRecording( std::string filename,
 			       int         runnr,
 			       std::string descr,
-			       bool        include_pixelconfig )
+			       bool        include_pixelcfg,
+			       int         pixelcfg_index )
 {
   // Fill in the file and device header with the current settings
   SpidrTpx3Header_t *fhdr = _fileWriter->fileHdr();
@@ -191,8 +193,8 @@ bool SpidrDaq::startRecording( std::string filename,
   int eth_filter, cpu_filter;
   if( _spidrCtrl )
     {
-      if( include_pixelconfig )
-	pixelconfig = _spidrCtrl->pixelConfig();
+      if( include_pixelcfg )
+	pixelconfig = _spidrCtrl->pixelConfig( pixelcfg_index );
 
       int val;
       if( _spidrCtrl->getSpidrId( &val ) )
@@ -558,14 +560,18 @@ int SpidrDaq::bufferWrapCount()
 }
 
 // ----------------------------------------------------------------------------
-// added by MvB
+// Added by Martin v B
 bool SpidrDaq::setFileCntr( int cntr )
 {
-  if ( _fileWriter  && ( cntr > 0 ) )   // check if fileWriter object exists
+  // May be used to control the file 'sequence' numbering when writing data
+  // to files, but only works for the 2nd and next files created during
+  // the same run number; the 1st file always has sequence number 1.
+  if( _fileWriter && cntr > 0 ) // Check if _fileWriter object exists
     {
-        _fileWriter->setFileCntr( cntr );
-        return true;
+      _fileWriter->setFileCntr( cntr );
+      return true;
     }
-  else return false;
+  return false;
 }
 
+// ----------------------------------------------------------------------------
