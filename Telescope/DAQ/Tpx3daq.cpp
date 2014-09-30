@@ -6,12 +6,7 @@
 // - clean up code
 // - check all return values
 
-
-#ifdef WIN32
-#include <windows.h>
-#else
 #include <unistd.h>
-#endif
 #include <stdio.h>
 #include <iostream>
 #include <iomanip>
@@ -35,6 +30,10 @@ using namespace std;
 
 #define CFG_PATH "/mnt/CONFIGS"
 #define DATA_PATH "/localstore/TPX3/DATA"
+// Convenience macros
+#define cout_spidr_err(str) cout<<str<<": "<<spidrctrl->errorString()<<endl
+#define cout_spidrdev_err(dev,str) cout<<"Dev "<<dev<<" "<<str<<": "<<spidrctrl->errorString()<<endl
+#define cout_daqdev_err(dev,str) cout<<"Dev "<<dev<<" "<<str<<": "<<spidrdaq[dev]->errorString()<<endl
 
 bool configure( SpidrController *spidrctrl );
 bool start_run( SpidrController *spidrctrl, SpidrDaq **spidrdaq, char *prefix, int run_nr, char *description);
@@ -43,18 +42,18 @@ bool timestamp( SpidrController *spidrctrl );
 void *timestamp_per_sec( void *rctrl );  // to run in a separate thread
 bool devId_tostring ( int devId, char *devIdstring);
 
-int  ndev;          // number of devices, supported by this software/firmware
-int  ndev_active = 0;   // number of connected devices, determined by activity on links
-bool dev_ena[16];  // tells if device is connected.  max 16 devices on a SPIDR, currently max 2
+int  ndev;            // number of devices, supported by this software/firmware
+int  ndev_active = 0; // number of connected devices, determined by activity on links
+bool dev_ena[16];     // tells if device is connected.  max 16 devices on a SPIDR, currently max 2
 int  devIds[16];
 char devIdstrings[16][16];
 bool run_control;
-int spidr_pixel_packets_sent[2] = {0,0};     // before and after
-int spidr_data_packets_sent[2] = {0,0};     // before and after
-int spidr_mon_packets_sent[2] = {0,0};      // before and after
-int spidr_pause_packets_rec[2] = {0,0};          // before and after
-int daq_packets_rec[2][2] = {{0,0},{0,0}};  // 2 devices before and after
-int daq_packets_lost[2][2]= {{0,0},{0,0}};  // 2 devices before and after
+int  spidr_pixel_packets_sent[2] = {0,0};    // before and after
+int  spidr_data_packets_sent[2] = {0,0};     // before and after
+int  spidr_mon_packets_sent[2] = {0,0};      // before and after
+int  spidr_pause_packets_rec[2] = {0,0};     // before and after
+int  daq_packets_rec[2][2] = {{0,0},{0,0}};  // 2 devices before and after
+int  daq_packets_lost[2][2]= {{0,0},{0,0}};  // 2 devices before and after
 
 int main(int argc, char *argv[])
 {
@@ -72,12 +71,12 @@ int main(int argc, char *argv[])
 
     int my_socket, new_socket;
     int bufsize = 1024;
-    int status;
+    bool status;
     char *buffer = (char *)malloc(bufsize);
     char cmd[32];
     struct sockaddr_in address;
     socklen_t addrlen;
-    pthread_t ts_thread = NULL;   // thread for 1 sec timestamps
+    pthread_t ts_thread = 0;   // thread for 1 sec timestamps
 
     if (argc != 3) { 
         cout << "usage: Tpx3daq <-r> <port number>" << endl;
@@ -105,7 +104,7 @@ int main(int argc, char *argv[])
 
  
     //----------------------------------------------------------
-    //Open a control connection to SPIDR - TPX3 module
+    // Open a control connection to SPIDR - TPX3 module
     // with address 192.168.100.10, default port number 50000
     //----------------------------------------------------------
     SpidrController *spidrctrl = new SpidrController(192, 168, 100, 10);
@@ -120,51 +119,50 @@ int main(int argc, char *argv[])
     
     int addr;
     if ( !spidrctrl->getIpAddrDest( 0, &addr ) )
-        cout << "###getIpAddrDest: " << spidrctrl->errorString() << endl;
+      cout_spidr_err( "###getIpAddrDest" );
 
-    //cout << (int) ((addr >> 24) & 0xFF) << "  " << 
-    //        (int) ((addr >> 16) & 0xFF) << "  " << 
-    //        (int) ((addr >>  8) & 0xFF) << "  " << 
-    //        (int) ((addr >>  0) & 0xFF) << endl;
- 
     // first select internal or external clock
     //if (!spidrctrl->setExtRefClk(true) ) 
     if (!spidrctrl->setExtRefClk(false) ) 
-        cout << "###setExtRefClk: " << spidrctrl->errorString() << endl;
+      cout_spidr_err( "###setExtRefClk" );
 
     int errstat;
     if( !spidrctrl->reset( &errstat ) ) {
         cout << "###reset errorstat: " << hex << errstat << dec << endl;
     }
 
-
     // determine number of devices, does not check if devices are active
     if ( !spidrctrl->getDeviceCount( &ndev ) )
-            cout << "###getDeviceCount: " << spidrctrl->errorString() << endl;
+      cout_spidr_err( "###getDeviceCount" );
     cout << "[Note] number of devices supported by firmware: " << ndev << endl;
-
 
     // check link status
     int linkstatus;
     for (int dev=0; dev<ndev; dev++) {
         if( !spidrctrl->getLinkStatus( dev, &linkstatus ) ) {
-            cout << "#getLinkStatus(): " << hex << errstat << dec << endl;
+	  cout_spidr_err( "###getLinkStatus()" );
         }
-        if ( linkstatus ) {
+	// Link status: bits 0-7: 0=link enabled; bits 16-23: 1=link locked
+	int links_enabled_mask = (~linkstatus) & 0xFF;
+	int links_locked_mask  = (linkstatus & 0xFF0000) >> 16;
+        if ( links_enabled_mask != 0 &&
+	     links_locked_mask == links_enabled_mask ) {
+	    // At least one link (of 8) is enabled, and all links enabled are locked
             dev_ena[dev] = true;
             ndev_active++;
             cout << "[Note] enabling device " << dev << endl; 
-            cout << "[Note] dev " << dev << " enabled links: " << hex << linkstatus << dec << endl;
+            cout << "[Note] dev " << dev << " linkstatus: " << hex << linkstatus << dec << endl;
             // get device IDs in readable form
             if ( !spidrctrl->getDeviceIds( devIds ) )
-                cout << "#getDevidIds(): " << hex << errstat << dec << endl;
+	      cout_spidr_err( "###getDevidIds()" );
             //cout << hex << devIds[dev] << dec << endl;
             devId_tostring( devIds[dev], devIdstrings[dev] );
             cout << "[Note] dev " << dev << ": " << devIdstrings[dev] << endl;
            }
-        cout << "linkstatus: " << linkstatus << endl;
+	else {
+	  cout << "###linkstatus: " << hex << linkstatus << dec << endl;
+	}
     }
-    
     
 
     // ----------------------------------------------------------
@@ -175,24 +173,22 @@ int main(int argc, char *argv[])
     for (int dev=0; dev<ndev; dev++) {
         if ( dev_ena[dev] ) {
             if ( !spidrctrl->getHeaderFilter  ( dev, &eth_mask, &cpu_mask ) )
-                cout << "Dev "<< dev << " ###getHeaderFilter: " << spidrctrl->errorString() << endl;
+	      cout_spidrdev_err( dev, "###getHeaderFilter" );
             eth_mask = 0xFFFF;
             //cpu_mask = 0x0080;
             if ( !spidrctrl->setHeaderFilter  ( dev, eth_mask,   cpu_mask ) )
-                cout << "Dev "<< dev << " ###setHeaderFilter: " << spidrctrl->errorString() << endl;
+	      cout_spidrdev_err( dev, "###setHeaderFilter" );;
             if ( !spidrctrl->getHeaderFilter  ( dev, &eth_mask, &cpu_mask ) )
-                cout << "Dev "<< dev << " ###getHeaderFilter: " << spidrctrl->errorString() << endl;
+	      cout_spidrdev_err( dev, "###getHeaderFilter" );;
             cout << "[Note] dev " << dev << hex << " eth_mask = " << eth_mask << "  cpu_mask = " << cpu_mask << dec << endl;
         }
     }
-
      
-
     // select whether or not the let the FPGA do the ToT/ToA decoding
     // gray decoding (for ToA only) has priority over LFSR decoding
     if ( !spidrctrl->setDecodersEna(true) )
     //if ( !spidrctrl->setDecodersEna(false) )
-        cout << "###setDecodersEna: " << spidrctrl->errorString() << endl;
+      cout_spidr_err( "###setDecodersEna" );
 
 
     // ----------------------------------------------------------
@@ -210,7 +206,6 @@ int main(int argc, char *argv[])
             //spidrdaq[dev]->setBufferSize( 0x00001000 ); // 16 MByte
             spidrdaq[dev]->setFlush( false ); // Don't flush when no file is open
             
-            // Sample 'frames' as well as write pixel data to file
             spidrdaq[dev]->setSampling( false ); // no sampling
         }
     }
@@ -221,7 +216,7 @@ int main(int argc, char *argv[])
     // TODO: remove?, it will be replaced by external T0-sync
     //
     if( !spidrctrl->restartTimers() )
-        cout << "###restartTimers: " << spidrctrl->errorString() << endl;
+      cout_spidr_err( "###restartTimers" );
 
     
     if ( run_control ) {
@@ -297,7 +292,6 @@ int main(int argc, char *argv[])
                     cout << "[Error] Can not create timestamp thread, error: " << strerror(err) << endl;
                 else
                     cout << "[Note] Timestamp thread created successfully" << endl;
-
             }
 
             if ( strcmp(cmd,"stop_mon")==0 ) {
@@ -328,6 +322,7 @@ int main(int argc, char *argv[])
                 int len = strlen(run_nr_str);  
                 strcpy( description, ptr+len+1);  // read in rest of string as comment
                 sscanf( run_nr_str, "%d", &run_nr);
+		/* NO LONGER NECESSARY (HB, 29 sep 2014)
                 if ( run_nr != prev_run_nr ) { // reset fileCntr to 1
                     for (int dev=0; dev<ndev; dev++) {
                         if ( dev_ena[dev] ) {
@@ -336,6 +331,7 @@ int main(int argc, char *argv[])
                     }
                     prev_run_nr = run_nr;
                 }
+		*/
                     
                 cout << "[Note] starting run " << run_nr << endl;
 
@@ -358,30 +354,26 @@ int main(int argc, char *argv[])
                     cout << "[Error] " << buffer << endl;
                 }
 
-                // start thread for 1 sec heartbeat
-                
                 int extcntr, intcntr;
                 if ( !spidrctrl->getExtShutterCounter( &extcntr) )
-                    cout << "###getExtShutterCounter: " << spidrctrl->errorString() << endl;
+		  cout_spidr_err( "###getExtShutterCounter" );;
                 cout << "[Note] External shutter counter: " << extcntr << endl;
                 if ( !spidrctrl->getShutterCounter( &intcntr) )
-                    cout << "###getShutterCounter: " << spidrctrl->errorString() << endl;
+		  cout_spidr_err( "###getShutterCounter" );
                 cout << "[Note] Number of shutters given " << intcntr << endl;
                 if ( extcntr != intcntr ) 
                     cout << "[Error] mismatch in shutter counters" << endl;
                 else 
                     cout << "[Note] shutter counters match" << endl;
- 
 
+                
+                // start thread for 1 sec heartbeat
                 
                 int err = pthread_create( &ts_thread, NULL, &timestamp_per_sec, (void *) spidrctrl );
                 if (err != 0)
                     cout << "[Error] Can not create timestamp thread, error: " << strerror(err) << endl;
                 else
-                    cout << "[Note] Timestamp thread created successfully" << endl;
-
-                
-                
+                    cout << "[Note] Timestamp thread created successfully" << endl;                
             }
     
             if (strcmp(cmd,"stop_run")==0) {
@@ -390,7 +382,7 @@ int main(int argc, char *argv[])
 
                 if (ts_thread) pthread_cancel( ts_thread );
                 if ( !spidrctrl->closeShutter() )
-                    cout << "###closeShutter: " << spidrctrl->errorString() << endl;
+		  cout_spidr_err( "###closeShutter" );
 
                 status = stop_run( spidrctrl, spidrdaq);
 
@@ -402,10 +394,10 @@ int main(int argc, char *argv[])
             
                 if( !spidrctrl->setShutterTriggerConfig( trig_mode, trig_length_us,
                                                  trig_freq_hz, nr_of_trigs ) )
-                    cout << "###setTriggerConfig: " << spidrctrl->errorString() << endl;
+		  cout_spidr_err( "###setShutterTriggerConfig" );
 
 
-                if (status == 0) {
+                if (status == true) {
                     run_started = false;
                     sprintf(buffer,"OK run %d stopped", run_nr);
                     cout << "[Note] " << buffer << endl;
@@ -417,10 +409,10 @@ int main(int argc, char *argv[])
 
                 int extcntr, intcntr;
                 if ( !spidrctrl->getExtShutterCounter( &extcntr) )
-                    cout << "###getExtShutterCounter: " << spidrctrl->errorString() << endl;
+		  cout_spidr_err( "###getExtShutterCounter" );
                 cout << "[Note] External shutter counter: " << extcntr << endl;
                 if ( !spidrctrl->getShutterCounter( &intcntr) )
-                    cout << "###getShutterCounter: " << spidrctrl->errorString() << endl;
+		  cout_spidr_err( "###getShutterCounter" );
                 cout << "[Note] Number of shutters given " << intcntr << endl;
                 if ( extcntr != intcntr ) 
                     cout << "[Error] mismatch in shutter counters" << endl;
@@ -446,7 +438,6 @@ int main(int argc, char *argv[])
     
         close(new_socket);
         close(my_socket); 
-    
     }
 
 
@@ -468,7 +459,7 @@ int main(int argc, char *argv[])
         retval = spidrctrl->openShutter();
         if ( !retval )
         {
-            cout << "###openShutter: " << spidrctrl->errorString() << endl;
+	    cout_spidr_err( "###openShutter" );
             status &= retval;
         }
 
@@ -487,14 +478,11 @@ int main(int argc, char *argv[])
     
         retval = spidrctrl->closeShutter(); 
         {
-            cout << "###closeShutter: " << spidrctrl->errorString() << endl;
+	    cout_spidr_err( "###closeShutter" );
             status &= retval;
         }
         stop_run ( spidrctrl, spidrdaq); 
-
-
     }
-
 
 
     //----------------------------------------------------------
@@ -511,7 +499,6 @@ int main(int argc, char *argv[])
     delete spidrctrl;
 
     return 0;
-
 }
 
 
@@ -519,7 +506,6 @@ int main(int argc, char *argv[])
 bool configure( SpidrController *spidrctrl )
 //=====================================================
 {
-
     bool status = true;   
     bool retval;
     int numpar;
@@ -566,8 +552,8 @@ bool configure( SpidrController *spidrctrl )
                     if (numpar == 2) {
                         retval = spidrctrl->setDac( dev, dac_nr, dac_val);
                         if ( !retval ) {
-                            cout << "Dev "<< dev << " ###setDac: " << spidrctrl->errorString() << endl;
-                            status &= retval;
+			    cout_spidrdev_err( dev, "###setDac" );
+                            status = false;
                         }
                     }
                     //cout << dac_nr <<  "  " << dac_val << endl;
@@ -590,28 +576,16 @@ bool configure( SpidrController *spidrctrl )
             // Clear pixel configuration in chip
             retval = spidrctrl->resetPixels( dev );
             if( !retval ) {
-                cout << "Dev "<< dev << " ###resetPixels: " << spidrctrl->errorString() << endl;
-                status &= retval;
+	        cout_spidrdev_err( dev, "###resetPixels" );
+                status = false;
             }
         }
     }
             
     for (int dev=0; dev<ndev; dev++) {
         if ( dev_ena[dev] ) {
-            // Clear local pixel config, no return value
+            // Clear local pixel config (testpulse disabled, not masked, threshold=0), no return value
             spidrctrl->resetPixelConfig() ;
-            // Disable all testpulse bits
-            retval = spidrctrl->setPixelTestEna( ALL_PIXELS, ALL_PIXELS, false) ;
-            if( !retval ) {
-                cout << "Dev "<< dev << " ###setPixelTestEna: " << spidrctrl->errorString() << endl;
-                status &= retval;
-            }
-            // Enable all pixels 
-            retval = spidrctrl->setPixelMask( ALL_PIXELS, ALL_PIXELS, false );
-            if( !retval ) {
-                cout << "Dev "<< dev << " ###setPixelMask: " << spidrctrl->errorString() << endl;
-                status &= retval;
-            }
         
             // read thresholds from file
             char *charptr; 
@@ -640,15 +614,15 @@ bool configure( SpidrController *spidrctrl )
                     sscanf(line, "%d %d %d %d %d", &col, &row, &thr, &mask, &tp_ena);
                     retval =  spidrctrl->setPixelThreshold( col, row, thr);
                     if ( !retval ) {
-                        cout << "Dev "<< dev << " ###setPixelThreshold: " << spidrctrl->errorString() << endl;
-                        status &= retval;
+		        cout_spidrdev_err( dev, "###setPixelThreshold" );
+                        status = false;
                     }
 
                     if (mask) {
                         retval = spidrctrl->setPixelMask( col, row, true );
                         if ( !retval ) {
-                            cout << "Dev "<< dev << " ###setPixelMask: " << spidrctrl->errorString() << endl;
-                            status &= retval;
+			    cout_spidrdev_err( dev, "###setPixelMask" );
+                            status = false;
                         }
                     }
                 }
@@ -657,16 +631,16 @@ bool configure( SpidrController *spidrctrl )
 
             //retval = spidrctrl->setPixelTestEna( 127, 127, true);
             //if( !retval ) {
-            //    cout << "Dev "<< dev << " ###setPixelTestEna: " << spidrctrl->errorString() << endl;
-            //    status &= retval;
+            //    cout_spidrdev_err( dev, "###setPixelTestEna" );
+            //    status = false;
             //}
             // Write pixel config to chip
             retval = spidrctrl->setPixelConfig( dev );
             if( !retval ) {
                 if ( strstr(spidrctrl->errorString().c_str(), "ERR_UNEXP") ) ; // known feature, do nothing
                 else {
-                    cout << "Dev "<< dev << " ###setPixelConfig: " << spidrctrl->errorString() << endl;
-                    status &= retval;
+		    cout_spidrdev_err( dev, "###setPixelConfig" );
+                    status = false;
                 }
             }
             
@@ -674,8 +648,8 @@ bool configure( SpidrController *spidrctrl )
             int gen_cfg;
             retval = spidrctrl->getGenConfig( dev, &gen_cfg);
             if( !retval ) {
-                cout << "Dev "<< dev << " ###getGenConfig: " << spidrctrl->errorString() << endl;
-                status &= retval;
+	        cout_spidrdev_err( dev, "###getGenConfig" );
+                status = false;
             }
         
         }
@@ -697,13 +671,13 @@ bool configure( SpidrController *spidrctrl )
          if ( dev_ena[dev] ) {
              retval = spidrctrl->setTpPeriodPhase( dev, 10, 0 );
              if( !retval ) {
-                 cout << "Dev "<< dev << " ###setTpPeriodPhase: " << spidrctrl->errorString() << endl;
-                 status &= retval;
+	         cout_spidrdev_err( dev, "###setTpPeriodPhase" );
+                 status = false;
              }
              retval = spidrctrl->setTpNumber( dev, 1 );
              if( !retval ) {
-                 cout << "Dev "<< dev << " ###setTpNumber: " << spidrctrl->errorString() << endl;
-                 status &= retval;
+	         cout_spidrdev_err( dev, "###setTpNumber" );
+                 status = false;
              }
          }
      }
@@ -715,12 +689,12 @@ bool configure( SpidrController *spidrctrl )
              for( col=0; col<256; ++col ) {
                  if( col == 127 )
                      spidrctrl->setCtprBit( col, 1 );
-                 retval = spidrctrl->setCtpr( dev );
-                 if( !retval ) {
-                     cout << "Dev "<< dev << " ###setCtpr: " << spidrctrl->errorString() << endl;
-                     status &= retval;
-                 }
              }
+	     retval = spidrctrl->setCtpr( dev );
+	     if( !retval ) {
+	         cout_spidrdev_err( dev, "###setCtpr" );
+	         status = false;
+	     }
          }
      }
 
@@ -739,15 +713,15 @@ bool configure( SpidrController *spidrctrl )
     retval = spidrctrl->setShutterTriggerConfig( trig_mode, trig_length_us,
                                      trig_freq_hz, nr_of_trigs );
     if ( !retval ) {
-        cout << "###setShutterTriggerConfig: " << spidrctrl->errorString() << endl;
-        status &= retval;
+        cout_spidr_err( "###setShutterTriggerConfig" );
+        status = false;
     }
 
     int i1, i2, i3, i4;
     retval = spidrctrl->getShutterTriggerConfig( &i1, &i2, &i3, &i4 );
     if ( !retval ) {
-        cout << "###getShutterTriggerConfig: " << spidrctrl->errorString() << endl;
-        status &= retval;
+        cout_spidr_err( "###getShutterTriggerConfig" );
+        status = false;
     }
     cout << "[Note] read trigger config " << hex << i1 << " " << i2 << " " << i3 << " " << i4 << dec  << endl;
 
@@ -770,16 +744,16 @@ bool configure( SpidrController *spidrctrl )
                                    ); 
     
             if( !retval ) {
-                cout << "Dev "<< dev << " ###setGenCfg: " << spidrctrl->errorString() << endl;
-                status &= retval;
+	        cout_spidrdev_err( dev, "###setGenCfg" );
+                status = false;
             }
         
             // read back configuration
             int gen_cfg;
             retval = spidrctrl->getGenConfig( dev, &gen_cfg);
             if( !retval ) {
-                cout << "Dev "<< dev << " ###getGenCfg: " << spidrctrl->errorString() << endl;
-                status &= retval;
+	        cout_spidrdev_err( dev, "###getGenConfig" );
+                status = false;
             }
             cout << "[Note] dev " << dev << " gen config " << hex << gen_cfg << dec <<  endl;
         
@@ -788,13 +762,13 @@ bool configure( SpidrController *spidrctrl )
             int pll_cfg = 0x01E | 0x100;  // 40 MHz, 16 clock phases
             retval = spidrctrl->setPllConfig(dev, pll_cfg);
             if( !retval ) {
-                cout << "Dev "<< dev << " ###setPllCfg: " << spidrctrl->errorString() << endl;
-                status &= retval;
+	        cout_spidrdev_err( dev, "###setPllConfig" );
+                status = false;
             }
             retval = spidrctrl->getPllConfig(dev, &pll_cfg);
             if( !retval ) {
-                cout << "Dev "<< dev << " ###setPllCfg: " << spidrctrl->errorString() << endl;
-                status &= retval;
+	        cout_spidrdev_err( dev, "###setPllConfig" );
+                status = false;
             }
             cout << "[Note] dev " << dev << " PLL config " << hex << pll_cfg <<  dec << endl;
         }
@@ -804,8 +778,8 @@ bool configure( SpidrController *spidrctrl )
     // Set Timepix3 into acquisition mode
     retval = spidrctrl->datadrivenReadout();
     if( !retval ) {
-        cout << "###ddrivenReadout: " << spidrctrl->errorString() << endl;
-        status &= retval;
+        cout_spidr_err( "###datadrivenReadout" );
+        status = false;
     }
 
     // reapply ethernet mask
@@ -813,15 +787,15 @@ bool configure( SpidrController *spidrctrl )
         if ( dev_ena[dev] ) {
             retval = spidrctrl->getHeaderFilter  ( dev, &eth_mask, &cpu_mask );
             if( !retval ) {
-                cout << "Dev "<< dev << " ###getHeaderFilter: " << spidrctrl->errorString() << endl;
-                status &= retval;
+	        cout_spidrdev_err( dev, "###getHeaderFilter" );
+                status = false;
             }
             //cpu_mask = 0x0080;
             eth_mask = 0xFFFF;
             retval = spidrctrl->setHeaderFilter  ( dev, eth_mask,   cpu_mask );
             if( !retval ) {
-                cout << "Dev "<< dev << " ###setHeaderFilter: " << spidrctrl->errorString() << endl;
-                status &= retval;
+	        cout_spidrdev_err( dev, "###setHeaderFilter" );
+                status = false;
             }
         }
     }
@@ -836,7 +810,7 @@ bool start_run( SpidrController *spidrctrl, SpidrDaq **spidrdaq, char *prefix, i
 //=======================================================================================
 {
     unsigned int timer_lo1, timer_hi1;
-    int status = 0;
+    bool status = true;
     bool retval;
     char filename[256];
     char dacfile[256];
@@ -848,36 +822,36 @@ bool start_run( SpidrController *spidrctrl, SpidrDaq **spidrdaq, char *prefix, i
     // reset shutter counters a.o.
     retval = spidrctrl->resetCounters();
     if( !retval ) {
-        cout <<  "###resetCounters: " << spidrctrl->errorString() << endl;
-        status &= retval;
+        cout_spidr_err( "###resetCounters" );
+        status = false;
     }
     
     // resetting counter for statistic of packets
     retval = spidrctrl->resetPacketCounters();
     if( !retval ) {
-        cout <<  "###resetPacketCounters: " << spidrctrl->errorString() << endl;
-        status &= retval;
+        cout_spidr_err( "###resetPacketCounters" );
+        status = false;
     }
   
     retval = spidrctrl->getDataPacketCounter( &spidr_data_packets_sent[0] );
     if( !retval ) {
-        cout << "###getDataPacketCounter: " << spidrctrl->errorString() << endl;
-        status &= retval;
+        cout_spidr_err( "###getDataPacketCounter" );
+        status = false;
     }
     retval = spidrctrl->getMonPacketCounter( &spidr_mon_packets_sent[0] );
     if( !retval ) {
-        cout << "###getMonPacketCounter: " << spidrctrl->errorString() << endl;
-        status &= retval;
+        cout_spidr_err( "###getMonPacketCounter" );
+        status = false;
     }
     retval = spidrctrl->getPixelPacketCounter( &spidr_pixel_packets_sent[0] );
     if( !retval ) {
-       cout << "###getPixelPacketCounter: " << spidrctrl->errorString() << endl;
-      status &= retval;
+        cout_spidr_err( "###getPixelPacketCounter" );
+        status = false;
     }
     retval = spidrctrl->getPausePacketCounter( &spidr_pause_packets_rec[0] );
     if( !retval ) {
-        cout << "###getPausePacketCounter: " << spidrctrl->errorString() << endl;
-        status &= retval;
+        cout_spidr_err( "###getPausePacketCounter" );
+        status = false;
     }
 
     for (int dev=0; dev<ndev; dev++) {
@@ -900,13 +874,13 @@ bool start_run( SpidrController *spidrctrl, SpidrDaq **spidrdaq, char *prefix, i
             cout << "[Note] opening data file" << endl;
             retval = spidrdaq[dev]->startRecording( filename, run_nr, description );
             if ( !retval ) {
-                cout << "Dev "<< dev << " ###startRecording: " << spidrctrl->errorString() << endl;
-                status &= retval;
+	        cout_daqdev_err( dev, "###startRecording" );
+                status = false;
             }
             retval = spidrctrl->getTimer(dev, &timer_lo1, &timer_hi1);  // adds timestamp to datafile
             if ( !retval ) {
-                cout << "Dev "<< dev << " ###getTimer: " << spidrctrl->errorString() << endl;
-                status &= retval;
+	        cout_spidrdev_err( dev, "###getTimer" );
+                status = false;
             }
         }
     }
@@ -944,14 +918,14 @@ bool start_run( SpidrController *spidrctrl, SpidrDaq **spidrdaq, char *prefix, i
 bool stop_run( SpidrController *spidrctrl, SpidrDaq **spidrdaq ) 
 //=============================================================
 {
-    bool status = false;
+    bool status = true;
     bool retval;
     unsigned int timer_lo1, timer_lo2, timer_hi1, timer_hi2;
 
     timestamp( spidrctrl );
     //for (int dev=0; dev<2; dev++) {
     //    retval = spidrctrl->getTimer(dev, &timer_lo1, &timer_hi1);  // adds timestamp to datafile
-    //    status |= retval;
+    //    status &&= retval;
     //}
 
     sleep(1);  // waiting time to collect last ethernet packets
@@ -960,13 +934,13 @@ bool stop_run( SpidrController *spidrctrl, SpidrDaq **spidrdaq )
         if ( dev_ena[dev] ) {
             retval = spidrctrl->getShutterStart(dev, &timer_lo1, &timer_hi1);
             if ( !retval ) {
-                cout << "Dev "<< dev << " ###getShutterStart: " << spidrctrl->errorString() << endl;
-                status &= retval;
+	        cout_spidrdev_err( dev, "###getShutterStart" );
+                status = false;
             }
             retval = spidrctrl->getShutterEnd(dev, &timer_lo2, &timer_hi2);
             if ( !retval ) {
-                cout << "Dev "<< dev << " ###getShutterEnd: " << spidrctrl->errorString() << endl;
-                status &= retval;
+	        cout_spidrdev_err( dev, "###getShutterEnd" );
+                status = false;
             }
             //cout << dec << "shutter timer high : " << (timer_hi2 - timer_hi1)*25E-9 << endl; 
             //cout << "shutter timer low : " << (timer_lo2 - timer_lo1)*25E-9 << endl; 
@@ -977,29 +951,32 @@ bool stop_run( SpidrController *spidrctrl, SpidrDaq **spidrdaq )
     for (int dev=0; dev<ndev; dev++) {
         if ( dev_ena[dev] ) {
             retval = spidrdaq[dev]->stopRecording();
-            status &= retval;
+	    if ( !retval ) {
+	      cout_daqdev_err( dev, "###stopRecording" );
+	      status = false;
+	    }
         }
     }
 
     retval = spidrctrl->getDataPacketCounter( &spidr_data_packets_sent[1] );
     if( !retval ) {
-        cout << "###getDatatPacketCounter: " << spidrctrl->errorString() << endl;
-        status &= retval;
+        cout_spidr_err( "###getDatatPacketCounter" );
+        status = false;
     }
     retval = spidrctrl->getMonPacketCounter( &spidr_mon_packets_sent[1] );
     if( !retval ) {
-        cout << "###getMonPacketCounter: " << spidrctrl->errorString() << endl;
-        status &= retval;
+        cout_spidr_err( "###getMonPacketCounter" );
+        status = false;
     }
     retval = spidrctrl->getPixelPacketCounter( &spidr_pixel_packets_sent[1] );
     if( !retval ) {
-        cout << "###getPixelPacketCounter: " << spidrctrl->errorString() << endl;
-        status &= retval;
+        cout_spidr_err( "###getPixelPacketCounter" );
+        status = false;
     }
     retval = spidrctrl->getPausePacketCounter( &spidr_pause_packets_rec[1] );
     if( !retval ) {
-        cout << "###getPausePacketCounter: " << spidrctrl->errorString() << endl;
-        status &= retval;
+        cout_spidr_err( "###getPausePacketCounter" );
+        status = false;
     }
 
     for (int dev=0; dev<ndev; dev++) {
@@ -1046,8 +1023,8 @@ bool timestamp( SpidrController *spidrctrl )
         if ( dev_ena[dev] ) {
             retval = spidrctrl->getTimer(dev, &timer_lo1, &timer_hi1);  // adds timestamp to datafile
             if( !retval ) {
-                cout << "###getTimer: " << spidrctrl->errorString() << endl;
-                status &= retval;
+	        cout_spidr_err( "###getTimer" );
+                status = false;
             }
         }
     }
@@ -1077,8 +1054,8 @@ void *timestamp_per_sec( void *ctrl )
             if ( dev_ena[dev] ) {
                 retval = spidrctrl->getTimer(dev, &timer_lo1, &timer_hi1);  // adds timestamp to datafile
                 if( !retval ) {
-                    cout << "###getTimer: " << spidrctrl->errorString() << endl;
-                    status &= retval;
+		    cout_spidr_err( "###getTimer" );
+                    status = false;
                 }
             }
         }
@@ -1086,8 +1063,8 @@ void *timestamp_per_sec( void *ctrl )
         int trigcntr; 
         retval = spidrctrl->getTdcTriggerCounter( &trigcntr );
         if( !retval ) {
-            cout << "###getTdcTriggerCounter: " << spidrctrl->errorString() << endl;
-            status &= retval;
+	    cout_spidr_err( "###getTdcTriggerCounter" );
+            status = false;
         }
 
         // in millidegrees
