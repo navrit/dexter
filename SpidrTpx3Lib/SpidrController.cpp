@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x14092900;
+const int   VERSION_ID = 0x14093000;
+//const int VERSION_ID = 0x14092900;
 //const int VERSION_ID = 0x14072100;
 //const int VERSION_ID = 0x14071600;
 //const int VERSION_ID = 0x14070800;
@@ -356,13 +357,12 @@ bool SpidrController::getHeaderFilter( int  dev_nr,
 				       int *cpu_mask )
 {
   int mask;
-  if( this->requestGetInt( CMD_GET_HEADERFILTER, dev_nr, &mask ) )
-    {
-      *eth_mask = (mask & 0xFFFF);
-      *cpu_mask = ((mask >> 16) & 0xFFFF);
-      return true;
-    }
-  return false;
+  if( !this->requestGetInt( CMD_GET_HEADERFILTER, dev_nr, &mask ) )
+    return false;
+
+  *eth_mask = (mask & 0xFFFF);
+  *cpu_mask = ((mask >> 16) & 0xFFFF);
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -424,10 +424,9 @@ bool SpidrController::getDeviceIds( int *ids )
 {
   int nr_of_devices;
   *ids = 0;
-  if( this->getDeviceCount( &nr_of_devices ) )
-    return this->requestGetInts( CMD_GET_DEVICEIDS, 0,
-				 nr_of_devices, ids );
-  return false;
+  if( !this->getDeviceCount( &nr_of_devices ) ) return false;
+  return this->requestGetInts( CMD_GET_DEVICEIDS, 0,
+			       nr_of_devices, ids );
 }
 
 // ----------------------------------------------------------------------------
@@ -452,19 +451,18 @@ bool SpidrController::setExtDac( int dev_nr, int dac_code, int dac_val )
 bool SpidrController::getDac( int dev_nr, int dac_code, int *dac_val )
 {
   int dac_data = dac_code;
-  if( this->requestGetInt( CMD_GET_DAC, dev_nr, &dac_data ) )
+  if( !this->requestGetInt( CMD_GET_DAC, dev_nr, &dac_data ) )
+    return false;
+
+  // Extract dac_nr and dac_val
+  if( (dac_data >> 16) != dac_code )
     {
-      // Extract dac_nr and dac_val
-      if( (dac_data >> 16) != dac_code )
-	{
-	  this->clearErrorString();
-	  _errString << "DAC code mismatch in reply";
-	  return false;
-	}
-      *dac_val = dac_data & 0xFFFF;
-      return true;
+      this->clearErrorString();
+      _errString << "DAC code mismatch in reply";
+      return false;
     }
-  return false;
+  *dac_val = dac_data & 0xFFFF;
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -538,6 +536,21 @@ bool SpidrController::setOutputMask( int dev_nr, int mask )
 bool SpidrController::getLinkStatus( int dev_nr, int *status )
 {
   return this->getSpidrReg( SPIDR_FE_GTX_CTRL_STAT_I+(dev_nr<<2), status );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getLinkStatus( int  dev_nr,
+				     int *enabled_mask,
+				     int *locked_mask )
+{
+  int status;
+  if( !this->getLinkStatus( dev_nr, &status ) ) return false;
+
+  // Link status: bits 0-7: 0=link enabled; bits 16-23: 1=link locked
+  *enabled_mask = (~status) & 0xFF;
+  *locked_mask  = (status & 0xFF0000) >> 16;
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -712,14 +725,13 @@ bool SpidrController::setTluEnable( int  dev_nr, bool enable )
 bool SpidrController::getTpPeriodPhase( int dev_nr, int *period, int *phase )
 {
   int tp_data;
-  if( this->requestGetInt( CMD_GET_TPPERIODPHASE, dev_nr, &tp_data ) )
-    {
-      // Extract period and phase values
-      *period = (tp_data & 0xFFFF);
-      *phase  = ((tp_data >> 16) & 0xFFFF);
-      return true;
-    }
-  return false;
+  if( !this->requestGetInt( CMD_GET_TPPERIODPHASE, dev_nr, &tp_data ) )
+    return false;
+
+  // Extract period and phase values
+  *period = (tp_data & 0xFFFF);
+  *phase  = ((tp_data >> 16) & 0xFFFF);
+  return true;
 }
 
 // ----------------------------------------------------------------------------
