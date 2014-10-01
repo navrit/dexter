@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x14093000;
+const int   VERSION_ID = 0x14100100;
+//const int VERSION_ID = 0x14093000;
 //const int VERSION_ID = 0x14092900;
 //const int VERSION_ID = 0x14072100;
 //const int VERSION_ID = 0x14071600;
@@ -27,6 +28,7 @@ const int   VERSION_ID = 0x14093000;
 
 // SPIDR register addresses (some of them)
 #define SPIDR_CPU2TPX_WR_I           0x01C8
+#define SPIDR_DEVICES_AND_PORTS_I    0x02C0
 #define SPIDR_TDC_TRIGGERCOUNTER_I   0x02F8
 #define SPIDR_FE_GTX_CTRL_STAT_I     0x0300
 #define SPIDR_IPMUX_CONFIG_I         0x0380
@@ -249,6 +251,16 @@ bool SpidrController::getPortCount( int *ports )
 bool SpidrController::getDeviceCount( int *devices )
 {
   return this->requestGetInt( CMD_GET_DEVICECOUNT, 0, devices );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getLinkCount( int *links )
+{
+  int reg;
+  if( !this->getSpidrReg( SPIDR_DEVICES_AND_PORTS_I, &reg ) ) return false;
+  *links = ((reg & 0xF00) >> 8) + 1;
+  return true;
 }
 
 // ----------------------------------------------------------------------------

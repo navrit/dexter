@@ -54,6 +54,7 @@ class MY_LIB_API SpidrController
                                         // or (USB/UART) console
   bool        getPortCount         ( int *ports );
   bool        getDeviceCount       ( int *devices );
+  bool        getLinkCount         ( int *links );
   bool        getSpidrId           ( int *id );
   bool        setSpidrId           ( int  id );
 

@@ -26,8 +26,8 @@ class MY_LIB_API SpidrDaq
   // C'tor, d'tor
   SpidrDaq( int ipaddr3, int ipaddr2, int ipaddr1, int ipaddr0, int port );
   SpidrDaq( SpidrController *spidrctrl,
-            long long bufsize = 0x20000000, //  512 MByte
-            int device_nr = 0 );
+            long long        bufsize = 0x20000000, //  512 MByte
+            int              device_nr = 0 );
   ~SpidrDaq();
 
   void stop                       ( );
@@ -58,7 +58,6 @@ class MY_LIB_API SpidrDaq
   void        resetBufferFullOccurred();
   char       *dataBuffer          ( );
   bool        setFileCntr         ( int cntr ); // MvB
-
 
   // Data sampling
   bool        getSample           ( int max_size, int timeout_ms );
