@@ -128,6 +128,7 @@ class MY_LIB_API SpidrController
   int  selectedPixelConfig     ( );
   unsigned char *pixelConfig   ( int  index = -1 );
   void resetPixelConfig        ( int  index = -1 );
+  int  comparePixelConfig      ( int  index1, int index2 );
   bool setPixelThreshold       ( int  x,
                                  int  y,
                                  int  threshold );

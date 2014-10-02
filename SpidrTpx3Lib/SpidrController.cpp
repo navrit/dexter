@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x14100100;
+const int   VERSION_ID = 0x14100200;
+//const int VERSION_ID = 0x14100100;
 //const int VERSION_ID = 0x14093000;
 //const int VERSION_ID = 0x14092900;
 //const int VERSION_ID = 0x14072100;
@@ -893,6 +894,24 @@ void SpidrController::resetPixelConfig( int index )
       memset( static_cast<void *> (&_pixelConfigData[index * 256*256]), 0,
 	      256*256 );
     }
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrController::comparePixelConfig( int index1, int index2 )
+{
+  // Select (locally stored) pixel configurations to compare,
+  // return -1 in case of an invalid index
+  if( index1 < 0 || index1 >= this->pixelConfigCount() ) return -1;
+  if( index2 < 0 || index2 >= this->pixelConfigCount() ) return -1;
+  if( index1 == index2 ) return 0; // Equal
+
+  unsigned char *cnf1 = &_pixelConfigData[index1 * 256*256];
+  unsigned char *cnf2 = &_pixelConfigData[index2 * 256*256];
+  if( memcmp( static_cast<void *> (cnf1),
+	      static_cast<void *> (cnf2), 256*256 ) == 0 )
+    return 0; // Equal
+  return 1;   // Not equal
 }
 
 // ----------------------------------------------------------------------------
