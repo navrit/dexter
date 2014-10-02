@@ -88,11 +88,13 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl,
   // the packet receiver thread
   _fileWriter = new DatasamplerThread( _packetReceiver );
 
-  // Provide the receiver thread with the possibility to control the module,
-  // i.e. to set and clear a busy/inhibit/throttle signal
   if( spidrctrl )
     {
+      // Provide the receiver thread with the capability to control the module,
+      // i.e. to set and clear a busy/inhibit/throttle signal
       _packetReceiver->setController( spidrctrl );
+      // The controller will be used to assemble the file header
+      // (see startRecording())
       _spidrCtrl = spidrctrl;
     }
 }

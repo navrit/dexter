@@ -26,7 +26,7 @@ class MY_LIB_API SpidrDaq
   // C'tor, d'tor
   SpidrDaq( int ipaddr3, int ipaddr2, int ipaddr1, int ipaddr0, int port );
   SpidrDaq( SpidrController *spidrctrl,
-            long long        bufsize = 0x20000000, //  512 MByte
+            long long        bufsize = 0x20000000, // 512 MByte
             int              device_nr = 0 );
   ~SpidrDaq();
 
@@ -39,10 +39,10 @@ class MY_LIB_API SpidrDaq
 
   // Data acquisition
   bool        startRecording      ( std::string filename,
-                                    int         runnr            = 0,
-                                    std::string descr            = std::string(),
-                                    bool        include_pixelcfg = false,
-                                    int         pixelcfg_index   = -1 );
+                                    int         runnr           = 0,
+                                    std::string descr           = std::string(),
+                                    bool        include_pixelcfg= false,
+                                    int         pixelcfg_index  = -1 );
   bool        stopRecording       ( );
   std::string fileName            ( );
   long long   fileMaxSize         ( );

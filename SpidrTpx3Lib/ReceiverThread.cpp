@@ -57,6 +57,8 @@ ReceiverThread::ReceiverThread( int      *ipaddr,
 	  memset( static_cast<void *> (_recvBuffer), 0xFF, bufsize );
 	  _bufferSize   = bufsize;
 	  _freeSpace    = bufsize;
+	  // Require a minimum of free space before applying 'busy'
+	  // (choose 1/256th of the buffer size with a minimum of 16K)
 	  _freeSpaceMin = bufsize/256;
 	  if( _freeSpaceMin < 16384 ) _freeSpaceMin = 16384;
 	}
@@ -292,6 +294,8 @@ bool ReceiverThread::setBufferSize( long long size )
       memset( static_cast<void *> (_recvBuffer), 0xFF, size );
       _bufferSize   = size;
       _freeSpace    = size;
+      // Require a minimum of free space before applying 'busy'
+      // (choose 1/256th of the buffer size with a minimum of 16K)
       _freeSpaceMin = size/256;
       if( _freeSpaceMin < 16384 ) _freeSpaceMin = 16384;
 

@@ -638,18 +638,18 @@ bool SpidrController::setDecodersEna( bool enable )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setPeriphClk80Mhz( bool enable )
+bool SpidrController::setPeriphClk80Mhz( bool set )
 {
   // Set or reset bit 24 of the CPU-to-TPX control register...
-  return this->setSpidrRegBit( SPIDR_CPU2TPX_WR_I, 24, enable );
+  return this->setSpidrRegBit( SPIDR_CPU2TPX_WR_I, 24, set );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setExtRefClk( bool enable )
+bool SpidrController::setExtRefClk( bool set )
 {
   // Set or reset bit 25 of the CPU-to-TPX control register...
-  return this->setSpidrRegBit( SPIDR_CPU2TPX_WR_I, 25, enable );
+  return this->setSpidrRegBit( SPIDR_CPU2TPX_WR_I, 25, set );
 }
 
 // ----------------------------------------------------------------------------

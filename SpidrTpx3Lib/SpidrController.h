@@ -102,8 +102,8 @@ class MY_LIB_API SpidrController
   bool        setBiasSupplyEna ( bool enable );
   bool        setBiasVoltage   ( int  volts );
   bool        setDecodersEna   ( bool enable );
-  bool        setPeriphClk80Mhz( bool enable );
-  bool        setExtRefClk     ( bool enable );
+  bool        setPeriphClk80Mhz( bool set );
+  bool        setExtRefClk     ( bool set );
   std::string dacName          ( int  dac_code );
   int         dacMax           ( int  dac_code );
   bool        uploadPacket     ( int  dev_nr, unsigned char *packet, int size );
