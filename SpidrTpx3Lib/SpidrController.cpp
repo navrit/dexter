@@ -828,6 +828,14 @@ bool SpidrController::getCtpr( int dev_nr, unsigned char **ctpr )
 }
 
 // ----------------------------------------------------------------------------
+
+unsigned char *SpidrController::ctpr()
+{
+  // Return a pointer to the locally stored CTPR byte array
+  return _ctpr;
+}
+
+// ----------------------------------------------------------------------------
 // Configuration: pixels
 // ----------------------------------------------------------------------------
 

@@ -121,6 +121,7 @@ class MY_LIB_API SpidrController
   bool        setCtprBits      ( int  val = 1 );
   bool        setCtpr          ( int  dev_nr );
   bool        getCtpr          ( int  dev_nr, unsigned char **ctpr );
+  unsigned char *ctpr          ( );
 
   // Configuration: device pixels
   int  pixelConfigCount        ( );
