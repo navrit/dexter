@@ -32,7 +32,8 @@ int main()
     cout << "errorstat " << hex << errstat << dec << endl;
   }
 
-  int device_nr = 0;
+  int i, device_nr = 0;
+  unsigned char *ctpr;
 
   // Enable test-pulses for (some or all) columns
   int col;
@@ -41,13 +42,18 @@ int main()
       //if( (col & 1) == 1 )
       spidrctrl.setCtprBit( col );
 
+  ctpr = spidrctrl.ctpr();
+  cout << hex;
+  for( i=0; i<32; ++i )
+    cout << (unsigned int) ctpr[i] << " ";
+  cout << endl;
+
   if( !spidrctrl.setCtpr( device_nr ) )
     error_out( "###setCtpr" );
 
-  unsigned char *ctpr;
+  ctpr = 0;
   if( spidrctrl.getCtpr( device_nr, &ctpr ) )
     {
-      int i;
       cout << hex;
       for( i=0; i<32; ++i )
 	cout << (unsigned int) ctpr[i] << " ";
