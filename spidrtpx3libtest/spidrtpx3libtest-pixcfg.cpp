@@ -26,7 +26,12 @@ int main( int argc, char *argv[] )
     cout << spidrctrl.ipAddressString() << ": "
 	 << spidrctrl.connectionStateString() << ", "
 	 << spidrctrl.connectionErrString() << endl;
-    //return 1;
+    return 1;
+  }
+
+  int errstat;
+  if( spidrctrl.reset( &errstat ) ) {
+    cout << "errorstat " << hex << errstat << dec << endl;
   }
 
   int x, y, cnf;
@@ -40,6 +45,8 @@ int main( int argc, char *argv[] )
 	    if( x == 34 || x == 37 ) spidrctrl.setPixelThreshold( x, y, 5 );
 	  }
     }
+  spidrctrl.setPixelMask( 130, 131 );
+  spidrctrl.setPixelMask( 213, 222 );
   cout << "0+1: " << spidrctrl.comparePixelConfig( 0, 1 ) << endl;
   cout << "1+2: " << spidrctrl.comparePixelConfig( 1, 2 ) << endl;
   cout << "2+3: " << spidrctrl.comparePixelConfig( 2, 3 ) << endl;
@@ -50,8 +57,10 @@ int main( int argc, char *argv[] )
   cout << "1+2: " << spidrctrl.comparePixelConfig( 1, 2 ) << endl;
   cout << "2+3: " << spidrctrl.comparePixelConfig( 2, 3 ) << endl;
 
-  // Upload pixel configuration 0
   int device_nr = 0;
+  spidrctrl.resetPixels( device_nr ); // Essential ! (or nothing can be read)
+
+  // Upload pixel configuration 0
   spidrctrl.selectPixelConfig( 0 );
   spidrctrl.setPixelConfig( device_nr );
   if( !spidrctrl.setPixelConfig( device_nr ) )
