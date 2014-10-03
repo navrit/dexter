@@ -62,7 +62,6 @@ int main( int argc, char *argv[] )
 
   // Upload pixel configuration 0
   spidrctrl.selectPixelConfig( 0 );
-  spidrctrl.setPixelConfig( device_nr );
   if( !spidrctrl.setPixelConfig( device_nr ) )
     error_out( "###setPixelConfig" );
 
