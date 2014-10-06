@@ -32,10 +32,6 @@ CONFIG(release, debug|release) {
   LIBS       += -L../../Release 
 } 
  
-win32 { 
-  RC_FILE = spidrdacs.rc 
-} 
- 
 INCLUDEPATH += ../../SpidrTpx3Lib 
  
 LIBS += -lSpidrTpx3Lib 
