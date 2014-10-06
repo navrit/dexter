@@ -32,4 +32,4 @@ SUBDIRS += SpidrTpx3TV/SpidrTTV.pro
 SUBDIRS += SpidrTpx3Lib/spidrtpx3libtest/spidrtpx3libtest.pro
 SUBDIRS += spidripconfig/spidripconfig.pro
 SUBDIRS += spidripconfig/spidripmonconfig.pro
-SUBDIRS += DummyGen/DummyGen.pro
+#SUBDIRS += Apps/DummyGen/DummyGen.pro
