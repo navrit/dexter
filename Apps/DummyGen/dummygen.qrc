@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="icon">
+    <file>spidr.ico</file>
+  </qresource>
+</RCC>
