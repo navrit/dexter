@@ -25,25 +25,27 @@ int main( int argc, char *argv[] )
   }
 
   int device_nr = 0, id, config;
+  cout << hex;
 
   if( !spidrctrl.getDeviceId( device_nr, &id ) )
     cout << "###getDevId: " << spidrctrl.errorString() << endl;
   else
     cout << "DeviceID=" << id << endl;
 
-  if( !spidrctrl.setGenConfig( device_nr,
-			       TPX3_POLARITY_HPLUS |
-			       TPX3_ACQMODE_TOA_TOT |
-			       TPX3_GRAYCOUNT_ENA |
-			       TPX3_TESTPULSE_ENA |
-			       TPX3_FASTLO_ENA |
-			       TPX3_SELECTTP_DIGITAL ) )
+  config = (TPX3_POLARITY_EMIN |
+	    TPX3_ACQMODE_TOA_TOT |
+	    TPX3_GRAYCOUNT_ENA |
+	    TPX3_TESTPULSE_ENA |
+	    TPX3_FASTLO_ENA |
+	    TPX3_SELECTTP_DIGITAL );
+  if( !spidrctrl.setGenConfig( device_nr, config ) )
     cout << "###setGenCfg: " << spidrctrl.errorString() << endl;
 
+  config = 0;
   if( !spidrctrl.getGenConfig( device_nr, &config ) )
     cout << "###getGenConfig: " << spidrctrl.errorString() << endl;
   else
-    cout << "GenConfig=" << hex << config << endl;
+    cout << "GenConfig=" << config << endl;
 
   // --------------------
 
@@ -54,31 +56,37 @@ int main( int argc, char *argv[] )
   if( !spidrctrl.getOutBlockConfig( device_nr, &config ) )
     cout << "###getOutBlockConfig: " << spidrctrl.errorString() << endl;
   else
-    cout << "OutConfig=" << hex << config << endl;
+    cout << "OutConfig=" << config << endl;
 
-  config &= ~0xFE;
+  config &= ~0xFC;
   //if( !spidrctrl.setOutBlockConfig( device_nr, config ) )
   if( !spidrctrl.setOutputMask( device_nr, config ) )
     cout << "###setOutBlockConfig: " << spidrctrl.errorString() << endl;
   else
-    cout << "OutConfig=" << hex << config << endl;
+    cout << "OutConfig=" << config << endl;
 
   if( !spidrctrl.getOutBlockConfig( device_nr, &config ) )
     cout << "###getOutBlockConfig: " << spidrctrl.errorString() << endl;
   else
-    cout << "OutConfig=" << hex << config << endl;
+    cout << "OutConfig=" << config << endl;
+
+  int ena_mask, lock_mask;
+  if( !spidrctrl.getLinkStatus( device_nr, &ena_mask, &lock_mask ) )
+    cout << "###getLinkStatus: " << spidrctrl.errorString() << endl;
+  else
+    cout << "linkstatus = " << ena_mask << ", " << lock_mask << endl;
 
   // --------------------
 
   if( !spidrctrl.getPllConfig( device_nr, &config ) )
     cout << "###getPllConfig: " << spidrctrl.errorString() << endl;
   else
-    cout << "PllConfig=" << hex << config << endl;
+    cout << "PllConfig=" << config << endl;
 
   if( !spidrctrl.getSlvsConfig( device_nr, &config ) )
     cout << "###getSlvsConfig: " << spidrctrl.errorString() << endl;
   else
-    cout << "SlvsConfig=" << hex << config << endl;
+    cout << "SlvsConfig=" << config << endl;
 
   return 0;
 }
