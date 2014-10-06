@@ -92,7 +92,8 @@ class MY_LIB_API SpidrController
   bool        setOutBlockConfig( int  dev_nr, int  config );
   bool        setOutputMask    ( int  dev_nr, int  mask );
   bool        getLinkStatus    ( int  dev_nr, int *status );
-  bool        getLinkStatus    ( int  dev_nr, int *enabled_mask, int *locked_mask );
+  bool        getLinkStatus    ( int  dev_nr,
+                                 int *enabled_mask, int *locked_mask );
   bool        getSlvsConfig    ( int  dev_nr, int *config );
   bool        setSlvsConfig    ( int  dev_nr, int  config );
   bool        getPwrPulseConfig( int  dev_nr, int *config );
