@@ -1,12 +1,12 @@
 # 
-# Project file for the SpidrMon tool 
+# Project file 
 # 
 # To generate a Visual Studio project: 
-#   qmake -t vcapp SpidrDacs.pro 
+#   qmake -t vcapp <name>.pro 
 # To generate a Makefile: 
-#   qmake SpidrDacs.pro 
+#   qmake <name>.pro 
 # 
-# (or start from the 'SUBDIRS' .pro file to recursively generate the projects) 
+# (or start from a 'SUBDIRS' .pro file to recursively generate your projects) 
 # 
 TEMPLATE = app 
 TARGET   = Tpx3daq  
