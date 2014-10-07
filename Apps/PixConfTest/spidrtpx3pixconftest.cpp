@@ -68,6 +68,10 @@ int main( int argc, char *argv[] )
     return 1;
   }
 
+  // Switch to slower 'serial links' output (instead of GTX links
+  //if( !spidrctrl.setSpidrRegBit( 0x2D0, 0 ) )
+  //  cout << "###setSpidrRegBit: " << spidrctrl.errorString() << endl;
+
   int errstat;
   if( spidrctrl.reset( &errstat ) )
     {
@@ -80,6 +84,7 @@ int main( int argc, char *argv[] )
     }
 
   // Essential after reset! (or nothing can be read from the pixel matrix)
+  // (to be included in onboard reset procedure?)
   spidrctrl.resetPixels( devnr );
 
   // Test using a pattern
@@ -87,8 +92,8 @@ int main( int argc, char *argv[] )
                                     0x3E, 0x3D, 0x3B, 0x37, 0x2F, 0x1F,
 				    0x3F };
   unsigned char *pixcfg;
-  int bit, i, sz = sizeof(PATTERN);
-  for( bit=0; bit<sz; ++bit )
+  int index, i, sz = sizeof(PATTERN);
+  for( index=0; index<sz; ++index )
     {
       spidrctrl.selectPixelConfig( 0 );
       spidrctrl.resetPixelConfig();
@@ -98,7 +103,7 @@ int main( int argc, char *argv[] )
       // Configure pixel config matrix 0
       pixcfg = spidrctrl.pixelConfig( 0 );
       for( i=0; i<256*256; ++i, ++pixcfg )
-	*pixcfg = PATTERN[(bit+i) % sz];
+	*pixcfg = PATTERN[(index+i) % sz];
 
       // Upload configuration 0
       spidrctrl.selectPixelConfig( 0 );
@@ -113,11 +118,71 @@ int main( int argc, char *argv[] )
       // Compare matrix 0 and 1
       if( spidrctrl.comparePixelConfig( 0, 1 ) == 0 )
 	{
-	  cout << "patt " << dec << bit << ": OKAY" << endl;
+	  cout << "patt " << dec << index << ": OKAY" << endl;
 	}
       else
 	{
-	  cout << "### patt " << bit << ": ERROR" << endl;
+	  cout << "### patt " << dec << index << ": ERROR" << endl;
+
+	  // Display some of the differences found
+	  unsigned char *pc0, *pc1;
+	  int x, y, cnt = 0;
+	  pc0 = spidrctrl.pixelConfig( 0 );
+	  pc1 = spidrctrl.pixelConfig( 1 );
+	  for( y=0; y<256; ++y )
+	    for( x=0; x<256; ++x, ++pc0, ++pc1 )
+	      {
+		if( *pc0 != *pc1 )
+		  {
+		    if( cnt < sz+1 )
+		      {
+			cout << "  y,x=" << dec << y << "," << x
+			     << ": got " << hex
+			     << (unsigned int) *pc1 << " expected "
+			     << (unsigned int) *pc0 << endl;
+		      }
+		    ++cnt;
+		  }
+	      }
+	  cout << "  Found " << dec << cnt << " different bytes" << endl;
+	}
+    }
+
+  // Test using a constant byte value
+  const unsigned char CONST[] = { 0x15, 0x2A, 0x3F };
+  sz = sizeof(CONST);
+  for( index=0; index<sz; ++index )
+    {
+      spidrctrl.selectPixelConfig( 0 );
+      spidrctrl.resetPixelConfig();
+      spidrctrl.selectPixelConfig( 1 );
+      spidrctrl.resetPixelConfig();
+
+      // Configure pixel config matrix 0
+      pixcfg = spidrctrl.pixelConfig( 0 );
+      for( i=0; i<256*256; ++i, ++pixcfg )
+	*pixcfg = CONST[index];
+
+      // Upload configuration 0
+      spidrctrl.selectPixelConfig( 0 );
+      if( !spidrctrl.setPixelConfig( devnr ) )
+	error_out( "###setPixelConfig" );
+
+      // Read back configuration into config matrix 1
+      spidrctrl.selectPixelConfig( 1 );
+      if( !spidrctrl.getPixelConfig( devnr ) )
+	error_out( "###getPixelConfig" );
+
+      // Compare matrix 0 and 1
+      if( spidrctrl.comparePixelConfig( 0, 1 ) == 0 )
+	{
+	  cout << "const " << hex << (unsigned int) CONST[index]
+	       << ": OKAY" << endl;
+	}
+      else
+	{
+	  cout << "### const " << hex << (unsigned int) CONST[index]
+	       << ": ERROR" << endl;
 
 	  // Display some of the differences found
 	  unsigned char *pc0, *pc1;
