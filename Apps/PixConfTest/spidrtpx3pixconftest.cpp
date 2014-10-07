@@ -93,10 +93,12 @@ int main( int argc, char *argv[] )
 				    0x3F };
   unsigned char *pixcfg;
   int index, i, sz = sizeof(PATTERN);
-  cout << endl << "Test using sequential pattern:" << hex << setfill('0');
+  cout << endl << "Test using repeating pattern:"
+       << hex << setfill('0') << endl << "  ";
   for( index=0; index<sz; ++index )
-    cout << " " << setw(2) << (unsigned int) PATTERN[index];
+    cout << setw(2) << (unsigned int) PATTERN[index] << " ";
   cout << endl;
+  cout << "(every pixel gets each value once)" << endl;
   for( index=0; index<sz; ++index )
     {
       spidrctrl.selectPixelConfig( 0 );
@@ -154,6 +156,7 @@ int main( int argc, char *argv[] )
   cout << endl;
 
   // Test using a constant byte value
+  cout << "Test using a constant value" << endl;
   const unsigned char CONST[] = { 0x15, 0x2A, 0x3F };
   sz = sizeof(CONST);
   for( index=0; index<sz; ++index )
