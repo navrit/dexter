@@ -93,6 +93,10 @@ int main( int argc, char *argv[] )
 				    0x3F };
   unsigned char *pixcfg;
   int index, i, sz = sizeof(PATTERN);
+  cout << endl << "Test using sequential pattern:" << hex << setfill('0');
+  for( index=0; index<sz; ++index )
+    cout << " " << setw(2) << (unsigned int) PATTERN[index];
+  cout << endl;
   for( index=0; index<sz; ++index )
     {
       spidrctrl.selectPixelConfig( 0 );
@@ -118,11 +122,11 @@ int main( int argc, char *argv[] )
       // Compare matrix 0 and 1
       if( spidrctrl.comparePixelConfig( 0, 1 ) == 0 )
 	{
-	  cout << "patt " << dec << index << ": OKAY" << endl;
+	  cout << "patt [" << dec << index << "]: OKAY" << endl;
 	}
       else
 	{
-	  cout << "### patt " << dec << index << ": ERROR" << endl;
+	  cout << "### patt [" << dec << index << "]: ERROR" << endl;
 
 	  // Display some of the differences found
 	  unsigned char *pc0, *pc1;
@@ -147,6 +151,7 @@ int main( int argc, char *argv[] )
 	  cout << "  Found " << dec << cnt << " different bytes" << endl;
 	}
     }
+  cout << endl;
 
   // Test using a constant byte value
   const unsigned char CONST[] = { 0x15, 0x2A, 0x3F };
