@@ -29,6 +29,7 @@ class SpidrMon : public QDialog, Ui_SpidrMonDialog
   bool             _doubleSpidr;
 
   int              _bgOut1, _bgOut2;
+  bool             _dacOkay1, _dacOkay2;
 
   void timerEvent( QTimerEvent * );
   void initDataDisplay();

@@ -40,11 +40,11 @@ SpidrMon::SpidrMon()
   _lineEditPort->setValidator( _ipPortValidator );
 
   _labelDisconnected->hide();
-  _lePowerOffLed->hide();
+  //_lePowerOffLed->hide();
 
   // Data update 'LED's
   _leUpdateSpidrLed->hide();
-  _leUpdateTpxLed->hide();
+  //_leUpdateTpxLed->hide();
   _leUpdateSpidrLed_2->hide();
   _leUpdateTpxLed_2->hide();
 
@@ -74,7 +74,7 @@ void SpidrMon::connectOrDisconnect()
       this->killTimer( _timerId );
 
       _spidrController->setSenseDac( 0, TPX3_SENSEOFF );
-      if( _cbMonitorTpx->isChecked() )
+      if( _checkBoxSpidrX2->isChecked() )
 	_spidrController->setSenseDac( 1, TPX3_SENSEOFF );
 
       delete _spidrController;
@@ -119,7 +119,8 @@ void SpidrMon::connectOrDisconnect()
   else
     {
       _labelDisconnected->hide();
-      _lePowerOffLed->hide();
+      //_lePowerOffLed->hide();
+      _lePowerOffLed->setEnabled( false );
 
       if( _lineEditAddr3->text().isEmpty() ||
 	  _lineEditAddr2->text().isEmpty() ||
@@ -180,15 +181,34 @@ void SpidrMon::connectOrDisconnect()
 	  //if( _cbMonitorTpx->isChecked() )
 	    // Set output of Timepix3 SenseDAC
 	    // in preparation for the first ADC reading
-	  _spidrController->setSenseDac( 0, _dacCode );
-	  if( _cbMonitorTpx->isChecked() )
-	    _spidrController->setSenseDac( 1, _dacCode );
+	  _dacOkay1 = _spidrController->setSenseDac( 0, _dacCode );
+	  if( _checkBoxSpidrX2->isChecked() )
+	    _dacOkay2 = _spidrController->setSenseDac( 1, _dacCode );
 
 	  // Just to make sure: set I2C switch to 1st SPIDR board
 	  _spidrController->selectChipBoard( 1 );
 
-	  // (Re)enable power to Timepix3
-	  _spidrController->setTpxPowerEna( true );
+	  // (Re)enable power to Timepix3 if requested and necessary
+	  if( _checkBoxTpxPowerEna->isChecked() )
+	    {
+	      int val;
+	      // Read SPIDR Board Control register to find out...
+	      if( _spidrController->getSpidrReg( 0x2D0, &val ) )
+		{
+		  // Check SPIDR_TPX_POWER_ENA bit: 1=ON, 0=OFF
+		  if( (val & 0x4) == 0 )
+		    {
+		      // Power is off: switch it on
+		      _spidrController->setTpxPowerEna( true );
+		      // Add some delay..., before issuing a reset
+		      _spidrController->getSpidrReg( 0x2D0, &val );
+		      _spidrController->getAdc( &val );
+		      _spidrController->getAdc( &val );
+		      // Issue a reset command
+		      _spidrController->reset( &val );
+		    }
+		}
+	    }
 
 	  QTimerEvent te(1);
 	  this->timerEvent( &te );
@@ -306,7 +326,7 @@ void SpidrMon::timerEvent(QTimerEvent *)
     {
       QString qs("--.---");
       int adc_val;
-      if( _spidrController->getAdc( &adc_val ) )
+      if( _dacOkay1 && _spidrController->getAdc( &adc_val ) )
 	{
 	  // Full-scale is 1.5V = 1500mV
 	  adc_val = (adc_val*1500) / 4095;
@@ -338,11 +358,14 @@ void SpidrMon::timerEvent(QTimerEvent *)
 		      temp > (float) _sbOverTemp->value() )
 		    {
 		      _spidrController->setTpxPowerEna( false );
-		      _lePowerOffLed->show();
+		      //_lePowerOffLed->show();
+		      _lePowerOffLed->setEnabled( true );
 		    }
 		}
 	    }
+	  _leUpdateTpxLed->setEnabled( true );
 	}
+
       if( _dacCode == TPX3_BANDGAP_OUTPUT )
 	{
 	  _lineEditDac1->setText( qs );
@@ -386,10 +409,12 @@ void SpidrMon::timerEvent(QTimerEvent *)
 	    _dacCode = TPX3_BANDGAP_OUTPUT;
 	  // Set output of Timepix3 SenseDAC in preparation
 	  // for the next ADC reading
-	  _spidrController->setSenseDac( 0, _dacCode );
+	  _dacOkay1 = _spidrController->setSenseDac( 0, _dacCode );
 	}
       return;
     }
+
+  // We only get here when '2 Chipboards' is ticked
 
   // Select 2nd SPIDR board's I2C
   if( !_spidrController->selectChipBoard( 2 ) )
@@ -463,7 +488,7 @@ void SpidrMon::timerEvent(QTimerEvent *)
     {
       QString qs("--.---");
       int adc_val;
-      if( _spidrController->getAdc( &adc_val ) )
+      if( _dacOkay2 && _spidrController->getAdc( &adc_val ) )
 	{
 	  // Full-scale is 1.5V = 1500mV
 	  adc_val = (adc_val*1500) / 4095;
@@ -482,12 +507,27 @@ void SpidrMon::timerEvent(QTimerEvent *)
 	      QString ts = QString("(T approx. [C]: %1.%2 )")
 		.arg( (int) temp ).arg( ((int)((temp*1000.0))%1000/10) );
 	      // Display only when a reasonable value is found
-	      if( temp < 0.0 || temp > 120.0 )
-		_labelT_2->setText( "" );
+	      if( temp < -60.0 || temp > 120.0 )
+		{
+		  // Not reasonable ?
+		  _labelT_2->setText( "" );
+		}
 	      else
-		_labelT_2->setText( ts );
+		{
+		  _labelT_2->setText( ts );
+		  // Over-temperature protection
+		  if( _cbOverTempProt->isChecked() &&
+		      temp > (float) _sbOverTemp->value() )
+		    {
+		      _spidrController->setTpxPowerEna( false );
+		      //_lePowerOffLed->show();
+		      _lePowerOffLed->setEnabled( true );
+		    }
+		}
 	    }
+	  _leUpdateTpxLed_2->show();
 	}
+
       if( _dacCode == TPX3_BANDGAP_OUTPUT )
 	{
 	  _lineEditDac1_2->setText( qs );
@@ -526,8 +566,8 @@ void SpidrMon::timerEvent(QTimerEvent *)
 	_dacCode = TPX3_BANDGAP_OUTPUT;
       // Set output of Timepix3 SenseDAC in preparation
       // for the next ADC reading
-      _spidrController->setSenseDac( 0, _dacCode );
-      _spidrController->setSenseDac( 1, _dacCode );
+      _dacOkay1 = _spidrController->setSenseDac( 0, _dacCode );
+      _dacOkay2 = _spidrController->setSenseDac( 1, _dacCode );
     }
 
   // Switch (I2C) back to 1st SPIDR board
@@ -560,7 +600,7 @@ void SpidrMon::initDataDisplay()
 void SpidrMon::updateLedOff()
 {
   _leUpdateSpidrLed->hide();
-  _leUpdateTpxLed->hide();
+  _leUpdateTpxLed->setEnabled( false ); //_leUpdateTpxLed->hide();
 
   _leUpdateSpidrLed_2->hide();
   _leUpdateTpxLed_2->hide();
