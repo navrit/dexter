@@ -44,7 +44,8 @@ class MY_LIB_API SpidrController
   std::string errorString          ( );
   void        clearErrorString     ( );
   int         errorId              ( );
-  bool        reset                ( int *errorstat );
+  bool        reset                ( int *errorstat,
+                                     int  fast_or_slow_readout = 0 );
   bool        setBusy              ( );
   bool        clearBusy            ( );
   void        setBusyRequest       ( ); // For internal use

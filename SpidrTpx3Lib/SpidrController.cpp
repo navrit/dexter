@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x14100200;
+const int   VERSION_ID = 0x14100800;
+//const int VERSION_ID = 0x14100200;
 //const int VERSION_ID = 0x14100100;
 //const int VERSION_ID = 0x14093000;
 //const int VERSION_ID = 0x14092900;
@@ -95,18 +96,14 @@ int SpidrController::classVersion()
 
 bool SpidrController::getSoftwVersion( int *version )
 {
-  int dummy = 0;
-  *version = 0;
-  return this->requestGetInt( CMD_GET_SOFTWVERSION, dummy, version );
+  return this->requestGetInt( CMD_GET_SOFTWVERSION, 0, version );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getFirmwVersion( int *version )
 {
-  int dummy = 0;
-  *version = 0;
-  return this->requestGetInt( CMD_GET_FIRMWVERSION, dummy, version );
+  return this->requestGetInt( CMD_GET_FIRMWVERSION, 0, version );
 }
 
 // ----------------------------------------------------------------------------
@@ -189,8 +186,14 @@ int SpidrController::errorId()
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::reset( int *errorstat )
+bool SpidrController::reset( int *errorstat, int fast_or_slow_readout )
 {
+  if( fast_or_slow_readout == 1 )
+    *errorstat = 0x89ABCDEF; // Magic number forcing high-speed Timepix3 readout
+  else if( fast_or_slow_readout == -1 )
+    *errorstat = 0x12345678; // Magic number forcing low-speed Timepix3 readout
+  else
+    *errorstat = 0; // Use default SPIDR<->Timepix3 readout speed
   return this->requestGetInt( CMD_RESET_MODULE, 0, errorstat );
 }
 
@@ -312,7 +315,6 @@ bool SpidrController::setIpAddrDest( int index, int ipaddr )
 
 bool SpidrController::getDevicePort( int index, int *port_nr )
 {
-  *port_nr = 0;
   return this->requestGetInt( CMD_GET_DEVICEPORT, index, port_nr );
 }
 
@@ -340,7 +342,6 @@ bool SpidrController::setDevicePort( int index, int port_nr )
 
 bool SpidrController::getServerPort( int index, int *port_nr )
 {
-  *port_nr = 0;
   return this->requestGetInt( CMD_GET_SERVERPORT, index, port_nr );
 }
 
@@ -427,7 +428,6 @@ bool  SpidrController::reinitDevices()
 
 bool SpidrController::getDeviceId( int dev_nr, int *id )
 {
-  *id = 0;
   return this->requestGetInt( CMD_GET_DEVICEID, dev_nr, id );
 }
 
@@ -1390,7 +1390,6 @@ bool SpidrController::getAdc( int *adc_val, int nr_of_samples )
 
 bool SpidrController::getRemoteTemp( int *mdegrees )
 {
-  *mdegrees = 0;
   return this->requestGetInt( CMD_GET_REMOTETEMP, 0, mdegrees );
 }
 
@@ -1398,7 +1397,6 @@ bool SpidrController::getRemoteTemp( int *mdegrees )
 
 bool SpidrController::getLocalTemp( int *mdegrees )
 {
-  *mdegrees = 0;
   return this->requestGetInt( CMD_GET_LOCALTEMP, 0, mdegrees );
 }
 
@@ -1406,7 +1404,6 @@ bool SpidrController::getLocalTemp( int *mdegrees )
 
 bool SpidrController::getFpgaTemp( int *mdegrees )
 {
-  *mdegrees = 0;
   return this->requestGetInt( CMD_GET_FPGATEMP, 0, mdegrees );
 }
 
