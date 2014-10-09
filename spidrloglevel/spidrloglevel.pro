@@ -32,8 +32,8 @@ CONFIG(release, debug|release) {
   LIBS       += -L../Release
 }
 
-LIBS += -lSpidrLib
+LIBS += -lSpidrMpx3Lib
 
-INCLUDEPATH += ../SpidrLib
+INCLUDEPATH += ../SpidrMpx3Lib
 
 SOURCES += spidrloglevel.cpp

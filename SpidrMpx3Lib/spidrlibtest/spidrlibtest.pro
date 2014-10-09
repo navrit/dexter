@@ -32,7 +32,7 @@ CONFIG(release, debug|release) {
   LIBS       += -L../../Release
 }
 
-LIBS += -lSpidrLib
+LIBS += -lSpidrMpx3Lib
 
 INCLUDEPATH += ..
 

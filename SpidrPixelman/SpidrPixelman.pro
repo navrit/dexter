@@ -34,15 +34,15 @@ CONFIG(release, debug|release) {
   LIBS       += -L../Release
 }
 
-LIBS += -lSpidrLib
+LIBS += -lSpidrMpx3Lib
 
-INCLUDEPATH += ../SpidrLib
+INCLUDEPATH += ../SpidrMpx3Lib
 INCLUDEPATH += common
 
 SOURCES += SpidrMgr.cpp
 SOURCES += spidrhwapi.cpp
 
-HEADERS += ../SpidrLib/SpidrController.h
+HEADERS += ../SpidrMpx3Lib/SpidrController.h
 HEADERS += SpidrMgr.h
 HEADERS += spidrhwapi.h
 HEADERS += common/common.h common/mpx3hw.h common/mpxerrors.h

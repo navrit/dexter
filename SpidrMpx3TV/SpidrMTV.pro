@@ -35,9 +35,9 @@ win32 {
   RC_FILE = spidrtv.rc
 }
 
-INCLUDEPATH += ../SpidrLib
+INCLUDEPATH += ../SpidrMpx3Lib
 
-LIBS += -lSpidrLib
+LIBS += -lSpidrMpx3Lib
 
 FORMS     += spidrtv.ui
 RESOURCES += spidrtv.qrc
