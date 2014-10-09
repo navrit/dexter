@@ -1,15 +1,15 @@
 #
-# Project file for the SpidrLib library
+# Project file for the SpidrMpx3Lib library
 #
 # To generate a Visual Studio project:
-#   qmake -t vclib SpidrLib.pro
+#   qmake -t vclib SpidrMpx3Lib.pro
 # To generate a Makefile:
-#   qmake SpidrLib.pro
+#   qmake SpidrMpx3Lib.pro
 #
 # (or start from the 'SUBDIRS' .pro file to recursively generate the projects)
 #
 TEMPLATE = lib
-TARGET   = SpidrLib
+TARGET   = SpidrMpx3Lib
 
 # Create a shared library
 QT -= gui
