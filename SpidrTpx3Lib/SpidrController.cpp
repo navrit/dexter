@@ -186,11 +186,11 @@ int SpidrController::errorId()
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::reset( int *errorstat, int fast_or_slow_readout )
+bool SpidrController::reset( int *errorstat, int readout_speed )
 {
-  if( fast_or_slow_readout == 1 )
+  if( readout_speed == 1 )
     *errorstat = 0x89ABCDEF; // Magic number forcing high-speed Timepix3 readout
-  else if( fast_or_slow_readout == -1 )
+  else if( readout_speed == -1 )
     *errorstat = 0x12345678; // Magic number forcing low-speed Timepix3 readout
   else
     *errorstat = 0; // Use default SPIDR<->Timepix3 readout speed
