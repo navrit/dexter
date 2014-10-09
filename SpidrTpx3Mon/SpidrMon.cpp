@@ -184,6 +184,8 @@ void SpidrMon::connectOrDisconnect()
 	  _dacOkay1 = _spidrController->setSenseDac( 0, _dacCode );
 	  if( _checkBoxSpidrX2->isChecked() )
 	    _dacOkay2 = _spidrController->setSenseDac( 1, _dacCode );
+	  else
+	    _dacOkay2 = false;
 
 	  // Just to make sure: set I2C switch to 1st SPIDR board
 	  _spidrController->selectChipBoard( 1 );
