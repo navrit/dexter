@@ -18,7 +18,7 @@ TEMPLATE = subdirs
 CONFIG += debug_and_release
 
 # Libraries
-SUBDIRS += SpidrLib/SpidrLib.pro
+SUBDIRS += SpidrMpx3Lib/SpidrMpx3Lib.pro
 SUBDIRS += SpidrPixelman/SpidrPixelman.pro
 SUBDIRS += SpidrTpx3Lib/SpidrTpx3Lib.pro
 
@@ -27,8 +27,8 @@ SUBDIRS += SpidrTpx3TV/SpidrTTV.pro
 SUBDIRS += SpidrMpx3TV/SpidrMTV.pro
 SUBDIRS += SpidrTV/SpidrTV.pro
 SUBDIRS += SpidrDacs/SpidrDacs.pro
-SUBDIRS += SpidrMon/SpidrMon.pro
+SUBDIRS += SpidrMpx3Mon/SpidrMon.pro
 SUBDIRS += SpidrTpx3Mon/SpidrMon.pro
 SUBDIRS += spidrloglevel/spidrloglevel.pro
-SUBDIRS += spidrlibtest/spidrlibtest.pro
-SUBDIRS += spidrtpx3libtest/spidrtpx3libtest.pro
+SUBDIRS += SpidrMpx3Lib/spidrlibtest/spidrlibtest.pro
+SUBDIRS += SpidrTpx3Lib/spidrtpx3libtest/spidrtpx3libtest.pro
