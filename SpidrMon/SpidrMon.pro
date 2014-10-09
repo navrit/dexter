@@ -35,9 +35,9 @@ win32 {
   RC_FILE = spidrmon.rc
 }
 
-INCLUDEPATH += ../SpidrLib
+INCLUDEPATH += ../SpidrMpx3Lib
 
-LIBS += -lSpidrLib
+LIBS += -lSpidrMpx3Lib
 
 FORMS     += SpidrMon.ui
 RESOURCES += spidrmon.qrc
