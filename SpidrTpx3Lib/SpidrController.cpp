@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x14100800;
+const int   VERSION_ID = 0x14101000;
+//const int VERSION_ID = 0x14100800;
 //const int VERSION_ID = 0x14100200;
 //const int VERSION_ID = 0x14100100;
 //const int VERSION_ID = 0x14093000;
@@ -396,32 +397,28 @@ bool SpidrController::setHeaderFilter( int dev_nr,
 
 bool SpidrController::resetDevice( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_RESET_DEVICE, dev_nr, dummy );
+  return this->requestSetInt( CMD_RESET_DEVICE, dev_nr, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::resetDevices()
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_RESET_DEVICES, dummy, dummy );
+  return this->requestSetInt( CMD_RESET_DEVICES, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
-bool  SpidrController::reinitDevice ( int  dev_nr )
+bool SpidrController::reinitDevice ( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_REINIT_DEVICE, dev_nr, dummy );
+  return this->requestSetInt( CMD_REINIT_DEVICE, dev_nr, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
-bool  SpidrController::reinitDevices()
+bool SpidrController::reinitDevices()
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_REINIT_DEVICES, dummy, dummy );
+  return this->requestSetInt( CMD_REINIT_DEVICES, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -491,8 +488,7 @@ bool SpidrController::setDac( int dev_nr, int dac_code, int dac_val )
 
 bool SpidrController::setDacsDflt( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_SET_DACS_DFLT, dev_nr, dummy );
+  return this->requestSetInt( CMD_SET_DACS_DFLT, dev_nr, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -542,6 +538,13 @@ bool SpidrController::setOutBlockConfig( int dev_nr, int config )
 bool SpidrController::setOutputMask( int dev_nr, int mask )
 {
   return this->requestSetInt( CMD_SET_OUTPUTMASK, dev_nr, mask );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setReadoutSpeed( int dev_nr, int mbits_per_sec )
+{
+  return this->requestSetInt( CMD_SET_READOUTSPEED, dev_nr, mbits_per_sec );
 }
 
 // ----------------------------------------------------------------------------
@@ -1954,7 +1957,8 @@ static const char *TPX3_ERR_STR[] =
     "TPX3_ERR_NOTEMPTY",
     "TPX3_ERR_FULL",
     "TPX3_ERR_UNEXP_REPLY",
-    "TPX3_ERR_UNEXP_HEADER"
+    "TPX3_ERR_UNEXP_HEADER",
+    "TPX3_ERR_LINKS_UNLOCKED"
   };
 
 static const char *MON_ERR_STR[] =

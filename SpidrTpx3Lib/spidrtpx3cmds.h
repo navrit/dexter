@@ -118,6 +118,7 @@
 #define CMD_SET_BIAS_ADJUST    0x560
 #define CMD_DECODERS_ENA       0x561
 #define CMD_SET_OUTPUTMASK     0x562
+#define CMD_SET_READOUTSPEED   0x563
 
 // Configuration: timer (continued)
 #define CMD_T0_SYNC            0x565
@@ -261,7 +262,7 @@ static const char *CMD_STR[] =
     "SET_BIAS_ADJUST  ", // 0x560
     "DECODERS_ENA     ", // 0x561
     "SET_OUTPUTMASK   ", // 0x562
-    "-----",             // 0x563
+    "SET_READOUTSPEED ", // 0x563
     "-----",             // 0x564
     "T0_SYNC          ", // 0x565
     "-----",             // 0x566
