@@ -122,8 +122,8 @@ int main(int argc, char *argv[])
       cout_spidr_err( "###getIpAddrDest" );
 
     // first select internal or external clock
-    //if (!spidrctrl->setExtRefClk(true) ) 
-    if (!spidrctrl->setExtRefClk(false) ) 
+    if (!spidrctrl->setExtRefClk(true) ) 
+    //if (!spidrctrl->setExtRefClk(false) ) 
       cout_spidr_err( "###setExtRefClk" );
 
     int errstat;
@@ -734,7 +734,7 @@ bool configure( SpidrController *spidrctrl )
     for (int dev=0; dev<ndev; dev++) {
         if ( dev_ena[dev] ) {
             retval = spidrctrl->setGenConfig( dev,
-                                     TPX3_POLARITY_EMIN |
+                                     TPX3_POLARITY_HPLUS |
                                      TPX3_ACQMODE_TOA_TOT |
                                      TPX3_GRAYCOUNT_ENA |
                                    TPX3_TESTPULSE_ENA |
