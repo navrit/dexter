@@ -54,6 +54,8 @@ int  spidr_mon_packets_sent[2] = {0,0};      // before and after
 int  spidr_pause_packets_rec[2] = {0,0};     // before and after
 int  daq_packets_rec[2][2] = {{0,0},{0,0}};  // 2 devices before and after
 int  daq_packets_lost[2][2]= {{0,0},{0,0}};  // 2 devices before and after
+int my_socket, new_socket;
+SpidrDaq *spidrdaq[2];
 
 int main(int argc, char *argv[])
 {
@@ -69,7 +71,6 @@ int main(int argc, char *argv[])
     extern char *optarg; 
     int portnumber = 51000; // for run control
 
-    int my_socket, new_socket;
     int bufsize = 1024;
     bool status;
     char *buffer = (char *)malloc(bufsize);
@@ -195,7 +196,6 @@ int main(int argc, char *argv[])
     // Interface to Timepix3 pixel data acquisition
     // ----------------------------------------------------------
 
-    SpidrDaq *spidrdaq[2];
     for (int dev=0; dev<ndev; dev++) {
         if ( dev_ena[dev] ) {
             spidrdaq[dev] = new SpidrDaq( spidrctrl, 0x10000000, dev);
@@ -335,8 +335,6 @@ int main(int argc, char *argv[])
                     
                 cout << "[Note] starting run " << run_nr << endl;
 
-                //start_time = clock();
-  
                 char rundir[256];
                 sprintf( rundir, "Run%d/", run_nr );
                 status = start_run( spidrctrl, spidrdaq, rundir, run_nr, description);
@@ -430,7 +428,6 @@ int main(int argc, char *argv[])
                 cout << "[Note] sending reply to client" << endl;
                 send( new_socket, buffer, strlen(buffer), 0 );
             }
-                //send(new_socket,buffer,bufsize,0);
 
             //usleep(500000); // slow down loop?
     
@@ -872,7 +869,7 @@ bool start_run( SpidrController *spidrctrl, SpidrDaq **spidrdaq, char *prefix, i
         if ( dev_ena[dev] ) {
             sprintf( filename, "%s/CHIP%d/%s%s.dat", DATA_PATH, dev, prefix, devIdstrings[dev] );
             cout << "[Note] opening data file" << endl;
-            retval = spidrdaq[dev]->startRecording( filename, run_nr, description );
+            retval = spidrdaq[dev]->startRecording( filename, run_nr, description, true );
             if ( !retval ) {
 	        cout_daqdev_err( dev, "###startRecording" );
                 status = false;
@@ -1042,11 +1039,13 @@ void *timestamp_per_sec( void *ctrl )
     bool retval;
 
     int FpgaTemp, BoardTemp, DeviceTemp;
-    int dac_val1, dac_val2;
+    int adc_val1, adc_val2;
     int navg = 1;
     int cnt = 0;
     int chip = 0;
     float Tpx3Temp[2]; 
+    char buffer[1024];
+    long long bytecount[2];
 
     SpidrController *spidrctrl = (SpidrController *)ctrl;
     while (1) {
@@ -1081,27 +1080,34 @@ void *timestamp_per_sec( void *ctrl )
         // get the temperature of the TPX3 by reading DAC values 28 and 29
         spidrctrl->setSenseDac( chip, TPX3_BANDGAP_OUTPUT);
         usleep(200000);
-        spidrctrl->getAdc( &dac_val1, navg );
+        spidrctrl->getAdc( &adc_val1, navg );
         usleep(200000);
         spidrctrl->setSenseDac( chip, TPX3_BANDGAP_TEMP );
         usleep(200000);
-        spidrctrl->getAdc( &dac_val2, navg );
+        spidrctrl->getAdc( &adc_val2, navg );
         usleep(200000);
     
-        //cout << "dac_val1: " << dac_val1 << endl;
-        //cout << "dac_val2: " << dac_val2 << endl;
+        //cout << "adc_val1: " << adc_val1 << endl;
+        //cout << "adc_val2: " << adc_val2 << endl;
     
         float AdcConversion = 1500.0/4095.0; // conversion factor of ADC in mv/lsb, full scale == 1500 mV
-        float BandGapOutput = (AdcConversion * dac_val1) / (float) navg / 1000.0;
-        float BandGapTemp = AdcConversion * dac_val2 / (float) navg / 1000.0 ;
+        float BandGapOutput = (AdcConversion * adc_val1) / (float) navg / 1000.0;
+        float BandGapTemp = AdcConversion * adc_val2 / (float) navg / 1000.0 ;
         //cout << "BandGapOutput " << BandGapOutput << endl;
         //cout << "BandGapTemp " << BandGapTemp << endl;
         Tpx3Temp[chip] = 88.75 - 607.3 * ( BandGapTemp - BandGapOutput );   // from Timepix3 manual
+
+        for (int dev=0; dev<ndev; dev++) {
+            if ( dev_ena[dev] ) {
+                bytecount[dev] = spidrdaq[dev]->bytesReceivedCount();
+            }
+        }
     
-        //cout << "the Timepix3 temperature is: " << Tpx3Temp << endl;
+        sprintf(buffer, "triggers: %6d   chip0 temp: %.1f   chip1 temp: %.1f   chip0 bytecount: %lld   chip1 bytecount: %lld", trigcntr, Tpx3Temp[0], Tpx3Temp[1], bytecount[0], bytecount[1]);
+        send( new_socket, buffer, strlen(buffer), 0 );
 
-
-        cout << "triggers: " << std::setw(6) << trigcntr << "  chip0 temp: " << Tpx3Temp[0] << "  chip1 temp : " << Tpx3Temp[1] << endl;
+        cout << buffer << endl;
+        //cout << "triggers: " << std::setw(6) << trigcntr << "  chip0 temp: " << Tpx3Temp[0] << "  chip1 temp : " << Tpx3Temp[1] << endl;
         cnt++;
     }
     return NULL;
