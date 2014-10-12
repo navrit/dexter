@@ -288,6 +288,7 @@ int main(int argc, char *argv[])
                 cmd_recognised = true;
                 cout << "[Note] starting monitoring " << run_nr << endl;
                 int err = pthread_create( &ts_thread, NULL, &timestamp_per_sec, (void *) spidrctrl );
+                sprintf(buffer,"monitoring started");
                 if (err != 0)
                     cout << "[Error] Can not create timestamp thread, error: " << strerror(err) << endl;
                 else
@@ -296,8 +297,10 @@ int main(int argc, char *argv[])
 
             if ( strcmp(cmd,"stop_mon")==0 ) {
                 cmd_recognised = true;
+                sprintf(buffer,"monitoring stopped");
                 cout << "[Note] stopping monitoring " << run_nr << endl;
-                pthread_cancel( ts_thread );
+                if (ts_thread) pthread_cancel( ts_thread );
+                sleep(1);   // needed to flush buffers on the client side
             }
 
             if ( strcmp(cmd,"configure")==0 ) {
@@ -417,6 +420,8 @@ int main(int argc, char *argv[])
                 else 
                     cout << "[Note] shutter counters match" << endl;
 
+                sleep(1);   // needed to flush buffers on the client side
+
             }
             
             if ( !cmd_recognised && (cmd_length>0) ) {
@@ -425,8 +430,8 @@ int main(int argc, char *argv[])
             }
     
             if (cmd_length > 0) { // send a reply
-                cout << "[Note] sending reply to client" << endl;
                 send( new_socket, buffer, strlen(buffer), 0 );
+                cout << "[Note] sending reply to client" << endl;
             }
 
             //usleep(500000); // slow down loop?
@@ -1099,7 +1104,8 @@ void *timestamp_per_sec( void *ctrl )
 
         for (int dev=0; dev<ndev; dev++) {
             if ( dev_ena[dev] ) {
-                bytecount[dev] = spidrdaq[dev]->bytesReceivedCount();
+                bytecount[dev] = spidrdaq[dev]->bytesWrittenCount();
+                cout << "bytes written " << spidrdaq[dev]->bytesWrittenCount() << endl;
             }
         }
     
