@@ -37,6 +37,8 @@ DatasamplerThread::DatasamplerThread( ReceiverThread *recvr,
     _bigEndian( false ),
     _framesSampled( 0 ),
     _bytesWritten( 0 ),
+    _bytesRecorded( 0 ),
+    _bytesRecordedInRun( 0 ),
     _bytesSampled( 0 ),
     _bytesFlushed( 0 ),
     _pixelConfig( 0 )
@@ -748,7 +750,12 @@ bool DatasamplerThread::startRecording( std::string    filename,
     }
 
   // Initialize file counter when the run number changes
-  if( runnr != _runNr ) _fileCntr = 1;
+  if( runnr != _runNr )
+    {
+      _fileCntr = 1;
+      _bytesRecordedInRun = 0;
+    }
+  _bytesRecorded = 0;
 
   // Remember run number (for file names)
   _runNr = runnr;
@@ -843,6 +850,9 @@ void DatasamplerThread::closeFilePrivate()
   // (this function is to be called from within the thread only)
   if( _file.isOpen() ) _file.close();
   _fileOpen = false;
+
+  _bytesRecorded += _bytesWritten;
+  _bytesRecordedInRun += _bytesWritten;
 }
 
 // ----------------------------------------------------------------------------

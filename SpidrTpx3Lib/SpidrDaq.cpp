@@ -7,7 +7,8 @@
 #include "dacsdescr.h"
 
 // Version identifier: year, month, day, release number
-const   int VERSION_ID = 0x14092900;
+const   int VERSION_ID = 0x14101300;
+//const int VERSION_ID = 0x14092900;
 //const int VERSION_ID = 0x14072400;
 
 // ----------------------------------------------------------------------------
@@ -538,6 +539,20 @@ long long SpidrDaq::bytesLostCount()
 long long SpidrDaq::bytesWrittenCount()
 {
   return _fileWriter->bytesWritten();
+}
+
+// ----------------------------------------------------------------------------
+
+long long SpidrDaq::bytesRecordedCount()
+{
+  return _fileWriter->bytesRecorded();
+}
+
+// ----------------------------------------------------------------------------
+
+long long SpidrDaq::bytesRecordedInRunCount()
+{
+  return _fileWriter->bytesRecordedInRun();
 }
 
 // ----------------------------------------------------------------------------

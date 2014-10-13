@@ -83,6 +83,8 @@ class MY_LIB_API SpidrDaq
   long long   bytesReceivedCount  ( );
   long long   bytesLostCount      ( );
   long long   bytesWrittenCount   ( );
+  long long   bytesRecordedCount  ( );
+  long long   bytesRecordedInRunCount( );
   long long   bytesSampledCount   ( );
   long long   bytesFlushedCount   ( );
   int         bufferWrapCount     ( );
