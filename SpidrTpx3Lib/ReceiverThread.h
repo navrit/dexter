@@ -68,7 +68,9 @@ class ReceiverThread : public QThread
   int bufferWraps()         { return _bufferWraps; }
 
  private:
+  void suspend();
   bool suspended();
+  void resume();
 
  private:
   QUdpSocket *_sock;

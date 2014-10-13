@@ -238,17 +238,17 @@ void ReceiverThread::updateBytesConsumed( long long bytes )
 
 // ----------------------------------------------------------------------------
 
-void ReceiverThread::reset()
+bool ReceiverThread::setBufferSize( long long size )
 {
-  if( this->isRunning() )
-    {
-      // Prevent thread from writing anything more into the buffer
-      _suspend = true;
-      // Now wait to make sure this thread takes '_suspend' into account...
-      volatile bool b = _suspended;
-      while( !b ) b = this->suspended(); // Function to prevent optimization
-    }
+  // Demand a certain minimum size...
+  if( size < 2*16384 ) return false;
 
+  // Already allocated ?
+  if( size == _bufferSize ) return true;
+
+  this->suspend();
+
+  // Reset receive buffer administration
   _packetsReceived = 0;
   _packetsLost     = 0;
   _bytesReceived   = 0;
@@ -259,28 +259,13 @@ void ReceiverThread::reset()
   _full            = false;
   _fullOccurred    = false;
 
-  _suspend         = false;
-  _suspended       = false;
-}
-
-// ----------------------------------------------------------------------------
-
-bool ReceiverThread::setBufferSize( long long size )
-{
-  // Demand a certain minimum size...
-  if( size < 2*16384 ) return false;
-
-  // Already allocated ?
-  if( size == _bufferSize ) return true;
-
-  this->reset();
-
   // Delete existing buffer if any
   if( _recvBuffer ) delete [] _recvBuffer;
   _recvBuffer = 0;
   _bufferSize = 0;
   _freeSpace  = 0;
 
+  bool result = true;
   try {
     // Allocate a new buffer of the requested size
     _recvBuffer = new char[size];
@@ -310,10 +295,11 @@ bool ReceiverThread::setBufferSize( long long size )
     {
       _errString += "; Failed to allocate requested buffer size";
       _stop = true;
-      return false;
+      result = false;
     }
 
-  return true;
+  this->resume();
+  return result;
 }
 
 // ----------------------------------------------------------------------------
@@ -335,11 +321,34 @@ std::string ReceiverThread::errorString()
 
 // ----------------------------------------------------------------------------
 
+void ReceiverThread::suspend()
+{
+  if( this->isRunning() )
+    {
+      // Prevent thread from writing anything more into the buffer
+      _suspend = true;
+      // Now wait to make sure this thread takes '_suspend' into account...
+      volatile bool b = _suspended;
+      while( !b ) b = this->suspended(); // Function to prevent optimization
+    }
+}
+
+// ----------------------------------------------------------------------------
+
 bool ReceiverThread::suspended()
 {
   // This function was only added to prevent the compiler from optimizing
-  // a while-loop (see reset()) on the _suspended variable!
+  // a while-loop (see suspend()) on the _suspended variable!
   return _suspended;
+}
+
+// ----------------------------------------------------------------------------
+
+void ReceiverThread::resume()
+{
+  // Resume normal receiving operation
+  _suspend   = false;
+  _suspended = false;
 }
 
 // ----------------------------------------------------------------------------
