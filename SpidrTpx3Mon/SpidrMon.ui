@@ -240,7 +240,7 @@
          <set>Qt::AlignCenter</set>
         </property>
        </widget>
-       <widget class="QWidget" name="">
+       <widget class="QWidget" name="layoutWidget1">
         <property name="geometry">
          <rect>
           <x>17</x>
@@ -1502,7 +1502,7 @@
            <set>Qt::AlignCenter</set>
           </property>
          </widget>
-         <widget class="QWidget" name="">
+         <widget class="QWidget" name="layoutWidget2">
           <property name="geometry">
            <rect>
             <x>17</x>
@@ -1603,7 +1603,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="">
+         <widget class="QWidget" name="layoutWidget3">
           <property name="geometry">
            <rect>
             <x>20</x>
@@ -1753,7 +1753,7 @@
           </size>
          </property>
          <property name="title">
-          <string>Timepix3</string>
+          <string>Timepix3 (2)</string>
          </property>
          <widget class="QLineEdit" name="_lineEditDac1_2">
           <property name="enabled">

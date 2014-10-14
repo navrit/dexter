@@ -191,14 +191,14 @@ void SpidrMon::connectOrDisconnect()
 	  _spidrController->selectChipBoard( 1 );
 
 	  // (Re)enable power to Timepix3 if requested and necessary
-	  if( _checkBoxTpxPowerEna->isChecked() )
+	  int val;
+	  // Read SPIDR Board Control register to find out if power is off
+	  if( _spidrController->getSpidrReg( 0x2D0, &val ) )
 	    {
-	      int val;
-	      // Read SPIDR Board Control register to find out...
-	      if( _spidrController->getSpidrReg( 0x2D0, &val ) )
+	      // Check SPIDR_TPX_POWER_ENA bit: 1=ON, 0=OFF
+	      if( (val & 0x4) == 0 )
 		{
-		  // Check SPIDR_TPX_POWER_ENA bit: 1=ON, 0=OFF
-		  if( (val & 0x4) == 0 )
+		  if( _checkBoxTpxPowerEna->isChecked() )
 		    {
 		      // Power is off: switch it on
 		      _spidrController->setTpxPowerEna( true );
@@ -208,6 +208,11 @@ void SpidrMon::connectOrDisconnect()
 		      _spidrController->getAdc( &val );
 		      // Issue a reset command
 		      _spidrController->reset( &val );
+		    }
+		  else
+		    {
+		      // Power is off: set indicator
+		      _lePowerOffLed->setEnabled( true );
 		    }
 		}
 	    }
