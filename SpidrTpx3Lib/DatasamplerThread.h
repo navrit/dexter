@@ -66,7 +66,7 @@ class DatasamplerThread : public QThread
 
   // Statistics
   i64  framesSampled  ( )             { return _framesSampled; }
-  i64  bytesWritten   ( )             { return _bytesWritten; }
+  i64  bytesWritten   ( )             { return _bytesToFile; }
   i64  bytesRecorded  ( )             { return _bytesRecorded; }
   i64  bytesRecordedInRun( )          { return _bytesRecordedInRun; }
   i64  bytesSampled   ( )             { return _bytesSampled; }
@@ -122,7 +122,7 @@ class DatasamplerThread : public QThread
 
   // Statistics
   i64     _framesSampled;
-  i64     _bytesWritten;
+  i64     _bytesToFile;
   i64     _bytesRecorded;
   i64     _bytesRecordedInRun;
   i64     _bytesSampled;

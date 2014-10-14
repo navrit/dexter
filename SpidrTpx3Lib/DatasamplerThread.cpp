@@ -36,7 +36,7 @@ DatasamplerThread::DatasamplerThread( ReceiverThread *recvr,
     _pixIndex( 0 ),
     _bigEndian( false ),
     _framesSampled( 0 ),
-    _bytesWritten( 0 ),
+    _bytesToFile( 0 ),
     _bytesRecorded( 0 ),
     _bytesRecordedInRun( 0 ),
     _bytesSampled( 0 ),
@@ -103,7 +103,7 @@ void DatasamplerThread::run()
       // Handle file opening and closing
       if( _recording )
 	{
-	  if( !_fileOpen || _bytesWritten > _fileMaxSize )
+	  if( !_fileOpen || _bytesToFile > _fileMaxSize )
 	    this->openFilePrivate();
 	}
       else
@@ -134,13 +134,15 @@ void DatasamplerThread::run()
 			  else
 			    bytes = this->copySampleToBuffer();
 
-			  // Write the sampled data to file too if open
+			  // Write the sampled data to file too if file is open
 			  if( _fileOpen )
 			    {
 			      // ###NB: what to do if not all bytes are written
 			      // but we did copy them to the sample buffer?
 			      _file.write( _receiver->data(), bytes );
-			      _bytesWritten += bytes;
+			      _bytesToFile += bytes;
+			      _bytesRecorded += bytes;
+			      _bytesRecordedInRun += bytes;
 			    }
 
 			  // Notify the receiver
@@ -196,7 +198,9 @@ void DatasamplerThread::run()
 			    // collecting a frame
 			    _file.write( _receiver->data(), bytes );
 
-			  _bytesWritten += bytes;
+			  _bytesToFile += bytes;
+			  _bytesRecorded += bytes;
+			  _bytesRecordedInRun += bytes;
 			}
 
 		      if( bytes == 0 )
@@ -220,7 +224,7 @@ void DatasamplerThread::run()
 		}
 	      else
 		{
-		  // File is open: write data to file
+		  // Not sampling and file is open: write data to file
 
 		  // Adhere to file-write chunk size
 		  bytes = _receiver->bytesAvailable();
@@ -230,12 +234,14 @@ void DatasamplerThread::run()
 
 		  // Notify the receiver
 		  _receiver->updateBytesConsumed( bytes );
-		  _bytesWritten += bytes;
+		  _bytesToFile += bytes;
+		  _bytesRecorded += bytes;
+		  _bytesRecordedInRun += bytes;
 		}
 	    }
 	  else
 	    {
-	      // If not sampling or writing to file flush the data
+	      // If not sampling or writing to file, flush the data
 	      // if flushing is enabled, otherwise keep it stored in buffer
 	      if( _flush )
 		{
@@ -834,7 +840,7 @@ bool DatasamplerThread::openFilePrivate()
       if( _pixelConfig )
 	_file.write( reinterpret_cast<char *>(_pixelConfig), 256*256 );
 
-      _bytesWritten = 0;
+      _bytesToFile = 0;
       _fileOpen = true;
       return true;
     }
@@ -851,8 +857,10 @@ void DatasamplerThread::closeFilePrivate()
   if( _file.isOpen() ) _file.close();
   _fileOpen = false;
 
-  _bytesRecorded += _bytesWritten;
-  _bytesRecordedInRun += _bytesWritten;
+  // ### Keep these counters up-to-date rather than updating
+  // ### once when closing a file (changed 14 Oct 2014)
+  //_bytesRecorded += _bytesToFile;
+  //_bytesRecordedInRun += _bytesToFile;
 }
 
 // ----------------------------------------------------------------------------
@@ -873,7 +881,7 @@ bool DatasamplerThread::openFileOld( std::string filename, bool overwrite )
   _file.open( QIODevice::WriteOnly );
   if( _file.isOpen() )
     {
-      _bytesWritten = 0;
+      _bytesToFile = 0;
       _fileOpen = true;
       return true;
     }
