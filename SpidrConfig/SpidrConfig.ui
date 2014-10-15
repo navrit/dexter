@@ -361,7 +361,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>Timepix3 @ 640Mbit/s (vs 80Mbit/s)</string>
+         <string>Timepix3 @ 640Mbit/s (vs 40Mbit/s)</string>
         </property>
        </widget>
        <widget class="QPushButton" name="_pushButtonErase">
