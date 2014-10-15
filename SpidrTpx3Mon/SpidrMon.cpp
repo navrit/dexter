@@ -115,12 +115,13 @@ void SpidrMon::connectOrDisconnect()
       _lineEditDac4_2->setEnabled( false );
 
       _dacCode = TPX3_BANDGAP_OUTPUT;
+
+      //_lePowerOffLed->hide();
+      _lePowerOffLed->setEnabled( false );
     }
   else
     {
       _labelDisconnected->hide();
-      //_lePowerOffLed->hide();
-      _lePowerOffLed->setEnabled( false );
 
       if( _lineEditAddr3->text().isEmpty() ||
 	  _lineEditAddr2->text().isEmpty() ||
