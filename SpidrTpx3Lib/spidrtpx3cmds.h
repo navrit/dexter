@@ -142,6 +142,8 @@
 #define CMD_VALID_DACS         0x679
 #define CMD_VALID_REGISTERS    0x67A
 #define CMD_VALID_PIXCONF      0x67B
+#define CMD_STORE_STARTOPTS    0x67C
+#define CMD_GET_STARTOPTS      0x67D
 
 // Other
 #define CMD_GET_GPIO           0x780
@@ -289,8 +291,8 @@ static const char *CMD_STR[] =
     "VALID_DACS       ", // 0x679
     "VALID_REGISTERS  ", // 0x67A
     "VALID_PIXCONF    ", // 0x67B
-    "-----",             // 0x67C
-    "-----",             // 0x67D
+    "STORE_STARTOPTS  ", // 0x67C
+    "GET_STARTOPTS    ", // 0x67D
     "-----",             // 0x67E
     "-----",             // 0x67F
 

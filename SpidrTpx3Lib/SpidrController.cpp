@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x14101000;
+const int   VERSION_ID = 0x14101500;
+//const int VERSION_ID = 0x14101000;
 //const int VERSION_ID = 0x14100800;
 //const int VERSION_ID = 0x14100200;
 //const int VERSION_ID = 0x14100100;
@@ -818,8 +819,7 @@ bool SpidrController::setCtpr( int dev_nr )
 /*
 bool SpidrController::setCtprLeon( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_SET_CTPR_LEON, dev_nr, dummy );
+  return this->requestSetInt( CMD_SET_CTPR_LEON, dev_nr, 0 );
 }
 */
 // ----------------------------------------------------------------------------
@@ -1072,8 +1072,7 @@ bool SpidrController::getPixelConfig( int dev_nr )
 
 bool SpidrController::resetPixels( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_RESET_PIXELS, dev_nr, dummy );
+  return this->requestSetInt( CMD_RESET_PIXELS, dev_nr, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -1130,8 +1129,7 @@ bool SpidrController::storeAddrAndPorts( int ipaddr_src,
 
 bool SpidrController::eraseAddrAndPorts()
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_ERASE_ADDRPORTS, 0, dummy );
+  return this->requestSetInt( CMD_ERASE_ADDRPORTS, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -1152,16 +1150,14 @@ bool SpidrController::validAddrAndPorts( bool *valid )
 
 bool SpidrController::storeDacs( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_STORE_DACS, dev_nr, dummy );
+  return this->requestSetInt( CMD_STORE_DACS, dev_nr, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::eraseDacs( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_ERASE_DACS, dev_nr, dummy );
+  return this->requestSetInt( CMD_ERASE_DACS, dev_nr, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -1176,6 +1172,26 @@ bool SpidrController::validDacs( int dev_nr, bool *valid )
       return true;
     }
   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::storeStartupOptions( int startopts )
+{
+  // Current layout of 'startopts' (15 Oct 2014):
+  // - bits 31-30: 01 (indicating a valid word)
+  // - bits 14-8 : bias voltage [V] [12..104], bit 15 must be 0
+  // - bit 7     : enable bias powersupply
+  // - bit 1     : Timepix3 output links slow (0) or fast (1)
+  // - bit 0     : enable Timepix3 powersupply
+  return this->requestSetInt( CMD_STORE_STARTOPTS, 0, startopts );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getStartupOptions( int *startopts )
+{
+  return this->requestGetInt( CMD_GET_STARTOPTS, 0, startopts );
 }
 
 // ----------------------------------------------------------------------------
@@ -1216,16 +1232,14 @@ bool SpidrController::getShutterTriggerConfig( int *trigger_mode,
 
 bool SpidrController::startAutoTrigger()
 {
-  int dummy1 = 0, dummy2 = 0;
-  return this->requestSetInt( CMD_AUTOTRIG_START, dummy1, dummy2 );
+  return this->requestSetInt( CMD_AUTOTRIG_START, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::stopAutoTrigger()
 {
-  int dummy1 = 0, dummy2 = 0;
-  return this->requestSetInt( CMD_AUTOTRIG_STOP, dummy1, dummy2 );
+  return this->requestSetInt( CMD_AUTOTRIG_STOP, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -1268,8 +1282,7 @@ bool SpidrController::getShutterCounter( int *cntr )
 
 bool SpidrController::resetCounters()
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_RESET_COUNTERS, 0, dummy );
+  return this->requestSetInt( CMD_RESET_COUNTERS, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -1285,16 +1298,14 @@ bool SpidrController::sequentialReadout( int tokens )
 
 bool SpidrController::datadrivenReadout()
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_DDRIVEN_READOUT, 0, dummy );
+  return this->requestSetInt( CMD_DDRIVEN_READOUT, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::pauseReadout()
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_PAUSE_READOUT, 0, dummy );
+  return this->requestSetInt( CMD_PAUSE_READOUT, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -1303,16 +1314,14 @@ bool SpidrController::pauseReadout()
 
 bool SpidrController::restartTimers()
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_RESTART_TIMERS, 0, dummy );
+  return this->requestSetInt( CMD_RESTART_TIMERS, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::resetTimer( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_RESET_TIMER, dev_nr, dummy );
+  return this->requestSetInt( CMD_RESET_TIMER, dev_nr, 0 );
 }
 
 // ----------------------------------------------------------------------------

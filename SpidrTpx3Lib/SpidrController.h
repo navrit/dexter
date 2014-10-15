@@ -161,6 +161,8 @@ class MY_LIB_API SpidrController
   bool storePixelConfig        ( int  dev_nr );              // ###TODO
   bool erasePixelConfig        ( int  dev_nr );              // ###TODO
   bool validPixelConfig        ( int  dev_nr, bool *valid ); // ###TODO
+  bool storeStartupOptions     ( int  startopts );
+  bool getStartupOptions       ( int *startopts );
 
   // Shutter trigger
   bool setShutterTriggerConfig ( int  trigger_mode,
