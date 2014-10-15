@@ -7,7 +7,9 @@
 #include "SpidrController.h"
 #include "tpx3defs.h"
 
-QString VERSION( "v2.1.0  16-Jan-2014" );
+QString   VERSION( "v2.2.0  15-Oct-2014" );
+//QString VERSION( "v2.1.0  16-Jan-2014" );
+//QString VERSION( "v2.0.0  26-Nov-2013" );
 
 //const int UPDATE_INTERVAL_MS = 750;
 const int UPDATE_INTERVAL_MS = 1500;
@@ -404,7 +406,7 @@ void SpidrMon::timerEvent(QTimerEvent *)
     }
 
   _leUpdateSpidrLed->show();
-  QTimer::singleShot( UPDATE_INTERVAL_MS/4, this, SLOT(updateLedOff()) );
+  QTimer::singleShot( UPDATE_INTERVAL_MS/4, this, SLOT(switchLedsOff()) );
 
   if( !_doubleSpidr )
     {
@@ -605,7 +607,7 @@ void SpidrMon::initDataDisplay()
 
 // ----------------------------------------------------------------------------
 
-void SpidrMon::updateLedOff()
+void SpidrMon::switchLedsOff()
 {
   _leUpdateSpidrLed->hide();
   _leUpdateTpxLed->setEnabled( false ); //_leUpdateTpxLed->hide();

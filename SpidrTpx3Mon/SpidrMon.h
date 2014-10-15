@@ -14,7 +14,7 @@ class SpidrMon : public QDialog, Ui_SpidrMonDialog
 
  private slots:
   void connectOrDisconnect();
-  void updateLedOff();
+  void switchLedsOff();
   void doubleSpidrModeChanged();
   void myResize();
 
