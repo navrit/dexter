@@ -38,6 +38,10 @@ SpidrDacs::SpidrDacs()
 	   this, SLOT( setDacsDefaults() ) );
   connect( _comboBoxDeviceIndex, SIGNAL( currentIndexChanged(int) ),
 	   this, SLOT( changeDeviceIndex(int) ) );
+  connect( _pushButtonStore, SIGNAL( clicked() ),
+	   this, SLOT( storeDacs() ) );
+  connect( _pushButtonErase, SIGNAL( clicked() ),
+	   this, SLOT( eraseDacs() ) );
 
   _ipAddrValidator = new QIntValidator( 1, 255, this );
   _lineEditAddr3->setValidator( _ipAddrValidator );
@@ -49,6 +53,8 @@ SpidrDacs::SpidrDacs()
   _lineEditPort->setValidator( _ipPortValidator );
 
   _labelDisconnected->hide();
+  _labelOkay->hide();
+  _labelErr->hide();
 
   _comboBoxDeviceIndex->hide();
 
@@ -149,10 +155,13 @@ void SpidrDacs::connectOrDisconnect()
       _pushButtonConnectOrDisconnect->setText( "Connect" );
       _pushButtonReadDacs->setEnabled( false );
       _pushButtonSetDacsDefaults->setEnabled( false );
+      _pushButtonStore->setEnabled( false );
+      _pushButtonErase->setEnabled( false );
     }
   else
     {
       _labelDisconnected->hide();
+      _labelErr->hide();
 
       if( _lineEditAddr3->text().isEmpty() ||
 	  _lineEditAddr2->text().isEmpty() ||
@@ -215,11 +224,15 @@ void SpidrDacs::connectOrDisconnect()
 
 void SpidrDacs::readDacs()
 {
+  _pushButtonStore->setEnabled( false );
+  _pushButtonErase->setEnabled( false );
+
   if( !_spidrController || !_spidrController->isConnected() ) return;
 
   // Get the current DAC settings and display them
   // without triggering DAC-set commands
   _disableSetDac = true;
+  bool noerr = true;
   int dac_val;
   for( int i=0; i<_slidrs.size(); ++i )
     {
@@ -231,9 +244,17 @@ void SpidrDacs::readDacs()
 	}
       else
 	{
-	  //_slidrs[i]->setValue( 0 );
+	  _slidrs[i]->setValue( 0 );
 	  _spboxs[i]->setPalette( _qpError );
+	  noerr = false;
 	}
+    }
+  if( noerr )
+    {
+      // Require all settings to be read out properly before allowing
+      // operations on non-volatile memory
+      _pushButtonStore->setEnabled( true );
+      _pushButtonErase->setEnabled( true );
     }
   _disableSetDac = false;
 }
@@ -327,6 +348,47 @@ void SpidrDacs::changeDeviceIndex( int index )
   if( index < 0 ) return;
   _deviceIndex = index;
   this->initDacs();
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDacs::storeDacs()
+{
+  if( !_spidrController || !_spidrController->isConnected() ) return;
+
+  // Store current DAC settings for this Timepix3 device in non-volatile memory
+  if( !_spidrController->storeDacs( _deviceIndex ) )
+    _labelErr->show();
+  else
+    {
+      _labelErr->hide();
+      _labelOkay->show();
+      QTimer::singleShot( 1000, this, SLOT( hideOkay() ) );
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDacs::eraseDacs()
+{
+  if( !_spidrController || !_spidrController->isConnected() ) return;
+
+  // Erase DAC settings for this Timepix3 device from non-volatile memory
+  if( !_spidrController->eraseDacs( _deviceIndex ) )
+    _labelErr->show();
+  else
+    {
+      _labelErr->hide();
+      _labelOkay->show();
+      QTimer::singleShot( 1000, this, SLOT( hideOkay() ) );
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDacs::hideOkay()
+{
+  _labelOkay->hide();
 }
 
 // ----------------------------------------------------------------------------

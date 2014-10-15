@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>738</width>
-    <height>481</height>
+    <width>906</width>
+    <height>483</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,114 +35,6 @@
      <property name="title">
       <string>SPIDR</string>
      </property>
-     <widget class="QLabel" name="labelPeriod">
-      <property name="geometry">
-       <rect>
-        <x>46</x>
-        <y>34</y>
-        <width>16</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>.</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="_lineEditAddr0">
-      <property name="geometry">
-       <rect>
-        <x>132</x>
-        <y>30</y>
-        <width>31</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>10</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="_lineEditAddr2">
-      <property name="geometry">
-       <rect>
-        <x>56</x>
-        <y>30</y>
-        <width>31</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>168</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="_pushButtonConnectOrDisconnect">
-      <property name="geometry">
-       <rect>
-        <x>240</x>
-        <y>30</y>
-        <width>75</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="focusPolicy">
-       <enum>Qt::ClickFocus</enum>
-      </property>
-      <property name="text">
-       <string>Connect</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="_lineEditAddr1">
-      <property name="geometry">
-       <rect>
-        <x>94</x>
-        <y>30</y>
-        <width>31</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>100</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QLabel" name="labelPeriod_3">
-      <property name="geometry">
-       <rect>
-        <x>122</x>
-        <y>34</y>
-        <width>16</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>.</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
      <widget class="QLabel" name="labelIpAddr">
       <property name="geometry">
        <rect>
@@ -162,7 +54,7 @@
      <widget class="QLabel" name="labelPort">
       <property name="geometry">
        <rect>
-        <x>174</x>
+        <x>190</x>
         <y>14</y>
         <width>53</width>
         <height>16</height>
@@ -175,157 +67,390 @@
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QLabel" name="labelPeriod_2">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>84</x>
-        <y>34</y>
-        <width>16</width>
-        <height>16</height>
+        <x>7</x>
+        <y>28</y>
+        <width>868</width>
+        <height>25</height>
        </rect>
       </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>.</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="_lineEditAddr3">
-      <property name="geometry">
-       <rect>
-        <x>18</x>
-        <y>30</y>
-        <width>31</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>192</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="_lineEditPort">
-      <property name="geometry">
-       <rect>
-        <x>176</x>
-        <y>30</y>
-        <width>51</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>50000</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QLabel" name="_labelDisconnected">
-      <property name="geometry">
-       <rect>
-        <x>330</x>
-        <y>30</y>
-        <width>91</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="palette">
-       <palette>
-        <active>
-         <colorrole role="WindowText">
-          <brush brushstyle="SolidPattern">
-           <color alpha="255">
-            <red>255</red>
-            <green>0</green>
-            <blue>0</blue>
-           </color>
-          </brush>
-         </colorrole>
-        </active>
-        <inactive>
-         <colorrole role="WindowText">
-          <brush brushstyle="SolidPattern">
-           <color alpha="255">
-            <red>255</red>
-            <green>0</green>
-            <blue>0</blue>
-           </color>
-          </brush>
-         </colorrole>
-        </inactive>
-        <disabled>
-         <colorrole role="WindowText">
-          <brush brushstyle="SolidPattern">
-           <color alpha="255">
-            <red>120</red>
-            <green>120</green>
-            <blue>120</blue>
-           </color>
-          </brush>
-         </colorrole>
-        </disabled>
-       </palette>
-      </property>
-      <property name="text">
-       <string>DISCONNECTED</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="_pushButtonReadDacs">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>419</x>
-        <y>30</y>
-        <width>75</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="focusPolicy">
-       <enum>Qt::ClickFocus</enum>
-      </property>
-      <property name="text">
-       <string>Reread DACs</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="_pushButtonSetDacsDefaults">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>505</x>
-        <y>31</y>
-        <width>75</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="focusPolicy">
-       <enum>Qt::ClickFocus</enum>
-      </property>
-      <property name="text">
-       <string>Set DACs dflt</string>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="_comboBoxDeviceIndex">
-      <property name="geometry">
-       <rect>
-        <x>610</x>
-        <y>30</y>
-        <width>76</width>
-        <height>22</height>
-       </rect>
-      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <item>
+        <widget class="QLineEdit" name="_lineEditAddr3">
+         <property name="maximumSize">
+          <size>
+           <width>40</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>192</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelPeriod">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>.</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="_lineEditAddr2">
+         <property name="maximumSize">
+          <size>
+           <width>40</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>168</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelPeriod_2">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>.</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="_lineEditAddr1">
+         <property name="maximumSize">
+          <size>
+           <width>40</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>100</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelPeriod_3">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>.</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="_lineEditAddr0">
+         <property name="maximumSize">
+          <size>
+           <width>40</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>10</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="_lineEditPort">
+         <property name="maximumSize">
+          <size>
+           <width>60</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>50000</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="_pushButtonConnectOrDisconnect">
+         <property name="focusPolicy">
+          <enum>Qt::ClickFocus</enum>
+         </property>
+         <property name="text">
+          <string>Connect</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="_labelDisconnected">
+         <property name="palette">
+          <palette>
+           <active>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>0</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </active>
+           <inactive>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>0</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </inactive>
+           <disabled>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>120</red>
+               <green>120</green>
+               <blue>120</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </disabled>
+          </palette>
+         </property>
+         <property name="text">
+          <string>DISCONNECTED</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="_pushButtonReadDacs">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::ClickFocus</enum>
+         </property>
+         <property name="text">
+          <string>Reread DACs</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="_pushButtonSetDacsDefaults">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::ClickFocus</enum>
+         </property>
+         <property name="text">
+          <string>Set DACs dflt</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="_comboBoxDeviceIndex"/>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="_labelFlash">
+         <property name="text">
+          <string>Flash:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="_labelErr">
+         <property name="palette">
+          <palette>
+           <active>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>0</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </active>
+           <inactive>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>0</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </inactive>
+           <disabled>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>120</red>
+               <green>120</green>
+               <blue>120</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </disabled>
+          </palette>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>ERR</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="_pushButtonStore">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Store</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="_pushButtonErase">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Erase</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="_labelOkay">
+         <property name="minimumSize">
+          <size>
+           <width>25</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="palette">
+          <palette>
+           <active>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>0</red>
+               <green>170</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </active>
+           <inactive>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>0</red>
+               <green>170</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </inactive>
+           <disabled>
+            <colorrole role="WindowText">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>120</red>
+               <green>120</green>
+               <blue>120</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </disabled>
+          </palette>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string> OK</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>

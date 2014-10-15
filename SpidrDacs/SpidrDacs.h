@@ -25,6 +25,9 @@ class SpidrDacs : public QDialog, Ui_SpidrDacsDialog
   void dacChanged( int index );
   void adjustLayout();
   void changeDeviceIndex( int index );
+  void storeDacs();
+  void eraseDacs();
+  void hideOkay();
 
  private:
   SpidrController    *_spidrController;
