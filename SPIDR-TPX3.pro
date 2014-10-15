@@ -26,6 +26,7 @@ CONFIG += debug_and_release
 SUBDIRS += SpidrTpx3Lib/SpidrTpx3Lib.pro
 
 # Executables
+SUBDIRS += SpidrConfig/SpidrConfig.pro
 SUBDIRS += SpidrDacs/SpidrDacs.pro
 SUBDIRS += SpidrTpx3Mon/SpidrMon.pro
 SUBDIRS += SpidrTpx3TV/SpidrTTV.pro
@@ -33,3 +34,4 @@ SUBDIRS += SpidrTpx3Lib/spidrtpx3libtest/spidrtpx3libtest.pro
 SUBDIRS += spidripconfig/spidripconfig.pro
 SUBDIRS += spidripconfig/spidripmonconfig.pro
 #SUBDIRS += Apps/DummyGen/DummyGen.pro
+#SUBDIRS += Apps/PixConfTest/PixConfTest.pro
