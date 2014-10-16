@@ -32,14 +32,16 @@ CONFIG(release, debug|release) {
   LIBS       += -L../../../Release 
 } 
 
-QMAKE_CXXFLAGS += -pthread -Wno-deprecated-declarations -m64 -I/home/timepix3/root/include
+QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -pthread -Wno-deprecated-declarations -m64 -I/home/mateus/root/include
 
 INCLUDEPATH += ../../../SpidrTpx3Lib 
 INCLUDEPATH += ../Lib 
  
 LIBS += -lSpidrTpx3Lib 
 LIBS += -lSpidrEqualisation
-LIBS += `root-config --glibs`
+LIBS += `root-config --libs --glibs --cflags --ldflags`
+#LIBS += `root-config --glibs`
  
 SOURCES   += Equalise.cpp 
 
