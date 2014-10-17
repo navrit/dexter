@@ -13,6 +13,8 @@ QMAKE_CXXFLAGS += -std=c++0x
 
 TARGET = RCGui
 OBJECTS_DIR = tmp
+MOC_DIR     = tmp
+UI_DIR      = tmp
 
 SOURCES += main.cpp\
            RCMainWindow.cpp\
