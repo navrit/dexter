@@ -31,7 +31,7 @@ SpidrEqualisation::SpidrEqualisation(SpidrController* spidrctrl,
                                      SpidrDaq* spidrdaq) : 
   m_ctrl(spidrctrl), m_daq(spidrdaq),
   m_device(0),
-  m_pixelmask(true), m_stddev(4),
+  m_stddev(4),
   m_spacing(2), 
   m_thlmin(0), m_thlmax(512), m_thlstep(1),
   m_thlcoarse(6), m_ikrum(10),
@@ -108,7 +108,7 @@ bool SpidrEqualisation::equalise(const bool scan0, const bool scan15,
   if (scanFinal) { 
     // Apply the trim values and rerun the acquisition.
     cout << "[Note] Applying trim values\n";
-    if (!setTHLTrim(filenameBase + ".txt")) {
+    if (!setTHLTrim(filenameBase + ".txt", false)) {
       printFinal("FAILED");
       return false;
     }
@@ -167,7 +167,7 @@ bool SpidrEqualisation::loadEqualisation(const std::string& filename, const bool
  
   if (!checkCommunication()) return false;
   std::cout << "[Note] Loading pixel trim values from" << filename << "\n";
-  if (!setTHLTrim(filename)) {
+  if (!setTHLTrim(filename, loadmask)) {
     printFinal("FAILED");
     return false;
   }
@@ -284,7 +284,8 @@ bool SpidrEqualisation::setConfiguration() {
 // ---------------------------------------------------------------------------
 // Load the trim DAC mask from a file and apply it to the pixels.
 // ---------------------------------------------------------------------------
-bool SpidrEqualisation::setTHLTrim(const std::string& filename) {
+bool SpidrEqualisation::setTHLTrim(const std::string& filename,
+                                   const bool applyMasking) {
 
   FILE* fp = fopen(filename.c_str(), "r");
   if (fp == NULL) {
@@ -293,13 +294,16 @@ bool SpidrEqualisation::setTHLTrim(const std::string& filename) {
   }
       
   char line[256];
-  int row, col, thr;
   while (!feof(fp)) {
     if (fgets(line, 256, fp) == NULL) continue;
     // Skip comments.
     if (line[0] == '#') continue;
-    sscanf(line, "%d %d %d", &col, &row, &thr);
+    int row, col, thr, mask;
+    sscanf(line, "%d %d %d %d", &col, &row, &thr, &mask);
     m_ctrl->setPixelThreshold(col, row, thr);
+    if (mask && applyMasking) {
+      m_ctrl->setPixelMask(col, row, true);
+    }
   }
   m_ctrl->setPixelConfig(m_device);
   cout << "[Note] Pixel trim bits written to chip\n";
@@ -541,7 +545,7 @@ bool SpidrEqualisation::extractPars(const std::string& filename) {
       masked = 0;
     }
     hTrim.Fill(trim);
-    fprintf(fdac, "%4d %4d %4d %4d %4d\n", i / 256, i % 256, trim, 0, 0);
+    fprintf(fdac, "%4d %4d %4d %4d %4d\n", i / 256, i % 256, trim, masked, 0);
   }
   fclose(fdac);
   return true;
@@ -626,11 +630,14 @@ bool SpidrEqualisation::maskPixels(const std::string& filename) {
   f.cd();
   TH1* hNoiseMean = (TH1*)gDirectory->Get("hNoiseMean");
   // Get the average noise level after equalisation and the sigma.
-  const double mean = hNoiseMean->GetMean();
+  const double meanAvg = hNoiseMean->GetMean();
   // Calculate the tolerance window.
-  const double delta = m_stddev * hNoiseMean->GetRMS();
+  const double deltaAvg = m_stddev * hNoiseMean->GetRMS();
   TH1* hthrscan_1 = (TH1*)gDirectory->Get("hthrscan_1");
   hthrscan_1->SetDirectory(0);
+  const double deltaSigma = 25;
+  TH1* hthrscan_2 = (TH1*)gDirectory->Get("hthrscan_2");
+  hthrscan_2->SetDirectory(0);
   f.Close();
 
   // Open the original text file with the trim DACs for each pixel.
@@ -645,7 +652,7 @@ bool SpidrEqualisation::maskPixels(const std::string& filename) {
   FILE* fnew = fopen(filenamemask.c_str(), "w");
   unsigned int nMasked = 0;
   char line[256];
-  int row, col, trim;
+  int row, col, trim, masked;
   const int tp = 0;
   while (!feof(fp)) {
     if (fgets(line, 256, fp) == NULL) continue;
@@ -653,11 +660,11 @@ bool SpidrEqualisation::maskPixels(const std::string& filename) {
       fprintf(fnew, line);
       continue;
     }
-    sscanf(line, "%d %d %d", &col, &row, &trim);
+    sscanf(line, "%d %d %d %d", &col, &row, &trim, &masked);
     const unsigned int pixel = col * 256 + row;
-    int masked = 0;
     const double thr = hthrscan_1->GetBinContent(pixel + 1);
-    if (fabs(thr - mean) > delta) {
+    const double sigma = hthrscan_2->GetBinContent(pixel + 1);
+    if (fabs(thr - meanAvg) > deltaAvg || sigma > deltaSigma) {
       masked = 1;
       ++nMasked;
     } 

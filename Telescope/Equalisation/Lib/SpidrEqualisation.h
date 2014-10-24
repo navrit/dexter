@@ -43,8 +43,8 @@ class MY_LIB_API SpidrEqualisation {
 
   // Load trim values already created.
   bool loadEqualisation(const std::string& filename, const bool loadmask);
-  void enablePixelMask(const bool pixelmask, const unsigned int stddev) {
-    m_pixelmask = pixelmask;
+  void enablePixelMask(const bool enable, const unsigned int stddev) {
+    m_pixelmask = enable;
     m_stddev = stddev;
   }
 
@@ -115,7 +115,7 @@ class MY_LIB_API SpidrEqualisation {
   bool maskPixels(const std::string& filename);
   bool plotEqualisation(const std::string& filename);
 
-  bool setTHLTrim(const std::string& filename);
+  bool setTHLTrim(const std::string& filename, const bool applyMasking);
   bool setTHLTrimALL(const unsigned int trim);
 
   void printError(const std::string& header);

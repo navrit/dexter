@@ -36,11 +36,10 @@ win32 {
   LIBS += -lWs2_32
 }
 
-QMAKE_CXXFLAGS += -std=c++11
-#QMAKE_CXXFLAGS += `root-config --cflags` 
-QMAKE_CXXFLAGS += -pthread -Wno-deprecated-declarations -m64 -I/home/mateus/root/include
+QMAKE_CXXFLAGS += `root-config --cflags` 
+#QMAKE_CXXFLAGS += -pthread -Wno-deprecated-declarations -m64 -I/home/mateus/root/include
+#QMAKE_CXXFLAGS += -pthread -Wno-deprecated-declarations -m64 -I/home/timepix3/root/include
 INCLUDEPATH += ../../../SpidrTpx3Lib
 
 SOURCES += SpidrEqualisation.cpp
-
 HEADERS += SpidrEqualisation.h
