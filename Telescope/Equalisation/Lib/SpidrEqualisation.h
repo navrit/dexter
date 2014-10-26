@@ -126,6 +126,7 @@ class MY_LIB_API SpidrEqualisation {
                     std::vector<std::string>& files);
 
   bool loadDacs(const std::string& filename);
+  void setupStyle();
 
 };
 

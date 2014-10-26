@@ -15,6 +15,8 @@
 #include "TFile.h"
 #include "TH2S.h"
 #include "TCanvas.h"
+#include "TStyle.h"
+#include "TROOT.h"
 
 #include "tpx3defs.h"
 #include "SpidrController.h"
@@ -37,7 +39,7 @@ SpidrEqualisation::SpidrEqualisation(SpidrController* spidrctrl,
   m_thlcoarse(6), m_ikrum(10),
   m_trig_length_us(50), m_trigmode(4),
   m_trig_freq_hz(100), m_nr_of_trigs(1),
-  m_filename("equalisation_test"), m_dacfilename(""),
+  m_filename(""), m_dacfilename(""),
   m_eminus(true) {
 
 }
@@ -557,12 +559,7 @@ bool SpidrEqualisation::extractPars(const std::string& filename) {
 // ---------------------------------------------------------------------------
 bool SpidrEqualisation::plotEqualisation(const std::string& filename) {
 
-  const std::string rootfilename = filename + "_plot.root";
-  TFile froot(rootfilename.c_str(), "RECREATE");
-  if (!froot.IsOpen()) {
-    cerr << "[Error] Cannot create ROOT file " << rootfilename << ".\n";
-    return false;
-  }
+  setupStyle();
   const std::string filename0 = filename + "_0.root";
   TFile f0(filename0.c_str(), "READ");
   if (!f0.IsOpen()) {
@@ -594,7 +591,7 @@ bool SpidrEqualisation::plotEqualisation(const std::string& filename) {
   h->SetDirectory(0);
   
   ///*
-  TCanvas c2("c2", "Fine Threshold Scan", 1000, 600);
+  TCanvas c2("c2", "Fine Threshold Scan", 600, 600);
   c2.cd();
   h0->SetLineColor(kBlue + 2);
   h0->SetFillColor(kBlue + 2);
@@ -604,7 +601,7 @@ bool SpidrEqualisation::plotEqualisation(const std::string& filename) {
   h->SetFillColor(kBlack);
 
   h->GetXaxis()->SetTitle("THL");
-  h->GetYaxis()->SetTitle("entries");
+  h->GetYaxis()->SetTitle("");
   
   h->Draw();
   h0->Draw("same");
@@ -755,4 +752,110 @@ bool SpidrEqualisation::loadDacs(const std::string& filename) {
   return true;
 }
 
+void SpidrEqualisation::setupStyle() {
+
+  // Use times new roman, precision 2 
+  int lhcbFont = 132;
+  // Line thickness
+  double lhcbWidth = 2.00;
+  // Text size
+  double lhcbTSize = 0.06; 
+  
+  // use plain black on white colors
+  gROOT->SetStyle("Plain"); 
+  
+  gStyle->SetFillColor(1);
+  gStyle->SetFillStyle(1001);   // solid
+  gStyle->SetFrameFillColor(0);
+  gStyle->SetFrameBorderMode(0);
+  gStyle->SetPadBorderMode(0);
+  gStyle->SetPadColor(0);
+  gStyle->SetCanvasBorderMode(0);
+  gStyle->SetCanvasColor(0);
+  gStyle->SetStatColor(0);
+  gStyle->SetLegendBorderSize(0);
+  gStyle->SetLegendFont(132);
+
+  // If you want the usual gradient palette (blue -> red)
+  gStyle->SetPalette(1);
+
+  // set the paper & margin sizes
+  gStyle->SetPaperSize(20,26);
+  gStyle->SetPadTopMargin(0.05);
+  gStyle->SetPadRightMargin(0.05);
+  gStyle->SetPadBottomMargin(0.16);
+  gStyle->SetPadLeftMargin(0.15);
+  
+  // use large fonts
+  gStyle->SetTextFont(lhcbFont);
+  gStyle->SetTextSize(lhcbTSize);
+  gStyle->SetLabelFont(lhcbFont,"x");
+  gStyle->SetLabelFont(lhcbFont,"y");
+  gStyle->SetLabelFont(lhcbFont,"z");
+  gStyle->SetLabelSize(lhcbTSize,"x");
+  gStyle->SetLabelSize(lhcbTSize,"y");
+  gStyle->SetLabelSize(lhcbTSize,"z");
+  gStyle->SetTitleFont(lhcbFont);
+  gStyle->SetTitleFont(lhcbFont,"x");
+  gStyle->SetTitleFont(lhcbFont,"y");
+  gStyle->SetTitleFont(lhcbFont,"z");
+  gStyle->SetTitleSize(1.2*lhcbTSize,"x");
+  gStyle->SetTitleSize(1.2*lhcbTSize,"y");
+  gStyle->SetTitleSize(1.2*lhcbTSize,"z");
+
+  // use medium bold lines and thick markers
+  gStyle->SetLineWidth(lhcbWidth);
+  gStyle->SetFrameLineWidth(lhcbWidth);
+  gStyle->SetHistLineWidth(lhcbWidth);
+  gStyle->SetFuncWidth(lhcbWidth);
+  gStyle->SetGridWidth(lhcbWidth);
+  gStyle->SetLineStyleString(2,"[12 12]"); // postscript dashes
+  gStyle->SetMarkerStyle(20);
+  gStyle->SetMarkerSize(1.0);
+
+  // label offsets
+  gStyle->SetLabelOffset(0.010,"X");
+  gStyle->SetLabelOffset(0.020,"Y");
+
+  // by default, do not display histogram decorations:
+  gStyle->SetOptStat(0);  
+  gStyle->SetOptStat("emr");  // show only nent -e , mean - m , rms -r
+  // full opts at http://root.cern.ch/root/html/TStyle.html#TStyle:SetOptStat
+  gStyle->SetStatFormat("6.3g"); // specified as c printf options
+  gStyle->SetOptTitle(0);
+  gStyle->SetOptFit(0);
+  //gStyle->SetOptFit(1011); // order is probability, Chi2, errors, parameters
+  //titles
+  gStyle->SetTitleOffset(0.95,"X");
+  gStyle->SetTitleOffset(0.95,"Y");
+  gStyle->SetTitleOffset(1.2,"Z");
+  gStyle->SetTitleFillColor(0);
+  gStyle->SetTitleStyle(0);
+  gStyle->SetTitleBorderSize(0);
+  gStyle->SetTitleFont(lhcbFont,"title");
+  gStyle->SetTitleX(0.0);
+  gStyle->SetTitleY(1.0); 
+  gStyle->SetTitleW(1.0);
+  gStyle->SetTitleH(0.05);
+  
+  // look of the statistics box:
+  gStyle->SetStatBorderSize(0);
+  gStyle->SetStatFont(lhcbFont);
+  gStyle->SetStatFontSize(0.05);
+  gStyle->SetStatX(0.5);
+  gStyle->SetStatY(0.9);
+  gStyle->SetStatW(0.25);
+  gStyle->SetStatH(0.15);
+
+  // put tick marks on top and RHS of plots
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
+
+  // histogram divisions: only 5 in x to avoid label overlaps
+  gStyle->SetNdivisions(505,"x");
+  gStyle->SetNdivisions(510,"y");
+  
+  gROOT->ForceStyle();
+
+}
 
