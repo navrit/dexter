@@ -440,13 +440,9 @@ bool SpidrEqualisation::analyseData(const std::string& filename) {
     std::cerr << "[Error] Cannot read header size" << std::endl;
     return false;
   }
+  // Skip the header.
   rewind(fp);
-  // Read the complete header
-  uint32_t* spidrHeader = (uint32_t*)malloc(sizeof(uint32_t) * headerSize);
-  if (fread(&spidrHeader, sizeof(spidrHeader), 1, fp) == 0) {
-    std::cerr << "[Error] Cannot read header" << std::endl;
-    return false;
-  }
+  fseek(fp, headerSize, SEEK_SET);
 
   // Read the packets.
   ULong64_t pixdata = 0;
