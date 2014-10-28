@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x14101500;
+const int   VERSION_ID = 0x14102800;
+//const int VERSION_ID = 0x14101500;
 //const int VERSION_ID = 0x14101000;
 //const int VERSION_ID = 0x14100800;
 //const int VERSION_ID = 0x14100200;
@@ -1178,12 +1179,12 @@ bool SpidrController::validDacs( int dev_nr, bool *valid )
 
 bool SpidrController::storeStartupOptions( int startopts )
 {
-  // Current layout of 'startopts' (15 Oct 2014):
+  // Current layout of 'startopts' parameter (15 Oct 2014):
   // - bits 31-30: 01 (indicating a valid word)
-  // - bits 14-8 : bias voltage [V] [12..104], bit 15 must be 0
-  // - bit 7     : enable bias powersupply
-  // - bit 1     : Timepix3 output links slow (0) or fast (1)
-  // - bit 0     : enable Timepix3 powersupply
+  // - bits 15-8 : bias voltage [V] [12..104], bit 15 must be 0
+  // - bit 7     : enable bias powersupply at powerup
+  // - bit 1     : Timepix3 output links powerup to slow (0) or fast (1)
+  // - bit 0     : enable Timepix3 powersupply at powerup
   return this->requestSetInt( CMD_STORE_STARTOPTS, 0, startopts );
 }
 
@@ -1289,8 +1290,9 @@ bool SpidrController::resetCounters()
 // Data-acquisition
 // ----------------------------------------------------------------------------
 
-bool SpidrController::sequentialReadout( int tokens )
+bool SpidrController::sequentialReadout( int tokens, bool now )
 {
+  if( now ) tokens |= 0x80000000; // Immediately start a readout
   return this->requestSetInt( CMD_SEQ_READOUT, 0, tokens );
 }
 

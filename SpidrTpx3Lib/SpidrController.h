@@ -182,7 +182,7 @@ class MY_LIB_API SpidrController
   bool resetCounters           ( );
 
   // Data-acquisition
-  bool sequentialReadout       ( int tokens = 128 );
+  bool sequentialReadout       ( int tokens = 128, bool now = false );
   bool datadrivenReadout       ( );
   bool pauseReadout            ( );
 

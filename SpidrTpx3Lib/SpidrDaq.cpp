@@ -7,7 +7,8 @@
 #include "dacsdescr.h"
 
 // Version identifier: year, month, day, release number
-const   int VERSION_ID = 0x14101300;
+const   int VERSION_ID = 0x14102800;
+//const int VERSION_ID = 0x14101300;
 //const int VERSION_ID = 0x14092900;
 //const int VERSION_ID = 0x14072400;
 
@@ -174,6 +175,23 @@ bool SpidrDaq::startRecording( std::string filename,
   SpidrTpx3Header_t *fhdr = _fileWriter->fileHdr();
   unsigned char *pixelconfig = 0;
 
+  // Initialize the (SPIDR-TPX3) file header
+  memset( static_cast<void *> (fhdr), 0, SPIDRTPX3_HEADER_SIZE );
+  memset( static_cast<void *> (&fhdr->unused), HEADER_FILLER,
+	  sizeof(fhdr->unused) );
+  fhdr->headerId        = SPIDR_HEADER_ID;
+  // To be adjusted if the device pixel configuration is added:
+  fhdr->headerSizeTotal = SPIDRTPX3_HEADER_SIZE;// Increase if pixconf added
+  fhdr->headerSize      = SPIDRTPX3_HEADER_SIZE - TPX3_HEADER_SIZE;
+  fhdr->format          = SPIDR_HEADER_VERSION;
+  Tpx3Header_t *thdr = &fhdr->devHeader;
+  memset( static_cast<void *> (&thdr->unused), HEADER_FILLER,
+	  sizeof(thdr->unused) );
+  thdr->headerId           = TPX3_HEADER_ID;
+  thdr->headerSizeTotal    = TPX3_HEADER_SIZE; // Increased when pixconf added
+  thdr->headerSize         = TPX3_HEADER_SIZE;
+  thdr->format             = TPX3_HEADER_VERSION | TPX3_FAMILY_TYPE;
+
   // Run number
   fhdr->runNr = runnr;
 
@@ -197,7 +215,15 @@ bool SpidrDaq::startRecording( std::string filename,
   if( _spidrCtrl )
     {
       if( include_pixelcfg )
-	pixelconfig = _spidrCtrl->pixelConfig( pixelcfg_index );
+	{
+	  pixelconfig = _spidrCtrl->pixelConfig( pixelcfg_index );
+	  // Adjust the (total) header sizes when appropriate
+	  if( pixelconfig )
+	    {
+	      fhdr->headerSizeTotal += 256*256;
+	      fhdr->devHeader.headerSizeTotal += 256*256;
+	    }
+	}
 
       int val;
       if( _spidrCtrl->getSpidrId( &val ) )

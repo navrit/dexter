@@ -43,23 +43,6 @@ DatasamplerThread::DatasamplerThread( ReceiverThread *recvr,
     _bytesFlushed( 0 ),
     _pixelConfig( 0 )
 {
-  // Initialize the (SPIDR-TPX3) file header
-  memset( static_cast<void *> (&_fileHdr), 0, SPIDRTPX3_HEADER_SIZE );
-  memset( static_cast<void *> (&_fileHdr.unused), HEADER_FILLER,
-	  sizeof(_fileHdr.unused) );
-  _fileHdr.headerId        = SPIDR_HEADER_ID;
-  // To be adjusted if the device pixel configuration is added:
-  _fileHdr.headerSizeTotal = SPIDRTPX3_HEADER_SIZE;// Increase if pixconf added
-  _fileHdr.headerSize      = SPIDRTPX3_HEADER_SIZE - TPX3_HEADER_SIZE;
-  _fileHdr.format          = SPIDR_HEADER_VERSION;
-  Tpx3Header_t *thdr = &_fileHdr.devHeader;
-  memset( static_cast<void *> (&thdr->unused), HEADER_FILLER,
-	  sizeof(thdr->unused) );
-  thdr->headerId           = TPX3_HEADER_ID;
-  thdr->headerSizeTotal    = TPX3_HEADER_SIZE; // Increased when pixconf added
-  thdr->headerSize         = TPX3_HEADER_SIZE;
-  thdr->format             = TPX3_HEADER_VERSION | TPX3_FAMILY_TYPE;
-
   _sampleBuffer = (char *) _sampleBufferUlong;
 
   // Start the thread (see run())
@@ -767,14 +750,8 @@ bool DatasamplerThread::startRecording( std::string    filename,
   _runNr = runnr;
 
   // Remember pointer to pixel configuration for inclusion in the fileheader
-  // (unless the pointer is NULL) and adjust the (total) header sizes
-  // when appropriate
+  // (unless the pointer is NULL)
   _pixelConfig = pixelconfig;
-  if( _pixelConfig )
-    {
-      _fileHdr.headerSizeTotal += 256*256;
-      _fileHdr.devHeader.headerSizeTotal += 256*256;
-    }
 
   // Instruct the thread to open a file
   _recording = true;
