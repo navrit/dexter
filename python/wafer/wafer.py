@@ -17,7 +17,7 @@ import sys
 from PySide.QtCore import *
 from PySide.QtGui import *
 import resources_rc
-from WaferProbing import Ui_MainWindow
+from WaferProbingUI import Ui_MainWindow
 from AboutDlg import *
 from SPIDRSettingsDlg import *
 from ProbestationSettingsDlg import *

@@ -71,7 +71,7 @@ ui/PixBitmap.so:ui/PixBitmap.py
 
 wafer: wafer/resources.qrc
 	pyside-rcc wafer/resources.qrc -o wafer/resources_rc.py
-	pyside-uic wafer/WaferProbing.ui -o wafer/WaferProbing.py
+	pyside-uic wafer/WaferProbingUI.ui -o wafer/WaferProbingUI.py
 	pyside-uic wafer/AboutDlgUI.ui -o wafer/AboutDlgUI.py
 	pyside-uic wafer/SPIDRSettingsDlgUI.ui -o wafer/SPIDRSettingsDlgUI.py
 	pyside-uic wafer/ProbestationSettingsDlgUI.ui -o wafer/ProbestationSettingsDlgUI.py
