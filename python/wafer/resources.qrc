@@ -1,0 +1,15 @@
+ <!DOCTYPE RCC><RCC version="1.0">
+ <qresource>
+     <file>img/burn.png</file>
+     <file>img/cancel.png</file>
+     <file>img/exit.png</file>
+     <file>img/filesaveas.png</file>
+     <file>img/help.png</file>
+     <file>img/cd.png</file>
+     <file>img/player_fwd.png</file>
+     <file>img/stop.png</file>
+     <file>img/player_play.png</file>
+ </qresource>
+ </RCC>
+ 
+           
