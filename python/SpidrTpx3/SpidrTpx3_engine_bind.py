@@ -122,7 +122,6 @@ SpidrController.add_method('setShutterTriggerConfig', 'bool',        [param('int
 SpidrController.add_method('startAutoTrigger',        'bool',        [])
 SpidrController.add_method('stopAutoTrigger',         'bool',        [])
 SpidrController.add_method('setOutputMask',           'bool',        [param('int', 'dev_nr'),param('int', 'mask')])
-SpidrController.add_method('getOutputMask',           'bool',        [param('int', 'dev_nr'),param('int*', 'mask', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 
 
 
