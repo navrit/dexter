@@ -39,12 +39,11 @@ class tpx3_test(object):
     self.logging.setLevel(logging.DEBUG)
     fh = logging.FileHandler(logname,mode='w')
     fh.setLevel(logging.DEBUG)
-    formatter = logging.Formatter( '[%(levelname)7s] [%(relativeCreated)5d] %(message)s',  datefmt='%M:%S')
+    formatter = logging.Formatter( '[%(levelname)7s|%(relativeCreated)6d] %(message)s',  datefmt='%M:%S')
     fh.setFormatter(formatter)
     self.logging.addHandler(fh)
-
+    #print self.logging.handlers
     self.tpx.setLogLevel(2)#LVL_WARNING
-
     self.logging.info("")
     self.logging.info("#"*BSPACERLEN)
     self.logging.info("# %-100s #"%self.__doc__.split('\n')[0])
@@ -223,13 +222,13 @@ class tpx3_test(object):
                   'IB_DIS1_OFF','IB_DIS2_ON','IB_DIS2_OFF',   'IB_PIXDAC',
                   'IB_TPBIN',   'IB_TPBOUT', 'VTP_COA',       'VTP_FINE',
                   'IB_CP_PLL','PLL_VCNTRL'] 
-      logging.info("# %-100s #"%"Settings")
+      self.logging.info("# %-100s #"%"Settings")
       l=""
       for di in range(1,len(dac_name)):
         tl="%2d) %s = %d "%(di,dac_name[di],self.tpx.getDac(di))
         l+="%-25s"%tl
         if (di-1)%4==3 or di==len(dac_name)-1: 
-          logging.info("# %-100s #"%l)
+          self.logging.info("# %-100s #"%l)
           l=""
       gc=self.tpx.getGenConfig()
       pll=self.tpx.getPllConfig()

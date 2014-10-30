@@ -59,9 +59,9 @@ class test08_equalization(tpx3_test):
         data=[]
         while tries:
 #        if 1:
-          ndata=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
+          ndata=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000, timeout=20)
           data+=ndata
-          if len(data)==0 or data[-1].raw!=0x71A000000000:
+          if len(data)==0 or (data[-1].raw & 0xFFFF00000000)!=0x71A000000000:
              tries-=1
              time.sleep(0.002)
           else:
@@ -72,7 +72,7 @@ class test08_equalization(tpx3_test):
         if len(data)==0:
              logging.error("No data !!")
              tries-=1
-        elif data[-1].raw!=0x71A000000000:
+        elif (data[-1].raw& 0xFFFF00000000)!=0x71A000000000:
              logging.error("Last packet %s"%(str(data[-1])))
              logging.error("Packets received %d (to be masked %d)"%(len(data),mask))
 

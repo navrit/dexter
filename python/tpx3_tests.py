@@ -14,6 +14,7 @@ from optparse import OptionParser
 import datetime
 import shlex
 import glob
+import signal
 
 def dict2file(fname,d):
     f=open(fname,"w")
@@ -283,7 +284,23 @@ def get_run_name(die_name):
   run_name="%02d_%s"%(new_id,now)
   return run_name
 
+class FlushedStreamHandler(logging.StreamHandler):
+    def __init__(self, f):
+        logging.StreamHandler.__init__(self,f)
+        self.f = f
+    def emit(self, msg):
+        logging.StreamHandler.emit(self,msg)
+        logging.StreamHandler.flush(self)
+
+def term_hanler(signum, frame):
+    raise KeyboardInterrupt
+
+EXITCODE_OK = 0
+EXITCODE_RUNTIME_ERROR =1
+EXITCODE_TERMINATE =2
+
 def main():
+  signal.signal(signal.SIGTERM, term_hanler)
   usage = "usage: %prog [options] assembly_name [test[(parameter=value parameter2=value)]"
   parser = OptionParser(usage=usage,version="%prog 0.01")
   parser.add_option("-i", "--ip",                              dest="ip",         default="192.168.100.10:50000", help="IP address of SPIDR TPX3 Controller")
@@ -293,6 +310,7 @@ def main():
   parser.add_option("-v", "--verbose",    action="store_true", dest="verbose",    default=False,  help="Verbose output in console (debug log level)")
   parser.add_option("-w", "--wiki",       action="store_true", dest="wiki",       default=False,  help="Add wiki banner (and log file)")
   parser.add_option("",   "--pcap",       action="store_true", dest="pcap",       default=False,  help="Store all Ethernet comunication in *.pcap file")
+  parser.add_option("-a", "--auto",       action="store_true", dest="auto",       default=False,  help="Auto detect assembly name")
 
   (options, args) = parser.parse_args()
 
@@ -300,10 +318,46 @@ def main():
     tests=TPX_tests("null",logdir="logs/null/")
     tests.list()
     return
-    
-  if len(args)<1:
-    parser.error("You have to specify assembly name")
-  name=args[0]
+
+  test_list=[]
+
+  logging_root=logging.getLogger()
+  for h in logging.getLogger().handlers:
+    logging_root.removeHandler(h)
+  logging_root.setLevel(logging.DEBUG)
+  formatter = logging.Formatter('[%(name)-25s|%(levelname)-8s|%(relativeCreated)6d] %(message)s')
+  consoleHandler = FlushedStreamHandler(sys.stdout)
+  consoleHandler.setFormatter(formatter)
+
+  if options.verbose:
+    consoleHandler.setLevel(logging.DEBUG)
+  else:
+    consoleHandler.setLevel(logging.INFO)
+  consoleHandler.setLevel(logging.INFO)
+
+  logging_root.addHandler(consoleHandler)
+
+
+  if options.auto:
+      try:
+          tpx=TPX3(options.ip)
+          if tpx.reinitDevice():
+              name=tpx.chipID()
+          else:
+              logging.warning("Unable to lock links!")
+              name="unknown"
+          tpx.disconect()
+          del tpx
+          test_list=args
+      except :
+          return
+  else:
+    if len(args)<1:
+      parser.error("You have to specify assembly name (or use --auto option)")
+    else:
+      name=args[0]
+      test_list=args[1:]
+
     #set up logger
 
   run_name=get_run_name(die_name=name)
@@ -320,40 +374,34 @@ def main():
 
 
   logname='%s/log.txt'%(odir)
-  logging.basicConfig(level=logging.INFO,
-                    format='[%(levelname)7s] [%(relativeCreated)5d] %(message)s',
-                    datefmt='%M:%S',filename=logname, filemode='w')
-  formatter = logging.Formatter('[%(levelname)7s] [%(relativeCreated)5d] %(message)s')
-  consoleHandler = logging.StreamHandler()
-  consoleHandler.setFormatter(formatter)
-  if options.verbose:
-    consoleHandler.setLevel(logging.DEBUG)
-  else:
-    consoleHandler.setLevel(logging.INFO)
-
-  logging.getLogger('').addHandler(consoleHandler)
+  fh = logging.FileHandler(logname,mode='w')
+  fh.setLevel(logging.DEBUG)
+  fh.setFormatter(formatter)
+  logging_root.addHandler(fh)
   logging.info("Log will be stored to %s"%logname)
+
 
   if options.pcap:
     pcapname='logs/%s/%s/log.pcap'%(name,run_name)
     logging.info("Storring pcap log to %s"%pcapname)
     CaptureThread=start_pcap("eth3",pcapname)
 
-  test_list=[]
-  if len(args)>1:
-    test_list=args[1:]
-
-  if 1 : #env_check():
-    try:
+  try:
       tests=TPX_tests(name,logdir=odir+"/")
       tests.connect(options.ip)
       if options.dump_all:
         tests.tpx.log_packets=True
       tests.execute(test_list,wiki=options.wiki)
-    except RuntimeError as e:
+  except RuntimeError as e:
       logging.critical(e)
+      return EXITCODE_RUNTIME_ERROR
+  except (KeyboardInterrupt, SystemExit):
+      logging.critical("Exiting on user / system request")
+      return EXITCODE_TERMINATE
+
   if options.pcap:
     stat=CaptureThread.exit()
     logging.info('PCAP log : %d packets received, %d packets dropped, %d packets dropped by interface' % stat)
+  return EXITCODE_OK
 if __name__=="__main__":
-  main()
+  os._exit(main())

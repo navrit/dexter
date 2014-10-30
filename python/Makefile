@@ -45,8 +45,8 @@ $(TMP_DIR)/SpidrTpx3_engine.so:$(TMP_DIR)/SpidrTpx3_engine.o $(TMP_DIR)/udp_serv
 
 # -lboost_thread -lboost_serialization -lboost_iostreams -lboost_filesystem -lboost_system
 
-.PHONY: subdirs
-
+.PHONY: subdirs wafer
+ 
 
 SpidrTpx3/tpx3.so:SpidrTpx3/tpx3.o
 	@echo "[   CXX   ]" $@ ; \
@@ -69,6 +69,13 @@ ui/PixBitmap.so:ui/PixBitmap.py
 	$(CXX) -shared ui/PixBitmap.o -o $@
 
 
+wafer: wafer/resources.qrc
+	pyside-rcc wafer/resources.qrc -o wafer/resources_rc.py
+	pyside-uic wafer/WaferProbing.ui -o wafer/WaferProbing.py
+	pyside-uic wafer/AboutDlgUI.ui -o wafer/AboutDlgUI.py
+	pyside-uic wafer/SPIDRSettingsDlgUI.ui -o wafer/SPIDRSettingsDlgUI.py
+	pyside-uic wafer/ProbestationSettingsDlgUI.ui -o wafer/ProbestationSettingsDlgUI.py
+	
 
 gui: ui/MainWnd.ui
 	pyside-uic ui/MainWnd.ui -o ui/MainWnd.py

@@ -28,10 +28,10 @@ def load_lut(fname):
 #d='../'
 d=''
 #print d,__file__
-evn4=load_lut(d+"SpidrTpx3/luts/event_count_4b_LUT.txt")
-itot14=load_lut(d+"SpidrTpx3/luts/itot_14b_LUT.txt")
-toa14=load_lut(d+"SpidrTpx3/luts/toa_gray_count_14b_LUT.txt")
-tote10=load_lut(d+"SpidrTpx3/luts/tot_event_count_10b_LUT.txt")
+#evn4=load_lut(d+"SpidrTpx3/luts/event_count_4b_LUT.txt")
+#itot14=load_lut(d+"SpidrTpx3/luts/itot_14b_LUT.txt")
+#toa14=load_lut(d+"SpidrTpx3/luts/toa_gray_count_14b_LUT.txt")
+#tote10=load_lut(d+"SpidrTpx3/luts/tot_event_count_10b_LUT.txt")
 
 
 
@@ -225,13 +225,13 @@ class tpx3packet:
        if self.tot in tote10:
          self.tot=tote10[self.tot]
        else:
-#         logging.warning("Packet decode: Invalid tot value = %0x [%012X]"%(self.tot,self.raw))
+#         self.logging.warning("Packet decode: Invalid tot value = %0x [%012X]"%(self.tot,self.raw))
          self.tot=-1
      
        if self.toa in toa14:
          self.toa=toa14[self.toa]
        else:
-#       logging.warning("Packet decode: Invalid toa value = %0x [%012X]"%(self.toa,self.raw))
+#       self.logging.warning("Packet decode: Invalid toa value = %0x [%012X]"%(self.toa,self.raw))
          self.toa=-1
 #     else: # self.hw_dec_ena:
 
@@ -397,43 +397,124 @@ class tpx3packet_hp:
         self.str+="(%3d,%3d)  evn_cnt=%d itot=%d"%(self.col,self.row, self.event_counter, self.itot)
     return "[%012X] %s"%(self.raw, self.str)
 
+
+
+
+#higher performance (no string generation online)
+class Tpx3DataPacket:
+  mode=0
+  pileup_decode=0
+  hw_dec_ena=0
+
+  #@cython.locals(raw=cython.long)
+  def __init__(self,col,row,data,ext_toa):
+    self.ext_toa=ext_toa
+    self.raw=data
+    self.str='-'
+    self.col=col
+    self.row=row
+    if Tpx3DataPacket.mode==0:
+        raw=self.raw
+        self.ftoa=raw&0xf
+        raw>>=4
+        self.tot=raw&0x3FF
+        raw>>=10
+        self.toa=raw&0x3FFF
+        raw>>=14
+
+        self.abs_toa= (self.ext_toa<<14) + self.toa - self.ftoa
+        if not self.pileup_decode:
+          self.abs_toa -= float(self.ftoa)/16
+        self.abs_toa *= 25e-9
+
+        if self.pileup_decode:
+           self.pileup=self.ftoa
+
+    elif Tpx3DataPacket.mode==2:
+        #event count and iTOT
+        raw=self.raw>>4
+        self.event_counter=raw&0x3FF
+        raw>>=10
+        self.itot=raw&0x3FFF
+        raw>>=14
+        self.pixel_address=raw&0xFFFF
+    else:
+        pass
+
+  def __repr__(self):
+    self.str="-"
+    if self.isData():
+      if Tpx3DataPacket.mode==0:
+        if self.pileup_decode:
+            self.str+="(%3d,%3d) toa=%d tot=%d pileup=%d"%(self.col,self.row, self.toa,self.tot,self.pileup)
+        else:
+            self.str+="(%3d,%3d) toa=%d tot=%d ftoa=%d"%(self.col,self.row, self.toa,self.tot,self.ftoa)
+      elif Tpx3DataPacket.mode==2:
+        self.str+="(%3d,%3d)  evn_cnt=%d itot=%d"%(self.col,self.row, self.event_counter, self.itot)
+    return "[%012X] %s"%(self.raw, self.str)
+
+
 class TPX3:
   def __init__(self,ip):
+    self.logging = logging.getLogger("tpx3")
     port=50000
     if len(ip.split(":")):
       port=int(ip.split(":")[1])
       ip=ip.split(":")[0]
     self.readout='seq'
     ip0,ip1,ip2,ip3=map(int,ip.split('.'))
-
+    self.id=0
     self.ctrl=SpidrController( ip0,ip1,ip2,ip3,port)
     if  not self.ctrl.isConnected() :
-      logging.critical("Unable to connect %s (%s)"%(self.ctrl.ipAddressString(), self.ctrl.connectionErrString()))
+      self.logging.critical("Unable to connect %s (%s)"%(self.ctrl.ipAddressString(), self.ctrl.connectionErrString()))
       raise RuntimeError("Unable to connect")
-    self.udp=UDPServer()
-    self.udp.start(8192)
-    if  not self.udp.isStarted():
-      raise RuntimeError("Problem with UDP server. Unable to connect")
+    #self.udp=UDPServer()
+    #self.udp.start(8192)
+    #if  not self.udp.isStarted():
+#      raise RuntimeError("Problem with UDP server. Unable to connect")
+    self.daq=SpidrDaq(self.ctrl, 1024*1024,self.id)
+    time.sleep(0.01) #give some time for process scheduling !
+    msg=str(self.daq.errorString())
+    if msg!="":
+         #self.connectrionMessage.setText(self.daq.errorString())
+         self._isConected=False
+         self._connectionErrString=self.daq.errorString()
+         self.logging.critical("Unable to connect (%s)"%msg)
+         raise RuntimeError("Unable to connect (%s)"%msg)
+    self.daq.setSampling(True)
+    self.daq.setSampleAll(True)
+
 
 #    self.daq=SpidrDaq( self.ctrl )
 #    self.daq.setFlush(False)
-    self.id=0
     self.log_packets=False
     self.dacs=numpy.zeros((256,256), int)
     self.tpena=numpy.zeros((256,256), int)
-    self.reinitDevice()
     self.flush_udp_fifo(val=0)
     self.timeouts=0
     self.bad_counters=0
+
+    self.has_supply_monitors=False
+    r,v,i,p=self.ctrl.getDvddNow()
+    if r :
+        self.has_supply_monitors=True
+
+  def disconect(self):
+      self.daq.stop
+      del self.daq
+      del self.ctrl
+
   def stop(self):
 #    self.daq.stop()
     pass
+
+
   def _vdd2str(self,meas):
     r,v,i,p=meas
     v=float(v)/1000
     i=float(i)/10
     p=float(p)/1000
-    if p>100:p=0
+    #if p>1000:p=0
     return "%.3f V %.1f mA %.3f W"%(v,i,p)
 
   def get_dvdd_v(self):
@@ -444,21 +525,19 @@ class TPX3:
     return float(self.ctrl.getDvdd()[3])/1000
 
   def get_avdd_v(self):
-    return float(self.ctrl.getAvdd()[1])/1000
+      r,vol=self.ctrl.getAvdd()
+      return float(vol)/1000
   def get_avdd_i(self):
     return float(self.ctrl.getAvdd()[2])/10000
   def get_avdd_p(self):
     return float(self.ctrl.getAvdd()[3])/1000
 
-  def get_avdd_str(self):
-    return self._vdd2str(self.ctrl.getAvdd())
 
-  
   def get_dvdd_str(self):
-    return self._vdd2str(self.ctrl.getDvdd())
+    return self._vdd2str(self.ctrl.getDvddNow())
     
   def get_avdd_str(self):
-    return self._vdd2str(self.ctrl.getAvdd())
+    return self._vdd2str(self.ctrl.getAvddNow())
     
   def get_adc(self,measurements=1):
     vv=[]
@@ -485,18 +564,40 @@ class TPX3:
     
   def get_local_temp(self):
     return self._temp2str(self.ctrl.getLocalTemp()[1])
-    
+
+  def getClassVersion(self):
+    v=self.ctrl.classVersion()
+    return "%08X"%v
+
+  def getSoftwVersion(self):
+    r,v=self.ctrl.getSoftwVersion()
+    return "%08X"%v
+
+  def getFirmwVersion(self):
+    r,v=self.ctrl.getFirmwVersion()
+    return "%08X"%v
+
   def info(self):
-    time.sleep(0.1)
-    logging.info( "Controller IP       : %s"%self.ctrl.ipAddressString())
-    if "daq" in self.__dict__:
-      print "DAQ Class version   : %08x"%self.daq.classVersion()
-      print "DAQ IP              : %s"%self.daq.ipAddressString()
-    logging.info( "Digital Chip Supply : %s"%self.get_dvdd_str())
-    logging.info( "Analog Chip Supply  : %s"%self.get_avdd_str())
-    logging.info( "Chip temp.          : %s"%self.get_remote_temp())
-    logging.info( "Chip card temp.     : %s"%self.get_local_temp())
- 
+      self.logging.info( "Controller IP       : %s"%self.ctrl.ipAddressString())
+      ver=self.getSoftwVersion()
+      self.logging.info( "Software Version    : 20%s/%s/%s (%s)"%(ver[0:2],ver[2:4],ver[4:6],ver[6:8]))
+      ver=self.getFirmwVersion()
+      self.logging.info( "Firmware Version    : 20%s/%s/%s (%s)"%(ver[0:2],ver[2:4],ver[4:6],ver[6:8]))
+      ver=self.getClassVersion()
+      self.logging.info( "Ctrl Class Version  : 20%s/%s/%s (%s)"%(ver[0:2],ver[2:4],ver[4:6],ver[6:8]))
+      if "daq" in self.__dict__:
+          ver="%08x"%self.daq.classVersion()
+          self.logging.info( "DAQ Class version   : 20%s/%s/%s (%s)"%(ver[0:2],ver[2:4],ver[4:6],ver[6:8]))
+          self.logging.info( "DAQ IP              : %s"%self.daq.ipAddressString())
+
+      self.logging.info( "Chip temp.          : %s"%self.get_remote_temp())
+      self.logging.info( "Chip card temp.     : %s"%self.get_local_temp())
+      if self.has_supply_monitors:
+          self.logging.info( "Digital Chip Supply : %s"%self.get_dvdd_str())
+          self.logging.info( "Analog Chip Supply  : %s"%self.get_avdd_str())
+      self.logging.info("Links speed         : %d Mbps"%self.getReadoutSpeed())
+      self.logging.info("Links status        : 0x%02x "%self.getLinkStatus())
+
   def _send_raw(self, buf):
     pck=[0xaa,0x00,0x00,0x00,0x00]
     for b in buf:
@@ -505,16 +606,18 @@ class TPX3:
     if l>256:
       print "Too long packet !! Not sending"
       return
-    if self.log_packets:
+    if  self.log_packets:
       s='<['
       for i in range(l):
         s+="%02X"%pck[i]
       s+=']'
-      logging.debug(s)
-    
+      self.logging.debug(s)
     for i in range(256-l):
       pck.append(0)
     pck=map(int, pck)
+
+
+
     self.ctrl.uploadPacket(self.id,list(pck),size=(l+2))
 #    time.sleep(2)
   def send_byte_array(self,buf):
@@ -533,19 +636,20 @@ class TPX3:
     return ret
                                                        
   def flush_udp_fifo(self,val=0x1234000000000000, mask=0xFFFF000000000000):
-    if val==0:
-      self.udp.flush()
-    else:
-      data = self.recv_mask(val,mask)
-      for d in data:
-        logging.debug("FLUSH : %s"%(str(d)))
-    
+    # if val==0:
+    #   self.udp.flush()
+    # else:
+    #   data = self.recv_mask(val,mask)
+    #   for d in data:
+    #     self.logging.debug("FLUSH : %s"%(str(d)))
+    #
+    pass
 
   def _log_ctrl_cmd(self,msg,result):
     if result:
-      logging.debug("%-80s [  OK  ]"%msg)
+      self.logging.debug("%-95s [  OK  ]"%msg)
     else:
-      logging.error("%-80s [FAILED] (%s)"%(msg,self.ctrl.errorString()))
+      self.logging.error("%-95s [FAILED] (%s)"%(msg,self.ctrl.errorString()))
 
   def setTpPeriodPhase(self,period, phase):
     r=self.ctrl.setTpPeriodPhase(self.id,period,phase)
@@ -614,11 +718,11 @@ class TPX3:
     self._log_ctrl_cmd("getGPIO(%d)=%d "%(pin,state),r)
     return state
 
-  def sequentialReadout(self,tokens=2):
+  def sequentialReadout(self,tokens=2,now=False):
     self.readout='seq'
-    r=self.ctrl.sequentialReadout(tokens)
-    self.presetFPGAFilters()
-    self._log_ctrl_cmd("sequentialReadout(tokens=%d) "%tokens,r)
+    r=self.ctrl.sequentialReadout(tokens,now=now)
+#    self.presetFPGAFilters()
+    self._log_ctrl_cmd("sequentialReadout(tokens=%d,now=%d) "%(tokens,now),r)
     
     
   def datadrivenReadout(self):
@@ -641,10 +745,46 @@ class TPX3:
     r=self.ctrl.resetDevice(self.id)
     self._log_ctrl_cmd("resetDevice() ",r)
 
+  def getLinkStatus(self):
+    r,mask,links=self.ctrl.getLinkStatus(self.id)
+    self._log_ctrl_cmd("getLinkStatus()=%02x,%02x"%(mask,links),r)
+    return links
+
   def reinitDevice(self):
-    r=self.ctrl.reinitDevice(self.id)
-    self._log_ctrl_cmd("reinitDevice() ",r)
-    return r
+    mask=0
+    links=1
+    cnt=3
+    while cnt>0 and mask!=links:
+        r=self.ctrl.reinitDevice(self.id)
+        self._log_ctrl_cmd("reinitDevice() ",r)
+        r,mask,links=self.ctrl.getLinkStatus(self.id)
+        if mask!=links:
+            self.logging.warning("reinitDevice(): Links unlocked!")
+            cnt-=1
+    return cnt>0
+
+  def setReadoutSpeed(self,speed):
+    r=self.ctrl.setReadoutSpeed(self.id,speed)
+    self._log_ctrl_cmd("setReadoutSpeed(%d) "%(speed),r)
+
+  def getReadoutSpeed(self):
+    r,OutBlockConfig=self.ctrl.getOutBlockConfig(self.id)
+    clksrc=OutBlockConfig&TPX3_CLK_SRC_MASK
+    clksrc>>=8
+    r,PllConfig=self.ctrl.getPllConfig(self.id)
+    DualEdgeClock=PllConfig&TPX3_DUALEDGE_CLK
+    speed=0
+    if clksrc==4:
+        speed=40
+    elif clksrc==3:
+        speed=80
+    elif clksrc==2:
+        speed=160
+    elif clksrc==1:
+        speed=320
+    if DualEdgeClock: speed*=2
+    return speed
+
 
   def readEfuses(self):
     r,v=self.ctrl.getDeviceId(self.id)
@@ -666,9 +806,31 @@ class TPX3:
     mod_val=(fuses>>22)&0x3FF
     return self.generate_die_name(w,x,y,mod,mod_val)
 
+  def chipID(self):
+    def _generate_die_name( wno, x,y,mod=0,mod_val=0):
+      if mod==1:
+        x=mod_val&0xf
+      elif mod==2:
+        y=mod_val&0xf
+      elif mod==3:
+        wno=wno & ~(0x3FF)
+        wno|=(mod_val&0x3FF)
+      xs=chr(ord('A')+x-1)
+      return "W%d_%s%d"%(wno,xs,y)
+
+    r,fuses=self.ctrl.getDeviceId(self.id)
+    if fuses==0:
+      return '-'
+    x=fuses&0xF
+    y=(fuses>>4)&0xF
+    w=(fuses>>8)&0xFFF
+    mod=(fuses>>20)&0x3
+    mod_val=(fuses>>22)&0x3FF
+    return _generate_die_name(w,x,y,mod,mod_val)
+
   def decode_die_name(self, name):
      if len(name.split("_"))!=2 : 
-       logging.error("Inforect die name")
+       self.logging.error("Inforect die name")
        return 
      try:
        wnum=int(name.split("_")[0][1:])
@@ -690,7 +852,7 @@ class TPX3:
            (xs=='M' and y>=5 and y<=7) :
             return (wnum,x,y)
        else:
-         logging.error("Inforect die name")
+         self.logging.error("Inforect die name")
          return
      except:
        return None
@@ -714,6 +876,11 @@ class TPX3:
   def setOutputMask(self, mask=0xff):
     r=self.ctrl.setOutputMask(self.id,mask)
     self._log_ctrl_cmd("setOutputMask(0x%02x) "%(mask),r)
+
+  def getOutputMask(self, mask=0xff):
+    r,mask=self.ctrl.getOutputMask(self.id)
+    self._log_ctrl_cmd("getOutputMask()=0x%02x"%(mask),r)
+    return mask
 
   def openShutter(self,sleep=True):
     r=self.ctrl.startAutoTrigger()
@@ -874,13 +1041,40 @@ class TPX3:
 #c2.add_method('getTpNumber',           'bool',        [param('int', 'dev_nr'),param('int*', 'number', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 #c2.add_method('setTpNumber',           'bool',        [param('int', 'dev_nr'),param('int', 'number')])
 
-  def get_frame(self):
-    if self.readout=='dd':
-      return self.recv_mask(0x71B0000000000000, 0xFFFF000000000000)
-    else:
-      return self.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
-    
-  def recv_mask(self,val,mask):
+  def get_frame(self,timeout=10):
+      res=self.daq.getFrame(timeout_ms=timeout)
+      ret=[]
+      while res:
+          rawpacket=self.daq.nextPacket()
+          if rawpacket==0: return ret
+          #print col,row
+          #if not res: break
+          p=tpx3packet_hp(rawpacket)
+          ret.append(p)
+          #print "p",p.col
+
+      return ret
+    #if self.readout=='dd':
+#      return self.recv_mask(0x71B0000000000000, 0xFFFF000000000000)
+#    else:
+#      return self.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
+  def recv_mask(self,val,mask,timeout=200):
+      ret=[]
+      res=1
+      while res:
+          res=self.daq.getSample(256*256*8*2,timeout_ms=timeout)
+          while True:
+            rawpacket=self.daq.nextPacket()
+            if rawpacket==0:
+                break
+            p=tpx3packet_hp(rawpacket)
+            ret.append(p)
+            #yield p
+            if (rawpacket&mask)==val:
+              return ret
+      return ret
+
+  def recv_mask2(self,val,mask):
     ok=False
     cnt=2
     ret=[]
@@ -894,10 +1088,10 @@ class TPX3:
       pck_num=r[-1]
       if pck_num in ERRORS:
         if pck_num ==0:
-          logging.warning("Received 0x0 packet !")
+          self.logging.warning("Received 0x0 packet !")
           continue
         if pck_num==1:
-          logging.warning("Chip is vomiting! (%d)"%len(ret))
+          self.logging.warning("Chip is vomiting! (%d)"%len(ret))
           self.reinitDevice()
           print len(r), r[0], r[-1]
           vomit=1
@@ -905,14 +1099,14 @@ class TPX3:
       for pck_num in r:
         p=tpx3packet_hp(pck_num)
         ret.append(p)
-        if self.log_packets : logging.info(p)
+        if self.log_packets : self.logging.info(p)
       last=r[-1]
       if (last&mask)==val: ok=True
       if vomit: break
     if not ok:
       self.timeouts+=1
       if self.timeouts<64:
-        logging.warning("Timeout ;/ (last packet : %16X while expecting %016X)"%(last,val))
+        self.logging.warning("Timeout ;/ (last packet : %16X while expecting %016X)"%(last,val))
     return ret
 
   def get_N_packets(self,N):

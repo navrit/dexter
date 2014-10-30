@@ -56,7 +56,11 @@ class test07_clock_phasing(tpx3_test):
       toa=np.zeros((256,256), int)
       bad_tot=np.zeros((256,256), int)
       CTPR_SPACING=16
+      self.logging.info("")
+      self.logging.info("Phase %d"%phase)
+
       for ctpr in range(CTPR_SPACING):
+
         self.tpx.setCtprBits(0)
         c=ctpr
         while c<256:
@@ -71,14 +75,14 @@ class test07_clock_phasing(tpx3_test):
         self.tpx.t0Sync()
         self.tpx.openShutter()
 #        self.logging.info("CTPR step %d, Waiting for data"%ctpr)
-        data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
+        #data=self.tpx.recv_mask(0x71A0000000000000, 0xFFFF000000000000)
       
-        self.logging.info("CTPR step %d, reveiced %d packets"%(ctpr,len(data)))
+        #self.logging.info("CTPR step %d, reveiced %d packets"%(ctpr,len(data)))
         shutter=self.tpx.getShutterStart()
-        print "PLL=%0x"%self.tpx.getPllConfig()
-        print "GenConfig=%0x"%self.tpx.getGenConfig()
+        #print "PLL=%0x"%self.tpx.getPllConfig()
+        #print "GenConfig=%0x"%self.tpx.getGenConfig()
 
-        for pck in data:
+        for pck in self.tpx.get_frame():
           if pck.type in (0xB,0xA):
             received[pck.col][pck.row]=1
             if not pck.tot in (64,65,66) and not (pck.col,pck.row) in self.bad_pixels:
@@ -93,7 +97,7 @@ class test07_clock_phasing(tpx3_test):
             self.warning_detailed("Unexpeced packet %s"%str(pck))
 
       cnt=np.sum(received)
-      self.logging.info("Pixel packets received: %d"%(cnt))
+      self.logging.info("  Pixel packets received: %d"%(cnt))
       if cnt!=65536:
         self.logging.warning("Phase 0x%0x. Missing pixel packets : %d"%(phase,65536-cnt))
         for c in range (256):
@@ -103,7 +107,7 @@ class test07_clock_phasing(tpx3_test):
       self.save_np_array(toa, fn=self.fname+'/phase%02x.map'%phase, info="  TOA Map saved to %s")
 
       fn=self.fname+'/phase%02x.cols'%phase
-      self.logging.info("Cols saved to %s"%fn)
+      self.logging.info("  Cols saved to %s"%fn)
       f=open(fn,"w")
       diffs=np.zeros((256,256), float)
       for col in range(256):
@@ -160,8 +164,6 @@ class test07_clock_phasing(tpx3_test):
             outliers.add( (c,r) )
 
 
-      self.logging.info("")
-      self.logging.info("Phase %d"%phase)
       self.logging.info("  Mean :           %.3f"%mean)
       self.logging.info("  Std. dev. :      %.3f"%stddev)
       self.warn_info("  Higher > 3 LSB : %d"%h3lsb, h3lsb>0 )

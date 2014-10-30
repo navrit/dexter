@@ -71,6 +71,8 @@ SpidrController.add_method('reinitDevices',           'bool',        [])
 SpidrController.add_method('resetPixelConfig',        None,          [])
 SpidrController.add_method('setPixelConfig',          'bool',        [param('int', 'dev_nr')])
 SpidrController.add_method('getDeviceId',             'bool',        [param('int', 'dev_nr'),param('int*', 'id', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+SpidrController.add_method('getLinkStatus',           'bool',        [param('int', 'dev_nr'),param('int*', 'enabled_mask', transfer_ownership=False,direction = Parameter.DIRECTION_OUT) ,param('int*', 'locked', transfer_ownership=False,direction = Parameter.DIRECTION_OUT) ] )
+SpidrController.add_method('setReadoutSpeed',         'bool',        [param('int', 'dev_nr'),param('int', 'mbits_per_sec')])
 SpidrController.add_method('getDac',                  'bool',        [param('int', 'dev_nr'),param('int', 'dac_code'),param('int*', 'dac_val', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 SpidrController.add_method('getGenConfig',            'bool',        [param('int', 'dev_nr'),param('int*', 'config', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
 SpidrController.add_method('setGenConfig',            'bool',        [param('int', 'dev_nr'),param('int', 'config')])
@@ -111,7 +113,8 @@ SpidrController.add_method('resetPixels',             'bool',        [param('int
 SpidrController.add_method('setCtprBit',              'bool',        [param('int', 'column'),param('int', 'val')])
 SpidrController.add_method('setCtprBits',             'bool',        [param('int', 'val')])
 SpidrController.add_method('setCtpr',                 'bool',        [param('int', 'dev_nr')])
-SpidrController.add_method('sequentialReadout',       'bool',        [param('int', 'tokens')])
+SpidrController.add_method('sequentialReadout',       'bool',        [param('int', 'tokens'),param('bool', 'now')])
+ 
 SpidrController.add_method('datadrivenReadout',       'bool',        [])
 SpidrController.add_method('pauseReadout',            'bool',        [])
 SpidrController.add_method('errorString',             'std::string', [])
@@ -119,6 +122,10 @@ SpidrController.add_method('setShutterTriggerConfig', 'bool',        [param('int
 SpidrController.add_method('startAutoTrigger',        'bool',        [])
 SpidrController.add_method('stopAutoTrigger',         'bool',        [])
 SpidrController.add_method('setOutputMask',           'bool',        [param('int', 'dev_nr'),param('int', 'mask')])
+SpidrController.add_method('getOutputMask',           'bool',        [param('int', 'dev_nr'),param('int*', 'mask', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+
+
+
 SpidrController.add_method('setDecodersEna',          'bool',        [param('bool', 'enable')])
 if DEFINE_CERN_PROBESTATION:
   SpidrController.add_method('burnEfuse',             'bool',        [param('int', 'dev_nr'),param('int', 'program_width'),param('int', 'selection')])
@@ -146,6 +153,8 @@ SpidrDaq.add_method('nextPixel',       'bool',        [param('int*', 'x', transf
                                                        param('int*', 'y', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),
                                                        param('int*', 'data', transfer_ownership=False,direction = Parameter.DIRECTION_OUT),
                                                        param('int*', 'timestamp', transfer_ownership=False,direction = Parameter.DIRECTION_OUT)])
+SpidrDaq.add_method('nextPacket',       'unsigned long long',        [])
+                                                       
 SpidrDaq.add_method('getFrame',        'bool',        [param('int', 'timeout_ms')])
 
 SpidrDaq.add_method('startRecording',  'bool',        [param('std::string', 'filename'), param('int', 'runnr'),

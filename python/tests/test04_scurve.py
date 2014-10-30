@@ -177,8 +177,8 @@ th_step   - threshold step size [LSB] (defult 4)"""
         for threshold in range(params['th_start'],params['th_stop']+1,params['th_step']):
             self.tpx.setDac(TPX3_VTHRESH_FINE,threshold)
             self.tpx.openShutter()
-            data=self.tpx.get_frame()
-            for d in data:
+            #data=self.tpx.get_frame()
+            for d in self.tpx.get_frame():
                 if d.type==0xA:
                   if d.col==d.row:
                     if not d.col in res:

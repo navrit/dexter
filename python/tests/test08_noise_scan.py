@@ -34,7 +34,7 @@ class test08_noise_scan(tpx3_test):
 #        data=self.tpx.recv_mask(0x7102000000000000, 0xFFFF000000000000)
 
         self.tpx.openShutter()
-        data=self.tpx.get_frame()
+        data=self.tpx.get_frame(timeout=30)
 
         #sanity check
         if len(data)==0:
@@ -87,8 +87,8 @@ class test08_noise_scan(tpx3_test):
     self.tpx.setCtprBits(0)
     self.tpx.setCtpr()
     self.tpx.setShutterLen(400)
-    self.tpx.sequentialReadout()
-    self.tpx.setLogLevel(2)#LVL_WARNING
+    self.tpx.sequentialReadout(128)
+    self.tpx.setLogLevel(0)#LVL_WARNING
 
     self.tpx.setDac(TPX3_IBIAS_IKRUM,15)
     self.tpx.setDac(TPX3_VTHRESH_COARSE,7) 
@@ -153,7 +153,7 @@ class test08_noise_scan(tpx3_test):
       res=self.threshold_scan(res,seq)
         
     do_fit=1
-    w2f=True
+    w2f=False
     logdir=self.fname+"/details/"
     if do_fit:
       bad_pixels=[]

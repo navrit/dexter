@@ -18,7 +18,7 @@ class test02_registers(tpx3_test):
 
     r,v=self.tpx.ctrl.getPllConfig(self.tpx.id)
     self._assert_true(r,"Reading PLL Config")
-    PLL_CONFIG_DEFAULT_VALUE=0x1E
+    PLL_CONFIG_DEFAULT_VALUE=0x16
     self._assert_true((v==PLL_CONFIG_DEFAULT_VALUE),"PLL Config value 0x%0X"%v)
     self.results['REG_PLL_CONFIG']=v
 

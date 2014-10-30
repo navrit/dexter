@@ -15,6 +15,12 @@ class test01_supply(tpx3_test):
       i=float(i)/10000
       p=float(p)/1000
       return (r,v,i,p)
+    if not self.tpx.has_supply_monitors:
+      self.logging.warning("")
+      self.logging.warning("There are not voltage and current monitors in the setup you are using!")
+      self.logging.warning("Ending the test without any measurements!")
+      self.logging.warning("")
+      return
     r,v,i,p=conv(self.tpx.ctrl.getDvddNow())
     r,v,i,p=conv(self.tpx.ctrl.getAvddNow())
     time.sleep(0.5)
@@ -76,7 +82,6 @@ class test01_bias(tpx3_test):
     if not r:
       self.logging.error("Temperature voltage out of spec")
       self.update_category('E')
-
     temp=88.75-607.3*(tempv-bgv)
     self.results['TEMPERATURE']="%.4f"%temp
 
@@ -97,6 +102,5 @@ class test01_bias(tpx3_test):
     if not r:
       self.logging.error("IBias DAC cascode voltage out of spec")
       self.update_category('E')
-
-    return 
+    return
 
