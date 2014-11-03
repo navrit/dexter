@@ -335,9 +335,10 @@ void SpidrMon::timerEvent(QTimerEvent *)
   if( _cbMonitorTpx->isChecked() )
     {
       QString qs("--.---");
-      int adc_val;
-      if( _dacOkay1 && _spidrController->getAdc( &adc_val ) )
+      int adc_val, samples = 10;
+      if( _dacOkay1 && _spidrController->getAdc( &adc_val, samples ) )
 	{
+	  adc_val /= samples; // Average
 	  // Full-scale is 1.5V = 1500mV
 	  adc_val = (adc_val*1500) / 4095;
 	  qs = QString("%1.%2").arg( adc_val/1000 )
@@ -497,9 +498,10 @@ void SpidrMon::timerEvent(QTimerEvent *)
   if( _cbMonitorTpx->isChecked() )
     {
       QString qs("--.---");
-      int adc_val;
-      if( _dacOkay2 && _spidrController->getAdc( &adc_val ) )
+      int adc_val, samples = 10;
+      if( _dacOkay2 && _spidrController->getAdc( &adc_val, samples ) )
 	{
+	  adc_val /= samples; // Average
 	  // Full-scale is 1.5V = 1500mV
 	  adc_val = (adc_val*1500) / 4095;
 	  qs = QString("%1.%2").arg( adc_val/1000 )
