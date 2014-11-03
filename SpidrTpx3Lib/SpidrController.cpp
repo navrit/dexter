@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x14102800;
+const int   VERSION_ID = 0x14110300;
+//const int VERSION_ID = 0x14102800;
 //const int VERSION_ID = 0x14101500;
 //const int VERSION_ID = 0x14101000;
 //const int VERSION_ID = 0x14100800;
@@ -547,6 +548,13 @@ bool SpidrController::setOutputMask( int dev_nr, int mask )
 bool SpidrController::setReadoutSpeed( int dev_nr, int mbits_per_sec )
 {
   return this->requestSetInt( CMD_SET_READOUTSPEED, dev_nr, mbits_per_sec );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getReadoutSpeed( int dev_nr, int *mbits_per_sec )
+{
+  return this->requestGetInt( CMD_GET_READOUTSPEED, dev_nr, mbits_per_sec );
 }
 
 // ----------------------------------------------------------------------------

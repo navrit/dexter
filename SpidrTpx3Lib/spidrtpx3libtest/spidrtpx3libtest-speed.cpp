@@ -51,7 +51,7 @@ int main( int argc, char *argv[] )
   else
     cout << "PllConfig=" << config << endl;
 
-  int i, speed[] = { 640, 80, 160, 320, 40 };
+  int i, s, speed[] = { 640, 80, 160, 320, 40 };
   int ena_mask, lock_mask, output_mask = 0xC0;
   for( i=0; i<5; ++i )
     {
@@ -61,6 +61,12 @@ int main( int argc, char *argv[] )
 	cout << "Speed: " << dec << speed[i] << hex << endl;
       else
 	cout << "###setReadoutSpeed " << dec << speed[i] << hex << ": "
+	     << spidrctrl.errorString() << endl;
+
+      if( spidrctrl.getReadoutSpeed( device_nr, &s ) )
+	cout << "Get speed: " << dec << s << hex << endl;
+      else
+	cout << "###getReadoutSpeed " << dec << speed[i] << hex << ": "
 	     << spidrctrl.errorString() << endl;
 
       if( !spidrctrl.getLinkStatus( device_nr, &ena_mask, &lock_mask ) )

@@ -119,6 +119,7 @@
 #define CMD_DECODERS_ENA       0x561
 #define CMD_SET_OUTPUTMASK     0x562
 #define CMD_SET_READOUTSPEED   0x563
+#define CMD_GET_READOUTSPEED   0x564
 
 // Configuration: timer (continued)
 #define CMD_T0_SYNC            0x565
@@ -265,7 +266,7 @@ static const char *CMD_STR[] =
     "DECODERS_ENA     ", // 0x561
     "SET_OUTPUTMASK   ", // 0x562
     "SET_READOUTSPEED ", // 0x563
-    "-----",             // 0x564
+    "GET_READOUTSPEED ", // 0x564
     "T0_SYNC          ", // 0x565
     "-----",             // 0x566
     "-----",             // 0x567

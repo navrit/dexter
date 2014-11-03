@@ -93,6 +93,7 @@ class MY_LIB_API SpidrController
   bool        setOutBlockConfig( int  dev_nr, int  config );
   bool        setOutputMask    ( int  dev_nr, int  mask );
   bool        setReadoutSpeed  ( int  dev_nr, int  mbits_per_sec );
+  bool        getReadoutSpeed  ( int  dev_nr, int *mbits_per_sec );
   bool        getLinkStatus    ( int  dev_nr, int *status );
   bool        getLinkStatus    ( int  dev_nr,
                                  int *enabled_mask, int *locked_mask );
