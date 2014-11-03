@@ -59,11 +59,12 @@ int main( int argc, char *argv[] )
     cout << "OutConfig=" << config << endl;
 
   config &= ~0xFC;
+  //config = 0x03;
   //if( !spidrctrl.setOutBlockConfig( device_nr, config ) )
   if( !spidrctrl.setOutputMask( device_nr, config ) )
-    cout << "###setOutBlockConfig: " << spidrctrl.errorString() << endl;
+    cout << "###setOutputMask: " << spidrctrl.errorString() << endl;
   else
-    cout << "OutConfig=" << config << endl;
+    cout << "OutputMask=" << config << endl;
 
   if( !spidrctrl.getOutBlockConfig( device_nr, &config ) )
     cout << "###getOutBlockConfig: " << spidrctrl.errorString() << endl;
@@ -87,6 +88,22 @@ int main( int argc, char *argv[] )
     cout << "###getSlvsConfig: " << spidrctrl.errorString() << endl;
   else
     cout << "SlvsConfig=" << config << endl;
+
+  int options;
+  if( !spidrctrl.getStartupOptions( &options ) )
+    cout << "###getStartupOptions: " << spidrctrl.errorString() << endl;
+  else
+    cout << "getStartupOptions=" << options << endl;
+  /*
+  if( options != 0x7fff34fe )
+    {
+      options = 0x7fff34fe;
+      if( !spidrctrl.storeStartupOptions( options ) )
+        cout << "###setStartupOptions: " << spidrctrl.errorString() << endl;
+      else
+      cout << "setStartupOptions=" << options << endl;
+    }
+  */
 
   return 0;
 }
