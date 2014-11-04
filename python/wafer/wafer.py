@@ -54,6 +54,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dumytimer = QTimer()
         self.dumytimer.start(100)  #
         self.dumytimer.timeout.connect(lambda: None)  # Let the interpreter run each 100 ms.
+        self.chipName.settext
     def onProbesation(self):
         print "connect"
     def onAbout(self):
