@@ -44,7 +44,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionStartOne.triggered.connect(self.onStartOne)
         self.toolStartOne.clicked.connect(self.onStartOne)
         self.toolStop.clicked.connect(self.onStop)
-
+        self.toolProbestation.clicked.connect(self.onProbesation)
         self.actionAbout.triggered.connect(self.onAbout)
         self.actionExit.triggered.connect(self.close)
         self.actionSPIDRSettings.triggered.connect(self.onSPIDRSettings)
@@ -54,7 +54,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dumytimer = QTimer()
         self.dumytimer.start(100)  #
         self.dumytimer.timeout.connect(lambda: None)  # Let the interpreter run each 100 ms.
-
+    def onProbesation(self):
+        print "connect"
     def onAbout(self):
         dlg=AboutDlg()
     def onHelp(self):
