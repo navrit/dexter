@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
       equalisation.setTrigger(4, 100, 1);
       equalisation.setThlScan(1, 512, 1);
       equalisation.setSpacing(1);
-      equalisation.findCoarse();
+      equalisation.scanCoarse();
     default:
       break;
   }
