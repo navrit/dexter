@@ -45,6 +45,42 @@ SpidrEqualisation::SpidrEqualisation(SpidrController* spidrctrl,
 }
 
 // ---------------------------------------------------------------------------
+// Scan coarse threshold
+// ---------------------------------------------------------------------------
+bool SpidrEqualisation::scanCoarse() {
+
+  if (!checkCommunication()) return false;
+  for (unsigned int thlc = 0; thlc < 15; ++thlc) {
+    m_thlcoarse = thlc;
+    cout << "[Note] VTHR_COARSE = " << thlc << endl;
+    cout << "[Note] Setting configuration" << endl;
+    if (!setConfiguration()) {
+      printFinal("FAILED");
+      return false;
+    }
+    std::stringstream ss;
+    ss << m_filename << "_spacing_" << m_spacing << "_coarse" << thlc;
+    const std::string filenameBase = ss.str();
+    // Noise scan with all pixels at same TRIM.
+    cout << "[Note] Taking data with all pixels at TRIM 7\n";
+    if (!setTHLTrimALL(7)) return false;
+    if (!takeData(filenameBase + "_7.dat")) {
+      printFinal("FAILED");
+      return false;
+    }
+    cout << "[Note] Analysing data\n";
+    if (!analyseData(filenameBase + "_7")) {
+      printFinal("FAILED");
+      return false;
+    }
+  }
+ 
+  printFinal("DONE");
+  return true;
+
+}
+
+// ---------------------------------------------------------------------------
 // Main equalisation function 
 // ---------------------------------------------------------------------------
 bool SpidrEqualisation::equalise(const bool scan0, const bool scan15, 
@@ -352,9 +388,11 @@ bool SpidrEqualisation::takeData(const std::string& filename) {
       if (!m_ctrl->setPixelConfig(m_device)) printError("setPixelConfig");
       cout << "[Note] Threshold scan " << step << "/" << nSteps << endl;
       // Threshold scan.
+      unsigned int nSteps = 0;
       for (int thl = m_thlmin; thl < m_thlmax; thl += m_thlstep) {
+        ++nSteps;
         const bool printProgress = true;
-        if (printProgress) {
+        if (printProgress && nSteps % 10 == 0) {
           cout << "   " << setprecision(1) << fixed 
                << ((float)(thl - m_thlmin) / (float)(m_thlmax - m_thlmin)) * 100. 
 	       << "%\r" << flush;

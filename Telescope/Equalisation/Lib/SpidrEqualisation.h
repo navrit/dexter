@@ -31,6 +31,7 @@ class MY_LIB_API SpidrEqualisation {
   // Destructor
   ~SpidrEqualisation() {}
 
+  bool scanCoarse();
   // Run the full equalisation.
   bool equalise(const bool scan0 = true, const bool scan15 = true,
                 const bool analyse0 = true, const bool analyse15 = true,
@@ -48,6 +49,7 @@ class MY_LIB_API SpidrEqualisation {
     m_stddev = stddev;
   }
 
+  void setDevice(const int device) { m_device = device; }
   // Set the name of the DAC file to be loaded during configuration.
   void setDacFile(const std::string& filename) { m_dacfilename = filename; }
   // Set the shutter trigger configuration.
