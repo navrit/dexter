@@ -110,7 +110,7 @@ int main()
   // ----------------------------------------------------------
 
   // Configure the shutter trigger
-  int trig_mode      = 4;      // SPIDR_TRIG_AUTO;
+  int trig_mode      = SHUTTERMODE_AUTO;
   int trig_length_us = 10000;  // 10 ms
   int trig_freq_hz   = 3;      // 3 Hz
   //int trig_count   = 10;     // 10 triggers

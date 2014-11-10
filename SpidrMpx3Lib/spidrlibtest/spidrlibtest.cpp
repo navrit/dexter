@@ -50,12 +50,12 @@ int main( int argc, char *argv[] )
 
   spidrcontrol.setMaxPacketSize( 1024 );
 
-  int trig_mode      = 4;      // Auto-trigger mode
-  int trig_period_us = 100000; // 100 ms
+  int trig_mode      = SHUTTERMODE_AUTO; // Auto-trigger mode
+  int trig_length_us = 100000; // 100 ms
   int trig_freq_hz   = 5;
   int nr_of_triggers = 2;
   int trig_pulse_count;
-  spidrcontrol.setShutterTriggerConfig( trig_mode, trig_period_us,
+  spidrcontrol.setShutterTriggerConfig( trig_mode, trig_length_us,
                                         trig_freq_hz, nr_of_triggers );
 
   int dac_index = 0;

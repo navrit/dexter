@@ -103,14 +103,54 @@ int main()
   // ----------------------------------------------------------
 
   // Configure the shutter trigger
-  int trig_mode      = 4;      // SPIDR_TRIG_AUTO;
+  int trig_mode      = SHUTTERMODE_AUTO;
   int trig_length_us = 10000;  // 10 ms
+  int trig_delay_ns  = 10000;  // 10 us
   int trig_freq_hz   = 3;      // 3 Hz
   //int trig_count   = 10;     // 10 triggers
   int trig_count     = 1;
   if( !spidrctrl.setShutterTriggerConfig( trig_mode, trig_length_us,
-					  trig_freq_hz, trig_count ) )
+					  trig_freq_hz, trig_count,
+					  trig_delay_ns ) )
     error_out( "###setShutterTriggerConfig" );
+
+  if( spidrctrl.getShutterTriggerConfig( &trig_mode, &trig_length_us,
+					 &trig_freq_hz, &trig_count,
+					 &trig_delay_ns ) )
+    {
+      cout << "getShutterTriggerConfig: ";
+      cout << trig_mode << " " << trig_length_us << " "
+	   << trig_freq_hz << " " << trig_count << " "
+	   << trig_delay_ns << endl;
+    }
+  else
+    {
+      error_out( "###getShutterTriggerConfig" );
+    }
+
+  trig_mode      = SHUTTERMODE_AUTO;
+  trig_length_us = 7000;
+  trig_delay_ns  = 10000;  // 10 us
+  trig_freq_hz   = 5;      // 3 Hz
+  trig_count     = 2;
+  if( !spidrctrl.setShutterTriggerCfg( trig_mode, trig_delay_ns,
+				       trig_length_us,
+				       trig_freq_hz, trig_count ) )
+    error_out( "###setShutterTriggerCfg" );
+
+  if( spidrctrl.getShutterTriggerCfg( &trig_mode, &trig_delay_ns,
+				      &trig_length_us,
+				      &trig_freq_hz, &trig_count ) )
+    {
+      cout << "getShutterTriggerCfg: ";
+      cout << trig_mode << " " << trig_length_us << " "
+	   << trig_freq_hz << " " << trig_count << " "
+	   << trig_delay_ns << endl;
+    }
+  else
+    {
+      error_out( "###getShutterTriggerConfig" );
+    }
 
   // ----------------------------------------------------------
 

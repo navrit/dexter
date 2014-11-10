@@ -676,7 +676,7 @@ int spidrSetAcqPars( int id, Mpx3AcqParams *pars )
       break;
     }
   SpidrTriggerMode = trigger_mode; // Remember for acquisition starts
-  int trigger_period_us   = (int) (1000000.0 * pars->time);
+  int trigger_length_us   = (int) (1000000.0 * pars->time);
   int trigger_freq_hz;
   int nr_of_triggers      = 1;
   int trigger_pulse_count = 0;
@@ -685,7 +685,7 @@ int spidrSetAcqPars( int id, Mpx3AcqParams *pars )
   else
     trigger_freq_hz = 1;
   if( trigger_freq_hz > 1 ) --trigger_freq_hz;
-  if( !spidrctrl->setShutterTriggerConfig( trigger_mode, trigger_period_us,
+  if( !spidrctrl->setShutterTriggerConfig( trigger_mode, trigger_length_us,
 				    trigger_freq_hz, nr_of_triggers,
 				    trigger_pulse_count ) )
     {
@@ -693,7 +693,7 @@ int spidrSetAcqPars( int id, Mpx3AcqParams *pars )
       return 1;
     }
   LOGGER() << "SetAcqPars.setTriggerConfig(): mode=" << trigger_mode
-	   << ", period_us=" << trigger_period_us
+	   << ", length_us=" << trigger_length_us
 	   << ", freq=" << trigger_freq_hz
 	   << ", trigs=" << nr_of_triggers << endl;
 
