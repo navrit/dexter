@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x14110300;
+const int   VERSION_ID = 0x14111000;
+//const int VERSION_ID = 0x14110300;
 //const int VERSION_ID = 0x14102800;
 //const int VERSION_ID = 0x14101500;
 //const int VERSION_ID = 0x14101000;
@@ -34,6 +35,11 @@ const int   VERSION_ID = 0x14110300;
 
 // SPIDR register addresses (some of them)
 #define SPIDR_CPU2TPX_WR_I           0x01C8
+#define SPIDR_SHUTTERTRIG_CTRL_I     0x0290
+#define SPIDR_SHUTTERTRIG_CNT_I      0x0294
+#define SPIDR_SHUTTERTRIG_FREQ_I     0x0298
+#define SPIDR_SHUTTERTRIG_LENGTH_I   0x029C
+#define SPIDR_SHUTTERTRIG_DELAY_I    0x02AC
 #define SPIDR_DEVICES_AND_PORTS_I    0x02C0
 #define SPIDR_TDC_TRIGGERCOUNTER_I   0x02F8
 #define SPIDR_FE_GTX_CTRL_STAT_I     0x0300
@@ -1210,14 +1216,18 @@ bool SpidrController::getStartupOptions( int *startopts )
 bool SpidrController::setShutterTriggerConfig( int trigger_mode,
 					       int trigger_length_us,
 					       int trigger_freq_hz,
-					       int trigger_count )
+					       int trigger_count,
+					       int trigger_delay_ns )
 {
-  int datawords[4];
+  int datawords[5];
   datawords[0] = trigger_mode;
   datawords[1] = trigger_length_us;
   datawords[2] = trigger_freq_hz;
   datawords[3] = trigger_count;
-  return this->requestSetInts( CMD_SET_TRIGCONFIG, 0, 4, datawords );
+  datawords[4] = trigger_delay_ns;
+  int len = 5;
+  if( trigger_delay_ns == 0 ) len = 4; // No need to send (for compatibility)
+  return this->requestSetInts( CMD_SET_TRIGCONFIG, 0, len, datawords );
 }
 
 // ----------------------------------------------------------------------------
@@ -1225,15 +1235,116 @@ bool SpidrController::setShutterTriggerConfig( int trigger_mode,
 bool SpidrController::getShutterTriggerConfig( int *trigger_mode,
 					       int *trigger_length_us,
 					       int *trigger_freq_hz,
-					       int *trigger_count )
+					       int *trigger_count,
+					       int *trigger_delay_ns )
 {
-  int data[4];
-  if( !this->requestGetInts( CMD_GET_TRIGCONFIG, 0, 4, data ) )
-    return false;
+  int data[5];
+  data[4] = 0;
+  if( !this->requestGetInts( CMD_GET_TRIGCONFIG, 0, 5, data ) )
+    // For backwards-compatibility try a length of 4 ('delay' was added later)
+    if( !this->requestGetInts( CMD_GET_TRIGCONFIG, 0, 4, data ) )
+      return false;
   *trigger_mode      = data[0];
   *trigger_length_us = data[1];
   *trigger_freq_hz   = data[2];
   *trigger_count     = data[3];
+  if( trigger_delay_ns ) *trigger_delay_ns = data[4];
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setShutterTriggerCfg( int trigger_mode,
+					    int trigger_delay_ns,
+					    int trigger_length_ns,
+					    int trigger_freq_hz,
+					    int trigger_count )
+{
+  // New version of setShutterTriggerConfig() with all times in nanoseconds
+  // instead of microseconds, and all but parameter 'trigger_mode' optional
+  // (uses individual register write operations)
+  // NB: maximum resolution is only 25ns (at 40MHz)
+  // NB: parameter order changed with respect to setShutterTriggerConfig()
+  if( trigger_mode < 0 || trigger_mode > SHUTTERMODE_AUTO )
+    return false; // Illegal trigger mode
+
+  // Mode
+  int reg;
+  if( !this->getSpidrReg( SPIDR_SHUTTERTRIG_CTRL_I, &reg ) )
+    return false;
+  reg &= ~0x7;         // Clear mode
+  reg |= trigger_mode; // Set mode
+  if( !this->setSpidrReg( SPIDR_SHUTTERTRIG_CTRL_I, reg ) )
+    return false;
+
+  if( trigger_mode == SHUTTERMODE_AUTO )
+    {
+      // Frequency and count
+      if( !this->setSpidrReg( SPIDR_SHUTTERTRIG_FREQ_I,
+			      40000000/trigger_freq_hz ) ) return false;
+      if( !this->setSpidrReg( SPIDR_SHUTTERTRIG_CNT_I,
+			      trigger_count ) ) return false;
+    }
+  else
+    {
+      // Delay
+      if( !this->setSpidrReg( SPIDR_SHUTTERTRIG_DELAY_I,
+			      trigger_delay_ns/25 ) ) return false;
+    }
+  if( trigger_mode == SHUTTERMODE_AUTO ||
+      trigger_mode == SHUTTERMODE_POS_EXT_TIMER ||
+      trigger_mode == SHUTTERMODE_NEG_EXT_TIMER )
+    {
+      // Duration (length)
+      if( !this->setSpidrReg( SPIDR_SHUTTERTRIG_LENGTH_I,
+			      trigger_length_ns/25 ) ) return false;
+    }
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getShutterTriggerCfg( int *trigger_mode,
+					    int *trigger_delay_ns,
+					    int *trigger_length_ns,
+					    int *trigger_freq_hz,
+					    int *trigger_count )
+{
+  // New version of getShutterTriggerConfig() with all times in nanoseconds
+  // instead of microseconds, including new parameter 'trigger_delay_ns'
+  // NB: maximum resolution is only 25ns (at 40MHz)
+  // NB: parameter order changed with respect to getShutterTriggerConfig()
+  int reg;
+  // Mode
+  if( trigger_mode )
+    {
+      if( !this->getSpidrReg( SPIDR_SHUTTERTRIG_CTRL_I, &reg ) ) return false;
+      *trigger_mode = (reg & 0x7);
+    }
+  // Delay
+  if( trigger_delay_ns )
+    {
+      if( !this->getSpidrReg( SPIDR_SHUTTERTRIG_DELAY_I, &reg ) ) return false;
+      *trigger_delay_ns = reg * 25;
+    }
+  // Length/width/duration
+  if( trigger_length_ns )
+    {
+      if( !this->getSpidrReg( SPIDR_SHUTTERTRIG_LENGTH_I, &reg ) ) return false;
+      *trigger_length_ns = reg * 25;
+    }
+  // Frequency
+  if( trigger_freq_hz )
+    {
+      if( !this->getSpidrReg( SPIDR_SHUTTERTRIG_FREQ_I, &reg ) ) return false;
+      *trigger_freq_hz = 40000000 / reg;
+    }
+  // Count
+  if( trigger_count )
+    {
+      if( !this->getSpidrReg( SPIDR_SHUTTERTRIG_CNT_I, &reg ) ) return false;
+      *trigger_count = reg;
+    }
   return true;
 }
 
@@ -1259,7 +1370,8 @@ bool SpidrController::openShutter()
   // and the frequency (10Hz) lower than the trigger period (200ms) allows
   //if( !this->setShutterTriggerConfig( 4, 200000, 10, 0 ) ) return false;
   // It is sufficient to set the trigger period to zero (June 2014)
-  if( !this->setShutterTriggerConfig( 4, 0, 10, 1 ) ) return false;
+  if( !this->setShutterTriggerConfig( SHUTTERMODE_AUTO, 0, 10, 1 ) )
+    return false;
   return this->startAutoTrigger();
 }
 
@@ -1269,7 +1381,8 @@ bool SpidrController::closeShutter()
 {
   if( !this->stopAutoTrigger() ) return false;
   // Set to auto-trigger mode (just in case), and to default trigger settings
-  //if( !this->setShutterTriggerConfig( 4, 100000, 1, 1 ) ) return false;
+  //if( !this->setShutterTriggerConfig( SHUTTERMODE_AUTO, 100000, 1, 1 ) )
+  //  return false;
   return true;
 }
 
@@ -1402,10 +1515,28 @@ bool SpidrController::t0Sync( int dev_nr )
 // Monitoring
 // ----------------------------------------------------------------------------
 
+bool SpidrController::getAdc( int *adc_val, int chan, int nr_of_samples )
+{
+  // Get the sum of a number of ADC samples of the selected SPIDR ADC channel
+  *adc_val = (chan & 0xFFFF) | ((nr_of_samples & 0xFFFF) << 16);
+  return this->requestGetInt( CMD_GET_SPIDR_ADC, 0, adc_val );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::getAdc( int *adc_val, int nr_of_samples )
 {
+  // Get an ADC sample of the Timepix3 'DACOut' output
   *adc_val = nr_of_samples;
   return this->requestGetInt( CMD_GET_ADC, 0, adc_val );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getDacOut( int *adc_val, int nr_of_samples )
+{
+  // Get an ADC sample of the Timepix3 'DACOut' output
+  return this->getAdc( adc_val, nr_of_samples );
 }
 
 // ----------------------------------------------------------------------------

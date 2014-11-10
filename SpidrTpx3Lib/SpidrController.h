@@ -19,6 +19,13 @@
 
 #define ALL_PIXELS  256
 
+// Shutter trigger modes
+#define SHUTTERMODE_POS_EXT       0
+#define SHUTTERMODE_NEG_EXT       1
+#define SHUTTERMODE_POS_EXT_TIMER 2
+#define SHUTTERMODE_NEG_EXT_TIMER 3
+#define SHUTTERMODE_AUTO          4
+
 class QTcpSocket;
 
 class MY_LIB_API SpidrController
@@ -169,11 +176,23 @@ class MY_LIB_API SpidrController
   bool setShutterTriggerConfig ( int  trigger_mode,
                                  int  trigger_length_us,
                                  int  trigger_freq_hz,
-                                 int  trigger_count );
+                                 int  trigger_count,
+                                 int  trigger_delay_ns = 0 );
   bool getShutterTriggerConfig ( int *trigger_mode,
                                  int *trigger_length_us,
                                  int *trigger_freq_hz,
-                                 int *trigger_count );
+                                 int *trigger_count,
+                                 int *trigger_delay_ns = 0 );
+  bool setShutterTriggerCfg    ( int  trigger_mode,
+                                 int  trigger_delay_ns = 0,
+                                 int  trigger_length_ns = 25,
+                                 int  trigger_freq_hz = 1,
+                                 int  trigger_count = 1 );
+  bool getShutterTriggerCfg    ( int *trigger_mode,
+                                 int *trigger_delay_ns = 0,
+                                 int *trigger_length_ns = 0,
+                                 int *trigger_freq_hz = 0,
+                                 int *trigger_count = 0 );
   bool startAutoTrigger        ( );
   bool stopAutoTrigger         ( );
   bool openShutter             ( );
@@ -205,7 +224,9 @@ class MY_LIB_API SpidrController
   bool t0Sync                  ( int  dev_nr );
 
   // Monitoring
+  bool getAdc                  ( int *adc_val, int chan, int nr_of_samples );
   bool getAdc                  ( int *adc_val, int nr_of_samples = 1 );
+  bool getDacOut               ( int *adc_val, int nr_of_samples = 1 );
   bool getRemoteTemp           ( int *mdegrees );
   bool getLocalTemp            ( int *mdegrees );
   bool getFpgaTemp             ( int *mdegrees );
