@@ -67,6 +67,7 @@
 #define CMD_SET_SENSEDACCODE   0x339
 #define CMD_SET_EXTDAC         0x33A
 #define CMD_WRITE_OMR          0x33B
+#define CMD_SET_GAINMODE       0x33C
 
 // Trigger
 #define CMD_GET_TRIGCONFIG     0x440
@@ -172,7 +173,7 @@ static const char *CMD_STR[] =
     "SET_SENSEDACCODE ", // 0x339
     "SET_EXTDAC       ", // 0x33A
     "WRITE_OMR        ", // 0x33B
-    "-----",             // 0x33C
+    "SET_GAINMODE     ", // 0x33C
     "-----",             // 0x33D
     "-----",             // 0x33E
     "-----",             // 0x33F

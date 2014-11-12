@@ -16,7 +16,8 @@ using namespace std;
 #include "spidrmpx3cmds.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14091600; // Update to SPIDR-TPX3 'standard'
+const int VERSION_ID = 0x14111200;   // Added setGainMode()
+//const int VERSION_ID = 0x14091600; // Update to SPIDR-TPX3 'standard'
 //const int VERSION_ID = 0x14012100;
 
 // ----------------------------------------------------------------------------
@@ -863,6 +864,14 @@ bool SpidrController::setCsmSpm( int csm )
 {
   // For Medipix3RX only
   return this->requestSetInt( CMD_SET_CSMSPM, 0, csm );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setGainMode( int mode )
+{
+  // For Medipix3RX only
+  return this->requestSetInt( CMD_SET_GAINMODE, 0, mode );
 }
 
 // ----------------------------------------------------------------------------

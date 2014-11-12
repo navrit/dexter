@@ -126,6 +126,7 @@ class MY_LIB_API SpidrController
   bool setEqThreshH            ( bool equalize );
   bool setColourMode           ( bool colour );
   bool setCsmSpm               ( int  csm );
+  bool setGainMode             ( int  mode );
   bool setSenseDac             ( int  dac_nr );
   bool setSenseDacCode         ( int  dac_code );
   bool setExtDac               ( int  dac_nr );
