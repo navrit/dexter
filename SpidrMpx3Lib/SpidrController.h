@@ -19,6 +19,14 @@
 
 #define ALL_PIXELS  256
 
+// Shutter trigger modes
+#define SHUTTERMODE_POS_EXT       0
+#define SHUTTERMODE_NEG_EXT       1
+#define SHUTTERMODE_POS_EXT_TIMER 2
+#define SHUTTERMODE_NEG_EXT_TIMER 3
+#define SHUTTERMODE_AUTO          4
+#define SHUTTERTRIG_POS_EXT_CNTR  5
+
 class QTcpSocket;
 
 class MY_LIB_API SpidrController
