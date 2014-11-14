@@ -24,10 +24,12 @@ CONFIG += debug_and_release
 
 # Libraries
 SUBDIRS += SpidrTpx3Lib/SpidrTpx3Lib.pro
+SUBDIRS += QCustomPlot/QCustomPlot.pro
 
 # Executables
 SUBDIRS += SpidrConfig/SpidrConfig.pro
 SUBDIRS += SpidrDacs/SpidrDacs.pro
+SUBDIRS += SpidrDacsScan/SpidrDacsScan.pro
 SUBDIRS += SpidrTpx3Mon/SpidrMon.pro
 SUBDIRS += SpidrTpx3TV/SpidrTTV.pro
 SUBDIRS += SpidrTpx3Lib/spidrtpx3libtest/spidrtpx3libtest.pro
