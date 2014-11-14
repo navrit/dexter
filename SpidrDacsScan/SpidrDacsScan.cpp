@@ -11,7 +11,7 @@
 
 #include "qcustomplot.h"
 
-QString VERSION( "v1.0.0  12-Nov-2014" );
+QString VERSION( "v1.0.0  14-Nov-2014" );
 
 // ----------------------------------------------------------------------------
 // (From LEON software: tpx3.c)
@@ -113,7 +113,7 @@ SpidrDacsScan::SpidrDacsScan()
   _lineEditPort->setValidator( _ipPortValidator );
 
   _labelDisconnected->hide();
-  _comboBoxDeviceIndex->hide();
+  //_comboBoxDeviceIndex->hide();
   _labelDac->hide();
   _labelErr->hide();
 
@@ -125,29 +125,30 @@ SpidrDacsScan::SpidrDacsScan()
   _comboBoxAdcSamples->addItem( "2 samples" );
   _comboBoxAdcSamples->addItem( "4 samples" );
   _comboBoxAdcSamples->addItem( "8 samples" );
+  _comboBoxAdcSamples->setCurrentIndex( 3 );
   for( i=1; i<=4; ++i )
     _comboBoxPenWidth->addItem( QString::number(i) );
 
   // Prepare the plot
   _plot = new QCustomPlot();
   _plot->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
+  // The title
+  _plot->plotLayout()->insertRow( 0 );
+  QString qs( "Timepix3 DACs scan" );
+  _plot->plotLayout()->addElement( 0, 0, new QCPPlotTitle( _plot, qs ) );
   // The legend
   _plot->legend->setVisible( false ); // Nothing there yet...
-  QFont f = font();  // Start out with MainWindow's font..
+  QFont f = font();  // Start out with Dialog's font..
   f.setPointSize( 9 ); // and make a bit smaller for legend
   _plot->legend->setFont( f );
   _plot->legend->setBrush( QBrush(QColor(255,255,255,230)) );
   // The axes
   _plot->xAxis->setRange( 0, 512 );
   _plot->yAxis->setRange( 0, 4096 );
-  f = font();  // Start out with MainWindow's font..
+  f = font();  // Start out with Dialog's font..
   f.setBold( true );
   _plot->xAxis->setLabelFont( f );
   _plot->yAxis->setLabelFont( f );
-  // The title
-  _plot->plotLayout()->insertRow( 0 );
-  QString qs( "Timepix3 DACs scan" );
-  _plot->plotLayout()->addElement( 0, 0, new QCPPlotTitle( _plot, qs ) );
   // The labels:
   _plot->xAxis->setLabel("DAC setting");
   _plot->yAxis->setLabel("DAC out");
@@ -214,14 +215,14 @@ void SpidrDacsScan::connectOrDisconnect()
 	  if( _spidrController->getDeviceCount( &devices ) )
 	    {
 	      QString qs = "Device ";
-	      _comboBoxDeviceIndex->show();
+	      //_comboBoxDeviceIndex->show();
 	      int i;
 	      for( i=0; i<devices; ++i )
 		_comboBoxDeviceIndex->addItem( qs + QString::number(i) );
 	    }
 	  else
 	    {
-	      _comboBoxDeviceIndex->hide();
+	      //_comboBoxDeviceIndex->hide();
 	    }
 	}
       else
@@ -286,7 +287,7 @@ void SpidrDacsScan::scan()
     {
       // Next DAC index
       _dacCode = TPX3_DAC_TABLE[_dacIndex].code;
-      _labelDac->setText( QString("DAC %1").arg( _dacCode ) );
+      _labelDac->setText( QString("DAC %1..").arg( _dacCode ) );
       _dacMax  = (1 << TPX3_DAC_TABLE[_dacIndex].bits) - 1;
       if( !_spidrController->setSenseDac( _deviceIndex, _dacCode ) )
 	this->inError();
@@ -314,7 +315,8 @@ void SpidrDacsScan::scan()
     this->inError();
 
   int adc_val;
-  if( !_spidrController->getDacOut( &adc_val, _samples ) )
+  //if( !_spidrController->getDacOut( &adc_val, _samples ) )
+  if( !_spidrController->getAdc( &adc_val, _deviceIndex, _samples ) )
     {
       this->inError();
     }
