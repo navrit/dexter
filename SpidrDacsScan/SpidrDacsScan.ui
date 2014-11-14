@@ -21,7 +21,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="spidrdacsscan.qrc">
-    <normaloff>:/icon/spidrdacsscan.ico</normaloff>:/icon/spidrdacsscan.ico</iconset>
+    <normaloff>:/icon/spidrdacsscan.png</normaloff>:/icon/spidrdacsscan.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="margin">

@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icon">
+    <file>spidrdacsscan.png</file>
     <file>spidrdacsscan.ico</file>
   </qresource>
 </RCC>
