@@ -118,18 +118,21 @@ SpidrDacsScan::SpidrDacsScan()
   _labelErr->hide();
 
   // Populate comboboxes
-  for( int i=1; i<=4; ++i )
+  int i;
+  for( i=1; i<=4; ++i )
+    _comboBoxDacStep->addItem( QString::number(i) );
+  _comboBoxAdcSamples->addItem( "1 sample" );
+  _comboBoxAdcSamples->addItem( "2 samples" );
+  _comboBoxAdcSamples->addItem( "4 samples" );
+  _comboBoxAdcSamples->addItem( "8 samples" );
+  for( i=1; i<=4; ++i )
     _comboBoxPenWidth->addItem( QString::number(i) );
-  _comboBoxSamples->addItem( "1 sample" );
-  _comboBoxSamples->addItem( "2 samples" );
-  _comboBoxSamples->addItem( "4 samples" );
-  _comboBoxSamples->addItem( "8 samples" );
 
   // Prepare the plot
   _plot = new QCustomPlot();
   _plot->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
   // The legend
-  _plot->legend->setVisible( true );
+  _plot->legend->setVisible( false ); // Nothing there yet...
   QFont f = font();  // Start out with MainWindow's font..
   f.setPointSize( 9 ); // and make a bit smaller for legend
   _plot->legend->setFont( f );
@@ -261,6 +264,7 @@ void SpidrDacsScan::startOrStopScan()
       _comboBoxDeviceIndex->setEnabled( false );
       _labelDac->show();
       _labelErr->hide();
+      _plot->legend->setVisible( true );
       _plot->clearGraphs();
       _plot->replot();
       this->scan();
@@ -288,13 +292,19 @@ void SpidrDacsScan::scan()
 	this->inError();
 
       // The number of (ADC) samples to take per DAC setting
-      _samples = (1 << _comboBoxSamples->currentIndex());
+      _samples = (1 << _comboBoxAdcSamples->currentIndex());
+
+      // The DAC settings step-size
+      if( _dacMax > 32 )
+	_dacStep = _comboBoxDacStep->currentIndex() + 1;
+      else
+	_dacStep = 1;
 
       // Next graph
       _plot->addGraph();
       _graph = _plot->graph( _dacIndex );
       QPen pen( COLOR_TABLE[_dacIndex] );
-      pen.setWidth( _comboBoxPenWidth->currentIndex()+1 );
+      pen.setWidth( _comboBoxPenWidth->currentIndex() + 1 );
       _graph->setPen( pen );
       _graph->setName( QString(TPX3_DAC_TABLE[_dacIndex].name) );
       _graph->addToLegend();
@@ -310,6 +320,7 @@ void SpidrDacsScan::scan()
     }
   else
     {
+      // Add sample to the graph, and update the plot
       adc_val /= _samples;
       _graph->addData( _dacVal, adc_val );
       _plot->replot();
