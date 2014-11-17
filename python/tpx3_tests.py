@@ -298,7 +298,7 @@ def term_hanler(signum, frame):
 EXITCODE_OK = 0
 EXITCODE_RUNTIME_ERROR =1
 EXITCODE_TERMINATE =2
-
+EXITCODE_AUTOIDERROR=3
 def main():
   signal.signal(signal.SIGTERM, term_hanler)
   usage = "usage: %prog [options] assembly_name [test[(parameter=value parameter2=value)]"
@@ -317,7 +317,7 @@ def main():
   if options.list_tests:
     tests=TPX_tests("null",logdir="logs/null/")
     tests.list()
-    return
+    return EXITCODE_OK
 
   test_list=[]
 
@@ -350,7 +350,7 @@ def main():
           del tpx
           test_list=args
       except :
-          return
+          return EXITCODE_AUTOIDERROR
   else:
     if len(args)<1:
       parser.error("You have to specify assembly name (or use --auto option)")
