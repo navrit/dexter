@@ -42,6 +42,26 @@
        </widget>
       </item>
       <item>
+       <widget class="QToolButton" name="toolInfo">
+        <property name="text">
+         <string>Info</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources.qrc">
+          <normaloff>:/img/messagebox_info.png</normaloff>:/img/messagebox_info.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>48</width>
+          <height>48</height>
+         </size>
+        </property>
+        <property name="toolButtonStyle">
+         <enum>Qt::ToolButtonTextUnderIcon</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QToolButton" name="toolStartOne">
         <property name="text">
          <string>Start One</string>
@@ -304,7 +324,7 @@
      <x>0</x>
      <y>0</y>
      <width>1121</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

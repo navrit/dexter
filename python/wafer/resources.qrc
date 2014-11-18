@@ -17,6 +17,7 @@
      <file>img/back.png</file>
      <file>img/start.png</file>
      <file>img/forward.png</file>
+     <file>img/messagebox_info.png</file>
  </qresource>
  </RCC>
  
