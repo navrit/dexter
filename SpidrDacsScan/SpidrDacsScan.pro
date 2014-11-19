@@ -14,7 +14,7 @@ TARGET   = SpidrDacsScan
 # Create a Qt app
 QT += network
 contains(QT_MAJOR_VERSION,5) {
-  QT += widgets
+  QT += widgets printsupport
 }
 CONFIG += qt thread warn_on exceptions debug_and_release
 
