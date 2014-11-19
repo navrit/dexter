@@ -12,8 +12,9 @@ typedef enum {
 #define __matrix_size 	__array_size_x*__array_size_y
 #define __max_adj_val  	0x1F // 0x1F = 31 is the max adjustment with 5 bits
 
-
+#ifndef WIN32
 #include <unistd.h>
 #define Sleep(ms) usleep(ms*1000)
+#endif
 
 #endif
