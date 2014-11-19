@@ -1,9 +1,3 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2014-10-30T16:31:35
-#
-#-------------------------------------------------
-
 TEMPLATE = app
 TARGET = SpidrMpx3Eq
 
@@ -13,7 +7,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 # When using QCustomPlot as a shared library
 DEFINES += QCUSTOMPLOT_USE_LIBRARY 
 
-CONFIG   += debug
+CONFIG += qt thread warn_on exceptions debug_and_release
 
 CONFIG(debug, debug|release) {
   OBJECTS_DIR = debug
