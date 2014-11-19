@@ -12,13 +12,12 @@ TEMPLATE = lib
 TARGET   = QCustomPlot
 
 # Create a shared library
-greaterThan(QT_MAJOR_VERSION, 4) {
-	QT += widgets printsupport
-} else {
-	QT += core gui
-}
+QT += core gui
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
+CONFIG += shared qt thread warn_on exceptions debug_and_release
 
-CONFIG += static qt thread warn_on exceptions debug_and_release debug
+# When compiling as a shared library
+DEFINES += QCUSTOMPLOT_COMPILE_LIBRARY 
 
 CONFIG(debug, debug|release) {
   OBJECTS_DIR = debug

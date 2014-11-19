@@ -7,14 +7,11 @@
 TEMPLATE = app
 TARGET = SpidrMpx3Eq
 
-# QT       += core gui network
-# Create a shared library
-greaterThan(QT_MAJOR_VERSION, 4) {
-	QT += widgets printsupport
-} else {
-	QT += core gui
-}
-QT += network
+QT += core gui network
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
+
+# When using QCustomPlot as a shared library
+DEFINES += QCUSTOMPLOT_USE_LIBRARY 
 
 CONFIG   += debug
 
@@ -33,8 +30,6 @@ CONFIG(release, debug|release) {
   DESTDIR     = ../Release
   LIBS       += -L../Release
 }
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 INCLUDEPATH += ../SpidrMpx3Lib
 INCLUDEPATH += ../QCustomPlot

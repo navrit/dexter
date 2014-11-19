@@ -16,6 +16,9 @@ QT += core gui network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 CONFIG += qt thread warn_on exceptions debug_and_release
 
+# When using QCustomPlot as a shared library
+DEFINES += QCUSTOMPLOT_USE_LIBRARY 
+
 CONFIG(debug, debug|release) {
   OBJECTS_DIR = debug
   MOC_DIR     = debug
