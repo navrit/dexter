@@ -1,7 +1,6 @@
 TEMPLATE = app
 TARGET   = PixConfTest
 
-# Create a Qt app
 # Create a Qt app 
 QT -= gui
 QT += core network

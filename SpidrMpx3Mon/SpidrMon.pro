@@ -12,7 +12,8 @@ TEMPLATE = app
 TARGET   = SpidrMMon
 
 # Create a Qt app
-QT += network
+QT += core gui network
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 CONFIG += qt thread warn_on exceptions debug_and_release
 
 CONFIG(debug, debug|release) {
