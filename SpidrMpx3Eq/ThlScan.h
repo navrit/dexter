@@ -6,23 +6,46 @@
 #ifndef THLSCAN_H
 #define THLSCAN_H
 
+#include <map>
+#include <set>
+using namespace std;
+
+
 class SpidrController;
 class SpidrDaq;
+class BarChart;
+
+enum Thl_Status {
+	__NOT_TESTED_YET = 0,
+};
 
 class ThlScan {
 
 public:
 	ThlScan();
-	ThlScan(SpidrController *, SpidrDaq *);
+	ThlScan(SpidrController *, SpidrDaq *, BarChart *);
 	~ThlScan();
 
+	void RewindData();
 	void DoScan();
-	void SetMask(int spacing, int offset);
+	int SetEqualizationMask(int spacing, int offset);
+	void ClearMask(){ _maskedSet.clear(); };
+	void Configuration();
+	void ExtractScanInfo(int * data, int size_in_bytes);
+	void UpdateChart(int thlValue);
+
+	int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
+	pair<int, int> XtoXY(int X, int dimX) { return make_pair(X % dimX, X/dimX); }
 
 private:
 
-	SpidrController * _spidrcntrl;
+	SpidrController * _spidrcontrol;
 	SpidrDaq * _spidrdaq;
+	BarChart * _chart;
+	map<int, int> _pixelCountsMap;
+	set<int> _maskedSet;
+	int _nTriggers;
+
 };
 
 #endif

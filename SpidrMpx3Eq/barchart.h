@@ -16,8 +16,8 @@ class BarChartProperties {
 
 public:
 	vector<string> name;
-	vector<int> min;
-	vector<int> max;
+	vector<int> min_x;
+	vector<int> max_x;
 	vector<int> nBins;
 	vector<int> color_r;
 	vector<int> color_g;
@@ -31,9 +31,14 @@ public:
 
 	BarChart( QWidget * parent );
 	~BarChart();
+
+	QCPBars * GetDataSet(int id) { return _barSets.at(id); };
 	void SetBarChartProperties(BarChartProperties * bp) { _bp = bp; };
 	void PrepareSets();
-	void PushBackToSet(unsigned int setId, double val, double weight = 1);
+
+	void SetValueInSet(unsigned int setId, double val, double weight = 1);
+	//void PushBackToSet(unsigned int setId, double val, double weight = 1);
+	//void DumpData();
 
 private:
 

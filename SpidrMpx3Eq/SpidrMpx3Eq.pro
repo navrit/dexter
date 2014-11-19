@@ -7,12 +7,16 @@
 TEMPLATE = app
 TARGET = SpidrMpx3Eq
 
-#QMAKEFEATURES += /usr/local/qwt-6.1.1/features
-include ( /usr/local/qwt-6.1.1/features/qwt.prf )
+# QT       += core gui network
+# Create a shared library
+greaterThan(QT_MAJOR_VERSION, 4) {
+	QT += widgets printsupport
+} else {
+	QT += core gui
+}
+QT += network
 
-QT       += core gui network
 CONFIG   += debug
-
 
 CONFIG(debug, debug|release) {
   OBJECTS_DIR = debug
@@ -42,7 +46,6 @@ SOURCES += main.cpp
 SOURCES += spidrmpx3eq.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
-
 
 HEADERS += spidrmpx3eq.h
 HEADERS += barchart.h

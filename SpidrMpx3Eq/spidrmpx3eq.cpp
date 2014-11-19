@@ -9,7 +9,7 @@
 
 #include "spidrmpx3eq.h"
 #include <unistd.h>
-#define Sleep(ms) usleep(ms*1000)
+//#define Sleep(ms) usleep(ms*1000)
 
 using namespace std;
 #include <iostream>
@@ -43,8 +43,8 @@ SpidrMpx3Eq::SpidrMpx3Eq(QWidget *parent) :
 	// Set One histogram
 	BarChartProperties * cprop = new BarChartProperties;
 	cprop->name.push_back("Adj0");
-	cprop->min.push_back(0);
-	cprop->max.push_back(511);
+	cprop->min_x.push_back(0);
+	cprop->max_x.push_back(511);
 	cprop->nBins.push_back(511);
 	cprop->color_r.push_back(150);
 	cprop->color_g.push_back(222);
@@ -53,7 +53,15 @@ SpidrMpx3Eq::SpidrMpx3Eq(QWidget *parent) :
 	_chart->SetBarChartProperties( cprop );
 	_chart->PrepareSets();
 
-	startTimer( 500 );
+
+	//startTimer( 100 );
+
+
+	//
+	Connect();
+
+	// Ready for scans
+	_tscan = new ThlScan(_spidrcontrol, _spidrdaq, _chart);
 
 	// some randon numbers
 	srand (time(NULL));
@@ -73,25 +81,30 @@ void SpidrMpx3Eq::StartEqualization(){
 	int dev_nr = 2;
 	int * data;
 
+
+	_tscan->DoScan();
+
+	/*
 	_spidrcontrol->setDac( dev_nr, MPX3_DAC_THRESH_1, 511 );
 
-	for( i=0; i < 512; i+=2 ) {
+	for( i=0; i < 511; i+=100 ) {
 
-		cout << "THL : " << i;
+		cout << "THL : " << i << " -------------------------" << endl;
 
 		_spidrcontrol->setDac( dev_nr, MPX3_DAC_THRESH_0, i );
 
 		_spidrcontrol->writeDacs( dev_nr );
 
 		_spidrcontrol->startAutoTrigger();
-		Sleep( 200 );
+		Sleep( 50 );
 
 		while ( _spidrdaq->hasFrame() ) {
+
 			int size_in_bytes = -1;
 			data = _spidrdaq->frameData(0, &size_in_bytes);
 			//cout << "Size in bytes = " << size_in_bytes << endl;
 			//PrintFraction(data, size_in_bytes, 100);
-			int nActive = GetNPixelsActive(data, size_in_bytes, __VERBL_INFO);
+			int nActive = GetNPixelsActive(data, size_in_bytes, __VERBL_DEBUG);
 
 			cout << ", active : " << nActive << " ";
 
@@ -113,6 +126,7 @@ void SpidrMpx3Eq::StartEqualization(){
 
 			_spidrdaq->releaseFrame();
 			Sleep( 50 ); // Allow time to get and decode the next frame, if any
+
 		}
 
 		cout << " " << endl;
@@ -123,9 +137,11 @@ void SpidrMpx3Eq::StartEqualization(){
 		//		<< spidrdaq.expSequenceNr( 0 ) << endl;
 	}
 
+	*/
+
 }
 
-void SpidrMpx3Eq::Connect(){
+void SpidrMpx3Eq::Connect() {
 
 	int dev_nr = 2;
 	cout << "Connecting ..." << endl;
@@ -170,17 +186,24 @@ void SpidrMpx3Eq::Connect(){
 	Sleep( 1000 );
 	cout << _spidrdaq->errString() << endl;
 
+
+	/*
 	// Reset pixel configuration
 	_spidrcontrol->resetPixelConfig();
 	//_spidrcontrol->writePixelConfigMpx3rx( dev_nr );
 
-	// Globals
+	// OMR
+	//_spidrcontrol->setPolarity( true );		// Holes collection
+	//_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
+	//_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
+	_spidrcontrol->setPixelDepth( 12 );
+
 	_spidrcontrol->setColourMode( false ); 	// Fine Pitch
 	_spidrcontrol->setCsmSpm( 0 );			// Single Pixel mode
 	_spidrcontrol->setEqThreshH( true );
+	_spidrcontrol->setDiscCsmSpm( 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
 
 	// Gain ?!
-
 
 	// Other OMR
 	_spidrdaq->setDecodeFrames( true );
@@ -188,21 +211,19 @@ void SpidrMpx3Eq::Connect(){
 	_spidrdaq->setPixelDepth( 12 );
 	_spidrcontrol->setMaxPacketSize( 1024 );
 
-	// Write OMR
-	_spidrcontrol->writeOmr( 0 );
+	// Write OMR ... i shouldn't call this here
+	//_spidrcontrol->writeOmr( 0 );
 
 	// Trigger config
 	int trig_mode      = 4;      // Auto-trigger mode
-	int trig_period_us = 100000; // 100 ms
+	int trig_length_us = 10000;  // This time shouldn't be longer than the period defined by trig_freq_hz
 	int trig_freq_hz   = 5;
-	int nr_of_triggers = 2;
+	int nr_of_triggers = 1;		 // This is the number of shutter open i get
 	int trig_pulse_count;
-	_spidrcontrol->setShutterTriggerConfig( trig_mode, trig_period_us,
+	_spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
 			trig_freq_hz, nr_of_triggers );
+*/
 
-	// Ready for scans
-	//_tscan = new ThlScan( _spidrcontrol, _spidrdaq );
-	_tscan = new ThlScan(_spidrcontrol, _spidrdaq);
 
 }
 
@@ -210,12 +231,21 @@ void SpidrMpx3Eq::Connect(){
 void SpidrMpx3Eq::timerEvent( QTimerEvent * evt ) {
 
 
-	double val = rand() % 500 + 1 ;
-	cout << "append : " << val << endl;
+	//double val = rand() % 510 + 1 ;
+	//cout << "append : " << val << endl;
 
 	// filling the histo with random numbers
-	_chart->PushBackToSet( 0, val );
-	_chart->update();
+	//_chart->PushBackToSet( 0, val );
+	////QCPBarData bin_content = (*(_chart->GetDataSet(0)->data()))[val];
+
+	//double cont = (*dmap)[val];
+	////_chart->GetDataSet(0)->addData( bin_content.key , bin_content.value +1 );
+	//_chart->DumpData();
+	//_chart->clearGraphs();
+	////_chart->replot();
+	//_chart->update();
+
+	//_chart->SetValueInSet(0, 100);
 
 }
 
@@ -239,17 +269,12 @@ int SpidrMpx3Eq::GetNPixelsActive(int * buffer, int size, verblev verbose) {
 	int NPixelsActive = 0;
 
 	// 4 bits per pixel
-	int nPixels = size/5;
+	int nPixels = size/4;
 	for(int i = 0 ; i < nPixels ; i++) {
 		pair<int, int> pix = XtoXY(i, __matrix_size_x);
 		if(buffer[i] != 0) {
 			if ( verbose == __VERBL_DEBUG ) {
-				// Separate in 4 words
-				unsigned int a = 0, b = 0;
-				unsigned int input = buffer[i];
-				a = input & 0x00000FFF;
-				b = (input >> 12)  & 0x00000FFF;
-				printf("(%d,%d): 0x%x --> words: 0x%x(%d), 0x%x(%d) \n",pix.first, pix.second, buffer[i], b, b, a, a);
+				printf("(%d,%d) counts: %d \n",pix.first, pix.second, buffer[i]);
 			}
 			NPixelsActive++;
 		}

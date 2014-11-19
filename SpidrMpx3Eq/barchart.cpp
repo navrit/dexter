@@ -3,18 +3,9 @@
  * Nikhef, 2014.
  */
 
-
 #include "barchart.h"
-#include <qwt_plot_renderer.h>
-#include <qwt_plot_canvas.h>
-#include <qwt_plot_multi_barchart.h>
-#include <qwt_column_symbol.h>
-#include <qwt_plot_layout.h>
-#include <qwt_legend.h>
-#include <qwt_scale_draw.h>
 
 #include <iostream>
-
 using namespace std;
 
 BarChart::BarChart( QWidget * parent ):
@@ -62,7 +53,7 @@ void BarChart::PrepareSets() {
 	this->xAxis->setRange(0, 511);
 
 	// prepare y axis:
-	this->yAxis->setRange(0, 10);
+	this->yAxis->setRange(0, 100);
 	this->yAxis->setPadding(5); // a bit more space to the left border
 	this->yAxis->setLabel("entries");
 	this->yAxis->grid()->setSubGridVisible(true);
@@ -86,13 +77,14 @@ void BarChart::PrepareSets() {
 	this->legend->setFont(legendFont);
 	this->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
 
+
 	// Prepare data.  As many vectors as sets.
 	_dataKeys = new QVector< QVector<double> * >(_nSets, new QVector<double>() );
 	_dataVals = new QVector< QVector<double> * >(_nSets, new QVector<double>() );
 
 	for (unsigned int iSet = 0 ; iSet < nSets ; iSet++ ) {
 		// Prepare x axis for this set, and fill with zeroes all bins
-		for(int i = 0 ; i < _bp->max[iSet] - _bp->min[iSet] ; i++) {
+		for(int i = 0 ; i < _bp->max_x[iSet] - _bp->min_x[iSet] ; i++) {
 			_dataKeys->at(iSet)->push_back( i );
 			_dataVals->at(iSet)->push_back( 0 );
 		}
@@ -102,7 +94,22 @@ void BarChart::PrepareSets() {
 
 }
 
+void BarChart::SetValueInSet(unsigned int setId, double val, double weight) {
 
+	QCPBarData bin_content = (*(GetDataSet(setId)->data()))[val];
+	GetDataSet(setId)->addData( bin_content.key , bin_content.value + weight );
+
+	// Revisit limits
+	QCPRange rangeY = this->yAxis->range();
+	if ( rangeY.upper < bin_content.value + weight ) {
+		this->yAxis->setRange(0, ( bin_content.value + weight) * 1.1 );
+	}
+
+	replot();
+
+}
+
+/*
 void BarChart::PushBackToSet(unsigned int setId, double val, double weight) {
 
 	if ( setId >= _nSets ) {
@@ -113,6 +120,41 @@ void BarChart::PushBackToSet(unsigned int setId, double val, double weight) {
 	// Increase the value at the particular location
 	double a = _dataVals->at(setId)->at( val );
 	a += weight;
-	_dataVals->at(setId)->at( a );
+	(*(_dataVals->at(setId)))[val] = a;
 
 }
+
+void BarChart::DumpData() {
+
+	QVector< QVector<double> * >::iterator itr = _dataVals->begin();
+	QVector< QVector<double> * >::iterator itrE = _dataVals->end();
+
+	QVector<double>::iterator i;
+	QVector<double>::iterator iE;
+
+	// Set
+	for ( ; itr != itrE ; itr++ ) {
+		// Data
+		i = (*itr)->begin();
+		iE = (*itr)->end();
+		if ( !(*itr)->empty() ) { cout << "< "; }
+		else { cout << "empty" << endl; }
+		int cntr = 0;
+		int sizeV = (*itr)->size();
+		bool dotsFlg = false;
+		for ( ; i != iE ; i++ ) {
+			// only print first 10 and last 10 elements
+			if ( cntr < 10 || cntr > sizeV - 10 ) {
+				cout << (*i);
+				if( i+1 != iE ) cout << ", ";
+				else cout << " >" << endl;
+			} else {
+				if ( !dotsFlg ) { cout << " ... "; dotsFlg = true; }
+			}
+			cntr++;
+		}
+	}
+
+}
+*/
+

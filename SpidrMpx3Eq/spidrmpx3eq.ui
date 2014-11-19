@@ -6,62 +6,377 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>858</width>
-    <height>485</height>
+    <width>1051</width>
+    <height>710</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>SpidrMpx3Eq</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QWidget" name="verticalLayoutWidget">
+   <widget class="QTabWidget" name="_tabDACs">
     <property name="geometry">
      <rect>
-      <x>600</x>
-      <y>330</y>
-      <width>241</width>
-      <height>85</height>
+      <x>0</x>
+      <y>10</y>
+      <width>1051</width>
+      <height>641</height>
      </rect>
     </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QPushButton" name="_connect">
-       <property name="text">
-        <string>Connect</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="_startEq">
-       <property name="text">
-        <string>Start Eq</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="_statusLabel">
-       <property name="text">
-        <string>Standby ...</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QFrame" name="_histoFrame">
-    <property name="geometry">
-     <rect>
-      <x>50</x>
-      <y>20</y>
-      <width>441</width>
-      <height>381</height>
-     </rect>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Equalization&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
+    <property name="currentIndex">
+     <number>1</number>
     </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Equalization</string>
+     </attribute>
+     <widget class="QWidget" name="verticalLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>760</x>
+        <y>470</y>
+        <width>241</width>
+        <height>85</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QPushButton" name="_connect">
+         <property name="text">
+          <string>Connect</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="_startEq">
+         <property name="text">
+          <string>Start Eq</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="_statusLabel">
+         <property name="text">
+          <string>Standby ...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QFrame" name="_histoFrame">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>491</width>
+        <height>361</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>DACs</string>
+     </attribute>
+     <widget class="QFrame" name="_DACScanFrame">
+      <property name="geometry">
+       <rect>
+        <x>590</x>
+        <y>20</y>
+        <width>431</width>
+        <height>331</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <zorder>verticalLayoutWidget_2</zorder>
+     </widget>
+     <widget class="QWidget" name="horizontalLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>381</width>
+        <height>607</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QSlider" name="dac0hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac1hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac2hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac3hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac4hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac5hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac6hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac7hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac8hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac9hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac10hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac11hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac12hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac13hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac14hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac15hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac16hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac17hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac18hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac19hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac20hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac21hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac22hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac23hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac24hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac25hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="dac26hSlider">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="QLineEdit" name="lineEdit_2"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_3"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_4"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_5"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_6"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_7"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_8"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_9"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_10"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_11"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_12"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_13"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_14"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_15"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_16"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_17"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_18"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_19"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_20"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_21"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -69,8 +384,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>858</width>
-     <height>25</height>
+     <width>1051</width>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
