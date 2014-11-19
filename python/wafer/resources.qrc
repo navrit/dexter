@@ -18,6 +18,7 @@
      <file>img/start.png</file>
      <file>img/forward.png</file>
      <file>img/messagebox_info.png</file>
+     <file>img/rotate_cw.png</file>
  </qresource>
  </RCC>
  
