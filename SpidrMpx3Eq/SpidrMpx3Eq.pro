@@ -37,6 +37,7 @@ SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
 
 HEADERS += spidrmpx3eq.h
+HEADERS += mpx3eq_common.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 
