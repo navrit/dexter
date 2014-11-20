@@ -82,7 +82,7 @@ class test07_clock_phasing(tpx3_test):
         #print "PLL=%0x"%self.tpx.getPllConfig()
         #print "GenConfig=%0x"%self.tpx.getGenConfig()
 
-        for pck in self.tpx.get_frame():
+        for pck in self.tpx.get_frame(timeout=50):
           if pck.type in (0xB,0xA):
             received[pck.col][pck.row]=1
             if not pck.tot in (64,65,66) and not (pck.col,pck.row) in self.bad_pixels:

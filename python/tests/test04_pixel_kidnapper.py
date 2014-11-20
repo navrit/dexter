@@ -46,7 +46,7 @@ class test04_pixel_kidnapper(tpx3_test):
       self.warning_detailed_restart()
       self.logging.info("Round %d"%seq)
       self.tpx.openShutter()
-      data=self.tpx.get_frame()
+      data=self.tpx.get_frame(timeout=100)
       self.logging.info("Reveiced %d packets"%(len(data)))
       cnt=0
       

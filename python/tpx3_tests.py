@@ -86,7 +86,7 @@ class TPX_tests:
         test_list.append(test_name)
       test_list=sorted(test_list)
 
-    params={'wiki':wiki}
+    params={'wiki':wiki,'name':self.name}
     result={'category':'A','bad_pixels':set(),'timeouts':0,'reinit_problem':0}
     
     for test_name in test_list:

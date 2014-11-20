@@ -12,6 +12,8 @@ class ProbeStationException(Exception):
 
 
 class ProbeStation:
+  CONTACT=0
+  ALIGN=1
   def __init__(self,address=22,logname=""):
     self.address=address
     self.logname=logname
@@ -19,13 +21,21 @@ class ProbeStation:
         self.logfile=open(self.logname,"w")
     else:
         self.logfile=None
+    self.x=0
+    self.y=0
+    self.z=0
+
   def log(self,msg):
     if self.logfile:
       self.logfile.write(msg+"\n")
       self.logfile.flush()
 
   def connect(self):
-    present=gpib.listener(0,self.address)
+    try:
+        present=gpib.listener(0,self.address)
+    except:
+      self.log("gpib.GpibError: listener() error: No such device (errno: 19)")
+      raise (ProbeStationException("connect:GPIB system is not configured properly."))
     if not present:
       self.log("connect:Probe Station not present.")
       raise (ProbeStationException("connect:Probe Station not present."))
@@ -48,15 +58,25 @@ class ProbeStation:
     self.wr(m)
     return self.rd(l)
 
+  def getChuckPosition(self):
+    r=self.qr("ReadChuckPosition")
+    rr=r.split()
+    if int(rr[0])!=0:
+      raise (ProbeStationException("ReadChuckPosition:"+r,code=int(rr[0])))
+    status,x,y,z,message=rr
+    z=float(z)
+    self.z=self.ALIGN
+    if z>=-200.0:
+        self.z=self.CONTACT
+    
   def StepFirstDie(self):
     r=self.qr("StepFirstDie")
     rr=r.split()
     if int(rr[0])!=0:
       raise (ProbeStationException("StepFirstDie:"+r,code=int(rr[0])))
     status,index_x,index_y,message=rr
-    index_x=int(index_x)
-    index_y=int(index_y)
-    return (index_x,index_y)
+    self.x=int(index_x)
+    self.y=int(index_y)
 
   def StepNextDie(self):
     r=self.qr("StepNextDie")
@@ -64,9 +84,8 @@ class ProbeStation:
     if int(rr[0])!=0:
       raise (ProbeStationException("StepNextDie:"+r,code=int(rr[0])))
     status,index_x,index_y,message=rr
-    index_x=int(index_x)
-    index_y=int(index_y)
-    return (index_x,index_y)
+    self.x=int(index_x)
+    self.y=int(index_y)
 
 
   def GoToXY(self,x,y,):
@@ -74,7 +93,9 @@ class ProbeStation:
     rr=r.split()
     if int(rr[0])!=0:
       raise (ProbeStationException("GoToXY:"+r,code=int(rr[0])))
-    return (rr[1],rr[2],rr[3])
+    status,index_x,index_y,message=rr
+    self.x=int(index_x)
+    self.y=int(index_y)
 
 
   def Contact(self):
@@ -82,14 +103,14 @@ class ProbeStation:
     rr=r.split()
     if int(rr[0])!=0:
       raise (ProbeStationException("MoveChuckContact:"+r,code=int(rr[0])))
-    return True
+    self.z=self.CONTACT
 
   def Align(self):
     r=self.qr("MoveChuckAlign")
     rr=r.split()
     if int(rr[0])!=0:
       raise (ProbeStationException("MoveChuckAlign:"+r,code=int(rr[0])))
-    return True
+    self.z=self.ALIGN
 
   def ReadMapPosition(self):
     r=self.qr("ReadMapPosition")
@@ -97,20 +118,20 @@ class ProbeStation:
     if int(rr[0])!=0:
       raise (ProbeStationException("ReadMapPosition:"+r,code=int(rr[0])))
     status,index_x,index_y,x,y,message=rr
-    index_x=int(index_x)
-    index_y=int(index_y)
-    return (index_x,index_y)
+    self.x=int(index_x)
+    self.y=int(index_y)
 
 def main():
 
     parser = OptionParser()
-    parser.add_option("-l", "--log",           dest="logname",    help="log file name", default="probestation.log")
-    parser.add_option("-g", "--gpib",          dest="address",    help="GPIB address of probestation", type="int", default=22)
-    parser.add_option("-r", "--read-position", dest="readpos",    help="Read current position", action="store_true", default=False)
-    parser.add_option("-f", "--step-first-die",dest="stepfirst",  help="Step first die", action="store_true", default=False)
-    parser.add_option("-n", "--step-next-die", dest="stepnext",   help="Step next die", action="store_true", default=False)
-    parser.add_option("-a", "--align",         dest="align",      help="Align", action="store_true", default=False)
-    parser.add_option("-c", "--concact",       dest="concact",    help="Concact", action="store_true", default=False)
+    parser.add_option("-l", "--log",           dest="logname",       help="log file name", default="probestation.log")
+    parser.add_option("-g", "--gpib",          dest="address",       help="GPIB address of probestation", type="int", default=22)
+    parser.add_option("-r", "--read-position", dest="readpos",       help="Read current position", action="store_true", default=False)
+    parser.add_option("-f", "--step-first-die",dest="stepfirst",     help="Step first die", action="store_true", default=False)
+    parser.add_option("-n", "--step-next-die", dest="stepnext",      help="Step next die", action="store_true", default=False)
+    parser.add_option("-a", "--align",         dest="align",         help="Align", action="store_true", default=False)
+    parser.add_option("-c", "--concact",       dest="concact",       help="Concact", action="store_true", default=False)
+    parser.add_option("-x", "--chuck-position",dest="chuck_position",help="Get Chuck postion", action="store_true", default=False)
 
     (options, args) = parser.parse_args()
 
@@ -128,6 +149,8 @@ def main():
         print "Align",ps.Align()
       if options.concact: 
         print "Concact",ps.Contact()
+      if options.chuck_position:
+          print "Chuck position", ps.getChuckPosition()
 #      ps.GoToXY(7,1)
     except ProbeStationException as ex:
       print "ERROR",ex,ex.code

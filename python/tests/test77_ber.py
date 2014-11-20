@@ -22,6 +22,7 @@ class test77_ber(tpx3_test):
 
     logname=self.fname+"/stats.txt"
     f=open(logname,"w")
+    self.tpx.setReadoutSpeed(80)
     for links in range(255,256):
         self.tpx.reinitDevice()
         eth_filter,cpu_filter=self.tpx.getHeaderFilter()
@@ -30,6 +31,7 @@ class test77_ber(tpx3_test):
         self.logging.info("Active link '0x%02x'"%links)
         self.tpx.setOutputMask( mask=links)
         self.tpx.setSlvsConfig(0x10)
+
         pixel_errors=0
 
         for pattern in ['zeros','ones','random',]:
@@ -63,7 +65,7 @@ class test77_ber(tpx3_test):
                   self.tpx.setPixelMask(x,y,mask)
               self.tpx.setPixelConfig()
 
-              MAX=256
+              MAX=10
               for loop in range(MAX):
                 self.warning_detailed_restart()
                 self.logging.info("ACQ %s %d/%d"%(pattern,loop+1,MAX))
