@@ -453,12 +453,18 @@ class TPX3:
     eth,cpu=self.getHeaderFilter()
     self.setHeaderFilter(eth|0x0C80,cpu)
 
-  def sequentialReadout(self,tokens=2):
-    self.readout='seq'
-    r=self.ctrl.sequentialReadout(tokens)
-    self._presetFPGAFilters()
-    self._log_ctrl_cmd("sequentialReadout(tokens=%d) "%tokens,r)
+#  def sequentialReadout(self,tokens=2):
+#    self.readout='seq'
+#    r=self.ctrl.sequentialReadout(tokens)
+#    self._presetFPGAFilters()
+#    self._log_ctrl_cmd("sequentialReadout(tokens=%d) "%tokens,r)
 
+  def sequentialReadout(self,tokens=2,now=False):
+    self.readout='seq'
+    r=self.ctrl.sequentialReadout(tokens,now=now)
+#    self.presetFPGAFilters()
+    self._log_ctrl_cmd("sequentialReadout(tokens=%d,now=%d) "%(tokens,now),r)
+    
   def datadrivenReadout(self):
     self.readout='dd'
     r=self.ctrl.datadrivenReadout()
