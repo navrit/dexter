@@ -29,18 +29,34 @@ using namespace std;
 // ---------------------------------------------------------------------------
 // Constructor 
 // ---------------------------------------------------------------------------
-SpidrEqualisation::SpidrEqualisation(SpidrController* spidrctrl, 
-                                     SpidrDaq* spidrdaq) : 
-  m_ctrl(spidrctrl), m_daq(spidrdaq),
-  m_device(0),
+SpidrEqualisation::SpidrEqualisation(SpidrController* spidrctrl) :
+  m_ctrl(spidrctrl), m_daq(),
+  m_nDevices(3), m_disabled(),
   m_stddev(4),
   m_spacing(2), 
   m_thlmin(0), m_thlmax(512), m_thlstep(1),
   m_thlcoarse(6), m_ikrum(10),
   m_trig_length_us(50), m_trigmode(4),
   m_trig_freq_hz(100), m_nr_of_trigs(1),
-  m_filename(""), m_dacfilename(""),
+  m_filename(""), m_dacfilename(),
   m_eminus(true) {
+
+  m_daq.resize(m_nDevices, NULL);
+  m_dacfilename.resize(m_nDevices, "");
+  m_disabled.resize(m_nDevices, false);
+  for (unsigned int i = 0; i < m_nDevices; ++i) {
+    m_daq[i] = new SpidrDaq(spidrctrl, 0x10000000, i);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Destructor 
+// ---------------------------------------------------------------------------
+SpidrEqualisation::~SpidrEqualisation() {
+
+  for (unsigned int i = 0; i < m_nDevices; ++i) {
+    if (m_daq[i]) delete m_daq[i];
+  }
 
 }
 
@@ -59,19 +75,30 @@ bool SpidrEqualisation::scanCoarse() {
       return false;
     }
     std::stringstream ss;
-    ss << m_filename << "_spacing_" << m_spacing << "_coarse" << thlc;
+    ss << m_filename << "_spacing_" << m_spacing << "_coarse" << thlc << "_chip";
     const std::string filenameBase = ss.str();
     // Noise scan with all pixels at same TRIM.
     cout << "[Note] Taking data with all pixels at TRIM 7\n";
     if (!setTHLTrimALL(7)) return false;
-    if (!takeData(filenameBase + "_7.dat")) {
+    std::vector<std::string> filenames(m_nDevices, "");
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      ss.str("");
+      ss << i;
+      filenames[i] = filenameBase + ss.str() + "_7.dat"; 
+    }
+    if (!takeData(filenames)) {
       printFinal("FAILED");
       return false;
     }
-    cout << "[Note] Analysing data\n";
-    if (!analyseData(filenameBase + "_7")) {
-      printFinal("FAILED");
-      return false;
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      if (m_disabled[i]) continue;
+      cout << "[Note] Analysing data for chip " << i << "\n";
+      ss.str("");
+      ss << i;
+      if (!analyseData(filenameBase + ss.str() + "_7")) {
+        printFinal("FAILED");
+        return false;
+      }
     }
   }
  
@@ -104,7 +131,13 @@ bool SpidrEqualisation::equalise(const bool scan0, const bool scan15,
   if (scan0) {
     cout << "[Note] Taking data with all pixels at TRIM 0\n";
     if (!setTHLTrimALL(0)) return false;
-    if (!takeData(filenameBase + "_0.dat")) {
+    std::vector<std::string> filenames(m_nDevices, "");
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      ss.str("");
+      ss << i;
+      filenames[i] = filenameBase + "_chip" + ss.str() + "_0.dat";
+    }
+    if (!takeData(filenames)) {
       printFinal("FAILED");
       return false;
     }
@@ -113,7 +146,13 @@ bool SpidrEqualisation::equalise(const bool scan0, const bool scan15,
   if (scan15) {
     cout << "[Note] Taking data with all pixels at TRIM 15\n";
     if (!setTHLTrimALL(15)) return false;
-    if (!takeData(filenameBase + "_15.dat")) {
+    std::vector<std::string> filenames(m_nDevices, "");
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      ss.str("");
+      ss << i;
+      filenames[i] = filenameBase + "_chip" + ss.str() + "_15.dat";
+    }
+    if (!takeData(filenames)) {
       printFinal("FAILED");
       return false;
     }
@@ -121,47 +160,78 @@ bool SpidrEqualisation::equalise(const bool scan0, const bool scan15,
 
   // Analyse the data for the lowest trim value.  
   if (analyse0) {
-    cout << "[Note] Analysing data for TRIM 0\n";
-    if (!analyseData(filenameBase + "_0")) {
-      printFinal("FAILED");
-      return false;
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      if (m_disabled[i]) continue;
+      cout << "[Note] Analysing data for TRIM 0, chip " << i << "\n";
+      ss.str("");
+      ss << i;
+      if (!analyseData(filenameBase + "_chip" + ss.str() + "_0")) {
+        printFinal("FAILED");
+        return false;
+      }
     }
   }
   // Analyse the data for the highest trim value.  
   if (analyse15) {
-    cout << "[Note] Analysing data for TRIM 15\n";
-    if (!analyseData(filenameBase + "_15")) {
-      printFinal("FAILED");
-      return false;
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      if (m_disabled[i]) continue;
+      cout << "[Note] Analysing data for TRIM 15, chip " << i << "\n";
+      ss.str("");
+      ss << i;
+      if (!analyseData(filenameBase + "_chip" + ss.str() + "_15")) {
+        printFinal("FAILED");
+        return false;
+      }
     }
   }
   // Find the trim values for each pixel.
   if (extract) { 
-    cout << "[Note] Extracting trim values\n";
-    if (!extractPars(filenameBase)) {
-      printFinal("FAILED");
-      return false;
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      if (m_disabled[i]) continue;
+      cout << "[Note] Extracting trim values for chip " << i << "\n";
+      ss.str("");
+      ss << i;
+      if (!extractPars(filenameBase + "_chip" + ss.str())) {
+        printFinal("FAILED");
+        return false;
+      }
     }
   }
   if (scanFinal) { 
     // Apply the trim values and rerun the acquisition.
-    cout << "[Note] Applying trim values\n";
-    if (!setTHLTrim(filenameBase + ".txt", false)) {
-      printFinal("FAILED");
-      return false;
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      if (m_disabled[i]) continue;
+      cout << "[Note] Applying trim values to chip " << i << "\n";
+      ss.str("");
+      ss << i;
+      if (!setTHLTrim(filenameBase + "_chip" + ss.str() + ".txt", false, i)) {
+        printFinal("FAILED");
+        return false;
+      }
     }
     cout << "[Note] Taking data\n";
-    if (!takeData(filenameBase + "_equalised.dat")) {
+    std::vector<std::string> filenames(m_nDevices, "");
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      ss.str("");
+      ss << i;
+      filenames[i] = filenameBase + "_chip" + ss.str() + "_equalised.dat";
+    }
+    if (!takeData(filenames)) {
       printFinal("FAILED");
       return false;
     }
   }
   // Analyse the data after equalisation.
   if (analyseFinal) {
-    cout << "[Note] Analysing data\n";
-    if (!analyseData(filenameBase + "_equalised")) {
-      printFinal("FAILED");
-      return false;
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      if (m_disabled[i]) continue;
+      cout << "[Note] Analysing data for chip " << i << "\n";
+      ss.str("");
+      ss << i;
+      if (!analyseData(filenameBase + "_chip" + ss.str() + "_equalised")) {
+        printFinal("FAILED");
+        return false;
+      }
     }
   }
   cout << "[Note] Unmasking all pixels" << endl; 
@@ -169,20 +239,33 @@ bool SpidrEqualisation::equalise(const bool scan0, const bool scan15,
     printFinal("FAILED");
     return false;
   }
-  if (!m_ctrl->setPixelConfig(m_device)) printError("setPixelConfig");
+  for (unsigned int i = 0; i < m_nDevices; ++i) {
+    if (m_disabled[i]) continue;
+    if (!m_ctrl->setPixelConfig(i)) printError("setPixelConfig");
+  }
   if (mask) {
-    cout << "[Note] Masking pixels out of range\n";
-    if (!maskPixels(filenameBase)) {
-      printFinal("FAILED");
-      return false;
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      if (m_disabled[i]) continue;
+      cout << "[Note] Masking pixels out of range on chip " << i << "\n";
+      ss.str("");
+      ss << i;
+      if (!maskPixels(filenameBase + "_chip" + ss.str())) {
+        printFinal("FAILED");
+        return false;
+      }
     } 
   }
  
   if (plot) {
-    cout << "[Note] Creating plot\n";
-    if (!plotEqualisation(filenameBase)) {
-      printFinal("FAILED");
-      return false;
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      if (m_disabled[i]) continue;
+      cout << "[Note] Creating plot for chip " << i << "\n";
+      ss.str("");
+      ss << i;
+      if (!plotEqualisation(filenameBase + "_chip" + ss.str())) {
+        printFinal("FAILED");
+        return false;
+      }
     }
   }
   printFinal("DONE");
@@ -201,16 +284,19 @@ bool SpidrEqualisation::quickEqualisation() {
 // ---------------------------------------------------------------------------
 // Load trim values and mask bits from file.
 // ---------------------------------------------------------------------------
-bool SpidrEqualisation::loadEqualisation(const std::string& filename, const bool loadmask) {
+bool SpidrEqualisation::loadEqualisation(const std::string& filename, 
+                                         const bool loadmask,
+                                         const unsigned int device) {
  
   if (!checkCommunication()) return false;
-  std::cout << "[Note] Loading pixel trim values from" << filename << "\n";
-  if (!setTHLTrim(filename, loadmask)) {
+  std::cout << "[Note] Loading pixel trim values for chip " << device 
+            << " from " << filename << "\n";
+  if (!setTHLTrim(filename, loadmask, device)) {
     printFinal("FAILED");
     return false;
   }
 
-  m_ctrl->setPixelConfig(m_device);
+  m_ctrl->setPixelConfig(device);
   printFinal("DONE");
   return true;
 }
@@ -233,24 +319,37 @@ bool SpidrEqualisation::checkCommunication() {
          << m_ctrl->connectionErrString() << endl;
     return false;
   }   
-  int linkstatus;
-  if (!m_ctrl->getLinkStatus(0, &linkstatus)) {
-    printError("getLinkStatus");
+  for (unsigned int i = 0; i < m_nDevices; ++i) {
+    if (m_disabled[i]) continue;
+    if (!m_ctrl->setOutputMask(i, 0x3)) {
+      printError("setOutputMask");
+    }
+    int linkstatus;
+    if (!m_ctrl->getLinkStatus(i, &linkstatus)) {
+      printError("getLinkStatus");
+    }
+    int links_enabled_mask = (~linkstatus) & 0xFF;
+    int links_locked_mask  = (linkstatus & 0xFF0000) >> 16;
+    std::cout << "[Note] Link status\n";
+    std::cout << "  Link  Enabled  Locked\n";
+    for (unsigned int j = 0; j < 8; ++j) {
+      const int enabled = (links_enabled_mask >> j) & 0x1;
+      const int locked = (links_locked_mask >> j) & 0x1;
+      std::cout << "    " << j << "      " << enabled 
+                << "       " << locked << "\n";
+    }
+    if (links_enabled_mask != 0 &&
+        links_locked_mask == links_enabled_mask) {
+      // At least one link is enabled, and all links enabled are locked
+      // cout << "[Note] linkstatus: " << hex << linkstatus << dec << endl;
+    } else {
+      std::stringstream ss;
+      ss << std::hex << linkstatus;
+      printError("linkstatus", ss.str());
+    }
+    const std::string errstr = m_daq[i]->errorString();
+    if (!errstr.empty()) printError("SpidrDaq", errstr);
   }
-  // Link status: bits 0-7: 0 = link enabled; bits 16-23: 1 = link locked
-  int links_enabled_mask = (~linkstatus) & 0xFF;
-  int links_locked_mask  = (linkstatus & 0xFF0000) >> 16;
-  if (links_enabled_mask != 0 &&
-      links_locked_mask == links_enabled_mask) {
-    // At least one link (of 8) is enabled, and all links enabled are locked
-    // cout << "[Note] linkstatus: " << hex << linkstatus << dec << endl;
-  } else {
-    std::stringstream ss;
-    ss << std::hex << linkstatus;
-    printError("linkstatus", ss.str());
-  }
-  const std::string errstr = m_daq->errorString();
-  if (!errstr.empty()) printError("SpidrDaq", errstr);
   return true;
 }
 
@@ -260,7 +359,7 @@ bool SpidrEqualisation::checkCommunication() {
 bool SpidrEqualisation::setConfiguration() {
 
   // Switch to slower 'serial links' output (instead of GTX links).
-  if (!m_ctrl->setSpidrRegBit(0x2D0, 0)) printError("setSpidrRegBit");
+  // if (!m_ctrl->setSpidrRegBit(0x2D0, 0)) printError("setSpidrRegBit");
 
   int errstat;
   if (!m_ctrl->reset(&errstat)) {
@@ -269,35 +368,63 @@ bool SpidrEqualisation::setConfiguration() {
     printError("reset", ss.str());
   }
   // Set the ethernet filter.
-  int eth_mask, cpu_mask;
-  m_ctrl->getHeaderFilter(m_device, &eth_mask, &cpu_mask);
-  eth_mask = 0xffff;
-  m_ctrl->setHeaderFilter(m_device, eth_mask, cpu_mask);
-  // Reset the pixel configuration.
-  if (!m_ctrl->resetPixels(m_device)) {
-    printError("resetPixels");
-    return false;
+  for (unsigned int i = 0; i < m_nDevices; ++i) {
+    if (m_disabled[i]) continue;
+    int eth_mask, cpu_mask;
+    m_ctrl->getHeaderFilter(i, &eth_mask, &cpu_mask);
+    eth_mask = 0xffff;
+    m_ctrl->setHeaderFilter(i, eth_mask, cpu_mask);
   }
-  m_ctrl->resetPixelConfig();
 
-  if (!m_ctrl->restartTimers()) printError("restartTimers");
-  if (m_dacfilename.empty()) {
-    cout << "[Note] Applying default DAC settings\n";
-    if (!m_ctrl->setDacsDflt(m_device)) printError("setDacsDflt");
-  } else {
-    loadDacs(m_dacfilename);
+  // Select whether or not to let the FPGA do the ToT/ToA decoding.
+  if (!m_ctrl->setDecodersEna(true)) printError("setDecodersEna");
+
+  // Reset the pixel configuration. 
+  for (unsigned int i = 0; i < m_nDevices; ++i) {
+    if (m_disabled[i]) continue;
+    cout << "[Note] Resetting pixel configuration for chip " << i << "\n";
+    if (!m_ctrl->resetPixels(i)) {
+      printError("resetPixels");
+      return false;
+    }
+    m_ctrl->resetPixelConfig();
   }
+
+  // Load the DAC settings.
+  for (unsigned int i = 0; i < m_nDevices; ++i) {
+    if (m_disabled[i]) continue;
+    cout << "[Note] Loading DAC settings for chip " << i << "\n";
+    if (m_dacfilename[i].empty()) {
+      cout << "[Note] Applying default DAC settings\n";
+      if (!m_ctrl->setDacsDflt(i)) printError("setDacsDflt");
+    } else {
+      loadDacs(m_dacfilename[i], i);
+    }
+  }
+
+
+  // Reset the timers.
+  for (unsigned int i = 0; i < m_nDevices; ++i) {
+    if (m_disabled[i]) continue;
+    cout << "[Note] Loading DAC settings for chip " << i << "\n";
+    m_ctrl->resetPixelConfig();
+    if (!m_ctrl->restartTimers()) printError("restartTimers");
+  }
+
   // Set the acquisition mode.
   int config = 0;
   if (m_eminus) {
-    std::cout << "[Note] Chip set to electron-collecting mode.\n";
+    std::cout << "[Note] Activating electron-collecting mode.\n";
     config = TPX3_POLARITY_EMIN | TPX3_ACQMODE_EVT_ITOT | TPX3_GRAYCOUNT_ENA;
   } else {
-    std::cout << "[Note] Chip set to hole-collecting mode.\n";
+    std::cout << "[Note] Activating hole-collecting mode.\n";
     config = TPX3_POLARITY_HPLUS | TPX3_ACQMODE_EVT_ITOT | TPX3_GRAYCOUNT_ENA;
   }
-  if (!m_ctrl->setGenConfig(m_device, config)) printError("setGenCfg");
-  if (!m_ctrl->setDecodersEna(true)) printError("setDecodersEna");
+  for (unsigned int i = 0; i < m_nDevices; ++i) {
+    if (m_disabled[i]) continue;
+    if (!m_ctrl->setGenConfig(i, config)) printError("setGenCfg");
+  }
+
   // Activate sequential readout mode.
   if (!m_ctrl->sequentialReadout(1)) printError("sequentialReadout");
   // Set the trigger configuration. 
@@ -307,15 +434,18 @@ bool SpidrEqualisation::setConfiguration() {
   }
   // Set the Ikrum DAC.
   std::cout << "[Note] Setting IBIAS_IKRUM to " << m_ikrum << "\n";
-  if (!m_ctrl->setDac(m_device, TPX3_IBIAS_IKRUM, m_ikrum)) {
-    printError("setDac (IBIAS_IKRUM)");
-  }
   std::cout << "[Note] Setting VTHRESH_COARSE to " << m_thlcoarse << "\n";
-  if (!m_ctrl->setDac(m_device, TPX3_VTHRESH_COARSE, m_thlcoarse)) { 
-    printError("setDac (VTHRESH_COARSE)");
+  for (unsigned int i = 0; i < m_nDevices; ++i) {
+    if (m_disabled[i]) continue;
+    if (!m_ctrl->setDac(i, TPX3_IBIAS_IKRUM, m_ikrum)) {
+      printError("setDac (IBIAS_IKRUM)");
+    }
+    if (!m_ctrl->setDac(i, TPX3_VTHRESH_COARSE, m_thlcoarse)) { 
+      printError("setDac (VTHRESH_COARSE)");
+    }
+    m_daq[i]->setFlush(false);
+    m_daq[i]->setSampling(true);
   }
-  m_daq->setFlush(false);
-  m_daq->setSampling(true);
   return true;
 }
 
@@ -323,7 +453,8 @@ bool SpidrEqualisation::setConfiguration() {
 // Load the trim DAC mask from a file and apply it to the pixels.
 // ---------------------------------------------------------------------------
 bool SpidrEqualisation::setTHLTrim(const std::string& filename,
-                                   const bool applyMasking) {
+                                   const bool applyMasking,
+                                   const unsigned int device) {
 
   FILE* fp = fopen(filename.c_str(), "r");
   if (fp == NULL) {
@@ -331,6 +462,12 @@ bool SpidrEqualisation::setTHLTrim(const std::string& filename,
     return false;
   }
       
+  if (!m_ctrl->resetPixels(device)) {
+    printError("resetPixels");
+    return false;
+  }
+  m_ctrl->setPixelTestEna(ALL_PIXELS, ALL_PIXELS, false);
+  m_ctrl->setPixelMask(ALL_PIXELS, ALL_PIXELS, false);
   char line[256];
   while (!feof(fp)) {
     if (fgets(line, 256, fp) == NULL) continue;
@@ -343,7 +480,7 @@ bool SpidrEqualisation::setTHLTrim(const std::string& filename,
       m_ctrl->setPixelMask(col, row, true);
     }
   }
-  m_ctrl->setPixelConfig(m_device);
+  m_ctrl->setPixelConfig(device);
   cout << "[Note] Pixel trim bits written to chip\n";
   return true;
 }
@@ -353,21 +490,26 @@ bool SpidrEqualisation::setTHLTrim(const std::string& filename,
 // ---------------------------------------------------------------------------
 bool SpidrEqualisation::setTHLTrimALL(const unsigned int trim) {
 
-  if (!m_ctrl->setPixelThreshold(ALL_PIXELS, ALL_PIXELS, trim)) {
-    printError("setPixelThreshold");
+  for (unsigned int i = 0; i < m_nDevices; ++i) {
+    if (m_disabled[i]) continue;
+    if (!m_ctrl->setPixelThreshold(ALL_PIXELS, ALL_PIXELS, trim)) {
+      printError("setPixelThreshold");
+    }
+    m_ctrl->setPixelConfig(i);
   }
-  m_ctrl->setPixelConfig(m_device);
   return true;
 }
 
 // ---------------------------------------------------------------------------
 // Run a noise scan for a given trim configuration.
 // ---------------------------------------------------------------------------
-bool SpidrEqualisation::takeData(const std::string& filename) {
+bool SpidrEqualisation::takeData(const std::vector<std::string>& filenames) {
 
-  // Open a data file.
-  m_daq->startRecording(filename.c_str(), 0);
-
+  // Open data files.
+  for (unsigned int i = 0; i < m_nDevices; ++i) {
+    if (m_disabled[i]) continue;
+    m_daq[i]->startRecording(filenames[i].c_str(), 0);
+  }
   const unsigned int nSteps = m_spacing * m_spacing;
   int step = 1;
   const unsigned int sampleSize = 256 * 256 * 8;
@@ -385,7 +527,10 @@ bool SpidrEqualisation::takeData(const std::string& filename) {
         }
       }
       // Write the pixel configuration to the chip.
-      if (!m_ctrl->setPixelConfig(m_device)) printError("setPixelConfig");
+      for (unsigned int i = 0; i < m_nDevices; ++i) {
+        if (m_disabled[i]) continue;
+        if (!m_ctrl->setPixelConfig(i)) printError("setPixelConfig");
+      }
       cout << "[Note] Threshold scan " << step << "/" << nSteps << endl;
       // Threshold scan.
       unsigned int nSteps = 0;
@@ -398,27 +543,37 @@ bool SpidrEqualisation::takeData(const std::string& filename) {
 	       << "%\r" << flush;
         } 
         // Set the new threshold.
-        if (!m_ctrl->setDac(m_device, TPX3_VTHRESH_FINE, thl)) {   
-          std::stringstream ss;
-          ss << "setDac (VTHRESH_FINE = " << thl << ")";
-          printError(ss.str());
-        }
-        if (!m_ctrl->getDac(m_device, TPX3_VTHRESH_FINE, &thl)) {   
-          std::stringstream ss;
-          ss << "getDac (VTHRESH_FINE = " << thl << ")";
-          printError(ss.str());
+        for (unsigned int i = 0; i < m_nDevices; ++i) {
+          if (m_disabled[i]) continue;
+          if (!m_ctrl->setDac(i, TPX3_VTHRESH_FINE, thl)) {   
+            std::stringstream ss;
+            ss << "setDac (VTHRESH_FINE = " << thl << ")";
+            printError(ss.str());
+          }
+          if (!m_ctrl->getDac(i, TPX3_VTHRESH_FINE, &thl)) {   
+            std::stringstream ss;
+            ss << "getDac (VTHRESH_FINE = " << thl << ")";
+            printError(ss.str());
+          }
         }
         // Wait for the DAC to stabilise.
         usleep(200);
         // Start triggers.
         if (!m_ctrl->startAutoTrigger()) printError("startAutoTrigger");
-        bool next_frame = true;
-        while (next_frame) next_frame = m_daq->getSample(sampleSize, 100);
+        const bool sampling = false;
+        if (!sampling) continue;
+        for (unsigned int i = 0; i < m_nDevices; ++i) {
+          bool next_frame = true;
+          while (next_frame) next_frame = m_daq[i]->getSample(sampleSize, 100);
+        }
       }
       ++step;
     }
   }
-  m_daq->stopRecording();
+  for (unsigned int i = 0; i < m_nDevices; ++i) {
+    if (m_disabled[i]) continue;
+    m_daq[i]->stopRecording();
+  }
   return true;
 
 }
@@ -762,13 +917,14 @@ bool SpidrEqualisation::findDatFiles(const std::string& filename,
   
 }
 
-bool SpidrEqualisation::loadDacs(const std::string& filename) {
+bool SpidrEqualisation::loadDacs(const std::string& filename,
+                                 const unsigned int device) {
 
   FILE *fp = fopen(filename.c_str(), "r");
   if (fp == NULL) {
     cout << "[Warning] Cannot open DAC file " << filename << "\n";
     cout << "[Warning] Applying default DAC settings\n";
-    if (!m_ctrl->setDacsDflt(m_device)) printError("setDacsDflt");
+    if (!m_ctrl->setDacsDflt(device)) printError("setDacsDflt");
     return true;
   } 
   cout << "[Note] Reading DACs from " << filename << endl;
@@ -779,7 +935,7 @@ bool SpidrEqualisation::loadDacs(const std::string& filename) {
     int dac_nr, dac_val;
     const int numpar = sscanf(line, "%d %d", &dac_nr, &dac_val);
     if (numpar == 2) {
-      if (!m_ctrl->setDac(m_device, dac_nr, dac_val)) printError("setDac");
+      if (!m_ctrl->setDac(device, dac_nr, dac_val)) printError("setDac");
     }
   }
   fclose(fp);

@@ -27,9 +27,9 @@ class SpidrDaq;
 class MY_LIB_API SpidrEqualisation {
  public:
   // Constructor
-  SpidrEqualisation(SpidrController* spidrctrl, SpidrDaq* spidrdaq);
+  SpidrEqualisation(SpidrController* spidrctrl);
   // Destructor
-  ~SpidrEqualisation() {}
+  ~SpidrEqualisation();
 
   bool scanCoarse();
   // Run the full equalisation.
@@ -43,15 +43,22 @@ class MY_LIB_API SpidrEqualisation {
   bool quickEqualisation();
 
   // Load trim values already created.
-  bool loadEqualisation(const std::string& filename, const bool loadmask);
+  bool loadEqualisation(const std::string& filename, const bool loadmask,
+                        const unsigned int device = 0);
   void enablePixelMask(const bool enable, const unsigned int stddev) {
     m_pixelmask = enable;
     m_stddev = stddev;
   }
 
-  void setDevice(const int device) { m_device = device; }
+  void setNDevices(const unsigned int nDevices) { m_nDevices = nDevices; }
+  void enableDevice(const unsigned int& device) { m_disabled[device] = false; }
+  void disableDevice(const unsigned int& device) { m_disabled[device] = true; }
+
   // Set the name of the DAC file to be loaded during configuration.
-  void setDacFile(const std::string& filename) { m_dacfilename = filename; }
+  void setDacFile(const std::string& filename,
+                  const unsigned int device = 0) { 
+    m_dacfilename[device] = filename; 
+  }
   // Set the shutter trigger configuration.
   void setTrigger(const unsigned int trig_mode, 
                   const unsigned int trig_freq_hz, 
@@ -83,10 +90,10 @@ class MY_LIB_API SpidrEqualisation {
  private:
 
   SpidrController* m_ctrl;
-  SpidrDaq* m_daq;
+  std::vector<SpidrDaq*> m_daq;
 
-  // Device number
-  int m_device;
+  unsigned int m_nDevices;
+  std::vector<bool> m_disabled;
   bool m_pixelmask;
   unsigned int m_stddev; 
   unsigned int m_spacing;
@@ -101,15 +108,15 @@ class MY_LIB_API SpidrEqualisation {
   unsigned int m_nr_of_trigs;
   // Name of the output file(s).
   std::string m_filename;
-  // Name of the DAC file to be loaded.
-  std::string m_dacfilename;
+  // Names of the DAC files to be loaded.
+  std::vector<std::string> m_dacfilename;
   // Flag whether to use electron or hole collecting mode.
   bool m_eminus;
 
   bool checkCommunication();
   bool setConfiguration();
 
-  bool takeData(const std::string& filename);
+  bool takeData(const std::vector<std::string>& filenames);
   bool analyseData(const std::string& filename);
   // Create file with trim values.
   bool extractPars(const std::string& filename);
@@ -117,7 +124,8 @@ class MY_LIB_API SpidrEqualisation {
   bool maskPixels(const std::string& filename);
   bool plotEqualisation(const std::string& filename);
 
-  bool setTHLTrim(const std::string& filename, const bool applyMasking);
+  bool setTHLTrim(const std::string& filename, const bool applyMasking,
+                  const unsigned int device);
   bool setTHLTrimALL(const unsigned int trim);
 
   void printError(const std::string& header);
@@ -127,7 +135,7 @@ class MY_LIB_API SpidrEqualisation {
   bool findDatFiles(const std::string& filename,
                     std::vector<std::string>& files);
 
-  bool loadDacs(const std::string& filename);
+  bool loadDacs(const std::string& filename, const unsigned int device);
   void setupStyle();
 
 };

@@ -28,8 +28,7 @@ int main(int argc, char* argv[]) {
   }
 
   SpidrController spidrctrl(192, 168, 100, 10);
-  SpidrDaq spidrdaq(&spidrctrl);
-  SpidrEqualisation equalisation(&spidrctrl, &spidrdaq);
+  SpidrEqualisation equalisation(&spidrctrl);
 
   extern char* optarg;
   int spacing = 4;
@@ -49,6 +48,7 @@ int main(int argc, char* argv[]) {
       equalisation.setThlScan(1, 512, 1);
       equalisation.setSpacing(spacing);
       equalisation.equalise();
+      // equalisation.equalise(false, false, false, false, true, true, true, true, true);
       // break;
       return 0;
 
