@@ -23,6 +23,8 @@ CONFIG(debug, debug|release) {
   MOC_DIR     = debug
   UI_DIR      = debug
   DESTDIR     = ../Debug
+  QMAKE_TARGET_PRODUCT = "SpidrTpx3Lib (debug mode)"
+  QMAKE_TARGET_DESCRIPTION = "API for control and readout of SPIDR-TPX3 (debug mode)"
 }
 
 CONFIG(release, debug|release) {
@@ -30,7 +32,11 @@ CONFIG(release, debug|release) {
   MOC_DIR     = release
   UI_DIR      = release
   DESTDIR     = ../Release
+  QMAKE_TARGET_PRODUCT = "SpidrTpx3Lib"
+  QMAKE_TARGET_DESCRIPTION = "API for control and readout of SPIDR-TPX3"
 }
+QMAKE_TARGET_COMPANY = "NIKHEF"
+QMAKE_TARGET_COPYRIGHT = "Copyright (C) by NIKHEF"
 
 win32 {
   LIBS += -lWs2_32

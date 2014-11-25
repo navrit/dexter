@@ -1468,10 +1468,10 @@ bool SpidrController::setTimer( int dev_nr,
 				unsigned int timer_lo,
 				unsigned int timer_hi )
 {
-  int data[2];
+  unsigned int data[2];
   data[0] = timer_lo;
   data[1] = timer_hi;
-  return this->requestSetInts( CMD_SET_TIMER, dev_nr, 2, data );
+  return this->requestSetInts( CMD_SET_TIMER, dev_nr, 2, (int *) data );
 }
 
 // ----------------------------------------------------------------------------
