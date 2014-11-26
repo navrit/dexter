@@ -2,7 +2,7 @@
 
 #include "ReceiverThread.h"
 #include "FramebuilderThread.h"
-#include "mpx3conf.h"
+#include "mpx3defs.h"
 
 #define byteswap(x) ((((x) & 0xFF00) >> 8) | (((x) & 0x00FF) << 8))
 

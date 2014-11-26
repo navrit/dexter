@@ -135,9 +135,8 @@ class MY_LIB_API SpidrController
   bool setColourMode           ( bool colour );
   bool setCsmSpm               ( int  csm );
   bool setGainMode             ( int  mode );
-  bool setSenseDac             ( int  dac_nr );
-  bool setSenseDacCode         ( int  dac_code );
-  bool setExtDac               ( int  dac_nr );
+  bool setSenseDac             ( int  dac_code );
+  bool setExtDac               ( int  dev_nr, int dac_code, int dac_val );
   bool writeOmr                ( int  dev_nr );
 
   // Configuration: non-volatile onboard storage
@@ -171,7 +170,10 @@ class MY_LIB_API SpidrController
   bool triggerOneReadout       ( );
 
   // Monitoring
+  bool getAdc                  ( int *adc_val, int chan, int nr_of_samples );
   bool getAdc                  ( int  dev_nr, int *adc_val );
+  bool getDacOut               ( int  dev_nr,
+                                 int *dacout_val, int nr_of_samples );
   bool getRemoteTemp           ( int *mdegrees );
   bool getLocalTemp            ( int *mdegrees );
   bool getAvdd                 ( int *mvolt, int *mamp, int *mwatt );

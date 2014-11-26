@@ -1,6 +1,6 @@
 #include "FramebuilderThread.h"
 #include "ReceiverThread.h"
-#include "mpx3conf.h"
+#include "mpx3defs.h"
 
 // ----------------------------------------------------------------------------
 

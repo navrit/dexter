@@ -9,14 +9,14 @@ using namespace std;
 #endif
 
 #include "SpidrController.h"
-
-#include "dacsdefs.h"
-#include "dacsdescr.h"
-#include "mpx3conf.h"
+#include "mpx3defs.h"
 #include "spidrmpx3cmds.h"
 
+#include "dacsdescr.h" // Depends on mpx3defs.h to be included first
+
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14111200;   // Added setGainMode()
+const int VERSION_ID = 0x14112500;   // Use DAC code instead of DAC index
+//const int VERSION_ID = 0x14111200; // Added setGainMode()
 //const int VERSION_ID = 0x14091600; // Update to SPIDR-TPX3 'standard'
 //const int VERSION_ID = 0x14012100;
 
@@ -70,18 +70,14 @@ int SpidrController::classVersion()
 
 bool SpidrController::getSoftwVersion( int *version )
 {
-  int dummy = 0;
-  *version = 0;
-  return this->requestGetInt( CMD_GET_SOFTWVERSION, dummy, version );
+  return this->requestGetInt( CMD_GET_SOFTWVERSION, 0, version );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getFirmwVersion( int *version )
 {
-  int dummy = 0;
-  *version = 0;
-  return this->requestGetInt( CMD_GET_FIRMWVERSION, dummy, version );
+  return this->requestGetInt( CMD_GET_FIRMWVERSION, 0, version );
 }
 
 // ----------------------------------------------------------------------------
@@ -300,7 +296,6 @@ bool SpidrController::setIpAddrDest( int index, int ipaddr )
 
 bool SpidrController::getDevicePort( int index, int *port_nr )
 {
-  *port_nr = 0;
   return this->requestGetInt( CMD_GET_DEVICEPORT, index, port_nr );
 }
 
@@ -323,7 +318,6 @@ bool SpidrController::setDevicePort( int dev_nr, int port_nr )
 
 bool SpidrController::getServerPort( int dev_nr, int *port_nr )
 {
-  *port_nr = 0;
   return this->requestGetInt( CMD_GET_SERVERPORT, dev_nr, port_nr );
 }
 
@@ -347,7 +341,6 @@ bool SpidrController::setServerPort( int dev_nr, int port_nr )
 
 bool SpidrController::getDeviceId( int dev_nr, int *id )
 {
-  *id = 0;
   return this->requestGetInt( CMD_GET_DEVICEID, dev_nr, id );
 }
 
@@ -362,7 +355,6 @@ bool SpidrController::getDeviceIds( int *ids )
 
 bool SpidrController::getDeviceType( int dev_nr, int *type )
 {
-  *type = 0;
   return this->requestGetInt( CMD_GET_DEVICETYPE, dev_nr, type );
 }
 
@@ -413,24 +405,21 @@ bool SpidrController::setDacs( int dev_nr, int nr_of_dacs, int *dac_val )
 
 bool SpidrController::readDacs( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_READ_DACS, dev_nr, dummy );
+  return this->requestSetInt( CMD_READ_DACS, dev_nr, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::writeDacs( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_WRITE_DACS, dev_nr, dummy );
+  return this->requestSetInt( CMD_WRITE_DACS, dev_nr, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::writeDacsDflt( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_WRITE_DACS_DFLT, dev_nr, dummy );
+  return this->requestSetInt( CMD_WRITE_DACS_DFLT, dev_nr, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -446,49 +435,42 @@ bool SpidrController::configCtpr( int dev_nr, int column, int val )
 
 bool SpidrController::setCtpr( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_SET_CTPR, dev_nr, dummy );
+  return this->requestSetInt( CMD_SET_CTPR, dev_nr, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getAcqEnable( int *mask )
 {
-  int dummy = 0;
-  *mask = 0;
-  return this->requestGetInt( CMD_GET_ACQENABLE, dummy, mask );
+  return this->requestGetInt( CMD_GET_ACQENABLE, 0, mask );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setAcqEnable( int mask )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_SET_ACQENABLE, dummy, mask );
+  return this->requestSetInt( CMD_SET_ACQENABLE, 0, mask );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::resetDevice( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_RESET_DEVICE, dev_nr, dummy );
+  return this->requestSetInt( CMD_RESET_DEVICE, dev_nr, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::resetDevices()
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_RESET_DEVICES, dummy, dummy );
+  return this->requestSetInt( CMD_RESET_DEVICES, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setReady()
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_SET_READY, dummy, dummy );
+  return this->requestSetInt( CMD_SET_READY, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -512,7 +494,7 @@ std::string SpidrController::dacNameMpx3rx( int index )
 int SpidrController::dacMaxMpx3( int index )
 {
   if( index < 0 || index >= MPX3_DAC_COUNT ) return 0;
-  return( (1<<MPX3_DAC_TABLE[index].size)-1 );
+  return( (1 << MPX3_DAC_TABLE[index].bits) - 1 );
 }
 
 // ----------------------------------------------------------------------------
@@ -520,7 +502,7 @@ int SpidrController::dacMaxMpx3( int index )
 int SpidrController::dacMaxMpx3rx( int index )
 {
   if( index < 0 || index >= MPX3RX_DAC_COUNT ) return 0;
-  return( (1<<MPX3RX_DAC_TABLE[index].size)-1 );
+  return( (1 << MPX3RX_DAC_TABLE[index].bits) - 1 );
 }
 
 // ----------------------------------------------------------------------------
@@ -876,23 +858,19 @@ bool SpidrController::setGainMode( int mode )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setSenseDac( int dac_nr )
+bool SpidrController::setSenseDac( int dac_code )
 {
-  return this->requestSetInt( CMD_SET_SENSEDAC, 0, dac_nr );
+  return this->requestSetInt( CMD_SET_SENSEDAC, 0, dac_code );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setSenseDacCode( int dac_code )
+bool SpidrController::setExtDac( int dev_nr, int dac_code, int dac_val )
 {
-  return this->requestSetInt( CMD_SET_SENSEDACCODE, 0, dac_code );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setExtDac( int dac_nr )
-{
-  return this->requestSetInt( CMD_SET_EXTDAC, 0, dac_nr );
+  // Combine dac_code and dac_val into a single int
+  // (the DAC to set is the SPIDR-MPX3 DAC)
+  int dac_data = ((dac_code & 0xFFFF) << 16) | (dac_val & 0xFFFF);
+  return this->requestSetInt( CMD_SET_EXTDAC, dev_nr, dac_data );
 }
 
 // ----------------------------------------------------------------------------
@@ -1039,28 +1017,45 @@ bool SpidrController::triggerOneReadout()
 // Monitoring
 // ----------------------------------------------------------------------------
 
+bool SpidrController::getAdc( int *adc_val, int chan, int nr_of_samples )
+{
+  // Get the sum of a number of ADC samples of the selected SPIDR ADC channel
+  *adc_val = (chan & 0xFFFF) | ((nr_of_samples & 0xFFFF) << 16);
+  return this->requestGetInt( CMD_GET_SPIDR_ADC, 0, adc_val );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::getAdc( int dev_nr, int *adc_val )
 {
-  *adc_val = 0;
+  // Get an ADC sample of the Medipix3 'DACOut' output
+  // (### OBSOLETE MEMBER: use getDacOut() instead)
   return this->requestGetInt( CMD_GET_ADC, dev_nr, adc_val );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getDacOut( int  dev_nr,
+				 int *dacout_val,
+				 int  nr_of_samples )
+{
+  // Get (an) ADC sample(s) of the Medipix3 'DACOut' output
+  int chan = dev_nr; // Assume this is how they are connected to the ADC
+  return this->getAdc( dacout_val, chan, nr_of_samples );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getRemoteTemp( int *mdegrees )
 {
-  int dummy = 0;
-  *mdegrees = 0;
-  return this->requestGetInt( CMD_GET_REMOTETEMP, dummy, mdegrees );
+  return this->requestGetInt( CMD_GET_REMOTETEMP, 0, mdegrees );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getLocalTemp( int *mdegrees )
 {
-  int dummy = 0;
-  *mdegrees = 0;
-  return this->requestGetInt( CMD_GET_LOCALTEMP, dummy, mdegrees );
+  return this->requestGetInt( CMD_GET_LOCALTEMP, 0, mdegrees );
 }
 
 // ----------------------------------------------------------------------------

@@ -10,7 +10,7 @@ using namespace std;
 
 #include "SpidrController.h"
 #include "SpidrDaq.h"
-#include "mpx3conf.h"
+#include "mpx3defs.h"
 
 int main( int argc, char *argv[] )
 {

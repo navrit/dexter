@@ -17,6 +17,7 @@
 #define CMD_SET_LOGLEVEL       0x90A
 #define CMD_DISPLAY_INFO       0x90B
 #define CMD_SET_TIMEOFDAY      0x90C
+#define CMD_GET_DEVICECOUNT    0x90D
 
 #define CMD_GET_SPIDRID        0x90F
 
@@ -64,7 +65,7 @@
 #define CMD_SET_COLOURMODE     0x336
 #define CMD_SET_CSMSPM         0x337
 #define CMD_SET_SENSEDAC       0x338
-#define CMD_SET_SENSEDACCODE   0x339
+
 #define CMD_SET_EXTDAC         0x33A
 #define CMD_WRITE_OMR          0x33B
 #define CMD_SET_GAINMODE       0x33C
@@ -82,10 +83,13 @@
 #define CMD_GET_LOCALTEMP      0x54A
 #define CMD_GET_AVDD           0x54B
 #define CMD_GET_DVDD           0x54C
-#define CMD_GET_VDD            0x54D
-#define CMD_GET_AVDD_NOW       0x54E
+#define CMD_GET_AVDD_NOW       0x54D
+#define CMD_GET_SPIDR_ADC      0x54E
 #define CMD_GET_DVDD_NOW       0x54F
-#define CMD_GET_VDD_NOW        0x550
+
+// Monitoring (continued)
+#define CMD_GET_VDD            0x56C
+#define CMD_GET_VDD_NOW        0x56D
 
 // Configuration: non-volatile onboard storage
 #define CMD_STORE_ADDRPORTS    0x670
@@ -123,7 +127,7 @@ static const char *CMD_STR[] =
     "SET_LOGLEVEL     ", // 0x90A
     "DISPLAY_INFO     ", // 0x90B
     "SET_TIMEOFDAY    ", // 0x90C
-    "-----",             // 0x90D
+    "GET_DEVICECOUNT  ", // 0x90D
     "-----",             // 0x90E
     "GET_SPIDRID      ", // 0x90F
 
@@ -170,7 +174,7 @@ static const char *CMD_STR[] =
     "SET_COLOURMODE   ", // 0x336
     "SET_CSMSPM       ", // 0x337
     "SET_SENSEDAC     ", // 0x338
-    "SET_SENSEDACCODE ", // 0x339
+    "-----",             // 0x339
     "SET_EXTDAC       ", // 0x33A
     "WRITE_OMR        ", // 0x33B
     "SET_GAINMODE     ", // 0x33C
@@ -192,11 +196,11 @@ static const char *CMD_STR[] =
     "GET_LOCALTEMP   ",  // 0x54A
     "GET_AVDD        ",  // 0x54B
     "GET_DVDD        ",  // 0x54C
-    "GET_VDD         ",  // 0x54D
-    "GET_AVDD_NOW    ",  // 0x54E
-    "GET_DVDD_NOW    ",  // 0x54F
-    "GET_VDD_NOW     ",  // 0x550
+    "GET_AVDD_NOW     ", // 0x54D
+    "GET_SPIDR_ADC    ", // 0x54E
+    "GET_DVDD_NOW     ", // 0x54F
 
+    "-----",             // 0x550
     "-----",             // 0x551
     "-----",             // 0x552
     "-----",             // 0x553
@@ -225,8 +229,8 @@ static const char *CMD_STR[] =
     "-----",             // 0x569
     "-----",             // 0x56A
     "-----",             // 0x56B
-    "-----",             // 0x56C
-    "-----",             // 0x56D
+    "GET_VDD         ",  // 0x56C
+    "GET_VDD_NOW     ",  // 0x56D
     "-----",             // 0x56E
     "-----",             // 0x56F
 
