@@ -1,7 +1,7 @@
 #include "spidrhwapi.h"
 #include "SpidrMgr.h"
 
-#include "mpx3conf.h"
+#include "mpx3defs.h"
 
 #ifndef WIN32
 #include <string.h>
@@ -29,7 +29,7 @@ static void   spidrCallback( int id );
 
 static HwCallback PixmanCallbackFunc = 0;
 
-static int SpidrTriggerMode = SPIDR_TRIG_AUTO;
+static int SpidrTriggerMode = SHUTTERMODE_AUTO;
 
 // ----------------------------------------------------------------------------
 // MPX3 Interface
@@ -663,16 +663,16 @@ int spidrSetAcqPars( int id, Mpx3AcqParams *pars )
   switch( pars->mode )
     {
     case ACQMODE_ACQSTART_TIMERSTOP:
-      trigger_mode = SPIDR_TRIG_AUTO;
+      trigger_mode = SHUTTERMODE_AUTO;
       break;
     case ACQMODE_HWTRIGSTART_TIMERSTOP:
-      trigger_mode = SPIDR_TRIG_POS_EXT_TIMER;
+      trigger_mode = SHUTTERMODE_POS_EXT_TIMER;
       break;
     case ACQMODE_EXTSHUTTER:
-      trigger_mode = SPIDR_TRIG_POS_EXT;
+      trigger_mode = SHUTTERMODE_POS_EXT;
       break;
     default:
-      trigger_mode = SPIDR_TRIG_AUTO;
+      trigger_mode = SHUTTERMODE_AUTO;
       break;
     }
   SpidrTriggerMode = trigger_mode; // Remember for acquisition starts

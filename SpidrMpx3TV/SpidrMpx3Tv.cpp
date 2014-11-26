@@ -1,4 +1,4 @@
-#include "mpx3conf.h"
+#include "mpx3defs.h"
 #include "SpidrMpx3Tv.h"
 #include "SpidrController.h"
 #include "SpidrDaq.h"
