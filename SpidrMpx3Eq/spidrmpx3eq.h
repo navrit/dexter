@@ -7,33 +7,30 @@
 #ifndef SPIDRMPX3EQ_H
 #define SPIDRMPX3EQ_H
 
-#include "ui_spidrmpx3eq.h"
-#include <QImage>
+//#include <QImage>
 #include <QMainWindow>
 
-#include "SpidrController.h"
-#include "SpidrDaq.h"
-#include "dacsdefs.h"
-
-#include "barchart.h"
-#include "ThlScan.h"
+#include <iostream>
+#include <vector>
+using namespace std;
 
 #include "mpx3eq_common.h"
-
-#include <vector>
 
 #define __matrix_size_x 256
 #define __matrix_size_y 256
 
-using namespace std;
+class QCustomPlot;
+class SpidrController;
+class SpidrDaq;
+class DACs;
+class ThlScan;
+class BarChart;
 
 namespace Ui {
-class SpidrMpx3Eq;
+	class SpidrMpx3Eq;
 }
 
-class QCustomPlot;
-
-class SpidrMpx3Eq : public QMainWindow, Ui_SpidrMpx3Eq{
+class SpidrMpx3Eq : public QMainWindow {
 	Q_OBJECT
 
 public:
@@ -57,12 +54,15 @@ private:
 
 	// Object in charge of performing Thl scans
 	ThlScan * _tscan;
+	// DACs
+	DACs * _dacs;
 
 private slots:
 
-void StartEqualization();
-void Connect();
+	void StartEqualization();
+	void Connect();
 
 };
+
 
 #endif // SPIDRMPX3EQ_H

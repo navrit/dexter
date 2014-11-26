@@ -10,7 +10,7 @@
 #include "mpx3eq_common.h"
 #include "barchart.h"
 
-#include "dacsdefs.h"
+#include "mpx3defs.h"
 
 #include <iostream>
 using namespace std;
@@ -19,16 +19,21 @@ ThlScan::ThlScan() {
 
 }
 
-ThlScan::ThlScan(SpidrController * sc, SpidrDaq * sd, BarChart * bc) {
+ThlScan::ThlScan(BarChart * bc) {
 
 	// keep these pointers
-	_spidrcontrol = sc;
-	_spidrdaq = sd;
+	_spidrcontrol = 0; // Assuming no connection yet
+	_spidrdaq = 0;     // Assuming no connection yet
 	_chart = bc;
 	_nTriggers = 10;
 
 	RewindData();
 
+}
+
+void ThlScan::ConnectToHardware(SpidrController * sc, SpidrDaq * sd) {
+	_spidrcontrol = sc;
+	_spidrdaq = sd;
 }
 
 /**

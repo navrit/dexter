@@ -50,7 +50,7 @@ void BarChart::PrepareSets() {
 	this->xAxis->setSubTickCount(0);
 	this->xAxis->setTickLength(0, 4);
 	this->xAxis->grid()->setVisible(true);
-	this->xAxis->setRange(0, 511);
+	this->xAxis->setRange(0, 512);
 
 	// prepare y axis:
 	this->yAxis->setRange(0, 100);

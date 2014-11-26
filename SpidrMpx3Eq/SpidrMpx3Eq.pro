@@ -1,13 +1,22 @@
+#-------------------------------------------------
+#
+# Project created by QtCreator 2014-10-30T16:31:35
+#
+#-------------------------------------------------
+
 TEMPLATE = app
 TARGET = SpidrMpx3Eq
 
-QT += core gui network
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
+# QT       += core gui network
+# Create a shared library
+greaterThan(QT_MAJOR_VERSION, 4) {
+	QT += widgets printsupport
+} else {
+	QT += core gui
+}
+QT += network
 
-# When using QCustomPlot as a shared library
-DEFINES += QCUSTOMPLOT_USE_LIBRARY 
-
-CONFIG += qt thread warn_on exceptions debug_and_release
+CONFIG   += debug
 
 CONFIG(debug, debug|release) {
   OBJECTS_DIR = debug
@@ -25,6 +34,8 @@ CONFIG(release, debug|release) {
   LIBS       += -L../Release
 }
 
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
 INCLUDEPATH += ../SpidrMpx3Lib
 INCLUDEPATH += ../QCustomPlot
 
@@ -35,10 +46,11 @@ SOURCES += main.cpp
 SOURCES += spidrmpx3eq.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
+SOURCES += DACs.cpp
 
 HEADERS += spidrmpx3eq.h
-HEADERS += mpx3eq_common.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
+HEADERS += DACs.h
 
 FORMS    += spidrmpx3eq.ui

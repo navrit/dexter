@@ -4,26 +4,29 @@
  */
 
 
-#include <stdlib.h>     /* srand, rand */
-
-
 #include "spidrmpx3eq.h"
-#include <unistd.h>
-//#define Sleep(ms) usleep(ms*1000)
-
-using namespace std;
-#include <iostream>
+#include "ui_spidrmpx3eq.h"
 
 #include "qcustomplot.h"
-
-#include "stdio.h"
-
 #include "mpx3eq_common.h"
+#include "DACs.h"
+#include "mpx3defs.h"
+#include "SpidrController.h"
+#include "SpidrDaq.h"
+#include "barchart.h"
+#include "ThlScan.h"
+
+#include <QMessageBox>
+
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
 
 SpidrMpx3Eq::SpidrMpx3Eq(QWidget *parent) :
-    												QMainWindow(parent),
-    												ui(new Ui::SpidrMpx3Eq)
+    		QMainWindow(parent),
+    		ui(new Ui::SpidrMpx3Eq)
 {
+
 	ui->setupUi(this);
 
 	connect( ui->_startEq, SIGNAL(clicked()), this, SLOT(StartEqualization()) );
@@ -32,6 +35,7 @@ SpidrMpx3Eq::SpidrMpx3Eq(QWidget *parent) :
 
 	// Create the bar chart
 	_chart = new BarChart( ui->_histoFrame );
+	_chart->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
 
 	//_customPlot = new QCustomPlot;
 	//_chart = new BarChart( this );
@@ -54,14 +58,14 @@ SpidrMpx3Eq::SpidrMpx3Eq(QWidget *parent) :
 	_chart->PrepareSets();
 
 
-	//startTimer( 100 );
+	startTimer( 200 );
 
+	// ThlScan
+	_tscan = new ThlScan(_chart);
 
-	//
-	Connect();
+	// Prepare DACs panel
+	_dacs = new DACs(ui);
 
-	// Ready for scans
-	_tscan = new ThlScan(_spidrcontrol, _spidrdaq, _chart);
 
 	// some randon numbers
 	srand (time(NULL));
@@ -77,9 +81,9 @@ SpidrMpx3Eq::~SpidrMpx3Eq()
 
 void SpidrMpx3Eq::StartEqualization(){
 
-	int i;
-	int dev_nr = 2;
-	int * data;
+	//int i;
+	//int dev_nr = 2;
+	//int * data;
 
 
 	_tscan->DoScan();
@@ -137,7 +141,7 @@ void SpidrMpx3Eq::StartEqualization(){
 		//		<< spidrdaq.expSequenceNr( 0 ) << endl;
 	}
 
-	*/
+	 */
 
 }
 
@@ -222,13 +226,19 @@ void SpidrMpx3Eq::Connect() {
 	int trig_pulse_count;
 	_spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
 			trig_freq_hz, nr_of_triggers );
-*/
+	 */
 
+
+	// Prepare THl scans for equalization
+	_tscan->ConnectToHardware(_spidrcontrol, _spidrdaq);
+
+	_dacs->ConnectToHardware(_spidrcontrol, _spidrdaq);
+	_dacs->PopulateDACValues();
 
 }
 
 
-void SpidrMpx3Eq::timerEvent( QTimerEvent * evt ) {
+void SpidrMpx3Eq::timerEvent( QTimerEvent * /*evt*/ ) {
 
 
 	//double val = rand() % 510 + 1 ;

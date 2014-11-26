@@ -22,10 +22,12 @@ enum Thl_Status {
 class ThlScan {
 
 public:
+
 	ThlScan();
-	ThlScan(SpidrController *, SpidrDaq *, BarChart *);
+	ThlScan(BarChart *);
 	~ThlScan();
 
+	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
 	void RewindData();
 	void DoScan();
 	int SetEqualizationMask(int spacing, int offset);

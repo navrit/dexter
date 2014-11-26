@@ -3,7 +3,6 @@
  * Nikhef, 2014.
  */
 
-
 #ifndef _BAR_CHART_H_
 
 #include "qcustomplot.h"
