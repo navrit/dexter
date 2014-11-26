@@ -226,7 +226,8 @@ class MY_LIB_API SpidrController
   // Monitoring
   bool getAdc                  ( int *adc_val, int chan, int nr_of_samples );
   bool getAdc                  ( int *adc_val, int nr_of_samples = 1 );
-  bool getDacOut               ( int *adc_val, int nr_of_samples = 1 );
+  bool getDacOut               ( int  dev_nr,
+                                 int *adc_val, int nr_of_samples = 1 );
   bool getRemoteTemp           ( int *mdegrees );
   bool getLocalTemp            ( int *mdegrees );
   bool getFpgaTemp             ( int *mdegrees );

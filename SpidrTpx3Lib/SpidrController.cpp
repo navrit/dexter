@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x14111000;
+const int   VERSION_ID = 0x14112600;
+//const int VERSION_ID = 0x14111000;
 //const int VERSION_ID = 0x14110300;
 //const int VERSION_ID = 0x14102800;
 //const int VERSION_ID = 0x14101500;
@@ -1527,16 +1528,20 @@ bool SpidrController::getAdc( int *adc_val, int chan, int nr_of_samples )
 bool SpidrController::getAdc( int *adc_val, int nr_of_samples )
 {
   // Get an ADC sample of the Timepix3 'DACOut' output
+  // (### OBSOLETE MEMBER: use getDacOut() instead)
   *adc_val = nr_of_samples;
   return this->requestGetInt( CMD_GET_ADC, 0, adc_val );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getDacOut( int *adc_val, int nr_of_samples )
+bool SpidrController::getDacOut( int  dev_nr,
+				 int *dacout_val,
+				 int  nr_of_samples )
 {
-  // Get an ADC sample of the Timepix3 'DACOut' output
-  return this->getAdc( adc_val, nr_of_samples );
+  // Get (an) ADC sample(s) of a Timepix3 device's 'DACOut' output
+  int chan = dev_nr; // Assume this is how they are connected to the ADC
+  return this->getAdc( dacout_val, chan, nr_of_samples );
 }
 
 // ----------------------------------------------------------------------------
