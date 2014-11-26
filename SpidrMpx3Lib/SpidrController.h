@@ -61,6 +61,7 @@ class MY_LIB_API SpidrController
   bool        setLogLevel          ( int level );
   bool        displayInfo          ( ); // In the currently open telnet window
                                         // or (USB/UART) console
+  bool        getDeviceCount       ( int *devices );
   bool        getSpidrId           ( int *id );
   bool        setSpidrId           ( int  id );
 
