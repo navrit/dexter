@@ -10,7 +10,7 @@ using namespace std;
 
 #include "SpidrController.h"
 #include "SpidrDaq.h"
-#include "mpx3conf.h"
+#include "mpx3defs.h"
 
 int main( int argc, char *argv[] )
 {
@@ -21,7 +21,7 @@ int main( int argc, char *argv[] )
     {
       cout << "Connected to SPIDR: " << spidrcontrol.ipAddressString();
       int ipaddr;
-      if( spidrcontrol.getIpAddrDest( &ipaddr ) )
+      if( spidrcontrol.getIpAddrDest( 0, &ipaddr ) )
 	cout << ", IP dest: "
 	     << ((ipaddr>>24) & 0xFF) << "."
 	     << ((ipaddr>>16) & 0xFF) << "."
@@ -55,7 +55,7 @@ int main( int argc, char *argv[] )
   int trig_freq_hz   = 5;
   int nr_of_triggers = 2;
   int trig_pulse_count;
-  spidrcontrol.setTriggerConfig( trig_mode, trig_period_us,
+  spidrcontrol.setShutterTriggerConfig( trig_mode, trig_period_us,
 				 trig_freq_hz, nr_of_triggers );
 
   int dac_index = 0;

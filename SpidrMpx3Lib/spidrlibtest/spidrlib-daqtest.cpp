@@ -39,7 +39,7 @@ int main( int argc, char *argv[] )
   int trig_period_us = 100000; // 100 ms
   int trig_freq_hz   = 3;
   int nr_of_triggers = 2;
-  spidrctrl.setTriggerConfig( trig_mode, trig_period_us,
+  spidrctrl.setShutterTriggerConfig( trig_mode, trig_period_us,
 			      trig_freq_hz, nr_of_triggers );
   spidrctrl.clearBusy();
   for( int i=0; i<5; ++i )

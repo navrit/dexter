@@ -10,8 +10,8 @@
 using namespace std;
 
 #include "SpidrController.h"
-#include "dacsdefs.h"
-#include "mpx3conf.h"
+#include "mpx3defs.h"
+#include "dacsdescr.h"
 
 int main( int argc, char *argv[] )
 {
@@ -46,7 +46,7 @@ int main( int argc, char *argv[] )
   for( dev_nr=0; dev_nr<4; ++dev_nr )
     {
       if( !spidr.getDeviceId( dev_nr, &id ) )
-	cout << "### DeviceID " << dev_nr << ": " << spidr.errString() << endl;
+	cout << "### DeviceID " << dev_nr << ": " << spidr.errorString() << endl;
       else
 	cout << "DeviceID " << dev_nr << ": " << id << endl;
     }
@@ -54,43 +54,44 @@ int main( int argc, char *argv[] )
   // Get the current acquisition-enable mask
   int mask;
   if( !spidr.getAcqEnable( &mask ) )
-    cout << "### getAcqEnable: " << spidr.errString() << endl;
+    cout << "### getAcqEnable: " << spidr.errorString() << endl;
   else
     cout << "getAcqEnable: " << mask << endl;
 
   int dac_nr, dac_value;
   // Get the DAC values from Medipix device 0 and display them
   if( !spidr.readDacs( 0 ) )
-    cout << "### readDacs: " << spidr.errString() << endl;
+    cout << "### readDacs: " << spidr.errorString() << endl;
   dev_nr = 0;
   for( dac_nr=0; dac_nr<MPX3_DAC_COUNT; ++dac_nr )
     {
       if( !spidr.getDac( dev_nr, dac_nr, &dac_value ) )
-	cout << "### DAC " << dac_nr << ": " << spidr.errString() << endl;
+	cout << "### DAC " << dac_nr << ": " << spidr.errorString() << endl;
       else
 	cout << "DAC " << dac_nr << " ("<< spidr.dacNameMpx3( dac_nr )
 	     << "): " << dac_value << endl;
     }
 
+#define DO_DAC_SCAN
 #ifdef DO_DAC_SCAN
   // Perform a DAC scan (on a single DAC..), displaying the ADC values
   int adc_value;
   dev_nr = 0;
-  dac_nr = MPX3_DAC_DISC;
-  if( !spidr.setSenseDac( dac_nr ) )
-    cout << "### SenseDAC " << dac_nr << ": " << spidr.errString() << endl;
+  int dac_code = MPX3_DAC_DISC;
+  if( !spidr.setSenseDac( dac_code ) )
+    cout << "### SenseDAC " << dac_code << ": " << spidr.errorString() << endl;
   else
     cout << "SenseDAC " << dac_nr << endl;
   for( dac_value=0; dac_value<=spidr.dacMaxMpx3(dac_nr); ++dac_value )
     {
       if( !spidr.setDac( dev_nr, dac_nr, dac_value ) )
-	cout << "### setDac: " << spidr.errString() << endl;
+	cout << "### setDac: " << spidr.errorString() << endl;
 
       if( !spidr.writeDacs( dev_nr ) )
-	cout << "### writeDacs: " << spidr.errString() << endl;
+	cout << "### writeDacs: " << spidr.errorString() << endl;
 
       if( !spidr.getAdc( dev_nr, &adc_value ) )
-	cout << "### getAdc: " << spidr.errString() << endl;
+	cout << "### getAdc: " << spidr.errorString() << endl;
       else
 	cout << setw(3) << dac_value << ": " << adc_value << endl;
     }
@@ -109,11 +110,11 @@ int main( int argc, char *argv[] )
       cout << "MPX31 pixel config" << endl;
       // Mask a number of pixel columns...
       for( col=128; col<192; ++col )
-	if( !spidr.maskPixelMpx3( col, ALL_PIXELS ) )
+	if( !spidr.setPixelMaskMpx3( col, ALL_PIXELS ) )
 	  cout << "### Pixel mask " << col << endl;
       // Upload the pixel configuration
-      if( !spidr.writePixelConfigMpx3( dev_nr ) )
-	cout << "### Pixel config: " << spidr.errString() << endl;
+      if( !spidr.setPixelConfigMpx3( dev_nr ) )
+	cout << "### Pixel config: " << spidr.errorString() << endl;
       else
 	cout << "Pixel config uploaded" << endl;
     }
@@ -122,11 +123,11 @@ int main( int argc, char *argv[] )
       cout << "MPX3RX pixel config" << endl;
       // Mask a number of pixel columns...
       for( col=64; col<92; ++col )
-	if( !spidr.maskPixelMpx3rx( col, ALL_PIXELS ) )
+	if( !spidr.setPixelMaskMpx3rx( col, ALL_PIXELS ) )
 	  cout << "### Pixel mask " << col << endl;
       // Upload the pixel configuration
-      if( !spidr.writePixelConfigMpx3rx( dev_nr ) )
-	cout << "### Pixel config: " << spidr.errString() << endl;
+      if( !spidr.setPixelConfigMpx3rx( dev_nr ) )
+	cout << "### Pixel config: " << spidr.errorString() << endl;
       else
 	cout << "Pixel config uploaded" << endl;
     }
@@ -141,7 +142,7 @@ int main( int argc, char *argv[] )
   int trig_period_us = 100000; // 100 ms
   int trig_freq_hz   = 3;
   int nr_of_triggers = 2;
-  spidr.setTriggerConfig( trig_mode, trig_period_us,
+  spidr.setShutterTriggerConfig( trig_mode, trig_period_us,
 			  trig_freq_hz, nr_of_triggers );
   spidr.clearBusy();
   int i;

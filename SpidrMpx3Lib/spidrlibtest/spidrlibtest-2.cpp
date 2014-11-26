@@ -4,7 +4,7 @@ using namespace std;
 
 #include "SpidrController.h"
 #include "SpidrDaq.h"
-#include "mpx3conf.h"
+#include "mpx3defs.h"
 
 #define WITH_SPIDRDAQ
 
@@ -105,7 +105,7 @@ int main( int argc, char *argv[] )
   int trig_freq_hz   = 5;
   int nr_of_triggers = 2;
   int trig_pulse_count;
-  spidrcontrol.setTriggerConfig( trig_mode, trig_period_us,
+  spidrcontrol.setShutterTriggerConfig( trig_mode, trig_period_us,
 				 trig_freq_hz, nr_of_triggers );
   spidrcontrol.clearBusy();
   int i;
@@ -133,7 +133,7 @@ int main( int argc, char *argv[] )
        << spidrdaq.framesLostCount() << ", lost pkts "
        << spidrdaq.packetsLostCount() << " (file: "
        << spidrdaq.packetsLostCountFile() << "), pkt size "
-       << spidrdaq.packetSize() << endl;
+       << spidrdaq.packetSize( 0 ) << endl;
   cout << "Lost/frame: ";
   for( i=0; i<8; ++i )
     cout << i << "=" << spidrdaq.packetsLostCountFrame( 0, i ) << ", ";
