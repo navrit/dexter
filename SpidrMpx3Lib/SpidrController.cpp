@@ -374,16 +374,16 @@ bool SpidrController::setDeviceType( int dev_nr, int type )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getDac( int dev_nr, int dac_nr, int *dac_val )
+bool SpidrController::getDac( int dev_nr, int dac_code, int *dac_val )
 {
-  int dac = dac_nr;
+  int dac = dac_code;
   if( this->requestGetInt( CMD_GET_DAC, dev_nr, &dac ) )
     {
-      // Extract dac_nr and dac_val
-      if( (dac >> 16) != dac_nr )
+      // Extract dac_code and dac_val
+      if( (dac >> 16) != dac_code )
 	{
 	  this->clearErrorString();
-	  _errString << "DAC number mismatch in reply";
+	  _errString << "DAC code mismatch in reply";
 	  return false;
 	}
       *dac_val = dac & 0xFFFF;
@@ -394,10 +394,10 @@ bool SpidrController::getDac( int dev_nr, int dac_nr, int *dac_val )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setDac( int dev_nr, int dac_nr, int dac_val )
+bool SpidrController::setDac( int dev_nr, int dac_code, int dac_val )
 {
-  // Combine dac_nr and dac_val into a single int
-  int dac = ((dac_nr & 0xFFFF) << 16) | (dac_val & 0xFFFF);
+  // Combine dac_code and dac_val into a single int
+  int dac = ((dac_code & 0xFFFF) << 16) | (dac_val & 0xFFFF);
   return this->requestSetInt( CMD_SET_DAC, dev_nr, dac );
 }
 
@@ -868,6 +868,14 @@ bool SpidrController::setGainMode( int mode )
 bool SpidrController::setSenseDac( int dac_code )
 {
   return this->requestSetInt( CMD_SET_SENSEDAC, 0, dac_code );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setSenseDac( int dev_nr, int dac_code )
+{
+  // This function for Timepix3 compatibility...
+  return this->setSenseDac( dac_code );
 }
 
 // ----------------------------------------------------------------------------

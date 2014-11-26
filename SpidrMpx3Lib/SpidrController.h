@@ -82,8 +82,8 @@ class MY_LIB_API SpidrController
   bool        getDeviceIds     ( int *ids );
   bool        getDeviceType    ( int  dev_nr, int *type );
   bool        setDeviceType    ( int  dev_nr, int  type );
-  bool        getDac           ( int  dev_nr, int  dac_nr, int *dac_val );
-  bool        setDac           ( int  dev_nr, int  dac_nr, int dac_val );
+  bool        getDac           ( int  dev_nr, int  dac_code, int *dac_val );
+  bool        setDac           ( int  dev_nr, int  dac_code, int dac_val );
   bool        setDacs          ( int  dev_nr, int  nr_of_dacs, int *dac_val );
   bool        readDacs         ( int  dev_nr );
   bool        writeDacs        ( int  dev_nr );
@@ -137,6 +137,7 @@ class MY_LIB_API SpidrController
   bool setCsmSpm               ( int  csm );
   bool setGainMode             ( int  mode );
   bool setSenseDac             ( int  dac_code );
+  bool setSenseDac             ( int  dev_nr, int dac_code );
   bool setExtDac               ( int  dev_nr, int dac_code, int dac_val );
   bool writeOmr                ( int  dev_nr );
 
