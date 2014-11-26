@@ -7,14 +7,15 @@
 
 #include "SpidrDacsScan.h"
 #include "SpidrController.h"
-#include "tpx3defs.h"
+#include "../SpidrTpx3Lib/tpx3defs.h"
+#include "../SpidrMpx3Lib/mpx3defs.h"
 
 #include "qcustomplot.h"
 
-QString VERSION( "v1.0.0  14-Nov-2014" );
+QString VERSION( "v1.1.0  26-Nov-2014" );
 
 // ----------------------------------------------------------------------------
-// (From LEON software: tpx3.c)
+// (From LEON software: tpx3.c (Timepix3) and dacs.c (Medipix3))
 
 // Structure containing info about a DAC
 typedef struct dac_s
@@ -25,7 +26,7 @@ typedef struct dac_s
   int         dflt;
 } dac_t;
 
-// Table with info about the DACs
+// Tables with info about the DACs
 static const dac_t TPX3_DAC_TABLE[TPX3_DAC_COUNT] = {
   { TPX3_IBIAS_PREAMP_ON,  "Ibias_Preamp_ON",   8, 128 },
   { TPX3_IBIAS_PREAMP_OFF, "Ibias_Preamp_OFF",  4, 8   },
@@ -53,25 +54,99 @@ static const dac_t TPX3_DAC_TABLE[TPX3_DAC_COUNT] = {
   { TPX3_SENSEOFF,         "SenseOFF",          0, 0   }
 };
 
+static const dac_t MPX3_DAC_TABLE[MPX3_DAC_COUNT] =
+{
+  { MPX3_DAC_THRESH_0,   "Threshold[0]",        9, 150 },
+  { MPX3_DAC_THRESH_1,   "Threshold[1]",        9, 150 },
+  { MPX3_DAC_THRESH_2,   "Threshold[2]",        9, (1<<9)/2 },
+  { MPX3_DAC_THRESH_3,   "Threshold[3]",        9, (1<<9)/2 },
+  { MPX3_DAC_THRESH_4,   "Threshold[4]",        9, (1<<9)/2 },
+  { MPX3_DAC_THRESH_5,   "Threshold[5]",        9, (1<<9)/2 },
+  { MPX3_DAC_THRESH_6,   "Threshold[6]",        9, (1<<9)/2 },
+  { MPX3_DAC_THRESH_7,   "Threshold[7]",        9, (1<<9)/2 },
+  { MPX3_DAC_PREAMP,     "Preamp",              8, 120 },
+  { MPX3_DAC_IKRUM,      "Ikrum",               8, 20 },
+  { MPX3_DAC_SHAPER,     "Shaper",              8, 173 },
+  { MPX3_DAC_DISC,       "Disc",                8, 255 },
+  { MPX3_DAC_DISC_LS,    "Disc_LS",             8, 170 },
+  { MPX3_DAC_THRESH_N,   "ThresholdN",          8, 20 },
+  { MPX3_DAC_PIXEL,      "DAC_pixel",           8, 0x76 },
+  { MPX3_DAC_DELAY,      "Delay",               8, (1<<8)/2 },
+  { MPX3_DAC_TP_BUF_IN,  "TP_BufferIn",         8, (1<<8)/2 },
+  { MPX3_DAC_TP_BUF_OUT, "TP_BufferOut",        8, 0x32 },
+  { MPX3_DAC_RPZ,        "RPZ",                 8, (1<<8)-1 },
+  { MPX3_DAC_GND,        "GND",                 8, 0x6E },
+  { MPX3_DAC_TP_REF,     "TP_REF",              8, (1<<8)/2 },
+  { MPX3_DAC_FBK,        "FBK",                 8, 0x8F },
+  { MPX3_DAC_CAS,        "Cas",                 8, 191 },
+  { MPX3_DAC_TP_REF_A,   "TP_REFA",             9, (1<<9)-1 },
+  { MPX3_DAC_TP_REF_B,   "TP_REFB",             9, (1<<9)-1 }
+};
+
+static const dac_t MPX3RX_DAC_TABLE[MPX3RX_DAC_COUNT] =
+{
+  { MPX3RX_DAC_THRESH_0,    "Threshold[0]",     9, (1<<9)/2 },
+  { MPX3RX_DAC_THRESH_1,    "Threshold[1]",     9, (1<<9)/2 },
+  { MPX3RX_DAC_THRESH_2,    "Threshold[2]",     9, (1<<9)/2 },
+  { MPX3RX_DAC_THRESH_3,    "Threshold[3]",     9, (1<<9)/2 },
+  { MPX3RX_DAC_THRESH_4,    "Threshold[4]",     9, (1<<9)/2 },
+  { MPX3RX_DAC_THRESH_5,    "Threshold[5]",     9, (1<<9)/2 },
+  { MPX3RX_DAC_THRESH_6,    "Threshold[6]",     9, (1<<9)/2 },
+  { MPX3RX_DAC_THRESH_7,    "Threshold[7]",     9, (1<<9)/2 },
+  { MPX3RX_DAC_PREAMP,      "Preamp",           8, (1<<8)/2 },
+  { MPX3RX_DAC_IKRUM,       "Ikrum",            8, (1<<8)/2 },
+  { MPX3RX_DAC_SHAPER,      "Shaper",           8, (1<<8)/2 },
+  { MPX3RX_DAC_DISC,        "Disc",             8, (1<<8)/2 },
+  { MPX3RX_DAC_DISC_LS,     "Disc_LS",          8, (1<<8)/2 },
+  { MPX3RX_DAC_SHAPER_TEST, "Shaper_Test",      8, (1<<8)/2 },
+  { MPX3RX_DAC_DISC_L,      "DAC_DiscL",        8, (1<<8)/2 },
+  { MPX3RX_DAC_TEST,        "DAC_test",         8, (1<<8)/2 },
+  { MPX3RX_DAC_DISC_H,      "DAC_DiscH",        8, (1<<8)/2 },
+  { MPX3RX_DAC_DELAY,       "Delay",            8, (1<<8)/2 },
+  { MPX3RX_DAC_TP_BUF_IN,   "TP_BufferIn",      8, (1<<8)/2 },
+  { MPX3RX_DAC_TP_BUF_OUT,  "TP_BufferOut",     8, (1<<8)/2 },
+  { MPX3RX_DAC_RPZ,         "RPZ",              8, (1<<8)/2 },
+  { MPX3RX_DAC_GND,         "GND",              8, (1<<8)/2 },
+  { MPX3RX_DAC_TP_REF,      "TP_REF",           8, (1<<8)/2 },
+  { MPX3RX_DAC_FBK,         "FBK",              8, (1<<8)/2 },
+  { MPX3RX_DAC_CAS,         "Cas",              8, (1<<8)/2 },
+  { MPX3RX_DAC_TP_REF_A,    "TP_REFA",          9, (1<<9)/2 },
+  { MPX3RX_DAC_TP_REF_B,    "TP_REFB",          9, (1<<9)/2 }
+};
+
 static const QColor COLOR_TABLE[] = {
   Qt::red,
   Qt::black,
   Qt::darkRed,
   Qt::green,
   Qt::darkGreen,
+
   Qt::blue,
   Qt::darkBlue,
   Qt::cyan,
   Qt::darkCyan,
   Qt::magenta,
+
   Qt::darkMagenta,
   Qt::yellow,
   Qt::darkYellow,
   QColor( "darkorange" ),
   QColor( "purple" ),
+
   QColor( "khaki" ),
   QColor( "gold" ),
-  QColor( "dodgerblue" )
+  QColor( "dodgerblue" ),
+  QColor( "light gray" ),
+  QColor( "medium gray" ),
+
+  QColor( "red" ),
+  QColor( "green" ),
+  QColor( "blue" ),
+  QColor( "cyan" ),
+  QColor( "magenta" ),
+
+  QColor( "yellow" ),
+  QColor( "dark yellow" )
 };
 
 // ----------------------------------------------------------------------------
@@ -80,13 +155,16 @@ SpidrDacsScan::SpidrDacsScan()
   : QDialog(),
     _spidrController( 0 ),
     _deviceIndex( 0 ),
+    _deviceType( MPX_TYPE_NC ),
     _scanInProgress( false ),
+    _dacCount( 0 ),
     _dacIndex( 0 ),
     _dacCode( TPX3_SENSEOFF ),
     _dacMax( 0 ),
     _dacVal( 0 ),
     _dacStep( 1 ),
     _samples( 1 ),
+    _dacTable( 0 ),
     _plot( 0 ),
     _graph( 0 )
 {
@@ -268,6 +346,12 @@ void SpidrDacsScan::startOrStopScan()
       _plot->legend->setVisible( true );
       _plot->clearGraphs();
       _plot->replot();
+      _deviceType = 0;
+      //_deviceType = MPX_TYPE_MPX3RX;
+      _dacCount = TPX3_DAC_COUNT_TO_SET;
+      //_dacCount = MPX3RX_DAC_COUNT;
+      _dacTable = &TPX3_DAC_TABLE[0];
+      //_dacTable = &MPX3RX_DAC_TABLE[0];
       this->scan();
       if( _spidrController ) _spidrController->setLogLevel( 2 ); // WARNING
     }
@@ -286,9 +370,11 @@ void SpidrDacsScan::scan()
   if( _dacVal == 0 )
     {
       // Next DAC index
-      _dacCode = TPX3_DAC_TABLE[_dacIndex].code;
+      //_dacCode = TPX3_DAC_TABLE[_dacIndex].code;
+      _dacCode = _dacTable[_dacIndex].code;
       _labelDac->setText( QString("DAC %1..").arg( _dacCode ) );
-      _dacMax  = (1 << TPX3_DAC_TABLE[_dacIndex].bits) - 1;
+      //_dacMax  = (1 << TPX3_DAC_TABLE[_dacIndex].bits) - 1;
+      _dacMax  = (1 << _dacTable[_dacIndex].bits) - 1;
       if( !_spidrController->setSenseDac( _deviceIndex, _dacCode ) )
 	this->inError();
 
@@ -307,7 +393,8 @@ void SpidrDacsScan::scan()
       QPen pen( COLOR_TABLE[_dacIndex] );
       pen.setWidth( _comboBoxPenWidth->currentIndex() + 1 );
       _graph->setPen( pen );
-      _graph->setName( QString(TPX3_DAC_TABLE[_dacIndex].name) );
+      //_graph->setName( QString(TPX3_DAC_TABLE[_dacIndex].name) );
+      _graph->setName( QString(_dacTable[_dacIndex].name) );
       _graph->addToLegend();
     }
 
@@ -315,8 +402,8 @@ void SpidrDacsScan::scan()
     this->inError();
 
   int adc_val;
-  //if( !_spidrController->getDacOut( &adc_val, _samples ) )
-  if( !_spidrController->getAdc( &adc_val, _deviceIndex, _samples ) )
+  if( !_spidrController->getDacOut( _deviceIndex, &adc_val, _samples ) )
+  //if( !_spidrController->getAdc( &adc_val, _deviceIndex, _samples ) )
     {
       this->inError();
     }
@@ -333,14 +420,16 @@ void SpidrDacsScan::scan()
   if( _dacVal > _dacMax )
     {
       // Set this DAC to its default setting...
-      int dflt = TPX3_DAC_TABLE[_dacIndex].dflt;
+      //int dflt = TPX3_DAC_TABLE[_dacIndex].dflt;
+      int dflt = _dacTable[_dacIndex].dflt;
       if( !_spidrController->setDac( _deviceIndex, _dacCode, dflt ) )
 	this->inError();
 
       // Go for next DAC or end it
       _dacVal = 0;
       ++_dacIndex;
-      if( _dacIndex == TPX3_DAC_COUNT_TO_SET )
+      //if( _dacIndex == TPX3_DAC_COUNT_TO_SET )
+      if( _dacIndex == _dacCount )
 	this->startOrStopScan(); // The end
     }
 

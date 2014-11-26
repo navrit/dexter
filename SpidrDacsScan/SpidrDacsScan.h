@@ -26,18 +26,21 @@ class SpidrDacsScan : public QDialog, Ui_SpidrDacsScanDialog
  private:
   SpidrController *_spidrController;
   int _deviceIndex;
+  int _deviceType;
 
   QIntValidator   *_ipAddrValidator;
   QIntValidator   *_ipPortValidator;
 
   // Scan parameters
   bool _scanInProgress;
+  int  _dacCount;
   int  _dacIndex;
   int  _dacCode;
   int  _dacMax;
   int  _dacVal;
   int  _dacStep;
   int  _samples;
+  const struct dac_s *_dacTable;
 
   // The plot
   QCustomPlot *_plot;
