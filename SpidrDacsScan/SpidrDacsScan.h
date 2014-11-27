@@ -4,6 +4,7 @@
 class SpidrController;
 class QIntValidator;
 class QCustomPlot;
+class QCPPlotTitle;
 class QCPGraph;
 
 class SpidrDacsScan : public QDialog, Ui_SpidrDacsScanDialog
@@ -43,7 +44,8 @@ class SpidrDacsScan : public QDialog, Ui_SpidrDacsScanDialog
   const struct dac_s *_dacTable;
 
   // The plot
-  QCustomPlot *_plot;
+  QCustomPlot  *_plot;
+  QCPPlotTitle *_title;
 
   // Currently active graph
   QCPGraph *_graph;

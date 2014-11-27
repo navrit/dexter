@@ -206,14 +206,18 @@ SpidrDacsScan::SpidrDacsScan()
   _comboBoxAdcSamples->setCurrentIndex( 3 );
   for( i=1; i<=4; ++i )
     _comboBoxPenWidth->addItem( QString::number(i) );
+  _comboBoxDeviceType->addItem( "T3" );
+  _comboBoxDeviceType->addItem( "M3" );
+  _comboBoxDeviceType->addItem( "M3RX" );
 
   // Prepare the plot
   _plot = new QCustomPlot();
   _plot->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
   // The title
+  _title = new QCPPlotTitle( _plot );
+  _title->setText( "Timepix3 DACs scan" );
   _plot->plotLayout()->insertRow( 0 );
-  QString qs( "Timepix3 DACs scan" );
-  _plot->plotLayout()->addElement( 0, 0, new QCPPlotTitle( _plot, qs ) );
+  _plot->plotLayout()->addElement( 0, 0, _title );
   // The legend
   _plot->legend->setVisible( false ); // Nothing there yet...
   QFont f = font();  // Start out with Dialog's font..
@@ -331,6 +335,7 @@ void SpidrDacsScan::startOrStopScan()
       _scanInProgress = false;
       _pushButtonScan->setText( "Start Scan" );
       _comboBoxDeviceIndex->setEnabled( true );
+      _comboBoxDeviceType->setEnabled( true );
       _labelDac->hide();
       if( _spidrController ) _spidrController->setLogLevel( 0 ); // DEBUG
     }
@@ -341,17 +346,42 @@ void SpidrDacsScan::startOrStopScan()
       _dacVal   = 0;
       _pushButtonScan->setText( "Stop Scan" );
       _comboBoxDeviceIndex->setEnabled( false );
+      _comboBoxDeviceType->setEnabled( false );
       _labelDac->show();
       _labelErr->hide();
+
+      _deviceType = _comboBoxDeviceType->currentIndex();
+      switch( _deviceType )
+	{
+	case MPX_TYPE_MPX31:
+	  _dacCount = MPX3_DAC_COUNT;
+	  _dacTable = &MPX3_DAC_TABLE[0];
+	  _plot->yAxis->setRange( 0, 65536 );
+	  _title->setText( "Medipix3RX DACs scan" );
+	  _comboBoxDacStep->setCurrentIndex( 3 );
+	  _comboBoxAdcSamples->setCurrentIndex( 0 );
+	  break;
+	case MPX_TYPE_MPX3RX:
+	  _dacCount = MPX3RX_DAC_COUNT;
+	  _dacTable = &MPX3RX_DAC_TABLE[0];
+	  _plot->yAxis->setRange( 0, 65536 );
+	  _title->setText( "Medipix3 DACs scan" );
+	  _comboBoxDacStep->setCurrentIndex( 3 );
+	  _comboBoxAdcSamples->setCurrentIndex( 0 );
+	  break;
+	default:
+	  _dacCount = TPX3_DAC_COUNT_TO_SET;
+	  _dacTable = &TPX3_DAC_TABLE[0];
+	  _plot->yAxis->setRange( 0, 4096 );
+	  _title->setText( "Timepix3 DACs scan" );
+	  _comboBoxDacStep->setCurrentIndex( 0 );
+	  _comboBoxAdcSamples->setCurrentIndex( 3 );
+	  break;
+	}
+
       _plot->legend->setVisible( true );
       _plot->clearGraphs();
       _plot->replot();
-      _deviceType = 0;
-      //_deviceType = MPX_TYPE_MPX3RX;
-      _dacCount = TPX3_DAC_COUNT_TO_SET;
-      //_dacCount = MPX3RX_DAC_COUNT;
-      _dacTable = &TPX3_DAC_TABLE[0];
-      //_dacTable = &MPX3RX_DAC_TABLE[0];
       this->scan();
       if( _spidrController ) _spidrController->setLogLevel( 2 ); // WARNING
     }
