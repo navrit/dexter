@@ -357,7 +357,7 @@ void SpidrDacsScan::startOrStopScan()
 	  _dacCount = MPX3_DAC_COUNT;
 	  _dacTable = &MPX3_DAC_TABLE[0];
 	  _plot->yAxis->setRange( 0, 65536 );
-	  _title->setText( "Medipix3RX DACs scan" );
+	  _title->setText( "Medipix3 DACs scan" );
 	  _comboBoxDacStep->setCurrentIndex( 3 );
 	  _comboBoxAdcSamples->setCurrentIndex( 0 );
 	  break;
@@ -365,7 +365,7 @@ void SpidrDacsScan::startOrStopScan()
 	  _dacCount = MPX3RX_DAC_COUNT;
 	  _dacTable = &MPX3RX_DAC_TABLE[0];
 	  _plot->yAxis->setRange( 0, 65536 );
-	  _title->setText( "Medipix3 DACs scan" );
+	  _title->setText( "Medipix3RX DACs scan" );
 	  _comboBoxDacStep->setCurrentIndex( 3 );
 	  _comboBoxAdcSamples->setCurrentIndex( 0 );
 	  break;
