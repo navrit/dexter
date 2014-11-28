@@ -17,4 +17,8 @@ typedef enum {
 #define Sleep(ms) usleep(ms*1000)
 #endif
 
+// DACs
+#define __voltage_DACS_MAX 	1.275
+#define __maxADCCounts	   131071 // 17 bits ? FIXME !!
+
 #endif
