@@ -18,6 +18,7 @@ class SpidrDacsScan : public QDialog, Ui_SpidrDacsScanDialog
  public slots:
   void connectOrDisconnect();
   void changeDeviceIndex( int index );
+  void changeDeviceType( int index );
   void startOrStopScan();
   void scan();
 

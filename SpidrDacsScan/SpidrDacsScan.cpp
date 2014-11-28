@@ -174,13 +174,6 @@ SpidrDacsScan::SpidrDacsScan()
 			Qt::WindowMaximizeButtonHint |
 			Qt::WindowCloseButtonHint );
 
-  connect( _pushButtonConnect, SIGNAL( clicked() ),
-	   this, SLOT( connectOrDisconnect() ) );
-  connect( _comboBoxDeviceIndex, SIGNAL( currentIndexChanged(int) ),
-	   this, SLOT( changeDeviceIndex(int) ) );
-  connect( _pushButtonScan, SIGNAL( clicked() ),
-	   this, SLOT( startOrStopScan() ) );
-
   _ipAddrValidator = new QIntValidator( 1, 255, this );
   _lineEditAddr3->setValidator( _ipAddrValidator );
   _lineEditAddr2->setValidator( _ipAddrValidator );
@@ -237,6 +230,16 @@ SpidrDacsScan::SpidrDacsScan()
 
   // Insert the plot in the dialog window
   _verticalLayout->addWidget( _plot );
+
+  // Connect signals
+  connect( _pushButtonConnect, SIGNAL( clicked() ),
+	   this, SLOT( connectOrDisconnect() ) );
+  connect( _comboBoxDeviceIndex, SIGNAL( currentIndexChanged(int) ),
+	   this, SLOT( changeDeviceIndex(int) ) );
+  connect( _comboBoxDeviceType, SIGNAL( currentIndexChanged(int) ),
+	   this, SLOT( changeDeviceType(int) ) );
+  connect( _pushButtonScan, SIGNAL( clicked() ),
+	   this, SLOT( startOrStopScan() ) );
 }
 
 // ----------------------------------------------------------------------------
@@ -328,6 +331,44 @@ void SpidrDacsScan::changeDeviceIndex( int index )
 
 // ----------------------------------------------------------------------------
 
+void SpidrDacsScan::changeDeviceType( int index )
+{
+  if( index < 0 ) return;
+  _deviceType = index;
+  switch( _deviceType )
+    {
+    case MPX_TYPE_MPX31:
+      _dacCount = MPX3_DAC_COUNT;
+      _dacTable = &MPX3_DAC_TABLE[0];
+      _plot->yAxis->setRange( 0, 65536 );
+      _title->setText( "Medipix3 DACs scan" );
+      _comboBoxDacStep->setCurrentIndex( 3 );
+      _comboBoxAdcSamples->setCurrentIndex( 0 );
+      break;
+    case MPX_TYPE_MPX3RX:
+      _dacCount = MPX3RX_DAC_COUNT;
+      _dacTable = &MPX3RX_DAC_TABLE[0];
+      _plot->yAxis->setRange( 0, 65536 );
+      _title->setText( "Medipix3RX DACs scan" );
+      _comboBoxDacStep->setCurrentIndex( 3 );
+      _comboBoxAdcSamples->setCurrentIndex( 0 );
+      break;
+    default:
+      _dacCount = TPX3_DAC_COUNT_TO_SET;
+      _dacTable = &TPX3_DAC_TABLE[0];
+      _plot->yAxis->setRange( 0, 4096 );
+      _title->setText( "Timepix3 DACs scan" );
+      _comboBoxDacStep->setCurrentIndex( 0 );
+      _comboBoxAdcSamples->setCurrentIndex( 3 );
+      break;
+    }
+  _plot->clearGraphs();
+  _plot->legend->setVisible( false );
+  _plot->replot();
+}
+
+// ----------------------------------------------------------------------------
+
 void SpidrDacsScan::startOrStopScan()
 {
   if( _scanInProgress )
@@ -349,35 +390,6 @@ void SpidrDacsScan::startOrStopScan()
       _comboBoxDeviceType->setEnabled( false );
       _labelDac->show();
       _labelErr->hide();
-
-      _deviceType = _comboBoxDeviceType->currentIndex();
-      switch( _deviceType )
-	{
-	case MPX_TYPE_MPX31:
-	  _dacCount = MPX3_DAC_COUNT;
-	  _dacTable = &MPX3_DAC_TABLE[0];
-	  _plot->yAxis->setRange( 0, 65536 );
-	  _title->setText( "Medipix3 DACs scan" );
-	  _comboBoxDacStep->setCurrentIndex( 3 );
-	  _comboBoxAdcSamples->setCurrentIndex( 0 );
-	  break;
-	case MPX_TYPE_MPX3RX:
-	  _dacCount = MPX3RX_DAC_COUNT;
-	  _dacTable = &MPX3RX_DAC_TABLE[0];
-	  _plot->yAxis->setRange( 0, 65536 );
-	  _title->setText( "Medipix3RX DACs scan" );
-	  _comboBoxDacStep->setCurrentIndex( 3 );
-	  _comboBoxAdcSamples->setCurrentIndex( 0 );
-	  break;
-	default:
-	  _dacCount = TPX3_DAC_COUNT_TO_SET;
-	  _dacTable = &TPX3_DAC_TABLE[0];
-	  _plot->yAxis->setRange( 0, 4096 );
-	  _title->setText( "Timepix3 DACs scan" );
-	  _comboBoxDacStep->setCurrentIndex( 0 );
-	  _comboBoxAdcSamples->setCurrentIndex( 3 );
-	  break;
-	}
 
       _plot->legend->setVisible( true );
       _plot->clearGraphs();
