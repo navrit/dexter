@@ -58,17 +58,18 @@ int main( int argc, char *argv[] )
   else
     cout << "getAcqEnable: " << mask << endl;
 
-  int dac_nr, dac_value;
+  dev_nr = 2;
+
+  int i, dac_value;
   // Get the DAC values from Medipix device 0 and display them
-  if( !spidr.readDacs( 0 ) )
+  if( !spidr.readDacs( dev_nr ) )
     cout << "### readDacs: " << spidr.errorString() << endl;
-  dev_nr = 0;
-  for( dac_nr=0; dac_nr<MPX3_DAC_COUNT; ++dac_nr )
+  for( i=0; i<MPX3_DAC_COUNT; ++i )
     {
-      if( !spidr.getDac( dev_nr, dac_nr, &dac_value ) )
-	cout << "### DAC " << dac_nr << ": " << spidr.errorString() << endl;
+      if( !spidr.getDac( dev_nr, i+1, &dac_value ) )
+	cout << "### DAC " << i << ": " << spidr.errorString() << endl;
       else
-	cout << "DAC " << dac_nr << " ("<< spidr.dacNameMpx3( dac_nr )
+	cout << "DAC " << i << " ("<< spidr.dacNameMpx3rx( i )
 	     << "): " << dac_value << endl;
     }
 
@@ -76,15 +77,15 @@ int main( int argc, char *argv[] )
 #ifdef DO_DAC_SCAN
   // Perform a DAC scan (on a single DAC..), displaying the ADC values
   int adc_value;
-  dev_nr = 0;
+  //dev_nr = 0;
   int dac_code = MPX3_DAC_DISC;
   if( !spidr.setSenseDac( dac_code ) )
     cout << "### SenseDAC " << dac_code << ": " << spidr.errorString() << endl;
   else
     cout << "SenseDAC " << dac_nr << endl;
-  for( dac_value=0; dac_value<=spidr.dacMaxMpx3(dac_nr); ++dac_value )
+  for( dac_value=0; dac_value<=spidr.dacMaxMpx3(dac_code); ++dac_value )
     {
-      if( !spidr.setDac( dev_nr, dac_nr, dac_value ) )
+      if( !spidr.setDac( dev_nr, dac_code, dac_value ) )
 	cout << "### setDac: " << spidr.errorString() << endl;
 
       if( !spidr.writeDacs( dev_nr ) )
@@ -99,7 +100,7 @@ int main( int argc, char *argv[] )
 #endif
 
   // Create a (new) pixel configuration (for a Medipix3 device)
-  dev_nr = 0;
+  //dev_nr = 0;
   int devtype = MPX_TYPE_NC;
   spidr.getDeviceType( 0, &devtype );
   spidr.resetPixelConfig();
@@ -145,7 +146,6 @@ int main( int argc, char *argv[] )
   spidr.setShutterTriggerConfig( trig_mode, trig_period_us,
 			  trig_freq_hz, nr_of_triggers );
   spidr.clearBusy();
-  int i;
   for( i=0; i<5; ++i )
     {
       cout << "Auto-trig " << i << endl;
