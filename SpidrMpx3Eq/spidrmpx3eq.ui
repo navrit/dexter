@@ -19,8 +19,8 @@
      <rect>
       <x>0</x>
       <y>10</y>
-      <width>1101</width>
-      <height>531</height>
+      <width>1176</width>
+      <height>491</height>
      </rect>
     </property>
     <property name="toolTip">
@@ -83,7 +83,7 @@
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="tab_2">
+    <widget class="QWidget" name="tabDACs">
      <attribute name="title">
       <string>DACs</string>
      </attribute>
@@ -112,7 +112,7 @@
         <height>391</height>
        </rect>
       </property>
-      <layout class="QGridLayout" name="gridLayout_2">
+      <layout class="QGridLayout" name="gridLayout2">
        <item row="3" column="1">
         <widget class="QLabel" name="dac17Label">
          <property name="text">
@@ -133,7 +133,7 @@
        <item row="3" column="4">
         <widget class="QLabel" name="dac17VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -153,7 +153,7 @@
        <item row="7" column="4">
         <widget class="QLabel" name="dac21VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -180,7 +180,7 @@
        <item row="11" column="4">
         <widget class="QLabel" name="dac25VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -197,7 +197,7 @@
        <item row="10" column="4">
         <widget class="QLabel" name="dac24VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -228,7 +228,7 @@
        <item row="4" column="4">
         <widget class="QLabel" name="dac18VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -259,7 +259,7 @@
        <item row="6" column="4">
         <widget class="QLabel" name="dac20VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -276,7 +276,7 @@
        <item row="8" column="4">
         <widget class="QLabel" name="dac22VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -317,7 +317,7 @@
        <item row="12" column="4">
         <widget class="QLabel" name="dac26VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -341,7 +341,7 @@
        <item row="1" column="4">
         <widget class="QLabel" name="dac15VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -351,14 +351,14 @@
        <item row="0" column="4">
         <widget class="QLabel" name="dac14VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="5" column="4">
         <widget class="QLabel" name="dac19VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -379,7 +379,7 @@
        <item row="2" column="4">
         <widget class="QLabel" name="dac16VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -421,7 +421,7 @@
        <item row="9" column="4">
         <widget class="QLabel" name="dac23VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -540,7 +540,7 @@
         <height>416</height>
        </rect>
       </property>
-      <layout class="QGridLayout" name="gridLayout">
+      <layout class="QGridLayout" name="gridLayout1">
        <item row="1" column="1">
         <widget class="QLabel" name="dac1Label">
          <property name="text">
@@ -568,14 +568,14 @@
        <item row="0" column="4">
         <widget class="QLabel" name="dac0VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="1" column="4">
         <widget class="QLabel" name="dac1VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -602,7 +602,7 @@
        <item row="2" column="4">
         <widget class="QLabel" name="dac2VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -630,7 +630,7 @@
        <item row="3" column="4">
         <widget class="QLabel" name="dac3VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -657,7 +657,7 @@
        <item row="4" column="4">
         <widget class="QLabel" name="dac4VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -681,7 +681,7 @@
        <item row="5" column="4">
         <widget class="QLabel" name="dac5VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -705,7 +705,7 @@
        <item row="6" column="4">
         <widget class="QLabel" name="dac6VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -726,7 +726,7 @@
        <item row="7" column="4">
         <widget class="QLabel" name="dac7VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -753,7 +753,7 @@
        <item row="8" column="4">
         <widget class="QLabel" name="dac8VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -777,7 +777,7 @@
        <item row="9" column="4">
         <widget class="QLabel" name="dac9VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -801,7 +801,7 @@
        <item row="10" column="4">
         <widget class="QLabel" name="dac10VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -825,7 +825,7 @@
        <item row="11" column="4">
         <widget class="QLabel" name="dac11VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -849,7 +849,7 @@
        <item row="12" column="4">
         <widget class="QLabel" name="dac12VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -873,7 +873,7 @@
        <item row="13" column="4">
         <widget class="QLabel" name="dac13VLabel">
          <property name="text">
-          <string>V</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -977,32 +977,6 @@
        </item>
       </layout>
      </widget>
-     <widget class="QPushButton" name="startScanButton">
-      <property name="geometry">
-       <rect>
-        <x>929</x>
-        <y>360</y>
-        <width>161</width>
-        <height>23</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Start scan</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label">
-      <property name="geometry">
-       <rect>
-        <x>680</x>
-        <y>360</y>
-        <width>31</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Step</string>
-      </property>
-     </widget>
      <widget class="QPushButton" name="selectAllPushButton">
       <property name="geometry">
        <rect>
@@ -1029,16 +1003,6 @@
        <string>Clear all</string>
       </property>
      </widget>
-     <widget class="QSpinBox" name="scanStepSpinBox">
-      <property name="geometry">
-       <rect>
-        <x>720</x>
-        <y>360</y>
-        <width>47</width>
-        <height>24</height>
-       </rect>
-      </property>
-     </widget>
      <widget class="QProgressBar" name="progressBar">
       <property name="geometry">
        <rect>
@@ -1051,6 +1015,71 @@
       <property name="value">
        <number>24</number>
       </property>
+     </widget>
+     <widget class="QPushButton" name="senseDACsPushButton">
+      <property name="geometry">
+       <rect>
+        <x>380</x>
+        <y>420</y>
+        <width>80</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Sense DACs</string>
+      </property>
+     </widget>
+     <widget class="QWidget" name="">
+      <property name="geometry">
+       <rect>
+        <x>760</x>
+        <y>360</y>
+        <width>330</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLabel" name="labelDeviceId">
+         <property name="text">
+          <string>Device Id</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="deviceIdSpinBox"/>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelStep">
+         <property name="text">
+          <string>Step</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="scanStepSpinBox"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="startScanButton">
+         <property name="text">
+          <string>Start scan</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </widget>
    </widget>

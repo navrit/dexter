@@ -3,12 +3,6 @@
  * Nikhef, 2014.
  */
 
-#include "DACs.h"
-#include "mpx3eq_common.h"
-#include "ui_spidrmpx3eq.h"
-#include "qcustomplot.h"
-#include "SpidrController.h"
-#include "SpidrDaq.h"
 
 #include <QFont>
 #include <QIntValidator>
@@ -16,11 +10,18 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QVBoxLayout>
-#include <QtWidgets>
+//#include <QtWidgets>
 #include <QPen>
 #include <QSignalMapper>
-#include <QVector>
+//#include <QVector>
 
+#include "DACs.h"
+#include "mpx3eq_common.h"
+#include "ui_spidrmpx3eq.h"
+#include "SpidrController.h"
+#include "SpidrDaq.h"
+
+#include "qcustomplot.h"
 
 DACs::DACs(){
 
@@ -34,6 +35,11 @@ DACs::DACs(Ui::SpidrMpx3Eq * ui) {
 
 	// Defaults
 	_scanStep = 4;
+	_deviceIndex = 2;
+	_ui->deviceIdSpinBox->setMaximum(3);
+	_ui->deviceIdSpinBox->setMinimum(0);
+	_ui->deviceIdSpinBox->setValue( _deviceIndex );
+	_ui->progressBar->setValue( 0 );
 
 	// Order widgets in vectors
 	FillWidgetVectors();
@@ -48,7 +54,7 @@ DACs::DACs(Ui::SpidrMpx3Eq * ui) {
 	// Leave a few things unnactivated
 	_ui->startScanButton->setDisabled( true );
 
-	/*
+
 	// Prepare plot
 	// Prepare the plot
 	_dacScanPlot = new QCustomPlot();
@@ -89,7 +95,8 @@ DACs::DACs(Ui::SpidrMpx3Eq * ui) {
 	QPen legendPen;
 	legendPen.setColor(QColor(130, 130, 130, 200));
 	_dacScanPlot->legend->setBorderPen(legendPen);
-	QFont legendFont = font();
+	QWidget f;
+	QFont legendFont = f.font();
 	legendFont.setPointSize(10);
 	_dacScanPlot->legend->setFont(legendFont);
 	_dacScanPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
@@ -109,7 +116,7 @@ DACs::DACs(Ui::SpidrMpx3Eq * ui) {
 
 
 	_dacScanPlot->replot();
-	 */
+
 }
 
 DACs::~DACs() {
@@ -136,10 +143,6 @@ void DACs::ConnectToHardware(SpidrController * sc, SpidrDaq * sd) {
 
 void DACs::PopulateDACValues(){
 
-	int dev_nr = 2;
-	int dac_val = 0;
-	int adc_val = 0;
-
 	// Here we set the default values hardcoded in MPX3RX_DAC_TABLE (mid range)
 	//   OR if the DACs file is present we read the values from it.  The file has
 	//   higher priority.
@@ -150,38 +153,56 @@ void DACs::PopulateDACValues(){
 		cout << "[INFO] setting dacs from defult DACs file." << endl;
 
 		for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
-			_spidrcontrol->setDac( dev_nr, MPX3RX_DAC_TABLE[i].code, _dacVals[i] );
+			_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[i].code, _dacVals[i] );
 			_dacSpinBoxes[i]->setValue( _dacVals[i] );
 			_dacSliders[i]->setValue( _dacVals[i] );
 		}
-		_spidrcontrol->writeDacs( dev_nr );
+		_spidrcontrol->writeDacs( _deviceIndex );
 
 
-	} else { // Setting dacs at midrange
+	} else { // Setting DACs at mid-range
 
 		for (int i = 0 ; i < 1; i++) {
 
-			//_spidrcontrol->getDac(dev_nr, MPX3RX_DAC_TABLE[i].code, &dac_val );
-			//cout << "Dacval = " << dac_val << endl;
-			_spidrcontrol->setDac( dev_nr, MPX3RX_DAC_TABLE[i].code, MPX3RX_DAC_TABLE[i].dflt );
+			_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[i].code, MPX3RX_DAC_TABLE[i].dflt );
 			_dacSpinBoxes[i]->setValue( MPX3RX_DAC_TABLE[i].dflt );
 			_dacSliders[i]->setValue( MPX3RX_DAC_TABLE[i].dflt );
 
-			// Sample DAC
-			/*
-			_spidrcontrol->setSenseDac( MPX3RX_DAC_TABLE[i].code );
-			Sleep( 10 );
-			_spidrcontrol->getAdc( dev_nr, &adc_val );
-			Sleep( 10 );
-			QString dacOut = QString::number( (__voltage_DACS_MAX/__maxADCCounts) * adc_val, 'f', 2 );
-			dacOut += " V";
-			_dacVLabels[i]->setText( dacOut );
-*/
 		}
 
 	}
 
 }
+
+void DACs::SenseDACs() {
+
+	int dev_nr = _ui->deviceIdSpinBox->value();
+	int adc_val = 0;
+
+	_ui->progressBar->setValue( 0 );
+
+	for (int i = 0 ; i < MPX3RX_DAC_COUNT ; i++) {
+
+		// Sample DAC
+		_spidrcontrol->setSenseDac( MPX3RX_DAC_TABLE[i].code );
+		Sleep( 100 );
+		_spidrcontrol->getAdc( dev_nr, &adc_val );
+		//cout << adc_val << endl;
+		QString dacOut = QString::number( (__voltage_DACS_MAX/__maxADCCounts) * adc_val, 'f', 2 );
+		dacOut += " V";
+		_dacVLabels[i]->setText( dacOut );
+
+		// Simple filling of the Progress bar
+		_ui->progressBar->setValue( floor( ( (double)i / MPX3RX_DAC_COUNT) * 100 ) );
+		//_ui->tabDACs->update();
+		//_ui->gridLayout2->update();
+
+	}
+
+	_ui->progressBar->setValue( 0 );
+
+}
+
 
 void DACs::FillWidgetVectors() {
 
@@ -354,6 +375,8 @@ void DACs::SetupSignalsAndSlots() {
 	connect( _ui->clearAllPushButton, SIGNAL(clicked()), this, SLOT( UncheckAllDACs() ) );
 	connect( _ui->selectAllPushButton, SIGNAL(clicked()), this, SLOT( CheckAllDACs() ) );
 	connect( _ui->startScanButton, SIGNAL(clicked()), this, SLOT( StartDACScan() ) );
+	connect( _ui->senseDACsPushButton, SIGNAL(clicked()), this, SLOT( SenseDACs() ) );
+	connect( _ui->deviceIdSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeDeviceIndex(int) ) );
 
 	// Sliders and SpinBoxes
 
@@ -393,24 +416,17 @@ void DACs::SetupSignalsAndSlots() {
 
 void DACs::UpdateSliders(int i) {
 
+	// Set the slider according to the new value in the Spin Box
 	_dacSliders[i]->setValue( _dacSpinBoxes[i]->value() );
 
 }
 
 void DACs::SetDAC(QObject * info) {
 
-	int dev_nr = 2;
-
 	// Verify first if the value changed at all
-	//int dac_val = 0;
-	//_spidrcontrol->getDac( dev_nr, MPX3RX_DAC_TABLE[ ((SignalSlotMapping *)info)->index ].code, &dac_val);
 
-	//if ( dac_val != ((SignalSlotMapping*)info)->value) {
-
-	_spidrcontrol->setDac( dev_nr, MPX3RX_DAC_TABLE[ ((SignalSlotMapping *)info)->index ].code, ((SignalSlotMapping*)info)->value );
-	_spidrcontrol->writeDacs( dev_nr );
-
-	//}
+	int val = _dacSpinBoxes[ ((SignalSlotMapping *)info)->index ]->value();
+	_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ ((SignalSlotMapping *)info)->index ].code, val );
 
 }
 
@@ -438,7 +454,7 @@ bool DACs::ReadDACsFile(string fn) {
 
 			rc = char(is.get());
 
-			if ( waitForNextLine && (rc != 0xa && rc != 0xd) ) { // Already in the next line
+			if ( waitForNextLine && ( rc != 0xa && rc != 0xd ) ) { // Already in the next line
 				waitForNextLine = false;
 				clearToAppend = true;
 				// previous line finished
@@ -468,13 +484,16 @@ bool DACs::ReadDACsFile(string fn) {
 
 		}
 		fb.close();
+
 	} else {
+
 		cout << "[WARNING] Couldn't find " << fn << endl;
 		cout << "[WARNING] Setting default DACs at mid range ! These might not be the best settings." << endl;
 		string messg = "Couldn't find: ";
 		messg += fn;
 		messg += "\nSetting default DACs at mid range ! These might not be the best settings.";
-		QMessageBox::warning(_ui->_DACScanFrame, tr("MPX3 - default DACs"), tr( messg.c_str() ) );
+		QMessageBox::warning ( _ui->_DACScanFrame, tr("MPX3 - default DACs"), tr( messg.c_str() ) );
+
 		return false;
 	}
 
@@ -482,8 +501,10 @@ bool DACs::ReadDACsFile(string fn) {
 	return true;
 }
 
-
-SignalSlotMapping::SignalSlotMapping() {
-
+void DACs::ChangeDeviceIndex( int index )
+{
+  if( index < 0 ) return; // can't really happen cause the SpinBox has been limited
+  _deviceIndex = index;
 }
+
 

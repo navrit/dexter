@@ -119,7 +119,7 @@ class SignalSlotMapping : public QObject {
 	Q_OBJECT
 
 public:
-	explicit SignalSlotMapping();
+	explicit SignalSlotMapping(){};
 	~SignalSlotMapping(){};
 
 	int index;
@@ -166,6 +166,9 @@ private:
 	// Keep track of DAC values
 	int _dacVals[MPX3RX_DAC_COUNT];
 
+	// Current device Id
+	int _deviceIndex;
+
 private slots:
 
 	void UncheckAllDACs();
@@ -174,6 +177,8 @@ private slots:
 	void SetupSignalsAndSlots();
 	void UpdateSliders(int);
 	void SetDAC(QObject * info);
+	void SenseDACs();
+	void ChangeDeviceIndex(int);
 
 };
 
