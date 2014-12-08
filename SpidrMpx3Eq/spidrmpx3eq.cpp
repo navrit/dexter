@@ -232,6 +232,7 @@ void SpidrMpx3Eq::Connect() {
 	// Prepare THl scans for equalization
 	_tscan->ConnectToHardware(_spidrcontrol, _spidrdaq);
 
+	// Prepare DACs.  Populate default values.
 	_dacs->ConnectToHardware(_spidrcontrol, _spidrdaq);
 	_dacs->PopulateDACValues();
 

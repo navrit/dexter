@@ -21,7 +21,6 @@
 #include <QSignalMapper>
 #include <QVector>
 
-//#include "spidrmpx3eq.h"
 
 DACs::DACs(){
 
@@ -144,22 +143,41 @@ void DACs::PopulateDACValues(){
 	// Here we set the default values hardcoded in MPX3RX_DAC_TABLE (mid range)
 	//   OR if the DACs file is present we read the values from it.  The file has
 	//   higher priority.
+	string defaultDACsFn = __default_DACs_filename;
 
-	for (int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
+	if ( ReadDACsFile(defaultDACsFn) ) {
 
-		_spidrcontrol->getDac(dev_nr, MPX3RX_DAC_TABLE[i].code, &dac_val );
-		cout << "Dacval = " << dac_val << endl;
-		_dacSpinBoxes[i]->setValue( dac_val );
-		_dacSliders[i]->setValue( dac_val );
+		cout << "[INFO] setting dacs from defult DACs file." << endl;
 
-		// Sample DAC
-		_spidrcontrol->setSenseDac( MPX3RX_DAC_TABLE[i].code );
-		Sleep( 10 );
-		_spidrcontrol->getAdc( dev_nr, &adc_val );
-		Sleep( 10 );
-		QString dacOut = QString::number( (__voltage_DACS_MAX/__maxADCCounts) * adc_val, 'f', 2);
-		dacOut += " V";
-		_dacVLabels[i]->setText( dacOut );
+		for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
+			_spidrcontrol->setDac( dev_nr, MPX3RX_DAC_TABLE[i].code, _dacVals[i] );
+			_dacSpinBoxes[i]->setValue( _dacVals[i] );
+			_dacSliders[i]->setValue( _dacVals[i] );
+		}
+		_spidrcontrol->writeDacs( dev_nr );
+
+
+	} else { // Setting dacs at midrange
+
+		for (int i = 0 ; i < 1; i++) {
+
+			//_spidrcontrol->getDac(dev_nr, MPX3RX_DAC_TABLE[i].code, &dac_val );
+			//cout << "Dacval = " << dac_val << endl;
+			_spidrcontrol->setDac( dev_nr, MPX3RX_DAC_TABLE[i].code, MPX3RX_DAC_TABLE[i].dflt );
+			_dacSpinBoxes[i]->setValue( MPX3RX_DAC_TABLE[i].dflt );
+			_dacSliders[i]->setValue( MPX3RX_DAC_TABLE[i].dflt );
+
+			// Sample DAC
+			/*
+			_spidrcontrol->setSenseDac( MPX3RX_DAC_TABLE[i].code );
+			Sleep( 10 );
+			_spidrcontrol->getAdc( dev_nr, &adc_val );
+			Sleep( 10 );
+			QString dacOut = QString::number( (__voltage_DACS_MAX/__maxADCCounts) * adc_val, 'f', 2 );
+			dacOut += " V";
+			_dacVLabels[i]->setText( dacOut );
+*/
+		}
 
 	}
 
@@ -389,12 +407,81 @@ void DACs::SetDAC(QObject * info) {
 
 	//if ( dac_val != ((SignalSlotMapping*)info)->value) {
 
-		_spidrcontrol->setDac( dev_nr, MPX3RX_DAC_TABLE[ ((SignalSlotMapping *)info)->index ].code, ((SignalSlotMapping*)info)->value );
-		_spidrcontrol->writeDacs( dev_nr );
+	_spidrcontrol->setDac( dev_nr, MPX3RX_DAC_TABLE[ ((SignalSlotMapping *)info)->index ].code, ((SignalSlotMapping*)info)->value );
+	_spidrcontrol->writeDacs( dev_nr );
 
 	//}
 
 }
+
+
+bool DACs::ReadDACsFile(string fn) {
+
+	if(fn.empty()) { // default
+		fn = __default_DACs_filename;
+	}
+
+	filebuf fb;
+	char rc;
+	string temp;
+	bool clearToAppend = true;
+	bool waitForNextLine = false;
+	int dacValIndex = 0;
+
+	if ( fb.open (fn.c_str(), ios::in) ) {
+
+		cout << "[INFO] reading DACs file from " << fn << endl;
+
+		istream is(&fb);
+
+		while(is) {
+
+			rc = char(is.get());
+
+			if ( waitForNextLine && (rc != 0xa && rc != 0xd) ) { // Already in the next line
+				waitForNextLine = false;
+				clearToAppend = true;
+				// previous line finished
+				//cout << temp << endl;
+				// Append the values to the dac vals internal array
+				_dacVals[dacValIndex] = atoi( temp.c_str() );
+				dacValIndex++;
+				if ( dacValIndex > MPX3RX_DAC_COUNT ) { // off scale
+					string messg = "ERROR loading the defaults DAC file: ";
+					messg += fn;
+					QMessageBox::information(_ui->_DACScanFrame, tr("MPX3 - default DACs"), tr( messg.c_str() ) );
+					return false;
+				}
+				temp.clear();
+			}
+
+			if ( rc == '/' || rc == '#' ) { // A comment from here and on
+				clearToAppend = false;
+			}
+			if (clearToAppend && !waitForNextLine) {
+				temp.append(1, rc); // append the character
+			}
+			if ( rc == 0xa || rc == 0xd ) { // This is the end of a line
+				clearToAppend = false;
+				waitForNextLine = true;
+			}
+
+		}
+		fb.close();
+	} else {
+		cout << "[WARNING] Couldn't find " << fn << endl;
+		cout << "[WARNING] Setting default DACs at mid range ! These might not be the best settings." << endl;
+		string messg = "Couldn't find: ";
+		messg += fn;
+		messg += "\nSetting default DACs at mid range ! These might not be the best settings.";
+		QMessageBox::warning(_ui->_DACScanFrame, tr("MPX3 - default DACs"), tr( messg.c_str() ) );
+		return false;
+	}
+
+
+	return true;
+}
+
 
 SignalSlotMapping::SignalSlotMapping() {
 

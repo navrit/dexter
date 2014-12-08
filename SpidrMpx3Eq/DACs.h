@@ -14,9 +14,13 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <string>
+#include <iostream>
+#include <fstream>
 using namespace std;
 
 #define 	__nDACs_MPX3RX		27
+#define		__default_DACs_filename "mpx3_defaultDACs.txt"
 
 class SpidrController;
 class SpidrDaq;
@@ -134,6 +138,8 @@ public:
 	~DACs();
 	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
 	void PopulateDACValues();
+
+	bool ReadDACsFile(string);
 
 private:
 
