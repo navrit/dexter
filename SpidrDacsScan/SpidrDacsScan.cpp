@@ -164,7 +164,7 @@ SpidrDacsScan::SpidrDacsScan()
     _dacVal( 0 ),
     _dacStep( 1 ),
     _samples( 1 ),
-    _dacTable( 0 ),
+    _dacTable( &TPX3_DAC_TABLE[0] ),
     _plot( 0 ),
     _graph( 0 )
 {
