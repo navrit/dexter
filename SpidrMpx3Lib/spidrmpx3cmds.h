@@ -37,9 +37,9 @@
 #define CMD_GET_DAC            0x11A
 #define CMD_SET_DAC            0x11B
 #define CMD_SET_DACS           0x11C
-#define CMD_READ_DACS          0x11D
-#define CMD_WRITE_DACS         0x11E
-#define CMD_WRITE_DACS_DFLT    0x11F
+//#define CMD_READ_DACS        0x11D
+//#define CMD_WRITE_DACS       0x11E
+#define CMD_SET_DACS_DFLT      0x11F
 #define CMD_CONFIG_CTPR        0x120
 #define CMD_SET_CTPR           0x121
 #define CMD_GET_ACQENABLE      0x122
@@ -144,9 +144,9 @@ static const char *CMD_STR[] =
     "GET_DAC          ", // 0x11A
     "SET_DAC          ", // 0x11B
     "SET_DACS         ", // 0x11C
-    "READ_DACS        ", // 0x11D
-    "WRITE_DACS       ", // 0x11E
-    "WRITE_DACS_DFLT  ", // 0x11F
+    "-----",             // 0x11D
+    "-----",             // 0x11E
+    "SET_DACS_DFLT    ", // 0x11F
     "CONFIG_CTPR      ", // 0x120
     "SET_CTPR         ", // 0x121
     "GET_ACQENABLE    ", // 0x122

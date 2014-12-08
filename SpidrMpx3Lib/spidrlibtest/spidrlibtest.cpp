@@ -62,7 +62,6 @@ int main( int argc, char *argv[] )
   for( int dev=0; dev<4; ++dev )
     {
       spidrcontrol.setDac( dev, dac_index, 0 );
-      spidrcontrol.writeDacs( dev );
     }
 
   int i;
@@ -73,7 +72,6 @@ int main( int argc, char *argv[] )
       if( i==4 )
 	{
 	  spidrcontrol.setDac( 3, dac_index, i*51 );
-	  spidrcontrol.writeDacs( 3 );
 	}
       spidrcontrol.startAutoTrigger();
       Sleep( 1000 );

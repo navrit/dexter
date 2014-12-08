@@ -116,7 +116,6 @@ int main( int argc, char *argv[] )
       if( 1 )//i==4 )
 	{
 	  spidrcontrol.setDac( 0, 0, i*51 );
-	  spidrcontrol.writeDacs( 0 );
 	}
       spidrcontrol.startAutoTrigger();
       Sleep( 1000 );

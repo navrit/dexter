@@ -416,11 +416,6 @@ int spidrSetDacs( int id, DACTYPE dac_vals[], int sz )
 	    }
 	}
 #endif // USE_SETDACS
-      if( !spidrctrl->writeDacs( spidrinfo->chipMap[chip] ) )
-	{
-	  LOGGER() << "### writeDacs(): " << spidrctrl->errorString() << endl;
-	  return 1;
-	}
     }
   return 0;
 }

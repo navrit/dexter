@@ -15,7 +15,8 @@ using namespace std;
 #include "dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14112500;   // Use DAC code instead of DAC index
+const int VERSION_ID = 0x14120800;   // Remove readDacs(), writeDacs(Dflt)()
+//const int VERSION_ID = 0x14112500; // Use DAC code instead of DAC index
 //const int VERSION_ID = 0x14111200; // Added setGainMode()
 //const int VERSION_ID = 0x14091600; // Update to SPIDR-TPX3 'standard'
 //const int VERSION_ID = 0x14012100;
@@ -410,23 +411,9 @@ bool SpidrController::setDacs( int dev_nr, int nr_of_dacs, int *dac_val )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::readDacs( int dev_nr )
+bool SpidrController::setDacsDflt( int dev_nr )
 {
-  return this->requestSetInt( CMD_READ_DACS, dev_nr, 0 );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::writeDacs( int dev_nr )
-{
-  return this->requestSetInt( CMD_WRITE_DACS, dev_nr, 0 );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::writeDacsDflt( int dev_nr )
-{
-  return this->requestSetInt( CMD_WRITE_DACS_DFLT, dev_nr, 0 );
+  return this->requestSetInt( CMD_SET_DACS_DFLT, dev_nr, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -917,8 +904,7 @@ bool SpidrController::storeAddrAndPorts( int ipaddr_src,
 
 bool SpidrController::eraseAddrAndPorts()
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_ERASE_ADDRPORTS, 0, dummy );
+  return this->requestSetInt( CMD_ERASE_ADDRPORTS, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -939,16 +925,14 @@ bool SpidrController::validAddrAndPorts( bool *valid )
 
 bool SpidrController::storeDacs( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_STORE_DACS, dev_nr, dummy );
+  return this->requestSetInt( CMD_STORE_DACS, dev_nr, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::eraseDacs( int dev_nr )
 {
-  int dummy = 0;
-  return this->requestSetInt( CMD_ERASE_DACS, dev_nr, dummy );
+  return this->requestSetInt( CMD_ERASE_DACS, dev_nr, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -993,8 +977,7 @@ bool SpidrController::getShutterTriggerConfig( int *trigger_mode,
 					       int *trigger_pulse_count )
 {
   int data[5];
-  int dummy = 0;
-  if( !this->requestGetInts( CMD_GET_TRIGCONFIG, dummy, 5, data ) )
+  if( !this->requestGetInts( CMD_GET_TRIGCONFIG, 0, 5, data ) )
     return false;
   *trigger_mode        = data[0];
   *trigger_period_us   = data[1];
@@ -1008,24 +991,21 @@ bool SpidrController::getShutterTriggerConfig( int *trigger_mode,
 
 bool SpidrController::startAutoTrigger()
 {
-  int dummy1 = 0, dummy2 = 0;
-  return this->requestSetInt( CMD_AUTOTRIG_START, dummy1, dummy2 );
+  return this->requestSetInt( CMD_AUTOTRIG_START, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::stopAutoTrigger()
 {
-  int dummy1 = 0, dummy2 = 0;
-  return this->requestSetInt( CMD_AUTOTRIG_STOP, dummy1, dummy2 );
+  return this->requestSetInt( CMD_AUTOTRIG_STOP, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::triggerOneReadout()
 {
-  int dummy1 = 0, dummy2 = 0;
-  return this->requestSetInt( CMD_TRIGGER_READOUT, dummy1, dummy2 );
+  return this->requestSetInt( CMD_TRIGGER_READOUT, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------
@@ -1190,8 +1170,7 @@ bool SpidrController::setPixelBit( int x, int y, unsigned int bitmask, bool b )
 bool SpidrController::get3Ints( int cmd, int *data0, int *data1, int *data2 )
 {
   int data[3];
-  int dummy = 0;
-  if( !this->requestGetInts( cmd, dummy, 3, data ) ) return false;
+  if( !this->requestGetInts( cmd, 0, 3, data ) ) return false;
   *data0 = data[0];
   *data1 = data[1];
   *data2 = data[2];

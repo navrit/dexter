@@ -85,9 +85,7 @@ class MY_LIB_API SpidrController
   bool        getDac           ( int  dev_nr, int  dac_code, int *dac_val );
   bool        setDac           ( int  dev_nr, int  dac_code, int dac_val );
   bool        setDacs          ( int  dev_nr, int  nr_of_dacs, int *dac_val );
-  bool        readDacs         ( int  dev_nr );
-  bool        writeDacs        ( int  dev_nr );
-  bool        writeDacsDflt    ( int  dev_nr );
+  bool        setDacsDflt      ( int  dev_nr );
   bool        configCtpr       ( int  dev_nr, int column, int val );
   bool        setCtpr          ( int  dev_nr );
   bool        getAcqEnable     ( int *mask );
