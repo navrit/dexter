@@ -97,7 +97,7 @@ int main( int argc, char *argv[] )
   // Create a (new) pixel configuration (for a Medipix3 device)
   //dev_nr = 0;
   int devtype = MPX_TYPE_NC;
-  spidr.getDeviceType( 0, &devtype );
+  spidr.getDeviceType( dev_nr, &devtype );
   spidr.resetPixelConfig();
   int col;
   // Mask a number of pixel columns...
