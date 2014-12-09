@@ -44,6 +44,10 @@ class SpidrDacsScan : public QDialog, Ui_SpidrDacsScanDialog
   int  _samples;
   const struct dac_s *_dacTable;
 
+  // ADC parameters
+  double _adcFullScale;
+  double _adcRange;
+
   // The plot
   QCustomPlot  *_plot;
   QCPPlotTitle *_title;

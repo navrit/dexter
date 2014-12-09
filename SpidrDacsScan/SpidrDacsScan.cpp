@@ -12,7 +12,7 @@
 
 #include "qcustomplot.h"
 
-QString VERSION( "v1.1.0  26-Nov-2014" );
+QString VERSION( "v1.1.1  9-Dec-2014" );
 
 // ----------------------------------------------------------------------------
 // (From LEON software: tpx3.c (Timepix3) and dacs.c (Medipix3))
@@ -165,6 +165,8 @@ SpidrDacsScan::SpidrDacsScan()
     _dacStep( 1 ),
     _samples( 1 ),
     _dacTable( &TPX3_DAC_TABLE[0] ),
+    _adcFullScale( 1.5 ),
+    _adcRange( 65536.0 ),
     _plot( 0 ),
     _graph( 0 )
 {
@@ -173,6 +175,8 @@ SpidrDacsScan::SpidrDacsScan()
   this->setWindowFlags( Qt::WindowMinimizeButtonHint |
 			Qt::WindowMaximizeButtonHint |
 			Qt::WindowCloseButtonHint );
+
+  _labelVersion->setText( VERSION );
 
   _ipAddrValidator = new QIntValidator( 1, 255, this );
   _lineEditAddr3->setValidator( _ipAddrValidator );
@@ -190,8 +194,8 @@ SpidrDacsScan::SpidrDacsScan()
 
   // Populate comboboxes
   int i;
-  for( i=1; i<=4; ++i )
-    _comboBoxDacStep->addItem( QString::number(i) );
+  for( i=0; i<=4; ++i )
+    _comboBoxDacStep->addItem( QString::number(1<<i) );
   _comboBoxAdcSamples->addItem( "1 sample" );
   _comboBoxAdcSamples->addItem( "2 samples" );
   _comboBoxAdcSamples->addItem( "4 samples" );
@@ -208,7 +212,6 @@ SpidrDacsScan::SpidrDacsScan()
   _plot->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
   // The title
   _title = new QCPPlotTitle( _plot );
-  _title->setText( "Timepix3 DACs scan" );
   _plot->plotLayout()->insertRow( 0 );
   _plot->plotLayout()->addElement( 0, 0, _title );
   // The legend
@@ -218,15 +221,16 @@ SpidrDacsScan::SpidrDacsScan()
   _plot->legend->setFont( f );
   _plot->legend->setBrush( QBrush(QColor(255,255,255,230)) );
   // The axes
-  _plot->xAxis->setRange( 0, 512 );
-  _plot->yAxis->setRange( 0, 4096 );
+  _plot->xAxis->setRange( 0, 512 ); // Maximum DAC range
   f = font();  // Start out with Dialog's font..
   f.setBold( true );
   _plot->xAxis->setLabelFont( f );
   _plot->yAxis->setLabelFont( f );
   // The labels:
   _plot->xAxis->setLabel("DAC setting");
-  _plot->yAxis->setLabel("DAC out");
+  _plot->yAxis->setLabel("DAC out [V]");
+  // Adjust and/or add according to (selected) device type
+  this->changeDeviceType( _comboBoxDeviceType->currentIndex() );
 
   // Insert the plot in the dialog window
   _verticalLayout->addWidget( _plot );
@@ -338,25 +342,34 @@ void SpidrDacsScan::changeDeviceType( int index )
   switch( _deviceType )
     {
     case MPX_TYPE_MPX31:
-      _dacCount = MPX3_DAC_COUNT;
-      _dacTable = &MPX3_DAC_TABLE[0];
-      _plot->yAxis->setRange( 0, 65536 );
+      _dacCount     = MPX3_DAC_COUNT;
+      _dacTable     = &MPX3_DAC_TABLE[0];
+      _adcFullScale = 1.5;
+      _adcRange     = 65536.0; // 16-bit ADC
+      _plot->yAxis->setRange( 0, _adcFullScale );
+	//_plot->yAxis->setRange( 0, 65536 );
       _title->setText( "Medipix3 DACs scan" );
-      _comboBoxDacStep->setCurrentIndex( 3 );
+      _comboBoxDacStep->setCurrentIndex( 2 );
       _comboBoxAdcSamples->setCurrentIndex( 0 );
       break;
     case MPX_TYPE_MPX3RX:
-      _dacCount = MPX3RX_DAC_COUNT;
-      _dacTable = &MPX3RX_DAC_TABLE[0];
-      _plot->yAxis->setRange( 0, 65536 );
+      _dacCount     = MPX3RX_DAC_COUNT;
+      _dacTable     = &MPX3RX_DAC_TABLE[0];
+      _adcFullScale = 1.5;
+      _adcRange     = 65536.0; // 16-bit ADC
+      _plot->yAxis->setRange( 0, _adcFullScale );
+      //_plot->yAxis->setRange( 0, 65536 );
       _title->setText( "Medipix3RX DACs scan" );
-      _comboBoxDacStep->setCurrentIndex( 3 );
+      _comboBoxDacStep->setCurrentIndex( 2 );
       _comboBoxAdcSamples->setCurrentIndex( 0 );
       break;
     default:
-      _dacCount = TPX3_DAC_COUNT_TO_SET;
-      _dacTable = &TPX3_DAC_TABLE[0];
-      _plot->yAxis->setRange( 0, 4096 );
+      _dacCount     = TPX3_DAC_COUNT_TO_SET;
+      _dacTable     = &TPX3_DAC_TABLE[0];
+      _adcFullScale = 1.5;
+      _adcRange     = 4096.0; // 12-bit ADC
+      _plot->yAxis->setRange( 0, _adcFullScale );
+      //_plot->yAxis->setRange( 0, 4096 );
       _title->setText( "Timepix3 DACs scan" );
       _comboBoxDacStep->setCurrentIndex( 0 );
       _comboBoxAdcSamples->setCurrentIndex( 3 );
@@ -425,7 +438,7 @@ void SpidrDacsScan::scan()
 
       // The DAC settings step-size
       if( _dacMax > 32 )
-	_dacStep = _comboBoxDacStep->currentIndex() + 1;
+	_dacStep = 1 << _comboBoxDacStep->currentIndex();
       else
 	_dacStep = 1;
 
@@ -453,7 +466,9 @@ void SpidrDacsScan::scan()
     {
       // Add sample to the graph, and update the plot
       adc_val /= _samples;
-      _graph->addData( _dacVal, adc_val );
+      //_graph->addData( _dacVal, adc_val );
+      double adc_volt = ((double) adc_val * _adcFullScale) / _adcRange;
+      _graph->addData( _dacVal, adc_volt );
       _plot->replot();
     }
 
