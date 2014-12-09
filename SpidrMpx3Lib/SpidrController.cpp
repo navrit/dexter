@@ -12,7 +12,7 @@ using namespace std;
 #include "mpx3defs.h"
 #include "spidrmpx3cmds.h"
 
-#include "dacsdescr.h" // Depends on mpx3defs.h to be included first
+#include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
 const int VERSION_ID = 0x14120800;   // Remove readDacs(), writeDacs(Dflt)()
