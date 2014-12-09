@@ -9,110 +9,14 @@
 #include "SpidrController.h"
 #include "../SpidrTpx3Lib/tpx3defs.h"
 #include "../SpidrMpx3Lib/mpx3defs.h"
+#include "../SpidrTpx3Lib/tpx3dacsdescr.h"
+#include "../SpidrMpx3Lib/mpx3dacsdescr.h"
 
 #include "qcustomplot.h"
 
 QString VERSION( "v1.1.1  9-Dec-2014" );
 
 // ----------------------------------------------------------------------------
-// (From LEON software: tpx3.c (Timepix3) and dacs.c (Medipix3))
-
-// Structure containing info about a DAC
-typedef struct dac_s
-{
-  int         code;
-  const char *name;
-  int         bits;
-  int         dflt;
-} dac_t;
-
-// Tables with info about the DACs
-static const dac_t TPX3_DAC_TABLE[TPX3_DAC_COUNT] = {
-  { TPX3_IBIAS_PREAMP_ON,  "Ibias_Preamp_ON",   8, 128 },
-  { TPX3_IBIAS_PREAMP_OFF, "Ibias_Preamp_OFF",  4, 8   },
-  { TPX3_VPREAMP_NCAS,     "VPreamp_NCAS",      8, 128 },
-  { TPX3_IBIAS_IKRUM,      "Ibias_Ikrum",       8, 128 },
-  { TPX3_VFBK,             "Vfbk",              8, 128 },
-  { TPX3_VTHRESH_FINE,     "Vthreshold_fine",   9, 256 },
-  { TPX3_VTHRESH_COARSE,   "Vthreshold_coarse", 4, 8   },
-  { TPX3_IBIAS_DISCS1_ON,  "Ibias_DiscS1_ON",   8, 128 },
-  { TPX3_IBIAS_DISCS1_OFF, "Ibias_DiscS1_OFF",  4, 8   },
-  { TPX3_IBIAS_DISCS2_ON,  "Ibias_DiscS2_ON",   8, 128 },
-  { TPX3_IBIAS_DISCS2_OFF, "Ibias_DiscS2_OFF",  4, 8   },
-  { TPX3_IBIAS_PIXELDAC,   "Ibias_PixelDAC",    8, 128 },
-  { TPX3_IBIAS_TPBUFIN,    "Ibias_TPbufferIn",  8, 128 },
-  { TPX3_IBIAS_TPBUFOUT,   "Ibias_TPbufferOut", 8, 128 },
-  { TPX3_VTP_COARSE,       "Vtp_coarse",        8, 128 },
-  { TPX3_VTP_FINE,         "Vtp_fine",          9, 256 },
-  { TPX3_IBIAS_CP_PLL,     "Ibias_CP_PLL",      8, 128 },
-  { TPX3_PLL_VCNTRL,       "Pll_Vcntrl",        8, 128 },
-
-  { TPX3_BANDGAP_OUTPUT,   "BandGap_output",    0, 0   },
-  { TPX3_BANDGAP_TEMP,     "BandGap_Temp",      0, 0   },
-  { TPX3_IBIAS_DAC,        "Ibias_dac",         0, 0   },
-  { TPX3_IBIAS_DAC_CAS,    "Ibias_dac_cas",     0, 0   },
-  { TPX3_SENSEOFF,         "SenseOFF",          0, 0   }
-};
-
-static const dac_t MPX3_DAC_TABLE[MPX3_DAC_COUNT] =
-{
-  { MPX3_DAC_THRESH_0,   "Threshold[0]",        9, 150 },
-  { MPX3_DAC_THRESH_1,   "Threshold[1]",        9, 150 },
-  { MPX3_DAC_THRESH_2,   "Threshold[2]",        9, (1<<9)/2 },
-  { MPX3_DAC_THRESH_3,   "Threshold[3]",        9, (1<<9)/2 },
-  { MPX3_DAC_THRESH_4,   "Threshold[4]",        9, (1<<9)/2 },
-  { MPX3_DAC_THRESH_5,   "Threshold[5]",        9, (1<<9)/2 },
-  { MPX3_DAC_THRESH_6,   "Threshold[6]",        9, (1<<9)/2 },
-  { MPX3_DAC_THRESH_7,   "Threshold[7]",        9, (1<<9)/2 },
-  { MPX3_DAC_PREAMP,     "Preamp",              8, 120 },
-  { MPX3_DAC_IKRUM,      "Ikrum",               8, 20 },
-  { MPX3_DAC_SHAPER,     "Shaper",              8, 173 },
-  { MPX3_DAC_DISC,       "Disc",                8, 255 },
-  { MPX3_DAC_DISC_LS,    "Disc_LS",             8, 170 },
-  { MPX3_DAC_THRESH_N,   "ThresholdN",          8, 20 },
-  { MPX3_DAC_PIXEL,      "DAC_pixel",           8, 0x76 },
-  { MPX3_DAC_DELAY,      "Delay",               8, (1<<8)/2 },
-  { MPX3_DAC_TP_BUF_IN,  "TP_BufferIn",         8, (1<<8)/2 },
-  { MPX3_DAC_TP_BUF_OUT, "TP_BufferOut",        8, 0x32 },
-  { MPX3_DAC_RPZ,        "RPZ",                 8, (1<<8)-1 },
-  { MPX3_DAC_GND,        "GND",                 8, 0x6E },
-  { MPX3_DAC_TP_REF,     "TP_REF",              8, (1<<8)/2 },
-  { MPX3_DAC_FBK,        "FBK",                 8, 0x8F },
-  { MPX3_DAC_CAS,        "Cas",                 8, 191 },
-  { MPX3_DAC_TP_REF_A,   "TP_REFA",             9, (1<<9)-1 },
-  { MPX3_DAC_TP_REF_B,   "TP_REFB",             9, (1<<9)-1 }
-};
-
-static const dac_t MPX3RX_DAC_TABLE[MPX3RX_DAC_COUNT] =
-{
-  { MPX3RX_DAC_THRESH_0,    "Threshold[0]",     9, (1<<9)/2 },
-  { MPX3RX_DAC_THRESH_1,    "Threshold[1]",     9, (1<<9)/2 },
-  { MPX3RX_DAC_THRESH_2,    "Threshold[2]",     9, (1<<9)/2 },
-  { MPX3RX_DAC_THRESH_3,    "Threshold[3]",     9, (1<<9)/2 },
-  { MPX3RX_DAC_THRESH_4,    "Threshold[4]",     9, (1<<9)/2 },
-  { MPX3RX_DAC_THRESH_5,    "Threshold[5]",     9, (1<<9)/2 },
-  { MPX3RX_DAC_THRESH_6,    "Threshold[6]",     9, (1<<9)/2 },
-  { MPX3RX_DAC_THRESH_7,    "Threshold[7]",     9, (1<<9)/2 },
-  { MPX3RX_DAC_PREAMP,      "Preamp",           8, (1<<8)/2 },
-  { MPX3RX_DAC_IKRUM,       "Ikrum",            8, (1<<8)/2 },
-  { MPX3RX_DAC_SHAPER,      "Shaper",           8, (1<<8)/2 },
-  { MPX3RX_DAC_DISC,        "Disc",             8, (1<<8)/2 },
-  { MPX3RX_DAC_DISC_LS,     "Disc_LS",          8, (1<<8)/2 },
-  { MPX3RX_DAC_SHAPER_TEST, "Shaper_Test",      8, (1<<8)/2 },
-  { MPX3RX_DAC_DISC_L,      "DAC_DiscL",        8, (1<<8)/2 },
-  { MPX3RX_DAC_TEST,        "DAC_test",         8, (1<<8)/2 },
-  { MPX3RX_DAC_DISC_H,      "DAC_DiscH",        8, (1<<8)/2 },
-  { MPX3RX_DAC_DELAY,       "Delay",            8, (1<<8)/2 },
-  { MPX3RX_DAC_TP_BUF_IN,   "TP_BufferIn",      8, (1<<8)/2 },
-  { MPX3RX_DAC_TP_BUF_OUT,  "TP_BufferOut",     8, (1<<8)/2 },
-  { MPX3RX_DAC_RPZ,         "RPZ",              8, (1<<8)/2 },
-  { MPX3RX_DAC_GND,         "GND",              8, (1<<8)/2 },
-  { MPX3RX_DAC_TP_REF,      "TP_REF",           8, (1<<8)/2 },
-  { MPX3RX_DAC_FBK,         "FBK",              8, (1<<8)/2 },
-  { MPX3RX_DAC_CAS,         "Cas",              8, (1<<8)/2 },
-  { MPX3RX_DAC_TP_REF_A,    "TP_REFA",          9, (1<<9)/2 },
-  { MPX3RX_DAC_TP_REF_B,    "TP_REFB",          9, (1<<9)/2 }
-};
 
 static const QColor COLOR_TABLE[] = {
   Qt::red,
