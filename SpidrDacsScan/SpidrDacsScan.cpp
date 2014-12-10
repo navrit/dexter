@@ -139,6 +139,9 @@ SpidrDacsScan::SpidrDacsScan()
   // Insert the plot in the dialog window
   _verticalLayout->addWidget( _plot );
 
+  _groupBoxSpidr->setLayout( _horizontalLayoutSpidr );
+  _groupBoxScan->setLayout( _horizontalLayoutScan );
+
   // Connect signals
   connect( _pushButtonConnect, SIGNAL( clicked() ),
 	   this, SLOT( connectOrDisconnect() ) );
