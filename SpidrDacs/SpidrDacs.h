@@ -25,6 +25,7 @@ class SpidrDacs : public QDialog, Ui_SpidrDacsDialog
   void dacChanged( int index );
   void adjustLayout();
   void changeDeviceIndex( int index );
+  void changeDeviceType( int index );
   void storeDacs();
   void eraseDacs();
   void hideOkay();
@@ -33,9 +34,12 @@ class SpidrDacs : public QDialog, Ui_SpidrDacsDialog
   SpidrController    *_spidrController;
   int _deviceIndex;
 
+  int _minWidth;
+
   QVector<QSlider *>  _slidrs;
   QVector<QSpinBox *> _spboxs;
-  QVector<QLabel *>   _labels;
+  QVector<QLabel *>   _nameLabels;
+  QVector<QLabel *>   _maxLabels;
 
   QSignalMapper      *_signalMapper;
 

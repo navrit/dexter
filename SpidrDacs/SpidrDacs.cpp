@@ -8,12 +8,15 @@
 #include <QString>
 #include <QTimer>
 
+#include "../SpidrMpx3Lib/mpx3defs.h"
+#include "../SpidrMpx3Lib/mpx3dacsdescr.h"
 #include "tpx3defs.h"
-#include "dacsdescr.h"
+#include "tpx3dacsdescr.h"
 #include "SpidrDacs.h"
 #include "SpidrController.h"
 
-QString VERSION( "v1.0.0  25-Oct-2013" );
+QString   VERSION( "v1.1.0  9-Dec-2014" );
+//QString VERSION( "v1.0.0  25-Oct-2013" );
 
 const int CHECK_INTERVAL_MS = 1000;
 
@@ -23,12 +26,18 @@ SpidrDacs::SpidrDacs()
   : QDialog(),
     _spidrController( 0 ),
     _deviceIndex( 0 ),
+    _minWidth( 0 ),
+    _signalMapper( 0 ),
     _disableSetDac( false )
 {
   this->setupUi(this);
 
   this->setWindowFlags( Qt::WindowMinimizeButtonHint |
+			Qt::WindowMaximizeButtonHint |
 			Qt::WindowCloseButtonHint );
+
+  _labelVersion->setText( VERSION );
+  _groupBoxSpidr->setLayout( _horizontalLayoutSpidr );
 
   connect( _pushButtonConnectOrDisconnect, SIGNAL( clicked() ),
 	   this, SLOT( connectOrDisconnect() ) );
@@ -38,6 +47,8 @@ SpidrDacs::SpidrDacs()
 	   this, SLOT( setDacsDefaults() ) );
   connect( _comboBoxDeviceIndex, SIGNAL( currentIndexChanged(int) ),
 	   this, SLOT( changeDeviceIndex(int) ) );
+  connect( _comboBoxDeviceType, SIGNAL( currentIndexChanged(int) ),
+	   this, SLOT( changeDeviceType(int) ) );
   connect( _pushButtonStore, SIGNAL( clicked() ),
 	   this, SLOT( storeDacs() ) );
   connect( _pushButtonErase, SIGNAL( clicked() ),
@@ -56,84 +67,16 @@ SpidrDacs::SpidrDacs()
   _labelOkay->hide();
   _labelErr->hide();
 
-  _comboBoxDeviceIndex->hide();
+  //_comboBoxDeviceIndex->hide();
+  _comboBoxDeviceType->addItem( "T3" );
+  _comboBoxDeviceType->addItem( "M3" );
+  _comboBoxDeviceType->addItem( "M3RX" );
 
   _qpOkay  = this->palette();
   _qpError = _qpOkay;
   _qpError.setColor( QPalette::Base, QColor("yellow") ); // Text entry backgr
 
-  _signalMapper = new QSignalMapper( this );
-
-  // Add sliders and spinboxes for the defined DACs
-  QLabel   *label;
-  QSlider  *slidr;
-  QSpinBox *spbox;
-  QString   qs;
-  QFont     f;
-  for( int i=0; i<TPX3_DAC_COUNT_TO_SET; ++i )
-    {
-      label = new QLabel( this );
-      label->setAlignment( Qt::AlignHCenter );
-      qs = QString::number( (1<<TPX3_DAC_TABLE[i].bits)-1 );
-      label->setText( qs );
-      _gridLayoutDacs->addWidget( label, 0, i, Qt::AlignHCenter );
-
-      label = new QLabel( this );
-      label->setAlignment( Qt::AlignHCenter );
-      //label->setForegroundRole( QPalette::Highlight );
-      label->setFrameStyle( QFrame::Panel | QFrame::Raised );
-      //label->setMargin( 2 );
-      qs = QString( TPX3_DAC_TABLE[i].name );
-      // Replace "_" in the string by "-\n"
-      qs = qs.replace( QChar('_'), QString("-\n") );
-      // Replace "threshold" in the string by "thresh"
-      // (some names are a bit too wide...)
-      qs = qs.replace( QString("threshold"), QString("thresh") );
-      // Replace "buffer" in the string by "buffer\n"
-      // (some names are a bit too wide...)
-      qs = qs.replace( QString("buffer"), QString("buffer\n") );
-      label->setText( qs );
-      QFont f = label->font();
-      //f.setPointSize( f.pointSize()-1 );
-      f.setBold( true );
-      label->setFont( f );
-      _gridLayoutDacs->addWidget( label, 3, i, Qt::AlignHCenter );
-      _labels.append( label );
-
-      slidr = new QSlider( this );
-      slidr->setTracking( true );
-      slidr->setRange( 0, (1<<TPX3_DAC_TABLE[i].bits)-1 );
-      if( slidr->maximum() < 20 ) slidr->setTickInterval( 1 );
-      else if( slidr->maximum() < 200 ) slidr->setTickInterval( 10 );
-      else if( slidr->maximum() < 300 ) slidr->setTickInterval( 20 );
-      else slidr->setTickInterval( 50 );
-      slidr->setTickPosition( QSlider::TicksLeft );
-      _gridLayoutDacs->addWidget( slidr, 1, i, Qt::AlignHCenter );
-      _slidrs.append( slidr );
-
-      spbox = new QSpinBox( this );
-      spbox->setRange( 0, (1<<TPX3_DAC_TABLE[i].bits)-1 );
-      _gridLayoutDacs->addWidget( spbox, 2, i, Qt::AlignHCenter );
-      _spboxs.append( spbox );
-
-      connect( slidr, SIGNAL(valueChanged(int)), spbox, SLOT(setValue(int)) );
-      connect( spbox, SIGNAL(valueChanged(int)), slidr, SLOT(setValue(int)) );
-
-      // Add a slider or spinbox signal to the signal mapper, which will
-      // emit a signal with the slider (i.e. DAC table) index
-      //connect( slidr, SIGNAL(sliderReleased()), _signalMapper, SLOT(map()) );
-      connect( spbox, SIGNAL(valueChanged(int)), _signalMapper, SLOT(map()) );
-      _signalMapper->setMapping( spbox, i );
-    }
-
-  connect( _signalMapper, SIGNAL(mapped(int)), this, SLOT(dacChanged(int)) );
-
-  for( int i=0; i<_slidrs.size(); ++i ) _slidrs[i]->setEnabled( false );
-  for( int i=0; i<_spboxs.size(); ++i ) _spboxs[i]->setEnabled( false );
-
-  // Column width equalization can only be done after the widget has been shown
-  // (see adjustLayout() below and Qt documentation on QGridLayout::cellRect)
-  QTimer::singleShot( 0, this, SLOT( adjustLayout() ) );
+  this->changeDeviceType( _comboBoxDeviceType->currentIndex() );
 }
 
 // ----------------------------------------------------------------------------
@@ -196,14 +139,14 @@ void SpidrDacs::connectOrDisconnect()
 	  if( _spidrController->getDeviceCount( &devices ) )
 	    {
 	      QString qs = "Device ";
-	      _comboBoxDeviceIndex->show();
+	      //_comboBoxDeviceIndex->show();
 	      int i;
 	      for( i=0; i<devices; ++i )
 		_comboBoxDeviceIndex->addItem( qs + QString::number(i) );
 	    }
 	  else
 	    {
-	      _comboBoxDeviceIndex->hide();
+	      //_comboBoxDeviceIndex->hide();
 	    }
 
 	  _timerId = this->startTimer( CHECK_INTERVAL_MS );
@@ -325,11 +268,22 @@ void SpidrDacs::adjustLayout()
   int col, min_width = 0;
   QRect r;
 
-  // Find maximum column size
-  for( col=0; col<_gridLayoutDacs->columnCount(); ++col )
+  // Find a column width only the very first time,
+  // when the window has not 'grown' yet
+  // (and the columns have grown to fit the width..)
+  if( _minWidth == 0 )
     {
-      r = _gridLayoutDacs->cellRect( 2, col );
-      if( min_width < r.width() ) min_width = r.width();
+      // Find maximum column size
+      for( col=0; col<_gridLayoutDacs->columnCount(); ++col )
+	{
+	  r = _gridLayoutDacs->cellRect( 2, col );
+	  if( min_width < r.width() ) min_width = r.width();
+	}
+      _minWidth = min_width;
+    }
+  else
+    {
+      min_width = _minWidth;
     }
 
   // Set equal column sizes
@@ -337,8 +291,10 @@ void SpidrDacs::adjustLayout()
     _gridLayoutDacs->setColumnMinimumWidth( col, min_width );
 
   // Set equal label widths
-  for( col=0; col<_labels.size(); ++col )
-    _labels[col]->setMinimumWidth( min_width );
+  for( col=0; col<_nameLabels.size(); ++col )
+    _nameLabels[col]->setMinimumWidth( min_width );
+
+  this->resize( 0, this->size().height() );
 }
 
 // ----------------------------------------------------------------------------
@@ -348,6 +304,147 @@ void SpidrDacs::changeDeviceIndex( int index )
   if( index < 0 ) return;
   _deviceIndex = index;
   this->initDacs();
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDacs::changeDeviceType( int index )
+{
+  if( index < 0 ) return;
+
+  int dev_type = index;
+  const struct dac_s *dac_table;
+  int dac_count;
+  if( dev_type == MPX_TYPE_MPX31 )
+    {
+      dac_count = MPX3_DAC_COUNT;
+      dac_table = &MPX3_DAC_TABLE[0];
+    }
+  else if( dev_type == MPX_TYPE_MPX3RX )
+    {
+      dac_count = MPX3RX_DAC_COUNT;
+      dac_table = &MPX3RX_DAC_TABLE[0];
+    }
+  else
+    {
+      dac_count = TPX3_DAC_COUNT_TO_SET;
+      dac_table = &TPX3_DAC_TABLE[0];
+    }
+
+  // Clear the DAC widgets
+  int i;
+  for( i=0; i<_slidrs.size(); ++i )
+    {
+      _gridLayoutDacs->removeWidget( _slidrs[i] );
+      delete _slidrs[i];
+    }
+  _slidrs.clear();
+  for( i=0; i<_spboxs.size(); ++i )
+    {
+      _gridLayoutDacs->removeWidget( _spboxs[i] );
+      delete _spboxs[i];
+    }
+  _spboxs.clear();
+  for( i=0; i<_nameLabels.size(); ++i )
+    {
+      _gridLayoutDacs->removeWidget( _nameLabels[i] );
+      delete _nameLabels[i];
+    }
+  _nameLabels.clear();
+  for( i=0; i<_maxLabels.size(); ++i )
+    {
+      _gridLayoutDacs->removeWidget( _maxLabels[i] );
+      delete _maxLabels[i];
+    }
+  _maxLabels.clear();
+
+  // Create the layout anew to be able to properly resize (?)
+  if( _gridLayoutDacs ) delete _gridLayoutDacs;
+  _gridLayoutDacs = new QGridLayout( this );
+  _gridLayoutDacs->setSpacing( 1 );
+  horizontalLayout->addLayout(_gridLayoutDacs); // Necessary to add
+                                                // to global layout
+  _groupBoxDacs->setLayout( _gridLayoutDacs );
+
+  if( _signalMapper ) delete _signalMapper;
+  _signalMapper = new QSignalMapper( this );
+
+  // Add sliders and spinboxes for the defined DACs
+  QLabel   *label;
+  QSlider  *slidr;
+  QSpinBox *spbox;
+  QString   qs;
+  QFont     f;
+  for( int i=0; i<dac_count; ++i )
+    {
+      label = new QLabel( this );
+      label->setAlignment( Qt::AlignHCenter );
+      qs = QString::number( (1<<dac_table[i].bits)-1 );
+      label->setText( qs );
+      _gridLayoutDacs->addWidget( label, 0, i, Qt::AlignHCenter );
+      _maxLabels.append( label );
+
+      label = new QLabel( this );
+      label->setAlignment( Qt::AlignHCenter );
+      //label->setForegroundRole( QPalette::Highlight );
+      label->setFrameStyle( QFrame::Panel | QFrame::Raised );
+      //label->setMargin( 2 );
+      qs = QString( dac_table[i].name );
+      // Replace "_" in the string by "-\n"
+      qs = qs.replace( QChar('_'), QString("-\n") );
+      // Replace "threshold" in the string by "thresh"
+      // (some names are a bit too wide...)
+      qs = qs.replace( QString("threshold"), QString("thresh") );
+      qs = qs.replace( QString("Threshold"), QString("Thresh") );
+      // Replace "buffer" in the string by "buffer\n"
+      // (some names are a bit too wide...)
+      qs = qs.replace( QString("buffer"), QString("buffer\n") );
+      qs = qs.replace( QString("Buffer"), QString("Buff") );
+      // Other
+      qs = qs.remove( QChar('[') );
+      qs = qs.remove( QChar(']') );
+      label->setText( qs );
+      QFont f = label->font();
+      //f.setPointSize( f.pointSize()-1 );
+      f.setBold( true );
+      label->setFont( f );
+      _gridLayoutDacs->addWidget( label, 3, i, Qt::AlignHCenter );
+      _nameLabels.append( label );
+
+      slidr = new QSlider( this );
+      slidr->setTracking( true );
+      slidr->setRange( 0, (1<<dac_table[i].bits)-1 );
+      if( slidr->maximum() < 20 ) slidr->setTickInterval( 1 );
+      else if( slidr->maximum() < 200 ) slidr->setTickInterval( 10 );
+      else if( slidr->maximum() < 300 ) slidr->setTickInterval( 20 );
+      else slidr->setTickInterval( 50 );
+      slidr->setTickPosition( QSlider::TicksLeft );
+      _gridLayoutDacs->addWidget( slidr, 1, i, Qt::AlignHCenter );
+      _slidrs.append( slidr );
+
+      spbox = new QSpinBox( this );
+      spbox->setRange( 0, (1<<dac_table[i].bits)-1 );
+      _gridLayoutDacs->addWidget( spbox, 2, i, Qt::AlignHCenter );
+      _spboxs.append( spbox );
+
+      connect( slidr, SIGNAL(valueChanged(int)), spbox, SLOT(setValue(int)) );
+      connect( spbox, SIGNAL(valueChanged(int)), slidr, SLOT(setValue(int)) );
+
+      // Add a slider or spinbox signal to the signal mapper, which will
+      // emit a signal with the slider (i.e. DAC table) index
+      //connect( slidr, SIGNAL(sliderReleased()), _signalMapper, SLOT(map()) );
+      connect( spbox, SIGNAL(valueChanged(int)), _signalMapper, SLOT(map()) );
+      _signalMapper->setMapping( spbox, i );
+    }
+
+  connect( _signalMapper, SIGNAL(mapped(int)), this, SLOT(dacChanged(int)) );
+
+  for( int i=0; i<_slidrs.size(); ++i ) _slidrs[i]->setEnabled( false );
+  for( int i=0; i<_spboxs.size(); ++i ) _spboxs[i]->setEnabled( false );
+
+  // Column width equalization can only be done after the widget has been shown
+  // (see adjustLayout() below and Qt documentation on QGridLayout::cellRect)
+  QTimer::singleShot( 0, this, SLOT( adjustLayout() ) );
 }
 
 // ----------------------------------------------------------------------------
