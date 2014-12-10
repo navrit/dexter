@@ -81,7 +81,7 @@ void ThlScan::DoScan(){
 			//cout << "THL : " << i << endl;
 
 			_spidrcontrol->setDac( dev_nr, MPX3RX_DAC_THRESH_0, i );
-			_spidrcontrol->writeDacs( dev_nr );
+			//_spidrcontrol->writeDacs( dev_nr );
 
 			// Start the trigger as configured
 			_spidrcontrol->startAutoTrigger();

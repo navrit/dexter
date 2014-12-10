@@ -175,10 +175,12 @@ private slots:
 	void CheckAllDACs();
 	void StartDACScan();
 	void SetupSignalsAndSlots();
-	void UpdateSliders(int);
-	void SetDAC(QObject * info);
+	void FromSpinBoxUpdateSlider(int);
+	void FromSliderUpdateSpinBox(int);
 	void SenseDACs();
 	void ChangeDeviceIndex(int);
+
+	//void SetDAC(QObject * info);
 
 };
 

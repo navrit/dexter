@@ -50,7 +50,6 @@ DACs::DACs(Ui::SpidrMpx3Eq * ui) {
 	// Setup connection between Sliders and SpinBoxes
 	SetupSignalsAndSlots();
 
-
 	// Leave a few things unnactivated
 	_ui->startScanButton->setDisabled( true );
 
@@ -157,7 +156,7 @@ void DACs::PopulateDACValues(){
 			_dacSpinBoxes[i]->setValue( _dacVals[i] );
 			_dacSliders[i]->setValue( _dacVals[i] );
 		}
-		_spidrcontrol->writeDacs( _deviceIndex );
+		//_spidrcontrol->writeDacs( _deviceIndex );
 
 
 	} else { // Setting DACs at mid-range
@@ -171,6 +170,8 @@ void DACs::PopulateDACValues(){
 		}
 
 	}
+
+
 
 }
 
@@ -381,54 +382,66 @@ void DACs::SetupSignalsAndSlots() {
 	// Sliders and SpinBoxes
 
 	// I need the SignalMapper in order to handle custom slots with parameters
-	QSignalMapper * signalMapper = new QSignalMapper (this) ;
+	QSignalMapper * signalMapperSlider = new QSignalMapper (this);
+	QSignalMapper * signalMapperSpinBox = new QSignalMapper (this);
+
 	for ( int i = 0 ; i < MPX3RX_DAC_COUNT; i++ ) {
 
 		// Connect slides to Spin Boxes back and forth
 		// When the sliders move the SpinBoxes actualizes
 		QObject::connect( _dacSliders[i], SIGNAL(sliderMoved(int)),
 				_dacSpinBoxes[i], SLOT(setValue(int)) );
-		// When a value is changed in the SpinBox the slider moves
-		QObject::connect( _dacSpinBoxes[i], SIGNAL(editingFinished()),
-				signalMapper, SLOT(map()) );
 
-		signalMapper->setMapping( _dacSpinBoxes[i], i );
-	}
-	QObject::connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(UpdateSliders(int)));
+		// When the slider released, talk to the hardware
+		QObject::connect( _dacSliders[i], SIGNAL(sliderReleased()),
+				signalMapperSlider, SLOT(map()) );
 
+		// When a value is changed in the SpinBox the slider needs to move
+		//  and talk to the hardware
+		QObject::connect( _dacSpinBoxes[i], SIGNAL(editingFinished()), // WARNING, this (int) is the value, not the index !
+				signalMapperSpinBox, SLOT(map()) );
 
-	// Now define actual actions on hardware
-	QSignalMapper * signalSetMapper = new QSignalMapper (this) ;
-	for ( int i = 0 ; i < MPX3RX_DAC_COUNT; i++ ) {
+		// map the index
+		signalMapperSlider->setMapping( _dacSliders[i], i );
 
-		// When the editing is finished set the dac
-		QObject::connect( _dacSpinBoxes[i], SIGNAL(valueChanged(int)),
-				signalSetMapper, SLOT(map()) );
-		SignalSlotMapping * info = new SignalSlotMapping;
-		info->index = i;
-		info->value = _dacSpinBoxes[i]->value();
-		signalSetMapper->setMapping( _dacSpinBoxes[i], info );
+		// map the index
+		signalMapperSpinBox->setMapping( _dacSpinBoxes[i], i );
+
 	}
 
-	QObject::connect( signalSetMapper, SIGNAL(mapped(QObject *)), this, SLOT(SetDAC(QObject *)) );
+	QObject::connect( signalMapperSlider, SIGNAL(mapped(int)), this, SLOT( FromSliderUpdateSpinBox(int) ) );
+
+	QObject::connect( signalMapperSpinBox, SIGNAL(mapped(int)), this, SLOT( FromSpinBoxUpdateSlider(int) ) ); // SLOT( UpdateSliders(int) ) );
 
 }
 
-void DACs::UpdateSliders(int i) {
+void DACs::FromSpinBoxUpdateSlider(int i) {
 
+	// Set the value
+	int val = _dacSpinBoxes[i]->value();
 	// Set the slider according to the new value in the Spin Box
-	_dacSliders[i]->setValue( _dacSpinBoxes[i]->value() );
+	_dacSliders[i]->setValue( val );
+	// Set DAC
+	_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
 
 }
 
-void DACs::SetDAC(QObject * info) {
+void DACs::FromSliderUpdateSpinBox(int i) {
 
-	// Verify first if the value changed at all
-
-	int val = _dacSpinBoxes[ ((SignalSlotMapping *)info)->index ]->value();
-	_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ ((SignalSlotMapping *)info)->index ].code, val );
+	//
+	int val = _dacSliders[ i ]->value();
+	// Set the spin box according to the new value in the Slider
+	//_dacSpinBoxes[i]->setValue( val );
+	// Set DAC
+	_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
 
 }
+
+//void DACs::SetDAC(QObject * info) {
+//	// Verify first if the value changed at all
+//	int val = _dacSpinBoxes[ ((SignalSlotMapping *)info)->index ]->value();
+//	_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ ((SignalSlotMapping *)info)->index ].code, val );
+//}
 
 
 bool DACs::ReadDACsFile(string fn) {
