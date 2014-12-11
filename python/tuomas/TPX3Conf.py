@@ -62,6 +62,19 @@ class TPX3ConfMatrixTPEnable(TPX3ConfBase):
         self.tpx.setPixelConfig()
 
 
+    def set_pixel_tp_mask(self, everyNpixels):
+            pixel_tp_mask = list(range(256))
+            tmp_count = everyNpixels
+            for i in range(256):
+                if tmp_count == 1:
+                    pixel_tp_mask[i] = 1
+                    tmp_count = everyNpixels
+                else:
+                    pixel_tp_mask[i] = 0
+                    tmp_count -= 1
+            for x in range(256):
+                for y in range(256):
+                    self.set_x_y(x, y, 'tp', pixel_tp_mask[y])
 class TPX3ConfBeforeDAQ(TPX3ConfBase):
 
     """Configures PLL, set DAC defaults and other operations before a DAQ"""

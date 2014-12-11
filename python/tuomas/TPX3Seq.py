@@ -18,8 +18,9 @@ class TPX3DataDrivenSeq(TPX3SeqBase):
     def __init__(self, test, rpt_interval = 10):
         TPX3SeqBase.__init__(self,test)
         self.data = dict()
-        self.data['toa'] = dict()
-        self.data['tot'] = dict()
+        self.fields = ['toa', 'tot', 'col', 'row']
+        for field in self.fields:
+            self.data[field] = dict()
         self.events = 0
         self.TIMEOUT = 60
         self.rpt_interval = rpt_interval
@@ -69,7 +70,7 @@ class TPX3DataDrivenSeq(TPX3SeqBase):
             else:
                 self.rpt_count -= 1
             if time_elapsed > self.TIMEOUT:
-                self.logging.info("TIMEOUT %d reached" % (self.TIMEOUT))
+                self.test.logging.info("TIMEOUT %d reached" % (self.TIMEOUT))
                 finished = True
 
         time_total =  time.time() - time_start
@@ -85,4 +86,12 @@ class TPX3DataDrivenSeq(TPX3SeqBase):
             self.data['tot'][pck.tot] += 1
         else:
             self.data['tot'][pck.tot] = 1
+        if pck.col in self.data['col']:
+            self.data['col'][pck.col] += 1
+        else:
+            self.data['col'][pck.col] = 1
+        if pck.row in self.data['row']:
+            self.data['row'][pck.row] += 1
+        else:
+            self.data['row'][pck.row] = 1
         self.events += 1
