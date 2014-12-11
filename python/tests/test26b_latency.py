@@ -2,60 +2,25 @@ from .tpx3_test import *
 from .dac_defaults import dac_defaults
 import time
 
-
-class TPX3ConfigMatrix:
-
-    def __init__(self, tpx, test):
-        self.tpx = tpx
-        self.test = test
-
-    def do_matrix_config(self):
-        self.tpx.resetPixelConfig()
-        for x in range(256):
-            for y in range(256):
-                self.tpx.setPixelThreshold(x, y, 0x0F)
-                self.tpx.setPixelMask(x, y, 0)
-                self.tpx.setPixelTestEna(x, y, 1)
-
-        self.tpx.setPixelConfig()
+from tuomas import *
 
 
-class test_tuomas_debug(tpx3_test):
+class test26b_latency(tpx3_test):
 
-    """Test for debugging the python scripts"""
-    def _init2(self):
-        self.data['toa'] = dict()
-        self.data['tot'] = dict()
+    """Test for measuring the latency of the output packets"""
 
     def _execute(self, **keywords):
-        self.TPX3_COLUMNS = 10
-        tpx = self.tpx
+        self.npulses = 100
         try:
-            print "Starting the test"
-            dac_defaults(self.tpx)
-            tpx.setPllConfig(
-                (TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK |
-                 TPX3_PHASESHIFT_DIV_16 | TPX3_PHASESHIFT_NR_16 | 0x14 <<
-                 TPX3_PLLOUT_CONFIG_SHIFT))
-            self.tpx.setOutputMask(0xFF)
-            tpx.shutterOff()
-            tpx.resetPixels()
+            self.logging.info("Starting latency measurement test")
+            conf_daq = TPX3ConfBeforeDAQ(self)
+            conf_daq.do_config()
             self.sample_temp(1, "Shutter OFF")
-            config = TPX3ConfigMatrix(tpx, self)
-            config.do_matrix_config()
+            conf_matrix = TPX3ConfMatrixTPEnable(self)
+            conf_matrix.do_config()
+            self.conf_matrix = conf_matrix
             self.tpx.setCtprBits(0)
-            self.tpx.t0Sync()
-
-            genConfig_register = TPX3_ACQMODE_TOA_TOT | TPX3_FASTLO_ENA
-            genConfig_register |= TPX3_TESTPULSE_ENA | TPX3_GRAYCOUNT_ENA
-            genConfig_register |= TPX3_SELECTTP_DIGITAL
-            self.tpx.setGenConfig(genConfig_register)
-            self.tpx.datadrivenReadout()
-
-            #self.tpx.pauseReadout()
-            #self.tpx.sequentialReadout(tokens=1)
-            self.tpx.resetPixels()
-            self.inject_testpulses(10)
+            self.inject_testpulses(1)
 
         finally:
             print "Cleaning up the test"
@@ -65,58 +30,51 @@ class test_tuomas_debug(tpx3_test):
         for i in range(nsamples):
             temperature = self.tpx.getTpix3Temp()
             print "%s Timepix3 temperature is %d" % (msg, temperature)
-            time.sleep(1)
 
     def inject_testpulses(self, npulses):
-        finish = 0
-        events = 0
-
-        # Make everything ready for TP injection
-        shutter_length = 1000
-        TESTPULSES = npulses
-        period = 0x4
-        self.tpx.setTpPeriodPhase(period, 0)
-        self.tpx.setTpNumber(TESTPULSES)
-        shutter_length = int(((2*(64*period+1)*TESTPULSES)/40) + 100)
-        self.tpx.setShutterLen(shutter_length)
-
-        # Inject TPs to one column at time
-        for x in range(self.TPX3_COLUMNS):
-            self.tpx.setCtprBit(x, 1)
-            self.tpx.setCtpr()
-            self.tpx.openShutter()
-            self.get_and_process_packets()
-            self.get_and_process_packets()
-            # self.tpx.closeShutter()
-            self.tpx.setCtprBit(x, 0)
+        conf_tp = TPX3ConfTestPulses(self)
+        conf_tp.set_tp_config(period=0x0E, npulses=self.npulses)
+        conf_tp.set_column_mask(self.get_ctpr_mask(everyNcols = 8))
+        conf_tp.do_config()
+        self.num_tp_enabled = self.conf_matrix.num_tp_enabled(mask = self.ctpr_mask)
+        #self.logging.info("Injecting hits to column %d" % (x))
+        data = self.tpx.get_N_packets(1024)
+        data_driven_seq = TPX3DataDrivenSeq(self, 1000)
+        data_driven_seq.do_seq()
+        self.data = data_driven_seq.get_data()
+        self.events = data_driven_seq.num_packets()
 
     def cleanup(self):
+        """ Called after the test to extract results and cleanup."""
         print "cleanup() called"
+        expected = self.npulses * self.num_tp_enabled
+        efficiency = float(self.events) / expected
+        self.logging.info("Total of %d event packets received" % (self.events))
+        self.logging.info("Expected number %d" % (expected))
+        self.logging.info("Efficiency: %f" %(efficiency))
         self.data_to_file()
 
-    def get_and_process_packets(self):
-        finish = 0
-        events = 0
-        data = self.tpx.get_frame()
-        #data = self.tpx.get_N_packets(10);
-        print "Received %d packets." % (len(data))
-        for pck in data:
-            if pck.isData():
-                self.data['toa'][pck.toa] += 1
-                self.data['tot'][pck.tot] += 1
-                events += 1
-            else:
-                if pck.isEoR():
-                    finish = 1
-                else:
-                    print "Got packet"
-        print "Finished the injection. %d events received." % (events)
+    def data_to_file(self):
+        """ Prints collected toa/tot data into separate files"""
 
-    def data_to_file(self, filename):
         data = ['toa', 'tot']
         for field in data:
             hist = self.data[field]
-            fname = open(self.test.fname + "/hist_" + field + ".csv", "w")
+            fname = open(self.fname + "/hist_" + field + ".csv", "w")
+            sorted(hist, key=int)
             for key in hist.keys():
-                fname.write("[%d]: %d" % (key, hist[key]))
+                fname.write("%d, %d\n" % (key, hist[key]))
             fname.close()
+
+    def get_ctpr_mask(self, everyNcols):
+        ctpr_mask = list(range(256))
+        tmp_count = everyNcols
+        for i in range(256):
+            if tmp_count == 1:
+                ctpr_mask[i] = 1
+                tmp_count = everyNcols
+            else:
+                ctpr_mask[i] = 0
+                tmp_count -= 1
+        self.ctpr_mask = ctpr_mask
+        return ctpr_mask
