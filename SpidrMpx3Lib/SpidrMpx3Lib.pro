@@ -45,7 +45,7 @@ SOURCES += ReceiverThread.cpp
 SOURCES += FramebuilderThread.cpp
 
 HEADERS += SpidrController.h
-HEADERS += dacsdescr.h
+HEADERS += mpx3dacsdescr.h
 HEADERS += mpx3defs.h
 HEADERS += spidrmpx3cmds.h
 HEADERS += spidrdata.h

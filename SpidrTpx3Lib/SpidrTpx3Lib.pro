@@ -49,7 +49,8 @@ SOURCES += ReceiverThread.cpp
 SOURCES += DatasamplerThread.cpp
 
 HEADERS += SpidrController.h
-HEADERS += tpx3defs.h dacsdescr.h
+HEADERS += tpx3defs.h
+HEADERS += tpx3dacsdescr.h
 HEADERS += spidrtpx3cmds.h
 HEADERS += spidrtpx3data.h
 HEADERS += SpidrDaq.h
