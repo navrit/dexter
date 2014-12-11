@@ -15,7 +15,8 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14120800;   // Remove readDacs(), writeDacs(Dflt)()
+const int VERSION_ID = 0x14121100;   // Remove writeOmr(), add setEnablePixelCom()
+//const int VERSION_ID = 0x14120800; // Remove readDacs(), writeDacs(Dflt)()
 //const int VERSION_ID = 0x14112500; // Use DAC code instead of DAC index
 //const int VERSION_ID = 0x14111200; // Added setGainMode()
 //const int VERSION_ID = 0x14091600; // Update to SPIDR-TPX3 'standard'
@@ -844,6 +845,16 @@ bool SpidrController::setCsmSpm( int csm )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::setEnablePixelCom( bool enable )
+{
+  // For Medipix3 only: corresponds to Medipix3RX CSM_SPM OMR bit
+  int val = 0;
+  if( enable ) val = 1;
+  return this->requestSetInt( CMD_SET_CSMSPM, 0, val );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::setGainMode( int mode )
 {
   // For Medipix3RX only
@@ -877,10 +888,10 @@ bool SpidrController::setExtDac( int dev_nr, int dac_code, int dac_val )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::writeOmr( int dev_nr )
-{
-  return this->requestSetInt( CMD_WRITE_OMR, dev_nr, 0 );
-}
+//bool SpidrController::writeOmr( int dev_nr )
+//{
+//  return this->requestSetInt( CMD_WRITE_OMR, dev_nr, 0 );
+//}
 
 // ----------------------------------------------------------------------------
 // Configuration: non-volatile storage

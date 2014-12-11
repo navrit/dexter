@@ -133,11 +133,11 @@ class MY_LIB_API SpidrController
   bool setEqThreshH            ( bool equalize );
   bool setColourMode           ( bool colour );
   bool setCsmSpm               ( int  csm );
+  bool setEnablePixelCom       ( bool enable );
   bool setGainMode             ( int  mode );
   bool setSenseDac             ( int  dac_code );
   bool setSenseDac             ( int  dev_nr, int dac_code );
   bool setExtDac               ( int  dev_nr, int dac_code, int dac_val );
-  bool writeOmr                ( int  dev_nr );
 
   // Configuration: non-volatile onboard storage
   bool storeAddrAndPorts       ( int  ipaddr = 0,
