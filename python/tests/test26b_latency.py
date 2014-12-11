@@ -23,9 +23,12 @@ class TPX3ConfigMatrix:
 class test_tuomas_debug(tpx3_test):
 
     """Test for debugging the python scripts"""
+    def _init2(self):
+        self.data['toa'] = dict()
+        self.data['tot'] = dict()
 
     def _execute(self, **keywords):
-        self.TPX3_COLUMNS = 1
+        self.TPX3_COLUMNS = 10
         tpx = self.tpx
         try:
             print "Starting the test"
@@ -47,10 +50,10 @@ class test_tuomas_debug(tpx3_test):
             genConfig_register |= TPX3_TESTPULSE_ENA | TPX3_GRAYCOUNT_ENA
             genConfig_register |= TPX3_SELECTTP_DIGITAL
             self.tpx.setGenConfig(genConfig_register)
-            # self.tpx.datadrivenReadout()
+            self.tpx.datadrivenReadout()
 
-            self.tpx.pauseReadout()
-            self.tpx.sequentialReadout(tokens=1)
+            #self.tpx.pauseReadout()
+            #self.tpx.sequentialReadout(tokens=1)
             self.tpx.resetPixels()
             self.inject_testpulses(10)
 
@@ -89,14 +92,18 @@ class test_tuomas_debug(tpx3_test):
 
     def cleanup(self):
         print "cleanup() called"
+        self.data_to_file()
 
     def get_and_process_packets(self):
         finish = 0
         events = 0
         data = self.tpx.get_frame()
+        #data = self.tpx.get_N_packets(10);
         print "Received %d packets." % (len(data))
         for pck in data:
             if pck.isData():
+                self.data['toa'][pck.toa] += 1
+                self.data['tot'][pck.tot] += 1
                 events += 1
             else:
                 if pck.isEoR():
@@ -104,3 +111,12 @@ class test_tuomas_debug(tpx3_test):
                 else:
                     print "Got packet"
         print "Finished the injection. %d events received." % (events)
+
+    def data_to_file(self, filename):
+        data = ['toa', 'tot']
+        for field in data:
+            hist = self.data[field]
+            fname = open(self.test.fname + "/hist_" + field + ".csv", "w")
+            for key in hist.keys():
+                fname.write("[%d]: %d" % (key, hist[key]))
+            fname.close()
