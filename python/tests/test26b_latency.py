@@ -10,15 +10,31 @@ class test26b_latency(tpx3_test):
     """Test for measuring the latency of the output packets"""
 
     def _execute(self, **keywords):
-        self.npulses = 100
+        self.temps = dict()
+        self.args = dict()
+        self.legal_args = ['npulses', 'npixels', 'ncols']
+        self.defaults = {'npulses': 2000, 'npixels': 9, 'ncols': 4}
+        self.tp_period = 0x0F
+        self.clk_freq_mhz = 40.0
+        for arg in self.legal_args:
+            if arg in keywords:
+                self.args[arg] = int(keywords[arg])
+                print "Set arg %s to %s from command line" %(arg, str(keywords[arg]))
+            else:
+                self.args[arg] = self.defaults[arg]
+
         try:
             self.logging.info("Starting latency measurement test")
             conf_daq = TPX3ConfBeforeDAQ(self)
             conf_daq.do_config()
             self.sample_temp(1, "Shutter OFF")
+
             conf_matrix = TPX3ConfMatrixTPEnable(self)
+            conf_matrix.set_pixel_tp_mask(everyNpixels = self.args['npixels'])
             conf_matrix.do_config()
             self.conf_matrix = conf_matrix
+            self.pixel_tp_mask = conf_matrix.get_pixel_tp_mask()
+
             self.tpx.setCtprBits(0)
             self.inject_testpulses(1)
 
@@ -26,20 +42,27 @@ class test26b_latency(tpx3_test):
             print "Cleaning up the test"
             self.cleanup()
 
-    def sample_temp(self, nsamples=10, msg=""):
+    def sample_temp(self, nsamples=10, msg="", verbose = False):
         for i in range(nsamples):
             temperature = self.tpx.getTpix3Temp()
-            print "%s Timepix3 temperature is %d" % (msg, temperature)
+            self.temps[time.time()] = temperature
+            if verbose == True:
+                print "%s Timepix3 temperature is %d" % (msg, temperature)
 
     def inject_testpulses(self, npulses):
         conf_tp = TPX3ConfTestPulses(self)
-        conf_tp.set_tp_config(period=0x0E, npulses=self.npulses)
-        conf_tp.set_column_mask(self.get_ctpr_mask(everyNcols = 8))
+        conf_tp.set_tp_config(period=self.tp_period, npulses=self.args['npulses'])
+        conf_tp.set_column_mask(self.get_ctpr_mask(everyNcols = self.args['ncols']))
         conf_tp.do_config()
         self.num_tp_enabled = self.conf_matrix.num_tp_enabled(mask = self.ctpr_mask)
-        #self.logging.info("Injecting hits to column %d" % (x))
         data = self.tpx.get_N_packets(1024)
+        print "Flushed out %d packets" %(len(data))
+
         data_driven_seq = TPX3DataDrivenSeq(self, 1000)
+        self.daq_seq = data_driven_seq
+        data_driven_seq.analyzer.set_ctpr_mask(self.ctpr_mask)
+        data_driven_seq.analyzer.set_pixel_tp_mask(self.pixel_tp_mask)
+
         data_driven_seq.do_seq()
         self.data = data_driven_seq.get_data()
         self.events = data_driven_seq.num_packets()
@@ -47,17 +70,25 @@ class test26b_latency(tpx3_test):
     def cleanup(self):
         """ Called after the test to extract results and cleanup."""
         print "cleanup() called"
-        expected = self.npulses * self.num_tp_enabled
-        efficiency = float(self.events) / expected
+        expected = self.args['npulses'] * self.num_tp_enabled
+        if expected > 0:
+            efficiency = float(self.events) / expected
+        else:
+            efficiency = -1;
         self.logging.info("Total of %d event packets received" % (self.events))
         self.logging.info("Expected number %d" % (expected))
         self.logging.info("Efficiency: %f" %(efficiency))
+        self.logging.info("Calc. rate: %f Mpackets/s" %(self.get_rate()))
+        self.logging.info(self.daq_seq.analyzer.report())
         self.data_to_file()
+
+    def get_rate(self):
+        return self.clk_freq_mhz * 1.0/(2*64*self.tp_period) * self.num_tp_enabled
 
     def data_to_file(self):
         """ Prints collected toa/tot data into separate files"""
 
-        data = ['toa', 'tot']
+        data = ['toa', 'tot', 'col', 'row']
         for field in data:
             hist = self.data[field]
             fname = open(self.fname + "/hist_" + field + ".csv", "w")
@@ -65,6 +96,11 @@ class test26b_latency(tpx3_test):
             for key in hist.keys():
                 fname.write("%d, %d\n" % (key, hist[key]))
             fname.close()
+
+        fname = open(self.fname + "/plot_temp.csv", "w")
+        for temp in self.temps:
+            fname.write("%d,%d\n" % (temp, self.temps[temp]))
+        fname.close()
 
     def get_ctpr_mask(self, everyNcols):
         ctpr_mask = list(range(256))
@@ -77,4 +113,5 @@ class test26b_latency(tpx3_test):
                 ctpr_mask[i] = 0
                 tmp_count -= 1
         self.ctpr_mask = ctpr_mask
+        print ctpr_mask
         return ctpr_mask

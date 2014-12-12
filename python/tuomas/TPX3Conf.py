@@ -7,18 +7,19 @@ class TPX3ConfBase:
 
     """Base class for configurations of Timepix3"""
 
-    def __init__(self, test):
+    def __init__(self, test, debug=False):
         self.tpx = test.tpx
         self.test = test
+        self.debug = debug
 
     def do_config(self):
         """Override this in your derived class"""
-        pass
+        print "do_config() not implemented in the base class"
 
 
 class TPX3ConfMatrixTPEnable(TPX3ConfBase):
 
-    """Enables test pulse for all pixels, unmasks them and sets DAC to F."""
+    """Configures test pulse for all pixels, unmasks them and sets the DACS."""
 
     def __init__(self, test):
         TPX3ConfBase.__init__(self, test)
@@ -27,7 +28,7 @@ class TPX3ConfMatrixTPEnable(TPX3ConfBase):
             self.conf_data[x] = list(range(256))
             for y in range(256):
                 self.conf_data[x][y] = dict()
-                self.conf_data[x][y]['mask'] = 0
+                self.conf_data[x][y]['mask'] = 1
                 self.conf_data[x][y]['tp'] = 0
                 self.conf_data[x][y]['dac'] = 0
 
@@ -53,28 +54,34 @@ class TPX3ConfMatrixTPEnable(TPX3ConfBase):
         for x in range(256):
             for y in range(256):
                 self.tpx.setPixelThreshold(x, y, 0x0F)
-                self.tpx.setPixelMask(x, y, 0)
-                self.tpx.setPixelTestEna(x, y, 1)
+                self.tpx.setPixelMask(x, y, 1)
+                self.tpx.setPixelTestEna(x, y, self.pixel_tp_mask[y])
                 self.set_x_y(x, y, 'dac', 0x0F)
-                self.set_x_y(x, y, 'tp', 1)
-                self.set_x_y(x, y, 'mask', 0)
+                self.set_x_y(x, y, 'tp', self.pixel_tp_mask[y])
+                self.set_x_y(x, y, 'mask', 1)
 
         self.tpx.setPixelConfig()
 
+    def get_pixel_tp_mask(self):
+        return self.pixel_tp_mask
 
     def set_pixel_tp_mask(self, everyNpixels):
-            pixel_tp_mask = list(range(256))
-            tmp_count = everyNpixels
-            for i in range(256):
-                if tmp_count == 1:
-                    pixel_tp_mask[i] = 1
-                    tmp_count = everyNpixels
-                else:
-                    pixel_tp_mask[i] = 0
-                    tmp_count -= 1
-            for x in range(256):
-                for y in range(256):
-                    self.set_x_y(x, y, 'tp', pixel_tp_mask[y])
+        self.pixel_tp_mask = list(range(256))
+        tmp_count = everyNpixels
+        for i in range(256):
+            if tmp_count == 1:
+                self.pixel_tp_mask[i] = 1
+                tmp_count = everyNpixels
+            else:
+                self.pixel_tp_mask[i] = 0
+                tmp_count -= 1
+        for x in range(256):
+            for y in range(256):
+                self.set_x_y(x, y, 'tp', self.pixel_tp_mask[y])
+        if self.debug:
+            print self.pixel_tp_mask
+
+
 class TPX3ConfBeforeDAQ(TPX3ConfBase):
 
     """Configures PLL, set DAC defaults and other operations before a DAQ"""
@@ -89,8 +96,8 @@ class TPX3ConfBeforeDAQ(TPX3ConfBase):
         tpx.setOutputMask(0xFF)
         tpx.shutterOff()
         tpx.resetPixels()
-        tpx.t0Sync()
         genConfig_register = TPX3_ACQMODE_TOA_TOT | TPX3_FASTLO_ENA | TPX3_GRAYCOUNT_ENA
+        tpx.t0Sync()
         tpx.setGenConfig(genConfig_register)
 
 
@@ -108,7 +115,7 @@ class TPX3ConfTestPulses(TPX3ConfBase):
         self.tpx.setShutterLen(self.shutter_length)
         for col in range(256):
             self.tpx.setCtprBit(col, self.mask[col])
-        #self.tpx.setCtprBits(1)
+        # self.tpx.setCtprBits(1)
         self.tpx.setCtpr()
 
     def set_tp_config(self, period, npulses, phase=0):

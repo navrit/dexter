@@ -1,5 +1,6 @@
 
 from tests.tpx3_test import *
+from tuomas.TPX3PacketAnalysis import TPX3TestPulsePacketAnalyzer
 import time
 
 
@@ -17,23 +18,17 @@ class TPX3DataDrivenSeq(TPX3SeqBase):
 
     def __init__(self, test, rpt_interval = 10):
         TPX3SeqBase.__init__(self,test)
-        self.data = dict()
-        self.fields = ['toa', 'tot', 'col', 'row']
-        for field in self.fields:
-            self.data[field] = dict()
         self.events = 0
         self.TIMEOUT = 60
         self.rpt_interval = rpt_interval
         self.rpt_count = rpt_interval
+        self.analyzer = TPX3TestPulsePacketAnalyzer(test)
 
     def get_data(self, data_type=""):
         if data_type == "":
-            return self.data
-        elif data_type in self.data:
-            return self.data[data_type]
+            return self.analyzer.get_data()
         else:
-            print "Unknown data type %s given" % (data_type)
-
+            return self.analyzer.get_data(data_type)
 
     def num_packets(self):
         return self.events
@@ -51,18 +46,9 @@ class TPX3DataDrivenSeq(TPX3SeqBase):
 
         while not finished:
             data = self.tpx.get_N_packets(2048)
-
-            for pck in data:
-                if pck.isData():
-                    self.process_packet(pck)
-                else:
-                    if pck.isEoR():
-                        self.test.logging.info("Finished due to End-of-Readout")
-                        finished = True
-                    else:
-                        pass
-                        # print "Got packet %d" %(pck.type)
+            self.analyzer.analyze_packets(data)
             time_elapsed = time.time() - time_start
+            self.test.sample_temp(1, "DURING DAQ")
             if self.rpt_count == 0:
                 self.test.sample_temp(1, "DURING DAQ")
                 self.test.logging.info("Packet count: %d" % (self.events))
@@ -72,26 +58,10 @@ class TPX3DataDrivenSeq(TPX3SeqBase):
             if time_elapsed > self.TIMEOUT:
                 self.test.logging.info("TIMEOUT %d reached" % (self.TIMEOUT))
                 finished = True
+            finished |= self.analyzer.is_finished()
 
         time_total =  time.time() - time_start
+        self.events = self.analyzer.num_events()
         print "Finished the injection. %d events received." % (self.events)
         print "Total rate: %f packets/s" %(float(self.events)/time_total)
 
-    def process_packet(self, pck):
-        if pck.toa in self.data['toa']:
-            self.data['toa'][pck.toa] += 1
-        else:
-            self.data['toa'][pck.toa] = 1
-        if pck.tot in self.data['tot']:
-            self.data['tot'][pck.tot] += 1
-        else:
-            self.data['tot'][pck.tot] = 1
-        if pck.col in self.data['col']:
-            self.data['col'][pck.col] += 1
-        else:
-            self.data['col'][pck.col] = 1
-        if pck.row in self.data['row']:
-            self.data['row'][pck.row] += 1
-        else:
-            self.data['row'][pck.row] = 1
-        self.events += 1
