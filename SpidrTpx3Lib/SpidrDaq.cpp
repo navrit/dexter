@@ -4,7 +4,7 @@
 #include "DatasamplerThread.h"
 
 #include "tpx3defs.h"
-#include "dacsdescr.h"
+#include "tpx3dacsdescr.h"
 
 // Version identifier: year, month, day, release number
 const   int VERSION_ID = 0x14102800;

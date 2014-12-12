@@ -243,7 +243,8 @@ class MY_LIB_API SpidrController
   bool getDataPacketCounter    ( int *cntr );
   bool getMonPacketCounter     ( int *cntr );
   bool getPausePacketCounter   ( int *cntr );
-  bool getPixelPacketCounter   ( int *cntr );
+  bool getPixelPacketCounter   ( int dev_nr, int *cntr );
+  bool getPixelPacketCounter   ( int *cntr );  // ### OBSOLETE
   bool resetPacketCounters     ( );
   bool getTdcTriggerCounter    ( int *cntr );
 

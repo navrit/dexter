@@ -12,10 +12,11 @@ using namespace std;
 #include "spidrtpx3cmds.h"
 #include "tpx3defs.h"
 
-#include "dacsdescr.h" // Depends on tpx3defs.h to be included first
+#include "tpx3dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x14112600;
+const int   VERSION_ID = 0x14120100;
+//const int VERSION_ID = 0x14112600;
 //const int VERSION_ID = 0x14111000;
 //const int VERSION_ID = 0x14110300;
 //const int VERSION_ID = 0x14102800;
@@ -44,11 +45,12 @@ const int   VERSION_ID = 0x14112600;
 #define SPIDR_DEVICES_AND_PORTS_I    0x02C0
 #define SPIDR_TDC_TRIGGERCOUNTER_I   0x02F8
 #define SPIDR_FE_GTX_CTRL_STAT_I     0x0300
+#define SPIDR_PIXEL_PKTCOUNTER_I     0x0340
 #define SPIDR_IPMUX_CONFIG_I         0x0380
 #define SPIDR_UDP_PKTCOUNTER_I       0x0384
 #define SPIDR_UDPMON_PKTCOUNTER_I    0x0388
 #define SPIDR_UDPPAUSE_PKTCOUNTER_I  0x038C
-#define SPIDR_PIXEL_PKTCOUNTER_I     0x0390
+#define SPIDR_PIXEL_PKTCOUNTER_OLD_I 0x0390
 #define SPIDR_PIXEL_FILTER_I         0x0394
 
 // ----------------------------------------------------------------------------
@@ -1671,9 +1673,17 @@ bool SpidrController::getPausePacketCounter( int *cntr )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::getPixelPacketCounter( int dev_nr, int *cntr )
+{
+  return this->getSpidrReg( SPIDR_PIXEL_PKTCOUNTER_I + dev_nr, cntr );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::getPixelPacketCounter( int *cntr )
 {
-  return this->getSpidrReg( SPIDR_PIXEL_PKTCOUNTER_I, cntr );
+  // ### OBSOLETE
+  return this->getSpidrReg( SPIDR_PIXEL_PKTCOUNTER_OLD_I, cntr );
 }
 
 // ----------------------------------------------------------------------------
