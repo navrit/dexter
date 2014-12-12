@@ -46,9 +46,9 @@ SpidrDacs::SpidrDacs()
   connect( _pushButtonSetDacsDefaults, SIGNAL( clicked() ),
 	   this, SLOT( setDacsDefaults() ) );
   connect( _comboBoxDeviceIndex, SIGNAL( currentIndexChanged(int) ),
-	   this, SLOT( changeDeviceIndex(int) ) );
+	   this, SLOT( setDeviceIndex(int) ) );
   connect( _comboBoxDeviceType, SIGNAL( currentIndexChanged(int) ),
-	   this, SLOT( changeDeviceType(int) ) );
+	   this, SLOT( setDeviceType(int) ) );
   connect( _pushButtonStore, SIGNAL( clicked() ),
 	   this, SLOT( storeDacs() ) );
   connect( _pushButtonErase, SIGNAL( clicked() ),
@@ -76,7 +76,7 @@ SpidrDacs::SpidrDacs()
   _qpError = _qpOkay;
   _qpError.setColor( QPalette::Base, QColor("yellow") ); // Text entry backgr
 
-  this->changeDeviceType( _comboBoxDeviceType->currentIndex() );
+  this->setDeviceType( _comboBoxDeviceType->currentIndex() );
 }
 
 // ----------------------------------------------------------------------------
@@ -160,7 +160,8 @@ void SpidrDacs::connectOrDisconnect()
 				"Failed to connect!" );
 	}
     }
-  this->initDacs();
+  // Disable DAC widgets
+  this->initDacWidgets( false );
 }
 
 // ----------------------------------------------------------------------------
@@ -171,6 +172,9 @@ void SpidrDacs::readDacs()
   _pushButtonErase->setEnabled( false );
 
   if( !_spidrController || !_spidrController->isConnected() ) return;
+
+  // Enable DAC widgets
+  this->initDacWidgets( true );
 
   // Get the current DAC settings and display them
   // without triggering DAC-set commands
@@ -213,7 +217,7 @@ void SpidrDacs::setDacsDefaults()
 
 // ----------------------------------------------------------------------------
 
-void SpidrDacs::dacChanged( int index )
+void SpidrDacs::setDac( int index )
 {
   if( !_spidrController || !_spidrController->isConnected() ) return;
   if( _disableSetDac ) return;
@@ -242,12 +246,15 @@ void SpidrDacs::timerEvent(QTimerEvent *)
 
 // ----------------------------------------------------------------------------
 
-void SpidrDacs::initDacs()
+void SpidrDacs::initDacWidgets( bool enable )
 {
+  // Don't allow the settings made here trigger a DAC set operation...
+  disconnect( _signalMapper, SIGNAL(mapped(int)), this, SLOT(setDac(int)) );
+
   int i;
-  if( !_spidrController || !_spidrController->isConnected() )
+  for( i=0; i<_slidrs.size(); ++i ) _slidrs[i]->setValue( 0 );
+  if( !enable || !_spidrController || !_spidrController->isConnected() )
     {
-      for( i=0; i<_slidrs.size(); ++i ) _slidrs[i]->setValue( 0 );
       for( i=0; i<_slidrs.size(); ++i ) _slidrs[i]->setEnabled( false );
       for( i=0; i<_spboxs.size(); ++i ) _spboxs[i]->setEnabled( false );
     }
@@ -255,10 +262,9 @@ void SpidrDacs::initDacs()
     {
       for( i=0; i<_slidrs.size(); ++i ) _slidrs[i]->setEnabled( true );
       for( i=0; i<_spboxs.size(); ++i ) _spboxs[i]->setEnabled( true );
-
-      // Get the current DAC settings and display them
-      this->readDacs();
     }
+
+  connect( _signalMapper, SIGNAL(mapped(int)), this, SLOT(setDac(int)) );
 }
 
 // ----------------------------------------------------------------------------
@@ -299,16 +305,17 @@ void SpidrDacs::adjustLayout()
 
 // ----------------------------------------------------------------------------
 
-void SpidrDacs::changeDeviceIndex( int index )
+void SpidrDacs::setDeviceIndex( int index )
 {
   if( index < 0 ) return;
   _deviceIndex = index;
-  this->initDacs();
+  // Device index changed: disable widgets until DACs are read out
+  this->initDacWidgets( false );
 }
 
 // ----------------------------------------------------------------------------
 
-void SpidrDacs::changeDeviceType( int index )
+void SpidrDacs::setDeviceType( int index )
 {
   if( index < 0 ) return;
 
@@ -437,10 +444,10 @@ void SpidrDacs::changeDeviceType( int index )
       _signalMapper->setMapping( spbox, i );
     }
 
-  connect( _signalMapper, SIGNAL(mapped(int)), this, SLOT(dacChanged(int)) );
+  // Device type changed: disable widgets until DACs are read out
+  this->initDacWidgets( false );
 
-  for( int i=0; i<_slidrs.size(); ++i ) _slidrs[i]->setEnabled( false );
-  for( int i=0; i<_spboxs.size(); ++i ) _spboxs[i]->setEnabled( false );
+  connect( _signalMapper, SIGNAL(mapped(int)), this, SLOT(setDac(int)) );
 
   // Column width equalization can only be done after the widget has been shown
   // (see adjustLayout() below and Qt documentation on QGridLayout::cellRect)

@@ -44,45 +44,13 @@
      <property name="title">
       <string>SPIDR</string>
      </property>
-     <widget class="QLabel" name="labelIpAddr">
-      <property name="geometry">
-       <rect>
-        <x>58</x>
-        <y>14</y>
-        <width>69</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>IP address</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QLabel" name="labelPort">
-      <property name="geometry">
-       <rect>
-        <x>190</x>
-        <y>14</y>
-        <width>53</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Port</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>7</x>
-        <y>28</y>
+        <y>20</y>
         <width>868</width>
-        <height>25</height>
+        <height>29</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="_horizontalLayoutSpidr">
@@ -95,9 +63,25 @@
        <property name="leftMargin">
         <number>10</number>
        </property>
+       <property name="topMargin">
+        <number>3</number>
+       </property>
        <property name="rightMargin">
         <number>10</number>
        </property>
+       <property name="bottomMargin">
+        <number>3</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="labelIpAddr">
+         <property name="text">
+          <string>IP addr</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
        <item>
         <widget class="QLineEdit" name="_lineEditAddr3">
          <property name="maximumSize">
@@ -204,6 +188,16 @@
          </property>
          <property name="text">
           <string>10</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelPort">
+         <property name="text">
+          <string>Port</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -324,9 +318,31 @@
         <enum>Qt::ClickFocus</enum>
        </property>
        <property name="text">
-        <string>Reread DACs</string>
+        <string>Read DACs</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="_comboBoxDeviceIndex"/>
+     </item>
+     <item>
+      <widget class="QComboBox" name="_comboBoxDeviceType"/>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Minimum</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
      <item>
       <widget class="QPushButton" name="_pushButtonSetDacsDefaults">
@@ -340,12 +356,6 @@
         <string>Set DACs dflt</string>
        </property>
       </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="_comboBoxDeviceIndex"/>
-     </item>
-     <item>
-      <widget class="QComboBox" name="_comboBoxDeviceType"/>
      </item>
      <item>
       <spacer name="horizontalSpacer_2">

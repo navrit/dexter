@@ -22,10 +22,10 @@ class SpidrDacs : public QDialog, Ui_SpidrDacsDialog
   void connectOrDisconnect();
   void readDacs();
   void setDacsDefaults();
-  void dacChanged( int index );
+  void setDac( int index );
   void adjustLayout();
-  void changeDeviceIndex( int index );
-  void changeDeviceType( int index );
+  void setDeviceIndex( int index );
+  void setDeviceType( int index );
   void storeDacs();
   void eraseDacs();
   void hideOkay();
@@ -53,5 +53,5 @@ class SpidrDacs : public QDialog, Ui_SpidrDacsDialog
   QPalette            _qpOkay, _qpError;
 
   void timerEvent( QTimerEvent * );
-  void initDacs();
+  void initDacWidgets( bool enable );
 };
