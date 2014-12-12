@@ -11,7 +11,7 @@ using namespace std;
 
 #include "SpidrController.h"
 #include "mpx3defs.h"
-#include "dacsdescr.h"
+#include "mpx3dacsdescr.h"
 
 int main( int argc, char *argv[] )
 {
@@ -77,7 +77,7 @@ int main( int argc, char *argv[] )
   int adc_value;
   //dev_nr = 0;
   int dac_code = MPX3_DAC_DISC;
-  if( !spidr.setSenseDac( dac_code ) )
+  if( !spidr.setSenseDac( dev_nr, dac_code ) )
     cout << "### SenseDAC " << dac_code << ": " << spidr.errorString() << endl;
   else
     cout << "SenseDAC " << dac_code << endl;

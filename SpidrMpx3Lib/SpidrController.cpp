@@ -15,7 +15,9 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14121100;   // Remove writeOmr(), add setEnablePixelCom()
+const int VERSION_ID = 0x14121200;   // Reinstate loadOmr() as private member,
+                                     // call it for each OMR setting
+//const int VERSION_ID = 0x14121100; // Remove writeOmr(), add setEnablePixelCom()
 //const int VERSION_ID = 0x14120800; // Remove readDacs(), writeDacs(Dflt)()
 //const int VERSION_ID = 0x14112500; // Use DAC code instead of DAC index
 //const int VERSION_ID = 0x14111200; // Added setGainMode()
@@ -768,42 +770,46 @@ unsigned int *SpidrController::pixelConfig()
 // Configuration: OMR
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setContRdWr( bool crw )
+bool SpidrController::setContRdWr( int dev_nr, bool crw )
 {
   int val = 0;
   if( crw ) val = 1;
-  return this->requestSetInt( CMD_SET_CRW, 0, val );
+  if( !this->requestSetInt( CMD_SET_CRW, 0, val ) ) return false;
+  return this->loadOmr( dev_nr );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setPolarity( bool polarity )
+bool SpidrController::setPolarity( int dev_nr, bool polarity )
 {
   int val = 0;
   if( polarity ) val = 1;
-  return this->requestSetInt( CMD_SET_POLARITY, 0, val );
+  if( !this->requestSetInt( CMD_SET_POLARITY, 0, val ) ) return false;
+  return this->loadOmr( dev_nr );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setDiscCsmSpm( int disc )
+bool SpidrController::setDiscCsmSpm( int dev_nr, int disc )
 {
   // For Medipix3RX only
-  return this->requestSetInt( CMD_SET_DISCCSMSPM, 0, disc );
+  if( !this->requestSetInt( CMD_SET_DISCCSMSPM, 0, disc ) ) return false;
+  return this->loadOmr( dev_nr );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setInternalTestPulse( bool internal )
+bool SpidrController::setInternalTestPulse( int dev_nr, bool internal )
 {
   int val = 0;
   if( internal ) val = 1;
-  return this->requestSetInt( CMD_SET_INTERNALTP, 0, val );
+  if( !this->requestSetInt( CMD_SET_INTERNALTP, 0, val ) ) return false;
+  return this->loadOmr( dev_nr );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setPixelDepth( int bits )
+bool SpidrController::setPixelDepth( int dev_nr, int bits )
 {
   int pixelcounterdepth_id = 2; // 12-bit
   if( bits == 1 )
@@ -812,68 +818,67 @@ bool SpidrController::setPixelDepth( int bits )
     pixelcounterdepth_id = 1;   // 4-bit or 6-bit (RX)
   else if( bits == 24 )
     pixelcounterdepth_id = 3;   // 24-bit
-  return this->requestSetInt( CMD_SET_COUNTERDEPTH, 0,
-			      pixelcounterdepth_id );
+  if( !this->requestSetInt( CMD_SET_COUNTERDEPTH, 0,
+			      pixelcounterdepth_id ) ) return false;
+  return this->loadOmr( dev_nr );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setEqThreshH( bool equalize )
+bool SpidrController::setEqThreshH( int dev_nr, bool equalize )
 {
   // Matches 'Equalization' bit for Medipix3RX
   int val = 0;
   if( equalize ) val = 1;
-  return this->requestSetInt( CMD_SET_EQTHRESHH, 0, val );
+  if( !this->requestSetInt( CMD_SET_EQTHRESHH, 0, val ) ) return false;
+  return this->loadOmr( dev_nr );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setColourMode( bool colour )
+bool SpidrController::setColourMode( int dev_nr, bool colour )
 {
   int val = 0;
   if( colour ) val = 1;
-  return this->requestSetInt( CMD_SET_COLOURMODE, 0, val );
+  if( !this->requestSetInt( CMD_SET_COLOURMODE, 0, val ) ) return false;
+  return this->loadOmr( dev_nr );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setCsmSpm( int csm )
+bool SpidrController::setCsmSpm( int dev_nr, int csm )
 {
   // For Medipix3RX only
-  return this->requestSetInt( CMD_SET_CSMSPM, 0, csm );
+  if( !this->requestSetInt( CMD_SET_CSMSPM, 0, csm ) ) return false;
+  return this->loadOmr( dev_nr );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setEnablePixelCom( bool enable )
+bool SpidrController::setEnablePixelCom( int dev_nr, bool enable )
 {
   // For Medipix3 only: corresponds to Medipix3RX CSM_SPM OMR bit
   int val = 0;
   if( enable ) val = 1;
-  return this->requestSetInt( CMD_SET_CSMSPM, 0, val );
+  if( !this->requestSetInt( CMD_SET_CSMSPM, 0, val ) ) return false;
+  return this->loadOmr( dev_nr );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setGainMode( int mode )
+bool SpidrController::setGainMode( int dev_nr, int mode )
 {
   // For Medipix3RX only
-  return this->requestSetInt( CMD_SET_GAINMODE, 0, mode );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setSenseDac( int dac_code )
-{
-  return this->requestSetInt( CMD_SET_SENSEDAC, 0, dac_code );
+  if( !this->requestSetInt( CMD_SET_GAINMODE, 0, mode ) ) return false;
+  return this->loadOmr( dev_nr );
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setSenseDac( int dev_nr, int dac_code )
 {
-  // This function for Timepix3 compatibility...
-  return this->setSenseDac( dac_code );
+  if( !this->requestSetInt( CMD_SET_SENSEDAC, 0, dac_code ) ) return false;
+  return this->loadOmr( dev_nr );
 }
 
 // ----------------------------------------------------------------------------
@@ -883,15 +888,9 @@ bool SpidrController::setExtDac( int dev_nr, int dac_code, int dac_val )
   // Combine dac_code and dac_val into a single int
   // (the DAC to set is the SPIDR-MPX3 DAC)
   int dac_data = ((dac_code & 0xFFFF) << 16) | (dac_val & 0xFFFF);
-  return this->requestSetInt( CMD_SET_EXTDAC, dev_nr, dac_data );
+  if( !this->requestSetInt( CMD_SET_EXTDAC, dev_nr, dac_data ) ) return false;
+  return this->loadOmr( dev_nr );
 }
-
-// ----------------------------------------------------------------------------
-
-//bool SpidrController::writeOmr( int dev_nr )
-//{
-//  return this->requestSetInt( CMD_WRITE_OMR, dev_nr, 0 );
-//}
 
 // ----------------------------------------------------------------------------
 // Configuration: non-volatile storage
@@ -1149,6 +1148,14 @@ bool SpidrController::setSpidrRegBit( int addr, int bitnr, bool set )
 
 // ----------------------------------------------------------------------------
 // Private functions
+// ----------------------------------------------------------------------------
+
+bool SpidrController::loadOmr( int dev_nr )
+{
+  // Load the actual OMR with the onboard data structure
+  return this->requestSetInt( CMD_WRITE_OMR, dev_nr, 0 );
+}
+
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setPixelBit( int x, int y, unsigned int bitmask, bool b )

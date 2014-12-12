@@ -432,17 +432,18 @@ int spidrSenseSignal( int id, int chip_nr,
 
   // In Pixelman version 2011_12_07 'code' appears to be a DAC number/index
   // rather than the DAC 'code' !
-  if( !spidrctrl->setSenseDac( code ) )
+  if( !spidrctrl->setSenseDac( chip_pos, code ) )
   //if( !spidrctrl->setSenseDacCode( code ) )
     {
       LOGGER() << "### setSenseDac(): " << spidrctrl->errorString() << endl;
       return 1;
     }
-  if( !spidrctrl->writeOmr( chip_pos ) )
-    {
-      LOGGER() << "### writeOmr(): " << spidrctrl->errorString() << endl;
-      return 1;
-    }
+  // ### Now done as part of setSenseDac():
+  //if( !spidrctrl->loadOmr( chip_pos ) )
+  //  {
+  //    LOGGER() << "### loadOmr(): " << spidrctrl->errorString() << endl;
+  //    return 1;
+  //  }
   int adc_val;
   if( !spidrctrl->getAdc( chip_pos, &adc_val ) )
     {
@@ -594,6 +595,7 @@ int spidrSetAcqPars( int id, Mpx3AcqParams *pars )
   LOGFUNCNAME();
   GETCONTROLLER( id );
   GETDAQ( id );
+  SpidrInfo *spidrinfo = SpidrMgr::instance()->info( id );
   /*
     typedef struct _Mpx3AcqParams
     {
@@ -617,11 +619,13 @@ int spidrSetAcqPars( int id, Mpx3AcqParams *pars )
 
   bool polarity = false;
   if( pars->polarityPositive ) polarity = true;
-  if( !spidrctrl->setPolarity( polarity ) )
-    {
-      LOGGER() << "### setPolarity(): " << spidrctrl->errorString() << endl;
-      return 1;
-    }
+  for( int chip=0; chip<spidrinfo->chipCount; ++chip )
+    if( !spidrctrl->setPolarity( spidrinfo->chipMap[chip], polarity ) )
+      {
+	LOGGER() << "### setPolarity(" << chip << "): "
+		 << spidrctrl->errorString() << endl;
+	return 1;
+      }
 
   /* These are definitions taken from common.h:
      ACQMODE_ACQSTART_TIMERSTOP:
@@ -684,7 +688,8 @@ int spidrSetAcqPars( int id, Mpx3AcqParams *pars )
 				    trigger_freq_hz, nr_of_triggers,
 				    trigger_pulse_count ) )
     {
-      LOGGER() << "### setTriggerConfig(): " << spidrctrl->errorString() << endl;
+      LOGGER() << "### setTriggerConfig(): "
+	       << spidrctrl->errorString() << endl;
       return 1;
     }
   LOGGER() << "SetAcqPars.setTriggerConfig(): mode=" << trigger_mode
@@ -702,11 +707,13 @@ int spidrSetAcqPars( int id, Mpx3AcqParams *pars )
   else if( pars->counterDepth == MPX3_COUNTER_24B )
     pixeldepth = 24;
   spidrdaq->setPixelDepth( pixeldepth );
-  if( !spidrctrl->setPixelDepth( pixeldepth ) )
-    {
-      LOGGER() << "### setPixelDepth(): " << spidrctrl->errorString() << endl;
-      return 1;
-    }
+  for( int chip=0; chip<spidrinfo->chipCount; ++chip )
+    if( !spidrctrl->setPixelDepth( spidrinfo->chipMap[chip], pixeldepth ) )
+      {
+	LOGGER() << "### setPixelDepth( " << chip << "): "
+		 << spidrctrl->errorString() << endl;
+	return 1;
+      }
 
   return 0;
 }

@@ -124,20 +124,18 @@ class MY_LIB_API SpidrController
   unsigned int *pixelConfig   ( );
 
   // Configuration: OMR
-  // (single local OMR, used for all this SPIDR's Medipix devices)
-  bool setContRdWr             ( bool crw );
-  bool setPolarity             ( bool polarity );
-  bool setDiscCsmSpm           ( int  disc );
-  bool setInternalTestPulse    ( bool internal );
-  bool setPixelDepth           ( int  bits );
-  bool setEqThreshH            ( bool equalize );
-  bool setColourMode           ( bool colour );
-  bool setCsmSpm               ( int  csm );
-  bool setEnablePixelCom       ( bool enable );
-  bool setGainMode             ( int  mode );
-  bool setSenseDac             ( int  dac_code );
-  bool setSenseDac             ( int  dev_nr, int dac_code );
-  bool setExtDac               ( int  dev_nr, int dac_code, int dac_val );
+  bool setContRdWr             ( int  dev_nr, bool crw );
+  bool setPolarity             ( int  dev_nr, bool polarity );
+  bool setDiscCsmSpm           ( int  dev_nr, int  disc );
+  bool setInternalTestPulse    ( int  dev_nr, bool internal );
+  bool setPixelDepth           ( int  dev_nr, int  bits );
+  bool setEqThreshH            ( int  dev_nr, bool equalize );
+  bool setColourMode           ( int  dev_nr, bool colour );
+  bool setCsmSpm               ( int  dev_nr, int  csm );
+  bool setEnablePixelCom       ( int  dev_nr, bool enable );
+  bool setGainMode             ( int  dev_nr, int  mode );
+  bool setSenseDac             ( int  dev_nr, int  dac_code );
+  bool setExtDac               ( int  dev_nr, int  dac_code, int dac_val );
 
   // Configuration: non-volatile onboard storage
   bool storeAddrAndPorts       ( int  ipaddr = 0,
@@ -189,6 +187,7 @@ class MY_LIB_API SpidrController
   bool setSpidrRegBit          ( int  addr, int bitnr, bool set = true );
 
  private:
+  bool loadOmr              ( int  dev_nr );
   bool setPixelBit          ( int  x, int y, unsigned int bitmask, bool b );
   bool get3Ints             ( int  cmd, int *data0, int *data1, int *data2 );
   bool validXandY           ( int  x,       int y,

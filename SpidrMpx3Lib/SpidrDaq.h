@@ -37,7 +37,7 @@ class MY_LIB_API SpidrDaq
   // General
   int         classVersion      (); // Version of this class
   std::string ipAddressString   ( int index );
-  std::string errString         ();
+  std::string errorString       ( );
 
   // Configuration
   void setPixelDepth            ( int nbits );
@@ -45,32 +45,32 @@ class MY_LIB_API SpidrDaq
   void setCompressFrames        ( bool compress );
   bool openFile                 ( std::string filename,
                                   bool overwrite = false );
-  bool closeFile                ();
+  bool closeFile                ( );
 
   // Acquisition
-  bool      hasFrame            ();
+  bool      hasFrame            ( );
   int      *frameData           ( int  index,
                                   int *size_in_bytes );
-  long long frameTimestamp      ();
+  long long frameTimestamp      ( );
   long long frameTimestamp      ( int buf_i );        // For debugging
-  long long frameTimestampSpidr ();
-  double    frameTimestampDouble();                   // For Pixelman
-  void      releaseFrame        ();
+  long long frameTimestampSpidr ( );
+  double    frameTimestampDouble( );                  // For Pixelman
+  void      releaseFrame        ( );
   void      setCallbackId       ( int id );           // For Pixelman
   void      setCallback         ( CallbackFunc cbf ); // For Pixelman
 
   // Statistics and info
-  int  framesWrittenCount       ();
-  int  framesProcessedCount     ();
+  int  framesWrittenCount       ( );
+  int  framesProcessedCount     ( );
   int  framesCount              ( int index );
-  int  framesCount              ();
+  int  framesCount              ( );
   int  framesLostCount          ( int index );
-  int  framesLostCount          ();
+  int  framesLostCount          ( );
   int  packetsReceivedCount     ( int index );
-  int  packetsReceivedCount     ();
+  int  packetsReceivedCount     ( );
   int  packetsLostCount         ( int index );
-  int  packetsLostCount         ();
-  int  packetsLostCountFile     ();
+  int  packetsLostCount         ( );
+  int  packetsLostCountFile     ( );
   int  packetsLostCountFrame    ( int index, int buf_i ); // For debugging
   int  packetSize               ( int index );            // For debugging
   int  expSequenceNr            ( int index );            // For debugging

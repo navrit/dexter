@@ -116,7 +116,7 @@ void SpidrMpx3Tv::timerEvent( QTimerEvent * )
 {
   if( !_daq ) return;
 
-  std::string str = _daq->errString();
+  std::string str = _daq->errorString();
   if( str.empty() )
     {
       //this->statusBar()->clearMessage();
@@ -185,7 +185,7 @@ void SpidrMpx3Tv::onOff()
 	}
 
       _daq = new SpidrDaq( _controller );
-      std::string str = _daq->errString();
+      std::string str = _daq->errorString();
       if( !str.empty() )
 	{
 	  this->statusBar()->
@@ -275,7 +275,7 @@ void SpidrMpx3Tv::onOff()
 	_lePacketSize->setText( QString::number(size) );
 
       // Set the selected pixel counterdepth
-      _controller->setPixelDepth( _counterDepth );
+      _controller->setPixelDepth( 0, _counterDepth );
       _daq->setPixelDepth( _counterDepth );
 
       // Let SpidrDaq decode the frame data (otherwise it will simply absorb
@@ -313,7 +313,7 @@ void SpidrMpx3Tv::changeCounterDepth()
   if( _sbMinValue->value() > _sbMaxValue->value() )
     _sbMinValue->setValue( 0 );
 
-  if( _controller ) _controller->setPixelDepth( _counterDepth );
+  if( _controller ) _controller->setPixelDepth( 0, _counterDepth );
   if( _daq )        _daq->setPixelDepth( _counterDepth );
 }
 

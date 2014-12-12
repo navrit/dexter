@@ -41,11 +41,14 @@ int main( int argc, char *argv[] )
   for( int i=0; i<4; ++i ) cout << spidrdaq.ipAddressString( i ) << " ";
   cout << endl;
   Sleep( 1000 );
-  cout << spidrdaq.errString() << endl;
+  cout << spidrdaq.errorString() << endl;
 
   spidrdaq.setDecodeFrames( true );
 
-  spidrcontrol.setPixelDepth( 12 );
+  for( int dev=0; dev<4; ++dev )
+    {
+      spidrcontrol.setPixelDepth( dev, 12 );
+    }
   spidrdaq.setPixelDepth( 12 );
 
   spidrcontrol.setMaxPacketSize( 1024 );

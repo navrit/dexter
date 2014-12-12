@@ -28,24 +28,27 @@ int main( int argc, char *argv[] )
 	   << spidrcontrol.ipAddressString() <<  endl;
     }
 
+   int devnr = 2;
+
 #ifdef WITH_SPIDRDAQ
   SpidrDaq spidrdaq( &spidrcontrol );
   cout << "SpidrDaq: ";
   for( int i=0; i<4; ++i ) cout << spidrdaq.ipAddressString( i ) << " ";
   cout << endl;
   Sleep( 1000 );
-  cout << spidrdaq.errString() << endl;
+  cout << spidrdaq.errorString() << endl;
 
   if( spidrdaq.openFile( "test.dat", true ) )
     cout << "Opened file" << endl;
   else
-    cout << "Failed to open file: " << spidrdaq.errString() << endl;
+    cout << "Failed to open file: " << spidrdaq.errorString() << endl;
 #endif
 
-#ifdef DONT_USE
+#define USE_THIS
+#ifdef USE_THIS
   // Create a (new) pixel configuration (for a Medipix3 device)
   int devtype = MPX_TYPE_NC;
-  spidrcontrol.getDeviceType( 2, &devtype );
+  spidrcontrol.getDeviceType( devnr, &devtype );
   spidrcontrol.resetPixelConfig();
   int col;
   if( devtype == MPX_TYPE_MPX31 )
@@ -53,22 +56,22 @@ int main( int argc, char *argv[] )
       cout << "MPX31 pixel config" << endl;
       // Mask a number of pixel columns...
       for( col=32; col<64; ++col )
-	if( !spidrcontrol.maskPixelMpx3( col, ALL_PIXELS ) )
+	if( !spidrcontrol.setPixelMaskMpx3( col, ALL_PIXELS ) )
 	  cout << "### Pixel mask " << col << endl;
       // Upload the pixel configuration
-      if( !spidrcontrol.writePixelConfigMpx3( 0, false ) )
-	cout << "### Pixel config: " << spidrcontrol.errString() << endl;
+      if( !spidrcontrol.setPixelConfigMpx3( devnr, false ) )
+	cout << "### Pixel config: " << spidrcontrol.errorString() << endl;
     }
   else if( devtype == MPX_TYPE_MPX3RX )
     {
       cout << "MPX3RX pixel config" << endl;
       // Mask a number of pixel columns...
       for( col=64; col<92; ++col )
-	if( !spidrcontrol.maskPixelMpx3rx( col, ALL_PIXELS ) )
+	if( !spidrcontrol.setPixelMaskMpx3rx( col, ALL_PIXELS ) )
 	  cout << "### Pixel mask " << col << endl;
       // Upload the pixel configuration
-      if( !spidrcontrol.writePixelConfigMpx3rx( 0, false ) )
-	cout << "### Pixel config: " << spidrcontrol.errString() << endl;
+      if( !spidrcontrol.setPixelConfigMpx3rx( devnr, false ) )
+	cout << "### Pixel config: " << spidrcontrol.errorString() << endl;
     }
   else
     {
@@ -76,7 +79,7 @@ int main( int argc, char *argv[] )
     }
 #endif
 
-  spidrcontrol.setPixelDepth( 12 );
+  spidrcontrol.setPixelDepth( 2, 12 );
 #ifdef WITH_SPIDRDAQ
   spidrdaq.setPixelDepth( 12 );
   spidrdaq.setDecodeFrames( true );
@@ -88,15 +91,14 @@ int main( int argc, char *argv[] )
   int dacnr, dacval;
   for( dacnr=0; dacnr<30; ++dacnr )
     {
-      spidrcontrol.getDac( 0, dacnr, &dacval );
+      spidrcontrol.getDac( devnr, dacnr, &dacval );
       cout << dacnr << ": " << dacval << endl;
     }
-  spidrcontrol.writeDacs( 0 );
-  //spidrcontrol.writeDacsDflt( 0 );
+  spidrcontrol.setDacsDflt( devnr );
   cout << "After" << endl;
   for( dacnr=0; dacnr<30; ++dacnr )
     {
-      spidrcontrol.getDac( 0, dacnr, &dacval );
+      spidrcontrol.getDac( devnr, dacnr, &dacval );
       cout << dacnr << ": " << dacval << endl;
     }
   */

@@ -193,7 +193,7 @@ std::string SpidrDaq::ipAddressString( int index )
 
 // ----------------------------------------------------------------------------
 
-std::string SpidrDaq::errString()
+std::string SpidrDaq::errorString()
 {
   std::string str;
   for( unsigned int i=0; i<_frameReceivers.size(); ++i )
