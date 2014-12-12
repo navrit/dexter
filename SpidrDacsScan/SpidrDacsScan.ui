@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>725</width>
-    <height>708</height>
+    <height>731</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -36,8 +36,8 @@
       <widget class="QGroupBox" name="_groupBoxSpidr">
        <property name="minimumSize">
         <size>
-         <width>657</width>
-         <height>65</height>
+         <width>0</width>
+         <height>50</height>
         </size>
        </property>
        <property name="maximumSize">
@@ -49,38 +49,6 @@
        <property name="title">
         <string>SPIDR</string>
        </property>
-       <widget class="QLabel" name="labelIpAddr">
-        <property name="geometry">
-         <rect>
-          <x>58</x>
-          <y>14</y>
-          <width>69</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>IP address</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-       <widget class="QLabel" name="labelPort">
-        <property name="geometry">
-         <rect>
-          <x>190</x>
-          <y>14</y>
-          <width>53</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Port</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
        <widget class="QWidget" name="layoutWidget1">
         <property name="geometry">
          <rect>
@@ -100,6 +68,16 @@
          <property name="rightMargin">
           <number>10</number>
          </property>
+         <item>
+          <widget class="QLabel" name="labelIpAddr">
+           <property name="text">
+            <string>IP addr</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="QLineEdit" name="_lineEditAddr3">
            <property name="maximumSize">
@@ -206,6 +184,16 @@
            </property>
            <property name="text">
             <string>10</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelPort">
+           <property name="text">
+            <string>Port</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
