@@ -364,7 +364,7 @@
           <widget class="QComboBox" name="_comboBoxDeviceIndex">
            <property name="maximumSize">
             <size>
-             <width>70</width>
+             <width>100</width>
              <height>16777215</height>
             </size>
            </property>
