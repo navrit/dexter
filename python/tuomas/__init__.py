@@ -13,10 +13,12 @@ from TPX3Conf import TPX3ConfAndReadPower
 from TPX3Seq import TPX3SeqBase
 from TPX3Seq import TPX3DataDrivenSeq
 from TPX3Seq import TPX3DataAcqSeq
+from TPX3Seq import TPX3CleanupSeq
 
 from TPX3PacketAnalysis import TPX3TestPulsePacketAnalyzer
 
 from TPX3Utils import GPIBdev
 from TPX3Utils import CurTempRecord
 from TPX3Utils import CSVRecordWithTime
+from TPX3Utils import CurrentTempSampler
 

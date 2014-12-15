@@ -4,21 +4,34 @@ from tuomas.TPX3PacketAnalysis import TPX3TestPulsePacketAnalyzer
 from tuomas.TPX3Utils import CSVRecordWithTime
 import time
 
+""" This file contains command sequences such as data driven DAQ. """
+
 
 class TPX3SeqBase:
+
     """Base class for command sequences to control Timepix3"""
 
     def __init__(self, test):
         self.tpx = test.tpx
         self.test = test
+        self.callbacks = dict()
 
     def do_seq(self):
-        pass
+        print "do_seq not implemented in the base class TPX3SeqBase"
+
+
+    def set_callback(self, cb_name, cb):
+        self.callbacks[cb_name] = cb
+
+    def invoke_callback(self, cb_name, *args):
+        if cb_name in self.callbacks:
+            self.callbacks[cb_name](*args)
+
 
 class TPX3DataDrivenSeq(TPX3SeqBase):
 
-    def __init__(self, test, rpt_interval = 10):
-        TPX3SeqBase.__init__(self,test)
+    def __init__(self, test, rpt_interval=10):
+        TPX3SeqBase.__init__(self, test)
         self.events = 0
         self.TIMEOUT = 60
         self.rpt_interval = rpt_interval
@@ -49,7 +62,7 @@ class TPX3DataDrivenSeq(TPX3SeqBase):
             data = self.tpx.get_N_packets(2048)
             self.analyzer.analyze_packets(data)
             time_elapsed = time.time() - time_start
-            self.test.sample_temp(1, "DURING DAQ")
+            self.invoke_callback('get_packets', "Sample during DAQ", "", 1)
             if self.rpt_count == 0:
                 self.test.sample_temp(1, "DURING DAQ")
                 self.test.logging.info("Packet count: %d" % (self.events))
@@ -61,10 +74,11 @@ class TPX3DataDrivenSeq(TPX3SeqBase):
                 finished = True
             finished |= self.analyzer.is_finished()
 
-        time_total =  time.time() - time_start
+        time_total = time.time() - time_start
         self.events = self.analyzer.num_events()
         print "Finished the injection. %d events received." % (self.events)
-        print "Total rate: %f packets/s" %(float(self.events)/time_total)
+        print "Total rate: %f packets/s" % (float(self.events)/time_total)
+
 
 class TPX3DataAcqSeq(TPX3SeqBase):
 
@@ -248,3 +262,12 @@ class TPX3DataAcqSeq(TPX3SeqBase):
         self.temp = 0
         self.nsample = 1
         self.mode_str = self.get_mode_string(mode)
+
+
+class TPX3CleanupSeq(TPX3SeqBase):
+
+    def do_seq(self):
+        self.tpx.shutterOff()
+        self.tpx.resetPixels()
+        genConfig_register = TPX3_ACQMODE_TOA_TOT | TPX3_FASTLO_ENA
+        self.tpx.setGenConfig(genConfig_register)

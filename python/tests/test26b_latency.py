@@ -8,26 +8,30 @@ from tuomas import *
 class test26b_latency(tpx3_test):
 
     """Test for measuring the latency of the output packets"""
-
-    def _execute(self, **keywords):
+    def __init2__(self, meas_power,**keywords):
         self.temps = dict()
         self.args = dict()
         self.legal_args = ['npulses', 'npixels', 'ncols']
-        self.defaults = {'npulses': 2000, 'npixels': 9, 'ncols': 4}
+        self.defaults = {'npulses': 100, 'npixels': 9, 'ncols': 4}
         self.tp_period = 0x0F
         self.clk_freq_mhz = 40.0
+        self.meas_power = meas_power
         for arg in self.legal_args:
             if arg in keywords:
                 self.args[arg] = int(keywords[arg])
                 print "Set arg %s to %s from command line" %(arg, str(keywords[arg]))
             else:
                 self.args[arg] = self.defaults[arg]
+        if meas_power is True:
+            self.sampler = CurrentTempSampler(self, meas_power = True)
 
+
+    def _execute(self, **keywords):
+        self.__init2__(meas_power = True, **keywords)
         try:
             self.logging.info("Starting latency measurement test")
             conf_daq = TPX3ConfBeforeDAQ(self)
             conf_daq.do_config()
-            self.sample_temp(1, "Shutter OFF")
 
             conf_matrix = TPX3ConfMatrixTPEnable(self)
             conf_matrix.set_pixel_tp_mask(everyNpixels = self.args['npixels'])
@@ -41,13 +45,7 @@ class test26b_latency(tpx3_test):
         finally:
             print "Cleaning up the test"
             self.cleanup()
-
-    def sample_temp(self, nsamples=10, msg="", verbose = False):
-        for i in range(nsamples):
-            temperature = self.tpx.getTpix3Temp()
-            self.temps[time.time()] = temperature
-            if verbose == True:
-                print "%s Timepix3 temperature is %d" % (msg, temperature)
+            self.report()
 
     def inject_testpulses(self, npulses):
         conf_tp = TPX3ConfTestPulses(self)
@@ -59,6 +57,7 @@ class test26b_latency(tpx3_test):
         print "Flushed out %d packets" %(len(data))
 
         data_driven_seq = TPX3DataDrivenSeq(self, 1000)
+        data_driven_seq.set_callback('get_packets', self.sampler.sample_cur_and_temp)
         self.daq_seq = data_driven_seq
         data_driven_seq.analyzer.set_ctpr_mask(self.ctpr_mask)
         data_driven_seq.analyzer.set_pixel_tp_mask(self.pixel_tp_mask)
@@ -82,6 +81,9 @@ class test26b_latency(tpx3_test):
         self.logging.info(self.daq_seq.analyzer.report())
         self.data_to_file()
 
+    def report(self):
+        if self.meas_power is True:
+            self.sampler.results_to_files()
     def get_rate(self):
         return self.clk_freq_mhz * 1.0/(2*64*self.tp_period) * self.num_tp_enabled
 

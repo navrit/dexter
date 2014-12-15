@@ -152,6 +152,9 @@ class TPX3ConfAndReadPower(TPX3ConfBase):
         self.tpx.shutterOff()
         tpx.resetPixels()
         dac_defaults(tpx)
+        self.tpx.setCtprBits(0)
+        self.tpx.setCtpr()
+        self.set_mask_all_pixels(1)
 
         # The number of phases doesn't really affect the power consumption...
         # clk_phase_nums = [TPX3_PHASESHIFT_NR_16, TPX3_PHASESHIFT_NR_8,
@@ -184,6 +187,14 @@ class TPX3ConfAndReadPower(TPX3ConfBase):
                     (clk_period) +
                     " ToA counter ON",
                     "\t\t")
+                self.tpx.shutterOn()
+                self.do_read_power(
+                    "Clk: %d" %
+                    (clk_period) +
+                    " Shutter OPEN, ToA counter ON",
+                    "\t\t")
+                self.tpx.shutterOff()
+
 
         clk_period = test.clk_period
         phase_div, phase = self.get_phase_div(clk_period)
@@ -200,14 +211,11 @@ class TPX3ConfAndReadPower(TPX3ConfBase):
             self.tpx.setOutputMask(0xFF)
             self.do_read_power("Output mask: " + "%x" % (output_mask), "\t")
 
-        self.tpx.setCtprBits(0)
-        self.tpx.setCtpr()
-        self.set_mask_all_pixels(1)
         self.do_read_power("After masking all pixels", "\t")
         self.tpx.datadrivenReadout()
         self.do_read_power("In data-driven readout mode", "\t")
 
-        self.configure_all_pixels()
+        #self.configure_all_pixels()
 
         self.tpx.resetTimer()
         self.tpx.t0Sync()
@@ -224,8 +232,9 @@ class TPX3ConfAndReadPower(TPX3ConfBase):
 
     def do_read_power(self, msg, indent=""):
         """ Reads power through GPIB if the read_power flag is True"""
-        if self.read_power:
-            test.sample_cur_and_temp(msg, indent)
+        if self.read_power is True:
+            print "Reading temp and current..."
+            self.test.sample_cur_and_temp(msg, indent)
 
     def get_phase_div(self, clk_period):
         phase_shift = 0

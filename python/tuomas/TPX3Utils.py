@@ -112,3 +112,107 @@ class CSVRecordWithTime:
             result += "\n"
             index += 1
         return result
+
+
+class CurrentTempSampler:
+
+    """ A class for sampling Timepix3 current and temperature values. The number
+    of samples can be specified and the class averages the value from these
+    samples. """
+
+    def __init__(self, test, meas_power=False):
+        self.test = test
+        self.tpx = test.tpx
+        self.currents = []
+        self.db = CurTempRecord()
+        self.verbose = 1
+        self.samples = 10
+        self.csv = CSVRecordWithTime()
+        self.csv.set_columns(("Time", "Current", "Temperature"))
+        self.temp_outside_limits = 0
+
+        self.TEMP_LOWER = -25
+        self.TEMP_UPPER = 150
+        self.GPIB_ADDR = 10
+        self.meas_power = meas_power
+        if self.meas_power is True:
+            if not self._create_and_connect_gpib_dev():
+                self.test.logging.info("ERROR. Couldn't create/connect GPIB")
+                return
+        else:
+            self.test.logging.warning("Current sampling is disabled.")
+
+    def _create_and_connect_gpib_dev(self):
+        """ Creates GPIB device and opens a connection"""
+        gpib_addr = self.GPIB_ADDR
+        gpib_dev = GPIBdev(gpib_addr)
+        if not gpib_dev.connect():
+            self.test.logging.info("No connection to GPIB device. Exiting...")
+            return False
+        self.gpib_dev = gpib_dev
+        print "GPIB device was created properly."
+        return True
+
+    def sample_cur_and_temp(self, msg="", ind="", nsamples=0):
+        """ Reads voltage/current from the gpib device and samples also temperature
+        of Timepix3. Num. of samples can be set for each func call. """
+        if self.meas_power is False:
+            return
+
+        self._msg(ind + msg)
+
+        if nsamples == 0:
+            nsamples = self.samples
+
+        for i in range(nsamples):
+            temperature = 999
+
+            while not self.temp_within_limits(temperature):
+                line = self.gpib_dev.qr("read?")
+                vol, cur, x, y, z = map(float, line.split(","))
+                temperature = self.tpx.getTpix3Temp()
+                if self.temp_within_limits(temperature):
+                    self.currents.append(cur)
+                    self._msg(
+                        ind + "\tVDD Voltage: %8.5f  Current: %8.5f" %
+                        (vol, cur))
+                    self._msg(ind + "\tTemperature: %8.5f" % (temperature))
+                    self.store_measured_values(msg, cur, temperature)
+                    self.csv.add((cur, temperature))
+                else:
+                    self.test.logging.info("Warning. Sample rejected. Temp out of limits:\
+            %8.5f" % (temperature))
+
+    def temp_within_limits(self, temperature):
+        """ Checks that the temperature is within reasonable limits """
+        if temperature > self.TEMP_UPPER or temperature < self.TEMP_LOWER:
+            self.temp_outside_limits += 1
+            return 0
+        else:
+            return 1
+
+    def get_db(self):
+        return self.db
+
+    def get_csv(self):
+        return self.csv
+
+    def store_measured_values(self, msg, cur, temp):
+        """ Stores measured current and temperature"""
+        self.db.add(msg, cur, temp)
+
+    def _msg(self, msg):
+        if self.verbose is True:
+            self.test.logging.info(msg)
+
+    def results_to_files(self):
+        """ Prints the sampled values into files."""
+        fresult = open(self.test.fname + "/current_temp.dat", "w")
+        db = self.get_db()
+        fresult.write(db.to_string())
+        fresult.close()
+
+        fresult = open(self.test.fname + "/current_temp.csv", "w")
+        csv = self.get_csv()
+        fresult.write(csv.to_string())
+        fresult.close()
