@@ -91,8 +91,8 @@ class TPX3ConfBeforeDAQ(TPX3ConfBase):
         dac_defaults(tpx)
         tpx.setPllConfig(
             (TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK |
-                TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_16 | 0x14 <<
-                TPX3_PLLOUT_CONFIG_SHIFT))
+                TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_16 | (0x14 <<
+                TPX3_PLLOUT_CONFIG_SHIFT)))
         tpx.setOutputMask(0xFF)
         tpx.shutterOff()
         tpx.resetPixels()
@@ -147,7 +147,7 @@ class TPX3ConfAndReadPower(TPX3ConfBase):
         tpx = self.tpx
         test = self.test
         clk_period = test.clk_period
-        phase_shift = TPX3_PHASESHIFT_DIV_2
+        #phase_shift = TPX3_PHASESHIFT_DIV_2
 
         self.tpx.shutterOff()
         tpx.resetPixels()

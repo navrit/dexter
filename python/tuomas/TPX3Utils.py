@@ -125,7 +125,7 @@ class CurrentTempSampler:
         self.tpx = test.tpx
         self.currents = []
         self.db = CurTempRecord()
-        self.verbose = 1
+        self.verbose = False
         self.samples = 10
         self.csv = CSVRecordWithTime()
         self.csv.set_columns(("Time", "Current", "Temperature"))
@@ -167,23 +167,23 @@ class CurrentTempSampler:
         for i in range(nsamples):
             temperature = 999
 
-            while not self.temp_within_limits(temperature):
+            while not self._temp_within_limits(temperature):
                 line = self.gpib_dev.qr("read?")
                 vol, cur, x, y, z = map(float, line.split(","))
                 temperature = self.tpx.getTpix3Temp()
-                if self.temp_within_limits(temperature):
+                if self._temp_within_limits(temperature):
                     self.currents.append(cur)
                     self._msg(
                         ind + "\tVDD Voltage: %8.5f  Current: %8.5f" %
                         (vol, cur))
                     self._msg(ind + "\tTemperature: %8.5f" % (temperature))
-                    self.store_measured_values(msg, cur, temperature)
+                    self._store_measured_values(msg, cur, temperature)
                     self.csv.add((cur, temperature))
                 else:
                     self.test.logging.info("Warning. Sample rejected. Temp out of limits:\
             %8.5f" % (temperature))
 
-    def temp_within_limits(self, temperature):
+    def _temp_within_limits(self, temperature):
         """ Checks that the temperature is within reasonable limits """
         if temperature > self.TEMP_UPPER or temperature < self.TEMP_LOWER:
             self.temp_outside_limits += 1
@@ -197,7 +197,7 @@ class CurrentTempSampler:
     def get_csv(self):
         return self.csv
 
-    def store_measured_values(self, msg, cur, temp):
+    def _store_measured_values(self, msg, cur, temp):
         """ Stores measured current and temperature"""
         self.db.add(msg, cur, temp)
 

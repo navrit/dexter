@@ -21,14 +21,19 @@ class TPX3SeqBase:
 
 
     def set_callback(self, cb_name, cb):
+        """ You can set callbacks that are called in the sequences."""
         self.callbacks[cb_name] = cb
 
     def invoke_callback(self, cb_name, *args):
+        """ Invokes the callback if a callback with given name is set."""
         if cb_name in self.callbacks:
             self.callbacks[cb_name](*args)
 
 
 class TPX3DataDrivenSeq(TPX3SeqBase):
+
+    """ Class can be used for data-driven acquisitions. It contains packet analysis logic and
+    verification of the packet data. """
 
     def __init__(self, test, rpt_interval=10):
         TPX3SeqBase.__init__(self, test)
@@ -45,11 +50,15 @@ class TPX3DataDrivenSeq(TPX3SeqBase):
             return self.analyzer.get_data(data_type)
 
     def num_packets(self):
+        """ Returns the number of event packets received during measurement."""
         return self.events
 
     def do_seq(self):
+        """ Starts up the sequence. """
         self.tpx.datadrivenReadout()
+        self.invoke_callback("before_shutter_on", "Before opening shutter", "", 10)
         self.tpx.shutterOn()
+        self.invoke_callback("after_shutter_on", "After opening shutter", "", 10)
         self.get_and_process_packets()
         self.tpx.shutterOff()
 
@@ -59,10 +68,11 @@ class TPX3DataDrivenSeq(TPX3SeqBase):
         time_elapsed = 0
 
         while not finished:
+            self.invoke_callback('get_packets', "Sample during DAQ", "", 10)
             data = self.tpx.get_N_packets(2048)
+            self.invoke_callback('get_packets', "Sample during DAQ", "", 10)
             self.analyzer.analyze_packets(data)
             time_elapsed = time.time() - time_start
-            self.invoke_callback('get_packets', "Sample during DAQ", "", 1)
             if self.rpt_count == 0:
                 self.test.sample_temp(1, "DURING DAQ")
                 self.test.logging.info("Packet count: %d" % (self.events))
