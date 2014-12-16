@@ -85,12 +85,16 @@ class CSVRecordWithTime:
         self.start_time = time.time()
         self.times = []
         self.add_time = True
+        self.tags = dict()
 
-    def add(self, new_tuple):
+    def add(self, new_tuple, tag=""):
         """ Adds a tuple of values to the CSV record """
         self.num_entries += 1
+        time_now = time.time()
         self.entries.append(new_tuple)
-        self.times.append(time.time())
+        self.times.append(time_now)
+        if len(tag) > 0:
+            self.tags[time_now] = tag
 
     def set_columns(self, col_tuple):
         self.columns = col_tuple
@@ -105,10 +109,13 @@ class CSVRecordWithTime:
         result += "\n"
 
         for entry in self.entries:
+            time_this_index = self.times[index]
             if self.add_time:
-                result += str(self.times[index] - self.start_time)
+                result += str(time_this_index - self.start_time)
             for value in entry:
                 result += "," + str(value)
+            if time_this_index in self.tags:
+                result += "%s" % self.tags[time_this_index]
             result += "\n"
             index += 1
         return result
@@ -120,7 +127,7 @@ class CurrentTempSampler:
     of samples can be specified and the class averages the value from these
     samples. """
 
-    def __init__(self, test, meas_power=False):
+    def __init__(self, test, meas_power=False, meas_temp=True):
         self.test = test
         self.tpx = test.tpx
         self.currents = []
@@ -135,6 +142,9 @@ class CurrentTempSampler:
         self.TEMP_UPPER = 150
         self.GPIB_ADDR = 10
         self.meas_power = meas_power
+        self.meas_temp = meas_temp
+        self.tag = ""
+
         if self.meas_power is True:
             if not self._create_and_connect_gpib_dev():
                 self.test.logging.info("ERROR. Couldn't create/connect GPIB")
@@ -153,11 +163,13 @@ class CurrentTempSampler:
         print "GPIB device was created properly."
         return True
 
+    def set_tag(self, tag):
+        """ Adds a tag to the sampler which is appended to the results"""
+        self.tag = tag
+
     def sample_cur_and_temp(self, msg="", ind="", nsamples=0):
         """ Reads voltage/current from the gpib device and samples also temperature
         of Timepix3. Num. of samples can be set for each func call. """
-        if self.meas_power is False:
-            return
 
         self._msg(ind + msg)
 
@@ -168,9 +180,16 @@ class CurrentTempSampler:
             temperature = 999
 
             while not self._temp_within_limits(temperature):
-                line = self.gpib_dev.qr("read?")
-                vol, cur, x, y, z = map(float, line.split(","))
-                temperature = self.tpx.getTpix3Temp()
+                (vol, cur, x, y, z) = 0, 0, 0, 0, 0
+                if self.meas_power is True:
+                    line = self.gpib_dev.qr("read?")
+                    vol, cur, x, y, z = map(float, line.split(","))
+
+                if self.meas_temp is True:
+                    temperature = self.tpx.getTpix3Temp()
+                else:
+                    temperature = 0
+
                 if self._temp_within_limits(temperature):
                     self.currents.append(cur)
                     self._msg(
@@ -178,7 +197,7 @@ class CurrentTempSampler:
                         (vol, cur))
                     self._msg(ind + "\tTemperature: %8.5f" % (temperature))
                     self._store_measured_values(msg, cur, temperature)
-                    self.csv.add((cur, temperature))
+                    self.csv.add((cur, temperature, self.tag))
                 else:
                     self.test.logging.info("Warning. Sample rejected. Temp out of limits:\
             %8.5f" % (temperature))

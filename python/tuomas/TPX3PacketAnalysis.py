@@ -4,8 +4,8 @@ class TPX3TestPulsePacketAnalyzer:
     """ This class can be used when doing measurements with testpulses. It checks
     that the packets are received from correct addresses."""
 
-    def __init__(self, test):
-        self.error_checking = True
+    def __init__(self, test, check = True, max_errors = 10):
+        self.error_checking = check
         self.finished = False
         self.test = test
         self.data = dict()
@@ -19,7 +19,7 @@ class TPX3TestPulsePacketAnalyzer:
         self.col_errors = 0
         self.packet_errors = 0
         self.name = "TPX3PacketAnalyzer"
-        self.max_errors = 10
+        self.max_errors = max_errors
 
     def num_events(self):
         return self.events
@@ -55,7 +55,7 @@ class TPX3TestPulsePacketAnalyzer:
 
     def process_packet(self, pck):
         """ Records all information in one packet"""
-        if self.is_expected(pck):
+        if self.is_expected(pck) or self.error_checking is False:
             if pck.toa in self.data['toa']:
                 self.data['toa'][pck.toa] += 1
             else:
@@ -100,3 +100,12 @@ class TPX3TestPulsePacketAnalyzer:
         result += "\tTotal events: %d\n" % (self.events)
         result += "\tTotal errors: %d\n" % (self.packet_errors)
         return result
+
+    def data_to_files(self):
+        for field in self.fields:
+            hist = self.data[field]
+            fname = open(self.test.fname + "/hist_" + field + ".csv", "w")
+            sorted(hist, key=int)
+            for key in hist.keys():
+                fname.write("%d, %d\n" % (key, hist[key]))
+            fname.close()

@@ -41,7 +41,7 @@ class TPX3DataDrivenSeq(TPX3SeqBase):
         self.TIMEOUT = 60
         self.rpt_interval = rpt_interval
         self.rpt_count = rpt_interval
-        self.analyzer = TPX3TestPulsePacketAnalyzer(test)
+        self.analyzer = TPX3TestPulsePacketAnalyzer(test, False, 1000)
 
     def get_data(self, data_type=""):
         if data_type == "":
@@ -68,9 +68,8 @@ class TPX3DataDrivenSeq(TPX3SeqBase):
         time_elapsed = 0
 
         while not finished:
-            self.invoke_callback('get_packets', "Sample during DAQ", "", 10)
+            self.invoke_callback('get_packets', "Sample during DAQ", "", 1)
             data = self.tpx.get_N_packets(2048)
-            self.invoke_callback('get_packets', "Sample during DAQ", "", 10)
             self.analyzer.analyze_packets(data)
             time_elapsed = time.time() - time_start
             if self.rpt_count == 0:
@@ -83,6 +82,9 @@ class TPX3DataDrivenSeq(TPX3SeqBase):
                 self.test.logging.info("TIMEOUT %d reached" % (self.TIMEOUT))
                 finished = True
             finished |= self.analyzer.is_finished()
+            if self.analyzer.num_events() == self.test.get_num_expected():
+                self.test.logging.info("Finished. All expected packets got")
+                finished = True
 
         time_total = time.time() - time_start
         self.events = self.analyzer.num_events()
@@ -105,17 +107,17 @@ class TPX3DataAcqSeq(TPX3SeqBase):
         self.anim = ['|', '/', '-', '\\', '|', '/', '-', '\\']
         self.thr_dac = 0
         self.mode_str = "UNKNOWN"
+        self.analyzer = TPX3TestPulsePacketAnalyzer(test, False, 1000)
 
     def do_daq(self, mode=TPX3_ACQMODE_TOA_TOT, max_time=20.0):
         """ Does DAQ in specified mode. Runs for max time specified. """
         csv_record = CSVRecordWithTime()
         csv_record.set_columns(('Time', 'Events', 'Rate', 'Temp'))
 
-        target_thr_v = self.target_thr_v
         time_start = time.time()
         time_elapsed = 0.0
         event_counter = 0
-        self.init_daq_run(mode)
+        self._init_daq_run(mode)
 
         self.tpx.shutterOff()
         genConfig_register = mode | TPX3_FASTLO_ENA | TPX3_GRAYCOUNT_ENA
@@ -126,7 +128,7 @@ class TPX3DataAcqSeq(TPX3SeqBase):
             "Starting Timepix3 data_driven DAQ, mode: %s" %
             (self.mode_str))
 
-        while not self.finish:
+        while self.finish is False:
             time_elapsed = time.time() - time_start
             time_temp = time.time() - self.time_last_temp
             self.sample_temperature(time_temp)
@@ -136,6 +138,7 @@ class TPX3DataAcqSeq(TPX3SeqBase):
             else:
                 data = self.tpx.get_N_packets(1024)
                 event_counter += self.process_data(data)
+                self.analyzer.analyze_packets(data)
 
                 self.count_rate_and_record_data(
                     event_counter,
@@ -150,14 +153,13 @@ class TPX3DataAcqSeq(TPX3SeqBase):
             max_time=20.00):
         """ Does DAQ and sequential readouts with specified rate """
         csv_record = CSVRecordWithTime()
-        csv_record.set_columns(('Time', 'Events', 'Rate', 'Temp'))
+        csv_record.set_columns(('Time', 'Events', 'Rate_Mpps', 'Temp'))
 
         time_last_readout = time.time()
         time_start = time.time()
         time_elapsed = 0.0
         event_counter = 0
-        target_thr_v = self.target_thr_v
-        self.init_daq_run(mode)
+        self._init_daq_run(mode)
 
         self.tpx.shutterOff()
         genConfig_register = mode | TPX3_FASTLO_ENA | TPX3_GRAYCOUNT_ENA
@@ -169,14 +171,16 @@ class TPX3DataAcqSeq(TPX3SeqBase):
             "Starting Timepix3 seq. DAQ, mode: %s" %
             (self.mode_str))
 
-        while not self.finish:
-            time_since_last_readout = time.time() - time_last_readout
-            time_elapsed = time.time() - time_start
-            time_temp = time.time() - self.time_last_temp
+        while self.finish is False:
+            time_now = time.time()
+            time_since_last_readout = time_now - time_last_readout
+            time_elapsed = time_now - time_start
+            time_temp = time_now - self.time_last_temp
 
             self.sample_temperature(time_temp)
 
             if time_elapsed > max_time:
+                print "Time out reached for sequential readout test"
                 self._finish_daq()
             else:
                 if time_since_last_readout > ro_period:
@@ -186,7 +190,8 @@ class TPX3DataAcqSeq(TPX3SeqBase):
                     self.tpx.shutterOff()
                     time.sleep(0.001)
                     data = self.tpx.get_frame()
-                    event_counter += self.process_data(data)
+                    event_counter += self.process_data(data, seq_mode = True)
+                    self.analyzer.analyze_packets(data)
                     time.sleep(0.001)
                     self.tpx.shutterOn()
                     self.count_rate_and_record_data(event_counter, time_elapsed,
@@ -200,6 +205,7 @@ class TPX3DataAcqSeq(TPX3SeqBase):
             fname = open(self.test.fname + "/" + record + ".csv", "w")
             fname.write(self.records[record].to_string())
             fname.close()
+        fname = open(self.test.fname + "/pck_analysis.txt", "w")
 
     def _finish_daq(self):
         """ Cleans up the chip and closes the shutter at the of DAQ run """
@@ -210,19 +216,15 @@ class TPX3DataAcqSeq(TPX3SeqBase):
 
     def sample_temperature(self, time_temp):
         """ Samples temperature (and current) """
-        if time_temp > 1.0:
-            #self.thr_dac =self.tpx.trackThreshold(target_thr_v=target_thr_v,thr_dac=thr_dac,adc=16)
-            self.time_last_temp = time.time()
-            self.temp = self.tpx.getTpix3Temp()
-            print "\n"
-            self.test.sample_cur_and_temp(
-                "DAQ mode %s" %
-                (self.mode_str),
-                "",
-                1)
-            self.nsample += 1
+        self.time_last_temp = time.time()
+        self.test.sample_cur_and_temp(
+            "DAQ mode %s" %
+            (self.mode_str),
+            "",
+            1)
+        self.nsample += 1
 
-    def process_data(self, data):
+    def process_data(self, data, seq_mode = False):
         """ Processes a bunch of packets given as input """
         event_counter = 0
         for pck in data:
@@ -232,8 +234,8 @@ class TPX3DataAcqSeq(TPX3SeqBase):
                 else:
                     event_counter += 1
             else:
-                if pck.isEoR():
-                    self.finish = 1
+                if pck.isEoR() and seq_mode is False:
+                    self.finish = False
         return event_counter
 
     def get_mode_string(self, mode):
@@ -265,13 +267,16 @@ class TPX3DataAcqSeq(TPX3SeqBase):
         sys.stdout.flush()
         csv_record.add((event_counter, hitRate, self.temp))
 
-    def init_daq_run(self, mode):
+    def _init_daq_run(self, mode):
         self.time_last_temp = time.time()
         self.finish = False
         self.thr_dac = 0
         self.temp = 0
         self.nsample = 1
         self.mode_str = self.get_mode_string(mode)
+
+    def report(self):
+        self.analyzer.data_to_files()
 
 
 class TPX3CleanupSeq(TPX3SeqBase):

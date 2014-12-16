@@ -42,7 +42,7 @@ class test26_vdd_meas(tpx3_test):
             tpx_config = TPX3ConfAndReadPower(
                 self.tpx,
                 self,
-                read_power=True)  # Create a class for configuring
+                meas_power=False)  # Create a class for configuring
             self.sample_cur_and_temp("Before pixel reset")
             tpx_config.do_config()
 
@@ -51,14 +51,18 @@ class test26_vdd_meas(tpx3_test):
             # At this point we should have Timepix3 configured, start the DAQ
 
             # ToA/ToT mode characterisation
+            if self.meas_power is True:
+                self.sampler.set_tag("\t# DAQ_TOA_TOT")
             tpx_daq = self.daq
-            # tpx_daq.do_daq()
-            time.sleep(2)
+            tpx_daq.do_daq()
+            #time.sleep(2)
 
             # ToA only mode characterisation
             # tpx_daq.do_daq(TPX3_ACQMODE_TOA)
 
             # Event count / iToT characterisation
+            if self.meas_power is True:
+                self.sampler.set_tag("\t# DAQ_EVT_ITOT")
             tpx_daq.do_seq_daq(TPX3_ACQMODE_EVT_ITOT, 1.0, 20)
 
         finally:
@@ -78,3 +82,5 @@ class test26_vdd_meas(tpx3_test):
             self.sampler.results_to_files()
 
         self.daq.records_to_files()
+        self.daq.report()
+

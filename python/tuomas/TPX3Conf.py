@@ -3,6 +3,7 @@ from tests.tpx3_test import *
 from tests.dac_defaults import dac_defaults
 import numpy
 
+
 class TPX3ConfBase:
 
     """Base class for configurations of Timepix3"""
@@ -21,16 +22,20 @@ class TPX3ConfMatrixTPEnable(TPX3ConfBase):
 
     """Configures test pulse for all pixels, unmasks them and sets the DACS."""
 
-    def __init__(self, test):
+    def __init__(self, test, mask=1, tp_en=1, dac=0):
         TPX3ConfBase.__init__(self, test)
         self.conf_data = list(range(256))
+        self.mask = mask
+        self.tp_en = tp_en
+        self.dac = dac
+
         for x in range(256):
             self.conf_data[x] = list(range(256))
             for y in range(256):
                 self.conf_data[x][y] = dict()
-                self.conf_data[x][y]['mask'] = 1
-                self.conf_data[x][y]['tp'] = 0
-                self.conf_data[x][y]['dac'] = 0
+                self.conf_data[x][y]['mask'] = mask
+                self.conf_data[x][y]['tp'] = tp_en
+                self.conf_data[x][y]['dac'] = dac
 
     def get_x_y(self, x, y, field):
         if field in self.conf_data[x][y]:
@@ -53,19 +58,18 @@ class TPX3ConfMatrixTPEnable(TPX3ConfBase):
         self.tpx.resetPixelConfig()
         for x in range(256):
             for y in range(256):
-                self.tpx.setPixelThreshold(x, y, 0x0F)
-                self.tpx.setPixelMask(x, y, 1)
-                self.tpx.setPixelTestEna(x, y, self.pixel_tp_mask[y])
-                self.set_x_y(x, y, 'dac', 0x0F)
-                self.set_x_y(x, y, 'tp', self.pixel_tp_mask[y])
-                self.set_x_y(x, y, 'mask', 1)
-
+                self.tpx.setPixelThreshold(x, y, self.conf_data[x][y]['dac'])
+                self.tpx.setPixelMask(x, y, self.conf_data[x][y]['mask'])
+                self.tpx.setPixelTestEna(x, y, self.conf_data[x][y]['tp'])
         self.tpx.setPixelConfig()
 
     def get_pixel_tp_mask(self):
+        """ Returns the test pulse mask applied to all columns. """
         return self.pixel_tp_mask
 
     def set_pixel_tp_mask(self, everyNpixels):
+        """ Initializes tp_en from a column mask. Enables every N pixel in each
+        column"""
         self.pixel_tp_mask = list(range(256))
         tmp_count = everyNpixels
         for i in range(256):
@@ -86,17 +90,34 @@ class TPX3ConfBeforeDAQ(TPX3ConfBase):
 
     """Configures PLL, set DAC defaults and other operations before a DAQ"""
 
+    def __init__(self, test):
+        TPX3ConfBase.__init__(self, test)
+        self.op_mode = TPX3_ACQMODE_TOA_TOT
+        self.fast_lo = TPX3_FASTLO_ENA
+        self.gray_count = TPX3_GRAYCOUNT_ENA
+        self.clk_div = TPX3_PHASESHIFT_DIV_8
+        self.ph_num = TPX3_PHASESHIFT_NR_16
+        self.output_mask = 0xFF
+
+    def set_output_mask(self, mask):
+        self.output_mask = mask
+
+    def set_gen_config(self, op_mode, fast_lo, gray_count):
+        self.op_mode = op_mode
+        self.fast_lo = fast_lo
+        self.gray_count = gray_count
+
     def do_config(self):
         tpx = self.tpx
         dac_defaults(tpx)
         tpx.setPllConfig(
             (TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK |
-                TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_16 | (0x14 <<
-                TPX3_PLLOUT_CONFIG_SHIFT)))
-        tpx.setOutputMask(0xFF)
+             self.clk_div | self.ph_num
+             | (0x14 << TPX3_PLLOUT_CONFIG_SHIFT)))
+        tpx.setOutputMask(self.output_mask)
         tpx.shutterOff()
         tpx.resetPixels()
-        genConfig_register = TPX3_ACQMODE_TOA_TOT | TPX3_FASTLO_ENA | TPX3_GRAYCOUNT_ENA
+        genConfig_register = self.op_mode | self.fast_lo | self.gray_count
         tpx.t0Sync()
         tpx.setGenConfig(genConfig_register)
 
@@ -137,17 +158,18 @@ class TPX3ConfAndReadPower(TPX3ConfBase):
 
     """Class for hiding some basic configuration code"""
 
-    def __init__(self, tpx, test, read_power=True):
+    def __init__(self, tpx, test, meas_power=True):
         self.tpx = tpx
         self.test = test
-        self.read_power = read_power  # If specified, reads power to GPIB
+        self.meas_power = meas_power  # If specified, reads power to GPIB
+        #self.thr_dac = 1050
+        self.thr_dac = 900
 
     def do_config(self):
         """ Configures Timepix3 for DACQ"""
         tpx = self.tpx
         test = self.test
         clk_period = test.clk_period
-        #phase_shift = TPX3_PHASESHIFT_DIV_2
 
         self.tpx.shutterOff()
         tpx.resetPixels()
@@ -166,36 +188,38 @@ class TPX3ConfAndReadPower(TPX3ConfBase):
                           TPX3_PHASESHIFT_DIV_8, TPX3_PHASESHIFT_DIV_16]
         clk_periods = [20, 40, 80, 160]
 
-        for phase_num in clk_phase_nums:
-            test.logging.info("### Number of phases %x ###" % (phase_num))
-            # Check power cons. with all clock freqs, ToA on and off
-            for clk_period in clk_periods:
-                phase_div, phases = self.get_phase_div(clk_period)
-                self.set_clk_period_and_phase(clk_period, phase_div, phase_num)
-                test.logging.info("\t### phase_div %x ###" % (phase_div))
-                genConfig_register = TPX3_ACQMODE_TOA_TOT | TPX3_FASTLO_ENA
-                self.tpx.setGenConfig(genConfig_register)
-                self.do_read_power(
-                    "Clk: %d" %
-                    (clk_period) +
-                    " ToA counter OFF",
-                    "\t\t")
-                genConfig_register = TPX3_ACQMODE_TOA_TOT | TPX3_FASTLO_ENA | TPX3_GRAYCOUNT_ENA
-                self.tpx.setGenConfig(genConfig_register)
-                self.do_read_power(
-                    "Clk: %d" %
-                    (clk_period) +
-                    " ToA counter ON",
-                    "\t\t")
-                self.tpx.shutterOn()
-                self.do_read_power(
-                    "Clk: %d" %
-                    (clk_period) +
-                    " Shutter OPEN, ToA counter ON",
-                    "\t\t")
-                self.tpx.shutterOff()
+        if self.meas_power is True:
 
+            for phase_num in clk_phase_nums:
+                test.logging.info("### Number of phases %x ###" % (phase_num))
+                # Check power cons. with all clock freqs, ToA on and off
+                for clk_period in clk_periods:
+                    phase_div, phases = self.get_phase_div(clk_period)
+                    self.set_clk_period_and_phase(clk_period, phase_div, phase_num)
+                    test.logging.info("\t### phase_div %x ###" % (phase_div))
+                    genConfig_register = TPX3_ACQMODE_TOA_TOT | TPX3_FASTLO_ENA
+                    self.tpx.setGenConfig(genConfig_register)
+                    self.do_read_power(
+                        "Clk: %d" %
+                        (clk_period) +
+                        " ToA counter OFF",
+                        "\t\t")
+                    genConfig_register = TPX3_ACQMODE_TOA_TOT | TPX3_FASTLO_ENA | TPX3_GRAYCOUNT_ENA
+                    self.tpx.setGenConfig(genConfig_register)
+                    self.do_read_power(
+                        "Clk: %d" %
+                        (clk_period) +
+                        " ToA counter ON",
+                        "\t\t")
+                    self.tpx.shutterOn()
+                    self.do_read_power(
+                        "Clk: %d" %
+                        (clk_period) +
+                        " Shutter OPEN, ToA counter ON",
+                        "\t\t")
+                    self.tpx.shutterOff()
 
+        self.tpx.shutterOff()
         clk_period = test.clk_period
         phase_div, phase = self.get_phase_div(clk_period)
         self.set_clk_period_and_phase(
@@ -215,7 +239,7 @@ class TPX3ConfAndReadPower(TPX3ConfBase):
         self.tpx.datadrivenReadout()
         self.do_read_power("In data-driven readout mode", "\t")
 
-        #self.configure_all_pixels()
+        self.configure_all_pixels()
 
         self.tpx.resetTimer()
         self.tpx.t0Sync()
@@ -231,8 +255,8 @@ class TPX3ConfAndReadPower(TPX3ConfBase):
              phase_num | 0x14 << TPX3_PLLOUT_CONFIG_SHIFT))
 
     def do_read_power(self, msg, indent=""):
-        """ Reads power through GPIB if the read_power flag is True"""
-        if self.read_power is True:
+        """ Reads power through GPIB if the meas_power flag is True"""
+        if self.meas_power is True:
             print "Reading temp and current..."
             self.test.sample_cur_and_temp(msg, indent)
 
@@ -326,7 +350,8 @@ class TPX3ConfAndReadPower(TPX3ConfBase):
         self.tpx.setPixelConfig()
         self.tpx.datadrivenReadout()
 
-        thr_dac = 1050
+        #thr_dac = 1050
+        thr_dac = self.thr_dac
         self.tpx.setThreshold(thr_dac)
         target_thr_v = self.test.target_thr_v
 

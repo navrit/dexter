@@ -14,10 +14,11 @@ class test26b_latency(tpx3_test):
         self.temps = dict()
         self.args = dict()
         self.legal_args = ['npulses', 'npixels', 'ncols']
-        self.defaults = {'npulses': 100, 'npixels': 4, 'ncols': 4}
+        self.defaults = {'npulses': 10000, 'npixels': 300, 'ncols': 300}
         self.tp_period = 0x0F
         self.clk_freq_mhz = 40.0
         self.meas_power = meas_power
+
         for arg in self.legal_args:
             if arg in keywords:
                 self.args[arg] = int(keywords[arg])
@@ -25,7 +26,7 @@ class test26b_latency(tpx3_test):
             else:
                 self.args[arg] = self.defaults[arg]
         if meas_power is True:
-            self.sampler = CurrentTempSampler(self, meas_power=True)
+            self.sampler = CurrentTempSampler(self, meas_power=True, meas_temp = False)
             self.sampler.verbose = False
 
     def _execute(self, **keywords):
@@ -35,14 +36,15 @@ class test26b_latency(tpx3_test):
             conf_daq = TPX3ConfBeforeDAQ(self)
             conf_daq.do_config()
 
-            conf_matrix = TPX3ConfMatrixTPEnable(self)
+            conf_matrix = TPX3ConfMatrixTPEnable(self, mask = 0)
             conf_matrix.set_pixel_tp_mask(everyNpixels=self.args['npixels'])
             conf_matrix.do_config()
             self.conf_matrix = conf_matrix
             self.pixel_tp_mask = conf_matrix.get_pixel_tp_mask()
 
             self.tpx.shutterOn()
-            self.sampler.sample_cur_and_temp("Start of DAQ, shutter open", "", 10)
+            if self.meas_power is True:
+                self.sampler.sample_cur_and_temp("Start of DAQ, shutter open", "", 10)
             self.tpx.shutterOff()
 
             self.tpx.setCtprBits(0)
@@ -67,18 +69,18 @@ class test26b_latency(tpx3_test):
         self.num_tp_enabled = self.conf_matrix.num_tp_enabled(
             mask=self.ctpr_mask)
         data = self.tpx.get_N_packets(1024)
-        print "Flushed out %d packets" % (len(data))
 
         data_driven_seq = TPX3DataDrivenSeq(self, 1000)
-        data_driven_seq.set_callback(
-            'before_shutter_on',
-            self.sampler.sample_cur_and_temp)
-        data_driven_seq.set_callback(
-            'after_shutter_on',
-            self.sampler.sample_cur_and_temp)
-        data_driven_seq.set_callback(
-            'get_packets',
-            self.sampler.sample_cur_and_temp)
+        if self.meas_power is True:
+            data_driven_seq.set_callback(
+                'before_shutter_on',
+                self.sampler.sample_cur_and_temp)
+            data_driven_seq.set_callback(
+                'after_shutter_on',
+                self.sampler.sample_cur_and_temp)
+            data_driven_seq.set_callback(
+                'get_packets',
+                self.sampler.sample_cur_and_temp)
         self.daq_seq = data_driven_seq
         data_driven_seq.analyzer.set_ctpr_mask(self.ctpr_mask)
         data_driven_seq.analyzer.set_pixel_tp_mask(self.pixel_tp_mask)
@@ -86,6 +88,13 @@ class test26b_latency(tpx3_test):
         data_driven_seq.do_seq()
         self.data = data_driven_seq.get_data()
         self.events = data_driven_seq.num_packets()
+
+    def get_num_expected(self):
+        """ Returns the expected amount of packets. """
+        self.num_tp_enabled = self.conf_matrix.num_tp_enabled(
+            mask=self.ctpr_mask)
+        expected = self.args['npulses'] * self.num_tp_enabled
+        return expected
 
     def cleanup(self):
         """ Called after the test to extract results and cleanup."""
