@@ -27,11 +27,13 @@ DACs::DACs(){
 
 }
 
-DACs::DACs(Ui::SpidrMpx3Eq * ui) {
+DACs::DACs(QApplication * coreApp, Ui::SpidrMpx3Eq * ui) {
 
+	_coreApp = coreApp;
 	_spidrcontrol = 0;  // Assuming no connection yet
 	_spidrdaq = 0;		// Assuming no connection yet
 	_ui = ui;
+	_senseThread = 0x0;
 
 	// Defaults
 	_scanStep = 4;
@@ -116,6 +118,7 @@ DACs::DACs(Ui::SpidrMpx3Eq * ui) {
 
 	_dacScanPlot->replot();
 
+
 }
 
 DACs::~DACs() {
@@ -177,30 +180,27 @@ void DACs::PopulateDACValues(){
 
 void DACs::SenseDACs() {
 
-	int dev_nr = _ui->deviceIdSpinBox->value();
-	int adc_val = 0;
-
-	_ui->progressBar->setValue( 0 );
-
-	for (int i = 0 ; i < MPX3RX_DAC_COUNT ; i++) {
-
-		// Sample DAC
-		_spidrcontrol->setSenseDac( MPX3RX_DAC_TABLE[i].code );
-		Sleep( 100 );
-		_spidrcontrol->getAdc( dev_nr, &adc_val );
-		//cout << adc_val << endl;
-		QString dacOut = QString::number( (__voltage_DACS_MAX/__maxADCCounts) * adc_val, 'f', 2 );
-		dacOut += " V";
-		_dacVLabels[i]->setText( dacOut );
-
-		// Simple filling of the Progress bar
-		_ui->progressBar->setValue( floor( ( (double)i / MPX3RX_DAC_COUNT) * 100 ) );
-		//_ui->tabDACs->update();
-		//_ui->gridLayout2->update();
-
+	// Threads
+	if ( _senseThread ) {
+		if ( _senseThread->isRunning() ) {
+			return;
+		}
+		//disconnect(_senseThread, SIGNAL( progress(int) ), _ui->progressBar, SLOT( setValue(int)) );
+		delete _senseThread;
+		_senseThread = 0x0;
 	}
 
-	_ui->progressBar->setValue( 0 );
+	// Create the thread
+	_senseThread = new SenseDACsThread(this, _spidrcontrol);
+	// Connect to the progress bar
+	connect( _senseThread, SIGNAL( progress(int) ), _ui->progressBar, SLOT( setValue(int)) );
+
+
+	//QObject::connect(_senseThread, SIGNAL(finished()), _senseThread, SLOT(quit()));
+
+	_senseThread->start();
+
+
 
 }
 
@@ -379,6 +379,8 @@ void DACs::SetupSignalsAndSlots() {
 	connect( _ui->senseDACsPushButton, SIGNAL(clicked()), this, SLOT( SenseDACs() ) );
 	connect( _ui->deviceIdSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeDeviceIndex(int) ) );
 
+
+
 	// Sliders and SpinBoxes
 
 	// I need the SignalMapper in order to handle custom slots with parameters
@@ -398,7 +400,7 @@ void DACs::SetupSignalsAndSlots() {
 
 		// When a value is changed in the SpinBox the slider needs to move
 		//  and talk to the hardware
-		QObject::connect( _dacSpinBoxes[i], SIGNAL(editingFinished()), // WARNING, this (int) is the value, not the index !
+		QObject::connect( _dacSpinBoxes[i], SIGNAL(editingFinished()), // SIGNAL(valueChanged(int)), // SIGNAL(editingFinished()),
 				signalMapperSpinBox, SLOT(map()) );
 
 		// map the index
@@ -414,6 +416,8 @@ void DACs::SetupSignalsAndSlots() {
 	QObject::connect( signalMapperSpinBox, SIGNAL(mapped(int)), this, SLOT( FromSpinBoxUpdateSlider(int) ) ); // SLOT( UpdateSliders(int) ) );
 
 }
+
+
 
 void DACs::FromSpinBoxUpdateSlider(int i) {
 
@@ -516,8 +520,86 @@ bool DACs::ReadDACsFile(string fn) {
 
 void DACs::ChangeDeviceIndex( int index )
 {
-  if( index < 0 ) return; // can't really happen cause the SpinBox has been limited
-  _deviceIndex = index;
+	if( index < 0 ) return; // can't really happen cause the SpinBox has been limited
+	_deviceIndex = index;
+}
+
+void SenseDACsThread::run() {
+
+	// Open a new temporary connection to the spider to avoid collisions to the main one
+	SpidrController * spidrcontrol = new SpidrController( 192, 168, 1, 10 );
+
+	if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
+		cout << "Device not connected !" << endl;
+		return;
+	}
+
+	// Make it update the Tab so the drawing is smooth
+	connect( this, SIGNAL( fillText(QString) ), _dacs->GetUI()->tabDACs, SLOT( update() ) );
+
+	// Clean up Labels first
+	for (int i = 0 ; i < MPX3RX_DAC_COUNT ; i++) {
+		connect( this, SIGNAL( fillText(QString) ), _dacs->GetLabelsList()[i], SLOT( setText(QString)) );
+
+		fillText("");
+		disconnect( this, SIGNAL( fillText(QString) ), _dacs->GetLabelsList()[i], SLOT( setText(QString)) );
+		//_dacs->GetLabelsList()[i]->setText( "" );
+	}
+
+	int adc_val = 0;
+
+	progress( 0 );
+
+	for (int i = 0 ; i < MPX3RX_DAC_COUNT ; i++) {
+
+		if ( ! _dacs->GetCheckBoxList()[i]->isChecked() ) continue;
+
+		if ( !spidrcontrol->setSenseDac( _dacs->GetDeviceIndex(), MPX3RX_DAC_TABLE[i].code ) ) {
+
+			cout << "setSenseDac[" << i << "] | " << _spidrcontrol->errorString() << endl;
+
+		} else {
+
+
+			adc_val = 0;
+
+
+			if ( !spidrcontrol->getDacOut( _dacs->GetDeviceIndex(), &adc_val, 2 ) ) {
+
+				cout << "Can't getDacOut : " << i << endl;
+
+			} else {
+
+				adc_val /= 2;
+				QString dacOut;
+				if ( adc_val > 0 ) { // FIXME .. handle the clipping properly
+					dacOut = QString::number( (__voltage_DACS_MAX/(double)__maxADCCounts) * (double)adc_val, 'f', 2 );
+					dacOut += "V";
+				} else {
+					dacOut = "clip'ng";
+				}
+
+				// Send signal to Labels.  Making connections one by one.
+				connect( this, SIGNAL( fillText(QString) ), _dacs->GetLabelsList()[i], SLOT( setText(QString)) );
+				fillText( dacOut );
+				disconnect( this, SIGNAL( fillText(QString) ), _dacs->GetLabelsList()[i], SLOT( setText(QString)) );
+
+				// Send signal to progress bar
+				progress( floor( ( (double)i / MPX3RX_DAC_COUNT) * 100 ) );
+				//cout << i << " --> " << adc_val << endl;
+
+
+			}
+
+		}
+
+	}
+
+	progress( 0 );
+
+	disconnect( this, SIGNAL( fillText(QString) ), _dacs->GetUI()->tabDACs, SLOT( update() ) );
+
+	delete spidrcontrol;
 }
 
 

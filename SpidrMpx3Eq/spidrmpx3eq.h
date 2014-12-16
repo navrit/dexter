@@ -34,7 +34,7 @@ class SpidrMpx3Eq : public QMainWindow {
 	Q_OBJECT
 
 public:
-	explicit SpidrMpx3Eq(QWidget *parent = 0);
+	explicit SpidrMpx3Eq(QApplication * coreApp, QWidget *parent = 0);
 	~SpidrMpx3Eq();
 
 	void timerEvent( QTimerEvent * );
@@ -44,7 +44,8 @@ public:
 
 private:
 
-	Ui::SpidrMpx3Eq *ui;
+	QApplication * _coreApp;
+	Ui::SpidrMpx3Eq * _ui;
 	SpidrController * _spidrcontrol;
 	SpidrDaq * _spidrdaq;
 

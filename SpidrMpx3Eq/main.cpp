@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 
     // At this level there's a difference between
     // SpidrMpx3Eq and Ui::SpidrMpx3Eq.  Not to be confused.
-    SpidrMpx3Eq w;
+    SpidrMpx3Eq w( &a );
 
     w.show();
 

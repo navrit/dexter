@@ -26,6 +26,7 @@ ThlScan::ThlScan(BarChart * bc) {
 	_spidrdaq = 0;     // Assuming no connection yet
 	_chart = bc;
 	_nTriggers = 10;
+	_deviceIndex = 2;
 
 	RewindData();
 
@@ -176,19 +177,19 @@ void ThlScan::Configuration(){
 	//_spidrcontrol->setPolarity( true );		// Holes collection
 	//_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
 	//_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
-	_spidrcontrol->setPixelDepth( 12 );
+	_spidrcontrol->setPixelDepth( _deviceIndex, 12 );
 
-	_spidrcontrol->setColourMode( false ); 	// Fine Pitch
-	_spidrcontrol->setCsmSpm( 0 );			// Single Pixel mode
-	_spidrcontrol->setEqThreshH( true );
-	_spidrcontrol->setDiscCsmSpm( 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
+	_spidrcontrol->setColourMode( _deviceIndex, false ); 	// Fine Pitch
+	_spidrcontrol->setCsmSpm( _deviceIndex, 0 );			// Single Pixel mode
+	_spidrcontrol->setEqThreshH( _deviceIndex, true );
+	_spidrcontrol->setDiscCsmSpm( _deviceIndex, 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
 	//_spidrcontrol->setGainMode( 1 );
 
 	// Gain ?!
 
 	// Other OMR
 	_spidrdaq->setDecodeFrames( true );
-	_spidrcontrol->setPixelDepth( 12 );
+	_spidrcontrol->setPixelDepth( _deviceIndex, 12 );
 	_spidrdaq->setPixelDepth( 12 );
 	_spidrcontrol->setMaxPacketSize( 1024 );
 

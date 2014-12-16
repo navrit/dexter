@@ -14,7 +14,7 @@
    <string>SpidrMpx3Eq</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QTabWidget" name="_tabDACs">
+   <widget class="QTabWidget" name="allTabs">
     <property name="geometry">
      <rect>
       <x>0</x>
@@ -1029,7 +1029,7 @@
        <string>Sense DACs</string>
       </property>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>760</x>

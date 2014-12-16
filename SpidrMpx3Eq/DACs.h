@@ -10,6 +10,7 @@
 #include "mpx3defs.h"
 
 #include <QDialog>
+#include <QThread>
 
 #include <map>
 #include <set>
@@ -31,11 +32,11 @@ class QCPGraph;
 // Taken from LEON Software.  Henk.
 typedef struct dac_s
 {
-  int         code;
-  const char *name;
-  int         offset;
-  int         size;
-  int         dflt;
+	int         code;
+	const char *name;
+	int         offset;
+	int         size;
+	int         dflt;
 } dac_t;
 
 // Tables with descriptions of DACs in the DACs register
@@ -50,69 +51,71 @@ typedef struct dac_s
 
 static const dac_t MPX3RX_DAC_TABLE[MPX3RX_DAC_COUNT] =
 {
-  {  1, "Threshold[0]",     30, 9, (1<<9)/2 },
-  {  2, "Threshold[1]",     39, 9, (1<<9)/2 },
-  {  3, "Threshold[2]",     48, 9, (1<<9)/2 },
-  {  4, "Threshold[3]",     57, 9, (1<<9)/2 },
-  {  5, "Threshold[4]",     66, 9, (1<<9)/2 },
-  {  6, "Threshold[5]",     75, 9, (1<<9)/2 },
-  {  7, "Threshold[6]",     84, 9, (1<<9)/2 },
-  {  8, "Threshold[7]",     93, 9, (1<<9)/2 },
-  {  9, "Preamp",          102, 8, (1<<8)/2 },
-  { 10, "Ikrum",           110, 8, (1<<8)/2 },
-  { 11, "Shaper",          118, 8, (1<<8)/2 },
-  { 12, "Disc",            126, 8, (1<<8)/2 },
-  { 13, "Disc_LS",         134, 8, (1<<8)/2 },
-  { 14, "Shaper_Test",     142, 8, (1<<8)/2 },
-  { 15, "DAC_DiscL",       150, 8, (1<<8)/2 },
-  { 30, "DAC_test",        158, 8, (1<<8)/2 },
-  { 31, "DAC_DiscH",       166, 8, (1<<8)/2 },
-  { 16, "Delay",           174, 8, (1<<8)/2 },
-  { 17, "TP_BufferIn",     182, 8, (1<<8)/2 },
-  { 18, "TP_BufferOut",    190, 8, (1<<8)/2 },
-  { 19, "RPZ",             198, 8, (1<<8)/2 },
-  { 20, "GND",             206, 8, (1<<8)/2 },
-  { 21, "TP_REF",          214, 8, (1<<8)/2 },
-  { 22, "FBK",             222, 8, (1<<8)/2 },
-  { 23, "Cas",             230, 8, (1<<8)/2 },
-  { 24, "TP_REFA",         238, 9, (1<<9)/2 },
-  { 25, "TP_REFB",         247, 9, (1<<9)/2 }
+		{  1, "Threshold[0]",     30, 9, (1<<9)/2 },
+		{  2, "Threshold[1]",     39, 9, (1<<9)/2 },
+		{  3, "Threshold[2]",     48, 9, (1<<9)/2 },
+		{  4, "Threshold[3]",     57, 9, (1<<9)/2 },
+		{  5, "Threshold[4]",     66, 9, (1<<9)/2 },
+		{  6, "Threshold[5]",     75, 9, (1<<9)/2 },
+		{  7, "Threshold[6]",     84, 9, (1<<9)/2 },
+		{  8, "Threshold[7]",     93, 9, (1<<9)/2 },
+		{  9, "Preamp",          102, 8, (1<<8)/2 },
+		{ 10, "Ikrum",           110, 8, (1<<8)/2 },
+		{ 11, "Shaper",          118, 8, (1<<8)/2 },
+		{ 12, "Disc",            126, 8, (1<<8)/2 },
+		{ 13, "Disc_LS",         134, 8, (1<<8)/2 },
+		{ 14, "Shaper_Test",     142, 8, (1<<8)/2 },
+		{ 15, "DAC_DiscL",       150, 8, (1<<8)/2 },
+		{ 30, "DAC_test",        158, 8, (1<<8)/2 },
+		{ 31, "DAC_DiscH",       166, 8, (1<<8)/2 },
+		{ 16, "Delay",           174, 8, (1<<8)/2 },
+		{ 17, "TP_BufferIn",     182, 8, (1<<8)/2 },
+		{ 18, "TP_BufferOut",    190, 8, (1<<8)/2 },
+		{ 19, "RPZ",             198, 8, (1<<8)/2 },
+		{ 20, "GND",             206, 8, (1<<8)/2 },
+		{ 21, "TP_REF",          214, 8, (1<<8)/2 },
+		{ 22, "FBK",             222, 8, (1<<8)/2 },
+		{ 23, "Cas",             230, 8, (1<<8)/2 },
+		{ 24, "TP_REFA",         238, 9, (1<<9)/2 },
+		{ 25, "TP_REFB",         247, 9, (1<<9)/2 }
 };
 
 static const QColor COLOR_TABLE[] = {
-  Qt::red, // 1
-  Qt::black,
-  Qt::darkRed,
-  Qt::green,
-  Qt::darkGreen,
-  Qt::blue,
-  Qt::darkBlue,
-  Qt::cyan,
-  Qt::darkCyan,
-  Qt::magenta, // 10
-  Qt::darkMagenta,
-  Qt::yellow,
-  Qt::darkYellow,
-  QColor( "darkorange" ),
-  QColor( "purple" ),
-  QColor( "khaki" ),
-  QColor( "gold" ),
-  QColor( "dodgerblue" ), // 18
-  QColor( "light gray" ),
-  QColor( "medium gray" ),
-  QColor( "red" ),
-  QColor( "green" ),
-  QColor( "blue" ),
-  QColor( "cyan" ),
-  QColor( "magenta" ),
-  QColor( "yellow" ),
-  QColor( "dark yellow" ) // 27
+		Qt::red, // 1
+		Qt::black,
+		Qt::darkRed,
+		Qt::green,
+		Qt::darkGreen,
+		Qt::blue,
+		Qt::darkBlue,
+		Qt::cyan,
+		Qt::darkCyan,
+		Qt::magenta, // 10
+		Qt::darkMagenta,
+		Qt::yellow,
+		Qt::darkYellow,
+		QColor( "darkorange" ),
+		QColor( "purple" ),
+		QColor( "khaki" ),
+		QColor( "gold" ),
+		QColor( "dodgerblue" ), // 18
+		QColor( "light gray" ),
+		QColor( "medium gray" ),
+		QColor( "red" ),
+		QColor( "green" ),
+		QColor( "blue" ),
+		QColor( "cyan" ),
+		QColor( "magenta" ),
+		QColor( "yellow" ),
+		QColor( "dark yellow" ) // 27
 };
+
 
 class QSpinBox;
 class QSlider;
 class QLabel;
 class QCheckBox;
+class SenseDACsThread;
 
 class SignalSlotMapping : public QObject {
 
@@ -134,18 +137,29 @@ class DACs : public QObject {
 public:
 
 	explicit DACs();
-	explicit DACs(Ui::SpidrMpx3Eq * bc);
+	explicit DACs(QApplication * coreApp, Ui::SpidrMpx3Eq * bc);
 	~DACs();
 	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
 	void PopulateDACValues();
 
 	bool ReadDACsFile(string);
 
+
+public:
+
+	Ui::SpidrMpx3Eq * GetUI() { return _ui; };
+	QSpinBox ** GetSpinBoxList() { return _dacSpinBoxes; };
+	QSlider ** GetSliderList() { return _dacSliders; };
+	QLabel ** GetLabelsList() { return _dacVLabels ; };
+	QCheckBox ** GetCheckBoxList() { return _dacCheckBoxes; };
+	int GetDeviceIndex() { return _deviceIndex; };
+
 private:
 
 	void FillWidgetVectors();
 	void SetLimits();
 
+	QApplication * _coreApp;
 	SpidrController * _spidrcontrol;
 	SpidrDaq * _spidrdaq;
 	Ui::SpidrMpx3Eq * _ui;
@@ -153,6 +167,9 @@ private:
 	QCustomPlot * _dacScanPlot;
 	// Currently active graph
 	QCPGraph *_graph;
+
+	//
+	SenseDACsThread * _senseThread;
 
 	// Vectors of Widgets
 	QSpinBox  * _dacSpinBoxes[MPX3RX_DAC_COUNT];
@@ -171,16 +188,40 @@ private:
 
 private slots:
 
-	void UncheckAllDACs();
-	void CheckAllDACs();
-	void StartDACScan();
-	void SetupSignalsAndSlots();
-	void FromSpinBoxUpdateSlider(int);
-	void FromSliderUpdateSpinBox(int);
-	void SenseDACs();
-	void ChangeDeviceIndex(int);
+void UncheckAllDACs();
+void CheckAllDACs();
+void StartDACScan();
+void SetupSignalsAndSlots();
+void FromSpinBoxUpdateSlider(int);
+void FromSliderUpdateSpinBox(int);
+void SenseDACs();
+void ChangeDeviceIndex(int);
 
-	//void SetDAC(QObject * info);
+//void SetDAC(QObject * info);
+
+};
+
+class SenseDACsThread : public QThread {
+
+	Q_OBJECT
+
+public:
+
+	explicit SenseDACsThread (DACs * dacs, SpidrController * sc) { _dacs = dacs; _spidrcontrol = sc; };
+
+private:
+
+	SpidrController * _spidrcontrol;
+	DACs * _dacs;
+
+	void run();
+
+signals:
+
+	// These are used in the parent class as a signal to thread-safe feed
+	//  widgets in the ui
+	void progress(int);
+	void fillText(QString);
 
 };
 

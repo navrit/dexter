@@ -48,6 +48,9 @@ private:
 	set<int> _maskedSet;
 	int _nTriggers;
 
+	// Current device Id
+	int _deviceIndex;
+
 };
 
 #endif

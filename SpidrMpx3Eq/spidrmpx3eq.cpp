@@ -22,26 +22,27 @@
 #include <unistd.h>
 #include <stdio.h>
 
-SpidrMpx3Eq::SpidrMpx3Eq(QWidget *parent) :
+SpidrMpx3Eq::SpidrMpx3Eq(QApplication * coreApp, QWidget * parent) :
     		QMainWindow(parent),
-    		ui(new Ui::SpidrMpx3Eq)
+    		_coreApp(coreApp),
+    		_ui(new Ui::SpidrMpx3Eq)
 {
 
-	ui->setupUi(this);
+	_ui->setupUi(this);
 
-	connect( ui->_startEq, SIGNAL(clicked()), this, SLOT(StartEqualization()) );
-	connect( ui->_connect, SIGNAL(clicked()), this, SLOT(Connect()) );
-	ui->_statusLabel->setStyleSheet("QLabel { background-color : gray; color : black; }");
+	connect( _ui->_startEq, SIGNAL(clicked()), this, SLOT(StartEqualization()) );
+	connect( _ui->_connect, SIGNAL(clicked()), this, SLOT(Connect()) );
+	_ui->_statusLabel->setStyleSheet("QLabel { background-color : gray; color : black; }");
 
 	// Create the bar chart
-	_chart = new BarChart( ui->_histoFrame );
+	_chart = new BarChart( _ui->_histoFrame );
 	_chart->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
 
 	//_customPlot = new QCustomPlot;
 	//_chart = new BarChart( this );
-	_chart->setParent( ui->_histoFrame );
+	_chart->setParent( _ui->_histoFrame );
 	// Make it fit in it's parent
-	QRect hrect = ui->_histoFrame->geometry();
+	QRect hrect = _ui->_histoFrame->geometry();
 	_chart->resize( hrect.size().rwidth() , hrect.size().rheight() );
 
 	// Set One histogram
@@ -64,7 +65,7 @@ SpidrMpx3Eq::SpidrMpx3Eq(QWidget *parent) :
 	_tscan = new ThlScan(_chart);
 
 	// Prepare DACs panel
-	_dacs = new DACs(ui);
+	_dacs = new DACs(_coreApp, _ui);
 
 
 	// some randon numbers
@@ -75,7 +76,7 @@ SpidrMpx3Eq::SpidrMpx3Eq(QWidget *parent) :
 SpidrMpx3Eq::~SpidrMpx3Eq()
 {
 	delete _chart;
-	delete ui;
+	delete _ui;
 }
 
 
@@ -162,14 +163,14 @@ void SpidrMpx3Eq::Connect() {
 			<< ((ipaddr>> 8) & 0xFF) << "."
 			<< ((ipaddr>> 0) & 0xFF);
 		cout <<  endl;
-		ui->_statusLabel->setText("Connected");
-		ui->_statusLabel->setStyleSheet("QLabel { background-color : blue; color : white; }");
+		_ui->_statusLabel->setText("Connected");
+		_ui->_statusLabel->setStyleSheet("QLabel { background-color : blue; color : white; }");
 
 	} else {
 		cout << _spidrcontrol->connectionStateString() << ": "
 				<< _spidrcontrol->connectionErrString() << endl;
-		ui->_statusLabel->setText("Connection failed.");
-		ui->_statusLabel->setStyleSheet("QLabel { background-color : red; color : black; }");
+		_ui->_statusLabel->setText("Connection failed.");
+		_ui->_statusLabel->setStyleSheet("QLabel { background-color : red; color : black; }");
 
 	}
 
@@ -188,10 +189,9 @@ void SpidrMpx3Eq::Connect() {
 	for( int i=0; i<4; ++i ) cout << _spidrdaq->ipAddressString( i ) << " ";
 	cout << endl;
 	Sleep( 1000 );
-	cout << _spidrdaq->errString() << endl;
+	cout << _spidrdaq->errorString() << endl;
 
-
-	/*
+/*
 	// Reset pixel configuration
 	_spidrcontrol->resetPixelConfig();
 	//_spidrcontrol->writePixelConfigMpx3rx( dev_nr );
@@ -204,7 +204,7 @@ void SpidrMpx3Eq::Connect() {
 
 	_spidrcontrol->setColourMode( false ); 	// Fine Pitch
 	_spidrcontrol->setCsmSpm( 0 );			// Single Pixel mode
-	_spidrcontrol->setEqThreshH( true );
+	//_spidrcontrol->setEqThreshH( true );
 	_spidrcontrol->setDiscCsmSpm( 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
 
 	// Gain ?!
@@ -226,7 +226,7 @@ void SpidrMpx3Eq::Connect() {
 	int trig_pulse_count;
 	_spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
 			trig_freq_hz, nr_of_triggers );
-	 */
+*/
 
 
 	// Prepare THl scans for equalization
