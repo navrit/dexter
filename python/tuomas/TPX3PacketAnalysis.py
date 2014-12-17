@@ -86,13 +86,15 @@ class TPX3TestPulsePacketAnalyzer:
 
     def is_expected(self, pck):
         """ Returns 1 if the packet is expected based on TP masks"""
-        if self.ctpr_mask[pck.col] == 0:
-            self.col_errors += 1
-            return False
-        if self.pixel_tp_mask[pck.row] == 0:
-            self.row_errors += 1
-            return False
-        return True
+        if self.error_checking is True:
+            if self.ctpr_mask[pck.col] == 0:
+                self.col_errors += 1
+                return False
+            if self.pixel_tp_mask[pck.row] == 0:
+                self.row_errors += 1
+                return False
+        else:
+            return True
 
     def report(self):
         """ Returns a string containing end of measurement report """
