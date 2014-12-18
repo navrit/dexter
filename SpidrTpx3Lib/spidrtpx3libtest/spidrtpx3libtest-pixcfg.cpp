@@ -12,6 +12,8 @@ using namespace std;
 
 #define error_out(str) cout<<str<<": "<<spidrctrl.errorString()<<endl
 
+static string time_str();
+
 // Test of pixel configuration functions
 // ======================================
 
@@ -61,9 +63,11 @@ int main( int argc, char *argv[] )
   spidrctrl.resetPixels( device_nr ); // Essential ! (or nothing can be read)
 
   // Upload pixel configuration 0
+  cout << "setPixCfg start:" << time_str() << endl;
   spidrctrl.selectPixelConfig( 0 );
   if( !spidrctrl.setPixelConfig( device_nr ) )
     error_out( "###setPixelConfig" );
+  cout << "setPixCfg stop :" << time_str() << endl;
 
   // Download pixel configuration into config 1
   spidrctrl.selectPixelConfig( 1 );
@@ -75,3 +79,33 @@ int main( int argc, char *argv[] )
 
   return 0;
 }
+
+// ----------------------------------------------------------------------------
+
+static string time_str()
+{
+  ostringstream oss;
+#ifdef WIN32
+  // Using Windows-specific 'GetLocalTime()' function for time
+  SYSTEMTIME st;
+  GetLocalTime( &st );
+  oss << setfill('0')
+      << setw(2) << st.wHour << ":"
+      << setw(2) << st.wMinute << ":"
+      << setw(2) << st.wSecond << ":"
+      << setw(3) << st.wMilliseconds << " ";
+#else
+  struct timeval tv;
+  gettimeofday( &tv, 0 );
+  struct tm tim;
+  localtime_r( &tv.tv_sec, &tim );
+  oss << setfill('0')
+      << setw(2) << tim.tm_hour << ":"
+      << setw(2) << tim.tm_min << ":"
+      << setw(2) << tim.tm_sec << ":"
+      << setw(3) << tv.tv_usec/1000 << " ";
+#endif // WIN32
+  return oss.str();
+}
+
+// ----------------------------------------------------------------------------
