@@ -6,6 +6,8 @@
 #ifndef DACS_H
 #define DACS_H
 
+#include "ui_spidrmpx3eq.h"
+
 #include "spidrmpx3eq.h"
 #include "mpx3defs.h"
 
@@ -116,6 +118,7 @@ class QSlider;
 class QLabel;
 class QCheckBox;
 class SenseDACsThread;
+class ScanDACsThread;
 
 class SignalSlotMapping : public QObject {
 
@@ -153,6 +156,10 @@ public:
 	QLabel ** GetLabelsList() { return _dacVLabels ; };
 	QCheckBox ** GetCheckBoxList() { return _dacCheckBoxes; };
 	int GetDeviceIndex() { return _deviceIndex; };
+	int GetNSamples() { return _nSamples; };
+	int GetScanStep() { return _scanStep; };
+	QCPGraph * GetGraph(int idx);
+	QCustomPlot * GetQCustomPlotPtr() { return _dacScanPlot; };
 
 private:
 
@@ -170,6 +177,7 @@ private:
 
 	//
 	SenseDACsThread * _senseThread;
+	ScanDACsThread * _scanThread;
 
 	// Vectors of Widgets
 	QSpinBox  * _dacSpinBoxes[MPX3RX_DAC_COUNT];
@@ -177,14 +185,21 @@ private:
 	QLabel    * _dacVLabels[MPX3RX_DAC_COUNT];
 	QCheckBox * _dacCheckBoxes[MPX3RX_DAC_COUNT];
 
-	// Scan values
-	int _scanStep;
 
 	// Keep track of DAC values
 	int _dacVals[MPX3RX_DAC_COUNT];
 
+	// Scan
+	int _scanStep;
 	// Current device Id
 	int _deviceIndex;
+	// Samples
+	int _nSamples;
+
+	// In case only a subset of the DACs are selected
+	//  to produce the scan, keep track of the id's
+	map<int, int> _plotIdxMap;
+	int _plotIdxCntr;
 
 private slots:
 
@@ -196,6 +211,11 @@ void FromSpinBoxUpdateSlider(int);
 void FromSliderUpdateSpinBox(int);
 void SenseDACs();
 void ChangeDeviceIndex(int);
+void ChangeNSamples(int);
+void ChangeScanStep(int);
+void addData(int, int, double);
+void addData(int);
+void scanFinished();
 
 //void SetDAC(QObject * info);
 
@@ -224,6 +244,34 @@ signals:
 	void fillText(QString);
 
 };
+
+class ScanDACsThread : public QThread {
+
+	Q_OBJECT
+
+public:
+
+	explicit ScanDACsThread (DACs * dacs, SpidrController * sc) { _dacs = dacs; _spidrcontrol = sc; };
+
+private:
+
+	SpidrController * _spidrcontrol;
+	DACs * _dacs;
+
+	void run();
+
+signals:
+
+	// These are used in the parent class as a signal to thread-safe feed
+	//  widgets in the ui
+	void progress(int);
+	void fillText(QString);
+	void addData(int, int, double);
+	void addData(int);
+	void scanFinished();
+
+};
+
 
 #endif
 

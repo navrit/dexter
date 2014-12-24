@@ -90,9 +90,9 @@
      <widget class="QFrame" name="_DACScanFrame">
       <property name="geometry">
        <rect>
-        <x>680</x>
+        <x>660</x>
         <y>20</y>
-        <width>411</width>
+        <width>421</width>
         <height>331</height>
        </rect>
       </property>
@@ -980,7 +980,7 @@
      <widget class="QPushButton" name="selectAllPushButton">
       <property name="geometry">
        <rect>
-        <x>470</x>
+        <x>450</x>
         <y>420</y>
         <width>80</width>
         <height>23</height>
@@ -993,7 +993,7 @@
      <widget class="QPushButton" name="clearAllPushButton">
       <property name="geometry">
        <rect>
-        <x>560</x>
+        <x>540</x>
         <y>420</y>
         <width>80</width>
         <height>23</height>
@@ -1006,10 +1006,10 @@
      <widget class="QProgressBar" name="progressBar">
       <property name="geometry">
        <rect>
-        <x>680</x>
-        <y>390</y>
-        <width>411</width>
-        <height>23</height>
+        <x>660</x>
+        <y>360</y>
+        <width>421</width>
+        <height>21</height>
        </rect>
       </property>
       <property name="value">
@@ -1019,7 +1019,7 @@
      <widget class="QPushButton" name="senseDACsPushButton">
       <property name="geometry">
        <rect>
-        <x>380</x>
+        <x>360</x>
         <y>420</y>
         <width>80</width>
         <height>23</height>
@@ -1032,17 +1032,40 @@
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>760</x>
-        <y>360</y>
-        <width>330</width>
+        <x>660</x>
+        <y>420</y>
+        <width>424</width>
         <height>26</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
+        <widget class="QLabel" name="labelSamples">
+         <property name="text">
+          <string>Samples</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="samplesSpinBox"/>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>17</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QLabel" name="labelDeviceId">
          <property name="text">
-          <string>Device Id</string>
+          <string>Dev Id</string>
          </property>
         </widget>
        </item>
@@ -1056,7 +1079,7 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
+           <width>17</width>
            <height>20</height>
           </size>
          </property>

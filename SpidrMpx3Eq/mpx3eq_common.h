@@ -20,5 +20,6 @@ typedef enum {
 // DACs
 #define __voltage_DACS_MAX 	(3.3/2.) // This is how it's setup in hardware
 #define __maxADCCounts	       65535 // 16 bits
+#define __max_DAC_range			 512
 
 #endif
