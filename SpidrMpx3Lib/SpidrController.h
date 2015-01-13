@@ -93,10 +93,10 @@ class MY_LIB_API SpidrController
   bool        resetDevice      ( int  dev_nr );
   bool        resetDevices     ( );
   bool        setReady         ( );
-  std::string dacNameMpx3      ( int  index );
-  std::string dacNameMpx3rx    ( int  index );
-  int         dacMaxMpx3       ( int  index );
-  int         dacMaxMpx3rx     ( int  index );
+  std::string dacNameMpx3      ( int  dac_code );
+  std::string dacNameMpx3rx    ( int  dac_code );
+  int         dacMaxMpx3       ( int  dac_code );
+  int         dacMaxMpx3rx     ( int  dac_code );
 
   // Configuration: pixels
   void resetPixelConfig        ( );
@@ -168,10 +168,10 @@ class MY_LIB_API SpidrController
   bool triggerOneReadout       ( );
 
   // Monitoring
-  bool getAdc                  ( int *adc_val, int chan, int nr_of_samples );
+  bool getAdc                  ( int *adc_val, int chan, int nr_of_samples = 1 );
   bool getAdc                  ( int  dev_nr, int *adc_val );
   bool getDacOut               ( int  dev_nr,
-                                 int *dacout_val, int nr_of_samples );
+                                 int *dacout_val, int nr_of_samples = 1 );
   bool getRemoteTemp           ( int *mdegrees );
   bool getLocalTemp            ( int *mdegrees );
   bool getAvdd                 ( int *mvolt, int *mamp, int *mwatt );
@@ -203,6 +203,9 @@ class MY_LIB_API SpidrController
                               int  nbytes, unsigned char *bytes );
   bool request              ( int  cmd, int dev_nr,
                               int  req_len, int exp_reply_len );
+  std::string spidrErrString( int  err );
+  int  dacIndexMpx3         ( int  dac_code );
+  int  dacIndexMpx3rx       ( int  dac_code );
 
  private:
   // Socket connecting to the SPIDR module

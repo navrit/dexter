@@ -15,7 +15,9 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14121200;   // Reinstate loadOmr() as private member;
+const int VERSION_ID = 0x15011300;   // spidrErrString(); dacMax(), dacName()
+                                     // parameter is DAC code (not 'index')
+//const int VERSION_ID = 0x14121200; // Reinstate loadOmr() as private member;
                                      // SPIDR loads each OMR setting immediately
 //const int VERSION_ID = 0x14121100; // Remove writeOmr(), add setEnablePixelCom()
 //const int VERSION_ID = 0x14120800; // Remove readDacs(), writeDacs(Dflt)()
@@ -472,32 +474,36 @@ bool SpidrController::setReady()
 
 // ----------------------------------------------------------------------------
 
-std::string SpidrController::dacNameMpx3( int index )
+std::string SpidrController::dacNameMpx3( int dac_code )
 {
-  if( index < 0 || index >= MPX3_DAC_COUNT ) return string( "????" ); 
+  int index = this->dacIndexMpx3( dac_code );
+  if( index < 0 ) return string( "????" ); 
   return string( MPX3_DAC_TABLE[index].name );
 }
 
 // ----------------------------------------------------------------------------
 
-std::string SpidrController::dacNameMpx3rx( int index )
+std::string SpidrController::dacNameMpx3rx( int dac_code )
 {
-  if( index < 0 || index >= MPX3RX_DAC_COUNT ) return string( "????" ); 
+  int index = this->dacIndexMpx3rx( dac_code );
+  if( index < 0 ) return string( "????" ); 
   return string( MPX3RX_DAC_TABLE[index].name );
 }
 
 // ----------------------------------------------------------------------------
 
-int SpidrController::dacMaxMpx3( int index )
+int SpidrController::dacMaxMpx3( int dac_code )
 {
-  if( index < 0 || index >= MPX3_DAC_COUNT ) return 0;
+  int index = this->dacIndexMpx3( dac_code );
+  if( index < 0 ) return 0;
   return( (1 << MPX3_DAC_TABLE[index].bits) - 1 );
 }
 
 // ----------------------------------------------------------------------------
 
-int SpidrController::dacMaxMpx3rx( int index )
+int SpidrController::dacMaxMpx3rx( int dac_code )
 {
+  int index = this->dacIndexMpx3rx( dac_code );
   if( index < 0 || index >= MPX3RX_DAC_COUNT ) return 0;
   return( (1 << MPX3RX_DAC_TABLE[index].bits) - 1 );
 }
@@ -1369,10 +1375,12 @@ bool SpidrController::request( int cmd,     int dev_nr,
       return false;
     }
   int err = ntohl( _replyMsg[2] ); // (Check 'err' before 'reply')
+  _errId = err;
   if( err != 0 )
     {
       this->clearErrorString();
-      _errString << "Error from SPIDR: 0x" << hex << err;
+      _errString << "Error from SPIDR: " << this->spidrErrString( err )
+		 << " (0x" << hex << err << ")";
       return false;
     }
   int reply = ntohl( _replyMsg[0] );
@@ -1389,6 +1397,108 @@ bool SpidrController::request( int cmd,     int dev_nr,
       return false;
     }
   return true;
+}
+
+// ----------------------------------------------------------------------------
+
+static const char *MPX3_ERR_STR[] =
+  {
+    "no error"
+  };
+
+static const char *SPIDR_ERR_STR[] =
+  {
+    "SPIDR_ERR_I2C_INIT",
+    "SPIDR_ERR_I2C",
+    "<unknown>",
+    "<unknown>",
+    "MON_ERR_MAX6663_INIT",
+    "MON_ERR_INA219_0_INIT",
+    "MON_ERR_INA219_1_INIT",
+    "MON_ERR_INA219_2_INIT"
+  };
+
+static const char *STORE_ERR_STR[] =
+  {
+    "no error",
+    "STORE_ERR_MPX",
+    "STORE_ERR_WRITE",
+    "STORE_ERR_WRITE_CHECK",
+    "STORE_ERR_READ",
+    "STORE_ERR_UNMATCHED_ID",
+    "STORE_ERR_NOFLASH"
+  };
+
+static const char *MONITOR_ERR_STR[] =
+  {
+    "MON_ERR_TEMP_DAQ",
+    "MON_ERR_POWER_DAQ",
+  };
+
+std::string SpidrController::spidrErrString( int err )
+{
+  std::string errstr;
+  unsigned int errid = err & 0xFF;
+  
+  if( errid >= (sizeof(ERR_STR)/sizeof(char*)) )
+    errstr = "<unknown>";
+  else
+    errstr = ERR_STR[errid];
+
+  if( errid == ERR_MPX3_HARDW )
+    {
+      errid = (err & 0xFF00) >> 8;
+      errstr += ", ";
+      // Error identifier is a number
+      if( errid >= (sizeof(MPX3_ERR_STR)/sizeof(char*)) )
+	errstr += "<unknown>";
+      else
+	errstr += MPX3_ERR_STR[errid];
+    }
+  else if( errid == ERR_MON_HARDW )
+    {
+      errid = (err & 0xFF00) >> 8;
+      errstr += ", ";
+      // Error identifier is a bitmask
+      for( int bit=0; bit<8; ++bit )
+	if( errid & (1<<bit) )
+	  {
+	    errstr += SPIDR_ERR_STR[bit];
+	    errstr += " ";
+	  }
+    }
+  else if( errid == ERR_FLASH_STORAGE )
+    {
+      errid = (err & 0xFF00) >> 8;
+      errstr += ", ";
+      // Error identifier is a number
+      if( errid >= (sizeof(STORE_ERR_STR)/sizeof(char*)) )
+	errstr += "<unknown>";
+      else
+	errstr += STORE_ERR_STR[errid];
+    }
+
+  return errstr;
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrController::dacIndexMpx3( int dac_code )
+{
+  int i;
+  for( i=0; i<MPX3_DAC_COUNT; ++i )
+    if( MPX3_DAC_TABLE[i].code == dac_code ) return i;
+  return -1;
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrController::dacIndexMpx3rx( int dac_code )
+{
+  int i;
+  for( i=0; i<MPX3RX_DAC_COUNT; ++i )
+    if( MPX3RX_DAC_TABLE[i].code == dac_code ) return i;
+  return -1;
 }
 
 // ----------------------------------------------------------------------------
