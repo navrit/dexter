@@ -70,14 +70,14 @@ void ThlScan::DoScan(){
 	// Set the right configuration
 	Configuration();
 
-	for(int maskOffsetItr = 0 ; maskOffsetItr < 4 ; maskOffsetItr++ ) {
+	for(int maskOffsetItr = 0 ; maskOffsetItr < 1 ; maskOffsetItr++ ) {
 
 		// Set mask
 		int nMasked = SetEqualizationMask(4, maskOffsetItr);
 		cout << "N pixels unmasked = " << __matrix_size - nMasked << endl;
 
 		// Start the Scan for one mask
-		for(int i = 511 ; i >= 0 ; i -= 10 ) {
+		for(int i = 250 ; i >= 0 ; i -= 10 ) {
 
 			//cout << "THL : " << i << endl;
 

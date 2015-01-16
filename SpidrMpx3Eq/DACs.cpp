@@ -561,6 +561,9 @@ void DACs::FromSpinBoxUpdateSlider(int i) {
 	_dacSliders[i]->setValue( val );
 	// Set DAC
 	_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
+	// Clean up the corresponding labelV.  The dacOut won't be read right away.
+	// Only under user request
+	GetLabelsList()[i]->setText("");
 
 }
 
@@ -572,6 +575,10 @@ void DACs::FromSliderUpdateSpinBox(int i) {
 	//_dacSpinBoxes[i]->setValue( val );
 	// Set DAC
 	_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
+
+	// Clean up the corresponding labelV.  The dacOut won't be read right away.
+	// Only under user request
+	GetLabelsList()[i]->setText("");
 
 }
 
@@ -893,9 +900,6 @@ void ScanDACsThread::run() {
 
 
 			} else {
-
-				//
-				Sleep(50);
 
 				// Adjust the sliders and the SpinBoxes to the new value
 				connect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
