@@ -24,6 +24,7 @@ using namespace std;
 
 #define 	__nDACs_MPX3RX		27
 #define		__default_DACs_filename "mpx3_defaultDACs.txt"
+#define		__N_RETRY_ORIGINAL_SETTING	3
 
 class SpidrController;
 class SpidrDaq;
@@ -119,6 +120,7 @@ class QLabel;
 class QCheckBox;
 class SenseDACsThread;
 class ScanDACsThread;
+class QSignalMapper;
 
 class SignalSlotMapping : public QObject {
 
@@ -183,6 +185,7 @@ private:
 	QSpinBox  * _dacSpinBoxes[MPX3RX_DAC_COUNT];
 	QSlider   * _dacSliders[MPX3RX_DAC_COUNT];
 	QLabel    * _dacVLabels[MPX3RX_DAC_COUNT];
+	QLabel    * _dacLabels[MPX3RX_DAC_COUNT];
 	QCheckBox * _dacCheckBoxes[MPX3RX_DAC_COUNT];
 
 
@@ -201,10 +204,17 @@ private:
 	map<int, int> _plotIdxMap;
 	int _plotIdxCntr;
 
+	QSignalMapper * _signalMapperSliderSpinBoxConn;
+	QSignalMapper * _signalMapperSlider;
+	QSignalMapper * _signalMapperSpinBox;
+
+
 private slots:
 
+void setTextWithIdx(QString,int);
 void UncheckAllDACs();
 void CheckAllDACs();
+void setValueDAC(int);
 void StartDACScan();
 void SetupSignalsAndSlots();
 void FromSpinBoxUpdateSlider(int);
@@ -216,8 +226,7 @@ void ChangeScanStep(int);
 void addData(int, int, double);
 void addData(int);
 void scanFinished();
-
-//void SetDAC(QObject * info);
+void slideAndSpin(int, int);
 
 };
 
@@ -266,9 +275,11 @@ signals:
 	//  widgets in the ui
 	void progress(int);
 	void fillText(QString);
+	void fillTextWithIdx(QString, int);
 	void addData(int, int, double);
 	void addData(int);
 	void scanFinished();
+	void slideAndSpin(int, int);
 
 };
 

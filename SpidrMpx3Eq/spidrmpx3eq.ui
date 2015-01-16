@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="toolTip">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Equalization&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>DAC Control</string>
     </property>
     <property name="currentIndex">
      <number>1</number>
@@ -95,6 +95,9 @@
         <width>421</width>
         <height>331</height>
        </rect>
+      </property>
+      <property name="toolTip">
+       <string>DAC scan plot</string>
       </property>
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
@@ -986,6 +989,9 @@
         <height>23</height>
        </rect>
       </property>
+      <property name="toolTip">
+       <string>Select all DACs</string>
+      </property>
       <property name="text">
        <string>Select all</string>
       </property>
@@ -998,6 +1004,9 @@
         <width>80</width>
         <height>23</height>
        </rect>
+      </property>
+      <property name="toolTip">
+       <string>Unselect all DACs</string>
       </property>
       <property name="text">
        <string>Clear all</string>
@@ -1012,6 +1021,9 @@
         <height>21</height>
        </rect>
       </property>
+      <property name="toolTip">
+       <string>Progress bar</string>
+      </property>
       <property name="value">
        <number>24</number>
       </property>
@@ -1024,6 +1036,9 @@
         <width>80</width>
         <height>23</height>
        </rect>
+      </property>
+      <property name="toolTip">
+       <string>Click to sense all DACs checked</string>
       </property>
       <property name="text">
        <string>Sense DACs</string>
@@ -1041,13 +1056,20 @@
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QLabel" name="labelSamples">
+         <property name="toolTip">
+          <string>Number of samplings when sensing a DAC</string>
+         </property>
          <property name="text">
           <string>Samples</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QSpinBox" name="samplesSpinBox"/>
+        <widget class="QSpinBox" name="samplesSpinBox">
+         <property name="toolTip">
+          <string>Number of samplings when sensing a DAC</string>
+         </property>
+        </widget>
        </item>
        <item>
         <spacer name="horizontalSpacer_2">
@@ -1064,13 +1086,20 @@
        </item>
        <item>
         <widget class="QLabel" name="labelDeviceId">
+         <property name="toolTip">
+          <string>Devide Id</string>
+         </property>
          <property name="text">
           <string>Dev Id</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QSpinBox" name="deviceIdSpinBox"/>
+        <widget class="QSpinBox" name="deviceIdSpinBox">
+         <property name="toolTip">
+          <string>Device Id</string>
+         </property>
+        </widget>
        </item>
        <item>
         <spacer name="horizontalSpacer">
@@ -1087,16 +1116,26 @@
        </item>
        <item>
         <widget class="QLabel" name="labelStep">
+         <property name="toolTip">
+          <string>Step for a DAC scan</string>
+         </property>
          <property name="text">
           <string>Step</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QSpinBox" name="scanStepSpinBox"/>
+        <widget class="QSpinBox" name="scanStepSpinBox">
+         <property name="toolTip">
+          <string>Step for a DAC scan</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="startScanButton">
+         <property name="toolTip">
+          <string>Start scan</string>
+         </property>
          <property name="text">
           <string>Start scan</string>
          </property>
