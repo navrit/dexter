@@ -37,7 +37,7 @@ int main( int argc, char *argv[] )
   }
 
   int x, y, cnf;
-  for( cnf=0; cnf<3; ++cnf )
+  for( cnf=0; cnf<spidrctrl.pixelConfigCount-1; ++cnf )
     {
       spidrctrl.selectPixelConfig( cnf );
       for( y=10; y<250; ++y )
