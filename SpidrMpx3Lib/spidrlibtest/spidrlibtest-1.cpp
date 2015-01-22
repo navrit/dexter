@@ -13,6 +13,8 @@ using namespace std;
 #include "mpx3defs.h"
 #include "mpx3dacsdescr.h"
 
+static string time_str();
+
 int main( int argc, char *argv[] )
 {
   // Open a control connection to SPIDR module with address 192.168.1.10,
@@ -122,10 +124,12 @@ int main( int argc, char *argv[] )
 	if( !spidr.setPixelMaskMpx3rx( col, ALL_PIXELS ) )
 	  cout << "### Pixel mask " << col << endl;
       // Upload the pixel configuration
+      cout << "setPixCfg start:" << time_str() << endl;
       if( !spidr.setPixelConfigMpx3rx( dev_nr ) )
 	cout << "### Pixel config: " << spidr.errorString() << endl;
       else
 	cout << "Pixel config uploaded" << endl;
+      cout << "setPixCfg stop :" << time_str() << endl;
     }
   else
     {
@@ -150,3 +154,33 @@ int main( int argc, char *argv[] )
 
   return 0;
 }
+
+// ----------------------------------------------------------------------------
+
+static string time_str()
+{
+  ostringstream oss;
+#ifdef WIN32
+  // Using Windows-specific 'GetLocalTime()' function for time
+  SYSTEMTIME st;
+  GetLocalTime( &st );
+  oss << setfill('0')
+      << setw(2) << st.wHour << ":"
+      << setw(2) << st.wMinute << ":"
+      << setw(2) << st.wSecond << ":"
+      << setw(3) << st.wMilliseconds << " ";
+#else
+  struct timeval tv;
+  gettimeofday( &tv, 0 );
+  struct tm tim;
+  localtime_r( &tv.tv_sec, &tim );
+  oss << setfill('0')
+      << setw(2) << tim.tm_hour << ":"
+      << setw(2) << tim.tm_min << ":"
+      << setw(2) << tim.tm_sec << ":"
+      << setw(3) << tv.tv_usec/1000 << " ";
+#endif // WIN32
+  return oss.str();
+}
+
+// ----------------------------------------------------------------------------
