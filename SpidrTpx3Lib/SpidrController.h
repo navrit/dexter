@@ -148,7 +148,8 @@ class MY_LIB_API SpidrController
                                  bool b = true );
   bool setPixelMask            ( int  x = ALL_PIXELS, int y = ALL_PIXELS,
                                  bool b = true );
-  bool setPixelConfig          ( int  dev_nr, int cols_per_packet = 2 );
+  bool setPixelConfig          ( int  dev_nr, bool formatted = false,
+                                 int  cols_per_packet = 2 );
   bool getPixelConfig          ( int  dev_nr );
   bool resetPixels             ( int  dev_nr );
   bool setSinglePixelFilter    ( int  index, int x, int y, bool enable = true );
@@ -282,8 +283,8 @@ class MY_LIB_API SpidrController
                                  int nbytes, unsigned char *bytes );
   bool request                 ( int cmd, int dev_nr,
                                  int req_len, int exp_reply_len );
-  int  dacIndex                ( int dac_code );
   std::string spidrErrString   ( int err );
+  int  dacIndex                ( int dac_code );
 
  private:
   // Socket connecting to the SPIDR module

@@ -328,6 +328,7 @@ static const char *CMD_STR[] =
 #define ERR_DAC_HARDW        0x00000008
 #define ERR_MON_HARDW        0x00000009
 #define ERR_FLASH_STORAGE    0x0000000A
+#define ERR_MONITOR          0x0000000B
 
 // Short strings describing the errors
 // (indexed by the lower byte of the error identifier)

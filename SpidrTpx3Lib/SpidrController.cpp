@@ -15,7 +15,8 @@ using namespace std;
 #include "tpx3dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x14120100;
+const int   VERSION_ID = 0x15012200;
+//const int VERSION_ID = 0x14120100;
 //const int VERSION_ID = 0x14112600;
 //const int VERSION_ID = 0x14111000;
 //const int VERSION_ID = 0x14110300;
@@ -998,19 +999,28 @@ bool SpidrController::setPixelMask( int x, int y, bool b )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setPixelConfig( int dev_nr, int cols_per_packet )
+bool SpidrController::setPixelConfig( int  dev_nr,
+				      bool formatted,
+				      int  cols_per_packet )
 {
   // Space for up to four columns (256 pixels each) pixel configuration data
-  // in the shape of 1 byte/pixel
-  // NB: under Linux the resulting packets get split into 2 parts(?), which
-  //     cannot be handled by the LEON software, so use cols_per_packet=2
-  unsigned char pixelcol[256*4];
+  // in the shape of 1 byte/pixel, or 'formatted' (ready for Timepix3)
+  // NB: under Linux the resulting packets may get split into 2 parts(?),
+  //     which cannot be handled by the LEON software,
+  //     so use cols_per_packet=2, not more...
+  unsigned char pixelcols[256*4];
   int x, y, col;
 
   if( cols_per_packet < 1 )
     cols_per_packet = 1;
   else if( cols_per_packet > 4 )
     cols_per_packet = 4;
+
+  int nbytes;
+  if( formatted )
+    nbytes = cols_per_packet * ((256*TPX3_PIXCFG_BITS)/8);
+  else
+    nbytes = cols_per_packet * 256;
 
   unsigned char *p;
   for( x=0; x<256; x+=cols_per_packet )
@@ -1020,16 +1030,30 @@ bool SpidrController::setPixelConfig( int dev_nr, int cols_per_packet )
       for( col=0; col<cols_per_packet; ++col )
 	{
 	  p = & _pixelConfig[x + col];
-	  for( y=0; y<256; ++y, p+=256 ) pixelcol[col*256+y] = *p;
-	  //for( y=0; y<256; ++y )
-	  //  pixelcol[col*256+y] = _pixelConfig[y*256 + x+col];
+	  if( formatted )
+	    {
+	      // Format the pixel column, ready for upload to Timepix3
+	      unsigned char *pcol = &pixelcols[col*((256*TPX3_PIXCFG_BITS)/8)];
+	      int offset = 0;
+	      for( y=0; y<256; ++y, p+=256, offset+=TPX3_PIXCFG_BITS )
+		this->setBitsBigEndianReversed( pcol, offset,
+						TPX3_PIXCFG_BITS,
+						*p,
+						256*TPX3_PIXCFG_BITS );
+	    }
+	  else
+	    {
+	      for( y=0; y<256; ++y, p+=256 )
+		pixelcols[col*256+y] = *p;
+	      //for( y=0; y<256; ++y )
+	      //  pixelcol[col*256+y] = _pixelConfig[y*256 + x+col];
+	    }
 	}
 
       // Send this column of pixel configuration data
       if( !this->requestSetIntAndBytes( CMD_SET_PIXCONF, dev_nr,
 					x, // Sequence number (column)
-					cols_per_packet * 256,
-					pixelcol ) )
+					nbytes, pixelcols ) )
 	return false;
     }
   return true;
@@ -2100,16 +2124,6 @@ bool SpidrController::request( int cmd,     int dev_nr,
 
 // ----------------------------------------------------------------------------
 
-int SpidrController::dacIndex( int dac_code )
-{
-  int i;
-  for( i=0; i<TPX3_DAC_COUNT; ++i )
-    if( TPX3_DAC_TABLE[i].code == dac_code ) return i;
-  return -1;
-}
-
-// ----------------------------------------------------------------------------
-
 static const char *TPX3_ERR_STR[] =
   {
     "no error",
@@ -2126,16 +2140,15 @@ static const char *TPX3_ERR_STR[] =
     "TPX3_ERR_LINKS_UNLOCKED"
   };
 
-static const char *MON_ERR_STR[] =
+static const char *SPIDR_ERR_STR[] =
   {
-    "MON_ERR_MAX6642_DAQ",
-    "MON_ERR_INA219_0_DAQ",
-    "ERR_INA219_1_DAQ",
-    "<unknown>",
-    "MON_ERR_MAX6642_INIT",
-    "MON_ERR_INA219_0_INIT",
-    "MON_ERR_INA219_1_INIT",
-    "<unknown>"
+    "SPIDR_ERR_I2C_INIT",
+    "SPIDR_ERR_LINK_INIT",
+    "SPIDR_ERR_MPU_INIT",
+    "SPIDR_ERR_MAX6642_INIT",
+    "SPIDR_ERR_INA219_0_INIT",
+    "SPIDR_ERR_INA219_1_INIT",
+    "SPIDR_ERR_I2C"
   };
 
 static const char *STORE_ERR_STR[] =
@@ -2147,6 +2160,12 @@ static const char *STORE_ERR_STR[] =
     "STORE_ERR_READ",
     "STORE_ERR_UNMATCHED_ID",
     "STORE_ERR_NOFLASH"
+  };
+
+static const char *MONITOR_ERR_STR[] =
+  {
+    "MON_ERR_TEMP_DAQ",
+    "MON_ERR_POWER_DAQ",
   };
 
 std::string SpidrController::spidrErrString( int err )
@@ -2177,7 +2196,7 @@ std::string SpidrController::spidrErrString( int err )
       for( int bit=0; bit<8; ++bit )
 	if( errid & (1<<bit) )
 	  {
-	    errstr += MON_ERR_STR[bit];
+	    errstr += SPIDR_ERR_STR[bit];
 	    errstr += " ";
 	  }
     }
@@ -2193,6 +2212,16 @@ std::string SpidrController::spidrErrString( int err )
     }
 
   return errstr;
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrController::dacIndex( int dac_code )
+{
+  int i;
+  for( i=0; i<TPX3_DAC_COUNT; ++i )
+    if( TPX3_DAC_TABLE[i].code == dac_code ) return i;
+  return -1;
 }
 
 // ----------------------------------------------------------------------------
