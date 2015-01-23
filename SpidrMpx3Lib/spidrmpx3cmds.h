@@ -182,20 +182,20 @@ static const char *CMD_STR[] =
     "-----",             // 0x33E
     "-----",             // 0x33F
 
-    "GET_TRIGCONFIG  ",  // 0x440
-    "SET_TRIGCONFIG  ",  // 0x441
-    "AUTOTRIG_START  ",  // 0x442
-    "AUTOTRIG_STOP   ",  // 0x443
-    "TRIGGER_READOUT ",  // 0x444
+    "GET_TRIGCONFIG   ", // 0x440
+    "SET_TRIGCONFIG   ", // 0x441
+    "AUTOTRIG_START   ", // 0x442
+    "AUTOTRIG_STOP    ", // 0x443
+    "TRIGGER_READOUT  ", // 0x444
     "-----",             // 0x445
     "-----",             // 0x446
     "-----",             // 0x447
 
-    "GET_ADC         ",  // 0x548
-    "GET_REMOTETEMP  ",  // 0x549
-    "GET_LOCALTEMP   ",  // 0x54A
-    "GET_AVDD        ",  // 0x54B
-    "GET_DVDD        ",  // 0x54C
+    "GET_ADC          ", // 0x548
+    "GET_REMOTETEMP   ", // 0x549
+    "GET_LOCALTEMP    ", // 0x54A
+    "GET_AVDD         ", // 0x54B
+    "GET_DVDD         ", // 0x54C
     "GET_AVDD_NOW     ", // 0x54D
     "GET_SPIDR_ADC    ", // 0x54E
     "GET_DVDD_NOW     ", // 0x54F
@@ -229,8 +229,8 @@ static const char *CMD_STR[] =
     "-----",             // 0x569
     "-----",             // 0x56A
     "-----",             // 0x56B
-    "GET_VDD         ",  // 0x56C
-    "GET_VDD_NOW     ",  // 0x56D
+    "GET_VDD          ", // 0x56C
+    "GET_VDD_NOW      ", // 0x56D
     "-----",             // 0x56E
     "-----",             // 0x56F
 
