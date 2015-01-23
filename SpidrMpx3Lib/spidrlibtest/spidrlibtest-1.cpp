@@ -1,6 +1,7 @@
 #ifdef WIN32
 #include <windows.h>
 #else
+#include <sys/time.h>
 #include <unistd.h>
 #define Sleep(ms) usleep(ms*1000)
 #endif
