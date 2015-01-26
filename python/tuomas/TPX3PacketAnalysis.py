@@ -9,7 +9,7 @@ class TPX3TestPulsePacketAnalyzer:
         self.finished = False
         self.test = test
         self.data = dict()
-        self.fields = ['toa', 'tot', 'col', 'row']
+        self.fields = ['toa', 'tot', 'col', 'row', 'latency']
         for field in self.fields:
             self.data[field] = dict()
         self.events = 0
@@ -20,6 +20,7 @@ class TPX3TestPulsePacketAnalyzer:
         self.packet_errors = 0
         self.name = "TPX3PacketAnalyzer"
         self.max_errors = max_errors
+        self.min_latency = 19 + 16
 
     def num_events(self):
         return self.events
@@ -73,6 +74,13 @@ class TPX3TestPulsePacketAnalyzer:
             else:
                 self.data['row'][pck.row] = 1
             self.events += 1
+
+            # Here we compute a latency for the packet
+            latency = self.get_latency(pck)
+            if latency in self.data['latency']:
+                self.data['latency'][latency] += 1
+            else:
+                self.data['latency'][latency] = 1
         else:
             if self.packet_errors < self.max_errors:
                 self.test.logging.error(
@@ -111,3 +119,10 @@ class TPX3TestPulsePacketAnalyzer:
             for key in hist.keys():
                 fname.write("%d, %d\n" % (key, hist[key]))
             fname.close()
+
+    def get_latency(self, pck):
+        daq_14_lsbs = (pck.ext_toa & 0x3FFF)
+        if daq_14_lsbs < pck.toa:
+            return (1 << 14) - pck.toa + daq_14_lsbs
+        else:
+            return daq_14_lsbs - pck.toa

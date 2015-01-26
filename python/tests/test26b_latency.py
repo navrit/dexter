@@ -31,31 +31,31 @@ class test26b_latency(tpx3_test):
 
     def _execute(self, **keywords):
         self.__init2__(meas_power=True, **keywords)
-        try:
-            self.logging.info("Starting latency measurement test")
-            conf_daq = TPX3ConfBeforeDAQ(self)
-            conf_daq.do_config()
+        #try:
+        self.logging.info("Starting latency measurement test")
+        conf_daq = TPX3ConfBeforeDAQ(self)
+        conf_daq.do_config()
 
-            conf_matrix = TPX3ConfMatrixTPEnable(self, mask = 0)
-            conf_matrix.set_pixel_tp_mask(everyNpixels=self.args['npixels'])
-            conf_matrix.do_config()
-            self.conf_matrix = conf_matrix
-            self.pixel_tp_mask = conf_matrix.get_pixel_tp_mask()
+        conf_matrix = TPX3ConfMatrixTPEnable(self, mask = 0)
+        conf_matrix.set_pixel_tp_mask(everyNpixels=self.args['npixels'])
+        conf_matrix.do_config()
+        self.conf_matrix = conf_matrix
+        self.pixel_tp_mask = conf_matrix.get_pixel_tp_mask()
 
-            self.tpx.shutterOn()
-            if self.meas_power is True:
-                self.sampler.sample_cur_and_temp("Start of DAQ, shutter open", "", 10)
-            self.tpx.shutterOff()
+        self.tpx.shutterOn()
+        if self.meas_power is True:
+            self.sampler.sample_cur_and_temp("Start of DAQ, shutter open", "", 10)
+        self.tpx.shutterOff()
 
-            self.tpx.setCtprBits(0)
-            self.inject_testpulses(1)
+        self.tpx.setCtprBits(0)
+        self.inject_testpulses(1)
 
-        finally:
-            print "Cleaning up the test"
-            tpx3_cleanup_seq = TPX3CleanupSeq(self)
-            tpx3_cleanup_seq.do_seq()
-            self.cleanup()
-            self.report()
+    #finally:
+        print "Cleaning up the test"
+        tpx3_cleanup_seq = TPX3CleanupSeq(self)
+        tpx3_cleanup_seq.do_seq()
+        self.cleanup()
+        self.report()
 
     def inject_testpulses(self, npulses):
         conf_tp = TPX3ConfTestPulses(self)
@@ -66,6 +66,7 @@ class test26b_latency(tpx3_test):
             self.get_ctpr_mask(
                 everyNcols=self.args['ncols']))
         conf_tp.do_config()
+        print "GOT HERE"
         self.num_tp_enabled = self.conf_matrix.num_tp_enabled(
             mask=self.ctpr_mask)
         data = self.tpx.get_N_packets(1024)
@@ -122,7 +123,7 @@ class test26b_latency(tpx3_test):
     def data_to_file(self):
         """ Prints collected toa/tot data into separate files"""
 
-        data = ['toa', 'tot', 'col', 'row']
+        data = ['toa', 'tot', 'col', 'row', 'latency']
         for field in data:
             hist = self.data[field]
             fname = open(self.fname + "/hist_" + field + ".csv", "w")
