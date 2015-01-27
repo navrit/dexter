@@ -37,36 +37,40 @@ class test26_vdd_meas(tpx3_test):
             return
 
     def _execute(self, **keywords):
-        try:
-            self.init2(meas_power=True)
-            tpx_config = TPX3ConfAndReadPower(
-                self.tpx,
-                self,
-                meas_power=False)  # Create a class for configuring
-            self.sample_cur_and_temp("Before pixel reset")
-            tpx_config.do_config()
+        #try:
+        self.init2(meas_power=True)
+        tpx_config = TPX3ConfAndReadPower(
+            self.tpx,
+            self,
+            meas_power=False)  # Create a class for configuring
+        self.sample_cur_and_temp("Before pixel reset")
+        tpx_config.do_config()
 
-            self.sample_cur_and_temp("After the configuration")
+        self.sample_cur_and_temp("After the configuration")
 
-            # At this point we should have Timepix3 configured, start the DAQ
+        # At this point we should have Timepix3 configured, start the DAQ
 
-            # ToA/ToT mode characterisation
-            if self.meas_power is True:
-                self.sampler.set_tag("\t# DAQ_TOA_TOT")
-            tpx_daq = self.daq
-            tpx_daq.do_daq()
-            #time.sleep(2)
+        # Filter is used to select which packets are sent to PC
+        eth,cpu=self.tpx.getHeaderFilter()
+        self.tpx.setHeaderFilter(eth|0x0C80,cpu)
 
-            # ToA only mode characterisation
-            # tpx_daq.do_daq(TPX3_ACQMODE_TOA)
+        # ToA/ToT mode characterisation
+        if self.meas_power is True:
+            self.sampler.set_tag("\t# DAQ_TOA_TOT")
+        tpx_daq = self.daq
+        tpx_daq.do_daq()
+        #time.sleep(2)
 
-            # Event count / iToT characterisation
-            if self.meas_power is True:
-                self.sampler.set_tag("\t# DAQ_EVT_ITOT")
-            tpx_daq.do_seq_daq(TPX3_ACQMODE_EVT_ITOT, 1.0, 20)
+        # ToA only mode characterisation
+        # tpx_daq.do_daq(TPX3_ACQMODE_TOA)
 
-        finally:
-            self.cleanup()
+        # Event count / iToT characterisation
+        if self.meas_power is True:
+            self.sampler.set_tag("\t# DAQ_EVT_ITOT")
+        tpx_daq.do_seq_daq(TPX3_ACQMODE_EVT_ITOT, 1.0, 20)
+
+        #finally:
+        self.cleanup()
 
         self.report()
 

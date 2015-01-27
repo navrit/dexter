@@ -16,6 +16,7 @@ from TPX3Seq import TPX3DataAcqSeq
 from TPX3Seq import TPX3CleanupSeq
 
 from TPX3PacketAnalysis import TPX3TestPulsePacketAnalyzer
+from TPX3PacketAnalysis import TPX3PacketProcessor
 
 from TPX3Utils import GPIBdev
 from TPX3Utils import CurTempRecord

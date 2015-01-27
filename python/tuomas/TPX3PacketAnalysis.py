@@ -21,6 +21,7 @@ class TPX3TestPulsePacketAnalyzer:
         self.name = "TPX3PacketAnalyzer"
         self.max_errors = max_errors
         self.min_latency = 19 + 16
+        self.proc = TPX3PacketProcessor()
 
     def num_events(self):
         return self.events
@@ -39,7 +40,8 @@ class TPX3TestPulsePacketAnalyzer:
         self.analyses += 1
         for pck in data:
             if pck.isData():
-                self.process_packet(pck)
+                if pck.mode in (0, 1):
+                    self.process_packet(pck)
             elif pck.isEoR():
                 self.finished = True
             else:
@@ -126,3 +128,26 @@ class TPX3TestPulsePacketAnalyzer:
             return (1 << 14) - pck.toa + daq_14_lsbs
         else:
             return daq_14_lsbs - pck.toa
+
+class TPX3PacketProcessor:
+    """ Low-perf. wrapper for extracting data from Timepix3 packets. """
+
+    def __init__(self):
+        """ Constructor. """
+
+    def get_header(self, pck):
+        """ Returns the 8-bit header. """
+        return (pck.raw >> 40) & 0xFF
+
+    def is_timer_resp(self, pck):
+        return pck.type == 0x4
+
+    def get_timer_offset(self, pck):
+        """ Computes the absolute diff. of two timers (DAQ/TPX3)"""
+        timer_mask = 0x3FFF
+        tpx3_timer = pck.raw & timer_mask
+        fpga_timer = pck.ext_toa & timer_mask
+        if fpga_timer < tpx3_timer:
+            return (timer_mask-1) - tpx3_timer + fpga_timer
+        return fpga_timer - tpx3_timer
+
