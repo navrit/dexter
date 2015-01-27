@@ -144,7 +144,7 @@ class TPX3PacketProcessor:
 
     def get_timer_offset(self, pck):
         """ Computes the absolute diff. of two timers (DAQ/TPX3)"""
-        timer_mask = 0x3FFF
+        timer_mask = 0xFFFF
         tpx3_timer = pck.raw & timer_mask
         fpga_timer = pck.ext_toa & timer_mask
         if fpga_timer < tpx3_timer:

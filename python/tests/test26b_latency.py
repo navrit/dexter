@@ -108,7 +108,8 @@ class test26b_latency(tpx3_test):
     def cleanup(self):
         """ Called after the test to extract results and cleanup."""
         print "cleanup() called"
-        expected = self.args['npulses'] * self.num_tp_enabled
+        #expected = self.args['npulses'] * self.num_tp_enabled
+        expected = self.get_num_expected()
         print "npulses: %d, num_tp_enabled: %d" % (self.args['npulses'], self.num_tp_enabled)
         if expected > 0:
             efficiency = float(self.events) / expected
