@@ -36,8 +36,10 @@ int main( int argc, char *argv[] )
     cout << "errorstat " << hex << errstat << dec << endl;
   }
 
+  // Set a configuration in all available configurations
+  cout << "count=" << spidrctrl.pixelConfigCount() << endl;
   int x, y, cnf;
-  for( cnf=0; cnf<spidrctrl.pixelConfigCount-1; ++cnf )
+  for( cnf=0; cnf<spidrctrl.pixelConfigCount(); ++cnf )
     {
       spidrctrl.selectPixelConfig( cnf );
       for( y=10; y<250; ++y )
@@ -47,29 +49,41 @@ int main( int argc, char *argv[] )
 	    if( x == 34 || x == 37 ) spidrctrl.setPixelThreshold( x, y, 5 );
 	  }
     }
+  // Change configuration #3
+  spidrctrl.selectPixelConfig( 3 );
   spidrctrl.setPixelMask( 130, 131 );
   spidrctrl.setPixelMask( 213, 222 );
-  cout << "0+1: " << spidrctrl.comparePixelConfig( 0, 1 ) << endl;
-  cout << "1+2: " << spidrctrl.comparePixelConfig( 1, 2 ) << endl;
-  cout << "2+3: " << spidrctrl.comparePixelConfig( 2, 3 ) << endl;
 
-  spidrctrl.selectPixelConfig( 0 );
-  spidrctrl.setPixelTestEna( 0, 0 );
+  // Compare configurations
   cout << "0+1: " << spidrctrl.comparePixelConfig( 0, 1 ) << endl;
   cout << "1+2: " << spidrctrl.comparePixelConfig( 1, 2 ) << endl;
-  cout << "2+3: " << spidrctrl.comparePixelConfig( 2, 3 ) << endl;
+  cout << "2+3: " << spidrctrl.comparePixelConfig( 2, 3 ) << endl << endl;
+
+  // Change configuration #0
+  spidrctrl.selectPixelConfig( 0 );
+  spidrctrl.setPixelMask( 130, 131 );
+  spidrctrl.setPixelMask( 213, 222 );
+  spidrctrl.setPixelTestEna( 0, 0 );
+
+  // Compare configurations
+  cout << "0+1: " << spidrctrl.comparePixelConfig( 0, 1 ) << endl;
+  cout << "1+2: " << spidrctrl.comparePixelConfig( 1, 2 ) << endl;
+  cout << "2+3: " << spidrctrl.comparePixelConfig( 2, 3 ) << endl << endl;
 
   int device_nr = 0;
   spidrctrl.resetPixels( device_nr ); // Essential ! (or nothing can be read)
 
-  // Upload pixel configuration 0
+  // Upload pixel configuration #0 to chip
   cout << "setPixCfg start:" << time_str() << endl;
   spidrctrl.selectPixelConfig( 0 );
-  if( !spidrctrl.setPixelConfig( device_nr ) )
+  //if( !spidrctrl.setPixelConfig( device_nr, true ) )// Preformatted 6-bit cfg
+  if( !spidrctrl.setPixelConfig( device_nr, false ) ) // 8-bit cfg 
     error_out( "###setPixelConfig" );
   cout << "setPixCfg stop :" << time_str() << endl;
+  //return 0;
 
-  // Download pixel configuration into config 1
+  // Download pixel configuration from chip into configuration #1,
+  // so now config #0 should be equal to #1, and #1 now longer equal to 2
   spidrctrl.selectPixelConfig( 1 );
   if( !spidrctrl.getPixelConfig( device_nr ) )
     error_out( "###getPixelConfig" );
