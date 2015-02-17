@@ -26,7 +26,7 @@ DACs::DACs(){
 
 }
 
-DACs::DACs(QApplication * coreApp, Ui::SpidrMpx3Eq * ui) {
+DACs::DACs(QApplication * coreApp, Ui::Mpx3GUI * ui) {
 
 	_coreApp = coreApp;
 	_spidrcontrol = 0;  // Assuming no connection yet

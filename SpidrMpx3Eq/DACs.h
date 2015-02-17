@@ -6,9 +6,9 @@
 #ifndef DACS_H
 #define DACS_H
 
-#include "ui_spidrmpx3eq.h"
+#include "ui_mpx3gui.h"
 
-#include "spidrmpx3eq.h"
+#include "mpx3gui.h"
 #include "mpx3defs.h"
 
 #include <QDialog>
@@ -142,7 +142,7 @@ class DACs : public QObject {
 public:
 
 	explicit DACs();
-	explicit DACs(QApplication * coreApp, Ui::SpidrMpx3Eq * bc);
+	explicit DACs(QApplication * coreApp, Ui::Mpx3GUI * bc);
 	~DACs();
 	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
 	void PopulateDACValues();
@@ -152,7 +152,7 @@ public:
 
 public:
 
-	Ui::SpidrMpx3Eq * GetUI() { return _ui; };
+	Ui::Mpx3GUI * GetUI() { return _ui; };
 	QSpinBox ** GetSpinBoxList() { return _dacSpinBoxes; };
 	QSlider ** GetSliderList() { return _dacSliders; };
 	QLabel ** GetLabelsList() { return _dacVLabels ; };
@@ -171,7 +171,7 @@ private:
 	QApplication * _coreApp;
 	SpidrController * _spidrcontrol;
 	SpidrDaq * _spidrdaq;
-	Ui::SpidrMpx3Eq * _ui;
+	Ui::Mpx3GUI * _ui;
 
 	QCustomPlot * _dacScanPlot;
 	// Currently active graph

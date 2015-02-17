@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 TEMPLATE = app
-TARGET = SpidrMpx3Eq
+TARGET = Mpx3GUI
 
 # QT       += core gui network
 # Create a shared library
@@ -43,14 +43,14 @@ LIBS += -lSpidrMpx3Lib
 LIBS += -lQCustomPlot
 
 SOURCES += main.cpp
-SOURCES += spidrmpx3eq.cpp
+SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
 SOURCES += DACs.cpp
 
-HEADERS += spidrmpx3eq.h
+HEADERS += mpx3gui.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DACs.h
 
-FORMS    += spidrmpx3eq.ui
+FORMS    += mpx3gui.ui
