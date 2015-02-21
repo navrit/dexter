@@ -8,7 +8,8 @@ TEMPLATE = app
 TARGET = Mpx3GUI
 
 # QT       += core gui network
-# Create a shared library
+# Use as shared library
+DEFINES += QCUSTOMPLOT_USE_LIBRARY
 greaterThan(QT_MAJOR_VERSION, 4) {
 	QT += widgets printsupport
 } else {
@@ -42,13 +43,19 @@ INCLUDEPATH += ../QCustomPlot
 LIBS += -lSpidrMpx3Lib
 LIBS += -lQCustomPlot
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    qcstmplotheatmap.cpp \
+    qcstmhistogram.cpp \
+    histogram.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
 SOURCES += DACs.cpp
 
-HEADERS += mpx3gui.h
+HEADERS += mpx3gui.h \
+    qcstmplotheatmap.h \
+    qcstmhistogram.h \
+    histogram.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DACs.h

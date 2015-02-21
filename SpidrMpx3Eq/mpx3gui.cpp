@@ -19,7 +19,7 @@
 #include <QMessageBox>
 
 #include <stdlib.h>
-#include <unistd.h>
+#include <time.h>
 #include <stdio.h>
 
 Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :
@@ -34,16 +34,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :
 	connect( _ui->_connect, SIGNAL(clicked()), this, SLOT(Connect()) );
 	_ui->_statusLabel->setStyleSheet("QLabel { background-color : gray; color : black; }");
 
-	// Create the bar chart
-	_chart = new BarChart( _ui->_histoFrame );
-	_chart->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
-
-	//_customPlot = new QCustomPlot;
-	//_chart = new BarChart( this );
-	_chart->setParent( _ui->_histoFrame );
-	// Make it fit in it's parent
-	QRect hrect = _ui->_histoFrame->geometry();
-	_chart->resize( hrect.size().rwidth() , hrect.size().rheight() );
+	_ui->_histoWidget->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
 
 	// Set One histogram
 	BarChartProperties * cprop = new BarChartProperties;
@@ -55,18 +46,16 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :
 	cprop->color_g.push_back(222);
 	cprop->color_b.push_back(0);
 
-	_chart->SetBarChartProperties( cprop );
-	_chart->PrepareSets();
-
+	_ui->_histoWidget->SetBarChartProperties( cprop );
+	_ui->_histoWidget->PrepareSets();
 
 	startTimer( 200 );
 
 	// ThlScan
-	_tscan = new ThlScan(_chart);
+	_tscan = new ThlScan(_ui->_histoWidget);
 
 	// Prepare DACs panel
 	_dacs = new DACs(_coreApp, _ui);
-
 
 	// some randon numbers
 	srand (time(NULL));
@@ -75,7 +64,6 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :
 
 Mpx3GUI::~Mpx3GUI()
 {
-	delete _chart;
 	delete _ui;
 }
 
@@ -171,7 +159,7 @@ void Mpx3GUI::Connect() {
 				<< _spidrcontrol->connectionErrString() << endl;
 		_ui->_statusLabel->setText("Connection failed.");
 		_ui->_statusLabel->setStyleSheet("QLabel { background-color : red; color : black; }");
-
+		return; //No use in continuing if we can't connect.
 	}
 
 	// Get version numbers
@@ -246,17 +234,17 @@ void Mpx3GUI::timerEvent( QTimerEvent * /*evt*/ ) {
 	//cout << "append : " << val << endl;
 
 	// filling the histo with random numbers
-	//_chart->PushBackToSet( 0, val );
-	////QCPBarData bin_content = (*(_chart->GetDataSet(0)->data()))[val];
+	//_ui->_histoWidget->PushBackToSet( 0, val );
+	////QCPBarData bin_content = (*(_ui->_histoWidget->GetDataSet(0)->data()))[val];
 
 	//double cont = (*dmap)[val];
-	////_chart->GetDataSet(0)->addData( bin_content.key , bin_content.value +1 );
-	//_chart->DumpData();
-	//_chart->clearGraphs();
-	////_chart->replot();
-	//_chart->update();
+	////_ui->_histoWidget->GetDataSet(0)->addData( bin_content.key , bin_content.value +1 );
+	//_ui->_histoWidget->DumpData();
+	//_ui->_histoWidget->clearGraphs();
+	////_ui->_histoWidget->replot();
+	//_ui->_histoWidget->update();
 
-	//_chart->SetValueInSet(0, 100);
+	//_ui->_histoWidget->SetValueInSet(0, 100);
 
 }
 

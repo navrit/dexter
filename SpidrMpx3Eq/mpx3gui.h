@@ -51,7 +51,7 @@ private:
 
 	// Drawing object
 	//QCustomPlot * _customPlot;
-	BarChart * _chart;
+	//BarChart * _chart;
 
 	// Object in charge of performing Thl scans
 	ThlScan * _tscan;
