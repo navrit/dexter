@@ -4,6 +4,7 @@
  */
 
 #ifndef _BAR_CHART_H_
+#define _BAR_CHART_H_
 
 #include "qcustomplot.h"
 
