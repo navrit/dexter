@@ -17,7 +17,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 }
 QT += network
 
-CONFIG   += debug
+CONFIG   += debug c++11
 
 CONFIG(debug, debug|release) {
   OBJECTS_DIR = debug
