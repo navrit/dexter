@@ -1,4 +1,4 @@
-#include "qcstmhistogram.h"
+#include "qcstmplothistogram.h"
 
 QCstmPlotHistogram::QCstmPlotHistogram(QWidget*& parent)
 {

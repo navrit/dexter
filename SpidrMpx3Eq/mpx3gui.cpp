@@ -22,13 +22,20 @@
 #include <time.h>
 #include <stdio.h>
 
-Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :
-    		QMainWindow(parent),
-    		_coreApp(coreApp),
-    		_ui(new Ui::Mpx3GUI)
+Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent), _coreApp(coreApp), _ui(new Ui::Mpx3GUI)
 {
-
 	_ui->setupUi(this);
+
+        //index various heatmaps
+        heatmapMap.insert("Grayscale", QCPColorGradient::gpGrayscale);
+        heatmapMap.insert("Jet", QCPColorGradient::gpJet);
+        /*heatmapMap.insert("Ion", QCPColorGradient::gpIon);
+        heatmapMap.insert("Candy", QCPColorGradient::gpCandy);*/
+        heatmapMap.insert("Hot", QCPColorGradient::gpHot);
+        heatmapMap.insert("Cold", QCPColorGradient::gpCold);
+        heatmapMap.insert("Thermal", QCPColorGradient::gpThermal);
+        //and set them
+        _ui->heatmapCombobox->addItems(heatmapMap.keys());
 
 	connect( _ui->_startEq, SIGNAL(clicked()), this, SLOT(StartEqualization()) );
 	connect( _ui->_connect, SIGNAL(clicked()), this, SLOT(Connect()) );
@@ -284,4 +291,10 @@ int Mpx3GUI::GetNPixelsActive(int * buffer, int size, verblev verbose) {
 
 pair<int, int> Mpx3GUI::XtoXY(int X, int dimX){
 	return make_pair(X % dimX, X/dimX);
+}
+
+void Mpx3GUI::on_heatmapCombobox_currentIndexChanged(const QString &arg1)//would be more elegant to do with signals and slots, but also a lot more work. Choose your battles and all that.
+{
+  _ui->heatmap->setHeatmap(heatmapMap[arg1]);
+  _ui->_intermediatePlot->setHeatmap(heatmapMap[arg1]);
 }

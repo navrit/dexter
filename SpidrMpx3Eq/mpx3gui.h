@@ -12,6 +12,9 @@
 
 #include <iostream>
 #include <vector>
+
+#include <qcustomplot.h>
+
 using namespace std;
 
 #include "mpx3eq_common.h"
@@ -43,7 +46,7 @@ public:
 	pair<int, int> XtoXY(int X, int dimX);
 
 private:
-
+	QMap<QString, QCPColorGradient> heatmapMap;
 	QApplication * _coreApp;
 	Ui::Mpx3GUI * _ui;
 	SpidrController * _spidrcontrol;
@@ -63,6 +66,7 @@ private slots:
 	void StartEqualization();
 	void Connect();
 
+	void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
 };
 
 
