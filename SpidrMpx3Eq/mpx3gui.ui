@@ -21,7 +21,7 @@
        <string>DAC Control</string>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -1146,7 +1146,14 @@
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_7">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="3,0,2">
+         <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,3,0,2">
+          <item>
+           <widget class="QOpenGLWidget" name="glPlot">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QCstmPlotHeatmap" name="heatmap" native="true"/>
           </item>
@@ -1159,6 +1166,9 @@
           </item>
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <widget class="QComboBox" name="layerCombobox"/>
+            </item>
             <item>
              <widget class="QCstmPlotHistogram" name="histogramPlot" native="true"/>
             </item>
@@ -1235,7 +1245,10 @@
    <header>qcstmplotheatmap.h</header>
    <container>1</container>
    <slots>
+    <signal>dataRangeChanged(QCPRange)</signal>
     <slot>setHeatmap(QCPColorGradient)</slot>
+    <slot>changeRange(QCPRange)</slot>
+    <slot>setActive(int)</slot>
    </slots>
   </customwidget>
   <customwidget>
@@ -1249,9 +1262,75 @@
     <slot>minClampChanged(double)</slot>
     <slot>maxClampChanged(double)</slot>
     <slot>changeRange(QCPRange)</slot>
+    <slot>setActive(int)</slot>
    </slots>
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>heatmap</sender>
+   <signal>dataRangeChanged(QCPRange)</signal>
+   <receiver>histogramPlot</receiver>
+   <slot>changeRange(QCPRange)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>599</x>
+     <y>369</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>874</x>
+     <y>354</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>histogramPlot</sender>
+   <signal>rangeChanged(QCPRange)</signal>
+   <receiver>heatmap</receiver>
+   <slot>changeRange(QCPRange)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>874</x>
+     <y>354</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>599</x>
+     <y>369</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>layerCombobox</sender>
+   <signal>activated(int)</signal>
+   <receiver>heatmap</receiver>
+   <slot>setActive(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>791</x>
+     <y>84</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>307</x>
+     <y>369</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>layerCombobox</sender>
+   <signal>activated(int)</signal>
+   <receiver>histogramPlot</receiver>
+   <slot>setActive(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>791</x>
+     <y>84</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>791</x>
+     <y>354</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

@@ -4,6 +4,9 @@ QCstmPlotHistogram::QCstmPlotHistogram(QWidget*& parent)
 {
     //setMouseTracking(false);
     this->setParent(parent);
+    this->addLayer("back");
+    this->addLayer("front");
+    this->addLayer("overlay");
     //hist = 0;
     //this->addGraph();
     setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
@@ -13,12 +16,12 @@ QCstmPlotHistogram::QCstmPlotHistogram(QWidget*& parent)
     //this->graph(0)->setLineStyle(QCPGraph::lsStepCenter);
     //this->graph(0)->setPen(QPen(Qt::black));
     lowClamp = new QCPItemStraightLine(this);    highClamp = new QCPItemStraightLine(this);
+    lowClamp->setLayer("overlay"); highClamp->setLayer("overlay");
     lowClamp->setPen(QPen(Qt::blue)); highClamp->setPen(QPen(Qt::blue));
     lowClamp->point1->setCoords(-DBL_MAX,0); lowClamp->point2->setCoords(-DBL_MAX,1);
     highClamp->point1->setCoords(DBL_MAX,0); highClamp->point2->setCoords(DBL_MAX,1);
     this->addItem(lowClamp); this->addItem(highClamp);
-    this->addLayer("back");
-    this->addLayer("front");
+
 
 }
 

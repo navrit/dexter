@@ -17,6 +17,7 @@
 
 using namespace std;
 
+#include "histogram.h"
 #include "mpx3eq_common.h"
 
 #define __matrix_size_x 256
@@ -46,11 +47,16 @@ public:
 	pair<int, int> XtoXY(int X, int dimX);
 
 private:
+	QStringList files;
 	QMap<QString, QCPColorGradient> heatmapMap;
 	QApplication * _coreApp;
 	Ui::Mpx3GUI * _ui;
 	SpidrController * _spidrcontrol;
 	SpidrDaq * _spidrdaq;
+
+	int **data = 0;
+	unsigned *nx =0, *ny =0, nData =0;
+	histogram **hists = 0;
 
 	// Drawing object
 	//QCustomPlot * _customPlot;
@@ -67,6 +73,7 @@ private slots:
 	void Connect();
 
 	void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
+	void on_openfileButton_clicked();
 };
 
 

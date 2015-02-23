@@ -293,8 +293,52 @@ pair<int, int> Mpx3GUI::XtoXY(int X, int dimX){
 	return make_pair(X % dimX, X/dimX);
 }
 
-void Mpx3GUI::on_heatmapCombobox_currentIndexChanged(const QString &arg1)//would be more elegant to do with signals and slots, but also a lot more work. Choose your battles and all that.
+void Mpx3GUI::on_heatmapCombobox_currentIndexChanged(const QString &arg1)//would be more elegant to do with signals and slots, but would require either specalizing the combobox, or making the heatmapMap globally visible.
 {
   _ui->heatmap->setHeatmap(heatmapMap[arg1]);
   _ui->_intermediatePlot->setHeatmap(heatmapMap[arg1]);
+}
+
+void Mpx3GUI::on_openfileButton_clicked()
+{
+  QImage image;
+  files = QFileDialog::getOpenFileNames(this, tr("Open File"),QStandardPaths::writableLocation(QStandardPaths::PicturesLocation), tr("Images (*.png *.xpm *.jpg *.gif *.png)"));
+  if(files.isEmpty())
+    return;
+  _ui->layerCombobox->clear();
+  _ui->layerCombobox->addItems(files);
+  _ui->histogramPlot->clear();
+  delete[] nx; delete[] ny;
+  for(unsigned u = 0; u < nData; u++){
+    delete[] data[u];
+    delete hists[u];
+    }
+  delete[] data;
+  delete[] hists;
+  _ui->heatmap->clear();
+  nData = files.length();
+  data = new int*[nData];
+  hists = new histogram*[nData];
+  nx = new unsigned[nData]; ny = new unsigned[nData];
+  for(unsigned i = 0; i < nData; i++){
+    image.load(files[i]);
+      if (image.isNull()) {
+          QMessageBox::information(this, tr("Image Viewer"), tr("Cannot load %1.").arg(files[i]));
+          return;
+      }
+      nx[i] = image.width(); ny[i] = image.height();
+      data[i] = new int[nx[i]*ny[i]];
+      for(unsigned u = 0; u < ny[i]; u++)
+        for(unsigned w = 0; w < nx[i];w++){
+            QRgb pixel = image.pixel(w,u);
+            data[i][u*nx[i]+w] = qGray(pixel);
+          }
+      hists[i] = new histogram(data[i],nx[i]*ny[i], 1);
+      _ui->histogramPlot->addHistogram(hists[i]);
+      _ui->heatmap->addData(data[i], nx[i], ny[i]);
+  }
+  _ui->histogramPlot->setActive(0);
+  _ui->heatmap->setActive(0);
+  //_ui->histogramPlot->rescaleAxes();
+  _ui->heatmap->rescaleAxes();
 }

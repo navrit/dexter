@@ -2,25 +2,22 @@
 QCstmPlotHeatmap::QCstmPlotHeatmap(QWidget*& parent){
   this->setParent(parent);
   //aspectRatio = 1;
-  colorMap = new QCPColorMap(xAxis, yAxis);
-  colorMap->data()->setRange(QCPRange(0, 1), QCPRange(0,1)); //TODO: move this somewhere else, set to proper meter based distance.
-  colorMap->clearData();
+  //colorMap = new QCPColorMap(xAxis, yAxis);
+  //colorMap->data()->setRange(QCPRange(0, 1), QCPRange(0,1)); //TODO: move this somewhere else, set to proper meter based distance.
+  //colorMap->clearData();
   setInteractions(QCP::iRangeDrag|QCP::iRangeZoom); // this will also allow rescaling the color scale by dragging/zooming
   axisRect()->setupFullAxesBox(true);
-   xAxis->setLabel("x");
-   yAxis->setLabel("y");
-  this->addPlottable(colorMap);
+   //xAxis->setLabel("x");
+   //yAxis->setLabel("y");
    colorScale = new QCPColorScale(this);
    plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
    colorScale->setType(QCPAxis::atRight); // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
-   colorMap->setColorScale(colorScale); // associate the color map with the color scale
+   //colorMap->setColorScale(colorScale); // associate the color map with the color scale
    colorScale->axis()->setLabel("Signal Strength");
 
    // set the color gradient of the color map to one of the presets:
-   colorMap->setGradient(QCPColorGradient::gpThermal);
-   colorMap->setInterpolate(false);
-   colorMap->setTightBoundary(true);
-   connect(colorMap, SIGNAL(dataRangeChanged(QCPRange)), this, SIGNAL(dataRangeChanged(QCPRange)));
+   //colorMap->setGradient(QCPColorGradient::gpThermal);
+
 }
 
 QCstmPlotHeatmap::~QCstmPlotHeatmap(){
@@ -40,12 +37,14 @@ void QCstmPlotHeatmap::resizeEvent(QResizeEvent *event){
 }
 
 void QCstmPlotHeatmap::setHeatmap(QCPColorGradient &gradient){
-  colorMap->setGradient(gradient);
-  replot();
+  currentGradient = gradient;
+  if(active >= 0){
+      colorMaps[active]->setGradient(currentGradient);
+      replot();
+  }
 }
 
-
-void QCstmPlotHeatmap::setData(int *data, int nx, int ny){
+/*void QCstmPlotHeatmap::setData(int *data, int nx, int ny){
   colorMap->data()->setRange(QCPRange(0, nx), QCPRange(0,ny));
   colorMap->clearData();
   colorMap->data()->setSize(nx, ny);
@@ -54,19 +53,68 @@ void QCstmPlotHeatmap::setData(int *data, int nx, int ny){
       colorMap->data()->setCell(w,u, data[u*nx+w]); //TODO: read 0 here. error.
     }
   // rescale the key (x) and value (y) axes so the whole color map is visible:
-  //colorMap->rescaleDataRange(true);
-  //colorMap->rescaleAxes();
+  colorMap->rescaleDataRange(true);
+  colorMap->rescaleAxes();
+  this->xAxis->setScaleRatio(this->yAxis,1);
   this->replot();
+}*/
 
+void QCstmPlotHeatmap::clear(){
+  for(int i = 0; i < colorMaps.count(); i++)
+      delete colorMaps[i];
+  colorMaps.clear();
+  active = -1;
 }
+
+void QCstmPlotHeatmap::addData(int *data, int nx, int ny){
+  colorMaps.append(new QCPColorMap(xAxis, yAxis));
+  colorMaps.last()->setInterpolate(false);
+  colorMaps.last()->setTightBoundary(true);
+  //colorMap->setInterpolate(false);
+  //colorMap->setTightBoundary(true);
+  connect(colorMaps.last(), SIGNAL(dataRangeChanged(QCPRange)), this, SIGNAL(dataRangeChanged(QCPRange)));
+  colorMaps.last()->data()->setRange(QCPRange(0, nx), QCPRange(0,ny));
+  colorMaps.last()->clearData();
+  colorMaps.last()->data()->setSize(nx, ny);
+  for(unsigned u = 0;  u < ny; u++)
+    for(unsigned w = 0; w < nx;w++){
+      colorMaps.last()->data()->setCell(w,u, data[u*nx+w]); //TODO: read 0 here. error.
+    }
+  // rescale the key (x) and value (y) axes so the whole color map is visible:
+  colorMaps.last()->rescaleDataRange(true);
+  colorMaps.last()->rescaleAxes();
+  this->xAxis->setScaleRatio(this->yAxis,1);
+  this->addPlottable(colorMaps.last());
+  colorMaps.last()->setVisible(false);
+  colorMaps.last()->setColorScale(colorScale);
+}
+
+void QCstmPlotHeatmap::setActive(int index){
+  colorMaps[index]->setGradient(currentGradient);
+  if(0 <= active) colorMaps[active]->setVisible(false);
+  colorMaps[index]->setVisible(true);
+  active = index;
+  //this->clearPlottables();
+  //this->replot();
+  this->replot();
+}
+
+void QCstmPlotHeatmap::rescaleAxes(void){
+  if(0 <= active){
+    colorMaps[active]->rescaleAxes();
+    colorMaps[active]->rescaleDataRange();
+    this->xAxis->setScaleRatio(this->yAxis,1);
+ }
+}
+
 
 void QCstmPlotHeatmap::onReplot(){//TODO: fix bugs based on fast draggin (see google)
   QCPRange rangeX = this->xAxis->range(), rangeY = this->yAxis->range();
   double xSize = rangeX.size();
   double ySize = rangeY.size();
      double lowerRangeBound = 0;
-     double upperRangeBoundX =colorMap->data()->keyRange().maxRange;
-     double upperRangeBoundY =colorMap->data()->valueRange().maxRange;
+     double upperRangeBoundX =colorMaps[active]->data()->keyRange().maxRange;
+     double upperRangeBoundY =colorMaps[active]->data()->valueRange().maxRange;
      if(rangeX.upper > upperRangeBoundX){  // restrict max zoom in
          rangeX.upper = upperRangeBoundX;
          rangeX.lower = upperRangeBoundX - xSize;
@@ -90,13 +138,13 @@ void QCstmPlotHeatmap::onReplot(){//TODO: fix bugs based on fast draggin (see go
 
 void QCstmPlotHeatmap::mousePressEvent(QMouseEvent *event){
   QCustomPlot::mousePressEvent(event);
-  if(event->button() == Qt::RightButton){
+  /*if((active >= 0) && (event->button() == Qt::RightButton)){
       double x = this->xAxis->pixelToCoord(event->pos().x());
       double y = this->yAxis->pixelToCoord(event->pos().y());
-      double z = colorMap->data()->data(x, y);
+      double z = colorMaps[active]->data()->data(x, y);
       //title->setText(QString("%3 @ (%1 , %2)").arg(x).arg(y).arg(z));
       replot();
-    }
+    }*/
 }
 
 /*void QCstmPlotHeatmap::mouseMoveEvent(QMouseEvent *event){//TODO: uses a lot of cpu, implement differently or not at all?
@@ -107,4 +155,5 @@ void QCstmPlotHeatmap::mousePressEvent(QMouseEvent *event){
       title->setText(QString("%3 @ (%1 , %2)").arg(x).arg(y).arg(z));
       replot();
 }*/
+
 

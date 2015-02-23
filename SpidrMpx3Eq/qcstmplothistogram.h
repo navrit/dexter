@@ -56,11 +56,11 @@ public:
   virtual ~QCstmPlotHistogram();
   void addHistogram(histogram *hist);
   //void setData(int *data, unsigned nData);
-  void setActive(int index);
   void clear();
 signals:
   void rangeChanged(QCPRange newRange);
 public slots:
+  void setActive(int index);
   void changeRange(QCPRange newRange);
   void minClampChanged(double min);
   void maxClampChanged(double max);

@@ -46,7 +46,8 @@ LIBS += -lQCustomPlot
 SOURCES += main.cpp \
     qcstmplotheatmap.cpp \
     histogram.cpp \
-    qcstmplothistogram.cpp
+    qcstmplothistogram.cpp \
+    qglheatmap.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -55,7 +56,8 @@ SOURCES += DACs.cpp
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
     histogram.h \
-    qcstmplothistogram.h
+    qcstmplothistogram.h \
+    qglheatmap.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DACs.h

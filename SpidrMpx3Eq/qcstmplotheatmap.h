@@ -16,18 +16,22 @@ class QCstmPlotHeatmap : public QCustomPlot
   //void mouseMoveEvent(QMouseEvent *event);
   //void toolTipEvent(QToolTip *event);
   ~QCstmPlotHeatmap();
-  QCPColorMap *colorMap;//TODO: not dynamically allocated?
+  QList<QCPColorMap*> colorMaps;//TODO: not dynamically allocated?
   QCPColorScale *colorScale;
-  QCPPlotTitle *title;
+  QCPColorGradient currentGradient;
+  int active = -1;
 public:
   void mousePressEvent(QMouseEvent *event);
-  void setData(int *data, int nx, int ny);
+  void addData(int *data, int nx, int ny);
+  void clear();
   void setHeatmap(QCPColorGradient &gradient);
+  void rescaleAxes(void);
   QCstmPlotHeatmap(QWidget*& parent);
 signals:
   void dataRangeChanged(QCPRange newRange);
  public slots:
   //void onXRangeChanged(QCPRange newRange);
+  void setActive(int);
   void changeRange(QCPRange newRange);
   void onReplot();
 
