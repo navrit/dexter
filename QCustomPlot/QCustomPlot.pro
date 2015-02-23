@@ -14,7 +14,7 @@ TARGET   = QCustomPlot
 # Create a shared library
 QT += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
-CONFIG += shared qt thread warn_on exceptions debug_and_release debug
+CONFIG += shared qt thread warn_on exceptions debug_and_release
 
 # When compiling as a shared library
 DEFINES += QCUSTOMPLOT_COMPILE_LIBRARY 
