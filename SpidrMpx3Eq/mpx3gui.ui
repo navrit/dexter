@@ -1178,7 +1178,7 @@
             <item>
              <widget class="QPushButton" name="openfileButton">
               <property name="text">
-               <string>Open file... (TBI)</string>
+               <string>Open files...</string>
               </property>
              </widget>
             </item>
