@@ -96,7 +96,7 @@ void ThlScan::DoScan(){
 
 			// See if there is a frame available
 			// I should get as many frames as triggers
-
+			unsigned nFrames = 0;
 			while ( _spidrdaq->hasFrame() ) {
 
 				int size_in_bytes = -1;
@@ -114,7 +114,7 @@ void ThlScan::DoScan(){
 					}
 				}
 				_heatmap->addData(data,256,256); //Add a new plot/frame.
-				_heatmap->setActive(-1); //Activate the last plot (the new one)
+				_heatmap->setActive(nFrames++); //Activate the last plot (the new one)
 				//_heatmap->setData( data, 256, 256 );
 
 			}

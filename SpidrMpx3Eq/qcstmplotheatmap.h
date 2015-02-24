@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QWidget>
 #include <QResizeEvent>
+#include <QDebug>
 
 #include "qcustomplot.h"
 

@@ -13,7 +13,7 @@ QCstmPlotHeatmap::QCstmPlotHeatmap(QWidget*& parent){
    plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
    colorScale->setType(QCPAxis::atRight); // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
    //colorMap->setColorScale(colorScale); // associate the color map with the color scale
-   colorScale->axis()->setLabel("Signal Strength");
+   //colorScale->axis()->setLabel("Signal Strength");
 
    // set the color gradient of the color map to one of the presets:
    //colorMap->setGradient(QCPColorGradient::gpThermal);
@@ -79,13 +79,14 @@ void QCstmPlotHeatmap::addData(int *data, int nx, int ny){
     for(unsigned w = 0; w < nx;w++){
       colorMaps.last()->data()->setCell(w,u, data[u*nx+w]); //TODO: read 0 here. error.
     }
-  // rescale the key (x) and value (y) axes so the whole color map is visible:
-  colorMaps.last()->rescaleDataRange(true);
-  colorMaps.last()->rescaleAxes();
-  this->xAxis->setScaleRatio(this->yAxis,1);
   this->addPlottable(colorMaps.last());
-  colorMaps.last()->setVisible(false);
+  // rescale the key (x) and value (y) axes so the whole color map is visible:
+  colorMaps.last()->rescaleAxes();
+  colorMaps.last()->rescaleDataRange(true);//TODO: this doesn't do anything...?
+  this->xAxis->setScaleRatio(this->yAxis,1);
   colorMaps.last()->setColorScale(colorScale);
+  colorScale->rescaleDataRange(false);
+  //setActive(-1);
   emit(plotCountChanged(colorMaps.count()-1));
 }
 
@@ -99,11 +100,13 @@ void QCstmPlotHeatmap::setData(int *data, int nx, int ny){
     }
   // rescale the key (x) and value (y) axes so the whole color map is visible:
   colorMaps[active]->rescaleDataRange(true);
+  colorScale->rescaleDataRange(false);
   colorMaps[active]->rescaleAxes();
   replot();
 }
 
 void QCstmPlotHeatmap::setActive(int index){
+  qDebug() << "setActvie called";
   if(!colorMaps.count()){
       return;
     }
@@ -112,12 +115,16 @@ void QCstmPlotHeatmap::setActive(int index){
   if(index == active)
     return;
   colorMaps[index]->setGradient(currentGradient);
-  if(0 <= active) colorMaps[active]->setVisible(false);
-  if(index == -1){
-      index = colorMaps.count()-1;
+  if(0 <= active){
+      qDebug() << "Masked frame " << active;
+      colorMaps[active]->setVisible(false);
     }
+  /*if(index == -1){
+      index = colorMaps.count()-1;
+    }*/
   colorMaps[index]->setVisible(true);
   active = index;
+  qDebug() << "Unmasked frame " << active;
   emit(activePlotChanged(active));
   //this->clearPlottables();
   //this->replot();

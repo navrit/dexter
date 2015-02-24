@@ -67,11 +67,11 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	// some randon numbers
 	srand (time(NULL));
 	int noise[256*256] = {0};
-	for(unsigned u = 0; u < 64;u++){
+	for(unsigned u = 0; u < 4;u++){
 	    for(unsigned w = 0; w < 256*256;w++)
-	      noise[w] = rand();
+	      noise[w] = rand()%64;
 	_ui->_intermediatePlot->addData(noise,256,256); //Add a new plot/frame.
-	_ui->_intermediatePlot->setActive(-1); //Activate the last plot (the new one)
+	_ui->_intermediatePlot->setActive(u); //Activate the last plot (the new one)
 	  }
 }
 
