@@ -50,7 +50,6 @@ void QCstmPlotHistogram::generateGraph(histogram* Histogram){
   for(unsigned u = 0; u < nBins;u++){
     Y = Histogram->getBin(u);
     X = u+shift;
-    qDebug() << "adding" << X << "," << Y;
     graph->addData(X,Y);
    }
   graph->rescaleAxes();
@@ -66,7 +65,6 @@ void QCstmPlotHistogram::addHistogram(histogram *hist){
 }
 
 void QCstmPlotHistogram::changeRange(QCPRange newRange){
-  qDebug() << "Changing range of hist to " << newRange.lower << ","<< newRange.upper;
   minClampChanged(newRange.lower);
   maxClampChanged(newRange.upper);
 }

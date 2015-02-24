@@ -15,7 +15,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 } else {
 	QT += core gui
 }
-QT += network
+QT += network opengl
 
 CONFIG   += debug c++11
 
@@ -63,3 +63,10 @@ HEADERS += ThlScan.h
 HEADERS += DACs.h
 
 FORMS    += mpx3gui.ui
+
+DISTFILES += \
+    shaders/texturedquad.vert \
+    shaders/grayscale.frag \
+    shaders/heatmaps/redblue.frag \
+    shaders/test.frag \
+    shaders/passthrough.vert

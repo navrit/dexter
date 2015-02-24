@@ -7,11 +7,9 @@ histogram::histogram(int *data, unsigned nData, unsigned binWidth = 1)
 
 void histogram::setData(int *data, unsigned nData, unsigned binWidth){
   this->binWidth = binWidth;
-  qDebug() << "deleting" << bins;
   delete[] bins;
   scanData(data, nData);
   bins = new unsigned[nBins];
-  qDebug() << "allocated" << bins;
   for(unsigned u = 0; u < nBins;u++){
       bins[u] =0;
   }
@@ -24,7 +22,6 @@ histogram::histogram()
 
 histogram::~histogram() //double detor because of copy.
 {
-  qDebug() << "detoring" << bins << "from" << this;
   delete[] bins;
 }
 
@@ -40,7 +37,6 @@ void histogram::scanData(int *data, unsigned n){
   this->max = max;
   this->min = min;
   this->nBins = (unsigned)(max-min+this->binWidth)/this->binWidth;
-  qDebug() << min << "to" << max << "->" << nBins;
 }
 
 void histogram::addCount(int * data,  unsigned n){//TODO: add bounds checking, allow for dynamic growing. (Not neccesary for this project atm but is nice).

@@ -26,7 +26,6 @@ QCstmPlotHeatmap::~QCstmPlotHeatmap(){
 
 void QCstmPlotHeatmap::changeRange(QCPRange newRange){
   colorScale->setDataRange(newRange);
-  qDebug() << "Changing range of main plot to " << newRange.lower <<"to"<< newRange.upper;
   replot();
 }
 

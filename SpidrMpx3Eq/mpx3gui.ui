@@ -1146,11 +1146,11 @@
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_7">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,3,0,2">
+         <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="3,3,0,2">
           <item>
-           <widget class="QOpenGLWidget" name="glPlot">
+           <widget class="QGLHeatmap" name="glPlot">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -1264,6 +1264,11 @@
     <slot>changeRange(QCPRange)</slot>
     <slot>setActive(int)</slot>
    </slots>
+  </customwidget>
+  <customwidget>
+   <class>QGLHeatmap</class>
+   <extends>QOpenGLWidget</extends>
+   <header>qglheatmap.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
