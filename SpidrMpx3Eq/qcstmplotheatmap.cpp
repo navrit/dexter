@@ -71,7 +71,7 @@ void QCstmPlotHeatmap::addData(int *data, int nx, int ny){
   colorMaps.last()->setTightBoundary(true);
   //colorMap->setInterpolate(false);
   //colorMap->setTightBoundary(true);
-  connect(colorMaps.last(), SIGNAL(dataRangeChanged(QCPRange)), this, SIGNAL(dataRangeChanged(QCPRange)));
+  connect(colorMaps.last(), SIGNAL(dataRangeChanged(QCPRange)), this, SIGNAL(dataRangeChanged(QCPRange)));//TODO: is this correct?
   colorMaps.last()->data()->setRange(QCPRange(0, nx), QCPRange(0,ny));
   colorMaps.last()->clearData();
   colorMaps.last()->data()->setSize(nx, ny);
@@ -86,6 +86,16 @@ void QCstmPlotHeatmap::addData(int *data, int nx, int ny){
   this->addPlottable(colorMaps.last());
   colorMaps.last()->setVisible(false);
   colorMaps.last()->setColorScale(colorScale);
+}
+
+void QCstmPlotHeatmap::setData(int *data, int nx, int ny){
+  for(unsigned u = 0;  u < ny; u++)
+    for(unsigned w = 0; w < nx;w++){
+      colorMaps[active]->data()->setCell(w,u, data[u*nx+w]); //TODO: read 0 here. error.
+    }
+  // rescale the key (x) and value (y) axes so the whole color map is visible:
+  colorMaps[active]->rescaleDataRange(true);
+  colorMaps[active]->rescaleAxes();
 }
 
 void QCstmPlotHeatmap::setActive(int index){
