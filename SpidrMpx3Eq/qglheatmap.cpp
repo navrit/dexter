@@ -56,7 +56,7 @@ void QGLHeatmap::initializeGL()
     program.link();
     program.bind();
     program.enableAttributeArray("position");
-    program.setAttributeArray("position", GL_FLOAT, nullptr, 0, 2); //is this the same as below?
+    program.setAttributeArray("position", GL_FLOAT, nullptr, 2, 0); //is this the same as below?
     //glVertexAttribIPointer(program.attributeLocation("position"), 2, GL_FLOAT, 0, NULL);
 
     qDebug() << "current context: " << QOpenGLContext::currentContext();
