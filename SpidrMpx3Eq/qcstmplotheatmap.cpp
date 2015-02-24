@@ -172,13 +172,16 @@ void QCstmPlotHeatmap::mousePressEvent(QMouseEvent *event){
     }*/
 }
 
-/*void QCstmPlotHeatmap::mouseMoveEvent(QMouseEvent *event){//TODO: uses a lot of cpu, implement differently or not at all?
+void QCstmPlotHeatmap::mouseMoveEvent(QMouseEvent *event){//TODO: uses a lot of cpu, implement differently or not at all?
     QCustomPlot::mouseMoveEvent(event);
-      double x = this->xAxis->pixelToCoord(event->pos().x());
-      double y = this->yAxis->pixelToCoord(event->pos().y());
-      double z = colorMap->data()->data(x, y);
-      title->setText(QString("%3 @ (%1 , %2)").arg(x).arg(y).arg(z));
-      replot();
-}*/
+    if(-1 != active){
+        double x = this->xAxis->pixelToCoord(event->pos().x());
+        double y = this->yAxis->pixelToCoord(event->pos().y());
+        double z = colorMaps[active]->data()->data(x, y);
+        emit(mouseOverChanged(QString("%3 @ (%1 , %2)").arg(x).arg(y).arg(z)));
+      //title->setText(QString("%3 @ (%1 , %2)").arg(x).arg(y).arg(z));
+      //replot();
+      }
+}
 
 

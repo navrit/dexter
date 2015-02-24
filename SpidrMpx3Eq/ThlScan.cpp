@@ -73,8 +73,8 @@ void ThlScan::DoScan(){
 	Configuration();
 
 	// Prepare the heatmap
-	_heatmap->addData( 0x0, 0, 0 );
-	_heatmap->setActive( 0 );
+	//_heatmap->addData( 0x0, 0, 0 );
+	//_heatmap->setActive( 0 );
 	_heatmap->clear();
 	for(int maskOffsetItr = 0 ; maskOffsetItr < 1 ; maskOffsetItr++ ) {
 

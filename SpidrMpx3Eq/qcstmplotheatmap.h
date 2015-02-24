@@ -22,6 +22,7 @@ class QCstmPlotHeatmap : public QCustomPlot
   int active = -1;
 public:
   void mousePressEvent(QMouseEvent *event);
+  void mouseMoveEvent(QMouseEvent *event);
   void addData(int *data, int nx, int ny);
   void setData(int *data, int nx, int ny);
   void clear();
@@ -32,6 +33,7 @@ signals:
   void dataRangeChanged(QCPRange newRange);
   void plotCountChanged(int nPlots);
   void activePlotChanged(int activePlot);
+  void mouseOverChanged(QString sample);
  public slots:
   //void onXRangeChanged(QCPRange newRange);
   void setActive(int);
