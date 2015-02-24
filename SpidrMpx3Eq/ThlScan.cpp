@@ -79,11 +79,11 @@ void ThlScan::DoScan(){
 	for(int maskOffsetItr = 0 ; maskOffsetItr < 1 ; maskOffsetItr++ ) {
 
 		// Set mask
-		int nMasked = SetEqualizationMask(4, maskOffsetItr);
+		int nMasked = SetEqualizationMask(32, maskOffsetItr);
 		cout << "N pixels unmasked = " << __matrix_size - nMasked << endl;
 
 		// Start the Scan for one mask
-		for(int i = 200 ; i >= 0 ; i -= 10 ) {
+		for(int i = 0 ; i <= 200 ; i += 10 ) {
 
 			//cout << "THL : " << i << endl;
 
@@ -103,7 +103,6 @@ void ThlScan::DoScan(){
 				data = _spidrdaq->frameData(0, &size_in_bytes);
 
 				ExtractScanInfo( data, size_in_bytes );
-
 
 				_spidrdaq->releaseFrame();
 				Sleep( 10 ); // Allow time to get and decode the next frame, if any
@@ -239,6 +238,18 @@ int ThlScan::SetEqualizationMask(int spacing, int offset) {
 	ClearMask();
 
 	for (int i = 0 ; i < __array_size_x ; i++) {
+			for (int j = 0 ; j < __array_size_y ; j++) {
+				_spidrcontrol->setPixelMaskMpx3rx(i, j, true);
+			}
+		}
+
+	// unmask only one
+	_spidrcontrol->setPixelMaskMpx3rx(1, 1, false);
+	_spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
+	return 1;
+
+
+	for (int i = 0 ; i < __array_size_x ; i++) {
 
 		// For instance if spacing = 4, there should be calls with offset=0,1,2,3
 		//  in order to cover the whole matrix.
@@ -267,3 +278,14 @@ int ThlScan::SetEqualizationMask(int spacing, int offset) {
 	return (int) _maskedSet.size();
 }
 
+void ThlScan::ClearMask(){
+
+	for (int i = 0 ; i < __array_size_x ; i++) {
+		for (int j = 0 ; j < __array_size_y ; j++) {
+			_spidrcontrol->setPixelMaskMpx3rx(i, j, false);
+		}
+	}
+	_spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
+
+	_maskedSet.clear();
+};

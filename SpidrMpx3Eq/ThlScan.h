@@ -32,7 +32,7 @@ public:
 	void RewindData();
 	void DoScan();
 	int SetEqualizationMask(int spacing, int offset);
-	void ClearMask(){ _maskedSet.clear(); };
+	void ClearMask();
 	void Configuration();
 	void ExtractScanInfo(int * data, int size_in_bytes);
 	void UpdateChart(int thlValue);
