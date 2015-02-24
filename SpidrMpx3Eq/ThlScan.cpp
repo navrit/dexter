@@ -29,6 +29,7 @@ ThlScan::ThlScan(BarChart * bc, QCstmPlotHeatmap * hm) {
 	_nTriggers = 1;
 	_deviceIndex = 2;
 	_heatmap = hm;
+	_spacing = 4;
 
 	RewindData();
 
@@ -76,60 +77,66 @@ void ThlScan::DoScan(){
 	//_heatmap->addData( 0x0, 0, 0 );
 	//_heatmap->setActive( 0 );
 	_heatmap->clear();
-	for(int maskOffsetItr = 0 ; maskOffsetItr < 1 ; maskOffsetItr++ ) {
+	for(int maskOffsetItr_x = 0 ; maskOffsetItr_x < _spacing ; maskOffsetItr_x++ ) {
 
-		// Set mask
-		int nMasked = SetEqualizationMask(32, maskOffsetItr);
-		cout << "N pixels unmasked = " << __matrix_size - nMasked << endl;
+		for(int maskOffsetItr_y = 0 ; maskOffsetItr_y < _spacing ; maskOffsetItr_y++ ) {
 
-		// Start the Scan for one mask
-		for(int i = 0 ; i <= 200 ; i += 10 ) {
+			// Set mask
+			int nMasked = SetEqualizationMask(_spacing, maskOffsetItr_x, maskOffsetItr_y);
+			cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  " | N pixels unmasked = " << __matrix_size - nMasked << endl;
 
-			//cout << "THL : " << i << endl;
+			// Start the Scan for one mask
+			for(int i = 10 ; i <= 11 ; i += 10 ) {
 
-			_spidrcontrol->setDac( dev_nr, MPX3RX_DAC_THRESH_0, i );
-			//_spidrcontrol->writeDacs( dev_nr );
+				//cout << "THL : " << i << endl;
 
-			// Start the trigger as configured
-			_spidrcontrol->startAutoTrigger();
-			Sleep( 50 );
+				_spidrcontrol->setDac( dev_nr, MPX3RX_DAC_THRESH_0, i );
+				//_spidrcontrol->writeDacs( dev_nr );
 
-			// See if there is a frame available
-			// I should get as many frames as triggers
-			unsigned nFrames = 0;
-			while ( _spidrdaq->hasFrame() ) {
+				// Start the trigger as configured
+				_spidrcontrol->startAutoTrigger();
+				Sleep( 50 );
 
-				int size_in_bytes = -1;
-				data = _spidrdaq->frameData(0, &size_in_bytes);
+				// See if there is a frame available
+				// I should get as many frames as triggers
 
-				ExtractScanInfo( data, size_in_bytes );
+				while ( _spidrdaq->hasFrame() ) {
 
-				_spidrdaq->releaseFrame();
-				Sleep( 10 ); // Allow time to get and decode the next frame, if any
+					int size_in_bytes = -1;
+					data = _spidrdaq->frameData(0, &size_in_bytes);
 
-				// Report to heatmap
-				for(int i = 0 ; i < 256*256 ; i++) {
-					if( data[i] != 0 ) {
-						cout << i << ": " << data[i] << endl;
-					}
+					cout << size_in_bytes << endl;
+
+					ExtractScanInfo( data, size_in_bytes );
+
+					_spidrdaq->releaseFrame();
+					Sleep( 10 ); // Allow time to get and decode the next frame, if any
+
+
+					//for(int i = 0 ; i < 256*256 ; i++) {
+					//	if( data[i] != 0 ) {
+					//		cout << i << ": " << data[i] << endl;
+					//	}
+					//}
+					// Report to heatmap
+					_heatmap->addData(data, 256, 256); //Add a new plot/frame.
+					_heatmap->setActive(-1); // Activate the last plot (the new one)
+					//_heatmap->setData( data, 256, 256 );
+
 				}
-				_heatmap->addData(data,256,256); //Add a new plot/frame.
-				_heatmap->setActive(nFrames++); //Activate the last plot (the new one)
-				//_heatmap->setData( data, 256, 256 );
+
+				// Report to graph
+				UpdateChart(i);
+
+				// Clean map
+				_pixelCountsMap.clear();
 
 			}
 
-			// Report to graph
-			UpdateChart(i);
-
-			// Clean map
-			_pixelCountsMap.clear();
+			// Try to resize to min max the X axis here
+			_chart->GetBarChartProperties()->max_x[0] = 200;
 
 		}
-
-		// Try to resize to min max the X axis here
-		_chart->GetBarChartProperties()->max_x[0] = 200;
-
 	}
 
 
@@ -234,35 +241,23 @@ void ThlScan::Configuration(){
  * Create and apply the mask with a given spacing
  *
  */
-int ThlScan::SetEqualizationMask(int spacing, int offset) {
+int ThlScan::SetEqualizationMask(int spacing, int offset_x, int offset_y) {
 
-	// Clear previous mask
-	ClearMask();
-
-	for (int i = 0 ; i < __array_size_x ; i++) {
-			for (int j = 0 ; j < __array_size_y ; j++) {
-				_spidrcontrol->setPixelMaskMpx3rx(i, j, true);
-			}
-		}
-
-	// unmask only one
-	_spidrcontrol->setPixelMaskMpx3rx(1, 1, false);
-	_spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
-	return 1;
-
+	// Clear previous mask.  Not sending the configuration yet !
+	ClearMask(false);
 
 	for (int i = 0 ; i < __array_size_x ; i++) {
 
-		// For instance if spacing = 4, there should be calls with offset=0,1,2,3
+		// For instance if spacing = 4, there should be calls with offset_x=0,1,2,3
 		//  in order to cover the whole matrix.
-		if ( (i + offset) % spacing == 0 ) { // This is the right column
+		if ( (i + offset_x) % spacing == 0 ) { // This is the right column
 
 			for (int j = 0 ; j < __array_size_y ; j++) {
 
-				if( (j + offset) % spacing != 0 ) { // This one should be masked
+				if( (j + offset_y) % spacing != 0 ) { // This one should be masked
 					_spidrcontrol->setPixelMaskMpx3rx(i, j);
 					_maskedSet.insert( XYtoX(i, j, __array_size_x ) );
-				} // leaving unmasked (j + offset) % spacing == 0
+				} // leaving unmasked (j + offset_x) % spacing == 0
 
 			}
 
@@ -275,19 +270,23 @@ int ThlScan::SetEqualizationMask(int spacing, int offset) {
 
 	}
 
-	cout << "N masked = " << _maskedSet.size() << endl;
+	// And send the configuration
+	_spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
+
+	//cout << "N masked = " << _maskedSet.size() << endl;
 
 	return (int) _maskedSet.size();
 }
 
-void ThlScan::ClearMask(){
+void ThlScan::ClearMask(bool sendToChip){
 
 	for (int i = 0 ; i < __array_size_x ; i++) {
 		for (int j = 0 ; j < __array_size_y ; j++) {
 			_spidrcontrol->setPixelMaskMpx3rx(i, j, false);
 		}
 	}
-	_spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
+	// And send the configuration
+	if ( sendToChip ) _spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
 
 	_maskedSet.clear();
 };
