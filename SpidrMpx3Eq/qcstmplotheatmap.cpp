@@ -62,13 +62,15 @@ void QCstmPlotHeatmap::clear(){
   for(int i = 0; i < colorMaps.count(); i++)
       delete colorMaps[i];
   colorMaps.clear();
+  this->clearPlottables();
   active = -1;
+  emit(plotCountChanged(0));
 }
 
 void QCstmPlotHeatmap::addData(int *data, int nx, int ny){
   colorMaps.append(new QCPColorMap(xAxis, yAxis));
   colorMaps.last()->setInterpolate(false);
-  colorMaps.last()->setTightBoundary(true);
+  //colorMaps.last()->setTightBoundary(true);
   //colorMap->setInterpolate(false);
   //colorMap->setTightBoundary(true);
   connect(colorMaps.last(), SIGNAL(dataRangeChanged(QCPRange)), this, SIGNAL(dataRangeChanged(QCPRange)));//TODO: is this correct?
@@ -77,7 +79,7 @@ void QCstmPlotHeatmap::addData(int *data, int nx, int ny){
   colorMaps.last()->data()->setSize(nx,ny);
   for(unsigned u = 0;  u < ny; u++)
     for(unsigned w = 0; w < nx;w++){
-      colorMaps.last()->data()->setCell(w,u, data[u*nx+w]); //TODO: read 0 here. error.
+      colorMaps.last()->data()->setCell(w,ny-1-u, data[u*nx+w]); //TODO: read 0 here. error.
     }
   this->addPlottable(colorMaps.last());
   // rescale the key (x) and value (y) axes so the whole color map is visible:
@@ -96,7 +98,7 @@ void QCstmPlotHeatmap::setData(int *data, int nx, int ny){
   colorMaps[active]->data()->setSize(nx, ny);
   for(unsigned u = 0;  u < ny; u++)
     for(unsigned w = 0; w < nx;w++){
-      colorMaps[active]->data()->setCell(w,u, data[u*nx+w]); //TODO: read 0 here. error.
+      colorMaps[active]->data()->setCell(w,ny-1-u, data[u*nx+w]); //TODO: read 0 here. error.
     }
   // rescale the key (x) and value (y) axes so the whole color map is visible:
   colorMaps[active]->rescaleDataRange(true);
@@ -184,7 +186,7 @@ void QCstmPlotHeatmap::mouseMoveEvent(QMouseEvent *event){//TODO: uses a lot of 
     if(-1 != active){
         double x = this->xAxis->pixelToCoord(event->pos().x());
         double y = this->yAxis->pixelToCoord(event->pos().y());
-        double z = colorMaps[active]->data()->data(x, y);
+        double z = colorMaps[active]->data()->data(x, colorMaps[active]->data()->valueSize() -y);
         emit(mouseOverChanged(QString("%3 @ (%1 , %2)").arg(x).arg(y).arg(z)));
       //title->setText(QString("%3 @ (%1 , %2)").arg(x).arg(y).arg(z));
       //replot();

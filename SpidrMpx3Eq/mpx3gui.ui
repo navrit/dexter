@@ -41,7 +41,7 @@
            </widget>
           </item>
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout" stretch="0,6,0,0,0,4">
+           <layout class="QVBoxLayout" name="verticalLayout" stretch="0,8,0,0,0,0,4">
             <item>
              <widget class="QSpinBox" name="frameSpinner">
               <property name="maximum">
@@ -51,6 +51,16 @@
             </item>
             <item>
              <widget class="QCstmPlotHeatmap" name="_intermediatePlot" native="true"/>
+            </item>
+            <item>
+             <widget class="QLabel" name="mouseHoveLabel">
+              <property name="text">
+               <string/>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="_connect">
@@ -1153,14 +1163,7 @@
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_7">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="3,3,0,2">
-          <item>
-           <widget class="QGLHeatmap" name="glPlot">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
+         <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="3,0,2">
           <item>
            <widget class="QCstmPlotHeatmap" name="heatmap" native="true"/>
           </item>
@@ -1255,6 +1258,7 @@
     <signal>dataRangeChanged(QCPRange)</signal>
     <signal>plotCountChanged(int)</signal>
     <signal>activePlotChanged(int)</signal>
+    <signal>nouseOverChanged(QString)</signal>
     <slot>setHeatmap(QCPColorGradient)</slot>
     <slot>changeRange(QCPRange)</slot>
     <slot>setActive(int)</slot>
@@ -1273,11 +1277,6 @@
     <slot>changeRange(QCPRange)</slot>
     <slot>setActive(int)</slot>
    </slots>
-  </customwidget>
-  <customwidget>
-   <class>QGLHeatmap</class>
-   <extends>QOpenGLWidget</extends>
-   <header>qglheatmap.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -39,6 +39,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
 	connect( _ui->_startEq, SIGNAL(clicked()), this, SLOT(StartEqualization()) );
 	connect( _ui->_connect, SIGNAL(clicked()), this, SLOT(Connect()) );
+	connect(_ui->_intermediatePlot, SIGNAL(mouseOverChanged(QString)), _ui->mouseHoveLabel, SLOT(setText(QString)));
 	_ui->_statusLabel->setStyleSheet("QLabel { background-color : gray; color : black; }");
 
 	_ui->_histoWidget->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
