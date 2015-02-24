@@ -34,6 +34,7 @@ public:
 
 	QCPBars * GetDataSet(int id) { return _barSets.at(id); };
 	void SetBarChartProperties(BarChartProperties * bp) { _bp = bp; };
+	BarChartProperties * GetBarChartProperties(){ return _bp; };
 	void PrepareSets();
 
 	void SetValueInSet(unsigned int setId, double val, double weight = 1);

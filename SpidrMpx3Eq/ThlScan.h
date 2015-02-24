@@ -14,6 +14,7 @@ using namespace std;
 class SpidrController;
 class SpidrDaq;
 class BarChart;
+class QCstmPlotHeatmap;
 
 enum Thl_Status {
 	__NOT_TESTED_YET = 0,
@@ -24,7 +25,7 @@ class ThlScan {
 public:
 
 	ThlScan();
-	ThlScan(BarChart *);
+	ThlScan(BarChart *, QCstmPlotHeatmap *);
 	~ThlScan();
 
 	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
@@ -44,6 +45,8 @@ private:
 	SpidrController * _spidrcontrol;
 	SpidrDaq * _spidrdaq;
 	BarChart * _chart;
+	QCstmPlotHeatmap * _heatmap;
+
 	map<int, int> _pixelCountsMap;
 	set<int> _maskedSet;
 	int _nTriggers;

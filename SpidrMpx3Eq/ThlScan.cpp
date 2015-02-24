@@ -9,6 +9,7 @@
 
 #include "mpx3eq_common.h"
 #include "barchart.h"
+#include "qcstmplotheatmap.h"
 
 #include "mpx3defs.h"
 
@@ -19,14 +20,15 @@ ThlScan::ThlScan() {
 
 }
 
-ThlScan::ThlScan(BarChart * bc) {
+ThlScan::ThlScan(BarChart * bc, QCstmPlotHeatmap * hm) {
 
 	// keep these pointers
 	_spidrcontrol = 0; // Assuming no connection yet
 	_spidrdaq = 0;     // Assuming no connection yet
 	_chart = bc;
-	_nTriggers = 10;
+	_nTriggers = 1;
 	_deviceIndex = 2;
+	_heatmap = hm;
 
 	RewindData();
 
@@ -70,6 +72,10 @@ void ThlScan::DoScan(){
 	// Set the right configuration
 	Configuration();
 
+	// Prepare the heatmap
+	_heatmap->addData( 0x0, 0, 0 );
+	_heatmap->setActive( 0 );
+
 	for(int maskOffsetItr = 0 ; maskOffsetItr < 1 ; maskOffsetItr++ ) {
 
 		// Set mask
@@ -77,7 +83,7 @@ void ThlScan::DoScan(){
 		cout << "N pixels unmasked = " << __matrix_size - nMasked << endl;
 
 		// Start the Scan for one mask
-		for(int i = 250 ; i >= 0 ; i -= 10 ) {
+		for(int i = 200 ; i >= 0 ; i -= 10 ) {
 
 			//cout << "THL : " << i << endl;
 
@@ -102,6 +108,14 @@ void ThlScan::DoScan(){
 				_spidrdaq->releaseFrame();
 				Sleep( 10 ); // Allow time to get and decode the next frame, if any
 
+				// Report to heatmap
+				for(int i = 0 ; i < 256*256 ; i++) {
+					if( data[i] != 0 ) {
+						cout << i << ": " << data[i] << endl;
+					}
+				}
+				_heatmap->setData( data, 256, 256 );
+
 			}
 
 			// Report to graph
@@ -112,6 +126,9 @@ void ThlScan::DoScan(){
 
 		}
 
+		// Try to resize to min max the X axis here
+		_chart->GetBarChartProperties()->max_x[0] = 200;
+
 	}
 
 
@@ -120,8 +137,8 @@ void ThlScan::DoScan(){
 void ThlScan::ExtractScanInfo(int * data, int size_in_bytes) {
 
 	int nPixels = size_in_bytes/4;
-	//int pixelsActive = 0;
-	// Each 32 bits corresponds to the counts in each pixel alread
+	// int pixelsActive = 0;
+	// Each 32 bits corresponds to the counts in each pixel already
 	// in 'int' representation as the decoding has been requested
 	for(int i = 0 ; i < nPixels ; i++) {
 
@@ -186,6 +203,11 @@ void ThlScan::Configuration(){
 	//_spidrcontrol->setGainMode( 1 );
 
 	// Gain ?!
+	// 00: SHGM
+	// 10: HGM
+	// 01: LGM
+	// 11: SLGM
+	_spidrcontrol->setGainMode( _deviceIndex, 2 );
 
 	// Other OMR
 	_spidrdaq->setDecodeFrames( true );
@@ -198,7 +220,7 @@ void ThlScan::Configuration(){
 
 	// Trigger config
 	int trig_mode      = 4;     // Auto-trigger mode
-	int trig_length_us = 1000;  // This time shouldn't be longer than the period defined by trig_freq_hz
+	int trig_length_us = 5000;  // This time shouldn't be longer than the period defined by trig_freq_hz
 	int trig_freq_hz   = 100;   // One trigger every 10ms
 	int nr_of_triggers = _nTriggers;    // This is the number of shutter open i get
 	//int trig_pulse_count;
