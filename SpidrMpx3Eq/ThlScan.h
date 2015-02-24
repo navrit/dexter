@@ -31,8 +31,8 @@ public:
 	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
 	void RewindData();
 	void DoScan();
-	int SetEqualizationMask(int spacing, int offset);
-	void ClearMask();
+	int SetEqualizationMask(int spacing, int offset_x, int offset_y);
+	void ClearMask(bool ClearMask = true);
 	void Configuration();
 	void ExtractScanInfo(int * data, int size_in_bytes);
 	void UpdateChart(int thlValue);
@@ -50,6 +50,7 @@ private:
 	map<int, int> _pixelCountsMap;
 	set<int> _maskedSet;
 	int _nTriggers;
+	int _spacing;
 
 	// Current device Id
 	int _deviceIndex;
