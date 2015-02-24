@@ -21,7 +21,6 @@ QCstmPlotHeatmap::QCstmPlotHeatmap(QWidget*& parent){
 }
 
 QCstmPlotHeatmap::~QCstmPlotHeatmap(){
-
 }
 
 void QCstmPlotHeatmap::changeRange(QCPRange newRange){
@@ -36,58 +35,39 @@ void QCstmPlotHeatmap::resizeEvent(QResizeEvent *event){
 }
 
 void QCstmPlotHeatmap::setHeatmap(QCPColorGradient &gradient){
-  currentGradient = gradient;
-  if(active >= 0){
-      colorMaps[active]->setGradient(currentGradient);
-      replot();
-  }
+  colorScale->setGradient(gradient);
+  replot();
 }
 
-/*void QCstmPlotHeatmap::setData(int *data, int nx, int ny){
-  colorMap->data()->setRange(QCPRange(0, nx), QCPRange(0,ny));
-  colorMap->clearData();
-  colorMap->data()->setSize(nx, ny);
-  for(unsigned u = 0;  u < ny; u++)
-    for(unsigned w = 0; w < nx;w++){
-      colorMap->data()->setCell(w,u, data[u*nx+w]); //TODO: read 0 here. error.
-    }
-  // rescale the key (x) and value (y) axes so the whole color map is visible:
-  colorMap->rescaleDataRange(true);
-  colorMap->rescaleAxes();
-  this->xAxis->setScaleRatio(this->yAxis,1);
-  this->replot();
-}*/
-
 void QCstmPlotHeatmap::clear(){
-  for(int i = 0; i < colorMaps.count(); i++)
-      delete colorMaps[i];
-  colorMaps.clear();
   this->clearPlottables();
+  colorMaps.clear();
   active = -1;
   emit(plotCountChanged(0));
+  replot();
 }
 
 void QCstmPlotHeatmap::addData(int *data, int nx, int ny){
-  colorMaps.append(new QCPColorMap(xAxis, yAxis));
-  colorMaps.last()->setInterpolate(false);
-  //colorMaps.last()->setTightBoundary(true);
-  //colorMap->setInterpolate(false);
-  //colorMap->setTightBoundary(true);
-  connect(colorMaps.last(), SIGNAL(dataRangeChanged(QCPRange)), this, SIGNAL(dataRangeChanged(QCPRange)));//TODO: is this correct?
-  colorMaps.last()->clearData();
-  colorMaps.last()->data()->setRange(QCPRange(0, nx), QCPRange(0,ny));
-  colorMaps.last()->data()->setSize(nx,ny);
+  QCPColorMap* newMap = new QCPColorMap(xAxis, yAxis);
+  qDebug() << "Allocated new map, " << newMap;
+  colorMaps.append(newMap);
+  newMap->setInterpolate(false);
+  connect(newMap, SIGNAL(dataRangeChanged(QCPRange)), this, SIGNAL(dataRangeChanged(QCPRange)));//TODO: is this correct?
+  newMap->clearData();
+  newMap->data()->setRange(QCPRange(0, nx), QCPRange(0,ny));
+  newMap->data()->setSize(nx,ny);
   for(unsigned u = 0;  u < ny; u++)
     for(unsigned w = 0; w < nx;w++){
-      colorMaps.last()->data()->setCell(w,ny-1-u, data[u*nx+w]); //TODO: read 0 here. error.
+      newMap->data()->setCell(w,ny-1-u, data[u*nx+w]); //TODO: read 0 here. error.
     }
-  this->addPlottable(colorMaps.last());
+  this->addPlottable(newMap);
   // rescale the key (x) and value (y) axes so the whole color map is visible:
-  colorMaps.last()->rescaleAxes();
-  colorMaps.last()->rescaleDataRange(true);//TODO: this doesn't do anything...?
+  newMap->rescaleAxes();
+  newMap->rescaleDataRange(true);//TODO: this doesn't do anything...?
   this->xAxis->setScaleRatio(this->yAxis,1);
-  colorMaps.last()->setColorScale(colorScale);
-  colorScale->rescaleDataRange(false);
+  newMap->setColorScale(colorScale);
+  colorScale->rescaleDataRange(true);
+  newMap->setVisible(false);
   //setActive(-1);
   emit(plotCountChanged(colorMaps.count()-1));
 }
@@ -108,7 +88,6 @@ void QCstmPlotHeatmap::setData(int *data, int nx, int ny){
 }
 
 void QCstmPlotHeatmap::setActive(int index){
-  qDebug() << "setActvie called";
   if(!colorMaps.count()){
       return;
     }
@@ -116,20 +95,14 @@ void QCstmPlotHeatmap::setActive(int index){
     index = 0;
   if(index == active)
     return;
-  colorMaps[index]->setGradient(currentGradient);
-  if(0 <= active){
-      qDebug() << "Masked frame " << active;
+  if(active >= 0){
+      //qDebug() << "Masked frame " << active;
       colorMaps[active]->setVisible(false);
     }
-  /*if(index == -1){
-      index = colorMaps.count()-1;
-    }*/
   colorMaps[index]->setVisible(true);
   active = index;
-  qDebug() << "Unmasked frame " << active;
+  qDebug() << "now active: " << active;
   emit(activePlotChanged(active));
-  //this->clearPlottables();
-  //this->replot();
   this->replot();
 }
 
@@ -170,17 +143,6 @@ void QCstmPlotHeatmap::onReplot(){//TODO: fix bugs based on fast draggin (see go
      this->xAxis->setScaleRatio(this->yAxis,1);
 }
 
-void QCstmPlotHeatmap::mousePressEvent(QMouseEvent *event){
-  QCustomPlot::mousePressEvent(event);
-  /*if((active >= 0) && (event->button() == Qt::RightButton)){
-      double x = this->xAxis->pixelToCoord(event->pos().x());
-      double y = this->yAxis->pixelToCoord(event->pos().y());
-      double z = colorMaps[active]->data()->data(x, y);
-      //title->setText(QString("%3 @ (%1 , %2)").arg(x).arg(y).arg(z));
-      replot();
-    }*/
-}
-
 void QCstmPlotHeatmap::mouseMoveEvent(QMouseEvent *event){//TODO: uses a lot of cpu, implement differently or not at all?
     QCustomPlot::mouseMoveEvent(event);
     if(-1 != active){
@@ -188,9 +150,19 @@ void QCstmPlotHeatmap::mouseMoveEvent(QMouseEvent *event){//TODO: uses a lot of 
         double y = this->yAxis->pixelToCoord(event->pos().y());
         double z = colorMaps[active]->data()->data(x, colorMaps[active]->data()->valueSize() -y);
         emit(mouseOverChanged(QString("%3 @ (%1 , %2)").arg(x).arg(y).arg(z)));
-      //title->setText(QString("%3 @ (%1 , %2)").arg(x).arg(y).arg(z));
-      //replot();
       }
 }
 
+bool QCstmPlotHeatmap::event(QEvent *event){
+  if (event->type() == QEvent::ToolTip)
+      if(active >= 0){
+        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+        double x = this->xAxis->pixelToCoord(helpEvent->pos().x());
+        double y = this->yAxis->pixelToCoord(helpEvent->pos().y());
+        double z = colorMaps[active]->data()->data(x, colorMaps[active]->data()->valueSize() -y);
+        QToolTip::showText(helpEvent->globalPos(), QString("%3 @ (%1 , %2)").arg(x).arg(y).arg(z));
+        return true;
+      }
+  return QWidget::event(event);
+}
 

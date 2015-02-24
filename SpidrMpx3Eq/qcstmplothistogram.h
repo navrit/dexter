@@ -46,7 +46,7 @@ class QCstmPlotHistogram : public QCustomPlot
               xReleased = xClicked;
               xClicked = tmp;
           };
-          qDebug() << "dragged: " << xClicked << "to" << xReleased;
+          //qDebug() << "dragged: " << xClicked << "to" << xReleased;
           emit rangeChanged(QCPRange(xClicked, xReleased));
         }
   }

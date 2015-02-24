@@ -36,10 +36,15 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
         heatmapMap.insert("Thermal", QCPColorGradient::gpThermal);
         //and set them
         _ui->heatmapCombobox->addItems(heatmapMap.keys());
+        _ui->equalizationHeatmapCombo->addItems(heatmapMap.keys());
+        _ui->heatmapCombobox->setCurrentText("Thermal"); //set initial heatmap. Gets mirrored between both plots.
+        _ui->heatmap->replot();
+        _ui->_intermediatePlot->replot(); //inconsistent naming schemes? what are you talking about...
 
 	connect( _ui->_startEq, SIGNAL(clicked()), this, SLOT(StartEqualization()) );
 	connect( _ui->_connect, SIGNAL(clicked()), this, SLOT(Connect()) );
 	connect(_ui->_intermediatePlot, SIGNAL(mouseOverChanged(QString)), _ui->mouseHoveLabel, SLOT(setText(QString)));
+	connect(_ui->heatmap, SIGNAL(mouseOverChanged(QString)), _ui->resultsMouseoverLabel, SLOT(setText(QString)));
 	_ui->_statusLabel->setStyleSheet("QLabel { background-color : gray; color : black; }");
 
 	_ui->_histoWidget->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
@@ -67,13 +72,13 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
 	// some randon numbers
 	srand (time(NULL));
-	int noise[256*256] = {0};
+	/*int noise[256*256] = {0};
 	for(unsigned u = 0; u < 4;u++){
 	    for(unsigned w = 0; w < 256*256;w++)
 	      noise[w] = rand()%64;
 	_ui->_intermediatePlot->addData(noise,256,256); //Add a new plot/frame.
 	_ui->_intermediatePlot->setActive(u); //Activate the last plot (the new one)
-	  }
+	  }*/
 }
 
 

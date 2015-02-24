@@ -19,10 +19,10 @@ class QCstmPlotHeatmap : public QCustomPlot
   ~QCstmPlotHeatmap();
   QList<QCPColorMap*> colorMaps;//TODO: not dynamically allocated?
   QCPColorScale *colorScale;
-  QCPColorGradient currentGradient;
+  //QCPColorGradient currentGradient;
   int active = -1;
 public:
-  void mousePressEvent(QMouseEvent *event);
+  bool event(QEvent *event);
   void mouseMoveEvent(QMouseEvent *event);
   void addData(int *data, int nx, int ny);
   void setData(int *data, int nx, int ny);

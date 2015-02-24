@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1002</width>
-    <height>708</height>
+    <width>823</width>
+    <height>535</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,7 +41,7 @@
            </widget>
           </item>
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout" stretch="0,8,0,0,0,0,4">
+           <layout class="QVBoxLayout" name="verticalLayout" stretch="0,8,0,0,0,0,0,0,4">
             <item>
              <widget class="QSpinBox" name="frameSpinner">
               <property name="maximum">
@@ -59,6 +59,16 @@
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="equalizationHeatmapCombo"/>
+            </item>
+            <item>
+             <widget class="Line" name="line_3">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
               </property>
              </widget>
             </item>
@@ -1163,9 +1173,23 @@
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_7">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="3,0,2">
+         <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="4,0,2">
           <item>
-           <widget class="QCstmPlotHeatmap" name="heatmap" native="true"/>
+           <layout class="QVBoxLayout" name="verticalLayout_7" stretch="1,0">
+            <item>
+             <widget class="QCstmPlotHeatmap" name="heatmap" native="true"/>
+            </item>
+            <item>
+             <widget class="QLabel" name="resultsMouseoverLabel">
+              <property name="text">
+               <string/>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
            <widget class="Line" name="line_2">
@@ -1207,8 +1231,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1002</width>
-     <height>19</height>
+     <width>823</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -1374,6 +1398,38 @@
     <hint type="destinationlabel">
      <x>789</x>
      <y>252</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>equalizationHeatmapCombo</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>heatmapCombobox</receiver>
+   <slot>setCurrentIndex(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>788</x>
+     <y>419</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>790</x>
+     <y>624</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>heatmapCombobox</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>equalizationHeatmapCombo</receiver>
+   <slot>setCurrentIndex(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>790</x>
+     <y>624</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>788</x>
+     <y>419</y>
     </hint>
    </hints>
   </connection>
