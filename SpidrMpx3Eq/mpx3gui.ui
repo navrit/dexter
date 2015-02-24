@@ -21,7 +21,7 @@
        <string>DAC Control</string>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -41,7 +41,14 @@
            </widget>
           </item>
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout" stretch="6,0,0,0,4">
+           <layout class="QVBoxLayout" name="verticalLayout" stretch="0,6,0,0,0,4">
+            <item>
+             <widget class="QSpinBox" name="frameSpinner">
+              <property name="maximum">
+               <number>99999</number>
+              </property>
+             </widget>
+            </item>
             <item>
              <widget class="QCstmPlotHeatmap" name="_intermediatePlot" native="true"/>
             </item>
@@ -1198,7 +1205,7 @@
      <x>0</x>
      <y>0</y>
      <width>1002</width>
-     <height>21</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -1246,6 +1253,8 @@
    <container>1</container>
    <slots>
     <signal>dataRangeChanged(QCPRange)</signal>
+    <signal>plotCountChanged(int)</signal>
+    <signal>activePlotChanged(int)</signal>
     <slot>setHeatmap(QCPColorGradient)</slot>
     <slot>changeRange(QCPRange)</slot>
     <slot>setActive(int)</slot>
@@ -1334,6 +1343,38 @@
     <hint type="destinationlabel">
      <x>791</x>
      <y>354</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>_intermediatePlot</sender>
+   <signal>activePlotChanged(int)</signal>
+   <receiver>frameSpinner</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>789</x>
+     <y>252</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>789</x>
+     <y>93</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>frameSpinner</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>_intermediatePlot</receiver>
+   <slot>setActive(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>789</x>
+     <y>93</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>789</x>
+     <y>252</y>
     </hint>
    </hints>
   </connection>

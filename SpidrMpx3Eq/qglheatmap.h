@@ -3,13 +3,13 @@
 
 #include <QObject>
 #include <QWidget>
-#include <QOpenGLFunctions_3_3_Core>
+#include <QtGui/QOpenGLFunctions_3_3_Core>
 #include <QOpenGLWidget>
-#include <QOpenGLShader>
-#include <QOpenGLShaderProgram>
-#include <QOpenGLBuffer>
-#include <QOpenGLVertexArrayObject>
-#include <QOpenGLTexture>
+#include <QtGui/QOpenGLShader>
+#include <QtGui/QOpenGLShaderProgram>
+#include <QtGui/QOpenGLBuffer>
+#include <QtGui/QOpenGLVertexArrayObject>
+#include <QtGui/QOpenGLTexture>
 
 /*TODO:
  * Error handling.

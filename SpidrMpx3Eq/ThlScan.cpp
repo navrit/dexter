@@ -75,7 +75,7 @@ void ThlScan::DoScan(){
 	// Prepare the heatmap
 	_heatmap->addData( 0x0, 0, 0 );
 	_heatmap->setActive( 0 );
-
+	_heatmap->clear();
 	for(int maskOffsetItr = 0 ; maskOffsetItr < 1 ; maskOffsetItr++ ) {
 
 		// Set mask
@@ -113,7 +113,9 @@ void ThlScan::DoScan(){
 						cout << i << ": " << data[i] << endl;
 					}
 				}
-				_heatmap->setData( data, 256, 256 );
+				_heatmap->addData(data,256,256); //Add a new plot/frame.
+				_heatmap->setActive(-1); //Activate the last plot (the new one)
+				//_heatmap->setData( data, 256, 256 );
 
 			}
 

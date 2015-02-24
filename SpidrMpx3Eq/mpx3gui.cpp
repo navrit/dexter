@@ -59,7 +59,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	startTimer( 200 );
 
 	// ThlScan
-	_tscan = new ThlScan(_ui->_histoWidget);
+	_tscan = new ThlScan(_ui->_histoWidget, _ui->_intermediatePlot);
 
 	// Prepare DACs panel
 	_dacs = new DACs(_coreApp, _ui);

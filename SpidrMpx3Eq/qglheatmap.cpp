@@ -1,7 +1,7 @@
 #include "qglheatmap.h"
 
 #include <QDirIterator>
-#include <QOpenGLContext>
+#include <QtGui/QOpenGLContext>
 #include <QPixmap>
 #define SHADER_DIR "Z:/Bonz/SpidrMpx3Eq/shaders"
 const GLfloat squareVertices[] =  {-1.0, -1.0,
@@ -56,7 +56,7 @@ void QGLHeatmap::initializeGL()
     program.link();
     program.bind();
     program.enableAttributeArray("position");
-    program.setAttributeArray("position", GL_FLOAT, nullptr, 2, 0); //is this the same as below?
+    program.setAttributeArray("position", GL_FLOAT, nullptr, 0,2); //is this the same as below?
     //glVertexAttribIPointer(program.attributeLocation("position"), 2, GL_FLOAT, 0, NULL);
 
     qDebug() << "current context: " << QOpenGLContext::currentContext();
@@ -67,7 +67,7 @@ void QGLHeatmap::paintGL(){
   VBO.bind();
   VAO.bind();
   program.bind();
-  glDrawArrays(GL_TRIANGLES,0,4);
+  glDrawArrays(GL_TRIANGLE_STRIP,0,4);
   program.release();
 }
 

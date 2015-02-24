@@ -30,6 +30,8 @@ public:
   QCstmPlotHeatmap(QWidget*& parent);
 signals:
   void dataRangeChanged(QCPRange newRange);
+  void plotCountChanged(int nPlots);
+  void activePlotChanged(int activePlot);
  public slots:
   //void onXRangeChanged(QCPRange newRange);
   void setActive(int);

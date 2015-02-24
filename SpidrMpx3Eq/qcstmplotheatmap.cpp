@@ -86,6 +86,7 @@ void QCstmPlotHeatmap::addData(int *data, int nx, int ny){
   this->addPlottable(colorMaps.last());
   colorMaps.last()->setVisible(false);
   colorMaps.last()->setColorScale(colorScale);
+  emit(plotCountChanged(colorMaps.count()-1));
 }
 
 void QCstmPlotHeatmap::setData(int *data, int nx, int ny){
@@ -103,10 +104,21 @@ void QCstmPlotHeatmap::setData(int *data, int nx, int ny){
 }
 
 void QCstmPlotHeatmap::setActive(int index){
+  if(!colorMaps.count()){
+      return;
+    }
+  if(index >= colorMaps.count() )
+    index = 0;
+  if(index == active)
+    return;
   colorMaps[index]->setGradient(currentGradient);
   if(0 <= active) colorMaps[active]->setVisible(false);
+  if(index == -1){
+      index = colorMaps.count()-1;
+    }
   colorMaps[index]->setVisible(true);
   active = index;
+  emit(activePlotChanged(active));
   //this->clearPlottables();
   //this->replot();
   this->replot();

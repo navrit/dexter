@@ -1,9 +1,8 @@
 #include "mpx3gui.h"
 #include <QApplication>
-#include <QtOpenGL/QGLFormat>
 //#include "ui_spidrmpx3eq.h"
 //#include <QAbstractOpenGLFunctions>
-#include <QOpenGLFunctions_3_3_Core>
+#include <QtGui/QOpenGLFunctions_3_3_Core>
 int main(int argc, char *argv[])
 {
 
