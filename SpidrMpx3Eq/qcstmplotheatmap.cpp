@@ -89,6 +89,7 @@ void QCstmPlotHeatmap::addData(int *data, int nx, int ny){
 }
 
 void QCstmPlotHeatmap::setData(int *data, int nx, int ny){
+  colorMaps[active]->clearData();
   for(unsigned u = 0;  u < ny; u++)
     for(unsigned w = 0; w < nx;w++){
       colorMaps[active]->data()->setCell(w,u, data[u*nx+w]); //TODO: read 0 here. error.

@@ -23,6 +23,7 @@ class QCstmPlotHeatmap : public QCustomPlot
 public:
   void mousePressEvent(QMouseEvent *event);
   void addData(int *data, int nx, int ny);
+  void setData(int *data, int nx, int ny);
   void clear();
   void setHeatmap(QCPColorGradient &gradient);
   void rescaleAxes(void);
