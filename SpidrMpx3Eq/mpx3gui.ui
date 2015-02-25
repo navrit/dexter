@@ -41,7 +41,7 @@
            </widget>
           </item>
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout" stretch="0,8,0,0,0,0,0,0,4">
+           <layout class="QVBoxLayout" name="verticalLayout" stretch="0,8,0,0,0,0,0,0">
             <item>
              <widget class="QSpinBox" name="frameSpinner">
               <property name="maximum">
@@ -80,13 +80,6 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="_startEq">
-              <property name="text">
-               <string>Start Eq</string>
-              </property>
-             </widget>
-            </item>
-            <item>
              <widget class="QLabel" name="_statusLabel">
               <property name="text">
                <string>Standby ...</string>
@@ -94,17 +87,78 @@
              </widget>
             </item>
             <item>
-             <spacer name="verticalSpacer">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
+             <widget class="QPushButton" name="_startEq">
+              <property name="text">
+               <string>Start Eq</string>
               </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
+             </widget>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_7">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_8">
+                <item>
+                 <widget class="QLabel" name="eqLabelnTriggers">
+                  <property name="text">
+                   <string>nTriggers</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QSpinBox" name="nTriggersSpinBox"/>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_3">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QLabel" name="eqLabelDevId">
+                  <property name="text">
+                   <string>Dev Id</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QSpinBox" name="devIdSpinBox"/>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_4">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QLabel" name="eqLabelSpacing">
+                  <property name="text">
+                   <string>Spacing</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QSpinBox" name="spacingSpinBox"/>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QTextBrowser" name="eqTextBrowser"/>
             </item>
            </layout>
           </item>
@@ -1231,8 +1285,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>823</width>
-     <height>21</height>
+     <width>1002</width>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
