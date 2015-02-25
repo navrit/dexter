@@ -19,6 +19,10 @@ BarChart::~BarChart() {
 
 }
 
+void BarChart::SetBarChartProperties(BarChartProperties * bp) {
+	_bp = bp;
+}
+
 void BarChart::PrepareSets() {
 
 	unsigned int nSets = (unsigned int)_bp->name.size();

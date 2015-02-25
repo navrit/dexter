@@ -12,9 +12,9 @@
 125 // I_Disc
 100 // I_Disc_LS
 100 // I_Shaper_test
-90  // I_DAC_DiscL //Run equalization to find the optimal value (Threshold 0 equalization)
+100  // I_DAC_DiscL //Run equalization to find the optimal value (Threshold 0 equalization) // originaly at 90
 100 // I_DAC_test
-90  // I_DAC_DiscH //Run equalization to find the optimal value (Threshold 1 equalization) 
+100  // I_DAC_DiscH //Run equalization to find the optimal value (Threshold 1 equalization) // originaly at 90
 50  // I_Delay
 128 // I_TP_BufferIn
 4   // I_TP_BufferOut

@@ -29,6 +29,8 @@ class SpidrDaq;
 class DACs;
 class ThlScan;
 class BarChart;
+class BarChartProperties;
+
 
 namespace Ui {
 	class Mpx3GUI;
@@ -45,14 +47,21 @@ public:
 	void PrintFraction(int * buffer, int size, int first_last);
 	int GetNPixelsActive(int * buffer, int size, verblev verbose);
 	pair<int, int> XtoXY(int X, int dimX);
+	void SetupSignalsAndSlots();
+	void SetLimits();
 
 private:
+
 	QStringList files;
 	QMap<QString, QCPColorGradient> heatmapMap;
 	QApplication * _coreApp;
 	Ui::Mpx3GUI * _ui;
 	SpidrController * _spidrcontrol;
 	SpidrDaq * _spidrdaq;
+
+	int _deviceIndex;
+	int _nTriggers;
+	int _spacing;
 
 	int **data = 0;
 	unsigned *nx =0, *ny =0, nData =0;
@@ -71,6 +80,9 @@ private slots:
 
 	void StartEqualization();
 	void Connect();
+	void ChangeNTriggers(int);
+	void ChangeDeviceIndex(int);
+	void ChangeSpacing(int);
 
 	void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
 	void on_openfileButton_clicked();

@@ -24,40 +24,54 @@
 
 Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent), _coreApp(coreApp), _ui(new Ui::Mpx3GUI)
 {
+
 	_ui->setupUi(this);
 
-        //index various heatmaps
-        heatmapMap.insert("Grayscale", QCPColorGradient::gpGrayscale);
-        heatmapMap.insert("Jet", QCPColorGradient::gpJet);
-        /*heatmapMap.insert("Ion", QCPColorGradient::gpIon);
+	// Some defaults
+	_deviceIndex = 2;
+	_nTriggers = 1;
+	_spacing = 4;
+
+	// Limits in the input widgets
+	SetLimits();
+
+	//index various heatmaps
+	heatmapMap.insert("Grayscale", QCPColorGradient::gpGrayscale);
+	heatmapMap.insert("Jet", QCPColorGradient::gpJet);
+	/*heatmapMap.insert("Ion", QCPColorGradient::gpIon);
         heatmapMap.insert("Candy", QCPColorGradient::gpCandy);*/
-        heatmapMap.insert("Hot", QCPColorGradient::gpHot);
-        heatmapMap.insert("Cold", QCPColorGradient::gpCold);
-        heatmapMap.insert("Thermal", QCPColorGradient::gpThermal);
-        //and set them
-        _ui->heatmapCombobox->addItems(heatmapMap.keys());
-        _ui->equalizationHeatmapCombo->addItems(heatmapMap.keys());
-        _ui->heatmapCombobox->setCurrentText("Thermal"); //set initial heatmap. Gets mirrored between both plots.
-        _ui->heatmap->replot();
-        _ui->_intermediatePlot->replot(); //inconsistent naming schemes? what are you talking about...
+	heatmapMap.insert("Hot", QCPColorGradient::gpHot);
+	heatmapMap.insert("Cold", QCPColorGradient::gpCold);
+	heatmapMap.insert("Thermal", QCPColorGradient::gpThermal);
+	//and set them
+	_ui->heatmapCombobox->addItems(heatmapMap.keys());
 
 	connect( _ui->_startEq, SIGNAL(clicked()), this, SLOT(StartEqualization()) );
 	connect( _ui->_connect, SIGNAL(clicked()), this, SLOT(Connect()) );
 	connect(_ui->_intermediatePlot, SIGNAL(mouseOverChanged(QString)), _ui->mouseHoveLabel, SLOT(setText(QString)));
-	connect(_ui->heatmap, SIGNAL(mouseOverChanged(QString)), _ui->resultsMouseoverLabel, SLOT(setText(QString)));
 	_ui->_statusLabel->setStyleSheet("QLabel { background-color : gray; color : black; }");
 
 	_ui->_histoWidget->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
 
-	// Set One histogram
+	// Set histograms required to start
 	BarChartProperties * cprop = new BarChartProperties;
-	cprop->name.push_back("Adj0");
+	cprop->name.push_back("DAC_DiscL100");
 	cprop->min_x.push_back(0);
 	cprop->max_x.push_back(511);
 	cprop->nBins.push_back(511);
-	cprop->color_r.push_back(150);
-	cprop->color_g.push_back(222);
+	cprop->color_r.push_back(127);
+	cprop->color_g.push_back(10);
 	cprop->color_b.push_back(0);
+
+	/*
+	cprop->name.push_back("DAC_DiscL=150");
+	cprop->min_x.push_back(0);
+	cprop->max_x.push_back(511);
+	cprop->nBins.push_back(511);
+	cprop->color_r.push_back(0);
+	cprop->color_g.push_back(10);
+	cprop->color_b.push_back(155);
+	 */
 
 	_ui->_histoWidget->SetBarChartProperties( cprop );
 	_ui->_histoWidget->PrepareSets();
@@ -70,88 +84,78 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	// Prepare DACs panel
 	_dacs = new DACs(_coreApp, _ui);
 
+	// Prepare Equalization
+
+	// Signals and slots
+	SetupSignalsAndSlots();
+
 	// some randon numbers
+	/*
 	srand (time(NULL));
-	/*int noise[256*256] = {0};
+	int noise[256*256] = {0};
 	for(unsigned u = 0; u < 4;u++){
 	    for(unsigned w = 0; w < 256*256;w++)
 	      noise[w] = rand()%64;
 	_ui->_intermediatePlot->addData(noise,256,256); //Add a new plot/frame.
 	_ui->_intermediatePlot->setActive(u); //Activate the last plot (the new one)
-	  }*/
+	  }
+	 */
 }
 
+void Mpx3GUI::SetLimits(){
+
+	//
+	_ui->devIdSpinBox->setValue( _deviceIndex );
+	_ui->devIdSpinBox->setMinimum( 0 );
+	_ui->devIdSpinBox->setMaximum( 3 );
+
+	_ui->nTriggersSpinBox->setValue( _nTriggers );
+	_ui->nTriggersSpinBox->setMinimum( 1 );
+	_ui->nTriggersSpinBox->setMaximum( 1000 );
+
+	_ui->spacingSpinBox->setValue( _spacing );
+	_ui->spacingSpinBox->setMinimum( 1 );
+	_ui->spacingSpinBox->setMaximum( 64 );
+
+}
 
 Mpx3GUI::~Mpx3GUI()
 {
 	delete _ui;
 }
 
-
 void Mpx3GUI::StartEqualization(){
 
-	//int i;
-	//int dev_nr = 2;
-	//int * data;
-
+	_ui->eqTextBrowser->setText( "Start ...\n 325.6" );
 
 	_tscan->DoScan();
 
-	/*
-	_spidrcontrol->setDac( dev_nr, MPX3_DAC_THRESH_1, 511 );
 
-	for( i=0; i < 511; i+=100 ) {
 
-		cout << "THL : " << i << " -------------------------" << endl;
+}
 
-		_spidrcontrol->setDac( dev_nr, MPX3_DAC_THRESH_0, i );
+void Mpx3GUI::SetupSignalsAndSlots() {
 
-		_spidrcontrol->writeDacs( dev_nr );
+	// Buttons
+	connect( _ui->nTriggersSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeNTriggers(int) ) );
+	connect( _ui->devIdSpinBox, SIGNAL(valueChanged(int)), this, SLOT(  ChangeDeviceIndex(int) ) );
+	connect( _ui->spacingSpinBox, SIGNAL(valueChanged(int)), this, SLOT(  ChangeSpacing(int) ) );
 
-		_spidrcontrol->startAutoTrigger();
-		Sleep( 50 );
+}
 
-		while ( _spidrdaq->hasFrame() ) {
+void Mpx3GUI::ChangeNTriggers( int nTriggers ) {
+	if( nTriggers < 0 ) return; // can't really happen cause the SpinBox has been limited
+	_nTriggers = nTriggers;
+}
 
-			int size_in_bytes = -1;
-			data = _spidrdaq->frameData(0, &size_in_bytes);
-			//cout << "Size in bytes = " << size_in_bytes << endl;
-			//PrintFraction(data, size_in_bytes, 100);
-			int nActive = GetNPixelsActive(data, size_in_bytes, __VERBL_DEBUG);
+void Mpx3GUI::ChangeDeviceIndex( int index ) {
+	if( index < 0 ) return; // can't really happen cause the SpinBox has been limited
+	_deviceIndex = index;
+}
 
-			cout << ", active : " << nActive << " ";
-
-			double t = _spidrdaq->frameTimestampDouble();
-			unsigned int secs = (unsigned int) t;
-			unsigned int msecs = (unsigned int) ((t - secs)*1000.0+0.5);
-			//cout << "T=" << fixed << setprecision(9)
-			// << spidrdaq.frameTimestampDouble() << endl;
-
-			//cout << "T=" << secs << "."
-			//		<< setfill('0') << setw(3) << msecs
-			//		<< ", " << spidrdaq.framesProcessedCount()
-			//		<< ", Ts=" << hex << spidrdaq.frameTimestampSpidr()
-			//		<< dec << endl;
-
-			//for	( int j = 0 ; j < N ; j++ ) {
-			//	cout << data[j] << ", ";
-			//}
-
-			_spidrdaq->releaseFrame();
-			Sleep( 50 ); // Allow time to get and decode the next frame, if any
-
-		}
-
-		cout << " " << endl;
-
-		//cout << "DAQ frames: " << spidrdaq.framesCount() << ", lost "
-		//		<< spidrdaq.framesLostCount() << ", lost pkts "
-		//		<< spidrdaq.packetsLostCount() << ", exp seqnr (dev 0) "
-		//		<< spidrdaq.expSequenceNr( 0 ) << endl;
-	}
-
-	 */
-
+void Mpx3GUI::ChangeSpacing( int spacing ) {
+	if( spacing < 0 ) return;
+	_spacing = spacing;
 }
 
 void Mpx3GUI::Connect() {
@@ -199,7 +203,7 @@ void Mpx3GUI::Connect() {
 	Sleep( 1000 );
 	cout << _spidrdaq->errorString() << endl;
 
-/*
+	/*
 	// Reset pixel configuration
 	_spidrcontrol->resetPixelConfig();
 	//_spidrcontrol->writePixelConfigMpx3rx( dev_nr );
@@ -234,7 +238,7 @@ void Mpx3GUI::Connect() {
 	int trig_pulse_count;
 	_spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
 			trig_freq_hz, nr_of_triggers );
-*/
+	 */
 
 
 	// Prepare THl scans for equalization
@@ -308,50 +312,50 @@ pair<int, int> Mpx3GUI::XtoXY(int X, int dimX){
 
 void Mpx3GUI::on_heatmapCombobox_currentIndexChanged(const QString &arg1)//would be more elegant to do with signals and slots, but would require either specalizing the combobox, or making the heatmapMap globally visible.
 {
-  _ui->heatmap->setHeatmap(heatmapMap[arg1]);
-  _ui->_intermediatePlot->setHeatmap(heatmapMap[arg1]);
+	_ui->heatmap->setHeatmap(heatmapMap[arg1]);
+	_ui->_intermediatePlot->setHeatmap(heatmapMap[arg1]);
 }
 
 void Mpx3GUI::on_openfileButton_clicked()
 {
-  QImage image;
-  files = QFileDialog::getOpenFileNames(this, tr("Open File"),QStandardPaths::writableLocation(QStandardPaths::PicturesLocation), tr("Images (*.png *.xpm *.jpg *.gif *.png)"));
-  if(files.isEmpty())
-    return;
-  _ui->layerCombobox->clear();
-  _ui->layerCombobox->addItems(files);
-  _ui->histogramPlot->clear();
-  delete[] nx; delete[] ny;
-  for(unsigned u = 0; u < nData; u++){
-    delete[] data[u];
-    delete hists[u];
-    }
-  delete[] data;
-  delete[] hists;
-  _ui->heatmap->clear();
-  nData = files.length();
-  data = new int*[nData];
-  hists = new histogram*[nData];
-  nx = new unsigned[nData]; ny = new unsigned[nData];
-  for(unsigned i = 0; i < nData; i++){
-    image.load(files[i]);
-      if (image.isNull()) {
-          QMessageBox::information(this, tr("Image Viewer"), tr("Cannot load %1.").arg(files[i]));
-          return;
-      }
-      nx[i] = image.width(); ny[i] = image.height();
-      data[i] = new int[nx[i]*ny[i]];
-      for(unsigned u = 0; u < ny[i]; u++)
-        for(unsigned w = 0; w < nx[i];w++){
-            QRgb pixel = image.pixel(w,u);
-            data[i][u*nx[i]+w] = qGray(pixel);
-          }
-      hists[i] = new histogram(data[i],nx[i]*ny[i], 1);
-      _ui->histogramPlot->addHistogram(hists[i]);
-      _ui->heatmap->addData(data[i], nx[i], ny[i]);
-  }
-  _ui->histogramPlot->setActive(0);
-  _ui->heatmap->setActive(0);
-  //_ui->histogramPlot->rescaleAxes();
-  _ui->heatmap->rescaleAxes();
+	QImage image;
+	files = QFileDialog::getOpenFileNames(this, tr("Open File"),QStandardPaths::writableLocation(QStandardPaths::PicturesLocation), tr("Images (*.png *.xpm *.jpg *.gif *.png)"));
+	if(files.isEmpty())
+		return;
+	_ui->layerCombobox->clear();
+	_ui->layerCombobox->addItems(files);
+	_ui->histogramPlot->clear();
+	delete[] nx; delete[] ny;
+	for(unsigned u = 0; u < nData; u++){
+		delete[] data[u];
+		delete hists[u];
+	}
+	delete[] data;
+	delete[] hists;
+	_ui->heatmap->clear();
+	nData = files.length();
+	data = new int*[nData];
+	hists = new histogram*[nData];
+	nx = new unsigned[nData]; ny = new unsigned[nData];
+	for(unsigned i = 0; i < nData; i++){
+		image.load(files[i]);
+		if (image.isNull()) {
+			QMessageBox::information(this, tr("Image Viewer"), tr("Cannot load %1.").arg(files[i]));
+			return;
+		}
+		nx[i] = image.width(); ny[i] = image.height();
+		data[i] = new int[nx[i]*ny[i]];
+		for(unsigned u = 0; u < ny[i]; u++)
+			for(unsigned w = 0; w < nx[i];w++){
+				QRgb pixel = image.pixel(w,u);
+				data[i][u*nx[i]+w] = qGray(pixel);
+			}
+		hists[i] = new histogram(data[i],nx[i]*ny[i], 1);
+		_ui->histogramPlot->addHistogram(hists[i]);
+		_ui->heatmap->addData(data[i], nx[i], ny[i]);
+	}
+	_ui->histogramPlot->setActive(0);
+	_ui->heatmap->setActive(0);
+	//_ui->histogramPlot->rescaleAxes();
+	_ui->heatmap->rescaleAxes();
 }

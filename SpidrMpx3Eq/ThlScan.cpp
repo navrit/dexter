@@ -74,9 +74,12 @@ void ThlScan::DoScan(){
 	Configuration();
 
 	// Prepare the heatmap
-	//_heatmap->addData( 0x0, 0, 0 );
-	//_heatmap->setActive( 0 );
 	_heatmap->clear();
+	int frameId = 0;
+
+	//int * intedata = new int[256*256];
+	//for(int i = 0 ; i < 256*256 ; i++ ) intedata[i] = 0;
+
 	for(int maskOffsetItr_x = 0 ; maskOffsetItr_x < _spacing ; maskOffsetItr_x++ ) {
 
 		for(int maskOffsetItr_y = 0 ; maskOffsetItr_y < _spacing ; maskOffsetItr_y++ ) {
@@ -86,7 +89,7 @@ void ThlScan::DoScan(){
 			cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  " | N pixels unmasked = " << __matrix_size - nMasked << endl;
 
 			// Start the Scan for one mask
-			for(int i = 10 ; i <= 11 ; i += 10 ) {
+			for(int i = 0 ; i <= 200 ; i += 16 ) {
 
 				//cout << "THL : " << i << endl;
 
@@ -105,8 +108,6 @@ void ThlScan::DoScan(){
 					int size_in_bytes = -1;
 					data = _spidrdaq->frameData(0, &size_in_bytes);
 
-					cout << size_in_bytes << endl;
-
 					ExtractScanInfo( data, size_in_bytes );
 
 					_spidrdaq->releaseFrame();
@@ -120,8 +121,11 @@ void ThlScan::DoScan(){
 					//}
 					// Report to heatmap
 					_heatmap->addData(data, 256, 256); //Add a new plot/frame.
-					_heatmap->setActive(-1); // Activate the last plot (the new one)
+					_heatmap->setActive(frameId++); // Activate the last plot (the new one)
 					//_heatmap->setData( data, 256, 256 );
+
+					// integral
+					//for(int i = 0 ; i < 256*256 ; i++ ) intedata[i] += data[i];
 
 				}
 
@@ -133,12 +137,17 @@ void ThlScan::DoScan(){
 
 			}
 
+			//_heatmap->addData(intedata, 256, 256); //Add a new plot/frame.
+			//_heatmap->setActive(frameId++); // Activate the last plot (the new one)
+			//for(int i = 0 ; i < 256*256 ; i++ ) intedata[i] = 0;
+
 			// Try to resize to min max the X axis here
-			_chart->GetBarChartProperties()->max_x[0] = 200;
+			//_chart->GetBarChartProperties()->max_x[0] = 200;
 
 		}
 	}
 
+	// At this point
 
 }
 
