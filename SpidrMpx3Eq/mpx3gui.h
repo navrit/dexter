@@ -30,62 +30,56 @@ class DACs;
 class ThlScan;
 class BarChart;
 class BarChartProperties;
-
+class Mpx3Equalization;
 
 namespace Ui {
-	class Mpx3GUI;
+class Mpx3GUI;
 }
 
+class ModuleConnection {
+
+public:
+	ModuleConnection(){};
+	~ModuleConnection(){};
+	//
+	void SetDACs(DACs * p) { _dacs = p ;};
+	void SetEqualization(Mpx3Equalization * p) { _equalization = p; };
+	// A pointer to the other tabs
+	DACs * GetDACs() { return _dacs; };
+	Mpx3Equalization * GetEqualization() { return _equalization; };
+
+private:
+
+	// Equalization
+	Mpx3Equalization * _equalization;
+	// DACs
+	DACs * _dacs;
+};
+
 class Mpx3GUI : public QMainWindow {
+
 	Q_OBJECT
 
 public:
+
 	explicit Mpx3GUI(QApplication * coreApp, QWidget *parent = 0);
 	~Mpx3GUI();
 
 	void timerEvent( QTimerEvent * );
-	void PrintFraction(int * buffer, int size, int first_last);
-	int GetNPixelsActive(int * buffer, int size, verblev verbose);
-	pair<int, int> XtoXY(int X, int dimX);
-	void SetupSignalsAndSlots();
-	void SetLimits();
 
 private:
 
-	QStringList files;
-	QMap<QString, QCPColorGradient> heatmapMap;
 	QApplication * _coreApp;
 	Ui::Mpx3GUI * _ui;
-	SpidrController * _spidrcontrol;
-	SpidrDaq * _spidrdaq;
 
-	int _deviceIndex;
-	int _nTriggers;
-	int _spacing;
-
-	int **data = 0;
-	unsigned *nx =0, *ny =0, nData =0;
-	histogram **hists = 0;
-
-	// Drawing object
-	//QCustomPlot * _customPlot;
-	//BarChart * _chart;
-
-	// Object in charge of performing Thl scans
-	ThlScan * _tscan;
+	// Each object here deals with one tab of the
+	// Equalization
+	Mpx3Equalization * _equalization;
 	// DACs
 	DACs * _dacs;
+	// This helps interconnecting the different modules
+	ModuleConnection * _moduleConn;
 
-private slots:
-
-	void StartEqualization();
-	void Connect();
-	void ChangeNTriggers(int);
-	void ChangeDeviceIndex(int);
-	void ChangeSpacing(int);
-
-	void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
-	void on_openfileButton_clicked();
 };
 
 

@@ -6,13 +6,13 @@
 int main(int argc, char *argv[])
 {
 
-  QApplication a(argc, argv);
+	QApplication a(argc, argv);
 
-  // At this level there's a difference between
-  // SpidrMpx3Eq and Ui::SpidrMpx3Eq.  Not to be confused.
-  Mpx3GUI w( &a );
+	// At this level there's a difference between
+	// SpidrMpx3Eq and Ui::SpidrMpx3Eq.  Not to be confused.
+	Mpx3GUI w( &a );
 
-    w.show();
+	w.show();
 
-    return a.exec();
+	return a.exec();
 }

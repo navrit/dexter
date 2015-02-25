@@ -51,6 +51,7 @@ SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
 SOURCES += DACs.cpp
+SOURCES += mpx3equalization.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -59,6 +60,7 @@ HEADERS += mpx3gui.h \
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DACs.h
+HEADERS += mpx3equalization.h
 
 FORMS    += mpx3gui.ui
 

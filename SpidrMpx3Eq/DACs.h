@@ -121,6 +121,7 @@ class QCheckBox;
 class SenseDACsThread;
 class ScanDACsThread;
 class QSignalMapper;
+class ModuleConnection;
 
 class SignalSlotMapping : public QObject {
 
@@ -142,7 +143,7 @@ class DACs : public QObject {
 public:
 
 	explicit DACs();
-	explicit DACs(QApplication * coreApp, Ui::Mpx3GUI * bc);
+	explicit DACs(QApplication * coreApp, Ui::Mpx3GUI * );
 	~DACs();
 	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
 	void PopulateDACValues();
@@ -162,11 +163,15 @@ public:
 	int GetScanStep() { return _scanStep; };
 	QCPGraph * GetGraph(int idx);
 	QCustomPlot * GetQCustomPlotPtr() { return _dacScanPlot; };
+	void SetModuleConnection(ModuleConnection * p) { _moduleConn = p; };
 
 private:
 
 	void FillWidgetVectors();
 	void SetLimits();
+
+	// Connectivity between modules
+	ModuleConnection * _moduleConn;
 
 	QApplication * _coreApp;
 	SpidrController * _spidrcontrol;
