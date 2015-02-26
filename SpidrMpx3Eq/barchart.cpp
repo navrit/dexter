@@ -102,6 +102,7 @@ void BarChart::SetValueInSet(unsigned int setId, double val, double weight) {
 
 	QCPBarData bin_content = (*(GetDataSet(setId)->data()))[val];
 	GetDataSet(setId)->addData( bin_content.key , bin_content.value + weight );
+	//GetDataSet(setId)->add
 
 	// Revisit limits
 	QCPRange rangeY = this->yAxis->range();

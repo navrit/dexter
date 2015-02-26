@@ -34,6 +34,9 @@ Mpx3Equalization::Mpx3Equalization(QApplication * coreApp, Ui::Mpx3GUI * ui)
 	_deviceIndex = 2;
 	_nTriggers = 1;
 	_spacing = 4;
+	_minScan = 0;
+	_maxScan = 200;
+	_stepScan = 16;
 
 	// Limits in the input widgets
 	SetLimits();
@@ -82,7 +85,7 @@ Mpx3Equalization::Mpx3Equalization(QApplication * coreApp, Ui::Mpx3GUI * ui)
 	startTimer( 200 );
 
 	// ThlScan
-	_tscan = new ThlScan(_ui->_histoWidget, _ui->_intermediatePlot);
+	_tscan = new ThlScan(_ui->_histoWidget, _ui->_intermediatePlot, this);
 
 	// Signals and slots
 	SetupSignalsAndSlots();
@@ -105,17 +108,29 @@ Mpx3Equalization::Mpx3Equalization() {
 void Mpx3Equalization::SetLimits(){
 
 	//
-	_ui->devIdSpinBox->setValue( _deviceIndex );
 	_ui->devIdSpinBox->setMinimum( 0 );
 	_ui->devIdSpinBox->setMaximum( 3 );
+	_ui->devIdSpinBox->setValue( _deviceIndex );
 
-	_ui->nTriggersSpinBox->setValue( _nTriggers );
 	_ui->nTriggersSpinBox->setMinimum( 1 );
 	_ui->nTriggersSpinBox->setMaximum( 1000 );
+	_ui->nTriggersSpinBox->setValue( _nTriggers );
 
-	_ui->spacingSpinBox->setValue( _spacing );
 	_ui->spacingSpinBox->setMinimum( 1 );
 	_ui->spacingSpinBox->setMaximum( 64 );
+	_ui->spacingSpinBox->setValue( _spacing );
+
+	_ui->eqMinSpinBox->setMinimum( 0 );
+	_ui->eqMinSpinBox->setMaximum( (MPX3RX_DAC_TABLE[ MPX3RX_DAC_THRESH_0 ].dflt * 2) - 1 );
+	_ui->eqMinSpinBox->setValue( _minScan );
+
+	_ui->eqMaxSpinBox->setMinimum( 0 );
+	_ui->eqMaxSpinBox->setMaximum( (MPX3RX_DAC_TABLE[ MPX3RX_DAC_THRESH_0 ].dflt * 2) - 1 );
+	_ui->eqMaxSpinBox->setValue( _maxScan );
+
+	_ui->eqStepSpinBox->setMinimum( 1 );
+	_ui->eqStepSpinBox->setMaximum( (MPX3RX_DAC_TABLE[ MPX3RX_DAC_THRESH_0 ].dflt * 2) - 1 );
+	_ui->eqStepSpinBox->setValue( _stepScan );
 
 }
 
@@ -126,18 +141,83 @@ Mpx3Equalization::~Mpx3Equalization()
 
 void Mpx3Equalization::StartEqualization(){
 
-	_ui->eqTextBrowser->setText( "Start ...\n 325.6" );
+	ClearTextBrowser();
+	AppendToTextBrowser("Start...");
 
-	_tscan->DoScan();
+	// 1)
+	// DAC_DiscL=100
+	Configuration();
+	_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_DISC_L, 100 );
+	//_tscan->DoScan( MPX3RX_DAC_TABLE[ MPX3RX_DAC_THRESH_0 ].code );
+	_tscan->DoScan( MPX3RX_DAC_THRESH_0 );
+
+	QString statsString = "Mean = ";
+	statsString += QString::number(2.1, 'f', 2);
+	AppendToTextBrowser(statsString);
 
 }
 
+void Mpx3Equalization::Configuration(){
+
+	// Reset pixel configuration
+	_spidrcontrol->resetPixelConfig();
+	pair<int, int> pix;
+	for ( int i = 0 ; i < __matrix_size ; i++ ) {
+		pix = XtoXY(i, __array_size_x);
+		_spidrcontrol->configPixelMpx3rx(pix.first, pix.second, 0, 0x0 ); // 0x1F = 31 is the max adjustment for 5 bits
+	}
+	_spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
+
+	// OMR
+	//_spidrcontrol->setPolarity( true );		// Holes collection
+	//_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
+	//_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
+	_spidrcontrol->setPixelDepth( _deviceIndex, 12 );
+
+	_spidrcontrol->setColourMode( _deviceIndex, false ); 	// Fine Pitch
+	_spidrcontrol->setCsmSpm( _deviceIndex, 0 );			// Single Pixel mode
+	_spidrcontrol->setEqThreshH( _deviceIndex, true );
+	_spidrcontrol->setDiscCsmSpm( _deviceIndex, 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
+	//_spidrcontrol->setGainMode( 1 );
+
+	// Gain ?!
+	// 00: SHGM
+	// 10: HGM
+	// 01: LGM
+	// 11: SLGM
+	_spidrcontrol->setGainMode( _deviceIndex, 2 );
+
+	// Other OMR
+	_spidrdaq->setDecodeFrames( true );
+	_spidrcontrol->setPixelDepth( _deviceIndex, 12 );
+	_spidrdaq->setPixelDepth( 12 );
+	_spidrcontrol->setMaxPacketSize( 1024 );
+
+	// Write OMR ... i shouldn't call this here
+	//_spidrcontrol->writeOmr( 0 );
+
+	// Trigger config
+	int trig_mode      = 4;     // Auto-trigger mode
+	int trig_length_us = 5000;  // This time shouldn't be longer than the period defined by trig_freq_hz
+	int trig_freq_hz   = 100;   // One trigger every 10ms
+	int nr_of_triggers = _nTriggers;    // This is the number of shutter open i get
+	//int trig_pulse_count;
+	_spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
+			trig_freq_hz, nr_of_triggers );
+
+}
+
+
 void Mpx3Equalization::SetupSignalsAndSlots() {
 
-	// Buttons
+	// Spinboxes
 	connect( _ui->nTriggersSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeNTriggers(int) ) );
 	connect( _ui->devIdSpinBox, SIGNAL(valueChanged(int)), this, SLOT(  ChangeDeviceIndex(int) ) );
 	connect( _ui->spacingSpinBox, SIGNAL(valueChanged(int)), this, SLOT(  ChangeSpacing(int) ) );
+
+	connect( _ui->eqMinSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeMin(int) ) );
+	connect( _ui->eqMaxSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeMax(int) ) );
+	connect( _ui->eqStepSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeStep(int) ) );
 
 }
 
@@ -154,6 +234,18 @@ void Mpx3Equalization::ChangeDeviceIndex( int index ) {
 void Mpx3Equalization::ChangeSpacing( int spacing ) {
 	if( spacing < 0 ) return;
 	_spacing = spacing;
+}
+void Mpx3Equalization::ChangeMin(int min) {
+	if( min < 0 ) return;
+	_minScan = min;
+}
+void Mpx3Equalization::ChangeMax(int max) {
+	if( max < 0 ) return;
+	_maxScan = max;
+}
+void Mpx3Equalization::ChangeStep(int step) {
+	if( step < 0 ) return;
+	_stepScan = step;
 }
 
 void Mpx3Equalization::Connect() {
@@ -248,6 +340,15 @@ void Mpx3Equalization::Connect() {
 
 }
 
+void Mpx3Equalization::AppendToTextBrowser(QString s){
+
+	_ui->eqTextBrowser->append( s );
+
+}
+
+void Mpx3Equalization::ClearTextBrowser(){
+	_ui->eqTextBrowser->clear();
+}
 
 void Mpx3Equalization::timerEvent( QTimerEvent * /*evt*/ ) {
 

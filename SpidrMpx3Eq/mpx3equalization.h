@@ -36,6 +36,8 @@ class BarChart;
 class BarChartProperties;
 class ModuleConnection;
 
+
+
 class Mpx3Equalization : public QWidget {
 	Q_OBJECT
 
@@ -51,6 +53,15 @@ public:
 	void SetupSignalsAndSlots();
 	void SetLimits();
 	void SetModuleConnection(ModuleConnection * p) { _moduleConn = p; };
+	void Configuration();
+	void AppendToTextBrowser(QString s);
+	void ClearTextBrowser();
+	int GetDeviceIndex(){ return _deviceIndex; };
+	int GetNTriggers(){ return _nTriggers; };
+	int GetSpacing(){ return _spacing; };
+	int GetMinScan(){ return _minScan; };
+	int GetMaxScan(){ return _maxScan; };
+	int GetStepScan(){ return _stepScan; };
 
 private:
 
@@ -68,6 +79,9 @@ private:
 	int _deviceIndex;
 	int _nTriggers;
 	int _spacing;
+	int _minScan;
+	int _maxScan;
+	int _stepScan;
 
 	int **data = 0;
 	unsigned *nx =0, *ny =0, nData =0;
@@ -89,6 +103,9 @@ private slots:
 	void ChangeNTriggers(int);
 	void ChangeDeviceIndex(int);
 	void ChangeSpacing(int);
+	void ChangeMin(int);
+	void ChangeMax(int);
+	void ChangeStep(int);
 
 	void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
 	void on_openfileButton_clicked();

@@ -15,6 +15,7 @@ class SpidrController;
 class SpidrDaq;
 class BarChart;
 class QCstmPlotHeatmap;
+class Mpx3Equalization;
 
 enum Thl_Status {
 	__NOT_TESTED_YET = 0,
@@ -25,17 +26,17 @@ class ThlScan {
 public:
 
 	ThlScan();
-	ThlScan(BarChart *, QCstmPlotHeatmap *);
+	ThlScan(BarChart *, QCstmPlotHeatmap *, Mpx3Equalization *);
 	~ThlScan();
 
 	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
 	void RewindData();
-	void DoScan();
+	void DoScan(int dac_code);
 	int SetEqualizationMask(int spacing, int offset_x, int offset_y);
 	void ClearMask(bool ClearMask = true);
-	void Configuration();
 	void ExtractScanInfo(int * data, int size_in_bytes);
-	void UpdateChart(int thlValue);
+	void UpdateChart(int setId, int thlValue);
+	void ExtractStatsOnChart(int setId);
 
 	int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
 	pair<int, int> XtoXY(int X, int dimX) { return make_pair(X % dimX, X/dimX); }
@@ -46,14 +47,10 @@ private:
 	SpidrDaq * _spidrdaq;
 	BarChart * _chart;
 	QCstmPlotHeatmap * _heatmap;
+	Mpx3Equalization * _equalization;
 
 	map<int, int> _pixelCountsMap;
 	set<int> _maskedSet;
-	int _nTriggers;
-	int _spacing;
-
-	// Current device Id
-	int _deviceIndex;
 
 };
 

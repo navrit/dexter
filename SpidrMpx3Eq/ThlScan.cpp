@@ -12,6 +12,7 @@
 #include "qcstmplotheatmap.h"
 
 #include "mpx3defs.h"
+#include "mpx3equalization.h"
 
 #include <iostream>
 using namespace std;
@@ -20,16 +21,14 @@ ThlScan::ThlScan() {
 
 }
 
-ThlScan::ThlScan(BarChart * bc, QCstmPlotHeatmap * hm) {
+ThlScan::ThlScan(BarChart * bc, QCstmPlotHeatmap * hm, Mpx3Equalization * ptr) {
 
 	// keep these pointers
 	_spidrcontrol = 0; // Assuming no connection yet
 	_spidrdaq = 0;     // Assuming no connection yet
 	_chart = bc;
-	_nTriggers = 1;
-	_deviceIndex = 2;
 	_heatmap = hm;
-	_spacing = 4;
+	_equalization = ptr;
 
 	RewindData();
 
@@ -65,36 +64,36 @@ ThlScan::~ThlScan(){
 
 }
 
-void ThlScan::DoScan(){
+void ThlScan::DoScan(int dac_code){
 
+	// Pointer to incoming data
 	int * data;
-	int dev_nr = 2;
-
-	// Set the right configuration
-	Configuration();
+	int spacing = _equalization->GetSpacing();
+	int minScan = _equalization->GetMinScan();
+	int maxScan = _equalization->GetMaxScan();
+	int stepScan = _equalization->GetStepScan();
+	int deviceIndex = _equalization->GetDeviceIndex();
 
 	// Prepare the heatmap
 	_heatmap->clear();
+	// The heatmap can store the images.  This is the indexing.
 	int frameId = 0;
 
-	//int * intedata = new int[256*256];
-	//for(int i = 0 ; i < 256*256 ; i++ ) intedata[i] = 0;
+	for(int maskOffsetItr_x = 0 ; maskOffsetItr_x < spacing ; maskOffsetItr_x++ ) {
 
-	for(int maskOffsetItr_x = 0 ; maskOffsetItr_x < _spacing ; maskOffsetItr_x++ ) {
-
-		for(int maskOffsetItr_y = 0 ; maskOffsetItr_y < _spacing ; maskOffsetItr_y++ ) {
+		for(int maskOffsetItr_y = 0 ; maskOffsetItr_y < spacing ; maskOffsetItr_y++ ) {
 
 			// Set mask
-			int nMasked = SetEqualizationMask(_spacing, maskOffsetItr_x, maskOffsetItr_y);
+			int nMasked = SetEqualizationMask(spacing, maskOffsetItr_x, maskOffsetItr_y);
 			cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  " | N pixels unmasked = " << __matrix_size - nMasked << endl;
 
 			// Start the Scan for one mask
-			for(int i = 0 ; i <= 200 ; i += 16 ) {
+			for(int i = minScan ; i <= maxScan ; i += stepScan ) {
 
 				//cout << "THL : " << i << endl;
 
-				_spidrcontrol->setDac( dev_nr, MPX3RX_DAC_THRESH_0, i );
-				//_spidrcontrol->writeDacs( dev_nr );
+				_spidrcontrol->setDac( deviceIndex, dac_code, i );
+				//_spidrcontrol->writeDacs( _deviceIndex );
 
 				// Start the trigger as configured
 				_spidrcontrol->startAutoTrigger();
@@ -120,34 +119,30 @@ void ThlScan::DoScan(){
 					//	}
 					//}
 					// Report to heatmap
-					_heatmap->addData(data, 256, 256); //Add a new plot/frame.
+					_heatmap->addData(data, 256, 256); // Add a new plot/frame.
 					_heatmap->setActive(frameId++); // Activate the last plot (the new one)
 					//_heatmap->setData( data, 256, 256 );
-
-					// integral
-					//for(int i = 0 ; i < 256*256 ; i++ ) intedata[i] += data[i];
 
 				}
 
 				// Report to graph
-				UpdateChart(i);
+				UpdateChart(0, i);
 
 				// Clean map
 				_pixelCountsMap.clear();
 
 			}
 
-			//_heatmap->addData(intedata, 256, 256); //Add a new plot/frame.
-			//_heatmap->setActive(frameId++); // Activate the last plot (the new one)
-			//for(int i = 0 ; i < 256*256 ; i++ ) intedata[i] = 0;
-
 			// Try to resize to min max the X axis here
 			//_chart->GetBarChartProperties()->max_x[0] = 200;
 
 		}
 	}
+	///////////////////////////////////////////////////////////////////
+	// Scan finished
 
-	// At this point
+	// Here's on Scan completed.  Do the stats on it.
+	ExtractStatsOnChart(0);
 
 }
 
@@ -164,7 +159,7 @@ void ThlScan::ExtractScanInfo(int * data, int size_in_bytes) {
 		// I checked that the entry is not zero, and also that is not in the maskedMap
 		if ( data[i] != 0 && ( _maskedSet.find( i ) == _maskedSet.end() ) ) {
 			// Increase the counting in this pixel if it hasn't already reached the _nTriggers
-			if ( _pixelCountsMap[i] < _nTriggers ) _pixelCountsMap[i]++;
+			if ( _pixelCountsMap[i] < _equalization->GetNTriggers() ) _pixelCountsMap[i]++;
 			//pixelsActive++;
 		}
 
@@ -173,7 +168,7 @@ void ThlScan::ExtractScanInfo(int * data, int size_in_bytes) {
 
 }
 
-void ThlScan::UpdateChart(int thlValue) {
+void ThlScan::UpdateChart(int setId, int thlValue) {
 
 	map<int, int>::iterator itr = _pixelCountsMap.begin();
 	map<int, int>::iterator itrE = _pixelCountsMap.end();
@@ -184,65 +179,23 @@ void ThlScan::UpdateChart(int thlValue) {
 	int cntr = 0;
 	for( ; itr != itrE ; itr++ ) {
 
-		if( (*itr).second == _nTriggers ) {
+		if( (*itr).second == _equalization->GetNTriggers() ) {
 			cntr++;
 			(*itr).second++; // This way we avoid re-ploting next time. The value _nTriggers+1 identifies these pixels
 		}
 	}
 
-	_chart->SetValueInSet( 0 , thlValue, cntr );
+	_chart->SetValueInSet( setId , thlValue, cntr );
 
 }
 
-void ThlScan::Configuration(){
+void ThlScan::ExtractStatsOnChart(int setId){
 
-	int dev_nr = 2;
-
-	// Reset pixel configuration
-	_spidrcontrol->resetPixelConfig();
-	pair<int, int> pix;
-	for ( int i = 0 ; i < __matrix_size ; i++ ) {
-		pix = XtoXY(i, __array_size_x);
-		_spidrcontrol->configPixelMpx3rx(pix.first, pix.second, 0, 0x0 ); // 0x1F = 31 is the max adjustment for 5 bits
+	QCPBarDataMap * dataSet = _chart->GetDataSet( setId )->data();
+	QCPBarDataMap::iterator i = dataSet->begin();
+	for( ; i != dataSet->end() ; i++){
+		cout << (*i).key << ", " << (*i).value << endl;
 	}
-	_spidrcontrol->setPixelConfigMpx3rx(dev_nr);
-
-	// OMR
-	//_spidrcontrol->setPolarity( true );		// Holes collection
-	//_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
-	//_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
-	_spidrcontrol->setPixelDepth( _deviceIndex, 12 );
-
-	_spidrcontrol->setColourMode( _deviceIndex, false ); 	// Fine Pitch
-	_spidrcontrol->setCsmSpm( _deviceIndex, 0 );			// Single Pixel mode
-	_spidrcontrol->setEqThreshH( _deviceIndex, true );
-	_spidrcontrol->setDiscCsmSpm( _deviceIndex, 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
-	//_spidrcontrol->setGainMode( 1 );
-
-	// Gain ?!
-	// 00: SHGM
-	// 10: HGM
-	// 01: LGM
-	// 11: SLGM
-	_spidrcontrol->setGainMode( _deviceIndex, 2 );
-
-	// Other OMR
-	_spidrdaq->setDecodeFrames( true );
-	_spidrcontrol->setPixelDepth( _deviceIndex, 12 );
-	_spidrdaq->setPixelDepth( 12 );
-	_spidrcontrol->setMaxPacketSize( 1024 );
-
-	// Write OMR ... i shouldn't call this here
-	//_spidrcontrol->writeOmr( 0 );
-
-	// Trigger config
-	int trig_mode      = 4;     // Auto-trigger mode
-	int trig_length_us = 5000;  // This time shouldn't be longer than the period defined by trig_freq_hz
-	int trig_freq_hz   = 100;   // One trigger every 10ms
-	int nr_of_triggers = _nTriggers;    // This is the number of shutter open i get
-	//int trig_pulse_count;
-	_spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
-			trig_freq_hz, nr_of_triggers );
 
 }
 
@@ -280,7 +233,7 @@ int ThlScan::SetEqualizationMask(int spacing, int offset_x, int offset_y) {
 	}
 
 	// And send the configuration
-	_spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
+	_spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
 
 	//cout << "N masked = " << _maskedSet.size() << endl;
 
@@ -295,7 +248,7 @@ void ThlScan::ClearMask(bool sendToChip){
 		}
 	}
 	// And send the configuration
-	if ( sendToChip ) _spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
+	if ( sendToChip ) _spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
 
 	_maskedSet.clear();
 };
