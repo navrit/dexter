@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QWidget>
 #include <QtGui/QOpenGLFunctions_3_3_Core>
-//#include <QOpenGLWidget>
+#include <QOpenGLWidget>
 #include <QtGui/QOpenGLShader>
 #include <QtGui/QOpenGLShaderProgram>
 #include <QtGui/QOpenGLBuffer>
