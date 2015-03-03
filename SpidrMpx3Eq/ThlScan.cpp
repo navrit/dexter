@@ -15,6 +15,7 @@
 #include "mpx3equalization.h"
 
 #include <iostream>
+#include <map>
 using namespace std;
 
 ThlScan::ThlScan() {
@@ -29,6 +30,10 @@ ThlScan::ThlScan(BarChart * bc, QCstmPlotHeatmap * hm, Mpx3Equalization * ptr) {
 	_chart = bc;
 	_heatmap = hm;
 	_equalization = ptr;
+
+	// Results of the scan
+	_results.weighted_arithmetic_mean = 0.;
+	_results.sigma = 0.;
 
 	RewindData();
 
@@ -64,7 +69,7 @@ ThlScan::~ThlScan(){
 
 }
 
-void ThlScan::DoScan(int dac_code){
+void ThlScan::DoScan(int dac_code, int setId){
 
 	// Pointer to incoming data
 	int * data;
@@ -75,7 +80,8 @@ void ThlScan::DoScan(int dac_code){
 	int deviceIndex = _equalization->GetDeviceIndex();
 
 	// Prepare the heatmap
-	_heatmap->clear();
+	// TODO ! ... why do I need the clear here ?
+	//_heatmap->clear();
 	// The heatmap can store the images.  This is the indexing.
 	int frameId = 0;
 
@@ -126,10 +132,7 @@ void ThlScan::DoScan(int dac_code){
 				}
 
 				// Report to graph
-				UpdateChart(0, i);
-
-				// Clean map
-				_pixelCountsMap.clear();
+				UpdateChart(setId, i);
 
 			}
 
@@ -142,7 +145,7 @@ void ThlScan::DoScan(int dac_code){
 	// Scan finished
 
 	// Here's on Scan completed.  Do the stats on it.
-	ExtractStatsOnChart(0);
+	ExtractStatsOnChart(setId);
 
 }
 
@@ -154,17 +157,13 @@ void ThlScan::ExtractScanInfo(int * data, int size_in_bytes) {
 	// in 'int' representation as the decoding has been requested
 	for(int i = 0 ; i < nPixels ; i++) {
 
-		// In principle masked pixels should count 0, but seems like it's not the case
-		// TODO.
 		// I checked that the entry is not zero, and also that is not in the maskedMap
 		if ( data[i] != 0 && ( _maskedSet.find( i ) == _maskedSet.end() ) ) {
 			// Increase the counting in this pixel if it hasn't already reached the _nTriggers
 			if ( _pixelCountsMap[i] < _equalization->GetNTriggers() ) _pixelCountsMap[i]++;
-			//pixelsActive++;
 		}
 
 	}
-	//cout << "!!! pixels active !!! " << pixelsActive << endl;
 
 }
 
@@ -183,19 +182,49 @@ void ThlScan::UpdateChart(int setId, int thlValue) {
 			cntr++;
 			(*itr).second++; // This way we avoid re-ploting next time. The value _nTriggers+1 identifies these pixels
 		}
+
 	}
 
 	_chart->SetValueInSet( setId , thlValue, cntr );
 
 }
 
-void ThlScan::ExtractStatsOnChart(int setId){
+void ThlScan::ExtractStatsOnChart(int setId) {
 
+	double weigtedSum = 0.;
+	double weights = 0.;
+	// Normalization value (p val) used later when calculating the variance
+	double norm_val = 0.;
+	// Calculate the weighted arithmetic mean and standard deviation
 	QCPBarDataMap * dataSet = _chart->GetDataSet( setId )->data();
 	QCPBarDataMap::iterator i = dataSet->begin();
-	for( ; i != dataSet->end() ; i++){
-		cout << (*i).key << ", " << (*i).value << endl;
+
+	for( ; i != dataSet->end() ; i++) {
+
+		if( (*i).value != 0 ) {
+			weigtedSum += ( (*i).key * (*i).value );
+			weights += (*i).value;
+
+			norm_val += (*i).value;
+		}
 	}
+	norm_val = 1. / norm_val;
+
+	if ( weights != 0.) _results.weighted_arithmetic_mean = weigtedSum / weights;
+	else _results.weighted_arithmetic_mean = 0.;
+
+	// Rewind the iterator and get the sigma
+	// I need to weight the sigmas first
+
+	i = dataSet->begin();
+	for( ; i != dataSet->end() ; i++) {
+		 _results.sigma += ( (*i).value * norm_val ) * (
+				 ( (*i).key - _results.weighted_arithmetic_mean )
+				 *
+				 ( (*i).key - _results.weighted_arithmetic_mean )
+				 );
+	}
+	_results.sigma = sqrt( _results.sigma );
 
 }
 

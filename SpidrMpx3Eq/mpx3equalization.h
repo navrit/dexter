@@ -23,9 +23,11 @@ using namespace std;
 
 #include "histogram.h"
 #include "mpx3eq_common.h"
+#include "ThlScan.h"
 
-#define __matrix_size_x 256
-#define __matrix_size_y 256
+#define __matrix_size_x 		256
+#define __matrix_size_y 		256
+#define __equalization_target	10
 
 class QCustomPlot;
 class SpidrController;
@@ -35,7 +37,6 @@ class ThlScan;
 class BarChart;
 class BarChartProperties;
 class ModuleConnection;
-
 
 
 class Mpx3Equalization : public QWidget {
@@ -49,18 +50,25 @@ public:
 	void timerEvent( QTimerEvent * );
 	void PrintFraction(int * buffer, int size, int first_last);
 	int GetNPixelsActive(int * buffer, int size, verblev verbose);
+	void GetSlopeAndCut_THL_IDAC_DISC(ScanResults, ScanResults, double &, double &);
+	double EvalLinear(double eta, double cut, double x);
+
+	// Equalization steps
+	void DAC_Disc_Optimization(int DAC_Disc_code);
+
 	pair<int, int> XtoXY(int X, int dimX);
 	void SetupSignalsAndSlots();
 	void SetLimits();
 	void SetModuleConnection(ModuleConnection * p) { _moduleConn = p; };
-	void Configuration();
+	void Configuration(bool reset);
+	void SetAllAdjustmentBits(int val_L, int val_H);
 	void AppendToTextBrowser(QString s);
 	void ClearTextBrowser();
 	int GetDeviceIndex(){ return _deviceIndex; };
 	int GetNTriggers(){ return _nTriggers; };
 	int GetSpacing(){ return _spacing; };
 	int GetMinScan(){ return _minScan; };
-	int GetMaxScan(){ return _maxScan; };
+	int GetMaxScan(){ return _maxScanTHL; };
 	int GetStepScan(){ return _stepScan; };
 
 private:
@@ -80,21 +88,29 @@ private:
 	int _nTriggers;
 	int _spacing;
 	int _minScan;
-	int _maxScan;
+	int _maxScanTHL;
 	int _stepScan;
 
 	int **data = 0;
 	unsigned *nx =0, *ny =0, nData =0;
-	histogram **hists = 0;
+	histogram ** hists = 0;
 
 	// Drawing object
 	//QCustomPlot * _customPlot;
 	//BarChart * _chart;
 
 	// Object in charge of performing Thl scans
-	ThlScan * _tscan;
+	vector<ThlScan * > _scans;
 	// DACs
 	DACs * _dacs;
+
+	// Important Equalization values
+	double _eta_THL_DAC_DiscL;
+	double _cut_THL_DAC_DiscL;
+	double _eta_THL_DAC_DiscH;
+	double _cut_THL_DAC_DiscH;
+	int _opt_MPX3RX_DAC_DISC_L;
+	int _opt_MPX3RX_DAC_DISC_H;
 
 private slots:
 
