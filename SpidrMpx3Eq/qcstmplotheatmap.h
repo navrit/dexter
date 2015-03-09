@@ -30,6 +30,7 @@ public:
   void setHeatmap(QCPColorGradient &gradient);
   void rescaleAxes(void);
   QCstmPlotHeatmap(QWidget*& parent);
+  int GetLastActive(){ return active; };
 signals:
   void dataRangeChanged(QCPRange newRange);
   void plotCountChanged(int nPlots);
