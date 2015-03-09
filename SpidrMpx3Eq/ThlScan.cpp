@@ -35,6 +35,9 @@ ThlScan::ThlScan(BarChart * bc, QCstmPlotHeatmap * hm, Mpx3Equalization * ptr) {
 	_results.weighted_arithmetic_mean = 0.;
 	_results.sigma = 0.;
 
+	_detectedScanBoundary_L = 0;
+	_detectedScanBoundary_H = 0;
+
 	RewindData();
 
 }
@@ -52,13 +55,18 @@ void ThlScan::RewindData() {
 	if ( !_pixelCountsMap.empty() ) {
 		_pixelCountsMap.clear();
 	}
+	if ( !_pixelReactiveTHL.empty() ) {
+		_pixelReactiveTHL.clear();
+	}
 
 	// Create entries at 0 for the whole matric
 	for ( int i = 0 ; i < __matrix_size ; i++ ) {
 		_pixelCountsMap[i] = __NOT_TESTED_YET;
+		_pixelReactiveTHL[i] = __UNDEFINED;
 	}
 
 	cout << "[INFO] ThlScan::_pixelCountsMap rewinded. Contains " << _pixelCountsMap.size() << " elements." << endl;
+	cout << "[INFO] ThlScan::_pixelReactiveTHL rewinded. Contains " << _pixelReactiveTHL.size() << " elements." << endl;
 
 	// Nothing should be masked
 	_maskedSet.clear();
@@ -69,7 +77,22 @@ ThlScan::~ThlScan(){
 
 }
 
-void ThlScan::DoScan(int dac_code, int setId){
+Mpx3EqualizationResults * ThlScan::DeliverPreliminaryEqualization(ScanResults scan_res) {
+
+	Mpx3EqualizationResults * eq = new Mpx3EqualizationResults;
+
+	// Fill the preliminary results
+	for ( int i = 0 ; i < __matrix_size ; i++ ) {
+		// First the adjustment is the same for all
+		eq->SetPixelAdj(i, scan_res.global_adj );
+		// And here is the reactive threshold
+		eq->SetPixelReactiveThl(i, _pixelReactiveTHL[i] );
+	}
+
+	return eq;
+}
+
+void ThlScan::DoScan(int dac_code, int setId, int numberOfLoops, bool blindScan) {
 
 	// Pointer to incoming data
 	int * data;
@@ -84,6 +107,10 @@ void ThlScan::DoScan(int dac_code, int setId){
 	//_heatmap->clear();
 	// The heatmap can store the images.  This is the indexing.
 	int frameId = 0;
+
+	// Sometimes a reduced loop is selected
+	int processedLoops = 0;
+	bool finishScan = false;
 
 	for(int maskOffsetItr_x = 0 ; maskOffsetItr_x < spacing ; maskOffsetItr_x++ ) {
 
@@ -113,34 +140,39 @@ void ThlScan::DoScan(int dac_code, int setId){
 					int size_in_bytes = -1;
 					data = _spidrdaq->frameData(0, &size_in_bytes);
 
-					ExtractScanInfo( data, size_in_bytes );
+					ExtractScanInfo( data, size_in_bytes, i );
 
 					_spidrdaq->releaseFrame();
 					Sleep( 10 ); // Allow time to get and decode the next frame, if any
 
-
-					//for(int i = 0 ; i < 256*256 ; i++) {
-					//	if( data[i] != 0 ) {
-					//		cout << i << ": " << data[i] << endl;
-					//	}
-					//}
 					// Report to heatmap
 					_heatmap->addData(data, 256, 256); // Add a new plot/frame.
 					_heatmap->setActive(frameId++); // Activate the last plot (the new one)
 					//_heatmap->setData( data, 256, 256 );
 
+					// Last scan boundaries
+					// This information could be useful for a next scan
+					if ( i < _detectedScanBoundary_L ) _detectedScanBoundary_L = i;
+					if ( i > _detectedScanBoundary_H ) _detectedScanBoundary_H = i;
+
 				}
 
 				// Report to graph
-				UpdateChart(setId, i);
+				if ( !blindScan ) UpdateChart(setId, i);
 
 			}
 
 			// Try to resize to min max the X axis here
 			//_chart->GetBarChartProperties()->max_x[0] = 200;
 
+			// A full spacing loop has been achieved here
+			processedLoops++;
+			if( numberOfLoops > 0 && numberOfLoops == processedLoops ) finishScan = true;
+			if( finishScan ) break;
 		}
+		if( finishScan ) break;
 	}
+
 	///////////////////////////////////////////////////////////////////
 	// Scan finished
 
@@ -149,7 +181,7 @@ void ThlScan::DoScan(int dac_code, int setId){
 
 }
 
-void ThlScan::ExtractScanInfo(int * data, int size_in_bytes) {
+void ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
 
 	int nPixels = size_in_bytes/4;
 	// int pixelsActive = 0;
@@ -161,10 +193,53 @@ void ThlScan::ExtractScanInfo(int * data, int size_in_bytes) {
 		if ( data[i] != 0 && ( _maskedSet.find( i ) == _maskedSet.end() ) ) {
 			// Increase the counting in this pixel if it hasn't already reached the _nTriggers
 			if ( _pixelCountsMap[i] < _equalization->GetNTriggers() ) _pixelCountsMap[i]++;
+			// It it reached the number of triggers, stablish this Threshold as the reactive threshold
+			if ( _pixelCountsMap[i] == _equalization->GetNTriggers() ) _pixelReactiveTHL[i] = thl;
 		}
+
 
 	}
 
+	/*
+	// Test
+	// count the number of non zero entries
+	int cntr = 0;
+	for (int j = 0 ; j < nPixels ; j++) {
+		if( data[j] != 0 ) cntr++;
+	}
+	if ( cntr > 1024 ) {
+		cout << "full frame" << endl;
+	}
+	 */
+
+}
+
+int ThlScan::NumberOfNonReactingPixels() {
+
+	int nNonReactive = 0;
+	map<int, int>::iterator i = _pixelReactiveTHL.begin();
+	map<int, int>::iterator iE = _pixelReactiveTHL.end();
+
+	// Test for non reactive pixels
+	for ( ; i != iE ; i++ ) {
+		if( (*i).second == __UNDEFINED ) nNonReactive++;
+	}
+
+	return nNonReactive;
+}
+
+void ThlScan::SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj) {
+
+	_results.DAC_DISC_setting = DAC_DISC_setting;
+	_results.global_adj = global_adj;
+
+}
+
+int ThlScan::ReadjustPixelsOff(double N) {
+
+	int adjustedPixels = 0;
+
+	return adjustedPixels;
 }
 
 void ThlScan::UpdateChart(int setId, int thlValue) {
@@ -218,11 +293,11 @@ void ThlScan::ExtractStatsOnChart(int setId) {
 
 	i = dataSet->begin();
 	for( ; i != dataSet->end() ; i++) {
-		 _results.sigma += ( (*i).value * norm_val ) * (
-				 ( (*i).key - _results.weighted_arithmetic_mean )
-				 *
-				 ( (*i).key - _results.weighted_arithmetic_mean )
-				 );
+		_results.sigma += ( (*i).value * norm_val ) * (
+				( (*i).key - _results.weighted_arithmetic_mean )
+				*
+				( (*i).key - _results.weighted_arithmetic_mean )
+		);
 	}
 	_results.sigma = sqrt( _results.sigma );
 

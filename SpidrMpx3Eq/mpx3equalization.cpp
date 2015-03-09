@@ -34,8 +34,8 @@ Mpx3Equalization::Mpx3Equalization(QApplication * coreApp, Ui::Mpx3GUI * ui)
 	_deviceIndex = 2;
 	_nTriggers = 1;
 	_spacing = 4;
-	_minScan = 0;
-	_maxScanTHL = 200;
+	_minScanTHL = 0;
+	_maxScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size) - 1;
 	_stepScan = 16;
 
 	// Limits in the input widgets
@@ -97,7 +97,7 @@ void Mpx3Equalization::SetLimits(){
 
 	_ui->eqMinSpinBox->setMinimum( 0 );
 	_ui->eqMinSpinBox->setMaximum( (MPX3RX_DAC_TABLE[ MPX3RX_DAC_THRESH_0 ].dflt * 2) - 1 );
-	_ui->eqMinSpinBox->setValue( _minScan );
+	_ui->eqMinSpinBox->setValue( _minScanTHL );
 
 	_ui->eqMaxSpinBox->setMinimum( 0 );
 	_ui->eqMaxSpinBox->setMaximum( (MPX3RX_DAC_TABLE[ MPX3RX_DAC_THRESH_0 ].dflt * 2) - 1 );
@@ -116,19 +116,203 @@ Mpx3Equalization::~Mpx3Equalization()
 
 void Mpx3Equalization::StartEqualization() {
 
-	// First) DAC_Disc Optimization
-	DAC_Disc_Optimization(MPX3RX_DAC_DISC_L);
+	// N sets in the plot
+	int setId = 0;
 
-	// Second)
-	//
+	// Preliminary) Find out the equalization range
+
+
+	// First) DAC_Disc Optimization
+	setId = DAC_Disc_Optimization(setId, MPX3RX_DAC_DISC_L);
+
+	// Second) First interpolation.  Coming close to the equalization target
+	setId = PrepareInterpolation(setId, MPX3RX_DAC_DISC_L);
+
+	// Third) Fine tunning.
+	setId = FineTunning(setId, MPX3RX_DAC_DISC_L);
+
 
 }
 
-void Mpx3Equalization::DAC_Disc_Optimization(int DAC_Disc_code) {
+int Mpx3Equalization::FineTunning(int setId, int DAC_Disc_code) {
+
+	// Start from the last scan.
+	int lastScanIndex = (int)_scans.size();
+	ThlScan * lastScan = 0x0;
+	if( lastScanIndex > 0 ) {
+		lastScan = _scans[lastScanIndex-1];
+	} else {
+		return -1;
+	}
+
+	// Check how many pixels are more than N*sigmas off the mean
+
+
+
+	return setId;
+}
+
+int Mpx3Equalization::DetectStartEqualizationRange(int setId, int DAC_Disc_code) {
+
+	return setId;
+}
+
+int Mpx3Equalization::PrepareInterpolation(int setId, int DAC_Disc_code) {
+
+	AppendToTextBrowser("2) Test adj-bits sensibility and extrapolate to target ...");
+
+	int global_adj = 0x0;
+
+	////////////////////////////////////////////////////////////////////////////////////
+	// 5)  See where the pixels fall now for adj0 and keep the pixel information
+	ThlScan * tscan_opt_adj0 = new ThlScan(_ui->_histoWidget, _ui->_intermediatePlot, this);
+	tscan_opt_adj0->ConnectToHardware(_spidrcontrol, _spidrdaq);
+	BarChartProperties cprop_opt_adj0;
+	cprop_opt_adj0.name = "DAC_DiscL_Opt_adj0";
+	cprop_opt_adj0.min_x = 0;
+	cprop_opt_adj0.max_x = 511;
+	cprop_opt_adj0.nBins = 511;
+	cprop_opt_adj0.color_r = 0;
+	cprop_opt_adj0.color_g = 127;
+	cprop_opt_adj0.color_b = 0;
+	_ui->_histoWidget->AppendSet( cprop_opt_adj0 );
+
+	// Send all the adjustment bits to 0x5
+	if( DAC_Disc_code == MPX3RX_DAC_DISC_L ) SetAllAdjustmentBits(global_adj, 0x0);
+	if( DAC_Disc_code == MPX3RX_DAC_DISC_H ) SetAllAdjustmentBits(0x0, global_adj);
+
+	// Let's assume the mean falls at the equalization target
+	tscan_opt_adj0->DoScan( MPX3RX_DAC_THRESH_0, setId++, -1 ); // -1: Do all loops
+	tscan_opt_adj0->SetConfigurationToScanResults(_opt_MPX3RX_DAC_DISC_L, global_adj);
+	ScanResults res_opt_adj0 = tscan_opt_adj0->GetScanResults();
+
+	// Results
+	DisplayStatsInTextBrowser(global_adj, _opt_MPX3RX_DAC_DISC_L, res_opt_adj0);
+
+	////////////////////////////////////////////////////////////////////////////////////
+	// 5)  See where the pixels fall now for adj5 and keep the pixel information
+	global_adj = 0x5;
+
+	// New limits
+	// The previous scan is a complete scan on all pixels.  Now we can cut the scan up to
+	//  a few sigmas from the previous scan.
+	SetMinScan( tscan_opt_adj0->GetDetectedLowScanBoundary() );
+	SetMaxScan( tscan_opt_adj0->GetDetectedHighScanBoundary() );
+
+	ThlScan * tscan_opt_adj5 = new ThlScan(_ui->_histoWidget, _ui->_intermediatePlot, this);
+	tscan_opt_adj5->ConnectToHardware(_spidrcontrol, _spidrdaq);
+	BarChartProperties cprop_opt_adj5;
+	cprop_opt_adj5.name = "DAC_DiscL_Opt_adj5";
+	cprop_opt_adj5.min_x = 0;
+	cprop_opt_adj5.max_x = 511;
+	cprop_opt_adj5.nBins = 511;
+	cprop_opt_adj5.color_r = 127;
+	cprop_opt_adj5.color_g = 127;
+	cprop_opt_adj5.color_b = 10;
+	_ui->_histoWidget->AppendSet( cprop_opt_adj5 );
+
+	// Send all the adjustment bits to 0x5
+	if( DAC_Disc_code == MPX3RX_DAC_DISC_L ) SetAllAdjustmentBits(global_adj, 0x0);
+	if( DAC_Disc_code == MPX3RX_DAC_DISC_H ) SetAllAdjustmentBits(0x0, global_adj);
+
+	// Let's assume the mean falls at the equalization target
+	tscan_opt_adj5->DoScan( MPX3RX_DAC_THRESH_0, setId++, -1 ); // -1: Do all loops
+	int nNonReactive = tscan_opt_adj5->NumberOfNonReactingPixels();
+	if ( nNonReactive > 0 ) {
+		cout << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
+	}
+	tscan_opt_adj5->SetConfigurationToScanResults(_opt_MPX3RX_DAC_DISC_L, global_adj);
+	ScanResults res_opt_adj5 = tscan_opt_adj5->GetScanResults();
+
+	// Results
+	DisplayStatsInTextBrowser(global_adj, _opt_MPX3RX_DAC_DISC_L, res_opt_adj5);
+
+	////////////////////////////////////////////////////////////////////////////////////
+	// 6) Stablish the dependency THL(Adj). It will be used to extrapolate to the
+	//    Equalization target for every pixel
+	GetSlopeAndCut_Adj_THL(res_opt_adj0, res_opt_adj5, _eta_Adj_THL, _cut_Adj_THL);
+
+	////////////////////////////////////////////////////////////////////////////////////
+	// 7) Extrapolate to the target using the last scan information and the knowledge
+	//    on the Adj_THL dependency.
+	_eqresults = tscan_opt_adj5->DeliverPreliminaryEqualization( res_opt_adj5 );
+	_eqresults->ExtrapolateAdjToTarget( __equalization_target, _eta_Adj_THL );
+	int * adj_matrix = _eqresults->GetAdjustementMatrix();
+
+	// Display
+	_ui->_intermediatePlot->clear();
+	//int lastActiveFrame = _ui->_intermediatePlot->GetLastActive();
+	_ui->_intermediatePlot->addData( adj_matrix, 256, 256 );
+	_ui->_intermediatePlot->setActive( 0 );
+
+	////////////////////////////////////////////////////////////////////////////////////
+	// 8) Perform now a scan with the extrapolated adjustments
+	//    Here there's absolutely no need to go through the THL range.
+	// New limits --> ask the last scan
+	SetMinScan( tscan_opt_adj5->GetDetectedLowScanBoundary() );
+	SetMaxScan( tscan_opt_adj5->GetDetectedHighScanBoundary() );
+
+	ThlScan * tscan_opt_ext = new ThlScan(_ui->_histoWidget, _ui->_intermediatePlot, this);
+
+	tscan_opt_ext->ConnectToHardware(_spidrcontrol, _spidrdaq);
+	BarChartProperties cprop_opt_ext;
+	cprop_opt_ext.name = "DAC_DiscL_Opt_ext";
+	cprop_opt_ext.min_x = 0;
+	cprop_opt_ext.max_x = 511;
+	cprop_opt_ext.nBins = 511;
+	cprop_opt_ext.color_r = 0;
+	cprop_opt_ext.color_g = 0;
+	cprop_opt_ext.color_b = 0;
+	_ui->_histoWidget->AppendSet( cprop_opt_ext );
+
+	// Send all the adjustment bits to 0x5
+	if( DAC_Disc_code == MPX3RX_DAC_DISC_L ) SetAllAdjustmentBits(_eqresults);
+	if( DAC_Disc_code == MPX3RX_DAC_DISC_H ) SetAllAdjustmentBits(_eqresults);
+
+	// Let's assume the mean falls at the equalization target
+	tscan_opt_ext->DoScan( MPX3RX_DAC_THRESH_0, setId++, -1 ); // -1: Do all loops
+	nNonReactive = tscan_opt_ext->NumberOfNonReactingPixels();
+	if ( nNonReactive > 0 ) {
+		cout << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
+	}
+	tscan_opt_ext->SetConfigurationToScanResults(_opt_MPX3RX_DAC_DISC_L, global_adj);
+	ScanResults res_opt_ext = tscan_opt_ext->GetScanResults();
+
+	// Results
+	DisplayStatsInTextBrowser(-1, _opt_MPX3RX_DAC_DISC_L, res_opt_ext);
+
+	// Display
+	_ui->_intermediatePlot->clear();
+	//int lastActiveFrame = _ui->_intermediatePlot->GetLastActive();
+	_ui->_intermediatePlot->addData( adj_matrix, 256, 256 );
+	_ui->_intermediatePlot->setActive( 0 );
+
+	// This last scan is in principle the good Scan.
+	// It may need fine tunning.  Append it to the scan list
+	_scans.push_back( tscan_opt_ext );
+
+	return setId;
+}
+
+void Mpx3Equalization::DisplayStatsInTextBrowser(int adj, int dac_disc, ScanResults res) {
+
+	QString statsString = "Adj=0x";
+	if (adj >= 0) statsString += QString::number(adj, 'd', 0);
+	else statsString += "X";
+	statsString += " | DAC_DISC_L=";
+	statsString += QString::number(dac_disc, 'd', 0);
+	statsString += " | Mean = ";
+	statsString += QString::number(res.weighted_arithmetic_mean, 'f', 1);
+	statsString += ", Sigma = ";
+	statsString += QString::number(res.sigma, 'f', 1);
+	AppendToTextBrowser(statsString);
+
+}
+
+int Mpx3Equalization::DAC_Disc_Optimization(int setId, int DAC_Disc_code) {
 
 	ClearTextBrowser();
 	AppendToTextBrowser("1) DAC_DiscL optimization ...");
-	//int setId = 0;
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// 1) Scan with MPX3RX_DAC_DISC_L = 100
@@ -140,7 +324,7 @@ void Mpx3Equalization::DAC_Disc_Optimization(int DAC_Disc_code) {
 	cprop.xAxisLabel = "THL";
 	cprop.yAxisLabel = "entries";
 	cprop.min_x = 0;
-	cprop.max_x = 200;
+	cprop.max_x = 511;
 	cprop.nBins = 511;
 	cprop.color_r = 0;
 	cprop.color_g = 10;
@@ -151,18 +335,19 @@ void Mpx3Equalization::DAC_Disc_Optimization(int DAC_Disc_code) {
 	Configuration(true);
 	_spidrcontrol->setDac( _deviceIndex, DAC_Disc_code, 100 );
 	//_tscan->DoScan( MPX3RX_DAC_TABLE[ MPX3RX_DAC_THRESH_0 ].code );
-	tscan->DoScan( MPX3RX_DAC_THRESH_0, 0 );
+	tscan->DoScan( MPX3RX_DAC_THRESH_0, setId++, 2 );
+	tscan->SetConfigurationToScanResults(100, 0);
 	ScanResults res = tscan->GetScanResults();
-	res.DAC_DISC_setting = 100;
 
-	QString statsString = "Adj=0x0 | DAC_DISC_L=100 | Mean = ";
-	statsString += QString::number(res.weighted_arithmetic_mean, 'f', 1);
-	statsString += ", Sigma = ";
-	statsString += QString::number(res.sigma, 'f', 1);
-	AppendToTextBrowser(statsString);
+	// Results
+	DisplayStatsInTextBrowser(0, res.DAC_DISC_setting, res);
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// 2) Scan with MPX3RX_DAC_DISC_L = 150
+	// New limits --> ask the last scan
+	SetMinScan( tscan->GetDetectedLowScanBoundary() );
+	SetMaxScan( tscan->GetDetectedHighScanBoundary() );
+
 	ThlScan * tscan_150 = new ThlScan(_ui->_histoWidget, _ui->_intermediatePlot, this);
 	tscan_150->ConnectToHardware(_spidrcontrol, _spidrdaq);
 	BarChartProperties cprop_150;
@@ -178,15 +363,12 @@ void Mpx3Equalization::DAC_Disc_Optimization(int DAC_Disc_code) {
 	// DAC_DiscL=150
 	_spidrcontrol->setDac( _deviceIndex, DAC_Disc_code, 150 );
 	//_tscan->DoScan( MPX3RX_DAC_TABLE[ MPX3RX_DAC_THRESH_0 ].code );
-	tscan_150->DoScan( MPX3RX_DAC_THRESH_0, 1 );
+	tscan_150->DoScan( MPX3RX_DAC_THRESH_0, setId++, 2 );
+	tscan_150->SetConfigurationToScanResults(150, 0);
 	ScanResults res_150 = tscan_150->GetScanResults();
-	res_150.DAC_DISC_setting = 150;
 
-	statsString = "Adj=0x0 | DAC_DISC_L=150 | Mean = ";
-	statsString += QString::number(res_150.weighted_arithmetic_mean, 'f', 1);
-	statsString += ", Sigma = ";
-	statsString += QString::number(res_150.sigma, 'f', 1);
-	AppendToTextBrowser(statsString);
+	// Results
+	DisplayStatsInTextBrowser(0, res_150.DAC_DISC_setting, res_150);
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// 3) With the results of step 1 and 2 I can obtain the dependency DAC_Disc[L/H](THL)
@@ -202,41 +384,11 @@ void Mpx3Equalization::DAC_Disc_Optimization(int DAC_Disc_code) {
 	_opt_MPX3RX_DAC_DISC_L = (int) EvalLinear(_eta_THL_DAC_DiscL, _cut_THL_DAC_DiscL, mean_for_opt_IDAC_DISC);
 	// Set the new DAC
 	_spidrcontrol->setDac( _deviceIndex, DAC_Disc_code, _opt_MPX3RX_DAC_DISC_L );
-	statsString = "Optimal DAC_DISC_L = ";
+	QString statsString = "Optimal DAC_DISC_L = ";
 	statsString += QString::number(_opt_MPX3RX_DAC_DISC_L, 'd', 0);
 	AppendToTextBrowser(statsString);
 
-	////////////////////////////////////////////////////////////////////////////////////
-	// 5)  See where the pixels fall now
-	ThlScan * tscan_opt = new ThlScan(_ui->_histoWidget, _ui->_intermediatePlot, this);
-	tscan_opt->ConnectToHardware(_spidrcontrol, _spidrdaq);
-	BarChartProperties cprop_opt;
-	cprop_opt.name = "DAC_DiscL_Opt";
-	cprop_opt.min_x = 0;
-	cprop_opt.max_x = 511;
-	cprop_opt.nBins = 511;
-	cprop_opt.color_r = 0;
-	cprop_opt.color_g = 127;
-	cprop_opt.color_b = 0;
-	_ui->_histoWidget->AppendSet( cprop_opt );
-
-	// Send all the adjustment bits to 0x5
-	if( DAC_Disc_code == MPX3RX_DAC_DISC_L ) SetAllAdjustmentBits(0x5, 0x0);
-	if( DAC_Disc_code == MPX3RX_DAC_DISC_H ) SetAllAdjustmentBits(0x0, 0x5);
-
-	// Let's assume the mean falls at the equalization target
-	tscan_opt->DoScan( MPX3RX_DAC_THRESH_0, 2 );
-	ScanResults res_opt = tscan_opt->GetScanResults();
-	res_opt.DAC_DISC_setting = _opt_MPX3RX_DAC_DISC_L;
-
-	statsString = "Adj=0x5 | DAC_DISC_L=";
-	statsString += QString::number(_opt_MPX3RX_DAC_DISC_L, 'd', 0);
-	statsString += " | Mean = ";
-	statsString += QString::number(res_opt.weighted_arithmetic_mean, 'f', 1);
-	statsString += ", Sigma = ";
-	statsString += QString::number(res_opt.sigma, 'f', 1);
-	AppendToTextBrowser(statsString);
-
+	return setId;
 }
 
 double Mpx3Equalization::EvalLinear(double eta, double cut, double x){
@@ -247,7 +399,25 @@ void Mpx3Equalization::GetSlopeAndCut_THL_IDAC_DISC(ScanResults r1, ScanResults 
 
 	// The slope is =  (THLmean2 - THLmean1) / (DAC_DISC_L_setting_2 - DAC_DISC_L_setting_1)
 	eta = (r2.weighted_arithmetic_mean - r1.weighted_arithmetic_mean) / (r2.DAC_DISC_setting - r1.DAC_DISC_setting);
-	cut = eta * 150 - r2.weighted_arithmetic_mean;
+	cut = r2.weighted_arithmetic_mean - (eta * r2.DAC_DISC_setting);
+
+}
+
+void Mpx3Equalization::GetSlopeAndCut_Adj_THL(ScanResults r1, ScanResults r2, double & eta, double & cut) {
+
+	eta = (r2.global_adj - r1.global_adj) / (r2.weighted_arithmetic_mean - r1.weighted_arithmetic_mean);
+	cut = r2.global_adj - (eta * r2.weighted_arithmetic_mean);
+
+}
+
+void Mpx3Equalization::SetAllAdjustmentBits(Mpx3EqualizationResults * eq) {
+
+	pair<int, int> pix;
+	for ( int i = 0 ; i < __matrix_size ; i++ ) {
+		pix = XtoXY(i, __array_size_x);
+		_spidrcontrol->configPixelMpx3rx(pix.first, pix.second, eq->GetPixelAdj(i), 0x0 );
+	}
+	_spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
 
 }
 
@@ -340,7 +510,7 @@ void Mpx3Equalization::ChangeSpacing( int spacing ) {
 }
 void Mpx3Equalization::ChangeMin(int min) {
 	if( min < 0 ) return;
-	_minScan = min;
+	_minScanTHL = min;
 }
 void Mpx3Equalization::ChangeMax(int max) {
 	if( max < 0 ) return;
@@ -509,6 +679,93 @@ pair<int, int> Mpx3Equalization::XtoXY(int X, int dimX){
 	return make_pair(X % dimX, X/dimX);
 }
 
+void Mpx3Equalization::SetMinScan(int min) {
+	_minScanTHL = min;
+	_ui->eqMinSpinBox->setValue( _minScanTHL );
+}
+
+void Mpx3Equalization::SetMaxScan(int max) {
+	_maxScanTHL = max;
+	_ui->eqMaxSpinBox->setValue( _maxScanTHL );
+}
+
+Mpx3EqualizationResults::Mpx3EqualizationResults(){
+
+}
+
+Mpx3EqualizationResults::~Mpx3EqualizationResults(){
+
+}
+void Mpx3EqualizationResults::SetPixelAdj(int pixId, int adj) {
+	_pixId_Adj[pixId] = adj;
+}
+void Mpx3EqualizationResults::SetPixelReactiveThl(int pixId, int thl) {
+	_pixId_Thl[pixId] = thl;
+}
+int Mpx3EqualizationResults::GetPixelAdj(int pixId) {
+	return _pixId_Adj[pixId];
+}
+int Mpx3EqualizationResults::GetPixelReactiveThl(int pixId) {
+	return _pixId_Thl[pixId];
+}
+
+int * Mpx3EqualizationResults::GetAdjustementMatrix() {
+
+	//int * mat = new int[__matrix_size];
+	//int mat[4][256*256];
+
+	int * mat = new int[__matrix_size];
+	for( int j = 0 ; j < __matrix_size ; j++ ){
+		mat[j] = _pixId_Adj[j];
+		//if(j < __matrix_size/2) mat[j] = 0;
+		//else mat[j] = 31;
+	}
+
+	/*
+	int ** mat = new int*[4];
+	for( int i = 0 ; i < 4 ; i++ ){
+		mat[i] = new int[__matrix_size];
+		for( int j = 0 ; j < __matrix_size ; j++ ){
+			mat[i][j] = 0;
+		}
+	}
+
+	for( int i = 0 ; i < 4 ; i++ ){
+		for ( int j = 0 ; j < __matrix_size ; j++ ) {
+			mat[i][j] = _pixId_Adj[j];
+		}
+	}
+	 */
+
+	return mat;
+}
+
+void Mpx3EqualizationResults::ExtrapolateAdjToTarget(int target, double eta_Adj_THL) {
+
+	// Here simply I go through every pixel and decide, according to the behaviour of
+	//   Adj(THL), which is the best adjustement.
+
+	for ( int i = 0 ; i < __matrix_size ; i++ ) {
+		// Every pixel has a different reactive thl.  At this point i know the behavior of
+		//  Adj(THL) based on the mean.  I will assume that the slope is the same, but now
+		//  I need to adjust the linear behaviour to every particular pixel.  Let's obtain the
+		//  cut.
+		double pixel_cut = _pixId_Adj[i] - (eta_Adj_THL * _pixId_Thl[i]);
+		// Now I can throw the extrapolation for every pixel to the equalization target
+		int adj = (int)(eta_Adj_THL * (double)target + pixel_cut);
+		// Replace the old matrix with this adjustment
+		if ( adj > 0x1F ) { 			// Deal with an impossibly high adjustement
+			_pixId_Adj[i] = 0x1F;
+		} else if ( adj < 0x0 ) { 		// Deal with an impossibly low adjustement
+			_pixId_Adj[i] = 0x0;
+		} else {
+			_pixId_Adj[i] = adj;
+		}
+
+	}
+
+}
+
 void Mpx3Equalization::on_heatmapCombobox_currentIndexChanged(const QString &arg1)//would be more elegant to do with signals and slots, but would require either specalizing the combobox, or making the heatmapMap globally visible.
 {
 	_ui->heatmap->setHeatmap(heatmapMap[arg1]);
@@ -558,3 +815,4 @@ void Mpx3Equalization::on_openfileButton_clicked()
 	//_ui->histogramPlot->rescaleAxes();
 	_ui->heatmap->rescaleAxes();
 }
+

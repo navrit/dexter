@@ -38,6 +38,26 @@ class BarChart;
 class BarChartProperties;
 class ModuleConnection;
 
+class Mpx3EqualizationResults {
+
+public:
+	Mpx3EqualizationResults();
+	~Mpx3EqualizationResults();
+	void SetPixelAdj(int pixId, int adj);
+	void SetPixelReactiveThl(int pixId, int thl);
+	int GetPixelAdj(int pixId);
+	int GetPixelReactiveThl(int pixId);
+	int * GetAdjustementMatrix();
+
+	void ExtrapolateAdjToTarget(int target, double eta_Adj_THL);
+
+private:
+	// pixel Id, adjustment
+	map<int, int> _pixId_Adj;
+	// pixel Id, reactive thlValue
+	map<int, int> _pixId_Thl;
+
+};
 
 class Mpx3Equalization : public QWidget {
 	Q_OBJECT
@@ -51,10 +71,17 @@ public:
 	void PrintFraction(int * buffer, int size, int first_last);
 	int GetNPixelsActive(int * buffer, int size, verblev verbose);
 	void GetSlopeAndCut_THL_IDAC_DISC(ScanResults, ScanResults, double &, double &);
+	void GetSlopeAndCut_Adj_THL(ScanResults, ScanResults, double &, double &);
+
 	double EvalLinear(double eta, double cut, double x);
 
 	// Equalization steps
-	void DAC_Disc_Optimization(int DAC_Disc_code);
+	int DAC_Disc_Optimization(int setId, int DAC_Disc_code);
+	int PrepareInterpolation(int setId, int DAC_Disc_code);
+	int FineTunning(int setId, int DAC_Disc_code);
+	int DetectStartEqualizationRange(int setId, int DAC_Disc_code);
+
+	void DisplayStatsInTextBrowser(int adj, int dac_disc, ScanResults res);
 
 	pair<int, int> XtoXY(int X, int dimX);
 	void SetupSignalsAndSlots();
@@ -62,14 +89,18 @@ public:
 	void SetModuleConnection(ModuleConnection * p) { _moduleConn = p; };
 	void Configuration(bool reset);
 	void SetAllAdjustmentBits(int val_L, int val_H);
+	void SetAllAdjustmentBits(Mpx3EqualizationResults *);
 	void AppendToTextBrowser(QString s);
 	void ClearTextBrowser();
 	int GetDeviceIndex(){ return _deviceIndex; };
 	int GetNTriggers(){ return _nTriggers; };
 	int GetSpacing(){ return _spacing; };
-	int GetMinScan(){ return _minScan; };
+	int GetMinScan(){ return _minScanTHL; };
 	int GetMaxScan(){ return _maxScanTHL; };
 	int GetStepScan(){ return _stepScan; };
+
+	void SetMinScan(int);
+	void SetMaxScan(int);
 
 private:
 
@@ -87,7 +118,7 @@ private:
 	int _deviceIndex;
 	int _nTriggers;
 	int _spacing;
-	int _minScan;
+	int _minScanTHL;
 	int _maxScanTHL;
 	int _stepScan;
 
@@ -101,8 +132,12 @@ private:
 
 	// Object in charge of performing Thl scans
 	vector<ThlScan * > _scans;
+
 	// DACs
 	DACs * _dacs;
+
+	//
+	Mpx3EqualizationResults * _eqresults;
 
 	// Important Equalization values
 	double _eta_THL_DAC_DiscL;
@@ -111,6 +146,8 @@ private:
 	double _cut_THL_DAC_DiscH;
 	int _opt_MPX3RX_DAC_DISC_L;
 	int _opt_MPX3RX_DAC_DISC_H;
+	double _eta_Adj_THL;
+	double _cut_Adj_THL;
 
 private slots:
 
