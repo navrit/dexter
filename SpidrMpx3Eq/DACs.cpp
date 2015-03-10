@@ -97,59 +97,8 @@ DACs::DACs(QApplication * coreApp, Ui::Mpx3GUI * ui) {
 	QRect hrect = ui->_DACScanFrame->geometry();
 	_dacScanPlot->resize( hrect.size().rwidth() , hrect.size().rheight() );
 
-
-	/*
-	// prepare x axis
-	QVector<double> ticks;
-	_dacScanPlot->xAxis->setAutoTicks(true);
-	_dacScanPlot->xAxis->setAutoTickLabels(true);
-	_dacScanPlot->xAxis->setSubTickCount(0);
-	_dacScanPlot->xAxis->setTickLength(0, 4);
-	_dacScanPlot->xAxis->grid()->setVisible(true);
-	_dacScanPlot->xAxis->setRange(0, 512);
-
-	// prepare y axis:
-	_dacScanPlot->yAxis->setRange(0, 4096);
-	_dacScanPlot->yAxis->setPadding(5); // a bit more space to the left border
-	_dacScanPlot->yAxis->setLabel("entries");
-	_dacScanPlot->yAxis->grid()->setSubGridVisible(true);
-
-	QPen gridPen;
-	gridPen.setStyle(Qt::SolidLine);
-	gridPen.setColor(QColor(0, 0, 0, 25));
-	_dacScanPlot->yAxis->grid()->setPen(gridPen);
-	gridPen.setStyle(Qt::DotLine);
-	_dacScanPlot->yAxis->grid()->setSubGridPen(gridPen);
-
-	// setup legend:
-	_dacScanPlot->legend->setVisible(true);
-	_dacScanPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignHCenter);
-	_dacScanPlot->legend->setBrush(QColor(255, 255, 255, 200));
-	QPen legendPen;
-	legendPen.setColor(QColor(130, 130, 130, 200));
-	_dacScanPlot->legend->setBorderPen(legendPen);
-	QWidget f;
-	QFont legendFont = f.font();
-	legendFont.setPointSize(10);
-	_dacScanPlot->legend->setFont(legendFont);
-	_dacScanPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
-
-
-	int _dacIndex = 0;
-	// Next graph
-	_dacScanPlot->addGraph();
-	_graph = _dacScanPlot->graph( _dacIndex );
-	//QPen pen( COLOR_TABLE[_dacIndex] );
-	QPen pen( Qt::red );
-	//pen.setWidth( _comboBoxPenWidth->currentIndex()+1 );
-	_graph->setPen( pen );
-	//_graph->setName( QString(TPX3_DAC_TABLE[_dacIndex].name) );
-	_graph->setName( QString("hola") );
-	_graph->addToLegend();
-
-
-	_dacScanPlot->replot();
-	 */
+	//ReadDACsFile("asda"); //TODO: shouldn't exist, doesn't throw an error.
+	ReadDACsFile(""); //read the default file
 
 }
 
@@ -589,74 +538,48 @@ void DACs::FromSliderUpdateSpinBox(int i) {
 //}
 
 
-bool DACs::ReadDACsFile(string fn) {
-
+bool DACs::ReadDACsFile(string fn) {//TODO: should use QString instead of std::string, for one: it handles unicode better and interfaces with the rest of Qt better.
 	if(fn.empty()) { // default
 		fn = __default_DACs_filename;
 	}
+	QFile saveFile(QString(fn.c_str()));
+	if (!saveFile.open(QIODevice::ReadOnly)) {
+	    cout << "[WARNING] Couldn't find " << fn << endl;
+	    cout << "[WARNING] Setting default DACs at hardcoded values ! These might not be the best settings." << endl;
+	    string messg = "Couldn't open: ";
+	    messg += fn;
+	    messg += "\nSetting default DACs at hardcoded values ! These might not be the best settings.";
+	    QMessageBox::warning ( _ui->_DACScanFrame, tr("MPX3 - default DACs"), tr( messg.c_str() ) );
+	    return false;
+	 }
 
-	filebuf fb;
-	char rc;
-	string temp;
-	bool clearToAppend = true;
-	bool waitForNextLine = false;
-	int dacValIndex = 0;
-
-	if ( fb.open (fn.c_str(), ios::in) ) {
-
-		cout << "[INFO] reading DACs file from " << fn << endl;
-
-		istream is(&fb);
-
-		while(is) {
-
-			rc = char(is.get());
-
-			if ( waitForNextLine && ( rc != 0xa && rc != 0xd ) ) { // Already in the next line
-				waitForNextLine = false;
-				clearToAppend = true;
-				// previous line finished
-				//cout << temp << endl;
-				// Append the values to the dac vals internal array
-				_dacVals[dacValIndex] = atoi( temp.c_str() );
-				dacValIndex++;
-				if ( dacValIndex > MPX3RX_DAC_COUNT ) { // off scale
-					string messg = "ERROR loading the defaults DAC file: ";
-					messg += fn;
-					QMessageBox::information(_ui->_DACScanFrame, tr("MPX3 - default DACs"), tr( messg.c_str() ) );
-					return false;
-				}
-				temp.clear();
-			}
-
-			if ( rc == '/' || rc == '#' ) { // A comment from here and on
-				clearToAppend = false;
-			}
-			if (clearToAppend && !waitForNextLine) {
-				temp.append(1, rc); // append the character
-			}
-			if ( rc == 0xa || rc == 0xd ) { // This is the end of a line
-				clearToAppend = false;
-				waitForNextLine = true;
-			}
-
-		}
-		fb.close();
-
-	} else {
-
-		cout << "[WARNING] Couldn't find " << fn << endl;
-		cout << "[WARNING] Setting default DACs at mid range ! These might not be the best settings." << endl;
-		string messg = "Couldn't find: ";
-		messg += fn;
-		messg += "\nSetting default DACs at mid range ! These might not be the best settings.";
-		QMessageBox::warning ( _ui->_DACScanFrame, tr("MPX3 - default DACs"), tr( messg.c_str() ) );
-
-		return false;
-	}
-
-
+	QJsonDocument jsDoc(QJsonDocument::fromJson(saveFile.readAll()));
+	configJson = jsDoc.object();
+	getConfig();
 	return true;
+}
+
+bool DACs::WriteDACsFile(string fn){
+  setConfig();
+  if(fn.empty()) { // default
+          fn = __default_DACs_filename;
+  }
+  QFile saveFile(QString(fn.c_str()));
+  if (!saveFile.open(QIODevice::WriteOnly)) {
+      string messg = "Couldn't open: ";
+      messg += fn;
+      messg += "\nNo output written!";
+      QMessageBox::warning ( _ui->_DACScanFrame, tr("MPX3 - default DACs"), tr( messg.c_str() ) );
+      return false;
+   }
+  QFileInfo fInfo(saveFile.fileName());
+  std::cout << "Opened " <<fInfo.absoluteFilePath().toStdString() << std::endl;
+  QJsonDocument jsDoc(configJson);
+  if(-1 == saveFile.write(jsDoc.toJson())){
+      std::cout << "Write error!";
+      return false;
+  }
+  return true;
 }
 
 void DACs::ChangeDeviceIndex( int index )
@@ -1034,4 +957,52 @@ void ScanDACsThread::run() {
 	delete spidrcontrol;
 }
 
+void DACs::setConfig(){
+  for(int i = 0; i < Thresholds.length();i++){
+      configJson[QString("Threshold%1").arg(i)] = Thresholds[i];
+   }
+  configJson["I_Preamp"] = I_Preamp;
+  configJson["I_Ikrum"] = I_Ikrum;
+  configJson["I_Shaper"] = I_Shaper;
+  configJson["I_Disc"] = I_Disc;
+  configJson["I_Disc_LS"] = I_Disc_LS;
+  configJson["I_Shaper_test"] = I_Shaper_test;
+  configJson["I_DAC_DiscL"] = I_DAC_DiscL;
+  configJson["I_DAC_test"] = I_DAC_test;
+  configJson["I_DAC_DiscH"] = I_DAC_DiscH;
+  configJson["I_Delay"] = I_Delay;
+  configJson["I_TP_BufferIn"] = I_TP_BufferIn;
+  configJson["I_TP_BufferOut"] = I_TP_BufferOut;
+  configJson["V_Rpz"] = V_Rpz;
+  configJson["V_Gnd"] = V_Gnd;
+  configJson["V_Tp_ref"] = V_Tp_ref;
+  configJson["V_Fbk"] = V_Fbk;
+  configJson["V_Cas"] = V_Cas;
+  configJson["V_Tp_refA"] = V_Tp_refA;
+  configJson["V_Tp_refB"] = V_Tp_refB;
+}
 
+void DACs::getConfig(){
+  for(int i = 0; i < Thresholds.length();i++){
+      Thresholds[i] = configJson[QString("Threshold%1").arg(i)].toInt();
+   }
+  I_Preamp = configJson["I_Preamp"].toInt();
+  I_Ikrum = configJson["I_Ikrum"].toInt();
+  I_Shaper = configJson["I_Shaper"].toInt();
+  I_Disc = configJson["I_Disc"].toInt();
+  I_Disc_LS = configJson["I_Disc_LS"].toInt();
+  I_Shaper_test = configJson["I_Shaper_test"].toInt();
+  I_DAC_DiscL = configJson["I_DAC_DiscL"].toInt();
+  I_DAC_test =configJson["I_DAC_test"].toInt();;
+  I_DAC_DiscH = configJson["I_DAC_DiscH"].toInt();
+  I_Delay = configJson["I_Delay"].toInt();
+  I_TP_BufferIn = configJson["I_TP_BufferIn"].toInt();
+  I_TP_BufferOut = configJson["I_TP_BufferOut"].toInt();
+  V_Rpz= configJson["V_Rpz"].toInt();
+  V_Gnd = configJson["V_Gnd"].toInt();
+  V_Tp_ref = configJson["V_Tp_ref"].toInt();
+  V_Fbk = configJson["V_Fbk"].toInt();
+  V_Cas = configJson["V_Cas"].toInt();
+  V_Tp_refA = configJson["V_Tp_refA"].toInt();
+  V_Tp_refB = configJson["V_Tp_refB"].toInt();
+}
