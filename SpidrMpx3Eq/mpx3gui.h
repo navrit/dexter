@@ -64,6 +64,7 @@ public:
 
 	explicit Mpx3GUI(QApplication * coreApp, QWidget *parent = 0);
 	~Mpx3GUI();
+	void SetupSignalsAndSlots();
 
 	void timerEvent( QTimerEvent * );
 
@@ -83,6 +84,10 @@ private:
 	DACs * _dacs;
 	// This helps interconnecting the different modules
 	ModuleConnection * _moduleConn;
+
+private slots:
+
+	void LoadEqualization();
 
 };
 

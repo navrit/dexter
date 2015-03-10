@@ -46,6 +46,10 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	// Pulling down the cables
 	_dacs->SetModuleConnection( _moduleConn );
 	_equalization->SetModuleConnection( _moduleConn );
+
+	// Signals and slots for this part
+	SetupSignalsAndSlots();
+
 }
 
 Mpx3GUI::~Mpx3GUI()
@@ -59,3 +63,14 @@ void Mpx3GUI::timerEvent( QTimerEvent * /*evt*/ ) {
 
 }
 
+void Mpx3GUI::LoadEqualization(){
+
+	_equalization->LoadEqualization();
+
+}
+
+void Mpx3GUI::SetupSignalsAndSlots(){
+
+	connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );
+
+}
