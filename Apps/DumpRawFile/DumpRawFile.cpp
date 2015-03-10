@@ -15,18 +15,38 @@ int main( int argc, char *argv[])
     int date[3];
     int time[4];
     int devid[3];
+    int i, j, retval;
+    int trim, trimrev, mask, tp_ena;
     char hdrid[5], devtypeid[5];
+    bool extract_trim = false;
+    char trimfile[256];
+    FILE *fp, *fptrim;
+    unsigned char trimdac[65536];
     
 
-    if (argc!=2)  { cout << "Usage: DumpRawFile <filename>" << endl; return -1; }
-
-    FILE *fp = fopen(argv[1],"rb");
-    if ( fp == NULL ) {
-        cout << "can not open file: " << argv[1] << endl;
+    if ( ! ((argc==2) || (argc==4)) )  { 
+        cout << "Usage: DumpRawFile [-t <trimdacfile>] <raw-filename>" << endl;
+        cout << "       optional: -t <trimdacfile> extracts the trimdac settings from the file header and writes it to trimdacfile\n" << endl;
         return -1;
     }
 
-    int retval = fread( &hdr, sizeof(hdr), 1, fp);
+    char c = getopt(argc, argv, "t:");
+    switch (c) { 
+        case 't': extract_trim = true;
+                  sscanf( optarg, "%s", trimfile );
+                  break; 
+        default : extract_trim = false;
+                  break;
+    }
+
+    fp = fopen(argv[optind],"rb");
+
+    if ( fp == NULL ) {
+        cout << "can not open file: " << argv[optind] << endl;
+        return -1;
+    }
+
+    retval = fread( &hdr, sizeof(hdr), 1, fp);
     if ( retval != 1 ) { cout << "Could not read complete header" << endl; return -2; }
 
     if (hdr.format != 0x1) { cout << " File format: 0x" << hdr.format << "   This decoder is for format: 0x1" << endl;  return -2; }
@@ -139,20 +159,30 @@ int main( int argc, char *argv[])
     cout << "===================================================================== " << endl;
 
         
+    if ( extract_trim ) {
+        if ( hdr.devHeader.headerSizeTotal >= 65792 ) {
+            fptrim = fopen( trimfile, "w");
+            if ( fptrim == NULL ) { cout << "can not open file: " << trimfile << endl; return -1; }
+            fprintf( fptrim, "#col  row trim mask tp_ena\n");
+            retval = fread( trimdac, sizeof(unsigned char), 65536, fp);
+            if ( retval != 65536 ) { cout << "Could not read trimdac data from eader" << endl; return -3; }
+            for ( i=0; i<256; i++) {   
+                for ( j=0; j<256; j++) {   
+                    trimrev = (trimdac[i+256*j] >> 1 ) & 0xF; 
+                    trim = ((trimrev & 0x1) << 3) | ((trimrev & 0x2) << 1) | ((trimrev & 0x4) >> 1) | ((trimrev & 0x8 ) >> 3); 
+                    mask = trimdac[i+256*j] & 0x1;
+                    tp_ena = trimdac[i+256*j] >> 6 & 0x1;
+                    fprintf(fptrim, "%4d %4d %4d %4d %4d\n", i, j, trim, mask, tp_ena);
+                }
+            }
+        }
+        else {
+            printf( "no trimdac data in the file header, size = %d\n", hdr.devHeader.headerSizeTotal );
+        }
+
+        
+    }
 
 
 }
 
-/*
-  u8  ctpr[256/8];
-  u32 unused[64-11-32-(256/8)/4];
-} Tpx3Header_t;
-#define SPIDRTPX3_HEADER_SIZE  sizeof(SpidrTpx3Header_t)
-#define TPX3_HEADER_SIZE       sizeof(Tpx3Header_t)
-
-#define SPIDRTPX3_HEADER_ID    0x33545053 // Represents "SPT3"
-#define TPX3_HEADER_ID         0x33585054 // Represents "TPX3"
-#define HEADER_FILLER          0xDD       // For unused space in headers
-
-#endif // SPIDRTPX3DATA_H
-*/
