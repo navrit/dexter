@@ -28,6 +28,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
 	// Instantiate everything in the UI
 	_ui->setupUi(this);
+
 	startTimer( 200 );
 
 
@@ -49,7 +50,6 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
 	// Signals and slots for this part
 	SetupSignalsAndSlots();
-
 }
 
 Mpx3GUI::~Mpx3GUI()
@@ -70,7 +70,7 @@ void Mpx3GUI::LoadEqualization(){
 }
 
 void Mpx3GUI::SetupSignalsAndSlots(){
-
-	connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );
-
+	std::cout << "Connecting signals and slots" << std::endl;
+	connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), _equalization, SLOT( LoadEqualization() ) );
+	connect( _ui->actionSave_DACs, SIGNAL(triggered()), _dacs, SLOT( openWriteMenu() ) );
 }

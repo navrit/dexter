@@ -732,8 +732,11 @@ int Mpx3EqualizationResults::GetPixelReactiveThl(int pixId) {
 
 void Mpx3EqualizationResults::WriteAdjBinaryFile(QString fn) {
 
-	ofstream fd;
-	fd.open (fn.toStdString().c_str(), ios::out | ios::binary);
+	//ofstream fd;
+	QFile file(fn);
+	if (!file.open(QIODevice::ReadOnly)) return;
+	file.write(_pixId_Adj);
+	/*fd.open (fn.toStdString().c_str(), ios::out | ios::binary);
 	cout << "Writing adjustment matrix to: " << fn.toStdString() << endl;
 	// Each adjustment value is written as 8 bits val.  Each value is actually 5 bits.
 	char buffer;
@@ -742,28 +745,15 @@ void Mpx3EqualizationResults::WriteAdjBinaryFile(QString fn) {
 		fd.write( &buffer, 1 );   // _pixId_Adj[j];
 	}
 
-	fd.close();
+	fd.close();*/
 
 }
 
 void Mpx3EqualizationResults::ReadAdjBinaryFile(QString fn) {
-
-	ifstream fd;
-	fd.open (fn.toStdString().c_str(), ios::in | ios::binary);
-	cout << "Reading adjustment matrix from: " << fn.toStdString() << endl;
-
-	// Each adjustment value is written as 8 bits val.  Each value is actually 5 bits.
-	char buffer;
-	int pixId = 0;
-	while ( fd.good() ) {
-		if ( fd.eof() ) break;
-		fd.read( &buffer, 1 );
-
-		_pixId_Adj[pixId++];
-	}
-
-	fd.close();
-
+  std::cout << "Read Adj Binary called for " << fn.toStdString() << std::endl;
+  QFile file(fn);
+  if (!file.open(QIODevice::ReadOnly)) return;
+  _pixId_Adj = file.readAll();
 }
 
 

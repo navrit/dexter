@@ -166,10 +166,8 @@ public:
 	QCPGraph * GetGraph(int idx);
 	QCustomPlot * GetQCustomPlotPtr() { return _dacScanPlot; };
 	void SetModuleConnection(ModuleConnection * p) { _moduleConn = p; };
-	QJsonObject readConfig(string filename);
 	void getConfig();
 	void setConfig();
-	void writeConfig(string filename);
 
 private:
 
@@ -177,10 +175,6 @@ private:
 	void SetLimits();
 	/*all the configuration bits*/
 	QJsonObject configJson;
-	QVector<int> Thresholds = {50,50,0,0,0,0,0,0};
-	int I_Preamp = 100, I_Ikrum = 10, I_Shaper = 125, I_Disc = 125, I_Disc_LS = 100,I_Shaper_test =100;
-	int I_DAC_DiscL = 100,  I_DAC_test = 100, I_DAC_DiscH = 100, I_Delay = 50, I_TP_BufferIn = 128,  I_TP_BufferOut = 4;
-	int  V_Rpz = 255,  V_Gnd = 149, V_Tp_ref=120, V_Fbk = 209,V_Cas   =191,V_Tp_refA = 50, V_Tp_refB = 255;
 
 	// Connectivity between modules
 	ModuleConnection * _moduleConn;
@@ -244,6 +238,7 @@ void addData(int, int, double);
 void addData(int);
 void scanFinished();
 void slideAndSpin(int, int);
+void openWriteMenu();
 
 };
 

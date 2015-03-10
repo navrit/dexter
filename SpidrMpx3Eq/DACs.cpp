@@ -27,7 +27,7 @@ DACs::DACs(){
 }
 
 DACs::DACs(QApplication * coreApp, Ui::Mpx3GUI * ui) {
-
+	ReadDACsFile(""); //read the default file
 	_coreApp = coreApp;
 	_spidrcontrol = 0;  // Assuming no connection yet
 	_spidrdaq = 0;		// Assuming no connection yet
@@ -98,7 +98,7 @@ DACs::DACs(QApplication * coreApp, Ui::Mpx3GUI * ui) {
 	_dacScanPlot->resize( hrect.size().rwidth() , hrect.size().rheight() );
 
 	//ReadDACsFile("asda"); //TODO: shouldn't exist, doesn't throw an error.
-	ReadDACsFile(""); //read the default file
+	//PopulateDACValues();
 
 }
 
@@ -160,7 +160,7 @@ void DACs::PopulateDACValues() {
 		cout << "[INFO] setting dacs from defult DACs file." << endl;
 
 		for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
-			_dacVals[i] = configJson[MPX3RX_DAC_TABLE[i].code];
+			_dacVals[i] = configJson[MPX3RX_DAC_TABLE[i].name].toInt();
 			_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[i].code, _dacVals[i] );
 			_dacSpinBoxes[i]->setValue( _dacVals[i] );
 			_dacSliders[i]->setValue( _dacVals[i] );
@@ -959,7 +959,10 @@ void ScanDACsThread::run() {
 }
 
 void DACs::setConfig(){
-  for(int i = 0; i < Thresholds.length();i++){
+  for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
+          configJson[MPX3RX_DAC_TABLE[i].name] = _dacVals[i];
+    }
+  /*for(int i = 0; i < Thresholds.length();i++){
       configJson[QString("Threshold%1").arg(i)] = Thresholds[i];
    }
   configJson["I_Preamp"] = I_Preamp;
@@ -980,11 +983,14 @@ void DACs::setConfig(){
   configJson["V_Fbk"] = V_Fbk;
   configJson["V_Cas"] = V_Cas;
   configJson["V_Tp_refA"] = V_Tp_refA;
-  configJson["V_Tp_refB"] = V_Tp_refB;
+  configJson["V_Tp_refB"] = V_Tp_refB;*/
 }
 
 void DACs::getConfig(){
-  for(int i = 0; i < Thresholds.length();i++){
+  for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++){
+    _dacVals[i] = configJson[MPX3RX_DAC_TABLE[i].name].toInt();
+    }
+  /*for(int i = 0; i < Thresholds.length();i++){
       Thresholds[i] = configJson[QString("Threshold%1").arg(i)].toInt();
    }
   I_Preamp = configJson["I_Preamp"].toInt();
@@ -1005,5 +1011,12 @@ void DACs::getConfig(){
   V_Fbk = configJson["V_Fbk"].toInt();
   V_Cas = configJson["V_Cas"].toInt();
   V_Tp_refA = configJson["V_Tp_refA"].toInt();
-  V_Tp_refB = configJson["V_Tp_refB"].toInt();
+  V_Tp_refB = configJson["V_Tp_refB"].toInt();*/
+}
+
+void DACs::openWriteMenu(){
+  std::cout << "Openwritemenu called!" << std::endl;
+  QString fileName = QFileDialog::getSaveFileName(this->_ui->widget, tr("Save Config"), tr("."), tr("json Files (*.json)"));
+  WriteDACsFile(fileName.toStdString());
+  //this->WriteDACsFile()
 }

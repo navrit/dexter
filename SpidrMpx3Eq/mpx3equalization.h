@@ -55,7 +55,8 @@ public:
 
 private:
 	// pixel Id, adjustment
-	map<int, int> _pixId_Adj;
+	/*map<int, int> */
+	QByteArray _pixId_Adj;
 	// pixel Id, reactive thlValue
 	map<int, int> _pixId_Thl;
 
