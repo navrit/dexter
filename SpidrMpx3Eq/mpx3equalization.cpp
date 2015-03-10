@@ -26,6 +26,7 @@
 #include <stdio.h>
 
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 
@@ -718,7 +719,7 @@ void Mpx3EqualizationResults::WriteAdjBinaryFile(QString fn) {
 
 	ofstream fd;
 	fd.open (fn.toStdString().c_str(), ios::out | ios::binary);
-
+	cout << "Writing adjustment matrix to: " << fn.toStdString() << endl;
 	// Each adjustment value is written as 8 bits val.  Each value is actually 5 bits.
 	char buffer;
 	for( int j = 0 ; j < __matrix_size ; j++ ){
@@ -729,6 +730,26 @@ void Mpx3EqualizationResults::WriteAdjBinaryFile(QString fn) {
 	fd.close();
 
 }
+
+void Mpx3EqualizationResults::ReadAdjBinaryFile(QString fn) {
+
+	ifstream fd;
+	fd.open (fn.toStdString().c_str(), ios::in | ios::binary);
+	cout << "Reading adjustment matrix from: " << fn.toStdString() << endl;
+
+	// Each adjustment value is written as 8 bits val.  Each value is actually 5 bits.
+	char buffer;
+	int pixId = 0;
+	while ( fd.good() ) {
+		if ( fd.eof() ) break;
+		fd.read( &buffer, 1 );
+		_pixId_Adj[pixId++] = atoi( &buffer );
+	}
+
+	fd.close();
+
+}
+
 
 /**
  * Convert the map to an array to feed the heatmap in the display

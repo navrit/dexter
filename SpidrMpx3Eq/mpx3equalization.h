@@ -51,6 +51,7 @@ public:
 
 	void ExtrapolateAdjToTarget(int target, double eta_Adj_THL);
 	void WriteAdjBinaryFile(QString fn);
+	void ReadAdjBinaryFile(QString fn);
 
 private:
 	// pixel Id, adjustment

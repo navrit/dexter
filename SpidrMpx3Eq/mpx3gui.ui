@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>928</width>
-    <height>537</height>
+    <height>553</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1363,7 +1363,7 @@
      <x>0</x>
      <y>0</y>
      <width>928</width>
-     <height>19</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -1374,7 +1374,30 @@
     <addaction name="actionConnect"/>
     <addaction name="actionExit"/>
    </widget>
+   <widget class="QMenu" name="menuConfig">
+    <property name="title">
+     <string>Config</string>
+    </property>
+    <widget class="QMenu" name="menuLoad_configuration">
+     <property name="title">
+      <string>Load configuration</string>
+     </property>
+     <addaction name="actionLoad_DACs"/>
+     <addaction name="actionLoad_Equalization"/>
+    </widget>
+    <widget class="QMenu" name="menuSave_configuration">
+     <property name="title">
+      <string>Save configuration</string>
+     </property>
+     <addaction name="actionSave_DACs"/>
+     <addaction name="actionSave_Equalization"/>
+    </widget>
+    <addaction name="actionClear_configuration"/>
+    <addaction name="menuLoad_configuration"/>
+    <addaction name="menuSave_configuration"/>
+   </widget>
    <addaction name="menuMpx3Eq"/>
+   <addaction name="menuConfig"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -1393,6 +1416,31 @@
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionClear_configuration">
+   <property name="text">
+    <string>Clear configuration</string>
+   </property>
+  </action>
+  <action name="actionLoad_DACs">
+   <property name="text">
+    <string>Load DACs</string>
+   </property>
+  </action>
+  <action name="actionLoad_Equalization">
+   <property name="text">
+    <string>Load Equalization</string>
+   </property>
+  </action>
+  <action name="actionSave_DACs">
+   <property name="text">
+    <string>Save DACs</string>
+   </property>
+  </action>
+  <action name="actionSave_Equalization">
+   <property name="text">
+    <string>Save Equalization</string>
    </property>
   </action>
  </widget>
