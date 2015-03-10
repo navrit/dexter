@@ -160,6 +160,7 @@ void DACs::PopulateDACValues() {
 		cout << "[INFO] setting dacs from defult DACs file." << endl;
 
 		for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
+			_dacVals[i] = configJson[MPX3RX_DAC_TABLE[i].code];
 			_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[i].code, _dacVals[i] );
 			_dacSpinBoxes[i]->setValue( _dacVals[i] );
 			_dacSliders[i]->setValue( _dacVals[i] );
