@@ -72,6 +72,10 @@ private:
 	QApplication * _coreApp;
 	Ui::Mpx3GUI * _ui;
 
+	//Define  some UI variable shared by all the modules.
+	QMap<QString, QCPColorGradient> heatmapMap;
+	unsigned currentFrame;
+
 	// Each object here deals with one tab of the
 	// Equalization
 	Mpx3Equalization * _equalization;

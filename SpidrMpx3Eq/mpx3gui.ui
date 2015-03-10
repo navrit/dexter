@@ -6,22 +6,22 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>922</width>
-    <height>553</height>
+    <width>928</width>
+    <height>537</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Mpx3GUI</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <layout class="QHBoxLayout" name="horizontalLayout_10">
     <item>
      <widget class="QTabWidget" name="allTabs">
       <property name="toolTip">
        <string>DAC Control</string>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -1343,6 +1343,16 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="visualization">
+       <attribute name="title">
+        <string>[NEW] visualization</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_11">
+        <item>
+         <widget class="QCstmVisualization" name="widget" native="true"/>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -1352,8 +1362,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>922</width>
-     <height>20</height>
+     <width>928</width>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -1422,6 +1432,12 @@
     <slot>changeRange(QCPRange)</slot>
     <slot>setActive(int)</slot>
    </slots>
+  </customwidget>
+  <customwidget>
+   <class>QCstmVisualization</class>
+   <extends>QWidget</extends>
+   <header>qcstmvisualization.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

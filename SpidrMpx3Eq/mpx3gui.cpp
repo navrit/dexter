@@ -28,7 +28,6 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
 	// Instantiate everything in the UI
 	_ui->setupUi(this);
-
 	startTimer( 200 );
 
 
@@ -47,7 +46,6 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	// Pulling down the cables
 	_dacs->SetModuleConnection( _moduleConn );
 	_equalization->SetModuleConnection( _moduleConn );
-
 }
 
 Mpx3GUI::~Mpx3GUI()

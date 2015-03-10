@@ -46,7 +46,11 @@ LIBS += -lQCustomPlot
 SOURCES += main.cpp \
     qcstmplotheatmap.cpp \
     histogram.cpp \
-    qcstmplothistogram.cpp 
+    qcstmplothistogram.cpp \ 
+    qcstmequalization.cpp \
+    qcstmvisualization.cpp \
+    qcstmdacs.cpp \
+    qcstmglplot.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -56,17 +60,17 @@ SOURCES += mpx3equalization.cpp
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
     histogram.h \
-    qcstmplothistogram.h 
+    qcstmplothistogram.h \ 
+    qcstmequalization.h \
+    qcstmvisualization.h \
+    qcstmdacs.h \
+    qcstmglplot.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DACs.h
 HEADERS += mpx3equalization.h
 
-FORMS    += mpx3gui.ui
-
-DISTFILES += \
-    shaders/texturedquad.vert \
-    shaders/grayscale.frag \
-    shaders/heatmaps/redblue.frag \
-    shaders/test.frag \
-    shaders/passthrough.vert
+FORMS    += mpx3gui.ui \
+    qcstmequalization.ui \
+    qcstmvisualization.ui \
+    qcstmdacs.ui
