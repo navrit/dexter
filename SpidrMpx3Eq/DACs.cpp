@@ -513,6 +513,7 @@ void DACs::FromSpinBoxUpdateSlider(int i) {
 	_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
 	// Clean up the corresponding labelV.  The dacOut won't be read right away.
 	// Only under user request
+	_dacVals[i] = val;
 	GetLabelsList()[i]->setText("");
 
 }
@@ -525,7 +526,7 @@ void DACs::FromSliderUpdateSpinBox(int i) {
 	//_dacSpinBoxes[i]->setValue( val );
 	// Set DAC
 	_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
-
+	_dacVals[i] = val;
 	// Clean up the corresponding labelV.  The dacOut won't be read right away.
 	// Only under user request
 	GetLabelsList()[i]->setText("");
