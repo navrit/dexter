@@ -46,6 +46,7 @@ void QCstmVisualization::ConnectionStatusChanged() {
 
 		int size_in_bytes = -1;
 		framedata = spidrdaq->frameData(0, &size_in_bytes);
+		_mpx3gui->addFrame(framedata, size_in_bytes);
 
 		//ExtractScanInfo( data, size_in_bytes, i );
 

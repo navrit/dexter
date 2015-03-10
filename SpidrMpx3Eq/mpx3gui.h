@@ -10,6 +10,7 @@
 //#include <QImage>
 #include <QMainWindow>
 
+#include <QVector>
 #include <iostream>
 #include <vector>
 
@@ -74,7 +75,7 @@ public:
 	~Mpx3GUI();
 	void SetupSignalsAndSlots();
 	Ui::Mpx3GUI * GetUI() { return _ui; };
-	ModuleConnection * GetModuleConnection(){ return _moduleConn; };
+	ModuleConnection * GetModuleConnection(){ return _moduleConn; }
 
 	void timerEvent( QTimerEvent * );
 
@@ -96,9 +97,21 @@ private:
 	ModuleConnection * _moduleConn;
 
 	//Data Stores
-	int **data = nullptr;
+	QVector<int*> data;
+	QVector<int> dataSize;
 	unsigned nData =0, *ny = nullptr, *nx = nullptr;
 	histogram **hists = nullptr;
+public:
+	void addFrame(int *frame, int size){
+	  data.append(frame);
+	  dataSize.append(size);
+	}
+	int* getFrame(int index, int *return_size_bytes = nullptr){
+	  if(return_size_bytes)
+	    *return_size_bytes = dataSize[index];
+	  return data[index];
+	}
+
 
 	private slots:
 
