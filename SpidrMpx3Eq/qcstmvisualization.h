@@ -15,13 +15,12 @@ class QCstmVisualization : public QWidget
   Q_OBJECT
 private:
   Ui::QCstmVisualization *ui;
-  ModuleConnection *connection = nullptr;
+  Mpx3GUI * _mpx3gui;
 public:
   explicit QCstmVisualization(QWidget *parent = 0);
   ~QCstmVisualization();
-  void setConnection(ModuleConnection *connection){
-    this->connection = connection;
-  }
+  void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
+  void Configuration(bool reset);
 
 /* Signals and slots for inttercommunication between te different tabs goes here.
  * S&S for communication between members of this tab can be set in the .ui file or constructor.
@@ -30,7 +29,8 @@ signals:
 
 public slots:
 private slots:
-  void on_openfileButton_clicked();
+	void ConnectionStatusChanged();
+	void on_openfileButton_clicked();
   //void on_data_changed();
 };
 

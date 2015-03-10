@@ -36,27 +36,32 @@ namespace Ui {
 class Mpx3GUI;
 }
 
-class ModuleConnection {
+class ModuleConnection : public QObject {
+
+	Q_OBJECT
 
 public:
+
 	ModuleConnection(){};
 	~ModuleConnection(){};
-	//
-	void SetDACs(DACs * p) { _dacs = p ;};
-	void SetEqualization(Mpx3Equalization * p) { _equalization = p; };
-	// A pointer to the other tabs
-	DACs * GetDACs() { return _dacs; };
-	Mpx3Equalization * GetEqualization() { return _equalization; };
+	SpidrController * GetSpidrController(){ return _spidrcontrol; };
+	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; };
 
 private:
-        //Data Stores
-        int **data = nullptr;
-        unsigned nData =0, *ny = nullptr, *nx = nullptr;
-        histogram **hists = nullptr;
-	// Equalization
-	Mpx3Equalization * _equalization;
-	// DACs
-	DACs * _dacs;
+
+	// Connectivity
+	SpidrController * _spidrcontrol;
+	SpidrDaq * _spidrdaq;
+
+private slots:
+
+	void Connection();
+
+	signals:
+
+void ConnectionStatusChanged();
+
+
 };
 
 class Mpx3GUI : public QMainWindow {
@@ -68,6 +73,8 @@ public:
 	explicit Mpx3GUI(QApplication * coreApp, QWidget *parent = 0);
 	~Mpx3GUI();
 	void SetupSignalsAndSlots();
+	Ui::Mpx3GUI * GetUI() { return _ui; };
+	ModuleConnection * GetModuleConnection(){ return _moduleConn; };
 
 	void timerEvent( QTimerEvent * );
 
@@ -88,11 +95,18 @@ private:
 	// This helps interconnecting the different modules
 	ModuleConnection * _moduleConn;
 
-private slots:
+	//Data Stores
+	int **data = nullptr;
+	unsigned nData =0, *ny = nullptr, *nx = nullptr;
+	histogram **hists = nullptr;
+
+	private slots:
 
 	void LoadEqualization();
-
 	void on_openfileButton_clicked();
+
+
+
 };
 
 

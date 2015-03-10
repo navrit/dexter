@@ -75,6 +75,7 @@ public:
 	int GetNPixelsActive(int * buffer, int size, verblev verbose);
 	void GetSlopeAndCut_THL_IDAC_DISC(ScanResults, ScanResults, double &, double &);
 	void GetSlopeAndCut_Adj_THL(ScanResults, ScanResults, double &, double &);
+	void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
 
 	double EvalLinear(double eta, double cut, double x);
 
@@ -89,7 +90,6 @@ public:
 	pair<int, int> XtoXY(int X, int dimX);
 	void SetupSignalsAndSlots();
 	void SetLimits();
-	void SetModuleConnection(ModuleConnection * p) { _moduleConn = p; };
 	void Configuration(bool reset);
 	void SetAllAdjustmentBits(int val_L, int val_H);
 	void SetAllAdjustmentBits(Mpx3EqualizationResults *);
@@ -111,12 +111,10 @@ public:
 private:
 
 	// Connectivity between modules
-	ModuleConnection * _moduleConn;
+	Mpx3GUI * _mpx3gui;
 
 	QStringList files;
 	QMap<QString, QCPColorGradient> heatmapMap;
-	SpidrController * _spidrcontrol;
-	SpidrDaq * _spidrdaq;
 
 	QApplication * _coreApp;
 	Ui::Mpx3GUI * _ui;
@@ -158,13 +156,13 @@ private:
 private slots:
 
 	void StartEqualization();
-	void Connect();
 	void ChangeNTriggers(int);
 	void ChangeDeviceIndex(int);
 	void ChangeSpacing(int);
 	void ChangeMin(int);
 	void ChangeMax(int);
 	void ChangeStep(int);
+	void ConnectionStatusChanged();
 
 	void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
 	void on_openfileButton_clicked();

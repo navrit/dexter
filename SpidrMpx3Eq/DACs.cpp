@@ -29,8 +29,7 @@ DACs::DACs(){
 DACs::DACs(QApplication * coreApp, Ui::Mpx3GUI * ui) {
 	ReadDACsFile(""); //read the default file
 	_coreApp = coreApp;
-	_spidrcontrol = 0;  // Assuming no connection yet
-	_spidrdaq = 0;		// Assuming no connection yet
+
 	_ui = ui;
 	_senseThread = 0x0;
 	_scanThread = 0x0;
@@ -108,7 +107,9 @@ DACs::~DACs() {
 
 void DACs::StartDACScan() {
 
-	if ( !_spidrcontrol ) {
+	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
+
+	if ( ! spidrcontrol ) {
 		QMessageBox::information(_ui->_DACScanFrame, tr("MPX3"), tr("Connect to hardware first.") );
 		return;
 	}
@@ -129,7 +130,7 @@ void DACs::StartDACScan() {
 	}
 
 	// Create the thread
-	_scanThread = new ScanDACsThread(this, _spidrcontrol);
+	_scanThread = new ScanDACsThread(this, spidrcontrol);
 	// Connect to the progress bar
 	connect( _scanThread, SIGNAL( progress(int) ), _ui->progressBar, SLOT( setValue(int)) );
 
@@ -137,18 +138,9 @@ void DACs::StartDACScan() {
 
 }
 
-void DACs::ConnectToHardware(SpidrController * sc, SpidrDaq * sd) {
-
-	_spidrcontrol = sc;
-	_spidrdaq = sd;
-
-	// Connected, activate what was not ready to operate
-	_ui->startScanButton->setDisabled( false );
-	_ui->senseDACsPushButton->setDisabled( false );
-
-}
-
 void DACs::PopulateDACValues() {
+
+	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
 
 	// Here we set the default values hardcoded in MPX3RX_DAC_TABLE (mid range)
 	//   OR if the DACs file is present we read the values from it.  The file has
@@ -161,7 +153,7 @@ void DACs::PopulateDACValues() {
 
 		for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
 			_dacVals[i] = configJson[MPX3RX_DAC_TABLE[i].name].toInt();
-			_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[i].code, _dacVals[i] );
+			spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[i].code, _dacVals[i] );
 			_dacSpinBoxes[i]->setValue( _dacVals[i] );
 			_dacSliders[i]->setValue( _dacVals[i] );
 		}
@@ -172,7 +164,7 @@ void DACs::PopulateDACValues() {
 
 		for (int i = 0 ; i < 1; i++) {
 
-			_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[i].code, MPX3RX_DAC_TABLE[i].dflt );
+			spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[i].code, MPX3RX_DAC_TABLE[i].dflt );
 			_dacSpinBoxes[i]->setValue( MPX3RX_DAC_TABLE[i].dflt );
 			_dacSliders[i]->setValue( MPX3RX_DAC_TABLE[i].dflt );
 
@@ -183,9 +175,19 @@ void DACs::PopulateDACValues() {
 
 }
 
+void DACs::ConnectionStatusChanged() {
+
+	// Connected, activate what was not ready to operate
+	_ui->startScanButton->setDisabled( false );
+	_ui->senseDACsPushButton->setDisabled( false );
+
+}
+
 void DACs::SenseDACs() {
 
-	if ( !_spidrcontrol ) {
+	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
+
+	if ( !spidrcontrol ) {
 		QMessageBox::information(_ui->_DACScanFrame, tr("MPX3"), tr("Connect to hardware first.") );
 		return;
 	}
@@ -201,7 +203,7 @@ void DACs::SenseDACs() {
 	}
 
 	// Create the thread
-	_senseThread = new SenseDACsThread(this, _spidrcontrol);
+	_senseThread = new SenseDACsThread(this, spidrcontrol);
 	// Connect to the progress bar
 	connect( _senseThread, SIGNAL( progress(int) ), _ui->progressBar, SLOT( setValue(int)) );
 
@@ -505,12 +507,14 @@ void DACs::setValueDAC(int i) {
 
 void DACs::FromSpinBoxUpdateSlider(int i) {
 
+	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
+
 	// Set the value
 	int val = _dacSpinBoxes[i]->value();
 	// Set the slider according to the new value in the Spin Box
 	_dacSliders[i]->setValue( val );
 	// Set DAC
-	_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
+	spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
 	// Clean up the corresponding labelV.  The dacOut won't be read right away.
 	// Only under user request
 	_dacVals[i] = val;
@@ -520,12 +524,14 @@ void DACs::FromSpinBoxUpdateSlider(int i) {
 
 void DACs::FromSliderUpdateSpinBox(int i) {
 
+	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
+
 	//
 	int val = _dacSliders[ i ]->value();
 	// Set the spin box according to the new value in the Slider
 	//_dacSpinBoxes[i]->setValue( val );
 	// Set DAC
-	_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
+	spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
 	_dacVals[i] = val;
 	// Clean up the corresponding labelV.  The dacOut won't be read right away.
 	// Only under user request
@@ -546,14 +552,14 @@ bool DACs::ReadDACsFile(string fn) {//TODO: should use QString instead of std::s
 	}
 	QFile saveFile(QString(fn.c_str()));
 	if (!saveFile.open(QIODevice::ReadOnly)) {
-	    cout << "[WARNING] Couldn't find " << fn << endl;
-	    cout << "[WARNING] Setting default DACs at hardcoded values ! These might not be the best settings." << endl;
-	    string messg = "Couldn't open: ";
-	    messg += fn;
-	    messg += "\nSetting default DACs at hardcoded values ! These might not be the best settings.";
-	    QMessageBox::warning ( _ui->_DACScanFrame, tr("MPX3 - default DACs"), tr( messg.c_str() ) );
-	    return false;
-	 }
+		cout << "[WARNING] Couldn't find " << fn << endl;
+		cout << "[WARNING] Setting default DACs at hardcoded values ! These might not be the best settings." << endl;
+		string messg = "Couldn't open: ";
+		messg += fn;
+		messg += "\nSetting default DACs at hardcoded values ! These might not be the best settings.";
+		QMessageBox::warning ( _ui->_DACScanFrame, tr("MPX3 - default DACs"), tr( messg.c_str() ) );
+		return false;
+	}
 
 	QJsonDocument jsDoc(QJsonDocument::fromJson(saveFile.readAll()));
 	configJson = jsDoc.object();
@@ -562,26 +568,26 @@ bool DACs::ReadDACsFile(string fn) {//TODO: should use QString instead of std::s
 }
 
 bool DACs::WriteDACsFile(string fn){
-  setConfig();
-  if(fn.empty()) { // default
-          fn = __default_DACs_filename;
-  }
-  QFile saveFile(QString(fn.c_str()));
-  if (!saveFile.open(QIODevice::WriteOnly)) {
-      string messg = "Couldn't open: ";
-      messg += fn;
-      messg += "\nNo output written!";
-      QMessageBox::warning ( _ui->_DACScanFrame, tr("MPX3 - default DACs"), tr( messg.c_str() ) );
-      return false;
-   }
-  QFileInfo fInfo(saveFile.fileName());
-  std::cout << "Opened " <<fInfo.absoluteFilePath().toStdString() << std::endl;
-  QJsonDocument jsDoc(configJson);
-  if(-1 == saveFile.write(jsDoc.toJson())){
-      std::cout << "Write error!";
-      return false;
-  }
-  return true;
+	setConfig();
+	if(fn.empty()) { // default
+		fn = __default_DACs_filename;
+	}
+	QFile saveFile(QString(fn.c_str()));
+	if (!saveFile.open(QIODevice::WriteOnly)) {
+		string messg = "Couldn't open: ";
+		messg += fn;
+		messg += "\nNo output written!";
+		QMessageBox::warning ( _ui->_DACScanFrame, tr("MPX3 - default DACs"), tr( messg.c_str() ) );
+		return false;
+	}
+	QFileInfo fInfo(saveFile.fileName());
+	std::cout << "Opened " <<fInfo.absoluteFilePath().toStdString() << std::endl;
+	QJsonDocument jsDoc(configJson);
+	if(-1 == saveFile.write(jsDoc.toJson())){
+		std::cout << "Write error!";
+		return false;
+	}
+	return true;
 }
 
 void DACs::ChangeDeviceIndex( int index )
@@ -960,10 +966,10 @@ void ScanDACsThread::run() {
 }
 
 void DACs::setConfig(){
-  for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
-          configJson[MPX3RX_DAC_TABLE[i].name] = _dacVals[i];
-    }
-  /*for(int i = 0; i < Thresholds.length();i++){
+	for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
+		configJson[MPX3RX_DAC_TABLE[i].name] = _dacVals[i];
+	}
+	/*for(int i = 0; i < Thresholds.length();i++){
       configJson[QString("Threshold%1").arg(i)] = Thresholds[i];
    }
   configJson["I_Preamp"] = I_Preamp;
@@ -988,10 +994,10 @@ void DACs::setConfig(){
 }
 
 void DACs::getConfig(){
-  for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++){
-    _dacVals[i] = configJson[MPX3RX_DAC_TABLE[i].name].toInt();
-    }
-  /*for(int i = 0; i < Thresholds.length();i++){
+	for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++){
+		_dacVals[i] = configJson[MPX3RX_DAC_TABLE[i].name].toInt();
+	}
+	/*for(int i = 0; i < Thresholds.length();i++){
       Thresholds[i] = configJson[QString("Threshold%1").arg(i)].toInt();
    }
   I_Preamp = configJson["I_Preamp"].toInt();
@@ -1016,8 +1022,8 @@ void DACs::getConfig(){
 }
 
 void DACs::openWriteMenu(){
-  std::cout << "Openwritemenu called!" << std::endl;
-  QString fileName = QFileDialog::getSaveFileName(this->_ui->widget, tr("Save Config"), tr("."), tr("json Files (*.json)"));
-  WriteDACsFile(fileName.toStdString());
-  //this->WriteDACsFile()
+	std::cout << "Openwritemenu called!" << std::endl;
+	QString fileName = QFileDialog::getSaveFileName(this->_ui->widget, tr("Save Config"), tr("."), tr("json Files (*.json)"));
+	WriteDACsFile(fileName.toStdString());
+	//this->WriteDACsFile()
 }

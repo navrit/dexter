@@ -49,8 +49,7 @@ SOURCES += main.cpp \
     qcstmplothistogram.cpp \ 
     qcstmequalization.cpp \
     qcstmvisualization.cpp \
-    qcstmdacs.cpp \
-    qcstmglplot.cpp
+    qcstmdacs.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -63,8 +62,7 @@ HEADERS += mpx3gui.h \
     qcstmplothistogram.h \ 
     qcstmequalization.h \
     qcstmvisualization.h \
-    qcstmdacs.h \
-    qcstmglplot.h
+    qcstmdacs.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DACs.h

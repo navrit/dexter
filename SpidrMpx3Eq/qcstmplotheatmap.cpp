@@ -49,7 +49,7 @@ void QCstmPlotHeatmap::clear(){
 
 void QCstmPlotHeatmap::addData(int *data, int nx, int ny){
   QCPColorMap* newMap = new QCPColorMap(xAxis, yAxis);
-  qDebug() << "Allocated new map, " << newMap;
+  //qDebug() << "Allocated new map, " << newMap;
   colorMaps.append(newMap);
   newMap->setInterpolate(false);
   connect(newMap, SIGNAL(dataRangeChanged(QCPRange)), this, SIGNAL(dataRangeChanged(QCPRange)));//TODO: is this correct?
@@ -101,8 +101,9 @@ void QCstmPlotHeatmap::setActive(int index){
     }
   colorMaps[index]->setVisible(true);
   active = index;
-  qDebug() << "now active: " << active;
+  //qDebug() << "now active: " << active;
   emit(activePlotChanged(active));
+  colorScale->rescaleDataRange(true);
   this->replot();
 }
 

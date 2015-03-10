@@ -146,7 +146,6 @@ public:
 	explicit DACs();
 	explicit DACs(QApplication * coreApp, Ui::Mpx3GUI * );
 	~DACs();
-	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
 	void PopulateDACValues();
 
 	bool ReadDACsFile(string);
@@ -165,7 +164,7 @@ public:
 	int GetScanStep() { return _scanStep; };
 	QCPGraph * GetGraph(int idx);
 	QCustomPlot * GetQCustomPlotPtr() { return _dacScanPlot; };
-	void SetModuleConnection(ModuleConnection * p) { _moduleConn = p; };
+	void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
 	void getConfig();
 	void setConfig();
 
@@ -177,11 +176,9 @@ private:
 	QJsonObject configJson;
 
 	// Connectivity between modules
-	ModuleConnection * _moduleConn;
+	Mpx3GUI * _mpx3gui;
 
 	QApplication * _coreApp;
-	SpidrController * _spidrcontrol;
-	SpidrDaq * _spidrdaq;
 	Ui::Mpx3GUI * _ui;
 
 	QCustomPlot * _dacScanPlot;
@@ -239,6 +236,8 @@ void addData(int);
 void scanFinished();
 void slideAndSpin(int, int);
 void openWriteMenu();
+void ConnectionStatusChanged();
+
 
 };
 
