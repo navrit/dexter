@@ -43,6 +43,7 @@ Mpx3Equalization::Mpx3Equalization(QApplication * coreApp, Ui::Mpx3GUI * ui)
 	_minScanTHL = 0;
 	_maxScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size) - 1;
 	_stepScan = 4;
+	_eqresults = 0x0;
 
 	// Limits in the input widgets
 	SetLimits();
@@ -486,6 +487,20 @@ void Mpx3Equalization::Configuration(bool reset) {
 
 }
 
+void Mpx3Equalization::LoadEqualization(){
+
+	if ( _eqresults == 0x0 ) {
+		_eqresults = new Mpx3EqualizationResults;
+	}
+	_eqresults->ReadAdjBinaryFile("adj");
+	// Display the equalization
+	int * adj_matrix = _eqresults->GetAdjustementMatrix();
+	_ui->_intermediatePlot->clear();
+	//int lastActiveFrame = _ui->_intermediatePlot->GetLastActive();
+	_ui->_intermediatePlot->addData( adj_matrix, 256, 256 );
+	_ui->_intermediatePlot->setActive( 0 );
+
+}
 
 void Mpx3Equalization::SetupSignalsAndSlots() {
 
@@ -723,8 +738,8 @@ void Mpx3EqualizationResults::WriteAdjBinaryFile(QString fn) {
 	// Each adjustment value is written as 8 bits val.  Each value is actually 5 bits.
 	char buffer;
 	for( int j = 0 ; j < __matrix_size ; j++ ){
-		 buffer = (char) ( _pixId_Adj[j] & 0xFF );
-		 fd.write( &buffer, 1 );   // _pixId_Adj[j];
+		buffer = (char) ( _pixId_Adj[j] & 0xFF );
+		fd.write( &buffer, 1 );   // _pixId_Adj[j];
 	}
 
 	fd.close();
@@ -743,7 +758,8 @@ void Mpx3EqualizationResults::ReadAdjBinaryFile(QString fn) {
 	while ( fd.good() ) {
 		if ( fd.eof() ) break;
 		fd.read( &buffer, 1 );
-		_pixId_Adj[pixId++] = atoi( &buffer );
+
+		_pixId_Adj[pixId++];
 	}
 
 	fd.close();

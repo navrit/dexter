@@ -105,6 +105,7 @@ public:
 	void SetMaxScan(int);
 
 	Mpx3EqualizationResults * GetEqualizationResults() { return _eqresults; };
+	void LoadEqualization();
 
 private:
 
