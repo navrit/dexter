@@ -252,20 +252,27 @@ int ThlScan::ReAdjustPixelsOff(double N, int dac_code) {
 				_pixelReactiveTHL[i] > __equalization_target + N*_results.sigma
 		) {
 
-			// If the pixel is at the right of the equalization target try
-			//  a higher adjustment bit until it reaches the max Adj or gets
-			//  inside the allow regime
+
 			int startAdj = _equalization->GetEqualizationResults()->GetPixelAdj( i );
 			bool outsideRegion = true;
 
-			while ( startAdj < __max_adj_val && outsideRegion ) {
+			cout << "Reprocess pixel [" << i << "] | ";
+
+			// Now scan from 0 to 10 sigma away from the last extrapolation adjustment
+			int thlItr = 0;
+			while ( startAdj < __max_adj_val && outsideRegion &&  thlItr <= __equalization_target + 10 * _results.sigma ) {
 
 				// Mask the whole pad except by this pixel
 				ClearMask(false); // don't send to the chip yet
 				pair<int, int> unmaskPix = XtoXY(i, __matrix_size_x);
 				_spidrcontrol->setPixelMaskMpx3rx(unmaskPix.first, unmaskPix.second, true);
-				// Set the new adjustment for this particular pixel.  Try increasing one value
-				_equalization->GetEqualizationResults()->SetPixelAdj(i, ++startAdj);
+				// Set the new adjustment for this particular pixel.
+				// If the pixel is at the right of the equalization target try
+				//  a higher adjustment bit until it reaches the max Adj. If the
+				//  pixel is at the left, try a lower adjustment.
+				if ( _pixelReactiveTHL[i] > __equalization_target ) startAdj++;
+				else startAdj--;
+				_equalization->GetEqualizationResults()->SetPixelAdj(i, startAdj);
 				// Write to the spidrControl
 				_equalization->SetAllAdjustmentBits( _equalization->GetEqualizationResults() );
 				// And send
@@ -276,47 +283,40 @@ int ThlScan::ReAdjustPixelsOff(double N, int dac_code) {
 				int stepScan = _equalization->GetStepScan();
 				int deviceIndex = _equalization->GetDeviceIndex();
 
-				cout << "Reprocess pixel [" << i << "] | ";
+				cout << "THL : " << thlItr << ", ";
 
-				for(int i = _detectedScanBoundary_L ; i <= _detectedScanBoundary_H ; i += stepScan ) {
+				_spidrcontrol->setDac( deviceIndex, dac_code, thlItr );
+				//_spidrcontrol->writeDacs( _deviceIndex );
 
-					cout << "THL : " << i << ", ";
+				// Start the trigger as configured
+				_spidrcontrol->startAutoTrigger();
+				Sleep( 50 );
 
+				// See if there is a frame available
+				// I should get as many frames as triggers
 
+				while ( _spidrdaq->hasFrame() ) {
 
-					_spidrcontrol->setDac( deviceIndex, dac_code, i );
-					//_spidrcontrol->writeDacs( _deviceIndex );
+					int size_in_bytes = -1;
+					data = _spidrdaq->frameData(0, &size_in_bytes);
 
-					// Start the trigger as configured
-					_spidrcontrol->startAutoTrigger();
-					Sleep( 50 );
+					ExtractScanInfo( data, size_in_bytes, thlItr );
 
-					// See if there is a frame available
-					// I should get as many frames as triggers
+					_spidrdaq->releaseFrame();
+					Sleep( 10 ); // Allow time to get and decode the next frame, if any
 
-					while ( _spidrdaq->hasFrame() ) {
-
-						int size_in_bytes = -1;
-						data = _spidrdaq->frameData(0, &size_in_bytes);
-
-						ExtractScanInfo( data, size_in_bytes, i );
-
-						_spidrdaq->releaseFrame();
-						Sleep( 10 ); // Allow time to get and decode the next frame, if any
-
-						// Report to heatmap
-						_heatmap->addData(data, 256, 256); // Add a new plot/frame.
-						_heatmap->setActive(frameId++); // Activate the last plot (the new one)
-						//_heatmap->setData( data, 256, 256 );
-
-					}
-
-					// Report to graph
-					//UpdateChart(setId, i);
+					// Report to heatmap
+					_heatmap->addData(data, 256, 256); // Add a new plot/frame.
+					_heatmap->setActive(frameId++); // Activate the last plot (the new one)
+					//_heatmap->setData( data, 256, 256 );
 
 				}
+
+				// Report to graph
+				//UpdateChart(setId, i);
+
 				//////////////////////////////////////////////////////
-				cout << endl;
+
 
 				// Is it still outside the region
 				outsideRegion =
@@ -325,7 +325,11 @@ int ThlScan::ReAdjustPixelsOff(double N, int dac_code) {
 								||
 								_pixelReactiveTHL[i] > __equalization_target + N*_results.sigma
 						);
+				// THL scan
+				thlItr += stepScan;
 			}
+
+			cout << endl;
 
 			adjustedPixels++;
 		}

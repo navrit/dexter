@@ -50,6 +50,7 @@ public:
 	int * GetAdjustementMatrix();
 
 	void ExtrapolateAdjToTarget(int target, double eta_Adj_THL);
+	void WriteAdjBinaryFile(QString fn);
 
 private:
 	// pixel Id, adjustment

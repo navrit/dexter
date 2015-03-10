@@ -25,6 +25,11 @@
 #include <time.h>
 #include <stdio.h>
 
+#include <fstream>
+
+using namespace std;
+
+
 Mpx3Equalization::Mpx3Equalization(QApplication * coreApp, Ui::Mpx3GUI * ui)
 {
 	_coreApp = coreApp;
@@ -36,7 +41,7 @@ Mpx3Equalization::Mpx3Equalization(QApplication * coreApp, Ui::Mpx3GUI * ui)
 	_spacing = 4;
 	_minScanTHL = 0;
 	_maxScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size) - 1;
-	_stepScan = 16;
+	_stepScan = 4;
 
 	// Limits in the input widgets
 	SetLimits();
@@ -129,8 +134,10 @@ void Mpx3Equalization::StartEqualization() {
 	setId = PrepareInterpolation(setId, MPX3RX_DAC_DISC_L);
 
 	// Third) Fine tunning.
-	setId = FineTunning(setId, MPX3RX_DAC_DISC_L);
+	//setId = FineTunning(setId, MPX3RX_DAC_DISC_L);
 
+	// 4) Write the result
+	_eqresults->WriteAdjBinaryFile("adj");
 
 }
 
@@ -707,33 +714,31 @@ int Mpx3EqualizationResults::GetPixelReactiveThl(int pixId) {
 	return _pixId_Thl[pixId];
 }
 
-int * Mpx3EqualizationResults::GetAdjustementMatrix() {
+void Mpx3EqualizationResults::WriteAdjBinaryFile(QString fn) {
 
-	//int * mat = new int[__matrix_size];
-	//int mat[4][256*256];
+	ofstream fd;
+	fd.open (fn.toStdString().c_str(), ios::out | ios::binary);
+
+	// Each adjustment value is written as 8 bits val.  Each value is actually 5 bits.
+	char buffer;
+	for( int j = 0 ; j < __matrix_size ; j++ ){
+		 buffer = (char) ( _pixId_Adj[j] & 0xFF );
+		 fd.write( &buffer, 1 );   // _pixId_Adj[j];
+	}
+
+	fd.close();
+
+}
+
+/**
+ * Convert the map to an array to feed the heatmap in the display
+ */
+int * Mpx3EqualizationResults::GetAdjustementMatrix() {
 
 	int * mat = new int[__matrix_size];
 	for( int j = 0 ; j < __matrix_size ; j++ ){
 		mat[j] = _pixId_Adj[j];
-		//if(j < __matrix_size/2) mat[j] = 0;
-		//else mat[j] = 31;
 	}
-
-	/*
-	int ** mat = new int*[4];
-	for( int i = 0 ; i < 4 ; i++ ){
-		mat[i] = new int[__matrix_size];
-		for( int j = 0 ; j < __matrix_size ; j++ ){
-			mat[i][j] = 0;
-		}
-	}
-
-	for( int i = 0 ; i < 4 ; i++ ){
-		for ( int j = 0 ; j < __matrix_size ; j++ ) {
-			mat[i][j] = _pixId_Adj[j];
-		}
-	}
-	 */
 
 	return mat;
 }
