@@ -49,7 +49,10 @@ public:
 	Mpx3Equalization * GetEqualization() { return _equalization; };
 
 private:
-
+        //Data Stores
+        int **data = nullptr;
+        unsigned nData =0, *ny = nullptr, *nx = nullptr;
+        histogram **hists = nullptr;
 	// Equalization
 	Mpx3Equalization * _equalization;
 	// DACs
@@ -89,6 +92,7 @@ private slots:
 
 	void LoadEqualization();
 
+	void on_openfileButton_clicked();
 };
 
 

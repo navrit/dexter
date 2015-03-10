@@ -74,3 +74,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 	connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), _equalization, SLOT( LoadEqualization() ) );
 	connect( _ui->actionSave_DACs, SIGNAL(triggered()), _dacs, SLOT( openWriteMenu() ) );
 }
+
+void Mpx3GUI::on_openfileButton_clicked()
+{
+}
