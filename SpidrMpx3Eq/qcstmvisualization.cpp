@@ -22,7 +22,7 @@ QCstmVisualization::~QCstmVisualization()
 }
 
 void QCstmVisualization::on_openfileButton_clicked()
-{
+{/*
   QImage image;
   QStringList files = QFileDialog::getOpenFileNames(this, tr("Open File"),QStandardPaths::writableLocation(QStandardPaths::PicturesLocation), tr("Images (*.png *.xpm *.jpg *.gif *.png)"));
   if(files.isEmpty())
@@ -62,5 +62,5 @@ void QCstmVisualization::on_openfileButton_clicked()
   ui->histogramPlot->setActive(0);
   ui->heatmap->setActive(0);
   //ui->histogramPlot->rescaleAxes();
-  ui->heatmap->rescaleAxes();
+  ui->heatmap->rescaleAxes();*/
 }

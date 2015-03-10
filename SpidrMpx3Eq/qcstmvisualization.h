@@ -19,7 +19,7 @@ private:
 public:
   explicit QCstmVisualization(QWidget *parent = 0);
   ~QCstmVisualization();
-  setConnection(ModuleConnection *connection){
+  void setConnection(ModuleConnection *connection){
     this->connection = connection;
   }
 
@@ -31,7 +31,7 @@ signals:
 public slots:
 private slots:
   void on_openfileButton_clicked();
-  void on_data_changed();
+  //void on_data_changed();
 };
 
 #endif // QCSTMVISUALIZATION_H
