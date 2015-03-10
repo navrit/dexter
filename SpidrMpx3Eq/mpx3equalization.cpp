@@ -146,8 +146,7 @@ int Mpx3Equalization::FineTunning(int setId, int DAC_Disc_code) {
 	}
 
 	// Check how many pixels are more than N*sigmas off the mean
-
-
+	lastScan->ReAdjustPixelsOff(3, DAC_Disc_code);
 
 	return setId;
 }
@@ -253,7 +252,6 @@ int Mpx3Equalization::PrepareInterpolation(int setId, int DAC_Disc_code) {
 	SetMaxScan( tscan_opt_adj5->GetDetectedHighScanBoundary() );
 
 	ThlScan * tscan_opt_ext = new ThlScan(_ui->_histoWidget, _ui->_intermediatePlot, this);
-
 	tscan_opt_ext->ConnectToHardware(_spidrcontrol, _spidrdaq);
 	BarChartProperties cprop_opt_ext;
 	cprop_opt_ext.name = "DAC_DiscL_Opt_ext";
@@ -265,7 +263,7 @@ int Mpx3Equalization::PrepareInterpolation(int setId, int DAC_Disc_code) {
 	cprop_opt_ext.color_b = 0;
 	_ui->_histoWidget->AppendSet( cprop_opt_ext );
 
-	// Send all the adjustment bits to 0x5
+	// Send all the adjustment bits to the adjusted values
 	if( DAC_Disc_code == MPX3RX_DAC_DISC_L ) SetAllAdjustmentBits(_eqresults);
 	if( DAC_Disc_code == MPX3RX_DAC_DISC_H ) SetAllAdjustmentBits(_eqresults);
 

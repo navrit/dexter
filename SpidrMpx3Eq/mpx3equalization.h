@@ -102,6 +102,8 @@ public:
 	void SetMinScan(int);
 	void SetMaxScan(int);
 
+	Mpx3EqualizationResults * GetEqualizationResults() { return _eqresults; };
+
 private:
 
 	// Connectivity between modules

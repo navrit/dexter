@@ -235,9 +235,102 @@ void ThlScan::SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj
 
 }
 
-int ThlScan::ReadjustPixelsOff(double N) {
+int ThlScan::ReAdjustPixelsOff(double N, int dac_code) {
 
 	int adjustedPixels = 0;
+	int * data;
+	// The heatmap can store the images.  This is the indexing.
+	int frameId = 0;
+
+	// Loop over the pixels off the adjustment
+	for ( int i = 0 ; i < __matrix_size ; i++ ) {
+
+		if
+		(
+				_pixelReactiveTHL[i] < __equalization_target - N*_results.sigma
+				||
+				_pixelReactiveTHL[i] > __equalization_target + N*_results.sigma
+		) {
+
+			// If the pixel is at the right of the equalization target try
+			//  a higher adjustment bit until it reaches the max Adj or gets
+			//  inside the allow regime
+			int startAdj = _equalization->GetEqualizationResults()->GetPixelAdj( i );
+			bool outsideRegion = true;
+
+			while ( startAdj < __max_adj_val && outsideRegion ) {
+
+				// Mask the whole pad except by this pixel
+				ClearMask(false); // don't send to the chip yet
+				pair<int, int> unmaskPix = XtoXY(i, __matrix_size_x);
+				_spidrcontrol->setPixelMaskMpx3rx(unmaskPix.first, unmaskPix.second, true);
+				// Set the new adjustment for this particular pixel.  Try increasing one value
+				_equalization->GetEqualizationResults()->SetPixelAdj(i, ++startAdj);
+				// Write to the spidrControl
+				_equalization->SetAllAdjustmentBits( _equalization->GetEqualizationResults() );
+				// And send
+				_spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
+
+				//////////////////////////////////////////////////////
+				// Now ready to scan on this unique pixel !
+				int stepScan = _equalization->GetStepScan();
+				int deviceIndex = _equalization->GetDeviceIndex();
+
+				cout << "Reprocess pixel [" << i << "] | ";
+
+				for(int i = _detectedScanBoundary_L ; i <= _detectedScanBoundary_H ; i += stepScan ) {
+
+					cout << "THL : " << i << ", ";
+
+
+
+					_spidrcontrol->setDac( deviceIndex, dac_code, i );
+					//_spidrcontrol->writeDacs( _deviceIndex );
+
+					// Start the trigger as configured
+					_spidrcontrol->startAutoTrigger();
+					Sleep( 50 );
+
+					// See if there is a frame available
+					// I should get as many frames as triggers
+
+					while ( _spidrdaq->hasFrame() ) {
+
+						int size_in_bytes = -1;
+						data = _spidrdaq->frameData(0, &size_in_bytes);
+
+						ExtractScanInfo( data, size_in_bytes, i );
+
+						_spidrdaq->releaseFrame();
+						Sleep( 10 ); // Allow time to get and decode the next frame, if any
+
+						// Report to heatmap
+						_heatmap->addData(data, 256, 256); // Add a new plot/frame.
+						_heatmap->setActive(frameId++); // Activate the last plot (the new one)
+						//_heatmap->setData( data, 256, 256 );
+
+					}
+
+					// Report to graph
+					//UpdateChart(setId, i);
+
+				}
+				//////////////////////////////////////////////////////
+				cout << endl;
+
+				// Is it still outside the region
+				outsideRegion =
+						(
+								_pixelReactiveTHL[i] < __equalization_target - N*_results.sigma
+								||
+								_pixelReactiveTHL[i] > __equalization_target + N*_results.sigma
+						);
+			}
+
+			adjustedPixels++;
+		}
+
+	}
 
 	return adjustedPixels;
 }

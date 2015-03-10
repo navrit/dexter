@@ -61,7 +61,7 @@ public:
 	int GetDetectedLowScanBoundary() { return _detectedScanBoundary_L; };
 	int GetDetectedHighScanBoundary() { return _detectedScanBoundary_H; };
 
-	int ReadjustPixelsOff(double N);
+	int ReAdjustPixelsOff(double N, int DAC_Disc_code);
 
 private:
 
