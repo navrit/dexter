@@ -17,6 +17,8 @@ ui(new Ui::QCstmVisualization)
 		child->setMinimumSize(1,1);
 	}
 	ui->mainSplitter->setSizes(defaultSizesMain);
+
+
 }
 
 QCstmVisualization::~QCstmVisualization()
@@ -24,14 +26,16 @@ QCstmVisualization::~QCstmVisualization()
 	delete ui;
 }
 
-void QCstmVisualization::ConnectionStatusChanged() {
+void QCstmVisualization::SignalsAndSlots(){
+	connect( ui->startDataTaking, SIGNAL( clicked() ), this, SLOT( StartDataTaking() ) );
+}
+
+void QCstmVisualization::StartDataTaking(){
+
+	cout << "One frame ..." << endl;
 
 	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
 	SpidrDaq * spidrdaq = _mpx3gui->GetModuleConnection()->GetSpidrDaq();
-
-	// TODO
-	// Configure the chip, provided that the Adj mask is loaded
-	Configuration( false );
 
 	// Start the trigger as configured
 	spidrcontrol->startAutoTrigger();
@@ -41,31 +45,34 @@ void QCstmVisualization::ConnectionStatusChanged() {
 	// I should get as many frames as triggers
 
 	int * framedata;
-
+	int frameNr = 0;
 	while ( spidrdaq->hasFrame() ) {
 
+		cout << "capture ..." << endl;
 		int size_in_bytes = -1;
 		framedata = spidrdaq->frameData(0, &size_in_bytes);
-		_mpx3gui->addFrame(framedata, size_in_bytes);
 
-		//ExtractScanInfo( data, size_in_bytes, i );
+		ui->heatmap->addData( framedata, 256, 256 );
+		ui->heatmap->setActive( frameNr++ );
+
+
+		//_mpx3gui->addFrame(framedata, size_in_bytes);
 
 		spidrdaq->releaseFrame();
 		Sleep( 10 ); // Allow time to get and decode the next frame, if any
 
-
-
-		// Report to heatmap
-		//_mpx3gui->
-
-		//_heatmap->addData(data, 256, 256); // Add a new plot/frame.
-		//_heatmap->setActive(frameId++); // Activate the last plot (the new one)
-
-		//_heatmap->setData( data, 256, 256 );
-
-		// Last scan boundaries
-
 	}
+
+}
+
+void QCstmVisualization::ConnectionStatusChanged() {
+
+
+
+	// TODO
+	// Configure the chip, provided that the Adj mask is loaded
+	Configuration( false );
+
 
 }
 
@@ -76,7 +83,7 @@ void QCstmVisualization::Configuration(bool reset) {
 	SpidrDaq * spidrdaq = _mpx3gui->GetModuleConnection()->GetSpidrDaq();
 
 	int deviceIndex = 2;
-	int nTriggers = 1;
+	int nTriggers = 100;
 
 	// Reset pixel configuration
 	if ( reset ) spidrcontrol->resetPixelConfig();

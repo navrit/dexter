@@ -44,6 +44,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
 	// Prepare Visualization
 	_ui->widget->SetMpx3GUI( this );
+	_ui->widget->SignalsAndSlots();
 
 	// Signals and slots for this part
 	SetupSignalsAndSlots();

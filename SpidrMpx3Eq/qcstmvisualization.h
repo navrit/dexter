@@ -21,6 +21,7 @@ public:
   ~QCstmVisualization();
   void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
   void Configuration(bool reset);
+  void SignalsAndSlots();
 
 /* Signals and slots for inttercommunication between te different tabs goes here.
  * S&S for communication between members of this tab can be set in the .ui file or constructor.
@@ -29,6 +30,7 @@ signals:
 
 public slots:
 private slots:
+	void StartDataTaking();
 	void ConnectionStatusChanged();
 	void on_openfileButton_clicked();
   //void on_data_changed();

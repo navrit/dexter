@@ -60,7 +60,6 @@ Mpx3Equalization::Mpx3Equalization(QApplication * coreApp, Ui::Mpx3GUI * ui)
 	_ui->heatmapCombobox->addItems(heatmapMap.keys());
 
 	connect( _ui->_startEq, SIGNAL(clicked()), this, SLOT(StartEqualization()) );
-	connect( _ui->_connect, SIGNAL(clicked()), this, SLOT(Connect()) );
 	connect(_ui->_intermediatePlot, SIGNAL(mouseOverChanged(QString)), _ui->mouseHoveLabel, SLOT(setText(QString)));
 	_ui->_statusLabel->setStyleSheet("QLabel { background-color : gray; color : black; }");
 
