@@ -62,8 +62,8 @@ class MY_LIB_API SpidrController
   bool        displayInfo          ( ); // In the currently open telnet window
                                         // or (USB/UART) console
   bool        getDeviceCount       ( int *devices );
-  bool        getSpidrId           ( int *id );
-  bool        setSpidrId           ( int  id );
+  bool        getChipboardId       ( int *id );
+  bool        setChipboardId       ( int  id );
 
   // ###TODO:
   bool        setTimeOfDay         ( ); // Set the SPIDR processor clock time
@@ -196,6 +196,8 @@ class MY_LIB_API SpidrController
   bool requestGetInt        ( int  cmd, int dev_nr, int *dataword );
   bool requestGetInts       ( int  cmd, int dev_nr,
                               int  expected_ints, int *datawords );
+  bool requestGetIntAndBytes( int  cmd, int dev_nr, int *dataword,
+			      int  expected_bytes, unsigned char *bytes );
   bool requestSetInt        ( int  cmd, int dev_nr, int dataword );
   bool requestSetInts       ( int  cmd, int dev_nr,
                               int  nwords, int *datawords );

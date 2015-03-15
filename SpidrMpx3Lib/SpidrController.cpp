@@ -263,16 +263,16 @@ bool SpidrController::getDeviceCount( int *devices )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getSpidrId( int *id )
+bool SpidrController::getChipboardId( int *id )
 {
-  return this->requestGetInt( CMD_GET_SPIDRID, 0, id );
+  return this->requestGetInt( CMD_GET_CHIPBOARDID, 0, id );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setSpidrId( int id )
+bool SpidrController::setChipboardId( int id )
 {
-  return this->requestSetInt( CMD_SET_SPIDRID, 0, id );
+  return this->requestSetInt( CMD_SET_CHIPBOARDID, 0, id );
 }
 
 // ----------------------------------------------------------------------------
@@ -1256,7 +1256,7 @@ bool SpidrController::requestGetInt( int cmd, int dev_nr, int *dataword )
     {
       *dataword = 0;
     }
- return false;
+  return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -1283,7 +1283,36 @@ bool SpidrController::requestGetInts( int cmd, int dev_nr,
       int i;
       for( i=0; i<expected_ints; ++i ) datawords[i] = 0;
     }
- return false;
+  return false;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::requestGetIntAndBytes( int cmd, int dev_nr,
+					     int *dataword,
+					     int expected_bytes,
+					     unsigned char *bytes )
+{
+  int len = (4+1)*4;
+  _reqMsg[0] = htonl( cmd );
+  _reqMsg[1] = htonl( len );
+  _reqMsg[2] = 0; // Dummy for now; reply uses this location for error status
+  _reqMsg[3] = htonl( dev_nr );
+  _reqMsg[4] = *dataword; // May contain an additional parameter
+  int expected_len = (5 * 4) + expected_bytes;
+  if( this->request( cmd, dev_nr, len, expected_len ) )
+    {
+      *dataword = ntohl( _replyMsg[4] );
+      memcpy( static_cast<void *> (bytes),
+	      static_cast<void *> (&_reqMsg[5]), expected_bytes );
+      return true;
+    }
+  else
+    {
+      int i;
+      for( i=0; i<expected_bytes; ++i ) bytes[i] = 0;
+    }
+  return false;
 }
 
 // ----------------------------------------------------------------------------
