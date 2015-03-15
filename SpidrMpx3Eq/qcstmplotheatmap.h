@@ -27,7 +27,7 @@ public:
   void addData(int *data, int nx, int ny);
   void setData(int *data, int nx, int ny);
   void clear();
-  void setHeatmap(QCPColorGradient &gradient);
+  void setHeatmap(QCPColorGradient gradient);
   void rescaleAxes(void);
   QCstmPlotHeatmap(QWidget*& parent);
   int GetLastActive(){ return active; };

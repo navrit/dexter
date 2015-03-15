@@ -85,7 +85,7 @@ private:
 	Ui::Mpx3GUI * _ui;
 
 	//Define  some UI variable shared by all the modules.
-	QMap<QString, QCPColorGradient> heatmapMap;
+	QMap<QString, QCPColorGradient> gradients;
 	unsigned currentFrame;
 
 	// Each object here deals with one tab of the
@@ -98,28 +98,41 @@ private:
 
 	//Data Stores
 	QVector<int*> data;
-	QVector<int> dataSize;
-	unsigned nData =0, *ny = nullptr, *nx = nullptr;
-	histogram **hists = nullptr;
+	/*QVector<int> dataSize;*/
+	//unsigned nData =0;
+	int ny = 256;
+	int nx = 256;
+	QVector<histogram*> hists;
 public:
-	void addFrame(int *frame, int size){
-	  data.append(frame);
-	  dataSize.append(size);
-	}
-	int* getFrame(int index, int *return_size_bytes = nullptr){
-	  if(return_size_bytes)
-	    *return_size_bytes = dataSize[index];
+	void generateFrame(); //Debugging function to generate data when not connected
+	void addFrame(int *frame);
+	int* getFrame(int index){
+	  if(-1 == index)
+	    index = data.count()-1;
 	  return data[index];
 	}
+	histogram* getHist(int index){
+	  if(-1 == index)
+	    index = hists.count()-1;
+	  return hists[index];
+	}
 
+	void getSize(QPoint *size);
+	void getSize(int *x, int *y);
+	int getX();
+	int getY();
+	int getFrameCount();
 
-	private slots:
+	QCPColorGradient getGradient(QString index);
 
+signals:
+	void dataChanged();
+	void frame_added();
+	void availible_gradients_changed(QStringList gradients);
+	void gradient_added(QString gradient);
+private slots:
 	void LoadEqualization();
 	void on_openfileButton_clicked();
-
-
-
 };
 
 

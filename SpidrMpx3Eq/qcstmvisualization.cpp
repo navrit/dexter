@@ -30,14 +30,12 @@ QCstmVisualization::~QCstmVisualization()
 void QCstmVisualization::SignalsAndSlots(){
 	connect( ui->startDataTaking, SIGNAL( clicked() ), this, SLOT( StartDataTaking() ) );
 }
-
 void QCstmVisualization::StartDataTaking(){
 
 	cout << "One frame ..." << endl;
 
 	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
 	SpidrDaq * spidrdaq = _mpx3gui->GetModuleConnection()->GetSpidrDaq();
-
 	// Start the trigger as configured
 	spidrcontrol->startAutoTrigger();
 	Sleep( 50 );
@@ -132,45 +130,32 @@ void QCstmVisualization::Configuration(bool reset) {
 }
 
 void QCstmVisualization::on_openfileButton_clicked()
-{/*
-  QImage image;
-  QStringList files = QFileDialog::getOpenFileNames(this, tr("Open File"),QStandardPaths::writableLocation(QStandardPaths::PicturesLocation), tr("Images (*.png *.xpm *.jpg *.gif *.png)"));
-  if(files.isEmpty())
-          return;
-  ui->layerCombobox->clear();
-  ui->layerCombobox->addItems(files);
-  ui->histogramPlot->clear();
-  delete[] nx; delete[] ny;
-  for(unsigned u = 0; u < nData; u++){
-          delete[] data[u];
-          delete hists[u];
-  }
-  delete[] data;
-  delete[] hists;
-  ui->heatmap->clear();
-  nData = files.length();
-  data = new int*[nData];
-  hists = new histogram*[nData];
-  nx = new unsigned[nData]; ny = new unsigned[nData];
-  for(unsigned i = 0; i < nData; i++){
-          image.load(files[i]);
-          if (image.isNull()) {
-                  QMessageBox::information(this, tr("Image Viewer"), tr("Cannot load %1.").arg(files[i]));
-                  return;
-          }
-          nx[i] = image.width(); ny[i] = image.height();
-          data[i] = new int[nx[i]*ny[i]];
-          for(unsigned u = 0; u < ny[i]; u++)
-                  for(unsigned w = 0; w < nx[i];w++){
-                          QRgb pixel = image.pixel(w,u);
-                          data[i][u*nx[i]+w] = qGray(pixel);
-                  }
-          hists[i] = new histogram(data[i],nx[i]*ny[i], 1);
-          ui->histogramPlot->addHistogram(hists[i]);
-          ui->heatmap->addData(data[i], nx[i], ny[i]);
-  }
-  ui->histogramPlot->setActive(0);
-  ui->heatmap->setActive(0);
-  //ui->histogramPlot->rescaleAxes();
-  ui->heatmap->rescaleAxes();*/
+{
+  _mpx3gui->generateFrame();
+}
+
+void QCstmVisualization::on_frame_added (){
+  ui->histogramPlot->addHistogram(_mpx3gui->getHist(-1));
+  ui->histogramPlot->setActive(-1);
+  ui->heatmap->addData(_mpx3gui->getFrame(-1), _mpx3gui->getX(), _mpx3gui->getY());
+  ui->layerSpinner->setMaximum(_mpx3gui->getFrameCount()-1);
+  ui->layerSpinner->setValue(_mpx3gui->getFrameCount()-1);
+}
+
+void QCstmVisualization::on_availible_gradients_changed(QStringList gradients){
+  ui->heatmapCombobox->addItems(gradients);
+}
+
+void QCstmVisualization::on_gradient_added(QString name){
+  ui->heatmapCombobox->addItem(name);
+}
+
+void QCstmVisualization::set_gradient(QString name){
+  ui->heatmapCombobox->setCurrentText(name);
+  on_heatmapCombobox_activated(name);
+}
+
+void QCstmVisualization::on_heatmapCombobox_activated(const QString &arg1)
+{
+    ui->heatmap->setHeatmap(_mpx3gui->getGradient(arg1));
 }

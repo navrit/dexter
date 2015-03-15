@@ -114,7 +114,7 @@ private:
 	Mpx3GUI * _mpx3gui;
 
 	QStringList files;
-	QMap<QString, QCPColorGradient> heatmapMap;
+	//QMap<QString, QCPColorGradient> heatmapMap;
 
 	QApplication * _coreApp;
 	Ui::Mpx3GUI * _ui;

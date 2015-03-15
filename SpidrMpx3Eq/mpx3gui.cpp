@@ -25,11 +25,19 @@
 
 Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent), _coreApp(coreApp), _ui(new Ui::Mpx3GUI)
 {
-
-	// Instantiate everything in the UI
-	_ui->setupUi(this);
-
-	startTimer( 200 );
+    // Instantiate everything in the UI
+    _ui->setupUi(this);
+  //index various heatmaps
+      gradients.insert("Grayscale", QCPColorGradient::gpGrayscale);
+      gradients.insert("Jet", QCPColorGradient::gpJet);
+      gradients.insert("Ion", QCPColorGradient::gpIon);
+      gradients.insert("Candy", QCPColorGradient::gpCandy);
+      gradients.insert("Hot", QCPColorGradient::gpHot);
+      gradients.insert("Cold", QCPColorGradient::gpCold);
+      emit availible_gradients_changed(QStringList(gradients.keys()));
+      gradients.insert("Thermal", QCPColorGradient::gpThermal);
+      emit gradient_added("Thermal");
+        startTimer( 200 );// TODO: use of this?
 
 	// Connectivity between modules
 	_moduleConn = new ModuleConnection;
@@ -43,8 +51,9 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	_equalization->SetMpx3GUI( this );
 
 	// Prepare Visualization
-	_ui->widget->SetMpx3GUI( this );
-	_ui->widget->SignalsAndSlots();
+	_ui->visualizationWidget->SetMpx3GUI( this );
+	_ui->visualizationWidget->SignalsAndSlots();
+	_ui->visualizationWidget->set_gradient("Thermal");
 
 	// Signals and slots for this part
 	SetupSignalsAndSlots();
@@ -54,7 +63,6 @@ Mpx3GUI::~Mpx3GUI()
 {
 	delete _ui;
 }
-
 
 void Mpx3GUI::timerEvent( QTimerEvent * /*evt*/ ) {
 
@@ -75,7 +83,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 	// Inform every module of changes in connection status
 	connect( _moduleConn, SIGNAL( ConnectionStatusChanged() ), _dacs, SLOT( ConnectionStatusChanged() ) );
 	connect( _moduleConn, SIGNAL( ConnectionStatusChanged() ), _equalization, SLOT( ConnectionStatusChanged() ) );
-	connect( _moduleConn, SIGNAL( ConnectionStatusChanged() ), _ui->widget, SLOT( ConnectionStatusChanged() ) );
+	connect( _moduleConn, SIGNAL( ConnectionStatusChanged() ), _ui->visualizationWidget, SLOT( ConnectionStatusChanged() ) );
 
 }
 
@@ -135,4 +143,38 @@ void ModuleConnection::Connection() {
 	//_moduleConn->GetDACs()->ConnectToHardware(_spidrcontrol, _spidrdaq);
 	//_moduleConn->GetDACs()->PopulateDACValues();
 
+}
+
+void Mpx3GUI::generateFrame(){
+  double fx = ((double)8*rand()/RAND_MAX)/(nx), fy = (8*(double)rand()/RAND_MAX)/ny;
+  int *data = new int[nx*ny];
+  for(int i = 0; i < ny; i++)
+    for(int j = 0; j < nx; j++)
+      data[i*nx+j] = (1<<14)+(int)((1<<14)*sin(fx*j)*(cos(fy*i)));
+  addFrame(data);
+}
+
+void Mpx3GUI::addFrame(int *frame){
+  data.append(frame);
+  hists.append(new histogram(frame, nx*ny, 1));
+  emit frame_added();
+}
+
+void Mpx3GUI::getSize(int *x, int *y){
+  *x = nx;
+  *y = ny;
+}
+int Mpx3GUI::getX(){
+  return nx;
+}
+int Mpx3GUI::getY(){
+  return ny;
+}
+
+int Mpx3GUI::getFrameCount(){
+  return data.count();
+}
+
+QCPColorGradient Mpx3GUI::getGradient(QString index){
+  return gradients[index];
 }

@@ -34,7 +34,7 @@ void QCstmPlotHeatmap::resizeEvent(QResizeEvent *event){
   this->replot();
 }
 
-void QCstmPlotHeatmap::setHeatmap(QCPColorGradient &gradient){
+void QCstmPlotHeatmap::setHeatmap(QCPColorGradient gradient){
   colorScale->setGradient(gradient);
   replot();
 }
@@ -67,8 +67,8 @@ void QCstmPlotHeatmap::addData(int *data, int nx, int ny){
   this->xAxis->setScaleRatio(this->yAxis,1);
   newMap->setColorScale(colorScale);
   colorScale->rescaleDataRange(true);
-  newMap->setVisible(false);
-  //setActive(-1);
+  newMap->setVisible(true);
+  setActive(colorMaps.count()-1);
   emit(plotCountChanged(colorMaps.count()-1));
 }
 

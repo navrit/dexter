@@ -18,7 +18,7 @@ public:
   int getMin(){return min;}
   int getMax(){return max;}
   histogram();
-  histogram(int *data, unsigned nData, unsigned binWidth);
+  histogram(int *data, unsigned nData, unsigned binWidth = 1);
   void addCount(int * data,  unsigned n);
   void addCount(int data);
   ~histogram();

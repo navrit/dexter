@@ -1,6 +1,6 @@
 #include "histogram.h"
 
-histogram::histogram(int *data, unsigned nData, unsigned binWidth = 1)
+histogram::histogram(int *data, unsigned nData, unsigned binWidth)
 {
   setData(data, nData, binWidth);
 }

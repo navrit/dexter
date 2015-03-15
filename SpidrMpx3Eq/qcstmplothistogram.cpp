@@ -30,6 +30,8 @@ QCstmPlotHistogram::~QCstmPlotHistogram()
     //delete hist;
 }
 void QCstmPlotHistogram::setActive(int index){
+  if(-1 == index)
+    index = this->graphCount()-1;
   this->graph(currentHist)->setPen(QPen(Qt::gray));
   this->graph(currentHist)->setLayer("back");
   currentHist = index;
@@ -62,6 +64,7 @@ void QCstmPlotHistogram::clear(){
 
 void QCstmPlotHistogram::addHistogram(histogram *hist){
   generateGraph(hist);
+  replot();
 }
 
 void QCstmPlotHistogram::changeRange(QCPRange newRange){

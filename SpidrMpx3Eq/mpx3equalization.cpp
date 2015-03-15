@@ -48,16 +48,9 @@ Mpx3Equalization::Mpx3Equalization(QApplication * coreApp, Ui::Mpx3GUI * ui)
 	// Limits in the input widgets
 	SetLimits();
 
-	//index various heatmaps
-	heatmapMap.insert("Grayscale", QCPColorGradient::gpGrayscale);
-	heatmapMap.insert("Jet", QCPColorGradient::gpJet);
-	/*heatmapMap.insert("Ion", QCPColorGradient::gpIon);
-        heatmapMap.insert("Candy", QCPColorGradient::gpCandy);*/
-	heatmapMap.insert("Hot", QCPColorGradient::gpHot);
-	heatmapMap.insert("Cold", QCPColorGradient::gpCold);
-	heatmapMap.insert("Thermal", QCPColorGradient::gpThermal);
+
 	//and set them
-	_ui->heatmapCombobox->addItems(heatmapMap.keys());
+	//_ui->heatmapCombobox->addItems(heatmapMap.keys());
 
 	connect( _ui->_startEq, SIGNAL(clicked()), this, SLOT(StartEqualization()) );
 	connect(_ui->_intermediatePlot, SIGNAL(mouseOverChanged(QString)), _ui->mouseHoveLabel, SLOT(setText(QString)));

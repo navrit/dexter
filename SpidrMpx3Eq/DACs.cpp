@@ -1021,9 +1021,9 @@ void DACs::getConfig(){
   V_Tp_refB = configJson["V_Tp_refB"].toInt();*/
 }
 
-void DACs::openWriteMenu(){
+void DACs::openWriteMenu(){//TODO: change to signal slot method
 	std::cout << "Openwritemenu called!" << std::endl;
-	QString fileName = QFileDialog::getSaveFileName(this->_ui->widget, tr("Save Config"), tr("."), tr("json Files (*.json)"));
+	QString fileName = QFileDialog::getSaveFileName(this->_ui->centralWidget, tr("Save Config"), tr("."), tr("json Files (*.json)"));
 	WriteDACsFile(fileName.toStdString());
 	//this->WriteDACsFile()
 }

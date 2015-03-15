@@ -20,7 +20,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QWidget" name="layoutWidget">
-      <layout class="QVBoxLayout" name="verticalLayout_7" stretch="1,0">
+      <layout class="QVBoxLayout" name="verticalLayout_7" stretch="1">
        <property name="spacing">
         <number>60</number>
        </property>
@@ -43,16 +43,6 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QLabel" name="resultsMouseoverLabel">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="layoutWidget">
@@ -61,7 +51,7 @@
         <enum>QLayout::SetDefaultConstraint</enum>
        </property>
        <item>
-        <widget class="QComboBox" name="layerCombobox"/>
+        <widget class="QSpinBox" name="layerSpinner"/>
        </item>
        <item>
         <widget class="QCstmPlotHistogram" name="histogramPlot" native="true"/>
@@ -134,5 +124,73 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>histogramPlot</sender>
+   <signal>rangeChanged(QCPRange)</signal>
+   <receiver>heatmap</receiver>
+   <slot>changeRange(QCPRange)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>476</x>
+     <y>265</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>46</x>
+     <y>256</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>heatmap</sender>
+   <signal>dataRangeChanged(QCPRange)</signal>
+   <receiver>histogramPlot</receiver>
+   <slot>changeRange(QCPRange)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>46</x>
+     <y>256</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>476</x>
+     <y>265</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>layerSpinner</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>heatmap</receiver>
+   <slot>setActive(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>508</x>
+     <y>21</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>78</x>
+     <y>293</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>heatmap</sender>
+   <signal>activePlotChanged(int)</signal>
+   <receiver>histogramPlot</receiver>
+   <slot>setActive(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>78</x>
+     <y>293</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>508</x>
+     <y>265</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>frame_added()</slot>
+ </slots>
 </ui>
