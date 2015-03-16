@@ -80,6 +80,9 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 	connect( _ui->actionSave_DACs, SIGNAL(triggered()), _dacs, SLOT( openWriteMenu() ) );
 	connect( _ui->actionConnect, SIGNAL(triggered()), this, SLOT( establish_connection() ) );
 
+	connect(_ui->actionSave_data, SIGNAL(triggered()), this, SLOT(save_data()));
+	connect(_ui->actionOpen_data, SIGNAL(triggered()), this, SLOT(open_data()));
+
 	// Inform every module of changes in connection status
 	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _dacs, SLOT( ConnectionStatusChanged() ) );
 	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _equalization, SLOT( ConnectionStatusChanged() ) );
@@ -179,4 +182,49 @@ int Mpx3GUI::getFrameCount(){
 
 QCPColorGradient Mpx3GUI::getGradient(QString index){
   return gradients[index];
+}
+
+void Mpx3GUI::save_data(){//TODO: does not append file suffix, error checking.
+  QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("binary files (*.bin)"));
+  QFile saveFile(filename);
+  if (!saveFile.open(QIODevice::WriteOnly)) {
+          string messg = "Couldn't open: ";
+          messg += filename.toStdString();
+          messg += "\nNo output written!";
+          QMessageBox::warning ( this, tr("Error saving data"), tr( messg.c_str() ) );
+          return;
+  }
+  if(-1 == saveFile.write((const char*)&nx, sizeof(nx))) QMessageBox::warning ( this, tr("Error saving data"), tr( "Couldn't save nx!") );
+  saveFile.write((const char*)&ny, sizeof(ny));
+  int nLayers = data.length();
+  saveFile.write((const char*)&nLayers, sizeof(nLayers));
+  for(int i = 0; i < nLayers;i++){
+      saveFile.write((const char*)data[i], nx*ny*sizeof(*data[i]));
+   }
+  saveFile.close();
+  return;
+}
+
+void Mpx3GUI::open_data(){
+  QString filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("binary files (*.bin)"));
+  QFile saveFile(filename);
+  if (!saveFile.open(QIODevice::ReadOnly)) {
+          string messg = "Couldn't open: ";
+          messg += filename.toStdString();
+          messg += "\nNo output written!";
+          QMessageBox::warning ( this, tr("Error opening data"), tr( messg.c_str() ) );
+          return;
+  }
+  data.clear();//TODO: do proper clearing, notify delegates
+  saveFile.read((char*)&nx, sizeof(nx));
+  saveFile.read((char*)&ny, sizeof(ny));
+  int nLayers;
+  saveFile.read((char*)&nLayers, sizeof(nLayers));
+  for(int i = 0; i < nLayers;i++){
+      int* newFrame = new int[nx*ny];
+      saveFile.read((char*)newFrame, nx*ny*sizeof(int));
+      this->addFrame(newFrame);
+   }
+  saveFile.close();
+  return;
 }

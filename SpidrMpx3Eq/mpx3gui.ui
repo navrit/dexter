@@ -1345,6 +1345,8 @@
     <addaction name="separator"/>
     <addaction name="actionConnect"/>
     <addaction name="actionExit"/>
+    <addaction name="actionSave_data"/>
+    <addaction name="actionOpen_data"/>
    </widget>
    <widget class="QMenu" name="menuConfig">
     <property name="title">
@@ -1424,6 +1426,16 @@
   <action name="actionSave_Equalization">
    <property name="text">
     <string>Save Equalization</string>
+   </property>
+  </action>
+  <action name="actionSave_data">
+   <property name="text">
+    <string>Save data</string>
+   </property>
+  </action>
+  <action name="actionOpen_data">
+   <property name="text">
+    <string>Open data</string>
    </property>
   </action>
  </widget>
