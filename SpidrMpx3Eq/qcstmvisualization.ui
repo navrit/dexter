@@ -57,6 +57,16 @@
         <widget class="QCstmPlotHistogram" name="histogramPlot" native="true"/>
        </item>
        <item>
+        <widget class="QSpinBox" name="spinBox">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>1000</number>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QComboBox" name="heatmapCombobox">
          <property name="sizePolicy">
           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -74,8 +84,20 @@
        </item>
        <item>
         <widget class="QPushButton" name="startDataTaking">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
           <string>Start</string>
+         </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
+         <property name="default">
+          <bool>false</bool>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -186,6 +208,22 @@
     <hint type="destinationlabel">
      <x>508</x>
      <y>265</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>histogramPlot</receiver>
+   <slot>changeBinSize(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>467</x>
+     <y>481</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>467</x>
+     <y>251</y>
     </hint>
    </hints>
   </connection>

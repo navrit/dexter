@@ -107,7 +107,7 @@ DACs::~DACs() {
 
 void DACs::StartDACScan() {
 
-	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
 	if ( ! spidrcontrol ) {
 		QMessageBox::information(_ui->_DACScanFrame, tr("MPX3"), tr("Connect to hardware first.") );
@@ -140,7 +140,7 @@ void DACs::StartDACScan() {
 
 void DACs::PopulateDACValues() {
 
-	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
 	// Here we set the default values hardcoded in MPX3RX_DAC_TABLE (mid range)
 	//   OR if the DACs file is present we read the values from it.  The file has
@@ -185,7 +185,7 @@ void DACs::ConnectionStatusChanged() {
 
 void DACs::SenseDACs() {
 
-	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
 	if ( !spidrcontrol ) {
 		QMessageBox::information(_ui->_DACScanFrame, tr("MPX3"), tr("Connect to hardware first.") );
@@ -507,7 +507,7 @@ void DACs::setValueDAC(int i) {
 
 void DACs::FromSpinBoxUpdateSlider(int i) {
 
-	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
 	// Set the value
 	int val = _dacSpinBoxes[i]->value();
@@ -524,7 +524,7 @@ void DACs::FromSpinBoxUpdateSlider(int i) {
 
 void DACs::FromSliderUpdateSpinBox(int i) {
 
-	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
 	//
 	int val = _dacSliders[ i ]->value();

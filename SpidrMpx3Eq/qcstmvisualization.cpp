@@ -31,55 +31,41 @@ void QCstmVisualization::SignalsAndSlots(){
 	connect( ui->startDataTaking, SIGNAL( clicked() ), this, SLOT( StartDataTaking() ) );
 }
 void QCstmVisualization::StartDataTaking(){
-
-	cout << "One frame ..." << endl;
-
-	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
-	SpidrDaq * spidrdaq = _mpx3gui->GetModuleConnection()->GetSpidrDaq();
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 	// Start the trigger as configured
 	spidrcontrol->startAutoTrigger();
 	Sleep( 50 );
-
 	// See if there is a frame available
 	// I should get as many frames as triggers
-
 	int * framedata;
 	int frameNr = 0;
 	while ( spidrdaq->hasFrame() ) {
-
 		cout << "capture ..." << endl;
 		int size_in_bytes = -1;
 		framedata = spidrdaq->frameData(0, &size_in_bytes);
 
 		ui->heatmap->addData( framedata, 256, 256 );
 		ui->heatmap->setActive( frameNr++ );
-
-
 		//_mpx3gui->addFrame(framedata, size_in_bytes);
-
 		spidrdaq->releaseFrame();
 		Sleep( 10 ); // Allow time to get and decode the next frame, if any
-
 	}
 
 }
 
-void QCstmVisualization::ConnectionStatusChanged() {
-
-
-
+void QCstmVisualization::ConnectionStatusChanged(bool connected) {
+	ui->startDataTaking->setEnabled(connected); //Enable or disable the button depending on the connection status.
 	// TODO
 	// Configure the chip, provided that the Adj mask is loaded
 	Configuration( false );
-
-
 }
 
 
-void QCstmVisualization::Configuration(bool reset) {
+void QCstmVisualization::Configuration(bool reset) {//TODO: should be part of parent?
 
-	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
-	SpidrDaq * spidrdaq = _mpx3gui->GetModuleConnection()->GetSpidrDaq();
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
 	int deviceIndex = 2;
 	int nTriggers = 100;
@@ -135,8 +121,8 @@ void QCstmVisualization::on_openfileButton_clicked()
 }
 
 void QCstmVisualization::on_frame_added (){
-  ui->histogramPlot->addHistogram(_mpx3gui->getHist(-1));
-  ui->histogramPlot->setActive(-1);
+  ui->histogramPlot->addHistogram(_mpx3gui->getHist(-1), ui->spinBox->value());
+  //ui->histogramPlot->setActive(-1);
   ui->heatmap->addData(_mpx3gui->getFrame(-1), _mpx3gui->getX(), _mpx3gui->getY());
   ui->layerSpinner->setMaximum(_mpx3gui->getFrameCount()-1);
   ui->layerSpinner->setValue(_mpx3gui->getFrameCount()-1);

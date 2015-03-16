@@ -32,8 +32,10 @@ QCstmPlotHistogram::~QCstmPlotHistogram()
 void QCstmPlotHistogram::setActive(int index){
   if(-1 == index)
     index = this->graphCount()-1;
-  this->graph(currentHist)->setPen(QPen(Qt::gray));
-  this->graph(currentHist)->setLayer("back");
+  if(currentHist >= 0){
+    this->graph(currentHist)->setPen(QPen(Qt::gray));
+    this->graph(currentHist)->setLayer("back");
+    }
   currentHist = index;
   this->graph(currentHist)->setPen(QPen(Qt::red));
   this->graph(currentHist)->setLayer("front");
@@ -42,18 +44,21 @@ void QCstmPlotHistogram::setActive(int index){
   replot();
 }
 
-void QCstmPlotHistogram::generateGraph(histogram* Histogram){
+void QCstmPlotHistogram::generateGraph(histogram* Histogram, int reduction){
+  hists.append(Histogram);
   QCPGraph* graph = addGraph();
   graph->setPen(QPen(Qt::gray));
   graph->setLineStyle(QCPGraph::lsStepCenter);
-  unsigned nBins = Histogram->getNBins();
+  this->setActive(-1);
+  changeBinSize(reduction);
+  /*unsigned nBins = Histogram->getNBins();
   int shift = Histogram->getMin();
   double X, Y;//TODO: make a vector to hold these, then reactivate bin rescaling.
   for(unsigned u = 0; u < nBins;u++){
     Y = Histogram->getBin(u);
     X = u+shift;
     graph->addData(X,Y);
-   }
+   }*/
   graph->rescaleAxes();
 }
 
@@ -62,8 +67,8 @@ void QCstmPlotHistogram::clear(){
   currentHist = 0;
 }
 
-void QCstmPlotHistogram::addHistogram(histogram *hist){
-  generateGraph(hist);
+void QCstmPlotHistogram::addHistogram(histogram *hist, int reduction){
+  generateGraph(hist, reduction);
   replot();
 }
 
@@ -80,21 +85,18 @@ void QCstmPlotHistogram::maxClampChanged(double max){
   highClamp->point1->setCoords(max,0); highClamp->point2->setCoords(max,1);
   replot();
 }
-
-void QCstmPlotHistogram::changeBinSize(int reduction){ //TODO: fix edge case behaviour due to int truncuation, reduction negative.
-  /*unsigned nBins = hist->getNBins(), reducedSize = nBins/reduction;
-  int shift = hist->getMin();
-  xHist.resize(reducedSize);
-  yHist.resize(reducedSize);
-  unsigned u;
-  for(u = 0; u < reducedSize;u++){
-    yHist[u] = 0;
-    xHist[u] = (u*reduction+((double)reduction)/2)+shift;
-    for(unsigned w = 0; w < reduction; w++)//comparision between signed and unsigned, should never be an issue as reuction should alwyas be positive.
-        yHist[u] += hist->getBin(u*reduction+w);
-   }
-  //TODO: add aditional for here to catch the truncuated tail of the histogram.
-  this->graph(currentHist)->setData(xHist, yHist);
-  this->graph(currentHist)->rescaleAxes();
-  this->replot();*/
+void QCstmPlotHistogram::changeBinSize(int reduction){
+  /*if(currentHist < 0)
+    return;*/
+  for(int currentHist =0; currentHist < hists.length();currentHist++){
+    int min = hists[currentHist]->getMin();
+    int binWidth = hists[currentHist]->getWidth()*reduction;
+    QVector<unsigned> subsampled;
+     hists[currentHist]->getSubsampled(reduction, &subsampled);
+     QCPDataMap *data = graph(currentHist)->data();
+     data->clear();
+     for(int i = 0; i < subsampled.length();i++)
+      data->insert((i+0.5)*binWidth+min, QCPData((i+0.5)*binWidth+min, ((double)subsampled[i])/binWidth));
+    }
+   replot();
 }

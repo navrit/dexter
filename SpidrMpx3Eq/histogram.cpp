@@ -9,11 +9,20 @@ void histogram::setData(int *data, unsigned nData, unsigned binWidth){
   this->binWidth = binWidth;
   delete[] bins;
   scanData(data, nData);
-  bins = new unsigned[nBins];
+  bins = new int[nBins];
   for(unsigned u = 0; u < nBins;u++){
       bins[u] =0;
   }
   addCount(data, nData);
+}
+
+void histogram::getSubsampled(unsigned reduction, QVector<unsigned> *data){
+  for(unsigned u = 0; u < nBins;u+=reduction){
+      unsigned sum = 0;
+      for(unsigned w = 0; (w < reduction) && (w+u < nBins);w++)
+        sum += bins[u+w];
+      data->append(sum);
+    }
 }
 
 histogram::histogram()

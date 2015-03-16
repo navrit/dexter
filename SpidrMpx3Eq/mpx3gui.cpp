@@ -40,7 +40,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
         startTimer( 200 );// TODO: use of this?
 
 	// Connectivity between modules
-	_moduleConn = new ModuleConnection;
+	//_moduleConn = new ModuleConnection;
 
 	// Prepare DACs panel
 	_dacs = new DACs(_coreApp, _ui);
@@ -78,12 +78,12 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 	std::cout << "[Mpx3GUI] Connecting signals and slots" << std::endl;
 	connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );
 	connect( _ui->actionSave_DACs, SIGNAL(triggered()), _dacs, SLOT( openWriteMenu() ) );
-	connect( _ui->actionConnect, SIGNAL(triggered()), _moduleConn, SLOT( Connection() ) );
+	connect( _ui->actionConnect, SIGNAL(triggered()), this, SLOT( establish_connection() ) );
 
 	// Inform every module of changes in connection status
-	connect( _moduleConn, SIGNAL( ConnectionStatusChanged() ), _dacs, SLOT( ConnectionStatusChanged() ) );
-	connect( _moduleConn, SIGNAL( ConnectionStatusChanged() ), _equalization, SLOT( ConnectionStatusChanged() ) );
-	connect( _moduleConn, SIGNAL( ConnectionStatusChanged() ), _ui->visualizationWidget, SLOT( ConnectionStatusChanged() ) );
+	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _dacs, SLOT( ConnectionStatusChanged() ) );
+	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _equalization, SLOT( ConnectionStatusChanged() ) );
+	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationWidget, SLOT( ConnectionStatusChanged() ) );
 
 }
 
@@ -91,10 +91,10 @@ void Mpx3GUI::on_openfileButton_clicked() {
 
 }
 
-void ModuleConnection::Connection() {
-
+void Mpx3GUI::establish_connection() {
 	int dev_nr = 2;
 	cout << "Connecting ..." << endl;
+	delete _spidrcontrol;
 	_spidrcontrol = new SpidrController( 192, 168, 1, 10 );
 
 	// Check if we are properly connected to the SPIDR module
@@ -116,6 +116,8 @@ void ModuleConnection::Connection() {
 				<< _spidrcontrol->connectionErrString() << endl;
 		//_ui->_statusLabel->setText("Connection failed.");
 		//_ui->_statusLabel->setStyleSheet("QLabel { background-color : red; color : black; }");
+		QMessageBox::critical(this, "Connection error",
+				      QString("Couldn't establish a connection to the Spidr controller at %1, %2").arg(QString::fromStdString(_spidrcontrol->ipAddressString())).arg(QString::fromStdString(_spidrcontrol->connectionErrString())));
 		return; //No use in continuing if we can't connect.
 	}
 
@@ -137,7 +139,7 @@ void ModuleConnection::Connection() {
 	cout << _spidrdaq->errorString() << endl;
 
 	// Emmit
-	emit ConnectionStatusChanged();
+	emit ConnectionStatusChanged(true);
 
 	// A connection to hardware should make aware the DAC panel
 	//_moduleConn->GetDACs()->ConnectToHardware(_spidrcontrol, _spidrdaq);
@@ -150,7 +152,7 @@ void Mpx3GUI::generateFrame(){
   int *data = new int[nx*ny];
   for(int i = 0; i < ny; i++)
     for(int j = 0; j < nx; j++)
-      data[i*nx+j] = (1<<14)+(int)((1<<14)*sin(fx*j)*(cos(fy*i)));
+      data[i*nx+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
   addFrame(data);
 }
 

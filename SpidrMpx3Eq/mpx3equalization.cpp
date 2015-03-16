@@ -159,8 +159,8 @@ int Mpx3Equalization::DetectStartEqualizationRange(int setId, int DAC_Disc_code)
 
 int Mpx3Equalization::PrepareInterpolation(int setId, int DAC_Disc_code) {
 
-	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
-	SpidrDaq * spidrdaq = _mpx3gui->GetModuleConnection()->GetSpidrDaq();
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
 	AppendToTextBrowser("2) Test adj-bits sensibility and extrapolate to target ...");
 
@@ -313,8 +313,8 @@ void Mpx3Equalization::DisplayStatsInTextBrowser(int adj, int dac_disc, ScanResu
 
 int Mpx3Equalization::DAC_Disc_Optimization(int setId, int DAC_Disc_code) {
 
-	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
-	SpidrDaq * spidrdaq = _mpx3gui->GetModuleConnection()->GetSpidrDaq();
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
 	ClearTextBrowser();
 	AppendToTextBrowser("1) DAC_DiscL optimization ...");
@@ -417,7 +417,7 @@ void Mpx3Equalization::GetSlopeAndCut_Adj_THL(ScanResults r1, ScanResults r2, do
 
 void Mpx3Equalization::SetAllAdjustmentBits(Mpx3EqualizationResults * eq) {
 
-	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
 	pair<int, int> pix;
 	for ( int i = 0 ; i < __matrix_size ; i++ ) {
@@ -430,7 +430,7 @@ void Mpx3Equalization::SetAllAdjustmentBits(Mpx3EqualizationResults * eq) {
 
 void Mpx3Equalization::SetAllAdjustmentBits(int val_L, int val_H) {
 
-	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
 	// Adjustment bits
 	pair<int, int> pix;
@@ -444,8 +444,8 @@ void Mpx3Equalization::SetAllAdjustmentBits(int val_L, int val_H) {
 
 void Mpx3Equalization::Configuration(bool reset) {
 
-	SpidrController * spidrcontrol = _mpx3gui->GetModuleConnection()->GetSpidrController();
-	SpidrDaq * spidrdaq = _mpx3gui->GetModuleConnection()->GetSpidrDaq();
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
 	// Reset pixel configuration
 	if ( reset ) spidrcontrol->resetPixelConfig();

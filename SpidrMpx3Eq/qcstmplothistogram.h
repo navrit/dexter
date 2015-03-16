@@ -12,13 +12,13 @@
 class QCstmPlotHistogram : public QCustomPlot
 {
  Q_OBJECT
-  //QVector<histogram> hist;
-  int currentHist = 0;
+  QVector<histogram*> hists;
+  int currentHist = -1;
   bool clicked = false;
   double xClicked = 0, xReleased =0;
   //QVector<QVector<double>> xHist, yHist;
   QCPItemStraightLine *lowClamp, *highClamp;
-  void generateGraph(histogram* Histogram);
+  void generateGraph(histogram* Histogram, int reduction);
   void mousePressEvent(QMouseEvent *event){//TODO: check if clicked inside graph.
     QCustomPlot::mousePressEvent(event);
     if(event->button() == Qt::RightButton)
@@ -54,7 +54,7 @@ class QCstmPlotHistogram : public QCustomPlot
 public:
   QCstmPlotHistogram(QWidget* &parent);
   virtual ~QCstmPlotHistogram();
-  void addHistogram(histogram *hist);
+  void addHistogram(histogram *hist, int reduction  );
   //void setData(int *data, unsigned nData);
   void clear();
 signals:

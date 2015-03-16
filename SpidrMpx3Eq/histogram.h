@@ -8,15 +8,18 @@
 class histogram
 {
   int max, min;
-  unsigned *bins =0, nBins, binWidth;
+  int *bins =nullptr;
+  unsigned nBins, binWidth =1;
   void scanData(int *data, unsigned nData);
   void setData(int * data,  unsigned nData, unsigned binWidth = 1);
 public:
-  unsigned* getBins(){return bins;}
+  int* getBins(){return bins;}
   unsigned getBin(unsigned index){return bins[index];}
   unsigned getNBins(){return nBins;}
+  unsigned getWidth(){return binWidth;}
   int getMin(){return min;}
   int getMax(){return max;}
+  void getSubsampled(unsigned reduction, QVector<unsigned> *data);
   histogram();
   histogram(int *data, unsigned nData, unsigned binWidth = 1);
   void addCount(int * data,  unsigned n);

@@ -36,7 +36,7 @@ class Mpx3Equalization;
 namespace Ui {
 class Mpx3GUI;
 }
-
+/*
 class ModuleConnection : public QObject {
 
 	Q_OBJECT
@@ -64,7 +64,7 @@ void ConnectionStatusChanged();
 
 
 };
-
+*/
 class Mpx3GUI : public QMainWindow {
 
 	Q_OBJECT
@@ -75,7 +75,7 @@ public:
 	~Mpx3GUI();
 	void SetupSignalsAndSlots();
 	Ui::Mpx3GUI * GetUI() { return _ui; };
-	ModuleConnection * GetModuleConnection(){ return _moduleConn; }
+	//ModuleConnection * GetModuleConnection(){ return _moduleConn; }
 
 	void timerEvent( QTimerEvent * );
 
@@ -90,11 +90,13 @@ private:
 
 	// Each object here deals with one tab of the
 	// Equalization
-	Mpx3Equalization * _equalization;
+	Mpx3Equalization * _equalization = nullptr;
 	// DACs
-	DACs * _dacs;
+	DACs * _dacs = nullptr;
 	// This helps interconnecting the different modules
-	ModuleConnection * _moduleConn;
+	//ModuleConnection * _moduleConn;
+	SpidrController * _spidrcontrol = nullptr;
+	SpidrDaq * _spidrdaq = nullptr;
 
 	//Data Stores
 	QVector<int*> data;
@@ -104,6 +106,8 @@ private:
 	int nx = 256;
 	QVector<histogram*> hists;
 public:
+	SpidrController * GetSpidrController(){ return _spidrcontrol; };
+	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; };
 	void generateFrame(); //Debugging function to generate data when not connected
 	void addFrame(int *frame);
 	int* getFrame(int index){
@@ -129,7 +133,10 @@ signals:
 	void dataChanged();
 	void frame_added();
 	void availible_gradients_changed(QStringList gradients);
-	void gradient_added(QString gradient);
+	void gradient_added(QString gradient);	
+	void ConnectionStatusChanged(bool); //TODO: emit false when connection is lost for whatever reason.
+public slots:
+	void establish_connection();
 private slots:
 	void LoadEqualization();
 	void on_openfileButton_clicked();
