@@ -268,8 +268,8 @@ int Mpx3Equalization::PrepareInterpolation(int setId, int DAC_Disc_code) {
 	_ui->_histoWidget->AppendSet( cprop_opt_ext );
 
 	// Send all the adjustment bits to the adjusted values
-	if( DAC_Disc_code == MPX3RX_DAC_DISC_L ) SetAllAdjustmentBits(_eqresults);
-	if( DAC_Disc_code == MPX3RX_DAC_DISC_H ) SetAllAdjustmentBits(_eqresults);
+	if( DAC_Disc_code == MPX3RX_DAC_DISC_L ) SetAllAdjustmentBits();
+	if( DAC_Disc_code == MPX3RX_DAC_DISC_H ) SetAllAdjustmentBits();
 
 	// Let's assume the mean falls at the equalization target
 	tscan_opt_ext->DoScan( MPX3RX_DAC_THRESH_0, setId++, -1 ); // -1: Do all loops
@@ -415,18 +415,32 @@ void Mpx3Equalization::GetSlopeAndCut_Adj_THL(ScanResults r1, ScanResults r2, do
 
 }
 
-void Mpx3Equalization::SetAllAdjustmentBits(Mpx3EqualizationResults * eq) {
+void Mpx3Equalization::SetAllAdjustmentBits() {
 
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
 	pair<int, int> pix;
 	for ( int i = 0 ; i < __matrix_size ; i++ ) {
 		pix = XtoXY(i, __array_size_x);
-		spidrcontrol->configPixelMpx3rx(pix.first, pix.second, eq->GetPixelAdj(i), 0x0 );
+		spidrcontrol->configPixelMpx3rx(pix.first, pix.second, _eqresults->GetPixelAdj(i), 0x0 );
 	}
+
+	// Set the mask
+	if ( _eqresults->GetNMaskedPixels() > 0 ) {
+		QSet<int> tomask = _eqresults->GetMaskedPixels();
+		QSet<int>::iterator i = tomask.begin();
+		QSet<int>::iterator iE = tomask.end();
+		pair<int, int> pix;
+		for ( ; i != iE ; i++ ) {
+			pix = XtoXY( (*i), __matrix_size_x );//John, What coordinate system does the chip use? Top left = (0,0)?
+			spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second);
+		}
+	}
+
 	spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
 
 }
+
 
 void Mpx3Equalization::SetAllAdjustmentBits(int val_L, int val_H) {
 
@@ -507,7 +521,7 @@ void Mpx3Equalization::LoadEqualization(){
 	_ui->_intermediatePlot->setActive( 0 );
 
 	// And talk to the hardware
-	SetAllAdjustmentBits( _eqresults );
+	SetAllAdjustmentBits( ); //_eqresults );
 
 }
 

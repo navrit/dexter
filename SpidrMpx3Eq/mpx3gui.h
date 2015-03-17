@@ -99,12 +99,12 @@ private:
 	SpidrDaq * _spidrdaq = nullptr;
 
 	//Data Stores
-	QVector<int*> data;
+	vector<int*> data;
 	/*QVector<int> dataSize;*/
 	//unsigned nData =0;
 	int ny = 256;
 	int nx = 256;
-	QVector<histogram*> hists;
+	vector<histogram*> hists;
 public:
 	Mpx3Equalization* getEqualization(){return _equalization;}
 	SpidrController * GetSpidrController(){ return _spidrcontrol; }
@@ -113,12 +113,12 @@ public:
 	void addFrame(int *frame);
 	int* getFrame(int index){
 	  if(-1 == index)
-	    index = data.count()-1;
+	    index = (int)data.size() - 1;//data.count()-1;
 	  return data[index];
 	}
 	histogram* getHist(int index){
 	  if(-1 == index)
-	    index = hists.count()-1;
+	    index = (int)hists.size()-1;
 	  return hists[index];
 	}
 

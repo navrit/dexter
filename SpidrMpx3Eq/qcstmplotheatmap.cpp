@@ -168,7 +168,7 @@ bool QCstmPlotHeatmap::event(QEvent *event){
 
 void QCstmPlotHeatmap::contextMenuEvent(QContextMenuEvent *event){
   int x = round(this->xAxis->pixelToCoord(event->pos().x()));
-  int y = round(this->yAxis->pixelToCoord(event->pos().y()));
+  int y = round(colorMaps[active]->data()->valueSize() - this->yAxis->pixelToCoord(event->pos().y()));
   emit(pixel_selected(QPoint(x,y), event->globalPos()));
   event->accept();
 }

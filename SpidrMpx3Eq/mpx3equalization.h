@@ -49,6 +49,8 @@ public:
 	int GetPixelReactiveThl(int pixId);
 	void maskPixel(int pixId){maskedPixels.insert(pixId);}
 	void unmaskPixel(int pixId){if(maskedPixels.contains(pixId)) maskedPixels.remove(pixId);}
+	int GetNMaskedPixels(){maskedPixels.size();}
+	QSet<int> GetMaskedPixels(){return maskedPixels;}
 	int * GetAdjustementMatrix();
 
 	void ExtrapolateAdjToTarget(int target, double eta_Adj_THL);
@@ -95,7 +97,8 @@ public:
 	void SetLimits();
 	void Configuration(bool reset);
 	void SetAllAdjustmentBits(int val_L, int val_H);
-	void SetAllAdjustmentBits(Mpx3EqualizationResults *);
+	void SetAllAdjustmentBits();
+
 	void AppendToTextBrowser(QString s);
 	void ClearTextBrowser();
 	int GetDeviceIndex(){ return _deviceIndex; };

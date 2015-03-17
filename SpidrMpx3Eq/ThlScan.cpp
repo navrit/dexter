@@ -274,7 +274,7 @@ int ThlScan::ReAdjustPixelsOff(double N, int dac_code) {
 				else startAdj--;
 				_equalization->GetEqualizationResults()->SetPixelAdj(i, startAdj);
 				// Write to the spidrControl
-				_equalization->SetAllAdjustmentBits( _equalization->GetEqualizationResults() );
+				_equalization->SetAllAdjustmentBits( ); // _equalization->GetEqualizationResults() );
 				// And send
 				_spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
 

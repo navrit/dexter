@@ -38,6 +38,7 @@ void QCstmVisualization::StartDataTaking(){
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
+	cout << "Acquiring ... ";
 
 	// Start the trigger as configured
 	spidrcontrol->startAutoTrigger();
@@ -172,4 +173,5 @@ void QCstmVisualization::on_pixel_selected(QPoint pixel, QPoint position){
       _mpx3gui->getEqualization()->GetEqualizationResults()->maskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());
   else if(selectedItem == &unmask)
       _mpx3gui->getEqualization()->GetEqualizationResults()->unmaskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());
+  _mpx3gui->getEqualization()->SetAllAdjustmentBits( );
 }
