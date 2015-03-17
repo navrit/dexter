@@ -47,13 +47,8 @@ public:
 	void SetPixelReactiveThl(int pixId, int thl);
 	int GetPixelAdj(int pixId);
 	int GetPixelReactiveThl(int pixId);
-	void maskPixel(int pixId){
-	  maskedPixels.append(pixId);
-	  std::cout << "Masked pixels: ";
-	  for(int i = 0; i < maskedPixels.length();i++)
-	    std::cout << maskedPixels[i] << ", ";
-	  std::cout << std::endl;
-	}//Does not check for repeats.
+	void maskPixel(int pixId){maskedPixels.insert(pixId);}
+	void unmaskPixel(int pixId){maskedPixels.remove(pixId);}
 	int * GetAdjustementMatrix();
 
 	void ExtrapolateAdjToTarget(int target, double eta_Adj_THL);
@@ -64,7 +59,7 @@ private:
 	// pixel Id, adjustment
 	/*map<int, int> */
 	QByteArray _pixId_Adj;
-	QVector<int> maskedPixels;
+	QSet<int> maskedPixels;
 	// pixel Id, reactive thlValue
 	map<int, int> _pixId_Thl;
 
