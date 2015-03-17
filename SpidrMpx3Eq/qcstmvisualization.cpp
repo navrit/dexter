@@ -152,7 +152,7 @@ void QCstmVisualization::on_frame_changed(){
 
 void QCstmVisualization::on_active_frame_changed(int active){
   int* frame = _mpx3gui->getFrame(active);
-  int count = 0, sum = 0;
+  long count = 0, sum = 0;
   for(int i = 0; i < _mpx3gui->getX()*_mpx3gui->getY();i++){//TODO: absorb this into frames themselves.
       if(frame[i]){
           sum += frame[i];
