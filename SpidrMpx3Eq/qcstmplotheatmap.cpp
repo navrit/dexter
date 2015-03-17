@@ -169,13 +169,6 @@ bool QCstmPlotHeatmap::event(QEvent *event){
 void QCstmPlotHeatmap::contextMenuEvent(QContextMenuEvent *event){
   int x = round(this->xAxis->pixelToCoord(event->pos().x()));
   int y = round(this->yAxis->pixelToCoord(event->pos().y()));
-  QMenu contextMenu;
-  contextMenu.addAction(QString("Mask pixel @ %1, %2").arg(x).arg(y));
-  QAction* selectedItem = contextMenu.exec(event->globalPos());
-  if (selectedItem)
-  {
-          std::cout << "Should mask @ " << x << ", " <<y << std::endl;
-  }
+  emit(pixel_selected(QPoint(x,y), event->globalPos()));
   event->accept();
-
 }

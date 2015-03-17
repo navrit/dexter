@@ -125,6 +125,7 @@
     <signal>plotCountChanged(int)</signal>
     <signal>activePlotChanged(int)</signal>
     <signal>nouseOverChanged(QString)</signal>
+    <signal>pixel_selected(QPoint,QPoint)</signal>
     <slot>setHeatmap(QCPColorGradient)</slot>
     <slot>changeRange(QCPRange)</slot>
     <slot>setActive(int)</slot>
@@ -227,8 +228,25 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>heatmap</sender>
+   <signal>pixel_selected(QPoint,QPoint)</signal>
+   <receiver>QCstmVisualization</receiver>
+   <slot>on_pixel_selected(QPoint,QPoint)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>37</x>
+     <y>293</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>436</x>
+     <y>293</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>frame_added()</slot>
+  <slot>on_pixel_selected(QPoint,QPoint)</slot>
  </slots>
 </ui>

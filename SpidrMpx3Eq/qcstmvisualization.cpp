@@ -3,6 +3,7 @@
 
 #include "SpidrController.h"
 #include "SpidrDaq.h"
+#include "mpx3equalization.h"
 
 QCstmVisualization::QCstmVisualization(QWidget *parent) :
 QWidget(parent),
@@ -159,4 +160,16 @@ void QCstmVisualization::set_gradient(QString name){
 void QCstmVisualization::on_heatmapCombobox_activated(const QString &arg1)
 {
     ui->heatmap->setHeatmap(_mpx3gui->getGradient(arg1));
+}
+
+void QCstmVisualization::on_pixel_selected(QPoint pixel, QPoint position){
+  QMenu contextMenu;
+  contextMenu.addAction(QString("Mask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()));
+  QAction* selectedItem = contextMenu.exec(position);
+  if (selectedItem)
+    {
+            std::cout << "Should mask @ " << pixel.x() << ", " <<pixel.y() << std::endl;
+            _mpx3gui->getEqualization()->GetEqualizationResults()->maskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());
+            //_mpx3gui->equalization->maskPixel(pixel);
+    }
 }

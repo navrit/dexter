@@ -38,6 +38,7 @@ signals:
   void plotCountChanged(int nPlots);
   void activePlotChanged(int activePlot);
   void mouseOverChanged(QString sample);
+  void pixel_selected(QPoint pixel, QPoint pos);
  public slots:
   //void onXRangeChanged(QCPRange newRange);
   void setActive(int);

@@ -106,8 +106,9 @@ private:
 	int nx = 256;
 	QVector<histogram*> hists;
 public:
-	SpidrController * GetSpidrController(){ return _spidrcontrol; };
-	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; };
+	Mpx3Equalization* getEqualization(){return _equalization;}
+	SpidrController * GetSpidrController(){ return _spidrcontrol; }
+	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
 	void generateFrame(); //Debugging function to generate data when not connected
 	void addFrame(int *frame);
 	int* getFrame(int index){
