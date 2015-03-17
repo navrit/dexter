@@ -141,6 +141,7 @@ void QCstmVisualization::on_frame_added (){
   ui->heatmap->addData(_mpx3gui->getFrame(-1), _mpx3gui->getX(), _mpx3gui->getY());
   ui->layerSpinner->setMaximum(_mpx3gui->getFrameCount()-1);
   ui->layerSpinner->setValue(_mpx3gui->getFrameCount()-1);
+  on_active_frame_changed(ui->layerSpinner->value());
 }
 
 void QCstmVisualization::on_frame_changed(){
