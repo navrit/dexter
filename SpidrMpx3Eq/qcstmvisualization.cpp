@@ -164,12 +164,12 @@ void QCstmVisualization::on_heatmapCombobox_activated(const QString &arg1)
 
 void QCstmVisualization::on_pixel_selected(QPoint pixel, QPoint position){
   QMenu contextMenu;
-  contextMenu.addAction(QString("Mask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()));
+  QAction mask(QString("Mask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu), unmask(QString("Unmask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu);
+  contextMenu.addAction(&mask);
+  contextMenu.addAction(&unmask);
   QAction* selectedItem = contextMenu.exec(position);
-  if (selectedItem)
-    {
-            std::cout << "Should mask @ " << pixel.x() << ", " <<pixel.y() << std::endl;
-            _mpx3gui->getEqualization()->GetEqualizationResults()->maskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());
-            //_mpx3gui->equalization->maskPixel(pixel);
-    }
+  if(selectedItem == &mask)
+      _mpx3gui->getEqualization()->GetEqualizationResults()->maskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());
+  else if(selectedItem == &unmask)
+      _mpx3gui->getEqualization()->GetEqualizationResults()->unmaskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());
 }

@@ -48,7 +48,7 @@ public:
 	int GetPixelAdj(int pixId);
 	int GetPixelReactiveThl(int pixId);
 	void maskPixel(int pixId){maskedPixels.insert(pixId);}
-	void unmaskPixel(int pixId){maskedPixels.remove(pixId);}
+	void unmaskPixel(int pixId){if(maskedPixels.contains(pixId)) maskedPixels.remove(pixId);}
 	int * GetAdjustementMatrix();
 
 	void ExtrapolateAdjToTarget(int target, double eta_Adj_THL);
