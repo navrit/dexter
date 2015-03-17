@@ -348,7 +348,7 @@
          <string>Timepix3 power enabled</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="_checkBoxTpxHiSpeed">
+       <widget class="QCheckBox" name="_checkBoxTpxLoSpeed">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -361,7 +361,7 @@
          </rect>
         </property>
         <property name="text">
-         <string>Timepix3 @ 640Mbit/s (vs 40Mbit/s)</string>
+         <string>Timepix3 @ 40Mbit/s (vs 640Mbit/s)</string>
         </property>
        </widget>
        <widget class="QPushButton" name="_pushButtonErase">
@@ -433,7 +433,7 @@
        <zorder>_pushButtonRead</zorder>
        <zorder>_pushButtonStore</zorder>
        <zorder>_checkBoxTpxPowerEna</zorder>
-       <zorder>_checkBoxTpxHiSpeed</zorder>
+       <zorder>_checkBoxTpxLoSpeed</zorder>
        <zorder>_pushButtonErase</zorder>
       </widget>
      </item>

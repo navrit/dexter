@@ -15,7 +15,8 @@ using namespace std;
 #include "tpx3dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x15012200;
+const int   VERSION_ID = 0x15031300;
+//const int VERSION_ID = 0x15012200;
 //const int VERSION_ID = 0x14120100;
 //const int VERSION_ID = 0x14112600;
 //const int VERSION_ID = 0x14111000;
@@ -259,13 +260,6 @@ bool SpidrController::displayInfo()
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getPortCount( int *ports )
-{
-  return this->requestGetInt( CMD_GET_PORTCOUNT, 0, ports );
-}
-
-// ----------------------------------------------------------------------------
-
 bool SpidrController::getDeviceCount( int *devices )
 {
   return this->requestGetInt( CMD_GET_DEVICECOUNT, 0, devices );
@@ -283,16 +277,16 @@ bool SpidrController::getLinkCount( int *links )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getSpidrId( int *id )
+bool SpidrController::getChipboardId( int *id )
 {
-  return this->requestGetInt( CMD_GET_SPIDRID, 0, id );
+  return this->requestGetInt( CMD_GET_CHIPBOARDID, 0, id );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setSpidrId( int id )
+bool SpidrController::setChipboardId( int id )
 {
-  return this->requestSetInt( CMD_SET_SPIDRID, 0, id );
+  return this->requestSetInt( CMD_SET_CHIPBOARDID, 0, id );
 }
 
 // ----------------------------------------------------------------------------
@@ -950,9 +944,9 @@ const unsigned int TPX3_THRESH_CONV_TABLE[16] =
   { 0x0, 0x8, 0x4, 0xC, 0x2, 0xA, 0x6, 0xE,
     0x1, 0x9, 0x5, 0xD, 0x3, 0xB, 0x7, 0xF };
 
-bool SpidrController::setPixelThreshold( int  x,
-					 int  y,
-					 int  threshold )
+bool SpidrController::setPixelThreshold( int x,
+					 int y,
+					 int threshold )
 {
   int xstart, xend;
   int ystart, yend;
@@ -1103,6 +1097,9 @@ bool SpidrController::getPixelConfig( int dev_nr )
 					256, pixelcol ) )
 	return false;
 
+      // Returned column number should match
+      if( xcopy != x ) return false;
+
       // Copy the column to the pixel configuration data into _pixelConfig
       for( y=0; y<256; ++y )
 	_pixelConfig[y*256 + x] = pixelcol[y];
@@ -1234,6 +1231,38 @@ bool SpidrController::storeStartupOptions( int startopts )
 bool SpidrController::getStartupOptions( int *startopts )
 {
   return this->requestGetInt( CMD_GET_STARTOPTS, 0, startopts );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::readFlash( int            flash_id,
+				 int            address,
+				 int           *nbytes,
+				 unsigned char *databytes )
+{
+  int addr = (address & 0x00FFFFFF) | (flash_id << 24);
+  *nbytes = 0;
+  if( !this->requestGetIntAndBytes( CMD_READ_FLASH, 0,
+				    &addr, 1024, databytes ) )
+    return false;
+
+  // Returned address should match
+  if( addr != ((address & 0x00FFFFFF) | (flash_id << 24)) ) return false;
+
+  *nbytes = 1024;
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::writeFlash( int            flash_id,
+				  int            address,
+				  int            nbytes,
+				  unsigned char *databytes )
+{
+  int addr = (address & 0x00FFFFFF) | (flash_id << 24);
+  return this->requestSetIntAndBytes( CMD_WRITE_FLASH, 0,
+				      addr, nbytes, databytes );
 }
 
 // ----------------------------------------------------------------------------
@@ -1432,6 +1461,22 @@ bool SpidrController::getShutterCounter( int *cntr )
 bool SpidrController::resetCounters()
 {
   return this->requestSetInt( CMD_RESET_COUNTERS, 0, 0 );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setMonitorStreamEna( bool enable )
+{
+  int reg;
+  if( !this->getSpidrReg( SPIDR_SHUTTERTRIG_CTRL_I, &reg ) )
+    return false;
+  if( enable )
+    reg |= 0x00001000; //SPIDR_MONPACKETS_ENA;
+  else
+    reg &= ~0x00001000; //~SPIDR_MONPACKETS_ENA;
+  if( !this->setSpidrReg( SPIDR_SHUTTERTRIG_CTRL_I, reg ) )
+    return false;
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1653,18 +1698,19 @@ bool SpidrController::getVdda( int *mvolts )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getFanSpeed( int *rpm )
+bool SpidrController::getFanSpeed( int index, int *rpm )
 {
-  *rpm = 0; // Indicates which fan speed to return (SPIDR or VC707)
+  // Index indicates fan speed to return (chipboard or SPIDR/VC707 resp.)
+  *rpm = index;
   return this->requestGetInt( CMD_GET_FANSPEED, 0, rpm );
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getFanSpeedVC707( int *rpm )
+bool SpidrController::setFanSpeed( int index, int percentage )
 {
-  *rpm = 1; // Indicates which fan speed to return (SPIDR or VC707)
-  return this->requestGetInt( CMD_GET_FANSPEED, 0, rpm );
+  // Index indicates fan speed to set (chipboard or SPIDR/VC707 resp.)
+  return this->requestSetInt( CMD_SET_FANSPEED, 0, (index << 16) | percentage );
 }
 
 // ----------------------------------------------------------------------------
@@ -2094,7 +2140,7 @@ bool SpidrController::request( int cmd,     int dev_nr,
     {
       this->clearErrorString();
       _errString << "Unexpected reply length, got "
-		 << reply_len << " expected " << exp_reply_len;
+		 << reply_len << ", expected at least " << exp_reply_len;
       return false;
     }
   int err = ntohl( _replyMsg[2] ); // (Check 'err' before 'reply')

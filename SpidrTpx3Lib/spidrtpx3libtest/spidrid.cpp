@@ -5,8 +5,9 @@ Descr  : Commandline tool to display and/or set a SPIDR module's identifier
          (serial number).
 
 Usage  :
-spidrid <ipaddr> [id_new]
+spidrid <ipaddr>[:<portnr] [id_new]
    Display or set a new identifier on the SPIDR module.
+     <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10
      <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10
      <id_new> : new identifier (32-bit, decimal or hexadecimal)
 
@@ -25,17 +26,17 @@ using namespace std;
 
 #define error_out(str) cout<<str<<": "<<spidrctrl.errorString()<<endl
 
-quint32 get_addr( const char *str );
+quint32 get_addr_and_port( const char *str, int *portnr );
 void    usage();
 
 // ----------------------------------------------------------------------------
 
 int main( int argc, char *argv[] )
 {
-  bool         modify = false;
-  quint32      addr_curr = 0;
-  QHostAddress qaddr;
-  int          id_curr, id_new;
+  bool    modify = false;
+  quint32 ipaddr = 0;
+  int     portnr = 50000;
+  int     id_curr, id_new;
 
   // Check argument count
   if( !(argc == 2 || argc == 3) )
@@ -44,7 +45,7 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
-  addr_curr = get_addr( argv[1] );
+  ipaddr = get_addr_and_port( argv[1], &portnr );
 
   if( argc == 3 )
     {
@@ -63,43 +64,45 @@ int main( int argc, char *argv[] )
       modify = true;
     }
 
-  // Open a control connection to SPIDR-TPX3 module
-  // with the given address and default port
-  SpidrController spidrctrl( (addr_curr>>24) & 0xFF,
-			     (addr_curr>>16) & 0xFF,
-			     (addr_curr>> 8) & 0xFF,
-			     (addr_curr>> 0) & 0xFF );
-
-  // Are we connected to the SPIDR-TPX3 module?
+  // Open a control connection to the SPIDR module
+  // with the given address and port, or -if the latter was not provided-
+  // the default port number 50000
+  SpidrController spidrctrl( (ipaddr>>24) & 0xFF,
+			     (ipaddr>>16) & 0xFF,
+			     (ipaddr>> 8) & 0xFF,
+			     (ipaddr>> 0) & 0xFF, portnr );
+  // Are we connected ?
   if( !spidrctrl.isConnected() ) {
     cout << spidrctrl.ipAddressString() << ": "
          << spidrctrl.connectionStateString() << ", "
          << spidrctrl.connectionErrString() << endl;
     return 1;
   }
+  cout << "Connected to SPIDR: " << spidrctrl.ipAddressString();
+  cout <<  endl;
 
-  if( !spidrctrl.getSpidrId( &id_curr ) )
+  if( !spidrctrl.getChipboardId( &id_curr ) )
     {
       cout << "### Error reading ID" << endl;
       return 0;
     }
-  cout << "Current SPIDR ID: "
+  cout << "Current chipboard ID: "
        << hex << setw(8) << setfill('0') << id_curr << dec << endl;
 
   if( modify )
     { 
-      if( !spidrctrl.setSpidrId( id_new ) )
+      if( !spidrctrl.setChipboardId( id_new ) )
 	{
 	  cout << "### Error writing ID" << endl;
 	  return 0;
 	}
 
-      if( !spidrctrl.getSpidrId( &id_curr ) )
+      if( !spidrctrl.getChipboardId( &id_curr ) )
 	{
 	  cout << "### Error reading ID" << endl;
 	  return 0;
 	}
-     cout << "New SPIDR ID: "
+     cout << "New chipboard ID: "
 	   << hex << setw(8) << setfill('0') << id_curr << dec << endl;
 
      if( id_new != id_curr )
@@ -111,12 +114,32 @@ int main( int argc, char *argv[] )
 
 // ----------------------------------------------------------------------------
 
-quint32 get_addr( const char *str )
+quint32 get_addr_and_port( const char *str, int *portnr )
 {
-  QHostAddress qaddr;
-  if( !qaddr.setAddress( QString(str) ) )
+  QString qstr( str );
+  if( qstr.contains( QChar(':') ) )
     {
-      cout << "### Invalid IP address: " << string(str) << endl;
+      // A port number is provided: extract it
+      bool ok;
+      int p = qstr.section( ':', 1, 1).toInt( &ok );
+      if( !ok )
+	{
+	  cout << "### Invalid port number: "
+	       << qstr.section( ':', 1, 1 ).toStdString() << endl;
+	  usage();
+	  exit( 0 );
+	}
+      else
+	{
+	  *portnr = p;
+	}
+      // Remove the port number from the string
+      qstr = qstr.section( ':', 0, 0 );
+    }
+  QHostAddress qaddr;
+  if( !qaddr.setAddress( qstr ) )
+    {
+      cout << "### Invalid IP address: " << qstr.toStdString() << endl;
       usage();
       exit( 0 );
     }
@@ -128,11 +151,13 @@ quint32 get_addr( const char *str )
 void usage()
 {
   cout << endl << "Usage:" << endl
-       << "spidrid <ipaddr> [id_new]"
+       << "spidrid <ipaddr>[:<portnr>] [id_new]"
        << endl
        << "   Display or set a new identifier on the SPIDR module."
        << endl
        << "     <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10"
+       << endl
+       << "     <portnr> : current SPIDR controller IP port number"
        << endl
        << "     <id_new> : new identifier (32-bit, decimal or hexadecimal)"
        << endl;

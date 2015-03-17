@@ -171,7 +171,7 @@ void ReceiverThread::readDatagrams()
 	{
 	  if( _spidrCtrl )
 	    {
-	      _spidrCtrl->setBusy();
+	      _spidrCtrl->setBusyRequest();
 	      _freeSpace = space;
 	      _spidrBusy = true;
 	    }
@@ -228,7 +228,7 @@ void ReceiverThread::updateBytesConsumed( long long bytes )
       _freeSpace += bytes;
       if( _freeSpace > _freeSpaceMin )
 	{
-	  _spidrCtrl->clearBusy();
+	  _spidrCtrl->clearBusyRequest();
 	  _spidrBusy = false;
 	}
     }

@@ -71,10 +71,10 @@ void SpidrConfig::connectOrDisconnect()
       _pushButtonStore->setEnabled( false );
 
       _checkBoxTpxPowerEna->setEnabled( false );
-      _checkBoxTpxHiSpeed->setEnabled( false );
+      _checkBoxTpxLoSpeed->setEnabled( false );
 
       _checkBoxTpxPowerEna->setChecked( false );
-      _checkBoxTpxHiSpeed->setChecked( false );
+      _checkBoxTpxLoSpeed->setChecked( false );
 
       _groupBoxSpidr->setTitle( "SPIDR Startup Options" );
     }
@@ -112,7 +112,7 @@ void SpidrConfig::connectOrDisconnect()
 	  _pushButtonStore->setEnabled( true );
 
 	  _checkBoxTpxPowerEna->setEnabled( true );
-	  _checkBoxTpxHiSpeed->setEnabled( true );
+	  _checkBoxTpxLoSpeed->setEnabled( true );
 
 	  QTimer::singleShot( 0, this, SLOT(readStartupOptions()) );
 	}
@@ -145,11 +145,11 @@ void SpidrConfig::readStartupOptions()
 	  else
 	    _checkBoxTpxPowerEna->setChecked( false );
 
-	  // Timepix3 readout speed: bit 1
+	  // Timepix3 readout speed: bit 1 (inverse logic in 'options'...)
 	  if( options & 0x02 )
-	    _checkBoxTpxHiSpeed->setChecked( true );
+	    _checkBoxTpxLoSpeed->setChecked( false );
 	  else
-	    _checkBoxTpxHiSpeed->setChecked( false );
+	    _checkBoxTpxLoSpeed->setChecked( true );
 
 	  // Bias powersupply: bit 7
 	  /*
@@ -168,7 +168,7 @@ void SpidrConfig::readStartupOptions()
       else
 	{
 	  _checkBoxTpxPowerEna->setChecked( false );
-	  _checkBoxTpxHiSpeed->setChecked( false );
+	  _checkBoxTpxLoSpeed->setChecked( false );
 
 	  qs += "*NOT* CONFIGURED";
 	}
@@ -176,7 +176,7 @@ void SpidrConfig::readStartupOptions()
   else
     {
       _checkBoxTpxPowerEna->setChecked( false );
-      _checkBoxTpxHiSpeed->setChecked( false );
+      _checkBoxTpxLoSpeed->setChecked( false );
 
       qs += "### FAILED TO GET";
     }
@@ -215,10 +215,10 @@ void SpidrConfig::storeStartupOptions()
 	options &= ~0x01;
 
       // Timepix3 readout speed: bit 1
-      if( _checkBoxTpxHiSpeed->isChecked() )
-	options |= 0x02;
-      else
+      if( _checkBoxTpxLoSpeed->isChecked() )
 	options &= ~0x02;
+      else
+	options |= 0x02;
 
       // Bias powersupply: bit 7
       /*

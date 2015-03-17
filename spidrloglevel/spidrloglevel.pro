@@ -13,7 +13,7 @@ TARGET   = spidrloglevel
 
 # Create a console app
 QT -= gui
-QT += core
+QT += core network
 CONFIG += qt thread console warn_on exceptions debug_and_release
 
 CONFIG(debug, debug|release) {

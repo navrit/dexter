@@ -7,7 +7,8 @@
 #include "tpx3dacsdescr.h"
 
 // Version identifier: year, month, day, release number
-const   int VERSION_ID = 0x14102800;
+const   int VERSION_ID = 0x15031300;
+//const int VERSION_ID = 0x14102800;
 //const int VERSION_ID = 0x14101300;
 //const int VERSION_ID = 0x14092900;
 //const int VERSION_ID = 0x14072400;
@@ -216,6 +217,10 @@ bool SpidrDaq::startRecording( std::string filename,
     {
       if( include_pixelcfg )
 	{
+	  // By default use the pixelconfiguration index matching
+	  // the device number given in the constructor
+	  if( pixelcfg_index == -1 )
+	    pixelcfg_index = _deviceNr;
 	  pixelconfig = _spidrCtrl->pixelConfig( pixelcfg_index );
 	  // Adjust the (total) header sizes when appropriate
 	  if( pixelconfig )
@@ -226,7 +231,7 @@ bool SpidrDaq::startRecording( std::string filename,
 	}
 
       int val;
-      if( _spidrCtrl->getSpidrId( &val ) )
+      if( _spidrCtrl->getChipboardId( &val ) )
 	fhdr->spidrId = val;
       else
 	fhdr->spidrId = INVALID_VAL;

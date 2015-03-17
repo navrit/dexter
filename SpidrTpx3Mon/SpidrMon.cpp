@@ -195,7 +195,7 @@ void SpidrMon::connectOrDisconnect()
 
 	  // (Re)enable power to Timepix3 if requested and necessary
 	  int val;
-	  // Read SPIDR Board Control register to find out if power is off
+	  // Read SPIDR 'Board Control' register to find out if power is off
 	  if( _spidrController->getSpidrReg( 0x2D0, &val ) )
 	    {
 	      // Check SPIDR_TPX_POWER_ENA bit: 1=ON, 0=OFF
@@ -323,11 +323,11 @@ void SpidrMon::timerEvent(QTimerEvent *)
     _lineEditVdda->setText( "----" );
 
   int rpm;
-  if( _spidrController->getFanSpeed( &rpm ) )
+  if( _spidrController->getFanSpeed( 0, &rpm ) )
     _lineEditFanSpidr->setText( QString::number( rpm ) );
   else
     _lineEditFanSpidr->setText( "----" );
-  if( _spidrController->getFanSpeedVC707( &rpm ) )
+  if( _spidrController->getFanSpeed( 1, &rpm ) )
     _lineEditFanVc707->setText( QString::number( rpm ) );
   else
     _lineEditFanVc707->setText( "----" );

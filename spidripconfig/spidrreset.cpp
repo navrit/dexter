@@ -4,10 +4,11 @@ File   : spidrreset.cpp
 Descr  : Commandline tool to reset a SPIDR module.
 
 Usage  :
-spidrreset <ipaddr> [port]
+spidrreset <ipaddr>[:<port>]
 
 History:
 05JUN2014; HenkB; Created.
+09MAR2015; HenkB; Use :<port> syntax for the optional port number.
 ---------------------------------------------------------------------------- */
 
 #include <iostream>
@@ -21,45 +22,33 @@ using namespace std;
 
 #define error_out(str) cout<<str<<": "<<spidrctrl.errorString()<<endl
 
-quint32 get_addr( const char *str );
+quint32 get_addr_and_port( const char *str, int *portnr );
 void    usage();
 
 // ----------------------------------------------------------------------------
 
 int main( int argc, char *argv[] )
 {
-  quint32      addr_cmd   = 0;
-  int          portnr_cmd = 50000;
-  QHostAddress qaddr;
+  quint32 ipaddr   = 0;
+  int     portnr = 50000;
 
   // Check argument count
-  if( !(argc == 2 || argc == 3) )
+  if( argc != 2 )
     {
       usage();
       return 0;
     }
 
-  // Check arguments
-  addr_cmd = get_addr( argv[1] );
-  if( argc == 3 )
-    {
-      bool ok;
-      portnr_cmd = QString(argv[2]).toUInt( &ok );
-      if( !ok )
-	{
-	  cout << "### Invalid IP port: " << string(argv[3]) << endl;
-	  usage();
-	  return 0;
-	}
-    }
+  // Get arguments
+  ipaddr = get_addr_and_port( argv[1], &portnr );
 
   // Open a control connection to SPIDR-TPX3 module
   // with the given address and port, or -if the latter was not provided-
   // the default port number 50000
-  SpidrController spidrctrl( (addr_cmd>>24) & 0xFF,
-			     (addr_cmd>>16) & 0xFF,
-			     (addr_cmd>> 8) & 0xFF,
-			     (addr_cmd>> 0) & 0xFF, portnr_cmd );
+  SpidrController spidrctrl( (ipaddr>>24) & 0xFF,
+			     (ipaddr>>16) & 0xFF,
+			     (ipaddr>> 8) & 0xFF,
+			     (ipaddr>> 0) & 0xFF, portnr );
 
   // Are we connected to the SPIDR-TPX3 module?
   if( !spidrctrl.isConnected() ) {
@@ -85,12 +74,32 @@ int main( int argc, char *argv[] )
 
 // ----------------------------------------------------------------------------
 
-quint32 get_addr( const char *str )
+quint32 get_addr_and_port( const char *str, int *portnr )
 {
-  QHostAddress qaddr;
-  if( !qaddr.setAddress( QString(str) ) )
+  QString qstr( str );
+  if( qstr.contains( QChar(':') ) )
     {
-      cout << "### Invalid IP address: " << string(str) << endl;
+      // A port number is provided: extract it
+      bool ok;
+      int p = qstr.section( ':', 1, 1).toInt( &ok );
+      if( !ok )
+	{
+	  cout << "### Invalid port number: "
+	       << qstr.section( ':', 1, 1 ).toStdString() << endl;
+	  usage();
+	  exit( 0 );
+	}
+      else
+	{
+	  *portnr = p;
+	}
+      // Remove the port number from the string
+      qstr = qstr.section( ':', 0, 0 );
+    }
+  QHostAddress qaddr;
+  if( !qaddr.setAddress( qstr ) )
+    {
+      cout << "### Invalid IP address: " << qstr.toStdString() << endl;
       usage();
       exit( 0 );
     }
@@ -102,7 +111,7 @@ quint32 get_addr( const char *str )
 void usage()
 {
   cout << endl << "Usage:" << endl
-       << "spidrreset <ipaddr> [<portnr_cmd>]" << endl
+       << "spidrreset <ipaddr>[:<portnr_cmd>]" << endl
        << "   Reset the SPIDR module with the given address and port "
        << "(default 50000)" << endl;
 }

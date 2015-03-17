@@ -60,11 +60,10 @@ class MY_LIB_API SpidrController
   bool        setLogLevel          ( int level );
   bool        displayInfo          ( ); // In the currently open telnet window
                                         // or (USB/UART) console
-  bool        getPortCount         ( int *ports );
   bool        getDeviceCount       ( int *devices );
   bool        getLinkCount         ( int *links );
-  bool        getSpidrId           ( int *id );
-  bool        setSpidrId           ( int  id );
+  bool        getChipboardId       ( int *id );
+  bool        setChipboardId       ( int  id );
 
   // ###TODO:
   bool        setTimeOfDay         ( ); // Set the SPIDR processor clock time
@@ -172,6 +171,14 @@ class MY_LIB_API SpidrController
   bool validPixelConfig        ( int  dev_nr, bool *valid ); // ###TODO
   bool storeStartupOptions     ( int  startopts );
   bool getStartupOptions       ( int *startopts );
+  bool readFlash               ( int  flash_id,
+				 int  address,
+				 int *nbytes,
+				 unsigned char *databytes );
+  bool writeFlash              ( int  flash_id,
+				 int  address,
+				 int  nbytes,
+				 unsigned char *databytes );
 
   // Shutter trigger
   bool setShutterTriggerConfig ( int  trigger_mode,
@@ -201,6 +208,7 @@ class MY_LIB_API SpidrController
   bool getExtShutterCounter    ( int *cntr );
   bool getShutterCounter       ( int *cntr );
   bool resetCounters           ( );
+  bool setMonitorStreamEna     ( bool enable );
 
   // Data-acquisition
   bool sequentialReadout       ( int tokens = 128, bool now = false );
@@ -238,8 +246,8 @@ class MY_LIB_API SpidrController
   bool getDvddNow              ( int *mvolts, int *mamps, int *mwatts );
   bool getBiasVoltage          ( int *volts );
   bool getVdda                 ( int *mvolts );
-  bool getFanSpeed             ( int *rpm );
-  bool getFanSpeedVC707        ( int *rpm );
+  bool getFanSpeed             ( int  index, int *rpm );
+  bool setFanSpeed             ( int  index, int percentage );
   bool selectChipBoard         ( int  board_nr );
   bool getDataPacketCounter    ( int *cntr );
   bool getMonPacketCounter     ( int *cntr );
