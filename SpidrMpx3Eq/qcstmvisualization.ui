@@ -46,12 +46,19 @@
       </layout>
      </widget>
      <widget class="QWidget" name="layoutWidget">
-      <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,2,0,0,0,0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,2,0,0,0,0,0">
        <property name="sizeConstraint">
         <enum>QLayout::SetDefaultConstraint</enum>
        </property>
        <item>
         <widget class="QSpinBox" name="layerSpinner"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="statistics">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QCstmPlotHistogram" name="histogramPlot" native="true"/>
@@ -267,9 +274,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>layerSpinner</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>QCstmVisualization</receiver>
+   <slot>on_active_frame_changed(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>467</x>
+     <y>21</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>436</x>
+     <y>293</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>frame_added()</slot>
   <slot>on_pixel_selected(QPoint,QPoint)</slot>
+  <slot>on_active_frame_changed(int)</slot>
  </slots>
 </ui>

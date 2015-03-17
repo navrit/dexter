@@ -41,6 +41,7 @@ private slots:
   void on_heatmapCombobox_activated(const QString &arg1);
   void on_pixel_selected(QPoint pixel, QPoint position);
   void on_data_cleared();
+  void on_active_frame_changed(int active);
 };
 
 #endif // QCSTMVISUALIZATION_H

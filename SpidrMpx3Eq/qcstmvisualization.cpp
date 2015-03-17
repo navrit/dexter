@@ -70,6 +70,8 @@ void QCstmVisualization::ConnectionStatusChanged(bool connected) {
 }
 
 void QCstmVisualization::on_data_cleared(){
+  ui->layerSpinner->setMaximum(0);
+  ui->layerSpinner->setValue(0);
   ui->heatmap->clear();
   ui->histogramPlot->clear();
 }
@@ -144,6 +146,19 @@ void QCstmVisualization::on_frame_added (){
 void QCstmVisualization::on_frame_changed(){
   ui->histogramPlot->swapHistogram(_mpx3gui->getHist(-1), ui->spinBox->value());
   ui->heatmap->setData(_mpx3gui->getFrame(-1), _mpx3gui->getX(), _mpx3gui->getY());
+  on_active_frame_changed(ui->layerSpinner->value());
+}
+
+void QCstmVisualization::on_active_frame_changed(int active){
+  int* frame = _mpx3gui->getFrame(active);
+  int count = 0, sum = 0;
+  for(int i = 0; i < _mpx3gui->getX()*_mpx3gui->getY();i++){//TODO: absorb this into frames themselves.
+      if(frame[i]){
+          sum += frame[i];
+          count++;
+        }
+   }
+  ui->statistics->setText(QString("Active Pixels: %1\t Total Charge: %2").arg(count).arg(sum));
 }
 
 void QCstmVisualization::on_availible_gradients_changed(QStringList gradients){

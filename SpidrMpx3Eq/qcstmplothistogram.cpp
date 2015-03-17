@@ -30,6 +30,8 @@ QCstmPlotHistogram::~QCstmPlotHistogram()
     //delete hist;
 }
 void QCstmPlotHistogram::setActive(int index){
+  if(this->graphCount() == 0)
+    return;
   if(-1 == index)
     index = this->graphCount()-1;
   if(currentHist >= 0){
@@ -64,7 +66,8 @@ void QCstmPlotHistogram::generateGraph(histogram* Histogram, int reduction){
 
 void QCstmPlotHistogram::clear(){
   this->clearGraphs();
-  currentHist = 0;
+  hists.clear();
+  currentHist = -1;
   this->replot();
 }
 
