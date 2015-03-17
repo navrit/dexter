@@ -80,7 +80,7 @@ public:
 	void timerEvent( QTimerEvent * );
 
 private:
-
+	int mode = 0;
 	QApplication * _coreApp;
 	Ui::Mpx3GUI * _ui;
 
@@ -132,6 +132,7 @@ public:
 signals:
 	void dataChanged();
 	void frame_added();
+	void frame_changed();
 	void availible_gradients_changed(QStringList gradients);
 	void gradient_added(QString gradient);	
 	void ConnectionStatusChanged(bool); //TODO: emit false when connection is lost for whatever reason.
@@ -139,6 +140,8 @@ public slots:
 	void establish_connection();
 	void save_data();
 	void open_data();
+	void set_mode_integral();
+	void set_mode_normal();
 private slots:
 	void LoadEqualization();
 	void on_openfileButton_clicked();

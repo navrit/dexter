@@ -83,6 +83,11 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 	connect( _ui->actionSave_DACs, SIGNAL(triggered()), _dacs, SLOT( openWriteMenu() ) );
 	connect( _ui->actionConnect, SIGNAL(triggered()), this, SLOT( establish_connection() ) );
 
+	connect(_ui->actionSumming, SIGNAL(triggered()), this, SLOT(set_mode_integral()));
+	connect(_ui->actionDiscrete, SIGNAL(triggered()), this, SLOT(set_mode_normal()));
+
+	connect(this, SIGNAL(frame_changed()), _ui->visualizationWidget, SLOT(on_frame_changed()));
+
 	connect(_ui->actionSave_data, SIGNAL(triggered()), this, SLOT(save_data()));
 	connect(_ui->actionOpen_data, SIGNAL(triggered()), this, SLOT(open_data()));
 
@@ -163,9 +168,18 @@ void Mpx3GUI::generateFrame(){
 }
 
 void Mpx3GUI::addFrame(int *frame){
-  data.append(frame);
-  hists.append(new histogram(frame, nx*ny, 1));
-  emit frame_added();
+  if(0 == mode || 0 == data.length()){//normal mode, or no frame yet
+    data.append(frame);
+    hists.append(new histogram(frame, nx*ny, 1));
+    emit frame_added();
+  }
+  else if(1 == mode){//summming mode
+      for(int i = 0; i < ny; i++)
+          for(int j = 0; j < nx; j++)
+            data.last()[i*nx+j] += frame[i*nx+j];
+       hists.last()->addCount(frame, nx*ny);
+        emit frame_changed();
+  }
 }
 
 void Mpx3GUI::getSize(int *x, int *y){
@@ -230,4 +244,12 @@ void Mpx3GUI::open_data(){
    }
   saveFile.close();
   return;
+}
+
+void Mpx3GUI::set_mode_integral(){
+  mode = 1;
+}
+
+void Mpx3GUI::set_mode_normal(){
+  mode = 0;
 }

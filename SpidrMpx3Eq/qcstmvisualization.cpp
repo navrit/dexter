@@ -138,6 +138,11 @@ void QCstmVisualization::on_frame_added (){
   ui->layerSpinner->setValue(_mpx3gui->getFrameCount()-1);
 }
 
+void QCstmVisualization::on_frame_changed(){
+  ui->histogramPlot->changeBinSize(ui->spinBox->value());//cheaty way to regenerate histogram.
+  ui->heatmap->setData(_mpx3gui->getFrame(-1), _mpx3gui->getX(), _mpx3gui->getY());
+}
+
 void QCstmVisualization::on_availible_gradients_changed(QStringList gradients){
   ui->heatmapCombobox->addItems(gradients);
 }

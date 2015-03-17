@@ -1366,9 +1366,17 @@
      <addaction name="actionSave_DACs"/>
      <addaction name="actionSave_Equalization"/>
     </widget>
+    <widget class="QMenu" name="menuMode">
+     <property name="title">
+      <string>mode..</string>
+     </property>
+     <addaction name="actionSumming"/>
+     <addaction name="actionDiscrete"/>
+    </widget>
     <addaction name="actionClear_configuration"/>
     <addaction name="menuLoad_configuration"/>
     <addaction name="menuSave_configuration"/>
+    <addaction name="menuMode"/>
    </widget>
    <addaction name="menuMpx3Eq"/>
    <addaction name="menuConfig"/>
@@ -1436,6 +1444,16 @@
   <action name="actionOpen_data">
    <property name="text">
     <string>Open data</string>
+   </property>
+  </action>
+  <action name="actionSumming">
+   <property name="text">
+    <string>summing</string>
+   </property>
+  </action>
+  <action name="actionDiscrete">
+   <property name="text">
+    <string>discrete</string>
    </property>
   </action>
  </widget>

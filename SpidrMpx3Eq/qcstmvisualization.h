@@ -35,6 +35,7 @@ private slots:
   void ConnectionStatusChanged(bool connected);
   void on_openfileButton_clicked();
   void on_frame_added();
+  void on_frame_changed();
   void on_availible_gradients_changed(QStringList gradients);
   void on_gradient_added(QString name);
   void on_heatmapCombobox_activated(const QString &arg1);
