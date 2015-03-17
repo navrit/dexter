@@ -1,4 +1,5 @@
 #include "qcstmplotheatmap.h"
+#include <iostream>
 QCstmPlotHeatmap::QCstmPlotHeatmap(QWidget*& parent){
   this->setParent(parent);
   //aspectRatio = 1;
@@ -80,10 +81,8 @@ void QCstmPlotHeatmap::setData(int *data, int nx, int ny){
     for(unsigned w = 0; w < nx;w++){
       colorMaps[active]->data()->setCell(w,ny-1-u, data[u*nx+w]); //TODO: read 0 here. error.
     }
-  // rescale the key (x) and value (y) axes so the whole color map is visible:
   colorMaps[active]->rescaleDataRange(true);
-  colorScale->rescaleDataRange(false);
-  colorMaps[active]->rescaleAxes();
+  colorScale->rescaleDataRange(true);
   replot();
 }
 
@@ -167,3 +166,16 @@ bool QCstmPlotHeatmap::event(QEvent *event){
   return QWidget::event(event);
 }
 
+void QCstmPlotHeatmap::contextMenuEvent(QContextMenuEvent *event){
+  int x = round(this->xAxis->pixelToCoord(event->pos().x()));
+  int y = round(this->yAxis->pixelToCoord(event->pos().y()));
+  QMenu contextMenu;
+  contextMenu.addAction(QString("Mask pixel @ %1, %2").arg(x).arg(y));
+  QAction* selectedItem = contextMenu.exec(event->globalPos());
+  if (selectedItem)
+  {
+          std::cout << "Should mask @ " << x << ", " <<y << std::endl;
+  }
+  event->accept();
+
+}

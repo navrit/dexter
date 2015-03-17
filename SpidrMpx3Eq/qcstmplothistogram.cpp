@@ -86,8 +86,8 @@ void QCstmPlotHistogram::maxClampChanged(double max){
   replot();
 }
 void QCstmPlotHistogram::changeBinSize(int reduction){
-  /*if(currentHist < 0)
-    return;*/
+  if(currentHist < 0)
+    return;
   for(int currentHist =0; currentHist < hists.length();currentHist++){
     int min = hists[currentHist]->getMin();
     int binWidth = hists[currentHist]->getWidth()*reduction;
@@ -98,5 +98,11 @@ void QCstmPlotHistogram::changeBinSize(int reduction){
      for(int i = 0; i < subsampled.length();i++)
       data->insert((i+0.5)*binWidth+min, QCPData((i+0.5)*binWidth+min, ((double)subsampled[i])/binWidth));
     }
+  this->graph(currentHist)->rescaleAxes();
    replot();
+}
+
+void QCstmPlotHistogram::swapHistogram(histogram *hist, int binSize){
+  hists[currentHist]  = hist;
+  changeBinSize(binSize);
 }

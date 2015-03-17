@@ -57,6 +57,7 @@ private:
 	// pixel Id, adjustment
 	/*map<int, int> */
 	QByteArray _pixId_Adj;
+	QVector<QPoint> maskedPixels;
 	// pixel Id, reactive thlValue
 	map<int, int> _pixId_Thl;
 

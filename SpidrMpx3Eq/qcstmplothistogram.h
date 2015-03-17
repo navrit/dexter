@@ -57,6 +57,7 @@ public:
   void addHistogram(histogram *hist, int reduction  );
   //void setData(int *data, unsigned nData);
   void clear();
+  void swapHistogram(histogram *hist, int binSize);
 signals:
   void rangeChanged(QCPRange newRange);
 public slots:

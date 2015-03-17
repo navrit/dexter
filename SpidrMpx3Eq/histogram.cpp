@@ -1,4 +1,5 @@
 #include "histogram.h"
+#include <iostream>
 
 histogram::histogram(int *data, unsigned nData, unsigned binWidth)
 {
@@ -6,14 +7,13 @@ histogram::histogram(int *data, unsigned nData, unsigned binWidth)
 }
 
 void histogram::setData(int *data, unsigned nData, unsigned binWidth){
-  this->binWidth = binWidth;
   delete[] bins;
-  scanData(data, nData);
-  bins = new int[nBins];
-  for(unsigned u = 0; u < nBins;u++){
-      bins[u] =0;
-  }
+  bins = nullptr;
+  max = INT_MIN;
+  min = INT_MAX;
+  this->binWidth = binWidth;
   addCount(data, nData);
+  std::cout << "added data, bounds are " << min << ", " << max << std::endl;
 }
 
 void histogram::getSubsampled(unsigned reduction, QVector<unsigned> *data){
@@ -35,20 +35,30 @@ histogram::~histogram() //double detor because of copy.
 }
 
 void histogram::scanData(int *data, unsigned n){
-  int max = INT_MIN;
-  int min = INT_MAX;
+  int oldMin = min, oldMax = max;
   for(unsigned u = 0; u < n;u++){
       if(data[u] < min)
         min = data[u];
       if(data[u] > max)
         max = data[u];
+ }
+  std::cout << "scanned` data, bounds are " << min << ", " << max << std::endl;
+  if((oldMin != min)|| (oldMax != max)){
+      int oldnBins = nBins;
+      this->nBins = (unsigned)(max-min+this->binWidth)/this->binWidth;
+      int *newBins = new int[nBins];
+      for(int i = 0; i < nBins;i++)
+        newBins[i] = 0;
+      if(bins != nullptr)
+        for(int i = 0; i < oldnBins; i++)
+          newBins[-min+oldMin+i] = bins[i];
+      delete[] bins;
+      bins = newBins;
     }
-  this->max = max;
-  this->min = min;
-  this->nBins = (unsigned)(max-min+this->binWidth)/this->binWidth;
 }
 
 void histogram::addCount(int * data,  unsigned n){//TODO: add bounds checking, allow for dynamic growing. (Not neccesary for this project atm but is nice).
+  scanData(data, n);
   for(unsigned u = 0; u < n; u++){
       int location = (data[u]-this->min)/this->binWidth;
       bins[location]++;

@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QResizeEvent>
 #include <QDebug>
+#include <QContextMenuEvent>
 
 #include "qcustomplot.h"
 
@@ -24,6 +25,7 @@ class QCstmPlotHeatmap : public QCustomPlot
 public:
   bool event(QEvent *event);
   void mouseMoveEvent(QMouseEvent *event);
+  void contextMenuEvent(QContextMenuEvent *event);
   void addData(int *data, int nx, int ny);
   void setData(int *data, int nx, int ny);
   void clear();

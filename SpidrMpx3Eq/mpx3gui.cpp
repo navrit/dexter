@@ -23,6 +23,7 @@
 #include <time.h>
 #include <stdio.h>
 
+
 Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent), _coreApp(coreApp), _ui(new Ui::Mpx3GUI)
 {
     // Instantiate everything in the UI
@@ -177,7 +178,12 @@ void Mpx3GUI::addFrame(int *frame){
       for(int i = 0; i < ny; i++)
           for(int j = 0; j < nx; j++)
             data.last()[i*nx+j] += frame[i*nx+j];
-       hists.last()->addCount(frame, nx*ny);
+       histogram *last = hists.last();
+       hists.pop_back();
+       delete last;
+       last = new histogram(data.last(),nx*ny);
+       hists.append(last);
+       //hists.last()->addCount(frame, nx*ny);
         emit frame_changed();
   }
 }

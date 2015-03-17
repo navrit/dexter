@@ -139,7 +139,7 @@ void QCstmVisualization::on_frame_added (){
 }
 
 void QCstmVisualization::on_frame_changed(){
-  ui->histogramPlot->changeBinSize(ui->spinBox->value());//cheaty way to regenerate histogram.
+  ui->histogramPlot->swapHistogram(_mpx3gui->getHist(-1), ui->spinBox->value());
   ui->heatmap->setData(_mpx3gui->getFrame(-1), _mpx3gui->getX(), _mpx3gui->getY());
 }
 
