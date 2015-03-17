@@ -556,6 +556,9 @@ void Mpx3Equalization::ConnectionStatusChanged() {
 	_mpx3gui->GetUI()->_statusLabel->setText("Connected");
 	_mpx3gui->GetUI()->_statusLabel->setStyleSheet("QLabel { background-color : blue; color : white; }");
 
+	// Load the adj bits
+	LoadEqualization();
+
 }
 
 void Mpx3Equalization::AppendToTextBrowser(QString s){
