@@ -46,7 +46,7 @@
       </layout>
      </widget>
      <widget class="QWidget" name="layoutWidget">
-      <layout class="QVBoxLayout" name="verticalLayout_6">
+      <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,2,0,0,0,0,0">
        <property name="sizeConstraint">
         <enum>QLayout::SetDefaultConstraint</enum>
        </property>
@@ -55,6 +55,13 @@
        </item>
        <item>
         <widget class="QCstmPlotHistogram" name="histogramPlot" native="true"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QSpinBox" name="spinBox">
@@ -124,7 +131,7 @@
     <signal>dataRangeChanged(QCPRange)</signal>
     <signal>plotCountChanged(int)</signal>
     <signal>activePlotChanged(int)</signal>
-    <signal>nouseOverChanged(QString)</signal>
+    <signal>mouseOverChanged(QString)</signal>
     <signal>pixel_selected(QPoint,QPoint)</signal>
     <slot>setHeatmap(QCPColorGradient)</slot>
     <slot>changeRange(QCPRange)</slot>
@@ -241,6 +248,22 @@
     <hint type="destinationlabel">
      <x>436</x>
      <y>293</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>heatmap</sender>
+   <signal>mouseOverChanged(QString)</signal>
+   <receiver>label</receiver>
+   <slot>setText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>37</x>
+     <y>293</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>467</x>
+     <y>359</y>
     </hint>
    </hints>
   </connection>

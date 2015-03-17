@@ -93,6 +93,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 
 	connect(_ui->actionSave_data, SIGNAL(triggered()), this, SLOT(save_data()));
 	connect(_ui->actionOpen_data, SIGNAL(triggered()), this, SLOT(open_data()));
+	connect(_ui->actionClear_data, SIGNAL(triggered()), this, SLOT(clear_data()));
 
 	// Inform every module of changes in connection status
 	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _dacs, SLOT( ConnectionStatusChanged() ) );
@@ -272,4 +273,12 @@ void Mpx3GUI::set_mode_integral(){
 
 void Mpx3GUI::set_mode_normal(){
 	mode = 0;
+}
+
+void Mpx3GUI::clear_data(){
+  for(int i = 0; i < data.size(); i++)
+    delete[] data[i];
+  data.clear();
+  hists.clear();
+  emit(data_cleared());
 }

@@ -15,6 +15,7 @@ class QCstmPlotHeatmap : public QCustomPlot
 {
   Q_OBJECT
   void resizeEvent(QResizeEvent *event);
+  QPoint toPixel(QPoint screenspace);
   //void mouseMoveEvent(QMouseEvent *event);
   //void toolTipEvent(QToolTip *event);
   ~QCstmPlotHeatmap();

@@ -65,6 +65,7 @@ void QCstmPlotHistogram::generateGraph(histogram* Histogram, int reduction){
 void QCstmPlotHistogram::clear(){
   this->clearGraphs();
   currentHist = 0;
+  this->replot();
 }
 
 void QCstmPlotHistogram::addHistogram(histogram *hist, int reduction){

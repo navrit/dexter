@@ -38,15 +38,12 @@ void QCstmVisualization::StartDataTaking(){
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
-	cout << "Acquiring ... ";
-
 	// Start the trigger as configured
 	spidrcontrol->startAutoTrigger();
 	Sleep( 50 );
 	// See if there is a frame available
 	// I should get as many frames as triggers
 	int * framedata;
-	int frameNr = 0;
 	while ( spidrdaq->hasFrame() ) {
 		//cout << "capture ..." << endl;
 		int size_in_bytes = -1;
@@ -72,6 +69,10 @@ void QCstmVisualization::ConnectionStatusChanged(bool connected) {
 
 }
 
+void QCstmVisualization::on_data_cleared(){
+  ui->heatmap->clear();
+  ui->histogramPlot->clear();
+}
 
 void QCstmVisualization::Configuration(bool reset) {//TODO: should be part of parent?
 

@@ -132,6 +132,7 @@ public:
 
 signals:
 	void dataChanged();
+	void data_cleared();
 	void frame_added();
 	void frame_changed();
 	void availible_gradients_changed(QStringList gradients);
@@ -139,6 +140,7 @@ signals:
 	void ConnectionStatusChanged(bool); //TODO: emit false when connection is lost for whatever reason.
 public slots:
 	void establish_connection();
+	void clear_data();
 	void save_data();
 	void open_data();
 	void set_mode_integral();

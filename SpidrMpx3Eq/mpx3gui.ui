@@ -1347,6 +1347,7 @@
     <addaction name="actionExit"/>
     <addaction name="actionSave_data"/>
     <addaction name="actionOpen_data"/>
+    <addaction name="actionClear_data"/>
    </widget>
    <widget class="QMenu" name="menuConfig">
     <property name="title">
@@ -1456,6 +1457,11 @@
     <string>discrete</string>
    </property>
   </action>
+  <action name="actionClear_data">
+   <property name="text">
+    <string>Clear data</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -1474,7 +1480,8 @@
     <signal>dataRangeChanged(QCPRange)</signal>
     <signal>plotCountChanged(int)</signal>
     <signal>activePlotChanged(int)</signal>
-    <signal>nouseOverChanged(QString)</signal>
+    <signal>mouseOverChanged(QString)</signal>
+    <signal>pixel_selected(QPoint,QPoint)</signal>
     <slot>setHeatmap(QCPColorGradient)</slot>
     <slot>changeRange(QCPRange)</slot>
     <slot>setActive(int)</slot>
@@ -1489,6 +1496,7 @@
     <slot>on_frame_added()</slot>
     <slot>on_availible_gradients_changed(QStringList)</slot>
     <slot>on_gradient_added(QString)</slot>
+    <slot>on_data_cleared()</slot>
    </slots>
   </customwidget>
   <customwidget>
@@ -1586,10 +1594,27 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>Mpx3GUI</sender>
+   <signal>data_cleared()</signal>
+   <receiver>visualizationWidget</receiver>
+   <slot>on_data_cleared()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>506</x>
+     <y>276</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>506</x>
+     <y>295</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <signal>frame_added()</signal>
   <signal>availible_gradients_changed(QStringList)</signal>
   <signal>gradient_added(QString)</signal>
+  <signal>data_cleared()</signal>
  </slots>
 </ui>

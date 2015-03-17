@@ -40,6 +40,7 @@ private slots:
   void on_gradient_added(QString name);
   void on_heatmapCombobox_activated(const QString &arg1);
   void on_pixel_selected(QPoint pixel, QPoint position);
+  void on_data_cleared();
 };
 
 #endif // QCSTMVISUALIZATION_H

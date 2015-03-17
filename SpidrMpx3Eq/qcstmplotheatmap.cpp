@@ -149,7 +149,7 @@ void QCstmPlotHeatmap::mouseMoveEvent(QMouseEvent *event){//TODO: uses a lot of 
         double x = this->xAxis->pixelToCoord(event->pos().x());
         double y = this->yAxis->pixelToCoord(event->pos().y());
         double z = colorMaps[active]->data()->data(x, colorMaps[active]->data()->valueSize() -y);
-        emit(mouseOverChanged(QString("%3 @ (%1 , %2)").arg(x).arg(y).arg(z)));
+        emit(mouseOverChanged(QString("%3 @ (%1 , %2)").arg(round(x)).arg(round(y)).arg(z)));
       }
 }
 
@@ -157,18 +157,19 @@ bool QCstmPlotHeatmap::event(QEvent *event){
   if (event->type() == QEvent::ToolTip)
       if(active >= 0){
         QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
-        double x = this->xAxis->pixelToCoord(helpEvent->pos().x());
-        double y = this->yAxis->pixelToCoord(helpEvent->pos().y());
-        double z = colorMaps[active]->data()->data(x, colorMaps[active]->data()->valueSize() -y);
-        QToolTip::showText(helpEvent->globalPos(), QString("%3 @ (%1 , %2)").arg(x).arg(y).arg(z));
+        QPoint pixel = toPixel(helpEvent->pos());
+        double z = colorMaps[active]->data()->data(pixel.x(), colorMaps[active]->data()->valueSize() -pixel.y());
+        QToolTip::showText(helpEvent->globalPos(), QString("%3 @ (%1 , %2)").arg(pixel.x()).arg(pixel.y()).arg(z));
         return true;
       }
   return QWidget::event(event);
 }
 
 void QCstmPlotHeatmap::contextMenuEvent(QContextMenuEvent *event){
-  int x = round(this->xAxis->pixelToCoord(event->pos().x()));
-  int y = round(colorMaps[active]->data()->valueSize() - this->yAxis->pixelToCoord(event->pos().y()));
-  emit(pixel_selected(QPoint(x,y), event->globalPos()));
+  emit(pixel_selected(toPixel(event->pos()), event->globalPos()));
   event->accept();
+}
+
+QPoint QCstmPlotHeatmap::toPixel(QPoint screenspace){
+  return QPoint(round(this->xAxis->pixelToCoord(screenspace.x())),  round(this->xAxis->pixelToCoord(screenspace.y())));
 }
