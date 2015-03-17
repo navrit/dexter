@@ -181,6 +181,9 @@ void DACs::ConnectionStatusChanged() {
 	_ui->startScanButton->setDisabled( false );
 	_ui->senseDACsPushButton->setDisabled( false );
 
+	// Fill the DACs
+	PopulateDACValues();
+
 }
 
 void DACs::SenseDACs() {

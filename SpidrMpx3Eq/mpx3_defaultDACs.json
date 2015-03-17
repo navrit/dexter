@@ -1,6 +1,6 @@
 {
     "I_DAC_DiscH": 100,
-    "I_DAC_DiscL": 100,
+    "I_DAC_DiscL": 50,
     "I_DAC_test": 100,
     "I_Delay": 50,
     "I_Disc": 125,

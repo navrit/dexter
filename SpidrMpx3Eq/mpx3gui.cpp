@@ -57,6 +57,9 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
 	// Signals and slots for this part
 	SetupSignalsAndSlots();
+
+	// Connect automatically
+	//_moduleConn->Connection();
 }
 
 Mpx3GUI::~Mpx3GUI()
@@ -86,7 +89,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 	// Inform every module of changes in connection status
 	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _dacs, SLOT( ConnectionStatusChanged() ) );
 	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _equalization, SLOT( ConnectionStatusChanged() ) );
-	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationWidget, SLOT( ConnectionStatusChanged() ) );
+	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationWidget, SLOT( ConnectionStatusChanged(bool) ) );
 
 }
 
@@ -146,7 +149,7 @@ void Mpx3GUI::establish_connection() {
 
 	// A connection to hardware should make aware the DAC panel
 	//_moduleConn->GetDACs()->ConnectToHardware(_spidrcontrol, _spidrdaq);
-	//_moduleConn->GetDACs()->PopulateDACValues();
+	//_dacs->PopulateDACValues();
 
 }
 

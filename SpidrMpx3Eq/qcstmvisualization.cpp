@@ -28,11 +28,16 @@ QCstmVisualization::~QCstmVisualization()
 }
 
 void QCstmVisualization::SignalsAndSlots(){
+
 	connect( ui->startDataTaking, SIGNAL( clicked() ), this, SLOT( StartDataTaking() ) );
+
 }
 void QCstmVisualization::StartDataTaking(){
+
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+
+
 	// Start the trigger as configured
 	spidrcontrol->startAutoTrigger();
 	Sleep( 50 );
@@ -41,24 +46,28 @@ void QCstmVisualization::StartDataTaking(){
 	int * framedata;
 	int frameNr = 0;
 	while ( spidrdaq->hasFrame() ) {
-		cout << "capture ..." << endl;
+		//cout << "capture ..." << endl;
 		int size_in_bytes = -1;
 		framedata = spidrdaq->frameData(0, &size_in_bytes);
 
-		ui->heatmap->addData( framedata, 256, 256 );
-		ui->heatmap->setActive( frameNr++ );
-		//_mpx3gui->addFrame(framedata, size_in_bytes);
+		_mpx3gui->addFrame( framedata );
+
 		spidrdaq->releaseFrame();
 		Sleep( 10 ); // Allow time to get and decode the next frame, if any
 	}
 
+	cout << "done." << endl;
+
 }
 
 void QCstmVisualization::ConnectionStatusChanged(bool connected) {
+
 	ui->startDataTaking->setEnabled(connected); //Enable or disable the button depending on the connection status.
+
 	// TODO
 	// Configure the chip, provided that the Adj mask is loaded
 	Configuration( false );
+
 }
 
 
@@ -93,7 +102,7 @@ void QCstmVisualization::Configuration(bool reset) {//TODO: should be part of pa
 	// 10: HGM   2
 	// 01: LGM   1
 	// 11: SLGM  3
-	spidrcontrol->setGainMode( deviceIndex, 3 );
+	spidrcontrol->setGainMode( deviceIndex, 1 );
 
 	// Other OMR
 	spidrdaq->setDecodeFrames( true );
@@ -107,7 +116,8 @@ void QCstmVisualization::Configuration(bool reset) {//TODO: should be part of pa
 	// Trigger config
 	int trig_mode      = 4;     // Auto-trigger mode
 	int trig_length_us = 5000;  // This time shouldn't be longer than the period defined by trig_freq_hz
-	int trig_freq_hz   = 100;   // One trigger every 10ms
+	int trig_freq_hz   = (int) ( 1. / (2.*((double)trig_length_us/1000000.)) );   // Make the period double the trig_len
+	cout << "Configured freq is " << trig_freq_hz << "Hz" << endl;
 	int nr_of_triggers = nTriggers;    // This is the number of shutter open i get
 	//int trig_pulse_count;
 	spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
