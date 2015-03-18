@@ -138,13 +138,16 @@ signals:
 	void availible_gradients_changed(QStringList gradients);
 	void gradient_added(QString gradient);	
 	void ConnectionStatusChanged(bool); //TODO: emit false when connection is lost for whatever reason.
-public slots:
+
+	public slots:
 	void establish_connection();
 	void clear_data();
 	void save_data();
 	void open_data();
 	void set_mode_integral();
 	void set_mode_normal();
+	void clear_configuration();
+
 private slots:
 	void LoadEqualization();
 	void on_openfileButton_clicked();

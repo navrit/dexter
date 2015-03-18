@@ -38,6 +38,12 @@ ThlScan::ThlScan(BarChart * bc, QCstmPlotHeatmap * hm, Mpx3Equalization * ptr) {
 	_detectedScanBoundary_L = 0;
 	_detectedScanBoundary_H = 0;
 
+	// Set to true for special scans
+	_stopWhenPlateau = false;
+
+	// number of reactive pixels
+	_nReactivePixels = 0;
+
 	RewindData();
 
 }
@@ -58,6 +64,7 @@ void ThlScan::RewindData() {
 	if ( !_pixelReactiveTHL.empty() ) {
 		_pixelReactiveTHL.clear();
 	}
+	_nReactivePixels = 0;
 
 	// Create entries at 0 for the whole matric
 	for ( int i = 0 ; i < __matrix_size ; i++ ) {
@@ -111,6 +118,7 @@ void ThlScan::DoScan(int dac_code, int setId, int numberOfLoops, bool blindScan)
 	// Sometimes a reduced loop is selected
 	int processedLoops = 0;
 	bool finishScan = false;
+	bool finishTHLLoop = false;
 
 	for(int maskOffsetItr_x = 0 ; maskOffsetItr_x < spacing ; maskOffsetItr_x++ ) {
 
@@ -121,6 +129,8 @@ void ThlScan::DoScan(int dac_code, int setId, int numberOfLoops, bool blindScan)
 			cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  " | N pixels unmasked = " << __matrix_size - nMasked << endl;
 
 			// Start the Scan for one mask
+			int pixelReactiveInScan = 0;
+			finishTHLLoop = false;
 			for(int i = minScan ; i <= maxScan ; i += stepScan ) {
 
 				//cout << "THL : " << i << endl;
@@ -140,7 +150,7 @@ void ThlScan::DoScan(int dac_code, int setId, int numberOfLoops, bool blindScan)
 					int size_in_bytes = -1;
 					data = _spidrdaq->frameData(0, &size_in_bytes);
 
-					ExtractScanInfo( data, size_in_bytes, i );
+					pixelReactiveInScan += ExtractScanInfo( data, size_in_bytes, i );
 
 					_spidrdaq->releaseFrame();
 					Sleep( 10 ); // Allow time to get and decode the next frame, if any
@@ -160,6 +170,25 @@ void ThlScan::DoScan(int dac_code, int setId, int numberOfLoops, bool blindScan)
 				// Report to graph
 				if ( !blindScan ) UpdateChart(setId, i);
 
+
+				// If the scan has reached the total number of pixels expected to react. Stop.
+				int expectedInScan = __matrix_size / ( spacing*spacing );
+				if ( pixelReactiveInScan % expectedInScan == 0 && pixelReactiveInScan > 0 ) {
+					finishScan = true;
+					cout << "[INFO] All pixels in round found active. Scan stops at THL = " << i << endl;
+				}
+
+				// See if this is a scan which can be aloud to truncate.
+				// Useful in certain cases like DiscL optimization
+				if ( _stopWhenPlateau ) {
+					if ( (double)pixelReactiveInScan > (double)expectedInScan*0.99 ) {
+						finishTHLLoop = true;
+						cout << "[INFO] Truncate scan. 99% reached. Scan stops at THL = " << i << endl;
+					}
+				}
+
+				if( finishScan ) break;
+				if( finishTHLLoop ) break;
 			}
 
 			// Try to resize to min max the X axis here
@@ -181,10 +210,10 @@ void ThlScan::DoScan(int dac_code, int setId, int numberOfLoops, bool blindScan)
 
 }
 
-void ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
+int ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
 
 	int nPixels = size_in_bytes/4;
-	// int pixelsActive = 0;
+	int pixelsActive = 0;
 	// Each 32 bits corresponds to the counts in each pixel already
 	// in 'int' representation as the decoding has been requested
 	for(int i = 0 ; i < nPixels ; i++) {
@@ -194,24 +223,16 @@ void ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
 			// Increase the counting in this pixel if it hasn't already reached the _nTriggers
 			if ( _pixelCountsMap[i] < _equalization->GetNTriggers() ) _pixelCountsMap[i]++;
 			// It it reached the number of triggers, stablish this Threshold as the reactive threshold
-			if ( _pixelCountsMap[i] == _equalization->GetNTriggers() ) _pixelReactiveTHL[i] = thl;
+			if ( _pixelCountsMap[i] == _equalization->GetNTriggers() ) {
+				_pixelReactiveTHL[i] = thl;
+				_nReactivePixels++;
+				pixelsActive++;
+			}
 		}
 
-
 	}
 
-	/*
-	// Test
-	// count the number of non zero entries
-	int cntr = 0;
-	for (int j = 0 ; j < nPixels ; j++) {
-		if( data[j] != 0 ) cntr++;
-	}
-	if ( cntr > 1024 ) {
-		cout << "full frame" << endl;
-	}
-	 */
-
+	return pixelsActive;
 }
 
 int ThlScan::NumberOfNonReactingPixels() {
@@ -226,6 +247,19 @@ int ThlScan::NumberOfNonReactingPixels() {
 	}
 
 	return nNonReactive;
+}
+
+vector<int> ThlScan::GetNonReactingPixels() {
+
+	vector<int> nonReactive;
+	map<int, int>::iterator i = _pixelReactiveTHL.begin();
+	map<int, int>::iterator iE = _pixelReactiveTHL.end();
+
+	// Test for non reactive pixels
+	for ( ; i != iE ; i++ ) {
+		if( (*i).second == __UNDEFINED ) nonReactive.push_back( (*i).first );
+	}
+	return nonReactive;
 }
 
 void ThlScan::SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj) {

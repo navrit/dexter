@@ -38,6 +38,8 @@ void QCstmVisualization::StartDataTaking(){
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
+	cout << "Acquiring ... ";
+
 	// Start the trigger as configured
 	spidrcontrol->startAutoTrigger();
 	Sleep( 50 );
@@ -91,7 +93,7 @@ void QCstmVisualization::Configuration(bool reset) {//TODO: should be part of pa
 	//SetAllAdjustmentBits(0x0, 0x0);
 
 	// OMR
-	//_spidrcontrol->setPolarity( true );		// Holes collection
+	//spidrcontrol->setPolarity( true );		// Holes collection
 	//_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
 	//_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
 	spidrcontrol->setPixelDepth( deviceIndex, 12 );
@@ -122,7 +124,7 @@ void QCstmVisualization::Configuration(bool reset) {//TODO: should be part of pa
 	int trig_mode      = 4;     // Auto-trigger mode
 	int trig_length_us = 5000;  // This time shouldn't be longer than the period defined by trig_freq_hz
 	int trig_freq_hz   = (int) ( 1. / (2.*((double)trig_length_us/1000000.)) );   // Make the period double the trig_len
-	cout << "Configured freq is " << trig_freq_hz << "Hz" << endl;
+	cout << "[INFO] Configured freq is " << trig_freq_hz << "Hz" << endl;
 	int nr_of_triggers = nTriggers;    // This is the number of shutter open i get
 	//int trig_pulse_count;
 	spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,

@@ -8,8 +8,9 @@
 
 #include <map>
 #include <set>
-using namespace std;
+#include <vector>
 
+using namespace std;
 
 class SpidrController;
 class SpidrDaq;
@@ -32,7 +33,6 @@ public:
 };
 
 
-
 class ThlScan {
 
 public:
@@ -46,12 +46,14 @@ public:
 	void DoScan(int dac_code, int setId, int numberOfLoops = -1, bool blindScan = false);
 	int SetEqualizationMask(int spacing, int offset_x, int offset_y);
 	void ClearMask(bool ClearMask = true);
-	void ExtractScanInfo(int * data, int size_in_bytes, int thl);
+	int ExtractScanInfo(int * data, int size_in_bytes, int thl);
 	void UpdateChart(int setId, int thlValue);
 	void ExtractStatsOnChart(int setId);
 	ScanResults GetScanResults() { return _results; };
 	int NumberOfNonReactingPixels();
+	vector<int> GetNonReactingPixels();
 	void SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj);
+	void SetStopWhenPlateau(bool b) { _stopWhenPlateau = b; };
 
 	Mpx3EqualizationResults * DeliverPreliminaryEqualization(ScanResults);
 
@@ -76,6 +78,7 @@ private:
 	map<int, int> _pixelCountsMap;
 	// pixelId, reactive thl
 	map<int, int> _pixelReactiveTHL;
+	int _nReactivePixels;
 
 	// Last scan boundaries
 	// This information could be useful for a next scan
@@ -83,6 +86,7 @@ private:
 	int _detectedScanBoundary_H;
 
 	set<int> _maskedSet;
+	bool _stopWhenPlateau;
 
 };
 

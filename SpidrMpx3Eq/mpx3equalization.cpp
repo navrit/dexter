@@ -64,21 +64,12 @@ Mpx3Equalization::Mpx3Equalization(QApplication * coreApp, Ui::Mpx3GUI * ui)
 	// Signals and slots
 	SetupSignalsAndSlots();
 
-	// some randon numbers
-	/*
-	srand (time(NULL));
-	int noise[256*256] = {0};
-	for(unsigned u = 0; u < 4;u++){
-	    for(unsigned w = 0; w < 256*256;w++)
-	      noise[w] = rand()%64;
-	_ui->_intermediatePlot->addData(noise,256,256); //Add a new plot/frame.
-	_ui->_intermediatePlot->setActive(u); //Activate the last plot (the new one)
-	  }
-	 */
 }
+
 Mpx3Equalization::Mpx3Equalization() {
 
 }
+
 void Mpx3Equalization::SetLimits(){
 
 	//
@@ -131,7 +122,16 @@ void Mpx3Equalization::StartEqualization() {
 	//setId = FineTunning(setId, MPX3RX_DAC_DISC_L);
 
 	// 4) Write the result
+	SaveEqualization();
+
+}
+
+void Mpx3Equalization::SaveEqualization() {
+
+	// Binary file
 	_eqresults->WriteAdjBinaryFile("adj");
+	// Masked pixels
+	_eqresults->WriteMaskBinaryFile("mask");
 
 }
 
@@ -185,6 +185,7 @@ int Mpx3Equalization::PrepareInterpolation(int setId, int DAC_Disc_code) {
 	if( DAC_Disc_code == MPX3RX_DAC_DISC_H ) SetAllAdjustmentBits(0x0, global_adj);
 
 	// Let's assume the mean falls at the equalization target
+	tscan_opt_adj0->SetStopWhenPlateau(true);
 	tscan_opt_adj0->DoScan( MPX3RX_DAC_THRESH_0, setId++, -1 ); // -1: Do all loops
 	tscan_opt_adj0->SetConfigurationToScanResults(_opt_MPX3RX_DAC_DISC_L, global_adj);
 	ScanResults res_opt_adj0 = tscan_opt_adj0->GetScanResults();
@@ -219,6 +220,7 @@ int Mpx3Equalization::PrepareInterpolation(int setId, int DAC_Disc_code) {
 	if( DAC_Disc_code == MPX3RX_DAC_DISC_H ) SetAllAdjustmentBits(0x0, global_adj);
 
 	// Let's assume the mean falls at the equalization target
+	tscan_opt_adj5->SetStopWhenPlateau(true);
 	tscan_opt_adj5->DoScan( MPX3RX_DAC_THRESH_0, setId++, -1 ); // -1: Do all loops
 	int nNonReactive = tscan_opt_adj5->NumberOfNonReactingPixels();
 	if ( nNonReactive > 0 ) {
@@ -290,8 +292,17 @@ int Mpx3Equalization::PrepareInterpolation(int setId, int DAC_Disc_code) {
 	_ui->_intermediatePlot->setActive( 0 );
 
 	// This last scan is in principle the good Scan.
-	// It may need fine tunning.  Append it to the scan list
+	// It may need fine tuning.  Append it to the scan list
 	_scans.push_back( tscan_opt_ext );
+
+	// TODO
+	// For the moment mask the non reactive pixels
+	vector<int> nonReactive = tscan_opt_ext->GetNonReactingPixels();
+	vector<int>::iterator nrItr = nonReactive.begin();
+	for ( ; nrItr != nonReactive.end() ; nrItr++ ) {
+		_eqresults->maskPixel( *nrItr );
+	}
+	SetAllAdjustmentBits();
 
 	return setId;
 }
@@ -339,8 +350,8 @@ int Mpx3Equalization::DAC_Disc_Optimization(int setId, int DAC_Disc_code) {
 	// DAC_DiscL=100
 	Configuration(true);
 	spidrcontrol->setDac( _deviceIndex, DAC_Disc_code, 100 );
-	//_tscan->DoScan( MPX3RX_DAC_TABLE[ MPX3RX_DAC_THRESH_0 ].code );
-	tscan->DoScan( MPX3RX_DAC_THRESH_0, setId++, 2 );
+	// This is a scan that I can truncate early ... I don't need to go all the way
+	tscan->DoScan( MPX3RX_DAC_THRESH_0, setId++, 1 );
 	tscan->SetConfigurationToScanResults(100, 0);
 	ScanResults res = tscan->GetScanResults();
 
@@ -349,9 +360,6 @@ int Mpx3Equalization::DAC_Disc_Optimization(int setId, int DAC_Disc_code) {
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// 2) Scan with MPX3RX_DAC_DISC_L = 150
-	// New limits --> ask the last scan
-	SetMinScan( tscan->GetDetectedLowScanBoundary() );
-	SetMaxScan( tscan->GetDetectedHighScanBoundary() );
 
 	ThlScan * tscan_150 = new ThlScan(_ui->_histoWidget, _ui->_intermediatePlot, this);
 	tscan_150->ConnectToHardware(spidrcontrol, spidrdaq);
@@ -367,8 +375,7 @@ int Mpx3Equalization::DAC_Disc_Optimization(int setId, int DAC_Disc_code) {
 
 	// DAC_DiscL=150
 	spidrcontrol->setDac( _deviceIndex, DAC_Disc_code, 150 );
-	//_tscan->DoScan( MPX3RX_DAC_TABLE[ MPX3RX_DAC_THRESH_0 ].code );
-	tscan_150->DoScan( MPX3RX_DAC_THRESH_0, setId++, 2 );
+	tscan_150->DoScan( MPX3RX_DAC_THRESH_0, setId++, 1 );
 	tscan_150->SetConfigurationToScanResults(150, 0);
 	ScanResults res_150 = tscan_150->GetScanResults();
 
@@ -419,21 +426,33 @@ void Mpx3Equalization::SetAllAdjustmentBits() {
 
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
+	if( !spidrcontrol ) {
+		QMessageBox::information(this, tr("Clear configuration"), tr("The system is disconnected. Nothing to clear.") );
+		return;
+	}
+
+	// Adj bits
 	pair<int, int> pix;
+
 	for ( int i = 0 ; i < __matrix_size ; i++ ) {
 		pix = XtoXY(i, __array_size_x);
 		spidrcontrol->configPixelMpx3rx(pix.first, pix.second, _eqresults->GetPixelAdj(i), 0x0 );
 	}
 
-	// Set the mask
+	// Mask
 	if ( _eqresults->GetNMaskedPixels() > 0 ) {
 		QSet<int> tomask = _eqresults->GetMaskedPixels();
 		QSet<int>::iterator i = tomask.begin();
 		QSet<int>::iterator iE = tomask.end();
 		pair<int, int> pix;
 		for ( ; i != iE ; i++ ) {
-			pix = XtoXY( (*i), __matrix_size_x );//John, What coordinate system does the chip use? Top left = (0,0)?
+			pix = XtoXY( (*i), __matrix_size_x ); //John, What coordinate system does the chip use? Top left = (0,0)?
 			spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second);
+		}
+	} else { // When the mask is empty go ahead and set all to zero
+		for ( int i = 0 ; i < __matrix_size ; i++ ) {
+			pix = XtoXY(i, __array_size_x);
+			spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
 		}
 	}
 
@@ -441,10 +460,26 @@ void Mpx3Equalization::SetAllAdjustmentBits() {
 
 }
 
+void Mpx3Equalization::ClearAllAdjustmentBits() {
+
+	// Clear all data structures
+	_eqresults->ClearAdj();
+	_eqresults->ClearMasked();
+	_eqresults->ClearReactiveThresholds();
+
+	// And now set it up
+	SetAllAdjustmentBits();
+
+}
 
 void Mpx3Equalization::SetAllAdjustmentBits(int val_L, int val_H) {
 
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
+	if( !spidrcontrol ) {
+		QMessageBox::information(this, tr("Clear configuration"), tr("The system is disconnected. Nothing to clear.") );
+		return;
+	}
 
 	// Adjustment bits
 	pair<int, int> pix;
@@ -512,6 +547,8 @@ void Mpx3Equalization::LoadEqualization(){
 		_eqresults = new Mpx3EqualizationResults;
 	}
 	_eqresults->ReadAdjBinaryFile("adj");
+	_eqresults->ReadMaskBinaryFile("mask");
+
 
 	// Display the equalization
 	int * adj_matrix = _eqresults->GetAdjustementMatrix();
@@ -674,11 +711,22 @@ int Mpx3EqualizationResults::GetPixelReactiveThl(int pixId) {
 	return _pixId_Thl[pixId];
 }
 
+void Mpx3EqualizationResults::ReadAdjBinaryFile(QString fn) {
+
+	cout << "[INFO] Read Adj binary file: " << fn.toStdString() << endl;
+	QFile file(fn);
+	if (!file.open(QIODevice::ReadOnly)) return;
+	_pixId_Adj = file.readAll();
+	file.close();
+
+}
+
 void Mpx3EqualizationResults::WriteAdjBinaryFile(QString fn) {
 
 	//ofstream fd;
+	cout << "Writing adj file to: " << fn.toStdString() << endl;
 	QFile file(fn);
-	if (!file.open(QIODevice::ReadOnly)) return;
+	if (!file.open(QIODevice::WriteOnly)) return;
 	file.write(_pixId_Adj);
 	/*fd.open (fn.toStdString().c_str(), ios::out | ios::binary);
 	cout << "Writing adjustment matrix to: " << fn.toStdString() << endl;
@@ -690,15 +738,45 @@ void Mpx3EqualizationResults::WriteAdjBinaryFile(QString fn) {
 	}
 
 	fd.close();*/
+	file.close();
 
 }
 
-void Mpx3EqualizationResults::ReadAdjBinaryFile(QString fn) {
-  std::cout << "Read Adj Binary called for " << fn.toStdString() << std::endl;
-  QFile file(fn);
-  if (!file.open(QIODevice::ReadOnly)) return;
-  _pixId_Adj = file.readAll();
+void Mpx3EqualizationResults::WriteMaskBinaryFile(QString fn) {
+
+	ofstream fd;
+	fd.open (fn.toStdString().c_str(), ios::out);
+	cout << "Writing mask file to: " << fn.toStdString() << endl;
+
+	QSet<int>::iterator i = maskedPixels.begin();
+	QSet<int>::iterator iE = maskedPixels.end();
+
+	for ( ; i != iE ; i++ ) {
+		fd << (*i) << endl;
+	}
+
 }
+
+void Mpx3EqualizationResults::ReadMaskBinaryFile(QString fn) {
+
+	ifstream fd;
+	fd.open (fn.toStdString().c_str(), ios::out);
+	cout << "Reading mask file from: " << fn.toStdString() << endl;
+
+	int val;
+	while ( fd.good() ) {
+
+		if( fd.eof() ) break;
+
+		fd >> val;
+		//cout << val << endl;
+		maskedPixels.insert( val );
+
+	}
+
+}
+
+
 
 
 /**
@@ -712,6 +790,24 @@ int * Mpx3EqualizationResults::GetAdjustementMatrix() {
 	}
 
 	return mat;
+}
+
+void Mpx3EqualizationResults::ClearAdj(){
+
+	if ( _pixId_Adj.size() == __matrix_size ) {
+		for ( int i = 0 ; i < __matrix_size ; i++ ) {
+			_pixId_Adj[i] = 0x0;
+		}
+	} else {
+		cout << "[ERROR] the pixAdj ByteArray doesn't match the matrix size Mpx3EqualizationResults::ClearAdj()" << endl;
+	}
+
+}
+void Mpx3EqualizationResults::ClearMasked(){
+	maskedPixels.clear();
+}
+void Mpx3EqualizationResults::ClearReactiveThresholds(){
+	_pixId_Thl.clear();
 }
 
 void Mpx3EqualizationResults::ExtrapolateAdjToTarget(int target, double eta_Adj_THL) {

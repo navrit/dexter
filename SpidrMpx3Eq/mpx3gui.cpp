@@ -92,8 +92,10 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 	connect( this, SIGNAL(frame_changed()), _ui->visualizationWidget, SLOT(on_frame_changed()) );
 
 	connect(_ui->actionSave_data, SIGNAL(triggered()), this, SLOT(save_data()));
+	connect(_ui->actionSave_Equalization, SIGNAL(triggered()), _equalization, SLOT(SaveEqualization()));
 	connect(_ui->actionOpen_data, SIGNAL(triggered()), this, SLOT(open_data()));
 	connect(_ui->actionClear_data, SIGNAL(triggered()), this, SLOT(clear_data()));
+	connect(_ui->actionClear_configuration, SIGNAL(triggered()), this, SLOT(clear_configuration()) );
 
 	// Inform every module of changes in connection status
 	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _dacs, SLOT( ConnectionStatusChanged() ) );
@@ -273,6 +275,32 @@ void Mpx3GUI::set_mode_integral(){
 
 void Mpx3GUI::set_mode_normal(){
 	mode = 0;
+}
+
+void Mpx3GUI::clear_configuration(){
+
+	// Clear adjustement bits
+	QMessageBox::StandardButton ans = QMessageBox::question(this, tr("Clear configuration"), tr("The adjustment matrix and the pixel mask will be cleared.  Continue ?") );
+	if ( ans == QMessageBox::No ) return;
+
+	bool noEqualization = false;
+	if ( _equalization ) {
+		if ( _equalization->GetEqualizationResults() ) {
+
+			cout << "[INFO] clearing adjustment bits and mask." << endl;
+
+			_equalization->ClearAllAdjustmentBits();
+
+		} else {
+			noEqualization = true;
+		}
+
+	} else { noEqualization = true; }
+
+	if ( noEqualization ) {
+		cout << "[INFO] No equalization has been loaded. Nothing to clear." << endl;
+	}
+
 }
 
 void Mpx3GUI::clear_data(){

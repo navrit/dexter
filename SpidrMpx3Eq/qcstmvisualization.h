@@ -26,7 +26,7 @@ public:
 /* Signals and slots for intercommunication between the different tabs goes here.
  * S&S for communication between members of this tab can be set in the .ui file or constructor.
  */
-signals:
+//signals:
 
 public slots:
   void set_gradient(QString name);

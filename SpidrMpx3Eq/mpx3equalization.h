@@ -56,6 +56,12 @@ public:
 	void ExtrapolateAdjToTarget(int target, double eta_Adj_THL);
 	void WriteAdjBinaryFile(QString fn);
 	void ReadAdjBinaryFile(QString fn);
+	void WriteMaskBinaryFile(QString fn);
+	void ReadMaskBinaryFile(QString fn);
+
+	void ClearAdj();
+	void ClearMasked();
+	void ClearReactiveThresholds();
 
 private:
 	// pixel Id, adjustment
@@ -98,6 +104,7 @@ public:
 	void Configuration(bool reset);
 	void SetAllAdjustmentBits(int val_L, int val_H);
 	void SetAllAdjustmentBits();
+	void ClearAllAdjustmentBits();
 
 	void AppendToTextBrowser(QString s);
 	void ClearTextBrowser();
@@ -115,6 +122,9 @@ public:
 	void LoadEqualization();
 
 private:
+
+	// Equalization info
+	Mpx3EqualizationResults * _eqresults;
 
 	// Connectivity between modules
 	Mpx3GUI * _mpx3gui;
@@ -146,8 +156,6 @@ private:
 	// DACs
 	DACs * _dacs;
 
-	//
-	Mpx3EqualizationResults * _eqresults;
 
 	// Important Equalization values
 	double _eta_THL_DAC_DiscL;
@@ -158,6 +166,9 @@ private:
 	int _opt_MPX3RX_DAC_DISC_H;
 	double _eta_Adj_THL;
 	double _cut_Adj_THL;
+
+public slots:
+	void SaveEqualization();
 
 private slots:
 
