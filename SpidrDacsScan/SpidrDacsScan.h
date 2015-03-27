@@ -19,6 +19,7 @@ class SpidrDacsScan : public QDialog, Ui_SpidrDacsScanDialog
   void connectOrDisconnect();
   void changeDeviceIndex( int index );
   void changeDeviceType( int index );
+  void changeAdcFullScale( int index );
   void startOrStopScan();
   void scan();
 

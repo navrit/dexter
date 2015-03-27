@@ -105,6 +105,9 @@ SpidrDacsScan::SpidrDacsScan()
   _comboBoxAdcSamples->addItem( "4 samples" );
   _comboBoxAdcSamples->addItem( "8 samples" );
   _comboBoxAdcSamples->setCurrentIndex( 3 );
+  _comboBoxAdcFullScale->addItem( "1.5V" );
+  _comboBoxAdcFullScale->addItem( "3.3V" );
+  _comboBoxAdcFullScale->setCurrentIndex( 0 );
   for( i=1; i<=4; ++i )
     _comboBoxPenWidth->addItem( QString::number(i) );
   _comboBoxDeviceType->addItem( "T3" );
@@ -149,6 +152,8 @@ SpidrDacsScan::SpidrDacsScan()
 	   this, SLOT( changeDeviceIndex(int) ) );
   connect( _comboBoxDeviceType, SIGNAL( currentIndexChanged(int) ),
 	   this, SLOT( changeDeviceType(int) ) );
+  connect( _comboBoxAdcFullScale, SIGNAL( currentIndexChanged(int) ),
+	   this, SLOT( changeAdcFullScale(int) ) );
   connect( _pushButtonScan, SIGNAL( clicked() ),
 	   this, SLOT( startOrStopScan() ) );
 }
@@ -251,7 +256,7 @@ void SpidrDacsScan::changeDeviceType( int index )
     case MPX_TYPE_MPX31:
       _dacCount     = MPX3_DAC_COUNT;
       _dacTable     = &MPX3_DAC_TABLE[0];
-      _adcFullScale = 1.5;
+      //_adcFullScale = 1.5;
       _adcRange     = 65536.0; // 16-bit ADC
       _plot->yAxis->setRange( 0, _adcFullScale );
 	//_plot->yAxis->setRange( 0, 65536 );
@@ -262,7 +267,7 @@ void SpidrDacsScan::changeDeviceType( int index )
     case MPX_TYPE_MPX3RX:
       _dacCount     = MPX3RX_DAC_COUNT;
       _dacTable     = &MPX3RX_DAC_TABLE[0];
-      _adcFullScale = 1.5;
+      //_adcFullScale = 1.5;
       _adcRange     = 65536.0; // 16-bit ADC
       _plot->yAxis->setRange( 0, _adcFullScale );
       //_plot->yAxis->setRange( 0, 65536 );
@@ -273,7 +278,7 @@ void SpidrDacsScan::changeDeviceType( int index )
     default:
       _dacCount     = TPX3_DAC_COUNT_TO_SET;
       _dacTable     = &TPX3_DAC_TABLE[0];
-      _adcFullScale = 1.5;
+      //_adcFullScale = 1.5;
       _adcRange     = 4096.0; // 12-bit ADC
       _plot->yAxis->setRange( 0, _adcFullScale );
       //_plot->yAxis->setRange( 0, 4096 );
@@ -285,6 +290,19 @@ void SpidrDacsScan::changeDeviceType( int index )
   _plot->clearGraphs();
   _plot->legend->setVisible( false );
   _plot->replot();
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDacsScan::changeAdcFullScale( int index )
+{
+  if( index < 0 ) return;
+  if( index == 0 ) _adcFullScale = 1.5;
+  if( index == 1 ) _adcFullScale = 3.3;
+  if( _adcFullScale > 2.0 )
+    _plot->yAxis->setRange( 0, 2.0 );
+  else
+    _plot->yAxis->setRange( 0, _adcFullScale );
 }
 
 // ----------------------------------------------------------------------------

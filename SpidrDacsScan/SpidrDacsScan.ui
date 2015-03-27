@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>725</width>
+    <width>894</width>
     <height>731</height>
    </rect>
   </property>
@@ -54,7 +54,7 @@
          <rect>
           <x>10</x>
           <y>28</y>
-          <width>691</width>
+          <width>859</width>
           <height>25</height>
          </rect>
         </property>
@@ -334,7 +334,7 @@
          <rect>
           <x>11</x>
           <y>20</y>
-          <width>692</width>
+          <width>861</width>
           <height>25</height>
          </rect>
         </property>
@@ -350,6 +350,18 @@
          </property>
          <item>
           <widget class="QComboBox" name="_comboBoxDeviceIndex">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>80</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="maximumSize">
             <size>
              <width>120</width>
@@ -492,6 +504,9 @@
          </item>
          <item>
           <widget class="QComboBox" name="_comboBoxAdcSamples"/>
+         </item>
+         <item>
+          <widget class="QComboBox" name="_comboBoxAdcFullScale"/>
          </item>
          <item>
           <spacer name="horizontalSpacer">
