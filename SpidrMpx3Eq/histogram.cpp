@@ -21,7 +21,7 @@ void histogram::getSubsampled(unsigned reduction, QVector<unsigned> *data){
       unsigned sum = 0;
       for(unsigned w = 0; (w < reduction) && (w+u < nBins);w++)
         sum += bins[u+w];
-      data->append(sum);
+        data->append(sum);
     }
 }
 

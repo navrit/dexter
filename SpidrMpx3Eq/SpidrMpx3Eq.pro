@@ -49,7 +49,11 @@ SOURCES += main.cpp \
     qcstmplothistogram.cpp \ 
     qcstmequalization.cpp \
     qcstmvisualization.cpp \
-    qcstmdacs.cpp
+    qcstmdacs.cpp \
+    gradientwidget.cpp \
+    qcstmglvisualization.cpp \
+    qcstmglplot.cpp \
+    gradient.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -62,7 +66,11 @@ HEADERS += mpx3gui.h \
     qcstmplothistogram.h \ 
     qcstmequalization.h \
     qcstmvisualization.h \
-    qcstmdacs.h
+    qcstmdacs.h \
+    gradientwidget.h \
+    qcstmglvisualization.h \
+    qcstmglplot.h \
+    gradient.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DACs.h
@@ -71,4 +79,9 @@ HEADERS += mpx3equalization.h
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \
     qcstmvisualization.ui \
-    qcstmdacs.ui
+    qcstmdacs.ui \
+    gradientwidget.ui \
+    qcstmglvisualization.ui
+
+DISTFILES += \
+    CHANGES.txt

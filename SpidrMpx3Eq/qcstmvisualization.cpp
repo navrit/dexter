@@ -29,7 +29,6 @@ QCstmVisualization::~QCstmVisualization()
 }
 
 void QCstmVisualization::SignalsAndSlots(){
-
 	connect( ui->startDataTaking, SIGNAL( clicked() ), this, SLOT( StartDataTaking() ) );
 
 }

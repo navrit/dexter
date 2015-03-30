@@ -21,8 +21,6 @@ QCstmPlotHistogram::QCstmPlotHistogram(QWidget*& parent)
     lowClamp->point1->setCoords(-DBL_MAX,0); lowClamp->point2->setCoords(-DBL_MAX,1);
     highClamp->point1->setCoords(DBL_MAX,0); highClamp->point2->setCoords(DBL_MAX,1);
     this->addItem(lowClamp); this->addItem(highClamp);
-
-
 }
 
 QCstmPlotHistogram::~QCstmPlotHistogram()

@@ -47,13 +47,22 @@ public:
 	void SetPixelReactiveThl(int pixId, int thl);
 	int GetPixelAdj(int pixId);
 	int GetPixelReactiveThl(int pixId);
-	void maskPixel(int pixId){maskedPixels.insert(pixId);}
-	void unmaskPixel(int pixId){if(maskedPixels.contains(pixId)) maskedPixels.remove(pixId);}
-	int GetNMaskedPixels(){maskedPixels.size();}
-	QSet<int> GetMaskedPixels(){return maskedPixels;}
+	void maskPixel(int pixId){
+	  maskedPixels.insert(pixId);
+	}
+	void unmaskPixel(int pixId){
+	  if(maskedPixels.contains(pixId)) maskedPixels.remove(pixId);
+	}
+	int GetNMaskedPixels(){
+	  maskedPixels.size();
+	}
+	QSet<int> GetMaskedPixels(){
+	  return maskedPixels;
+	}
 	int * GetAdjustementMatrix();
 
 	void ExtrapolateAdjToTarget(int target, double eta_Adj_THL);
+
 	void WriteAdjBinaryFile(QString fn);
 	void ReadAdjBinaryFile(QString fn);
 	void WriteMaskBinaryFile(QString fn);
@@ -86,7 +95,7 @@ public:
 	int GetNPixelsActive(int * buffer, int size, verblev verbose);
 	void GetSlopeAndCut_THL_IDAC_DISC(ScanResults, ScanResults, double &, double &);
 	void GetSlopeAndCut_Adj_THL(ScanResults, ScanResults, double &, double &);
-	void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
+	void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
 
 	double EvalLinear(double eta, double cut, double x);
 

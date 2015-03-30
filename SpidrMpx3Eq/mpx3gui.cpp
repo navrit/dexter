@@ -59,6 +59,8 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	// Signals and slots for this part
 	SetupSignalsAndSlots();
 
+	_ui->glWidget->SetMpx3GUI(this);
+
 	// Connect automatically
 	//_moduleConn->Connection();
 }
@@ -165,6 +167,7 @@ void Mpx3GUI::establish_connection() {
 }
 
 void Mpx3GUI::generateFrame(){
+	printf("Generating a frame!\n");
 	double fx = ((double)8*rand()/RAND_MAX)/(nx), fy = (8*(double)rand()/RAND_MAX)/ny;
 	int data[nx*ny];
 	for(int i = 0; i < ny; i++)
@@ -184,6 +187,7 @@ void Mpx3GUI::addFrame(int * origframe){
 		data.push_back(frame);
 		hists.push_back(new histogram(frame, nx*ny, 1));
 		emit frame_added();
+		emit frames_reload(data);
 	}
 	else if(1 == mode){ // Summing mode
 
@@ -203,6 +207,10 @@ void Mpx3GUI::addFrame(int * origframe){
 		//hists.last()->addCount(frame, nx*ny);
 		emit frame_changed();
 	}
+}
+
+QPoint Mpx3GUI::getSize(){
+  return QPoint(nx, ny);
 }
 
 void Mpx3GUI::getSize(int *x, int *y){
@@ -255,7 +263,7 @@ void Mpx3GUI::open_data(){
 		QMessageBox::warning ( this, tr("Error opening data"), tr( messg.c_str() ) );
 		return;
 	}
-	data.clear();//TODO: do proper clearing, notify delegates
+	clear_data();
 	saveFile.read((char*)&nx, sizeof(nx));
 	saveFile.read((char*)&ny, sizeof(ny));
 	int nLayers;

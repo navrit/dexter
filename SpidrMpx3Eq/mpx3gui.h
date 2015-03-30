@@ -74,7 +74,7 @@ public:
 	explicit Mpx3GUI(QApplication * coreApp, QWidget *parent = 0);
 	~Mpx3GUI();
 	void SetupSignalsAndSlots();
-	Ui::Mpx3GUI * GetUI() { return _ui; };
+	Ui::Mpx3GUI * GetUI() { return _ui; }
 	//ModuleConnection * GetModuleConnection(){ return _moduleConn; }
 
 	void timerEvent( QTimerEvent * );
@@ -99,9 +99,7 @@ private:
 	SpidrDaq * _spidrdaq = nullptr;
 
 	//Data Stores
-	vector<int*> data;
-	/*QVector<int> dataSize;*/
-	//unsigned nData =0;
+	QVector<int*> data;
 	int ny = 256;
 	int nx = 256;
 	vector<histogram*> hists;
@@ -109,7 +107,6 @@ public:
 	Mpx3Equalization* getEqualization(){return _equalization;}
 	SpidrController * GetSpidrController(){ return _spidrcontrol; }
 	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
-	void generateFrame(); //Debugging function to generate data when not connected
 	void addFrame(int *frame);
 	int* getFrame(int index){
 	  if(-1 == index)
@@ -122,7 +119,7 @@ public:
 	  return hists[index];
 	}
 
-	void getSize(QPoint *size);
+	QPoint  getSize();
 	void getSize(int *x, int *y);
 	int getX();
 	int getY();
@@ -135,11 +132,13 @@ signals:
 	void data_cleared();
 	void frame_added();
 	void frame_changed();
+	void frames_reload(QVector<int*>);
 	void availible_gradients_changed(QStringList gradients);
 	void gradient_added(QString gradient);	
 	void ConnectionStatusChanged(bool); //TODO: emit false when connection is lost for whatever reason.
 
 	public slots:
+	void generateFrame(); //Debugging function to generate data when not connected
 	void establish_connection();
 	void clear_data();
 	void save_data();

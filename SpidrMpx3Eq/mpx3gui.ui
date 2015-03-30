@@ -21,7 +21,7 @@
        <string>DAC Control</string>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -1305,6 +1305,16 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="visualizationGL">
+       <attribute name="title">
+        <string>GL</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <item>
+         <widget class="QCstmGLVisualization" name="glWidget" native="true"/>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="EqualizationTab">
        <attribute name="title">
         <string>[NEW] Equalization</string>
@@ -1466,12 +1476,6 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>BarChart</class>
-   <extends>QWidget</extends>
-   <header>barchart.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>QCstmPlotHeatmap</class>
    <extends>QWidget</extends>
    <header>qcstmplotheatmap.h</header>
@@ -1486,6 +1490,12 @@
     <slot>changeRange(QCPRange)</slot>
     <slot>setActive(int)</slot>
    </slots>
+  </customwidget>
+  <customwidget>
+   <class>BarChart</class>
+   <extends>QWidget</extends>
+   <header>barchart.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>QCstmVisualization</class>
@@ -1511,6 +1521,15 @@
    <header>qcstmdacs.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>QCstmGLVisualization</class>
+   <extends>QWidget</extends>
+   <header>qcstmglvisualization.h</header>
+   <container>1</container>
+   <slots>
+    <slot>on_frame_added()</slot>
+   </slots>
+  </customwidget>
  </customwidgets>
  <resources/>
  <connections>
@@ -1521,8 +1540,8 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>789</x>
-     <y>252</y>
+     <x>991</x>
+     <y>113</y>
     </hint>
     <hint type="destinationlabel">
      <x>789</x>
@@ -1541,8 +1560,8 @@
      <y>93</y>
     </hint>
     <hint type="destinationlabel">
-     <x>789</x>
-     <y>252</y>
+     <x>991</x>
+     <y>113</y>
     </hint>
    </hints>
   </connection>
