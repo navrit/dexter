@@ -1,6 +1,6 @@
 #ifndef GRADIENT_H
 #define GRADIENT_H
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLFunctions>
 #include <QVector>
 #include <QMap>
 #include <QColor>

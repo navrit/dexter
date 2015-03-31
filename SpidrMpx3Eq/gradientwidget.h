@@ -2,6 +2,7 @@
 #define GRADIENTWIDGET_H
 
 #include <QWidget>
+#include "qcustomplot.h"
 #include "qcstmglplot.h"
 
 class GradientWidget : public QWidget
@@ -10,7 +11,7 @@ class GradientWidget : public QWidget
   Gradient*m_gradient = nullptr;
   QImage *m_gradient_image = nullptr;
   QPixmap m_gradient_pixmap;
-  int m_max = -100, m_min = 100;
+  float m_max = 100, m_min = -100;
   float m_label_spacing;
   int m_nlabels = 21, m_barWidth = 100;
 public:
@@ -24,6 +25,7 @@ signals:
   void range_changed(int min, int max);
 public slots:
   void set_range(int min, int max);
+  void set_range(QCPRange range);
 };
 
 

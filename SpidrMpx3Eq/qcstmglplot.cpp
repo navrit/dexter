@@ -72,7 +72,7 @@ void QCstmGLPlot::initializeGL(){
       frames[k] = new GLint[nx*ny];
       for(int i = 0; i < ny;i++)
         for(int j = 0;j < nx;j++){
-          frames[k][i*nx+j] =100*sin(1.0/ny*i*(k+1)*6.28)*sin(1.0/nx*j*(k+1)*6.28);
+          frames[k][i*nx+j] = 100*sin(1.0/ny*i*(k+1)*6.28)*sin(1.0/nx*j*(k+1)*6.28);
           //printf("%2d ", frames[k][i*nx+j]);
         }
       //printf("\n");
@@ -206,19 +206,23 @@ void QCstmGLPlot::setRange(QCPRange range){
 }
 
 void QCstmGLPlot::setActive(int layer){
+  this->makeCurrent();
   program[0].bind();
   program[0].setUniformValue("layer",layer);
+  this->update();
 }
 
 void QCstmGLPlot::setZoom(float newZoom){
   zoom = newZoom;
   program[0].bind();
   program[0].setUniformValue(zoomLoc, zoom);
+  this->update();
 }
 
 void QCstmGLPlot::setRange(int min, int max){
   program[0].bind();
   program[0].setUniformValue(clampLoc, QSize(min, max));
+  this->update();
 }
 
 void QCstmGLPlot::setOffset(GLfloat x, GLfloat y){

@@ -18,6 +18,9 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   connect(_mpx3gui, SIGNAL(frame_added()), this, SLOT(on_frame_added()));
   connect(_mpx3gui, SIGNAL(frames_reload(QVector<int *>)),ui->glPlot, SLOT(setData(QVector<int*>)));
   connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)),ui->glPlot, SLOT(setRange(QCPRange)));
+  connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), ui->gradientDisplay, SLOT(set_range(QCPRange)));
+  connect(ui->layerSpinner, SIGNAL(valueChanged(int)), ui->glPlot, SLOT(setActive(int)));
+  connect(ui->binWidthSpinner, SIGNAL(valueChanged(int)), ui->histPlot, SLOT(changeBinSize(int)));
 }
 
 void QCstmGLVisualization::on_frame_added(){

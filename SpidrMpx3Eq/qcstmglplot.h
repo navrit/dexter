@@ -14,13 +14,13 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLShader>
 #include <QOpenGLTexture>
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLFunctions_3_1>
 
 #include <cfloat>
 #include <iostream>
 #include <stdio.h>
 
-class QCstmGLPlot : public QOpenGLWidget,  protected QOpenGLFunctions_3_3_Core
+class QCstmGLPlot : public QOpenGLWidget,  protected QOpenGLFunctions_3_1
 {
 Q_OBJECT
 public:

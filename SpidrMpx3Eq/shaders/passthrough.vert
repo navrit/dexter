@@ -1,4 +1,4 @@
-#version 330
+#version 140
 uniform vec2 aspectRatio;
 uniform vec2 offset;
 uniform float zoom;

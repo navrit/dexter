@@ -1,4 +1,4 @@
-#version 330
+#version 140
 varying vec2 texCoords;
 
 uniform vec2 resolution;

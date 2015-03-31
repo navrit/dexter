@@ -38,7 +38,7 @@ void GradientWidget::paintEvent(QPaintEvent *event){ //TODO: caching, auto-forma
   m_label_spacing = (this->height()-spacingBottom-spacingTop)/m_nlabels;
   for(int i = 0; i < m_nlabels; i++){
       QRectF newBounds(30, i*m_label_spacing+spacingTop, this->width()-m_gradient_image->width(), m_label_spacing);
-      label.sprintf(" %.0f", m_min+(m_max-m_min)*(newBounds.y()+0.5*newBounds.height()-spacingTop/2)/span);
+      label.sprintf(" %.0f", m_max-(m_max-m_min)*(newBounds.y()+0.5*newBounds.height()-spacingTop/2)/span);
       painter.drawText(newBounds,Qt::AlignVCenter,
                        label, &boundingBox);
       requiredWidth = (requiredWidth < 30+boundingBox.width()? 30+boundingBox.width() : requiredWidth);
@@ -79,5 +79,10 @@ void GradientWidget::setGradient(Gradient *gradient){
 
 void GradientWidget::set_range(int min, int max){
   m_min = min; m_max = max;
+  this->update();
+}
+
+void GradientWidget::set_range(QCPRange range){
+  m_min = range.lower; m_max = range.upper;
   this->update();
 }
