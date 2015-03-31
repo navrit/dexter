@@ -14,16 +14,11 @@ GradientWidget::~GradientWidget()
 
 void GradientWidget::paintEvent(QPaintEvent *event){ //TODO: caching, auto-formating of labels.
   int requiredWidth = 0;
-  printf("Called paintEvent\n");
   if(!m_gradient_image)
     return;
-  printf("Starting drawing\n");
   QPainter painter(this);
   painter.begin(this);
-  printf("Image size: %d, %d\n", m_gradient_image->width(), m_gradient_image->height());
   m_label_spacing = this->height()/((float) m_nlabels);
-  //painter.drawImage(0,0, *m_gradient_image);
-  //int vpadding= this->fontMetrics().height("0123456789.")/2;
   QRectF boundingBox;
   QString label;
   label.sprintf(" %.0f", m_max);
@@ -73,14 +68,12 @@ void GradientWidget::setGradient(Gradient *gradient){
   m_gradient = gradient;
   QVector<GLfloat> colors = m_gradient->getColorArray();
   delete m_gradient_image;
-  printf("Requesting new image: %d/3, %d\n",colors.length(),1);
   m_gradient_image = new QImage(this->width()/2,this->height(),QImage::Format_RGB32);
   for(int i = 0; i < m_gradient_image->height();i++){
     QRgb *scanline = (QRgb*) m_gradient_image->scanLine(i);
     for(int j = 0; j < m_gradient_image->width();j++)
       scanline[j] = qRgb(255*colors[i*3+0], 255*colors[i*3+1], 255*colors[i*3+2]);
   }
-  //this->repaint();
   this->update();
 }
 

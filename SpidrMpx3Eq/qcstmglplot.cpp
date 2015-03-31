@@ -174,6 +174,9 @@ void QCstmGLPlot::setData(QVector<int *> layers){ //TODO: Set size functions, on
   for(int i = 0; i < layers.count();i++){
     dataTex->setData(0,i,QOpenGLTexture::Red_Integer,QOpenGLTexture::Int32, layers[i]);
   }
+  dataTex->setMagnificationFilter(QOpenGLTexture::Nearest);//Do not interpolate when zooming in.
+  dataTex->setMinificationFilter(QOpenGLTexture::Nearest);
+  this->update();
 }
 
 void QCstmGLPlot::loadFrames(int nx, int ny, int nFrames, GLint **data ){
@@ -184,23 +187,14 @@ void QCstmGLPlot::loadFrames(int nx, int ny, int nFrames, GLint **data ){
     }
   dataTex->setFormat(QOpenGLTexture::R32I);
   dataTex->create(); //glGenTexture
+  dataTex->setLayers(nFrames);
   dataTex->setSize(nx, ny);
   dataTex->bind(0); //bind to unit 0;
   dataTex->setWrapMode(QOpenGLTexture::ClampToEdge);
-  //dataTex->setLayers(nFrames);
   dataTex->allocateStorage();
   dataTex->setData(QOpenGLTexture::Red_Integer, QOpenGLTexture::Int32, data[0]);
-  //}
   dataTex->setMagnificationFilter(QOpenGLTexture::Nearest);//Do not interpolate when zooming in.
   dataTex->setMinificationFilter(QOpenGLTexture::Nearest);
-  printf("Using version: %s\n", glGetString(GL_VERSION));
-  QVector<GLint> buffer(nx*ny);
-  glGetTexImage(GL_TEXTURE_2D,0, GL_RED_INTEGER, GL_INT, buffer.data() );
-  for(int i = 0; i < ny; i++){
-    for(int j = 0; j < nx; j++)
-      printf("%3d ", buffer[i*nx+j]);
-    puts("");
-    }
   this->update();
 }
 

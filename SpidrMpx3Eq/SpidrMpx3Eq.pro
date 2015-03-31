@@ -52,8 +52,7 @@ SOURCES += main.cpp \
     gradientwidget.cpp \
     qcstmglvisualization.cpp \
     qcstmglplot.cpp \
-    gradient.cpp \
-    qglheatmap.cpp
+    gradient.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -71,8 +70,7 @@ HEADERS += mpx3gui.h \
     qcstmglvisualization.h \
     qcstmglplot.h \
     gradient.h \
-    mpx3eq_common.h \
-    qglheatmap.h
+    mpx3eq_common.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DACs.h
