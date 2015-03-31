@@ -16,7 +16,6 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 	QT += core gui
 }
 QT += network opengl
-
 CONFIG   += debug c++11
 
 CONFIG(debug, debug|release) {
@@ -53,7 +52,8 @@ SOURCES += main.cpp \
     gradientwidget.cpp \
     qcstmglvisualization.cpp \
     qcstmglplot.cpp \
-    gradient.cpp
+    gradient.cpp \
+    qglheatmap.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -70,7 +70,9 @@ HEADERS += mpx3gui.h \
     gradientwidget.h \
     qcstmglvisualization.h \
     qcstmglplot.h \
-    gradient.h
+    gradient.h \
+    mpx3eq_common.h \
+    qglheatmap.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DACs.h
@@ -84,4 +86,13 @@ FORMS    += mpx3gui.ui \
     qcstmglvisualization.ui
 
 DISTFILES += \
-    CHANGES.txt
+    CHANGES.txt \
+    shaders/heatmap.frag \
+    shaders/passthrough.vert
+
+
+    copydata.commands += $(COPY_DIR)  \"$$PWD/shaders\" \"$$DESTDIR/shaders\"
+    first.depends = $(first) copydata
+    export(first.depends)
+    export(copydata.commands)
+    QMAKE_EXTRA_TARGETS += first copydata

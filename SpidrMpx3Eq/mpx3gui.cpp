@@ -169,11 +169,11 @@ void Mpx3GUI::establish_connection() {
 void Mpx3GUI::generateFrame(){
 	printf("Generating a frame!\n");
 	double fx = ((double)8*rand()/RAND_MAX)/(nx), fy = (8*(double)rand()/RAND_MAX)/ny;
-	int data[nx*ny];
+	QVector<int> data(nx*ny);
 	for(int i = 0; i < ny; i++)
 		for(int j = 0; j < nx; j++)
 			data[i*nx+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
-	addFrame(data);
+	addFrame(data.data());
 }
 
 void Mpx3GUI::addFrame(int * origframe){

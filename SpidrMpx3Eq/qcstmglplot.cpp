@@ -5,7 +5,7 @@
 QCstmGLPlot::QCstmGLPlot(QWidget* &parent){
   this->setParent(parent);
   program =  new QOpenGLShaderProgram[3];
-  dataTex = new QOpenGLTexture(QOpenGLTexture::Target2D);
+  dataTex = new QOpenGLTexture(QOpenGLTexture::Target2DArray);
   gradientTex = new QOpenGLTexture(QOpenGLTexture::Target1D);
   //atlas.addAscii();
   this->setFocusPolicy(Qt::WheelFocus);
@@ -54,7 +54,7 @@ void QCstmGLPlot::initializeGL(){
   ny = 256;
   nLayers  = 1;
 
-  grabShadersFrom("/home/roel/projects/SPIDR/SPIDR/software/branches/Mpix3GUI_UNSTABLE/SpidrMpx3Eq/shaders");//TODO: include shaders in build directory.
+  grabShadersFrom("./shaders");
   program[0].bindAttributeLocation("position",0);
   program[0].bindAttributeLocation("texCoordsIn",1);
   program[0].addShader(vertexShaders["passthrough"]);
@@ -159,14 +159,16 @@ void QCstmGLPlot::loadGradient(){
 }
 
 void QCstmGLPlot::setData(QVector<int *> layers){ //TODO: Set size functions, only grow nLayes when necessary.
+  this->makeCurrent();
   if(dataTex->isCreated()){
       dataTex->destroy();
     }
-  dataTex->create(); //glGenTexture
-  dataTex->bind(0); //bind to unit 0;
   dataTex->setFormat(QOpenGLTexture::R32I);
   dataTex->setWrapMode(QOpenGLTexture::ClampToEdge);
+
+  dataTex->create(); //glGenTexture
   dataTex->setLayers(layers.count());
+  dataTex->bind(0); //bind to unit 0;
   //dataTex->setSize(nx, ny);
   dataTex->allocateStorage();
   for(int i = 0; i < layers.count();i++){
@@ -175,24 +177,25 @@ void QCstmGLPlot::setData(QVector<int *> layers){ //TODO: Set size functions, on
 }
 
 void QCstmGLPlot::loadFrames(int nx, int ny, int nFrames, GLint **data ){
+  this->makeCurrent();
   //this->makeCurrent();
   if(dataTex->isCreated()){
       dataTex->destroy();
     }
-  dataTex->create(); //glGenTexture
-  dataTex->bind(0); //bind to unit 0;
   dataTex->setFormat(QOpenGLTexture::R32I);
+  dataTex->create(); //glGenTexture
+  dataTex->setSize(nx, ny);
+  dataTex->bind(0); //bind to unit 0;
   dataTex->setWrapMode(QOpenGLTexture::ClampToEdge);
   //dataTex->setLayers(nFrames);
-  dataTex->setSize(nx, ny);
   dataTex->allocateStorage();
   dataTex->setData(QOpenGLTexture::Red_Integer, QOpenGLTexture::Int32, data[0]);
   //}
   dataTex->setMagnificationFilter(QOpenGLTexture::Nearest);//Do not interpolate when zooming in.
   dataTex->setMinificationFilter(QOpenGLTexture::Nearest);
   printf("Using version: %s\n", glGetString(GL_VERSION));
-  GLint buffer[nx*ny];
-  glGetTexImage(GL_TEXTURE_2D,0, GL_RED_INTEGER, GL_INT, buffer );
+  QVector<GLint> buffer(nx*ny);
+  glGetTexImage(GL_TEXTURE_2D,0, GL_RED_INTEGER, GL_INT, buffer.data() );
   for(int i = 0; i < ny; i++){
     for(int j = 0; j < nx; j++)
       printf("%3d ", buffer[i*nx+j]);

@@ -557,10 +557,10 @@ bool DACs::ReadDACsFile(string fn) {//TODO: should use QString instead of std::s
 	if (!saveFile.open(QIODevice::ReadOnly)) {
 		cout << "[WARNING] Couldn't find " << fn << endl;
 		cout << "[WARNING] Setting default DACs at hardcoded values ! These might not be the best settings." << endl;
-		string messg = "Couldn't open: ";
+		/*string messg = "Couldn't open: ";
 		messg += fn;
 		messg += "\nSetting default DACs at hardcoded values ! These might not be the best settings.";
-		QMessageBox::warning ( _ui->_DACScanFrame, tr("MPX3 - default DACs"), tr( messg.c_str() ) );
+		QMessageBox::warning ( _ui->_DACScanFrame, tr("MPX3 - default DACs"), tr( messg.c_str() ) );//segfaults: roel*/
 		return false;
 	}
 

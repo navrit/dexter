@@ -54,7 +54,7 @@ public:
 	  if(maskedPixels.contains(pixId)) maskedPixels.remove(pixId);
 	}
 	int GetNMaskedPixels(){
-	  maskedPixels.size();
+	  return maskedPixels.size();
 	}
 	QSet<int> GetMaskedPixels(){
 	  return maskedPixels;

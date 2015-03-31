@@ -1,6 +1,6 @@
 #include "mpx3gui.h"
 #include <QApplication>
-#include <QtGui/QOpenGLFunctions>
+#include <QtGui/QOpenGLFunctions_3_3_Core>
 int main(int argc, char *argv[])
 {
 

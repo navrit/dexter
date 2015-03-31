@@ -1,7 +1,15 @@
 #version 330
+uniform vec2 aspectRatio;
+uniform vec2 offset;
+uniform float zoom;
+
 in vec2 position;
+in vec2 texCoordsIn;
+varying vec2 texCoords;
+
 void main(void)
 {
-    gl_Position = vec4(position,0,1);
+    texCoords = texCoordsIn;
+    gl_Position = vec4(position*aspectRatio*zoom+offset,0,1);
 }
 
