@@ -21,6 +21,9 @@ private:
   Ui::QCstmGLVisualization *ui;
 public slots:
   void on_frame_added();
+  void on_hover_changed(QPoint);
+ signals:
+  void change_hover_text(QString);
 };
 
 #endif // QCSTMGLVISUALIZATION_H

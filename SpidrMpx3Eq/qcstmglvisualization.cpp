@@ -21,6 +21,12 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), ui->gradientDisplay, SLOT(set_range(QCPRange)));
   connect(ui->layerSpinner, SIGNAL(valueChanged(int)), ui->glPlot, SLOT(setActive(int)));
   connect(ui->binWidthSpinner, SIGNAL(valueChanged(int)), ui->histPlot, SLOT(changeBinSize(int)));
+  connect(ui->glPlot, SIGNAL(hovered_pixel_changed(QPoint)),this, SLOT(on_hover_changed(QPoint)));
+  connect(this, SIGNAL(change_hover_text(QString)), ui->mouseOverLabel, SLOT(setText(QString)));
+}
+
+void QCstmGLVisualization::on_hover_changed(QPoint pixel){
+  emit(change_hover_text(QString("%1 @ (%2, %3)").arg(_mpx3gui->getPixelAt(pixel.x(), pixel.y(),ui->layerSpinner->value())).arg(pixel.x()).arg(pixel.y())));
 }
 
 void QCstmGLVisualization::on_frame_added(){

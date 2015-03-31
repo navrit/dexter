@@ -50,8 +50,6 @@ void QCstmGLPlot::initializeGL(){
   glBufferData (GL_ARRAY_BUFFER, sizeof(textureCoordinates), textureCoordinates, GL_STATIC_DRAW);
   glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
-  nx = 256;
-  ny = 256;
   nLayers  = 1;
 
   grabShadersFrom("./shaders");
@@ -82,8 +80,7 @@ void QCstmGLPlot::initializeGL(){
   qDebug() << "texCoordsIn @ " << program[0].attributeLocation("texCoordsIn");
 
   loadGradient();
-
-  loadFrames(nx, ny, nLayers, frames);
+  loadFrames(nx,ny,nLayers, frames);
   program[0].setUniformValue("layer",0);
   program[0].setUniformValue(clampLoc, QSizeF(-100, 100));
   program[0].setUniformValue("tex", 0); //set "tex" to  unit 0.
@@ -168,8 +165,8 @@ void QCstmGLPlot::setData(QVector<int *> layers){ //TODO: Set size functions, on
 
   dataTex->create(); //glGenTexture
   dataTex->setLayers(layers.count());
+  dataTex->setSize(this->nx, this->ny);
   dataTex->bind(0); //bind to unit 0;
-  //dataTex->setSize(nx, ny);
   dataTex->allocateStorage();
   for(int i = 0; i < layers.count();i++){
     dataTex->setData(0,i,QOpenGLTexture::Red_Integer,QOpenGLTexture::Int32, layers[i]);
@@ -238,12 +235,17 @@ void QCstmGLPlot::addOffset(GLfloat x, GLfloat y){
   setOffset(offsetX+x, offsetY+y);
 }
 
-QPointF QCstmGLPlot::pixelAt(QPoint position){
+QPoint QCstmGLPlot::pixelAt(QPoint position){
   GLfloat pixelX = 2.0*position.x()/this->width()-1.0;
   GLfloat pixelY = -2.0*position.y()/this->height()+1.0;
   pixelX -= offsetX; pixelY -= offsetY;
   pixelX /= (zoom*baseSizeX); pixelY /= (zoom*baseSizeY);
-  return QPointF(pixelX, pixelY);
+  pixelX = (1.0+pixelX)*0.5; pixelY = (1.0+pixelY)*0.5;
+  int truePixelX = pixelX*nx;
+  int truePixelY = pixelY*ny;
+  truePixelX = truePixelX >= nx? nx-1 : truePixelX < 0? 0 : truePixelX;
+  truePixelY = truePixelY >= ny? ny-1 : truePixelY < 0? 0 : truePixelY;
+  return QPoint(truePixelX, truePixelY);
 }
 
 void QCstmGLPlot::wheelEvent(QWheelEvent *event){
@@ -302,4 +304,6 @@ void QCstmGLPlot::mouseMoveEvent(QMouseEvent *event){//TODO: verify dragspeed sh
     clickedLocation = event->pos();
     addOffset(translationX, translationY);
   }
+  //QPointF pixelHovered = pixelAt(event->pos());
+  emit(hovered_pixel_changed(pixelAt(event->pos())));// QString("%1, %2, ??").arg(pixelHovered.x()).arg(pixelHovered.y())));
 }

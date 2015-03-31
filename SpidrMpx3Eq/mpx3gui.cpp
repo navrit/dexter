@@ -209,6 +209,12 @@ void Mpx3GUI::addFrame(int * origframe){
 	}
 }
 
+int Mpx3GUI::getPixelAt(int x, int y, int layer){
+  if(layer >= data.length() || x >= nx || y >= ny)
+    return 0;
+  return data[layer][y*nx+x];
+}
+
 QPoint Mpx3GUI::getSize(){
   return QPoint(nx, ny);
 }

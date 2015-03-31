@@ -46,7 +46,8 @@ public:
   GLfloat innerBoxGradient[2*4];
   GLfloat gradientTexCoords[1*2*2]; //TODO: reduce to 2 using instanced rendering., remove using vertex Ids?
 
-  int nx =0, ny =0, nLayers = 0;
+  const int nx =256, ny =256;
+  int nLayers = 0;
   GLfloat offsetX =0, offsetY = 0, zoom = 1.0, baseSizeX, baseSizeY;
   GLint offsetLoc, zoomLoc, aspectRatioLoc, resolutionLoc, textureLoc, gradientTexLoc, layerLoc, clampLoc; //uniform binding locations.
   GLint positionLoc, texCoordsInLoc;//Attribute binding locations.
@@ -60,7 +61,7 @@ public:
   void resizeGL(int w, int h) ;
   void grabShadersFrom(QString directory);
 public: //functions
-  QPointF pixelAt(QPoint position);
+  QPoint pixelAt(QPoint position);
   Gradient* getGradient(){return &gradient;}
 public: //events
   void wheelEvent(QWheelEvent *event);
@@ -76,6 +77,8 @@ public slots:
   void setZoom(float change);
   void setOffset(GLfloat x, GLfloat y);
   void addOffset(GLfloat x, GLfloat y);
+ signals:
+  void hovered_pixel_changed(QPoint);
 };
 
 #endif // QCSTMGLPLOT_H

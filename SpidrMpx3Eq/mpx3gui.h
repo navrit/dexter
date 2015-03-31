@@ -123,6 +123,7 @@ public:
 	void getSize(int *x, int *y);
 	int getX();
 	int getY();
+	int getPixelAt(int x, int y, int layer);
 	int getFrameCount();
 
 	QCPColorGradient getGradient(QString index);

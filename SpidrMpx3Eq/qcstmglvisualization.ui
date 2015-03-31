@@ -19,7 +19,7 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
        <item>
         <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
@@ -27,7 +27,7 @@
           <widget class="QCstmGLPlot" name="glPlot"/>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,1,0">
+          <layout class="QHBoxLayout" name="horizontalLayout" stretch="4,1,2">
            <item>
             <widget class="QComboBox" name="gradientSelector"/>
            </item>
@@ -47,7 +47,10 @@
            <item>
             <widget class="QLabel" name="mouseOverLabel">
              <property name="text">
-              <string>(X, Y, Z)</string>
+              <string/>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -67,7 +70,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1,0,0,0,0">
        <item>
         <widget class="QSpinBox" name="layerSpinner">
