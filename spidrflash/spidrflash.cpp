@@ -1,3 +1,24 @@
+/* ----------------------------------------------------------------------------
+File   : spidrflash.cpp
+
+Descr  : Commandline tool to verify or program SPIDR firmware
+         via its Ethernet connection.
+
+Usage  :
+spidrflash <ipaddr>[:<portnr>] <filename> <1|2> [prog]
+   Verify or program a Compact-SPIDR's flash device '1' or '2'.
+   Verifies the flash memory contents against the file contents
+   on the module with the given IP address (and port number).
+   Programs the file contents into flash memory when keyword
+   'prog' is appended.
+   <ipaddr>   : IP address of the Compact-SPIDR.
+   <portnr>   : IP port of the Compact-SPIDR. Default 50000.
+   <filename> : name of the MCS/HEX file containing FPGA code.
+
+History:
+--MAR2015; HenkB; Created.
+---------------------------------------------------------------------------- */
+
 #include <iostream>
 #include <iomanip>
 using namespace std;
@@ -288,17 +309,19 @@ void usage()
   cout << endl << "Usage:" << endl
        << "spidrflash <ipaddr>[:<portnr>] <filename> <1|2> [prog]"
        << endl
-       << "   Verify or program a Compact-SPIDR's flash device with"
-       << " the given ID (1 or 2)."
+       << "   Verify or program a Compact-SPIDR's flash device '1' or '2'."
        << endl
        << "   Verifies the flash memory contents against the file contents"
        << endl
-       << "   on the module with the given IP address and port number "
-       << "(default 50000)."
+       << "   on the module with the given IP address (and port number)."
        << endl
        << "   Programs the file contents into flash memory when keyword"
        << endl
        << "   'prog' is appended."
+       << endl
+       << "   <ipaddr>   : IP address of the Compact-SPIDR."
+       << endl
+       << "   <portnr>   : IP port of the Compact-SPIDR. Default 50000."
        << endl
        << "   <filename> : name of the MCS/HEX file containing FPGA code."
        << endl;
