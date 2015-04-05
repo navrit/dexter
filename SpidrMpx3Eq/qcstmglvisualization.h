@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "mpx3gui.h"
+#include "gradient.h"
 
 namespace Ui {
   class QCstmGLVisualization;
@@ -15,11 +16,12 @@ class QCstmGLVisualization : public QWidget
 public:
   explicit QCstmGLVisualization(QWidget *parent = 0);
   void SetMpx3GUI(Mpx3GUI * p);
-
   ~QCstmGLVisualization();
 private:
   Ui::QCstmGLVisualization *ui;
 public slots:
+  void setGradient(int index);
+  void on_availible_gradients_changed(QStringList gradients);
   void on_frame_added();
   void on_hover_changed(QPoint);
  signals:

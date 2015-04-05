@@ -52,7 +52,8 @@ SOURCES += main.cpp \
     gradientwidget.cpp \
     qcstmglvisualization.cpp \
     qcstmglplot.cpp \
-    gradient.cpp
+    gradient.cpp \
+    dataset.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -70,7 +71,8 @@ HEADERS += mpx3gui.h \
     qcstmglvisualization.h \
     qcstmglplot.h \
     gradient.h \
-    mpx3eq_common.h
+    mpx3eq_common.h \
+    dataset.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DACs.h
@@ -86,10 +88,12 @@ FORMS    += mpx3gui.ui \
 DISTFILES += \
     CHANGES.txt \
     shaders/heatmap.frag \
-    shaders/passthrough.vert
+    shaders/passthrough.vert \
+    heatmaps.json
 
 
-    copydata.commands += $(COPY_DIR)  \"$$PWD/shaders\" \"$$DESTDIR/shaders\"
+    copydata.commands += $(COPY_DIR)  \"$$PWD/shaders\" \"$$DESTDIR/shaders\";
+    copydata.commands += $(COPY)  \"$$PWD/heatmaps.json\" \"$$DESTDIR/\";
     first.depends = $(first) copydata
     export(first.depends)
     export(copydata.commands)

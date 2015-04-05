@@ -10,12 +10,6 @@ QCstmGLPlot::QCstmGLPlot(QWidget* &parent){
   //atlas.addAscii();
   this->setFocusPolicy(Qt::WheelFocus);
   this->setMouseTracking(true);
-
-  gradient.addColor(+1.0, Qt::red);//TODO: better default.
-  gradient.addColor(+0.0001,Qt::white);
-  gradient.addColor(-0.0001,Qt::black);
-  gradient.addColor(-1.0, Qt::blue);
-  gradient.fillArray();
 }
 
 QCstmGLPlot::~QCstmGLPlot()
@@ -30,7 +24,6 @@ void QCstmGLPlot::initializeGL(){
   textureCoordinates[0] = 0.0f; textureCoordinates[1] = 0.0f; textureCoordinates[2] = 0.0f; textureCoordinates[3] = +1.0f;
   textureCoordinates[4] = +1.0f; textureCoordinates[5] = 0.0f; textureCoordinates[6]  = +1.0f; textureCoordinates[7] = +1.0f;
   initializeOpenGLFunctions();
-
   QColor bgColor = this->palette().color(this->backgroundRole());
   glClearColor((GLfloat)(bgColor.red()/255.), (GLfloat)(bgColor.green()/255.), (GLfloat)(bgColor.blue()/255.),1.0); //Sets the background Color to match Qt.
   glEnable (GL_BLEND); glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -74,12 +67,13 @@ void QCstmGLPlot::initializeGL(){
           //printf("%2d ", frames[k][i*nx+j]);
         }
       //printf("\n");
+      //QOpenGLWidget::initializeGL();
    }
 
   qDebug() << "position @ " << program[0].attributeLocation("position");
   qDebug() << "texCoordsIn @ " << program[0].attributeLocation("texCoordsIn");
 
-  loadGradient();
+  //loadGradient();
   loadFrames(nx,ny,nLayers, frames);
   program[0].setUniformValue("layer",0);
   program[0].setUniformValue(clampLoc, QSizeF(-100, 100));
@@ -93,6 +87,10 @@ void QCstmGLPlot::initializeGL(){
 }
 
 void QCstmGLPlot::paintGL(){
+  if(gradientChanged){
+      gradientChanged = false;
+      loadGradient();
+    }
   glClear(GL_COLOR_BUFFER_BIT);
 
   program[0].bind();
@@ -144,15 +142,20 @@ void QCstmGLPlot::loadGradient(){
   gradientTex->create();
   gradientTex->bind(1);
   gradientTex->setFormat(QOpenGLTexture::RGB32F); //TODO: use u8 for color elements?
-  gradientTex->setSize(gradient.getLength());
+  gradientTex->setSize(gradient->getLength());
   gradientTex->allocateStorage();
-  gradientTex->setData(QOpenGLTexture::RGB, QOpenGLTexture::Float32, gradient.getArray());
+  gradientTex->setData(QOpenGLTexture::RGB, QOpenGLTexture::Float32, gradient->getArray());
   gradientTex->setWrapMode(QOpenGLTexture::ClampToEdge);//Clamp to Border not valid for 1D?
 
   gradientTex->setMagnificationFilter(QOpenGLTexture::Linear);//Do not interpolate when zooming in.
   gradientTex->setMinificationFilter(QOpenGLTexture::Linear);
   //program[0].bind();
   //program[0].setUniformValue("gradient",1); //set "tex" to texture unit 0.
+}
+void QCstmGLPlot::setGradient(Gradient *gradient){
+  this->gradient = gradient;
+  gradientChanged = true;
+  update();
 }
 
 void QCstmGLPlot::setData(QVector<int *> layers){ //TODO: Set size functions, only grow nLayes when necessary.

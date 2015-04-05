@@ -16,6 +16,7 @@
 #include "SpidrDaq.h"
 #include "barchart.h"
 #include "ThlScan.h"
+#include "gradient.h"
 
 #include <QMessageBox>
 
@@ -23,13 +24,13 @@
 #include <time.h>
 #include <stdio.h>
 
-
 Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent), _coreApp(coreApp), _ui(new Ui::Mpx3GUI)
 {
 	// Instantiate everything in the UI
 	_ui->setupUi(this);
+	workingSet = new Dataset(256, 256);
 	//index various heatmaps
-	gradients.insert("Grayscale", QCPColorGradient::gpGrayscale);
+	/*gradients.insert("Grayscale", QCPColorGradient::gpGrayscale);
 	gradients.insert("Jet", QCPColorGradient::gpJet);
 	gradients.insert("Ion", QCPColorGradient::gpIon);
 	gradients.insert("Candy", QCPColorGradient::gpCandy);
@@ -38,10 +39,15 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	emit availible_gradients_changed(QStringList(gradients.keys()));
 	gradients.insert("Thermal", QCPColorGradient::gpThermal);
 	emit gradient_added("Thermal");
-	startTimer( 200 );// TODO: use of this?
+	startTimer( 200 );// TODO: use of this?*/
 
 	// Connectivity between modules
 	//_moduleConn = new ModuleConnection;
+
+	gradients2 = Gradient::fromJsonFile("./heatmaps.json");
+	QStringList gradientNames;
+	for(int i = 0; i < gradients2.length();i++)
+	  gradientNames.append(gradients2[i]->getName());
 
 	// Prepare DACs panel
 	_dacs = new DACs(_coreApp, _ui);
@@ -60,6 +66,8 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	SetupSignalsAndSlots();
 
 	_ui->glWidget->SetMpx3GUI(this);
+	//_ui->glWidget->setGradient(0);
+	emit availible_gradients_changed(gradientNames);
 
 	// Connect automatically
 	//_moduleConn->Connection();
@@ -67,14 +75,17 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
 Mpx3GUI::~Mpx3GUI()
 {
-	for(int i = 0; i < data.size(); i++)
-		delete[] data[i];
+	delete workingSet;
 	delete _ui;
 }
 
 void Mpx3GUI::timerEvent( QTimerEvent * /*evt*/ ) {
 
 
+}
+
+Gradient* Mpx3GUI::getGradient(int index){
+  return gradients2.at(index);
 }
 
 void Mpx3GUI::LoadEqualization(){
@@ -166,43 +177,40 @@ void Mpx3GUI::establish_connection() {
 
 }
 
-void Mpx3GUI::generateFrame(){
+void Mpx3GUI::generateFrame(){//TODO: put into Dataset
 	printf("Generating a frame!\n");
-	double fx = ((double)8*rand()/RAND_MAX)/(nx), fy = (8*(double)rand()/RAND_MAX)/ny;
-	QVector<int> data(nx*ny);
-	for(int i = 0; i < ny; i++)
-		for(int j = 0; j < nx; j++)
-			data[i*nx+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
+	double fx = ((double)8*rand()/RAND_MAX)/(workingSet->x()), fy = (8*(double)rand()/RAND_MAX)/workingSet->y();
+	QVector<int> data(workingSet->x()*workingSet->y());
+	for(int i = 0; i < workingSet->y(); i++)
+		for(int j = 0; j < workingSet->x(); j++)
+			data[i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
 	addFrame(data.data());
 }
 
-void Mpx3GUI::addFrame(int * origframe){
+void Mpx3GUI::addFrame(int * frame){
 
 	// Make a local copy first
-	int * frame = new int[nx*ny];
-	for(int i = 0; i < nx*ny; i++) frame[i] = origframe[i];
+	//int * frame = new int[workingSet->x()*workingSet->y()];
+	//for(int i = 0; i < workingSet->x()*workingSet->y(); i++) frame[i] = origframe[i]; //TODO: don't moke new
 
 
-	if(0 == mode || 0 == data.size()){//normal mode, or no frame yet
-		data.push_back(frame);
-		hists.push_back(new histogram(frame, nx*ny, 1));
-		emit frame_added();
-		emit frames_reload(data);
+	if(0 == mode || 0 == workingSet->getFrameCount()){//normal mode, or no frame yet
+		workingSet->addFrame(frame);
+		hists.push_back(new histogram(frame, workingSet->x()*workingSet->y(),  1));
+		emit frame_added();// --> emit something else.
+		emit frames_reload(workingSet->getFrames());
 	}
 	else if(1 == mode){ // Summing mode
-
-		for(int i = 0; i < ny; i++) {
-
+	/*	for(int i = 0; i < ny; i++) {
 			for(int j = 0; j < nx; j++){
-
 				data[data.size()-1][i*nx+j] += frame[i*nx+j];
-
 			}
-		}
-		histogram *last = hists[hists.size()-1];
+		}*/
+		workingSet->sumFrame(frame);
+		histogram *last = hists[hists.size()-1];//TODO: do this better
 		hists.pop_back();
 		delete last;
-		last = new histogram(data[data.size()-1],nx*ny);
+		last = new histogram(workingSet->getActiveFrame(),workingSet->x()*workingSet->y());
 		hists.push_back(last);
 		//hists.last()->addCount(frame, nx*ny);
 		emit frame_changed();
@@ -210,33 +218,32 @@ void Mpx3GUI::addFrame(int * origframe){
 }
 
 int Mpx3GUI::getPixelAt(int x, int y, int layer){
-  if(layer >= data.length() || x >= nx || y >= ny)
-    return 0;
-  return data[layer][y*nx+x];
+  return workingSet->sample(x,y, layer);
+  //if(layer >= data.length() || x >= nx || y >= ny)
+  // return 0;
+  //return data[layer][y*nx+x];
 }
 
 QPoint Mpx3GUI::getSize(){
-  return QPoint(nx, ny);
+  return workingSet->getSize();
 }
 
 void Mpx3GUI::getSize(int *x, int *y){
-	*x = nx;
-	*y = ny;
+	QPoint dataSize = workingSet->getSize();
+	*x = dataSize.x();
+	*y = dataSize.y();
 }
 int Mpx3GUI::getX(){
-	return nx;
+	return workingSet->getSize().x();
 }
 int Mpx3GUI::getY(){
-	return ny;
+	return workingSet->getSize().y();
 }
 
 int Mpx3GUI::getFrameCount(){
-	return (int)data.size();
+	return workingSet->getFrameCount();
 }
 
-QCPColorGradient Mpx3GUI::getGradient(QString index){
-	return gradients[index];
-}
 
 void Mpx3GUI::save_data(){//TODO: does not append file suffix, error checking.
 	QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("binary files (*.bin)"));
@@ -248,12 +255,14 @@ void Mpx3GUI::save_data(){//TODO: does not append file suffix, error checking.
 		QMessageBox::warning ( this, tr("Error saving data"), tr( messg.c_str() ) );
 		return;
 	}
+	QPoint dataSize = workingSet->getSize();
+	int nx = dataSize.x(); int ny = dataSize.y();
 	if(-1 == saveFile.write((const char*)&nx, sizeof(nx))) QMessageBox::warning ( this, tr("Error saving data"), tr( "Couldn't save nx!") );
 	saveFile.write((const char*)&ny, sizeof(ny));
-	int nLayers = (int)data.size();
+	int nLayers = workingSet->getFrameCount();
 	saveFile.write((const char*)&nLayers, sizeof(nLayers));
 	for(int i = 0; i < nLayers;i++){
-		saveFile.write((const char*)data[i], nx*ny*sizeof(*data[i]));
+		saveFile.write((const char*)workingSet->getFrame(i), nx*ny*sizeof(*workingSet->getFrame(i)));
 	}
 	saveFile.close();
 	return;
@@ -270,8 +279,11 @@ void Mpx3GUI::open_data(){
 		return;
 	}
 	clear_data();
+	int nx, ny;
 	saveFile.read((char*)&nx, sizeof(nx));
 	saveFile.read((char*)&ny, sizeof(ny));
+	delete workingSet;
+	workingSet = new Dataset(nx, ny);
 	int nLayers;
 	saveFile.read((char*)&nLayers, sizeof(nLayers));
 	for(int i = 0; i < nLayers;i++){
@@ -318,9 +330,11 @@ void Mpx3GUI::clear_configuration(){
 }
 
 void Mpx3GUI::clear_data(){
-  for(int i = 0; i < data.size(); i++)
+  /*for(int i = 0; i < data.size(); i++)
     delete[] data[i];
-  data.clear();
+  data.clear();*/
+  delete workingSet;
+  workingSet = nullptr;
   hists.clear();
   emit(data_cleared());
 }

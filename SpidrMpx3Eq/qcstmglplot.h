@@ -38,7 +38,7 @@ public:
   QMap<QString, QOpenGLShader*>fragmentShaders;
   QOpenGLTexture *gradientTex = 0, *dataTex = 0, *textTex = 0; /* *buffer = 0;*/
   //QOpenGLTexture *texture = 0, *gradientTex = 0;
-  Gradient gradient;
+  Gradient *gradient;
 
   GLfloat points[2*4];
   GLfloat textureCoordinates[2*4];
@@ -52,7 +52,7 @@ public:
   GLint offsetLoc, zoomLoc, aspectRatioLoc, resolutionLoc, textureLoc, gradientTexLoc, layerLoc, clampLoc; //uniform binding locations.
   GLint positionLoc, texCoordsInLoc;//Attribute binding locations.
   QPoint clickedLocation;
-  bool clicked = false;
+  bool clicked = false, gradientChanged = true;
   QVector<GLfloat> textVertices;
 
 
@@ -62,7 +62,8 @@ public:
   void grabShadersFrom(QString directory);
 public: //functions
   QPoint pixelAt(QPoint position);
-  Gradient* getGradient(){return &gradient;}
+  Gradient* getGradient(){return gradient;}
+  void setGradient(Gradient *gradient);
 public: //events
   void wheelEvent(QWheelEvent *event);
   void mouseMoveEvent(QMouseEvent *event);

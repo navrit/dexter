@@ -40,7 +40,7 @@ void QCstmVisualization::StartDataTaking(){
 	cout << "Acquiring ... ";
 
 	// Start the trigger as configured
-	spidrcontrol->startAutoTrigger();
+	spidrcontrol->startAutoTrigger();//getNTriggers
 	Sleep( 50 );
 	// See if there is a frame available
 	// I should get as many frames as triggers
@@ -178,7 +178,7 @@ void QCstmVisualization::set_gradient(QString name){
 
 void QCstmVisualization::on_heatmapCombobox_activated(const QString &arg1)
 {
-    ui->heatmap->setHeatmap(_mpx3gui->getGradient(arg1));
+//    ui->heatmap->setHeatmap(_mpx3gui->getGradient(arg1));
 }
 
 void QCstmVisualization::on_pixel_selected(QPoint pixel, QPoint position){

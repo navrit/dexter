@@ -17,7 +17,7 @@ class GradientWidget : public QWidget
 public:
   explicit GradientWidget(QWidget *parent = 0);
   ~GradientWidget();
-  void setGradient(Gradient*gradient);
+  void setGradient(Gradient *gradient);
   void paintEvent(QPaintEvent *event);
   void resizeEvent(QResizeEvent *event);
 

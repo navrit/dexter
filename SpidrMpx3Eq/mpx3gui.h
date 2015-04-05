@@ -18,6 +18,8 @@
 
 using namespace std;
 
+#include "dataset.h"
+#include "gradient.h"
 #include "histogram.h"
 #include "mpx3eq_common.h"
 
@@ -99,19 +101,21 @@ private:
 	SpidrDaq * _spidrdaq = nullptr;
 
 	//Data Stores
-	QVector<int*> data;
-	int ny = 256;
-	int nx = 256;
+	//QVector<int*> data;
+	//int ny = 256;
+	//int nx = 256;
+
+	Dataset *workingSet;
+	QVector<Gradient*>  gradients2;
 	vector<histogram*> hists;
 public:
 	Mpx3Equalization* getEqualization(){return _equalization;}
 	SpidrController * GetSpidrController(){ return _spidrcontrol; }
 	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
 	void addFrame(int *frame);
+	Gradient* getGradient(int index);
 	int* getFrame(int index){
-	  if(-1 == index)
-	    index = (int)data.size() - 1;//data.count()-1;
-	  return data[index];
+	  return workingSet->getFrame(index);
 	}
 	histogram* getHist(int index){
 	  if(-1 == index)
@@ -125,8 +129,6 @@ public:
 	int getY();
 	int getPixelAt(int x, int y, int layer);
 	int getFrameCount();
-
-	QCPColorGradient getGradient(QString index);
 
 signals:
 	void dataChanged();
