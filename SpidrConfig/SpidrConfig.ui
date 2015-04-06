@@ -27,7 +27,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="spidrconfig.qrc">
-    <normaloff>:/icon/spidrconfig.ico</normaloff>:/icon/spidrconfig.ico</iconset>
+    <normaloff>:/icon/SPIDR-logo-square.ico</normaloff>:/icon/SPIDR-logo-square.ico</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="bottomMargin">
