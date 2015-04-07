@@ -1,5 +1,5 @@
 <RCC>
   <qresource prefix="icon">
-    <file>SPIDR-logo-square.ico</file>
+    <file>SPIDR-logo.ico</file>
   </qresource>
 </RCC>
