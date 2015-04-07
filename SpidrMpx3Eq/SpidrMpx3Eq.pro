@@ -53,7 +53,8 @@ SOURCES += main.cpp \
     qcstmglvisualization.cpp \
     qcstmglplot.cpp \
     gradient.cpp \
-    dataset.cpp
+    dataset.cpp \
+    qcstmthreshold.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -72,7 +73,8 @@ HEADERS += mpx3gui.h \
     qcstmglplot.h \
     gradient.h \
     mpx3eq_common.h \
-    dataset.h
+    dataset.h \
+    qcstmthreshold.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DACs.h
@@ -83,7 +85,8 @@ FORMS    += mpx3gui.ui \
     qcstmvisualization.ui \
     qcstmdacs.ui \
     gradientwidget.ui \
-    qcstmglvisualization.ui
+    qcstmglvisualization.ui \
+    qcstmthreshold.ui
 
 DISTFILES += \
     CHANGES.txt \

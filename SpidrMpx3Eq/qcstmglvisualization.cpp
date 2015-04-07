@@ -1,5 +1,6 @@
 #include "qcstmglvisualization.h"
 #include "ui_qcstmglvisualization.h"
+#include "mpx3equalization.h"
 #include <stdio.h>
 QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :  QWidget(parent),  ui(new Ui::QCstmGLVisualization)
 {
@@ -30,6 +31,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   connect(ui->layerSpinner, SIGNAL(valueChanged(int)), ui->histPlot, SLOT(setActive(int)));
   connect(ui->binWidthSpinner, SIGNAL(valueChanged(int)), ui->histPlot, SLOT(changeBinSize(int)));
   connect(ui->glPlot, SIGNAL(hovered_pixel_changed(QPoint)),this, SLOT(on_hover_changed(QPoint)));
+  connect(ui->glPlot, SIGNAL(pixel_selected(QPoint,QPoint)), this, SLOT(on_pixel_selected(QPoint,QPoint)));
   connect(this, SIGNAL(change_hover_text(QString)), ui->mouseOverLabel, SLOT(setText(QString)));
 }
 
@@ -47,4 +49,20 @@ void QCstmGLVisualization::on_frame_added(){
   ui->histPlot->addHistogram(_mpx3gui->getHist(-1), ui->binWidthSpinner->value());
   ui->layerSpinner->setMaximum(_mpx3gui->getFrameCount()-1);
   ui->layerSpinner->setValue(_mpx3gui->getFrameCount()-1);
+}
+
+void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
+  QMenu contextMenu;
+  QAction mask(QString("Mask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu), unmask(QString("Unmask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu);
+  contextMenu.addAction(&mask);
+  contextMenu.addAction(&unmask);
+  QAction* selectedItem = contextMenu.exec(position);
+  if(selectedItem == &mask)
+      //_mpx3gui->getDataset()->addMask(pixel);
+     _mpx3gui->getEqualization()->GetEqualizationResults()->maskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());
+  else if(selectedItem == &unmask)
+      //_mpx3gui->getDataset()->removeMask(pixel);
+      _mpx3gui->getEqualization()->GetEqualizationResults()->unmaskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());
+  //_mpx3gui->getDataset()->loadAdjustments();
+  _mpx3gui->getEqualization()->SetAllAdjustmentBits( );//TODO: integrate into dataset
 }

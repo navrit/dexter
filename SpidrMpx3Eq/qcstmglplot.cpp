@@ -300,6 +300,11 @@ void QCstmGLPlot::keyPressEvent(QKeyEvent *event){//Doesn't really work that wel
     }
 }
 
+void QCstmGLPlot::contextMenuEvent(QContextMenuEvent *event){
+  emit(pixel_selected(pixelAt(event->pos()), event->globalPos()));
+  event->accept();
+}
+
 void QCstmGLPlot::mouseMoveEvent(QMouseEvent *event){//TODO: verify dragspeed should be so that the same pixel stays under the cursor at all times.
   if(clicked){
     float translationX = 2*((double)event->x()-clickedLocation.x())/this->width();

@@ -14,7 +14,7 @@
    <string>Mpx3GUI</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_10">
+   <layout class="QHBoxLayout" name="horizontalLayout_7">
     <item>
      <widget class="QTabWidget" name="allTabs">
       <property name="toolTip">
@@ -1295,25 +1295,20 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="visualizationTab">
-       <attribute name="title">
-        <string>Results</string>
-       </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_11">
-        <item>
-         <widget class="QCstmVisualization" name="visualizationWidget" native="true"/>
-        </item>
-       </layout>
-      </widget>
       <widget class="QWidget" name="visualizationGL">
        <attribute name="title">
-        <string>GL</string>
+        <string>results</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_6">
         <item>
          <widget class="QCstmGLVisualization" name="glWidget" native="true"/>
         </item>
        </layout>
+      </widget>
+      <widget class="QCstmThreshold" name="ThresholdTab">
+       <attribute name="title">
+        <string>Thresholds</string>
+       </attribute>
       </widget>
       <widget class="QWidget" name="EqualizationTab">
        <attribute name="title">
@@ -1345,7 +1340,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -1486,6 +1481,7 @@
     <signal>activePlotChanged(int)</signal>
     <signal>mouseOverChanged(QString)</signal>
     <signal>pixel_selected(QPoint,QPoint)</signal>
+    <signal>nouseOverChanged(QString)</signal>
     <slot>setHeatmap(QCPColorGradient)</slot>
     <slot>changeRange(QCPRange)</slot>
     <slot>setActive(int)</slot>
@@ -1496,18 +1492,6 @@
    <extends>QWidget</extends>
    <header>barchart.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QCstmVisualization</class>
-   <extends>QWidget</extends>
-   <header>qcstmvisualization.h</header>
-   <container>1</container>
-   <slots>
-    <slot>on_frame_added()</slot>
-    <slot>on_availible_gradients_changed(QStringList)</slot>
-    <slot>on_gradient_added(QString)</slot>
-    <slot>on_data_cleared()</slot>
-   </slots>
   </customwidget>
   <customwidget>
    <class>QCstmEqualization</class>
@@ -1529,6 +1513,12 @@
    <slots>
     <slot>on_frame_added()</slot>
    </slots>
+  </customwidget>
+  <customwidget>
+   <class>QCstmThreshold</class>
+   <extends>QWidget</extends>
+   <header>qcstmthreshold.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
@@ -1562,70 +1552,6 @@
     <hint type="destinationlabel">
      <x>991</x>
      <y>113</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>Mpx3GUI</sender>
-   <signal>frame_added()</signal>
-   <receiver>visualizationWidget</receiver>
-   <slot>on_frame_added()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>506</x>
-     <y>276</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>506</x>
-     <y>295</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>Mpx3GUI</sender>
-   <signal>availible_gradients_changed(QStringList)</signal>
-   <receiver>visualizationWidget</receiver>
-   <slot>on_availible_gradients_changed(QStringList)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>506</x>
-     <y>276</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>506</x>
-     <y>295</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>Mpx3GUI</sender>
-   <signal>gradient_added(QString)</signal>
-   <receiver>visualizationWidget</receiver>
-   <slot>on_gradient_added(QString)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>506</x>
-     <y>276</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>506</x>
-     <y>295</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>Mpx3GUI</sender>
-   <signal>data_cleared()</signal>
-   <receiver>visualizationWidget</receiver>
-   <slot>on_data_cleared()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>506</x>
-     <y>276</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>506</x>
-     <y>295</y>
     </hint>
    </hints>
   </connection>

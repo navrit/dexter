@@ -70,6 +70,7 @@ public: //events
   void keyPressEvent(QKeyEvent *event);
   void mousePressEvent(QMouseEvent *event){this->setCursor(Qt::ClosedHandCursor); clickedLocation = event->pos();clicked = true;}
   void mouseReleaseEvent(QMouseEvent *event){this->setCursor(Qt::ArrowCursor); clicked = false;}
+  void contextMenuEvent(QContextMenuEvent *);
 public slots:
   void setData(QVector<int*> layers);
   void setActive(int layer);
@@ -80,6 +81,7 @@ public slots:
   void addOffset(GLfloat x, GLfloat y);
  signals:
   void hovered_pixel_changed(QPoint);
+  void pixel_selected(QPoint, QPoint);
 };
 
 #endif // QCSTMGLPLOT_H

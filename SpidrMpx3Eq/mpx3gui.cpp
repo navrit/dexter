@@ -58,9 +58,6 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	_equalization->SetMpx3GUI( this );
 
 	// Prepare Visualization
-	_ui->visualizationWidget->SetMpx3GUI( this );
-	_ui->visualizationWidget->SignalsAndSlots();
-	_ui->visualizationWidget->set_gradient("Thermal");
 
 	// Signals and slots for this part
 	SetupSignalsAndSlots();
@@ -102,8 +99,6 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 	connect(_ui->actionSumming, SIGNAL(triggered()), this, SLOT(set_mode_integral()));
 	connect(_ui->actionDiscrete, SIGNAL(triggered()), this, SLOT(set_mode_normal()));
 
-	connect( this, SIGNAL(frame_changed()), _ui->visualizationWidget, SLOT(on_frame_changed()) );
-
 	connect(_ui->actionSave_data, SIGNAL(triggered()), this, SLOT(save_data()));
 	connect(_ui->actionSave_Equalization, SIGNAL(triggered()), _equalization, SLOT(SaveEqualization()));
 	connect(_ui->actionOpen_data, SIGNAL(triggered()), this, SLOT(open_data()));
@@ -113,7 +108,6 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 	// Inform every module of changes in connection status
 	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _dacs, SLOT( ConnectionStatusChanged() ) );
 	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _equalization, SLOT( ConnectionStatusChanged() ) );
-	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationWidget, SLOT( ConnectionStatusChanged(bool) ) );
 
 }
 

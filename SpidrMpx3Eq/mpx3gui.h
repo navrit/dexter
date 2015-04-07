@@ -109,6 +109,7 @@ private:
 	QVector<Gradient*>  gradients2;
 	vector<histogram*> hists;
 public:
+	Dataset* getDataset(){return workingSet;}
 	Mpx3Equalization* getEqualization(){return _equalization;}
 	SpidrController * GetSpidrController(){ return _spidrcontrol; }
 	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
