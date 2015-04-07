@@ -89,11 +89,11 @@ DISTFILES += \
     CHANGES.txt \
     shaders/heatmap.frag \
     shaders/passthrough.vert \
-    heatmaps.json
+    config/heatmaps.json
 
 
-    copydata.commands += $(COPY_DIR)  \"$$PWD/shaders\" \"$$DESTDIR/shaders\";
-    copydata.commands += $(COPY)  \"$$PWD/heatmaps.json\" \"$$DESTDIR/\";
+    copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/config\" &
+    copydata.commands += $(COPY_DIR)  \"$$PWD/shaders\" \"$$DESTDIR/shaders\" &
     first.depends = $(first) copydata
     export(first.depends)
     export(copydata.commands)

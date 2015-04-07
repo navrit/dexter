@@ -44,7 +44,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	// Connectivity between modules
 	//_moduleConn = new ModuleConnection;
 
-	gradients2 = Gradient::fromJsonFile("./heatmaps.json");
+	gradients2 = Gradient::fromJsonFile("./config/heatmaps.json");
 	QStringList gradientNames;
 	for(int i = 0; i < gradients2.length();i++)
 	  gradientNames.append(gradients2[i]->getName());
