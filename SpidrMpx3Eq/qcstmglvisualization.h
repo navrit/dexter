@@ -23,6 +23,7 @@ public slots:
   void setGradient(int index);
   void on_availible_gradients_changed(QStringList gradients);
   void on_frame_added();
+  void on_frame_updated();
   void on_hover_changed(QPoint);
   void on_pixel_selected(QPoint pixel, QPoint position);
  signals:

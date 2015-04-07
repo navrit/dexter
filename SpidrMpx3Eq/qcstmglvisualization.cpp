@@ -20,10 +20,12 @@ void QCstmGLVisualization::setGradient(int index){
 void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   _mpx3gui = p;
   setGradient(0);
+  connect(ui->summingCheckbox, SIGNAL(clicked(bool)), _mpx3gui, SLOT(set_summing(bool)));
+  connect(_mpx3gui, SIGNAL(summing_set(bool)), ui->summingCheckbox, SLOT(setChecked(bool)));
   connect(ui->gradientSelector, SIGNAL(activated(int)), this, SLOT(setGradient(int)));
   connect(ui->generateDataButton, SIGNAL(clicked()), _mpx3gui, SLOT(generateFrame()));
   connect(_mpx3gui, SIGNAL(frame_added()), this, SLOT(on_frame_added()));
-  connect(_mpx3gui, SIGNAL(frames_reload(QVector<int *>)),ui->glPlot, SLOT(setData(QVector<int*>)));
+  connect(_mpx3gui, SIGNAL(frames_reload()),this, SLOT(on_frame_updated()));
   connect(_mpx3gui, SIGNAL(availible_gradients_changed(QStringList)), this, SLOT(on_availible_gradients_changed(QStringList)));
   connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)),ui->glPlot, SLOT(setRange(QCPRange)));
   connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), ui->gradientDisplay, SLOT(set_range(QCPRange)));
@@ -40,12 +42,16 @@ void QCstmGLVisualization::on_availible_gradients_changed(QStringList gradients)
   ui->gradientSelector->addItems(gradients);
 }
 
+void QCstmGLVisualization::on_frame_updated(){
+  ui->glPlot->setData(_mpx3gui->getDataset()->getFrames());
+  ui->histPlot->changeBinSize(ui->binWidthSpinner->value());
+}
+
 void QCstmGLVisualization::on_hover_changed(QPoint pixel){
   emit(change_hover_text(QString("%1 @ (%2, %3)").arg(_mpx3gui->getPixelAt(pixel.x(), pixel.y(),ui->layerSpinner->value())).arg(pixel.x()).arg(pixel.y())));
 }
 
 void QCstmGLVisualization::on_frame_added(){
-  printf("GLvis: frame added!\n");
   ui->histPlot->addHistogram(_mpx3gui->getHist(-1), ui->binWidthSpinner->value());
   ui->layerSpinner->setMaximum(_mpx3gui->getFrameCount()-1);
   ui->layerSpinner->setValue(_mpx3gui->getFrameCount()-1);

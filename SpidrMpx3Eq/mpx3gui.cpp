@@ -115,6 +115,13 @@ void Mpx3GUI::on_openfileButton_clicked() {
 
 }
 
+void Mpx3GUI::set_summing(bool shouldSum){
+  if(shouldSum)
+    set_mode_integral();
+  else
+    set_mode_normal();
+}
+
 void Mpx3GUI::establish_connection() {
 	int dev_nr = 2;
 	cout << "Connecting ..." << endl;
@@ -192,7 +199,7 @@ void Mpx3GUI::addFrame(int * frame){
 		workingSet->addFrame(frame);
 		hists.push_back(new histogram(frame, workingSet->x()*workingSet->y(),  1));
 		emit frame_added();// --> emit something else.
-		emit frames_reload(workingSet->getFrames());
+		emit frames_reload();
 	}
 	else if(1 == mode){ // Summing mode
 	/*	for(int i = 0; i < ny; i++) {
@@ -207,7 +214,9 @@ void Mpx3GUI::addFrame(int * frame){
 		last = new histogram(workingSet->getActiveFrame(),workingSet->x()*workingSet->y());
 		hists.push_back(last);
 		//hists.last()->addCount(frame, nx*ny);
-		emit frame_changed();
+		//emit frame_changed();
+		emit frames_reload();
+		_ui->glWidget->repaint();
 	}
 }
 
@@ -290,11 +299,17 @@ void Mpx3GUI::open_data(){
 }
 
 void Mpx3GUI::set_mode_integral(){
-	mode = 1;
+	if(mode != 1){
+	  mode = 1;
+	  emit set_summing(true);
+	}
 }
 
 void Mpx3GUI::set_mode_normal(){
+  if(0 != mode){
 	mode = 0;
+	emit set_summing(false);
+    }
 }
 
 void Mpx3GUI::clear_configuration(){

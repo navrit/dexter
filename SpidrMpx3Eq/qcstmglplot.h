@@ -8,7 +8,7 @@
 #include <QWheelEvent>
 
 #include <iterator>
-
+#include "dataset.h"
 
 #include <QOpenGLWidget>
 #include <QOpenGLShaderProgram>
@@ -46,6 +46,8 @@ public:
   GLfloat innerBoxGradient[2*4];
   GLfloat gradientTexCoords[1*2*2]; //TODO: reduce to 2 using instanced rendering., remove using vertex Ids?
 
+
+  Dataset *data = nullptr;
   const int nx =256, ny =256;
   int nLayers = 0;
   GLfloat offsetX =0, offsetY = 0, zoom = 1.0, baseSizeX, baseSizeY;

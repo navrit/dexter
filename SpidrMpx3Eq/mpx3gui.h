@@ -136,10 +136,11 @@ signals:
 	void data_cleared();
 	void frame_added();
 	void frame_changed();
-	void frames_reload(QVector<int*>);
+	void frames_reload();
 	void availible_gradients_changed(QStringList gradients);
 	void gradient_added(QString gradient);	
 	void ConnectionStatusChanged(bool); //TODO: emit false when connection is lost for whatever reason.
+	void summing_set(bool);
 
 	public slots:
 	void generateFrame(); //Debugging function to generate data when not connected
@@ -150,6 +151,7 @@ signals:
 	void set_mode_integral();
 	void set_mode_normal();
 	void clear_configuration();
+	void set_summing(bool);
 
 private slots:
 	void LoadEqualization();

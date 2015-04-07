@@ -71,7 +71,7 @@
       </layout>
      </widget>
      <widget class="QWidget" name="layoutWidget">
-      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1,0,0,0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1,0,0,0,0,0,0">
        <item>
         <widget class="QSpinBox" name="layerSpinner">
          <property name="maximum">
@@ -114,6 +114,23 @@
         <widget class="QLabel" name="countsLabel">
          <property name="text">
           <string>pixels fired: 0</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="startButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Start</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="summingCheckbox">
+         <property name="text">
+          <string>Sum frames</string>
          </property>
         </widget>
        </item>
