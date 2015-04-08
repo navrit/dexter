@@ -13,7 +13,7 @@ using namespace std;
 int main( int argc, char *argv[] )
 {
   // Open a control connection to SPIDR-TPX3 module
-  // with address 192.168.100.10, default port number 50000
+  // with address 192.168.1(00).10, default port number 50000
   SpidrController spidrctrl( 192, 168, 100, 10 );
 
   // Are we connected to the SPIDR-TPX3 module?
@@ -51,14 +51,14 @@ int main( int argc, char *argv[] )
   else
     cout << "PllConfig=" << config << endl;
 
-  int i, s, speed[] = { 640, 80, 160, 320, 40 };
+  int i, s, speed[] = { 640, 80, 160, 320, 40, 40 };
   int ena_mask, lock_mask, output_mask = 0xC0;
-  for( i=0; i<5; ++i )
+  for( i=0; i<sizeof(speed)/sizeof(int); ++i )
     {
-      cout << endl << endl;
+      cout << endl;
 
       if( spidrctrl.setReadoutSpeed( device_nr, speed[i] ) )
-	cout << "Speed: " << dec << speed[i] << hex << endl;
+	cout << "Speed=> " << dec << speed[i] << hex << endl;
       else
 	cout << "###setReadoutSpeed " << dec << speed[i] << hex << ": "
 	     << spidrctrl.errorString() << endl;
@@ -88,7 +88,7 @@ int main( int argc, char *argv[] )
       if( !spidrctrl.setOutputMask( device_nr, output_mask ) )
 	cout << "###setOutputMask: " << spidrctrl.errorString() << endl;
       else
-	cout << "OutputMask=" << output_mask << endl;
+	cout << "OutputMask=> " << output_mask << endl;
 
       Sleep( 2000 );
     }

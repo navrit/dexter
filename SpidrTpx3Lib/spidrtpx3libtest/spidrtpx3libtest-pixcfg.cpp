@@ -20,8 +20,9 @@ static string time_str();
 int main( int argc, char *argv[] )
 {
   // Open a control connection to SPIDR-TPX3 module
-  // with address 192.168.100.10, default port number 50000
-  SpidrController spidrctrl( 192, 168, 100, 10 );
+  // with address 192.168.1(00).10, default port number 50000
+  SpidrController spidrctrl( 192, 168, 1, 10 );
+  //SpidrController spidrctrl( 192, 168, 100, 10 );
 
   // Are we connected to the SPIDR-TPX3 module?
   if( !spidrctrl.isConnected() ) {
