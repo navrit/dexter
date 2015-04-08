@@ -22,16 +22,16 @@ using namespace std;
 
 #define error_out(str) cout<<str<<": "<<spidrctrl.errorString()<<endl
 
-quint32 get_addr( const char *str );
+quint32 get_addr_and_port( const char *str, int *portnr );
 void    usage( char *appname );
 
 // ----------------------------------------------------------------------------
 
 int main( int argc, char *argv[] )
 {
-  quint32      addr  = 0;
-  int          devnr = 0;
-  QHostAddress qaddr;
+  quint32 ipaddr = 0;
+  int     portnr = 50000;
+  int     devnr  = 0;
 
   // Check argument count
   if( !(argc == 2 || argc == 3) )
@@ -41,14 +41,14 @@ int main( int argc, char *argv[] )
     }
 
   // Check arguments
-  addr = get_addr( argv[1] );
+  ipaddr = get_addr_and_port( argv[1], &portnr );
   if( argc == 3 )
     {
       bool ok;
       devnr = QString(argv[2]).toUInt( &ok );
       if( !ok )
 	{
-	  cout << "### Invalid device number: " << string(argv[3]) << endl;
+	  cout << "### Invalid device number: " << string(argv[2]) << endl;
 	  usage( argv[0]);
 	  return 0;
 	}
@@ -56,8 +56,10 @@ int main( int argc, char *argv[] )
 
   // Open a control connection to SPIDR-TPX3 module
   // with the given address and default port number 50000
-  SpidrController spidrctrl( (addr>>24) & 0xFF, (addr>>16) & 0xFF,
-			     (addr>> 8) & 0xFF, (addr>> 0) & 0xFF );
+  SpidrController spidrctrl( (ipaddr>>24) & 0xFF,
+			     (ipaddr>>16) & 0xFF,
+			     (ipaddr>> 8) & 0xFF,
+			     (ipaddr>> 0) & 0xFF, portnr );
 
   // Are we connected to the SPIDR-TPX3 module?
   if( !spidrctrl.isConnected() ) {
@@ -87,7 +89,7 @@ int main( int argc, char *argv[] )
   // (to be included in onboard reset procedure?)
   spidrctrl.resetPixels( devnr );
 
-  // Test using a pattern
+  // Test it using a pattern
   const unsigned char PATTERN[] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20,
                                     0x3E, 0x3D, 0x3B, 0x37, 0x2F, 0x1F,
 				    0x3F };
@@ -221,12 +223,32 @@ int main( int argc, char *argv[] )
 
 // ----------------------------------------------------------------------------
 
-quint32 get_addr( const char *str )
+quint32 get_addr_and_port( const char *str, int *portnr )
 {
-  QHostAddress qaddr;
-  if( !qaddr.setAddress( QString(str) ) )
+  QString qstr( str );
+  if( qstr.contains( QChar(':') ) )
     {
-      cout << "### Invalid IP address: " << string(str) << endl;
+      // A port number is provided: extract it
+      bool ok;
+      int p = qstr.section( ':', 1, 1).toInt( &ok );
+      if( !ok )
+	{
+	  cout << "### Invalid port number: "
+	       << qstr.section( ':', 1, 1 ).toStdString() << endl;
+	  //usage();
+	  exit( 0 );
+	}
+      else
+	{
+	  *portnr = p;
+	}
+      // Remove the port number from the string
+      qstr = qstr.section( ':', 0, 0 );
+    }
+  QHostAddress qaddr;
+  if( !qaddr.setAddress( qstr ) )
+    {
+      cout << "### Invalid IP address: " << qstr.toStdString() << endl;
       //usage();
       exit( 0 );
     }
@@ -238,7 +260,7 @@ quint32 get_addr( const char *str )
 void usage( char *appname )
 {
   cout << endl << "Usage: "
-       << appname << " <ipaddr> [<devnr>]" << endl
+       << appname << " <ipaddr>[:<portnr>] [<devnr>]" << endl
        << "   Run a pixel configuration matrix test on a Timepix3 device"
        << endl
        << "   with the given device index number <devnr> (default 0)"
