@@ -1,15 +1,15 @@
 #
-# Project file for the spidrtpx3libtest testprogram
+# Project file for the spidrtest testprogram
 #
 # To generate a Visual Studio project:
-#   qmake -t vcapp spidrlibtpx3test.pro
+#   qmake -t vcapp spidrtest.pro
 # To generate a Makefile:
-#   qmake spidrlibtpx3test.pro
+#   qmake spidrtest.pro
 #
 # (or start from the 'SUBDIRS' .pro file to recursively generate the projects)
 #
 TEMPLATE = app
-TARGET   = spidrtpx3libtest
+TARGET   = spidrtest
 
 # Create a console app
 QT -= gui
@@ -36,4 +36,4 @@ LIBS += -lSpidrTpx3Lib
 
 INCLUDEPATH += ..
 
-SOURCES += spidrtpx3libtest.cpp
+SOURCES += spidrtest.cpp
