@@ -62,6 +62,8 @@ int main()
     {
       spidrctrl.setPixelTestEna( 0, i );
       spidrctrl.setPixelTestEna( 1, i );
+      spidrctrl.setPixelTestEna( 120, i );
+      spidrctrl.setPixelTestEna( 121, i );
     }
   if( !spidrctrl.setPixelConfig( device_nr ) )
     error_out( "###setPixelConfig" );
@@ -92,7 +94,7 @@ int main()
   if( !spidrctrl.restartTimers() )
     error_out( "###restartTimers" );
 
-  // Set Timepix3 acquisition mode
+  // Set Timepix3 acquisition mode: ToA-ToT, test-pulses, digital-in
   if( !spidrctrl.setGenConfig( device_nr,
                                TPX3_POLARITY_EMIN |
                                TPX3_ACQMODE_TOA_TOT |
@@ -103,8 +105,8 @@ int main()
     error_out( "###setGenCfg" );
 
   // Set Timepix3 into acquisition mode
+  //if( !spidrctrl.sequentialReadout() )
   if( !spidrctrl.datadrivenReadout() )
-  //if( !spidrctrl.sequentialReadout( 1 ) )
     error_out( "###xxxxReadout" );
 
   // ----------------------------------------------------------

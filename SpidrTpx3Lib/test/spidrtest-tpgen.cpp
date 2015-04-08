@@ -93,7 +93,7 @@ int main()
                                TPX3_GRAYCOUNT_ENA |
                                TPX3_TESTPULSE_ENA |
                                TPX3_FASTLO_ENA |
-			       TPX3_SELECTTP_DIGITAL ) )
+                               TPX3_SELECTTP_DIGITAL ) )
     error_out( "###setGenCfg" );
 
   // Set Timepix3 into acquisition mode
@@ -114,7 +114,7 @@ int main()
   if( !spidrctrl.setShutterTriggerConfig( trig_mode, trig_length_us,
 					  trig_freq_hz, trig_count,
 					  trig_delay_ns ) )
-    error_out( "###setTriggerConfig" );
+    error_out( "###setShutterTriggerConfig" );
 
   // ----------------------------------------------------------
 
