@@ -27,7 +27,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="spidrmon.qrc">
-    <normaloff>:/icon/spidrmon.ico</normaloff>:/icon/spidrmon.ico</iconset>
+    <normaloff>:/icon/SPIDR-logo-mon.ico</normaloff>:/icon/SPIDR-logo-mon.ico</iconset>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_3">
    <item>

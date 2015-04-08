@@ -1,5 +1,5 @@
 <RCC>
   <qresource prefix="icon">
-    <file>spidrmon.ico</file>
+    <file>SPIDR-logo-mon.ico</file>
   </qresource>
 </RCC>
