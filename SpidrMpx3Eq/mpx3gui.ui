@@ -21,7 +21,7 @@
        <string>DAC Control</string>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>6</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -1295,15 +1295,11 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="visualizationGL">
+      <widget class="QCstmGLVisualization" name="visualizationGL">
        <attribute name="title">
         <string>results</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_6">
-        <item>
-         <widget class="QCstmGLVisualization" name="glWidget" native="true"/>
-        </item>
-       </layout>
+       <layout class="QHBoxLayout" name="horizontalLayout_6"/>
       </widget>
       <widget class="QCstmThreshold" name="ThresholdTab">
        <attribute name="title">
@@ -1345,7 +1341,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">

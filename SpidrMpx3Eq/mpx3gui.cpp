@@ -59,7 +59,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	_equalization->SetMpx3GUI( this );
 
 	// Prepare Visualization
-	_ui->glWidget->SetMpx3GUI(this);
+	_ui->visualizationGL->SetMpx3GUI(this);
 	emit availible_gradients_changed(gradientNames);
 
 	// Prepare THL Calibration
@@ -220,7 +220,7 @@ void Mpx3GUI::addFrame(int * frame){
 		//hists.last()->addCount(frame, nx*ny);
 		//emit frame_changed();
 		emit frames_reload();
-		_ui->glWidget->repaint();
+		_ui->visualizationGL->repaint();
 	}
 }
 

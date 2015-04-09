@@ -57,8 +57,7 @@ void VoxelWidget::resizeGL(int w, int h){
   // Calculate aspect ratio
   qreal aspect = qreal(w) / qreal(h ? h : 1);
 
-  // Set near plane to 3.0, far plane to 7.0, field of view 45 degrees
-  const qreal zNear = 0, zFar = 1, fov = 45.0;
+
   setModelView();
   range = QVector3D(w, h, 10);
   program.bind();
@@ -68,8 +67,10 @@ void VoxelWidget::resizeGL(int w, int h){
 void VoxelWidget::setModelView(){
   // Reset projection
   mvp_matrix.setToIdentity();
-
-  //mvp_matrix.perspective(fov, aspect, zNear, zFar);
+  // Set near plane to 3.0, far plane to 7.0, field of view 45 degrees
+  qreal aspect = qreal(this->width()) / qreal(this->height() ? this->height() : 1);
+  const qreal zNear = 0.1, zFar = 10, fov = 90.0;
+  mvp_matrix.perspective(fov, aspect, zNear, zFar);
   mvp_matrix.translate(translation);
   mvp_matrix.rotate(rotations.x(), 1, 0, 0);
   mvp_matrix.rotate(rotations.y(), 0, 1, 0);
@@ -198,9 +199,9 @@ void VoxelWidget::keyPressEvent(QKeyEvent *event){
       break;
     case(Qt::Key_Space):
       std::cout << "Reseting!" <<std::endl;
-      translation = QVector3D(0,0,0.5);
-      rotations = QVector3D(0,0,0);
-      scale = 0.3;
+      translation = QVector3D(0,0,-3);
+      rotations = QVector3D(45,45,45);
+      scale = 0.5;
       break;
     }
     setModelView();
@@ -213,7 +214,7 @@ void VoxelWidget::createData(unsigned x, unsigned y, unsigned z){
   for(unsigned u = 0; u < z; u++)
     for(unsigned v = 0; v < y; v++)
       for(unsigned w = 0; w < x; w++)
-        data[u*y*x+v*x+w] = sin(sqrt(v)*w*w/v);
+        data[u*y*x+v*x+w] = qrand()&1? 1.0 : 0;// fabs(sin((10.*(double)u)/z)*sin(4.*((double)v)/y)*sin((16.*(double)w)/x));
 }
 
 void VoxelWidget::loadData(){
