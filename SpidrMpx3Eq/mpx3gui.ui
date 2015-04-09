@@ -21,7 +21,7 @@
        <string>DAC Control</string>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -1310,6 +1310,11 @@
         <string>Thresholds</string>
        </attribute>
       </widget>
+      <widget class="QCstmVoxeltab" name="voxelTab">
+       <attribute name="title">
+        <string>Voxel</string>
+       </attribute>
+      </widget>
       <widget class="QWidget" name="EqualizationTab">
        <attribute name="title">
         <string>[NEW] Equalization</string>
@@ -1340,7 +1345,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>21</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -1518,6 +1523,12 @@
    <class>QCstmThreshold</class>
    <extends>QWidget</extends>
    <header>qcstmthreshold.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QCstmVoxeltab</class>
+   <extends>QWidget</extends>
+   <header>qcstmvoxeltab.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

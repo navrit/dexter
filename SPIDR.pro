@@ -19,7 +19,7 @@ CONFIG += debug_and_release
 
 # Libraries
 SUBDIRS += SpidrMpx3Lib/SpidrMpx3Lib.pro
-SUBDIRS += SpidrPixelman/SpidrPixelman.pro
+SUBDIRS += SpidrMpx3Pixelman/SpidrPixelman.pro #Changed SpidrPixelman/ folder to SpidrMpx3Pixelman/
 SUBDIRS += SpidrTpx3Lib/SpidrTpx3Lib.pro
 
 # Executables

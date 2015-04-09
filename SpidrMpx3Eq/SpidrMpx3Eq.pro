@@ -52,9 +52,11 @@ SOURCES += main.cpp \
     gradientwidget.cpp \
     qcstmglvisualization.cpp \
     qcstmglplot.cpp \
+    qcstmvoxeltab.cpp \
     gradient.cpp \
     dataset.cpp \
-    qcstmthreshold.cpp
+    qcstmthreshold.cpp \
+    voxelwidget.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -71,10 +73,12 @@ HEADERS += mpx3gui.h \
     gradientwidget.h \
     qcstmglvisualization.h \
     qcstmglplot.h \
+    qcstmvoxeltab.h \
     gradient.h \
     mpx3eq_common.h \
     dataset.h \
-    qcstmthreshold.h
+    qcstmthreshold.h \
+    voxelwidget.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DACs.h
@@ -86,17 +90,20 @@ FORMS    += mpx3gui.ui \
     qcstmdacs.ui \
     gradientwidget.ui \
     qcstmglvisualization.ui \
-    qcstmthreshold.ui
+    qcstmthreshold.ui \
+    qcstmvoxeltab.ui
 
 DISTFILES += \
     CHANGES.txt \
     shaders/heatmap.frag \
     shaders/passthrough.vert \
-    config/heatmaps.json
+    config/heatmaps.json \
+    shaders/simple3d.vert \
+    shaders/simple3d.frag
 
 
     copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/config\" &
-    copydata.commands += $(COPY_DIR)  \"$$PWD/shaders\" \"$$DESTDIR/shaders\" &
+    copydata.commands += $(COPY_DIR)  \"$$PWD/shaders\" \"$$DESTDIR/\" &
     first.depends = $(first) copydata
     export(first.depends)
     export(copydata.commands)

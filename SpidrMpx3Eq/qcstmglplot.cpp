@@ -272,7 +272,6 @@ void QCstmGLPlot::wheelEvent(QWheelEvent *event){
 
 void QCstmGLPlot::keyPressEvent(QKeyEvent *event){//Doesn't really work that well for controls.
   //Can't seem to handle multiple presses at once and stutters quite badly.
-  qDebug() << "Caught keyEvent!";
   const GLfloat speed = 0.05;
   switch(event->key()){
     case Qt::Key_Left:

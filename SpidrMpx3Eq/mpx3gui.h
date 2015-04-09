@@ -22,6 +22,7 @@ using namespace std;
 #include "gradient.h"
 #include "histogram.h"
 #include "mpx3eq_common.h"
+#include "qcstmvoxeltab.h"
 
 #define __matrix_size_x 256
 #define __matrix_size_y 256
