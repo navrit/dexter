@@ -247,12 +247,15 @@ class SenseDACsThread : public QThread {
 
 public:
 
-	explicit SenseDACsThread (DACs * dacs, SpidrController * sc) { _dacs = dacs; _spidrcontrol = sc; };
+	explicit SenseDACsThread (int devIndx, DACs * dacs, SpidrController * sc);
 
 private:
 
 	SpidrController * _spidrcontrol;
 	DACs * _dacs;
+	int _deviceIndex;
+	// IP source address (SPIDR network interface)
+	int _srcAddr;
 
 	void run();
 
@@ -271,12 +274,15 @@ class ScanDACsThread : public QThread {
 
 public:
 
-	explicit ScanDACsThread (DACs * dacs, SpidrController * sc) { _dacs = dacs; _spidrcontrol = sc; };
+	explicit ScanDACsThread (int devIndx, DACs * dacs, SpidrController * sc);
 
 private:
 
 	SpidrController * _spidrcontrol;
 	DACs * _dacs;
+	int _deviceIndex;
+	// IP source address (SPIDR network interface)
+	int _srcAddr;
 
 	void run();
 

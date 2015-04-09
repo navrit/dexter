@@ -1,6 +1,9 @@
 #include "qcstmglvisualization.h"
 #include "ui_qcstmglvisualization.h"
 #include "mpx3equalization.h"
+#include "SpidrController.h"
+#include "SpidrDaq.h"
+
 #include <stdio.h>
 QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :  QWidget(parent),  ui(new Ui::QCstmGLVisualization)
 {
@@ -12,6 +15,97 @@ QCstmGLVisualization::~QCstmGLVisualization()
   delete ui;
 }
 
+void QCstmGLVisualization::StartDataTaking(){
+
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+
+	cout << "Acquiring ... ";
+
+	// Start the trigger as configured
+	spidrcontrol->startAutoTrigger();//getNTriggers
+	Sleep( 50 );
+	// See if there is a frame available
+	// I should get as many frames as triggers
+	int * framedata;
+	while ( spidrdaq->hasFrame() ) {
+		//cout << "capture ..." << endl;
+		int size_in_bytes = -1;
+		framedata = spidrdaq->frameData(0, &size_in_bytes);
+
+		_mpx3gui->addFrame( framedata );
+
+		spidrdaq->releaseFrame();
+		Sleep( 10 ); // Allow time to get and decode the next frame, if any
+	}
+
+	cout << "done." << endl;
+
+}
+void QCstmGLVisualization::ConnectionStatusChanged() {
+
+	ui->startButton->setEnabled(true); //Enable or disable the button depending on the connection status.
+
+	// TODO
+	// Configure the chip, provided that the Adj mask is loaded
+	Configuration( false );
+
+}
+
+void QCstmGLVisualization::Configuration(bool reset) {//TODO: should be part of parent?
+
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+
+	int deviceIndex = 2;
+	int nTriggers = 100;
+
+	// Reset pixel configuration
+	if ( reset ) spidrcontrol->resetPixelConfig();
+
+	// All adjustment bits to zero
+	//SetAllAdjustmentBits(0x0, 0x0);
+
+	// OMR
+	//spidrcontrol->setPolarity( true );		// Holes collection
+	//_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
+	//_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
+	spidrcontrol->setPixelDepth( deviceIndex, 12 );
+
+	spidrcontrol->setColourMode( deviceIndex, false ); 	// Fine Pitch
+	spidrcontrol->setCsmSpm( deviceIndex, 0 );			// Single Pixel mode
+	spidrcontrol->setEqThreshH( deviceIndex, true );
+	spidrcontrol->setDiscCsmSpm( deviceIndex, 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
+	//_spidrcontrol->setGainMode( 1 );
+
+	// Gain ?!
+	// 00: SHGM  0
+	// 10: HGM   2
+	// 01: LGM   1
+	// 11: SLGM  3
+	spidrcontrol->setGainMode( deviceIndex, 1 );
+
+	// Other OMR
+	spidrdaq->setDecodeFrames( true );
+	spidrcontrol->setPixelDepth( deviceIndex, 12 );
+	spidrdaq->setPixelDepth( 12 );
+	spidrcontrol->setMaxPacketSize( 1024 );
+
+	// Write OMR ... i shouldn't call this here
+	//_spidrcontrol->writeOmr( 0 );
+
+	// Trigger config
+	int trig_mode      = 4;     // Auto-trigger mode
+	int trig_length_us = 5000;  // This time shouldn't be longer than the period defined by trig_freq_hz
+	int trig_freq_hz   = (int) ( 1. / (2.*((double)trig_length_us/1000000.)) );   // Make the period double the trig_len
+	cout << "[INFO] Configured freq is " << trig_freq_hz << "Hz" << endl;
+	int nr_of_triggers = nTriggers;    // This is the number of shutter open i get
+	//int trig_pulse_count;
+	spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
+			trig_freq_hz, nr_of_triggers );
+
+}
+
 void QCstmGLVisualization::setGradient(int index){
   ui->gradientDisplay->setGradient(_mpx3gui->getGradient(index));
   ui->glPlot->setGradient(_mpx3gui->getGradient(index));
@@ -21,7 +115,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   _mpx3gui = p;
   setGradient(0);
   connect(_mpx3gui, SIGNAL(ConnectionStatusChanged(bool)), ui->startButton, SLOT(setEnabled(bool))); //enable the button on connection
-  connect(ui->startButton, SIGNAL(clicked(bool)), _mpx3gui, SLOT(establish_connection()));
+  connect(ui->startButton, SIGNAL(clicked(bool)), this, SLOT(StartDataTaking()));
   connect(ui->summingCheckbox, SIGNAL(clicked(bool)), _mpx3gui, SLOT(set_summing(bool)));
   connect(_mpx3gui, SIGNAL(summing_set(bool)), ui->summingCheckbox, SLOT(setChecked(bool)));
   connect(ui->gradientSelector, SIGNAL(activated(int)), this, SLOT(setGradient(int)));

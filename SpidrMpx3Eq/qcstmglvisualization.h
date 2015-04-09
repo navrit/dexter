@@ -16,10 +16,15 @@ class QCstmGLVisualization : public QWidget
 public:
   explicit QCstmGLVisualization(QWidget *parent = 0);
   void SetMpx3GUI(Mpx3GUI * p);
+  void Configuration(bool reset);
+
   ~QCstmGLVisualization();
 private:
   Ui::QCstmGLVisualization *ui;
+private slots:
+  void ConnectionStatusChanged();
 public slots:
+  void StartDataTaking();
   void setGradient(int index);
   void on_availible_gradients_changed(QStringList gradients);
   void on_frame_added();

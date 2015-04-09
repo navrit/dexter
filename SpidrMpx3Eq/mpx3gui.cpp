@@ -6,6 +6,7 @@
 
 #include "mpx3gui.h"
 #include "mpx3equalization.h"
+#include "qcstmglvisualization.h"
 #include "ui_mpx3gui.h"
 
 #include "qcustomplot.h"
@@ -58,13 +59,14 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	_equalization->SetMpx3GUI( this );
 
 	// Prepare Visualization
+	_ui->glWidget->SetMpx3GUI(this);
+	emit availible_gradients_changed(gradientNames);
+
+	// Prepare THL Calibration
+	_ui->ThresholdTab->SetMpx3GUI(this);
 
 	// Signals and slots for this part
 	SetupSignalsAndSlots();
-
-	_ui->glWidget->SetMpx3GUI(this);
-	//_ui->glWidget->setGradient(0);
-	emit availible_gradients_changed(gradientNames);
 
 	// Connect automatically
 	//_moduleConn->Connection();
@@ -108,6 +110,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 	// Inform every module of changes in connection status
 	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _dacs, SLOT( ConnectionStatusChanged() ) );
 	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _equalization, SLOT( ConnectionStatusChanged() ) );
+	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged() ) );
 
 }
 
@@ -126,7 +129,8 @@ void Mpx3GUI::establish_connection() {
 	int dev_nr = 2;
 	cout << "Connecting ..." << endl;
 	delete _spidrcontrol;
-	_spidrcontrol = new SpidrController( 192, 168, 1, 10 );
+	//_spidrcontrol = new SpidrController( 192, 168, 1, 10 );
+	_spidrcontrol = new SpidrController( 192, 16, 192, 30 );
 
 	// Check if we are properly connected to the SPIDR module
 	if ( _spidrcontrol->isConnected() ) {

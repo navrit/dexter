@@ -130,7 +130,7 @@ void DACs::StartDACScan() {
 	}
 
 	// Create the thread
-	_scanThread = new ScanDACsThread(this, spidrcontrol);
+	_scanThread = new ScanDACsThread(_deviceIndex, this, spidrcontrol);
 	// Connect to the progress bar
 	connect( _scanThread, SIGNAL( progress(int) ), _ui->progressBar, SLOT( setValue(int)) );
 
@@ -206,7 +206,7 @@ void DACs::SenseDACs() {
 	}
 
 	// Create the thread
-	_senseThread = new SenseDACsThread(this, spidrcontrol);
+	_senseThread = new SenseDACsThread(_deviceIndex, this, spidrcontrol);
 	// Connect to the progress bar
 	connect( _senseThread, SIGNAL( progress(int) ), _ui->progressBar, SLOT( setValue(int)) );
 
@@ -691,14 +691,45 @@ void DACs::addData(int dacIdx) {
 
 }
 
+SenseDACsThread::SenseDACsThread (int devIdx, DACs * dacs, SpidrController * sc) {
+
+	_dacs = dacs;
+	_spidrcontrol = sc;
+	_deviceIndex = devIdx;
+	// I need to do this here and not when already running the thread
+	// Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
+	if( _spidrcontrol ) { _spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
+	else { _srcAddr = 0; }
+
+}
+
+ScanDACsThread::ScanDACsThread (int devIdx, DACs * dacs, SpidrController * sc) {
+
+	_dacs = dacs;
+	_spidrcontrol = sc;
+	_deviceIndex = devIdx;
+	// I need to do this here and not when already running the thread
+	// Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
+	if( _spidrcontrol ) { _spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
+	else { _srcAddr = 0; }
+
+}
 
 void SenseDACsThread::run() {
 
 	// Open a new temporary connection to the spider to avoid collisions to the main one
-	SpidrController * spidrcontrol = new SpidrController( 192, 168, 1, 10 );
+	// Extract the ip address
+	int ipaddr[4] = { 1, 1, 168, 192 };
+	if( _srcAddr != 0 ) {
+		ipaddr[3] = (_srcAddr >> 24) & 0xFF;
+		ipaddr[2] = (_srcAddr >> 16) & 0xFF;
+		ipaddr[1] = (_srcAddr >>  8) & 0xFF;
+		ipaddr[0] = (_srcAddr >>  0) & 0xFF;
+	}
+	SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 
 	if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
-		cout << "Device not connected !" << endl;
+		cout << "[ERR ] Device not connected !" << endl;
 		return;
 	}
 
@@ -775,7 +806,16 @@ void SenseDACsThread::run() {
 void ScanDACsThread::run() {
 
 	// Open a new temporary connection to the spider to avoid collisions to the main one
-	SpidrController * spidrcontrol = new SpidrController( 192, 168, 1, 10 );
+	// Extract the ip address
+	int ipaddr[4] = { 1, 1, 168, 192 };
+	if( _srcAddr != 0 ) {
+		ipaddr[3] = (_srcAddr >> 24) & 0xFF;
+		ipaddr[2] = (_srcAddr >> 16) & 0xFF;
+		ipaddr[1] = (_srcAddr >>  8) & 0xFF;
+		ipaddr[0] = (_srcAddr >>  0) & 0xFF;
+	}
+
+	SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 
 	if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
 		cout << "Device not connected !" << endl;
