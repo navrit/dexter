@@ -20,6 +20,8 @@ void QCstmGLVisualization::setGradient(int index){
 void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   _mpx3gui = p;
   setGradient(0);
+  connect(_mpx3gui, SIGNAL(ConnectionStatusChanged(bool)), ui->startButton, SLOT(setEnabled(bool))); //enable the button on connection
+  connect(ui->startButton, SIGNAL(clicked(bool)), _mpx3gui, SLOT(establish_connection()));
   connect(ui->summingCheckbox, SIGNAL(clicked(bool)), _mpx3gui, SLOT(set_summing(bool)));
   connect(_mpx3gui, SIGNAL(summing_set(bool)), ui->summingCheckbox, SLOT(setChecked(bool)));
   connect(ui->gradientSelector, SIGNAL(activated(int)), this, SLOT(setGradient(int)));
