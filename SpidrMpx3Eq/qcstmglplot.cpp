@@ -202,7 +202,7 @@ void QCstmGLPlot::setRange(QCPRange range){
     program[0].bind();
     program[0].setUniformValue(clampLoc, QSizeF(range.lower, range.upper));
     printf("Set new range of glPlot to %f, %f\n", range.lower, range.upper);
-    this->repaint();
+    this->update();
 }
 
 void QCstmGLPlot::setActive(int layer){

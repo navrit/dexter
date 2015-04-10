@@ -17,7 +17,8 @@ void GradientWidget::paintEvent(QPaintEvent *event){ //TODO: caching, auto-forma
   if(!m_gradient_image)
     return;
   QPainter painter(this);
-  painter.begin(this);
+  if(!painter.isActive())
+    painter.begin(this);
   m_label_spacing = this->height()/((float) m_nlabels);
   QRectF boundingBox;
   QString label;
@@ -46,6 +47,7 @@ void GradientWidget::paintEvent(QPaintEvent *event){ //TODO: caching, auto-forma
     }
   if(requiredWidth > this->width())
     this->setMinimumWidth(requiredWidth);
+  painter.end();
 }
 
 void GradientWidget::resizeEvent(QResizeEvent *event){
