@@ -50,10 +50,10 @@ class QCstmPlotHistogram : public QCustomPlot
           emit rangeChanged(QCPRange(xClicked, xReleased));
         }
   }
-  void changeBinSize(int binSize, int histogramToChange);
 public:
   QCstmPlotHistogram(QWidget* &parent);
   virtual ~QCstmPlotHistogram();
+  void changeBinSize(int binSize, int histogramToChange);
   void addHistogram(histogram *hist, int reduction  );
   //void setData(int *data, unsigned nData);
   void clear();

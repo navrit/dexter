@@ -100,6 +100,7 @@ signals:
 	void frame_added();
 	void frame_changed();
 	void frames_reload();
+	void active_frame_changed(int);
 	void availible_gradients_changed(QStringList gradients);
 	void gradient_added(QString gradient);	
 	void ConnectionStatusChanged(bool); //TODO: emit false when connection is lost for whatever reason.
@@ -116,7 +117,8 @@ signals:
 	void clear_configuration();
 	void set_summing(bool);
 	void start_data_taking();
-
+public slots:
+	void set_active_frame(int);
 private slots:
 	void LoadEqualization();
 	void on_openfileButton_clicked();

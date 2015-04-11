@@ -17,6 +17,7 @@ private:
 public:
   Dataset(int x, int y);
   ~Dataset();
+  void setActive(int index){m_activeFrame = index;}
   //void addMask(QPoint pixel){m_mask.insert(pixel);}
   //void removeMask(QPoint pixel){m_mask.remove(pixel);}
   void addFrame(int *frame);
@@ -26,6 +27,7 @@ public:
   int getFrameCount(){return m_frames.length();}
   QPoint getSize(){return QPoint(m_nx, m_ny);}
   int* getActiveFrame(){return m_frames.at(m_activeFrame);}
+  int  getActiveIndex(){return m_activeFrame;}
   int *getFrame(int index);
   QVector <int*> getFrames(){ return m_frames; }
   void sumFrame(int *frame);

@@ -35,9 +35,8 @@ int* Dataset::getFrame(int index){
 }
 
 void Dataset::sumFrame(int * frame){
-  for(int i = 0; i < m_nx*m_ny; i++){
-      m_frames.at(m_activeFrame)[i] += frame[i];
-    }
+  for(int i = 0; i < m_nx*m_ny; i++)
+    m_frames.at(m_activeFrame)[i] += frame[i];
 }
 
 int Dataset::sample(int x, int y, int layer){

@@ -88,13 +88,14 @@ void QCstmPlotHistogram::changeBinSize(int reduction, int histogramToChange){
    data->clear();
    for(int i = 0; i < subsampled.length();i++)
     data->insert((i+0.5)*binWidth+min, QCPData((i+0.5)*binWidth+min, ((double)subsampled[i])/binWidth));
+   this->graph(currentHist)->rescaleAxes();
    replot();
 }
 
 void QCstmPlotHistogram::rebinHistograms(int binSize){
   for(int i = 0; i < this->graphCount();i++)
     changeBinSize(binSize, i);
-  rescaleAxes();
+  this->graph(currentHist)->rescaleAxes();
   replot();
 }
 

@@ -125,11 +125,12 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   connect(_mpx3gui, SIGNAL(availible_gradients_changed(QStringList)), this, SLOT(on_availible_gradients_changed(QStringList)));
   connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)),ui->glPlot, SLOT(setRange(QCPRange)));
   connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), ui->gradientDisplay, SLOT(set_range(QCPRange)));
-  connect(ui->layerSpinner, SIGNAL(valueChanged(int)), ui->glPlot, SLOT(setActive(int)));
-  connect(ui->layerSpinner, SIGNAL(valueChanged(int)), ui->histPlot, SLOT(setActive(int)));
+  connect(_mpx3gui, SIGNAL(active_frame_changed(int)), ui->glPlot, SLOT(setActive(int)));
+  connect(_mpx3gui, SIGNAL(active_frame_changed(int)), ui->histPlot, SLOT(setActive(int)));
   connect(ui->binWidthSpinner, SIGNAL(valueChanged(int)), ui->histPlot, SLOT(rebinHistograms(int)));
   connect(ui->glPlot, SIGNAL(hovered_pixel_changed(QPoint)),this, SLOT(on_hover_changed(QPoint)));
   connect(ui->glPlot, SIGNAL(pixel_selected(QPoint,QPoint)), this, SLOT(on_pixel_selected(QPoint,QPoint)));
+  connect(ui->layerSpinner, SIGNAL(valueChanged(int)), _mpx3gui, SLOT(set_active_frame(int)));
   connect(this, SIGNAL(change_hover_text(QString)), ui->mouseOverLabel, SLOT(setText(QString)));
 }
 
@@ -140,7 +141,7 @@ void QCstmGLVisualization::on_availible_gradients_changed(QStringList gradients)
 
 void QCstmGLVisualization::on_frame_updated(){
   ui->glPlot->setData(_mpx3gui->getDataset()->getFrames());
-  //ui->histPlot->changeBinSize(ui->binWidthSpinner->value());
+  ui->histPlot->changeBinSize(ui->binWidthSpinner->value(), ui->layerSpinner->value());
 }
 
 void QCstmGLVisualization::on_hover_changed(QPoint pixel){

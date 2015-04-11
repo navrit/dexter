@@ -177,6 +177,10 @@ void Mpx3GUI::addFrame(int *frame){
   wrapper[0] = frame;
   this->addFrames(wrapper);
 }
+void Mpx3GUI::set_active_frame(int index){
+  workingSet->setActive(index);
+  emit active_frame_changed(index);
+}
 
 void Mpx3GUI::addFrames(QVector<int*> frames){
   for(int i = 0; i < frames.length(); i++){
@@ -187,11 +191,9 @@ void Mpx3GUI::addFrames(QVector<int*> frames){
 	}
 	else if(1 == mode){ // Summing mode
 		workingSet->sumFrame(frames[i]);
-		histogram *last = hists[hists.size()-1];//TODO: do this better
-		hists.pop_back();
-		delete last;
-		last = new histogram(workingSet->getActiveFrame(),workingSet->x()*workingSet->y());
-		hists.push_back(last);
+		histogram *old = hists[workingSet->getActiveIndex()];//TODO: do this better
+		delete old;
+		old = new histogram(workingSet->getActiveFrame(),workingSet->x()*workingSet->y());
 	}
   }
    if(0 == mode || 0 == workingSet->getFrameCount())
