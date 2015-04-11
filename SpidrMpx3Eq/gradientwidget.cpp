@@ -70,3 +70,4 @@ void GradientWidget::set_range(QCPRange range){
   m_min = range.lower; m_max = range.upper;
   this->update();
 }
+

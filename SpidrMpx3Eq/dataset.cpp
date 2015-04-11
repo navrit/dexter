@@ -11,6 +11,11 @@ Dataset::~Dataset()
     delete[] m_frames.at(i);
 }
 
+void Dataset::addFrames(QVector<int *> frames){
+  for(int i = 0; i < frames.length(); i++)
+    this->addFrame(frames[i]);
+}
+
 void Dataset::addFrame(int *frame){
   int *newFrame = new int[m_nx*m_ny];
   for(int i = 0 ; i < m_nx*m_ny;i++)

@@ -75,6 +75,7 @@ public:
 	SpidrController * GetSpidrController(){ return _spidrcontrol; }
 	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
 	void addFrame(int *frame);
+	void addFrames(QVector<int*> frames);
 	Gradient* getGradient(int index);
 	int* getFrame(int index){
 	  return workingSet->getFrame(index);
@@ -95,6 +96,7 @@ public:
 signals:
 	void dataChanged();
 	void data_cleared();
+	void hist_added();
 	void frame_added();
 	void frame_changed();
 	void frames_reload();

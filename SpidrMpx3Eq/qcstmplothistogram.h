@@ -50,7 +50,7 @@ class QCstmPlotHistogram : public QCustomPlot
           emit rangeChanged(QCPRange(xClicked, xReleased));
         }
   }
-
+  void changeBinSize(int binSize, int histogramToChange);
 public:
   QCstmPlotHistogram(QWidget* &parent);
   virtual ~QCstmPlotHistogram();
@@ -65,7 +65,7 @@ public slots:
   void changeRange(QCPRange newRange);
   void minClampChanged(double min);
   void maxClampChanged(double max);
-  void changeBinSize(int binSize);
+  void rebinHistograms(int binSize);
 };
 
 #endif // QCSTMPLOTHISTOGRAM_H

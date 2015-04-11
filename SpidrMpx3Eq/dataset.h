@@ -21,6 +21,7 @@ public:
   //void removeMask(QPoint pixel){m_mask.remove(pixel);}
   void addFrame(int *frame);
   void addFrame(QVector<int> frame);
+  void addFrames(QVector<int*> frames);
   void toJson(); //return JSON object to save.
   int getFrameCount(){return m_frames.length();}
   QPoint getSize(){return QPoint(m_nx, m_ny);}

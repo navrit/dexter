@@ -172,37 +172,32 @@ void Mpx3GUI::generateFrame(){//TODO: put into Dataset
 			data[i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
 	addFrame(data.data());
 }
+void Mpx3GUI::addFrame(int *frame){
+  QVector<int*> wrapper(1);
+  wrapper[0] = frame;
+  this->addFrames(wrapper);
+}
 
-void Mpx3GUI::addFrame(int * frame){
-
-	// Make a local copy first
-	//int * frame = new int[workingSet->x()*workingSet->y()];
-	//for(int i = 0; i < workingSet->x()*workingSet->y(); i++) frame[i] = origframe[i]; //TODO: don't moke new
-
-
+void Mpx3GUI::addFrames(QVector<int*> frames){
+  for(int i = 0; i < frames.length(); i++){
 	if(0 == mode || 0 == workingSet->getFrameCount()){//normal mode, or no frame yet
-		workingSet->addFrame(frame);
-		hists.push_back(new histogram(frame, workingSet->x()*workingSet->y(),  1));
-		emit frame_added();// --> emit something else.
-		emit frames_reload();
+		workingSet->addFrame(frames[i]);
+		hists.push_back(new histogram(frames[i], workingSet->x()*workingSet->y(),  1));
+		emit hist_added();
 	}
 	else if(1 == mode){ // Summing mode
-	/*	for(int i = 0; i < ny; i++) {
-			for(int j = 0; j < nx; j++){
-				data[data.size()-1][i*nx+j] += frame[i*nx+j];
-			}
-		}*/
-		workingSet->sumFrame(frame);
+		workingSet->sumFrame(frames[i]);
 		histogram *last = hists[hists.size()-1];//TODO: do this better
 		hists.pop_back();
 		delete last;
 		last = new histogram(workingSet->getActiveFrame(),workingSet->x()*workingSet->y());
 		hists.push_back(last);
-		//hists.last()->addCount(frame, nx*ny);
-		//emit frame_changed();
-		emit frames_reload();
-		_ui->visualizationGL->repaint();
 	}
+  }
+   if(0 == mode || 0 == workingSet->getFrameCount())
+    emit frame_added();// --> emit something else.
+   else if(1 == mode)
+    emit frames_reload();
 }
 
 int Mpx3GUI::getPixelAt(int x, int y, int layer){
@@ -274,12 +269,16 @@ void Mpx3GUI::open_data(){
 	workingSet = new Dataset(nx, ny);
 	int nLayers;
 	saveFile.read((char*)&nLayers, sizeof(nLayers));
+	QVector<int*> newFrames(nLayers);
 	for(int i = 0; i < nLayers;i++){
-		int* newFrame = new int[nx*ny];
-		saveFile.read((char*)newFrame, nx*ny*sizeof(int));
-		this->addFrame(newFrame);
+	  newFrames[i] = new int[nx*ny];
+	  saveFile.read((char*)newFrames[i], nx*ny*sizeof(int));
+	  this->addFrame(newFrames[i]);
 	}
 	saveFile.close();
+	//this->addFrames(newFrames);
+	for(int i = 0; i < nLayers;i++)
+	  delete[] newFrames[i];
 	return;
 }
 

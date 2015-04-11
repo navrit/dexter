@@ -19,6 +19,7 @@ public:
   ~GradientWidget();
   void setGradient(Gradient *gradient);
   void paintEvent(QPaintEvent *event);
+  //void wheelEvent(QWheelEvent *event);
 
 signals:
   void range_changed(int min, int max);
