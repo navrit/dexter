@@ -30,25 +30,11 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	// Instantiate everything in the UI
 	_ui->setupUi(this);
 	workingSet = new Dataset(256, 256);
-	//index various heatmaps
-	/*gradients.insert("Grayscale", QCPColorGradient::gpGrayscale);
-	gradients.insert("Jet", QCPColorGradient::gpJet);
-	gradients.insert("Ion", QCPColorGradient::gpIon);
-	gradients.insert("Candy", QCPColorGradient::gpCandy);
-	gradients.insert("Hot", QCPColorGradient::gpHot);
-	gradients.insert("Cold", QCPColorGradient::gpCold);
-	emit availible_gradients_changed(QStringList(gradients.keys()));
-	gradients.insert("Thermal", QCPColorGradient::gpThermal);
-	emit gradient_added("Thermal");
-	startTimer( 200 );// TODO: use of this?*/
 
-	// Connectivity between modules
-	//_moduleConn = new ModuleConnection;
-
-	gradients2 = Gradient::fromJsonFile("./config/heatmaps.json");
+	gradients = Gradient::fromJsonFile("./config/heatmaps.json");
 	QStringList gradientNames;
-	for(int i = 0; i < gradients2.length();i++)
-	  gradientNames.append(gradients2[i]->getName());
+	for(int i = 0; i < gradients.length();i++)
+	  gradientNames.append(gradients[i]->getName());
 
 	// Prepare DACs panel
 	_dacs = new DACs(_coreApp, _ui);
@@ -78,13 +64,8 @@ Mpx3GUI::~Mpx3GUI()
 	delete _ui;
 }
 
-void Mpx3GUI::timerEvent( QTimerEvent * /*evt*/ ) {
-
-
-}
-
 Gradient* Mpx3GUI::getGradient(int index){
-  return gradients2.at(index);
+  return gradients.at(index);
 }
 
 void Mpx3GUI::LoadEqualization(){

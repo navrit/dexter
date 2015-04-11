@@ -69,7 +69,7 @@ void VoxelWidget::setModelView(){
   mvp_matrix.setToIdentity();
   // Set near plane to 3.0, far plane to 7.0, field of view 45 degrees
   qreal aspect = qreal(this->width()) / qreal(this->height() ? this->height() : 1);
-  const qreal zNear = 0.1, zFar = 10, fov = 90.0;
+  const qreal zNear = 0.1, zFar = 10, fov = 60.0;
   mvp_matrix.perspective(fov, aspect, zNear, zFar);
   mvp_matrix.translate(translation);
   mvp_matrix.rotate(rotations.x(), 1, 0, 0);

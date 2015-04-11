@@ -99,7 +99,8 @@ DISTFILES += \
     shaders/passthrough.vert \
     config/heatmaps.json \
     shaders/simple3d.vert \
-    shaders/simple3d.frag
+    shaders/simple3d.frag \
+    NOTES.txt
 
 
     copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/config\" &

@@ -1,0 +1,22 @@
+BUGS & ISSUES:
+-Generated data + load data leaves old data.
+-No pixels fired/total charge(/pixels masked)
+-Loading is slow on AMD cards, upload all frames at once not frame by frame.
+DONE 2015-04-11-Heatmap is the wrong way around before switching
+    DONE 2015-04-11-Heatmap is the wrong way around for Opengl.
+-segfault in histogram when summing? Could not reproduce.
+-Clear data segfaults?
+
+TODO:
+-Controls on gradient widget
+-Clean up code.
+   ->Optimize/clean the gl renderer.
+   ->Move connection/data taking stuff to Mpx3GUI
+   ->Move loading/saving into Dataset
+   ->Add summing mode etc. into Dataset.
+-Finish voxels.
+    ->Lighting, Normal components
+    ->Compute voxels with MC.
+
+OBSERVATIONS & QUESTIONS:
+-Sr90 data shows a connected structure, is this because of a lack of colimator?

@@ -2,9 +2,7 @@
 #include <QPainter>
 #include <QString>
 #include <stdio.h>
-GradientWidget::GradientWidget(QWidget *parent) : QWidget(parent)
-{
-
+GradientWidget::GradientWidget(QWidget *parent) : QWidget(parent){
 }
 
 GradientWidget::~GradientWidget()
@@ -50,35 +48,16 @@ void GradientWidget::paintEvent(QPaintEvent *event){ //TODO: caching, auto-forma
   painter.end();
 }
 
-void GradientWidget::resizeEvent(QResizeEvent *event){
-  QVector<GLfloat> colors = m_gradient->getColorArray();
-  delete m_gradient_image;
-  m_gradient_image = new QImage(1,event->size().height(),QImage::Format_RGB32);
-  printf("ColorArray size = %d pixels", colors.length()/3);
-  double delta =(colors.length()/3)/ ((double)m_gradient_image->height());
-  for(int i = 0; i < m_gradient_image->height();i++){
-    QRgb *scanline = (QRgb*) m_gradient_image->scanLine( m_gradient_image->height()-i-1);//TODO: check if this is the right way around.
-    int sample = round(i*delta);
-    QRgb color = qRgb(255*colors[sample*3+0], 255*colors[sample*3+1], 255*colors[sample*3+2]);
-    for(int j = 0; j < m_gradient_image->width();j++)
-      scanline[j] = color;
-  }
-  m_gradient_pixmap = QPixmap::fromImage(*m_gradient_image);
-  this->update();
-}
-
 void GradientWidget::setGradient(Gradient *gradient){
   m_gradient = gradient;
   QVector<GLfloat> colors = m_gradient->getColorArray();
   delete m_gradient_image;
-  m_gradient_image = new QImage(1,colors.length()/3,QImage::Format_RGB32);
+  m_gradient_image = new QImage(1, colors.length()/3,QImage::Format_RGB32);
   for(int i = 0; i < m_gradient_image->height();i++){
-    QRgb *scanline = (QRgb*) m_gradient_image->scanLine(i);
-    for(int j = 0; j < m_gradient_image->width();j++)
-       scanline[j] = qRgb(255*colors[i*3+0], 255*colors[i*3+1], 255*colors[i*3+2]);
+    QRgb *scanline = (QRgb*) m_gradient_image->scanLine(m_gradient_image->height()-1-i);
+    scanline[0] = qRgb(255*colors[i*3+0], 255*colors[i*3+1], 255*colors[i*3+2]);
   }
   m_gradient_pixmap = QPixmap::fromImage(*m_gradient_image);
-  //this->repaint();
   this->update();
 }
 

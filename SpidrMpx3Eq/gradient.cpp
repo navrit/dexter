@@ -57,10 +57,10 @@ QVector<Gradient*> Gradient::fromJsonFile(QString filename){
    return ret;
 }
 
-GLfloat* Gradient::fillArray(){
+void Gradient::fillArray(){
       int nFixedPoints = fixedPoints.count();
       if(nFixedPoints <  2)//We need at least 2 fixed points to interpolate.
-        return nullptr;
+        return;
       colorArray.resize(nPoints*3);
       QMap<float,QColor>::iterator prev = fixedPoints.end()-1;
       QMap<float,QColor>::iterator next = fixedPoints.begin();
@@ -104,5 +104,4 @@ GLfloat* Gradient::fillArray(){
           colorArray[i*3+1]  = interpolated.greenF();//a1*prev.value().greenF()+a0*next.value().greenF();
           colorArray[i*3+2]  = interpolated.blueF();//a1*prev.value().blueF()+a0*next.value().blueF();
        }
-      return colorArray.data();
 }

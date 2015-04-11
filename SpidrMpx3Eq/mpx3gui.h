@@ -39,35 +39,7 @@ class Mpx3Equalization;
 namespace Ui {
 class Mpx3GUI;
 }
-/*
-class ModuleConnection : public QObject {
 
-	Q_OBJECT
-
-public:
-
-	ModuleConnection(){};
-	~ModuleConnection(){};
-	SpidrController * GetSpidrController(){ return _spidrcontrol; };
-	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; };
-
-private:
-
-	// Connectivity
-	SpidrController * _spidrcontrol;
-	SpidrDaq * _spidrdaq;
-
-private slots:
-
-	void Connection();
-
-	signals:
-
-void ConnectionStatusChanged();
-
-
-};
-*/
 class Mpx3GUI : public QMainWindow {
 
 	Q_OBJECT
@@ -78,36 +50,24 @@ public:
 	~Mpx3GUI();
 	void SetupSignalsAndSlots();
 	Ui::Mpx3GUI * GetUI() { return _ui; }
-	//ModuleConnection * GetModuleConnection(){ return _moduleConn; }
-
-	void timerEvent( QTimerEvent * );
 
 private:
 	int mode = 0;
 	QApplication * _coreApp;
 	Ui::Mpx3GUI * _ui;
 
-	//Define  some UI variable shared by all the modules.
-	QMap<QString, QCPColorGradient> gradients;
-	unsigned currentFrame;
-
 	// Each object here deals with one tab of the
 	// Equalization
 	Mpx3Equalization * _equalization = nullptr;
 	// DACs
 	DACs * _dacs = nullptr;
+
 	// This helps interconnecting the different modules
-	//ModuleConnection * _moduleConn;
 	SpidrController * _spidrcontrol = nullptr;
 	SpidrDaq * _spidrdaq = nullptr;
 
-	//Data Stores
-	//QVector<int*> data;
-	//int ny = 256;
-	//int nx = 256;
-
 	Dataset *workingSet;
-	QVector<Gradient*>  gradients2;
+	QVector<Gradient*>  gradients;
 	vector<histogram*> hists;
 public:
 	Dataset* getDataset(){return workingSet;}

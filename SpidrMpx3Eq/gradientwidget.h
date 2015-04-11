@@ -19,7 +19,6 @@ public:
   ~GradientWidget();
   void setGradient(Gradient *gradient);
   void paintEvent(QPaintEvent *event);
-  void resizeEvent(QResizeEvent *event);
 
 signals:
   void range_changed(int min, int max);

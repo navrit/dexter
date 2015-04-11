@@ -18,7 +18,7 @@ public:
   static Gradient* fromJsonObject(QJsonObject object);
   QVector<GLfloat> getColorArray(){return colorArray;}
   void setNPoints(int nPoints){ this->nPoints = nPoints; }
-  GLfloat* fillArray();
+  void fillArray();
   void setInterpolationMode(int mode){ interpolationMode = mode;}
   GLfloat* getArray(){return colorArray.data();}
   int getLength(){return colorArray.size()/3;}

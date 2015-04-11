@@ -70,9 +70,6 @@ void QCstmGLPlot::initializeGL(){
       //QOpenGLWidget::initializeGL();
    }
 
-  qDebug() << "position @ " << program[0].attributeLocation("position");
-  qDebug() << "texCoordsIn @ " << program[0].attributeLocation("texCoordsIn");
-
   //loadGradient();
   loadFrames(nx,ny,nLayers, frames);
   program[0].setUniformValue("layer",0);
@@ -107,7 +104,6 @@ void QCstmGLPlot::resizeGL(int w, int h){
   double scaleFactor = 1.0/(ratioX >  ratioY? ratioX:ratioY);
   baseSizeX = ratioX*scaleFactor; baseSizeY = ratioY*scaleFactor;
   program[0].setUniformValue("aspectRatio", baseSizeX, baseSizeY);
-  printf("(%d, %d) --> (%d, %d)  = (%f, %f)\n ", w, h, nx, ny , baseSizeX, baseSizeY);
   qDebug() << "(" << w << "," << h << ") --> (" << nx << "," << ny << ") = " << baseSizeX << ", " << baseSizeY;
   program[0].setUniformValue("resolution", (float)w, (float)h);
 }
@@ -201,7 +197,6 @@ void QCstmGLPlot::loadFrames(int nx, int ny, int nFrames, GLint **data ){
 void QCstmGLPlot::setRange(QCPRange range){
     program[0].bind();
     program[0].setUniformValue(clampLoc, QSizeF(range.lower, range.upper));
-    printf("Set new range of glPlot to %f, %f\n", range.lower, range.upper);
     this->update();
 }
 
@@ -226,7 +221,6 @@ void QCstmGLPlot::setRange(int min, int max){
 }
 
 void QCstmGLPlot::setOffset(GLfloat x, GLfloat y){
-  qDebug() << "Setting offset: "  << x << "," << y;
   offsetX = x; offsetY = y;
   program[0].bind();
   program[0].setUniformValue(offsetLoc, offsetX,  offsetY);
@@ -234,7 +228,6 @@ void QCstmGLPlot::setOffset(GLfloat x, GLfloat y){
 }
 
 void QCstmGLPlot::addOffset(GLfloat x, GLfloat y){
-  qDebug() << "adding offset: " << x << "," << y;
   setOffset(offsetX+x, offsetY+y);
 }
 
