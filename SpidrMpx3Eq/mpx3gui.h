@@ -68,7 +68,7 @@ private:
 
 	Dataset *workingSet;
 	QVector<Gradient*>  gradients;
-	vector<histogram*> hists;
+	QVector<histogram*> hists;
 public:
 	Dataset* getDataset(){return workingSet;}
 	Mpx3Equalization* getEqualization(){return _equalization;}

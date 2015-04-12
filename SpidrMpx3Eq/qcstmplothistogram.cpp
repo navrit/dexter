@@ -93,6 +93,8 @@ void QCstmPlotHistogram::changeBinSize(int reduction, int histogramToChange){
 }
 
 void QCstmPlotHistogram::rebinHistograms(int binSize){
+  if(currentHist == -1)
+    return;
   for(int i = 0; i < this->graphCount();i++)
     changeBinSize(binSize, i);
   this->graph(currentHist)->rescaleAxes();

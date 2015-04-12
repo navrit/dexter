@@ -4,6 +4,7 @@ BUGS & ISSUES:
 DONE 2015-04-11, Was mostly an issue with the way histograms were loaded not, textures loaded. -Loading is slow on AMD cards, upload all frames at once not frame by frame.
 DONE 2015-04-11-Heatmap is the wrong way around before switching
     DONE 2015-04-11-Heatmap is the wrong way around for Opengl.
+
 -segfault in histogram when summing? Could not reproduce.
 -Clear data segfaults?
 

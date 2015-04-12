@@ -17,6 +17,7 @@ private:
 public:
   Dataset(int x, int y);
   ~Dataset();
+  void clear();
   void setActive(int index){m_activeFrame = index;}
   //void addMask(QPoint pixel){m_mask.insert(pixel);}
   //void removeMask(QPoint pixel){m_mask.remove(pixel);}

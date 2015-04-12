@@ -119,6 +119,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   connect(_mpx3gui, SIGNAL(summing_set(bool)), ui->summingCheckbox, SLOT(setChecked(bool)));
   connect(ui->gradientSelector, SIGNAL(activated(int)), this, SLOT(setGradient(int)));
   connect(ui->generateDataButton, SIGNAL(clicked()), _mpx3gui, SLOT(generateFrame()));
+  connect(_mpx3gui, SIGNAL(data_cleared()), this, SLOT(on_clear()));
   connect(_mpx3gui, SIGNAL(frame_added()), this, SLOT(on_frame_added()));
   connect(_mpx3gui, SIGNAL(hist_added()), this, SLOT(on_hist_added()));
   connect(_mpx3gui, SIGNAL(frames_reload()),this, SLOT(on_frame_updated()));
@@ -132,6 +133,11 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   connect(ui->glPlot, SIGNAL(pixel_selected(QPoint,QPoint)), this, SLOT(on_pixel_selected(QPoint,QPoint)));
   connect(ui->layerSpinner, SIGNAL(valueChanged(int)), _mpx3gui, SLOT(set_active_frame(int)));
   connect(this, SIGNAL(change_hover_text(QString)), ui->mouseOverLabel, SLOT(setText(QString)));
+}
+
+void QCstmGLVisualization::on_clear(){
+  ui->histPlot->clear();
+  ui->layerSpinner->setMaximum(0);
 }
 
 void QCstmGLVisualization::on_availible_gradients_changed(QStringList gradients){

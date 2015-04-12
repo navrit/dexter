@@ -325,11 +325,9 @@ void Mpx3GUI::clear_configuration(){
 }
 
 void Mpx3GUI::clear_data(){
-  /*for(int i = 0; i < data.size(); i++)
-    delete[] data[i];
-  data.clear();*/
-  delete workingSet;
-  workingSet = nullptr;
+  workingSet->clear();
+  for(int i = 0; i < hists.length(); i++)
+    delete hists[i];
   hists.clear();
   emit(data_cleared());
 }

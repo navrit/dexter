@@ -44,3 +44,10 @@ int Dataset::sample(int x, int y, int layer){
     return 0;
   return m_frames.at(layer)[m_nx*y+x];
 }
+
+void Dataset::clear(){
+  m_activeFrame = 0;
+  for(int i = 0; i < m_frames.length();i++)
+    delete[] m_frames.at(i);
+  m_frames.clear();
+}
