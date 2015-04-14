@@ -255,7 +255,7 @@ void QCstmGLPlot::wheelEvent(QWheelEvent *event){
     deltaZoom = 1/zoom;
   }
   GLfloat displacementX = oldX*(1-deltaZoom); GLfloat displacementY = oldY*(1-deltaZoom);
-  qDebug() << "got zoom event, newZoom = " <<  newZoom;
+  //qDebug() << "got zoom event, newZoom = " <<  newZoom;
   setZoom(newZoom);
   addOffset(displacementX, displacementY);
   event->accept();

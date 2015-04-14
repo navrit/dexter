@@ -25,19 +25,21 @@
 
 
 QCstmDacs::QCstmDacs(QWidget *parent) :
-  QWidget(parent),
-  ui(new Ui::QCstmDacs)
+QWidget(parent),
+ui(new Ui::QCstmDacs)
 {
-  ui->setupUi(this);
+	ui->setupUi(this);
 
 	ReadDACsFile(""); //read the default file
 
 	//_ui = ui;
 	_senseThread = 0x0;
 	_scanThread = 0x0;
+	_updateDACsThread = 0x0;
 	_signalMapperSliderSpinBoxConn = 0x0;
 	_signalMapperSlider = 0x0;
 	_signalMapperSpinBox = 0x0;
+	_nDACConfigsAvailable = 1;  // Assume there's enough configs for 1 chip only
 
 	// Number of plots added to the Scan
 	_plotIdxCntr = 0;
@@ -143,6 +145,30 @@ void QCstmDacs::StartDACScan() {
 
 }
 
+void QCstmDacs::FillDACValues( int devId ) {
+
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
+	// Threads
+	if ( _updateDACsThread ) {
+		if ( _updateDACsThread->isRunning() ) {
+			return;
+		}
+		//disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
+		delete _updateDACsThread;
+		_updateDACsThread = 0x0;
+	}
+
+	// Create the thread
+	_updateDACsThread = new UpdateDACsThread(devId, _nDACConfigsAvailable, this, spidrcontrol);
+	// Connect to the progress bar
+	connect( _updateDACsThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
+	// Run !
+	_updateDACsThread->start();
+
+
+}
+
 void QCstmDacs::PopulateDACValues() {
 
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
@@ -152,20 +178,11 @@ void QCstmDacs::PopulateDACValues() {
 	//   higher priority.
 	string defaultDACsFn = __default_DACs_filename;
 
+	cout << "[INFO] setting dacs from defult DACs file." << endl;
+
 	if ( ReadDACsFile(defaultDACsFn) ) {
 
-		cout << "[INFO] setting dacs from defult DACs file." << endl;
-
-		for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
-			/*
-			_dacVals[i] = configJson[MPX3RX_DAC_TABLE[i].name].toInt();
-			spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[i].code, _dacVals[i] );
-			_dacSpinBoxes[i]->setValue( _dacVals[i] );
-			_dacSliders[i]->setValue( _dacVals[i] );
-			*/
-		}
-		//_spidrcontrol->writeDacs( _deviceIndex );
-
+		FillDACValues();
 
 	} else { // Setting DACs at mid-range
 
@@ -178,7 +195,6 @@ void QCstmDacs::PopulateDACValues() {
 		}
 
 	}
-
 
 }
 
@@ -610,6 +626,10 @@ void QCstmDacs::ChangeDeviceIndex( int index )
 {
 	if( index < 0 ) return; // can't really happen cause the SpinBox has been limited
 	_deviceIndex = index;
+
+	// Now change the entire view.  Actualize all values
+	FillDACValues( index );
+
 }
 
 void QCstmDacs::ChangeNSamples( int index )
@@ -813,6 +833,69 @@ void SenseDACsThread::run() {
 	// Disconnect the progress bar
 	//disconnect( this, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
 
+
+	delete spidrcontrol;
+}
+
+UpdateDACsThread::UpdateDACsThread (int devIdx, int nDACConfigsAvailable, QCstmDacs * dacs, SpidrController * sc) {
+
+	_dacs = dacs;
+	_spidrcontrol = sc;
+	_deviceIndex = devIdx;
+	_nDACConfigsAvailable = nDACConfigsAvailable;
+
+	// I need to do this here and not when already running the thread
+	// Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
+	if( _spidrcontrol ) { _spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
+	else { _srcAddr = 0; }
+
+}
+
+void UpdateDACsThread::run(){
+
+	// Open a new temporary connection to the spider to avoid collisions to the main one
+	// Extract the ip address
+	int ipaddr[4] = { 1, 1, 168, 192 };
+	if( _srcAddr != 0 ) {
+		ipaddr[3] = (_srcAddr >> 24) & 0xFF;
+		ipaddr[2] = (_srcAddr >> 16) & 0xFF;
+		ipaddr[1] = (_srcAddr >>  8) & 0xFF;
+		ipaddr[0] = (_srcAddr >>  0) & 0xFF;
+	}
+
+	SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
+
+	if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
+		cout << "Device not connected !" << endl;
+		return;
+	}
+
+	int chipMin = 0;
+	int chipMax = _nDACConfigsAvailable;
+	if( _deviceIndex != -1 ) { // Do only one
+		chipMin = _deviceIndex;
+		chipMax = _deviceIndex + 1;
+	}
+
+
+	for(int chip = chipMin ; chip < chipMax ; chip++) { // Chip
+
+		for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) { // DACs
+
+			//cout << "chip " << chip << " | " << MPX3RX_DAC_TABLE[i].name
+			//		<< " | " << _dacs->GetDACValue(chip, i) << endl;
+
+			spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[i].code,  _dacs->GetDACValue(chip, i) );
+			// Adjust the sliders and the SpinBoxes to the new value
+			connect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
+			slideAndSpin( i, _dacs->GetDACValue(chip, i) );
+			disconnect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
+
+			//_dacSpinBoxes[i]->setValue( _dacVals[i][chip] );
+			//_dacSliders[i]->setValue( _dacVals[i][chip] );
+
+		}
+	}
 
 	delete spidrcontrol;
 }
@@ -1058,15 +1141,17 @@ void QCstmDacs::getConfig(){
 	// Extract the array needed here
 	QJsonArray dacsArray = jsonObject["DACs"].toArray();
 	// Should be equal to the number of chips available
-	int nConfigs = dacsArray.size();
-	cout << "[INFO] " << nConfigs << " DAC configurations found in jason file." << endl;
+	_nDACConfigsAvailable = dacsArray.size();
+	cout << "[INFO] " << _nDACConfigsAvailable << " DAC configurations found in jason file." << endl;
 
 	// Now read all configurations
 	foreach (const QJsonValue & value, dacsArray) {
-	    QJsonObject obj = value.toObject();
-	    for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
-	    	_dacVals[i].push_back( obj[MPX3RX_DAC_TABLE[i].name].toInt() );
-	    }
+		QJsonObject obj = value.toObject();
+		for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
+			//cout << MPX3RX_DAC_TABLE[i].name << " --> " << obj[MPX3RX_DAC_TABLE[i].name].toInt() << endl;
+			_dacVals[i].push_back( obj[MPX3RX_DAC_TABLE[i].name].toInt() );
+		}
+		//cout << endl;
 	}
 
 }
