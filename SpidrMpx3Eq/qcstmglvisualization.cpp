@@ -16,6 +16,8 @@ QCstmGLVisualization::~QCstmGLVisualization()
 }
 
 void QCstmGLVisualization::StartDataTaking(){
+	Configuration( false );
+
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
@@ -47,7 +49,7 @@ void QCstmGLVisualization::ConnectionStatusChanged() {
 
 	// TODO
 	// Configure the chip, provided that the Adj mask is loaded
-	Configuration( false );
+	//Configuration( false );
 
 }
 
@@ -56,7 +58,7 @@ void QCstmGLVisualization::Configuration(bool reset) {//TODO: should be part of 
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
-	int deviceIndex = 2;
+	int deviceIndex = 1;
 	int nTriggers = 100;
 
 	// Reset pixel configuration
@@ -69,11 +71,10 @@ void QCstmGLVisualization::Configuration(bool reset) {//TODO: should be part of 
 	//spidrcontrol->setPolarity( true );		// Holes collection
 	//_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
 	//_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
-	spidrcontrol->setPixelDepth( deviceIndex, 12 );
 
 	spidrcontrol->setColourMode( deviceIndex, false ); 	// Fine Pitch
 	spidrcontrol->setCsmSpm( deviceIndex, 0 );			// Single Pixel mode
-	spidrcontrol->setEqThreshH( deviceIndex, true );
+	//spidrcontrol->setEqThreshH( deviceIndex, true );
 	spidrcontrol->setDiscCsmSpm( deviceIndex, 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
 	//_spidrcontrol->setGainMode( 1 );
 
@@ -82,7 +83,7 @@ void QCstmGLVisualization::Configuration(bool reset) {//TODO: should be part of 
 	// 10: HGM   2
 	// 01: LGM   1
 	// 11: SLGM  3
-	spidrcontrol->setGainMode( deviceIndex, 1 );
+	spidrcontrol->setGainMode( deviceIndex, 2 );
 
 	// Other OMR
 	spidrdaq->setDecodeFrames( true );
@@ -94,8 +95,8 @@ void QCstmGLVisualization::Configuration(bool reset) {//TODO: should be part of 
 	//_spidrcontrol->writeOmr( 0 );
 
 	// Trigger config
-	int trig_mode      = 4;     // Auto-trigger mode
-	int trig_length_us = 5000;  // This time shouldn't be longer than the period defined by trig_freq_hz
+	int trig_mode      = 4;     // Auto-trigger mode = 4
+	int trig_length_us = 500;  // This time shouldn't be longer than the period defined by trig_freq_hz
 	int trig_freq_hz   = (int) ( 1. / (2.*((double)trig_length_us/1000000.)) );   // Make the period double the trig_len
 	cout << "[INFO] Configured freq is " << trig_freq_hz << "Hz" << endl;
 	int nr_of_triggers = nTriggers;    // This is the number of shutter open i get
