@@ -32,7 +32,8 @@ using namespace std;
 class QCustomPlot;
 class SpidrController;
 class SpidrDaq;
-class DACs;
+//class DACs;
+class QCstmDacs;
 class ThlScan;
 class BarChart;
 class BarChartProperties;
@@ -163,7 +164,7 @@ private:
 	vector<ThlScan * > _scans;
 
 	// DACs
-	DACs * _dacs;
+	QCstmDacs * _dacs;
 
 
 	// Important Equalization values

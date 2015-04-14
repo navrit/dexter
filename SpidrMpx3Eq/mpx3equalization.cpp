@@ -10,8 +10,9 @@
 
 
 #include "qcustomplot.h"
+#include "qcstmdacs.h"
 #include "mpx3eq_common.h"
-#include "DACs.h"
+//#include "DACs.h"
 #include "mpx3defs.h"
 #include "SpidrController.h"
 #include "SpidrDaq.h"

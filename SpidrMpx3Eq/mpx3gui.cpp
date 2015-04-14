@@ -11,7 +11,7 @@
 
 #include "qcustomplot.h"
 #include "mpx3eq_common.h"
-#include "DACs.h"
+//#include "DACs.h"
 #include "mpx3defs.h"
 #include "SpidrController.h"
 #include "SpidrDaq.h"
@@ -37,8 +37,10 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	  gradientNames.append(gradients[i]->getName());
 
 	// Prepare DACs panel
-	_dacs = new DACs(_coreApp, _ui);
-	_dacs->SetMpx3GUI( this );
+	//_dacs = new DACs(_coreApp, _ui);
+	//_dacs->SetMpx3GUI( this );
+
+	_ui->DACsWidget->SetMpx3GUI( this );
 
 	// Prepare Equalization
 	_equalization = new Mpx3Equalization(_coreApp, _ui);
@@ -50,6 +52,8 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
 	// Prepare THL Calibration
 	_ui->ThresholdTab->SetMpx3GUI(this);
+
+	//
 
 	// Signals and slots for this part
 	SetupSignalsAndSlots();
@@ -76,7 +80,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 
 	std::cout << "[Mpx3GUI] Connecting signals and slots" << std::endl;
 	connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );
-	connect( _ui->actionSave_DACs, SIGNAL(triggered()), _dacs, SLOT( openWriteMenu() ) );
+	connect( _ui->actionSave_DACs, SIGNAL(triggered()), _ui->DACsWidget, SLOT( openWriteMenu() ) );
 	connect( _ui->actionConnect, SIGNAL(triggered()), this, SLOT( establish_connection() ) );
 
 	connect(_ui->actionSumming, SIGNAL(triggered()), this, SLOT(set_mode_integral()));
@@ -89,7 +93,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 	connect(_ui->actionClear_configuration, SIGNAL(triggered()), this, SLOT(clear_configuration()) );
 
 	// Inform every module of changes in connection status
-	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _dacs, SLOT( ConnectionStatusChanged() ) );
+	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged() ) );
 	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _equalization, SLOT( ConnectionStatusChanged() ) );
 	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged() ) );
 
@@ -107,11 +111,12 @@ void Mpx3GUI::set_summing(bool shouldSum){
 }
 
 void Mpx3GUI::establish_connection() {
+
 	int dev_nr = 2;
 	cout << "Connecting ..." << endl;
 	delete _spidrcontrol;
-	//_spidrcontrol = new SpidrController( 192, 168, 1, 10 );
-	_spidrcontrol = new SpidrController( 192, 16, 192, 30 );
+	_spidrcontrol = new SpidrController( 192, 168, 1, 10 );
+	//_spidrcontrol = new SpidrController( 192, 16, 192, 30 );
 
 	// Check if we are properly connected to the SPIDR module
 	if ( _spidrcontrol->isConnected() ) {

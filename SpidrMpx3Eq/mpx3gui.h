@@ -30,7 +30,8 @@ using namespace std;
 class QCustomPlot;
 class SpidrController;
 class SpidrDaq;
-class DACs;
+//class DACs;
+class QCstmDacs;
 class ThlScan;
 class BarChart;
 class BarChartProperties;
@@ -60,7 +61,7 @@ private:
 	// Equalization
 	Mpx3Equalization * _equalization = nullptr;
 	// DACs
-	DACs * _dacs = nullptr;
+	//DACs * _dacs = nullptr;
 
 	// This helps interconnecting the different modules
 	SpidrController * _spidrcontrol = nullptr;
