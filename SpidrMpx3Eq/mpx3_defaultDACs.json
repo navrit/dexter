@@ -5,7 +5,7 @@
 		"SpidrControllerIP16"	: 168,
 		"SpidrControllerIP8" 	: 1,
 		"SpidrControllerIP0"	: 10,
-		"SpidrControllerPort"	: 50000,
+		"SpidrControllerPort"	: 50000
 	},
 	
 	"DetectorConfig" : {
@@ -19,7 +19,7 @@
 		"TriggerMode"	: 4,
 		"TriggerLength_us"	: 500,
 		"nTriggers"		: 100
-	}
+	},
 	
 	"DACs" : [
 		{
