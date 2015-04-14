@@ -126,6 +126,7 @@ class QLabel;
 class QCheckBox;
 class SenseDACsThread;
 class ScanDACsThread;
+class UpdateDACsThread;
 class QSignalMapper;
 class ModuleConnection;
 
@@ -153,6 +154,7 @@ public:
 	//explicit QCstmDacs(QApplication * coreApp, Ui::Mpx3GUI * );
 	~QCstmDacs();
 	void PopulateDACValues();
+	void FillDACValues(int devId = -1);
 
 	bool ReadDACsFile(string);
 	bool WriteDACsFile(string);
@@ -174,6 +176,7 @@ public:
 	void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
 	void getConfig();
 	void setConfig();
+	int GetDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; };
 
 private:
 
@@ -185,7 +188,7 @@ private:
 	//QJsonObject configJson;
 	//QJsonArray configJson;
 	QJsonDocument * jsonDocument;
-
+	int _nDACConfigsAvailable;
 
 	// Connectivity between modules
 	Mpx3GUI * _mpx3gui;
@@ -199,6 +202,7 @@ private:
 	//
 	SenseDACsThread * _senseThread;
 	ScanDACsThread * _scanThread;
+	UpdateDACsThread * _updateDACsThread;
 
 	// Vectors of Widgets
 	QSpinBox  * _dacSpinBoxes[MPX3RX_DAC_COUNT];
@@ -249,7 +253,6 @@ void scanFinished();
 void slideAndSpin(int, int);
 void openWriteMenu();
 void ConnectionStatusChanged();
-
 
 };
 
@@ -307,6 +310,38 @@ signals:
 	void fillTextWithIdx(QString, int);
 	void addData(int, int, double);
 	void addData(int);
+	void scanFinished();
+	void slideAndSpin(int, int);
+
+};
+
+
+class UpdateDACsThread : public QThread {
+
+	Q_OBJECT
+
+public:
+
+	explicit UpdateDACsThread (int devIndx, int nDACConfigsAvailable, QCstmDacs * dacs, SpidrController * sc);
+
+private:
+
+	SpidrController * _spidrcontrol;
+	QCstmDacs * _dacs;
+	int _deviceIndex;
+	int _nDACConfigsAvailable;
+	// IP source address (SPIDR network interface)
+	int _srcAddr;
+
+	void run();
+
+signals:
+
+	// These are used in the parent class as a signal to thread-safe feed
+	//  widgets in the ui
+	void progress(int);
+	void fillText(QString);
+	void fillTextWithIdx(QString, int);
 	void scanFinished();
 	void slideAndSpin(int, int);
 
