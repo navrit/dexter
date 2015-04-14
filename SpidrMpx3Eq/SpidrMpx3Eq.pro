@@ -56,11 +56,12 @@ SOURCES += main.cpp \
     gradient.cpp \
     dataset.cpp \
     qcstmthreshold.cpp \
-    voxelwidget.cpp
+    voxelwidget.cpp \
+    mpx3config.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
-SOURCES += DACs.cpp
+SOURCES +=
 SOURCES += mpx3equalization.cpp
 
 HEADERS += mpx3gui.h \
@@ -78,10 +79,11 @@ HEADERS += mpx3gui.h \
     mpx3eq_common.h \
     dataset.h \
     qcstmthreshold.h \
-    voxelwidget.h
+    voxelwidget.h \
+    mpx3config.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
-HEADERS += DACs.h
+HEADERS +=
 HEADERS += mpx3equalization.h
 
 FORMS    += mpx3gui.ui \
@@ -100,7 +102,8 @@ DISTFILES += \
     config/heatmaps.json \
     shaders/simple3d.vert \
     shaders/simple3d.frag \
-    NOTES.txt
+    NOTES.txt \
+    config/mpx3.json
 
 
     copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/config\" &

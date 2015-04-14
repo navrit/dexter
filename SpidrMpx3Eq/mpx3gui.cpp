@@ -18,6 +18,7 @@
 #include "barchart.h"
 #include "ThlScan.h"
 #include "gradient.h"
+#include "mpx3config.h"
 
 #include <QMessageBox>
 
@@ -29,6 +30,10 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 {
 	// Instantiate everything in the UI
 	_ui->setupUi(this);
+	Mpx3Config config;
+	config.fromJsonFile("./config/mpx3.json");
+	printf("Ip addres set to: %s\n", config.getIpAddress().toStdString().c_str());
+	printf("Pixel Depth: %d\n", config.getMaxPacketSize());
 	workingSet = new Dataset(256, 256);
 	workingSet->setFramesPerGroup(2,2);
 	workingSet->setOrientation(0, Dataset::orientationTtBLtR);
