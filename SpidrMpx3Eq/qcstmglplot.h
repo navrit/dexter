@@ -48,7 +48,7 @@ public:
 
 
   Dataset *data = nullptr;
-  const int nx =256, ny =256;
+  int nx =512, ny =512;
   int nLayers = 0;
   GLfloat offsetX =0, offsetY = 0, zoom = 1.0, baseSizeX, baseSizeY;
   GLint offsetLoc, zoomLoc, aspectRatioLoc, resolutionLoc, textureLoc, gradientTexLoc, layerLoc, clampLoc; //uniform binding locations.
@@ -67,6 +67,7 @@ public: //functions
   Gradient* getGradient(){return gradient;}
   void setGradient(Gradient *gradient);
 public: //events
+  void setSize(int nx, int ny){this->nx=nx; this->ny = ny;}
   void wheelEvent(QWheelEvent *event);
   void mouseMoveEvent(QMouseEvent *event);
   void keyPressEvent(QKeyEvent *event);

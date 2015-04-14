@@ -30,7 +30,11 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	// Instantiate everything in the UI
 	_ui->setupUi(this);
 	workingSet = new Dataset(256, 256);
-
+	workingSet->setFramesPerGroup(2,2);
+	workingSet->setOrientation(0, Dataset::orientationTtBLtR);
+	workingSet->setOrientation(3, Dataset::orientationTtBLtR);
+	workingSet->setOrientation(1, Dataset::orientationBtTRtL);
+	workingSet->setOrientation(2, Dataset::orientationBtTRtL);
 	gradients = Gradient::fromJsonFile("./config/heatmaps.json");
 	QStringList gradientNames;
 	for(int i = 0; i < gradients.length();i++)
@@ -57,9 +61,6 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
 	// Signals and slots for this part
 	SetupSignalsAndSlots();
-
-	// Connect automatically
-	//_moduleConn->Connection();
 }
 
 Mpx3GUI::~Mpx3GUI()
@@ -171,10 +172,10 @@ void Mpx3GUI::establish_connection() {
 void Mpx3GUI::generateFrame(){//TODO: put into Dataset
 	printf("Generating a frame!\n");
 	double fx = ((double)8*rand()/RAND_MAX)/(workingSet->x()), fy = (8*(double)rand()/RAND_MAX)/workingSet->y();
-	QVector<int> data(workingSet->x()*workingSet->y());
-	for(int i = 0; i < workingSet->y(); i++)
-		for(int j = 0; j < workingSet->x(); j++)
-			data[i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
+	QVector<int> data(workingSet->x()/2*workingSet->y()/2);
+	for(int i = 0; i < workingSet->y()/2; i++)
+		for(int j = 0; j < workingSet->x()/2; j++)
+			data[i*workingSet->x()/2+j] = 2*j+i;//(int)((1<<14)*sin(fx*j)*(cos(fy*i)));
 	addFrame(data.data());
 }
 void Mpx3GUI::addFrame(int *frame){
@@ -191,7 +192,7 @@ void Mpx3GUI::addFrames(QVector<int*> frames){
   for(int i = 0; i < frames.length(); i++){
 	if(0 == mode || 0 == workingSet->getFrameCount()){//normal mode, or no frame yet
 		workingSet->addFrame(frames[i]);
-		hists.push_back(new histogram(frames[i], workingSet->x()*workingSet->y(),  1));
+		hists.push_back(new histogram(frames[i], workingSet->x()/2*workingSet->y()/2,  1));
 		emit hist_added();
 	}
 	else if(1 == mode){ // Summing mode
@@ -274,6 +275,11 @@ void Mpx3GUI::open_data(){
 	saveFile.read((char*)&ny, sizeof(ny));
 	delete workingSet;
 	workingSet = new Dataset(nx, ny);
+	workingSet->setFramesPerGroup(2,2);
+	workingSet->setOrientation(0, Dataset::orientationLtRTtB);
+	workingSet->setOrientation(3, Dataset::orientationLtRTtB);
+	workingSet->setOrientation(1, Dataset::orientationLtRTtB);
+	workingSet->setOrientation(2, Dataset::orientationLtRTtB);
 	int nLayers;
 	saveFile.read((char*)&nLayers, sizeof(nLayers));
 	QVector<int*> newFrames(nLayers);

@@ -28,10 +28,39 @@ void Dataset::addFrame(QVector<int> frame){
   addFrame(frame.data());
 }
 
-int* Dataset::getFrame(int index){
+int* Dataset::getFrame(int index){//TODO: fix memory leak!
   if(index == -1)
-    return m_frames.at(m_activeFrame);
-  return m_frames.at(index);
+    index = m_frames.length()-1;
+  int* ret  = new int[m_nx*m_ny*m_nFramesX*m_nFramesY];
+  int realIndex = m_nFramesX*m_nFramesY*index;
+  int offset = 0;
+  int offsets[] = {0,
+                   m_nx,
+                   m_nx*m_nFramesX*m_ny+m_nx,
+                   m_nx*m_nFramesX*m_ny
+                  }; //hardcoded clockwise, starting top left.
+  for(int i = 0; i < m_nFramesX*m_nFramesY; i++){
+      offset = offsets[i];
+      switch(m_frameOrientation[i]){
+        default:
+        case(Dataset::orientationLtRTtB)://reading fashion
+          for(int y = 0; y < m_ny; y++)
+            for(int x = 0; x < m_nx;x++)
+              ret[x+y*m_nFramesX*m_nx+offset] = m_frames[realIndex+i][x+y*m_nx];
+          break;
+          case(Dataset::orientationTtBLtR)://frame 0 and 3
+          for(int y = 0; y < m_ny; y++)
+            for(int x = 0; x < m_nx;x++)
+              ret[x+y*m_nFramesX*m_nx+offset] = m_frames[realIndex][y+x*m_ny];
+          break;
+        case(Dataset::orientationBtTRtL)://frame 1 and 2
+        for(int y = 0; y < m_ny; y++)
+          for(int x = 0; x < m_nx;x++)
+            ret[x+y*m_nFramesX*m_nx+offset] = m_frames[realIndex][(m_ny-1-y)+(m_nx-1-x)*m_ny];//...I think
+        break;
+        }
+   }
+  return ret;
 }
 
 void Dataset::sumFrame(int * frame){

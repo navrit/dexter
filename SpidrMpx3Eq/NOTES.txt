@@ -9,6 +9,7 @@ DONE 2015-04-11-Heatmap is the wrong way around before switching
 -Clear data segfaults?
 
 TODO:
+DONE 2015-04-14 multidisplay, STILL BUGGY
 -Controls on gradient widget
 -Clean up code.
    ->Optimize/clean the gl renderer.
