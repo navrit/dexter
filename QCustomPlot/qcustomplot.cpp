@@ -10414,7 +10414,7 @@ void QCustomPlot::deselectAll()
   signals on two QCustomPlots to make them replot synchronously, it won't cause an infinite
   recursion.
 */
-void QCustomPlot:: replot(QCustomPlot::RefreshPriority refreshPriority)
+void QCustomPlot::replot(QCustomPlot::RefreshPriority refreshPriority)
 {
   if (mReplotting) // incase signals loop back to replot slot
     return;
