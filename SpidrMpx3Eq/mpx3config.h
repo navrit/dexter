@@ -34,6 +34,8 @@ public:
   QString getIpAddress(){return QString("%1:%2").arg(SpidrAddress.toString()).arg(port);}
   SpidrController* getController(){return controller;}
   int getDacCount(){return _dacVals[0].length(); }
+  int getDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
+
   quint32 getIpAddressInt(){return SpidrAddress.toIPv4Address();}
   uint16_t getIpAddressPort(){return port;}
   bool getColourMode(){return colourMode;}

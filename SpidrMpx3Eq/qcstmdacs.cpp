@@ -30,8 +30,6 @@ ui(new Ui::QCstmDacs)
 {
 	ui->setupUi(this);
 
-	ReadDACsFile(""); //read the default file
-
 	//_ui = ui;
 	_senseThread = 0x0;
 	_scanThread = 0x0;
@@ -39,7 +37,6 @@ ui(new Ui::QCstmDacs)
 	_signalMapperSliderSpinBoxConn = 0x0;
 	_signalMapperSlider = 0x0;
 	_signalMapperSpinBox = 0x0;
-	_nDACConfigsAvailable = 1;  // Assume there's enough configs for 1 chip only
 
 	// Number of plots added to the Scan
 	_plotIdxCntr = 0;
@@ -112,6 +109,10 @@ QCstmDacs::~QCstmDacs() {
 	delete ui;
 }
 
+int QCstmDacs::GetDACValue(int chip, int dacIndex) {
+	return _mpx3gui->getConfig()->getDACValue(chip, dacIndex);
+}
+
 void QCstmDacs::StartDACScan() {
 
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
@@ -160,10 +161,9 @@ void QCstmDacs::FillDACValues( int devId ) {
 	}
 
 	// Create the thread
-	_updateDACsThread = new UpdateDACsThread(devId, _nDACConfigsAvailable, this, spidrcontrol);
+	_updateDACsThread = new UpdateDACsThread(devId, _mpx3gui->getConfig()->getDacCount(), this, spidrcontrol);
 	// Run !
 	_updateDACsThread->start();
-
 
 }
 
@@ -178,7 +178,7 @@ void QCstmDacs::PopulateDACValues() {
 
 	cout << "[INFO] setting dacs from defult DACs file." << endl;
 
-	if ( ReadDACsFile(defaultDACsFn) ) {
+	if ( GetDACsFromConfiguration() ) {
 
 		FillDACValues();
 
@@ -572,28 +572,14 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
 //}
 
 
-bool QCstmDacs::ReadDACsFile(string fn) {//TODO: should use QString instead of std::string, for one: it handles unicode better and interfaces with the rest of Qt better.
+bool QCstmDacs::GetDACsFromConfiguration() {
 
-	if(fn.empty()) { // default
-		fn = __default_DACs_filename;
-	}
-	QFile saveFile(QString(fn.c_str()));
-	if (!saveFile.open(QIODevice::ReadOnly)) {
-		cout << "[WARNING] Couldn't find " << fn << endl;
-		cout << "[WARNING] Setting default DACs at hard-coded values ! These might not be the best settings." << endl;
-		/*string messg = "Couldn't open: ";
-		messg += fn;
-		messg += "\nSetting default DACs at hardcoded values ! These might not be the best settings.";
-		QMessageBox::warning ( ui->_DACScanFrame_2, tr("MPX3 - default DACs"), tr( messg.c_str() ) );//segfaults: roel*/
-		return false;
+	// See if there DAC information to work with
+	if ( _mpx3gui->getConfig()->getDacCount() != 0 ) {
+		return true;
 	}
 
-	//QJsonDocument jsDoc(QJsonDocument::fromJson(saveFile.readAll()));
-	jsonDocument = new QJsonDocument( QJsonDocument::fromJson(saveFile.readAll()) );
-	//configJson = jsDoc.object();
-	//configJson = jsDoc.array();
-	getConfig();
-	return true;
+	return false;
 }
 
 bool QCstmDacs::WriteDACsFile(string fn){
@@ -1146,28 +1132,6 @@ void QCstmDacs::setConfig(){
   configJson["V_Cas"] = V_Cas;
   configJson["V_Tp_refA"] = V_Tp_refA;
   configJson["V_Tp_refB"] = V_Tp_refB;*/
-}
-
-void QCstmDacs::getConfig(){
-
-	// Get the jason objet
-	QJsonObject jsonObject = jsonDocument->object();
-	// Extract the array needed here
-	QJsonArray dacsArray = jsonObject["DACs"].toArray();
-	// Should be equal to the number of chips available
-	_nDACConfigsAvailable = dacsArray.size();
-	cout << "[INFO] " << _nDACConfigsAvailable << " DAC configurations found in jason file." << endl;
-
-	// Now read all configurations
-	foreach (const QJsonValue & value, dacsArray) {
-		QJsonObject obj = value.toObject();
-		for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
-			//cout << MPX3RX_DAC_TABLE[i].name << " --> " << obj[MPX3RX_DAC_TABLE[i].name].toInt() << endl;
-			_dacVals[i].push_back( obj[MPX3RX_DAC_TABLE[i].name].toInt() );
-		}
-		//cout << endl;
-	}
-
 }
 
 void QCstmDacs::openWriteMenu(){//TODO: change to signal slot method

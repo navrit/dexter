@@ -154,7 +154,7 @@ public:
 	void PopulateDACValues();
 	void FillDACValues(int devId = -1);
 
-	bool ReadDACsFile(string);
+	bool GetDACsFromConfiguration();
 	bool WriteDACsFile(string);
 
 
@@ -172,9 +172,9 @@ public:
 	QCPGraph * GetGraph(int idx);
 	//QCustomPlot * GetQCustomPlotPtr() { return _dacScanPlot; };
 	void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
-	void getConfig();
 	void setConfig();
-	int GetDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; };
+	// Ask the config !
+	int GetDACValue(int chip, int dacIndex);
 
 private:
 
@@ -182,11 +182,6 @@ private:
 
 	void FillWidgetVectors();
 	void SetLimits();
-	/*all the configuration bits*/
-	//QJsonObject configJson;
-	//QJsonArray configJson;
-	QJsonDocument * jsonDocument;
-	int _nDACConfigsAvailable;
 
 	// Connectivity between modules
 	Mpx3GUI * _mpx3gui;
@@ -205,11 +200,6 @@ private:
 	QLabel    * _dacVLabels[MPX3RX_DAC_COUNT];
 	QLabel    * _dacLabels[MPX3RX_DAC_COUNT];
 	QCheckBox * _dacCheckBoxes[MPX3RX_DAC_COUNT];
-
-
-	// Keep track of DAC values.  The second dimension here
-	//  corresponds to the array
-	vector<int> _dacVals[MPX3RX_DAC_COUNT];
 
 	// Scan
 	int _scanStep;
