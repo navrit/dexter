@@ -7,6 +7,15 @@ Mpx3Config::Mpx3Config()
 
 }
 
+void Mpx3Config::setIpAddress(QString ip, uint16_t port){
+  SpidrAddress.setAddress(ip);
+  this->port = port;
+  quint32 ipaddr =  SpidrAddress.toIPv4Address();
+  delete controller;
+  controller = new SpidrController(((ipaddr>>24) & 0xFF), ((ipaddr>>16) & 0xFF), ((ipaddr>>8) & 0xFF), ((ipaddr>>0) & 0xFF), port);
+  isConnected = controller->isConnected();
+}
+
 void Mpx3Config::fromJsonFile(QString filename){
   QFile loadFile(filename);
   if(!loadFile.open(QIODevice::ReadOnly)){
@@ -24,41 +33,42 @@ void Mpx3Config::fromJsonFile(QString filename){
       SpidrAddress.setAddress(it.value().toString());
     it = JSobject.find("SpidrControllerPort");
     if(it != JSobject.end())
-      port = it.value().toInt();
+        port = it.value().toInt();
+    emit IpAdressChanged(this->getIpAddress());
   }
   itParent = JSobjectParent.find("DetectorConfig");
   if(itParent != JSobjectParent.end()){
       QJsonObject JSobject = itParent.value().toObject();
       it = JSobject.find("OperationMode");
       if(it != JSobject.end())
-        OperationMode = it.value().toInt();
+        setOperationMode(it.value().toInt());
       it = JSobject.find("PixelDepth");
       if(it != JSobject.end())
-        PixelDepth = it.value().toInt();
+        setPixelDepth(it.value().toInt());
       it = JSobject.find("CsmSpm");
       if(it != JSobject.end())
-        CsmSpm = it.value().toInt();
+        setCsmSpm(it.value().toInt());
       it = JSobject.find("GainMode");
       if(it != JSobject.end())
-        GainMode = it.value().toInt();
+        setGainMode(it.value().toInt());
       it = JSobject.find("MaxPacketSize");
       if(it != JSobject.end())
-        MaxPacketSize = it.value().toInt();
+        setMaxPacketSize(it.value().toInt());
       it = JSobject.find("TriggerMode");
       if(it != JSobject.end())
-        TriggerMode = it.value().toInt();
+        setTriggerMode(it.value().toInt());
       it = JSobject.find("TriggerLength_us");
       if(it != JSobject.end())
-        TriggerLength_us = it.value().toInt();
+        setTriggerLength(it.value().toInt());
       it = JSobject.find("nTriggers");
       if(it != JSobject.end())
-        nTriggers = it.value().toInt();
+        setNTriggers(it.value().toInt());
       it = JSobject.find("colourMode");
       if(it != JSobject.end())
-        colourMode = it.value().toBool();
+        setColourMode(it.value().toBool());
       it = JSobject.find("decodeFrames");
       if(it != JSobject.end())
-        decodeFrames = it.value().toBool();
+        setDecodeFrames(it.value().toBool());
   }
   QJsonArray dacsArray;
   itParent = JSobjectParent.find("DACs");

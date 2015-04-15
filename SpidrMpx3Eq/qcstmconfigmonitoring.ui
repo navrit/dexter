@@ -15,37 +15,195 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0">
      <item>
-      <widget class="QWidget" name="widget" native="true"/>
+      <layout class="QFormLayout" name="formLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Max Packet Size</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSpinBox" name="maxPacketSizeSpinner">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+         <property name="maximum">
+          <number>999999999</number>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Operation Mode</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="operationModeSpinner">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+         <property name="maximum">
+          <number>9999999</number>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Pixel Depth</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="pixelDepthSpinner">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+         <property name="maximum">
+          <number>9999999</number>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Csm Spm</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QSpinBox" name="csmSpmSpinner">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+         <property name="maximum">
+          <number>9999999</number>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Gain Mode</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QSpinBox" name="gainModeSpinner">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+         <property name="maximum">
+          <number>9999999</number>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Trigger Mode</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QSpinBox" name="triggerModeSpinner">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+         <property name="maximum">
+          <number>999999</number>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Number of Triggers</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QSpinBox" name="nTriggersSpinner">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+         <property name="maximum">
+          <number>999999999</number>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Trigger Length (us)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QSpinBox" name="triggerLengthSpinner">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+         <property name="maximum">
+          <number>999999999</number>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QCheckBox" name="ColourModeCheckBox">
+         <property name="text">
+          <string>Colour Mode</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <widget class="QCheckBox" name="decodeFramesCheckbox">
+         <property name="text">
+          <string>Decode Frames</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+      </widget>
      </item>
      <item>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="1" column="1">
+       <item row="2" column="1">
         <widget class="QLabel" name="tempMeasLabel">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <widget class="QDoubleSpinBox" name="samplingSpinner"/>
        </item>
-       <item row="1" column="0">
+       <item row="2" column="0">
         <widget class="QLabel" name="label_0">
          <property name="text">
           <string>Temp (C):</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="label_1">
          <property name="text">
           <string>.Sampling (s):</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
+       <item row="1" column="0">
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -57,6 +215,20 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Ip Adress:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="ipLabel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>

@@ -18,7 +18,6 @@
 #include "barchart.h"
 #include "ThlScan.h"
 #include "gradient.h"
-#include "mpx3config.h"
 
 #include <QMessageBox>
 
@@ -30,10 +29,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 {
 	// Instantiate everything in the UI
 	_ui->setupUi(this);
-	Mpx3Config config;
-	config.fromJsonFile("./config/mpx3.json");
-	printf("Ip addres set to: %s\n", config.getIpAddress().toStdString().c_str());
-	printf("Pixel Depth: %d\n", config.getMaxPacketSize());
+	config = new Mpx3Config;
 	workingSet = new Dataset(256, 256);
 	workingSet->setFramesPerGroup(2,2);
 	workingSet->setOrientation(0, Dataset::orientationTtBLtR);
@@ -57,6 +53,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
 	// Prepare Visualization
 	_ui->visualizationGL->SetMpx3GUI(this);
+	_ui->CTTab->SetMpx3GUI(this);
 	emit availible_gradients_changed(gradientNames);
 
 	// Prepare THL Calibration
@@ -64,6 +61,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
 	//Config & monitoring
 	_ui->CnMWidget->SetMpx3GUI(this);
+	config->fromJsonFile("./config/mpx3.json");
 
 	// Signals and slots for this part
 	SetupSignalsAndSlots();
@@ -71,6 +69,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
 Mpx3GUI::~Mpx3GUI()
 {
+	delete config;
 	delete workingSet;
 	delete _ui;
 }
@@ -105,7 +104,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 	connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged() ) );
 
 }
-
+Mpx3Config* Mpx3GUI::getConfig(){return config;}
 void Mpx3GUI::on_openfileButton_clicked() {
 
 }

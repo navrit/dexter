@@ -17,16 +17,18 @@
 #include <qcustomplot.h>
 
 using namespace std;
+class Mpx3Config;
 
 #include "dataset.h"
 #include "gradient.h"
 #include "histogram.h"
 #include "mpx3eq_common.h"
 #include "qcstmvoxeltab.h"
+#include "mpx3config.h"
 
 #define __matrix_size_x 256
 #define __matrix_size_y 256
-
+class Mpx3Config;
 class QCustomPlot;
 class SpidrController;
 class SpidrDaq;
@@ -56,6 +58,7 @@ private:
 	int mode = 0;
 	QApplication * _coreApp;
 	Ui::Mpx3GUI * _ui;
+	Mpx3Config *config;
 
 	// Each object here deals with one tab of the
 	// Equalization
@@ -71,6 +74,7 @@ private:
 	QVector<Gradient*>  gradients;
 	QVector<histogram*> hists;
 public:
+	Mpx3Config* getConfig();
 	Dataset* getDataset(){return workingSet;}
 	Mpx3Equalization* getEqualization(){return _equalization;}
 	SpidrController * GetSpidrController(){ return _spidrcontrol; }

@@ -8,7 +8,7 @@
 		"OperationMode"	: 0,
 		"PixelDepth"	: 12,
 		"ColourMode"	: false,
-		"CsmSpm"		: 0,
+        "CsmSpm"		: 0,
 		"GainMode"		: 2,
 		"DecodeFrames"	: true,
 		"MaxPacketSize"	: 1024,

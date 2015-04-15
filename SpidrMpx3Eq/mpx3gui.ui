@@ -21,7 +21,7 @@
        <string>DAC Control</string>
       </property>
       <property name="currentIndex">
-       <number>6</number>
+       <number>7</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -274,6 +274,11 @@
         <string>Config and Monitoring</string>
        </attribute>
       </widget>
+      <widget class="QCstmGLVisualization" name="CTTab">
+       <attribute name="title">
+        <string>Wesley's Tab</string>
+       </attribute>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -415,6 +420,12 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
+   <class>BarChart</class>
+   <extends>QWidget</extends>
+   <header>barchart.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>QCstmPlotHeatmap</class>
    <extends>QWidget</extends>
    <header>qcstmplotheatmap.h</header>
@@ -423,19 +434,13 @@
     <signal>dataRangeChanged(QCPRange)</signal>
     <signal>plotCountChanged(int)</signal>
     <signal>activePlotChanged(int)</signal>
+    <signal>nouseOverChanged(QString)</signal>
     <signal>mouseOverChanged(QString)</signal>
     <signal>pixel_selected(QPoint,QPoint)</signal>
-    <signal>nouseOverChanged(QString)</signal>
     <slot>setHeatmap(QCPColorGradient)</slot>
     <slot>changeRange(QCPRange)</slot>
     <slot>setActive(int)</slot>
    </slots>
-  </customwidget>
-  <customwidget>
-   <class>BarChart</class>
-   <extends>QWidget</extends>
-   <header>barchart.h</header>
-   <container>1</container>
   </customwidget>
   <customwidget>
    <class>QCstmEqualization</class>

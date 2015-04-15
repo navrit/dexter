@@ -3,58 +3,32 @@
 #include "mpx3defs.h"
 #include "qcstmdacs.h"
 
+#include <QObject>
 #include <QHostAddress>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
 
+#include "SpidrController.h"
+
 #include <stdint.h>
 
-//Dac stuff
-/*static const dac_t MPX3RX_DAC_TABLE[MPX3RX_DAC_COUNT] =
-{
-                {  1, "Threshold0",     30, 9, (1<<9)/2 },
-                {  2, "Threshold1",     39, 9, (1<<9)/2 },
-                {  3, "Threshold2",     48, 9, (1<<9)/2 },
-                {  4, "Threshold3",     57, 9, (1<<9)/2 },
-                {  5, "Threshold4",     66, 9, (1<<9)/2 },
-                {  6, "Threshold5",     75, 9, (1<<9)/2 },
-                {  7, "Threshold6",     84, 9, (1<<9)/2 },
-                {  8, "Threshold7",     93, 9, (1<<9)/2 },
-                {  9, "I_Preamp",          102, 8, (1<<8)/2 },
-                { 10, "I_Ikrum",           110, 8, (1<<8)/2 },
-                { 11, "I_Shaper",          118, 8, (1<<8)/2 },
-                { 12, "I_Disc",            126, 8, (1<<8)/2 },
-                { 13, "I_Disc_LS",         134, 8, (1<<8)/2 },
-                { 14, "I_Shaper_Test",     142, 8, (1<<8)/2 },
-                { 15, "I_DAC_DiscL",       150, 8, (1<<8)/2 },
-                { 30, "I_DAC_test",        158, 8, (1<<8)/2 },
-                { 31, "I_DAC_DiscH",       166, 8, (1<<8)/2 },
-                { 16, "I_Delay",           174, 8, (1<<8)/2 },
-                { 17, "I_TP_BufferIn",     182, 8, (1<<8)/2 },
-                { 18, "I_TP_BufferOut",    190, 8, (1<<8)/2 },
-                { 19, "V_Rpz",             198, 8, (1<<8)/2 },
-                { 20, "V_Gnd",             206, 8, (1<<8)/2 },
-                { 21, "V_Tp_ref",          214, 8, (1<<8)/2 },
-                { 22, "V_Fbk",             222, 8, (1<<8)/2 },
-                { 23, "V_Cas",             230, 8, (1<<8)/2 },
-                { 24, "V_Tp_refA",         238, 9, (1<<9)/2 },
-                { 25, "V_Tp_refB",         247, 9, (1<<9)/2 }
-};*/
-
-class Mpx3Config
-{
+class Mpx3Config: public QObject {
+  Q_OBJECT
   //Spidr stuff
+  SpidrController *controller = nullptr;
+  bool isConnected = false;
   QHostAddress SpidrAddress;
   uint16_t port;
   //Operation stuff
-  bool colourMode, decodeFrames;
-  int OperationMode, PixelDepth, CsmSpm, GainMode, MaxPacketSize, TriggerMode, TriggerLength_us, nTriggers;
+  bool colourMode = false, decodeFrames = false;
+  int OperationMode = -1, PixelDepth = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, TriggerMode =-1, TriggerLength_us = -1, nTriggers = -1;
 
   QVector<int> _dacVals[MPX3RX_DAC_COUNT];
 
 public:
   Mpx3Config();
+  void setIpAddress(QString ip, uint16_t port);
   void fromJsonFile(QString filename);
   void toJsonFile(QString filename);
   QString getIpAddress(){return QString("%1:%2").arg(SpidrAddress.toString()).arg(port);}
@@ -65,8 +39,51 @@ public:
   int getCsmSpm(){return CsmSpm;  }
   int getGainMode(){return GainMode;}
   int getMaxPacketSize(){return MaxPacketSize;}
+  int getTriggerMode(){return TriggerMode;}
   int getTriggerLength(){return TriggerLength_us;}
   int getNTriggers(){return nTriggers;}
+signals:
+  void IpAdressChanged(QString);
+  void colourModeChanged(bool);
+  void decodeFramesChanged(bool);
+  void operationModeChanged(int);
+  void pixelDepthChanged(int);
+  void csmSpmChanged(int);
+  void gainModeChanged(int);
+  void MaxPacketSizeChanged(int);
+  void TriggerModeChanged(int);
+  void TriggerLengthChanged(int);
+  void nTriggersChanged(int);
+public slots:
+  void setColourMode(bool mode){if(mode != colourMode){colourMode =mode; emit colourModeChanged(mode);}}
+  //void updateColourMode();
+
+  void setDecodeFrames(bool decode){if(decode != decodeFrames){decodeFrames = decode; emit decodeFramesChanged(decode);}}
+  //void updateDecodeFrames();
+
+  void setOperationMode(int newVal){if(newVal != OperationMode){OperationMode = newVal; emit operationModeChanged(newVal);}}
+  //void updateOperationMode();
+
+  void setPixelDepth(int newVal){if(newVal != PixelDepth){PixelDepth = newVal; emit pixelDepthChanged(newVal);}}
+  //void updatePixelDepth();
+
+  void setCsmSpm(int newVal){if(newVal != CsmSpm){CsmSpm = newVal; emit csmSpmChanged(newVal);}}
+  //void updateCsmSpm();
+
+  void setGainMode(int newVal){if(newVal != GainMode){GainMode = newVal; emit gainModeChanged(newVal);}}
+  //void updateGainMode();
+
+  void setMaxPacketSize(int newVal){if(newVal != MaxPacketSize){MaxPacketSize = newVal; emit MaxPacketSizeChanged(newVal);}}
+  //void updateMaxPacketSize();
+
+  void setTriggerMode(int newVal){if(newVal != TriggerMode){TriggerMode = newVal; emit TriggerModeChanged(newVal);}}
+  //void updateTriggerMode();
+
+  void setTriggerLength(int newVal){if(newVal != TriggerLength_us){TriggerLength_us = newVal; emit TriggerLengthChanged(newVal);}}
+  //void updateTriggerLength();
+
+  void setNTriggers(int newVal){if(newVal != nTriggers){nTriggers = newVal; emit nTriggersChanged(newVal);}}
+  //void updateNTriggers();
 };
 
 #endif // MPX3CONFIG_H

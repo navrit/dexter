@@ -7,10 +7,8 @@
 #define QCSTMDACS_H
 
 #include <QWidget>
+class Mpx3GUI;
 #include "mpx3gui.h"
-
-//#include "ui_mpx3gui.h"
-
 #include "mpx3defs.h"
 
 #include <QDialog>
@@ -192,9 +190,6 @@ private:
 
 	// Connectivity between modules
 	Mpx3GUI * _mpx3gui;
-
-	//QApplication * _coreApp;
-	Ui::Mpx3GUI * _ui;
 
 	// Currently active graph
 	QCPGraph *_graph;
