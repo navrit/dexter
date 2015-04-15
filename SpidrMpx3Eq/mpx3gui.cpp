@@ -123,7 +123,7 @@ void Mpx3GUI::set_summing(bool shouldSum){
 void Mpx3GUI::establish_connection() {
 
 	cout << "Connecting ..." << endl;
-	_spidrcontrol = config->getController();
+	_spidrcontrol = config->establishConnection();
 
 	// Check if we are properly connected to the SPIDR module
 	if ( _spidrcontrol->isConnected() ) {

@@ -12,13 +12,21 @@ Mpx3Config::Mpx3Config()
 
 }
 
-void Mpx3Config::setIpAddress(QString ip, uint16_t port){
+/*void Mpx3Config::setIpAddress(QString ip, uint16_t port){
 	SpidrAddress.setAddress(ip);
 	this->port = port;
 	quint32 ipaddr =  SpidrAddress.toIPv4Address();
 	delete controller;
 	controller = new SpidrController(((ipaddr>>24) & 0xFF), ((ipaddr>>16) & 0xFF), ((ipaddr>>8) & 0xFF), ((ipaddr>>0) & 0xFF), port);
 	isConnected = controller->isConnected();
+}*/
+
+SpidrController* Mpx3Config::establishConnection(){
+  quint32 ipaddr =  SpidrAddress.toIPv4Address();
+  delete controller;
+  controller = new SpidrController(((ipaddr>>24) & 0xFF), ((ipaddr>>16) & 0xFF), ((ipaddr>>8) & 0xFF), ((ipaddr>>0) & 0xFF), port);
+  isConnected = controller->isConnected();
+  return controller;
 }
 
 bool Mpx3Config::fromJsonFile(QString filename){

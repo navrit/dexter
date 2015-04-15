@@ -28,11 +28,12 @@ class Mpx3Config: public QObject {
 
 public:
   Mpx3Config();
-  void setIpAddress(QString ip, uint16_t port);
+  //void setIpAddress(QString ip, uint16_t port);
   bool fromJsonFile(QString filename);
   void toJsonFile(QString filename);
   QString getIpAddress(){return QString("%1:%2").arg(SpidrAddress.toString()).arg(port);}
   SpidrController* getController(){return controller;}
+  SpidrController* establishConnection();
   int getDacCount(){return _dacVals[0].length(); }
   int getDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
 
