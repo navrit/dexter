@@ -36,7 +36,7 @@ bool Mpx3Config::fromJsonFile(QString filename){
 	QFile loadFile(filename);
 	if(!loadFile.open(QIODevice::ReadOnly)){
 		printf("Couldn't open configuration file %s\n", filename.toStdString().c_str());
-		return true;
+		return false;
 	}
 	QByteArray binaryData = loadFile.readAll();
 	QJsonObject JSobjectParent = QJsonDocument::fromJson(binaryData).object();
@@ -83,10 +83,8 @@ bool Mpx3Config::fromJsonFile(QString filename){
 		if(it != JSobject.end())
 			setColourMode(it.value().toBool());
 		it = JSobject.find("DecodeFrames");
-		if(it != JSobject.end()){
-			printf("Read %d for decodeFrames!\n", it.value().toBool());
+		if(it != JSobject.end())
 			setDecodeFrames(it.value().toBool());
-		}
 	}
 	QJsonArray dacsArray;
 	itParent = JSobjectParent.find("DACs");
@@ -102,4 +100,41 @@ bool Mpx3Config::fromJsonFile(QString filename){
 
 
 	return true;
+}
+
+bool Mpx3Config::toJsonFile(QString filename){
+  QFile loadFile(filename);
+  if(!loadFile.open(QIODevice::WriteOnly)){
+          printf("Couldn't open configuration file %s\n", filename.toStdString().c_str());
+          return false;
+  }
+  QJsonObject JSobjectParent, objIp, objDetector;
+  QJsonArray objDacsArray;
+  objIp.insert("SpidrControllerIp", SpidrAddress.toString());
+  objIp.insert("SpidrControllerPort", this->port);
+
+  objDetector.insert("OperationMode", this->OperationMode);
+  objDetector.insert("PixelDepth", this->PixelDepth);
+  objDetector.insert("CsmSpm", this->CsmSpm);
+  objDetector.insert("GainMode", this->GainMode);
+  objDetector.insert("MaxPacketSize", this->MaxPacketSize);
+  objDetector.insert("TriggerMode", this->TriggerMode);
+  objDetector.insert("TriggerLength_us", this->TriggerLength_us);
+  objDetector.insert("nTriggers", this->nTriggers);
+  objDetector.insert("ColourMode", this->colourMode);
+  objDetector.insert("DecodeFrames", this->decodeFrames);
+
+  for(int j = 0; j < this->getDacCount(); j++){
+      QJsonObject obj;
+      for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++)
+          obj.insert(MPX3RX_DAC_TABLE[i].name, _dacVals[i][j]);
+      objDacsArray.insert(j, obj);
+   }
+
+  JSobjectParent.insert("IPConfig", objIp);
+  JSobjectParent.insert("DetectorConfig", objDetector);
+  JSobjectParent.insert("DACs", objDacsArray);
+  QJsonDocument doc;
+  doc.setObject(JSobjectParent);
+  loadFile.write(doc.toJson());
 }

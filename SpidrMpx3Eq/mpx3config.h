@@ -30,7 +30,7 @@ public:
   Mpx3Config();
   //void setIpAddress(QString ip, uint16_t port);
   bool fromJsonFile(QString filename);
-  void toJsonFile(QString filename);
+  bool toJsonFile(QString filename);
   QString getIpAddress(){return QString("%1:%2").arg(SpidrAddress.toString()).arg(port);}
   SpidrController* getController(){return controller;}
   SpidrController* establishConnection();

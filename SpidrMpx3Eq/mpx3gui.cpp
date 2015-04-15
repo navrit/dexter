@@ -69,6 +69,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	}
 	// Signals and slots for this part
 	SetupSignalsAndSlots();
+	config->toJsonFile("./config/TestOut.json");
 }
 
 Mpx3GUI::~Mpx3GUI()
