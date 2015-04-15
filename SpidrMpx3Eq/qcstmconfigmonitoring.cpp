@@ -2,20 +2,24 @@
 #include "ui_qcstmconfigmonitoring.h"
 #include "mpx3config.h"
 
+#include "SpidrController.h"
+
 QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
-  QWidget(parent),
-  ui(new Ui::QCstmConfigMonitoring)
+QWidget(parent),
+ui(new Ui::QCstmConfigMonitoring)
 {
-  ui->setupUi(this);
+	ui->setupUi(this);
+
+	_timerId = this->startTimer( 1000 );
 }
 
 QCstmConfigMonitoring::~QCstmConfigMonitoring()
 {
-  delete ui;
+	delete ui;
 }
 
 void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p){
-  _mpx3gui = p;
+	_mpx3gui = p;
   Mpx3Config *config = _mpx3gui->getConfig();
   ui->ipLabel->setText(config->getIpAddress());
 
@@ -52,4 +56,79 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p){
   connect(config, SIGNAL(TriggerModeChanged(int)), ui->triggerModeSpinner, SLOT(setValue(int)));
 
   connect(config, SIGNAL(IpAdressChanged(QString)), ui->ipLabel, SLOT(setText(QString)));
+}
+
+void QCstmConfigMonitoring::timerEvent(QTimerEvent *) {
+
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
+	if ( spidrcontrol ) {
+
+		int mdegrees;
+		if( spidrcontrol->getRemoteTemp( &mdegrees ) ) {
+			QString qs = QString("%1.%2").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
+			ui->remoteTempMeasLabel->setText( qs );
+		} else {
+			ui->remoteTempMeasLabel->setText( "--.---" );
+		}
+
+		if( spidrcontrol->getLocalTemp( &mdegrees ) ) {
+			QString qs = QString("%1.%2").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
+			ui->localTempMeasLabel->setText( qs );
+		} else {
+			ui->localTempMeasLabel->setText( "--.---" );
+		}
+
+	}
+
+	/*
+  int mvolt, mamp, mwatt;
+  if( _spidrController->getAvddNow( &mvolt, &mamp, &mwatt ) )
+    {
+      _lineEditAvddMvolt->setText( QString::number( mvolt ) );
+      _lineEditAvddMwatt->setText( QString::number( mwatt ) );
+      QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
+      _lineEditAvddMamp->setText( qs );
+    }
+  else
+    {
+      _lineEditAvddMvolt->setText( "----" );
+      _lineEditAvddMamp->setText( "----" );
+      _lineEditAvddMwatt->setText( "----" );
+    }
+  if( _spidrController->getDvddNow( &mvolt, &mamp, &mwatt ) )
+    {
+      _lineEditDvddMvolt->setText( QString::number( mvolt ) );
+      _lineEditDvddMwatt->setText( QString::number( mwatt ) );
+      QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
+      _lineEditDvddMamp->setText( qs );
+    }
+  else
+    {
+      _lineEditDvddMvolt->setText( "----" );
+      _lineEditDvddMamp->setText( "----" );
+      _lineEditDvddMwatt->setText( "----" );
+    }
+  if( !_skipVdd )
+    {
+      if( _spidrController->getVddNow( &mvolt, &mamp, &mwatt ) )
+	{
+	  _lineEditVddMvolt->setText( QString::number( mvolt ) );
+	  _lineEditVddMwatt->setText( QString::number( mwatt ) );
+	  QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
+	  _lineEditVddMamp->setText( qs );
+	}
+      else
+	{
+	  _skipVdd = true; // SPIDR-TPX3 does not have VDD
+	  _lineEditVddMvolt->setText( "----" );
+	  _lineEditVddMamp->setText( "----" );
+	  _lineEditVddMwatt->setText( "----" );
+	}
+    }
+
+  _leUpdateLed->show();
+  QTimer::singleShot( UPDATE_INTERVAL_MS/4, this, SLOT(updateLedOff()) );
+	 */
+
 }

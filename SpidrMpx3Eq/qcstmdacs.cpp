@@ -161,8 +161,6 @@ void QCstmDacs::FillDACValues( int devId ) {
 
 	// Create the thread
 	_updateDACsThread = new UpdateDACsThread(devId, _nDACConfigsAvailable, this, spidrcontrol);
-	// Connect to the progress bar
-	connect( _updateDACsThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
 	// Run !
 	_updateDACsThread->start();
 
@@ -659,6 +657,13 @@ void QCstmDacs::scanFinished() {
 
 }
 
+void QCstmDacs::updateFinished() {
+
+	// What needs to be done when an update has been requested ? TODO
+
+}
+
+
 void QCstmDacs::addData(int dacIdx, int dacVal, double adcVal ) {
 
 	_graph = ui->plotScan->graph( _plotIdxMap[dacIdx] ); // the right vector index
@@ -865,6 +870,9 @@ void UpdateDACsThread::run(){
 
 	SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 
+	// Ready to take action when the scan is done
+	connect( this, SIGNAL( updateFinished() ), _dacs, SLOT( updateFinished() ) );
+
 	if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
 		cout << "Device not connected !" << endl;
 		return;
@@ -886,6 +894,7 @@ void UpdateDACsThread::run(){
 			//		<< " | " << _dacs->GetDACValue(chip, i) << endl;
 
 			spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[i].code,  _dacs->GetDACValue(chip, i) );
+			Sleep(10);
 			// Adjust the sliders and the SpinBoxes to the new value
 			connect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
 			slideAndSpin( i, _dacs->GetDACValue(chip, i) );
@@ -896,7 +905,12 @@ void UpdateDACsThread::run(){
 
 		}
 	}
+	// Send signal
+	updateFinished();
 
+	disconnect( this, SIGNAL( updateFinished() ), _dacs, SLOT( updateFinished() ) );
+
+	// Get rid of this connection
 	delete spidrcontrol;
 }
 

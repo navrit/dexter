@@ -29,9 +29,11 @@ class Mpx3Config: public QObject {
 public:
   Mpx3Config();
   void setIpAddress(QString ip, uint16_t port);
-  void fromJsonFile(QString filename);
+  bool fromJsonFile(QString filename);
   void toJsonFile(QString filename);
   QString getIpAddress(){return QString("%1:%2").arg(SpidrAddress.toString()).arg(port);}
+  quint32 getIpAddressInt(){return SpidrAddress.toIPv4Address();}
+  uint16_t getIpAddressPort(){return port;}
   bool getColourMode(){return colourMode;}
   bool getDecodeFrames(){return decodeFrames;}
   int getOperationMode(){return OperationMode;}

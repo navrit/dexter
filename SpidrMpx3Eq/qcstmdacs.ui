@@ -33,7 +33,11 @@
         </widget>
        </item>
        <item row="7" column="3">
-        <widget class="QSpinBox" name="dac7SpinBox"/>
+        <widget class="QSpinBox" name="dac7SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="8" column="1">
         <widget class="QLabel" name="dac8Label">
@@ -50,7 +54,11 @@
         </widget>
        </item>
        <item row="8" column="3">
-        <widget class="QSpinBox" name="dac8SpinBox"/>
+        <widget class="QSpinBox" name="dac8SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="8" column="4">
         <widget class="QLabel" name="dac8VLabel">
@@ -74,7 +82,11 @@
         </widget>
        </item>
        <item row="9" column="3">
-        <widget class="QSpinBox" name="dac9SpinBox"/>
+        <widget class="QSpinBox" name="dac9SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="9" column="4">
         <widget class="QLabel" name="dac9VLabel">
@@ -98,7 +110,11 @@
         </widget>
        </item>
        <item row="10" column="3">
-        <widget class="QSpinBox" name="dac10SpinBox"/>
+        <widget class="QSpinBox" name="dac10SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="10" column="4">
         <widget class="QLabel" name="dac10VLabel">
@@ -122,7 +138,11 @@
         </widget>
        </item>
        <item row="11" column="3">
-        <widget class="QSpinBox" name="dac11SpinBox"/>
+        <widget class="QSpinBox" name="dac11SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="11" column="4">
         <widget class="QLabel" name="dac11VLabel">
@@ -146,7 +166,11 @@
         </widget>
        </item>
        <item row="12" column="3">
-        <widget class="QSpinBox" name="dac12SpinBox"/>
+        <widget class="QSpinBox" name="dac12SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="12" column="4">
         <widget class="QLabel" name="dac12VLabel">
@@ -170,7 +194,11 @@
         </widget>
        </item>
        <item row="13" column="3">
-        <widget class="QSpinBox" name="dac13SpinBox"/>
+        <widget class="QSpinBox" name="dac13SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="13" column="4">
         <widget class="QLabel" name="dac13VLabel">
@@ -236,7 +264,11 @@
         </widget>
        </item>
        <item row="0" column="3">
-        <widget class="QSpinBox" name="dac0SpinBox"/>
+        <widget class="QSpinBox" name="dac0SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="0" column="4">
         <widget class="QLabel" name="dac0VLabel">
@@ -253,7 +285,11 @@
         </widget>
        </item>
        <item row="1" column="3">
-        <widget class="QSpinBox" name="dac1SpinBox"/>
+        <widget class="QSpinBox" name="dac1SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="1" column="2">
         <widget class="QSlider" name="dac1hSlider">
@@ -270,7 +306,11 @@
         </widget>
        </item>
        <item row="2" column="3">
-        <widget class="QSpinBox" name="dac2SpinBox"/>
+        <widget class="QSpinBox" name="dac2SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="2" column="4">
         <widget class="QLabel" name="dac2VLabel">
@@ -308,7 +348,11 @@
         </widget>
        </item>
        <item row="3" column="3">
-        <widget class="QSpinBox" name="dac3SpinBox"/>
+        <widget class="QSpinBox" name="dac3SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="4" column="1">
         <widget class="QLabel" name="dac4Label">
@@ -325,7 +369,11 @@
         </widget>
        </item>
        <item row="4" column="3">
-        <widget class="QSpinBox" name="dac4SpinBox"/>
+        <widget class="QSpinBox" name="dac4SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="4" column="4">
         <widget class="QLabel" name="dac4VLabel">
@@ -349,7 +397,11 @@
         </widget>
        </item>
        <item row="5" column="3">
-        <widget class="QSpinBox" name="dac5SpinBox"/>
+        <widget class="QSpinBox" name="dac5SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="5" column="4">
         <widget class="QLabel" name="dac5VLabel">
@@ -373,7 +425,11 @@
         </widget>
        </item>
        <item row="6" column="3">
-        <widget class="QSpinBox" name="dac6SpinBox"/>
+        <widget class="QSpinBox" name="dac6SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
        </item>
        <item row="6" column="4">
         <widget class="QLabel" name="dac6VLabel">
@@ -486,7 +542,11 @@
           </widget>
          </item>
          <item row="3" column="3">
-          <widget class="QSpinBox" name="dac17SpinBox"/>
+          <widget class="QSpinBox" name="dac17SpinBox">
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="3" column="2">
           <widget class="QSlider" name="dac17hSlider">
@@ -510,10 +570,18 @@
           </widget>
          </item>
          <item row="9" column="3">
-          <widget class="QSpinBox" name="dac23SpinBox"/>
+          <widget class="QSpinBox" name="dac23SpinBox">
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="7" column="3">
-          <widget class="QSpinBox" name="dac21SpinBox"/>
+          <widget class="QSpinBox" name="dac21SpinBox">
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="7" column="4">
           <widget class="QLabel" name="dac21VLabel">
@@ -537,10 +605,18 @@
           </widget>
          </item>
          <item row="2" column="3">
-          <widget class="QSpinBox" name="dac16SpinBox"/>
+          <widget class="QSpinBox" name="dac16SpinBox">
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="11" column="3">
-          <widget class="QSpinBox" name="dac25SpinBox"/>
+          <widget class="QSpinBox" name="dac25SpinBox">
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="11" column="4">
           <widget class="QLabel" name="dac25VLabel">
@@ -557,7 +633,11 @@
           </widget>
          </item>
          <item row="10" column="3">
-          <widget class="QSpinBox" name="dac24SpinBox"/>
+          <widget class="QSpinBox" name="dac24SpinBox">
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="10" column="4">
           <widget class="QLabel" name="dac24VLabel">
@@ -567,7 +647,11 @@
           </widget>
          </item>
          <item row="4" column="3">
-          <widget class="QSpinBox" name="dac18SpinBox"/>
+          <widget class="QSpinBox" name="dac18SpinBox">
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="11" column="1">
           <widget class="QLabel" name="dac25Label">
@@ -619,7 +703,11 @@
           </widget>
          </item>
          <item row="6" column="3">
-          <widget class="QSpinBox" name="dac20SpinBox"/>
+          <widget class="QSpinBox" name="dac20SpinBox">
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="6" column="4">
           <widget class="QLabel" name="dac20VLabel">
@@ -636,7 +724,11 @@
           </widget>
          </item>
          <item row="8" column="3">
-          <widget class="QSpinBox" name="dac22SpinBox"/>
+          <widget class="QSpinBox" name="dac22SpinBox">
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="8" column="4">
           <widget class="QLabel" name="dac22VLabel">
@@ -660,7 +752,11 @@
           </widget>
          </item>
          <item row="1" column="3">
-          <widget class="QSpinBox" name="dac15SpinBox"/>
+          <widget class="QSpinBox" name="dac15SpinBox">
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="12" column="1">
           <widget class="QLabel" name="dac26Label">
@@ -677,7 +773,11 @@
           </widget>
          </item>
          <item row="12" column="3">
-          <widget class="QSpinBox" name="dac26SpinBox"/>
+          <widget class="QSpinBox" name="dac26SpinBox">
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="12" column="4">
           <widget class="QLabel" name="dac26VLabel">
@@ -694,7 +794,11 @@
           </widget>
          </item>
          <item row="5" column="3">
-          <widget class="QSpinBox" name="dac19SpinBox"/>
+          <widget class="QSpinBox" name="dac19SpinBox">
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="2" column="1">
           <widget class="QLabel" name="dac16Label">
@@ -711,7 +815,11 @@
           </widget>
          </item>
          <item row="0" column="3">
-          <widget class="QSpinBox" name="dac14SpinBox"/>
+          <widget class="QSpinBox" name="dac14SpinBox">
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="0" column="4">
           <widget class="QLabel" name="dac14VLabel">
@@ -964,6 +1072,9 @@
            <property name="toolTip">
             <string>Number of samplings when sensing a DAC</string>
            </property>
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
           </widget>
          </item>
          <item>
@@ -994,6 +1105,9 @@
            <property name="toolTip">
             <string>Device Id</string>
            </property>
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
           </widget>
          </item>
          <item>
@@ -1023,6 +1137,9 @@
           <widget class="QSpinBox" name="scanStepSpinBox">
            <property name="toolTip">
             <string>Step for a DAC scan</string>
+           </property>
+           <property name="keyboardTracking">
+            <bool>false</bool>
            </property>
           </widget>
          </item>

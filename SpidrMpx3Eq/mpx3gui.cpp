@@ -61,8 +61,12 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
 	//Config & monitoring
 	_ui->CnMWidget->SetMpx3GUI(this);
-	config->fromJsonFile("./config/mpx3.json");
-
+	// Read the configuration
+	QString configFile = "./config/mpx3.json";
+	if ( ! config->fromJsonFile( configFile ) ) {
+	QMessageBox::critical(this, "Loading configuration error",
+					QString("Couldn't load the configuration file: %1").arg(configFile));
+	}
 	// Signals and slots for this part
 	SetupSignalsAndSlots();
 }
@@ -118,17 +122,20 @@ void Mpx3GUI::set_summing(bool shouldSum){
 
 void Mpx3GUI::establish_connection() {
 
-	int dev_nr = 2;
 	cout << "Connecting ..." << endl;
 	delete _spidrcontrol;
-	_spidrcontrol = new SpidrController( 192, 168, 1, 10 );
-	//_spidrcontrol = new SpidrController( 192, 16, 192, 30 );
+
+	quint32 ipaddr = getConfig()->getIpAddressInt();
+	uint16_t port = getConfig()->getIpAddressPort();
+
+	_spidrcontrol = new SpidrController(((ipaddr>>24) & 0xFF), ((ipaddr>>16) & 0xFF), ((ipaddr>>8) & 0xFF), ((ipaddr>>0) & 0xFF), port);
 
 	// Check if we are properly connected to the SPIDR module
 	if ( _spidrcontrol->isConnected() ) {
 		cout << "Connected to SPIDR: " << _spidrcontrol->ipAddressString();
 		int ipaddr;
-		if( _spidrcontrol->getIpAddrDest( dev_nr, &ipaddr ) )
+		 // This call takes device number 0 'cause it is not really addressed to a chip in particular
+		if( _spidrcontrol->getIpAddrDest( 0, &ipaddr ) )
 			cout << ", IP dest: "
 			<< ((ipaddr>>24) & 0xFF) << "."
 			<< ((ipaddr>>16) & 0xFF) << "."

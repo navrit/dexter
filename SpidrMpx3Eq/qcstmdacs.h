@@ -245,6 +245,7 @@ void ChangeScanStep(int);
 void addData(int, int, double);
 void addData(int);
 void scanFinished();
+void updateFinished();
 void slideAndSpin(int, int);
 void openWriteMenu();
 void ConnectionStatusChanged();
@@ -334,10 +335,7 @@ signals:
 
 	// These are used in the parent class as a signal to thread-safe feed
 	//  widgets in the ui
-	void progress(int);
-	void fillText(QString);
-	void fillTextWithIdx(QString, int);
-	void scanFinished();
+	void updateFinished();
 	void slideAndSpin(int, int);
 
 };
