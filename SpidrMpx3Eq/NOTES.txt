@@ -1,4 +1,5 @@
 BUGS & ISSUES:
+DONE 2015-04-15 -Decode frames not properly set from JSON
 -Generated data + load data leaves old data.
 -No pixels fired/total charge(/pixels masked)
 DONE 2015-04-11, Was mostly an issue with the way histograms were loaded not, textures loaded. -Loading is slow on AMD cards, upload all frames at once not frame by frame.
@@ -10,6 +11,8 @@ DONE 2015-04-11-Heatmap is the wrong way around before switching
 
 TODO:
 DONE 2015-04-14 multidisplay, STILL BUGGY. Implement with opengl rotation instead?
+-Propagate data to  Spidr
+-Ip address as spinbox
 -Controls on gradient widget
 -Clean up code.
    ->Optimize/clean the gl renderer.

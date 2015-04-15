@@ -63,12 +63,14 @@ void Mpx3Config::fromJsonFile(QString filename){
       it = JSobject.find("nTriggers");
       if(it != JSobject.end())
         setNTriggers(it.value().toInt());
-      it = JSobject.find("colourMode");
+      it = JSobject.find("ColourMode");
       if(it != JSobject.end())
         setColourMode(it.value().toBool());
-      it = JSobject.find("decodeFrames");
-      if(it != JSobject.end())
-        setDecodeFrames(it.value().toBool());
+      it = JSobject.find("DecodeFrames");
+      if(it != JSobject.end()){
+          printf("Read %d for decodeFrames!\n", it.value().toBool());
+          setDecodeFrames(it.value().toBool());
+        }
   }
   QJsonArray dacsArray;
   itParent = JSobjectParent.find("DACs");
