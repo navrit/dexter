@@ -123,12 +123,7 @@ void Mpx3GUI::set_summing(bool shouldSum){
 void Mpx3GUI::establish_connection() {
 
 	cout << "Connecting ..." << endl;
-	delete _spidrcontrol;
-
-	quint32 ipaddr = getConfig()->getIpAddressInt();
-	uint16_t port = getConfig()->getIpAddressPort();
-
-	_spidrcontrol = new SpidrController(((ipaddr>>24) & 0xFF), ((ipaddr>>16) & 0xFF), ((ipaddr>>8) & 0xFF), ((ipaddr>>0) & 0xFF), port);
+	_spidrcontrol = config->getController();
 
 	// Check if we are properly connected to the SPIDR module
 	if ( _spidrcontrol->isConnected() ) {
@@ -152,6 +147,7 @@ void Mpx3GUI::establish_connection() {
 		//_ui->_statusLabel->setStyleSheet("QLabel { background-color : red; color : black; }");
 		QMessageBox::critical(this, "Connection error",
 				QString("Couldn't establish a connection to the Spidr controller at %1, %2").arg(QString::fromStdString(_spidrcontrol->ipAddressString())).arg(QString::fromStdString(_spidrcontrol->connectionErrString())));
+		emit ConnectionStatusChanged(false);
 		return; //No use in continuing if we can't connect.
 	}
 
