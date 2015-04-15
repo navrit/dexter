@@ -91,11 +91,11 @@ bool Mpx3Config::fromJsonFile(QString filename){
 	QJsonArray dacsArray;
 	itParent = JSobjectParent.find("DACs");
 	if(itParent != JSobjectParent.end()){
-		QJsonObject JSobject = itParent.value().toObject();
+		dacsArray = itParent.value().toArray();
 		foreach (const QJsonValue & value, dacsArray) {
 			QJsonObject obj = value.toObject();
 			for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
-				_dacVals[i].push_back( JSobject[MPX3RX_DAC_TABLE[i].name].toInt() );
+				_dacVals[i].push_back( obj[MPX3RX_DAC_TABLE[i].name].toInt() );
 			}
 		}
 	}

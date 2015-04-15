@@ -67,7 +67,7 @@ private:
 	//DACs * _dacs = nullptr;
 
 	// This helps interconnecting the different modules
-	SpidrController * _spidrcontrol = nullptr;
+	//SpidrController * _spidrcontrol = nullptr;
 	SpidrDaq * _spidrdaq = nullptr;
 
 	Dataset *workingSet;
@@ -77,7 +77,7 @@ public:
 	Mpx3Config* getConfig();
 	Dataset* getDataset(){return workingSet;}
 	Mpx3Equalization* getEqualization(){return _equalization;}
-	SpidrController * GetSpidrController(){ return _spidrcontrol; }
+	SpidrController * GetSpidrController();
 	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
 	void addFrame(int *frame);
 	void addFrames(QVector<int*> frames);

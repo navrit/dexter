@@ -82,6 +82,10 @@ Gradient* Mpx3GUI::getGradient(int index){
   return gradients.at(index);
 }
 
+SpidrController * Mpx3GUI::GetSpidrController(){
+	return config->getController();
+}
+
 void Mpx3GUI::LoadEqualization(){
 	_equalization->LoadEqualization();
 }
@@ -123,14 +127,14 @@ void Mpx3GUI::set_summing(bool shouldSum){
 void Mpx3GUI::establish_connection() {
 
 	cout << "Connecting ..." << endl;
-	_spidrcontrol = config->establishConnection();
+	SpidrController * spidrcontrol = config->establishConnection();
 
 	// Check if we are properly connected to the SPIDR module
-	if ( _spidrcontrol->isConnected() ) {
-		cout << "Connected to SPIDR: " << _spidrcontrol->ipAddressString();
+	if ( spidrcontrol->isConnected() ) {
+		cout << "Connected to SPIDR: " << spidrcontrol->ipAddressString();
 		int ipaddr;
 		 // This call takes device number 0 'cause it is not really addressed to a chip in particular
-		if( _spidrcontrol->getIpAddrDest( 0, &ipaddr ) )
+		if( spidrcontrol->getIpAddrDest( 0, &ipaddr ) )
 			cout << ", IP dest: "
 			<< ((ipaddr>>24) & 0xFF) << "."
 			<< ((ipaddr>>16) & 0xFF) << "."
@@ -141,27 +145,27 @@ void Mpx3GUI::establish_connection() {
 		//_ui->_statusLabel->setStyleSheet("QLabel { background-color : blue; color : white; }");
 
 	} else {
-		cout << _spidrcontrol->connectionStateString() << ": "
-				<< _spidrcontrol->connectionErrString() << endl;
+		cout << spidrcontrol->connectionStateString() << ": "
+				<< spidrcontrol->connectionErrString() << endl;
 		//_ui->_statusLabel->setText("Connection failed.");
 		//_ui->_statusLabel->setStyleSheet("QLabel { background-color : red; color : black; }");
 		QMessageBox::critical(this, "Connection error",
-				QString("Couldn't establish a connection to the Spidr controller at %1, %2").arg(QString::fromStdString(_spidrcontrol->ipAddressString())).arg(QString::fromStdString(_spidrcontrol->connectionErrString())));
+				QString("Couldn't establish a connection to the Spidr controller at %1, %2").arg(QString::fromStdString(spidrcontrol->ipAddressString())).arg(QString::fromStdString(spidrcontrol->connectionErrString())));
 		emit ConnectionStatusChanged(false);
 		return; //No use in continuing if we can't connect.
 	}
 
 	// Get version numbers
 	cout << "SpidrController class: "
-			<< _spidrcontrol->versionToString( _spidrcontrol->classVersion() ) << endl;
+			<< spidrcontrol->versionToString( spidrcontrol->classVersion() ) << endl;
 	int version;
-	if( _spidrcontrol->getFirmwVersion( &version ) )
-		cout << "SPIDR firmware  : " << _spidrcontrol->versionToString( version ) << endl;
-	if( _spidrcontrol->getSoftwVersion( &version ) )
-		cout << "SPIDR software  : " << _spidrcontrol->versionToString( version ) << endl;
+	if( spidrcontrol->getFirmwVersion( &version ) )
+		cout << "SPIDR firmware  : " << spidrcontrol->versionToString( version ) << endl;
+	if( spidrcontrol->getSoftwVersion( &version ) )
+		cout << "SPIDR software  : " << spidrcontrol->versionToString( version ) << endl;
 
 	// SpidrDaq
-	_spidrdaq = new SpidrDaq( _spidrcontrol );
+	_spidrdaq = new SpidrDaq( spidrcontrol );
 	cout << "SpidrDaq: ";
 	for( int i=0; i<4; ++i ) cout << _spidrdaq->ipAddressString( i ) << " ";
 	cout << endl;
@@ -172,7 +176,7 @@ void Mpx3GUI::establish_connection() {
 	emit ConnectionStatusChanged(true);
 
 	// A connection to hardware should make aware the DAC panel
-	//_moduleConn->GetDACs()->ConnectToHardware(_spidrcontrol, _spidrdaq);
+	//_moduleConn->GetDACs()->ConnectToHardware(spidrcontrol, _spidrdaq);
 	//_dacs->PopulateDACValues();
 
 }
