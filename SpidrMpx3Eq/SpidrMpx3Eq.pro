@@ -57,7 +57,8 @@ SOURCES += main.cpp \
     dataset.cpp \
     qcstmthreshold.cpp \
     voxelwidget.cpp \
-    mpx3config.cpp
+    mpx3config.cpp \
+    qcstmconfigmonitoring.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -80,7 +81,8 @@ HEADERS += mpx3gui.h \
     dataset.h \
     qcstmthreshold.h \
     voxelwidget.h \
-    mpx3config.h
+    mpx3config.h \
+    qcstmconfigmonitoring.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS +=
@@ -93,7 +95,8 @@ FORMS    += mpx3gui.ui \
     gradientwidget.ui \
     qcstmglvisualization.ui \
     qcstmthreshold.ui \
-    qcstmvoxeltab.ui
+    qcstmvoxeltab.ui \
+    qcstmconfigmonitoring.ui
 
 DISTFILES += \
     CHANGES.txt \

@@ -62,7 +62,8 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	// Prepare THL Calibration
 	_ui->ThresholdTab->SetMpx3GUI(this);
 
-	//
+	//Config & monitoring
+	_ui->CnMWidget->SetMpx3GUI(this);
 
 	// Signals and slots for this part
 	SetupSignalsAndSlots();

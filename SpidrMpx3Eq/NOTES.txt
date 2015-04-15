@@ -9,7 +9,7 @@ DONE 2015-04-11-Heatmap is the wrong way around before switching
 -Clear data segfaults?
 
 TODO:
-DONE 2015-04-14 multidisplay, STILL BUGGY
+DONE 2015-04-14 multidisplay, STILL BUGGY. Implement with opengl rotation instead?
 -Controls on gradient widget
 -Clean up code.
    ->Optimize/clean the gl renderer.
@@ -22,4 +22,4 @@ DONE 2015-04-14 multidisplay, STILL BUGGY
    ->Compute voxels with MC.
 
 OBSERVATIONS & QUESTIONS:
--Sr90 data shows a connected structure, is this because of a lack of colimator?
+-Sr90 data shows a connected structure, is this because of a lack of colimator? NO, electron movement in silicon, Sr90 is a beta source.

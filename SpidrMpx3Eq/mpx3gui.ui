@@ -21,7 +21,7 @@
        <string>DAC Control</string>
       </property>
       <property name="currentIndex">
-       <number>5</number>
+       <number>6</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -269,6 +269,11 @@
         </item>
        </layout>
       </widget>
+      <widget class="QCstmConfigMonitoring" name="CnMWidget">
+       <attribute name="title">
+        <string>Config and Monitoring</string>
+       </attribute>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -279,7 +284,7 @@
      <x>0</x>
      <y>0</y>
      <width>1086</width>
-     <height>25</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -463,6 +468,12 @@
    <class>QCstmVoxeltab</class>
    <extends>QWidget</extends>
    <header>qcstmvoxeltab.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QCstmConfigMonitoring</class>
+   <extends>QWidget</extends>
+   <header>qcstmconfigmonitoring.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
