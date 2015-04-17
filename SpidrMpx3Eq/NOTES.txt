@@ -5,12 +5,17 @@ DONE 2015-04-15 -Decode frames not properly set from JSON
 DONE 2015-04-11, Was mostly an issue with the way histograms were loaded not, textures loaded. -Loading is slow on AMD cards, upload all frames at once not frame by frame.
 DONE 2015-04-11-Heatmap is the wrong way around before switching
     DONE 2015-04-11-Heatmap is the wrong way around for Opengl.
+-Get frames reimplemnt
+-Histograms on multidisplays
 
 -segfault in histogram when summing? Could not reproduce.
 -Clear data segfaults?
 
 TODO:
 DONE 2015-04-14 multidisplay, STILL BUGGY. Implement with opengl rotation instead?
+DONE 2015-04-15 Store and load config from file
+    -DONE 2015-04-17 Allow for seperate loading of config DACs and other config.
+    -Automatically append .json
 -Propagate data to  Spidr
 -Ip address as spinbox
 -Controls on gradient widget

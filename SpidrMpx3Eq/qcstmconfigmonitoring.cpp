@@ -132,3 +132,15 @@ void QCstmConfigMonitoring::timerEvent(QTimerEvent *) {
 	 */
 
 }
+
+void QCstmConfigMonitoring::on_SaveButton_clicked()//TODO: automatically append .json
+{
+  QString filename = QFileDialog::getSaveFileName(this, tr("Save configuration"), tr("./config"), tr("Json files (*.json)"));
+  _mpx3gui->getConfig()->toJsonFile(filename, ui->IncludeDacsCheck->isChecked());
+}
+
+void QCstmConfigMonitoring::on_LoadButton_clicked()
+{
+  QString filename = QFileDialog::getOpenFileName(this, tr("Open configuration"), tr("./config"), tr("Json files (*.json)"));
+  _mpx3gui->getConfig()->fromJsonFile(filename, ui->IncludeDacsCheck->isChecked());
+}

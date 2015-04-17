@@ -18,6 +18,11 @@ public:
   ~QCstmConfigMonitoring();
   void timerEvent( QTimerEvent * );
 
+private slots:
+  void on_SaveButton_clicked();
+
+  void on_LoadButton_clicked();
+
 private:
   Ui::QCstmConfigMonitoring *ui;
   int _timerId;

@@ -29,7 +29,7 @@ SpidrController* Mpx3Config::establishConnection(){
   return controller;
 }
 
-bool Mpx3Config::fromJsonFile(QString filename){
+bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
 
 	cout << "[INFO] reading the configuration from the Json file: " << filename.toStdString() << endl;
 
@@ -86,23 +86,24 @@ bool Mpx3Config::fromJsonFile(QString filename){
 		if(it != JSobject.end())
 			setDecodeFrames(it.value().toBool());
 	}
-	QJsonArray dacsArray;
-	itParent = JSobjectParent.find("DACs");
-	if(itParent != JSobjectParent.end()){
+	if(includeDacs){
+	    QJsonArray dacsArray;
+	    itParent = JSobjectParent.find("DACs");
+	    if(itParent != JSobjectParent.end()){
 		dacsArray = itParent.value().toArray();
 		foreach (const QJsonValue & value, dacsArray) {
-			QJsonObject obj = value.toObject();
-			for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
-				_dacVals[i].push_back( obj[MPX3RX_DAC_TABLE[i].name].toInt() );
-			}
-		}
-	}
-
+		    QJsonObject obj = value.toObject();
+		    for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
+			_dacVals[i].push_back( obj[MPX3RX_DAC_TABLE[i].name].toInt() );
+		      }
+		  }
+	      }
+	  }
 
 	return true;
 }
 
-bool Mpx3Config::toJsonFile(QString filename){
+bool Mpx3Config::toJsonFile(QString filename, bool includeDacs){
   QFile loadFile(filename);
   if(!loadFile.open(QIODevice::WriteOnly)){
           printf("Couldn't open configuration file %s\n", filename.toStdString().c_str());
@@ -124,16 +125,17 @@ bool Mpx3Config::toJsonFile(QString filename){
   objDetector.insert("ColourMode", this->colourMode);
   objDetector.insert("DecodeFrames", this->decodeFrames);
 
-  for(int j = 0; j < this->getDacCount(); j++){
-      QJsonObject obj;
-      for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++)
-          obj.insert(MPX3RX_DAC_TABLE[i].name, _dacVals[i][j]);
-      objDacsArray.insert(j, obj);
-   }
-
   JSobjectParent.insert("IPConfig", objIp);
   JSobjectParent.insert("DetectorConfig", objDetector);
-  JSobjectParent.insert("DACs", objDacsArray);
+  if(includeDacs){
+      for(int j = 0; j < this->getDacCount(); j++){
+          QJsonObject obj;
+          for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++)
+            obj.insert(MPX3RX_DAC_TABLE[i].name, _dacVals[i][j]);
+          objDacsArray.insert(j, obj);
+        }
+      JSobjectParent.insert("DACs", objDacsArray);
+    }
   QJsonDocument doc;
   doc.setObject(JSobjectParent);
   loadFile.write(doc.toJson());

@@ -29,8 +29,8 @@ class Mpx3Config: public QObject {
 public:
   Mpx3Config();
   //void setIpAddress(QString ip, uint16_t port);
-  bool fromJsonFile(QString filename);
-  bool toJsonFile(QString filename);
+  bool fromJsonFile(QString filename, bool includeDacs = true);
+  bool toJsonFile(QString filename, bool includeDacs = true);
   QString getIpAddress(){return QString("%1:%2").arg(SpidrAddress.toString()).arg(port);}
   SpidrController* getController(){return controller;}
   SpidrController* establishConnection();
@@ -62,6 +62,8 @@ signals:
   void TriggerLengthChanged(int);
   void nTriggersChanged(int);
 public slots:
+  //void setIpAddress(QString ip){if(ip ! SpidrAddress
+
   void setColourMode(bool mode){if(mode != colourMode){colourMode =mode; emit colourModeChanged(mode);}}
   //void updateColourMode();
 
