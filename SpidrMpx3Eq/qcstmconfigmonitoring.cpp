@@ -9,8 +9,12 @@ QWidget(parent),
 ui(new Ui::QCstmConfigMonitoring)
 {
 	ui->setupUi(this);
-
 	_timerId = this->startTimer( 1000 );
+	ui->gainModeCombobox->addItem("Super High Gain Mode");
+	ui->gainModeCombobox->addItem("Low Gain Mode");
+	ui->gainModeCombobox->addItem("High Gain Mode");
+	ui->gainModeCombobox->addItem("Super Low Gain Mode");
+
 }
 
 QCstmConfigMonitoring::~QCstmConfigMonitoring()
@@ -31,8 +35,8 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p){
   connect(ui->decodeFramesCheckbox, SIGNAL(clicked(bool)), config, SLOT(setDecodeFrames(bool)));
   connect(config, SIGNAL(decodeFramesChanged(bool)), ui->decodeFramesCheckbox, SLOT(setChecked(bool)));
 
-  connect(ui->gainModeSpinner, SIGNAL(valueChanged(int)), config, SLOT(setGainMode(int)));
-  connect(config, SIGNAL(gainModeChanged(int)), ui->gainModeSpinner, SLOT(setValue(int)));
+  connect(ui->gainModeCombobox, SIGNAL(activated(int)), config, SLOT(setGainMode(int)));
+  connect(config, SIGNAL(gainModeChanged(int)), ui->gainModeCombobox, SLOT(setCurrentIndex(int)));
 
   connect(ui->maxPacketSizeSpinner, SIGNAL(valueChanged(int)), config, SLOT(setMaxPacketSize(int)));
   connect(config, SIGNAL(MaxPacketSizeChanged(int)), ui->maxPacketSizeSpinner, SLOT(setValue(int)));

@@ -95,24 +95,14 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="1">
-          <widget class="QSpinBox" name="gainModeSpinner">
-           <property name="keyboardTracking">
-            <bool>false</bool>
-           </property>
-           <property name="maximum">
-            <number>9999999</number>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="0">
+         <item row="7" column="0">
           <widget class="QLabel" name="label_7">
            <property name="text">
             <string>Trigger Mode</string>
            </property>
           </widget>
          </item>
-         <item row="6" column="1">
+         <item row="7" column="1">
           <widget class="QSpinBox" name="triggerModeSpinner">
            <property name="keyboardTracking">
             <bool>false</bool>
@@ -122,14 +112,14 @@
            </property>
           </widget>
          </item>
-         <item row="7" column="0">
+         <item row="8" column="0">
           <widget class="QLabel" name="label_9">
            <property name="text">
             <string>Number of Triggers</string>
            </property>
           </widget>
          </item>
-         <item row="7" column="1">
+         <item row="8" column="1">
           <widget class="QSpinBox" name="nTriggersSpinner">
            <property name="keyboardTracking">
             <bool>false</bool>
@@ -139,14 +129,14 @@
            </property>
           </widget>
          </item>
-         <item row="8" column="0">
+         <item row="9" column="0">
           <widget class="QLabel" name="label_8">
            <property name="text">
             <string>Trigger Length (us)</string>
            </property>
           </widget>
          </item>
-         <item row="8" column="1">
+         <item row="9" column="1">
           <widget class="QSpinBox" name="triggerLengthSpinner">
            <property name="keyboardTracking">
             <bool>false</bool>
@@ -156,19 +146,22 @@
            </property>
           </widget>
          </item>
-         <item row="9" column="1">
+         <item row="10" column="1">
           <widget class="QCheckBox" name="ColourModeCheckBox">
            <property name="text">
             <string>Colour Mode</string>
            </property>
           </widget>
          </item>
-         <item row="10" column="1">
+         <item row="11" column="1">
           <widget class="QCheckBox" name="decodeFramesCheckbox">
            <property name="text">
             <string>Decode Frames</string>
            </property>
           </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QComboBox" name="gainModeCombobox"/>
          </item>
         </layout>
        </item>

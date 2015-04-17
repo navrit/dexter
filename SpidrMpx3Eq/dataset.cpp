@@ -31,6 +31,7 @@ void Dataset::addFrame(QVector<int> frame){
 int* Dataset::getFrame(int index){//TODO: fix memory leak!
   if(index == -1)
     index = m_frames.length()-1;
+ //return m_frames[index];
   int* ret  = new int[m_nx*m_ny*m_nFramesX*m_nFramesY];
   int realIndex = m_nFramesX*m_nFramesY*index;
   int offset = 0;
