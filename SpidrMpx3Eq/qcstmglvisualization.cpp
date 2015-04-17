@@ -136,6 +136,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   connect(ui->glPlot, SIGNAL(pixel_selected(QPoint,QPoint)), this, SLOT(on_pixel_selected(QPoint,QPoint)));
   connect(ui->layerSpinner, SIGNAL(valueChanged(int)), _mpx3gui, SLOT(set_active_frame(int)));
   connect(this, SIGNAL(change_hover_text(QString)), ui->mouseOverLabel, SLOT(setText(QString)));
+  connect(ui->fullRangeRadio, SIGNAL(pressed()), ui->histPlot, SLOT(set_scale_full()));
 }
 
 void QCstmGLVisualization::on_clear(){
@@ -181,4 +182,26 @@ void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
       _mpx3gui->getEqualization()->GetEqualizationResults()->unmaskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());
   //_mpx3gui->getDataset()->loadAdjustments();
   _mpx3gui->getEqualization()->SetAllAdjustmentBits( );//TODO: integrate into dataset
+}
+
+void QCstmGLVisualization::on_percentileRangeRadio_clicked()
+{
+    int nPoints = ui->glPlot->getNx()*ui->glPlot->getNy()/ui->binWidthSpinner->value();
+    ui->histPlot->set_scale_percentile(ui->lowerPercentileSpin->value()*nPoints, ui->upperPercentileSpin->value()*nPoints);
+}
+
+void QCstmGLVisualization::on_lowerPercentileSpin_editingFinished()
+{
+  int nPoints = ui->glPlot->getNx()*ui->glPlot->getNy()/ui->binWidthSpinner->value();
+    if(ui->lowerPercentileSpin->value() > ui->upperPercentileSpin->value())
+      ui->upperPercentileSpin->setValue(ui->lowerPercentileSpin->value());
+    ui->histPlot->set_scale_percentile(ui->lowerPercentileSpin->value()*nPoints, ui->upperPercentileSpin->value()*nPoints);
+}
+
+void QCstmGLVisualization::on_upperPercentileSpin_editingFinished()
+{
+  int nPoints = ui->glPlot->getNx()*ui->glPlot->getNy()/ui->binWidthSpinner->value();
+    if(ui->upperPercentileSpin->value() < ui->lowerPercentileSpin->value())
+      ui->lowerPercentileSpin->setValue(ui->upperPercentileSpin->value());
+    ui->histPlot->set_scale_percentile(ui->lowerPercentileSpin->value()*nPoints, ui->upperPercentileSpin->value()*nPoints);
 }

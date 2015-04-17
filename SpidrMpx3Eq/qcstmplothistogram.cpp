@@ -69,6 +69,7 @@ void QCstmPlotHistogram::addHistogram(histogram *hist, int reduction){
 void QCstmPlotHistogram::changeRange(QCPRange newRange){
   minClampChanged(newRange.lower);
   maxClampChanged(newRange.upper);
+  emit rangeChanged(newRange);
 }
 
 void QCstmPlotHistogram::minClampChanged(double min){
@@ -104,4 +105,42 @@ void QCstmPlotHistogram::rebinHistograms(int binSize){
 void QCstmPlotHistogram::swapHistogram(histogram *hist, int binSize){
   hists[currentHist]  = hist;
   changeBinSize(binSize, currentHist);
+}
+
+void QCstmPlotHistogram::set_scale_full(){
+  //this->rescaleAxes();
+  this->changeRange(QCPRange(this->graph(currentHist)->data()->begin().key(), (this->graph(currentHist)->data()->end()-1).key()));
+  this->replot();
+}
+
+void QCstmPlotHistogram::set_scale_percentile(double lower, double upper){
+  double sum = 0;
+  auto it = this->graph(currentHist)->data()->begin();
+  do{
+    sum += it.value().value;
+    it++;
+  }while(sum < lower);
+  double lowerBound = (--it).key();
+  do{
+    sum += it.value().value;
+    it++;
+  }while(sum < upper);
+  double upperBound = (--it).key();
+  this->changeRange(QCPRange(lowerBound, upperBound));
+}
+
+void QCstmPlotHistogram::mouseReleaseEvent(QMouseEvent *event){
+  QCustomPlot::mouseReleaseEvent(event);
+  if((event->button() == Qt::RightButton) && clicked)
+      {
+        clicked = false;
+        xReleased = xAxis->pixelToCoord(event->x());
+        maxClampChanged(xReleased);
+        if(xReleased < xClicked){
+            double tmp = xReleased;
+            xReleased = xClicked;
+            xClicked = tmp;
+        };
+        this->changeRange(QCPRange(xClicked, xReleased));
+      }
 }

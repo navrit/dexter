@@ -23,6 +23,12 @@ private:
   Ui::QCstmGLVisualization *ui;
 private slots:
   void ConnectionStatusChanged();
+  void on_percentileRangeRadio_clicked();
+
+  void on_lowerPercentileSpin_editingFinished();
+
+  void on_upperPercentileSpin_editingFinished();
+
 public slots:
   void StartDataTaking();
   void setGradient(int index);

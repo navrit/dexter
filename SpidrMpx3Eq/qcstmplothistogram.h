@@ -34,22 +34,7 @@ class QCstmPlotHistogram : public QCustomPlot
         maxClampChanged(xAxis->pixelToCoord(event->x()));
   }
 
-  void mouseReleaseEvent(QMouseEvent *event){ //check if released inside graph.
-    QCustomPlot::mouseReleaseEvent(event);
-    if((event->button() == Qt::RightButton) && clicked)
-        {
-          clicked = false;
-          xReleased = xAxis->pixelToCoord(event->x());
-          maxClampChanged(xReleased);
-          if(xReleased < xClicked){
-              double tmp = xReleased;
-              xReleased = xClicked;
-              xClicked = tmp;
-          };
-          //qDebug() << "dragged: " << xClicked << "to" << xReleased;
-          emit rangeChanged(QCPRange(xClicked, xReleased));
-        }
-  }
+  void mouseReleaseEvent(QMouseEvent *event);
 public:
   QCstmPlotHistogram(QWidget* &parent);
   virtual ~QCstmPlotHistogram();
@@ -61,6 +46,8 @@ public:
 signals:
   void rangeChanged(QCPRange newRange);
 public slots:
+  void set_scale_full();
+  void set_scale_percentile(double lower, double upper);
   void setActive(int index);
   void changeRange(QCPRange newRange);
   void minClampChanged(double min);

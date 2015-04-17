@@ -207,7 +207,7 @@ void Mpx3GUI::addFrames(QVector<int*> frames){
   for(int i = 0; i < frames.length(); i++){
 	if(0 == mode || 0 == workingSet->getFrameCount()){//normal mode, or no frame yet
 		workingSet->addFrame(frames[i]);
-		hists.push_back(new histogram(frames[i], workingSet->x()/2*workingSet->y()/2,  1));
+		hists.push_back(new histogram(frames[i], workingSet->x()*workingSet->y(),  1));
 		emit hist_added();
 	}
 	else if(1 == mode){ // Summing mode

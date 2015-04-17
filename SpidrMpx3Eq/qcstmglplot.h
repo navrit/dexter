@@ -72,6 +72,8 @@ public: //events
   void mousePressEvent(QMouseEvent *event){this->setCursor(Qt::ClosedHandCursor); clickedLocation = event->pos();clicked = true;}
   void mouseReleaseEvent(QMouseEvent *event){this->setCursor(Qt::ArrowCursor); clicked = false;}
   void contextMenuEvent(QContextMenuEvent *);
+  int getNx(){return nx;}
+  int getNy(){return ny;}
 public slots:
   void setData(QVector<int*> layers);
   void setActive(int layer);
