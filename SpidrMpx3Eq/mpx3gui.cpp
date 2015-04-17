@@ -50,6 +50,8 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	// Prepare Equalization
 	_equalization = new Mpx3Equalization(_coreApp, _ui);
 	_equalization->SetMpx3GUI( this );
+	//_ui->equalizationWidget->SetMpx3GUI( this );
+
 
 	// Prepare Visualization
 	_ui->visualizationGL->SetMpx3GUI(this);

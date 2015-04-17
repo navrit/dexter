@@ -876,10 +876,8 @@ void UpdateDACsThread::run(){
 
 		for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) { // DACs
 
-			cout << "chip " << chip << " | " << MPX3RX_DAC_TABLE[i].name
-					<< " | " << _dacs->GetDACValue(chip, i) << endl;
-
-
+			//cout << "chip " << chip << " | " << MPX3RX_DAC_TABLE[i].name
+			//		<< " | " << _dacs->GetDACValue(chip, i) << endl;
 
 			spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[i].code,  _dacs->GetDACValue(chip, i) );
 			Sleep(10);

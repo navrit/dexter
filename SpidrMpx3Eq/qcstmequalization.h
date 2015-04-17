@@ -15,10 +15,13 @@ class QCstmEqualization : public QWidget
 public:
   explicit QCstmEqualization(QWidget *parent = 0);
   ~QCstmEqualization();
+  void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
 
 private:
   Ui::QCstmEqualization *ui;
   Ui::Mpx3GUI *sharedGUI;
+  Mpx3GUI * _mpx3gui;
+
 };
 
 #endif // QCSTMEQUALIZATION_H
