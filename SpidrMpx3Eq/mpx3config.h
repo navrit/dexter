@@ -31,7 +31,7 @@ public:
   //void setIpAddress(QString ip, uint16_t port);
   bool fromJsonFile(QString filename, bool includeDacs = true);
   bool toJsonFile(QString filename, bool includeDacs = true);
-  QString getIpAddress(){return QString("%1:%2").arg(SpidrAddress.toString()).arg(port);}
+  QString getIpAddress(){return SpidrAddress.toString();}
   SpidrController* getController(){return controller;}
   SpidrController* establishConnection();
   int getDacCount(){return _dacVals[0].length(); }
@@ -51,6 +51,7 @@ public:
   int getNTriggers(){return nTriggers;}
 signals:
   void IpAdressChanged(QString);
+  void portChanged(int);
   void colourModeChanged(bool);
   void decodeFramesChanged(bool);
   void operationModeChanged(int);
@@ -62,7 +63,14 @@ signals:
   void TriggerLengthChanged(int);
   void nTriggersChanged(int);
 public slots:
-  //void setIpAddress(QString ip){if(ip ! SpidrAddress
+  void setIpAddress(QString ip){
+    if(ip != this->getIpAddress()){
+        SpidrAddress.setAddress(ip);
+        emit IpAdressChanged(this->getIpAddress());
+      }
+  }
+  void setPort(int newVal){if(newVal != port){port = newVal; emit portChanged(newVal);}}
+  //void updateAddress();
 
   void setColourMode(bool mode){if(mode != colourMode){colourMode =mode; emit colourModeChanged(mode);}}
   //void updateColourMode();

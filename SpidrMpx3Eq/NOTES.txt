@@ -12,12 +12,15 @@ DONE 2015-04-11-Heatmap is the wrong way around before switching
 -Clear data segfaults?
 
 TODO:
+-Sampling (s) not connected?
+-Gainmode/operationMode  etc. as combobox (see glVisualization)
+-Histogram, full range, percentile (median, spread), manual range.
 DONE 2015-04-14 multidisplay, STILL BUGGY. Implement with opengl rotation instead?
 DONE 2015-04-15 Store and load config from file
-    -DONE 2015-04-17 Allow for seperate loading of config DACs and other config.
-    -Automatically append .json
+    DONE 2015-04-17 -Allow for seperate loading of config DACs and other config.
+    DONE 2015-04-17 -Automatically append .json
 -Propagate data to  Spidr
--Ip address as spinbox
+DONE 2015-04-17 -Ip address as spinbox
 -Controls on gradient widget
 -Clean up code.
    ->Optimize/clean the gl renderer.

@@ -46,11 +46,10 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
 		QJsonObject JSobject = itParent.value().toObject();
 		it = JSobject.find("SpidrControllerIp");
 		if(it != JSobject.end())
-			SpidrAddress.setAddress(it.value().toString());
+			setIpAddress(it.value().toString());
 		it = JSobject.find("SpidrControllerPort");
 		if(it != JSobject.end())
-			port = it.value().toInt();
-		emit IpAdressChanged(this->getIpAddress());
+			setPort(it.value().toInt());
 	}
 	itParent = JSobjectParent.find("DetectorConfig");
 	if(itParent != JSobjectParent.end()){

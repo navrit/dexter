@@ -21,9 +21,6 @@ QCstmConfigMonitoring::~QCstmConfigMonitoring()
 void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p){
 	_mpx3gui = p;
   Mpx3Config *config = _mpx3gui->getConfig();
-  ui->ipLabel->setText(config->getIpAddress());
-
-
 
   connect(ui->ColourModeCheckBox, SIGNAL(clicked(bool)), config, SLOT(setColourMode(bool)));
   connect(config, SIGNAL(colourModeChanged(bool)), ui->ColourModeCheckBox, SLOT(setChecked(bool)));
@@ -55,7 +52,11 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p){
   connect(ui->triggerModeSpinner, SIGNAL(valueChanged(int)), config, SLOT(setTriggerMode(int)));
   connect(config, SIGNAL(TriggerModeChanged(int)), ui->triggerModeSpinner, SLOT(setValue(int)));
 
-  connect(config, SIGNAL(IpAdressChanged(QString)), ui->ipLabel, SLOT(setText(QString)));
+  connect(ui->portSpinner, SIGNAL(valueChanged(int)), config, SLOT(setPort(int)));
+  connect(config, SIGNAL(portChanged(int)), ui->portSpinner, SLOT(setValue(int)));
+
+  connect(config, SIGNAL(IpAdressChanged(QString)), ui->ipLineEdit, SLOT(setText(QString)));
+  //connect(ui->ipLineEdit, SIGNAL(textEdited(QString)), config, SLOT(setIpAddress(QString)));//Can't turn of keyboard tracking for this
 }
 
 void QCstmConfigMonitoring::timerEvent(QTimerEvent *) {
@@ -135,7 +136,15 @@ void QCstmConfigMonitoring::timerEvent(QTimerEvent *) {
 
 void QCstmConfigMonitoring::on_SaveButton_clicked()//TODO: automatically append .json
 {
-  QString filename = QFileDialog::getSaveFileName(this, tr("Save configuration"), tr("./config"), tr("Json files (*.json)"));
+  QFileDialog saveDialog(this, tr("Save configuration"), tr("./config"), tr("Json files (*.json)"));
+  saveDialog.setAcceptMode(QFileDialog::AcceptSave);
+  saveDialog.setDefaultSuffix("json");
+  //saveDialog.setDirectory("./config");
+  saveDialog.exec();
+  QString filename = saveDialog.selectedFiles().first();
+  //QFileDialog dialog;
+  //dialog.setDefaultSuffix("json");//Bugged under Linux?
+  //QString filename = dialog.getSaveFileName(this, tr("Save configuration"), tr("./config"), tr("Json files (*.json)"));
   _mpx3gui->getConfig()->toJsonFile(filename, ui->IncludeDacsCheck->isChecked());
 }
 
@@ -143,4 +152,9 @@ void QCstmConfigMonitoring::on_LoadButton_clicked()
 {
   QString filename = QFileDialog::getOpenFileName(this, tr("Open configuration"), tr("./config"), tr("Json files (*.json)"));
   _mpx3gui->getConfig()->fromJsonFile(filename, ui->IncludeDacsCheck->isChecked());
+}
+
+void QCstmConfigMonitoring::on_ipLineEdit_editingFinished()
+{
+  _mpx3gui->getConfig()->setIpAddress(ui->ipLineEdit->text());
 }
