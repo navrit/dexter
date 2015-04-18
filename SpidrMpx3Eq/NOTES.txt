@@ -15,13 +15,15 @@ TODO:
 -Add a log display?
 -Sampling (s) not connected?
 PARTIALLY DONE 2015-04-17, CAN'T FIND DEFINITION OF OPERATION MODE -Gainmode/operationMode  etc. as combobox (see glVisualization)
--Histogram, full range, percentile (median, spread), manual range.
+DONE 2015-04-17- BUGGY'ISH Histogram, full range, percentile (median, spread), manual range.
 DONE 2015-04-14 multidisplay, STILL BUGGY. Implement with opengl rotation instead?
 DONE 2015-04-15 Store and load config from file
     DONE 2015-04-17 -Allow for seperate loading of config DACs and other config.
     DONE 2015-04-17 -Automatically append .json
 PARTIALLY DONE 2015-04-17, REQUIRES JOHN'S ATTENTION -Propagate data to  Spidr
 DONE 2015-04-17 -Ip address as spinbox
+-Only load a single frame at a time in glplot.
+-Look at terminal output (shows more errors), remove all errors.
 
 -Controls on gradient widget
 -Clean up code.

@@ -16,7 +16,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 	QT += core gui
 }
 QT += network opengl
-CONFIG   += debug c++11
+CONFIG   +=  c++11
 
 CONFIG(debug, debug|release) {
   OBJECTS_DIR = debug
@@ -99,7 +99,6 @@ FORMS    += mpx3gui.ui \
     qcstmconfigmonitoring.ui
 
 DISTFILES += \
-    CHANGES.txt \
     shaders/heatmap.frag \
     shaders/passthrough.vert \
     config/heatmaps.json \

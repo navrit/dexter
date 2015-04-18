@@ -114,6 +114,8 @@ void QCstmPlotHistogram::set_scale_full(){
 }
 
 void QCstmPlotHistogram::set_scale_percentile(double lower, double upper){
+  if(this->graphCount() == 0)
+    return;
   double sum = 0;
   auto it = this->graph(currentHist)->data()->begin();
   do{
@@ -141,6 +143,7 @@ void QCstmPlotHistogram::mouseReleaseEvent(QMouseEvent *event){
             xReleased = xClicked;
             xClicked = tmp;
         };
-        this->changeRange(QCPRange(xClicked, xReleased));
+        //this->changeRange(QCPRange(xClicked, xReleased));
+        emit new_range_dragged(QCPRange(xClicked, xReleased));
       }
 }

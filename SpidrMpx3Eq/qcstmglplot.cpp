@@ -29,6 +29,7 @@ void QCstmGLPlot::initializeShader(){
   program.bind();
 }
 
+
 void QCstmGLPlot::initializeGL(){
   points[0] = -1.0f; points[1] = -1.0f; points[2] = -1.0f; points[3] = +1.0f; points[4] = +1.0f; points[5] = -1.0f; points[6]  = +1.0f; points[7] = +1.0f;
   textureCoordinates[0] = 0.0f; textureCoordinates[1] = 0.0f; textureCoordinates[2] = 0.0f; textureCoordinates[3] = +1.0f;
@@ -78,6 +79,7 @@ void QCstmGLPlot::initializeGL(){
         }
       //printf("\n");
       //QOpenGLWidget::initializeGL();
+      initialized = true;
    }
 
   //loadGradient();
@@ -162,6 +164,8 @@ void QCstmGLPlot::setData(QVector<int *> layers){ //TODO: Set size functions, on
 }
 
 void QCstmGLPlot::loadFrames(int nx, int ny, int nFrames, GLint **data ){
+  if(!initialized)
+    return;
   this->makeCurrent();
   //this->makeCurrent();
   if(dataTex->isCreated()){
@@ -181,9 +185,12 @@ void QCstmGLPlot::loadFrames(int nx, int ny, int nFrames, GLint **data ){
 }
 
 void QCstmGLPlot::setRange(QCPRange range){
-    program.bind();
-    program.setUniformValue(clampLoc, QSizeF(range.lower, range.upper));
-    this->update();
+  if(!initialized)
+    return;
+  this->makeCurrent();
+  program.bind();
+  program.setUniformValue(clampLoc, QSizeF(range.lower, range.upper));
+  this->update();
 }
 
 void QCstmGLPlot::setActive(int layer){

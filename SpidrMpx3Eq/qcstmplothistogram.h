@@ -45,6 +45,7 @@ public:
   void swapHistogram(histogram *hist, int binSize);
 signals:
   void rangeChanged(QCPRange newRange);
+  void new_range_dragged(QCPRange NewRange);
 public slots:
   void set_scale_full();
   void set_scale_percentile(double lower, double upper);

@@ -217,8 +217,9 @@ void Mpx3GUI::addFrames(QVector<int*> frames){
 		old = new histogram(workingSet->getActiveFrame(),workingSet->x()*workingSet->y());
 	}
   }
-   if(0 == mode || 0 == workingSet->getFrameCount())
+   if(0 == mode || 0 == workingSet->getFrameCount()){
     emit frame_added();// --> emit something else.
+   }
    else if(1 == mode)
     emit frames_reload();
 }

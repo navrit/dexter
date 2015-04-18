@@ -23,11 +23,21 @@ private:
   Ui::QCstmGLVisualization *ui;
 private slots:
   void ConnectionStatusChanged();
-  void on_percentileRangeRadio_clicked();
+  void on_percentileRangeRadio_toggled(bool checked);
 
   void on_lowerPercentileSpin_editingFinished();
 
   void on_upperPercentileSpin_editingFinished();
+
+  void on_lowerManualSpin_editingFinished();
+
+  void on_upperManualSpin_editingFinished();
+
+  void on_active_frame_changed(int);
+  void on_new_range_dragged(QCPRange newRange);
+  void on_manualRangeRadio_toggled(bool checked);
+
+  void on_fullRangeRadio_toggled(bool checked);
 
 public slots:
   void StartDataTaking();

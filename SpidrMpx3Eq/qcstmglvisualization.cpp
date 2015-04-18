@@ -131,12 +131,24 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), ui->gradientDisplay, SLOT(set_range(QCPRange)));
   connect(_mpx3gui, SIGNAL(active_frame_changed(int)), ui->glPlot, SLOT(setActive(int)));
   connect(_mpx3gui, SIGNAL(active_frame_changed(int)), ui->histPlot, SLOT(setActive(int)));
+  connect(_mpx3gui, SIGNAL(active_frame_changed(int)), this, SLOT(on_active_frame_changed(int)));
   connect(ui->binWidthSpinner, SIGNAL(valueChanged(int)), ui->histPlot, SLOT(rebinHistograms(int)));
   connect(ui->glPlot, SIGNAL(hovered_pixel_changed(QPoint)),this, SLOT(on_hover_changed(QPoint)));
   connect(ui->glPlot, SIGNAL(pixel_selected(QPoint,QPoint)), this, SLOT(on_pixel_selected(QPoint,QPoint)));
   connect(ui->layerSpinner, SIGNAL(valueChanged(int)), _mpx3gui, SLOT(set_active_frame(int)));
   connect(this, SIGNAL(change_hover_text(QString)), ui->mouseOverLabel, SLOT(setText(QString)));
-  connect(ui->fullRangeRadio, SIGNAL(pressed()), ui->histPlot, SLOT(set_scale_full()));
+  //connect(ui->fullRangeRadio, SIGNAL(pressed()), ui->histPlot, SLOT(set_scale_full()));
+  connect(ui->histPlot, SIGNAL(new_range_dragged(QCPRange)), this, SLOT(on_new_range_dragged(QCPRange)));
+}
+
+void QCstmGLVisualization::on_new_range_dragged(QCPRange newRange){
+  ui->lowerManualSpin->setValue(newRange.lower);
+  ui->upperManualSpin->setValue(newRange.upper);
+  if(ui->manualRangeRadio->isChecked())
+    this->on_manualRangeRadio_toggled(true);
+  else
+    ui->manualRangeRadio->setChecked(true);
+
 }
 
 void QCstmGLVisualization::on_clear(){
@@ -152,6 +164,8 @@ void QCstmGLVisualization::on_availible_gradients_changed(QStringList gradients)
 void QCstmGLVisualization::on_frame_updated(){
   ui->glPlot->setData(_mpx3gui->getDataset()->getFrames());
   ui->histPlot->changeBinSize(ui->binWidthSpinner->value(), ui->layerSpinner->value());
+  on_percentileRangeRadio_toggled(ui->percentileRangeRadio->isChecked());
+  on_fullRangeRadio_toggled(ui->fullRangeRadio->isChecked());
 }
 
 void QCstmGLVisualization::on_hover_changed(QPoint pixel){
@@ -164,8 +178,14 @@ void QCstmGLVisualization::on_hist_added(){
 }
 
 void QCstmGLVisualization::on_frame_added(){
-  ui->layerSpinner->setValue(_mpx3gui->getFrameCount()-1);
   ui->glPlot->setData(_mpx3gui->getDataset()->getFrames());
+  on_active_frame_changed(_mpx3gui->getFrameCount()-1);
+}
+
+void QCstmGLVisualization::on_active_frame_changed(int active){
+  ui->layerSpinner->setValue(active);
+  on_percentileRangeRadio_toggled(ui->percentileRangeRadio->isChecked());
+  on_fullRangeRadio_toggled(ui->fullRangeRadio->isChecked());
 }
 
 void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
@@ -184,24 +204,55 @@ void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
   _mpx3gui->getEqualization()->SetAllAdjustmentBits( );//TODO: integrate into dataset
 }
 
-void QCstmGLVisualization::on_percentileRangeRadio_clicked()
+void QCstmGLVisualization::on_percentileRangeRadio_toggled(bool checked)
 {
-    int nPoints = ui->glPlot->getNx()*ui->glPlot->getNy()/ui->binWidthSpinner->value();
-    ui->histPlot->set_scale_percentile(ui->lowerPercentileSpin->value()*nPoints, ui->upperPercentileSpin->value()*nPoints);
+    if(checked){
+      int nPoints = ui->glPlot->getNx()*ui->glPlot->getNy()/ui->binWidthSpinner->value();
+      ui->histPlot->set_scale_percentile(ui->lowerPercentileSpin->value()*nPoints, ui->upperPercentileSpin->value()*nPoints);
+      }
 }
 
 void QCstmGLVisualization::on_lowerPercentileSpin_editingFinished()
 {
-  int nPoints = ui->glPlot->getNx()*ui->glPlot->getNy()/ui->binWidthSpinner->value();
     if(ui->lowerPercentileSpin->value() > ui->upperPercentileSpin->value())
       ui->upperPercentileSpin->setValue(ui->lowerPercentileSpin->value());
-    ui->histPlot->set_scale_percentile(ui->lowerPercentileSpin->value()*nPoints, ui->upperPercentileSpin->value()*nPoints);
+    if(ui->percentileRangeRadio->isChecked())
+      on_percentileRangeRadio_toggled(ui->percentileRangeRadio->isChecked());
 }
 
 void QCstmGLVisualization::on_upperPercentileSpin_editingFinished()
 {
-  int nPoints = ui->glPlot->getNx()*ui->glPlot->getNy()/ui->binWidthSpinner->value();
     if(ui->upperPercentileSpin->value() < ui->lowerPercentileSpin->value())
       ui->lowerPercentileSpin->setValue(ui->upperPercentileSpin->value());
-    ui->histPlot->set_scale_percentile(ui->lowerPercentileSpin->value()*nPoints, ui->upperPercentileSpin->value()*nPoints);
+    if(ui->percentileRangeRadio->isChecked())
+      on_percentileRangeRadio_toggled(ui->percentileRangeRadio->isChecked());
+}
+
+void QCstmGLVisualization::on_lowerManualSpin_editingFinished()
+{
+    if(ui->upperManualSpin->value() < ui->lowerManualSpin->value())
+      ui->upperManualSpin->setValue(ui->lowerManualSpin->value());
+    if(ui->manualRangeRadio->isChecked())
+      on_manualRangeRadio_toggled(ui->manualRangeRadio->isChecked());
+
+}
+
+void QCstmGLVisualization::on_upperManualSpin_editingFinished()
+{
+  if(ui->lowerManualSpin->value() > ui->upperManualSpin->value())
+    ui->lowerManualSpin->setValue(ui->upperManualSpin->value());
+  if(ui->manualRangeRadio->isChecked())
+    on_manualRangeRadio_toggled(ui->manualRangeRadio->isChecked());
+}
+
+void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
+{
+      if(checked)
+        ui->histPlot->changeRange(QCPRange(ui->lowerManualSpin->value(), ui->upperManualSpin->value()));
+}
+
+void QCstmGLVisualization::on_fullRangeRadio_toggled(bool checked)
+{
+    if(checked)
+      ui->histPlot->set_scale_full();
 }

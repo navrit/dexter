@@ -29,6 +29,7 @@ public:
   void loadFrames(int nx, int ny, int nFrames, GLint **data );
   void loadGradient();
  private:
+  bool initialized = false;
   /*We use normal OpenGL vao's and vbo's as opposed to QOpenGLBuffer because the latter is not feature complete*/
   GLuint  vao;
   //TODO: optimize this handling. Merge different vbos/coordinates when possible.
