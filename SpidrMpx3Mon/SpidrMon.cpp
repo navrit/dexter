@@ -1,5 +1,7 @@
+#include <QCloseEvent>
 #include <QIntValidator>
 #include <QMessageBox>
+#include <QSettings>
 #include <QString>
 #include <QTimer>
 
@@ -37,6 +39,9 @@ SpidrMon::SpidrMon()
   // Data update 'LED'
   _leUpdateLed->hide();
   _labelDisconnected->hide();
+
+  // Read settings remembered from this application's previous use
+  this->readAppSettings();
 }
 
 // ----------------------------------------------------------------------------
@@ -231,6 +236,47 @@ void SpidrMon::initDataDisplay()
 void SpidrMon::updateLedOff()
 {
   _leUpdateLed->hide();
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrMon::closeEvent( QCloseEvent *event )
+{
+  // When quitting the application save some of the current settings
+  this->writeAppSettings();
+  event->accept();
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrMon::readAppSettings()
+{
+  QSettings settings( "NIKHEF", "SPIDR" );
+
+  int ipaddr = settings.value( "ipAddress", 0xC0A8010A ).toInt();
+  _lineEditAddr3->setText( QString::number((ipaddr>>24) & 0xFF) );
+  _lineEditAddr2->setText( QString::number((ipaddr>>16) & 0xFF) );
+  _lineEditAddr1->setText( QString::number((ipaddr>> 8) & 0xFF) );
+  _lineEditAddr0->setText( QString::number((ipaddr>> 0) & 0xFF) );
+
+  int portnr = settings.value( "ipPort", 50000 ).toInt();
+  _lineEditPort->setText( QString::number(portnr) );
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrMon::writeAppSettings()
+{
+  QSettings settings( "NIKHEF", "SPIDR" );
+
+  int ipaddr = 0;
+  ipaddr |= (_lineEditAddr3->text().toInt() & 0xFF) << 24;
+  ipaddr |= (_lineEditAddr2->text().toInt() & 0xFF) << 16;
+  ipaddr |= (_lineEditAddr1->text().toInt() & 0xFF) <<  8;
+  ipaddr |= (_lineEditAddr0->text().toInt() & 0xFF) <<  0;
+  settings.setValue( "ipAddress", ipaddr );
+
+  settings.setValue( "ipPort", _lineEditPort->text().toInt() );
 }
 
 // ----------------------------------------------------------------------------

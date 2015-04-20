@@ -28,4 +28,8 @@ class SpidrMon : public QDialog, Ui_SpidrMonDialog
 
   void timerEvent( QTimerEvent * );
   void initDataDisplay();
+
+  void closeEvent( QCloseEvent *event );
+  void readAppSettings();
+  void writeAppSettings();
 };
