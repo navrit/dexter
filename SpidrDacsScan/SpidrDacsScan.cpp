@@ -1,7 +1,9 @@
+#include <QCloseEvent>
 #include <QFont>
 #include <QIntValidator>
 #include <QLabel>
 #include <QMessageBox>
+#include <QSettings>
 #include <QTimer>
 #include <QVBoxLayout>
 
@@ -90,6 +92,8 @@ SpidrDacsScan::SpidrDacsScan()
 
   _ipPortValidator = new QIntValidator( 1, 65535, this );
   _lineEditPort->setValidator( _ipPortValidator );
+
+  this->readAppSettings();
 
   _labelDisconnected->hide();
   //_comboBoxDeviceIndex->hide();
@@ -425,6 +429,47 @@ void SpidrDacsScan::inError()
 {
   _labelErr->show();
   if( _scanInProgress ) this->startOrStopScan();
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDacsScan::closeEvent( QCloseEvent *event )
+{
+  // When quitting the application save some of the current settings
+  this->writeAppSettings();
+  event->accept();
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDacsScan::readAppSettings()
+{
+  QSettings settings( "NIKHEF", "SPIDR" );
+
+  int ipaddr = settings.value( "ipAddress", 0xC0A8010A ).toInt();
+  _lineEditAddr3->setText( QString::number((ipaddr>>24) & 0xFF) );
+  _lineEditAddr2->setText( QString::number((ipaddr>>16) & 0xFF) );
+  _lineEditAddr1->setText( QString::number((ipaddr>> 8) & 0xFF) );
+  _lineEditAddr0->setText( QString::number((ipaddr>> 0) & 0xFF) );
+
+  int portnr = settings.value( "ipPort", 50000 ).toInt();
+  _lineEditPort->setText( QString::number(portnr) );
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDacsScan::writeAppSettings()
+{
+  QSettings settings( "NIKHEF", "SPIDR" );
+
+  int ipaddr = 0;
+  ipaddr |= (_lineEditAddr3->text().toInt() & 0xFF) << 24;
+  ipaddr |= (_lineEditAddr2->text().toInt() & 0xFF) << 16;
+  ipaddr |= (_lineEditAddr1->text().toInt() & 0xFF) <<  8;
+  ipaddr |= (_lineEditAddr0->text().toInt() & 0xFF) <<  0;
+  settings.setValue( "ipAddress", ipaddr );
+
+  settings.setValue( "ipPort", _lineEditPort->text().toInt() );
 }
 
 // ----------------------------------------------------------------------------

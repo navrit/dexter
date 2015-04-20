@@ -55,4 +55,8 @@ class SpidrDacsScan : public QDialog, Ui_SpidrDacsScanDialog
 
   // Currently active graph
   QCPGraph *_graph;
+
+  void closeEvent( QCloseEvent *event );
+  void readAppSettings();
+  void writeAppSettings();
 };
