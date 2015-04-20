@@ -54,4 +54,8 @@ class SpidrDacs : public QDialog, Ui_SpidrDacsDialog
 
   void timerEvent( QTimerEvent * );
   void initDacWidgets( bool enable );
+
+  void closeEvent( QCloseEvent *event );
+  void readAppSettings();
+  void writeAppSettings();
 };
