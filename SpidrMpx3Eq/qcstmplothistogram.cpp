@@ -108,7 +108,8 @@ void QCstmPlotHistogram::swapHistogram(histogram *hist, int binSize){
 }
 
 void QCstmPlotHistogram::set_scale_full(){
-  //this->rescaleAxes();
+  if(this->graphCount() == 0)
+    return;
   this->changeRange(QCPRange(this->graph(currentHist)->data()->begin().key(), (this->graph(currentHist)->data()->end()-1).key()));
   this->replot();
 }
