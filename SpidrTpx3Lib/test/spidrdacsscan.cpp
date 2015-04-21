@@ -177,12 +177,10 @@ int main( int argc, char *argv[] )
     }
 
   if( !_spidrController->setSenseDac( _deviceIndex, TPX3_SENSEOFF ) )
-    {
-      error_out( "setSenseDac(SENSEOFF)" );
-      break;
-    }
+    error_out( "setSenseDac(SENSEOFF)" );
 
   _spidrController->setLogLevel( 0 ); // Restore SPIDR console output mode
+
   return 0;
 }
 
@@ -233,6 +231,7 @@ void usage()
        << endl
        << "     <portnr> : current SPIDR controller IP port number, "
        << "default 50000."
+       << endl
        << "     <devnr>  : device index."
        << endl;
 }

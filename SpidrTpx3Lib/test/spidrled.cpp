@@ -171,6 +171,7 @@ void usage()
        << endl
        << "     <portnr> : current SPIDR controller IP port number, "
        << "default 50000."
+       << endl
        << "     <lednr>  : LED index."
        << endl;
 }
