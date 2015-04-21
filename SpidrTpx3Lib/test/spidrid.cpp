@@ -8,7 +8,7 @@ Usage  :
 spidrid <ipaddr>[:<portnr] [id_new]
    Display or set a new identifier on the SPIDR module.
      <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10
-     <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10
+     <portnr> : current SPIDR controller IP port number, default 50000
      <id_new> : new identifier (32-bit, decimal or hexadecimal)
 
 History:
@@ -155,11 +155,12 @@ void usage()
        << endl
        << "   Display or set a new identifier on the SPIDR module."
        << endl
-       << "     <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10"
+       << "     <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10."
        << endl
-       << "     <portnr> : current SPIDR controller IP port number"
+       << "     <portnr> : current SPIDR controller IP port number, "
+       << "default 50000."
        << endl
-       << "     <id_new> : new identifier (32-bit, decimal or hexadecimal)"
+       << "     <id_new> : new identifier (32-bit, decimal or hexadecimal)."
        << endl;
 }
 

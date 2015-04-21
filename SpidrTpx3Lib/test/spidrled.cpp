@@ -4,10 +4,11 @@ File   : spidrled.cpp
 Descr  : Commandline tool to blink an LED on a SPIDR module.
 
 Usage  :
-spidrled <ipaddr> [lednr]
+spidrled <ipaddr>[:<portnr>] [lednr]
    Blink an LED on the SPIDR module.
-     <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10
-     <lednr>  : LED index
+     <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10.
+     <portnr> : current SPIDR controller IP port number.
+     <lednr>  : LED index.
 
 History:
 04MAR2015; HenkB; Created.
@@ -162,13 +163,15 @@ quint32 get_addr_and_port( const char *str, int *portnr )
 void usage()
 {
   cout << endl << "Usage:" << endl
-       << "spidrled <ipaddr> [lednr]"
+       << "spidrled <ipaddr>[:<portnr>] [lednr]"
        << endl
        << "   Blink an LED on the SPIDR module."
        << endl
-       << "     <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10"
+       << "     <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10."
        << endl
-       << "     <lednr>  : LED index"
+       << "     <portnr> : current SPIDR controller IP port number, "
+       << "default 50000."
+       << "     <lednr>  : LED index."
        << endl;
 }
 
