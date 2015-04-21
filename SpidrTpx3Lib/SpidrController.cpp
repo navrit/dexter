@@ -15,7 +15,8 @@ using namespace std;
 #include "tpx3dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x15031300;
+const int   VERSION_ID = 0x15040600;
+//const int VERSION_ID = 0x15031300;
 //const int VERSION_ID = 0x15012200;
 //const int VERSION_ID = 0x14120100;
 //const int VERSION_ID = 0x14112600;
@@ -1722,6 +1723,20 @@ bool SpidrController::selectChipBoard( int board_nr )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::getHumidity( int *percentage )
+{
+  return this->requestGetInt( CMD_GET_HUMIDITY, 0, percentage );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getPressure( int *mbar )
+{
+  return this->requestGetInt( CMD_GET_PRESSURE, 0, mbar );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::getDataPacketCounter( int *cntr )
 {
   return this->getSpidrReg( SPIDR_UDP_PKTCOUNTER_I, cntr );
@@ -2190,6 +2205,7 @@ static const char *SPIDR_ERR_STR[] =
   {
     "SPIDR_ERR_I2C_INIT",
     "SPIDR_ERR_LINK_INIT",
+    "SPIDR_ERR_MPL_INIT",
     "SPIDR_ERR_MPU_INIT",
     "SPIDR_ERR_MAX6642_INIT",
     "SPIDR_ERR_INA219_0_INIT",

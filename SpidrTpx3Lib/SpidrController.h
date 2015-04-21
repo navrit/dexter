@@ -169,6 +169,7 @@ class MY_LIB_API SpidrController
   bool storePixelConfig        ( int  dev_nr );              // ###TODO
   bool erasePixelConfig        ( int  dev_nr );              // ###TODO
   bool validPixelConfig        ( int  dev_nr, bool *valid ); // ###TODO
+  // (used through provided tools only:)
   bool storeStartupOptions     ( int  startopts );
   bool getStartupOptions       ( int *startopts );
   bool readFlash               ( int  flash_id,
@@ -237,9 +238,9 @@ class MY_LIB_API SpidrController
   bool getAdc                  ( int *adc_val, int nr_of_samples = 1 );
   bool getDacOut               ( int  dev_nr,
                                  int *adc_val, int nr_of_samples = 1 );
-  bool getRemoteTemp           ( int *mdegrees );
-  bool getLocalTemp            ( int *mdegrees );
-  bool getFpgaTemp             ( int *mdegrees );
+  bool getRemoteTemp           ( int *mdegrees ); // Device temperature
+  bool getLocalTemp            ( int *mdegrees ); // SPIDR board temperature
+  bool getFpgaTemp             ( int *mdegrees ); // SPIDR FPGA temperature
   bool getAvdd                 ( int *mvolts, int *mamps, int *mwatts );
   bool getDvdd                 ( int *mvolts, int *mamps, int *mwatts );
   bool getAvddNow              ( int *mvolts, int *mamps, int *mwatts );
@@ -249,6 +250,8 @@ class MY_LIB_API SpidrController
   bool getFanSpeed             ( int  index, int *rpm );
   bool setFanSpeed             ( int  index, int percentage );
   bool selectChipBoard         ( int  board_nr );
+  bool getHumidity             ( int *percentage );
+  bool getPressure             ( int *mbar );
   bool getDataPacketCounter    ( int *cntr );
   bool getMonPacketCounter     ( int *cntr );
   bool getPausePacketCounter   ( int *cntr );

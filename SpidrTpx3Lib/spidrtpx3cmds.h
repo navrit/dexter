@@ -129,6 +129,8 @@
 #define CMD_GET_FANSPEED       0x569
 #define CMD_SET_FANSPEED       0x56A
 #define CMD_SELECT_CHIPBOARD   0x56B
+#define CMD_GET_HUMIDITY       0x56C
+#define CMD_GET_PRESSURE       0x56D
 
 // Configuration: non-volatile onboard storage
 #define CMD_STORE_ADDRPORTS    0x670
@@ -278,8 +280,8 @@ static const char *CMD_STR[] =
     "GET_FANSPEED     ", // 0x569
     "SET_FANSPEED     ", // 0x56A
     "SELECT_CHIPBOARD ", // 0x56B
-    "-----",             // 0x56C
-    "-----",             // 0x56D
+    "GET_HUMIDITY     ", // 0x56C
+    "GET_PRESSURE     ", // 0x56D
     "-----",             // 0x56E
     "-----",             // 0x56F
 
