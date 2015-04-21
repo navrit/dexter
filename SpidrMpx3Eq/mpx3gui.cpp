@@ -291,19 +291,19 @@ void Mpx3GUI::open_data(){
 	saveFile.read((char*)&ny, sizeof(ny));
 	delete workingSet;
 	workingSet = new Dataset(nx, ny);
-	workingSet->setFramesPerGroup(2,2);
+	workingSet->setFramesPerGroup(1,1);
 	workingSet->setOrientation(0, Dataset::orientationLtRTtB);
-	workingSet->setOrientation(3, Dataset::orientationLtRTtB);
-	workingSet->setOrientation(1, Dataset::orientationLtRTtB);
-	workingSet->setOrientation(2, Dataset::orientationLtRTtB);
+	//workingSet->setOrientation(3, Dataset::orientationLtRTtB);
+	//workingSet->setOrientation(1, Dataset::orientationLtRTtB);
+	//workingSet->setOrientation(2, Dataset::orientationLtRTtB);
 	int nLayers;
 	saveFile.read((char*)&nLayers, sizeof(nLayers));
 	QVector<int*> newFrames(nLayers);
 	for(int i = 0; i < nLayers;i++){
 	  newFrames[i] = new int[nx*ny];
 	  saveFile.read((char*)newFrames[i], nx*ny*sizeof(int));
-	  this->addFrame(newFrames[i]);
 	}
+	this->addFrames(newFrames);
 	saveFile.close();
 	//this->addFrames(newFrames);
 	for(int i = 0; i < nLayers;i++)
