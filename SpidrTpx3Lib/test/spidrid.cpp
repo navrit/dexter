@@ -7,9 +7,9 @@ Descr  : Commandline tool to display and/or set a SPIDR module's identifier
 Usage  :
 spidrid <ipaddr>[:<portnr] [id_new]
    Display or set a new identifier on the SPIDR module.
-     <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10
-     <portnr> : current SPIDR controller IP port number, default 50000
-     <id_new> : new identifier (32-bit, decimal or hexadecimal)
+     <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10.
+     <portnr> : current SPIDR controller IP port number, default 50000.
+     <id_new> : new identifier (32-bit, decimal or hexadecimal).
 
 History:
 28APR2014; HenkB; Created.

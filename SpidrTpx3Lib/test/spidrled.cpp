@@ -7,7 +7,7 @@ Usage  :
 spidrled <ipaddr>[:<portnr>] [lednr]
    Blink an LED on the SPIDR module.
      <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10.
-     <portnr> : current SPIDR controller IP port number.
+     <portnr> : current SPIDR controller IP port number, default 50000.
      <lednr>  : LED index.
 
 History:
