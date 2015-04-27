@@ -10,7 +10,8 @@ using namespace std;
 Mpx3Config::Mpx3Config()
 {
 	// number of devices connected
-	_deviceCount.clear();
+	_devicePresenceLayout.clear();
+	_nDevicesPresent = 0;
 
 }
 
@@ -30,13 +31,25 @@ SpidrController* Mpx3Config::establishConnection(){
 	controller = new SpidrController(((ipaddr>>24) & 0xFF), ((ipaddr>>16) & 0xFF), ((ipaddr>>8) & 0xFF), ((ipaddr>>0) & 0xFF), port);
 	isConnected = controller->isConnected();
 
-	// number of devices connected
-	int nDevConn = 0;
-	controller->getDeviceCount(&nDevConn);
+	// number of device that the system can support
+	int nDevSupported = 0;
+	controller->getDeviceCount(&nDevSupported);
+	cout << "[INFO] Number of devices suported: " << nDevSupported << endl;
+
 	// FIXME
 	// For the moment assume matrixes of 256*256
-	for(int i = 0 ; i > nDevConn ; i++) {
-		_deviceCount.push_back( QPoint(__default_matrixSizePerChip_X, __default_matrixSizePerChip_Y) );
+	for(int i = 0 ; i < nDevSupported ; i++) {
+		int id = 0;
+		controller->getDeviceId(i, &id);
+
+		if ( id != 0 ) {
+			cout << "[INFO] Device [" << i << "] with id : " << id << " connected." << endl;
+			_devicePresenceLayout.push_back( QPoint(__default_matrixSizePerChip_X, __default_matrixSizePerChip_Y) );
+			_nDevicesPresent++;
+		} else {
+			cout << "[INFO] Device [" << i << "] not present." << endl;
+			_devicePresenceLayout.push_back( QPoint(0, 0) );
+		}
 	}
 
 	return controller;

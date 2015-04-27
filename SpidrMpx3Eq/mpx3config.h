@@ -39,7 +39,8 @@ public:
   SpidrController* establishConnection();
   int getDacCount(){return _dacVals[0].length(); }
   int getDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
-  QVector<QPoint> getDeviceCount(){ return _deviceCount; };
+  QVector<QPoint> getDevicePresenceLayout(){ return _devicePresenceLayout; };
+  int getDevicesPresent() { return _nDevicesPresent; }
 
   quint32 getIpAddressInt(){return SpidrAddress.toIPv4Address();}
   uint16_t getIpAddressPort(){return port;}
@@ -56,7 +57,8 @@ public:
 
 private:
   // Layout of the matrix. Each QPoint is a chip connected with X,Y sizes.
-  QVector<QPoint> _deviceCount;
+  QVector<QPoint> _devicePresenceLayout;
+  int _nDevicesPresent;
 
 signals:
   void IpAdressChanged(QString);
