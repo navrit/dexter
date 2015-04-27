@@ -1,6 +1,6 @@
 #include "qcstmglvisualization.h"
 #include "ui_qcstmglvisualization.h"
-#include "mpx3equalization.h"
+#include "qcstmequalization.h"
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 

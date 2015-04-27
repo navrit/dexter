@@ -37,7 +37,7 @@ class QCstmDacs;
 class ThlScan;
 class BarChart;
 class BarChartProperties;
-class Mpx3Equalization;
+class QCstmEqualization;
 
 namespace Ui {
 class Mpx3GUI;
@@ -62,7 +62,7 @@ private:
 
 	// Each object here deals with one tab of the
 	// Equalization
-	Mpx3Equalization * _equalization = nullptr;
+	QCstmEqualization * _equalization = nullptr;
 	// DACs
 	//DACs * _dacs = nullptr;
 
@@ -76,7 +76,7 @@ private:
 public:
 	Mpx3Config* getConfig();
 	Dataset* getDataset(){return workingSet;}
-	Mpx3Equalization* getEqualization(){return _equalization;}
+	QCstmEqualization * getEqualization(){return _equalization;}
 	SpidrController * GetSpidrController();
 	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
 	void addFrame(int *frame);

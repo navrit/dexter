@@ -16,7 +16,7 @@ class SpidrController;
 class SpidrDaq;
 class BarChart;
 class QCstmPlotHeatmap;
-class Mpx3Equalization;
+class QCstmEqualization;
 class Mpx3EqualizationResults;
 
 enum Thl_Status {
@@ -38,7 +38,7 @@ class ThlScan {
 public:
 
 	ThlScan();
-	ThlScan(BarChart *, QCstmPlotHeatmap *, Mpx3Equalization *);
+	ThlScan(BarChart *, QCstmPlotHeatmap *, QCstmEqualization *);
 	~ThlScan();
 
 	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
@@ -71,7 +71,7 @@ private:
 	SpidrDaq * _spidrdaq;
 	BarChart * _chart;
 	QCstmPlotHeatmap * _heatmap;
-	Mpx3Equalization * _equalization;
+	QCstmEqualization * _equalization;
 	ScanResults _results;
 
 	// pixelId, counts map

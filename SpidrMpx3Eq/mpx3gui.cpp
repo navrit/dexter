@@ -5,7 +5,7 @@
 
 
 #include "mpx3gui.h"
-#include "mpx3equalization.h"
+#include "qcstmequalization.h"
 #include "qcstmglvisualization.h"
 #include "ui_mpx3gui.h"
 
@@ -48,9 +48,9 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	_ui->DACsWidget->SetMpx3GUI( this );
 
 	// Prepare Equalization
-	_equalization = new Mpx3Equalization(_coreApp, _ui);
-	_equalization->SetMpx3GUI( this );
-	//_ui->equalizationWidget->SetMpx3GUI( this );
+	//_equalization = new Mpx3Equalization(_coreApp, _ui);
+	//_equalization->SetMpx3GUI( this );
+	_ui->equalizationWidget->SetMpx3GUI( this );
 
 
 	// Prepare Visualization

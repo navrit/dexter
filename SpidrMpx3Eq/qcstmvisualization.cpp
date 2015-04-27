@@ -3,7 +3,7 @@
 
 #include "SpidrController.h"
 #include "SpidrDaq.h"
-#include "mpx3equalization.h"
+#include "qcstmequalization.h"
 
 QCstmVisualization::QCstmVisualization(QWidget *parent) :
 QWidget(parent),

@@ -7,12 +7,12 @@
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 
-#include "mpx3eq_common.h"
 #include "barchart.h"
 #include "qcstmplotheatmap.h"
+#include "qcstmequalization.h"
 
 #include "mpx3defs.h"
-#include "mpx3equalization.h"
+#include "mpx3eq_common.h"
 
 #include <iostream>
 #include <map>
@@ -22,7 +22,7 @@ ThlScan::ThlScan() {
 
 }
 
-ThlScan::ThlScan(BarChart * bc, QCstmPlotHeatmap * hm, Mpx3Equalization * ptr) {
+ThlScan::ThlScan(BarChart * bc, QCstmPlotHeatmap * hm, QCstmEqualization * ptr) {
 
 	// keep these pointers
 	_spidrcontrol = 0; // Assuming no connection yet
