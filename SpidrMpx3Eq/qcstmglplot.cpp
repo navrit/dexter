@@ -1,12 +1,10 @@
 #include "qcstmglplot.h"
-#include <QPainter>
 #include <iostream>
-#include <QDirIterator>
+
 QCstmGLPlot::QCstmGLPlot(QWidget* &parent){
   this->setParent(parent);
   dataTex = new QOpenGLTexture(QOpenGLTexture::Target2DArray);
   gradientTex = new QOpenGLTexture(QOpenGLTexture::Target1D);
-  //atlas.addAscii();
   this->setFocusPolicy(Qt::WheelFocus);
   this->setMouseTracking(true);
 }
@@ -20,15 +18,38 @@ QCstmGLPlot::~QCstmGLPlot()
 void QCstmGLPlot::initializeLocations(){
   positionLoc =  program.attributeLocation("position");
   texcoordLoc = program.attributeLocation("texCoordsIn");
+  zoomLoc = program.uniformLocation("zoom");
+  offsetLoc = program.uniformLocation("offset");
+  clampLoc = program.uniformLocation("clampRange");
+  this->layerLoc = program.uniformLocation("layer");
+  aspectRatioLoc = program.uniformLocation("aspectRatio");
+  resolutionLoc = program.uniformLocation("resolution");
+  texLoc = program.uniformLocation("tex");
+  gradientLoc = program.uniformLocation("gradient");
 }
 
-void QCstmGLPlot::initializeShader(){
+void QCstmGLPlot::initializeShaders(){
   program.addShaderFromSourceFile(QOpenGLShader::Vertex, "./shaders/passthrough.vert");
   program.addShaderFromSourceFile(QOpenGLShader::Fragment, "./shaders/heatmap.frag");
   program.link();
+  if(program.log().length() != 0)
+    std::cout << program.log().toStdString();
   program.bind();
 }
 
+void QCstmGLPlot::initializeTextures(){
+  dataTex->create(); //glGenTexture
+  dataTex->setFormat(QOpenGLTexture::R32I);
+  dataTex->setWrapMode(QOpenGLTexture::ClampToEdge);
+  dataTex->bind(0); //bind to unit 0;
+  dataTex->setMagnificationFilter(QOpenGLTexture::Nearest);//Do not interpolate when zooming in.
+  dataTex->setMinificationFilter(QOpenGLTexture::Nearest);
+  gradientTex->create();
+  gradientTex->bind(1);
+  gradientTex->setFormat(QOpenGLTexture::RGB32F); //TODO: use u8 for color elements?
+  gradientTex->setMagnificationFilter(QOpenGLTexture::Linear);
+  gradientTex->setMinificationFilter(QOpenGLTexture::Linear);
+}
 
 void QCstmGLPlot::initializeGL(){
   points[0] = -1.0f; points[1] = -1.0f; points[2] = -1.0f; points[3] = +1.0f; points[4] = +1.0f; points[5] = -1.0f; points[6]  = +1.0f; points[7] = +1.0f;
@@ -39,60 +60,31 @@ void QCstmGLPlot::initializeGL(){
   glClearColor((GLfloat)(bgColor.red()/255.), (GLfloat)(bgColor.green()/255.), (GLfloat)(bgColor.blue()/255.),1.0); //Sets the background Color to match Qt.
   glEnable (GL_BLEND); glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  initializeShader();
+  initializeShaders();
   initializeLocations();
+  initializeTextures();
 
   glGenBuffers (2, vbo);
   glGenVertexArrays (1, &vao);
 
   glBindVertexArray (vao);
-  glEnableVertexAttribArray (0);
+  glEnableVertexAttribArray (positionLoc);
   glBindBuffer (GL_ARRAY_BUFFER, vbo[0]);
   glBufferData (GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
-  glVertexAttribPointer (0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+  glVertexAttribPointer (positionLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
-  glEnableVertexAttribArray (1);
+  glEnableVertexAttribArray (texcoordLoc);
   glBindBuffer (GL_ARRAY_BUFFER, vbo[1]);
   glBufferData (GL_ARRAY_BUFFER, sizeof(textureCoordinates), textureCoordinates, GL_STATIC_DRAW);
-  glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+  glVertexAttribPointer (texcoordLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
   nLayers  = 1;
-
-  //grabShadersFrom("./shaders");
-  program.bindAttributeLocation("position",0);
-  program.bindAttributeLocation("texCoordsIn",1);
-  program.link();
-  if(program.log().length() != 0)
-    std::cout << program.log().toStdString();
-  program.bind();
-
-  zoomLoc = program.uniformLocation("zoom");
-  offsetLoc = program.uniformLocation("offset");
-  clampLoc = program.uniformLocation("clampRange");
-  GLint **frames = new GLint*[nLayers];
-  for(int k = 0; k < nLayers; k++){
-      frames[k] = new GLint[nx*ny];
-      for(int i = 0; i < ny;i++)
-        for(int j = 0;j < nx;j++){
-          frames[k][i*nx+j] = 100*sin(1.0/ny*i*(k+1)*6.28)*sin(1.0/nx*j*(k+1)*6.28);
-          //printf("%2d ", frames[k][i*nx+j]);
-        }
-      //printf("\n");
-      //QOpenGLWidget::initializeGL();
-      initialized = true;
-   }
-
-  //loadGradient();
-  loadFrames(nx,ny,nLayers, frames);
-  program.setUniformValue("layer",0);
+  program.setUniformValue(layerLoc, 0);
   program.setUniformValue(clampLoc, QSizeF(-100, 100));
-  program.setUniformValue("tex", 0); //set "tex" to  unit 0.
-  program.setUniformValue("gradient", 1); //set "gradient" to  unit 0.
-
-  for(int i = 0; i < nLayers; i++)
-    delete[] frames[i];
-  delete[] frames;
+  program.setUniformValue(texLoc, 0); //set "tex" to  unit 0.
+  program.setUniformValue(gradientLoc, 1); //set "gradient" to  unit 0.
   setZoom(1);
+  initialized = true;
 }
 
 void QCstmGLPlot::paintGL(){
@@ -115,9 +107,8 @@ void QCstmGLPlot::resizeGL(int w, int h){
   double ratioY = ((double)ny)/h;
   double scaleFactor = 1.0/(ratioX >  ratioY? ratioX:ratioY);
   baseSizeX = ratioX*scaleFactor; baseSizeY = ratioY*scaleFactor;
-  program.setUniformValue("aspectRatio", baseSizeX, baseSizeY);
-  qDebug() << "(" << w << "," << h << ") --> (" << nx << "," << ny << ") = " << baseSizeX << ", " << baseSizeY;
-  program.setUniformValue("resolution", (float)w, (float)h);
+  program.setUniformValue(aspectRatioLoc, baseSizeX, baseSizeY);
+  program.setUniformValue(resolutionLoc, (float)w, (float)h);
 }
 
 void QCstmGLPlot::loadGradient(){
@@ -133,9 +124,8 @@ void QCstmGLPlot::loadGradient(){
 
   gradientTex->setMagnificationFilter(QOpenGLTexture::Linear);//Do not interpolate when zooming in.
   gradientTex->setMinificationFilter(QOpenGLTexture::Linear);
-  //program.bind();
-  //program.setUniformValue("gradient",1); //set "tex" to texture unit 0.
 }
+
 void QCstmGLPlot::setGradient(Gradient *gradient){
   this->gradient = gradient;
   gradientChanged = true;
@@ -143,14 +133,14 @@ void QCstmGLPlot::setGradient(Gradient *gradient){
 }
 
 void QCstmGLPlot::setData(QVector<int *> layers){ //TODO: Set size functions, only grow nLayes when necessary.
+  if(!initialized)
+    return;
   this->makeCurrent();
   if(dataTex->isCreated()){
-      dataTex->destroy();
-    }
+     dataTex->destroy();
+  }
   dataTex->setFormat(QOpenGLTexture::R32I);
   dataTex->setWrapMode(QOpenGLTexture::ClampToEdge);
-
-  dataTex->create(); //glGenTexture
   dataTex->setLayers(layers.count());
   dataTex->setSize(this->nx, this->ny);
   dataTex->bind(0); //bind to unit 0;
@@ -163,11 +153,11 @@ void QCstmGLPlot::setData(QVector<int *> layers){ //TODO: Set size functions, on
   this->update();
 }
 
+/*
 void QCstmGLPlot::loadFrames(int nx, int ny, int nFrames, GLint **data ){
   if(!initialized)
     return;
   this->makeCurrent();
-  //this->makeCurrent();
   if(dataTex->isCreated()){
       dataTex->destroy();
     }
@@ -183,6 +173,7 @@ void QCstmGLPlot::loadFrames(int nx, int ny, int nFrames, GLint **data ){
   dataTex->setMinificationFilter(QOpenGLTexture::Nearest);
   this->update();
 }
+*/
 
 void QCstmGLPlot::setRange(QCPRange range){
   if(!initialized)
@@ -196,7 +187,7 @@ void QCstmGLPlot::setRange(QCPRange range){
 void QCstmGLPlot::setActive(int layer){
   this->makeCurrent();
   program.bind();
-  program.setUniformValue("layer",layer);
+  program.setUniformValue(layerLoc, layer);
   this->update();
 }
 

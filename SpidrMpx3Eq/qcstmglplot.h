@@ -30,27 +30,20 @@ public:
   void loadGradient();
  private:
   bool initialized = false;
-  /*We use normal OpenGL vao's and vbo's as opposed to QOpenGLBuffer because the latter is not feature complete*/
   GLuint  vao;
   //TODO: optimize this handling. Merge different vbos/coordinates when possible.
   GLuint  vbo[3];//0 = position, 1 = texture, 2 = layer selectors
   QOpenGLShaderProgram program;
-  //QMap<QString, QOpenGLShader*> vertexShaders;
-  //QMap<QString, QOpenGLShader*>fragmentShaders;
   QOpenGLTexture *gradientTex = 0, *dataTex = 0;
-  //QOpenGLTexture *texture = 0, *gradientTex = 0;
   Gradient *gradient;
 
   GLfloat points[4*2];
   GLfloat textureCoordinates[2*4];
-  //GLfloat outerBoxGradient[2*4];
-  //GLfloat innerBoxGradient[2*4];
-  //GLfloat gradientTexCoords[1*2*2]; //TODO: reduce to 2 using instanced rendering., remove using vertex Ids?
 
   int nx =512, ny =512;
   int nLayers = 0;
   GLfloat offsetX =0, offsetY = 0, zoom = 1.0, baseSizeX, baseSizeY;
-  GLint offsetLoc, zoomLoc, aspectRatioLoc, resolutionLoc, textureLoc, gradientTexLoc, layerLoc, clampLoc; //uniform binding locations.
+  GLint offsetLoc, zoomLoc, aspectRatioLoc, resolutionLoc, layerLoc, clampLoc, texLoc, gradientLoc; //uniform binding locations.
   GLint positionLoc, texcoordLoc;//Attribute binding locations.
   QPoint clickedLocation;
   bool clicked = false, gradientChanged = true;
@@ -58,9 +51,9 @@ public:
   void paintGL();
   void initializeGL();
   void resizeGL(int w, int h) ;
+  void initializeShaders();
   void initializeLocations();
-  void initializeShader();
-  //void grabShadersFrom(QString directory);
+  void initializeTextures();
 public: //functions
   QPoint pixelAt(QPoint position);
   Gradient* getGradient(){return gradient;}

@@ -70,7 +70,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1,0,0,0,0,0,0">
        <item>
         <widget class="QSpinBox" name="layerSpinner">
@@ -83,9 +83,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QCstmPlotHistogram" name="histPlot" native="true">
-         <zorder>startButton</zorder>
-        </widget>
+        <widget class="QCstmPlotHistogram" name="histPlot" native="true"/>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,0">
@@ -126,6 +124,9 @@
          </item>
          <item>
           <widget class="QSpinBox" name="binWidthSpinner">
+           <property name="keyboardTracking">
+            <bool>false</bool>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>

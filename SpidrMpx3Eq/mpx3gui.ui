@@ -274,7 +274,7 @@
         <string>Config and Monitoring</string>
        </attribute>
       </widget>
-      <widget class="QCstmGLVisualization" name="CTTab">
+      <widget class="QWidget" name="CTTab">
        <attribute name="title">
         <string>Wesley's Tab</string>
        </attribute>

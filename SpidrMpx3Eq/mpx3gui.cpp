@@ -55,7 +55,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
 	// Prepare Visualization
 	_ui->visualizationGL->SetMpx3GUI(this);
-	_ui->CTTab->SetMpx3GUI(this);
+	//_ui->CTTab->SetMpx3GUI(this);
 	emit availible_gradients_changed(gradientNames);
 
 	// Prepare THL Calibration

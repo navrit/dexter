@@ -129,13 +129,15 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   connect(_mpx3gui, SIGNAL(availible_gradients_changed(QStringList)), this, SLOT(on_availible_gradients_changed(QStringList)));
   connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)),ui->glPlot, SLOT(setRange(QCPRange)));
   connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), ui->gradientDisplay, SLOT(set_range(QCPRange)));
-  connect(_mpx3gui, SIGNAL(active_frame_changed(int)), ui->glPlot, SLOT(setActive(int)));
-  connect(_mpx3gui, SIGNAL(active_frame_changed(int)), ui->histPlot, SLOT(setActive(int)));
-  connect(_mpx3gui, SIGNAL(active_frame_changed(int)), this, SLOT(on_active_frame_changed(int)));
+  connect(ui->layerSpinner, SIGNAL(valueChanged(int)), ui->glPlot, SLOT(setActive(int)));
+  connect(ui->layerSpinner, SIGNAL(valueChanged(int)), ui->histPlot, SLOT(setActive(int)));
+  connect(ui->layerSpinner, SIGNAL(valueChanged(int)), _mpx3gui, SLOT(set_active_frame(int)));
+  connect(ui->layerSpinner, SIGNAL(valueChanged(int)), this, SLOT(on_active_frame_changed(int)));
+  //connect(_mpx3gui, SIGNAL(active_frame_changed(int)), this, SLOT(on_active_frame_changed(int)));
   connect(ui->binWidthSpinner, SIGNAL(valueChanged(int)), ui->histPlot, SLOT(rebinHistograms(int)));
   connect(ui->glPlot, SIGNAL(hovered_pixel_changed(QPoint)),this, SLOT(on_hover_changed(QPoint)));
   connect(ui->glPlot, SIGNAL(pixel_selected(QPoint,QPoint)), this, SLOT(on_pixel_selected(QPoint,QPoint)));
-  connect(ui->layerSpinner, SIGNAL(valueChanged(int)), _mpx3gui, SLOT(set_active_frame(int)));
+
   connect(this, SIGNAL(change_hover_text(QString)), ui->mouseOverLabel, SLOT(setText(QString)));
   //connect(ui->fullRangeRadio, SIGNAL(pressed()), ui->histPlot, SLOT(set_scale_full()));
   connect(ui->histPlot, SIGNAL(new_range_dragged(QCPRange)), this, SLOT(on_new_range_dragged(QCPRange)));
@@ -164,8 +166,10 @@ void QCstmGLVisualization::on_availible_gradients_changed(QStringList gradients)
 void QCstmGLVisualization::on_frame_updated(){
   ui->glPlot->setData(_mpx3gui->getDataset()->getFrames());
   ui->histPlot->changeBinSize(ui->binWidthSpinner->value(), ui->layerSpinner->value());
-  on_percentileRangeRadio_toggled(ui->percentileRangeRadio->isChecked());
-  on_fullRangeRadio_toggled(ui->fullRangeRadio->isChecked());
+  if(ui->percentileRangeRadio->isChecked())
+    on_percentileRangeRadio_toggled(true);
+  else if(ui->fullRangeRadio->isChecked())
+    on_fullRangeRadio_toggled(true);
 }
 
 void QCstmGLVisualization::on_hover_changed(QPoint pixel){
@@ -184,8 +188,10 @@ void QCstmGLVisualization::on_frame_added(){
 
 void QCstmGLVisualization::on_active_frame_changed(int active){
   ui->layerSpinner->setValue(active);
-  on_percentileRangeRadio_toggled(ui->percentileRangeRadio->isChecked());
-  on_fullRangeRadio_toggled(ui->fullRangeRadio->isChecked());
+  if(ui->percentileRangeRadio->isChecked())
+    on_percentileRangeRadio_toggled(true);
+  else if(ui->fullRangeRadio->isChecked())
+    on_fullRangeRadio_toggled(true);
 }
 
 void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
