@@ -13,6 +13,8 @@
 
 #include <stdint.h>
 #define DEFAULT_IP  "192.168.1.10"
+#define __default_matrixSizePerChip_X 	256
+#define __default_matrixSizePerChip_Y 	256
 
 class Mpx3Config: public QObject {
   Q_OBJECT
@@ -37,7 +39,7 @@ public:
   SpidrController* establishConnection();
   int getDacCount(){return _dacVals[0].length(); }
   int getDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
-  int getDeviceCount(){ return _deviceCount; };
+  QVector<QPoint> getDeviceCount(){ return _deviceCount; };
 
   quint32 getIpAddressInt(){return SpidrAddress.toIPv4Address();}
   uint16_t getIpAddressPort(){return port;}
@@ -53,7 +55,8 @@ public:
   int getNTriggers(){return nTriggers;}
 
 private:
-  int _deviceCount;
+  // Layout of the matrix. Each QPoint is a chip connected with X,Y sizes.
+  QVector<QPoint> _deviceCount;
 
 signals:
   void IpAdressChanged(QString);

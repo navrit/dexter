@@ -10,7 +10,8 @@ using namespace std;
 Mpx3Config::Mpx3Config()
 {
 	// number of devices connected
-	_deviceCount = 0;
+	_deviceCount.clear();
+
 }
 
 /*void Mpx3Config::setIpAddress(QString ip, uint16_t port){
@@ -30,7 +31,13 @@ SpidrController* Mpx3Config::establishConnection(){
 	isConnected = controller->isConnected();
 
 	// number of devices connected
-	controller->getDeviceCount(&_deviceCount);
+	int nDevConn = 0;
+	controller->getDeviceCount(&nDevConn);
+	// FIXME
+	// For the moment assume matrixes of 256*256
+	for(int i = 0 ; i > nDevConn ; i++) {
+		_deviceCount.push_back( QPoint(__default_matrixSizePerChip_X, __default_matrixSizePerChip_Y) );
+	}
 
 	return controller;
 }
