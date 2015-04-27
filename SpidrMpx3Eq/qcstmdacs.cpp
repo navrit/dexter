@@ -179,9 +179,10 @@ void QCstmDacs::PopulateDACValues() {
 	cout << "[INFO] setting dacs from defult DACs file." << endl;
 
 	if ( GetDACsFromConfiguration() ) {
-
-		FillDACValues();
-
+		QVector<QPoint> devices = getDevicePresenceLayout();
+		for(int i = 0; i < devices.length();i++)
+		  if(devices[i] != QPoint(0,0))
+		  FillDACValues();
 	} else { // Setting DACs at mid-range
 
 		for (int i = 0 ; i < 1; i++) {
