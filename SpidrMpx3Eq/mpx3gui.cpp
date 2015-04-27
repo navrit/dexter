@@ -134,7 +134,7 @@ void Mpx3GUI::establish_connection() {
 
 	// Check if we are properly connected to the SPIDR module
 	if ( spidrcontrol->isConnected() ) {
-		cout << "Connected to SPIDR: " << spidrcontrol->ipAddressString();
+		cout << "Connected to SPIDR: " << spidrcontrol->ipAddressString() << "[" << config->getDeviceCount() << " chips found] ";
 		int ipaddr;
 		 // This call takes device number 0 'cause it is not really addressed to a chip in particular
 		if( spidrcontrol->getIpAddrDest( 0, &ipaddr ) )
@@ -170,6 +170,7 @@ void Mpx3GUI::establish_connection() {
 	// SpidrDaq
 	_spidrdaq = new SpidrDaq( spidrcontrol );
 	cout << "SpidrDaq: ";
+
 	for( int i=0; i<4; ++i ) cout << _spidrdaq->ipAddressString( i ) << " ";
 	cout << endl;
 	Sleep( 1000 );

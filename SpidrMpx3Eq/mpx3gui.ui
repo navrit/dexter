@@ -23,241 +23,11 @@
       <property name="currentIndex">
        <number>1</number>
       </property>
-      <widget class="QWidget" name="tab">
-       <attribute name="title">
-        <string>Equalization</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,2">
-          <item>
-           <widget class="BarChart" name="_histoWidget" native="true">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QVBoxLayout" name="verticalLayout" stretch="0,8,0,0,0,0,0,0,0,0">
-            <item>
-             <widget class="QSpinBox" name="frameSpinner">
-              <property name="maximum">
-               <number>99999</number>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCstmPlotHeatmap" name="_intermediatePlot" native="true"/>
-            </item>
-            <item>
-             <widget class="QLabel" name="mouseHoveLabel">
-              <property name="text">
-               <string/>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="equalizationHeatmapCombo"/>
-            </item>
-            <item>
-             <widget class="Line" name="line_3">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="_connect">
-              <property name="text">
-               <string>Connect</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="_statusLabel">
-              <property name="text">
-               <string>Standby ...</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="_startEq">
-              <property name="text">
-               <string>Start Eq</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_7">
-              <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_8">
-                <item>
-                 <widget class="QLabel" name="eqLabelnTriggers">
-                  <property name="text">
-                   <string>nTriggers</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QSpinBox" name="nTriggersSpinBox"/>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_3">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QLabel" name="eqLabelDevId">
-                  <property name="text">
-                   <string>Dev Id</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QSpinBox" name="devIdSpinBox"/>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_4">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QLabel" name="eqLabelSpacing">
-                  <property name="text">
-                   <string>Spacing</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QSpinBox" name="spacingSpinBox"/>
-                </item>
-               </layout>
-              </item>
-              <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_9">
-                <item>
-                 <widget class="QLabel" name="eqLabelMin">
-                  <property name="text">
-                   <string>min</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QSpinBox" name="eqMinSpinBox"/>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_5">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QLabel" name="eqLabelMax">
-                  <property name="text">
-                   <string>max</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QSpinBox" name="eqMaxSpinBox"/>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_6">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QLabel" name="eqLabelStep">
-                  <property name="text">
-                   <string>step</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QSpinBox" name="eqStepSpinBox"/>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="eqAutoCheckBox">
-                  <property name="text">
-                   <string>auto</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QTextBrowser" name="eqTextBrowser"/>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
       <widget class="QCstmGLVisualization" name="visualizationGL">
        <attribute name="title">
-        <string>results</string>
+        <string>Visualization</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_6"/>
-      </widget>
-      <widget class="QCstmThreshold" name="ThresholdTab">
-       <attribute name="title">
-        <string>Thresholds</string>
-       </attribute>
-      </widget>
-      <widget class="QCstmVoxeltab" name="voxelTab">
-       <attribute name="title">
-        <string>Voxel</string>
-       </attribute>
-      </widget>
-      <widget class="QWidget" name="EqualizationTab">
-       <attribute name="title">
-        <string>[NEW] Equalization</string>
-       </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_12">
-        <item>
-         <widget class="QCstmEqualization" name="equalizationWidget" native="true"/>
-        </item>
-       </layout>
       </widget>
       <widget class="QWidget" name="DACsTab">
        <attribute name="title">
@@ -269,9 +39,29 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="EqualizationTab">
+       <attribute name="title">
+        <string>Equalization</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_12">
+        <item>
+         <widget class="QCstmEqualization" name="equalizationWidget" native="true"/>
+        </item>
+       </layout>
+      </widget>
       <widget class="QCstmConfigMonitoring" name="CnMWidget">
        <attribute name="title">
         <string>Config and Monitoring</string>
+       </attribute>
+      </widget>
+      <widget class="QCstmThreshold" name="ThresholdTab">
+       <attribute name="title">
+        <string>Thresholds</string>
+       </attribute>
+      </widget>
+      <widget class="QCstmVoxeltab" name="voxelTab">
+       <attribute name="title">
+        <string>Voxel</string>
        </attribute>
       </widget>
       <widget class="QWidget" name="CTTab">
@@ -289,7 +79,7 @@
      <x>0</x>
      <y>0</y>
      <width>1086</width>
-     <height>19</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -420,29 +210,6 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>BarChart</class>
-   <extends>QWidget</extends>
-   <header>barchart.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QCstmPlotHeatmap</class>
-   <extends>QWidget</extends>
-   <header>qcstmplotheatmap.h</header>
-   <container>1</container>
-   <slots>
-    <signal>dataRangeChanged(QCPRange)</signal>
-    <signal>plotCountChanged(int)</signal>
-    <signal>activePlotChanged(int)</signal>
-    <signal>nouseOverChanged(QString)</signal>
-    <signal>mouseOverChanged(QString)</signal>
-    <signal>pixel_selected(QPoint,QPoint)</signal>
-    <slot>setHeatmap(QCPColorGradient)</slot>
-    <slot>changeRange(QCPRange)</slot>
-    <slot>setActive(int)</slot>
-   </slots>
-  </customwidget>
-  <customwidget>
    <class>QCstmEqualization</class>
    <extends>QWidget</extends>
    <header>qcstmequalization.h</header>
@@ -483,40 +250,7 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections>
-  <connection>
-   <sender>_intermediatePlot</sender>
-   <signal>activePlotChanged(int)</signal>
-   <receiver>frameSpinner</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>991</x>
-     <y>113</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>789</x>
-     <y>93</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>frameSpinner</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>_intermediatePlot</receiver>
-   <slot>setActive(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>789</x>
-     <y>93</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>991</x>
-     <y>113</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
  <slots>
   <signal>frame_added()</signal>
   <signal>availible_gradients_changed(QStringList)</signal>

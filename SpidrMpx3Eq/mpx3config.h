@@ -37,6 +37,7 @@ public:
   SpidrController* establishConnection();
   int getDacCount(){return _dacVals[0].length(); }
   int getDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
+  int getDeviceCount(){ return _deviceCount; };
 
   quint32 getIpAddressInt(){return SpidrAddress.toIPv4Address();}
   uint16_t getIpAddressPort(){return port;}
@@ -50,6 +51,10 @@ public:
   int getTriggerMode(){return TriggerMode;}
   int getTriggerLength(){return TriggerLength_us;}
   int getNTriggers(){return nTriggers;}
+
+private:
+  int _deviceCount;
+
 signals:
   void IpAdressChanged(QString);
   void portChanged(int);
