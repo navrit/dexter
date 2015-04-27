@@ -71,7 +71,6 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	}
 	// Signals and slots for this part
 	SetupSignalsAndSlots();
-	_ui->widget->setGradient(gradients[0]);
 }
 
 Mpx3GUI::~Mpx3GUI()
@@ -134,7 +133,7 @@ void Mpx3GUI::establish_connection() {
 
 	// Check if we are properly connected to the SPIDR module
 	if ( spidrcontrol->isConnected() ) {
-		cout << "Connected to SPIDR: " << spidrcontrol->ipAddressString() << "[" << config->getDeviceCount().size() << " chips found] ";
+		cout << "Connected to SPIDR: " << spidrcontrol->ipAddressString() << "[" << config->getDevicesPresent() << " chips found] ";
 		int ipaddr;
 		 // This call takes device number 0 'cause it is not really addressed to a chip in particular
 		if( spidrcontrol->getIpAddrDest( 0, &ipaddr ) )
