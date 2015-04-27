@@ -58,7 +58,9 @@ SOURCES += main.cpp \
     qcstmthreshold.cpp \
     voxelwidget.cpp \
     mpx3config.cpp \
-    qcstmconfigmonitoring.cpp
+    qcstmconfigmonitoring.cpp \
+    qcstmruler.cpp \
+    heatmapdisplay.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -80,7 +82,9 @@ HEADERS += mpx3gui.h \
     qcstmthreshold.h \
     voxelwidget.h \
     mpx3config.h \
-    qcstmconfigmonitoring.h
+    qcstmconfigmonitoring.h \
+    qcstmruler.h \
+    heatmapdisplay.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 
@@ -92,7 +96,8 @@ FORMS    += mpx3gui.ui \
     qcstmglvisualization.ui \
     qcstmthreshold.ui \
     qcstmvoxeltab.ui \
-    qcstmconfigmonitoring.ui
+    qcstmconfigmonitoring.ui \
+    heatmapdisplay.ui
 
 DISTFILES += \
     shaders/heatmap.frag \

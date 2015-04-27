@@ -20,11 +20,11 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QWidget" name="layoutWidget">
-      <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
+      <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1">
        <item>
         <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
          <item>
-          <widget class="QCstmGLPlot" name="glPlot"/>
+          <widget class="HeatmapDisplay" name="glPlot" native="true"/>
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout" stretch="4,1,2">
@@ -57,16 +57,6 @@
           </layout>
          </item>
         </layout>
-       </item>
-       <item>
-        <widget class="GradientWidget" name="gradientDisplay" native="true">
-         <property name="minimumSize">
-          <size>
-           <width>50</width>
-           <height>0</height>
-          </size>
-         </property>
-        </widget>
        </item>
       </layout>
      </widget>
@@ -145,7 +135,7 @@
             <string>Full</string>
            </property>
            <property name="checked">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -153,6 +143,9 @@
           <widget class="QRadioButton" name="percentileRangeRadio">
            <property name="text">
             <string>Percentile</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -189,6 +182,9 @@
              <property name="singleStep">
               <double>0.010000000000000</double>
              </property>
+             <property name="value">
+              <double>0.025000000000000</double>
+             </property>
             </widget>
            </item>
            <item row="1" column="0">
@@ -213,7 +209,7 @@
               <double>0.010000000000000</double>
              </property>
              <property name="value">
-              <double>1.000000000000000</double>
+              <double>0.975000000000000</double>
              </property>
             </widget>
            </item>
@@ -313,14 +309,9 @@
    </slots>
   </customwidget>
   <customwidget>
-   <class>QCstmGLPlot</class>
-   <extends>QOpenGLWidget</extends>
-   <header>qcstmglplot.h</header>
-  </customwidget>
-  <customwidget>
-   <class>GradientWidget</class>
+   <class>HeatmapDisplay</class>
    <extends>QWidget</extends>
-   <header>gradientwidget.h</header>
+   <header>heatmapdisplay.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -54,12 +54,12 @@ public:
   void initializeShaders();
   void initializeLocations();
   void initializeTextures();
+  void recomputeBounds();
 public: //functions
   QPoint pixelAt(QPoint position);
   Gradient* getGradient(){return gradient;}
   void setGradient(Gradient *gradient);
 public: //events
-  void setSize(int nx, int ny){this->nx=nx; this->ny = ny;}
   void wheelEvent(QWheelEvent *event);
   void mouseMoveEvent(QMouseEvent *event);
   void keyPressEvent(QKeyEvent *event);
@@ -69,6 +69,8 @@ public: //events
   int getNx(){return nx;}
   int getNy(){return ny;}
 public slots:
+  void setSize(int nx, int ny);
+  void setSize(QPoint size){this->setSize(size.x(), size.y());}
   void setData(QVector<int*> layers);
   void setActive(int layer);
   void setRange(int min, int max);
@@ -79,6 +81,10 @@ public slots:
  signals:
   void hovered_pixel_changed(QPoint);
   void pixel_selected(QPoint, QPoint);
+  void offset_changed(QPointF offset);
+  void zoom_changed(float zoom);
+  void size_changed(QPoint size);
+  void bounds_changed(QRectF bounds);
 };
 
 #endif // QCSTMGLPLOT_H

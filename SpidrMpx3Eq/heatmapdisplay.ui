@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>HeatmapDisplay</class>
+ <widget class="QWidget" name="HeatmapDisplay">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="1">
+        <widget class="QCstmRuler" name="NRuler" native="true"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QCstmRuler" name="WRuler" native="true"/>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCstmGLPlot" name="heatmap">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QCstmRuler" name="ERuler" native="true"/>
+       </item>
+       <item row="2" column="1">
+        <widget class="QCstmRuler" name="SRuler" native="true"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="GradientWidget" name="gradient" native="true"/>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QCstmGLPlot</class>
+   <extends>QOpenGLWidget</extends>
+   <header>qcstmglplot.h</header>
+  </customwidget>
+  <customwidget>
+   <class>GradientWidget</class>
+   <extends>QWidget</extends>
+   <header>gradientwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QCstmRuler</class>
+   <extends>QWidget</extends>
+   <header>qcstmruler.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

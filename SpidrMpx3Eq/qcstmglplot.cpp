@@ -132,6 +132,11 @@ void QCstmGLPlot::setGradient(Gradient *gradient){
   update();
 }
 
+void QCstmGLPlot::setSize(int nx, int ny){
+  this->nx=nx; this->ny = ny;
+  emit size_changed(QPoint(nx, ny));
+}
+
 void QCstmGLPlot::setData(QVector<int *> layers){ //TODO: Set size functions, only grow nLayes when necessary.
   if(!initialized)
     return;
@@ -152,28 +157,6 @@ void QCstmGLPlot::setData(QVector<int *> layers){ //TODO: Set size functions, on
   dataTex->setMinificationFilter(QOpenGLTexture::Nearest);
   this->update();
 }
-
-/*
-void QCstmGLPlot::loadFrames(int nx, int ny, int nFrames, GLint **data ){
-  if(!initialized)
-    return;
-  this->makeCurrent();
-  if(dataTex->isCreated()){
-      dataTex->destroy();
-    }
-  dataTex->setFormat(QOpenGLTexture::R32I);
-  dataTex->create(); //glGenTexture
-  dataTex->setLayers(nFrames);
-  dataTex->setSize(nx, ny);
-  dataTex->bind(0); //bind to unit 0;
-  dataTex->setWrapMode(QOpenGLTexture::ClampToEdge);
-  dataTex->allocateStorage();
-  dataTex->setData(QOpenGLTexture::Red_Integer, QOpenGLTexture::Int32, data[0]);
-  dataTex->setMagnificationFilter(QOpenGLTexture::Nearest);//Do not interpolate when zooming in.
-  dataTex->setMinificationFilter(QOpenGLTexture::Nearest);
-  this->update();
-}
-*/
 
 void QCstmGLPlot::setRange(QCPRange range){
   if(!initialized)
@@ -196,6 +179,7 @@ void QCstmGLPlot::setZoom(float newZoom){
   program.bind();
   program.setUniformValue(zoomLoc, zoom);
   this->update();
+  emit zoom_changed(zoom);
 }
 
 void QCstmGLPlot::setRange(int min, int max){
@@ -209,6 +193,20 @@ void QCstmGLPlot::setOffset(GLfloat x, GLfloat y){
   program.bind();
   program.setUniformValue(offsetLoc, offsetX,  offsetY);
   update();
+  recomputeBounds();
+  //emit offset_changed(QPointF(offsetX, offsetY));
+}
+
+void QCstmGLPlot::recomputeBounds(){
+  GLfloat x_low = 1.0, x_high = -1.0;
+  GLfloat y_low= -1.0, y_high = 1.0;
+  x_low -= offsetX;x_high -= offsetX;
+  y_low  -= offsetY; y_high -= offsetY;
+  x_low /= (zoom*baseSizeX); x_high /=  (zoom*baseSizeX);
+  y_low /= (zoom*baseSizeY);y_high /=  (zoom*baseSizeY);
+  x_low  = (1.0+x_low)*0.5*nx;x_high  = (1.0+x_high)*0.5*nx;
+  y_low  = (1.0+y_low)*0.5*ny;y_high  = (1.0+y_high)*0.5*ny;
+  emit bounds_changed(QRectF(x_low, y_low, x_high, y_high));
 }
 
 void QCstmGLPlot::addOffset(GLfloat x, GLfloat y){
