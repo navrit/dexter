@@ -93,7 +93,7 @@ public:
 	void timerEvent( QTimerEvent * );
 	void PrintFraction(int * buffer, int size, int first_last);
 	int GetNPixelsActive(int * buffer, int size, verblev verbose);
-	void GetSlopeAndCut_THL_IDAC_DISC(ScanResults, ScanResults, double &, double &);
+	void GetSlopeAndCut_IDAC_DISC_THL(ScanResults, ScanResults, double &, double &);
 	void GetSlopeAndCut_Adj_THL(ScanResults, ScanResults, double &, double &);
 
 	double EvalLinear(double eta, double cut, double x);

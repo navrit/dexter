@@ -171,12 +171,13 @@ void ThlScan::DoScan(int dac_code, int setId, int numberOfLoops, bool blindScan)
 				if ( !blindScan ) UpdateChart(setId, i);
 
 
+				// FIXME
 				// If the scan has reached the total number of pixels expected to react. Stop.
 				int expectedInScan = __matrix_size / ( spacing*spacing );
-				if ( pixelReactiveInScan % expectedInScan == 0 && pixelReactiveInScan > 0 ) {
-					finishScan = true;
-					cout << "[INFO] All pixels in round found active. Scan stops at THL = " << i << endl;
-				}
+				//if ( pixelReactiveInScan % expectedInScan == 0 && pixelReactiveInScan > 0 ) {
+				//	finishScan = true;
+				//	cout << "[INFO] All pixels in round found active. Scan stops at THL = " << i << endl;
+				//}
 
 				// See if this is a scan which can be aloud to truncate.
 				// Useful in certain cases like DiscL optimization

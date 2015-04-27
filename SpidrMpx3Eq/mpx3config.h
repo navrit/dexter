@@ -40,7 +40,7 @@ public:
   int getDacCount(){return _dacVals[0].length(); }
   int getDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
   QVector<QPoint> getDevicePresenceLayout(){ return _devicePresenceLayout; };
-  int getDevicesPresent() { return _nDevicesPresent; }
+  int getNDevicesPresent() { return _nDevicesPresent; }
 
   quint32 getIpAddressInt(){return SpidrAddress.toIPv4Address();}
   uint16_t getIpAddressPort(){return port;}

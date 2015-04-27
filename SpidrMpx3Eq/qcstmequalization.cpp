@@ -43,7 +43,7 @@ _ui(new Ui::QCstmEqualization)
 	_spacing = 4;
 	_minScanTHL = 0;
 	_maxScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size) - 1;
-	_stepScan = 4;
+	_stepScan = 2;
 	_eqresults = 0x0;
 
 	// Limits in the input widgets
@@ -109,6 +109,11 @@ void QCstmEqualization::StartEqualization() {
 	// 4) Write the result
 	SaveEqualization();
 
+	/////////////////////////////////////////////
+	// !!! ATTENTION !!!
+	// THL1 Eq, set the Equalization for THL1 eq
+	//  but the results comes in the counter 0 !!!
+
 }
 
 void QCstmEqualization::SaveEqualization() {
@@ -170,7 +175,7 @@ int QCstmEqualization::PrepareInterpolation(int setId, int DAC_Disc_code) {
 	if( DAC_Disc_code == MPX3RX_DAC_DISC_H ) SetAllAdjustmentBits(0x0, global_adj);
 
 	// Let's assume the mean falls at the equalization target
-	tscan_opt_adj0->SetStopWhenPlateau(true);
+	//tscan_opt_adj0->SetStopWhenPlateau(true);
 	tscan_opt_adj0->DoScan( MPX3RX_DAC_THRESH_0, setId++, -1 ); // -1: Do all loops
 	tscan_opt_adj0->SetConfigurationToScanResults(_opt_MPX3RX_DAC_DISC_L, global_adj);
 	ScanResults res_opt_adj0 = tscan_opt_adj0->GetScanResults();
@@ -205,7 +210,7 @@ int QCstmEqualization::PrepareInterpolation(int setId, int DAC_Disc_code) {
 	if( DAC_Disc_code == MPX3RX_DAC_DISC_H ) SetAllAdjustmentBits(0x0, global_adj);
 
 	// Let's assume the mean falls at the equalization target
-	tscan_opt_adj5->SetStopWhenPlateau(true);
+	//tscan_opt_adj5->SetStopWhenPlateau(true);
 	tscan_opt_adj5->DoScan( MPX3RX_DAC_THRESH_0, setId++, -1 ); // -1: Do all loops
 	int nNonReactive = tscan_opt_adj5->NumberOfNonReactingPixels();
 	if ( nNonReactive > 0 ) {
@@ -369,16 +374,17 @@ int QCstmEqualization::DAC_Disc_Optimization(int setId, int DAC_Disc_code) {
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// 3) With the results of step 1 and 2 I can obtain the dependency DAC_Disc[L/H](THL)
-	GetSlopeAndCut_THL_IDAC_DISC(res, res_150, _eta_THL_DAC_DiscL, _cut_THL_DAC_DiscL);
+	GetSlopeAndCut_IDAC_DISC_THL(res, res_150, _eta_THL_DAC_DiscL, _cut_THL_DAC_DiscL);
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// 4) Now IDAC_DISC optimal is such that:
 	//    With an adj-bit of 00101[5] the optimal mean is at __equalization_target + 3.2 sigma
 
 	// Desired mean value = __equalization_target + 3.2 sigma
-	double mean_for_opt_IDAC_DISC = __equalization_target + 3.2*res.sigma;
+	//double mean_for_opt_IDAC_DISC = __equalization_target + 3.2*res.sigma; // Tomando el sigma del primer scan
+	double meanTHL_for_opt_IDAC_DISC = __equalization_target + 3.5*res.sigma;
 	// Using the relation DAC_Disc[L/H](THL) we can find the value of DAC_Disc
-	_opt_MPX3RX_DAC_DISC_L = (int) EvalLinear(_eta_THL_DAC_DiscL, _cut_THL_DAC_DiscL, mean_for_opt_IDAC_DISC);
+	_opt_MPX3RX_DAC_DISC_L = (int) EvalLinear(_eta_THL_DAC_DiscL, _cut_THL_DAC_DiscL, meanTHL_for_opt_IDAC_DISC);
 	// Set the new DAC
 	spidrcontrol->setDac( _deviceIndex, DAC_Disc_code, _opt_MPX3RX_DAC_DISC_L );
 	QString statsString = "Optimal DAC_DISC_L = ";
@@ -392,11 +398,11 @@ double QCstmEqualization::EvalLinear(double eta, double cut, double x){
 	return x*eta + cut;
 }
 
-void QCstmEqualization::GetSlopeAndCut_THL_IDAC_DISC(ScanResults r1, ScanResults r2, double & eta, double & cut) {
+void QCstmEqualization::GetSlopeAndCut_IDAC_DISC_THL(ScanResults r1, ScanResults r2, double & eta, double & cut) {
 
 	// The slope is =  (THLmean2 - THLmean1) / (DAC_DISC_L_setting_2 - DAC_DISC_L_setting_1)
-	eta = (r2.weighted_arithmetic_mean - r1.weighted_arithmetic_mean) / (r2.DAC_DISC_setting - r1.DAC_DISC_setting);
-	cut = r2.weighted_arithmetic_mean - (eta * r2.DAC_DISC_setting);
+	eta = (r2.DAC_DISC_setting - r1.DAC_DISC_setting) / (r2.weighted_arithmetic_mean - r1.weighted_arithmetic_mean);
+	cut = r2.DAC_DISC_setting - (eta * r2.weighted_arithmetic_mean);
 
 }
 
@@ -489,13 +495,18 @@ void QCstmEqualization::Configuration(bool reset) {
 
 	// OMR
 	//_spidrcontrol->setPolarity( true );		// Holes collection
-	//_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
 	//_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
 	spidrcontrol->setPixelDepth( _deviceIndex, 12 );
-
 	spidrcontrol->setColourMode( _deviceIndex, false ); 	// Fine Pitch
 	spidrcontrol->setCsmSpm( _deviceIndex, 0 );			// Single Pixel mode
+
+
+	// For Equalization
 	spidrcontrol->setEqThreshH( _deviceIndex, true );
+	spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
+	//spidrcontrol->setDiscCsmSpm( 1 );		// DiscH used
+
+
 	spidrcontrol->setDiscCsmSpm( _deviceIndex, 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
 	//_spidrcontrol->setGainMode( 1 );
 
@@ -516,6 +527,7 @@ void QCstmEqualization::Configuration(bool reset) {
 	//_spidrcontrol->writeOmr( 0 );
 
 	// Trigger config
+	// Sequential R/W
 	int trig_mode      = 4;     // Auto-trigger mode
 	int trig_length_us = 5000;  // This time shouldn't be longer than the period defined by trig_freq_hz
 	int trig_freq_hz   = 100;   // One trigger every 10ms
@@ -523,6 +535,11 @@ void QCstmEqualization::Configuration(bool reset) {
 	//int trig_pulse_count;
 	spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
 			trig_freq_hz, nr_of_triggers );
+
+	// Continues R/W
+	// One counter at a time, but no dead-time
+
+
 
 }
 
