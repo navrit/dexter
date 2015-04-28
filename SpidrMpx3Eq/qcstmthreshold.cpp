@@ -8,10 +8,10 @@ QCstmThreshold::QCstmThreshold(QWidget *parent) :  QWidget(parent),  ui(new Ui::
   defaultSizesMain.append(2971215);
   defaultSizesMain.append(1836312);
   for(int i = 0; i < ui->splitter->count();i++){
-          QWidget *child = ui->splitter->widget(i);
-          child->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-          child->setMinimumSize(1,1);
-  }
+      QWidget *child = ui->splitter->widget(i);
+      child->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+      child->setMinimumSize(1,1);
+    }
   ui->splitter->setSizes(defaultSizesMain);
 
   // Signals & Slots
@@ -20,6 +20,10 @@ QCstmThreshold::QCstmThreshold(QWidget *parent) :  QWidget(parent),  ui(new Ui::
   // GUI defaults
   GUIDefaults();
 
+  ui->framePlot->axisRect()->setupFullAxesBox(true);
+  QCPColorScale *colorScale = new QCPColorScale(ui->framePlot);
+  ui->framePlot->plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
+  colorScale->setType(QCPAxis::atRight); // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
 }
 
 QCstmThreshold::~QCstmThreshold()
@@ -29,8 +33,8 @@ QCstmThreshold::~QCstmThreshold()
 
 void QCstmThreshold::StartCalibration() {
 
-	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+  SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+  SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
 
 
@@ -38,14 +42,23 @@ void QCstmThreshold::StartCalibration() {
 
 void QCstmThreshold::SetupSignalsAndSlots() {
 
-	std::cout << "[QCstmThreshold] Connecting signals and slots" << std::endl;
-	connect( ui->thlCalibStart, SIGNAL(clicked()), this, SLOT( StartCalibration() ) );
+  std::cout << "[QCstmThreshold] Connecting signals and slots" << std::endl;
+  connect( ui->thlCalibStart, SIGNAL(clicked()), this, SLOT( StartCalibration() ) );
 
 }
 
 void QCstmThreshold::GUIDefaults() {
 
-	//ui->thlCalibStart->
+  //ui->thlCalibStart->
+}
 
+void QCstmThreshold::addFrame(QPoint offset, int layer, QVector<int> data){
+  while(layer >= ui->framePlot->plottableCount())
+    ui->framePlot->addPlottable(new QCPColorMap(ui->framePlot->xAxis, ui->framePlot->yAxis));
+  int nx = _mpx3gui->getX(),  ny =_mpx3gui->getY(); //TODO: grab from config.
+  for(int i = 0; i < ny; i++)
+    for(int j = 0; j < nx; j++)
+      ((QCPColorMap*)ui->framePlot->plottable(layer))->data()->setCell(j+offset.x()*nx,ny-1-i+offset.y()*ny, data[i*nx+j]);
+  ui->framePlot->rescaleAxes();
 }
 

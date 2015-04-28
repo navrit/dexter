@@ -58,8 +58,8 @@ public:
   }
   void sumFrame(int *frame);
   int sample(int x, int y, int layer);
-  int x(){return m_nx*m_nFramesX;}
-  int y(){return m_ny*m_nFramesY;}
+  int x(){return m_nx;}
+  int y(){return m_ny;}
 };
 
 #endif // DATASET_H

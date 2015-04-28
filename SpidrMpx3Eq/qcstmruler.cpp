@@ -41,7 +41,7 @@ void QCstmRuler::paintTop(){
           return repaint();
         }
       toPrint =  m_display_max.x()-(m_display_max.x()-m_display_min.x())*(newBounds.x()+0.5*newBounds.width())/this->width();
-      if(toPrint != lastPrint){
+      if(toPrint != lastPrint && toPrint >= m_cutoff.left() && toPrint <= m_cutoff.right()){
           lastPrint = toPrint;
           label.sprintf(" %d",toPrint);
           painter.drawText(newBounds,Qt::AlignHCenter, label, &boundingBox);
@@ -78,7 +78,7 @@ void QCstmRuler::paintLeft(){
           return repaint();
         }
       toPrint =  m_display_max.y()-(m_display_max.y()-m_display_min.y())*(newBounds.y()+0.5*newBounds.height())/this->height();
-      if(toPrint != lastPrint){
+      if(toPrint != lastPrint && toPrint >= m_cutoff.top() && toPrint <= m_cutoff.bottom() ){
           lastPrint = toPrint;
           label.sprintf(" %4d",toPrint);
           painter.drawText(newBounds,Qt::AlignVCenter, label, &boundingBox);
