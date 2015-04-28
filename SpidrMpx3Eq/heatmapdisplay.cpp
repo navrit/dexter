@@ -12,6 +12,7 @@ HeatmapDisplay::HeatmapDisplay(QWidget *parent) :
   setupSignalsAndSlots();
   ui->heatmap->setSize(512, 512);
   ui->NRuler->setOrientation(QCstmRuler::orientationTop);
+  ui->NRuler->setMargin(25);
 }
 
 HeatmapDisplay::~HeatmapDisplay()

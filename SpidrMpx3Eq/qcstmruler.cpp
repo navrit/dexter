@@ -21,40 +21,50 @@ void QCstmRuler::resizeEvent(QResizeEvent *event){
     m_nSteps = event->size().width()/10;
   else
     m_nSteps = event->size().height()/10;
+  m_margin = 5;
 }
 
 void QCstmRuler::paintTop(){
   QPainter painter(this);
-  float label_spacing = this->width()/((float) m_nSteps+1);
-  float subSpacing = label_spacing/(m_subDashCount+1);
-  int requiredHeight = 0;
-  QRectF boundingBox;
+  int requiredWidth = 0;
+  int toPrint, lastPrint = m_display_max.y();
   QString label;
-  int toPrint, lastPrint = m_display_max.x();
   if(!painter.isActive())
     painter.begin(this);
   QRectF newBounds;
-  for(int i = 0; i <= m_nSteps; i++){
-       newBounds.setRect( i*label_spacing,0, label_spacing, this->height()-m_dashLength);
-      if(newBounds.left() < boundingBox.right()){
-          m_nSteps /= 2;
-          return repaint();
-        }
-      toPrint =  m_display_max.x()-(m_display_max.x()-m_display_min.x())*(newBounds.x()+0.5*newBounds.width())/this->width();
-      if(toPrint != lastPrint && toPrint >= m_cutoff.left() && toPrint <= m_cutoff.right()){
-          lastPrint = toPrint;
-          label.sprintf(" %d",toPrint);
+  QRectF boundingBox(INT_MIN, INT_MIN,0,0);
+  QRectF oldBoundingBox(INT_MIN, INT_MIN,0,0);
+  //double pixelConversionFactor = this->height()/(m_display_min.y()-m_display_max.y()); //multiplicative factor for converting "physical" coordinates to pixel coords., need to subtract max too.
+  //double offset_min = this->height() - pixelConversionFactor*(ceil(m_display_min.y())-m_display_min.y());//offset from the bottom to the nearest integer, in pixels.
+  double offset_min = (ceil(m_display_min.x())-m_display_min.x())/(m_display_max.x()-m_display_min.x())*this->width();
+  double range = 1+floor(m_display_max.x())-ceil(m_display_min.x());//amount of integer points, including endpoints between the top and bottom.
+  int nSteps = range;
+
+  double label_spacing = (floor(m_display_max.x())-ceil(m_display_min.x()))/((nSteps-1)*(m_display_max.x()-m_display_min.x()))*this->width();
+  double subSpacing = label_spacing/(m_subDashCount+1);
+  for(int i = 0; i < nSteps; i++){
+      toPrint =  ceil(m_display_min.x())+i;
+      newBounds.setRect(offset_min+i*label_spacing-0.5*label_spacing,0, label_spacing,this->height()-m_dashLength);
+      if( toPrint > m_cutoff.right() ||  toPrint < m_cutoff.left())
+        continue;
+      label.sprintf(" %d",toPrint);
+      if(!newBounds.intersects(oldBoundingBox)){
           painter.drawText(newBounds,Qt::AlignHCenter, label, &boundingBox);
-          requiredHeight = (requiredHeight < 0+boundingBox.height()? 0+boundingBox.height() : requiredHeight);
-      }
-      painter.drawLine(QPointF(newBounds.center().x(), this->height()), QPointF(newBounds.center().x(),this->height()-m_dashLength));
-      for(int i = 1; i <= m_subDashCount;i++)
-        painter.drawLine(QPointF(newBounds.center().x()-subSpacing*i, this->height()), QPointF(newBounds.center().x()-subSpacing*i,this->height()-m_subDashLength));
+          painter.eraseRect(newBounds);
+          if(!boundingBox.intersects(oldBoundingBox)){
+              painter.drawText(newBounds,Qt::AlignHCenter|Qt::TextDontClip, label, &boundingBox);
+              oldBoundingBox = boundingBox;
+            }
+          requiredWidth = (requiredWidth < 0+boundingBox.height()? 0+boundingBox.height() : requiredWidth);
+        }
+      painter.drawLine(QPointF(newBounds.center().x(), this->height()), QPointF( newBounds.center().x(), this->height()-m_dashLength));
+      /*for(int i = 1; i <= m_subDashCount;i++)
+        painter.drawLine(QPointF(this->width(), newBounds.center().y()-subSpacing*i), QPointF(this->width()-m_subDashLength, newBounds.center().y()-subSpacing*i));*/
     }
-  for(int i = 1; i <= m_subDashCount+1;i++)
-    painter.drawLine(QPointF(newBounds.center().x()+subSpacing*i, this->height()), QPointF(newBounds.center().x()+subSpacing*i,this->height()-m_subDashLength));
-  if(requiredHeight > m_requiredWidth){
-      m_requiredWidth = requiredHeight;
+  /*for(int i = 1; i <= m_subDashCount+1;i++)
+    painter.drawLine(QPointF(this->width(), newBounds.center().y()+subSpacing*i), QPointF(this->width()-m_subDashLength, newBounds.center().y()+subSpacing*i));*/
+  if(requiredWidth > m_requiredWidth){
+      m_requiredWidth = requiredWidth;
       this->setMinimumHeight(m_requiredWidth +m_dashLength);
     }
   painter.end();
@@ -62,34 +72,42 @@ void QCstmRuler::paintTop(){
 
 void QCstmRuler::paintLeft(){
   QPainter painter(this);
-  float label_spacing = this->height()/((float) m_nSteps+1);
-  float subSpacing = label_spacing/(m_subDashCount+1);
   int requiredWidth = 0;
   int toPrint, lastPrint = m_display_max.y();
-  QRectF boundingBox;
   QString label;
   if(!painter.isActive())
     painter.begin(this);
   QRectF newBounds;
-  for(int i = 0; i <= m_nSteps; i++){
-      newBounds.setRect(0, i*label_spacing, this->width()-m_dashLength, label_spacing);
-      if(newBounds.top() < boundingBox.bottom()){
-          m_nSteps /= 2;
-          return repaint();
-        }
-      toPrint =  m_display_max.y()-(m_display_max.y()-m_display_min.y())*(newBounds.y()+0.5*newBounds.height())/this->height();
-      if(toPrint != lastPrint && toPrint >= m_cutoff.top() && toPrint <= m_cutoff.bottom() ){
-          lastPrint = toPrint;
-          label.sprintf(" %4d",toPrint);
+  QRectF boundingBox(INT_MAX, INT_MAX,0,0);
+  QRectF oldBoundingBox(INT_MAX, INT_MAX,0,0);
+  //double pixelConversionFactor = this->height()/(m_display_min.y()-m_display_max.y()); //multiplicative factor for converting "physical" coordinates to pixel coords., need to subtract max too.
+  //double offset_min = this->height() - pixelConversionFactor*(ceil(m_display_min.y())-m_display_min.y());//offset from the bottom to the nearest integer, in pixels.
+  double offset_min = (1-(ceil(m_display_min.y())-m_display_min.y())/(m_display_max.y()-m_display_min.y()))*this->height();
+  double range = 1+floor(m_display_max.y())-ceil(m_display_min.y());//amount of integer points, including endpoints between the top and bottom.
+  int nSteps = range;
+
+  double label_spacing = (floor(m_display_max.y())-ceil(m_display_min.y()))/((nSteps-1)*(m_display_max.y()-m_display_min.y()))*this->height();
+  for(int i = 0; i < nSteps; i++){
+      toPrint =  ceil(m_display_min.y())+i;
+      newBounds.setRect(0,offset_min-i*label_spacing-0.5*label_spacing, this->width()-m_dashLength, label_spacing);
+      if(toPrint < m_cutoff.top() ||  toPrint > m_cutoff.bottom())
+        continue;
+      label.sprintf(" %4d",toPrint);
+      if(!newBounds.intersects(oldBoundingBox)){
           painter.drawText(newBounds,Qt::AlignVCenter, label, &boundingBox);
-          requiredWidth = (requiredWidth < 0+boundingBox.width()? 0+boundingBox.width() : requiredWidth);
-      }
+          painter.eraseRect(newBounds);
+          if(!boundingBox.intersects(oldBoundingBox)){
+              painter.drawText(newBounds,Qt::AlignVCenter|Qt::TextDontClip, label, &boundingBox);
+              oldBoundingBox = boundingBox;
+            }
+        }
+      requiredWidth = (requiredWidth < 0+boundingBox.width()? 0+boundingBox.width() : requiredWidth);
       painter.drawLine(QPointF(this->width(), newBounds.center().y()), QPointF(this->width()-m_dashLength, newBounds.center().y()));
-      for(int i = 1; i <= m_subDashCount;i++)
-        painter.drawLine(QPointF(this->width(), newBounds.center().y()-subSpacing*i), QPointF(this->width()-m_subDashLength, newBounds.center().y()-subSpacing*i));
+      /*for(int i = 1; i <= m_subDashCount;i++)
+        painter.drawLine(QPointF(this->width(), newBounds.center().y()-subSpacing*i), QPointF(this->width()-m_subDashLength, newBounds.center().y()-subSpacing*i));*/
     }
-  for(int i = 1; i <= m_subDashCount+1;i++)
-    painter.drawLine(QPointF(this->width(), newBounds.center().y()+subSpacing*i), QPointF(this->width()-m_subDashLength, newBounds.center().y()+subSpacing*i));
+  /*for(int i = 1; i <= m_subDashCount+1;i++)
+    painter.drawLine(QPointF(this->width(), newBounds.center().y()+subSpacing*i), QPointF(this->width()-m_subDashLength, newBounds.center().y()+subSpacing*i));*/
   if(requiredWidth > m_requiredWidth){
       m_requiredWidth = requiredWidth;
       this->setMinimumWidth(m_requiredWidth +m_dashLength);

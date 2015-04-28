@@ -200,7 +200,7 @@ void QCstmGLPlot::setOffset(GLfloat x, GLfloat y){
 }
 
 void QCstmGLPlot::recomputeBounds(){
-  GLfloat x_low = 1.0, x_high = -1.0;
+  GLfloat x_low = -1.0, x_high = 1.0;
   GLfloat y_low= -1.0, y_high = 1.0;
   x_low -= offsetX;x_high -= offsetX;
   y_low  -= offsetY; y_high -= offsetY;
