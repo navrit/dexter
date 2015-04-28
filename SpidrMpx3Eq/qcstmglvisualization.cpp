@@ -197,6 +197,8 @@ void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
   contextMenu.addAction(&mask);
   contextMenu.addAction(&unmask);
   QAction* selectedItem = contextMenu.exec(position);
+  if(!_mpx3gui->getConfig()->isConnected())
+    return;
   if(selectedItem == &mask)
       //_mpx3gui->getDataset()->addMask(pixel);
      _mpx3gui->getEqualization()->GetEqualizationResults()->maskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());

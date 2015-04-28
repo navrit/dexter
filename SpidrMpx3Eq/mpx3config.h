@@ -20,7 +20,7 @@ class Mpx3Config: public QObject {
 	Q_OBJECT
 	//Spidr stuff
 	SpidrController *controller = nullptr;
-	bool isConnected = false;
+	bool connected = false;
 	QHostAddress SpidrAddress;
 	uint16_t port;
 	//Operation stuff
@@ -32,6 +32,7 @@ class Mpx3Config: public QObject {
 public:
 	Mpx3Config();
 	//void setIpAddress(QString ip, uint16_t port);
+	bool isConnected(){return connected;}
 	bool fromJsonFile(QString filename, bool includeDacs = true);
 	bool toJsonFile(QString filename, bool includeDacs = true);
 	QString getIpAddress(){return SpidrAddress.toString();}

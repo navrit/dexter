@@ -24,7 +24,7 @@ SpidrController* Mpx3Config::establishConnection(){
 	quint32 ipaddr =  SpidrAddress.toIPv4Address();
 	delete controller;
 	controller = new SpidrController(((ipaddr>>24) & 0xFF), ((ipaddr>>16) & 0xFF), ((ipaddr>>8) & 0xFF), ((ipaddr>>0) & 0xFF), port);
-	isConnected = controller->isConnected();
+	connected = controller->isConnected();
 
 	// number of device that the system can support
 	int nDevSupported = 0;
