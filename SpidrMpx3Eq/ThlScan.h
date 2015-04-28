@@ -33,7 +33,7 @@ public:
 };
 
 
-class ThlScan {
+class ThlScan { //: public QThread {
 
 public:
 
@@ -64,6 +64,8 @@ public:
 	int GetDetectedHighScanBoundary() { return _detectedScanBoundary_H; };
 
 	int ReAdjustPixelsOff(double N, int DAC_Disc_code);
+
+	//void run();
 
 private:
 

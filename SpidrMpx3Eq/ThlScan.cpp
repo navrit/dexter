@@ -99,6 +99,10 @@ Mpx3EqualizationResults * ThlScan::DeliverPreliminaryEqualization(ScanResults sc
 	return eq;
 }
 
+
+//void ThlScan::run() {
+//}
+
 void ThlScan::DoScan(int dac_code, int setId, int numberOfLoops, bool blindScan) {
 
 	// Pointer to incoming data

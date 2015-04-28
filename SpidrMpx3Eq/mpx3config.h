@@ -17,103 +17,109 @@
 #define __default_matrixSizePerChip_Y 	256
 
 class Mpx3Config: public QObject {
-  Q_OBJECT
-  //Spidr stuff
-  SpidrController *controller = nullptr;
-  bool isConnected = false;
-  QHostAddress SpidrAddress;
-  uint16_t port;
-  //Operation stuff
-  bool colourMode = false, decodeFrames = false;
-  int OperationMode = -1, PixelDepth = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, TriggerMode =-1, TriggerLength_us = -1, nTriggers = -1;
+	Q_OBJECT
+	//Spidr stuff
+	SpidrController *controller = nullptr;
+	bool isConnected = false;
+	QHostAddress SpidrAddress;
+	uint16_t port;
+	//Operation stuff
+	bool colourMode = false, decodeFrames = false;
+	int OperationMode = -1, PixelDepth = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, TriggerMode =-1, TriggerLength_us = -1, nTriggers = -1;
 
-  QVector<int> _dacVals[MPX3RX_DAC_COUNT];
+	QVector<int> _dacVals[MPX3RX_DAC_COUNT];
 
 public:
-  Mpx3Config();
-  //void setIpAddress(QString ip, uint16_t port);
-  bool fromJsonFile(QString filename, bool includeDacs = true);
-  bool toJsonFile(QString filename, bool includeDacs = true);
-  QString getIpAddress(){return SpidrAddress.toString();}
-  SpidrController* getController(){return controller;}
-  SpidrController* establishConnection();
-  int getDacCount(){return _dacVals[0].length(); }
-  int getDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
-  QVector<QPoint> getDevicePresenceLayout(){ return _devicePresenceLayout; };
-  int getNDevicesPresent() { return _nDevicesPresent; }
+	Mpx3Config();
+	//void setIpAddress(QString ip, uint16_t port);
+	bool fromJsonFile(QString filename, bool includeDacs = true);
+	bool toJsonFile(QString filename, bool includeDacs = true);
+	QString getIpAddress(){return SpidrAddress.toString();}
+	SpidrController* getController(){return controller;}
+	SpidrController* establishConnection();
+	int getDacCount(){return _dacVals[0].length(); }
+	int getDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
+	QVector<QPoint> getDevicePresenceLayout(){ return _devicePresenceLayout; };
+	int getNDevicesPresent() { return _nDevicesPresent; }
 
-  quint32 getIpAddressInt(){return SpidrAddress.toIPv4Address();}
-  uint16_t getIpAddressPort(){return port;}
-  bool getColourMode(){return colourMode;}
-  bool getDecodeFrames(){return decodeFrames;}
-  int getOperationMode(){return OperationMode;}
-  int getPixelDepth(){return PixelDepth;}
-  int getCsmSpm(){return CsmSpm;  }
-  int getGainMode(){return GainMode;}
-  int getMaxPacketSize(){return MaxPacketSize;}
-  int getTriggerMode(){return TriggerMode;}
-  int getTriggerLength(){return TriggerLength_us;}
-  int getNTriggers(){return nTriggers;}
+	quint32 getIpAddressInt(){return SpidrAddress.toIPv4Address();}
+	uint16_t getIpAddressPort(){return port;}
+	bool getColourMode(){return colourMode;}
+	bool getDecodeFrames(){return decodeFrames;}
+	int getOperationMode(){return OperationMode;}
+	int getPixelDepth(){return PixelDepth;}
+	int getCsmSpm(){return CsmSpm;  }
+	int getGainMode(){return GainMode;}
+	int getMaxPacketSize(){return MaxPacketSize;}
+	int getTriggerMode(){return TriggerMode;}
+	int getTriggerLength(){return TriggerLength_us;}
+	int getNTriggers(){return nTriggers;}
 
 private:
-  // Layout of the matrix. Each QPoint is a chip connected with X,Y sizes.
-  QVector<QPoint> _devicePresenceLayout;
-  int _nDevicesPresent;
+	// Layout of the matrix. Each QPoint is a chip connected with X,Y sizes.
+	QVector<QPoint> _devicePresenceLayout;
+	int _nDevicesPresent;
 
-signals:
-  void IpAdressChanged(QString);
-  void portChanged(int);
-  void colourModeChanged(bool);
-  void decodeFramesChanged(bool);
-  void operationModeChanged(int);
-  void pixelDepthChanged(int);
-  void csmSpmChanged(int);
-  void gainModeChanged(int);
-  void MaxPacketSizeChanged(int);
-  void TriggerModeChanged(int);
-  void TriggerLengthChanged(int);
-  void nTriggersChanged(int);
+	signals:
+	void IpAdressChanged(QString);
+	void portChanged(int);
+	void colourModeChanged(bool);
+	void decodeFramesChanged(bool);
+	void operationModeChanged(int);
+	void pixelDepthChanged(int);
+	void csmSpmChanged(int);
+	void gainModeChanged(int);
+	void MaxPacketSizeChanged(int);
+	void TriggerModeChanged(int);
+	void TriggerLengthChanged(int);
+	void nTriggersChanged(int);
 public slots:
-  void setIpAddress(QString ip){
-    if(ip != this->getIpAddress()){
-        SpidrAddress.setAddress(ip);
-        if(SpidrAddress.toString().length() == 0)
-          SpidrAddress.setAddress(DEFAULT_IP);
-        emit IpAdressChanged(this->getIpAddress());
-        establishConnection();
-      }
-  }
-  void setPort(int newVal){if(newVal != port){port = newVal; emit portChanged(newVal);establishConnection();}}
+void setIpAddress(QString ip){
+	if(ip != this->getIpAddress()){
+		SpidrAddress.setAddress(ip);
+		if(SpidrAddress.toString().length() == 0)
+			SpidrAddress.setAddress(DEFAULT_IP);
+		emit IpAdressChanged(this->getIpAddress());
+		establishConnection();
+	}
+}
+void setPort(int newVal){
+	if(newVal != port){
+		port = newVal;
+		emit portChanged(newVal);
+		//establishConnection();
+	}
+}
 
-  void setColourMode(bool mode){if(mode != colourMode){colourMode =mode; emit colourModeChanged(mode);updateColourMode();}}
-  void updateColourMode(){controller->setColourMode(0, colourMode);}
+void setColourMode(bool mode){if(mode != colourMode){colourMode =mode; emit colourModeChanged(mode);updateColourMode();}}
+void updateColourMode(){controller->setColourMode(0, colourMode);}
 
-  void setDecodeFrames(bool decode){if(decode != decodeFrames){decodeFrames = decode; emit decodeFramesChanged(decode);updateDecodeFrames();}}
-  void updateDecodeFrames(){}
+void setDecodeFrames(bool decode){if(decode != decodeFrames){decodeFrames = decode; emit decodeFramesChanged(decode);updateDecodeFrames();}}
+void updateDecodeFrames(){}
 
-  void setOperationMode(int newVal){if(newVal != OperationMode){OperationMode = newVal; emit operationModeChanged(newVal);updateOperationMode();}}
- void updateOperationMode(){}
+void setOperationMode(int newVal){if(newVal != OperationMode){OperationMode = newVal; emit operationModeChanged(newVal);updateOperationMode();}}
+void updateOperationMode(){}
 
-  void setPixelDepth(int newVal){if(newVal != PixelDepth){PixelDepth = newVal; emit pixelDepthChanged(newVal);updatePixelDepth();}}
-  void updatePixelDepth(){controller->setPixelDepth(0, PixelDepth);}
+void setPixelDepth(int newVal){if(newVal != PixelDepth){PixelDepth = newVal; emit pixelDepthChanged(newVal);updatePixelDepth();}}
+void updatePixelDepth(){controller->setPixelDepth(0, PixelDepth);}
 
-  void setCsmSpm(int newVal){if(newVal != CsmSpm){CsmSpm = newVal; emit csmSpmChanged(newVal);updateCsmSpm();}}
-  void updateCsmSpm(){controller->setCsmSpm(0, CsmSpm);}
+void setCsmSpm(int newVal){if(newVal != CsmSpm){CsmSpm = newVal; emit csmSpmChanged(newVal);updateCsmSpm();}}
+void updateCsmSpm(){controller->setCsmSpm(0, CsmSpm);}
 
-  void setGainMode(int newVal){if(newVal != GainMode){GainMode = newVal; emit gainModeChanged(newVal);updateGainMode();}}
-  void updateGainMode(){controller->setGainMode(0, GainMode);}
+void setGainMode(int newVal){if(newVal != GainMode){GainMode = newVal; emit gainModeChanged(newVal);updateGainMode();}}
+void updateGainMode(){controller->setGainMode(0, GainMode);}
 
-  void setMaxPacketSize(int newVal){if(newVal != MaxPacketSize){MaxPacketSize = newVal; emit MaxPacketSizeChanged(newVal);updateMaxPacketSize();}}
-  void updateMaxPacketSize(){controller->setMaxPacketSize(MaxPacketSize);}
+void setMaxPacketSize(int newVal){if(newVal != MaxPacketSize){MaxPacketSize = newVal; emit MaxPacketSizeChanged(newVal);updateMaxPacketSize();}}
+void updateMaxPacketSize(){controller->setMaxPacketSize(MaxPacketSize);}
 
-  void setTriggerMode(int newVal){if(newVal != TriggerMode){TriggerMode = newVal; emit TriggerModeChanged(newVal);updateTriggerMode();}}
-  void updateTriggerMode(){}
+void setTriggerMode(int newVal){if(newVal != TriggerMode){TriggerMode = newVal; emit TriggerModeChanged(newVal);updateTriggerMode();}}
+void updateTriggerMode(){}
 
-  void setTriggerLength(int newVal){if(newVal != TriggerLength_us){TriggerLength_us = newVal; emit TriggerLengthChanged(newVal);updateTriggerLength();}}
-  void updateTriggerLength(){}
+void setTriggerLength(int newVal){if(newVal != TriggerLength_us){TriggerLength_us = newVal; emit TriggerLengthChanged(newVal);updateTriggerLength();}}
+void updateTriggerLength(){}
 
-  void setNTriggers(int newVal){if(newVal != nTriggers){nTriggers = newVal; emit nTriggersChanged(newVal);updateNTriggers();}}
-  void updateNTriggers(){}
+void setNTriggers(int newVal){if(newVal != nTriggers){nTriggers = newVal; emit nTriggersChanged(newVal);updateNTriggers();}}
+void updateNTriggers(){}
 };
 
 #endif // MPX3CONFIG_H

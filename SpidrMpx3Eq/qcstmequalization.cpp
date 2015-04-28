@@ -503,7 +503,7 @@ void QCstmEqualization::Configuration(bool reset) {
 
 	// For Equalization
 	spidrcontrol->setEqThreshH( _deviceIndex, true );
-	spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
+	spidrcontrol->setDiscCsmSpm( _deviceIndex, 0 );		// DiscL used
 	//spidrcontrol->setDiscCsmSpm( 1 );		// DiscH used
 
 
