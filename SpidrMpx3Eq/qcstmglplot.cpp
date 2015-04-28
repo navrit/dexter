@@ -109,6 +109,7 @@ void QCstmGLPlot::resizeGL(int w, int h){
   baseSizeX = ratioX*scaleFactor; baseSizeY = ratioY*scaleFactor;
   program.setUniformValue(aspectRatioLoc, baseSizeX, baseSizeY);
   program.setUniformValue(resolutionLoc, (float)w, (float)h);
+  recomputeBounds();
 }
 
 void QCstmGLPlot::loadGradient(){
@@ -135,6 +136,7 @@ void QCstmGLPlot::setGradient(Gradient *gradient){
 void QCstmGLPlot::setSize(int nx, int ny){
   this->nx=nx; this->ny = ny;
   emit size_changed(QPoint(nx, ny));
+  recomputeBounds();
 }
 
 void QCstmGLPlot::setData(QVector<int *> layers){ //TODO: Set size functions, only grow nLayes when necessary.

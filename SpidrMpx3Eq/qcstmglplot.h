@@ -40,7 +40,7 @@ public:
   GLfloat points[4*2];
   GLfloat textureCoordinates[2*4];
 
-  int nx =512, ny =512;
+  int nx =1, ny =1;
   int nLayers = 0;
   GLfloat offsetX =0, offsetY = 0, zoom = 1.0, baseSizeX, baseSizeY;
   GLint offsetLoc, zoomLoc, aspectRatioLoc, resolutionLoc, layerLoc, clampLoc, texLoc, gradientLoc; //uniform binding locations.
@@ -54,8 +54,8 @@ public:
   void initializeShaders();
   void initializeLocations();
   void initializeTextures();
-  void recomputeBounds();
 public: //functions
+  void recomputeBounds();
   QPoint pixelAt(QPoint position);
   Gradient* getGradient(){return gradient;}
   void setGradient(Gradient *gradient);

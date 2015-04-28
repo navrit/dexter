@@ -26,6 +26,7 @@ public:
   void setNSteps(int nSteps){m_nSteps = nSteps;}
   void setOrientation(int orientation){m_orientation = orientation;update();}
   void paintEvent(QPaintEvent *event);
+  void resizeEvent(QResizeEvent *event);
 signals:
 public slots:
   void on_bounds_changed(QRectF newBounds){
