@@ -79,12 +79,9 @@ public:
 	QCstmEqualization * getEqualization(){return _equalization;}
 	SpidrController * GetSpidrController();
 	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
-	void addFrame(int *frame);
+	void addFrame(int *frame, int index, int layer);
 	void addFrames(QVector<int*> frames);
 	Gradient* getGradient(int index);
-	int* getFrame(int index){
-	  return workingSet->getFrame(index);
-	}
 	histogram* getHist(int index){
 	  if(-1 == index)
 	    index = (int)hists.size()-1;
@@ -112,6 +109,8 @@ signals:
 	void summing_set(bool);
 
 	public slots:
+	void addLayer(int* data);
+	void addLayer(int* data, int layer);
 	void generateFrame(); //Debugging function to generate data when not connected
 	void establish_connection();
 	void clear_data();

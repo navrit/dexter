@@ -1,10 +1,8 @@
-#version 140
-varying vec2 texCoords;
+#version 330
+smooth in vec2 c;
+flat in int frameID;
 
-uniform vec2 resolution;
 uniform isampler2DArray tex;
-uniform int layer;
-
 uniform sampler1D gradient;
 uniform vec2 clampRange; //uses floats for now. perhaps better to make an ivec2.
 
@@ -15,8 +13,8 @@ float normalizeSample(float sample){
 }
 
 void main(void) {
-    int sample = texture(tex,vec3(texCoords,layer)).r;
+    int sample = texture(tex,vec3(c,frameID)).r;
     vec3 color = texture(gradient, normalizeSample(float(sample))).rgb;
-    gl_FragColor =  vec4(color,1);
-    //gl_FragColor = vec4(texCoords, 1, 1);
+    gl_FragColor =  vec4(color, 1);
+    //gl_FragColor = vec4(1);
 }

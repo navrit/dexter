@@ -33,9 +33,8 @@ void QCstmGLVisualization::StartDataTaking(){
 		//cout << "capture ..." << endl;
 		int size_in_bytes = -1;
 		framedata = spidrdaq->frameData(0, &size_in_bytes);
-
-		_mpx3gui->addFrame( framedata );
-
+		_mpx3gui->addLayer(framedata);
+		//_mpx3gui->getDataset()->setLayer(framedata,0);
 		spidrdaq->releaseFrame();
 		Sleep( 10 ); // Allow time to get and decode the next frame, if any
 	}
@@ -161,7 +160,7 @@ void QCstmGLVisualization::on_availible_gradients_changed(QStringList gradients)
 }
 
 void QCstmGLVisualization::on_frame_updated(){
-  ui->glPlot->getPlot()->setData(_mpx3gui->getDataset()->getFrames());
+  ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset());
   ui->histPlot->changeBinSize(ui->binWidthSpinner->value(), ui->layerSpinner->value());
   if(ui->percentileRangeRadio->isChecked())
     on_percentileRangeRadio_toggled(true);
@@ -179,7 +178,8 @@ void QCstmGLVisualization::on_hist_added(){
 }
 
 void QCstmGLVisualization::on_frame_added(){
-  ui->glPlot->getPlot()->setData(_mpx3gui->getDataset()->getFrames());
+  ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset());
+  //ui->glPlot->getPlot()->setData(_mpx3gui->getDataset()->getFrames());
   on_active_frame_changed(_mpx3gui->getFrameCount()-1);
 }
 

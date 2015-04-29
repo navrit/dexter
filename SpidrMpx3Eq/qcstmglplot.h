@@ -4,6 +4,7 @@
 #include "qcustomplot.h"
 #include <QObject>
 #include <QVector>
+#include <QVarLengthArray>
 #include <QPointF>
 #include <QWheelEvent>
 
@@ -32,19 +33,20 @@ public:
   bool initialized = false;
   GLuint  vao;
   //TODO: optimize this handling. Merge different vbos/coordinates when possible.
-  GLuint  vbo[3];//0 = position, 1 = texture, 2 = layer selectors
+  GLuint  vbo[4];//square, offsets, texture coords, orientation.
   QOpenGLShaderProgram program;
-  QOpenGLTexture *gradientTex = 0, *dataTex = 0;
+  QOpenGLTexture *gradientTex = nullptr, *dataTex = nullptr;
   Gradient *gradient;
 
-  GLfloat points[4*2];
-  GLfloat textureCoordinates[2*4];
+  QVarLengthArray<QVector2D> offsets;
+  //QVarLengthArray<QVector2D> textureCoordinates;
+  int scaleFactor = 1;
 
   int nx =1, ny =1;
   int nLayers = 0;
   GLfloat offsetX =0, offsetY = 0, zoom = 1.0, baseSizeX, baseSizeY;
-  GLint offsetLoc, zoomLoc, aspectRatioLoc, resolutionLoc, layerLoc, clampLoc, texLoc, gradientLoc; //uniform binding locations.
-  GLint positionLoc, texcoordLoc;//Attribute binding locations.
+  GLint offsetLoc, zoomLoc, aspectRatioLoc, clampLoc, texLoc, gradientLoc; //uniform binding locations.
+  GLint offsetAttributeLoc, squareLoc, textureCoordsLoc, orientationLoc;//Attribute binding locations.
   QPoint clickedLocation;
   bool clicked = false, gradientChanged = true;
 
@@ -54,6 +56,10 @@ public:
   void initializeShaders();
   void initializeLocations();
   void initializeTextures();
+  void initializeVAOsAndVBOs();
+  void populateTextures(Dataset &data);
+  void readLayouts(Dataset &data);
+  void readOrientations(Dataset &data);
 public: //functions
   void recomputeBounds();
   QPoint pixelAt(QPoint position);
@@ -71,7 +77,8 @@ public: //events
 public slots:
   void setSize(int nx, int ny);
   void setSize(QPoint size){this->setSize(size.x(), size.y());}
-  void setData(QVector<int*> layers);
+  void readData(Dataset &data);
+  //void setData(QVector<int*> layers);
   void setActive(int layer);
   void setRange(int min, int max);
   void setRange(QCPRange range);

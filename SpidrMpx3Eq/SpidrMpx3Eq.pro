@@ -47,7 +47,6 @@ SOURCES += main.cpp \
     histogram.cpp \
     qcstmplothistogram.cpp \ 
     qcstmequalization.cpp \
-    qcstmvisualization.cpp \
     qcstmdacs.cpp \
     gradientwidget.cpp \
     qcstmglvisualization.cpp \
@@ -70,7 +69,6 @@ HEADERS += mpx3gui.h \
     histogram.h \
     qcstmplothistogram.h \ 
     qcstmequalization.h \
-    qcstmvisualization.h \
     qcstmdacs.h \
     gradientwidget.h \
     qcstmglvisualization.h \
@@ -90,7 +88,6 @@ HEADERS += ThlScan.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \
-    qcstmvisualization.ui \
     qcstmdacs.ui \
     gradientwidget.ui \
     qcstmglvisualization.ui \

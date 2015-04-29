@@ -16,14 +16,16 @@ QCstmGLPlot::~QCstmGLPlot()
 }
 
 void QCstmGLPlot::initializeLocations(){
-  positionLoc =  program.attributeLocation("position");
-  texcoordLoc = program.attributeLocation("texCoordsIn");
+  orientationLoc = program.attributeLocation("orientationIn");
+  offsetAttributeLoc =  program.attributeLocation("offsetsIn");
+  textureCoordsLoc = program.attributeLocation("textureCoordsIn");
+  squareLoc = program.attributeLocation("verticesIn");
+
+  //layerLoc = program.uniformLocation("layer");
   zoomLoc = program.uniformLocation("zoom");
-  offsetLoc = program.uniformLocation("offset");
+  offsetLoc = program.uniformLocation("globalOffset");
   clampLoc = program.uniformLocation("clampRange");
-  this->layerLoc = program.uniformLocation("layer");
   aspectRatioLoc = program.uniformLocation("aspectRatio");
-  resolutionLoc = program.uniformLocation("resolution");
   texLoc = program.uniformLocation("tex");
   gradientLoc = program.uniformLocation("gradient");
 }
@@ -31,6 +33,9 @@ void QCstmGLPlot::initializeLocations(){
 void QCstmGLPlot::initializeShaders(){
   program.addShaderFromSourceFile(QOpenGLShader::Vertex, "./shaders/passthrough.vert");
   program.addShaderFromSourceFile(QOpenGLShader::Fragment, "./shaders/heatmap.frag");
+  for(int i = 0; i < program.shaders().length();i++)
+    if(program.shaders()[i]->log().length() != 0)
+      std::cout << program.shaders()[i]->log().toStdString();
   program.link();
   if(program.log().length() != 0)
     std::cout << program.log().toStdString();
@@ -44,6 +49,7 @@ void QCstmGLPlot::initializeTextures(){
   dataTex->bind(0); //bind to unit 0;
   dataTex->setMagnificationFilter(QOpenGLTexture::Nearest);//Do not interpolate when zooming in.
   dataTex->setMinificationFilter(QOpenGLTexture::Nearest);
+
   gradientTex->create();
   gradientTex->bind(1);
   gradientTex->setFormat(QOpenGLTexture::RGB32F); //TODO: use u8 for color elements?
@@ -51,10 +57,47 @@ void QCstmGLPlot::initializeTextures(){
   gradientTex->setMinificationFilter(QOpenGLTexture::Linear);
 }
 
+void QCstmGLPlot::initializeVAOsAndVBOs(){
+  glGenVertexArrays (1, &vao);
+  glBindVertexArray(vao);
+  glGenBuffers (4, vbo);
+
+  GLfloat points[2*4];
+  points[0] = -1.0f; points[1] = -1.0f;
+  points[2] = -1.0f; points[3] = +1.0f;
+  points[4] = +1.0f; points[5] = -1.0f;
+  points[6]  = +1.0f; points[7] = +1.0f;
+  glEnableVertexAttribArray (squareLoc);
+  glBindBuffer (GL_ARRAY_BUFFER, vbo[0]);
+  glBufferData (GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
+  glVertexAttribPointer (squareLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+  glVertexAttribDivisor(squareLoc, 0);
+
+  glEnableVertexAttribArray(offsetAttributeLoc);
+  glBindBuffer (GL_ARRAY_BUFFER, vbo[1]);
+  glVertexAttribPointer (offsetAttributeLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+  glVertexAttribDivisor(offsetAttributeLoc, 1);
+
+  GLfloat textureCoordinates[2*4];
+//LtRTtB
+  textureCoordinates[0] = 0; textureCoordinates[1] = 0;
+  textureCoordinates[2] = 0; textureCoordinates[3] =1;
+  textureCoordinates[4] = 1; textureCoordinates[5] = 0;
+  textureCoordinates[6] =1; textureCoordinates[7] = 1;
+  glEnableVertexAttribArray(textureCoordsLoc);
+  glBindBuffer (GL_ARRAY_BUFFER, vbo[2]);
+  //glBufferData(GL_ARRAY_BUFFER, sizeof(textureCoordinates), textureCoordinates, GL_STATIC_DRAW);
+  glBufferData (GL_ARRAY_BUFFER, sizeof(textureCoordinates), textureCoordinates, GL_STATIC_DRAW);
+  glVertexAttribPointer (textureCoordsLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+  glVertexAttribDivisor(textureCoordsLoc, 0);
+
+  glEnableVertexAttribArray(orientationLoc);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
+  glVertexAttribPointer (orientationLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+  glVertexAttribDivisor(orientationLoc, 1);
+}
+
 void QCstmGLPlot::initializeGL(){
-  points[0] = -1.0f; points[1] = -1.0f; points[2] = -1.0f; points[3] = +1.0f; points[4] = +1.0f; points[5] = -1.0f; points[6]  = +1.0f; points[7] = +1.0f;
-  textureCoordinates[0] = 0.0f; textureCoordinates[1] = 0.0f; textureCoordinates[2] = 0.0f; textureCoordinates[3] = +1.0f;
-  textureCoordinates[4] = +1.0f; textureCoordinates[5] = 0.0f; textureCoordinates[6]  = +1.0f; textureCoordinates[7] = +1.0f;
   initializeOpenGLFunctions();
   QColor bgColor = this->palette().color(this->backgroundRole());
   glClearColor((GLfloat)(bgColor.red()/255.), (GLfloat)(bgColor.green()/255.), (GLfloat)(bgColor.blue()/255.),1.0); //Sets the background Color to match Qt.
@@ -63,26 +106,12 @@ void QCstmGLPlot::initializeGL(){
   initializeShaders();
   initializeLocations();
   initializeTextures();
+  initializeVAOsAndVBOs();
 
-  glGenBuffers (2, vbo);
-  glGenVertexArrays (1, &vao);
-
-  glBindVertexArray (vao);
-  glEnableVertexAttribArray (positionLoc);
-  glBindBuffer (GL_ARRAY_BUFFER, vbo[0]);
-  glBufferData (GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
-  glVertexAttribPointer (positionLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-
-  glEnableVertexAttribArray (texcoordLoc);
-  glBindBuffer (GL_ARRAY_BUFFER, vbo[1]);
-  glBufferData (GL_ARRAY_BUFFER, sizeof(textureCoordinates), textureCoordinates, GL_STATIC_DRAW);
-  glVertexAttribPointer (texcoordLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-
-  nLayers  = 1;
-  program.setUniformValue(layerLoc, 0);
+  //set the initial uniform values.
   program.setUniformValue(clampLoc, QSizeF(-100, 100));
   program.setUniformValue(texLoc, 0); //set "tex" to  unit 0.
-  program.setUniformValue(gradientLoc, 1); //set "gradient" to  unit 0.
+  program.setUniformValue(gradientLoc, 1); //set "gradient" to  unit 1
   setZoom(1);
   initialized = true;
 }
@@ -93,12 +122,10 @@ void QCstmGLPlot::paintGL(){
       loadGradient();
     }
   glClear(GL_COLOR_BUFFER_BIT);
-
   program.bind();
-  glBindVertexArray (vao);
   dataTex->bind(0);
-  glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
-
+  glBindVertexArray (vao);
+  glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4,offsets.size());
 }
 
 void QCstmGLPlot::resizeGL(int w, int h){
@@ -108,7 +135,7 @@ void QCstmGLPlot::resizeGL(int w, int h){
   double scaleFactor = 1.0/(ratioX >  ratioY? ratioX:ratioY);
   baseSizeX = ratioX*scaleFactor; baseSizeY = ratioY*scaleFactor;
   program.setUniformValue(aspectRatioLoc, baseSizeX, baseSizeY);
-  program.setUniformValue(resolutionLoc, (float)w, (float)h);
+  //program.setUniformValue(resolutionLoc, (float)w, (float)h);
   recomputeBounds();
 }
 
@@ -139,25 +166,69 @@ void QCstmGLPlot::setSize(int nx, int ny){
   recomputeBounds();
 }
 
-void QCstmGLPlot::setData(QVector<int *> layers){ //TODO: Set size functions, only grow nLayes when necessary.
+void QCstmGLPlot::readData(Dataset &data){
+  readOrientations(data);
+  readLayouts(data);
+  populateTextures(data);
+}
+
+void QCstmGLPlot::populateTextures(Dataset &data){
   if(!initialized)
     return;
   this->makeCurrent();
   if(dataTex->isCreated()){
      dataTex->destroy();
   }
+  dataTex->create();
+  dataTex->bind(0); //bind to unit 0;
   dataTex->setFormat(QOpenGLTexture::R32I);
   dataTex->setWrapMode(QOpenGLTexture::ClampToEdge);
-  dataTex->setLayers(layers.count());
-  dataTex->setSize(this->nx, this->ny);
-  dataTex->bind(0); //bind to unit 0;
+  dataTex->setLayers(data.getFrameCount()*data.getLayerCount());
+  nx = data.x();
+  ny  = data.y();
+  dataTex->setSize(nx, ny);//TODO: set to nx, ny
   dataTex->allocateStorage();
-  for(int i = 0; i < layers.count();i++){
-    dataTex->setData(0,i,QOpenGLTexture::Red_Integer,QOpenGLTexture::Int32, layers[i]);
-  }
+  for(int i = 0; i < data.getLayerCount();i++){
+      for(int j = 0; j < data.getFrameCount();j++){
+          int *frame =     data.getFrame(j,i);
+          dataTex->setData(0,i*data.getFrameCount()+j,QOpenGLTexture::Red_Integer,QOpenGLTexture::Int32, frame);
+        }
+    }
   dataTex->setMagnificationFilter(QOpenGLTexture::Nearest);//Do not interpolate when zooming in.
   dataTex->setMinificationFilter(QOpenGLTexture::Nearest);
-  this->update();
+}
+
+void QCstmGLPlot::readLayouts(Dataset &data){
+  QVector<QPoint> layout = data.getLayoutVector();
+  offsets.resize(layout.size());
+  int max;
+  for(int i = 0; i < offsets.size();i++){
+    offsets[i] = QVector2D(layout[i].x()*2, layout[i].y()*2);
+    if(layout[i].x() > max)
+      max = layout[i].x();
+    if(layout[i].y() > max)
+      max = layout[i].y();
+   }
+  //scaleFactor = max/;
+  glBindVertexArray (vao);
+  //glEnableVertexAttribArray (positionLoc);
+  glBindBuffer (GL_ARRAY_BUFFER, vbo[1]);
+  glBufferData (GL_ARRAY_BUFFER, offsets.size()*sizeof(*offsets.data()), offsets.data(), GL_STATIC_DRAW);
+  setZoom(1);
+  //glVertexAttribPointer (positionLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+}
+
+void QCstmGLPlot::readOrientations(Dataset &data){
+  QVector<int> orientations = data.getOrientationVector();
+  QVector<GLfloat> orientationsGL(orientations.size()*2);
+  for(int i = 0; i < orientations.size();i++){
+      orientationsGL[i*2+0] = 1-2*(orientations[i]&1);
+      orientationsGL[i*2+1] = 1-(orientations[i]&2);//      QVector2D(1,1/*1-2*(orientations[i]&1), 1-orientations[i]&2*/ );//little hack: first bit of orientations RtL or LtR, second if TtB or BtT.
+    }
+  glBindVertexArray (vao);
+  glBindBuffer (GL_ARRAY_BUFFER, vbo[3]);
+  glBufferData (GL_ARRAY_BUFFER, orientationsGL.size()*sizeof(*orientationsGL.data()), orientationsGL.data(), GL_STATIC_DRAW);
+
 }
 
 void QCstmGLPlot::setRange(QCPRange range){
@@ -172,14 +243,14 @@ void QCstmGLPlot::setRange(QCPRange range){
 void QCstmGLPlot::setActive(int layer){
   this->makeCurrent();
   program.bind();
-  program.setUniformValue(layerLoc, layer);
+  //program.setUniformValue(layerLoc, layer);
   this->update();
 }
 
 void QCstmGLPlot::setZoom(float newZoom){
   zoom = newZoom;
   program.bind();
-  program.setUniformValue(zoomLoc, zoom);
+  program.setUniformValue(zoomLoc, zoom/scaleFactor);//TODO:scalefactor.
   this->update();
   emit zoom_changed(zoom);
 }

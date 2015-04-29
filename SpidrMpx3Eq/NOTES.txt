@@ -24,6 +24,7 @@ PARTIALLY DONE 2015-04-17, REQUIRES JOHN'S ATTENTION -Propagate data to  Spidr
 DONE 2015-04-17 -Ip address as spinbox
 -Only load a single frame at a time in glplot.
 -Look at terminal output (shows more errors), remove all errors.
+-Stop using Qt's texture implementation: it clears all configs when data needs reloading....
 
 -Controls on gradient widget
 -Clean up code.
