@@ -53,11 +53,11 @@ void QCstmRuler::paintTop(){
           painter.eraseRect(newBounds);
           if(!boundingBox.intersects(oldBoundingBox)){
               painter.drawText(newBounds,Qt::AlignHCenter|Qt::TextDontClip, label, &boundingBox);
+              painter.drawLine(QPointF(newBounds.center().x(), this->height()), QPointF( newBounds.center().x(), this->height()-m_dashLength));
               oldBoundingBox = boundingBox;
             }
           requiredWidth = (requiredWidth < 0+boundingBox.height()? 0+boundingBox.height() : requiredWidth);
-        }
-      painter.drawLine(QPointF(newBounds.center().x(), this->height()), QPointF( newBounds.center().x(), this->height()-m_dashLength));
+       }
       /*for(int i = 1; i <= m_subDashCount;i++)
         painter.drawLine(QPointF(this->width(), newBounds.center().y()-subSpacing*i), QPointF(this->width()-m_subDashLength, newBounds.center().y()-subSpacing*i));*/
     }
@@ -99,10 +99,11 @@ void QCstmRuler::paintLeft(){
           if(!boundingBox.intersects(oldBoundingBox)){
               painter.drawText(newBounds,Qt::AlignVCenter|Qt::TextDontClip, label, &boundingBox);
               oldBoundingBox = boundingBox;
+              painter.drawLine(QPointF(this->width(), newBounds.center().y()), QPointF(this->width()-m_dashLength, newBounds.center().y()));
             }
-        }
       requiredWidth = (requiredWidth < 0+boundingBox.width()? 0+boundingBox.width() : requiredWidth);
-      painter.drawLine(QPointF(this->width(), newBounds.center().y()), QPointF(this->width()-m_dashLength, newBounds.center().y()));
+
+        }
       /*for(int i = 1; i <= m_subDashCount;i++)
         painter.drawLine(QPointF(this->width(), newBounds.center().y()-subSpacing*i), QPointF(this->width()-m_subDashLength, newBounds.center().y()-subSpacing*i));*/
     }
