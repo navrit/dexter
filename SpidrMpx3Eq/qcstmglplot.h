@@ -45,7 +45,7 @@ public:
   int nx =1, ny =1;
   int nLayers = 0;
   GLfloat offsetX =0, offsetY = 0, zoom = 1.0, baseSizeX, baseSizeY;
-  GLint offsetLoc, zoomLoc, aspectRatioLoc, clampLoc, texLoc, gradientLoc; //uniform binding locations.
+  GLint offsetLoc, zoomLoc, layerLoc, aspectRatioLoc, clampLoc, texLoc, gradientLoc; //uniform binding locations.
   GLint offsetAttributeLoc, squareLoc, textureCoordsLoc, orientationLoc;//Attribute binding locations.
   QPoint clickedLocation;
   bool clicked = false, gradientChanged = true;

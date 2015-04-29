@@ -21,7 +21,7 @@ void QCstmGLPlot::initializeLocations(){
   textureCoordsLoc = program.attributeLocation("textureCoordsIn");
   squareLoc = program.attributeLocation("verticesIn");
 
-  //layerLoc = program.uniformLocation("layer");
+  layerLoc = program.uniformLocation("layer");
   zoomLoc = program.uniformLocation("zoom");
   offsetLoc = program.uniformLocation("globalOffset");
   clampLoc = program.uniformLocation("clampRange");
@@ -214,7 +214,7 @@ void QCstmGLPlot::readLayouts(Dataset &data){
   //glEnableVertexAttribArray (positionLoc);
   glBindBuffer (GL_ARRAY_BUFFER, vbo[1]);
   glBufferData (GL_ARRAY_BUFFER, offsets.size()*sizeof(*offsets.data()), offsets.data(), GL_STATIC_DRAW);
-  setZoom(1);
+  //setZoom(1);
   //glVertexAttribPointer (positionLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 }
 
@@ -243,7 +243,7 @@ void QCstmGLPlot::setRange(QCPRange range){
 void QCstmGLPlot::setActive(int layer){
   this->makeCurrent();
   program.bind();
-  //program.setUniformValue(layerLoc, layer);
+  program.setUniformValue(layerLoc, layer);
   this->update();
 }
 
@@ -305,9 +305,9 @@ void QCstmGLPlot::wheelEvent(QWheelEvent *event){
   float newZoom = zoom*deltaZoom;
   double oldX = 2*((double)event->x())/this->width()-1, oldY = -(2*((double)event->y())/this->height()-1);
   oldX -= offsetX; oldY -= offsetY;
-  if(newZoom < 1.0){
-    newZoom = 1.0;
-    deltaZoom = 1/zoom;
+  if(newZoom < .1){
+    newZoom = .1;
+    deltaZoom = .1/zoom;
   }
   GLfloat displacementX = oldX*(1-deltaZoom); GLfloat displacementY = oldY*(1-deltaZoom);
   //qDebug() << "got zoom event, newZoom = " <<  newZoom;

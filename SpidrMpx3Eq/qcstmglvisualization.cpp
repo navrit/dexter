@@ -179,8 +179,8 @@ void QCstmGLVisualization::on_hist_added(){
 
 void QCstmGLVisualization::on_frame_added(){
   ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset());
-  //ui->glPlot->getPlot()->setData(_mpx3gui->getDataset()->getFrames());
-  on_active_frame_changed(_mpx3gui->getFrameCount()-1);
+  ui->layerSpinner->setMaximum(_mpx3gui->getDataset()->getLayerCount()-1);
+  on_active_frame_changed(_mpx3gui->getDataset()->getLayerCount()-1);
 }
 
 void QCstmGLVisualization::on_active_frame_changed(int active){
