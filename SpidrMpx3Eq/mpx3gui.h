@@ -39,6 +39,7 @@ class ThlScan;
 class BarChart;
 class BarChartProperties;
 class QCstmEqualization;
+class QCstmGLVisualization;
 
 namespace Ui {
 class Mpx3GUI;
@@ -70,6 +71,8 @@ public:
 	Mpx3Config* getConfig();
 	Dataset* getDataset(){return workingSet;}
 	QCstmEqualization * getEqualization();
+	QCstmGLVisualization * getVisualization();
+
 	SpidrController * GetSpidrController();
 	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
 	void addFrame(int *frame, int index, int layer);
