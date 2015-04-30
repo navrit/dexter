@@ -9,6 +9,9 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <QThread>
+
+#include "mpx3gui.h"
 
 using namespace std;
 
@@ -33,23 +36,24 @@ public:
 };
 
 
-class ThlScan { //: public QThread {
+class ThlScan : public QThread {
+
+	Q_OBJECT
 
 public:
 
-	ThlScan();
-	ThlScan(BarChart *, QCstmPlotHeatmap *, QCstmEqualization *);
-	~ThlScan();
+	//explicit ThlScan();
+	explicit ThlScan(Mpx3GUI *, QCstmEqualization *);
+	//~ThlScan();
 
 	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
 	void RewindData();
-	void DoScan(int dac_code, int setId, int numberOfLoops = -1, bool blindScan = false);
-	int SetEqualizationMask(int spacing, int offset_x, int offset_y);
-	void ClearMask(bool ClearMask = true);
+	void DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops = -1, bool blindScan = false);
+	int SetEqualizationMask(SpidrController * sc, int spacing, int offset_x, int offset_y);
+	void ClearMask(SpidrController * spidrcontrol, bool ClearMask = true);
 	int ExtractScanInfo(int * data, int size_in_bytes, int thl);
-	void UpdateChart(int setId, int thlValue);
-	void ExtractStatsOnChart(int setId);
 	ScanResults GetScanResults() { return _results; };
+	void ExtractStatsOnChart(int setId);
 	int NumberOfNonReactingPixels();
 	vector<int> GetNonReactingPixels();
 	void SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj);
@@ -65,15 +69,25 @@ public:
 
 	int ReAdjustPixelsOff(double N, int DAC_Disc_code);
 
-	//void run();
+	typedef enum {
+		__adjust_to_global = 0,
+		__adjust_to_equalizationMatrix
+	} adj_type;
+
+	void SetAdjustmentType(adj_type t){ _adjType = t; };
+
 
 private:
+
+	void run();
+
+	Mpx3GUI * _mpx3gui;
+	QCstmEqualization * _equalization;
 
 	SpidrController * _spidrcontrol;
 	SpidrDaq * _spidrdaq;
 	BarChart * _chart;
 	QCstmPlotHeatmap * _heatmap;
-	QCstmEqualization * _equalization;
 	ScanResults _results;
 
 	// pixelId, counts map
@@ -89,6 +103,39 @@ private:
 
 	set<int> _maskedSet;
 	bool _stopWhenPlateau;
+
+	// Scan parameters
+	adj_type _adjType;
+	int _spacing;
+	int _minScan;
+	int _maxScan;
+	int _stepScan;
+	int _deviceIndex;
+	int _dac_code;
+	int _setId;
+	int _numberOfLoops;
+	bool _blindScan;
+	int _DAC_Disc_code;
+	// IP source address (SPIDR network interface)
+	int _srcAddr;
+
+	// For data taking
+	int * _data;
+	int _frameId;
+	int _thlItr;
+	int _pixelReactiveInScan;
+
+	private slots:
+	//void UpdateChart(int setId, int thlValue);
+	void UpdateChart(int thlValue);
+	void UpdateChart(int setId, int thlValue);
+	void UpdateHeatMap(int sizex, int sizey);
+
+	signals:
+	void UpdateChartSignal(int setId, int thlValue);
+	void UpdateHeatMapSignal(int sizex, int sizey);
+	void fillText(QString);
+	void slideAndSpin(int, int);
 
 };
 

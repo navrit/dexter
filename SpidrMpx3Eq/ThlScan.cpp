@@ -10,26 +10,30 @@
 #include "barchart.h"
 #include "qcstmplotheatmap.h"
 #include "qcstmequalization.h"
+#include "ui_qcstmequalization.h"
 
 #include "mpx3defs.h"
 #include "mpx3eq_common.h"
+#include "ui_mpx3gui.h"
 
 #include <iostream>
 #include <map>
 using namespace std;
 
-ThlScan::ThlScan() {
+//ThlScan::ThlScan() {
+//}
 
-}
-
-ThlScan::ThlScan(BarChart * bc, QCstmPlotHeatmap * hm, QCstmEqualization * ptr) {
+ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 
 	// keep these pointers
-	_spidrcontrol = 0; // Assuming no connection yet
-	_spidrdaq = 0;     // Assuming no connection yet
-	_chart = bc;
-	_heatmap = hm;
+	_mpx3gui = mpx3gui;
 	_equalization = ptr;
+	_chart = 0x0;
+	_heatmap = 0x0;
+	_spidrcontrol = 0x0; // Assuming no connection yet
+	_spidrdaq = 0x0;     // Assuming no connection yet
+	_frameId = 0;
+	_adjType = __adjust_to_global;
 
 	// Results of the scan
 	_results.weighted_arithmetic_mean = 0.;
@@ -46,11 +50,30 @@ ThlScan::ThlScan(BarChart * bc, QCstmPlotHeatmap * hm, QCstmEqualization * ptr) 
 
 	RewindData();
 
+	// Extract the information needed when the thread will be launched
+	_spacing = _equalization->GetSpacing();
+	_minScan = _equalization->GetMinScan();
+	_maxScan = _equalization->GetMaxScan();
+	_stepScan = _equalization->GetStepScan();
+	_deviceIndex = _equalization->GetDeviceIndex();
+
+
 }
 
 void ThlScan::ConnectToHardware(SpidrController * sc, SpidrDaq * sd) {
+
 	_spidrcontrol = sc;
 	_spidrdaq = sd;
+
+	// I need to do this here and not when already running the thread
+	// Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
+	if( _spidrcontrol ) { _spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
+	else { _srcAddr = 0; }
+
+	// The chart and the heatmap !
+	_chart = _equalization->GetUI()->_histoWidget;
+	_heatmap = _equalization->GetUI()->_intermediatePlot;
+
 }
 
 /**
@@ -80,9 +103,9 @@ void ThlScan::RewindData() {
 
 }
 
-ThlScan::~ThlScan(){
+//ThlScan::~ThlScan(){
 
-}
+//}
 
 Mpx3EqualizationResults * ThlScan::DeliverPreliminaryEqualization(ScanResults scan_res) {
 
@@ -99,85 +122,139 @@ Mpx3EqualizationResults * ThlScan::DeliverPreliminaryEqualization(ScanResults sc
 	return eq;
 }
 
+void ThlScan::DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops, bool blindScan) {
 
-//void ThlScan::run() {
-//}
+	_dac_code = dac_code;
+	_setId = setId;
+	_numberOfLoops = numberOfLoops;
+	_blindScan = blindScan;
+	_DAC_Disc_code = DAC_Disc_code;
 
-void ThlScan::DoScan(int dac_code, int setId, int numberOfLoops, bool blindScan) {
+}
 
-	// Pointer to incoming data
-	int * data;
-	int spacing = _equalization->GetSpacing();
-	int minScan = _equalization->GetMinScan();
-	int maxScan = _equalization->GetMaxScan();
-	int stepScan = _equalization->GetStepScan();
-	int deviceIndex = _equalization->GetDeviceIndex();
+void ThlScan::run() {
 
-	// Prepare the heatmap
-	// TODO ! ... why do I need the clear here ?
-	//_heatmap->clear();
-	// The heatmap can store the images.  This is the indexing.
-	int frameId = 0;
+	// Open a new temporary connection to the spider to avoid collisions to the main one
+	// Extract the ip address
+	int ipaddr[4] = { 1, 1, 168, 192 };
+	if( _srcAddr != 0 ) {
+		ipaddr[3] = (_srcAddr >> 24) & 0xFF;
+		ipaddr[2] = (_srcAddr >> 16) & 0xFF;
+		ipaddr[1] = (_srcAddr >>  8) & 0xFF;
+		ipaddr[0] = (_srcAddr >>  0) & 0xFF;
+	}
+	SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
+
+	if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
+		cout << "[ERR ] Device not connected !" << endl;
+		return;
+	}
+
+	//_equalization->SetAllAdjustmentBits(spidrcontrol, 0x5, 0x0);
+	// Send all the adjustment bits to 0x5
+	if ( _adjType == __adjust_to_global ) {
+		if( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) _equalization->SetAllAdjustmentBits(spidrcontrol, _equalization->GetGlobalAdj(), 0x0);
+		if( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) _equalization->SetAllAdjustmentBits(spidrcontrol, 0x0, _equalization->GetGlobalAdj());
+	} else if ( _adjType == __adjust_to_equalizationMatrix ) {
+		_equalization->SetAllAdjustmentBits(spidrcontrol);
+	}
+
+	// Signals to draw out of the worker
+	connect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
+	connect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
 
 	// Sometimes a reduced loop is selected
 	int processedLoops = 0;
 	bool finishScan = false;
 	bool finishTHLLoop = false;
+	// For a truncated scan
+	int expectedInOneThlLoop = __matrix_size / ( _spacing*_spacing );
+	// For a full matrix scan
+	//if( _numberOfLoops <= 0) expectedInScan = __matrix_size;
 
-	for(int maskOffsetItr_x = 0 ; maskOffsetItr_x < spacing ; maskOffsetItr_x++ ) {
+	//int nMasked = SetEqualizationMask(spidrcontrol, _spacing, 0,0);
 
-		for(int maskOffsetItr_y = 0 ; maskOffsetItr_y < spacing ; maskOffsetItr_y++ ) {
+
+	for(int maskOffsetItr_x = 0 ; maskOffsetItr_x < _spacing ; maskOffsetItr_x++ ) {
+
+		for(int maskOffsetItr_y = 0 ; maskOffsetItr_y < _spacing ; maskOffsetItr_y++ ) {
 
 			// Set mask
-			int nMasked = SetEqualizationMask(spacing, maskOffsetItr_x, maskOffsetItr_y);
+			int nMasked = SetEqualizationMask(spidrcontrol, _spacing, maskOffsetItr_x, maskOffsetItr_y);
 			cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  " | N pixels unmasked = " << __matrix_size - nMasked << endl;
 
+
 			// Start the Scan for one mask
-			int pixelReactiveInScan = 0;
+			_pixelReactiveInScan = 0;
 			finishTHLLoop = false;
-			for(int i = minScan ; i <= maxScan ; i += stepScan ) {
+			for(_thlItr = _minScan ; _thlItr <= _maxScan ; _thlItr += _stepScan ) {
 
-				//cout << "THL : " << i << endl;
+				QString thlLabelS;
+				thlLabelS = QString::number( _thlItr, 'd', 0 );
+				// Send signal to Labels.  Making connections one by one.
+				connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
+				fillText( thlLabelS );
+				disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
 
-				_spidrcontrol->setDac( deviceIndex, dac_code, i );
-				//_spidrcontrol->writeDacs( _deviceIndex );
+				// Set Dac
+				spidrcontrol->setDac( _deviceIndex, _dac_code, _thlItr );
+				// Adjust the sliders and the SpinBoxes to the new value
+				connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+				// Get the DAC back just to be sure and then slide&spin
+				int dacVal = 0;
+				spidrcontrol->getDac( _deviceIndex, _dac_code, &dacVal);
+				// SlideAndSpin works with the DAC index, no the code.
+				int dacIndex = _mpx3gui->GetUI()->DACsWidget->GetDACIndex( _dac_code );
+				slideAndSpin( dacIndex,  dacVal );
+				disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
 
 				// Start the trigger as configured
-				_spidrcontrol->startAutoTrigger();
+				spidrcontrol->startAutoTrigger();
+				//StartAutoTriggerSignal();
 				Sleep( 50 );
 
 				// See if there is a frame available
 				// I should get as many frames as triggers
 
-				while ( _spidrdaq->hasFrame() ) {
+				while ( _spidrdaq->hasFrame() ) { //HasFrameSignal(_thlItr) ) {
+					// if HasFrameSignal(_thlItr) is true there will be a signal back
+					// which will process the given frame
 
 					int size_in_bytes = -1;
-					data = _spidrdaq->frameData(0, &size_in_bytes);
+					_data = _spidrdaq->frameData(0, &size_in_bytes);
 
-					pixelReactiveInScan += ExtractScanInfo( data, size_in_bytes, i );
+					_pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes, _thlItr );
 
-					_spidrdaq->releaseFrame();
-					Sleep( 10 ); // Allow time to get and decode the next frame, if any
+					//ReleaseFrameSignal();
+					//Sleep( 10 ); // Allow time to get and decode the next frame, if any
 
 					// Report to heatmap
-					_heatmap->addData(data, 256, 256); // Add a new plot/frame.
-					_heatmap->setActive(frameId++); // Activate the last plot (the new one)
+					UpdateHeatMapSignal(256, 256);
+
+					//_heatmap->addData(data, 256, 256); // Add a new plot/frame.
+					//_heatmap->setActive(_frameId++); // Activate the last plot (the new one)
 					//_heatmap->setData( data, 256, 256 );
 
 					// Last scan boundaries
 					// This information could be useful for a next scan
-					if ( i < _detectedScanBoundary_L ) _detectedScanBoundary_L = i;
-					if ( i > _detectedScanBoundary_H ) _detectedScanBoundary_H = i;
+					if ( _thlItr < _detectedScanBoundary_L ) _detectedScanBoundary_L = _thlItr;
+					if ( _thlItr > _detectedScanBoundary_H ) _detectedScanBoundary_H = _thlItr;
+
+					//
+					_spidrdaq->releaseFrame();
+					Sleep(10);
 
 				}
+				//Sleep(10);
 
 				// Report to graph
-				if ( !blindScan ) UpdateChart(setId, i);
+				//cout << _setId << "," << _thlItr << endl;
+				if ( !_blindScan ) UpdateChartSignal(_setId, _thlItr);
 
-
+				/*
+				// FIXME
 				// FIXME
 				// If the scan has reached the total number of pixels expected to react. Stop.
-				int expectedInScan = __matrix_size / ( spacing*spacing );
 				//if ( pixelReactiveInScan % expectedInScan == 0 && pixelReactiveInScan > 0 ) {
 				//	finishScan = true;
 				//	cout << "[INFO] All pixels in round found active. Scan stops at THL = " << i << endl;
@@ -186,23 +263,38 @@ void ThlScan::DoScan(int dac_code, int setId, int numberOfLoops, bool blindScan)
 				// See if this is a scan which can be aloud to truncate.
 				// Useful in certain cases like DiscL optimization
 				if ( _stopWhenPlateau ) {
-					if ( (double)pixelReactiveInScan > (double)expectedInScan*0.99 ) {
+					if ( (double)_pixelReactiveInScan > (double)expectedInOneThlLoop*0.99 ) {
 						finishTHLLoop = true;
-						cout << "[INFO] Truncate scan. 99% reached. Scan stops at THL = " << i << endl;
+						cout << "[INFO] Truncate scan. 99% reached. Scan stops at THL = " << _thlItr << endl;
 					}
+				}
+				 */
+
+				QString reactiveLabelS;
+				reactiveLabelS = QString::number( _pixelReactiveInScan, 'd', 0 );
+				// Send signal to Labels.  Making connections one by one.
+				connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelNPixelsReactive, SLOT( setText(QString)) );
+				fillText( reactiveLabelS );
+				disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelNPixelsReactive, SLOT( setText(QString)) );
+
+
+				// If done with all pixels
+				if ( _pixelReactiveInScan == expectedInOneThlLoop ) {
+					finishTHLLoop = true;
 				}
 
 				if( finishScan ) break;
 				if( finishTHLLoop ) break;
+
 			}
 
-			// Try to resize to min max the X axis here
-			//_chart->GetBarChartProperties()->max_x[0] = 200;
 
 			// A full spacing loop has been achieved here
 			processedLoops++;
-			if( numberOfLoops > 0 && numberOfLoops == processedLoops ) finishScan = true;
+			if( _numberOfLoops > 0 && _numberOfLoops == processedLoops ) finishScan = true;
 			if( finishScan ) break;
+
+
 		}
 		if( finishScan ) break;
 	}
@@ -211,9 +303,54 @@ void ThlScan::DoScan(int dac_code, int setId, int numberOfLoops, bool blindScan)
 	// Scan finished
 
 	// Here's on Scan completed.  Do the stats on it.
-	ExtractStatsOnChart(setId);
+	//ExtractStatsOnChart(_setId);
+
+	// Signals to draw out of the thread
+	disconnect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
+	disconnect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
+
+	delete spidrcontrol;
+}
+
+void ThlScan::ExtractStatsOnChart(int setId) {
+
+	double weigtedSum = 0.;
+	double weights = 0.;
+	// Normalization value (p val) used later when calculating the variance
+	double norm_val = 0.;
+	// Calculate the weighted arithmetic mean and standard deviation
+	QCPBarDataMap * dataSet = _chart->GetDataSet( setId )->data();
+	QCPBarDataMap::iterator i = dataSet->begin();
+
+	for( ; i != dataSet->end() ; i++) {
+
+		if( (*i).value != 0 ) {
+			weigtedSum += ( (*i).key * (*i).value );
+			weights += (*i).value;
+
+			norm_val += (*i).value;
+		}
+	}
+	norm_val = 1. / norm_val;
+
+	if ( weights != 0.) _results.weighted_arithmetic_mean = weigtedSum / weights;
+	else _results.weighted_arithmetic_mean = 0.;
+
+	// Rewind the iterator and get the sigma
+	// I need to weight the sigmas first
+
+	i = dataSet->begin();
+	for( ; i != dataSet->end() ; i++) {
+		_results.sigma += ( (*i).value * norm_val ) * (
+				( (*i).key - _results.weighted_arithmetic_mean )
+				*
+				( (*i).key - _results.weighted_arithmetic_mean )
+		);
+	}
+	_results.sigma = sqrt( _results.sigma );
 
 }
+
 
 int ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
 
@@ -221,6 +358,7 @@ int ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
 	int pixelsActive = 0;
 	// Each 32 bits corresponds to the counts in each pixel already
 	// in 'int' representation as the decoding has been requested
+
 	for(int i = 0 ; i < nPixels ; i++) {
 
 		// I checked that the entry is not zero, and also that is not in the maskedMap
@@ -378,7 +516,37 @@ int ThlScan::ReAdjustPixelsOff(double N, int dac_code) {
 	return adjustedPixels;
 }
 
+void ThlScan::UpdateHeatMap(int sizex, int sizey) {
+
+	//_heatmap->addData(_data, sizex, sizey);	// Add a new plot/frame.
+	_heatmap->setData( _data, sizex, sizey);
+	//_heatmap->setActive(_frameId++); 		// Activate the last plot (the new one)
+
+}
+
 void ThlScan::UpdateChart(int setId, int thlValue) {
+
+	map<int, int>::iterator itr = _pixelCountsMap.begin();
+	map<int, int>::iterator itrE = _pixelCountsMap.end();
+
+	// I am going to plot for this threshold the number of
+	//  pixels which reached _nTriggers counts.  The next time
+	//  they won't be considered.
+	int cntr = 0;
+	for( ; itr != itrE ; itr++ ) {
+
+		if( (*itr).second ==  _equalization->GetNTriggers() ) {
+			cntr++;
+			(*itr).second++; // This way we avoid re-ploting next time. The value _nTriggers+1 identifies these pixels
+		}
+
+	}
+
+	_chart->SetValueInSet( setId , thlValue, cntr );
+
+}
+
+void ThlScan::UpdateChart(int thlValue) {
 
 	map<int, int>::iterator itr = _pixelCountsMap.begin();
 	map<int, int>::iterator itrE = _pixelCountsMap.end();
@@ -396,57 +564,20 @@ void ThlScan::UpdateChart(int setId, int thlValue) {
 
 	}
 
-	_chart->SetValueInSet( setId , thlValue, cntr );
+	_chart->SetValueInSet( _setId , thlValue, cntr );
 
 }
 
-void ThlScan::ExtractStatsOnChart(int setId) {
 
-	double weigtedSum = 0.;
-	double weights = 0.;
-	// Normalization value (p val) used later when calculating the variance
-	double norm_val = 0.;
-	// Calculate the weighted arithmetic mean and standard deviation
-	QCPBarDataMap * dataSet = _chart->GetDataSet( setId )->data();
-	QCPBarDataMap::iterator i = dataSet->begin();
-
-	for( ; i != dataSet->end() ; i++) {
-
-		if( (*i).value != 0 ) {
-			weigtedSum += ( (*i).key * (*i).value );
-			weights += (*i).value;
-
-			norm_val += (*i).value;
-		}
-	}
-	norm_val = 1. / norm_val;
-
-	if ( weights != 0.) _results.weighted_arithmetic_mean = weigtedSum / weights;
-	else _results.weighted_arithmetic_mean = 0.;
-
-	// Rewind the iterator and get the sigma
-	// I need to weight the sigmas first
-
-	i = dataSet->begin();
-	for( ; i != dataSet->end() ; i++) {
-		_results.sigma += ( (*i).value * norm_val ) * (
-				( (*i).key - _results.weighted_arithmetic_mean )
-				*
-				( (*i).key - _results.weighted_arithmetic_mean )
-		);
-	}
-	_results.sigma = sqrt( _results.sigma );
-
-}
 
 /**
  * Create and apply the mask with a given spacing
  *
  */
-int ThlScan::SetEqualizationMask(int spacing, int offset_x, int offset_y) {
+int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int spacing, int offset_x, int offset_y) {
 
 	// Clear previous mask.  Not sending the configuration yet !
-	ClearMask(false);
+	ClearMask(spidrcontrol, false);
 
 	for (int i = 0 ; i < __array_size_x ; i++) {
 
@@ -457,7 +588,7 @@ int ThlScan::SetEqualizationMask(int spacing, int offset_x, int offset_y) {
 			for (int j = 0 ; j < __array_size_y ; j++) {
 
 				if( (j + offset_y) % spacing != 0 ) { // This one should be masked
-					_spidrcontrol->setPixelMaskMpx3rx(i, j);
+					spidrcontrol->setPixelMaskMpx3rx(i, j);
 					_maskedSet.insert( XYtoX(i, j, __array_size_x ) );
 				} // leaving unmasked (j + offset_x) % spacing == 0
 
@@ -465,7 +596,7 @@ int ThlScan::SetEqualizationMask(int spacing, int offset_x, int offset_y) {
 
 		} else { // mask the entire column
 			for (int j = 0 ; j < __array_size_y ; j++) {
-				_spidrcontrol->setPixelMaskMpx3rx(i, j);
+				spidrcontrol->setPixelMaskMpx3rx(i, j);
 				_maskedSet.insert( XYtoX(i, j, __array_size_x ) );
 			}
 		}
@@ -473,22 +604,22 @@ int ThlScan::SetEqualizationMask(int spacing, int offset_x, int offset_y) {
 	}
 
 	// And send the configuration
-	_spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
+	spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
 
 	//cout << "N masked = " << _maskedSet.size() << endl;
 
 	return (int) _maskedSet.size();
 }
 
-void ThlScan::ClearMask(bool sendToChip){
+void ThlScan::ClearMask(SpidrController * spidrcontrol, bool sendToChip){
 
 	for (int i = 0 ; i < __array_size_x ; i++) {
 		for (int j = 0 ; j < __array_size_y ; j++) {
-			_spidrcontrol->setPixelMaskMpx3rx(i, j, false);
+			spidrcontrol->setPixelMaskMpx3rx(i, j, false);
 		}
 	}
 	// And send the configuration
-	if ( sendToChip ) _spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
+	if ( sendToChip ) spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
 
 	_maskedSet.clear();
 };
