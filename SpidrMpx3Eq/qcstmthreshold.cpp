@@ -66,7 +66,8 @@ void QCstmThreshold::StartCalibration() {
 	int deviceIndex = 2;
 
 	int pixelsReactive = 0;
-
+	if(ui->sumCheckbox->isChecked())
+	  ui->plot->clearGraphs();
 	for(int itr = minScan ; itr <= maxScan ; itr += stepScan ) {
 
 		//cout << itr << endl;
