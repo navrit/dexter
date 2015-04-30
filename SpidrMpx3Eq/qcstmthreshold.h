@@ -4,7 +4,7 @@
 #include "mpx3gui.h"
 
 #include <QWidget>
-
+#include <QPointF>
 
 namespace Ui {
 class QCstmThreshold;
@@ -29,6 +29,9 @@ private:
   Mpx3GUI * _mpx3gui;
   void addFrame(QPoint offset, int layer, int*data);
   int getActiveTargetCode();
+  void setPoint(QPointF data, int plot);
+  void addPoint(QPointF data, int plot);
+  double getPoint(int x, int plot);
 
 	int * _data;
 

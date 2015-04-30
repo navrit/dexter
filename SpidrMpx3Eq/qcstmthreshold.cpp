@@ -1,7 +1,7 @@
 #include "qcstmthreshold.h"
 #include "ui_qcstmthreshold.h"
 #include  "qcstmdacs.h"
-
+#include <iterator>
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 
@@ -184,3 +184,24 @@ void QCstmThreshold::addFrame(QPoint offset, int layer, int* data){
   ui->framePlot->rescaleAxes();
 }
 
+void QCstmThreshold::setPoint(QPointF data, int plot){
+  while(plot >= ui->plot->graphCount())
+    ui->plot->addGraph();
+  ui->plot->graph(plot)->removeData(data.x());
+  ui->plot->graph(plot)->addData(data.x(), data.y());
+  ui->plot->rescaleAxes();
+  ui->plot->replot();
+}
+
+double QCstmThreshold::getPoint(int x, int plot){
+  if(plot >= ui->plot->graphCount())
+    return 0;
+  ui->plot->graph(plot)->data()->find(x);
+  if(ui->plot->graph(plot)->data()->find(x) == ui->plot->graph(plot)->data()->end())
+    return 0;
+  return ui->plot->graph(plot)->data()->find(x).value().value;
+}
+
+void QCstmThreshold::addPoint(QPointF data, int plot){
+  return setPoint(QPointF(data.x(), data.y()+getPoint(data.x(),plot)), plot);
+}
