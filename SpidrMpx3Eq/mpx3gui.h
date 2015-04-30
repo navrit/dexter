@@ -119,7 +119,6 @@ signals:
 	void set_mode_normal();
 	void clear_configuration();
 	void set_summing(bool);
-	void start_data_taking();
 public slots:
 	void set_active_frame(int);
 private slots:

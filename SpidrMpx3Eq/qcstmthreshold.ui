@@ -41,7 +41,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="sumChekcbox">
+          <widget class="QCheckBox" name="sumCheckbox">
            <property name="text">
             <string>Sum</string>
            </property>

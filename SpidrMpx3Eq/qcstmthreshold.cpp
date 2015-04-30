@@ -101,7 +101,10 @@ void QCstmThreshold::StartCalibration() {
 			}
 
 			// plot
-			setPoint( QPointF(itr, cntr), 0);
+			if(ui->sumCheckbox->isChecked())
+			  addPoint(QPointF(itr, cntr),0);
+			else
+			  setPoint( QPointF(itr, cntr), 0);
 
 			pixelsReactive += ExtractScanInfo( _data, size_in_bytes, itr );
 

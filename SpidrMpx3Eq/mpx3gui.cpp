@@ -417,30 +417,3 @@ void Mpx3GUI::clear_data(){
 
 QCstmEqualization * Mpx3GUI::getEqualization(){return _ui->equalizationWidget;}
 QCstmGLVisualization * Mpx3GUI::getVisualization() { return _ui->visualizationGL; }
-
-void Mpx3GUI::start_data_taking(){
-  SpidrController * spidrcontrol = this->GetSpidrController();
-  SpidrDaq * spidrdaq = this->GetSpidrDaq();
-
-  cout << "Acquiring ... ";
-
-  // Start the trigger as configured
-  spidrcontrol->startAutoTrigger();//getNTriggers
-  Sleep( 50 );
-  // See if there is a frame available
-  // I should get as many frames as triggers
-  int * framedata;
-  while ( spidrdaq->hasFrame() ) {
-      //cout << "capture ..." << endl;
-      int size_in_bytes = -1;
-      framedata = spidrdaq->frameData(0, &size_in_bytes);
-
-      addLayer( framedata );
-
-      spidrdaq->releaseFrame();
-      Sleep( 10 ); // Allow time to get and decode the next frame, if any
-    }
-
-  cout << "done." << endl;
-
-}
