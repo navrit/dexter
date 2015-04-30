@@ -106,7 +106,7 @@ SpidrController * Mpx3GUI::GetSpidrController(){
 }
 
 void Mpx3GUI::LoadEqualization(){
-  _equalization->LoadEqualization();
+  _ui->equalizationWidget->LoadEqualization();
 }
 
 void Mpx3GUI::SetupSignalsAndSlots(){
@@ -120,14 +120,14 @@ void Mpx3GUI::SetupSignalsAndSlots(){
   connect(_ui->actionDiscrete, SIGNAL(triggered()), this, SLOT(set_mode_normal()));
 
   connect(_ui->actionSave_data, SIGNAL(triggered()), this, SLOT(save_data()));
-  connect(_ui->actionSave_Equalization, SIGNAL(triggered()), _equalization, SLOT(SaveEqualization()));
+  connect(_ui->actionSave_Equalization, SIGNAL(triggered()), _ui->equalizationWidget, SLOT(SaveEqualization()));
   connect(_ui->actionOpen_data, SIGNAL(triggered()), this, SLOT(open_data()));
   connect(_ui->actionClear_data, SIGNAL(triggered()), this, SLOT(clear_data()));
   connect(_ui->actionClear_configuration, SIGNAL(triggered()), this, SLOT(clear_configuration()) );
 
   // Inform every module of changes in connection status
   connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged() ) );
-  connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _equalization, SLOT( ConnectionStatusChanged() ) );
+  connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged() ) );
   connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged() ) );
 
 }
@@ -355,12 +355,12 @@ void Mpx3GUI::clear_configuration(){
   if ( ans == QMessageBox::No ) return;
 
   bool noEqualization = false;
-  if ( _equalization ) {
-      if ( _equalization->GetEqualizationResults() ) {
+  if ( _ui->equalizationWidget ) {
+      if ( _ui->equalizationWidget->GetEqualizationResults() ) {
 
           cout << "[INFO] clearing adjustment bits and mask." << endl;
 
-          _equalization->ClearAllAdjustmentBits();
+          _ui->equalizationWidget->ClearAllAdjustmentBits();
 
         } else {
           noEqualization = true;
@@ -381,6 +381,8 @@ void Mpx3GUI::clear_data(){
   hists.clear();
   emit(data_cleared());
 }
+
+QCstmEqualization * Mpx3GUI::getEqualization(){return _ui->equalizationWidget;}
 
 void Mpx3GUI::start_data_taking(){
   SpidrController * spidrcontrol = this->GetSpidrController();

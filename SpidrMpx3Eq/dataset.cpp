@@ -14,9 +14,11 @@ Dataset::~Dataset()
 }
 
 void Dataset::computeBoundingBox(){
-  m_boundingBox.setRect(0,0,0,0);
-  //for(int i =0; i < m_frameLayouts.length();i++)
-    //if(boundingBo)
+  /*m_boundingBox.setRect(0,0,0,0);
+  for(int i =0; i < m_frameLayouts.length();i++){
+    if(!m_boundingBox.contains(m_frameLayouts[i])){
+        m_boundingBox.united()
+      }*/
 }
 
 /*void Dataset::addFrames(QVector<int *> frames){

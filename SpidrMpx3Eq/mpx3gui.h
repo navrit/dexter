@@ -26,6 +26,7 @@ class Mpx3Config;
 #include "qcstmvoxeltab.h"
 #include "mpx3config.h"
 
+
 #define __matrix_size_x 256
 #define __matrix_size_y 256
 class Mpx3Config;
@@ -60,14 +61,6 @@ private:
 	Ui::Mpx3GUI * _ui;
 	Mpx3Config *config;
 
-	// Each object here deals with one tab of the
-	// Equalization
-	QCstmEqualization * _equalization = nullptr;
-	// DACs
-	//DACs * _dacs = nullptr;
-
-	// This helps interconnecting the different modules
-	//SpidrController * _spidrcontrol = nullptr;
 	SpidrDaq * _spidrdaq = nullptr;
 
 	Dataset *workingSet;
@@ -76,7 +69,7 @@ private:
 public:
 	Mpx3Config* getConfig();
 	Dataset* getDataset(){return workingSet;}
-	QCstmEqualization * getEqualization(){return _equalization;}
+	QCstmEqualization * getEqualization();
 	SpidrController * GetSpidrController();
 	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
 	void addFrame(int *frame, int index, int layer);
