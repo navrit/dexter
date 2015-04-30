@@ -30,7 +30,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
   // Instantiate everything in the UI
   _ui->setupUi(this);
   config = new Mpx3Config;
-  workingSet = new Dataset(16,16, 4);
+  workingSet = new Dataset(512,512, 4);
   //workingSet->setFramesPerGroup(1,1)
   workingSet->setOrientation(0, Dataset::orientationLtRTtB);
   workingSet->setOrientation(1, Dataset::orientationRtLBtT);

@@ -25,7 +25,8 @@ private:
   Ui::QCstmThreshold *ui;
   // Connectivity between modules
   Mpx3GUI * _mpx3gui;
-  void addFrame(QPoint offset, int layer, QVector<int> data);
+  void addFrame(QPoint offset, int layer, int*data);
+  int getActiveTargetCode();
 
 private slots:
 

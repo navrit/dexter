@@ -21,7 +21,7 @@
        <string>DAC Control</string>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QCstmGLVisualization" name="visualizationGL">
        <attribute name="title">
@@ -29,25 +29,17 @@
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_6"/>
       </widget>
-      <widget class="QWidget" name="DACsTab">
+      <widget class="QCstmDacs" name="DACsWidget">
        <attribute name="title">
         <string>DACs</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_13">
-        <item>
-         <widget class="QCstmDacs" name="DACsWidget" native="true"/>
-        </item>
-       </layout>
+       <layout class="QHBoxLayout" name="horizontalLayout_13"/>
       </widget>
-      <widget class="QWidget" name="EqualizationTab">
+      <widget class="QCstmEqualization" name="equalizationWidget">
        <attribute name="title">
         <string>Equalization</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_12">
-        <item>
-         <widget class="QCstmEqualization" name="equalizationWidget" native="true"/>
-        </item>
-       </layout>
+       <layout class="QHBoxLayout" name="horizontalLayout_12"/>
       </widget>
       <widget class="QCstmConfigMonitoring" name="CnMWidget">
        <attribute name="title">

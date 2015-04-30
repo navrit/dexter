@@ -147,7 +147,6 @@ class QCstmDacs : public QWidget {
 
 public:
 
-	explicit QCstmDacs();
 	explicit QCstmDacs(QWidget *parent = 0);
 	//explicit QCstmDacs(QApplication * coreApp, Ui::Mpx3GUI * );
 	~QCstmDacs();

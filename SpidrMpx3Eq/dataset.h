@@ -4,6 +4,7 @@
 #include <QVector>
 #include <QSet>
 #include <QPoint>
+#include <QRect>
 
 class Dataset//TODO: specify starting corner?
 {
@@ -23,6 +24,7 @@ class Dataset//TODO: specify starting corner?
 private:
   int m_activeFrame = -1;
   int m_nx, m_ny;
+  QRect m_boundingBox;
   int m_nFrames =1 , m_tilingMode;
   QVector<int> m_frameOrientation;
   QVector<float>  m_Thresholds;
@@ -33,9 +35,11 @@ private:
   QVector<int> m_thresholds;
   QVector<int*> m_layers;
   void resizeContainers();
+  void computeBoundingBox();
 public:
   Dataset(int x, int y, int framesPerLayer = 1, int layers = 0);
   ~Dataset();
+  QRect getBoundingBox();
   void setLayerCount(int nLayers);
   void setOrientation(QVector<int> orientations){for(int i = 0; i < orientations.length();i++)setOrientation(i, orientations[i]);}
   void setOrientation(int index, int orientation){m_frameOrientation[index] = orientation;}

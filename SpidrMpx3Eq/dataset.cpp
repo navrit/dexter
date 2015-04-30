@@ -13,6 +13,12 @@ Dataset::~Dataset()
     delete[] m_layers.at(i);
 }
 
+void Dataset::computeBoundingBox(){
+  m_boundingBox.setRect(0,0,0,0);
+  //for(int i =0; i < m_frameLayouts.length();i++)
+    //if(boundingBo)
+}
+
 /*void Dataset::addFrames(QVector<int *> frames){
   for(int i = 0; i < frames.length(); i++)
     this->addFrame(frames[i]);
