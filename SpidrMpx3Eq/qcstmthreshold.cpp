@@ -33,9 +33,9 @@ QCstmThreshold::QCstmThreshold(QWidget *parent) :  QWidget(parent),  ui(new Ui::
 	QCPColorScale *colorScale = new QCPColorScale(ui->framePlot);
 	ui->framePlot->plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
 	colorScale->setType(QCPAxis::atRight); // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
-  for(int i = 0; i < MPX3RX_DAC_COUNT;i++){
-      ui->scanTargetComboBox->addItem(MPX3RX_DAC_TABLE[i].name);
-    }
+	for(int i = 0; i < MPX3RX_DAC_COUNT;i++){
+		ui->scanTargetComboBox->addItem(MPX3RX_DAC_TABLE[i].name);
+	}
 }
 
 QCstmThreshold::~QCstmThreshold()
@@ -44,10 +44,14 @@ QCstmThreshold::~QCstmThreshold()
 }
 
 int QCstmThreshold::getActiveTargetCode(){
-  return MPX3RX_DAC_TABLE[ui->scanTargetComboBox->currentIndex()-1].code;
+	return MPX3RX_DAC_TABLE[ui->scanTargetComboBox->currentIndex()-1].code;
 }
 
 void QCstmThreshold::StartCalibration() {
+
+	// Configure, no reset
+	_mpx3gui->getVisualization()->Configuration( false );
+
 
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
@@ -65,7 +69,7 @@ void QCstmThreshold::StartCalibration() {
 
 	for(int itr = minScan ; itr <= maxScan ; itr += stepScan ) {
 
-		cout << itr << endl;
+		//cout << itr << endl;
 
 		// Set Dac
 		spidrcontrol->setDac( deviceIndex, dacCodeToScan, itr );
@@ -82,7 +86,7 @@ void QCstmThreshold::StartCalibration() {
 		// Measure
 		// Start the trigger as configured
 		spidrcontrol->startAutoTrigger();
-		Sleep( 50 );
+		Sleep( 100 );
 
 		// See if there is a frame available
 		// I should get as many frames as triggers
@@ -91,24 +95,31 @@ void QCstmThreshold::StartCalibration() {
 
 			int size_in_bytes = -1;
 			_data = spidrdaq->frameData(0, &size_in_bytes);
+			int cntr = 0;
+			for(int i = 0 ; i < size_in_bytes/4 ; i++) {
+				if( _data[i] != 0 ) cntr++;
+			}
+
+			// plot
+			setPoint( QPointF(itr, cntr), 0);
 
 			pixelsReactive += ExtractScanInfo( _data, size_in_bytes, itr );
 
 			// Report to heatmap
-			UpdateHeatMapSignal();
+			//UpdateHeatMapSignal();
 
 			//
 			spidrdaq->releaseFrame();
-			Sleep(10);
+			Sleep(100);
 
 		}
 
-
 	}
-
 
 	disconnect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
 	disconnect( this, SIGNAL( UpdateHeatMapSignal() ), this, SLOT( UpdateHeatMap() ) );
+
+	cout << "[INFO] Scan finished" << endl;
 
 }
 
@@ -140,7 +151,7 @@ int QCstmThreshold::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
 }
 
 void QCstmThreshold::UpdateChart(int setId, int thlValue) {
-/*
+	/*
 	map<int, int>::iterator itr = _pixelCountsMap.begin();
 	map<int, int>::iterator itrE = _pixelCountsMap.end();
 
@@ -158,7 +169,7 @@ void QCstmThreshold::UpdateChart(int setId, int thlValue) {
 	}
 
 	_chart->SetValueInSet( setId , thlValue, cntr );
-*/
+	 */
 }
 
 void QCstmThreshold::UpdateHeatMap() {
@@ -175,13 +186,19 @@ void QCstmThreshold::UpdateHeatMap() {
 
 void QCstmThreshold::addFrame(QPoint offset, int layer, int* data){
 
-  while(layer >= ui->framePlot->plottableCount())
-    ui->framePlot->addPlottable(new QCPColorMap(ui->framePlot->xAxis, ui->framePlot->yAxis));
-  int nx = _mpx3gui->getDataset()->x(),  ny =_mpx3gui->getDataset()->y(); //TODO: grab from config.
-  for(int i = 0; i < ny; i++)
-    for(int j = 0; j < nx; j++)
-      ((QCPColorMap*)ui->framePlot->plottable(layer))->data()->setCell(j+offset.x()*nx,ny-1-i+offset.y()*ny, data[i*nx+j]);
-  ui->framePlot->rescaleAxes();
+	while(layer >= ui->framePlot->plottableCount())
+		ui->framePlot->addPlottable(new QCPColorMap(ui->framePlot->xAxis, ui->framePlot->yAxis));
+	int nx = _mpx3gui->getDataset()->x(),  ny =_mpx3gui->getDataset()->y(); //TODO: grab from config.
+	for(int i = 0; i < ny; i++) {
+		for(int j = 0; j < nx; j++){
+			((QCPColorMap*)ui->framePlot->plottable(layer))->data()->setCell(j+offset.x()*nx, ny-1-i+offset.y()*ny, data[i*nx+j]);
+		}
+	}
+
+	ui->framePlot->rescaleAxes();
+	ui->framePlot->replot();
+	ui->framePlot->repaint();
+
 }
 
 void QCstmThreshold::setPoint(QPointF data, int plot){

@@ -101,7 +101,20 @@ void QCstmEqualization::SetLimits(){
 }
 
 
-void QCstmEqualization::StartEqualization() {
+void QCstmEqualization::StartEqualizationAllChips() {
+
+	// One equalization
+
+	int nChips = _mpx3gui->getFrameCount();
+	for(int i = 0 ; i < nChips ; i++) {
+		_deviceIndex = i;
+		_ui->devIdSpinBox->setValue( _deviceIndex );
+		_eqStatus = __INIT;
+		StartEqualization( i );
+	}
+}
+
+void QCstmEqualization::StartEqualization(int chipId) {
 
 	// I need to do this here and not when already running the thread
 	// Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
@@ -211,7 +224,7 @@ void QCstmEqualization::StartEqualization() {
 		_ui->_intermediatePlot->setActive( 0 );
 
 		// 4) Write the result
-		SaveEqualization();
+		SaveEqualization(chipId);
 
 	}
 
@@ -362,12 +375,17 @@ void QCstmEqualization::DAC_Disc_Optimization (ScanResults res_100, ScanResults 
 
 }
 
-void QCstmEqualization::SaveEqualization() {
+void QCstmEqualization::SaveEqualization(int chipId) {
+
+	QString adjfn = "adj_";
+	adjfn += QString::number(chipId, 10);
+	QString maskfn = "mask_";
+	maskfn += QString::number(chipId, 10);
 
 	// Binary file
-	_eqresults->WriteAdjBinaryFile("adj");
+	_eqresults->WriteAdjBinaryFile( adjfn );
 	// Masked pixels
-	_eqresults->WriteMaskBinaryFile("mask");
+	_eqresults->WriteMaskBinaryFile( maskfn );
 
 }
 
@@ -553,7 +571,7 @@ void QCstmEqualization::ScanThreadFinished(){
 	_eqStatus++;
 	// Now revisit the equalization.
 	// It knows where to pick up.
-	StartEqualization();
+	StartEqualization( _deviceIndex );
 }
 
 
@@ -717,8 +735,13 @@ void QCstmEqualization::LoadEqualization(){
 	if ( _eqresults == 0x0 ) {
 		_eqresults = new Mpx3EqualizationResults;
 	}
+
+	int nChips = _mpx3gui->getFrameCount();
+
+	//for(int i = 0 ; i < )
 	_eqresults->ReadAdjBinaryFile("adj");
 	_eqresults->ReadMaskBinaryFile("mask");
+
 
 
 	// Display the equalization
@@ -735,7 +758,9 @@ void QCstmEqualization::LoadEqualization(){
 
 void QCstmEqualization::SetupSignalsAndSlots() {
 
-	connect( _ui->_startEq, SIGNAL(clicked()), this, SLOT(StartEqualization()) );
+	connect( _ui->_startEq, SIGNAL(clicked()), this, SLOT(StartEqualization(int)) );
+	connect( _ui->_startEqAll, SIGNAL(clicked()), this, SLOT(StartEqualizationAllChips()) );
+
 	connect(_ui->_intermediatePlot, SIGNAL(mouseOverChanged(QString)), _ui->mouseHoveLabel, SLOT(setText(QString)));
 	//_ui->_statusLabel->setStyleSheet("QLabel { background-color : gray; color : black; }");
 	_ui->_histoWidget->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
@@ -784,7 +809,7 @@ void QCstmEqualization::ConnectionStatusChanged() {
 	//_ui->_statusLabel->setStyleSheet("QLabel { background-color : blue; color : white; }");
 
 	// Load the adj bits
-	LoadEqualization();
+	//LoadEqualization();
 
 }
 

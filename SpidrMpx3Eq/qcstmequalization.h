@@ -202,12 +202,13 @@ private:
 	double _cut_Adj_THL;
 
 public slots:
-void SaveEqualization();
+void SaveEqualization( int chipId );
 
 private slots:
 
 void ScanThreadFinished();
-void StartEqualization();
+void StartEqualization(int chipId);
+void StartEqualizationAllChips();
 void ChangeNTriggers(int);
 void ChangeDeviceIndex(int);
 void ChangeSpacing(int);
