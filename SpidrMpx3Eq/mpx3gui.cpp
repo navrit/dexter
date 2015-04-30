@@ -36,14 +36,14 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
   //workingSet->setFramesPerGroup(1,1)
   workingSet->setOrientation(0, Dataset::orientationLtRTtB);
-  /*workingSet->setOrientation(1, Dataset::orientationRtLBtT);
+  workingSet->setOrientation(1, Dataset::orientationRtLBtT);
   workingSet->setOrientation(2, Dataset::orientationTtBLtR);
   workingSet->setOrientation(3, Dataset::orientationRtLTtB);
 
   workingSet->setLayout(0, QPoint(0,0));
   workingSet->setLayout(1, QPoint(1,0));
   workingSet->setLayout(2, QPoint(0,1));
-  workingSet->setLayout(3, QPoint(1,1));*/
+  workingSet->setLayout(3, QPoint(1,1));
   gradients = Gradient::fromJsonFile("./config/heatmaps.json");
   QStringList gradientNames;
   for(int i = 0; i < gradients.length();i++)
@@ -93,11 +93,15 @@ void Mpx3GUI::addLayer(int *data){
   return addLayer(data, -1);
 }
 
-void Mpx3GUI::addLayer(int *data, int layer){
+void Mpx3GUI::reloadLayer(int layer){
+ updateHistogram(layer);
+ emit frame_added();
+}
+
+void Mpx3GUI::updateHistogram(int layer){
   if(mode == 1){
-      workingSet->addLayer(data, layer);
       if(hists.length() == 0){
-          hists.push_back(new histogram(data,workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
+          hists.push_back(new histogram(workingSet->getLayer(-1),workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
           emit hist_added();
         }
       else{
@@ -110,10 +114,19 @@ void Mpx3GUI::addLayer(int *data, int layer){
         }
     }
   else{
-      workingSet->setLayer(data, layer);
-      hists.push_back(new histogram(data,workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
+      hists.push_back(new histogram(workingSet->getLayer(-1),workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
       emit hist_added();
     }
+}
+
+void Mpx3GUI::addLayer(int *data, int layer){
+  if(mode == 1){
+      workingSet->addLayer(data, layer);
+    }
+  else{
+      workingSet->setLayer(data, layer);
+    }
+  updateHistogram(layer);
   emit frame_added();
 }
 

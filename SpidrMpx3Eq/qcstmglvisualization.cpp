@@ -16,94 +16,97 @@ QCstmGLVisualization::~QCstmGLVisualization()
 }
 
 void QCstmGLVisualization::StartDataTaking(){
-	Configuration( false );
+  Configuration( false );
 
-	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+  SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+  SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
-	cout << "Acquiring ... ";
+  cout << "Acquiring ... ";
 
-	// Start the trigger as configured
-	spidrcontrol->startAutoTrigger();//getNTriggers
-	Sleep( 50 );
-	// See if there is a frame available
-	// I should get as many frames as triggers
-	int * framedata;
-	while ( spidrdaq->hasFrame() ) {
-		//cout << "capture ..." << endl;
-		int size_in_bytes = -1;
-		framedata = spidrdaq->frameData(0, &size_in_bytes);
-		_mpx3gui->addLayer(framedata);
-		//_mpx3gui->getDataset()->setLayer(framedata,0);
-		spidrdaq->releaseFrame();
-		Sleep( 10 ); // Allow time to get and decode the next frame, if any
-	}
+  // Start the trigger as configured
+  spidrcontrol->startAutoTrigger();//getNTriggers
+  Sleep( 50 );
+  // See if there is a frame available
+  // I should get as many frames as triggers
+  int * framedata;
+  while ( spidrdaq->hasFrame() ) {
+      //cout << "capture ..." << endl;
+      int size_in_bytes = -1;
+      for(int i = 0; i < _mpx3gui->getDataset()->getFrameCount(); i++){
+          framedata = spidrdaq->frameData(i, &size_in_bytes);
+          _mpx3gui->getDataset()->addFrame(framedata, i,-1);
+        }
+      //_mpx3gui->getDataset()->setLayer(framedata,0);
+      spidrdaq->releaseFrame();
+      _mpx3gui->reloadLayer(-1);
+      Sleep( 10 ); // Allow time to get and decode the next frame, if any
+    }
 
-	cout << "done." << endl;
+  cout << "done." << endl;
 
 }
 void QCstmGLVisualization::ConnectionStatusChanged() {
 
-	ui->startButton->setEnabled(true); //Enable or disable the button depending on the connection status.
+  ui->startButton->setEnabled(true); //Enable or disable the button depending on the connection status.
 
-	// TODO
-	// Configure the chip, provided that the Adj mask is loaded
-	//Configuration( false );
+  // TODO
+  // Configure the chip, provided that the Adj mask is loaded
+  //Configuration( false );
 
 }
 
 void QCstmGLVisualization::Configuration(bool reset) {//TODO: should be part of parent?
 
-	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+  SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+  SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
-	int deviceIndex = 1;
-	int nTriggers = 100;
+  int deviceIndex = 1;
+  int nTriggers = 100;
 
-	// Reset pixel configuration
-	if ( reset ) spidrcontrol->resetPixelConfig();
+  // Reset pixel configuration
+  if ( reset ) spidrcontrol->resetPixelConfig();
 
-	// All adjustment bits to zero
-	//SetAllAdjustmentBits(0x0, 0x0);
+  // All adjustment bits to zero
+  //SetAllAdjustmentBits(0x0, 0x0);
 
-	// OMR
-	//spidrcontrol->setPolarity( true );		// Holes collection
-	//_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
-	//_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
+  // OMR
+  //spidrcontrol->setPolarity( true );		// Holes collection
+  //_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
+  //_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
 
-	spidrcontrol->setColourMode( deviceIndex, _mpx3gui->getConfig()->getColourMode() ); // false 	// Fine Pitch
-	spidrcontrol->setCsmSpm( deviceIndex, _mpx3gui->getConfig()->getCsmSpm() ); // 0 );				// Single Pixel mode
+  spidrcontrol->setColourMode( deviceIndex, _mpx3gui->getConfig()->getColourMode() ); // false 	// Fine Pitch
+  spidrcontrol->setCsmSpm( deviceIndex, _mpx3gui->getConfig()->getCsmSpm() ); // 0 );				// Single Pixel mode
 
-	// Particular for Equalization
-	//spidrcontrol->setEqThreshH( deviceIndex, true );
-	//spidrcontrol->setDiscCsmSpm( deviceIndex, 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
-	//_spidrcontrol->setGainMode( 1 );
+  // Particular for Equalization
+  //spidrcontrol->setEqThreshH( deviceIndex, true );
+  //spidrcontrol->setDiscCsmSpm( deviceIndex, 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
+  //_spidrcontrol->setGainMode( 1 );
 
-	// Gain ?!
-	// 00: SHGM  0
-	// 10: HGM   2
-	// 01: LGM   1
-	// 11: SLGM  3
-	spidrcontrol->setGainMode( deviceIndex, _mpx3gui->getConfig()->getGainMode() ); // 2 );
+  // Gain ?!
+  // 00: SHGM  0
+  // 10: HGM   2
+  // 01: LGM   1
+  // 11: SLGM  3
+  spidrcontrol->setGainMode( deviceIndex, _mpx3gui->getConfig()->getGainMode() ); // 2 );
 
-	// Other OMR
-	spidrdaq->setDecodeFrames(  _mpx3gui->getConfig()->getDecodeFrames() ); //  true );
-	spidrcontrol->setPixelDepth( deviceIndex,  _mpx3gui->getConfig()->getPixelDepth() );
-	spidrdaq->setPixelDepth( _mpx3gui->getConfig()->getPixelDepth() );
-	spidrcontrol->setMaxPacketSize( _mpx3gui->getConfig()->getMaxPacketSize() );
+  // Other OMR
+  spidrdaq->setDecodeFrames(  _mpx3gui->getConfig()->getDecodeFrames() ); //  true );
+  spidrcontrol->setPixelDepth( deviceIndex,  _mpx3gui->getConfig()->getPixelDepth() );
+  spidrdaq->setPixelDepth( _mpx3gui->getConfig()->getPixelDepth() );
+  spidrcontrol->setMaxPacketSize( _mpx3gui->getConfig()->getMaxPacketSize() );
 
-	// Write OMR ... i shouldn't call this here
-	//_spidrcontrol->writeOmr( 0 );
+  // Write OMR ... i shouldn't call this here
+  //_spidrcontrol->writeOmr( 0 );
 
-	// Trigger config
-	int trig_mode      = _mpx3gui->getConfig()->getTriggerMode();     // Auto-trigger mode = 4
-	int trig_length_us = _mpx3gui->getConfig()->getTriggerLength();  // This time shouldn't be longer than the period defined by trig_freq_hz
-	int trig_freq_hz   = (int) ( 1. / (2.*((double)trig_length_us/1000000.)) );   // Make the period double the trig_len
-	cout << "[INFO] Configured freq is " << trig_freq_hz << "Hz" << endl;
-	int nr_of_triggers = _mpx3gui->getConfig()->getNTriggers();    // This is the number of shutter open i get
-	//int trig_pulse_count;
-	spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
-			trig_freq_hz, nr_of_triggers );
+  // Trigger config
+  int trig_mode      = _mpx3gui->getConfig()->getTriggerMode();     // Auto-trigger mode = 4
+  int trig_length_us = _mpx3gui->getConfig()->getTriggerLength();  // This time shouldn't be longer than the period defined by trig_freq_hz
+  int trig_freq_hz   = (int) ( 1. / (2.*((double)trig_length_us/1000000.)) );   // Make the period double the trig_len
+  cout << "[INFO] Configured freq is " << trig_freq_hz << "Hz" << endl;
+  int nr_of_triggers = _mpx3gui->getConfig()->getNTriggers();    // This is the number of shutter open i get
+  //int trig_pulse_count;
+  spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
+                                         trig_freq_hz, nr_of_triggers );
 
 }
 
@@ -204,45 +207,45 @@ void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
   if(!_mpx3gui->getConfig()->isConnected())
     return;
   if(selectedItem == &mask)
-      //_mpx3gui->getDataset()->addMask(pixel);
-     _mpx3gui->getEqualization()->GetEqualizationResults()->maskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());
+    //_mpx3gui->getDataset()->addMask(pixel);
+    _mpx3gui->getEqualization()->GetEqualizationResults()->maskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());
   else if(selectedItem == &unmask)
-      //_mpx3gui->getDataset()->removeMask(pixel);
-      _mpx3gui->getEqualization()->GetEqualizationResults()->unmaskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());
+    //_mpx3gui->getDataset()->removeMask(pixel);
+    _mpx3gui->getEqualization()->GetEqualizationResults()->unmaskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());
   //_mpx3gui->getDataset()->loadAdjustments();
   _mpx3gui->getEqualization()->SetAllAdjustmentBits( );//TODO: integrate into dataset
 }
 
 void QCstmGLVisualization::on_percentileRangeRadio_toggled(bool checked)
 {
-    if(checked){
+  if(checked){
       int nPoints = _mpx3gui->getDataset()->getPixelsPerLayer()/ui->binWidthSpinner->value();
       ui->histPlot->set_scale_percentile(ui->lowerPercentileSpin->value()*nPoints, ui->upperPercentileSpin->value()*nPoints);
-      }
+    }
 }
 
 void QCstmGLVisualization::on_lowerPercentileSpin_editingFinished()
 {
-    if(ui->lowerPercentileSpin->value() > ui->upperPercentileSpin->value())
-      ui->upperPercentileSpin->setValue(ui->lowerPercentileSpin->value());
-    if(ui->percentileRangeRadio->isChecked())
-      on_percentileRangeRadio_toggled(ui->percentileRangeRadio->isChecked());
+  if(ui->lowerPercentileSpin->value() > ui->upperPercentileSpin->value())
+    ui->upperPercentileSpin->setValue(ui->lowerPercentileSpin->value());
+  if(ui->percentileRangeRadio->isChecked())
+    on_percentileRangeRadio_toggled(ui->percentileRangeRadio->isChecked());
 }
 
 void QCstmGLVisualization::on_upperPercentileSpin_editingFinished()
 {
-    if(ui->upperPercentileSpin->value() < ui->lowerPercentileSpin->value())
-      ui->lowerPercentileSpin->setValue(ui->upperPercentileSpin->value());
-    if(ui->percentileRangeRadio->isChecked())
-      on_percentileRangeRadio_toggled(ui->percentileRangeRadio->isChecked());
+  if(ui->upperPercentileSpin->value() < ui->lowerPercentileSpin->value())
+    ui->lowerPercentileSpin->setValue(ui->upperPercentileSpin->value());
+  if(ui->percentileRangeRadio->isChecked())
+    on_percentileRangeRadio_toggled(ui->percentileRangeRadio->isChecked());
 }
 
 void QCstmGLVisualization::on_lowerManualSpin_editingFinished()
 {
-    if(ui->upperManualSpin->value() < ui->lowerManualSpin->value())
-      ui->upperManualSpin->setValue(ui->lowerManualSpin->value());
-    if(ui->manualRangeRadio->isChecked())
-      on_manualRangeRadio_toggled(ui->manualRangeRadio->isChecked());
+  if(ui->upperManualSpin->value() < ui->lowerManualSpin->value())
+    ui->upperManualSpin->setValue(ui->lowerManualSpin->value());
+  if(ui->manualRangeRadio->isChecked())
+    on_manualRangeRadio_toggled(ui->manualRangeRadio->isChecked());
 
 }
 
@@ -256,17 +259,17 @@ void QCstmGLVisualization::on_upperManualSpin_editingFinished()
 
 void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
 {
-      if(checked)
-        ui->histPlot->changeRange(QCPRange(ui->lowerManualSpin->value(), ui->upperManualSpin->value()));
+  if(checked)
+    ui->histPlot->changeRange(QCPRange(ui->lowerManualSpin->value(), ui->upperManualSpin->value()));
 }
 
 void QCstmGLVisualization::on_fullRangeRadio_toggled(bool checked)
 {
-    if(checked)
-      ui->histPlot->set_scale_full();
+  if(checked)
+    ui->histPlot->set_scale_full();
 }
 
 void QCstmGLVisualization::on_outOfBoundsCheckbox_toggled(bool checked)
 {
-    ui->glPlot->getPlot()->setAlphaBlending(checked);
+  ui->glPlot->getPlot()->setAlphaBlending(checked);
 }

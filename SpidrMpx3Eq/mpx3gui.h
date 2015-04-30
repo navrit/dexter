@@ -67,6 +67,7 @@ private:
 	Dataset *workingSet;
 	QVector<Gradient*>  gradients;
 	QVector<histogram*> hists;
+	void updateHistogram(int layer);
 public:
 	Mpx3Config* getConfig();
 	Dataset* getDataset(){return workingSet;}
@@ -106,6 +107,7 @@ signals:
 	void summing_set(bool);
 
 	public slots:
+	void reloadLayer(int layer);
 	void addLayer(int* data);
 	void addLayer(int* data, int layer);
 	void generateFrame(); //Debugging function to generate data when not connected

@@ -32,6 +32,12 @@ void Dataset::addFrame(int *frame, int index, int layer){
     newFrame[i] = frame[i];
 }
 
+int* Dataset::getFrame(int index, int layer){
+  if(layer == -1)
+    layer = m_layers.length();
+  return m_layers[layer]+m_nx*m_ny*index;
+}
+
 void Dataset::setFramesPerLayer(int nFrames){
   m_nFrames = nFrames;
 

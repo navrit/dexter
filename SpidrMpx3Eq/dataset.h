@@ -66,7 +66,7 @@ public:
   //int* getActiveFrame(){return m_frames.at(m_activeFrame);}
   int  getActiveIndex(){return m_activeFrame;}
   //int *getFrame(int index);
-  int *getFrame(int index, int layer){return m_layers[layer]+m_nx*m_ny*index;}
+  int *getFrame(int index, int layer);
   int* getLayer(int layer);
   QVector <int*> getFrames();
   void sumFrame(int * frame, int index, int layer);

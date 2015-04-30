@@ -41,6 +41,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QCheckBox" name="sumChekcbox">
+           <property name="text">
+            <string>Sum</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QCheckBox" name="thlCalibDifferentiateCheckBox">
            <property name="text">
             <string>differentiate</string>
