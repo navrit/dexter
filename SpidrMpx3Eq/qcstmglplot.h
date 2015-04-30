@@ -74,6 +74,7 @@ public: //events
   void contextMenuEvent(QContextMenuEvent *);
   int getNx(){return nx;}
   int getNy(){return ny;}
+  void setAlphaBlending(bool setOn);
 public slots:
   void setSize(int nx, int ny);
   void setSize(QPoint size){this->setSize(size.x(), size.y());}

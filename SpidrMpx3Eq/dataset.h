@@ -14,11 +14,11 @@ class Dataset//TODO: specify starting corner?
     orientationLtRTtB = 0,
     orientationRtLTtB = 1,
     orientationLtRBtT = 2,
-    orientationRtLBtT = 3/*,
-    orientationTtBLtR,
-    orientationTtBRtL,
-    orientationBtTLtR,
-    orientationBtTRtL*/
+    orientationRtLBtT = 3,
+    orientationTtBLtR=4,
+    orientationTtBRtL=5,
+    orientationBtTLtR=6,
+    orientationBtTRtL=7
   };
 private:
   int m_activeFrame = -1;
@@ -56,6 +56,7 @@ public:
   QVector<int> getOrientationVector(){return m_frameOrientation;}
   int getFrameCount(){return m_nFrames;}
   int getLayerCount(){return m_layers.length();}
+  int getPixelsPerLayer(){return m_nFrames*m_nx*m_ny;}
   QPoint getSize(){return QPoint(m_nx, m_ny);}
   //int* getActiveFrame(){return m_frames.at(m_activeFrame);}
   int  getActiveIndex(){return m_activeFrame;}

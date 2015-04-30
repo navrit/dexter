@@ -93,7 +93,7 @@ void QCstmGLPlot::initializeVAOsAndVBOs(){
 
   glEnableVertexAttribArray(orientationLoc);
   glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
-  glVertexAttribPointer (orientationLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+  glVertexAttribPointer (orientationLoc, 4, GL_FLOAT, GL_FALSE, 0, NULL);
   glVertexAttribDivisor(orientationLoc, 1);
 }
 
@@ -101,7 +101,8 @@ void QCstmGLPlot::initializeGL(){
   initializeOpenGLFunctions();
   QColor bgColor = this->palette().color(this->backgroundRole());
   glClearColor((GLfloat)(bgColor.red()/255.), (GLfloat)(bgColor.green()/255.), (GLfloat)(bgColor.blue()/255.),1.0); //Sets the background Color to match Qt.
-  glEnable (GL_BLEND); glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  //glEnable (GL_BLEND);
+  glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   initializeShaders();
   initializeLocations();
@@ -160,6 +161,17 @@ void QCstmGLPlot::setGradient(Gradient *gradient){
   update();
 }
 
+void QCstmGLPlot::setAlphaBlending(bool setOn){
+  if(!initialized)
+    return;
+  this->makeCurrent();
+  if(setOn)
+     glEnable (GL_BLEND);
+  else
+     glDisable(GL_BLEND);
+  this->update();
+}
+
 void QCstmGLPlot::setSize(int nx, int ny){
   this->nx=nx; this->ny = ny;
   emit size_changed(QPoint(nx, ny));
@@ -182,7 +194,7 @@ void QCstmGLPlot::populateTextures(Dataset &data){
   dataTex->create();
   dataTex->bind(0); //bind to unit 0;
   dataTex->setFormat(QOpenGLTexture::R32I);
-  dataTex->setWrapMode(QOpenGLTexture::ClampToEdge);
+  dataTex->setWrapMode(QOpenGLTexture::Repeat);
   dataTex->setLayers(data.getFrameCount()*data.getLayerCount());
   nx = data.x();
   ny  = data.y();
@@ -220,10 +232,21 @@ void QCstmGLPlot::readLayouts(Dataset &data){
 
 void QCstmGLPlot::readOrientations(Dataset &data){
   QVector<int> orientations = data.getOrientationVector();
-  QVector<GLfloat> orientationsGL(orientations.size()*2);
+  QVector<GLfloat> orientationsGL(orientations.size()*4);
   for(int i = 0; i < orientations.size();i++){
-      orientationsGL[i*2+0] = 1-2*(orientations[i]&1);
-      orientationsGL[i*2+1] = 1-(orientations[i]&2);//      QVector2D(1,1/*1-2*(orientations[i]&1), 1-orientations[i]&2*/ );//little hack: first bit of orientations RtL or LtR, second if TtB or BtT.
+      GLfloat x = 1-2*(orientations[i]&1);
+      GLfloat y = 1-(orientations[i]&2);//      QVector2D(1,1/*1-2*(orientations[i]&1), 1-orientations[i]&2*/ );//little hack: first bit of orientations RtL or LtR, second if TtB or BtT.
+      if(orientations[i]&4){
+        orientationsGL[i*4+0]  = 0;
+        orientationsGL[i*4+1]  = y;
+        orientationsGL[i*4+2]  = x;
+        orientationsGL[i*4+3]  = 0;
+        }else{
+          orientationsGL[i*4+0]  = x;
+          orientationsGL[i*4+1]  = 0;
+          orientationsGL[i*4+2]  = 0;
+          orientationsGL[i*4+3]  = y;
+        }
     }
   glBindVertexArray (vao);
   glBindBuffer (GL_ARRAY_BUFFER, vbo[3]);

@@ -30,15 +30,16 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
   // Instantiate everything in the UI
   _ui->setupUi(this);
   config = new Mpx3Config;
-  workingSet = new Dataset(512,512, 4);
+  workingSet = new Dataset(16,16, 4);
   //workingSet->setFramesPerGroup(1,1)
   workingSet->setOrientation(0, Dataset::orientationLtRTtB);
-  /*workingSet->setOrientation(3, Dataset::orientationTtBLtR);
-  workingSet->setOrientation(1, Dataset::orientationBtTRtL);
-  workingSet->setOrientation(2, Dataset::orientationBtTRtL);*/
+  workingSet->setOrientation(1, Dataset::orientationRtLBtT);
+  workingSet->setOrientation(2, Dataset::orientationTtBLtR);
+  workingSet->setOrientation(3, Dataset::orientationRtLTtB);
+
   workingSet->setLayout(0, QPoint(0,0));
   workingSet->setLayout(1, QPoint(1,0));
-  workingSet->setLayout(2, QPoint(-1,1));
+  workingSet->setLayout(2, QPoint(0,1));
   workingSet->setLayout(3, QPoint(1,1));
   gradients = Gradient::fromJsonFile("./config/heatmaps.json");
   QStringList gradientNames;

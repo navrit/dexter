@@ -15,6 +15,6 @@ float normalizeSample(float sample){
 void main(void) {
     int sample = texture(tex,vec3(c,frameID)).r;
     vec3 color = texture(gradient, normalizeSample(float(sample))).rgb;
-    gl_FragColor =  vec4(color, 1);
+    gl_FragColor =  vec4(color, step(clampRange.x, sample)* step(sample,clampRange.y));
     //gl_FragColor = vec4(1);
 }

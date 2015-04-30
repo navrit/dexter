@@ -39,6 +39,8 @@ private slots:
 
   void on_fullRangeRadio_toggled(bool checked);
 
+  void on_outOfBoundsCheckbox_toggled(bool checked);
+
 public slots:
   void StartDataTaking();
   void setGradient(int index);
