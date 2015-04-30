@@ -164,6 +164,7 @@ public:
 	Ui::QCstmDacs  * GetUI() { return ui; };
 	QSpinBox ** GetSpinBoxList() { return _dacSpinBoxes; };
 	QSlider ** GetSliderList() { return _dacSliders; };
+	int GetDACIndex(int dac_code);
 	QLabel ** GetLabelsList() { return _dacVLabels ; };
 	QCheckBox ** GetCheckBoxList() { return _dacCheckBoxes; };
 	int GetDeviceIndex() { return _deviceIndex; };

@@ -205,6 +205,7 @@ void Mpx3GUI::establish_connection() {
 
 }
 
+
 void Mpx3GUI::generateFrame(){//TODO: put into Dataset
   printf("Generating a frame!\n");
 

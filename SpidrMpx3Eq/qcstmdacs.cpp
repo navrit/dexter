@@ -682,6 +682,17 @@ void QCstmDacs::setTextWithIdx(QString s, int i) {
 
 }
 
+/**
+ * In case I have the dac code and I want to know to which slider/spinBox it corresponds
+ */
+int QCstmDacs::GetDACIndex(int dac_code) {
+
+	for(int i = 0 ; i < MPX3RX_DAC_COUNT ; i++) {
+		if ( MPX3RX_DAC_TABLE[i].code == dac_code ) return i;
+	}
+	return -1;
+}
+
 void QCstmDacs::slideAndSpin(int i, int val) {
 
 	// // Temporarily disconnect the signal that triggers the message to the hardware

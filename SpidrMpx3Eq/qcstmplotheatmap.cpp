@@ -74,6 +74,9 @@ void QCstmPlotHeatmap::addData(int *data, int nx, int ny){
 }
 
 void QCstmPlotHeatmap::setData(int *data, int nx, int ny){
+	if( -1 == active ) {
+		return addData(data, nx, ny);
+	}
   colorMaps[active]->clearData();
   colorMaps[active]->data()->setRange(QCPRange(0, nx), QCPRange(0,ny));
   colorMaps[active]->data()->setSize(nx, ny);

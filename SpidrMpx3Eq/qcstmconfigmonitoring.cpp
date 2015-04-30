@@ -65,6 +65,8 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p){
 
 void QCstmConfigMonitoring::timerEvent(QTimerEvent *) {
 
+
+	/*
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
 	if ( spidrcontrol ) {
@@ -85,6 +87,7 @@ void QCstmConfigMonitoring::timerEvent(QTimerEvent *) {
 		}
 
 	}
+*/
 
 	/*
   int mvolt, mamp, mwatt;

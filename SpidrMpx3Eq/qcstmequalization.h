@@ -7,6 +7,7 @@
 #include "mpx3defs.h"
 #include <qcustomplot.h>
 
+
 #include <iostream>
 #include <vector>
 
@@ -19,6 +20,8 @@ using namespace std;
 #define __matrix_size_x 		256
 #define __matrix_size_y 		256
 #define __equalization_target	10
+
+#define EQ_NEXT_STEP(x) ( _eqStatus == x && ! _stepDone[x] )
 
 class QCustomPlot;
 class SpidrController;
@@ -88,7 +91,7 @@ public:
 	explicit QCstmEqualization(QWidget *parent = 0);
 	~QCstmEqualization();
 	void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
-
+	Ui::QCstmEqualization * GetUI();
 
 	void timerEvent( QTimerEvent * );
 	void PrintFraction(int * buffer, int size, int first_last);
@@ -99,8 +102,16 @@ public:
 	double EvalLinear(double eta, double cut, double x);
 
 	// Equalization steps
-	int DAC_Disc_Optimization(int setId, int DAC_Disc_code);
-	int PrepareInterpolation(int setId, int DAC_Disc_code);
+	void DAC_Disc_Optimization_100(int DAC_Disc_code, int DAC_DISC_testValue);
+	void DAC_Disc_Optimization_150(int DAC_Disc_code, int DAC_DISC_testValue);
+	void DAC_Disc_Optimization(ScanResults res_100, ScanResults res_150);
+	void PrepareInterpolation_0x0(int DAC_Disc_code);
+	void PrepareInterpolation_0x5(int DAC_Disc_code);
+	void CalculateInterpolation(ScanResults res_x0, ScanResults res_x5);
+	void ScanOnInterpolation(int DAC_Disc_code);
+
+	void DAC_Disc_Optimization_DisplayResults(ScanResults res);
+
 	int FineTunning(int setId, int DAC_Disc_code);
 	int DetectStartEqualizationRange(int setId, int DAC_Disc_code);
 
@@ -110,7 +121,8 @@ public:
 	void SetupSignalsAndSlots();
 	void SetLimits();
 	void Configuration(bool reset);
-	void SetAllAdjustmentBits(int val_L, int val_H);
+	void SetAllAdjustmentBits(SpidrController * spidrcontrol, int val_L, int val_H);
+	void SetAllAdjustmentBits(SpidrController * spidrcontrol);
 	void SetAllAdjustmentBits();
 	void ClearAllAdjustmentBits();
 
@@ -122,6 +134,7 @@ public:
 	int GetMinScan(){ return _minScanTHL; };
 	int GetMaxScan(){ return _maxScanTHL; };
 	int GetStepScan(){ return _stepScan; };
+	int GetGlobalAdj(){ return _global_adj; };
 
 	void SetMinScan(int);
 	void SetMaxScan(int);
@@ -129,6 +142,16 @@ public:
 	Mpx3EqualizationResults * GetEqualizationResults() { return _eqresults; };
 	void LoadEqualization();
 
+	typedef enum {
+		__INIT = 0,
+		__DAC_Disc_Optimization_100,
+		__DAC_Disc_Optimization_150,
+		__PrepareInterpolation_0x0,
+		__PrepareInterpolation_0x5,
+		__ScanOnInterpolation,
+		__EQStatus_Count
+	} eqStatus;
+	bool * _stepDone;
 
 private:
 
@@ -141,17 +164,20 @@ private:
 	Mpx3GUI * _mpx3gui;
 
 	QStringList files;
-	//QMap<QString, QCPColorGradient> heatmapMap;
 
 	QApplication * _coreApp;
-//	Ui::Mpx3GUI * _ui;
 
+	int _setId;
 	int _deviceIndex;
 	int _nTriggers;
 	int _spacing;
 	int _minScanTHL;
 	int _maxScanTHL;
 	int _stepScan;
+	bool _threadFinished;
+	unsigned int _eqStatus;
+	// IP source address (SPIDR network interface)
+	int _srcAddr;
 
 	int **data = 0;
 	unsigned *nx =0, *ny =0, nData =0;
@@ -164,10 +190,6 @@ private:
 	// Object in charge of performing Thl scans
 	vector<ThlScan * > _scans;
 
-	// DACs
-	QCstmDacs * _dacs;
-
-
 	// Important Equalization values
 	double _eta_THL_DAC_DiscL;
 	double _cut_THL_DAC_DiscL;
@@ -175,6 +197,7 @@ private:
 	double _cut_THL_DAC_DiscH;
 	int _opt_MPX3RX_DAC_DISC_L;
 	int _opt_MPX3RX_DAC_DISC_H;
+	int _global_adj;
 	double _eta_Adj_THL;
 	double _cut_Adj_THL;
 
@@ -183,6 +206,7 @@ void SaveEqualization();
 
 private slots:
 
+void ScanThreadFinished();
 void StartEqualization();
 void ChangeNTriggers(int);
 void ChangeDeviceIndex(int);
@@ -195,9 +219,9 @@ void ConnectionStatusChanged();
 void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
 void on_openfileButton_clicked();
 
-//  	Ui::QCstmEqualization *ui;
-//  Ui::Mpx3GUI *sharedGUI;
-//  Mpx3GUI * _mpx3gui;
+signals:
+	void slideAndSpin(int, int);
+
 
 };
 

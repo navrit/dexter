@@ -60,13 +60,6 @@
       <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout_10">
         <item>
-         <widget class="QLabel" name="_statusLabel">
-          <property name="text">
-           <string>Standby ...</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QPushButton" name="_startEq">
           <property name="text">
            <string>Start Eq</string>
@@ -138,8 +131,8 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="7">
-             <widget class="QSpinBox" name="spacingSpinBox">
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="eqMinSpinBox">
               <property name="keyboardTracking">
                <bool>false</bool>
               </property>
@@ -152,8 +145,8 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
-             <widget class="QSpinBox" name="eqMinSpinBox">
+            <item row="0" column="7">
+             <widget class="QSpinBox" name="spacingSpinBox">
               <property name="keyboardTracking">
                <bool>false</bool>
               </property>
@@ -212,6 +205,54 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>THL:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLabel" name="eqLabelTHLCurrentValue">
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="3">
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>Reactive:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="4">
+             <widget class="QLabel" name="eqLabelNPixelsReactive">
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="6">
+             <widget class="QLabel" name="label_6">
+              <property name="text">
+               <string>Unresponsive:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="7">
+             <widget class="QLabel" name="eqLabelNPixelsUnresponsive">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
