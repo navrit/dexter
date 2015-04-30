@@ -88,6 +88,21 @@ void Dataset::setLayer(int *data, int layer){
     m_layers[layer][i] = data[i];
 }
 
+void Dataset::addLayer(int *data, int layer){
+  if(m_layers.length() <= layer|| m_layers.length() == 0)
+    return setLayer(data, layer);
+  if(layer == -1)
+    layer = m_layers.length()-1;
+  for(int i = 0; i < m_nx*m_ny*m_nFrames;i++)
+    m_layers[layer][i] += data[i];
+}
+
+int* Dataset::getLayer(int layer){
+  if(layer == -1)
+    layer = m_layers.length()-1;
+  return m_layers[layer];
+}
+
 QVector <int*> Dataset::getFrames(){
   QVector<int*> ret(0);
   for(int i = 0; i < getLayerCount(); i++){

@@ -52,6 +52,7 @@ public:
   //void removeMask(QPoint pixel){m_mask.remove(pixel);}
   void setFramesPerLayer(int nFrames);
   void setLayer(int *data, int layer);
+  void addLayer(int* data, int layer);
   void addFrame(int *frame, int index, int layer);
   void addFrame(QVector<int> frame);
   void addFrames(QVector<int*> frames);
@@ -66,6 +67,7 @@ public:
   int  getActiveIndex(){return m_activeFrame;}
   //int *getFrame(int index);
   int *getFrame(int index, int layer){return m_layers[layer]+m_nx*m_ny*index;}
+  int* getLayer(int layer);
   QVector <int*> getFrames();
   void sumFrame(int * frame, int index, int layer);
   int sample(int x, int y, int layer);

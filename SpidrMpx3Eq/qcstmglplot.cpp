@@ -178,7 +178,7 @@ void QCstmGLPlot::setSize(int nx, int ny){
   recomputeBounds();
 }
 
-void QCstmGLPlot::readData(Dataset &data){
+void QCstmGLPlot::readData(Dataset &data){//TODO: only update textures.
   readOrientations(data);
   readLayouts(data);
   populateTextures(data);
@@ -266,7 +266,7 @@ void QCstmGLPlot::setRange(QCPRange range){
 void QCstmGLPlot::setActive(int layer){
   this->makeCurrent();
   program.bind();
-  program.setUniformValue(layerLoc, layer);
+  program.setUniformValue(layerLoc, layer*offsets.length());
   this->update();
 }
 

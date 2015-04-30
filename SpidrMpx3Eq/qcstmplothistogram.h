@@ -39,10 +39,12 @@ public:
   QCstmPlotHistogram(QWidget* &parent);
   virtual ~QCstmPlotHistogram();
   void changeBinSize(int binSize, int histogramToChange);
+  void setHistogram(histogram *hist, int reduction, int index  );
   void addHistogram(histogram *hist, int reduction  );
   //void setData(int *data, unsigned nData);
   void clear();
   void swapHistogram(histogram *hist, int binSize);
+  int getHistogramCount(){return hists.length();}
 signals:
   void rangeChanged(QCPRange newRange);
   void new_range_dragged(QCPRange NewRange);

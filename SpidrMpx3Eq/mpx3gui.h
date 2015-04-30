@@ -92,6 +92,7 @@ signals:
 	void dataChanged();
 	void data_cleared();
 	void hist_added();
+	void hist_changed();
 	void frame_added();
 	void frame_changed();
 	void frames_reload();

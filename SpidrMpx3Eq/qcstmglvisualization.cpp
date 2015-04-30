@@ -123,6 +123,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   connect(_mpx3gui, SIGNAL(data_cleared()), this, SLOT(on_clear()));
   connect(_mpx3gui, SIGNAL(frame_added()), this, SLOT(on_frame_added()));
   connect(_mpx3gui, SIGNAL(hist_added()), this, SLOT(on_hist_added()));
+  connect(_mpx3gui, SIGNAL(hist_changed()),this, SLOT(on_hist_changed()));
   connect(_mpx3gui, SIGNAL(frames_reload()),this, SLOT(on_frame_updated()));
   connect(_mpx3gui, SIGNAL(availible_gradients_changed(QStringList)), this, SLOT(on_availible_gradients_changed(QStringList)));
   connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), ui->glPlot, SLOT(set_range(QCPRange)));
@@ -174,7 +175,10 @@ void QCstmGLVisualization::on_hover_changed(QPoint pixel){
 
 void QCstmGLVisualization::on_hist_added(){
   ui->histPlot->addHistogram(_mpx3gui->getHist(-1), ui->binWidthSpinner->value());
-  ui->layerSpinner->setMaximum(_mpx3gui->getFrameCount()-1);
+}
+
+void QCstmGLVisualization::on_hist_changed(){
+  ui->histPlot->setHistogram(_mpx3gui->getHist(ui->layerSpinner->value()),ui->binWidthSpinner->value(), ui->layerSpinner->value());
 }
 
 void QCstmGLVisualization::on_frame_added(){

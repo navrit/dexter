@@ -91,9 +91,26 @@ void Mpx3GUI::addLayer(int *data){
 }
 
 void Mpx3GUI::addLayer(int *data, int layer){
-  workingSet->setLayer(data, layer);
-  hists.push_back(new histogram(data,workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
-  emit hist_added();
+  if(mode == 1){
+      workingSet->addLayer(data, layer);
+      if(hists.length() == 0){
+          hists.push_back(new histogram(data,workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
+          emit hist_added();
+        }
+      else{
+          if(layer == -1)
+            layer = hists.length()-1;
+          histogram *old = hists[layer];//TODO: do this better
+          delete old;
+          old = new histogram(workingSet->getLayer(layer),workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1);
+          emit hist_changed();
+        }
+    }
+  else{
+      workingSet->setLayer(data, layer);
+      hists.push_back(new histogram(data,workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
+      emit hist_added();
+    }
   emit frame_added();
 }
 

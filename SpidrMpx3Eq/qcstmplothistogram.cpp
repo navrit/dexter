@@ -66,6 +66,13 @@ void QCstmPlotHistogram::addHistogram(histogram *hist, int reduction){
   replot();
 }
 
+void QCstmPlotHistogram::setHistogram(histogram *hist, int reduction, int index){
+  QCPGraph* graph = this->graph(index);
+  hists[index] = hist;
+  changeBinSize(reduction,index);
+  this->setActive(index);
+}
+
 void QCstmPlotHistogram::changeRange(QCPRange newRange){
   minClampChanged(newRange.lower);
   maxClampChanged(newRange.upper);
