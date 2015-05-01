@@ -168,16 +168,30 @@ void ThlScan::run() {
 	bool finishScan = false;
 	bool finishTHLLoop = false;
 	// For a truncated scan
-	int expectedInOneThlLoop = __matrix_size / ( _spacing*_spacing );
+	int expectedInOneThlLoop = ( _equalization->GetNTriggers() * __matrix_size ) / ( _spacing*_spacing );
 	// For a full matrix scan
 	//if( _numberOfLoops <= 0) expectedInScan = __matrix_size;
 
 	//int nMasked = SetEqualizationMask(spidrcontrol, _spacing, 0,0);
 
+	int idDataFetch = 0;
+	int step = _stepScan;
+	bool accelerationApplied = false;
+	int accelerationFlagCntr = 0;
+	if( _mpx3gui->getFrameCount() > 1 ) idDataFetch = _deviceIndex;
 
 	for(int maskOffsetItr_x = 0 ; maskOffsetItr_x < _spacing ; maskOffsetItr_x++ ) {
 
 		for(int maskOffsetItr_y = 0 ; maskOffsetItr_y < _spacing ; maskOffsetItr_y++ ) {
+
+			QString loopProgressS;
+			loopProgressS =  QString::number( maskOffsetItr_x * _spacing + maskOffsetItr_y + 1, 'd', 0 );
+			loopProgressS += "/";
+			loopProgressS += QString::number( _spacing * _spacing, 'd', 0 );
+			connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
+			fillText( loopProgressS );
+			disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
+
 
 			// Set mask
 			int nMasked = SetEqualizationMask(spidrcontrol, _spacing, maskOffsetItr_x, maskOffsetItr_y);
@@ -187,10 +201,14 @@ void ThlScan::run() {
 			// Start the Scan for one mask
 			_pixelReactiveInScan = 0;
 			finishTHLLoop = false;
-			for(_thlItr = _minScan ; _thlItr <= _maxScan ; _thlItr += _stepScan ) {
+			accelerationApplied = false;
+			accelerationFlagCntr = 0;
+			step = _stepScan;
+			for(_thlItr = _minScan ; _thlItr <= _maxScan ; _thlItr += step ) {
 
 				QString thlLabelS;
 				thlLabelS = QString::number( _thlItr, 'd', 0 );
+				if ( accelerationApplied ) thlLabelS += " acc";
 				// Send signal to Labels.  Making connections one by one.
 				connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
 				fillText( thlLabelS );
@@ -221,7 +239,8 @@ void ThlScan::run() {
 					// which will process the given frame
 
 					int size_in_bytes = -1;
-					_data = _spidrdaq->frameData(0, &size_in_bytes);
+
+					_data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
 
 					_pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes, _thlItr );
 
@@ -229,7 +248,7 @@ void ThlScan::run() {
 					//Sleep( 10 ); // Allow time to get and decode the next frame, if any
 
 					// Report to heatmap
-					UpdateHeatMapSignal(256, 256);
+					UpdateHeatMapSignal(_mpx3gui->getDataset()->x(), _mpx3gui->getDataset()->y());
 
 					//_heatmap->addData(data, 256, 256); // Add a new plot/frame.
 					//_heatmap->setActive(_frameId++); // Activate the last plot (the new one)
@@ -278,6 +297,7 @@ void ThlScan::run() {
 				disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelNPixelsReactive, SLOT( setText(QString)) );
 
 
+
 				// If done with all pixels
 				if ( _pixelReactiveInScan == expectedInOneThlLoop ) {
 					finishTHLLoop = true;
@@ -285,6 +305,20 @@ void ThlScan::run() {
 
 				if( finishScan ) break;
 				if( finishTHLLoop ) break;
+
+				// Accelerate if the pixels reactive reached a significate fraction
+				// Once the 99% limit is reached, wait 50 counts and accelerate
+				if ( (double)_pixelReactiveInScan > (double)expectedInOneThlLoop*0.99
+						&& !accelerationApplied
+						&& accelerationFlagCntr < __accelerationStartLimit
+				) {
+					accelerationFlagCntr += step;
+					if ( accelerationFlagCntr >= __accelerationStartLimit ) {
+						step *= 5;
+						accelerationApplied = true;
+					}
+				}
+
 
 			}
 

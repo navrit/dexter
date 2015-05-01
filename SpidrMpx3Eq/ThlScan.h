@@ -27,6 +27,8 @@ enum Thl_Status {
 	__NOT_TESTED_YET = 0,
 };
 
+#define  __accelerationStartLimit  50
+
 class ScanResults {
 public:
 	double weighted_arithmetic_mean;
