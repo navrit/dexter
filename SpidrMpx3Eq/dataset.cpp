@@ -1,4 +1,5 @@
 #include "dataset.h"
+#include <QDataStream>
 
 Dataset::Dataset(int x, int y, int framesPerLayer, int layers)
 {
@@ -11,6 +12,39 @@ Dataset::~Dataset()
 {
   for(int i = 0; i < m_layers.length();i++)
     delete[] m_layers.at(i);
+}
+
+QByteArray Dataset::toByteArray(){
+  QByteArray ret(0);
+  ret += QByteArray::fromRawData((const char*)&m_nx, (int)sizeof(m_nx));
+  ret += QByteArray::fromRawData((const char*)&m_ny, (int)sizeof(m_ny));
+  ret += QByteArray::fromRawData((const char*)&m_nFrames, (int)sizeof(m_nFrames));
+  int layerCount = m_layers.length();
+  ret += QByteArray::fromRawData((const char*)&layerCount, (int)sizeof(layerCount));
+  ret += QByteArray::fromRawData((const char*)m_frameLayouts.data(),(int)(m_nFrames*sizeof(*m_frameLayouts.data())));
+  ret += QByteArray::fromRawData((const char*)m_frameOrientation.data(), (int)(m_nFrames*sizeof(*m_frameOrientation.data())));
+  ret += QByteArray::fromRawData((const char*)m_Thresholds.data(),(int)( m_nFrames*sizeof(*m_Thresholds.data())));
+  for(int i = 0; i < m_layers.length(); i++)
+    for(int j = 0; j < m_nFrames; j++)
+      ret += QByteArray::fromRawData((const char*)this->getFrame(j,i), (int)(sizeof(**m_layers.data())*m_nx*m_ny));
+  return ret;
+}
+
+void Dataset::fromByteArray(QByteArray serialized){
+  QDataStream in(&serialized, QIODevice::ReadOnly);
+  in.readRawData((char*)&m_nx, (int)sizeof(m_nx));
+  in.readRawData((char*)&m_ny, (int)sizeof(m_ny));
+  in.readRawData((char*)&m_nFrames, (int)sizeof(m_nFrames));
+  resizeContainers();
+  int layerCount;
+  in.readRawData((char*)&layerCount, (int)sizeof(layerCount));
+  setLayerCount(layerCount);
+  in.readRawData((char*)m_frameLayouts.data(), m_nFrames*(int)sizeof(*m_frameLayouts.data()));
+  in.readRawData((char*)m_frameOrientation.data(), m_nFrames*(int)sizeof(*m_frameOrientation.data()));
+  in.readRawData((char*)m_Thresholds.data(), m_nFrames*(int)sizeof(*m_Thresholds.data()));
+  for(int i = 0; i < m_layers.length(); i++)
+    for(int j = 0; j < m_nFrames; j++)
+      in.readRawData((char*)this->getFrame(j,i), (int)sizeof(**m_layers.data())*m_nx*m_ny);
 }
 
 void Dataset::computeBoundingBox(){
@@ -64,6 +98,7 @@ int Dataset::sample(int x, int y, int layer){
 void Dataset::resizeContainers(){
   m_frameOrientation.resize(m_nFrames);
   m_frameLayouts.resize(m_nFrames);
+  m_Thresholds.resize(m_nFrames);
 }
 
 void Dataset::setLayerCount(int nLayers){
@@ -117,3 +152,4 @@ QVector <int*> Dataset::getFrames(){
     }
   return ret;
 }
+

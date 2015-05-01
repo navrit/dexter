@@ -2,6 +2,7 @@
 #define DATASET_H
 
 #include <QVector>
+#include <QByteArray>
 #include <QSet>
 #include <QPoint>
 #include <QRect>
@@ -10,8 +11,6 @@ class Dataset//TODO: specify starting corner?
 {
  public:
   enum globals{
-    tilingClockwise  = 0,
-    tilingCounterClockwise  = 1,
     orientationLtRTtB = 0,
     orientationRtLTtB = 1,
     orientationLtRBtT = 2,
@@ -26,13 +25,11 @@ private:
   int m_nx, m_ny;
   QRect m_boundingBox;
   int m_nFrames =1 , m_tilingMode;
-  QVector<int> m_frameOrientation;
-  QVector<float>  m_Thresholds;
   QVector<QPoint>  m_frameLayouts;
-  unsigned tiling = Dataset::tilingClockwise;
+  QVector<int> m_frameOrientation;
+  QVector<double>  m_Thresholds;
   QSet<QPoint> m_mask;
   QVector<int> m_correction;
-  QVector<int> m_thresholds;
   QVector<int*> m_layers;
   void resizeContainers();
   void computeBoundingBox();
@@ -40,6 +37,8 @@ public:
   Dataset(int x, int y, int framesPerLayer = 1, int layers = 0);
   ~Dataset();
   QRect getBoundingBox();
+  QByteArray toByteArray();
+  void fromByteArray(QByteArray serialized);
   void setLayerCount(int nLayers);
   void setOrientation(QVector<int> orientations){for(int i = 0; i < orientations.length();i++)setOrientation(i, orientations[i]);}
   void setOrientation(int index, int orientation){m_frameOrientation[index] = orientation;}

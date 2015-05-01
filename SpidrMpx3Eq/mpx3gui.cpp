@@ -114,7 +114,7 @@ void Mpx3GUI::updateHistogram(int layer){
         }
     }
   else{
-      hists.push_back(new histogram(workingSet->getLayer(-1),workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
+      hists.push_back(new histogram(workingSet->getLayer(layer),workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
       emit hist_added();
     }
 }
@@ -258,28 +258,6 @@ void Mpx3GUI::set_active_frame(int index){
   emit active_frame_changed(index);
 }
 
-/*void Mpx3GUI::addFrames(QVector<int*> frames){
-  for(int i = 0; i < frames.length(); i++){
-      if(0 == mode || 0 == workingSet->getFrameCount()){//normal mode, or no frame yet
-          workingSet->addFrame(frames[i], );
-          workingSet->addFrame(frames[i]);
-          hists.push_back(new histogram(frames[i], workingSet->x()*workingSet->y(),  1));
-          emit hist_added();
-        }
-      else if(1 == mode){ // Summing mode
-          workingSet->sumFrame(frames[i]);
-          histogram *old = hists[workingSet->getActiveIndex()];//TODO: do this better
-          delete old;
-          old = new histogram(workingSet->getActiveFrame(),workingSet->x()*workingSet->y());
-        }
-    }
-  if(0 == mode || 0 == workingSet->getFrameCount()){
-      emit frame_added();// --> emit something else.
-    }
-  else if(1 == mode)
-    emit frames_reload();
-}*/
-
 int Mpx3GUI::getPixelAt(int x, int y, int layer){
   return workingSet->sample(x,y, layer);
   //if(layer >= data.length() || x >= nx || y >= ny)
@@ -309,7 +287,7 @@ int Mpx3GUI::getFrameCount(){
 
 
 void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
-  /*QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("binary files (*.bin)"));
+  QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("binary files (*.bin)"));
   QFile saveFile(filename);
   if (!saveFile.open(QIODevice::WriteOnly)) {
       string messg = "Couldn't open: ";
@@ -318,21 +296,13 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
       QMessageBox::warning ( this, tr("Error saving data"), tr( messg.c_str() ) );
       return;
     }
-  QPoint dataSize = workingSet->getSize();
-  int nx = dataSize.x(); int ny = dataSize.y();
-  if(-1 == saveFile.write((const char*)&nx, sizeof(nx))) QMessageBox::warning ( this, tr("Error saving data"), tr( "Couldn't save nx!") );
-  saveFile.write((const char*)&ny, sizeof(ny));
-  int nLayers = workingSet->getFrameCount();
-  saveFile.write((const char*)&nLayers, sizeof(nLayers));
-  for(int i = 0; i < nLayers;i++){
-      saveFile.write((const char*)workingSet->getFrame(i), nx*ny*sizeof(*workingSet->getFrame(i)));
-    }
+  saveFile.write(workingSet->toByteArray());
   saveFile.close();
-  return;*/
+  return;
 }
 
 void Mpx3GUI::open_data(){
-  /*QString filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("binary files (*.bin)"));
+  QString filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("binary files (*.bin)"));
   QFile saveFile(filename);
   if (!saveFile.open(QIODevice::ReadOnly)) {
       string messg = "Couldn't open: ";
@@ -342,42 +312,26 @@ void Mpx3GUI::open_data(){
       return;
     }
   clear_data();
-  int nx, ny;
-  saveFile.read((char*)&nx, sizeof(nx));
-  saveFile.read((char*)&ny, sizeof(ny));
-  delete workingSet;
-  workingSet = new Dataset(nx, ny);
-  workingSet->setFramesPerGroup(1,1);
-  workingSet->setOrientation(0, Dataset::orientationLtRTtB);
-  //workingSet->setOrientation(3, Dataset::orientationLtRTtB);
-  //workingSet->setOrientation(1, Dataset::orientationLtRTtB);
-  //workingSet->setOrientation(2, Dataset::orientationLtRTtB);
-  int nLayers;
-  saveFile.read((char*)&nLayers, sizeof(nLayers));
-  QVector<int*> newFrames(nLayers);
-  for(int i = 0; i < nLayers;i++){
-      newFrames[i] = new int[nx*ny];
-      saveFile.read((char*)newFrames[i], nx*ny*sizeof(int));
-    }
-  this->addFrames(newFrames);
+  workingSet->fromByteArray(saveFile.readAll());
   saveFile.close();
-  //this->addFrames(newFrames);
-  for(int i = 0; i < nLayers;i++)
-    delete[] newFrames[i];
-  return;*/
+  set_mode_normal();
+  for(int i = 0; i < workingSet->getLayerCount();i++)
+    updateHistogram(i);
+  emit frame_added();
+  return;
 }
 
 void Mpx3GUI::set_mode_integral(){
   if(mode != 1){
       mode = 1;
-      emit set_summing(true);
+      emit summing_set(true);
     }
 }
 
 void Mpx3GUI::set_mode_normal(){
   if(0 != mode){
       mode = 0;
-      emit set_summing(false);
+      emit summing_set(false);
     }
 }
 
