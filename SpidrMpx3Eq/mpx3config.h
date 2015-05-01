@@ -51,10 +51,10 @@ public:
 	int getDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
 	QVector<QPoint> getDevicePresenceLayout(){ return _devicePresenceLayout; };
 	int getNDevicesPresent() { return _nDevicesPresent; }
+	int getNDevicesSupported() { return _nDevicesSupported; };
 
-
-	void checkChipResponse(int devId, detector_response dr);
-	bool detectorResponds(int devId);
+	void checkChipResponse(int devIndx, detector_response dr);
+	bool detectorResponds(int devIndx);
 
 	quint32 getIpAddressInt(){return SpidrAddress.toIPv4Address();}
 	uint16_t getIpAddressPort(){return port;}
@@ -73,6 +73,7 @@ private:
 	// Layout of the matrix. Each QPoint is a chip connected with X,Y sizes.
 	QVector<QPoint> _devicePresenceLayout;
 	int _nDevicesPresent;
+	int _nDevicesSupported;
 
 	signals:
 	void IpAdressChanged(QString);

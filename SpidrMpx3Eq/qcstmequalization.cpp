@@ -106,7 +106,7 @@ void QCstmEqualization::StartEqualizationAllChips() {
 
 	// One equalization
 	_eqStatus = __INIT;
-	_nChips = _mpx3gui->getConfig()->getNDevicesPresent();
+	_nChips = _mpx3gui->getConfig()->getNDevicesSupported();
 
 	// Start by the first chip
 	_deviceIndex = 0;
@@ -118,7 +118,7 @@ void QCstmEqualization::StartEqualizationAllChips() {
 void QCstmEqualization::Rewind() {
 
 	// Establish if it is needed to Equalize another chip
-	if( _deviceIndex < _nChips - 1 ) {
+	if( _deviceIndex < _nChips - 1  ) {
 
 		// Rewind state machine variables
 		_eqStatus = __INIT;
@@ -126,7 +126,11 @@ void QCstmEqualization::Rewind() {
 		// Next chip
 		_deviceIndex++;
 		_ui->devIdSpinBox->setValue( _deviceIndex );
+
 		StartEqualization( _deviceIndex );
+
+	} else { // when done
+		AppendToTextBrowser( "-- done ----------------" );
 	}
 
 }
@@ -139,6 +143,7 @@ void QCstmEqualization::StartEqualization() {
 
 void QCstmEqualization::StartEqualization(int chipId) {
 
+
 	// I need to do this here and not when already running the thread
 	// Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
@@ -146,7 +151,13 @@ void QCstmEqualization::StartEqualization(int chipId) {
 	else { _srcAddr = 0; }
 
 	// Check if we can talk to the chip
-
+	if ( ! _mpx3gui->getConfig()->detectorResponds( _deviceIndex ) ) {
+		QString startS = "--- chip ";
+		startS += QString::number(_deviceIndex, 'd', 0);
+		startS += " --- NOT RESPONDING -- SKIP --";
+		AppendToTextBrowser( startS );
+		Rewind();
+	}
 
 	// N sets in the plot
 	int DAC_DISC_testValue = 100;

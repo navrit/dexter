@@ -179,6 +179,8 @@ void ThlScan::run() {
 	bool accelerationApplied = false;
 	int accelerationFlagCntr = 0;
 	if( _mpx3gui->getFrameCount() > 1 ) idDataFetch = _deviceIndex;
+	int progressMax = _numberOfLoops;
+	if ( _numberOfLoops < 0 ) progressMax = _spacing * _spacing;
 
 	for(int maskOffsetItr_x = 0 ; maskOffsetItr_x < _spacing ; maskOffsetItr_x++ ) {
 
@@ -187,7 +189,7 @@ void ThlScan::run() {
 			QString loopProgressS;
 			loopProgressS =  QString::number( maskOffsetItr_x * _spacing + maskOffsetItr_y + 1, 'd', 0 );
 			loopProgressS += "/";
-			loopProgressS += QString::number( _spacing * _spacing, 'd', 0 );
+			loopProgressS += QString::number( progressMax, 'd', 0 );
 			connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
 			fillText( loopProgressS );
 			disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );

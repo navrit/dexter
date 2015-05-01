@@ -27,13 +27,16 @@ SpidrController* Mpx3Config::establishConnection(){
 	connected = controller->isConnected();
 
 	// number of device that the system can support
-	int nDevSupported = 0;
-	controller->getDeviceCount(&nDevSupported);
-	cout << "[INFO] Number of devices supported: " << nDevSupported << endl;
+	controller->getDeviceCount(&_nDevicesSupported);
+	cout << "[INFO] Number of devices supported: " << _nDevicesSupported << endl;
+
+
+	// Response
+	_responseChips = QVector<detector_response>( _nDevicesSupported );
 
 	// FIXME
 	// For the moment assume matrixes of 256*256
-	for(int i = 0 ; i < nDevSupported ; i++) {
+	for(int i = 0 ; i < _nDevicesSupported ; i++) {
 		int id = 0;
 		controller->getDeviceId(i, &id);
 
@@ -45,11 +48,13 @@ SpidrController* Mpx3Config::establishConnection(){
 			_devicePresenceLayout.push_back( QPoint(__default_matrixSizePerChip_X, __default_matrixSizePerChip_Y) );
 			_nDevicesPresent++;
 			// If connected check response
-			checkChipResponse( id, __CONTROLLER_OK );
+			checkChipResponse( i, __CONTROLLER_OK );
 
 		} else {
-			cout << "     	NOT PRESENT !";
+			cout << "     	NOT RESPONDING !";
 			_devicePresenceLayout.push_back( QPoint(0, 0) );
+			// If not connected tag it immediately
+			_responseChips[i] = __NOT_RESPONDING;
 		}
 
 		cout << endl;
@@ -58,28 +63,29 @@ SpidrController* Mpx3Config::establishConnection(){
 	return controller;
 }
 
-void Mpx3Config::checkChipResponse(int devId, detector_response dr) {
+void Mpx3Config::checkChipResponse(int devIndx, detector_response dr) {
 
 	if ( dr == __CONTROLLER_OK ) { // Check if the detector responds ok to the Controller
 
 		// For instance try to read a DAC
 		int dac_val = 0;
 
-		if ( controller->setDac( devId, MPX3RX_DAC_TABLE[0].code, dac_val ) ) {
+		if ( ! controller->setDac( devIndx, MPX3RX_DAC_TABLE[0].code, dac_val ) ) {
 			cout << "chip response failed : "  << controller->errorString();
-			_responseChips.push_back( __NOT_RESPONDING );
+			_responseChips[devIndx] = __NOT_RESPONDING;
 		} else {
 			cout << "Response OK";
-			_responseChips.push_back( __CONTROLLER_OK );
+
+			_responseChips[devIndx] = __CONTROLLER_OK;
 		}
 
 	}
 
 }
 
-bool Mpx3Config::detectorResponds(int devId) {
+bool Mpx3Config::detectorResponds(int devIndx) {
 
-	if ( _responseChips[devId] > __NOT_RESPONDING ) return true;
+	if ( _responseChips[devIndx] > __NOT_RESPONDING ) return true;
 
 	return false;
 }
