@@ -29,7 +29,7 @@ SpidrController* Mpx3Config::establishConnection(){
 	// number of device that the system can support
 	int nDevSupported = 0;
 	controller->getDeviceCount(&nDevSupported);
-	cout << "[INFO] Number of devices suported: " << nDevSupported << endl;
+	cout << "[INFO] Number of devices supported: " << nDevSupported << endl;
 
 	// FIXME
 	// For the moment assume matrixes of 256*256
@@ -37,17 +37,51 @@ SpidrController* Mpx3Config::establishConnection(){
 		int id = 0;
 		controller->getDeviceId(i, &id);
 
+		cout << "--- Device [" << i << "] ------------------ " << endl;
+
 		if ( id != 0 ) {
-			cout << "[INFO] Device [" << i << "] with id : " << id << " connected." << endl;
+
+			cout << "    id : " << id << " | ";
 			_devicePresenceLayout.push_back( QPoint(__default_matrixSizePerChip_X, __default_matrixSizePerChip_Y) );
 			_nDevicesPresent++;
+			// If connected check response
+			checkChipResponse( id, __CONTROLLER_OK );
+
 		} else {
-			cout << "[INFO] Device [" << i << "] not present." << endl;
+			cout << "     	NOT PRESENT !";
 			_devicePresenceLayout.push_back( QPoint(0, 0) );
 		}
+
+		cout << endl;
 	}
 
 	return controller;
+}
+
+void Mpx3Config::checkChipResponse(int devId, detector_response dr) {
+
+	if ( dr == __CONTROLLER_OK ) { // Check if the detector responds ok to the Controller
+
+		// For instance try to read a DAC
+		int dac_val = 0;
+
+		if ( controller->setDac( devId, MPX3RX_DAC_TABLE[0].code, dac_val ) ) {
+			cout << "chip response failed : "  << controller->errorString();
+			_responseChips.push_back( __NOT_RESPONDING );
+		} else {
+			cout << "Response OK";
+			_responseChips.push_back( __CONTROLLER_OK );
+		}
+
+	}
+
+}
+
+bool Mpx3Config::detectorResponds(int devId) {
+
+	if ( _responseChips[devId] > __NOT_RESPONDING ) return true;
+
+	return false;
 }
 
 bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){

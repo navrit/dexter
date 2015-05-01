@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <QVector>
 //#include <QtWidgets>
 #include <QPen>
 #include <QSignalMapper>
@@ -17,6 +18,8 @@
 #include "qcstmdacs.h"
 #include "ui_qcstmdacs.h"
 #include "mpx3eq_common.h"
+
+#include "qcstmequalization.h"
 
 #include "SpidrController.h"
 #include "SpidrDaq.h"
@@ -146,14 +149,14 @@ void QCstmDacs::StartDACScan() {
 
 }
 
-void QCstmDacs::FillDACValues( int devId ) {
+UpdateDACsThread * QCstmDacs::FillDACValues( int devId ) {
 
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
 	// Threads
 	if ( _updateDACsThread ) {
 		if ( _updateDACsThread->isRunning() ) {
-			return;
+			return 0;
 		}
 		//disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
 		delete _updateDACsThread;
@@ -162,9 +165,14 @@ void QCstmDacs::FillDACValues( int devId ) {
 
 	// Create the thread
 	_updateDACsThread = new UpdateDACsThread(devId, _mpx3gui->getConfig()->getDacCount(), this, spidrcontrol);
+
+	cout << _mpx3gui->getConfig()->getDacCount() << endl;
+
 	// Run !
 	_updateDACsThread->start();
 
+	// return it to run it later
+	return _updateDACsThread;
 }
 
 void QCstmDacs::PopulateDACValues() {
@@ -178,11 +186,18 @@ void QCstmDacs::PopulateDACValues() {
 
 	cout << "[INFO] setting dacs from defult DACs file." << endl;
 
+	int lastIndexToSet = 0;
+	int nChipsToSet = 0;
 	if ( GetDACsFromConfiguration() ) {
 		QVector<QPoint> devices = _mpx3gui->getConfig()->getDevicePresenceLayout();
-		for(int i = 0; i < devices.length();i++)
-		  if(devices[i] != QPoint(0,0))
-		    FillDACValues(i);
+		for(int i = 0; i < devices.length();i++) {
+			// The DAC setting threads
+			if(devices[i] != QPoint(0,0)) {
+				nChipsToSet++;
+				lastIndexToSet = i;
+			} else {
+			}
+		}
 	} else { // Setting DACs at mid-range
 
 		for (int i = 0 ; i < 1; i++) {
@@ -194,6 +209,10 @@ void QCstmDacs::PopulateDACValues() {
 		}
 
 	}
+
+	// do multiple or only one
+	if(nChipsToSet > 1) FillDACValues(-1);
+	else FillDACValues(lastIndexToSet);
 
 }
 

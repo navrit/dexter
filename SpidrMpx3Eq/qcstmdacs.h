@@ -151,7 +151,7 @@ public:
 	//explicit QCstmDacs(QApplication * coreApp, Ui::Mpx3GUI * );
 	~QCstmDacs();
 	void PopulateDACValues();
-	void FillDACValues(int devId = -1);
+	UpdateDACsThread * FillDACValues(int devId = -1);
 
 	bool GetDACsFromConfiguration();
 	bool WriteDACsFile(string);

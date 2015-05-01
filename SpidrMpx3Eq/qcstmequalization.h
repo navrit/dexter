@@ -109,6 +109,7 @@ public:
 	void PrepareInterpolation_0x5(int DAC_Disc_code);
 	void CalculateInterpolation(ScanResults res_x0, ScanResults res_x5);
 	void ScanOnInterpolation(int DAC_Disc_code);
+	void Rewind();
 
 	void DAC_Disc_Optimization_DisplayResults(ScanResults res);
 
@@ -138,6 +139,8 @@ public:
 
 	void SetMinScan(int);
 	void SetMaxScan(int);
+
+	void StartEqualization(int chipId);
 
 	Mpx3EqualizationResults * GetEqualizationResults() { return _eqresults; };
 	void LoadEqualization();
@@ -178,6 +181,7 @@ private:
 	unsigned int _eqStatus;
 	// IP source address (SPIDR network interface)
 	int _srcAddr;
+	int _nChips;
 
 	int **data = 0;
 	unsigned *nx =0, *ny =0, nData =0;
@@ -207,7 +211,7 @@ void SaveEqualization( int chipId );
 private slots:
 
 void ScanThreadFinished();
-void StartEqualization(int chipId);
+void StartEqualization();
 void StartEqualizationAllChips();
 void ChangeNTriggers(int);
 void ChangeDeviceIndex(int);

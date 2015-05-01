@@ -17,7 +17,7 @@ public:
   explicit QCstmGLVisualization(QWidget *parent = 0);
   void SetMpx3GUI(Mpx3GUI * p);
   void Configuration(bool reset);
-
+  void Configuration(int deviceIndex, bool reset);
   ~QCstmGLVisualization();
 private:
   Ui::QCstmGLVisualization *ui;

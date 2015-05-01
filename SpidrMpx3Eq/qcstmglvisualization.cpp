@@ -23,24 +23,28 @@ void QCstmGLVisualization::StartDataTaking(){
 
   cout << "Acquiring ... ";
 
-  // Start the trigger as configured
-  spidrcontrol->startAutoTrigger();//getNTriggers
-  Sleep( 50 );
-  // See if there is a frame available
-  // I should get as many frames as triggers
-  int * framedata;
-  while ( spidrdaq->hasFrame() ) {
-      //cout << "capture ..." << endl;
-      int size_in_bytes = -1;
-      for(int i = 0; i < _mpx3gui->getDataset()->getFrameCount(); i++){
-          framedata = spidrdaq->frameData(i, &size_in_bytes);
-          _mpx3gui->getDataset()->addFrame(framedata, i,-1);
-        }
-      //_mpx3gui->getDataset()->setLayer(framedata,0);
-      spidrdaq->releaseFrame();
-      _mpx3gui->reloadLayer(-1);
-      Sleep( 10 ); // Allow time to get and decode the next frame, if any
-    }
+	int nChips = _mpx3gui->getFrameCount();
+
+	// Start the trigger as configured
+	spidrcontrol->startAutoTrigger();//getNTriggers
+	Sleep( 50 );
+	// See if there is a frame available
+	// I should get as many frames as triggers
+	int * framedata;
+	while ( spidrdaq->hasFrame() ) {
+		//cout << "capture ..." << endl;
+		int size_in_bytes = -1;
+
+		for(int i = 0 ; i < nChips ; i++) {
+			framedata = spidrdaq->frameData(i, &size_in_bytes);
+			/////// !!!!!!!!!
+			//_mpx3gui->addLayer(framedata);
+		}
+
+		//_mpx3gui->getDataset()->setLayer(framedata,0);
+		spidrdaq->releaseFrame();
+		Sleep( 10 ); // Allow time to get and decode the next frame, if any
+	}
 
   cout << "done." << endl;
 
@@ -55,13 +59,19 @@ void QCstmGLVisualization::ConnectionStatusChanged() {
 
 }
 
+void QCstmGLVisualization::Configuration(int deviceIndex, bool reset) {
+
+
+
+}
+
 void QCstmGLVisualization::Configuration(bool reset) {//TODO: should be part of parent?
 
   SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
   SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
-  int deviceIndex = 1;
-  int nTriggers = 100;
+	int deviceIndex = 2;
+	int nTriggers = _mpx3gui->getConfig()->getNTriggers();
 
   // Reset pixel configuration
   if ( reset ) spidrcontrol->resetPixelConfig();

@@ -49,6 +49,7 @@ _ui(new Ui::QCstmEqualization)
 	_eqresults = 0x0;
 	_setId = 0;
 	_global_adj = 0x0;
+	_nChips = 1;
 
 	// Limits in the input widgets
 	SetLimits();
@@ -104,14 +105,36 @@ void QCstmEqualization::SetLimits(){
 void QCstmEqualization::StartEqualizationAllChips() {
 
 	// One equalization
+	_eqStatus = __INIT;
+	_nChips = _mpx3gui->getConfig()->getNDevicesPresent();
 
-	int nChips = _mpx3gui->getFrameCount();
-	for(int i = 0 ; i < nChips ; i++) {
-		_deviceIndex = i;
-		_ui->devIdSpinBox->setValue( _deviceIndex );
+	// Start by the first chip
+	_deviceIndex = 0;
+	_ui->devIdSpinBox->setValue( _deviceIndex );
+	StartEqualization( _deviceIndex );
+
+}
+
+void QCstmEqualization::Rewind() {
+
+	// Establish if it is needed to Equalize another chip
+	if( _deviceIndex < _nChips - 1 ) {
+
+		// Rewind state machine variables
 		_eqStatus = __INIT;
-		StartEqualization( i );
+		for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
+		// Next chip
+		_deviceIndex++;
+		_ui->devIdSpinBox->setValue( _deviceIndex );
+		StartEqualization( _deviceIndex );
 	}
+
+}
+
+void QCstmEqualization::StartEqualization() {
+
+	StartEqualization( _deviceIndex );
+
 }
 
 void QCstmEqualization::StartEqualization(int chipId) {
@@ -121,6 +144,9 @@ void QCstmEqualization::StartEqualization(int chipId) {
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 	if( spidrcontrol ) { spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
 	else { _srcAddr = 0; }
+
+	// Check if we can talk to the chip
+
 
 	// N sets in the plot
 	int DAC_DISC_testValue = 100;
@@ -133,7 +159,11 @@ void QCstmEqualization::StartEqualization(int chipId) {
 		////////////
 		// STEP 1 //
 		////////////
-		ClearTextBrowser();
+		if(_nChips > 1 && _deviceIndex == 0) ClearTextBrowser(); // Clear only the first time
+		QString startS = "--- chip ";
+		startS += QString::number(_deviceIndex, 'd', 0);
+		startS += " ----------------";
+		AppendToTextBrowser( startS );
 		AppendToTextBrowser("1) DAC_DiscL optimization ...");
 		Configuration(true);
 
@@ -225,6 +255,9 @@ void QCstmEqualization::StartEqualization(int chipId) {
 
 		// 4) Write the result
 		SaveEqualization(chipId);
+
+		// Done.  Rewind and call this routine again if needed
+		Rewind();
 
 	}
 
@@ -717,7 +750,7 @@ void QCstmEqualization::Configuration(bool reset) {
 	// Sequential R/W
 	int trig_mode      = 4;     // Auto-trigger mode
 	int trig_length_us = 5000;  // This time shouldn't be longer than the period defined by trig_freq_hz
-	int trig_freq_hz   = 100;   // One trigger every 10ms
+	int trig_freq_hz   = 166;//100;   // One trigger every 10ms
 	int nr_of_triggers = _nTriggers;    // This is the number of shutter open i get
 	//int trig_pulse_count;
 	spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
@@ -738,10 +771,15 @@ void QCstmEqualization::LoadEqualization(){
 
 	int nChips = _mpx3gui->getFrameCount();
 
-	//for(int i = 0 ; i < )
-	_eqresults->ReadAdjBinaryFile("adj");
-	_eqresults->ReadMaskBinaryFile("mask");
+	for(int i = 0 ; i < nChips ; i++) {
+		QString adjfn = "adj_";
+		adjfn += QString::number(i, 10);
+		QString maskfn = "mask_";
+		maskfn += QString::number(i, 10);
 
+		_eqresults->ReadAdjBinaryFile( adjfn );
+		_eqresults->ReadMaskBinaryFile( maskfn );
+	}
 
 
 	// Display the equalization
@@ -758,7 +796,7 @@ void QCstmEqualization::LoadEqualization(){
 
 void QCstmEqualization::SetupSignalsAndSlots() {
 
-	connect( _ui->_startEq, SIGNAL(clicked()), this, SLOT(StartEqualization(int)) );
+	connect( _ui->_startEq, SIGNAL(clicked()), this, SLOT(StartEqualization()) );
 	connect( _ui->_startEqAll, SIGNAL(clicked()), this, SLOT(StartEqualizationAllChips()) );
 
 	connect(_ui->_intermediatePlot, SIGNAL(mouseOverChanged(QString)), _ui->mouseHoveLabel, SLOT(setText(QString)));

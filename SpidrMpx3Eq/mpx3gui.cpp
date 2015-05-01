@@ -44,6 +44,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
   workingSet->setLayout(1, QPoint(1,0));
   workingSet->setLayout(2, QPoint(0,1));
   workingSet->setLayout(3, QPoint(1,1));
+
   gradients = Gradient::fromJsonFile("./config/heatmaps.json");
   QStringList gradientNames;
   for(int i = 0; i < gradients.length();i++)

@@ -53,7 +53,14 @@
          <widget class="QCstmPlotHeatmap" name="_intermediatePlot" native="true"/>
         </item>
         <item>
-         <widget class="QComboBox" name="equalizationHeatmapCombo"/>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QComboBox" name="equalizationTypeCombo"/>
+          </item>
+          <item>
+           <widget class="QComboBox" name="equalizationHeatmapCombo"/>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -261,12 +268,12 @@
             <item row="2" column="6">
              <widget class="QLabel" name="label_6">
               <property name="text">
-               <string>Unresponsive:</string>
+               <string>Loop:</string>
               </property>
              </widget>
             </item>
             <item row="2" column="7">
-             <widget class="QLabel" name="eqLabelNPixelsUnresponsive">
+             <widget class="QLabel" name="eqLabelLoopProgress">
               <property name="text">
                <string/>
               </property>

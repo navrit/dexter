@@ -17,6 +17,7 @@
 #define __default_matrixSizePerChip_Y 	256
 
 class Mpx3Config: public QObject {
+
 	Q_OBJECT
 	//Spidr stuff
 	SpidrController *controller = nullptr;
@@ -28,6 +29,14 @@ class Mpx3Config: public QObject {
 	int OperationMode = -1, PixelDepth = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, TriggerMode =-1, TriggerLength_us = -1, nTriggers = -1;
 
 	QVector<int> _dacVals[MPX3RX_DAC_COUNT];
+
+	typedef enum {
+		__NOT_RESPONDING = 0,
+		__CONTROLLER_OK,
+		__DAC_OK
+	} detector_response;
+
+	QVector<detector_response> _responseChips;
 
 public:
 	Mpx3Config();
@@ -42,6 +51,10 @@ public:
 	int getDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
 	QVector<QPoint> getDevicePresenceLayout(){ return _devicePresenceLayout; };
 	int getNDevicesPresent() { return _nDevicesPresent; }
+
+
+	void checkChipResponse(int devId, detector_response dr);
+	bool detectorResponds(int devId);
 
 	quint32 getIpAddressInt(){return SpidrAddress.toIPv4Address();}
 	uint16_t getIpAddressPort(){return port;}
