@@ -54,6 +54,7 @@ public:
   void sumFrame(int *frame, int index, int layer);
   void toJson(); //return JSON object to save.
   QVector<QPoint> getLayoutVector(){return m_frameLayouts;}
+  QList<int> getThresholds(){return m_thresholdsToIndices.keys();}
   QVector<int> getOrientationVector(){return m_frameOrientation;}
   int getFrameCount(){return m_nFrames;}
   int getLayerCount(){return m_layers.count();}

@@ -162,6 +162,8 @@ void QCstmGLVisualization::on_new_range_dragged(QCPRange newRange){
 }
 
 void QCstmGLVisualization::on_clear(){
+  layerNames.clear();
+  ui->layerSelector->clear();
   ui->histPlot->clear();
   ui->layerSelector->clear();
 }

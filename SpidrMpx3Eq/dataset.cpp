@@ -50,7 +50,7 @@ void Dataset::fromByteArray(QByteArray serialized){
   QVector<int> keys(layerCount);
   in.readRawData((char*)keys.data(), keys.size()*(int)sizeof(int));
   QVector<int> frameBuffer(m_nx*m_ny);
-  for(int i = 0; i < m_layers.size(); i++){
+  for(int i = 0; i < keys.size(); i++){
       for(int j = 0; j < m_nFrames; j++){
           in.readRawData((char*)frameBuffer.data(), (int)sizeof(int)*frameBuffer.size());
           this->setFrame(frameBuffer.data(), j, keys[i]);
@@ -61,6 +61,7 @@ void Dataset::fromByteArray(QByteArray serialized){
 void Dataset::clear(){
   for(int i =0; i < m_layers.size(); i++)
     delete[] m_layers[i];
+  m_layers.clear();
   m_thresholdsToIndices.clear();
   setFramesPerLayer(0);
 }

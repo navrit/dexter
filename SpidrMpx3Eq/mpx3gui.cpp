@@ -319,9 +319,10 @@ void Mpx3GUI::open_data(){
   workingSet->fromByteArray(saveFile.readAll());
   saveFile.close();
   set_mode_normal();
-  for(int i = 0; i < workingSet->getLayerCount();i++)
-    updateHistogram(i);
-  emit frames_reload();
+  QList<int> thresholds = workingSet->getThresholds();
+  for(int i = 0; i <thresholds.count();i++){
+    reloadLayer(thresholds[i]);
+  }
   return;
 }
 
