@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "mpx3gui.h"
 #include "gradient.h"
+#include "histogram.h"
 
 namespace Ui {
   class QCstmGLVisualization;
@@ -13,6 +14,8 @@ class QCstmGLVisualization : public QWidget
 {
   Q_OBJECT
   Mpx3GUI * _mpx3gui;
+  //QMap<int, histogram> histograms;
+  QMap<int, QString> layerNames;
 public:
   explicit QCstmGLVisualization(QWidget *parent = 0);
   void SetMpx3GUI(Mpx3GUI * p);
@@ -33,7 +36,7 @@ private slots:
 
   void on_upperManualSpin_editingFinished();
 
-  void on_active_frame_changed(int);
+  void on_active_frame_changed();
   void on_new_range_dragged(QCPRange newRange);
   void on_manualRangeRadio_toggled(bool checked);
 
@@ -41,13 +44,15 @@ private slots:
 
   void on_outOfBoundsCheckbox_toggled(bool checked);
 
+  void on_layerSelector_activated(const QString &arg1);
+
 public slots:
   void StartDataTaking();
   void setGradient(int index);
   void on_availible_gradients_changed(QStringList gradients);
-  void on_hist_added();
-  void on_hist_changed();
-  void on_frame_added();
+  void on_hist_added(int layer);
+  void on_hist_changed(int layer);
+  void on_frame_added(int threshold);
   void on_frame_updated();
   void on_hover_changed(QPoint);
   void on_pixel_selected(QPoint pixel, QPoint position);

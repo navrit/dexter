@@ -94,29 +94,31 @@ void Mpx3GUI::addLayer(int *data){
   return addLayer(data, -1);
 }
 
-void Mpx3GUI::reloadLayer(int layer){
- updateHistogram(layer);
- emit frame_added();
-}
-
 void Mpx3GUI::updateHistogram(int layer){
   if(mode == 1){
-      if(hists.length() == 0){
-          hists.push_back(new histogram(workingSet->getLayer(-1),workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
-          emit hist_added();
+      if(workingSet->thresholdToIndex(layer) >= hists.size()){
+          hists.append(new histogram(workingSet->getLayer(layer),workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
+          emit hist_added(layer);
         }
       else{
-          if(layer == -1)
-            layer = hists.length()-1;
-          histogram *old = hists[layer];//TODO: do this better
+          histogram *old = hists[workingSet->thresholdToIndex(layer)];//TODO: do this better
           delete old;
           old = new histogram(workingSet->getLayer(layer),workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1);
-          emit hist_changed();
+          emit hist_changed(layer);
         }
     }
   else{
-      hists.push_back(new histogram(workingSet->getLayer(layer),workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
-      emit hist_added();
+      hists.append(new histogram(workingSet->getLayer(layer),workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
+      emit hist_added(layer);
+    }
+}
+
+void Mpx3GUI::addFrame(int *frame, int index, int layer){
+  if(mode == 1){
+      workingSet->sumFrame(frame,index, layer);
+    }
+  else{
+      workingSet->setFrame(frame, index, layer);
     }
 }
 
@@ -128,7 +130,12 @@ void Mpx3GUI::addLayer(int *data, int layer){
       workingSet->setLayer(data, layer);
     }
   updateHistogram(layer);
-  emit frame_added();
+  emit frame_added(layer);
+}
+
+void Mpx3GUI::reloadLayer(int layer){
+  updateHistogram(layer);
+  emit frame_added(layer);
 }
 
 Gradient* Mpx3GUI::getGradient(int index){
@@ -178,7 +185,6 @@ void Mpx3GUI::set_summing(bool shouldSum){
 }
 
 void Mpx3GUI::establish_connection() {
-
   cout << "Connecting ..." << endl;
   SpidrController * spidrcontrol = config->establishConnection();
 
@@ -232,31 +238,28 @@ void Mpx3GUI::establish_connection() {
 
   // Emmit
   emit ConnectionStatusChanged(true);
+  delete workingSet;
 
-  // A connection to hardware should make aware the DAC panel
-  //_moduleConn->GetDACs()->ConnectToHardware(spidrcontrol, _spidrdaq);
-  //_dacs->PopulateDACValues();
-
+  workingSet = new Dataset(256, 256,config->getNActiveDevices());//TODO: get framesize from config, load offsets & orientation from config
+  //emit something here?
+  for(int i = 0; i < workingSet->getLayerCount();i++)
+    updateHistogram(i);
+  emit frames_reload();
 }
 
 
 void Mpx3GUI::generateFrame(){//TODO: put into Dataset
-  printf("Generating a frame!\n");
-
-
+  int threshold = rand()%10;
   QVector<int> data(workingSet->x()*workingSet->y()*workingSet->getFrameCount());
   for(int k = 0; k < workingSet->getFrameCount();k++){
       double fx = ((double)8*rand()/RAND_MAX)/(workingSet->x()), fy = (8*(double)rand()/RAND_MAX)/workingSet->y();
       for(int i = 0; i < workingSet->y(); i++)
         for(int j = 0; j < workingSet->x(); j++)
-          data[k*workingSet->x()*workingSet->y()+i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
+          //data[k*workingSet->x()*workingSet->y()+i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
+          data[i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
+      addFrame(data.data(), k, threshold);
     }
-  addLayer(data.data());
-}
-
-void Mpx3GUI::set_active_frame(int index){
-  //workingSet->setActive(index);
-  emit active_frame_changed(index);
+  reloadLayer(threshold);
 }
 
 int Mpx3GUI::getPixelAt(int x, int y, int layer){
@@ -318,7 +321,7 @@ void Mpx3GUI::open_data(){
   set_mode_normal();
   for(int i = 0; i < workingSet->getLayerCount();i++)
     updateHistogram(i);
-  emit frame_added();
+  emit frames_reload();
   return;
 }
 
@@ -364,7 +367,7 @@ void Mpx3GUI::clear_configuration(){
 
 void Mpx3GUI::clear_data(){
   workingSet->clear();
-  for(int i = 0; i < hists.length(); i++)
+  for(int i = 0; i < hists.size();i++)
     delete hists[i];
   hists.clear();
   emit(data_cleared());

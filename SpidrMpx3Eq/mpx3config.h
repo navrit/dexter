@@ -27,7 +27,6 @@ class Mpx3Config: public QObject {
 	//Operation stuff
 	bool colourMode = false, decodeFrames = false;
 	int OperationMode = -1, PixelDepth = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, TriggerMode =-1, TriggerLength_us = -1, nTriggers = -1;
-
 	QVector<int> _dacVals[MPX3RX_DAC_COUNT];
 
 	typedef enum {
@@ -37,6 +36,7 @@ class Mpx3Config: public QObject {
 	} detector_response;
 
 	QVector<detector_response> _responseChips;
+	QVector<int> _activeChips;
 
 public:
 	Mpx3Config();
@@ -52,6 +52,9 @@ public:
 	QVector<QPoint> getDevicePresenceLayout(){ return _devicePresenceLayout; };
 	int getNDevicesPresent() { return _nDevicesPresent; }
 	int getNDevicesSupported() { return _nDevicesSupported; };
+	int getNActiveDevices(){return _activeChips.size();}
+	QVector<int>  getActiveDevices(){return _activeChips;}
+	int getIDIndex(int id){return _activeChips.indexOf(id);}
 
 	void checkChipResponse(int devIndx, detector_response dr);
 	bool detectorResponds(int devIndx);

@@ -200,9 +200,10 @@ void QCstmGLPlot::populateTextures(Dataset &data){
   ny  = data.y();
   dataTex->setSize(nx, ny);//TODO: set to nx, ny
   dataTex->allocateStorage();
+
   for(int i = 0; i < data.getLayerCount();i++){
       for(int j = 0; j < data.getFrameCount();j++){
-          int *frame =     data.getFrame(j,i);
+          int *frame =     data.getFrameAt(j,i);
           dataTex->setData(0,i*data.getFrameCount()+j,QOpenGLTexture::Red_Integer,QOpenGLTexture::Int32, frame);
         }
     }

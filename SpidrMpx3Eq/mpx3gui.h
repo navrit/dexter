@@ -60,11 +60,12 @@ private:
 	int mode = 0;
 	QApplication * _coreApp;
 	Ui::Mpx3GUI * _ui;
+
 	Mpx3Config *config;
+	Dataset *workingSet;
 
 	SpidrDaq * _spidrdaq = nullptr;
 
-	Dataset *workingSet;
 	QVector<Gradient*>  gradients;
 	QVector<histogram*> hists;
 	void updateHistogram(int layer);
@@ -77,13 +78,8 @@ public:
 	SpidrController * GetSpidrController();
 	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
 	void addFrame(int *frame, int index, int layer);
-	void addFrames(QVector<int*> frames);
 	Gradient* getGradient(int index);
-	histogram* getHist(int index){
-	  if(-1 == index)
-	    index = (int)hists.size()-1;
-	  return hists[index];
-	}
+	histogram* getHist(int index){return hists[index];}
 
 	QPoint  getSize();
 	void getSize(int *x, int *y);
@@ -95,10 +91,11 @@ public:
 signals:
 	void dataChanged();
 	void data_cleared();
-	void hist_added();
-	void hist_changed();
-	void frame_added();
-	void frame_changed();
+	void hist_added(int);
+	void hist_changed(int);
+	void reload_layer(int layer);
+	void frame_added(int layer);
+	void frame_changed(int layer);
 	void frames_reload();
 	void active_frame_changed(int);
 	void availible_gradients_changed(QStringList gradients);
@@ -119,8 +116,6 @@ signals:
 	void set_mode_normal();
 	void clear_configuration();
 	void set_summing(bool);
-public slots:
-	void set_active_frame(int);
 private slots:
 	void LoadEqualization();
 	void on_openfileButton_clicked();

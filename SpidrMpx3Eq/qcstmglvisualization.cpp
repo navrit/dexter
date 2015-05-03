@@ -34,12 +34,12 @@ void QCstmGLVisualization::StartDataTaking(){
 	while ( spidrdaq->hasFrame() ) {
 		//cout << "capture ..." << endl;
 		int size_in_bytes = -1;
-
-		for(int i = 0 ; i < nChips ; i++) {
-			framedata = spidrdaq->frameData(i, &size_in_bytes);
-			/////// !!!!!!!!!
-			//_mpx3gui->addLayer(framedata);
+		QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
+		for(int i = 0 ; i < activeDevices.size() ; i++) {
+			framedata = spidrdaq->frameData(activeDevices[i], &size_in_bytes);
+			_mpx3gui->addFrame(framedata, i, 0);//TODO: REPLACE 0 BY THRESHOLD.
 		}
+		_mpx3gui->reloadLayer(0);//TODO: REPLACE 0 BY THRESHOLD.
 
 		//_mpx3gui->getDataset()->setLayer(framedata,0);
 		spidrdaq->releaseFrame();
@@ -134,16 +134,14 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   connect(ui->gradientSelector, SIGNAL(activated(int)), this, SLOT(setGradient(int)));
   connect(ui->generateDataButton, SIGNAL(clicked()), _mpx3gui, SLOT(generateFrame()));
   connect(_mpx3gui, SIGNAL(data_cleared()), this, SLOT(on_clear()));
-  connect(_mpx3gui, SIGNAL(frame_added()), this, SLOT(on_frame_added()));
-  connect(_mpx3gui, SIGNAL(hist_added()), this, SLOT(on_hist_added()));
-  connect(_mpx3gui, SIGNAL(hist_changed()),this, SLOT(on_hist_changed()));
+  connect(_mpx3gui, SIGNAL(frame_added(int)), this, SLOT(on_frame_added(int)));//TODO specify which layer.
+  connect(_mpx3gui, SIGNAL(hist_added(int)), this, SLOT(on_hist_added(int)));
+  connect(_mpx3gui, SIGNAL(hist_changed(int)),this, SLOT(on_hist_changed(int)));
   connect(_mpx3gui, SIGNAL(frames_reload()),this, SLOT(on_frame_updated()));
   connect(_mpx3gui, SIGNAL(availible_gradients_changed(QStringList)), this, SLOT(on_availible_gradients_changed(QStringList)));
   connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), ui->glPlot, SLOT(set_range(QCPRange)));
-  connect(ui->layerSpinner, SIGNAL(valueChanged(int)), ui->glPlot->getPlot(), SLOT(setActive(int)));
-  connect(ui->layerSpinner, SIGNAL(valueChanged(int)), ui->histPlot, SLOT(setActive(int)));
-  connect(ui->layerSpinner, SIGNAL(valueChanged(int)), _mpx3gui, SLOT(set_active_frame(int)));
-  connect(ui->layerSpinner, SIGNAL(valueChanged(int)), this, SLOT(on_active_frame_changed(int)));
+ // connect(ui->layerSelector, SIGNAL(activated(QString)), ui->glPlot->getPlot(), SLOT()
+
   connect(ui->binWidthSpinner, SIGNAL(valueChanged(int)), ui->histPlot, SLOT(rebinHistograms(int)));
   connect(ui->glPlot->getPlot(), SIGNAL(hovered_pixel_changed(QPoint)),this, SLOT(on_hover_changed(QPoint)));
   connect(ui->glPlot->getPlot(), SIGNAL(pixel_selected(QPoint,QPoint)), this, SLOT(on_pixel_selected(QPoint,QPoint)));
@@ -165,7 +163,7 @@ void QCstmGLVisualization::on_new_range_dragged(QCPRange newRange){
 
 void QCstmGLVisualization::on_clear(){
   ui->histPlot->clear();
-  ui->layerSpinner->setMaximum(0);
+  ui->layerSelector->clear();
 }
 
 void QCstmGLVisualization::on_availible_gradients_changed(QStringList gradients){
@@ -175,7 +173,7 @@ void QCstmGLVisualization::on_availible_gradients_changed(QStringList gradients)
 
 void QCstmGLVisualization::on_frame_updated(){
   ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset());
-  ui->histPlot->changeBinSize(ui->binWidthSpinner->value(), ui->layerSpinner->value());
+  ui->histPlot->changeBinSize(ui->binWidthSpinner->value(), ui->layerSelector->currentText().toInt());
   if(ui->percentileRangeRadio->isChecked())
     on_percentileRangeRadio_toggled(true);
   else if(ui->fullRangeRadio->isChecked())
@@ -183,25 +181,36 @@ void QCstmGLVisualization::on_frame_updated(){
 }
 
 void QCstmGLVisualization::on_hover_changed(QPoint pixel){
-  emit(change_hover_text(QString("%1 @ (%2, %3)").arg(_mpx3gui->getPixelAt(pixel.x(), pixel.y(),ui->layerSpinner->value())).arg(pixel.x()).arg(pixel.y())));
+  emit(change_hover_text(QString("%1 @ (%2, %3)").arg(_mpx3gui->getPixelAt(pixel.x(), pixel.y(),ui->layerSelector->currentText().toInt())).arg(pixel.x()).arg(pixel.y())));
 }
 
-void QCstmGLVisualization::on_hist_added(){
-  ui->histPlot->addHistogram(_mpx3gui->getHist(-1), ui->binWidthSpinner->value());
+void QCstmGLVisualization::on_hist_added(int threshold){
+  int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
+  ui->histPlot->addHistogram(_mpx3gui->getHist(layer), ui->binWidthSpinner->value());
 }
 
-void QCstmGLVisualization::on_hist_changed(){
-  ui->histPlot->setHistogram(_mpx3gui->getHist(ui->layerSpinner->value()),ui->binWidthSpinner->value(), ui->layerSpinner->value());
+void QCstmGLVisualization::on_hist_changed(int threshold){
+  int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
+  ui->histPlot->setHistogram(_mpx3gui->getHist(layer),ui->binWidthSpinner->value(), layer);
 }
 
-void QCstmGLVisualization::on_frame_added(){
+void QCstmGLVisualization::on_frame_added(int threshold){
+  int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
   ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset());
-  ui->layerSpinner->setMaximum(_mpx3gui->getDataset()->getLayerCount()-1);
-  on_active_frame_changed(_mpx3gui->getDataset()->getLayerCount()-1);
+  QString label = QString("Threshold %1").arg(threshold);
+  if(!layerNames.contains(threshold)){
+      layerNames[threshold] =label ;
+      ui->layerSelector->clear();
+      ui->layerSelector->addItems(QStringList(layerNames.values()));
+  }
+  ui->layerSelector->setCurrentText(label);
+  ui->glPlot->getPlot()->setActive(layer);
+  ui->histPlot->setActive(layer);
+  on_active_frame_changed();
 }
 
-void QCstmGLVisualization::on_active_frame_changed(int active){
-  ui->layerSpinner->setValue(active);
+void QCstmGLVisualization::on_active_frame_changed(){
+  //ui->layerSelector->addItem(QString("%1").arg(threshold));
   if(ui->percentileRangeRadio->isChecked())
     on_percentileRangeRadio_toggled(true);
   else if(ui->fullRangeRadio->isChecked())
@@ -282,4 +291,15 @@ void QCstmGLVisualization::on_fullRangeRadio_toggled(bool checked)
 void QCstmGLVisualization::on_outOfBoundsCheckbox_toggled(bool checked)
 {
   ui->glPlot->getPlot()->setAlphaBlending(checked);
+}
+
+void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
+{
+    QStringList split = arg1.split(' ');
+    int threshold = split.last().toInt();
+    int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
+    ui->glPlot->getPlot()->setActive(layer);
+    ui->histPlot->setActive(layer);
+    //_mpx3gui->set_active_frame(threshold);
+    this->on_active_frame_changed();
 }

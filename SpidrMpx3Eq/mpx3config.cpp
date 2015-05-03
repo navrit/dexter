@@ -20,16 +20,14 @@ SpidrController* Mpx3Config::establishConnection(){
 	// number of devices connected
 	_devicePresenceLayout.clear();
 	_nDevicesPresent = 0;
-
+	_activeChips.clear();
 	quint32 ipaddr =  SpidrAddress.toIPv4Address();
 	delete controller;
 	controller = new SpidrController(((ipaddr>>24) & 0xFF), ((ipaddr>>16) & 0xFF), ((ipaddr>>8) & 0xFF), ((ipaddr>>0) & 0xFF), port);
 	connected = controller->isConnected();
-
 	// number of device that the system can support
 	controller->getDeviceCount(&_nDevicesSupported);
 	cout << "[INFO] Number of devices supported: " << _nDevicesSupported << endl;
-
 
 	// Response
 	_responseChips = QVector<detector_response>( _nDevicesSupported );
@@ -49,7 +47,8 @@ SpidrController* Mpx3Config::establishConnection(){
 			_nDevicesPresent++;
 			// If connected check response
 			checkChipResponse( i, __CONTROLLER_OK );
-
+			if(detectorResponds(i))
+			  _activeChips.push_back(i);
 		} else {
 			cout << "     	NOT RESPONDING !";
 			_devicePresenceLayout.push_back( QPoint(0, 0) );
