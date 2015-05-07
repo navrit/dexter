@@ -44,6 +44,7 @@ public:
 	void SetValueInSet(unsigned int setId, double val, double weight = 1);
 	//void PushBackToSet(unsigned int setId, double val, double weight = 1);
 	//void DumpData();
+	void Clean();
 
 private:
 

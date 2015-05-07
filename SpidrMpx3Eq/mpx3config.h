@@ -51,6 +51,7 @@ public:
 	int getDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
 	QVector<QPoint> getDevicePresenceLayout(){ return _devicePresenceLayout; };
 	int getNDevicesPresent() { return _nDevicesPresent; }
+	int getDataBufferId(int devIndx);
 	int getNDevicesSupported() { return _nDevicesSupported; };
 	int getNActiveDevices(){return _activeChips.size();}
 	QVector<int>  getActiveDevices(){return _activeChips;}

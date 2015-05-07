@@ -244,7 +244,7 @@ void Mpx3GUI::establish_connection() {
   //emit something here?
   for(int i = 0; i < workingSet->getLayerCount();i++)
     updateHistogram(i);
-  emit frames_reload();
+  //emit frames_reload();
 }
 
 

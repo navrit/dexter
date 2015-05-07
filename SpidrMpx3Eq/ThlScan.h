@@ -61,7 +61,7 @@ public:
 	void SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj);
 	void SetStopWhenPlateau(bool b) { _stopWhenPlateau = b; };
 
-	Mpx3EqualizationResults * DeliverPreliminaryEqualization(ScanResults);
+	void DeliverPreliminaryEqualization(Mpx3EqualizationResults *, ScanResults);
 
 	int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
 	pair<int, int> XtoXY(int X, int dimX) { return make_pair(X % dimX, X/dimX); }

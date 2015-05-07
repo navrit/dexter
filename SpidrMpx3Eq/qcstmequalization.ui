@@ -60,6 +60,13 @@
           <item>
            <widget class="QComboBox" name="equalizationHeatmapCombo"/>
           </item>
+          <item>
+           <widget class="QPushButton" name="_cleanEq">
+            <property name="text">
+             <string>Clean</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>

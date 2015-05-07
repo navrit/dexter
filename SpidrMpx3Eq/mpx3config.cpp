@@ -62,6 +62,26 @@ SpidrController* Mpx3Config::establishConnection(){
 	return controller;
 }
 
+/*
+ * If there is only one device connected, no matter what the devIndx is, the data is always at DataBuffer 0
+ * Otherwise, for instance if only devices 0 and 2 are connected.  The data will be found in 0,1.
+ * This member computes that transform using the detected status of the chips.
+ */
+int Mpx3Config::getDataBufferId(int devIndx) {
+
+	// If there is only one device connected, no matter what the devIndx is, the data is always at DataBuffer 0
+	if ( getNDevicesPresent() == 1 ) return 0;
+
+	// Otherwise, for instance if only devices 0 and 2 are connected.  The data will be found in 0,1
+	int dataBufferId = -1;
+	for ( int i = 0 ; i < _nDevicesSupported ; i++ ) {
+		if ( _responseChips[i] != __NOT_RESPONDING ) dataBufferId++;
+		if ( devIndx == i ) return dataBufferId;
+	}
+
+	return -1;
+}
+
 void Mpx3Config::checkChipResponse(int devIndx, detector_response dr) {
 
 	if ( dr == __CONTROLLER_OK ) { // Check if the detector responds ok to the Controller

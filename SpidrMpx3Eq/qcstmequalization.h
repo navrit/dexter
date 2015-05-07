@@ -66,6 +66,7 @@ public:
 	void ClearAdj();
 	void ClearMasked();
 	void ClearReactiveThresholds();
+	void Clear();
 
 private:
 	// pixel Id, adjustment
@@ -110,11 +111,12 @@ public:
 	void CalculateInterpolation(ScanResults res_x0, ScanResults res_x5);
 	void ScanOnInterpolation(int DAC_Disc_code);
 	void Rewind();
+	void InitEqualization();
 
 	void DAC_Disc_Optimization_DisplayResults(ScanResults res);
 
 	int FineTunning(int setId, int DAC_Disc_code);
-	int DetectStartEqualizationRange(int setId, int DAC_Disc_code);
+//	int DetectStartEqualizationRange(int setId, int DAC_Disc_code);
 
 	void DisplayStatsInTextBrowser(int adj, int dac_disc, ScanResults res);
 
@@ -192,7 +194,7 @@ private:
 	//BarChart * _chart;
 
 	// Object in charge of performing Thl scans
-	vector<ThlScan * > _scans;
+	QVector<ThlScan * > _scans;
 
 	// Important Equalization values
 	double _eta_THL_DAC_DiscL;
@@ -220,6 +222,8 @@ void ChangeMin(int);
 void ChangeMax(int);
 void ChangeStep(int);
 void ConnectionStatusChanged();
+void StopEqualization();
+void CleanEqualization();
 
 void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
 void on_openfileButton_clicked();

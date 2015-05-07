@@ -13,12 +13,26 @@ BarChart::BarChart( QWidget * parent ):
 																		_nSets(0)
 {
 	_parent = parent;
+	Clean();
+
 }
 
 BarChart::~BarChart() {
 
 }
 
+void BarChart::Clean() {
+
+	int nCleared = this->clearPlottables();
+	cout << "[INFO] Number of plots cleared : " << nCleared << endl;
+
+	_nSets = 0;
+	_barSets.clear();
+	_bp.clear();
+
+	replot();
+
+}
 
 void BarChart::AppendSet(BarChartProperties bp) {
 

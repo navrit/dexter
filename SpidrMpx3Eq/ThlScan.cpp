@@ -95,8 +95,8 @@ void ThlScan::RewindData() {
 		_pixelReactiveTHL[i] = __UNDEFINED;
 	}
 
-	cout << "[INFO] ThlScan::_pixelCountsMap rewinded. Contains " << _pixelCountsMap.size() << " elements." << endl;
-	cout << "[INFO] ThlScan::_pixelReactiveTHL rewinded. Contains " << _pixelReactiveTHL.size() << " elements." << endl;
+	//cout << "[INFO] ThlScan::_pixelCountsMap rewinded. Contains " << _pixelCountsMap.size() << " elements." << endl;
+	//cout << "[INFO] ThlScan::_pixelReactiveTHL rewinded. Contains " << _pixelReactiveTHL.size() << " elements." << endl;
 
 	// Nothing should be masked
 	_maskedSet.clear();
@@ -107,9 +107,7 @@ void ThlScan::RewindData() {
 
 //}
 
-Mpx3EqualizationResults * ThlScan::DeliverPreliminaryEqualization(ScanResults scan_res) {
-
-	Mpx3EqualizationResults * eq = new Mpx3EqualizationResults;
+void ThlScan::DeliverPreliminaryEqualization(Mpx3EqualizationResults * eq, ScanResults scan_res) {
 
 	// Fill the preliminary results
 	for ( int i = 0 ; i < __matrix_size ; i++ ) {
@@ -119,7 +117,6 @@ Mpx3EqualizationResults * ThlScan::DeliverPreliminaryEqualization(ScanResults sc
 		eq->SetPixelReactiveThl(i, _pixelReactiveTHL[i] );
 	}
 
-	return eq;
 }
 
 void ThlScan::DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops, bool blindScan) {
@@ -168,17 +165,16 @@ void ThlScan::run() {
 	bool finishScan = false;
 	bool finishTHLLoop = false;
 	// For a truncated scan
-	int expectedInOneThlLoop = ( _equalization->GetNTriggers() * __matrix_size ) / ( _spacing*_spacing );
-	// For a full matrix scan
-	//if( _numberOfLoops <= 0) expectedInScan = __matrix_size;
+	int expectedInOneThlLoop = ( __matrix_size ) / ( _spacing*_spacing );
 
-	//int nMasked = SetEqualizationMask(spidrcontrol, _spacing, 0,0);
+	// The data buffer id doesn't necessarily corresponds to _deviceIndex
+	int idDataFetch = _mpx3gui->getConfig()->getDataBufferId( _deviceIndex );
+	cout << "[INFO] Run a Scan. devIndex:" << _deviceIndex << " | databuffer:" << idDataFetch << endl;
 
-	int idDataFetch = 0;
 	int step = _stepScan;
 	bool accelerationApplied = false;
 	int accelerationFlagCntr = 0;
-	if( _mpx3gui->getFrameCount() > 1 ) idDataFetch = _deviceIndex;
+
 	int progressMax = _numberOfLoops;
 	if ( _numberOfLoops < 0 ) progressMax = _spacing * _spacing;
 
@@ -207,6 +203,8 @@ void ThlScan::run() {
 			accelerationFlagCntr = 0;
 			step = _stepScan;
 			for(_thlItr = _minScan ; _thlItr <= _maxScan ; _thlItr += step ) {
+
+				//cout << "------------ THL : " << _thlItr << "----------------" << endl;
 
 				QString thlLabelS;
 				thlLabelS = QString::number( _thlItr, 'd', 0 );
@@ -240,11 +238,16 @@ void ThlScan::run() {
 					// if HasFrameSignal(_thlItr) is true there will be a signal back
 					// which will process the given frame
 
+					//cout << "frame ..." << endl;
+
 					int size_in_bytes = -1;
 
 					_data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
 
 					_pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes, _thlItr );
+
+					// Release
+					_spidrdaq->releaseFrame();
 
 					//ReleaseFrameSignal();
 					//Sleep( 10 ); // Allow time to get and decode the next frame, if any
@@ -261,8 +264,7 @@ void ThlScan::run() {
 					if ( _thlItr < _detectedScanBoundary_L ) _detectedScanBoundary_L = _thlItr;
 					if ( _thlItr > _detectedScanBoundary_H ) _detectedScanBoundary_H = _thlItr;
 
-					//
-					_spidrdaq->releaseFrame();
+					// Give some more time to decode the next frame
 					Sleep(10);
 
 				}
@@ -400,13 +402,23 @@ int ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
 		// I checked that the entry is not zero, and also that is not in the maskedMap
 		if ( data[i] != 0 && ( _maskedSet.find( i ) == _maskedSet.end() ) ) {
 			// Increase the counting in this pixel if it hasn't already reached the _nTriggers
-			if ( _pixelCountsMap[i] < _equalization->GetNTriggers() ) _pixelCountsMap[i]++;
+			if ( _pixelCountsMap[i] < _equalization->GetNTriggers() ) {
+				_pixelCountsMap[i]++;
+			}
 			// It it reached the number of triggers, stablish this Threshold as the reactive threshold
 			if ( _pixelCountsMap[i] == _equalization->GetNTriggers() ) {
+
+				// This way I mark the pixel as reactive +1
+				_pixelCountsMap[i]++;
+
+				//cout << i << " | " << _pixelCountsMap[i] << " -- data --> " << data[i] << " | triggers : " << _equalization->GetNTriggers() << endl;
+
 				_pixelReactiveTHL[i] = thl;
 				_nReactivePixels++;
 				pixelsActive++;
 			}
+
+
 		}
 
 	}
@@ -571,14 +583,15 @@ void ThlScan::UpdateChart(int setId, int thlValue) {
 	int cntr = 0;
 	for( ; itr != itrE ; itr++ ) {
 
-		if( (*itr).second ==  _equalization->GetNTriggers() ) {
-			cntr++;
-			(*itr).second++; // This way we avoid re-ploting next time. The value _nTriggers+1 identifies these pixels
+		if( (*itr).second ==  _equalization->GetNTriggers() + 1 ) { // Marked as +1 := reactive
+			// Count how many pixels counted at this threshold
+			cntr++; // Marked as +2 --> taken into account in Chart
+			(*itr).second++; // This way we avoid re-ploting next time. The value _nTriggers+2 identifies these pixels
 		}
 
 	}
 
-	_chart->SetValueInSet( setId , thlValue, cntr );
+	if ( cntr > 0 ) _chart->SetValueInSet( setId , thlValue, cntr );
 
 }
 

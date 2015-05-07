@@ -166,8 +166,6 @@ UpdateDACsThread * QCstmDacs::FillDACValues( int devId ) {
 	// Create the thread
 	_updateDACsThread = new UpdateDACsThread(devId, _mpx3gui->getConfig()->getDacCount(), this, spidrcontrol);
 
-	cout << _mpx3gui->getConfig()->getDacCount() << endl;
-
 	// Run !
 	_updateDACsThread->start();
 
