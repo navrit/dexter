@@ -35,6 +35,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
   workingSet = new Dataset(256,256, 4);
 
   //workingSet->setFramesPerGroup(1,1)
+
   workingSet->setOrientation(0, Dataset::orientationLtRTtB);
   workingSet->setOrientation(1, Dataset::orientationRtLBtT);
   workingSet->setOrientation(2, Dataset::orientationTtBLtR);
@@ -244,6 +245,11 @@ void Mpx3GUI::establish_connection() {
   workingSet = new Dataset(256, 256,config->getNActiveDevices());//TODO: get framesize from config, load offsets & orientation from config
   //emit something here?
   clear_data();
+  QVector<int> activeDevices = config->getActiveDevices();
+  for(int i = 0; i < activeDevices.size();i++){
+      workingSet->setLayout(i, _MPX3RX_LAYOUT[activeDevices[i]]);
+      workingSet->setOrientation(i, _MPX3RX_ORIENTATION[activeDevices[i]]);
+    }
   for(int i = 0; i < workingSet->getLayerCount();i++)
     updateHistogram(i);
   //emit frames_reload();

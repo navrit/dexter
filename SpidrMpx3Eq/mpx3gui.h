@@ -57,6 +57,8 @@ public:
 	Ui::Mpx3GUI * GetUI() { return _ui; }
 
 private:
+	int _MPX3RX_ORIENTATION[4] = {Dataset::orientationLtRTtB, Dataset::orientationRtLBtT, Dataset::orientationTtBLtR, Dataset::orientationRtLTtB};
+	QPoint _MPX3RX_LAYOUT[4] = { QPoint(0,1), QPoint(1,1),QPoint(0,0), QPoint(1,0)};
 	int mode = 0;
 	QApplication * _coreApp;
 	Ui::Mpx3GUI * _ui;
