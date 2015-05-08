@@ -242,6 +242,7 @@ void Mpx3GUI::establish_connection() {
 
   workingSet = new Dataset(256, 256,config->getNActiveDevices());//TODO: get framesize from config, load offsets & orientation from config
   //emit something here?
+  clear_data();
   for(int i = 0; i < workingSet->getLayerCount();i++)
     updateHistogram(i);
   //emit frames_reload();

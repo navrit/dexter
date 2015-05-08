@@ -63,7 +63,7 @@ void Dataset::clear(){
     delete[] m_layers[i];
   m_layers.clear();
   m_thresholdsToIndices.clear();
-  setFramesPerLayer(0);
+  setFramesPerLayer(1);
 }
 
 void Dataset::computeBoundingBox(){
