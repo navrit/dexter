@@ -308,13 +308,13 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
 }
 
 void Mpx3GUI::save_config(){
-  QString filename = QFileDialog::getSaveFileName(this, tr("Save config"), tr("."), tr("binary files (*.json)"));
+  QString filename = QFileDialog::getSaveFileName(this, tr("Save config"), tr("."), tr("json files (*.json)"));
   config->toJsonFile(filename);
   return;
 }
 
 void Mpx3GUI::load_config(){
-  QString filename = QFileDialog::getOpenFileName(this, tr("Save config"), tr("."), tr("binary files (*.json)"));
+  QString filename = QFileDialog::getOpenFileName(this, tr("Save config"), tr("."), tr("json files (*.json)"));
   config->fromJsonFile(filename);
   //TODO: update widgets to match
   return;
