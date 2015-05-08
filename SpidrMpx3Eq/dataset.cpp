@@ -134,7 +134,7 @@ int Dataset::sample(int x, int y, int threshold){
   int remainderX = x%m_nx, remainderY= y%m_ny;
   for(int i = 0; i < m_frameLayouts.length();i++){
       if(layoutSample == m_frameLayouts[i])//TODO: orientation messes up sampling!
-        return 0;// getFrame(i, layer)[remainderY*m_nx+remainderX];
+        return getFrameAt(i, layerIndex)[remainderY*m_nx+remainderX];
     }
   return 0;
 }

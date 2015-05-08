@@ -325,8 +325,8 @@ QPoint QCstmGLPlot::pixelAt(QPoint position){
   pixelX = (1.0+pixelX)*0.5; pixelY = (1.0+pixelY)*0.5;
   int truePixelX = pixelX*nx;
   int truePixelY = pixelY*ny;
-  truePixelX = truePixelX >= nx? nx-1 : truePixelX < 0? 0 : truePixelX;
-  truePixelY = truePixelY >= ny? ny-1 : truePixelY < 0? 0 : truePixelY;
+  //truePixelX = truePixelX >= nx? nx-1 : truePixelX < 0? 0 : truePixelX;
+  //truePixelY = truePixelY >= ny? ny-1 : truePixelY < 0? 0 : truePixelY;
   return QPoint(truePixelX, truePixelY);
 }
 

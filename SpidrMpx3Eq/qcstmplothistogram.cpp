@@ -130,12 +130,13 @@ void QCstmPlotHistogram::set_scale_percentile(double lower, double upper){
     sum += it.value().value;
     it++;
   }while(sum < lower);
-  double lowerBound = (--it).key();
-  do{
+  double lowerBound = (it-1).key();
+
+ while(sum < upper){
     sum += it.value().value;
     it++;
-  }while(sum < upper);
-  double upperBound = (--it).key();
+  };
+  double upperBound = (it-1).key();
   this->changeRange(QCPRange(lowerBound, upperBound));
 }
 
