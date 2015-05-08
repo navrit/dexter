@@ -116,6 +116,8 @@ signals:
 	void set_mode_normal();
 	void clear_configuration();
 	void set_summing(bool);
+	void save_config();
+	void load_config();
 private slots:
 	void LoadEqualization();
 	void on_openfileButton_clicked();

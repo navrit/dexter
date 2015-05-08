@@ -154,7 +154,8 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 
   std::cout << "[Mpx3GUI] Connecting signals and slots" << std::endl;
   connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );
-  connect( _ui->actionSave_DACs, SIGNAL(triggered()), _ui->DACsWidget, SLOT( openWriteMenu() ) );
+  connect( _ui->actionSave_DACs, SIGNAL(triggered()), this, SLOT( save_config()) );
+  connect( _ui->actionLoad_DACs, SIGNAL(triggered()), this, SLOT( load_config()) );
   connect( _ui->actionConnect, SIGNAL(triggered()), this, SLOT( establish_connection() ) );
 
   connect(_ui->actionSumming, SIGNAL(triggered()), this, SLOT(set_mode_integral()));
@@ -303,6 +304,19 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
     }
   saveFile.write(workingSet->toByteArray());
   saveFile.close();
+  return;
+}
+
+void Mpx3GUI::save_config(){
+  QString filename = QFileDialog::getSaveFileName(this, tr("Save config"), tr("."), tr("binary files (*.json)"));
+  config->toJsonFile(filename);
+  return;
+}
+
+void Mpx3GUI::load_config(){
+  QString filename = QFileDialog::getOpenFileName(this, tr("Save config"), tr("."), tr("binary files (*.json)"));
+  config->fromJsonFile(filename);
+  //TODO: update widgets to match
   return;
 }
 
