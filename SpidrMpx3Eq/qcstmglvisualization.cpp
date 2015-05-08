@@ -184,7 +184,7 @@ void QCstmGLVisualization::on_frame_updated(){
 }
 
 void QCstmGLVisualization::on_hover_changed(QPoint pixel){
-  emit(change_hover_text(QString("%1 @ (%2, %3)").arg(_mpx3gui->getPixelAt(pixel.x(), pixel.y(),ui->layerSelector->currentText().toInt())).arg(pixel.x()).arg(pixel.y())));
+  emit(change_hover_text(QString("%1 @ (%2, %3)").arg(_mpx3gui->getPixelAt(pixel.x(), pixel.y(),getActiveThreshold())).arg(pixel.x()).arg(pixel.y())));
 }
 
 void QCstmGLVisualization::on_hist_added(int threshold){
@@ -210,6 +210,13 @@ void QCstmGLVisualization::on_frame_added(int threshold){
   ui->glPlot->getPlot()->setActive(layer);
   ui->histPlot->setActive(layer);
   on_active_frame_changed();
+}
+
+int QCstmGLVisualization::getActiveThreshold(){
+ QStringList list = ui->layerSelector->currentText().split(" ");
+ if(list.size() < 2)
+   return -1;
+ return list[1].toInt();
 }
 
 void QCstmGLVisualization::on_active_frame_changed(){

@@ -134,11 +134,25 @@ int Dataset::sample(int x, int y, int threshold){
   int remainderX = x%m_nx, remainderY= y%m_ny;
   for(int i = 0; i < m_frameLayouts.length();i++){
       if(layoutSample == m_frameLayouts[i])//TODO: orientation messes up sampling!
-        return getFrameAt(i, layerIndex)[remainderY*m_nx+remainderX];
+        return sampleFrameAt(i, layerIndex, remainderX, remainderY);
     }
   return 0;
 }
 
+int  Dataset::sampleFrameAt(int index, int layer, int x, int y){
+  int* frame = getFrameAt(index, layer);
+  int orientation = m_frameOrientation[index];
+  if(orientation&1)
+    x = m_nx -x;
+  if(orientation&2)
+    y = m_ny -y;
+  if(orientation&4){
+      int tmp = x;
+      x = y;
+      y = tmp;
+    }
+  return frame[y*m_nx+x];//TODO:check math
+}
 
 void Dataset::setFramesPerLayer(int newFrameCount){
   int oldFrameCount =m_nFrames;

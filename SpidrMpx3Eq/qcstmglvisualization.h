@@ -24,6 +24,7 @@ public:
   ~QCstmGLVisualization();
 private:
   Ui::QCstmGLVisualization *ui;
+  int getActiveThreshold();
 private slots:
   void ConnectionStatusChanged();
   void on_percentileRangeRadio_toggled(bool checked);

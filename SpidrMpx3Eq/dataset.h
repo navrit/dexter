@@ -63,6 +63,7 @@ public:
   QPoint getSize(){return QPoint(m_nx, m_ny);}
   int *getFrame(int index, int threshold);
   int *getFrameAt(int index, int layer);
+  int sampleFrameAt(int index, int layer, int x, int y);
   int* getLayer(int layer);
   int sample(int x, int y, int layer);
   int x(){return m_nx;}
