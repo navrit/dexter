@@ -11,6 +11,7 @@ void histogram::setData(int *data, unsigned nData, unsigned binWidth){
   bins = nullptr;
   max = INT_MIN;
   min = INT_MAX;
+  total = 0;
   this->binWidth = binWidth;
   addCount(data, nData);
   std::cout << "added data, bounds are " << min << ", " << max << std::endl;
@@ -62,6 +63,7 @@ void histogram::addCount(int * data,  unsigned n){//TODO: add bounds checking, a
   for(unsigned u = 0; u < n; u++){
       int location = (data[u]-this->min)/this->binWidth;
       bins[location]++;
+      total += location;
     }
 }
 

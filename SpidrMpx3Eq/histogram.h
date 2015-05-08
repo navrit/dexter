@@ -10,10 +10,12 @@ class histogram
   int max, min;
   int *bins =nullptr;
   unsigned nBins, binWidth =1;
+  uint64_t total = 0;
   void scanData(int *data, unsigned nData);
   void setData(int * data,  unsigned nData, unsigned binWidth = 1);
 public:
   int* getBins(){return bins;}
+  uint64_t getTotal(){return total;}
   unsigned getBin(unsigned index){return bins[index];}
   unsigned getNBins(){return nBins;}
   unsigned getWidth(){return binWidth;}

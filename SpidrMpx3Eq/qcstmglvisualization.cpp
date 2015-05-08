@@ -221,6 +221,9 @@ int QCstmGLVisualization::getActiveThreshold(){
 
 void QCstmGLVisualization::on_active_frame_changed(){
   //ui->layerSelector->addItem(QString("%1").arg(threshold));
+  int layer = _mpx3gui->getDataset()->thresholdToIndex(this->getActiveThreshold());
+  ui->chargeLabel->setText(QString("Total Charge: %1").arg(_mpx3gui->getHist(layer)->getTotal()));
+  ui->countsLabel->setText(QString("Total Fired: %1").arg(_mpx3gui->getDataset()->getPixelsPerLayer() - _mpx3gui->getHist(layer)->getBin(0)));
   if(ui->percentileRangeRadio->isChecked())
     on_percentileRangeRadio_toggled(true);
   else if(ui->fullRangeRadio->isChecked())
