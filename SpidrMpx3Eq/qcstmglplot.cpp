@@ -179,9 +179,16 @@ void QCstmGLPlot::setSize(int nx, int ny){
 }
 
 void QCstmGLPlot::readData(Dataset &data){//TODO: only update textures.
+
+  QSize bounding = data.computeBoundingBox();
+  program.bind();
+  this->setOffset(-0.25*bounding.width()/data.x(), -0.25*bounding.height()/data.y());
+  this->setZoom(1.0/(bounding.width()/data.x() > bounding.height()/data.y() ? bounding.width()/data.x() : bounding.height()/data.y()));
+
   readOrientations(data);
   readLayouts(data);
   populateTextures(data);
+  this->update();
 }
 
 void QCstmGLPlot::populateTextures(Dataset &data){
@@ -222,7 +229,7 @@ void QCstmGLPlot::readLayouts(Dataset &data){
     if(layout[i].y() > max)
       max = layout[i].y();
    }
-  //scaleFactor = max/;
+
   glBindVertexArray (vao);
   //glEnableVertexAttribArray (positionLoc);
   glBindBuffer (GL_ARRAY_BUFFER, vbo[1]);
