@@ -2,6 +2,7 @@
 #define MPX3CONFIG_H
 #include "mpx3defs.h"
 #include "qcstmdacs.h"
+#include "mpx3gui.h"
 
 #include <QObject>
 #include <QHostAddress>
@@ -40,6 +41,7 @@ class Mpx3Config: public QObject {
 
 public:
 	Mpx3Config();
+	void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
 	//void setIpAddress(QString ip, uint16_t port);
 	bool isConnected(){return connected;}
 	bool fromJsonFile(QString filename, bool includeDacs = true);
@@ -61,6 +63,9 @@ public:
 	void checkChipResponse(int devIndx, detector_response dr);
 	bool detectorResponds(int devIndx);
 
+	void SendConfiguration();
+	void Configuration(bool reset, int deviceIndex);
+
 	quint32 getIpAddressInt(){return SpidrAddress.toIPv4Address();}
 	uint16_t getIpAddressPort(){return port;}
 	bool getColourMode(){return colourMode;}
@@ -75,6 +80,8 @@ public:
 	int getNTriggers(){return nTriggers;}
 
 private:
+
+	Mpx3GUI * _mpx3gui;
 	// Layout of the matrix. Each QPoint is a chip connected with X,Y sizes.
 	QVector<QPoint> _devicePresenceLayout;
 	int _nDevicesPresent;
@@ -111,35 +118,103 @@ void setPort(int newVal){
 	}
 }
 
-void setColourMode(bool mode){if(mode != colourMode){colourMode =mode; emit colourModeChanged(mode);updateColourMode();}}
+void setColourMode(bool mode){
+	if(mode != colourMode){
+		colourMode =mode; emit colourModeChanged(mode);
+		//updateColourMode();
+	}
+	SendConfiguration();
+}
 void updateColourMode(){controller->setColourMode(0, colourMode);}
 
-void setDecodeFrames(bool decode){if(decode != decodeFrames){decodeFrames = decode; emit decodeFramesChanged(decode);updateDecodeFrames();}}
+
+void setDecodeFrames(bool decode){
+	if(decode != decodeFrames){
+		decodeFrames = decode; emit decodeFramesChanged(decode);
+		//updateDecodeFrames();
+	}
+	SendConfiguration();
+}
 void updateDecodeFrames(){}
 
-void setOperationMode(int newVal){if(newVal != OperationMode){OperationMode = newVal; emit operationModeChanged(newVal);updateOperationMode();}}
+void setOperationMode(int newVal){
+	if(newVal != OperationMode){
+		OperationMode = newVal; emit operationModeChanged(newVal);
+		//updateOperationMode();
+	}
+	SendConfiguration();
+}
 void updateOperationMode(){}
 
-void setPixelDepth(int newVal){if(newVal != PixelDepth){PixelDepth = newVal; emit pixelDepthChanged(newVal);updatePixelDepth();}}
+
+void setPixelDepth(int newVal){
+	if(newVal != PixelDepth){
+		PixelDepth = newVal; emit pixelDepthChanged(newVal);
+		//updatePixelDepth();
+	}
+	SendConfiguration();
+}
 void updatePixelDepth(){controller->setPixelDepth(0, PixelDepth);}
 
-void setCsmSpm(int newVal){if(newVal != CsmSpm){CsmSpm = newVal; emit csmSpmChanged(newVal);updateCsmSpm();}}
+
+void setCsmSpm(int newVal){
+	if(newVal != CsmSpm){
+		CsmSpm = newVal; emit csmSpmChanged(newVal);
+		//updateCsmSpm();
+	}
+	SendConfiguration();
+}
 void updateCsmSpm(){controller->setCsmSpm(0, CsmSpm);}
 
-void setGainMode(int newVal){if(newVal != GainMode){GainMode = newVal; emit gainModeChanged(newVal);updateGainMode();}}
+
+void setGainMode(int newVal){
+	if(newVal != GainMode){
+		GainMode = newVal; emit gainModeChanged(newVal);
+		//updateGainMode();
+	}
+	SendConfiguration();
+}
 void updateGainMode(){controller->setGainMode(0, GainMode);}
 
-void setMaxPacketSize(int newVal){if(newVal != MaxPacketSize){MaxPacketSize = newVal; emit MaxPacketSizeChanged(newVal);updateMaxPacketSize();}}
+
+void setMaxPacketSize(int newVal){
+	if(newVal != MaxPacketSize){
+		MaxPacketSize = newVal; emit MaxPacketSizeChanged(newVal);
+		//updateMaxPacketSize();
+	}
+	SendConfiguration();
+}
 void updateMaxPacketSize(){controller->setMaxPacketSize(MaxPacketSize);}
 
-void setTriggerMode(int newVal){if(newVal != TriggerMode){TriggerMode = newVal; emit TriggerModeChanged(newVal);updateTriggerMode();}}
+
+void setTriggerMode(int newVal){
+	if(newVal != TriggerMode){
+		TriggerMode = newVal; emit TriggerModeChanged(newVal);
+		//updateTriggerMode();
+	}
+	SendConfiguration();
+}
 void updateTriggerMode(){}
 
-void setTriggerLength(int newVal){if(newVal != TriggerLength_us){TriggerLength_us = newVal; emit TriggerLengthChanged(newVal);updateTriggerLength();}}
+void setTriggerLength(int newVal){
+	if(newVal != TriggerLength_us){
+		TriggerLength_us = newVal; emit TriggerLengthChanged(newVal);
+		//updateTriggerLength();
+	}
+	SendConfiguration();
+}
 void updateTriggerLength(){}
 
-void setNTriggers(int newVal){if(newVal != nTriggers){nTriggers = newVal; emit nTriggersChanged(newVal);updateNTriggers();}}
+
+void setNTriggers(int newVal){
+	if(newVal != nTriggers){
+		nTriggers = newVal; emit nTriggersChanged(newVal);
+		//updateNTriggers();
+	}
+	SendConfiguration();
+}
 void updateNTriggers(){}
+
 };
 
 #endif // MPX3CONFIG_H

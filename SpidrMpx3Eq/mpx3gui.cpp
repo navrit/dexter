@@ -30,6 +30,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
   // Instantiate everything in the UI
   _ui->setupUi(this);
   config = new Mpx3Config;
+  config->SetMpx3GUI( this );
 
   // FIXME
   workingSet = new Dataset(256,256, 4);
@@ -237,6 +238,9 @@ void Mpx3GUI::establish_connection() {
   cout << endl;
   Sleep( 1000 );
   cout << _spidrdaq->errorString() << endl;
+
+  // Here the chips can be configured
+  getConfig()->SendConfiguration();
 
   // Emmit
   emit ConnectionStatusChanged(true);

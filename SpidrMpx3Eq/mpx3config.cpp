@@ -1,8 +1,12 @@
 #include "mpx3config.h"
 #include <iterator>
+#include <iostream>
+
 #include <QFile>
 
-#include <iostream>
+#include "SpidrController.h"
+#include "SpidrDaq.h"
+
 
 using namespace std;
 
@@ -13,6 +17,78 @@ Mpx3Config::Mpx3Config()
   _devicePresenceLayout.clear();
   _nDevicesPresent = 0;
 
+}
+
+void Mpx3Config::SendConfiguration(){
+
+	// Configure the chips
+	int nDevSupported = getNDevicesSupported();
+	for(int i = 0 ; i < nDevSupported ; i++) {
+		if ( detectorResponds( i ) ) {
+			Configuration( false, i );
+		}
+	}
+
+}
+
+void Mpx3Config::Configuration(bool reset, int deviceIndex) {
+
+	cout << "[INFO] Configuring chip " << deviceIndex;
+
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+
+	int nTriggers = getNTriggers();
+
+	// Reset pixel configuration
+	if ( reset ) spidrcontrol->resetPixelConfig();
+
+	// All adjustment bits to zero
+	//SetAllAdjustmentBits(0x0, 0x0);
+
+	// OMR
+	//spidrcontrol->setPolarity( true );		// Holes collection
+	//_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
+	//_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
+
+	// Not an equalization
+	spidrcontrol->setEqThreshH( deviceIndex, false );
+
+	spidrcontrol->setColourMode( deviceIndex, getColourMode() ); // false 	// Fine Pitch
+	spidrcontrol->setCsmSpm( deviceIndex, getCsmSpm() ); // 0 );				// Single Pixel mode
+
+	// Particular for Equalization
+	//spidrcontrol->setEqThreshH( deviceIndex, true );
+	//spidrcontrol->setDiscCsmSpm( deviceIndex, 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
+	//_spidrcontrol->setGainMode( 1 );
+
+	// Gain ?!
+	// 00: SHGM  0
+	// 10: HGM   2
+	// 01: LGM   1
+	// 11: SLGM  3
+	spidrcontrol->setGainMode( deviceIndex, getGainMode() );
+
+	// Other OMR
+	spidrdaq->setDecodeFrames(  getDecodeFrames() ); //  true );
+	spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth() );
+	spidrdaq->setPixelDepth( getPixelDepth() );
+	spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
+
+	// Write OMR ... i shouldn't call this here
+	//_spidrcontrol->writeOmr( 0 );
+
+	// Trigger config
+	int trig_mode      = getTriggerMode();     // Auto-trigger mode = 4
+	int trig_length_us = getTriggerLength();  // This time shouldn't be longer than the period defined by trig_freq_hz
+	int trig_freq_hz   = (int) ( 1. / (2.*((double)trig_length_us/1000000.)) );   // Make the period double the trig_len
+	cout << " | configured freq is " << trig_freq_hz << "Hz";
+	int nr_of_triggers = getNTriggers();    // This is the number of shutter open i get
+	//int trig_pulse_count;
+	spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
+			trig_freq_hz, nr_of_triggers );
+
+	cout << endl;
 }
 
 SpidrController* Mpx3Config::establishConnection(){

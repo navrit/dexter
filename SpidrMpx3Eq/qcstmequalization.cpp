@@ -839,7 +839,7 @@ void QCstmEqualization::LoadEqualization(){
 
 		// And clear all previous adjustements
 		// In case an equalization was done in the same session
-		ClearAllAdjustmentBits();
+		//ClearAllAdjustmentBits();
 
 		// Check if the device is alive
 		if ( ! _mpx3gui->getConfig()->detectorResponds( i ) ) {

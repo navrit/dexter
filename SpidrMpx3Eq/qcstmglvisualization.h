@@ -6,6 +6,11 @@
 #include "gradient.h"
 #include "histogram.h"
 
+#include <vector>
+
+using namespace std;
+
+
 namespace Ui {
   class QCstmGLVisualization;
 }
@@ -18,13 +23,22 @@ class QCstmGLVisualization : public QWidget
   QMap<int, QString> layerNames;
 public:
   explicit QCstmGLVisualization(QWidget *parent = 0);
-  void SetMpx3GUI(Mpx3GUI * p);
-  void Configuration(bool reset);
-  void Configuration(int deviceIndex, bool reset);
   ~QCstmGLVisualization();
+
+  //void SeparateThresholds(int * data, int size, int * th0, int * th2, int * th4, int * th6, int sizeReduced);
+  void SeparateThresholds(int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
+
+  void SetMpx3GUI(Mpx3GUI * p);
+  void Configuration(bool reset, int deviceIndex);
+  pair<int, int> XtoXY(int X, int dimX);
+  int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
+
 private:
   Ui::QCstmGLVisualization *ui;
   int getActiveThreshold();
+
+
+
 private slots:
   void ConnectionStatusChanged();
   void on_percentileRangeRadio_toggled(bool checked);
