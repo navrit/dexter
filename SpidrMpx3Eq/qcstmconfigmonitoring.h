@@ -25,6 +25,8 @@ private slots:
 
   void on_ipLineEdit_editingFinished();
 
+  void on_ColourModeCheckBox_toggled(bool checked);
+
 private:
   Ui::QCstmConfigMonitoring *ui;
   int _timerId;

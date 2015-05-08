@@ -39,3 +39,6 @@ DONE 2015-04-17 -Ip address as spinbox
 
 OBSERVATIONS & QUESTIONS:
 -Sr90 data shows a connected structure, is this because of a lack of colimator? NO, electron movement in silicon, Sr90 is a beta source.
+
+-Masking
+-shrink in colour mode

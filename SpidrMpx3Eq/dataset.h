@@ -46,6 +46,7 @@ public:
   void setOrientation(int index, int orientation){m_frameOrientation[index] = orientation;}
   void setLayout(int index, QPoint layout){m_frameLayouts[index] = layout;}
   void clear();
+  void resize(int nx, int ny){clear(); m_nx = nx; m_ny = ny;}
   void setFramesPerLayer(int newFrameCount);
   void setLayer(int *data, int layer);
   void addLayer(int* data, int layer);
