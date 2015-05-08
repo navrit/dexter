@@ -66,12 +66,23 @@ void Dataset::clear(){
   //setFramesPerLayer(1);
 }
 
-void Dataset::computeBoundingBox(){
-  /*m_boundingBox.setRect(0,0,0,0);
+QSize Dataset::computeBoundingBox(){
+  m_boundingBox.setRect(0,0,0,0);
+  int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
   for(int i =0; i < m_frameLayouts.length();i++){
-    if(!m_boundingBox.contains(m_frameLayouts[i])){
-        m_boundingBox.united()
-      }*/
+      if(m_frameLayouts[i].x() < min_x)
+        min_x = m_frameLayouts[i].x();
+      if(m_frameLayouts[i].y() < min_y)
+        min_y = m_frameLayouts[i].y();
+      if(m_frameLayouts[i].x() > max_x)
+        max_x = m_frameLayouts[i].x();
+      if(m_frameLayouts[i].y() > max_y)
+        max_y = m_frameLayouts[i].y();
+    }
+  m_boundingBox.setTopLeft(QPoint(min_x, min_y));
+  m_boundingBox.setBottomRight(QPoint(max_x, max_y));
+  //m_boundingBox.setRect(0,0, (max_x-min_x+1)*m_nx, (max_y-min_y+1)*m_ny );
+  return m_boundingBox.size();
 }
 
 /*void Dataset::addFrames(QVector<int *> frames){

@@ -32,11 +32,11 @@ private:
 
   QMap <int, int> m_thresholdsToIndices;
   QVector<int*> m_layers;
-  void computeBoundingBox();
   int getLayerIndex(int threshold);
 public:
   Dataset(int x, int y, int framesPerLayer = 1, int layers = 0);
   ~Dataset();
+  QSize computeBoundingBox();
   int thresholdToIndex(int threshold){return m_thresholdsToIndices.value(threshold, -1);}
   QRect getBoundingBox();
   QByteArray toByteArray();
