@@ -174,7 +174,8 @@ public:
 	void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
 	void setConfig();
 	// Ask the config !
-	int GetDACValue(int chip, int dacIndex);
+	int GetDACValueFromConfig(int chip, int dacIndex);
+	void SetDACValueLocalConfig(int chip, int dacIndex, int val);
 
 private:
 

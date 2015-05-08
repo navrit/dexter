@@ -112,8 +112,12 @@ QCstmDacs::~QCstmDacs() {
 	delete ui;
 }
 
-int QCstmDacs::GetDACValue(int chip, int dacIndex) {
+int QCstmDacs::GetDACValueFromConfig(int chip, int dacIndex) {
 	return _mpx3gui->getConfig()->getDACValue(chip, dacIndex);
+}
+
+void QCstmDacs::SetDACValueLocalConfig(int chip, int dacIndex, int val) {
+	_mpx3gui->getConfig()->setDACValue(chip, dacIndex, val);
 }
 
 void QCstmDacs::StartDACScan() {
@@ -150,6 +154,11 @@ void QCstmDacs::StartDACScan() {
 }
 
 UpdateDACsThread * QCstmDacs::FillDACValues( int devId ) {
+
+	// Check if the device is alive
+	if ( ! _mpx3gui->getConfig()->detectorResponds( _deviceIndex ) ) {
+		return 0x0;
+	}
 
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
@@ -557,6 +566,10 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
 	_dacSliders[i]->setValue( val );
 	// Set DAC
 	spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
+
+	// Now I need to chage it in the local data base
+	SetDACValueLocalConfig( _deviceIndex, i, val);
+
 	// Clean up the corresponding labelV.  The dacOut won't be read right away.
 	// Only under user request
 	//++i
@@ -575,6 +588,10 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
 	//_dacSpinBoxes[i]->setValue( val );
 	// Set DAC
 	spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
+
+	// Now I need to chage it in the local data base
+	SetDACValueLocalConfig( _deviceIndex, i, val);
+
 	//++i
 	//_dacVals[i] = val;
 	// Clean up the corresponding labelV.  The dacOut won't be read right away.
@@ -718,6 +735,9 @@ void QCstmDacs::slideAndSpin(int i, int val) {
 	// Slide n' Spin
 	GetSpinBoxList()[i]->setValue( val );
 	GetSliderList()[i]->setValue( val );
+
+	// Also change the value in the local database
+
 
 	// Connect it back
 	QObject::connect( _signalMapperSpinBox, SIGNAL(mapped(int)), this, SLOT( FromSpinBoxUpdateSlider(int) ) );
@@ -908,11 +928,11 @@ void UpdateDACsThread::run(){
 			//cout << "chip " << chip << " | " << MPX3RX_DAC_TABLE[i].name
 			//		<< " | " << _dacs->GetDACValue(chip, i) << endl;
 
-			spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[i].code,  _dacs->GetDACValue(chip, i) );
+			spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[i].code,  _dacs->GetDACValueFromConfig(chip, i) );
 			Sleep(10);
 			// Adjust the sliders and the SpinBoxes to the new value
 			connect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
-			slideAndSpin( i, _dacs->GetDACValue(chip, i) );
+			slideAndSpin( i, _dacs->GetDACValueFromConfig(chip, i) );
 			disconnect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
 
 			//_dacSpinBoxes[i]->setValue( _dacVals[i][chip] );

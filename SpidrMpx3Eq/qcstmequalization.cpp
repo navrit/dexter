@@ -450,7 +450,7 @@ void QCstmEqualization::DAC_Disc_Optimization (ScanResults res_100, ScanResults 
 	_mpx3gui->GetSpidrController()->getDac( _deviceIndex, MPX3RX_DAC_DISC_L, &dacVal);
 	// SlideAndSpin works with the DAC index, no the code.
 	int dacIndex = _mpx3gui->GetUI()->DACsWidget->GetDACIndex( MPX3RX_DAC_DISC_L );
-	slideAndSpin( dacIndex,  dacVal);
+	slideAndSpin( dacIndex,  dacVal );
 	disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
 
 	QString statsString = "Optimal DAC_DISC_L = ";
