@@ -164,6 +164,7 @@ private:
 
 	// Equalization info
 	Mpx3EqualizationResults * _eqresults;
+	QVector<Mpx3EqualizationResults *> _eqVector;
 
 	// Connectivity between modules
 	Mpx3GUI * _mpx3gui;

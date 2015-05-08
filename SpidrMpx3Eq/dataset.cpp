@@ -79,9 +79,10 @@ QSize Dataset::computeBoundingBox(){
       if(m_frameLayouts[i].y() > max_y)
         max_y = m_frameLayouts[i].y();
     }
-  m_boundingBox.setTopLeft(QPoint(min_x, min_y));
-  m_boundingBox.setBottomRight(QPoint(max_x, max_y));
-  //m_boundingBox.setRect(0,0, (max_x-min_x+1)*m_nx, (max_y-min_y+1)*m_ny );
+  //m_boundingBox.setTopLeft(QPoint(min_x*m_nx, min_y*m_ny));
+  //m_boundingBox.setBottomRight(QPoint((1+max_x)*m_nx, (1+max_y)*m_ny));
+  m_boundingBox.setRect(0,0, (max_x-min_x+1)*m_nx, (max_y-min_y+1)*m_ny );
+
   return m_boundingBox.size();
 }
 

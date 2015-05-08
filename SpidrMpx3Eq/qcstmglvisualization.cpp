@@ -16,6 +16,7 @@ QCstmGLVisualization::~QCstmGLVisualization()
 }
 
 void QCstmGLVisualization::StartDataTaking(){
+
   Configuration( false );
 
   SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();

@@ -104,7 +104,12 @@ void Mpx3Config::checkChipResponse(int devIndx, detector_response dr) {
 
 bool Mpx3Config::detectorResponds(int devIndx) {
 
-  if ( _responseChips[devIndx] > __NOT_RESPONDING ) return true;
+	if( devIndx >= _nDevicesSupported || devIndx < 0) {
+		cout << "[ERR ] device index out of range: " << devIndx << endl;
+		return false;
+	}
+
+	if ( _responseChips[devIndx] > __NOT_RESPONDING ) return true;
 
   return false;
 }

@@ -172,6 +172,8 @@ public:
 	QCPGraph * GetGraph(int idx);
 	//QCustomPlot * GetQCustomPlotPtr() { return _dacScanPlot; };
 	void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
+	Mpx3GUI * GetMpx3GUI() { return _mpx3gui; };
+
 	void setConfig();
 	// Ask the config !
 	int GetDACValueFromConfig(int chip, int dacIndex);

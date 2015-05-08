@@ -155,10 +155,9 @@ void QCstmDacs::StartDACScan() {
 
 UpdateDACsThread * QCstmDacs::FillDACValues( int devId ) {
 
-	// Check if the device is alive
-	if ( ! _mpx3gui->getConfig()->detectorResponds( _deviceIndex ) ) {
-		return 0x0;
-	}
+
+	// Switch to this dev id
+	//ChangeDeviceIndex( devId );
 
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
@@ -790,6 +789,12 @@ ScanDACsThread::ScanDACsThread (int devIdx, QCstmDacs * dacs, SpidrController * 
 
 void SenseDACsThread::run() {
 
+	// Check if the device is alive
+	if ( ! _dacs->GetMpx3GUI()->getConfig()->detectorResponds( _dacs->GetDeviceIndex() ) ) {
+		cout << "[ERR ] Device " << _dacs->GetDeviceIndex() << " not responding." << endl;
+		return;
+	}
+
 	// Open a new temporary connection to the spider to avoid collisions to the main one
 	// Extract the ip address
 	int ipaddr[4] = { 1, 1, 168, 192 };
@@ -923,6 +928,12 @@ void UpdateDACsThread::run(){
 
 	for(int chip = chipMin ; chip < chipMax ; chip++) { // Chip
 
+		// Check if the device is alive
+		if ( ! _dacs->GetMpx3GUI()->getConfig()->detectorResponds( chip ) ) {
+			cout << "[ERR ] Device " << chip << " not responding." << endl;
+			continue;
+		}
+
 		for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) { // DACs
 
 			//cout << "chip " << chip << " | " << MPX3RX_DAC_TABLE[i].name
@@ -950,6 +961,12 @@ void UpdateDACsThread::run(){
 }
 
 void ScanDACsThread::run() {
+
+	// Check if the device is alive
+	if ( ! _dacs->GetMpx3GUI()->getConfig()->detectorResponds( _dacs->GetDeviceIndex() ) ) {
+		cout << "[ERR ] Device " << _dacs->GetDeviceIndex() << " not responding." << endl;
+		return;
+	}
 
 	// Open a new temporary connection to the spider to avoid collisions to the main one
 	// Extract the ip address

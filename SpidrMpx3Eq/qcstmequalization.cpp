@@ -50,6 +50,7 @@ _ui(new Ui::QCstmEqualization)
 	_setId = 0;
 	_global_adj = 0x0;
 	_nChips = 1;
+	_eqVector.clear();
 
 	// Limits in the input widgets
 	SetLimits();
@@ -680,6 +681,10 @@ void QCstmEqualization::GetSlopeAndCut_Adj_THL(ScanResults r1, ScanResults r2, d
 
 }
 
+/*
+ * The way the next two functions relate looks redundant but I need
+ * it for when this is called from inside a thread.
+ */
 void QCstmEqualization::SetAllAdjustmentBits() {
 
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
@@ -718,6 +723,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol) {
 			spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
 		}
 	}
+
 
 	spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
 
@@ -817,13 +823,34 @@ void QCstmEqualization::Configuration(bool reset) {
 
 void QCstmEqualization::LoadEqualization(){
 
-	if ( _eqresults == 0x0 ) {
-		_eqresults = new Mpx3EqualizationResults;
-	}
+	int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
 
-	int nChips = _mpx3gui->getFrameCount();
+
+	// FIXME !!!!
+	// For display.  Memory should be taken care properly and the layout is not correct here
+	int * displaymatrix = new int[__matrix_size_x * __matrix_size_y * nChips];
+
 
 	for(int i = 0 ; i < nChips ; i++) {
+
+		// Next equalization
+		_eqVector.push_back( new Mpx3EqualizationResults );
+		_eqresults = _eqVector[i];
+
+		// And clear all previous adjustements
+		// In case an equalization was done in the same session
+		ClearAllAdjustmentBits();
+
+		// Check if the device is alive
+		if ( ! _mpx3gui->getConfig()->detectorResponds( i ) ) {
+			cout << "[ERR ] Device " << i << " not responding." << endl;
+			continue;
+		}
+
+		// Go to this device index
+		ChangeDeviceIndex( i );
+		_ui->devIdSpinBox->setValue( i );
+
 		QString adjfn = "adj_";
 		adjfn += QString::number(i, 10);
 		QString maskfn = "mask_";
@@ -831,18 +858,27 @@ void QCstmEqualization::LoadEqualization(){
 
 		_eqresults->ReadAdjBinaryFile( adjfn );
 		_eqresults->ReadMaskBinaryFile( maskfn );
+
+		// And talk to the hardware
+		SetAllAdjustmentBits( );
+
+		// Display the equalization
+		int * adj_matrix = _eqresults->GetAdjustementMatrix();
+
+		for (int j = 0 ; j < __matrix_size_x * __matrix_size_y ; j++) {
+			displaymatrix[i*(__matrix_size_x * __matrix_size_y) + j ] = adj_matrix[j];
+		}
+
 	}
 
 
-	// Display the equalization
-	int * adj_matrix = _eqresults->GetAdjustementMatrix();
 	_ui->_intermediatePlot->clear();
 	//int lastActiveFrame = _ui->_intermediatePlot->GetLastActive();
-	_ui->_intermediatePlot->addData( adj_matrix, 256, 256 );
+	QSize boundingBox = _mpx3gui->getDataset()->computeBoundingBox();
+	cout << boundingBox.width() << ", " << boundingBox.height() << endl;
+	_ui->_intermediatePlot->addData( displaymatrix, boundingBox.width(), boundingBox.height() );
 	_ui->_intermediatePlot->setActive( 0 );
 
-	// And talk to the hardware
-	SetAllAdjustmentBits( ); //_eqresults );
 
 }
 
