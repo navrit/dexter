@@ -121,9 +121,14 @@ void QCstmPlotHistogram::set_scale_full(){
   this->replot();
 }
 
-void QCstmPlotHistogram::set_scale_percentile(double lower, double upper){
+void QCstmPlotHistogram::set_scale_percentile(double lowerPercentile, double upperPercentile){
+
   if(this->graphCount() == 0)
     return;
+  double total =0;
+  for(auto it = this->graph(currentHist)->data()->begin(); it != this->graph(currentHist)->data()->end();it++)
+    total += it.value().value;
+  double lower = total*lowerPercentile, upper = total*upperPercentile;
   double sum = 0;
   auto it = this->graph(currentHist)->data()->begin();
   do{

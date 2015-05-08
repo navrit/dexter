@@ -248,8 +248,7 @@ void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
 void QCstmGLVisualization::on_percentileRangeRadio_toggled(bool checked)
 {
   if(checked){
-      int nPoints = _mpx3gui->getDataset()->getPixelsPerLayer()/ui->binWidthSpinner->value();
-      ui->histPlot->set_scale_percentile(ui->lowerPercentileSpin->value()*nPoints, ui->upperPercentileSpin->value()*nPoints);
+      ui->histPlot->set_scale_percentile(ui->lowerPercentileSpin->value(), ui->upperPercentileSpin->value());
     }
 }
 
