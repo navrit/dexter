@@ -443,7 +443,6 @@ void QCstmEqualization::DAC_Disc_Optimization (ScanResults res_100, ScanResults 
 	_opt_MPX3RX_DAC_DISC_L = (int) EvalLinear(_eta_THL_DAC_DiscL, _cut_THL_DAC_DiscL, meanTHL_for_opt_IDAC_DISC);
 	// Set the new DAC
 	_mpx3gui->GetSpidrController()->setDac( _deviceIndex, MPX3RX_DAC_DISC_L, _opt_MPX3RX_DAC_DISC_L );
-
 	// Adjust the sliders and the SpinBoxes to the new value
 	connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
 	// Get the DAC back just to be sure and then slide&spin
@@ -453,6 +452,9 @@ void QCstmEqualization::DAC_Disc_Optimization (ScanResults res_100, ScanResults 
 	int dacIndex = _mpx3gui->GetUI()->DACsWidget->GetDACIndex( MPX3RX_DAC_DISC_L );
 	slideAndSpin( dacIndex,  dacVal );
 	disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+	// Now I need to set it in the local data base
+	_mpx3gui->GetUI()->DACsWidget->SetDACValueLocalConfig( _deviceIndex, dacIndex, _opt_MPX3RX_DAC_DISC_L);
+
 
 	QString statsString = "Optimal DAC_DISC_L = ";
 	statsString += QString::number(_opt_MPX3RX_DAC_DISC_L, 'd', 0);

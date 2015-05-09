@@ -113,7 +113,7 @@ void QCstmGLVisualization::SeparateThresholds(int * data, int size, QVector<int>
 			indx = XYtoX( i, j, __matrix_size_x);
 			indxRed = XYtoX( redi, redj, __matrix_size_x / 2); // This index should go up to 128*128
 
-			if(indxRed > 16380 ) cout << "indx " << indx << ", indxRed = " << indxRed << endl;
+			//if(indxRed > 16380 ) cout << "indx " << indx << ", indxRed = " << indxRed << endl;
 
 			if( i % 2 == 0 && j % 2 == 0) {
 				(*th6)[indxRed] = data[indx]; // P4

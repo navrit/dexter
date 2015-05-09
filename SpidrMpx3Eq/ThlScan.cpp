@@ -156,6 +156,21 @@ void ThlScan::run() {
 		_equalization->SetAllAdjustmentBits(spidrcontrol);
 	}
 
+	// While equalizing one threshold the other can be at a very high value
+	// to keep that circuit from reacting
+	// Set Dac
+	spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_THRESH_1, 150 );
+	// Adjust the sliders and the SpinBoxes to the new value
+	connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+	// Get the DAC back just to be sure and then slide&spin
+	int dacVal = 0;
+	spidrcontrol->getDac( _deviceIndex,  MPX3RX_DAC_THRESH_1, &dacVal);
+	// SlideAndSpin works with the DAC index, no the code.
+	int dacIndex = _mpx3gui->GetUI()->DACsWidget->GetDACIndex( MPX3RX_DAC_THRESH_1 );
+	slideAndSpin( dacIndex,  dacVal );
+	disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+
+
 	// Signals to draw out of the worker
 	connect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
 	connect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
