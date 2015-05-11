@@ -4,7 +4,7 @@ File   : spidrdacsscan.cpp
 Descr  : Commandline tool to scan Timepix3 (or Medipix3) DACs.
 
 Usage  :
-spidrdacsscan <ipaddr>[:<portnr>] [devnr]
+spidrdacsscan <ipaddr>[:<portnr>] <devnr>
    Do a (Timepix3) DACs scan on a SPIDR module.
      <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10.
      <portnr> : current SPIDR controller IP port number, default 50000.
@@ -83,7 +83,7 @@ int main( int argc, char *argv[] )
       usage();
       return 0;
     }
-  else if( devnr >= 3 || devnr < 0 )
+  else if( devnr > 3 || devnr < 0 )
     {
       cout << "### Device-number out-of-range <0-3>" << endl;
       return 0;
@@ -223,7 +223,7 @@ quint32 get_addr_and_port( const char *str, int *portnr )
 void usage()
 {
   cout << endl << "Usage:" << endl
-       << "spidrdacsscan <ipaddr>[:<portnr>] [devnr]"
+       << "spidrdacsscan <ipaddr>[:<portnr>] <devnr>"
        << endl
        << "   Do a (Timepix3) DACs scan on a SPIDR module."
        << endl
