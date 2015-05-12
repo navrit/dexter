@@ -103,7 +103,10 @@ SpidrDacsScan::SpidrDacsScan()
   // Populate comboboxes
   int i;
   for( i=0; i<=4; ++i )
-    _comboBoxDacStep->addItem( QString::number(1<<i) );
+    {
+      _comboBoxDacStep->addItem( QString::number(1<<i) );
+      _comboBoxDacStart->addItem( QString::number(i) );
+    }
   _comboBoxAdcSamples->addItem( "1 sample" );
   _comboBoxAdcSamples->addItem( "2 samples" );
   _comboBoxAdcSamples->addItem( "4 samples" );
@@ -291,6 +294,7 @@ void SpidrDacsScan::changeDeviceType( int index )
       _comboBoxAdcSamples->setCurrentIndex( 3 );
       break;
     }
+  _comboBoxDacStart->setCurrentIndex( 0 );
   _plot->clearGraphs();
   _plot->legend->setVisible( false );
   _plot->replot();
@@ -370,6 +374,9 @@ void SpidrDacsScan::scan()
 	_dacStep = 1 << _comboBoxDacStep->currentIndex();
       else
 	_dacStep = 1;
+
+      // The DAC settings start value
+      _dacVal = _comboBoxDacStart->currentIndex();
 
       // Next graph
       _plot->addGraph();
