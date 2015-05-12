@@ -50,6 +50,11 @@ public:
 
   void setPlot(int index, Histogram hist);
 
+  int getMin(int threshold){return m_mapping[threshold].second.getMin();}
+  int getMax(int threshold){return m_mapping[threshold].second.getMax();}
+  unsigned getBin(int threshold, int level){return m_mapping[threshold].second[level];}
+  unsigned getTotal(int threshold);
+
   void clear();
   int getHistogramCount(){return m_mapping.size();}
 signals:

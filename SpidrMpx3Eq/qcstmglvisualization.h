@@ -72,6 +72,7 @@ public slots:
   void on_hover_changed(QPoint);
   void on_pixel_selected(QPoint pixel, QPoint position);
   void on_clear();
+  void on_range_changed(QCPRange);
  signals:
   void change_hover_text(QString);
 };

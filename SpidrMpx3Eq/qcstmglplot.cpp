@@ -242,7 +242,7 @@ void QCstmGLPlot::readOrientations(Dataset &data){
   QVector<int> orientations = data.getOrientationVector();
   QVector<GLfloat> orientationsGL(orientations.size()*4);
   for(int i = 0; i < orientations.size();i++){
-      GLfloat x = 1-2*(orientations[i]&1);
+      GLfloat x = 2*(orientations[i]&1)-1;
       GLfloat y = 1-(orientations[i]&2);//      QVector2D(1,1/*1-2*(orientations[i]&1), 1-orientations[i]&2*/ );//little hack: first bit of orientations RtL or LtR, second if TtB or BtT.
       if(orientations[i]&4){
         orientationsGL[i*4+0]  = 0;

@@ -33,19 +33,18 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
   config->SetMpx3GUI( this );
 
   // FIXME
-  workingSet = new Dataset(256,256, 4);
+  workingSet = new Dataset(8,8, 4);
 
   //workingSet->setFramesPerGroup(1,1)
 
-  workingSet->setOrientation(0, Dataset::orientationLtRTtB);
-  workingSet->setOrientation(1, Dataset::orientationRtLBtT);
-  workingSet->setOrientation(2, Dataset::orientationTtBLtR);
-  workingSet->setOrientation(3, Dataset::orientationRtLTtB);
-
-  workingSet->setLayout(0, QPoint(0,0));
-  workingSet->setLayout(1, QPoint(1,0));
-  workingSet->setLayout(2, QPoint(0,1));
-  workingSet->setLayout(3, QPoint(1,1));
+  workingSet->setOrientation(0, _MPX3RX_ORIENTATION[0]);
+  workingSet->setOrientation(1, _MPX3RX_ORIENTATION[1]);
+  workingSet->setOrientation(2, _MPX3RX_ORIENTATION[2]);
+  workingSet->setOrientation(3,_MPX3RX_ORIENTATION[3]);
+  workingSet->setLayout(0,  _MPX3RX_LAYOUT[0] );
+  workingSet->setLayout(1,  _MPX3RX_LAYOUT[1] );
+  workingSet->setLayout(2,  _MPX3RX_LAYOUT[2]);
+  workingSet->setLayout(3,  _MPX3RX_LAYOUT[3]);
 
   gradients = Gradient::fromJsonFile("./config/heatmaps.json");
   QStringList gradientNames;
@@ -269,7 +268,7 @@ void Mpx3GUI::generateFrame(){//TODO: put into Dataset
           for(int i = 0; i < workingSet->y(); i++)
             for(int j = 0; j < workingSet->x(); j++)
               //data[k*workingSet->x()*workingSet->y()+i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
-              data[i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
+              data[i*workingSet->x()+j] = (int)((1<<0)*(i*j));//sin(fx*j)*(cos(fy*i)));
           addFrame(data.data(), k, t);
         }
     }

@@ -68,6 +68,14 @@ void QCstmPlotHistogram::setPlot(int index, Histogram hist){
   replot();
 }
 
+unsigned QCstmPlotHistogram::getTotal(int threshold){
+  Histogram hist = m_mapping[threshold].second;
+  unsigned sum = 0;
+  for(int i = hist.getMin(); i < hist.getMax(); i++ )
+    sum += hist[i];
+  return sum;
+}
+
 void QCstmPlotHistogram::rebin(){
   for(int i = 0; i < m_mapping.size();i++)
     setPlot(m_mapping.values()[i].first, m_mapping.values()[i].second);

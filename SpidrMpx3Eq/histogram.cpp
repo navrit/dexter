@@ -1,5 +1,5 @@
 #include <histogram.h>
-
+#include <limits.h>
 Histogram::edgeCaseBehaviourEnum Histogram::m_defaultEdgeCaseBehaviour = Histogram::edgesDrop;
 
 Histogram::Histogram(): Histogram(0){
@@ -9,9 +9,16 @@ Histogram::Histogram(int max):Histogram(0,max){
 }
 
 Histogram::Histogram(int* data, size_t size) : Histogram(){
-  setEdgeCaseBehaviour(Histogram::edgesResize);
-  for(int i = 0; i < size; i++)
+  int min = INT_MAX, max = INT_MIN;
+  for(int i = 0; i < size; i++){
+      if(data[i] < min)
+        min = data[i];
+      else if(data[i] > max)
+        max = data[i];
+  }setRange(min, max);
+  for(int i = 0; i < size; i++){
     *this += data[i];
+  }
   setEdgeCaseBehaviour(m_defaultEdgeCaseBehaviour);
 }
 
