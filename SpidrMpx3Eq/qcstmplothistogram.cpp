@@ -52,6 +52,8 @@ void QCstmPlotHistogram::addHistogram(int threshold, int *data, int size){
 
 int QCstmPlotHistogram::generateGraph(){
   QCPGraph *newGraph = addGraph();
+  newGraph->setPen(QPen(Qt::gray));
+  newGraph->setLayer("back");
   newGraph->setLineStyle(QCPGraph::lsStepRight);
   return graphCount()-1;
 }

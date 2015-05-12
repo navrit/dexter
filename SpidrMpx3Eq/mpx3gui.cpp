@@ -33,7 +33,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
   config->SetMpx3GUI( this );
 
   // FIXME
-  workingSet = new Dataset(128,128, 4);
+  workingSet = new Dataset(256,256, 4);
 
   //workingSet->setFramesPerGroup(1,1)
 
@@ -95,25 +95,6 @@ void Mpx3GUI::addLayer(int *data){
   return addLayer(data, -1);
 }
 
-/*void Mpx3GUI::updateHistogram(int layer){
-  if(mode == 1){
-      if(workingSet->thresholdToIndex(layer) >= hists.size()){
-          hists.append(new histogram(workingSet->getLayer(layer),workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
-          emit hist_added(layer);
-        }
-      else{
-          histogram *old = hists[workingSet->thresholdToIndex(layer)];//TODO: do this better
-          delete old;
-          old = new histogram(workingSet->getLayer(layer),workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1);
-          emit hist_changed(layer);
-        }
-    }
-  else{
-      hists.append(new histogram(workingSet->getLayer(layer),workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
-      emit hist_added(layer);
-    }
-}*/
-
 void Mpx3GUI::addFrame(int *frame, int index, int layer){
   if(mode == 1){
       workingSet->sumFrame(frame,index, layer);
@@ -130,13 +111,7 @@ void Mpx3GUI::addLayer(int *data, int layer){
   else{
       workingSet->setLayer(data, layer);
     }
-  //updateHistogram(layer);
-  emit frame_added(layer);
-}
-
-void Mpx3GUI::reloadLayer(int layer){
-  //updateHistogram(layer);
-  emit frame_added(layer);
+  emit reload_layer(layer);
 }
 
 Gradient* Mpx3GUI::getGradient(int index){
@@ -268,11 +243,12 @@ void Mpx3GUI::generateFrame(){//TODO: put into Dataset
           for(int i = 0; i < workingSet->y(); i++)
             for(int j = 0; j < workingSet->x(); j++)
               //data[k*workingSet->x()*workingSet->y()+i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
-              data[i*workingSet->x()+j] = (int)((i+1)*(j+1));
+              data[i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
           addFrame(data.data(), k, t);
         }
     }
-  reloadLayer(0);reloadLayer(1);reloadLayer(2);reloadLayer(3);
+  //reloadLayer(0);reloadLayer(1);reloadLayer(2);reloadLayer(3);
+  emit reload_all_layers();
 }
 
 int Mpx3GUI::getPixelAt(int x, int y, int layer){
@@ -349,9 +325,10 @@ void Mpx3GUI::open_data(){
   saveFile.close();
   set_mode_normal();
   QList<int> thresholds = workingSet->getThresholds();
-  for(int i = 0; i <thresholds.count();i++){
+  /*for(int i = 0; i <thresholds.count();i++){
       reloadLayer(thresholds[i]);
-    }
+    }*/
+  emit reload_all_layers();
   return;
 }
 

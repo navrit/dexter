@@ -36,6 +36,8 @@ public:
 private:
   Ui::QCstmGLVisualization *ui;
   int getActiveThreshold();
+  void addThresholdToSelector(int threshold);
+  void setThreshold(int threshold);
 
 
 
@@ -65,10 +67,10 @@ public slots:
   void StartDataTaking();
   void setGradient(int index);
   void on_availible_gradients_changed(QStringList gradients);
-  //void on_hist_added(int layer);
-  //void on_hist_changed(int layer);
-  void on_frame_added(int threshold);
-  void on_frame_updated();
+  //void on_frame_added(int threshold);
+  //void on_frame_updated();
+  void on_reload_layer(int);
+  void on_reload_all_layers();
   void on_hover_changed(QPoint);
   void on_pixel_selected(QPoint pixel, QPoint position);
   void on_clear();

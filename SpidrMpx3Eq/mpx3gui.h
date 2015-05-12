@@ -98,18 +98,19 @@ signals:
 	void data_cleared();
 	void hist_added(int);
 	void hist_changed(int);
-	void reload_layer(int layer);
+	/*void reload_layer(int layer);
 	void frame_added(int layer);
 	void frame_changed(int layer);
-	void frames_reload();
+	void frames_reload();*/
 	void active_frame_changed(int);
 	void availible_gradients_changed(QStringList gradients);
 	void gradient_added(QString gradient);	
 	void ConnectionStatusChanged(bool); //TODO: emit false when connection is lost for whatever reason.
 	void summing_set(bool);
+	void reload_layer(int layer);
+	void reload_all_layers();
 
 	public slots:
-	void reloadLayer(int layer);
 	void addLayer(int* data);
 	void addLayer(int* data, int layer);
 	void generateFrame(); //Debugging function to generate data when not connected
