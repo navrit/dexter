@@ -342,7 +342,7 @@ void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
 void QCstmGLVisualization::on_percentileRangeRadio_toggled(bool checked)
 {
   if(checked){
-      ui->histPlot->set_scale_percentile(ui->lowerPercentileSpin->value(), ui->upperPercentileSpin->value());
+      ui->histPlot->set_scale_percentile(getActiveThreshold(),ui->lowerPercentileSpin->value(), ui->upperPercentileSpin->value());
     }
 }
 
@@ -388,7 +388,7 @@ void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
 void QCstmGLVisualization::on_fullRangeRadio_toggled(bool checked)
 {
   if(checked)
-    ui->histPlot->set_scale_full();
+    ui->histPlot->set_scale_full(getActiveThreshold());
 }
 
 void QCstmGLVisualization::on_outOfBoundsCheckbox_toggled(bool checked)

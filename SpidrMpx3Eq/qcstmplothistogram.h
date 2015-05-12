@@ -38,13 +38,6 @@ class QCstmPlotHistogram : public QCustomPlot
   void mouseReleaseEvent(QMouseEvent *event);
   void rebin();
   int generateGraph();
-  void getCurrentHistogram(Histogram &histogram){
-    for(auto it = m_mapping.values().begin(); it != m_mapping.values().end(); it++)
-      if((*it).first == m_currentHist){
-        histogram = ((*it).second);
-        return;
-        }
-  }
 
 public:
   QCstmPlotHistogram(QWidget* &parent);
@@ -69,8 +62,8 @@ signals:
   void rangeChanged(QCPRange newRange);
   void new_range_dragged(QCPRange NewRange);
 public slots:
-  void set_scale_full();
-  void set_scale_percentile(double lower, double upper);
+  void set_scale_full(int threshold);
+  void set_scale_percentile(int threshold, double lower, double upper);
   void setActive(int index);
   void changeRange(QCPRange newRange);
   void minClampChanged(double min);
