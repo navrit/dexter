@@ -15,7 +15,8 @@ using namespace std;
 #include "tpx3dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x15040600;
+const int   VERSION_ID = 0x15051100;
+//const int VERSION_ID = 0x15040600;
 //const int VERSION_ID = 0x15031300;
 //const int VERSION_ID = 0x15012200;
 //const int VERSION_ID = 0x14120100;
@@ -2135,7 +2136,7 @@ bool SpidrController::request( int cmd,     int dev_nr,
   // Reply expected ?
   if( cmd & CMD_NOREPLY ) return true;
 
-  if( !_sock->waitForReadyRead( 400 ) )
+  if( !_sock->waitForReadyRead( 1000 ) )
     {
       this->clearErrorString();
       _errString << "Time-out receiving reply";
