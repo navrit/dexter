@@ -8,10 +8,11 @@ spidripmonconfig <ipaddr>[:<portnr>] show
    Display devices' IP addresses and ports for the SPIDR module
    with the given (Controller) address/port.
 
-spidripmonconfig <ipaddr>[:<portnr>] dest [<ipaddr_dst>]
-   Display or set SPIDR devices' monitor-data destination IP address(es).
-     <ipaddr>    : SPIDR Controller IP address, e.g. 192.168.100.10
-     <ipaddr_dst>: new devices' IP destination, e.g. 192.168.2.10
+spidripmonconfig <ipaddr>[:<portnr>] dest|src [<ipaddr_ds>]
+   Display or set SPIDR devices' monitor-data destination (src) IP address(es).
+     <ipaddr>   : SPIDR Controller IP address, e.g. 192.168.100.10
+     <ipaddr_ds>: new devices' IP destination/source,
+                  e.g. 192.168.2.10/192.168.2.1
 
 spidripmonconfig <ipaddr>[:<portnr>] port [<portnr_dst>]
    Display or set SPIDR devices' monitor-data server IP port number(s).
@@ -44,6 +45,7 @@ void    usage();
 int main( int argc, char *argv[] )
 {
   bool         dst       = false; // Set UDP port destination address(es)
+  bool         src       = false; // Set UDP port source address(es)
   bool         prt       = false; // Set UDP port port number(s)
   bool         show_only = false; // Show curr destination IP or port addresses
   quint32      addr_cmd    = 0;
@@ -66,6 +68,7 @@ int main( int argc, char *argv[] )
 	  usage();
 	}
       else if( (QString(argv[2]) == QString("dest") ||
+		QString(argv[2]) == QString("src") ||
 		QString(argv[2]) == QString("port")) && argc > 4 )
 	{
 	  cout << "### Argument count" << endl;
@@ -82,6 +85,16 @@ int main( int argc, char *argv[] )
   else if( QString(argv[2]) == QString("dest") )
     {
       dst = true;
+      addr_cmd = get_addr_and_port( argv[1], &portnr_cmd );
+
+      if( argc == 4 )
+	addr_new = get_addr( argv[3] );
+      else
+	show_only = true;
+    }
+  else if( QString(argv[2]) == QString("src") )
+    {
+      src = true;
       addr_cmd = get_addr_and_port( argv[1], &portnr_cmd );
 
       if( argc == 4 )
@@ -175,6 +188,57 @@ int main( int argc, char *argv[] )
 	      {
 		cout << endl
 		     << "### Error setting IP dest addr " << i
+		     << ", aborting..." << endl;
+		return 0;
+	      }
+	}
+
+      // And now store it all
+      if( !show_only )
+	{
+	  if( spidrctrl.storeAddrAndPorts() )
+	    cout << "==> New settings stored" << endl;
+	  else
+	    error_out( "### Error storing new settings" );
+	}
+    }
+  else if( src )
+    {
+      // Display all the Medipix3/Timepix3 device source IP addresses
+      // and optionally set to a new value...
+      int      i, ipaddr;
+      quint32 *qi = (quint32 *) &ipaddr;
+      cout << "UDP port IP source addresses (monitor stream): ";
+      for( i=0; i<devices; ++i )
+	{
+	  if( !spidrctrl.getIpAddrSrc( i + SPIDR_IPMON_OFFS, &ipaddr ) )
+	    {
+	      cout << endl
+		   << "### Error getting IP src addr " << i
+		   << ", aborting..." << endl;
+	      return 0;
+	    }
+	  else
+	    {
+	      if( i > 0 ) cout << ", ";
+	      qaddr.setAddress( *qi );
+	      cout << qaddr.toString().toLatin1().constData();
+	    }
+	}
+      cout << endl;
+
+      if( !show_only )
+	{
+	  cout << "change to: ";
+	  qaddr.setAddress( addr_new );
+	  cout << qaddr.toString().toLatin1().constData() << endl;
+
+	  for( i=0; i<devices; ++i )
+	    if( !spidrctrl.setIpAddrSrc( i + SPIDR_IPMON_OFFS,
+					 *paddr_new_i ) )
+	      {
+		cout << endl
+		     << "### Error setting IP src addr " << i
 		     << ", aborting..." << endl;
 		return 0;
 	      }

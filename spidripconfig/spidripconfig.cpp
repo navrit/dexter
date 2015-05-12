@@ -20,10 +20,11 @@ spidripconfig <ipaddr>[:<portnr_cmd>] <ipaddr_new>[:<portnr_new>]
      <portnr_cmd>: current IP port for SPIDR command & control, default 50000
      <portnr_new>: new IP port for SPIDR command & control
 
-spidripconfig <ipaddr>[:<portnr>] dest|src [<ipaddr_dst>]
+spidripconfig <ipaddr>[:<portnr>] dest|src [<ipaddr_ds>]
    Display or set SPIDR devices' destination (source) IP address(es).
-     <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10
-     <ipaddr_dst>: new devices' IP destination, e.g. 192.168.101.1
+     <ipaddr>   : current SPIDR IP address, e.g. 192.168.100.10
+     <ipaddr_ds>: new devices' IP destination or source,
+                    e.g. 192.168.101.1 (dest) or 192.168.101.10 (src)
 
 spidripconfig <ipaddr>[:<portnr>] port [<portnr_dst>]
    Display or set SPIDR devices' server IP port number(s).
@@ -527,13 +528,13 @@ void usage()
        << endl
        << "     <ipaddr_dst>: new devices' IP destination, e.g. 192.168.101.1"
        << endl << endl
-       << "spidripconfig <ipaddr>[:<portnr>] src [<ipaddr_dst>]"
+       << "spidripconfig <ipaddr>[:<portnr>] src [<ipaddr_src>]"
        << endl
        << "   Display or set SPIDR devices' source IP address(es)."
        << endl
        << "     <ipaddr>    : current SPIDR IP address, e.g. 192.168.100.10"
        << endl
-       << "     <ipaddr_dst>: new devices' IP source, e.g. 192.168.101.1"
+       << "     <ipaddr_src>: new devices' IP source, e.g. 192.168.101.10"
        << endl << endl
        << "spidripconfig <ipaddr>[:<portnr>] port [<portnr_dst>]"
        << endl
