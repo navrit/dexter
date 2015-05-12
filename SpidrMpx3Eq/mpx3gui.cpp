@@ -268,7 +268,7 @@ void Mpx3GUI::generateFrame(){//TODO: put into Dataset
           for(int i = 0; i < workingSet->y(); i++)
             for(int j = 0; j < workingSet->x(); j++)
               //data[k*workingSet->x()*workingSet->y()+i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
-              data[i*workingSet->x()+j] = (int)((1<<10)*sin(fx*j)*(cos(fy*i)));
+              data[i*workingSet->x()+j] = (int)((i+1)*(j+1));
           addFrame(data.data(), k, t);
         }
     }
