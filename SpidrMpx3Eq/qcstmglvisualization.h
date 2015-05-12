@@ -65,8 +65,8 @@ public slots:
   void StartDataTaking();
   void setGradient(int index);
   void on_availible_gradients_changed(QStringList gradients);
-  void on_hist_added(int layer);
-  void on_hist_changed(int layer);
+  //void on_hist_added(int layer);
+  //void on_hist_changed(int layer);
   void on_frame_added(int threshold);
   void on_frame_updated();
   void on_hover_changed(QPoint);

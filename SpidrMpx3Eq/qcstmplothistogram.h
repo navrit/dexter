@@ -12,13 +12,14 @@
 class QCstmPlotHistogram : public QCustomPlot
 {
  Q_OBJECT
-  QVector<histogram*> hists;
-  int currentHist = -1;
+  QMap<int, QPair<int,Histogram>> m_mapping;
+  int m_binSize = 1;
+  int m_currentHist = -1;
   bool clicked = false;
   double xClicked = 0, xReleased =0;
   //QVector<QVector<double>> xHist, yHist;
   QCPItemStraightLine *lowClamp, *highClamp;
-  void generateGraph(histogram* Histogram, int reduction);
+
   void mousePressEvent(QMouseEvent *event){//TODO: check if clicked inside graph.
     QCustomPlot::mousePressEvent(event);
     if(event->button() == Qt::RightButton)
@@ -35,16 +36,22 @@ class QCstmPlotHistogram : public QCustomPlot
   }
 
   void mouseReleaseEvent(QMouseEvent *event);
+  void rebin();
+  int generateGraph();
 public:
   QCstmPlotHistogram(QWidget* &parent);
   virtual ~QCstmPlotHistogram();
-  void changeBinSize(int binSize, int histogramToChange);
-  void setHistogram(histogram *hist, int reduction, int index  );
-  void addHistogram(histogram *hist, int reduction  );
-  //void setData(int *data, unsigned nData);
+
+  void setHistogram(int threshold, int* data, int size);
+  void setHistogram(int threshold, QVector<int> data);
+
+  void addHistogram(int threshold, int* data, int size);
+  void addHistogram(int threshold, QVector<int> data);
+
+  void setPlot(int index, Histogram hist);
+
   void clear();
-  void swapHistogram(histogram *hist, int binSize);
-  int getHistogramCount(){return hists.length();}
+  int getHistogramCount(){return m_mapping.size();}
 signals:
   void rangeChanged(QCPRange newRange);
   void new_range_dragged(QCPRange NewRange);
@@ -55,7 +62,8 @@ public slots:
   void changeRange(QCPRange newRange);
   void minClampChanged(double min);
   void maxClampChanged(double max);
-  void rebinHistograms(int binSize);
+  void changeBinSize(int binSize){m_binSize = binSize; rebin();}
+  //void rebinHistograms(int binSize)
 };
 
 #endif // QCSTMPLOTHISTOGRAM_H

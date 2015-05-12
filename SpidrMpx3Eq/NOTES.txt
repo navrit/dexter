@@ -42,3 +42,7 @@ OBSERVATIONS & QUESTIONS:
 
 -Masking
 -shrink in colour mode
+-Lots and lots of cleaning up.
+   ->only reload new layers when neccesary.
+   ->More robust histogram plotting
+     ->armadillo histograms?

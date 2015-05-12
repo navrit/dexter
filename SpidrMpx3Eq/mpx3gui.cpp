@@ -96,7 +96,7 @@ void Mpx3GUI::addLayer(int *data){
   return addLayer(data, -1);
 }
 
-void Mpx3GUI::updateHistogram(int layer){
+/*void Mpx3GUI::updateHistogram(int layer){
   if(mode == 1){
       if(workingSet->thresholdToIndex(layer) >= hists.size()){
           hists.append(new histogram(workingSet->getLayer(layer),workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
@@ -113,7 +113,7 @@ void Mpx3GUI::updateHistogram(int layer){
       hists.append(new histogram(workingSet->getLayer(layer),workingSet->getFrameCount()*workingSet->x()*workingSet->y(),  1));
       emit hist_added(layer);
     }
-}
+}*/
 
 void Mpx3GUI::addFrame(int *frame, int index, int layer){
   if(mode == 1){
@@ -131,12 +131,12 @@ void Mpx3GUI::addLayer(int *data, int layer){
   else{
       workingSet->setLayer(data, layer);
     }
-  updateHistogram(layer);
+  //updateHistogram(layer);
   emit frame_added(layer);
 }
 
 void Mpx3GUI::reloadLayer(int layer){
-  updateHistogram(layer);
+  //updateHistogram(layer);
   emit frame_added(layer);
 }
 
@@ -254,24 +254,26 @@ void Mpx3GUI::establish_connection() {
       workingSet->setLayout(i, _MPX3RX_LAYOUT[activeDevices[i]]);
       workingSet->setOrientation(i, _MPX3RX_ORIENTATION[activeDevices[i]]);
     }
-  for(int i = 0; i < workingSet->getLayerCount();i++)
-    updateHistogram(i);
+ /*for(int i = 0; i < workingSet->getLayerCount();i++)
+    updateHistogram(i);*/
   //emit frames_reload();
 }
 
 
 void Mpx3GUI::generateFrame(){//TODO: put into Dataset
-  int threshold = rand()%10;
+  //int thresholds[] = {0,1,2,3};
   QVector<int> data(workingSet->x()*workingSet->y()*workingSet->getFrameCount());
   for(int k = 0; k < workingSet->getFrameCount();k++){
-      double fx = ((double)8*rand()/RAND_MAX)/(workingSet->x()), fy = (8*(double)rand()/RAND_MAX)/workingSet->y();
-      for(int i = 0; i < workingSet->y(); i++)
-        for(int j = 0; j < workingSet->x(); j++)
-          //data[k*workingSet->x()*workingSet->y()+i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
-          data[i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
-      addFrame(data.data(), k, threshold);
+      for(int t = 0; t < 4;t++){
+          double fx = ((double)8*rand()/RAND_MAX)/(workingSet->x()), fy = (8*(double)rand()/RAND_MAX)/workingSet->y();
+          for(int i = 0; i < workingSet->y(); i++)
+            for(int j = 0; j < workingSet->x(); j++)
+              //data[k*workingSet->x()*workingSet->y()+i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
+              data[i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
+          addFrame(data.data(), k, t);
+        }
     }
-  reloadLayer(threshold);
+  reloadLayer(0);reloadLayer(1);reloadLayer(2);reloadLayer(3);
 }
 
 int Mpx3GUI::getPixelAt(int x, int y, int layer){
@@ -349,8 +351,8 @@ void Mpx3GUI::open_data(){
   set_mode_normal();
   QList<int> thresholds = workingSet->getThresholds();
   for(int i = 0; i <thresholds.count();i++){
-    reloadLayer(thresholds[i]);
-  }
+      reloadLayer(thresholds[i]);
+    }
   return;
 }
 
@@ -396,9 +398,9 @@ void Mpx3GUI::clear_configuration(){
 
 void Mpx3GUI::clear_data(){
   workingSet->clear();
-  for(int i = 0; i < hists.size();i++)
+  /*for(int i = 0; i < hists.size();i++)
     delete hists[i];
-  hists.clear();
+  hists.clear();*/
   emit(data_cleared());
 }
 

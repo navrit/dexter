@@ -69,7 +69,7 @@ private:
 	SpidrDaq * _spidrdaq = nullptr;
 
 	QVector<Gradient*>  gradients;
-	QVector<histogram*> hists;
+	//QVector<istogram*> hists;
 	void updateHistogram(int layer);
 public:
 	Mpx3Config* getConfig();
@@ -81,7 +81,7 @@ public:
 	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
 	void addFrame(int *frame, int index, int layer);
 	Gradient* getGradient(int index);
-	histogram* getHist(int index){return hists[index];}
+	//histogram* getHist(int index){return hists[index];}
 
 	QPoint  getSize();
 	void getSize(int *x, int *y);

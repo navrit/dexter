@@ -188,7 +188,7 @@ private:
 
 	int **data = 0;
 	unsigned *nx =0, *ny =0, nData =0;
-	histogram ** hists = 0;
+//	histogram ** hists = 0;
 
 	// Drawing object
 	//QCustomPlot * _customPlot;

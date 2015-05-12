@@ -2,75 +2,100 @@
 
 QCstmPlotHistogram::QCstmPlotHistogram(QWidget*& parent)
 {
-    //setMouseTracking(false);
-    this->setParent(parent);
-    this->addLayer("back");
-    this->addLayer("front");
-    this->addLayer("overlay");
-    //hist = 0;
-    //this->addGraph();
-    setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
-    axisRect()->setupFullAxesBox(true);
-    xAxis->setLabel("signal");
-    yAxis->setLabel("count");
-    //this->graph(0)->setLineStyle(QCPGraph::lsStepCenter);
-    //this->graph(0)->setPen(QPen(Qt::black));
-    lowClamp = new QCPItemStraightLine(this);    highClamp = new QCPItemStraightLine(this);
-    lowClamp->setLayer("overlay"); highClamp->setLayer("overlay");
-    lowClamp->setPen(QPen(Qt::blue)); highClamp->setPen(QPen(Qt::blue));
-    lowClamp->point1->setCoords(-DBL_MAX,0); lowClamp->point2->setCoords(-DBL_MAX,1);
-    highClamp->point1->setCoords(DBL_MAX,0); highClamp->point2->setCoords(DBL_MAX,1);
-    this->addItem(lowClamp); this->addItem(highClamp);
+  //setMouseTracking(false);
+  this->setParent(parent);
+  this->addLayer("back");
+  this->addLayer("front");
+  this->addLayer("overlay");
+  //hist = 0;
+  //this->addGraph();
+  setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
+  axisRect()->setupFullAxesBox(true);
+  xAxis->setLabel("signal");
+  yAxis->setLabel("count");
+  //this->graph(0)->setLineStyle(QCPGraph::lsStepCenter);
+  //this->graph(0)->setPen(QPen(Qt::black));
+  lowClamp = new QCPItemStraightLine(this);    highClamp = new QCPItemStraightLine(this);
+  lowClamp->setLayer("overlay"); highClamp->setLayer("overlay");
+  lowClamp->setPen(QPen(Qt::blue)); highClamp->setPen(QPen(Qt::blue));
+  lowClamp->point1->setCoords(-DBL_MAX,0); lowClamp->point2->setCoords(-DBL_MAX,1);
+  highClamp->point1->setCoords(DBL_MAX,0); highClamp->point2->setCoords(DBL_MAX,1);
+  this->addItem(lowClamp); this->addItem(highClamp);
 }
 
 QCstmPlotHistogram::~QCstmPlotHistogram()
 {
-    //delete hist;
+  //delete hist;
 }
+
+void QCstmPlotHistogram::setHistogram(int threshold, QVector<int> data){
+  setHistogram(threshold, data.data(), data.size());
+}
+
+void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size){
+  int index = m_mapping.contains(threshold) ? m_mapping[threshold].first : generateGraph();
+  Histogram hist = Histogram(data, size);
+  m_mapping[threshold] = qMakePair(index, hist);
+  setPlot(index, hist);
+}
+
+/*void QCstmPlotHistogram::addHistogram(int threshold, QVector<int> data){
+  addHistogram(threshold, data.data(), data.size());
+}
+
+void QCstmPlotHistogram::addHistogram(int threshold, int *data, int size){
+  if(!m_mapping.contains(threshold))
+    return setHistogram(threshold, data, size);
+  m_mapping[threshold].second += Histogram(data, size);
+  setPlot(m_mapping[threshold].first, m_mapping[threshold].second);
+}*/
+
+int QCstmPlotHistogram::generateGraph(){
+  addGraph();
+  return graphCount()-1;
+}
+
+void QCstmPlotHistogram::setPlot(int index, Histogram hist){
+  QCPGraph *graph = this->graph(index);
+  graph->clearData();
+  for(int i = hist.getMin(); i < hist.getMax(); i+=m_binSize){
+      int sample = 0;
+      for(int j = 0; j < m_binSize; j++)
+        sample += hist.at(i+j);
+      graph->addData(i+0.5*m_binSize, ((double)sample)/m_binSize);
+    }
+  graph->rescaleAxes();
+  replot();
+}
+
+void QCstmPlotHistogram::rebin(){
+  for(int i = 0; i < m_mapping.size();i++)
+    setPlot(m_mapping.values()[i].first, m_mapping.values()[i].second);
+}
+
+
 void QCstmPlotHistogram::setActive(int index){
   if(this->graphCount() == 0)
     return;
   if(-1 == index)
     index = this->graphCount()-1;
-  if(currentHist >= 0){
-    this->graph(currentHist)->setPen(QPen(Qt::gray));
-    this->graph(currentHist)->setLayer("back");
+  if(m_currentHist >= 0){
+      this->graph(m_currentHist)->setPen(QPen(Qt::gray));
+      this->graph(m_currentHist)->setLayer("back");
     }
-  currentHist = index;
-  this->graph(currentHist)->setPen(QPen(Qt::red));
-  this->graph(currentHist)->setLayer("front");
+  m_currentHist = index;
+  this->graph(m_currentHist)->setPen(QPen(Qt::red));
+  this->graph(m_currentHist)->setLayer("front");
   //this->graph(currentHist)->setLayer()
-  this->graph(currentHist)->rescaleAxes();
+  this->graph(m_currentHist)->rescaleAxes();
   replot();
-}
-
-void QCstmPlotHistogram::generateGraph(histogram* Histogram, int reduction){
-  hists.append(Histogram);
-  QCPGraph* graph = addGraph();
-  graph->setPen(QPen(Qt::gray));
-  graph->setLineStyle(QCPGraph::lsStepCenter);
-  this->setActive(-1);
-  changeBinSize(reduction,this->graphCount()-1);
-  graph->rescaleAxes();
 }
 
 void QCstmPlotHistogram::clear(){
   this->clearGraphs();
-  hists.clear();
-  currentHist = -1;
+  m_mapping.clear();
+  m_currentHist = -1;
   this->replot();
-}
-
-void QCstmPlotHistogram::addHistogram(histogram *hist, int reduction){
-  generateGraph(hist, reduction);
-  replot();
-}
-
-void QCstmPlotHistogram::setHistogram(histogram *hist, int reduction, int index){
-  QCPGraph* graph = this->graph(index);
-  hists[index] = hist;
-  changeBinSize(reduction,index);
-  this->setActive(index);
 }
 
 void QCstmPlotHistogram::changeRange(QCPRange newRange){
@@ -87,37 +112,11 @@ void QCstmPlotHistogram::maxClampChanged(double max){
   highClamp->point1->setCoords(max,0); highClamp->point2->setCoords(max,1);
   replot();
 }
-void QCstmPlotHistogram::changeBinSize(int reduction, int histogramToChange){
-  int min = hists[histogramToChange]->getMin();
-  int binWidth = hists[histogramToChange]->getWidth()*reduction;
-  QVector<unsigned> subsampled;
-   hists[histogramToChange]->getSubsampled(reduction, &subsampled);
-   QCPDataMap *data = graph(histogramToChange)->data();
-   data->clear();
-   for(int i = 0; i < subsampled.length();i++)
-    data->insert((i+0.5)*binWidth+min, QCPData((i+0.5)*binWidth+min, ((double)subsampled[i])/binWidth));
-   this->graph(currentHist)->rescaleAxes();
-   replot();
-}
-
-void QCstmPlotHistogram::rebinHistograms(int binSize){
-  if(currentHist == -1)
-    return;
-  for(int i = 0; i < this->graphCount();i++)
-    changeBinSize(binSize, i);
-  this->graph(currentHist)->rescaleAxes();
-  replot();
-}
-
-void QCstmPlotHistogram::swapHistogram(histogram *hist, int binSize){
-  hists[currentHist]  = hist;
-  changeBinSize(binSize, currentHist);
-}
 
 void QCstmPlotHistogram::set_scale_full(){
   if(this->graphCount() == 0)
     return;
-  this->changeRange(QCPRange(this->graph(currentHist)->data()->begin().key(), (this->graph(currentHist)->data()->end()-1).key()));
+  this->changeRange(QCPRange(this->graph(m_currentHist)->data()->begin().key(), (this->graph(m_currentHist)->data()->end()-1).key()));
   this->replot();
 }
 
@@ -126,21 +125,21 @@ void QCstmPlotHistogram::set_scale_percentile(double lowerPercentile, double upp
   if(this->graphCount() == 0)
     return;
   double total =0;
-  for(auto it = this->graph(currentHist)->data()->begin(); it != this->graph(currentHist)->data()->end();it++)
+  for(auto it = this->graph(m_currentHist)->data()->begin(); it != this->graph(m_currentHist)->data()->end();it++)
     total += it.value().value;
   double lower = total*lowerPercentile, upper = total*upperPercentile;
   double sum = 0;
-  auto it = this->graph(currentHist)->data()->begin();
+  auto it = this->graph(m_currentHist)->data()->begin();
   do{
-    sum += it.value().value;
-    it++;
-  }while(sum < lower);
+      sum += it.value().value;
+      it++;
+    }while(sum < lower);
   double lowerBound = (it-1).key();
 
- while(sum < upper){
-    sum += it.value().value;
-    it++;
-  };
+  while(sum < upper){
+      sum += it.value().value;
+      it++;
+    };
   double upperBound = (it-1).key();
   this->changeRange(QCPRange(lowerBound, upperBound));
 }
@@ -148,16 +147,16 @@ void QCstmPlotHistogram::set_scale_percentile(double lowerPercentile, double upp
 void QCstmPlotHistogram::mouseReleaseEvent(QMouseEvent *event){
   QCustomPlot::mouseReleaseEvent(event);
   if((event->button() == Qt::RightButton) && clicked)
-      {
-        clicked = false;
-        xReleased = xAxis->pixelToCoord(event->x());
-        maxClampChanged(xReleased);
-        if(xReleased < xClicked){
-            double tmp = xReleased;
-            xReleased = xClicked;
-            xClicked = tmp;
+    {
+      clicked = false;
+      xReleased = xAxis->pixelToCoord(event->x());
+      maxClampChanged(xReleased);
+      if(xReleased < xClicked){
+          double tmp = xReleased;
+          xReleased = xClicked;
+          xClicked = tmp;
         };
-        //this->changeRange(QCPRange(xClicked, xReleased));
-        emit new_range_dragged(QCPRange(xClicked, xReleased));
-      }
+      //this->changeRange(QCPRange(xClicked, xReleased));
+      emit new_range_dragged(QCPRange(xClicked, xReleased));
+    }
 }

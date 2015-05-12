@@ -1,73 +1,94 @@
-#include "histogram.h"
-#include <iostream>
+#include <histogram.h>
 
-histogram::histogram(int *data, unsigned nData, unsigned binWidth)
-{
-  setData(data, nData, binWidth);
+Histogram::edgeCaseBehaviourEnum Histogram::m_defaultEdgeCaseBehaviour = Histogram::edgesDrop;
+
+Histogram::Histogram(): Histogram(0){
 }
 
-void histogram::setData(int *data, unsigned nData, unsigned binWidth){
-  delete[] bins;
-  bins = nullptr;
-  max = INT_MIN;
-  min = INT_MAX;
-  total = 0;
-  this->binWidth = binWidth;
-  addCount(data, nData);
-  std::cout << "added data, bounds are " << min << ", " << max << std::endl;
+Histogram::Histogram(int max):Histogram(0,max){
 }
 
-void histogram::getSubsampled(unsigned reduction, QVector<unsigned> *data){
-  for(unsigned u = 0; u < nBins;u+=reduction){
-      unsigned sum = 0;
-      for(unsigned w = 0; (w < reduction) && (w+u < nBins);w++)
-        sum += bins[u+w];
-        data->append(sum);
+Histogram::Histogram(int* data, size_t size) : Histogram(){
+  setEdgeCaseBehaviour(Histogram::edgesResize);
+  for(int i = 0; i < size; i++)
+    *this += data[i];
+  setEdgeCaseBehaviour(m_defaultEdgeCaseBehaviour);
+}
+
+Histogram::Histogram(int min, int max){
+  m_min = min;
+  m_max = max;
+  m_bins.resize(size());
+  for(auto it = begin(); it  != end();it++)
+    (*it) = 0;
+  setEdgeCaseBehaviour(m_defaultEdgeCaseBehaviour);
+}
+
+Histogram::~Histogram(){
+}
+
+void Histogram::setMax(int max){
+  if(max < m_min)
+    m_min = max;
+  const int offset = size();
+  m_max = max;
+  m_bins.resize(size());
+  for(int i = offset; i < size(); i++)
+    m_bins[i] = 0;
+}
+
+void Histogram::setMin(int min){
+  if(min > m_max)
+    setMax(min);
+  int old_min = m_min;
+  m_min = min;
+  std::vector<unsigned> new_bins(size());
+  if(m_min < old_min){ //if we need to prepend
+      const int offset = old_min-m_min;
+      for(int i = 0; i < offset; i++)//set the first bins to 0.
+        new_bins[i] = 0;
+      for(int i = 0; i < m_bins.size(); i++)//copy the rest.
+        new_bins[i+offset] = m_bins[i];
     }
-}
-
-histogram::histogram()
-{
-}
-
-histogram::~histogram() //double detor because of copy.
-{
-  delete[] bins;
-}
-
-void histogram::scanData(int *data, unsigned n){
-  int oldMin = min, oldMax = max;
-  for(unsigned u = 0; u < n;u++){
-      if(data[u] < min)
-        min = data[u];
-      if(data[u] > max)
-        max = data[u];
- }
-  std::cout << "scanned` data, bounds are " << min << ", " << max << std::endl;
-  if((oldMin != min)|| (oldMax != max)){
-      int oldnBins = nBins;
-      this->nBins = (unsigned)(max-min+this->binWidth)/this->binWidth;
-      int *newBins = new int[nBins];
-      for(int i = 0; i < nBins;i++)
-        newBins[i] = 0;
-      if(bins != nullptr)
-        for(int i = 0; i < oldnBins; i++)
-          newBins[-min+oldMin+i] = bins[i];
-      delete[] bins;
-      bins = newBins;
+  else{//if we need to drop the first bins.
+      const int offset = m_min-old_min;//TODO: respect edgeCaseBehaviour
+      new_bins.assign(m_bins.begin()+offset, m_bins.end());
     }
+  m_bins.swap(new_bins);
 }
 
-void histogram::addCount(int * data,  unsigned n){//TODO: add bounds checking, allow for dynamic growing. (Not neccesary for this project atm but is nice).
-  scanData(data, n);
-  for(unsigned u = 0; u < n; u++){
-      int location = (data[u]-this->min)/this->binWidth;
-      bins[location]++;
-      total += location;
+void Histogram::setRange(int min, int max){//TODO: test this when less sleepy
+  setMin(min);
+  setMax(max);
+}
+
+Histogram& Histogram::operator+=(const int& rhs){
+  addCount(rhs);
+  return *this;
+}
+
+Histogram& Histogram::operator+=(const Histogram& rhs){
+  const int min = rhs.getMin();
+  const int max = rhs.getMax();
+  if(m_edgeCaseBehaviour == Histogram::edgesResize){
+      if(min < getMin())
+        setMin(min);
+      if(max > getMax())
+        setMax(max);
     }
+  for(int i = min; i <= max; i++)
+    addCount(i,rhs[i]);
+  return *this;
 }
 
-void histogram::addCount(int data){
-      bins[(data-this->min)/this->binWidth]++;
+Histogram Histogram::operator+(const Histogram& rhs) const{//TODO: edge case behaviour inhereted?
+  Histogram ret = *this;
+  ret += rhs;
+  return ret;
 }
 
+Histogram Histogram::operator+(const int& rhs) const{
+  Histogram ret = *this;
+  ret += rhs;
+  return ret;
+}

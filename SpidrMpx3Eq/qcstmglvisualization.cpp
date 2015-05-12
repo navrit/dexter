@@ -230,7 +230,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 	connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), ui->glPlot, SLOT(set_range(QCPRange)));
 	// connect(ui->layerSelector, SIGNAL(activated(QString)), ui->glPlot->getPlot(), SLOT()
 
-	connect(ui->binWidthSpinner, SIGNAL(valueChanged(int)), ui->histPlot, SLOT(rebinHistograms(int)));
+	connect(ui->binWidthSpinner, SIGNAL(valueChanged(int)), ui->histPlot, SLOT(changeBinSize(int)));
 	connect(ui->glPlot->getPlot(), SIGNAL(hovered_pixel_changed(QPoint)),this, SLOT(on_hover_changed(QPoint)));
 	connect(ui->glPlot->getPlot(), SIGNAL(pixel_selected(QPoint,QPoint)), this, SLOT(on_pixel_selected(QPoint,QPoint)));
 
@@ -263,7 +263,7 @@ void QCstmGLVisualization::on_availible_gradients_changed(QStringList gradients)
 
 void QCstmGLVisualization::on_frame_updated(){
 	ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset());
-	ui->histPlot->changeBinSize(ui->binWidthSpinner->value(), ui->layerSelector->currentText().toInt());
+	ui->histPlot->setHistogram(getActiveThreshold(), _mpx3gui->getDataset()->getLayer(getActiveThreshold()), _mpx3gui->getDataset()->getPixelsPerLayer());
 	if(ui->percentileRangeRadio->isChecked())
 		on_percentileRangeRadio_toggled(true);
 	else if(ui->fullRangeRadio->isChecked())
@@ -274,7 +274,7 @@ void QCstmGLVisualization::on_hover_changed(QPoint pixel){
 	emit(change_hover_text(QString("%1 @ (%2, %3)").arg(_mpx3gui->getPixelAt(pixel.x(), pixel.y(),getActiveThreshold())).arg(pixel.x()).arg(pixel.y())));
 }
 
-void QCstmGLVisualization::on_hist_added(int threshold){
+/*void QCstmGLVisualization::on_hist_added(int threshold){
 	int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
 	ui->histPlot->addHistogram(_mpx3gui->getHist(layer), ui->binWidthSpinner->value());
 }
@@ -282,11 +282,12 @@ void QCstmGLVisualization::on_hist_added(int threshold){
 void QCstmGLVisualization::on_hist_changed(int threshold){
 	int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
 	ui->histPlot->setHistogram(_mpx3gui->getHist(layer),ui->binWidthSpinner->value(), layer);
-}
+}*/
 
 void QCstmGLVisualization::on_frame_added(int threshold){
 	int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
 	ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset());
+	ui->histPlot->setHistogram(threshold, _mpx3gui->getDataset()->getLayer(threshold), _mpx3gui->getDataset()->getPixelsPerLayer());
 	QString label = QString("Threshold %1").arg(threshold);
 	if(!layerNames.contains(threshold)){
 		layerNames[threshold] =label ;
@@ -309,8 +310,8 @@ int QCstmGLVisualization::getActiveThreshold(){
 void QCstmGLVisualization::on_active_frame_changed(){
 	//ui->layerSelector->addItem(QString("%1").arg(threshold));
 	int layer = _mpx3gui->getDataset()->thresholdToIndex(this->getActiveThreshold());
-	ui->chargeLabel->setText(QString("Total Charge: %1").arg(_mpx3gui->getHist(layer)->getTotal()));
-	ui->countsLabel->setText(QString("Total Fired: %1").arg(_mpx3gui->getDataset()->getPixelsPerLayer() - _mpx3gui->getHist(layer)->getBin(0)));
+	//ui->chargeLabel->setText(QString("Total Charge: %1").arg(_mpx3gui->getHist(layer)->getTotal())); REDO THIS
+	//ui->countsLabel->setText(QString("Total Fired: %1").arg(_mpx3gui->getDataset()->getPixelsPerLayer() - _mpx3gui->getHist(layer)->getBin(0)));
 	if(ui->percentileRangeRadio->isChecked())
 		on_percentileRangeRadio_toggled(true);
 	else if(ui->fullRangeRadio->isChecked())
