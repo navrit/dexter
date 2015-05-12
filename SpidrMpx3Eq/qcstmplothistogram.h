@@ -38,6 +38,14 @@ class QCstmPlotHistogram : public QCustomPlot
   void mouseReleaseEvent(QMouseEvent *event);
   void rebin();
   int generateGraph();
+  void getCurrentHistogram(Histogram &histogram){
+    for(auto it = m_mapping.values().begin(); it != m_mapping.values().end(); it++)
+      if((*it).first == m_currentHist){
+        histogram = ((*it).second);
+        return;
+        }
+  }
+
 public:
   QCstmPlotHistogram(QWidget* &parent);
   virtual ~QCstmPlotHistogram();

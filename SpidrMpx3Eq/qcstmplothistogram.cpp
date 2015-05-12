@@ -132,23 +132,21 @@ void QCstmPlotHistogram::set_scale_percentile(double lowerPercentile, double upp
 
   if(this->graphCount() == 0)
     return;
-  double total =0;
-  for(auto it = this->graph(m_currentHist)->data()->begin(); it != this->graph(m_currentHist)->data()->end();it++)
-    total += it.value().value;
-  double lower = total*lowerPercentile, upper = total*upperPercentile;
-  double sum = 0;
-  auto it = this->graph(m_currentHist)->data()->begin();
+  Histogram hist;
+  getCurrentHistogram(hist);
+  int total = 0, partialSum  = 0;
+  for(int i = hist.getMin(); i < hist.getMax(); i++)
+    total += hist[i];
+  int minBound = round(lowerPercentile*total), maxBound = round(upperPercentile*total);
+  double lowerBound, upperBound;
+  int index = hist.getMin();
   do{
-      sum += it.value().value;
-      it++;
-    }while(sum < lower);
-  double lowerBound = (it-1).key();
-
-  while(sum < upper){
-      sum += it.value().value;
-      it++;
-    };
-  double upperBound = (it-1).key();
+      partialSum += hist[index++];
+    }while(partialSum < minBound);
+  lowerBound = index-1;
+  while(partialSum < upperBound)
+    partialSum += hist[index++];
+  upperBound = index;
   this->changeRange(QCPRange(lowerBound, upperBound));
 }
 
