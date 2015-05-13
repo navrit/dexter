@@ -333,12 +333,27 @@ void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
   if(!_mpx3gui->getConfig()->isConnected())
     return;
   if(selectedItem == &mask){
-       _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord);
+      if(_mpx3gui->getConfig()->getColourMode()){
+        _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord);
+        _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord+1);
+        _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord+_mpx3gui->getX()*2);
+        _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord+1+_mpx3gui->getX()*2);
+        }
+      else
+      _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord);
    }
   else if(selectedItem == &unmask){
+      if(_mpx3gui->getConfig()->getColourMode()){
+        _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord);
+        _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord+1);
+        _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord+_mpx3gui->getX()*2);
+        _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord+1+_mpx3gui->getX()*2);
+        }
+      else
         _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord);
     }
-  _mpx3gui->getEqualization()->SetAllAdjustmentBits( _mpx3gui->getConfig()->getController(), deviceID);
+  if(selectedItem != nullptr)
+    _mpx3gui->getEqualization()->SetAllAdjustmentBits( _mpx3gui->getConfig()->getController(), deviceID);
 }
 
 void QCstmGLVisualization::on_percentileRangeRadio_toggled(bool checked)
@@ -408,3 +423,4 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
   //_mpx3gui->set_active_frame(threshold);
   this->on_active_frame_changed();
 }
+
