@@ -58,6 +58,7 @@ public:
 
   void clear();
   int getHistogramCount(){return m_mapping.size();}
+  void scaleToInterest();
 signals:
   void rangeChanged(QCPRange newRange);
   void new_range_dragged(QCPRange NewRange);

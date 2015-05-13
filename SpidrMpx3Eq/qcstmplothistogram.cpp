@@ -74,6 +74,14 @@ void QCstmPlotHistogram::setPlot(int index, Histogram hist){
   replot();
 }
 
+void QCstmPlotHistogram::scaleToInterest(){
+  double x0 = lowClamp->point1->coords().x();
+  double x1 = highClamp->point1->coords().x();
+  double delta = x1-x0;
+  this->xAxis->setRange(x0-delta*0.1, x1+delta*0.1);
+  this->replot();
+}
+
 unsigned QCstmPlotHistogram::getTotal(int threshold){
   Histogram hist = m_mapping[threshold].second;
   unsigned sum = 0;

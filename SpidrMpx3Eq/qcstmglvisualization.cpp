@@ -356,13 +356,6 @@ void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
     _mpx3gui->getEqualization()->SetAllAdjustmentBits( _mpx3gui->getConfig()->getController(), deviceID);
 }
 
-void QCstmGLVisualization::on_percentileRangeRadio_toggled(bool checked)
-{
-  if(checked){
-      ui->histPlot->set_scale_percentile(getActiveThreshold(),ui->lowerPercentileSpin->value(), ui->upperPercentileSpin->value());
-    }
-}
-
 void QCstmGLVisualization::on_lowerPercentileSpin_editingFinished()
 {
   if(ui->lowerPercentileSpin->value() > ui->upperPercentileSpin->value())
@@ -400,12 +393,21 @@ void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
 {
   if(checked)
     ui->histPlot->changeRange(QCPRange(ui->lowerManualSpin->value(), ui->upperManualSpin->value()));
+  ui->histPlot->scaleToInterest();
 }
 
 void QCstmGLVisualization::on_fullRangeRadio_toggled(bool checked)
 {
   if(checked)
     ui->histPlot->set_scale_full(getActiveThreshold());
+  ui->histPlot->scaleToInterest();
+}
+
+void QCstmGLVisualization::on_percentileRangeRadio_toggled(bool checked)
+{
+  if(checked)
+      ui->histPlot->set_scale_percentile(getActiveThreshold(),ui->lowerPercentileSpin->value(), ui->upperPercentileSpin->value());
+  ui->histPlot->scaleToInterest();
 }
 
 void QCstmGLVisualization::on_outOfBoundsCheckbox_toggled(bool checked)
