@@ -123,18 +123,18 @@ int* Dataset::getFrame(int index, int threshold){
 }
 
 int* Dataset::getFrameAt(int index, int layer){
-    return &m_layers[layer][index*m_nx*m_ny];
+  return &m_layers[layer][index*m_nx*m_ny];
 }
 
 int Dataset::sample(int x, int y, int threshold){
   int layerIndex = thresholdToIndex(threshold);
   if(layerIndex == -1)
     return 0;
-  QPoint layoutSample(x/m_nx, y/m_ny);
+  QPoint layoutSample((x+m_nx)/m_nx -1, (y+m_ny)/m_ny-1);
   int remainderX = x%m_nx, remainderY= y%m_ny;
   for(int i = 0; i < m_frameLayouts.length();i++){
       if(layoutSample == m_frameLayouts[i])//TODO: orientation messes up sampling!
-        return sampleFrameAt(i, layerIndex, m_nx-remainderX, remainderY);
+        return sampleFrameAt(i, layerIndex, remainderX, remainderY);
     }
   return 0;
 }
@@ -142,10 +142,10 @@ int Dataset::sample(int x, int y, int threshold){
 int  Dataset::sampleFrameAt(int index, int layer, int x, int y){
   int* frame = getFrameAt(index, layer);
   int orientation = m_frameOrientation[index];
-  if(orientation&1)
-    x = m_nx -x;
+  if(!(orientation&1))
+    x = m_nx -x-1;
   if(orientation&2)
-    y = m_ny -y;
+    y = m_ny -y-1;
   if(orientation&4){
       int tmp = x;
       x = y;
@@ -168,13 +168,13 @@ void Dataset::setFramesPerLayer(int newFrameCount){
 void Dataset::setLayer(int *data, int threshold){
   int layerIndex = getLayerIndex(threshold);
   for(int i = 0; i < m_nFrames*m_nx*m_ny;i++)
-      m_layers[layerIndex][i] = data[i];
+    m_layers[layerIndex][i] = data[i];
 }
 
 void Dataset::addLayer(int *data, int threshold){
   int layerIndex = getLayerIndex(threshold);
   for(int i = 0; i < m_nFrames*m_nx*m_ny;i++)
-      m_layers[layerIndex][i] += data[i];
+    m_layers[layerIndex][i] += data[i];
 }
 
 int* Dataset::getLayer(int threshold){

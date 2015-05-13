@@ -66,15 +66,15 @@ void QCstmGLVisualization::StartDataTaking(){
               _mpx3gui->addFrame(th6->data(), i, 6);
               delete th6;
 
-              on_reload_all_layers();
-
             } else {
               _mpx3gui->addFrame(framedata, i, 0);
-              on_reload_layer(0);
-
             }
 
         }
+       if( _mpx3gui->getConfig()->getColourMode() )
+         on_reload_all_layers();
+       else
+         on_reload_layer(0);
       //_mpx3gui->getDataset()->setLayer(framedata,0);
       spidrdaq->releaseFrame();
       Sleep( 10 ); // Allow time to get and decode the next frame, if any
