@@ -32,14 +32,13 @@ public:
   void Configuration(bool reset, int deviceIndex);
   pair<int, int> XtoXY(int X, int dimX);
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
+  void GetAFrame();
 
 private:
   Ui::QCstmGLVisualization *ui;
   int getActiveThreshold();
   void addThresholdToSelector(int threshold);
   void setThreshold(int threshold);
-
-
 
 private slots:
   void ConnectionStatusChanged();
@@ -62,6 +61,7 @@ private slots:
   void on_outOfBoundsCheckbox_toggled(bool checked);
 
   void on_layerSelector_activated(const QString &arg1);
+  void UnlockWaitingForFrame();
 
 public slots:
   void StartDataTaking();
