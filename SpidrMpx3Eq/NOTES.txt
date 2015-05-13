@@ -41,8 +41,7 @@ OBSERVATIONS & QUESTIONS:
 -Sr90 data shows a connected structure, is this because of a lack of colimator? NO, electron movement in silicon, Sr90 is a beta source.
 
 -Masking
--shrink in colour mode
+-shrink in colour mode switching
 -Lots and lots of cleaning up.
    ->only reload new layers when neccesary.
-   ->More robust histogram plotting
-     ->armadillo histograms?
+

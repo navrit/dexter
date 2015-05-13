@@ -13,7 +13,7 @@ Histogram::Histogram(int* data, size_t size) : Histogram(){
   for(int i = 0; i < size; i++){
       if(data[i] < min)
         min = data[i];
-      else if(data[i] > max)
+      if(data[i] > max)
         max = data[i];
   }setRange(min, max);
   for(int i = 0; i < size; i++){

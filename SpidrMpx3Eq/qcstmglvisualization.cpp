@@ -37,7 +37,7 @@ void QCstmGLVisualization::StartDataTaking(){
 
       for(int i = 0 ; i < activeDevices.size() ; i++) {
 
-          framedata = spidrdaq->frameData(activeDevices[i], &size_in_bytes);
+          framedata = spidrdaq->frameData(i, &size_in_bytes);
 
           if ( size_in_bytes == 0 ) continue; // this may happen
 
@@ -65,6 +65,7 @@ void QCstmGLVisualization::StartDataTaking(){
 
               _mpx3gui->addFrame(th6->data(), i, 6);
               delete th6;
+
               on_reload_all_layers();
 
             } else {
@@ -259,15 +260,6 @@ void QCstmGLVisualization::on_availible_gradients_changed(QStringList gradients)
   ui->gradientSelector->clear();
   ui->gradientSelector->addItems(gradients);
 }
-
-/*void QCstmGLVisualization::on_frame_updated(){
-  ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset());
-  ui->histPlot->setHistogram(getActiveThreshold(), _mpx3gui->getDataset()->getLayer(getActiveThreshold()), _mpx3gui->getDataset()->getPixelsPerLayer());
-  if(ui->percentileRangeRadio->isChecked())
-    on_percentileRangeRadio_toggled(true);
-  else if(ui->fullRangeRadio->isChecked())
-    on_fullRangeRadio_toggled(true);
-}*/
 
 void QCstmGLVisualization::on_hover_changed(QPoint pixel){
   emit(change_hover_text(QString("%1 @ (%2, %3)").arg(_mpx3gui->getPixelAt(pixel.x(), pixel.y(),getActiveThreshold())).arg(pixel.x()).arg(pixel.y())));

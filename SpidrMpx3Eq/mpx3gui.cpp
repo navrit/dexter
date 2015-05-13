@@ -33,7 +33,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
   config->SetMpx3GUI( this );
 
   // FIXME
-  workingSet = new Dataset(256,256, 4);
+  workingSet = new Dataset(128,128, 4);
 
   //workingSet->setFramesPerGroup(1,1)
 
@@ -220,7 +220,8 @@ void Mpx3GUI::establish_connection() {
   emit ConnectionStatusChanged(true);
   delete workingSet;
 
-  workingSet = new Dataset(256, 256,config->getNActiveDevices());//TODO: get framesize from config, load offsets & orientation from config
+  int chipSize = config->getColourMode()? __matrix_size_x /2: __matrix_size_x ;
+  workingSet = new Dataset(chipSize, chipSize,config->getNActiveDevices());//TODO: get framesize from config, load offsets & orientation from config
   //emit something here?
   clear_data();
   QVector<int> activeDevices = config->getActiveDevices();
