@@ -36,6 +36,8 @@ private:
 public:
   Dataset(int x, int y, int framesPerLayer = 1, int layers = 0);
   ~Dataset();
+  int getContainingFrame(QPoint pixel);
+  QPoint getNaturalCoordinates(QPoint pixel, int index);
   QSize computeBoundingBox();
   int thresholdToIndex(int threshold){return m_thresholdsToIndices.value(threshold, -1);}
   QRect getBoundingBox();

@@ -16,7 +16,6 @@ QCstmGLVisualization::~QCstmGLVisualization()
 }
 
 void QCstmGLVisualization::StartDataTaking(){
-
   SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
   SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
@@ -31,7 +30,6 @@ void QCstmGLVisualization::StartDataTaking(){
   // See if there is a frame available
   int * framedata;
   while ( spidrdaq->hasFrame() ) {
-
       int size_in_bytes = -1;
       QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
 
@@ -319,6 +317,14 @@ void QCstmGLVisualization::on_active_frame_changed(){
 }
 
 void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
+  if(!_mpx3gui->getConfig()->isConnected())
+    return;
+  int frameIndex = _mpx3gui->getDataset()->getContainingFrame(pixel);
+  if(frameIndex == -1)
+    return;
+  QPoint naturalCoords = _mpx3gui->getDataset()->getNaturalCoordinates(pixel, frameIndex);
+  int naturalFlatCoord = naturalCoords.y()*_mpx3gui->getDataset()->x()+naturalCoords.x();
+  int deviceID = _mpx3gui->getConfig()->getActiveDevices()[frameIndex];
   QMenu contextMenu;
   QAction mask(QString("Mask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu), unmask(QString("Unmask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu);
   contextMenu.addAction(&mask);
@@ -326,14 +332,13 @@ void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
   QAction* selectedItem = contextMenu.exec(position);
   if(!_mpx3gui->getConfig()->isConnected())
     return;
-  if(selectedItem == &mask)
-    //_mpx3gui->getDataset()->addMask(pixel);
-    _mpx3gui->getEqualization()->GetEqualizationResults()->maskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());
-  else if(selectedItem == &unmask)
-    //_mpx3gui->getDataset()->removeMask(pixel);
-    _mpx3gui->getEqualization()->GetEqualizationResults()->unmaskPixel(pixel.y()*_mpx3gui->getX()+pixel.x());
-  //_mpx3gui->getDataset()->loadAdjustments();
-  _mpx3gui->getEqualization()->SetAllAdjustmentBits( );//TODO: integrate into dataset
+  if(selectedItem == &mask){
+       _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord);
+   }
+  else if(selectedItem == &unmask){
+        _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord);
+    }
+  _mpx3gui->getEqualization()->SetAllAdjustmentBits( _mpx3gui->getConfig()->getController(), deviceID);
 }
 
 void QCstmGLVisualization::on_percentileRangeRadio_toggled(bool checked)

@@ -126,17 +126,41 @@ int* Dataset::getFrameAt(int index, int layer){
   return &m_layers[layer][index*m_nx*m_ny];
 }
 
+int Dataset::getContainingFrame(QPoint pixel){
+  QPoint layoutSample((pixel.x()+m_nx)/m_nx -1, (pixel.y()+m_ny)/m_ny-1);
+  for(int i = 0; i < m_frameLayouts.length();i++){
+      if(layoutSample == m_frameLayouts[i])//TODO: orientation messes up sampling!
+        return i;
+    }
+  return -1;
+}
+
+QPoint Dataset::getNaturalCoordinates(QPoint pixel, int index){
+  int x = pixel.x() % m_nx;
+  int y = pixel.y() % m_ny;
+  int orientation = m_frameOrientation[index];
+  if(!(orientation&1))
+    x = m_nx -x-1;
+  if(orientation&2)
+    y = m_ny -y-1;
+  if(orientation&4){
+      int tmp = x;
+      x = y;
+      y = tmp;
+    }
+  return QPoint(x,y);
+}
+
 int Dataset::sample(int x, int y, int threshold){
   int layerIndex = thresholdToIndex(threshold);
   if(layerIndex == -1)
     return 0;
-  QPoint layoutSample((x+m_nx)/m_nx -1, (y+m_ny)/m_ny-1);
-  int remainderX = x%m_nx, remainderY= y%m_ny;
-  for(int i = 0; i < m_frameLayouts.length();i++){
-      if(layoutSample == m_frameLayouts[i])//TODO: orientation messes up sampling!
-        return sampleFrameAt(i, layerIndex, remainderX, remainderY);
-    }
-  return 0;
+  int frameIndex  = getContainingFrame(QPoint(x,y));
+  if(frameIndex == -1)
+    return 0;
+  int* frame = getFrameAt(frameIndex, layerIndex);
+  QPoint coordinate = getNaturalCoordinates(QPoint(x,y), frameIndex);
+  return frame[coordinate.y()*m_nx+coordinate.x()];
 }
 
 int  Dataset::sampleFrameAt(int index, int layer, int x, int y){
