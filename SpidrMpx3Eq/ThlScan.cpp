@@ -477,6 +477,7 @@ void ThlScan::SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj
 
 int ThlScan::ReAdjustPixelsOff(double N, int dac_code) {
 
+	/*
 	int adjustedPixels = 0;
 	int * data;
 	// The heatmap can store the images.  This is the indexing.
@@ -577,6 +578,7 @@ int ThlScan::ReAdjustPixelsOff(double N, int dac_code) {
 	}
 
 	return adjustedPixels;
+	*/
 }
 
 void ThlScan::UpdateHeatMap(int sizex, int sizey) {
