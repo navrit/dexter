@@ -15,7 +15,8 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x15011300;   // spidrErrString(); dacMax(), dacName()
+const int VERSION_ID = 0x15042800;   // triggerSingleReadout(countl_or_h)
+//const int VERSION_ID = 0x15011300; // spidrErrString(); dacMax(), dacName()
                                      // parameter is DAC code (not 'index')
 //const int VERSION_ID = 0x14121200; // Reinstate loadOmr() as private member;
                                      // SPIDR loads each OMR setting immediately
@@ -1007,9 +1008,9 @@ bool SpidrController::stopAutoTrigger()
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::triggerOneReadout()
+bool SpidrController::triggerSingleReadout( int countl_or_h )
 {
-  return this->requestSetInt( CMD_TRIGGER_READOUT, 0, 0 );
+  return this->requestSetInt( CMD_TRIGGER_READOUT, 0, countl_or_h );
 }
 
 // ----------------------------------------------------------------------------

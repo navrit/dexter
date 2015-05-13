@@ -165,7 +165,7 @@ class MY_LIB_API SpidrController
 				 int *trig_pulse_count );
   bool startAutoTrigger        ( );
   bool stopAutoTrigger         ( );
-  bool triggerOneReadout       ( );
+  bool triggerSingleReadout    ( int counterl_or_h = 0 );
 
   // Monitoring
   bool getAdc                  ( int *adc_val, int chan, int nr_of_samples = 1 );
