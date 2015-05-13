@@ -694,6 +694,20 @@ void QCstmEqualization::SetAllAdjustmentBits() {
 
 }
 
+void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int chipIndex ) {
+
+	int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
+	if ( chipIndex < 0 || chipIndex > nChips - 1) {
+		cout << "[ERROR] wrong chip index !" << endl;
+		return;
+	}
+
+	_eqresults = _eqVector[chipIndex];
+
+	SetAllAdjustmentBits(spidrcontrol);
+
+}
+
 void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol) {
 
 	if( !spidrcontrol ) {

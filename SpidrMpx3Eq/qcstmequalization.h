@@ -126,6 +126,7 @@ public:
 	void Configuration(bool reset);
 	void SetAllAdjustmentBits(SpidrController * spidrcontrol, int val_L, int val_H);
 	void SetAllAdjustmentBits(SpidrController * spidrcontrol);
+	void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId );
 	void SetAllAdjustmentBits();
 	void ClearAllAdjustmentBits();
 
