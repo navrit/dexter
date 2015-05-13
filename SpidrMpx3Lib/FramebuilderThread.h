@@ -41,6 +41,7 @@ class FramebuilderThread : public QThread
   void writeFrameToFile();
   void writeRawFrameToFile();
   void writeDecodedFrameToFile();
+  bool waitForDecodedFrame( unsigned long timeout_ms = ULONG_MAX );
   bool hasDecodedFrame() { return _hasDecodedFrame; }
   int *decodedFrameData( int index, int *size );
   void releaseDecodedFrame();
@@ -77,6 +78,7 @@ class FramebuilderThread : public QThread
   QMutex         _mutex;
   QWaitCondition _inputCondition;
   QWaitCondition _outputCondition;
+  QWaitCondition _frameAvailableCondition;
   bool           _stop;
 
   // For external notification purposes, a general-purpose callback function

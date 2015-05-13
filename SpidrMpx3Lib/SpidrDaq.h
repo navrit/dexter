@@ -48,6 +48,7 @@ class MY_LIB_API SpidrDaq
   bool closeFile                ( );
 
   // Acquisition
+  bool      waitForFrame        ( unsigned long timeout_ms = ULONG_MAX );
   bool      hasFrame            ( );
   int      *frameData           ( int  index,
                                   int *size_in_bytes );

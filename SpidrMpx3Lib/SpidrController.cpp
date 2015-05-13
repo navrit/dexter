@@ -812,7 +812,8 @@ bool SpidrController::setInternalTestPulse( int dev_nr, bool internal )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setPixelDepth( int dev_nr, int bits )
+bool SpidrController::setPixelDepth( int dev_nr, int bits,
+				     bool two_counter_readout )
 {
   int pixelcounterdepth_id = 2; // 12-bit
   if( bits == 1 )
@@ -821,6 +822,10 @@ bool SpidrController::setPixelDepth( int dev_nr, int bits )
     pixelcounterdepth_id = 1;   // 4-bit or 6-bit (RX)
   else if( bits == 24 )
     pixelcounterdepth_id = 3;   // 24-bit
+
+  // Will both counters (per pixel) be read out ?
+  if( two_counter_readout ) pixelcounterdepth_id |= 0x10000;
+
   return this->requestSetInt( CMD_SET_COUNTERDEPTH, dev_nr,
 			      pixelcounterdepth_id );
 }

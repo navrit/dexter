@@ -128,7 +128,8 @@ class MY_LIB_API SpidrController
   bool setPolarity             ( int  dev_nr, bool polarity );
   bool setDiscCsmSpm           ( int  dev_nr, int  disc );
   bool setInternalTestPulse    ( int  dev_nr, bool internal );
-  bool setPixelDepth           ( int  dev_nr, int  bits );
+  bool setPixelDepth           ( int  dev_nr, int  bits,
+				 bool two_counter_readout = false );
   bool setEqThreshH            ( int  dev_nr, bool equalize );
   bool setColourMode           ( int  dev_nr, bool colour );
   bool setCsmSpm               ( int  dev_nr, int  csm );
@@ -155,12 +156,12 @@ class MY_LIB_API SpidrController
   // Shutter trigger
   bool setShutterTriggerConfig ( int  trig_mode,
 				 int  trig_period_us,
-				 int  trig_freq_hz,
+				 int  trig_freq_mhz,
 				 int  nr_of_triggers,
 				 int  trig_pulse_count = 0 );
   bool getShutterTriggerConfig ( int *trig_mode,
 				 int *trig_period_us,
-				 int *trig_freq_hz,
+				 int *trig_freq_mhz,
 				 int *nr_of_triggers,
 				 int *trig_pulse_count );
   bool startAutoTrigger        ( );

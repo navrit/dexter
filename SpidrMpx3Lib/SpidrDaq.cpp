@@ -257,6 +257,13 @@ bool SpidrDaq::closeFile()
 // Acquisition
 // ----------------------------------------------------------------------------
 
+bool SpidrDaq::waitForFrame( unsigned long timeout_ms )
+{
+  return _frameBuilder->waitForDecodedFrame( timeout_ms );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrDaq::hasFrame()
 {
   return _frameBuilder->hasDecodedFrame();
