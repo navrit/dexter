@@ -144,7 +144,8 @@ public:
 
 	void StartEqualization(int chipId);
 
-	Mpx3EqualizationResults * GetEqualizationResults() { return _eqresults; };
+	Mpx3EqualizationResults * GetEqualizationResults(int chipIndex);
+
 	void LoadEqualization();
 
 	typedef enum {

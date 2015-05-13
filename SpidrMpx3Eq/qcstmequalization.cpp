@@ -823,6 +823,12 @@ void QCstmEqualization::Configuration(bool reset) {
 
 }
 
+Mpx3EqualizationResults * QCstmEqualization::GetEqualizationResults(int chipIndex) {
+	int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
+	if ( chipIndex < 0 || chipIndex > nChips - 1) return 0x0;
+	return _eqVector[chipIndex];
+}
+
 void QCstmEqualization::LoadEqualization(){
 
 	int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
