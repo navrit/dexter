@@ -81,12 +81,12 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
 	// Trigger config
 	int trig_mode      = getTriggerMode();     // Auto-trigger mode = 4
 	int trig_length_us = getTriggerLength();  // This time shouldn't be longer than the period defined by trig_freq_hz
-	int trig_freq_hz   = (int) ( 1. / (2.*((double)trig_length_us/1000000.)) );   // Make the period double the trig_len
-	cout << " | configured freq is " << trig_freq_hz << "Hz";
+	int trig_freq_mhz   = (int) 1000 * ( 1. / (2.*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
+	cout << " | configured freq is " << trig_freq_mhz << "mHz";
 	int nr_of_triggers = getNTriggers();    // This is the number of shutter open i get
 	//int trig_pulse_count;
 	spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
-			trig_freq_hz, nr_of_triggers );
+			trig_freq_mhz, nr_of_triggers );
 
 	cout << endl;
 }

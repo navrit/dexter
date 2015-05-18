@@ -6,10 +6,12 @@
 #include "gradient.h"
 #include "histogram.h"
 
+
 #include <vector>
 
 using namespace std;
 
+class DataTakingThread;
 
 namespace Ui {
   class QCstmGLVisualization;
@@ -36,6 +38,7 @@ public:
 
 private:
   Ui::QCstmGLVisualization *ui;
+  DataTakingThread * _dataTakingThread;
   int getActiveThreshold();
   void addThresholdToSelector(int threshold);
   void setThreshold(int threshold);

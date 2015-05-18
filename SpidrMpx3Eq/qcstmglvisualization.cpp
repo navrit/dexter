@@ -3,11 +3,13 @@
 #include "qcstmequalization.h"
 #include "SpidrController.h"
 #include "SpidrDaq.h"
+#include "DataTakingThread.h"
 
 #include <stdio.h>
 QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :  QWidget(parent),  ui(new Ui::QCstmGLVisualization)
 {
 	ui->setupUi(this);
+	_dataTakingThread = 0x0;
 }
 
 QCstmGLVisualization::~QCstmGLVisualization()
@@ -21,6 +23,25 @@ void QCstmGLVisualization::UnlockWaitingForFrame() {
 
 void QCstmGLVisualization::StartDataTaking(){
 
+	// Threads
+	if ( _dataTakingThread ) {
+		if ( _dataTakingThread->isRunning() ) {
+			return;
+		}
+		//disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
+		delete _dataTakingThread;
+		_dataTakingThread = 0x0;
+	}
+
+	// Create the thread
+	_dataTakingThread = new DataTakingThread(_mpx3gui, this);
+	_dataTakingThread->ConnectToHardware();
+	// Connect to the progress bar
+	//connect( _senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
+
+	_dataTakingThread->start();
+
+	/*
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
@@ -98,6 +119,8 @@ void QCstmGLVisualization::StartDataTaking(){
 	else
 		on_reload_layer(0);
 
+
+	 */
 }
 
 void QCstmGLVisualization::GetAFrame() {

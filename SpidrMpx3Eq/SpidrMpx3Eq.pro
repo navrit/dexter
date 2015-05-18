@@ -16,7 +16,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 	QT += core gui
 }
 QT += network opengl
-CONFIG   +=  c++11
+CONFIG   +=  c++11 debug
 
 CONFIG(debug, debug|release) {
   OBJECTS_DIR = debug
@@ -64,6 +64,8 @@ SOURCES += main.cpp \
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
+SOURCES += DataTakingThread.cpp
+
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -87,6 +89,8 @@ HEADERS += mpx3gui.h \
     qcstmct.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
+HEADERS += DataTakingThread.h
+
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \

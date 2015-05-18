@@ -1,0 +1,180 @@
+/**
+ * John Idarraga <idarraga@cern.ch>
+ * Nikhef, 2014.
+ */
+
+#include "DataTakingThread.h"
+#include "qcstmglvisualization.h"
+
+#include "SpidrController.h"
+#include "SpidrDaq.h"
+
+DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, QCstmGLVisualization * dt) {
+
+	_mpx3gui = mpx3gui;
+	_vis = dt;
+	_srcAddr = 0;
+
+}
+
+void DataTakingThread::ConnectToHardware() {
+
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
+	// I need to do this here and not when already running the thread
+	// Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
+	if( spidrcontrol ) { spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
+	else { _srcAddr = 0; }
+
+}
+
+void DataTakingThread::run() {
+
+	// Open a new temporary connection to the spider to avoid collisions to the main one
+	int ipaddr[4] = { 1, 1, 168, 192 };
+	if( _srcAddr != 0 ) {
+		ipaddr[3] = (_srcAddr >> 24) & 0xFF;
+		ipaddr[2] = (_srcAddr >> 16) & 0xFF;
+		ipaddr[1] = (_srcAddr >>  8) & 0xFF;
+		ipaddr[0] = (_srcAddr >>  0) & 0xFF;
+	}
+
+	SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
+
+	if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
+		cout << "[ERR ] Device not connected !" << endl;
+		return;
+	}
+
+	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+
+	connect(this, SIGNAL(reload_all_layers()), _vis, SLOT(on_reload_all_layers()));
+	connect(this, SIGNAL(reload_layer(int)), _vis, SLOT(on_reload_layer(int)));
+
+	cout << "Acquiring ... " << endl;
+
+	// Start the trigger as configured
+	spidrcontrol->startAutoTrigger();
+
+	int nFramesReceived = 0;
+	int * framedata;
+
+	while ( spidrdaq->waitForFrame( _mpx3gui->getConfig()->getTriggerLength() + 20  ) ) { // 20ms timeout
+
+		int size_in_bytes = -1;
+		QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
+
+		for(int i = 0 ; i < activeDevices.size() ; i++) {
+
+			framedata = spidrdaq->frameData(i, &size_in_bytes);
+
+			//cout << "data[" << i << "] chip id : " << activeDevices[i] << endl;
+
+			if ( size_in_bytes == 0 ) continue; // this may happen
+
+			// In color mode the separation of thresholds needs to be done
+			if( _mpx3gui->getConfig()->getColourMode() ) {
+
+				int size = size_in_bytes / 4;
+				int sizeReduced = size / 4;    // 4 thresholds per 110um pixel
+
+				QVector<int> *th0 = new QVector<int>(sizeReduced);
+				QVector<int> *th2 = new QVector<int>(sizeReduced);
+				QVector<int> *th4 = new QVector<int>(sizeReduced);
+				QVector<int> *th6 = new QVector<int>(sizeReduced);
+
+				SeparateThresholds(framedata, size, th0, th2, th4, th6, sizeReduced);
+
+				_mpx3gui->addFrame(th0->data(), i, 0);
+				delete th0;
+
+				_mpx3gui->addFrame(th2->data(), i, 2);
+				delete th2;
+
+				_mpx3gui->addFrame(th4->data(), i, 4);
+				delete th4;
+
+				_mpx3gui->addFrame(th6->data(), i, 6);
+				delete th6;
+
+			} else {
+				_mpx3gui->addFrame(framedata, i, 0);
+			}
+
+		}
+
+
+		nFramesReceived++;
+		spidrdaq->releaseFrame();
+
+		// If number of triggers reached
+		if ( nFramesReceived == _mpx3gui->getConfig()->getNTriggers() ) break;
+
+	}
+
+	cout << "received " << nFramesReceived << " | lost : " << spidrdaq->framesLostCount() << endl;
+
+	if( _mpx3gui->getConfig()->getColourMode() ) {
+		emit reload_all_layers();
+	} else {
+		emit reload_layer(0);
+	}
+
+	disconnect(this, SIGNAL(reload_all_layers()), _vis, SLOT(on_reload_all_layers()));
+	disconnect(this, SIGNAL(reload_layer(int)), _vis, SLOT(on_reload_layer(int)));
+
+	delete spidrcontrol;
+}
+
+pair<int, int> DataTakingThread::XtoXY(int X, int dimX){
+	return make_pair(X % dimX, X/dimX);
+}
+
+void DataTakingThread::SeparateThresholds(int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced) {
+
+	// Layout of 110um pixel
+	//  -------------
+	//  | P3  |  P1 |
+	//	-------------
+	//  | P4  |  P2 |
+	//  -------------
+	//  Where:
+	//  	P1 --> TH0, TH1
+	//		P2 --> TH2, TH3
+	//		P3 --> TH4, TH5
+	//		P4 --> TH6, TH7
+
+	int indx = 0, indxRed = 0, redi = 0, redj = 0;
+
+	for (int j = 0 ; j < __matrix_size_y ; j++) {
+
+		redi = 0;
+		for (int i = 0 ; i < __matrix_size_x  ; i++) {
+
+			indx = XYtoX( i, j, __matrix_size_x);
+			indxRed = XYtoX( redi, redj, __matrix_size_x / 2); // This index should go up to 128*128
+
+			//if(indxRed > 16380 ) cout << "indx " << indx << ", indxRed = " << indxRed << endl;
+
+			if( i % 2 == 0 && j % 2 == 0) {
+				(*th6)[indxRed] = data[indx]; // P4
+			}
+			if( i % 2 == 0 && j % 2 == 1) {
+				(*th4)[indxRed] = data[indx]; // P3
+			}
+			if( i % 2 == 1 && j % 2 == 0) {
+				(*th2)[indxRed] = data[indx]; // P2
+			}
+			if( i % 2 == 1 && j % 2 == 1) {
+				(*th0)[indxRed] = data[indx]; // P1
+			}
+
+			if (i % 2 == 1) redi++;
+
+		}
+
+		if (j % 2 == 1) redj++;
+
+	}
+
+}

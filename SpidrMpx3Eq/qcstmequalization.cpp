@@ -704,6 +704,16 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 	_deviceIndex = chipIndex;
 	_eqresults = _eqVector[chipIndex];
 
+	// This comes from hand-picked masking operation
+	// Clean the chip first
+	pair<int, int> pix;
+	for ( int i = 0 ; i < __matrix_size ; i++ ) {
+		pix = XtoXY(i, __array_size_x);
+		spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+	}
+	spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
+
+	// Now set the right adjustments
 	SetAllAdjustmentBits(spidrcontrol);
 
 }
@@ -731,6 +741,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol) {
 		pair<int, int> pix;
 		for ( ; i != iE ; i++ ) {
 			pix = XtoXY( (*i), __matrix_size_x );
+			cout << "devid:" << _deviceIndex << " | " << pix.first << "," << pix.second << endl;
 			spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second);
 		}
 	} else { // When the mask is empty go ahead and set all to zero
