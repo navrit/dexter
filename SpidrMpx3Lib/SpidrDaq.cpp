@@ -6,7 +6,8 @@
 #include "FramebuilderThread.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x14012400;
+const int VERSION_ID = 0x15051900;
+//const int VERSION_ID = 0x14012400;
 
 // At least one argument needed for QCoreApplication
 //int   Argc = 1;
@@ -271,9 +272,9 @@ bool SpidrDaq::hasFrame()
 
 // ----------------------------------------------------------------------------
 
-int *SpidrDaq::frameData( int index, int *size_in_bytes )
+int *SpidrDaq::frameData( int index, int *size_in_bytes, int *packets_lost )
 {
-  return _frameBuilder->decodedFrameData( index, size_in_bytes );
+  return _frameBuilder->decodedFrameData( index, size_in_bytes, packets_lost );
 }
 
 // ----------------------------------------------------------------------------
@@ -428,6 +429,14 @@ int SpidrDaq::packetsLostCountFile()
   // The total number of lost packets detected in the frames written
   // to the current or last closed file
   return _frameBuilder->packetsLost();
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrDaq::packetsLostCountFrame()
+{
+  // The total number of lost packets detected in the current frame
+  return _frameBuilder->packetsLostFrame();
 }
 
 // ----------------------------------------------------------------------------

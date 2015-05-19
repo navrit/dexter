@@ -51,7 +51,8 @@ class MY_LIB_API SpidrDaq
   bool      waitForFrame        ( unsigned long timeout_ms = ULONG_MAX );
   bool      hasFrame            ( );
   int      *frameData           ( int  index,
-                                  int *size_in_bytes );
+                                  int *size_in_bytes,
+                                  int *packets_lost = 0 );
   long long frameTimestamp      ( );
   long long frameTimestamp      ( int buf_i );        // For debugging
   long long frameTimestampSpidr ( );
@@ -73,6 +74,8 @@ class MY_LIB_API SpidrDaq
   int  packetsLostCount         ( );
   void resetLostCount           ( );
   int  packetsLostCountFile     ( );
+  int  packetsLostCountFrame    ( );
+
   int  packetsLostCountFrame    ( int index, int buf_i ); // For debugging
   int  packetSize               ( int index );            // For debugging
   int  expSequenceNr            ( int index );            // For debugging

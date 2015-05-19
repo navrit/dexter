@@ -22,7 +22,7 @@ FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
     _framesReceived( 0 ),
     _framesWritten( 0 ),
     _framesProcessed( 0 ),
-    _packetsLost( 0 ),
+    _packetsLostTotal( 0 ),
     _decode( false ),
     _compress( false ),
     _flush( false ),
@@ -30,9 +30,11 @@ FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
     _abortFrame( false ),
     _fileOpen( false )
 {
-  _n = _receivers.size();
-  // Preset the headers
   u32 i;
+  _n = _receivers.size();
+  for( i=0; i<4; ++i )
+    _packetsLostFrame[i] = 0;
+  // Preset the headers
   _evtHdr.headerId   = EVT_HEADER_ID;
   _evtHdr.headerSize = EVT_HEADER_SIZE;
   _evtHdr.format     = EVT_HEADER_VERSION;
@@ -215,6 +217,10 @@ void FramebuilderThread::processFrame()
 	}
       _timeStamp = _receivers[0]->timeStampFrame();
       _timeStampSpidr = _receivers[0]->timeStampFrameSpidr();
+
+      for( i=0; i<_n; ++i )
+	_packetsLostFrame[i] = _receivers[i]->packetsLostFrame();
+
       _hasDecodedFrame = true;
       ++_framesProcessed;
 
@@ -262,12 +268,15 @@ void FramebuilderThread::writeRawFrameToFile()
   _file.write( (const char *) &_evtHdr, EVT_HEADER_SIZE );
 
   DevHeader_t *p_devhdr;
+  int lost;
   for( i=0; i<_n; ++i )
     {
       // Fill in the rest of the device header and write it
       p_devhdr = &_devHdr[i];
-      p_devhdr->lostPackets = _receivers[i]->packetsLostFrame();
-      _packetsLost += p_devhdr->lostPackets;
+      lost = _receivers[i]->packetsLostFrame();
+      p_devhdr->lostPackets = lost;
+      _packetsLostFrame[i]  = lost;
+      _packetsLostTotal    += lost;
 
       // Copy the saved SPIDR 'header' (6 short ints)
       memcpy( (void *) p_devhdr->spidrHeader,
@@ -314,12 +323,15 @@ void FramebuilderThread::writeDecodedFrameToFile()
   _file.write( (const char *) &_evtHdr, EVT_HEADER_SIZE );
 
   DevHeader_t *p_devhdr;
+  int lost;
   for( i=0; i<_n; ++i )
     {
       // Fill in the rest of the device header and write it
       p_devhdr = &_devHdr[i];
-      p_devhdr->lostPackets = _receivers[i]->packetsLostFrame();
-      _packetsLost += p_devhdr->lostPackets;
+      lost = _receivers[i]->packetsLostFrame();
+      p_devhdr->lostPackets = lost;
+      _packetsLostFrame[i]  = lost;
+      _packetsLostTotal    += lost;
 
       // Copy the saved SPIDR 'header' (6 short ints)
       memcpy( (void *) p_devhdr->spidrHeader,
@@ -345,12 +357,15 @@ bool FramebuilderThread::waitForDecodedFrame( unsigned long timeout_ms )
 
 // ----------------------------------------------------------------------------
 
-int *FramebuilderThread::decodedFrameData( int index, int *size )
+int *FramebuilderThread::decodedFrameData( int index, int *size, int *packets_lost )
 {
   if( _hasDecodedFrame )
     *size = _frameSz[index];
   else
     *size = 0;
+
+  if( packets_lost ) *packets_lost = _packetsLostFrame[index];
+
   return &_decodedFrame[index][0];
 }
 
@@ -472,7 +487,7 @@ bool FramebuilderThread::openFile( std::string filename, bool overwrite )
   if( _file.isOpen() )
     {
       _framesWritten = 0;
-      _packetsLost = 0;
+      _packetsLostTotal = 0;
       _fileOpen = true;
       return true;
     }
@@ -491,6 +506,15 @@ bool FramebuilderThread::closeFile()
       return true;
     }
   return false;
+}
+
+// ----------------------------------------------------------------------------
+
+int FramebuilderThread::packetsLostFrame()
+{
+  int lost = 0;
+  for( u32 i=0; i<_n; ++i ) lost += _packetsLostFrame[i];
+  return lost;
 }
 
 // ----------------------------------------------------------------------------
@@ -549,14 +573,17 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
 	    {
 	      // Process raw data byte-by-byte
 	      byte = *praw;
-	      if( byte & 0x80 ) ppix[0] |= bitmask;
-	      if( byte & 0x40 ) ppix[1] |= bitmask;
-	      if( byte & 0x20 ) ppix[2] |= bitmask;
-	      if( byte & 0x10 ) ppix[3] |= bitmask;
-	      if( byte & 0x08 ) ppix[4] |= bitmask;
-	      if( byte & 0x04 ) ppix[5] |= bitmask;
-	      if( byte & 0x02 ) ppix[6] |= bitmask;
-	      if( byte & 0x01 ) ppix[7] |= bitmask;
+	      if( byte != 0 )
+		{
+		  if( byte & 0x80 ) ppix[0] |= bitmask;
+		  if( byte & 0x40 ) ppix[1] |= bitmask;
+		  if( byte & 0x20 ) ppix[2] |= bitmask;
+		  if( byte & 0x10 ) ppix[3] |= bitmask;
+		  if( byte & 0x08 ) ppix[4] |= bitmask;
+		  if( byte & 0x04 ) ppix[5] |= bitmask;
+		  if( byte & 0x02 ) ppix[6] |= bitmask;
+		  if( byte & 0x01 ) ppix[7] |= bitmask;
+		}
 	      ppix += 8;
 	      ++praw; // Next raw byte
 	    }
@@ -581,14 +608,17 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
 		{
 		  // Process raw data byte-by-byte
 		  byte = *praw;
-		  if( byte & 0x80 ) ppix[0] |= bitmask;
-		  if( byte & 0x40 ) ppix[1] |= bitmask;
-		  if( byte & 0x20 ) ppix[2] |= bitmask;
-		  if( byte & 0x10 ) ppix[3] |= bitmask;
-		  if( byte & 0x08 ) ppix[4] |= bitmask;
-		  if( byte & 0x04 ) ppix[5] |= bitmask;
-		  if( byte & 0x02 ) ppix[6] |= bitmask;
-		  if( byte & 0x01 ) ppix[7] |= bitmask;
+		  if( byte != 0 )
+		    {
+		      if( byte & 0x80 ) ppix[0] |= bitmask;
+		      if( byte & 0x40 ) ppix[1] |= bitmask;
+		      if( byte & 0x20 ) ppix[2] |= bitmask;
+		      if( byte & 0x10 ) ppix[3] |= bitmask;
+		      if( byte & 0x08 ) ppix[4] |= bitmask;
+		      if( byte & 0x04 ) ppix[5] |= bitmask;
+		      if( byte & 0x02 ) ppix[6] |= bitmask;
+		      if( byte & 0x01 ) ppix[7] |= bitmask;
+		    }
 		  ppix += 8;
 		  ++praw; // Next raw byte
 		}

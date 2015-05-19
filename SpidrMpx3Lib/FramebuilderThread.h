@@ -43,7 +43,7 @@ class FramebuilderThread : public QThread
   void writeDecodedFrameToFile();
   bool waitForDecodedFrame( unsigned long timeout_ms = ULONG_MAX );
   bool hasDecodedFrame() { return _hasDecodedFrame; }
-  int *decodedFrameData( int index, int *size );
+  int *decodedFrameData( int index, int *size, int *packets_lost = 0 );
   void releaseDecodedFrame();
   i64    decodedFrameTimestamp();
   double decodedFrameTimestampDouble();
@@ -65,13 +65,14 @@ class FramebuilderThread : public QThread
   int  framesReceived() { return _framesReceived; }
   int  framesWritten()  { return _framesWritten; }
   int  framesProcessed(){ return _framesProcessed; }
-  int  packetsLost()    { return _packetsLost; }
+  int  packetsLost()    { return _packetsLostTotal; }
+  int  packetsLostFrame();
 
   std::string errString();
   void clearErrString() { _errString.clear(); };
 
  private:
-  // Vector with pointers to frame receivers (up to 4)
+  // Vector with pointers to frame receivers (there are up to 4)
   std::vector<ReceiverThread *> _receivers;
   u32 _n; // To contain size of _receivers
 
@@ -94,7 +95,8 @@ class FramebuilderThread : public QThread
   int   _framesReceived;
   int   _framesWritten;
   int   _framesProcessed;
-  int   _packetsLost;
+  int   _packetsLostTotal;
+  int   _packetsLostFrame[4];
   bool  _decode;
   bool  _compress;
   bool  _flush;
