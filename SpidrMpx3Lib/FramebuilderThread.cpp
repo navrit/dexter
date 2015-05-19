@@ -2,6 +2,14 @@
 #include "ReceiverThread.h"
 #include "mpx3defs.h"
 
+#define _USE_QTCONCURRENT
+#ifdef _USE_QTCONCURRENT
+#if QT_VERSION >= 0x050000
+#include <QtConcurrent>
+#else
+#include <QtCore>
+#endif
+#endif
 // ----------------------------------------------------------------------------
 
 FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
@@ -179,13 +187,32 @@ void FramebuilderThread::processFrame()
       if( _abortFrame ) return; // Bail out
 
       // The following decoding operations could be done
-      // in separate threads (i.e. by QConcurrent?)
-      for( i=0; i<_n; ++i )
-	_frameSz[i] = this->mpx3RawToPixel( _receivers[i]->frameData(),
-					    _decodedFrame[i],
-					    _evtHdr.pixelDepth,
-					    _devHdr[i].deviceType,
-					    _compress );
+      // in separate threads (i.e. by QtConcurrent)
+#ifdef _USE_QTCONCURRENT
+      if( _n != 1 )
+	{
+	  QFuture<int> qftr[4];
+	  for( i=0; i<_n; ++i )
+	    qftr[i] = QtConcurrent::run( this, &FramebuilderThread::mpx3RawToPixel,
+					 _receivers[i]->frameData(),
+					 &_decodedFrame[i][0],
+					 _evtHdr.pixelDepth,
+					 _devHdr[i].deviceType,
+					 _compress );
+	  // Wait for threads to finish and get the results...
+	  for( i=0; i<_n; ++i )
+	    _frameSz[i] = qftr[i].result();
+	}
+      else
+#endif // _USE_QTCONCURRENT
+	{
+	  for( i=0; i<_n; ++i )
+	    _frameSz[i] = this->mpx3RawToPixel( _receivers[i]->frameData(),
+						_decodedFrame[i],
+						_evtHdr.pixelDepth,
+						_devHdr[i].deviceType,
+						_compress );
+	}
       _timeStamp = _receivers[0]->timeStampFrame();
       _timeStampSpidr = _receivers[0]->timeStampFrameSpidr();
       _hasDecodedFrame = true;
@@ -261,7 +288,7 @@ void FramebuilderThread::writeDecodedFrameToFile()
   u32 i;
 
   // The following decoding operations could be done
-  // in separate threads (i.e. by QConcurrent)
+  // in separate threads (i.e. by QtConcurrent)
   int frame_sz[4];
   for( i=0; i<_n; ++i )
     frame_sz[i] = this->mpx3RawToPixel( _receivers[i]->frameData(),
