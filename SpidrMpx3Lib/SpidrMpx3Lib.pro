@@ -14,6 +14,9 @@ TARGET   = SpidrMpx3Lib
 # Create a shared library
 QT -= gui
 QT += core network
+contains(QT_MAJOR_VERSION,5) {
+  QT += concurrent
+}
 CONFIG += shared qt thread warn_on exceptions debug_and_release
 
 DEFINES += MY_LIB_EXPORT
