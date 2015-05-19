@@ -579,6 +579,7 @@ int ThlScan::ReAdjustPixelsOff(double N, int dac_code) {
 
 	return adjustedPixels;
 	*/
+  return 0;
 }
 
 void ThlScan::UpdateHeatMap(int sizex, int sizey) {

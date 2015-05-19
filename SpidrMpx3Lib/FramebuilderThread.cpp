@@ -5,7 +5,7 @@
 #define _USE_QTCONCURRENT
 #ifdef _USE_QTCONCURRENT
 #if QT_VERSION >= 0x050000
-#include <QtConcurrent>
+#include <QtConcurrent/QtConcurrent>
 #else
 #include <QtCore>
 #endif

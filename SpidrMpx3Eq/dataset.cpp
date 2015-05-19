@@ -4,6 +4,7 @@
 Dataset::Dataset(int x, int y, int framesPerLayer, int layers)
 {
   m_nx = x; m_ny = y;
+  m_nFrames = 0;
   setFramesPerLayer(framesPerLayer);
 }
 
