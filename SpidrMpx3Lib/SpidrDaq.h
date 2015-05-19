@@ -71,6 +71,7 @@ class MY_LIB_API SpidrDaq
   int  packetsReceivedCount     ( );
   int  packetsLostCount         ( int index );
   int  packetsLostCount         ( );
+  void resetLostCount           ( );
   int  packetsLostCountFile     ( );
   int  packetsLostCountFrame    ( int index, int buf_i ); // For debugging
   int  packetSize               ( int index );            // For debugging

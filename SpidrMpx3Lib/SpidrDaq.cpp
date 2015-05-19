@@ -415,6 +415,14 @@ int SpidrDaq::packetsLostCount()
 
 // ----------------------------------------------------------------------------
 
+void SpidrDaq::resetLostCount()
+{
+  for( int i=0; i<(int) _frameReceivers.size(); ++i )
+    _frameReceivers[i]->resetLost();
+}
+
+// ----------------------------------------------------------------------------
+
 int SpidrDaq::packetsLostCountFile()
 {
   // The total number of lost packets detected in the frames written
