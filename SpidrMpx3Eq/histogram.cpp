@@ -1,5 +1,10 @@
 #include <histogram.h>
 #include <limits.h>
+
+#include <iostream>
+using namespace std;
+
+
 Histogram::edgeCaseBehaviourEnum Histogram::m_defaultEdgeCaseBehaviour = Histogram::edgesDrop;
 
 Histogram::Histogram(): Histogram(0){
@@ -40,6 +45,7 @@ void Histogram::setMax(int max){
   const int offset = size();
   m_max = max;
   m_bins.resize(size());
+  //cout << "size max = " << size() << endl;
   for(int i = offset; i < size(); i++)
     m_bins[i] = 0;
 }
@@ -49,6 +55,7 @@ void Histogram::setMin(int min){
     setMax(min);
   int old_min = m_min;
   m_min = min;
+  //cout << "size min = " << size() << endl;
   std::vector<unsigned> new_bins(size());
   if(m_min < old_min){ //if we need to prepend
       const int offset = old_min-m_min;

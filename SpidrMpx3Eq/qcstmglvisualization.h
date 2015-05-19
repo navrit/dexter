@@ -2,10 +2,12 @@
 #define QCSTMGLVISUALIZATION_H
 
 #include <QWidget>
+#include <QElapsedTimer>
 #include "mpx3gui.h"
 #include "gradient.h"
 #include "histogram.h"
 
+#define __display_eta_granularity 200 // ms
 
 #include <vector>
 
@@ -21,6 +23,11 @@ class QCstmGLVisualization : public QWidget
 {
   Q_OBJECT
   Mpx3GUI * _mpx3gui;
+  bool _takingData;
+  bool _busyDrawing;
+  QElapsedTimer * _etatimer;
+  QTimer * _timer;
+
   //QMap<int, histogram> histograms;
   QMap<int, QString> layerNames;
 public:
@@ -31,10 +38,13 @@ public:
   void SeparateThresholds(int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
 
   void SetMpx3GUI(Mpx3GUI * p);
-  void Configuration(bool reset, int deviceIndex);
+  Mpx3GUI * GetMpx3GUI() { return _mpx3gui; };
+  Ui::QCstmGLVisualization * GetUI(){ return ui; };
+
   pair<int, int> XtoXY(int X, int dimX);
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
   void GetAFrame();
+  void FlipBusyState();
 
 private:
   Ui::QCstmGLVisualization *ui;
@@ -78,8 +88,16 @@ public slots:
   void on_pixel_selected(QPoint pixel, QPoint position);
   void on_clear();
   void on_range_changed(QCPRange);
+  void on_data_taking_finished(int);
+  void on_progress_signal(int);
+  void updateETA();
+
  signals:
   void change_hover_text(QString);
+  void stop_data_taking_thread();
+  void free_to_draw();
+  void busy_drawing();
+
 };
 
 #endif // QCSTMGLVISUALIZATION_H

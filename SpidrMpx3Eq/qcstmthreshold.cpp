@@ -50,7 +50,7 @@ int QCstmThreshold::getActiveTargetCode(){
 void QCstmThreshold::StartCalibration() {
 
 	// Configure, no reset
-	_mpx3gui->getVisualization()->Configuration( false, 0 );
+	_mpx3gui->getConfig()->Configuration( false, 0 );
 
 
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();

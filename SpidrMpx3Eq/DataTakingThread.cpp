@@ -5,15 +5,21 @@
 
 #include "DataTakingThread.h"
 #include "qcstmglvisualization.h"
+#include "ui_qcstmglvisualization.h"
 
 #include "SpidrController.h"
 #include "SpidrDaq.h"
+
+#include "mpx3gui.h"
+#include "ui_mpx3gui.h"
 
 DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, QCstmGLVisualization * dt) {
 
 	_mpx3gui = mpx3gui;
 	_vis = dt;
 	_srcAddr = 0;
+	_stop = false;
+	_canDraw = true;
 
 }
 
@@ -50,84 +56,159 @@ void DataTakingThread::run() {
 
 	connect(this, SIGNAL(reload_all_layers()), _vis, SLOT(on_reload_all_layers()));
 	connect(this, SIGNAL(reload_layer(int)), _vis, SLOT(on_reload_layer(int)));
+	connect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(on_data_taking_finished(int)));
+	connect(this, SIGNAL(progress(int)), _vis, SLOT(on_progress_signal(int)));
+	connect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
+	connect(_vis, SIGNAL(free_to_draw()), this, SLOT(on_free_to_draw()) );
+	connect(_vis, SIGNAL(busy_drawing()), this, SLOT(on_busy_drawing()) );
 
-	cout << "Acquiring ... " << endl;
+	cout << "Acquiring ... ";
+	//_mpx3gui->GetUI()->startButton->setActive(false);
 
 	// Start the trigger as configured
 	spidrcontrol->startAutoTrigger();
 
-	int nFramesReceived = 0;
+	int nFramesReceived = 0, lastDrawn = 0;
 	int * framedata;
+	emit progress( 0 );
+	bool doReadFrames = true;
 
 	while ( spidrdaq->waitForFrame( _mpx3gui->getConfig()->getTriggerLength() + 20  ) ) { // 20ms timeout
 
 		int size_in_bytes = -1;
 		QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
 
-		for(int i = 0 ; i < activeDevices.size() ; i++) {
-
-			framedata = spidrdaq->frameData(i, &size_in_bytes);
-
-			//cout << "data[" << i << "] chip id : " << activeDevices[i] << endl;
-
-			if ( size_in_bytes == 0 ) continue; // this may happen
-
-			// In color mode the separation of thresholds needs to be done
-			if( _mpx3gui->getConfig()->getColourMode() ) {
-
-				int size = size_in_bytes / 4;
-				int sizeReduced = size / 4;    // 4 thresholds per 110um pixel
-
-				QVector<int> *th0 = new QVector<int>(sizeReduced);
-				QVector<int> *th2 = new QVector<int>(sizeReduced);
-				QVector<int> *th4 = new QVector<int>(sizeReduced);
-				QVector<int> *th6 = new QVector<int>(sizeReduced);
-
-				SeparateThresholds(framedata, size, th0, th2, th4, th6, sizeReduced);
-
-				_mpx3gui->addFrame(th0->data(), i, 0);
-				delete th0;
-
-				_mpx3gui->addFrame(th2->data(), i, 2);
-				delete th2;
-
-				_mpx3gui->addFrame(th4->data(), i, 4);
-				delete th4;
-
-				_mpx3gui->addFrame(th6->data(), i, 6);
-				delete th6;
-
-			} else {
-				_mpx3gui->addFrame(framedata, i, 0);
+		doReadFrames = true;
+		if ( _vis->GetUI()->dropFramesCheckBox->isChecked() ) {
+			if ( spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected
+				doReadFrames = false;
 			}
-
 		}
 
+		if ( doReadFrames ) {
+			for(int i = 0 ; i < activeDevices.size() ; i++) {
+
+				framedata = spidrdaq->frameData(i, &size_in_bytes);
+
+				//cout << "data[" << i << "] chip id : " << activeDevices[i] << endl;
+
+				if ( size_in_bytes == 0 ) continue; // this may happen
+
+				// In color mode the separation of thresholds needs to be done
+				if( _mpx3gui->getConfig()->getColourMode() ) {
+
+					int size = size_in_bytes / 4;
+					int sizeReduced = size / 4;    // 4 thresholds per 110um pixel
+
+					QVector<int> *th0 = new QVector<int>(sizeReduced);
+					QVector<int> *th2 = new QVector<int>(sizeReduced);
+					QVector<int> *th4 = new QVector<int>(sizeReduced);
+					QVector<int> *th6 = new QVector<int>(sizeReduced);
+
+					SeparateThresholds(framedata, size, th0, th2, th4, th6, sizeReduced);
+
+					_mpx3gui->addFrame(th0->data(), i, 0);
+					delete th0;
+
+					_mpx3gui->addFrame(th2->data(), i, 2);
+					delete th2;
+
+					_mpx3gui->addFrame(th4->data(), i, 4);
+					delete th4;
+
+					_mpx3gui->addFrame(th6->data(), i, 6);
+					delete th6;
+
+				} else {
+					_mpx3gui->addFrame(framedata, i, 0);
+				}
+
+			}
+		}
 
 		nFramesReceived++;
+		// Release frame
 		spidrdaq->releaseFrame();
+
+
+		// Get to draw if possible
+		if ( _canDraw ) {
+
+			emit progress( nFramesReceived );
+
+			if( _mpx3gui->getConfig()->getColourMode() ) {
+				emit reload_all_layers();
+			} else {
+				emit reload_layer(0);
+			}
+
+			lastDrawn = nFramesReceived;
+		}
 
 		// If number of triggers reached
 		if ( nFramesReceived == _mpx3gui->getConfig()->getNTriggers() ) break;
 
+		// If called to Stop
+		if ( _stop ) break;
+
 	}
 
-	cout << "received " << nFramesReceived << " | lost : " << spidrdaq->framesLostCount() << endl;
-
-	if( _mpx3gui->getConfig()->getColourMode() ) {
-		emit reload_all_layers();
-	} else {
-		emit reload_layer(0);
+	// Force last draw if not reached
+	if ( nFramesReceived != lastDrawn ) {
+		emit progress( nFramesReceived );
+		if( _mpx3gui->getConfig()->getColourMode() ) {
+			emit reload_all_layers();
+		} else {
+			emit reload_layer(0);
+		}
 	}
+
+	cout << "received " << nFramesReceived
+			<< " | lost frames : " << spidrdaq->framesLostCount()
+			<< " | lost packets : " << spidrdaq->packetsLostCount()
+			<< endl;
+
+	// When the process is finished the thread sends a message
+	//  to inform QCstmGLVisualization that it's done.
+	// QCstmGLVisualization could be having a hard time trying
+	//  to keep up with the drawing.  At that moment something
+	//  needs to happens to avoid blocking.
+	emit data_taking_finished( nFramesReceived );
 
 	disconnect(this, SIGNAL(reload_all_layers()), _vis, SLOT(on_reload_all_layers()));
 	disconnect(this, SIGNAL(reload_layer(int)), _vis, SLOT(on_reload_layer(int)));
+	disconnect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(on_data_taking_finished(int)));
+	disconnect(this, SIGNAL(progress(int)), _vis, SLOT(on_progress_signal(int)));
+	disconnect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
+	disconnect(_vis, SIGNAL(free_to_draw()), this, SLOT(on_free_to_draw()) );
+	disconnect(_vis, SIGNAL(busy_drawing()), this, SLOT(on_busy_drawing()) );
+
+	// In case the thread is reused
+	_stop = false;
+
+	// clear counters in SpidrDac
+	// spidrdaq->frame
 
 	delete spidrcontrol;
 }
 
 pair<int, int> DataTakingThread::XtoXY(int X, int dimX){
 	return make_pair(X % dimX, X/dimX);
+}
+
+void DataTakingThread::on_busy_drawing() {
+	_canDraw = false;
+}
+
+void DataTakingThread::on_free_to_draw() {
+	_canDraw = true;
+}
+
+void DataTakingThread::on_stop_data_taking_thread() {
+
+	// Used to properly stop the data taking thread
+	_stop = true;
+
 }
 
 void DataTakingThread::SeparateThresholds(int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced) {

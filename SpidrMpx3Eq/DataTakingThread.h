@@ -10,9 +10,10 @@
 #include <QThread>
 #include <QVector>
 
-#include "mpx3gui.h"
-
 #include <iostream>
+
+#include "mpx3gui.h"
+#include "mpx3defs.h"
 
 using namespace std;
 
@@ -37,14 +38,23 @@ private:
 
 	Mpx3GUI * _mpx3gui;
 	QCstmGLVisualization * _vis;
+	bool _stop;
+	bool _canDraw;
 
 	// IP source address (SPIDR network interface)
 	int _srcAddr;
+
+public slots:
+	void on_stop_data_taking_thread();
+	void on_busy_drawing();
+	void on_free_to_draw();
 
 signals:
 	// drawing signals calling back to QCstmGLVisualization
 	void reload_all_layers();
 	void reload_layer(int);
+	void data_taking_finished(int);
+	void progress(int);
 
 };
 

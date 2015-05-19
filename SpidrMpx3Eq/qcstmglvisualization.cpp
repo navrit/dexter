@@ -10,6 +10,13 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :  QWidget(parent), 
 {
 	ui->setupUi(this);
 	_dataTakingThread = 0x0;
+	_takingData = false;
+	_busyDrawing = false;
+	// By default don't drop frames
+	ui->dropFramesCheckBox->setChecked( false );
+	_etatimer = new QElapsedTimer;
+	_timer = 0x0;
+
 }
 
 QCstmGLVisualization::~QCstmGLVisualization()
@@ -17,110 +24,98 @@ QCstmGLVisualization::~QCstmGLVisualization()
 	delete ui;
 }
 
+void QCstmGLVisualization::FlipBusyState() {
+
+	if( _busyDrawing ) {
+		_busyDrawing = false;
+		emit free_to_draw();
+	} else {
+		_busyDrawing = true;
+		emit busy_drawing();
+	}
+
+}
+
 void QCstmGLVisualization::UnlockWaitingForFrame() {
 	cout << "..." << endl;
 }
 
+void QCstmGLVisualization::updateETA() {
+
+	// show eta in display
+	QString text = QTime(0,0,_etatimer->elapsed(),0).toString("hh:mm:ss");
+
+	ui->etaCntr->setText( text );
+
+}
+
 void QCstmGLVisualization::StartDataTaking(){
 
-	// Threads
-	if ( _dataTakingThread ) {
-		if ( _dataTakingThread->isRunning() ) {
-			return;
-		}
-		//disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
-		delete _dataTakingThread;
-		_dataTakingThread = 0x0;
-	}
+	if( !_takingData ) {
 
-	// Create the thread
-	_dataTakingThread = new DataTakingThread(_mpx3gui, this);
-	_dataTakingThread->ConnectToHardware();
-	// Connect to the progress bar
-	//connect( _senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
-
-	_dataTakingThread->start();
-
-	/*
-	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
-
-	cout << "Acquiring ... " << endl;
-
-	// Start the trigger as configured
-	spidrcontrol->startAutoTrigger();
-
-	int nFramesReceived = 0;
-	int * framedata;
-
-	// A timeout to
-	//QTimer::singleShot(10, this, SLOT(UnlockWaitingForFrame()));
-	//while ( ! spidrdaq->hasFrame() ) {
-	//startTimer(10); // ms
-	//}
-
-	while ( spidrdaq->waitForFrame( _mpx3gui->getConfig()->getTriggerLength() + 20  ) ) { // 20ms timeout
-
-		int size_in_bytes = -1;
-		QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
-
-		for(int i = 0 ; i < activeDevices.size() ; i++) {
-
-			framedata = spidrdaq->frameData(i, &size_in_bytes);
-
-			//cout << "data[" << i << "] chip id : " << activeDevices[i] << endl;
-
-			if ( size_in_bytes == 0 ) continue; // this may happen
-
-			// In color mode the separation of thresholds needs to be done
-			if( _mpx3gui->getConfig()->getColourMode() ) {
-
-				int size = size_in_bytes / 4;
-				int sizeReduced = size / 4;    // 4 thresholds per 110um pixel
-
-				QVector<int> *th0 = new QVector<int>(sizeReduced);
-				QVector<int> *th2 = new QVector<int>(sizeReduced);
-				QVector<int> *th4 = new QVector<int>(sizeReduced);
-				QVector<int> *th6 = new QVector<int>(sizeReduced);
-
-				SeparateThresholds(framedata, size, th0, th2, th4, th6, sizeReduced);
-
-				_mpx3gui->addFrame(th0->data(), i, 0);
-				delete th0;
-
-				_mpx3gui->addFrame(th2->data(), i, 2);
-				delete th2;
-
-				_mpx3gui->addFrame(th4->data(), i, 4);
-				delete th4;
-
-				_mpx3gui->addFrame(th6->data(), i, 6);
-				delete th6;
-
-			} else {
-				_mpx3gui->addFrame(framedata, i, 0);
+		// Threads
+		if ( _dataTakingThread ) {
+			if ( _dataTakingThread->isRunning() ) {
+				return;
 			}
-
+			//disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
+			delete _dataTakingThread;
+			_dataTakingThread = 0x0;
 		}
 
+		// Create the thread
+		_dataTakingThread = new DataTakingThread(_mpx3gui, this);
+		_dataTakingThread->ConnectToHardware();
 
-		nFramesReceived++;
-		spidrdaq->releaseFrame();
+		// Change the Start button to Stop
+		ui->startButton->setText( "Stop" );
 
-		// If number of triggers reached
-		if ( nFramesReceived == _mpx3gui->getConfig()->getNTriggers() ) break;
+		// Start data taking
+		_takingData = true;
+		_dataTakingThread->start();
 
+		// Start the timer to display eta
+		if( !_timer ) {
+			//_timer = new QTimer(this);
+			//connect(_timer, SIGNAL(timeout()), this, SLOT(updateETA()));
+			//_timer->start( __display_eta_granularity );
+			// and start the elapsed timer
+			//_etatimer->start();
+		}
+
+	} else {
+
+		// Try to stop the thread
+		if ( _dataTakingThread ) emit stop_data_taking_thread();
+
+		// Change the Stop button to Start
+		ui->startButton->setText( "Start" );
+		_takingData = false;
+
+		// Finish
+		//if( _etatimer ) {
+		//	_etatimer->stop();
+		//	delete _etatimer;
+		//}
 	}
 
-	cout << "received " << nFramesReceived << " | lost : " << spidrdaq->framesLostCount() << endl;
+}
 
-	if( _mpx3gui->getConfig()->getColourMode() )
-		on_reload_all_layers();
-	else
-		on_reload_layer(0);
+void QCstmGLVisualization::on_data_taking_finished(int nFramesTaken) {
 
+	if( _takingData ) {
+		// Change the Stop button to Start
+		ui->startButton->setText( "Start" );
+		_takingData = false;
+		// timer
+		//disconnect(_timer, SIGNAL(timeout()), this, SLOT(updateETA()));
+		//delete _timer;
+		//_etatimer->restart();
+	}
 
-	 */
+	// Also we will inform the visualization to go straight to the very last frame to be drawn
+	//  in case the data taking thread was too fast compared to drawing
+
 }
 
 void QCstmGLVisualization::GetAFrame() {
@@ -183,68 +178,16 @@ pair<int, int> QCstmGLVisualization::XtoXY(int X, int dimX){
 
 void QCstmGLVisualization::ConnectionStatusChanged() {
 
-	ui->startButton->setEnabled(true); //Enable or disable the button depending on the connection status.
+	ui->startButton->setEnabled(true); // Enable or disable the button depending on the connection status.
 
 	// TODO
 	// Configure the chip, provided that the Adj mask is loaded
+	// now done from the configuration
 	//Configuration( false );
 
 }
 
 
-void QCstmGLVisualization::Configuration(bool reset, int deviceIndex) {//TODO: should be part of parent?
-
-	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
-
-	int nTriggers = _mpx3gui->getConfig()->getNTriggers();
-
-	// Reset pixel configuration
-	if ( reset ) spidrcontrol->resetPixelConfig();
-
-	// All adjustment bits to zero
-	//SetAllAdjustmentBits(0x0, 0x0);
-
-	// OMR
-	//spidrcontrol->setPolarity( true );		// Holes collection
-	//_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
-	//_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
-
-	spidrcontrol->setColourMode( deviceIndex, _mpx3gui->getConfig()->getColourMode() ); // false 	// Fine Pitch
-	spidrcontrol->setCsmSpm( deviceIndex, _mpx3gui->getConfig()->getCsmSpm() ); // 0 );				// Single Pixel mode
-
-	// Particular for Equalization
-	//spidrcontrol->setEqThreshH( deviceIndex, true );
-	//spidrcontrol->setDiscCsmSpm( deviceIndex, 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
-	//_spidrcontrol->setGainMode( 1 );
-
-	// Gain ?!
-	// 00: SHGM  0
-	// 10: HGM   2
-	// 01: LGM   1
-	// 11: SLGM  3
-	spidrcontrol->setGainMode( deviceIndex, _mpx3gui->getConfig()->getGainMode() ); // 2 );
-
-	// Other OMR
-	spidrdaq->setDecodeFrames(  _mpx3gui->getConfig()->getDecodeFrames() ); //  true );
-	spidrcontrol->setPixelDepth( deviceIndex,  _mpx3gui->getConfig()->getPixelDepth() );
-	spidrdaq->setPixelDepth( _mpx3gui->getConfig()->getPixelDepth() );
-	spidrcontrol->setMaxPacketSize( _mpx3gui->getConfig()->getMaxPacketSize() );
-
-	// Write OMR ... i shouldn't call this here
-	//_spidrcontrol->writeOmr( 0 );
-
-	// Trigger config
-	int trig_mode      = _mpx3gui->getConfig()->getTriggerMode();     // Auto-trigger mode = 4
-	int trig_length_us = _mpx3gui->getConfig()->getTriggerLength();  // This time shouldn't be longer than the period defined by trig_freq_hz
-	int trig_freq_hz   = (int) ( 1. / (2.*((double)trig_length_us/1000000.)) );   // Make the period double the trig_len
-	cout << "[INFO] Configured freq is " << trig_freq_hz << "Hz" << endl;
-	int nr_of_triggers = _mpx3gui->getConfig()->getNTriggers();    // This is the number of shutter open i get
-	//int trig_pulse_count;
-	spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
-			trig_freq_hz, nr_of_triggers );
-
-}
 
 void QCstmGLVisualization::setGradient(int index){
 	ui->glPlot->setGradient(_mpx3gui->getGradient(index));
@@ -316,7 +259,20 @@ void QCstmGLVisualization::on_reload_layer(int threshold){
 	on_active_frame_changed();
 }
 
+
+void QCstmGLVisualization::on_progress_signal(int framecntr) {
+
+	QString prog = QString("%1/%2").arg( framecntr ).arg(_mpx3gui->getConfig()->getNTriggers() );
+	ui->frameCntr->setText( prog );
+
+}
+
+
 void QCstmGLVisualization::on_reload_all_layers(){
+
+	// Get busy
+	emit FlipBusyState();
+
 	ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
 	QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
 	for(int i = 0; i < thresholds.size(); i++){
@@ -359,6 +315,10 @@ void QCstmGLVisualization::on_active_frame_changed(){
 		on_percentileRangeRadio_toggled(true);
 	else if(ui->fullRangeRadio->isChecked())
 		on_fullRangeRadio_toggled(true);
+
+	// Get free
+	emit FlipBusyState();
+
 }
 
 void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){

@@ -81,7 +81,8 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
 	// Trigger config
 	int trig_mode      = getTriggerMode();     // Auto-trigger mode = 4
 	int trig_length_us = getTriggerLength();  // This time shouldn't be longer than the period defined by trig_freq_hz
-	int trig_freq_mhz   = (int) 1000 * ( 1. / (2.*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
+	//int trig_freq_mhz   = (int) 1000 * ( 1. / (2.*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
+	int trig_freq_mhz   = (int) 1000 * ( 1. / (1.1*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
 	cout << " | configured freq is " << trig_freq_mhz << "mHz";
 	int nr_of_triggers = getNTriggers();    // This is the number of shutter open i get
 	//int trig_pulse_count;
@@ -90,6 +91,65 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
 
 	cout << endl;
 }
+
+/*
+void QCstmGLVisualization::Configuration(bool reset, int deviceIndex) {//TODO: should be part of parent?
+
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+
+	int nTriggers = _mpx3gui->getConfig()->getNTriggers();
+
+	// Reset pixel configuration
+	if ( reset ) spidrcontrol->resetPixelConfig();
+
+	// All adjustment bits to zero
+	//SetAllAdjustmentBits(0x0, 0x0);
+
+	// OMR
+	//spidrcontrol->setPolarity( true );		// Holes collection
+	//_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
+	//_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
+
+	spidrcontrol->setColourMode( deviceIndex, _mpx3gui->getConfig()->getColourMode() ); // false 	// Fine Pitch
+	spidrcontrol->setCsmSpm( deviceIndex, _mpx3gui->getConfig()->getCsmSpm() ); // 0 );				// Single Pixel mode
+
+	// Particular for Equalization
+	//spidrcontrol->setEqThreshH( deviceIndex, true );
+	//spidrcontrol->setDiscCsmSpm( deviceIndex, 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
+	//_spidrcontrol->setGainMode( 1 );
+
+	// Gain ?!
+	// 00: SHGM  0
+	// 10: HGM   2
+	// 01: LGM   1
+	// 11: SLGM  3
+	spidrcontrol->setGainMode( deviceIndex, _mpx3gui->getConfig()->getGainMode() ); // 2 );
+
+	// Other OMR
+	spidrdaq->setDecodeFrames(  _mpx3gui->getConfig()->getDecodeFrames() ); //  true );
+	spidrcontrol->setPixelDepth( deviceIndex,  _mpx3gui->getConfig()->getPixelDepth() );
+	spidrdaq->setPixelDepth( _mpx3gui->getConfig()->getPixelDepth() );
+	spidrcontrol->setMaxPacketSize( _mpx3gui->getConfig()->getMaxPacketSize() );
+
+	// Write OMR ... i shouldn't call this here
+	//_spidrcontrol->writeOmr( 0 );
+
+	// Trigger config
+	int trig_mode      = _mpx3gui->getConfig()->getTriggerMode();     // Auto-trigger mode = 4
+	int trig_length_us = _mpx3gui->getConfig()->getTriggerLength();  // This time shouldn't be longer than the period defined by trig_freq_hz
+	//int trig_freq_hz   = (int) ( 1. / (2.*((double)trig_length_us/1000000.)) );   // Make the period double the trig_len
+	int trig_freq_hz   = (int) ( 1. / (((double)trig_length_us/1000000.)) );   // Make the period double the trig_len
+
+
+	cout << "[INFO] Configured freq is " << trig_freq_hz << "Hz" << endl;
+	int nr_of_triggers = _mpx3gui->getConfig()->getNTriggers();    // This is the number of shutter open i get
+	//int trig_pulse_count;
+	spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
+			trig_freq_hz, nr_of_triggers );
+
+}
+*/
 
 SpidrController* Mpx3Config::establishConnection(){
 
