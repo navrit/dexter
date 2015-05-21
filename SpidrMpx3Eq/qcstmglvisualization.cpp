@@ -14,8 +14,9 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :  QWidget(parent), 
 	_busyDrawing = false;
 	// By default don't drop frames
 	ui->dropFramesCheckBox->setChecked( false );
-	_etatimer = new QElapsedTimer;
+	_etatimer = 0x0;
 	_timer = 0x0;
+	_estimatedETA = 0;
 
 }
 
@@ -43,9 +44,13 @@ void QCstmGLVisualization::UnlockWaitingForFrame() {
 void QCstmGLVisualization::updateETA() {
 
 	// show eta in display
-	QString text = QTime(0,0,_etatimer->elapsed(),0).toString("hh:mm:ss");
-
-	ui->etaCntr->setText( text );
+	// h must be in the range 0 to 23, m and s must be in the range 0 to 59, and ms must be in the range 0 to 999.
+	QTime n(0, 0, 0);                // n == 00:00:00
+	QTime t(0, 0, 0);
+	int diff = _estimatedETA - _etatimer->elapsed();
+	if (diff > 0) t = n.addMSecs( _estimatedETA - _etatimer->elapsed() );
+	QString textT = t.toString("hh:mm:ss");
+	ui->etaCntr->setText( textT );
 
 }
 
@@ -71,17 +76,15 @@ void QCstmGLVisualization::StartDataTaking(){
 		ui->startButton->setText( "Stop" );
 
 		// Start data taking
+		// FIXME, depends on the mode !
+		_estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms
+		_estimatedETA += _estimatedETA/5; // add 20% network overhead.  FIXME  to be calculated at startup
+
 		_takingData = true;
 		_dataTakingThread->start();
 
 		// Start the timer to display eta
-		if( !_timer ) {
-			//_timer = new QTimer(this);
-			//connect(_timer, SIGNAL(timeout()), this, SLOT(updateETA()));
-			//_timer->start( __display_eta_granularity );
-			// and start the elapsed timer
-			//_etatimer->start();
-		}
+		ArmAndStartTimer();
 
 	} else {
 
@@ -93,28 +96,60 @@ void QCstmGLVisualization::StartDataTaking(){
 		_takingData = false;
 
 		// Finish
-		//if( _etatimer ) {
-		//	_etatimer->stop();
-		//	delete _etatimer;
-		//}
+		DestroyTimer();
+		ETAToZero();
 	}
+
+}
+
+void QCstmGLVisualization::ETAToZero() {
+
+	QString textT = QTime(0,0,0).toString("hh:mm:ss");
+	ui->etaCntr->setText( textT );
 
 }
 
 void QCstmGLVisualization::on_data_taking_finished(int nFramesTaken) {
 
 	if( _takingData ) {
+
 		// Change the Stop button to Start
 		ui->startButton->setText( "Start" );
 		_takingData = false;
-		// timer
-		//disconnect(_timer, SIGNAL(timeout()), this, SLOT(updateETA()));
-		//delete _timer;
-		//_etatimer->restart();
+
+		DestroyTimer();
+		ETAToZero();
+
 	}
 
 	// Also we will inform the visualization to go straight to the very last frame to be drawn
 	//  in case the data taking thread was too fast compared to drawing
+
+}
+
+void QCstmGLVisualization::ArmAndStartTimer(){
+
+	// See for previous instances
+	if( _timer ) delete _timer;
+	if( _etatimer ) delete _etatimer;
+
+	_etatimer = new QElapsedTimer;
+	_timer = new QTimer(this);
+	connect(_timer, SIGNAL(timeout()), this, SLOT(updateETA()));
+	_timer->start( __display_eta_granularity );
+	// and start the elapsed timer
+	_etatimer->start();
+
+}
+
+void QCstmGLVisualization::DestroyTimer() {
+
+	// timer
+	disconnect(_timer, SIGNAL(timeout()), this, SLOT(updateETA()));
+	if( _timer ) delete _timer;
+	_timer = 0x0;
+	if( _etatimer ) delete _etatimer;
+	_etatimer = 0x0;
 
 }
 

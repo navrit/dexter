@@ -97,7 +97,7 @@
          <item>
           <widget class="QLabel" name="etaCntr">
            <property name="text">
-            <string>--:--/--:--</string>
+            <string>---:--:--</string>
            </property>
           </widget>
          </item>
@@ -114,6 +114,9 @@
         <layout class="QHBoxLayout" name="horizontalLayout_6">
          <item>
           <widget class="QCheckBox" name="dropFramesCheckBox">
+           <property name="toolTip">
+            <string>drop a frame if there are lost packets</string>
+           </property>
            <property name="text">
             <string>drop</string>
            </property>

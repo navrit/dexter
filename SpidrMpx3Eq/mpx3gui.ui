@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Mpx3GUI</string>
   </property>
+  <property name="toolTip">
+   <string>Visualization</string>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_7">
     <item>
@@ -66,7 +69,7 @@
      <x>0</x>
      <y>0</y>
      <width>1086</width>
-     <height>19</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">

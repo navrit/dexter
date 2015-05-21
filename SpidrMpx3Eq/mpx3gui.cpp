@@ -54,6 +54,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 	//_dacs = new DACs(_coreApp, _ui);
 	//_dacs->SetMpx3GUI( this );
 
+
 	_ui->DACsWidget->SetMpx3GUI( this );
 
 	// Prepare Equalization

@@ -16,7 +16,7 @@ Mpx3Config::Mpx3Config()
   // number of devices connected
   _devicePresenceLayout.clear();
   _nDevicesPresent = 0;
-
+  _trigPeriod_ms = 0;
 }
 
 void Mpx3Config::SendConfiguration(){
@@ -81,11 +81,15 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
 	// Trigger config
 	int trig_mode      = getTriggerMode();     // Auto-trigger mode = 4
 	int trig_length_us = getTriggerLength();  // This time shouldn't be longer than the period defined by trig_freq_hz
+
 	//int trig_freq_mhz   = (int) 1000 * ( 1. / (2.*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
 	int trig_freq_mhz   = (int) 1000 * ( 1. / (1.1*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
 	cout << " | configured freq is " << trig_freq_mhz << "mHz";
+
+	// Get the trigger period for information.  This is NOT the trigger length !
+	_trigPeriod_ms = (int) (1E6 * (1./(double)trig_freq_mhz));
 	int nr_of_triggers = getNTriggers();    // This is the number of shutter open i get
-	//int trig_pulse_count;
+
 	spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
 			trig_freq_mhz, nr_of_triggers );
 

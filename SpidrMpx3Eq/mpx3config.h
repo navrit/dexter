@@ -25,6 +25,7 @@ class Mpx3Config: public QObject {
 	bool connected = false;
 	QHostAddress SpidrAddress;
 	uint16_t port;
+	int _trigPeriod_ms;
 	//Operation stuff
 	bool colourMode = false, decodeFrames = false;
 	int OperationMode = -1, PixelDepth = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, TriggerMode =-1, TriggerLength_us = -1, nTriggers = -1;
@@ -59,6 +60,7 @@ public:
 	int getNActiveDevices(){return _activeChips.size();}
 	QVector<int>  getActiveDevices(){return _activeChips;}
 	int getIDIndex(int id){return _activeChips.indexOf(id);}
+	int getTriggerPeriodMS(){return _trigPeriod_ms;}
 
 	void checkChipResponse(int devIndx, detector_response dr);
 	bool detectorResponds(int devIndx);

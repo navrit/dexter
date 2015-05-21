@@ -70,7 +70,7 @@ void DataTakingThread::run() {
 
 	int nFramesReceived = 0, lastDrawn = 0;
 	int * framedata;
-	emit progress( 0 );
+	emit progress( nFramesReceived );
 	bool doReadFrames = true;
 
 	while ( spidrdaq->waitForFrame( _mpx3gui->getConfig()->getTriggerLength() + 20  ) ) { // 20ms timeout

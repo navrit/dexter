@@ -27,6 +27,7 @@ class QCstmGLVisualization : public QWidget
   bool _busyDrawing;
   QElapsedTimer * _etatimer;
   QTimer * _timer;
+  int _estimatedETA;
 
   //QMap<int, histogram> histograms;
   QMap<int, QString> layerNames;
@@ -45,6 +46,9 @@ public:
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
   void GetAFrame();
   void FlipBusyState();
+  void DestroyTimer();
+  void ArmAndStartTimer();
+  void ETAToZero();
 
 private:
   Ui::QCstmGLVisualization *ui;

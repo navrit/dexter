@@ -34,6 +34,7 @@ ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 	_spidrdaq = 0x0;     // Assuming no connection yet
 	_frameId = 0;
 	_adjType = __adjust_to_global;
+	_stop = false;
 
 	// Results of the scan
 	_results.weighted_arithmetic_mean = 0.;
@@ -129,6 +130,11 @@ void ThlScan::DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoo
 
 }
 
+void ThlScan::on_stop_data_taking_thread() {
+	// Used to properly stop the data taking thread
+	_stop = true;
+}
+
 void ThlScan::run() {
 
 	// Open a new temporary connection to the spider to avoid collisions to the main one
@@ -174,6 +180,7 @@ void ThlScan::run() {
 	// Signals to draw out of the worker
 	connect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
 	connect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
+	connect(_equalization, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
 
 	// Sometimes a reduced loop is selected
 	int processedLoops = 0;
@@ -338,18 +345,22 @@ void ThlScan::run() {
 					}
 				}
 
-
+				// If called to Stop
+				if ( _stop ) break;
 			}
-
 
 			// A full spacing loop has been achieved here
 			processedLoops++;
 			if( _numberOfLoops > 0 && _numberOfLoops == processedLoops ) finishScan = true;
 			if( finishScan ) break;
 
-
+			// If called to Stop
+			if ( _stop ) break;
 		}
+
 		if( finishScan ) break;
+		// If called to Stop
+		if ( _stop ) break;
 	}
 
 	///////////////////////////////////////////////////////////////////
@@ -361,6 +372,10 @@ void ThlScan::run() {
 	// Signals to draw out of the thread
 	disconnect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
 	disconnect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
+	disconnect( _equalization, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread()) );
+
+	// in case the thread is used again
+	_stop = false;
 
 	delete spidrcontrol;
 }
@@ -475,9 +490,9 @@ void ThlScan::SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj
 
 }
 
-int ThlScan::ReAdjustPixelsOff(double N, int dac_code) {
+int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 
-	/*
+/*
 	int adjustedPixels = 0;
 	int * data;
 	// The heatmap can store the images.  This is the indexing.
@@ -488,13 +503,13 @@ int ThlScan::ReAdjustPixelsOff(double N, int dac_code) {
 
 		if
 		(
-				_pixelReactiveTHL[i] < __equalization_target - N*_results.sigma
+				_pixelReactiveTHL[i] < __equalization_target - Nsigma*_results.sigma
 				||
-				_pixelReactiveTHL[i] > __equalization_target + N*_results.sigma
+				_pixelReactiveTHL[i] > __equalization_target + Nsigma*_results.sigma
 		) {
 
 
-			int startAdj = _equalization->GetEqualizationResults()->GetPixelAdj( i );
+			int startAdj = _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( i );
 			bool outsideRegion = true;
 
 			cout << "Reprocess pixel [" << i << "] | ";
@@ -562,9 +577,9 @@ int ThlScan::ReAdjustPixelsOff(double N, int dac_code) {
 				// Is it still outside the region
 				outsideRegion =
 						(
-								_pixelReactiveTHL[i] < __equalization_target - N*_results.sigma
+								_pixelReactiveTHL[i] < __equalization_target - Nsigma*_results.sigma
 								||
-								_pixelReactiveTHL[i] > __equalization_target + N*_results.sigma
+								_pixelReactiveTHL[i] > __equalization_target + Nsigma*_results.sigma
 						);
 				// THL scan
 				thlItr += stepScan;
@@ -578,7 +593,7 @@ int ThlScan::ReAdjustPixelsOff(double N, int dac_code) {
 	}
 
 	return adjustedPixels;
-	*/
+*/
   return 0;
 }
 

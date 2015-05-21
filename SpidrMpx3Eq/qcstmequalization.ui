@@ -102,6 +102,13 @@
          <layout class="QVBoxLayout" name="verticalLayout_9">
           <item>
            <layout class="QGridLayout" name="gridLayout">
+            <item row="1" column="6">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>step</string>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="2">
              <spacer name="horizontalSpacer_5">
               <property name="orientation">
@@ -163,8 +170,8 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
-             <widget class="QSpinBox" name="eqMinSpinBox">
+            <item row="0" column="7">
+             <widget class="QSpinBox" name="spacingSpinBox">
               <property name="keyboardTracking">
                <bool>false</bool>
               </property>
@@ -177,8 +184,8 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="7">
-             <widget class="QSpinBox" name="spacingSpinBox">
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="eqMinSpinBox">
               <property name="keyboardTracking">
                <bool>false</bool>
               </property>
@@ -198,17 +205,27 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="6">
-             <widget class="QLabel" name="label_3">
-              <property name="text">
-               <string>step</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="7">
              <widget class="QSpinBox" name="eqStepSpinBox">
               <property name="keyboardTracking">
                <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>THL:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLabel" name="eqLabelTHLCurrentValue">
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
               </property>
              </widget>
             </item>
@@ -238,31 +255,7 @@
               </property>
              </spacer>
             </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_4">
-              <property name="text">
-               <string>THL:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QLabel" name="eqLabelTHLCurrentValue">
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="3">
-             <widget class="QLabel" name="label_5">
-              <property name="text">
-               <string>Reactive:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="4">
+            <item row="3" column="4">
              <widget class="QLabel" name="eqLabelNPixelsReactive">
               <property name="layoutDirection">
                <enum>Qt::RightToLeft</enum>
@@ -272,19 +265,46 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="6">
+            <item row="3" column="3">
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>Reactive:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="6">
              <widget class="QLabel" name="label_6">
               <property name="text">
                <string>Loop:</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="7">
+            <item row="3" column="7">
              <widget class="QLabel" name="eqLabelLoopProgress">
               <property name="text">
                <string/>
               </property>
              </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>sigma_f</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="3">
+             <widget class="QLabel" name="eqSigmaMaskingSpinBox">
+              <property name="text">
+               <string>sigma_m</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QSpinBox" name="eqSigmaFineTunningSpinBox"/>
+            </item>
+            <item row="2" column="4">
+             <widget class="QSpinBox" name="spinBox_2"/>
             </item>
            </layout>
           </item>

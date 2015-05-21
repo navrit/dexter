@@ -43,7 +43,7 @@ QCstmThreshold::~QCstmThreshold()
 	delete ui;
 }
 
-int QCstmThreshold::getActiveTargetCode(){
+int QCstmThreshold::getActiveTargetCode() {
 	return MPX3RX_DAC_TABLE[ui->scanTargetComboBox->currentIndex()-1].code;
 }
 

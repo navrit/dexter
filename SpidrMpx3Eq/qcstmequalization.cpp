@@ -307,6 +307,11 @@ void QCstmEqualization::StartEqualization(int chipId) {
 		// 4) Write the result
 		SaveEqualization(chipId);
 
+		// 5) Attempt fine tunning
+		FineTunning(MPX3RX_DAC_DISC_L);
+
+	} else if ( EQ_NEXT_STEP( __FineTunning ) ) {
+
 		// Continue if multiple chips need to be equalized
 		if ( _nChips > 1 ) Rewind();
 
@@ -426,6 +431,23 @@ void QCstmEqualization::DAC_Disc_Optimization_150(int DAC_Disc_code, int DAC_DIS
 
 }
 
+int QCstmEqualization::FineTunning(int DAC_Disc_code) {
+
+	// Start from the last scan.
+	int lastScanIndex = (int)_scans.size() - 1;
+	ThlScan * lastScan = 0x0;
+	if( lastScanIndex > 0 ) {
+		lastScan = _scans[lastScanIndex];
+	} else {
+		return -1;
+	}
+
+	// Check how many pixels are more than N*sigmas off the mean
+	lastScan->ReAdjustPixelsOff(3, DAC_Disc_code);
+
+	return 0;
+}
+
 void QCstmEqualization::DAC_Disc_Optimization (ScanResults res_100, ScanResults res_150) {
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -477,22 +499,6 @@ void QCstmEqualization::SaveEqualization(int chipId) {
 
 }
 
-int QCstmEqualization::FineTunning(int setId, int DAC_Disc_code) {
-
-	// Start from the last scan.
-	int lastScanIndex = (int)_scans.size();
-	ThlScan * lastScan = 0x0;
-	if( lastScanIndex > 0 ) {
-		lastScan = _scans[lastScanIndex-1];
-	} else {
-		return -1;
-	}
-
-	// Check how many pixels are more than N*sigmas off the mean
-	lastScan->ReAdjustPixelsOff(3, DAC_Disc_code);
-
-	return setId;
-}
 
 
 //int QCstmEqualization::DetectStartEqualizationRange(int setId, int DAC_Disc_code) {
@@ -969,6 +975,7 @@ void QCstmEqualization::ChangeStep(int step) {
 void QCstmEqualization::StopEqualization() {
 
 	//GetUI()->_histoWidget->Clean();
+	emit stop_data_taking_thread();
 
 }
 

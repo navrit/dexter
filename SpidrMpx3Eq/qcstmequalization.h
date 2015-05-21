@@ -115,7 +115,7 @@ public:
 
 	void DAC_Disc_Optimization_DisplayResults(ScanResults res);
 
-	int FineTunning(int setId, int DAC_Disc_code);
+	int FineTunning(int DAC_Disc_code);
 //	int DetectStartEqualizationRange(int setId, int DAC_Disc_code);
 
 	void DisplayStatsInTextBrowser(int adj, int dac_disc, ScanResults res);
@@ -156,6 +156,7 @@ public:
 		__PrepareInterpolation_0x0,
 		__PrepareInterpolation_0x5,
 		__ScanOnInterpolation,
+		__FineTunning,
 		__EQStatus_Count
 	} eqStatus;
 	bool * _stepDone;
@@ -233,7 +234,7 @@ void on_openfileButton_clicked();
 
 signals:
 	void slideAndSpin(int, int);
-
+	void stop_data_taking_thread();
 
 };
 

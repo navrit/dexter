@@ -48,6 +48,8 @@ public:
 	explicit ThlScan(Mpx3GUI *, QCstmEqualization *);
 	//~ThlScan();
 
+
+
 	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
 	void RewindData();
 	void DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops = -1, bool blindScan = false);
@@ -69,7 +71,7 @@ public:
 	int GetDetectedLowScanBoundary() { return _detectedScanBoundary_L; };
 	int GetDetectedHighScanBoundary() { return _detectedScanBoundary_H; };
 
-	int ReAdjustPixelsOff(double N, int DAC_Disc_code);
+	int ReAdjustPixelsOff(double Nsigma, int DAC_Disc_code);
 
 	typedef enum {
 		__adjust_to_global = 0,
@@ -127,11 +129,15 @@ private:
 	int _thlItr;
 	int _pixelReactiveInScan;
 
+	// control
+	bool _stop;
+
 	private slots:
 	//void UpdateChart(int setId, int thlValue);
 	void UpdateChart(int thlValue);
 	void UpdateChart(int setId, int thlValue);
 	void UpdateHeatMap(int sizex, int sizey);
+	void on_stop_data_taking_thread();
 
 	signals:
 	void UpdateChartSignal(int setId, int thlValue);
