@@ -85,7 +85,7 @@ void QCstmPlotHistogram::setPlot(int index, Histogram *hist){
   int i;
   int sample = 0, oldSample = 0;
   for( i = 0; i < hist->size(); i++){
-      graph->addData((i+hist->getMin())*m_binSize, ((double)hist->atIndex(i)));
+      graph->addData(i*m_binSize+hist->getMin(), ((double)hist->atIndex(i)));
       /*sample = 0;
       for(int j = 0; j < m_binSize; j++)
         sample += hist.at(i+j);
@@ -94,7 +94,7 @@ void QCstmPlotHistogram::setPlot(int index, Histogram *hist){
           oldSample = sample;
         }*/
     }
-  graph->addData((i+hist->getMin())*m_binSize, ((double)hist->atIndex(i)));
+  graph->addData(i*m_binSize+hist->getMin(), ((double)hist->atIndex(i)));
   graph->rescaleAxes();
   replot();
   qDebug() << "Histogram plot took " << timer.elapsed() << "milliseconds";
