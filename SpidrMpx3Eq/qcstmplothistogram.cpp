@@ -34,7 +34,10 @@ void QCstmPlotHistogram::setHistogram(int threshold, QVector<int> data){
 
 void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size){
   int index = m_mapping.contains(threshold) ? m_mapping[threshold].first : generateGraph();
+  QElapsedTimer timer;
+  timer.start();
   Histogram hist = Histogram(data, size);
+  qDebug() << "Histogram creation took" << timer.elapsed() << "milliseconds";
   m_mapping[threshold] = qMakePair(index, hist);
   setPlot(index, hist);
 }
@@ -59,6 +62,8 @@ int QCstmPlotHistogram::generateGraph(){
 }
 
 void QCstmPlotHistogram::setPlot(int index, Histogram hist){
+  QElapsedTimer timer;
+  timer.start();
   QCPGraph *graph = this->graph(index);
   graph->clearData();
   int i;
@@ -75,6 +80,7 @@ void QCstmPlotHistogram::setPlot(int index, Histogram hist){
   graph->addData(i, ((double)sample)/m_binSize);
   graph->rescaleAxes();
   replot();
+  qDebug() << "Histogram plot took " << timer.elapsed() << "milliseconds";
 }
 
 void QCstmPlotHistogram::scaleToInterest(){

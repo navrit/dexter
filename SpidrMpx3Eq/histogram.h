@@ -11,7 +11,7 @@ enum edgeCaseBehaviourEnum{
   };
 private:
   std::vector<unsigned> m_bins;
-  int m_min =0, m_max=0, m_binWidth = 1;
+  int m_min =0, m_max=0, m_binWidth = 1, m_binCount;
   static edgeCaseBehaviourEnum m_defaultEdgeCaseBehaviour;
   edgeCaseBehaviourEnum m_edgeCaseBehaviour;
 public:
@@ -44,6 +44,9 @@ public:
     for(auto it = container.begin(); it != container.end(); it++){
       Histogram::addCount(*it);
     }
+  }
+  void setBinCount(int binCount){
+
   }
   void setMax(int max);
   int getMax() const{return m_max;}

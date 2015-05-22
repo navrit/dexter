@@ -289,7 +289,7 @@ void QCstmGLVisualization::on_hover_changed(QPoint pixel){
 void QCstmGLVisualization::on_reload_layer(int threshold){
 	int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
 	ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
-	//ui->histPlot->setHistogram(threshold, _mpx3gui->getDataset()->getLayer(threshold), _mpx3gui->getDataset()->getPixelsPerLayer());
+	ui->histPlot->setHistogram(threshold, _mpx3gui->getDataset()->getLayer(threshold), _mpx3gui->getDataset()->getPixelsPerLayer());
 	setThreshold(threshold);
 	on_active_frame_changed();
 }
@@ -312,7 +312,7 @@ void QCstmGLVisualization::on_reload_all_layers(){
 	QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
 	for(int i = 0; i < thresholds.size(); i++){
 		addThresholdToSelector(thresholds[i]);
-//		ui->histPlot->setHistogram(thresholds[i], _mpx3gui->getDataset()->getLayer(thresholds[i]), _mpx3gui->getDataset()->getPixelsPerLayer());
+		ui->histPlot->setHistogram(thresholds[i], _mpx3gui->getDataset()->getLayer(thresholds[i]), _mpx3gui->getDataset()->getPixelsPerLayer());
 	}
 	setThreshold(thresholds[0]);
 	on_active_frame_changed();
