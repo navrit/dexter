@@ -11,9 +11,10 @@ enum edgeCaseBehaviourEnum{
   };
 private:
   std::vector<unsigned> m_bins;
-  int m_min =0, m_max=0, m_binWidth = 1, m_binCount;
+  int m_min =0, m_max=0, m_binWidth = 1;
   static edgeCaseBehaviourEnum m_defaultEdgeCaseBehaviour;
   edgeCaseBehaviourEnum m_edgeCaseBehaviour;
+  inline int valueToBin(int value) const{return (value-m_min)/m_binWidth; }
 public:
   Histogram();
   Histogram(int max);
@@ -22,13 +23,17 @@ public:
   ~Histogram();
   static void setDefaultEdgeCaseBehaviour(edgeCaseBehaviourEnum behaviour){m_defaultEdgeCaseBehaviour  = behaviour;}
   void setEdgeCaseBehaviour(edgeCaseBehaviourEnum behaviour){m_edgeCaseBehaviour = behaviour;}
+
   inline void addCount(int value, int count = 1){
     if(value <= m_max && value >= m_min)
-      m_bins[value-m_min] += count;
+      m_bins[valueToBin(value)] += count;
     else{
       switch(m_edgeCaseBehaviour){
         case edgesClamp:
-          (value > m_max? m_bins[value-m_min] : m_bins[0]) += count;
+          if(value > m_max)
+            m_bins[valueToBin(m_max)] += count;
+          else
+            m_bins[valueToBin(m_min)] += count;
           break;
         case edgesResize:
           value > m_max? this->setMax(value) : this->setMin(value);
@@ -45,16 +50,20 @@ public:
       Histogram::addCount(*it);
     }
   }
-  void setBinCount(int binCount){
-
+  void addRange(int *array, int size){
+    for(int i = 0; i < size;i++)
+      Histogram::addCount(array[i]);
   }
+
+  inline void setWidth(int binwidth){m_binWidth = binwidth; m_bins.resize(size());}
   void setMax(int max);
   int getMax() const{return m_max;}
   void setMin(int min);
   int getMin() const{return m_min;}
   void setRange(int min, int max);
-  inline int size(){return m_max-m_min+1;}
-  inline int at(int value){return (value <= m_max && value >= m_min)? m_bins[value-m_min] : 0;} //bounds checking version of [], non-reference because OOB references.
+  inline int size(){return (m_max-m_min+1)/m_binWidth;}
+  inline int at(int value){return (value <= m_max && value >= m_min)? m_bins[valueToBin(value)] : 0;} //bounds checking version of [], non-reference because OOB references.
+  inline int atIndex(int index){return (index >= 0 && index < size())? m_bins[index]: 0;}
 
 //CONTAINER WRAPPERS
   auto begin() -> decltype(m_bins.begin()){return m_bins.begin();}
@@ -68,8 +77,8 @@ public:
   auto cend() -> decltype(m_bins.cend()){return m_bins.cend();}
 
 //OPERATORS
-  unsigned &operator[](int value) { return m_bins[value-m_min];  } //no bounds checking, editale reference
-  unsigned operator[](int value) const{ return m_bins[value-m_min];  } //no bounds checking, copied value.
+  unsigned &operator[](int value) { return m_bins[valueToBin(value)];  } //no bounds checking, editale reference
+  unsigned operator[](int value) const{ return m_bins[valueToBin(value)];  } //no bounds checking, copied value.
   Histogram& operator+=(const Histogram& rhs);
   Histogram operator+(const Histogram& rhs) const;
   Histogram& operator+=(const int& rhs);

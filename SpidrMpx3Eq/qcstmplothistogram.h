@@ -12,7 +12,7 @@
 class QCstmPlotHistogram : public QCustomPlot
 {
  Q_OBJECT
-  QMap<int, QPair<int,Histogram>> m_mapping;
+  QMap<int, QPair<int, Histogram*>> m_mapping;
   int m_binSize = 1;
   int m_currentHist = -1;
   bool clicked = false;
@@ -49,11 +49,11 @@ public:
   void addHistogram(int threshold, int* data, int size);
   void addHistogram(int threshold, QVector<int> data);
 
-  void setPlot(int index, Histogram hist);
+  void setPlot(int index, Histogram *hist);
 
-  int getMin(int threshold){return m_mapping[threshold].second.getMin();}
-  int getMax(int threshold){return m_mapping[threshold].second.getMax();}
-  unsigned getBin(int threshold, int level){return m_mapping[threshold].second[level];}
+  int getMin(int threshold){return m_mapping[threshold].second->getMin();}
+  int getMax(int threshold){return m_mapping[threshold].second->getMax();}
+  unsigned getBin(int threshold, int level){return m_mapping[threshold].second->at(level);}
   unsigned getTotal(int threshold);
 
   void clear();

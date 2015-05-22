@@ -33,10 +33,26 @@ void QCstmPlotHistogram::setHistogram(int threshold, QVector<int> data){
 }
 
 void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size){
-  int index = m_mapping.contains(threshold) ? m_mapping[threshold].first : generateGraph();
+  int index;
+  if(m_mapping.contains(threshold) ){
+    index =m_mapping[threshold].first;
+    delete m_mapping[threshold].second;
+  }
+  else
+    index = generateGraph();
   QElapsedTimer timer;
   timer.start();
-  Histogram hist = Histogram(data, size);
+  Histogram *hist = new Histogram();
+  hist->setWidth(m_binSize);
+  int min = INT_MAX, max = INT_MIN;
+  for(int i = 0; i < size; i++){
+    if(data[i] < min)
+      min = data[i];
+    if(data[i] > max)
+      max = data[i];
+    }
+  hist->setRange(min, max);
+  hist->addRange(data, size);
   qDebug() << "Histogram creation took" << timer.elapsed() << "milliseconds";
   m_mapping[threshold] = qMakePair(index, hist);
   setPlot(index, hist);
@@ -61,23 +77,24 @@ int QCstmPlotHistogram::generateGraph(){
   return graphCount()-1;
 }
 
-void QCstmPlotHistogram::setPlot(int index, Histogram hist){
+void QCstmPlotHistogram::setPlot(int index, Histogram *hist){
   QElapsedTimer timer;
   timer.start();
   QCPGraph *graph = this->graph(index);
   graph->clearData();
   int i;
   int sample = 0, oldSample = 0;
-  for( i = hist.getMin(); i <= hist.getMax(); i+=m_binSize){
-      sample = 0;
+  for( i = 0; i < hist->size(); i++){
+      graph->addData((i+hist->getMin())*m_binSize, ((double)hist->atIndex(i)));
+      /*sample = 0;
       for(int j = 0; j < m_binSize; j++)
         sample += hist.at(i+j);
       if(sample != oldSample){
           graph->addData(i, ((double)sample)/m_binSize);
           oldSample = sample;
-        }
+        }*/
     }
-  graph->addData(i, ((double)sample)/m_binSize);
+  graph->addData((i+hist->getMin())*m_binSize, ((double)hist->atIndex(i)));
   graph->rescaleAxes();
   replot();
   qDebug() << "Histogram plot took " << timer.elapsed() << "milliseconds";
@@ -92,10 +109,10 @@ void QCstmPlotHistogram::scaleToInterest(){
 }
 
 unsigned QCstmPlotHistogram::getTotal(int threshold){
-  Histogram hist = m_mapping[threshold].second;
+  Histogram *hist = m_mapping[threshold].second;
   unsigned sum = 0;
-  for(int i = hist.getMin(); i <= hist.getMax(); i++ )
-    sum += hist[i];
+  for(int i = hist->getMin(); i <= hist->getMax(); i++ )
+    sum += hist->at(i);
   return sum;
 }
 
@@ -156,19 +173,19 @@ void QCstmPlotHistogram::set_scale_percentile(int threshold, double lowerPercent
 
   if(this->graphCount() == 0)
     return;
-  Histogram hist = m_mapping[threshold].second;
+  Histogram *hist = m_mapping[threshold].second;
   unsigned total = 0, partialSum  = 0;
-  for(int i = hist.getMin(); i <= hist.getMax(); i++)
-    total += hist[i];
+  for(int i = hist->getMin(); i <= hist->getMax(); i++)
+    total += hist->at(i);
   int minBound = round(lowerPercentile*total), maxBound = round(upperPercentile*total);
   double lowerBound, upperBound;
-  int index = hist.getMin();
+  int index = hist->getMin();
   do{
-      partialSum += hist[index++];
+      partialSum += hist->at(index++);
     }while(partialSum < minBound);
   lowerBound = index-1;
   while(partialSum < maxBound)
-    partialSum += hist[index++];
+    partialSum += hist->at(index++);
   upperBound = index;
   this->changeRange(QCPRange(lowerBound, upperBound));
 }

@@ -53,20 +53,19 @@ void Histogram::setMax(int max){
 void Histogram::setMin(int min){
   if(min > m_max)
     setMax(min);
-  int old_min = m_min;
+  int old_size = size();
   m_min = min;
   //cout << "size min = " << size() << endl;
   std::vector<unsigned> new_bins(size());
-  if(m_min < old_min){ //if we need to prepend
-      const int offset = old_min-m_min;
+  const int offset = size()-old_size;
+  if(offset > 0){ //if we need to prepend
       for(int i = 0; i < offset; i++)//set the first bins to 0.
         new_bins[i] = 0;
       for(int i = 0; i < m_bins.size(); i++)//copy the rest.
         new_bins[i+offset] = m_bins[i];
     }
   else{//if we need to drop the first bins.
-      const int offset = m_min-old_min;//TODO: respect edgeCaseBehaviour
-      new_bins.assign(m_bins.begin()+offset, m_bins.end());
+      new_bins.assign(m_bins.begin()-offset, m_bins.end());
     }
   m_bins.swap(new_bins);
 }

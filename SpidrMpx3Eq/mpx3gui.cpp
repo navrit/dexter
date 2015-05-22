@@ -241,11 +241,11 @@ void Mpx3GUI::generateFrame(){//TODO: put into Dataset
 	for(int t = 0; t < config->getNTriggers();t++)
 	for(int k = 0; k < workingSet->getFrameCount();k++){
 		for(int t = 0; t < 4;t++){
-			//double fx = ((double)8*rand()/RAND_MAX)/(workingSet->x()), fy = (8*(double)rand()/RAND_MAX)/workingSet->y();
+			double fx = ((double)8*rand()/RAND_MAX)/(workingSet->x()), fy = (8*(double)rand()/RAND_MAX)/workingSet->y();
 			for(int i = 0; i < workingSet->y(); i++)
 				for(int j = 0; j < workingSet->x(); j++)
 					//data[k*workingSet->x()*workingSet->y()+i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
-					data[i*workingSet->x()+j] = (int)((1));//*sin(fx*j)*(cos(fy*i)));
+					data[i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
 			addFrame(data.data(), k, t);
 		}
 	}
