@@ -62,12 +62,15 @@ void QCstmPlotHistogram::setPlot(int index, Histogram hist){
   QCPGraph *graph = this->graph(index);
   graph->clearData();
   int i;
-  int sample = 0;
+  int sample = 0, oldSample = 0;
   for( i = hist.getMin(); i <= hist.getMax(); i+=m_binSize){
       sample = 0;
       for(int j = 0; j < m_binSize; j++)
         sample += hist.at(i+j);
-      graph->addData(i, ((double)sample)/m_binSize);
+      if(sample != oldSample){
+          graph->addData(i, ((double)sample)/m_binSize);
+          oldSample = sample;
+        }
     }
   graph->addData(i, ((double)sample)/m_binSize);
   graph->rescaleAxes();
