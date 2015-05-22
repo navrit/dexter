@@ -2,6 +2,8 @@
 #include <vector>
 #include <iterator>
 #include <iostream>
+#include <QDebug>
+
 class Histogram{
 public:
 enum edgeCaseBehaviourEnum{
@@ -19,14 +21,19 @@ public:
   Histogram();
   Histogram(int max);
   Histogram(int min, int max);
+  Histogram(int min, int max, int binSize);
   Histogram(int *data, size_t size);
   ~Histogram();
   static void setDefaultEdgeCaseBehaviour(edgeCaseBehaviourEnum behaviour){m_defaultEdgeCaseBehaviour  = behaviour;}
   void setEdgeCaseBehaviour(edgeCaseBehaviourEnum behaviour){m_edgeCaseBehaviour = behaviour;}
 
   inline void addCount(int value, int count = 1){
-    if(value <= m_max && value >= m_min)
-      m_bins[valueToBin(value)] += count;
+    if(value <= m_max && value >= m_min){
+        int index = valueToBin(value);
+        if(index >= m_bins.size() || index < 0)
+          qDebug() << "Out of bounds!" << index << "/" << m_bins.size();
+       m_bins[valueToBin(value)] += count;
+      }
     else{
       switch(m_edgeCaseBehaviour){
         case edgesClamp:
@@ -47,12 +54,12 @@ public:
   template<typename Container>
   void addRange(Container const& container){
     for(auto it = container.begin(); it != container.end(); it++){
-      Histogram::addCount(*it);
+        addCount(*it);
     }
   }
   void addRange(int *array, int size){
     for(int i = 0; i < size;i++)
-      Histogram::addCount(array[i]);
+      addCount(array[i]);
   }
 
   inline void setWidth(int binwidth){m_binWidth = binwidth; m_bins.resize(size());}
@@ -61,7 +68,7 @@ public:
   void setMin(int min);
   int getMin() const{return m_min;}
   void setRange(int min, int max);
-  inline int size(){return (m_max-m_min+1)/m_binWidth;}
+  inline int size(){return (m_max-m_min+1)/m_binWidth+1;}
   inline int at(int value){return (value <= m_max && value >= m_min)? m_bins[valueToBin(value)] : 0;} //bounds checking version of [], non-reference because OOB references.
   inline int atIndex(int index){return (index >= 0 && index < size())? m_bins[index]: 0;}
 

@@ -69,7 +69,7 @@ public slots:
   void changeRange(QCPRange newRange);
   void minClampChanged(double min);
   void maxClampChanged(double max);
-  void changeBinSize(int binSize){m_binSize = binSize; rebin();}
+  void changeBinSize(int binSize){m_binSize = binSize;}
   //void rebinHistograms(int binSize)
 };
 

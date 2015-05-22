@@ -40,10 +40,10 @@ void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size){
   }
   else
     index = generateGraph();
-  QElapsedTimer timer;
-  timer.start();
-  Histogram *hist = new Histogram();
-  hist->setWidth(m_binSize);
+
+  //QElapsedTimer timer;
+  //timer.start();
+  //hist->setWidth(m_binSize);
   int min = INT_MAX, max = INT_MIN;
   for(int i = 0; i < size; i++){
     if(data[i] < min)
@@ -51,9 +51,10 @@ void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size){
     if(data[i] > max)
       max = data[i];
     }
-  hist->setRange(min, max);
+  Histogram *hist = new Histogram(min, max, m_binSize);
   hist->addRange(data, size);
-  qDebug() << "Histogram creation took" << timer.elapsed() << "milliseconds";
+  //qDebug() << "Histogram creation took" << timer.elapsed() << "milliseconds";
+
   m_mapping[threshold] = qMakePair(index, hist);
   setPlot(index, hist);
 }
@@ -78,26 +79,24 @@ int QCstmPlotHistogram::generateGraph(){
 }
 
 void QCstmPlotHistogram::setPlot(int index, Histogram *hist){
-  QElapsedTimer timer;
-  timer.start();
+  //QElapsedTimer timer;
+
+  //timer.start();
   QCPGraph *graph = this->graph(index);
   graph->clearData();
   int i;
-  int sample = 0, oldSample = 0;
+  int sample, oldSample = hist->atIndex(0)-1;
   for( i = 0; i < hist->size(); i++){
-      graph->addData(i*m_binSize+hist->getMin(), ((double)hist->atIndex(i)));
-      /*sample = 0;
-      for(int j = 0; j < m_binSize; j++)
-        sample += hist.at(i+j);
+      sample = hist->atIndex(i);
       if(sample != oldSample){
-          graph->addData(i, ((double)sample)/m_binSize);
+          graph->addData(i*m_binSize+hist->getMin(), ((double)sample));
           oldSample = sample;
-        }*/
+        }
     }
   graph->addData(i*m_binSize+hist->getMin(), ((double)hist->atIndex(i)));
   graph->rescaleAxes();
   replot();
-  qDebug() << "Histogram plot took " << timer.elapsed() << "milliseconds";
+  //qDebug() << "Histogram plot took " << timer.elapsed() << "milliseconds";
 }
 
 void QCstmPlotHistogram::scaleToInterest(){
@@ -117,8 +116,8 @@ unsigned QCstmPlotHistogram::getTotal(int threshold){
 }
 
 void QCstmPlotHistogram::rebin(){
-  for(int i = 0; i < m_mapping.size();i++)
-    setPlot(m_mapping.values()[i].first, m_mapping.values()[i].second);
+  /*for(int i = 0; i < m_mapping.size();i++)
+    setPlot(m_mapping.values()[i].first, m_mapping.values()[i].second);*/
 }
 
 
@@ -141,6 +140,8 @@ void QCstmPlotHistogram::setActive(int index){
 
 void QCstmPlotHistogram::clear(){
   this->clearGraphs();
+  for(auto it = m_mapping.begin(); it != m_mapping.end(); it++)
+    delete it.value().second;
   m_mapping.clear();
   m_currentHist = -1;
   this->replot();

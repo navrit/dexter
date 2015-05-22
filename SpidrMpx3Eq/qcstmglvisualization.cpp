@@ -249,13 +249,22 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 	//connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), this, SLOT(on_new_range_dragged(QCPRange)));
 	// connect(ui->layerSelector, SIGNAL(activated(QString)), ui->glPlot->getPlot(), SLOT()
 
-	connect(ui->binWidthSpinner, SIGNAL(valueChanged(int)), ui->histPlot, SLOT(changeBinSize(int)));
+	connect(ui->binWidthSpinner, SIGNAL(valueChanged(int)), this, SLOT(changeBinSize(int)));
 	connect(ui->glPlot->getPlot(), SIGNAL(hovered_pixel_changed(QPoint)),this, SLOT(on_hover_changed(QPoint)));
 	connect(ui->glPlot->getPlot(), SIGNAL(pixel_selected(QPoint,QPoint)), this, SLOT(on_pixel_selected(QPoint,QPoint)));
 
 	connect(this, SIGNAL(change_hover_text(QString)), ui->mouseOverLabel, SLOT(setText(QString)));
 	//connect(ui->fullRangeRadio, SIGNAL(pressed()), ui->histPlot, SLOT(set_scale_full()));
 	connect(ui->histPlot, SIGNAL(new_range_dragged(QCPRange)), this, SLOT(on_new_range_dragged(QCPRange)));
+}
+
+void QCstmGLVisualization::changeBinSize(int width){
+ ui->histPlot->changeBinSize(width);
+ QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
+ for(int i = 0; i < thresholds.size(); i++){
+         addThresholdToSelector(thresholds[i]);
+         ui->histPlot->setHistogram(thresholds[i], _mpx3gui->getDataset()->getLayer(thresholds[i]), _mpx3gui->getDataset()->getPixelsPerLayer());
+ }
 }
 
 void QCstmGLVisualization::on_range_changed(QCPRange newRange){
@@ -304,7 +313,6 @@ void QCstmGLVisualization::on_progress_signal(int framecntr) {
 
 
 void QCstmGLVisualization::on_reload_all_layers(){
-
 	// Get busy
 	emit FlipBusyState();
 
