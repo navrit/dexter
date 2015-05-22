@@ -44,13 +44,13 @@ _ui(new Ui::QCstmEqualization)
 	_nTriggers = 1;
 	_spacing = 4;
 	_minScanTHL = 0;
-	_maxScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size) - 1;
+	_maxScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size);
 	_stepScan = 2;
 	_eqresults = 0x0;
 	_setId = 0;
 	_global_adj = 0x0;
 	_nChips = 1;
-	_eqVector.clear();
+	_eqMap.clear();
 
 	// Limits in the input widgets
 	SetLimits();
@@ -112,12 +112,12 @@ void QCstmEqualization::InitEqualization() {
 	// No sets available
 	_setId = 0;
 	// Clear the equalization results
-	if ( _eqresults ) {
-		delete _eqresults;
+	if ( _eqMap.size() > 0 ) {
+		_eqMap.clear();
 	}
-	_eqresults = new Mpx3EqualizationResults;
 
-	//else _eqresults->Clear();
+	_eqMap[_deviceIndex] = new Mpx3EqualizationResults;
+	_eqresults = _eqMap[_deviceIndex];
 
 	// Rewind limits
 	SetMinScan( 0 );
@@ -304,13 +304,13 @@ void QCstmEqualization::StartEqualization(int chipId) {
 		_ui->_intermediatePlot->addData( adj_matrix, 256, 256 );
 		_ui->_intermediatePlot->setActive( 0 );
 
-		// 4) Write the result
-		SaveEqualization(chipId);
-
 		// 5) Attempt fine tunning
 		FineTunning(MPX3RX_DAC_DISC_L);
 
 	} else if ( EQ_NEXT_STEP( __FineTunning ) ) {
+
+		// 4) Write the result
+		SaveEqualization( chipId );
 
 		// Continue if multiple chips need to be equalized
 		if ( _nChips > 1 ) Rewind();
@@ -432,6 +432,10 @@ void QCstmEqualization::DAC_Disc_Optimization_150(int DAC_Disc_code, int DAC_DIS
 }
 
 int QCstmEqualization::FineTunning(int DAC_Disc_code) {
+
+	// The step goes down to 1 here
+	_stepScan = 1;
+	_ui->eqStepSpinBox->setValue( _stepScan );
 
 	// Start from the last scan.
 	int lastScanIndex = (int)_scans.size() - 1;
@@ -708,7 +712,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 		return;
 	}
 	_deviceIndex = chipIndex;
-	_eqresults = _eqVector[chipIndex];
+	_eqresults = _eqMap[chipIndex];
 
 	// This comes from hand-picked masking operation
 	// Clean the chip first
@@ -855,10 +859,14 @@ void QCstmEqualization::Configuration(bool reset) {
 }
 
 Mpx3EqualizationResults * QCstmEqualization::GetEqualizationResults(int chipIndex) {
+
 	int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
 	if ( chipIndex < 0 || chipIndex > nChips - 1) return 0x0;
-	return _eqVector[chipIndex];
+
+	return _eqMap[chipIndex];
 }
+
+
 
 void QCstmEqualization::LoadEqualization(){
 
@@ -873,8 +881,8 @@ void QCstmEqualization::LoadEqualization(){
 	for(int i = 0 ; i < nChips ; i++) {
 
 		// Next equalization
-		_eqVector.push_back( new Mpx3EqualizationResults );
-		_eqresults = _eqVector[i];
+		_eqMap[i] = new Mpx3EqualizationResults;
+		_eqresults = _eqMap[i];
 
 		// And clear all previous adjustements
 		// In case an equalization was done in the same session

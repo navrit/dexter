@@ -104,6 +104,21 @@ void ThlScan::RewindData() {
 
 }
 
+void ThlScan::RewindPixelCountsMap(){
+
+	if ( !_pixelCountsMap.empty() ) {
+		_pixelCountsMap.clear();
+	}
+	// Create entries at 0 for the whole matric
+	for ( int i = 0 ; i < __matrix_size ; i++ ) {
+		_pixelCountsMap[i] = __NOT_TESTED_YET;
+	}
+
+	// Nothing should be masked
+	_maskedSet.clear();
+
+}
+
 //ThlScan::~ThlScan(){
 
 //}
@@ -224,6 +239,8 @@ void ThlScan::run() {
 			accelerationApplied = false;
 			accelerationFlagCntr = 0;
 			step = _stepScan;
+			bool doReadFrames = true;
+
 			for(_thlItr = _minScan ; _thlItr <= _maxScan ; _thlItr += step ) {
 
 				//cout << "------------ THL : " << _thlItr << "----------------" << endl;
@@ -250,47 +267,51 @@ void ThlScan::run() {
 
 				// Start the trigger as configured
 				spidrcontrol->startAutoTrigger();
-				//StartAutoTriggerSignal();
-				Sleep( 50 );
 
 				// See if there is a frame available
 				// I should get as many frames as triggers
+				// Assume the frame won't come
+				doReadFrames = false;
+				while ( _spidrdaq->waitForFrame( 25 ) ) { // 5ms for eq + 20ms transfer over the network
 
-				while ( _spidrdaq->hasFrame() ) { //HasFrameSignal(_thlItr) ) {
-					// if HasFrameSignal(_thlItr) is true there will be a signal back
-					// which will process the given frame
+					// A frame is here
+					doReadFrames = true;
+					// Check quality
+					if ( _spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected
+						doReadFrames = false;
+					}
 
-					//cout << "frame ..." << endl;
-
-					int size_in_bytes = -1;
-
-					_data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
-
-					_pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes, _thlItr );
+					if ( doReadFrames ) {
+						int size_in_bytes = -1;
+						_data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
+						_pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes, _thlItr );
+					}
 
 					// Release
 					_spidrdaq->releaseFrame();
 
-					//ReleaseFrameSignal();
-					//Sleep( 10 ); // Allow time to get and decode the next frame, if any
+					if ( doReadFrames ) {
+						// Report to heatmap
+						UpdateHeatMapSignal(_mpx3gui->getDataset()->x(), _mpx3gui->getDataset()->y());
 
-					// Report to heatmap
-					UpdateHeatMapSignal(_mpx3gui->getDataset()->x(), _mpx3gui->getDataset()->y());
+						//_heatmap->addData(data, 256, 256); // Add a new plot/frame.
+						//_heatmap->setActive(_frameId++); // Activate the last plot (the new one)
+						//_heatmap->setData( data, 256, 256 );
 
-					//_heatmap->addData(data, 256, 256); // Add a new plot/frame.
-					//_heatmap->setActive(_frameId++); // Activate the last plot (the new one)
-					//_heatmap->setData( data, 256, 256 );
-
-					// Last scan boundaries
-					// This information could be useful for a next scan
-					if ( _thlItr < _detectedScanBoundary_L ) _detectedScanBoundary_L = _thlItr;
-					if ( _thlItr > _detectedScanBoundary_H ) _detectedScanBoundary_H = _thlItr;
-
-					// Give some more time to decode the next frame
-					Sleep(10);
+						// Last scan boundaries
+						// This information could be useful for a next scan
+						if ( _thlItr < _detectedScanBoundary_L ) _detectedScanBoundary_L = _thlItr;
+						if ( _thlItr > _detectedScanBoundary_H ) _detectedScanBoundary_H = _thlItr;
+					}
 
 				}
-				//Sleep(10);
+
+				// Try again if necessary
+				if( !doReadFrames ) {
+					doReadFrames = true;
+					_thlItr -= step;
+					continue;
+				}
 
 				// Report to graph
 				//cout << _setId << "," << _thlItr << endl;
@@ -435,7 +456,7 @@ int ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
 			if ( _pixelCountsMap[i] < _equalization->GetNTriggers() ) {
 				_pixelCountsMap[i]++;
 			}
-			// It it reached the number of triggers, stablish this Threshold as the reactive threshold
+			// It it reached the number of triggers, set this Threshold as the reactive threshold
 			if ( _pixelCountsMap[i] == _equalization->GetNTriggers() ) {
 
 				// This way I mark the pixel as reactive +1
@@ -455,6 +476,47 @@ int ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
 
 	return pixelsActive;
 }
+
+int ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl, int interestingpix) {
+
+	int nPixels = size_in_bytes/4;
+	int pixelsActive = 0;
+	// Each 32 bits corresponds to the counts in each pixel already
+	// in 'int' representation as the decoding has been requested
+
+	for(int i = 0 ; i < nPixels ; i++) {
+
+		if ( i == interestingpix ) {
+			cout << " { " << i << " | counts: " << _pixelCountsMap[i] << " -- data --> " << data[i] << " | reactive: " << _pixelReactiveTHL[i] << "} " << endl;
+		}
+
+		// I checked that the entry is not zero, and also that is not in the maskedMap
+		if ( data[i] != 0 && ( _maskedSet.find( i ) == _maskedSet.end() ) ) {
+			// Increase the counting in this pixel if it hasn't already reached the _nTriggers
+			if ( _pixelCountsMap[i] < _equalization->GetNTriggers() ) {
+				_pixelCountsMap[i]++;
+			}
+			// It it reached the number of triggers, set this Threshold as the reactive threshold
+			if ( _pixelCountsMap[i] == _equalization->GetNTriggers() ) {
+
+				// This way I mark the pixel as reactive +1
+				_pixelCountsMap[i]++;
+
+				//cout << i << " | " << _pixelCountsMap[i] << " -- data --> " << data[i] << " | triggers : " << _equalization->GetNTriggers() << endl;
+
+				_pixelReactiveTHL[i] = thl;
+				_nReactivePixels++;
+				pixelsActive++;
+			}
+
+
+		}
+
+	}
+
+	return pixelsActive;
+}
+
 
 int ThlScan::NumberOfNonReactingPixels() {
 
@@ -492,100 +554,176 @@ void ThlScan::SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj
 
 int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 
-/*
+	int ipaddr[4] = { 1, 1, 168, 192 };
+	if( _srcAddr != 0 ) {
+		ipaddr[3] = (_srcAddr >> 24) & 0xFF;
+		ipaddr[2] = (_srcAddr >> 16) & 0xFF;
+		ipaddr[1] = (_srcAddr >>  8) & 0xFF;
+		ipaddr[0] = (_srcAddr >>  0) & 0xFF;
+	}
+
+	SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
+	//SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
 	int adjustedPixels = 0;
 	int * data;
-	// The heatmap can store the images.  This is the indexing.
 	int frameId = 0;
+	bool doReadFrames = true;
+
+	// The data buffer id doesn't necessarily corresponds to _deviceIndex
+	int idDataFetch = _mpx3gui->getConfig()->getDataBufferId( _deviceIndex );
+	cout << "[INFO] Run a Scan. devIndex:" << _deviceIndex << " | databuffer:" << idDataFetch << endl;
 
 	// Loop over the pixels off the adjustment
 	for ( int i = 0 ; i < __matrix_size ; i++ ) {
+
+		// Mask the whole pixel pad.  Don't send to the chip yet
+		for (int i = 0 ; i < __array_size_x ; i++) {
+			for (int j = 0 ; j < __array_size_y ; j++) {
+				spidrcontrol->setPixelMaskMpx3rx(i, j, true);
+			}
+		}
 
 		if
 		(
 				_pixelReactiveTHL[i] < __equalization_target - Nsigma*_results.sigma
 				||
 				_pixelReactiveTHL[i] > __equalization_target + Nsigma*_results.sigma
+				||
+				_pixelReactiveTHL[i] < _equalization->GetNTriggers() // simply never responded
 		) {
 
 
 			int startAdj = _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( i );
 			bool outsideRegion = true;
 
-			cout << "Reprocess pixel [" << i << "] | ";
 
 			// Now scan from 0 to 10 sigma away from the last extrapolation adjustment
-			int thlItr = 0;
-			while ( startAdj < __max_adj_val && outsideRegion &&  thlItr <= __equalization_target + 10 * _results.sigma ) {
+			int stepScan = _equalization->GetStepScan();
+			int deviceIndex = _equalization->GetDeviceIndex();
 
-				// Mask the whole pad except by this pixel
-				ClearMask(false); // don't send to the chip yet
-				pair<int, int> unmaskPix = XtoXY(i, __matrix_size_x);
-				_spidrcontrol->setPixelMaskMpx3rx(unmaskPix.first, unmaskPix.second, true);
-				// Set the new adjustment for this particular pixel.
-				// If the pixel is at the right of the equalization target try
-				//  a higher adjustment bit until it reaches the max Adj. If the
-				//  pixel is at the left, try a lower adjustment.
-				if ( _pixelReactiveTHL[i] > __equalization_target ) startAdj++;
-				else startAdj--;
-				_equalization->GetEqualizationResults()->SetPixelAdj(i, startAdj);
-				// Write to the spidrControl
-				_equalization->SetAllAdjustmentBits( ); // _equalization->GetEqualizationResults() );
-				// And send
-				_spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
+			// And try now a new adjustment :
+			// - If the pixel is at the right of the equalization target try
+			//  a higher adjustment until it reaches the max Adj.
+			// - If the pixel is at the left, try a lower adjustment.
+			if ( _pixelReactiveTHL[i] > __equalization_target ) startAdj++;
+			else startAdj--;
+
+			///////////////////////////////////////
+			// GIVE UP CONDITION
+			// This means no adjustment is possible
+			//  and this pixel should be masked
+			if ( startAdj > __max_adj_val
+					||
+					startAdj < 0 ) {
+				// TODO mark as pixels which should be masked
+				continue;
+			}
+
+			cout << "Reprocess pixel [" << i << "] adj="  << startAdj << endl;
+
+			// Unmask this particular pixel
+			pair<int, int> unmaskPix = XtoXY(i, __matrix_size_x);
+			spidrcontrol->setPixelMaskMpx3rx(unmaskPix.first, unmaskPix.second, false);
+			// Set the new adjustment for this particular pixel.
+			_equalization->GetEqualizationResults(_deviceIndex)->SetPixelAdj(i, startAdj);
+			// Write the adjustment
+			spidrcontrol->configPixelMpx3rx(unmaskPix.first, unmaskPix.second, startAdj, 0x0 );
+			// send to chip
+			spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
+			//_equalization->SetAllAdjustmentBits( spidrcontrol );
+
+			// Now I can rewind counters for this pixel
+			_pixelReactiveTHL[i] = __UNDEFINED;
+			_pixelCountsMap[i] = __NOT_TESTED_YET;
+			// Unmask it also in the local set so it can work on it
+			set<int>::iterator iS = _maskedSet.find( i );
+			if ( iS != _maskedSet.end() ) _maskedSet.erase( iS );
+
+			int thlItr = 0;
+			bool waitingForReaction = true;
+			while (
+					startAdj <= __max_adj_val
+					&&
+					startAdj >= 0
+					&&
+					outsideRegion
+					&&
+					//thlItr <= __equalization_target + 10 * _results.sigma
+					thlItr <= _maxScan
+					&&
+					waitingForReaction
+					) {
 
 				//////////////////////////////////////////////////////
 				// Now ready to scan on this unique pixel !
-				int stepScan = _equalization->GetStepScan();
-				int deviceIndex = _equalization->GetDeviceIndex();
+				//cout << "THL,adj(" << thlItr << "," << startAdj << ")";
 
-				cout << "THL : " << thlItr << ", ";
-
-				_spidrcontrol->setDac( deviceIndex, dac_code, thlItr );
+				spidrcontrol->setDac( deviceIndex, dac_code, thlItr );
 				//_spidrcontrol->writeDacs( _deviceIndex );
 
 				// Start the trigger as configured
-				_spidrcontrol->startAutoTrigger();
-				Sleep( 50 );
+				spidrcontrol->startAutoTrigger();
 
 				// See if there is a frame available
 				// I should get as many frames as triggers
+				// Assume the frame won't come
+				doReadFrames = false;
+				while ( _spidrdaq->waitForFrame( 25 ) ) { // 5ms for eq + 20ms transfer over the network
 
-				while ( _spidrdaq->hasFrame() ) {
+					doReadFrames = true;
+					if ( _spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected
+						doReadFrames = false;
+					}
 
-					int size_in_bytes = -1;
-					data = _spidrdaq->frameData(0, &size_in_bytes);
+					if ( doReadFrames ) {
 
-					ExtractScanInfo( data, size_in_bytes, thlItr );
+						int size_in_bytes = -1;
+						data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
+
+						ExtractScanInfo( data, size_in_bytes, thlItr );
+
+
+						// Report to heatmap
+						_heatmap->addData(data, 256, 256); // Add a new plot/frame.
+						_heatmap->setActive(frameId++); // Activate the last plot (the new one)
+						//_heatmap->setData( data, 256, 256 );
+					}
 
 					_spidrdaq->releaseFrame();
-					Sleep( 10 ); // Allow time to get and decode the next frame, if any
-
-					// Report to heatmap
-					_heatmap->addData(data, 256, 256); // Add a new plot/frame.
-					_heatmap->setActive(frameId++); // Activate the last plot (the new one)
-					//_heatmap->setData( data, 256, 256 );
 
 				}
 
 				// Report to graph
 				//UpdateChart(setId, i);
 
-				//////////////////////////////////////////////////////
+				if ( doReadFrames ) {
 
+					// Is it still outside the region ?
+					outsideRegion =
+							(
+									_pixelReactiveTHL[i] < __equalization_target - Nsigma*_results.sigma
+									||
+									_pixelReactiveTHL[i] > __equalization_target + Nsigma*_results.sigma
+									||
+									_pixelReactiveTHL[i] < _equalization->GetNTriggers() // never responded
+							);
 
-				// Is it still outside the region
-				outsideRegion =
-						(
-								_pixelReactiveTHL[i] < __equalization_target - Nsigma*_results.sigma
-								||
-								_pixelReactiveTHL[i] > __equalization_target + Nsigma*_results.sigma
-						);
-				// THL scan
-				thlItr += stepScan;
+					// Reacted ?
+					if (_pixelReactiveTHL[i] != __UNDEFINED ) {
+						waitingForReaction = false;
+						cout << "thl:" << _pixelReactiveTHL[i] << endl;
+					}
+
+					// THL scan
+					thlItr += stepScan;
+
+				} // otherwise try again
+
 			}
 
-			cout << endl;
+			// still outside the region ? try again with another adjustment
+			if( outsideRegion ) i--;
 
 			adjustedPixels++;
 		}
@@ -593,8 +731,6 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 	}
 
 	return adjustedPixels;
-*/
-  return 0;
 }
 
 void ThlScan::UpdateHeatMap(int sizex, int sizey) {

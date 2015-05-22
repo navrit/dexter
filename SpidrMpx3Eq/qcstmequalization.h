@@ -2,6 +2,7 @@
 #define QCSTMEQUALIZATION_H
 
 #include <QWidget>
+#include <QMap>
 
 #include "mpx3gui.h"
 #include "mpx3defs.h"
@@ -167,7 +168,7 @@ private:
 
 	// Equalization info
 	Mpx3EqualizationResults * _eqresults;
-	QVector<Mpx3EqualizationResults *> _eqVector;
+	QMap<int, Mpx3EqualizationResults *> _eqMap;
 
 	// Connectivity between modules
 	Mpx3GUI * _mpx3gui;

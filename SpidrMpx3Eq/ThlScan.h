@@ -52,10 +52,13 @@ public:
 
 	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
 	void RewindData();
+	void RewindPixelCountsMap();
 	void DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops = -1, bool blindScan = false);
 	int SetEqualizationMask(SpidrController * sc, int spacing, int offset_x, int offset_y);
 	void ClearMask(SpidrController * spidrcontrol, bool ClearMask = true);
 	int ExtractScanInfo(int * data, int size_in_bytes, int thl);
+	int ExtractScanInfo(int * data, int size_in_bytes, int thl, int);
+
 	ScanResults GetScanResults() { return _results; };
 	void ExtractStatsOnChart(int setId);
 	int NumberOfNonReactingPixels();
@@ -98,6 +101,8 @@ private:
 	map<int, int> _pixelCountsMap;
 	// pixelId, reactive thl
 	map<int, int> _pixelReactiveTHL;
+	set<int> _maskedSet;
+
 	int _nReactivePixels;
 
 	// Last scan boundaries
@@ -105,7 +110,6 @@ private:
 	int _detectedScanBoundary_L;
 	int _detectedScanBoundary_H;
 
-	set<int> _maskedSet;
 	bool _stopWhenPlateau;
 
 	// Scan parameters
