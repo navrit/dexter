@@ -231,6 +231,8 @@ void QCstmGLVisualization::setGradient(int index){
 void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 	_mpx3gui = p;
 	setGradient(0);
+	changeBinCount(ui->binCountSpinner->value());
+
 	connect(_mpx3gui, SIGNAL(ConnectionStatusChanged(bool)), ui->startButton, SLOT(setEnabled(bool))); //enable the button on connection
 	connect(ui->startButton, SIGNAL(clicked(bool)), this, SLOT(StartDataTaking()));
 	connect(ui->summingCheckbox, SIGNAL(clicked(bool)), _mpx3gui, SLOT(set_summing(bool)));
@@ -249,7 +251,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 	//connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), this, SLOT(on_new_range_dragged(QCPRange)));
 	// connect(ui->layerSelector, SIGNAL(activated(QString)), ui->glPlot->getPlot(), SLOT()
 
-	connect(ui->binWidthSpinner, SIGNAL(valueChanged(int)), this, SLOT(changeBinSize(int)));
+	connect(ui->binCountSpinner, SIGNAL(valueChanged(int)), this, SLOT(changeBinCount(int)));
 	connect(ui->glPlot->getPlot(), SIGNAL(hovered_pixel_changed(QPoint)),this, SLOT(on_hover_changed(QPoint)));
 	connect(ui->glPlot->getPlot(), SIGNAL(pixel_selected(QPoint,QPoint)), this, SLOT(on_pixel_selected(QPoint,QPoint)));
 
@@ -258,8 +260,8 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 	connect(ui->histPlot, SIGNAL(new_range_dragged(QCPRange)), this, SLOT(on_new_range_dragged(QCPRange)));
 }
 
-void QCstmGLVisualization::changeBinSize(int width){
- ui->histPlot->changeBinSize(width);
+void QCstmGLVisualization::changeBinCount(int count){
+ ui->histPlot->changeBinCount(count);
  QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
  for(int i = 0; i < thresholds.size(); i++){
          addThresholdToSelector(thresholds[i]);

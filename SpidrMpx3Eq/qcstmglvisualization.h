@@ -94,7 +94,7 @@ public slots:
   void on_range_changed(QCPRange);
   void on_data_taking_finished(int);
   void on_progress_signal(int);
-  void changeBinSize(int width);
+  void changeBinCount(int count);
   void updateETA();
 
  signals:

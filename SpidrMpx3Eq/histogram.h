@@ -13,7 +13,7 @@ enum edgeCaseBehaviourEnum{
   };
 private:
   std::vector<unsigned> m_bins;
-  int m_min =0, m_max=0, m_binWidth = 1;
+  long m_min =0, m_max=0, m_binWidth = 1;
   static edgeCaseBehaviourEnum m_defaultEdgeCaseBehaviour;
   edgeCaseBehaviourEnum m_edgeCaseBehaviour;
   inline int valueToBin(int value) const{return (value-m_min)/m_binWidth; }
@@ -63,6 +63,7 @@ public:
   }
 
   inline void setWidth(int binwidth){m_binWidth = binwidth; m_bins.resize(size());}
+  int getWidth() const{return m_binWidth;}
   void setMax(int max);
   int getMax() const{return m_max;}
   void setMin(int min);

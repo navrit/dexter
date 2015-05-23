@@ -25,6 +25,7 @@ QCstmPlotHistogram::QCstmPlotHistogram(QWidget*& parent)
 
 QCstmPlotHistogram::~QCstmPlotHistogram()
 {
+  this->clear();
   //delete hist;
 }
 
@@ -51,7 +52,7 @@ void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size){
     if(data[i] > max)
       max = data[i];
     }
-  Histogram *hist = new Histogram(min, max, m_binSize);
+  Histogram *hist = new Histogram(min, max, (max-min)/m_binCount);
   hist->addRange(data, size);
   //qDebug() << "Histogram creation took" << timer.elapsed() << "milliseconds";
 
@@ -89,11 +90,11 @@ void QCstmPlotHistogram::setPlot(int index, Histogram *hist){
   for( i = 0; i < hist->size(); i++){
       sample = hist->atIndex(i);
       if(sample != oldSample){
-          graph->addData(i*m_binSize+hist->getMin(), ((double)sample));
+          graph->addData(i*hist->getWidth()+hist->getMin(), ((double)sample));
           oldSample = sample;
         }
     }
-  graph->addData(i*m_binSize+hist->getMin(), ((double)hist->atIndex(i)));
+  graph->addData(i*hist->getWidth()+hist->getMin(), ((double)hist->atIndex(i)));
   graph->rescaleAxes();
   replot();
   //qDebug() << "Histogram plot took " << timer.elapsed() << "milliseconds";
@@ -175,19 +176,19 @@ void QCstmPlotHistogram::set_scale_percentile(int threshold, double lowerPercent
   if(this->graphCount() == 0)
     return;
   Histogram *hist = m_mapping[threshold].second;
-  unsigned total = 0, partialSum  = 0;
-  for(int i = hist->getMin(); i <= hist->getMax(); i++)
-    total += hist->at(i);
-  int minBound = round(lowerPercentile*total), maxBound = round(upperPercentile*total);
+  uint64_t total = 0, partialSum  = 0;
+  for(int i = 0; i < hist->size(); i++)
+    total += hist->atIndex(i);
+  uint64_t minBound = lowerPercentile*total, maxBound = upperPercentile*total;
   double lowerBound, upperBound;
-  int index = hist->getMin();
+  int index = 0;
   do{
-      partialSum += hist->at(index++);
+      partialSum += hist->atIndex(index++);
     }while(partialSum < minBound);
-  lowerBound = index-1;
+  lowerBound = hist->getMin()+(index-1)*hist->getWidth();
   while(partialSum < maxBound)
-    partialSum += hist->at(index++);
-  upperBound = index;
+    partialSum += hist->atIndex(index++);
+  upperBound = hist->getMin()+(index)*hist->getWidth();;
   this->changeRange(QCPRange(lowerBound, upperBound));
 }
 

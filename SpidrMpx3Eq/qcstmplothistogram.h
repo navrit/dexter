@@ -13,7 +13,7 @@ class QCstmPlotHistogram : public QCustomPlot
 {
  Q_OBJECT
   QMap<int, QPair<int, Histogram*>> m_mapping;
-  int m_binSize = 1;
+  int m_binCount = 1;
   int m_currentHist = -1;
   bool clicked = false;
   double xClicked = 0, xReleased =0;
@@ -69,7 +69,7 @@ public slots:
   void changeRange(QCPRange newRange);
   void minClampChanged(double min);
   void maxClampChanged(double max);
-  void changeBinSize(int binSize){m_binSize = binSize;}
+  void changeBinCount(int binCount){m_binCount = binCount;}
   //void rebinHistograms(int binSize)
 };
 
