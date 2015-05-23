@@ -16,7 +16,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 	QT += core gui
 }
 QT += network opengl
-CONFIG   +=  c++11 debug
+CONFIG   +=  c++11
 
 CONFIG(debug, debug|release) {
   OBJECTS_DIR = debug
