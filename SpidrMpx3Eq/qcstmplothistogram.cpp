@@ -94,7 +94,7 @@ void QCstmPlotHistogram::setPlot(int index, Histogram *hist){
           oldSample = sample;
         }
     }
-  graph->addData(i*hist->getWidth()+hist->getMin(), ((double)hist->atIndex(i)));
+  graph->addData(i*hist->getWidth()+hist->getMin(), ((double)hist->atIndex(i-1)));
   graph->rescaleAxes();
   replot();
   //qDebug() << "Histogram plot took " << timer.elapsed() << "milliseconds";

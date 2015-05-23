@@ -71,7 +71,7 @@ public:
   void setRange(int min, int max);
   inline int size(){return (m_max-m_min+1)/m_binWidth+1;}
   inline int at(int value){return (value <= m_max && value >= m_min)? m_bins[valueToBin(value)] : 0;} //bounds checking version of [], non-reference because OOB references.
-  inline int atIndex(int index){return (index >= 0 && index < size())? m_bins[index]: 0;}
+  inline int atIndex(int index){return /*(index >= 0 && index < size())?*/ m_bins[index];}
 
 //CONTAINER WRAPPERS
   auto begin() -> decltype(m_bins.begin()){return m_bins.begin();}
