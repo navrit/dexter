@@ -28,6 +28,7 @@ class QCstmGLVisualization : public QWidget
   QElapsedTimer * _etatimer;
   QTimer * _timer;
   int _estimatedETA;
+  int activeSlice = 0;
 
   //QMap<int, histogram> histograms;
   QMap<int, QString> layerNames;
@@ -60,6 +61,7 @@ private:
 private slots:
   void ConnectionStatusChanged();
   void on_percentileRangeRadio_toggled(bool checked);
+  void on_slice_added(int sliceCount);
 
   void on_lowerPercentileSpin_editingFinished();
 
@@ -79,6 +81,10 @@ private slots:
 
   void on_layerSelector_activated(const QString &arg1);
   void UnlockWaitingForFrame();
+
+  void on_summingCheckbox_toggled(bool checked);
+
+  void on_timeSpinner_valueChanged(int arg1);
 
 public slots:
   void StartDataTaking();

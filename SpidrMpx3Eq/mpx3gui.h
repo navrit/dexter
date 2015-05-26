@@ -64,7 +64,8 @@ private:
 	Ui::Mpx3GUI * _ui;
 
 	Mpx3Config *config;
-	Dataset *workingSet;
+	//Dataset *workingSet;
+	QVector<Dataset> workingSet;
 
 	SpidrDaq * _spidrdaq = nullptr;
 
@@ -73,7 +74,8 @@ private:
 	void updateHistogram(int layer);
 public:
 	Mpx3Config* getConfig();
-	Dataset* getDataset(){return workingSet;}
+	Dataset* getDataset(){return &workingSet.last();}
+	Dataset* getDataset(int index){return &workingSet[index];}
 	QCstmEqualization * getEqualization();
 	QCstmGLVisualization * getVisualization();
 
@@ -83,17 +85,21 @@ public:
 	Gradient* getGradient(int index);
 	//histogram* getHist(int index){return hists[index];}
 
+	void addDataset(Dataset &newSet){workingSet.append(newSet);}
+
 	QPoint  getSize();
 	void getSize(int *x, int *y);
 	int getX();
 	int getY();
 	int getPixelAt(int x, int y, int layer);
 	int getFrameCount();
+	void addSlice();
 
 signals:
 	void dataChanged();
 	void data_cleared();
 	void hist_added(int);
+	void slice_added(int);
 	void hist_changed(int);
 	/*void reload_layer(int layer);
 	void frame_added(int layer);

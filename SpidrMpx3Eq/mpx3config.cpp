@@ -365,4 +365,5 @@ bool Mpx3Config::toJsonFile(QString filename, bool includeDacs){
   QJsonDocument doc;
   doc.setObject(JSobjectParent);
   loadFile.write(doc.toJson());
+  return true;
 }

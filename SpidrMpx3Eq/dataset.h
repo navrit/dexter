@@ -35,7 +35,10 @@ private:
   int getLayerIndex(int threshold);
 public:
   Dataset(int x, int y, int framesPerLayer = 1, int layers = 0);
+  Dataset();
   ~Dataset();
+  Dataset( const Dataset& other );
+  Dataset& operator=( const Dataset& rhs );
   int getContainingFrame(QPoint pixel);
   QPoint getNaturalCoordinates(QPoint pixel, int index);
   QSize computeBoundingBox();
@@ -59,18 +62,18 @@ public:
   QVector<QPoint> getLayoutVector(){return m_frameLayouts;}
   QList<int> getThresholds(){return m_thresholdsToIndices.keys();}
   QVector<int> getOrientationVector(){return m_frameOrientation;}
-  int getFrameCount(){return m_nFrames;}
-  int getLayerCount(){return m_layers.count();}
-  int getLayerSize(){return m_nFrames*m_nx*m_ny;}
-  int getPixelsPerLayer(){return m_nFrames*m_nx*m_ny;}
+  int getFrameCount() const{return m_nFrames;}
+  int getLayerCount() const{return m_layers.count();}
+  int getLayerSize() const{return m_nFrames*m_nx*m_ny;}
+  int getPixelsPerLayer() const{return m_nFrames*m_nx*m_ny;}
   QPoint getSize(){return QPoint(m_nx, m_ny);}
   int *getFrame(int index, int threshold);
   int *getFrameAt(int index, int layer);
   int sampleFrameAt(int index, int layer, int x, int y);
   int* getLayer(int layer);
   int sample(int x, int y, int layer);
-  int x(){return m_nx;}
-  int y(){return m_ny;}
+  int x() const{return m_nx;}
+  int y() const{return m_ny;}
 };
 
 #endif // DATASET_H

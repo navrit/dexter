@@ -8,10 +8,28 @@ Dataset::Dataset(int x, int y, int framesPerLayer, int layers)
   setFramesPerLayer(framesPerLayer);
 }
 
+Dataset::Dataset() : Dataset(1,1,1,0){}
+
 Dataset::~Dataset()
 {
   for(int i =0; i < m_layers.size(); i++)
     delete[] m_layers[i];
+}
+
+Dataset::Dataset( const Dataset& other ): m_boundingBox(other.m_boundingBox), m_frameLayouts(other.m_frameLayouts), m_frameOrientation(other.m_frameOrientation), m_thresholdsToIndices(other.m_thresholdsToIndices), m_layers(other.m_layers){
+  m_nx = other.x(); m_ny = other.y();
+  m_nFrames = other.getFrameCount();
+  for(int i = 0; i < m_layers.size(); i++){
+    m_layers[i] = new int[m_nx*m_ny*m_nFrames];
+    for(int j = 0; j < m_nx*m_ny*m_nFrames; j++)
+      m_layers[i][j] = other.m_layers[i][j];
+  }
+}
+
+Dataset& Dataset::operator =( const Dataset& rhs){
+  Dataset copy(rhs);
+  std::swap(this->m_layers, copy.m_layers);
+  return *this;
 }
 
 int Dataset::getLayerIndex(int threshold){
