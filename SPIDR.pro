@@ -19,16 +19,23 @@ CONFIG += debug_and_release
 
 # Libraries
 SUBDIRS += SpidrMpx3Lib/SpidrMpx3Lib.pro
-SUBDIRS += SpidrMpx3Pixelman/SpidrPixelman.pro #Changed SpidrPixelman/ folder to SpidrMpx3Pixelman/
 SUBDIRS += SpidrTpx3Lib/SpidrTpx3Lib.pro
+#SUBDIRS += SpidrMpx3Pixelman/SpidrPixelman.pro
 
 # Executables
+SUBDIRS += SpidrDacs/SpidrDacs.pro
+SUBDIRS += SpidrDacsScan/SpidrDacsScan.pro
+
+SUBDIRS += SpidrMpx3Mon/SpidrMon.pro
+SUBDIRS += SpidrTpx3Mon/SpidrMon.pro
+
+SUBDIRS += spidripconfig/spidripconfig.pro
+SUBDIRS += spidripconfig/spidripmonconfig.pro
+SUBDIRS += spidrloglevel/spidrloglevel.pro
+
 SUBDIRS += SpidrTpx3TV/SpidrTTV.pro
 SUBDIRS += SpidrMpx3TV/SpidrMTV.pro
 SUBDIRS += SpidrTV/SpidrTV.pro
-SUBDIRS += SpidrDacs/SpidrDacs.pro
-SUBDIRS += SpidrMpx3Mon/SpidrMon.pro
-SUBDIRS += SpidrTpx3Mon/SpidrMon.pro
-SUBDIRS += spidrloglevel/spidrloglevel.pro
+
 SUBDIRS += SpidrMpx3Lib/spidrlibtest/spidrlibtest.pro
-SUBDIRS += SpidrTpx3Lib/spidrtpx3libtest/spidrtpx3libtest.pro
+SUBDIRS += SpidrTpx3Lib/test/spidrtest.pro
