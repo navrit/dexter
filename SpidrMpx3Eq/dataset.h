@@ -1,3 +1,12 @@
+/**
+ * \class Dataset
+ *
+ * \brief Class for handling detector data.
+ *
+ * This class stores collected data in their natural orientation, along with detector count, orientation, position and size.
+ *
+ */
+
 #ifndef DATASET_H
 #define DATASET_H
 
@@ -21,22 +30,20 @@ class Dataset//TODO: specify starting corner?
     orientationTtBRtL=5,
     orientationBtTLtR=6,
     orientationBtTRtL=7
-  };
+  };  ///Enumerations to define the coordinate system of the chips. (L)eft, (R)ight, (t)o, (T)op, and (B)ottom.
 private:
-  int m_nx, m_ny;
-  QRect m_boundingBox;
-  int m_nFrames;
+  int m_nx, m_ny; //!Pixel size in the x and y direction
+  QRect m_boundingBox;//!A rectangular box which encompasses all the chips. Hence the name.
+  int m_nFrames; //< The amount of detectors, a.k.a. frames here.
 
-  QVector<QPoint>  m_frameLayouts;
-  QVector<int> m_frameOrientation;
+  QVector<QPoint>  m_frameLayouts; //<A vector containing the bottom-left corners of the detectors, (0,0) is bottom, left , (1,0) is to the right, (0,1) above.
+  QVector<int> m_frameOrientation;//<The orientation of the detectors. see the enum.
 
   QMap <int, int> m_thresholdsToIndices;
   QVector<int*> m_layers;
-  QVector<QVector<int*>> m_history;
-  int m_historyIndex = -1;
   int getLayerIndex(int threshold);
 public:
-  Dataset(int x, int y, int framesPerLayer = 1, int layers = 0);
+  Dataset(int x, int y, int framesPerLayer = 1);
   Dataset();
   ~Dataset();
   Dataset( const Dataset& other );
@@ -60,7 +67,7 @@ public:
   int newLayer(int layer);
   void setFrame(int *frame, int index, int layer);
   void sumFrame(int *frame, int index, int layer);
-  void toJson(); //return JSON object to save.
+  void toJson(); //!<return JSON object to save.
   QVector<QPoint> getLayoutVector(){return m_frameLayouts;}
   QList<int> getThresholds(){return m_thresholdsToIndices.keys();}
   QVector<int> getOrientationVector(){return m_frameOrientation;}

@@ -1,3 +1,12 @@
+/**
+ * \class QCstmGLPlot
+ *
+ * \brief And OpenGL 3 dependent heatmap renderer.
+ *
+ * This class renders integer data provided by the Dataset class. It uses the class Gradient for its rendering.
+ *
+ */
+
 #ifndef QCSTMGLPLOT_H
 #define QCSTMGLPLOT_H
 #include "gradient.h"
@@ -27,9 +36,9 @@ Q_OBJECT
 public:
   QCstmGLPlot(QWidget *&parent);
   ~QCstmGLPlot();
-  void loadFrames(int nx, int ny, int nFrames, GLint **data );
-  void loadGradient();
+  //void loadFrames(int nx, int ny, int nFrames, GLint **data );
  private:
+  void loadGradient();
   bool initialized = false;
   GLuint  vao;
   //TODO: optimize this handling. Merge different vbos/coordinates when possible.
@@ -53,14 +62,18 @@ public:
   void paintGL();
   void initializeGL();
   void resizeGL(int w, int h) ;
+
   void initializeShaders();
   void initializeLocations();
   void initializeTextures();
   void initializeVAOsAndVBOs();
+
   void populateTextures(Dataset &data);
   void readLayouts(Dataset &data);
   void readOrientations(Dataset &data);
+
 public: //functions
+  //! Computes and emits the coordinates of the viewport. This is used by the Ruler class to determine what it should display.
   void recomputeBounds();
   QPoint pixelAt(QPoint position);
   Gradient* getGradient(){return gradient;}
@@ -74,21 +87,21 @@ public: //events
   void contextMenuEvent(QContextMenuEvent *);
   int getNx(){return nx;}
   int getNy(){return ny;}
-  void setAlphaBlending(bool setOn);
+  void setAlphaBlending(bool setOn);//!< toggles alpha blending. When on, out-of-bounds pixels will become transparant.
 public slots:
   void setSize(int nx, int ny);
   void setSize(QPoint size){this->setSize(size.x(), size.y());}
-  void readData(Dataset &data);
+  void readData(Dataset &data);//!< (Re-)reads the entire Dataset.  Should be optimized to only grab the active threshold.
   //void setData(QVector<int*> layers);
-  void setActive(int layer);
-  void setRange(int min, int max);
-  void setRange(QCPRange range);
-  void setZoom(float change);
-  void setOffset(GLfloat x, GLfloat y);
-  void addOffset(GLfloat x, GLfloat y);
+  void setActive(int layer); //!< Sets the active layer to display
+  void setRange(int min, int max); //!< Sets the data-range of the heatmap.
+  void setRange(QCPRange range);//!< Sets the data-range of the heatmap.
+  void setZoom(float change);//!< sets the zoom factor (multiplicative).
+  void setOffset(GLfloat x, GLfloat y); //!< Set the offset of the images, used for moving around.
+  void addOffset(GLfloat x, GLfloat y);//!< Adds an offset to the current one.
  signals:
-  void hovered_pixel_changed(QPoint);
-  void pixel_selected(QPoint, QPoint);
+  void hovered_pixel_changed(QPoint); //!< The pixel hovered by the mouse-cursor has changed. Passes the coordinate of the hovered pixel.
+  void pixel_selected(QPoint, QPoint);//!< A pixel has been clicked. Passes the coordinate in the chip and position of the relevant chip.
   void offset_changed(QPointF offset);
   void zoom_changed(float zoom);
   void size_changed(QPoint size);

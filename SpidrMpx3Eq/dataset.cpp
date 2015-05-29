@@ -1,14 +1,14 @@
 #include "dataset.h"
 #include <QDataStream>
 
-Dataset::Dataset(int x, int y, int framesPerLayer, int /*layers*/)
+Dataset::Dataset(int x, int y, int framesPerLayer)
 {
   m_nx = x; m_ny = y;
   m_nFrames = 0;
   setFramesPerLayer(framesPerLayer);
 }
 
-Dataset::Dataset() : Dataset(1,1,1,0){}
+Dataset::Dataset() : Dataset(1,1,1){}
 
 Dataset::~Dataset()
 {
@@ -19,10 +19,10 @@ Dataset::Dataset( const Dataset& other ): m_boundingBox(other.m_boundingBox), m_
   m_nx = other.x(); m_ny = other.y();
   m_nFrames = other.getFrameCount();
   for(int i = 0; i < m_layers.size(); i++){
-    m_layers[i] = new int[m_nx*m_ny*m_nFrames];
-    for(int j = 0; j < m_nx*m_ny*m_nFrames; j++)
-      m_layers[i][j] = other.m_layers[i][j];
-  }
+      m_layers[i] = new int[m_nx*m_ny*m_nFrames];
+      for(int j = 0; j < m_nx*m_ny*m_nFrames; j++)
+        m_layers[i][j] = other.m_layers[i][j];
+    }
 }
 
 Dataset& Dataset::operator =( const Dataset& rhs){
@@ -79,12 +79,9 @@ void Dataset::fromByteArray(QByteArray serialized){
 void Dataset::clear(){
   for(int i =0; i < m_layers.size(); i++){
       delete[] m_layers[i];
-      for(int j = 0; j < m_history.size();j++)
-        delete[] m_history[j][i];
     }
   m_layers.clear();
   m_thresholdsToIndices.clear();
-  m_historyIndex = -1;
   //setFramesPerLayer(1);
 }
 
@@ -101,17 +98,10 @@ QSize Dataset::computeBoundingBox(){
       if(m_frameLayouts[i].y() > max_y)
         max_y = m_frameLayouts[i].y();
     }
-  //m_boundingBox.setTopLeft(QPoint(min_x*m_nx, min_y*m_ny));
-  //m_boundingBox.setBottomRight(QPoint((1+max_x)*m_nx, (1+max_y)*m_ny));
   m_boundingBox.setRect(0,0, (max_x-min_x+1)*m_nx, (max_y-min_y+1)*m_ny );
 
   return m_boundingBox.size();
 }
-
-/*void Dataset::addFrames(QVector<int *> frames){
-  for(int i = 0; i < frames.length(); i++)
-    this->addFrame(frames[i]);
-}*/
 
 int Dataset::newLayer(int threshold){
   m_thresholdsToIndices[threshold] = m_layers.size();
@@ -145,10 +135,7 @@ int* Dataset::getFrame(int index, int threshold){
 }
 
 int* Dataset::getFrameAt(int index, int layer){
-  if(m_historyIndex == -1)
-    return &m_layers[layer][index*m_nx*m_ny];
-  else
-    return &m_history[m_historyIndex][layer][index*m_nx*m_ny];
+  return &m_layers[layer][index*m_nx*m_ny];
 }
 
 int Dataset::getContainingFrame(QPoint pixel){
@@ -230,8 +217,5 @@ int* Dataset::getLayer(int threshold){
   int layerIndex = thresholdToIndex(threshold);
   if(layerIndex == -1)
     return nullptr;
-  if(m_historyIndex == -1)
-    return m_layers[layerIndex];
-  else
-    return m_history[m_historyIndex][layerIndex];
+  return m_layers[layerIndex];
 }

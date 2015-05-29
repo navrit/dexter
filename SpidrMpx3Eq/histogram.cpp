@@ -96,8 +96,8 @@ Histogram& Histogram::operator+=(const Histogram& rhs){
       if(max > getMax())
         setMax(max);
     }
-  for(int i = min; i <= max; i++)
-    addCount(i,rhs[i]);
+  for(int i = 0; i <= rhs.size(); i++)//TODO: fix this to work with binWidth.
+    addCount(min+i*rhs.getWidth(),rhs[i]);
   return *this;
 }
 
