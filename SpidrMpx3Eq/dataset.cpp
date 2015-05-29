@@ -15,6 +15,24 @@ Dataset::~Dataset()
   clear();
 }
 
+int Dataset::getTotal(int threshold){
+  int index = thresholdToIndex(threshold);
+  int count = 0;
+  for(int j = 0; j < m_nx*m_ny*m_nFrames; j++)
+    count += m_layers[index][j];
+  return count;
+}
+
+unsigned Dataset::getActivePixels(int threshold){
+  int index = thresholdToIndex(threshold);
+  unsigned count  =0;
+  for(int j = 0; j < m_nx*m_ny*m_nFrames; j++){
+      if(0 != m_layers[index][j])
+        count++;
+    }
+  return count;
+}
+
 Dataset::Dataset( const Dataset& other ): m_boundingBox(other.m_boundingBox), m_frameLayouts(other.m_frameLayouts), m_frameOrientation(other.m_frameOrientation), m_thresholdsToIndices(other.m_thresholdsToIndices), m_layers(other.m_layers){
   m_nx = other.x(); m_ny = other.y();
   m_nFrames = other.getFrameCount();

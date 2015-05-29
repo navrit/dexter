@@ -108,13 +108,13 @@ void QCstmPlotHistogram::scaleToInterest(){
   this->replot();
 }
 
-unsigned QCstmPlotHistogram::getTotal(int threshold){
+/*unsigned QCstmPlotHistogram::getTotal(int threshold){
   Histogram *hist = m_mapping[threshold].second;
   unsigned sum = 0;
   for(int i = hist->getMin(); i <= hist->getMax(); i++ )
     sum += hist->at(i);
   return sum;
-}
+}*/
 
 void QCstmPlotHistogram::rebin(){
   /*for(int i = 0; i < m_mapping.size();i++)

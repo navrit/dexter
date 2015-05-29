@@ -48,6 +48,9 @@ public:
   ~Dataset();
   Dataset( const Dataset& other );
   Dataset& operator=( const Dataset& rhs );
+  unsigned getActivePixels(int threshold);
+  unsigned getPixelsFired(int threshold){return getPixelsPerLayer() - getActivePixels(threshold);}
+  int getTotal(int threshold);
   int getContainingFrame(QPoint pixel);
   QPoint getNaturalCoordinates(QPoint pixel, int index);
   QSize computeBoundingBox();

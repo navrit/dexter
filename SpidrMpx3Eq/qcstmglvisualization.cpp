@@ -361,8 +361,8 @@ void QCstmGLVisualization::on_active_frame_changed(){
   int layer = _mpx3gui->getDataset(activeSlice)->thresholdToIndex(this->getActiveThreshold());
   ui->glPlot->getPlot()->setActive(layer);
   ui->histPlot->setActive(layer);
-  ui->chargeLabel->setText(QString("Total Charge: %1").arg(ui->histPlot->getTotal(getActiveThreshold())));
-  ui->countsLabel->setText(QString("Total Fired: %1").arg(_mpx3gui->getDataset(activeSlice)->getPixelsPerLayer() - ui->histPlot->getBin(getActiveThreshold(),0)));
+  ui->chargeLabel->setText(QString("Total Charge: %1").arg(_mpx3gui->getDataset(activeSlice)->getTotal(getActiveThreshold())));
+  ui->countsLabel->setText(QString("Total Fired: %1").arg(_mpx3gui->getDataset(activeSlice)->getPixelsFired(getActiveThreshold())));
   if(ui->percentileRangeRadio->isChecked())
     on_percentileRangeRadio_toggled(true);
   else if(ui->fullRangeRadio->isChecked())
