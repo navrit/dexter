@@ -447,7 +447,11 @@ int QCstmEqualization::FineTunning(int DAC_Disc_code) {
 	}
 
 	// Check how many pixels are more than N*sigmas off the mean
-	lastScan->ReAdjustPixelsOff(3, DAC_Disc_code);
+	//lastScan->ReAdjustPixelsOff(3, DAC_Disc_code);
+	lastScan->SetScanType( ThlScan::__FINE_TUNNING1_SCAN );
+	connect( lastScan, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
+	lastScan->start();
+
 
 	return 0;
 }
@@ -1237,7 +1241,7 @@ void Mpx3EqualizationResults::ExtrapolateAdjToTarget(int target, double eta_Adj_
 
 }
 
-void QCstmEqualization::on_heatmapCombobox_currentIndexChanged(const QString &arg1)//would be more elegant to do with signals and slots, but would require either specalizing the combobox, or making the heatmapMap globally visible.
+void QCstmEqualization::on_heatmapCombobox_currentIndexChanged(const QString & /*arg1*/)//would be more elegant to do with signals and slots, but would require either specalizing the combobox, or making the heatmapMap globally visible.
 {
 }
 

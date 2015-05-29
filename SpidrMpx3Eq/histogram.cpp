@@ -16,13 +16,13 @@ Histogram::Histogram(int max):Histogram(0,max){
 
 Histogram::Histogram(int* data, size_t size) : Histogram(){
   int min = INT_MAX, max = INT_MIN;
-  for(int i = 0; i < size; i++){
+  for(int i = 0; i < (int)size; i++){
       if(data[i] < min)
         min = data[i];
       if(data[i] > max)
         max = data[i];
   }setRange(min, max);
-  for(int i = 0; i < size; i++){
+  for(int i = 0; i < (int)size; i++){
     *this += data[i];
   }
   setEdgeCaseBehaviour(m_defaultEdgeCaseBehaviour);
@@ -71,7 +71,7 @@ void Histogram::setMin(int min){
   if(offset > 0){ //if we need to prepend
       for(int i = 0; i < offset; i++)//set the first bins to 0.
         new_bins[i] = 0;
-      for(int i = 0; i < m_bins.size(); i++)//copy the rest.
+      for(int i = 0; i < (int)m_bins.size(); i++)//copy the rest.
         new_bins[i+offset] = m_bins[i];
     }
   else{//if we need to drop the first bins.

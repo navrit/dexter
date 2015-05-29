@@ -184,9 +184,9 @@ void QCstmPlotHistogram::set_scale_percentile(int threshold, double lowerPercent
   int index = 0;
   do{
       partialSum += hist->atIndex(index++);
-    }while(partialSum < minBound);
+    }while(partialSum < (unsigned)minBound);
   lowerBound = hist->getMin()+(index-1)*hist->getWidth();
-  while(partialSum < maxBound)
+  while(partialSum < (unsigned)maxBound)
     partialSum += hist->atIndex(index++);
   upperBound = hist->getMin()+(index)*hist->getWidth();;
   this->changeRange(QCPRange(lowerBound, upperBound));

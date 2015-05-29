@@ -57,8 +57,8 @@ void QCstmPlotHeatmap::addData(int *data, int nx, int ny){
   newMap->clearData();
   newMap->data()->setRange(QCPRange(0, nx), QCPRange(0,ny));
   newMap->data()->setSize(nx,ny);
-  for(unsigned u = 0;  u < ny; u++)
-    for(unsigned w = 0; w < nx;w++){
+  for(unsigned u = 0;  u < (unsigned)ny; u++)
+    for(unsigned w = 0; w < (unsigned)nx;w++){
       newMap->data()->setCell(w,ny-1-u, data[u*nx+w]); //TODO: read 0 here. error.
     }
   this->addPlottable(newMap);
@@ -80,8 +80,8 @@ void QCstmPlotHeatmap::setData(int *data, int nx, int ny){
   colorMaps[active]->clearData();
   colorMaps[active]->data()->setRange(QCPRange(0, nx), QCPRange(0,ny));
   colorMaps[active]->data()->setSize(nx, ny);
-  for(unsigned u = 0;  u < ny; u++)
-    for(unsigned w = 0; w < nx;w++){
+  for(unsigned u = 0;  u < (unsigned)ny; u++)
+    for(unsigned w = 0; w < (unsigned)nx;w++){
       colorMaps[active]->data()->setCell(w,ny-1-u, data[u*nx+w]); //TODO: read 0 here. error.
     }
   colorMaps[active]->rescaleDataRange(true);

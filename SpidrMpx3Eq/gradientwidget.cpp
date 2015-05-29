@@ -10,7 +10,7 @@ GradientWidget::~GradientWidget()
 
 }
 
-void GradientWidget::paintEvent(QPaintEvent *event){ //TODO: caching, auto-formating of labels.
+void GradientWidget::paintEvent(QPaintEvent * /*event*/){ //TODO: caching, auto-formating of labels.
   int requiredWidth = 0;
   if(!m_gradient_image)
     return;

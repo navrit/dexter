@@ -30,7 +30,7 @@ public:
   inline void addCount(int value, int count = 1){
     if(value <= m_max && value >= m_min){
         int index = valueToBin(value);
-        if(index >= m_bins.size() || index < 0)
+        if(index >= (int)m_bins.size() || index < 0)
           qDebug() << "Out of bounds!" << index << "/" << m_bins.size();
        m_bins[valueToBin(value)] += count;
       }

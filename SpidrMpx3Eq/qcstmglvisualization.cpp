@@ -109,7 +109,7 @@ void QCstmGLVisualization::ETAToZero() {
 
 }
 
-void QCstmGLVisualization::on_data_taking_finished(int nFramesTaken) {
+void QCstmGLVisualization::on_data_taking_finished(int /*nFramesTaken*/) {
 
   if( _takingData ) {
 
@@ -304,11 +304,11 @@ void QCstmGLVisualization::on_hover_changed(QPoint pixel){
 }
 
 void QCstmGLVisualization::on_reload_layer(int threshold){
-  int layer = _mpx3gui->getDataset(activeSlice)->thresholdToIndex(threshold);
-  ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset(activeSlice)); //TODO: only read specific layer.
-  ui->histPlot->setHistogram(threshold, _mpx3gui->getDataset(activeSlice)->getLayer(threshold), _mpx3gui->getDataset(activeSlice)->getPixelsPerLayer());
-  setThreshold(threshold);
-  on_active_frame_changed();
+	//int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
+	ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
+	ui->histPlot->setHistogram(threshold, _mpx3gui->getDataset()->getLayer(threshold), _mpx3gui->getDataset()->getPixelsPerLayer());
+	setThreshold(threshold);
+	on_active_frame_changed();
 }
 
 

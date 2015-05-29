@@ -54,8 +54,9 @@ void VoxelWidget::paintGL(){
 }
 
 void VoxelWidget::resizeGL(int w, int h){
+
   // Calculate aspect ratio
-  qreal aspect = qreal(w) / qreal(h ? h : 1);
+  //qreal aspect = qreal(w) / qreal(h ? h : 1);
 
 
   setModelView();

@@ -9,7 +9,7 @@ QCstmRuler::QCstmRuler(QWidget *parent) : QWidget(parent)
 }
 
 
-void QCstmRuler::paintEvent(QPaintEvent *event){
+void QCstmRuler::paintEvent(QPaintEvent * /*event*/){
   if(m_orientation == orientationTop)
     return paintTop();
   else
@@ -27,7 +27,7 @@ void QCstmRuler::resizeEvent(QResizeEvent *event){
 void QCstmRuler::paintTop(){
   QPainter painter(this);
   int requiredWidth = 0;
-  int toPrint, lastPrint = m_display_max.y();
+  int toPrint;// lastPrint = m_display_max.y();
   QString label;
   if(!painter.isActive())
     painter.begin(this);
@@ -41,7 +41,7 @@ void QCstmRuler::paintTop(){
   int nSteps = range;
 
   double label_spacing = (floor(m_display_max.x())-ceil(m_display_min.x()))/((nSteps-1)*(m_display_max.x()-m_display_min.x()))*this->width();
-  double subSpacing = label_spacing/(m_subDashCount+1);
+  //double subSpacing = label_spacing/(m_subDashCount+1);
   for(int i = 0; i < nSteps; i++){
       toPrint =  ceil(m_display_min.x())+i;
       newBounds.setRect(offset_min+i*label_spacing-0.5*label_spacing,0, label_spacing,this->height()-m_dashLength);
@@ -73,7 +73,7 @@ void QCstmRuler::paintTop(){
 void QCstmRuler::paintLeft(){
   QPainter painter(this);
   int requiredWidth = 0;
-  int toPrint, lastPrint = m_display_max.y();
+  int toPrint; // lastPrint = m_display_max.y();
   QString label;
   if(!painter.isActive())
     painter.begin(this);

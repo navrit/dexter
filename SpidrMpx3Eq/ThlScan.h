@@ -27,6 +27,7 @@ enum Thl_Status {
 	__NOT_TESTED_YET = 0,
 };
 
+
 #define  __accelerationStartLimit  50
 
 class ScanResults {
@@ -48,16 +49,29 @@ public:
 	explicit ThlScan(Mpx3GUI *, QCstmEqualization *);
 	//~ThlScan();
 
+	typedef enum {
+		__adjust_to_global = 0,
+		__adjust_to_equalizationMatrix
+	} adj_type;
 
+	void SetAdjustmentType(adj_type t){ _adjType = t; };
+
+	typedef enum {
+		__BASIC_SCAN = 0,
+		__FINE_TUNNING1_SCAN
+	} scan_type;
 
 	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
 	void RewindData();
 	void RewindPixelCountsMap();
 	void DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops = -1, bool blindScan = false);
 	int SetEqualizationMask(SpidrController * sc, int spacing, int offset_x, int offset_y);
+	int SetEqualizationVetoMask(SpidrController * sc, set<int> vetolist, bool clear = false);
+
 	void ClearMask(SpidrController * spidrcontrol, bool ClearMask = true);
 	int ExtractScanInfo(int * data, int size_in_bytes, int thl);
 	int ExtractScanInfo(int * data, int size_in_bytes, int thl, int);
+	bool OutsideTargetRegion(int pix, double Nsigma);
 
 	ScanResults GetScanResults() { return _results; };
 	void ExtractStatsOnChart(int setId);
@@ -75,13 +89,13 @@ public:
 	int GetDetectedHighScanBoundary() { return _detectedScanBoundary_H; };
 
 	int ReAdjustPixelsOff(double Nsigma, int DAC_Disc_code);
+	void EqualizationScan();
 
-	typedef enum {
-		__adjust_to_global = 0,
-		__adjust_to_equalizationMatrix
-	} adj_type;
+	void SetScanType(scan_type st) { _scanType = st; };
+	scan_type GetScanType() { return _scanType; };
+	set<int> ExtractFineTunningVetoList(double Nsigma);
+	set<int> ExtractReworkList(double Nsigma);
 
-	void SetAdjustmentType(adj_type t){ _adjType = t; };
 
 
 private:
@@ -104,6 +118,7 @@ private:
 	set<int> _maskedSet;
 
 	int _nReactivePixels;
+	scan_type _scanType;
 
 	// Last scan boundaries
 	// This information could be useful for a next scan

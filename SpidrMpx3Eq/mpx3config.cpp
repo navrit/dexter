@@ -38,8 +38,6 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
-	int nTriggers = getNTriggers();
-
 	// Reset pixel configuration
 	if ( reset ) spidrcontrol->resetPixelConfig();
 
@@ -365,5 +363,6 @@ bool Mpx3Config::toJsonFile(QString filename, bool includeDacs){
   QJsonDocument doc;
   doc.setObject(JSobjectParent);
   loadFile.write(doc.toJson());
+
   return true;
 }

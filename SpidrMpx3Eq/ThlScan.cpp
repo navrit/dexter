@@ -35,6 +35,7 @@ ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 	_frameId = 0;
 	_adjType = __adjust_to_global;
 	_stop = false;
+	_scanType = __BASIC_SCAN;
 
 	// Results of the scan
 	_results.weighted_arithmetic_mean = 0.;
@@ -150,12 +151,25 @@ void ThlScan::on_stop_data_taking_thread() {
 	_stop = true;
 }
 
+
+
 void ThlScan::run() {
+
+	// The normal scan starting from scratch
+	if(_scanType == __BASIC_SCAN) EqualizationScan();
+
+	// This one is a fine tunning scan
+	if(_scanType == __FINE_TUNNING1_SCAN) {
+		ReAdjustPixelsOff(3, MPX3RX_DAC_DISC_L);
+	}
+}
+
+void ThlScan::EqualizationScan() {
 
 	// Open a new temporary connection to the spider to avoid collisions to the main one
 	// Extract the ip address
 	int ipaddr[4] = { 1, 1, 168, 192 };
-	if( _srcAddr != 0 ) {
+	if ( _srcAddr != 0 ) {
 		ipaddr[3] = (_srcAddr >> 24) & 0xFF;
 		ipaddr[2] = (_srcAddr >> 16) & 0xFF;
 		ipaddr[1] = (_srcAddr >>  8) & 0xFF;
@@ -401,6 +415,245 @@ void ThlScan::run() {
 	delete spidrcontrol;
 }
 
+bool ThlScan::OutsideTargetRegion(int pix, double Nsigma){
+	return (
+
+			_pixelReactiveTHL[pix] < __equalization_target - Nsigma*_results.sigma
+			||
+			_pixelReactiveTHL[pix] > __equalization_target + Nsigma*_results.sigma
+			||
+			_pixelReactiveTHL[pix] < _equalization->GetNTriggers() // simply never responded
+	);
+}
+
+set<int> ThlScan::ExtractFineTunningVetoList(double Nsigma) {
+
+	set<int> vetoList;
+
+	for ( int i = 0 ; i < __matrix_size ; i++ ) {
+
+		if ( ! OutsideTargetRegion(i, Nsigma) ) {
+
+			vetoList.insert( i );
+
+		}
+
+	}
+
+	cout << "[INFO] " << vetoList.size() << " pixels in veto for fine tuning." << endl;
+
+	return vetoList;
+}
+
+set<int> ThlScan::ExtractReworkList(double Nsigma) {
+
+	set<int> reworkList;
+
+		for ( int i = 0 ; i < __matrix_size ; i++ ) {
+
+			if ( OutsideTargetRegion(i, Nsigma) ) {
+
+				reworkList.insert( i );
+
+			}
+
+		}
+
+		cout << "[INFO] " << reworkList.size() << " pixels scheduled for fine tuning." << endl;
+
+		return reworkList;
+}
+
+int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
+
+	int ipaddr[4] = { 1, 1, 168, 192 };
+	if( _srcAddr != 0 ) {
+		ipaddr[3] = (_srcAddr >> 24) & 0xFF;
+		ipaddr[2] = (_srcAddr >> 16) & 0xFF;
+		ipaddr[1] = (_srcAddr >>  8) & 0xFF;
+		ipaddr[0] = (_srcAddr >>  0) & 0xFF;
+	}
+
+	SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
+
+	// I re-scan only pixels that are off the target by N*sigma.
+	// But that scan should also keep into account the spacing.
+	// The idea is to re-do the spacing scan putting a veto on
+	//  the pixels which don't need fine tunning.
+
+	// Extract list of pixels to veto 'cause they are already ok
+	set<int> vetoPixels = ExtractFineTunningVetoList(Nsigma);
+	set<int> reworkPixelsSet = ExtractReworkList(Nsigma);
+
+	return 0;
+
+	int adjustedPixels = 0;
+	int * data;
+	int frameId = 0;
+	bool doReadFrames = true;
+
+	// The data buffer id doesn't necessarily corresponds to _deviceIndex
+	int idDataFetch = _mpx3gui->getConfig()->getDataBufferId( _deviceIndex );
+	cout << "[INFO] Run a Scan. devIndex:" << _deviceIndex << " | databuffer:" << idDataFetch << endl;
+
+	// Loop over the pixels off the adjustment
+	//for ( int i = 0 ; i < __matrix_size ; i++ ) {
+	int i = 0;
+	int reworkPixels = 0;
+	for (int maskOffsetItr_x = 0 ; maskOffsetItr_x < _spacing ; maskOffsetItr_x++ ) {
+
+		for (int maskOffsetItr_y = 0 ; maskOffsetItr_y < _spacing ; maskOffsetItr_y++ ) {
+
+			// Mask as usual but consider the veto list because we don't need to work on those pixels
+			//  as they are already properly adjusted.
+			int nMasked = SetEqualizationMask(spidrcontrol, _spacing, maskOffsetItr_x, maskOffsetItr_y);
+			cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  " | N pixels unmasked = " << __matrix_size - nMasked << endl;
+			int nExtraMasked = SetEqualizationVetoMask(spidrcontrol, vetoPixels, false);
+			// reworkPixels are the number of pixels unmask and due for rework in this loop
+			reworkPixels = ( (__matrix_size_x * __matrix_size_y ) / ( _spacing * _spacing ) ) - nExtraMasked;
+			cout << "extra masked = " << nExtraMasked << " | rework = " << reworkPixels << endl;
+
+			// At this point only pixels needing rework are unmasked.
+			// We are doing the rework on all these pixels at the same time.
+			// 1) Decide on the start adjustment point for all the interesting pixels
+
+			// if ( OutsideTargetRegion( i, Nsigma ) ) {
+
+			int startAdj = _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( i );
+			bool outsideRegion = true;
+
+			// Now scan from 0 to 10 sigma away from the last extrapolation adjustment
+			int stepScan = _equalization->GetStepScan();
+			int deviceIndex = _equalization->GetDeviceIndex();
+
+
+
+			// And try now a new adjustment :
+			// - If the pixel is at the right of the equalization target try
+			//  a higher adjustment until it reaches the max Adj.
+			// - If the pixel is at the left, try a lower adjustment.
+			if ( _pixelReactiveTHL[i] > __equalization_target ) startAdj++;
+			else startAdj--;
+
+			///////////////////////////////////////
+			// GIVE UP CONDITION
+			// This means no adjustment is possible
+			//  and this pixel should be masked
+			if ( startAdj > __max_adj_val
+					||
+					startAdj < 0 ) {
+				// TODO mark as pixels which should be masked
+				continue;
+			}
+
+			cout << "Reprocess pixel [" << i << "] adj="  << startAdj << endl;
+
+			// Unmask this particular pixel
+			pair<int, int> unmaskPix = XtoXY(i, __matrix_size_x);
+			spidrcontrol->setPixelMaskMpx3rx(unmaskPix.first, unmaskPix.second, false);
+			// Set the new adjustment for this particular pixel.
+			_equalization->GetEqualizationResults(_deviceIndex)->SetPixelAdj(i, startAdj);
+			// Write the adjustment
+			spidrcontrol->configPixelMpx3rx(unmaskPix.first, unmaskPix.second, startAdj, 0x0 );
+			// send to chip
+			spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
+			//_equalization->SetAllAdjustmentBits( spidrcontrol );
+
+			// Now I can rewind counters for this pixel
+			_pixelReactiveTHL[i] = __UNDEFINED;
+			_pixelCountsMap[i] = __NOT_TESTED_YET;
+			// Unmask it also in the local set so it can work on it
+			set<int>::iterator iS = _maskedSet.find( i );
+			if ( iS != _maskedSet.end() ) _maskedSet.erase( iS );
+
+			int thlItr = 0;
+			bool waitingForReaction = true;
+			while (
+					startAdj <= __max_adj_val
+					&&
+					startAdj >= 0
+					&&
+					outsideRegion
+					&&
+					//thlItr <= __equalization_target + 10 * _results.sigma
+					thlItr <= _maxScan
+					&&
+					waitingForReaction
+			) {
+
+				//////////////////////////////////////////////////////
+				// Now ready to scan on this unique pixel !
+				//cout << "THL,adj(" << thlItr << "," << startAdj << ")";
+
+				spidrcontrol->setDac( deviceIndex, dac_code, thlItr );
+				//_spidrcontrol->writeDacs( _deviceIndex );
+
+				// Start the trigger as configured
+				spidrcontrol->startAutoTrigger();
+
+				// See if there is a frame available
+				// I should get as many frames as triggers
+				// Assume the frame won't come
+				doReadFrames = false;
+				while ( _spidrdaq->waitForFrame( 25 ) ) { // 5ms for eq + 20ms transfer over the network
+
+					doReadFrames = true;
+					if ( _spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected
+						doReadFrames = false;
+					}
+
+					if ( doReadFrames ) {
+
+						int size_in_bytes = -1;
+						data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
+
+						ExtractScanInfo( data, size_in_bytes, thlItr );
+
+
+						// Report to heatmap
+						_heatmap->addData(data, 256, 256); // Add a new plot/frame.
+						_heatmap->setActive(frameId++); // Activate the last plot (the new one)
+						//_heatmap->setData( data, 256, 256 );
+					}
+
+					_spidrdaq->releaseFrame();
+
+				}
+
+				// Report to graph
+				//UpdateChart(setId, i);
+
+				if ( doReadFrames ) {
+
+					// Is it still outside the region ?
+					outsideRegion = OutsideTargetRegion(i, Nsigma);
+
+					// Reacted ?
+					if ( _pixelReactiveTHL[i] != __UNDEFINED ) {
+						waitingForReaction = false;
+						cout << "thl:" << _pixelReactiveTHL[i] << endl;
+					}
+
+					// THL scan
+					thlItr += stepScan;
+
+				} // otherwise try again
+
+			}
+
+			// still outside the region ? try again with another adjustment
+			if( outsideRegion ) i--;
+
+			adjustedPixels++;
+			//}
+
+		}
+	}
+
+	return adjustedPixels;
+}
+
+
 void ThlScan::ExtractStatsOnChart(int setId) {
 
 	double weigtedSum = 0.;
@@ -552,186 +805,6 @@ void ThlScan::SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj
 
 }
 
-int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
-
-	int ipaddr[4] = { 1, 1, 168, 192 };
-	if( _srcAddr != 0 ) {
-		ipaddr[3] = (_srcAddr >> 24) & 0xFF;
-		ipaddr[2] = (_srcAddr >> 16) & 0xFF;
-		ipaddr[1] = (_srcAddr >>  8) & 0xFF;
-		ipaddr[0] = (_srcAddr >>  0) & 0xFF;
-	}
-
-	SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
-	//SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-
-	int adjustedPixels = 0;
-	int * data;
-	int frameId = 0;
-	bool doReadFrames = true;
-
-	// The data buffer id doesn't necessarily corresponds to _deviceIndex
-	int idDataFetch = _mpx3gui->getConfig()->getDataBufferId( _deviceIndex );
-	cout << "[INFO] Run a Scan. devIndex:" << _deviceIndex << " | databuffer:" << idDataFetch << endl;
-
-	// Loop over the pixels off the adjustment
-	for ( int i = 0 ; i < __matrix_size ; i++ ) {
-
-		// Mask the whole pixel pad.  Don't send to the chip yet
-		for (int i = 0 ; i < __array_size_x ; i++) {
-			for (int j = 0 ; j < __array_size_y ; j++) {
-				spidrcontrol->setPixelMaskMpx3rx(i, j, true);
-			}
-		}
-
-		if
-		(
-				_pixelReactiveTHL[i] < __equalization_target - Nsigma*_results.sigma
-				||
-				_pixelReactiveTHL[i] > __equalization_target + Nsigma*_results.sigma
-				||
-				_pixelReactiveTHL[i] < _equalization->GetNTriggers() // simply never responded
-		) {
-
-
-			int startAdj = _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( i );
-			bool outsideRegion = true;
-
-
-			// Now scan from 0 to 10 sigma away from the last extrapolation adjustment
-			int stepScan = _equalization->GetStepScan();
-			int deviceIndex = _equalization->GetDeviceIndex();
-
-			// And try now a new adjustment :
-			// - If the pixel is at the right of the equalization target try
-			//  a higher adjustment until it reaches the max Adj.
-			// - If the pixel is at the left, try a lower adjustment.
-			if ( _pixelReactiveTHL[i] > __equalization_target ) startAdj++;
-			else startAdj--;
-
-			///////////////////////////////////////
-			// GIVE UP CONDITION
-			// This means no adjustment is possible
-			//  and this pixel should be masked
-			if ( startAdj > __max_adj_val
-					||
-					startAdj < 0 ) {
-				// TODO mark as pixels which should be masked
-				continue;
-			}
-
-			cout << "Reprocess pixel [" << i << "] adj="  << startAdj << endl;
-
-			// Unmask this particular pixel
-			pair<int, int> unmaskPix = XtoXY(i, __matrix_size_x);
-			spidrcontrol->setPixelMaskMpx3rx(unmaskPix.first, unmaskPix.second, false);
-			// Set the new adjustment for this particular pixel.
-			_equalization->GetEqualizationResults(_deviceIndex)->SetPixelAdj(i, startAdj);
-			// Write the adjustment
-			spidrcontrol->configPixelMpx3rx(unmaskPix.first, unmaskPix.second, startAdj, 0x0 );
-			// send to chip
-			spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
-			//_equalization->SetAllAdjustmentBits( spidrcontrol );
-
-			// Now I can rewind counters for this pixel
-			_pixelReactiveTHL[i] = __UNDEFINED;
-			_pixelCountsMap[i] = __NOT_TESTED_YET;
-			// Unmask it also in the local set so it can work on it
-			set<int>::iterator iS = _maskedSet.find( i );
-			if ( iS != _maskedSet.end() ) _maskedSet.erase( iS );
-
-			int thlItr = 0;
-			bool waitingForReaction = true;
-			while (
-					startAdj <= __max_adj_val
-					&&
-					startAdj >= 0
-					&&
-					outsideRegion
-					&&
-					//thlItr <= __equalization_target + 10 * _results.sigma
-					thlItr <= _maxScan
-					&&
-					waitingForReaction
-					) {
-
-				//////////////////////////////////////////////////////
-				// Now ready to scan on this unique pixel !
-				//cout << "THL,adj(" << thlItr << "," << startAdj << ")";
-
-				spidrcontrol->setDac( deviceIndex, dac_code, thlItr );
-				//_spidrcontrol->writeDacs( _deviceIndex );
-
-				// Start the trigger as configured
-				spidrcontrol->startAutoTrigger();
-
-				// See if there is a frame available
-				// I should get as many frames as triggers
-				// Assume the frame won't come
-				doReadFrames = false;
-				while ( _spidrdaq->waitForFrame( 25 ) ) { // 5ms for eq + 20ms transfer over the network
-
-					doReadFrames = true;
-					if ( _spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected
-						doReadFrames = false;
-					}
-
-					if ( doReadFrames ) {
-
-						int size_in_bytes = -1;
-						data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
-
-						ExtractScanInfo( data, size_in_bytes, thlItr );
-
-
-						// Report to heatmap
-						_heatmap->addData(data, 256, 256); // Add a new plot/frame.
-						_heatmap->setActive(frameId++); // Activate the last plot (the new one)
-						//_heatmap->setData( data, 256, 256 );
-					}
-
-					_spidrdaq->releaseFrame();
-
-				}
-
-				// Report to graph
-				//UpdateChart(setId, i);
-
-				if ( doReadFrames ) {
-
-					// Is it still outside the region ?
-					outsideRegion =
-							(
-									_pixelReactiveTHL[i] < __equalization_target - Nsigma*_results.sigma
-									||
-									_pixelReactiveTHL[i] > __equalization_target + Nsigma*_results.sigma
-									||
-									_pixelReactiveTHL[i] < _equalization->GetNTriggers() // never responded
-							);
-
-					// Reacted ?
-					if (_pixelReactiveTHL[i] != __UNDEFINED ) {
-						waitingForReaction = false;
-						cout << "thl:" << _pixelReactiveTHL[i] << endl;
-					}
-
-					// THL scan
-					thlItr += stepScan;
-
-				} // otherwise try again
-
-			}
-
-			// still outside the region ? try again with another adjustment
-			if( outsideRegion ) i--;
-
-			adjustedPixels++;
-		}
-
-	}
-
-	return adjustedPixels;
-}
 
 void ThlScan::UpdateHeatMap(int sizex, int sizey) {
 
@@ -790,7 +863,6 @@ void ThlScan::UpdateChart(int thlValue) {
 
 /**
  * Create and apply the mask with a given spacing
- *
  */
 int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int spacing, int offset_x, int offset_y) {
 
@@ -828,6 +900,36 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int spacing, in
 
 	return (int) _maskedSet.size();
 }
+
+int ThlScan::SetEqualizationVetoMask(SpidrController * spidrcontrol, set<int> vetolist, bool clear) {
+
+	// Clear previous mask.  Not sending the configuration yet !
+	if ( clear ) ClearMask(spidrcontrol, false);
+
+	set<int>::iterator itr = vetolist.begin();
+	set<int>::iterator itrE = vetolist.end();
+
+	pair<int, int> pix;
+	int cntr = 0;
+	for ( ; itr != itrE ; itr++ ) {
+
+		pix = XtoXY( *itr, __array_size_x );
+
+		// If the pixel we are masking here was not in the masked let's count it
+		if ( _maskedSet.find( *itr ) == _maskedSet.end() ) cntr++;
+
+		// The pixels coming in the vetolist must be masked
+		spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second);
+		_maskedSet.insert( *itr ); // this is a set, entries are unique
+
+	}
+
+	// And send the configuration
+	spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
+
+	return cntr;
+}
+
 
 void ThlScan::ClearMask(SpidrController * spidrcontrol, bool sendToChip){
 
