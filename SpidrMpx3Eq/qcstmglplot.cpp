@@ -179,7 +179,8 @@ void QCstmGLPlot::setSize(int nx, int ny){
 }
 
 void QCstmGLPlot::readData(Dataset &data){//TODO: only update textures.
-
+  if(!initialized)
+    return;
   QSize bounding = data.computeBoundingBox();
   program.bind();
   this->setOffset(-0.25*bounding.width()/data.x(), -0.25*bounding.height()/data.y());

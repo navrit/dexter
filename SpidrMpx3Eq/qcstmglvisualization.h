@@ -108,6 +108,7 @@ public slots:
   void stop_data_taking_thread();
   void free_to_draw();
   void busy_drawing();
+  void mode_changed(bool);
 
 };
 

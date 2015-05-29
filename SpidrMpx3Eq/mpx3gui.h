@@ -89,6 +89,7 @@ public:
 
 	QPoint  getSize();
 	void getSize(int *x, int *y);
+	int getMode(){return mode;}
 	int getX();
 	int getY();
 	int getPixelAt(int x, int y, int layer);

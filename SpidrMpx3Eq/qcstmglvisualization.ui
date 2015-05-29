@@ -70,10 +70,10 @@
      <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,1,0,0,0,0,0,0,0,0">
        <item>
-        <widget class="QComboBox" name="layerSelector"/>
+        <widget class="QSpinBox" name="timeSpinner"/>
        </item>
        <item>
-        <widget class="QSpinBox" name="timeSpinner"/>
+        <widget class="QComboBox" name="layerSelector"/>
        </item>
        <item>
         <widget class="QCstmPlotHistogram" name="histPlot" native="true"/>

@@ -29,7 +29,6 @@ Histogram::Histogram(int* data, size_t size) : Histogram(){
 }
 
 Histogram::Histogram(int min, int max, int binSize){
-  qDebug() << "Creating new histogram: " << this;
   this->setWidth(binSize);
   m_min = min;
   m_max = max;
@@ -44,11 +43,9 @@ Histogram::Histogram(int min, int max) : Histogram(min, max, 1){
 }
 
 Histogram::~Histogram(){
-  qDebug() << "Deleteing histogram " << this;
 }
 
 void Histogram::setMax(int max){
-  qDebug() << "Changing m_max for " << this << "to" << max;
   if(max < m_min)
     m_min = max;
   const int offset = size();
@@ -60,7 +57,6 @@ void Histogram::setMax(int max){
 }
 
 void Histogram::setMin(int min){
-  qDebug() << "Changing m_min for " << this << "to" << min;
   if(min > m_max)
     setMax(min);
   int old_size = size();

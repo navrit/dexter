@@ -236,7 +236,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   connect(_mpx3gui, SIGNAL(ConnectionStatusChanged(bool)), ui->startButton, SLOT(setEnabled(bool))); //enable the button on connection
   connect(_mpx3gui, SIGNAL(slice_added(int)), this, SLOT(on_slice_added(int)));
   connect(ui->startButton, SIGNAL(clicked(bool)), this, SLOT(StartDataTaking()));
-  connect(ui->summingCheckbox, SIGNAL(clicked(bool)), _mpx3gui, SLOT(set_summing(bool)));
+  connect(this, SIGNAL(mode_changed(bool)), _mpx3gui, SLOT(set_summing(bool)));
   connect(_mpx3gui, SIGNAL(summing_set(bool)), ui->summingCheckbox, SLOT(setChecked(bool)));
   connect(ui->gradientSelector, SIGNAL(activated(int)), this, SLOT(setGradient(int)));
   connect(ui->generateDataButton, SIGNAL(clicked()), _mpx3gui, SLOT(generateFrame()));
@@ -292,6 +292,7 @@ void QCstmGLVisualization::on_clear(){
   ui->layerSelector->clear();
   ui->histPlot->clear();
   ui->layerSelector->clear();
+  //on_reload_all_layers();
 }
 
 void QCstmGLVisualization::on_availible_gradients_changed(QStringList gradients){
@@ -330,7 +331,7 @@ void QCstmGLVisualization::on_reload_all_layers(){
       addThresholdToSelector(thresholds[i]);
       ui->histPlot->setHistogram(thresholds[i], _mpx3gui->getDataset(activeSlice)->getLayer(thresholds[i]), _mpx3gui->getDataset(activeSlice)->getPixelsPerLayer());
     }
-  setThreshold(thresholds[0]);
+  //setThreshold(thresholds[0]);
   on_active_frame_changed();
 }
 
@@ -489,8 +490,10 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
 void QCstmGLVisualization::on_summingCheckbox_toggled(bool checked)
 {
   ui->timeSpinner->setEnabled(!checked);
-  activeSlice = checked? 0 : ui->timeSpinner->value();
-  on_reload_all_layers();
+  ui->timeSpinner->setValue(0);
+  activeSlice = 0;//checked? 0 : ui->timeSpinner->value();
+  emit mode_changed(checked);
+  //on_reload_all_layers();
 }
 
 void QCstmGLVisualization::on_timeSpinner_valueChanged(int arg1)

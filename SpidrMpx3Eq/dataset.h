@@ -32,6 +32,8 @@ private:
 
   QMap <int, int> m_thresholdsToIndices;
   QVector<int*> m_layers;
+  QVector<QVector<int*>> m_history;
+  int m_historyIndex = -1;
   int getLayerIndex(int threshold);
 public:
   Dataset(int x, int y, int framesPerLayer = 1, int layers = 0);

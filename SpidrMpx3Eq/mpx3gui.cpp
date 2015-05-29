@@ -249,7 +249,7 @@ void Mpx3GUI::generateFrame(){//TODO: put into Dataset
             }
         }
       if(mode != 1)
-        addSlice();
+        addSlice();//prep a new slice.
     }
   //reloadLayer(0);reloadLayer(1);reloadLayer(2);reloadLayer(3);
   emit reload_all_layers();
@@ -329,15 +329,13 @@ void Mpx3GUI::open_data(){
   saveFile.close();
   set_mode_normal();
   QList<int> thresholds = getDataset()->getThresholds();
-  /*for(int i = 0; i <thresholds.count();i++){
-      reloadLayer(thresholds[i]);
-    }*/
   emit reload_all_layers();
   return;
 }
 
 void Mpx3GUI::set_mode_integral(){
   if(mode != 1){
+      clear_data();
       mode = 1;
       emit summing_set(true);
     }
@@ -345,6 +343,7 @@ void Mpx3GUI::set_mode_integral(){
 
 void Mpx3GUI::set_mode_normal(){
   if(0 != mode){
+      clear_data();
       mode = 0;
       emit summing_set(false);
     }
@@ -381,10 +380,8 @@ void Mpx3GUI::clear_configuration(){
 }
 
 void Mpx3GUI::clear_data(){
-  workingSet.clear();
-  /*for(int i = 0; i < hists.size();i++)
-    delete hists[i];
-  hists.clear();*/
+  workingSet.resize(1);
+  workingSet[0].clear();
   emit(data_cleared());
 }
 

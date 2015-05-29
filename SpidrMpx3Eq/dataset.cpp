@@ -12,8 +12,7 @@ Dataset::Dataset() : Dataset(1,1,1,0){}
 
 Dataset::~Dataset()
 {
-  for(int i =0; i < m_layers.size(); i++)
-    delete[] m_layers[i];
+  clear();
 }
 
 Dataset::Dataset( const Dataset& other ): m_boundingBox(other.m_boundingBox), m_frameLayouts(other.m_frameLayouts), m_frameOrientation(other.m_frameOrientation), m_thresholdsToIndices(other.m_thresholdsToIndices), m_layers(other.m_layers){
@@ -78,10 +77,14 @@ void Dataset::fromByteArray(QByteArray serialized){
 }
 
 void Dataset::clear(){
-  for(int i =0; i < m_layers.size(); i++)
-    delete[] m_layers[i];
+  for(int i =0; i < m_layers.size(); i++){
+      delete[] m_layers[i];
+      for(int j = 0; j < m_history.size();j++)
+        delete[] m_history[j][i];
+    }
   m_layers.clear();
   m_thresholdsToIndices.clear();
+  m_historyIndex = -1;
   //setFramesPerLayer(1);
 }
 
@@ -142,7 +145,10 @@ int* Dataset::getFrame(int index, int threshold){
 }
 
 int* Dataset::getFrameAt(int index, int layer){
-  return &m_layers[layer][index*m_nx*m_ny];
+  if(m_historyIndex == -1)
+    return &m_layers[layer][index*m_nx*m_ny];
+  else
+    return &m_history[m_historyIndex][layer][index*m_nx*m_ny];
 }
 
 int Dataset::getContainingFrame(QPoint pixel){
@@ -224,5 +230,8 @@ int* Dataset::getLayer(int threshold){
   int layerIndex = thresholdToIndex(threshold);
   if(layerIndex == -1)
     return nullptr;
-  return m_layers[layerIndex];
+  if(m_historyIndex == -1)
+    return m_layers[layerIndex];
+  else
+    return m_history[m_historyIndex][layerIndex];
 }
