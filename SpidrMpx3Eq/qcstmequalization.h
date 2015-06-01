@@ -37,8 +37,18 @@ class ModuleConnection;
 class Mpx3EqualizationResults {
 
 public:
+
 	Mpx3EqualizationResults();
 	~Mpx3EqualizationResults();
+
+	typedef enum {
+		__NOT_EQUALIZED = 0,
+		__SCHEDULED_FOR_FINETUNING,				// Scheduled for Fine Tunning
+		__EQUALIZED,							// DONE
+		__EQUALIZATION_FAILED_ADJ_OUTOFBOUNDS,  // EQ FAILED
+		__EQUALIZATION_FAILED_NONREACTIVE		// EQ FAILED
+	} eq_status;
+
 	void SetPixelAdj(int pixId, int adj);
 	void SetPixelReactiveThl(int pixId, int thl);
 	int GetPixelAdj(int pixId);
@@ -69,13 +79,18 @@ public:
 	void ClearReactiveThresholds();
 	void Clear();
 
+	void SetStatus(int pixId, eq_status st) { _eqStatus[pixId] = st; };
+	eq_status GetStatus(int pixId) { return _eqStatus[pixId]; };
+
 private:
+
 	// pixel Id, adjustment
-	/*map<int, int> */
 	QByteArray _pixId_Adj;
 	QSet<int> maskedPixels;
 	// pixel Id, reactive thlValue
 	map<int, int> _pixId_Thl;
+	// status
+	map<int, eq_status> _eqStatus;
 
 };
 

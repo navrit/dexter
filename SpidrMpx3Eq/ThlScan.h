@@ -67,6 +67,7 @@ public:
 	void DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops = -1, bool blindScan = false);
 	int SetEqualizationMask(SpidrController * sc, int spacing, int offset_x, int offset_y);
 	int SetEqualizationVetoMask(SpidrController * sc, set<int> vetolist, bool clear = false);
+	set<int> GetReworkSubset(set<int> reworkSet, int spacing, int offset_x, int offset_y);
 
 	void ClearMask(SpidrController * spidrcontrol, bool ClearMask = true);
 	int ExtractScanInfo(int * data, int size_in_bytes, int thl);
@@ -91,11 +92,18 @@ public:
 	int ReAdjustPixelsOff(double Nsigma, int DAC_Disc_code);
 	void EqualizationScan();
 
+
 	void SetScanType(scan_type st) { _scanType = st; };
 	scan_type GetScanType() { return _scanType; };
 	set<int> ExtractFineTunningVetoList(double Nsigma);
 	set<int> ExtractReworkList(double Nsigma);
-
+	map<int, int> ExtractReworkAdjustments(set<int> reworkPixels);
+	void ShiftAdjustments(SpidrController *, map<int, int> & reworkAdjustements, set<int> reworkSubset);
+	void TagPixelsEqualizationStatus(set<int> vetoList);
+	void RewindReactionCounters(set<int> reworkPixelsSet);
+	void UnmaskPixelsInLocalSet(set<int> reworkPixelsSet);
+	bool ThlScanEndConditionFineTuning(set<int> reworkPixelsSet, int thl, int Nsigma);
+	void DumpRework(set<int> reworkSubset, int thl);
 
 
 private:
