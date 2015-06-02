@@ -5,7 +5,7 @@
 #define _USE_QTCONCURRENT
 #ifdef _USE_QTCONCURRENT
 #if QT_VERSION >= 0x050000
-#include <QtConcurrent/QtConcurrent>
+#include <QtConcurrent>
 #else
 #include <QtCore>
 #endif
@@ -191,19 +191,20 @@ void FramebuilderThread::processFrame()
       // The following decoding operations could be done
       // in separate threads (i.e. by QtConcurrent)
 #ifdef _USE_QTCONCURRENT
-      if( _n != 1 )
+      if( _n > 1 )
 	{
-	  QFuture<int> qftr[4];
+	  QFuture<int> qf[4];
 	  for( i=0; i<_n; ++i )
-	    qftr[i] = QtConcurrent::run( this, &FramebuilderThread::mpx3RawToPixel,
-					 _receivers[i]->frameData(),
-					 &_decodedFrame[i][0],
-					 _evtHdr.pixelDepth,
-					 _devHdr[i].deviceType,
-					 _compress );
+	    qf[i] = QtConcurrent::run( this,
+				       &FramebuilderThread::mpx3RawToPixel,
+				       _receivers[i]->frameData(),
+				       &_decodedFrame[i][0],
+				       _evtHdr.pixelDepth,
+				       _devHdr[i].deviceType,
+				       _compress );
 	  // Wait for threads to finish and get the results...
 	  for( i=0; i<_n; ++i )
-	    _frameSz[i] = qftr[i].result();
+	    _frameSz[i] = qf[i].result();
 	}
       else
 #endif // _USE_QTCONCURRENT
