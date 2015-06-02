@@ -98,11 +98,12 @@ public:
 	set<int> ExtractFineTunningVetoList(double Nsigma);
 	set<int> ExtractReworkList(double Nsigma);
 	map<int, int> ExtractReworkAdjustments(set<int> reworkPixels);
-	void ShiftAdjustments(SpidrController *, map<int, int> & reworkAdjustements, set<int> reworkSubset);
+	void ShiftAdjustments(SpidrController *, set<int> reworkSubset);
 	void TagPixelsEqualizationStatus(set<int> vetoList);
 	void RewindReactionCounters(set<int> reworkPixelsSet);
 	void UnmaskPixelsInLocalSet(set<int> reworkPixelsSet);
 	bool ThlScanEndConditionFineTuning(set<int> reworkPixelsSet, int thl, int Nsigma);
+	set<int> NeedsReadjustment(set<int> reworkPixelsSet, int Nsigma);
 	void DumpRework(set<int> reworkSubset, int thl);
 
 
