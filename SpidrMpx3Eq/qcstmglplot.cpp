@@ -222,7 +222,7 @@ void QCstmGLPlot::populateTextures(Dataset &data){
 void QCstmGLPlot::readLayouts(Dataset &data){
   QVector<QPoint> layout = data.getLayoutVector();
   offsets.resize(layout.size());
-  int max;
+  int max = INT_MIN;
   for(int i = 0; i < offsets.size();i++){
     offsets[i] = QVector2D(layout[i].x()*2, layout[i].y()*2);
     if(layout[i].x() > max)

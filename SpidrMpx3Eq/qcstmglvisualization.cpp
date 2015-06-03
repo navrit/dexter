@@ -234,7 +234,6 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   changeBinCount(ui->binCountSpinner->value());
 
   connect(_mpx3gui, SIGNAL(ConnectionStatusChanged(bool)), ui->startButton, SLOT(setEnabled(bool))); //enable the button on connection
-  connect(_mpx3gui, SIGNAL(slice_added(int)), this, SLOT(on_slice_added(int)));
   connect(ui->startButton, SIGNAL(clicked(bool)), this, SLOT(StartDataTaking()));
   connect(this, SIGNAL(mode_changed(bool)), _mpx3gui, SLOT(set_summing(bool)));
   connect(_mpx3gui, SIGNAL(summing_set(bool)), ui->summingCheckbox, SLOT(setChecked(bool)));
@@ -263,16 +262,11 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 
 void QCstmGLVisualization::changeBinCount(int count){
   ui->histPlot->changeBinCount(count);
-  QList<int> thresholds = _mpx3gui->getDataset(activeSlice)->getThresholds();
+  QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
   for(int i = 0; i < thresholds.size(); i++){
       addThresholdToSelector(thresholds[i]);
-      ui->histPlot->setHistogram(thresholds[i], _mpx3gui->getDataset(activeSlice)->getLayer(thresholds[i]), _mpx3gui->getDataset(activeSlice)->getPixelsPerLayer());
+      ui->histPlot->setHistogram(thresholds[i], _mpx3gui->getDataset()->getLayer(thresholds[i]), _mpx3gui->getDataset()->getPixelsPerLayer());
     }
-}
-
-void QCstmGLVisualization::on_slice_added(int sliceCount){
-  ui->timeSpinner->setMaximum(sliceCount);
-  ui->timeSpinner->setValue(sliceCount);
 }
 
 void QCstmGLVisualization::on_range_changed(QCPRange newRange){
@@ -325,11 +319,11 @@ void QCstmGLVisualization::on_reload_all_layers(){
   // Get busy
   emit FlipBusyState();
 
-  ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset(activeSlice)); //TODO: only read specific layer.
-  QList<int> thresholds = _mpx3gui->getDataset(activeSlice)->getThresholds();
+  ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
+  QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
   for(int i = 0; i < thresholds.size(); i++){
       addThresholdToSelector(thresholds[i]);
-      ui->histPlot->setHistogram(thresholds[i], _mpx3gui->getDataset(activeSlice)->getLayer(thresholds[i]), _mpx3gui->getDataset(activeSlice)->getPixelsPerLayer());
+      ui->histPlot->setHistogram(thresholds[i], _mpx3gui->getDataset()->getLayer(thresholds[i]), _mpx3gui->getDataset()->getPixelsPerLayer());
     }
   //setThreshold(thresholds[0]);
   on_active_frame_changed();
@@ -346,7 +340,7 @@ void QCstmGLVisualization::addThresholdToSelector(int threshold){
 
 void QCstmGLVisualization::setThreshold(int threshold){
   addThresholdToSelector(threshold);
-  ui->layerSelector->setCurrentIndex(_mpx3gui->getDataset(activeSlice)->thresholdToIndex(threshold));
+  ui->layerSelector->setCurrentIndex(_mpx3gui->getDataset()->thresholdToIndex(threshold));
 }
 
 int QCstmGLVisualization::getActiveThreshold(){
@@ -358,11 +352,11 @@ int QCstmGLVisualization::getActiveThreshold(){
 
 void QCstmGLVisualization::on_active_frame_changed(){
   //ui->layerSelector->addItem(QString("%1").arg(threshold));
-  int layer = _mpx3gui->getDataset(activeSlice)->thresholdToIndex(this->getActiveThreshold());
+  int layer = _mpx3gui->getDataset()->thresholdToIndex(this->getActiveThreshold());
   ui->glPlot->getPlot()->setActive(layer);
   ui->histPlot->setActive(layer);
-  ui->chargeLabel->setText(QString("Total Charge: %1").arg(_mpx3gui->getDataset(activeSlice)->getTotal(getActiveThreshold())));
-  ui->countsLabel->setText(QString("Total Fired: %1").arg(_mpx3gui->getDataset(activeSlice)->getPixelsFired(getActiveThreshold())));
+  ui->chargeLabel->setText(QString("Total Charge: %1").arg(_mpx3gui->getDataset()->getTotal(getActiveThreshold())));
+  ui->countsLabel->setText(QString("Total Fired: %1").arg(_mpx3gui->getDataset()->getPixelsFired(getActiveThreshold())));
   if(ui->percentileRangeRadio->isChecked())
     on_percentileRangeRadio_toggled(true);
   else if(ui->fullRangeRadio->isChecked())
@@ -376,13 +370,13 @@ void QCstmGLVisualization::on_active_frame_changed(){
 void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
   if(!_mpx3gui->getConfig()->isConnected())
     return;
-  int frameIndex = _mpx3gui->getDataset(activeSlice)->getContainingFrame(pixel);
+  int frameIndex = _mpx3gui->getDataset()->getContainingFrame(pixel);
   if(frameIndex == -1)
     return;
-  QPoint naturalCoords = _mpx3gui->getDataset(activeSlice)->getNaturalCoordinates(pixel, frameIndex);
-  int naturalFlatCoord = naturalCoords.y()*_mpx3gui->getDataset(activeSlice)->x()+naturalCoords.x();
+  QPoint naturalCoords = _mpx3gui->getDataset()->getNaturalCoordinates(pixel, frameIndex);
+  int naturalFlatCoord = naturalCoords.y()*_mpx3gui->getDataset()->x()+naturalCoords.x();
   if(_mpx3gui->getConfig()->getColourMode()) {
-      naturalFlatCoord = 4*naturalCoords.y()*_mpx3gui->getDataset(activeSlice)->x() + 2*naturalCoords.x();
+      naturalFlatCoord = 4*naturalCoords.y()*_mpx3gui->getDataset()->x() + 2*naturalCoords.x();
     }
   int deviceID = _mpx3gui->getConfig()->getActiveDevices()[frameIndex];
   QMenu contextMenu;
@@ -479,7 +473,7 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
 {
   QStringList split = arg1.split(' ');
   int threshold = split.last().toInt();
-  int layer = _mpx3gui->getDataset(activeSlice)->thresholdToIndex(threshold);
+  int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
   ui->glPlot->getPlot()->setActive(layer);
   ui->histPlot->setActive(layer);
   //_mpx3gui->set_active_frame(threshold);
@@ -489,15 +483,7 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
 
 void QCstmGLVisualization::on_summingCheckbox_toggled(bool checked)
 {
-  ui->timeSpinner->setEnabled(!checked);
-  ui->timeSpinner->setValue(0);
-  activeSlice = 0;//checked? 0 : ui->timeSpinner->value();
   emit mode_changed(checked);
   //on_reload_all_layers();
 }
 
-void QCstmGLVisualization::on_timeSpinner_valueChanged(int arg1)
-{
-  activeSlice = arg1;
-  on_reload_all_layers();
-}

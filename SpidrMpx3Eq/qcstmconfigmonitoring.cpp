@@ -168,11 +168,9 @@ void QCstmConfigMonitoring::on_ipLineEdit_editingFinished()
 
 void QCstmConfigMonitoring::on_ColourModeCheckBox_toggled(bool checked)
 {
-  Dataset newSet(*_mpx3gui->getDataset());
   _mpx3gui->clear_data();
   if(checked)
-      newSet.resize(newSet.x()/2, newSet.y()/2);
+      _mpx3gui->getDataset()->resize(_mpx3gui->getDataset()->x()/2, _mpx3gui->getDataset()->y()/2);
   else
-     newSet.resize(newSet.x()*2, newSet.y()*2);
-  _mpx3gui->addDataset(newSet);
+     _mpx3gui->getDataset()->resize(_mpx3gui->getDataset()->x()*2, _mpx3gui->getDataset()->y()*2);
 }

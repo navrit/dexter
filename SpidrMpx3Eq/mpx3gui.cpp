@@ -27,8 +27,8 @@
 Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent), _coreApp(coreApp), _ui(new Ui::Mpx3GUI)
 {
   // Instantiate everything in the UI
-  _ui->setupUi(this);
-  workingSet.append(Dataset(128,128, 4));
+  _ui->setupUi(this);;
+  workingSet = new Dataset(128,128, 4);
   config = new Mpx3Config;
   config->SetMpx3GUI( this );
 
@@ -85,6 +85,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 Mpx3GUI::~Mpx3GUI()
 {
   delete config;
+  delete workingSet;
   delete _ui;
 }
 
@@ -94,7 +95,7 @@ void Mpx3GUI::addLayer(int *data){
 
 void Mpx3GUI::addFrame(int *frame, int index, int layer){
   if(mode == 1){
-      workingSet.first().sumFrame(frame,index, layer);
+      getDataset()->sumFrame(frame,index, layer);
     }
   else{
       getDataset()->setFrame(frame, index, layer);
@@ -149,11 +150,6 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 Mpx3Config* Mpx3GUI::getConfig(){return config;}
 void Mpx3GUI::on_openfileButton_clicked() {
 
-}
-
-void Mpx3GUI::addSlice(){
-  workingSet.append(Dataset(*getDataset()));
-  emit slice_added(workingSet.size()-2);
 }
 
 void Mpx3GUI::set_summing(bool shouldSum){
@@ -220,9 +216,10 @@ void Mpx3GUI::establish_connection() {
 
   // Emmit
   emit ConnectionStatusChanged(true);
-  workingSet.clear();
+  delete workingSet;
   int chipSize = config->getColourMode()? __matrix_size_x /2: __matrix_size_x ;
-  workingSet.append(Dataset(chipSize, chipSize,config->getNActiveDevices()));//TODO: get framesize from config, load offsets & orientation from config
+  workingSet = new Dataset(chipSize, chipSize,config->getNActiveDevices());//TODO: get framesize from config, load offsets & orientation from config
+  clear_data();
   QVector<int> activeDevices = config->getActiveDevices();
   for(int i = 0; i < activeDevices.size();i++){
       getDataset()->setLayout(i, _MPX3RX_LAYOUT[activeDevices[i]]);
@@ -248,8 +245,6 @@ void Mpx3GUI::generateFrame(){//TODO: put into Dataset
               addFrame(data.data(), k, t);
             }
         }
-      if(mode != 1)
-        addSlice();//prep a new slice.
     }
   //reloadLayer(0);reloadLayer(1);reloadLayer(2);reloadLayer(3);
   emit reload_all_layers();
@@ -335,7 +330,6 @@ void Mpx3GUI::open_data(){
 
 void Mpx3GUI::set_mode_integral(){
   if(mode != 1){
-      clear_data();
       mode = 1;
       emit summing_set(true);
     }
@@ -343,7 +337,6 @@ void Mpx3GUI::set_mode_integral(){
 
 void Mpx3GUI::set_mode_normal(){
   if(0 != mode){
-      clear_data();
       mode = 0;
       emit summing_set(false);
     }
@@ -380,8 +373,7 @@ void Mpx3GUI::clear_configuration(){
 }
 
 void Mpx3GUI::clear_data(){
-  workingSet.resize(1);
-  workingSet[0].clear();
+  getDataset()->clear();
   emit(data_cleared());
 }
 

@@ -124,8 +124,6 @@ void DataTakingThread::run() {
 				}
 
 			}
-			if(_mpx3gui->getMode() == 0)//If we're not in summing mode
-			  _mpx3gui->addSlice();//Add a timeslice.
 		}
 		//_mpx3gui->getDataset()->addHistory();
 
