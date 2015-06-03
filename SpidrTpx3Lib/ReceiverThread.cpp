@@ -42,6 +42,8 @@ ReceiverThread::ReceiverThread( int      *ipaddr,
 	      QString::number( ipaddr[1] ) + '.' +
 	      QString::number( ipaddr[0] ));
 
+  if( bufsize == 0 ) bufsize = DFLT_RECV_BUF_SIZE;
+
   if( bufsize > 0 )
     {
       try {
