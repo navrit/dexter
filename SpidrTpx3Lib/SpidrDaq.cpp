@@ -200,7 +200,7 @@ bool SpidrDaq::startRecording( std::string filename,
   memset( static_cast<void *>(&fhdr->descr), 0, sizeof(fhdr->descr) );
   if( !descr.empty() )
     {
-      u32 sz = descr.length();
+      size_t sz = descr.length();
       if( sz > sizeof(fhdr->descr)-1 )
 	sz = sizeof(fhdr->descr)-1;
 
