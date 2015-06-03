@@ -17,6 +17,8 @@ Dataset::~Dataset()
 
 int Dataset::getTotal(int threshold){
   int index = thresholdToIndex(threshold);
+  if(index == -1)
+    return 0;
   int count = 0;
   for(int j = 0; j < m_nx*m_ny*m_nFrames; j++)
     count += m_layers[index][j];
@@ -25,6 +27,8 @@ int Dataset::getTotal(int threshold){
 
 unsigned Dataset::getActivePixels(int threshold){
   int index = thresholdToIndex(threshold);
+  if(index == -1)
+    return 0;
   unsigned count  =0;
   for(int j = 0; j < m_nx*m_ny*m_nFrames; j++){
       if(0 != m_layers[index][j])

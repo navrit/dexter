@@ -1,3 +1,10 @@
+/**
+ * \class HeatmapDisplay
+ *
+ * \brief A wrapper widget for displaying heatmaps. Use QCstmGLPlot, GradientWidget and QCstmRuler.
+ *
+ */
+
 #ifndef HEATMAPDISPLAY_H
 #define HEATMAPDISPLAY_H
 
