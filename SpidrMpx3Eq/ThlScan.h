@@ -28,7 +28,8 @@ enum Thl_Status {
 };
 
 
-#define  __accelerationStartLimit  50
+#define  __accelerationStartLimit	50
+#define __step_scan_boostfactor		10
 
 class ScanResults {
 public:

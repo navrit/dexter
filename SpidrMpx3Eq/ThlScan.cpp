@@ -418,9 +418,9 @@ void ThlScan::EqualizationScan() {
 bool ThlScan::OutsideTargetRegion(int pix, double Nsigma){
 	return (
 
-			_pixelReactiveTHL[pix] < __equalization_target - Nsigma*_results.sigma
+			_pixelReactiveTHL[pix] < __equalization_target - ceil(Nsigma*_results.sigma)
 			||
-			_pixelReactiveTHL[pix] > __equalization_target + Nsigma*_results.sigma
+			_pixelReactiveTHL[pix] > __equalization_target + ceil(Nsigma*_results.sigma)
 			||
 			_pixelReactiveTHL[pix] < _equalization->GetNTriggers() // simply never responded
 	);
@@ -550,9 +550,9 @@ void ThlScan::DumpRework(set<int> reworkSubset, int thl){
 
 	for ( ; i != iE ; i++ ) {
 		cout << "   pix:" << *i << " | status:" << _equalization->GetEqualizationResults(_deviceIndex)->GetStatus( *i )
-																																					<< " | adj" <<  _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i )
-																																					<< " | reactive:" << _pixelReactiveTHL[*i]
-																																					                                       << endl;
+																																									<< " | adj" <<  _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i )
+																																									<< " | reactive:" << _pixelReactiveTHL[*i]
+																																									                                       << endl;
 	}
 
 }
@@ -733,7 +733,7 @@ int ThlScan::ExtractReworkSubsetSpacingAware(set<int> & reworkPixelsSet, set<int
 	int cntrToSubset = 0;
 
 	// Keep a list of those pixels sent to the reworkSubset which need to be erased
-	//  from the reworkPixelsSet
+	//  from the reworkPixelsSet.
 	set<int> scheduleToErase;
 
 	// Chances are the reworkSubset is empty.  Let's insert one value to get it started.
@@ -744,23 +744,28 @@ int ThlScan::ExtractReworkSubsetSpacingAware(set<int> & reworkPixelsSet, set<int
 		i++;
 	}
 
+	bool clearToAdd = true;
+
 	for ( ; i != iE ; i++ ) {
 
-		// Rewind bounds
+		// Rewind bounds on reworkSubset
 		ri = reworkSubset.begin();
 		riE = reworkSubset.end();
 
 		// See if the current pixel is at a safe distance from all pixels in reworkSubset
+		clearToAdd = true;
 		for ( ; ri != riE ; ri++ ) {
 
-			// If respects the minimum spacing put it in the reworkSubset and
-			//  schedule for erasing.
-			if ( TwoPixelsRespectMinimumSpacing( *i, *ri, spacing) ) {
-				reworkSubset.insert ( *i );
-				scheduleToErase.insert ( *i );
-				cntrToSubset++;
-			}
+			if ( ! TwoPixelsRespectMinimumSpacing( *i, *ri, spacing) ) clearToAdd = false;
 
+		}
+
+		// If it respects the minimum spacing, then put it in the reworkSubset and
+		//  schedule for erasing.
+		if ( clearToAdd ) {
+			reworkSubset.insert ( *i );
+			scheduleToErase.insert ( *i );
+			cntrToSubset++;
 		}
 
 	}
@@ -783,8 +788,11 @@ bool ThlScan::TwoPixelsRespectMinimumSpacing(int pix1, int pix2, int spacing) {
 	pair<int, int> p1 = XtoXY(pix1, __matrix_size_x);
 	pair<int, int> p2 = XtoXY(pix2, __matrix_size_x);
 
-	if ( abs(p1.first  - p2.first)  < spacing ) return false;
-	if ( abs(p1.second - p2.second) < spacing ) return false;
+	if (
+			abs(p1.first  - p2.first) < spacing
+			&&
+			abs(p1.second - p2.second) < spacing
+	) return false;
 
 	return true;
 }
@@ -830,10 +838,9 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 	//
 	int stepScan = _equalization->GetStepScan();
 	int deviceIndex = _equalization->GetDeviceIndex();
-	int i = 0;
-	int reworkPixels = 0;
+	//int i = 0;
+	//int reworkPixels = 0;
 	bool accelerationApplied = false;
-	int accelerationFlagCntr = 0;
 
 	//for (int maskOffsetItr_x = 0 ; maskOffsetItr_x < _spacing ; maskOffsetItr_x++ ) {
 	//for (int maskOffsetItr_y = 0 ; maskOffsetItr_y < _spacing ; maskOffsetItr_y++ ) {
@@ -852,13 +859,18 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 	//set<int> reworkSubset = GetReworkSubset(reworkPixelsSet, _spacing, maskOffsetItr_x, maskOffsetItr_y);
 
 	int reworkCntr = 0;
-	while ( ! reworkPixelsSet.empty() ) {
 
-		// Out of this reworkPixelsSet I need a subset which respects the spacing
-		set<int> reworkSubset;
+	// Out of this reworkPixelsSet I need a subset which respects the spacing
+	set<int> reworkSubset;
 
-		// Keep track of what has been tuned, or goes as noisy.
-		set<int> doneAndNoisySet;
+	// Keep track of what has been tuned, or goes as noisy.
+	set<int> doneAndNoisySet;
+
+	// This is the original number of pixels which need rework
+	int nPixelsRework = (int)reworkPixelsSet.size();
+
+	// Stop when they have all been processed
+	while ( (int) doneAndNoisySet.size() < nPixelsRework ) {
 
 		reworkCntr += ExtractReworkSubsetSpacingAware(reworkPixelsSet, reworkSubset, _spacing);
 		DumpSet( reworkPixelsSet, "reworkPixelsSet" );
@@ -869,7 +881,7 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 		while ( ! reworkSubset.empty() ) {
 
 			// Here doneAndNoisySet contains the list of pixels already worked out
-			cout << "[INFO] finished with " << (int)doneAndNoisySet.size() << " pixels" << endl;
+			cout << "[INFO] progress : " << (int)doneAndNoisySet.size() << "/" << nPixelsRework << endl;
 
 			reworkCntr += ExtractReworkSubsetSpacingAware(reworkPixelsSet, reworkSubset, _spacing);
 			DumpSet( reworkPixelsSet, "reworkPixelsSet" );
@@ -899,6 +911,7 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 			/////////////////////////
 			// Thl scan
 			int thlItr = 0;
+			stepScan = _equalization->GetStepScan();
 			accelerationApplied = false;
 			while (  ThlScanEndConditionFineTuning( reworkSubset, thlItr, Nsigma )  ) { // ! THE PIXELS EQUALIZED ARE TAGGED HERE !
 
@@ -956,7 +969,7 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 				// In the fine tuning the acceleration can take place at a reasonable
 				// deviation from the target.  I pick half range or the dac.
 				if ( thlItr > MPX3RX_DAC_TABLE[dac_code].dflt && !accelerationApplied ) {
-					stepScan *= 5;
+					stepScan *= __step_scan_boostfactor;
 					accelerationApplied = true;
 				}
 
