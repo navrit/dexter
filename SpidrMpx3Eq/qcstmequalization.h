@@ -21,6 +21,7 @@ using namespace std;
 #define __matrix_size_x 		256
 #define __matrix_size_y 		256
 #define __equalization_target	10
+#define __default_step_scan		2
 
 #define EQ_NEXT_STEP(x) ( _eqStatus == x && ! _stepDone[x] )
 
@@ -79,7 +80,7 @@ public:
 	void ClearReactiveThresholds();
 	void Clear();
 
-	void SetStatus(int pixId, eq_status st) { _eqStatus[pixId] = st; };
+	void SetStatus(int pixId, eq_status st);
 	eq_status GetStatus(int pixId) { return _eqStatus[pixId]; };
 
 private:
@@ -201,6 +202,7 @@ private:
 	int _stepScan;
 	bool _threadFinished;
 	unsigned int _eqStatus;
+	unsigned int _scanIndex;
 	// IP source address (SPIDR network interface)
 	int _srcAddr;
 	int _nChips;

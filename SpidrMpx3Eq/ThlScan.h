@@ -66,6 +66,7 @@ public:
 	void RewindPixelCountsMap();
 	void DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops = -1, bool blindScan = false);
 	int SetEqualizationMask(SpidrController * sc, int spacing, int offset_x, int offset_y);
+	int SetEqualizationMask(SpidrController * sc, set<int> reworkPixels);
 	int SetEqualizationVetoMask(SpidrController * sc, set<int> vetolist, bool clear = false);
 	set<int> GetReworkSubset(set<int> reworkSet, int spacing, int offset_x, int offset_y);
 
@@ -97,14 +98,17 @@ public:
 	scan_type GetScanType() { return _scanType; };
 	set<int> ExtractFineTunningVetoList(double Nsigma);
 	set<int> ExtractReworkList(double Nsigma);
+	int ExtractReworkSubsetSpacingAware(set<int> & reworkPixelsSet, set<int> & reworkSubset, int spacing);
+	bool TwoPixelsRespectMinimumSpacing(int pix1, int pix2, int spacing);
 	map<int, int> ExtractReworkAdjustments(set<int> reworkPixels);
 	void ShiftAdjustments(SpidrController *, set<int> reworkSubset);
 	void TagPixelsEqualizationStatus(set<int> vetoList);
 	void RewindReactionCounters(set<int> reworkPixelsSet);
 	void UnmaskPixelsInLocalSet(set<int> reworkPixelsSet);
 	bool ThlScanEndConditionFineTuning(set<int> reworkPixelsSet, int thl, int Nsigma);
-	set<int> NeedsReadjustment(set<int> reworkPixelsSet, int Nsigma);
+	set<int> NeedsReadjustment(set<int> reworkPixelsSet, set<int> & doneAndNoisySet, int Nsigma);
 	void DumpRework(set<int> reworkSubset, int thl);
+	void DumpSet(set<int> reworkSubset, QString name);
 
 
 private:

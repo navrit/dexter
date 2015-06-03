@@ -517,6 +517,24 @@ void ThlScan::RewindReactionCounters(set<int> reworkPixelsSet) {
 
 }
 
+void ThlScan::DumpSet(set<int> theset, QString name) {
+
+	cout << "-- " << name.toStdString() << " [" << (int)theset.size() << "] --------" << endl;
+
+	if ( theset.empty() ) return;
+
+	set<int>::iterator i = theset.begin();
+	set<int>::iterator iE = theset.end();
+
+	cout << "< ";
+	for ( ; i != iE ; ) {
+		cout << *i;
+		if ( ++i != iE ) cout << ", ";
+	}
+	cout << " >" << endl;
+
+}
+
 void ThlScan::DumpRework(set<int> reworkSubset, int thl){
 
 	set<int>::iterator i = reworkSubset.begin();
@@ -532,17 +550,17 @@ void ThlScan::DumpRework(set<int> reworkSubset, int thl){
 
 	for ( ; i != iE ; i++ ) {
 		cout << "   pix:" << *i << " | status:" << _equalization->GetEqualizationResults(_deviceIndex)->GetStatus( *i )
-													<< " | adj" <<  _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i )
-													<< " | reactive:" << _pixelReactiveTHL[*i]
-													                                       << endl;
+																																					<< " | adj" <<  _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i )
+																																					<< " | reactive:" << _pixelReactiveTHL[*i]
+																																					                                       << endl;
 	}
 
 }
 
 /*
- * Returns a new reworkSubset with those still needing readjustment
+ * Returns a new reworkSubset with those still needing re-adjustment
  */
-set<int> ThlScan::NeedsReadjustment(set<int> reworkSubset, int Nsigma) {
+set<int> ThlScan::NeedsReadjustment(set<int> reworkSubset, set<int> & doneAndNoisySet, int Nsigma) {
 
 	set<int> rw;
 
@@ -556,16 +574,20 @@ set<int> ThlScan::NeedsReadjustment(set<int> reworkSubset, int Nsigma) {
 		////////////////////////////////////////////////////////////////////////////
 		// See if it is still outside the target region and that it hasn't been
 		//  tagged as equalized or impossible-to-equalize
-		if( _equalization->GetEqualizationResults(_deviceIndex)->GetStatus( *i ) >= Mpx3EqualizationResults::__EQUALIZED ) continue;
-
+		if( _equalization->GetEqualizationResults(_deviceIndex)->GetStatus( *i ) >= Mpx3EqualizationResults::__EQUALIZED ) {
+			// Done AND Noisy pixels are reported here (N.B >= Mpx3EqualizationResults::__EQUALIZED) !
+			doneAndNoisySet.insert( *i );
+			continue;
+		}
 		if ( ! OutsideTargetRegion( *i, Nsigma ) ) {
 			// this might have happened in the last scan, tag it here
 			_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( *i,  Mpx3EqualizationResults::__EQUALIZED );
+			// Done pixels are reported here
+			doneAndNoisySet.insert( *i );
 		} else {
 			// These keep going
 			rw.insert( *i );
 		}
-
 
 	}
 
@@ -691,6 +713,82 @@ void ThlScan::ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSu
 
 }
 
+/**
+ * reworkPixelsSet:	Contains the pixels which need rework.
+ * reworkSubset: 	Will contain only those from reworkPixelsSet which respect the spacing.
+ * 		Every time a pixel is picked from reworkPixelsSet, it also gets removed from it.
+ * 		reworkSubset gets shrink by other functions below when rework pixels are tuned.
+ */
+int ThlScan::ExtractReworkSubsetSpacingAware(set<int> & reworkPixelsSet, set<int> & reworkSubset, int spacing) {
+
+	// Iterate on the input set
+	set<int>::iterator i = reworkPixelsSet.begin();
+	set<int>::iterator iE = reworkPixelsSet.end();
+
+	// Iterate on the output set
+	set<int>::iterator ri = reworkSubset.begin();
+	set<int>::iterator riE = reworkSubset.end();
+
+	// Count the number of pixels moved to the reworkSubset
+	int cntrToSubset = 0;
+
+	// Keep a list of those pixels sent to the reworkSubset which need to be erased
+	//  from the reworkPixelsSet
+	set<int> scheduleToErase;
+
+	// Chances are the reworkSubset is empty.  Let's insert one value to get it started.
+	if ( reworkSubset.empty() ) {
+		reworkSubset.insert ( *i );
+		scheduleToErase.insert ( *i );
+		cntrToSubset++;
+		i++;
+	}
+
+	for ( ; i != iE ; i++ ) {
+
+		// Rewind bounds
+		ri = reworkSubset.begin();
+		riE = reworkSubset.end();
+
+		// See if the current pixel is at a safe distance from all pixels in reworkSubset
+		for ( ; ri != riE ; ri++ ) {
+
+			// If respects the minimum spacing put it in the reworkSubset and
+			//  schedule for erasing.
+			if ( TwoPixelsRespectMinimumSpacing( *i, *ri, spacing) ) {
+				reworkSubset.insert ( *i );
+				scheduleToErase.insert ( *i );
+				cntrToSubset++;
+			}
+
+		}
+
+	}
+
+	// Erase from reworkPixelsSet what was tossed in reworkSubset
+	// Iterate on the output set
+	set<int>::iterator ei = scheduleToErase.begin();
+	set<int>::iterator eiE = scheduleToErase.end();
+	set<int>::iterator itoerase;
+	for ( ; ei != eiE ; ei++ ) {
+		itoerase = reworkPixelsSet.find( *ei );
+		if ( itoerase != reworkPixelsSet.end() ) reworkPixelsSet.erase( itoerase );
+	}
+
+	return cntrToSubset;
+}
+
+bool ThlScan::TwoPixelsRespectMinimumSpacing(int pix1, int pix2, int spacing) {
+
+	pair<int, int> p1 = XtoXY(pix1, __matrix_size_x);
+	pair<int, int> p2 = XtoXY(pix2, __matrix_size_x);
+
+	if ( abs(p1.first  - p2.first)  < spacing ) return false;
+	if ( abs(p1.second - p2.second) < spacing ) return false;
+
+	return true;
+}
+
 int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 
 	int ipaddr[4] = { 1, 1, 168, 192 };
@@ -717,7 +815,6 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 	TagPixelsEqualizationStatus( vetoPixels );
 	// Get now the pixels which need rework
 	set<int> reworkPixelsSet = ExtractReworkList(Nsigma);
-	map<int, int> reworkAdjustements = ExtractReworkAdjustments( reworkPixelsSet );
 
 	int adjustedPixels = 0;
 	int * data;
@@ -735,124 +832,149 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 	int deviceIndex = _equalization->GetDeviceIndex();
 	int i = 0;
 	int reworkPixels = 0;
-	for (int maskOffsetItr_x = 0 ; maskOffsetItr_x < _spacing ; maskOffsetItr_x++ ) {
+	bool accelerationApplied = false;
+	int accelerationFlagCntr = 0;
 
-		for (int maskOffsetItr_y = 0 ; maskOffsetItr_y < _spacing ; maskOffsetItr_y++ ) {
+	//for (int maskOffsetItr_x = 0 ; maskOffsetItr_x < _spacing ; maskOffsetItr_x++ ) {
+	//for (int maskOffsetItr_y = 0 ; maskOffsetItr_y < _spacing ; maskOffsetItr_y++ ) {
 
-			// Mask as usual but consider the veto list because we don't need to work on those pixels
-			//  as they are already properly adjusted.
-			int nMasked = SetEqualizationMask(spidrcontrol, _spacing, maskOffsetItr_x, maskOffsetItr_y);
-			cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  " | N pixels unmasked = " << __matrix_size - nMasked << endl;
-			int nExtraMasked = SetEqualizationVetoMask(spidrcontrol, vetoPixels, false);
-			// reworkPixels are the number of pixels unmask and due for rework in this loop
-			reworkPixels = ( (__matrix_size_x * __matrix_size_y ) / ( _spacing * _spacing ) ) - nExtraMasked;
-			cout << "extra masked = " << nExtraMasked << " | rework = " << reworkPixels << endl;
+	// Mask as usual but consider the veto list because we don't need to work on those pixels
+	//  as they are already properly adjusted.
+	//int nMasked = SetEqualizationMask(spidrcontrol, _spacing, maskOffsetItr_x, maskOffsetItr_y);
+	//cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  " | N pixels unmasked = " << __matrix_size - nMasked << endl;
+	//int nExtraMasked = SetEqualizationVetoMask(spidrcontrol, vetoPixels, false);
 
-			// There is going to be a subset of the rework pixels which is active in this particular mask.
-			set<int> reworkSubset = GetReworkSubset(reworkPixelsSet, _spacing, maskOffsetItr_x, maskOffsetItr_y);
+	// reworkPixels are the number of pixels unmask and due for rework in this loop
+	//reworkPixels = ( (__matrix_size_x * __matrix_size_y ) / ( _spacing * _spacing ) ) - nExtraMasked;
+	//cout << "extra masked = " << nExtraMasked << " | rework = " << reworkPixels << endl;
 
-			cout << "----------------------------------------" << endl;
-			cout << "ReworkSubset : " << reworkSubset.size() << endl;
+	// There is going to be a subset of the rework pixels which is active in this particular mask.
+	//set<int> reworkSubset = GetReworkSubset(reworkPixelsSet, _spacing, maskOffsetItr_x, maskOffsetItr_y);
 
-			// Adjust again if needed
-			while ( ! reworkSubset.empty() ) {
+	int reworkCntr = 0;
+	while ( ! reworkPixelsSet.empty() ) {
 
-				// At this point only pixels needing rework are unmasked.
-				// We are doing the rework on all these pixels at the same time.
-				// 1) Decide on the start adjustment point for all the rework pixels
-				// 		- If the pixel is at the right of the equalization target try
-				//  		a higher adjustment until it reaches the max Adj.
-				// 		- If the pixel is at the left, try a lower adjustment.
-				ShiftAdjustments(spidrcontrol, reworkSubset);
+		// Out of this reworkPixelsSet I need a subset which respects the spacing
+		set<int> reworkSubset;
 
-				// Time to rewind the counters for these particular pixels
-				RewindReactionCounters(reworkSubset);
-				// Unmask pixels in the local set
-				UnmaskPixelsInLocalSet(reworkSubset);
+		// Keep track of what has been tuned, or goes as noisy.
+		set<int> doneAndNoisySet;
 
-				cout << "__ Adjustment __________________________" << endl;
+		reworkCntr += ExtractReworkSubsetSpacingAware(reworkPixelsSet, reworkSubset, _spacing);
+		DumpSet( reworkPixelsSet, "reworkPixelsSet" );
+		DumpSet( reworkSubset,  "reworkSubset" );
+		DumpSet( doneAndNoisySet, "doneAndNoisySet");
 
-				/////////////////////////
-				// Thl scan
-				int thlItr = 0;
-				bool waitingForReaction = true;
-				while (  ThlScanEndConditionFineTuning( reworkSubset, thlItr, Nsigma )  ) {
+		// Adjust again if needed
+		while ( ! reworkSubset.empty() ) {
 
+			// Here doneAndNoisySet contains the list of pixels already worked out
+			cout << "[INFO] finished with " << (int)doneAndNoisySet.size() << " pixels" << endl;
 
-					//////////////////////////////////////////////////////
-					// Now ready to scan on this unique pixel !
+			reworkCntr += ExtractReworkSubsetSpacingAware(reworkPixelsSet, reworkSubset, _spacing);
+			DumpSet( reworkPixelsSet, "reworkPixelsSet" );
+			DumpSet( reworkSubset,  "reworkSubset" );
+			DumpSet( doneAndNoisySet, "doneAndNoisySet");
 
-					spidrcontrol->setDac( deviceIndex, dac_code, thlItr );
-					//_spidrcontrol->writeDacs( _deviceIndex );
+			// At this point reworkSubset already shrinked by exactly doneAndNoisySet
+			// 1) doneAndNoisySet should be masked
+			// 2) reworkSubset can be unmasked
+			int unmasked = SetEqualizationMask(spidrcontrol, reworkSubset);
+			cout << "[INFO] leaving " << unmasked << " pixels unmasked" << endl;
 
-					// Start the trigger as configured
-					spidrcontrol->startAutoTrigger();
+			// At this point only pixels needing rework are unmasked.
+			// We are doing the rework on all these pixels at the same time.
+			// 1) Decide on the start adjustment point for all the rework pixels
+			// 		- If the pixel is at the right of the equalization target try
+			//  		a higher adjustment until it reaches the max Adj.
+			// 		- If the pixel is at the left, try a lower adjustment.
+			ShiftAdjustments(spidrcontrol, reworkSubset); // ! THE PIXELS OUT OF BOUNDS ARE TAGGED HERE !
 
-					// See if there is a frame available. I should get as many frames as triggers
-					// Assume the frame won't come intact
-					doReadFrames = false;
-
-					while ( _spidrdaq->waitForFrame( 25 ) ) { // 5ms for eq + 20ms transfer over the network
-
-						doReadFrames = true;
-						if ( _spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected
-							doReadFrames = false;
-						}
-
-
-						if ( doReadFrames ) {
-
-							int size_in_bytes = -1;
-							_data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
-							ExtractScanInfo( _data, size_in_bytes, thlItr );
-
-							// Report to heatmap
-							//_heatmap->addData(data, 256, 256); // Add a new plot/frame.
-							//_heatmap->setActive(frameId++); // Activate the last plot (the new one)
-							//_heatmap->setData( data, 256, 256 );
-
-							// Report to graph
-							//UpdateChart(setId, i);
-							// Report to heatmap
-							UpdateHeatMapSignal(_mpx3gui->getDataset()->x(), _mpx3gui->getDataset()->y());
-
-							// Reacted ?
-							//if ( _pixelReactiveTHL[i] != __UNDEFINED ) {
-							//	waitingForReaction = false;
-							//	cout << "thl:" << _pixelReactiveTHL[i] << endl;
-							//}
-
-							// Continue thl scan
-							thlItr += stepScan;
+			// Time to rewind the counters for these particular pixels
+			RewindReactionCounters(reworkSubset);
+			// Unmask pixels in the local set
+			UnmaskPixelsInLocalSet(reworkSubset);
 
 
-						} else {
-							// otherwise try again on the same thl
-						}
+			/////////////////////////
+			// Thl scan
+			int thlItr = 0;
+			accelerationApplied = false;
+			while (  ThlScanEndConditionFineTuning( reworkSubset, thlItr, Nsigma )  ) { // ! THE PIXELS EQUALIZED ARE TAGGED HERE !
 
-						// Release frame whatever happens
-						_spidrdaq->releaseFrame();
+				QString thlLabelS;
+				thlLabelS = QString::number( thlItr, 'd', 0 );
+				if ( accelerationApplied ) thlLabelS += " acc";
+				// Send signal to Labels.  Making connections one by one.
+				connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
+				fillText( thlLabelS );
+				disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
 
+				//////////////////////////////////////////////////////
+				// Now ready to scan on this unique pixel !
+
+				spidrcontrol->setDac( deviceIndex, dac_code, thlItr );
+				//_spidrcontrol->writeDacs( _deviceIndex );
+
+				// Start the trigger as configured
+				spidrcontrol->startAutoTrigger();
+
+				// See if there is a frame available. I should get as many frames as triggers
+				// Assume the frame won't come intact
+				doReadFrames = false;
+
+				while ( _spidrdaq->waitForFrame( 25 ) ) { // 5ms for eq + 20ms transfer over the network
+
+					doReadFrames = true;
+					if ( _spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected
+						doReadFrames = false;
 					}
 
-					// still outside the region ? try again with another adjustment
-					//if( outsideRegion ) i--;
-					//adjustedPixels++;
-					//}
 
-					//DumpRework( reworkSubset, thlItr );
+					if ( doReadFrames ) {
 
+						int size_in_bytes = -1;
+						_data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
+						ExtractScanInfo( _data, size_in_bytes, thlItr );
 
-				} // THL loop
+						// Report to heatmap
+						UpdateHeatMapSignal(_mpx3gui->getDataset()->x(), _mpx3gui->getDataset()->y());
 
-				reworkSubset = NeedsReadjustment( reworkSubset, Nsigma );
-				cout << "Rework " << (int) reworkSubset.size() << endl;
-
-			} // Adjust loop
+						// Continue thl scan
+						thlItr += stepScan;
 
 
-		} // mask loop
-	} // mask loop
+					} else {
+						// otherwise try again on the same thl
+					}
+
+					// Release frame whatever happens
+					_spidrdaq->releaseFrame();
+
+				}
+
+				// In the fine tuning the acceleration can take place at a reasonable
+				// deviation from the target.  I pick half range or the dac.
+				if ( thlItr > MPX3RX_DAC_TABLE[dac_code].dflt && !accelerationApplied ) {
+					stepScan *= 5;
+					accelerationApplied = true;
+				}
+
+			} // THL loop
+
+			// Here is where the reworkSubset shrinks.  Ready to take new elements if any.
+			reworkSubset = NeedsReadjustment( reworkSubset, doneAndNoisySet, Nsigma ); // ! HERE THE reworkSubset SHRINKS for both Equalized and Noisy !
+			cout << "[INFO] Rework " << (int) reworkSubset.size() << endl;
+
+		} // Adjust loop
+
+
+		//} // mask loop
+		//} // mask loop
+
+	}
+
+	cout << "[INFO] done with fine tuning. " << reworkCntr << " pixels considered." << endl;
 
 	disconnect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
 
@@ -1133,6 +1255,38 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int spacing, in
 	//cout << "N masked = " << _maskedSet.size() << endl;
 
 	return (int) _maskedSet.size();
+}
+
+/**
+ * Leave reworkPixels unmasked.  Returns number of unmaksed pixels.
+ */
+int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, set<int> reworkPixels) {
+
+	// Clear previous mask.  Not sending the configuration yet !
+	ClearMask(spidrcontrol, false);
+
+	int cntr = 0, pix = 0;
+	for (int i = 0 ; i < __array_size_x ; i++) {
+
+		for (int j = 0 ; j < __array_size_y ; j++) {
+
+			pix = XYtoX(i, j, __array_size_x);
+
+			// The pixels NOT in the reworkPixels set, must be masked
+			if ( reworkPixels.find( pix ) == reworkPixels.end() ) {
+				spidrcontrol->setPixelMaskMpx3rx(i,j);
+				_maskedSet.insert( pix ); // this is a set, entries are unique
+			} else {
+				cntr++;
+			}
+
+		}
+
+	}
+	// And send the configuration
+	spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
+
+	return cntr;
 }
 
 int ThlScan::SetEqualizationVetoMask(SpidrController * spidrcontrol, set<int> vetolist, bool clear) {

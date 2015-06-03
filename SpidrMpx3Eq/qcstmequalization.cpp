@@ -45,7 +45,7 @@ _ui(new Ui::QCstmEqualization)
 	_spacing = 4;
 	_minScanTHL = 0;
 	_maxScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size);
-	_stepScan = 2;
+	_stepScan = __default_step_scan;
 	_eqresults = 0x0;
 	_setId = 0;
 	_global_adj = 0x0;
@@ -59,6 +59,7 @@ _ui(new Ui::QCstmEqualization)
 	SetupSignalsAndSlots();
 
 	_eqStatus = __INIT;
+	_scanIndex = 0;
 	_stepDone = new bool[__EQStatus_Count];
 	for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
 
@@ -107,6 +108,7 @@ void QCstmEqualization::InitEqualization() {
 
 	// Rewind state machine variables
 	_eqStatus = __INIT;
+	_scanIndex = 0;
 	for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
 	GetUI()->_histoWidget->Clean();
 	// No sets available
@@ -121,6 +123,10 @@ void QCstmEqualization::InitEqualization() {
 
 	// Rewind limits
 	SetMinScan( 0 );
+	// And step
+	_stepScan = __default_step_scan;
+	_ui->eqStepSpinBox->setValue( _stepScan );
+
 	// FIXME ! ... it can be other threshold
 	SetMaxScan( (MPX3RX_DAC_TABLE[ MPX3RX_DAC_THRESH_0 ].dflt * 2) - 1 );
 
@@ -131,12 +137,14 @@ void QCstmEqualization::StartEqualizationAllChips() {
 	// How many ?
 	_nChips = _mpx3gui->getConfig()->getNDevicesSupported();
 
-	// Init
-	InitEqualization();
-
 	// Start by the first chip
 	_deviceIndex = 0;
 	_ui->devIdSpinBox->setValue( _deviceIndex );
+
+	// Init
+	InitEqualization();
+
+
 	StartEqualization( _deviceIndex );
 
 }
@@ -148,11 +156,11 @@ void QCstmEqualization::Rewind() {
 	// Establish if it is needed to Equalize another chip
 	if( _deviceIndex < _nChips - 1  ) {
 
-		InitEqualization();
-
 		// Next chip
 		_deviceIndex++;
 		_ui->devIdSpinBox->setValue( _deviceIndex );
+
+		InitEqualization();
 
 		// Clear the previous scans !
 		_scans.clear();
@@ -226,9 +234,9 @@ void QCstmEqualization::StartEqualization(int chipId) {
 	} else if ( EQ_NEXT_STEP(__DAC_Disc_Optimization_100 ) ) {
 
 		// Extract results from immediately previous scan. Calc the stats now (this is quick)
-		_scans[_eqStatus - 1]->ExtractStatsOnChart(_setId - 1);
+		_scans[_scanIndex - 1]->ExtractStatsOnChart(_setId - 1);
 		// Show the results
-		DAC_Disc_Optimization_DisplayResults( _scans[_eqStatus - 1]->GetScanResults() );
+		DAC_Disc_Optimization_DisplayResults( _scans[_scanIndex - 1]->GetScanResults() );
 
 		// And go for next scan
 		DAC_DISC_testValue = 150;
@@ -238,13 +246,13 @@ void QCstmEqualization::StartEqualization(int chipId) {
 	} else if ( EQ_NEXT_STEP(__DAC_Disc_Optimization_150 ) ) {
 
 		// Extract results from immediately previous scan. Calc the stats now (this is quick)
-		_scans[_eqStatus - 1]->ExtractStatsOnChart(_setId - 1);
+		_scans[_scanIndex - 1]->ExtractStatsOnChart(_setId - 1);
 		// Show the results
-		DAC_Disc_Optimization_DisplayResults( _scans[_eqStatus - 1]->GetScanResults() );
+		DAC_Disc_Optimization_DisplayResults( _scans[_scanIndex - 1]->GetScanResults() );
 
 		// And calculate the optimal DAC_Disc
-		ScanResults res_100 = _scans[_eqStatus - 2]->GetScanResults();
-		ScanResults res_150 = _scans[_eqStatus - 1]->GetScanResults();
+		ScanResults res_100 = _scans[_scanIndex - 2]->GetScanResults();
+		ScanResults res_150 = _scans[_scanIndex - 1]->GetScanResults();
 		DAC_Disc_Optimization(res_100, res_150);
 
 		// I could get rid of the previous two equalizations
@@ -259,8 +267,8 @@ void QCstmEqualization::StartEqualization(int chipId) {
 	} else if ( EQ_NEXT_STEP(__PrepareInterpolation_0x0) ) {
 
 		// Results
-		_scans[_eqStatus - 1]->ExtractStatsOnChart(_setId - 1);
-		DisplayStatsInTextBrowser(_global_adj, _opt_MPX3RX_DAC_DISC_L, _scans[_eqStatus - 1]->GetScanResults());
+		_scans[_scanIndex - 1]->ExtractStatsOnChart(_setId - 1);
+		DisplayStatsInTextBrowser(_global_adj, _opt_MPX3RX_DAC_DISC_L, _scans[_scanIndex - 1]->GetScanResults());
 
 		// Now adj=0x5
 		PrepareInterpolation_0x5(MPX3RX_DAC_DISC_L);
@@ -268,17 +276,17 @@ void QCstmEqualization::StartEqualization(int chipId) {
 	} else if ( EQ_NEXT_STEP(__PrepareInterpolation_0x5) ) {
 
 		// Results
-		int nNonReactive = _scans[_eqStatus - 1]->NumberOfNonReactingPixels();
+		int nNonReactive = _scans[_scanIndex - 1]->NumberOfNonReactingPixels();
 		if ( nNonReactive > 0 ) {
 			cout << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
 		}
 
-		_scans[_eqStatus - 1]->ExtractStatsOnChart(_setId - 1);
-		DisplayStatsInTextBrowser(_global_adj, _opt_MPX3RX_DAC_DISC_L, _scans[_eqStatus - 1]->GetScanResults());
+		_scans[_scanIndex - 1]->ExtractStatsOnChart(_setId - 1);
+		DisplayStatsInTextBrowser(_global_adj, _opt_MPX3RX_DAC_DISC_L, _scans[_scanIndex - 1]->GetScanResults());
 
 		// Interpolate now
-		ScanResults res_x0 = _scans[_eqStatus - 2]->GetScanResults();
-		ScanResults res_x5 = _scans[_eqStatus - 1]->GetScanResults();
+		ScanResults res_x0 = _scans[_scanIndex - 2]->GetScanResults();
+		ScanResults res_x5 = _scans[_scanIndex - 1]->GetScanResults();
 		CalculateInterpolation(res_x0, res_x5);
 
 		// Perform now a scan with the extrapolated adjustments
@@ -290,12 +298,12 @@ void QCstmEqualization::StartEqualization(int chipId) {
 	} else if ( EQ_NEXT_STEP( __ScanOnInterpolation) ) {
 
 		// Results
-		int nNonReactive = _scans[_eqStatus - 1]->NumberOfNonReactingPixels();
+		int nNonReactive = _scans[_scanIndex - 1]->NumberOfNonReactingPixels();
 		if ( nNonReactive > 0 ) {
 			cout << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
 		}
-		_scans[_eqStatus - 1]->ExtractStatsOnChart(_setId - 1);
-		DisplayStatsInTextBrowser(-1, _opt_MPX3RX_DAC_DISC_L, _scans[_eqStatus - 1]->GetScanResults());
+		_scans[_scanIndex - 1]->ExtractStatsOnChart(_setId - 1);
+		DisplayStatsInTextBrowser(-1, _opt_MPX3RX_DAC_DISC_L, _scans[_scanIndex - 1]->GetScanResults());
 
 		// Display
 		_ui->_intermediatePlot->clear();
@@ -304,7 +312,7 @@ void QCstmEqualization::StartEqualization(int chipId) {
 		_ui->_intermediatePlot->addData( adj_matrix, 256, 256 );
 		_ui->_intermediatePlot->setActive( 0 );
 
-		// 5) Attempt fine tunning
+		// 5) Attempt fine tuning
 		FineTunning(MPX3RX_DAC_DISC_L);
 
 	} else if ( EQ_NEXT_STEP( __FineTunning ) ) {
@@ -341,7 +349,7 @@ void QCstmEqualization::CalculateInterpolation(ScanResults res_x0, ScanResults r
 	////////////////////////////////////////////////////////////////////////////////////
 	// 7) Extrapolate to the target using the last scan information and the knowledge
 	//    on the Adj_THL dependency.
-	_scans[_eqStatus - 1]->DeliverPreliminaryEqualization(_eqresults, res_x5 );
+	_scans[_scanIndex - 1]->DeliverPreliminaryEqualization(_eqresults, res_x5 );
 	_eqresults->ExtrapolateAdjToTarget( __equalization_target, _eta_Adj_THL );
 	int * adj_matrix = _eqresults->GetAdjustementMatrix();
 
@@ -392,7 +400,7 @@ void QCstmEqualization::DAC_Disc_Optimization_100(int DAC_Disc_code, int DAC_DIS
 	tscan->SetConfigurationToScanResults(DAC_DISC_testValue, 0x0);
 
 	// Launch as thread.  Connect the slot which signals when it's done
-	_scans.push_back( tscan );
+	_scans.push_back( tscan ); _scanIndex++;
 	connect( tscan, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
 	tscan->start();
 
@@ -424,7 +432,7 @@ void QCstmEqualization::DAC_Disc_Optimization_150(int DAC_Disc_code, int DAC_DIS
 	tscan->SetConfigurationToScanResults(DAC_DISC_testValue, 0x0);
 
 	// Launch as thread.  Connect the slot which signals when it's done
-	_scans.push_back( tscan );
+	_scans.push_back( tscan ); _scanIndex++;
 	connect( tscan, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
 	tscan->start();
 
@@ -451,7 +459,6 @@ int QCstmEqualization::FineTunning(int DAC_Disc_code) {
 	lastScan->SetScanType( ThlScan::__FINE_TUNNING1_SCAN );
 	connect( lastScan, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
 	lastScan->start();
-
 
 	return 0;
 }
@@ -544,7 +551,7 @@ void QCstmEqualization::PrepareInterpolation_0x0(int DAC_Disc_code) {
 	tscan_opt_adj0->SetConfigurationToScanResults(_opt_MPX3RX_DAC_DISC_L, _global_adj);
 
 	// Launch as thread.  Connect the slot which signals when it's done
-	_scans.push_back( tscan_opt_adj0 );
+	_scans.push_back( tscan_opt_adj0 ); _scanIndex++;
 	connect( tscan_opt_adj0, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
 	tscan_opt_adj0->start();
 
@@ -552,11 +559,15 @@ void QCstmEqualization::PrepareInterpolation_0x0(int DAC_Disc_code) {
 
 void QCstmEqualization::ScanOnInterpolation(int DAC_Disc_code) {
 
+	// The step goes down to 1 here
+	_stepScan = 1;
+	_ui->eqStepSpinBox->setValue( _stepScan );
+
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
 	// New limits --> ask the scan with adj_global = 0x0
-	ThlScan * scan_adj5 = _scans[_eqStatus - 2];
+	ThlScan * scan_adj5 = _scans[_scanIndex - 2];
 	SetMinScan( scan_adj5->GetDetectedLowScanBoundary() );
 	SetMaxScan( scan_adj5->GetDetectedHighScanBoundary() );
 
@@ -583,7 +594,7 @@ void QCstmEqualization::ScanOnInterpolation(int DAC_Disc_code) {
 	tscan_opt_ext->SetConfigurationToScanResults(_opt_MPX3RX_DAC_DISC_L, -1);
 
 	// Launch as thread.  Connect the slot which signals when it's done
-	_scans.push_back( tscan_opt_ext);
+	_scans.push_back( tscan_opt_ext); _scanIndex++;
 	connect( tscan_opt_ext, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
 	tscan_opt_ext->start();
 
@@ -604,8 +615,8 @@ void QCstmEqualization::PrepareInterpolation_0x5(int DAC_Disc_code) {
 	// New limits
 	// The previous scan is a complete scan on all pixels.  Now we can cut the scan up to
 	//  a few sigmas from the previous scan.
-	SetMinScan( _scans[_eqStatus - 1]->GetDetectedLowScanBoundary() );
-	SetMaxScan( _scans[_eqStatus - 1]->GetDetectedHighScanBoundary() );
+	SetMinScan( _scans[_scanIndex - 1]->GetDetectedLowScanBoundary() );
+	SetMaxScan( _scans[_scanIndex - 1]->GetDetectedHighScanBoundary() );
 
 	ThlScan * tscan_opt_adj5 = new ThlScan(_mpx3gui, this);
 	tscan_opt_adj5->ConnectToHardware(spidrcontrol, spidrdaq);
@@ -629,7 +640,7 @@ void QCstmEqualization::PrepareInterpolation_0x5(int DAC_Disc_code) {
 	tscan_opt_adj5->SetConfigurationToScanResults(_opt_MPX3RX_DAC_DISC_L, _global_adj);
 
 	// Launch as thread.  Connect the slot which signals when it's done
-	_scans.push_back( tscan_opt_adj5 );
+	_scans.push_back( tscan_opt_adj5 ); _scanIndex++;
 	connect( tscan_opt_adj5, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
 	tscan_opt_adj5->start();
 
@@ -667,9 +678,9 @@ void QCstmEqualization::ScanThreadFinished(){
 
 	// This step was done
 	_stepDone[_eqStatus] = true;
-	// disconnect the signal that brought us here
-	disconnect( _scans[_eqStatus], SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
-	// Go to next step
+	// disconnect the signal that brought us here.  _scanIndex is incremented as the thread is created.
+	disconnect( _scans[_scanIndex-1], SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
+	// Go to next step, except for fine tuning where I use the same previous scan
 	_eqStatus++;
 	// Now revisit the equalization.
 	// It knows where to pick up.
@@ -1109,6 +1120,9 @@ int Mpx3EqualizationResults::GetPixelAdj(int pixId) {
 }
 int Mpx3EqualizationResults::GetPixelReactiveThl(int pixId) {
 	return _pixId_Thl[pixId];
+}
+void Mpx3EqualizationResults::SetStatus(int pixId, eq_status st) {
+	_eqStatus[pixId] = st;
 }
 
 void Mpx3EqualizationResults::ReadAdjBinaryFile(QString fn) {
