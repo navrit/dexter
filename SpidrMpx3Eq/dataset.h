@@ -17,6 +17,7 @@
 #include <QPoint>
 #include <QRect>
 #include <QMap>
+#include <stdint.h>
 
 class Dataset//TODO: specify starting corner?
 {
@@ -48,9 +49,10 @@ public:
   ~Dataset();
   Dataset( const Dataset& other );
   Dataset& operator=( const Dataset& rhs );
-  unsigned getActivePixels(int threshold);
-  unsigned getPixelsFired(int threshold){return getPixelsPerLayer() - getActivePixels(threshold);}
-  int getTotal(int threshold);
+  void zero();
+  uint64_t getActivePixels(int threshold);
+  //uint64_t getPixelsFired(int threshold){return getActivePixels(threshold);}//Don't ask
+  int64_t getTotal(int threshold);
   int getContainingFrame(QPoint pixel);
   QPoint getNaturalCoordinates(QPoint pixel, int index);
   QSize computeBoundingBox();
@@ -77,7 +79,7 @@ public:
   int getFrameCount() const{return m_nFrames;}
   int getLayerCount() const{return m_layers.count();}
   int getLayerSize() const{return m_nFrames*m_nx*m_ny;}
-  int getPixelsPerLayer() const{return m_nFrames*m_nx*m_ny;}
+  uint64_t getPixelsPerLayer() const{return m_nFrames*m_nx*m_ny;}
   QPoint getSize(){return QPoint(m_nx, m_ny);}
   int *getFrame(int index, int threshold);
   int *getFrameAt(int index, int layer);

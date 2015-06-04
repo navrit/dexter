@@ -15,21 +15,21 @@ Dataset::~Dataset()
   clear();
 }
 
-int Dataset::getTotal(int threshold){
+int64_t Dataset::getTotal(int threshold){
   int index = thresholdToIndex(threshold);
   if(index == -1)
     return 0;
-  int count = 0;
+  int64_t count = 0;
   for(int j = 0; j < m_nx*m_ny*m_nFrames; j++)
     count += m_layers[index][j];
   return count;
 }
 
-unsigned Dataset::getActivePixels(int threshold){
+uint64_t Dataset::getActivePixels(int threshold){
   int index = thresholdToIndex(threshold);
   if(index == -1)
     return 0;
-  unsigned count  =0;
+  uint64_t count  =0;
   for(int j = 0; j < m_nx*m_ny*m_nFrames; j++){
       if(0 != m_layers[index][j])
         count++;
@@ -51,6 +51,13 @@ Dataset& Dataset::operator =( const Dataset& rhs){
   Dataset copy(rhs);
   std::swap(this->m_layers, copy.m_layers);
   return *this;
+}
+
+void Dataset::zero(){
+  for(int i = 0; i < m_layers.size(); i++){
+      for(int j = 0; j < m_nx*m_ny*m_nFrames; j++)
+        m_layers[i][j] = 0;
+    }
 }
 
 int Dataset::getLayerIndex(int threshold){
