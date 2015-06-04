@@ -42,6 +42,7 @@ private:
 
   QMap <int, int> m_thresholdsToIndices;
   QVector<int*> m_layers;
+  Dataset *correction = nullptr;
   int getLayerIndex(int threshold);
 public:
   Dataset(int x, int y, int framesPerLayer = 1);
@@ -49,9 +50,9 @@ public:
   ~Dataset();
   Dataset( const Dataset& other );
   Dataset& operator=( const Dataset& rhs );
+  void removeCorrection(){delete correction; correction = nullptr;}
   void zero();
   uint64_t getActivePixels(int threshold);
-  //uint64_t getPixelsFired(int threshold){return getActivePixels(threshold);}//Don't ask
   int64_t getTotal(int threshold);
   int getContainingFrame(QPoint pixel);
   QPoint getNaturalCoordinates(QPoint pixel, int index);
@@ -61,6 +62,8 @@ public:
   QByteArray toByteArray();
   void fromByteArray(QByteArray serialized);
   //void setLayerCount(int nLayers);
+  void loadCorrection(QByteArray serialized);
+  void applyCorrection();
   void setOrientation(QVector<int> orientations){for(int i = 0; i < orientations.length();i++)setOrientation(i, orientations[i]);}
   void setOrientation(int index, int orientation){m_frameOrientation[index] = orientation;}
   void setLayout(int index, QPoint layout){m_frameLayouts[index] = layout;}

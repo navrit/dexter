@@ -125,7 +125,6 @@ void DataTakingThread::run() {
 
 			}
 		}
-
 		//_mpx3gui->getDataset()->addHistory();
 
 		nFramesReceived++;

@@ -1,5 +1,6 @@
 #include "dataset.h"
 #include <QDataStream>
+#include <QDebug>
 
 Dataset::Dataset(int x, int y, int framesPerLayer)
 {
@@ -12,7 +13,14 @@ Dataset::Dataset() : Dataset(1,1,1){}
 
 Dataset::~Dataset()
 {
+  delete correction;
   clear();
+}
+
+void Dataset::loadCorrection(QByteArray serialized){
+  delete correction;
+  correction  = new Dataset(0,0,0);
+  correction->fromByteArray(serialized);//TODO: add error checking on correction to see if it is relevant to the data.
 }
 
 int64_t Dataset::getTotal(int threshold){
@@ -20,7 +28,7 @@ int64_t Dataset::getTotal(int threshold){
   if(index == -1)
     return 0;
   int64_t count = 0;
-  for(int j = 0; j < m_nx*m_ny*m_nFrames; j++)
+  for(int j = 0; j < getPixelsPerLayer(); j++)
     count += m_layers[index][j];
   return count;
 }
@@ -30,7 +38,7 @@ uint64_t Dataset::getActivePixels(int threshold){
   if(index == -1)
     return 0;
   uint64_t count  =0;
-  for(int j = 0; j < m_nx*m_ny*m_nFrames; j++){
+  for(int j = 0; j <getPixelsPerLayer(); j++){
       if(0 != m_layers[index][j])
         count++;
     }
@@ -41,8 +49,8 @@ Dataset::Dataset( const Dataset& other ): m_boundingBox(other.m_boundingBox), m_
   m_nx = other.x(); m_ny = other.y();
   m_nFrames = other.getFrameCount();
   for(int i = 0; i < m_layers.size(); i++){
-      m_layers[i] = new int[m_nx*m_ny*m_nFrames];
-      for(int j = 0; j < m_nx*m_ny*m_nFrames; j++)
+      m_layers[i] = new int[getPixelsPerLayer()];
+      for(int j = 0; j < getPixelsPerLayer(); j++)
         m_layers[i][j] = other.m_layers[i][j];
     }
 }
@@ -55,7 +63,7 @@ Dataset& Dataset::operator =( const Dataset& rhs){
 
 void Dataset::zero(){
   for(int i = 0; i < m_layers.size(); i++){
-      for(int j = 0; j < m_nx*m_ny*m_nFrames; j++)
+      for(int j = 0; j < getPixelsPerLayer(); j++)
         m_layers[i][j] = 0;
     }
 }
@@ -79,8 +87,26 @@ QByteArray Dataset::toByteArray(){
   QList<int> keys = m_thresholdsToIndices.keys();
   ret += QByteArray::fromRawData((const char*)keys.toVector().data(),(int)(keys.size()*sizeof(int))); //thresholds
   for(int i = 0; i < keys.length(); i++)
-    ret += QByteArray::fromRawData((const char*)this->getLayer(keys[i]), (int)(sizeof(int)*getLayerSize()));
+    ret += QByteArray::fromRawData((const char*)this->getLayer(keys[i]), (int)(sizeof(float)*getLayerSize()));
   return ret;
+}
+
+void Dataset::applyCorrection(){
+  if(correction == nullptr)
+    return;
+  QList<int> keys = m_thresholdsToIndices.keys();
+  for(int i = 0; i < keys.length(); i++){
+      double currentTotal = getTotal(keys[i]), correctionTotal = correction->getTotal(keys[i]);
+      int* currentLayer = getLayer(keys[i]);
+      int* correctionLayer = correction->getLayer(keys[i]);
+      if(correctionLayer == nullptr){
+          qDebug() << "[WARN] flatfield correction does not contain a treshold" << keys[i];
+          continue;
+        }
+      for(int j = 0; j < getPixelsPerLayer(); j++)
+        if(0  != correctionLayer[j])
+          currentLayer[j] = (int)(correctionTotal*currentLayer[j])/(currentTotal*correctionLayer[j]);
+    }
 }
 
 void Dataset::fromByteArray(QByteArray serialized){
@@ -99,7 +125,7 @@ void Dataset::fromByteArray(QByteArray serialized){
   QVector<int> frameBuffer(m_nx*m_ny);
   for(int i = 0; i < keys.size(); i++){
       for(int j = 0; j < m_nFrames; j++){
-          in.readRawData((char*)frameBuffer.data(), (int)sizeof(int)*frameBuffer.size());
+          in.readRawData((char*)frameBuffer.data(), (int)sizeof(float)*frameBuffer.size());
           this->setFrame(frameBuffer.data(), j, keys[i]);
         }
     }
@@ -134,7 +160,7 @@ QSize Dataset::computeBoundingBox(){
 
 int Dataset::newLayer(int threshold){
   m_thresholdsToIndices[threshold] = m_layers.size();
-  m_layers.append(new int[m_nx*m_ny*m_nFrames]);
+  m_layers.append(new int[getPixelsPerLayer()]);
   for(int j = 0; j < getLayerSize(); j++)
     m_layers.last()[j] = 0;
   return m_layers.size()-1;

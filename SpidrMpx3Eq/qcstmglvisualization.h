@@ -83,6 +83,8 @@ private slots:
   void UnlockWaitingForFrame();
 
 
+  void on_obcorrCheckbox_toggled(bool checked);
+
 public slots:
   void StartDataTaking();
   void setGradient(int index);

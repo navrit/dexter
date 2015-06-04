@@ -116,10 +116,10 @@ void QCstmGLVisualization::on_data_taking_finished(int /*nFramesTaken*/) {
       // Change the Stop button to Start
       ui->startButton->setText( "Start" );
       _takingData = false;
-
       DestroyTimer();
       ETAToZero();
-
+      _mpx3gui->getDataset()->applyCorrection();
+      on_reload_all_layers();
     }
 
   // Also we will inform the visualization to go straight to the very last frame to be drawn
@@ -487,3 +487,21 @@ void QCstmGLVisualization::on_summingCheckbox_toggled(bool checked)
   //on_reload_all_layers();
 }
 
+
+void QCstmGLVisualization::on_obcorrCheckbox_toggled(bool checked)
+{
+    if(!checked)
+      _mpx3gui->getDataset()->removeCorrection();
+    else{
+        QString filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("binary files (*.bin)"));
+        QFile saveFile(filename);
+        if (!saveFile.open(QIODevice::ReadOnly)) {
+            string messg = "Couldn't open: ";
+            messg += filename.toStdString();
+            messg += "\nNo output written!";
+            QMessageBox::warning ( this, tr("Error opening data"), tr( messg.c_str() ) );
+            return;
+          }
+        _mpx3gui->getDataset()->loadCorrection(saveFile.readAll());
+      }
+}

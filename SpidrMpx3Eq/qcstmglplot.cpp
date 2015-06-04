@@ -44,7 +44,7 @@ void QCstmGLPlot::initializeShaders(){
 
 void QCstmGLPlot::initializeTextures(){
   dataTex->create(); //glGenTexture
-  dataTex->setFormat(QOpenGLTexture::R32I);
+  dataTex->setFormat(QOpenGLTexture::R32F);
   dataTex->setWrapMode(QOpenGLTexture::ClampToEdge);
   dataTex->bind(0); //bind to unit 0;
   dataTex->setMagnificationFilter(QOpenGLTexture::Nearest);//Do not interpolate when zooming in.
@@ -201,7 +201,7 @@ void QCstmGLPlot::populateTextures(Dataset &data){
   }
   dataTex->create();
   dataTex->bind(0); //bind to unit 0;
-  dataTex->setFormat(QOpenGLTexture::R32I);
+  dataTex->setFormat(QOpenGLTexture::R32F);
   dataTex->setWrapMode(QOpenGLTexture::Repeat);
   dataTex->setLayers(data.getFrameCount()*data.getLayerCount());
   nx = data.x();
@@ -212,7 +212,7 @@ void QCstmGLPlot::populateTextures(Dataset &data){
   for(int i = 0; i < data.getLayerCount();i++){
       for(int j = 0; j < data.getFrameCount();j++){
           int *frame =     data.getFrameAt(j,i);
-          dataTex->setData(0,i*data.getFrameCount()+j,QOpenGLTexture::Red_Integer,QOpenGLTexture::Int32, frame);
+          dataTex->setData(0,i*data.getFrameCount()+j,QOpenGLTexture::Red,QOpenGLTexture::Float32, frame);
         }
     }
   dataTex->setMagnificationFilter(QOpenGLTexture::Nearest);//Do not interpolate when zooming in.
