@@ -52,7 +52,8 @@ void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size){
     if(data[i] > max)
       max = data[i];
     }
-  Histogram *hist = new Histogram(min, max, (max-min)/m_binCount);
+  int binWidth = (max-min)/m_binCount == 0? 1 : (max-min)/m_binCount;
+  Histogram *hist = new Histogram(min, max, binWidth);
   hist->addRange(data, size);
   //qDebug() << "Histogram creation took" << timer.elapsed() << "milliseconds";
 

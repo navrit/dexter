@@ -160,7 +160,7 @@ void ThlScan::run() {
 
 	// This one is a fine tunning scan
 	if(_scanType == __FINE_TUNNING1_SCAN) {
-		ReAdjustPixelsOff(3, MPX3RX_DAC_DISC_L);
+		ReAdjustPixelsOff(4, MPX3RX_DAC_DISC_L);
 	}
 }
 

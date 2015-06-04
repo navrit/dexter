@@ -114,11 +114,29 @@
         </layout>
        </item>
        <item>
-        <widget class="QCheckBox" name="summingCheckbox">
-         <property name="text">
-          <string>Sum frames</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QCheckBox" name="summingCheckbox">
+           <property name="text">
+            <string>Sum frames</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="obcorrCheckbox">
+           <property name="text">
+            <string>OB corr</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="deadpixelsinterpolationCheckbox">
+           <property name="text">
+            <string>interpolation</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_6"/>
