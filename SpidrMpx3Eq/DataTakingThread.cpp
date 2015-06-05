@@ -100,10 +100,10 @@ void DataTakingThread::run() {
 					int size = size_in_bytes / 4;
 					int sizeReduced = size / 4;    // 4 thresholds per 110um pixel
 
-					QVector<int> *th0 = new QVector<int>(sizeReduced);
-					QVector<int> *th2 = new QVector<int>(sizeReduced);
-					QVector<int> *th4 = new QVector<int>(sizeReduced);
-					QVector<int> *th6 = new QVector<int>(sizeReduced);
+					QVector<int> *th0 = new QVector<int>(sizeReduced,0);
+					QVector<int> *th2 = new QVector<int>(sizeReduced,0);
+					QVector<int> *th4 = new QVector<int>(sizeReduced,0);
+					QVector<int> *th6 = new QVector<int>(sizeReduced,0);
 
 					SeparateThresholds(framedata, size, th0, th2, th4, th6, sizeReduced);
 
@@ -121,6 +121,18 @@ void DataTakingThread::run() {
 
 				} else {
 					_mpx3gui->addFrame(framedata, i, 0);
+
+					/*
+					// dump
+					ofstream of("data.txt", std::ofstream::out);
+					pair<int, int> pix;
+					for(int i = 0 ; i < __matrix_size_x*__matrix_size_y ; i++) {
+						pix = XtoXY( i, __matrix_size_x );
+						of << framedata[i] << " ";
+						if(pix.first == __matrix_size_x-1) of << endl;
+					}
+					of.close();
+*/
 				}
 
 			}
@@ -226,7 +238,9 @@ void DataTakingThread::SeparateThresholds(int * data, int size, QVector<int> * t
 	//		P3 --> TH4, TH5
 	//		P4 --> TH6, TH7
 
+
 	int indx = 0, indxRed = 0, redi = 0, redj = 0;
+	int c0 = 0, c2 = 0, c4 = 0, c6 = 0;
 
 	for (int j = 0 ; j < __matrix_size_y ; j++) {
 
@@ -238,25 +252,28 @@ void DataTakingThread::SeparateThresholds(int * data, int size, QVector<int> * t
 
 			//if(indxRed > 16380 ) cout << "indx " << indx << ", indxRed = " << indxRed << endl;
 
-			if( i % 2 == 0 && j % 2 == 0) {
+			if( (i % 2) == 0 && (j % 2) == 0) {
 				(*th6)[indxRed] = data[indx]; // P4
 			}
-			if( i % 2 == 0 && j % 2 == 1) {
+			if( (i % 2) == 0 && (j % 2) == 1) {
 				(*th4)[indxRed] = data[indx]; // P3
 			}
-			if( i % 2 == 1 && j % 2 == 0) {
+			if( (i % 2) == 1 && (j % 2) == 0) {
 				(*th2)[indxRed] = data[indx]; // P2
 			}
-			if( i % 2 == 1 && j % 2 == 1) {
+			if( (i % 2) == 1 && (j % 2) == 1) {
 				(*th0)[indxRed] = data[indx]; // P1
 			}
 
 			if (i % 2 == 1) redi++;
+
+
 
 		}
 
 		if (j % 2 == 1) redj++;
 
 	}
+
 
 }

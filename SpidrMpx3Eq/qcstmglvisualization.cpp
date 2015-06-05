@@ -119,7 +119,12 @@ void QCstmGLVisualization::on_data_taking_finished(int /*nFramesTaken*/) {
       DestroyTimer();
       ETAToZero();
       _mpx3gui->getDataset()->applyCorrection();
+
+      // Other corrections
+      if( ui->deadpixelsinterpolationCheckbox->isChecked() ) _mpx3gui->getDataset()->applyDeadPixelsInterpolation();
+
       on_reload_all_layers();
+
     }
 
   // Also we will inform the visualization to go straight to the very last frame to be drawn
