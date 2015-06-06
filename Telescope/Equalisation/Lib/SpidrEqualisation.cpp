@@ -10,6 +10,7 @@
 
 #include <dirent.h>
 
+//#include "TApplication.h"
 #include "TH1F.h"
 #include "TF1.h"
 #include "TFile.h"
@@ -31,7 +32,7 @@ using namespace std;
 // ---------------------------------------------------------------------------
 SpidrEqualisation::SpidrEqualisation(SpidrController* spidrctrl) :
   m_ctrl(spidrctrl), m_daq(),
-  m_nDevices(3), m_disabled(),
+  m_nDevices(1), m_disabled(),
   m_stddev(4),
   m_spacing(2), 
   m_thlmin(0), m_thlmax(512), m_thlstep(1),
@@ -44,6 +45,8 @@ SpidrEqualisation::SpidrEqualisation(SpidrController* spidrctrl) :
   m_daq.resize(m_nDevices, NULL);
   m_dacfilename.resize(m_nDevices, "");
   m_disabled.resize(m_nDevices, false);
+   //m_disabled[0] = true;
+   //m_disabled[1] = true;
   for (unsigned int i = 0; i < m_nDevices; ++i) {
     m_daq[i] = new SpidrDaq(spidrctrl, 0x10000000, i);
   }
@@ -107,6 +110,70 @@ bool SpidrEqualisation::scanCoarse() {
 
 }
 
+// ---------------------------------------------------------------------------
+// Main equalisation function 
+// ---------------------------------------------------------------------------
+bool SpidrEqualisation::analyse_temp(const bool analyse0, const bool analyse15,
+                                     const bool analyseFinal, const bool plot) {
+
+  std::stringstream ss;
+  ss << m_filename << "_spacing_" << m_spacing;
+  const std::string filenameBase = ss.str();
+  // Analyse the data for the lowest trim value.  
+  if (analyse0) {
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      if (m_disabled[i]) continue;
+      cout << "[Note] Analysing data for TRIM 0, chip " << i << "\n";
+      ss.str("");
+      ss << i;
+      if (!analyseData(filenameBase + "_chip" + ss.str() + "_0")) {
+        printFinal("FAILED");
+        return false;
+      }
+    }
+  }
+  // Analyse the data for the highest trim value.  
+  if (analyse15) {
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      if (m_disabled[i]) continue;
+      cout << "[Note] Analysing data for TRIM 15, chip " << i << "\n";
+      ss.str("");
+      ss << i;
+      if (!analyseData(filenameBase + "_chip" + ss.str() + "_15")) {
+        printFinal("FAILED");
+        return false;
+      }
+    }
+  }
+  // Analyse the data after equalisation.
+  if (analyseFinal) {
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      if (m_disabled[i]) continue;
+      cout << "[Note] Analysing data for chip " << i << "\n";
+      ss.str("");
+      ss << i;
+      if (!analyseData(filenameBase + "_chip" + ss.str() + "_equalised")) {
+        printFinal("FAILED");
+        return false;
+      }
+    }
+  }
+  if (plot) {
+    for (unsigned int i = 0; i < m_nDevices; ++i) {
+      if (m_disabled[i]) continue;
+      cout << "[Note] Creating plot for chip " << i << "\n";
+      ss.str("");
+      ss << i;
+      if (!plotEqualisation(filenameBase + "_chip" + ss.str())) {
+        printFinal("FAILED");
+        return false;
+      }
+    }
+  }
+  printFinal("DONE");
+  return true;
+
+}
 // ---------------------------------------------------------------------------
 // Main equalisation function 
 // ---------------------------------------------------------------------------
@@ -321,9 +388,11 @@ bool SpidrEqualisation::checkCommunication() {
   }   
   for (unsigned int i = 0; i < m_nDevices; ++i) {
     if (m_disabled[i]) continue;
+    ///*
     if (!m_ctrl->setOutputMask(i, 0x3)) {
       printError("setOutputMask");
     }
+    //*/
     int linkstatus;
     if (!m_ctrl->getLinkStatus(i, &linkstatus)) {
       printError("getLinkStatus");
@@ -367,6 +436,7 @@ bool SpidrEqualisation::setConfiguration() {
     ss << std::hex << errstat;
     printError("reset", ss.str());
   }
+  
   // Set the ethernet filter.
   for (unsigned int i = 0; i < m_nDevices; ++i) {
     if (m_disabled[i]) continue;
@@ -375,6 +445,14 @@ bool SpidrEqualisation::setConfiguration() {
     eth_mask = 0xffff;
     m_ctrl->setHeaderFilter(i, eth_mask, cpu_mask);
   }
+
+  /*
+  for (unsigned int i = 0; i < m_nDevices; ++i) {
+    if (m_disabled[i]) continue;
+    m_ctrl->setOutputMask(i, 0x3);
+  }
+  //*/
+
 
   // Select whether or not to let the FPGA do the ToT/ToA decoding.
   if (!m_ctrl->setDecodersEna(true)) printError("setDecodersEna");
@@ -545,6 +623,11 @@ bool SpidrEqualisation::takeData(const std::vector<std::string>& filenames) {
         // Set the new threshold.
         for (unsigned int i = 0; i < m_nDevices; ++i) {
           if (m_disabled[i]) continue;
+          //if (!m_ctrl->setDac(i, TPX3_IBIAS_PIXELDAC, 250)) {   
+          //  std::stringstream ss;
+          //  ss << "getDac (VTHRESH_FINE = " << thl << ")";
+          //  printError(ss.str());
+          //}
           if (!m_ctrl->setDac(i, TPX3_VTHRESH_FINE, thl)) {   
             std::stringstream ss;
             ss << "setDac (VTHRESH_FINE = " << thl << ")";
@@ -703,6 +786,7 @@ bool SpidrEqualisation::extractPars(const std::string& filename) {
   // Get the average noise level for trim 0.
   hNoiseMean0->Fit("gaus", "Q");
   const double mu0 = hNoiseMean0->GetFunction("gaus")->GetParameter(1);
+  const double sigma0 = hNoiseMean0->GetFunction("gaus")->GetParameter(2);
 
   // Open ROOT file with results for trim 15.
   const std::string filename15 = filename + "_15.root";
@@ -716,9 +800,14 @@ bool SpidrEqualisation::extractPars(const std::string& filename) {
   // Get the average noise level for trim 15.
   hNoiseMean15->Fit("gaus", "Q");
   const double mu15 = hNoiseMean15->GetFunction("gaus")->GetParameter(1);
+  const double sigma15 = hNoiseMean15->GetFunction("gaus")->GetParameter(2);
 
   // Calculate the target threshold.
   const double target = 0.5 * (mu0 + mu15);
+  const double distance = mu15 - mu0;
+  const double opt_distance = 2*sigma0+2*sigma15;
+  std::cout << "[Note] Optimal distance between noise centroids: " << distance << std::endl;
+  std::cout << "[Note] Distance between noise centroids: " << opt_distance << std::endl;
   std::cout << "[Note] Target threshold set to " << target << std::endl;
   TH1F hTrim("htrimdac", "; Trim DAC; Pixels", 16, -0.5, 15.5);
   const std::string filenametrim = filename + ".txt";
@@ -747,6 +836,9 @@ bool SpidrEqualisation::extractPars(const std::string& filename) {
 // Make a plot of the three noise level distributions
 // ---------------------------------------------------------------------------
 bool SpidrEqualisation::plotEqualisation(const std::string& filename) {
+
+  //TApplication app(const TApplication&);
+  //app.SetReturnFromRun(true);
 
   setupStyle();
   const std::string filename0 = filename + "_0.root";
@@ -804,6 +896,8 @@ bool SpidrEqualisation::plotEqualisation(const std::string& filename) {
   f0.Close();
   f15.Close();
 
+  //app.Run(true);
+
   return true;
 
 }
@@ -852,8 +946,8 @@ bool SpidrEqualisation::maskPixels(const std::string& filename) {
     const double sigma = hthrscan_2->GetBinContent(pixel + 1);
     if (fabs(thr - meanAvg) > deltaAvg || sigma > deltaSigma) {
       masked = 1;
-      ++nMasked;
     } 
+    if (masked == 1) ++nMasked;
     fprintf(fnew, "%4d %4d %4d %4d %4d\n", col, row, trim, masked, tp);
   }
   fclose(fp);

@@ -33,6 +33,8 @@ class MY_LIB_API SpidrEqualisation {
 
   bool scanCoarse();
   // Run the full equalisation.
+  bool analyse_temp(const bool analyse0 = true, const bool analyse15 = true,
+                    const bool analyseFinal = true, const bool plot = true);
   bool equalise(const bool scan0 = true, const bool scan15 = true,
                 const bool analyse0 = true, const bool analyse15 = true,
                 const bool extract = true,
