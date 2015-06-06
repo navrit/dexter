@@ -8,6 +8,8 @@
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 
+//#include "TApplication.h"
+
 using namespace std;
 
 int main(int argc, char* argv[]) {
@@ -27,14 +29,28 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
+  // TApplication app("app", &argc, argv);
+  // app.SetReturnFromRun(true);
+  // app.Run(true);
+
   SpidrController spidrctrl(192, 168, 100, 10);
   SpidrEqualisation equalisation(&spidrctrl);
 
   extern char* optarg;
   int spacing = 4;
   std::string fileprefix = "";
-  char c = getopt(argc, argv, "f:q:l:t:c:");
+  char c = getopt(argc, argv, "a:f:q:l:t:c:");
   switch (c) {
+    case 'a':
+      fileprefix = optarg;
+      cout << " Enter pixels spacing: ";
+      cin >> spacing;
+      equalisation.setFileName(fileprefix);
+      equalisation.setSpacing(spacing);
+      equalisation.setNDevices(1);
+      equalisation.analyse_temp();
+      //equalisation.equalise(false, false, false, false, false);
+      return 0;
     case 'f':
       fileprefix = optarg;
       cout << " Enter pixels spacing: ";
@@ -47,8 +63,10 @@ int main(int argc, char* argv[]) {
       equalisation.setTrigger(4, 100, 1);
       equalisation.setThlScan(1, 512, 1);
       equalisation.setSpacing(spacing);
+      // equalisation.setNDevices(3);
+      //equalisation.setDacFile("/home/timepix3/SPIDR/SPIDR/software/trunk/Telescope/Equalisation/App/chip0_dac.txt");
       equalisation.equalise();
-      // equalisation.equalise(false, false, false, false, true, true, true, true, true);
+      // equalisation.equalise(false, false);
       // break;
       return 0;
 
@@ -63,6 +81,7 @@ int main(int argc, char* argv[]) {
       equalisation.setTrigger(4, 100, 1);
       equalisation.setThlScan(1, 512, 1);
       equalisation.setSpacing(spacing);
+      equalisation.setDacFile("/home/timepix3/CONFIG/W0009_F04_dacs.txt");
       equalisation.quickEqualisation();
       // break;
       return 0;
