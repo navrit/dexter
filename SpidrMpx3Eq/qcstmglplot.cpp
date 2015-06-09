@@ -181,10 +181,12 @@ void QCstmGLPlot::setSize(int nx, int ny){
 void QCstmGLPlot::readData(Dataset &data){//TODO: only update textures.
   if(!initialized)
     return;
-  QSize bounding = data.computeBoundingBox();
+  QRectF bounding = data.computeBoundingBox();
   program.bind();
-  this->setOffset(-0.25*bounding.width()/data.x(), -0.25*bounding.height()/data.y());
-  this->setZoom(1.0/(bounding.width()/data.x() > bounding.height()/data.y() ? bounding.width()/data.x() : bounding.height()/data.y()));
+  float baseOffsetX = bounding.center().x();
+  float baseOffsetY = bounding.center().y();
+  this->setOffset(0.5-baseOffsetX, 0.5-baseOffsetY);
+  this->setZoom(1.0/(bounding.width() > bounding.height()? bounding.width() : bounding.height()));
 
   readOrientations(data);
   readLayouts(data);
@@ -221,14 +223,8 @@ void QCstmGLPlot::populateTextures(Dataset &data){
 void QCstmGLPlot::readLayouts(Dataset &data){
   QVector<QPoint> layout = data.getLayoutVector();
   offsets.resize(layout.size());
-  int max = INT_MIN;
-  for(int i = 0; i < offsets.size();i++){
+  for(int i = 0; i < offsets.size();i++)
     offsets[i] = QVector2D(layout[i].x()*2, layout[i].y()*2);
-    if(layout[i].x() > max)
-      max = layout[i].x();
-    if(layout[i].y() > max)
-      max = layout[i].y();
-   }
 
   glBindVertexArray (vao);
   //glEnableVertexAttribArray (positionLoc);
@@ -295,6 +291,7 @@ void QCstmGLPlot::setRange(int min, int max){
 void QCstmGLPlot::setOffset(GLfloat x, GLfloat y){
   offsetX = x; offsetY = y;
   program.bind();
+  qDebug() << "Offset =" << offsetX << "," << offsetY;
   program.setUniformValue(offsetLoc, offsetX,  offsetY);
   update();
   recomputeBounds();
@@ -351,7 +348,7 @@ void QCstmGLPlot::wheelEvent(QWheelEvent *event){
 
 void QCstmGLPlot::keyPressEvent(QKeyEvent *event){//Doesn't really work that well for controls.
   //Can't seem to handle multiple presses at once and stutters quite badly.
-  const GLfloat speed = 0.05;
+  const GLfloat speed = zoom*0.05;
   switch(event->key()){
     case Qt::Key_Left:
       addOffset(+speed, 0);

@@ -34,7 +34,7 @@ class Dataset//TODO: specify starting corner?
   };  ///Enumerations to define the coordinate system of the chips. (L)eft, (R)ight, (t)o, (T)op, and (B)ottom.
 private:
   int m_nx, m_ny; //!Pixel size in the x and y direction
-  QRect m_boundingBox;//!A rectangular box which encompasses all the chips. Hence the name.
+  QRectF m_boundingBox;//!A rectangular box which encompasses all the chips. Hence the name.
   int m_nFrames; //< The amount of detectors, a.k.a. frames here.
 
   QVector<QPoint>  m_frameLayouts; //<A vector containing the bottom-left corners of the detectors, (0,0) is bottom, left , (1,0) is to the right, (0,1) above.
@@ -56,7 +56,7 @@ public:
   int64_t getTotal(int threshold);
   int getContainingFrame(QPoint pixel);
   QPoint getNaturalCoordinates(QPoint pixel, int index);
-  QSize computeBoundingBox();
+  QRectF computeBoundingBox();
   int thresholdToIndex(int threshold){return m_thresholdsToIndices.value(threshold, -1);}
   QRect getBoundingBox();
   QByteArray toByteArray();

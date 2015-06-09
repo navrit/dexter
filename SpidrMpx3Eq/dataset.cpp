@@ -95,7 +95,7 @@ void Dataset::applyDeadPixelsInterpolation(){
 
 	QList<int> keys = m_thresholdsToIndices.keys();
 
-	QSize isize = computeBoundingBox();
+	QSize isize = QSize(computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y());
 
 	for(int i = 0; i < keys.length(); i++) {
 
@@ -181,7 +181,7 @@ void Dataset::clear(){
 	//setFramesPerLayer(1);
 }
 
-QSize Dataset::computeBoundingBox(){
+QRectF Dataset::computeBoundingBox(){
 	m_boundingBox.setRect(0,0,0,0);
 	int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
 	for(int i =0; i < m_frameLayouts.length();i++){
@@ -194,9 +194,9 @@ QSize Dataset::computeBoundingBox(){
 		if(m_frameLayouts[i].y() > max_y)
 			max_y = m_frameLayouts[i].y();
 	}
-	m_boundingBox.setRect(0,0, (max_x-min_x+1)*m_nx, (max_y-min_y+1)*m_ny );
+	m_boundingBox.setRect(min_x,min_y, max_x+1, max_y+1);
 
-	return m_boundingBox.size();
+	return m_boundingBox;
 }
 
 int Dataset::newLayer(int threshold){
