@@ -17,6 +17,6 @@ void main(void)
     //texCoords  = texelFetch(textureCoordsBuffer, 4*textureIndexIn+gl_VertexID).rg; //Grab the textureCoordinates for this vertex.
     c = vec2(textureCoordsIn.x*orientationIn.xy+textureCoordsIn.y*orientationIn.zw);
     frameID = gl_InstanceID+layer;
-    gl_Position = vec4((verticesIn+offsetsIn+globalOffset)*aspectRatio*zoom,0,1);
+    gl_Position = vec4((verticesIn+offsetsIn)*aspectRatio*zoom+globalOffset,0,1);
 }
 
