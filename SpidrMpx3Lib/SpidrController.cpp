@@ -738,7 +738,8 @@ bool SpidrController::setPixelConfigMpx3rx( int dev_nr, bool with_replies )
 	      // Fill a byte
 	      byte = 0;
 	      bitmask = 0x80;
-	      for( bit=0; bit<8; ++bit )
+	      //for( bit=0; bit<8; ++bit )
+	      for( bit=7; bit>=0; --bit ) // JOHN. Henk this needs to be reverse too.
 		{
 		  if( pconfig[column + bit] & pixelbitmask )
 		    byte |= bitmask;
