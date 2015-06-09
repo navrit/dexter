@@ -85,6 +85,8 @@ private slots:
 
   void on_obcorrCheckbox_toggled(bool checked);
 
+  void on_pushButton_clicked();
+
 public slots:
   void StartDataTaking();
   void setGradient(int index);

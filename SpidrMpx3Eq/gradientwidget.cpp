@@ -7,7 +7,11 @@ GradientWidget::GradientWidget(QWidget *parent) : QWidget(parent){
 
 GradientWidget::~GradientWidget()
 {
-
+  QPalette Pal(palette());
+  // set black background
+  Pal.setColor(QPalette::Background, Qt::transparent);
+  this->setAutoFillBackground(true);
+  this->setPalette(Pal);
 }
 
 void GradientWidget::paintEvent(QPaintEvent * /*event*/){ //TODO: caching, auto-formating of labels.

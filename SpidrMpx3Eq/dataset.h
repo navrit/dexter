@@ -88,7 +88,7 @@ public:
   int *getFrame(int index, int threshold);
   int *getFrameAt(int index, int layer);
   int sampleFrameAt(int index, int layer, int x, int y);
-  int* getLayer(int layer);
+  int* getLayer(int threshold);
   int sample(int x, int y, int layer);
   int x() const{return m_nx;}
   int y() const{return m_ny;}

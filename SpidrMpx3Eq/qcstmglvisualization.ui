@@ -27,7 +27,7 @@
           <widget class="HeatmapDisplay" name="glPlot" native="true"/>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout" stretch="4,0,1,2">
+          <layout class="QHBoxLayout" name="horizontalLayout" stretch="4,0,1,2,0">
            <item>
             <widget class="QComboBox" name="gradientSelector"/>
            </item>
@@ -58,6 +58,13 @@
              </property>
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton">
+             <property name="text">
+              <string>save image</string>
              </property>
             </widget>
            </item>

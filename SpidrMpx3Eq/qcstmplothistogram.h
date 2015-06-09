@@ -58,6 +58,7 @@ public:
 
   void clear();
   int getHistogramCount(){return m_mapping.size();}
+  Histogram* getHistogram(int threshold){return m_mapping[threshold].second;}
   void scaleToInterest();
 signals:
   void rangeChanged(QCPRange newRange);

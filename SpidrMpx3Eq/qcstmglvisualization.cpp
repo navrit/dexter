@@ -6,6 +6,8 @@
 #include "DataTakingThread.h"
 
 #include <stdio.h>
+#include <QDialog>
+
 QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :  QWidget(parent),  ui(new Ui::QCstmGLVisualization)
 {
   ui->setupUi(this);
@@ -509,4 +511,20 @@ void QCstmGLVisualization::on_obcorrCheckbox_toggled(bool checked)
           }
         _mpx3gui->getDataset()->loadCorrection(saveFile.readAll());
       }
+}
+
+void QCstmGLVisualization::on_pushButton_clicked()
+{
+  QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), QStandardPaths::displayName(QStandardPaths::PicturesLocation), tr("location"));
+    ui->glPlot->grab().save(filename+".png");
+   ui->histPlot->savePng(filename+"_histogram.png");
+   QFile histogramDat(filename+"_histogram.dat");
+   if(!histogramDat.open(QIODevice::WriteOnly)){
+       qDebug() << histogramDat.errorString();
+       return;
+     }
+   Histogram *hist = ui->histPlot->getHistogram(getActiveThreshold());
+   for(int i = 0; i < hist->size();i++)
+     histogramDat.write(QString("%1 %2\n").arg(hist->keyAt(i)).arg(hist->atIndex(i)).toStdString().c_str());
+
 }

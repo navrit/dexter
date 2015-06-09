@@ -100,7 +100,7 @@ void QCstmGLPlot::initializeVAOsAndVBOs(){
 void QCstmGLPlot::initializeGL(){
   initializeOpenGLFunctions();
   QColor bgColor = this->palette().color(this->backgroundRole());
-  glClearColor((GLfloat)(bgColor.red()/255.), (GLfloat)(bgColor.green()/255.), (GLfloat)(bgColor.blue()/255.),1.0); //Sets the background Color to match Qt.
+  glClearColor((GLfloat)(bgColor.red()/255.), (GLfloat)(bgColor.green()/255.), (GLfloat)(bgColor.blue()/255.),0.0); //Sets the background Color to match Qt.
   //glEnable (GL_BLEND);
   glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -208,7 +208,6 @@ void QCstmGLPlot::populateTextures(Dataset &data){
   ny  = data.y();
   dataTex->setSize(nx, ny);//TODO: set to nx, ny
   dataTex->allocateStorage();
-
   for(int i = 0; i < data.getLayerCount();i++){
       for(int j = 0; j < data.getFrameCount();j++){
           int *frame =     data.getFrameAt(j,i);

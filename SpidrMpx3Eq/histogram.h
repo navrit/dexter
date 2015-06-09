@@ -87,6 +87,7 @@ public:
   inline int at(int value){return (value <= m_max && value >= m_min)? m_bins[valueToBin(value)] : 0;} //bounds checking version of [], non-reference because OOB references.
    //! Returns the size of the bin at the specified index. Does not do bounds checking.
   inline int atIndex(int index){return /*(index >= 0 && index < size())?*/ m_bins[index];}
+  int keyAt(int index) const{return m_min+index*m_binWidth;}
 
 //CONTAINER WRAPPERS
   auto begin() -> decltype(m_bins.begin()){return m_bins.begin();}
