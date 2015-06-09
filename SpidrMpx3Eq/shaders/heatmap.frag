@@ -22,14 +22,15 @@ float normalizeSample(float sample){
 void main(void) {
     int v[5];
     int temp;
-    v[0] = texture(tex,vec3(c+vec2(0,0),frameID)).r;
+    /*v[0] = texture(tex,vec3(c+vec2(0,0),frameID)).r;
     v[1] = texture(tex,vec3(c+vec2(1,0),frameID)).r;
     v[2] = texture(tex,vec3(c+vec2(-1,0),frameID)).r;
     v[3] = texture(tex,vec3(c+vec2(0,1),frameID)).r;
     v[4] = texture(tex,vec3(c+vec2(0,-1),frameID)).r;
     mnmx5(v[0], v[1], v[2], v[3], v[4]);
     mnmx3(v[1], v[2], v[3]);
-    int sample = v[2];
+    int sample = v[2];*/
+    int sample = texture(tex,vec3(c+vec2(0,0),frameID)).r;
 
     vec3 color = texture(gradient, normalizeSample(float(sample))).rgb;
     gl_FragColor =  vec4(color, step(clampRange.x, sample)* step(sample,clampRange.y));
