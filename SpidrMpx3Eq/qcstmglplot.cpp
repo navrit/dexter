@@ -291,7 +291,7 @@ void QCstmGLPlot::setRange(int min, int max){
 void QCstmGLPlot::setOffset(GLfloat x, GLfloat y){
   offsetX = x; offsetY = y;
   program.bind();
-  qDebug() << "Offset =" << offsetX << "," << offsetY;
+  //qDebug() << "Offset =" << offsetX << "," << offsetY;
   program.setUniformValue(offsetLoc, offsetX,  offsetY);
   update();
   recomputeBounds();

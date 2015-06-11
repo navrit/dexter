@@ -313,6 +313,7 @@ void QCstmEqualization::StartEqualization(int chipId) {
 		_ui->_intermediatePlot->setActive( 0 );
 
 		// 5) Attempt fine tuning
+		//GetUI()->_histoWidget->removeGraph( _scanIndex );
 		FineTunning(MPX3RX_DAC_DISC_L);
 
 	} else if ( EQ_NEXT_STEP( __FineTunning ) ) {
@@ -387,7 +388,7 @@ void QCstmEqualization::DAC_Disc_Optimization_100(int DAC_Disc_code, int DAC_DIS
 	cprop.yAxisLabel = "entries";
 	cprop.min_x = 0;
 	cprop.max_x = 511;
-	cprop.nBins = 511;
+	cprop.nBins = 512;
 	cprop.color_r = 0;
 	cprop.color_g = 127;
 	cprop.color_b = 0;
@@ -420,7 +421,7 @@ void QCstmEqualization::DAC_Disc_Optimization_150(int DAC_Disc_code, int DAC_DIS
 	cprop_150.name = "DAC_DiscL150";
 	cprop_150.min_x = 0;
 	cprop_150.max_x = 200;
-	cprop_150.nBins = 511;
+	cprop_150.nBins = 512;
 	cprop_150.color_r = 127;
 	cprop_150.color_g = 127;
 	cprop_150.color_b = 10;
@@ -441,6 +442,17 @@ void QCstmEqualization::DAC_Disc_Optimization_150(int DAC_Disc_code, int DAC_DIS
 
 int QCstmEqualization::FineTunning(int DAC_Disc_code) {
 
+	// The fine tuning reports to a new BarChat but runs on the previous ThlScan
+	BarChartProperties cprop_opt;
+	cprop_opt.name = "Fine_tuning";
+	cprop_opt.min_x = 0;
+	cprop_opt.max_x = 511;
+	cprop_opt.nBins = 512;
+	cprop_opt.color_r = 0;
+	cprop_opt.color_g = 0;
+	cprop_opt.color_b = 0;
+	_ui->_histoWidget->AppendSet( cprop_opt );
+
 	// The step goes down to 1 here
 	_stepScan = 1;
 	_ui->eqStepSpinBox->setValue( _stepScan );
@@ -453,6 +465,9 @@ int QCstmEqualization::FineTunning(int DAC_Disc_code) {
 	} else {
 		return -1;
 	}
+
+	// Increase the setId
+	lastScan->SetSetId( _setId++ );
 
 	// Check how many pixels are more than N*sigmas off the mean
 	//lastScan->ReAdjustPixelsOff(3, DAC_Disc_code);
@@ -545,7 +560,7 @@ void QCstmEqualization::PrepareInterpolation_0x0(int DAC_Disc_code) {
 	cprop_opt_adj0.name = "DAC_DiscL_Opt_adj0";
 	cprop_opt_adj0.min_x = 0;
 	cprop_opt_adj0.max_x = 511;
-	cprop_opt_adj0.nBins = 511;
+	cprop_opt_adj0.nBins = 512;
 	cprop_opt_adj0.color_r = 0;
 	cprop_opt_adj0.color_g = 10;
 	cprop_opt_adj0.color_b = 127;
@@ -587,10 +602,10 @@ void QCstmEqualization::ScanOnInterpolation(int DAC_Disc_code) {
 	cprop_opt_ext.name = "DAC_DiscL_Opt_ext";
 	cprop_opt_ext.min_x = 0;
 	cprop_opt_ext.max_x = 511;
-	cprop_opt_ext.nBins = 511;
-	cprop_opt_ext.color_r = 0;
-	cprop_opt_ext.color_g = 0;
-	cprop_opt_ext.color_b = 0;
+	cprop_opt_ext.nBins = 512;
+	cprop_opt_ext.color_r = 192;
+	cprop_opt_ext.color_g = 192;
+	cprop_opt_ext.color_b = 192;
 	_ui->_histoWidget->AppendSet( cprop_opt_ext );
 
 	// Send all the adjustment bits to the adjusted values
@@ -634,7 +649,7 @@ void QCstmEqualization::PrepareInterpolation_0x5(int DAC_Disc_code) {
 	cprop_opt_adj5.name = "DAC_DiscL_Opt_adj5";
 	cprop_opt_adj5.min_x = 0;
 	cprop_opt_adj5.max_x = 511;
-	cprop_opt_adj5.nBins = 511;
+	cprop_opt_adj5.nBins = 512;
 	cprop_opt_adj5.color_r = 127;
 	cprop_opt_adj5.color_g = 10;
 	cprop_opt_adj5.color_b = 0;

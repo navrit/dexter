@@ -36,6 +36,7 @@ ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 	_adjType = __adjust_to_global;
 	_stop = false;
 	_scanType = __BASIC_SCAN;
+	_fineTunningPixelsEqualized.clear();
 
 	// Results of the scan
 	_results.weighted_arithmetic_mean = 0.;
@@ -301,12 +302,16 @@ void ThlScan::EqualizationScan() {
 						_pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes, _thlItr );
 					}
 
+
 					// Release
 					_spidrdaq->releaseFrame();
 
 					if ( doReadFrames ) {
 						// Report to heatmap
 						UpdateHeatMapSignal(_mpx3gui->getDataset()->x(), _mpx3gui->getDataset()->y());
+
+						// Report to graph
+						if ( !_blindScan ) UpdateChartSignal(_setId, _thlItr);
 
 						//_heatmap->addData(data, 256, 256); // Add a new plot/frame.
 						//_heatmap->setActive(_frameId++); // Activate the last plot (the new one)
@@ -324,12 +329,10 @@ void ThlScan::EqualizationScan() {
 				if( !doReadFrames ) {
 					doReadFrames = true;
 					_thlItr -= step;
+					if ( _thlItr < _minScan ) _thlItr = _minScan;
 					continue;
 				}
 
-				// Report to graph
-				//cout << _setId << "," << _thlItr << endl;
-				if ( !_blindScan ) UpdateChartSignal(_setId, _thlItr);
 
 				/*
 				// FIXME
@@ -435,6 +438,7 @@ bool ThlScan::OutsideTargetRegion(int pix, double Nsigma){
 void ThlScan::TagPixelsEqualizationStatus(set<int> vetoList) {
 
 	// This pixels will be marked in the Mpx3EqualizationResults as __EQUALIZED
+
 	for ( int i = 0 ; i < __matrix_size ; i++ ) {
 
 		if( vetoList.find(i) == vetoList.end() ) {
@@ -444,9 +448,14 @@ void ThlScan::TagPixelsEqualizationStatus(set<int> vetoList) {
 		} else {
 			// if it is found in the vetolist this pixel is well equalized
 			_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( i, Mpx3EqualizationResults::__EQUALIZED );
+			// These can be send to the histogram immediately
+			_fineTunningPixelsEqualized.insert( i );
 		}
 
 	}
+
+	// The pixels which are ready can be drawn immediately in the plot
+	emit UpdateChartPixelsReadySignal(_setId);
 
 }
 
@@ -528,7 +537,7 @@ void ThlScan::DumpSet(set<int> theset, QString name) {
 
 	cout << "< ";
 	for ( ; i != iE ; ) {
-		cout << *i;
+		cout << *i << "{" << _pixelReactiveTHL[*i] << ":" << _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i ) << "}, ";
 		if ( ++i != iE ) cout << ", ";
 	}
 	cout << " >" << endl;
@@ -621,8 +630,21 @@ bool ThlScan::ThlScanEndConditionFineTuning(set<int> reworkSubset, int thl, int 
 		bool outsideTargetRegion = OutsideTargetRegion( *i, Nsigma );
 
 		// If the pixel entered the target region, mark it as __EQUALIZED
-		if( !outsideTargetRegion ) {
+		if( ! outsideTargetRegion ) {
+
 			_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( *i, Mpx3EqualizationResults::__EQUALIZED );
+
+			/*
+			// If it entered the target region, it could still be that we can get even closer to the target.
+			// 1) If it is right at the target we are done here
+			if ( _pixelReactiveTHL[pix] == __equalization_target ) P
+				_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( *i, Mpx3EqualizationResults::__EQUALIZED );
+			} else {
+				// 2) Otherwise start keeping track of that's happening here
+
+			}
+			*/
+
 		}
 
 		// Is this pixel pending to react ?
@@ -810,6 +832,8 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 	SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 
 	connect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
+	connect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
+	connect( this, SIGNAL( UpdateChartPixelsReadySignal(int) ), this, SLOT( UpdateChartPixelsReady(int) ) );
 
 
 	// I re-scan only pixels that are off the target by N*sigma.
@@ -953,6 +977,8 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 						// Report to heatmap
 						UpdateHeatMapSignal(_mpx3gui->getDataset()->x(), _mpx3gui->getDataset()->y());
 
+						UpdateChartSignal(_setId, _thlItr);
+
 						// Continue thl scan
 						thlItr += stepScan;
 
@@ -990,6 +1016,8 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 	cout << "[INFO] done with fine tuning. " << reworkCntr << " pixels considered." << endl;
 
 	disconnect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
+	disconnect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
+	disconnect( this, SIGNAL( UpdateChartPixelsReadySignal(int) ), this, SLOT( UpdateChartPixelsReady(int) ) );
 
 	return adjustedPixels;
 }
@@ -1046,10 +1074,12 @@ int ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
 
 		// I checked that the entry is not zero, and also that is not in the maskedMap
 		if ( data[i] != 0 && ( _maskedSet.find( i ) == _maskedSet.end() ) ) {
+
 			// Increase the counting in this pixel if it hasn't already reached the _nTriggers
 			if ( _pixelCountsMap[i] < _equalization->GetNTriggers() ) {
 				_pixelCountsMap[i]++;
 			}
+
 			// It it reached the number of triggers, set this Threshold as the reactive threshold
 			if ( _pixelCountsMap[i] == _equalization->GetNTriggers() ) {
 
@@ -1062,7 +1092,6 @@ int ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
 				_nReactivePixels++;
 				pixelsActive++;
 			}
-
 
 		}
 
@@ -1175,6 +1204,35 @@ void ThlScan::UpdateChart(int setId, int thlValue) {
 	}
 
 	if ( cntr > 0 ) _chart->SetValueInSet( setId , thlValue, cntr );
+
+}
+
+/**
+ * Only for plotting purposes.  Take the pixels already counted as done and plot.
+ */
+void ThlScan::UpdateChartPixelsReady(int setId) {
+
+	// <thl, cntr>
+	map<int, int> thlCntr;
+	set<int>::iterator i = _fineTunningPixelsEqualized.begin();
+	set<int>::iterator iE = _fineTunningPixelsEqualized.end();
+
+	// initialize
+	for (i = _fineTunningPixelsEqualized.begin() ; i != iE ; i++ ) {
+		thlCntr[  _pixelReactiveTHL[*i] ] = 0;
+	}
+
+	// build the histogram
+	for (i = _fineTunningPixelsEqualized.begin() ; i != iE ; i++ ) {
+		thlCntr[  _pixelReactiveTHL[*i] ]++;
+	}
+
+	// Draw
+	map<int, int>::iterator im = thlCntr.begin();
+	map<int, int>::iterator imE = thlCntr.end();
+	for ( ; im != imE ; im++ ) {
+		_chart->SetValueInSet( setId , im->first, im->second );
+	}
 
 }
 

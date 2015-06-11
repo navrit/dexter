@@ -10,6 +10,7 @@
 
 QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :  QWidget(parent),  ui(new Ui::QCstmGLVisualization)
 {
+
   ui->setupUi(this);
   _dataTakingThread = 0x0;
   _takingData = false;
@@ -19,6 +20,10 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :  QWidget(parent), 
   _etatimer = 0x0;
   _timer = 0x0;
   _estimatedETA = 0;
+
+  // Defaults from GUI
+  ui->dropFramesCheckBox->setChecked( true );
+  ui->summingCheckbox->setChecked( true );
 
 }
 
@@ -59,6 +64,9 @@ void QCstmGLVisualization::updateETA() {
 void QCstmGLVisualization::StartDataTaking(){
 
   if( !_takingData ) {
+
+	  // Clear previous data first
+	  GetMpx3GUI()->clear_data();
 
       // Threads
       if ( _dataTakingThread ) {
@@ -362,8 +370,8 @@ void QCstmGLVisualization::on_active_frame_changed(){
   int layer = _mpx3gui->getDataset()->thresholdToIndex(this->getActiveThreshold());
   ui->glPlot->getPlot()->setActive(layer);
   ui->histPlot->setActive(layer);
-  ui->chargeLabel->setText(QString("Total Charge: %1").arg(_mpx3gui->getDataset()->getTotal(getActiveThreshold())));
-  ui->countsLabel->setText(QString("Total Fired: %1").arg(_mpx3gui->getDataset()->getActivePixels(getActiveThreshold())));
+  ui->chargeLabel->setText(QString("%1").arg(_mpx3gui->getDataset()->getTotal(getActiveThreshold())));
+  ui->countsLabel->setText(QString("%1").arg(_mpx3gui->getDataset()->getActivePixels(getActiveThreshold())));
   if(ui->percentileRangeRadio->isChecked())
     on_percentileRangeRadio_toggled(true);
   else if(ui->fullRangeRadio->isChecked())

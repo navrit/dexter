@@ -2,6 +2,11 @@
 #include <QDataStream>
 #include <QDebug>
 
+#include <iostream>
+
+using namespace std;
+
+
 Dataset::Dataset(int x, int y, int framesPerLayer)
 {
 	m_nx = x; m_ny = y;
@@ -91,6 +96,55 @@ QByteArray Dataset::toByteArray(){
 	return ret;
 }
 
+void Dataset::applyHighPixelsInterpolation(){
+
+	QList<int> keys = m_thresholdsToIndices.keys();
+	QSize isize = QSize(computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y());
+
+	for(int i = 0; i < keys.length(); i++) {
+
+		int* currentLayer = getLayer(keys[i]);
+
+		double mean = 0.;
+		for(int j = 0; j < getPixelsPerLayer(); j++) {
+
+			// skip the borders
+			if ( j < isize.width() || j > (isize.width()*isize.width() - isize.height()) || (j % isize.width()-1)==0 || (j % isize.width())==0 ) continue;
+
+			// calculate the mean
+			mean += currentLayer[j];
+
+		}
+		mean /= getPixelsPerLayer();
+		cout << "mean = " << mean << endl;
+		for(int j = 0; j < getPixelsPerLayer(); j++) {
+			// skip the borders
+			if ( j < isize.width() || j > (isize.width()*isize.width() - isize.height()) || (j % isize.width()-1)==0 || (j % isize.width())==0 ) continue;
+
+			if ( currentLayer[j] > 2*mean
+					&&
+					currentLayer[j+1] < 2*mean
+					&&
+					currentLayer[j-1] < 2*mean
+					&&
+					currentLayer[j+m_nx+1] < 2*mean
+					&&
+					currentLayer[j+m_nx-1] < 2*mean
+			) {
+				currentLayer[j] =
+						(
+								(currentLayer[j+1] + currentLayer[j-1]) +
+								(currentLayer[j+m_nx+1] + currentLayer[j+m_nx-1])
+						) / 4;
+			}
+
+		}
+
+
+	}
+
+}
+
 void Dataset::applyDeadPixelsInterpolation(){
 
 	QList<int> keys = m_thresholdsToIndices.keys();
@@ -108,11 +162,14 @@ void Dataset::applyDeadPixelsInterpolation(){
 
 			if ( currentLayer[j] == 0 ) {
 				currentLayer[j] =
-						(currentLayer[j+1] + currentLayer[j-1]) +
-						(currentLayer[j+m_nx+1] + currentLayer[j+m_nx-1]) / 4;
+						(
+								( currentLayer[j+1] + currentLayer[j-1] ) +
+								( currentLayer[j+m_nx+1] + currentLayer[j+m_nx-1] )
+						) / 4;
 			}
 
 		}
+
 	}
 
 }

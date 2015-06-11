@@ -227,11 +227,11 @@ void DataTakingThread::on_stop_data_taking_thread() {
 void DataTakingThread::SeparateThresholds(int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced) {
 
 	// Layout of 110um pixel
-	//  -------------
-	//  | P3  |  P1 |
-	//	-------------
-	//  | P4  |  P2 |
-	//  -------------
+	//  -------------   ---------------------
+	//  | P3  |  P1 |   | thl 4,5 | thl 0,1 |
+	//	-------------   ---------------------
+	//  | P4  |  P2 |   | thl 6,7 | thl 2,3 |
+	//  -------------   ---------------------
 	//  Where:
 	//  	P1 --> TH0, TH1
 	//		P2 --> TH2, TH3
@@ -266,8 +266,6 @@ void DataTakingThread::SeparateThresholds(int * data, int size, QVector<int> * t
 			}
 
 			if (i % 2 == 1) redi++;
-
-
 
 		}
 
