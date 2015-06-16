@@ -577,26 +577,34 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
 	      if( byte != 0 )
 		{
 		  /*
-		  if( byte & 0x80 ) ppix[0] |= bitmask;
-		  if( byte & 0x40 ) ppix[1] |= bitmask;
-		  if( byte & 0x20 ) ppix[2] |= bitmask;
-		  if( byte & 0x10 ) ppix[3] |= bitmask;
-		  if( byte & 0x08 ) ppix[4] |= bitmask;
-		  if( byte & 0x04 ) ppix[5] |= bitmask;
-		  if( byte & 0x02 ) ppix[6] |= bitmask;
-		  if( byte & 0x01 ) ppix[7] |= bitmask;
-		  */
-		  // Fill ppix in reverse
-		  if( byte & 0x80 ) ppix[7] |= bitmask;
-		  if( byte & 0x40 ) ppix[6] |= bitmask;
-		  if( byte & 0x20 ) ppix[5] |= bitmask;
-		  if( byte & 0x10 ) ppix[4] |= bitmask;
-		  if( byte & 0x08 ) ppix[3] |= bitmask;
-		  if( byte & 0x04 ) ppix[2] |= bitmask;
-		  if( byte & 0x02 ) ppix[1] |= bitmask;
 		  if( byte & 0x01 ) ppix[0] |= bitmask;
+		  if( byte & 0x02 ) ppix[1] |= bitmask;
+		  if( byte & 0x04 ) ppix[2] |= bitmask;
+		  if( byte & 0x08 ) ppix[3] |= bitmask;
+		  if( byte & 0x10 ) ppix[4] |= bitmask;
+		  if( byte & 0x20 ) ppix[5] |= bitmask;
+		  if( byte & 0x40 ) ppix[6] |= bitmask;
+		  if( byte & 0x80 ) ppix[7] |= bitmask;
+		  */
+		  // Faster ?
+		  if( byte & 0x01 ) *ppix |= bitmask;
+		  ++ppix;
+		  if( byte & 0x02 ) *ppix |= bitmask;
+		  ++ppix;
+		  if( byte & 0x04 ) *ppix |= bitmask;
+		  ++ppix;
+		  if( byte & 0x08 ) *ppix |= bitmask;
+		  ++ppix;
+		  if( byte & 0x10 ) *ppix |= bitmask;
+		  ++ppix;
+		  if( byte & 0x20 ) *ppix |= bitmask;
+		  ++ppix;
+		  if( byte & 0x40 ) *ppix |= bitmask;
+		  ++ppix;
+		  if( byte & 0x80 ) *ppix |= bitmask;
+		  ++ppix;
 		}
-	      ppix += 8;
+	      //ppix += 8;
 	      ++praw; // Next raw byte
 	    }
 	  bitmask >>= 1;
@@ -623,26 +631,34 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
 		  if( byte != 0 )
 		    {
 		      /*
-		      if( byte & 0x80 ) ppix[0] |= bitmask;
-		      if( byte & 0x40 ) ppix[1] |= bitmask;
-		      if( byte & 0x20 ) ppix[2] |= bitmask;
-		      if( byte & 0x10 ) ppix[3] |= bitmask;
-		      if( byte & 0x08 ) ppix[4] |= bitmask;
-		      if( byte & 0x04 ) ppix[5] |= bitmask;
-		      if( byte & 0x02 ) ppix[6] |= bitmask;
-		      if( byte & 0x01 ) ppix[7] |= bitmask;
-		      */
-		      // Fill ppix in reverse
-		      if( byte & 0x80 ) ppix[7] |= bitmask;
-		      if( byte & 0x40 ) ppix[6] |= bitmask;
-		      if( byte & 0x20 ) ppix[5] |= bitmask;
-		      if( byte & 0x10 ) ppix[4] |= bitmask;
-		      if( byte & 0x08 ) ppix[3] |= bitmask;
-		      if( byte & 0x04 ) ppix[2] |= bitmask;
-		      if( byte & 0x02 ) ppix[1] |= bitmask;
 		      if( byte & 0x01 ) ppix[0] |= bitmask;
+		      if( byte & 0x02 ) ppix[1] |= bitmask;
+		      if( byte & 0x04 ) ppix[2] |= bitmask;
+		      if( byte & 0x08 ) ppix[3] |= bitmask;
+		      if( byte & 0x10 ) ppix[4] |= bitmask;
+		      if( byte & 0x20 ) ppix[5] |= bitmask;
+		      if( byte & 0x40 ) ppix[6] |= bitmask;
+		      if( byte & 0x80 ) ppix[7] |= bitmask;
+		      */
+		      // Faster ?
+		      if( byte & 0x01 ) *ppix |= bitmask;
+		      ++ppix;
+		      if( byte & 0x02 ) *ppix |= bitmask;
+		      ++ppix;
+		      if( byte & 0x04 ) *ppix |= bitmask;
+		      ++ppix;
+		      if( byte & 0x08 ) *ppix |= bitmask;
+		      ++ppix;
+		      if( byte & 0x10 ) *ppix |= bitmask;
+		      ++ppix;
+		      if( byte & 0x20 ) *ppix |= bitmask;
+		      ++ppix;
+		      if( byte & 0x40 ) *ppix |= bitmask;
+		      ++ppix;
+		      if( byte & 0x80 ) *ppix |= bitmask;
+		      ++ppix;
 		    }
-		  ppix += 8;
+		  //ppix += 8;
 		  ++praw; // Next raw byte
 		}
 	      bitmask >>= 1;
@@ -670,11 +686,11 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
 	  int pixval;
 	  for( int i=0; i<MPX_PIXELS; ++i )
 	    {
-	      pixval     = pixels[i];
+	      pixval = pixels[i];
 	      // Lower 12 bits
-	      pixels[i]  = _mpx3Rx12BitsLut[pixval & 0xFFF];
+	      pixels[i] = _mpx3Rx12BitsLut[pixval & 0xFFF];
 	      // Upper 12 bits
-	      pixval     = (pixval >> 12) & 0xFFF;
+	      pixval = (pixval >> 12) & 0xFFF;
 	      pixels[i] |= (_mpx3Rx12BitsLut[pixval] << 12);
 	    }
 	}
