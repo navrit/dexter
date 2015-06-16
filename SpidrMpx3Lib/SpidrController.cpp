@@ -605,15 +605,15 @@ bool SpidrController::setPixelConfigMpx3( int dev_nr, bool with_replies )
       //if( !with_replies ) cmd |= CMD_NOREPLY;
 
       // Convert the data in _pixelConfig row-by-row into the format
-      // as required by the Medipix device
+      // required by the Medipix device
       for( row=0; row<256; ++row )
 	{
 	  // Next row
 	  pconfig = &_pixelConfig[row][0];
 	  // Refill pixelrow[]
-	  prow = pixelrow;
 	  memset( static_cast<void *> (pixelrow), 0, sizeof(pixelrow) );
 	  // 12 bits of configuration data, starting from MSB
+	  prow = pixelrow;
 	  for( pixelbit=hi_bit; pixelbit>=lo_bit; --pixelbit )
 	    {
 	      pixelbitmask = (1 << pixelbit);
@@ -621,12 +621,12 @@ bool SpidrController::setPixelConfigMpx3( int dev_nr, bool with_replies )
 		{
 		  // Fill a byte
 		  byte = 0;
-		  bitmask = 0x80;
+		  bitmask = 0x01;
 		  for( bit=0; bit<8; ++bit )
 		    {
 		      if( pconfig[column + bit] & pixelbitmask )
 			byte |= bitmask;
-		      bitmask >>= 1;
+		      bitmask <<= 1;
 		    }
 		  *prow = byte;
 		  ++prow;
@@ -721,15 +721,15 @@ bool SpidrController::setPixelConfigMpx3rx( int dev_nr, bool with_replies )
   //if( !with_replies ) cmd |= CMD_NOREPLY;
 
   // Convert the data in _pixelConfig row-by-row into the format
-  // as required by the Medipix device
+  // required by the Medipix device
   for( row=0; row<256; ++row )
     {
       // Next row
       pconfig = &_pixelConfig[row][0];
       // Refill pixelrow[]
-      prow = pixelrow;
       memset( static_cast<void *> (pixelrow), 0, sizeof(pixelrow) );
       // 12 bits of configuration data, starting from MSB
+      prow = pixelrow;
       for( pixelbit=11; pixelbit>=0; --pixelbit )
 	{
 	  pixelbitmask = (1 << pixelbit);
@@ -737,13 +737,12 @@ bool SpidrController::setPixelConfigMpx3rx( int dev_nr, bool with_replies )
 	    {
 	      // Fill a byte
 	      byte = 0;
-	      bitmask = 0x80;
-	      //for( bit=0; bit<8; ++bit )
-	      for( bit=7; bit>=0; --bit ) // JOHN. Henk this needs to be reverse too.
+	      bitmask = 0x01;
+	      for( bit=0; bit<8; ++bit )
 		{
 		  if( pconfig[column + bit] & pixelbitmask )
 		    byte |= bitmask;
-		  bitmask >>= 1;
+		  bitmask <<= 1;
 		}
 	      *prow = byte;
 	      ++prow;
