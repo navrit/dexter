@@ -102,24 +102,24 @@ class MY_LIB_API SpidrController
   void resetPixelConfig        ( );
   // Medipix3.1
   bool configPixelMpx3         ( int  x,
-				 int  y,
-				 int  configtha,
-				 int  configthb,
-				 bool configtha4 = false,
-				 bool configthb4 = false,
-				 bool gainmode = false,
-				 bool testbit = false );
+                                 int  y,
+                                 int  configtha,
+                                 int  configthb,
+                                 bool configtha4 = false,
+                                 bool configthb4 = false,
+                                 bool gainmode = false,
+                                 bool testbit = false );
   bool setPixelMaskMpx3        ( int  x = ALL_PIXELS, int y = ALL_PIXELS,
-				 bool b = true );
+                                 bool b = true );
   bool setPixelConfigMpx3      ( int dev_nr, bool with_replies = true );
   // Medipix3RX
   bool configPixelMpx3rx       ( int  x,
-				 int  y,
-				 int  discl,
-				 int  disch,
-				 bool testbit = false );
+                                 int  y,
+                                 int  discl,
+                                 int  disch,
+                                 bool testbit = false );
   bool setPixelMaskMpx3rx      ( int  x = ALL_PIXELS, int y = ALL_PIXELS,
-				 bool b = true );
+                                 bool b = true );
   bool setPixelConfigMpx3rx   ( int dev_nr, bool with_replies = true );
   unsigned int *pixelConfig   ( );
 
@@ -129,7 +129,7 @@ class MY_LIB_API SpidrController
   bool setDiscCsmSpm           ( int  dev_nr, int  disc );
   bool setInternalTestPulse    ( int  dev_nr, bool internal );
   bool setPixelDepth           ( int  dev_nr, int  bits,
-				 bool two_counter_readout = false );
+                                 bool two_counter_readout = false );
   bool setEqThreshH            ( int  dev_nr, bool equalize );
   bool setColourMode           ( int  dev_nr, bool colour );
   bool setCsmSpm               ( int  dev_nr, int  csm );
@@ -155,15 +155,15 @@ class MY_LIB_API SpidrController
 
   // Shutter trigger
   bool setShutterTriggerConfig ( int  trig_mode,
-				 int  trig_period_us,
-				 int  trig_freq_mhz,
-				 int  nr_of_triggers,
-				 int  trig_pulse_count = 0 );
+                                 int  trig_period_us,
+                                 int  trig_freq_mhz,
+                                 int  nr_of_triggers,
+                                 int  trig_pulse_count = 0 );
   bool getShutterTriggerConfig ( int *trig_mode,
-				 int *trig_period_us,
-				 int *trig_freq_mhz,
-				 int *nr_of_triggers,
-				 int *trig_pulse_count );
+                                 int *trig_period_us,
+                                 int *trig_freq_mhz,
+                                 int *nr_of_triggers,
+                                 int *trig_pulse_count );
   bool startAutoTrigger        ( );
   bool stopAutoTrigger         ( );
   bool triggerSingleReadout    ( int counterl_or_h = 0 );
@@ -198,7 +198,7 @@ class MY_LIB_API SpidrController
   bool requestGetInts       ( int  cmd, int dev_nr,
                               int  expected_ints, int *datawords );
   bool requestGetIntAndBytes( int  cmd, int dev_nr, int *dataword,
-			      int  expected_bytes, unsigned char *bytes );
+                              int  expected_bytes, unsigned char *bytes );
   bool requestSetInt        ( int  cmd, int dev_nr, int dataword );
   bool requestSetInts       ( int  cmd, int dev_nr,
                               int  nwords, int *datawords );
