@@ -113,8 +113,8 @@ DISTFILES += \
     config/mpx3.json
 
 
-    copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/\" &
-    copydata.commands += $(COPY_DIR)  \"$$PWD/shaders\" \"$$DESTDIR/\" &
+    copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/config\" &
+    copydata.commands += $(COPY_DIR)  \"$$PWD/shaders\" \"$$DESTDIR/shaders\" &
     first.depends = $(first) copydata
     export(first.depends)
     export(copydata.commands)

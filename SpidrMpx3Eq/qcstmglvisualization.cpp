@@ -274,6 +274,8 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
   connect(this, SIGNAL(change_hover_text(QString)), ui->mouseOverLabel, SLOT(setText(QString)));
   //connect(ui->fullRangeRadio, SIGNAL(pressed()), ui->histPlot, SLOT(set_scale_full()));
   connect(ui->histPlot, SIGNAL(new_range_dragged(QCPRange)), this, SLOT(on_new_range_dragged(QCPRange)));
+
+  emit mode_changed(ui->summingCheckbox->isChecked());
 }
 
 void QCstmGLVisualization::changeBinCount(int count){
