@@ -82,8 +82,8 @@ public: //events
   void wheelEvent(QWheelEvent *event);
   void mouseMoveEvent(QMouseEvent *event);
   void keyPressEvent(QKeyEvent *event);
-  void mousePressEvent(QMouseEvent *event){if(event->buttons()== Qt::LeftButton){this->setCursor(Qt::ClosedHandCursor); clickedLocation = event->pos();clicked = true;}}
-  void mouseReleaseEvent(QMouseEvent */*event*/){this->setCursor(Qt::ArrowCursor); clicked = false;}
+  void mousePressEvent(QMouseEvent *event);//{if(event->buttons()== Qt::LeftButton){this->setCursor(Qt::ClosedHandCursor); clickedLocation = event->pos();clicked = true;}}
+  void mouseReleaseEvent(QMouseEvent */*event*/);//{this->setCursor(Qt::ArrowCursor); clicked = false;}
   void contextMenuEvent(QContextMenuEvent *);
   int getNx(){return nx;}
   int getNy(){return ny;}

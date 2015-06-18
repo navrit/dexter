@@ -132,6 +132,7 @@ void QCstmGLVisualization::on_data_taking_finished(int /*nFramesTaken*/) {
 
       // Other corrections
       if( ui->deadpixelsinterpolationCheckbox->isChecked() ) _mpx3gui->getDataset()->applyDeadPixelsInterpolation();
+      if( ui->highinterpolationCheckbox->isChecked() ) _mpx3gui->getDataset()->applyHighPixelsInterpolation();
 
       on_reload_all_layers();
 

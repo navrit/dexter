@@ -346,6 +346,18 @@ void QCstmGLPlot::wheelEvent(QWheelEvent *event){
   update();
 }
 
+void QCstmGLPlot::mousePressEvent(QMouseEvent *event){
+	if(event->buttons()== Qt::LeftButton){
+		this->setCursor(Qt::ClosedHandCursor);
+		clickedLocation = event->pos();
+		clicked = true;
+	}
+}
+void QCstmGLPlot::mouseReleaseEvent(QMouseEvent */*event*/){
+	this->setCursor(Qt::ArrowCursor);
+	clicked = false;
+}
+
 void QCstmGLPlot::keyPressEvent(QKeyEvent *event){//Doesn't really work that well for controls.
   //Can't seem to handle multiple presses at once and stutters quite badly.
   const GLfloat speed = zoom*0.05;

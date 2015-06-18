@@ -22,7 +22,7 @@ Dataset::~Dataset()
 	clear();
 }
 
-void Dataset::loadCorrection(QByteArray serialized){
+void Dataset::loadCorrection(QByteArray serialized) {
 	delete correction;
 	correction  = new Dataset(0,0,0);
 	correction->fromByteArray(serialized);//TODO: add error checking on correction to see if it is relevant to the data.
@@ -116,7 +116,7 @@ void Dataset::applyHighPixelsInterpolation(){
 
 		}
 		mean /= getPixelsPerLayer();
-		cout << "mean = " << mean << endl;
+		cout << "[" << i << "]" << "mean = " << mean << endl;
 		for(int j = 0; j < getPixelsPerLayer(); j++) {
 			// skip the borders
 			if ( j < isize.width() || j > (isize.width()*isize.width() - isize.height()) || (j % isize.width()-1)==0 || (j % isize.width())==0 ) continue;
@@ -170,7 +170,19 @@ void Dataset::applyDeadPixelsInterpolation(){
 
 		}
 
+		//
+		/*
+		for( int j = 0 ; j < x() ; j++ ) {
+			for( int i = 0 ; i < x() ; i++ ) {
+
+
+			}
+		}
+		*/
+
+
 	}
+
 
 }
 

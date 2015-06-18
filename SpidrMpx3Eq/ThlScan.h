@@ -111,6 +111,9 @@ public:
 	void DumpRework(set<int> reworkSubset, int thl);
 	void DumpSet(set<int> reworkSubset, QString name);
 
+	void SetSetId(int si) { _setId = si; };
+	int GetSetId() { return _setId; };
+
 
 private:
 
@@ -130,6 +133,8 @@ private:
 	// pixelId, reactive thl
 	map<int, int> _pixelReactiveTHL;
 	set<int> _maskedSet;
+	// Holder for pixels ready.  Used at the begginging of the fine tunning procedure
+	set<int> _fineTunningPixelsEqualized;
 
 	int _nReactivePixels;
 	scan_type _scanType;
@@ -169,11 +174,13 @@ private:
 	//void UpdateChart(int setId, int thlValue);
 	void UpdateChart(int thlValue);
 	void UpdateChart(int setId, int thlValue);
+	void UpdateChartPixelsReady(int setId);
 	void UpdateHeatMap(int sizex, int sizey);
 	void on_stop_data_taking_thread();
 
 	signals:
 	void UpdateChartSignal(int setId, int thlValue);
+	void UpdateChartPixelsReadySignal(int setId);
 	void UpdateHeatMapSignal(int sizex, int sizey);
 	void fillText(QString);
 	void slideAndSpin(int, int);
