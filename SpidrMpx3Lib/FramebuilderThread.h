@@ -33,40 +33,39 @@ class FramebuilderThread : public QThread
 		    QObject *parent = 0 );
   ~FramebuilderThread();
 
-  void stop();
-  void run();
-  void inputNotification();
-  void abortFrame();
-  void processFrame();
-  void writeFrameToFile();
-  void writeRawFrameToFile();
-  void writeDecodedFrameToFile();
-  bool waitForDecodedFrame( unsigned long timeout_ms = ULONG_MAX );
-  bool hasDecodedFrame() { return _hasDecodedFrame; }
-  int *decodedFrameData( int index, int *size, int *packets_lost = 0 );
-  void releaseDecodedFrame();
+  void   stop();
+  void   run();
+  void   inputNotification();
+  void   abortFrame();
+  void   processFrame();
+  void   writeFrameToFile();
+  void   writeRawFrameToFile();
+  void   writeDecodedFrameToFile();
+  bool   hasDecodedFrame( unsigned long timeout_ms = 0 );
+  int   *decodedFrameData( int index, int *size, int *packets_lost = 0 );
+  void   releaseDecodedFrame();
   i64    decodedFrameTimestamp();
   double decodedFrameTimestampDouble();
   i64    decodedFrameTimestampSpidr();
 
-  void setAddrInfo( int *ipaddr, int *ports );
-  void setDeviceIdsAndTypes( int *ids, int *types );
-  void setPixelDepth( int nbits );
-  void setDecodeFrames( bool decode );
-  void setCompressFrames( bool compress );
-  void setFlush( bool flush ) { _flush = flush; }
+  void   setAddrInfo( int *ipaddr, int *ports );
+  void   setDeviceIdsAndTypes( int *ids, int *types );
+  void   setPixelDepth( int nbits );
+  void   setDecodeFrames( bool decode );
+  void   setCompressFrames( bool compress );
+  void   setFlush( bool flush ) { _flush = flush; }
 
-  void setCallbackId( int id ) { _id = id; }
-  void setCallback( CallbackFunc cbf ) { _callbackFunc = cbf; }
+  void   setCallbackId( int id ) { _id = id; }
+  void   setCallback( CallbackFunc cbf ) { _callbackFunc = cbf; }
 
-  bool openFile( std::string filename, bool overwrite = false );
-  bool closeFile();
+  bool   openFile( std::string filename, bool overwrite = false );
+  bool   closeFile();
 
-  int  framesReceived() { return _framesReceived; }
-  int  framesWritten()  { return _framesWritten; }
-  int  framesProcessed(){ return _framesProcessed; }
-  int  packetsLost()    { return _packetsLostTotal; }
-  int  packetsLostFrame();
+  int    framesReceived() { return _framesReceived; }
+  int    framesWritten()  { return _framesWritten; }
+  int    framesProcessed(){ return _framesProcessed; }
+  int    packetsLost()    { return _packetsLostTotal; }
+  int    packetsLostFrame();
 
   std::string errString();
   void clearErrString() { _errString.clear(); };

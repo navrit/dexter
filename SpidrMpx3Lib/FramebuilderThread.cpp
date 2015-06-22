@@ -347,8 +347,11 @@ void FramebuilderThread::writeDecodedFrameToFile()
 
 // ----------------------------------------------------------------------------
 
-bool FramebuilderThread::waitForDecodedFrame( unsigned long timeout_ms )
+bool FramebuilderThread::hasDecodedFrame( unsigned long timeout_ms )
 {
+  if( timeout_ms == 0 ) return _hasDecodedFrame;
+
+  // For timeout_ms > 0
   _mutex.lock();
   if( !_hasDecodedFrame )
     _frameAvailableCondition.wait( &_mutex, timeout_ms );
@@ -358,7 +361,9 @@ bool FramebuilderThread::waitForDecodedFrame( unsigned long timeout_ms )
 
 // ----------------------------------------------------------------------------
 
-int *FramebuilderThread::decodedFrameData( int index, int *size, int *packets_lost )
+int *FramebuilderThread::decodedFrameData( int  index,
+					   int *size,
+					   int *packets_lost )
 {
   if( _hasDecodedFrame )
     *size = _frameSz[index];
@@ -576,35 +581,16 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
 	      byte = *praw;
 	      if( byte != 0 )
 		{
-		  /*
-		  if( byte & 0x01 ) ppix[0] |= bitmask;
-		  if( byte & 0x02 ) ppix[1] |= bitmask;
-		  if( byte & 0x04 ) ppix[2] |= bitmask;
-		  if( byte & 0x08 ) ppix[3] |= bitmask;
-		  if( byte & 0x10 ) ppix[4] |= bitmask;
-		  if( byte & 0x20 ) ppix[5] |= bitmask;
-		  if( byte & 0x40 ) ppix[6] |= bitmask;
-		  if( byte & 0x80 ) ppix[7] |= bitmask;
-		  */
-		  // Faster ?
-		  if( byte & 0x01 ) *ppix |= bitmask;
-		  ++ppix;
-		  if( byte & 0x02 ) *ppix |= bitmask;
-		  ++ppix;
-		  if( byte & 0x04 ) *ppix |= bitmask;
-		  ++ppix;
-		  if( byte & 0x08 ) *ppix |= bitmask;
-		  ++ppix;
-		  if( byte & 0x10 ) *ppix |= bitmask;
-		  ++ppix;
-		  if( byte & 0x20 ) *ppix |= bitmask;
-		  ++ppix;
-		  if( byte & 0x40 ) *ppix |= bitmask;
-		  ++ppix;
-		  if( byte & 0x80 ) *ppix |= bitmask;
-		  ++ppix;
+		  if( byte & 0x80 ) ppix[0] |= bitmask;
+		  if( byte & 0x40 ) ppix[1] |= bitmask;
+		  if( byte & 0x20 ) ppix[2] |= bitmask;
+		  if( byte & 0x10 ) ppix[3] |= bitmask;
+		  if( byte & 0x08 ) ppix[4] |= bitmask;
+		  if( byte & 0x04 ) ppix[5] |= bitmask;
+		  if( byte & 0x02 ) ppix[6] |= bitmask;
+		  if( byte & 0x01 ) ppix[7] |= bitmask;
 		}
-	      //ppix += 8;
+	      ppix += 8;
 	      ++praw; // Next raw byte
 	    }
 	  bitmask >>= 1;
@@ -630,35 +616,16 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
 		  byte = *praw;
 		  if( byte != 0 )
 		    {
-		      /*
-		      if( byte & 0x01 ) ppix[0] |= bitmask;
-		      if( byte & 0x02 ) ppix[1] |= bitmask;
-		      if( byte & 0x04 ) ppix[2] |= bitmask;
-		      if( byte & 0x08 ) ppix[3] |= bitmask;
-		      if( byte & 0x10 ) ppix[4] |= bitmask;
-		      if( byte & 0x20 ) ppix[5] |= bitmask;
-		      if( byte & 0x40 ) ppix[6] |= bitmask;
-		      if( byte & 0x80 ) ppix[7] |= bitmask;
-		      */
-		      // Faster ?
-		      if( byte & 0x01 ) *ppix |= bitmask;
-		      ++ppix;
-		      if( byte & 0x02 ) *ppix |= bitmask;
-		      ++ppix;
-		      if( byte & 0x04 ) *ppix |= bitmask;
-		      ++ppix;
-		      if( byte & 0x08 ) *ppix |= bitmask;
-		      ++ppix;
-		      if( byte & 0x10 ) *ppix |= bitmask;
-		      ++ppix;
-		      if( byte & 0x20 ) *ppix |= bitmask;
-		      ++ppix;
-		      if( byte & 0x40 ) *ppix |= bitmask;
-		      ++ppix;
-		      if( byte & 0x80 ) *ppix |= bitmask;
-		      ++ppix;
+		      if( byte & 0x80 ) ppix[0] |= bitmask;
+		      if( byte & 0x40 ) ppix[1] |= bitmask;
+		      if( byte & 0x20 ) ppix[2] |= bitmask;
+		      if( byte & 0x10 ) ppix[3] |= bitmask;
+		      if( byte & 0x08 ) ppix[4] |= bitmask;
+		      if( byte & 0x04 ) ppix[5] |= bitmask;
+		      if( byte & 0x02 ) ppix[6] |= bitmask;
+		      if( byte & 0x01 ) ppix[7] |= bitmask;
 		    }
-		  //ppix += 8;
+		  ppix += 8;
 		  ++praw; // Next raw byte
 		}
 	      bitmask >>= 1;
@@ -686,11 +653,11 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
 	  int pixval;
 	  for( int i=0; i<MPX_PIXELS; ++i )
 	    {
-	      pixval = pixels[i];
+	      pixval     = pixels[i];
 	      // Lower 12 bits
-	      pixels[i] = _mpx3Rx12BitsLut[pixval & 0xFFF];
+	      pixels[i]  = _mpx3Rx12BitsLut[pixval & 0xFFF];
 	      // Upper 12 bits
-	      pixval = (pixval >> 12) & 0xFFF;
+	      pixval     = (pixval >> 12) & 0xFFF;
 	      pixels[i] |= (_mpx3Rx12BitsLut[pixval] << 12);
 	    }
 	}
