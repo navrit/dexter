@@ -92,8 +92,8 @@ public: //events
   int getNy(){return ny;}
   void setAlphaBlending(bool setOn);//!< toggles alpha blending. When on, out-of-bounds pixels will become transparant.
 public slots:
-  void setSize(int nx, int ny);
-  void setSize(QPoint size){this->setSize(size.x(), size.y());}
+  //void setSize(int nx, int ny);
+  //void setSize(QPoint size){this->setSize(size.x(), size.y());}
   void readData(Dataset &data);//!< (Re-)reads the entire Dataset.  Should be optimized to only grab the active threshold.
   //void setData(QVector<int*> layers);
   void setActive(int layer); //!< Sets the active layer to display

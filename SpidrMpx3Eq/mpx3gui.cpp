@@ -71,6 +71,10 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
   //Config & monitoring
   _ui->CnMWidget->SetMpx3GUI(this);
+
+  // CT
+  _ui->ctTab->SetMpx3GUI( this );
+
   // Read the configuration
   QString configFile = "./config/mpx3.json";
   if ( ! config->fromJsonFile( configFile ) ) {
@@ -87,6 +91,12 @@ Mpx3GUI::~Mpx3GUI()
   delete config;
   delete workingSet;
   delete _ui;
+}
+
+void Mpx3GUI::resize(int x, int y) {
+	 getDataset()->resize(x, y);
+	 QRectF bbox = getDataset()->computeBoundingBox();
+	 emit sizeChanged(bbox.width() * x, bbox.height() * y); // goes to qcstmglplot
 }
 
 void Mpx3GUI::addLayer(int *data){

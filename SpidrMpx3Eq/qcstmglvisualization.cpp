@@ -249,6 +249,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 	changeBinCount(ui->binCountSpinner->value());
 
 	connect(_mpx3gui, SIGNAL(ConnectionStatusChanged(bool)), ui->startButton, SLOT(setEnabled(bool))); //enable the button on connection
+	connect(_mpx3gui, SIGNAL(sizeChanged(int, int)), ui->glPlot, SLOT(setSize(int, int)));
 	connect(ui->startButton, SIGNAL(clicked(bool)), this, SLOT(StartDataTaking()));
 	connect(this, SIGNAL(mode_changed(bool)), _mpx3gui, SLOT(set_summing(bool)));
 	connect(_mpx3gui, SIGNAL(summing_set(bool)), ui->summingCheckbox, SLOT(setChecked(bool)));

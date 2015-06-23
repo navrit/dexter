@@ -81,6 +81,7 @@ public:
 	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
 	void addFrame(int *frame, int index, int layer);
 	Gradient* getGradient(int index);
+	void resize(int x, int y);
 	//histogram* getHist(int index){return hists[index];}
 
 	QPoint  getSize();
@@ -107,6 +108,7 @@ signals:
 	void summing_set(bool);
 	void reload_layer(int layer);
 	void reload_all_layers();
+	void sizeChanged(int, int);
 
 	public slots:
 	void addLayer(int* data);

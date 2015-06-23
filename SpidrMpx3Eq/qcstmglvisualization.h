@@ -137,6 +137,7 @@ public slots:
   void busy_drawing();
   void mode_changed(bool);
 
+
 };
 
 #endif // QCSTMGLVISUALIZATION_H

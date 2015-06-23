@@ -28,6 +28,7 @@ private:
 public slots:
   void setGradient(Gradient* gradient);
   void setSize(QPoint size);
+  void setSize(int x, int y);
   void set_range(QCPRange range);
  public:
   QCstmGLPlot *getPlot();

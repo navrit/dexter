@@ -123,6 +123,7 @@ void setPort(int newVal){
 void setColourMode(bool mode){
 	if(mode != colourMode){
 		colourMode =mode; emit colourModeChanged(mode);
+
 		//updateColourMode();
 	}
 	SendConfiguration();

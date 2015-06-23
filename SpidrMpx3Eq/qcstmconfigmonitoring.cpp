@@ -170,7 +170,7 @@ void QCstmConfigMonitoring::on_ColourModeCheckBox_toggled(bool checked)
 {
   _mpx3gui->clear_data();
   if(checked)
-      _mpx3gui->getDataset()->resize(_mpx3gui->getDataset()->x()/2, _mpx3gui->getDataset()->y()/2);
+      _mpx3gui->resize(_mpx3gui->getDataset()->x()/2, _mpx3gui->getDataset()->y()/2);
   else
-     _mpx3gui->getDataset()->resize(_mpx3gui->getDataset()->x()*2, _mpx3gui->getDataset()->y()*2);
+     _mpx3gui->resize(_mpx3gui->getDataset()->x()*2, _mpx3gui->getDataset()->y()*2);
 }

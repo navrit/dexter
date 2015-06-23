@@ -10,7 +10,7 @@ HeatmapDisplay::HeatmapDisplay(QWidget *parent) :
   ui->NRuler->setMinimumSize(1,1);
   ui->gradient->setMinimumSize(1,1);
   setupSignalsAndSlots();
-  ui->heatmap->setSize(512, 512);
+  //ui->heatmap->setSize(512, 512);
   ui->NRuler->setOrientation(QCstmRuler::orientationTop);
   ui->NRuler->setMargin(25);
 }
@@ -37,7 +37,12 @@ void HeatmapDisplay::setGradient(Gradient *gradient){
 }
 
 void HeatmapDisplay::setSize(QPoint size){
-  ui->heatmap->setSize(size.x(), size.y());
+	setSize(size.x(), size.y());
+}
+void HeatmapDisplay::setSize(int x, int y){
+  //ui->heatmap->setSize(x, y);
+  ui->NRuler->set_cutoff(x,y);
+  ui->WRuler->set_cutoff(x,y);
 }
 
 void HeatmapDisplay::set_range(QCPRange range){

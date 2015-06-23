@@ -172,11 +172,13 @@ void QCstmGLPlot::setAlphaBlending(bool setOn){
 	this->update();
 }
 
+/*
 void QCstmGLPlot::setSize(int nx, int ny){
 	this->nx=nx; this->ny = ny;
-	emit size_changed(QPoint(nx, ny));
+	//emit size_changed(QPoint(nx, ny));
 	recomputeBounds();
 }
+*/
 
 void QCstmGLPlot::readData(Dataset &data){//TODO: only update textures.
 	if(!initialized)

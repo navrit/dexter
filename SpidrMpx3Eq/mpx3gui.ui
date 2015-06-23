@@ -59,6 +59,11 @@
         <string>Voxel</string>
        </attribute>
       </widget>
+      <widget class="QCstmCT" name="ctTab">
+       <attribute name="title">
+        <string>CT</string>
+       </attribute>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -236,6 +241,12 @@
    <class>QCstmConfigMonitoring</class>
    <extends>QWidget</extends>
    <header>qcstmconfigmonitoring.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QCstmCT</class>
+   <extends>QWidget</extends>
+   <header>qcstmct.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
