@@ -74,7 +74,7 @@ int main( int argc, char *argv[] )
 	     << "): " << dac_value << endl;
     }
 
-#define DO_DAC_SCAN
+//#define DO_DAC_SCAN
 #ifdef DO_DAC_SCAN
   // Perform a DAC scan (on a single DAC..), displaying the ADC values
   int adc_value;
@@ -96,6 +96,13 @@ int main( int argc, char *argv[] )
     }
   return 0;
 #endif
+
+  int depth = 6;
+  if( !spidr.setPixelDepth( dev_nr, depth, true ) )
+  //if( !spidr.setPixelDepth( dev_nr, depth, false ) )
+    cout << "### setPixelDepth: " << spidr.errorString() << endl;
+  else
+    cout << "setPixelDepth: " << depth << endl;
 
   // Create a (new) pixel configuration (for a Medipix3 device)
   //dev_nr = 0;
@@ -138,11 +145,11 @@ int main( int argc, char *argv[] )
     }
 
   // Configure the trigger, then generate some triggers
-  // (there is no SpidrDaq object, so look at the frames e.g. with SpidrTV
-  int trig_mode      = 4;
+  // (there is no SpidrDaq object here, so look at the frames e.g. with SpidrTV
+  int trig_mode      = SHUTTERMODE_AUTO;
   int trig_period_us = 100000; // 100 ms
   int trig_freq_hz   = 3;
-  int nr_of_triggers = 2;
+  int nr_of_triggers = 1;
   spidr.setShutterTriggerConfig( trig_mode, trig_period_us,
 			  trig_freq_hz, nr_of_triggers );
   spidr.clearBusy();
@@ -150,7 +157,7 @@ int main( int argc, char *argv[] )
     {
       cout << "Auto-trig " << i << endl;
       spidr.startAutoTrigger();
-      Sleep( 2000 );
+      Sleep( 500 );
     }
 
   return 0;

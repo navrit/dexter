@@ -819,7 +819,7 @@ bool SpidrController::setPixelDepth( int dev_nr, int bits,
   if( bits == 1 )
     pixelcounterdepth_id = 0;   // 1-bit
   else if( bits == 4 || bits == 6 )
-    pixelcounterdepth_id = 1;   // 4-bit or 6-bit (RX)
+    pixelcounterdepth_id = 1;   // 4-bit (MPX3) or 6-bit (MPX3RX)
   else if( bits == 24 )
     pixelcounterdepth_id = 3;   // 24-bit
 
