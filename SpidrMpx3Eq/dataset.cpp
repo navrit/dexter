@@ -96,6 +96,59 @@ QByteArray Dataset::toByteArray(){
 	return ret;
 }
 
+void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
+
+	QList<int> keys = m_thresholdsToIndices.keys();
+
+	QSize isize = QSize(computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y());
+
+
+	// Region of interest
+	QRectF RoI;
+	RoI.setRect(pixel_init.x(), pixel_init.y(), pixel_end.x() - pixel_init.x(),  pixel_end.y() - pixel_init.y() );
+
+	cout << "-- Basic stats -- ";
+	for(int i = 0; i < keys.length(); i++) {
+		cout << "\t" << keys[i];
+	}
+	cout << endl;
+
+	// Mean
+	cout << "   mean\t\t";
+	for(int i = 0; i < keys.length(); i++) {
+
+		int* currentLayer = getLayer(keys[i]);
+
+		// Calc mean on the interesting pixels
+		double mean = 0.;
+		int nMean = 0.;
+		for(int j = 0; j < getPixelsPerLayer(); j++) {
+			// See if the pixel is inside the region
+			QPointF pix = XtoXY(j, isize.width());
+			if ( RoI.contains( pix ) ) {
+				mean += currentLayer[j];
+				nMean++;
+			}
+		}
+		if(nMean != 0) mean /= nMean;
+
+		//cout.precision(1);
+		cout << "\t" << mean;
+
+	}
+
+	cout << endl;
+
+}
+
+bool IsInsideBox() {
+
+}
+
+QPointF Dataset::XtoXY(int X, int dimX){
+	return QPointF(X % dimX, X/dimX);
+}
+
 void Dataset::applyHighPixelsInterpolation(){
 
 	QList<int> keys = m_thresholdsToIndices.keys();
@@ -178,7 +231,7 @@ void Dataset::applyDeadPixelsInterpolation(){
 
 			}
 		}
-		*/
+		 */
 
 
 	}

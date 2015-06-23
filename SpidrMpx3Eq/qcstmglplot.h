@@ -57,7 +57,10 @@ public:
   GLint offsetLoc, zoomLoc, layerLoc, aspectRatioLoc, clampLoc, texLoc, gradientLoc; //uniform binding locations.
   GLint offsetAttributeLoc, squareLoc, textureCoordsLoc, orientationLoc;//Attribute binding locations.
   QPoint clickedLocation;
+  QPoint clickReleaseLocation;
+
   bool clicked = false, gradientChanged = true;
+  bool rightClicked = false;
 
   void paintGL();
   void initializeGL();
@@ -83,8 +86,8 @@ public: //events
   void mouseMoveEvent(QMouseEvent *event);
   void keyPressEvent(QKeyEvent *event);
   void mousePressEvent(QMouseEvent *event);//{if(event->buttons()== Qt::LeftButton){this->setCursor(Qt::ClosedHandCursor); clickedLocation = event->pos();clicked = true;}}
-  void mouseReleaseEvent(QMouseEvent */*event*/);//{this->setCursor(Qt::ArrowCursor); clicked = false;}
-  void contextMenuEvent(QContextMenuEvent *);
+  void mouseReleaseEvent(QMouseEvent * event);//{this->setCursor(Qt::ArrowCursor); clicked = false;}
+  //void contextMenuEvent(QContextMenuEvent *);
   int getNx(){return nx;}
   int getNy(){return ny;}
   void setAlphaBlending(bool setOn);//!< toggles alpha blending. When on, out-of-bounds pixels will become transparant.
@@ -102,6 +105,7 @@ public slots:
  signals:
   void hovered_pixel_changed(QPoint); //!< The pixel hovered by the mouse-cursor has changed. Passes the coordinate of the hovered pixel.
   void pixel_selected(QPoint, QPoint);//!< A pixel has been clicked. Passes the coordinate in the chip and position of the relevant chip.
+  void region_selected(QPoint, QPoint, QPoint);//!< A right-button mouse drag selects a region. Passes the coordinate in the chip and position of the relevant chip.
   void offset_changed(QPointF offset);
   void zoom_changed(float zoom);
   void size_changed(QPoint size);

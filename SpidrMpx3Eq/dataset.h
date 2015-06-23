@@ -15,6 +15,7 @@
 #include <QByteArray>
 #include <QList>
 #include <QPoint>
+#include <QPointF>
 #include <QRect>
 #include <QMap>
 #include <stdint.h>
@@ -66,6 +67,8 @@ public:
   void applyCorrection();//!< Computes and applies the flat-field correction
   void applyDeadPixelsInterpolation();
   void applyHighPixelsInterpolation();
+  void calcBasicStats(QPoint pixel_init, QPoint pixel_end);
+  QPointF XtoXY(int X, int dimX);
   void setOrientation(QVector<int> orientations){for(int i = 0; i < orientations.length();i++)setOrientation(i, orientations[i]);}
   void setOrientation(int index, int orientation){m_frameOrientation[index] = orientation;}
   void setLayout(int index, QPoint layout){m_frameLayouts[index] = layout;}
