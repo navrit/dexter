@@ -49,9 +49,10 @@ int main( int argc, char *argv[] )
   for( dev_nr=0; dev_nr<4; ++dev_nr )
     {
       if( !spidr.getDeviceId( dev_nr, &id ) )
-	cout << "### DeviceID " << dev_nr << ": " << spidr.errorString() << endl;
+	cout << "### DeviceID " << dev_nr << ": "
+	     << spidr.errorString() << endl;
       else
-	cout << "DeviceID " << dev_nr << ": " << id << endl;
+	cout << "DeviceID " << dev_nr << hex << ": 0x" << id << dec << endl;
     }
 
   // Get the current acquisition-enable mask
@@ -63,14 +64,15 @@ int main( int argc, char *argv[] )
 
   dev_nr = 2;
 
-  int i, dac_value;
-  // Get the DAC values from Medipix device 0 and display them
-  for( i=0; i<MPX3_DAC_COUNT; ++i )
+  int i, dac_code, dac_value;
+  // Get the DAC values from Medipix3RX device 'dev_nr' and display them
+  for( i=0; i<MPX3RX_DAC_COUNT; ++i )
     {
-      if( !spidr.getDac( dev_nr, i+1, &dac_value ) )
+      dac_code = MPX3RX_DAC_TABLE[i].code;
+      if( !spidr.getDac( dev_nr, dac_code, &dac_value ) )
 	cout << "### DAC " << i << ": " << spidr.errorString() << endl;
       else
-	cout << "DAC " << i << " ("<< spidr.dacNameMpx3rx( i )
+	cout << "DAC " << i << " (" << spidr.dacNameMpx3rx( dac_code )
 	     << "): " << dac_value << endl;
     }
 
@@ -79,12 +81,12 @@ int main( int argc, char *argv[] )
   // Perform a DAC scan (on a single DAC..), displaying the ADC values
   int adc_value;
   //dev_nr = 0;
-  int dac_code = MPX3_DAC_DISC;
+  int dac_code = MPX3RX_DAC_DISC;
   if( !spidr.setSenseDac( dev_nr, dac_code ) )
     cout << "### SenseDAC " << dac_code << ": " << spidr.errorString() << endl;
   else
     cout << "SenseDAC " << dac_code << endl;
-  for( dac_value=0; dac_value<=spidr.dacMaxMpx3(dac_code); ++dac_value )
+  for( dac_value=0; dac_value<=spidr.dacMaxMpx3rx(dac_code); ++dac_value )
     {
       if( !spidr.setDac( dev_nr, dac_code, dac_value ) )
 	cout << "### setDac: " << spidr.errorString() << endl;
@@ -151,7 +153,7 @@ int main( int argc, char *argv[] )
   int trig_freq_hz   = 3;
   int nr_of_triggers = 1;
   spidr.setShutterTriggerConfig( trig_mode, trig_period_us,
-			  trig_freq_hz, nr_of_triggers );
+				 trig_freq_hz, nr_of_triggers );
   spidr.clearBusy();
   for( i=0; i<5; ++i )
     {

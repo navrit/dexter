@@ -6,7 +6,7 @@ using namespace std;
 #include "SpidrDaq.h"
 #include "mpx3defs.h"
 
-#define WITH_SPIDRDAQ
+#define USE_SPIDRDAQ
 
 int main( int argc, char *argv[] )
 {
@@ -28,9 +28,9 @@ int main( int argc, char *argv[] )
 	   << spidrcontrol.ipAddressString() <<  endl;
     }
 
-   int devnr = 2;
+  int devnr = 2;
 
-#ifdef WITH_SPIDRDAQ
+#ifdef USE_SPIDRDAQ
   SpidrDaq spidrdaq( &spidrcontrol );
   cout << "SpidrDaq: ";
   for( int i=0; i<4; ++i ) cout << spidrdaq.ipAddressString( i ) << " ";
@@ -79,12 +79,14 @@ int main( int argc, char *argv[] )
     }
 #endif
 
-  spidrcontrol.setPixelDepth( 2, 12 );
-#ifdef WITH_SPIDRDAQ
-  spidrdaq.setPixelDepth( 12 );
-  spidrdaq.setDecodeFrames( true );
+  int depth = 24;
+  //spidrcontrol.setPixelDepth( devnr, depth, false );
+  spidrcontrol.setPixelDepth( devnr, depth, false );
+#ifdef USE_SPIDRDAQ
+  spidrdaq.setPixelDepth( depth );
 #endif
-  spidrcontrol.setMaxPacketSize( 1024 );
+  //spidrcontrol.setMaxPacketSize( 1024 );
+  spidrcontrol.setMaxPacketSize( 8000 );
 
   /*
   cout << "Before" << endl;
@@ -94,7 +96,8 @@ int main( int argc, char *argv[] )
       spidrcontrol.getDac( devnr, dacnr, &dacval );
       cout << dacnr << ": " << dacval << endl;
     }
-  spidrcontrol.setDacsDflt( devnr );
+  spidrcontrol.writeDacs( devnr );
+  //spidrcontrol.writeDacsDflt( 0 );
   cout << "After" << endl;
   for( dacnr=0; dacnr<30; ++dacnr )
     {
@@ -103,39 +106,38 @@ int main( int argc, char *argv[] )
     }
   */
 
-  int trig_mode      = 4;      // Auto-trigger mode
+  int trig_mode      = SHUTTERMODE_AUTO; // Auto-trigger mode
   int trig_period_us = 100000; // 100 ms
   int trig_freq_hz   = 5;
   int nr_of_triggers = 2;
   int trig_pulse_count;
   spidrcontrol.setShutterTriggerConfig( trig_mode, trig_period_us,
-				 trig_freq_hz, nr_of_triggers );
+					trig_freq_hz, nr_of_triggers );
   spidrcontrol.clearBusy();
   int i;
-  for( i=0; i<3; ++i )
-    //for( i=0; i<1; ++i )
+  for( i=0; i<10; ++i )
     {
       cout << "Auto-trig " << i << endl;
       if( 1 )//i==4 )
 	{
-	  spidrcontrol.setDac( 2, 0, i*51 );
+	  spidrcontrol.setDac( devnr, 0, i*51 );
 	}
       spidrcontrol.startAutoTrigger();
       Sleep( 1000 );
-#ifdef WITH_SPIDRDAQ
+#ifdef USE_SPIDRDAQ
       cout << "DAQ frames: " << spidrdaq.framesCount() << ", lost "
 	   << spidrdaq.framesLostCount() << ", lost pkts "
 	   << spidrdaq.packetsLostCount() << endl;
 #endif
     }
 
-#ifdef WITH_SPIDRDAQ
+#ifdef USE_SPIDRDAQ
   cout << "DAQ frames: " << spidrdaq.framesCount() << " (file: "
        << spidrdaq.framesWrittenCount() << "), lost "
        << spidrdaq.framesLostCount() << ", lost pkts "
        << spidrdaq.packetsLostCount() << " (file: "
        << spidrdaq.packetsLostCountFile() << "), pkt size "
-       << spidrdaq.packetSize(0) << endl;
+       << spidrdaq.packetSize( 0 ) << endl;
   cout << "Lost/frame: ";
   for( i=0; i<8; ++i )
     cout << i << "=" << spidrdaq.packetsLostCountFrame( 0, i ) << ", ";
