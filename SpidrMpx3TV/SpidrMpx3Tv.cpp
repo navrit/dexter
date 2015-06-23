@@ -199,6 +199,7 @@ void SpidrMpx3Tv::onOff()
 	}
 
       _tbOn->setText( "Off" );
+      _cbCounterDepth->setEnabled( false );
 
       // Get the host adapter IP address SPIDR uses, to display
       int ipaddr;
@@ -275,7 +276,11 @@ void SpidrMpx3Tv::onOff()
 	_lePacketSize->setText( QString::number(size) );
 
       // Set the selected pixel counterdepth
-      _controller->setPixelDepth( 0, _counterDepth );
+      /* On the devices: to be done by the controlling application...
+      for( int i=0; i<4; ++i )
+	if( ids[i] != 0 )
+	  _controller->setPixelDepth( i, _counterDepth );
+      */
       _daq->setPixelDepth( _counterDepth );
 
       // Let SpidrDaq decode the frame data (otherwise it will simply absorb
@@ -296,6 +301,7 @@ void SpidrMpx3Tv::onOff()
       _controller = 0;
       this->statusBar()->clearMessage();
       _deviceCount = 0;
+      _cbCounterDepth->setEnabled( true );
     }
 }
 
@@ -312,9 +318,6 @@ void SpidrMpx3Tv::changeCounterDepth()
 
   if( _sbMinValue->value() > _sbMaxValue->value() )
     _sbMinValue->setValue( 0 );
-
-  if( _controller ) _controller->setPixelDepth( 0, _counterDepth );
-  if( _daq )        _daq->setPixelDepth( _counterDepth );
 }
 
 // ----------------------------------------------------------------------------
