@@ -1,3 +1,12 @@
+/**
+ * \class QCstmGLVisualization
+ *
+ * \brief Main visualization UI class.
+ *
+ * This class acts as a gatekeeper between the main Mpx3GUI class and the various plotting utilities, as well as a few relevant data-taking mechanisms.
+ */
+
+
 #ifndef QCSTMGLVISUALIZATION_H
 #define QCSTMGLVISUALIZATION_H
 
@@ -53,8 +62,11 @@ public:
 private:
   Ui::QCstmGLVisualization *ui;
   DataTakingThread * _dataTakingThread;
+  //!Gets the currently active threshold by looking at the value of the layerselector combobox.
   int getActiveThreshold();
+  //!Adds the specified threshold to the layerselector combobox
   void addThresholdToSelector(int threshold);
+  //!Adds the specified threshold if it didn't exist yet. Then switches to it.
   void setThreshold(int threshold);
 
 private slots:
@@ -69,8 +81,12 @@ private slots:
 
   void on_upperManualSpin_editingFinished();
 
+  //! Gets called when the current display needs to be reloaded. Uses the layerselector combo-box to determine what layer to load.
   void on_active_frame_changed();
+
+  //! Gets called when a new data range was selected in the histogram plot.
   void on_new_range_dragged(QCPRange newRange);
+
   void on_manualRangeRadio_toggled(bool checked);
 
   void on_fullRangeRadio_toggled(bool checked);
@@ -80,27 +96,36 @@ private slots:
   void on_summingCheckbox_toggled(bool checked);
 
   void on_layerSelector_activated(const QString &arg1);
+
   void UnlockWaitingForFrame();
 
-
+  //!Presents the user with a file menu to select a dataset to use for the openbeam correction. If one is selected, it will set it for the current dataset (but not apply it, that happens after data taking).
   void on_obcorrCheckbox_toggled(bool checked);
 
+  //!Temporary save button for images and data.
   void on_pushButton_clicked();
 
 public slots:
   void StartDataTaking();
   void setGradient(int index);
+  //!Used to inform this object of the availible gradients and their names.
   void on_availible_gradients_changed(QStringList gradients);
-  //void on_frame_added(int threshold);
-  //void on_frame_updated();
+  //!Reloads the data for a specific threshold and updates the display, currently reloads all the data for the GLplot
   void on_reload_layer(int);
+  //!Reloads all the data and updates.
   void on_reload_all_layers();
+  //!Called when the pixel hovered by the mouse changes. Takes assembly-coordinates.
   void on_hover_changed(QPoint);
+  //!Called when a pixel has been selected with the right mouse-button. Pixel is assembly-coordinates, position is screenspace (used to determine where to create the context menu).
+  //!Position could possibly be removed and simply query the cursor location from here.
   void on_pixel_selected(QPoint pixel, QPoint position);
+  //!Called when the data is cleared. Clears all the plots and relevant combo-boxes.
   void on_clear();
+  //!Called when the display range of the data is changed. (so the scale on the heatmap).
   void on_range_changed(QCPRange);
   void on_data_taking_finished(int);
   void on_progress_signal(int);
+  //!Called when the user request a different bin-count. Recomputes the histograms for each threshold.
   void changeBinCount(int count);
   void updateETA();
 
