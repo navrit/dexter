@@ -334,7 +334,12 @@ void Mpx3GUI::open_data(){
   saveFile.close();
   set_mode_normal();
   QList<int> thresholds = getDataset()->getThresholds();
+
+  // required signals
+  QRectF bbox = getDataset()->computeBoundingBox();
+  emit sizeChanged(bbox.width() * getDataset()->x(), bbox.height() * getDataset()->y() ); // goes to qcstmglplot
   emit reload_all_layers();
+
   return;
 }
 

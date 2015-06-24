@@ -4,6 +4,7 @@
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 #include "DataTakingThread.h"
+#include "qcstmBHWindow.h"
 
 #include <stdio.h>
 #include <QDialog>
@@ -20,6 +21,7 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :  QWidget(parent), 
 	_etatimer = 0x0;
 	_timer = 0x0;
 	_estimatedETA = 0;
+	_bhwindow = 0x0;
 
 	// Defaults from GUI
 	ui->dropFramesCheckBox->setChecked( true );
@@ -536,15 +538,34 @@ void QCstmGLVisualization::on_summingCheckbox_toggled(bool checked)
 	//on_reload_all_layers();
 }
 
+//!Load a BH correction
+void QCstmGLVisualization::on_bhcorrCheckbox_toggled(bool checked) {
 
-void QCstmGLVisualization::on_obcorrCheckbox_toggled(bool checked)
-{
-	if(!checked)
+	// Deal with the separate BH window
+	if ( !_bhwindow && checked ) {
+		_bhwindow = new QCstmBHWindow(this);
+		_bhwindow->show();
+		_bhwindow->raise();
+		_bhwindow->activateWindow();
+	}
+
+	if ( ! checked ) {
+		_bhwindow->close();
+	} else {
+		_bhwindow->show();
+		_bhwindow->raise();
+		_bhwindow->activateWindow();
+	}
+
+}
+
+void QCstmGLVisualization::on_obcorrCheckbox_toggled(bool checked) {
+	if(!checked) {
 		_mpx3gui->getDataset()->removeCorrection();
-	else{
+	} else {
 		QString filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("binary files (*.bin)"));
 		QFile saveFile(filename);
-		if (!saveFile.open(QIODevice::ReadOnly)) {
+		if ( !saveFile.open(QIODevice::ReadOnly) ) {
 			string messg = "Couldn't open: ";
 			messg += filename.toStdString();
 			messg += "\nNo output written!";

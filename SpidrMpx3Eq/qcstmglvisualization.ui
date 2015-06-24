@@ -127,16 +127,19 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="deadpixelsinterpolationCheckbox">
+          <widget class="QCheckBox" name="dropFramesCheckBox">
+           <property name="toolTip">
+            <string>drop a frame if there are lost packets</string>
+           </property>
            <property name="text">
-            <string>interpolate low</string>
+            <string>drop</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="highinterpolationCheckbox">
+          <widget class="QCheckBox" name="bhcorrCheckbox">
            <property name="text">
-            <string>interpolate high</string>
+            <string>BH corr</string>
            </property>
           </widget>
          </item>
@@ -148,12 +151,16 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="dropFramesCheckBox">
-           <property name="toolTip">
-            <string>drop a frame if there are lost packets</string>
-           </property>
+          <widget class="QCheckBox" name="deadpixelsinterpolationCheckbox">
            <property name="text">
-            <string>drop</string>
+            <string>interlow</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="highinterpolationCheckbox">
+           <property name="text">
+            <string>interhigh</string>
            </property>
           </widget>
          </item>

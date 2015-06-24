@@ -23,6 +23,7 @@
 using namespace std;
 
 class DataTakingThread;
+class QCstmBHWindow;
 
 namespace Ui {
   class QCstmGLVisualization;
@@ -40,6 +41,10 @@ class QCstmGLVisualization : public QWidget
 
   //QMap<int, histogram> histograms;
   QMap<int, QString> layerNames;
+
+  // BH window
+  QCstmBHWindow * _bhwindow;
+
 public:
   explicit QCstmGLVisualization(QWidget *parent = 0);
   ~QCstmGLVisualization();
@@ -101,6 +106,9 @@ private slots:
 
   //!Presents the user with a file menu to select a dataset to use for the openbeam correction. If one is selected, it will set it for the current dataset (but not apply it, that happens after data taking).
   void on_obcorrCheckbox_toggled(bool checked);
+
+  //!Load a BH correction
+  void on_bhcorrCheckbox_toggled(bool checked);
 
   //!Temporary save button for images and data.
   void on_pushButton_clicked();

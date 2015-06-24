@@ -141,10 +141,6 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
 
 }
 
-bool IsInsideBox() {
-
-}
-
 QPointF Dataset::XtoXY(int X, int dimX){
 	return QPointF(X % dimX, X/dimX);
 }
