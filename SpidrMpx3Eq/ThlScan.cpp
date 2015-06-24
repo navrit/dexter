@@ -287,7 +287,7 @@ void ThlScan::EqualizationScan() {
 				// I should get as many frames as triggers
 				// Assume the frame won't come
 				doReadFrames = false;
-				while ( _spidrdaq->waitForFrame( 25 ) ) { // 5ms for eq + 20ms transfer over the network
+				while ( _spidrdaq->hasFrame( 25 ) ) { // 5ms for eq + 20ms transfer over the network
 
 					// A frame is here
 					doReadFrames = true;
@@ -960,7 +960,7 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 				// Assume the frame won't come intact
 				doReadFrames = false;
 
-				while ( _spidrdaq->waitForFrame( 25 ) ) { // 5ms for eq + 20ms transfer over the network
+				while ( _spidrdaq->hasFrame( 25 ) ) { // 5ms for eq + 20ms transfer over the network
 
 					doReadFrames = true;
 					if ( _spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected

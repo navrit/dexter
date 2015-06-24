@@ -73,7 +73,7 @@ void DataTakingThread::run() {
 	emit progress( nFramesReceived );
 	bool doReadFrames = true;
 
-	while ( spidrdaq->waitForFrame( _mpx3gui->getConfig()->getTriggerLength() + 20  ) ) { // 20ms timeout
+	while ( spidrdaq->hasFrame( _mpx3gui->getConfig()->getTriggerLength() + 20  ) ) { // 20ms timeout
 
 		int size_in_bytes = -1;
 		QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
