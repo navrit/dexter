@@ -122,7 +122,7 @@ void DataTakingThread::run() {
 				} else {
 					_mpx3gui->addFrame(framedata, i, 0);
 
-					/*
+/*
 					// dump
 					ofstream of("data.txt", std::ofstream::out);
 					pair<int, int> pix;
@@ -243,15 +243,29 @@ void DataTakingThread::SeparateThresholds(int * data, int size, QVector<int> * t
 	int c0 = 0, c2 = 0, c4 = 0, c6 = 0;
 
 	for (int j = 0 ; j < __matrix_size_y ; j++) {
+	//for (int j = __matrix_size_y-1 ; j >= 0 ; j--) {
 
 		redi = 0;
 		for (int i = 0 ; i < __matrix_size_x  ; i++) {
+		//for (int i = __matrix_size_x-1 ; i >= 0  ; i--) {
 
 			indx = XYtoX( i, j, __matrix_size_x);
 			indxRed = XYtoX( redi, redj, __matrix_size_x / 2); // This index should go up to 128*128
 
-			//if(indxRed > 16380 ) cout << "indx " << indx << ", indxRed = " << indxRed << endl;
+			if( (i % 2) == 0 && (j % 2) == 0) {
+				(*th2)[indxRed] = data[indx]; // P2
+			}
+			if( (i % 2) == 0 && (j % 2) == 1) {
+				(*th0)[indxRed] = data[indx]; // P1
+			}
+			if( (i % 2) == 1 && (j % 2) == 0) {
+				(*th6)[indxRed] = data[indx]; // P4
+			}
+			if( (i % 2) == 1 && (j % 2) == 1) {
+				(*th4)[indxRed] = data[indx]; // P3
+			}
 
+			/*
 			if( (i % 2) == 0 && (j % 2) == 0) {
 				(*th6)[indxRed] = data[indx]; // P4
 			}
@@ -264,8 +278,10 @@ void DataTakingThread::SeparateThresholds(int * data, int size, QVector<int> * t
 			if( (i % 2) == 1 && (j % 2) == 1) {
 				(*th0)[indxRed] = data[indx]; // P1
 			}
+			*/
 
 			if (i % 2 == 1) redi++;
+			//if (i % 2 == 0) redi++;
 
 		}
 
