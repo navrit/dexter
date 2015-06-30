@@ -167,6 +167,8 @@ class EqualizeThread(QThread):
         genConfig_register=TPX3_ACQMODE_EVT_ITOT
         if self.parent.checkUseTP.isChecked():
             genConfig_register|=TPX3_TESTPULSE_ENA
+        polarity = self.tpx.getGenConfig() & TPX3_POLARITY_EMIN
+        genConfig_register |= polarity 
         self.tpx.setGenConfig( genConfig_register )
         self.tpx.setPllConfig( (TPX3_PLL_RUN | TPX3_VCNTRL_PLL | TPX3_DUALEDGE_CLK | TPX3_PHASESHIFT_DIV_8 | TPX3_PHASESHIFT_NR_16 | 0x14<<TPX3_PLLOUT_CONFIG_SHIFT) )
         self.tpx.setCtprBits(0)
