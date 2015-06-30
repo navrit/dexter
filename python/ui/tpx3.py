@@ -697,10 +697,25 @@ class TPX3:
         for n in root[0].getElementsByTagName('registers')[0].getElementsByTagName("reg"):
             reg_name=n.attributes['name'].value
             reg_val=int(n.attributes['value'].value,0)
-#            print reg_name,reg_val
-            dn=("TPX3_"+reg_name).upper()
-            if dn in all_dacs:
-                self.setDac(eval(dn),reg_val)
+            #print reg_name,reg_val
+            def loadGeneralConfig() :
+                self.setGenConfig(reg_val)
+
+            def loadPllConfig():
+                self.setPllConfig(reg_val)
+
+            def loadOutputBlockConfig():
+                self.setOutputMask(reg_val & 0xFF)
+
+            def loadDACs():
+                dn=("TPX3_"+reg_name).upper()
+                if dn in all_dacs:
+                    self.setDac(eval(dn),reg_val)
+
+            registers = {'GeneralConfig' : loadGeneralConfig,
+                         'PllConfig' : loadPllConfig,
+                         'OutputBlockConfig' : loadOutputBlockConfig,}
+            registers.get(reg_name, loadDACs)() #by default loadDACs
     codes=root[0].getElementsByTagName('codes')[0]
     if codes:
        self.dacsFromString(codes.firstChild.nodeValue)

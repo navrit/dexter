@@ -261,6 +261,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.viewerDACs._regenerate_bitmap()
             self.viewerMask._regenerate_bitmap()
             self.updateDacs()
+            self.updateGcr()
+            self.updateOutputLinks()
 
     def onActionSaveConfiguration(self):
         settings=QSettings()
