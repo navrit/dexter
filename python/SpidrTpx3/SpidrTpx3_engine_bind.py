@@ -188,7 +188,7 @@ getSample2_imp(PySpidrDaq *self, PyObject *args, PyObject *kwargs, PyObject **re
 
 if 1:
   SpidrDaq.add_custom_method_wrapper( method_name="getNumpyFrames", wrapper_name="getNumpyFrames_imp", wrapper_body="""
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#define NPY_NO_DEPRECATED_API NPY_1_6_API_VERSION
 #include <numpy/arrayobject.h>
 typedef  long long PYINT;
 
@@ -274,7 +274,7 @@ PyObject * getNumpyFrames_imp(PySpidrDaq *self, PyObject *args, PyObject *kwargs
 
 if 0:
   SpidrDaq.add_custom_method_wrapper( method_name="getSampleToTNDArray", wrapper_name="getSampleToTNDArray_imp", wrapper_body="""
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#define NPY_NO_DEPRECATED_API NPY_1_6_API_VERSION
 #include "numpy/arrayobject.h"
  PyObject * getSampleToTNDArray_imp(PySpidrDaq *self, PyObject *args, PyObject *kwargs, PyObject **return_exception)
 {
