@@ -590,6 +590,7 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
 		  if( byte & 0x20 ) ppix[5] |= bitmask;
 		  if( byte & 0x40 ) ppix[6] |= bitmask;
 		  if( byte & 0x80 ) ppix[7] |= bitmask;
+		  ppix += 8;
 		  */
 		  // Faster ?
 		  if( byte & 0x01 ) *ppix |= bitmask;
@@ -647,6 +648,7 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
 		      if( byte & 0x20 ) ppix[5] |= bitmask;
 		      if( byte & 0x40 ) ppix[6] |= bitmask;
 		      if( byte & 0x80 ) ppix[7] |= bitmask;
+		      ppix += 8;
 		      */
 		      // Faster ?
 		      if( byte & 0x01 ) *ppix |= bitmask;
