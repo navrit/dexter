@@ -34,8 +34,14 @@ int main( int argc, char *argv[] )
 
   // --------------------
 
-  //if( !spidrctrl.setTpxPowerEna( true ) )
-  //  cout << "###setTpxPowerEna: " << spidrctrl.errorString() << endl;
+  if( !spidrctrl.setTpxPowerEna( true ) )
+    cout << "###setTpxPowerEna: " << spidrctrl.errorString() << endl;
+
+  int speed;
+  if( spidrctrl.getReadoutSpeed( device_nr, &speed ) )
+    cout << "Get speed (before reset): " << dec << speed << hex << endl;
+  else
+    cout << "###getReadoutSpeed: " << spidrctrl.errorString() << endl;
 
   int stat;
   spidrctrl.reset( &stat, -1 ); // Force low-speed readout
@@ -44,11 +50,6 @@ int main( int argc, char *argv[] )
   cout << "reset: stat=" << stat << endl;
 
   int config;
-  if( spidrctrl.getReadoutSpeed( device_nr, &config ) )
-    cout << "Get speed: " << dec << config << hex << endl;
-  else
-    cout << "###getReadoutSpeed: " << spidrctrl.errorString() << endl;
-
   if( !spidrctrl.getOutBlockConfig( device_nr, &config ) )
     cout << "###getOutBlockConfig: " << spidrctrl.errorString() << endl;
   else
@@ -59,24 +60,36 @@ int main( int argc, char *argv[] )
   else
     cout << "PllConfig=" << config << endl;
 
-  //int i, s, speed[] = { 640, 80, 160, 320, 40, 40 };
-  int i, s, speed[] = { 40, 80, 160, 320, 640, 40 };
-  int ena_mask, lock_mask, output_mask = 0xC0;
-  for( i=0; i<sizeof(speed)/sizeof(int); ++i )
+  if( spidrctrl.getReadoutSpeed( device_nr, &speed ) )
+    cout << "Get speed (after reset): " << dec << speed << hex << endl;
+  else
+    cout << "###getReadoutSpeed: " << spidrctrl.errorString() << endl;
+
+  int linkcount;
+  if( spidrctrl.getLinkCount( &linkcount ) )
+    cout << "Get link count: " << dec << linkcount << hex << endl;
+  else
+    cout << "###getLinkCount: " << spidrctrl.errorString() << endl;
+
+  int i;
+  int ena_mask, lock_mask, output_mask = 0x00;
+  for( i=0; i<linkcount*2; ++i )
     {
       cout << endl;
 
-      if( spidrctrl.setReadoutSpeed( device_nr, speed[i] ) )
-	cout << "Speed=> " << dec << speed[i] << hex << endl;
+      if( i >= linkcount )
+	{
+	  if( i == linkcount ) output_mask = 0x00;
+	  output_mask |= (1 << (i-linkcount)); // Additional link each time
+	}
       else
-	cout << "###setReadoutSpeed " << dec << speed[i] << hex << ": "
-	     << spidrctrl.errorString() << endl;
-
-      if( spidrctrl.getReadoutSpeed( device_nr, &s ) )
-	cout << "Get speed: " << dec << s << hex << endl;
+	{
+	  output_mask = (1 << i); // 1 link at a time
+	}
+      if( !spidrctrl.setOutputMask( device_nr, output_mask ) )
+	cout << "###setOutputMask: " << spidrctrl.errorString() << endl;
       else
-	cout << "###getReadoutSpeed " << dec << speed[i] << hex << ": "
-	     << spidrctrl.errorString() << endl;
+	cout << "OutputMask=> " << output_mask << endl;
 
       if( !spidrctrl.getLinkStatus( device_nr, &ena_mask, &lock_mask ) )
 	cout << "###getLinkStatus: " << spidrctrl.errorString() << endl;
@@ -92,14 +105,8 @@ int main( int argc, char *argv[] )
 	cout << "###getPllConfig: " << spidrctrl.errorString() << endl;
       else
 	cout << "PllConfig=" << config << endl;
-      /*
-      output_mask |= (1 << i);
-      if( !spidrctrl.setOutputMask( device_nr, output_mask ) )
-	cout << "###setOutputMask: " << spidrctrl.errorString() << endl;
-      else
-	cout << "OutputMask=> " << output_mask << endl;
-      */
-      Sleep( 1500 );
+
+      Sleep( 1000 );
     }
 
   return 0;
