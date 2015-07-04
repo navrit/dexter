@@ -9,7 +9,7 @@
 # (or start from a 'SUBDIRS' .pro file to recursively generate your projects)
 #
 TEMPLATE = app
-TARGET   = spidrlibtest
+TARGET   = spidrmpx3test
 
 # Create a console app
 QT -= gui
@@ -36,4 +36,4 @@ LIBS += -lSpidrMpx3Lib
 
 INCLUDEPATH += ..
 
-SOURCES += spidrlibtest.cpp
+SOURCES += spidrmpx3test.cpp
