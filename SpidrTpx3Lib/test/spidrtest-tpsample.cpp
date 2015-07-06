@@ -32,10 +32,22 @@ int main()
 
   int errstat;
   if( spidrctrl.reset( &errstat ) ) {
-    cout << "errorstat " << hex << errstat << dec << endl;
+    cout << "errorstat " << hex << errstat << endl;
   }
 
   int device_nr = 0;
+
+  int speed = 640;
+  if( spidrctrl.setReadoutSpeed( device_nr, speed ) )
+    cout << "Speed=> " << dec << speed << endl;
+  else
+    cout << "###setReadoutSpeed " << dec << speed << ": "
+	 << spidrctrl.errorString() << endl;
+
+  if( spidrctrl.getReadoutSpeed( device_nr, &speed ) )
+    cout << "Link speed: " << dec << speed << endl;
+  else
+    cout << "###getReadoutSpeed: " << spidrctrl.errorString() << endl;
 
   // ----------------------------------------------------------
   // DACs configuration
@@ -156,8 +168,9 @@ int main()
 	  int pixcnt = 0;
           while( spidrdaq.nextPixel( &x, &y, &pixdata, &timestamp ) )
 	    {
-	      if( pixcnt < 5 )
-		cout << x << "," << y << ": " << hex << pixdata << dec << endl;
+	      if( pixcnt < 10 )
+		cout << dec << "Pixel " << setw(3) << x << "," << y << ": "
+		     << hex << pixdata << endl;
 	      ++pixcnt;
 	    }
 	  total_pixcnt += pixcnt;
@@ -165,19 +178,20 @@ int main()
 	  unsigned long long pixel;
           while( (pixel = spidrdaq.nextPixel()) != 0 && pixcnt < 5 )
 	    {
-	      cout << pixcnt << ": " << hex << pixel << dec << endl;
+	      cout << pixcnt << ": " << hex << pixel << endl;
 	      ++pixcnt;
 	    }
 	  */
 
 	  total_size += size;
 	  if( pixcnt > 0 )
-	    cout << "Sample " << framecnt << " size=" << size << " (total="
-		 << total_size << "): " << pixcnt <<" pixels" << endl;
+	    cout << "Sample " << dec << framecnt << " size=" << size
+		 << " (total=" << total_size << "): "
+		 << pixcnt <<" pixels" << endl;
         }
       else
         {
-          cout << "### Timeout -> finish after " << framecnt
+          cout << "### Timeout -> finish after " << dec << framecnt
 	       << " samples, " << total_pixcnt
 	       << " pix, bytes r=" << spidrdaq.bytesReceivedCount()
 	       << ", s=" << spidrdaq.bytesSampledCount()

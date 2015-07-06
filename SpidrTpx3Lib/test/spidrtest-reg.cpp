@@ -41,7 +41,7 @@ int main( int argc, char *argv[] )
   if( !spidrctrl.getDeviceCount( &device_cnt ) )
     cout << "###getDeviceCount: " << spidrctrl.errorString() << endl;
   else
-    cout << "DeviceCount=" << device_cnt << endl;
+    cout << "DeviceCount=" << device_cnt << endl << endl;
 
   cout << hex;
 
@@ -69,6 +69,12 @@ int main( int argc, char *argv[] )
 	cout << "GenConfig=" << config << endl;
 
       // --------------------
+
+      int speed;
+      if( spidrctrl.getReadoutSpeed( device_nr, &speed ) )
+	cout << "Link speed: " << dec << speed << hex << endl;
+      else
+	cout << "###getReadoutSpeed: " << spidrctrl.errorString() << endl;
 
       if( !spidrctrl.getOutBlockConfig( device_nr, &config ) )
 	cout << "###getOutBlockConfig: " << spidrctrl.errorString() << endl;
@@ -136,8 +142,9 @@ int main( int argc, char *argv[] )
 	cout << "###getSlvsConfig: " << spidrctrl.errorString() << endl;
       else
 	cout << "SlvsConfig=" << config << endl;
+
+      cout << endl;
     }
-  cout << endl;
 
   int options;
   if( !spidrctrl.getStartupOptions( &options ) )

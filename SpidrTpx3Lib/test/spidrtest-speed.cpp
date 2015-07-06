@@ -45,7 +45,7 @@ int main( int argc, char *argv[] )
 
   int config;
   if( spidrctrl.getReadoutSpeed( device_nr, &config ) )
-    cout << "Get speed: " << dec << config << hex << endl;
+    cout << "Link speed: " << dec << config << hex << endl;
   else
     cout << "###getReadoutSpeed: " << spidrctrl.errorString() << endl;
 
@@ -73,7 +73,7 @@ int main( int argc, char *argv[] )
 	     << spidrctrl.errorString() << endl;
 
       if( spidrctrl.getReadoutSpeed( device_nr, &s ) )
-	cout << "Get speed: " << dec << s << hex << endl;
+	cout << "Link speed: " << dec << s << hex << endl;
       else
 	cout << "###getReadoutSpeed " << dec << speed[i] << hex << ": "
 	     << spidrctrl.errorString() << endl;

@@ -21,8 +21,8 @@ int main( int argc, char *argv[] )
 {
   // Open a control connection to SPIDR-TPX3 module
   // with address 192.168.1(00).10, default port number 50000
-  SpidrController spidrctrl( 192, 168, 1, 10 );
-  //SpidrController spidrctrl( 192, 168, 100, 10 );
+  //SpidrController spidrctrl( 192, 168, 1, 10 );
+  SpidrController spidrctrl( 192, 168, 100, 10 );
 
   // Are we connected to the SPIDR-TPX3 module?
   if( !spidrctrl.isConnected() ) {
@@ -38,7 +38,7 @@ int main( int argc, char *argv[] )
   }
 
   // Set a configuration in all available configurations
-  cout << "count=" << spidrctrl.pixelConfigCount() << endl;
+  cout << "pixelconfig count=" << spidrctrl.pixelConfigCount() << endl << endl;
   int x, y, cnf;
   for( cnf=0; cnf<spidrctrl.pixelConfigCount(); ++cnf )
     {
@@ -56,6 +56,7 @@ int main( int argc, char *argv[] )
   spidrctrl.setPixelMask( 213, 222 );
 
   // Compare configurations
+  cout << "Modified pixconf #3:" << endl;
   cout << "0+1: " << spidrctrl.comparePixelConfig( 0, 1 ) << endl;
   cout << "1+2: " << spidrctrl.comparePixelConfig( 1, 2 ) << endl;
   cout << "2+3: " << spidrctrl.comparePixelConfig( 2, 3 ) << endl << endl;
@@ -67,6 +68,7 @@ int main( int argc, char *argv[] )
   spidrctrl.setPixelTestEna( 0, 0 );
 
   // Compare configurations
+  cout << "Modified pixconf #0:" << endl;
   cout << "0+1: " << spidrctrl.comparePixelConfig( 0, 1 ) << endl;
   cout << "1+2: " << spidrctrl.comparePixelConfig( 1, 2 ) << endl;
   cout << "2+3: " << spidrctrl.comparePixelConfig( 2, 3 ) << endl << endl;
@@ -75,16 +77,17 @@ int main( int argc, char *argv[] )
   spidrctrl.resetPixels( device_nr ); // Essential ! (or nothing can be read)
 
   // Upload pixel configuration #0 to chip
-  cout << "setPixCfg start:" << time_str() << endl;
+  cout << "setPixCfg #0 start:" << time_str() << endl;
   spidrctrl.selectPixelConfig( 0 );
   //if( !spidrctrl.setPixelConfig( device_nr, true ) )// Preformatted 6-bit cfg
   if( !spidrctrl.setPixelConfig( device_nr, false ) ) // 8-bit cfg 
     error_out( "###setPixelConfig" );
-  cout << "setPixCfg stop :" << time_str() << endl;
+  cout << "setPixCfg    stop :" << time_str() << endl;
   //return 0;
 
-  // Download pixel configuration from chip into configuration #1,
-  // so now config #0 should be equal to #1, and #1 now longer equal to 2
+  cout << "Download pixel configuration from chip into configuration #1,"
+       << endl << "so now config #0 should be equal to #1, "
+       << "and #1 no longer equal to 2" << endl;
   spidrctrl.selectPixelConfig( 1 );
   if( !spidrctrl.getPixelConfig( device_nr ) )
     error_out( "###getPixelConfig" );

@@ -34,12 +34,12 @@ int main( int argc, char *argv[] )
 
   // --------------------
 
-  if( !spidrctrl.setTpxPowerEna( true ) )
-    cout << "###setTpxPowerEna: " << spidrctrl.errorString() << endl;
+  //if( !spidrctrl.setTpxPowerEna( true ) )
+  //  cout << "###setTpxPowerEna: " << spidrctrl.errorString() << endl;
 
   int speed;
   if( spidrctrl.getReadoutSpeed( device_nr, &speed ) )
-    cout << "Get speed (before reset): " << dec << speed << hex << endl;
+    cout << "Link speed (before reset): " << dec << speed << hex << endl;
   else
     cout << "###getReadoutSpeed: " << spidrctrl.errorString() << endl;
 
@@ -48,6 +48,18 @@ int main( int argc, char *argv[] )
   //spidrctrl.reset( &stat );     // Default readout speed
   //spidrctrl.reset( &stat,  1 );   // Force high-speed readout
   cout << "reset: stat=" << stat << endl;
+
+  speed = 640;
+  if( spidrctrl.setReadoutSpeed( device_nr, speed ) )
+    cout << "Speed=> " << dec << speed << hex << endl;
+  else
+    cout << "###setReadoutSpeed " << dec << speed << hex << ": "
+	 << spidrctrl.errorString() << endl;
+
+  if( spidrctrl.getReadoutSpeed( device_nr, &speed ) )
+    cout << "Link speed: " << dec << speed << hex << endl;
+  else
+    cout << "###getReadoutSpeed: " << spidrctrl.errorString() << endl;
 
   int config;
   if( !spidrctrl.getOutBlockConfig( device_nr, &config ) )
@@ -60,14 +72,9 @@ int main( int argc, char *argv[] )
   else
     cout << "PllConfig=" << config << endl;
 
-  if( spidrctrl.getReadoutSpeed( device_nr, &speed ) )
-    cout << "Get speed (after reset): " << dec << speed << hex << endl;
-  else
-    cout << "###getReadoutSpeed: " << spidrctrl.errorString() << endl;
-
   int linkcount;
   if( spidrctrl.getLinkCount( &linkcount ) )
-    cout << "Get link count: " << dec << linkcount << hex << endl;
+    cout << "Link count: " << dec << linkcount << hex << endl;
   else
     cout << "###getLinkCount: " << spidrctrl.errorString() << endl;
 
@@ -94,7 +101,7 @@ int main( int argc, char *argv[] )
       if( !spidrctrl.getLinkStatus( device_nr, &ena_mask, &lock_mask ) )
 	cout << "###getLinkStatus: " << spidrctrl.errorString() << endl;
       else
-	cout << "linkstatus = " << ena_mask << ", " << lock_mask << endl;
+	cout << "LinkStatus = " << ena_mask << ", " << lock_mask << endl;
 
       if( !spidrctrl.getOutBlockConfig( device_nr, &config ) )
 	cout << "###getOutBlockConfig: " << spidrctrl.errorString() << endl;
@@ -106,7 +113,7 @@ int main( int argc, char *argv[] )
       else
 	cout << "PllConfig=" << config << endl;
 
-      Sleep( 1000 );
+      Sleep( 800 );
     }
 
   return 0;
