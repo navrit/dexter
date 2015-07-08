@@ -145,11 +145,39 @@ QPointF Dataset::XtoXY(int X, int dimX){
 	return QPointF(X % dimX, X/dimX);
 }
 
+bool Dataset::isBorderPixel(int p, QSize isize) {
+
+	if (
+			p < isize.width() 	// lower edge: 0 --> width-1
+			||
+			p >= ( isize.width()*isize.height() - isize.width() ) // upper edge: width*height-width --> width*height
+			||
+			( ( p % (isize.width()-1) ) == 0 ) // right edge
+			||
+			( ( p %  isize.width()    ) == 0 ) // left edge
+	) return true;
+
+	return false;
+}
+
+bool Dataset::isBorderPixel(int x, int y, QSize isize) {
+
+	if ( y <= 0 ) return true;					// lower edge
+	if ( y >= isize.height() - 1 ) return true;	// upper edge
+	if ( x <= 0 ) return true;					// left edge
+	if ( x >= isize.width()  - 1 ) return true;	// right edge
+
+	return false;
+}
+
 void Dataset::applyHighPixelsInterpolation(){
 
 	QList<int> keys = m_thresholdsToIndices.keys();
-	QSize isize = QSize(computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y());
+	// computeBoundingBox().size().width() 	--> gives the number of chips
+	// this->x() 							--> gives the number of pixels per chip
+	QSize isize = QSize( computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y() );
 
+	double meanMultiplier = 2.0; // TODO
 	for(int i = 0; i < keys.length(); i++) {
 
 		int* currentLayer = getLayer(keys[i]);
@@ -158,32 +186,36 @@ void Dataset::applyHighPixelsInterpolation(){
 		for(int j = 0; j < getPixelsPerLayer(); j++) {
 
 			// skip the borders
-			if ( j < isize.width() || j > (isize.width()*isize.width() - isize.height()) || (j % isize.width()-1)==0 || (j % isize.width())==0 ) continue;
+			if ( isBorderPixel(j, isize) ) continue;
 
 			// calculate the mean
 			mean += currentLayer[j];
 
 		}
-		mean /= getPixelsPerLayer();
-		cout << "[" << i << "]" << "mean = " << mean << endl;
-		for(int j = 0; j < getPixelsPerLayer(); j++) {
-			// skip the borders
-			if ( j < isize.width() || j > (isize.width()*isize.width() - isize.height()) || (j % isize.width()-1)==0 || (j % isize.width())==0 ) continue;
+		// no borders !
+		mean /= ( getPixelsPerLayer() - 2*isize.width() - 2*isize.height() );
 
-			if ( currentLayer[j] > 2*mean
+		cout << "[" << i << "]" << "mean = " << mean << endl;
+
+		for(int j = 0; j < getPixelsPerLayer(); j++) {
+
+			// skip the borders
+			if ( isBorderPixel(j, isize) ) continue;
+
+			if ( currentLayer[j] > meanMultiplier*mean
 					&&
-					currentLayer[j+1] < 2*mean
+					currentLayer[j+1] < meanMultiplier*mean
 					&&
-					currentLayer[j-1] < 2*mean
+					currentLayer[j-1] < meanMultiplier*mean
 					&&
-					currentLayer[j+m_nx+1] < 2*mean
+					currentLayer[j+isize.width()] < meanMultiplier*mean
 					&&
-					currentLayer[j+m_nx-1] < 2*mean
+					currentLayer[j-isize.width()] < meanMultiplier*mean
 			) {
 				currentLayer[j] =
 						(
 								(currentLayer[j+1] + currentLayer[j-1]) +
-								(currentLayer[j+m_nx+1] + currentLayer[j+m_nx-1])
+								(currentLayer[j+isize.width()] + currentLayer[j-isize.width()])
 						) / 4;
 			}
 
@@ -196,43 +228,119 @@ void Dataset::applyHighPixelsInterpolation(){
 
 void Dataset::applyDeadPixelsInterpolation(){
 
+	// The keys are the thresholds
 	QList<int> keys = m_thresholdsToIndices.keys();
 
 	QSize isize = QSize(computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y());
 
-	for(int i = 0; i < keys.length(); i++) {
+	for(int i = 0; i < 1 ; i++) { //keys.length(); i++) {
 
-		int* currentLayer = getLayer(keys[i]);
+		int * currentLayer = getLayer(keys[i]);
 
-		for(int j = 0; j < getPixelsPerLayer(); j++) {
+		for(int y = 0 ; y < isize.height() ; y++) {
 
-			// skip the borders
-			if ( j < isize.width() || j > (isize.width()*isize.width() - isize.height()) || (j % isize.width()-1)==0 || (j % isize.width())==0 ) continue;
+			for(int x = 0 ; x < isize.width() ; x++) {
 
-			if ( currentLayer[j] == 0 ) {
-				currentLayer[j] =
-						(
-								( currentLayer[j+1] + currentLayer[j-1] ) +
-								( currentLayer[j+m_nx+1] + currentLayer[j+m_nx-1] )
-						) / 4;
-			}
+				// is dead pixel
+				if ( sample(x, y, keys[i]) == 0 ) {
 
-		}
+					// Check first how many of it's neighbors are active
+					vector<int> actives = activeNeighbors(x, y, keys[i], isize);
 
-		//
-		/*
-		for( int j = 0 ; j < x() ; j++ ) {
-			for( int i = 0 ; i < x() ; i++ ) {
+					// Request at least two active neighbors to consider filling up by averaging
+					if ( actives.size() >= 2 ) {
+						setPixel(x, y, keys[i], vectorAverage( actives ) );
+					}
 
+				}
 
-			}
-		}
-		 */
+			} // x
+		} // y
+
+	} // layers
 
 
+}
+
+int Dataset::vectorAverage(vector<int> v) {
+
+	double av = 0;
+	vector<int>::iterator i  = v.begin();
+	vector<int>::iterator iE = v.end();
+	for ( ; i != iE ; i++ ) {
+		av += *i;
+	}
+	av /= ( (double)(v.size()) );
+
+	return qRound(av);
+}
+
+vector<int> Dataset::activeNeighbors(int x, int y, int thl, QSize isize) {
+
+	vector<int> activeNeighbors;
+
+	// If the pixel is not in the border.  Most probable.
+	if ( ! isBorderPixel(x, y, isize) ) {
+		if ( sample(x, y+1, thl) > 0 ) activeNeighbors.push_back( sample(x, y+1, thl) );
+		if ( sample(x, y-1, thl) > 0 ) activeNeighbors.push_back( sample(x, y-1, thl) );
+		if ( sample(x+1, y, thl) > 0 ) activeNeighbors.push_back( sample(x+1, y, thl) );
+		if ( sample(x-1, y, thl) > 0 ) activeNeighbors.push_back( sample(x-1, y, thl) );
+		return activeNeighbors;
 	}
 
+	// Bottom edge
+	if ( y == 0 && x > 0 && x < (isize.width()-1) ) {
+		if ( sample(x-1,   y, thl) > 0 ) activeNeighbors.push_back( sample(x-1,   y, thl) );
+		if ( sample(x  , y+1, thl) > 0 ) activeNeighbors.push_back( sample(x  , y+1, thl) );
+		if ( sample(x+1,   y, thl) > 0 ) activeNeighbors.push_back( sample(x+1,   y, thl) );
+		return activeNeighbors;
+	}
+	// Left edge
+	if (  y > 0 && y < (isize.height()-1) && x == 0 ) {
+		if ( sample(x  , y+1, thl) > 0 ) activeNeighbors.push_back( sample(x  , y+1, thl) );
+		if ( sample(x+1,   y, thl) > 0 ) activeNeighbors.push_back( sample(x+1,   y, thl) );
+		if ( sample(x  , y-1, thl) > 0 ) activeNeighbors.push_back( sample(x  , y-1, thl) );
+		return activeNeighbors;
+	}
+	// Top edge
+	if (  y == (isize.height()-1) && x > 0 && x < (isize.width()-1) ) {
+		if ( sample(x-1,   y, thl) > 0 ) activeNeighbors.push_back( sample(x-1,   y, thl) );
+		if ( sample(x+1,   y, thl) > 0 ) activeNeighbors.push_back( sample(x+1,   y, thl) );
+		if ( sample(x  , y-1, thl) > 0 ) activeNeighbors.push_back( sample(x  , y-1, thl) );
+		return activeNeighbors;
+	}
+	// Right edge
+	if (  x == (isize.width()-1) && y > 0 && y < (isize.height()-1) ) {
+		if ( sample(x  , y+1, thl) > 0 ) activeNeighbors.push_back( sample(x  , y+1, thl) );
+		if ( sample(x  , y-1, thl) > 0 ) activeNeighbors.push_back( sample(x  , y-1, thl) );
+		if ( sample(x-1,   y, thl) > 0 ) activeNeighbors.push_back( sample(x-1,   y, thl) );
+		return activeNeighbors;
+	}
 
+	// Four corners
+	if (  (x % (isize.width()-1) == 0)  &&  (y % (isize.height()-1) == 0)  ) {
+
+		if ( x == 0 && y == 0) {  // left bottom
+			activeNeighbors.push_back( sample(x+1,   y, thl) );
+			activeNeighbors.push_back( sample(x,   y+1, thl) );
+			activeNeighbors.push_back( sample(x+1, y+1, thl) );
+		} else if ( x == 0 && y == (isize.height()-1) ) {  // left top
+			activeNeighbors.push_back( sample(x+1,   y, thl) );
+			activeNeighbors.push_back( sample(x,   y-1, thl) );
+			activeNeighbors.push_back( sample(x+1, y-1, thl) );
+		} else if ( x == (isize.width()-1) && y == (isize.height()-1) ) {  // right top
+			activeNeighbors.push_back( sample(x-1,   y, thl) );
+			activeNeighbors.push_back( sample(x-1, y-1, thl) );
+			activeNeighbors.push_back( sample(x  , y-1, thl) );
+		} else if ( x == (isize.width()-1) && y == 0 ) {  // right bottom
+			activeNeighbors.push_back( sample(x-1,   y, thl) );
+			activeNeighbors.push_back( sample(x-1, y+1, thl) );
+			activeNeighbors.push_back( sample(x  , y+1, thl) );
+		}
+		cout << "+" << endl;
+	}
+
+	return activeNeighbors;
 }
 
 void Dataset::applyCorrection(){
@@ -244,7 +352,7 @@ void Dataset::applyCorrection(){
 		int* currentLayer = getLayer(keys[i]);
 		int* correctionLayer = correction->getLayer(keys[i]);
 		if(correctionLayer == nullptr){
-			qDebug() << "[WARN] flatfield correction does not contain a treshold" << keys[i];
+			qDebug() << "[WARN] flat-field correction does not contain a threshold" << keys[i];
 			continue;
 		}
 
@@ -387,6 +495,21 @@ int Dataset::sample(int x, int y, int threshold){
 	int* frame = getFrameAt(frameIndex, layerIndex);
 	QPoint coordinate = getNaturalCoordinates(QPoint(x,y), frameIndex);
 	return frame[coordinate.y()*m_nx+coordinate.x()];
+}
+
+void Dataset::setPixel(int x, int y, int threshold, int val) {
+
+	int layerIndex = thresholdToIndex(threshold);
+	if(layerIndex == -1)
+		return; // couldn't find a layer, no changes applied.
+	int frameIndex  = getContainingFrame(QPoint(x,y));
+	if(frameIndex == -1)
+		return; // couldn't find the frame, no changes applied.
+	int * frame = getFrameAt(frameIndex, layerIndex);
+	QPoint coordinate = getNaturalCoordinates(QPoint(x,y), frameIndex);
+	// set the value
+	frame[coordinate.y()*m_nx+coordinate.x()] = val;
+
 }
 
 int  Dataset::sampleFrameAt(int index, int layer, int x, int y){

@@ -5,6 +5,9 @@
 #include "mpx3gui.h"
 #include "gradient.h"
 
+//#include <stdio.h>
+//#include <phidget21.h>
+
 namespace Ui {
   class QCstmCT;
 }
@@ -22,10 +25,23 @@ public:
   void SetMpx3GUI(Mpx3GUI *p);
   void setGradient(int index);
 
+  /*
+  int CCONV AttachHandler(CPhidgetHandle stepper, void *userptr);
+  int CCONV DetachHandler(CPhidgetHandle stepper, void *userptr);
+  int CCONV ErrorHandler(CPhidgetHandle stepper, void *userptr, int ErrorCode, const char *Description);
+  int CCONV PositionChangeHandler(CPhidgetStepperHandle stepper, void *usrptr, int Index, __int64 Value);
+  int display_properties(CPhidgetStepperHandle phid);
+  int stepper_simple();
+*/
+
 private:
 
   Ui::QCstmCT *ui;
   Mpx3GUI * _mpx3gui;
+
+private slots:
+
+  void on_rotatePushButton_clicked();
 
 };
 

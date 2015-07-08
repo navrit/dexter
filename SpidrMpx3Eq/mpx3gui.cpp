@@ -300,6 +300,29 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
 	}
 	saveFile.write(getDataset()->toByteArray());
 	saveFile.close();
+
+	// save to other formats TODO
+	int * framedata = getDataset()->getLayer( 0 );
+	//QRectF box = getDataset()->computeBoundingBox();
+	int sizex =  getDataset()->x();
+	int sizey =  getDataset()->y();
+
+	ofstream of("data.txt", std::ofstream::out);
+	cout << getDataset()->getPixelsPerLayer() << endl;
+
+	for(int i = 0 ; i < sizex * sizey ; i++) {
+
+		of << framedata[i] << " ";
+
+		if ( (i+1) % sizex == 0 ) {
+
+			of << "\n";
+		}
+
+	}
+
+	of.close();
+
 	return;
 }
 

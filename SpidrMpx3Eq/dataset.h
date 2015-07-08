@@ -20,6 +20,11 @@
 #include <QMap>
 #include <stdint.h>
 
+#include <vector>
+
+using namespace std;
+
+
 class Dataset//TODO: specify starting corner?
 {
  public:
@@ -69,6 +74,8 @@ public:
   void applyHighPixelsInterpolation();
   void calcBasicStats(QPoint pixel_init, QPoint pixel_end);
   QPointF XtoXY(int X, int dimX);
+  int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
+
   void setOrientation(QVector<int> orientations){for(int i = 0; i < orientations.length();i++)setOrientation(i, orientations[i]);}
   void setOrientation(int index, int orientation){m_frameOrientation[index] = orientation;}
   void setLayout(int index, QPoint layout){m_frameLayouts[index] = layout;}
@@ -78,6 +85,7 @@ public:
   void setLayer(int *data, int threshold);//!<Overwrites a specific layer with the values pointed to by data.
   void addLayer(int* data, int threshold);//!<Adds the values pointed to by data to the specified layer.
   void setFrame(int *frame, int index, int threshold);//!< Overwrites the data of chip index at the specified threshold with the data pointed to by frame.
+  void setPixel(int x, int y, int threshold, int val);//!< Set a pixel value for a given threshold (x,y) (assembly coordinates !)
   void sumFrame(int *frame, int index, int threshold);//!< Adds the data pointed to by frame to the data of chip index at the specified threshold.
   void toJson(); //!<return JSON object to save.
 
@@ -88,6 +96,9 @@ public:
   int getLayerCount() const{return m_layers.count();}
   int getLayerSize() const{return m_nFrames*m_nx*m_ny;}
   uint64_t getPixelsPerLayer() const{return m_nFrames*m_nx*m_ny;}
+  bool isBorderPixel(int pixel, QSize isize); //!<Determines if the pixel is at the border (x) (assembly coordinates !)
+  bool isBorderPixel(int x, int y, QSize isize); //!<Determines if the pixel is at the border (x,y) (assembly coordinates !)
+  vector<int> activeNeighbors(int x, int y, int thl, QSize isize);//!<Determines if a pixel has active neighbors (assembly coordinates !)
   QPoint getSize(){return QPoint(m_nx, m_ny);}
   int *getFrame(int index, int threshold); //!< returns a pointer to the data of chip index at the specified threshold.
   int *getFrameAt(int index, int layer); //!< returns a pointer to the data of chip index at the specified layer-index. (i.e. does not call thresholdToLayer(layer))
@@ -96,6 +107,10 @@ public:
   int sample(int x, int y, int threshold);//!<Returns the value of the pixel at (x,y) (assembly coordinates) and the specified threshold.
   int x() const{return m_nx;}
   int y() const{return m_ny;}
+
+  // simple tools
+  int vectorAverage(vector<int> v);
+
 };
 
 #endif // DATASET_H

@@ -963,7 +963,10 @@ void QCstmEqualization::LoadEqualization(){
 	_ui->_intermediatePlot->clear();
 	//int lastActiveFrame = _ui->_intermediatePlot->GetLastActive();
 	QRectF boundingBoxF =  _mpx3gui->getDataset()->computeBoundingBox();
-	QSize boundingBox =QSize(boundingBoxF.size().width()*_mpx3gui->x(), boundingBoxF.size().height()*_mpx3gui->y());
+	//QSize boundingBox =QSize(boundingBoxF.size().width()*_mpx3gui->x(), boundingBoxF.size().height()*_mpx3gui->y());
+
+	QSize boundingBox = QSize(boundingBoxF.width()*_mpx3gui->getDataset()->x(), boundingBoxF.height()*_mpx3gui->getDataset()->y());
+
 	cout << boundingBox.width() << ", " << boundingBox.height() << endl;
 	_ui->_intermediatePlot->addData( displaymatrix, boundingBox.width(), boundingBox.height() );
 	_ui->_intermediatePlot->setActive( 0 );
