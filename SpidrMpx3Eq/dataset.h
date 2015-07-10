@@ -98,7 +98,7 @@ public:
   uint64_t getPixelsPerLayer() const{return m_nFrames*m_nx*m_ny;}
   bool isBorderPixel(int pixel, QSize isize); //!<Determines if the pixel is at the border (x) (assembly coordinates !)
   bool isBorderPixel(int x, int y, QSize isize); //!<Determines if the pixel is at the border (x,y) (assembly coordinates !)
-  vector<int> activeNeighbors(int x, int y, int thl, QSize isize);//!<Determines if a pixel has active neighbors (assembly coordinates !)
+
   QPoint getSize(){return QPoint(m_nx, m_ny);}
   int *getFrame(int index, int threshold); //!< returns a pointer to the data of chip index at the specified threshold.
   int *getFrameAt(int index, int layer); //!< returns a pointer to the data of chip index at the specified layer-index. (i.e. does not call thresholdToLayer(layer))
@@ -108,8 +108,21 @@ public:
   int x() const{return m_nx;}
   int y() const{return m_ny;}
 
-  // simple tools
+  // Simple tools
+  typedef enum {
+	  __less = 0,
+	  __lesseq,
+	  __equal,
+	  __biggereq,
+	  __bigger
+  } comp;
+  map< pair<int, int>, int > activeNeighbors(int x, int y, int thl, QSize isize, comp c = __bigger, int activeValue = 0);//!<Determines if a pixel has active neighbors (assembly coordinates !)
   int vectorAverage(vector<int> v);
+  int averageValues(map< pair<int, int>, int > m1);
+  void appendSelection(int x, int y, int thl, int compareto, comp c, map< pair<int, int>, int > & );
+  double calcPadMean(int thlkey, QSize isize);
+  vector<int> getIntersection(map< pair<int, int>, int > m1, map< pair<int, int>, int > m2);
+  void DumpSmallMap(map< pair<int, int>, int > m1);
 
 };
 

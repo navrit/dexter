@@ -164,6 +164,16 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="noisyPixelMeanMultiplier">
+           <property name="decimals">
+            <number>1</number>
+           </property>
+           <property name="value">
+            <double>5.000000000000000</double>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>

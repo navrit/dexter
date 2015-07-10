@@ -170,72 +170,91 @@ bool Dataset::isBorderPixel(int x, int y, QSize isize) {
 	return false;
 }
 
-void Dataset::applyHighPixelsInterpolation(){
+double Dataset::calcPadMean(int thlkey, QSize isize) {
+
+	double mean = 0.0;
+	int meanCntr = 0;
+
+	for(int y = 0 ; y < isize.height() ; y++) {
+
+		for(int x = 0 ; x < isize.width() ; x++) {
+
+			// sample and skip if it's a dead pixel
+			int sampling = sample(x, y, thlkey);
+			if ( sampling <= 0 ) continue;
+
+			// skip borders
+			if ( isBorderPixel(x,y, isize) ) continue;
+
+			// calculate the mean
+			mean += sampling;
+			meanCntr++;
+
+		}
+
+	}
+	// no borders !
+	mean /= (double)meanCntr;
+
+	return mean;
+}
+
+void Dataset::applyHighPixelsInterpolation() {
 
 	QList<int> keys = m_thresholdsToIndices.keys();
 	// computeBoundingBox().size().width() 	--> gives the number of chips
 	// this->x() 							--> gives the number of pixels per chip
 	QSize isize = QSize( computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y() );
 
-	double meanMultiplier = 2.0; // TODO
+	double meanMultiplier = 5.0; // TODO
+
 	for(int i = 0; i < keys.length(); i++) {
 
-		int* currentLayer = getLayer(keys[i]);
+		double mean = calcPadMean(keys[i], isize);
+		cout << "[" << keys[i] << "]" << " mean = " << mean << endl;
 
-		double mean = 0.;
-		for(int j = 0; j < getPixelsPerLayer(); j++) {
+		for(int y = 0 ; y < isize.height() ; y++) {
 
-			// skip the borders
-			if ( isBorderPixel(j, isize) ) continue;
+			for(int x = 0 ; x < isize.width() ; x++) {
 
-			// calculate the mean
-			mean += currentLayer[j];
+				// If a pixel is higher than meanMultiplier times the mean
+				if ( sample(x, y, keys[i]) > qRound(meanMultiplier * mean) ) {
 
-		}
-		// no borders !
-		mean /= ( getPixelsPerLayer() - 2*isize.width() - 2*isize.height() );
+					// Then count how many pixels around this pixel have a value lower than its own value
 
-		cout << "[" << i << "]" << "mean = " << mean << endl;
+					// Check first how many of it's neighbors are active beyond the multiplier * mean
+					map< pair<int, int>, int > activeBellow = activeNeighbors(x, y, keys[i], isize, __less, qRound(meanMultiplier * mean) );
 
-		for(int j = 0; j < getPixelsPerLayer(); j++) {
+					// Request at least three active neighbors to consider filling up by averaging
+					// In the dead-pixel correction we request only 2.  Here we need at least four.
+					//  otherwise we may eat up corners of distinctive structure which are actual images.
+					// It means we request a hot pixel fully isolated.
+					if ( activeBellow.size() >= 4 ) {
+						setPixel(x, y, keys[i], averageValues( activeBellow ) );
+					}
 
-			// skip the borders
-			if ( isBorderPixel(j, isize) ) continue;
+				}
 
-			if ( currentLayer[j] > meanMultiplier*mean
-					&&
-					currentLayer[j+1] < meanMultiplier*mean
-					&&
-					currentLayer[j-1] < meanMultiplier*mean
-					&&
-					currentLayer[j+isize.width()] < meanMultiplier*mean
-					&&
-					currentLayer[j-isize.width()] < meanMultiplier*mean
-			) {
-				currentLayer[j] =
-						(
-								(currentLayer[j+1] + currentLayer[j-1]) +
-								(currentLayer[j+isize.width()] + currentLayer[j-isize.width()])
-						) / 4;
-			}
+			} // x
 
-		}
+		} // y
 
-
-	}
+	} // layers
 
 }
 
-void Dataset::applyDeadPixelsInterpolation(){
+void Dataset::applyDeadPixelsInterpolation() {
 
 	// The keys are the thresholds
 	QList<int> keys = m_thresholdsToIndices.keys();
 
 	QSize isize = QSize(computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y());
+	double meanMultiplier = 5.0; // TODO
 
-	for(int i = 0; i < 1 ; i++) { //keys.length(); i++) {
+	for(int i = 0; i < keys.length(); i++) {
 
-		int * currentLayer = getLayer(keys[i]);
+		double mean = calcPadMean(keys[i], isize);
+		cout << "[" << keys[i] << "]" << " mean = " << mean << endl;
 
 		for(int y = 0 ; y < isize.height() ; y++) {
 
@@ -245,11 +264,22 @@ void Dataset::applyDeadPixelsInterpolation(){
 				if ( sample(x, y, keys[i]) == 0 ) {
 
 					// Check first how many of it's neighbors are active
-					vector<int> actives = activeNeighbors(x, y, keys[i], isize);
+					map< pair<int, int>, int > actives = activeNeighbors(x, y, keys[i], isize, __bigger, 0);
+					// And check how many of it's neighbors are not noisy
+					map< pair<int, int>, int > notNoisy = activeNeighbors(x, y, keys[i], isize, __less, qRound(meanMultiplier * mean) );
+					// The average will be made on the intersection of actives and notNoisy
+					vector<int> toAverage = getIntersection(actives, notNoisy);
+
+					//if( actives.size() > 0 ) {
+					//	DumpSmallMap(actives);
+					//	DumpSmallMap(notNoisy);
+					//}
 
 					// Request at least two active neighbors to consider filling up by averaging
-					if ( actives.size() >= 2 ) {
-						setPixel(x, y, keys[i], vectorAverage( actives ) );
+					if ( toAverage.size() >= 2 ) {
+						// It is a problem when a dead pixel is close to a noisy pixel.
+						// The noisy pixel should not be taken into account.
+						setPixel(x, y, keys[i], vectorAverage( toAverage ) );
 					}
 
 				}
@@ -260,6 +290,50 @@ void Dataset::applyDeadPixelsInterpolation(){
 	} // layers
 
 
+}
+
+void Dataset::DumpSmallMap(map< pair<int, int>, int > m1) {
+
+	map< pair<int, int>, int >::iterator i = m1.begin();
+	map< pair<int, int>, int >::iterator iE = m1.end();
+	for ( ; i != iE ; i++ ) {
+		cout << " | " << (*i).first.first << "," << (*i).first.second << "=" << (*i).second;
+	}
+	//cout << endl;
+}
+
+vector<int> Dataset::getIntersection(map< pair<int, int>, int > m1, map< pair<int, int>, int > m2) {
+
+	vector<int> intersection;
+
+	// loop over m1 and find the matches in m2
+	map< pair<int, int>, int >::iterator i = m1.begin();
+	map< pair<int, int>, int >::iterator iE = m1.end();
+	map< pair<int, int>, int >::iterator f;
+
+	for ( ; i != iE ; i++ ) {
+
+		// If match found
+		if ( m2.find( (*i).first ) != m2.end() ) intersection.push_back( (*i).second );
+
+	}
+
+	return intersection;
+}
+
+int Dataset::averageValues(map< pair<int, int>, int > m1) {
+
+	double av = 0;
+
+	map< pair<int, int>, int >::iterator i = m1.begin();
+	map< pair<int, int>, int >::iterator iE = m1.end();
+
+	for ( ; i != iE ; i++ ) {
+		av += (*i).second;
+	}
+	av /= ( (double)(m1.size()) );
+
+	return qRound(av);
 }
 
 int Dataset::vectorAverage(vector<int> v) {
@@ -275,45 +349,104 @@ int Dataset::vectorAverage(vector<int> v) {
 	return qRound(av);
 }
 
-vector<int> Dataset::activeNeighbors(int x, int y, int thl, QSize isize) {
 
-	vector<int> activeNeighbors;
+void Dataset::appendSelection(int x, int y, int thl, int compareto, comp c, map< pair<int, int>, int > & activeNeighbors) {
+
+	int val = sample(x, y, thl);
+
+	switch ( c ) {
+	case __less:
+		if ( val < compareto ) {
+			activeNeighbors[ make_pair(x,y) ] = val;
+		}
+		break;
+	case __lesseq:
+		if ( val <= compareto ) {
+			activeNeighbors[ make_pair(x,y) ] = val;
+		}
+		break;
+	case __equal:
+		if ( val == compareto ) {
+			activeNeighbors[ make_pair(x,y) ] = val;
+		}
+		break;
+	case __bigger:
+		if ( val > compareto ) {
+			activeNeighbors[ make_pair(x,y) ] = val;
+		}
+		break;
+	case __biggereq:
+		if ( val >= compareto ) {
+			activeNeighbors[ make_pair(x,y) ] = val;
+		}
+		break;
+	default:
+		if ( val > compareto ) {		// __bigger
+			activeNeighbors[ make_pair(x,y) ] = val;
+		}
+		break;
+	}
+
+}
+
+map< pair<int, int>, int > Dataset::activeNeighbors(int x, int y, int thl, QSize isize, comp c, int activeValue) {
+
+	map< pair<int, int>, int > activeNeighbors;
 
 	// If the pixel is not in the border.  Most probable.
 	if ( ! isBorderPixel(x, y, isize) ) {
-		if ( sample(x, y+1, thl) > 0 ) activeNeighbors.push_back( sample(x, y+1, thl) );
-		if ( sample(x, y-1, thl) > 0 ) activeNeighbors.push_back( sample(x, y-1, thl) );
-		if ( sample(x+1, y, thl) > 0 ) activeNeighbors.push_back( sample(x+1, y, thl) );
-		if ( sample(x-1, y, thl) > 0 ) activeNeighbors.push_back( sample(x-1, y, thl) );
-		return activeNeighbors;
-	}
 
+		appendSelection( x, y+1, thl, activeValue, c, activeNeighbors );
+		appendSelection( x, y-1, thl, activeValue, c, activeNeighbors );
+		appendSelection( x+1, y, thl, activeValue, c, activeNeighbors );
+		appendSelection( x-1, y, thl, activeValue, c, activeNeighbors );
+		//if ( sample(x, y+1, thl) > activeValue ) activeNeighbors.push_back( sample(x, y+1, thl) );
+		//if ( sample(x, y-1, thl) > activeValue ) activeNeighbors.push_back( sample(x, y-1, thl) );
+		//if ( sample(x+1, y, thl) > activeValue ) activeNeighbors.push_back( sample(x+1, y, thl) );
+		//if ( sample(x-1, y, thl) > activeValue ) activeNeighbors.push_back( sample(x-1, y, thl) );
+		return activeNeighbors;
+
+	}
 	// Bottom edge
 	if ( y == 0 && x > 0 && x < (isize.width()-1) ) {
-		if ( sample(x-1,   y, thl) > 0 ) activeNeighbors.push_back( sample(x-1,   y, thl) );
-		if ( sample(x  , y+1, thl) > 0 ) activeNeighbors.push_back( sample(x  , y+1, thl) );
-		if ( sample(x+1,   y, thl) > 0 ) activeNeighbors.push_back( sample(x+1,   y, thl) );
+
+		appendSelection( x-1,   y, thl, activeValue, c, activeNeighbors );
+		appendSelection( x  , y+1, thl, activeValue, c, activeNeighbors );
+		appendSelection( x+1,   y, thl, activeValue, c, activeNeighbors );
+		//if ( sample(x-1,   y, thl) > activeValue ) activeNeighbors.push_back( sample(x-1,   y, thl) );
+		//if ( sample(x  , y+1, thl) > activeValue ) activeNeighbors.push_back( sample(x  , y+1, thl) );
+		//if ( sample(x+1,   y, thl) > activeValue ) activeNeighbors.push_back( sample(x+1,   y, thl) );
 		return activeNeighbors;
 	}
 	// Left edge
 	if (  y > 0 && y < (isize.height()-1) && x == 0 ) {
-		if ( sample(x  , y+1, thl) > 0 ) activeNeighbors.push_back( sample(x  , y+1, thl) );
-		if ( sample(x+1,   y, thl) > 0 ) activeNeighbors.push_back( sample(x+1,   y, thl) );
-		if ( sample(x  , y-1, thl) > 0 ) activeNeighbors.push_back( sample(x  , y-1, thl) );
+		appendSelection( x  , y+1, thl, activeValue, c, activeNeighbors );
+		appendSelection( x+1,   y, thl, activeValue, c, activeNeighbors );
+		appendSelection( x  , y-1, thl, activeValue, c, activeNeighbors );
+
+		//if ( sample(x  , y+1, thl) > activeValue ) activeNeighbors.push_back( sample(x  , y+1, thl) );
+		//if ( sample(x+1,   y, thl) > activeValue ) activeNeighbors.push_back( sample(x+1,   y, thl) );
+		//if ( sample(x  , y-1, thl) > activeValue ) activeNeighbors.push_back( sample(x  , y-1, thl) );
 		return activeNeighbors;
 	}
 	// Top edge
 	if (  y == (isize.height()-1) && x > 0 && x < (isize.width()-1) ) {
-		if ( sample(x-1,   y, thl) > 0 ) activeNeighbors.push_back( sample(x-1,   y, thl) );
-		if ( sample(x+1,   y, thl) > 0 ) activeNeighbors.push_back( sample(x+1,   y, thl) );
-		if ( sample(x  , y-1, thl) > 0 ) activeNeighbors.push_back( sample(x  , y-1, thl) );
+		appendSelection( x-1,   y, thl, activeValue, c, activeNeighbors );
+		appendSelection( x+1,   y, thl, activeValue, c, activeNeighbors );
+		appendSelection( x  , y-1, thl, activeValue, c, activeNeighbors );
+		//if ( sample(x-1,   y, thl) > activeValue ) activeNeighbors.push_back( sample(x-1,   y, thl) );
+		//if ( sample(x+1,   y, thl) > activeValue ) activeNeighbors.push_back( sample(x+1,   y, thl) );
+		//if ( sample(x  , y-1, thl) > activeValue ) activeNeighbors.push_back( sample(x  , y-1, thl) );
 		return activeNeighbors;
 	}
 	// Right edge
 	if (  x == (isize.width()-1) && y > 0 && y < (isize.height()-1) ) {
-		if ( sample(x  , y+1, thl) > 0 ) activeNeighbors.push_back( sample(x  , y+1, thl) );
-		if ( sample(x  , y-1, thl) > 0 ) activeNeighbors.push_back( sample(x  , y-1, thl) );
-		if ( sample(x-1,   y, thl) > 0 ) activeNeighbors.push_back( sample(x-1,   y, thl) );
+		appendSelection( x  , y+1, thl, activeValue, c, activeNeighbors );
+		appendSelection( x  , y-1, thl, activeValue, c, activeNeighbors );
+		appendSelection( x-1,   y, thl, activeValue, c, activeNeighbors );
+		//if ( sample(x  , y+1, thl) > activeValue ) activeNeighbors.push_back( sample(x  , y+1, thl) );
+		//if ( sample(x  , y-1, thl) > activeValue ) activeNeighbors.push_back( sample(x  , y-1, thl) );
+		//if ( sample(x-1,   y, thl) > activeValue ) activeNeighbors.push_back( sample(x-1,   y, thl) );
 		return activeNeighbors;
 	}
 
@@ -321,23 +454,34 @@ vector<int> Dataset::activeNeighbors(int x, int y, int thl, QSize isize) {
 	if (  (x % (isize.width()-1) == 0)  &&  (y % (isize.height()-1) == 0)  ) {
 
 		if ( x == 0 && y == 0) {  // left bottom
-			activeNeighbors.push_back( sample(x+1,   y, thl) );
-			activeNeighbors.push_back( sample(x,   y+1, thl) );
-			activeNeighbors.push_back( sample(x+1, y+1, thl) );
+			appendSelection( x+1,   y, thl, activeValue, c, activeNeighbors );
+			appendSelection( x,   y+1, thl, activeValue, c, activeNeighbors );
+			appendSelection( x+1, y+1, thl, activeValue, c, activeNeighbors );
+			//if ( sample(x+1,   y, thl) > activeValue ) activeNeighbors.push_back( sample(x+1,   y, thl) );
+			//if ( sample(x,   y+1, thl) > activeValue ) activeNeighbors.push_back( sample(x,   y+1, thl) );
+			//if ( sample(x+1, y+1, thl) > activeValue ) activeNeighbors.push_back( sample(x+1, y+1, thl) );
 		} else if ( x == 0 && y == (isize.height()-1) ) {  // left top
-			activeNeighbors.push_back( sample(x+1,   y, thl) );
-			activeNeighbors.push_back( sample(x,   y-1, thl) );
-			activeNeighbors.push_back( sample(x+1, y-1, thl) );
+			appendSelection( x+1,   y, thl, activeValue, c, activeNeighbors );
+			appendSelection( x,   y-1, thl, activeValue, c, activeNeighbors );
+			appendSelection( x+1, y-1, thl, activeValue, c, activeNeighbors );
+			//if ( sample(x+1,   y, thl) > activeValue ) activeNeighbors.push_back( sample(x+1,   y, thl) );
+			//if ( sample(x,   y-1, thl) > activeValue ) activeNeighbors.push_back( sample(x,   y-1, thl) );
+			//if ( sample(x+1, y-1, thl) > activeValue ) activeNeighbors.push_back( sample(x+1, y-1, thl) );
 		} else if ( x == (isize.width()-1) && y == (isize.height()-1) ) {  // right top
-			activeNeighbors.push_back( sample(x-1,   y, thl) );
-			activeNeighbors.push_back( sample(x-1, y-1, thl) );
-			activeNeighbors.push_back( sample(x  , y-1, thl) );
+			appendSelection( x-1,   y, thl, activeValue, c, activeNeighbors );
+			appendSelection( x-1, y-1, thl, activeValue, c, activeNeighbors );
+			appendSelection( x  , y-1, thl, activeValue, c, activeNeighbors );
+			//if ( sample(x-1,   y, thl) > activeValue ) activeNeighbors.push_back( sample(x-1,   y, thl) );
+			//if ( sample(x-1, y-1, thl) > activeValue ) activeNeighbors.push_back( sample(x-1, y-1, thl) );
+			//if ( sample(x  , y-1, thl) > activeValue ) activeNeighbors.push_back( sample(x  , y-1, thl) );
 		} else if ( x == (isize.width()-1) && y == 0 ) {  // right bottom
-			activeNeighbors.push_back( sample(x-1,   y, thl) );
-			activeNeighbors.push_back( sample(x-1, y+1, thl) );
-			activeNeighbors.push_back( sample(x  , y+1, thl) );
+			appendSelection( x-1,   y, thl, activeValue, c, activeNeighbors );
+			appendSelection( x-1, y+1, thl, activeValue, c, activeNeighbors );
+			appendSelection( x  , y+1, thl, activeValue, c, activeNeighbors );
+			//if ( sample(x-1,   y, thl) > activeValue ) activeNeighbors.push_back( sample(x-1,   y, thl) );
+			//if ( sample(x-1, y+1, thl) > activeValue ) activeNeighbors.push_back( sample(x-1, y+1, thl) );
+			//if ( sample(x  , y+1, thl) > activeValue ) activeNeighbors.push_back( sample(x  , y+1, thl) );
 		}
-		cout << "+" << endl;
 	}
 
 	return activeNeighbors;
