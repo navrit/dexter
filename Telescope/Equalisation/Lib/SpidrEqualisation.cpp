@@ -32,21 +32,22 @@ using namespace std;
 // ---------------------------------------------------------------------------
 SpidrEqualisation::SpidrEqualisation(SpidrController* spidrctrl) :
   m_ctrl(spidrctrl), m_daq(),
-  m_nDevices(1), m_disabled(),
+  m_nDevices(3), m_disabled(),
   m_stddev(4),
   m_spacing(2), 
   m_thlmin(0), m_thlmax(512), m_thlstep(1),
-  m_thlcoarse(6), m_ikrum(10),
+  m_thlcoarse(6), m_ikrum(20),
   m_trig_length_us(50), m_trigmode(4),
   m_trig_freq_hz(100), m_nr_of_trigs(1),
   m_filename(""), m_dacfilename(),
   m_eminus(true) {
 
   m_daq.resize(m_nDevices, NULL);
-  m_dacfilename.resize(m_nDevices, "");
+  m_dacfilename.resize(m_nDevices, "chip0_dac.txt");
   m_disabled.resize(m_nDevices, false);
-   //m_disabled[0] = true;
-   //m_disabled[1] = true;
+  //m_disabled[1] = true;
+  m_disabled[1] = true;
+  m_disabled[2] = true;
   for (unsigned int i = 0; i < m_nDevices; ++i) {
     m_daq[i] = new SpidrDaq(spidrctrl, 0x10000000, i);
   }
@@ -747,6 +748,13 @@ bool SpidrEqualisation::analyseData(const std::string& filename) {
       thr = (pixdata & 0x000000003FE00000) >> 21;
     }  
   }
+  // subtract 1 from all non-zero bins to get rid of the tail on one side of the per-pixel Gaussians (tail due to shutter logic)
+  for ( unsigned int i=0; i<nPixels; i++) {
+    for ( unsigned int j=0; j<512; j++) {
+      int binc = hthrscan.GetBinContent(i+1, j+1);
+      if ( binc > 0 ) hthrscan.SetBinContent(i+1, j+1, binc-1);
+    }
+  }
   const double mean = hthrscan.ProjectionY()->GetMean();
   TF1* fGauss = new TF1("fGauss", "gaus", mean - 70., mean + 70.);
   fGauss->SetRange(mean - 70., mean + 70.);
@@ -818,9 +826,12 @@ bool SpidrEqualisation::extractPars(const std::string& filename) {
     const double thr0 = hScan0->GetBinContent(i + 1);
     const double thr15 = hScan15->GetBinContent(i + 1);
     const double deltathr = thr15 - thr0;  
+    const double trimstep = deltathr / 15.0;
+    const double bound0 = thr0 - trimstep/2.0;     // subtract half a trim-bin
+    const double bound15 = thr15 + trimstep/2.0;   // add half a trim-bin
     int trim = 15;
     int masked = 1;
-    if (target >= thr0 && target <= thr15) {
+    if (target >= bound0 && target <= bound15) {
       trim = (((target - thr0) / deltathr) * 15 + 0.5) / 1;
       masked = 0;
     }
