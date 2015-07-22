@@ -24,12 +24,15 @@
 
 using namespace std;
 
+namespace Ui {
+  class QCstmGLVisualization;
+}
 
 class Dataset//TODO: specify starting corner?
 {
  public:
    ///Enumerations to define the coordinate system of the chips. (L)eft, (R)ight, (t)o, (T)op, and (B)ottom.
-  enum globals{
+  enum globals {
     orientationLtRTtB = 0,
     orientationRtLTtB = 1,
     orientationLtRBtT = 2,
@@ -39,7 +42,8 @@ class Dataset//TODO: specify starting corner?
     orientationBtTLtR=6,
     orientationBtTRtL=7
   };
-private:
+
+ private:
   int m_nx, m_ny; //!<Pixel size in the x and y direction
   QRectF m_boundingBox;//!<A rectangular box which encompasses all the chips. Hence the name.
   int m_nFrames; //!< The amount of detectors, a.k.a. frames here.
@@ -49,16 +53,17 @@ private:
 
   QMap <int, int> m_thresholdsToIndices;//!<Translate threshold values to indices in the vectors.
   QVector<int*> m_layers;//!<Actual data, one pointer per threshold.
-  Dataset *correction = nullptr;//!< A pointer to tthe Dataset used for the flat-field correction.
+  Dataset * obCorrection = nullptr;//!< A pointer to the Dataset used for the flat-field correction.
   int getLayerIndex(int threshold);
   int newLayer(int layer);//!<Adds a new layer at the specified threshold.
+
 public:
   Dataset(int x, int y, int framesPerLayer = 1);
   Dataset();
   ~Dataset();
   Dataset( const Dataset& other );
   Dataset& operator=( const Dataset& rhs );
-  void removeCorrection(){delete correction; correction = nullptr;}
+  void removeCorrection(){delete obCorrection; obCorrection = nullptr;}
   void zero();//!< Set all layers to zero.
   QPoint getNaturalCoordinates(QPoint pixel, int index); //!< Used by sample to compute coordinates
   int thresholdToIndex(int threshold){return m_thresholdsToIndices.value(threshold, -1);}
@@ -69,9 +74,10 @@ public:
   QByteArray toByteArray(); //!< Serializes the dataset for saving.
   void fromByteArray(QByteArray serialized); //!< Restores the dataset from a previously serialized set.
   void loadCorrection(QByteArray serialized);//!< Loads and sets the correction to a previously serialized set.
-  void applyCorrection();//!< Computes and applies the flat-field correction
-  void applyDeadPixelsInterpolation();
-  void applyHighPixelsInterpolation();
+  void applyCorrections(Ui::QCstmGLVisualization * ui);//<!Handles all corrections.  This function is blocking for the moment !
+  void applyOBCorrection();//!< Computes and applies the flat-field correction
+  void applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
+  void applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
   void calcBasicStats(QPoint pixel_init, QPoint pixel_end);
   QPointF XtoXY(int X, int dimX);
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
@@ -108,6 +114,9 @@ public:
   int x() const{return m_nx;}
   int y() const{return m_ny;}
 
+  // from UI
+  bool isAnyCorrectionActive(Ui::QCstmGLVisualization * ui);
+
   // Simple tools
   typedef enum {
 	  __less = 0,
@@ -124,6 +133,7 @@ public:
   vector<int> getIntersection(map< pair<int, int>, int > m1, map< pair<int, int>, int > m2);
   void DumpSmallMap(map< pair<int, int>, int > m1);
 
+  QMap<int, double> GetPadMean();
 };
 
 #endif // DATASET_H

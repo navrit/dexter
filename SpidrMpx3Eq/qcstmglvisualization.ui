@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>966</width>
+    <width>1104</width>
     <height>601</height>
    </rect>
   </property>
@@ -166,11 +166,21 @@
          </item>
          <item>
           <widget class="QDoubleSpinBox" name="noisyPixelMeanMultiplier">
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
            <property name="decimals">
             <number>1</number>
            </property>
            <property name="value">
-            <double>5.000000000000000</double>
+            <double>20.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="applyCorr">
+           <property name="text">
+            <string>apply</string>
            </property>
           </widget>
          </item>

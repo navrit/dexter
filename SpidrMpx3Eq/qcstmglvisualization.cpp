@@ -130,12 +130,15 @@ void QCstmGLVisualization::on_data_taking_finished(int /*nFramesTaken*/) {
 		_takingData = false;
 		DestroyTimer();
 		ETAToZero();
-		_mpx3gui->getDataset()->applyCorrection();
 
-		// Other corrections
-		if( ui->deadpixelsinterpolationCheckbox->isChecked() ) _mpx3gui->getDataset()->applyDeadPixelsInterpolation();
-		if( ui->highinterpolationCheckbox->isChecked() ) _mpx3gui->getDataset()->applyHighPixelsInterpolation();
+		// When finished taking data save the original data
+		* (_mpx3gui->getOriginalDataset() ) =  * ( _mpx3gui->getDataset() );
+		//_mpx3gui->getDataset()->saveOriginalData();
 
+		// Corrections
+		_mpx3gui->getDataset()->applyCorrections( ui );
+
+		// And replot
 		on_reload_all_layers();
 
 	}
@@ -560,6 +563,7 @@ void QCstmGLVisualization::on_bhcorrCheckbox_toggled(bool checked) {
 }
 
 void QCstmGLVisualization::on_obcorrCheckbox_toggled(bool checked) {
+
 	if(!checked) {
 		_mpx3gui->getDataset()->removeCorrection();
 	} else {
@@ -574,6 +578,7 @@ void QCstmGLVisualization::on_obcorrCheckbox_toggled(bool checked) {
 		}
 		_mpx3gui->getDataset()->loadCorrection(saveFile.readAll());
 	}
+
 }
 
 void QCstmGLVisualization::on_pushButton_clicked()
@@ -591,3 +596,31 @@ void QCstmGLVisualization::on_pushButton_clicked()
 		histogramDat.write(QString("%1 %2\n").arg(hist->keyAt(i)).arg(hist->atIndex(i)).toStdString().c_str());
 
 }
+
+void QCstmGLVisualization::on_noisyPixelMeanMultiplier_valueChanged() {
+
+
+
+}
+
+/**
+ * On an existing image
+ */
+void QCstmGLVisualization::on_applyCorr_clicked() {
+
+	if( ! _takingData ) {
+
+		// This is done off data taking
+		// Recover first the saved data to operate on the original
+		* ( _mpx3gui->getDataset() ) = * (_mpx3gui->getOriginalDataset() );
+
+		_mpx3gui->getDataset()->applyCorrections( ui );
+
+		on_reload_all_layers();
+
+	}
+
+}
+
+
+

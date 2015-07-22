@@ -6,26 +6,30 @@
 
 using namespace std;
 
+#include "ui_qcstmglvisualization.h"
 
 Dataset::Dataset(int x, int y, int framesPerLayer)
 {
 	m_nx = x; m_ny = y;
 	m_nFrames = 0;
 	setFramesPerLayer(framesPerLayer);
+
+	obCorrection = 0x0;
+
 }
 
 Dataset::Dataset() : Dataset(1,1,1){}
 
 Dataset::~Dataset()
 {
-	delete correction;
+	if(obCorrection) delete obCorrection;
 	clear();
 }
 
 void Dataset::loadCorrection(QByteArray serialized) {
-	delete correction;
-	correction  = new Dataset(0,0,0);
-	correction->fromByteArray(serialized);//TODO: add error checking on correction to see if it is relevant to the data.
+	delete obCorrection;
+	obCorrection  = new Dataset(0,0,0);
+	obCorrection->fromByteArray(serialized);//TODO: add error checking on correction to see if it is relevant to the data.
 }
 
 int64_t Dataset::getTotal(int threshold){
@@ -51,13 +55,16 @@ uint64_t Dataset::getActivePixels(int threshold){
 }
 
 Dataset::Dataset( const Dataset& other ): m_boundingBox(other.m_boundingBox), m_frameLayouts(other.m_frameLayouts), m_frameOrientation(other.m_frameOrientation), m_thresholdsToIndices(other.m_thresholdsToIndices), m_layers(other.m_layers){
+	// copy the dimensions
 	m_nx = other.x(); m_ny = other.y();
+	// And copy the layers
 	m_nFrames = other.getFrameCount();
 	for(int i = 0; i < m_layers.size(); i++){
 		m_layers[i] = new int[getPixelsPerLayer()];
 		for(int j = 0; j < getPixelsPerLayer(); j++)
 			m_layers[i][j] = other.m_layers[i][j];
 	}
+	obCorrection = 0x0;
 }
 
 Dataset& Dataset::operator =( const Dataset& rhs){
@@ -179,6 +186,16 @@ double Dataset::calcPadMean(int thlkey, QSize isize) {
 
 		for(int x = 0 ; x < isize.width() ; x++) {
 
+			// Around pixel (29,30)(dead) for info
+			if ( x == 29 && y == 30 ) {
+				cout
+				<< sample(x, y+1, thlkey)
+				<< ", " << sample(x+1, y, thlkey)
+				<< ", " << sample(x, y-1, thlkey)
+				<< ", " << sample(x-1, y, thlkey)
+				<< endl;
+			}
+
 			// sample and skip if it's a dead pixel
 			int sampling = sample(x, y, thlkey);
 			if ( sampling <= 0 ) continue;
@@ -190,6 +207,7 @@ double Dataset::calcPadMean(int thlkey, QSize isize) {
 			mean += sampling;
 			meanCntr++;
 
+
 		}
 
 	}
@@ -199,19 +217,17 @@ double Dataset::calcPadMean(int thlkey, QSize isize) {
 	return mean;
 }
 
-void Dataset::applyHighPixelsInterpolation() {
+void Dataset::applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals) {
 
 	QList<int> keys = m_thresholdsToIndices.keys();
 	// computeBoundingBox().size().width() 	--> gives the number of chips
 	// this->x() 							--> gives the number of pixels per chip
 	QSize isize = QSize( computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y() );
 
-	double meanMultiplier = 5.0; // TODO
-
 	for(int i = 0; i < keys.length(); i++) {
 
-		double mean = calcPadMean(keys[i], isize);
-		cout << "[" << keys[i] << "]" << " mean = " << mean << endl;
+		double mean = meanvals[ keys[i] ];
+
 
 		for(int y = 0 ; y < isize.height() ; y++) {
 
@@ -225,11 +241,11 @@ void Dataset::applyHighPixelsInterpolation() {
 					// Check first how many of it's neighbors are active beyond the multiplier * mean
 					map< pair<int, int>, int > activeBellow = activeNeighbors(x, y, keys[i], isize, __less, qRound(meanMultiplier * mean) );
 
-					// Request at least three active neighbors to consider filling up by averaging
-					// In the dead-pixel correction we request only 2.  Here we need at least four.
-					//  otherwise we may eat up corners of distinctive structure which are actual images.
-					// It means we request a hot pixel fully isolated.
-					if ( activeBellow.size() >= 4 ) {
+					// Request at least three active neighbors to consider filling up by averaging.
+					// In the dead-pixel correction we request only 2. We may end up eating corners
+					//   of a distinctive structure which is an actual part of the image.
+					// This means we request a hot pixel almost fully isolated.
+					if ( activeBellow.size() >= 3 ) {
 						setPixel(x, y, keys[i], averageValues( activeBellow ) );
 					}
 
@@ -243,18 +259,17 @@ void Dataset::applyHighPixelsInterpolation() {
 
 }
 
-void Dataset::applyDeadPixelsInterpolation() {
+void Dataset::applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals) {
 
 	// The keys are the thresholds
 	QList<int> keys = m_thresholdsToIndices.keys();
 
 	QSize isize = QSize(computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y());
-	double meanMultiplier = 5.0; // TODO
 
 	for(int i = 0; i < keys.length(); i++) {
 
-		double mean = calcPadMean(keys[i], isize);
-		cout << "[" << keys[i] << "]" << " mean = " << mean << endl;
+		double mean = meanvals[ keys[i] ];
+
 
 		for(int y = 0 ; y < isize.height() ; y++) {
 
@@ -263,17 +278,12 @@ void Dataset::applyDeadPixelsInterpolation() {
 				// is dead pixel
 				if ( sample(x, y, keys[i]) == 0 ) {
 
-					// Check first how many of it's neighbors are active
+					// Check first how many of its neighbors are active
 					map< pair<int, int>, int > actives = activeNeighbors(x, y, keys[i], isize, __bigger, 0);
-					// And check how many of it's neighbors are not noisy
+					// And check how many of its neighbors are not noisy
 					map< pair<int, int>, int > notNoisy = activeNeighbors(x, y, keys[i], isize, __less, qRound(meanMultiplier * mean) );
 					// The average will be made on the intersection of actives and notNoisy
 					vector<int> toAverage = getIntersection(actives, notNoisy);
-
-					//if( actives.size() > 0 ) {
-					//	DumpSmallMap(actives);
-					//	DumpSmallMap(notNoisy);
-					//}
 
 					// Request at least two active neighbors to consider filling up by averaging
 					if ( toAverage.size() >= 2 ) {
@@ -487,14 +497,80 @@ map< pair<int, int>, int > Dataset::activeNeighbors(int x, int y, int thl, QSize
 	return activeNeighbors;
 }
 
-void Dataset::applyCorrection(){
-	if(correction == nullptr)
+QMap<int, double> Dataset::GetPadMean() {
+
+	QMap<int, double> meanvals;
+
+	QList<int> keys = m_thresholdsToIndices.keys();
+	QSize isize = QSize(computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y());
+	for ( int i = 0; i < keys.length(); i++ ) {
+		meanvals[keys[i]] = calcPadMean(keys[i], isize); // this function is CPU consuming and this scope is blocking !
+	}
+
+	// Print
+	cout << '\t';
+	for(int i = 0; i < keys.length(); i++) {
+		cout <<  "[" << keys[i] << "]" << '\t';
+	}
+	cout << endl;
+
+	cout << fixed;
+	cout.precision(0);
+	cout << "mean:" << '\t';
+	for(int i = 0; i < keys.length(); i++) {
+		cout << meanvals[ keys[i] ] << '\t';
+	}
+	cout << endl;
+
+
+
+	return meanvals;
+}
+
+
+void Dataset::applyCorrections(Ui::QCstmGLVisualization * ui) {
+
+	if ( isAnyCorrectionActive( ui ) ) {
+
+		QMap<int, double> meanvals = Dataset::GetPadMean();
+
+		// Corrections
+		if ( ui->obcorrCheckbox->isChecked() ) applyOBCorrection();
+		if ( ui->deadpixelsinterpolationCheckbox->isChecked() ) applyDeadPixelsInterpolation( ui->noisyPixelMeanMultiplier->value(), meanvals );
+		if ( ui->highinterpolationCheckbox->isChecked() ) applyHighPixelsInterpolation( ui->noisyPixelMeanMultiplier->value(), meanvals );
+
+	}
+
+}
+
+bool Dataset::isAnyCorrectionActive(Ui::QCstmGLVisualization * ui) {
+
+	if (
+			ui->bhcorrCheckbox->isChecked()
+			||
+			ui->obcorrCheckbox->isChecked()
+			||
+			ui->deadpixelsinterpolationCheckbox->isChecked()
+			||
+			ui->highinterpolationCheckbox->isChecked()
+
+	) return true;
+
+	return false;
+}
+
+
+void Dataset::applyOBCorrection(){
+
+	// Check that the OB correction data has been loaded by the user
+	if(obCorrection == nullptr)
 		return;
+
 	QList<int> keys = m_thresholdsToIndices.keys();
 	for(int i = 0; i < keys.length(); i++){
 		//double currentTotal = getTotal(keys[i]), correctionTotal = correction->getTotal(keys[i]);
 		int* currentLayer = getLayer(keys[i]);
-		int* correctionLayer = correction->getLayer(keys[i]);
+		int* correctionLayer = obCorrection->getLayer(keys[i]);
 		if(correctionLayer == nullptr){
 			qDebug() << "[WARN] flat-field correction does not contain a threshold" << keys[i];
 			continue;
@@ -542,12 +618,14 @@ void Dataset::fromByteArray(QByteArray serialized){
 	}
 }
 
-void Dataset::clear(){
+void Dataset::clear() {
+
 	for(int i =0; i < m_layers.size(); i++){
 		delete[] m_layers[i];
 	}
 	m_layers.clear();
 	m_thresholdsToIndices.clear();
+
 	//setFramesPerLayer(1);
 }
 

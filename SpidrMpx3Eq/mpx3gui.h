@@ -63,8 +63,9 @@ private:
 	QApplication * _coreApp;
 	Ui::Mpx3GUI * _ui;
 
-	Mpx3Config *config;
-	Dataset *workingSet;
+	Mpx3Config * config;
+	Dataset * workingSet;
+	Dataset * originalSet;
 
 	SpidrDaq * _spidrdaq = nullptr;
 
@@ -74,6 +75,8 @@ private:
 public:
 	Mpx3Config* getConfig();
 	Dataset* getDataset(){return workingSet;}
+	Dataset* getOriginalDataset(){return originalSet;}
+
 	QCstmEqualization * getEqualization();
 	QCstmGLVisualization * getVisualization();
 

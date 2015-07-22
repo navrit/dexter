@@ -113,6 +113,12 @@ private slots:
   //!Temporary save button for images and data.
   void on_pushButton_clicked();
 
+  //!Spinbox for noisyPixelMeanMultiplier parameter
+  void on_noisyPixelMeanMultiplier_valueChanged();
+
+  //!Apply corrections manually
+  void on_applyCorr_clicked();
+
 public slots:
   void StartDataTaking();
   void setGradient(int index);
