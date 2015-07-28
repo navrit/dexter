@@ -24,7 +24,7 @@
        <string>DAC Control</string>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QCstmGLVisualization" name="visualizationGL">
        <attribute name="title">

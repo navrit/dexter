@@ -4,6 +4,8 @@
 #include <QWidget>
 #include "mpx3gui.h"
 
+class StepperMotorController;
+
 namespace Ui {
   class QCstmConfigMonitoring;
 }
@@ -27,9 +29,15 @@ private slots:
 
   void on_ColourModeCheckBox_toggled(bool checked);
 
+  // Stepper
+  void on_stepperMotorCheckBox_toggled(bool checked);
+  void on_motorGoToTargetButton_clicked();
+
 private:
   Ui::QCstmConfigMonitoring *ui;
   int _timerId;
+
+  StepperMotorController * _stepper;
 
 };
 

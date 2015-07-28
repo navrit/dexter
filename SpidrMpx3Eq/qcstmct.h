@@ -25,15 +25,6 @@ public:
   void SetMpx3GUI(Mpx3GUI *p);
   void setGradient(int index);
 
-  /*
-  int CCONV AttachHandler(CPhidgetHandle stepper, void *userptr);
-  int CCONV DetachHandler(CPhidgetHandle stepper, void *userptr);
-  int CCONV ErrorHandler(CPhidgetHandle stepper, void *userptr, int ErrorCode, const char *Description);
-  int CCONV PositionChangeHandler(CPhidgetStepperHandle stepper, void *usrptr, int Index, __int64 Value);
-  int display_properties(CPhidgetStepperHandle phid);
-  int stepper_simple();
-*/
-
 private:
 
   Ui::QCstmCT *ui;

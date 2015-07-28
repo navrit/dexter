@@ -41,6 +41,7 @@ INCLUDEPATH += ../QCustomPlot
 
 LIBS += -lSpidrMpx3Lib
 LIBS += -lQCustomPlot
+LIBS += -lphidget21
 
 SOURCES += main.cpp \
     qcstmplotheatmap.cpp \
@@ -66,6 +67,7 @@ SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
 SOURCES += DataTakingThread.cpp
 SOURCES += qcstmBHWindow.cpp
+SOURCES += StepperMotorController.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -91,6 +93,7 @@ HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DataTakingThread.h
 HEADERS += qcstmBHWindow.h
+HEADERS += StepperMotorController.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \

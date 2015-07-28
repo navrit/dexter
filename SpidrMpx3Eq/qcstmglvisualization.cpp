@@ -29,8 +29,7 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :  QWidget(parent), 
 
 }
 
-QCstmGLVisualization::~QCstmGLVisualization()
-{
+QCstmGLVisualization::~QCstmGLVisualization() {
 	delete ui;
 }
 

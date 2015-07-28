@@ -3,6 +3,7 @@
 #include "mpx3config.h"
 
 #include "SpidrController.h"
+#include "StepperMotorController.h"
 
 QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
 QWidget(parent),
@@ -61,6 +62,9 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p){
 
   connect(config, SIGNAL(IpAdressChanged(QString)), ui->ipLineEdit, SLOT(setText(QString)));
   //connect(ui->ipLineEdit, SIGNAL(textEdited(QString)), config, SLOT(setIpAddress(QString)));//Can't turn of keyboard tracking for this
+
+  _stepper = 0x0;
+
 }
 
 void QCstmConfigMonitoring::timerEvent(QTimerEvent *) {
@@ -155,22 +159,46 @@ void QCstmConfigMonitoring::on_SaveButton_clicked()//TODO: automatically append 
   _mpx3gui->getConfig()->toJsonFile(filename, ui->IncludeDacsCheck->isChecked());
 }
 
-void QCstmConfigMonitoring::on_LoadButton_clicked()
-{
+void QCstmConfigMonitoring::on_LoadButton_clicked() {
   QString filename = QFileDialog::getOpenFileName(this, tr("Open configuration"), tr("./config"), tr("Json files (*.json)"));
   _mpx3gui->getConfig()->fromJsonFile(filename, ui->IncludeDacsCheck->isChecked());
 }
 
-void QCstmConfigMonitoring::on_ipLineEdit_editingFinished()
-{
+void QCstmConfigMonitoring::on_ipLineEdit_editingFinished() {
   _mpx3gui->getConfig()->setIpAddress(ui->ipLineEdit->text());
 }
 
-void QCstmConfigMonitoring::on_ColourModeCheckBox_toggled(bool checked)
-{
+void QCstmConfigMonitoring::on_ColourModeCheckBox_toggled(bool checked) {
   _mpx3gui->clear_data();
   if(checked)
       _mpx3gui->resize(_mpx3gui->getDataset()->x()/2, _mpx3gui->getDataset()->y()/2);
   else
      _mpx3gui->resize(_mpx3gui->getDataset()->x()*2, _mpx3gui->getDataset()->y()*2);
 }
+
+void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
+
+	// if the handler hasn't been initialized
+	if ( ! _stepper ) _stepper = new StepperMotorController;
+
+	// On turn on --> setup, on turn off --> close
+	if ( checked == true ) {
+		_stepper->arm_stepper( ui );
+		_stepper->PropagateParsToGUI( ui );
+	} else {
+		_stepper->disarm_stepper();
+	}
+
+
+}
+void QCstmConfigMonitoring::on_motorGoToTargetButton_clicked() {
+
+	// fetch target pos
+	long long int targetPos = (long long int) ui->targetPosSpinBox->value();
+	int motorId = ui->motorIdSpinBox->value();
+
+	_stepper->goToTarget( targetPos, motorId );
+
+}
+
+
