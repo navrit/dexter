@@ -183,8 +183,24 @@ void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
 
 	// On turn on --> setup, on turn off --> close
 	if ( checked == true ) {
-		_stepper->arm_stepper( ui );
-		_stepper->PropagateParsToGUI( ui );
+
+		_stepper->arm_stepper( );
+
+		// Block the maximum and minimum number of motors
+		ui->motorIdSpinBox->setMinimum( 0 );
+		ui->motorIdSpinBox->setMaximum( _stepper->getNumMotors() - 1 );
+
+		// Get parameters to propagate to GUI
+		map<int, motorPars> parsMap = _stepper->getPars( );
+
+		int motorid = ui->motorIdSpinBox->value();
+
+		ui->speedSpinBox->setValue( parsMap[motorid].vel );
+		ui->accelerationSpinBox->setValue( parsMap[motorid].acc );
+		QString posS;
+		posS = QString::number( parsMap[motorid].currPos , 'lld', 0 );
+		ui->motorCurrentPosLabel->setText( posS );
+
 	} else {
 		_stepper->disarm_stepper();
 	}

@@ -6,9 +6,9 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
 using namespace std;
 
-#include "qcstmconfigmonitoring.h"
 
 int CCONV AttachHandler(CPhidgetHandle stepper, void *userptr);
 int CCONV DetachHandler(CPhidgetHandle stepper, void *userptr);
@@ -33,17 +33,24 @@ public:
 	StepperMotorController();
 	~StepperMotorController();
 
-	int display_properties(CPhidgetStepperHandle phid);
-	void arm_stepper(Ui::QCstmConfigMonitoring * ui);//<! returns the id's of motors attached
-	void disarm_stepper();
+	// getters
+	int getNumMotors(){ return _numMotors; }
 
+	// Motors commands
+	void arm_stepper();//<! returns the id's of motors attached
+	void disarm_stepper();
+	int display_properties(CPhidgetStepperHandle phid);
 	void goToTarget(long long int targetPos, int motorid = 0);
 
+	// Parameters
+	map<int, motorPars> getPars();
+
+	// Others
 	int stepper_simple(int motorid = 0); //<! Just a test routine
-	void PropagateParsToGUI(Ui::QCstmConfigMonitoring * ui);
 
 private:
 
+	int _numMotors;
 	CPhidgetStepperHandle _stepper;
 	map<int, motorPars> _parsMap;
 

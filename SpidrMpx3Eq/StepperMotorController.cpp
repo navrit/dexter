@@ -1,5 +1,5 @@
 #include "StepperMotorController.h"
-#include "ui_qcstmconfigmonitoring.h"
+
 
 StepperMotorController::StepperMotorController() {
 
@@ -67,7 +67,7 @@ int StepperMotorController::display_properties(CPhidgetStepperHandle phid)
 	return 0;
 }
 
-void StepperMotorController::arm_stepper(Ui::QCstmConfigMonitoring * ui) {
+void StepperMotorController::arm_stepper( ) {
 
 	int result;
 	const char *err;
@@ -102,6 +102,10 @@ void StepperMotorController::arm_stepper(Ui::QCstmConfigMonitoring * ui) {
 	int numMotors;
 	double tval;
 	CPhidgetStepper_getMotorCount (_stepper, &numMotors);
+
+	// Set the number of motors supported by the board connected
+	_numMotors = numMotors;
+
 	for ( int motorid = 0 ; motorid < numMotors ; motorid++ ) {
 
 		// Velocity
@@ -137,23 +141,13 @@ void StepperMotorController::arm_stepper(Ui::QCstmConfigMonitoring * ui) {
 	}
 
 
-	// Reflex certain things in the GUI
-	ui->motorIdSpinBox->setMinimum( 0 );
-	ui->motorIdSpinBox->setMaximum( numMotors - 1 );
 
 	//return 1;
 }
 
-void StepperMotorController::PropagateParsToGUI(Ui::QCstmConfigMonitoring * ui){
+map<int, motorPars> StepperMotorController::getPars(){
 
-	int motorid = ui->motorIdSpinBox->value();
-
-	ui->speedSpinBox->setValue( _parsMap[motorid].vel );
-	ui->accelerationSpinBox->setValue( _parsMap[motorid].acc );
-	QString posS;
-	posS = QString::number( _parsMap[motorid].currPos , 'lld', 0 );
-	ui->motorCurrentPosLabel->setText( posS );
-
+	return _parsMap;
 }
 
 void StepperMotorController::disarm_stepper() {
