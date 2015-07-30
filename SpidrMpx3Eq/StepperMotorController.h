@@ -37,16 +37,26 @@ public:
 	int getNumMotors(){ return _numMotors; }
 
 	// Motors commands
-	void arm_stepper();//<! returns the id's of motors attached
+	bool arm_stepper();//<! returns the id's of motors attached
 	void disarm_stepper();
 	int display_properties(CPhidgetStepperHandle phid);
 	void goToTarget(long long int targetPos, int motorid = 0);
 
 	// Parameters
 	map<int, motorPars> getPars();
+	void setCurrPos(int motorid, long long int currPos) { _parsMap[motorid].currPos = currPos; }
+	long long int getCurrPos(int motorid);
+
+	void setTargetPos(int motorid, long long int targetPos) { _parsMap[motorid].targetPos = targetPos; }
+	long long int getTargetPos(int motorid) { return _parsMap[motorid].targetPos; }
+
+	void SetAcceleration(int motorid, double val);
+	void SetSpeed(int motorid, double val);
 
 	// Others
 	int stepper_simple(int motorid = 0); //<! Just a test routine
+	bool isStepperReady();
+
 
 private:
 

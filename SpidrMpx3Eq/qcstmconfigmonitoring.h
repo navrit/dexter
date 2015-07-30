@@ -5,6 +5,7 @@
 #include "mpx3gui.h"
 
 class StepperMotorController;
+class ConfigStepperThread; // defined in this file at the bottom
 
 namespace Ui {
   class QCstmConfigMonitoring;
@@ -20,6 +21,9 @@ public:
   ~QCstmConfigMonitoring();
   void timerEvent( QTimerEvent * );
 
+  StepperMotorController * getMotorController() { return _stepper; }
+  void activeInGUI();
+
 private slots:
   void on_SaveButton_clicked();
 
@@ -33,12 +37,43 @@ private slots:
   void on_stepperMotorCheckBox_toggled(bool checked);
   void on_motorGoToTargetButton_clicked();
 
+  // dial
+  void motorDialReleased();
+  void motorDialMoved(int);
+  // spins
+  void setAcceleration(double);
+  void setSpeed(double);
+
+
 private:
   Ui::QCstmConfigMonitoring *ui;
   int _timerId;
 
   StepperMotorController * _stepper;
+  ConfigStepperThread * _stepperThread;
 
 };
+
+class ConfigStepperThread : public QThread {
+
+	Q_OBJECT
+
+public:
+	explicit ConfigStepperThread(Mpx3GUI *, Ui::QCstmConfigMonitoring  *, QCstmConfigMonitoring *);
+	void ConnectToHardware( );
+
+private:
+
+	void run();
+
+	Mpx3GUI * _mpx3gui;
+	Ui::QCstmConfigMonitoring * _ui;
+	QCstmConfigMonitoring * _stepperController;
+//public slots:
+
+//signals:
+
+};
+
 
 #endif // QCSTMCONFIGMONITORING_H

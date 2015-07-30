@@ -247,20 +247,6 @@
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Current pos:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="2">
-        <widget class="QLabel" name="motorCurrentPosLabel">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="5">
         <widget class="QLabel" name="remoteTempMeasLabel">
          <property name="text">
@@ -289,13 +275,6 @@
          </property>
          <property name="placeholderText">
           <string>0.0.0.0</string>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="1">
-        <widget class="QLabel" name="label_13">
-         <property name="text">
-          <string>Speed:</string>
          </property>
         </widget>
        </item>
@@ -362,9 +341,43 @@
         </widget>
        </item>
        <item row="11" column="5">
-        <widget class="QDial" name="dial"/>
+        <widget class="QDial" name="motorDial">
+         <property name="maximum">
+          <number>360</number>
+         </property>
+        </widget>
        </item>
-       <item row="11" column="1">
+       <item row="10" column="5">
+        <widget class="QLCDNumber" name="motorCurrentPoslcdNumber"/>
+       </item>
+       <item row="10" column="4">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Current pos:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QLabel" name="label_15">
+         <property name="text">
+          <string>Acceleration:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="2">
+        <widget class="QDoubleSpinBox" name="accelerationSpinBox"/>
+       </item>
+       <item row="9" column="1">
+        <widget class="QLabel" name="label_13">
+         <property name="text">
+          <string>Speed:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="2">
+        <widget class="QDoubleSpinBox" name="speedSpinBox"/>
+       </item>
+       <item row="10" column="1">
         <widget class="QLabel" name="label_16">
          <property name="text">
           <string>Target pos:</string>
@@ -372,22 +385,9 @@
         </widget>
        </item>
        <item row="10" column="2">
-        <widget class="QDoubleSpinBox" name="speedSpinBox"/>
-       </item>
-       <item row="11" column="2">
         <widget class="QDoubleSpinBox" name="targetPosSpinBox">
          <property name="maximum">
           <double>1000000.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="2">
-        <widget class="QDoubleSpinBox" name="accelerationSpinBox"/>
-       </item>
-       <item row="9" column="1">
-        <widget class="QLabel" name="label_15">
-         <property name="text">
-          <string>Acceleration:</string>
          </property>
         </widget>
        </item>

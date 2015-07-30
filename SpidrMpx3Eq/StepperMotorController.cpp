@@ -67,7 +67,7 @@ int StepperMotorController::display_properties(CPhidgetStepperHandle phid)
 	return 0;
 }
 
-void StepperMotorController::arm_stepper( ) {
+bool StepperMotorController::arm_stepper( ) {
 
 	int result;
 	const char *err;
@@ -93,7 +93,7 @@ void StepperMotorController::arm_stepper( ) {
 	{
 		CPhidget_getErrorDescription(result, &err);
 		printf("Problem waiting for attachment: %s\n", err);
-		//return 0;
+		return false;
 	}
 	//Display the properties of the attached device
 	display_properties( _stepper );
@@ -129,7 +129,7 @@ void StepperMotorController::arm_stepper( ) {
 		// Pos
 		long long int curr_pos = 0;
 		if ( CPhidgetStepper_getCurrentPosition(_stepper, motorid, &curr_pos) == EPHIDGET_OK ) {
-				printf("       Motor: %d > Current Position: %lld\n", motorid, curr_pos);
+			printf("       Motor: %d > Current Position: %lld\n", motorid, curr_pos);
 		}
 		_parsMap[motorid].currPos = curr_pos;
 		_parsMap[motorid].targetPos = _parsMap[motorid].currPos;
@@ -140,14 +140,36 @@ void StepperMotorController::arm_stepper( ) {
 
 	}
 
-
-
-	//return 1;
+	return true;
 }
 
 map<int, motorPars> StepperMotorController::getPars(){
 
 	return _parsMap;
+}
+
+long long int StepperMotorController::getCurrPos(int motorid) {
+
+	// check the hardware the motor may have moved
+	long long int curr_pos = 0;
+	if ( CPhidgetStepper_getCurrentPosition(_stepper, motorid, &curr_pos) == EPHIDGET_OK ) {
+		_parsMap[motorid].currPos = curr_pos;
+	}
+	return _parsMap[motorid].currPos;
+}
+
+void StepperMotorController::SetAcceleration(int motorid, double val) {
+
+	_parsMap[motorid].acc = val;
+	CPhidgetStepper_setAcceleration(_stepper, motorid, _parsMap[motorid].acc);
+
+}
+
+void StepperMotorController::SetSpeed(int motorid, double val) {
+
+	_parsMap[motorid].vel = val;
+	CPhidgetStepper_setVelocityLimit(_stepper, motorid, _parsMap[motorid].vel);
+
 }
 
 void StepperMotorController::disarm_stepper() {
@@ -157,6 +179,11 @@ void StepperMotorController::disarm_stepper() {
 	CPhidget_delete((CPhidgetHandle)_stepper);
 	_stepper = 0;
 
+}
+
+bool StepperMotorController::isStepperReady() {
+	if(_stepper) return true;
+	return false;
 }
 
 int StepperMotorController::stepper_simple(int motorid)
