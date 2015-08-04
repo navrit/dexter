@@ -23,6 +23,8 @@ public:
 
   StepperMotorController * getMotorController() { return _stepper; }
   void activeInGUI();
+  void activateItemsGUI();
+  void deactivateItemsGUI();
 
 private slots:
   void on_SaveButton_clicked();
@@ -35,7 +37,9 @@ private slots:
 
   // Stepper
   void on_stepperMotorCheckBox_toggled(bool checked);
+  void on_stepperUseCalibCheckBox_toggled(bool checked);
   void on_motorGoToTargetButton_clicked();
+  void on_motorResetButton_clicked();
 
   // dial
   void motorDialReleased();

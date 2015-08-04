@@ -46,7 +46,7 @@ int CCONV ErrorHandler(CPhidgetHandle stepper, void *userptr, int ErrorCode, con
 
 int CCONV PositionChangeHandler(CPhidgetStepperHandle stepper, void *usrptr, int Index, __int64 Value)
 {
-	printf("Motor: %d > Current Position: %lld\n", Index, Value);
+	//printf("Motor: %d > Current Position: %lld\n", Index, Value);
 	return 0;
 }
 
@@ -238,7 +238,7 @@ int StepperMotorController::stepper_simple(int motorid)
 
 	//display current motor position if available
 	if ( CPhidgetStepper_getCurrentPosition(stepper, motorid, &curr_pos) == EPHIDGET_OK )
-		printf("Motor: 0 > Current Position: %lld\n", curr_pos);
+		printf("Motor: %d > Current Position: %lld\n", motorid, curr_pos);
 
 	//keep displaying stepper event data until user input is read
 	printf("Press any key to continue\n");
@@ -297,3 +297,5 @@ void StepperMotorController::goToTarget(long long int targetPos, int motorid) {
 	CPhidgetStepper_setTargetPosition (_stepper, motorid, targetPos);
 
 }
+
+

@@ -5,6 +5,9 @@
 #include "SpidrController.h"
 #include "StepperMotorController.h"
 
+#include "qtableview.h"
+#include "qstandarditemmodel.h"
+
 QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
 QWidget(parent),
 ui(new Ui::QCstmConfigMonitoring) {
@@ -18,9 +21,18 @@ ui(new Ui::QCstmConfigMonitoring) {
 	ui->motorDial->setNotchesVisible(true);
 
 	_stepperThread = 0x0;
+	_stepper = 0x0;
 
 	// Set inactive whatever is needed to be inactive
 	activeInGUI();
+
+	QStandardItemModel * tvmodel = new QStandardItemModel(3,2, this); // 3 Rows and 2 Columns
+	tvmodel->setHorizontalHeaderItem( 0, new QStandardItem(QString("pos")) );
+	tvmodel->setHorizontalHeaderItem( 1, new QStandardItem(QString("angle")) );
+
+	ui->stepperCalibrationTableView->setModel( tvmodel );
+
+	ui->stepperMotorCheckBox->setToolTip( "enable/disable stepper motor control" );
 
 }
 
@@ -35,22 +47,39 @@ void QCstmConfigMonitoring::activeInGUI(){
 	// stepper part
 	if ( _stepper ) {
 		if ( ! _stepper->isStepperReady() ) {
-			ui->motorDial->setDisabled( true );
-			ui->motorGoToTargetButton->setDisabled( true );
-			ui->motorResetButton->setDisabled( true );
+			deactivateItemsGUI();
 		} else {
-			ui->motorDial->setEnabled( true );
-			ui->motorGoToTargetButton->setEnabled( true );
-			ui->motorResetButton->setEnabled( true );
+			activateItemsGUI();
 		}
 	} else {
-		ui->motorDial->setDisabled( true );
-		ui->motorGoToTargetButton->setDisabled( true );
-		ui->motorResetButton->setDisabled( true );
+		deactivateItemsGUI();
 	}
 
 }
 
+void QCstmConfigMonitoring::activateItemsGUI(){
+	ui->motorDial->setEnabled( true );
+	ui->motorGoToTargetButton->setEnabled( true );
+	ui->motorResetButton->setEnabled( true );
+	ui->stepperCalibrationTableView->setEnabled( true );
+	ui->stepperUseCalibCheckBox->setEnabled( true );
+	ui->accelerationSpinBox->setEnabled( true );
+	ui->speedSpinBox->setEnabled( true );
+	ui->targetPosSpinBox->setEnabled( true );
+	ui->motorIdSpinBox->setEnabled( true );
+}
+
+void QCstmConfigMonitoring::deactivateItemsGUI(){
+	ui->motorDial->setDisabled( true );
+	ui->motorGoToTargetButton->setDisabled( true );
+	ui->motorResetButton->setDisabled( true );
+	ui->stepperCalibrationTableView->setDisabled( true );
+	ui->stepperUseCalibCheckBox->setDisabled( true );
+	ui->accelerationSpinBox->setDisabled( true );
+	ui->speedSpinBox->setDisabled( true );
+	ui->targetPosSpinBox->setDisabled( true );
+	ui->motorIdSpinBox->setDisabled( true );
+}
 
 
 void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
@@ -215,6 +244,44 @@ void QCstmConfigMonitoring::on_ColourModeCheckBox_toggled(bool checked) {
 		_mpx3gui->resize(_mpx3gui->getDataset()->x()*2, _mpx3gui->getDataset()->y()*2);
 }
 
+void QCstmConfigMonitoring::on_stepperUseCalibCheckBox_toggled(bool checked) {
+
+	// On turn on --> verify and use calib, on turn off --> stop using calibration
+	if ( checked == true ) {
+
+		QStandardItemModel * model = (QStandardItemModel *) ui->stepperCalibrationTableView->model();
+		int columns = model->columnCount();
+		if(columns < 2) return; // this table is expected to have pairs <pos, angle>
+
+		int rows = model->rowCount();
+
+		vector<pair<double, double> > vals;
+		// Check how many pairs available
+		for ( int row = 0 ; row < rows ; row++ ) {
+
+			QStandardItem * itempos = model->item(row, 0);
+			QStandardItem * itemangle = model->item(row, 1);
+			if( !itempos || !itemangle ) continue; // meaning no data or not a full pair in this row
+
+			QVariant datapos = itempos->data(Qt::DisplayRole);
+			QVariant dataang = itemangle->data(Qt::DisplayRole);
+			// See if these are good values
+			if ( datapos.canConvert<double>() && dataang.canConvert<double>() ) {
+				vals.push_back( make_pair( datapos.toDouble(), dataang.toDouble() ) );
+			}
+
+		}
+
+		cout << "[STEP] " << vals.size() << " points available for calibration" << endl;
+
+		//_stepper->SetStepAngleCalibration();
+
+	} else {
+
+	}
+
+}
+
 void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
 
 	// if the handler hasn't been initialized
@@ -231,14 +298,34 @@ void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
 		// Block the maximum and minimum number of motors
 		ui->motorIdSpinBox->setMinimum( 0 );
 		ui->motorIdSpinBox->setMaximum( _stepper->getNumMotors() - 1 );
+		QString motorIdS = "supported motors: ";
+		motorIdS += QString::number( _stepper->getNumMotors() , 'd', 0 );
+		ui->motorIdSpinBox->setToolTip( motorIdS );
 
 		// Get parameters to propagate to GUI
 		map<int, motorPars> parsMap = _stepper->getPars( );
 
 		int motorid = ui->motorIdSpinBox->value();
 
+		// Speed
+		ui->speedSpinBox->setMinimum( parsMap[motorid].minVel );
+		ui->speedSpinBox->setMaximum( parsMap[motorid].maxVel );
 		ui->speedSpinBox->setValue( parsMap[motorid].vel );
+		QString speedS = "Set velocity from ";
+		speedS += QString::number( parsMap[motorid].minVel , 'f', 1 );
+		speedS += " to ";
+		speedS += QString::number( parsMap[motorid].maxVel , 'f', 1 );
+		ui->speedSpinBox->setToolTip( speedS );
+
+		// Acc
+		ui->accelerationSpinBox->setMinimum( parsMap[motorid].minAcc );
+		ui->accelerationSpinBox->setMaximum( parsMap[motorid].maxAcc );
 		ui->accelerationSpinBox->setValue( parsMap[motorid].acc );
+		QString accS = "Set acceleration from ";
+		accS += QString::number( parsMap[motorid].minAcc , 'f', 1 );
+		accS += " to ";
+		accS += QString::number( parsMap[motorid].maxAcc , 'f', 1 );
+		ui->accelerationSpinBox->setToolTip( accS );
 
 
 
@@ -252,6 +339,20 @@ void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
 
 
 }
+
+void QCstmConfigMonitoring::on_motorResetButton_clicked() {
+
+	// Disarm
+	_stepper->disarm_stepper();
+	delete _stepper;
+	_stepper = 0x0;
+
+	// And arm again
+	on_stepperMotorCheckBox_toggled( true );
+
+}
+
+
 void QCstmConfigMonitoring::on_motorGoToTargetButton_clicked() {
 
 	////////////////////////////////////////////////////////////////////////////
