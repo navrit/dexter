@@ -24,6 +24,11 @@ typedef struct {
 	double acc;
 	long long int currPos;
 	long long int targetPos;
+	bool calibOK;
+	double calibSlope;  // for Angle(step) function
+	double calibCut;
+	double calibSlopeInv;  // for Step(angle) function
+	double calibCutInv;
 } motorPars;
 
 class StepperMotorController  {
@@ -44,14 +49,22 @@ public:
 
 	// Parameters
 	map<int, motorPars> getPars();
+	void ClearParsMap();
 	void setCurrPos(int motorid, long long int currPos) { _parsMap[motorid].currPos = currPos; }
 	long long int getCurrPos(int motorid);
 
 	void setTargetPos(int motorid, long long int targetPos) { _parsMap[motorid].targetPos = targetPos; }
 	long long int getTargetPos(int motorid) { return _parsMap[motorid].targetPos; }
+	void setZero(int motorid);
 
 	void SetAcceleration(int motorid, double val);
 	void SetSpeed(int motorid, double val);
+
+	// Calibration
+	bool SetStepAngleCalibration(int motorid, vector<pair<double, double> > points);
+	double StepToAngle(int motorid, double step);
+	double AngleToStep(int motorid, double angle);
+
 
 	// Others
 	int stepper_simple(int motorid = 0); //<! Just a test routine

@@ -67,6 +67,7 @@ void QCstmConfigMonitoring::activateItemsGUI(){
 	ui->speedSpinBox->setEnabled( true );
 	ui->targetPosSpinBox->setEnabled( true );
 	ui->motorIdSpinBox->setEnabled( true );
+	ui->stepperSetZeroPushButton->setEnabled( true );
 }
 
 void QCstmConfigMonitoring::deactivateItemsGUI(){
@@ -79,6 +80,7 @@ void QCstmConfigMonitoring::deactivateItemsGUI(){
 	ui->speedSpinBox->setDisabled( true );
 	ui->targetPosSpinBox->setDisabled( true );
 	ui->motorIdSpinBox->setDisabled( true );
+	ui->stepperSetZeroPushButton->setDisabled( true );
 }
 
 
@@ -265,22 +267,89 @@ void QCstmConfigMonitoring::on_stepperUseCalibCheckBox_toggled(bool checked) {
 
 			QVariant datapos = itempos->data(Qt::DisplayRole);
 			QVariant dataang = itemangle->data(Qt::DisplayRole);
-			// See if these are good values
-			if ( datapos.canConvert<double>() && dataang.canConvert<double>() ) {
-				vals.push_back( make_pair( datapos.toDouble(), dataang.toDouble() ) );
+
+			// See if these can be converted to QString
+			if ( datapos.canConvert<QString>() && dataang.canConvert<QString>() ) {
+				// Now check if the vlues are alpha numeric
+				QString posS = datapos.toString();
+				QString angS = dataang.toString();
+
+				bool posok = false;
+				double pos = posS.toDouble( &posok );
+				bool angok = false;
+				double ang  = angS.toDouble( &angok );
+
+				// push them if conversion is ok
+				if( posok && angok ) vals.push_back( make_pair( pos, ang ) );
+
 			}
 
 		}
 
-		cout << "[STEP] " << vals.size() << " points available for calibration" << endl;
+		// If calibration OK
+		if ( _stepper->SetStepAngleCalibration( ui->motorIdSpinBox->value(), vals ) ) {
+			cout << "[STEP] Calibrated with " << vals.size() << " points." << endl;
+		} else {
+			// User message
+			string messg = "Insufficient points to calibrate or incorrect format.";
+			QMessageBox::warning ( this, tr("Can't calibrate stepper"), tr( messg.c_str() ) );
+			// force uncheck
+			ui->stepperUseCalibCheckBox->setChecked( false );
+			// and get out
+			return;
+		}
 
-		//_stepper->SetStepAngleCalibration();
+		// Now prepare the interface
+		angleModeGUI();
+
+		// In the angle space things may not be matching.
+		// For instance step --> 3, means an angle of 2.7 (for 0.9 deg per 1 step resolution)
+		// Make it match.
+		int motorId = ui->motorIdSpinBox->value();
+		double targetPos = ui->targetPosSpinBox->value();
+		double targetAng = _stepper->StepToAngle(motorId, targetPos);
+		if ( targetPos !=  targetAng ) {
+			ui->targetPosSpinBox->setValue( targetAng );
+		}
+		QString posS;
+		posS = QString::number( targetAng , 'f', 1 );
+		ui->motorCurrentPoslcdNumber->display( posS );
 
 	} else {
+
+		// Interface back to steps mode
+		stepsModeGUI();
+
+		// In the step space things may not be matching either.
+		// Same situation as immediately above
+		// Make it match.
+		int motorId = ui->motorIdSpinBox->value();
+		// In this case we inquiry the current angle
+		double currentPos = _stepper->getCurrPos(motorId);
+		//double currentAng = _stepper->StepToAngle(motorId, currentPos);
+		//if ( currentPos !=  currentAng ) {
+			ui->targetPosSpinBox->setValue( currentPos );
+		//}
+		QString posS;
+		posS = QString::number( currentPos , 'ldd', 0 );
+		ui->motorCurrentPoslcdNumber->display( posS );
 
 	}
 
 }
+
+void QCstmConfigMonitoring::angleModeGUI(){
+	ui->stepperTargetPosLabel->setText("Target angle:");
+	ui->stepperCurrentPosLabel->setText("Current angle:");
+
+}
+
+void QCstmConfigMonitoring::stepsModeGUI(){
+	ui->stepperTargetPosLabel->setText("Target pos:");
+	ui->stepperCurrentPosLabel->setText("Current pos:");
+
+}
+
 
 void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
 
@@ -352,6 +421,26 @@ void QCstmConfigMonitoring::on_motorResetButton_clicked() {
 
 }
 
+void QCstmConfigMonitoring::on_stepperSetZeroPushButton_clicked() {
+
+	// Current position is selected as zero
+
+	// Reset the controller
+	int motorId = ui->motorIdSpinBox->value();
+	_stepper->setZero( motorId );
+
+	// Reset displays
+	ui->targetPosSpinBox->setValue( 0.0 );
+	QString posS;
+	if ( ui->stepperUseCalibCheckBox->isChecked() ) {
+		posS = QString::number( 0.0 , 'f', 1 );
+		ui->motorCurrentPoslcdNumber->display( posS );
+	} else {
+		posS = QString::number( 0 , 'lld', 0 );
+		ui->motorCurrentPoslcdNumber->display( posS );
+	}
+
+}
 
 void QCstmConfigMonitoring::on_motorGoToTargetButton_clicked() {
 
@@ -360,17 +449,23 @@ void QCstmConfigMonitoring::on_motorGoToTargetButton_clicked() {
 	// 1) Target pos
 	int motorId = ui->motorIdSpinBox->value();
 	// fetch target pos and enter it in the structure
-	long long int targetPos = (long long int) ui->targetPosSpinBox->value();
+	double targetPos = ui->targetPosSpinBox->value();
+
+	// Look if we are working calibrated or uncalibrated
+	if ( ui->stepperUseCalibCheckBox->isChecked() ) {
+		targetPos = _stepper->AngleToStep(motorId, (double)targetPos);
+	}
 	_stepper->setTargetPos( motorId, targetPos );
+
 	// If curr and target are the same there's nothing to do here
 	if ( _stepper->getCurrPos( motorId ) == _stepper->getTargetPos( motorId ) ) return;
-
 	////////////////////////////////////////////////////////////////////////////
 	// 2) If a rotation is ready to be launched, send the command to the hardware
-	_stepper->goToTarget( targetPos, motorId );
+	// If in angle mode the entry of the user will be interpreted as an angle
+	_stepper->goToTarget( (long long int)targetPos, motorId );
 
 	// 3) and launch the thread which actualizes the GUI
-	if ( ! _stepperThread ) _stepperThread = new ConfigStepperThread(_mpx3gui, ui, this);
+	if ( ! _stepperThread ) _stepperThread = new ConfigStepperThread( _mpx3gui, ui, this );
 	_stepperThread->start();
 
 
@@ -424,23 +519,45 @@ void ConfigStepperThread::run() {
 	int motorId = _ui->motorIdSpinBox->value();
 	long long int curr_pos = 0;
 
+	_ui->motorCurrentPoslcdNumber->setPalette(Qt::blue);
+
 	// Keep running until the stepper has reached the desired position
+	double posDisplay;
 	while ( ! reachedTarget ) {
 
 		// get current position
 		curr_pos = _stepperController->getMotorController()->getCurrPos( motorId );
+		posDisplay = (double)curr_pos;
 
-		// Update display
 		QString posS;
-		posS = QString::number( curr_pos , 'lld', 0 );
-		_ui->motorCurrentPoslcdNumber->display( posS );
+		if ( _ui->stepperUseCalibCheckBox->isChecked() ) {
+
+			posDisplay = _stepperController->getMotorController()->StepToAngle(motorId, (double)curr_pos);
+			// Update display
+			posS = QString::number( posDisplay , 'f', 1 );
+			_ui->motorCurrentPoslcdNumber->display( posS );
+
+		} else {
+			// Update display
+			posS = QString::number( curr_pos , 'lld', 0 );
+			_ui->motorCurrentPoslcdNumber->display( posS );
+		}
 
 		// Update dial
-		_ui->motorDial->setValue( curr_pos );
+		_ui->motorDial->setValue( (int)posDisplay );
 
-		// terminating condition
+		// terminating condition good for both calibrated and uncalibrated
 		if ( curr_pos ==  _stepperController->getMotorController()->getTargetPos( motorId ) ) reachedTarget = true;
 
+	}
+
+	// At the end the following may happen
+	// Say the user request and angle of 3 degrees.  With a given resolution (ex. 0.9 deg per step)
+	//  the bets the stepper can do is 2.7 degrees.  In that case color the LCD
+	if ( posDisplay != _ui->targetPosSpinBox->value() ) {
+		_ui->motorCurrentPoslcdNumber->setPalette(Qt::yellow);
+	} else {
+		_ui->motorCurrentPoslcdNumber->setPalette(Qt::green);
 	}
 
 }

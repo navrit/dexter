@@ -138,6 +138,9 @@ bool StepperMotorController::arm_stepper( ) {
 		CPhidgetStepper_setCurrentPosition( _stepper, motorid, _parsMap[motorid].currPos );
 		CPhidgetStepper_setEngaged( _stepper, motorid, PTRUE );
 
+		// Calibration not present yet
+		_parsMap[motorid].calibOK = false;
+
 	}
 
 	return true;
@@ -156,6 +159,16 @@ long long int StepperMotorController::getCurrPos(int motorid) {
 		_parsMap[motorid].currPos = curr_pos;
 	}
 	return _parsMap[motorid].currPos;
+}
+
+void StepperMotorController::setZero(int motorid) {
+
+	// set in the hardware
+	CPhidgetStepper_setCurrentPosition( _stepper, motorid, 0 );
+
+	// reset data structure
+	_parsMap[motorid].targetPos = 0;
+	_parsMap[motorid].currPos = 0;
 }
 
 void StepperMotorController::SetAcceleration(int motorid, double val) {
@@ -298,4 +311,47 @@ void StepperMotorController::goToTarget(long long int targetPos, int motorid) {
 
 }
 
+/**
+ * This establishes the relation Angle(steps).  The user may pass 2 or more points.
+ * With 2 points a straight line can be made.  With more points a linear regression.
+ */
+
+bool StepperMotorController::SetStepAngleCalibration(int motorid, vector<pair<double, double> > points) {
+
+	// At least two points
+	if ( points.size() < 2 ) {
+		cout << "[STEP] two few points to calibrate" << endl;
+		return false;
+	}
+
+	// Data comes   pos, angle
+	_parsMap[motorid].calibSlope = ( (points[0].second - points[1].second) / (points[0].first - points[1].first) );
+	_parsMap[motorid].calibCut = points[1].second - ( _parsMap[motorid].calibSlope * points[1].first );
+
+	// Prepare the inverse
+	_parsMap[motorid].calibSlopeInv = ( (points[0].first  - points[1].first) / (points[0].second - points[1].second) );
+	_parsMap[motorid].calibCutInv = points[1].first - ( _parsMap[motorid].calibSlopeInv * points[1].second );
+
+	// calib ok
+	_parsMap[motorid].calibOK = true;
+
+	return true;
+}
+
+double StepperMotorController::StepToAngle(int motorid, double step) {
+	if ( _parsMap[motorid].calibOK ) return (_parsMap[motorid].calibSlope * step ) + _parsMap[motorid].calibCut;
+	return 0.0;
+}
+
+double StepperMotorController::AngleToStep(int motorid, double angle) {
+	if ( _parsMap[motorid].calibOK ) return (_parsMap[motorid].calibSlopeInv * angle ) + _parsMap[motorid].calibCutInv;
+	return 0.0;
+}
+
+
+void StepperMotorController::ClearParsMap() {
+
+	//_parsMap[motorid].
+
+}
 

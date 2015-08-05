@@ -26,6 +26,9 @@ public:
   void activateItemsGUI();
   void deactivateItemsGUI();
 
+  void angleModeGUI();
+  void stepsModeGUI();
+
 private slots:
   void on_SaveButton_clicked();
 
@@ -40,6 +43,7 @@ private slots:
   void on_stepperUseCalibCheckBox_toggled(bool checked);
   void on_motorGoToTargetButton_clicked();
   void on_motorResetButton_clicked();
+  void on_stepperSetZeroPushButton_clicked();
 
   // dial
   void motorDialReleased();
