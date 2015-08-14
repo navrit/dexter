@@ -15,7 +15,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 } else {
 	QT += core gui
 }
-QT += network opengl
+QT += network opengl multimedia multimediawidgets
 CONFIG   +=  c++11 debug_and_release
 
 CONFIG(debug, debug|release) {

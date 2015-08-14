@@ -8,6 +8,7 @@
 #include "qtableview.h"
 #include "qstandarditemmodel.h"
 
+
 QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
 QWidget(parent),
 ui(new Ui::QCstmConfigMonitoring) {
@@ -34,11 +35,23 @@ ui(new Ui::QCstmConfigMonitoring) {
 
 	ui->stepperMotorCheckBox->setToolTip( "enable/disable stepper motor control" );
 
+	///////////////////////////////////////////////
+	// Camera
+	_cameraOn = false;
+	_camera = 0x0;
+	_imageCapture = 0x0;
+	_viewfinder = 0x0;
+	_cameraId = -1;
+
 }
 
 QCstmConfigMonitoring::~QCstmConfigMonitoring()
 {
-	if(_stepperThread) delete _stepperThread;
+	if( _stepperThread ) delete _stepperThread;
+	if( _imageCapture ) delete _imageCapture;
+	if( _viewfinder ) delete _viewfinder;
+	if( _camera ) delete _camera;
+
 	delete ui;
 }
 
@@ -125,15 +138,35 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
 	connect(config, SIGNAL(IpAdressChanged(QString)), ui->ipLineEdit, SLOT(setText(QString)));
 	//connect(ui->ipLineEdit, SIGNAL(textEdited(QString)), config, SLOT(setIpAddress(QString)));//Can't turn of keyboard tracking for this
 
-	_stepper = 0x0;
 
 	// stepper
+	_stepper = 0x0;
+	//connect(ui->stepperUseCalibCheckBox, SIGNAL(clicked(bool)), config, SLOT(setStepperConfigUseCalib(bool)));
+	//connect(config, SIGNAL(UseCalibChanged(bool)), ui->stepperUseCalibCheckBox, SLOT(setChecked(bool)));
+
+	//connect(ui->accelerationSpinBox, SIGNAL(valueChanged(double)), config, SLOT(setStepperConfigAcceleration(double)));
+	//connect(config, SIGNAL(AccelerationChanged(double)), ui->accelerationSpinBox, SLOT(setValue(double)));
+
+	//connect(ui->speedSpinBox, SIGNAL(valueChanged(double)), config, SLOT(setStepperConfigSpeed(double)));
+	//connect(config, SIGNAL(SpeedChanged(double)), ui->speedSpinBox, SLOT(setValue(double)));
+
+	// This line deals with all elements in the calibration table :)
+	//connect(ui->stepperCalibrationTableView->model(), SIGNAL(itemChanged(QStandardItem *)), config, SLOT(setStepperConfigCalib(QStandardItem *)));
+	// Faut faire ceci 'a pedale.
+	//connect(config, SIGNAL(CalibPos0Changed(double)), this, SLOT(ConfigCalibPos0Changed(double)));
+	//connect(config, SIGNAL(CalibAngle0Changed(double)), this, SLOT(ConfigCalibAngle0Changed(double)));
+	//connect(config, SIGNAL(CalibPos1Changed(double)), this, SLOT(ConfigCalibPos1Changed(double)));
+	//connect(config, SIGNAL(CalibAngle1Changed(double)), this, SLOT(ConfigCalibAngle1Changed(double)));
+
 	// When the slider released, talk to the hardware
 	QObject::connect( ui->motorDial, SIGNAL(sliderReleased()), this, SLOT(motorDialReleased()) );
 	QObject::connect( ui->motorDial, SIGNAL(sliderMoved(int)), this, SLOT(motorDialMoved(int)) );
 
 	connect(ui->accelerationSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setAcceleration(double)) );
 	connect(ui->speedSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeed(double)) );
+
+	// camera
+	connect(ui->cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeCamera(int)));
 
 }
 
@@ -314,6 +347,10 @@ void QCstmConfigMonitoring::on_stepperUseCalibCheckBox_toggled(bool checked) {
 		QString posS;
 		posS = QString::number( targetAng , 'f', 1 );
 		ui->motorCurrentPoslcdNumber->display( posS );
+		// If the wasn't a match between target and current I make it match here.
+		// Go green.
+		ui->motorCurrentPoslcdNumber->setPalette(Qt::green);
+		ui->motorCurrentPoslcdNumber->setToolTip("Target reached.");
 
 	} else {
 
@@ -328,7 +365,7 @@ void QCstmConfigMonitoring::on_stepperUseCalibCheckBox_toggled(bool checked) {
 		double currentPos = _stepper->getCurrPos(motorId);
 		//double currentAng = _stepper->StepToAngle(motorId, currentPos);
 		//if ( currentPos !=  currentAng ) {
-			ui->targetPosSpinBox->setValue( currentPos );
+		ui->targetPosSpinBox->setValue( currentPos );
 		//}
 		QString posS;
 		posS = QString::number( currentPos , 'ldd', 0 );
@@ -350,6 +387,168 @@ void QCstmConfigMonitoring::stepsModeGUI(){
 
 }
 
+void QCstmConfigMonitoring::on_cameraCheckBox_toggled(bool checked) {
+
+	// temporarily disconnect the reaction to changes in the list
+	disconnect(ui->cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeCamera(int)));
+
+	if ( ! _cameraOn && checked ) {
+
+		cameraSearch();
+
+		//cameraResize();
+
+		cameraSetup();
+
+		cameraOn();
+
+
+	} else if ( ! checked ) {
+
+		cameraOff();
+
+	}
+
+	// temporarily disconnect the reaction to changes in the list
+	connect(ui->cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeCamera(int)));
+
+}
+
+void QCstmConfigMonitoring::changeCamera(int index) {
+
+	// temporarily disconnect the reaction to changes in the list
+	disconnect(ui->cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeCamera(int)));
+
+	// turn off any previous camera
+	cameraOff();
+
+	// Pick up this camera
+	cameraSearch( index );
+
+	// temporarily disconnect the reaction to changes in the list
+	connect(ui->cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeCamera(int)));
+
+	cameraSetup();
+
+	cameraOn();
+
+}
+
+void QCstmConfigMonitoring::cameraResize() {
+
+	QRect dockGeo = ui->videoDockWidget->geometry();
+
+	cout << "QCstmConfigMonitoring::cameraResize() " << dockGeo.x() << ", " << dockGeo.y() << endl;
+
+	//ui->videoWidget->setGeometry( dockGeo );
+
+}
+
+void QCstmConfigMonitoring::cameraOff() {
+
+	if ( _imageCapture ) {
+		delete _imageCapture; _imageCapture = 0x0;
+	}
+
+	if ( _viewfinder ) {
+		delete _viewfinder; _viewfinder = 0x0;
+	}
+
+	if ( _camera ) {
+		delete _camera;
+		_camera = 0x0;
+	}
+
+	// empty the ui->cameraComboBox
+	int nItems = ui->cameraComboBox->count();
+	for (int i = 0 ; i < nItems ; i++) {
+		ui->cameraComboBox->removeItem( 0 ); // you are always removing the first item
+	}
+
+	_cameraOn = false;
+
+}
+
+void QCstmConfigMonitoring::cameraSearch (int indexRequest){
+
+	// temporarily disconnect the reaction to changes in the list
+	disconnect(ui->cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeCamera(int)));
+
+	if (QCameraInfo::availableCameras().count() > 0) {
+		cout << "[CAM ] Camera found.  Number of cameras: " << QCameraInfo::availableCameras().count() << endl;
+	} else {
+		string messg = "No camera present";
+		QMessageBox::warning ( this, tr("Connect camera"), tr( messg.c_str() ) );
+	}
+
+
+	QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+	int index = 0;
+
+	foreach (const QCameraInfo & cameraInfo, cameras) {
+
+		QString cameraName = cameraInfo.deviceName();
+		cout << "       [" << index << "] " << cameraName.toStdString() << endl;
+
+		ui->cameraComboBox->insertItem( index++, cameraInfo.deviceName() );
+
+		// Pick up the last camera if the indexRequest is -1.  Else pick the one requested
+		if ( indexRequest == -1 && index == QCameraInfo::availableCameras().count() ) {
+			_cameraId = index - 1;
+			ui->cameraComboBox->setCurrentIndex( _cameraId );
+			_camera = new QCamera(cameraInfo);
+		} else if ( index - 1 == indexRequest ) {
+			_cameraId = index - 1;
+			ui->cameraComboBox->setCurrentIndex( _cameraId );
+			_camera = new QCamera(cameraInfo);
+		}
+
+	}
+
+	if( _camera ) _cameraOn = true;
+
+	// connect it back
+	connect(ui->cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeCamera(int)));
+
+}
+
+
+void QCstmConfigMonitoring::cameraSetup() {
+
+	// In C++, your choice depends on whether you are using widgets, or QGraphicsView.
+	// The QCameraViewfinder class is used in the widgets case, and QGraphicsVideoItem
+	// is useful for QGraphicsView.
+	if ( ! _viewfinder ) _viewfinder = new QCameraViewfinder;
+	_camera->setViewfinder(_viewfinder);
+	_viewfinder->show();
+
+    //cameraResize();
+
+	//_viewfinder->setParent( ui->videoDockWidget );
+
+	ui->videoDockWidget->setWidget( _viewfinder );
+	ui->videoDockWidget->toggleViewAction();
+
+
+}
+
+void QCstmConfigMonitoring::cameraOn(){
+
+	if ( ! _imageCapture ) _imageCapture = new QCameraImageCapture(_camera);
+	_camera->setCaptureMode(QCamera::CaptureStillImage);
+	_camera->start(); // Viewfinder frames start flowing
+
+	//on half pressed shutter button
+	_camera->searchAndLock();
+
+	//on shutter button pressed
+	_imageCapture->capture();
+
+	//on shutter button released
+	_camera->unlock();
+
+
+}
 
 void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
 
@@ -396,6 +595,11 @@ void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
 		accS += QString::number( parsMap[motorid].maxAcc , 'f', 1 );
 		ui->accelerationSpinBox->setToolTip( accS );
 
+		// The rest of the values should have been read from the configuration at startup
+		double configAcc = _mpx3gui->getConfig()->getStepperAcceleration();
+		if ( configAcc >= parsMap[motorid].minAcc && configAcc <= parsMap[motorid].maxAcc ) {
+			ui->accelerationSpinBox->setValue( configAcc );
+		}
 
 
 	} else {
@@ -419,6 +623,34 @@ void QCstmConfigMonitoring::on_motorResetButton_clicked() {
 	// And arm again
 	on_stepperMotorCheckBox_toggled( true );
 
+}
+
+void QCstmConfigMonitoring::ConfigCalibPos0Changed(double val) {
+	QStandardItemModel * model = (QStandardItemModel *) ui->stepperCalibrationTableView->model();
+	QModelIndex index = model->index(0,0);
+	QVariant var(val);
+	model->setData( index, var );
+}
+
+void QCstmConfigMonitoring::ConfigCalibAngle0Changed(double val) {
+	QStandardItemModel * model = (QStandardItemModel *) ui->stepperCalibrationTableView->model();
+	QModelIndex index = model->index(0,1);
+	QVariant var(val);
+	model->setData( index, var );
+}
+
+void QCstmConfigMonitoring::ConfigCalibPos1Changed(double val) {
+	QStandardItemModel * model = (QStandardItemModel *) ui->stepperCalibrationTableView->model();
+	QModelIndex index = model->index(1,0);
+	QVariant var(val);
+	model->setData( index, var );
+}
+
+void QCstmConfigMonitoring::ConfigCalibAngle1Changed(double val) {
+	QStandardItemModel * model = (QStandardItemModel *) ui->stepperCalibrationTableView->model();
+	QModelIndex index = model->index(1,1);
+	QVariant var(val);
+	model->setData( index, var );
 }
 
 void QCstmConfigMonitoring::on_stepperSetZeroPushButton_clicked() {
@@ -487,6 +719,9 @@ void QCstmConfigMonitoring::motorDialMoved(int val) {
 
 void QCstmConfigMonitoring::setAcceleration(double acc) {
 
+	// avoid to set if the device is not connected
+	if ( !_stepper ) return;
+
 	// Set the new acceleration
 	int motorId = ui->motorIdSpinBox->value();
 	_stepper->SetAcceleration( motorId, acc );
@@ -494,6 +729,9 @@ void QCstmConfigMonitoring::setAcceleration(double acc) {
 }
 
 void QCstmConfigMonitoring::setSpeed(double speed) {
+
+	// avoid to set if the device is not connected
+	if ( !_stepper ) return;
 
 	// Set the new acceleration
 	int motorId = ui->motorIdSpinBox->value();
@@ -556,8 +794,10 @@ void ConfigStepperThread::run() {
 	//  the bets the stepper can do is 2.7 degrees.  In that case color the LCD
 	if ( posDisplay != _ui->targetPosSpinBox->value() ) {
 		_ui->motorCurrentPoslcdNumber->setPalette(Qt::yellow);
+		_ui->motorCurrentPoslcdNumber->setToolTip("Requested target couldn't be reached exactly.");
 	} else {
 		_ui->motorCurrentPoslcdNumber->setPalette(Qt::green);
+		_ui->motorCurrentPoslcdNumber->setToolTip("Target reached.");
 	}
 
 }

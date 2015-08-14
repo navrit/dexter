@@ -308,6 +308,42 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
       if(it != JSobject.end())
         setDecodeFrames(it.value().toBool());
     }
+
+  itParent = JSobjectParent.find("StepperConfig");
+  if ( itParent != JSobjectParent.end() ) {
+
+	  QJsonObject JSobject = itParent.value().toObject();
+
+      it = JSobject.find("Acceleration");
+      if(it != JSobject.end())
+        setStepperConfigAcceleration(it.value().toDouble());
+
+      it = JSobject.find("Speed");
+      if(it != JSobject.end())
+        setStepperConfigSpeed(it.value().toDouble());
+
+      it = JSobject.find("UseCalib");
+      if(it != JSobject.end())
+        setStepperConfigUseCalib(it.value().toBool());
+
+      it = JSobject.find("CalibPos0");
+      if(it != JSobject.end())
+        setStepperConfigCalibPos0(it.value().toDouble());
+
+      it = JSobject.find("CalibAngle0");
+      if(it != JSobject.end())
+        setStepperConfigCalibAngle0(it.value().toDouble());
+
+      it = JSobject.find("CalibPos1");
+      if(it != JSobject.end())
+        setStepperConfigCalibPos1(it.value().toDouble());
+
+      it = JSobject.find("CalibAngle1");
+      if(it != JSobject.end())
+        setStepperConfigCalibAngle1(it.value().toDouble());
+
+    }
+
   if(includeDacs){
       for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++)
         _dacVals[i].clear();

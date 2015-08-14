@@ -220,13 +220,6 @@
      </item>
      <item>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="1" column="1">
-        <widget class="QLabel" name="label_12">
-         <property name="text">
-          <string>Port:</string>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="0">
         <widget class="QCheckBox" name="tempReadingActivateCheckBox">
          <property name="text">
@@ -234,7 +227,14 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="4">
+       <item row="1" column="1">
+        <widget class="QLabel" name="label_12">
+         <property name="text">
+          <string>Port:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
         <widget class="QLabel" name="label_0">
          <property name="text">
           <string>Remote Temp (C):</string>
@@ -248,29 +248,36 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="5">
+       <item row="0" column="4">
         <widget class="QLabel" name="remoteTempMeasLabel">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="1" column="5">
-        <widget class="QLabel" name="localTempMeasLabel">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
+       <item row="3" column="4">
+        <widget class="QDoubleSpinBox" name="samplingSpinner"/>
        </item>
-       <item row="1" column="4">
+       <item row="1" column="3">
         <widget class="QLabel" name="label_10">
          <property name="text">
           <string>Local Temp (C):</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="5">
-        <widget class="QDoubleSpinBox" name="samplingSpinner"/>
+       <item row="1" column="4">
+        <widget class="QLabel" name="localTempMeasLabel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="3">
+        <widget class="QLabel" name="label_1">
+         <property name="text">
+          <string>Sampling (s):</string>
+         </property>
+        </widget>
        </item>
        <item row="1" column="2">
         <widget class="QSpinBox" name="portSpinner">
@@ -279,12 +286,15 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="4">
-        <widget class="QLabel" name="label_1">
+       <item row="8" column="3">
+        <widget class="QLabel" name="label_14">
          <property name="text">
-          <string>Sampling (s):</string>
+          <string>Motor Id:</string>
          </property>
         </widget>
+       </item>
+       <item row="8" column="4">
+        <widget class="QSpinBox" name="motorIdSpinBox"/>
        </item>
        <item row="0" column="2">
         <widget class="QLineEdit" name="ipLineEdit">
@@ -296,34 +306,24 @@
          </property>
         </widget>
        </item>
-       <item row="8" column="4">
-        <widget class="QLabel" name="label_14">
-         <property name="text">
-          <string>Motor Id:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="5">
-        <widget class="QSpinBox" name="motorIdSpinBox"/>
-       </item>
-       <item row="9" column="5">
+       <item row="9" column="4">
         <widget class="QPushButton" name="motorResetButton">
          <property name="text">
           <string>Reset stepper</string>
          </property>
         </widget>
        </item>
-       <item row="11" column="5">
+       <item row="10" column="4">
+        <widget class="QLCDNumber" name="motorCurrentPoslcdNumber"/>
+       </item>
+       <item row="11" column="4">
         <widget class="QDial" name="motorDial">
          <property name="maximum">
           <number>360</number>
          </property>
         </widget>
        </item>
-       <item row="10" column="5">
-        <widget class="QLCDNumber" name="motorCurrentPoslcdNumber"/>
-       </item>
-       <item row="10" column="4">
+       <item row="10" column="3">
         <widget class="QLabel" name="stepperCurrentPosLabel">
          <property name="text">
           <string>Current pos:</string>
@@ -372,6 +372,13 @@
          </property>
         </widget>
        </item>
+       <item row="11" column="1">
+        <widget class="QCheckBox" name="stepperUseCalibCheckBox">
+         <property name="text">
+          <string>use calib</string>
+         </property>
+        </widget>
+       </item>
        <item row="10" column="2">
         <widget class="QDoubleSpinBox" name="targetPosSpinBox">
          <property name="decimals">
@@ -385,10 +392,10 @@
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
-        <widget class="QCheckBox" name="stepperUseCalibCheckBox">
+       <item row="11" column="3">
+        <widget class="QPushButton" name="motorGoToTargetButton">
          <property name="text">
-          <string>use calib</string>
+          <string>Go to target</string>
          </property>
         </widget>
        </item>
@@ -405,6 +412,13 @@
          </property>
         </spacer>
        </item>
+       <item row="9" column="3">
+        <widget class="QPushButton" name="stepperSetZeroPushButton">
+         <property name="text">
+          <string>SetZero</string>
+         </property>
+        </widget>
+       </item>
        <item row="11" column="2">
         <widget class="QTableView" name="stepperCalibrationTableView">
          <property name="layoutDirection">
@@ -412,18 +426,29 @@
          </property>
         </widget>
        </item>
-       <item row="11" column="4">
-        <widget class="QPushButton" name="motorGoToTargetButton">
+       <item row="4" column="0">
+        <widget class="QCheckBox" name="cameraCheckBox">
          <property name="text">
-          <string>Go to target</string>
+          <string>camera</string>
          </property>
         </widget>
        </item>
-       <item row="9" column="4">
-        <widget class="QPushButton" name="stepperSetZeroPushButton">
+       <item row="4" column="1">
+        <widget class="QLabel" name="label">
          <property name="text">
-          <string>SetZero</string>
+          <string>Device:</string>
          </property>
+        </widget>
+       </item>
+       <item row="4" column="2">
+        <widget class="QComboBox" name="cameraComboBox"/>
+       </item>
+       <item row="6" column="2">
+        <widget class="QDockWidget" name="videoDockWidget">
+         <property name="features">
+          <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+         </property>
+         <widget class="QWidget" name="dockWidgetContents"/>
         </widget>
        </item>
       </layout>

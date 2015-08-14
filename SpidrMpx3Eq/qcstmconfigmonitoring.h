@@ -4,6 +4,11 @@
 #include <QWidget>
 #include "mpx3gui.h"
 
+#include <QCameraInfo>
+#include <QCameraViewfinder>
+#include <QCameraImageCapture>
+#include <QtWidgets>
+
 class StepperMotorController;
 class ConfigStepperThread; // defined in this file at the bottom
 
@@ -29,6 +34,13 @@ public:
   void angleModeGUI();
   void stepsModeGUI();
 
+  void cameraSetup();
+  void cameraOn();
+  void cameraOff();
+  void cameraSearch(int indexRequest = -1);
+  void cameraResize();
+
+
 private slots:
   void on_SaveButton_clicked();
 
@@ -38,6 +50,7 @@ private slots:
 
   void on_ColourModeCheckBox_toggled(bool checked);
 
+  ////////////////////////////////////////////////////////////
   // Stepper
   void on_stepperMotorCheckBox_toggled(bool checked);
   void on_stepperUseCalibCheckBox_toggled(bool checked);
@@ -45,6 +58,10 @@ private slots:
   void on_motorResetButton_clicked();
   void on_stepperSetZeroPushButton_clicked();
 
+  void ConfigCalibPos0Changed(double);
+  void ConfigCalibAngle0Changed(double);
+  void ConfigCalibPos1Changed(double);
+  void ConfigCalibAngle1Changed(double);
   // dial
   void motorDialReleased();
   void motorDialMoved(int);
@@ -52,6 +69,10 @@ private slots:
   void setAcceleration(double);
   void setSpeed(double);
 
+  ////////////////////////////////////////////////////////////
+  // Camera
+  void on_cameraCheckBox_toggled(bool checked);
+  void changeCamera(int);
 
 private:
   Ui::QCstmConfigMonitoring *ui;
@@ -59,6 +80,12 @@ private:
 
   StepperMotorController * _stepper;
   ConfigStepperThread * _stepperThread;
+
+  bool _cameraOn;
+  QCamera * _camera;
+  QCameraViewfinder * _viewfinder;
+  QCameraImageCapture * _imageCapture;
+  int _cameraId;
 
 };
 
