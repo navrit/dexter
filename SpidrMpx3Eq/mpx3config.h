@@ -271,37 +271,7 @@ void setStepperConfigSpeed(double newVal) {
 
 }
 
-void setStepperConfigCalib(QStandardItem * item) {
-
-	int row = item->row();
-	int col = item->column();
-
-	// Check value integrity. Needs to convert to a double.
-	QVariant val = item->data(Qt::DisplayRole);
-	double dval = 0.0;
-	if ( val.canConvert<QString>() ) {
-
-		QString posS = val.toString();
-		bool valok = false;
-		double dval = posS.toDouble( &valok );
-
-		if( ! valok ) return;
-	}
-
-	// If the value is ok check where it goes
-
-	if        ( row == 0 && col == 0 ) {
-		setStepperConfigCalibPos0( dval );
-	} else if ( row == 0 && col == 1 ) {
-		setStepperConfigCalibAngle0( dval );
-	} else if ( row == 1 && col == 0 ) {
-		setStepperConfigCalibPos1( dval );
-	} else if ( row == 1 && col == 1 ) {
-		setStepperConfigCalibAngle1( dval );
-	}
-
-}
-
+void setStepperConfigCalib(QStandardItem * item);
 
 
 void setStepperConfigCalibPos0(double newVal) {

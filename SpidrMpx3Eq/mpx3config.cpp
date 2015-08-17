@@ -315,6 +315,7 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
 	  QJsonObject JSobject = itParent.value().toObject();
 
       it = JSobject.find("Acceleration");
+      double t1 = it.value().toDouble();
       if(it != JSobject.end())
         setStepperConfigAcceleration(it.value().toDouble());
 
@@ -369,7 +370,7 @@ bool Mpx3Config::toJsonFile(QString filename, bool includeDacs){
       printf("Couldn't open configuration file %s\n", filename.toStdString().c_str());
       return false;
     }
-  QJsonObject JSobjectParent, objIp, objDetector;
+  QJsonObject JSobjectParent, objIp, objDetector, objStepper;
   QJsonArray objDacsArray;
   objIp.insert("SpidrControllerIp", SpidrAddress.toString());
   objIp.insert("SpidrControllerPort", this->port);
@@ -385,8 +386,18 @@ bool Mpx3Config::toJsonFile(QString filename, bool includeDacs){
   objDetector.insert("ColourMode", this->colourMode);
   objDetector.insert("DecodeFrames", this->decodeFrames);
 
+  objStepper.insert("Acceleration", this->stepperAcceleration);
+  objStepper.insert("Speed", this->stepperSpeed);
+  objStepper.insert("UseCalib", this->stepperUseCalib);
+  objStepper.insert("CalibPos0", this->stepperCalibPos0);
+  objStepper.insert("CalibAngle0", this->stepperCalibAngle0);
+  objStepper.insert("CalibPos1", this->stepperCalibPos1);
+  objStepper.insert("CalibAngle1", this->stepperCalibAngle1);
+
   JSobjectParent.insert("IPConfig", objIp);
   JSobjectParent.insert("DetectorConfig", objDetector);
+  JSobjectParent.insert("StepperConfig", objStepper);
+
   if(includeDacs){
       for(int j = 0; j < this->getDacCount(); j++){
           QJsonObject obj;
@@ -402,3 +413,40 @@ bool Mpx3Config::toJsonFile(QString filename, bool includeDacs){
 
   return true;
 }
+
+void  Mpx3Config::setStepperConfigCalib(QStandardItem * item) {
+
+	int row = item->row();
+	int col = item->column();
+
+	// Check value integrity. Needs to convert to a double.
+	QVariant val = item->data(Qt::DisplayRole);
+	double dval = 0.0;
+	QString posS;
+	if ( val.canConvert<QString>() ) {
+
+		posS = val.toString();
+		cout << posS.toStdString() << endl;
+		bool valok = false;
+		double dval = posS.toDouble( &valok );
+		cout << dval << endl;
+
+		if( ! valok ) return;
+
+	}
+
+	// If the value is ok check where it goes
+
+	if        ( row == 0 && col == 0 ) {
+		setStepperConfigCalibPos0( dval );
+	} else if ( row == 0 && col == 1 ) {
+		setStepperConfigCalibAngle0( dval );
+	} else if ( row == 1 && col == 0 ) {
+		setStepperConfigCalibPos1( dval );
+	} else if ( row == 1 && col == 1 ) {
+		setStepperConfigCalibAngle1( dval );
+	}
+
+}
+
+

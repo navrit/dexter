@@ -150,20 +150,12 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
 	//connect(ui->speedSpinBox, SIGNAL(valueChanged(double)), config, SLOT(setStepperConfigSpeed(double)));
 	//connect(config, SIGNAL(SpeedChanged(double)), ui->speedSpinBox, SLOT(setValue(double)));
 
-	// This line deals with all elements in the calibration table :)
-	//connect(ui->stepperCalibrationTableView->model(), SIGNAL(itemChanged(QStandardItem *)), config, SLOT(setStepperConfigCalib(QStandardItem *)));
-	// Faut faire ceci 'a pedale.
-	//connect(config, SIGNAL(CalibPos0Changed(double)), this, SLOT(ConfigCalibPos0Changed(double)));
-	//connect(config, SIGNAL(CalibAngle0Changed(double)), this, SLOT(ConfigCalibAngle0Changed(double)));
-	//connect(config, SIGNAL(CalibPos1Changed(double)), this, SLOT(ConfigCalibPos1Changed(double)));
-	//connect(config, SIGNAL(CalibAngle1Changed(double)), this, SLOT(ConfigCalibAngle1Changed(double)));
 
 	// When the slider released, talk to the hardware
 	QObject::connect( ui->motorDial, SIGNAL(sliderReleased()), this, SLOT(motorDialReleased()) );
 	QObject::connect( ui->motorDial, SIGNAL(sliderMoved(int)), this, SLOT(motorDialMoved(int)) );
 
-	connect(ui->accelerationSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setAcceleration(double)) );
-	connect(ui->speedSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeed(double)) );
+
 
 	// camera
 	connect(ui->cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeCamera(int)));
@@ -372,6 +364,8 @@ void QCstmConfigMonitoring::on_stepperUseCalibCheckBox_toggled(bool checked) {
 		ui->motorCurrentPoslcdNumber->display( posS );
 
 	}
+	// send to config
+	_mpx3gui->getConfig()->setStepperConfigUseCalib( checked );
 
 }
 
@@ -532,7 +526,7 @@ void QCstmConfigMonitoring::cameraSetup() {
 
 }
 
-void QCstmConfigMonitoring::cameraOn(){
+void QCstmConfigMonitoring::cameraOn() {
 
 	if ( ! _imageCapture ) _imageCapture = new QCameraImageCapture(_camera);
 	_camera->setCaptureMode(QCamera::CaptureStillImage);
@@ -554,6 +548,14 @@ void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
 
 	// if the handler hasn't been initialized
 	if ( ! _stepper ) _stepper = new StepperMotorController;
+
+	// Make the table unsensitive with respect to the config for a moment.
+	// This reconnects at the end of this function.
+	// This line deals with all elements in the calibration table :)
+	disconnect(ui->stepperCalibrationTableView->model(), SIGNAL(itemChanged(QStandardItem *)), _mpx3gui->getConfig(), SLOT(setStepperConfigCalib(QStandardItem *)));
+	disconnect(ui->accelerationSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setAcceleration(double)) );
+	disconnect(ui->speedSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeed(double)) );
+	// the missing boolead (ui->stepperUseCalibCheckBox) is managed by an implicit slot (on_stepperUseCalibCheckBox_toggled)
 
 	// On turn on --> setup, on turn off --> close
 	if ( checked == true ) {
@@ -595,12 +597,42 @@ void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
 		accS += QString::number( parsMap[motorid].maxAcc , 'f', 1 );
 		ui->accelerationSpinBox->setToolTip( accS );
 
+		// From config //////////////////////////////////////////////////////////////////
 		// The rest of the values should have been read from the configuration at startup
 		double configAcc = _mpx3gui->getConfig()->getStepperAcceleration();
 		if ( configAcc >= parsMap[motorid].minAcc && configAcc <= parsMap[motorid].maxAcc ) {
 			ui->accelerationSpinBox->setValue( configAcc );
+			setAcceleration( configAcc );
+		}
+		double configSpeed = _mpx3gui->getConfig()->getStepperSpeed();
+		if ( configSpeed >= parsMap[motorid].minVel && configSpeed <= parsMap[motorid].maxVel ) {
+			ui->speedSpinBox->setValue( configSpeed );
+			setSpeed( configSpeed );
 		}
 
+		QStandardItemModel * model = (QStandardItemModel *) ui->stepperCalibrationTableView->model();
+		QModelIndex index = model->index(0,0);
+		double t1 = _mpx3gui->getConfig()->getStepperCalibPos0();
+		QVariant var0( t1 );
+		model->setData( index, var0 );
+
+		index = model->index(0,1);
+		QVariant var1( _mpx3gui->getConfig()->getStepperCalibAngle0() );
+		model->setData( index, var1 );
+
+		index = model->index(1,0);
+		QVariant var2( _mpx3gui->getConfig()->getStepperCalibPos1() );
+		model->setData( index, var2 );
+
+		index = model->index(1,1);
+		QVariant var3( _mpx3gui->getConfig()->getStepperCalibAngle1() );
+		model->setData( index, var3 );
+
+		if ( _mpx3gui->getConfig()->getStepperUseCalib() ) {
+			ui->stepperUseCalibCheckBox->setChecked( true );
+			// and call the corresponding actions as if the user had toggled it
+			on_stepperUseCalibCheckBox_toggled( true );
+		}
 
 	} else {
 
@@ -610,6 +642,11 @@ void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
 
 	}
 
+	// This line deals with all elements in the calibration table :)
+	connect(ui->stepperCalibrationTableView->model(), SIGNAL(itemChanged(QStandardItem *)), _mpx3gui->getConfig(), SLOT(setStepperConfigCalib(QStandardItem *)));
+	connect(ui->accelerationSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setAcceleration(double)) );
+	connect(ui->speedSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeed(double)) );
+	// the missing boolead (ui->stepperUseCalibCheckBox) is managed by an implicit slot (on_stepperUseCalibCheckBox_toggled)
 
 }
 
@@ -625,33 +662,14 @@ void QCstmConfigMonitoring::on_motorResetButton_clicked() {
 
 }
 
-void QCstmConfigMonitoring::ConfigCalibPos0Changed(double val) {
-	QStandardItemModel * model = (QStandardItemModel *) ui->stepperCalibrationTableView->model();
-	QModelIndex index = model->index(0,0);
-	QVariant var(val);
-	model->setData( index, var );
-}
-
-void QCstmConfigMonitoring::ConfigCalibAngle0Changed(double val) {
-	QStandardItemModel * model = (QStandardItemModel *) ui->stepperCalibrationTableView->model();
-	QModelIndex index = model->index(0,1);
-	QVariant var(val);
-	model->setData( index, var );
-}
-
-void QCstmConfigMonitoring::ConfigCalibPos1Changed(double val) {
-	QStandardItemModel * model = (QStandardItemModel *) ui->stepperCalibrationTableView->model();
-	QModelIndex index = model->index(1,0);
-	QVariant var(val);
-	model->setData( index, var );
-}
-
+/*
 void QCstmConfigMonitoring::ConfigCalibAngle1Changed(double val) {
 	QStandardItemModel * model = (QStandardItemModel *) ui->stepperCalibrationTableView->model();
 	QModelIndex index = model->index(1,1);
 	QVariant var(val);
 	model->setData( index, var );
 }
+*/
 
 void QCstmConfigMonitoring::on_stepperSetZeroPushButton_clicked() {
 
@@ -726,6 +744,9 @@ void QCstmConfigMonitoring::setAcceleration(double acc) {
 	int motorId = ui->motorIdSpinBox->value();
 	_stepper->SetAcceleration( motorId, acc );
 
+	// send to config
+	_mpx3gui->getConfig()->setStepperConfigAcceleration( acc );
+
 }
 
 void QCstmConfigMonitoring::setSpeed(double speed) {
@@ -736,6 +757,9 @@ void QCstmConfigMonitoring::setSpeed(double speed) {
 	// Set the new acceleration
 	int motorId = ui->motorIdSpinBox->value();
 	_stepper->SetSpeed(motorId, speed);
+
+	// send to config
+	_mpx3gui->getConfig()->setStepperConfigSpeed( speed );
 
 }
 

@@ -57,11 +57,8 @@ private slots:
   void on_motorGoToTargetButton_clicked();
   void on_motorResetButton_clicked();
   void on_stepperSetZeroPushButton_clicked();
+  //void ConfigCalibAngle1Changed(double);
 
-  void ConfigCalibPos0Changed(double);
-  void ConfigCalibAngle0Changed(double);
-  void ConfigCalibPos1Changed(double);
-  void ConfigCalibAngle1Changed(double);
   // dial
   void motorDialReleased();
   void motorDialMoved(int);
