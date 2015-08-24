@@ -43,6 +43,7 @@ class Mpx3Config: public QObject {
 	QVector<detector_response> _responseChips;
 	QVector<int> _activeChips;
 
+
 public:
 	Mpx3Config();
 	void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
@@ -68,8 +69,15 @@ public:
 	void checkChipResponse(int devIndx, detector_response dr);
 	bool detectorResponds(int devIndx);
 
+	typedef struct {
+		int nTriggers;
+		bool equalizationBit;
+		int DiscCsmSpm;
+	} scan_config_parameters;
+
 	void SendConfiguration();
 	void Configuration(bool reset, int deviceIndex);
+	void Configuration(bool reset, int deviceIndex, scan_config_parameters);
 
 	quint32 getIpAddressInt(){return SpidrAddress.toIPv4Address();}
 	uint16_t getIpAddressPort(){return port;}

@@ -41,6 +41,10 @@ public:
 	void AppendSet(BarChartProperties);
 	unsigned int GetNsets(){return _nSets; };
 
+
+	void SetLogY(bool setl);
+	void SetLogX(bool setl);
+
 	void SetValueInSet(unsigned int setId, double val, double weight = 1);
 	//void PushBackToSet(unsigned int setId, double val, double weight = 1);
 	//void DumpData();

@@ -65,6 +65,8 @@ public:
 	double StepToAngle(int motorid, double step);
 	double AngleToStep(int motorid, double angle);
 
+	long long int getPositionMin(int motorid);
+	long long int getPositionMax(int motorid);
 
 	// Others
 	int stepper_simple(int motorid = 0); //<! Just a test routine

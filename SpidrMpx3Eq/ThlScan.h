@@ -10,6 +10,7 @@
 #include <set>
 #include <vector>
 #include <QThread>
+#include <QtWidgets>
 
 #include "mpx3gui.h"
 
@@ -109,7 +110,7 @@ public:
 	bool ThlScanEndConditionFineTuning(set<int> reworkPixelsSet, int thl, int Nsigma);
 	set<int> NeedsReadjustment(set<int> reworkPixelsSet, set<int> & doneAndNoisySet, int Nsigma);
 	void DumpRework(set<int> reworkSubset, int thl);
-	void DumpSet(set<int> reworkSubset, QString name);
+	void DumpSet(set<int> reworkSubset, QString name, int max = 100);
 
 	void SetSetId(int si) { _setId = si; };
 	int GetSetId() { return _setId; };

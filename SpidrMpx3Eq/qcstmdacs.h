@@ -210,6 +210,8 @@ private:
 	int _deviceIndex;
 	// Samples
 	int _nSamples;
+	// Simultaneous settings
+	bool _dacsSimultaneous;
 
 	// In case only a subset of the DACs are selected
 	//  to produce the scan, keep track of the id's
@@ -222,6 +224,8 @@ private:
 
 
 private slots:
+
+void on_allDACSimultaneousCheckBox_toggled(bool checked);
 
 void setTextWithIdx(QString,int);
 void UncheckAllDACs();

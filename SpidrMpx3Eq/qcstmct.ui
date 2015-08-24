@@ -23,9 +23,9 @@
      <widget class="QWidget" name="verticalLayoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QPushButton" name="rotatePushButton">
+        <widget class="QPushButton" name="startCTPushButton">
          <property name="text">
-          <string>PushButton</string>
+          <string>Start CT</string>
          </property>
         </widget>
        </item>

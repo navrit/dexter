@@ -178,6 +178,22 @@ void StepperMotorController::SetAcceleration(int motorid, double val) {
 
 }
 
+long long int StepperMotorController::getPositionMin(int motorid) {
+
+	long long int pos;
+	CPhidgetStepper_getPositionMin(_stepper, motorid, &pos);
+
+	return pos;
+}
+
+long long int StepperMotorController::getPositionMax(int motorid) {
+
+	long long int pos;
+	CPhidgetStepper_getPositionMax(_stepper, motorid, &pos);
+
+	return pos;
+}
+
 void StepperMotorController::SetSpeed(int motorid, double val) {
 
 	_parsMap[motorid].vel = val;

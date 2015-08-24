@@ -44,13 +44,18 @@ _ui(new Ui::QCstmEqualization)
 	_nTriggers = 1;
 	_spacing = 4;
 	_minScanTHL = 0;
-	_maxScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size);
+	_maxScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size) / 2;
 	_stepScan = __default_step_scan;
 	_eqresults = 0x0;
 	_setId = 0;
 	_global_adj = 0x0;
 	_nChips = 1;
 	_eqMap.clear();
+
+	_ui->rangeDirectionEqCheckBox->setToolTip("When checked the scan is descendant");
+	_scanDescendant = true;
+	_ui->rangeDirectionEqCheckBox->setChecked( true );
+
 
 	// Limits in the input widgets
 	SetLimits();
@@ -63,6 +68,8 @@ _ui(new Ui::QCstmEqualization)
 	_stepDone = new bool[__EQStatus_Count];
 	for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
 
+	connect(_ui->nHitsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setNHits(int)) );
+
 }
 
 Ui::QCstmEqualization * QCstmEqualization::GetUI() {
@@ -74,7 +81,20 @@ QCstmEqualization::~QCstmEqualization()
 	delete _ui;
 }
 
+void QCstmEqualization::setNHits(int val){
+	_nHits = val;
+}
+
+void QCstmEqualization::on_rangeDirectionCheckBox_toggled(bool checked) {
+	_scanDescendant = checked;
+}
+
 void QCstmEqualization::SetLimits(){
+
+	_ui->nHitsSpinBox->setMinimum( 1 );
+	_ui->nHitsSpinBox->setMaximum( 100 );
+	_ui->nHitsSpinBox->setValue( 3 );
+	_nHits = 3;
 
 	//
 	_ui->devIdSpinBox->setMinimum( 0 );
@@ -103,6 +123,15 @@ void QCstmEqualization::SetLimits(){
 
 }
 
+void QCstmEqualization::on_logYCheckBox_toggled(bool checked) {
+
+	if ( checked ) {
+		GetUI()->_histoWidget->SetLogY( true );
+	} else {
+		GetUI()->_histoWidget->SetLogY( false );
+	}
+	GetUI()->_histoWidget->replot();
+}
 
 void QCstmEqualization::InitEqualization() {
 
@@ -111,6 +140,8 @@ void QCstmEqualization::InitEqualization() {
 	_scanIndex = 0;
 	for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
 	GetUI()->_histoWidget->Clean();
+	//GetUI()->_histoWidget->SetLogY( true );
+
 	// No sets available
 	_setId = 0;
 	// Clear the equalization results
@@ -128,7 +159,7 @@ void QCstmEqualization::InitEqualization() {
 	_ui->eqStepSpinBox->setValue( _stepScan );
 
 	// FIXME ! ... it can be other threshold
-	SetMaxScan( (MPX3RX_DAC_TABLE[ MPX3RX_DAC_THRESH_0 ].dflt * 2) - 1 );
+	//SetMaxScan( (MPX3RX_DAC_TABLE[ MPX3RX_DAC_THRESH_0 ].dflt * 2) - 1 );
 
 }
 
@@ -232,6 +263,10 @@ void QCstmEqualization::StartEqualization(int chipId) {
 
 
 	} else if ( EQ_NEXT_STEP(__DAC_Disc_Optimization_100 ) ) {
+
+		// Check if the previous scan has been stopped by the user
+//		_scans
+
 
 		// Extract results from immediately previous scan. Calc the stats now (this is quick)
 		_scans[_scanIndex - 1]->ExtractStatsOnChart(_setId - 1);
@@ -850,7 +885,7 @@ void QCstmEqualization::Configuration(bool reset) {
 	SetAllAdjustmentBits(spidrcontrol, 0x0, 0x0);
 
 	// OMR
-	//_spidrcontrol->setPolarity( true );		// Holes collection
+	//spidrcontrol->setPolarity( _deviceIndex, false );		// true: Holes collection
 	//_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
 	spidrcontrol->setPixelDepth( _deviceIndex, 12 );
 	spidrcontrol->setColourMode( _deviceIndex, false ); 	// Fine Pitch
@@ -993,8 +1028,6 @@ void QCstmEqualization::SetupSignalsAndSlots() {
 	connect( _ui->eqMinSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeMin(int) ) );
 	connect( _ui->eqMaxSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeMax(int) ) );
 	connect( _ui->eqStepSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeStep(int) ) );
-
-
 
 }
 
@@ -1139,6 +1172,9 @@ Mpx3EqualizationResults::Mpx3EqualizationResults(){
 Mpx3EqualizationResults::~Mpx3EqualizationResults(){
 
 }
+
+
+
 void Mpx3EqualizationResults::SetPixelAdj(int pixId, int adj) {
 	_pixId_Adj[pixId] = adj;
 }
@@ -1261,6 +1297,10 @@ void Mpx3EqualizationResults::ExtrapolateAdjToTarget(int target, double eta_Adj_
 	// Here simply I go through every pixel and decide, according to the behaviour of
 	//   Adj(THL), which is the best adjustement.
 
+	int atmax = 0;
+	int atmin = 0;
+
+	int cntr = 0;
 	for ( int i = 0 ; i < __matrix_size ; i++ ) {
 		// Every pixel has a different reactive thl.  At this point i know the behavior of
 		//  Adj(THL) based on the mean.  I will assume that the slope is the same, but now
@@ -1268,17 +1308,24 @@ void Mpx3EqualizationResults::ExtrapolateAdjToTarget(int target, double eta_Adj_
 		//  cut.
 		double pixel_cut = _pixId_Adj[i] - (eta_Adj_THL * _pixId_Thl[i]);
 		// Now I can throw the extrapolation for every pixel to the equalization target
-		int adj = (int)(eta_Adj_THL * (double)target + pixel_cut);
+		int adj = floor( (eta_Adj_THL * (double)target)  +  pixel_cut );
+
+
 		// Replace the old matrix with this adjustment
-		if ( adj > 0x1F ) { 			// Deal with an impossibly high adjustement
+		if ( adj > 0x1F ) { 			// Deal with an impossibly high adjustment
 			_pixId_Adj[i] = 0x1F;
-		} else if ( adj < 0x0 ) { 		// Deal with an impossibly low adjustement
+		} else if ( adj < 0x0 ) { 		// Deal with an impossibly low adjustment
 			_pixId_Adj[i] = 0x0;
 		} else {
 			_pixId_Adj[i] = adj;
 		}
 
+		if ( _pixId_Adj[i] == 0x1F ) atmax++;
+		if ( _pixId_Adj[i] == 0x0 ) atmin++;
+
 	}
+
+	cout << "[INFO] Extrapolation formula used. Pixels set at max adj : " << atmax << ". Pixels set at min adj : " << atmin << endl;
 
 }
 

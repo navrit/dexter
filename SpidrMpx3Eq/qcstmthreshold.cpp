@@ -6,6 +6,7 @@
 #include "SpidrDaq.h"
 
 #include "mpx3gui.h"
+#include "mpx3config.h"
 #include "mpx3defs.h"
 #include "mpx3eq_common.h"
 #include "ui_mpx3gui.h"
@@ -23,19 +24,69 @@ QCstmThreshold::QCstmThreshold(QWidget *parent) :  QWidget(parent),  ui(new Ui::
 	}
 	ui->splitter->setSizes(defaultSizesMain);
 
+	_scanThread = 0x0;
+	_plotIdxCntr = 0;
+
 	// Signals & Slots
 	SetupSignalsAndSlots();
 
 	// GUI defaults
 	GUIDefaults();
 
+	ui->plot->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
+	// The legend
+	ui->plot->legend->setVisible( false ); // Nothing there yet...
+	QFont f = ui->plot->font();
+	f.setPointSize( 7 ); // and make a bit smaller for legend
+	ui->plot->legend->setFont( f );
+	ui->plot->legend->setBrush( QBrush(QColor(255,255,255,230)) );
+	// The axes
+	ui->plot->xAxis->setRange( 0, 511 ); // Maximum DAC range
+	ui->plot->yAxis->setRange( 0, 10000 );
+	f = ui->plot->font();  // Start out with Dialog's font..
+	f.setBold( true );
+	ui->plot->xAxis->setLabelFont( f );
+	ui->plot->yAxis->setLabelFont( f );
+	// The labels:
+	ui->plot->xAxis->setLabel("DAC");
+	ui->plot->yAxis->setLabel("counts");
+
+	/*
 	ui->framePlot->axisRect()->setupFullAxesBox(true);
 	QCPColorScale *colorScale = new QCPColorScale(ui->framePlot);
 	ui->framePlot->plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
 	colorScale->setType(QCPAxis::atRight); // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
+	 */
 	for(int i = 0; i < MPX3RX_DAC_COUNT;i++){
 		ui->scanTargetComboBox->addItem(MPX3RX_DAC_TABLE[i].name);
 	}
+
+	// Defaults
+	ui->eqMinSpinBox->setValue( 0 );
+	ui->eqMaxSpinBox->setValue( 100 );
+	ui->eqStepSpinBox->setValue( 2 );
+	ui->nTriggersSpinBox->setValue( 3 );
+	// Get the current one in the DACs
+	ui->devIdSpinBox->setValue( 2 );
+	ui->onAllChipsCheckBox->setChecked( false );
+	// After equalization spacing is not necessary for the scans.
+	// If not equalization present the user should tweak this value
+	//  to specific needs.
+	ui->spacingSpinBox->setValue( 0 );
+
+	ui->rangeDirectionCheckBox->setToolTip("When checked the scan is descendant");
+	_scanDescendant = false;
+	ui->rangeDirectionCheckBox->setChecked( false );
+
+	ui->keepCheckbox->setToolTip("When checked the previous plots are kept");
+	_keepPlots = true;
+	ui->keepCheckbox->setChecked( true );
+
+	ui->setEqualizationBitCheckBox->setToolTip("When checked the OMR equalization bit is turned on (debug)");
+	ui->setEqualizationBitCheckBox->setChecked( false );
+
+	_logyPlot = false;
+
 }
 
 QCstmThreshold::~QCstmThreshold()
@@ -43,87 +94,97 @@ QCstmThreshold::~QCstmThreshold()
 	delete ui;
 }
 
-int QCstmThreshold::getActiveTargetCode() {
-	return MPX3RX_DAC_TABLE[ui->scanTargetComboBox->currentIndex()-1].code;
+void QCstmThreshold::on_rangeDirectionCheckBox_toggled(bool checked) {
+	_scanDescendant = checked;
 }
+
+void QCstmThreshold::on_keepCheckbox_toggled(bool checked) {
+	_keepPlots = checked;
+}
+
+void QCstmThreshold::on_logyCheckBox_toggled(bool checked) {
+
+	_logyPlot = checked;
+
+	if ( _logyPlot ) ui->plot->yAxis->setScaleType( QCPAxis::stLogarithmic );
+	else ui->plot->yAxis->setScaleType( QCPAxis::stLinear );
+
+	ui->plot->replot();
+}
+
+int QCstmThreshold::getActiveTargetCode() {
+	return MPX3RX_DAC_TABLE[ui->scanTargetComboBox->currentIndex()].code;
+}
+
+QString QCstmThreshold::getActiveTargetName() {
+	return QString(MPX3RX_DAC_TABLE[ui->scanTargetComboBox->currentIndex()].name);
+}
+
 
 void QCstmThreshold::StartCalibration() {
 
-	// Configure, no reset
-	_mpx3gui->getConfig()->Configuration( false, 0 );
-
-
-	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
-
-	connect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
-	connect( this, SIGNAL( UpdateHeatMapSignal() ), this, SLOT( UpdateHeatMap() ) );
-
-	int dacCodeToScan = 1;
-	int minScan = 0;
-	int maxScan = 100;
-	int stepScan = 2;
-	int deviceIndex = 2;
-
-	int pixelsReactive = 0;
-	if(ui->sumCheckbox->isChecked())
-	  ui->plot->clearGraphs();
-	for(int itr = minScan ; itr <= maxScan ; itr += stepScan ) {
-
-		//cout << itr << endl;
-
-		// Set Dac
-		spidrcontrol->setDac( deviceIndex, dacCodeToScan, itr );
-		// Adjust the sliders and the SpinBoxes to the new value
-		connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
-		// Get the DAC back just to be sure and then slide&spin
-		int dacVal = 0;
-		spidrcontrol->getDac( deviceIndex, dacCodeToScan, &dacVal);
-		// SlideAndSpin works with the DAC index, no the code.
-		int dacIndex = _mpx3gui->GetUI()->DACsWidget->GetDACIndex( dacCodeToScan );
-		slideAndSpin( dacIndex,  dacVal );
-		disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
-
-		// Measure
-		// Start the trigger as configured
-		spidrcontrol->startAutoTrigger();
-		Sleep( 100 );
-
-		// See if there is a frame available
-		// I should get as many frames as triggers
-
-		while ( spidrdaq->hasFrame() ) {
-
-			int size_in_bytes = -1;
-			_data = spidrdaq->frameData(0, &size_in_bytes);
-			int cntr = 0;
-			for(int i = 0 ; i < size_in_bytes/4 ; i++) {
-				if( _data[i] != 0 ) cntr++;
-			}
-
-			// plot
-			if(ui->sumCheckbox->isChecked())
-			  addPoint(QPointF(itr, cntr),0);
-			else
-			  setPoint( QPointF(itr, cntr), 0);
-
-			pixelsReactive += ExtractScanInfo( _data, size_in_bytes, itr );
-
-			// Report to heatmap
-			//UpdateHeatMapSignal();
-
-			//
-			spidrdaq->releaseFrame();
-			Sleep(100);
-
+	//if( _scanThread ) delete _scanThread;
+	if ( _scanThread ) {
+		if ( _scanThread->isRunning() ) {
+			return;
 		}
-
+		//disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
+		delete _scanThread;
+		_scanThread = 0x0;
 	}
 
-	disconnect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
-	disconnect( this, SIGNAL( UpdateHeatMapSignal() ), this, SLOT( UpdateHeatMap() ) );
+	if ( ! _keepPlots ) {
+		// clear graphs and rewind
+		ui->plot->clearGraphs();
+		_plotIdxMap.clear();
+		_plotIdxCntr = 0;
+	}
 
-	cout << "[INFO] Scan finished" << endl;
+	// Look at the spacing
+	if ( ui->spacingSpinBox->value() == 0 ) {
+
+		SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
+		for (int i = 0 ; i < __array_size_x ; i++) {
+			for (int j = 0 ; j < __array_size_y ; j++) {
+				spidrcontrol->setPixelMaskMpx3rx(i, j, false);
+			}
+		}
+		// And send the configuration
+		spidrcontrol->setPixelConfigMpx3rx( ui->devIdSpinBox->value() );
+	}
+
+	cout << "adding : " << getActiveTargetName().toStdString() << endl;
+	addData( _plotIdxCntr );
+
+	QCPGraph * _graph = ui->plot->graph( _plotIdxCntr-1 ); // the right vector index
+
+	QPen pen( COLOR_TABLE[ _plotIdxCntr-1 ] );
+	pen.setWidth( 0.1 );
+	_graph->setPen( pen );
+	_graph->setName( QString(MPX3RX_DAC_TABLE[_plotIdxCntr-1].name) ); // the dac index
+
+	// Prepare plot
+	//ui->plot->xAxis->setLabel( getActiveTargetName() );
+	//ui->plot->clearGraphs();
+	//ui->plot->legend->setVisible( false );
+	ui->plot->replot();
+
+	// Configure the chip.  Custom configuration for a scan
+	Mpx3Config::scan_config_parameters expars;
+	expars.nTriggers = ui->nTriggersSpinBox->value();
+	expars.equalizationBit = false;
+	expars.DiscCsmSpm = 0x1; // Disc High
+	if ( ui->setEqualizationBitCheckBox->isChecked() ) expars.equalizationBit = true;
+
+	// Send the configuration
+	_mpx3gui->getConfig()->Configuration( false, ui->devIdSpinBox->value(), expars);
+
+	// Go on with the scan thread
+	_scanThread = new CustomScanThread( _mpx3gui, this );
+	_scanThread->ConnectToHardware();
+
+	_scanThread->start();
 
 }
 
@@ -206,23 +267,281 @@ void QCstmThreshold::addFrame(QPoint offset, int layer, int* data){
 }
 
 void QCstmThreshold::setPoint(QPointF data, int plot){
-  while(plot >= ui->plot->graphCount())
-    ui->plot->addGraph();
-  ui->plot->graph(plot)->removeData(data.x());
-  ui->plot->graph(plot)->addData(data.x(), data.y());
-  ui->plot->rescaleAxes();
-  ui->plot->replot();
+	while(plot >= ui->plot->graphCount())
+		ui->plot->addGraph();
+	ui->plot->graph(plot)->removeData(data.x());
+	ui->plot->graph(plot)->addData(data.x(), data.y());
+	ui->plot->rescaleAxes();
+	ui->plot->replot();
 }
 
 double QCstmThreshold::getPoint(int x, int plot){
-  if(plot >= ui->plot->graphCount())
-    return 0;
-  ui->plot->graph(plot)->data()->find(x);
-  if(ui->plot->graph(plot)->data()->find(x) == ui->plot->graph(plot)->data()->end())
-    return 0;
-  return ui->plot->graph(plot)->data()->find(x).value().value;
+	if(plot >= ui->plot->graphCount())
+		return 0;
+	ui->plot->graph(plot)->data()->find(x);
+	if(ui->plot->graph(plot)->data()->find(x) == ui->plot->graph(plot)->data()->end())
+		return 0;
+	return ui->plot->graph(plot)->data()->find(x).value().value;
 }
 
 void QCstmThreshold::addPoint(QPointF data, int plot){
-  return setPoint(QPointF(data.x(), data.y()+getPoint(data.x(),plot)), plot);
+	return setPoint(QPointF(data.x(), data.y()+getPoint(data.x(),plot)), plot);
+}
+
+
+void QCstmThreshold::addData(int dacIdx, int dacVal, double adcVal ) {
+
+	_graph = ui->plot->graph( _plotIdxMap[dacIdx] ); // the right vector index
+	_graph->addData( dacVal, adcVal );
+	ui->plot->yAxis->rescale( true );
+	ui->plot->xAxis->rescale( true );
+
+	ui->plot->replot();
+
+	// Actualize Slider, SpinBoxes, and Labels
+	//_dacSpinBoxes[dacIdx]->setValue( dacVal );
+	//_dacSliders[dacIdx]->setValue( dacVal );
+	// Labels are updated already through a SIGNAL/SLOT from the thread.
+
+}
+
+void QCstmThreshold::addData(int dacIdx) {
+
+	_plotIdxMap[dacIdx] = _plotIdxCntr;
+	_plotIdxCntr++;
+
+	// If starting a plot, create it first
+	ui->plot->addGraph();
+	_graph = ui->plot->graph( _plotIdxMap[dacIdx] ); // the right vector index
+
+	QPen pen( COLOR_TABLE[ dacIdx ] );
+	pen.setWidth( 0.1 );
+	_graph->setPen( pen );
+	_graph->setName( QString(MPX3RX_DAC_TABLE[dacIdx].name) ); // the dac index
+
+	// Do not use legend.  I will color the text boxes instead.
+	//_graph->addToLegend();
+	ui->plot->legend->setVisible( true );
+
+}
+
+CustomScanThread::CustomScanThread(Mpx3GUI * mpx3gui, QCstmThreshold * cstmThreshold) {
+
+	_mpx3gui = mpx3gui;
+	_cstmThreshold = cstmThreshold;
+	_ui = _cstmThreshold->GetUI();
+
+}
+
+void CustomScanThread::ConnectToHardware() {
+
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
+	// I need to do this here and not when already running the thread
+	// Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
+	if( spidrcontrol ) { spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
+	else { _srcAddr = 0; }
+
+	// The chart and the heatmap !
+	//_chart = _equalization->GetUI()->_histoWidget;
+	//_heatmap = _equalization->GetUI()->_intermediatePlot;
+
+}
+
+void CustomScanThread::run() {
+
+	// Open a new temporary connection to the spider to avoid collisions to the main one
+	// Extract the ip address
+	int ipaddr[4] = { 1, 1, 168, 192 };
+	if ( _srcAddr != 0 ) {
+		ipaddr[3] = (_srcAddr >> 24) & 0xFF;
+		ipaddr[2] = (_srcAddr >> 16) & 0xFF;
+		ipaddr[1] = (_srcAddr >>  8) & 0xFF;
+		ipaddr[0] = (_srcAddr >>  0) & 0xFF;
+	}
+	SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
+
+	if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
+		cout << "[ERR ] Device not connected !" << endl;
+		return;
+	}
+
+	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+
+	// Configure, no reset
+	//_mpx3gui->getConfig()->Configuration( false, 2, _ui->nTriggersSpinBox->value() );
+	//_mpx3gui->getConfig()->Configuration( false, 3, _ui->nTriggersSpinBox->value() );
+
+	//SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+	//SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+
+	//connect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
+	//connect( this, SIGNAL( UpdateHeatMapSignal() ), this, SLOT( UpdateHeatMap() ) );
+
+	connect( this, SIGNAL( addData(int, int, double) ), _cstmThreshold, SLOT( addData(int, int, double) ) );
+	connect( this, SIGNAL( addData(int) ), _cstmThreshold, SLOT( addData(int) ) );
+
+	int dacCodeToScan = _cstmThreshold->getActiveTargetCode();
+	int minScan = _ui->eqMinSpinBox->value();
+	int maxScan = _ui->eqMaxSpinBox->value();
+	int stepScan = _ui->eqStepSpinBox->value();
+	int deviceIndex = _ui->devIdSpinBox->value();
+
+	bool doReadFrames = true;
+	int pixelsReactive = 0;
+	int nReps = 0;
+
+	// Scan iterator observing direction
+	int dacItr = minScan;
+	if ( _cstmThreshold->isScanDescendant() ) dacItr = maxScan;
+	bool scanContinue = true;
+
+	for ( ; scanContinue ; ) {
+
+
+		// Set Dac
+		if ( _cstmThreshold->GetUI()->onAllChipsCheckBox->isChecked() ) {
+			for(int i = 0 ; i < _mpx3gui->getConfig()->getNActiveDevices() ; i++) {
+				if ( ! _cstmThreshold->GetMpx3GUI()->getConfig()->detectorResponds( i ) ) {
+					cout << "[ERR ] Device " << i << " not responding." << endl;
+				} else {
+					spidrcontrol->setDac( i, dacCodeToScan, dacItr );
+				}
+			}
+		} else {
+			spidrcontrol->setDac( deviceIndex, dacCodeToScan, dacItr );
+		}
+
+		// Adjust the sliders and the SpinBoxes to the new value
+		connect( _cstmThreshold, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+		// Get the DAC back just to be sure and then slide&spin
+		int dacVal = 0;
+		spidrcontrol->getDac( deviceIndex, dacCodeToScan, &dacVal);
+		// SlideAndSpin works with the DAC index, no the code.
+		int dacIndex = _mpx3gui->GetUI()->DACsWidget->GetDACIndex( dacCodeToScan );
+		_cstmThreshold->slideAndSpin( dacIndex,  dacVal );
+		disconnect( _cstmThreshold, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+
+
+		// Scan info
+		QString scanVal;
+		scanVal =  QString::number( dacItr, 'd', 0 );
+		connect( this, SIGNAL( fillText(QString) ), _cstmThreshold->GetUI()->scanningLabel, SLOT( setText(QString)) );
+		fillText( scanVal );
+		disconnect( this, SIGNAL( fillText(QString) ), _cstmThreshold->GetUI()->scanningLabel, SLOT( setText(QString)) );
+
+		// Measure
+		// Start the trigger as configured
+		spidrcontrol->startAutoTrigger();
+
+		// See if there is a frame available
+		// I should get as many frames as triggers
+
+		//while ( _spidrdaq->hasFrame() ) {
+		doReadFrames = true;
+		nReps = 0;
+		pixelsReactive = 0;
+
+		while ( spidrdaq->hasFrame( (_mpx3gui->getConfig()->getTriggerLength()/1000) + 20  ) ) {
+
+			QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
+
+			// A frame is here
+			doReadFrames = true;
+
+			// Check quality, if packets lost don't consider the frame
+			if ( spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected
+				doReadFrames = false;
+			}
+
+			if ( doReadFrames ) {
+				int size_in_bytes = -1;
+
+				// On all active chips
+				if ( _cstmThreshold->GetUI()->onAllChipsCheckBox->isChecked() ) {
+					for(int i = 0 ; i < activeDevices.size() ; i++) {
+						//cout << i << endl;
+						_data = spidrdaq->frameData(i, &size_in_bytes);
+						pixelsReactive += PixelsReactive( _data, size_in_bytes, dacItr );
+					}
+				}
+
+				// On a single chip scan
+				int chipScanId = _cstmThreshold->GetUI()->devIdSpinBox->value();
+				int dataIdForChip = _mpx3gui->getConfig()->getIDIndex( chipScanId );
+				_data = spidrdaq->frameData(dataIdForChip, &size_in_bytes);
+				pixelsReactive += PixelsReactive( _data, size_in_bytes, dacItr );
+
+				nReps++;
+			}
+
+			// Release
+			spidrdaq->releaseFrame();
+
+			/*
+			// plot
+			if ( _ui->sumCheckbox->isChecked() )
+				_cstmThreshold->addPoint(QPointF(itr, cntr), 0);
+			else
+				_cstmThreshold->setPoint( QPointF(itr, cntr), 0);
+			 */
+
+			// Report to heatmap
+			//UpdateHeatMapSignal();
+
+		}
+
+		double nFiredAverage = ((double)pixelsReactive) / ((double)nReps);
+
+		// Scan info
+		QString firedVal;
+		firedVal =  QString::number( nFiredAverage, 'f', 0 );
+		connect( this, SIGNAL( fillText(QString) ), _cstmThreshold->GetUI()->firedLabel, SLOT( setText(QString)) );
+		fillText( firedVal );
+		disconnect( this, SIGNAL( fillText(QString) ), _cstmThreshold->GetUI()->firedLabel, SLOT( setText(QString)) );
+
+		// plot
+		if ( nReps > 0 ) {
+			addData( _cstmThreshold->getCurrentPlotIndex() , dacItr, nFiredAverage );
+		}
+
+		// increment
+		if( _cstmThreshold->isScanDescendant() ) dacItr -= stepScan;
+		else dacItr += stepScan;
+
+		// See the termination condition
+		if ( _cstmThreshold->isScanDescendant() ) {
+			if ( dacItr >= minScan ) scanContinue = true;
+			else scanContinue = false;
+		} else {
+			if ( dacItr <= maxScan ) scanContinue = true;
+			else scanContinue = false;
+		}
+
+	}
+
+	disconnect( this, SIGNAL( addData(int, int, double) ), _cstmThreshold, SLOT( addData(int, int, double) ) );
+	disconnect( this, SIGNAL( addData(int) ), _cstmThreshold, SLOT( addData(int) ) );
+
+	//disconnect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
+	//disconnect( this, SIGNAL( UpdateHeatMapSignal() ), this, SLOT( UpdateHeatMap() ) );
+
+	cout << "[INFO] Scan finished" << endl;
+
+	delete spidrcontrol;
+}
+
+int CustomScanThread::PixelsReactive(int * data, int size_in_bytes, int thl) {
+
+	int nPixels = size_in_bytes/4;
+	int pixelsActive = 0;
+	// Each 32 bits corresponds to the counts in each pixel already
+	// in 'int' representation as the decoding has been requested
+	for(int i = 0 ; i < nPixels ; i++) {
+		if ( data[i] != 0 ) {
+			pixelsActive++;
+		}
+	}
+
+	return pixelsActive;
 }

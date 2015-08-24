@@ -156,9 +156,11 @@ public:
 	int GetMaxScan(){ return _maxScanTHL; };
 	int GetStepScan(){ return _stepScan; };
 	int GetGlobalAdj(){ return _global_adj; };
+	int GetNHits(){ return _nHits; };
 
 	void SetMinScan(int);
 	void SetMaxScan(int);
+	bool isScanDescendant() { return _scanDescendant; }
 
 	void StartEqualization(int chipId);
 
@@ -200,12 +202,14 @@ private:
 	int _minScanTHL;
 	int _maxScanTHL;
 	int _stepScan;
+	int _nHits;
 	bool _threadFinished;
 	unsigned int _eqStatus;
 	unsigned int _scanIndex;
 	// IP source address (SPIDR network interface)
 	int _srcAddr;
 	int _nChips;
+	bool _scanDescendant;
 
 	int **data = 0;
 	unsigned *nx =0, *ny =0, nData =0;
@@ -231,9 +235,11 @@ private:
 
 public slots:
 void SaveEqualization( int chipId );
+void on_logYCheckBox_toggled(bool checked);
 
 private slots:
 
+void setNHits(int);
 void ScanThreadFinished();
 void StartEqualization();
 void StartEqualizationAllChips();
@@ -249,6 +255,7 @@ void CleanEqualization();
 
 void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
 void on_openfileButton_clicked();
+void on_rangeDirectionCheckBox_toggled(bool checked);
 
 signals:
 	void slideAndSpin(int, int);

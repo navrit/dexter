@@ -60,6 +60,10 @@ ui(new Ui::QCstmDacs)
 
 	ui->progressBar->setValue( 0 );
 
+	_dacsSimultaneous = true;
+	ui->allDACSimultaneousCheckBox->setChecked( true );
+	ui->allDACSimultaneousCheckBox->setToolTip("Apply changes to all chips simultaneously");
+
 	// Order widgets in vectors
 	FillWidgetVectors();
 
@@ -110,6 +114,15 @@ ui(new Ui::QCstmDacs)
 
 QCstmDacs::~QCstmDacs() {
 	delete ui;
+}
+
+void QCstmDacs::on_allDACSimultaneousCheckBox_toggled(bool checked) {
+
+	_dacsSimultaneous = checked;
+
+	if ( _dacsSimultaneous ) ui->deviceIdSpinBox->setDisabled( true );
+	else  ui->deviceIdSpinBox->setEnabled( true );
+
 }
 
 int QCstmDacs::GetDACValueFromConfig(int chip, int dacIndex) {
@@ -563,11 +576,26 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
 	int val = _dacSpinBoxes[i]->value();
 	// Set the slider according to the new value in the Spin Box
 	_dacSliders[i]->setValue( val );
-	// Set DAC
-	spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
 
-	// Now I need to chage it in the local data base
-	SetDACValueLocalConfig( _deviceIndex, i, val);
+	//////////////////////////////////////
+	// Set DAC
+	// If the setting is global apply it
+	if ( _dacsSimultaneous ) {
+		for( int chip = 0 ; chip < _mpx3gui->getConfig()->getNDevicesSupported() ; chip++) {
+			// Check if the device is alive
+			if ( ! _mpx3gui->getConfig()->detectorResponds( chip ) ) {
+				cout << "[ERR ] Device " << chip << " not responding." << endl;
+				continue;
+			}
+			spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[ i ].code, val );
+			// Now I need to chage it in the local data base
+			SetDACValueLocalConfig( chip, i, val);
+		}
+	} else {
+		spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
+		// Now I need to chage it in the local data base
+		SetDACValueLocalConfig( _deviceIndex, i, val);
+	}
 
 	// Clean up the corresponding labelV.  The dacOut won't be read right away.
 	// Only under user request
@@ -585,11 +613,30 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
 	int val = _dacSliders[ i ]->value();
 	// Set the spin box according to the new value in the Slider
 	//_dacSpinBoxes[i]->setValue( val );
-	// Set DAC
-	spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
 
-	// Now I need to chage it in the local data base
-	SetDACValueLocalConfig( _deviceIndex, i, val);
+	//////////////////////////////////////
+	// Set DAC
+	// If the setting is global apply it
+	if ( _dacsSimultaneous ) {
+		for( int chip = 0 ; chip < _mpx3gui->getConfig()->getNDevicesSupported() ; chip++) {
+			// Check if the device is alive
+			if ( ! _mpx3gui->getConfig()->detectorResponds( chip ) ) {
+				cout << "[ERR ] Device " << chip << " not responding." << endl;
+				continue;
+			}
+			spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[ i ].code, val );
+			// Now I need to chage it in the local data base
+			SetDACValueLocalConfig( chip, i, val);
+		}
+	} else {
+		spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
+		// Now I need to chage it in the local data base
+		SetDACValueLocalConfig( _deviceIndex, i, val);
+	}
+
+	// Set DAC
+	//spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
+
 
 	//++i
 	//_dacVals[i] = val;
@@ -931,6 +978,8 @@ void UpdateDACsThread::run(){
 		// Check if the device is alive
 		if ( ! _dacs->GetMpx3GUI()->getConfig()->detectorResponds( chip ) ) {
 			cout << "[ERR ] Device " << chip << " not responding." << endl;
+			// De-activate the spin boxes and sliders when a non-responding chip is selected
+			// TODO !
 			continue;
 		}
 

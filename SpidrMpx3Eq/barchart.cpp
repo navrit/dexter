@@ -21,6 +21,15 @@ BarChart::~BarChart() {
 
 }
 
+void BarChart::SetLogY(bool setl) {
+	if ( setl ) yAxis->setScaleType( QCPAxis::stLogarithmic );
+	else yAxis->setScaleType( QCPAxis::stLinear );
+}
+void BarChart::SetLogX(bool setl) {
+	if ( setl ) xAxis->setScaleType( QCPAxis::stLogarithmic );
+	else xAxis->setScaleType( QCPAxis::stLinear );
+}
+
 void BarChart::Clean() {
 
 	int nCleared = this->clearPlottables();

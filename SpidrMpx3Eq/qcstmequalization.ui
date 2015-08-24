@@ -20,7 +20,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QWidget" name="layoutWidget">
-      <layout class="QVBoxLayout" name="verticalLayout_11" stretch="1,0">
+      <layout class="QVBoxLayout" name="verticalLayout_11" stretch="1,0,0">
        <item>
         <widget class="BarChart" name="_histoWidget" native="true"/>
        </item>
@@ -31,6 +31,13 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="logYCheckBox">
+         <property name="text">
+          <string>logy</string>
          </property>
         </widget>
        </item>
@@ -242,19 +249,6 @@
               </property>
              </spacer>
             </item>
-            <item row="1" column="5">
-             <spacer name="horizontalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
             <item row="3" column="4">
              <widget class="QLabel" name="eqLabelNPixelsReactive">
               <property name="layoutDirection">
@@ -305,6 +299,26 @@
             </item>
             <item row="2" column="4">
              <widget class="QSpinBox" name="spinBox_2"/>
+            </item>
+            <item row="1" column="5">
+             <widget class="QCheckBox" name="rangeDirectionEqCheckBox">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string>desc</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="6">
+             <widget class="QLabel" name="label_8">
+              <property name="text">
+               <string>nHits</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="7">
+             <widget class="QSpinBox" name="nHitsSpinBox"/>
             </item>
            </layout>
           </item>

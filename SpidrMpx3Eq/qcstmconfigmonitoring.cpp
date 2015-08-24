@@ -344,6 +344,12 @@ void QCstmConfigMonitoring::on_stepperUseCalibCheckBox_toggled(bool checked) {
 		ui->motorCurrentPoslcdNumber->setPalette(Qt::green);
 		ui->motorCurrentPoslcdNumber->setToolTip("Target reached.");
 
+		// Do something about the range of the dial
+		// With calibration we're talking about an angle.
+		// Go from 0 to 360 deg
+		ui->motorDial->setMinimum( 0 );
+		ui->motorDial->setMaximum( 360 );
+
 	} else {
 
 		// Interface back to steps mode
@@ -362,6 +368,22 @@ void QCstmConfigMonitoring::on_stepperUseCalibCheckBox_toggled(bool checked) {
 		QString posS;
 		posS = QString::number( currentPos , 'ldd', 0 );
 		ui->motorCurrentPoslcdNumber->display( posS );
+
+		// Do something about the range of the dial
+		int motorid = ui->motorIdSpinBox->value();
+		map<int, motorPars> parsMap = _stepper->getPars( );
+		// The minimum is normally -1*max. I will set zero here for convenience.
+		ui->motorDial->setMinimum( 0 );
+		// This is just an strategy to get a maximum of steps
+		//  which makes almost a full turn.
+		// _stepper->getPositionMax( motorid )
+		ui->motorDial->setMaximum( parsMap[motorId].maxVel / 2  );
+
+		//cout << "[STEP] pos min = "
+		//		<< _stepper->getPositionMin( motorid )
+		//		<< " | pos max = "
+		//		<< _stepper->getPositionMax( motorid )
+		//		<< endl;
 
 	}
 	// send to config
@@ -633,6 +655,7 @@ void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
 			// and call the corresponding actions as if the user had toggled it
 			on_stepperUseCalibCheckBox_toggled( true );
 		}
+
 
 	} else {
 
