@@ -69,6 +69,7 @@
 #define CMD_SET_EXTDAC         0x33A
 #define CMD_WRITE_OMR          0x33B
 #define CMD_SET_GAINMODE       0x33C
+#define CMD_GET_OMR            0x33D
 
 // Trigger
 #define CMD_GET_TRIGCONFIG     0x440

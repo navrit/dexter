@@ -15,7 +15,10 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x15042800;   // triggerSingleReadout(countl_or_h)
+const int VERSION_ID = 0x15082600;   // Add getOmr(); optimization in
+                                     // request..() functions;
+                                     // add requestGetBytes()
+//const int VERSION_ID = 0x15042800; // triggerSingleReadout(countl_or_h)
 //const int VERSION_ID = 0x15011300; // spidrErrString(); dacMax(), dacName()
                                      // parameter is DAC code (not 'index')
 //const int VERSION_ID = 0x14121200; // Reinstate loadOmr() as private member;
@@ -47,6 +50,7 @@ SpidrController::SpidrController( int ipaddr3,
 
   _sock->waitForConnected( 5000 );
 
+  // Initialize the local pixel configuration data array to all zeroes
   this->resetPixelConfig();
 
   _busyRequests = 0;
@@ -277,7 +281,7 @@ bool SpidrController::setChipboardId( int id )
 }
 
 // ----------------------------------------------------------------------------
-// Configuration: module/devices interface
+// Configuration: module/device interface
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getIpAddrSrc( int index, int *ipaddr )
@@ -404,8 +408,8 @@ bool SpidrController::getDac( int dev_nr, int dac_code, int *dac_val )
 bool SpidrController::setDac( int dev_nr, int dac_code, int dac_val )
 {
   // Combine dac_code and dac_val into a single int
-  int dac = ((dac_code & 0xFFFF) << 16) | (dac_val & 0xFFFF);
-  return this->requestSetInt( CMD_SET_DAC, dev_nr, dac );
+  int dac_data = ((dac_code & 0xFFFF) << 16) | (dac_val & 0xFFFF);
+  return this->requestSetInt( CMD_SET_DAC, dev_nr, dac_data );
 }
 
 // ----------------------------------------------------------------------------
@@ -893,6 +897,13 @@ bool SpidrController::setExtDac( int dev_nr, int dac_code, int dac_val )
 }
 
 // ----------------------------------------------------------------------------
+
+bool SpidrController::getOmr( int dev_nr, unsigned char *omr )
+{
+  return this->requestGetBytes( CMD_GET_OMR, dev_nr, 48/8, omr );
+}
+
+// ----------------------------------------------------------------------------
 // Configuration: non-volatile storage
 // ----------------------------------------------------------------------------
 
@@ -1188,7 +1199,8 @@ bool SpidrController::setPixelBit( int x, int y, unsigned int bitmask, bool b )
 bool SpidrController::get3Ints( int cmd, int *data0, int *data1, int *data2 )
 {
   int data[3];
-  if( !this->requestGetInts( cmd, 0, 3, data ) ) return false;
+  int dummy = 0;
+  if( !this->requestGetInts( cmd, dummy, 3, data ) ) return false;
   *data0 = data[0];
   *data1 = data[1];
   *data2 = data[2];
@@ -1246,14 +1258,10 @@ bool SpidrController::validXandY( int x,       int y,
 
 bool SpidrController::requestGetInt( int cmd, int dev_nr, int *dataword )
 {
-  int len = (4+1)*4;
-  _reqMsg[0] = htonl( cmd );
-  _reqMsg[1] = htonl( len );
-  _reqMsg[2] = 0; // Dummy for now; reply uses this location for error status
-  _reqMsg[3] = htonl( dev_nr );
-  _reqMsg[4] = htonl( *dataword ); // May contain an additional parameter
-  int expected_len = 5 * 4;
-  if( this->request( cmd, dev_nr, len, expected_len ) )
+  int req_len = (4+1)*4;
+  _reqMsg[4] = htonl( *dataword ); // May contain an additional parameter!
+  int expected_len = (4+1)*4;
+  if( this->request( cmd, dev_nr, req_len, expected_len ) )
     {
       *dataword = ntohl( _replyMsg[4] );
       return true;
@@ -1270,14 +1278,10 @@ bool SpidrController::requestGetInt( int cmd, int dev_nr, int *dataword )
 bool SpidrController::requestGetInts( int cmd, int dev_nr,
 				      int expected_ints, int *datawords )
 {
-  int len = (4+1)*4;
-  _reqMsg[0] = htonl( cmd );
-  _reqMsg[1] = htonl( len );
-  _reqMsg[2] = 0; // Dummy for now; reply uses this location for error status
-  _reqMsg[3] = htonl( dev_nr );
-  _reqMsg[4] = 0;
+  int req_len = (4+1)*4;
+  _reqMsg[4] = htonl( *datawords ); // May contain an additional parameter!
   int expected_len = (4 + expected_ints) * 4;
-  if( this->request( cmd, dev_nr, len, expected_len ) )
+  if( this->request( cmd, dev_nr, req_len, expected_len ) )
     {
       int i;
       for( i=0; i<expected_ints; ++i )
@@ -1294,29 +1298,50 @@ bool SpidrController::requestGetInts( int cmd, int dev_nr,
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::requestGetIntAndBytes( int cmd, int dev_nr,
-					     int *dataword,
-					     int expected_bytes,
-					     unsigned char *bytes )
+bool SpidrController::requestGetBytes( int cmd, int dev_nr,
+				       int expected_bytes,
+				       unsigned char *databytes )
 {
-  int len = (4+1)*4;
-  _reqMsg[0] = htonl( cmd );
-  _reqMsg[1] = htonl( len );
-  _reqMsg[2] = 0; // Dummy for now; reply uses this location for error status
-  _reqMsg[3] = htonl( dev_nr );
-  _reqMsg[4] = *dataword; // May contain an additional parameter
-  int expected_len = (5 * 4) + expected_bytes;
-  if( this->request( cmd, dev_nr, len, expected_len ) )
+  int req_len = (4+1)*4;
+  _reqMsg[4] = 0;
+  int expected_len = (4*4) + expected_bytes;
+  if( this->request( cmd, dev_nr, req_len, expected_len ) )
     {
-      *dataword = ntohl( _replyMsg[4] );
-      memcpy( static_cast<void *> (bytes),
-	      static_cast<void *> (&_reqMsg[5]), expected_bytes );
+      memcpy( static_cast<void *> (databytes),
+	      static_cast<void *> (&_replyMsg[4]), expected_bytes );
       return true;
     }
   else
     {
       int i;
-      for( i=0; i<expected_bytes; ++i ) bytes[i] = 0;
+      for( i=0; i<expected_bytes; ++i ) databytes[i] = 0;
+    }
+  return false;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::requestGetIntAndBytes( int cmd, int dev_nr,
+					     int *dataword,
+					     int expected_bytes,
+					     unsigned char *databytes )
+{
+  // Send a message with 1 dataword, expect a reply with a dataword
+  // and a number of bytes
+  int req_len = (4+1)*4;
+  _reqMsg[4] = htonl( *dataword ); // May contain an additional parameter!
+  int expected_len = (4+1)*4 + expected_bytes;
+  if( this->request( cmd, dev_nr, req_len, expected_len ) )
+    {
+      *dataword = ntohl( _replyMsg[4] );
+      memcpy( static_cast<void *> (databytes),
+	      static_cast<void *> (&_replyMsg[5]), expected_bytes );
+      return true;
+    }
+  else
+    {
+      int i;
+      for( i=0; i<expected_bytes; ++i ) databytes[i] = 0;
     }
   return false;
 }
@@ -1325,14 +1350,10 @@ bool SpidrController::requestGetIntAndBytes( int cmd, int dev_nr,
 
 bool SpidrController::requestSetInt( int cmd, int dev_nr, int dataword )
 {
-  int len = (4+1)*4;
-  _reqMsg[0] = htonl( cmd );
-  _reqMsg[1] = htonl( len );
-  _reqMsg[2] = 0; // Dummy for now; reply uses this location for error status
-  _reqMsg[3] = htonl( dev_nr );
+  int req_len = (4+1)*4;
   _reqMsg[4] = htonl( dataword );
-  int expected_len = 5 * 4;
-  return this->request( cmd, dev_nr, len, expected_len );
+  int expected_len = (4+1)*4;
+  return this->request( cmd, dev_nr, req_len, expected_len );
 }
 
 // ----------------------------------------------------------------------------
@@ -1340,15 +1361,11 @@ bool SpidrController::requestSetInt( int cmd, int dev_nr, int dataword )
 bool SpidrController::requestSetInts( int cmd, int dev_nr,
 				      int nwords, int *datawords )
 {
-  int len = (4 + nwords)*4;
-  _reqMsg[0] = htonl( cmd );
-  _reqMsg[1] = htonl( len );
-  _reqMsg[2] = 0; // Dummy for now; reply uses this location for error status
-  _reqMsg[3] = htonl( dev_nr );
+  int req_len = (4 + nwords)*4;
   for( int i=0; i<nwords; ++i )
     _reqMsg[4+i] = htonl( datawords[i] );
-  int expected_len = 5 * 4;
-  return this->request( cmd, dev_nr, len, expected_len );
+  int expected_len = (4+1)*4;
+  return this->request( cmd, dev_nr, req_len, expected_len );
 }
 
 // ----------------------------------------------------------------------------
@@ -1358,16 +1375,12 @@ bool SpidrController::requestSetIntAndBytes( int cmd, int dev_nr,
 					     int nbytes,
 					     unsigned char *bytes )
 {
-  int len = (4+1)*4 + nbytes;
-  _reqMsg[0] = htonl( cmd );
-  _reqMsg[1] = htonl( len );
-  _reqMsg[2] = 0; // Dummy for now; reply uses this location for error status
-  _reqMsg[3] = htonl( dev_nr );
+  int req_len = (4+1)*4 + nbytes;
   _reqMsg[4] = htonl( dataword );
   memcpy( static_cast<void *> (&_reqMsg[5]),
 	  static_cast<void *> (bytes), nbytes );
-  int expected_len = 5 * 4;
-  return this->request( cmd, dev_nr, len, expected_len );
+  int expected_len = (4+1)*4;
+  return this->request( cmd, dev_nr, req_len, expected_len );
 }
 
 // ----------------------------------------------------------------------------
@@ -1375,6 +1388,11 @@ bool SpidrController::requestSetIntAndBytes( int cmd, int dev_nr,
 bool SpidrController::request( int cmd,     int dev_nr,
 			       int req_len, int exp_reply_len )
 {
+  _reqMsg[0] = htonl( cmd );
+  _reqMsg[1] = htonl( req_len );
+  _reqMsg[2] = 0; // Dummy for now; reply uses it to return an error status
+  _reqMsg[3] = htonl( dev_nr );
+
   _sock->write( (const char *) _reqMsg, req_len );
   if( !_sock->waitForBytesWritten( 400 ) )
     {
@@ -1386,7 +1404,7 @@ bool SpidrController::request( int cmd,     int dev_nr,
   // Reply expected ?
   if( cmd & CMD_NOREPLY ) return true;
 
-  if( !_sock->waitForReadyRead( 400 ) )
+  if( !_sock->waitForReadyRead( 1000 ) )
     {
       this->clearErrorString();
       _errString << "Time-out receiving reply";
@@ -1406,7 +1424,7 @@ bool SpidrController::request( int cmd,     int dev_nr,
     {
       this->clearErrorString();
       _errString << "Unexpected reply length, got "
-		 << reply_len << " expected " << exp_reply_len;
+		 << reply_len << ", expected at least " << exp_reply_len;
       return false;
     }
   int err = ntohl( _replyMsg[2] ); // (Check 'err' before 'reply')
@@ -1425,7 +1443,7 @@ bool SpidrController::request( int cmd,     int dev_nr,
       _errString << "Unexpected reply: 0x" << hex << reply;
       return false;
     }
-  if( ntohl( _replyMsg[3] ) != dev_nr )
+  if( ntohl( _replyMsg[3] ) != (unsigned int) dev_nr )
     {
       this->clearErrorString();
       _errString << "Unexpected device number in reply: " << _replyMsg[3];
@@ -1439,6 +1457,9 @@ bool SpidrController::request( int cmd,     int dev_nr,
 static const char *MPX3_ERR_STR[] =
   {
     "no error"
+    "MPX3_ERR_FLUSHING",
+    "MPX3_ERR_EMPTY",
+    "MPX3_ERR_UNEXP_SIZE"
   };
 
 static const char *SPIDR_ERR_STR[] =

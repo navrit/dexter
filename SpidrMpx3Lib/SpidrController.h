@@ -137,6 +137,7 @@ class MY_LIB_API SpidrController
   bool setGainMode             ( int  dev_nr, int  mode );
   bool setSenseDac             ( int  dev_nr, int  dac_code );
   bool setExtDac               ( int  dev_nr, int  dac_code, int dac_val );
+  bool getOmr                  ( int  dev_nr, unsigned char *omr );
 
   // Configuration: non-volatile onboard storage
   bool storeAddrAndPorts       ( int  ipaddr = 0,
@@ -197,6 +198,8 @@ class MY_LIB_API SpidrController
   bool requestGetInt        ( int  cmd, int dev_nr, int *dataword );
   bool requestGetInts       ( int  cmd, int dev_nr,
                               int  expected_ints, int *datawords );
+  bool requestGetBytes      ( int  cmd, int dev_nr,
+                              int  expected_bytes, unsigned char *databytes );
   bool requestGetIntAndBytes( int  cmd, int dev_nr, int *dataword,
                               int  expected_bytes, unsigned char *bytes );
   bool requestSetInt        ( int  cmd, int dev_nr, int dataword );
