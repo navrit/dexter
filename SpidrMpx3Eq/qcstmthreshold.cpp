@@ -85,6 +85,9 @@ QCstmThreshold::QCstmThreshold(QWidget *parent) :  QWidget(parent),  ui(new Ui::
 	ui->setEqualizationBitCheckBox->setToolTip("When checked the OMR equalization bit is turned on (debug)");
 	ui->setEqualizationBitCheckBox->setChecked( false );
 
+	ui->setDiscCsmSpmBitCheckBox->setToolTip("When checked the OMR Disc_CSM_SPM bit is turned on (debug)");
+	ui->setDiscCsmSpmBitCheckBox->setChecked( false );
+
 	_logyPlot = false;
 
 }
@@ -162,7 +165,7 @@ void QCstmThreshold::StartCalibration() {
 	QPen pen( COLOR_TABLE[ _plotIdxCntr-1 ] );
 	pen.setWidth( 0.1 );
 	_graph->setPen( pen );
-	_graph->setName( QString(MPX3RX_DAC_TABLE[_plotIdxCntr-1].name) ); // the dac index
+	_graph->setName( getActiveTargetName() ); // the dac index
 
 	// Prepare plot
 	//ui->plot->xAxis->setLabel( getActiveTargetName() );
@@ -174,8 +177,11 @@ void QCstmThreshold::StartCalibration() {
 	Mpx3Config::scan_config_parameters expars;
 	expars.nTriggers = ui->nTriggersSpinBox->value();
 	expars.equalizationBit = false;
-	expars.DiscCsmSpm = 0x1; // Disc High
-	if ( ui->setEqualizationBitCheckBox->isChecked() ) expars.equalizationBit = true;
+	// Debug bits in this context.  Disc_CSM_SPM.
+	if ( ui->setDiscCsmSpmBitCheckBox->isChecked() ) { expars.DiscCsmSpm = 0x1; }
+	else { expars.DiscCsmSpm = 0x0; }
+	// Debug bits in this context.  Equalization bit.
+	if ( ui->setEqualizationBitCheckBox->isChecked() ) { expars.equalizationBit = true; }
 
 	// Send the configuration
 	_mpx3gui->getConfig()->Configuration( false, ui->devIdSpinBox->value(), expars);

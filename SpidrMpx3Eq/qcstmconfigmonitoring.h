@@ -50,6 +50,8 @@ private slots:
 
   void on_ColourModeCheckBox_toggled(bool checked);
 
+  void on_readOMRPushButton_clicked();
+
   ////////////////////////////////////////////////////////////
   // Stepper
   void on_stepperMotorCheckBox_toggled(bool checked);

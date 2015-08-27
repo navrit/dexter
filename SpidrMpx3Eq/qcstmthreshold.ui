@@ -277,6 +277,13 @@
                </property>
               </widget>
              </item>
+             <item row="2" column="7">
+              <widget class="QCheckBox" name="setDiscCsmSpmBitCheckBox">
+               <property name="text">
+                <string>DiscCsmSpm</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </item>
           </layout>

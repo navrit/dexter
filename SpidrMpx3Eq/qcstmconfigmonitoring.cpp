@@ -55,6 +55,48 @@ QCstmConfigMonitoring::~QCstmConfigMonitoring()
 	delete ui;
 }
 
+void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
+
+	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
+	int  dev_nr = 2;
+	unsigned char omr[6];
+	spidrcontrol->getOmr( dev_nr, omr );
+
+	QString toDisplay;
+
+	unsigned char endMask = 0x100; // 1 00000000 (ninth bit)
+
+	cout << "[OMR ]" << endl;
+	int bitCntr = 0;
+	for ( int i = 0 ; i < 6 ; i++ ) { // this comes packed in 6 bytes
+		// extract each bit
+		unsigned char mask = 0x1;
+		bool bitOn = false;
+		for( ; mask != endMask ; ) {
+
+			if( (omr[i] & mask) != 0 ) {
+				printf("%d[1] ", bitCntr);
+				bitOn = true;
+			} else {
+				printf("%d[0] ", bitCntr);
+				bitOn = false;
+			}
+
+			toDisplay += QString(" %1").arg( bitCntr );
+			if(bitOn) toDisplay += QString("%c").arg( '1' );
+			else toDisplay += QString("%c").arg( '0' );
+
+			ui->omrDisplayLabel->setText( toDisplay );
+
+			mask = mask << 1; // shift a bit to the left
+			bitCntr++;
+		}
+	}
+	cout << endl;
+
+}
+
 void QCstmConfigMonitoring::activeInGUI(){
 
 	// stepper part
