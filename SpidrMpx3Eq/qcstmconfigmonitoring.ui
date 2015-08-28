@@ -176,16 +176,15 @@
         </layout>
        </item>
        <item>
-        <widget class="QLabel" name="label_17">
-         <property name="text">
-          <string>OMR bits</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QLabel" name="omrDisplayLabel">
          <property name="text">
           <string/>
+         </property>
+         <property name="textFormat">
+          <enum>Qt::RichText</enum>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -286,9 +285,6 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="4">
-        <widget class="QDoubleSpinBox" name="samplingSpinner"/>
-       </item>
        <item row="1" column="3">
         <widget class="QLabel" name="label_10">
          <property name="text">
@@ -300,13 +296,6 @@
         <widget class="QLabel" name="localTempMeasLabel">
          <property name="text">
           <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="3">
-        <widget class="QLabel" name="label_1">
-         <property name="text">
-          <string>Sampling (s):</string>
          </property>
         </widget>
        </item>
@@ -480,6 +469,16 @@
           <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
          </property>
          <widget class="QWidget" name="dockWidgetContents"/>
+        </widget>
+       </item>
+       <item row="3" column="4">
+        <widget class="QDoubleSpinBox" name="samplingSpinner"/>
+       </item>
+       <item row="3" column="3">
+        <widget class="QLabel" name="label_1">
+         <property name="text">
+          <string>Sampling (s):</string>
+         </property>
         </widget>
        </item>
       </layout>

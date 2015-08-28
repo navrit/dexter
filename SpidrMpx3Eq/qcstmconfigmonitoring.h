@@ -18,8 +18,11 @@ namespace Ui {
 
 class QCstmConfigMonitoring : public QWidget
 {
+
   Q_OBJECT
+
   Mpx3GUI * _mpx3gui;
+
 public:
   void SetMpx3GUI(Mpx3GUI * p);
   explicit QCstmConfigMonitoring(QWidget *parent = 0);
@@ -40,6 +43,7 @@ public:
   void cameraSearch(int indexRequest = -1);
   void cameraResize();
 
+  void readTemp();
 
 private slots:
   void on_SaveButton_clicked();
@@ -49,6 +53,8 @@ private slots:
   void on_ipLineEdit_editingFinished();
 
   void on_ColourModeCheckBox_toggled(bool checked);
+
+  void on_tempReadingActivateCheckBox_toggled(bool checked);
 
   void on_readOMRPushButton_clicked();
 

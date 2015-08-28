@@ -11,9 +11,13 @@
 
 QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
 QWidget(parent),
+
 ui(new Ui::QCstmConfigMonitoring) {
 	ui->setupUi(this);
-	_timerId = this->startTimer( 1000 );
+
+	_timerId = -1;
+	ui->samplingSpinner->setValue( 1.0 );
+
 	ui->gainModeCombobox->addItem("Super High Gain Mode");
 	ui->gainModeCombobox->addItem("Low Gain Mode");
 	ui->gainModeCombobox->addItem("High Gain Mode");
@@ -35,6 +39,10 @@ ui(new Ui::QCstmConfigMonitoring) {
 
 	ui->stepperMotorCheckBox->setToolTip( "enable/disable stepper motor control" );
 
+	QFont font1("Courier New");
+	ui->omrDisplayLabel->setFont( font1 );
+	ui->omrDisplayLabel->setTextFormat( Qt::RichText );
+
 	///////////////////////////////////////////////
 	// Camera
 	_cameraOn = false;
@@ -55,6 +63,27 @@ QCstmConfigMonitoring::~QCstmConfigMonitoring()
 	delete ui;
 }
 
+
+void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked) {
+
+	if ( checked ) {
+		// Get a quick read first to let the user see immediately and start the timer.
+		// The timer will keep refreshing periodically.
+		readTemp();
+		_timerId = this->startTimer( ui->samplingSpinner->value()*1000 ); // value comes in seconds from GUI.  Convert to ms.
+	} else {
+		this->killTimer( _timerId );
+		_timerId = -1;
+		// clean the temp display
+		ui->remoteTempMeasLabel->setText("");
+		ui->localTempMeasLabel->setText("");
+	}
+
+}
+
+#define __nwords_OMR 6
+#define __nbits_OMR 48 // 6 words of 8 bits
+
 void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
@@ -63,37 +92,92 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 	unsigned char omr[6];
 	spidrcontrol->getOmr( dev_nr, omr );
 
+	// <font color=\"blue\">Hello</font> <font color=\"red\">World</font><font color=\"green">!</font>
+
 	QString toDisplay;
+	QString formatNoSpace_gui;
+	QString formatWithSpace_gui;
+	QString formatNoSpace_console;
+	QString formatWithSpace_console;
 
 	unsigned char endMask = 0x100; // 1 00000000 (ninth bit)
+	char bits16Save[__nbits_OMR];
+	int lateRunningBitCntr = 0;
 
 	cout << "[OMR ]" << endl;
 	int bitCntr = 0;
-	for ( int i = 0 ; i < 6 ; i++ ) { // this comes packed in 6 bytes
+	for ( int i = 0 ; i < __nwords_OMR ; i++ ) { // this comes packed in 6 bytes
 		// extract each bit
 		unsigned char mask = 0x1;
-		bool bitOn = false;
+		formatNoSpace_gui   = "B%00d&nbsp;";
+		formatWithSpace_gui = "B%02d&nbsp;";
+		formatNoSpace_console   = "B%00d ";
+		formatWithSpace_console = "B%02d ";
+
 		for( ; mask != endMask ; ) {
 
+			// Pick the bit ON or OFF
+			char bitC;
 			if( (omr[i] & mask) != 0 ) {
-				printf("%d[1] ", bitCntr);
-				bitOn = true;
+				bitC='1';
 			} else {
-				printf("%d[0] ", bitCntr);
-				bitOn = false;
+				bitC='0';
 			}
 
-			toDisplay += QString(" %1").arg( bitCntr );
-			if(bitOn) toDisplay += QString("%c").arg( '1' );
-			else toDisplay += QString("%c").arg( '0' );
+			// Save the bit selected in this array
+			bits16Save[bitCntr] = bitC;
 
-			ui->omrDisplayLabel->setText( toDisplay );
+			QString oneBitS;
+			if ( bitCntr < 10 ) {
+				toDisplay += oneBitS.sprintf(formatWithSpace_gui.toStdString().c_str(), bitCntr); // GUI
+				printf(formatWithSpace_console.toStdString().c_str(), bitCntr, bitC); // console
+			} else {
+				toDisplay += oneBitS.sprintf(formatNoSpace_gui.toStdString().c_str(), bitCntr); // GUI
+				printf(formatNoSpace_console.toStdString().c_str(), bitCntr, bitC); // console
+			}
 
 			mask = mask << 1; // shift a bit to the left
 			bitCntr++;
 		}
+
+		if ( (bitCntr%16)==0 && bitCntr!=0  ) {
+
+			// Printing bits now
+			formatNoSpace_gui   = "&nbsp;%c&nbsp;&nbsp;";
+			formatWithSpace_gui = "&nbsp;%c&nbsp;&nbsp;";
+			formatNoSpace_console   = " %c  ";
+			formatWithSpace_console = " %c  ";
+
+			// A carriage return
+			toDisplay += "<br />";  // GUI
+			cout << endl;  // Console
+			for( ; lateRunningBitCntr < bitCntr ; ) {
+				// Draw the last 16 bits now
+				QString oneBitS;
+				// if the bit is on pain it in red
+				if ( bits16Save[lateRunningBitCntr] == '1' ) {
+					toDisplay += "<font color=\"red\">";
+				} else {
+					toDisplay += "<font color=\"black\">";
+				}
+				if ( bitCntr < 10 ) {
+					toDisplay += oneBitS.sprintf(formatWithSpace_gui.toStdString().c_str(), bits16Save[lateRunningBitCntr]); // GUI
+					printf(formatWithSpace_console.toStdString().c_str(), bits16Save[lateRunningBitCntr]); // console
+				} else {
+					toDisplay += oneBitS.sprintf(formatNoSpace_gui.toStdString().c_str(), bits16Save[lateRunningBitCntr]); // GUI
+					printf(formatNoSpace_console.toStdString().c_str(), bits16Save[lateRunningBitCntr]); // console
+				}
+				toDisplay += "</font>";
+				lateRunningBitCntr++;
+			}
+			// A carriage return
+			toDisplay += "<br />";  // GUI
+			cout << endl;  // Console
+		}
+
 	}
-	cout << endl;
+
+	ui->omrDisplayLabel->setText( toDisplay );
 
 }
 
@@ -206,8 +290,12 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
 
 void QCstmConfigMonitoring::timerEvent(QTimerEvent *) {
 
+	readTemp();
 
-	/*
+}
+
+void QCstmConfigMonitoring::readTemp() {
+
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
 	if ( spidrcontrol ) {
@@ -228,57 +316,57 @@ void QCstmConfigMonitoring::timerEvent(QTimerEvent *) {
 		}
 
 	}
-	 */
 
-	/*
-  int mvolt, mamp, mwatt;
-  if( _spidrController->getAvddNow( &mvolt, &mamp, &mwatt ) )
-    {
-      _lineEditAvddMvolt->setText( QString::number( mvolt ) );
-      _lineEditAvddMwatt->setText( QString::number( mwatt ) );
-      QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
-      _lineEditAvddMamp->setText( qs );
-    }
-  else
-    {
-      _lineEditAvddMvolt->setText( "----" );
-      _lineEditAvddMamp->setText( "----" );
-      _lineEditAvddMwatt->setText( "----" );
-    }
-  if( _spidrController->getDvddNow( &mvolt, &mamp, &mwatt ) )
-    {
-      _lineEditDvddMvolt->setText( QString::number( mvolt ) );
-      _lineEditDvddMwatt->setText( QString::number( mwatt ) );
-      QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
-      _lineEditDvddMamp->setText( qs );
-    }
-  else
-    {
-      _lineEditDvddMvolt->setText( "----" );
-      _lineEditDvddMamp->setText( "----" );
-      _lineEditDvddMwatt->setText( "----" );
-    }
-  if( !_skipVdd )
-    {
-      if( _spidrController->getVddNow( &mvolt, &mamp, &mwatt ) )
-	{
-	  _lineEditVddMvolt->setText( QString::number( mvolt ) );
-	  _lineEditVddMwatt->setText( QString::number( mwatt ) );
-	  QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
-	  _lineEditVddMamp->setText( qs );
-	}
-      else
-	{
-	  _skipVdd = true; // SPIDR-TPX3 does not have VDD
-	  _lineEditVddMvolt->setText( "----" );
-	  _lineEditVddMamp->setText( "----" );
-	  _lineEditVddMwatt->setText( "----" );
-	}
-    }
 
-  _leUpdateLed->show();
-  QTimer::singleShot( UPDATE_INTERVAL_MS/4, this, SLOT(updateLedOff()) );
-	 */
+/*
+	int mvolt, mamp, mwatt;
+	if( _spidrController->getAvddNow( &mvolt, &mamp, &mwatt ) )
+	{
+		_lineEditAvddMvolt->setText( QString::number( mvolt ) );
+		_lineEditAvddMwatt->setText( QString::number( mwatt ) );
+		QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
+		_lineEditAvddMamp->setText( qs );
+	}
+	else
+	{
+		_lineEditAvddMvolt->setText( "----" );
+		_lineEditAvddMamp->setText( "----" );
+		_lineEditAvddMwatt->setText( "----" );
+	}
+	if( _spidrController->getDvddNow( &mvolt, &mamp, &mwatt ) )
+	{
+		_lineEditDvddMvolt->setText( QString::number( mvolt ) );
+		_lineEditDvddMwatt->setText( QString::number( mwatt ) );
+		QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
+		_lineEditDvddMamp->setText( qs );
+	}
+	else
+	{
+		_lineEditDvddMvolt->setText( "----" );
+		_lineEditDvddMamp->setText( "----" );
+		_lineEditDvddMwatt->setText( "----" );
+	}
+	if( !_skipVdd )
+	{
+		if( _spidrController->getVddNow( &mvolt, &mamp, &mwatt ) )
+		{
+			_lineEditVddMvolt->setText( QString::number( mvolt ) );
+			_lineEditVddMwatt->setText( QString::number( mwatt ) );
+			QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
+			_lineEditVddMamp->setText( qs );
+		}
+		else
+		{
+			_skipVdd = true; // SPIDR-TPX3 does not have VDD
+			_lineEditVddMvolt->setText( "----" );
+			_lineEditVddMamp->setText( "----" );
+			_lineEditVddMwatt->setText( "----" );
+		}
+	}
+
+	_leUpdateLed->show();
+	QTimer::singleShot( UPDATE_INTERVAL_MS/4, this, SLOT(updateLedOff()) );
+*/
 
 }
 
@@ -580,7 +668,7 @@ void QCstmConfigMonitoring::cameraSetup() {
 	_camera->setViewfinder(_viewfinder);
 	_viewfinder->show();
 
-    //cameraResize();
+	//cameraResize();
 
 	//_viewfinder->setParent( ui->videoDockWidget );
 
@@ -734,7 +822,7 @@ void QCstmConfigMonitoring::ConfigCalibAngle1Changed(double val) {
 	QVariant var(val);
 	model->setData( index, var );
 }
-*/
+ */
 
 void QCstmConfigMonitoring::on_stepperSetZeroPushButton_clicked() {
 
