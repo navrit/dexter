@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1044</width>
+    <width>1073</width>
     <height>592</height>
    </rect>
   </property>
@@ -75,7 +75,7 @@
      <widget class="QWidget" name="layoutWidget">
       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0">
        <item>
-        <widget class="QCustomPlot" name="framePlot" native="true"/>
+        <widget class="QCstmPlotHeatmap" name="framePlot" native="true"/>
        </item>
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -301,6 +301,12 @@
    <class>QCustomPlot</class>
    <extends>QWidget</extends>
    <header>qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QCstmPlotHeatmap</class>
+   <extends>QWidget</extends>
+   <header>qcstmplotheatmap.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

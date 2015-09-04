@@ -11,6 +11,7 @@ class QCstmThreshold;
 }
 
 class CustomScanThread;
+class QCstmPlotHeatmap;
 
 class QCstmThreshold : public QWidget
 {
@@ -64,12 +65,12 @@ void addData(int dacIdx, int dacVal, double adcVal );
 void addData(int);
 
 void StartCalibration();
-void UpdateHeatMap();
+//void UpdateHeatMap();
 void UpdateChart(int setId, int thlValue);
 
 signals:
 void slideAndSpin(int, int);
-void UpdateHeatMapSignal();
+//void UpdateHeatMapSignal();
 void UpdateChartSignal(int, int);
 
 
@@ -91,17 +92,20 @@ private:
 	Mpx3GUI * _mpx3gui;
 	QCstmThreshold * _cstmThreshold;
 	Ui::QCstmThreshold * _ui;
+	QCstmPlotHeatmap * _heatmap;
 
 	// IP source address (SPIDR network interface)
 	int _srcAddr;
 	int * _data;
 
-	//public slots:
+	public slots:
+	void UpdateHeatMap(int, int);
 
 	signals:
 	void addData(int, int, double);
 	void addData(int);
 	void fillText(QString);
+	void UpdateHeatMapSignal(int, int);
 
 };
 #endif // QCSTMTHRESHOLD_H

@@ -502,10 +502,11 @@ int QCstmEqualization::FineTunning(int DAC_Disc_code) {
 	}
 
 	// Increase the setId
-	lastScan->SetSetId( _setId++ );
+	//lastScan->SetSetId( _setId++ );
 
 	// Check how many pixels are more than N*sigmas off the mean
 	//lastScan->ReAdjustPixelsOff(3, DAC_Disc_code);
+	lastScan->DoScan( MPX3RX_DAC_THRESH_0, _setId++, DAC_Disc_code, -1 ); // -1: Do all loops
 	lastScan->SetScanType( ThlScan::__FINE_TUNNING1_SCAN );
 	connect( lastScan, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
 	lastScan->start();
@@ -814,6 +815,9 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol) {
 	pair<int, int> pix;
 
 	for ( int i = 0 ; i < __matrix_size ; i++ ) {
+
+		//cout << " adj " << i << " | " << _eqresults->GetPixelAdj(i) << endl;
+
 		pix = XtoXY(i, __array_size_x);
 		spidrcontrol->configPixelMpx3rx(pix.first, pix.second, _eqresults->GetPixelAdj(i), 0x0 );
 	}

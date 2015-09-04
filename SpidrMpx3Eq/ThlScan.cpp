@@ -167,7 +167,7 @@ void ThlScan::run() {
 		//string messg = "This may take some time depending on the number of pixels off target.";
 		//QMessageBox::warning ( _equalization, tr("Fine tuning"), tr( messg.c_str() ) );
 
-		ReAdjustPixelsOff(1, MPX3RX_DAC_DISC_L);
+		ReAdjustPixelsOff( 2 );// MPX3RX_DAC_DISC_L);
 	}
 }
 
@@ -268,7 +268,7 @@ void ThlScan::EqualizationScan() {
 				_stepScan *= __step_scan_boostfactor;
 				_equalization->GetUI()->eqStepSpinBox->setValue( _stepScan );
 			}
-*/
+			 */
 
 			// limits from the GUI (no signals on them) TODO
 			_minScan = _equalization->GetUI()->eqMinSpinBox->value();
@@ -491,7 +491,6 @@ bool ThlScan::OutsideTargetRegion(int pix, double Nsigma){
 
 	int offset =  floor(Nsigma*_results.sigma);
 	if ( offset < 1 ) offset = 1;
-	offset = 1; // FIXME
 
 	int lowLim = __equalization_target - offset;
 	int highLim = __equalization_target + offset;
@@ -646,9 +645,9 @@ void ThlScan::DumpRework(set<int> reworkSubset, int thl){
 
 	for ( ; i != iE ; i++ ) {
 		cout << "   pix:" << *i << " | status:" << _equalization->GetEqualizationResults(_deviceIndex)->GetStatus( *i )
-																																																															<< " | adj" <<  _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i )
-																																																															<< " | reactive:" << _pixelReactiveTHL[*i]
-																																																															                                       << endl;
+						<< " | adj" <<  _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i )
+						<< " | reactive:" << _pixelReactiveTHL[*i]
+						                                       << endl;
 	}
 
 }
@@ -827,6 +826,7 @@ void ThlScan::ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSu
 		// Now set the new value
 		// Set the new adjustment for this particular pixel.
 		pix = XtoXY(*i, __matrix_size_x);
+
 		_equalization->GetEqualizationResults(_deviceIndex)->SetPixelAdj(*i, newadj);
 		// Write the adjustment
 		spidrcontrol->configPixelMpx3rx(pix.first, pix.second, newadj, 0x0 );
@@ -925,7 +925,7 @@ bool ThlScan::TwoPixelsRespectMinimumSpacing(int pix1, int pix2, int spacing) {
 /**
  * Returns number of adjusted pixels
  */
-int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
+int ThlScan::ReAdjustPixelsOff(double Nsigma) { //, int dac_code) {
 
 	int ipaddr[4] = { 1, 1, 168, 192 };
 	if( _srcAddr != 0 ) {
@@ -941,6 +941,24 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 		cout << "[ERR ] Device not connected !" << endl;
 		return 0;
 	}
+
+	// Reload resulting adjustement bits
+	_equalization->SetAllAdjustmentBits(spidrcontrol);
+
+	// While equalizing one threshold the other can be at a very high value
+	// to keep that circuit from reacting
+	// Set Dac
+	spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_THRESH_1, 150 );
+	// Adjust the sliders and the SpinBoxes to the new value
+	connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+	// Get the DAC back just to be sure and then slide&spin
+	int dacVal = 0;
+	spidrcontrol->getDac( _deviceIndex,  MPX3RX_DAC_THRESH_1, &dacVal);
+	// SlideAndSpin works with the DAC index, no the code.
+	int dacIndex = _mpx3gui->GetUI()->DACsWidget->GetDACIndex( MPX3RX_DAC_THRESH_1 );
+	slideAndSpin( dacIndex,  dacVal );
+	disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+
 
 	connect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
 	connect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
@@ -1023,9 +1041,9 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 			cout << "[INFO] progress : " << (int)doneAndNoisySet.size() << "/" << nPixelsRework << endl;
 
 			reworkCntr += ExtractReworkSubsetSpacingAware(reworkPixelsSet, reworkSubset, _spacing);
-			//DumpSet( reworkPixelsSet, "reworkPixelsSet" );
+			DumpSet( reworkPixelsSet, "reworkPixelsSet" );
 			DumpSet( reworkSubset,  "reworkSubset" );
-			//DumpSet( doneAndNoisySet, "doneAndNoisySet");
+			DumpSet( doneAndNoisySet, "doneAndNoisySet");
 
 			// At this point reworkSubset already shrinks by exactly doneAndNoisySet
 			// 1) doneAndNoisySet should be masked
@@ -1044,8 +1062,7 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 			// Time to rewind the counters for these particular pixels
 			RewindReactionCounters(reworkSubset);
 			// Unmask pixels in the local set.
-			//UnmaskPixelsInLocalSet(reworkSubset);
-
+			UnmaskPixelsInLocalSet(reworkSubset);
 
 			/////////////////////////
 			// Thl scan
@@ -1066,11 +1083,17 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 				fillText( thlLabelS );
 				disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
 
-				//////////////////////////////////////////////////////
-				// Now ready to scan on this unique pixel !
-
-				spidrcontrol->setDac( deviceIndex, dac_code, thlItr );
-				//_spidrcontrol->writeDacs( _deviceIndex );
+				// Set Dac
+				spidrcontrol->setDac( deviceIndex, _dac_code, thlItr );
+				// Adjust the sliders and the SpinBoxes to the new value
+				connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+				// Get the DAC back just to be sure and then slide&spin
+				int dacVal = 0;
+				spidrcontrol->getDac( deviceIndex, _dac_code, &dacVal);
+				// SlideAndSpin works with the DAC index, no the code.
+				int dacIndex = _mpx3gui->GetUI()->DACsWidget->GetDACIndex( _dac_code );
+				slideAndSpin( dacIndex,  dacVal );
+				disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
 
 				// Start the trigger as configured
 				spidrcontrol->startAutoTrigger();
@@ -1091,7 +1114,8 @@ int ThlScan::ReAdjustPixelsOff(double Nsigma, int dac_code) {
 						_data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
 						_pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes, thlItr );
 					}
-					// Release frame whatever happens
+
+					// Release
 					_spidrdaq->releaseFrame();
 
 					if( doReadFrames ) {
@@ -1210,7 +1234,7 @@ int ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
 
 		// I checked that the entry is not zero, and also that is not in the maskedMap
 		//if ( data[i] != 0 && ( _maskedSet.find( i ) == _maskedSet.end() ) ) {
-		if ( data[i] >= _equalization->GetNHits() && ( _maskedSet.find( i ) == _maskedSet.end() ) ) {
+		if ( ( data[i] >= _equalization->GetNHits() ) && ( _maskedSet.find( i ) == _maskedSet.end() ) )  {
 
 			// Increase the counting in this pixel if it hasn't already reached the _nTriggers
 			if ( _pixelCountsMap[i] < _equalization->GetNTriggers() ) {
@@ -1335,7 +1359,7 @@ void ThlScan::UpdateChart(int setId, int thlValue) {
 		if( (*itr).second ==  _equalization->GetNTriggers() + 1 ) { // Marked as +1 := reactive
 			// Count how many pixels counted at this threshold
 			cntr++; // Marked as +2 --> taken into account in Chart
-			(*itr).second++; // This way we avoid re-ploting next time. The value _nTriggers+2 identifies these pixels
+			(*itr).second++; // This way we avoid re-plotting next time. The value _nTriggers+2 identifies these pixels
 		}
 
 	}
@@ -1466,13 +1490,12 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int spacing, in
 }
 
 /**
- * Leave reworkPixels unmasked.  Returns number of unmaksed pixels.
+ * Leave reworkPixels unmasked.  Returns number of un-maksed pixels.
  */
 int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, set<int> reworkPixels) {
 
 	// Clear previous mask.  Not sending the configuration yet !
 	ClearMask(spidrcontrol, false);
-
 
 	int cntr = 0, pix = 0;
 	for (int i = 0 ; i < __array_size_x ; i++) {
@@ -1483,9 +1506,10 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, set<int> rework
 
 			// The pixels NOT in the reworkPixels set, must be masked
 			if ( reworkPixels.find( pix ) == reworkPixels.end() ) {
-				spidrcontrol->setPixelMaskMpx3rx(i,j);
+				spidrcontrol->setPixelMaskMpx3rx(i,j, true);
 				_maskedSet.insert( pix ); // this is a set, entries are unique
 			} else {
+				spidrcontrol->setPixelMaskMpx3rx(i,j, false);
 				cntr++; // count unmasked
 			}
 
@@ -1536,7 +1560,7 @@ void ThlScan::ClearMask(SpidrController * spidrcontrol, bool sendToChip){
 			spidrcontrol->setPixelMaskMpx3rx(i, j, false);
 		}
 	}
-	// And send the configuration
+	// And send the configuration if requested
 	if ( sendToChip ) spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
 
 	_maskedSet.clear();

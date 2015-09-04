@@ -92,7 +92,7 @@ public:
 	int GetDetectedLowScanBoundary() { return _detectedScanBoundary_L; };
 	int GetDetectedHighScanBoundary() { return _detectedScanBoundary_H; };
 
-	int ReAdjustPixelsOff(double Nsigma, int DAC_Disc_code);
+	int ReAdjustPixelsOff(double Nsigma); //, int DAC_Disc_code);
 	void EqualizationScan();
 
 

@@ -75,8 +75,8 @@ QCstmThreshold::QCstmThreshold(QWidget *parent) :  QWidget(parent),  ui(new Ui::
 	ui->spacingSpinBox->setValue( 0 );
 
 	ui->rangeDirectionCheckBox->setToolTip("When checked the scan is descendant");
-	_scanDescendant = false;
-	ui->rangeDirectionCheckBox->setChecked( false );
+	_scanDescendant = true;
+	ui->rangeDirectionCheckBox->setChecked( true );
 
 	ui->keepCheckbox->setToolTip("When checked the previous plots are kept");
 	_keepPlots = true;
@@ -243,15 +243,13 @@ void QCstmThreshold::UpdateChart(int setId, int thlValue) {
 	 */
 }
 
-void QCstmThreshold::UpdateHeatMap() {
-
-	addFrame(QPoint(0,0), 0, _data);
-
-}
+//void QCstmThreshold::UpdateHeatMap() {
+//	addFrame(QPoint(0,0), 0, _data);
+//}
 
 /**
  * 		offset: corner of the quad
- * 		layer: threhold layer
+ * 		layer: threshold layer
  * 		data: the actual data
  */
 
@@ -350,7 +348,15 @@ void CustomScanThread::ConnectToHardware() {
 
 	// The chart and the heatmap !
 	//_chart = _equalization->GetUI()->_histoWidget;
-	//_heatmap = _equalization->GetUI()->_intermediatePlot;
+	_heatmap = _cstmThreshold->GetUI()->framePlot;
+
+}
+
+void CustomScanThread::UpdateHeatMap(int sizex, int sizey) {
+
+	//_heatmap->addData(_data, sizex, sizey);	// Add a new plot/frame.
+	_heatmap->setData( _data, sizex, sizey);
+	//_heatmap->setActive(_frameId++); 		// Activate the last plot (the new one)
 
 }
 
@@ -382,8 +388,8 @@ void CustomScanThread::run() {
 	//SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
 	//connect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
-	//connect( this, SIGNAL( UpdateHeatMapSignal() ), this, SLOT( UpdateHeatMap() ) );
 
+	connect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
 	connect( this, SIGNAL( addData(int, int, double) ), _cstmThreshold, SLOT( addData(int, int, double) ) );
 	connect( this, SIGNAL( addData(int) ), _cstmThreshold, SLOT( addData(int) ) );
 
@@ -484,6 +490,11 @@ void CustomScanThread::run() {
 			// Release
 			spidrdaq->releaseFrame();
 
+
+			// Report to heatmap
+			if ( doReadFrames ) {
+				UpdateHeatMapSignal(_mpx3gui->getDataset()->x(), _mpx3gui->getDataset()->y());
+			}
 			/*
 			// plot
 			if ( _ui->sumCheckbox->isChecked() )
@@ -526,6 +537,7 @@ void CustomScanThread::run() {
 
 	}
 
+	disconnect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
 	disconnect( this, SIGNAL( addData(int, int, double) ), _cstmThreshold, SLOT( addData(int, int, double) ) );
 	disconnect( this, SIGNAL( addData(int) ), _cstmThreshold, SLOT( addData(int) ) );
 
