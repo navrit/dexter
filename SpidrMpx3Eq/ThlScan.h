@@ -93,6 +93,7 @@ public:
 	int GetDetectedHighScanBoundary() { return _detectedScanBoundary_H; };
 
 	int ReAdjustPixelsOff(double Nsigma); //, int DAC_Disc_code);
+	int FineTuning(double Nsigma);
 	void EqualizationScan();
 
 
@@ -100,10 +101,13 @@ public:
 	scan_type GetScanType() { return _scanType; };
 	set<int> ExtractFineTunningVetoList(double Nsigma);
 	set<int> ExtractReworkList(double Nsigma);
+	set<int> ExtractPixelsNotOnTarget();
 	int ExtractReworkSubsetSpacingAware(set<int> & reworkPixelsSet, set<int> & reworkSubset, int spacing);
 	bool TwoPixelsRespectMinimumSpacing(int pix1, int pix2, int spacing);
 	map<int, int> ExtractReworkAdjustments(set<int> reworkPixels);
 	void ShiftAdjustments(SpidrController *, set<int> reworkSubset);
+	void ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSubset, set<int> activeMask);
+	bool AdjScanCompleted(set<int> reworkSubset, set<int> activeMask);
 	void TagPixelsEqualizationStatus(set<int> vetoList);
 	void RewindReactionCounters(set<int> reworkPixelsSet);
 	void UnmaskPixelsInLocalSet(set<int> reworkPixelsSet);
@@ -111,6 +115,8 @@ public:
 	set<int> NeedsReadjustment(set<int> reworkPixelsSet, set<int> & doneAndNoisySet, int Nsigma);
 	void DumpRework(set<int> reworkSubset, int thl);
 	void DumpSet(set<int> reworkSubset, QString name, int max = 100);
+	void FillAdjReactTHLHistory();
+	void DumpAdjReactTHLHistory();
 
 	void SetSetId(int si) { _setId = si; };
 	int GetSetId() { return _setId; };
@@ -134,8 +140,14 @@ private:
 	// pixelId, reactive thl
 	map<int, int> _pixelReactiveTHL;
 	set<int> _maskedSet;
-	// Holder for pixels ready.  Used at the begginging of the fine tunning procedure
+	// Holder for pixels ready.  Used at the beginning of the fine tuning procedure
 	set<int> _fineTunningPixelsEqualized;
+	set<int> _scheduledForFineTuning;
+
+	// Dedicated to Fine Tuning
+	// Keeping track of the reactive threshold for every adj value
+	// pixId ---> < (adj,reactTHL) ... >
+	map<int, vector< pair<int, int> > > _adjReactiveTHLFineTuning;
 
 	int _nReactivePixels;
 	scan_type _scanType;
