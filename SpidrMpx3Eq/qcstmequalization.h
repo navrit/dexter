@@ -44,7 +44,7 @@ public:
 
 	typedef enum {
 		__NOT_EQUALIZED = 0,
-		__SCHEDULED_FOR_FINETUNING,				// Scheduled for Fine Tunning
+		__SCHEDULED_FOR_FINETUNING,				// Scheduled for Fine Tuning
 		__EQUALIZED,							// DONE
 		__EQUALIZATION_FAILED_ADJ_OUTOFBOUNDS,  // EQ FAILED
 		__EQUALIZATION_FAILED_NONREACTIVE		// EQ FAILED
@@ -142,8 +142,9 @@ public:
 	void SetLimits();
 	void Configuration(bool reset);
 	void SetAllAdjustmentBits(SpidrController * spidrcontrol, int val_L, int val_H);
+	void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId);
 	void SetAllAdjustmentBits(SpidrController * spidrcontrol);
-	void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId );
+	//void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId );
 	void SetAllAdjustmentBits();
 	void ClearAllAdjustmentBits();
 
@@ -157,6 +158,7 @@ public:
 	int GetStepScan(){ return _stepScan; };
 	int GetGlobalAdj(){ return _global_adj; };
 	int GetNHits(){ return _nHits; };
+	int GetFineTuningLoops() { return _fineTuningLoops; };
 
 	void SetMinScan(int);
 	void SetMaxScan(int);
@@ -203,6 +205,7 @@ private:
 	int _maxScanTHL;
 	int _stepScan;
 	int _nHits;
+	int _fineTuningLoops;
 	bool _threadFinished;
 	unsigned int _eqStatus;
 	unsigned int _scanIndex;
@@ -239,6 +242,7 @@ void on_logYCheckBox_toggled(bool checked);
 
 private slots:
 
+void setFineTuningLoops(int);
 void setNHits(int);
 void ScanThreadFinished();
 void StartEqualization();

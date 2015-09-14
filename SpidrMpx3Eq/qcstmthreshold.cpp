@@ -380,6 +380,9 @@ void CustomScanThread::run() {
 
 	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
+	// Send the existing equalization
+	_mpx3gui->getEqualization()->SetAllAdjustmentBits(spidrcontrol);
+
 	// Configure, no reset
 	//_mpx3gui->getConfig()->Configuration( false, 2, _ui->nTriggersSpinBox->value() );
 	//_mpx3gui->getConfig()->Configuration( false, 3, _ui->nTriggersSpinBox->value() );

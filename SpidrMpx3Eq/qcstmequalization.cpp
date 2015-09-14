@@ -56,6 +56,8 @@ _ui(new Ui::QCstmEqualization)
 	_scanDescendant = true;
 	_ui->rangeDirectionEqCheckBox->setChecked( true );
 
+	_fineTuningLoops = 5;
+	_ui->fineTuningLoopsSpinBox->setValue( _fineTuningLoops );
 
 	// Limits in the input widgets
 	SetLimits();
@@ -68,7 +70,6 @@ _ui(new Ui::QCstmEqualization)
 	_stepDone = new bool[__EQStatus_Count];
 	for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
 
-	connect(_ui->nHitsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setNHits(int)) );
 
 }
 
@@ -131,6 +132,10 @@ void QCstmEqualization::on_logYCheckBox_toggled(bool checked) {
 		GetUI()->_histoWidget->SetLogY( false );
 	}
 	GetUI()->_histoWidget->replot();
+}
+
+void QCstmEqualization::setFineTuningLoops(int nLoops) {
+	_fineTuningLoops = nLoops;
 }
 
 void QCstmEqualization::InitEqualization() {
@@ -265,7 +270,7 @@ void QCstmEqualization::StartEqualization(int chipId) {
 	} else if ( EQ_NEXT_STEP(__DAC_Disc_Optimization_100 ) ) {
 
 		// Check if the previous scan has been stopped by the user
-//		_scans
+		//		_scans
 
 
 		// Extract results from immediately previous scan. Calc the stats now (this is quick)
@@ -352,6 +357,13 @@ void QCstmEqualization::StartEqualization(int chipId) {
 		FineTunning(MPX3RX_DAC_DISC_L);
 
 	} else if ( EQ_NEXT_STEP( __FineTunning ) ) {
+
+		// Display
+		_ui->_intermediatePlot->clear();
+		//int lastActiveFrame = _ui->_intermediatePlot->GetLastActive();
+		int * adj_matrix = _eqresults->GetAdjustementMatrix();
+		_ui->_intermediatePlot->addData( adj_matrix, 256, 256 );
+		_ui->_intermediatePlot->setActive( 0 );
 
 		// 4) Write the result
 		SaveEqualization( chipId );
@@ -779,7 +791,7 @@ void QCstmEqualization::SetAllAdjustmentBits() {
 	SetAllAdjustmentBits(spidrcontrol);
 
 }
-
+/*
 void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int chipIndex ) {
 
 	int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
@@ -800,14 +812,43 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 	spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
 
 	// Now set the right adjustments
-	SetAllAdjustmentBits(spidrcontrol);
+	SetAllAdjustmentBits( spidrcontrol );
+
+}
+ */
+
+/**
+ * Send the configuration to all chips
+ */
+void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol) {
+
+	int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
+
+	for ( int i = 0 ; i < nChips ; i++ ) {
+
+		// Check if the device is alive
+		if ( ! _mpx3gui->getConfig()->detectorResponds( i ) ) {
+			cout << "[ERR ] Device " << i << " not responding." << endl;
+			continue;
+		}
+
+		// Go ahead and configure this chip
+		SetAllAdjustmentBits(spidrcontrol, i);
+
+	}
 
 }
 
-void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol) {
+void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int chipIndex) {
 
 	if( !spidrcontrol ) {
 		QMessageBox::information(this, tr("Clear configuration"), tr("The system is disconnected. Nothing to clear.") );
+		return;
+	}
+
+	int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
+	if ( chipIndex < 0 || chipIndex > nChips - 1) {
+		cout << "[ERROR] wrong chip index !" << endl;
 		return;
 	}
 
@@ -816,10 +857,9 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol) {
 
 	for ( int i = 0 ; i < __matrix_size ; i++ ) {
 
-		//cout << " adj " << i << " | " << _eqresults->GetPixelAdj(i) << endl;
-
 		pix = XtoXY(i, __array_size_x);
-		spidrcontrol->configPixelMpx3rx(pix.first, pix.second, _eqresults->GetPixelAdj(i), 0x0 );
+		spidrcontrol->configPixelMpx3rx(pix.first, pix.second, _eqMap[chipIndex]->GetPixelAdj(i), 0x0 );
+
 	}
 
 	// Mask
@@ -842,7 +882,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol) {
 	}
 
 
-	spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
+	spidrcontrol->setPixelConfigMpx3rx( chipIndex );
 
 }
 
@@ -987,7 +1027,7 @@ void QCstmEqualization::LoadEqualization(){
 		_eqresults->ReadMaskBinaryFile( maskfn );
 
 		// And talk to the hardware
-		SetAllAdjustmentBits( );
+		SetAllAdjustmentBits( _mpx3gui->GetSpidrController() );
 
 		// Display the equalization
 		int * adj_matrix = _eqresults->GetAdjustementMatrix();
@@ -1015,6 +1055,8 @@ void QCstmEqualization::LoadEqualization(){
 
 void QCstmEqualization::SetupSignalsAndSlots() {
 
+	connect(_ui->nHitsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setNHits(int)) );
+
 	connect( _ui->_startEq, SIGNAL(clicked()), this, SLOT(StartEqualization()) );
 	connect( _ui->_startEqAll, SIGNAL(clicked()), this, SLOT(StartEqualizationAllChips()) );
 	connect( _ui->_stopEq, SIGNAL(clicked()), this, SLOT(StopEqualization()) );
@@ -1032,6 +1074,8 @@ void QCstmEqualization::SetupSignalsAndSlots() {
 	connect( _ui->eqMinSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeMin(int) ) );
 	connect( _ui->eqMaxSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeMax(int) ) );
 	connect( _ui->eqStepSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeStep(int) ) );
+
+	connect( _ui->fineTuningLoopsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setFineTuningLoops(int)) );
 
 }
 

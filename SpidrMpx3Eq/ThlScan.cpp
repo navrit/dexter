@@ -44,7 +44,7 @@ ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 	_results.weighted_arithmetic_mean = 0.;
 	_results.sigma = 0.;
 
-	_detectedScanBoundary_L = 0;
+	_detectedScanBoundary_L = 511;
 	_detectedScanBoundary_H = 0;
 
 	// Set to true for special scans
@@ -197,6 +197,9 @@ int ThlScan::FineTuning(double Nsigma) {
 		return 0;
 	}
 
+	// Reload resulting adjustement bits
+	_equalization->SetAllAdjustmentBits(spidrcontrol);
+
 	// While equalizing one threshold the other can be at a very high value
 	// to keep that circuit from reacting
 	// Set Dac
@@ -211,13 +214,19 @@ int ThlScan::FineTuning(double Nsigma) {
 	slideAndSpin( dacIndex,  dacVal );
 	disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
 
+	// Signals to draw out of the worker
+	connect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
+	connect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
+	connect(_equalization, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
+
+
 	// Extract all the pixels not responding at exactly the target THL value.
 	// The reactive THL information is available because this scan is the
 	//   same object used for the on-extrapolation scan.
 	_scheduledForFineTuning = ExtractPixelsNotOnTarget();
 	// Start with the adjustments currently reacting
 	FillAdjReactTHLHistory();
-	DumpAdjReactTHLHistory();
+	DumpAdjReactTHLHistory( 10 );
 
 	int processedLoops = 0;
 	bool finishScan = false;
@@ -248,17 +257,24 @@ int ThlScan::FineTuning(double Nsigma) {
 			cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  " | N pixels unmasked = " << __matrix_size - nMasked << endl;
 
 			// Decide when to stop trying different adj values for this particular mask
-			while ( ! AdjScanCompleted(_scheduledForFineTuning, _maskedSet) ) {
+			int adjLoops = 0;
+			while ( ! AdjScanCompleted(_scheduledForFineTuning, _maskedSet) && (adjLoops < _equalization->GetFineTuningLoops()) ) {
+
+				// Stop when a number of loops has been reached
+				adjLoops++;
 
 				// Shift adj !
-				ShiftAdjustments( spidrcontrol, _scheduledForFineTuning, _maskedSet);
+				int nNotInMask = ShiftAdjustments( spidrcontrol, _scheduledForFineTuning, _maskedSet );
+
+				// Rewind reactions counters after making the shift of adjustments
+				RewindReactionCounters( _scheduledForFineTuning );
 
 				// Do THL scans keeping track of the reactive threshold for every adj value
 				//  Using: pixId ---> < (adj,reactTHL) ... > : map<int, vector< pair<int, int> > > _adjReactiveTHLFineTuning;
 
-				// limits from the GUI (no signals on them) TODO
-				_minScan = _equalization->GetUI()->eqMinSpinBox->value();
-				_maxScan = _equalization->GetUI()->eqMaxSpinBox->value();
+				// Use the limits detected in the previous scan
+				_minScan = GetDetectedLowScanBoundary(); // _equalization->GetUI()->eqMinSpinBox->value();
+				_maxScan = GetDetectedHighScanBoundary(); // _equalization->GetUI()->eqMaxSpinBox->value();
 
 				// Scan iterator observing direction
 				_pixelReactiveInScan = 0;
@@ -311,7 +327,6 @@ int ThlScan::FineTuning(double Nsigma) {
 							_pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes, _thlItr );
 						}
 
-
 						// Release
 						_spidrdaq->releaseFrame();
 
@@ -322,29 +337,30 @@ int ThlScan::FineTuning(double Nsigma) {
 
 						}
 
-						/*
-					if ( doReadFrames ) {
-						// Report to heatmap
-						UpdateHeatMapSignal(_mpx3gui->getDataset()->x(), _mpx3gui->getDataset()->y());
+						if ( doReadFrames ) {
+							// Report to heatmap
+							UpdateHeatMapSignal(_mpx3gui->getDataset()->x(), _mpx3gui->getDataset()->y());
 
-						// Report to graph
-						if ( !_blindScan ) UpdateChartSignal(_setId, _thlItr);
+							// Report to graph
+							//if ( !_blindScan ) UpdateChartSignal(_setId, _thlItr);
 
-						//_heatmap->addData(data, 256, 256); // Add a new plot/frame.
-						//_heatmap->setActive(_frameId++); // Activate the last plot (the new one)
-						//_heatmap->setData( data, 256, 256 );
+							//_heatmap->addData(data, 256, 256); // Add a new plot/frame.
+							//_heatmap->setActive(_frameId++); // Activate the last plot (the new one)
+							//_heatmap->setData( data, 256, 256 );
 
-						// Last scan boundaries
-						// This information could be useful for a next scan
-						if ( _thlItr < _detectedScanBoundary_L ) _detectedScanBoundary_L = _thlItr;
-						if ( _thlItr > _detectedScanBoundary_H ) _detectedScanBoundary_H = _thlItr;
-					}
-						 */
+							// Last scan boundaries
+							// This information could be useful for a next scan
+							//if ( _thlItr < _detectedScanBoundary_L ) _detectedScanBoundary_L = _thlItr;
+							//if ( _thlItr > _detectedScanBoundary_H ) _detectedScanBoundary_H = _thlItr;
+						}
+
 
 					}
 
 					QString reactiveLabelS;
 					reactiveLabelS = QString::number( _pixelReactiveInScan, 'd', 0 );
+					reactiveLabelS += "/";
+					reactiveLabelS += QString::number( nNotInMask, 'd', 0 );
 					// Send signal to Labels.  Making connections one by one.
 					connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelNPixelsReactive, SLOT( setText(QString)) );
 					fillText( reactiveLabelS );
@@ -367,7 +383,7 @@ int ThlScan::FineTuning(double Nsigma) {
 				}
 
 				//
-				DumpAdjReactTHLHistory();
+				DumpAdjReactTHLHistory( 10 );
 
 				// A full spacing loop has been achieved here
 				processedLoops++;
@@ -387,12 +403,95 @@ int ThlScan::FineTuning(double Nsigma) {
 
 	}
 
+	// Done
+	// Now for the list of pixels which need rework, select the best adj value from the history
+	SelectBestAdjFromHistory( 10 );
+	// And send the new configuration to the chip
+	_equalization->SetAllAdjustmentBits(spidrcontrol);
 
+	// Signals to draw out of the thread
+	disconnect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
+	disconnect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
+	disconnect( _equalization, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread()) );
 
+	// in case the thread is used again
+	_stop = false;
+
+	delete spidrcontrol;
 }
 
-//void ThlScan::InitializeReactTHLHistory() {
-//}
+void ThlScan::SelectBestAdjFromHistory(int showHeadAndTail) {
+
+	// 1) Select the closest response to the equalization target
+	// 2) if two values at the same distance are found at the right and left
+	//    side, take the right side always (for no particular reason, but gotta be consistent).
+
+	// Loop over the pixels scheduled for Fine tuning
+	set<int>::iterator i = _scheduledForFineTuning.begin();
+	set<int>::iterator iE = _scheduledForFineTuning.end();
+
+	cout << "[INFO] Selecting bests adjustments" << endl << "       ";
+	int cntr = 0;
+	for ( ; i != iE ; i++ ) {
+
+		// Take a pixel and look at its history
+		vector< pair<int, int> > pixHistory = _adjReactiveTHLFineTuning[*i];
+		int historySize = (int) pixHistory.size();
+
+		// Find the closes to eq target
+		// It can happen that two points at the right and left side of eqTarget
+		//  are to be found at the same distance from the target.
+		// Calculate first all distances to target in history and see if this happens
+		vector<int> distancesToTarget;
+		for (int hI = 0 ; hI < historySize ; hI++ ) {
+			distancesToTarget.push_back( pixHistory[hI].second - __equalization_target );
+		}
+		// Check if there is more than one point at the same distance and at opposite sides
+		// I will use a simple sort algorithm (these vectors have at most a size of 31).
+		int minDistanceToTarget = 511;
+		int minDistanceIndx = -1;
+		for (int j = 0 ; j < historySize ; j++ ) {
+			// here look for the smalles distance
+			if ( qAbs( distancesToTarget[j] ) < minDistanceToTarget ) {
+				minDistanceToTarget = qAbs( distancesToTarget[j] );
+				minDistanceIndx = j;
+			}
+		}
+
+		for (int j = 0 ; j < historySize ; j++ ) {
+			for (int k = j+1 ; k < historySize ; k++ ) {
+
+				if (
+						( qAbs( distancesToTarget[j] ) ==  qAbs( distancesToTarget[k] ) ) 	// same distance
+						&&
+						(distancesToTarget[j] * distancesToTarget[k]) < 0 					// at opposite sides
+				) {
+					// See if this enters in competition with the minimum
+					if ( qAbs(distancesToTarget[j]) <= minDistanceToTarget  ) {
+						// Then the one at the right side ought to be selected
+						if ( distancesToTarget[j] > 0 ) minDistanceIndx = j;
+						if ( distancesToTarget[k] > 0 ) minDistanceIndx = k;
+					}
+					// else this coincidence is irrelevant
+				}
+
+			}
+		}
+
+		// At this point the best adjustment has been found.
+		// Send it to the data structure
+		_equalization->GetEqualizationResults( _deviceIndex )->SetPixelAdj( *i, pixHistory[minDistanceIndx].first );
+		// And tag as equalized
+		_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( *i, Mpx3EqualizationResults::__EQUALIZED);
+
+		if ( cntr < showHeadAndTail || cntr >= _scheduledForFineTuning.size() - showHeadAndTail ) {
+			cout << "[" << *i << "](" << pixHistory[minDistanceIndx].first << ") ";
+		}
+
+		cntr++;
+	}
+
+}
 
 void ThlScan::FillAdjReactTHLHistory() {
 
@@ -425,23 +524,44 @@ void ThlScan::FillAdjReactTHLHistory() {
 
 }
 
-void ThlScan::DumpAdjReactTHLHistory() {
+void ThlScan::DumpAdjReactTHLHistory(int showHeadAndTail) {
 
 	map<int, vector< pair<int, int> > >::iterator i  = _adjReactiveTHLFineTuning.begin();
 	map<int, vector< pair<int, int> > >::iterator iE = _adjReactiveTHLFineTuning.end();
 	vector< pair<int, int> >::iterator vi;
 	vector< pair<int, int> >::iterator viE;
+	int fullHistorySize = (int) _adjReactiveTHLFineTuning.size();
 
 	cout << "[INFO] adjReactiveTHL history : [pix]{ (adj,reactTHL), ... } " << endl;
+	int cntr = 0;
 	for ( ; i != iE ; i++ ) {
-		cout << "       " << "[" << (*i).first << "]{";
-		vi  = (*i).second.begin();
-		viE = (*i).second.end();
-		for ( ; vi != viE ; vi++ ) {
-			cout << "(" << (*vi).first << "," << (*vi).second << ")";
-			if ( (vi+1) != viE ) cout << ", ";
+
+		if (
+				( cntr < showHeadAndTail )
+				||
+				( cntr >= (fullHistorySize - showHeadAndTail)  )
+
+		) {
+			cout << "       " << "[" << (*i).first << "]{";
+
+			vi  = (*i).second.begin();
+			viE = (*i).second.end();
+			for ( ; vi != viE ; vi++ ) {
+
+				cout << "(" << (*vi).first << "," << (*vi).second << ")";
+				if ( (vi+1) != viE ) cout << ", ";
+
+			}
+			cout << "}" << endl;
 		}
-		cout << "}" << endl;
+
+		if ( cntr == showHeadAndTail ) {
+			int skipping = fullHistorySize - 2*showHeadAndTail;
+			cout << " ... skip " << skipping << " ... " << endl;
+		}
+
+		cntr++;
+
 	}
 	cout << endl;
 
@@ -616,8 +736,10 @@ void ThlScan::EqualizationScan() {
 
 						// Last scan boundaries
 						// This information could be useful for a next scan
-						if ( _thlItr < _detectedScanBoundary_L ) _detectedScanBoundary_L = _thlItr;
-						if ( _thlItr > _detectedScanBoundary_H ) _detectedScanBoundary_H = _thlItr;
+						if ( _pixelReactiveInScan != 0 ) {
+							if ( _thlItr < _detectedScanBoundary_L ) _detectedScanBoundary_L = _thlItr;
+							if ( _thlItr > _detectedScanBoundary_H ) _detectedScanBoundary_H = _thlItr;
+						}
 					}
 
 				}
@@ -835,10 +957,15 @@ set<int> ThlScan::ExtractPixelsNotOnTarget() {
 	set<int> reworkList;
 
 	for ( int i = 0 ; i < __matrix_size ; i++ ) {
+
 		if ( _pixelReactiveTHL[i] != __equalization_target ) {
 			reworkList.insert( i );
-			if ( reworkList.size() >= 10 ) break; // FIXME
+			_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( i, Mpx3EqualizationResults::__SCHEDULED_FOR_FINETUNING );
+		} else {
+			// Otherwise tag it as equalized
+			_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( i, Mpx3EqualizationResults::__EQUALIZED);
 		}
+
 	}
 
 	cout << "[INFO] " << reworkList.size() << " pixels found out of target" << endl;
@@ -888,8 +1015,7 @@ void ThlScan::RewindReactionCounters(set<int> reworkPixelsSet) {
 	set<int>::iterator iE = reworkPixelsSet.end();
 
 	for( ; i != iE ; i++ ) {
-		// Now I can rewind counters for this pixel
-		_pixelReactiveTHL[ *i ] = __UNDEFINED;
+		//_pixelReactiveTHL[ *i ] = __UNDEFINED; // NOT THIS ONE ! KEEP IT
 		_pixelCountsMap[ *i ] = __NOT_TESTED_YET;
 	}
 
@@ -938,9 +1064,9 @@ void ThlScan::DumpRework(set<int> reworkSubset, int thl){
 
 	for ( ; i != iE ; i++ ) {
 		cout << "   pix:" << *i << " | status:" << _equalization->GetEqualizationResults(_deviceIndex)->GetStatus( *i )
-																																				<< " | adj" <<  _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i )
-																																				<< " | reactive:" << _pixelReactiveTHL[*i]
-																																				                                       << endl;
+																																																								<< " | adj" <<  _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i )
+																																																								<< " | reactive:" << _pixelReactiveTHL[*i]
+																																																								                                       << endl;
 	}
 
 }
@@ -1071,25 +1197,95 @@ void ThlScan::UnmaskPixelsInLocalSet(set<int> reworkPixelsSet) {
 bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> activeMask) {
 
 	// End the scan if
-	//  1) all the pixels involved have touched (reactTHL val) the equalization target
+	//  1) all the pixels involved have touched (reactTHL val) the equalization target OR passed over it
 	//  2) OR exhausted all adj values
+
+	// Consider only pixels from the reworkSubset NOT in the activeMask
+	set<int>::iterator i  = reworkSubset.begin();
+	set<int>::iterator iE = reworkSubset.end();
+
+	int pixelsConsidered = 0;
+	int pixelsLimitsReached = 0;
+	int pixelsAteqT = 0;
+	bool passedUpTarget = false;
+	bool passedOnTarget = false;
+	bool passedUnderTarget = false;
+
+	for ( ; i != iE ; i++ ) {
+
+		// rewind some vars
+		passedUpTarget = false;
+		passedOnTarget = false;
+		passedUnderTarget = false;
+
+		// Skip if found in the mask
+		if ( activeMask.find( *i ) != activeMask.end() ) continue;
+
+		// Also skip if the pixel has been previously marked as equalized or impossible to equalize ( > __EQUALIZED)
+		if ( _equalization->GetEqualizationResults(_deviceIndex)->GetStatus( *i ) >= Mpx3EqualizationResults::__EQUALIZED ) continue;
+
+		// Considering this pixel.  Count it.
+		pixelsConsidered++;
+
+		// See how many adj values have been tested for this pixel
+		vector< pair<int, int> > adjTHLHistory = _adjReactiveTHLFineTuning[ *i ];
+		vector< pair<int, int> >::iterator adjI  = adjTHLHistory.begin();
+		vector< pair<int, int> >::iterator adjIE = adjTHLHistory.end();
+		// Here we are searching for extremes.  The history doesn't have to contain all values [0:31].
+		// If it contains one of the extremes 0 or 31, it's enough.
+		for ( ; adjI != adjIE ; adjI++ ) {
+
+			// Check the limits
+			if ( (*adjI).first == 0x0 ||  (*adjI).first == __max_adj_val ) pixelsLimitsReached++;
+
+			// Check if it's passing over the target
+			if ( (*adjI).second  > __equalization_target ) passedUpTarget = true;
+			if ( (*adjI).second == __equalization_target ) passedOnTarget = true;
+			if ( (*adjI).second  < __equalization_target ) passedUnderTarget = true;
+		}
+
+		// See if it passed over the target or right on the target
+		if ( (passedUpTarget && passedUnderTarget) || passedOnTarget ) {
+			pixelsAteqT++;
+			// And tag the pixel as equalized already
+			_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( *i, Mpx3EqualizationResults::__EQUALIZED);
+		}
+
+	}
+
+	// First condition
+	// 1) all the pixels involved have touched (reactTHL val) the equalization target
+	if ( pixelsConsidered == pixelsAteqT ) return true;
+
+	// Second condition
+	// 2) exhausted all adj values. If it contains one of the extremes 0 or 31, it's enough.
+	if ( pixelsConsidered == pixelsLimitsReached ) return true;
+
 
 	return false;
 }
-
-void ThlScan::ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSubset, set<int> activeMask) {
+/**
+ * return the number of pixels in the rework subset which are not in the mask
+ */
+int ThlScan::ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSubset, set<int> activeMask) {
 
 	set<int>::iterator i = reworkSubset.begin();
 	set<int>::iterator iE = reworkSubset.end();
 
 	pair<int, int> pix;
 	int adj = 0, newadj = 0;
+	int nPixelsNotInMask = 0;
 
 	for( ; i != iE ; i++ ) {
 
 		// First see if the pixel is in the mask.
 		// If it is found in the mask (maske pixels, i.e. not reacting) the pixel doesn't need an adjustment shift yet.
 		if ( activeMask.find( *i ) != activeMask.end() ) continue;
+
+		nPixelsNotInMask++;
+
+		// Also skip if the pixel has been previously marked as equalized or higher status
+		if ( _equalization->GetEqualizationResults(_deviceIndex)->GetStatus( *i ) >= Mpx3EqualizationResults::__EQUALIZED ) continue;
 
 		// Get the current adj
 		adj = _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i );
@@ -1106,17 +1302,21 @@ void ThlScan::ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSu
 			specialCase = true;
 		}
 
-		if ( !specialCase ) {
+		if ( ! specialCase ) {
+
 			// take a decision on next adjustment
 			if ( _pixelReactiveTHL[ *i ] == __UNDEFINED ) newadj = 0;
 			else if ( _pixelReactiveTHL[ *i ] > __equalization_target ) newadj = adj + 1;
 			else if ( _pixelReactiveTHL[ *i ] < __equalization_target ) newadj = adj - 1;
+
+			// If out of bounds don't change the value
+			if ( newadj > __max_adj_val || newadj < 0 ) newadj = adj;
+
 		}
 
 		// Now set the new value
 		// Set the new adjustment for this particular pixel.
 		pix = XtoXY(*i, __matrix_size_x);
-
 		_equalization->GetEqualizationResults(_deviceIndex)->SetPixelAdj(*i, newadj);
 		// Write the adjustment
 		spidrcontrol->configPixelMpx3rx(pix.first, pix.second, newadj, 0x0 );
@@ -1126,6 +1326,7 @@ void ThlScan::ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSu
 	// send to chip
 	spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
 
+	return nPixelsNotInMask;
 }
 
 void ThlScan::ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSubset) {
@@ -1839,7 +2040,7 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int spacing, in
 	}
 
 	// And send the configuration
-	spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
+	spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
 
 	//cout << "N masked = " << _maskedSet.size() << endl;
 
@@ -1918,7 +2119,7 @@ void ThlScan::ClearMask(SpidrController * spidrcontrol, bool sendToChip){
 		}
 	}
 	// And send the configuration if requested
-	if ( sendToChip ) spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
+	if ( sendToChip ) spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
 
 	_maskedSet.clear();
 };

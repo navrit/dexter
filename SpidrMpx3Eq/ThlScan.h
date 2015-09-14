@@ -106,7 +106,8 @@ public:
 	bool TwoPixelsRespectMinimumSpacing(int pix1, int pix2, int spacing);
 	map<int, int> ExtractReworkAdjustments(set<int> reworkPixels);
 	void ShiftAdjustments(SpidrController *, set<int> reworkSubset);
-	void ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSubset, set<int> activeMask);
+	void SelectBestAdjFromHistory(int showHeadAndTail);
+	int ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSubset, set<int> activeMask);
 	bool AdjScanCompleted(set<int> reworkSubset, set<int> activeMask);
 	void TagPixelsEqualizationStatus(set<int> vetoList);
 	void RewindReactionCounters(set<int> reworkPixelsSet);
@@ -116,7 +117,7 @@ public:
 	void DumpRework(set<int> reworkSubset, int thl);
 	void DumpSet(set<int> reworkSubset, QString name, int max = 100);
 	void FillAdjReactTHLHistory();
-	void DumpAdjReactTHLHistory();
+	void DumpAdjReactTHLHistory(int showHeadAndTail);
 
 	void SetSetId(int si) { _setId = si; };
 	int GetSetId() { return _setId; };
