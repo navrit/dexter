@@ -46,7 +46,6 @@ _ui(new Ui::QCstmEqualization)
 	_minScanTHL = 0;
 	_maxScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size) / 2;
 	_stepScan = __default_step_scan;
-	_eqresults = 0x0;
 	_setId = 0;
 	_global_adj = 0x0;
 	_nChips = 1;
@@ -69,7 +68,6 @@ _ui(new Ui::QCstmEqualization)
 	_scanIndex = 0;
 	_stepDone = new bool[__EQStatus_Count];
 	for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
-
 
 }
 
@@ -149,13 +147,6 @@ void QCstmEqualization::InitEqualization() {
 
 	// No sets available
 	_setId = 0;
-	// Clear the equalization results
-	if ( _eqMap.size() > 0 ) {
-		_eqMap.clear();
-	}
-
-	_eqMap[_deviceIndex] = new Mpx3EqualizationResults;
-	_eqresults = _eqMap[_deviceIndex];
 
 	// Rewind limits
 	SetMinScan( 0 );
@@ -179,7 +170,6 @@ void QCstmEqualization::StartEqualizationAllChips() {
 
 	// Init
 	InitEqualization();
-
 
 	StartEqualization( _deviceIndex );
 
@@ -348,7 +338,7 @@ void QCstmEqualization::StartEqualization(int chipId) {
 		// Display
 		_ui->_intermediatePlot->clear();
 		//int lastActiveFrame = _ui->_intermediatePlot->GetLastActive();
-		int * adj_matrix = _eqresults->GetAdjustementMatrix();
+		int * adj_matrix = _eqMap[_deviceIndex]->GetAdjustementMatrix();
 		_ui->_intermediatePlot->addData( adj_matrix, 256, 256 );
 		_ui->_intermediatePlot->setActive( 0 );
 
@@ -361,7 +351,7 @@ void QCstmEqualization::StartEqualization(int chipId) {
 		// Display
 		_ui->_intermediatePlot->clear();
 		//int lastActiveFrame = _ui->_intermediatePlot->GetLastActive();
-		int * adj_matrix = _eqresults->GetAdjustementMatrix();
+		int * adj_matrix = _eqMap[_deviceIndex]->GetAdjustementMatrix();
 		_ui->_intermediatePlot->addData( adj_matrix, 256, 256 );
 		_ui->_intermediatePlot->setActive( 0 );
 
@@ -397,9 +387,9 @@ void QCstmEqualization::CalculateInterpolation(ScanResults res_x0, ScanResults r
 	////////////////////////////////////////////////////////////////////////////////////
 	// 7) Extrapolate to the target using the last scan information and the knowledge
 	//    on the Adj_THL dependency.
-	_scans[_scanIndex - 1]->DeliverPreliminaryEqualization(_eqresults, res_x5 );
-	_eqresults->ExtrapolateAdjToTarget( __equalization_target, _eta_Adj_THL );
-	int * adj_matrix = _eqresults->GetAdjustementMatrix();
+	_scans[_scanIndex - 1]->DeliverPreliminaryEqualization(_eqMap[_deviceIndex], res_x5 );
+	_eqMap[_deviceIndex]->ExtrapolateAdjToTarget( __equalization_target, _eta_Adj_THL );
+	int * adj_matrix = _eqMap[_deviceIndex]->GetAdjustementMatrix();
 
 	// Display
 	_ui->_intermediatePlot->clear();
@@ -579,11 +569,10 @@ void QCstmEqualization::SaveEqualization(int chipId) {
 		return;
 	}
 
-
 	// Binary file
-	_eqresults->WriteAdjBinaryFile( adjfn );
+	_eqMap[chipId]->WriteAdjBinaryFile( adjfn );
 	// Masked pixels
-	_eqresults->WriteMaskBinaryFile( maskfn );
+	_eqMap[chipId]->WriteMaskBinaryFile( maskfn );
 
 }
 
@@ -863,8 +852,8 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 	}
 
 	// Mask
-	if ( _eqresults->GetNMaskedPixels() > 0 ) {
-		QSet<int> tomask = _eqresults->GetMaskedPixels();
+	if ( _eqMap[chipIndex]->GetNMaskedPixels() > 0 ) {
+		QSet<int> tomask = _eqMap[chipIndex]->GetMaskedPixels();
 		QSet<int>::iterator i = tomask.begin();
 		QSet<int>::iterator iE = tomask.end();
 		pair<int, int> pix;
@@ -889,9 +878,9 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 void QCstmEqualization::ClearAllAdjustmentBits() {
 
 	// Clear all data structures
-	_eqresults->ClearAdj();
-	_eqresults->ClearMasked();
-	_eqresults->ClearReactiveThresholds();
+	_eqMap[_deviceIndex]->ClearAdj();
+	_eqMap[_deviceIndex]->ClearMasked();
+	_eqMap[_deviceIndex]->ClearReactiveThresholds();
 
 	// And now set it up
 	SetAllAdjustmentBits();
@@ -1000,10 +989,6 @@ void QCstmEqualization::LoadEqualization(){
 
 	for(int i = 0 ; i < nChips ; i++) {
 
-		// Next equalization
-		_eqMap[i] = new Mpx3EqualizationResults;
-		_eqresults = _eqMap[i];
-
 		// And clear all previous adjustements
 		// In case an equalization was done in the same session
 		//ClearAllAdjustmentBits();
@@ -1023,14 +1008,14 @@ void QCstmEqualization::LoadEqualization(){
 		QString maskfn = "mask_";
 		maskfn += QString::number(i, 10);
 
-		_eqresults->ReadAdjBinaryFile( adjfn );
-		_eqresults->ReadMaskBinaryFile( maskfn );
+		_eqMap[i]->ReadAdjBinaryFile( adjfn );
+		_eqMap[i]->ReadMaskBinaryFile( maskfn );
 
 		// And talk to the hardware
 		SetAllAdjustmentBits( _mpx3gui->GetSpidrController() );
 
 		// Display the equalization
-		int * adj_matrix = _eqresults->GetAdjustementMatrix();
+		int * adj_matrix = _eqMap[i]->GetAdjustementMatrix();
 
 		for (int j = 0 ; j < __matrix_size_x * __matrix_size_y ; j++) {
 			displaymatrix[i*(__matrix_size_x * __matrix_size_y) + j ] = adj_matrix[j];
@@ -1124,6 +1109,19 @@ void QCstmEqualization::CleanEqualization() {
 }
 
 void QCstmEqualization::ConnectionStatusChanged() {
+
+	cout << "[INFO] Equalization initializing data structures" << endl;
+
+	// Creat an equalization per chip
+	if ( _mpx3gui->getConfig()->isConnected() ) {
+		int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
+		for(int i = 0 ; i < nChips ; i++) {
+			_eqMap[i] = new Mpx3EqualizationResults;
+		}
+	} else {
+		// This should call the corresponding destructors
+		_eqMap.clear();
+	}
 
 	// WARNING
 	// This could imply talking to the chip at the same time than the dacscontrol or

@@ -187,7 +187,6 @@ private:
 	Ui::QCstmEqualization * _ui;
 
 	// Equalization info
-	Mpx3EqualizationResults * _eqresults;
 	QMap<int, Mpx3EqualizationResults *> _eqMap;
 
 	// Connectivity between modules

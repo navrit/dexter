@@ -490,6 +490,7 @@ void ThlScan::SelectBestAdjFromHistory(int showHeadAndTail) {
 
 		cntr++;
 	}
+	cout << endl;
 
 }
 
