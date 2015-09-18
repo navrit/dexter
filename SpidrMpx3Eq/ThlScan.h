@@ -38,6 +38,7 @@ public:
 	double sigma;
 	int DAC_DISC_setting;
 	int global_adj;
+	int chipIndx;
 };
 
 
@@ -64,21 +65,19 @@ public:
 	} scan_type;
 
 	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
-	void RewindData();
-	void RewindPixelCountsMap();
+	void RewindData(int full_sizex, int full_sizey);
 	void DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops = -1, bool blindScan = false);
-	int SetEqualizationMask(SpidrController * sc, int spacing, int offset_x, int offset_y);
+	int SetEqualizationMask(SpidrController * sc, int devId, int spacing, int offset_x, int offset_y);
 	int SetEqualizationMask(SpidrController * sc, set<int> reworkPixels);
 	int SetEqualizationVetoMask(SpidrController * sc, set<int> vetolist, bool clear = false);
 	set<int> GetReworkSubset(set<int> reworkSet, int spacing, int offset_x, int offset_y);
 
-	void ClearMask(SpidrController * spidrcontrol, bool ClearMask = true);
+	void ClearMask(SpidrController * spidrcontrol, int devId, bool ClearMask = true);
 	int ExtractScanInfo(int * data, int size_in_bytes, int thl);
 	int ExtractScanInfo(int * data, int size_in_bytes, int thl, int);
-	bool OutsideTargetRegion(int pix, double Nsigma);
+	bool OutsideTargetRegion(int devId, int pix, double Nsigma);
 
-	ScanResults GetScanResults() { return _results; };
-	void ExtractStatsOnChart(int setId);
+	void ExtractStatsOnChart(int devId, int setId);
 	int NumberOfNonReactingPixels();
 	vector<int> GetNonReactingPixels();
 	void SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj);
@@ -92,15 +91,12 @@ public:
 	int GetDetectedLowScanBoundary() { return _detectedScanBoundary_L; };
 	int GetDetectedHighScanBoundary() { return _detectedScanBoundary_H; };
 
-	int ReAdjustPixelsOff(double Nsigma); //, int DAC_Disc_code);
 	int FineTuning(double Nsigma);
 	void EqualizationScan();
-
+	void SetDAC_propagateInGUI(SpidrController * spidrcontrol, int devId, int dac_code, int dac_val );
 
 	void SetScanType(scan_type st) { _scanType = st; };
 	scan_type GetScanType() { return _scanType; };
-	set<int> ExtractFineTunningVetoList(double Nsigma);
-	set<int> ExtractReworkList(double Nsigma);
 	set<int> ExtractPixelsNotOnTarget();
 	int ExtractReworkSubsetSpacingAware(set<int> & reworkPixelsSet, set<int> & reworkSubset, int spacing);
 	bool TwoPixelsRespectMinimumSpacing(int pix1, int pix2, int spacing);
@@ -112,8 +108,6 @@ public:
 	void TagPixelsEqualizationStatus(set<int> vetoList);
 	void RewindReactionCounters(set<int> reworkPixelsSet);
 	void UnmaskPixelsInLocalSet(set<int> reworkPixelsSet);
-	bool ThlScanEndConditionFineTuning(set<int> reworkPixelsSet, int thl, int Nsigma);
-	set<int> NeedsReadjustment(set<int> reworkPixelsSet, set<int> & doneAndNoisySet, int Nsigma);
 	void DumpRework(set<int> reworkSubset, int thl);
 	void DumpSet(set<int> reworkSubset, QString name, int max = 100);
 	void FillAdjReactTHLHistory();
@@ -122,6 +116,11 @@ public:
 	void SetSetId(int si) { _setId = si; };
 	int GetSetId() { return _setId; };
 
+	void SetWorkChipIndexes(vector<int> v);
+	vector<int> GetWorkChipIndexes() { return _workChipsIndx; };
+
+	void InitializeScanResults();
+	ScanResults * GetScanResults(int chipIdx);
 
 private:
 
@@ -132,9 +131,11 @@ private:
 
 	SpidrController * _spidrcontrol;
 	SpidrDaq * _spidrdaq;
-	BarChart * _chart;
 	QCstmPlotHeatmap * _heatmap;
-	ScanResults _results;
+
+	vector<ScanResults *> _results;		//<! results for all chips
+	vector<int> _workChipsIndx;
+	Dataset * _dataset;
 
 	// pixelId, counts map
 	map<int, int> _pixelCountsMap;
@@ -172,11 +173,13 @@ private:
 	int _numberOfLoops;
 	bool _blindScan;
 	int _DAC_Disc_code;
+	bool _equalizeAllChips;
 	// IP source address (SPIDR network interface)
 	int _srcAddr;
 
 	// For data taking
 	int * _data;
+	int * _plotdata;
 	int _frameId;
 	int _thlItr;
 	int _pixelReactiveInScan;
@@ -186,15 +189,14 @@ private:
 
 	private slots:
 	//void UpdateChart(int setId, int thlValue);
-	void UpdateChart(int thlValue);
-	void UpdateChart(int setId, int thlValue);
-	void UpdateChartPixelsReady(int setId);
+	void UpdateChart(int devId, int setId, int thlValue);
+	void UpdateChartPixelsReady(int devId, int setId);
 	void UpdateHeatMap(int sizex, int sizey);
 	void on_stop_data_taking_thread();
 
 	signals:
-	void UpdateChartSignal(int setId, int thlValue);
-	void UpdateChartPixelsReadySignal(int setId);
+	void UpdateChartSignal(int devId, int setId, int thlValue);
+	void UpdateChartPixelsReadySignal(int devId, int setId);
 	void UpdateHeatMapSignal(int sizex, int sizey);
 	void fillText(QString);
 	void slideAndSpin(int, int);

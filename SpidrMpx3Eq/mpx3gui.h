@@ -79,6 +79,7 @@ public:
 
 	QCstmEqualization * getEqualization();
 	QCstmGLVisualization * getVisualization();
+	QCstmDacs * getDACs();
 
 	SpidrController * GetSpidrController();
 	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }

@@ -166,7 +166,7 @@ void QCstmDacs::StartDACScan() {
 
 }
 
-UpdateDACsThread * QCstmDacs::FillDACValues( int devId ) {
+UpdateDACsThread * QCstmDacs::FillDACValues( int devId, bool updateInTheChip ) {
 
 
 	// Switch to this dev id
@@ -186,6 +186,7 @@ UpdateDACsThread * QCstmDacs::FillDACValues( int devId ) {
 
 	// Create the thread
 	_updateDACsThread = new UpdateDACsThread(devId, _mpx3gui->getConfig()->getDacCount(), this, spidrcontrol);
+	_updateDACsThread->SetUpdateInTheChip( updateInTheChip );
 
 	// Run !
 	_updateDACsThread->start();
@@ -693,7 +694,14 @@ void QCstmDacs::ChangeDeviceIndex( int index )
 	_deviceIndex = index;
 
 	// Now change the entire view.  Actualize all values
-	FillDACValues( index );
+	// If the detector is busy with something else set the
+	//   actualization flag to false so the GUI refreshes
+	//   but the values are not sent to the chip
+	bool busy = _mpx3gui->getEqualization()->isBusy();
+	// busy |= visualization->isBusy();
+
+	// if busy, don't update in the chip
+	FillDACValues( index, !busy );
 
 }
 
@@ -935,6 +943,7 @@ UpdateDACsThread::UpdateDACsThread (int devIdx, int nDACConfigsAvailable, QCstmD
 	_spidrcontrol = sc;
 	_deviceIndex = devIdx;
 	_nDACConfigsAvailable = nDACConfigsAvailable;
+	_updateInTheChip = false;
 
 	// I need to do this here and not when already running the thread
 	// Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
@@ -988,8 +997,10 @@ void UpdateDACsThread::run(){
 			//cout << "chip " << chip << " | " << MPX3RX_DAC_TABLE[i].name
 			//		<< " | " << _dacs->GetDACValue(chip, i) << endl;
 
-			spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[i].code,  _dacs->GetDACValueFromConfig(chip, i) );
-			Sleep(10);
+			// If requested to send to the chip
+			if ( _updateInTheChip ) spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[i].code,  _dacs->GetDACValueFromConfig(chip, i) );
+
+			//Sleep(10);
 			// Adjust the sliders and the SpinBoxes to the new value
 			connect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
 			slideAndSpin( i, _dacs->GetDACValueFromConfig(chip, i) );

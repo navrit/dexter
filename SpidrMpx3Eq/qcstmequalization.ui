@@ -20,26 +20,40 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QWidget" name="layoutWidget">
-      <layout class="QVBoxLayout" name="verticalLayout_11" stretch="1,0,0">
+      <layout class="QVBoxLayout" name="verticalLayoutBarChartEq" stretch="0,0">
        <item>
-        <widget class="BarChart" name="_histoWidget" native="true"/>
+        <layout class="QHBoxLayout" name="horizontalLayoutEqHistos"/>
        </item>
        <item>
-        <widget class="QLabel" name="mouseHoveLabel">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="logYCheckBox">
-         <property name="text">
-          <string>logy</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QCheckBox" name="logYCheckBox">
+           <property name="text">
+            <string>logy</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox">
+           <property name="text">
+            <string>adj hist</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -62,10 +76,10 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QComboBox" name="equalizationTypeCombo"/>
+           <widget class="QComboBox" name="equalizationTHLTHHCombo"/>
           </item>
           <item>
-           <widget class="QComboBox" name="equalizationHeatmapCombo"/>
+           <widget class="QComboBox" name="equalizationTypeCombo"/>
           </item>
           <item>
            <widget class="QPushButton" name="_cleanEq">
@@ -83,16 +97,16 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QPushButton" name="_startEq">
+           <widget class="QPushButton" name="_startEqAll">
             <property name="text">
-             <string>Start Eq</string>
+             <string>Start (all chips)</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="_startEqAll">
+           <widget class="QPushButton" name="_startEq">
             <property name="text">
-             <string>Start Eq (all)</string>
+             <string>Start (single chip)</string>
             </property>
            </widget>
           </item>
@@ -109,15 +123,15 @@
          <layout class="QVBoxLayout" name="verticalLayout_9">
           <item>
            <layout class="QGridLayout" name="gridLayout">
-            <item row="1" column="6">
-             <widget class="QLabel" name="label_3">
+            <item row="1" column="3">
+             <widget class="QLabel" name="label_2">
               <property name="text">
-               <string>step</string>
+               <string>end</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="2">
-             <spacer name="horizontalSpacer_5">
+            <item row="0" column="5">
+             <spacer name="horizontalSpacer_6">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -143,18 +157,12 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="5">
-             <spacer name="horizontalSpacer_6">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+            <item row="1" column="6">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>step</string>
               </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-             </spacer>
+             </widget>
             </item>
             <item row="0" column="4">
              <widget class="QSpinBox" name="devIdSpinBox">
@@ -170,10 +178,10 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QSpinBox" name="nTriggersSpinBox">
-              <property name="keyboardTracking">
-               <bool>false</bool>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>start</string>
               </property>
              </widget>
             </item>
@@ -184,10 +192,10 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>min</string>
+            <item row="0" column="1">
+             <widget class="QSpinBox" name="nTriggersSpinBox">
+              <property name="keyboardTracking">
+               <bool>false</bool>
               </property>
              </widget>
             </item>
@@ -195,13 +203,6 @@
              <widget class="QSpinBox" name="eqMinSpinBox">
               <property name="keyboardTracking">
                <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="3">
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>max</string>
               </property>
              </widget>
             </item>
@@ -236,18 +237,12 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="2">
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+            <item row="3" column="3">
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>Reactive:</string>
               </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
+             </widget>
             </item>
             <item row="3" column="4">
              <widget class="QLabel" name="eqLabelNPixelsReactive">
@@ -256,13 +251,6 @@
               </property>
               <property name="text">
                <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="3">
-             <widget class="QLabel" name="label_5">
-              <property name="text">
-               <string>Reactive:</string>
               </property>
              </widget>
             </item>
@@ -290,16 +278,6 @@
             <item row="2" column="4">
              <widget class="QSpinBox" name="fineTuningLoopsSpinBox"/>
             </item>
-            <item row="1" column="5">
-             <widget class="QCheckBox" name="rangeDirectionEqCheckBox">
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
-              </property>
-              <property name="text">
-               <string>desc</string>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="6">
              <widget class="QLabel" name="label_8">
               <property name="text">
@@ -309,6 +287,32 @@
             </item>
             <item row="2" column="7">
              <widget class="QSpinBox" name="nHitsSpinBox"/>
+            </item>
+            <item row="1" column="2">
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="0" column="2">
+             <spacer name="horizontalSpacer_5">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </item>
@@ -325,12 +329,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>BarChart</class>
-   <extends>QWidget</extends>
-   <header>barchart.h</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>QCstmPlotHeatmap</class>
    <extends>QWidget</extends>

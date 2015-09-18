@@ -50,10 +50,15 @@ public:
 		__EQUALIZATION_FAILED_NONREACTIVE		// EQ FAILED
 	} eq_status;
 
-	void SetPixelAdj(int pixId, int adj);
-	void SetPixelReactiveThl(int pixId, int thl);
-	int GetPixelAdj(int pixId);
-	int GetPixelReactiveThl(int pixId);
+	typedef enum {
+		__ADJ_L = 0,
+		__ADJ_H
+	} lowHighSel;
+
+	void SetPixelAdj(int pixId, int adj, lowHighSel sel = __ADJ_L);
+	void SetPixelReactiveThl(int pixId, int thl, lowHighSel = __ADJ_L);
+	int GetPixelAdj(int pixId, lowHighSel = __ADJ_L);
+	int GetPixelReactiveThl(int pixId, lowHighSel = __ADJ_L);
 	void maskPixel(int pixId){
 		maskedPixels.insert(pixId);
 	}
@@ -66,12 +71,12 @@ public:
 	QSet<int> GetMaskedPixels(){
 		return maskedPixels;
 	}
-	int * GetAdjustementMatrix();
+	int * GetAdjustementMatrix(lowHighSel sel = __ADJ_L);
 
-	void ExtrapolateAdjToTarget(int target, double eta_Adj_THL);
+	void ExtrapolateAdjToTarget(int target, double eta_Adj_THL, lowHighSel sel = __ADJ_L);
 
-	void WriteAdjBinaryFile(QString fn);
-	void ReadAdjBinaryFile(QString fn);
+	void WriteAdjBinaryFile(QString fn, lowHighSel sel = __ADJ_L);
+	void ReadAdjBinaryFile(QString fn, lowHighSel sel = __ADJ_L);
 	void WriteMaskBinaryFile(QString fn);
 	void ReadMaskBinaryFile(QString fn);
 
@@ -80,18 +85,25 @@ public:
 	void ClearReactiveThresholds();
 	void Clear();
 
-	void SetStatus(int pixId, eq_status st);
-	eq_status GetStatus(int pixId) { return _eqStatus[pixId]; };
+	void SetStatus(int pixId, eq_status st, lowHighSel sel = __ADJ_L);
+	eq_status GetStatus(int pixId, lowHighSel = __ADJ_L);
 
 private:
 
 	// pixel Id, adjustment
-	QByteArray _pixId_Adj;
+	QByteArray _pixId_Adj_L;
+	QByteArray _pixId_Adj_H;
+
+	// Masked pixels
 	QSet<int> maskedPixels;
+
 	// pixel Id, reactive thlValue
-	map<int, int> _pixId_Thl;
+	map<int, int> _pixId_Thl_L;
+	map<int, int> _pixId_Thl_H;
+
 	// status
-	map<int, eq_status> _eqStatus;
+	map<int, eq_status> _eqStatus_L;
+	map<int, eq_status> _eqStatus_H;
 
 };
 
@@ -114,34 +126,34 @@ public:
 	void timerEvent( QTimerEvent * );
 	void PrintFraction(int * buffer, int size, int first_last);
 	int GetNPixelsActive(int * buffer, int size, verblev verbose);
-	void GetSlopeAndCut_IDAC_DISC_THL(ScanResults, ScanResults, double &, double &);
+	void GetSlopeAndCut_IDAC_DISC_THL(ScanResults *, ScanResults *, double &, double &);
 	void GetSlopeAndCut_Adj_THL(ScanResults, ScanResults, double &, double &);
 
 	double EvalLinear(double eta, double cut, double x);
 
 	// Equalization steps
-	void DAC_Disc_Optimization_100(int DAC_Disc_code, int DAC_DISC_testValue);
-	void DAC_Disc_Optimization_150(int DAC_Disc_code, int DAC_DISC_testValue);
-	void DAC_Disc_Optimization(ScanResults res_100, ScanResults res_150);
-	void PrepareInterpolation_0x0(int DAC_Disc_code);
-	void PrepareInterpolation_0x5(int DAC_Disc_code);
+	void DAC_Disc_Optimization_100(int DAC_DISC_testValue);
+	void DAC_Disc_Optimization_150(int DAC_DISC_testValue);
+	void DAC_Disc_Optimization(int devId, ScanResults * res_100, ScanResults * res_150);
+	void PrepareInterpolation_0x0();
+	void PrepareInterpolation_0x5();
 	void CalculateInterpolation(ScanResults res_x0, ScanResults res_x5);
 	void ScanOnInterpolation(int DAC_Disc_code);
 	void Rewind();
-	void InitEqualization();
+	void InitEqualization(int chipId); //!< chipId = -1  will equalize all available chips at once
 
-	void DAC_Disc_Optimization_DisplayResults(ScanResults res);
+	void DAC_Disc_Optimization_DisplayResults(ScanResults * res);
 
 	int FineTunning(int DAC_Disc_code);
 //	int DetectStartEqualizationRange(int setId, int DAC_Disc_code);
 
-	void DisplayStatsInTextBrowser(int adj, int dac_disc, ScanResults res);
+	void DisplayStatsInTextBrowser(int adj, int dac_disc, ScanResults * res);
 
 	pair<int, int> XtoXY(int X, int dimX);
 	void SetupSignalsAndSlots();
 	void SetLimits();
-	void Configuration(bool reset);
-	void SetAllAdjustmentBits(SpidrController * spidrcontrol, int val_L, int val_H);
+	void Configuration(int devId, int THx, bool reset);
+	void SetAllAdjustmentBits(SpidrController * spidrcontrol, int devId, int val_L, int val_H);
 	void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId);
 	void SetAllAdjustmentBits(SpidrController * spidrcontrol);
 	//void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId );
@@ -160,13 +172,22 @@ public:
 	int GetNHits(){ return _nHits; };
 	int GetFineTuningLoops() { return _fineTuningLoops; };
 
+	int GetNChips() {return _nChips; };
+
 	void SetMinScan(int);
 	void SetMaxScan(int);
 	bool isScanDescendant() { return _scanDescendant; }
+	bool isBusy() { return _busy; };
 
-	void StartEqualization(int chipId);
+	void StartEqualization(); //!<
+	void SetDAC_propagateInGUI(SpidrController * spidrcontrol, int devId, int dac_code, int dac_val);
 
 	Mpx3EqualizationResults * GetEqualizationResults(int chipIndex);
+	void InitializeBarCharts();
+	BarChart * GetBarChart(int chipIdx);
+	QCheckBox * GetCheckBox(int chipIdx);
+
+	string BuildChartName(int val, QString leg);
 
 	void LoadEqualization();
 
@@ -185,9 +206,13 @@ public:
 private:
 
 	Ui::QCstmEqualization * _ui;
+	bool _busy;
 
 	// Equalization info
 	QMap<int, Mpx3EqualizationResults *> _eqMap;
+	vector<BarChart * > _chart;			//<! charts for all chips
+	vector<QCheckBox * > _checkBoxes;	//<! checkBoxes for all chips
+	set<int> _chartShownIndx;
 
 	// Connectivity between modules
 	Mpx3GUI * _mpx3gui;
@@ -206,8 +231,34 @@ private:
 	int _nHits;
 	int _fineTuningLoops;
 	bool _threadFinished;
+	vector<int> _workChipsIndx;
 	unsigned int _eqStatus;
 	unsigned int _scanIndex;
+	enum {
+		__THLandTHH = 0,
+		__OnlyTHL,
+		__OnlyTHH,
+		__nEQCombinations
+	};
+	int _equalizationCombination;
+	enum {
+		__NoiseEdge = 0,
+		__nEQTypes
+	};
+	int _equalizationType;
+	typedef struct {
+		int currentTHx;
+		QString currentTHx_String;
+		int currentDAC_DISC;
+		QString currentDAC_DISC_String;
+		int currentDAC_DISC_OptValue;
+		double currentEta_THL_DAC_Disc;
+		double currentCut_THL_DAC_Disc;
+		int equalizationCombination;
+		int equalizationType;
+	} equalizationSteeringInfo;
+	equalizationSteeringInfo _steeringInfo;
+
 	// IP source address (SPIDR network interface)
 	int _srcAddr;
 	int _nChips;
@@ -244,7 +295,7 @@ private slots:
 void setFineTuningLoops(int);
 void setNHits(int);
 void ScanThreadFinished();
-void StartEqualization();
+void StartEqualizationSingleChip();
 void StartEqualizationAllChips();
 void ChangeNTriggers(int);
 void ChangeDeviceIndex(int);
@@ -255,10 +306,12 @@ void ChangeStep(int);
 void ConnectionStatusChanged();
 void StopEqualization();
 void CleanEqualization();
+void setEqualizationTHLTHH(int);
+void setEqualizationTHLType(int);
+void ShowEqualizationForChip(bool checked);
 
 void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
 void on_openfileButton_clicked();
-void on_rangeDirectionCheckBox_toggled(bool checked);
 
 signals:
 	void slideAndSpin(int, int);

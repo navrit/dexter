@@ -151,7 +151,7 @@ public:
 	//explicit QCstmDacs(QApplication * coreApp, Ui::Mpx3GUI * );
 	~QCstmDacs();
 	void PopulateDACValues();
-	UpdateDACsThread * FillDACValues(int devId = -1);
+	UpdateDACsThread * FillDACValues(int devId = -1, bool updateInTheChip = true);
 
 	bool GetDACsFromConfiguration();
 	bool WriteDACsFile(string);
@@ -316,6 +316,7 @@ class UpdateDACsThread : public QThread {
 public:
 
 	explicit UpdateDACsThread (int devIndx, int nDACConfigsAvailable, QCstmDacs * dacs, SpidrController * sc);
+	void SetUpdateInTheChip(bool f) { _updateInTheChip = f; } //<! true = send to the chip, false = only update guy
 
 private:
 
@@ -325,6 +326,7 @@ private:
 	int _nDACConfigsAvailable;
 	// IP source address (SPIDR network interface)
 	int _srcAddr;
+	bool _updateInTheChip;
 
 	void run();
 
