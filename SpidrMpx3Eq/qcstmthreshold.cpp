@@ -206,7 +206,7 @@ void QCstmThreshold::GUIDefaults() {
 	//ui->thlCalibStart->
 }
 
-int QCstmThreshold::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
+int QCstmThreshold::ExtractScanInfo(int * data, int size_in_bytes, int /*thl*/) {
 
 	int nPixels = size_in_bytes/4;
 	int pixelsActive = 0;
@@ -221,7 +221,7 @@ int QCstmThreshold::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
 	return pixelsActive;
 }
 
-void QCstmThreshold::UpdateChart(int setId, int thlValue) {
+void QCstmThreshold::UpdateChart(int /*setId*/, int /*thlValue*/) {
 	/*
 	map<int, int>::iterator itr = _pixelCountsMap.begin();
 	map<int, int>::iterator itrE = _pixelCountsMap.end();
@@ -552,7 +552,7 @@ void CustomScanThread::run() {
 	delete spidrcontrol;
 }
 
-int CustomScanThread::PixelsReactive(int * data, int size_in_bytes, int thl) {
+int CustomScanThread::PixelsReactive(int * data, int size_in_bytes, int /*thl*/) {
 
 	int nPixels = size_in_bytes/4;
 	int pixelsActive = 0;

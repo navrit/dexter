@@ -22,6 +22,7 @@ class BarChart;
 class QCstmPlotHeatmap;
 class QCstmEqualization;
 class Mpx3EqualizationResults;
+class equalizationSteeringInfo;
 
 enum Thl_Status {
 	__UNDEFINED = -1,
@@ -69,13 +70,14 @@ public:
 	void DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops = -1, bool blindScan = false);
 	int SetEqualizationMask(SpidrController * sc, int devId, int spacing, int offset_x, int offset_y);
 	int SetEqualizationMask(SpidrController * sc, set<int> reworkPixels);
-	int SetEqualizationVetoMask(SpidrController * sc, set<int> vetolist, bool clear = false);
 	set<int> GetReworkSubset(set<int> reworkSet, int spacing, int offset_x, int offset_y);
 
 	void ClearMask(SpidrController * spidrcontrol, int devId, bool ClearMask = true);
 	int ExtractScanInfo(int * data, int size_in_bytes, int thl);
 	int ExtractScanInfo(int * data, int size_in_bytes, int thl, int);
 	bool OutsideTargetRegion(int devId, int pix, double Nsigma);
+	void SetMinScan(int val = -1);
+	void SetMaxScan(int val = -1);
 
 	void ExtractStatsOnChart(int devId, int setId);
 	int NumberOfNonReactingPixels();
@@ -83,7 +85,7 @@ public:
 	void SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj);
 	void SetStopWhenPlateau(bool b) { _stopWhenPlateau = b; };
 
-	void DeliverPreliminaryEqualization(Mpx3EqualizationResults *, ScanResults);
+	void DeliverPreliminaryEqualization(int devId, int currentDAC_DISC, Mpx3EqualizationResults *, int global_adj);
 
 	int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
 	pair<int, int> XtoXY(int X, int dimX) { return make_pair(X % dimX, X/dimX); }
@@ -91,7 +93,7 @@ public:
 	int GetDetectedLowScanBoundary() { return _detectedScanBoundary_L; };
 	int GetDetectedHighScanBoundary() { return _detectedScanBoundary_H; };
 
-	int FineTuning(double Nsigma);
+	void FineTuning();
 	void EqualizationScan();
 	void SetDAC_propagateInGUI(SpidrController * spidrcontrol, int devId, int dac_code, int dac_val );
 
@@ -100,26 +102,24 @@ public:
 	set<int> ExtractPixelsNotOnTarget();
 	int ExtractReworkSubsetSpacingAware(set<int> & reworkPixelsSet, set<int> & reworkSubset, int spacing);
 	bool TwoPixelsRespectMinimumSpacing(int pix1, int pix2, int spacing);
-	map<int, int> ExtractReworkAdjustments(set<int> reworkPixels);
 	void ShiftAdjustments(SpidrController *, set<int> reworkSubset);
 	void SelectBestAdjFromHistory(int showHeadAndTail);
 	int ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSubset, set<int> activeMask);
 	bool AdjScanCompleted(set<int> reworkSubset, set<int> activeMask);
 	void TagPixelsEqualizationStatus(set<int> vetoList);
 	void RewindReactionCounters(set<int> reworkPixelsSet);
-	void UnmaskPixelsInLocalSet(set<int> reworkPixelsSet);
-	void DumpRework(set<int> reworkSubset, int thl);
 	void DumpSet(set<int> reworkSubset, QString name, int max = 100);
 	void FillAdjReactTHLHistory();
 	void DumpAdjReactTHLHistory(int showHeadAndTail);
+	int PixelBelonsToChip(int pix);
 
 	void SetSetId(int si) { _setId = si; };
 	int GetSetId() { return _setId; };
 
-	void SetWorkChipIndexes(vector<int> v);
+	void SetWorkChipIndexes(vector<int> v, vector<equalizationSteeringInfo *> st);
 	vector<int> GetWorkChipIndexes() { return _workChipsIndx; };
 
-	void InitializeScanResults();
+	void InitializeScanResults(vector<equalizationSteeringInfo *> st);
 	ScanResults * GetScanResults(int chipIdx);
 
 private:
@@ -174,8 +174,12 @@ private:
 	bool _blindScan;
 	int _DAC_Disc_code;
 	bool _equalizeAllChips;
+	int _nchipsX;
+	int _nchipsY;
 	// IP source address (SPIDR network interface)
 	int _srcAddr;
+	int _fullsize_x;
+	int _fullsize_y;
 
 	// For data taking
 	int * _data;

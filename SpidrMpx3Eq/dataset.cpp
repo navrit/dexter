@@ -579,18 +579,22 @@ void Dataset::applyOBCorrection(){
 		// Obtain the average of the corrected image
 		double averageCorr = 0.;
 		double averageCurrent = 0.;
+		int acntr = 0;
 		for(int j = 0; j < getPixelsPerLayer(); j++) {
-			if(correctionLayer[j] > 0) averageCorr += ((double)currentLayer[j])/((double)correctionLayer[j]);
-			averageCurrent += (double)currentLayer[j];
+			if(correctionLayer[j] > 0) {
+				averageCorr += ((double)currentLayer[j])/((double)correctionLayer[j]);
+				averageCurrent += (double)currentLayer[j];
+				acntr++;
+			}
 		}
-		averageCorr /= getPixelsPerLayer();
-		averageCurrent /= getPixelsPerLayer();
+		averageCorr /= acntr;
+		averageCurrent /= acntr;
 
 		for(int j = 0; j < getPixelsPerLayer(); j++)
 			if(0  != correctionLayer[j]) {
 				double numer = averageCurrent*currentLayer[j];
 				double den = averageCorr*correctionLayer[j];
-				currentLayer[j] = round( numer/den );
+				currentLayer[j] = round(  -log( numer/den )  );
 			}
 	}
 
@@ -627,6 +631,16 @@ void Dataset::clear() {
 	m_thresholdsToIndices.clear();
 
 	//setFramesPerLayer(1);
+}
+
+int Dataset::getNChipsX() {
+	QRectF cb = computeBoundingBox();
+	return (int)cb.width();
+}
+
+int Dataset::getNChipsY() {
+	QRectF cb = computeBoundingBox();
+	return (int)cb.height();
 }
 
 QRectF Dataset::computeBoundingBox(){

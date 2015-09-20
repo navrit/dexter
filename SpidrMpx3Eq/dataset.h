@@ -71,6 +71,8 @@ public:
   int64_t getTotal(int threshold);//!< Returns the sum of all pixels for a  specific threshold
   int getContainingFrame(QPoint pixel);//!< Returns the frame-index of the frame which contains the specified point. Returns -1 if no frame contains the point.
   QRectF computeBoundingBox(); //!< Computes the minimum bounding box of the set of chips. Returns coordinates and sizes in units of "chips", so e.g. (0,2)x(0,2) instead of (0,512)x(0,512) for a quad.
+  int getNChipsX();
+  int getNChipsY();
   QByteArray toByteArray(); //!< Serializes the dataset for saving.
   void fromByteArray(QByteArray serialized); //!< Restores the dataset from a previously serialized set.
   void loadCorrection(QByteArray serialized);//!< Loads and sets the correction to a previously serialized set.

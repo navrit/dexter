@@ -108,6 +108,32 @@ private:
 };
 
 
+class equalizationSteeringInfo {
+
+public:
+
+	equalizationSteeringInfo(){};
+	~equalizationSteeringInfo(){};
+
+	void SetCurrentEta_Adj_THx(double v) { currentEta_Adj_THx = v; }
+
+	int equalizationCombination;
+	int equalizationType;
+	int globalAdj;
+	int currentTHx;
+	QString currentTHx_String;
+	int currentDAC_DISC;
+	QString currentDAC_DISC_String;
+	int currentDAC_DISC_OptValue;	// the optimized value
+	double currentEta_THx_DAC_Disc; //<! Eta and Cut for the THx Vs DAC_DISC_x function (DAC_DISC Optimization)
+	double currentCut_THx_DAC_Disc;
+	double currentEta_Adj_THx; //<! Eta and Cut for the Adj Vs. THx function (Adj extrapolation)
+	double currentCut_Adj_THx;
+
+
+};
+
+
 namespace Ui {
 class QCstmEqualization;
 }
@@ -127,27 +153,29 @@ public:
 	void PrintFraction(int * buffer, int size, int first_last);
 	int GetNPixelsActive(int * buffer, int size, verblev verbose);
 	void GetSlopeAndCut_IDAC_DISC_THL(ScanResults *, ScanResults *, double &, double &);
-	void GetSlopeAndCut_Adj_THL(ScanResults, ScanResults, double &, double &);
+	void GetSlopeAndCut_Adj_THL(ScanResults *, ScanResults *, double &, double &);
 
 	double EvalLinear(double eta, double cut, double x);
 
 	// Equalization steps
-	void DAC_Disc_Optimization_100(int DAC_DISC_testValue);
-	void DAC_Disc_Optimization_150(int DAC_DISC_testValue);
+	void DAC_Disc_Optimization_100();
+	void DAC_Disc_Optimization_150();
 	void DAC_Disc_Optimization(int devId, ScanResults * res_100, ScanResults * res_150);
 	void PrepareInterpolation_0x0();
 	void PrepareInterpolation_0x5();
-	void CalculateInterpolation(ScanResults res_x0, ScanResults res_x5);
-	void ScanOnInterpolation(int DAC_Disc_code);
+	int * CalculateInterpolation(int devId, ThlScan * scan_x0, ThlScan * scan_x5);// ScanResults * res_x0, ScanResults * res_x5);
+	void ScanOnInterpolation();
 	void Rewind();
 	void InitEqualization(int chipId); //!< chipId = -1  will equalize all available chips at once
+	bool pixelInScheduledChips(int);
 
 	void DAC_Disc_Optimization_DisplayResults(ScanResults * res);
 
-	int FineTunning(int DAC_Disc_code);
-//	int DetectStartEqualizationRange(int setId, int DAC_Disc_code);
+	int FineTunning();
+	//	int DetectStartEqualizationRange(int setId, int DAC_Disc_code);
 
 	void DisplayStatsInTextBrowser(int adj, int dac_disc, ScanResults * res);
+	void KeepOtherChipsQuiet();
 
 	pair<int, int> XtoXY(int X, int dimX);
 	void SetupSignalsAndSlots();
@@ -168,24 +196,27 @@ public:
 	int GetMinScan(){ return _minScanTHL; };
 	int GetMaxScan(){ return _maxScanTHL; };
 	int GetStepScan(){ return _stepScan; };
-	int GetGlobalAdj(){ return _global_adj; };
 	int GetNHits(){ return _nHits; };
 	int GetFineTuningLoops() { return _fineTuningLoops; };
 
 	int GetNChips() {return _nChips; };
 
-	void SetMinScan(int);
-	void SetMaxScan(int);
+	void SetMinScan(int val = -1);
+	void SetMaxScan(int val = -1);
 	bool isScanDescendant() { return _scanDescendant; }
 	bool isBusy() { return _busy; };
+	bool scanningAllChips() { return _scanAllChips; };
 
 	void StartEqualization(); //!<
 	void SetDAC_propagateInGUI(SpidrController * spidrcontrol, int devId, int dac_code, int dac_val);
 
 	Mpx3EqualizationResults * GetEqualizationResults(int chipIndex);
 	void InitializeBarCharts();
+	equalizationSteeringInfo * GetSteeringInfo(int chipIdx);
 	BarChart * GetBarChart(int chipIdx);
 	QCheckBox * GetCheckBox(int chipIdx);
+	int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
+	void UpdateHeatMap(int * data, int sizex, int sizey);
 
 	string BuildChartName(int val, QString leg);
 
@@ -212,7 +243,6 @@ private:
 	QMap<int, Mpx3EqualizationResults *> _eqMap;
 	vector<BarChart * > _chart;			//<! charts for all chips
 	vector<QCheckBox * > _checkBoxes;	//<! checkBoxes for all chips
-	set<int> _chartShownIndx;
 
 	// Connectivity between modules
 	Mpx3GUI * _mpx3gui;
@@ -231,6 +261,11 @@ private:
 	int _nHits;
 	int _fineTuningLoops;
 	bool _threadFinished;
+	bool _scanAllChips;
+	int _nchipsX;
+	int _nchipsY;
+	int _fullsize_x;
+	int _fullsize_y;
 	vector<int> _workChipsIndx;
 	unsigned int _eqStatus;
 	unsigned int _scanIndex;
@@ -246,18 +281,7 @@ private:
 		__nEQTypes
 	};
 	int _equalizationType;
-	typedef struct {
-		int currentTHx;
-		QString currentTHx_String;
-		int currentDAC_DISC;
-		QString currentDAC_DISC_String;
-		int currentDAC_DISC_OptValue;
-		double currentEta_THL_DAC_Disc;
-		double currentCut_THL_DAC_Disc;
-		int equalizationCombination;
-		int equalizationType;
-	} equalizationSteeringInfo;
-	equalizationSteeringInfo _steeringInfo;
+	vector<equalizationSteeringInfo *> _steeringInfo;
 
 	// IP source address (SPIDR network interface)
 	int _srcAddr;
@@ -266,25 +290,9 @@ private:
 
 	int **data = 0;
 	unsigned *nx =0, *ny =0, nData =0;
-//	histogram ** hists = 0;
-
-	// Drawing object
-	//QCustomPlot * _customPlot;
-	//BarChart * _chart;
 
 	// Object in charge of performing Thl scans
 	QVector<ThlScan * > _scans;
-
-	// Important Equalization values
-	double _eta_THL_DAC_DiscL;
-	double _cut_THL_DAC_DiscL;
-	double _eta_THL_DAC_DiscH;
-	double _cut_THL_DAC_DiscH;
-	int _opt_MPX3RX_DAC_DISC_L;
-	int _opt_MPX3RX_DAC_DISC_H;
-	int _global_adj;
-	double _eta_Adj_THL;
-	double _cut_Adj_THL;
 
 public slots:
 void SaveEqualization( int chipId );
@@ -314,8 +322,8 @@ void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
 void on_openfileButton_clicked();
 
 signals:
-	void slideAndSpin(int, int);
-	void stop_data_taking_thread();
+void slideAndSpin(int, int);
+void stop_data_taking_thread();
 
 };
 

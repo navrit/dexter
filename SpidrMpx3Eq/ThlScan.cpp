@@ -39,6 +39,7 @@ ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 	_scanType = __BASIC_SCAN;
 	_fineTunningPixelsEqualized.clear();
 	_results.clear();
+	_maskedSet.clear();
 	_plotdata = 0x0;
 	_dataset = 0x0;
 
@@ -46,7 +47,7 @@ ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 	//_results.weighted_arithmetic_mean = 0.;
 	//_results.sigma = 0.;
 
-	_detectedScanBoundary_L = 511;
+	_detectedScanBoundary_L = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size);
 	_detectedScanBoundary_H = 0;
 
 	// Set to true for special scans
@@ -56,39 +57,50 @@ ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 	// number of reactive pixels
 	_nReactivePixels = 0;
 
-
+	_nchipsX = 2; //_mpx3gui->getDataset()->getNChipsX();
+	_nchipsY = 2; //_mpx3gui->getDataset()->getNChipsY();
+	// TODO.  When one chips is connected the dataset returns 2,1 (which is good)
+	_fullsize_x = __matrix_size_x * _nchipsX;
+	_fullsize_y = __matrix_size_y * _nchipsY;
 
 	// Extract the information needed when the thread will be launched
 	_spacing = _equalization->GetSpacing();
-	_minScan = _equalization->GetMinScan();
-	_maxScan = _equalization->GetMaxScan();
+	SetMinScan(); // default min max
+	SetMaxScan();
 	_stepScan = _equalization->GetStepScan();
 	_deviceIndex = _equalization->GetDeviceIndex();
 
 }
 
-void ThlScan::SetWorkChipIndexes(vector<int> v) {
+void ThlScan::SetWorkChipIndexes(vector<int> v, vector<equalizationSteeringInfo *> st) {
 
 	_workChipsIndx = v;
 
-	InitializeScanResults();
+	InitializeScanResults(st);
 
 }
 
-
-
-void ThlScan::InitializeScanResults() {
+void ThlScan::InitializeScanResults(vector<equalizationSteeringInfo *> st) {
 
 	vector<int>::iterator i  = _workChipsIndx.begin();
 	vector<int>::iterator iE = _workChipsIndx.end();
 
 	// One result object per chip to be equalized
-	for ( ; i != iE ; i++ ) {
+	for (int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
+
 		ScanResults * sr = new ScanResults;
 		sr->weighted_arithmetic_mean = 0.;
 		sr->sigma = 0.;
-		sr->chipIndx = *i;
+		sr->chipIndx = _workChipsIndx[i];
+
+		// use the test value when adjusting to global
+		sr->DAC_DISC_setting = st[i]->currentDAC_DISC_OptValue;
+
+		// set global adjustment
+		sr->global_adj = st[i]->globalAdj;
+
 		_results.push_back( sr );
+
 	}
 
 }
@@ -150,14 +162,28 @@ void ThlScan::RewindData(int full_sizex, int full_sizey) {
 }
 
 
-void ThlScan::DeliverPreliminaryEqualization(Mpx3EqualizationResults * eq, ScanResults scan_res) {
+void ThlScan::DeliverPreliminaryEqualization(int devId, int currentDAC_DISC, Mpx3EqualizationResults * eq, int global_adj) {
+
+	Mpx3EqualizationResults::lowHighSel sel = Mpx3EqualizationResults::__ADJ_L;
+	if ( currentDAC_DISC == MPX3RX_DAC_DISC_L ) sel = Mpx3EqualizationResults::__ADJ_L;
+	if ( currentDAC_DISC == MPX3RX_DAC_DISC_H ) sel = Mpx3EqualizationResults::__ADJ_H;
 
 	// Fill the preliminary results
-	for ( int i = 0 ; i < __matrix_size ; i++ ) {
+	// The reactive THL comes in the whole matrix
+	// [0](0 ... 256*256), [0](0 ... 256*256), [0](0 ... 256*256), [3](0 ... 256*256)
+	// 1) I need the find the right range.
+	// 2) The results are divided by chip, so I need a second counter.
+	int inChipCntr = 0;
+
+	for ( int i = devId*__matrix_size ; i < (devId+1)*__matrix_size ; i++ ) {
+
 		// First the adjustment is the same for all
-		eq->SetPixelAdj(i, scan_res.global_adj );
+		eq->SetPixelAdj(inChipCntr, global_adj, sel );
+
 		// And here is the reactive threshold
-		eq->SetPixelReactiveThl(i, _pixelReactiveTHL[i] );
+		eq->SetPixelReactiveThl(inChipCntr, _pixelReactiveTHL[i], sel );
+
+		inChipCntr++;
 	}
 
 }
@@ -184,17 +210,14 @@ void ThlScan::on_stop_data_taking_thread() {
 void ThlScan::run() {
 
 	// The normal scan starting from scratch
-	if(_scanType == __BASIC_SCAN) EqualizationScan();
+	if(_scanType == __BASIC_SCAN) EqualizationScan( );
 
 	// This one is a fine tunning scan
 	if(_scanType == __FINE_TUNNING1_SCAN) {
 
 		//string messg = "This may take some time depending on the number of pixels off target.";
 		//QMessageBox::warning ( _equalization, tr("Fine tuning"), tr( messg.c_str() ) );
-
-		// ReAdjustPixelsOff( 2 );// MPX3RX_DAC_DISC_L);
-		FineTuning( 2 );
-
+		FineTuning( );
 	}
 }
 
@@ -202,7 +225,7 @@ void ThlScan::run() {
  * Nsigma:
  * returns number of pixels adjusted.
  */
-int ThlScan::FineTuning(double Nsigma) {
+void ThlScan::FineTuning() {
 
 	// Open a new temporary connection to the spider to avoid collisions to the main one
 	// Extract the ip address
@@ -217,25 +240,33 @@ int ThlScan::FineTuning(double Nsigma) {
 
 	if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
 		cout << "[ERR ] Device not connected !" << endl;
-		return 0;
+		return;
 	}
 
-	// Reload resulting adjustement bits
-	_equalization->SetAllAdjustmentBits(spidrcontrol);
+	/////////////////////////////////////////////////////////////////////////
+	// Prepare a dataset just to handle the assembling of compound frames
+	// Rewind local counters
+	if ( !_dataset ) _dataset = new Dataset ( __matrix_size_x, __matrix_size_y, _nchipsX*_nchipsY );
+	_dataset->clear();
+	// NO REWINDATA IN FINE TUNNING !!!
 
-	// While equalizing one threshold the other can be at a very high value
-	// to keep that circuit from reacting
-	// Set Dac
-	spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_THRESH_1, 150 );
-	// Adjust the sliders and the SpinBoxes to the new value
-	connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
-	// Get the DAC back just to be sure and then slide&spin
-	int dacVal = 0;
-	spidrcontrol->getDac( _deviceIndex,  MPX3RX_DAC_THRESH_1, &dacVal);
-	// SlideAndSpin works with the DAC index, no the code.
-	int dacIndex = _mpx3gui->GetUI()->DACsWidget->GetDACIndex( MPX3RX_DAC_THRESH_1 );
-	slideAndSpin( dacIndex,  dacVal );
-	disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+	// Send configuation to the chip
+	for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
+
+		if ( ! _mpx3gui->getConfig()->detectorResponds( _workChipsIndx[di] ) ) continue;
+
+		// Send the adj bits
+		_equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di]); //
+
+		// While equalizing one threshold the other should be set at a very high value
+		//   to keep that circuit from reacting.  Set it at half range.
+		if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
+			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].size)/2 );
+		} else if (  _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
+			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_0, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size)/2 );
+		}
+
+	}
 
 	// Signals to draw out of the worker
 	connect( this, SIGNAL( UpdateChartSignal(int, int, int) ), this, SLOT( UpdateChart(int, int, int) ) );
@@ -253,7 +284,7 @@ int ThlScan::FineTuning(double Nsigma) {
 
 	int processedLoops = 0;
 	bool finishScan = false;
-	bool finishTHLLoop = false;
+	//bool finishTHLLoop = false;
 	bool doReadFrames = false;
 	// The data buffer id doesn't necessarily corresponds to _deviceIndex
 	int idDataFetch = _mpx3gui->getConfig()->getDataBufferId( _deviceIndex );
@@ -279,7 +310,8 @@ int ThlScan::FineTuning(double Nsigma) {
 			for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
 				nMasked += SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y);
 			}
-			cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  " | N pixels unmasked = " << __matrix_size - nMasked << endl;
+			cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y
+					<<  " | N pixels unmasked = " << ((int)_workChipsIndx.size()*__matrix_size) - nMasked << endl;
 
 			// Decide when to stop trying different adj values for this particular mask
 			int adjLoops = 0;
@@ -290,6 +322,9 @@ int ThlScan::FineTuning(double Nsigma) {
 
 				// Shift adj !
 				int nNotInMask = ShiftAdjustments( spidrcontrol, _scheduledForFineTuning, _maskedSet );
+				for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
+					_equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di]);
+				}
 
 				// Rewind reactions counters after making the shift of adjustments
 				RewindReactionCounters( _scheduledForFineTuning );
@@ -318,17 +353,10 @@ int ThlScan::FineTuning(double Nsigma) {
 					fillText( thlLabelS );
 					disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
 
-					// Set Dac
-					spidrcontrol->setDac( _deviceIndex, _dac_code, _thlItr );
-					// Adjust the sliders and the SpinBoxes to the new value
-					connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
-					// Get the DAC back just to be sure and then slide&spin
-					int dacVal = 0;
-					spidrcontrol->getDac( _deviceIndex, _dac_code, &dacVal);
-					// SlideAndSpin works with the DAC index, no the code.
-					int dacIndex = _mpx3gui->GetUI()->DACsWidget->GetDACIndex( _dac_code );
-					slideAndSpin( dacIndex,  dacVal );
-					disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+					// Set the threshold on all chips
+					for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
+						SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], _dac_code, _thlItr );
+					}
 
 					// Start the trigger as configured
 					spidrcontrol->startAutoTrigger();
@@ -348,8 +376,26 @@ int ThlScan::FineTuning(double Nsigma) {
 
 						if ( doReadFrames ) {
 							int size_in_bytes = -1;
-							_data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
-							_pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes, _thlItr );
+
+							int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
+							// Go through all chips avoiding those not present
+							for ( int idx = 0 ; idx < nChips ; idx++ ) {
+
+								if ( ! _mpx3gui->getConfig()->detectorResponds( idx ) ) continue;
+
+								idDataFetch = _mpx3gui->getConfig()->getDataBufferId( idx );
+								_data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
+
+								// Stack
+								_dataset->setFrame(_data, idx, 0);
+
+							}
+
+							// Once the frame is complete, extract info
+							_data = _dataset->getLayer( 0 );
+							// I am assuming that all the frames have the same size in bytes
+							_pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes * _nchipsX*_nchipsY, _thlItr );
+
 						}
 
 						// Release
@@ -364,7 +410,7 @@ int ThlScan::FineTuning(double Nsigma) {
 
 						if ( doReadFrames ) {
 							// Report to heatmap
-							UpdateHeatMapSignal(_mpx3gui->getDataset()->x(), _mpx3gui->getDataset()->y());
+							UpdateHeatMapSignal(_fullsize_x, _fullsize_y);
 
 							// Report to graph
 							//if ( !_blindScan ) UpdateChartSignal(_setId, _thlItr);
@@ -432,7 +478,9 @@ int ThlScan::FineTuning(double Nsigma) {
 	// Now for the list of pixels which need rework, select the best adj value from the history
 	SelectBestAdjFromHistory( 10 );
 	// And send the new configuration to the chip
-	_equalization->SetAllAdjustmentBits(spidrcontrol);
+	for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
+		_equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di]);
+	}
 
 	// Signals to draw out of the thread
 	disconnect( this, SIGNAL( UpdateChartSignal(int, int, int) ), this, SLOT( UpdateChart(int, int, int) ) );
@@ -442,6 +490,17 @@ int ThlScan::FineTuning(double Nsigma) {
 	// in case the thread is used again
 	_stop = false;
 
+	// delete the extra space to plot.
+	if ( _plotdata ) {
+		delete [] _plotdata;
+		_plotdata = 0x0;
+	}
+
+	// the dataset used here for frames stichting
+	delete _dataset;
+	_dataset = 0x0;
+
+	// close the connection
 	delete spidrcontrol;
 }
 
@@ -457,7 +516,10 @@ void ThlScan::SelectBestAdjFromHistory(int showHeadAndTail) {
 
 	cout << "[INFO] Selecting bests adjustments" << endl << "       ";
 	int cntr = 0;
+	int chipId = 0;
 	for ( ; i != iE ; i++ ) {
+
+		chipId = PixelBelonsToChip( *i );
 
 		// Take a pixel and look at its history
 		vector< pair<int, int> > pixHistory = _adjReactiveTHLFineTuning[*i];
@@ -505,11 +567,11 @@ void ThlScan::SelectBestAdjFromHistory(int showHeadAndTail) {
 
 		// At this point the best adjustment has been found.
 		// Send it to the data structure
-		_equalization->GetEqualizationResults( _deviceIndex )->SetPixelAdj( *i, pixHistory[minDistanceIndx].first );
+		_equalization->GetEqualizationResults( chipId )->SetPixelAdj( *i, pixHistory[minDistanceIndx].first );
 		// And tag as equalized
-		_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( *i, Mpx3EqualizationResults::__EQUALIZED);
+		_equalization->GetEqualizationResults( chipId )->SetStatus( *i, Mpx3EqualizationResults::__EQUALIZED);
 
-		if ( cntr < showHeadAndTail || cntr >= _scheduledForFineTuning.size() - showHeadAndTail ) {
+		if ( cntr < showHeadAndTail || cntr >= (int)_scheduledForFineTuning.size() - showHeadAndTail ) {
 			cout << "[" << *i << "](" << pixHistory[minDistanceIndx].first << ") ";
 		}
 
@@ -517,6 +579,13 @@ void ThlScan::SelectBestAdjFromHistory(int showHeadAndTail) {
 	}
 	cout << endl;
 
+}
+
+int ThlScan::PixelBelonsToChip(int pix) {
+
+	int chipId = pix / __matrix_size;
+
+	return chipId;
 }
 
 void ThlScan::FillAdjReactTHLHistory() {
@@ -527,8 +596,10 @@ void ThlScan::FillAdjReactTHLHistory() {
 
 	for ( ; i != iE ; i++ ) {
 
+		int chipId = PixelBelonsToChip( *i );
+
 		// Look at the current adjustment
-		int adj = _equalization->GetEqualizationResults( _deviceIndex )->GetPixelAdj( *i );
+		int adj = _equalization->GetEqualizationResults( chipId )->GetPixelAdj( (*i)%__matrix_size );
 		vector< pair<int, int> > pixHistory = _adjReactiveTHLFineTuning[*i];
 		// search for this adj
 		int foundIndx = -1;
@@ -637,29 +708,34 @@ void ThlScan::EqualizationScan() {
 	/////////////////////////////////////////////////////////////////////////
 	// Prepare a dataset just to handle the assembling of compound frames
 	// Rewind local counters
-	int nchipsX = 2;
-	int nchipsY = 2;
-
-	if ( !_dataset ) _dataset = new Dataset ( __matrix_size_x, __matrix_size_y, nchipsX*nchipsY );
+	if ( !_dataset ) _dataset = new Dataset ( __matrix_size_x, __matrix_size_y, _nchipsX*_nchipsY );
 	_dataset->clear();
-	RewindData(_dataset->x() * nchipsX, _dataset->y() * nchipsY);
+	RewindData(_fullsize_x, _fullsize_y);
 
-	for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
+	for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
+
+		if ( ! _mpx3gui->getConfig()->detectorResponds( _workChipsIndx[di] ) ) continue;
 
 		// Send all the adjustment bits to a global value
 		if ( _adjType == __adjust_to_global ) {
-			if( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[devId], _equalization->GetGlobalAdj(), 0x0);
-			if( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[devId], 0x0, _equalization->GetGlobalAdj());
+			if( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
+				_equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj, 0x0);
+				//cout << "setting global L =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
+			}
+			if( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
+				_equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], 0x0, _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj);
+				//cout << "setting global H =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
+			}
 		} else if ( _adjType == __adjust_to_equalizationMatrix ) {
-			_equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[devId]); //
+			_equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di]); //
 		}
 
 		// While equalizing one threshold the other should be set at a very high value
 		//   to keep that circuit from reacting.  Set it at half range.
 		if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
-			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_1, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].size)/2 );
+			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].size)/2 );
 		} else if (  _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
-			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_0, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size)/2 );
+			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_0, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size)/2 );
 		}
 
 	}
@@ -711,11 +787,11 @@ void ThlScan::EqualizationScan() {
 			accelerationFlagCntr = 0;
 			bool doReadFrames = true;
 			accelerationApplied = false;
-			_stepScan = _equalization->GetUI()->eqStepSpinBox->value();
 
 			// limits from the GUI (no signals on them) TODO
-			_minScan = _equalization->GetUI()->eqMinSpinBox->value();
-			_maxScan = _equalization->GetUI()->eqMaxSpinBox->value();
+			_stepScan = _equalization->GetUI()->eqStepSpinBox->value();
+			//_minScan = _equalization->GetUI()->eqMinSpinBox->value();
+			//_maxScan = _equalization->GetUI()->eqMaxSpinBox->value();
 
 			// THx scan
 			bool scanContinue = true;
@@ -733,7 +809,6 @@ void ThlScan::EqualizationScan() {
 				fillText( thlLabelS );
 				disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
 
-				int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
 				// Set the threshold on all chips
 				for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
 					SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], _dac_code, _thlItr );
@@ -778,7 +853,7 @@ void ThlScan::EqualizationScan() {
 							// Once the frame is complete, extract info
 							_data = _dataset->getLayer( 0 );
 							// I am assuming that all the frames have the same size in bytes
-							_pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes * nchipsX*nchipsY, _thlItr );
+							_pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes * _nchipsX*_nchipsY, _thlItr );
 
 						} else {
 
@@ -796,7 +871,7 @@ void ThlScan::EqualizationScan() {
 					if ( doReadFrames ) {
 
 						// Report to heatmap
-						UpdateHeatMapSignal(_dataset->x() * nchipsX, _dataset->y() * nchipsY);
+						UpdateHeatMapSignal(_fullsize_x, _fullsize_y);
 
 						// Report to graph
 						for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
@@ -937,6 +1012,7 @@ void ThlScan::EqualizationScan() {
 
 	// the dataset used here for frames stichting
 	delete _dataset;
+	_dataset = 0x0;
 
 	// close the connection
 	delete spidrcontrol;
@@ -995,38 +1071,29 @@ set<int> ThlScan::ExtractPixelsNotOnTarget() {
 
 	set<int> reworkList;
 
-	for ( int i = 0 ; i < __matrix_size ; i++ ) {
+	for ( int i = 0 ; i < _fullsize_x*_fullsize_y ; i++ ) {
+
+		//cout << "[" << i << "]" << _pixelReactiveTHL[i] << ", ";
+		//if ( i % 1024 == 0 && i != 0 ) cout << endl;
+
+		// consider the pixel only if it belongs in the _workChipsIndx
+		if ( ! _equalization->pixelInScheduledChips( i ) ) continue;
 
 		if ( _pixelReactiveTHL[i] != __equalization_target ) {
 			reworkList.insert( i );
-			_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( i, Mpx3EqualizationResults::__SCHEDULED_FOR_FINETUNING );
+			// WARNING: the numbering is per chip in the EqualizationResults
+			_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( i % __matrix_size, Mpx3EqualizationResults::__SCHEDULED_FOR_FINETUNING );
 		} else {
 			// Otherwise tag it as equalized
-			_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( i, Mpx3EqualizationResults::__EQUALIZED);
+			_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( i % __matrix_size, Mpx3EqualizationResults::__EQUALIZED);
 		}
 
 	}
-
+	//cout << endl;
 	cout << "[INFO] " << reworkList.size() << " pixels found out of target" << endl;
 
 	return reworkList;
 
-}
-
-/**
- * return <pixid, adj> map
- */
-map<int, int> ThlScan::ExtractReworkAdjustments(set<int> reworkPixels) {
-
-	map<int, int> adj;
-	set<int>::iterator i;
-	set<int>::iterator iE;
-
-	for( ; i != iE ; i++ ) {
-		adj[*i] = _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i );
-	}
-
-	return adj;
 }
 
 void ThlScan::RewindReactionCounters(set<int> reworkPixelsSet) {
@@ -1069,43 +1136,6 @@ void ThlScan::DumpSet(set<int> theset, QString name, int max) {
 
 }
 
-void ThlScan::DumpRework(set<int> reworkSubset, int thl){
-
-	set<int>::iterator i = reworkSubset.begin();
-	set<int>::iterator iE = reworkSubset.end();
-
-	int adj = 0;
-	Mpx3EqualizationResults::eq_status eqStat;
-
-	// Asume all rework pixels are still outside the target region
-	bool anyOutsideTargetRegion = false;
-
-	cout << "THL:" << thl << endl;
-
-	for ( ; i != iE ; i++ ) {
-		cout << "   pix:" << *i << " | status:" << _equalization->GetEqualizationResults(_deviceIndex)->GetStatus( *i )
-																																																																																				<< " | adj" <<  _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i )
-																																																																																				<< " | reactive:" << _pixelReactiveTHL[*i]
-																																																																																				                                       << endl;
-	}
-
-}
-
-void ThlScan::UnmaskPixelsInLocalSet(set<int> reworkPixelsSet) {
-
-	set<int>::iterator i = reworkPixelsSet.begin();
-	set<int>::iterator iE = reworkPixelsSet.end();
-
-	for( ; i != iE ; i++ ) {
-		set<int>::iterator iS = _maskedSet.find( *i );
-		if ( iS != _maskedSet.end() ) {
-			cout << "FOUND !" << endl;
-			_maskedSet.erase( iS );
-		}
-	}
-
-}
-
 bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> activeMask) {
 
 	// End the scan if
@@ -1122,6 +1152,7 @@ bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> activeMask) {
 	bool passedUpTarget = false;
 	bool passedOnTarget = false;
 	bool passedUnderTarget = false;
+	int chipId = 0;
 
 	for ( ; i != iE ; i++ ) {
 
@@ -1130,11 +1161,13 @@ bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> activeMask) {
 		passedOnTarget = false;
 		passedUnderTarget = false;
 
+		chipId = PixelBelonsToChip( *i );
+
 		// Skip if found in the mask
 		if ( activeMask.find( *i ) != activeMask.end() ) continue;
 
 		// Also skip if the pixel has been previously marked as equalized or impossible to equalize ( > __EQUALIZED)
-		if ( _equalization->GetEqualizationResults(_deviceIndex)->GetStatus( *i ) >= Mpx3EqualizationResults::__EQUALIZED ) continue;
+		if ( _equalization->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size ) >= Mpx3EqualizationResults::__EQUALIZED ) continue;
 
 		// Considering this pixel.  Count it.
 		pixelsConsidered++;
@@ -1160,7 +1193,7 @@ bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> activeMask) {
 		if ( (passedUpTarget && passedUnderTarget) || passedOnTarget ) {
 			pixelsAteqT++;
 			// And tag the pixel as equalized already
-			_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( *i, Mpx3EqualizationResults::__EQUALIZED);
+			_equalization->GetEqualizationResults( chipId )->SetStatus( (*i)%__matrix_size, Mpx3EqualizationResults::__EQUALIZED);
 		}
 
 	}
@@ -1176,10 +1209,36 @@ bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> activeMask) {
 
 	return false;
 }
+
+void ThlScan::SetMinScan(int min) {
+
+	// default value
+	if( min == -1 ) {
+		_minScan = _equalization->GetUI()->eqMinSpinBox->value();
+		return;
+	}
+
+	_minScan = min;
+	_equalization->GetUI()->eqMinSpinBox->setValue( _minScan );
+
+}
+
+void ThlScan::SetMaxScan(int max) {
+
+	// default value
+	if( max == -1 ) {
+		_maxScan = _equalization->GetUI()->eqMaxSpinBox->value();
+		return;
+	}
+
+	_maxScan = max;
+	_equalization->GetUI()->eqMaxSpinBox->setValue( _maxScan );
+}
+
 /**
  * return the number of pixels in the rework subset which are not in the mask
  */
-int ThlScan::ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSubset, set<int> activeMask) {
+int ThlScan::ShiftAdjustments(SpidrController * /*spidrcontrol*/, set<int> reworkSubset, set<int> activeMask) {
 
 	set<int>::iterator i = reworkSubset.begin();
 	set<int>::iterator iE = reworkSubset.end();
@@ -1187,6 +1246,7 @@ int ThlScan::ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSub
 	pair<int, int> pix;
 	int adj = 0, newadj = 0;
 	int nPixelsNotInMask = 0;
+	int chipId = 0;
 
 	for( ; i != iE ; i++ ) {
 
@@ -1194,13 +1254,15 @@ int ThlScan::ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSub
 		// If it is found in the mask (maske pixels, i.e. not reacting) the pixel doesn't need an adjustment shift yet.
 		if ( activeMask.find( *i ) != activeMask.end() ) continue;
 
+		chipId = PixelBelonsToChip( *i );
+
 		nPixelsNotInMask++;
 
 		// Also skip if the pixel has been previously marked as equalized or higher status
-		if ( _equalization->GetEqualizationResults(_deviceIndex)->GetStatus( *i ) >= Mpx3EqualizationResults::__EQUALIZED ) continue;
+		if ( _equalization->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size ) >= Mpx3EqualizationResults::__EQUALIZED ) continue;
 
 		// Get the current adj
-		adj = _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i );
+		adj = _equalization->GetEqualizationResults( chipId )->GetPixelAdj( (*i)%__matrix_size );
 
 		bool specialCase = false;
 		// special cases
@@ -1217,7 +1279,7 @@ int ThlScan::ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSub
 		if ( ! specialCase ) {
 
 			// take a decision on next adjustment
-			if ( _pixelReactiveTHL[ *i ] == __UNDEFINED ) newadj = 0;
+			if ( _pixelReactiveTHL[ *i ] == __UNDEFINED ) newadj = 0; // mid-range
 			else if ( _pixelReactiveTHL[ *i ] > __equalization_target ) newadj = adj + 1;
 			else if ( _pixelReactiveTHL[ *i ] < __equalization_target ) newadj = adj - 1;
 
@@ -1228,15 +1290,16 @@ int ThlScan::ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSub
 
 		// Now set the new value
 		// Set the new adjustment for this particular pixel.
-		pix = XtoXY(*i, __matrix_size_x);
-		_equalization->GetEqualizationResults(_deviceIndex)->SetPixelAdj(*i, newadj);
+		// It is different depending on the chipId
+		_equalization->GetEqualizationResults( chipId )->SetPixelAdj( (*i)%__matrix_size , newadj);
 		// Write the adjustment
-		spidrcontrol->configPixelMpx3rx(pix.first, pix.second, newadj, 0x0 );
+		//pix = XtoXY(*i, __matrix_size_x);
+		//spidrcontrol->configPixelMpx3rx(pix.first, pix.second, newadj, 0x0 );
 
 	}
 
 	// send to chip
-	spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
+	//spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
 
 	return nPixelsNotInMask;
 }
@@ -1442,7 +1505,7 @@ int ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
 
 		// I checked that the entry is not zero, and also that is not in the maskedMap
 		//if ( data[i] != 0 && ( _maskedSet.find( i ) == _maskedSet.end() ) ) {
-		if ( ( data[i] >= _equalization->GetNHits() ) && ( _maskedSet.find( i ) == _maskedSet.end() ) )  {
+		if ( ( data[i] >= _equalization->GetNHits() ) ) { //&& ( _maskedSet.find( i ) == _maskedSet.end() ) )  {
 
 			// Increase the counting in this pixel if it hasn't already reached the _nTriggers
 			if ( _pixelCountsMap[i] < _equalization->GetNTriggers() ) {
@@ -1563,7 +1626,7 @@ void ThlScan::UpdateHeatMap(int sizex, int sizey) {
 
 
 	// Consider 1)
-	if ( _equalization->GetNChips() > 1 ) {
+	if ( _equalization->scanningAllChips() ) {
 
 		// Initialize if not ready
 		if ( !_plotdata ) {
@@ -1579,7 +1642,7 @@ void ThlScan::UpdateHeatMap(int sizex, int sizey) {
 
 		int totCntr = 0;
 
-		for ( int chipIdx = 0 ; chipIdx < _equalization->GetNChips() ; chipIdx++ ) {
+		for ( int chipIdx = 0 ; chipIdx < _mpx3gui->getConfig()->getNDevicesSupported() ; chipIdx++ ) {
 
 			// where to start in X
 			if ( (xswitch>>1 & 0x1) == 0 ) xoffset = 0;
@@ -1622,16 +1685,17 @@ void ThlScan::UpdateChart(int devId, int setId, int thlValue) {
 	map<int, int>::iterator itrE = _pixelCountsMap.end();
 
 	// offset for devId
-	int offset = devId * _dataset->x() * _dataset->y();
+	int offset = devId * __matrix_size;
 
 	// I am going to plot for this threshold the number of
 	//  pixels which reached _nTriggers counts.  The next time
 	//  they won't be considered.
 	int cntr = 0;
-	for(int i = 0 ; i < (int)_pixelCountsMap.size() ; i++ ) {
 
-		// avoid the pixels not corresponding to this devId
-		if ( ( i < offset ) || i >= ( offset + (_dataset->x() * _dataset->y()) ) ) continue;
+	for(int i = 0 ; i < _fullsize_x*_fullsize_y ; i++ ) {
+
+		// Avoid the pixels not corresponding to this devId
+		if ( ( i < offset ) || i >= ( offset + __matrix_size ) ) continue;
 
 		if( _pixelCountsMap[i] ==  _equalization->GetNTriggers() + 1 ) { // Marked as +1 := reactive
 			// Count how many pixels counted at this threshold
@@ -1712,6 +1776,10 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int devId, int 
 	// Clear previous mask.  Not sending the configuration yet !
 	ClearMask(spidrcontrol, devId, false);
 
+	// Indexes in the masked set need the offset of the chipId.
+	// The reason is that it needs to match with the _pixelCountsMap id structure.
+	int chipIdOffset = __matrix_size * devId;
+
 	for (int i = 0 ; i < __array_size_x ; i++) {
 
 		// For instance if spacing = 4, there should be calls with offset_x=0,1,2,3
@@ -1722,7 +1790,7 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int devId, int 
 
 				if( (j + offset_y) % spacing != 0 ) { // This one should be masked
 					spidrcontrol->setPixelMaskMpx3rx(i, j);
-					_maskedSet.insert( XYtoX(i, j, __array_size_x ) );
+					_maskedSet.insert( XYtoX(i, j, __array_size_x ) + chipIdOffset );
 				} // leaving unmasked (j + offset_x) % spacing == 0
 
 			}
@@ -1730,7 +1798,7 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int devId, int 
 		} else { // mask the entire column
 			for (int j = 0 ; j < __array_size_y ; j++) {
 				spidrcontrol->setPixelMaskMpx3rx(i, j);
-				_maskedSet.insert( XYtoX(i, j, __array_size_x ) );
+				_maskedSet.insert( XYtoX(i, j, __array_size_x ) + chipIdOffset );
 			}
 		}
 
@@ -1766,35 +1834,6 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, set<int> rework
 			}
 
 		}
-
-	}
-
-	// And send the configuration
-	spidrcontrol->setPixelConfigMpx3rx( _equalization->GetDeviceIndex() );
-
-	return cntr;
-}
-
-int ThlScan::SetEqualizationVetoMask(SpidrController * spidrcontrol, set<int> vetolist, bool clear) {
-
-	// Clear previous mask.  Not sending the configuration yet !
-	if ( clear ) ClearMask(spidrcontrol, false);
-
-	set<int>::iterator itr = vetolist.begin();
-	set<int>::iterator itrE = vetolist.end();
-
-	pair<int, int> pix;
-	int cntr = 0;
-	for ( ; itr != itrE ; itr++ ) {
-
-		pix = XtoXY( *itr, __array_size_x );
-
-		// If the pixel we are masking here was not in the masked let's count it
-		if ( _maskedSet.find( *itr ) == _maskedSet.end() ) cntr++;
-
-		// The pixels coming in the vetolist must be masked
-		spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second);
-		_maskedSet.insert( *itr ); // this is a set, entries are unique
 
 	}
 
