@@ -35,6 +35,8 @@ class BarChart;
 class BarChartProperties;
 class ModuleConnection;
 
+
+
 class Mpx3EqualizationResults {
 
 public:
@@ -50,7 +52,7 @@ public:
 		__EQUALIZATION_FAILED_NONREACTIVE		// EQ FAILED
 	} eq_status;
 
-	typedef enum {
+	typedef enum  {
 		__ADJ_L = 0,
 		__ADJ_H
 	} lowHighSel;
@@ -238,6 +240,7 @@ private:
 
 	Ui::QCstmEqualization * _ui;
 	bool _busy;
+	Dataset * _resdataset;
 
 	// Equalization info
 	QMap<int, Mpx3EqualizationResults *> _eqMap;
@@ -295,7 +298,7 @@ private:
 	QVector<ThlScan * > _scans;
 
 public slots:
-void SaveEqualization( int chipId );
+void SaveEqualization();
 void on_logYCheckBox_toggled(bool checked);
 
 private slots:

@@ -250,7 +250,7 @@ void ThlScan::FineTuning() {
 	_dataset->clear();
 	// NO REWINDATA IN FINE TUNNING !!!
 
-	// Send configuation to the chip
+	// Send configuration to the chip
 	for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
 
 		if ( ! _mpx3gui->getConfig()->detectorResponds( _workChipsIndx[di] ) ) continue;
@@ -293,9 +293,9 @@ void ThlScan::FineTuning() {
 	int progressMax = _numberOfLoops;
 	if ( _numberOfLoops < 0 ) progressMax = _spacing * _spacing;
 
-	for(int maskOffsetItr_x = 0 ; maskOffsetItr_x < _spacing ; maskOffsetItr_x++ ) {
+	for ( int maskOffsetItr_x = 0 ; maskOffsetItr_x < _spacing ; maskOffsetItr_x++ ) {
 
-		for(int maskOffsetItr_y = 0 ; maskOffsetItr_y < _spacing ; maskOffsetItr_y++ ) {
+		for ( int maskOffsetItr_y = 0 ; maskOffsetItr_y < _spacing ; maskOffsetItr_y++ ) {
 
 			QString loopProgressS;
 			loopProgressS =  QString::number( maskOffsetItr_x * _spacing + maskOffsetItr_y + 1, 'd', 0 );
@@ -510,6 +510,11 @@ void ThlScan::SelectBestAdjFromHistory(int showHeadAndTail) {
 	// 2) if two values at the same distance are found at the right and left
 	//    side, take the right side always (for no particular reason, but gotta be consistent).
 
+	// select THx
+	Mpx3EqualizationResults::lowHighSel sel;
+	if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) sel = Mpx3EqualizationResults::__ADJ_L;
+	if ( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) sel = Mpx3EqualizationResults::__ADJ_H;
+
 	// Loop over the pixels scheduled for Fine tuning
 	set<int>::iterator i = _scheduledForFineTuning.begin();
 	set<int>::iterator iE = _scheduledForFineTuning.end();
@@ -567,9 +572,9 @@ void ThlScan::SelectBestAdjFromHistory(int showHeadAndTail) {
 
 		// At this point the best adjustment has been found.
 		// Send it to the data structure
-		_equalization->GetEqualizationResults( chipId )->SetPixelAdj( *i, pixHistory[minDistanceIndx].first );
+		_equalization->GetEqualizationResults( chipId )->SetPixelAdj( *i, pixHistory[minDistanceIndx].first, sel );
 		// And tag as equalized
-		_equalization->GetEqualizationResults( chipId )->SetStatus( *i, Mpx3EqualizationResults::__EQUALIZED);
+		_equalization->GetEqualizationResults( chipId )->SetStatus( *i, Mpx3EqualizationResults::__EQUALIZED, sel);
 
 		if ( cntr < showHeadAndTail || cntr >= (int)_scheduledForFineTuning.size() - showHeadAndTail ) {
 			cout << "[" << *i << "](" << pixHistory[minDistanceIndx].first << ") ";
@@ -593,13 +598,17 @@ void ThlScan::FillAdjReactTHLHistory() {
 	// Loop over the pixels scheduled for Fine tuning
 	set<int>::iterator i = _scheduledForFineTuning.begin();
 	set<int>::iterator iE = _scheduledForFineTuning.end();
+	// select THx
+	Mpx3EqualizationResults::lowHighSel sel;
+	if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) sel = Mpx3EqualizationResults::__ADJ_L;
+	if ( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) sel = Mpx3EqualizationResults::__ADJ_H;
 
 	for ( ; i != iE ; i++ ) {
 
 		int chipId = PixelBelonsToChip( *i );
 
 		// Look at the current adjustment
-		int adj = _equalization->GetEqualizationResults( chipId )->GetPixelAdj( (*i)%__matrix_size );
+		int adj = _equalization->GetEqualizationResults( chipId )->GetPixelAdj( (*i)%__matrix_size, sel );
 		vector< pair<int, int> > pixHistory = _adjReactiveTHLFineTuning[*i];
 		// search for this adj
 		int foundIndx = -1;
@@ -1069,12 +1078,19 @@ void ThlScan::TagPixelsEqualizationStatus(set<int> vetoList) {
 
 set<int> ThlScan::ExtractPixelsNotOnTarget() {
 
+	// select THx
+	Mpx3EqualizationResults::lowHighSel sel;
+	if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) sel = Mpx3EqualizationResults::__ADJ_L;
+	if ( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) sel = Mpx3EqualizationResults::__ADJ_H;
+
 	set<int> reworkList;
+	int chipId = 0;
 
 	for ( int i = 0 ; i < _fullsize_x*_fullsize_y ; i++ ) {
 
 		//cout << "[" << i << "]" << _pixelReactiveTHL[i] << ", ";
 		//if ( i % 1024 == 0 && i != 0 ) cout << endl;
+		chipId = PixelBelonsToChip( i );
 
 		// consider the pixel only if it belongs in the _workChipsIndx
 		if ( ! _equalization->pixelInScheduledChips( i ) ) continue;
@@ -1082,10 +1098,10 @@ set<int> ThlScan::ExtractPixelsNotOnTarget() {
 		if ( _pixelReactiveTHL[i] != __equalization_target ) {
 			reworkList.insert( i );
 			// WARNING: the numbering is per chip in the EqualizationResults
-			_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( i % __matrix_size, Mpx3EqualizationResults::__SCHEDULED_FOR_FINETUNING );
+			_equalization->GetEqualizationResults( chipId )->SetStatus( i % __matrix_size, Mpx3EqualizationResults::__SCHEDULED_FOR_FINETUNING, sel );
 		} else {
 			// Otherwise tag it as equalized
-			_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( i % __matrix_size, Mpx3EqualizationResults::__EQUALIZED);
+			_equalization->GetEqualizationResults( chipId )->SetStatus( i % __matrix_size, Mpx3EqualizationResults::__EQUALIZED, sel);
 		}
 
 	}
@@ -1117,6 +1133,8 @@ void ThlScan::DumpSet(set<int> theset, QString name, int max) {
 	set<int>::iterator i = theset.begin();
 	set<int>::iterator iE = theset.end();
 
+
+
 	int cntr = 0;
 	cout << "< pixId{reactTHL,adj} : ";
 	for ( ; i != iE ; ) {
@@ -1141,6 +1159,11 @@ bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> activeMask) {
 	// End the scan if
 	//  1) all the pixels involved have touched (reactTHL val) the equalization target OR passed over it
 	//  2) OR exhausted all adj values
+
+	// select THx
+	Mpx3EqualizationResults::lowHighSel sel;
+	if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) sel = Mpx3EqualizationResults::__ADJ_L;
+	if ( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) sel = Mpx3EqualizationResults::__ADJ_H;
 
 	// Consider only pixels from the reworkSubset NOT in the activeMask
 	set<int>::iterator i  = reworkSubset.begin();
@@ -1167,7 +1190,7 @@ bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> activeMask) {
 		if ( activeMask.find( *i ) != activeMask.end() ) continue;
 
 		// Also skip if the pixel has been previously marked as equalized or impossible to equalize ( > __EQUALIZED)
-		if ( _equalization->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size ) >= Mpx3EqualizationResults::__EQUALIZED ) continue;
+		if ( _equalization->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) >= Mpx3EqualizationResults::__EQUALIZED ) continue;
 
 		// Considering this pixel.  Count it.
 		pixelsConsidered++;
@@ -1193,7 +1216,7 @@ bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> activeMask) {
 		if ( (passedUpTarget && passedUnderTarget) || passedOnTarget ) {
 			pixelsAteqT++;
 			// And tag the pixel as equalized already
-			_equalization->GetEqualizationResults( chipId )->SetStatus( (*i)%__matrix_size, Mpx3EqualizationResults::__EQUALIZED);
+			_equalization->GetEqualizationResults( chipId )->SetStatus( (*i)%__matrix_size, Mpx3EqualizationResults::__EQUALIZED, sel);
 		}
 
 	}
@@ -1248,6 +1271,11 @@ int ThlScan::ShiftAdjustments(SpidrController * /*spidrcontrol*/, set<int> rewor
 	int nPixelsNotInMask = 0;
 	int chipId = 0;
 
+	// select THx
+	Mpx3EqualizationResults::lowHighSel sel;
+	if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) sel = Mpx3EqualizationResults::__ADJ_L;
+	if ( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) sel = Mpx3EqualizationResults::__ADJ_H;
+
 	for( ; i != iE ; i++ ) {
 
 		// First see if the pixel is in the mask.
@@ -1259,10 +1287,10 @@ int ThlScan::ShiftAdjustments(SpidrController * /*spidrcontrol*/, set<int> rewor
 		nPixelsNotInMask++;
 
 		// Also skip if the pixel has been previously marked as equalized or higher status
-		if ( _equalization->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size ) >= Mpx3EqualizationResults::__EQUALIZED ) continue;
+		if ( _equalization->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) >= Mpx3EqualizationResults::__EQUALIZED ) continue;
 
 		// Get the current adj
-		adj = _equalization->GetEqualizationResults( chipId )->GetPixelAdj( (*i)%__matrix_size );
+		adj = _equalization->GetEqualizationResults( chipId )->GetPixelAdj( (*i)%__matrix_size, sel);
 
 		bool specialCase = false;
 		// special cases
@@ -1291,7 +1319,7 @@ int ThlScan::ShiftAdjustments(SpidrController * /*spidrcontrol*/, set<int> rewor
 		// Now set the new value
 		// Set the new adjustment for this particular pixel.
 		// It is different depending on the chipId
-		_equalization->GetEqualizationResults( chipId )->SetPixelAdj( (*i)%__matrix_size , newadj);
+		_equalization->GetEqualizationResults( chipId )->SetPixelAdj( (*i)%__matrix_size , newadj, sel);
 		// Write the adjustment
 		//pix = XtoXY(*i, __matrix_size_x);
 		//spidrcontrol->configPixelMpx3rx(pix.first, pix.second, newadj, 0x0 );

@@ -55,6 +55,7 @@ _ui(new Ui::QCstmEqualization)
 	_minScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size) / 2;
 	_scanDescendant = true;
 	_busy = false;
+	_resdataset = 0x0;
 
 	_stepScan = __default_step_scan;
 	_setId = 0;
@@ -640,8 +641,8 @@ void QCstmEqualization::StartEqualization() {
 		}
 
 		// Use a data set to put the adj matrixes together
-		Dataset * dataset = new Dataset ( __matrix_size_x, __matrix_size_y, _nchipsX*_nchipsY );
-		dataset->clear();
+		if ( ! _resdataset ) _resdataset = new Dataset ( __matrix_size_x, __matrix_size_y, _nchipsX*_nchipsY );
+		_resdataset->clear();
 
 		for ( int i = 0 ; i < chipListSize ; i++ ) {
 
@@ -654,14 +655,14 @@ void QCstmEqualization::StartEqualization() {
 
 			ThlScan * scan_x0 = _scans[_scanIndex - 2];
 			ThlScan * scan_x5 = _scans[_scanIndex - 1];
-			int * adjdata = CalculateInterpolation(_workChipsIndx[i], scan_x0, scan_x5);
+			int * adjdata = CalculateInterpolation( _workChipsIndx[i], scan_x0, scan_x5 );
 			// Stack
-			dataset->setFrame(adjdata, _workChipsIndx[i], 0);
+			_resdataset->setFrame(adjdata, _workChipsIndx[i], 0);
 
 		}
 
 		// Once the frame is complete, extract info
-		int * fulladjdata = dataset->getLayer( 0 );
+		int * fulladjdata = _resdataset->getLayer( 0 );
 		// Plot
 		UpdateHeatMap(fulladjdata, _fullsize_x, _fullsize_y);
 
@@ -691,23 +692,37 @@ void QCstmEqualization::StartEqualization() {
 		// 5) Attempt fine tuning
 		FineTunning( );
 
-	}  /*else if ( EQ_NEXT_STEP( __FineTunning ) ) {
+	}  else if ( EQ_NEXT_STEP( __FineTunning ) ) {
 
-		// Display
-		_ui->_intermediatePlot->clear();
-		//int lastActiveFrame = _ui->_intermediatePlot->GetLastActive();
-		int * adj_matrix = _eqMap[_deviceIndex]->GetAdjustementMatrix();
-		_ui->_intermediatePlot->addData( adj_matrix, 256, 256 );
-		_ui->_intermediatePlot->setActive( 0 );
+		// clear previous data
+		_resdataset->clear();
+		for ( int i = 0 ; i < chipListSize ; i++ ) {
+			int * da = _eqMap[_workChipsIndx[i]]->GetAdjustementMatrix();
+			_resdataset->setFrame(da, _workChipsIndx[i], 0);
+		}
+		int * fulladjdata = _resdataset->getLayer( 0 );
+		UpdateHeatMap(fulladjdata, _fullsize_x, _fullsize_y);
 
-		// 4) Write the result
-		SaveEqualization( chipId );
+		// 4) Write the results
+		SaveEqualization( );
 
-		// Continue if multiple chips need to be equalized
-		if ( _nChips > 1 ) Rewind();
+		// Decide if the equalization needs to be ran again for THH or if we are done
+		if ( _equalizationCombination == __THLandTHH ) {
+			// At this point we finished THL. Go for THH now
+			_equalizationCombination = __OnlyTHH;
+
+		} else {
+			// done
+			_eqStatus = __INIT;
+			_scans.clear();
+			//  Call itself
+			StartEqualization();
+		}
+
+		//Rewind();
 
 	}
-	 */
+
 	// Second) First interpolation.  Coming close to the equalization target
 	////setId = PrepareInterpolation(setId, MPX3RX_DAC_DISC_L);
 
@@ -966,28 +981,23 @@ void QCstmEqualization::DAC_Disc_Optimization (int devId, ScanResults * res_100,
 
 }
 
-void QCstmEqualization::SaveEqualization(int chipId) {
+void QCstmEqualization::SaveEqualization() {
 
-	QString adjfn = "adj_";
-	adjfn += QString::number(chipId, 10);
-	QString maskfn = "mask_";
-	maskfn += QString::number(chipId, 10);
+	int chipListSize = (int)_workChipsIndx.size();
 
-	/*
-	// Use the last scan.
-	int lastScanIndex = (int)_scans.size() - 1;
-	ThlScan * lastScan = 0x0;
-	if( lastScanIndex > 0 ) {
-		lastScan = _scans[lastScanIndex];
-	} else {
-		return;
+	for ( int i = 0 ; i < chipListSize ; i++ ) {
+
+		QString adjfn = "adj_";
+		adjfn += QString::number(_workChipsIndx[i], 10);
+		QString maskfn = "mask_";
+		maskfn += QString::number(_workChipsIndx[i], 10);
+
+		// Binary file
+		_eqMap[_workChipsIndx[i]]->WriteAdjBinaryFile( adjfn );
+		// Masked pixels
+		_eqMap[_workChipsIndx[i]]->WriteMaskBinaryFile( maskfn );
+
 	}
-	 */
-
-	// Binary file
-	_eqMap[chipId]->WriteAdjBinaryFile( adjfn );
-	// Masked pixels
-	_eqMap[chipId]->WriteMaskBinaryFile( maskfn );
 
 }
 
@@ -1265,13 +1275,18 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 		return;
 	}
 
+	// select THx
+	Mpx3EqualizationResults::lowHighSel sel;
+	if ( _steeringInfo[0]->currentDAC_DISC == MPX3RX_DAC_DISC_L ) sel = Mpx3EqualizationResults::__ADJ_L;  // is the same for all chips, can use index 0
+	if ( _steeringInfo[0]->currentDAC_DISC == MPX3RX_DAC_DISC_H ) sel = Mpx3EqualizationResults::__ADJ_H;
+
 	// Adj bits
 	pair<int, int> pix;
 
 	for ( int i = 0 ; i < __matrix_size ; i++ ) {
 
 		pix = XtoXY(i, __array_size_x);
-		spidrcontrol->configPixelMpx3rx(pix.first, pix.second, _eqMap[chipIndex]->GetPixelAdj(i), _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H) );
+		spidrcontrol->configPixelMpx3rx(pix.first, pix.second, _eqMap[chipIndex]->GetPixelAdj(i), _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H), sel );
 
 	}
 
@@ -1738,6 +1753,7 @@ void Mpx3EqualizationResults::WriteAdjBinaryFile(QString fn, lowHighSel sel) {
 	if (!file.open(QIODevice::WriteOnly)) return;
 	if ( sel == __ADJ_L ) file.write(_pixId_Adj_L);
 	if ( sel == __ADJ_H ) file.write(_pixId_Adj_H);
+
 	/*fd.open (fn.toStdString().c_str(), ios::out | ios::binary);
 	cout << "Writing adjustment matrix to: " << fn.toStdString() << endl;
 	// Each adjustment value is written as 8 bits val.  Each value is actually 5 bits.
