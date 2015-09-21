@@ -52,7 +52,6 @@ ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 
 	// Set to true for special scans
 	_stopWhenPlateau = false;
-	_equalizeAllChips = true;
 
 	// number of reactive pixels
 	_nReactivePixels = 0;
@@ -320,6 +319,14 @@ void ThlScan::FineTuning() {
 				// Stop when a number of loops has been reached
 				adjLoops++;
 
+				QString ftLoopProgressS;
+				ftLoopProgressS =  QString::number( adjLoops, 'd', 0 );
+				ftLoopProgressS += "/";
+				ftLoopProgressS += QString::number( _equalization->GetFineTuningLoops(), 'd', 0 );
+				connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelFineTuningLoopProgress, SLOT( setText(QString)) );
+				fillText( ftLoopProgressS );
+				disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelFineTuningLoopProgress, SLOT( setText(QString)) );
+
 				// Shift adj !
 				int nNotInMask = ShiftAdjustments( spidrcontrol, _scheduledForFineTuning, _maskedSet );
 				for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
@@ -572,9 +579,9 @@ void ThlScan::SelectBestAdjFromHistory(int showHeadAndTail) {
 
 		// At this point the best adjustment has been found.
 		// Send it to the data structure
-		_equalization->GetEqualizationResults( chipId )->SetPixelAdj( *i, pixHistory[minDistanceIndx].first, sel );
+		_equalization->GetEqualizationResults( chipId )->SetPixelAdj( (*i)%__matrix_size, pixHistory[minDistanceIndx].first, sel );
 		// And tag as equalized
-		_equalization->GetEqualizationResults( chipId )->SetStatus( *i, Mpx3EqualizationResults::__EQUALIZED, sel);
+		_equalization->GetEqualizationResults( chipId )->SetStatus( (*i)%__matrix_size, Mpx3EqualizationResults::__EQUALIZED, sel);
 
 		if ( cntr < showHeadAndTail || cntr >= (int)_scheduledForFineTuning.size() - showHeadAndTail ) {
 			cout << "[" << *i << "](" << pixHistory[minDistanceIndx].first << ") ";
@@ -843,34 +850,26 @@ void ThlScan::EqualizationScan() {
 
 						int size_in_bytes = -1;
 
-						if ( _equalizeAllChips ) {
 
-							int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
-							// Go through all chips avoiding those not present
-							for ( int idx = 0 ; idx < nChips ; idx++ ) {
+						int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
+						// Go through all chips avoiding those not present
+						for ( int idx = 0 ; idx < nChips ; idx++ ) {
 
-								if ( ! _mpx3gui->getConfig()->detectorResponds( idx ) ) continue;
+							if ( ! _mpx3gui->getConfig()->detectorResponds( idx ) ) continue;
 
-								idDataFetch = _mpx3gui->getConfig()->getDataBufferId( idx );
-								_data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
-
-								// Stack
-								_dataset->setFrame(_data, idx, 0);
-
-							}
-
-							// Once the frame is complete, extract info
-							_data = _dataset->getLayer( 0 );
-							// I am assuming that all the frames have the same size in bytes
-							_pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes * _nchipsX*_nchipsY, _thlItr );
-
-						} else {
-
-
+							idDataFetch = _mpx3gui->getConfig()->getDataBufferId( idx );
 							_data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
-							_pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes, _thlItr );
+
+							// Stack
+							_dataset->setFrame(_data, idx, 0);
 
 						}
+
+						// Once the frame is complete, extract info
+						_data = _dataset->getLayer( 0 );
+						// I am assuming that all the frames have the same size in bytes
+						_pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes * _nchipsX*_nchipsY, _thlItr );
+
 
 					}
 
@@ -926,6 +925,8 @@ void ThlScan::EqualizationScan() {
 
 				QString reactiveLabelS;
 				reactiveLabelS = QString::number( _pixelReactiveInScan, 'd', 0 );
+				reactiveLabelS += "/";
+				reactiveLabelS += QString::number( expectedInOneThlLoop, 'd', 0);
 				// Send signal to Labels.  Making connections one by one.
 				connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelNPixelsReactive, SLOT( setText(QString)) );
 				fillText( reactiveLabelS );
@@ -1332,69 +1333,6 @@ int ThlScan::ShiftAdjustments(SpidrController * /*spidrcontrol*/, set<int> rewor
 	return nPixelsNotInMask;
 }
 
-void ThlScan::ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSubset) {
-
-	set<int>::iterator i = reworkSubset.begin();
-	set<int>::iterator iE = reworkSubset.end();
-
-	pair<int, int> pix;
-	int adj = 0, newadj = 0;
-
-	for( ; i != iE ; i++ ) {
-
-		// If the pixel is already equalized or failed shifting is not needed anymore
-		if ( _equalization->GetEqualizationResults(_deviceIndex)->GetStatus( *i ) >= Mpx3EqualizationResults::__EQUALIZED ) continue;
-
-		// In this case the pixel never actually fired cause it was probably confined
-		//  to the negative THL values.  We try here the minimum possible adjustment
-		//  which effectively pushes a pixel to the right.
-		adj = _equalization->GetEqualizationResults(_deviceIndex)->GetPixelAdj( *i );
-
-		// If a pixel doesn't react at zero then it's very probably a dead pixel
-		if ( _pixelReactiveTHL[ *i ] == __UNDEFINED && ( adj == 0x0 ) ) {
-			// done with this pixel
-			_equalization->GetEqualizationResults(_deviceIndex)->SetStatus( *i, Mpx3EqualizationResults::__EQUALIZATION_FAILED_NONREACTIVE);
-			continue;
-		}
-
-		// A pixel cornered in the invisible region to the left.  Possibly reacting at THL < 0
-		bool invisiblePixel = false;
-		if (  _pixelReactiveTHL[ *i ] == __UNDEFINED && ( adj == __max_adj_val ) ) {
-			newadj = adj - 1; // bring them where they where visible
-			invisiblePixel = true;
-		}
-
-		//if ( _pixelReactiveTHL[ i->first ] == __UNDEFINED ) i->second = 0x0;
-
-		// Otherwise see where it is standing and try the next value
-		// - If the pixel is at the right of the equalization target try
-		//		a higher adjustment until it reaches the max Adj.
-		//- If the pixel is at the left, try a lower adjustment.
-		//if ( _pixelReactiveTHL[ i->first ] > __equalization_target ) i->second++;
-		//else i->second--;
-		if ( ! invisiblePixel ) {
-
-			if ( _pixelReactiveTHL[ *i ] == __UNDEFINED ) newadj = adj - 1;
-			else if ( _pixelReactiveTHL[ *i ] > __equalization_target ) newadj = adj + 1;
-			else if ( _pixelReactiveTHL[ *i ] < __equalization_target ) newadj = adj - 1;
-
-		}
-
-		// Now set the new value
-		// Set the new adjustment for this particular pixel.
-		pix = XtoXY(*i, __matrix_size_x);
-
-		_equalization->GetEqualizationResults(_deviceIndex)->SetPixelAdj(*i, newadj);
-		// Write the adjustment
-		spidrcontrol->configPixelMpx3rx(pix.first, pix.second, newadj, 0x0 );
-
-	}
-
-	// send to chip
-	spidrcontrol->setPixelConfigMpx3rx( _deviceIndex );
-
-}
-
 /**
  * reworkPixelsSet:	Contains the pixels which need rework.
  * reworkSubset: 	Will contain only those from reworkPixelsSet which respect the spacing.
@@ -1654,56 +1592,44 @@ void ThlScan::UpdateHeatMap(int sizex, int sizey) {
 
 
 	// Consider 1)
-	if ( _equalization->scanningAllChips() ) {
 
-		// Initialize if not ready
-		if ( !_plotdata ) {
-			_plotdata = new int[sizex * sizey];
-		}
+	// Initialize if not ready
+	if ( !_plotdata ) {
+		_plotdata = new int[sizex * sizey];
+	}
 
-		unsigned int xswitch = 1;
-		unsigned int yswitch = 0;
-		int xoffset = 0, yoffset = 0;
+	unsigned int xswitch = 1;
+	unsigned int yswitch = 0;
+	int xoffset = 0, yoffset = 0;
 
-		int sizex_chip = sizex / 2;
-		int sizey_chip = sizey / 2;
+	int sizex_chip = sizex / 2;
+	int sizey_chip = sizey / 2;
 
-		int totCntr = 0;
+	int totCntr = 0;
 
-		for ( int chipIdx = 0 ; chipIdx < _mpx3gui->getConfig()->getNDevicesSupported() ; chipIdx++ ) {
+	for ( int chipIdx = 0 ; chipIdx < _mpx3gui->getConfig()->getNDevicesSupported() ; chipIdx++ ) {
 
-			// where to start in X
-			if ( (xswitch>>1 & 0x1) == 0 ) xoffset = 0;
-			else xoffset = sizex_chip;
+		// where to start in X
+		if ( (xswitch>>1 & 0x1) == 0 ) xoffset = 0;
+		else xoffset = sizex_chip;
 
-			// where to start in Y
-			if ( (yswitch>>1 & 0x1) == 0 ) yoffset = sizey_chip;
-			else yoffset = 0;
+		// where to start in Y
+		if ( (yswitch>>1 & 0x1) == 0 ) yoffset = sizey_chip;
+		else yoffset = 0;
 
-			// Now go chip by chip
-			for ( int j = 0 ; j < sizey_chip ; j++ ) {
-				for ( int i = 0 ; i < sizex_chip ; i++ ) {
-					_plotdata[ XYtoX( xoffset + i , yoffset + j, sizex ) ] = _data[ totCntr++ ];
-				}
+		// Now go chip by chip
+		for ( int j = 0 ; j < sizey_chip ; j++ ) {
+			for ( int i = 0 ; i < sizex_chip ; i++ ) {
+				_plotdata[ XYtoX( xoffset + i , yoffset + j, sizex ) ] = _data[ totCntr++ ];
 			}
-
-			xswitch++;
-			yswitch++;
-
 		}
 
-		_heatmap->setData( _plotdata, sizex, sizey);
-
-	} else {
-
-		// Consider 2)
-		// The copy is not needed in this case
-		_heatmap->setData( _data, sizex, sizey);
+		xswitch++;
+		yswitch++;
 
 	}
 
-	//_heatmap->setActive(_frameId++); 		// Activate the last plot (the new one)
-	//_heatmap->addData(_data, sizex, sizey);	// Add a new plot/frame.
+	_heatmap->setData( _plotdata, sizex, sizey);
 
 }
 

@@ -27,8 +27,8 @@ class Mpx3Config: public QObject {
 	uint16_t port;
 	int _trigPeriod_ms;
 	//Operation stuff
-	bool colourMode = false, decodeFrames = false;
-	int OperationMode = -1, PixelDepth = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, TriggerMode =-1, TriggerLength_us = -1, nTriggers = -1;
+	bool colourMode = false, decodeFrames = false, readBothCounters = false;
+	int OperationMode = -1, PixelDepth = -1, Polarity = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, TriggerMode =-1, TriggerLength_us = -1, nTriggers = -1;
 	QVector<int> _dacVals[MPX3RX_DAC_COUNT];
 	// Stepper
 	bool stepperUseCalib = false;
@@ -83,8 +83,10 @@ public:
 	uint16_t getIpAddressPort(){return port;}
 	bool getColourMode(){return colourMode;}
 	bool getDecodeFrames(){return decodeFrames;}
+	bool getReadBothCounters() {return readBothCounters;}
 	int getOperationMode(){return OperationMode;}
 	int getPixelDepth(){return PixelDepth;}
+	int getPolarity(){return Polarity;}
 	int getCsmSpm(){return CsmSpm;  }
 	int getGainMode(){return GainMode;}
 	int getMaxPacketSize(){return MaxPacketSize;}
@@ -112,9 +114,11 @@ private:
 	void IpAdressChanged(QString);
 	void portChanged(int);
 	void colourModeChanged(bool);
+	void readBothCountersChanged(bool);
 	void decodeFramesChanged(bool);
 	void operationModeChanged(int);
 	void pixelDepthChanged(int);
+	void polarityChanged(int);
 	void csmSpmChanged(int);
 	void gainModeChanged(int);
 	void MaxPacketSizeChanged(int);
@@ -159,6 +163,12 @@ void setColourMode(bool mode){
 }
 void updateColourMode(){controller->setColourMode(0, colourMode);}
 
+void setReadBothCounters(bool rbc) {
+	if(rbc != readBothCounters) {
+		readBothCounters=rbc; emit readBothCountersChanged(rbc);
+	}
+	SendConfiguration();
+}
 
 void setDecodeFrames(bool decode){
 	if(decode != decodeFrames){
@@ -208,6 +218,14 @@ void setGainMode(int newVal){
 }
 void updateGainMode(){controller->setGainMode(0, GainMode);}
 
+void setPolarity(int newVal){
+	if(newVal != Polarity){
+		Polarity = newVal; emit polarityChanged(newVal);
+		//updateGainMode();
+	}
+	SendConfiguration();
+}
+void updatePolarity(){controller->setPolarity(0, Polarity);}
 
 void setMaxPacketSize(int newVal){
 	if(newVal != MaxPacketSize){

@@ -54,14 +54,14 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
+         <item row="4" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
             <string>Pixel Depth</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="4" column="1">
           <widget class="QSpinBox" name="pixelDepthSpinner">
            <property name="keyboardTracking">
             <bool>false</bool>
@@ -71,14 +71,14 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="0">
+         <item row="6" column="0">
           <widget class="QLabel" name="label_5">
            <property name="text">
             <string>Csm Spm</string>
            </property>
           </widget>
          </item>
-         <item row="5" column="1">
+         <item row="6" column="1">
           <widget class="QSpinBox" name="csmSpmSpinner">
            <property name="keyboardTracking">
             <bool>false</bool>
@@ -88,21 +88,21 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="0">
+         <item row="7" column="0">
           <widget class="QLabel" name="label_6">
            <property name="text">
             <string>Gain Mode</string>
            </property>
           </widget>
          </item>
-         <item row="8" column="0">
+         <item row="9" column="0">
           <widget class="QLabel" name="label_7">
            <property name="text">
             <string>Trigger Mode</string>
            </property>
           </widget>
          </item>
-         <item row="8" column="1">
+         <item row="9" column="1">
           <widget class="QSpinBox" name="triggerModeSpinner">
            <property name="keyboardTracking">
             <bool>false</bool>
@@ -112,14 +112,14 @@
            </property>
           </widget>
          </item>
-         <item row="9" column="0">
+         <item row="10" column="0">
           <widget class="QLabel" name="label_9">
            <property name="text">
             <string>Number of Triggers</string>
            </property>
           </widget>
          </item>
-         <item row="9" column="1">
+         <item row="10" column="1">
           <widget class="QSpinBox" name="nTriggersSpinner">
            <property name="keyboardTracking">
             <bool>false</bool>
@@ -129,14 +129,14 @@
            </property>
           </widget>
          </item>
-         <item row="10" column="0">
+         <item row="11" column="0">
           <widget class="QLabel" name="label_8">
            <property name="text">
             <string>Trigger Length (us)</string>
            </property>
           </widget>
          </item>
-         <item row="10" column="1">
+         <item row="11" column="1">
           <widget class="QSpinBox" name="triggerLengthSpinner">
            <property name="keyboardTracking">
             <bool>false</bool>
@@ -146,32 +146,42 @@
            </property>
           </widget>
          </item>
-         <item row="11" column="1">
+         <item row="14" column="1">
           <widget class="QCheckBox" name="ColourModeCheckBox">
            <property name="text">
             <string>Colour Mode</string>
            </property>
           </widget>
          </item>
-         <item row="12" column="1">
+         <item row="16" column="1">
           <widget class="QCheckBox" name="decodeFramesCheckbox">
            <property name="text">
             <string>Decode Frames</string>
            </property>
           </widget>
          </item>
-         <item row="6" column="1">
+         <item row="7" column="1">
           <widget class="QComboBox" name="gainModeCombobox"/>
          </item>
-         <item row="4" column="0">
+         <item row="5" column="0">
           <widget class="QLabel" name="label_16">
            <property name="text">
             <string>Polarity</string>
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
+         <item row="5" column="1">
           <widget class="QComboBox" name="polarityComboBox"/>
+         </item>
+         <item row="13" column="1">
+          <widget class="QCheckBox" name="readBothCountersCheckBox">
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
+           <property name="text">
+            <string>Read both Counters</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>

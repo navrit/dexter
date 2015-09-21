@@ -103,7 +103,6 @@ public:
 	set<int> ExtractPixelsNotOnTarget();
 	int ExtractReworkSubsetSpacingAware(set<int> & reworkPixelsSet, set<int> & reworkSubset, int spacing);
 	bool TwoPixelsRespectMinimumSpacing(int pix1, int pix2, int spacing);
-	void ShiftAdjustments(SpidrController *, set<int> reworkSubset);
 	void SelectBestAdjFromHistory(int showHeadAndTail);
 	int ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSubset, set<int> activeMask);
 	bool AdjScanCompleted(set<int> reworkSubset, set<int> activeMask);
@@ -174,7 +173,6 @@ private:
 	int _numberOfLoops;
 	bool _blindScan;
 	int _DAC_Disc_code;
-	bool _equalizeAllChips;
 	int _nchipsX;
 	int _nchipsY;
 	// IP source address (SPIDR network interface)

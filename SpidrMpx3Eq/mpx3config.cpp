@@ -45,7 +45,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
 	//SetAllAdjustmentBits(0x0, 0x0);
 
 	// OMR
-	spidrcontrol->setPolarity( deviceIndex, false );		// true: Holes collection
+	spidrcontrol->setPolarity( deviceIndex, true );		// true: Holes collection
 	//_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
 	//_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
 
@@ -69,7 +69,8 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
 
 	// Other OMR
 	spidrdaq->setDecodeFrames(  getDecodeFrames() ); //  true );
-	spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth() );
+	cout << " | (" << getPixelDepth() << ":" << getReadBothCounters() << ") ";
+	spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters() ); // third parameter : true = read two counters
 	spidrdaq->setPixelDepth( getPixelDepth() );
 	spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
 
@@ -132,7 +133,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, scan_config_paramete
 
 	// Other OMR
 	spidrdaq->setDecodeFrames(  getDecodeFrames() ); //  true );
-	spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth() );
+	spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters() ); // third parameter : true = read two counters
 	spidrdaq->setPixelDepth( getPixelDepth() );
 	spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
 

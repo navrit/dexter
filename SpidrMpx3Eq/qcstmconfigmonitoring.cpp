@@ -23,6 +23,9 @@ ui(new Ui::QCstmConfigMonitoring) {
 	ui->gainModeCombobox->addItem("High Gain Mode");
 	ui->gainModeCombobox->addItem("Super Low Gain Mode");
 
+	ui->polarityComboBox->addItem("Positive");
+	ui->polarityComboBox->addItem("Negative");
+
 	ui->motorDial->setNotchesVisible(true);
 
 	_stepperThread = 0x0;
@@ -231,6 +234,10 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
 	connect(ui->ColourModeCheckBox, SIGNAL(clicked(bool)), config, SLOT(setColourMode(bool)));
 	connect(config, SIGNAL(colourModeChanged(bool)), ui->ColourModeCheckBox, SLOT(setChecked(bool)));
 
+	connect(ui->readBothCountersCheckBox, SIGNAL(clicked(bool)), config, SLOT(setReadBothCounters(bool)));
+	connect(config, SIGNAL(readBothCountersChanged(bool)), ui->readBothCountersCheckBox, SLOT(setChecked(bool)));
+
+
 	connect(ui->csmSpmSpinner, SIGNAL(valueChanged(int)), config, SLOT(setCsmSpm(int)));
 	connect(config, SIGNAL(csmSpmChanged(int)), ui->csmSpmSpinner, SLOT(setValue(int)));
 
@@ -239,6 +246,9 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
 
 	connect(ui->gainModeCombobox, SIGNAL(activated(int)), config, SLOT(setGainMode(int)));
 	connect(config, SIGNAL(gainModeChanged(int)), ui->gainModeCombobox, SLOT(setCurrentIndex(int)));
+
+	connect(ui->polarityComboBox, SIGNAL(activated(int)), config, SLOT(setPolarity(int)));
+	connect(config, SIGNAL(polarityChanged(int)), ui->gainModeCombobox, SLOT(setCurrentIndex(int)));
 
 	connect(ui->maxPacketSizeSpinner, SIGNAL(valueChanged(int)), config, SLOT(setMaxPacketSize(int)));
 	connect(config, SIGNAL(MaxPacketSizeChanged(int)), ui->maxPacketSizeSpinner, SLOT(setValue(int)));

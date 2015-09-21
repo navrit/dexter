@@ -29,7 +29,7 @@ void DataTakingThread::ConnectToHardware() {
 
 	// I need to do this here and not when already running the thread
 	// Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
-	if( spidrcontrol ) { spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
+	if ( spidrcontrol ) { spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
 	else { _srcAddr = 0; }
 
 }
@@ -72,8 +72,9 @@ void DataTakingThread::run() {
 	int * framedata;
 	emit progress( nFramesReceived );
 	bool doReadFrames = true;
+	unsigned int cntrBothCounters = 0;
 
-	while ( spidrdaq->hasFrame( _mpx3gui->getConfig()->getTriggerLength() + 20  ) ) { // 20ms timeout
+	while ( spidrdaq->hasFrame( (_mpx3gui->getConfig()->getTriggerLength()/1000) + 20  ) ) { // 20ms timeout
 
 		int size_in_bytes = -1;
 		QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
@@ -97,42 +98,61 @@ void DataTakingThread::run() {
 				// In color mode the separation of thresholds needs to be done
 				if( _mpx3gui->getConfig()->getColourMode() ) {
 
-					int size = size_in_bytes / 4;
-					int sizeReduced = size / 4;    // 4 thresholds per 110um pixel
+					if ( ( cntrBothCounters%2 == 0 && _mpx3gui->getConfig()->getReadBothCounters() ) ||  !_mpx3gui->getConfig()->getReadBothCounters() ) {
+						//cout << "low : " << _mpx3gui->getConfig()->getReadBothCounters() << "," << cntrBothCounters << endl;
+						int size = size_in_bytes / 4;
+						int sizeReduced = size / 4;    // 4 thresholds per 110um pixel
 
-					QVector<int> *th0 = new QVector<int>(sizeReduced,0);
-					QVector<int> *th2 = new QVector<int>(sizeReduced,0);
-					QVector<int> *th4 = new QVector<int>(sizeReduced,0);
-					QVector<int> *th6 = new QVector<int>(sizeReduced,0);
+						QVector<int> *th0 = new QVector<int>(sizeReduced,0);
+						QVector<int> *th2 = new QVector<int>(sizeReduced,0);
+						QVector<int> *th4 = new QVector<int>(sizeReduced,0);
+						QVector<int> *th6 = new QVector<int>(sizeReduced,0);
 
-					SeparateThresholds(framedata, size, th0, th2, th4, th6, sizeReduced);
+						SeparateThresholds(framedata, size, th0, th2, th4, th6, sizeReduced);
 
-					_mpx3gui->addFrame(th0->data(), i, 0);
-					delete th0;
+						_mpx3gui->addFrame(th0->data(), i, 0);
+						delete th0;
 
-					_mpx3gui->addFrame(th2->data(), i, 2);
-					delete th2;
+						_mpx3gui->addFrame(th2->data(), i, 2);
+						delete th2;
 
-					_mpx3gui->addFrame(th4->data(), i, 4);
-					delete th4;
+						_mpx3gui->addFrame(th4->data(), i, 4);
+						delete th4;
 
-					_mpx3gui->addFrame(th6->data(), i, 6);
-					delete th6;
+						_mpx3gui->addFrame(th6->data(), i, 6);
+						delete th6;
+					}
+
+					if ( cntrBothCounters%2 == 1 && _mpx3gui->getConfig()->getReadBothCounters() ) {
+
+						cout << "high" << endl;
+
+						int size = size_in_bytes / 4;
+						int sizeReduced = size / 4;    // 4 thresholds per 110um pixel
+
+						QVector<int> *th1 = new QVector<int>(sizeReduced,0);
+						QVector<int> *th3 = new QVector<int>(sizeReduced,0);
+						QVector<int> *th5 = new QVector<int>(sizeReduced,0);
+						QVector<int> *th7 = new QVector<int>(sizeReduced,0);
+
+						SeparateThresholds(framedata, size, th1, th3, th5, th7, sizeReduced);
+
+						_mpx3gui->addFrame(th1->data(), i, 1);
+						delete th1;
+
+						_mpx3gui->addFrame(th3->data(), i, 3);
+						delete th3;
+
+						_mpx3gui->addFrame(th5->data(), i, 5);
+						delete th5;
+
+						_mpx3gui->addFrame(th7->data(), i, 7);
+						delete th7;
+					}
+
 
 				} else {
 					_mpx3gui->addFrame(framedata, i, 0);
-
-/*
-					// dump
-					ofstream of("data.txt", std::ofstream::out);
-					pair<int, int> pix;
-					for(int i = 0 ; i < __matrix_size_x*__matrix_size_y ; i++) {
-						pix = XtoXY( i, __matrix_size_x );
-						of << framedata[i] << " ";
-						if(pix.first == __matrix_size_x-1) of << endl;
-					}
-					of.close();
-*/
 				}
 
 			}
@@ -164,6 +184,8 @@ void DataTakingThread::run() {
 		// If called to Stop
 		if ( _stop ) break;
 
+		cntrBothCounters++;
+		//cout << cntrBothCounters << endl;
 	}
 
 	// Force last draw if not reached
@@ -175,6 +197,8 @@ void DataTakingThread::run() {
 			emit reload_layer(0);
 		}
 	}
+
+	cout << "local counter : " << cntrBothCounters << endl;
 
 	cout << "received " << nFramesReceived
 			<< " | lost frames : " << spidrdaq->framesLostCount()
@@ -243,11 +267,11 @@ void DataTakingThread::SeparateThresholds(int * data, int size, QVector<int> * t
 	int c0 = 0, c2 = 0, c4 = 0, c6 = 0;
 
 	for (int j = 0 ; j < __matrix_size_y ; j++) {
-	//for (int j = __matrix_size_y-1 ; j >= 0 ; j--) {
+		//for (int j = __matrix_size_y-1 ; j >= 0 ; j--) {
 
 		redi = 0;
 		for (int i = 0 ; i < __matrix_size_x  ; i++) {
-		//for (int i = __matrix_size_x-1 ; i >= 0  ; i--) {
+			//for (int i = __matrix_size_x-1 ; i >= 0  ; i--) {
 
 			indx = XYtoX( i, j, __matrix_size_x);
 			indxRed = XYtoX( redi, redj, __matrix_size_x / 2); // This index should go up to 128*128
@@ -278,7 +302,7 @@ void DataTakingThread::SeparateThresholds(int * data, int size, QVector<int> * t
 			if( (i % 2) == 1 && (j % 2) == 1) {
 				(*th0)[indxRed] = data[indx]; // P1
 			}
-			*/
+			 */
 
 			if (i % 2 == 1) redi++;
 			//if (i % 2 == 0) redi++;

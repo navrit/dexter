@@ -77,8 +77,8 @@ public:
 
 	void ExtrapolateAdjToTarget(int target, double eta_Adj_THL, lowHighSel sel = __ADJ_L);
 
-	void WriteAdjBinaryFile(QString fn, lowHighSel sel = __ADJ_L);
-	void ReadAdjBinaryFile(QString fn, lowHighSel sel = __ADJ_L);
+	void WriteAdjBinaryFile(QString fn);
+	void ReadAdjBinaryFile(QString fn);
 	void WriteMaskBinaryFile(QString fn);
 	void ReadMaskBinaryFile(QString fn);
 
@@ -168,7 +168,8 @@ public:
 	int * CalculateInterpolation(int devId, ThlScan * scan_x0, ThlScan * scan_x5);// ScanResults * res_x0, ScanResults * res_x5);
 	void ScanOnInterpolation();
 	void Rewind();
-	void InitEqualization(int chipId); //!< chipId = -1  will equalize all available chips at once
+	void InitEqualization(int chipId); //<! chipId = -1  will equalize all available chips at once
+	void NewRunInitEqualization(); //<! partial initialization
 	bool pixelInScheduledChips(int);
 
 	void DAC_Disc_Optimization_DisplayResults(ScanResults * res);
@@ -223,6 +224,10 @@ public:
 	string BuildChartName(int val, QString leg);
 
 	void LoadEqualization();
+	void ShowEqualization(Mpx3EqualizationResults::lowHighSel sel);
+
+	void InitializeEqualizationStructure(); //<! on a normal run, when the user load the equalization after connecting
+	void RewindEqualizationStructure();
 
 	typedef enum {
 		__INIT = 0,
@@ -284,6 +289,7 @@ private:
 		__nEQTypes
 	};
 	int _equalizationType;
+	Mpx3EqualizationResults::lowHighSel _equalizationShow;
 	vector<equalizationSteeringInfo *> _steeringInfo;
 
 	// IP source address (SPIDR network interface)
@@ -318,6 +324,7 @@ void ConnectionStatusChanged();
 void StopEqualization();
 void CleanEqualization();
 void setEqualizationTHLTHH(int);
+void setEqualizationShowTHLTHH(int);
 void setEqualizationTHLType(int);
 void ShowEqualizationForChip(bool checked);
 
