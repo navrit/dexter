@@ -133,6 +133,13 @@ void ReceiverThread::readDatagrams()
 	  // (subsequent counters are initialized in nextFrameBuffer())
 	  _packetsLostFrame[0] = _expPacketsPerFrame;
 	}
+      else
+	{
+	  // For the 'two counters' readout the sequence number continues to
+	  // increase for the next frame containing the data from the second
+	  // counter (added 21 Sep 2015)
+	  sequence_nr %= _expPacketsPerFrame;
+	}
 
       if( shutter_cnt != _currShutterCnt ||
 	  // Another frame with the same shutter counter as previously
