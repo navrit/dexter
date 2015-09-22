@@ -74,7 +74,7 @@ void DataTakingThread::run() {
 	bool doReadFrames = true;
 	unsigned int cntrBothCounters = 0;
 
-	while ( spidrdaq->hasFrame( (_mpx3gui->getConfig()->getTriggerLength()/1000) + 20  ) ) { // 20ms timeout
+	while ( spidrdaq->hasFrame( (_mpx3gui->getConfig()->getTriggerLength()/1000) + 20  ) ) { // 20ms over the trigger length timeout
 
 		int size_in_bytes = -1;
 		QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
@@ -162,7 +162,7 @@ void DataTakingThread::run() {
 		nFramesReceived++;
 		// Release frame
 		spidrdaq->releaseFrame();
-
+		cntrBothCounters++;
 
 		// Get to draw if possible
 		if ( _canDraw ) {
@@ -184,8 +184,6 @@ void DataTakingThread::run() {
 		// If called to Stop
 		if ( _stop ) break;
 
-		cntrBothCounters++;
-		//cout << cntrBothCounters << endl;
 	}
 
 	// Force last draw if not reached
@@ -205,6 +203,11 @@ void DataTakingThread::run() {
 			<< " | lost packets : " << spidrdaq->packetsLostCount()
 			<< endl;
 
+	QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
+	for(int i = 0 ; i < activeDevices.size() ; i++) {
+		cout << "devId = " << i << " | packetsReceivedCount = " << spidrdaq->packetsReceivedCount( i ) << endl;
+		cout << "devId = " << i << " | packetSize = " << spidrdaq->packetSize( i ) << endl;
+	}
 	// When the process is finished the thread sends a message
 	//  to inform QCstmGLVisualization that it's done.
 	// QCstmGLVisualization could be having a hard time trying

@@ -119,6 +119,13 @@
          <layout class="QVBoxLayout" name="verticalLayout_9">
           <item>
            <layout class="QGridLayout" name="gridLayout">
+            <item row="0" column="1">
+             <widget class="QSpinBox" name="nTriggersSpinBox">
+              <property name="keyboardTracking">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
             <item row="1" column="3">
              <widget class="QLabel" name="label_2">
               <property name="text">
@@ -167,10 +174,10 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="6">
-             <widget class="QLabel" name="eqLabelSpacing">
-              <property name="text">
-               <string>Spacing</string>
+            <item row="0" column="7">
+             <widget class="QSpinBox" name="spacingSpinBox">
+              <property name="keyboardTracking">
+               <bool>false</bool>
               </property>
              </widget>
             </item>
@@ -181,22 +188,22 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="7">
-             <widget class="QSpinBox" name="spacingSpinBox">
-              <property name="keyboardTracking">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QSpinBox" name="nTriggersSpinBox">
-              <property name="keyboardTracking">
-               <bool>false</bool>
+            <item row="0" column="6">
+             <widget class="QLabel" name="eqLabelSpacing">
+              <property name="text">
+               <string>Spacing</string>
               </property>
              </widget>
             </item>
             <item row="1" column="1">
              <widget class="QSpinBox" name="eqMinSpinBox">
+              <property name="keyboardTracking">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="7">
+             <widget class="QSpinBox" name="eqStepSpinBox">
               <property name="keyboardTracking">
                <bool>false</bool>
               </property>
@@ -209,10 +216,13 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="7">
-             <widget class="QSpinBox" name="eqStepSpinBox">
-              <property name="keyboardTracking">
-               <bool>false</bool>
+            <item row="3" column="4">
+             <widget class="QLabel" name="eqLabelLoopProgress">
+              <property name="toolTip">
+               <string>Mask loop progress</string>
+              </property>
+              <property name="text">
+               <string/>
               </property>
              </widget>
             </item>
@@ -252,10 +262,10 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="4">
-             <widget class="QLabel" name="eqLabelLoopProgress">
+            <item row="3" column="7">
+             <widget class="QLabel" name="eqLabelFineTuningLoopProgress">
               <property name="toolTip">
-               <string>Mask loop progress</string>
+               <string>Fine tuning loop progress</string>
               </property>
               <property name="text">
                <string/>
@@ -269,16 +279,6 @@
               </property>
               <property name="text">
                <string>FTLoop:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="7">
-             <widget class="QLabel" name="eqLabelFineTuningLoopProgress">
-              <property name="toolTip">
-               <string>Fine tuning loop progress</string>
-              </property>
-              <property name="text">
-               <string/>
               </property>
              </widget>
             </item>
@@ -302,13 +302,6 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="thxLabel">
-              <property name="text">
-               <string>THL:</string>
-              </property>
-             </widget>
-            </item>
             <item row="3" column="1">
              <widget class="QLabel" name="eqLabelTHLCurrentValue">
               <property name="layoutDirection">
@@ -329,6 +322,13 @@
               </property>
               <property name="text">
                <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="thxLabel">
+              <property name="text">
+               <string>THL:</string>
               </property>
              </widget>
             </item>

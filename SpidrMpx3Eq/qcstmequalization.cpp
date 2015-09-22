@@ -76,7 +76,7 @@ _ui(new Ui::QCstmEqualization)
 
 	_checkBoxes.clear();
 
-	_fineTuningLoops = 5;
+	_fineTuningLoops = 32;
 	_ui->fineTuningLoopsSpinBox->setValue( _fineTuningLoops );
 
 	_ui->equalizationTHLTHHCombo->addItem( QString("THL and THH") );
@@ -529,6 +529,24 @@ equalizationSteeringInfo * QCstmEqualization::GetSteeringInfo(int chipIdx) {
 	return 0x0; // otherwise
 }
 
+BarChart * QCstmEqualization::GetAdjBarChart(int chipIdx, Mpx3EqualizationResults::lowHighSel sel) {
+
+	// There should be twice as many AdjBarChart objects as chips to be equalized
+	//  Low and High
+	if ( _workChipsIndx.size() != _adjchart_L.size() ) return 0x0;
+	if ( _workChipsIndx.size() != _adjchart_H.size() ) return 0x0;
+
+	for (int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
+		// return the corresponding results Ptr
+		if ( _workChipsIndx[i] == chipIdx ) {
+			if ( sel == Mpx3EqualizationResults::__ADJ_L) return _adjchart_L[i];
+			if ( sel == Mpx3EqualizationResults::__ADJ_H) return _adjchart_H[i];
+		}
+	}
+
+	return 0x0; // otherwise
+}
+
 BarChart * QCstmEqualization::GetBarChart(int chipIdx) {
 
 	// There should be as results objects as chips to be equalized
@@ -616,8 +634,8 @@ void QCstmEqualization::KeepOtherChipsQuiet() {
 		for ( int i = 0 ; i < chipListSize ; i++ ) if ( _workChipsIndx[i] == idx ) continue;
 
 		//
-		SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_0,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size) / 2);
-		SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_1,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].size) / 2);
+		SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_0,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size) / 4);
+		SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_1,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].size) / 4);
 
 	}
 
@@ -732,6 +750,14 @@ void QCstmEqualization::StartEqualization() {
 		PrepareInterpolation_0x0();
 
 	} else if ( EQ_NEXT_STEP(__PrepareInterpolation_0x0) ) {
+
+		// Results
+		int nNonReactive = _scans[_scanIndex - 1]->NumberOfNonReactingPixels();
+		// Correct in case not all chips are active
+		nNonReactive -= (_mpx3gui->getConfig()->getNDevicesSupported() - chipListSize)*__matrix_size;
+		if ( nNonReactive > 0 ) {
+			cout << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
+		}
 
 		for ( int i = 0 ; i < chipListSize ; i++ ) {
 			// Results
@@ -1059,6 +1085,10 @@ int QCstmEqualization::FineTunning() {
 	} else {
 		return -1;
 	}
+
+	// Use its own previous limits
+	lastScan->SetMinScan( lastScan->GetDetectedHighScanBoundary() );
+	lastScan->SetMaxScan( lastScan->GetDetectedLowScanBoundary() );
 
 	lastScan->DoScan( _steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1 ); // -1: Do all loops
 	lastScan->SetScanType( ThlScan::__FINE_TUNNING1_SCAN );
@@ -1477,7 +1507,7 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
 	spidrcontrol->setPolarity( _deviceIndex, true );		// true: Holes collection
 	//spidrcontrol->setInternalTestPulse( true ); 			// Internal tests pulse
 	spidrcontrol->setPixelDepth( devId, 12 );
-	spidrcontrol->setColourMode( devId, false ); 	// Fine Pitch
+	spidrcontrol->setColourMode( devId, _mpx3gui->getConfig()->getColourMode() ); 		// false = Fine Pitch
 	spidrcontrol->setCsmSpm( devId, 0 );				// Single Pixel mode
 
 	////////////////////////////////////////////////////////////////////////////////
@@ -1536,8 +1566,68 @@ void QCstmEqualization::InitializeEqualizationStructure(){
 
 	int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
 	for(int i = 0 ; i < nChips ; i++) {
+
+		if ( ! _mpx3gui->getConfig()->detectorResponds( i ) ) continue;
+
+		// save working indexes
+		_workChipsIndx.push_back( i );
+
+		// build the results
 		_eqMap[ i ] = new Mpx3EqualizationResults;
+
+		// I need a number of objects to draw the adjustments low and high
+		for(int j = 0 ; j < 2 ; j++) { // low and high
+
+			BarChart * nbc = new BarChart( GetUI()->layoutWidget );
+			nbc->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
+			QString title = "[";
+			title += QString::number(i, 'd', 0);
+			BarChartProperties cprop;
+
+			if ( j%2 == 0 ) {
+
+				title += "] THL";
+
+				cprop.name = title.toStdString();
+				cprop.xAxisLabel = "adj";
+				cprop.yAxisLabel = "entries";
+				cprop.min_x = 0;
+				cprop.max_x = 31;
+				cprop.nBins = 32;
+				cprop.color_r = 0;
+				cprop.color_g = 0;
+				cprop.color_b = 127;
+				nbc->AppendSet( cprop );
+
+				_adjchart_L.push_back( nbc );
+
+			} else if ( j%2 == 1 ) {
+
+				title += "] THH";
+
+				cprop.name = title.toStdString();
+				cprop.xAxisLabel = "adj";
+				cprop.yAxisLabel = "entries";
+				cprop.min_x = 0;
+				cprop.max_x = 31;
+				cprop.nBins = 32;
+				cprop.color_r = 127;
+				cprop.color_g = 0;
+				cprop.color_b = 0;
+				nbc->AppendSet( cprop );
+
+				_adjchart_H.push_back( nbc );
+			}
+
+			// set as parent the same as the one delivered in the UI
+			_ui->horizontalLayoutEqHistos->addWidget( nbc );
+
+			// hide for now
+			nbc->hide();
+
+		}
 	}
+
 
 }
 
@@ -1612,6 +1702,9 @@ void QCstmEqualization::ShowEqualization(Mpx3EqualizationResults::lowHighSel sel
 		//}
 		// Stack
 		_resdataset->setFrame(adj_matrix, i, 0);
+
+		// Show the related histograms
+		//GetAdjBarChart(i, sel)->show();
 
 	}
 
@@ -1933,7 +2026,8 @@ void Mpx3EqualizationResults::ReadAdjBinaryFile(QString fn) {
 	}
 	int cntr = 0;
 	for ( int i = __matrix_size ; i < 2*__matrix_size ; i++) {
-		_pixId_Adj_H[cntr++] = temp_pixId_Adj_X[i];
+		if ( readSize>65536 ) _pixId_Adj_H[cntr++] = temp_pixId_Adj_X[i];
+		else _pixId_Adj_H[cntr++] = 0;
 	}
 
 }
@@ -2112,11 +2206,12 @@ void QCstmEqualization::SetDAC_propagateInGUI(SpidrController * spidrcontrol, in
 	// Adjust the sliders and the SpinBoxes to the new value
 	connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
 	// Get the DAC back just to be sure and then slide&spin
-	int dacVal = 0;
-	spidrcontrol->getDac( devId,  dac_code, &dacVal);
+	//int dacVal = 0;
+	//spidrcontrol->getDac( devId,  dac_code, &dacVal);
 	// SlideAndSpin works with the DAC index, no the code.
 	int dacIndex = _mpx3gui->getDACs()->GetDACIndex( dac_code );
-	slideAndSpin( dacIndex,  dacVal );
+	//slideAndSpin( dacIndex,  dacVal );
+	slideAndSpin( dacIndex,  dac_val );
 	disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
 
 	// Set in the local config.  This function also takes the dac_index and not the dac_code

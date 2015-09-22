@@ -258,11 +258,21 @@ void ThlScan::FineTuning() {
 		_equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di]); //
 
 		// While equalizing one threshold the other should be set at a very high value
-		//   to keep that circuit from reacting.  Set it at half range.
+		//   to keep that circuit from reacting.  Set it at ~100
 		if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
-			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].size)/2 );
+			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].size)/4 );
+			if ( _mpx3gui->getConfig()->getColourMode() ) {
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_3, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_3].size)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_5, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5].size)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_7, 128 );
+			}
 		} else if (  _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
-			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_0, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size)/2 );
+			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_0, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size)/4 );
+			if ( _mpx3gui->getConfig()->getColourMode() ) {
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_2, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_2].size)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_4, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_4].size)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_6, 128 );
+			}
 		}
 
 	}
@@ -363,6 +373,15 @@ void ThlScan::FineTuning() {
 					// Set the threshold on all chips
 					for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
 						SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], _dac_code, _thlItr );
+						if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_0 ) {
+							SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_2, _thlItr );
+							SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_4, _thlItr );
+							SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_6, _thlItr );
+						} else if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_1 ) {
+							SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_3, _thlItr );
+							SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_5, _thlItr );
+							SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_7, _thlItr );
+						}
 					}
 
 					// Start the trigger as configured
@@ -676,7 +695,27 @@ void ThlScan::DumpAdjReactTHLHistory(int showHeadAndTail) {
 		cntr++;
 
 	}
-	cout << endl;
+	cout << endl << "       And a list of pixels stuck non-reactive (if any) --> " << endl;
+
+	// search for a few special non-reactive pixels
+	i  = _adjReactiveTHLFineTuning.begin();
+	int cntrROI = 0;
+	for ( ; i != iE ; i++ ) {
+
+		vi  = (*i).second.begin();
+		viE = (*i).second.end();
+		if( (*vi).second == __UNDEFINED ) { // interesting pixel
+			cout << "       " << "[" << (*i).first << "]{";
+			for ( ; vi != viE ; vi++ ) {
+
+				cout << "(" << (*vi).first << "," << (*vi).second << ")";
+				if ( (vi+1) != viE ) cout << ", ";
+
+			}
+			cout << "}" << endl;
+			if(cntrROI++ > 5) break; // only a few of these pixels, finish here
+		}
+	}
 
 }
 
@@ -687,16 +726,28 @@ void ThlScan::SetDAC_propagateInGUI(SpidrController * spidrcontrol, int devId, i
 	// Adjust the sliders and the SpinBoxes to the new value
 	connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
 	// Get the DAC back just to be sure and then slide&spin
-	int dacVal = 0;
-	spidrcontrol->getDac( devId,  dac_code, &dacVal);
+	//int dacVal = 0;
+	//spidrcontrol->getDac( devId,  dac_code, &dacVal);
 	// SlideAndSpin works with the DAC index, no the code.
 	int dacIndex = _mpx3gui->getDACs()->GetDACIndex( dac_code );
-	slideAndSpin( dacIndex,  dacVal );
+	//slideAndSpin( dacIndex,  dacVal );
+	slideAndSpin( dacIndex,  dac_val );
 	disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
 
 	// Set in the local config.  This function also takes the dac_index and not the dac_code
 	_mpx3gui->getDACs()->SetDACValueLocalConfig( devId, dacIndex, dac_val);
 
+}
+
+bool ThlScan::ThereIsAFalse(vector<bool> v){
+
+	vector<bool>::iterator i  = v.begin();
+	vector<bool>::iterator iE = v.end();
+
+	for ( ; i != iE ; i++ ) {
+		if ( (*i) == false ) return true;
+	}
+	return false;
 }
 
 void ThlScan::EqualizationScan() {
@@ -747,11 +798,21 @@ void ThlScan::EqualizationScan() {
 		}
 
 		// While equalizing one threshold the other should be set at a very high value
-		//   to keep that circuit from reacting.  Set it at half range.
+		//   to keep that circuit from reacting.  Set it at ~100
 		if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
-			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].size)/2 );
+			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].size)/4 );
+			if ( _mpx3gui->getConfig()->getColourMode() ) {
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_3, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_3].size)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_5, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5].size)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_7, 128 );
+			}
 		} else if (  _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
-			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_0, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size)/2 );
+			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_0, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size)/4 );
+			if ( _mpx3gui->getConfig()->getColourMode() ) {
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_2, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_2].size)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_4, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_4].size)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_6, 128 );
+			}
 		}
 
 	}
@@ -801,7 +862,7 @@ void ThlScan::EqualizationScan() {
 			_pixelReactiveInScan = 0;
 			finishTHLLoop = false;
 			accelerationFlagCntr = 0;
-			bool doReadFrames = true;
+			vector<bool> doReadFrames;
 			accelerationApplied = false;
 
 			// limits from the GUI (no signals on them) TODO
@@ -828,25 +889,38 @@ void ThlScan::EqualizationScan() {
 				// Set the threshold on all chips
 				for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
 					SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], _dac_code, _thlItr );
+					if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_0 ) {
+						SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_2, _thlItr );
+						SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_4, _thlItr );
+						SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_6, _thlItr );
+					} else if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_1 ) {
+						SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_3, _thlItr );
+						SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_5, _thlItr );
+						SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_7, _thlItr );
+					}
 				}
 
 				// Start the trigger as configured
 				spidrcontrol->startAutoTrigger();
 
-				// See if there is a frame available
-				// I should get as many frames as triggers
-				// Assume the frame won't come
-				doReadFrames = false;
+				// flush the history of good/bad frames
+				doReadFrames.clear();
+
+				// See if there is a frame available.  I should get as many frames as triggers
+				int framesCntr = 0;
 				while ( _spidrdaq->hasFrame( 25 ) ) { // 5ms for eq + 20ms transfer over the network
 
-					// A frame is here
-					doReadFrames = true;
+					// assume a good frame
+					doReadFrames.push_back( true );
+
 					// Check quality
 					if ( _spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected
-						doReadFrames = false;
+						// schedule a bad frame.  Don't 'continue' the loop or release frame just yet !
+						cout << "bad frame, thl: " << _thlItr << endl;
+						doReadFrames[framesCntr] = false;
 					}
 
-					if ( doReadFrames ) {
+					if ( doReadFrames[framesCntr] ) {
 
 						int size_in_bytes = -1;
 
@@ -876,7 +950,7 @@ void ThlScan::EqualizationScan() {
 					// Release
 					_spidrdaq->releaseFrame();
 
-					if ( doReadFrames ) {
+					if ( doReadFrames[framesCntr] ) {
 
 						// Report to heatmap
 						UpdateHeatMapSignal(_fullsize_x, _fullsize_y);
@@ -898,10 +972,11 @@ void ThlScan::EqualizationScan() {
 						}
 					}
 
+					framesCntr++;
 				}
 
 				// Try again if necessary
-				if ( ! doReadFrames ) {
+				if ( ThereIsAFalse( doReadFrames ) ) {
 					continue;
 				}
 
@@ -1292,6 +1367,8 @@ int ThlScan::ShiftAdjustments(SpidrController * /*spidrcontrol*/, set<int> rewor
 
 		// Get the current adj
 		adj = _equalization->GetEqualizationResults( chipId )->GetPixelAdj( (*i)%__matrix_size, sel);
+		// assume no change for the moment
+		newadj = adj;
 
 		bool specialCase = false;
 		// special cases
@@ -1301,16 +1378,22 @@ int ThlScan::ShiftAdjustments(SpidrController * /*spidrcontrol*/, set<int> rewor
 			specialCase = true;
 		}
 		if (  _pixelReactiveTHL[ *i ] == __UNDEFINED && ( adj == 0x0 ) ) {
-			// TODO ! this needs to be marked as a bad pixel !
+			// this pixel will never react.  Mark immediately.
+			_equalization->GetEqualizationResults( chipId )->SetStatus( (*i)%__matrix_size, Mpx3EqualizationResults::__EQUALIZATION_FAILED_NONREACTIVE, sel);
 			specialCase = true;
 		}
 
 		if ( ! specialCase ) {
 
 			// take a decision on next adjustment
-			if ( _pixelReactiveTHL[ *i ] == __UNDEFINED ) newadj = 0; // mid-range
-			else if ( _pixelReactiveTHL[ *i ] > __equalization_target ) newadj = adj + 1;
-			else if ( _pixelReactiveTHL[ *i ] < __equalization_target ) newadj = adj - 1;
+			if ( _pixelReactiveTHL[ *i ] == __UNDEFINED ) {
+				// If the pixel is not at the right corner (this has been considered just before)
+				newadj = adj - 1;
+			} else if ( _pixelReactiveTHL[ *i ] > __equalization_target ) {
+				newadj = adj + 1;
+			} else if ( _pixelReactiveTHL[ *i ] < __equalization_target ) {
+				newadj = adj - 1;
+			}
 
 			// If out of bounds don't change the value
 			if ( newadj > __max_adj_val || newadj < 0 ) newadj = adj;

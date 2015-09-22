@@ -218,6 +218,8 @@ public:
 	equalizationSteeringInfo * GetSteeringInfo(int chipIdx);
 	BarChart * GetBarChart(int chipIdx);
 	QCheckBox * GetCheckBox(int chipIdx);
+	BarChart * GetAdjBarChart(int chipIdx, Mpx3EqualizationResults::lowHighSel sel);
+
 	int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
 	void UpdateHeatMap(int * data, int sizex, int sizey);
 
@@ -251,6 +253,8 @@ private:
 	QMap<int, Mpx3EqualizationResults *> _eqMap;
 	vector<BarChart * > _chart;			//<! charts for all chips
 	vector<QCheckBox * > _checkBoxes;	//<! checkBoxes for all chips
+	vector<BarChart * > _adjchart_L;			//<! adjustment charts
+	vector<BarChart * > _adjchart_H;			//<! adjustment charts
 
 	// Connectivity between modules
 	Mpx3GUI * _mpx3gui;

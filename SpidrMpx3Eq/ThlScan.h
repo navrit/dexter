@@ -112,6 +112,7 @@ public:
 	void FillAdjReactTHLHistory();
 	void DumpAdjReactTHLHistory(int showHeadAndTail);
 	int PixelBelonsToChip(int pix);
+	bool ThereIsAFalse(vector<bool> v);
 
 	void SetSetId(int si) { _setId = si; };
 	int GetSetId() { return _setId; };

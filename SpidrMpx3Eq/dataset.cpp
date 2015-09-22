@@ -121,6 +121,7 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
 	cout << endl;
 
 	// Mean
+	vector<double> mean_v;
 	cout << "   mean\t\t";
 	for(int i = 0; i < keys.length(); i++) {
 
@@ -128,7 +129,7 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
 
 		// Calc mean on the interesting pixels
 		double mean = 0.;
-		int nMean = 0.;
+		double nMean = 0.;
 		for(int j = 0; j < getPixelsPerLayer(); j++) {
 			// See if the pixel is inside the region
 			QPointF pix = XtoXY(j, isize.width());
@@ -141,7 +142,30 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
 
 		//cout.precision(1);
 		cout << "\t" << mean;
+		mean_v.push_back( mean ); // save the man values for calculation of stdev
 
+	}
+	cout << endl;
+
+	// Standard Deviation
+	cout << "   stdev\t";
+	for(int i = 0; i < keys.length(); i++) {
+
+		int* currentLayer = getLayer(keys[i]);
+		double stdev = 0.;
+		double nMean = 0.;
+		for(int j = 0; j < getPixelsPerLayer(); j++) {
+			// See if the pixel is inside the region
+			QPointF pix = XtoXY(j, isize.width());
+			if ( RoI.contains( pix ) ) {
+				stdev += (currentLayer[j] - mean_v[i])*(currentLayer[j] - mean_v[i]);
+				nMean++;
+			}
+		}
+		if ( stdev != 0 ) stdev /= nMean;
+		stdev = sqrt(stdev);
+		//cout.precision(1);
+		cout << "\t" << stdev;
 	}
 
 	cout << endl;
