@@ -283,7 +283,17 @@
              </widget>
             </item>
             <item row="2" column="7">
-             <widget class="QSpinBox" name="fineTuningLoopsSpinBox"/>
+             <widget class="QSpinBox" name="fineTuningLoopsSpinBox">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>32</number>
+              </property>
+              <property name="value">
+               <number>32</number>
+              </property>
+             </widget>
             </item>
             <item row="2" column="6">
              <widget class="QLabel" name="eqSigmaMaskingSpinBox">

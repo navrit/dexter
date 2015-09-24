@@ -302,32 +302,38 @@ void ThlScan::FineTuning() {
 	int progressMax = _numberOfLoops;
 	if ( _numberOfLoops < 0 ) progressMax = _spacing * _spacing;
 
-	for ( int maskOffsetItr_x = 0 ; maskOffsetItr_x < _spacing ; maskOffsetItr_x++ ) {
+	// Decide when to stop trying different adj values for this particular mask
+	int adjLoops = 0;
+	while ( ! AdjScanCompleted(_scheduledForFineTuning, _maskedSet) && (adjLoops < _equalization->GetFineTuningLoops()) ) {
 
-		for ( int maskOffsetItr_y = 0 ; maskOffsetItr_y < _spacing ; maskOffsetItr_y++ ) {
+		// Stop when a number of loops has been reached
+		adjLoops++;
 
-			QString loopProgressS;
-			loopProgressS =  QString::number( maskOffsetItr_x * _spacing + maskOffsetItr_y + 1, 'd', 0 );
-			loopProgressS += "/";
-			loopProgressS += QString::number( progressMax, 'd', 0 );
-			connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
-			fillText( loopProgressS );
-			disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
+		for ( int maskOffsetItr_x = 0 ; maskOffsetItr_x < _spacing ; maskOffsetItr_x++ ) {
 
-			// Set a mask
-			int nMasked = 0;
-			for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
-				nMasked += SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y);
-			}
-			cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y
-					<<  " | N pixels unmasked = " << ((int)_workChipsIndx.size()*__matrix_size) - nMasked << endl;
+			for ( int maskOffsetItr_y = 0 ; maskOffsetItr_y < _spacing ; maskOffsetItr_y++ ) {
 
-			// Decide when to stop trying different adj values for this particular mask
-			int adjLoops = 0;
-			while ( ! AdjScanCompleted(_scheduledForFineTuning, _maskedSet) && (adjLoops < _equalization->GetFineTuningLoops()) ) {
+				QString loopProgressS;
+				loopProgressS =  QString::number( maskOffsetItr_x * _spacing + maskOffsetItr_y + 1, 'd', 0 );
+				loopProgressS += "/";
+				loopProgressS += QString::number( progressMax, 'd', 0 );
+				connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
+				fillText( loopProgressS );
+				disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
 
-				// Stop when a number of loops has been reached
-				adjLoops++;
+				// Set a mask
+				int nMasked = 0;
+				for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
+					nMasked += SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y);
+				}
+				cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y
+						<<  " | N pixels unmasked = " << ((int)_workChipsIndx.size()*__matrix_size) - nMasked << endl;
+
+				// Decide when to stop trying different adj values for this particular mask
+				//int adjLoops = 0;
+				//while ( ! AdjScanCompleted(_scheduledForFineTuning, _maskedSet) && (adjLoops < _equalization->GetFineTuningLoops()) ) {
+
+
 
 				QString ftLoopProgressS;
 				ftLoopProgressS =  QString::number( adjLoops, 'd', 0 );
@@ -356,6 +362,7 @@ void ThlScan::FineTuning() {
 				// Scan iterator observing direction
 				_pixelReactiveInScan = 0;
 				_thlItr = _minScan;
+				_maxScan = 35; // FIXME !!!
 				if ( _equalization->isScanDescendant() ) _thlItr = _maxScan;
 				bool scanContinue = true;
 
@@ -1263,7 +1270,7 @@ bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> activeMask) {
 		chipId = PixelBelonsToChip( *i );
 
 		// Skip if found in the mask
-		if ( activeMask.find( *i ) != activeMask.end() ) continue;
+		//if ( activeMask.find( *i ) != activeMask.end() ) continue;
 
 		// Also skip if the pixel has been previously marked as equalized or impossible to equalize ( > __EQUALIZED)
 		if ( _equalization->GetEqualizationResults( chipId )->GetStatus( (*i)%__matrix_size, sel ) >= Mpx3EqualizationResults::__EQUALIZED ) continue;

@@ -214,7 +214,9 @@ public:
 	void SetDAC_propagateInGUI(SpidrController * spidrcontrol, int devId, int dac_code, int dac_val);
 
 	Mpx3EqualizationResults * GetEqualizationResults(int chipIndex);
-	void InitializeBarCharts();
+	void InitializeBarChartsEqualization();
+	void InitializeBarChartsAdjustements();
+	void DistributeAdjHistogramsInGridLayout();
 	equalizationSteeringInfo * GetSteeringInfo(int chipIdx);
 	BarChart * GetBarChart(int chipIdx);
 	QCheckBox * GetCheckBox(int chipIdx);
@@ -255,6 +257,7 @@ private:
 	vector<QCheckBox * > _checkBoxes;	//<! checkBoxes for all chips
 	vector<BarChart * > _adjchart_L;			//<! adjustment charts
 	vector<BarChart * > _adjchart_H;			//<! adjustment charts
+	QGridLayout * _gridLayoutHistograms;
 
 	// Connectivity between modules
 	Mpx3GUI * _mpx3gui;

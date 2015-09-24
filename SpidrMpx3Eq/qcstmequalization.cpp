@@ -56,6 +56,7 @@ _ui(new Ui::QCstmEqualization)
 	_scanDescendant = true;
 	_busy = false;
 	_resdataset = 0x0;
+	_gridLayoutHistograms = 0x0;
 
 	_stepScan = __default_step_scan;
 	_setId = 0;
@@ -91,6 +92,7 @@ _ui(new Ui::QCstmEqualization)
 	_ui->equalizationSelectTHLTHHCombo->addItem( QString("Show THL") );
 	_ui->equalizationSelectTHLTHHCombo->addItem( QString("Show THH") );
 	_ui->equalizationSelectTHLTHHCombo->setDisabled( true ); // Only when the equalization is finished this will be enabled
+	_equalizationShow = Mpx3EqualizationResults::__ADJ_L;
 
 	_ui->eqLabelFineTuningLoopProgress->setText("-/-");
 
@@ -384,7 +386,7 @@ void QCstmEqualization::InitEqualization(int chipId) {
 	}
 
 	// BarCharts !
-	InitializeBarCharts();
+	InitializeBarChartsEqualization();
 
 	// THx scan label
 	if( _steeringInfo[0]->currentTHx == MPX3RX_DAC_THRESH_0) _ui->thxLabel->setText( "THL:" );
@@ -424,7 +426,7 @@ void QCstmEqualization::InitEqualization(int chipId) {
 
 }
 
-void QCstmEqualization::InitializeBarCharts() {
+void QCstmEqualization::InitializeBarChartsEqualization() {
 
 	// There's one barChart object that was already instantiated in the GUI
 	// But if we are equalizing more than 1 chip, we need the rest
@@ -1575,11 +1577,39 @@ void QCstmEqualization::InitializeEqualizationStructure(){
 		// build the results
 		_eqMap[ i ] = new Mpx3EqualizationResults;
 
+	}
+}
+
+void QCstmEqualization::InitializeBarChartsAdjustements(){
+
+	// The one built in the constructor will be erased here
+	_ui->horizontalLayoutEqHistos->removeWidget( _chart[0] );
+	_chart.clear();
+
+	// Now locate them in a layout
+	// Prepare a QGrid layout for the different equalizations
+	//if ( !_gridLayoutHistograms ) _gridLayoutHistograms = new QGridLayout();
+	//_ui->horizontalLayoutEqHistos->addLayout( _gridLayoutHistograms );
+	//_gridLayoutHistograms->update();
+
+
+	int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
+	for(int i = 0 ; i < nChips ; i++) {
+
+		if ( ! _mpx3gui->getConfig()->detectorResponds( i ) ) continue;
+
 		// I need a number of objects to draw the adjustments low and high
 		for(int j = 0 ; j < 2 ; j++) { // low and high
 
+			QString barChartName = "histoWidget_";
+			barChartName += QString::number(_workChipsIndx[0], 'd', 0);
+			barChartName += "_";
+			barChartName += QString::number(j%2, 'd', 0); // low or high
+
 			BarChart * nbc = new BarChart( GetUI()->layoutWidget );
+			nbc->setObjectName(barChartName);
 			nbc->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
+
 			QString title = "[";
 			title += QString::number(i, 'd', 0);
 			BarChartProperties cprop;
@@ -1597,6 +1627,7 @@ void QCstmEqualization::InitializeEqualizationStructure(){
 				cprop.color_r = 0;
 				cprop.color_g = 0;
 				cprop.color_b = 127;
+
 				nbc->AppendSet( cprop );
 
 				_adjchart_L.push_back( nbc );
@@ -1614,22 +1645,61 @@ void QCstmEqualization::InitializeEqualizationStructure(){
 				cprop.color_r = 127;
 				cprop.color_g = 0;
 				cprop.color_b = 0;
+
 				nbc->AppendSet( cprop );
 
 				_adjchart_H.push_back( nbc );
 			}
 
-			// set as parent the same as the one delivered in the UI
-			_ui->horizontalLayoutEqHistos->addWidget( nbc );
-
-			// hide for now
-			nbc->hide();
-
 		}
 	}
 
 
+	// Now locate them in the grid layout as needed.
+	// This will depend on the number of chips available.
+	//DistributeAdjHistogramsInGridLayout();
+
 }
+
+void QCstmEqualization::DistributeAdjHistogramsInGridLayout(){
+
+
+	int chipListSize = (int)_workChipsIndx.size();
+
+	int nCols = ceil( (double)chipListSize / 2.);
+
+	// I am generating the sequence row,col that matches the locations of the chips in the board
+	//  -----------------
+	//  - chip0 | chip1 -
+	//  - chip3 | chip2 -
+	//  -----------------
+
+	int indx = 0, row = 0;
+	while ( indx < chipListSize ) {
+
+		int col = row;
+		int colCntr = 0;
+		while ( colCntr < nCols ) {
+
+			col = ( col % nCols );
+
+			BarChart * bc = GetAdjBarChart( indx, _equalizationShow );
+			if ( bc != 0x0 ) { // i might be asking for a chart that is not available 'cause a chip is unresponsive
+				_gridLayoutHistograms->addWidget( bc , row, col );
+				bc->show();
+			}
+
+			indx++;
+			colCntr++;
+			col++;
+		}
+		row++;
+	}
+
+	_gridLayoutHistograms->update();
+
+}
+
 
 void QCstmEqualization::RewindEqualizationStructure(){
 
@@ -1641,6 +1711,9 @@ void QCstmEqualization::LoadEqualization(){
 
 	// Init the data structures necessary to hold the equalization for all the chips
 	InitializeEqualizationStructure();
+
+	// Get the BardCharts in place
+	InitializeBarChartsAdjustements();
 
 	int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
 
@@ -1704,7 +1777,7 @@ void QCstmEqualization::ShowEqualization(Mpx3EqualizationResults::lowHighSel sel
 		_resdataset->setFrame(adj_matrix, i, 0);
 
 		// Show the related histograms
-		//GetAdjBarChart(i, sel)->show();
+		if ( GetAdjBarChart(i, sel) != 0x0 ) GetAdjBarChart(i, sel)->show();
 
 	}
 
@@ -1765,6 +1838,8 @@ void QCstmEqualization::SetupSignalsAndSlots() {
 }
 
 void QCstmEqualization::setEqualizationShowTHLTHH(int sel) {
+
+	cout << "react" << endl;
 
 	if( (int)_equalizationShow == sel ) {
 		ShowEqualization(_equalizationShow);
