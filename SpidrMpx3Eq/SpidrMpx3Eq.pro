@@ -38,6 +38,10 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 INCLUDEPATH += ../SpidrMpx3Lib
 INCLUDEPATH += ../QCustomPlot
+win32 {
+  INCLUDEPATH += "C:/Program Files/Phidgets"
+  LIBS        += "-LC:/Program Files/Phidgets"
+}
 
 LIBS += -lSpidrMpx3Lib
 LIBS += -lQCustomPlot
