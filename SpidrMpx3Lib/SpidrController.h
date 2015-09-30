@@ -20,12 +20,12 @@
 #define ALL_PIXELS  256
 
 // Shutter trigger modes
-#define SHUTTERMODE_POS_EXT       0
-#define SHUTTERMODE_NEG_EXT       1
-#define SHUTTERMODE_POS_EXT_TIMER 2
-#define SHUTTERMODE_NEG_EXT_TIMER 3
-#define SHUTTERMODE_AUTO          4
-#define SHUTTERTRIG_POS_EXT_CNTR  5
+#define SHUTTERMODE_POS_EXT        0
+#define SHUTTERMODE_NEG_EXT        1
+#define SHUTTERMODE_POS_EXT_TIMER  2
+#define SHUTTERMODE_NEG_EXT_TIMER  3
+#define SHUTTERMODE_AUTO           4
+#define SHUTTERTRIG_POS_EXT_CNTR   5
 
 class QTcpSocket;
 
@@ -82,8 +82,8 @@ class MY_LIB_API SpidrController
   bool        getDeviceIds     ( int *ids );
   bool        getDeviceType    ( int  dev_nr, int *type );
   bool        setDeviceType    ( int  dev_nr, int  type );
-  bool        getDac           ( int  dev_nr, int  dac_code, int *dac_val );
-  bool        setDac           ( int  dev_nr, int  dac_code, int dac_val );
+  bool        getDac           ( int  dev_nr, int  dac_code,   int *dac_val );
+  bool        setDac           ( int  dev_nr, int  dac_code,   int  dac_val );
   bool        setDacs          ( int  dev_nr, int  nr_of_dacs, int *dac_val );
   bool        setDacsDflt      ( int  dev_nr );
   bool        configCtpr       ( int  dev_nr, int column, int val );
@@ -111,7 +111,8 @@ class MY_LIB_API SpidrController
                                  bool testbit = false );
   bool setPixelMaskMpx3        ( int  x = ALL_PIXELS, int y = ALL_PIXELS,
                                  bool b = true );
-  bool setPixelConfigMpx3      ( int dev_nr, bool with_replies = true );
+  bool setPixelConfigMpx3      ( int  dev_nr,
+                                 bool with_replies = true );
   // Medipix3RX
   bool configPixelMpx3rx       ( int  x,
                                  int  y,
@@ -120,8 +121,10 @@ class MY_LIB_API SpidrController
                                  bool testbit = false );
   bool setPixelMaskMpx3rx      ( int  x = ALL_PIXELS, int y = ALL_PIXELS,
                                  bool b = true );
-  bool setPixelConfigMpx3rx   ( int dev_nr, bool with_replies = true );
-  unsigned int *pixelConfig   ( );
+  bool setPixelConfigMpx3rx    ( int  dev_nr,
+                                 bool readback = false,
+                                 bool with_replies = true );
+  unsigned int *pixelConfig    ( );
 
   // Configuration: OMR
   bool setContRdWr             ( int  dev_nr, bool crw );

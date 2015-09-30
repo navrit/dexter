@@ -41,18 +41,22 @@ class FramebuilderThread : public QThread
   void   writeFrameToFile();
   void   writeRawFrameToFile();
   void   writeDecodedFrameToFile();
-  bool   hasDecodedFrame( unsigned long timeout_ms = 0 );
-  int   *decodedFrameData( int index, int *size, int *packets_lost = 0 );
-  void   releaseDecodedFrame();
-  i64    decodedFrameTimestamp();
-  double decodedFrameTimestampDouble();
-  i64    decodedFrameTimestampSpidr();
+  bool   hasFrame( unsigned long timeout_ms = 0 );
+  int   *frameData( int index, int *size, int *packets_lost = 0 );
+  void   clearFrameData( int index );
+  void   releaseFrame();
+  i64    frameTimestamp();
+  double frameTimestampDouble();
+  i64    frameTimestampSpidr();
+  int    frameShutterCounter( int index );
+  bool   isCounterhFrame( int index );
 
   void   setAddrInfo( int *ipaddr, int *ports );
   void   setDeviceIdsAndTypes( int *ids, int *types );
   void   setPixelDepth( int nbits );
   void   setDecodeFrames( bool decode );
   void   setCompressFrames( bool compress );
+  void   disableLut( bool disable ) { _applyLut = !disable; }
   void   setFlush( bool flush ) { _flush = flush; }
 
   void   setCallbackId( int id ) { _id = id; }
@@ -71,7 +75,7 @@ class FramebuilderThread : public QThread
   void clearErrString() { _errString.clear(); };
 
  private:
-  // Vector with pointers to frame receivers (there are up to 4)
+  // Vector with pointers to frame receivers (up to 4 of them)
   std::vector<ReceiverThread *> _receivers;
   u32 _n; // To contain size of _receivers
 
@@ -99,7 +103,7 @@ class FramebuilderThread : public QThread
   bool  _decode;
   bool  _compress;
   bool  _flush;
-  bool  _hasDecodedFrame;
+  bool  _hasFrame;
   bool  _abortFrame;
 
   QFile _file;
@@ -109,13 +113,20 @@ class FramebuilderThread : public QThread
   QString _errString;
 
   // Look-up tables for Medipix3RX pixel data decoding
-  int _mpx3Rx6BitsLut[64];
-  int _mpx3Rx12BitsLut[4096];
+  int           _mpx3Rx6BitsLut[64];
+  int           _mpx3Rx12BitsLut[4096];
+  bool          _applyLut;
 
-  // Intermediate buffers for a decoded frame from each of the 4 receivers
-  i64 _timeStamp, _timeStampSpidr;
-  int _frameSz[4];
-  int _decodedFrame[4][256*256];
+  // Info about the (decoded) set of frames
+  i64           _timeStamp;
+  i64           _timeStampSpidr;
+  int           _frameSz[4];
+  bool          _isCounterhFrame[4];
+  SpidrHeader_t _spidrHeader[4];
+
+  // Intermediate buffers for a (decoded) set of frames;
+  // one from each of up to 4 receivers
+  int           _decodedFrame[4][256*256];
 
   int mpx3RawToPixel( unsigned char *raw_bytes,
 		      int           *pixels,

@@ -43,6 +43,7 @@ class MY_LIB_API SpidrDaq
   void setPixelDepth            ( int nbits );
   void setDecodeFrames          ( bool decode );
   void setCompressFrames        ( bool compress );
+  void disableLut               ( bool disable );
   bool openFile                 ( std::string filename,
                                   bool overwrite = false );
   bool closeFile                ( );
@@ -52,11 +53,14 @@ class MY_LIB_API SpidrDaq
   int      *frameData           ( int  index,
                                   int *size_in_bytes,
                                   int *packets_lost = 0 );
+  void      releaseFrame        ( );
+  void      clearFrameData      ( int index );
+  int       frameShutterCounter ( int index );
+  bool      isCounterhFrame     ( int index );
   long long frameTimestamp      ( );
   long long frameTimestamp      ( int buf_i );        // For debugging
   long long frameTimestampSpidr ( );
   double    frameTimestampDouble( );                  // For Pixelman
-  void      releaseFrame        ( );
   void      setCallbackId       ( int id );           // For Pixelman
   void      setCallback         ( CallbackFunc cbf ); // For Pixelman
 

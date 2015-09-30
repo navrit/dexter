@@ -49,6 +49,7 @@ class ReceiverThread : public QThread
   u32  dataSizeFrame()    { return _expFrameSize; }
   u8  *frameData()        { return _frameBuffer[_tail]; } 
   u8  *spidrHeaderFrame() { return _headerBuffer[_tail]; }
+  bool isCounterhFrame()  { return _isCounterhFrame[_tail]; }
   int  packetsLostFrame() { return _packetsLostFrame[_tail]; }
   int  packetsLostFrame( int i ) { return _packetsLostFrame[i]; }
   i64  timeStampFrame( int i );
@@ -114,6 +115,7 @@ class ReceiverThread : public QThread
 
   // Frame info and buffers
   QDateTime _timeStamp[NR_OF_FRAMEBUFS];
+  bool      _isCounterhFrame[NR_OF_FRAMEBUFS];
   u8        _headerBuffer[NR_OF_FRAMEBUFS][SPIDR_HEADER_SIZE];
   u8        _frameBuffer[NR_OF_FRAMEBUFS][FRAMEBUF_SIZE];
 };

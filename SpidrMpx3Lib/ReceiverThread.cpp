@@ -43,7 +43,8 @@ ReceiverThread::ReceiverThread( int *ipaddr,
   for( u32 i=0; i<NR_OF_FRAMEBUFS; ++i )
     {
       _packetsLostFrame[i] = 9999;
-      _timeStamp[i] = QDateTime();
+      _isCounterhFrame[i]  = false;
+      _timeStamp[i]        = QDateTime();
       // Initialize the frame buffers
       memset( _frameBuffer[i], 0xFF, sizeof(_frameBuffer[0]) );
     }
@@ -117,6 +118,7 @@ void ReceiverThread::readDatagrams()
 
       // Initialize shutter counter if necessary and determine
       // the expected number of packets per frame
+      // (redo this at every new frame start, see below)
       if( _currShutterCnt == 0 )
 	{
 	  _currShutterCnt = shutter_cnt;
@@ -131,19 +133,27 @@ void ReceiverThread::readDatagrams()
 
 	  // Need to initialize the first loss count(down)!
 	  // (subsequent counters are initialized in nextFrameBuffer())
-	  _packetsLostFrame[0] = _expPacketsPerFrame;
+	  _packetsLostFrame[_head] = _expPacketsPerFrame;
 	}
       else
 	{
 	  // For the 'two counters' readout the sequence number continues to
 	  // increase for the next frame containing the data from the second
-	  // counter (added 21 Sep 2015)
+	  // counter (added 21 Sep 2015), so if the sequence number exceeds
+	  // the expected number we assume here the second counter ('CounterH')
+	  // is being read out (added 30 Sep 2015)
+	  if( sequence_nr == _expPacketsPerFrame )
+	    _isCounterhFrame[_head] = true;
+	  else if( sequence_nr == 0 )
+	    _isCounterhFrame[_head] = false;
+
 	  sequence_nr %= _expPacketsPerFrame;
 	}
 
+      // Start of a new frame?
       if( shutter_cnt != _currShutterCnt ||
-	  // Another frame with the same shutter counter as previously
-	  // (happens e.g. with auto-trigger with just 1 trigger per sequence)
+	  // Another frame with the same shutter counter as previously?
+	  // (happens e.g. with auto-trigger with just 1 trigger per sequence):
 	  sequence_nr < _expSequenceNr )
 	{
 	  _currShutterCnt = shutter_cnt;
@@ -160,17 +170,32 @@ void ReceiverThread::readDatagrams()
 	  // Any final packets lost in the previous sequence
 	  // or any lost packets at the start of this new sequence ?
 	  _packetsLost += (_expPacketsPerFrame - _expSequenceNr + sequence_nr);
+
+	  // The packet size may have changed (added 30 Sep 2015):
+	  if( _expPayloadSize != recvd_sz - SPIDR_HEADER_SIZE )
+	    {
+	      // Determine the new payload size
+	      _expPayloadSize = recvd_sz - SPIDR_HEADER_SIZE;
+
+	      // ..and from that the expected number of packets per frame
+	      // (including a last packet that may contain less data)
+	      _expPacketsPerFrame = ((_expFrameSize + (_expPayloadSize-1)) /
+				     _expPayloadSize);
+
+	      // (Re)initialize the number of lost packets for this frame
+	      _packetsLostFrame[_head] = _expPacketsPerFrame;
+	    }
 	}
       else if( sequence_nr > _expSequenceNr )
 	{
-	  // One or more packets lost in the ongoing sequence
+	  // One or more packets lost in the ongoing frame sequence
 	  _packetsLost += sequence_nr - _expSequenceNr;
 	}
 
-      // Next expected sequence number (NB: minus 1 when compared to SPIDR)
+      // Next expected packet sequence number (NB: minus 1 compared to SPIDR)
       _expSequenceNr = sequence_nr + 1;
 
-      // Copy the packet's payload to its proper location in the frame buffer
+      // Copy the packet's payload to its expected location in the frame buffer
       // (but only when the sequence number is valid..)
       if( sequence_nr < _expPacketsPerFrame )
 	{

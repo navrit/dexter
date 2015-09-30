@@ -26,9 +26,10 @@ FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
     _decode( false ),
     _compress( false ),
     _flush( false ),
-    _hasDecodedFrame( false ),
+    _hasFrame( false ),
     _abortFrame( false ),
-    _fileOpen( false )
+    _fileOpen( false ),
+    _applyLut( true )
 {
   u32 i;
   _n = _receivers.size();
@@ -183,7 +184,7 @@ void FramebuilderThread::processFrame()
     {
       // If necessary wait until the previous frame has been consumed
       _mutex.lock();
-      if( _hasDecodedFrame ) _outputCondition.wait( &_mutex );
+      if( _hasFrame ) _outputCondition.wait( &_mutex );
       _mutex.unlock();
 
       if( _abortFrame ) return; // Bail out
@@ -216,13 +217,23 @@ void FramebuilderThread::processFrame()
 						_devHdr[i].deviceType,
 						_compress );
 	}
+
+      // Collect various information on the frames from their receivers
       _timeStamp = _receivers[0]->timeStampFrame();
       _timeStampSpidr = _receivers[0]->timeStampFrameSpidr();
-
       for( i=0; i<_n; ++i )
-	_packetsLostFrame[i] = _receivers[i]->packetsLostFrame();
+	{
+	  // Copy (part of) the SPIDR 'header' (6 short ints: 3 copied)
+	  memcpy( (void *) &_spidrHeader[i],
+		  (void *) _receivers[i]->spidrHeaderFrame(),
+		  SPIDR_HEADER_SIZE/2 ); // Only half!
 
-      _hasDecodedFrame = true;
+	  _isCounterhFrame[i] = _receivers[i]->isCounterhFrame();
+
+	  _packetsLostFrame[i] = _receivers[i]->packetsLostFrame();
+	}
+
+      _hasFrame = true;
       ++_framesProcessed;
 
       //if( _callbackFunc ) _callbackFunc( _id );
@@ -347,25 +358,25 @@ void FramebuilderThread::writeDecodedFrameToFile()
 
 // ----------------------------------------------------------------------------
 
-bool FramebuilderThread::hasDecodedFrame( unsigned long timeout_ms )
+bool FramebuilderThread::hasFrame( unsigned long timeout_ms )
 {
-  if( timeout_ms == 0 ) return _hasDecodedFrame;
+  if( timeout_ms == 0 ) return _hasFrame;
 
   // For timeout_ms > 0
   _mutex.lock();
-  if( !_hasDecodedFrame )
+  if( !_hasFrame )
     _frameAvailableCondition.wait( &_mutex, timeout_ms );
   _mutex.unlock();
-  return _hasDecodedFrame;
+  return _hasFrame;
 }
 
 // ----------------------------------------------------------------------------
 
-int *FramebuilderThread::decodedFrameData( int  index,
-					   int *size,
-					   int *packets_lost )
+int *FramebuilderThread::frameData( int  index,
+				    int *size,
+				    int *packets_lost )
 {
-  if( _hasDecodedFrame )
+  if( _hasFrame )
     *size = _frameSz[index];
   else
     *size = 0;
@@ -377,35 +388,58 @@ int *FramebuilderThread::decodedFrameData( int  index,
 
 // ----------------------------------------------------------------------------
 
-void FramebuilderThread::releaseDecodedFrame()
+void FramebuilderThread::clearFrameData( int index )
+{
+  index &= 0x3;
+  memset( static_cast<void *> (_decodedFrame[index]),
+	  0, MPX_PIXELS * sizeof(int) );
+}
+
+// ----------------------------------------------------------------------------
+
+void FramebuilderThread::releaseFrame()
 {
   _mutex.lock();
-  _hasDecodedFrame = false;
+  _hasFrame = false;
   _outputCondition.wakeOne();
   _mutex.unlock();
 }
 
 // ----------------------------------------------------------------------------
 
-i64 FramebuilderThread::decodedFrameTimestamp()
+i64 FramebuilderThread::frameTimestamp()
 {
   return _timeStamp;
 }
 
 // ----------------------------------------------------------------------------
 
-i64 FramebuilderThread::decodedFrameTimestampSpidr()
+double FramebuilderThread::frameTimestampDouble()
+{
+  u32 secs  = (u32) (_timeStamp / (i64)1000);
+  u32 msecs = (u32) (_timeStamp % (i64)1000);
+  return( (double) secs + ((double) msecs)/1000.0 );
+}
+
+// ----------------------------------------------------------------------------
+
+i64 FramebuilderThread::frameTimestampSpidr()
 {
   return _timeStampSpidr;
 }
 
 // ----------------------------------------------------------------------------
 
-double FramebuilderThread::decodedFrameTimestampDouble()
+int FramebuilderThread::frameShutterCounter( int index )
 {
-  u32 secs  = (u32) (_timeStamp / (i64)1000);
-  u32 msecs = (u32) (_timeStamp % (i64)1000);
-  return( (double) secs + ((double) msecs)/1000.0 );
+  return (int) _spidrHeader[index].shutterCnt;
+}
+
+// ----------------------------------------------------------------------------
+
+bool FramebuilderThread::isCounterhFrame( int index )
+{
+  return _isCounterhFrame[index];
 }
 
 // ----------------------------------------------------------------------------
@@ -681,7 +715,7 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
     }
 
   // If necessary, apply a look-up table (LUT)
-  if( device_type == MPX_TYPE_MPX3RX && counter_depth > 1 )
+  if( device_type == MPX_TYPE_MPX3RX && counter_depth > 1 && _applyLut )
     {
       // Medipix3RX device: apply LUT
       if( counter_depth == 6 )

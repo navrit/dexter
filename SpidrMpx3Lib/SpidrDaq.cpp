@@ -6,7 +6,8 @@
 #include "FramebuilderThread.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x15092100;
+const int VERSION_ID = 0x15093000;
+//const int VERSION_ID = 0x15092100;
 //const int VERSION_ID = 0x15051900;
 //const int VERSION_ID = 0x14012400;
 
@@ -243,6 +244,13 @@ void SpidrDaq::setCompressFrames( bool compress )
 
 // ----------------------------------------------------------------------------
 
+void SpidrDaq::disableLut( bool disable )
+{
+  _frameBuilder->disableLut( disable );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrDaq::openFile( std::string filename, bool overwrite )
 {
   return _frameBuilder->openFile( filename, overwrite );
@@ -261,27 +269,57 @@ bool SpidrDaq::closeFile()
 
 bool SpidrDaq::hasFrame( unsigned long timeout_ms )
 {
-  return _frameBuilder->hasDecodedFrame( timeout_ms );
+  return _frameBuilder->hasFrame( timeout_ms );
 }
 
 // ----------------------------------------------------------------------------
 
 int *SpidrDaq::frameData( int index, int *size_in_bytes, int *packets_lost )
 {
-  return _frameBuilder->decodedFrameData( index, size_in_bytes, packets_lost );
+  return _frameBuilder->frameData( index, size_in_bytes, packets_lost );
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDaq::releaseFrame()
+{
+  _frameBuilder->releaseFrame();
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrDaq::clearFrameData( int index )
+{
+  // Utility function to set a frame data array to zero
+  _frameBuilder->clearFrameData( index );
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrDaq::frameShutterCounter( int index )
+{
+  return _frameBuilder->frameShutterCounter( index );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrDaq::isCounterhFrame( int index )
+{
+  return _frameBuilder->isCounterhFrame( index );
 }
 
 // ----------------------------------------------------------------------------
 
 long long SpidrDaq::frameTimestamp()
 {
-  return _frameBuilder->decodedFrameTimestamp();
+  return _frameBuilder->frameTimestamp();
 }
 
 // ----------------------------------------------------------------------------
 
 long long SpidrDaq::frameTimestamp( int buf_i )
 {
+  // DEBUG function:
   return _frameReceivers[0]->timeStampFrame( buf_i );
 }
 
@@ -289,27 +327,22 @@ long long SpidrDaq::frameTimestamp( int buf_i )
 
 long long SpidrDaq::frameTimestampSpidr()
 {
-  return _frameBuilder->decodedFrameTimestampSpidr();
+  return _frameBuilder->frameTimestampSpidr();
 }
 
 // ----------------------------------------------------------------------------
 
 double SpidrDaq::frameTimestampDouble()
 {
-  return _frameBuilder->decodedFrameTimestampDouble();
-}
-
-// ----------------------------------------------------------------------------
-
-void SpidrDaq::releaseFrame()
-{
-  _frameBuilder->releaseDecodedFrame();
+  // For Pixelman
+  return _frameBuilder->frameTimestampDouble();
 }
 
 // ----------------------------------------------------------------------------
 
 void SpidrDaq::setCallbackId( int id )
 {
+  // For Pixelman
   _frameBuilder->setCallbackId( id );
 }
 
@@ -317,6 +350,7 @@ void SpidrDaq::setCallbackId( int id )
 
 void SpidrDaq::setCallback( CallbackFunc cbf )
 {
+  // For Pixelman
   _frameBuilder->setCallback( cbf );
 }
 
@@ -446,6 +480,7 @@ int SpidrDaq::packetsLostCountFrame( int index, int buf_i )
 
 int SpidrDaq::packetSize( int index )
 {
+  // DEBUG function:
   if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
   return _frameReceivers[index]->packetSize();
 }

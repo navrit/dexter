@@ -15,7 +15,8 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x15082600;   // Add getOmr(); optimization in
+const int VERSION_ID = 0x15092800;   // Add pixelconfig read-back option
+//const int VERSION_ID = 0x15082600; // Add getOmr(); optimization in
                                      // request..() functions;
                                      // add requestGetBytes()
 //const int VERSION_ID = 0x15042800; // triggerSingleReadout(countl_or_h)
@@ -584,7 +585,8 @@ bool SpidrController::setPixelMaskMpx3( int x, int y, bool b )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setPixelConfigMpx3( int dev_nr, bool with_replies )
+bool SpidrController::setPixelConfigMpx3( int  dev_nr,
+					  bool with_replies )
 {
   // To be done in 2 stages:
   // 12 bits of configuration (bits 0-11) per pixel to 'Counter0', then
@@ -704,7 +706,9 @@ bool SpidrController::setPixelMaskMpx3rx( int x, int y, bool b )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setPixelConfigMpx3rx( int dev_nr, bool with_replies )
+bool SpidrController::setPixelConfigMpx3rx( int  dev_nr,
+					    bool readback,
+					    bool with_replies )
 {
   // The SPIDR software will see to it that it gets done in 2 stages:
   // the first 128 rows, then the second 128 rows...
@@ -760,6 +764,10 @@ bool SpidrController::setPixelConfigMpx3rx( int dev_nr, bool with_replies )
       else if( !with_replies )
 	cmd |= CMD_NOREPLY;
       */
+
+      // Trigger read-out to read back the pixel config uploaded just now
+      //if( row == 255 && readback ) row |= 0x10000;
+
       // Send this row of formatted configuration data to the SPIDR module
       if( this->requestSetIntAndBytes( cmd, dev_nr,
 				       row, // Sequence number
