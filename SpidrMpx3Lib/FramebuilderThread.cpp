@@ -432,14 +432,42 @@ i64 FramebuilderThread::frameTimestampSpidr()
 
 int FramebuilderThread::frameShutterCounter( int index )
 {
-  return (int) _spidrHeader[index].shutterCnt;
+  if( index < 0 )
+    {
+      // Return the shutter counter if identical for each device,
+      // otherwise return -1
+      int cnt = (int) _spidrHeader[0].shutterCnt;
+      for( u32 i=1; i<_n; ++i )
+	if( cnt != (int) _spidrHeader[i].shutterCnt )
+	  return -1;
+      return cnt;
+    }
+  else
+    {
+      index &= 0x3;
+      return (int) _spidrHeader[index].shutterCnt;
+    }
 }
 
 // ----------------------------------------------------------------------------
 
 bool FramebuilderThread::isCounterhFrame( int index )
 {
-  return _isCounterhFrame[index];
+  if( index < 0 )
+    {
+      // Return true if each device has a 'CounterH' frame,
+      // otherwise return false
+      bool b = _isCounterhFrame[0];
+      for( u32 i=1; i<_n; ++i )
+	if( b != _isCounterhFrame[index] )
+	  return false;
+      return b;
+    }
+  else
+    {
+      index &= 0x3;
+      return _isCounterhFrame[index];
+    }
 }
 
 // ----------------------------------------------------------------------------

@@ -48,8 +48,8 @@ class FramebuilderThread : public QThread
   i64    frameTimestamp();
   double frameTimestampDouble();
   i64    frameTimestampSpidr();
-  int    frameShutterCounter( int index );
-  bool   isCounterhFrame( int index );
+  int    frameShutterCounter( int index = -1 );
+  bool   isCounterhFrame( int index = -1 );
 
   void   setAddrInfo( int *ipaddr, int *ports );
   void   setDeviceIdsAndTypes( int *ids, int *types );

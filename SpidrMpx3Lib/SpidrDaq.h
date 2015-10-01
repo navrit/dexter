@@ -55,8 +55,8 @@ class MY_LIB_API SpidrDaq
                                   int *packets_lost = 0 );
   void      releaseFrame        ( );
   void      clearFrameData      ( int index );
-  int       frameShutterCounter ( int index );
-  bool      isCounterhFrame     ( int index );
+  int       frameShutterCounter ( int index = -1 );
+  bool      isCounterhFrame     ( int index = -1 );
   long long frameTimestamp      ( );
   long long frameTimestamp      ( int buf_i );        // For debugging
   long long frameTimestampSpidr ( );
