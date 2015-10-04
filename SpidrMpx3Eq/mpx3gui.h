@@ -27,8 +27,6 @@ class Mpx3Config;
 #include "mpx3config.h"
 
 
-#define __matrix_size_x 256
-#define __matrix_size_y 256
 class Mpx3Config;
 class QCustomPlot;
 class SpidrController;
@@ -40,6 +38,7 @@ class BarChart;
 class BarChartProperties;
 class QCstmEqualization;
 class QCstmGLVisualization;
+class QCstmConfigMonitoring;
 
 namespace Ui {
 class Mpx3GUI;
@@ -80,6 +79,7 @@ public:
 	QCstmEqualization * getEqualization();
 	QCstmGLVisualization * getVisualization();
 	QCstmDacs * getDACs();
+	QCstmConfigMonitoring * getConfigMonitoring();
 
 	SpidrController * GetSpidrController();
 	SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }

@@ -2,8 +2,9 @@
 #define MPX3CONFIG_H
 #include "mpx3defs.h"
 #include "qcstmdacs.h"
-#include "mpx3gui.h"
+//#include "mpx3gui.h"
 
+#include <QComboBox>
 #include <QObject>
 #include <QHostAddress>
 #include <QJsonDocument>
@@ -11,6 +12,8 @@
 #include <QJsonObject>
 
 #include "SpidrController.h"
+
+class Mpx3GUI;
 
 #include <stdint.h>
 #define DEFAULT_IP  "192.168.1.10"
@@ -21,14 +24,14 @@ class Mpx3Config: public QObject {
 
 	Q_OBJECT
 	//Spidr stuff
-	SpidrController *controller = nullptr;
+	SpidrController * controller;
 	bool connected = false;
 	QHostAddress SpidrAddress;
 	uint16_t port;
 	int _trigPeriod_ms;
 	//Operation stuff
-	bool colourMode = false, decodeFrames = false, readBothCounters = false;
-	int OperationMode = -1, PixelDepth = -1, Polarity = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, TriggerMode =-1, TriggerLength_us = -1, nTriggers = -1;
+	bool colourMode = false, decodeFrames = false, readBothCounters = false, Polarity = true;
+	int OperationMode = -1, PixelDepth = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, TriggerMode =-1, TriggerLength_us = -1, TriggerDowntime_us = -1, nTriggers = -1;
 	QVector<int> _dacVals[MPX3RX_DAC_COUNT];
 	// Stepper
 	bool stepperUseCalib = false;
@@ -43,8 +46,8 @@ class Mpx3Config: public QObject {
 	QVector<detector_response> _responseChips;
 	QVector<int> _activeChips;
 
-
 public:
+
 	Mpx3Config();
 	void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
 	//void setIpAddress(QString ip, uint16_t port);
@@ -86,12 +89,18 @@ public:
 	bool getReadBothCounters() {return readBothCounters;}
 	int getOperationMode(){return OperationMode;}
 	int getPixelDepth(){return PixelDepth;}
-	int getPolarity(){return Polarity;}
+	bool getPolarity(){return Polarity;}
 	int getCsmSpm(){return CsmSpm;  }
 	int getGainMode(){return GainMode;}
 	int getMaxPacketSize(){return MaxPacketSize;}
 	int getTriggerMode(){return TriggerMode;}
+
 	int getTriggerLength(){return TriggerLength_us;}
+	int getTriggerLength_ms(){return (TriggerLength_us/1000);}
+
+	int getTriggerDowntime(){return TriggerDowntime_us;}
+	int getTriggerDowntime_ms(){return TriggerDowntime_us/1000;}
+
 	int getNTriggers(){return nTriggers;}
 
 	bool getStepperUseCalib(){ return stepperUseCalib; }
@@ -124,6 +133,7 @@ private:
 	void MaxPacketSizeChanged(int);
 	void TriggerModeChanged(int);
 	void TriggerLengthChanged(int);
+	void TriggerDowntimeChanged(int);
 	void nTriggersChanged(int);
 	// stepper
 	void UseCalibChanged(bool);
@@ -161,7 +171,7 @@ void setColourMode(bool mode){
 	}
 	SendConfiguration();
 }
-void updateColourMode(){controller->setColourMode(0, colourMode);}
+void updateColourMode(){}
 
 void setReadBothCounters(bool rbc) {
 	if(rbc != readBothCounters) {
@@ -196,8 +206,7 @@ void setPixelDepth(int newVal){
 	}
 	SendConfiguration();
 }
-void updatePixelDepth(){controller->setPixelDepth(0, PixelDepth);}
-
+void updatePixelDepth(){}
 
 void setCsmSpm(int newVal){
 	if(newVal != CsmSpm){
@@ -206,7 +215,7 @@ void setCsmSpm(int newVal){
 	}
 	SendConfiguration();
 }
-void updateCsmSpm(){controller->setCsmSpm(0, CsmSpm);}
+void updateCsmSpm(){}
 
 
 void setGainMode(int newVal){
@@ -216,16 +225,11 @@ void setGainMode(int newVal){
 	}
 	SendConfiguration();
 }
-void updateGainMode(){controller->setGainMode(0, GainMode);}
+void updateGainMode(){}
 
-void setPolarity(int newVal){
-	if(newVal != Polarity){
-		Polarity = newVal; emit polarityChanged(newVal);
-		//updateGainMode();
-	}
-	SendConfiguration();
-}
-void updatePolarity(){controller->setPolarity(0, Polarity);}
+void setPolarity(int); // implemented in cpp
+void setPolarityByString(QString itemS, int indx = -1); // implemented in cpp
+void updatePolarity(){}
 
 void setMaxPacketSize(int newVal){
 	if(newVal != MaxPacketSize){
@@ -255,6 +259,11 @@ void setTriggerLength(int newVal){
 }
 void updateTriggerLength(){}
 
+// This is connected to QAbstractSpinBox::editingFinished() which takes no argument.
+// Pick the value from the spin-box directly.
+void setTriggerDowntime();
+void setTriggerDowntime(int);
+void updateTriggerDowntime(){}
 
 void setNTriggers(int newVal){
 	if(newVal != nTriggers){

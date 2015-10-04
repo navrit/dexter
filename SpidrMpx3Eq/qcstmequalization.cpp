@@ -7,6 +7,7 @@
 #include "mpx3gui.h"
 #include "ui_mpx3gui.h"
 #include "mpx3eq_common.h"
+#include "mpx3dacsdescr.h"
 //#include "DACs.h"
 #include "SpidrController.h"
 #include "SpidrDaq.h"
@@ -52,7 +53,7 @@ _ui(new Ui::QCstmEqualization)
 
 	// Suggest a descendant scan
 	_maxScanTHL = 0;
-	_minScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size) / 2;
+	_minScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].bits) / 2;
 	_scanDescendant = true;
 	_busy = false;
 	_resdataset = 0x0;
@@ -211,7 +212,7 @@ void QCstmEqualization::NewRunInitEqualization() {
 
 
 	// Rewind min and max suggesting a descendant scan.
-	SetMinScan( (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size) / 2 );
+	SetMinScan( (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].bits) / 2 );
 	SetMaxScan( 0 );
 
 	// Delete scans
@@ -636,9 +637,22 @@ void QCstmEqualization::KeepOtherChipsQuiet() {
 		for ( int i = 0 ; i < chipListSize ; i++ ) if ( _workChipsIndx[i] == idx ) continue;
 
 		//
-		SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_0,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size) / 4);
-		SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_1,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].size) / 4);
+		SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_0,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].bits) / 4);
+		SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_1,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].bits) / 4);
+		// Work with all the thresholds if operating in Colour mode
+		if ( _mpx3gui->getConfig()->getColourMode() ) {
+			SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_2,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_2].bits) / 4);
+			SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_3,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_3].bits) / 4);
+			SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_4,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_4].bits) / 4);
+			SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_5,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5].bits) / 4);
+			SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_6,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_6].bits) / 4);
+			SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_7,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7].bits) / 4);
+			cout << "thl 6 y 7 : " << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_6].bits << ","
+					<< MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7].bits << endl;
+			cout << "  codes : " << MPX3RX_DAC_THRESH_6 << ","
+								 << MPX3RX_DAC_THRESH_7 << endl;
 
+		}
 	}
 
 }

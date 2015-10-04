@@ -28,9 +28,10 @@ class DataTakingThread : public QThread {
 public:
 	explicit DataTakingThread(Mpx3GUI *, QCstmGLVisualization *);
 	void ConnectToHardware();
-	void SeparateThresholds(int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
+	void SeparateThresholds(int id, int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
 	pair<int, int> XtoXY(int X, int dimX);
 	int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
+	bool ThereIsAFalse(vector<bool> v);
 
 private:
 

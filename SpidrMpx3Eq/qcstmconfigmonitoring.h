@@ -27,7 +27,10 @@ public:
   void SetMpx3GUI(Mpx3GUI * p);
   explicit QCstmConfigMonitoring(QWidget *parent = 0);
   ~QCstmConfigMonitoring();
+  Ui::QCstmConfigMonitoring * getUI() { return ui; }
+
   void timerEvent( QTimerEvent * );
+
 
   StepperMotorController * getMotorController() { return _stepper; }
   void activeInGUI();

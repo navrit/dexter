@@ -11,6 +11,7 @@
 #include "qcstmplotheatmap.h"
 #include "qcstmequalization.h"
 #include "ui_qcstmequalization.h"
+#include "mpx3dacsdescr.h"
 
 #include "mpx3defs.h"
 #include "mpx3eq_common.h"
@@ -47,7 +48,7 @@ ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 	//_results.weighted_arithmetic_mean = 0.;
 	//_results.sigma = 0.;
 
-	_detectedScanBoundary_L = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size);
+	_detectedScanBoundary_L = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].bits);
 	_detectedScanBoundary_H = 0;
 
 	// Set to true for special scans
@@ -260,18 +261,18 @@ void ThlScan::FineTuning() {
 		// While equalizing one threshold the other should be set at a very high value
 		//   to keep that circuit from reacting.  Set it at ~100
 		if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
-			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].size)/4 );
+			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].bits)/4 );
 			if ( _mpx3gui->getConfig()->getColourMode() ) {
-				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_3, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_3].size)/4 );
-				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_5, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5].size)/4 );
-				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_7, 128 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_3, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_3].bits)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_5, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5].bits)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_7, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7].bits)/4 );
 			}
 		} else if (  _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
-			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_0, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size)/4 );
+			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_0, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].bits)/4 );
 			if ( _mpx3gui->getConfig()->getColourMode() ) {
-				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_2, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_2].size)/4 );
-				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_4, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_4].size)/4 );
-				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_6, 128 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_2, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_2].bits)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_4, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_4].bits)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_6, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_6].bits)/4 );
 			}
 		}
 
@@ -806,19 +807,22 @@ void ThlScan::EqualizationScan() {
 
 		// While equalizing one threshold the other should be set at a very high value
 		//   to keep that circuit from reacting.  Set it at ~100
+		cout << "presettings : " << (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5].bits)/4 << ", " <<  (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7].bits)/4 << endl;
+		cout << "              " << MPX3RX_DAC_THRESH_5 << ", " << MPX3RX_DAC_THRESH_7 << endl;
+
 		if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
-			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].size)/4 );
+			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].bits)/4 );
 			if ( _mpx3gui->getConfig()->getColourMode() ) {
-				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_3, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_3].size)/4 );
-				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_5, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5].size)/4 );
-				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_7, 128 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_3, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_3].bits)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_5, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5].bits)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_7, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7].bits)/4 );
 			}
 		} else if (  _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
-			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_0, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].size)/4 );
+			SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_0, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].bits)/4 );
 			if ( _mpx3gui->getConfig()->getColourMode() ) {
-				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_2, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_2].size)/4 );
-				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_4, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_4].size)/4 );
-				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_6, 128 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_2, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_2].bits)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_4, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_4].bits)/4 );
+				SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_6, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_6].bits)/4 );
 			}
 		}
 
@@ -915,7 +919,7 @@ void ThlScan::EqualizationScan() {
 
 				// See if there is a frame available.  I should get as many frames as triggers
 				int framesCntr = 0;
-				while ( _spidrdaq->hasFrame( 25 ) ) { // 5ms for eq + 20ms transfer over the network
+				while ( _spidrdaq->hasFrame( 50 ) ) { // 5ms for eq + 20ms transfer over the network
 
 					// assume a good frame
 					doReadFrames.push_back( true );
@@ -1022,6 +1026,7 @@ void ThlScan::EqualizationScan() {
 				if( finishScan ) break;
 				if( finishTHLLoop ) break;
 
+				/*
 				if( ! _equalization->isScanDescendant() ) {
 
 					// Scan upwards
@@ -1049,7 +1054,7 @@ void ThlScan::EqualizationScan() {
 						_equalization->GetUI()->eqStepSpinBox->setValue( _stepScan );
 					}
 				}
-
+*/
 				// If called to Stop
 				if ( _stop ) break;
 
@@ -1287,7 +1292,7 @@ bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> activeMask) {
 		for ( ; adjI != adjIE ; adjI++ ) {
 
 			// Check the limits
-			if ( (*adjI).first == 0x0 ||  (*adjI).first == __max_adj_val ) pixelsLimitsReached++;
+			if ( (*adjI).first == 0x0 ||  (*adjI).first == __max_adj_val ) pixelsLimitsReached++; // TODO, probably i shouldn't consider here the high extreme = 31
 
 			// Check if it's passing over the target
 			if ( (*adjI).second  > __equalization_target ) passedUpTarget = true;

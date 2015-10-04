@@ -4,6 +4,7 @@
 #include <iterator>
 #include "SpidrController.h"
 #include "SpidrDaq.h"
+#include "mpx3dacsdescr.h"
 
 #include "mpx3gui.h"
 #include "mpx3config.h"

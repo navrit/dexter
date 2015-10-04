@@ -432,3 +432,5 @@ void Mpx3GUI::clear_data(){
 QCstmEqualization * Mpx3GUI::getEqualization(){return _ui->equalizationWidget;}
 QCstmGLVisualization * Mpx3GUI::getVisualization() { return _ui->visualizationGL; }
 QCstmDacs * Mpx3GUI::getDACs() { return _ui->DACsWidget; }
+QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; }
+

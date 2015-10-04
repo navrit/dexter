@@ -364,6 +364,7 @@ void QCstmGLVisualization::addThresholdToSelector(int threshold){
 
 void QCstmGLVisualization::setThreshold(int threshold){
 	addThresholdToSelector(threshold);
+	//cout << "[INDEX] " << threshold << " --> " << _mpx3gui->getDataset()->thresholdToIndex(threshold) << endl;
 	ui->layerSelector->setCurrentIndex(_mpx3gui->getDataset()->thresholdToIndex(threshold));
 }
 
@@ -527,6 +528,8 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
 	QStringList split = arg1.split(' ');
 	int threshold = split.last().toInt();
 	int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
+	cout << "[INDEX] " << threshold << " --> " << layer << endl;
+
 	ui->glPlot->getPlot()->setActive(layer);
 	ui->histPlot->setActive(layer);
 	//_mpx3gui->set_active_frame(threshold);

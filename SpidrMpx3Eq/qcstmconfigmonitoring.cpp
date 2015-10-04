@@ -248,7 +248,7 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
 	connect(config, SIGNAL(gainModeChanged(int)), ui->gainModeCombobox, SLOT(setCurrentIndex(int)));
 
 	connect(ui->polarityComboBox, SIGNAL(activated(int)), config, SLOT(setPolarity(int)));
-	connect(config, SIGNAL(polarityChanged(int)), ui->gainModeCombobox, SLOT(setCurrentIndex(int)));
+	connect(config, SIGNAL(polarityChanged(int)), ui->polarityComboBox, SLOT(setCurrentIndex(int)));
 
 	connect(ui->maxPacketSizeSpinner, SIGNAL(valueChanged(int)), config, SLOT(setMaxPacketSize(int)));
 	connect(config, SIGNAL(MaxPacketSizeChanged(int)), ui->maxPacketSizeSpinner, SLOT(setValue(int)));
@@ -264,6 +264,10 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
 
 	connect(ui->triggerLengthSpinner, SIGNAL(valueChanged(int)), config, SLOT(setTriggerLength(int)));
 	connect(config, SIGNAL(TriggerLengthChanged(int)), ui->triggerLengthSpinner, SLOT(setValue(int)));
+
+	connect(ui->triggerDowntimeSpinner, SIGNAL(editingFinished()), config, SLOT(setTriggerDowntime()));
+	connect(config, SIGNAL(TriggerDowntimeChanged(int)), ui->triggerDowntimeSpinner, SLOT(setValue(int)));
+
 
 	connect(ui->triggerModeSpinner, SIGNAL(valueChanged(int)), config, SLOT(setTriggerMode(int)));
 	connect(config, SIGNAL(TriggerModeChanged(int)), ui->triggerModeSpinner, SLOT(setValue(int)));

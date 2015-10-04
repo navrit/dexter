@@ -7,7 +7,8 @@
 #define QCSTMDACS_H
 
 #include <QWidget>
-class Mpx3GUI;
+
+
 #include "mpx3gui.h"
 #include "mpx3defs.h"
 
@@ -31,11 +32,13 @@ class SpidrController;
 class SpidrDaq;
 class QCustomPlot;
 class QCPGraph;
+class Mpx3GUI;
 
 namespace Ui {
   class QCstmDacs;
 }
 
+/*
 // Taken from LEON Software.  Henk.
 typedef struct dac_s
 {
@@ -86,7 +89,7 @@ static const dac_t MPX3RX_DAC_TABLE[MPX3RX_DAC_COUNT] =
 		{ 24, "V_Tp_refA",         238, 9, (1<<9)/2 },
 		{ 25, "V_Tp_refB",         247, 9, (1<<9)/2 }
 };
-
+*/
 static const QColor COLOR_TABLE[] = {
 		Qt::red, // 1
 		Qt::black,

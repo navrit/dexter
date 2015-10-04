@@ -6,6 +6,7 @@
 
 #include "mpx3gui.h"
 #include "mpx3defs.h"
+#include "mpx3eq_common.h"
 #include <qcustomplot.h>
 
 
@@ -15,11 +16,8 @@
 using namespace std;
 
 #include "histogram.h"
-//#include "mpx3eq_common.h"
 #include "ThlScan.h"
 
-#define __matrix_size_x 		256
-#define __matrix_size_y 		256
 #define __equalization_target	10
 #define __default_step_scan		2
 

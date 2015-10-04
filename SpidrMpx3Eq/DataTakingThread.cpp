@@ -10,6 +10,7 @@
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 
+#include "mpx3eq_common.h"
 #include "mpx3gui.h"
 #include "ui_mpx3gui.h"
 
@@ -62,112 +63,250 @@ void DataTakingThread::run() {
 	connect(_vis, SIGNAL(free_to_draw()), this, SLOT(on_free_to_draw()) );
 	connect(_vis, SIGNAL(busy_drawing()), this, SLOT(on_busy_drawing()) );
 
-	cout << "Acquiring ... ";
+	cout << "Acquiring ... " << endl;
 	//_mpx3gui->GetUI()->startButton->setActive(false);
+
+	// Get the list of id's for active devices
+	QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
+	int nChips = activeDevices.size();
+	int firstDevId = activeDevices[0];
+
+	// Data structures for all 8 thresholds
+	// counterL
+	// I need to buffer the counterL in case the counterH is not correct.
+	QVector<int> ** th0 = new QVector<int>*[nChips]; // have as many pointers as chips
+	QVector<int> ** th2 = new QVector<int>*[nChips];
+	QVector<int> ** th4 = new QVector<int>*[nChips];
+	QVector<int> ** th6 = new QVector<int>*[nChips];
+	for ( int i = 0 ; i < nChips ; i++ ) {
+		th0[i] = 0x0;
+		th2[i] = 0x0;
+		th4[i] = 0x0;
+		th6[i] = 0x0;
+	}
+	// counterH
+	// I don't need to buffer the high counters
+	QVector<int> * th1 = 0x0;
+	QVector<int> * th3 = 0x0;
+	QVector<int> * th5 = 0x0;
+	QVector<int> * th7 = 0x0;
+
+	int nFramesReceived = 0, lastDrawn = 0;
+	int frameId = 0, prevFrameId = 0;
+
+
+	int * framedata;
+
+	emit progress( nFramesReceived );
+	bool doReadFrames_L = true;
+	bool doReadFrames_H = true;
+
+	int size_in_bytes = -1;
+
+	// Timeout
+	int timeOutTime =
+			_mpx3gui->getConfig()->getTriggerLength_ms()
+			+  _mpx3gui->getConfig()->getTriggerDowntime_ms()
+			+ 500; // ms
+	// TODO ! The extra 500ms is a combination of delay in the network plus
+	// system overhead.  This should be predicted and not hard-coded. TODO !
 
 	// Start the trigger as configured
 	spidrcontrol->startAutoTrigger();
 
-	int nFramesReceived = 0, lastDrawn = 0;
-	int * framedata;
-	emit progress( nFramesReceived );
-	bool doReadFrames = true;
-	unsigned int cntrBothCounters = 0;
+	while ( spidrdaq->hasFrame( timeOutTime ) ) {
 
-	while ( spidrdaq->hasFrame( (_mpx3gui->getConfig()->getTriggerLength()/1000) + 20  ) ) { // 20ms over the trigger length timeout
+		// record the frameId for the first device available (it's the same for all of them)
+		frameId = spidrdaq->frameShutterCounter( firstDevId );
 
-		int size_in_bytes = -1;
-		QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
+		cout << "[START] frame : " << nFramesReceived << " | id: " << frameId << " | statusH : " << spidrdaq->isCounterhFrame(firstDevId) << endl;
 
-		doReadFrames = true;
-		if ( _vis->GetUI()->dropFramesCheckBox->isChecked() ) {
-			if ( spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected
-				doReadFrames = false;
+
+		// If taking care of a counterL, start by rewinding the flags
+		if ( !spidrdaq->isCounterhFrame(firstDevId) ) {
+			doReadFrames_L = true;
+			doReadFrames_H = true;
+			// Buffering for the counterL
+			for ( int i = 0 ; i < nChips ; i++ ) {
+				if ( th0[i] ) { delete th0[i]; th0[i] = 0x0; }
+				if ( th2[i] ) { delete th2[i]; th2[i] = 0x0; }
+				if ( th4[i] ) { delete th4[i]; th4[i] = 0x0; }
+				if ( th6[i] ) { delete th6[i]; th6[i] = 0x0; }
 			}
+			// counterH is erased as soon as is used.
+			// No need to buffer for that counterH
 		}
 
-		if ( doReadFrames ) {
-			for(int i = 0 ; i < activeDevices.size() ; i++) {
+		size_in_bytes = -1;
 
-				framedata = spidrdaq->frameData(i, &size_in_bytes);
+		if ( _vis->GetUI()->dropFramesCheckBox->isChecked() ) {
 
-				//cout << "data[" << i << "] chip id : " << activeDevices[i] << endl;
+			if ( spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected
 
-				if ( size_in_bytes == 0 ) continue; // this may happen
-
-				// In color mode the separation of thresholds needs to be done
-				if( _mpx3gui->getConfig()->getColourMode() ) {
-
-					if ( ( cntrBothCounters%2 == 0 && _mpx3gui->getConfig()->getReadBothCounters() ) ||  !_mpx3gui->getConfig()->getReadBothCounters() ) {
-						//cout << "low : " << _mpx3gui->getConfig()->getReadBothCounters() << "," << cntrBothCounters << endl;
-						int size = size_in_bytes / 4;
-						int sizeReduced = size / 4;    // 4 thresholds per 110um pixel
-
-						QVector<int> *th0 = new QVector<int>(sizeReduced,0);
-						QVector<int> *th2 = new QVector<int>(sizeReduced,0);
-						QVector<int> *th4 = new QVector<int>(sizeReduced,0);
-						QVector<int> *th6 = new QVector<int>(sizeReduced,0);
-
-						SeparateThresholds(framedata, size, th0, th2, th4, th6, sizeReduced);
-
-						_mpx3gui->addFrame(th0->data(), i, 0);
-						delete th0;
-
-						_mpx3gui->addFrame(th2->data(), i, 2);
-						delete th2;
-
-						_mpx3gui->addFrame(th4->data(), i, 4);
-						delete th4;
-
-						_mpx3gui->addFrame(th6->data(), i, 6);
-						delete th6;
-					}
-
-					if ( cntrBothCounters%2 == 1 && _mpx3gui->getConfig()->getReadBothCounters() ) {
-
-						cout << "high" << endl;
-
-						int size = size_in_bytes / 4;
-						int sizeReduced = size / 4;    // 4 thresholds per 110um pixel
-
-						QVector<int> *th1 = new QVector<int>(sizeReduced,0);
-						QVector<int> *th3 = new QVector<int>(sizeReduced,0);
-						QVector<int> *th5 = new QVector<int>(sizeReduced,0);
-						QVector<int> *th7 = new QVector<int>(sizeReduced,0);
-
-						SeparateThresholds(framedata, size, th1, th3, th5, th7, sizeReduced);
-
-						_mpx3gui->addFrame(th1->data(), i, 1);
-						delete th1;
-
-						_mpx3gui->addFrame(th3->data(), i, 3);
-						delete th3;
-
-						_mpx3gui->addFrame(th5->data(), i, 5);
-						delete th5;
-
-						_mpx3gui->addFrame(th7->data(), i, 7);
-						delete th7;
-					}
-
-
+				if ( _mpx3gui->getConfig()->getColourMode() ) {
+					if ( spidrdaq->isCounterhFrame(firstDevId) ) doReadFrames_H = false;
+					else doReadFrames_L = false;
 				} else {
-					_mpx3gui->addFrame(framedata, i, 0);
+					doReadFrames_L = false;
 				}
 
 			}
-		}
-		//_mpx3gui->getDataset()->addHistory();
 
+		}
+
+		// If in color mode, check flipping L,H -- L,H -- .... L,H
+		if ( _mpx3gui->getConfig()->getColourMode() ) {
+			// the flip is wrong
+			if ( (bool)(nFramesReceived%2) != spidrdaq->isCounterhFrame(firstDevId) ) {
+				// Keep a local count of number of frames
+				nFramesReceived++;
+				// keep the frameId
+				prevFrameId = frameId;
+				cout << "Bad flipping !!!" << endl;
+
+				// Release frame
+				spidrdaq->releaseFrame();
+
+				continue;
+			}
+
+		}
+
+		// If the frame is not good to read just keep going.
+		// If both counters are to be read then drop both counterL and counterH.
+		if ( !doReadFrames_L || !doReadFrames_H ) {
+
+			// Keep a local count of number of frames
+			nFramesReceived++;
+			// keep the frameId
+			prevFrameId = frameId;
+
+			cout << "Bad frame L:" << doReadFrames_L << ", H:" << doReadFrames_H << endl;
+
+			// Release frame
+			spidrdaq->releaseFrame();
+
+			// and keep going
+			continue;
+		}
+
+
+		for(int i = 0 ; i < activeDevices.size() ; i++) {
+
+			// retreive data for a given chip
+			framedata = spidrdaq->frameData(i, &size_in_bytes);
+
+			//cout << "chip id : " << activeDevices[i] << " | SpidrDaq::frameShutterCounter: " << spidrdaq->frameShutterCounter(i) << endl;
+			// if ( size_in_bytes == 0 ) continue; // this may happen
+
+			// In color mode the separation of thresholds needs to be done
+			if ( _mpx3gui->getConfig()->getColourMode() ) {
+
+				if ( !spidrdaq->isCounterhFrame(firstDevId) ) {
+
+					cout << "low , frameId = " << nFramesReceived << endl;
+
+					int size = size_in_bytes / __nThresholdsPerSpectroscopicPixel;
+					int sizeReduced = size / __nThresholdsPerSpectroscopicPixel;    // 4 thresholds per 110um pixel
+
+					th0[i] = new QVector<int>(sizeReduced, 0);
+					th2[i] = new QVector<int>(sizeReduced, 0);
+					th4[i] = new QVector<int>(sizeReduced, 0);
+					th6[i] = new QVector<int>(sizeReduced, 0);
+
+					SeparateThresholds(i, framedata, size, th0[i], th2[i], th4[i], th6[i], sizeReduced);
+
+					// Send if if we are not reading counterH
+					// counterL
+					if ( ! _mpx3gui->getConfig()->getReadBothCounters() ) {
+						_mpx3gui->addFrame(th0[i]->data(), i, 0);
+						//delete th0;
+
+						_mpx3gui->addFrame(th2[i]->data(), i, 2);
+						//delete th2;
+
+						_mpx3gui->addFrame(th4[i]->data(), i, 4);
+						//delete th4;
+
+						_mpx3gui->addFrame(th6[i]->data(), i, 6);
+						//delete th6;
+					}
+
+				}
+
+				if ( spidrdaq->isCounterhFrame(firstDevId) && _mpx3gui->getConfig()->getReadBothCounters() ) {
+
+					cout << "high , frameId = " << nFramesReceived << endl;
+
+
+					int size = size_in_bytes / __nThresholdsPerSpectroscopicPixel;
+					int sizeReduced = size / __nThresholdsPerSpectroscopicPixel;    // 4 thresholds per 110um pixel
+
+					th1 = new QVector<int>(sizeReduced, 0);
+					th3 = new QVector<int>(sizeReduced, 0);
+					th5 = new QVector<int>(sizeReduced, 0);
+					th7 = new QVector<int>(sizeReduced, 0);
+
+					SeparateThresholds(i, framedata, size, th1, th3, th5, th7, sizeReduced);
+
+					// Now send all the thresholds for the give chip.
+					// !!! WARNING: They have to enter in order !!!
+					// TH0
+					_mpx3gui->addFrame(th0[i]->data(), i, 0);
+					//delete th0;
+
+					// TH1
+					_mpx3gui->addFrame(th1->data(), i, 1);
+					delete th1; th1 = 0x0;
+
+					// TH2
+					_mpx3gui->addFrame(th2[i]->data(), i, 2);
+					//delete th2;
+
+					// TH3
+					_mpx3gui->addFrame(th3->data(), i, 3);
+					delete th3; th3 = 0x0;
+
+					// TH4
+					_mpx3gui->addFrame(th4[i]->data(), i, 4);
+					//delete th4;
+
+					// TH5
+					_mpx3gui->addFrame(th5->data(), i, 5);
+					delete th5; th5 = 0x0;
+
+					// TH6
+					_mpx3gui->addFrame(th6[i]->data(), i, 6);
+					//delete th6;
+
+					// TH7
+					_mpx3gui->addFrame(th7->data(), i, 7);
+					delete th7; th7 = 0x0;
+
+				}
+
+
+			} else {
+				_mpx3gui->addFrame(framedata, i, 0);
+			}
+
+		}
+
+
+
+		// Keep a local count of number of frames
 		nFramesReceived++;
+		// keep the frameId
+		prevFrameId = frameId;
 		// Release frame
 		spidrdaq->releaseFrame();
-		cntrBothCounters++;
 
 		// Get to draw if possible
 		if ( _canDraw ) {
 
-			emit progress( nFramesReceived );
+			// When reading both counters 1 full frame is made of 2 frames received
+			if ( _mpx3gui->getConfig()->getReadBothCounters() ) emit progress( nFramesReceived/2 );
+			else  emit progress( nFramesReceived );
 
 			if( _mpx3gui->getConfig()->getColourMode() ) {
 				emit reload_all_layers();
@@ -178,13 +317,13 @@ void DataTakingThread::run() {
 			lastDrawn = nFramesReceived;
 		}
 
-		// If number of triggers reached
-		if ( nFramesReceived == _mpx3gui->getConfig()->getNTriggers() ) break;
-
-		// If called to Stop
-		if ( _stop ) break;
-
 	}
+	// If number of triggers reached
+	//if ( nFramesReceived == _mpx3gui->getConfig()->getNTriggers() ) break;
+
+	// If called to Stop
+	//if ( _stop ) break;
+
 
 	// Force last draw if not reached
 	if ( nFramesReceived != lastDrawn ) {
@@ -196,14 +335,12 @@ void DataTakingThread::run() {
 		}
 	}
 
-	cout << "local counter : " << cntrBothCounters << endl;
-
 	cout << "received " << nFramesReceived
 			<< " | lost frames : " << spidrdaq->framesLostCount()
 			<< " | lost packets : " << spidrdaq->packetsLostCount()
+			<< " | frames count :" << spidrdaq->framesCount()
 			<< endl;
 
-	QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
 	for(int i = 0 ; i < activeDevices.size() ; i++) {
 		cout << "devId = " << i << " | packetsReceivedCount = " << spidrdaq->packetsReceivedCount( i ) << endl;
 		cout << "devId = " << i << " | packetSize = " << spidrdaq->packetSize( i ) << endl;
@@ -236,6 +373,17 @@ pair<int, int> DataTakingThread::XtoXY(int X, int dimX){
 	return make_pair(X % dimX, X/dimX);
 }
 
+bool DataTakingThread::ThereIsAFalse(vector<bool> v){
+
+	vector<bool>::iterator i  = v.begin();
+	vector<bool>::iterator iE = v.end();
+
+	for ( ; i != iE ; i++ ) {
+		if ( (*i) == false ) return true;
+	}
+	return false;
+}
+
 void DataTakingThread::on_busy_drawing() {
 	_canDraw = false;
 }
@@ -251,7 +399,7 @@ void DataTakingThread::on_stop_data_taking_thread() {
 
 }
 
-void DataTakingThread::SeparateThresholds(int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced) {
+void DataTakingThread::SeparateThresholds(int id, int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced) {
 
 	// Layout of 110um pixel
 	//  -------------   ---------------------
@@ -265,6 +413,12 @@ void DataTakingThread::SeparateThresholds(int * data, int size, QVector<int> * t
 	//		P3 --> TH4, TH5
 	//		P4 --> TH6, TH7
 
+	// test
+	//QString name = "frame_";
+	//name += QString::number( id, 'd', 0 );
+	//name += ".txt";
+	//std::fstream fs ( name.toStdString().c_str(), std::fstream::out);
+	//int cntr = 0;
 
 	int indx = 0, indxRed = 0, redi = 0, redj = 0;
 	int c0 = 0, c2 = 0, c4 = 0, c6 = 0;
@@ -278,6 +432,11 @@ void DataTakingThread::SeparateThresholds(int * data, int size, QVector<int> * t
 
 			indx = XYtoX( i, j, __matrix_size_x);
 			indxRed = XYtoX( redi, redj, __matrix_size_x / 2); // This index should go up to 128*128
+
+			// test
+			//fs << data[indx] << " ";
+			//cntr++;
+			//if( cntr%256 == 0 ) fs << endl;
 
 			if( (i % 2) == 0 && (j % 2) == 0) {
 				(*th2)[indxRed] = data[indx]; // P2
@@ -316,5 +475,5 @@ void DataTakingThread::SeparateThresholds(int * data, int size, QVector<int> * t
 
 	}
 
-
+	//fs.close();
 }
