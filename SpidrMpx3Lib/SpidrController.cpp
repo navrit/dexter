@@ -766,7 +766,7 @@ bool SpidrController::setPixelConfigMpx3rx( int  dev_nr,
       */
 
       // Trigger read-out to read back the pixel config uploaded just now
-      //if( row == 255 && readback ) row |= 0x10000;
+      if( row == 255 && readback ) row |= 0x10000;
 
       // Send this row of formatted configuration data to the SPIDR module
       if( this->requestSetIntAndBytes( cmd, dev_nr,
