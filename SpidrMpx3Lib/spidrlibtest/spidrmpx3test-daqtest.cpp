@@ -79,16 +79,15 @@ int main( int argc, char *argv[] )
     }
 #endif
 
-  int depth = 24;
-  //spidrcontrol.setPixelDepth( devnr, depth, false );
+  int depth = 12;
   spidrcontrol.setPixelDepth( devnr, depth, false );
 #ifdef USE_SPIDRDAQ
   spidrdaq.setPixelDepth( depth );
 #endif
-  //spidrcontrol.setMaxPacketSize( 1024 );
   spidrcontrol.setMaxPacketSize( 8000 );
 
   /*
+  // DACs
   cout << "Before" << endl;
   int dacnr, dacval;
   for( dacnr=0; dacnr<30; ++dacnr )
@@ -97,7 +96,7 @@ int main( int argc, char *argv[] )
       cout << dacnr << ": " << dacval << endl;
     }
   spidrcontrol.writeDacs( devnr );
-  //spidrcontrol.writeDacsDflt( 0 );
+  //spidrcontrol.writeDacsDflt( devnr );
   cout << "After" << endl;
   for( dacnr=0; dacnr<30; ++dacnr )
     {

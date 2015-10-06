@@ -74,8 +74,7 @@ int main( int argc, char *argv[] )
 	  spidrcontrol.setDac( 3, dac_index, i*51 );
 	}
       spidrcontrol.startAutoTrigger();
-      Sleep( 1000 );
-      while( spidrdaq.hasFrame() )
+      while( spidrdaq.hasFrame( 1000 ) )
 	{
 	  double t = spidrdaq.frameTimestampDouble();
 	  unsigned int secs = (unsigned int) t;
@@ -88,7 +87,6 @@ int main( int argc, char *argv[] )
 	       << ", Ts=" << hex << spidrdaq.frameTimestampSpidr()
 	       << dec << endl;
 	  spidrdaq.releaseFrame();
-	  Sleep( 50 ); // Allow time to get and decode the next frame, if any
 	}
       cout << "DAQ frames: " << spidrdaq.framesCount() << ", lost "
 	   << spidrdaq.framesLostCount() << ", lost pkts "
