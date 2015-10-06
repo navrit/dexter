@@ -144,8 +144,8 @@ void ReceiverThread::readDatagrams()
 	  // is being read out (added 30 Sep 2015)
 	  if( sequence_nr == _expPacketsPerFrame )
 	    _isCounterhFrame[_head] = true;
-	  else if( sequence_nr == 0 )
-	    _isCounterhFrame[_head] = false;
+	  //else if( sequence_nr == 0 )
+	  //_isCounterhFrame[_head] = false; // NB: done in releaseFrame()
 
 	  sequence_nr %= _expPacketsPerFrame;
 	}
@@ -302,6 +302,7 @@ void ReceiverThread::releaseFrame()
   // Release the next frame buffer processed by the consumer:
   // update the frame buffer management
   _mutex.lock();
+  _isCounterhFrame[_tail] = false;
   _tail = (_tail + 1) & (NR_OF_FRAMEBUFS-1);
   if( _tail == _head ) _empty = true;
   _mutex.unlock();

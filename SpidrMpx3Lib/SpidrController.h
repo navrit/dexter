@@ -61,7 +61,7 @@ class MY_LIB_API SpidrController
   bool        setLogLevel          ( int level );
   bool        displayInfo          ( ); // In the currently open telnet window
                                         // or (USB/UART) console
-  bool        getDeviceCount       ( int *devices );
+  bool        getDeviceCount       ( int *count );
   bool        getChipboardId       ( int *id );
   bool        setChipboardId       ( int  id );
 
@@ -174,9 +174,9 @@ class MY_LIB_API SpidrController
 
   // Monitoring
   bool getAdc                  ( int *adc_val, int chan, int nr_of_samples = 1 );
-  bool getAdc                  ( int  dev_nr, int *adc_val );
-  bool getDacOut               ( int  dev_nr,
-                                 int *dacout_val, int nr_of_samples = 1 );
+  bool getAdc                  ( int  dev_nr,  int *adc_val );
+  bool getDacOut               ( int  dev_nr,  int *dacout_val,
+                                 int  nr_of_samples = 1 );
   bool getRemoteTemp           ( int *mdegrees );
   bool getLocalTemp            ( int *mdegrees );
   bool getAvdd                 ( int *mvolt, int *mamp, int *mwatt );

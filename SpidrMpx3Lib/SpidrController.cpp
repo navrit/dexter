@@ -262,9 +262,9 @@ bool SpidrController::displayInfo()
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getDeviceCount( int *devices )
+bool SpidrController::getDeviceCount( int *count )
 {
-  return this->requestGetInt( CMD_GET_DEVICECOUNT, 0, devices );
+  return this->requestGetInt( CMD_GET_DEVICECOUNT, 0, count );
 }
 
 // ----------------------------------------------------------------------------

@@ -10,6 +10,9 @@
 #include <QtCore>
 #endif
 #endif
+
+#define byteswap(x) ((((x) & 0xFF00) >> 8) | (((x) & 0x00FF) << 8))
+
 // ----------------------------------------------------------------------------
 
 FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
@@ -440,12 +443,12 @@ int FramebuilderThread::frameShutterCounter( int index )
       for( u32 i=1; i<_n; ++i )
 	if( cnt != (int) _spidrHeader[i].shutterCnt )
 	  return -1;
-      return cnt;
+      return byteswap( cnt );
     }
   else
     {
       index &= 0x3;
-      return (int) _spidrHeader[index].shutterCnt;
+      return byteswap( (int) _spidrHeader[index].shutterCnt );
     }
 }
 
