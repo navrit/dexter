@@ -32,12 +32,19 @@ FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
     _hasFrame( false ),
     _abortFrame( false ),
     _fileOpen( false ),
-    _applyLut( true )
+    _applyLut( true ),
+    _timeStamp( 0 ),
+    _timeStampSpidr( 0 )
 {
   u32 i;
   _n = _receivers.size();
   for( i=0; i<4; ++i )
-    _packetsLostFrame[i] = 0;
+    {
+      _packetsLostFrame[i] = 0;
+      _frameSz[i]          = 0;
+      _isCounterhFrame[i]  = false;
+      memset( static_cast<void *> (&_spidrHeader[i]), 0, SPIDR_HEADER_SIZE );
+    }
   // Preset the headers
   _evtHdr.headerId   = EVT_HEADER_ID;
   _evtHdr.headerSize = EVT_HEADER_SIZE;
@@ -229,7 +236,7 @@ void FramebuilderThread::processFrame()
 	  // Copy (part of) the SPIDR 'header' (6 short ints: 3 copied)
 	  memcpy( (void *) &_spidrHeader[i],
 		  (void *) _receivers[i]->spidrHeaderFrame(),
-		  SPIDR_HEADER_SIZE/2 ); // Only half!
+		  SPIDR_HEADER_SIZE/2 ); // Only half of it needed here
 
 	  _isCounterhFrame[i] = _receivers[i]->isCounterhFrame();
 

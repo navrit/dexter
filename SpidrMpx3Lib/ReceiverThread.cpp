@@ -20,7 +20,7 @@ ReceiverThread::ReceiverThread( int *ipaddr,
     _expFrameSize( MPX3_12BIT_RAW_SIZE ),
     _expPayloadSize( 0 - SPIDR_HEADER_SIZE ),
     _expPacketsPerFrame( 999 ),
-    _currShutterCnt( 0 ),
+    _currShutterCnt( -1 ),
     _expSequenceNr( 0 ),
     _copySpidrHeader( true ),
     _framesReceived( 0 ),
@@ -119,7 +119,7 @@ void ReceiverThread::readDatagrams()
       // Initialize shutter counter if necessary and determine
       // the expected number of packets per frame
       // (redo this at every new frame start, see below)
-      if( _currShutterCnt == 0 )
+      if( _currShutterCnt == -1 )
 	{
 	  _currShutterCnt = shutter_cnt;
 
@@ -151,6 +151,9 @@ void ReceiverThread::readDatagrams()
 	}
 
       // Start of a new frame?
+      // (NB: it was noticed that with smaller packetsizes (ca.<1800 bytes)
+      //      the order of the first 16 or so packets of the first frame
+      //      was not sequential... This is not understood! 8 Oct 2015)
       if( shutter_cnt != _currShutterCnt ||
 	  // Another frame with the same shutter counter as previously?
 	  // (happens e.g. with auto-trigger with just 1 trigger per sequence):
@@ -228,7 +231,7 @@ void ReceiverThread::handleFrameTimeout()
   // Handle the case where the last packet(s) of the last frame
   // (since a while) has/have been lost, by means of a time-out (defined by
   // a multiple of the time-out in _sock->waitForReadyRead() above)
-  if( _currShutterCnt != 0 && _expSequenceNr != _expPacketsPerFrame )
+  if( _currShutterCnt >= 0 && _expSequenceNr != _expPacketsPerFrame )
     {
       ++_recvTimeoutCount;
       if( _recvTimeoutCount == 2 )

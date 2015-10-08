@@ -115,7 +115,7 @@
 // (indexed by the lower byte of the command identifier)
 static const char *CMD_STR[] =
   {
-    "-----",             // 0x900
+    "<no operation>   ", // 0x900
     "GET_SOFTWVERSION ", // 0x901
     "GET_FIRMWVERSION ", // 0x902
     "GET_DEVICETYPE   ", // 0x903
