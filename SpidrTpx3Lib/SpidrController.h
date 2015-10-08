@@ -266,7 +266,7 @@ class MY_LIB_API SpidrController
   bool setGpioPin              ( int  pin_nr, int state );
   bool getSpidrReg             ( int  addr, int *val );
   bool setSpidrReg             ( int  addr, int  val );
-  bool setSpidrRegBit          ( int  addr, int bitnr, bool set = true );
+  bool setSpidrRegBit          ( int  addr, int  bitnr, bool set = true );
 #ifdef TLU
   bool setTluEnable            ( int  dev_nr, bool enable );
 #endif
