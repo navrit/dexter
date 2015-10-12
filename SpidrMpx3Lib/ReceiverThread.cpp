@@ -104,7 +104,7 @@ void ReceiverThread::run()
 
 void ReceiverThread::readDatagrams()
 {
-  int recvd_sz, sequence_nr, shutter_cnt;
+  int recvd_sz, sequence_nr, sequence_nr_modulo, shutter_cnt;
 
   while( _sock->hasPendingDatagrams() )
     {
@@ -135,8 +135,37 @@ void ReceiverThread::readDatagrams()
 	  // (subsequent counters are initialized in nextFrameBuffer())
 	  _packetsLostFrame[_head] = _expPacketsPerFrame;
 	}
-      else
+
+
+      // For the 'two counters' readout the sequence number continues to
+      // increase for the second frame containing the data from the 'high'
+      // counter (added 21 Sep 2015)
+      sequence_nr_modulo = sequence_nr % _expPacketsPerFrame;
+
+      // Start of a new frame?
+      // (NB: it was noticed that with smaller packetsizes (ca.<1800 bytes)
+      //      the order of the first 16 or so packets of the first frame
+      //      was not sequential... This is not understood! 8 Oct 2015
+      //      ==> must be a system issue when starting an application:
+      //          doing twice the same code results only in the first one
+      //          having an unordered packet sequence)
+      if( shutter_cnt != _currShutterCnt ||
+	  // Another frame with the same shutter counter as previously?
+	  // (happens e.g. with auto-trigger with just 1 trigger per sequence):
+	  sequence_nr_modulo < _expSequenceNr )
 	{
+	  _currShutterCnt = shutter_cnt;
+
+	  if( _expSequenceNr != _expPacketsPerFrame )
+	    {
+	      // Starting a new frame/image, but prematurely apparently,
+	      // since '_expSequenceNr != _expPacketsPerFrame' means
+	      // the frame wasn't complete yet...
+	      // (see further down where a frame properly completes)
+	      ++_framesReceived;
+	      this->nextFrameBuffer();
+	    }
+
 	  // For the 'two counters' readout the sequence number continues to
 	  // increase for the next frame containing the data from the second
 	  // counter (added 21 Sep 2015), so if the sequence number exceeds
@@ -144,35 +173,14 @@ void ReceiverThread::readDatagrams()
 	  // is being read out (added 30 Sep 2015)
 	  if( sequence_nr == _expPacketsPerFrame )
 	    _isCounterhFrame[_head] = true;
+	  // NB: now done in releaseFrame():
 	  //else if( sequence_nr == 0 )
-	  //_isCounterhFrame[_head] = false; // NB: done in releaseFrame()
-
-	  sequence_nr %= _expPacketsPerFrame;
-	}
-
-      // Start of a new frame?
-      // (NB: it was noticed that with smaller packetsizes (ca.<1800 bytes)
-      //      the order of the first 16 or so packets of the first frame
-      //      was not sequential... This is not understood! 8 Oct 2015)
-      if( shutter_cnt != _currShutterCnt ||
-	  // Another frame with the same shutter counter as previously?
-	  // (happens e.g. with auto-trigger with just 1 trigger per sequence):
-	  sequence_nr < _expSequenceNr )
-	{
-	  _currShutterCnt = shutter_cnt;
-
-	  if( _expSequenceNr != _expPacketsPerFrame )
-	    {
-	      // Starting a new frame/image, but prematurely apparently;
-	      // it wasn't complete yet...
-	      // (see further down for a properly completed frame)
-	      ++_framesReceived;
-	      this->nextFrameBuffer();
-	    }
+	  //_isCounterhFrame[_head] = false;
 
 	  // Any final packets lost in the previous sequence
 	  // or any lost packets at the start of this new sequence ?
-	  _packetsLost += (_expPacketsPerFrame - _expSequenceNr + sequence_nr);
+	  _packetsLost += (_expPacketsPerFrame - _expSequenceNr +
+			   sequence_nr_modulo);
 
 	  // The packet size may have changed (added 30 Sep 2015):
 	  if( _expPayloadSize != recvd_sz - SPIDR_HEADER_SIZE )
@@ -189,20 +197,20 @@ void ReceiverThread::readDatagrams()
 	      _packetsLostFrame[_head] = _expPacketsPerFrame;
 	    }
 	}
-      else if( sequence_nr > _expSequenceNr )
+      else if( sequence_nr_modulo > _expSequenceNr )
 	{
 	  // One or more packets lost in the ongoing frame sequence
-	  _packetsLost += sequence_nr - _expSequenceNr;
+	  _packetsLost += sequence_nr_modulo - _expSequenceNr;
 	}
 
       // Next expected packet sequence number (NB: minus 1 compared to SPIDR)
-      _expSequenceNr = sequence_nr + 1;
+      _expSequenceNr = sequence_nr_modulo + 1;
 
       // Copy the packet's payload to its expected location in the frame buffer
       // (but only when the sequence number is valid..)
-      if( sequence_nr < _expPacketsPerFrame )
+      if( sequence_nr_modulo < _expPacketsPerFrame )
 	{
-	  memcpy( &_currFrameBuffer[sequence_nr * _expPayloadSize],
+	  memcpy( &_currFrameBuffer[sequence_nr_modulo * _expPayloadSize],
 		  &_recvBuffer[SPIDR_HEADER_SIZE],
 		  recvd_sz - SPIDR_HEADER_SIZE );
 	  --_packetsLostFrame[_head]; // Is a countdown counter...
@@ -217,7 +225,7 @@ void ReceiverThread::readDatagrams()
 
       if( _expSequenceNr == _expPacketsPerFrame )
 	{
-	  // The current frame is complete so go for a new frame/image
+	  // The current frame is now complete so go for a new frame/image
 	  ++_framesReceived;
 	  this->nextFrameBuffer();
 	}
