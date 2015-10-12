@@ -591,35 +591,43 @@ void Dataset::applyOBCorrection(){
 		return;
 
 	QList<int> keys = m_thresholdsToIndices.keys();
-	for(int i = 0; i < keys.length(); i++){
+	for (int i = 0; i < keys.length(); i++) {
 		//double currentTotal = getTotal(keys[i]), correctionTotal = correction->getTotal(keys[i]);
-		int* currentLayer = getLayer(keys[i]);
-		int* correctionLayer = obCorrection->getLayer(keys[i]);
-		if(correctionLayer == nullptr){
+		int * currentLayer = getLayer(keys[i]);
+		int * correctionLayer = obCorrection->getLayer(keys[i]);
+		if ( correctionLayer == nullptr ) {
 			qDebug() << "[WARN] flat-field correction does not contain a threshold" << keys[i];
 			continue;
 		}
 
-		// Obtain the average of the corrected image
-		double averageCorr = 0.;
-		double averageCurrent = 0.;
-		int acntr = 0;
-		for(int j = 0; j < getPixelsPerLayer(); j++) {
-			if(correctionLayer[j] > 0) {
-				averageCorr += ((double)currentLayer[j])/((double)correctionLayer[j]);
-				averageCurrent += (double)currentLayer[j];
-				acntr++;
-			}
-		}
-		averageCorr /= acntr;
-		averageCurrent /= acntr;
+		// Let the operation happen in float point and then we'll normalize to pass to the int map.
+		// Allocate some scratch memory
+		double * normFrame = new double[getPixelsPerLayer()];
+		// Find the smallest value.  Initialize it for the search.
+		double min = (double)correctionLayer[0];
+		if ( currentLayer[0] > correctionLayer[0] ) min = currentLayer[0];
 
-		for(int j = 0; j < getPixelsPerLayer(); j++)
-			if(0  != correctionLayer[j]) {
-				double numer = averageCurrent*currentLayer[j];
-				double den = averageCorr*correctionLayer[j];
-				currentLayer[j] = round(  -log( numer/den )  );
+		for(int j = 0; j < getPixelsPerLayer(); j++) {
+
+			if ( correctionLayer[j] > 0 ) {
+				normFrame[j] = ((double)currentLayer[j]) / ((double)correctionLayer[j]);
+				normFrame[j] = -log( normFrame[j] );
+				if ( normFrame[j] < min ) min = normFrame[j];
+			} else {
+				currentLayer[j] = 0;
 			}
+
+		}
+
+		cout << "minimum : " << min << endl;
+
+		for(int j = 0; j < getPixelsPerLayer(); j++) {
+			currentLayer[j] = round(normFrame[j] * 1000.0);
+
+		}
+
+		delete [] normFrame;
+
 	}
 
 }
