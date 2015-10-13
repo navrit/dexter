@@ -49,6 +49,7 @@ class MY_LIB_API SpidrDaq
   bool closeFile                ( );
 
   // Acquisition
+  int       numberOfDevices     ( ) { return (int) _frameReceivers.size(); }
   bool      hasFrame            ( unsigned long timeout_ms = 0 );
   int      *frameData           ( int  index,
                                   int *size_in_bytes,
@@ -86,8 +87,6 @@ class MY_LIB_API SpidrDaq
  private:
   std::vector<ReceiverThread *> _frameReceivers;
   FramebuilderThread *_frameBuilder;
-
-  //static QCoreApplication *App;
 
   // Functions used in c'tors
   void getIdsPortsTypes( SpidrController *spidrctrl,
