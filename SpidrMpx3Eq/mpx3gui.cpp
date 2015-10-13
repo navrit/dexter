@@ -106,6 +106,7 @@ void Mpx3GUI::addLayer(int *data){
 }
 
 void Mpx3GUI::addFrame(int *frame, int index, int layer){
+	//cout << "index : " << index << " | layer : " << layer << " | mode : " << mode << endl;
 	if(mode == 1){
 		getDataset()->sumFrame(frame,index, layer);
 	}

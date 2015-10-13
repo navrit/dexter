@@ -100,6 +100,7 @@ void DataTakingThread::run() {
 	emit progress( nFramesReceived );
 	bool doReadFrames_L = true;
 	bool doReadFrames_H = true;
+	bool badFlipping = false;
 
 	int size_in_bytes = -1;
 
@@ -116,22 +117,50 @@ void DataTakingThread::run() {
 
 	while ( spidrdaq->hasFrame( timeOutTime ) ) {
 
-		// record the frameId for the first device available (it's the same for all of them)
-		frameId = spidrdaq->frameShutterCounter( firstDevId );
+		for(int i = 0 ; i < activeDevices.size() ; i++) {
 
-		cout << "[START] frame : " << nFramesReceived << " | id: " << frameId << " | statusH : " << spidrdaq->isCounterhFrame(firstDevId) << endl;
+			// record the frameId for the first device available (it's the same for all of them)
+			frameId = spidrdaq->frameShutterCounter( i );
 
+			cout << "[START] [" << activeDevices[i] << "] frame : " << nFramesReceived
+					<< " | frameShutterCounter: " << frameId
+					<< " | isCounterhFrame : " << spidrdaq->isCounterhFrame( i )
+					<< endl;
+		}
+
+		// If bad flip happened I wait until the first counterL shows up
+		if ( badFlipping ) {
+			if ( !spidrdaq->isCounterhFrame(firstDevId) && frameId != prevFrameId) {
+
+				// Out of the bad flip condition
+				cout << "[INFO] recovering from bad flip ... " << endl;
+				badFlipping = false;
+
+			} else {
+				// Keep a local count of number of frames
+				nFramesReceived++;
+				// keep the frameId
+				prevFrameId = frameId;
+				// Release frame
+				spidrdaq->releaseFrame();
+				continue;
+			}
+		}
 
 		// If taking care of a counterL, start by rewinding the flags
 		if ( !spidrdaq->isCounterhFrame(firstDevId) ) {
+			cout << "[INFO] Cleaning up" << endl;
 			doReadFrames_L = true;
 			doReadFrames_H = true;
 			// Buffering for the counterL
 			for ( int i = 0 ; i < nChips ; i++ ) {
+
 				if ( th0[i] ) { delete th0[i]; th0[i] = 0x0; }
 				if ( th2[i] ) { delete th2[i]; th2[i] = 0x0; }
 				if ( th4[i] ) { delete th4[i]; th4[i] = 0x0; }
 				if ( th6[i] ) { delete th6[i]; th6[i] = 0x0; }
+
+
 			}
 			// counterH is erased as soon as is used.
 			// No need to buffer for that counterH
@@ -155,14 +184,17 @@ void DataTakingThread::run() {
 		}
 
 		// If in color mode, check flipping L,H -- L,H -- .... L,H
-		if ( _mpx3gui->getConfig()->getColourMode() ) {
+		if ( _mpx3gui->getConfig()->getColourMode() && _mpx3gui->getConfig()->getReadBothCounters() ) {
 			// the flip is wrong
 			if ( (bool)(nFramesReceived%2) != spidrdaq->isCounterhFrame(firstDevId) ) {
 				// Keep a local count of number of frames
 				nFramesReceived++;
 				// keep the frameId
 				prevFrameId = frameId;
-				cout << "Bad flipping !!!" << endl;
+
+				cout << "       !!! Bad flipping !!!" << endl;
+
+				badFlipping = true;
 
 				// Release frame
 				spidrdaq->releaseFrame();
@@ -257,7 +289,7 @@ void DataTakingThread::run() {
 
 					// TH1
 					_mpx3gui->addFrame(th1->data(), i, 1);
-					delete th1; th1 = 0x0;
+					//delete th1; th1 = 0x0;
 
 					// TH2
 					_mpx3gui->addFrame(th2[i]->data(), i, 2);
@@ -265,7 +297,7 @@ void DataTakingThread::run() {
 
 					// TH3
 					_mpx3gui->addFrame(th3->data(), i, 3);
-					delete th3; th3 = 0x0;
+					//delete th3; th3 = 0x0;
 
 					// TH4
 					_mpx3gui->addFrame(th4[i]->data(), i, 4);
@@ -273,7 +305,7 @@ void DataTakingThread::run() {
 
 					// TH5
 					_mpx3gui->addFrame(th5->data(), i, 5);
-					delete th5; th5 = 0x0;
+					//delete th5; th5 = 0x0;
 
 					// TH6
 					_mpx3gui->addFrame(th6[i]->data(), i, 6);
@@ -281,7 +313,13 @@ void DataTakingThread::run() {
 
 					// TH7
 					_mpx3gui->addFrame(th7->data(), i, 7);
-					delete th7; th7 = 0x0;
+					//delete th7; th7 = 0x0;
+
+					// Get ready with the high thresholds
+					if ( th1 ) { delete th1; th1 = 0x0; }
+					if ( th3 ) { delete th3; th3 = 0x0; }
+					if ( th5 ) { delete th5; th5 = 0x0; }
+					if ( th7 ) { delete th7; th7 = 0x0; }
 
 				}
 

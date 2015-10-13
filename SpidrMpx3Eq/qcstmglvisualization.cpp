@@ -460,7 +460,7 @@ void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
 			_mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord);
 	}
 	if(selectedItem != nullptr)
-		_mpx3gui->getEqualization()->SetAllAdjustmentBits( _mpx3gui->getConfig()->getController(), deviceID);
+		_mpx3gui->getEqualization()->SetAllAdjustmentBits( _mpx3gui->getConfig()->getController(), deviceID, true);
 
 }
 

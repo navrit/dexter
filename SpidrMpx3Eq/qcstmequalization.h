@@ -183,7 +183,7 @@ public:
 	void SetLimits();
 	void Configuration(int devId, int THx, bool reset);
 	void SetAllAdjustmentBits(SpidrController * spidrcontrol, int devId, int val_L, int val_H);
-	void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId);
+	void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId, bool applymask = false);
 	void SetAllAdjustmentBits(SpidrController * spidrcontrol);
 	//void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId );
 	void SetAllAdjustmentBits();

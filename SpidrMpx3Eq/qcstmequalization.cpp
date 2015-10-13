@@ -650,7 +650,7 @@ void QCstmEqualization::KeepOtherChipsQuiet() {
 			cout << "thl 6 y 7 : " << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_6].bits << ","
 					<< MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7].bits << endl;
 			cout << "  codes : " << MPX3RX_DAC_THRESH_6 << ","
-								 << MPX3RX_DAC_THRESH_7 << endl;
+					<< MPX3RX_DAC_THRESH_7 << endl;
 
 		}
 	}
@@ -1428,7 +1428,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol) {
 
 }
 
-void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int chipIndex) {
+void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int chipIndex, bool applymask) {
 
 	if( !spidrcontrol ) {
 		QMessageBox::information(this, tr("Clear configuration"), tr("The system is disconnected. Nothing to clear.") );
@@ -1452,26 +1452,26 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 	}
 
 	// This is not the moment for a mask
-	/*
-	// Mask
-	if ( _eqMap[chipIndex]->GetNMaskedPixels() > 0 ) {
-		QSet<int> tomask = _eqMap[chipIndex]->GetMaskedPixels();
-		QSet<int>::iterator i = tomask.begin();
-		QSet<int>::iterator iE = tomask.end();
-		pair<int, int> pix;
-		cout << "[INFO] Masking " << endl;
-		for ( ; i != iE ; i++ ) {
-			pix = XtoXY( (*i), __matrix_size_x );
-			cout << "     devid:" << _deviceIndex << " | " << pix.first << "," << pix.second << endl;
-			spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second);
-		}
-	} else { // When the mask is empty go ahead and set all to zero
-		for ( int i = 0 ; i < __matrix_size ; i++ ) {
-			pix = XtoXY(i, __array_size_x);
-			spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+	if ( applymask ) {
+		// Mask
+		if ( _eqMap[chipIndex]->GetNMaskedPixels() > 0 ) {
+			QSet<int> tomask = _eqMap[chipIndex]->GetMaskedPixels();
+			QSet<int>::iterator i = tomask.begin();
+			QSet<int>::iterator iE = tomask.end();
+			pair<int, int> pix;
+			cout << "[INFO] Masking " << endl;
+			for ( ; i != iE ; i++ ) {
+				pix = XtoXY( (*i), __matrix_size_x );
+				cout << "     devid:" << _deviceIndex << " | " << pix.first << "," << pix.second << endl;
+				spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second);
+			}
+		} else { // When the mask is empty go ahead and set all to zero
+			for ( int i = 0 ; i < __matrix_size ; i++ ) {
+				pix = XtoXY(i, __array_size_x);
+				spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+			}
 		}
 	}
-	 */
 
 	spidrcontrol->setPixelConfigMpx3rx( chipIndex );
 
