@@ -20,14 +20,14 @@
             "TP_REF": 120,
             "TP_REFA": 50,
             "TP_REFB": 255,
-            "Threshold[0]": 20,
-            "Threshold[1]": 25,
-            "Threshold[2]": 30,
-            "Threshold[3]": 35,
+            "Threshold[0]": 32,
+            "Threshold[1]": 34,
+            "Threshold[2]": 36,
+            "Threshold[3]": 38,
             "Threshold[4]": 40,
-            "Threshold[5]": 45,
-            "Threshold[6]": 50,
-            "Threshold[7]": 55
+            "Threshold[5]": 42,
+            "Threshold[6]": 44,
+            "Threshold[7]": 46
         },
         {
             "Cas": 191,
@@ -78,14 +78,14 @@
             "TP_REF": 120,
             "TP_REFA": 50,
             "TP_REFB": 255,
-            "Threshold[0]": 20,
-            "Threshold[1]": 25,
-            "Threshold[2]": 30,
-            "Threshold[3]": 35,
+            "Threshold[0]": 32,
+            "Threshold[1]": 34,
+            "Threshold[2]": 36,
+            "Threshold[3]": 38,
             "Threshold[4]": 40,
-            "Threshold[5]": 45,
-            "Threshold[6]": 50,
-            "Threshold[7]": 55
+            "Threshold[5]": 42,
+            "Threshold[6]": 44,
+            "Threshold[7]": 46
         },
         {
             "Cas": 191,
@@ -107,14 +107,14 @@
             "TP_REF": 120,
             "TP_REFA": 50,
             "TP_REFB": 255,
-            "Threshold[0]": 20,
-            "Threshold[1]": 25,
-            "Threshold[2]": 30,
-            "Threshold[3]": 35,
+            "Threshold[0]": 32,
+            "Threshold[1]": 34,
+            "Threshold[2]": 36,
+            "Threshold[3]": 38,
             "Threshold[4]": 40,
-            "Threshold[5]": 45,
-            "Threshold[6]": 50,
-            "Threshold[7]": 55
+            "Threshold[5]": 42,
+            "Threshold[6]": 44,
+            "Threshold[7]": 46
         }
     ],
     "DetectorConfig": {
@@ -127,9 +127,9 @@
         "PixelDepth": 12,
         "Polarity": true,
         "TriggerDeadtime_us": 10000,
-        "TriggerLength_us": 30000,
+        "TriggerLength_us": 40000,
         "TriggerMode": 4,
-        "nTriggers": 1
+        "nTriggers": 100
     },
     "IPConfig": {
         "SpidrControllerIp": "192.168.1.10",

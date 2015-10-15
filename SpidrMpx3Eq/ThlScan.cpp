@@ -774,6 +774,10 @@ void ThlScan::EqualizationScan() {
 	//SpidrController * spidrcontrol2 = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 	//SpidrController * spidrcontrol3 = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 	//SpidrController * spidrcontrol4 = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
+	// 0 : DEBUG
+	// 1 : INFO
+	// 2 : WARNINGS, ERROR, FATAL
+	spidrcontrol->setLogLevel( 2 );
 
 	if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
 		cout << "[ERR ] Device not connected !" << endl;

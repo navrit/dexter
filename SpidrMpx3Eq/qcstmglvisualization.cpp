@@ -27,6 +27,11 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :  QWidget(parent), 
 	ui->dropFramesCheckBox->setChecked( true );
 	ui->summingCheckbox->setChecked( true );
 
+	// packets lost counter
+	//QFont font1("Courier New");
+	//ui->lostPacketsLabel->setFont( font1 );
+	ui->lostPacketsLabel->setTextFormat( Qt::RichText );
+
 }
 
 QCstmGLVisualization::~QCstmGLVisualization() {
@@ -291,6 +296,33 @@ void QCstmGLVisualization::changeBinCount(int count){
 		addThresholdToSelector(thresholds[i]);
 		ui->histPlot->setHistogram(thresholds[i], _mpx3gui->getDataset()->getLayer(thresholds[i]), _mpx3gui->getDataset()->getPixelsPerLayer());
 	}
+}
+
+void QCstmGLVisualization::on_fps_update(int nframes_done) {
+
+	double fpsVal = ((double)nframes_done) / ((double)_etatimer->elapsed() / 1000.);
+	cout << nframes_done << " ***** " << _etatimer->elapsed()/1000 << " ******* " << fpsVal << endl;
+
+	QString fpsS = QString::number( round( fpsVal ) , 'd', 0 );
+	fpsS += " fps";
+
+	ui->fpsLabel->setText( fpsS );
+
+}
+
+void QCstmGLVisualization::on_lost_packets(int packetsLost) {
+
+	// Increase the current packet loss
+	_mpx3gui->getDataset()->increasePacketsLost( packetsLost );
+
+	// Retrieve the counter and display
+	QString plS = "<font color=\"red\">";
+	plS += QString::number( _mpx3gui->getDataset()->getPacketsLost(), 'd', 0 );
+	plS += "</font>";
+
+	ui->lostPacketsLabel->setText( plS );
+
+
 }
 
 void QCstmGLVisualization::on_range_changed(QCPRange newRange){

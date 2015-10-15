@@ -56,6 +56,8 @@ signals:
 	void reload_layer(int);
 	void data_taking_finished(int);
 	void progress(int);
+	void lost_packets(int);
+	void fps_update(int);
 
 };
 

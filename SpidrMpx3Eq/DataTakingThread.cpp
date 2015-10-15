@@ -47,6 +47,10 @@ void DataTakingThread::run() {
 	}
 
 	SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
+	// 0 : DEBUG
+	// 1 : INFO
+	// 2 : WARNINGS, ERROR, FATAL
+	spidrcontrol->setLogLevel( 2 );
 
 	if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
 		cout << "[ERR ] Device not connected !" << endl;
@@ -62,6 +66,9 @@ void DataTakingThread::run() {
 	connect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
 	connect(_vis, SIGNAL(free_to_draw()), this, SLOT(on_free_to_draw()) );
 	connect(_vis, SIGNAL(busy_drawing()), this, SLOT(on_busy_drawing()) );
+
+	connect(this, SIGNAL(lost_packets(int)), _vis, SLOT(on_lost_packets(int)) );
+	connect(this, SIGNAL(fps_update(int)), _vis, SLOT(on_fps_update(int)) );
 
 	cout << "Acquiring ... " << endl;
 	//_mpx3gui->GetUI()->startButton->setActive(false);
@@ -93,7 +100,6 @@ void DataTakingThread::run() {
 
 	int nFramesReceived = 0, lastDrawn = 0;
 	int frameId = 0, prevFrameId = 0;
-
 
 	int * framedata;
 
@@ -170,7 +176,12 @@ void DataTakingThread::run() {
 
 		if ( _vis->GetUI()->dropFramesCheckBox->isChecked() ) {
 
-			if ( spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected
+			int packetsLost = spidrdaq->packetsLostCountFrame();
+
+			if ( packetsLost != 0 ) { // from any of the chips connected
+
+				// report the loss
+				lost_packets( packetsLost );
 
 				if ( _mpx3gui->getConfig()->getColourMode() ) {
 					if ( spidrdaq->isCounterhFrame(firstDevId) ) doReadFrames_H = false;
@@ -339,6 +350,11 @@ void DataTakingThread::run() {
 		// Release frame
 		spidrdaq->releaseFrame();
 
+		// report to the gui
+		if ( _mpx3gui->getConfig()->getReadBothCounters() ) emit fps_update( nFramesReceived/2 );
+		else emit fps_update( nFramesReceived );
+
+
 		// Get to draw if possible
 		if ( _canDraw ) {
 
@@ -397,6 +413,9 @@ void DataTakingThread::run() {
 	disconnect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
 	disconnect(_vis, SIGNAL(free_to_draw()), this, SLOT(on_free_to_draw()) );
 	disconnect(_vis, SIGNAL(busy_drawing()), this, SLOT(on_busy_drawing()) );
+
+	disconnect(this, SIGNAL(lost_packets(int)), _vis, SLOT(on_lost_packets(int)) );
+	disconnect(this, SIGNAL(fps_update(int)), _vis, SLOT(on_fps_update(int)) );
 
 	// In case the thread is reused
 	_stop = false;

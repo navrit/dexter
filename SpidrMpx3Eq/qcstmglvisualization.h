@@ -144,6 +144,9 @@ public slots:
   void changeBinCount(int count);
   void updateETA();
 
+  void on_lost_packets(int);
+  void on_fps_update(int);
+
  signals:
   void change_hover_text(QString);
   void stop_data_taking_thread();
