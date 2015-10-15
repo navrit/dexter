@@ -75,6 +75,7 @@ public:
   int getNChipsX();
   int getNChipsY();
   QByteArray toByteArray(); //!< Serializes the dataset for saving.
+  QVector<int> toQVector(); //!< Serializes the dataset for saving.
   void fromByteArray(QByteArray serialized); //!< Restores the dataset from a previously serialized set.
   void loadCorrection(QByteArray serialized);//!< Loads and sets the correction to a previously serialized set.
   void applyCorrections(Ui::QCstmGLVisualization * ui);//<!Handles all corrections.  This function is blocking for the moment !

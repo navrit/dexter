@@ -87,7 +87,8 @@ int Dataset::getLayerIndex(int threshold){
 	return layerIndex;
 }
 
-QByteArray Dataset::toByteArray(){
+QByteArray Dataset::toByteArray() {
+
 	QByteArray ret(0);
 	ret += QByteArray::fromRawData((const char*)&m_nx, (int)sizeof(m_nx));
 	ret += QByteArray::fromRawData((const char*)&m_ny, (int)sizeof(m_ny));
@@ -100,7 +101,23 @@ QByteArray Dataset::toByteArray(){
 	ret += QByteArray::fromRawData((const char*)keys.toVector().data(),(int)(keys.size()*sizeof(int))); //thresholds
 	for(int i = 0; i < keys.length(); i++)
 		ret += QByteArray::fromRawData((const char*)this->getLayer(keys[i]), (int)(sizeof(float)*getLayerSize()));
+
 	return ret;
+}
+
+QVector<int> Dataset::toQVector() {
+
+	QVector<int> tovec;
+
+	QList<int> keys = m_thresholdsToIndices.keys();
+	for(int i = 0; i < keys.length(); i++) {
+		int * layer = this->getLayer(keys[i]);
+		for ( int j = 0 ; j < this->getPixelsPerLayer() ; j++) {
+			tovec.append( layer[j] );
+		}
+	}
+
+	return tovec;
 }
 
 void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
