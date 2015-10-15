@@ -3,6 +3,7 @@
 #include <QDebug>
 
 #include <iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -607,7 +608,7 @@ bool Dataset::isAnyCorrectionActive(Ui::QCstmGLVisualization * ui) {
 void Dataset::applyOBCorrection(){
 
 	// Check that the OB correction data has been loaded by the user
-	if(obCorrection == nullptr)
+	if (obCorrection == nullptr)
 		return;
 
 	QList<int> keys = m_thresholdsToIndices.keys();
@@ -615,7 +616,7 @@ void Dataset::applyOBCorrection(){
 		//double currentTotal = getTotal(keys[i]), correctionTotal = correction->getTotal(keys[i]);
 		int * currentLayer = getLayer(keys[i]);
 		int * correctionLayer = obCorrection->getLayer(keys[i]);
-		if ( correctionLayer == nullptr ) {
+		if (correctionLayer == nullptr) {
 			qDebug() << "[WARN] flat-field correction does not contain a threshold" << keys[i];
 			continue;
 		}
@@ -625,28 +626,45 @@ void Dataset::applyOBCorrection(){
 		double * normFrame = new double[getPixelsPerLayer()];
 		// Find the smallest value.  Initialize it for the search.
 		double min = (double)correctionLayer[0];
-		if ( currentLayer[0] > correctionLayer[0] ) min = currentLayer[0];
+		if (currentLayer[0] > correctionLayer[0]) min = currentLayer[0];
 
-		for(int j = 0; j < getPixelsPerLayer(); j++) {
+		for (int j = 0; j < getPixelsPerLayer(); j++) {
 
-			if ( correctionLayer[j] > 0 ) {
-				normFrame[j] = ((double)currentLayer[j]) / ((double)correctionLayer[j]);
-				normFrame[j] = -log( normFrame[j] );
-				if ( normFrame[j] < min ) min = normFrame[j];
-			} else {
-				currentLayer[j] = 0;
+			//
+			if (currentLayer[j] != 0)
+			{
+				if (correctionLayer[j] > 0) {
+
+					normFrame[j] = ((double)currentLayer[j]) / ((double)correctionLayer[j]);
+
+					if (normFrame[j] < 1.)
+						normFrame[j] = -log(normFrame[j]);
+					if (normFrame[j] >= 1.)
+						normFrame[j] = log(normFrame[j]);
+					if (j<20) std::cout << std::setprecision(10) << normFrame[j] << endl;
+
+					if (normFrame[j] < min) min = normFrame[j];
+				}
+				else {
+					currentLayer[j] = 0;
+				}
+
 			}
 
 		}
 
-		cout << "minimum : " << min << endl;
+		int correctionFactor = (int)-floor(log10(min));
+		cout << std::setprecision(10) << "minimum : " << (double)min << endl;
+		cout << std::setprecision(10) << "correction : " << correctionFactor << endl;
 
-		for(int j = 0; j < getPixelsPerLayer(); j++) {
-			currentLayer[j] = round(normFrame[j] * 1000.0);
+		for (int j = 0; j < getPixelsPerLayer(); j++) {
+			if (currentLayer[j] != 0)
+				currentLayer[j] = round(normFrame[j] * pow(10.0, correctionFactor));
+
 
 		}
 
-		delete [] normFrame;
+		delete[] normFrame;
 
 	}
 
