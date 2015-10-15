@@ -1,4 +1,15 @@
 #include <QUdpSocket>
+#include <QAbstractSocket>
+#ifdef WIN32
+#include <winsock2.h>
+#else
+// Linux
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+typedef int SOCKET;
+#define INVALID_SOCKET -1
+#endif
 
 #include "ReceiverThread.h"
 #include "FramebuilderThread.h"
@@ -73,8 +84,12 @@ void ReceiverThread::stop()
 
 // ----------------------------------------------------------------------------
 
+#define USE_NATIVE_SOCKET
+
 void ReceiverThread::run()
 {
+#ifndef USE_NATIVE_SOCKET
+  // Use Qt socket
   _sock = new QUdpSocket();
   if( !_sock->bind( QHostAddress(_addr), _port ) )
     {
@@ -86,16 +101,76 @@ void ReceiverThread::run()
   //     (and with a QCoreApplication in SpidrDaq)
   //connect( _sock, SIGNAL( readyRead() ), this, SLOT( readDatagrams() ) );
 
+#else
+  // Use native socket
+  _sock = new QAbstractSocket( QAbstractSocket::UdpSocket, 0 );
+  SOCKET sk;
+  _stop = true;
+#ifdef WIN32
+  // Start up winsock
+  WSADATA wsadata;
+  if( WSAStartup( 0x0202, &wsadata ) != 0 )
+    {
+      _errString = "WSAStartup failed";
+    }
+  else if( wsadata.wVersion != 0x0202 )
+    {
+      _errString = QString( "winsock version: " ) +
+	QString::number( wsadata.wVersion, 16 );
+    }
+  else
+#endif // WIN32
+    {
+      // Open a UDP socket
+      sk = socket( AF_INET, SOCK_DGRAM, 0 );
+
+      if( sk != INVALID_SOCKET )
+	{
+	  // Set socket option(s)
+	  int rcvbufsz = MPX_PIXELS * 64; // Will that be enough?
+	  if( setsockopt( sk, SOL_SOCKET, SO_RCVBUF,
+			  reinterpret_cast<char *> ( &rcvbufsz ),
+			  sizeof( int ) ) == 0 )
+	    {
+	      // Bind the socket
+	      struct sockaddr_in saddr;
+	      saddr.sin_family      = AF_INET;
+	      saddr.sin_port        = htons( _port );
+	      saddr.sin_addr.s_addr = htonl( _addr );
+	      if( bind( sk, ( struct sockaddr * ) &saddr,
+			sizeof( struct sockaddr_in ) ) == 0 )
+		{
+		  // Assign the native socket to the Qt socket object
+		  if( _sock->setSocketDescriptor( sk ) )
+		    _stop = false;
+		  else
+		    _errString = QString("Failed to set descriptor");
+		}
+	      else
+		{
+		  _errString = QString("Failed to bind");
+		}
+	    }
+	  else
+	    {
+	      _errString = QString("Failed to set socket option SO_RCVBUF");
+	    }
+	}
+      else
+	{
+	  _errString = QString("Failed to create socket");
+	}
+    }
+#endif // USE_NATIVE_SOCKET
+
   while( !_stop )
     {
-      //this->exec(); // Start an event loop // ### Cannot get this to work?
-      // I think we need a QCoreApplication::exec() as well
-
       if( _sock->waitForReadyRead( 100 ) )
 	this->readDatagrams();
       else
 	this->handleFrameTimeout();
     }
+
   _sock->close();
   delete _sock;
 }
@@ -106,10 +181,16 @@ void ReceiverThread::readDatagrams()
 {
   int recvd_sz, sequence_nr, sequence_nr_modulo, shutter_cnt;
 
+#ifndef USE_NATIVE_SOCKET
   while( _sock->hasPendingDatagrams() )
     {
       recvd_sz = _sock->readDatagram( _recvBuffer, RECV_BUF_SIZE );
       if( recvd_sz <= 0 ) continue;
+#else
+    {
+      recvd_sz = _sock->read( _recvBuffer, RECV_BUF_SIZE );
+      if( recvd_sz <= 0 ) return;
+#endif // USE_NATIVE_SOCKET
 
       // Process the received packet
       ++_packetsReceived;

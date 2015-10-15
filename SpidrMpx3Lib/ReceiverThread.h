@@ -22,6 +22,7 @@ typedef uint8_t  u8;
 #define RECV_BUF_SIZE    16384
 
 class QUdpSocket;
+class QAbstractSocket;
 class FramebuilderThread;
 class SpidrController;
 
@@ -74,7 +75,12 @@ class ReceiverThread : public QThread
     { _spidrController = spidrctrl; };
 
  private:
+#define USE_NATIVE_SOCKET
+#ifdef USE_NATIVE_SOCKET
+  QAbstractSocket *_sock;
+#else
   QUdpSocket *_sock;
+#endif
   quint32     _addr;
   QString     _addrStr;
   int         _port;

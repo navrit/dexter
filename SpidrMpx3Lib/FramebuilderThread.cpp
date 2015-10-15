@@ -469,7 +469,7 @@ bool FramebuilderThread::isCounterhFrame( int index )
       // otherwise return false
       bool b = _isCounterhFrame[0];
       for( u32 i=1; i<_n; ++i )
-	if( b != _isCounterhFrame[index] )
+	if( b != _isCounterhFrame[i] )
 	  return false;
       return b;
     }

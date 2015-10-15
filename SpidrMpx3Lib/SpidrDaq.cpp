@@ -6,7 +6,8 @@
 #include "FramebuilderThread.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x15100100;
+const int VERSION_ID = 0x15101500;
+//const int VERSION_ID = 0x15100100;
 //const int VERSION_ID = 0x15093000;
 //const int VERSION_ID = 0x15092100;
 //const int VERSION_ID = 0x15051900;
