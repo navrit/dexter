@@ -303,6 +303,7 @@ int Mpx3GUI::getFrameCount(){
 
 
 void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
+
 	QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("binary files (*.bin)"));
 	QFile saveFile(filename);
 	if (!saveFile.open(QIODevice::WriteOnly)) {
@@ -314,28 +315,47 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
 	}
 	saveFile.write(getDataset()->toByteArray());
 	saveFile.close();
+	
+	///////////////////////////////////////////////////////////
+	// ASCII
+	// Get the layers
+	QList<int> thresholds = getDataset()->getThresholds();
+	QList<int>::iterator it  = thresholds.begin();
+	QList<int>::iterator itE = thresholds.end();
 
-	// save to other formats TODO
-	int * framedata = getDataset()->getLayer( 0 );
-	//QRectF box = getDataset()->computeBoundingBox();
-	int sizex =  getDataset()->x();
-	int sizey =  getDataset()->y();
+	for (; it != itE; it++) {
 
-	ofstream of("data.txt", std::ofstream::out);
-	cout << getDataset()->getPixelsPerLayer() << endl;
+			// Get the matrix for a given layer
+			int * framedata = getDataset()->getLayer( *it );
+			int sizex = getDataset()->x();
+			int sizey = getDataset()->y();
 
-	for(int i = 0 ; i < sizex * sizey ; i++) {
+			QString plS = "frame_";
+			plS += QString::number(*it, 'd', 0);
+			plS += ".txt";
+			string saveLoc = plS.toStdString();
 
-		of << framedata[i] << " ";
+			ofstream of(saveLoc, std::ofstream::out);
+			of.open(saveLoc);
+			if (of.is_open())
+			{
+				for (int i = 0; i < sizex * sizey; i++) {
 
-		if ( (i+1) % sizex == 0 ) {
+					of << framedata[i] << " ";
 
-			of << "\n";
-		}
+					if ((i + 1) % sizex == 0) {
 
-	}
+						of << "\n";
+					}
 
-	of.close();
+				}
+			}
+	
+			of.close();
+	
+
+
+	} // layer (threshold)
 
 	return;
 }
