@@ -128,10 +128,10 @@ void DataTakingThread::run() {
 			// record the frameId for the first device available (it's the same for all of them)
 			frameId = spidrdaq->frameShutterCounter( i );
 
-			cout << "[START] [" << activeDevices[i] << "] frame : " << nFramesReceived
-					<< " | frameShutterCounter: " << frameId
-					<< " | isCounterhFrame : " << spidrdaq->isCounterhFrame( i )
-					<< endl;
+			//cout << "[START] [" << activeDevices[i] << "] frame : " << nFramesReceived
+			//		<< " | frameShutterCounter: " << frameId
+			//		<< " | isCounterhFrame : " << spidrdaq->isCounterhFrame( i )
+			//		<< endl;
 		}
 
 		// If bad flip happened I wait until the first counterL shows up
@@ -155,7 +155,7 @@ void DataTakingThread::run() {
 
 		// If taking care of a counterL, start by rewinding the flags
 		if ( !spidrdaq->isCounterhFrame(firstDevId) ) {
-			cout << "[INFO] Cleaning up" << endl;
+			//cout << "[INFO] Cleaning up" << endl;
 			doReadFrames_L = true;
 			doReadFrames_H = true;
 			// Buffering for the counterL
@@ -224,7 +224,7 @@ void DataTakingThread::run() {
 			// keep the frameId
 			prevFrameId = frameId;
 
-			cout << "Bad frame L:" << doReadFrames_L << ", H:" << doReadFrames_H << endl;
+			//cout << "Bad frame L:" << doReadFrames_L << ", H:" << doReadFrames_H << endl;
 
 			// Release frame
 			spidrdaq->releaseFrame();
@@ -247,7 +247,7 @@ void DataTakingThread::run() {
 
 				if ( !spidrdaq->isCounterhFrame(firstDevId) ) {
 
-					cout << "low , frameId = " << nFramesReceived << endl;
+					//cout << "low , frameId = " << nFramesReceived << endl;
 
 					int size = size_in_bytes / __nThresholdsPerSpectroscopicPixel;
 					int sizeReduced = size / __nThresholdsPerSpectroscopicPixel;    // 4 thresholds per 110um pixel
@@ -279,7 +279,7 @@ void DataTakingThread::run() {
 
 				if ( spidrdaq->isCounterhFrame(firstDevId) && _mpx3gui->getConfig()->getReadBothCounters() ) {
 
-					cout << "high , frameId = " << nFramesReceived << endl;
+					//cout << "high , frameId = " << nFramesReceived << endl;
 
 
 					int size = size_in_bytes / __nThresholdsPerSpectroscopicPixel;
@@ -381,7 +381,10 @@ void DataTakingThread::run() {
 
 	// Force last draw if not reached
 	if ( nFramesReceived != lastDrawn ) {
-		emit progress( nFramesReceived );
+
+		if ( _mpx3gui->getConfig()->getReadBothCounters() ) emit progress( nFramesReceived/2 );
+		else  emit progress( nFramesReceived );
+
 		if( _mpx3gui->getConfig()->getColourMode() ) {
 			emit reload_all_layers();
 		} else {

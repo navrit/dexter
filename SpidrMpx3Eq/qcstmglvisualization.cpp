@@ -111,6 +111,9 @@ void QCstmGLVisualization::StartDataTaking(){
 		ui->startButton->setText( "Start" );
 		_takingData = false;
 
+		// force the GUI to update
+		update();
+
 		// Finish
 		DestroyTimer();
 		ETAToZero();
@@ -300,8 +303,7 @@ void QCstmGLVisualization::changeBinCount(int count){
 
 void QCstmGLVisualization::on_fps_update(int nframes_done) {
 
-	double fpsVal = ((double)nframes_done) / ((double)_etatimer->elapsed() / 1000.);
-	cout << nframes_done << " ***** " << _etatimer->elapsed()/1000 << " ******* " << fpsVal << endl;
+	double fpsVal = ((double)nframes_done) / ((double)_etatimer->elapsed() / 1000.); // elapsed() comes in milliseconds
 
 	QString fpsS = QString::number( round( fpsVal ) , 'd', 0 );
 	fpsS += " fps";
