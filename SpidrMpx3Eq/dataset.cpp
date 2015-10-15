@@ -17,9 +17,13 @@ Dataset::Dataset(int x, int y, int framesPerLayer)
 
 	obCorrection = 0x0;
 
+	reloadScores();
+
 }
 
-Dataset::Dataset() : Dataset(1,1,1){}
+Dataset::Dataset() : Dataset(1,1,1) {
+	reloadScores();
+}
 
 Dataset::~Dataset()
 {
@@ -31,6 +35,10 @@ void Dataset::loadCorrection(QByteArray serialized) {
 	delete obCorrection;
 	obCorrection  = new Dataset(0,0,0);
 	obCorrection->fromByteArray(serialized);//TODO: add error checking on correction to see if it is relevant to the data.
+}
+
+void Dataset::reloadScores() {
+	_scores.packetsLost = 0;
 }
 
 int64_t Dataset::getTotal(int threshold){

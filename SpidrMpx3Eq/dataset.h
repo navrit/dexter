@@ -44,10 +44,15 @@ class Dataset//TODO: specify starting corner?
     orientationBtTRtL=7
   };
 
+  typedef struct {
+	  int packetsLost;
+  } score_info;
+
  private:
   int m_nx, m_ny; //!<Pixel size in the x and y direction
   QRectF m_boundingBox;//!<A rectangular box which encompasses all the chips. Hence the name.
   int m_nFrames; //!< The amount of detectors, a.k.a. frames here.
+  score_info _scores; //!< some 'score' info about this frame. A buch of counters.
 
   QVector<QPoint>  m_frameLayouts; //!<A vector containing the bottom-left corners of the detectors, (0,0) is bottom, left , (1,0) is to the right, (0,1) above.
   QVector<int> m_frameOrientation;//!<The orientation of the detectors. see the enum.
@@ -57,6 +62,7 @@ class Dataset//TODO: specify starting corner?
   Dataset * obCorrection = nullptr;//!< A pointer to the Dataset used for the flat-field correction.
   int getLayerIndex(int threshold);
   int newLayer(int layer);//!<Adds a new layer at the specified threshold.
+  void reloadScores();
 
 public:
   Dataset(int x, int y, int framesPerLayer = 1);
@@ -108,6 +114,8 @@ public:
   uint64_t getPixelsPerLayer() const{return m_nFrames*m_nx*m_ny;}
   bool isBorderPixel(int pixel, QSize isize); //!<Determines if the pixel is at the border (x) (assembly coordinates !)
   bool isBorderPixel(int x, int y, QSize isize); //!<Determines if the pixel is at the border (x,y) (assembly coordinates !)
+  void increasePacketsLost(int val) { _scores.packetsLost += val; }
+  int getPacketsLost() { return _scores.packetsLost; }
 
   QPoint getSize(){return QPoint(m_nx, m_ny);}
   int *getFrame(int index, int threshold); //!< returns a pointer to the data of chip index at the specified threshold.
