@@ -105,6 +105,9 @@ QByteArray Dataset::toByteArray() {
 	return ret;
 }
 
+/**
+ * This serializes all the layers in a single vector of integers.
+ */
 QVector<int> Dataset::toQVector() {
 
 	QVector<int> tovec;
@@ -112,7 +115,7 @@ QVector<int> Dataset::toQVector() {
 	QList<int> keys = m_thresholdsToIndices.keys();
 	for(int i = 0; i < keys.length(); i++) {
 		int * layer = this->getLayer(keys[i]);
-		for ( int j = 0 ; j < this->getPixelsPerLayer() ; j++) {
+		for ( uint64_t j = 0 ; j < this->getPixelsPerLayer() ; j++) {
 			tovec.append( layer[j] );
 		}
 	}
