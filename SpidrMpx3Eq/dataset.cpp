@@ -645,13 +645,15 @@ void Dataset::applyOBCorrection(){
 
 					normFrame[j] = ((double)currentLayer[j]) / ((double)correctionLayer[j]);
 
+					//avoid negative values
 					if (normFrame[j] < 1.)
 						normFrame[j] = -log(normFrame[j]);
 					if (normFrame[j] >= 1.)
 						normFrame[j] = log(normFrame[j]);
 					if (j<20) std::cout << std::setprecision(10) << normFrame[j] << endl;
 
-					if (normFrame[j] < min) min = normFrame[j];
+					//set Minimum
+					if (normFrame[j] < min && normFrame[j]!= 0) min = normFrame[j];
 				}
 				else {
 					currentLayer[j] = 0;

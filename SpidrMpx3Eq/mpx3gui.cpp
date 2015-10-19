@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
+#include <fstream>
+#include <iostream>
 
 Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent), _coreApp(coreApp), _ui(new Ui::Mpx3GUI)
 {
@@ -330,13 +332,15 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
 			int sizex = getDataset()->x();
 			int sizey = getDataset()->y();
 
-			QString plS = "frame_";
+			QString plS = filename;
+			plS.remove(plS.size() - 4, 4);
+			plS += "_frame_";
 			plS += QString::number(*it, 'd', 0);
 			plS += ".txt";
 			string saveLoc = plS.toStdString();
 
-			ofstream of(saveLoc, std::ofstream::out);
-			of.open(saveLoc);
+			ofstream of;
+			of.open(saveLoc, ios::app);
 			if (of.is_open())
 			{
 				for (int i = 0; i < sizex * sizey; i++) {
