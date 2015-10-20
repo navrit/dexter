@@ -96,6 +96,8 @@ public:
 	int getPixelAt(int x, int y, int layer);
 	int getFrameCount();
 
+	int XYtoX(int x, int y, int dimX) { return y * dimX + x; };
+
 signals:
 	void dataChanged();
 	void data_cleared();

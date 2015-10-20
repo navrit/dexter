@@ -139,7 +139,7 @@ void QCstmGLVisualization::on_data_taking_finished(int /*nFramesTaken*/) {
 		ETAToZero();
 
 		// When finished taking data save the original data
-		* (_mpx3gui->getOriginalDataset() ) =  * ( _mpx3gui->getDataset() );
+		//* (_mpx3gui->getOriginalDataset() ) =  * ( _mpx3gui->getDataset() );
 		//_mpx3gui->getDataset()->saveOriginalData();
 
 		// Corrections
@@ -648,7 +648,7 @@ void QCstmGLVisualization::on_applyCorr_clicked() {
 
 		// This is done off data taking
 		// Recover first the saved data to operate on the original
-		* ( _mpx3gui->getDataset() ) = * (_mpx3gui->getOriginalDataset() );
+		//* ( _mpx3gui->getDataset() ) = * (_mpx3gui->getOriginalDataset() );
 
 		_mpx3gui->getDataset()->applyCorrections( ui );
 

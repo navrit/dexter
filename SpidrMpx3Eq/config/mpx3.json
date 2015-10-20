@@ -118,7 +118,7 @@
         }
     ],
     "DetectorConfig": {
-        "ColourMode": true,
+        "ColourMode": false,
         "CsmSpm": 0,
         "DecodeFrames": true,
         "GainMode": 1,
