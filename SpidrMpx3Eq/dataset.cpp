@@ -591,6 +591,7 @@ void Dataset::applyCorrections(Ui::QCstmGLVisualization * ui) {
 		if ( ui->obcorrCheckbox->isChecked() ) applyOBCorrection();
 		if ( ui->deadpixelsinterpolationCheckbox->isChecked() ) applyDeadPixelsInterpolation( ui->noisyPixelMeanMultiplier->value(), meanvals );
 		if ( ui->highinterpolationCheckbox->isChecked() ) applyHighPixelsInterpolation( ui->noisyPixelMeanMultiplier->value(), meanvals );
+		if (ui->bhcorrCheckbox->isChecked()) applyBHCorrection();
 
 	}
 
@@ -677,6 +678,11 @@ void Dataset::applyOBCorrection(){
 		delete[] normFrame;
 
 	}
+
+}
+
+void Dataset::applyBHCorrection(){
+	//TODO implement
 
 }
 
