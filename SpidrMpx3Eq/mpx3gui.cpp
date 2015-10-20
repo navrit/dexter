@@ -17,8 +17,10 @@
 #include "barchart.h"
 #include "ThlScan.h"
 #include "gradient.h"
+#include "dataset.h"
 
 #include <QMessageBox>
+#include <QDebug>
 
 #include <stdlib.h>
 #include <time.h>
@@ -320,18 +322,85 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
 	
 	///////////////////////////////////////////////////////////
 	// ASCII
-	// Get the layers
+	int _nchipsX = getDataset()->getNChipsX();
+	int _nchipsY = getDataset()->getNChipsY();
+	Dataset * resdataset = new Dataset(__matrix_size_x, __matrix_size_y, _nchipsX*_nchipsY);
+	resdataset->clear();
+
+	//The final application should supprot 8 different thresholds
 	QList<int> thresholds = getDataset()->getThresholds();
 	QList<int>::iterator it  = thresholds.begin();
 	QList<int>::iterator itE = thresholds.end();
 
-	for (; it != itE; it++) {
+	// Do the different layers
+		for (; it != itE; it++) {
+
+			//Select only working chips
+			for (int i = 0; i < getConfig()->getNDevicesSupported(); i++) {
+
+				// Check if the device is alive
+				if (!getConfig()->detectorResponds(i)) {
+					continue;
+				}
+
+				// Get adj matrix for one chip
+				int * adj_matrix = getDataset()->getFrame(i, *it);
+				// Stack
+				resdataset->setFrame(adj_matrix, i, *it);
+
+			}
+
 
 			// Get the matrix for a given layer
-			int * framedata = getDataset()->getLayer( *it );
+			int * framedata = resdataset->getLayer( *it );
+
+
+
+			int nchipsx = getDataset()->getNChipsX();
+			int nchipsy = getDataset()->getNChipsY();
 			int sizex = getDataset()->x();
 			int sizey = getDataset()->y();
 
+			//necessary for putting frames on the correct spot
+			unsigned int xswitch = 1;
+			unsigned int yswitch = 0;
+			int xoffset = 0, yoffset = 0;
+			int totCntr = 0;
+
+			int* _plotbuffer = new int[sizex * sizey * nchipsx * nchipsy];
+
+			for (int cntr = 0; cntr < sizex*sizey*nchipsx*nchipsy; cntr++) { _plotbuffer[cntr] = 0; }
+	
+			// reorder data to create image
+			for (int chipIdx = 0; chipIdx < getConfig()->getNDevicesSupported(); chipIdx++) {
+
+				// Check if the device is alive
+				//if (!getConfig()->detectorResponds(chipIdx)) {
+				//	continue;
+				//}
+
+				// where to start in X
+				if ((xswitch >> 1 & 0x1) == 0) xoffset = 0;
+				else xoffset = sizex;
+
+				// where to start in Y
+				if ((yswitch >> 1 & 0x1) == 0) yoffset = sizey;
+				else yoffset = 0;
+
+				// Now go chip by chip
+				for (int j = 0; j < sizey; j++) {
+					for (int i = 0; i < sizex; i++) {
+						_plotbuffer[ XYtoX(xoffset + i, yoffset + j, sizex*nchipsx) ] = framedata[totCntr++];
+						//_plotbuffer[(yoffset + j)*sizex*nchipsx + xoffset + i] = framedata[totCntr++];
+					}
+				}
+
+				xswitch++;
+				yswitch++;
+
+			}
+			
+			//create string containing file location
 			QString plS = filename;
 			plS.remove(plS.size() - 4, 4);
 			plS += "_frame_";
@@ -339,18 +408,19 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
 			plS += ".txt";
 			string saveLoc = plS.toStdString();
 
+			//qDebug() << "nchipsx : " << nchipsx << " | nchipsy : " << nchipsy << " --> " << getDataset()->getPixelsPerLayer();
+
+			//save file
 			ofstream of;
-			of.open(saveLoc, ios::app);
+			of.open(saveLoc);
 			if (of.is_open())
 			{
-				for (int i = 0; i < sizex * sizey; i++) {
+				for (int i = 0; i < sizex*sizey*nchipsx*nchipsy; i++) {			
+																						
+					of << _plotbuffer[i] << " ";
 
-					of << framedata[i] << " ";
-
-					if ((i + 1) % sizex == 0) {
-
-						of << "\n";
-					}
+					// new line
+					if ( (i + 1) % (sizex*nchipsx) == 0 ) of << "\r\n";
 
 				}
 			}
@@ -359,7 +429,7 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
 	
 
 
-	} // layer (threshold)
+	} // end of for loop that cycles through the layers (threshold)
 
 	return;
 }
