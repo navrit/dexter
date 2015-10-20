@@ -70,7 +70,7 @@ public:
   ~Dataset();
   Dataset( const Dataset& other );
   Dataset& operator=( const Dataset& rhs );
-  void removeCorrection(){delete obCorrection; obCorrection = nullptr;}
+  void removeCorrection(){ delete obCorrection; obCorrection = nullptr;}
   void zero();//!< Set all layers to zero.
   QPoint getNaturalCoordinates(QPoint pixel, int index); //!< Used by sample to compute coordinates
   int thresholdToIndex(int threshold){return m_thresholdsToIndices.value(threshold, -1);}
@@ -86,6 +86,7 @@ public:
   void loadCorrection(QByteArray serialized);//!< Loads and sets the correction to a previously serialized set.
   void applyCorrections(Ui::QCstmGLVisualization * ui);//<!Handles all corrections.  This function is blocking for the moment !
   void applyOBCorrection();//!< Computes and applies the flat-field correction
+  void applyBHCorrection();//!< Computes and applies a beam-hardening correction
   void applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
   void applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
   void calcBasicStats(QPoint pixel_init, QPoint pixel_end);
