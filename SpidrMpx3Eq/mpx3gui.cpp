@@ -327,36 +327,50 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
 
     ///////////////////////////////////////////////////////////
     // ASCII
-    int * fullFrame = getDataset()->getFullImageAsArrayWithLayout(0, this);
+
     int sizex = getDataset()->x();
+	int sizey = getDataset()->y();
     int nchipsx =  getDataset()->getNChipsX();
-    int len = sizex * getDataset()->y() * nchipsx * getDataset()->getNChipsY();
+	int nchipsy = getDataset()->getNChipsY();
+    int len = sizex * sizey * nchipsx * nchipsy;
 
-    // Create string containing file location
-    QString plS = filename;
-    plS.remove(plS.size() - 4, 4); // get rid of the .bin extension
-    plS += "_frame_ascii_";
-    plS += QString::number(0, 'd', 0);
-    plS += ".txt";
-    string saveLoc = plS.toStdString();
+	QList <int> thresholds = getDataset()->getThresholds();
+	QList<int>::iterator it = thresholds.begin();
+	QList<int>::iterator itE = thresholds.end();
 
-    //qDebug() << "nchipsx : " << nchipsx << " | nchipsy : " << nchipsy << " --> " << getDataset()->getPixelsPerLayer();
+	// Do the different thresholds
+	for (; it != itE; it++) {
 
-    // Save file
-    ofstream of;
-    of.open( saveLoc );
-    if ( of.is_open() ) {
-        for ( int i = 0; i < len; i++ ) {
+		int * fullFrame = getDataset()->getFullImageAsArrayWithLayout(*it, this);
 
-            of << fullFrame[i] << " ";
 
-            // new line
-            if ( (i + 1) % (sizex*nchipsx) == 0 ) of << "\r\n";
+		// Create string containing file location
+		QString plS = filename;
+		plS.remove(plS.size() - 4, 4); // get rid of the .bin extension
+		plS += "_frame_ascii_";
+		plS += QString::number(*it, 'd', 0);
+		plS += ".txt";
+		string saveLoc = plS.toStdString();
 
-        }
-    }
+		//qDebug() << "nchipsx : " << nchipsx << " | nchipsy : " << nchipsy << " --> " << getDataset()->getPixelsPerLayer();
 
-    of.close();
+		// Save file
+		ofstream of;
+		of.open(saveLoc);
+		if (of.is_open()) {
+			for (int i = 0; i < len; i++) {
+
+				of << fullFrame[i] << " ";
+
+				// new line
+				if ((i + 1) % (sizex*nchipsx) == 0) of << "\r\n";
+
+			}
+		}
+
+		of.close();
+
+	}
 
 
     // end of for loop that cycles through the layers (threshold)
