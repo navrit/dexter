@@ -1,3 +1,6 @@
+// John Idarraga 2015
+
+
 #include "StepperMotorController.h"
 
 
@@ -126,6 +129,14 @@ bool StepperMotorController::arm_stepper( ) {
 
 		CPhidgetStepper_setAcceleration(_stepper, motorid, _parsMap[motorid].acc);
 
+		// CurrentLimit
+		double limit = 0.0;
+		CPhidgetStepper_getCurrentLimit( _stepper, motorid, &limit );
+		cout << "limit : " << limit << endl;
+		_parsMap[motorid].currentILimit = limit;
+
+		CPhidgetStepper_setCurrentLimit( _stepper, motorid, limit );
+
 		// Pos
 		long long int curr_pos = 0;
 		if ( CPhidgetStepper_getCurrentPosition(_stepper, motorid, &curr_pos) == EPHIDGET_OK ) {
@@ -200,6 +211,16 @@ void StepperMotorController::SetSpeed(int motorid, double val) {
 	CPhidgetStepper_setVelocityLimit(_stepper, motorid, _parsMap[motorid].vel);
 
 }
+
+void StepperMotorController::SetCurrentILimit(int motorid, double val) {
+
+	_parsMap[motorid].currentILimit = val;
+	CPhidgetStepper_setCurrentLimit(_stepper, motorid, _parsMap[motorid].currentILimit);
+
+	//cout << "current limit : " << _parsMap[motorid].currentILimit << endl;
+
+}
+
 
 void StepperMotorController::disarm_stepper() {
 
@@ -324,6 +345,7 @@ int StepperMotorController::stepper_simple(int motorid)
 void StepperMotorController::goToTarget(long long int targetPos, int motorid) {
 
 	CPhidgetStepper_setTargetPosition (_stepper, motorid, targetPos);
+
 
 }
 

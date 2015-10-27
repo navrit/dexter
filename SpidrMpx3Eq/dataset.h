@@ -28,6 +28,7 @@ namespace Ui {
   class QCstmGLVisualization;
 }
 
+class Mpx3GUI;
 
 class Dataset//TODO: specify starting corner?
 {
@@ -53,6 +54,7 @@ class Dataset//TODO: specify starting corner?
   QRectF m_boundingBox;//!<A rectangular box which encompasses all the chips. Hence the name.
   int m_nFrames; //!< The amount of detectors, a.k.a. frames here.
   score_info _scores; //!< some 'score' info about this frame. A buch of counters.
+  int * _plainImageBuff = nullptr;
 
   QVector<QPoint>  m_frameLayouts; //!<A vector containing the bottom-left corners of the detectors, (0,0) is bottom, left , (1,0) is to the right, (0,1) above.
   QVector<int> m_frameOrientation;//!<The orientation of the detectors. see the enum.
@@ -119,10 +121,11 @@ public:
   int getPacketsLost() { return _scores.packetsLost; }
 
   QPoint getSize(){return QPoint(m_nx, m_ny);}
-  int *getFrame(int index, int threshold); //!< returns a pointer to the data of chip index at the specified threshold.
-  int *getFrameAt(int index, int layer); //!< returns a pointer to the data of chip index at the specified layer-index. (i.e. does not call thresholdToLayer(layer))
+  int * getFrame(int index, int threshold); //!< returns a pointer to the data of chip index at the specified threshold.
+  int * getFrameAt(int index, int layer); //!< returns a pointer to the data of chip index at the specified layer-index. (i.e. does not call thresholdToLayer(layer))
   int sampleFrameAt(int index, int layer, int x, int y);//!< Returns the value of the pixel at (x,y), in the coordinate-system of the assembly, of chip index directly at the specified layer. Does take into account the orientation of the chip.
-  int* getLayer(int threshold);
+  int * getLayer(int threshold);
+  int * getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui);
   int sample(int x, int y, int threshold);//!<Returns the value of the pixel at (x,y) (assembly coordinates) and the specified threshold.
   int x() const{return m_nx;}
   int y() const{return m_ny;}

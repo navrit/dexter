@@ -73,7 +73,7 @@ private:
 	void updateHistogram(int layer);
 public:
 	Mpx3Config* getConfig();
-	Dataset* getDataset(){return workingSet;}
+    Dataset* getDataset(){return workingSet;}
 	Dataset* getOriginalDataset(){return originalSet;}
 
 	QCstmEqualization * getEqualization();
@@ -87,6 +87,9 @@ public:
 	Gradient* getGradient(int index);
 	void resize(int x, int y);
 	//histogram* getHist(int index){return hists[index];}
+
+    vector<int> getOrientation() { return _MPX3RX_ORIENTATION; }
+    vector<QPoint> getLayout() { return _MPX3RX_LAYOUT; }
 
 	QPoint  getSize();
 	void getSize(int *x, int *y);
@@ -133,6 +136,7 @@ signals:
 private slots:
 	void LoadEqualization();
 	void on_openfileButton_clicked();
+    void on_actionExit_triggered();
 };
 
 

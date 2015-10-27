@@ -208,6 +208,7 @@ void QCstmConfigMonitoring::activateItemsGUI(){
 	ui->accelerationSpinBox->setEnabled( true );
 	ui->speedSpinBox->setEnabled( true );
 	ui->targetPosSpinBox->setEnabled( true );
+	ui->currentISpinBox->setEnabled( true );
 	ui->motorIdSpinBox->setEnabled( true );
 	ui->stepperSetZeroPushButton->setEnabled( true );
 }
@@ -221,6 +222,7 @@ void QCstmConfigMonitoring::deactivateItemsGUI(){
 	ui->accelerationSpinBox->setDisabled( true );
 	ui->speedSpinBox->setDisabled( true );
 	ui->targetPosSpinBox->setDisabled( true );
+	ui->currentISpinBox->setDisabled( true );
 	ui->motorIdSpinBox->setDisabled( true );
 	ui->stepperSetZeroPushButton->setDisabled( true );
 }
@@ -332,7 +334,7 @@ void QCstmConfigMonitoring::readTemp() {
 	}
 
 
-/*
+	/*
 	int mvolt, mamp, mwatt;
 	if( _spidrController->getAvddNow( &mvolt, &mamp, &mwatt ) )
 	{
@@ -380,7 +382,7 @@ void QCstmConfigMonitoring::readTemp() {
 
 	_leUpdateLed->show();
 	QTimer::singleShot( UPDATE_INTERVAL_MS/4, this, SLOT(updateLedOff()) );
-*/
+	 */
 
 }
 
@@ -721,6 +723,8 @@ void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
 	disconnect(ui->stepperCalibrationTableView->model(), SIGNAL(itemChanged(QStandardItem *)), _mpx3gui->getConfig(), SLOT(setStepperConfigCalib(QStandardItem *)));
 	disconnect(ui->accelerationSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setAcceleration(double)) );
 	disconnect(ui->speedSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeed(double)) );
+	disconnect(ui->currentISpinBox, SIGNAL(valueChanged(double)), this, SLOT(setCurrentILimit(double)) );
+
 	// the missing boolead (ui->stepperUseCalibCheckBox) is managed by an implicit slot (on_stepperUseCalibCheckBox_toggled)
 
 	// On turn on --> setup, on turn off --> close
@@ -762,6 +766,16 @@ void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
 		accS += " to ";
 		accS += QString::number( parsMap[motorid].maxAcc , 'f', 1 );
 		ui->accelerationSpinBox->setToolTip( accS );
+
+		// CurrentI limit
+		ui->currentISpinBox->setMinimum( 0 );
+		ui->currentISpinBox->setMaximum( 1.0 ); // TODO ... is this Amps ?
+		ui->currentISpinBox->setValue( parsMap[motorid].currentILimit );
+		QString clS = "Set current limit from ";
+		clS += QString::number( 0 , 'f', 1 );
+		clS += " to ";
+		clS += QString::number( 1.0 , 'f', 1 );
+		ui->currentISpinBox->setToolTip( clS );
 
 		// From config //////////////////////////////////////////////////////////////////
 		// The rest of the values should have been read from the configuration at startup
@@ -813,6 +827,8 @@ void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
 	connect(ui->stepperCalibrationTableView->model(), SIGNAL(itemChanged(QStandardItem *)), _mpx3gui->getConfig(), SLOT(setStepperConfigCalib(QStandardItem *)));
 	connect(ui->accelerationSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setAcceleration(double)) );
 	connect(ui->speedSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeed(double)) );
+	connect(ui->currentISpinBox, SIGNAL(valueChanged(double)), this, SLOT(setCurrentILimit(double)) );
+
 	// the missing boolead (ui->stepperUseCalibCheckBox) is managed by an implicit slot (on_stepperUseCalibCheckBox_toggled)
 
 }
@@ -927,6 +943,20 @@ void QCstmConfigMonitoring::setSpeed(double speed) {
 
 	// send to config
 	_mpx3gui->getConfig()->setStepperConfigSpeed( speed );
+
+}
+
+void QCstmConfigMonitoring::setCurrentILimit(double limitI) {
+
+	// avoid to set if the device is not connected
+	if ( !_stepper ) return;
+
+	// Set the new CurrentI
+	int motorId = ui->motorIdSpinBox->value();
+	_stepper->SetCurrentILimit(motorId, limitI);
+
+	// send to config
+	//_mpx3gui->getConfig()->
 
 }
 

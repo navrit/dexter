@@ -1,3 +1,5 @@
+// John Idarraga 2015
+
 #ifndef STEPPERMOTORCONTROLLER_H
 #define STEPPERMOTORCONTROLLER_H
 
@@ -22,6 +24,7 @@ typedef struct {
 	double maxAcc;
 	double minAcc;
 	double acc;
+	double currentILimit;
 	long long int currPos;
 	long long int targetPos;
 	bool calibOK;
@@ -59,6 +62,7 @@ public:
 
 	void SetAcceleration(int motorid, double val);
 	void SetSpeed(int motorid, double val);
+	void SetCurrentILimit(int motorid, double val);
 
 	// Calibration
 	bool SetStepAngleCalibration(int motorid, vector<pair<double, double> > points);

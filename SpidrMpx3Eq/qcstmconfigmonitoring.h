@@ -76,6 +76,7 @@ private slots:
   // spins
   void setAcceleration(double);
   void setSpeed(double);
+  void setCurrentILimit(double);
 
   ////////////////////////////////////////////////////////////
   // Camera
