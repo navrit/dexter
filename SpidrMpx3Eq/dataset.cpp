@@ -776,11 +776,8 @@ int* Dataset::getFrame(int index, int threshold){
     if(!m_thresholdsToIndices.contains(threshold))
         return nullptr;
     else {
-        //qDebug() << "th:" << threshold << ", index: " << thresholdToIndex(threshold);
         int N = m_thresholdsToIndices.size();
-        for(int i = 0 ; i < N ; i++) qDebug() << m_layers[i] << " ";
         return &m_layers[thresholdToIndex(threshold)][index*m_nx*m_ny];
-        //return m_layers[thresholdToIndex(threshold)];
     }
 }
 
@@ -895,7 +892,6 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui) {
     for ( int i = 0 ; i < nChips ; i++ ) {
         QPoint point = frameLayouts[i];
         offsets.push_back( QPoint( point.x() * x(), point.y() * y() ) );
-        qDebug() << point.x() * x() << ", " << point.y() * y();
     }
     // - Work out the orientation
     //   Here we decide where the loop starts and in which direction
