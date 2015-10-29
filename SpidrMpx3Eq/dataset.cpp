@@ -635,7 +635,9 @@ void Dataset::applyOBCorrection(){
         // Allocate some scratch memory
         double * normFrame = new double[getPixelsPerLayer()];
         // Find the smallest value.  Initialize it for the search.
-        double min = (double)correctionLayer[0];
+		double min = (double)std::abs(correctionLayer[0]);
+		double low = 0;
+		double temp;
         if (currentLayer[0] > correctionLayer[0]) min = currentLayer[0];
 
         for (int j = 0; j < getPixelsPerLayer(); j++) {
@@ -645,17 +647,17 @@ void Dataset::applyOBCorrection(){
             {
                 if (correctionLayer[j] > 0) {
 
-                    normFrame[j] = ((double)currentLayer[j]) / ((double)correctionLayer[j]);
-
-                    //avoid negative values
-                    if (normFrame[j] < 1.)
-                        normFrame[j] = -log(normFrame[j]);
-                    if (normFrame[j] >= 1.)
-                        normFrame[j] = log(normFrame[j]);
-                    if (j<20) std::cout << std::setprecision(10) << normFrame[j] << endl;
-
-                    //set Minimum
-                    if (normFrame[j] < min && normFrame[j]!= 0) min = normFrame[j];
+					normFrame[j] = log(((double)currentLayer[j]) / ((double)correctionLayer[j]));
+					
+                    //set Minimum. Value closest to 0 is taken.
+					if (std::abs(normFrame[j]) < min && normFrame[j] != 0)
+					{
+						min = std::abs(normFrame[j]);
+						
+						std::cout << std::setprecision(10) << "min = " << min << endl;
+						std::cout << std::setprecision(10) << "value " << log(((double)currentLayer[j]) / ((double)correctionLayer[j])) << endl;
+					}
+					if (normFrame[j] < low)	low = normFrame[j];
                 }
                 else {
                     currentLayer[j] = 0;
@@ -664,15 +666,20 @@ void Dataset::applyOBCorrection(){
             }
 
         }
-
+		// Calculates the amount of decimals before the first digit of the minimum. eg: 0.03 -> 2. 
+		// this ensures that all values can be converted to ints without losing data.
         int correctionFactor = (int)-floor(log10(min));
+		int offset = (int)(std::abs(low)*pow(10.0, correctionFactor));
+		cout << std::setprecision(10) << "low : " << low << endl;
+		cout << std::setprecision(10) << "offset : " << offset << endl;
         cout << std::setprecision(10) << "minimum : " << (double)min << endl;
         cout << std::setprecision(10) << "correction : " << correctionFactor << endl;
 
         for (int j = 0; j < getPixelsPerLayer(); j++) {
             if (currentLayer[j] != 0)
-                currentLayer[j] = round(normFrame[j] * pow(10.0, correctionFactor));
-
+                currentLayer[j] = offset + round(normFrame[j] * pow(10.0, correctionFactor));
+			if (currentLayer[j] < 0)
+				cout << j << endl;
 
         }
 
