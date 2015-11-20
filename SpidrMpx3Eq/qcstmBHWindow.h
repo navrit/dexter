@@ -5,6 +5,7 @@
 #include <QWidget>
 #include "mpx3gui.h"
 #include "gradient.h"
+#include "qstmBHdialog.h"
 
 namespace Ui {
   class QCstmBHWindow;
@@ -21,6 +22,23 @@ public:
   Ui::QCstmBHWindow * GetUI(){ return ui; };
 
   void SetMpx3GUI(Mpx3GUI *p);
+
+  qstmBHdialog * _bhdialog;
+
+private slots:
+  void on_addButton_clicked();
+
+  void on_dataButton_clicked();
+
+  void on_clearButton_clicked();
+
+  void on_loadButton_clicked();
+
+  void on_saveButton_clicked();
+
+  void on_optionsButton_clicked();
+
+  void on_list_itemClicked(QListWidgetItem *item);
 
 private:
 

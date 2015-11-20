@@ -65,7 +65,8 @@ SOURCES += main.cpp \
     qcstmconfigmonitoring.cpp \
     qcstmruler.cpp \
     heatmapdisplay.cpp \
-    qcstmct.cpp
+    qcstmct.cpp \
+    qstmBHdialog.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -92,7 +93,8 @@ HEADERS += mpx3gui.h \
     qcstmconfigmonitoring.h \
     qcstmruler.h \
     heatmapdisplay.h \
-    qcstmct.h
+    qcstmct.h \
+    qstmBHdialog.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DataTakingThread.h
@@ -109,7 +111,8 @@ FORMS    += mpx3gui.ui \
     qcstmconfigmonitoring.ui \
     heatmapdisplay.ui \
     qcstmct.ui \
-    qcstmBHWindow.ui
+    qcstmBHWindow.ui \
+    qstmBHdialog.ui
 
 DISTFILES += \
     shaders/heatmap.frag \
