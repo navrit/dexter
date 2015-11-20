@@ -692,6 +692,9 @@ void Dataset::applyOBCorrection(){
 void Dataset::applyBHCorrection(){
     //TODO implement
 
+	//Gets fitparameters per pixel from QCstmBHWindow::LoadCorrection
+	//Solves: function(x) = y, for x is the actual thickness of the object, y is the measured thickness (from data taking) and function is the fit based on the parameters
+	//Replaces y for x in currentLayer
 }
 
 void Dataset::fromByteArray(QByteArray serialized){
