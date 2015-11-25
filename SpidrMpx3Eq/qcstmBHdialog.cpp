@@ -1,4 +1,4 @@
-#include "qstmBHdialog.h"
+#include "qcstmBHdialog.h"
 #include "ui_qstmBHdialog.h"
 
 qstmBHdialog::qstmBHdialog(QWidget *parent) :
