@@ -847,8 +847,8 @@ void ThlScan::EqualizationScan() {
 	// The data buffer id doesn't necessarily corresponds to _deviceIndex
 	int idDataFetch = -1;
 	bool accelerationApplied = false;
-	int accelerationFlagCntr = 0;
-	int oldStep = _equalization->GetUI()->eqStepSpinBox->value();
+    int accelerationFlagCntr = 0;
+    //int oldStep = _equalization->GetUI()->eqStepSpinBox->value();
 	int nMasked = 0;
 
 	int progressMax = _numberOfLoops;

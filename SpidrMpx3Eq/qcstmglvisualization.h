@@ -17,6 +17,7 @@
 #include "histogram.h"
 
 #define __display_eta_granularity 200 // ms
+#define __networkOverhead 0.1
 
 #include <vector>
 
@@ -45,6 +46,9 @@ class QCstmGLVisualization : public QWidget
   // BH window
   QCstmBHWindow * _bhwindow;
 
+  // Reco
+  Color2DRecoGuided * _reco_Color2DRecoGuided = nullptr;
+
 public:
   explicit QCstmGLVisualization(QWidget *parent = 0);
   ~QCstmGLVisualization();
@@ -71,6 +75,7 @@ private:
   int getActiveThreshold();
   //!Adds the specified threshold to the layerselector combobox
   void addThresholdToSelector(int threshold);
+  void changeThresholdToNameAndUpdateSelector(int threshold, QString name);
   //!Adds the specified threshold if it didn't exist yet. Then switches to it.
   void setThreshold(int threshold);
 
@@ -118,6 +123,7 @@ private slots:
 
   //!Apply corrections manually
   void on_applyCorr_clicked();
+
 
 public slots:
   void StartDataTaking();

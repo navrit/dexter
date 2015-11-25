@@ -1,12 +1,19 @@
 #include "dataset.h"
 #include "mpx3gui.h"
+#include "color2drecoguided.h"
+
 #include <QDataStream>
 #include <QDebug>
 
 #include <iostream>
 #include <iomanip>
 
-using namespace std;
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/lu.hpp>
+#include <boost/numeric/ublas/io.hpp>
+
+using namespace boost::numeric::ublas;
+//using namespace std;
 
 #include "ui_qcstmglvisualization.h"
 
@@ -151,7 +158,7 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
     cout << endl;
 
     // Mean
-    vector<double> mean_v;
+    std::vector<double> mean_v;
     cout << "   mean\t\t";
     for(int i = 0; i < keys.length(); i++) {
 
@@ -337,7 +344,7 @@ void Dataset::applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, doub
                     // And check how many of its neighbors are not noisy
                     map< pair<int, int>, int > notNoisy = activeNeighbors(x, y, keys[i], isize, __less, qRound(meanMultiplier * mean) );
                     // The average will be made on the intersection of actives and notNoisy
-                    vector<int> toAverage = getIntersection(actives, notNoisy);
+                    std::vector<int> toAverage = getIntersection(actives, notNoisy);
 
                     // Request at least two active neighbors to consider filling up by averaging
                     if ( toAverage.size() >= 2 ) {
@@ -366,9 +373,9 @@ void Dataset::DumpSmallMap(map< pair<int, int>, int > m1) {
     //cout << endl;
 }
 
-vector<int> Dataset::getIntersection(map< pair<int, int>, int > m1, map< pair<int, int>, int > m2) {
+std::vector<int> Dataset::getIntersection(map< pair<int, int>, int > m1, map< pair<int, int>, int > m2) {
 
-    vector<int> intersection;
+    std::vector<int> intersection;
 
     // loop over m1 and find the matches in m2
     map< pair<int, int>, int >::iterator i = m1.begin();
@@ -400,11 +407,11 @@ int Dataset::averageValues(map< pair<int, int>, int > m1) {
     return qRound(av);
 }
 
-int Dataset::vectorAverage(vector<int> v) {
+int Dataset::vectorAverage(std::vector<int> v) {
 
     double av = 0;
-    vector<int>::iterator i  = v.begin();
-    vector<int>::iterator iE = v.end();
+    std::vector<int>::iterator i  = v.begin();
+    std::vector<int>::iterator iE = v.end();
     for ( ; i != iE ; i++ ) {
         av += *i;
     }
@@ -615,7 +622,102 @@ bool Dataset::isAnyCorrectionActive(Ui::QCstmGLVisualization * ui) {
 }
 
 
-void Dataset::applyOBCorrection(){
+
+int Dataset::applyColor2DRecoGuided(Color2DRecoGuided * reco) {
+
+    // Following the approach
+    //  lambda = Mu \prod t
+    // Mu^-1 \prod lambda = 1 \prod t --> which yields every thickness for every material
+
+    // Check that the OB correction data has been loaded by the user
+    if (obCorrection == nullptr) {
+        QMessageBox::information(0,"applyColor2DRecoGuided","You must load an OB file first.");
+        return EXIT_FAILURE;
+    }
+
+    QList<int> keys = m_thresholdsToIndices.keys();
+    int nThresholds = keys.size();
+    if ( nThresholds == 0 ) {
+        QMessageBox::information(0,"applyColor2DRecoGuided","No data available.");
+        return EXIT_FAILURE;
+    }
+
+    int ** currentLayers = new int*[nThresholds];
+    int ** correctionLayers = new int*[nThresholds];
+
+    // Retrieve pointers to data of all thresholds
+    for (int i = 0; i < nThresholds; i++) {
+        currentLayers[i] = getLayer(keys[i]);
+        correctionLayers[i] = obCorrection->getLayer(keys[i]);
+        if (correctionLayers[i] == nullptr) {
+            qDebug() << "[WARN] flat-field correction does not contain threshold: " << keys[i];
+            return EXIT_SUCCESS;
+        }
+    }
+
+    // Calculate -log(I/Io) := lambda
+    double ** normFrame = new double*[nThresholds];
+    for (int i = 0; i < nThresholds; i++) {
+        // work on this one layer
+        normFrame[i] = new double[getPixelsPerLayer()];
+
+        // Calculate -log(I/Io)
+        for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
+            if (currentLayers[i][j] != 0 && correctionLayers[i][j] > 0) {
+                normFrame[i][j] = -1 * log ( ((double)currentLayers[i][j]) / ((double)correctionLayers[i][j]) );
+            } else {
+                normFrame[i][j] = 0;
+            }
+        }
+
+    }
+
+    // Now make use of all layers at the same time
+
+    // Mu^-1 \prod lambda for every pixel
+    matrix<double> * muInv = reco->getMuInvMatrix();
+    boost::numeric::ublas::vector<double> lambda(nThresholds);
+    boost::numeric::ublas::vector<double> t(nThresholds);
+
+    cout << "MuInv(rep) = " << *muInv << endl;
+
+    // Go pixel per pixel
+    for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
+
+        // Build lambda matrix size 1*Nenergies.  Now go over energies
+        //int invCntr = nThresholds - 1;
+        //invCntr--
+        for (int i = 0; i < nThresholds; i++) {
+            lambda(i) = normFrame[i][j];
+        }
+        // Now having lambda calculate Mu^-1 \prod lambda
+        axpy_prod( (*muInv) , lambda, t );
+        //cout << "[muInv]  | " << (*muInv) << endl;
+        //cout << "[lambda] | " << lambda << endl;
+        //cout << "[t]      | " << t << endl;
+
+        // Show the content of t.  Coming from Energy to Materials
+        for (int i = 0; i < nThresholds; i++) {
+            currentLayers[i][j] = qRound( t(i) * 1.0E6 );
+        }
+
+    }
+
+    // Take care of deleting local structures
+    for (int i = 0; i < nThresholds; i++) {
+        delete [] normFrame[i];
+    }
+    // currentLayers and correctionLayers live in the data set.
+    // I just erase the references I made here.
+    delete [] currentLayers;
+    delete [] correctionLayers;
+    // normFrame needs full treatment
+    delete [] normFrame;
+
+    return EXIT_SUCCESS;
+}
+
+void Dataset::applyOBCorrection() {
 
     // Check that the OB correction data has been loaded by the user
     if (obCorrection == nullptr)
@@ -635,9 +737,9 @@ void Dataset::applyOBCorrection(){
         // Allocate some scratch memory
         double * normFrame = new double[getPixelsPerLayer()];
         // Find the smallest value.  Initialize it for the search.
-		double min = (double)std::abs(correctionLayer[0]);
-		double low = 0;
-		double temp;
+        double min = (double)std::abs(correctionLayer[0]);
+        double low = 0;
+        double temp;
         if (currentLayer[0] > correctionLayer[0]) min = currentLayer[0];
 
         for (int j = 0; j < getPixelsPerLayer(); j++) {
@@ -647,17 +749,17 @@ void Dataset::applyOBCorrection(){
             {
                 if (correctionLayer[j] > 0) {
 
-					normFrame[j] = log(((double)currentLayer[j]) / ((double)correctionLayer[j]));
-					
+                    normFrame[j] = log(((double)currentLayer[j]) / ((double)correctionLayer[j]));
+
                     //set Minimum. Value closest to 0 is taken.
-					if (std::abs(normFrame[j]) < min && normFrame[j] != 0)
-					{
-						min = std::abs(normFrame[j]);
-						
-						std::cout << std::setprecision(10) << "min = " << min << endl;
-						std::cout << std::setprecision(10) << "value " << log(((double)currentLayer[j]) / ((double)correctionLayer[j])) << endl;
-					}
-					if (normFrame[j] < low)	low = normFrame[j];
+                    if (std::abs(normFrame[j]) < min && normFrame[j] != 0)
+                    {
+                        min = std::abs(normFrame[j]);
+
+                        std::cout << std::setprecision(10) << "min = " << min << endl;
+                        std::cout << std::setprecision(10) << "value " << log(((double)currentLayer[j]) / ((double)correctionLayer[j])) << endl;
+                    }
+                    if (normFrame[j] < low)	low = normFrame[j];
                 }
                 else {
                     currentLayer[j] = 0;
@@ -666,20 +768,20 @@ void Dataset::applyOBCorrection(){
             }
 
         }
-		// Calculates the amount of decimals before the first digit of the minimum. eg: 0.03 -> 2. 
-		// this ensures that all values can be converted to ints without losing data.
+        // Calculates the amount of decimals before the first digit of the minimum. eg: 0.03 -> 2.
+        // this ensures that all values can be converted to ints without losing data.
         int correctionFactor = (int)-floor(log10(min));
-		int offset = (int)(std::abs(low)*pow(10.0, correctionFactor));
-		cout << std::setprecision(10) << "low : " << low << endl;
-		cout << std::setprecision(10) << "offset : " << offset << endl;
+        int offset = (int)(std::abs(low)*pow(10.0, correctionFactor));
+        cout << std::setprecision(10) << "low : " << low << endl;
+        cout << std::setprecision(10) << "offset : " << offset << endl;
         cout << std::setprecision(10) << "minimum : " << (double)min << endl;
         cout << std::setprecision(10) << "correction : " << correctionFactor << endl;
 
         for (int j = 0; j < getPixelsPerLayer(); j++) {
             if (currentLayer[j] != 0)
                 currentLayer[j] = offset + round(normFrame[j] * pow(10.0, correctionFactor));
-			if (currentLayer[j] < 0)
-				cout << j << endl;
+            if (currentLayer[j] < 0)
+                cout << j << endl;
 
         }
 
@@ -894,8 +996,8 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui) {
     // I want the layout of the whole chip.  I will build it again
 
     int nChips = getNChipsX() * getNChipsY();
-    vector<QPoint> frameLayouts = mpx3gui->getLayout();
-    vector<int> frameOrientation = mpx3gui->getOrientation();
+    std::vector<QPoint> frameLayouts = mpx3gui->getLayout();
+    std::vector<int> frameOrientation = mpx3gui->getOrientation();
 
     // - Now work out the offsets
     QVector<QPoint> offsets;

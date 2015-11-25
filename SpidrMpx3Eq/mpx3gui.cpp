@@ -52,10 +52,19 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
     getDataset()->setLayout(2,  _MPX3RX_LAYOUT[2]);
     getDataset()->setLayout(3,  _MPX3RX_LAYOUT[3]);
 
-    gradients = Gradient::fromJsonFile("./config/heatmaps.json");
+    QString heatmapsFile = "./config/heatmaps.json";
+    gradients = Gradient::fromJsonFile( heatmapsFile );
     QStringList gradientNames;
-    for(int i = 0; i < gradients.length();i++)
-        gradientNames.append(gradients[i]->getName());
+
+    if ( gradients.empty() ) {
+        QMessageBox::critical(this, "Loading configuration error",
+                              QString("Couldn't load the following configuration file: %1 . The program won't start. Place the file in the suggested relative path and run again. You are running the program from \"%2\"" ).arg(heatmapsFile).arg(QDir::currentPath()));
+        _armedOk = false; // it won't let the application go into the event loop
+        return;
+    } else {
+        for ( int i = 0 ; i < gradients.length() ; i++ )
+            gradientNames.append(gradients[i]->getName());
+    }
 
     // Prepare DACs panel
     //_dacs = new DACs(_coreApp, _ui);
@@ -69,11 +78,14 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
     //_equalization->SetMpx3GUI( this );
     _ui->equalizationWidget->SetMpx3GUI( this );
 
-    // Prepare Visualization
-    _ui->visualizationGL->SetMpx3GUI(this);
-    //_ui->CTTab->SetMpx3GUI(this);
-    emit availible_gradients_changed(gradientNames);
+    if ( ! gradients.empty() ) {
+        // Prepare Visualization
+        _ui->visualizationGL->SetMpx3GUI(this);
 
+        //_ui->CTTab->SetMpx3GUI(this);
+        emit availible_gradients_changed(gradientNames);
+
+    }
     // Prepare THL Calibration
     _ui->ThresholdTab->SetMpx3GUI(this);
 
@@ -87,8 +99,11 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
     QString configFile = "./config/mpx3.json";
     if ( ! config->fromJsonFile( configFile ) ) {
         QMessageBox::critical(this, "Loading configuration error",
-                              QString("Couldn't load the configuration file: %1").arg(configFile));
+                              QString("Couldn't load the following configuration file: %1. The program won't start. Place the file in the suggested relative path and run again. You are running the program from \"%2\"").arg(configFile).arg(QDir::currentPath()));
+        _armedOk = false; // it won't let the application go into the event loop
+        return;
     }
+
     // Signals and slots for this part
     SetupSignalsAndSlots();
     //emit frame_added();

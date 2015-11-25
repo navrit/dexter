@@ -67,6 +67,7 @@ private:
 	Dataset * originalSet;
 
 	SpidrDaq * _spidrdaq = nullptr;
+    bool _armedOk = true; // it won't let the application go into the event loop if set to false
 
 	QVector<Gradient*>  gradients;
 	//QVector<istogram*> hists;
@@ -75,6 +76,7 @@ public:
 	Mpx3Config* getConfig();
     Dataset* getDataset(){return workingSet;}
 	Dataset* getOriginalDataset(){return originalSet;}
+    bool isArmedOk(){return _armedOk;}
 
 	QCstmEqualization * getEqualization();
 	QCstmGLVisualization * getVisualization();

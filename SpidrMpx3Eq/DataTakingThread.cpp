@@ -459,7 +459,7 @@ void DataTakingThread::on_stop_data_taking_thread() {
 
 }
 
-void DataTakingThread::SeparateThresholds(int id, int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced) {
+void DataTakingThread::SeparateThresholds(int /*id*/, int * data, int /*size*/, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced) {
 
 	// Layout of 110um pixel
 	//  -------------   ---------------------
@@ -481,7 +481,7 @@ void DataTakingThread::SeparateThresholds(int id, int * data, int size, QVector<
 	//int cntr = 0;
 
 	int indx = 0, indxRed = 0, redi = 0, redj = 0;
-	int c0 = 0, c2 = 0, c4 = 0, c6 = 0;
+    //int c0 = 0, c2 = 0, c4 = 0, c6 = 0;
 
 	for (int j = 0 ; j < __matrix_size_y ; j++) {
 		//for (int j = __matrix_size_y-1 ; j >= 0 ; j--) {

@@ -6,8 +6,11 @@
 #include "DataTakingThread.h"
 #include "qcstmBHWindow.h"
 
+#include "color2drecoguided.h"
+
 #include <stdio.h>
 #include <QDialog>
+#include <QDebug>
 
 QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :  QWidget(parent),  ui(new Ui::QCstmGLVisualization)
 {
@@ -56,6 +59,10 @@ void QCstmGLVisualization::UnlockWaitingForFrame() {
 
 void QCstmGLVisualization::updateETA() {
 
+    // Recalculate ETA first
+    //_estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms
+    //_estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.  FIXME  to be calculated at startup
+
 	// show eta in display
 	// h must be in the range 0 to 23, m and s must be in the range 0 to 59, and ms must be in the range 0 to 999.
 	QTime n(0, 0, 0);                // n == 00:00:00
@@ -93,8 +100,8 @@ void QCstmGLVisualization::StartDataTaking(){
 
 		// Start data taking
 		// FIXME, depends on the mode !
-		_estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms
-		_estimatedETA += _estimatedETA/5; // add 20% network overhead.  FIXME  to be calculated at startup
+        _estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms
+        _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.  FIXME  to be calculated at startup
 
 		_takingData = true;
 		_dataTakingThread->start();
@@ -139,11 +146,11 @@ void QCstmGLVisualization::on_data_taking_finished(int /*nFramesTaken*/) {
 		ETAToZero();
 
 		// When finished taking data save the original data
-		//* (_mpx3gui->getOriginalDataset() ) =  * ( _mpx3gui->getDataset() );
-		//_mpx3gui->getDataset()->saveOriginalData();
+        * (_mpx3gui->getOriginalDataset() ) =  * ( _mpx3gui->getDataset() );
+        //_mpx3gui->getDataset()->saveOriginalData();
 
 		// Corrections
-		_mpx3gui->getDataset()->applyCorrections( ui );
+        _mpx3gui->getDataset()->applyCorrections( ui );
 
 		// And replot
 		on_reload_all_layers();
@@ -185,7 +192,7 @@ void QCstmGLVisualization::GetAFrame() {
 
 }
 
-void QCstmGLVisualization::SeparateThresholds(int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced) {
+void QCstmGLVisualization::SeparateThresholds(int * data, int /*size*/, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced) {
 
 	// Layout of 110um pixel
 	//  -------------
@@ -396,6 +403,18 @@ void QCstmGLVisualization::addThresholdToSelector(int threshold){
 	}
 }
 
+void QCstmGLVisualization::changeThresholdToNameAndUpdateSelector(int threshold, QString name) {
+
+    QString label = QString("Material %1 %2").arg( name ).arg( threshold ); // The threshold number is needed here !  When reloaded the program finds it by searching for it.  Change this !  TODO
+    if ( layerNames.contains(threshold) ) {
+        layerNames[threshold] = label ;
+        ui->layerSelector->setItemText( _mpx3gui->getDataset()->thresholdToIndex(threshold), label );
+    } else {
+        qDebug() << "[QCstmGLVisualization::changeThresholdToNameAndUpdateSelector] The given threshold didn't exist !";
+    }
+
+}
+
 void QCstmGLVisualization::setThreshold(int threshold){
 	addThresholdToSelector(threshold);
 	//cout << "[INDEX] " << threshold << " --> " << _mpx3gui->getDataset()->thresholdToIndex(threshold) << endl;
@@ -406,7 +425,9 @@ int QCstmGLVisualization::getActiveThreshold(){
 	QStringList list = ui->layerSelector->currentText().split(" ");
 	if(list.size() < 2)
 		return -1;
-	return list[1].toInt();
+    // The index will be found in the last position.  TODO ! Let's don't pick the right threshold like this.  Have a map !
+    int valIdx = list.size() - 1;
+    return list[valIdx].toInt();
 }
 
 void QCstmGLVisualization::on_active_frame_changed(){
@@ -644,19 +665,45 @@ void QCstmGLVisualization::on_noisyPixelMeanMultiplier_valueChanged() {
  */
 void QCstmGLVisualization::on_applyCorr_clicked() {
 
-	if( ! _takingData ) {
+    if ( ! _takingData ) {
 
 		// This is done off data taking
 		// Recover first the saved data to operate on the original
-		//* ( _mpx3gui->getDataset() ) = * (_mpx3gui->getOriginalDataset() );
+        * ( _mpx3gui->getDataset() ) = * (_mpx3gui->getOriginalDataset() );
 
-		_mpx3gui->getDataset()->applyCorrections( ui );
+        // !!!!!!!!!!!!!!! uncomment
+        _mpx3gui->getDataset()->applyCorrections( ui );
+        on_reload_all_layers();
 
-		on_reload_all_layers();
 
-	}
+        /*
+        // TODO, the location of the corrections will be moved to a separate window
+        // Try the reconstruction
+
+        // If previous reco available, delete.
+        if ( _reco_Color2DRecoGuided ) delete _reco_Color2DRecoGuided;
+
+        // Prepare the reconstruction handler
+        _reco_Color2DRecoGuided = new Color2DRecoGuided( _mpx3gui );
+        _reco_Color2DRecoGuided->LoadCrossSectionData();
+        _reco_Color2DRecoGuided->BuildAndInvertMuMatrix();
+        // Send off for reco
+        _mpx3gui->getDataset()->applyColor2DRecoGuided( _reco_Color2DRecoGuided );
+
+        // Now change layer names
+        // This maps indx to material name
+        QMap<int, QString> materials =_reco_Color2DRecoGuided->getMaterialMap();
+        // This is the list of thresholds
+        QList<int> thls = _mpx3gui->getDataset()->getThresholds();
+
+        for ( int i = 0 ; i < thls.size() ; i++ ) {
+            changeThresholdToNameAndUpdateSelector( thls[i], materials[i] );
+        }
+
+        on_reload_all_layers();
+*/
+    }
 
 }
-
 
 

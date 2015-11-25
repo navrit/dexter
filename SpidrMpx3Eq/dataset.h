@@ -29,6 +29,7 @@ namespace Ui {
 }
 
 class Mpx3GUI;
+class Color2DRecoGuided;
 
 class Dataset//TODO: specify starting corner?
 {
@@ -91,6 +92,7 @@ public:
   void applyBHCorrection();//!< Computes and applies a beam-hardening correction
   void applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
   void applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
+  int applyColor2DRecoGuided(Color2DRecoGuided * );
   void calcBasicStats(QPoint pixel_init, QPoint pixel_end);
   QPointF XtoXY(int X, int dimX);
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
@@ -142,11 +144,11 @@ public:
 	  __bigger
   } comp;
   map< pair<int, int>, int > activeNeighbors(int x, int y, int thl, QSize isize, comp c = __bigger, int activeValue = 0);//!<Determines if a pixel has active neighbors (assembly coordinates !)
-  int vectorAverage(vector<int> v);
+  int vectorAverage(std::vector<int> v);
   int averageValues(map< pair<int, int>, int > m1);
   void appendSelection(int x, int y, int thl, int compareto, comp c, map< pair<int, int>, int > & );
   double calcPadMean(int thlkey, QSize isize);
-  vector<int> getIntersection(map< pair<int, int>, int > m1, map< pair<int, int>, int > m2);
+  std::vector<int> getIntersection(map< pair<int, int>, int > m1, map< pair<int, int>, int > m2);
   void DumpSmallMap(map< pair<int, int>, int > m1);
 
   QMap<int, double> GetPadMean();
