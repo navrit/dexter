@@ -72,6 +72,7 @@ SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
 SOURCES += DataTakingThread.cpp
 SOURCES += qcstmBHWindow.cpp
+SOURCES += qcstmBHdialog.cpp
 SOURCES += StepperMotorController.cpp
 
 HEADERS += mpx3gui.h \
@@ -99,6 +100,7 @@ HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DataTakingThread.h
 HEADERS += qcstmBHWindow.h
+HEADERS += qcstmBHdialog.h
 HEADERS += StepperMotorController.h
 
 FORMS    += mpx3gui.ui \
