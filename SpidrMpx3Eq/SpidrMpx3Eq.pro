@@ -113,7 +113,8 @@ FORMS    += mpx3gui.ui \
     qcstmconfigmonitoring.ui \
     heatmapdisplay.ui \
     qcstmct.ui \
-    qcstmBHWindow.ui
+    qcstmBHWindow.ui \
+    qcstmBHdialog.ui
     qcstmBHdialog.ui
 
 DISTFILES += \

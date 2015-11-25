@@ -5,7 +5,7 @@
 #include <QWidget>
 #include "mpx3gui.h"
 #include "gradient.h"
-#include "qstmBHdialog.h"
+#include "qcstmBHdialog.h"
 
 namespace Ui {
   class QCstmBHWindow;
@@ -23,7 +23,7 @@ public:
 
   void SetMpx3GUI(Mpx3GUI *p);
 
-  qstmBHdialog * _bhdialog;
+  qcstmBHdialog * _bhdialog;
 
 signals:
 

@@ -6,16 +6,16 @@
 
 
 namespace Ui {
-class qstmBHdialog;
+class qcstmBHdialog;
 }
 
-class qstmBHdialog : public QDialog
+class qcstmBHdialog : public QDialog
 {
     Q_OBJECT
 
 public:
-	explicit qstmBHdialog(QWidget *parent = 0);
-    ~qstmBHdialog();
+	explicit qcstmBHdialog(QWidget *parent = 0);
+    ~qcstmBHdialog();
 
 private slots:
     void on_pushButton_clicked();
@@ -23,7 +23,7 @@ private slots:
     void on_pushButton_2_clicked();
 
 private:
-    Ui::qstmBHdialog *ui;
+    Ui::qcstmBHdialog *ui;
 	QString * dialogResult;
 
 signals:

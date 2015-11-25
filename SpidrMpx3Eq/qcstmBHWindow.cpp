@@ -30,7 +30,7 @@ void QCstmBHWindow::on_addButton_clicked()
 	_bhdialog = nullptr;
 	
 	if (!_bhdialog) {
-		_bhdialog = new qstmBHdialog(this);
+		_bhdialog = new qcstmBHdialog(this);
 		_bhdialog->show();
 		_bhdialog->raise();
 		_bhdialog->activateWindow();

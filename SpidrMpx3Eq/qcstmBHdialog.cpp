@@ -1,19 +1,19 @@
 #include "qcstmBHdialog.h"
 #include "ui_qcstmBHdialog.h"
 
-qstmBHdialog::qstmBHdialog(QWidget *parent) :
+qcstmBHdialog::qcstmBHdialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::qstmBHdialog)
+    ui(new Ui::qcstmBHdialog)
 {
     ui->setupUi(this);
 }
 
-qstmBHdialog::~qstmBHdialog()
+qcstmBHdialog::~qcstmBHdialog()
 {
     delete ui;
 }
 
-void qstmBHdialog::on_pushButton_clicked()
+void qcstmBHdialog::on_pushButton_clicked()
 {
 	// = ui->thicknessBox->text;
 	QString valS = ui->thicknessBox->text();
@@ -24,7 +24,7 @@ void qstmBHdialog::on_pushButton_clicked()
 	this->close();
 }
 
-void qstmBHdialog::on_pushButton_2_clicked()
+void qcstmBHdialog::on_pushButton_2_clicked()
 {
     this->close();
 }
