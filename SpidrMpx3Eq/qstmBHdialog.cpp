@@ -15,6 +15,12 @@ qstmBHdialog::~qstmBHdialog()
 
 void qstmBHdialog::on_pushButton_clicked()
 {
+	// = ui->thicknessBox->text;
+	QString valS = ui->thicknessBox->text();
+	emit talkToForm(valS.toDouble());
+
+
+
 	this->close();
 }
 

@@ -14,7 +14,7 @@ class qstmBHdialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit qstmBHdialog(QWidget *parent = 0);
+	explicit qstmBHdialog(QWidget *parent = 0);
     ~qstmBHdialog();
 
 private slots:
@@ -24,7 +24,11 @@ private slots:
 
 private:
     Ui::qstmBHdialog *ui;
-	QTextItem thicknessBox;
+	QString * dialogResult;
+
+signals:
+	void talkToForm(double signalThickness);
+
 };
 
 #endif // QSTMBHDIALOG_H

@@ -11,7 +11,7 @@ namespace Ui {
   class QCstmBHWindow;
 }
 
-class QCstmBHWindow : public QMainWindow
+class QCstmBHWindow : public QDialog
 {
   Q_OBJECT
 
@@ -24,6 +24,14 @@ public:
   void SetMpx3GUI(Mpx3GUI *p);
 
   qstmBHdialog * _bhdialog;
+
+signals:
+
+  void selectedItem();
+
+  void takeData();
+
+  void switchDataView();
 
 private slots:
   void on_addButton_clicked();
@@ -40,10 +48,18 @@ private slots:
 
   void on_list_itemClicked(QListWidgetItem *item);
 
+  void on_talkToForm(double thickness);
+
+  void on_selectedItem();
+
 private:
 
   Ui::QCstmBHWindow *ui;
   Mpx3GUI * _mpx3gui;
+  QMap<int, Dataset*> correctionMap;
+  int mapCounter = 0;
+  int selectedItemNo;
+
 
 };
 

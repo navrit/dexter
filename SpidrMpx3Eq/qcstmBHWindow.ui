@@ -9,165 +9,117 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>407</width>
-    <height>577</height>
+    <width>467</width>
+    <height>553</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QWidget" name="background" native="true">
-     <widget class="QPushButton" name="addButton">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>20</y>
-        <width>75</width>
-        <height>23</height>
-       </rect>
-      </property>
-      <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add .bin file to the correction&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-      <property name="text">
-       <string>Add</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="clearButton">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>80</y>
-        <width>75</width>
-        <height>23</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Clear</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="dataButton">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>50</y>
-        <width>75</width>
-        <height>23</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Take Data</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="optionsButton">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>170</y>
-        <width>75</width>
-        <height>23</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Options</string>
-      </property>
-     </widget>
-     <widget class="QProgressBar" name="progressBar">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>222</y>
-        <width>161</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="value">
-       <number>24</number>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="loadButton">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>140</y>
-        <width>75</width>
-        <height>23</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Load</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="saveButton">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>110</y>
-        <width>75</width>
-        <height>23</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Save</string>
-      </property>
-     </widget>
-     <widget class="QListWidget" name="list">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>191</width>
-        <height>241</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QWidget" name="widget" native="true">
-      <property name="geometry">
-       <rect>
-        <x>9</x>
-        <y>269</y>
-        <width>371</width>
-        <height>281</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="comboBox">
-      <property name="geometry">
-       <rect>
-        <x>310</x>
-        <y>20</y>
-        <width>69</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <item>
-       <property name="text">
-        <string>Al</string>
-       </property>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0" rowspan="7">
+       <widget class="QListWidget" name="list"/>
       </item>
-      <item>
-       <property name="text">
-        <string>Pb</string>
-       </property>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="addButton">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add .bin file to the correction&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Add</string>
+        </property>
+       </widget>
       </item>
-      <item>
-       <property name="text">
-        <string>SiO2</string>
-       </property>
+      <item row="0" column="2">
+       <widget class="QComboBox" name="comboBox">
+        <item>
+         <property name="text">
+          <string>Al</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Pb</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>SiO2</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Au</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>C8H10N4O2</string>
+         </property>
+        </item>
+       </widget>
       </item>
-      <item>
-       <property name="text">
-        <string>Au</string>
-       </property>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="dataButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Take Data</string>
+        </property>
+       </widget>
       </item>
-      <item>
-       <property name="text">
-        <string>C8H10N4O2</string>
-       </property>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="clearButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Clear</string>
+        </property>
+       </widget>
       </item>
-     </widget>
+      <item row="3" column="1">
+       <widget class="QPushButton" name="saveButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Save</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QPushButton" name="loadButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Load</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QPushButton" name="optionsButton">
+        <property name="text">
+         <string>Options</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1" colspan="2">
+       <widget class="QProgressBar" name="progressBar">
+        <property name="value">
+         <number>24</number>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0" colspan="3">
+       <widget class="QWidget" name="widget_2" native="true"/>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>
