@@ -114,6 +114,7 @@ FORMS    += mpx3gui.ui \
     heatmapdisplay.ui \
     qcstmct.ui \
     qcstmBHWindow.ui
+    qcstmBHdialog.ui
 
 DISTFILES += \
     shaders/heatmap.frag \
