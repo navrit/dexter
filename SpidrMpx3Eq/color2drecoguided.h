@@ -44,11 +44,11 @@ public:
 private:
 
     Mpx3GUI * _mpx3gui;
-//    QString _datafiles[4] = { "H2O.txt", "Al_Z13.txt", "Ca_Z20.txt", "Cu_Z29.txt" };
- //   double  _densities[4] = { 1.0, 2.7, 1.55, 8.96 };
+	  QString _datafiles[4];
+	  double  _densities[4];
 
-	QString _datafiles[4];
-	double _densities[4];
+	//QString _datafiles[4];
+	//double _densities[4];
 
     QMap<int, QString> _nameMap_TotAttWCohScatt; // Contains the names
     QMap<int, tk::spline *> _splineMap_TotAttWCohScatt;  // Contain the interpolations
