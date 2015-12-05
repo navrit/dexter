@@ -63,8 +63,6 @@ int main(int argc, char *argv[])
     spidrctrl.getSoftwVersion( &version ); // SPIDR LEON3 software version, first call after reset fails...
     spidrctrl.getSoftwVersion( &version ); // SPIDR LEON3 software version, so call twice
     cout << hex << "leon SW version:       " << version << endl;
-    spidrctrl.getSoftwVersion( &version ); // SPIDR LEON3 software version
-    cout << hex << "leon SW version:       " << version << endl;
     spidrctrl.getFirmwVersion( &version ); // SPIDR FPGA firmware version
     cout << hex << "FPGA firmware version: " << version << endl;
 
