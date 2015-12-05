@@ -55,9 +55,14 @@ int main(int argc, char *argv[])
         cout << "errorstat " << hex << errstat << dec << endl;
     }
 
+    sleep(1);   // required for compact SPIDR
+
     int version;
     
     cout << hex << "class version:         " << spidrctrl.classVersion() << endl;
+    spidrctrl.getSoftwVersion( &version ); // SPIDR LEON3 software version, first call after reset fails...
+    spidrctrl.getSoftwVersion( &version ); // SPIDR LEON3 software version, so call twice
+    cout << hex << "leon SW version:       " << version << endl;
     spidrctrl.getSoftwVersion( &version ); // SPIDR LEON3 software version
     cout << hex << "leon SW version:       " << version << endl;
     spidrctrl.getFirmwVersion( &version ); // SPIDR FPGA firmware version
