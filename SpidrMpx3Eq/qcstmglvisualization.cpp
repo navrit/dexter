@@ -76,7 +76,7 @@ void QCstmGLVisualization::updateETA() {
 
 void QCstmGLVisualization::StartDataTaking(){
 
-	if( !_takingData ) {
+    if ( !_takingData ) {
 
 		// Clear previous data first
 		GetMpx3GUI()->clear_data();
@@ -137,16 +137,14 @@ void QCstmGLVisualization::ETAToZero() {
 
 void QCstmGLVisualization::on_data_taking_finished(int /*nFramesTaken*/) {
 
-	if( _takingData ) {
+    if ( _takingData ) {
 
-		// Change the Stop button to Start
-		ui->startButton->setText( "Start" );
 		_takingData = false;
 		DestroyTimer();
 		ETAToZero();
 
 		// When finished taking data save the original data
-        * (_mpx3gui->getOriginalDataset() ) =  * ( _mpx3gui->getDataset() );
+        //* (_mpx3gui->getOriginalDataset() ) =  * ( _mpx3gui->getDataset() );
         //_mpx3gui->getDataset()->saveOriginalData();
 
 		// Corrections
@@ -154,6 +152,9 @@ void QCstmGLVisualization::on_data_taking_finished(int /*nFramesTaken*/) {
 
 		// And replot
 		on_reload_all_layers();
+
+        // Change the Stop button to Start
+        ui->startButton->setText( "Start" );
 
 	}
 
@@ -381,6 +382,7 @@ void QCstmGLVisualization::on_progress_signal(int framecntr) {
 
 
 void QCstmGLVisualization::on_reload_all_layers(){
+
 	// Get busy
 	emit FlipBusyState();
 
@@ -392,6 +394,7 @@ void QCstmGLVisualization::on_reload_all_layers(){
 	}
 	//setThreshold(thresholds[0]);
 	on_active_frame_changed();
+
 }
 
 void QCstmGLVisualization::addThresholdToSelector(int threshold){
@@ -669,7 +672,7 @@ void QCstmGLVisualization::on_applyCorr_clicked() {
 
 		// This is done off data taking
 		// Recover first the saved data to operate on the original
-        * ( _mpx3gui->getDataset() ) = * (_mpx3gui->getOriginalDataset() );
+        //* ( _mpx3gui->getDataset() ) = * (_mpx3gui->getOriginalDataset() );
 
         // !!!!!!!!!!!!!!! uncomment
         _mpx3gui->getDataset()->applyCorrections( ui );
