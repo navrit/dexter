@@ -133,3 +133,8 @@ DISTFILES += \
     export(first.depends)
     export(copydata.commands)
     QMAKE_EXTRA_TARGETS += first copydata
+
+RESOURCES += \
+    icons.qrc
+
+
