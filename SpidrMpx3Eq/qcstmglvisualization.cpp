@@ -456,12 +456,12 @@ void QCstmGLVisualization::on_region_selected(QPoint pixel_begin, QPoint pixel_e
 		return;
 	int frameIndex = _mpx3gui->getDataset()->getContainingFrame(pixel_begin);
 	QPoint naturalCoords = _mpx3gui->getDataset()->getNaturalCoordinates(pixel_begin, frameIndex);
-	int naturalFlatCoord = naturalCoords.y()*_mpx3gui->getDataset()->x()+naturalCoords.x();
+    int naturalFlatCoord = naturalCoords.y()*_mpx3gui->getDataset()->x()+naturalCoords.x();
 	if(_mpx3gui->getConfig()->getColourMode()) {
 		naturalFlatCoord = 4*naturalCoords.y()*_mpx3gui->getDataset()->x() + 2*naturalCoords.x();
 	}
 
-	int deviceID = _mpx3gui->getConfig()->getActiveDevices()[frameIndex];
+    //int deviceID = _mpx3gui->getConfig()->getActiveDevices()[frameIndex];
 	QMenu contextMenu;
 	QAction calcStats(QString("Calc stats (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
 	contextMenu.addAction(&calcStats);

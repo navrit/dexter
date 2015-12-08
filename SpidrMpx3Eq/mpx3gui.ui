@@ -115,6 +115,8 @@
      <string>&amp;System</string>
     </property>
     <addaction name="actionConnect"/>
+    <addaction name="actionDisconnect"/>
+    <addaction name="actionDefibrilator"/>
    </widget>
    <addaction name="menuMpx3Eq"/>
    <addaction name="menuSystem"/>
@@ -132,6 +134,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionConnect"/>
+   <addaction name="actionDisconnect"/>
    <addaction name="separator"/>
    <addaction name="actionSave_data"/>
    <addaction name="actionOpen_data"/>
@@ -215,6 +218,20 @@
    </property>
    <property name="text">
     <string>&amp;Connect</string>
+   </property>
+  </action>
+  <action name="actionDisconnect">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/switch-turn-off-icon.png</normaloff>:/icons/switch-turn-off-icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>Disconnect</string>
+   </property>
+  </action>
+  <action name="actionDefibrilator">
+   <property name="text">
+    <string>Defibrillator</string>
    </property>
   </action>
  </widget>

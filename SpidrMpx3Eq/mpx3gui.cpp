@@ -107,6 +107,11 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
     // Signals and slots for this part
     SetupSignalsAndSlots();
     //emit frame_added();
+
+    // Startup status
+    _ui->actionConnect->setEnabled( true );
+    _ui->actionDisconnect->setEnabled( false );
+
 }
 
 Mpx3GUI::~Mpx3GUI()
@@ -165,7 +170,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );
     connect( _ui->actionSave_DACs, SIGNAL(triggered()), this, SLOT( save_config()) );
     connect( _ui->actionLoad_DACs, SIGNAL(triggered()), this, SLOT( load_config()) );
-    connect( _ui->actionConnect, SIGNAL(triggered()), this, SLOT( establish_connection() ) );
+    //connect( _ui->actionConnect, SIGNAL(triggered()), this, SLOT( establish_connection() ) );
 
     connect(_ui->actionSumming, SIGNAL(triggered()), this, SLOT(set_mode_integral()));
     connect(_ui->actionDiscrete, SIGNAL(triggered()), this, SLOT(set_mode_normal()));
@@ -180,6 +185,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged() ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged() ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged() ) );
+    connect( this, &Mpx3GUI::ConnectionStatusChanged, &Mpx3GUI::onConnectionStatusChanged );
 
 }
 
@@ -344,48 +350,48 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
     // ASCII
 
     int sizex = getDataset()->x();
-	int sizey = getDataset()->y();
+    int sizey = getDataset()->y();
     int nchipsx =  getDataset()->getNChipsX();
-	int nchipsy = getDataset()->getNChipsY();
+    int nchipsy = getDataset()->getNChipsY();
     int len = sizex * sizey * nchipsx * nchipsy;
 
-	QList <int> thresholds = getDataset()->getThresholds();
-	QList<int>::iterator it = thresholds.begin();
-	QList<int>::iterator itE = thresholds.end();
+    QList <int> thresholds = getDataset()->getThresholds();
+    QList<int>::iterator it = thresholds.begin();
+    QList<int>::iterator itE = thresholds.end();
 
-	// Do the different thresholds
-	for (; it != itE; it++) {
+    // Do the different thresholds
+    for (; it != itE; it++) {
 
-		int * fullFrame = getDataset()->getFullImageAsArrayWithLayout(*it, this);
+        int * fullFrame = getDataset()->getFullImageAsArrayWithLayout(*it, this);
 
 
-		// Create string containing file location
-		QString plS = filename;
-		plS.remove(plS.size() - 4, 4); // get rid of the .bin extension
-		plS += "_frame_ascii_";
-		plS += QString::number(*it, 'd', 0);
-		plS += ".txt";
-		string saveLoc = plS.toStdString();
+        // Create string containing file location
+        QString plS = filename;
+        plS.remove(plS.size() - 4, 4); // get rid of the .bin extension
+        plS += "_frame_ascii_";
+        plS += QString::number(*it, 'd', 0);
+        plS += ".txt";
+        string saveLoc = plS.toStdString();
 
-		//qDebug() << "nchipsx : " << nchipsx << " | nchipsy : " << nchipsy << " --> " << getDataset()->getPixelsPerLayer();
+        //qDebug() << "nchipsx : " << nchipsx << " | nchipsy : " << nchipsy << " --> " << getDataset()->getPixelsPerLayer();
 
-		// Save file
-		ofstream of;
-		of.open(saveLoc);
-		if (of.is_open()) {
-			for (int i = 0; i < len; i++) {
+        // Save file
+        ofstream of;
+        of.open(saveLoc);
+        if (of.is_open()) {
+            for (int i = 0; i < len; i++) {
 
-				of << fullFrame[i] << " ";
+                of << fullFrame[i] << " ";
 
-				// new line
-				if ((i + 1) % (sizex*nchipsx) == 0) of << "\r\n";
+                // new line
+                if ((i + 1) % (sizex*nchipsx) == 0) of << "\r\n";
 
-			}
-		}
+            }
+        }
 
-		of.close();
+        of.close();
 
-	}
+    }
 
 
     // end of for loop that cycles through the layers (threshold)
@@ -407,6 +413,17 @@ void Mpx3GUI::load_config(){
     _ui->DACsWidget->PopulateDACValues();
 
     return;
+}
+
+void Mpx3GUI::onConnectionStatusChanged(bool good)
+{
+    if( good ) {
+        _ui->actionConnect->setEnabled( false );
+        _ui->actionDisconnect->setEnabled( true );
+    } else {
+        _ui->actionConnect->setEnabled( true );
+        _ui->actionDisconnect->setEnabled( false );
+    }
 }
 
 void Mpx3GUI::open_data(){
@@ -493,3 +510,10 @@ void Mpx3GUI::on_actionExit_triggered()
 {
     _coreApp->exit();
 }
+
+void Mpx3GUI::on_actionConnect_triggered() {
+    // The connection status signal will be sent from establish_connection
+    establish_connection();
+
+}
+
