@@ -54,7 +54,7 @@ int64_t Dataset::getTotal(int threshold){
     if(index == -1)
         return 0;
     int64_t count = 0;
-    for(int j = 0; j < getPixelsPerLayer(); j++)
+    for(unsigned int j = 0; j < getPixelsPerLayer(); j++)
         count += m_layers[index][j];
     return count;
 }
@@ -64,7 +64,7 @@ uint64_t Dataset::getActivePixels(int threshold){
     if(index == -1)
         return 0;
     uint64_t count  =0;
-    for(int j = 0; j <getPixelsPerLayer(); j++){
+    for(unsigned int j = 0; j <getPixelsPerLayer(); j++){
         if(0 != m_layers[index][j])
             count++;
     }
@@ -78,7 +78,7 @@ Dataset::Dataset( const Dataset& other ): m_boundingBox(other.m_boundingBox), m_
     m_nFrames = other.getFrameCount();
     for(int i = 0; i < m_layers.size(); i++){
         m_layers[i] = new int[getPixelsPerLayer()];
-        for(int j = 0; j < getPixelsPerLayer(); j++)
+        for(unsigned int j = 0; j < getPixelsPerLayer(); j++)
             m_layers[i][j] = other.m_layers[i][j];
     }
     obCorrection = 0x0;
@@ -92,7 +92,7 @@ Dataset& Dataset::operator =( const Dataset& rhs){
 
 void Dataset::zero(){
     for(int i = 0; i < m_layers.size(); i++){
-        for(int j = 0; j < getPixelsPerLayer(); j++)
+        for(unsigned int j = 0; j < getPixelsPerLayer(); j++)
             m_layers[i][j] = 0;
     }
 }
@@ -167,7 +167,7 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
         // Calc mean on the interesting pixels
         double mean = 0.;
         double nMean = 0.;
-        for(int j = 0; j < getPixelsPerLayer(); j++) {
+        for(unsigned int j = 0; j < getPixelsPerLayer(); j++) {
             // See if the pixel is inside the region
             QPointF pix = XtoXY(j, isize.width());
             if ( RoI.contains( pix ) ) {
@@ -191,7 +191,7 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
         int* currentLayer = getLayer(keys[i]);
         double stdev = 0.;
         double nMean = 0.;
-        for(int j = 0; j < getPixelsPerLayer(); j++) {
+        for(unsigned int j = 0; j < getPixelsPerLayer(); j++) {
             // See if the pixel is inside the region
             QPointF pix = XtoXY(j, isize.width());
             if ( RoI.contains( pix ) ) {
@@ -739,10 +739,10 @@ void Dataset::applyOBCorrection() {
         // Find the smallest value.  Initialize it for the search.
         double min = (double)std::abs(correctionLayer[0]);
         double low = 0;
-        double temp;
+        //double temp;
         if (currentLayer[0] > correctionLayer[0]) min = currentLayer[0];
 
-        for (int j = 0; j < getPixelsPerLayer(); j++) {
+        for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
 
             //
             if (currentLayer[j] != 0)
@@ -777,7 +777,7 @@ void Dataset::applyOBCorrection() {
         cout << std::setprecision(10) << "minimum : " << (double)min << endl;
         cout << std::setprecision(10) << "correction : " << correctionFactor << endl;
 
-        for (int j = 0; j < getPixelsPerLayer(); j++) {
+        for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
             if (currentLayer[j] != 0)
                 currentLayer[j] = offset + round(normFrame[j] * pow(10.0, correctionFactor));
             if (currentLayer[j] < 0)
@@ -888,7 +888,7 @@ int* Dataset::getFrame(int index, int threshold){
     if(!m_thresholdsToIndices.contains(threshold))
         return nullptr;
     else {
-        int N = m_thresholdsToIndices.size();
+        //int N = m_thresholdsToIndices.size();
         return &m_layers[thresholdToIndex(threshold)][index*m_nx*m_ny];
     }
 }
