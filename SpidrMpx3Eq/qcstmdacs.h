@@ -6,12 +6,8 @@
 #ifndef QCSTMDACS_H
 #define QCSTMDACS_H
 
+
 #include <QWidget>
-
-
-#include "mpx3gui.h"
-#include "mpx3defs.h"
-
 #include <QDialog>
 #include <QThread>
 #include <QJsonObject>
@@ -22,7 +18,10 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+
 using namespace std;
+
+
 
 #define 	__nDACs_MPX3RX		27
 #define		__default_DACs_filename "mpx3_defaultDACs.json"
@@ -90,6 +89,8 @@ static const dac_t MPX3RX_DAC_TABLE[MPX3RX_DAC_COUNT] =
 		{ 25, "V_Tp_refB",         247, 9, (1<<9)/2 }
 };
 */
+
+
 static const QColor COLOR_TABLE[] = {
 		Qt::red, // 1
 		Qt::black,
@@ -120,6 +121,8 @@ static const QColor COLOR_TABLE[] = {
 		QColor( "dark yellow" ) // 27
 };
 
+#include "mpx3gui.h"
+#include "mpx3defs.h"
 
 class QSpinBox;
 class QSlider;
@@ -131,19 +134,6 @@ class UpdateDACsThread;
 class QSignalMapper;
 class ModuleConnection;
 
-class SignalSlotMapping : public QObject {
-
-	Q_OBJECT
-
-public:
-	explicit SignalSlotMapping(){};
-	~SignalSlotMapping(){};
-
-	int index;
-	int value;
-
-};
-
 class QCstmDacs : public QWidget {
 
 	Q_OBJECT
@@ -151,7 +141,6 @@ class QCstmDacs : public QWidget {
 public:
 
 	explicit QCstmDacs(QWidget *parent = 0);
-	//explicit QCstmDacs(QApplication * coreApp, Ui::Mpx3GUI * );
 	~QCstmDacs();
 	void PopulateDACValues();
 	UpdateDACsThread * FillDACValues(int devId = -1, bool updateInTheChip = true);
@@ -176,6 +165,8 @@ public:
 	//QCustomPlot * GetQCustomPlotPtr() { return _dacScanPlot; };
 	void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
 	Mpx3GUI * GetMpx3GUI() { return _mpx3gui; };
+
+    //void setWindowWidgetsStatus(win_status s = win_status::startup );
 
 	void setConfig();
 	// Ask the config !

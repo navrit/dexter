@@ -67,15 +67,10 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
     }
 
     // Prepare DACs panel
-    //_dacs = new DACs(_coreApp, _ui);
-    //_dacs->SetMpx3GUI( this );
-
-
     _ui->DACsWidget->SetMpx3GUI( this );
+    //_ui->DACsWidget->setWindowWidgetsStatus(); // statup status
 
     // Prepare Equalization
-    //_equalization = new Mpx3Equalization(_coreApp, _ui);
-    //_equalization->SetMpx3GUI( this );
     _ui->equalizationWidget->SetMpx3GUI( this );
 
     if ( ! gradients.empty() ) {
@@ -108,11 +103,9 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
     SetupSignalsAndSlots();
     //emit frame_added();
 
-    // Startup status
-    _ui->actionConnect->setEnabled( true );
-    _ui->actionDisconnect->setEnabled( false );
-
 }
+
+
 
 Mpx3GUI::~Mpx3GUI()
 {
@@ -191,6 +184,27 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 
 Mpx3Config* Mpx3GUI::getConfig() {
     return config;
+}
+
+void Mpx3GUI::setWindowWidgetsStatus(win_status s)
+{
+    switch (s) {
+
+    case win_status::startup:
+        // Startup status
+        _ui->actionConnect->setEnabled( true );
+        _ui->actionDisconnect->setEnabled( false );
+        break;
+
+    case win_status::connected:
+        // Startup status
+        _ui->actionConnect->setEnabled( true );
+        _ui->actionDisconnect->setEnabled( false );
+        break;
+    default:
+        break;
+
+    }
 }
 
 void Mpx3GUI::on_openfileButton_clicked() {

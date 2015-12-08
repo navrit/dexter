@@ -193,7 +193,7 @@ void QCstmGLVisualization::GetAFrame() {
 
 }
 
-void QCstmGLVisualization::SeparateThresholds(int * data, int /*size*/, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced) {
+void QCstmGLVisualization::SeparateThresholds(int * data, int /*size*/, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int /*sizeReduced*/) {
 
 	// Layout of 110um pixel
 	//  -------------
@@ -454,12 +454,13 @@ void QCstmGLVisualization::on_region_selected(QPoint pixel_begin, QPoint pixel_e
 
 	if(!_mpx3gui->getConfig()->isConnected())
 		return;
-	int frameIndex = _mpx3gui->getDataset()->getContainingFrame(pixel_begin);
-	QPoint naturalCoords = _mpx3gui->getDataset()->getNaturalCoordinates(pixel_begin, frameIndex);
-    int naturalFlatCoord = naturalCoords.y()*_mpx3gui->getDataset()->x()+naturalCoords.x();
-	if(_mpx3gui->getConfig()->getColourMode()) {
-		naturalFlatCoord = 4*naturalCoords.y()*_mpx3gui->getDataset()->x() + 2*naturalCoords.x();
-	}
+
+    //int frameIndex = _mpx3gui->getDataset()->getContainingFrame(pixel_begin);
+    //QPoint naturalCoords = _mpx3gui->getDataset()->getNaturalCoordinates(pixel_begin, frameIndex);
+    //int naturalFlatCoord = naturalCoords.y()*_mpx3gui->getDataset()->x()+naturalCoords.x();
+    //if(_mpx3gui->getConfig()->getColourMode()) {
+    //	naturalFlatCoord = 4*naturalCoords.y()*_mpx3gui->getDataset()->x() + 2*naturalCoords.x();
+    //}
 
     //int deviceID = _mpx3gui->getConfig()->getActiveDevices()[frameIndex];
 	QMenu contextMenu;

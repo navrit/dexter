@@ -511,12 +511,11 @@ void QCstmConfigMonitoring::on_stepperUseCalibCheckBox_toggled(bool checked) {
 		//if ( currentPos !=  currentAng ) {
 		ui->targetPosSpinBox->setValue( currentPos );
 		//}
-		QString posS;
-		posS = QString::number( currentPos , 'ldd', 0 );
+        QString posS = QString::number( currentPos , 'ldd', 0 );
 		ui->motorCurrentPoslcdNumber->display( posS );
 
 		// Do something about the range of the dial
-		int motorid = ui->motorIdSpinBox->value();
+        //int motorid = ui->motorIdSpinBox->value();
 		map<int, motorPars> parsMap = _stepper->getPars( );
 		// The minimum is normally -1*max. I will set zero here for convenience.
 		ui->motorDial->setMinimum( 0 );

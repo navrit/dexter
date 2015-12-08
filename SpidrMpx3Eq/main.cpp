@@ -15,6 +15,9 @@ int main(int argc, char *argv[])
 
     // Instantiate the main class
     Mpx3GUI w( &a );
+    // status for startup
+    w.setWindowWidgetsStatus();
+
     // If the configuration was not loaded properly this won't let the program run
     if ( ! w.isArmedOk() ) return EXIT_FAILURE;
 

@@ -109,6 +109,8 @@
     <addaction name="actionClear_configuration"/>
     <addaction name="menuLoad_configuration"/>
     <addaction name="menuSave_configuration"/>
+    <addaction name="separator"/>
+    <addaction name="actionWizard"/>
    </widget>
    <widget class="QMenu" name="menuSystem">
     <property name="title">
@@ -139,6 +141,8 @@
    <addaction name="actionSave_data"/>
    <addaction name="actionOpen_data"/>
    <addaction name="actionClear_data"/>
+   <addaction name="separator"/>
+   <addaction name="actionWizard"/>
   </widget>
   <action name="actionExit">
    <property name="text">
@@ -232,6 +236,18 @@
   <action name="actionDefibrilator">
    <property name="text">
     <string>Defibrillator</string>
+   </property>
+  </action>
+  <action name="actionWizard">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/Actions-tools-wizard-icon.png</normaloff>:/icons/Actions-tools-wizard-icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>Wizard</string>
+   </property>
+   <property name="toolTip">
+    <string>Configure the system with a wizard</string>
    </property>
   </action>
  </widget>

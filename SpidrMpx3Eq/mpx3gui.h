@@ -40,6 +40,8 @@ class QCstmEqualization;
 class QCstmGLVisualization;
 class QCstmConfigMonitoring;
 
+enum class win_status { startup, connected, disconnected };
+
 namespace Ui {
 class Mpx3GUI;
 }
@@ -54,6 +56,8 @@ public:
     ~Mpx3GUI();
     void SetupSignalsAndSlots();
     Ui::Mpx3GUI * GetUI() { return _ui; }
+
+
 
 private:
     vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
@@ -72,11 +76,15 @@ private:
     QVector<Gradient*>  gradients;
     //QVector<istogram*> hists;
     void updateHistogram(int layer);
+
 public:
+
     Mpx3Config* getConfig();
     Dataset* getDataset(){return workingSet;}
     Dataset* getOriginalDataset(){return originalSet;}
     bool isArmedOk(){return _armedOk;}
+
+    void setWindowWidgetsStatus(win_status s = win_status::startup);
 
     QCstmEqualization * getEqualization();
     QCstmGLVisualization * getVisualization();

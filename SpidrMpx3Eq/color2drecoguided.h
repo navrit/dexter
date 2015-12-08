@@ -20,7 +20,6 @@
 
 class Color2DRecoGuided {
 
-
 public:
 
     Color2DRecoGuided(Mpx3GUI *);
