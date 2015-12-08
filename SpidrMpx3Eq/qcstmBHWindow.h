@@ -23,6 +23,8 @@ public:
 
   void SetMpx3GUI(Mpx3GUI *p);
 
+private:
+
   qcstmBHdialog * _bhdialog;
 
 signals:
@@ -32,6 +34,8 @@ signals:
   void takeData();
 
   void switchDataView();
+
+  void openData();
 
 private slots:
   void on_addButton_clicked();

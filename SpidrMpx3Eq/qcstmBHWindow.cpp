@@ -22,22 +22,24 @@ void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
 	_mpx3gui = p;
 	connect(this, SIGNAL(takeData()), _mpx3gui->getVisualization(), SLOT(StartDataTaking()));
 	connect(this, SIGNAL(switchDataView), _mpx3gui->getVisualization(), SLOT(on_reload_all_layers()));
+    connect(this, &QCstmBHWindow::openData, _mpx3gui, &Mpx3GUI::open_data);
 
 }
 
 void QCstmBHWindow::on_addButton_clicked()
 {
+
 	_bhdialog = nullptr;
 	
 	if (!_bhdialog) {
 		_bhdialog = new qcstmBHdialog(this);
-		_bhdialog->show();
+        _bhdialog->open();
 		_bhdialog->raise();
 		_bhdialog->activateWindow();
 
 		connect(_bhdialog, SIGNAL(talkToForm(double)), this, SLOT(on_talkToForm(double)));
 		
-	}
+}
 
 	
 
@@ -66,8 +68,8 @@ void QCstmBHWindow::on_saveButton_clicked()
 
 void QCstmBHWindow::on_loadButton_clicked()
 {
-	_mpx3gui->open_data();
-	correctionMap[selectedItemNo] = _mpx3gui->getDataset();
+    emit openData();
+    //correctionMap[selectedItemNo] = _mpx3gui->getDataset();
 }
 
 void QCstmBHWindow::on_optionsButton_clicked()
