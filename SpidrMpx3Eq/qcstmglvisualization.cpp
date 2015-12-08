@@ -607,7 +607,9 @@ void QCstmGLVisualization::on_bhcorrCheckbox_toggled(bool checked) {
 	// Deal with the separate BH window
 	if ( !_bhwindow && checked ) {
 		_bhwindow = new QCstmBHWindow(this);
-		_bhwindow->show();
+        _bhwindow->SetMpx3GUI( _mpx3gui );
+
+        _bhwindow->show(); // nonModal
 		_bhwindow->raise();
 		_bhwindow->activateWindow();
 	}
@@ -708,5 +710,4 @@ void QCstmGLVisualization::on_applyCorr_clicked() {
     }
 
 }
-
 
