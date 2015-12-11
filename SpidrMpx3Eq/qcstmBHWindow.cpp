@@ -15,6 +15,7 @@ QCstmBHWindow::QCstmBHWindow(QWidget *parent) :
 QCstmBHWindow::~QCstmBHWindow()
 {
   delete ui;
+  delete _bhdialog;
 }
 
 void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
@@ -24,6 +25,10 @@ void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
 	connect(this, SIGNAL(switchDataView), _mpx3gui->getVisualization(), SLOT(on_reload_all_layers()));
     connect(this, &QCstmBHWindow::openData, _mpx3gui, &Mpx3GUI::open_data);
 
+    Dataset * orSet = new Dataset;
+    *orSet = (*_mpx3gui->getDataset());
+    qDebug() << orSet->getLayer(0);
+
 }
 
 void QCstmBHWindow::on_addButton_clicked()
@@ -31,33 +36,43 @@ void QCstmBHWindow::on_addButton_clicked()
 
 	_bhdialog = nullptr;
 	
-	if (!_bhdialog) {
+    if (!_bhdialog)
+    {
 		_bhdialog = new qcstmBHdialog(this);
         _bhdialog->open();
 		_bhdialog->raise();
 		_bhdialog->activateWindow();
 
 		connect(_bhdialog, SIGNAL(talkToForm(double)), this, SLOT(on_talkToForm(double)));
-		
-}
-
-	
-
+     }
 }
 
 void QCstmBHWindow::on_dataButton_clicked()
 {
 	emit(takeData());
-	correctionMap[selectedItemNo] = _mpx3gui->getDataset();
+    //Dataset tempSet (*_mpx3gui->getDataset());
+    layers.push_back((*_mpx3gui->getDataset()));
+    //correctionMap[selectedItemNo].data = tempSet;
 
 }
 
 void QCstmBHWindow::on_clearButton_clicked()
 {
-	correctionMap[selectedItemNo]->clear();
+    //correctionMap.remove(selectedItemNo);
 	delete ui->list->item(selectedItemNo);
-	selectedItemNo--;
-	ui->list->item(selectedItemNo)->setSelected(true);
+    thicknessvctr.erase (thicknessvctr.begin()+selectedItemNo-1);
+    if(selectedItemNo>1)
+    {
+        selectedItemNo--;
+        ui->list->item(selectedItemNo)->setSelected(true);
+    }else
+    {
+        selectedItemNo = 0;
+        ui->clearButton->setEnabled(false);
+        ui->dataButton->setEnabled(false);
+        ui->saveButton->setEnabled(false);
+        ui->loadButton->setEnabled(false);
+    }
 
 }
 
@@ -69,7 +84,9 @@ void QCstmBHWindow::on_saveButton_clicked()
 void QCstmBHWindow::on_loadButton_clicked()
 {
     emit openData();
-    //correctionMap[selectedItemNo] = _mpx3gui->getDataset();
+    //Dataset tempSet = (*_mpx3gui->getDataset());
+    layers.push_back((*_mpx3gui->getDataset()));
+    //correctionMap[selectedItemNo].data = (*_mpx3gui->getDataset());
 }
 
 void QCstmBHWindow::on_optionsButton_clicked()
@@ -81,6 +98,7 @@ void QCstmBHWindow::on_list_itemClicked(QListWidgetItem *item)
 {
 	selectedItemNo = item->listWidget()->row(item);
 	emit selectedItem();
+   // if(layers.size()>0)  *_mpx3gui->getDataset() = layers[selectedItemNo];
 	emit switchDataView();
 }
 
@@ -91,8 +109,10 @@ void QCstmBHWindow::on_talkToForm(double thickness)
 	description += " um";
 	ui->list->addItem(description);
 
-	correctionMap[mapCounter] = new Dataset;
-	mapCounter++;
+    thicknessvctr.push_back(thickness);
+
+    //correctionMap[mapCounter] = CorrectionItem(thickness, ui->comboBox->currentText());
+    //mapCounter++;
 }
 
 void QCstmBHWindow::on_selectedItem()
@@ -100,6 +120,12 @@ void QCstmBHWindow::on_selectedItem()
 	ui->clearButton->setEnabled(true);
 	ui->dataButton->setEnabled(true);
 	ui->saveButton->setEnabled(true);
-	ui->loadButton->setEnabled(true);
+    ui->loadButton->setEnabled(true);
+}
+
+void QCstmBHWindow::on_startButton_clicked()
+{
+    qDebug() << originalSet.getLayer(0);
+  _mpx3gui->getDataset()->applyBHCorrection(thicknessvctr, originalSet, layers);
 }
 

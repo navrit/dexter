@@ -19,7 +19,7 @@ public:
 
   explicit QCstmBHWindow(QWidget *parent = 0);
   ~QCstmBHWindow();
-  Ui::QCstmBHWindow * GetUI(){ return ui; };
+  Ui::QCstmBHWindow * GetUI(){ return ui; }
 
   void SetMpx3GUI(Mpx3GUI *p);
 
@@ -56,13 +56,17 @@ private slots:
 
   void on_selectedItem();
 
+  void on_startButton_clicked();
+
 private:
 
   Ui::QCstmBHWindow *ui;
-  Mpx3GUI * _mpx3gui;
-  QMap<int, Dataset*> correctionMap;
-  int mapCounter = 0;
+  Mpx3GUI * _mpx3gui; 
   int selectedItemNo;
+  Dataset tempSet;
+  Dataset originalSet;
+  QVector<Dataset> layers;
+  vector<double> thicknessvctr;
 
 
 };

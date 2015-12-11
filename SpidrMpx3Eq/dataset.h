@@ -19,8 +19,9 @@
 #include <QRect>
 #include <QMap>
 #include <stdint.h>
-
 #include <vector>
+
+
 
 using namespace std;
 
@@ -30,6 +31,7 @@ namespace Ui {
 
 class Mpx3GUI;
 class Color2DRecoGuided;
+class CorrectionItem;
 
 class Dataset//TODO: specify starting corner?
 {
@@ -49,6 +51,18 @@ class Dataset//TODO: specify starting corner?
   typedef struct {
 	  int packetsLost;
   } score_info;
+
+
+  struct sortPair{
+      double thickness;
+      double value;
+      sortPair(double t, double v){thickness = t; value = v;}
+      sortPair() {}
+  };
+
+  struct sortingStruct{
+      bool operator() (const sortPair &lhs, const sortPair &rhs) { return lhs.thickness < rhs.thickness; }
+  } sortByThickness;
 
  private:
   int m_nx, m_ny; //!<Pixel size in the x and y direction
@@ -89,7 +103,7 @@ public:
   void loadCorrection(QByteArray serialized);//!< Loads and sets the correction to a previously serialized set.
   void applyCorrections(Ui::QCstmGLVisualization * ui);//<!Handles all corrections.  This function is blocking for the moment !
   void applyOBCorrection();//!< Computes and applies the flat-field correction
-  void applyBHCorrection();//!< Computes and applies a beam-hardening correction
+  void applyBHCorrection(std::vector<double> thickness, Dataset originalSet, QVector<Dataset> setlist);//!< Computes and applies a beam-hardening correction
   void applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
   void applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
   int applyColor2DRecoGuided(Color2DRecoGuided * );

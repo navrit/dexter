@@ -1,6 +1,8 @@
 #include "dataset.h"
 #include "mpx3gui.h"
 #include "color2drecoguided.h"
+#include "qcstmBHWindow.h"
+#include "spline.h"
 
 #include <QDataStream>
 #include <QDebug>
@@ -599,7 +601,8 @@ void Dataset::applyCorrections(Ui::QCstmGLVisualization * ui) {
         if ( ui->obcorrCheckbox->isChecked() ) applyOBCorrection();
         if ( ui->deadpixelsinterpolationCheckbox->isChecked() ) applyDeadPixelsInterpolation( ui->noisyPixelMeanMultiplier->value(), meanvals );
         if ( ui->highinterpolationCheckbox->isChecked() ) applyHighPixelsInterpolation( ui->noisyPixelMeanMultiplier->value(), meanvals );
-        if (ui->bhcorrCheckbox->isChecked()) applyBHCorrection();
+        //if (ui->bhcorrCheckbox->isChecked()) applyBHCorrection();
+        //applyBHCorrection gets called from QCstmBHWindow. Calling it from here is not good, since the user still needs to specify some data.
 
     }
 
@@ -769,7 +772,7 @@ void Dataset::applyOBCorrection() {
 
         }
         // Calculates the amount of decimals before the first digit of the minimum. eg: 0.03 -> 2.
-        // this ensures that all values can be converted to ints without losing data.
+        // this ensures that all values can be converted to integers without losing data.
         int correctionFactor = (int)-floor(log10(min));
         int offset = (int)(std::abs(low)*pow(10.0, correctionFactor));
         cout << std::setprecision(10) << "low : " << low << endl;
@@ -791,12 +794,47 @@ void Dataset::applyOBCorrection() {
 
 }
 
-void Dataset::applyBHCorrection(){
-    //TODO implement
+void Dataset::applyBHCorrection(std::vector<double> thickness , Dataset originalSet, QVector<Dataset> setlist)
+//Makes signal to thickness conversion
+{
+    QList<int> keys = m_thresholdsToIndices.keys();
 
-	//Gets fitparameters per pixel from QCstmBHWindow::LoadCorrection
-	//Solves: function(x) = y, for x is the actual thickness of the object, y is the measured thickness (from data taking) and function is the fit based on the parameters
-	//Replaces y for x in currentLayer
+    for (int i = 0; i < keys.length(); i++)
+    {
+        std::vector<std::vector<double>> bhData(getPixelsPerLayer());
+       // std::vector<double> * bhData = new std::vector<double>[getPixelsPerLayer()];
+        for(int j = 0; j<setlist.size(); j++)
+        {
+                qDebug() <<  &setlist[j] << setlist[j].getLayer(keys[i]) << getPixelsPerLayer() << originalSet.getLayer(keys[i]);
+                int * layer = setlist[j].getLayer(keys[i]);
+                for(int k = 0; k<getPixelsPerLayer(); k++)
+                {
+                    bhData[k].push_back(layer[k]);
+                }
+        }
+
+        for(int j=0; j<getPixelsPerLayer(); j++)
+        {
+            std::vector<sortPair> pair(setlist.size());
+            for(int k = 0; k<setlist.size(); k++)
+            {
+                pair.push_back(sortPair(thickness[k],bhData[j][k]));
+            }
+            std::sort(pair.begin(), pair.end(), sortByThickness);
+            for(int k = 0; k<setlist.size(); k++)
+            {
+                bhData[j][k] = pair[k].value;
+            }
+        }
+        sort(thickness.begin(), thickness.end());
+        int * currentLayer = originalSet.getLayer(keys[i]);
+        for(int j = 0; j< getPixelsPerLayer(); j++)
+        {
+            tk::spline s;
+            s.set_points(thickness, bhData[j]);
+            currentLayer[j] = s(currentLayer[j]);
+        }
+    }
 }
 
 void Dataset::fromByteArray(QByteArray serialized){
