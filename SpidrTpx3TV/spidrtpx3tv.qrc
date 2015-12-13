@@ -1,7 +1,7 @@
 <RCC>
   <qresource prefix="default">
-    <file>spidr.png</file>
     <file>NIKHEF-logo-transparent.png</file>
+    <file>SPIDR-logo.ico</file>
     <file>spidrtpx3tv.png</file>
   </qresource>
 </RCC>
