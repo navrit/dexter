@@ -159,11 +159,29 @@ void SpidrTpx3Tv::onOff()
 	  return;
 	}
 
+      // Number of devices
+      disconnect( _cbDeviceNr, 0, 0, 0 );
+      _cbDeviceNr->clear();
+      int devices;
+      if( _controller->getDeviceCount( &devices ) )
+	{
+	  int i;
+	  for( i=0; i<devices; ++i )
+	    _cbDeviceNr->addItem( QString::number(i) );
+	  _cbDeviceNr->setEnabled( true );
+	  connect( _cbDeviceNr, SIGNAL(currentIndexChanged(int)),
+		   this, SLOT(selectDeviceNr(int)) );
+	}
+      else
+	{
+	  this->displayError( "Get device-count failed" );
+	}
+
+      this->selectDeviceNr( 0 );
+
       _pbConnect->setText( "Disconnect" );
 
       _cbTestMode->setEnabled( true );
-
-      this->selectDeviceNr( 0 );
     }
   else
     {
@@ -185,24 +203,7 @@ void SpidrTpx3Tv::onOff()
 
 void SpidrTpx3Tv::selectDeviceNr( int index )
 {
-  // Number of devices
   _deviceNr = index;
-  disconnect( _cbDeviceNr, 0, 0, 0 );
-  _cbDeviceNr->clear();
-  int devices;
-  if( _controller->getDeviceCount( &devices ) )
-    {
-      int i;
-      for( i=0; i<devices; ++i )
-	_cbDeviceNr->addItem( QString::number(i) );
-      _cbDeviceNr->setEnabled( true );
-      connect( _cbDeviceNr, SIGNAL(currentIndexChanged(int)),
-	       this, SLOT(selectDeviceNr(int)) );
-    }
-  else
-    {
-      this->displayError( "Get device-count failed" );
-    }
 
   // Device port
   int port;
@@ -222,13 +223,13 @@ void SpidrTpx3Tv::selectDeviceNr( int index )
       _leHostIpAddr->setText( "" );
     }
 
+  // Instantiate a new SpidrDaq for the selected device
   if( _daq )
     {
       _daq->stop();
       delete _daq;
       _daq = 0;
     }
-
   _daq = new SpidrDaq( _controller, 0x20000000, _deviceNr );
   std::string str = _daq->errorString();
   if( !str.empty() )
@@ -343,7 +344,7 @@ void SpidrTpx3Tv::changeShutter( bool open )
 			label->size().width())/2,
 		       (this->size().height() -
 			label->size().height())/2 );
-	  label->resize( 200, 60 );
+	  label->resize( 300, 100 );
 	  label->show();
 	  QApplication::processEvents();
 
