@@ -161,6 +161,16 @@ std::string SpidrDaq::errorString()
 }
 
 // ----------------------------------------------------------------------------
+
+bool SpidrDaq::hasError()
+{
+  if( !_packetReceiver->errorString().empty() ||
+      !_fileWriter->errorString().empty() )
+    return true;
+  return false;
+}
+
+// ----------------------------------------------------------------------------
 // Acquisition
 // ----------------------------------------------------------------------------
 

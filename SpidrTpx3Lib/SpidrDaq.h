@@ -36,6 +36,7 @@ class MY_LIB_API SpidrDaq
   int         classVersion        ( ); // Version of this class
   std::string ipAddressString     ( );
   std::string errorString         ( );
+  bool        hasError            ( );
 
   // Data acquisition
   bool        startRecording      ( std::string filename,
