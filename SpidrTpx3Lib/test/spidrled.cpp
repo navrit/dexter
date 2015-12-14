@@ -66,14 +66,15 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
-  // Open a control connection to SPIDR-TPX3 module
-  // with the given address and default port
+  // Open a control connection to the SPIDR module
+  // with the given address and port, or -if the latter was not provided-
+  // the default port number 50000
   SpidrController spidrctrl( (ipaddr>>24) & 0xFF,
 			     (ipaddr>>16) & 0xFF,
 			     (ipaddr>> 8) & 0xFF,
 			     (ipaddr>> 0) & 0xFF, portnr );
 
-  // Are we connected to the SPIDR-TPX3 module?
+  // Are we connected ?
   if( !spidrctrl.isConnected() ) {
     cout << spidrctrl.ipAddressString() << ": "
          << spidrctrl.connectionStateString() << ", "
