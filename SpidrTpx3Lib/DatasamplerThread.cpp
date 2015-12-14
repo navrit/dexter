@@ -1,7 +1,7 @@
 #include <QDateTime>
 #include <QDir>
 
-#define RETURN_AVAILABLE_SAMPLE
+//#define RETURN_AVAILABLE_SAMPLE // ###THERE'S A PROBLEM WITH THIS...
 #define USE_BIGENDIAN
 
 #include "DatasamplerThread.h"
