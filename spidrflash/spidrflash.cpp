@@ -10,9 +10,9 @@ spidrflash <ipaddr>[:<portnr>] <filename> <1|2> [prog]
    - Verifies the flash memory contents against the file contents
      on the module with the given IP address (and port number).
    - Programs the file contents into flash memory when keyword
-     'prog' is appended. (Check switch setting on SPIDR to see
-     which memory device the current version is stored in;
-     preferably program the other device).
+     'prog' (sic) is appended. (Check switch setting on SPIDR to see
+     which memory device the current version is stored in; you might
+     want to program the other device and keep the current version).
 
    <ipaddr>   : IP address of the Compact-SPIDR.
    <portnr>   : IP port of the Compact-SPIDR. Default 50000.
@@ -320,11 +320,11 @@ void usage()
        << endl
        << "   - Programs the file contents into flash memory when keyword"
        << endl
-       << "     'prog' is appended. (Check switch setting on SPIDR to see"
+       << "     'prog' (sic) is appended. (Check switch setting on SPIDR to see"
        << endl
-       << "     which memory device the current version is stored in;"
+       << "     which memory device the current version is stored in; you might"
        << endl
-       << "     preferably program the other device)."
+       << "     want to program the other device and keep the current version)."
        << endl << endl
        << "   <ipaddr>   : IP address of the Compact-SPIDR."
        << endl
