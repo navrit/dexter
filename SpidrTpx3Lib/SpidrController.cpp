@@ -2136,7 +2136,7 @@ bool SpidrController::request( int cmd,     int dev_nr,
   // Reply expected ?
   if( cmd & CMD_NOREPLY ) return true;
 
-  if( !_sock->waitForReadyRead( 1000 ) )
+  if( !_sock->waitForReadyRead( 2000 ) )
     {
       this->clearErrorString();
       _errString << "Time-out receiving reply";
