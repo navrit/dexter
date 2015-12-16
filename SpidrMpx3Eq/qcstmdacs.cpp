@@ -238,11 +238,14 @@ void QCstmDacs::PopulateDACValues() {
 
 }
 
-void QCstmDacs::ConnectionStatusChanged() {
+void QCstmDacs::ConnectionStatusChanged(bool conn) {
 
-    // Connected, activate what was not ready to operate
-    ui->startScanButton->setDisabled( false );
-    ui->senseDACsPushButton->setDisabled( false );
+    if ( conn ) {
+        setWindowWidgetsStatus( win_status::connected );
+    } else {
+        setWindowWidgetsStatus( win_status::disconnected );
+    }
+
 
     // Fill the DACs
     PopulateDACValues();
@@ -723,20 +726,35 @@ QCPGraph * QCstmDacs::GetGraph(int idx) {
     return ui->plotScan->graph( idx );
 }
 
-/*
-void QCstmDacs::setWindowWidgetsStatus(Mpx3GUI::win_status s)
+
+void QCstmDacs::setWindowWidgetsStatus(win_status s)
 {
 
     switch (s) {
-    case Mpx3GUI::__startup_status :
+
+    case win_status::startup:
+
         this->setEnabled( false );
+        ui->startScanButton->setDisabled( true );
+        ui->senseDACsPushButton->setDisabled( true );
+
         break;
+
+    case win_status::connected:
+        this->setEnabled( true );
+        ui->startScanButton->setDisabled( false );
+        ui->senseDACsPushButton->setDisabled( false );
+
+        break;
+
     default:
+
         break;
+
     }
 
 }
-*/
+
 
 void QCstmDacs::scanFinished() {
 

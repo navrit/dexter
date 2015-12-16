@@ -1,6 +1,38 @@
 #ifndef MPX3EQ_COMMON_H
 #define MPX3EQ_COMMON_H
 
+enum class win_status { startup, connected, disconnected };
+
+static const QColor COLOR_TABLE[] = {
+        Qt::red, // 1
+        Qt::black,
+        Qt::darkRed,
+        Qt::green,
+        Qt::darkGreen,
+        Qt::blue,
+        Qt::darkBlue,
+        Qt::cyan,
+        Qt::darkCyan,
+        Qt::magenta, // 10
+        Qt::darkMagenta,
+        Qt::yellow,
+        Qt::darkYellow,
+        QColor( "darkorange" ),
+        QColor( "purple" ),
+        QColor( "khaki" ),
+        QColor( "gold" ),
+        QColor( "dodgerblue" ), // 18
+        QColor( "light gray" ),
+        QColor( "medium gray" ),
+        QColor( "red" ),
+        QColor( "green" ),
+        QColor( "blue" ),
+        QColor( "cyan" ),
+        QColor( "magenta" ),
+        QColor( "yellow" ),
+        QColor( "dark yellow" ) // 27
+};
+
 typedef enum {
 	__VERBL_ERR = 0,
 	__VERBL_INFO,

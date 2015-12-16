@@ -50,7 +50,8 @@ void DataTakingThread::run() {
 	// 0 : DEBUG
 	// 1 : INFO
 	// 2 : WARNINGS, ERROR, FATAL
-	spidrcontrol->setLogLevel( 2 );
+    //spidrcontrol->setLogLevel( 2 );
+    spidrcontrol->setLogLevel( 0 );
 
 	if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
 		cout << "[ERR ] Device not connected !" << endl;
@@ -459,7 +460,7 @@ void DataTakingThread::on_stop_data_taking_thread() {
 
 }
 
-void DataTakingThread::SeparateThresholds(int /*id*/, int * data, int /*size*/, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced) {
+void DataTakingThread::SeparateThresholds(int /*id*/, int * data, int /*size*/, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int /*sizeReduced*/) {
 
 	// Layout of 110um pixel
 	//  -------------   ---------------------

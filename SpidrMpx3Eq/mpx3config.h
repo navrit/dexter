@@ -24,7 +24,7 @@ class Mpx3Config: public QObject {
 
 	Q_OBJECT
 	//Spidr stuff
-	SpidrController * controller;
+    SpidrController * controller = nullptr;
 	bool connected = false;
 	QHostAddress SpidrAddress;
 	uint16_t port;

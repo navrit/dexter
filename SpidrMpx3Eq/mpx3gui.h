@@ -40,7 +40,7 @@ class QCstmEqualization;
 class QCstmGLVisualization;
 class QCstmConfigMonitoring;
 
-enum class win_status { startup, connected, disconnected };
+
 
 namespace Ui {
 class Mpx3GUI;

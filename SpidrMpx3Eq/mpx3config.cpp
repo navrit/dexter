@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include <QFile>
+#include <QDebug>
 
 #include "SpidrController.h"
 #include "SpidrDaq.h"
@@ -232,49 +233,71 @@ void QCstmGLVisualization::Configuration(bool reset, int deviceIndex) {//TODO: s
 }
  */
 
-SpidrController* Mpx3Config::establishConnection(){
+SpidrController * Mpx3Config::establishConnection(){
 
 	// number of devices connected
 	_devicePresenceLayout.clear();
 	_nDevicesPresent = 0;
 	_activeChips.clear();
+
+    // Addres from Json config file
 	quint32 ipaddr =  SpidrAddress.toIPv4Address();
-	cout << SpidrAddress.toString().toStdString() << endl;
-	delete controller;
+    //cout << SpidrAddress.toString().toStdString() << endl;
+
+    // If previously connected
+    if ( controller ) delete controller;
 	controller = new SpidrController(((ipaddr>>24) & 0xFF), ((ipaddr>>16) & 0xFF), ((ipaddr>>8) & 0xFF), ((ipaddr>>0) & 0xFF), port);
 	connected = controller->isConnected();
 	// number of device that the system can support
 	controller->getDeviceCount(&_nDevicesSupported);
-	cout << "[INFO] Number of devices supported: " << _nDevicesSupported << endl;
+    qDebug() << "[INFO] Number of devices supported :" << _nDevicesSupported;
+
+    //! Work around
+    //! If we attempt a connection while the system is already sending data
+    //! (this may happen if for instance the program died for whatever reason,
+    //!  or when it is close while a very long data taking has been lauched and
+    //! the system failed to stop the data taking).  If this happens we ought
+    //! to stop data taking, and give the system a bit of delay.
+    controller->stopAutoTrigger();
+    Sleep( 100 );
 
 	// Response
 	_responseChips = QVector<detector_response>( _nDevicesSupported );
 
-	// FIXME
-	// For the moment assume matrixes of 256*256
+
+    // Run a simple reponse check by reaching a DAC setting
 	for(int i = 0 ; i < _nDevicesSupported ; i++) {
+
 		int id = 0;
 		controller->getDeviceId(i, &id);
 
-		cout << "--- Device [" << i << "] ------------------ " << endl;
+        QDebug dbg(QtInfoMsg);
+        dbg << "--- Device [" << i << "] ---";
 
 		if ( id != 0 ) {
 
-			cout << "    id : " << id << " | ";
+            dbg << "Id :" << id << "|";
 			_devicePresenceLayout.push_back( QPoint(__default_matrixSizePerChip_X, __default_matrixSizePerChip_Y) );
 			_nDevicesPresent++;
+
 			// If connected check response
-			checkChipResponse( i, __CONTROLLER_OK );
-			if(detectorResponds(i))
+            checkChipResponse( i, __CONTROLLER_OK );
+            if( detectorResponds(i) ) {
 				_activeChips.push_back(i);
+                dbg << "OK";
+            }
+
 		} else {
-			cout << "     	NOT RESPONDING !";
+
+            dbg << "NOT RESPONDING !";
 			_devicePresenceLayout.push_back( QPoint(0, 0) );
 			// If not connected tag it immediately
 			_responseChips[i] = __NOT_RESPONDING;
+
 		}
 
-		cout << endl;
+        // the CR for the QDebug object is emmited when the object is destroyed
+
 	}
 
 	return controller;

@@ -676,11 +676,11 @@ void QCstmGLVisualization::on_applyCorr_clicked() {
 		// This is done off data taking
 		// Recover first the saved data to operate on the original
         //* ( _mpx3gui->getDataset() ) = * (_mpx3gui->getOriginalDataset() );
+        //Dataset d2 ( *_mpx3gui->getDataset() );
 
         // !!!!!!!!!!!!!!! uncomment
         _mpx3gui->getDataset()->applyCorrections( ui );
         on_reload_all_layers();
-
 
         /*
         // TODO, the location of the corrections will be moved to a separate window

@@ -1,6 +1,11 @@
 #ifndef QCSTMEQUALIZATION_H
 #define QCSTMEQUALIZATION_H
 
+/**
+ * John Idarraga <idarraga@cern.ch>
+ * Nikhef, 2014.
+ */
+
 #include <QWidget>
 #include <QMap>
 
@@ -75,10 +80,10 @@ public:
 
 	void ExtrapolateAdjToTarget(int target, double eta_Adj_THL, lowHighSel sel = __ADJ_L);
 
-	void WriteAdjBinaryFile(QString fn);
-	void ReadAdjBinaryFile(QString fn);
-	void WriteMaskBinaryFile(QString fn);
-	void ReadMaskBinaryFile(QString fn);
+    bool WriteAdjBinaryFile(QString fn);
+    bool ReadAdjBinaryFile(QString fn);
+    bool WriteMaskBinaryFile(QString fn);
+    bool ReadMaskBinaryFile(QString fn);
 
 	void ClearAdj();
 	void ClearMasked();
@@ -87,6 +92,7 @@ public:
 
 	void SetStatus(int pixId, eq_status st, lowHighSel sel = __ADJ_L);
 	eq_status GetStatus(int pixId, lowHighSel = __ADJ_L);
+
 
 private:
 
@@ -243,6 +249,8 @@ public:
 	} eqStatus;
 	bool * _stepDone;
 
+    void setWindowWidgetsStatus(win_status s = win_status::startup);
+
 private:
 
 	Ui::QCstmEqualization * _ui;
@@ -325,7 +333,7 @@ void ChangeSpacing(int);
 void ChangeMin(int);
 void ChangeMax(int);
 void ChangeStep(int);
-void ConnectionStatusChanged();
+void ConnectionStatusChanged(bool);
 void StopEqualization();
 void CleanEqualization();
 void setEqualizationTHLTHH(int);

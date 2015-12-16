@@ -68,10 +68,11 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 
     // Prepare DACs panel
     _ui->DACsWidget->SetMpx3GUI( this );
-    //_ui->DACsWidget->setWindowWidgetsStatus(); // statup status
+    _ui->DACsWidget->setWindowWidgetsStatus(); // statup status
 
     // Prepare Equalization
     _ui->equalizationWidget->SetMpx3GUI( this );
+    _ui->equalizationWidget->setWindowWidgetsStatus();
 
     if ( ! gradients.empty() ) {
         // Prepare Visualization
@@ -175,8 +176,8 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect(_ui->actionClear_configuration, SIGNAL(triggered()), this, SLOT(clear_configuration()) );
 
     // Inform every module of changes in connection status
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged() ) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged() ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool) ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged() ) );
     connect( this, &Mpx3GUI::ConnectionStatusChanged, &Mpx3GUI::onConnectionStatusChanged );
 
@@ -201,6 +202,7 @@ void Mpx3GUI::setWindowWidgetsStatus(win_status s)
         _ui->actionConnect->setEnabled( true );
         _ui->actionDisconnect->setEnabled( false );
         break;
+
     default:
         break;
 
@@ -261,6 +263,7 @@ void Mpx3GUI::establish_connection() {
     if( spidrcontrol->getSoftwVersion( &version ) )
         cout << "SPIDR software  : " << spidrcontrol->versionToString( version ) << endl;
 
+
     // SpidrDaq
     _spidrdaq = new SpidrDaq( spidrcontrol );
     cout << "SpidrDaq: ";
@@ -273,8 +276,12 @@ void Mpx3GUI::establish_connection() {
     // Here the chips can be configured
     getConfig()->SendConfiguration();
 
-    // Emmit
+    // Load equalization if possible
+    LoadEqualization();
+
+    // Emit
     emit ConnectionStatusChanged(true);
+
     // A working set had been instantiated before just to have a Dataset
     //  working on startup.  Now upon connection a new one will be
     //  instantiated.
@@ -346,9 +353,16 @@ int Mpx3GUI::getFrameCount(){
 
 void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
 
-    ///////////////////////////////////////////////////////////
-    /// Native format
+    //! Native format
+    // User dialog
     QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("binary files (*.bin)"));
+
+    // Force the .bin in the data filename
+    if ( ! filename.contains(".bin") ) {
+        filename.append(".bin");
+    }
+
+    // And save
     QFile saveFile(filename);
     if (!saveFile.open(QIODevice::WriteOnly)) {
         string messg = "Couldn't open: ";
@@ -429,15 +443,18 @@ void Mpx3GUI::load_config(){
     return;
 }
 
-void Mpx3GUI::onConnectionStatusChanged(bool good)
+void Mpx3GUI::onConnectionStatusChanged(bool conn)
 {
-    if( good ) {
+    // Specific to the main window
+    if( conn ) {
         _ui->actionConnect->setEnabled( false );
         _ui->actionDisconnect->setEnabled( true );
+
     } else {
         _ui->actionConnect->setEnabled( true );
         _ui->actionDisconnect->setEnabled( false );
     }
+
 }
 
 void Mpx3GUI::open_data(){

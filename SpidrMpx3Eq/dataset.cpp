@@ -48,7 +48,7 @@ void Dataset::loadCorrection(QByteArray serialized) {
 }
 
 void Dataset::reloadScores() {
-    _scores.packetsLost = 0;
+    m_scores.packetsLost = 0;
 }
 
 int64_t Dataset::getTotal(int threshold){
@@ -73,12 +73,24 @@ uint64_t Dataset::getActivePixels(int threshold){
     return count;
 }
 
-Dataset::Dataset( const Dataset& other ): m_boundingBox(other.m_boundingBox), m_frameLayouts(other.m_frameLayouts), m_frameOrientation(other.m_frameOrientation), m_thresholdsToIndices(other.m_thresholdsToIndices), m_layers(other.m_layers){
+/*!
+ * \brief MyClass::MyClass
+ *        The copy constructor
+ */
+Dataset::Dataset( const Dataset& other ):
+    m_boundingBox(other.m_boundingBox),
+    m_scores(other.m_scores),
+    m_frameLayouts(other.m_frameLayouts),
+    m_frameOrientation(other.m_frameOrientation),
+    m_thresholdsToIndices(other.m_thresholdsToIndices),
+    m_layers(other.m_layers)
+{
+
     // copy the dimensions
     m_nx = other.x(); m_ny = other.y();
     // And copy the layers
     m_nFrames = other.getFrameCount();
-    for(int i = 0; i < m_layers.size(); i++){
+    for (int i = 0; i < m_layers.size(); i++) {
         m_layers[i] = new int[getPixelsPerLayer()];
         for(unsigned int j = 0; j < getPixelsPerLayer(); j++)
             m_layers[i][j] = other.m_layers[i][j];
@@ -86,9 +98,17 @@ Dataset::Dataset( const Dataset& other ): m_boundingBox(other.m_boundingBox), m_
     obCorrection = 0x0;
 }
 
-Dataset& Dataset::operator =( const Dataset& rhs){
-    Dataset copy(rhs);
-    std::swap(this->m_layers, copy.m_layers);
+/*!
+ * \brief MyClass::operator =
+ *        The copy assignment
+ */
+Dataset& Dataset::operator=( const Dataset& rhs){
+
+    if ( this != &rhs ) {
+        Dataset copy(rhs);
+        std::swap(this->m_layers, copy.m_layers);
+    }
+
     return *this;
 }
 
@@ -807,13 +827,13 @@ void Dataset::applyBHCorrection(std::vector<double> thickness , Dataset original
         {
                 qDebug() <<  &setlist[j] << setlist[j].getLayer(keys[i]) << getPixelsPerLayer() << originalSet.getLayer(keys[i]);
                 int * layer = setlist[j].getLayer(keys[i]);
-                for(int k = 0; k<getPixelsPerLayer(); k++)
+                for(unsigned int k = 0; k<getPixelsPerLayer(); k++)
                 {
                     bhData[k].push_back(layer[k]);
                 }
         }
 
-        for(int j=0; j<getPixelsPerLayer(); j++)
+        for(unsigned int j=0; j<getPixelsPerLayer(); j++)
         {
             std::vector<sortPair> pair(setlist.size());
             for(int k = 0; k<setlist.size(); k++)
@@ -828,7 +848,7 @@ void Dataset::applyBHCorrection(std::vector<double> thickness , Dataset original
         }
         sort(thickness.begin(), thickness.end());
         int * currentLayer = originalSet.getLayer(keys[i]);
-        for(int j = 0; j< getPixelsPerLayer(); j++)
+        for(unsigned int j = 0; j< getPixelsPerLayer(); j++)
         {
             tk::spline s;
             s.set_points(thickness, bhData[j]);
@@ -1073,8 +1093,8 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui) {
     }
 
     // - Create a buffer for the whole image
-    if ( _plainImageBuff ) delete [] _plainImageBuff;
-    _plainImageBuff = new int[nChips * x() * y()];
+    if ( m_plainImageBuff ) delete [] m_plainImageBuff;
+    m_plainImageBuff = new int[nChips * x() * y()];
 
     // - Fill it according to layout
     // - Take one chip
@@ -1113,10 +1133,10 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui) {
 
                     //qDebug() << "[" << i << "]" << x << "," << y << " : " << pixIdTranslate << " | " << pixCntr;
 
-                    _plainImageBuff[pixIdTranslate] = chipdata[pixCntr++];
+                    m_plainImageBuff[pixIdTranslate] = chipdata[pixCntr++];
                 } else {
 
-                    _plainImageBuff[pixIdTranslate] = 0;
+                    m_plainImageBuff[pixIdTranslate] = 0;
 
                 }
 
@@ -1151,7 +1171,7 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui) {
     }
     */
 
-    return _plainImageBuff;
+    return m_plainImageBuff;
 }
 
 int* Dataset::getLayer(int threshold){

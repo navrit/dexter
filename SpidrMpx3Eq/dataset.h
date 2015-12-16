@@ -33,6 +33,8 @@ class Mpx3GUI;
 class Color2DRecoGuided;
 class CorrectionItem;
 
+
+
 class Dataset//TODO: specify starting corner?
 {
  public:
@@ -68,8 +70,8 @@ class Dataset//TODO: specify starting corner?
   int m_nx, m_ny; //!<Pixel size in the x and y direction
   QRectF m_boundingBox;//!<A rectangular box which encompasses all the chips. Hence the name.
   int m_nFrames; //!< The amount of detectors, a.k.a. frames here.
-  score_info _scores; //!< some 'score' info about this frame. A buch of counters.
-  int * _plainImageBuff = nullptr;
+  score_info m_scores; //!< some 'score' info about this frame. A buch of counters.
+  int * m_plainImageBuff = nullptr;
 
   QVector<QPoint>  m_frameLayouts; //!<A vector containing the bottom-left corners of the detectors, (0,0) is bottom, left , (1,0) is to the right, (0,1) above.
   QVector<int> m_frameOrientation;//!<The orientation of the detectors. see the enum.
@@ -133,8 +135,8 @@ public:
   uint64_t getPixelsPerLayer() const{return m_nFrames*m_nx*m_ny;}
   bool isBorderPixel(int pixel, QSize isize); //!<Determines if the pixel is at the border (x) (assembly coordinates !)
   bool isBorderPixel(int x, int y, QSize isize); //!<Determines if the pixel is at the border (x,y) (assembly coordinates !)
-  void increasePacketsLost(int val) { _scores.packetsLost += val; }
-  int getPacketsLost() { return _scores.packetsLost; }
+  void increasePacketsLost(int val) { m_scores.packetsLost += val; }
+  int getPacketsLost() { return m_scores.packetsLost; }
 
   QPoint getSize(){return QPoint(m_nx, m_ny);}
   int * getFrame(int index, int threshold); //!< returns a pointer to the data of chip index at the specified threshold.
@@ -167,5 +169,7 @@ public:
 
   QMap<int, double> GetPadMean();
 };
+
+
 
 #endif // DATASET_H
