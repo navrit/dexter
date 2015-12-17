@@ -187,6 +187,16 @@ Mpx3Config* Mpx3GUI::getConfig() {
     return config;
 }
 
+void Mpx3GUI::saveOriginalDataset()
+{
+    *originalSet = *workingSet;
+}
+
+void Mpx3GUI::rewindToOriginalDataset()
+{
+    *workingSet = *originalSet;
+}
+
 void Mpx3GUI::setWindowWidgetsStatus(win_status s)
 {
     switch (s) {

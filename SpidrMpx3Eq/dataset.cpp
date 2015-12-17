@@ -102,10 +102,13 @@ Dataset::Dataset( const Dataset& other ):
  * \brief MyClass::operator =
  *        The copy assignment
  */
-Dataset& Dataset::operator=( const Dataset& rhs){
+Dataset& Dataset::operator=( const Dataset& tocopy){
 
-    if ( this != &rhs ) {
-        Dataset copy(rhs);
+    // Avoid self assignment
+    if ( this != &tocopy ) {
+        // Make a copy
+        Dataset copy(tocopy);
+        // And swap data
         std::swap(this->m_layers, copy.m_layers);
     }
 

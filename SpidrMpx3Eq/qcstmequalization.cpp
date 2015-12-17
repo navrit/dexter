@@ -2227,7 +2227,7 @@ bool Mpx3EqualizationResults::ReadMaskBinaryFile(QString fn) {
 int * Mpx3EqualizationResults::GetAdjustementMatrix(lowHighSel sel) {
 
     int * mat = new int[__matrix_size];
-    for( int j = 0 ; j < __matrix_size ; j++ ){
+    for ( int j = 0 ; j < __matrix_size ; j++ ) {
         if ( sel == __ADJ_L ) mat[j] = _pixId_Adj_L[j];
         if ( sel == __ADJ_H ) mat[j] = _pixId_Adj_H[j];
     }

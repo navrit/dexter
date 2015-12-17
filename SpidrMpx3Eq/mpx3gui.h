@@ -84,6 +84,8 @@ public:
     Dataset* getOriginalDataset(){return originalSet;}
     bool isArmedOk(){return _armedOk;}
 
+    void saveOriginalDataset();
+    void rewindToOriginalDataset();
     void setWindowWidgetsStatus(win_status s = win_status::startup);
 
     QCstmEqualization * getEqualization();
