@@ -25,9 +25,8 @@ void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
 	connect(this, SIGNAL(switchDataView), _mpx3gui->getVisualization(), SLOT(on_reload_all_layers()));
     connect(this, &QCstmBHWindow::openData, _mpx3gui, &Mpx3GUI::open_data);
 
-    Dataset * orSet = new Dataset;
-    *orSet = (*_mpx3gui->getDataset());
-    qDebug() << orSet->getLayer(0);
+    // Keep a copy of the original dataset
+    _mpx3gui->saveOriginalDataset();
 
 }
 
@@ -125,7 +124,6 @@ void QCstmBHWindow::on_selectedItem()
 
 void QCstmBHWindow::on_startButton_clicked()
 {
-    qDebug() << originalSet.getLayer(0);
-  _mpx3gui->getDataset()->applyBHCorrection(thicknessvctr, originalSet, layers);
+  _mpx3gui->getDataset()->applyBHCorrection(thicknessvctr, _mpx3gui->getOriginalDataset(), layers);
 }
 

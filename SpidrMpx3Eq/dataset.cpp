@@ -106,10 +106,24 @@ Dataset& Dataset::operator=( const Dataset& tocopy){
 
     // Avoid self assignment
     if ( this != &tocopy ) {
-        // Make a copy
+
+        // Make a copy, only used to swap layers, can't use 'tocopy'
         Dataset copy(tocopy);
         // And swap data
         std::swap(this->m_layers, copy.m_layers);
+
+        // Still the rest of the properties need to be copied
+        this->m_boundingBox = tocopy.m_boundingBox;
+        this->m_scores = tocopy.m_scores,
+        this->m_frameLayouts = tocopy.m_frameLayouts,
+        this->m_frameOrientation = tocopy.m_frameOrientation,
+        this->m_thresholdsToIndices = tocopy.m_thresholdsToIndices,
+        this->m_layers = tocopy.m_layers;
+        this->m_nx = tocopy.x();
+        this->m_ny = tocopy.y();
+        this->m_nFrames = tocopy.getFrameCount();
+        this->obCorrection = 0x0;
+
     }
 
     return *this;
@@ -817,31 +831,46 @@ void Dataset::applyOBCorrection() {
 
 }
 
-void Dataset::applyBHCorrection(std::vector<double> thickness , Dataset originalSet, QVector<Dataset> setlist)
+
+void Dataset::applyBHCorrection(std::vector<double> thickness, Dataset* originalSet, QVector<Dataset> setlist)
 //Makes signal to thickness conversion
 {
     QList<int> keys = m_thresholdsToIndices.keys();
 
+    //Loop over layers
     for (int i = 0; i < keys.length(); i++)
-    {
+    {        
+        //Create data structure
         std::vector<std::vector<double>> bhData(getPixelsPerLayer());
        // std::vector<double> * bhData = new std::vector<double>[getPixelsPerLayer()];
         for(int j = 0; j<setlist.size(); j++)
         {
-                qDebug() <<  &setlist[j] << setlist[j].getLayer(keys[i]) << getPixelsPerLayer() << originalSet.getLayer(keys[i]);
+                qDebug() <<  &setlist[j] << setlist[j].getLayer(keys[i]) << getPixelsPerLayer() << originalSet->getLayer(0);
                 int * layer = setlist[j].getLayer(keys[i]);
                 for(unsigned int k = 0; k<getPixelsPerLayer(); k++)
                 {
                     bhData[k].push_back(layer[k]);
+                    if(k<5)
+                    {
+                        qDebug() << layer[k] << bhData[k][j];
+                    }
                 }
         }
 
+        //Sort the bhData pairs based on the thickness vector
         for(unsigned int j=0; j<getPixelsPerLayer(); j++)
         {
             std::vector<sortPair> pair(setlist.size());
             for(int k = 0; k<setlist.size(); k++)
             {
-                pair.push_back(sortPair(thickness[k],bhData[j][k]));
+                sortPair temp(thickness[k],bhData[j][k]);
+                pair.push_back(temp);
+
+                if(j<3)
+                {
+                    //Somehow pair[0].value != bhData[j][k]
+                    qDebug()<< pair[0].value << bhData[j][k];
+                }
             }
             std::sort(pair.begin(), pair.end(), sortByThickness);
             for(int k = 0; k<setlist.size(); k++)
@@ -850,7 +879,10 @@ void Dataset::applyBHCorrection(std::vector<double> thickness , Dataset original
             }
         }
         sort(thickness.begin(), thickness.end());
-        int * currentLayer = originalSet.getLayer(keys[i]);
+
+        //Apply correction
+
+        int * currentLayer = originalSet->getLayer(keys[i]);
         for(unsigned int j = 0; j< getPixelsPerLayer(); j++)
         {
             tk::spline s;
@@ -1178,6 +1210,7 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui) {
 }
 
 int* Dataset::getLayer(int threshold){
+
     int layerIndex = thresholdToIndex(threshold);
     if(layerIndex == -1)
         return nullptr;

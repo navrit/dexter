@@ -64,7 +64,6 @@ private:
   Mpx3GUI * _mpx3gui; 
   int selectedItemNo;
   Dataset tempSet;
-  Dataset originalSet;
   QVector<Dataset> layers;
   vector<double> thicknessvctr;
 
