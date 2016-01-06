@@ -132,6 +132,7 @@ signals:
     void reload_layer(int layer);
     void reload_all_layers();
     void sizeChanged(int, int);
+    void open_data_failed();
 
 public slots:
     void addLayer(int* data);

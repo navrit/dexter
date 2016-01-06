@@ -639,7 +639,7 @@ void Dataset::applyCorrections(Ui::QCstmGLVisualization * ui) {
         if ( ui->deadpixelsinterpolationCheckbox->isChecked() ) applyDeadPixelsInterpolation( ui->noisyPixelMeanMultiplier->value(), meanvals );
         if ( ui->highinterpolationCheckbox->isChecked() ) applyHighPixelsInterpolation( ui->noisyPixelMeanMultiplier->value(), meanvals );
         //if (ui->bhcorrCheckbox->isChecked()) applyBHCorrection();
-        //applyBHCorrection gets called from QCstmBHWindow. Calling it from here is not good, since the user still needs to specify some data.
+        //applyBHCorrection gets called from QCstmBHWindow. TODO: Make sure that it can be called from here as well
 
     }
 
@@ -779,7 +779,6 @@ void Dataset::applyOBCorrection() {
         // Find the smallest value.  Initialize it for the search.
         double min = (double)std::abs(correctionLayer[0]);
         double low = 0;
-        //double temp;
         if (currentLayer[0] > correctionLayer[0]) min = currentLayer[0];
 
         for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
@@ -832,36 +831,41 @@ void Dataset::applyOBCorrection() {
 }
 
 
-void Dataset::applyBHCorrection(std::vector<double> thickness, Dataset* originalSet, QVector<Dataset> setlist)
+void Dataset::applyBHCorrection(std::vector<double> thickness, Dataset* originalSet, QMap<double, Dataset> map)
 //Makes signal to thickness conversion
 {
+
+
+
     QList<int> keys = m_thresholdsToIndices.keys();
 
     //Loop over layers
     for (int i = 0; i < keys.length(); i++)
-    {        
+    {
+        qDebug()<<i;
         //Create data structure
         std::vector<std::vector<double>> bhData(getPixelsPerLayer());
-       // std::vector<double> * bhData = new std::vector<double>[getPixelsPerLayer()];
-        for(int j = 0; j<setlist.size(); j++)
+        sort(thickness.begin(), thickness.end());
+        for(int j = 0; j<thickness.size(); j++)
         {
-                qDebug() <<  &setlist[j] << setlist[j].getLayer(keys[i]) << getPixelsPerLayer() << originalSet->getLayer(0);
-                int * layer = setlist[j].getLayer(keys[i]);
+                qDebug() <<  &map[thickness[j]] << map[thickness[j]].getLayer(keys[i]) << getPixelsPerLayer() << originalSet->getLayer(0);
+                int * layer = map[thickness[j]].getLayer(keys[i]);
                 for(unsigned int k = 0; k<getPixelsPerLayer(); k++)
                 {
                     bhData[k].push_back(layer[k]);
-                    if(k<5)
+                    if(k<1)
                     {
                         qDebug() << layer[k] << bhData[k][j];
                     }
                 }
         }
 
+        /*
         //Sort the bhData pairs based on the thickness vector
         for(unsigned int j=0; j<getPixelsPerLayer(); j++)
         {
-            std::vector<sortPair> pair(setlist.size());
-            for(int k = 0; k<setlist.size(); k++)
+            std::vector<sortPair> pair(map.size());
+            for(int k = 0; k<map.size(); k++)
             {
                 sortPair temp(thickness[k],bhData[j][k]);
                 pair.push_back(temp);
@@ -873,18 +877,22 @@ void Dataset::applyBHCorrection(std::vector<double> thickness, Dataset* original
                 }
             }
             std::sort(pair.begin(), pair.end(), sortByThickness);
-            for(int k = 0; k<setlist.size(); k++)
+            for(int k = 0; k<map.size(); k++)
             {
                 bhData[j][k] = pair[k].value;
             }
         }
         sort(thickness.begin(), thickness.end());
+        */
 
         //Apply correction
-
         int * currentLayer = originalSet->getLayer(keys[i]);
         for(unsigned int j = 0; j< getPixelsPerLayer(); j++)
         {
+            if(j%1000==0)
+            {
+                int q = j;
+            }
             tk::spline s;
             s.set_points(thickness, bhData[j]);
             currentLayer[j] = s(currentLayer[j]);

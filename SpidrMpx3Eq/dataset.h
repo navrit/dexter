@@ -105,7 +105,7 @@ public:
   void loadCorrection(QByteArray serialized);//!< Loads and sets the correction to a previously serialized set.
   void applyCorrections(Ui::QCstmGLVisualization * ui);//<!Handles all corrections.  This function is blocking for the moment !
   void applyOBCorrection();//!< Computes and applies the flat-field correction
-  void applyBHCorrection(std::vector<double> thickness, Dataset* originalSet, QVector<Dataset> setlist);//!< Computes and applies a beam-hardening correction
+  void applyBHCorrection(std::vector<double> thickness, Dataset* originalSet, QMap<double, Dataset> map);//!< Computes and applies a beam-hardening correction
   void applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
   void applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
   int applyColor2DRecoGuided(Color2DRecoGuided * );

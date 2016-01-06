@@ -3,9 +3,11 @@
 
 #include <QMainWindow>
 #include <QWidget>
+#include <QMap>
 #include "mpx3gui.h"
 #include "gradient.h"
 #include "qcstmBHdialog.h"
+
 
 namespace Ui {
   class QCstmBHWindow;
@@ -29,13 +31,11 @@ private:
 
 signals:
 
-  void selectedItem();
-
   void takeData();
 
-  void switchDataView();
-
   void openData();
+
+  void reload();
 
 private slots:
   void on_addButton_clicked();
@@ -54,18 +54,19 @@ private slots:
 
   void on_talkToForm(double thickness);
 
-  void on_selectedItem();
-
   void on_startButton_clicked();
+
+  void on_open_data_failed();
 
 private:
 
   Ui::QCstmBHWindow *ui;
   Mpx3GUI * _mpx3gui; 
   int selectedItemNo;
-  Dataset tempSet;
-  QVector<Dataset> layers;
+  QMap<double,Dataset> correctionMap;
   vector<double> thicknessvctr;
+  int emptyCorrectionCounter = 0;
+  bool dataOpened;
 
 
 };

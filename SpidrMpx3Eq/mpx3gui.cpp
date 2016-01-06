@@ -476,6 +476,7 @@ void Mpx3GUI::open_data(){
         messg += filename.toStdString();
         messg += "\nNo output written!";
         QMessageBox::warning ( this, tr("Error opening data"), tr( messg.c_str() ) );
+        emit open_data_failed();
         return;
     }
     clear_data();
