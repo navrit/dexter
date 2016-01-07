@@ -86,7 +86,7 @@ void QCstmGLVisualization::StartDataTaking(){
 			if ( _dataTakingThread->isRunning() ) {
 				return;
 			}
-			//disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
+            //disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
 			delete _dataTakingThread;
 			_dataTakingThread = 0x0;
 		}
@@ -605,7 +605,7 @@ void QCstmGLVisualization::on_summingCheckbox_toggled(bool checked)
 void QCstmGLVisualization::on_bhcorrCheckbox_toggled(bool checked) {
 
 	// Deal with the separate BH window
-	if ( !_bhwindow && checked ) {
+    if ( !_bhwindow && checked && _mpx3gui->getDataset()->getLayer(0)!= nullptr) {
 		_bhwindow = new QCstmBHWindow(this);
         _bhwindow->SetMpx3GUI( _mpx3gui );
 
@@ -614,14 +614,24 @@ void QCstmGLVisualization::on_bhcorrCheckbox_toggled(bool checked) {
 		_bhwindow->activateWindow();
 	}
 
-	if ( ! checked ) {
-		_bhwindow->close();
-	} else {
-		_bhwindow->show();
-		_bhwindow->raise();
-		_bhwindow->activateWindow();
-	}
+    if(_mpx3gui->getDataset()->getLayer(0)== nullptr && checked)
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Please first load / take data.");
+        msgBox.exec();
+        ui->bhcorrCheckbox->setChecked(false);
+    }
 
+if(_mpx3gui->getDataset()->getLayer(0)!= nullptr)
+    {
+        if ( ! checked ) {
+            _bhwindow->close();
+        } else {
+            _bhwindow->show();
+            _bhwindow->raise();
+            _bhwindow->activateWindow();
+        }
+    }
 }
 
 void QCstmGLVisualization::on_obcorrCheckbox_toggled(bool checked) {

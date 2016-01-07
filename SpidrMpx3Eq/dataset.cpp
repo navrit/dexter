@@ -834,70 +834,31 @@ void Dataset::applyOBCorrection() {
 void Dataset::applyBHCorrection(std::vector<double> thickness, Dataset* originalSet, QMap<double, Dataset> map)
 //Makes signal to thickness conversion
 {
-
-
-
     QList<int> keys = m_thresholdsToIndices.keys();
 
     //Loop over layers
     for (int i = 0; i < keys.length(); i++)
     {
-        qDebug()<<i;
+        tk::spline *s = new tk::spline;// instantiate spline
         //Create data structure
         std::vector<std::vector<double>> bhData(getPixelsPerLayer());
         sort(thickness.begin(), thickness.end());
         for(int j = 0; j<thickness.size(); j++)
         {
-                qDebug() <<  &map[thickness[j]] << map[thickness[j]].getLayer(keys[i]) << getPixelsPerLayer() << originalSet->getLayer(0);
                 int * layer = map[thickness[j]].getLayer(keys[i]);
-                for(unsigned int k = 0; k<getPixelsPerLayer(); k++)
-                {
-                    bhData[k].push_back(layer[k]);
-                    if(k<1)
-                    {
-                        qDebug() << layer[k] << bhData[k][j];
-                    }
-                }
+                for(unsigned int k = 0; k<getPixelsPerLayer(); k++){ bhData[k].push_back(layer[k]); }
         }
-
-        /*
-        //Sort the bhData pairs based on the thickness vector
-        for(unsigned int j=0; j<getPixelsPerLayer(); j++)
-        {
-            std::vector<sortPair> pair(map.size());
-            for(int k = 0; k<map.size(); k++)
-            {
-                sortPair temp(thickness[k],bhData[j][k]);
-                pair.push_back(temp);
-
-                if(j<3)
-                {
-                    //Somehow pair[0].value != bhData[j][k]
-                    qDebug()<< pair[0].value << bhData[j][k];
-                }
-            }
-            std::sort(pair.begin(), pair.end(), sortByThickness);
-            for(int k = 0; k<map.size(); k++)
-            {
-                bhData[j][k] = pair[k].value;
-            }
-        }
-        sort(thickness.begin(), thickness.end());
-        */
-
         //Apply correction
         int * currentLayer = originalSet->getLayer(keys[i]);
         for(unsigned int j = 0; j< getPixelsPerLayer(); j++)
         {
-            if(j%1000==0)
-            {
-                int q = j;
-            }
-            tk::spline s;
-            s.set_points(thickness, bhData[j]);
-            currentLayer[j] = s(currentLayer[j]);
+            std::vector<double> temp = bhData[j];
+            s->set_points(thickness, temp, false);
+            currentLayer[j] = (*s)(currentLayer[j]); //Do the interpolation  -- Critical error detected c0000374 when this line is enabled
         }
+        delete [] s;
     }
+
 }
 
 void Dataset::fromByteArray(QByteArray serialized){

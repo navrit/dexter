@@ -46,18 +46,25 @@ void QCstmBHWindow::on_addButton_clicked()
 void QCstmBHWindow::on_dataButton_clicked()
 {
 	emit(takeData());
-    if(!correctionMap.contains(thicknessvctr.back())) correctionMap.insert(thicknessvctr.back(), *_mpx3gui->getDataset());
-    emptyCorrectionCounter--;
-    if(emptyCorrectionCounter == 0) ui->startButton->setEnabled(true);
+    if(!correctionMap.contains(thicknessvctr.back())){
+        correctionMap.insert(thicknessvctr.back(), *_mpx3gui->getDataset());
+        emptyCorrectionCounter--;
+        qDebug() << emptyCorrectionCounter ;
+    }
+
+    if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )
+        ui->startButton->setEnabled(true);
 
 }
 
 void QCstmBHWindow::on_clearButton_clicked()
 {
 	delete ui->list->item(selectedItemNo);
-    if(correctionMap.contains(thicknessvctr[selectedItemNo])) emptyCorrectionCounter--;
+    if(!correctionMap.contains(thicknessvctr[selectedItemNo]))
+    {emptyCorrectionCounter--;
+    qDebug() << emptyCorrectionCounter ;}
     correctionMap.remove(thicknessvctr[selectedItemNo]);
-    thicknessvctr.erase (thicknessvctr.begin()+std::max(0,selectedItemNo-1));
+    thicknessvctr.erase (thicknessvctr.begin()+selectedItemNo);
     if(selectedItemNo>1)
     {
         selectedItemNo--;
@@ -72,7 +79,8 @@ void QCstmBHWindow::on_clearButton_clicked()
         ui->startButton->setEnabled(false);
     }
 
-    if(emptyCorrectionCounter == 0 && selectedItemNo!=0) ui->startButton->setEnabled(true);
+  if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )
+        ui->startButton->setEnabled(true);
 }
 
 void QCstmBHWindow::on_saveButton_clicked()
@@ -84,13 +92,18 @@ void QCstmBHWindow::on_loadButton_clicked()
 {
     dataOpened = true;
     emit openData();
-    if(!correctionMap.contains(thicknessvctr.back())&&dataOpened)
+
+    if(!correctionMap.contains(thicknessvctr[selectedItemNo])&&dataOpened)
     {
-        correctionMap.insert(thicknessvctr.back(), *_mpx3gui->getDataset());
+        correctionMap.insert(thicknessvctr[selectedItemNo], *_mpx3gui->getDataset());
         emptyCorrectionCounter--;
+        qDebug() << emptyCorrectionCounter ;
     }
 
-    if(emptyCorrectionCounter == 0) ui->startButton->setEnabled(true);
+    if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )
+        ui->startButton->setEnabled(true);
+
+    ui->loadButton->setEnabled(false);
 }
 
 void QCstmBHWindow::on_optionsButton_clicked()
@@ -110,18 +123,42 @@ void QCstmBHWindow::on_list_itemClicked(QListWidgetItem *item)
     ui->clearButton->setEnabled(true);
     ui->dataButton->setEnabled(true);
     ui->saveButton->setEnabled(true);
-    ui->loadButton->setEnabled(true);
+    if(!correctionMap.contains(thicknessvctr[selectedItemNo])){
+        ui->loadButton->setEnabled(true);
+    }else{
+        ui->loadButton->setEnabled(false);
+    }
 }
 
 void QCstmBHWindow::on_talkToForm(double thickness)
 {
-	QString description = ui->comboBox->currentText() + " ";
-	description.append(QString("%1").arg(thickness));
-	description += " um";
-	ui->list->addItem(description);
-    thicknessvctr.push_back(thickness);
-    emptyCorrectionCounter++;
-    ui->startButton->setEnabled(false);
+    bool contained = false;
+
+    for(int i = 0; i<thicknessvctr.size(); i++)
+    {
+        if(thicknessvctr[i]==thickness)
+        {
+            contained = true;
+            QMessageBox msgBox;
+            msgBox.setText("Please do not use duplicate thicknesses.");
+            msgBox.exec();
+            break;
+        }
+    }
+
+    if(!contained)
+    {
+        QString description = ui->comboBox->currentText() + " ";
+        description.append(QString("%1").arg(thickness));
+        description += " um";
+        ui->list->addItem(description);
+
+        thicknessvctr.push_back(thickness);
+        emptyCorrectionCounter++;
+        qDebug() << emptyCorrectionCounter ;
+
+        ui->startButton->setEnabled(false);
+    }
 }
 
 void QCstmBHWindow::on_open_data_failed()
