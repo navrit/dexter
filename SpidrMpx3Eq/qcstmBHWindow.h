@@ -7,6 +7,7 @@
 #include "mpx3gui.h"
 #include "gradient.h"
 #include "qcstmBHdialog.h"
+#include "qcustomplot.h"
 
 
 namespace Ui {
@@ -25,6 +26,8 @@ public:
 
   void SetMpx3GUI(Mpx3GUI *p);
 
+  void makePlot();
+
 private:
 
   qcstmBHdialog * _bhdialog;
@@ -36,6 +39,12 @@ signals:
   void openData();
 
   void reload();
+
+  void loadSignal();
+
+  void applyCorrection();
+
+  void updateProgressBar(int value);
 
 private slots:
   void on_addButton_clicked();
@@ -58,15 +67,25 @@ private slots:
 
   void on_open_data_failed();
 
+  void on_list_doubleClicked(const QModelIndex &index);
+
+  void on_progressBar_valueChanged(int value);
+
+  void on_applyBHCorrection();
+
 private:
 
   Ui::QCstmBHWindow *ui;
   Mpx3GUI * _mpx3gui; 
-  int selectedItemNo;
+  int selectedItemNo = 0;
   QMap<double,Dataset> correctionMap;
-  vector<double> thicknessvctr;
+  QVector<double> thicknessvctr;
+  QVector<double> xPlot;
+  QVector<double> yPlot;
   int emptyCorrectionCounter = 0;
   bool dataOpened;
+  QCustomPlot* customPlot;
+  tk::spline* m_spline; //!< spline interpolation
 
 
 };

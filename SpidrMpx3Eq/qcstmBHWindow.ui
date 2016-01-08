@@ -21,7 +21,7 @@
     <widget class="QWidget" name="widget" native="true">
      <layout class="QGridLayout" name="gridLayout">
       <item row="7" column="0" colspan="3">
-       <widget class="QWidget" name="widget_2" native="true"/>
+       <widget class="QCustomPlot" name="plotWidget" native="true"/>
       </item>
       <item row="0" column="1">
        <widget class="QPushButton" name="addButton">
@@ -134,6 +134,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header>qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

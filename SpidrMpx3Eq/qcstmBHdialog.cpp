@@ -13,18 +13,14 @@ qcstmBHdialog::~qcstmBHdialog()
     delete ui;
 }
 
-void qcstmBHdialog::on_pushButton_clicked()
+void qcstmBHdialog::on_okButton_clicked()
 {
-	// = ui->thicknessBox->text;
-	QString valS = ui->thicknessBox->text();
-	emit talkToForm(valS.toDouble());
-
-
-
-	this->close();
+    QString valS = ui->thicknessBox->text();
+    emit talkToForm(valS.toDouble());
+    this->close();
 }
 
-void qcstmBHdialog::on_pushButton_2_clicked()
+void qcstmBHdialog::on_closeButton_clicked()
 {
     this->close();
 }

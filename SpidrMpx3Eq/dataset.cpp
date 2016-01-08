@@ -830,18 +830,18 @@ void Dataset::applyOBCorrection() {
 
 }
 
-
-void Dataset::applyBHCorrection(std::vector<double> thickness, Dataset* originalSet, QMap<double, Dataset> map)
+/*
+void Dataset::applyBHCorrection(QVector<double> thickness, Dataset* originalSet, QMap<double, Dataset> map)
 //Makes signal to thickness conversion
 {
     QList<int> keys = m_thresholdsToIndices.keys();
+    if(m_spline==nullptr) m_spline = new tk::spline;  // instantiate spline if not defined
 
     //Loop over layers
     for (int i = 0; i < keys.length(); i++)
     {
-        tk::spline *s = new tk::spline;// instantiate spline
         //Create data structure
-        std::vector<std::vector<double>> bhData(getPixelsPerLayer());
+        QVector<QVector<double>> bhData(getPixelsPerLayer());
         sort(thickness.begin(), thickness.end());
         for(int j = 0; j<thickness.size(); j++)
         {
@@ -852,14 +852,19 @@ void Dataset::applyBHCorrection(std::vector<double> thickness, Dataset* original
         int * currentLayer = originalSet->getLayer(keys[i]);
         for(unsigned int j = 0; j< getPixelsPerLayer(); j++)
         {
-            std::vector<double> temp = bhData[j];
-            s->set_points(thickness, temp, false);
-            currentLayer[j] = (*s)(currentLayer[j]); //Do the interpolation  -- Critical error detected c0000374 when this line is enabled
+            QVector<double> temp = bhData[j];
+            m_spline->set_points(thickness.toStdVector(), temp.toStdVector(), false);
+            currentLayer[j] = (*m_spline)(currentLayer[j]); //Do the interpolation
+
+            if(j % (getPixelsPerLayer() / 100) == 0)
+            {
+                emit Dataset::updateProgressBar( (100 / keys.size()) * (i+1) * j / getPixelsPerLayer() );
+            }
         }
-        delete [] s;
     }
 
 }
+*/
 
 void Dataset::fromByteArray(QByteArray serialized){
     QDataStream in(&serialized, QIODevice::ReadOnly);
