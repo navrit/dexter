@@ -151,7 +151,6 @@ public slots:
 
 private slots:
     void LoadEqualization();
-    void on_openfileButton_clicked();
     void on_actionExit_triggered();
     void on_actionConnect_triggered();
 };

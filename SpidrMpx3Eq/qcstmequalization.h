@@ -341,8 +341,8 @@ void setEqualizationShowTHLTHH(int);
 void setEqualizationTHLType(int);
 void ShowEqualizationForChip(bool checked);
 
-void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
-void on_openfileButton_clicked();
+//void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
+//void on_openfileButton_clicked();
 
 signals:
 void slideAndSpin(int, int);

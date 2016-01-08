@@ -92,10 +92,10 @@ private slots:
   void on_upperManualSpin_editingFinished();
 
   //! Gets called when the current display needs to be reloaded. Uses the layerselector combo-box to determine what layer to load.
-  void on_active_frame_changed();
+  void active_frame_changed();
 
   //! Gets called when a new data range was selected in the histogram plot.
-  void on_new_range_dragged(QCPRange newRange);
+  void new_range_dragged(QCPRange newRange);
 
   void on_manualRangeRadio_toggled(bool checked);
 
@@ -118,40 +118,39 @@ private slots:
   //!Temporary save button for images and data.
   void on_pushButton_clicked();
 
-  //!Spinbox for noisyPixelMeanMultiplier parameter
-  void on_noisyPixelMeanMultiplier_valueChanged();
-
   //!Apply corrections manually
   void on_applyCorr_clicked();
 
+  //!Spinbox for noisyPixelMeanMultiplier parameter
+  void on_noisyPixelMeanMultiplier_valueChanged(double arg1);
 
 public slots:
   void StartDataTaking();
   void setGradient(int index);
   //!Used to inform this object of the availible gradients and their names.
-  void on_availible_gradients_changed(QStringList gradients);
+  void availible_gradients_changed(QStringList gradients);
   //!Reloads the data for a specific threshold and updates the display, currently reloads all the data for the GLplot
-  void on_reload_layer(int);
+  void reload_layer(int);
   //!Reloads all the data and updates.
-  void on_reload_all_layers();
+  void reload_all_layers();
   //!Called when the pixel hovered by the mouse changes. Takes assembly-coordinates.
-  void on_hover_changed(QPoint);
+  void hover_changed(QPoint);
   //!Called when a pixel has been selected with the right mouse-button. Pixel is assembly-coordinates, position is screenspace (used to determine where to create the context menu).
   //!Position could possibly be removed and simply query the cursor location from here.
-  void on_pixel_selected(QPoint pixel, QPoint position);
-  void on_region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position);
+  void pixel_selected(QPoint pixel, QPoint position);
+  void region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position);
   //!Called when the data is cleared. Clears all the plots and relevant combo-boxes.
   void on_clear();
   //!Called when the display range of the data is changed. (so the scale on the heatmap).
-  void on_range_changed(QCPRange);
-  void on_data_taking_finished(int);
-  void on_progress_signal(int);
+  void range_changed(QCPRange);
+  void data_taking_finished(int);
+  void progress_signal(int);
   //!Called when the user request a different bin-count. Recomputes the histograms for each threshold.
   void changeBinCount(int count);
   void updateETA();
 
-  void on_lost_packets(int);
-  void on_fps_update(int);
+  void lost_packets(int);
+  void fps_update(int);
 
  signals:
   void change_hover_text(QString);

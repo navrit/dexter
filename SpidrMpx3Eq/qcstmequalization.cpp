@@ -1871,7 +1871,7 @@ void QCstmEqualization::SetupSignalsAndSlots() {
     connect( _ui->fineTuningLoopsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setFineTuningLoops(int)) );
 
     connect( _ui->equalizationTHLTHHCombo, SIGNAL(activated(int)), this, SLOT(setEqualizationTHLTHH(int)) );
-    connect( _ui->equalizationTypeCombo, SIGNAL(activated(int)), this, SLOT(setEqualizationType(int)) );
+    //connect( _ui->equalizationTypeCombo, SIGNAL(activated(int)), this, SLOT(setEqualizationType(int)) );
     connect( _ui->equalizationSelectTHLTHHCombo, SIGNAL(activated(int)), this, SLOT(setEqualizationShowTHLTHH(int)) );
 
 }
@@ -2128,7 +2128,7 @@ Mpx3EqualizationResults::eq_status Mpx3EqualizationResults::GetStatus(int pixId,
  */
 bool Mpx3EqualizationResults::ReadAdjBinaryFile(QString fn) {
 
-    cout << "[INFO] Read Adj binary file: " << fn.toStdString() << endl;
+    qDebug() << "[INFO] Read Adj binary file: " << fn.toStdString().c_str();
     QFile file(fn);
     if ( !file.open(QIODevice::ReadOnly) ) {
         return false;
@@ -2139,7 +2139,7 @@ bool Mpx3EqualizationResults::ReadAdjBinaryFile(QString fn) {
     temp_pixId_Adj_X = file.readAll();
     file.close();
     int readSize = temp_pixId_Adj_X.size();
-    cout << "[READ] read " << temp_pixId_Adj_X.size() << " bytes" << endl;
+    qDebug() << "[READ] read " << temp_pixId_Adj_X.size() << " bytes";
 
     // Now split in Low and High
     for ( int i = 0 ; i < __matrix_size ; i++) {
@@ -2205,7 +2205,7 @@ bool Mpx3EqualizationResults::ReadMaskBinaryFile(QString fn) {
 
     ifstream fd;
     fd.open (fn.toStdString().c_str(), ios::out);
-    cout << "[MASK] Reading mask file from: " << fn.toStdString() << endl;
+    qDebug() << "[MASK] Reading mask file from: " << fn.toStdString().c_str();
 
     int val;
     while ( fd.good() ) {
@@ -2345,10 +2345,10 @@ void QCstmEqualization::SetDAC_propagateInGUI(SpidrController * spidrcontrol, in
 
 }
 
-void QCstmEqualization::on_heatmapCombobox_currentIndexChanged(const QString & /*arg1*/)//would be more elegant to do with signals and slots, but would require either specalizing the combobox, or making the heatmapMap globally visible.
-{
-}
+//void QCstmEqualization::on_heatmapCombobox_currentIndexChanged(const QString & /*arg1*/)//would be more elegant to do with signals and slots, but would require either specalizing the combobox, or making the heatmapMap globally visible.
+//{
+//}
 
-void QCstmEqualization::on_openfileButton_clicked()
-{
-}
+//void QCstmEqualization::on_openfileButton_clicked()
+//{
+//}

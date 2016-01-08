@@ -40,7 +40,7 @@ void Mpx3Config::SendConfiguration(){
 
 void Mpx3Config::Configuration(bool reset, int deviceIndex) {
 
-	cout << "[INFO] Configuring chip " << deviceIndex;
+    //cout << "[INFO] Configuring chip " << deviceIndex;
 
 	SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
@@ -53,7 +53,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
 
 	// OMR
 	spidrcontrol->setPolarity( deviceIndex, getPolarity() );		// true: Holes collection
-	cout << " | polarity: " << getPolarity();
+    //cout << " | polarity: " << getPolarity();
 	//_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
 	//_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
 
@@ -77,7 +77,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
 
 	// Other OMR
 	spidrdaq->setDecodeFrames(  getDecodeFrames() ); //  true );
-	cout << " | (" << getPixelDepth() << ":" << getReadBothCounters() << ") ";
+    //cout << " | (" << getPixelDepth() << ":" << getReadBothCounters() << ") ";
 	spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters() ); // third parameter : true = read two counters
 	spidrdaq->setPixelDepth( getPixelDepth() );
 	spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
@@ -94,7 +94,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
 	//int trig_freq_mhz   = (int) 1000 * ( 1. / (1.1*((double)trig_length_us/1000000)) );   //
 	int trig_freq_mhz   = (int) 1000 * ( 1. / ((double)( trig_length_us + trig_deadtime_us )/1000000) );
 
-	cout << " | configured freq is " << trig_freq_mhz << "mHz";
+    //cout << " | configured freq is " << trig_freq_mhz << "mHz";
 
 	// Get the trigger period for information.  This is NOT the trigger length !
 	_trigPeriod_ms = (int) (1E6 * (1./(double)trig_freq_mhz));
@@ -108,7 +108,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
 			nr_of_triggers
 	);
 
-	cout << endl;
+    //cout << endl;
 }
 
 
@@ -250,7 +250,6 @@ SpidrController * Mpx3Config::establishConnection(){
 	connected = controller->isConnected();
 	// number of device that the system can support
 	controller->getDeviceCount(&_nDevicesSupported);
-    qDebug() << "[INFO] Number of devices supported :" << _nDevicesSupported;
 
     //! Work around
     //! If we attempt a connection while the system is already sending data
@@ -263,7 +262,6 @@ SpidrController * Mpx3Config::establishConnection(){
 
 	// Response
 	_responseChips = QVector<detector_response>( _nDevicesSupported );
-
 
     // Run a simple reponse check by reaching a DAC setting
 	for(int i = 0 ; i < _nDevicesSupported ; i++) {
@@ -281,7 +279,9 @@ SpidrController * Mpx3Config::establishConnection(){
 			_nDevicesPresent++;
 
 			// If connected check response
-            checkChipResponse( i, __CONTROLLER_OK );
+            checkChipResponse( i, __CONTROLLER_OK ); // this fills a vector
+
+            // And then I just consult that vector
             if( detectorResponds(i) ) {
 				_activeChips.push_back(i);
                 dbg << "OK";
@@ -331,11 +331,10 @@ void Mpx3Config::checkChipResponse(int devIndx, detector_response dr) {
 		int dac_val = 0;
 
 		if ( ! controller->setDac( devIndx, MPX3RX_DAC_TABLE[0].code, dac_val ) ) {
-			cout << "chip response failed : "  << controller->errorString();
+            //cout << "chip response failed : "  << controller->errorString();
 			_responseChips[devIndx] = __NOT_RESPONDING;
 		} else {
-			cout << "Response OK";
-
+            //cout << "Response OK";
 			_responseChips[devIndx] = __CONTROLLER_OK;
 		}
 
@@ -410,7 +409,7 @@ void Mpx3Config::setPolarity(int newVal) {
 bool Mpx3Config::detectorResponds(int devIndx) {
 
 	if( devIndx >= _nDevicesSupported || devIndx < 0) {
-		cout << "[ERR ] device index out of range: " << devIndx << endl;
+        qDebug() << "[ERR ] device index out of range: " << devIndx;
 		return false;
 	}
 
@@ -546,7 +545,7 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
 				QJsonObject obj = value.toObject();
 				for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
 					_dacVals[i].push_back( obj[MPX3RX_DAC_TABLE[i].name].toInt() );
-					cout << obj[MPX3RX_DAC_TABLE[i].name].toInt() << endl;
+                    //cout << obj[MPX3RX_DAC_TABLE[i].name].toInt() << endl;
 				}
 			}
 		}

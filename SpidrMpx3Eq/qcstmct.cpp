@@ -28,7 +28,7 @@ void QCstmCT::setGradient(int index) {
 
 }
 
-void QCstmCT::on_rotatePushButton_clicked() {
+void QCstmCT::rotatePushButton_clicked() {
 
 	cout << "..." << endl;
 

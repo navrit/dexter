@@ -27,7 +27,7 @@ Gradient* Gradient::fromJsonObject(QJsonObject object){
     QColor color;
     color.setNamedColor(colorString);
     float anchor = jsonValue.toArray().first().toDouble();
-    printf("Got point: %f, %s\n", anchor, colorString.toStdString().c_str());
+    //printf("Got point: %f, %s\n", anchor, colorString.toStdString().c_str());
     grad->addColor(anchor, color);
   }
   grad->setNPoints(512);
@@ -68,7 +68,7 @@ void Gradient::fillArray(){
       GLfloat delta = deltaRange/nPoints;
       prev = fixedPoints.begin();
       next = prev+1;
-      printf("prev:%f\t next:%f\n", prev.key(), next.key());
+      //printf("prev:%f\t next:%f\n", prev.key(), next.key());
       float innerDelta = next.key()-prev.key();
       float samplePoint = prev.key()-delta/2;
       for(int i = 0; i < nPoints;i++){
@@ -76,7 +76,7 @@ void Gradient::fillArray(){
           while(samplePoint >= next.key()){//TODO: breaks on negative values, add sign detection?
               prev = next;
               next++;
-              printf("prev:%f\t next:%f\n", prev.key(), next.key());
+              //printf("prev:%f\t next:%f\n", prev.key(), next.key());
               innerDelta = next.key()-prev.key();
             }
           float a0 = (samplePoint-prev.key())/innerDelta;

@@ -60,16 +60,16 @@ void DataTakingThread::run() {
 
 	SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
-	connect(this, SIGNAL(reload_all_layers()), _vis, SLOT(on_reload_all_layers()));
-	connect(this, SIGNAL(reload_layer(int)), _vis, SLOT(on_reload_layer(int)));
-	connect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(on_data_taking_finished(int)));
-	connect(this, SIGNAL(progress(int)), _vis, SLOT(on_progress_signal(int)));
+    connect(this, SIGNAL(reload_all_layers()), _vis, SLOT(reload_all_layers()));
+    connect(this, SIGNAL(reload_layer(int)), _vis, SLOT(reload_layer(int)));
+    connect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(data_taking_finished(int)));
+    connect(this, SIGNAL(progress(int)), _vis, SLOT(progress_signal(int)));
 	connect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
 	connect(_vis, SIGNAL(free_to_draw()), this, SLOT(on_free_to_draw()) );
 	connect(_vis, SIGNAL(busy_drawing()), this, SLOT(on_busy_drawing()) );
 
-	connect(this, SIGNAL(lost_packets(int)), _vis, SLOT(on_lost_packets(int)) );
-	connect(this, SIGNAL(fps_update(int)), _vis, SLOT(on_fps_update(int)) );
+    connect(this, SIGNAL(lost_packets(int)), _vis, SLOT(lost_packets(int)) );
+    connect(this, SIGNAL(fps_update(int)), _vis, SLOT(fps_update(int)) );
 
 	cout << "Acquiring ... " << endl;
 	//_mpx3gui->GetUI()->startButton->setActive(false);
@@ -410,16 +410,16 @@ void DataTakingThread::run() {
 	//  needs to happens to avoid blocking.
 	emit data_taking_finished( nFramesReceived );
 
-	disconnect(this, SIGNAL(reload_all_layers()), _vis, SLOT(on_reload_all_layers()));
-	disconnect(this, SIGNAL(reload_layer(int)), _vis, SLOT(on_reload_layer(int)));
-	disconnect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(on_data_taking_finished(int)));
-	disconnect(this, SIGNAL(progress(int)), _vis, SLOT(on_progress_signal(int)));
+    disconnect(this, SIGNAL(reload_all_layers()), _vis, SLOT(reload_all_layers()));
+    disconnect(this, SIGNAL(reload_layer(int)), _vis, SLOT(reload_layer(int)));
+    disconnect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(data_taking_finished(int)));
+    disconnect(this, SIGNAL(progress(int)), _vis, SLOT(progress_signal(int)));
 	disconnect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
 	disconnect(_vis, SIGNAL(free_to_draw()), this, SLOT(on_free_to_draw()) );
 	disconnect(_vis, SIGNAL(busy_drawing()), this, SLOT(on_busy_drawing()) );
 
-	disconnect(this, SIGNAL(lost_packets(int)), _vis, SLOT(on_lost_packets(int)) );
-	disconnect(this, SIGNAL(fps_update(int)), _vis, SLOT(on_fps_update(int)) );
+    disconnect(this, SIGNAL(lost_packets(int)), _vis, SLOT(lost_packets(int)) );
+    disconnect(this, SIGNAL(fps_update(int)), _vis, SLOT(fps_update(int)) );
 
 	// In case the thread is reused
 	_stop = false;

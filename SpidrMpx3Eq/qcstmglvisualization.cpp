@@ -15,7 +15,7 @@
 QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :  QWidget(parent),  ui(new Ui::QCstmGLVisualization)
 {
 
-	ui->setupUi(this);
+    ui->setupUi(this);
 	_dataTakingThread = 0x0;
 	_takingData = false;
 	_busyDrawing = false;
@@ -135,7 +135,7 @@ void QCstmGLVisualization::ETAToZero() {
 
 }
 
-void QCstmGLVisualization::on_data_taking_finished(int /*nFramesTaken*/) {
+void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
     if ( _takingData ) {
 
@@ -150,7 +150,7 @@ void QCstmGLVisualization::on_data_taking_finished(int /*nFramesTaken*/) {
         _mpx3gui->getDataset()->applyCorrections( ui );
 
 		// And replot
-		on_reload_all_layers();
+        reload_all_layers();
 
         // Change the Stop button to Start
         ui->startButton->setText( "Start" );
@@ -275,25 +275,25 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 	connect(ui->gradientSelector, SIGNAL(activated(int)), this, SLOT(setGradient(int)));
 	connect(ui->generateDataButton, SIGNAL(clicked()), _mpx3gui, SLOT(generateFrame()));
 	connect(_mpx3gui, SIGNAL(data_cleared()), this, SLOT(on_clear()));
-	connect(_mpx3gui, SIGNAL(frame_added(int)), this, SLOT(on_frame_added(int)));//TODO specify which layer.
+    //connect(_mpx3gui, SIGNAL(frame_added(int)), this, SLOT(on_frame_added(int)));//TODO specify which layer.
 	//connect(_mpx3gui, SIGNAL(hist_added(int)), this, SLOT(on_hist_added(int)));
 	//connect(_mpx3gui, SIGNAL(hist_changed(int)),this, SLOT(on_hist_changed(int)));
-	connect(_mpx3gui, SIGNAL(reload_layer(int)), this, SLOT( on_reload_layer(int)));
-	connect(_mpx3gui, SIGNAL(reload_all_layers()), this, SLOT(on_reload_all_layers()));
+    connect(_mpx3gui, SIGNAL(reload_layer(int)), this, SLOT( reload_layer(int)));
+    connect(_mpx3gui, SIGNAL(reload_all_layers()), this, SLOT(reload_all_layers()));
 	//connect(_mpx3gui, SIGNAL(frames_reload()),this, SLOT(on_frame_updated()));
-	connect(_mpx3gui, SIGNAL(availible_gradients_changed(QStringList)), this, SLOT(on_availible_gradients_changed(QStringList)));
-	connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), this, SLOT(on_range_changed(QCPRange)));
+    connect(_mpx3gui, SIGNAL(availible_gradients_changed(QStringList)), this, SLOT(availible_gradients_changed(QStringList)));
+    connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), this, SLOT(range_changed(QCPRange)));
 	//connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), this, SLOT(on_new_range_dragged(QCPRange)));
 	// connect(ui->layerSelector, SIGNAL(activated(QString)), ui->glPlot->getPlot(), SLOT()
 
 	connect(ui->binCountSpinner, SIGNAL(valueChanged(int)), this, SLOT(changeBinCount(int)));
-	connect(ui->glPlot->getPlot(), SIGNAL(hovered_pixel_changed(QPoint)),this, SLOT(on_hover_changed(QPoint)));
-	connect(ui->glPlot->getPlot(), SIGNAL(pixel_selected(QPoint,QPoint)), this, SLOT(on_pixel_selected(QPoint,QPoint)));
-	connect(ui->glPlot->getPlot(), SIGNAL(region_selected(QPoint,QPoint,QPoint)), this, SLOT(on_region_selected(QPoint,QPoint,QPoint)));
+    connect(ui->glPlot->getPlot(), SIGNAL(hovered_pixel_changed(QPoint)),this, SLOT(hover_changed(QPoint)));
+    connect(ui->glPlot->getPlot(), SIGNAL(pixel_selected(QPoint,QPoint)), this, SLOT(pixel_selected(QPoint,QPoint)));
+    connect(ui->glPlot->getPlot(), SIGNAL(region_selected(QPoint,QPoint,QPoint)), this, SLOT(region_selected(QPoint,QPoint,QPoint)));
 
 	connect(this, SIGNAL(change_hover_text(QString)), ui->mouseOverLabel, SLOT(setText(QString)));
 	//connect(ui->fullRangeRadio, SIGNAL(pressed()), ui->histPlot, SLOT(set_scale_full()));
-	connect(ui->histPlot, SIGNAL(new_range_dragged(QCPRange)), this, SLOT(on_new_range_dragged(QCPRange)));
+    connect(ui->histPlot, SIGNAL(new_range_dragged(QCPRange)), this, SLOT(new_range_dragged(QCPRange)));
 
 	// Defaults
 	emit mode_changed(ui->summingCheckbox->isChecked());
@@ -308,7 +308,7 @@ void QCstmGLVisualization::changeBinCount(int count){
 	}
 }
 
-void QCstmGLVisualization::on_fps_update(int nframes_done) {
+void QCstmGLVisualization::fps_update(int nframes_done) {
 
 	double fpsVal = ((double)nframes_done) / ((double)_etatimer->elapsed() / 1000.); // elapsed() comes in milliseconds
 
@@ -319,7 +319,7 @@ void QCstmGLVisualization::on_fps_update(int nframes_done) {
 
 }
 
-void QCstmGLVisualization::on_lost_packets(int packetsLost) {
+void QCstmGLVisualization::lost_packets(int packetsLost) {
 
 	// Increase the current packet loss
 	_mpx3gui->getDataset()->increasePacketsLost( packetsLost );
@@ -334,14 +334,14 @@ void QCstmGLVisualization::on_lost_packets(int packetsLost) {
 
 }
 
-void QCstmGLVisualization::on_range_changed(QCPRange newRange){
+void QCstmGLVisualization::range_changed(QCPRange newRange){
 	ui->lowerManualSpin->setValue(newRange.lower);
 	ui->upperManualSpin->setValue(newRange.upper);
 	ui->glPlot->set_range(newRange);
 }
 
-void QCstmGLVisualization::on_new_range_dragged(QCPRange newRange){
-	on_range_changed(newRange);
+void QCstmGLVisualization::new_range_dragged(QCPRange newRange){
+    range_changed(newRange);
 	if(!ui->manualRangeRadio->isChecked())
 		ui->manualRangeRadio->setChecked(true);
 }
@@ -354,25 +354,25 @@ void QCstmGLVisualization::on_clear(){
 	//on_reload_all_layers();
 }
 
-void QCstmGLVisualization::on_availible_gradients_changed(QStringList gradients){
+void QCstmGLVisualization::availible_gradients_changed(QStringList gradients){
 	ui->gradientSelector->clear();
 	ui->gradientSelector->addItems(gradients);
 }
 
-void QCstmGLVisualization::on_hover_changed(QPoint pixel){
+void QCstmGLVisualization::hover_changed(QPoint pixel){
 	emit(change_hover_text(QString("%1 @ (%2, %3)").arg(_mpx3gui->getPixelAt(pixel.x(), pixel.y(),getActiveThreshold())).arg(pixel.x()).arg(pixel.y())));
 }
 
-void QCstmGLVisualization::on_reload_layer(int threshold){
+void QCstmGLVisualization::reload_layer(int threshold){
 	//int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
 	ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
 	ui->histPlot->setHistogram(threshold, _mpx3gui->getDataset()->getLayer(threshold), _mpx3gui->getDataset()->getPixelsPerLayer());
 	setThreshold(threshold);
-	on_active_frame_changed();
+    active_frame_changed();
 }
 
 
-void QCstmGLVisualization::on_progress_signal(int framecntr) {
+void QCstmGLVisualization::progress_signal(int framecntr) {
 
 	QString prog = QString("%1/%2").arg( framecntr ).arg(_mpx3gui->getConfig()->getNTriggers() );
 	ui->frameCntr->setText( prog );
@@ -380,7 +380,7 @@ void QCstmGLVisualization::on_progress_signal(int framecntr) {
 }
 
 
-void QCstmGLVisualization::on_reload_all_layers(){
+void QCstmGLVisualization::reload_all_layers(){
 
 	// Get busy
 	emit FlipBusyState();
@@ -392,7 +392,7 @@ void QCstmGLVisualization::on_reload_all_layers(){
 		ui->histPlot->setHistogram(thresholds[i], _mpx3gui->getDataset()->getLayer(thresholds[i]), _mpx3gui->getDataset()->getPixelsPerLayer());
 	}
 	//setThreshold(thresholds[0]);
-	on_active_frame_changed();
+    active_frame_changed();
 
 }
 
@@ -432,7 +432,7 @@ int QCstmGLVisualization::getActiveThreshold(){
     return list[valIdx].toInt();
 }
 
-void QCstmGLVisualization::on_active_frame_changed(){
+void QCstmGLVisualization::active_frame_changed(){
 	//ui->layerSelector->addItem(QString("%1").arg(threshold));
 	int layer = _mpx3gui->getDataset()->thresholdToIndex(this->getActiveThreshold());
 	ui->glPlot->getPlot()->setActive(layer);
@@ -449,7 +449,7 @@ void QCstmGLVisualization::on_active_frame_changed(){
 
 }
 
-void QCstmGLVisualization::on_region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position){
+void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position){
 
 	if(!_mpx3gui->getConfig()->isConnected())
 		return;
@@ -477,7 +477,7 @@ void QCstmGLVisualization::on_region_selected(QPoint pixel_begin, QPoint pixel_e
 
 }
 
-void QCstmGLVisualization::on_pixel_selected(QPoint pixel, QPoint position){
+void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
 	if(!_mpx3gui->getConfig()->isConnected())
 		return;
@@ -591,7 +591,7 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
 	ui->glPlot->getPlot()->setActive(layer);
 	ui->histPlot->setActive(layer);
 	//_mpx3gui->set_active_frame(threshold);
-	this->on_active_frame_changed();
+    this->active_frame_changed();
 }
 
 
@@ -669,12 +669,6 @@ void QCstmGLVisualization::on_pushButton_clicked()
 
 }
 
-void QCstmGLVisualization::on_noisyPixelMeanMultiplier_valueChanged() {
-
-
-
-}
-
 /**
  * On an existing image
  */
@@ -688,7 +682,7 @@ void QCstmGLVisualization::on_applyCorr_clicked() {
 
         // And apply corrections
         _mpx3gui->getDataset()->applyCorrections( ui );
-        on_reload_all_layers();
+        reload_all_layers();
 
         /*
         // TODO, the location of the corrections will be moved to a separate window
@@ -720,3 +714,8 @@ void QCstmGLVisualization::on_applyCorr_clicked() {
 
 }
 
+
+void QCstmGLVisualization::on_noisyPixelMeanMultiplier_valueChanged(double arg1)
+{
+
+}

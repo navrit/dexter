@@ -32,7 +32,7 @@ private:
 
 private slots:
 
-  void on_rotatePushButton_clicked();
+  void rotatePushButton_clicked();
 
 };
 

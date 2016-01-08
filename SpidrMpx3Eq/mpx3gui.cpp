@@ -32,7 +32,7 @@ Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent)
 {
 
     // Instantiate everything in the UI
-    _ui->setupUi(this);;
+    _ui->setupUi(this);
     workingSet = new Dataset(128,128, 4);
     originalSet = new Dataset(128,128, 4);
     config = new Mpx3Config;
@@ -160,7 +160,6 @@ void Mpx3GUI::LoadEqualization(){
 
 void Mpx3GUI::SetupSignalsAndSlots(){
 
-    std::cout << "[Mpx3GUI] Connecting signals and slots" << std::endl;
     connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );
     connect( _ui->actionSave_DACs, SIGNAL(triggered()), this, SLOT( save_config()) );
     connect( _ui->actionLoad_DACs, SIGNAL(triggered()), this, SLOT( load_config()) );
@@ -219,10 +218,6 @@ void Mpx3GUI::setWindowWidgetsStatus(win_status s)
     }
 }
 
-void Mpx3GUI::on_openfileButton_clicked() {
-
-}
-
 void Mpx3GUI::set_summing(bool shouldSum){
     if(shouldSum)
         set_mode_integral();
@@ -231,25 +226,26 @@ void Mpx3GUI::set_summing(bool shouldSum){
 }
 
 void Mpx3GUI::establish_connection() {
-    cout << "Connecting ..." << endl;
+
+    qDebug() << "[INFO] Connecting ...";
     SpidrController * spidrcontrol = config->establishConnection();
+
+    QDebug dbg(QtInfoMsg);
 
     // Check if we are properly connected to the SPIDR module
     if ( spidrcontrol->isConnected() ) {
-
-        cout << "Connected to SPIDR: " << spidrcontrol->ipAddressString() << "[" << config->getNDevicesPresent();
-        if(config->getNDevicesPresent() > 1) cout << " chips found] ";
-        else cout << " chip found] ";
+        dbg << "Connected to SPIDR: " << spidrcontrol->ipAddressString().c_str() << "[" << config->getNDevicesPresent();
+        if(config->getNDevicesPresent() > 1) dbg << " chips found] ";
+        else dbg << " chip found] ";
 
         int ipaddr;
         // This call takes device number 0 'cause it is not really addressed to a chip in particular
         if( spidrcontrol->getIpAddrDest( 0, &ipaddr ) )
-            cout << ", IP dest: "
+            dbg << ", IP dest: "
                  << ((ipaddr>>24) & 0xFF) << "."
                  << ((ipaddr>>16) & 0xFF) << "."
                  << ((ipaddr>> 8) & 0xFF) << "."
                  << ((ipaddr>> 0) & 0xFF);
-        cout <<  endl;
         //_ui->_statusLabel->setText("Connected");
         //_ui->_statusLabel->setStyleSheet("QLabel { background-color : blue; color : white; }");
 
@@ -265,23 +261,24 @@ void Mpx3GUI::establish_connection() {
     }
 
     // Get version numbers
-    cout << "SpidrController class: "
-         << spidrcontrol->versionToString( spidrcontrol->classVersion() ) << endl;
+    dbg << "\n";
+    dbg << "SpidrController class: "
+         << spidrcontrol->versionToString( spidrcontrol->classVersion() ).c_str() << "\n";
     int version;
     if( spidrcontrol->getFirmwVersion( &version ) )
-        cout << "SPIDR firmware  : " << spidrcontrol->versionToString( version ) << endl;
+        dbg << "SPIDR firmware  : " << spidrcontrol->versionToString( version ).c_str() << "\n";
     if( spidrcontrol->getSoftwVersion( &version ) )
-        cout << "SPIDR software  : " << spidrcontrol->versionToString( version ) << endl;
+        dbg << "SPIDR software  : " << spidrcontrol->versionToString( version ).c_str() << "\n";
 
 
     // SpidrDaq
     _spidrdaq = new SpidrDaq( spidrcontrol );
-    cout << "SpidrDaq: ";
+    dbg << "SpidrDaq: ";
 
-    for( int i=0; i<4; ++i ) cout << _spidrdaq->ipAddressString( i ) << " ";
-    cout << endl;
+    for( int i=0; i<4; ++i ) dbg << _spidrdaq->ipAddressString( i ).c_str() << " ";
+    dbg << "\n";
     Sleep( 1000 );
-    cout << _spidrdaq->errorString() << endl;
+    dbg << _spidrdaq->errorString().c_str() << "\n";
 
     // Here the chips can be configured
     getConfig()->SendConfiguration();

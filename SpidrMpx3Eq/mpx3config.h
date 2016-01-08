@@ -152,7 +152,7 @@ void setIpAddress(QString ip){
 		if(SpidrAddress.toString().length() == 0)
 			SpidrAddress.setAddress(DEFAULT_IP);
 		emit IpAdressChanged(this->getIpAddress());
-		establishConnection();
+        //establishConnection();
 	}
 }
 void setPort(int newVal){

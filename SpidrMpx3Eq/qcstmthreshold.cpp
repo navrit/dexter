@@ -158,7 +158,7 @@ void QCstmThreshold::StartCalibration() {
 		spidrcontrol->setPixelConfigMpx3rx( ui->devIdSpinBox->value() );
 	}
 
-	cout << "adding : " << getActiveTargetName().toStdString() << endl;
+    //cout << "adding : " << getActiveTargetName().toStdString() << endl;
 	addData( _plotIdxCntr );
 
 	QCPGraph * _graph = ui->plot->graph( _plotIdxCntr-1 ); // the right vector index
@@ -197,7 +197,7 @@ void QCstmThreshold::StartCalibration() {
 
 void QCstmThreshold::SetupSignalsAndSlots() {
 
-	std::cout << "[QCstmThreshold] Connecting signals and slots" << std::endl;
+    //std::cout << "[QCstmThreshold] Connecting signals and slots" << std::endl;
 	connect( ui->thlCalibStart, SIGNAL(clicked()), this, SLOT( StartCalibration() ) );
 
 }
@@ -375,7 +375,7 @@ void CustomScanThread::run() {
 	SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 
 	if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
-		cout << "[ERR ] Device not connected !" << endl;
+        qDebug() << "[ERR ] Device not connected !";
 		return;
 	}
 
@@ -419,7 +419,7 @@ void CustomScanThread::run() {
 		if ( _cstmThreshold->GetUI()->onAllChipsCheckBox->isChecked() ) {
 			for(int i = 0 ; i < _mpx3gui->getConfig()->getNActiveDevices() ; i++) {
 				if ( ! _cstmThreshold->GetMpx3GUI()->getConfig()->detectorResponds( i ) ) {
-					cout << "[ERR ] Device " << i << " not responding." << endl;
+                    qDebug() << "[ERR ] Device " << i << " not responding.";
 				} else {
 					spidrcontrol->setDac( i, dacCodeToScan, dacItr );
 				}
@@ -548,7 +548,7 @@ void CustomScanThread::run() {
 	//disconnect( this, SIGNAL( UpdateChartSignal(int, int) ), this, SLOT( UpdateChart(int, int) ) );
 	//disconnect( this, SIGNAL( UpdateHeatMapSignal() ), this, SLOT( UpdateHeatMap() ) );
 
-	cout << "[INFO] Scan finished" << endl;
+    //cout << "[INFO] Scan finished" << endl;
 
 	delete spidrcontrol;
 }
