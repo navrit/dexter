@@ -82,14 +82,15 @@ Dataset::Dataset( const Dataset& other ):
     m_scores(other.m_scores),
     m_frameLayouts(other.m_frameLayouts),
     m_frameOrientation(other.m_frameOrientation),
-    m_thresholdsToIndices(other.m_thresholdsToIndices),
-    m_layers(other.m_layers)
+    m_thresholdsToIndices(other.m_thresholdsToIndices)
+    //m_layers(other.m_layers)
 {
 
     // copy the dimensions
     m_nx = other.x(); m_ny = other.y();
     // And copy the layers
     m_nFrames = other.getFrameCount();
+    m_layers = QVector<int *>( other.getLayerCount() );
     for (int i = 0; i < m_layers.size(); i++) {
         m_layers[i] = new int[getPixelsPerLayer()];
         for(unsigned int j = 0; j < getPixelsPerLayer(); j++)
@@ -113,15 +114,15 @@ Dataset& Dataset::operator=( const Dataset& tocopy){
         std::swap(this->m_layers, copy.m_layers);
 
         // Still the rest of the properties need to be copied
-        //this->m_boundingBox = tocopy.m_boundingBox;
-        //this->m_scores = tocopy.m_scores,
-        //this->m_frameLayouts = tocopy.m_frameLayouts,
-        //this->m_frameOrientation = tocopy.m_frameOrientation,
-        //this->m_thresholdsToIndices = tocopy.m_thresholdsToIndices,
+        this->m_boundingBox = tocopy.m_boundingBox;
+        this->m_scores = tocopy.m_scores,
+        this->m_frameLayouts = tocopy.m_frameLayouts,
+        this->m_frameOrientation = tocopy.m_frameOrientation,
+        this->m_thresholdsToIndices = tocopy.m_thresholdsToIndices,
         //this->m_layers = tocopy.m_layers;
-        //this->m_nx = tocopy.x();
-        //this->m_ny = tocopy.y();
-        //this->m_nFrames = tocopy.getFrameCount();
+        this->m_nx = tocopy.x();
+        this->m_ny = tocopy.y();
+        this->m_nFrames = tocopy.getFrameCount();
         //*this->obCorrection = *tocopy.obCorrection;
 
     }

@@ -85,7 +85,7 @@ private:
   int emptyCorrectionCounter = 0;
   bool dataOpened;
   QCustomPlot* customPlot;
-  tk::spline* m_spline; //!< spline interpolation
+  tk::spline* m_spline = nullptr; //!< spline interpolation
 
 
 };

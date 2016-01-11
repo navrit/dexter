@@ -1437,7 +1437,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 
     int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
     if ( chipIndex < 0 || chipIndex > nChips - 1) {
-        cout << "[ERROR] wrong chip index !" << endl;
+        qDebug() << "[ERROR] wrong chip index !";
         return;
     }
 
@@ -1460,10 +1460,10 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
             QSet<int>::iterator i = tomask.begin();
             QSet<int>::iterator iE = tomask.end();
             pair<int, int> pix;
-            cout << "[INFO] Masking " << endl;
+            qDebug() << "[INFO] Masking ";
             for ( ; i != iE ; i++ ) {
                 pix = XtoXY( (*i), __matrix_size_x );
-                cout << "     devid:" << _deviceIndex << " | " << pix.first << "," << pix.second << endl;
+                //cout << "     devid:" << _deviceIndex << " | " << pix.first << "," << pix.second << endl;
                 spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second);
             }
         } else { // When the mask is empty go ahead and set all to zero
