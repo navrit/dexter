@@ -9,6 +9,7 @@ QCstmBHWindow::QCstmBHWindow(QWidget *parent) :
 {
   ui->setupUi(this);
   connect(this,&QCstmBHWindow::loadSignal,this, &QCstmBHWindow::on_loadButton_clicked);
+  emit updateProgressBar(0);
 }
 
 QCstmBHWindow::~QCstmBHWindow()
@@ -138,7 +139,8 @@ void QCstmBHWindow::on_loadButton_clicked()
             tk::spline s;
             //sort(xPlot.begin(), xPlot.end());
             //sort(yPlot.begin(), yPlot.end());
-            s.set_points(xPlot.toStdVector(),yPlot.toStdVector(),false);
+            //s.set_points(xPlot.toStdVector(),yPlot.toStdVector(),false);
+            s.set_points(xPlot.toStdVector(),yPlot.toStdVector());
 
             QVector<double> sx;
             QVector<double> sy;
@@ -150,6 +152,7 @@ void QCstmBHWindow::on_loadButton_clicked()
             }
 
             ui->plotWidget->graph(1)->setData(sx, sy);
+            ui->plotWidget->graph(1)->setPen(QPen(Qt::red));
         }
 
         ui->plotWidget->xAxis->setRange(minX, maxX);
@@ -247,7 +250,6 @@ void QCstmBHWindow::on_applyBHCorrection()
         //Create data structure
         QVector<QVector<double>> bhData(_mpx3gui->getDataset()->getPixelsPerLayer());
         std::sort(thicknessvctr.begin(), thicknessvctr.end(), cstmSortStruct);
-        qDebug() << thicknessvctr;
         for(int j = 0; j<thicknessvctr.size(); j++)
         {
                 int * layer = correctionMap[thicknessvctr[j]].getLayer(keys[i]);
@@ -258,22 +260,26 @@ void QCstmBHWindow::on_applyBHCorrection()
         for(unsigned int j = 0; j< _mpx3gui->getDataset()->getPixelsPerLayer(); j++)
         {
             QVector<double> temp = bhData[j];
-            qDebug()<<temp;
 
             bool ascending = true;
             for(int q = 0; q<temp.size()-1; q++)
             {
-                if(temp[q]<temp[q+1]) ascending = false;
+                if(temp[q]>=temp[q+1]) ascending = false;
             }
+
+            int a = currentLayer[j];
 
             if(temp[0]!= 0 && temp[0] < 50000 && ascending)
             {
                  m_spline->set_points(temp.toStdVector(),thicknessvctr.toStdVector(), false);
                  currentLayer[j] = (*m_spline)(currentLayer[j]); //Do the interpolation
             }
-            if(j % (_mpx3gui->getDataset()->getPixelsPerLayer() / 100) == 0)
+
+            if(a == currentLayer[j]) currentLayer[j] = 0;
+
+            if(j % (_mpx3gui->getDataset()->getPixelsPerLayer() / 1000) == 0)
             {
-                emit updateProgressBar( (100 / keys.size()) * (i+1) * j / _mpx3gui->getDataset()->getPixelsPerLayer() );
+                emit updateProgressBar( (100 / keys.size()) * (i) + j * (100 / keys.size()) / _mpx3gui->getDataset()->getPixelsPerLayer() );
             }
         }
 
