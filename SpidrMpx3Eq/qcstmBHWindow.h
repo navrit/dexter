@@ -26,8 +26,6 @@ public:
 
   void SetMpx3GUI(Mpx3GUI *p);
 
-  void makePlot();
-
 private:
 
   qcstmBHdialog * _bhdialog;
@@ -86,7 +84,9 @@ private:
   bool dataOpened;
   QCustomPlot* customPlot;
   tk::spline* m_spline = nullptr; //!< spline interpolation
-
+  struct sortStruct {
+    bool operator() (int a,int b) { return (a>b);}
+  } cstmSortStruct;
 
 };
 

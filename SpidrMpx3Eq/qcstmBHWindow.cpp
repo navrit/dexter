@@ -22,7 +22,7 @@ void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
 	_mpx3gui = p;
 	connect(this, SIGNAL(takeData()), _mpx3gui->getVisualization(), SLOT(StartDataTaking()));
     connect(this, &QCstmBHWindow::openData, _mpx3gui, &Mpx3GUI::open_data);
-    connect(this, SIGNAL(reload()),_mpx3gui->getVisualization(),SLOT(on_reload_all_layers()));
+    connect(this, SIGNAL(reload()),_mpx3gui->getVisualization(),SLOT(reload_all_layers()));
     connect(_mpx3gui, SIGNAL(open_data_failed()),this,SLOT(on_open_data_failed()));
     connect(this, SIGNAL(updateProgressBar(int)),this, SLOT(on_progressBar_valueChanged(int)));
     connect(this,SIGNAL(applyCorrection()),this, SLOT(on_applyBHCorrection()));
@@ -93,6 +93,8 @@ void QCstmBHWindow::on_saveButton_clicked()
 
 void QCstmBHWindow::on_loadButton_clicked()
 {
+    //TODO sort yPlot based on xPlot.
+
     dataOpened = true;
     emit openData();
 
@@ -134,6 +136,8 @@ void QCstmBHWindow::on_loadButton_clicked()
         if(xPlot.size()>2)
         {
             tk::spline s;
+            //sort(xPlot.begin(), xPlot.end());
+            //sort(yPlot.begin(), yPlot.end());
             s.set_points(xPlot.toStdVector(),yPlot.toStdVector(),false);
 
             QVector<double> sx;
@@ -231,12 +235,6 @@ void QCstmBHWindow::on_progressBar_valueChanged(int value)
     ui->progressBar->update();
 }
 
-void makePlot()
-{
-    //QCustomPlot * q = new QCustomPlot;
-    //q->
-}
-
 void QCstmBHWindow::on_applyBHCorrection()
 //Makes signal to thickness conversion
 {
@@ -248,7 +246,8 @@ void QCstmBHWindow::on_applyBHCorrection()
     {
         //Create data structure
         QVector<QVector<double>> bhData(_mpx3gui->getDataset()->getPixelsPerLayer());
-        sort(thicknessvctr.begin(), thicknessvctr.end());
+        std::sort(thicknessvctr.begin(), thicknessvctr.end(), cstmSortStruct);
+        qDebug() << thicknessvctr;
         for(int j = 0; j<thicknessvctr.size(); j++)
         {
                 int * layer = correctionMap[thicknessvctr[j]].getLayer(keys[i]);
@@ -259,14 +258,32 @@ void QCstmBHWindow::on_applyBHCorrection()
         for(unsigned int j = 0; j< _mpx3gui->getDataset()->getPixelsPerLayer(); j++)
         {
             QVector<double> temp = bhData[j];
-            m_spline->set_points(thicknessvctr.toStdVector(), temp.toStdVector(), false);
-            currentLayer[j] = (*m_spline)(currentLayer[j]); //Do the interpolation
+            qDebug()<<temp;
 
+            bool ascending = true;
+            for(int q = 0; q<temp.size()-1; q++)
+            {
+                if(temp[q]<temp[q+1]) ascending = false;
+            }
+
+            if(temp[0]!= 0 && temp[0] < 50000 && ascending)
+            {
+                 m_spline->set_points(temp.toStdVector(),thicknessvctr.toStdVector(), false);
+                 currentLayer[j] = (*m_spline)(currentLayer[j]); //Do the interpolation
+            }
             if(j % (_mpx3gui->getDataset()->getPixelsPerLayer() / 100) == 0)
             {
                 emit updateProgressBar( (100 / keys.size()) * (i+1) * j / _mpx3gui->getDataset()->getPixelsPerLayer() );
             }
         }
+
+        for(unsigned int j = 0; j< _mpx3gui->getDataset()->getPixelsPerLayer(); j++)
+        {
+            _mpx3gui->getDataset()->getLayer(keys[i])[j] = currentLayer[j];
+        }
+
     }
+
+    emit updateProgressBar(100);
 
 }
