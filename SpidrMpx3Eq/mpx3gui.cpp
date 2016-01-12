@@ -276,9 +276,10 @@ void Mpx3GUI::establish_connection() {
     dbg << "SpidrDaq: ";
 
     for( int i=0; i<4; ++i ) dbg << _spidrdaq->ipAddressString( i ).c_str() << " ";
-    dbg << "\n";
+
     Sleep( 1000 );
-    dbg << _spidrdaq->errorString().c_str() << "\n";
+
+    dbg << _spidrdaq->errorString().c_str();
 
     // Here the chips can be configured
     getConfig()->SendConfiguration();
@@ -486,6 +487,9 @@ void Mpx3GUI::open_data(){
     QRectF bbox = getDataset()->computeBoundingBox();
     emit sizeChanged(bbox.width() * getDataset()->x(), bbox.height() * getDataset()->y() ); // goes to qcstmglplot
     emit reload_all_layers();
+
+    // And keep a copy just as in QCstmGLVisualization::data_taking_finished
+    saveOriginalDataset();
 
     return;
 }

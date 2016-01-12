@@ -19,6 +19,12 @@
   <layout class="QHBoxLayout" name="horizontalLayout_4">
    <item>
     <widget class="QSplitter" name="mainSplitter">
+     <property name="minimumSize">
+      <size>
+       <width>1086</width>
+       <height>583</height>
+      </size>
+     </property>
      <property name="layoutDirection">
       <enum>Qt::LeftToRight</enum>
      </property>
@@ -149,7 +155,7 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_7">
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
          <item>
           <widget class="QCheckBox" name="summingCheckbox">
            <property name="text">

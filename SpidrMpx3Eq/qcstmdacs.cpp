@@ -206,7 +206,7 @@ void QCstmDacs::PopulateDACValues() {
     //   higher priority.
     string defaultDACsFn = __default_DACs_filename;
 
-    cout << "[INFO] setting dacs from defult DACs file." << endl;
+    qDebug() << "[INFO] setting dacs from defult DACs file.";
 
     int lastIndexToSet = 0;
     int nChipsToSet = 0;
@@ -590,7 +590,7 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
         for( int chip = 0 ; chip < _mpx3gui->getConfig()->getNDevicesSupported() ; chip++) {
             // Check if the device is alive
             if ( ! _mpx3gui->getConfig()->detectorResponds( chip ) ) {
-                cout << "[ERR ] Device " << chip << " not responding." << endl;
+                qDebug() << "[ERR ] Device " << chip << " not responding.";
                 continue;
             }
             spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[ i ].code, val );
@@ -627,7 +627,7 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
         for( int chip = 0 ; chip < _mpx3gui->getConfig()->getNDevicesSupported() ; chip++) {
             // Check if the device is alive
             if ( ! _mpx3gui->getConfig()->detectorResponds( chip ) ) {
-                cout << "[ERR ] Device " << chip << " not responding." << endl;
+                qDebug() << "[ERR ] Device " << chip << " not responding.";
                 continue;
             }
             spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[ i ].code, val );
@@ -683,7 +683,7 @@ bool QCstmDacs::WriteDACsFile(string fn){
         return false;
     }
     QFileInfo fInfo(saveFile.fileName());
-    std::cout << "Opened " <<fInfo.absoluteFilePath().toStdString() << std::endl;
+    qDebug() << "[INFO] Opened " <<fInfo.absoluteFilePath().toStdString().c_str();
     //++i
     //QJsonDocument jsDoc(configJson);
     //if(-1 == saveFile.write(jsDoc.toJson())){
@@ -881,7 +881,7 @@ void SenseDACsThread::run() {
 
     // Check if the device is alive
     if ( ! _dacs->GetMpx3GUI()->getConfig()->detectorResponds( _dacs->GetDeviceIndex() ) ) {
-        cout << "[ERR ] Device " << _dacs->GetDeviceIndex() << " not responding." << endl;
+        qDebug() << "[ERR ] Device " << _dacs->GetDeviceIndex() << " not responding.";
         return;
     }
 
@@ -897,7 +897,7 @@ void SenseDACsThread::run() {
     SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
-        cout << "[ERR ] Device not connected !" << endl;
+        qDebug() << "[ERR ] Device not connected !";
         return;
     }
 
@@ -924,7 +924,7 @@ void SenseDACsThread::run() {
 
         if ( !spidrcontrol->setSenseDac( _dacs->GetDeviceIndex(), MPX3RX_DAC_TABLE[i].code ) ) {
 
-            cout << "setSenseDac[" << i << "] | " << spidrcontrol->errorString() << endl;
+            qDebug() << "setSenseDac[" << i << "] | " << spidrcontrol->errorString().c_str();
 
         } else {
 
@@ -932,7 +932,7 @@ void SenseDACsThread::run() {
 
             if ( !spidrcontrol->getDacOut( _dacs->GetDeviceIndex(), &adc_val, _dacs->GetNSamples() ) ) {
 
-                cout << "getDacOut : " << i << " | " << spidrcontrol->errorString() << endl;
+                qDebug() << "getDacOut : " << i << " | " << spidrcontrol->errorString().c_str();
 
             } else {
 
@@ -1005,7 +1005,7 @@ void UpdateDACsThread::run(){
     connect( this, SIGNAL( updateFinished() ), _dacs, SLOT( updateFinished() ) );
 
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
-        cout << "Device not connected !" << endl;
+        qDebug() << "Device not connected !";
         return;
     }
 
@@ -1021,7 +1021,7 @@ void UpdateDACsThread::run(){
 
         // Check if the device is alive
         if ( ! _dacs->GetMpx3GUI()->getConfig()->detectorResponds( chip ) ) {
-            cout << "[ERR ] Device " << chip << " not responding." << endl;
+            qDebug() << "[ERR ] Device " << chip << " not responding.";
             // De-activate the spin boxes and sliders when a non-responding chip is selected
             // TODO !
             continue;
@@ -1059,7 +1059,7 @@ void ScanDACsThread::run() {
 
     // Check if the device is alive
     if ( ! _dacs->GetMpx3GUI()->getConfig()->detectorResponds( _dacs->GetDeviceIndex() ) ) {
-        cout << "[ERR ] Device " << _dacs->GetDeviceIndex() << " not responding." << endl;
+        qDebug() << "[ERR ] Device " << _dacs->GetDeviceIndex() << " not responding.";
         return;
     }
 
@@ -1076,7 +1076,7 @@ void ScanDACsThread::run() {
     SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
-        cout << "Device not connected !" << endl;
+        qDebug() << "Device not connected !";
         return;
     }
 
@@ -1128,7 +1128,7 @@ void ScanDACsThread::run() {
 
             if( !spidrcontrol->setDac( _dacs->GetDeviceIndex(), MPX3RX_DAC_TABLE[i].code, dacValI ) ) {
 
-                cout << "setDac[" << i << "] | " << spidrcontrol->errorString() << endl;
+                qDebug() << "setDac[" << i << "] | " << spidrcontrol->errorString().c_str();
 
 
             } else {
@@ -1140,7 +1140,7 @@ void ScanDACsThread::run() {
 
                 if ( !spidrcontrol->setSenseDac( _dacs->GetDeviceIndex(), MPX3RX_DAC_TABLE[i].code ) ) {
 
-                    cout << "setSenseDac[" << i << "] | " << spidrcontrol->errorString() << endl;
+                    qDebug() << "setSenseDac[" << i << "] | " << spidrcontrol->errorString().c_str();
 
                 } else {
 
@@ -1148,7 +1148,7 @@ void ScanDACsThread::run() {
 
                     if ( !spidrcontrol->getDacOut( _dacs->GetDeviceIndex(), &adc_val, _dacs->GetNSamples() ) ) {
 
-                        cout << "getDacOut : " << i << " | " << spidrcontrol->errorString() << endl;
+                        qDebug() << "getDacOut : " << i << " | " << spidrcontrol->errorString().c_str();
 
                     } else {
 
@@ -1197,10 +1197,10 @@ void ScanDACsThread::run() {
 
             if( retryCntr == 0 ) {
                 retryCntr = __N_RETRY_ORIGINAL_SETTING;
-                cout << "setDac[" << i << "] | " << spidrcontrol->errorString() << " ... tried 3 times, giving up." << endl;
+                qDebug() << "setDac[" << i << "] | " << spidrcontrol->errorString().c_str() << " ... tried 3 times, giving up." << endl;
                 continue;
             }
-            cout << "setDac[" << i << "] | " << spidrcontrol->errorString() << " ... retry " << __N_RETRY_ORIGINAL_SETTING - retryCntr + 1 << endl;
+            qDebug() << "setDac[" << i << "] | " << spidrcontrol->errorString().c_str() << " ... retry " << __N_RETRY_ORIGINAL_SETTING - retryCntr + 1 << endl;
             retryCntr--;
 
         } else {
@@ -1216,7 +1216,7 @@ void ScanDACsThread::run() {
             // And sense it in the original position
             if ( !spidrcontrol->setSenseDac( _dacs->GetDeviceIndex(), MPX3RX_DAC_TABLE[i].code ) ) {
 
-                cout << "setSenseDac[" << i << "] | " << spidrcontrol->errorString() << endl;
+                qDebug() << "setSenseDac[" << i << "] | " << spidrcontrol->errorString().c_str() << endl;
 
             } else {
 
@@ -1224,7 +1224,7 @@ void ScanDACsThread::run() {
 
                 if ( !spidrcontrol->getDacOut( _dacs->GetDeviceIndex(), &adc_val, _dacs->GetNSamples() ) ) {
 
-                    cout << "getDacOut : " << i << " | " << spidrcontrol->errorString() << endl;
+                    qDebug() << "getDacOut : " << i << " | " << spidrcontrol->errorString().c_str();
 
                 } else {
 
@@ -1296,7 +1296,7 @@ void QCstmDacs::setConfig(){
 }
 
 void QCstmDacs::openWriteMenu(){//TODO: change to signal slot method
-    std::cout << "Openwritemenu called!" << std::endl;
+    qDebug() << "[INFO] Openwritemenu called!";
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Config"), tr("."), tr("json Files (*.json)"));
     WriteDACsFile(fileName.toStdString());
     //this->WriteDACsFile()

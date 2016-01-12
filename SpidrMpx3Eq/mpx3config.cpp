@@ -420,7 +420,7 @@ bool Mpx3Config::detectorResponds(int devIndx) {
 
 bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
 
-	cout << "[INFO] reading the configuration from the Json file: " << filename.toStdString() << endl;
+    qDebug() << "[INFO] reading the configuration from the Json file: " << filename.toStdString().c_str();
 
 	QFile loadFile(filename);
 	if(!loadFile.open(QIODevice::ReadOnly)){
