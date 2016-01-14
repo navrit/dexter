@@ -28,7 +28,7 @@ private:
 	QString * dialogResult;
 
 signals:
-	void talkToForm(double signalThickness);
+    void talkToForm(double signalThickness, QString material);
 
 };
 

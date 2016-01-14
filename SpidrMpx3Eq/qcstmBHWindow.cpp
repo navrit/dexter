@@ -9,7 +9,7 @@ QCstmBHWindow::QCstmBHWindow(QWidget *parent) :
 {
   ui->setupUi(this);
   connect(this,&QCstmBHWindow::loadSignal,this, &QCstmBHWindow::on_loadButton_clicked);
-  emit updateProgressBar(0);
+  ui->progressBar->setValue(0);
 }
 
 QCstmBHWindow::~QCstmBHWindow()
@@ -43,7 +43,7 @@ void QCstmBHWindow::on_addButton_clicked()
 		_bhdialog->raise();
 		_bhdialog->activateWindow();
 
-		connect(_bhdialog, SIGNAL(talkToForm(double)), this, SLOT(on_talkToForm(double)));
+        connect(_bhdialog, SIGNAL(talkToForm(double, QString)), this, SLOT(on_talkToForm(double, QString)));
      }
 }
 
@@ -94,7 +94,7 @@ void QCstmBHWindow::on_saveButton_clicked()
 
 void QCstmBHWindow::on_loadButton_clicked()
 {
-    //TODO sort yPlot based on xPlot.
+    if(correctionMap.contains(thicknessvctr[selectedItemNo])) return;
 
     dataOpened = true;
     emit openData();
@@ -104,22 +104,34 @@ void QCstmBHWindow::on_loadButton_clicked()
         correctionMap.insert(thicknessvctr[selectedItemNo], *_mpx3gui->getDataset());
         emptyCorrectionCounter--;
         ui->loadButton->setEnabled(false);
+        ui->list->currentItem()->setBackground(QBrush(Qt::cyan));
 
-        double count = 0;
-        for(int j = 0; j< _mpx3gui->getDataset()->getPixelsPerLayer(); j++ )
+//Plot
+
+        QVector<double> yPlot, xPlot;
+        QMap<double, double> plotMap;
+        for(int i = 0; i<thicknessvctr.size(); i++)
         {
-            count += _mpx3gui->getDataset()->getLayer(0)[j];
+            if(correctionMap.contains(thicknessvctr[i])) xPlot.push_back(thicknessvctr[i]);
         }
-        xPlot.push_back(thicknessvctr[selectedItemNo]);
-        yPlot.push_back(count);
 
-        // create graph and assign data to it:
-        ui->plotWidget->addGraph();
-        ui->plotWidget->graph(0)->setData(xPlot, yPlot);
-        // give the axes some labels:
-        ui->plotWidget->xAxis->setLabel("Thickness");
-        ui->plotWidget->yAxis->setLabel("Signal");
-        // set axes ranges, so we see all data:
+        for(int i = 0; i< xPlot.size(); i++)
+        {
+            double count = 0;
+            for(int j = 0; j< _mpx3gui->getDataset()->getPixelsPerLayer(); j++ )
+            {
+                count += correctionMap[xPlot[i]].getLayer(0)[j];
+            }
+            count /= _mpx3gui->getDataset()->getPixelsPerLayer(); //average of threshold 0
+            plotMap.insert(xPlot[i], count);
+        }
+
+        std::sort(xPlot.begin(), xPlot.end());
+
+        for(int i = 0; i<xPlot.size(); i++)
+        {
+            yPlot.push_back(plotMap[xPlot[i]]);
+        }
 
         double minX = 0;
         double maxX = 0;
@@ -134,6 +146,15 @@ void QCstmBHWindow::on_loadButton_clicked()
             maxY = std::max(maxY, yPlot[i]);
         }
 
+        ui->plotWidget->addGraph();
+        ui->plotWidget->graph(0)->setData(xPlot, yPlot);
+        ui->plotWidget->xAxis->setLabel("Thickness");
+        ui->plotWidget->yAxis->setLabel("Signal");
+        ui->plotWidget->xAxis->setRange(minX, maxX);
+        ui->plotWidget->yAxis->setRange(minY, maxY);
+        ui->plotWidget->replot();
+
+        /* Do interpolation - Disabled because QPlot automatically does linear interpolation and spline cubic does not fit well
         if(xPlot.size()>2)
         {
             tk::spline s;
@@ -154,16 +175,12 @@ void QCstmBHWindow::on_loadButton_clicked()
             ui->plotWidget->graph(1)->setData(sx, sy);
             ui->plotWidget->graph(1)->setPen(QPen(Qt::red));
         }
+        */
 
-        ui->plotWidget->xAxis->setRange(minX, maxX);
-        ui->plotWidget->yAxis->setRange(minY, maxY);
-        ui->plotWidget->replot();
     }
 
     if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )
         ui->startButton->setEnabled(true);    
-
-
 }
 
 void QCstmBHWindow::on_optionsButton_clicked()
@@ -173,7 +190,6 @@ void QCstmBHWindow::on_optionsButton_clicked()
 
 void QCstmBHWindow::on_startButton_clicked()
 {
-  //_mpx3gui->getDataset()->applyBHCorrection(thicknessvctr, _mpx3gui->getOriginalDataset(), correctionMap);
   emit applyCorrection();
   emit reload();
 }
@@ -191,7 +207,7 @@ void QCstmBHWindow::on_list_itemClicked(QListWidgetItem *item)
     }
 }
 
-void QCstmBHWindow::on_talkToForm(double thickness)
+void QCstmBHWindow::on_talkToForm(double thickness, QString material)
 {
     bool contained = false;
 
@@ -209,10 +225,11 @@ void QCstmBHWindow::on_talkToForm(double thickness)
 
     if(!contained)
     {
-        QString description = ui->comboBox->currentText() + " ";
-        description.append(QString("%1").arg(thickness));
-        description += " um";
-        ui->list->addItem(description);
+        //QString description = ui->comboBox->currentText() + " ";
+        material += " ";
+        material.append(QString("%1").arg(thickness));
+        material += " um";
+        ui->list->addItem(material);
 
         thicknessvctr.push_back(thickness);
         emptyCorrectionCounter++;
@@ -228,6 +245,7 @@ void QCstmBHWindow::on_open_data_failed()
 
 void QCstmBHWindow::on_list_doubleClicked(const QModelIndex &index)
 {
+
     emit loadSignal();
 }
 

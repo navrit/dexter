@@ -59,7 +59,7 @@ private slots:
 
   void on_list_itemClicked(QListWidgetItem *item);
 
-  void on_talkToForm(double thickness);
+  void on_talkToForm(double thickness, QString material);
 
   void on_startButton_clicked();
 
@@ -76,11 +76,9 @@ private:
   Ui::QCstmBHWindow *ui;
   Mpx3GUI * _mpx3gui; 
   int selectedItemNo = 0;
+  int emptyCorrectionCounter = 0;
   QMap<double,Dataset> correctionMap;
   QVector<double> thicknessvctr;
-  QVector<double> xPlot;
-  QVector<double> yPlot;
-  int emptyCorrectionCounter = 0;
   bool dataOpened;
   QCustomPlot* customPlot;
   tk::spline* m_spline = nullptr; //!< spline interpolation

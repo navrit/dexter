@@ -33,35 +33,6 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
-       <widget class="QComboBox" name="comboBox">
-        <item>
-         <property name="text">
-          <string>Al</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Pb</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>SiO2</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Au</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>C8H10N4O2</string>
-         </property>
-        </item>
-       </widget>
-      </item>
       <item row="3" column="1">
        <widget class="QPushButton" name="saveButton">
         <property name="enabled">

@@ -16,7 +16,7 @@ qcstmBHdialog::~qcstmBHdialog()
 void qcstmBHdialog::on_okButton_clicked()
 {
     QString valS = ui->thicknessBox->text();
-    emit talkToForm(valS.toDouble());
+    emit talkToForm(valS.toDouble(), ui->comboBox->currentText());
     this->close();
 }
 
