@@ -3,6 +3,7 @@
 #include "color2drecoguided.h"
 #include "qcstmBHWindow.h"
 #include "spline.h"
+#include "qcstmcorrectionsdialog.h"
 
 #include <QDataStream>
 #include <QDebug>
@@ -629,39 +630,26 @@ QMap<int, double> Dataset::GetPadMean() {
 }
 
 
-void Dataset::applyCorrections(Ui::QCstmGLVisualization * ui) {
+void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
 
-    if ( isAnyCorrectionActive( ui ) ) {
+    if ( ! corrdiag ) return;
+
+    if ( corrdiag->isCorrectionsActive() ) {
 
         QMap<int, double> meanvals = Dataset::GetPadMean();
 
         // Corrections
-        if ( ui->obcorrCheckbox->isChecked() ) applyOBCorrection();
-        if ( ui->deadpixelsinterpolationCheckbox->isChecked() ) applyDeadPixelsInterpolation( ui->noisyPixelMeanMultiplier->value(), meanvals );
-        if ( ui->highinterpolationCheckbox->isChecked() ) applyHighPixelsInterpolation( ui->noisyPixelMeanMultiplier->value(), meanvals );
+        if ( corrdiag->isSelectedOBCorr() ) applyOBCorrection();
+        if ( corrdiag->isSelectedDeadPixelsInter() ) applyDeadPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
+        if ( corrdiag->isSelectedHighPixelsInter() ) applyHighPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
+
+
         //if (ui->bhcorrCheckbox->isChecked()) applyBHCorrection();
         //applyBHCorrection gets called from QCstmBHWindow. TODO: Make sure that it can be called from here as well
 
     }
 
 }
-
-bool Dataset::isAnyCorrectionActive(Ui::QCstmGLVisualization * ui) {
-
-    if (
-            ui->bhcorrCheckbox->isChecked()
-            ||
-            ui->obcorrCheckbox->isChecked()
-            ||
-            ui->deadpixelsinterpolationCheckbox->isChecked()
-            ||
-            ui->highinterpolationCheckbox->isChecked()
-
-            ) return true;
-
-    return false;
-}
-
 
 
 int Dataset::applyColor2DRecoGuided(Color2DRecoGuided * reco) {

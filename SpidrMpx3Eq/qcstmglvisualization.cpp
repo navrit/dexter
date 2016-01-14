@@ -4,7 +4,8 @@
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 #include "DataTakingThread.h"
-#include "qcstmBHWindow.h"
+
+#include "qcstmcorrectionsdialog.h"
 
 #include "color2drecoguided.h"
 
@@ -24,7 +25,6 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :  QWidget(parent), 
 	_etatimer = 0x0;
 	_timer = 0x0;
 	_estimatedETA = 0;
-	_bhwindow = 0x0;
 
 	// Defaults from GUI
 	ui->dropFramesCheckBox->setChecked( true );
@@ -147,7 +147,7 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
         _mpx3gui->saveOriginalDataset();
 
 		// Corrections
-        _mpx3gui->getDataset()->applyCorrections( ui );
+        if( _corrdialog ) _mpx3gui->getDataset()->applyCorrections( _corrdialog );
 
 		// And replot
         reload_all_layers();
@@ -601,57 +601,9 @@ void QCstmGLVisualization::on_summingCheckbox_toggled(bool checked)
 	//on_reload_all_layers();
 }
 
-//!Load a BH correction
-void QCstmGLVisualization::on_bhcorrCheckbox_toggled(bool checked) {
 
-	// Deal with the separate BH window
-    if ( !_bhwindow && checked && _mpx3gui->getDataset()->getLayer(0)!= nullptr) {
-		_bhwindow = new QCstmBHWindow(this);
-        _bhwindow->SetMpx3GUI( _mpx3gui );
 
-        _bhwindow->show(); // nonModal
-		_bhwindow->raise();
-		_bhwindow->activateWindow();
-	}
 
-    if(_mpx3gui->getDataset()->getLayer(0)== nullptr && checked)
-    {
-        QMessageBox msgBox;
-        msgBox.setText("Please first load / take data.");
-        msgBox.exec();
-        ui->bhcorrCheckbox->setChecked(false);
-    }
-
-if(_mpx3gui->getDataset()->getLayer(0)!= nullptr)
-    {
-        if ( ! checked ) {
-            _bhwindow->close();
-        } else {
-            _bhwindow->show();
-            _bhwindow->raise();
-            _bhwindow->activateWindow();
-        }
-    }
-}
-
-void QCstmGLVisualization::on_obcorrCheckbox_toggled(bool checked) {
-
-	if(!checked) {
-		_mpx3gui->getDataset()->removeCorrection();
-	} else {
-		QString filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("binary files (*.bin)"));
-		QFile saveFile(filename);
-		if ( !saveFile.open(QIODevice::ReadOnly) ) {
-			string messg = "Couldn't open: ";
-			messg += filename.toStdString();
-			messg += "\nNo output written!";
-			QMessageBox::warning ( this, tr("Error opening data"), tr( messg.c_str() ) );
-			return;
-		}
-		_mpx3gui->getDataset()->loadCorrection(saveFile.readAll());
-	}
-
-}
 
 void QCstmGLVisualization::on_pushButton_clicked()
 {
@@ -669,53 +621,36 @@ void QCstmGLVisualization::on_pushButton_clicked()
 
 }
 
-/**
- * On an existing image
- */
-void QCstmGLVisualization::on_applyCorr_clicked() {
-
-    if ( ! _takingData ) {
-
-		// This is done off data taking
-		// Recover first the saved data to operate on the original
-        _mpx3gui->rewindToOriginalDataset();
-
-        // And apply corrections
-        _mpx3gui->getDataset()->applyCorrections( ui );
-        reload_all_layers();
-
-        /*
-        // TODO, the location of the corrections will be moved to a separate window
-        // Try the reconstruction
-
-        // If previous reco available, delete.
-        if ( _reco_Color2DRecoGuided ) delete _reco_Color2DRecoGuided;
-
-        // Prepare the reconstruction handler
-        _reco_Color2DRecoGuided = new Color2DRecoGuided( _mpx3gui );
-        _reco_Color2DRecoGuided->LoadCrossSectionData();
-        _reco_Color2DRecoGuided->BuildAndInvertMuMatrix();
-        // Send off for reco
-        _mpx3gui->getDataset()->applyColor2DRecoGuided( _reco_Color2DRecoGuided );
-
-        // Now change layer names
-        // This maps indx to material name
-        QMap<int, QString> materials =_reco_Color2DRecoGuided->getMaterialMap();
-        // This is the list of thresholds
-        QList<int> thls = _mpx3gui->getDataset()->getThresholds();
-
-        for ( int i = 0 ; i < thls.size() ; i++ ) {
-            changeThresholdToNameAndUpdateSelector( thls[i], materials[i] );
-        }
-
-        on_reload_all_layers();
-*/
-    }
-
-}
-
 
 void QCstmGLVisualization::on_noisyPixelMeanMultiplier_valueChanged(double arg1)
 {
+
+}
+
+void QCstmGLVisualization::on_correctionsDialogCheckBox_toggled(bool checked)
+{
+
+    if ( !_corrdialog && checked ) {
+
+        // Setup corrections and be ready to apply them
+        _corrdialog = new QCstmCorrectionsDialog(this);
+        _corrdialog->SetMpx3GUI( _mpx3gui );
+
+        // non Modal
+        _corrdialog->show();
+        _corrdialog->raise();
+        _corrdialog->activateWindow();
+
+    } else if ( _corrdialog && checked ) {
+
+        // If already created
+        _corrdialog->show();
+        _corrdialog->raise();
+        _corrdialog->activateWindow();
+
+    }
+
+    //  Activate or deactivate the corrections
+    _corrdialog->setCorrectionsActive( checked );
 
 }

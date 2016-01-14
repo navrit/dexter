@@ -33,7 +33,7 @@ namespace Ui {
 class Mpx3GUI;
 class Color2DRecoGuided;
 class CorrectionItem;
-
+class QCstmCorrectionsDialog;
 
 
 class Dataset//TODO: specify starting corner?
@@ -104,7 +104,7 @@ public:
   QVector<int> toQVector(); //!< Serializes the dataset for saving.
   void fromByteArray(QByteArray serialized); //!< Restores the dataset from a previously serialized set.
   void loadCorrection(QByteArray serialized);//!< Loads and sets the correction to a previously serialized set.
-  void applyCorrections(Ui::QCstmGLVisualization * ui);//<!Handles all corrections.  This function is blocking for the moment !
+  void applyCorrections(QCstmCorrectionsDialog * corrdiag);//<!Handles all corrections.  This function is blocking for the moment !
   void applyOBCorrection();//!< Computes and applies the flat-field correction
   //void applyBHCorrection(QVector<double> thickness, Dataset* originalSet, QMap<double, Dataset> map);//!< Computes and applies a beam-hardening correction
   void applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
@@ -149,8 +149,6 @@ public:
   int x() const{return m_nx;}
   int y() const{return m_ny;}
 
-  // from UI
-  bool isAnyCorrectionActive(Ui::QCstmGLVisualization * ui);
 
   // Simple tools
   typedef enum {

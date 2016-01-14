@@ -24,7 +24,8 @@
 using namespace std;
 
 class DataTakingThread;
-class QCstmBHWindow;
+
+class QCstmCorrectionsDialog;
 
 namespace Ui {
   class QCstmGLVisualization;
@@ -43,8 +44,9 @@ class QCstmGLVisualization : public QWidget
   //QMap<int, histogram> histograms;
   QMap<int, QString> layerNames;
 
-  // BH window
-  QCstmBHWindow * _bhwindow;
+  // Corrections
+
+  QCstmCorrectionsDialog * _corrdialog = nullptr;
 
   // Reco
   Color2DRecoGuided * _reco_Color2DRecoGuided = nullptr;
@@ -55,6 +57,7 @@ public:
 
   //void SeparateThresholds(int * data, int size, int * th0, int * th2, int * th4, int * th6, int sizeReduced);
   void SeparateThresholds(int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
+  bool isTakingData(){ return _takingData; }
 
   void SetMpx3GUI(Mpx3GUI * p);
   Mpx3GUI * GetMpx3GUI() { return _mpx3gui; };
@@ -109,20 +112,13 @@ private slots:
 
   void UnlockWaitingForFrame();
 
-  //!Presents the user with a file menu to select a dataset to use for the openbeam correction. If one is selected, it will set it for the current dataset (but not apply it, that happens after data taking).
-  void on_obcorrCheckbox_toggled(bool checked);
-
-  //!Load a BH correction
-  void on_bhcorrCheckbox_toggled(bool checked);
-
   //!Temporary save button for images and data.
   void on_pushButton_clicked();
 
-  //!Apply corrections manually
-  void on_applyCorr_clicked();
-
   //!Spinbox for noisyPixelMeanMultiplier parameter
   void on_noisyPixelMeanMultiplier_valueChanged(double arg1);
+
+  void on_correctionsDialogCheckBox_toggled(bool checked);
 
 public slots:
   void StartDataTaking();
