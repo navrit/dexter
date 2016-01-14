@@ -62,6 +62,23 @@ int64_t Dataset::getTotal(int threshold){
     return count;
 }
 
+//! Overflow is checked on a frame per frame basis, not on the integral
+int64_t Dataset::getOverflow(int threshold)
+{
+/*
+    int index = thresholdToIndex(threshold);
+    if(index == -1)
+        return 0;
+    int64_t count = 0;
+    int overflowval = 0;
+    for(unsigned int j = 0; j < getPixelsPerLayer(); j++) {
+        if ( m_layers[index][j] >= overflowval ) count ++;
+    }
+    return count;
+    */
+    return 0;
+}
+
 uint64_t Dataset::getActivePixels(int threshold){
     int index = thresholdToIndex(threshold);
     if(index == -1)
