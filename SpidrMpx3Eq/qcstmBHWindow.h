@@ -34,7 +34,7 @@ signals:
 
   void takeData();
 
-  void openData();
+  void openData(bool);
 
   void reload();
 

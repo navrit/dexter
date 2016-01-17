@@ -97,7 +97,10 @@ void QCstmBHWindow::on_loadButton_clicked()
     if(correctionMap.contains(thicknessvctr[selectedItemNo])) return;
 
     dataOpened = true;
-    emit openData();
+    // Load BH layers, but don't save the data set.  The original dataset
+    //  has already been saved when loaded.  Otherwise we end up correcting
+    //  with respect to a correction layer
+    emit openData(false);
 
     if(!correctionMap.contains(thicknessvctr[selectedItemNo])&&dataOpened)
     {

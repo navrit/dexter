@@ -140,7 +140,7 @@ public slots:
     void generateFrame(); //Debugging function to generate data when not connected
     void clear_data();
     void save_data();
-    void open_data();
+    void open_data(bool saveOriginal = true);
     void set_mode_integral();
     void set_mode_normal();
     void clear_configuration();

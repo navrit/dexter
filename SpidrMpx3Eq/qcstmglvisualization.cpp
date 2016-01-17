@@ -407,7 +407,7 @@ void QCstmGLVisualization::addThresholdToSelector(int threshold){
 
 void QCstmGLVisualization::changeThresholdToNameAndUpdateSelector(int threshold, QString name) {
 
-    QString label = QString("Material %1 %2").arg( name ).arg( threshold ); // The threshold number is needed here !  When reloaded the program finds it by searching for it.  Change this !  TODO
+    QString label = QString("Material %1 | %2").arg( name ).arg( threshold ); // The threshold number is needed here !  When reloaded the program finds it by searching for it.  Change this !  TODO
     if ( layerNames.contains(threshold) ) {
         layerNames[threshold] = label ;
         ui->layerSelector->setItemText( _mpx3gui->getDataset()->thresholdToIndex(threshold), label );
@@ -602,13 +602,15 @@ void QCstmGLVisualization::on_summingCheckbox_toggled(bool checked)
 }
 
 
-
-
-
-void QCstmGLVisualization::on_pushButton_clicked()
+void QCstmGLVisualization::on_saveBitmapPushButton_clicked()
 {
 	QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), QStandardPaths::displayName(QStandardPaths::PicturesLocation), tr("location"));
-	ui->glPlot->grab().save(filename+".png");
+
+    // Get the image
+    if ( _savePNGWithScales ) ui->glPlot->grab().save(filename+".png"); // with all children
+    else ui->glPlot->getPlot()->grabFramebuffer().save(filename+".png"); // only image
+
+    // And the histogram
 	ui->histPlot->savePng(filename+"_histogram.png");
 	QFile histogramDat(filename+"_histogram.dat");
 	if(!histogramDat.open(QIODevice::WriteOnly)){
@@ -653,4 +655,41 @@ void QCstmGLVisualization::on_correctionsDialogCheckBox_toggled(bool checked)
     //  Activate or deactivate the corrections
     _corrdialog->setCorrectionsActive( checked );
 
+}
+
+void QCstmGLVisualization::on_recoPushButton_clicked()
+{
+
+     _mpx3gui->rewindToOriginalDataset();
+
+    // TODO, the location of the corrections will be moved to a separate window
+    // Try the reconstruction
+
+    // If previous reco available, delete.
+    if ( _reco_Color2DRecoGuided ) delete _reco_Color2DRecoGuided;
+
+    // Prepare the reconstruction handler
+    _reco_Color2DRecoGuided = new Color2DRecoGuided( _mpx3gui );
+    _reco_Color2DRecoGuided->LoadCrossSectionData();
+    _reco_Color2DRecoGuided->BuildAndInvertMuMatrix();
+    // Send off for reco
+    _mpx3gui->getDataset()->applyColor2DRecoGuided( _reco_Color2DRecoGuided );
+
+    // Now change layer names
+    // This maps indx to material name
+    QMap<int, QString> materials =_reco_Color2DRecoGuided->getMaterialMap();
+    // This is the list of thresholds
+    QList<int> thls = _mpx3gui->getDataset()->getThresholds();
+
+    for ( int i = 0 ; i < thls.size() ; i++ ) {
+        changeThresholdToNameAndUpdateSelector( thls[i], materials[i] );
+    }
+
+    reload_all_layers();
+
+}
+
+void QCstmGLVisualization::on_saveWithScaleCheckBox_toggled(bool checked)
+{
+    _savePNGWithScales = checked;
 }

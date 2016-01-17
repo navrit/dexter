@@ -45,7 +45,6 @@ class QCstmGLVisualization : public QWidget
   QMap<int, QString> layerNames;
 
   // Corrections
-
   QCstmCorrectionsDialog * _corrdialog = nullptr;
 
   // Reco
@@ -74,6 +73,7 @@ public:
 private:
   Ui::QCstmGLVisualization *ui;
   DataTakingThread * _dataTakingThread;
+  bool _savePNGWithScales = false;
   //!Gets the currently active threshold by looking at the value of the layerselector combobox.
   int getActiveThreshold();
   //!Adds the specified threshold to the layerselector combobox
@@ -113,12 +113,16 @@ private slots:
   void UnlockWaitingForFrame();
 
   //!Temporary save button for images and data.
-  void on_pushButton_clicked();
+  void on_saveBitmapPushButton_clicked();
 
   //!Spinbox for noisyPixelMeanMultiplier parameter
   void on_noisyPixelMeanMultiplier_valueChanged(double arg1);
 
   void on_correctionsDialogCheckBox_toggled(bool checked);
+
+  void on_recoPushButton_clicked();
+
+  void on_saveWithScaleCheckBox_toggled(bool checked);
 
 public slots:
   void StartDataTaking();

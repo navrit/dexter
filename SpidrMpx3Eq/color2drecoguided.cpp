@@ -66,10 +66,20 @@ int Color2DRecoGuided::BuildAndInvertMuMatrix() {
     // To obtain the energies per thresholds we need a calibration, TODO !
     // Probably available through the Config ?
     QList<double> energies;
-    energies.append(  3.6E-3 ); // !!! NIST data comes in MeV !!!
-    energies.append(  10.E-3 ); //
-    energies.append(  15.E-3 ); //
-    energies.append(  20.E-3 ); //
+//    energies.append(  3.6E-3 ); // !!! NIST data comes in MeV !!!
+//    energies.append(  10.E-3 ); //
+//    energies.append(  15.E-3 ); //
+//    energies.append(  20.E-3 ); //
+
+    energies.append( 4.8E-3 );
+    energies.append( 7.2E-3 );
+    energies.append( 9.6E-3 );
+    energies.append( 11.9E-3 );
+
+//      energies.append(  4.8E-3 );
+//      energies.append( 10.0E-3 );
+//      energies.append( 15.0E-3 );
+//      energies.append( 20.0E-3 );
 
     // Materials
     _nMaterials = getNTotAttWCohScattDatasets();

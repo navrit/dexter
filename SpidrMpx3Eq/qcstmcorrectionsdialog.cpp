@@ -117,34 +117,9 @@ void QCstmCorrectionsDialog::on_applyCorr_clicked() {
 
         // And apply corrections
         _mpx3gui->getDataset()->applyCorrections( this );
+
         _vis->reload_all_layers();
 
-        /*
-        // TODO, the location of the corrections will be moved to a separate window
-        // Try the reconstruction
-
-        // If previous reco available, delete.
-        if ( _reco_Color2DRecoGuided ) delete _reco_Color2DRecoGuided;
-
-        // Prepare the reconstruction handler
-        _reco_Color2DRecoGuided = new Color2DRecoGuided( _mpx3gui );
-        _reco_Color2DRecoGuided->LoadCrossSectionData();
-        _reco_Color2DRecoGuided->BuildAndInvertMuMatrix();
-        // Send off for reco
-        _mpx3gui->getDataset()->applyColor2DRecoGuided( _reco_Color2DRecoGuided );
-
-        // Now change layer names
-        // This maps indx to material name
-        QMap<int, QString> materials =_reco_Color2DRecoGuided->getMaterialMap();
-        // This is the list of thresholds
-        QList<int> thls = _mpx3gui->getDataset()->getThresholds();
-
-        for ( int i = 0 ; i < thls.size() ; i++ ) {
-            changeThresholdToNameAndUpdateSelector( thls[i], materials[i] );
-        }
-
-        on_reload_all_layers();
-*/
     }
 
 }

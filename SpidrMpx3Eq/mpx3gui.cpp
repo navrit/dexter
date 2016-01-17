@@ -465,7 +465,7 @@ void Mpx3GUI::onConnectionStatusChanged(bool conn)
 
 }
 
-void Mpx3GUI::open_data(){
+void Mpx3GUI::open_data(bool saveOriginal){
 
     QString filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("binary files (*.bin)"));
     QFile saveFile(filename);
@@ -489,7 +489,7 @@ void Mpx3GUI::open_data(){
     emit reload_all_layers();
 
     // And keep a copy just as in QCstmGLVisualization::data_taking_finished
-    saveOriginalDataset();
+    if ( saveOriginal ) saveOriginalDataset();
 
     return;
 }
