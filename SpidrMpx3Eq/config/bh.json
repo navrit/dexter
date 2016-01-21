@@ -1,0 +1,42 @@
+{
+    "corr0":
+        {
+            "mat" : "Al ",
+            "thickness" : 0,
+            "path" : "C:\Users\cyranoc\Desktop\flowerfiles\flower\ob corrections\0umAl.bin"
+        },
+    "corr1":
+        {
+            "mat" : "Al ",
+            "thickness" : 50,
+            "path" : "C:\Users\cyranoc\Desktop\flowerfiles\flower\ob corrections\50umAl.bin"
+        },
+    "corr2":
+        {
+            "mat" : "Al ",
+            "thickness" : 100,
+            "path" : "C:\Users\cyranoc\Desktop\flowerfiles\flower\ob corrections\100umAl.bin"
+        },
+    "corr3":
+        {
+            "mat" : "Al ",
+            "thickness" : 200,
+            "path" : "C:\Users\cyranoc\Desktop\flowerfiles\flower\ob corrections\200umAl.bin"
+        },
+    "corr4":
+        {
+            "mat" : "Al ",
+            "thickness" : 500,
+            "path" : "C:\Users\cyranoc\Desktop\flowerfiles\flower\ob corrections\500umAl.bin"
+        },
+    "corr5":
+        {
+            "mat" : "Al ",
+            "thickness" : 1000,
+            "path" : "C:\Users\cyranoc\Desktop\flowerfiles\flower\ob corrections\1000umAl.bin"
+        }
+
+
+
+}
+
