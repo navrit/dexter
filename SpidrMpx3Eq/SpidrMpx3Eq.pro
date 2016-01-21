@@ -127,7 +127,8 @@ DISTFILES += \
     shaders/simple3d.vert \
     shaders/simple3d.frag \
     NOTES.txt \
-    config/mpx3.json
+    config/mpx3.json \
+    config/bh.json
 
 
     copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/config\" &

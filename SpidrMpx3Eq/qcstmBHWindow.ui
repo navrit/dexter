@@ -28,7 +28,6 @@
         <height>341</height>
        </rect>
       </property>
-      <zorder>buttonBox</zorder>
      </widget>
      <widget class="QPushButton" name="addButton">
       <property name="geometry">
@@ -173,6 +172,32 @@
       </property>
       <property name="text">
        <string>Ok</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="loadJsonButton">
+      <property name="geometry">
+       <rect>
+        <x>360</x>
+        <y>90</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Load Json</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="saveJsonButton">
+      <property name="geometry">
+       <rect>
+        <x>360</x>
+        <y>60</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Save Json</string>
       </property>
      </widget>
     </widget>
