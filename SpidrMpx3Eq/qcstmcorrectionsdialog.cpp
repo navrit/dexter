@@ -121,6 +121,10 @@ void QCstmCorrectionsDialog::on_applyCorr_clicked() {
         _vis->reload_all_layers();
 
     }
+}
 
+void QCstmCorrectionsDialog::callBHCorrection()
+{
+    emit applyBHCorrection();
 }
 

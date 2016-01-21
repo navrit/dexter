@@ -14,6 +14,8 @@ namespace Ui {
   class QCstmBHWindow;
 }
 
+class QCstmCorrectionsDialog;
+
 class QCstmBHWindow : public QDialog
 {
   Q_OBJECT
@@ -71,9 +73,12 @@ private slots:
 
   void on_applyBHCorrection();
 
+  void on_okButton_clicked();
+
 private:
 
   Ui::QCstmBHWindow *ui;
+  QCstmCorrectionsDialog * _corr;
   Mpx3GUI * _mpx3gui; 
   int selectedItemNo = 0;
   int emptyCorrectionCounter = 0;

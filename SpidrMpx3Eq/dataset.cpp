@@ -659,11 +659,7 @@ void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
         if ( corrdiag->isSelectedOBCorr() ) applyOBCorrection();
         if ( corrdiag->isSelectedDeadPixelsInter() ) applyDeadPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
         if ( corrdiag->isSelectedHighPixelsInter() ) applyHighPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
-
-
-        //if (ui->bhcorrCheckbox->isChecked()) applyBHCorrection();
-        //applyBHCorrection gets called from QCstmBHWindow. TODO: Make sure that it can be called from here as well
-
+        if ( corrdiag->isSelectedBHCorr()) corrdiag->callBHCorrection();
     }
 
 }

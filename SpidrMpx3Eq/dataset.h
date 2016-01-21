@@ -169,8 +169,6 @@ public:
 
   QMap<int, double> GetPadMean();
 
-signals:
-  void updateProgressBar(int value);
 };
 
 

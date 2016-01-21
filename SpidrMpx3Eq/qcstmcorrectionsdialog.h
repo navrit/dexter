@@ -29,6 +29,8 @@ public:
     void setCorrectionsActive(bool s){ _correctionsActive = s; }
     double getNoisyPixelMeanMultiplier();
 
+    void callBHCorrection();
+
 private slots:
     void on_obcorrCheckbox_toggled(bool checked);
     void on_bhcorrCheckbox_toggled(bool checked);
@@ -42,6 +44,8 @@ private:
     QCstmBHWindow * _bhwindow = nullptr;
     bool _correctionsActive = false;
 
+signals:
+    void applyBHCorrection();
 };
 
 #endif // QCSTMCORRECTIONSDIALOG_H

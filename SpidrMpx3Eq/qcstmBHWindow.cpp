@@ -1,7 +1,9 @@
 #include "qcstmBHWindow.h"
 #include "ui_qcstmBHWindow.h"
 
-#include "qcstmglvisualization.h" 
+#include "qcstmglvisualization.h"
+
+#include "qcstmcorrectionsdialog.h"
 
 QCstmBHWindow::QCstmBHWindow(QWidget *parent) :
 	QDialog(parent),
@@ -9,7 +11,7 @@ QCstmBHWindow::QCstmBHWindow(QWidget *parent) :
 {
   ui->setupUi(this);
   connect(this,&QCstmBHWindow::loadSignal,this, &QCstmBHWindow::on_loadButton_clicked);
-  ui->progressBar->setValue(0);
+  _corr = dynamic_cast<QCstmCorrectionsDialog*>(parent);
 }
 
 QCstmBHWindow::~QCstmBHWindow()
@@ -27,6 +29,7 @@ void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
     connect(_mpx3gui, SIGNAL(open_data_failed()),this,SLOT(on_open_data_failed()));
     connect(this, SIGNAL(updateProgressBar(int)),this, SLOT(on_progressBar_valueChanged(int)));
     connect(this,SIGNAL(applyCorrection()),this, SLOT(on_applyBHCorrection()));
+    connect(_corr, SIGNAL(applyBHCorrection()), this, SLOT(on_applyBHCorrection()));
     _mpx3gui->saveOriginalDataset();    // Keep a copy of the original dataset
 
 }
@@ -262,6 +265,8 @@ void QCstmBHWindow::on_progressBar_valueChanged(int value)
 void QCstmBHWindow::on_applyBHCorrection()
 //Makes signal to thickness conversion
 {
+    if(emptyCorrectionCounter != 0 || thicknessvctr.size()<3 ) return;
+
     QList<int> keys = _mpx3gui->getDataset()->getThresholds();
     if(m_spline==nullptr) m_spline = new tk::spline;  // instantiate spline if not defined
 
@@ -296,6 +301,8 @@ void QCstmBHWindow::on_applyBHCorrection()
                  currentLayer[j] = (*m_spline)(currentLayer[j]); //Do the interpolation
             }
 
+            if(j% 1000 == 0) qDebug()<<temp << thicknessvctr << a << currentLayer[j];
+
             if(a == currentLayer[j]) currentLayer[j] = 0;
 
             if(j % (_mpx3gui->getDataset()->getPixelsPerLayer() / 1000) == 0)
@@ -313,4 +320,17 @@ void QCstmBHWindow::on_applyBHCorrection()
 
     emit updateProgressBar(100);
 
+}
+
+
+void QCstmBHWindow::on_okButton_clicked()
+{
+    if(emptyCorrectionCounter != 0 || thicknessvctr.size()<3 )
+    {
+        QMessageBox msgBox;
+        msgBox.setText("You haven't loaded all / enough corrections. The beam hardening will not operate. Please load more corrections.");
+        msgBox.exec();
+    }
+
+    this->close();
 }
