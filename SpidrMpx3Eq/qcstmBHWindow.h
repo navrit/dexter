@@ -38,6 +38,10 @@ signals:
 
   void openData(bool);
 
+  void openData2(bool, bool, QString);
+
+  void loadData(bool, QString);
+
   void reload();
 
   void loadSignal();
@@ -54,6 +58,8 @@ private slots:
   void on_clearButton_clicked();
 
   void on_loadButton_clicked();
+
+  void on_loadData(bool requestPath = false, QString path = "");
 
   void on_saveButton_clicked();
 
@@ -74,6 +80,10 @@ private slots:
   void on_applyBHCorrection();
 
   void on_okButton_clicked();
+
+  void on_loadJsonButton_clicked();
+
+  void on_saveJsonButton_clicked();
 
 private:
 

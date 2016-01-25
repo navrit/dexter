@@ -494,6 +494,39 @@ void Mpx3GUI::open_data(bool saveOriginal){
     return;
 }
 
+
+void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString path)
+{
+    QFile saveFile(path);
+    if (!saveFile.open(QIODevice::ReadOnly)) {
+        string messg = "Couldn't open: ";
+        messg += path.toStdString();
+        messg += "\nNo output written!";
+        QMessageBox::warning ( this, tr("Error opening data"), tr( messg.c_str() ) );
+        emit open_data_failed();
+        return;
+    }
+    clear_data();
+    getDataset()->fromByteArray(saveFile.readAll());
+    saveFile.close();
+    set_mode_normal();
+    QList<int> thresholds = getDataset()->getThresholds();
+
+    // required signals
+    QRectF bbox = getDataset()->computeBoundingBox();
+    emit sizeChanged(bbox.width() * getDataset()->x(), bbox.height() * getDataset()->y() ); // goes to qcstmglplot
+    emit reload_all_layers();
+
+    // And keep a copy just as in QCstmGLVisualization::data_taking_finished
+    if ( saveOriginal ) saveOriginalDataset();
+
+    if(getDataset()->getLayer(0)[0]==0)
+    {
+        qDebug() << getDataset()->getLayer(0)[0];
+    }
+
+    return;
+}
 void Mpx3GUI::set_mode_integral(){
     if(mode != 1){
         mode = 1;

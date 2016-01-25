@@ -11,6 +11,7 @@ QCstmBHWindow::QCstmBHWindow(QWidget *parent) :
 {
   ui->setupUi(this);
   connect(this,&QCstmBHWindow::loadSignal,this, &QCstmBHWindow::on_loadButton_clicked);
+  connect(this,SIGNAL(loadData(bool,QString)), this, SLOT(on_loadData(bool,QString)));
   _corr = dynamic_cast<QCstmCorrectionsDialog*>(parent);
 }
 
@@ -24,7 +25,8 @@ void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
 
 	_mpx3gui = p;
 	connect(this, SIGNAL(takeData()), _mpx3gui->getVisualization(), SLOT(StartDataTaking()));
-    connect(this, &QCstmBHWindow::openData, _mpx3gui, &Mpx3GUI::open_data);
+    connect(this,&QCstmBHWindow::openData, _mpx3gui, &Mpx3GUI::open_data);
+    connect(this, &QCstmBHWindow::openData2, _mpx3gui, &Mpx3GUI::open_data_with_path);
     connect(this, SIGNAL(reload()),_mpx3gui->getVisualization(),SLOT(reload_all_layers()));
     connect(_mpx3gui, SIGNAL(open_data_failed()),this,SLOT(on_open_data_failed()));
     connect(this, SIGNAL(updateProgressBar(int)),this, SLOT(on_progressBar_valueChanged(int)));
@@ -56,7 +58,6 @@ void QCstmBHWindow::on_dataButton_clicked()
     if(!correctionMap.contains(thicknessvctr.back())){
         correctionMap.insert(thicknessvctr.back(), *_mpx3gui->getDataset());
         emptyCorrectionCounter--;
-        qDebug() << emptyCorrectionCounter ;
     }
 
     if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )
@@ -189,19 +190,80 @@ void QCstmBHWindow::on_loadButton_clicked()
         ui->startButton->setEnabled(true);    
 }
 
-void QCstmBHWindow::on_optionsButton_clicked()
-{
+void QCstmBHWindow::on_loadData(bool requestPath, QString path){
+
+    dataOpened = true;
+
+    emit openData2(false, requestPath, path);
+
+    correctionMap.insert(thicknessvctr.last(), *_mpx3gui->getDataset());
+    emptyCorrectionCounter--;
+    ui->loadButton->setEnabled(false);
+
+//Plot
+
+        QVector<double> yPlot, xPlot;
+        QMap<double, double> plotMap;
+        for(int i = 0; i<thicknessvctr.size(); i++)
+        {
+            if(correctionMap.contains(thicknessvctr[i])) xPlot.push_back(thicknessvctr[i]);
+        }
+
+        for(int i = 0; i< xPlot.size(); i++)
+        {
+            double count = 0;
+            for(int j = 0; j< _mpx3gui->getDataset()->getPixelsPerLayer(); j++ )
+            {
+                count += correctionMap[xPlot[i]].getLayer(0)[j];
+            }
+            count /= _mpx3gui->getDataset()->getPixelsPerLayer(); //average of threshold 0
+            plotMap.insert(xPlot[i], count);
+        }
+
+        std::sort(xPlot.begin(), xPlot.end());
+
+        for(int i = 0; i<xPlot.size(); i++)
+        {
+            yPlot.push_back(plotMap[xPlot[i]]);
+        }
+
+        double minX = 0;
+        double maxX = 0;
+        double minY = 0;
+        double maxY = 0;
+
+        for(int i = 0; i < xPlot.size(); i++ )
+        {
+            minX = std::min(minX, xPlot[i]);
+            maxX = std::max(maxX, xPlot[i]);
+            minY = std::min(minY, yPlot[i]);
+            maxY = std::max(maxY, yPlot[i]);
+        }
+
+        ui->plotWidget->addGraph();
+        ui->plotWidget->graph(0)->setData(xPlot, yPlot);
+        ui->plotWidget->xAxis->setLabel("Thickness");
+        ui->plotWidget->yAxis->setLabel("Signal");
+        ui->plotWidget->xAxis->setRange(minX, maxX);
+        ui->plotWidget->yAxis->setRange(minY, maxY);
+        ui->plotWidget->replot();
+
+
+    if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )
+        ui->startButton->setEnabled(true);
+}
+
+
+void QCstmBHWindow::on_optionsButton_clicked(){
 
 }
 
-void QCstmBHWindow::on_startButton_clicked()
-{
+void QCstmBHWindow::on_startButton_clicked(){
   emit applyCorrection();
   emit reload();
 }
 
-void QCstmBHWindow::on_list_itemClicked(QListWidgetItem *item)
-{
+void QCstmBHWindow::on_list_itemClicked(QListWidgetItem *item){
 	selectedItemNo = item->listWidget()->row(item);
     ui->clearButton->setEnabled(true);
     ui->dataButton->setEnabled(true);
@@ -213,8 +275,8 @@ void QCstmBHWindow::on_list_itemClicked(QListWidgetItem *item)
     }
 }
 
-void QCstmBHWindow::on_talkToForm(double thickness, QString material)
-{
+
+void QCstmBHWindow::on_talkToForm(double thickness, QString material){
     bool contained = false;
 
     for(int i = 0; i<thicknessvctr.size(); i++)
@@ -244,23 +306,23 @@ void QCstmBHWindow::on_talkToForm(double thickness, QString material)
     }
 }
 
-void QCstmBHWindow::on_open_data_failed()
-{
+
+void QCstmBHWindow::on_open_data_failed(){
     dataOpened = false;
 }
 
-void QCstmBHWindow::on_list_doubleClicked(const QModelIndex &index)
-{
+
+void QCstmBHWindow::on_list_doubleClicked(const QModelIndex &index){
 
     emit loadSignal();
 }
 
 
-void QCstmBHWindow::on_progressBar_valueChanged(int value)
-{
+void QCstmBHWindow::on_progressBar_valueChanged(int value){
     ui->progressBar->setValue(value);
     ui->progressBar->update();
 }
+
 
 void QCstmBHWindow::on_applyBHCorrection()
 //Makes signal to thickness conversion
@@ -301,8 +363,6 @@ void QCstmBHWindow::on_applyBHCorrection()
                  currentLayer[j] = (*m_spline)(currentLayer[j]); //Do the interpolation
             }
 
-            if(j% 1000 == 0) qDebug()<<temp << thicknessvctr << a << currentLayer[j];
-
             if(a == currentLayer[j]) currentLayer[j] = 0;
 
             if(j % (_mpx3gui->getDataset()->getPixelsPerLayer() / 1000) == 0)
@@ -333,4 +393,57 @@ void QCstmBHWindow::on_okButton_clicked()
     }
 
     this->close();
+}
+
+
+void QCstmBHWindow::on_loadJsonButton_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+       tr("Json files (*.JSON)"));
+    QFile loadFile(fileName);
+    if(!loadFile.open(QIODevice::ReadOnly)){// | QIODevice::Text
+        printf("Couldn't open configuration file %s\n", fileName.toStdString().c_str());
+        return;
+    }
+    QByteArray binaryData = loadFile.readAll();
+    QJsonObject JSobjectParent = QJsonDocument::fromJson(binaryData).object();
+    QJsonObject::iterator it, itParent;
+
+    for(int i = 0; i<100; i++)
+    {
+        QString correctionNo = "corr";
+        correctionNo+=QString::number(i);
+        itParent = JSobjectParent.find(correctionNo);
+        double thickness;
+        if(itParent != JSobjectParent.end()){
+            QJsonObject JSobject = itParent.value().toObject();
+            it = JSobject.find("thickness");
+            if(it != JSobject.end())
+                thickness = it.value().toDouble();
+            it = JSobject.find("mat");
+            if(it != JSobject.end())
+            {
+                on_talkToForm(thickness,it.value().toString());
+            }
+            it = JSobject.find("path");
+            if(it != JSobject.end())
+            {
+                emit loadData(true, it.value().toString());
+            }
+
+        } else {
+            break;
+        }
+
+
+
+    }
+}
+
+
+void QCstmBHWindow::on_saveJsonButton_clicked()
+{
+
+
+
 }

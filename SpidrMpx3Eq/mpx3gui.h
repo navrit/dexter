@@ -141,6 +141,7 @@ public slots:
     void clear_data();
     void save_data();
     void open_data(bool saveOriginal = true);
+    void open_data_with_path(bool saveOriginal = true, bool requestPath = false, QString path = "");
     void set_mode_integral();
     void set_mode_normal();
     void clear_configuration();
