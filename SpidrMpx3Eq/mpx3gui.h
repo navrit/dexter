@@ -133,6 +133,7 @@ signals:
     void reload_all_layers();
     void sizeChanged(int, int);
     void open_data_failed();
+    void returnFilename(QString);
 
 public slots:
     void addLayer(int* data);

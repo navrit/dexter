@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QWidget>
 #include <QMap>
+#include <QString>
 #include "mpx3gui.h"
 #include "gradient.h"
 #include "qcstmBHdialog.h"
@@ -57,11 +58,11 @@ private slots:
 
   void on_clearButton_clicked();
 
+  void on_clearAllButton_clicked();
+
   void on_loadButton_clicked();
 
   void on_loadData(bool requestPath = false, QString path = "");
-
-  void on_saveButton_clicked();
 
   void on_optionsButton_clicked();
 
@@ -85,6 +86,8 @@ private slots:
 
   void on_saveJsonButton_clicked();
 
+  void on_returnFilename(QString path);
+
 private:
 
   Ui::QCstmBHWindow *ui;
@@ -93,7 +96,10 @@ private:
   int selectedItemNo = 0;
   int emptyCorrectionCounter = 0;
   QMap<double,Dataset> correctionMap;
+  QMap<double,QString> correctionPaths;
+  QMap<double,QString> correctionMaterial;
   QVector<double> thicknessvctr;
+  QString fileName;
   bool dataOpened;
   QCustomPlot* customPlot;
   tk::spline* m_spline = nullptr; //!< spline interpolation

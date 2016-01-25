@@ -497,7 +497,15 @@ void Mpx3GUI::open_data(bool saveOriginal){
 
 void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString path)
 {
-    QFile saveFile(path);
+    QString filename;
+    if(!requestPath)
+    {
+        filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("binary files (*.bin)"));
+    }else{
+        filename = path;
+    }
+
+    QFile saveFile(filename);
     if (!saveFile.open(QIODevice::ReadOnly)) {
         string messg = "Couldn't open: ";
         messg += path.toStdString();
@@ -523,6 +531,11 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
     if(getDataset()->getLayer(0)[0]==0)
     {
         qDebug() << getDataset()->getLayer(0)[0];
+    }
+
+    if(!requestPath)
+    {
+        emit returnFilename(filename);
     }
 
     return;

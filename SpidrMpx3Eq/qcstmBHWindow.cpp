@@ -18,14 +18,14 @@ QCstmBHWindow::QCstmBHWindow(QWidget *parent) :
 QCstmBHWindow::~QCstmBHWindow()
 {
   delete ui;
-  delete _bhdialog;
 }
 
 void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
 
 	_mpx3gui = p;
 	connect(this, SIGNAL(takeData()), _mpx3gui->getVisualization(), SLOT(StartDataTaking()));
-    connect(this,&QCstmBHWindow::openData, _mpx3gui, &Mpx3GUI::open_data);
+    //connect(this,&QCstmBHWindow::openData, _mpx3gui, &Mpx3GUI::open_data);
+    connect(_mpx3gui, SIGNAL(returnFilename(QString)), this, SLOT(on_returnFilename(QString)));
     connect(this, &QCstmBHWindow::openData2, _mpx3gui, &Mpx3GUI::open_data_with_path);
     connect(this, SIGNAL(reload()),_mpx3gui->getVisualization(),SLOT(reload_all_layers()));
     connect(_mpx3gui, SIGNAL(open_data_failed()),this,SLOT(on_open_data_failed()));
@@ -82,7 +82,6 @@ void QCstmBHWindow::on_clearButton_clicked()
         selectedItemNo = 0;
         ui->clearButton->setEnabled(false);
         ui->dataButton->setEnabled(false);
-        ui->saveButton->setEnabled(false);
         ui->loadButton->setEnabled(false);
         ui->startButton->setEnabled(false);
     }
@@ -91,9 +90,13 @@ void QCstmBHWindow::on_clearButton_clicked()
         ui->startButton->setEnabled(true);
 }
 
-void QCstmBHWindow::on_saveButton_clicked()
+void QCstmBHWindow::on_clearAllButton_clicked()
 {
-
+    thicknessvctr.clear();
+    correctionMap.clear();
+    correctionMaterial.clear();
+    correctionPaths.clear();
+    ui->list->clear();
 }
 
 void QCstmBHWindow::on_loadButton_clicked()
@@ -104,11 +107,13 @@ void QCstmBHWindow::on_loadButton_clicked()
     // Load BH layers, but don't save the data set.  The original dataset
     //  has already been saved when loaded.  Otherwise we end up correcting
     //  with respect to a correction layer
-    emit openData(false);
+    //emit openData(false);
+    emit openData2(false, false, fileName);
 
     if(!correctionMap.contains(thicknessvctr[selectedItemNo])&&dataOpened)
     {
         correctionMap.insert(thicknessvctr[selectedItemNo], *_mpx3gui->getDataset());
+        correctionPaths.insert(thicknessvctr[selectedItemNo], fileName);
         emptyCorrectionCounter--;
         ui->loadButton->setEnabled(false);
         ui->list->currentItem()->setBackground(QBrush(Qt::cyan));
@@ -197,6 +202,7 @@ void QCstmBHWindow::on_loadData(bool requestPath, QString path){
     emit openData2(false, requestPath, path);
 
     correctionMap.insert(thicknessvctr.last(), *_mpx3gui->getDataset());
+    correctionPaths.insert(thicknessvctr.last(), path);
     emptyCorrectionCounter--;
     ui->loadButton->setEnabled(false);
 
@@ -266,8 +272,7 @@ void QCstmBHWindow::on_startButton_clicked(){
 void QCstmBHWindow::on_list_itemClicked(QListWidgetItem *item){
 	selectedItemNo = item->listWidget()->row(item);
     ui->clearButton->setEnabled(true);
-    ui->dataButton->setEnabled(true);
-    ui->saveButton->setEnabled(true);
+    if(_mpx3gui->getConfig()->isConnected())ui->dataButton->setEnabled(true);
     if(!correctionMap.contains(thicknessvctr[selectedItemNo])){
         ui->loadButton->setEnabled(true);
     }else{
@@ -294,13 +299,16 @@ void QCstmBHWindow::on_talkToForm(double thickness, QString material){
     if(!contained)
     {
         //QString description = ui->comboBox->currentText() + " ";
+
+        correctionMaterial.insert(thickness,material);
+
         material += " ";
         material.append(QString("%1").arg(thickness));
         material += " um";
         ui->list->addItem(material);
-
         thicknessvctr.push_back(thickness);
         emptyCorrectionCounter++;
+
 
         ui->startButton->setEnabled(false);
     }
@@ -382,6 +390,10 @@ void QCstmBHWindow::on_applyBHCorrection()
 
 }
 
+void QCstmBHWindow::on_returnFilename(QString path)
+{
+    fileName = path;
+}
 
 void QCstmBHWindow::on_okButton_clicked()
 {
@@ -398,13 +410,20 @@ void QCstmBHWindow::on_okButton_clicked()
 
 void QCstmBHWindow::on_loadJsonButton_clicked()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,
+    fileName = QFileDialog::getOpenFileName(this,
        tr("Json files (*.JSON)"));
     QFile loadFile(fileName);
     if(!loadFile.open(QIODevice::ReadOnly)){// | QIODevice::Text
         printf("Couldn't open configuration file %s\n", fileName.toStdString().c_str());
         return;
     }
+
+    thicknessvctr.clear();
+    correctionMap.clear();
+    correctionMaterial.clear();
+    correctionPaths.clear();
+    ui->list->clear();
+
     QByteArray binaryData = loadFile.readAll();
     QJsonObject JSobjectParent = QJsonDocument::fromJson(binaryData).object();
     QJsonObject::iterator it, itParent;
@@ -430,6 +449,7 @@ void QCstmBHWindow::on_loadJsonButton_clicked()
             {
                 emit loadData(true, it.value().toString());
             }
+            ui->list->item(i)->setBackground(QBrush(Qt::cyan));
 
         } else {
             break;
@@ -443,7 +463,31 @@ void QCstmBHWindow::on_loadJsonButton_clicked()
 
 void QCstmBHWindow::on_saveJsonButton_clicked()
 {
+    fileName= QFileDialog::getSaveFileName(this, tr("Save to Json"),"",tr("Json files (*.JSON)"));
+    QFile loadFile(fileName);
+    if(!loadFile.open(QIODevice::WriteOnly)){
+        printf("Couldn't open configuration file %s\n", fileName.toStdString().c_str());
+        return;
+        }
+     QJsonObject JSobjectParent;
 
+     for(int i = 0; i<thicknessvctr.length(); i++)
+     {
+         QJsonObject objcorr;
+         objcorr.insert("mat", correctionMaterial[thicknessvctr[i]]);
+         objcorr.insert("thickness", thicknessvctr[i]);
+         objcorr.insert("path", correctionPaths[thicknessvctr[i]]);
 
+         QString objname = "corr";
+         objname+=QString::number(i);
+         JSobjectParent.insert(objname, objcorr);
+     }
+
+     QJsonDocument doc;
+     doc.setObject(JSobjectParent);
+     loadFile.write(doc.toJson());
 
 }
+
+
+
