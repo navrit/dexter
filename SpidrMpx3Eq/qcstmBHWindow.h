@@ -41,7 +41,7 @@ signals:
 
   void openData2(bool, bool, QString);
 
-  void loadData(bool, QString);
+  void loadData();
 
   void reload();
 
@@ -61,10 +61,6 @@ private slots:
   void on_clearAllButton_clicked();
 
   void on_loadButton_clicked();
-
-  void on_loadData(bool requestPath = false, QString path = "");
-
-  void on_optionsButton_clicked();
 
   void on_list_itemClicked(QListWidgetItem *item);
 
@@ -86,8 +82,6 @@ private slots:
 
   void on_saveJsonButton_clicked();
 
-  void on_returnFilename(QString path);
-
 private:
 
   Ui::QCstmBHWindow *ui;
@@ -100,7 +94,9 @@ private:
   QMap<double,QString> correctionMaterial;
   QVector<double> thicknessvctr;
   QString fileName;
+  QString correctionPath;
   bool dataOpened;
+  bool usePath = false;
   QCustomPlot* customPlot;
   tk::spline* m_spline = nullptr; //!< spline interpolation
   struct sortStruct {
