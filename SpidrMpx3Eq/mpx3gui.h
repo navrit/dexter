@@ -52,18 +52,16 @@ class Mpx3GUI : public QMainWindow {
 
 public:
 
-    explicit Mpx3GUI(QApplication * coreApp, QWidget *parent = 0);
+    explicit Mpx3GUI(QWidget *parent = 0);
     ~Mpx3GUI();
     void SetupSignalsAndSlots();
     Ui::Mpx3GUI * GetUI() { return _ui; }
-
-
 
 private:
     vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
     vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
     int mode = 0;
-    QApplication * _coreApp;
+    //QApplication * _coreApp;
     Ui::Mpx3GUI * _ui;
 
     Mpx3Config * config;

@@ -28,7 +28,10 @@
 #include <fstream>
 #include <iostream>
 
-Mpx3GUI::Mpx3GUI(QApplication * coreApp, QWidget * parent) :	QMainWindow(parent), _coreApp(coreApp), _ui(new Ui::Mpx3GUI)
+//Mpx3GUI::Mpx3GUI(QWidget * parent) :	QMainWindow(parent), _coreApp(coreApp), _ui(new Ui::Mpx3GUI)
+Mpx3GUI::Mpx3GUI(QWidget * parent) :
+    QMainWindow(parent),
+    _ui(new Ui::Mpx3GUI)
 {
 
     // Instantiate everything in the UI
@@ -597,7 +600,7 @@ QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; 
 
 void Mpx3GUI::on_actionExit_triggered()
 {
-    _coreApp->exit();
+    //_coreApp->exit();
 }
 
 void Mpx3GUI::on_actionConnect_triggered() {

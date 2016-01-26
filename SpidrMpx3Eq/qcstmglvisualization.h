@@ -34,11 +34,11 @@ namespace Ui {
 class QCstmGLVisualization : public QWidget
 {
   Q_OBJECT
-  Mpx3GUI * _mpx3gui;
+  Mpx3GUI * _mpx3gui = nullptr;
   bool _takingData;
   bool _busyDrawing;
-  QElapsedTimer * _etatimer;
-  QTimer * _timer;
+  QElapsedTimer * _etatimer = nullptr;
+  QTimer * _timer = nullptr;
   int _estimatedETA;
 
   //QMap<int, histogram> histograms;
@@ -71,8 +71,8 @@ public:
   void ETAToZero();
 
 private:
-  Ui::QCstmGLVisualization *ui;
-  DataTakingThread * _dataTakingThread;
+  Ui::QCstmGLVisualization * ui = nullptr;
+  DataTakingThread * _dataTakingThread = nullptr;
   bool _savePNGWithScales = false;
   //!Gets the currently active threshold by looking at the value of the layerselector combobox.
   int getActiveThreshold();

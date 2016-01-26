@@ -12,13 +12,19 @@
 class QCstmPlotHistogram : public QCustomPlot
 {
  Q_OBJECT
+
+public:
+  //explicit QCstmPlotHistogram(QWidget* &parent);
+  explicit QCstmPlotHistogram(QWidget * parent);
+  ~QCstmPlotHistogram();
+
   QMap<int, QPair<int, Histogram*>> m_mapping;
   int m_binCount = 1;
   int m_currentHist = -1;
   bool clicked = false;
   double xClicked = 0, xReleased =0;
   //QVector<QVector<double>> xHist, yHist;
-  QCPItemStraightLine *lowClamp, *highClamp;
+  QCPItemStraightLine *lowClamp = nullptr, *highClamp = nullptr;
 
   void mousePressEvent(QMouseEvent *event){//TODO: check if clicked inside graph.
     QCustomPlot::mousePressEvent(event);
@@ -40,8 +46,6 @@ class QCstmPlotHistogram : public QCustomPlot
   int generateGraph();
 
 public:
-  QCstmPlotHistogram(QWidget* &parent);
-  virtual ~QCstmPlotHistogram();
 
   void setHistogram(int threshold, int* data, int size);
   void setHistogram(int threshold, QVector<int> data);

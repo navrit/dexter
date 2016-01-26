@@ -18,6 +18,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 QT += network opengl multimedia multimediawidgets
 CONFIG   +=  c++11 debug_and_release
 
+
 CONFIG(debug, debug|release) {
   OBJECTS_DIR = debug
   MOC_DIR     = debug
@@ -37,14 +38,14 @@ CONFIG(release, debug|release) {
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 INCLUDEPATH += ../SpidrMpx3Lib
-INCLUDEPATH += ../QCustomPlot
+#INCLUDEPATH += ../QCustomPlot
 win32 {
   INCLUDEPATH += "C:/Program Files/Phidgets"
   LIBS        += "-LC:/Program Files/Phidgets"
 }
 
 LIBS += -lSpidrMpx3Lib
-LIBS += -lQCustomPlot
+#LIBS += -lQCustomPlot
 LIBS += -lphidget21
 
 SOURCES += main.cpp \
@@ -75,6 +76,7 @@ SOURCES += DataTakingThread.cpp
 SOURCES += qcstmBHWindow.cpp
 SOURCES += qcstmBHdialog.cpp
 SOURCES += StepperMotorController.cpp
+SOURCES += qcustomplot.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -104,6 +106,7 @@ HEADERS += DataTakingThread.h
 HEADERS += qcstmBHWindow.h
 HEADERS += qcstmBHdialog.h
 HEADERS += StepperMotorController.h
+HEADERS += qcustomplot.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \
@@ -127,8 +130,7 @@ DISTFILES += \
     shaders/simple3d.vert \
     shaders/simple3d.frag \
     NOTES.txt \
-    config/mpx3.json \
-    config/bh.json
+    config/mpx3.json
 
 
     copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/config\" &

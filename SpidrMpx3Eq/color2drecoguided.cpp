@@ -15,8 +15,8 @@ Color2DRecoGuided::Color2DRecoGuided(Mpx3GUI * mg) {
     _mpx3gui = mg;
 	_datafiles[0] = "H2O.txt";
 	_datafiles[1] = "Al_Z13.txt";
-	_datafiles[2] = "Ca_Z20.txt";
-	_datafiles[3] = "Cu_Z29.txt";
+    _datafiles[2] = "Ca_Z20.txt";
+    _datafiles[3] = "Cu_Z29.txt";
 
 	_densities[0] = 1.0;
 	_densities[1] = 2.7;

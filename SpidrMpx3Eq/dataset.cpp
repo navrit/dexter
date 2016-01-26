@@ -740,7 +740,9 @@ int Dataset::applyColor2DRecoGuided(Color2DRecoGuided * reco) {
 
         // Show the content of t.  Coming from Energy to Materials
         for (int i = 0; i < nThresholds; i++) {
-            currentLayers[i][j] = qRound( t(i) * 1.0E6 );
+            int val = qRound( t(i) * 1.0E6 );
+            if ( val < 0 ) val = 0;
+            currentLayers[i][j] = val;
         }
 
     }

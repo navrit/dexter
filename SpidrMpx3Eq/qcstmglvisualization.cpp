@@ -13,7 +13,9 @@
 #include <QDialog>
 #include <QDebug>
 
-QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :  QWidget(parent),  ui(new Ui::QCstmGLVisualization)
+QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::QCstmGLVisualization)
 {
 
     ui->setupUi(this);
@@ -407,7 +409,11 @@ void QCstmGLVisualization::addThresholdToSelector(int threshold){
 
 void QCstmGLVisualization::changeThresholdToNameAndUpdateSelector(int threshold, QString name) {
 
+    if ( name == "Ca_Z20" ) name = "Unknown";
+    if ( name == "Al_Z13" ) name = "Unknown";
+
     QString label = QString("Material %1 | %2").arg( name ).arg( threshold ); // The threshold number is needed here !  When reloaded the program finds it by searching for it.  Change this !  TODO
+
     if ( layerNames.contains(threshold) ) {
         layerNames[threshold] = label ;
         ui->layerSelector->setItemText( _mpx3gui->getDataset()->thresholdToIndex(threshold), label );

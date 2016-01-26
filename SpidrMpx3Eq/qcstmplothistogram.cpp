@@ -1,9 +1,12 @@
 #include "qcstmplothistogram.h"
 
-QCstmPlotHistogram::QCstmPlotHistogram(QWidget*& parent)
+//QCstmPlotHistogram::QCstmPlotHistogram(QWidget*& parent)
+//    : QCustomPlot ( parent )
+QCstmPlotHistogram::QCstmPlotHistogram(QWidget * parent)
+    : QCustomPlot ( parent )
 {
   //setMouseTracking(false);
-  this->setParent(parent);
+  this->setParent( parent );
   this->addLayer("back");
   this->addLayer("front");
   this->addLayer("overlay");
