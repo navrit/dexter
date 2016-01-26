@@ -25,11 +25,8 @@ QCstmBHWindow::~QCstmBHWindow()
 }
 
 void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
-
 	_mpx3gui = p;
     _mpx3gui->saveOriginalDataset();    //! Keep a copy of the original dataset
-
-	connect(this, SIGNAL(takeData()), _mpx3gui->getVisualization(), SLOT(StartDataTaking()));
     connect(this, &QCstmBHWindow::openData2, _mpx3gui, &Mpx3GUI::open_data_with_path);
     connect(this, SIGNAL(reload()),_mpx3gui->getVisualization(),SLOT(reload_all_layers()));
     connect(_mpx3gui, SIGNAL(open_data_failed()),this,SLOT(on_open_data_failed()));
@@ -40,19 +37,16 @@ void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
 
 void QCstmBHWindow::on_addButton_clicked()
 {   //! Creates dialog where user can add a correction item, specify its thickness and material.
-
 	_bhdialog = nullptr;
-	
-    if (!_bhdialog)
-    {
+    if (!_bhdialog){
 		_bhdialog = new qcstmBHdialog(this);
         _bhdialog->open();
 		_bhdialog->raise();
 		_bhdialog->activateWindow();
-
         connect(_bhdialog, SIGNAL(talkToForm(double, QString)), this, SLOT(on_talkToForm(double, QString)));
      }
 }
+
 
 void QCstmBHWindow::on_talkToForm(double thickness, QString material){
     //! Is called after user finishes with dialog that adds a correction item.
@@ -88,20 +82,6 @@ void QCstmBHWindow::on_talkToForm(double thickness, QString material){
     }
 }
 
-void QCstmBHWindow::on_dataButton_clicked()
-{
-    //! Take data using the X-ray tube then add that to a correction item.
-
-    emit(takeData()); //TODO: implement properly & test if working.
-    if(!correctionMap.contains(thicknessvctr[selectedItemNo])){
-        correctionMap.insert(thicknessvctr[selectedItemNo], *_mpx3gui->getDataset());
-        emptyCorrectionCounter--;
-    }
-
-    if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )
-        ui->startButton->setEnabled(true);
-
-}
 
 void QCstmBHWindow::on_clearButton_clicked()
 {
@@ -120,7 +100,6 @@ void QCstmBHWindow::on_clearButton_clicked()
     {
         selectedItemNo = 0;
         ui->clearButton->setEnabled(false);
-        ui->dataButton->setEnabled(false);
         ui->loadButton->setEnabled(false);
         ui->startButton->setEnabled(false);
     }
@@ -142,8 +121,7 @@ void QCstmBHWindow::on_clearAllButton_clicked()
     ui->plotWidget->replot();
 }
 
-void QCstmBHWindow::on_loadButton_clicked()
-{
+void QCstmBHWindow::on_loadButton_clicked(){
     //! Loads dataset from memory.
 
     //! Calls slot in Mpx3Gui.
@@ -155,15 +133,19 @@ void QCstmBHWindow::on_loadButton_clicked()
     dataOpened = true;
     emit openData2(false, usePath, correctionPath);
 
-    if(!correctionMap.contains(thicknessvctr[selectedItemNo])&&dataOpened)
-    {
-
+    if(!correctionMap.contains(thicknessvctr[selectedItemNo])&&dataOpened){
         ui->list->item(selectedItemNo)->setBackground(QBrush(Qt::cyan));
         correctionMap.insert(thicknessvctr[selectedItemNo], *_mpx3gui->getDataset());
         correctionPaths.insert(thicknessvctr[selectedItemNo], correctionPath);
         emptyCorrectionCounter--;
         ui->loadButton->setEnabled(false);
+        on_plot();
+    }
+    if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )
+        ui->startButton->setEnabled(true);    
+}
 
+void QCstmBHWindow::on_plot(){
     //! Plots the average count of the first layer of each correction item.
     //! Has to start from scratch everytime, since items may not be sorted.
 
@@ -237,10 +219,6 @@ void QCstmBHWindow::on_loadButton_clicked()
         }
         */
 
-    }
-
-    if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )
-        ui->startButton->setEnabled(true);    
 }
 
 void QCstmBHWindow::on_startButton_clicked(){
@@ -256,7 +234,6 @@ void QCstmBHWindow::on_list_itemClicked(QListWidgetItem *item){
 
 	selectedItemNo = item->listWidget()->row(item);
     ui->clearButton->setEnabled(true);
-    if(_mpx3gui->getConfig()->isConnected())ui->dataButton->setEnabled(true);
     if(!correctionMap.contains(thicknessvctr[selectedItemNo])){
         ui->loadButton->setEnabled(true);
     }else{

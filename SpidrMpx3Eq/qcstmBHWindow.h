@@ -54,8 +54,6 @@ signals:
 private slots:
   void on_addButton_clicked();
 
-  void on_dataButton_clicked();
-
   void on_clearButton_clicked();
 
   void on_clearAllButton_clicked();
@@ -81,6 +79,8 @@ private slots:
   void on_loadJsonButton_clicked();
 
   void on_saveJsonButton_clicked();
+
+  void on_plot();
 
 private:
 
