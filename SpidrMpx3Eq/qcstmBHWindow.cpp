@@ -52,10 +52,8 @@ void QCstmBHWindow::on_talkToForm(double thickness, QString material){
     //! Is called after user finishes with dialog that adds a correction item.
 
     bool contained = false;
-    for(int i = 0; i<thicknessvctr.size(); i++)
-    {
-        if(thicknessvctr[i]==thickness)
-        {
+    for(int i = 0; i<thicknessvctr.size(); i++){
+        if(thicknessvctr[i]==thickness){
             contained = true;
             QMessageBox msgBox;
             msgBox.setText("Please do not use duplicate thicknesses.");
@@ -63,21 +61,14 @@ void QCstmBHWindow::on_talkToForm(double thickness, QString material){
             break;
         }
     }
-
-    if(!contained)
-    {
-        //QString description = ui->comboBox->currentText() + " ";
-
+    if(!contained){
         correctionMaterial.insert(thickness,material);
-
         material += " ";
         material.append(QString("%1").arg(thickness));
         material += " um";
         ui->list->addItem(material);
         thicknessvctr.push_back(thickness);
         emptyCorrectionCounter++;
-
-
         ui->startButton->setEnabled(false);
     }
 }
@@ -87,11 +78,9 @@ void QCstmBHWindow::on_clearButton_clicked()
 {
     //! Removes selected correction item from the list.
     if(!correctionMap.contains(thicknessvctr[selectedItemNo])) emptyCorrectionCounter--;
-
 	delete ui->list->item(selectedItemNo);
     correctionMap.remove(thicknessvctr[selectedItemNo]);
     thicknessvctr.erase (thicknessvctr.begin()+selectedItemNo);
-
     if(selectedItemNo>1)
     {
         selectedItemNo--;
@@ -103,7 +92,6 @@ void QCstmBHWindow::on_clearButton_clicked()
         ui->loadButton->setEnabled(false);
         ui->startButton->setEnabled(false);
     }
-
   if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )
         ui->startButton->setEnabled(true);
 }
@@ -129,10 +117,8 @@ void QCstmBHWindow::on_loadButton_clicked(){
     //! Slot should always be called with first parameter false, so it doesn't override the OriginalSet of Mpx3Gui.
 
     if(correctionMap.contains(thicknessvctr[selectedItemNo])) return;
-
     dataOpened = true;
     emit openData2(false, usePath, correctionPath);
-
     if(!correctionMap.contains(thicknessvctr[selectedItemNo])&&dataOpened){
         ui->list->item(selectedItemNo)->setBackground(QBrush(Qt::cyan));
         correctionMap.insert(thicknessvctr[selectedItemNo], *_mpx3gui->getDataset());
@@ -145,22 +131,19 @@ void QCstmBHWindow::on_loadButton_clicked(){
         ui->startButton->setEnabled(true);    
 }
 
+
 void QCstmBHWindow::on_plot(){
     //! Plots the average count of the first layer of each correction item.
     //! Has to start from scratch everytime, since items may not be sorted.
 
         QVector<double> yPlot, xPlot;
         QMap<double, double> plotMap;
-        for(int i = 0; i<thicknessvctr.size(); i++)
-        {
+        for(int i = 0; i<thicknessvctr.size(); i++){
             if(correctionMap.contains(thicknessvctr[i])) xPlot.push_back(thicknessvctr[i]);
         }
-
-        for(int i = 0; i< xPlot.size(); i++)
-        {
+        for(int i = 0; i< xPlot.size(); i++){
             double count = 0;
-            for(int j = 0; j< _mpx3gui->getDataset()->getPixelsPerLayer(); j++ )
-            {
+            for(int j = 0; j< _mpx3gui->getDataset()->getPixelsPerLayer(); j++ ){
                 count += correctionMap[xPlot[i]].getLayer(0)[j];
             }
             count /= _mpx3gui->getDataset()->getPixelsPerLayer(); //average of threshold 0
@@ -168,25 +151,19 @@ void QCstmBHWindow::on_plot(){
         }
 
         std::sort(xPlot.begin(), xPlot.end());
-
-        for(int i = 0; i<xPlot.size(); i++)
-        {
+        for(int i = 0; i<xPlot.size(); i++){
             yPlot.push_back(plotMap[xPlot[i]]);
         }
-
         double minX = 0;
         double maxX = 0;
         double minY = 0;
         double maxY = 0;
-
-        for(int i = 0; i < xPlot.size(); i++ )
-        {
+        for(int i = 0; i < xPlot.size(); i++ ){
             minX = std::min(minX, xPlot[i]);
             maxX = std::max(maxX, xPlot[i]);
             minY = std::min(minY, yPlot[i]);
             maxY = std::max(maxY, yPlot[i]);
         }
-
         ui->plotWidget->addGraph();
         ui->plotWidget->graph(0)->setData(xPlot, yPlot);
         ui->plotWidget->xAxis->setLabel("Thickness");
@@ -194,26 +171,20 @@ void QCstmBHWindow::on_plot(){
         ui->plotWidget->xAxis->setRange(minX, maxX);
         ui->plotWidget->yAxis->setRange(minY, maxY);
         ui->plotWidget->replot();
-
         //! Do interpolation - Disabled because QPlot automatically does linear interpolation and spline cubic does not work well
         /*
-        if(xPlot.size()>2)
-        {
+        if(xPlot.size()>2){
             tk::spline s;
             //sort(xPlot.begin(), xPlot.end());
             //sort(yPlot.begin(), yPlot.end());
             //s.set_points(xPlot.toStdVector(),yPlot.toStdVector(),false);
             s.set_points(xPlot.toStdVector(),yPlot.toStdVector());
-
             QVector<double> sx;
             QVector<double> sy;
-
-            for(int i = 0; i < maxX; i++)
-            {
+            for(int i = 0; i < maxX; i++){
                 sx.push_back(i);
                 sy.push_back(s(i));
             }
-
             ui->plotWidget->graph(1)->setData(sx, sy);
             ui->plotWidget->graph(1)->setPen(QPen(Qt::red));
         }
@@ -238,7 +209,6 @@ void QCstmBHWindow::on_list_itemClicked(QListWidgetItem *item){
         ui->loadButton->setEnabled(true);
     }else{
         ui->loadButton->setEnabled(false);
-
         if(_mpx3gui->getDataset()->getLayer(0)[0] != correctionMap[thicknessvctr[selectedItemNo]].getLayer(0)[0]){
                 *(_mpx3gui->getDataset()) = correctionMap[thicknessvctr[selectedItemNo]];
                 emit reload();
