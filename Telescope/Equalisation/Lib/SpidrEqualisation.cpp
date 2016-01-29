@@ -50,6 +50,9 @@ SpidrEqualisation::SpidrEqualisation(SpidrController* spidrctrl) :
   m_disabled[2] = true;
   for (unsigned int i = 0; i < m_nDevices; ++i) {
     m_daq[i] = new SpidrDaq(spidrctrl, 0x10000000, i);
+    if (m_daq[i]->hasError())
+      cerr << "### new SpidrDaq " << i << ": "
+           << m_daq[i]->errorString() << endl; 
   }
 }
 
@@ -78,13 +81,13 @@ bool SpidrEqualisation::scanCoarse() {
       printFinal("FAILED");
       return false;
     }
-    std::stringstream ss;
+    stringstream ss;
     ss << m_filename << "_spacing_" << m_spacing << "_coarse" << thlc << "_chip";
-    const std::string filenameBase = ss.str();
+    const string filenameBase = ss.str();
     // Noise scan with all pixels at same TRIM.
     cout << "[Note] Taking data with all pixels at TRIM 7\n";
     if (!setTHLTrimALL(7)) return false;
-    std::vector<std::string> filenames(m_nDevices, "");
+    vector<string> filenames(m_nDevices, "");
     for (unsigned int i = 0; i < m_nDevices; ++i) {
       ss.str("");
       ss << i;
@@ -117,9 +120,9 @@ bool SpidrEqualisation::scanCoarse() {
 bool SpidrEqualisation::analyse_temp(const bool analyse0, const bool analyse15,
                                      const bool analyseFinal, const bool plot) {
 
-  std::stringstream ss;
+  stringstream ss;
   ss << m_filename << "_spacing_" << m_spacing;
-  const std::string filenameBase = ss.str();
+  const string filenameBase = ss.str();
   // Analyse the data for the lowest trim value.  
   if (analyse0) {
     for (unsigned int i = 0; i < m_nDevices; ++i) {
@@ -192,14 +195,14 @@ bool SpidrEqualisation::equalise(const bool scan0, const bool scan15,
       return false;
     }
   }
-  std::stringstream ss;
+  stringstream ss;
   ss << m_filename << "_spacing_" << m_spacing;
-  const std::string filenameBase = ss.str();
+  const string filenameBase = ss.str();
   // Noise scan with all pixels at lowest trim value.
   if (scan0) {
     cout << "[Note] Taking data with all pixels at TRIM 0\n";
     if (!setTHLTrimALL(0)) return false;
-    std::vector<std::string> filenames(m_nDevices, "");
+    vector<string> filenames(m_nDevices, "");
     for (unsigned int i = 0; i < m_nDevices; ++i) {
       ss.str("");
       ss << i;
@@ -214,7 +217,7 @@ bool SpidrEqualisation::equalise(const bool scan0, const bool scan15,
   if (scan15) {
     cout << "[Note] Taking data with all pixels at TRIM 15\n";
     if (!setTHLTrimALL(15)) return false;
-    std::vector<std::string> filenames(m_nDevices, "");
+    vector<string> filenames(m_nDevices, "");
     for (unsigned int i = 0; i < m_nDevices; ++i) {
       ss.str("");
       ss << i;
@@ -278,7 +281,7 @@ bool SpidrEqualisation::equalise(const bool scan0, const bool scan15,
       }
     }
     cout << "[Note] Taking data\n";
-    std::vector<std::string> filenames(m_nDevices, "");
+    vector<string> filenames(m_nDevices, "");
     for (unsigned int i = 0; i < m_nDevices; ++i) {
       ss.str("");
       ss << i;
@@ -352,12 +355,12 @@ bool SpidrEqualisation::quickEqualisation() {
 // ---------------------------------------------------------------------------
 // Load trim values and mask bits from file.
 // ---------------------------------------------------------------------------
-bool SpidrEqualisation::loadEqualisation(const std::string& filename, 
+bool SpidrEqualisation::loadEqualisation(const string& filename, 
                                          const bool loadmask,
                                          const unsigned int device) {
  
   if (!checkCommunication()) return false;
-  std::cout << "[Note] Loading pixel trim values for chip " << device 
+  cout << "[Note] Loading pixel trim values for chip " << device 
             << " from " << filename << "\n";
   if (!setTHLTrim(filename, loadmask, device)) {
     printFinal("FAILED");
@@ -400,12 +403,12 @@ bool SpidrEqualisation::checkCommunication() {
     }
     int links_enabled_mask = (~linkstatus) & 0xFF;
     int links_locked_mask  = (linkstatus & 0xFF0000) >> 16;
-    std::cout << "[Note] Link status\n";
-    std::cout << "  Link  Enabled  Locked\n";
+    cout << "[Note] Link status\n";
+    cout << "  Link  Enabled  Locked\n";
     for (unsigned int j = 0; j < 8; ++j) {
       const int enabled = (links_enabled_mask >> j) & 0x1;
       const int locked = (links_locked_mask >> j) & 0x1;
-      std::cout << "    " << j << "      " << enabled 
+      cout << "    " << j << "      " << enabled 
                 << "       " << locked << "\n";
     }
     if (links_enabled_mask != 0 &&
@@ -413,11 +416,11 @@ bool SpidrEqualisation::checkCommunication() {
       // At least one link is enabled, and all links enabled are locked
       // cout << "[Note] linkstatus: " << hex << linkstatus << dec << endl;
     } else {
-      std::stringstream ss;
-      ss << std::hex << linkstatus;
+      stringstream ss;
+      ss << hex << linkstatus;
       printError("linkstatus", ss.str());
     }
-    const std::string errstr = m_daq[i]->errorString();
+    const string errstr = m_daq[i]->errorString();
     if (!errstr.empty()) printError("SpidrDaq", errstr);
   }
   return true;
@@ -433,8 +436,8 @@ bool SpidrEqualisation::setConfiguration() {
 
   int errstat;
   if (!m_ctrl->reset(&errstat)) {
-    std::stringstream ss;
-    ss << std::hex << errstat;
+    stringstream ss;
+    ss << hex << errstat;
     printError("reset", ss.str());
   }
   
@@ -493,10 +496,10 @@ bool SpidrEqualisation::setConfiguration() {
   // Set the acquisition mode.
   int config = 0;
   if (m_eminus) {
-    std::cout << "[Note] Activating electron-collecting mode.\n";
+    cout << "[Note] Activating electron-collecting mode.\n";
     config = TPX3_POLARITY_EMIN | TPX3_ACQMODE_EVT_ITOT | TPX3_GRAYCOUNT_ENA;
   } else {
-    std::cout << "[Note] Activating hole-collecting mode.\n";
+    cout << "[Note] Activating hole-collecting mode.\n";
     config = TPX3_POLARITY_HPLUS | TPX3_ACQMODE_EVT_ITOT | TPX3_GRAYCOUNT_ENA;
   }
   for (unsigned int i = 0; i < m_nDevices; ++i) {
@@ -512,8 +515,8 @@ bool SpidrEqualisation::setConfiguration() {
     printError("setShutterTriggerConfig");
   }
   // Set the Ikrum DAC.
-  std::cout << "[Note] Setting IBIAS_IKRUM to " << m_ikrum << "\n";
-  std::cout << "[Note] Setting VTHRESH_COARSE to " << m_thlcoarse << "\n";
+  cout << "[Note] Setting IBIAS_IKRUM to " << m_ikrum << "\n";
+  cout << "[Note] Setting VTHRESH_COARSE to " << m_thlcoarse << "\n";
   for (unsigned int i = 0; i < m_nDevices; ++i) {
     if (m_disabled[i]) continue;
     if (!m_ctrl->setDac(i, TPX3_IBIAS_IKRUM, m_ikrum)) {
@@ -531,7 +534,7 @@ bool SpidrEqualisation::setConfiguration() {
 // ---------------------------------------------------------------------------
 // Load the trim DAC mask from a file and apply it to the pixels.
 // ---------------------------------------------------------------------------
-bool SpidrEqualisation::setTHLTrim(const std::string& filename,
+bool SpidrEqualisation::setTHLTrim(const string& filename,
                                    const bool applyMasking,
                                    const unsigned int device) {
 
@@ -582,7 +585,7 @@ bool SpidrEqualisation::setTHLTrimALL(const unsigned int trim) {
 // ---------------------------------------------------------------------------
 // Run a noise scan for a given trim configuration.
 // ---------------------------------------------------------------------------
-bool SpidrEqualisation::takeData(const std::vector<std::string>& filenames) {
+bool SpidrEqualisation::takeData(const vector<string>& filenames) {
 
   // Open data files.
   for (unsigned int i = 0; i < m_nDevices; ++i) {
@@ -625,17 +628,17 @@ bool SpidrEqualisation::takeData(const std::vector<std::string>& filenames) {
         for (unsigned int i = 0; i < m_nDevices; ++i) {
           if (m_disabled[i]) continue;
           //if (!m_ctrl->setDac(i, TPX3_IBIAS_PIXELDAC, 250)) {   
-          //  std::stringstream ss;
+          //  stringstream ss;
           //  ss << "getDac (VTHRESH_FINE = " << thl << ")";
           //  printError(ss.str());
           //}
           if (!m_ctrl->setDac(i, TPX3_VTHRESH_FINE, thl)) {   
-            std::stringstream ss;
+            stringstream ss;
             ss << "setDac (VTHRESH_FINE = " << thl << ")";
             printError(ss.str());
           }
           if (!m_ctrl->getDac(i, TPX3_VTHRESH_FINE, &thl)) {   
-            std::stringstream ss;
+            stringstream ss;
             ss << "getDac (VTHRESH_FINE = " << thl << ")";
             printError(ss.str());
           }
@@ -665,13 +668,13 @@ bool SpidrEqualisation::takeData(const std::vector<std::string>& filenames) {
 // ---------------------------------------------------------------------------
 // Analyse the data from a noise scan.
 // ---------------------------------------------------------------------------
-bool SpidrEqualisation::analyseData(const std::string& filename) {
+bool SpidrEqualisation::analyseData(const string& filename) {
 
   // Create a ROOT file.
-  const std::string rootfilename = filename + ".root";
+  const string rootfilename = filename + ".root";
   TFile froot(rootfilename.c_str(), "RECREATE");
   if (!froot.IsOpen()) { 
-    std::cerr << "[Error] Cannot create ROOT file " << rootfilename << "\n";
+    cerr << "[Error] Cannot create ROOT file " << rootfilename << "\n";
     return false;
   }
   // Setup the histograms.
@@ -688,7 +691,7 @@ bool SpidrEqualisation::analyseData(const std::string& filename) {
                nCols, -0.5, nCols - 0.5, nRows, -0.5, nRows - 0.5);
   hitot2d.SetStats(kFALSE);
   hhitmap.SetStats(kFALSE);
-  std::string labels[16] = {"per_ana", "per_opb", "per_pll", "per_gen", 
+  string labels[16] = {"per_ana", "per_opb", "per_pll", "per_gen", 
                             "per_time", "per_free", "per_free", "per_ctrl", 
                             "ld_pix_cfg?", "rd_pix_cfg", "data_seq", "data_dd", 
                             "ld_ctpt_cfg?", "ctpr_cfg", "stop_mtrx1", "stop_mtrx2"};
@@ -698,23 +701,23 @@ bool SpidrEqualisation::analyseData(const std::string& filename) {
   }
 
   // Open the data file.
-  std::vector<std::string> files;
+  vector<string> files;
   if (!findDatFiles(filename, files)) return false;
-  const std::string datfilename = files.front();
+  const string datfilename = files.front();
   FILE* fp = fopen(datfilename.c_str(), "rb");
   if (!fp) {
-    std::cerr << "[Error] Cannot open data file " << datfilename << "\n";
+    cerr << "[Error] Cannot open data file " << datfilename << "\n";
     return false;
   } 
   // Read the first fields of the header.
   uint32_t headerID;
   if (fread(&headerID, sizeof(headerID), 1, fp) == 0) {
-    std::cerr << "[Error] Cannot read header ID" << std::endl;
+    cerr << "[Error] Cannot read header ID" << endl;
     return false;
   }
   uint32_t headerSize;
   if (fread(&headerSize, sizeof(headerSize), 1, fp) == 0) {
-    std::cerr << "[Error] Cannot read header size" << std::endl;
+    cerr << "[Error] Cannot read header size" << endl;
     return false;
   }
   // Skip the header.
@@ -768,7 +771,7 @@ bool SpidrEqualisation::analyseData(const std::string& filename) {
     hNoiseMean.Fill(hthrscan_1->GetBinContent(i + 1));
     hNoiseRMS.Fill(hthrscan_2->GetBinContent(i + 1));
   }
-  std::cout << "[Note] Average noise level: " << hNoiseMean.GetMean() << "\n";
+  cout << "[Note] Average noise level: " << hNoiseMean.GetMean() << "\n";
   delete fGauss;
 
   froot.Write();
@@ -780,10 +783,10 @@ bool SpidrEqualisation::analyseData(const std::string& filename) {
 // ---------------------------------------------------------------------------
 // Determine the target threshold and find the trim bits for each pixel 
 // ---------------------------------------------------------------------------
-bool SpidrEqualisation::extractPars(const std::string& filename) {
+bool SpidrEqualisation::extractPars(const string& filename) {
 
   // Open ROOT file with results for trim 0.
-  const std::string filename0 = filename + "_0.root";
+  const string filename0 = filename + "_0.root";
   TFile f0(filename0.c_str(), "READ");
   f0.cd();
   TH1* hNoiseMean0 = (TH1*)gDirectory->Get("hNoiseMean");
@@ -797,7 +800,7 @@ bool SpidrEqualisation::extractPars(const std::string& filename) {
   const double sigma0 = hNoiseMean0->GetFunction("gaus")->GetParameter(2);
 
   // Open ROOT file with results for trim 15.
-  const std::string filename15 = filename + "_15.root";
+  const string filename15 = filename + "_15.root";
   TFile f15(filename15.c_str(), "READ");
   f15.cd();
   TH1* hNoiseMean15 = (TH1*)gDirectory->Get("hNoiseMean");
@@ -814,11 +817,11 @@ bool SpidrEqualisation::extractPars(const std::string& filename) {
   const double target = 0.5 * (mu0 + mu15);
   const double distance = mu15 - mu0;
   const double opt_distance = 2*sigma0+2*sigma15;
-  std::cout << "[Note] Optimal distance between noise centroids: " << distance << std::endl;
-  std::cout << "[Note] Distance between noise centroids: " << opt_distance << std::endl;
-  std::cout << "[Note] Target threshold set to " << target << std::endl;
+  cout << "[Note] Optimal distance between noise centroids: " << distance << endl;
+  cout << "[Note] Distance between noise centroids: " << opt_distance << endl;
+  cout << "[Note] Target threshold set to " << target << endl;
   TH1F hTrim("htrimdac", "; Trim DAC; Pixels", 16, -0.5, 15.5);
-  const std::string filenametrim = filename + ".txt";
+  const string filenametrim = filename + ".txt";
   FILE* fdac = fopen(filenametrim.c_str(), "w");
   fprintf(fdac, "#col row trim mask tp_ena\n");
   const unsigned int nPixels = 65536;
@@ -846,13 +849,13 @@ bool SpidrEqualisation::extractPars(const std::string& filename) {
 // ---------------------------------------------------------------------------
 // Make a plot of the three noise level distributions
 // ---------------------------------------------------------------------------
-bool SpidrEqualisation::plotEqualisation(const std::string& filename) {
+bool SpidrEqualisation::plotEqualisation(const string& filename) {
 
   //TApplication app(const TApplication&);
   //app.SetReturnFromRun(true);
 
   setupStyle();
-  const std::string filename0 = filename + "_0.root";
+  const string filename0 = filename + "_0.root";
   TFile f0(filename0.c_str(), "READ");
   if (!f0.IsOpen()) {
     cerr << "[Error] Cannot open " << filename0 << ".\n";
@@ -862,7 +865,7 @@ bool SpidrEqualisation::plotEqualisation(const std::string& filename) {
   TH1* h0 = (TH1*)gDirectory->Get("hNoiseMean");
   h0->SetDirectory(0);
 
-  const std::string filename15 = filename + "_15.root";
+  const string filename15 = filename + "_15.root";
   TFile f15(filename15.c_str(), "READ");
   if (!f15.IsOpen()) {
     cerr << "[Error] Cannot open " << filename15 << ".\n";
@@ -872,7 +875,7 @@ bool SpidrEqualisation::plotEqualisation(const std::string& filename) {
   TH1* h15 = (TH1*)gDirectory->Get("hNoiseMean");
   h15->SetDirectory(0);
 
-  const std::string filenameEqualised = filename + "_equalised.root";
+  const string filenameEqualised = filename + "_equalised.root";
   TFile f(filenameEqualised.c_str(), "READ");
   if (!f.IsOpen()) {
     cerr << "[Error] Cannot open " << filenameEqualised << ".\n";
@@ -899,7 +902,7 @@ bool SpidrEqualisation::plotEqualisation(const std::string& filename) {
   h0->Draw("same");
   h15->Draw("same");
 
-  const std::string image_filename = filename + ".png";
+  const string image_filename = filename + ".png";
   c2.SaveAs(image_filename.c_str());
   //*/
 
@@ -913,10 +916,10 @@ bool SpidrEqualisation::plotEqualisation(const std::string& filename) {
 
 }
 
-bool SpidrEqualisation::maskPixels(const std::string& filename) {
+bool SpidrEqualisation::maskPixels(const string& filename) {
 
   // Open the ROOT file with the post-equalisation histograms. 
-  std::string rootfilename = filename + "_equalised.root";
+  string rootfilename = filename + "_equalised.root";
   TFile f(rootfilename.c_str(), "READ");
   f.cd();
   TH1* hNoiseMean = (TH1*)gDirectory->Get("hNoiseMean");
@@ -932,14 +935,14 @@ bool SpidrEqualisation::maskPixels(const std::string& filename) {
   f.Close();
 
   // Open the original text file with the trim DACs for each pixel.
-  const std::string txtfilename = filename + ".txt"; 
+  const string txtfilename = filename + ".txt"; 
   FILE* fp = fopen(txtfilename.c_str(), "r");
   if (fp == NULL) {
     cerr << "[Error] Cannot open pixel config file " << txtfilename << endl; 
     return false;
   }
   // Open a new text file.
-  const std::string filenamemask = filename + "_masked.txt";
+  const string filenamemask = filename + "_masked.txt";
   FILE* fnew = fopen(filenamemask.c_str(), "w");
   unsigned int nMasked = 0;
   char line[256];
@@ -963,58 +966,58 @@ bool SpidrEqualisation::maskPixels(const std::string& filename) {
   }
   fclose(fp);
   fclose(fnew);
-  std::cout << "[Note] Masked " << nMasked << " pixels.\n";
+  cout << "[Note] Masked " << nMasked << " pixels.\n";
   return true;
 
 }
 
-void SpidrEqualisation::printError(const std::string& header) {
+void SpidrEqualisation::printError(const string& header) {
 
   printError(header, m_ctrl->errorString());
 
 }
 
-void SpidrEqualisation::printError(const std::string& header,
-                                   const std::string& message) const {
+void SpidrEqualisation::printError(const string& header,
+                                   const string& message) const {
 
-  std::cerr << "### ERROR ### " << header << ": " << message << std::endl; 
+  cerr << "### ERROR ### " << header << ": " << message << endl; 
 
 }
 
-void SpidrEqualisation::printFinal(const std::string& message) {
+void SpidrEqualisation::printFinal(const string& message) {
 
-  std::cout << std::endl << std::string(70, '=') << std::endl;
+  cout << endl << string(70, '=') << endl;
   int pad = 35 - message.length() / 2;
   if (pad < 1) pad = 1;
-  std::cout << std::string(pad, ' ') << message << std::endl;
-  std::cout << std::string(70, '=') << std::endl;
+  cout << string(pad, ' ') << message << endl;
+  cout << string(70, '=') << endl;
 }
 
-bool SpidrEqualisation::findDatFiles(const std::string& filename, 
-                                     std::vector<std::string>& files) {
+bool SpidrEqualisation::findDatFiles(const string& filename, 
+                                     vector<string>& files) {
 
   files.clear();
   DIR *dir;
   if ((dir = opendir ("./")) == NULL) {
-    std::cerr << "[Error] Cannot open current directory.\n";
+    cerr << "[Error] Cannot open current directory.\n";
     return false;
   }
   struct dirent *ent;
   while ((ent = readdir(dir)) != NULL) {
-    std::string f = ent->d_name;
+    string f = ent->d_name;
     // Check if the filename has an extension.
-    const std::size_t index = f.rfind('.');
-    if (index == std::string::npos) continue;
+    const size_t index = f.rfind('.');
+    if (index == string::npos) continue;
     // Check if the extension is .dat.
     if (f.substr(index + 1) != "dat") continue;
     // Check if the file contains the requested string.
-    const std::size_t found = f.find(filename);
-    if (found == std::string::npos) continue;
+    const size_t found = f.find(filename);
+    if (found == string::npos) continue;
     files.push_back(f);
   }
   closedir(dir);
   if (files.empty()) {
-    std::cerr << "[Error] Could not find any files with filename containing " 
+    cerr << "[Error] Could not find any files with filename containing " 
               << filename << "\n";
     return false;
   }
@@ -1022,7 +1025,7 @@ bool SpidrEqualisation::findDatFiles(const std::string& filename,
   
 }
 
-bool SpidrEqualisation::loadDacs(const std::string& filename,
+bool SpidrEqualisation::loadDacs(const string& filename,
                                  const unsigned int device) {
 
   FILE *fp = fopen(filename.c_str(), "r");
