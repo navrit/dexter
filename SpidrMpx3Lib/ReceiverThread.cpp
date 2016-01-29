@@ -102,21 +102,23 @@ void ReceiverThread::run()
   //connect( _sock, SIGNAL( readyRead() ), this, SLOT( readDatagrams() ) );
 
 #else
-  // Use native socket
+  // Use native socket, 'wrapped' in a QAbstractSocket object
   _sock = new QAbstractSocket( QAbstractSocket::UdpSocket, 0 );
   SOCKET sk;
   _stop = true;
 #ifdef WIN32
-  // Start up winsock
+  // Start up Winsock
   WSADATA wsadata;
-  if( WSAStartup( 0x0202, &wsadata ) != 0 )
+  int err = WSAStartup( 0x0202, &wsadata );
+  if( err != 0 )
     {
-      _errString = "WSAStartup failed";
+      _errString = (QString( "WSAStartup failed, error code " ) +
+		    QString::number( err ));
     }
   else if( wsadata.wVersion != 0x0202 )
     {
-      _errString = QString( "winsock version: " ) +
-	QString::number( wsadata.wVersion, 16 );
+      _errString = (QString( "Winsock version: " ) +
+		    QString::number( wsadata.wVersion, 16 ));
     }
   else
 #endif // WIN32
@@ -127,10 +129,30 @@ void ReceiverThread::run()
       if( sk != INVALID_SOCKET )
 	{
 	  // Set socket option(s)
+	  bool err_opt = false;
+
+	  // Receive buffer size
 	  int rcvbufsz = MPX_PIXELS * 64; // Will that be enough?
 	  if( setsockopt( sk, SOL_SOCKET, SO_RCVBUF,
 			  reinterpret_cast<char *> ( &rcvbufsz ),
-			  sizeof( int ) ) == 0 )
+			  sizeof( int ) ) != 0 )
+	    {
+	      _errString = QString("Failed to set socket option SO_RCVBUF");
+	      err_opt = true;
+	    }
+	  /*
+	  // Inspect the receive time-out setting..
+#ifdef WIN32
+	  int to;
+	  typedef int socklen_t;
+#else
+	  struct timeval to;
+#endif // WIN32
+	  socklen_t len;
+	  getsockopt( sk, SOL_SOCKET, SO_RCVTIMEO,
+		      reinterpret_cast<char *> ( &to ), &len );
+	  */
+	  if( !err_opt )
 	    {
 	      // Bind the socket
 	      struct sockaddr_in saddr;
@@ -150,10 +172,6 @@ void ReceiverThread::run()
 		{
 		  _errString = QString("Failed to bind");
 		}
-	    }
-	  else
-	    {
-	      _errString = QString("Failed to set socket option SO_RCVBUF");
 	    }
 	}
       else
@@ -217,16 +235,16 @@ void ReceiverThread::readDatagrams()
 	  _packetsLostFrame[_head] = _expPacketsPerFrame;
 	}
 
-
       // For the 'two counters' readout the sequence number continues to
       // increase for the second frame containing the data from the 'high'
       // counter (added 21 Sep 2015)
       sequence_nr_modulo = sequence_nr % _expPacketsPerFrame;
 
       // Start of a new frame?
-      // (NB: it was noticed that with smaller packetsizes (ca.<1800 bytes)
-      //      the order of the first 16 or so packets of the first frame
-      //      was not sequential... This is not understood! 8 Oct 2015
+      // (NB: it was noticed (Wireshark) that with smaller packetsizes
+      //      (ca.<1800 bytes) the order of the first 16 or so packets of
+      //      the first frame was not sequential... This is not understood!
+      //      (8 Oct 2015)
       //      ==> must be a system issue when starting an application:
       //          doing twice the same code results only in the first one
       //          having an unordered packet sequence)
