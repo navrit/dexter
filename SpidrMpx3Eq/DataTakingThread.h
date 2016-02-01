@@ -58,6 +58,7 @@ signals:
 	void progress(int);
 	void lost_packets(int);
 	void fps_update(int);
+    void overflow_update(int);
 
 };
 

@@ -69,6 +69,8 @@ class Dataset//TODO: specify starting corner?
 
  private:
   int m_nx, m_ny; //!<Pixel size in the x and y direction
+  int m_pixelDepthBits;
+  int m_pixelDepthCntr;
   QRectF m_boundingBox;//!<A rectangular box which encompasses all the chips. Hence the name.
   int m_nFrames; //!< The amount of detectors, a.k.a. frames here.
   score_info m_scores; //!< some 'score' info about this frame. A buch of counters.
@@ -85,7 +87,7 @@ class Dataset//TODO: specify starting corner?
   void reloadScores();
 
 public:
-  Dataset(int x, int y, int framesPerLayer = 1);
+  Dataset(int x, int y, int framesPerLayer = 1, int pixelDepthBits = 12);
   Dataset();
   ~Dataset();
   Dataset( const Dataset& other );
@@ -123,9 +125,9 @@ public:
   void setFramesPerLayer(int newFrameCount); //!<Sets the amount of chips. New Chips get initialized with location (0,0) and a LtRTtB orientation.
   void setLayer(int *data, int threshold);//!<Overwrites a specific layer with the values pointed to by data.
   void addLayer(int* data, int threshold);//!<Adds the values pointed to by data to the specified layer.
-  void setFrame(int *frame, int index, int threshold);//!< Overwrites the data of chip index at the specified threshold with the data pointed to by frame.
+  unsigned int setFrame(int *frame, int index, int threshold);//!< Overwrites the data of chip index at the specified threshold with the data pointed to by frame.
   void setPixel(int x, int y, int threshold, int val);//!< Set a pixel value for a given threshold (x,y) (assembly coordinates !)
-  void sumFrame(int *frame, int index, int threshold);//!< Adds the data pointed to by frame to the data of chip index at the specified threshold.
+  unsigned int sumFrame(int *frame, int index, int threshold);//!< Adds the data pointed to by frame to the data of chip index at the specified threshold.
   void toJson(); //!<return JSON object to save.
 
   QVector<QPoint> getLayoutVector(){return m_frameLayouts;}
@@ -149,7 +151,7 @@ public:
   int sample(int x, int y, int threshold);//!<Returns the value of the pixel at (x,y) (assembly coordinates) and the specified threshold.
   int x() const{return m_nx;}
   int y() const{return m_ny;}
-
+  int getPixelDepthBits() const { return m_pixelDepthBits; }
 
   // Simple tools
   typedef enum {

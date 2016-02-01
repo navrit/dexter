@@ -70,6 +70,8 @@ void DataTakingThread::run() {
 
     connect(this, SIGNAL(lost_packets(int)), _vis, SLOT(lost_packets(int)) );
     connect(this, SIGNAL(fps_update(int)), _vis, SLOT(fps_update(int)) );
+    connect(this, SIGNAL(overflow_update(int)), _vis, SLOT(overflow_update(int)) );
+
 
 	cout << "Acquiring ... " << endl;
 	//_mpx3gui->GetUI()->startButton->setActive(false);
@@ -122,7 +124,12 @@ void DataTakingThread::run() {
 	// Start the trigger as configured
 	spidrcontrol->startAutoTrigger();
 
+    // keep an eye on overflow
+    unsigned int overflowCntr = 0;
+
 	while ( spidrdaq->hasFrame( timeOutTime ) ) {
+
+        overflowCntr = 0;
 
 		for(int i = 0 ; i < activeDevices.size() ; i++) {
 
@@ -235,6 +242,7 @@ void DataTakingThread::run() {
 		}
 
 
+
 		for(int i = 0 ; i < activeDevices.size() ; i++) {
 
 			// retreive data for a given chip
@@ -263,16 +271,16 @@ void DataTakingThread::run() {
 					// Send if if we are not reading counterH
 					// counterL
 					if ( ! _mpx3gui->getConfig()->getReadBothCounters() ) {
-						_mpx3gui->addFrame(th0[i]->data(), i, 0);
+                        overflowCntr += _mpx3gui->addFrame(th0[i]->data(), i, 0);
 						//delete th0;
 
-						_mpx3gui->addFrame(th2[i]->data(), i, 2);
+                        overflowCntr += _mpx3gui->addFrame(th2[i]->data(), i, 2);
 						//delete th2;
 
-						_mpx3gui->addFrame(th4[i]->data(), i, 4);
+                        overflowCntr += _mpx3gui->addFrame(th4[i]->data(), i, 4);
 						//delete th4;
 
-						_mpx3gui->addFrame(th6[i]->data(), i, 6);
+                        overflowCntr += _mpx3gui->addFrame(th6[i]->data(), i, 6);
 						//delete th6;
 					}
 
@@ -296,35 +304,35 @@ void DataTakingThread::run() {
 					// Now send all the thresholds for the give chip.
 					// !!! WARNING: They have to enter in order !!!
 					// TH0
-					_mpx3gui->addFrame(th0[i]->data(), i, 0);
+                    overflowCntr += _mpx3gui->addFrame(th0[i]->data(), i, 0);
 					//delete th0;
 
 					// TH1
-					_mpx3gui->addFrame(th1->data(), i, 1);
+                    overflowCntr += _mpx3gui->addFrame(th1->data(), i, 1);
 					//delete th1; th1 = 0x0;
 
 					// TH2
-					_mpx3gui->addFrame(th2[i]->data(), i, 2);
+                    overflowCntr += _mpx3gui->addFrame(th2[i]->data(), i, 2);
 					//delete th2;
 
 					// TH3
-					_mpx3gui->addFrame(th3->data(), i, 3);
+                    overflowCntr += _mpx3gui->addFrame(th3->data(), i, 3);
 					//delete th3; th3 = 0x0;
 
 					// TH4
-					_mpx3gui->addFrame(th4[i]->data(), i, 4);
+                    overflowCntr += _mpx3gui->addFrame(th4[i]->data(), i, 4);
 					//delete th4;
 
 					// TH5
-					_mpx3gui->addFrame(th5->data(), i, 5);
+                    overflowCntr += _mpx3gui->addFrame(th5->data(), i, 5);
 					//delete th5; th5 = 0x0;
 
 					// TH6
-					_mpx3gui->addFrame(th6[i]->data(), i, 6);
+                    overflowCntr += _mpx3gui->addFrame(th6[i]->data(), i, 6);
 					//delete th6;
 
 					// TH7
-					_mpx3gui->addFrame(th7->data(), i, 7);
+                    overflowCntr += _mpx3gui->addFrame(th7->data(), i, 7);
 					//delete th7; th7 = 0x0;
 
 					// Get ready with the high thresholds
@@ -337,11 +345,10 @@ void DataTakingThread::run() {
 
 
 			} else {
-				_mpx3gui->addFrame(framedata, i, 0);
+                overflowCntr += _mpx3gui->addFrame(framedata, i, 0);
 			}
 
 		}
-
 
 
 		// Keep a local count of number of frames
@@ -351,10 +358,11 @@ void DataTakingThread::run() {
 		// Release frame
 		spidrdaq->releaseFrame();
 
-		// report to the gui
+        // Report to the gui
 		if ( _mpx3gui->getConfig()->getReadBothCounters() ) emit fps_update( nFramesReceived/2 );
 		else emit fps_update( nFramesReceived );
 
+        emit overflow_update( overflowCntr );
 
 		// Get to draw if possible
 		if ( _canDraw ) {
@@ -420,6 +428,7 @@ void DataTakingThread::run() {
 
     disconnect(this, SIGNAL(lost_packets(int)), _vis, SLOT(lost_packets(int)) );
     disconnect(this, SIGNAL(fps_update(int)), _vis, SLOT(fps_update(int)) );
+    disconnect(this, SIGNAL(overflow_update(int)), _vis, SLOT(overflow_update(int)) );
 
 	// In case the thread is reused
 	_stop = false;

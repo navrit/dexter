@@ -129,14 +129,16 @@ void Mpx3GUI::addLayer(int *data){
     return addLayer(data, -1);
 }
 
-void Mpx3GUI::addFrame(int *frame, int index, int layer){
+unsigned int Mpx3GUI::addFrame(int *frame, int index, int layer){
     //cout << "index : " << index << " | layer : " << layer << " | mode : " << mode << endl;
+    unsigned int ovfcntr = 0;
     if(mode == 1){
-        getDataset()->sumFrame(frame,index, layer);
+        ovfcntr = getDataset()->sumFrame(frame,index, layer);
     }
     else{
-        getDataset()->setFrame(frame, index, layer);
+        ovfcntr = getDataset()->setFrame(frame, index, layer);
     }
+    return ovfcntr;
 }
 
 void Mpx3GUI::addLayer(int *data, int layer){
@@ -300,8 +302,8 @@ void Mpx3GUI::establish_connection() {
     delete originalSet;
 
     int chipSize = config->getColourMode()? __matrix_size_x /2: __matrix_size_x ;
-    workingSet = new Dataset(chipSize, chipSize,config->getNActiveDevices());//TODO: get framesize from config, load offsets & orientation from config
-    originalSet = new Dataset(chipSize, chipSize,config->getNActiveDevices());
+    workingSet = new Dataset(chipSize, chipSize, config->getNActiveDevices(), config->getPixelDepth()); //TODO: get framesize from config, load offsets & orientation from config
+    originalSet = new Dataset(chipSize, chipSize, config->getNActiveDevices(), config->getPixelDepth());
 
     clear_data();
     QVector<int> activeDevices = config->getActiveDevices();

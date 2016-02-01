@@ -74,6 +74,9 @@ private:
   Ui::QCstmGLVisualization * ui = nullptr;
   DataTakingThread * _dataTakingThread = nullptr;
   bool _savePNGWithScales = false;
+  bool _singleShot = false;
+  int _singleShotSaveNTriggers = 0;
+
   //!Gets the currently active threshold by looking at the value of the layerselector combobox.
   int getActiveThreshold();
   //!Adds the specified threshold to the layerselector combobox
@@ -124,6 +127,8 @@ private slots:
 
   void on_saveWithScaleCheckBox_toggled(bool checked);
 
+  void on_singleshotPushButton_clicked();
+
 public slots:
   void StartDataTaking();
   void setGradient(int index);
@@ -151,6 +156,8 @@ public slots:
 
   void lost_packets(int);
   void fps_update(int);
+  void overflow_update(int);
+
 
  signals:
   void change_hover_text(QString);

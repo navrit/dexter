@@ -143,4 +143,5 @@ DISTFILES += \
 RESOURCES += \
     icons.qrc
 
+CONFIG   += static
 

@@ -93,7 +93,7 @@ public:
 
     SpidrController * GetSpidrController();
     SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
-    void addFrame(int *frame, int index, int layer);
+    unsigned int addFrame(int *frame, int index, int layer);
     Gradient* getGradient(int index);
     void resize(int x, int y);
     //histogram* getHist(int index){return hists[index];}

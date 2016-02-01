@@ -20,9 +20,13 @@ using namespace boost::numeric::ublas;
 
 #include "ui_qcstmglvisualization.h"
 
-Dataset::Dataset(int x, int y, int framesPerLayer)
+Dataset::Dataset(int x, int y, int framesPerLayer, int pixelDepthBits)
 {
+
     m_nx = x; m_ny = y;
+    m_pixelDepthBits = pixelDepthBits;
+    m_pixelDepthCntr = ((int)pow(2, m_pixelDepthBits)) - 1;
+
     m_nFrames = 0;
     setFramesPerLayer(framesPerLayer);
 
@@ -106,6 +110,7 @@ Dataset::Dataset( const Dataset& other ):
 
     // copy the dimensions
     m_nx = other.x(); m_ny = other.y();
+    m_pixelDepthBits = other.getPixelDepthBits();
     // And copy the layers
     m_nFrames = other.getFrameCount();
     m_layers = QVector<int *>( other.getLayerCount() );
@@ -141,6 +146,7 @@ Dataset& Dataset::operator=( const Dataset& tocopy){
         this->m_nx = copy.x();
         this->m_ny = copy.y();
         this->m_nFrames = copy.getFrameCount();
+        this->m_pixelDepthBits = copy.getPixelDepthBits();
         //*this->obCorrection = *tocopy.obCorrection;
 
     }
@@ -940,20 +946,39 @@ int Dataset::newLayer(int threshold){
     return m_layers.size()-1;
 }
 
-void Dataset::setFrame(int *frame, int index, int threshold){
+unsigned int Dataset::setFrame(int *frame, int index, int threshold){
+
     if(!m_thresholdsToIndices.contains(threshold))
         newLayer(threshold);
     int *newFrame = getFrame(index, threshold);
-    for(int i = 0 ; i < m_nx*m_ny;i++)
-        newFrame[i]= frame[i];
+
+    // and keep an eye on overflow frames
+    unsigned int overflowCntr = 0;
+
+    for(int i = 0 ; i < m_nx*m_ny;i++) {
+        newFrame[i] = frame[i];
+        // overflow check on the current single frame
+        if ( frame[i] >= m_pixelDepthCntr ) overflowCntr++;
+    }
+
+    return overflowCntr;
 }
 
-void Dataset::sumFrame(int *frame, int index, int threshold){
+unsigned int Dataset::sumFrame(int *frame, int index, int threshold){
+
     if(!m_thresholdsToIndices.contains(threshold))
         newLayer(threshold);
     int *newFrame = getFrame(index, threshold);
-    for(int i = 0 ; i < m_nx*m_ny;i++)
+
+    // and keep an eye on overflow frames
+    unsigned int overflowCntr = 0;
+    for(int i = 0 ; i < m_nx*m_ny;i++) {
         newFrame[i] += frame[i];
+        // overflow check on the current single frame
+        if ( frame[i] >= m_pixelDepthCntr ) overflowCntr++;
+    }
+
+    return overflowCntr;
 }
 
 int* Dataset::getFrame(int index, int threshold){
