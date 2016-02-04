@@ -177,14 +177,17 @@ class MY_LIB_API SpidrController
   bool getAdc                  ( int  dev_nr,  int *adc_val );
   bool getDacOut               ( int  dev_nr,  int *dacout_val,
                                  int  nr_of_samples = 1 );
-  bool getRemoteTemp           ( int *mdegrees );
-  bool getLocalTemp            ( int *mdegrees );
+  bool getRemoteTemp           ( int *mdegrees ); // Device temperature
+  bool getLocalTemp            ( int *mdegrees ); // SPIDR board temperature
+  bool getFpgaTemp             ( int *mdegrees ); // SPIDR FPGA temperature
   bool getAvdd                 ( int *mvolt, int *mamp, int *mwatt );
   bool getDvdd                 ( int *mvolt, int *mamp, int *mwatt );
   bool getVdd                  ( int *mvolt, int *mamp, int *mwatt );
   bool getAvddNow              ( int *mvolt, int *mamp, int *mwatt );
   bool getDvddNow              ( int *mvolt, int *mamp, int *mwatt );
   bool getVddNow               ( int *mvolt, int *mamp, int *mwatt );
+  bool getFanSpeed             ( int  index, int *rpm );
+  bool setFanSpeed             ( int  index, int percentage );
 
   // Other
   bool getSpidrReg             ( int  addr, int *val );

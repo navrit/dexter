@@ -18,7 +18,7 @@
 #define CMD_DISPLAY_INFO       0x90B
 #define CMD_SET_TIMEOFDAY      0x90C
 #define CMD_GET_DEVICECOUNT    0x90D
-
+#define CMD_GET_BOARDID        0x90E
 #define CMD_GET_CHIPBOARDID    0x90F
 
 // Configuration: devices
@@ -89,6 +89,9 @@
 #define CMD_GET_DVDD_NOW       0x54F
 
 // Monitoring (continued)
+#define CMD_GET_FPGATEMP       0x568
+#define CMD_GET_FANSPEED       0x569
+#define CMD_SET_FANSPEED       0x56A
 #define CMD_GET_VDD            0x56C
 #define CMD_GET_VDD_NOW        0x56D
 
@@ -106,10 +109,14 @@
 #define CMD_VALID_REGISTERS    0x67A
 #define CMD_VALID_PIXCONF      0x67B
 
+#define CMD_READ_FLASH         0x67E
+#define CMD_WRITE_FLASH        0x67F
+
 // Other
 #define CMD_GET_SPIDRREG       0x783
 #define CMD_SET_SPIDRREG       0x784
 #define CMD_SET_CHIPBOARDID    0x785
+#define CMD_SET_BOARDID        0x786
 
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
@@ -129,7 +136,7 @@ static const char *CMD_STR[] =
     "DISPLAY_INFO     ", // 0x90B
     "SET_TIMEOFDAY    ", // 0x90C
     "GET_DEVICECOUNT  ", // 0x90D
-    "-----",             // 0x90E
+    "GET_BOARDID      ", // 0x90E
     "GET_CHIPBOARDID  ", // 0x90F
 
     "GET_DEVICEID     ", // 0x110
@@ -226,9 +233,9 @@ static const char *CMD_STR[] =
     "-----",             // 0x565
     "-----",             // 0x566
     "-----",             // 0x567
-    "-----",             // 0x568
-    "-----",             // 0x569
-    "-----",             // 0x56A
+    "GET_FPGATEMP     ", // 0x568
+    "GET_FANSPEED     ", // 0x569
+    "SET_FANSPEED     ", // 0x56A
     "-----",             // 0x56B
     "GET_VDD          ", // 0x56C
     "GET_VDD_NOW      ", // 0x56D
@@ -249,15 +256,16 @@ static const char *CMD_STR[] =
     "VALID_PIXCONF    ", // 0x67B
     "-----",             // 0x67C
     "-----",             // 0x67D
-    "-----",             // 0x67E
-    "-----",             // 0x67F
+    "READ_FLASH       ", // 0x67E
+    "WRITE_FLASH      ", // 0x67F
 
     "-----",             // 0x780
     "-----",             // 0x781
     "-----",             // 0x782
     "GET_SPIDRREG     ", // 0x783
     "SET_SPIDRREG     ", // 0x784
-    "SET_CHIPBOARDID  "  // 0x785
+    "SET_CHIPBOARDID  ", // 0x785
+    "SET_BOARDID      "  // 0x786
   };
 
 // Reply bit: set in the reply message in the command identifier

@@ -15,7 +15,8 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x15092800;   // Add pixelconfig read-back option
+const int   VERSION_ID = 0x16020100; // Add getFpgaTemp(), get/setFanSpeed()
+//const int VERSION_ID = 0x15092800; // Add pixelconfig read-back option
 //const int VERSION_ID = 0x15082600; // Add getOmr(); optimization in
                                      // request..() functions;
                                      // add requestGetBytes()
@@ -1084,6 +1085,13 @@ bool SpidrController::getLocalTemp( int *mdegrees )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::getFpgaTemp( int *mdegrees )
+{
+  return this->requestGetInt( CMD_GET_FPGATEMP, 0, mdegrees );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::getAvdd( int *mvolt, int *mamp, int *mwatt )
 {
   return this->get3Ints( CMD_GET_AVDD, mvolt, mamp, mwatt );
@@ -1122,6 +1130,23 @@ bool SpidrController::getDvddNow( int *mvolt, int *mamp, int *mwatt )
 bool SpidrController::getVddNow( int *mvolt, int *mamp, int *mwatt )
 {
   return this->get3Ints( CMD_GET_VDD_NOW, mvolt, mamp, mwatt );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getFanSpeed( int index, int *rpm )
+{
+  // Index indicates fan speed to return (chipboard or SPIDR resp.)
+  *rpm = index;
+  return this->requestGetInt( CMD_GET_FANSPEED, 0, rpm );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setFanSpeed( int index, int percentage )
+{
+  // Index indicates fan speed to set (chipboard or SPIDR resp.)
+  return this->requestSetInt( CMD_SET_FANSPEED, 0, (index << 16) | percentage );
 }
 
 // ----------------------------------------------------------------------------

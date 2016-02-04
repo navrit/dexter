@@ -13,7 +13,7 @@ int main( int argc, char *argv[] )
 {
   // Open a control connection to SPIDR module with address 192.168.1.10,
   // port 50000 (default)
-  SpidrController spidrcontrol( 192, 168, 1, 10 );
+  SpidrController spidrcontrol( 192, 168, 100, 10 );
 
   // Check the connection to the SPIDR module
   if( !spidrcontrol.isConnected() )
@@ -51,8 +51,9 @@ int main( int argc, char *argv[] )
 #ifdef USE_SPIDRDAQ
   SpidrDaq spidrdaq( &spidrcontrol );
   cout << "SpidrDaq: ";
-  for( int i=0; i<4; ++i ) cout << spidrdaq.ipAddressString( i );
-  cout << " #chips: " << spidrdaq.numberOfDevices();
+  for( int i=0; i<4; ++i )
+    cout << spidrdaq.ipAddressString( i ) << " ";
+  cout << "#chips: " << spidrdaq.numberOfDevices();
   cout << endl;
   Sleep( 1000 );
   cout << spidrdaq.errorString() << endl;
@@ -148,7 +149,7 @@ int main( int argc, char *argv[] )
     }
 #endif
 
-  spidrcontrol.setPixelDepth( devnr, pixdepth, true );
+  //spidrcontrol.setPixelDepth( devnr, pixdepth, true );
 
   /*
   // DACs
@@ -159,8 +160,8 @@ int main( int argc, char *argv[] )
       spidrcontrol.getDac( devnr, dacnr, &dacval );
       cout << dacnr << ": " << dacval << endl;
     }
-  spidrcontrol.writeDacs( devnr );
-  //spidrcontrol.writeDacsDflt( devnr );
+  spidrcontrol.setDac( devnr, 10, 10 );
+  //spidrcontrol.setDacsDflt( devnr );
   cout << "After" << endl;
   for( dacnr=0; dacnr<30; ++dacnr )
     {
@@ -169,10 +170,15 @@ int main( int argc, char *argv[] )
     }
   */
 
-  int trig_mode      = SHUTTERMODE_AUTO; // Auto-trigger mode
-  int trig_period_us = 500;
-  int trig_freq_hz   = 30000;
-  int nr_of_triggers = 50;
+  char ch;
+  cin >> ch;
+
+  int trig_mode = SHUTTERMODE_AUTO; // Auto-trigger mode
+  int trig_period_us = 10;
+  //int trig_freq_hz = 30000;
+  int trig_freq_hz   = 1;
+  //int nr_of_triggers = 500;
+  int nr_of_triggers = 1;
   int trig_pulse_count;
   spidrcontrol.setShutterTriggerConfig( trig_mode, trig_period_us,
 					trig_freq_hz, nr_of_triggers );
@@ -180,8 +186,9 @@ int main( int argc, char *argv[] )
   //spidrcontrol.clearBusy();
   int i, frame_cnt = 0;
   //for( i=0; i<10; ++i )
-  for( i=0; i<2; ++i )
+  for( i=0; i<1; ++i )
     {
+      cin >> ch;
       cout << "Auto-trig " << i << endl;
 
       //if( 1 )//i==4 ) spidrcontrol.setDac( devnr, 0, i*51 );
@@ -216,6 +223,7 @@ int main( int argc, char *argv[] )
 	    }
 	  cout << endl;
 	  spidrdaq.releaseFrame();
+	  //if( frame_cnt >= 25 ) spidrcontrol.stopAutoTrigger(); // TEST
 	}
 #else
       Sleep( 1000 );
