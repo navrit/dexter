@@ -20,7 +20,7 @@ int main()
   // ----------------------------------------------------------
   // Open a control connection to SPIDR-TPX3 module
   // with address 192.168.100.10, default port number 50000
-  SpidrController spidrctrl( 192, 168, 100, 10 );
+  SpidrController spidrctrl( 192, 168, 10, 10 );
 
   // Are we connected to the SPIDR-TPX3 module?
   if( !spidrctrl.isConnected() ) {

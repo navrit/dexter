@@ -14,13 +14,6 @@ History:
 21APR2015; HenkB; Created.
 ---------------------------------------------------------------------------- */
 
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#define Sleep(ms) usleep(1000*ms)
-#endif
-
 #include <iostream>
 #include <iomanip>
 using namespace std;
@@ -31,7 +24,6 @@ using namespace std;
 #include "../SpidrMpx3Lib/mpx3dacsdescr.h"
 #include "SpidrController.h"
 
-#include <QHostAddress>
 #include <QString>
 
 #define error_out(str) cout<<str<<": "<<_spidrController->errorString()<<endl
@@ -105,17 +97,21 @@ int main( int argc, char *argv[] )
   }
 
   _deviceIndex  = devnr;
-  _dacCount     = TPX3_DAC_COUNT_TO_SET;
+  //_dacCount   = TPX3_DAC_COUNT_TO_SET;
+  _dacCount     = MPX3_DAC_COUNT;
   _dacIndex     = 0;
-  _dacCode      = TPX3_SENSEOFF;
+  //_dacCode    = TPX3_SENSEOFF;
+  _dacCode      = 0;
   _dacMax       = 0;
   _dacVal       = 0;
   _dacStep      = 1;
   _samples      = 1;
-  _dacTable     = &TPX3_DAC_TABLE[0];
+  //_dacTable     = &TPX3_DAC_TABLE[0];
+  _dacTable     = &MPX3RX_DAC_TABLE[0];
   _adcFullScale = 1.5;
   _adcRange     = 4096.0; // 12-bit DAC
-  _spidrController->setLogLevel( 2 ); // Limit amount of SPIDR console output
+  //_spidrController->setLogLevel( 2 ); // Limit amount of SPIDR console output
+  _spidrController->setLogLevel( 0 ); // Limit amount of SPIDR console output
 
   cout << "DACs Scan: step=" << _dacStep
        << ", samples/step=" << _samples << endl;
@@ -186,43 +182,9 @@ int main( int argc, char *argv[] )
 
 // ----------------------------------------------------------------------------
 
-quint32 get_addr_and_port( const char *str, int *portnr )
-{
-  QString qstr( str );
-  if( qstr.contains( QChar(':') ) )
-    {
-      // A port number is provided: extract it
-      bool ok;
-      int p = qstr.section( ':', 1, 1).toInt( &ok );
-      if( !ok )
-	{
-	  cout << "### Invalid port number: "
-	       << qstr.section( ':', 1, 1 ).toStdString() << endl;
-	  usage();
-	  exit( 0 );
-	}
-      else
-	{
-	  *portnr = p;
-	}
-      // Remove the port number from the string
-      qstr = qstr.section( ':', 0, 0 );
-    }
-  QHostAddress qaddr;
-  if( !qaddr.setAddress( qstr ) )
-    {
-      cout << "### Invalid IP address: " << qstr.toStdString() << endl;
-      usage();
-      exit( 0 );
-    }
-  return qaddr.toIPv4Address();
-}
-
-// ----------------------------------------------------------------------------
-
 void usage()
 {
-  cout << endl << "Usage:" << endl
+  cout << "Usage:" << endl
        << "spidrdacsscan <ipaddr>[:<portnr>] <devnr>"
        << endl
        << "   Do a (Timepix3) DACs scan on a SPIDR module."

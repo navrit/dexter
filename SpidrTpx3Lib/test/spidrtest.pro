@@ -36,4 +36,4 @@ LIBS += -lSpidrTpx3Lib
 
 INCLUDEPATH += ..
 
-SOURCES += spidrtest.cpp
+SOURCES += getaddr.cpp spidrtest.cpp

@@ -44,17 +44,12 @@ int main( int argc, char *argv[] )
     cout << "###getReadoutSpeed: " << spidrctrl.errorString() << endl;
 
   int stat;
-  spidrctrl.reset( &stat, -1 ); // Force low-speed readout
   //spidrctrl.reset( &stat );     // Default readout speed
-  //spidrctrl.reset( &stat,  1 );   // Force high-speed readout
-  cout << "reset: stat=" << stat << endl;
-
-  speed = 640;
-  if( spidrctrl.setReadoutSpeed( device_nr, speed ) )
-    cout << "Speed=> " << dec << speed << hex << endl;
+  if( argc > 1 )
+    spidrctrl.reset( &stat, -1 ); // Force low-speed readout
   else
-    cout << "###setReadoutSpeed " << dec << speed << hex << ": "
-	 << spidrctrl.errorString() << endl;
+    spidrctrl.reset( &stat,  1 ); // Force high-speed readout
+  cout << "reset: stat=" << stat << endl;
 
   if( spidrctrl.getReadoutSpeed( device_nr, &speed ) )
     cout << "Link speed: " << dec << speed << hex << endl;
@@ -79,7 +74,7 @@ int main( int argc, char *argv[] )
     cout << "###getLinkCount: " << spidrctrl.errorString() << endl;
 
   int i;
-  int ena_mask, lock_mask, output_mask = 0x00;
+  int ena_mask, lock_mask, output_mask = 0x00, dac;
   for( i=0; i<linkcount*2; ++i )
     {
       cout << endl;
@@ -113,6 +108,35 @@ int main( int argc, char *argv[] )
       else
 	cout << "PllConfig=" << config << endl;
 
+      if( !spidrctrl.getDac( device_nr, i+1, &dac ) )
+	cout << "###getDac: " << spidrctrl.errorString() << endl;
+      else
+	cout << "DAC = " << dac << endl;
+
+      if( i == 9 )
+	{
+	  speed = 640;
+	  if( spidrctrl.setReadoutSpeed( device_nr, speed ) )
+	    cout << "Speed=> " << dec << speed << hex << endl;
+	  else
+	    cout << "###setReadoutSpeed " << dec << speed << hex << ": "
+		 << spidrctrl.errorString() << endl;
+
+	  if( spidrctrl.getReadoutSpeed( device_nr, &speed ) )
+	    cout << "Link speed: " << dec << speed << hex << endl;
+	  else
+	    cout << "###getReadoutSpeed: " << spidrctrl.errorString() << endl;
+
+	  if( !spidrctrl.getOutBlockConfig( device_nr, &config ) )
+	    cout << "###getOutBlockConfig: " << spidrctrl.errorString() << endl;
+	  else
+	    cout << "OutConfig=" << config << endl;
+
+	  if( !spidrctrl.getPllConfig( device_nr, &config ) )
+	    cout << "###getPllConfig: " << spidrctrl.errorString() << endl;
+	  else
+	    cout << "PllConfig=" << config << endl;
+	}
       Sleep( 800 );
     }
 

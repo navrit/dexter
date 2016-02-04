@@ -4,7 +4,7 @@ File   : spidrled.cpp
 Descr  : Commandline tool to blink an LED on a SPIDR module.
 
 Usage  :
-spidrled <ipaddr>[:<portnr>] [lednr]
+spidrled <ipaddr>[:<portnr>] <lednr>
    Blink an LED on the SPIDR module.
      <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10.
      <portnr> : current SPIDR controller IP port number, default 50000.
@@ -26,8 +26,6 @@ History:
 using namespace std;
 
 #include "SpidrController.h"
-
-#include <QHostAddress>
 #include <QString>
 
 #define error_out(str) cout<<str<<": "<<spidrctrl.errorString()<<endl
@@ -87,6 +85,7 @@ int main( int argc, char *argv[] )
     {
       lednr -= 8;
 
+      // Available in the 'Board Control' register
       if( !spidrctrl.getSpidrReg( 0x2D0, &reg ) )
 	{
 	  cout << "### getReg" << endl;
@@ -105,6 +104,7 @@ int main( int argc, char *argv[] )
     }
   else
     {
+      // Available in the 'LEDs' register
       if( !spidrctrl.getSpidrReg( 0x2C4, &reg ) )
 	{
 	  cout << "### getReg" << endl;
@@ -127,44 +127,10 @@ int main( int argc, char *argv[] )
 
 // ----------------------------------------------------------------------------
 
-quint32 get_addr_and_port( const char *str, int *portnr )
-{
-  QString qstr( str );
-  if( qstr.contains( QChar(':') ) )
-    {
-      // A port number is provided: extract it
-      bool ok;
-      int p = qstr.section( ':', 1, 1).toInt( &ok );
-      if( !ok )
-	{
-	  cout << "### Invalid port number: "
-	       << qstr.section( ':', 1, 1 ).toStdString() << endl;
-	  usage();
-	  exit( 0 );
-	}
-      else
-	{
-	  *portnr = p;
-	}
-      // Remove the port number from the string
-      qstr = qstr.section( ':', 0, 0 );
-    }
-  QHostAddress qaddr;
-  if( !qaddr.setAddress( qstr ) )
-    {
-      cout << "### Invalid IP address: " << qstr.toStdString() << endl;
-      usage();
-      exit( 0 );
-    }
-  return qaddr.toIPv4Address();
-}
-
-// ----------------------------------------------------------------------------
-
 void usage()
 {
-  cout << endl << "Usage:" << endl
-       << "spidrled <ipaddr>[:<portnr>] [lednr]"
+  cout << "Usage:" << endl
+       << "spidrled <ipaddr>[:<portnr>] <lednr>"
        << endl
        << "   Blink an LED on the SPIDR module."
        << endl

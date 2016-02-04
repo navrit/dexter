@@ -20,7 +20,7 @@ int main()
   // ----------------------------------------------------------
   // Open a control connection to SPIDR-TPX3 module
   // with address 192.168.100.10, default port number 50000
-  SpidrController spidrctrl( 192, 168, 100, 10 );
+  SpidrController spidrctrl( 192, 168, 1, 10 );
 
   // Are we connected to the SPIDR-TPX3 module?
   if( !spidrctrl.isConnected() ) {
@@ -42,13 +42,13 @@ int main()
   // ----------------------------------------------------------
   // DACs configuration
 
-  if( !spidrctrl.setDacsDflt( device_nr ) )
-    error_out( "###setDacsDflt" );
+  //if( !spidrctrl.setDacsDflt( device_nr ) )
+  //  error_out( "###setDacsDflt" );
   // The following setting is necessary (in combination with
   // the setGenConfig() setting EMIN or HPLUS) in order to prevent
   // noisy pixels also generating pixel data!
-  if( !spidrctrl.setDac( device_nr, TPX3_VTHRESH_COARSE, 9 ) )
-    error_out( "###setDac" );
+  //if( !spidrctrl.setDac( device_nr, TPX3_VTHRESH_COARSE, 9 ) )
+  //  error_out( "###setDac" );
 
   // ----------------------------------------------------------
   // Pixel configuration
@@ -58,13 +58,13 @@ int main()
 
   // Enable test-bit in pixels
   spidrctrl.resetPixelConfig();
-  spidrctrl.setPixelTestEna();
+  //spidrctrl.setPixelTestEna();
   if( !spidrctrl.setPixelConfig( device_nr ) )
     error_out( "###setPixelConfig" );
 
   // ----------------------------------------------------------
   // Test pulse and CTPR configuration
-
+  /*
   // Timepix3 test pulse configuration
   if( !spidrctrl.setTpPeriodPhase( device_nr, 10, 0 ) )
     error_out( "###setTpPeriodPhase" );
@@ -83,7 +83,7 @@ int main()
 
   if( !spidrctrl.setCtpr( device_nr ) )
     error_out( "###setCtpr" );
-
+  */
   // ----------------------------------------------------------
 
   // SPIDR-TPX3 and Timepix3 timers
@@ -110,8 +110,8 @@ int main()
     error_out( "###setGenCfg" );
 
   // Set Timepix3 into acquisition mode
-  //if( !spidrctrl.datadrivenReadout() )
-  if( !spidrctrl.sequentialReadout( 1 ) )
+  if( !spidrctrl.datadrivenReadout() )
+  //if( !spidrctrl.sequentialReadout( 1 ) )
     error_out( "###xxxxReadout" );
 
   // ----------------------------------------------------------
