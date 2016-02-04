@@ -81,6 +81,9 @@ SpidrDacs::SpidrDacs()
   this->setDeviceType( _comboBoxDeviceType->currentIndex() );
 
   this->readAppSettings();
+
+  _dacTable = &TPX3_DAC_TABLE[0];
+  _dacCount = TPX3_DAC_COUNT_TO_SET;
 }
 
 // ----------------------------------------------------------------------------
@@ -188,7 +191,7 @@ void SpidrDacs::readDacs()
   for( int i=0; i<_slidrs.size(); ++i )
     {
       if( _spidrController->getDac( _deviceIndex,
-				    TPX3_DAC_TABLE[i].code, &dac_val ) )
+				    _dacTable[i].code, &dac_val ) )
 	{
 	  _slidrs[i]->setValue( dac_val );
 	  _spboxs[i]->setPalette( _qpOkay );
@@ -226,7 +229,7 @@ void SpidrDacs::setDac( int index )
   if( !_spidrController || !_spidrController->isConnected() ) return;
   if( _disableSetDac ) return;
 
-  if( _spidrController->setDac( _deviceIndex, TPX3_DAC_TABLE[index].code,
+  if( _spidrController->setDac( _deviceIndex, _dacTable[index].code,
 				_spboxs[index]->value() ) )
     _spboxs[index]->setPalette( _qpOkay );
   else
@@ -341,6 +344,8 @@ void SpidrDacs::setDeviceType( int index )
       dac_count = TPX3_DAC_COUNT_TO_SET;
       dac_table = &TPX3_DAC_TABLE[0];
     }
+  _dacCount = dac_count;
+  _dacTable = dac_table;
 
   // Clear the DAC widgets
   int i;

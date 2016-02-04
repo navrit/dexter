@@ -33,6 +33,8 @@ class SpidrDacs : public QDialog, Ui_SpidrDacsDialog
  private:
   SpidrController    *_spidrController;
   int _deviceIndex;
+  const struct dac_s *_dacTable;
+  int                 _dacCount;
 
   int _minWidth;
 
