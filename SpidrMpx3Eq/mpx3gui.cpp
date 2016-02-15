@@ -591,7 +591,8 @@ void Mpx3GUI::clear_configuration(){
 
 void Mpx3GUI::clear_data(){
     getDataset()->clear();
-    emit(data_cleared());
+    //getVisualization()->cle
+    emit data_cleared();
 }
 
 QCstmEqualization * Mpx3GUI::getEqualization(){return _ui->equalizationWidget;}

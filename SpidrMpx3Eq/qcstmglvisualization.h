@@ -80,6 +80,8 @@ private:
     int _singleShotSaveNTriggers = 0;
     QCPRange _manualRange;
     QCPRange _percentileRange;
+    bool _logyPlot = false;
+
 
     //!Gets the currently active threshold by looking at the value of the layerselector combobox.
     int getActiveThreshold();
@@ -137,6 +139,8 @@ private slots:
 
     void on_upperSpin_editingFinished();
 
+    void on_logscale(bool);
+
 public slots:
     void StartDataTaking();
     void setGradient(int index);
@@ -161,6 +165,7 @@ public slots:
     //!Called when the user request a different bin-count. Recomputes the histograms for each threshold.
     void changeBinCount(int count);
     void updateETA();
+
 
     void lost_packets(int);
     void fps_update(int);

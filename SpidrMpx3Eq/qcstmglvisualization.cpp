@@ -38,9 +38,13 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     ui->lostPacketsLabel->setTextFormat( Qt::RichText );
 
     // Range selection on histogram. Init values
-    _manualRange = QCPRange( -16384, 16384 ); // This is quite arbitrary. It doesn't really matter here.
+    _manualRange = QCPRange( 0, 1 ); // This is quite arbitrary. It doesn't really matter here.
     _percentileRange = QCPRange( 0.025, 0.975 ); // These instead are reasonable percentile cuts
     setRangeSpinBoxesPercentile();
+
+    // Log Scale for histogram
+    connect(ui->logCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_logscale(bool)));
+
 
 }
 
@@ -80,6 +84,7 @@ void QCstmGLVisualization::updateETA() {
     ui->etaCntr->setText( textT );
 
 }
+
 
 void QCstmGLVisualization::StartDataTaking(){
 
@@ -146,16 +151,20 @@ void QCstmGLVisualization::ETAToZero() {
 void QCstmGLVisualization::setRangeSpinBoxesManual()
 {
 
+    // Geometry
+    // I will force the geometry so it looks
+    //  the same in both Manual and Percentile.
+    ui->lowerSpin->setFixedWidth( 80 );
+    ui->upperSpin->setFixedWidth( 80 );
+
+    // Values
     ui->lowerSpin->setMinimum( -4E16 );
-    //ui->lowerSpin->setFixedWidth( 5 );
     ui->lowerSpin->setMaximum(  4E16 );
     ui->lowerSpin->setSingleStep( 1 );
     ui->lowerSpin->setDecimals( 0 );
     ui->lowerSpin->setValue( _manualRange.lower );
 
     ui->upperSpin->setMinimum( -4E16 );
-    //ui->upperSpin->setFixedWidth( 5 );
-
     ui->upperSpin->setMaximum(  4E16 );
     ui->upperSpin->setSingleStep( 1 );
     ui->upperSpin->setDecimals( 0 );
@@ -166,6 +175,11 @@ void QCstmGLVisualization::setRangeSpinBoxesManual()
 void QCstmGLVisualization::setRangeSpinBoxesPercentile()
 {
 
+    // Geometry
+    ui->lowerSpin->setFixedWidth( 80 );
+    ui->upperSpin->setFixedWidth( 80 );
+
+    // Values
     ui->lowerSpin->setMinimum( 0 );
     ui->lowerSpin->setMaximum( 1 );
     ui->lowerSpin->setSingleStep( 0.01 );
@@ -668,19 +682,20 @@ void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
 
     if ( checked ) {
 
-        /*
-        // current threshold
-        int activeTHL = getActiveThreshold();
+        // When toggling here recompute the min and max
+        // if the range is still the initial (0,1)
 
-        // when toggling here recompute the min and max
-        if ( activeTHL >= 0 ) {
-            _manualRange = QCPRange( ui->histPlot->getMin( activeTHL ),
-                                     ui->histPlot->getMax( activeTHL )
-                                     );
-        } else {
-            _manualRange = QCPRange( 0,1 );
+        if ( _manualRange == QCPRange( 0,1 ) ) {
+            // current threshold
+            int activeTHL = getActiveThreshold();
+            if ( activeTHL >= 0 ) {
+                _manualRange = QCPRange( ui->histPlot->getMin( activeTHL ),
+                                         ui->histPlot->getMax( activeTHL )
+                                         );
+            } else {
+                _manualRange = QCPRange( 0,1 );
+            }
         }
-*/
 
         setRangeSpinBoxesManual();
         ui->histPlot->changeRange( _manualRange );
@@ -920,27 +935,20 @@ void QCstmGLVisualization::on_upperSpin_editingFinished()
 
 }
 
-//void QCstmGLVisualization::on_upperPercentileSpin_editingFinished()
-//{
-//    //if(ui->upperPercentileSpin->value() < ui->lowerPercentileSpin->value())
-//    //    ui->lowerPercentileSpin->setValue(ui->upperPercentileSpin->value());
+void QCstmGLVisualization::on_logscale(bool checked)
+{
 
-//    if(ui->upperSpin->value() < ui->lowerSpin->value())
-//        ui->lowerSpin->setValue(ui->upperSpin->value());
+    _logyPlot = checked;
 
-//    if(ui->percentileRangeRadio->isChecked())
-//        on_percentileRangeRadio_toggled(ui->percentileRangeRadio->isChecked());
-//}
+    if ( _logyPlot ) {
+        ui->histPlot->yAxis->setScaleType( QCPAxis::stLogarithmic );
+        ui->histPlot->yAxis->setRangeLower( __range_min_whenLog );
+    } else {
+        ui->histPlot->yAxis->setScaleType( QCPAxis::stLinear );
+        ui->histPlot->yAxis->setRangeLower( 0 );
+    }
 
-//void QCstmGLVisualization::on_lowerManualSpin_editingFinished()
-//{
-//    if(ui->upperManualSpin->value() < ui->lowerManualSpin->value())
-//        ui->upperManualSpin->setValue(ui->lowerManualSpin->value());
+    ui->histPlot->replot(QCustomPlot::rpQueued);
 
-//    if(ui->upperSpin->value() < ui->lowerSpin->value())
-//        ui->upperSpin->setValue(ui->lowerSpin->value());
+}
 
-//    if(ui->manualRangeRadio->isChecked())
-//        on_manualRangeRadio_toggled(ui->manualRangeRadio->isChecked());
-
-//}

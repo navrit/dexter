@@ -9,6 +9,8 @@
 
 #include "histogram.h"
 
+#define __range_min_whenLog  1.0
+
 class QCstmPlotHistogram : public QCustomPlot
 {
     Q_OBJECT
@@ -26,6 +28,7 @@ public:
     //QVector<QVector<double>> xHist, yHist;
     QCPItemStraightLine *lowClamp = nullptr, *highClamp = nullptr;
     qreal _lastDraggPoint = 0.;
+    QCPAxis::ScaleType _scaleTypeHistogram = QCPAxis::stLinear;
 
     void mousePressEvent(QMouseEvent *event){//TODO: check if clicked inside graph.
         QCustomPlot::mousePressEvent(event);
@@ -37,6 +40,7 @@ public:
         }
     }
 
+    void mouseDoubleClickEvent(QMouseEvent *event);
 
     void mouseMoveEvent(QMouseEvent *event){ //TODO: don't update actual range, only markers. Update range on release.
         QCustomPlot::mouseMoveEvent(event);
@@ -59,14 +63,33 @@ public:
 
     void setPlot(int index, Histogram *hist);
 
-    int getMin(int threshold){return m_mapping[threshold].second->getMin();}
-    int getMax(int threshold){return m_mapping[threshold].second->getMax();}
-    unsigned getBin(int threshold, int level){return m_mapping[threshold].second->at(level);}
+    int getMin(int threshold){
+        if (threshold < 0) return 0;
+        return m_mapping[threshold].second->getMin();
+    }
+    int getMax(int threshold){
+        if (threshold < 0) return 0;
+        return m_mapping[threshold].second->getMax();
+    }
+    int getCurrentThreshold();
+
+    unsigned getYMaxCount(int threshold){
+        if (threshold < 0) return 0;
+        return m_mapping[threshold].second->getYMaxCount();
+    }
+    unsigned getBin(int threshold, int level){
+        if (threshold < 0) return 0;
+        return m_mapping[threshold].second->at(level);
+    }
     unsigned getTotal(int threshold);
+    double getRangeMinWhenLog(){return __range_min_whenLog; }
 
     void clear();
     int getHistogramCount(){return m_mapping.size();}
-    Histogram* getHistogram(int threshold){return m_mapping[threshold].second;}
+    Histogram* getHistogram(int threshold){
+        if (threshold < 0) return nullptr;
+        return m_mapping[threshold].second;
+    }
     void scaleToInterest();
 signals:
     void rangeChanged(QCPRange newRange);
@@ -80,6 +103,8 @@ public slots:
     void minClampChanged(double min);
     void maxClampChanged(double max);
     void changeBinCount(int binCount){m_binCount = binCount;}
+    void on_scaleTypeChanged(QCPAxis::ScaleType st);
+
     //void rebinHistograms(int binSize)
 };
 

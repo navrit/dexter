@@ -81,6 +81,7 @@ public:
   void setMin(int min);
   int getMin() const{return m_min;}
   void setRange(int min, int max);
+  unsigned getYMaxCount();
   //! Returns the amount of bins.
   inline int size() const{return (m_max-m_min+1)/m_binWidth+1;}
   //!Returns the size of the bin corresponding to value. If value is out-of-bounds, returns 0.

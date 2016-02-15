@@ -1,5 +1,8 @@
 #include "qcstmplothistogram.h"
 
+#include <QMap>
+#include <QPair>
+
 //QCstmPlotHistogram::QCstmPlotHistogram(QWidget*& parent)
 //    : QCustomPlot ( parent )
 QCstmPlotHistogram::QCstmPlotHistogram(QWidget * parent)
@@ -25,6 +28,10 @@ QCstmPlotHistogram::QCstmPlotHistogram(QWidget * parent)
     highClamp->point1->setCoords(DBL_MAX,0); highClamp->point2->setCoords(DBL_MAX,1);
     this->addItem(lowClamp); this->addItem(highClamp);
 
+
+    // Being aware of changes in the scale type for histogram
+    connect( this->yAxis, SIGNAL(scaleTypeChanged(QCPAxis::ScaleType)),
+             this, SLOT(on_scaleTypeChanged(QCPAxis::ScaleType)) );
 }
 
 QCstmPlotHistogram::~QCstmPlotHistogram()
@@ -33,11 +40,47 @@ QCstmPlotHistogram::~QCstmPlotHistogram()
     //delete hist;
 }
 
+/**
+ * @brief QCstmPlotHistogram::mouseDoubleClickEvent.  This method
+ *  will recover the proper strecht in Y (full image visible in the
+ *  Y-range) if the user wants it.
+ *
+ * @param event
+ */
+void QCstmPlotHistogram::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    QCustomPlot::mousePressEvent(event);
+    if(event->button() == Qt::LeftButton)
+    {
+
+        // see that there are histograms
+        if ( m_currentHist == -1 ) return;
+
+        // Get the max
+        int ymax = getYMaxCount( getCurrentThreshold() );
+
+        // Change range
+        if ( _scaleTypeHistogram == QCPAxis::stLinear ) {
+            this->yAxis->setRangeLower( 0 );
+        } else {
+            this->yAxis->setRangeLower( __range_min_whenLog );
+        }
+
+        this->yAxis->setRangeUpper( ymax );
+
+        // replot
+        this->replot( QCustomPlot::rpQueued);
+
+    }
+}
+
 void QCstmPlotHistogram::setHistogram(int threshold, QVector<int> data){
+    if ( threshold < 0 ) return;
     setHistogram(threshold, data.data(), data.size());
 }
 
 void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size){
+    if ( threshold < 0 ) return;
     int index;
     if(m_mapping.contains(threshold) ){
         index =m_mapping[threshold].first;
@@ -101,8 +144,17 @@ void QCstmPlotHistogram::setPlot(int index, Histogram *hist){
     }
     graph->addData(i*hist->getWidth()+hist->getMin(), ((double)hist->atIndex(i-1)));
     graph->rescaleAxes();
-    replot();
+    replot(QCustomPlot::rpQueued);
     //qDebug() << "Histogram plot took " << timer.elapsed() << "milliseconds";
+}
+
+int QCstmPlotHistogram::getCurrentThreshold()
+{
+
+    QList<int> keys = m_mapping.keys();
+    if ( ! keys.empty() ) return keys[m_currentHist];
+
+    return 0;
 }
 
 void QCstmPlotHistogram::scaleToInterest(){
@@ -110,7 +162,7 @@ void QCstmPlotHistogram::scaleToInterest(){
     double x1 = highClamp->point1->coords().x();
     double delta = x1-x0;
     this->xAxis->setRange(x0-delta*0.1, x1+delta*0.1);
-    this->replot();
+    this->replot(QCustomPlot::rpQueued);
 }
 
 /*unsigned QCstmPlotHistogram::getTotal(int threshold){
@@ -141,7 +193,7 @@ void QCstmPlotHistogram::setActive(int index){
     this->graph(m_currentHist)->setLayer("front");
     //this->graph(currentHist)->setLayer()
     this->graph(m_currentHist)->rescaleAxes();
-    replot();
+    replot(QCustomPlot::rpQueued);
 }
 
 void QCstmPlotHistogram::clear(){
@@ -150,7 +202,7 @@ void QCstmPlotHistogram::clear(){
         delete it.value().second;
     m_mapping.clear();
     m_currentHist = -1;
-    this->replot();
+    this->replot(QCustomPlot::rpQueued);
 }
 
 void QCstmPlotHistogram::changeRange(QCPRange newRange){
@@ -176,15 +228,16 @@ void QCstmPlotHistogram::maxClampChanged(double max){
 }
 
 void QCstmPlotHistogram::set_scale_full(int threshold){
+    if ( threshold < 0 ) return;
     int index = m_mapping[threshold].first;
     if(this->graphCount() == 0)
         return;
     this->changeRange(QCPRange(this->graph(index)->data()->begin().key(), (this->graph(index)->data()->end()-1).key()));
-    this->replot();
+    this->replot(QCustomPlot::rpQueued);
 }
 
 void QCstmPlotHistogram::set_scale_percentile(int threshold, double lowerPercentile, double upperPercentile){
-
+    if ( threshold < 0 ) return;
     if(this->graphCount() == 0)
         return;
     Histogram *hist = m_mapping[threshold].second;
@@ -219,4 +272,9 @@ void QCstmPlotHistogram::mouseReleaseEvent(QMouseEvent *event){
         //this->changeRange(QCPRange(xClicked, xReleased));
         emit new_range_dragged(QCPRange(xClicked, xReleased));
     }
+}
+
+void QCstmPlotHistogram::on_scaleTypeChanged(QCPAxis::ScaleType st)
+{
+    _scaleTypeHistogram = st;
 }

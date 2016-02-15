@@ -82,6 +82,16 @@ void Histogram::setRange(int min, int max){//TODO: test this when less sleepy
   qDebug() << "new size = " << size();
 }
 
+unsigned Histogram::getYMaxCount()
+{
+    int nBins = size();
+    unsigned maxV = 0;
+    for ( int i = 0 ; i < nBins ; i++ ) {
+        if( m_bins[i] > maxV ) maxV = m_bins[i];
+    }
+    return maxV;
+}
+
 Histogram& Histogram::operator+=(const int& rhs){
   addCount(rhs);
   return *this;
