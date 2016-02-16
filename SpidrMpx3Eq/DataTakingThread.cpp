@@ -47,6 +47,16 @@ void DataTakingThread::run() {
 	}
 
 	SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
+
+    //! Work around
+    //! If we attempt a connection while the system is already sending data
+    //! (this may happen if for instance the program died for whatever reason,
+    //!  or when it is close while a very long data taking has been lauched and
+    //! the system failed to stop the data taking).  If this happens we ought
+    //! to stop data taking, and give the system a bit of delay.
+    spidrcontrol->stopAutoTrigger();
+    Sleep( 100 );
+
 	// 0 : DEBUG
 	// 1 : INFO
 	// 2 : WARNINGS, ERROR, FATAL
@@ -380,7 +390,15 @@ void DataTakingThread::run() {
 			lastDrawn = nFramesReceived;
 		}
 
-	}
+        // If called to Stop
+        if ( _stop ) break;
+
+    }
+
+    if ( _stop ) { // if the data taking was stopped
+        spidrcontrol->stopAutoTrigger();
+    }
+
 	// If number of triggers reached
 	//if ( nFramesReceived == _mpx3gui->getConfig()->getNTriggers() ) break;
 

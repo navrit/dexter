@@ -88,6 +88,8 @@ void QCstmGLVisualization::updateETA() {
 
 void QCstmGLVisualization::StartDataTaking(){
 
+    // The Start button becomes the Stop button
+
     if ( !_takingData ) {
 
         // Clear previous data first
@@ -124,8 +126,13 @@ void QCstmGLVisualization::StartDataTaking(){
 
     } else {
 
-        // Try to stop the thread
+        // Attempt to stop the thread
         if ( _dataTakingThread ) emit stop_data_taking_thread();
+
+        // The thread will try to finish itself.
+        // Now let's block this thread until that
+        // happens. It will be fast
+        _dataTakingThread->wait();
 
         // Change the Stop button to Start
         ui->startButton->setText( "Start" );
@@ -378,6 +385,9 @@ void QCstmGLVisualization::changeBinCount(int count){
 }
 
 void QCstmGLVisualization::fps_update(int nframes_done) {
+
+    // check if there is a datataking thread is running
+    if ( ! _dataTakingThread->isRunning() ) return;
 
     double fpsVal = ((double)nframes_done) / ((double)_etatimer->elapsed() / 1000.); // elapsed() comes in milliseconds
 
