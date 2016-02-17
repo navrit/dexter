@@ -220,6 +220,18 @@ std::string SpidrDaq::errorString()
 }
 
 // ----------------------------------------------------------------------------
+
+bool SpidrDaq::hasError()
+{
+  for( unsigned int i=0; i<_frameReceivers.size(); ++i )
+    if( !_frameReceivers[i]->errString().empty() )
+      return true;
+  if( !_frameBuilder->errString().empty() )
+    return true;
+  return false;
+}
+
+// ----------------------------------------------------------------------------
 // Configuration
 // ----------------------------------------------------------------------------
 

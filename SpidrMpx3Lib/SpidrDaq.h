@@ -38,6 +38,7 @@ class MY_LIB_API SpidrDaq
   int         classVersion      ( ); // Version of this class
   std::string ipAddressString   ( int index );
   std::string errorString       ( );
+  bool        hasError          ( );
 
   // Configuration
   void setPixelDepth            ( int nbits );
