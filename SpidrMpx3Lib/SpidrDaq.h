@@ -85,6 +85,12 @@ class MY_LIB_API SpidrDaq
   int  packetSize               ( int index );            // For debugging
   int  expSequenceNr            ( int index );            // For debugging
 
+  int  pixelsReceivedCount      ( int index );
+  int  pixelsReceivedCount      ( );
+  int  pixelsLostCount          ( int index );
+  int  pixelsLostCount          ( );
+  int  pixelsLostCountFrame     ( int index, int buf_i ); // For debugging
+
  private:
   std::vector<ReceiverThread *> _frameReceivers;
   FramebuilderThread *_frameBuilder;

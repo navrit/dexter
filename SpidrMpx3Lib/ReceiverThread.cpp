@@ -483,11 +483,13 @@ void ReceiverThread::setPixelDepth( int nbits )
       nbits == 24 )
     {
       _expFrameSize = (MPX_PIXELS * nbits) / 8;
+      _pixelDepth = nbits;
     }
   else
     {
       // Illegal number of bits, set frame size to some value
       _expFrameSize = MPX3_12BIT_RAW_SIZE;
+      _pixelDepth = 12;
     }
 }
 

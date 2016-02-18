@@ -44,6 +44,7 @@ class MY_LIB_API SpidrController
   std::string versionToString( int  version ); // Utility function
 
   // General module configuration
+  bool        isCompactSpidr       ( );
   bool        isConnected          ( );
   std::string connectionStateString( );
   std::string connectionErrString  ( );

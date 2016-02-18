@@ -2,7 +2,7 @@
 #include "ReceiverThreadC.h"
 #include "mpx3defs.h"
 
-#define _USE_QTCONCURRENT
+//#define _USE_QTCONCURRENT
 #ifdef _USE_QTCONCURRENT
 #if QT_VERSION >= 0x050000
 #include <QtConcurrent>
@@ -49,12 +49,12 @@ void FramebuilderThreadC::processFrame()
 #ifdef _USE_QTCONCURRENT
       if( _n > 1 )
 	{
-	  int nbytes; // Here dummy/unused parameter
 	  QFuture<int> qf[4];
 	  for( i=0; i<_n; ++i )
 	    qf[i] = QtConcurrent::run( this,
 				       &FramebuilderThreadC::mpx3RawToPixel,
-				       _receivers[i]->frameData(), nbytes,
+				       _receivers[i]->frameData(),
+				       _receivers[i]->dataSizeFrame(),
 				       &_decodedFrame[i][0],
 				       _evtHdr.pixelDepth,
 				       //_devHdr[i].deviceType,
@@ -67,7 +67,8 @@ void FramebuilderThreadC::processFrame()
 #endif // _USE_QTCONCURRENT
 	{
 	  for( i=0; i<_n; ++i )
-	    _frameSz[i] = this->mpx3RawToPixel( _receivers[i]->frameData(), 0,
+	    _frameSz[i] = this->mpx3RawToPixel( _receivers[i]->frameData(),
+						_receivers[i]->dataSizeFrame(),
 						_decodedFrame[i],
 						_evtHdr.pixelDepth,
 						//_devHdr[i].deviceType,

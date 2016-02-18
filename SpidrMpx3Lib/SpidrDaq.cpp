@@ -3,10 +3,13 @@
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 #include "ReceiverThread.h"
+#include "ReceiverThreadC.h"
 #include "FramebuilderThread.h"
+#include "FramebuilderThreadC.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x15101500;
+const int VERSION_ID = 0x16021700; // Compact-SPIDR support added
+//const int VERSION_ID = 0x15101500;
 //const int VERSION_ID = 0x15100100;
 //const int VERSION_ID = 0x15093000;
 //const int VERSION_ID = 0x15092100;
@@ -106,32 +109,52 @@ void SpidrDaq::init( int             *ipaddr,
   _frameBuilder = 0;
 
   ReceiverThread *recvr;
+
+  bool is_cspidr = false;
+  if( spidrctrl )
+    is_cspidr = spidrctrl->isCompactSpidr();
+  
   // Use ports[] to determine what's there, in case we want
   // to start with default parameters (which includes ID=0)
   if( ports[0] != 0 )
     {
-      recvr = new ReceiverThread( ipaddr, ports[0] );
+      if( is_cspidr )
+	recvr = new ReceiverThreadC( ipaddr, ports[0] );
+      else
+	recvr = new ReceiverThread( ipaddr, ports[0] );
       _frameReceivers.push_back( recvr );
     }
   if( ports[1] != 0 )
     {
-      recvr = new ReceiverThread( ipaddr, ports[1] );
+      if( is_cspidr )
+	recvr = new ReceiverThreadC( ipaddr, ports[1] );
+      else
+	recvr = new ReceiverThread( ipaddr, ports[1] );
       _frameReceivers.push_back( recvr );
     }
   if( ports[2] != 0 )
     {
-      recvr = new ReceiverThread( ipaddr, ports[2] );
+      if( is_cspidr )
+	recvr = new ReceiverThreadC( ipaddr, ports[2] );
+      else
+	recvr = new ReceiverThread( ipaddr, ports[2] );
       _frameReceivers.push_back( recvr );
     }
   if( ports[3] != 0 )
     {
-      recvr = new ReceiverThread( ipaddr, ports[3] );
+      if( is_cspidr )
+	recvr = new ReceiverThreadC( ipaddr, ports[3] );
+      else
+	recvr = new ReceiverThread( ipaddr, ports[3] );
       _frameReceivers.push_back( recvr );
     }
 
   // Create the file writer thread, providing it with a link to
   // the readout threads
-  _frameBuilder = new FramebuilderThread( _frameReceivers );
+  if( is_cspidr )
+    _frameBuilder = new FramebuilderThreadC( _frameReceivers );
+  else
+    _frameBuilder = new FramebuilderThread( _frameReceivers );
 
   // Let the first receiver notify the file writer about new data
   if( _frameReceivers.size() > 0 )
@@ -506,6 +529,53 @@ int SpidrDaq::expSequenceNr( int index )
   // DEBUG function:
   if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
   return _frameReceivers[index]->expSequenceNr();
+}
+
+// ----------------------------------------------------------------------------
+// For Compact-SPIDR type
+// ----------------------------------------------------------------------------
+
+int SpidrDaq::pixelsReceivedCount( int index )
+{
+  if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
+  return _frameReceivers[index]->pixelsReceived();
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrDaq::pixelsReceivedCount()
+{
+  int count = 0;
+  for( int i=0; i<(int) _frameReceivers.size(); ++i )
+    count += _frameReceivers[i]->pixelsReceived();
+  return count;
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrDaq::pixelsLostCount( int index )
+{
+  if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
+  return _frameReceivers[index]->pixelsLost();
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrDaq::pixelsLostCount()
+{
+  int count = 0;
+  for( int i=0; i<(int) _frameReceivers.size(); ++i )
+    count += _frameReceivers[i]->pixelsLost();
+  return count;
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrDaq::pixelsLostCountFrame( int index, int buf_i )
+{
+  // DEBUG function:
+  if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
+  return _frameReceivers[index]->pixelsLostFrame( buf_i );
 }
 
 // ----------------------------------------------------------------------------

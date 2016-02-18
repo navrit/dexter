@@ -209,9 +209,10 @@ void FramebuilderThread::processFrame()
 	    qf[i] = QtConcurrent::run( this,
 				       &FramebuilderThread::mpx3RawToPixel,
 				       _receivers[i]->frameData(),
+				       _receivers[i]->dataSizeFrame(),
 				       &_decodedFrame[i][0],
 				       _evtHdr.pixelDepth,
-				       _devHdr[i].deviceType,
+				       //_devHdr[i].deviceType,
 				       _compress );
 	  // Wait for threads to finish and get the results...
 	  for( i=0; i<_n; ++i )
@@ -222,9 +223,10 @@ void FramebuilderThread::processFrame()
 	{
 	  for( i=0; i<_n; ++i )
 	    _frameSz[i] = this->mpx3RawToPixel( _receivers[i]->frameData(),
+						_receivers[i]->dataSizeFrame(),
 						_decodedFrame[i],
 						_evtHdr.pixelDepth,
-						_devHdr[i].deviceType,
+						//_devHdr[i].deviceType,
 						_compress );
 	}
 
@@ -323,9 +325,10 @@ void FramebuilderThread::writeDecodedFrameToFile()
   int frame_sz[4];
   for( i=0; i<_n; ++i )
     frame_sz[i] = this->mpx3RawToPixel( _receivers[i]->frameData(),
+					_receivers[i]->dataSizeFrame(),
 					_decodedFrame[i],
 					_evtHdr.pixelDepth,
-					_devHdr[i].deviceType,
+					//_devHdr[i].deviceType,
 					_compress );
 
   // Fill the headers with the frame data sizes
@@ -607,13 +610,17 @@ std::string FramebuilderThread::errString()
 // ----------------------------------------------------------------------------
 
 int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
+					int            nbytes,
 					int           *pixels,
 					int            counter_depth,
-					int            device_type,
+					//int          device_type,
 					bool           compress )
 {
   // Convert MPX3 raw bit stream in byte array 'raw_bytes'
   // into n-bits pixel values in array 'pixel' (with n=counter_depth)
+  // (NB: parameter 'nbytes' here not used, intentionally)
+  // (NB: parameter 'device_type' removed as it appears the function
+  //      for QtConcurrent::run can have up to 5 parameters only..)
   int            counter_bits, row, col, offset, pixelbit;
   int            bitmask;
   int           *ppix;
@@ -753,7 +760,8 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
     }
 
   // If necessary, apply a look-up table (LUT)
-  if( device_type == MPX_TYPE_MPX3RX && counter_depth > 1 && _applyLut )
+  //if( device_type == MPX_TYPE_MPX3RX && counter_depth > 1 && _applyLut )
+  if( counter_depth > 1 && _applyLut )
     {
       // Medipix3RX device: apply LUT
       if( counter_depth == 6 )

@@ -106,6 +106,20 @@ std::string SpidrController::versionToString( int version )
 // General module configuration
 // ----------------------------------------------------------------------------
 
+bool SpidrController::isCompactSpidr()
+{
+  // Is the module a Compact-SPIDR module?
+  // (based on the software version least-significant byte >= 0x0A)
+  bool is_cspidr = false;
+  int version;
+  if( this->getSoftwVersion( &version ) )
+    if( (version & 0xFF) != 0xFF && (version & 0xFF) > 0x09 )
+      is_cspidr = true;
+  return is_cspidr;
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::isConnected()
 {
   return( _sock->state() == QAbstractSocket::ConnectedState );

@@ -37,6 +37,7 @@ class ReceiverThreadC : public ReceiverThread
   u64    *_framePtr;
   int     _frameSize[NR_OF_FRAMEBUFS];
   u16     _shutterCnt;
+  bool    _bigEndian;
 
   // Statistics
   int     _pixelsReceived;

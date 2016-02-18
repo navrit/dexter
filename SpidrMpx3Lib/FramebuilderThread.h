@@ -31,13 +31,13 @@ class FramebuilderThread : public QThread
  public:
   FramebuilderThread( std::vector<ReceiverThread *> recvrs,
 		    QObject *parent = 0 );
-  ~FramebuilderThread();
+  virtual ~FramebuilderThread();
 
   void   stop();
   void   run();
   void   inputNotification();
   void   abortFrame();
-  void   processFrame();
+  virtual void processFrame();
   void   writeFrameToFile();
   void   writeRawFrameToFile();
   void   writeDecodedFrameToFile();
@@ -74,7 +74,7 @@ class FramebuilderThread : public QThread
   std::string errString();
   void clearErrString() { _errString.clear(); };
 
- private:
+ protected:
   // Vector with pointers to frame receivers (up to 4 of them)
   std::vector<ReceiverThread *> _receivers;
   u32 _n; // To contain size of _receivers
@@ -128,11 +128,12 @@ class FramebuilderThread : public QThread
   // one from each of up to 4 receivers
   int           _decodedFrame[4][256*256];
 
-  int mpx3RawToPixel( unsigned char *raw_bytes,
-		      int           *pixels,
-		      int            counter_depth,
-		      int            device_type,
-		      bool           compress );
+  virtual int mpx3RawToPixel( unsigned char *raw_bytes,
+			      int            nbytes,
+			      int           *pixels,
+			      int            counter_depth,
+			      //int          device_type,
+			      bool           compress );
 };
 
 #endif // FILEWRITERTHREAD_H

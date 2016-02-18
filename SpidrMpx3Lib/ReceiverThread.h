@@ -12,6 +12,7 @@
   #include </usr/include/stdint.h>
 #endif
 typedef int64_t  i64;
+typedef uint64_t u64;
 typedef uint32_t u32;
 typedef uint16_t u16;
 typedef uint8_t  u8;
@@ -34,20 +35,20 @@ class ReceiverThread : public QThread
   ReceiverThread( int     *ipaddr,
 		  int      port = 8192,
 		  QObject *parent = 0 );
-  ~ReceiverThread();
+  virtual ~ReceiverThread();
   
   void stop();
 
   void run();
 
-  void readDatagrams();
+  virtual void readDatagrams();
   void handleFrameTimeout();
   void nextFrameBuffer();
   void releaseFrame();
   bool hasFrame();
   i64  timeStampFrame();
   i64  timeStampFrameSpidr();
-  u32  dataSizeFrame()    { return _expFrameSize; }
+  virtual int dataSizeFrame() { return _expFrameSize; }
   u8  *frameData()        { return _frameBuffer[_tail]; } 
   u8  *spidrHeaderFrame() { return _headerBuffer[_tail]; }
   bool isCounterhFrame()  { return _isCounterhFrame[_tail]; }
@@ -69,12 +70,16 @@ class ReceiverThread : public QThread
   int  packetSize()       { return _expPayloadSize + SPIDR_HEADER_SIZE; }
   int  expSequenceNr()    { return _expSequenceNr; }
 
+  virtual int pixelsReceived()         { return 0; }
+  virtual int pixelsLost()             { return 0; }
+  virtual int pixelsLostFrame( int i ) { i=0; return 0; }
+
   void setFramebuilder( FramebuilderThread *framebuilder )
     { _frameBuilder = framebuilder; };
   void setController( SpidrController *spidrctrl )
     { _spidrController = spidrctrl; };
 
- private:
+ protected:
 #define USE_NATIVE_SOCKET
 #ifdef USE_NATIVE_SOCKET
   QAbstractSocket *_sock;
@@ -95,6 +100,7 @@ class ReceiverThread : public QThread
   int     _currShutterCnt;
   int     _expSequenceNr;
   bool    _copySpidrHeader;
+  int     _pixelDepth;
 
   // Statistics
   int     _framesReceived;
@@ -117,7 +123,7 @@ class ReceiverThread : public QThread
   SpidrHeader_t *_spidrHeader;
 
   // Receive buffer for a single datagram/IP-packet
-  char    _recvBuffer[RECV_BUF_SIZE];
+  char      _recvBuffer[RECV_BUF_SIZE];
 
   // Frame info and buffers
   QDateTime _timeStamp[NR_OF_FRAMEBUFS];

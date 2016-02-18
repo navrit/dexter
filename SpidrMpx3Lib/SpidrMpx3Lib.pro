@@ -45,7 +45,9 @@ unix {
 SOURCES += SpidrController.cpp
 SOURCES += SpidrDaq.cpp
 SOURCES += ReceiverThread.cpp
+SOURCES += ReceiverThreadC.cpp
 SOURCES += FramebuilderThread.cpp
+SOURCES += FramebuilderThreadC.cpp
 
 HEADERS += SpidrController.h
 HEADERS += mpx3dacsdescr.h
@@ -54,4 +56,6 @@ HEADERS += spidrmpx3cmds.h
 HEADERS += spidrdata.h
 HEADERS += SpidrDaq.h
 HEADERS += ReceiverThread.h
+HEADERS += ReceiverThreadC.h
 HEADERS += FramebuilderThread.h
+HEADERS += FramebuilderThreadC.h
