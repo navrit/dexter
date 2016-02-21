@@ -23,6 +23,7 @@ class SpidrMpx3Tv : public QMainWindow, Ui_SpidrTv
  private:
   SpidrController *_controller;
   SpidrDaq        *_daq;
+  bool             _isCompactSpidr;
   QImage           _image1, _image4;
   int              _deviceCount;
   int              _counterDepth;
