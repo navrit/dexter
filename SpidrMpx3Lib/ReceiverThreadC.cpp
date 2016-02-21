@@ -17,7 +17,7 @@ ReceiverThreadC::ReceiverThreadC( int *ipaddr,
     _pixelsLost( 0 ),
     _framePtr( (u64 *)_frameBuffer[0] ),
     _shutterCnt( 1 ),
-    _bigEndian( true ),
+    _bigEndian( false ),
     ReceiverThread( ipaddr, port, parent )
 {
   for( u32 i=0; i<NR_OF_FRAMEBUFS; ++i )
