@@ -240,15 +240,15 @@ void QCstmDacs::PopulateDACValues() {
 
 void QCstmDacs::ConnectionStatusChanged(bool conn) {
 
+    // Widgets status
     if ( conn ) {
         setWindowWidgetsStatus( win_status::connected );
     } else {
         setWindowWidgetsStatus( win_status::disconnected );
     }
 
-
     // Fill the DACs
-    PopulateDACValues();
+    if ( conn ) PopulateDACValues();
 
 }
 

@@ -93,7 +93,7 @@ void QCstmGLVisualization::StartDataTaking(){
     if ( !_takingData ) {
 
         // Clear previous data first
-        GetMpx3GUI()->clear_data();
+        GetMpx3GUI()->clear_data( false );
 
         // Threads
         if ( _dataTakingThread ) {
@@ -124,6 +124,8 @@ void QCstmGLVisualization::StartDataTaking(){
         // Start the timer to display eta
         ArmAndStartTimer();
 
+        emit sig_statusBarAppend("start","blue");
+
     } else {
 
         // Attempt to stop the thread
@@ -144,6 +146,8 @@ void QCstmGLVisualization::StartDataTaking(){
         // Finish
         DestroyTimer();
         ETAToZero();
+
+        emit sig_statusBarAppend("stop","orange");
     }
 
 }
@@ -227,6 +231,8 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
             _singleShot = false;
             _singleShotSaveNTriggers = 0;
         }
+
+        emit sig_statusBarAppend("done","blue");
 
     }
 
@@ -370,6 +376,10 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect(this, SIGNAL(change_hover_text(QString)), ui->mouseOverLabel, SLOT(setText(QString)));
     //connect(ui->fullRangeRadio, SIGNAL(pressed()), ui->histPlot, SLOT(set_scale_full()));
     connect(ui->histPlot, SIGNAL(new_range_dragged(QCPRange)), this, SLOT(new_range_dragged(QCPRange)));
+
+    connect( this, &QCstmGLVisualization::sig_statusBarAppend, _mpx3gui, &Mpx3GUI::statusBarAppend );
+    connect( this, &QCstmGLVisualization::sig_statusBarWrite, _mpx3gui, &Mpx3GUI::statusBarWrite );
+    connect( this, &QCstmGLVisualization::sig_statusBarClean, _mpx3gui, &Mpx3GUI::statusBarClean );
 
     // Defaults
     emit mode_changed(ui->summingCheckbox->isChecked());

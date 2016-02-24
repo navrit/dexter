@@ -21,6 +21,7 @@
 
 #include <QMessageBox>
 #include <QDebug>
+#include <QStatusBar>
 
 #include <stdlib.h>
 #include <time.h>
@@ -107,6 +108,22 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     SetupSignalsAndSlots();
     //emit frame_added();
 
+    /////////////////////////////////////////////////////////
+    // statusBarMessage
+
+    // I use a QLabel to be able to use rich text inside
+    m_statusBarMessageLabel.setTextFormat( Qt::RichText );
+
+    //QRect sgeo = _ui->statusBar->geometry();
+    //m_statusBarMessageLabel.setGeometry(sgeo);
+
+    // Add the QLabel permanently to the statusBar
+    _ui->statusBar->addPermanentWidget( &m_statusBarMessageLabel, 0 );
+
+    //_ui->statusBar->set
+    //m_statusBarMessageLabel.setAlignment( Qt::AlignLeft );
+    m_statusBarMessageString.clear( );
+
 }
 
 
@@ -185,6 +202,10 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged() ) );
     connect( this, &Mpx3GUI::ConnectionStatusChanged, &Mpx3GUI::onConnectionStatusChanged );
 
+    connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
+    connect( this, &Mpx3GUI::sig_statusBarWrite, this, &Mpx3GUI::statusBarWrite );
+    connect( this, &Mpx3GUI::sig_statusBarClean, this, &Mpx3GUI::statusBarClean );
+
 }
 
 Mpx3Config* Mpx3GUI::getConfig() {
@@ -230,61 +251,90 @@ void Mpx3GUI::set_summing(bool shouldSum){
         set_mode_normal();
 }
 
-void Mpx3GUI::establish_connection() {
+bool Mpx3GUI::establish_connection() {
 
     qDebug() << "[INFO] Connecting ...";
+
     SpidrController * spidrcontrol = config->establishConnection();
 
-    QDebug dbg(QtInfoMsg);
+    QDebug * dbg = new QDebug(QtInfoMsg);
 
     // Check if we are properly connected to the SPIDR module
     if ( spidrcontrol->isConnected() ) {
-        dbg << "Connected to SPIDR: " << spidrcontrol->ipAddressString().c_str() << "[" << config->getNDevicesPresent();
-        if(config->getNDevicesPresent() > 1) dbg << " chips found] ";
-        else dbg << " chip found] ";
+        *dbg << "Connected to SPIDR: " << spidrcontrol->ipAddressString().c_str() << "[" << config->getNDevicesPresent();
+        if(config->getNDevicesPresent() > 1) *dbg << " chips found] ";
+        else *dbg << " chip found] ";
 
         int ipaddr;
         // This call takes device number 0 'cause it is not really addressed to a chip in particular
         if( spidrcontrol->getIpAddrDest( 0, &ipaddr ) )
-            dbg << ", IP dest: "
+            *dbg << ", IP dest: "
                  << ((ipaddr>>24) & 0xFF) << "."
                  << ((ipaddr>>16) & 0xFF) << "."
                  << ((ipaddr>> 8) & 0xFF) << "."
                  << ((ipaddr>> 0) & 0xFF);
-        //_ui->_statusLabel->setText("Connected");
-        //_ui->_statusLabel->setStyleSheet("QLabel { background-color : blue; color : white; }");
 
     } else {
-        cout << spidrcontrol->connectionStateString() << ": "
-             << spidrcontrol->connectionErrString() << endl;
-        //_ui->_statusLabel->setText("Connection failed.");
-        //_ui->_statusLabel->setStyleSheet("QLabel { background-color : red; color : black; }");
+
         QMessageBox::critical(this, "Connection error",
-                              QString("Couldn't establish a connection to the Spidr controller at %1, %2").arg(QString::fromStdString(spidrcontrol->ipAddressString())).arg(QString::fromStdString(spidrcontrol->connectionErrString())));
+                              tr("Could not establish a connection to the SPIDR controller.\n\nStatus: %1"
+                                 "\nError message: %2"
+                                 "\n\n"
+                                 "If unsure about the network setup you can listen to the SPIDR during "
+                                 "the power cycle through the USB port (8-N-1 115200)."
+                                 ).
+                              arg(QString::fromStdString(spidrcontrol->connectionStateString())).
+                              arg(QString::fromStdString(spidrcontrol->connectionErrString()))
+                              );
+
+        config->destroyController();
         emit ConnectionStatusChanged(false);
-        return; //No use in continuing if we can't connect.
+
+        return false; // No use in continuing if we can't connect.
     }
 
     // Get version numbers
-    dbg << "\n";
-    dbg << "SpidrController class: "
+    *dbg << "\n";
+    *dbg << "SpidrController class: "
          << spidrcontrol->versionToString( spidrcontrol->classVersion() ).c_str() << "\n";
     int version;
     if( spidrcontrol->getFirmwVersion( &version ) )
-        dbg << "SPIDR firmware  : " << spidrcontrol->versionToString( version ).c_str() << "\n";
+        *dbg << "SPIDR firmware  : " << spidrcontrol->versionToString( version ).c_str() << "\n";
     if( spidrcontrol->getSoftwVersion( &version ) )
-        dbg << "SPIDR software  : " << spidrcontrol->versionToString( version ).c_str() << "\n";
+        *dbg << "SPIDR software  : " << spidrcontrol->versionToString( version ).c_str() << "\n";
 
 
     // SpidrDaq
     _spidrdaq = new SpidrDaq( spidrcontrol );
-    dbg << "SpidrDaq: ";
+    *dbg << "SpidrDaq: ";
 
-    for( int i=0; i<4; ++i ) dbg << _spidrdaq->ipAddressString( i ).c_str() << " ";
+    for( int i=0; i<4; ++i ) *dbg << _spidrdaq->ipAddressString( i ).c_str() << " ";
+    *dbg << "\n";
 
-    Sleep( 1000 );
+    if ( _spidrdaq->hasError() ) {
+        // Dump the verbose here.
+        delete dbg;
 
-    dbg << _spidrdaq->errorString().c_str();
+        QMessageBox::critical(this, "Connection error",
+                              tr("Couldn't open an UDP connection. Error message:\n\n%1"
+                                 "\n\nThis could be due to:\n- A program using the required UDP ports."
+                                 "\n- Problems with the network between this system and SPIDR.").
+                              arg(QString::fromStdString(_spidrdaq->errorString()))
+                              );
+
+        delete _spidrdaq;
+        config->destroyController();
+
+        emit ConnectionStatusChanged(false);
+        return false; // No use in continuing if we can't connect.
+    }
+
+    // Dump the verbose here.
+    delete dbg;
+
+    ///////////////////////////////////////////////////
+    // Done connecting.
+    // If passed this point we are ready to work !
 
     // Here the chips can be configured
     getConfig()->SendConfiguration();
@@ -305,7 +355,7 @@ void Mpx3GUI::establish_connection() {
     workingSet = new Dataset(chipSize, chipSize, config->getNActiveDevices(), config->getPixelDepth()); //TODO: get framesize from config, load offsets & orientation from config
     originalSet = new Dataset(chipSize, chipSize, config->getNActiveDevices(), config->getPixelDepth());
 
-    clear_data();
+    clear_data( false );
     QVector<int> activeDevices = config->getActiveDevices();
     for ( int i = 0 ; i < activeDevices.size() ; i++ ) {
         getDataset()->setLayout(i, _MPX3RX_LAYOUT[activeDevices[i]]);
@@ -314,6 +364,98 @@ void Mpx3GUI::establish_connection() {
     /*for(int i = 0; i < workingSet->getLayerCount();i++)
     updateHistogram(i);*/
     //emit frames_reload();
+
+    return true;
+}
+
+void Mpx3GUI::statusBarAppend(QString mess, QString colorString)
+{
+
+    QString toappend;
+    if ( ! m_statusBarMessageString.isEmpty() ) {
+        toappend += " | ";
+    }
+
+    toappend += "<font color=\"";
+    toappend += colorString;
+    toappend += "\">";
+    toappend += mess;
+    toappend += "</font>";
+
+    // Append
+    m_statusBarMessageString.append( toappend );
+
+    // Associate to the label
+    m_statusBarMessageLabel.setText( m_statusBarMessageString );
+
+    // See if it fits in the status bar other wise cut stuff
+    QRect messRect = m_statusBarMessageLabel.geometry();
+    QRect statusRect = _ui->statusBar->geometry();
+
+    //qDebug() << "mess:" << messRect.width() << "stat:" << statusRect.width() << " | " << m_statusBarMessageString << "\n";
+
+    while ( (messRect.width() + 100) > statusRect.width() ) {
+
+        m_statusBarMessageString = removeOneMessage( m_statusBarMessageString );
+        m_statusBarMessageLabel.setText( m_statusBarMessageString );
+        m_statusBarMessageLabel.adjustSize();
+
+        messRect = m_statusBarMessageLabel.geometry();
+        statusRect = _ui->statusBar->geometry();
+
+        //qDebug() << "mess:" << messRect.width() << "stat:" << statusRect.width() << " | " << m_statusBarMessageString << "\n";
+
+    }
+
+    _ui->statusBar->update();
+    m_statusBarMessageLabel.update();
+
+}
+
+
+
+void Mpx3GUI::statusBarWrite(QString mess, QString colorString)
+{
+
+    QString toappend = "<font color=\"";
+    toappend += colorString;
+    toappend += "\">";
+    toappend += mess;
+    toappend += "</font>";
+
+
+    // clear all previous messages
+    m_statusBarMessageString.clear();
+
+    //
+    m_statusBarMessageLabel.setText( m_statusBarMessageString );
+
+    _ui->statusBar->update();
+    m_statusBarMessageLabel.update();
+
+}
+
+void Mpx3GUI::statusBarClean()
+{
+
+    m_statusBarMessageString.clear();
+    m_statusBarMessageLabel.setText( m_statusBarMessageString );
+    _ui->statusBar->clearMessage();
+
+    _ui->statusBar->update();
+    m_statusBarMessageLabel.update();
+
+}
+
+QString Mpx3GUI::removeOneMessage(QString fullMess)
+{
+
+    int indx = fullMess.indexOf(" | ");
+    if ( indx != -1 ) {
+        fullMess = fullMess.right( fullMess.size() - indx - 3 );
+    }
+
+    return fullMess;
 }
 
 
@@ -589,10 +731,14 @@ void Mpx3GUI::clear_configuration(){
 
 }
 
-void Mpx3GUI::clear_data(){
+void Mpx3GUI::clear_data(bool clearStatusBar) {
+
     getDataset()->clear();
     //getVisualization()->cle
     emit data_cleared();
+
+    if ( clearStatusBar ) emit sig_statusBarAppend("clear data","orange");
+
 }
 
 QCstmEqualization * Mpx3GUI::getEqualization(){return _ui->equalizationWidget;}
@@ -607,8 +753,13 @@ void Mpx3GUI::on_actionExit_triggered()
 }
 
 void Mpx3GUI::on_actionConnect_triggered() {
+
     // The connection status signal will be sent from establish_connection
-    establish_connection();
+    if ( establish_connection() ) {
+        emit sig_statusBarAppend( "Connected", "green" );
+    } else {
+        emit sig_statusBarAppend( "Connection failed", "red" );
+    }
 
 }
 

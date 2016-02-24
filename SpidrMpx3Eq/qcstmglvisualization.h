@@ -178,7 +178,10 @@ signals:
     void free_to_draw();
     void busy_drawing();
     void mode_changed(bool);
-
+    // status bar
+    void sig_statusBarAppend(QString mess, QString colorString);
+    void sig_statusBarWrite(QString mess, QString colorString);
+    void sig_statusBarClean();
 
 };
 

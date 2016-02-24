@@ -13,6 +13,7 @@
 #include <QVector>
 #include <iostream>
 #include <vector>
+#include <QScrollBar>
 
 #include <qcustomplot.h>
 
@@ -75,6 +76,9 @@ private:
     //QVector<istogram*> hists;
     void updateHistogram(int layer);
 
+    QLabel m_statusBarMessageLabel;
+    QString m_statusBarMessageString;
+
 public:
 
     Mpx3Config* getConfig();
@@ -111,7 +115,8 @@ public:
 
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; };
 
-    void establish_connection();
+    bool establish_connection();
+
 
 signals:
     void dataChanged();
@@ -133,11 +138,16 @@ signals:
     void open_data_failed();
     void returnFilename(QString);
 
+    // status bar
+    void sig_statusBarAppend(QString mess, QString colorString);
+    void sig_statusBarWrite(QString mess, QString colorString);
+    void sig_statusBarClean();
+
 public slots:
     void addLayer(int* data);
     void addLayer(int* data, int layer);
     void generateFrame(); //Debugging function to generate data when not connected
-    void clear_data();
+    void clear_data(bool clearStatusBar = true);
     void save_data();
     void open_data(bool saveOriginal = true);
     void open_data_with_path(bool saveOriginal = true, bool requestPath = false, QString path = "");
@@ -148,6 +158,12 @@ public slots:
     void save_config();
     void load_config();
     void onConnectionStatusChanged(bool);
+
+    // status bar
+    void statusBarAppend(QString mess, QString colorString);
+    void statusBarWrite(QString mess, QString colorString);
+    void statusBarClean();
+    QString removeOneMessage(QString fullMess);
 
 private slots:
     void LoadEqualization();

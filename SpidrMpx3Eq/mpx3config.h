@@ -57,6 +57,7 @@ public:
 	QString getIpAddress(){return SpidrAddress.toString();}
 	SpidrController* getController(){return controller;}
 	SpidrController* establishConnection();
+    void destroyController();
 	int getDacCount(){return _dacVals[0].length(); }
 	int getDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
 	void setDACValue(int chip, int dacIndex, int val) { _dacVals[dacIndex][chip] = val; }

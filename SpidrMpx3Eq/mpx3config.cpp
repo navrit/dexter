@@ -233,6 +233,8 @@ void QCstmGLVisualization::Configuration(bool reset, int deviceIndex) {//TODO: s
 }
  */
 
+
+
 SpidrController * Mpx3Config::establishConnection(){
 
 	// number of devices connected
@@ -248,6 +250,10 @@ SpidrController * Mpx3Config::establishConnection(){
     if ( controller ) delete controller;
 	controller = new SpidrController(((ipaddr>>24) & 0xFF), ((ipaddr>>16) & 0xFF), ((ipaddr>>8) & 0xFF), ((ipaddr>>0) & 0xFF), port);
 	connected = controller->isConnected();
+
+    // Connection failed
+    if ( ! connected ) return controller;
+
 	// number of device that the system can support
 	controller->getDeviceCount(&_nDevicesSupported);
 
@@ -300,7 +306,15 @@ SpidrController * Mpx3Config::establishConnection(){
 
 	}
 
-	return controller;
+    return controller;
+}
+
+void Mpx3Config::destroyController()
+{
+    if( controller != nullptr ) {
+        delete controller;
+        controller = nullptr;
+    }
 }
 
 /*

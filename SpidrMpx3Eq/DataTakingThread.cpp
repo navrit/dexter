@@ -402,10 +402,6 @@ void DataTakingThread::run() {
 	// If number of triggers reached
 	//if ( nFramesReceived == _mpx3gui->getConfig()->getNTriggers() ) break;
 
-	// If called to Stop
-	//if ( _stop ) break;
-
-
 	// Force last draw if not reached
 	if ( nFramesReceived != lastDrawn ) {
 
@@ -452,9 +448,10 @@ void DataTakingThread::run() {
 	_stop = false;
 
 	// clear counters in SpidrDac
-	// spidrdaq->frame
+    spidrdaq->resetLostCount();
 
 	delete spidrcontrol;
+
 }
 
 pair<int, int> DataTakingThread::XtoXY(int X, int dimX){
