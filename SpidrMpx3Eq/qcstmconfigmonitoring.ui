@@ -373,9 +373,6 @@
          </property>
         </widget>
        </item>
-       <item row="10" column="5">
-        <widget class="QLCDNumber" name="motorCurrentPoslcdNumber"/>
-       </item>
        <item row="0" column="3">
         <widget class="QLineEdit" name="ipLineEdit">
          <property name="frame">
@@ -397,13 +394,6 @@
         <widget class="QLabel" name="label_15">
          <property name="text">
           <string>Acceleration:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="4">
-        <widget class="QLabel" name="stepperCurrentPosLabel">
-         <property name="text">
-          <string>Current pos:</string>
          </property>
         </widget>
        </item>
@@ -462,13 +452,6 @@
          </property>
         </widget>
        </item>
-       <item row="12" column="4">
-        <widget class="QPushButton" name="motorGoToTargetButton">
-         <property name="text">
-          <string>Go to target</string>
-         </property>
-        </widget>
-       </item>
        <item row="9" column="4">
         <widget class="QPushButton" name="stepperSetZeroPushButton">
          <property name="text">
@@ -517,6 +500,30 @@
        </item>
        <item row="11" column="3">
         <widget class="QDoubleSpinBox" name="currentISpinBox"/>
+       </item>
+       <item row="11" column="4">
+        <widget class="QLabel" name="stepperCurrentPosLabel">
+         <property name="text">
+          <string>Current pos:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="4">
+        <widget class="QPushButton" name="motorGoToTargetButton">
+         <property name="text">
+          <string>Go to target</string>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="5">
+        <widget class="QLCDNumber" name="motorCurrentPoslcdNumber"/>
+       </item>
+       <item row="10" column="5">
+        <widget class="QPushButton" name="motorTestButton">
+         <property name="text">
+          <string>Test</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>

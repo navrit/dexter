@@ -83,6 +83,10 @@ private slots:
   void on_cameraCheckBox_toggled(bool checked);
   void changeCamera(int);
 
+  void on_motorTestButton_clicked();
+
+  void stepperGotoTargetFinished();
+
 private:
   Ui::QCstmConfigMonitoring *ui;
   int _timerId;
@@ -95,6 +99,8 @@ private:
   QCameraViewfinder * _viewfinder;
   QCameraImageCapture * _imageCapture;
   int _cameraId;
+  QVector<double> m_stepperTestSequence;
+  int m_stepperTestCurrentStep = 0;
 
 };
 
