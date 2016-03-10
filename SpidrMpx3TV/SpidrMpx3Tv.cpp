@@ -126,10 +126,7 @@ void SpidrMpx3Tv::timerEvent( QTimerEvent * )
       _lbFramesRecv->setText( QString::number(_daq->framesCount()) );
       _lbPacketsRecv->setText( QString::number(_daq->packetsReceivedCount()) );
       //_lbDebugCounter->setText( QString::number(_recvr->debugCounter()) );
-      if( _isCompactSpidr )
-	_lbPacketsLost->setText( QString::number(_daq->pixelsLostCount()) );
-      else
-	_lbPacketsLost->setText( QString::number(_daq->packetsLostCount()) );
+      _lbPacketsLost->setText( QString::number(_daq->lostCount()) );
       /*
 	this->lbShutterCount->
 	setText( QString::number(_recvr->lastShutterCount()) );
@@ -288,10 +285,10 @@ void SpidrMpx3Tv::onOff()
       _daq->setPixelDepth( _counterDepth );
 
       // If this is a Compact-SPIDR module there is no need
-      // apply LUTs to decode the pixel data
+      // apply LUTs to decode the pixel data (not yet implemented, 9 Mar 2016)
       _isCompactSpidr = _controller->isCompactSpidr();
-      if( _isCompactSpidr )
-	_daq->disableLut( true );
+      //if( _isCompactSpidr )
+      //_daq->disableLut( true );
 
       // Let SpidrDaq decode the frame data (otherwise it will simply absorb
       // all frames when no output file is opened..)
