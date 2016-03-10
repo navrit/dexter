@@ -20,6 +20,8 @@ typedef uint16_t u16;
 typedef uint8_t  u8;
 #include "spidrdata.h"
 
+#define NR_OF_DEVICES  4
+
 class ReceiverThread;
 
 typedef void (*CallbackFunc)( int id );
@@ -42,7 +44,7 @@ class FramebuilderThread : public QThread
   void   writeRawFrameToFile();
   void   writeDecodedFrameToFile();
   bool   hasFrame( unsigned long timeout_ms = 0 );
-  int   *frameData( int index, int *size, int *packets_lost = 0 );
+  int   *frameData( int index, int *size, int *lost_count = 0 );
   void   clearFrameData( int index );
   void   releaseFrame();
   i64    frameTimestamp();
@@ -68,8 +70,8 @@ class FramebuilderThread : public QThread
   int    framesReceived() { return _framesReceived; }
   int    framesWritten()  { return _framesWritten; }
   int    framesProcessed(){ return _framesProcessed; }
-  int    packetsLost()    { return _packetsLostTotal; }
-  int    packetsLostFrame();
+  int    lostCount()      { return _lostCountTotal; }
+  int    lostCountFrame();
 
   std::string errString();
   void clearErrString() { _errString.clear(); };
@@ -93,13 +95,13 @@ class FramebuilderThread : public QThread
   // Event header buffer
   EvtHeader_t _evtHdr;
   // Device headers
-  DevHeader_t _devHdr[4];
+  DevHeader_t _devHdr[NR_OF_DEVICES];
 
   int   _framesReceived;
   int   _framesWritten;
   int   _framesProcessed;
-  int   _packetsLostTotal;
-  int   _packetsLostFrame[4];
+  int   _lostCountTotal;
+  int   _lostCountFrame[NR_OF_DEVICES];
   bool  _decode;
   bool  _compress;
   bool  _flush;
@@ -120,13 +122,13 @@ class FramebuilderThread : public QThread
   // Info about the (decoded) set of frames
   i64           _timeStamp;
   i64           _timeStampSpidr;
-  int           _frameSz[4];
-  bool          _isCounterhFrame[4];
-  SpidrHeader_t _spidrHeader[4];
+  int           _frameSz[NR_OF_DEVICES];
+  bool          _isCounterhFrame[NR_OF_DEVICES];
+  SpidrHeader_t _spidrHeader[NR_OF_DEVICES];
 
   // Intermediate buffers for a (decoded) set of frames;
   // one from each of up to 4 receivers
-  int           _decodedFrame[4][256*256];
+  int           _decodedFrame[NR_OF_DEVICES][256*256];
 
   virtual int mpx3RawToPixel( unsigned char *raw_bytes,
 			      int            nbytes,

@@ -31,7 +31,11 @@ class ReceiverThreadC : public ReceiverThread
 
   virtual int pixelsReceived()         { return _pixelsReceived; }
   virtual int pixelsLost()             { return _pixelsLost; }
+  virtual int pixelsLostFrame()        { return _pixelsLostFrame[_tail]; }
   virtual int pixelsLostFrame( int i ) { return _pixelsLostFrame[i]; }
+
+  virtual int lostCount()              { return pixelsLost(); }
+  virtual int lostCountFrame()         { return pixelsLostFrame(); }
 
  private:
   // Expected frame data

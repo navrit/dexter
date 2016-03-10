@@ -8,7 +8,7 @@
 #include "FramebuilderThreadC.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x16021700; // Compact-SPIDR support added
+const int VERSION_ID = 0x16030900; // Compact-SPIDR support added
 //const int VERSION_ID = 0x15101500;
 //const int VERSION_ID = 0x15100100;
 //const int VERSION_ID = 0x15093000;
@@ -311,9 +311,9 @@ bool SpidrDaq::hasFrame( unsigned long timeout_ms )
 
 // ----------------------------------------------------------------------------
 
-int *SpidrDaq::frameData( int index, int *size_in_bytes, int *packets_lost )
+int *SpidrDaq::frameData( int index, int *size_in_bytes, int *lost_count )
 {
-  return _frameBuilder->frameData( index, size_in_bytes, packets_lost );
+  return _frameBuilder->frameData( index, size_in_bytes, lost_count );
 }
 
 // ----------------------------------------------------------------------------
@@ -463,19 +463,19 @@ int SpidrDaq::packetsReceivedCount()
 
 // ----------------------------------------------------------------------------
 
-int SpidrDaq::packetsLostCount( int index )
+int SpidrDaq::lostCount( int index )
 {
   if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
-  return _frameReceivers[index]->packetsLost();
+  return _frameReceivers[index]->lostCount();
 }
 
 // ----------------------------------------------------------------------------
 
-int SpidrDaq::packetsLostCount()
+int SpidrDaq::lostCount()
 {
   int count = 0;
   for( int i=0; i<(int) _frameReceivers.size(); ++i )
-    count += _frameReceivers[i]->packetsLost();
+    count += _frameReceivers[i]->lostCount();
   return count;
 }
 
@@ -489,19 +489,19 @@ void SpidrDaq::resetLostCount()
 
 // ----------------------------------------------------------------------------
 
-int SpidrDaq::packetsLostCountFile()
+int SpidrDaq::lostCountFile()
 {
-  // The total number of lost packets detected in the frames written
+  // The total number of lost packets/pixels detected in the frames written
   // to the current or last closed file
-  return _frameBuilder->packetsLost();
+  return _frameBuilder->lostCount();
 }
 
 // ----------------------------------------------------------------------------
 
-int SpidrDaq::packetsLostCountFrame()
+int SpidrDaq::lostCountFrame()
 {
-  // The total number of lost packets detected in the current frame
-  return _frameBuilder->packetsLostFrame();
+  // The total number of lost packets/pixels detected in the current frame
+  return _frameBuilder->lostCountFrame();
 }
 
 // ----------------------------------------------------------------------------

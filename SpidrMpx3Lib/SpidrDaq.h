@@ -54,7 +54,7 @@ class MY_LIB_API SpidrDaq
   bool      hasFrame            ( unsigned long timeout_ms = 0 );
   int      *frameData           ( int  index,
                                   int *size_in_bytes,
-                                  int *packets_lost = 0 );
+                                  int *lost_count = 0 );
   void      releaseFrame        ( );
   void      clearFrameData      ( int index );
   int       frameShutterCounter ( int index = -1 );
@@ -75,11 +75,11 @@ class MY_LIB_API SpidrDaq
   int  framesLostCount          ( );
   int  packetsReceivedCount     ( int index );
   int  packetsReceivedCount     ( );
-  int  packetsLostCount         ( int index );
-  int  packetsLostCount         ( );
+  int  lostCount                ( int index );
+  int  lostCount                ( );
   void resetLostCount           ( );
-  int  packetsLostCountFile     ( );
-  int  packetsLostCountFrame    ( );
+  int  lostCountFile            ( );
+  int  lostCountFrame           ( );
 
   int  packetsLostCountFrame    ( int index, int buf_i ); // For debugging
   int  packetSize               ( int index );            // For debugging

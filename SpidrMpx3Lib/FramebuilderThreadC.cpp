@@ -87,7 +87,7 @@ void FramebuilderThreadC::processFrame()
 
 	  _isCounterhFrame[i] = _receivers[i]->isCounterhFrame();
 
-	  _packetsLostFrame[i] = _receivers[i]->packetsLostFrame();
+	  _lostCountFrame[i] = _receivers[i]->pixelsLostFrame();
 	}
 
       _hasFrame = true;
@@ -120,7 +120,9 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
   pixel_mask   = (1<<counter_bits)-1;
 
   // Parse and unpack the pixel packets
-  int  index = 0, rownr = -1;
+  int *pixelrow = &pixels[0];
+  int  index    = 0;
+  int  rownr    = -1;
   u64 *pixelpkt = (u64 *) raw_bytes;
   u64  pixelword;
   u64  type;
@@ -134,7 +136,8 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
 	case PIXEL_DATA_SOR:
 	case PIXEL_DATA_SOF:
 	  ++rownr;
-	  index = rownr * MPX_PIXEL_COLUMNS;
+	  pixelrow = &pixels[rownr * MPX_PIXEL_COLUMNS];
+	  index = 0;
 	  // 'break' left out intentionally
 	case PIXEL_DATA_EOR:
 	case PIXEL_DATA_EOF:
@@ -142,7 +145,9 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
 	  // Unpack the pixel packet
 	  for( j=0; j<pix_per_word; ++j, ++index )
 	    {
-	      pixels[index] = pixelword & pixel_mask;
+	      // Make sure not to write outside the current pixel row
+	      if( index < MPX_PIXEL_COLUMNS )
+		pixelrow[index] = pixelword & pixel_mask;
 	      pixelword >>= counter_bits;
 	    }
 	  break;

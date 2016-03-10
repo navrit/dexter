@@ -72,7 +72,12 @@ class ReceiverThread : public QThread
 
   virtual int pixelsReceived()         { return 0; }
   virtual int pixelsLost()             { return 0; }
+  virtual int pixelsLostFrame()        { return 0; }
   virtual int pixelsLostFrame( int i ) { i=0; return 0; }
+
+  virtual int lostCount()              { return packetsLost(); }
+  virtual int lostCountFrame()         { return packetsLostFrame(); }
+  virtual int lostCountFrame( int i )  { return packetsLostFrame(i); }
 
   void setFramebuilder( FramebuilderThread *framebuilder )
     { _frameBuilder = framebuilder; };

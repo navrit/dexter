@@ -25,7 +25,7 @@ FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
     _framesReceived( 0 ),
     _framesWritten( 0 ),
     _framesProcessed( 0 ),
-    _packetsLostTotal( 0 ),
+    _lostCountTotal( 0 ),
     _decode( false ),
     _compress( false ),
     _flush( false ),
@@ -38,11 +38,11 @@ FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
 {
   u32 i;
   _n = _receivers.size();
-  for( i=0; i<4; ++i )
+  for( i=0; i<NR_OF_DEVICES; ++i )
     {
-      _packetsLostFrame[i] = 0;
-      _frameSz[i]          = 0;
-      _isCounterhFrame[i]  = false;
+      _lostCountFrame[i] = 0;
+      _frameSz[i]         = 0;
+      _isCounterhFrame[i] = false;
       memset( static_cast<void *> (&_spidrHeader[i]), 0, SPIDR_HEADER_SIZE );
     }
   // Preset the headers
@@ -53,7 +53,7 @@ FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
     _evtHdr.unused[i] = HEADER_FILLER_WORD;
   for( i=0; i<sizeof(_evtHdr.triggerConfig)/sizeof(u32); ++i )
     _evtHdr.triggerConfig[i] = 0xAAAAAAAA; // ### Not yet implemented
-  for( i=0; i<4; ++i )
+  for( i=0; i<NR_OF_DEVICES; ++i )
     {
       _devHdr[i].headerId   = DEV_HEADER_ID;
       _devHdr[i].headerSize = DEV_HEADER_SIZE;
@@ -242,7 +242,7 @@ void FramebuilderThread::processFrame()
 
 	  _isCounterhFrame[i] = _receivers[i]->isCounterhFrame();
 
-	  _packetsLostFrame[i] = _receivers[i]->packetsLostFrame();
+	  _lostCountFrame[i] = _receivers[i]->packetsLostFrame();
 	}
 
       _hasFrame = true;
@@ -297,10 +297,10 @@ void FramebuilderThread::writeRawFrameToFile()
     {
       // Fill in the rest of the device header and write it
       p_devhdr = &_devHdr[i];
-      lost = _receivers[i]->packetsLostFrame();
+      lost = _receivers[i]->lostCountFrame();
       p_devhdr->lostPackets = lost;
-      _packetsLostFrame[i]  = lost;
-      _packetsLostTotal    += lost;
+      _lostCountFrame[i]    = lost;
+      _lostCountTotal      += lost;
 
       // Copy the saved SPIDR 'header' (6 short ints)
       memcpy( (void *) p_devhdr->spidrHeader,
@@ -353,10 +353,10 @@ void FramebuilderThread::writeDecodedFrameToFile()
     {
       // Fill in the rest of the device header and write it
       p_devhdr = &_devHdr[i];
-      lost = _receivers[i]->packetsLostFrame();
+      lost = _receivers[i]->lostCountFrame();
       p_devhdr->lostPackets = lost;
-      _packetsLostFrame[i]  = lost;
-      _packetsLostTotal    += lost;
+      _lostCountFrame[i]    = lost;
+      _lostCountTotal      += lost;
 
       // Copy the saved SPIDR 'header' (6 short ints)
       memcpy( (void *) p_devhdr->spidrHeader,
@@ -387,14 +387,14 @@ bool FramebuilderThread::hasFrame( unsigned long timeout_ms )
 
 int *FramebuilderThread::frameData( int  index,
 				    int *size,
-				    int *packets_lost )
+				    int *lost_count )
 {
   if( _hasFrame )
     *size = _frameSz[index];
   else
     *size = 0;
 
-  if( packets_lost ) *packets_lost = _packetsLostFrame[index];
+  if( lost_count ) *lost_count = _lostCountFrame[index];
 
   return &_decodedFrame[index][0];
 }
@@ -568,7 +568,7 @@ bool FramebuilderThread::openFile( std::string filename, bool overwrite )
   if( _file.isOpen() )
     {
       _framesWritten = 0;
-      _packetsLostTotal = 0;
+      _lostCountTotal = 0;
       _fileOpen = true;
       return true;
     }
@@ -591,10 +591,10 @@ bool FramebuilderThread::closeFile()
 
 // ----------------------------------------------------------------------------
 
-int FramebuilderThread::packetsLostFrame()
+int FramebuilderThread::lostCountFrame()
 {
   int lost = 0;
-  for( u32 i=0; i<_n; ++i ) lost += _packetsLostFrame[i];
+  for( u32 i=0; i<_n; ++i ) lost += _lostCountFrame[i];
   return lost;
 }
 
@@ -626,6 +626,7 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
   int           *ppix;
   unsigned char  byte;
   unsigned char *praw;
+  Q_UNUSED( nbytes );
 
   // Necessary to globally clear the pixels array
   // as we only use '|' (OR) in the assignments below

@@ -4,7 +4,9 @@
 #include "ReceiverThreadC.h"
 #include "mpx3defs.h"
 
-#define USE_BIGENDIAN_OPTION
+#define ALLOW_BIGENDIAN_OPTION
+
+#define byteswap(x) ((((x) & 0xFF00) >> 8) | (((x) & 0x00FF) << 8))
 
 // ----------------------------------------------------------------------------
 
@@ -30,7 +32,7 @@ ReceiverThreadC::ReceiverThreadC( int *ipaddr,
   // Maintain a 'shutter counter' in the 'SPIDR header'
   // (not produced by the Compact-SPIDR hardware)
   u16 *header = (u16 *) _headerBuffer[_head];
-  header[1] = _shutterCnt;
+  header[1] = byteswap( _shutterCnt );
 }
 
 // ----------------------------------------------------------------------------
@@ -65,7 +67,7 @@ void ReceiverThreadC::readDatagrams()
       pixelpkt = (u64 *) _recvBuffer;
       for( i=0; i<recvd_sz/sizeof(u64); ++i, ++pixelpkt )
 	{
-#ifdef USE_BIGENDIAN_OPTION
+#ifdef ALLOW_BIGENDIAN_OPTION
 	  if( _bigEndian )
 	    {
 	      // Reverse the byte order
@@ -75,7 +77,7 @@ void ReceiverThreadC::readDatagrams()
 		bytes[i] = p[7-i];
 	      *pixelpkt = pixelword;
 	    }
-#endif // USE_BIGENDIAN_OPTION
+#endif // ALLOW_BIGENDIAN_OPTION
 
 	  type = (*pixelpkt) & PKT_TYPE_MASK;
 	  copy = true;
@@ -144,8 +146,6 @@ void ReceiverThreadC::readDatagrams()
 		  // Don't count them again at next SOF/SOR
 		  _rowPixels = MPX_PIXEL_COLUMNS;
 		}
-	      // Start filling a next frame
-	      this->nextFrame();
 	      break;
 
 	    case PIXEL_DATA_MID:
@@ -182,6 +182,10 @@ void ReceiverThreadC::readDatagrams()
 				    (_rowPixels-MPX_PIXEL_COLUMNS));
 	      else
 		_pixelsReceived += pix_per_word;
+
+	      if( type == PIXEL_DATA_EOF )
+		// Start filling a next frame
+		this->nextFrame();
 	    }
 	}
     }
@@ -215,7 +219,7 @@ void ReceiverThreadC::nextFrame()
   // (not produced by the Compact-SPIDR hardware)
   ++_shutterCnt;
   u16 *header = (u16 *) _headerBuffer[_head];
-  header[1] = _shutterCnt;
+  header[1] = byteswap( _shutterCnt );
 }
 
 // ----------------------------------------------------------------------------
