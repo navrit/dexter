@@ -20,6 +20,9 @@ class Mpx3GUI;
 #define __default_matrixSizePerChip_X 	256
 #define __default_matrixSizePerChip_Y 	256
 
+#define __operationMode_SequentialRW  0
+#define __operationMode_ContinuousRW  1
+
 class Mpx3Config: public QObject {
 
 	Q_OBJECT
@@ -191,6 +194,7 @@ void setDecodeFrames(bool decode){
 void updateDecodeFrames(){}
 
 void setOperationMode(int newVal){
+
 	if(newVal != OperationMode){
 		OperationMode = newVal; emit operationModeChanged(newVal);
 		//updateOperationMode();

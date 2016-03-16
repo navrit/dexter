@@ -136,12 +136,12 @@
         "SpidrControllerPort": 50000
     },
     "StepperConfig": {
-        "Acceleration": 5000000,
+        "Acceleration": 500000,
         "CalibAngle0": 90,
         "CalibAngle1": 0,
-        "CalibPos0": 100,
+        "CalibPos0": 21500,
         "CalibPos1": 0,
-        "Speed": 125000,
+        "Speed": 12500,
         "UseCalib": true
     }
 }

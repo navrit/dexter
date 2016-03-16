@@ -99,6 +99,10 @@ void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size){
         if(data[i] > max)
             max = data[i];
     }
+
+    // This could happen
+    if ( min == INT_MIN ) min = 0;
+
     int binWidth = (max-min)/m_binCount == 0? 1 : (max-min)/m_binCount;
     Histogram *hist = new Histogram(min, max, binWidth);
     hist->addRange(data, size);

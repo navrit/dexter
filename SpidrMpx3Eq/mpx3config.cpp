@@ -51,6 +51,15 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
 	// All adjustment bits to zero
 	//SetAllAdjustmentBits(0x0, 0x0);
 
+    // Operation mode
+    if ( OperationMode == __operationMode_SequentialRW ) {
+        spidrcontrol->setContRdWr( deviceIndex, false );
+    } else if ( OperationMode == __operationMode_ContinuousRW ) {
+        spidrcontrol->setContRdWr( deviceIndex, true );
+    } else {
+        spidrcontrol->setContRdWr( deviceIndex, false );
+    }
+
 	// OMR
 	spidrcontrol->setPolarity( deviceIndex, getPolarity() );		// true: Holes collection
     //cout << " | polarity: " << getPolarity();
@@ -121,6 +130,15 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, scan_config_paramete
 	// Reset pixel configuration
 	if ( reset ) spidrcontrol->resetPixelConfig();
 
+    // Operation mode
+    if ( OperationMode == __operationMode_SequentialRW ) {
+        spidrcontrol->setContRdWr( deviceIndex, false );
+    } else if ( OperationMode == __operationMode_ContinuousRW ) {
+        spidrcontrol->setContRdWr( deviceIndex, true );
+    } else {
+        spidrcontrol->setContRdWr( deviceIndex, false );
+    }
+
 	// All adjustment bits to zero
 	//SetAllAdjustmentBits(0x0, 0x0);
 
@@ -162,7 +180,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, scan_config_paramete
 
 	//int trig_freq_mhz   = (int) 1000 * ( 1. / (2.*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
 	int trig_freq_mhz   = (int) 1000 * ( 1. / (1.1*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
-	cout << " | configured freq is " << trig_freq_mhz << "mHz";
+    qDebug() << " | configured freq is " << trig_freq_mhz << "mHz";
 
 	// Get the trigger period for information.  This is NOT the trigger length !
 	_trigPeriod_ms = (int) (1E6 * (1./(double)trig_freq_mhz));
@@ -171,7 +189,6 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, scan_config_paramete
 	spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
 			trig_freq_mhz, extrapars.nTriggers );
 
-	cout << endl;
 }
 
 /*

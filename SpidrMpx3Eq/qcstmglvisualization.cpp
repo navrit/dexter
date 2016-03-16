@@ -216,10 +216,7 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
         // When finished taking data save the original data
         _mpx3gui->saveOriginalDataset();
 
-        // Corrections
-        if( _corrdialog ) _mpx3gui->getDataset()->applyCorrections( _corrdialog );
-
-        // And replot
+        // And replot, this also attempts to apply selected corrections
         reload_all_layers();
 
         // Change the Stop button to Start
@@ -481,11 +478,21 @@ void QCstmGLVisualization::hover_changed(QPoint pixel){
 }
 
 void QCstmGLVisualization::reload_layer(int threshold){
+
+    // Get busy
+    emit FlipBusyState();
+
+    // Corrections
+    if( _corrdialog ) _mpx3gui->getDataset()->applyCorrections( _corrdialog );
+
     //int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
     ui->histPlot->setHistogram(threshold, _mpx3gui->getDataset()->getLayer(threshold), _mpx3gui->getDataset()->getPixelsPerLayer());
     setThreshold(threshold);
+
+    // done
     active_frame_changed();
+
 }
 
 
@@ -502,13 +509,18 @@ void QCstmGLVisualization::reload_all_layers(){
     // Get busy
     emit FlipBusyState();
 
+    // Corrections
+    if( _corrdialog ) _mpx3gui->getDataset()->applyCorrections( _corrdialog );
+
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
     QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
-    for(int i = 0; i < thresholds.size(); i++){
+    for (int i = 0; i < thresholds.size(); i++) {
         addThresholdToSelector(thresholds[i]);
         ui->histPlot->setHistogram(thresholds[i], _mpx3gui->getDataset()->getLayer(thresholds[i]), _mpx3gui->getDataset()->getPixelsPerLayer());
     }
     //setThreshold(thresholds[0]);
+
+    // done
     active_frame_changed();
 
 }
@@ -621,6 +633,13 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
         return;
     if(selectedItem == &mask){
         if(_mpx3gui->getConfig()->getColourMode()){
+
+            qDebug() << "nat: "
+                     << naturalFlatCoord
+                     << naturalFlatCoord+1
+                     << naturalFlatCoord+_mpx3gui->getX()*2
+                     << naturalFlatCoord+1+_mpx3gui->getX()*2;
+
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord);
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord+1);
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord+_mpx3gui->getX()*2);

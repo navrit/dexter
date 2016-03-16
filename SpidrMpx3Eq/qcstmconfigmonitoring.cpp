@@ -26,6 +26,9 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     ui->polarityComboBox->addItem("Positive");
     ui->polarityComboBox->addItem("Negative");
 
+    ui->operationModeComboBox->addItem("Sequential R/W");
+    ui->operationModeComboBox->addItem("Continuous R/W");
+
     ui->motorDial->setNotchesVisible(true);
 
     _stepperThread = nullptr;
@@ -260,8 +263,8 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(ui->nTriggersSpinner, SIGNAL(valueChanged(int)), config, SLOT(setNTriggers(int)));
     connect(config, SIGNAL(nTriggersChanged(int)), ui->nTriggersSpinner, SLOT(setValue(int)));
 
-    connect(ui->operationModeSpinner, SIGNAL(valueChanged(int)), config, SLOT(setOperationMode(int)));
-    connect(config, SIGNAL(operationModeChanged(int)), ui->operationModeSpinner, SLOT(setValue(int)));
+    connect(ui->operationModeComboBox, SIGNAL(activated(int)), config, SLOT(setOperationMode(int)));
+    connect(config, SIGNAL(operationModeChanged(int)), ui->operationModeComboBox, SLOT(activated(int)));
 
     connect(ui->pixelDepthSpinner, SIGNAL(valueChanged(int)), config, SLOT(setPixelDepth(int)));
     connect(config, SIGNAL(pixelDepthChanged(int)), ui->pixelDepthSpinner, SLOT(setValue(int)));
@@ -1045,12 +1048,22 @@ void QCstmConfigMonitoring::on_motorTestButton_clicked()
     // Fill in a sequance
     m_stepperTestSequence.clear();
 
+    /*
     m_stepperTestSequence.push_back( 45.0 );
     for ( int i = 1 ; i < 9 ; i++ ) {
         m_stepperTestSequence.push_back( 0.0 );           // a return to zero
         m_stepperTestSequence.push_back( 45.0 * i );    // and some test angle
     }
     m_stepperTestSequence.push_back( 0 ); // and come back to zero
+    */
+
+    m_stepperTestSequence.push_back( -15.0 );
+    m_stepperTestSequence.push_back( 15.0 );
+
+    m_stepperTestSequence.push_back( 0 ); // and come back to zero
+
+
+
     m_stepperTestCurrentStep = 0;
 
     /////////////////////////////////////////////////////////////////////////

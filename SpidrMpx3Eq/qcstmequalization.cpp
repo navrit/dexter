@@ -1452,7 +1452,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 
     }
 
-    // This is not the moment for a mask
+    // This may not the moment for a mask
     if ( applymask ) {
         // Mask
         if ( _eqMap[chipIndex]->GetNMaskedPixels() > 0 ) {
@@ -1463,7 +1463,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
             qDebug() << "[INFO] Masking ";
             for ( ; i != iE ; i++ ) {
                 pix = XtoXY( (*i), __matrix_size_x );
-                //cout << "     devid:" << _deviceIndex << " | " << pix.first << "," << pix.second << endl;
+                cout << "     devid:" << chipIndex << " | " << pix.first << "," << pix.second << endl;
                 spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second);
             }
         } else { // When the mask is empty go ahead and set all to zero
@@ -1779,8 +1779,8 @@ void QCstmEqualization::LoadEqualization(){
             return;
         }
 
-        // And talk to the hardware
-        SetAllAdjustmentBits( _mpx3gui->GetSpidrController(), i );
+        // And talk to the hardware loading also the mask
+        SetAllAdjustmentBits( _mpx3gui->GetSpidrController(), i, true );
 
     }
 
@@ -2210,10 +2210,10 @@ bool Mpx3EqualizationResults::ReadMaskBinaryFile(QString fn) {
     int val;
     while ( fd.good() ) {
 
-        if( fd.eof() ) break;
-
         fd >> val;
-        //cout << val << endl;
+
+        if ( fd.eof() ) break;
+
         maskedPixels.insert( val );
 
     }

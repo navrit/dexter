@@ -486,9 +486,13 @@ void CustomScanThread::run() {
             doReadFrames = true;
 
             // Check quality, if packets lost don't consider the frame
-            if ( spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected
-                doReadFrames = false;
-            }
+            //for(int i = 0 ; i < _mpx3gui->getConfig()->getNActiveDevices() ; i++) {
+                //if ( ! _cstmThreshold->GetMpx3GUI()->getConfig()->detectorResponds( i ) ) {
+                    if ( spidrdaq->packetsLostCountFrame( ) != 0 ) { // from any of the chips connected
+                        doReadFrames = false;
+                  }
+                //}
+            //}
 
             if ( doReadFrames ) {
                 int size_in_bytes = -1;

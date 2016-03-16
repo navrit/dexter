@@ -161,6 +161,7 @@ int Color2DRecoGuided::LoadCrossSectionData() {
         QVector<double> mu;
 
         while ( !in.atEnd() ) {
+
             QString line = in.readLine();
             QStringList fields = line.split("\t");
 

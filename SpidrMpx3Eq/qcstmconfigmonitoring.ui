@@ -44,16 +44,6 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QSpinBox" name="operationModeSpinner">
-           <property name="keyboardTracking">
-            <bool>false</bool>
-           </property>
-           <property name="maximum">
-            <number>9999999</number>
-           </property>
-          </widget>
-         </item>
          <item row="4" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
@@ -199,6 +189,9 @@
             <string>Trigger down (us)</string>
            </property>
           </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="operationModeComboBox"/>
          </item>
         </layout>
        </item>
