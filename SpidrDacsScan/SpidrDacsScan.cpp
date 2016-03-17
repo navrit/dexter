@@ -16,7 +16,8 @@
 
 #include "qcustomplot.h"
 
-QString VERSION( "v1.1.1  9-Dec-2014" );
+QString   VERSION( "v1.2.0  17-Mar-2016" );
+//QString VERSION( "v1.1.1  9-Dec-2014" );
 
 // ----------------------------------------------------------------------------
 
