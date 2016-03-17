@@ -263,10 +263,8 @@ void SpidrDacsScan::changeDeviceType( int index )
     case MPX_TYPE_MPX31:
       _dacCount     = MPX3_DAC_COUNT;
       _dacTable     = &MPX3_DAC_TABLE[0];
-      //_adcFullScale = 1.5;
-      _adcRange     = 65536.0; // 16-bit ADC
       _plot->yAxis->setRange( 0, _adcFullScale );
-	//_plot->yAxis->setRange( 0, 65536 );
+      //_plot->yAxis->setRange( 0, 65536 );
       _title->setText( "Medipix3 DACs scan" );
       _comboBoxDacStep->setCurrentIndex( 2 );
       _comboBoxAdcSamples->setCurrentIndex( 0 );
@@ -274,9 +272,7 @@ void SpidrDacsScan::changeDeviceType( int index )
     case MPX_TYPE_MPX3RX:
       _dacCount     = MPX3RX_DAC_COUNT;
       _dacTable     = &MPX3RX_DAC_TABLE[0];
-      //_adcFullScale = 1.5;
-      _adcRange     = 65536.0; // 16-bit ADC
-      _plot->yAxis->setRange( 0, _adcFullScale );
+      _plot->yAxis->setRange(0, _adcFullScale);
       //_plot->yAxis->setRange( 0, 65536 );
       _title->setText( "Medipix3RX DACs scan" );
       _comboBoxDacStep->setCurrentIndex( 2 );
@@ -285,8 +281,6 @@ void SpidrDacsScan::changeDeviceType( int index )
     default:
       _dacCount     = TPX3_DAC_COUNT_TO_SET;
       _dacTable     = &TPX3_DAC_TABLE[0];
-      //_adcFullScale = 1.5;
-      _adcRange     = 4096.0; // 12-bit ADC
       _plot->yAxis->setRange( 0, _adcFullScale );
       //_plot->yAxis->setRange( 0, 4096 );
       _title->setText( "Timepix3 DACs scan" );
@@ -377,6 +371,12 @@ void SpidrDacsScan::scan()
 
       // The DAC settings start value
       _dacVal = _comboBoxDacStart->currentIndex();
+
+      // The ADC range
+      if( _comboBoxAdcBits->currentIndex() == 0 )
+	_adcRange = 4096.0;  // 12-bit ADC (AD7991)
+      else
+	_adcRange = 65536.0; // 16-bit ADC (LTC2489)
 
       // Next graph
       _plot->addGraph();

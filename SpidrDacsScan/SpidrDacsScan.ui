@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>902</width>
+    <width>938</width>
     <height>731</height>
    </rect>
   </property>
@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>SPIDR Timepix3 DACs Scan</string>
+   <string>SPIDR Medipix3/Timepix3 DACs Scan</string>
   </property>
   <property name="windowIcon">
    <iconset resource="spidrdacsscan.qrc">
@@ -54,7 +54,7 @@
          <rect>
           <x>10</x>
           <y>28</y>
-          <width>859</width>
+          <width>905</width>
           <height>25</height>
          </rect>
         </property>
@@ -334,7 +334,7 @@
          <rect>
           <x>11</x>
           <y>20</y>
-          <width>861</width>
+          <width>912</width>
           <height>25</height>
          </rect>
         </property>
@@ -520,10 +520,38 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="_comboBoxAdcSamples"/>
+          <widget class="QComboBox" name="_comboBoxAdcSamples">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="_comboBoxAdcFullScale"/>
+          <widget class="QComboBox" name="_comboBoxAdcFullScale">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="_comboBoxAdcBits">
+           <item>
+            <property name="text">
+             <string>12-bit</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>16-bit</string>
+            </property>
+           </item>
+          </widget>
          </item>
          <item>
           <spacer name="horizontalSpacer">
