@@ -65,7 +65,8 @@ public:
     pair<int, int> XtoXY(int X, int dimX);
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
     void GetAFrame();
-    void FlipBusyState();
+    void SetBusyState();
+    void FreeBusyState();
     void DestroyTimer();
     void ArmAndStartTimer();
     void ETAToZero();

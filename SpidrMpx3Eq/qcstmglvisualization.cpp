@@ -20,7 +20,10 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
 
     ui->setupUi(this);
     _dataTakingThread = 0x0;
-    _takingData = false;
+
+    FreeBusyState();
+    //_takingData = false;
+
     _busyDrawing = false;
     // By default don't drop frames
     ui->dropFramesCheckBox->setChecked( false );
@@ -52,17 +55,20 @@ QCstmGLVisualization::~QCstmGLVisualization() {
     delete ui;
 }
 
-void QCstmGLVisualization::FlipBusyState() {
+void QCstmGLVisualization::SetBusyState() {
 
-    if( _busyDrawing ) {
-        _busyDrawing = false;
-        emit free_to_draw();
-    } else {
-        _busyDrawing = true;
-        emit busy_drawing();
-    }
+    _busyDrawing = true;
+    emit busy_drawing();
 
 }
+
+void QCstmGLVisualization::FreeBusyState() {
+
+    _busyDrawing = false;
+    emit free_to_draw();
+
+}
+
 
 void QCstmGLVisualization::UnlockWaitingForFrame() {
     cout << "..." << endl;
@@ -117,6 +123,9 @@ void QCstmGLVisualization::StartDataTaking(){
         // FIXME, depends on the mode !
         _estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms
         _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.  FIXME  to be calculated at startup
+
+        // Free to draw now
+        FreeBusyState();
 
         _takingData = true;
         _dataTakingThread->start();
@@ -214,10 +223,10 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
         ETAToZero();
 
         // When finished taking data save the original data
-        _mpx3gui->saveOriginalDataset();
+        //_mpx3gui->saveOriginalDataset();
 
         // And replot, this also attempts to apply selected corrections
-        reload_all_layers();
+        //reload_all_layers();
 
         // Change the Stop button to Start
         ui->startButton->setText( "Start" );
@@ -480,8 +489,9 @@ void QCstmGLVisualization::hover_changed(QPoint pixel){
 void QCstmGLVisualization::reload_layer(int threshold){
 
     // Get busy
-    emit FlipBusyState();
+    SetBusyState();
 
+    _mpx3gui->saveOriginalDataset();
     // Corrections
     if( _corrdialog ) _mpx3gui->getDataset()->applyCorrections( _corrdialog );
 
@@ -492,6 +502,9 @@ void QCstmGLVisualization::reload_layer(int threshold){
 
     // done
     active_frame_changed();
+
+    // Get free
+    FreeBusyState();
 
 }
 
@@ -507,10 +520,11 @@ void QCstmGLVisualization::progress_signal(int framecntr) {
 void QCstmGLVisualization::reload_all_layers(){
 
     // Get busy
-    emit FlipBusyState();
+    SetBusyState();
 
+    _mpx3gui->saveOriginalDataset();
     // Corrections
-    if( _corrdialog ) _mpx3gui->getDataset()->applyCorrections( _corrdialog );
+    if ( _corrdialog ) _mpx3gui->getDataset()->applyCorrections( _corrdialog );
 
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
     QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
@@ -522,6 +536,9 @@ void QCstmGLVisualization::reload_all_layers(){
 
     // done
     active_frame_changed();
+
+    // Get free
+    FreeBusyState();
 
 }
 
@@ -578,8 +595,6 @@ void QCstmGLVisualization::active_frame_changed(){
     else if(ui->fullRangeRadio->isChecked())
         on_fullRangeRadio_toggled(true);
 
-    // Get free
-    emit FlipBusyState();
 
 }
 
