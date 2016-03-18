@@ -787,14 +787,23 @@ void Dataset::applyOBCorrection() {
         // Allocate some scratch memory
         double * normFrame = new double[getPixelsPerLayer()];
         // Find the smallest value.  Initialize it for the search.
-        double min = (double)std::abs(correctionLayer[0]);
+        double min = -1.0*log(((double)currentLayer[0]) / ((double)correctionLayer[0]));
         double max = min;
         double low = 0;
         if (currentLayer[0] > correctionLayer[0]) min = currentLayer[0];
 
+        //Calculating the minimum and maximum pixel values of the image taken.
+        double Dmin = (double)currentLayer[0]; //A
+        double Dmax = Dmin; //A
+
+
+        double k = 10; //A
+
         for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
 
-            //
+            if((double)currentLayer[j]<Dmin) Dmin = currentLayer[j];//A
+            if((double)currentLayer[j]>Dmax) Dmax = currentLayer[j];//A
+
             if (currentLayer[j] != 0)
             {
                 if (correctionLayer[j] > 0) {
@@ -829,10 +838,12 @@ void Dataset::applyOBCorrection() {
         cout << std::setprecision(10) << "min    : " << (double)min << endl;
         cout << std::setprecision(10) << "max    : " << (double)max << endl;
         cout << std::setprecision(10) << "correction : " << correctionFactor << endl;
+        cout << std::setprecision(10) << "Corr. Range   : " << (double)max - (double)min << endl;//A
+        cout << std::setprecision(10) << "Data Range    : " << (double)Dmax - (double)Dmin << endl;//A
 
         for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
             if (currentLayer[j] != 0)
-                currentLayer[j] = offset + round(normFrame[j] * pow(10.0, correctionFactor+1));
+                currentLayer[j] = offset + round(normFrame[j] * pow(10.0, correctionFactor));
             //if (currentLayer[j] < 0)
             //    cout << j << endl;
 
