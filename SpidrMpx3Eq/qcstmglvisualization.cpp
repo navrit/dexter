@@ -22,7 +22,7 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     _dataTakingThread = 0x0;
 
     FreeBusyState();
-    //_takingData = false;
+    _takingData = false;
 
     _busyDrawing = false;
     // By default don't drop frames
