@@ -9,7 +9,7 @@
 
 #include "histogram.h"
 
-#define __range_min_whenLog  1.0
+#define __range_min_whenLog  0.1
 
 class QCstmPlotHistogram : public QCustomPlot
 {

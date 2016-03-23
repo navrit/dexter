@@ -20,8 +20,8 @@ class Mpx3GUI;
 #define __default_matrixSizePerChip_X 	256
 #define __default_matrixSizePerChip_Y 	256
 
-#define __operationMode_SequentialRW  0
-#define __operationMode_ContinuousRW  1
+//#define __operationMode_SequentialRW  0
+//#define __operationMode_ContinuousRW  1
 
 class Mpx3Config: public QObject {
 
@@ -39,6 +39,12 @@ class Mpx3Config: public QObject {
 	// Stepper
 	bool stepperUseCalib = false;
 	double stepperAcceleration = -1., stepperSpeed = -1., stepperCalibPos0 = -1., stepperCalibAngle0 = -1., stepperCalibPos1 = -1., stepperCalibAngle1 = -1.;
+
+    typedef enum {
+        __operationMode_SequentialRW = 0,
+        __operationMode_ContinuousRW,
+        __operationMode_NumberOf
+    } operation_mode;
 
 	typedef enum {
 		__NOT_RESPONDING = 0,
@@ -194,6 +200,11 @@ void setDecodeFrames(bool decode){
 void updateDecodeFrames(){}
 
 void setOperationMode(int newVal){
+
+    // This can only take some values
+    if ( newVal > __operationMode_NumberOf || newVal < __operationMode_SequentialRW ) {
+        newVal = __operationMode_SequentialRW;
+    }
 
 	if(newVal != OperationMode){
 		OperationMode = newVal; emit operationModeChanged(newVal);

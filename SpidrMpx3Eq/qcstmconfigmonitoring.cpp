@@ -4,6 +4,8 @@
 
 #include "SpidrController.h"
 #include "StepperMotorController.h"
+#include "qcstmglvisualization.h"
+#include "ui_qcstmglvisualization.h"
 
 #include "qtableview.h"
 #include "qstandarditemmodel.h"
@@ -262,6 +264,11 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
 
     connect(ui->nTriggersSpinner, SIGNAL(valueChanged(int)), config, SLOT(setNTriggers(int)));
     connect(config, SIGNAL(nTriggersChanged(int)), ui->nTriggersSpinner, SLOT(setValue(int)));
+    // connection in the viewer
+    connect(ui->nTriggersSpinner, SIGNAL(valueChanged(int)),
+            _mpx3gui->getVisualization()->GetUI()->nTriggersSpinBox,
+            SLOT(setValue(int)));
+
 
     connect(ui->operationModeComboBox, SIGNAL(activated(int)), config, SLOT(setOperationMode(int)));
     connect(config, SIGNAL(operationModeChanged(int)), ui->operationModeComboBox, SLOT(setCurrentIndex(int)));
@@ -271,6 +278,10 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
 
     connect(ui->triggerLengthSpinner, SIGNAL(valueChanged(int)), config, SLOT(setTriggerLength(int)));
     connect(config, SIGNAL(TriggerLengthChanged(int)), ui->triggerLengthSpinner, SLOT(setValue(int)));
+    // connection in the viewer
+    connect(ui->triggerLengthSpinner, SIGNAL(valueChanged(int)),
+            _mpx3gui->getVisualization()->GetUI()->triggerLengthSpinBox,
+            SLOT(setValue(int)));
 
     connect(ui->triggerDowntimeSpinner, SIGNAL(editingFinished()), config, SLOT(setTriggerDowntime()));
     connect(config, SIGNAL(TriggerDowntimeChanged(int)), ui->triggerDowntimeSpinner, SLOT(setValue(int)));

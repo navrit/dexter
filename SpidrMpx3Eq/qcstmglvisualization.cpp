@@ -7,6 +7,9 @@
 
 #include "qcstmcorrectionsdialog.h"
 
+#include "qcstmconfigmonitoring.h"
+#include "ui_qcstmconfigmonitoring.h"
+
 #include "color2drecoguided.h"
 
 #include <stdio.h>
@@ -22,7 +25,7 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     _dataTakingThread = 0x0;
 
     FreeBusyState();
-    _takingData = false;
+    _takingData = false; // important for offline work
 
     _busyDrawing = false;
     // By default don't drop frames
@@ -47,7 +50,6 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
 
     // Log Scale for histogram
     connect(ui->logCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_logscale(bool)));
-
 
 }
 
@@ -226,7 +228,7 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
         //_mpx3gui->saveOriginalDataset();
 
         // And replot, this also attempts to apply selected corrections
-        //reload_all_layers();
+        reload_all_layers( true );
 
         // Change the Stop button to Start
         ui->startButton->setText( "Start" );
@@ -387,6 +389,15 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect( this, &QCstmGLVisualization::sig_statusBarWrite, _mpx3gui, &Mpx3GUI::statusBarWrite );
     connect( this, &QCstmGLVisualization::sig_statusBarClean, _mpx3gui, &Mpx3GUI::statusBarClean );
 
+    // connection to configuration
+    connect( ui->nTriggersSpinBox, SIGNAL(valueChanged(int)),
+             _mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner,
+             SLOT(setValue(int)));
+
+    connect( ui->triggerLengthSpinBox, SIGNAL(valueChanged(int)),
+             _mpx3gui->getConfigMonitoring()->getUI()->triggerLengthSpinner,
+             SLOT(setValue(int)));
+
     // Defaults
     emit mode_changed(ui->summingCheckbox->isChecked());
 }
@@ -493,7 +504,7 @@ void QCstmGLVisualization::reload_layer(int threshold){
 
     _mpx3gui->saveOriginalDataset();
     // Corrections
-    if( _corrdialog ) _mpx3gui->getDataset()->applyCorrections( _corrdialog );
+    //if( _corrdialog ) _mpx3gui->getDataset()->applyCorrections( _corrdialog );
 
     //int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
@@ -517,14 +528,14 @@ void QCstmGLVisualization::progress_signal(int framecntr) {
 }
 
 
-void QCstmGLVisualization::reload_all_layers(){
+void QCstmGLVisualization::reload_all_layers(bool corrections){
 
     // Get busy
     SetBusyState();
 
     _mpx3gui->saveOriginalDataset();
     // Corrections
-    if ( _corrdialog ) _mpx3gui->getDataset()->applyCorrections( _corrdialog );
+    if ( corrections && _corrdialog ) _mpx3gui->getDataset()->applyCorrections( _corrdialog );
 
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
     QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
@@ -536,6 +547,8 @@ void QCstmGLVisualization::reload_all_layers(){
 
     // done
     active_frame_changed();
+
+    ui->glPlot->update();
 
     // Get free
     FreeBusyState();
@@ -600,8 +613,8 @@ void QCstmGLVisualization::active_frame_changed(){
 
 void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position){
 
-    if(!_mpx3gui->getConfig()->isConnected())
-        return;
+    //if(!_mpx3gui->getConfig()->isConnected())
+    //    return;
 
     //int frameIndex = _mpx3gui->getDataset()->getContainingFrame(pixel_begin);
     //QPoint naturalCoords = _mpx3gui->getDataset()->getNaturalCoordinates(pixel_begin, frameIndex);
@@ -614,6 +627,13 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     QMenu contextMenu;
     QAction calcStats(QString("Calc stats (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&calcStats);
+
+    QAction calcProX(QString("ProfileX (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    contextMenu.addAction(&calcProX);
+
+    QAction calcProY(QString("ProfileY (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    contextMenu.addAction(&calcProY);
+
 
     // Show the menu
     QAction * selectedItem = contextMenu.exec(position);

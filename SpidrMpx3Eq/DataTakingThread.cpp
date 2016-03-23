@@ -411,24 +411,27 @@ void DataTakingThread::run() {
         if ( _mpx3gui->getConfig()->getReadBothCounters() ) emit progress( nFramesReceived/2 );
         else  emit progress( nFramesReceived );
 
+        /*
         if( _mpx3gui->getConfig()->getColourMode() ) {
             emit reload_all_layers();
         } else {
             emit reload_layer(0);
         }
+        */
+
     }
 
     cout << "received : " << nFramesReceived
          << " | frames kept : " << nFramesKept
          << " | lost frames : " << spidrdaq->framesLostCount()
          << " | lost packets : " << spidrdaq->packetsLostCount()
-         << " | frames count :" << spidrdaq->framesCount()
+         << " | frames count : " << spidrdaq->framesCount()
          << endl;
 
-    for ( int i = 0 ; i < activeDevices.size() ; i++ ) {
-        cout << "devId = " << i << " | packetsReceivedCount = " << spidrdaq->packetsReceivedCount( i ) << endl;
-        cout << "devId = " << i << " | packetSize = " << spidrdaq->packetSize( i ) << endl;
-    }
+    //for ( int i = 0 ; i < activeDevices.size() ; i++ ) {
+    //    cout << "devId = " << i << " | packetsReceivedCount = " << spidrdaq->packetsReceivedCount( i ) << endl;
+    //    cout << "devId = " << i << " | packetSize = " << spidrdaq->packetSize( i ) << endl;
+    //}
 
     // When the process is finished the thread sends a message
     //  to inform QCstmGLVisualization that it's done.

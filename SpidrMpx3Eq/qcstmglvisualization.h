@@ -150,7 +150,7 @@ public slots:
     //!Reloads the data for a specific threshold and updates the display, currently reloads all the data for the GLplot
     void reload_layer(int);
     //!Reloads all the data and updates.
-    void reload_all_layers();
+    void reload_all_layers(bool corrections = false);
     //!Called when the pixel hovered by the mouse changes. Takes assembly-coordinates.
     void hover_changed(QPoint);
     //!Called when a pixel has been selected with the right mouse-button. Pixel is assembly-coordinates, position is screenspace (used to determine where to create the context menu).

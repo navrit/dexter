@@ -44,6 +44,9 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="operationModeComboBox"/>
+         </item>
          <item row="4" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
@@ -60,6 +63,16 @@
             <number>9999999</number>
            </property>
           </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_16">
+           <property name="text">
+            <string>Polarity</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QComboBox" name="polarityComboBox"/>
          </item>
          <item row="6" column="0">
           <widget class="QLabel" name="label_5">
@@ -84,6 +97,9 @@
             <string>Gain Mode</string>
            </property>
           </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QComboBox" name="gainModeCombobox"/>
          </item>
          <item row="9" column="0">
           <widget class="QLabel" name="label_7">
@@ -136,40 +152,10 @@
            </property>
           </widget>
          </item>
-         <item row="14" column="1">
-          <widget class="QCheckBox" name="ColourModeCheckBox">
+         <item row="12" column="0">
+          <widget class="QLabel" name="label_17">
            <property name="text">
-            <string>Colour Mode</string>
-           </property>
-          </widget>
-         </item>
-         <item row="16" column="1">
-          <widget class="QCheckBox" name="decodeFramesCheckbox">
-           <property name="text">
-            <string>Decode Frames</string>
-           </property>
-          </widget>
-         </item>
-         <item row="7" column="1">
-          <widget class="QComboBox" name="gainModeCombobox"/>
-         </item>
-         <item row="5" column="0">
-          <widget class="QLabel" name="label_16">
-           <property name="text">
-            <string>Polarity</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1">
-          <widget class="QComboBox" name="polarityComboBox"/>
-         </item>
-         <item row="13" column="1">
-          <widget class="QCheckBox" name="readBothCountersCheckBox">
-           <property name="layoutDirection">
-            <enum>Qt::LeftToRight</enum>
-           </property>
-           <property name="text">
-            <string>Read both Counters</string>
+            <string>Trigger down (us)</string>
            </property>
           </widget>
          </item>
@@ -183,15 +169,70 @@
            </property>
           </widget>
          </item>
-         <item row="12" column="0">
-          <widget class="QLabel" name="label_17">
+         <item row="19" column="1">
+          <widget class="QCheckBox" name="readBothCountersCheckBox">
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
            <property name="text">
-            <string>Trigger down (us)</string>
+            <string>Read both Counters</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QComboBox" name="operationModeComboBox"/>
+         <item row="20" column="1">
+          <widget class="QCheckBox" name="ColourModeCheckBox">
+           <property name="text">
+            <string>Colour Mode</string>
+           </property>
+          </widget>
+         </item>
+         <item row="22" column="1">
+          <widget class="QCheckBox" name="decodeFramesCheckbox">
+           <property name="text">
+            <string>Decode Frames</string>
+           </property>
+          </widget>
+         </item>
+         <item row="13" column="0">
+          <widget class="QLabel" name="label_19">
+           <property name="text">
+            <string>Time units</string>
+           </property>
+          </widget>
+         </item>
+         <item row="13" column="1">
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QRadioButton" name="radioButtonS">
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
+             <property name="text">
+              <string>s</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="radioButtonMS">
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
+             <property name="text">
+              <string>ms</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="radioButtonUS">
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
+             <property name="text">
+              <string>us</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
