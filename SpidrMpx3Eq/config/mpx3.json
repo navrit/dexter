@@ -118,12 +118,12 @@
         }
     ],
     "DetectorConfig": {
+        "OperationMode" : 0,
         "ColourMode": true,
         "CsmSpm": 0,
         "DecodeFrames": true,
         "GainMode": 1,
         "MaxPacketSize": 9000,
-        "OperationMode": 0,
         "PixelDepth": 12,
         "Polarity": true,
         "TriggerDeadtime_us": 10000,
