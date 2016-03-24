@@ -33,6 +33,15 @@ public:
 	int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
 	bool ThereIsAFalse(vector<bool> v);
 
+    typedef struct {
+        int framesKept;
+        int framesReceived;
+    } datataking_score_info;
+
+    datataking_score_info getScoreInfo() { return _score; }
+    void rewindScoring();
+
+
 private:
 
 	void run();
@@ -41,6 +50,7 @@ private:
 	QCstmGLVisualization * _vis;
 	bool _stop;
 	bool _canDraw;
+    datataking_score_info _score;
 
 	// IP source address (SPIDR network interface)
 	int _srcAddr;

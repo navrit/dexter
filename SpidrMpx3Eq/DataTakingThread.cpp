@@ -22,6 +22,9 @@ DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, QCstmGLVisualization * dt)
     _stop = false;
     _canDraw = true;
 
+    _score.framesKept = 0;
+    _score.framesReceived = 0;
+
 }
 
 void DataTakingThread::ConnectToHardware() {
@@ -36,6 +39,8 @@ void DataTakingThread::ConnectToHardware() {
 }
 
 void DataTakingThread::run() {
+
+    rewindScoring();
 
     // Open a new temporary connection to the spider to avoid collisions to the main one
     int ipaddr[4] = { 1, 1, 168, 192 };
@@ -147,21 +152,19 @@ void DataTakingThread::run() {
             // record the frameId for the first device available (it's the same for all of them)
             frameId = spidrdaq->frameShutterCounter( i );
 
-            //cout << "[START] [" << activeDevices[i] << "] frame : " << nFramesReceived
-            //		<< " | frameShutterCounter: " << frameId
-            //		<< " | isCounterhFrame : " << spidrdaq->isCounterhFrame( i )
-            //		<< endl;
         }
 
         // If bad flip happened I wait until the first counterL shows up
         if ( badFlipping ) {
-            if ( !spidrdaq->isCounterhFrame(firstDevId) && frameId != prevFrameId) {
+
+            if ( !spidrdaq->isCounterhFrame(firstDevId) && frameId != prevFrameId ) {
 
                 // Out of the bad flip condition
                 cout << "[INFO] recovering from bad flip ... " << endl;
                 badFlipping = false;
 
             } else {
+
                 // Keep a local count of number of frames
                 nFramesReceived++;
                 // keep the frameId
@@ -170,13 +173,16 @@ void DataTakingThread::run() {
                 spidrdaq->releaseFrame();
                 continue;
             }
+
         }
 
         // If taking care of a counterL, start by rewinding the flags
-        if ( !spidrdaq->isCounterhFrame(firstDevId) ) {
+        if ( !spidrdaq->isCounterhFrame( firstDevId ) ) {
+
             //cout << "[INFO] Cleaning up" << endl;
             doReadFrames_L = true;
             doReadFrames_H = true;
+
             // Buffering for the counterL
             for ( int i = 0 ; i < nChips ; i++ ) {
 
@@ -185,7 +191,6 @@ void DataTakingThread::run() {
                 if ( th4[i] ) { delete th4[i]; th4[i] = 0x0; }
                 if ( th6[i] ) { delete th6[i]; th6[i] = 0x0; }
 
-
             }
             // counterH is erased as soon as is used.
             // No need to buffer for that counterH
@@ -193,14 +198,13 @@ void DataTakingThread::run() {
 
         size_in_bytes = -1;
 
+        int packetsLost = spidrdaq->lostCountFrame(); // The total number of lost packets/pixels detected in the current frame
+        // report the loss
+        emit lost_packets( packetsLost );
+
         if ( _vis->GetUI()->dropFramesCheckBox->isChecked() ) {
 
-            int packetsLost = spidrdaq->packetsLostCountFrame();
-
             if ( packetsLost != 0 ) { // from any of the chips connected
-
-                // report the loss
-                emit lost_packets( packetsLost );
 
                 if ( _mpx3gui->getConfig()->getColourMode() ) {
                     if ( spidrdaq->isCounterhFrame(firstDevId) ) doReadFrames_H = false;
@@ -371,6 +375,7 @@ void DataTakingThread::run() {
         // Release frame
         spidrdaq->releaseFrame();
 
+
         // Report to the gui
         if ( _mpx3gui->getConfig()->getReadBothCounters() ) emit fps_update( nFramesReceived/2 );
         else emit fps_update( nFramesReceived );
@@ -421,10 +426,14 @@ void DataTakingThread::run() {
 
     }
 
+    // Keep some scoring info for later
+    _score.framesKept = nFramesKept;
+    _score.framesReceived = nFramesReceived;
+
     cout << "received : " << nFramesReceived
          << " | frames kept : " << nFramesKept
          << " | lost frames : " << spidrdaq->framesLostCount()
-         << " | lost packets : " << spidrdaq->packetsLostCount()
+         << " | lost packets(ML605)/pixels(compactSPIDR) : " << spidrdaq->lostCountFrame()
          << " | frames count : " << spidrdaq->framesCount()
          << endl;
 
@@ -440,17 +449,17 @@ void DataTakingThread::run() {
     //  needs to happens to avoid blocking.
     emit data_taking_finished( nFramesReceived );
 
-    disconnect(this, SIGNAL(reload_all_layers()), _vis, SLOT(reload_all_layers()));
-    disconnect(this, SIGNAL(reload_layer(int)), _vis, SLOT(reload_layer(int)));
-    disconnect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(data_taking_finished(int)));
-    disconnect(this, SIGNAL(progress(int)), _vis, SLOT(progress_signal(int)));
-    disconnect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
-    disconnect(_vis, SIGNAL(free_to_draw()), this, SLOT(on_free_to_draw()) );
-    disconnect(_vis, SIGNAL(busy_drawing()), this, SLOT(on_busy_drawing()) );
+    disconnect( this, SIGNAL(reload_all_layers()), _vis, SLOT(reload_all_layers()));
+    disconnect( this, SIGNAL(reload_layer(int)), _vis, SLOT(reload_layer(int)));
+    disconnect( this, SIGNAL(data_taking_finished(int)), _vis, SLOT(data_taking_finished(int)));
+    disconnect( this, SIGNAL(progress(int)), _vis, SLOT(progress_signal(int)));
+    disconnect( _vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
+    disconnect( _vis, SIGNAL(free_to_draw()), this, SLOT(on_free_to_draw()) );
+    disconnect( _vis, SIGNAL(busy_drawing()), this, SLOT(on_busy_drawing()) );
 
-    disconnect(this, SIGNAL(lost_packets(int)), _vis, SLOT(lost_packets(int)) );
-    disconnect(this, SIGNAL(fps_update(int)), _vis, SLOT(fps_update(int)) );
-    disconnect(this, SIGNAL(overflow_update(int)), _vis, SLOT(overflow_update(int)) );
+    disconnect( this, SIGNAL(lost_packets(int)), _vis, SLOT(lost_packets(int)) );
+    disconnect( this, SIGNAL(fps_update(int)), _vis, SLOT(fps_update(int)) );
+    disconnect( this, SIGNAL(overflow_update(int)), _vis, SLOT(overflow_update(int)) );
 
     // In case the thread is reused
     _stop = false;
@@ -466,7 +475,7 @@ pair<int, int> DataTakingThread::XtoXY(int X, int dimX){
     return make_pair(X % dimX, X/dimX);
 }
 
-bool DataTakingThread::ThereIsAFalse(vector<bool> v){
+bool DataTakingThread::ThereIsAFalse(vector<bool> v) {
 
     vector<bool>::iterator i  = v.begin();
     vector<bool>::iterator iE = v.end();
@@ -475,6 +484,11 @@ bool DataTakingThread::ThereIsAFalse(vector<bool> v){
         if ( (*i) == false ) return true;
     }
     return false;
+}
+
+void DataTakingThread::rewindScoring() {
+    _score.framesKept = 0;
+    _score.framesReceived = 0;
 }
 
 void DataTakingThread::on_busy_drawing() {

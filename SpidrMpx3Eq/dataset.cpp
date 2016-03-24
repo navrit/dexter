@@ -32,12 +32,12 @@ Dataset::Dataset(int x, int y, int framesPerLayer, int pixelDepthBits)
 
     obCorrection = 0x0;
 
-    reloadScores();
+    rewindScores();
 
 }
 
 Dataset::Dataset() : Dataset(1,1,1) {
-    reloadScores();
+    rewindScores();
 }
 
 Dataset::~Dataset()
@@ -52,11 +52,11 @@ void Dataset::loadCorrection(QByteArray serialized) {
     obCorrection->fromByteArray(serialized);//TODO: add error checking on correction to see if it is relevant to the data.
 }
 
-void Dataset::reloadScores() {
+void Dataset::rewindScores() {
     m_scores.packetsLost = 0;
 }
 
-int64_t Dataset::getTotal(int threshold){
+int64_t Dataset::getTotal(int threshold) {
     int index = thresholdToIndex(threshold);
     if(index == -1)
         return 0;
@@ -921,6 +921,9 @@ void Dataset::clear() {
     }
     m_layers.clear();
     m_thresholdsToIndices.clear();
+
+    // scores
+    rewindScores();
 
     //setFramesPerLayer(1);
 }

@@ -404,7 +404,7 @@ void ThlScan::FineTuning() {
 						// A frame is here
 						doReadFrames = true;
 						// Check quality
-						if ( _spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected
+                        if ( _spidrdaq->lostCountFrame() != 0 ) { // // The total number of lost packets/pixels detected in the current frame
 							doReadFrames = false;
 						}
 
@@ -929,7 +929,7 @@ void ThlScan::EqualizationScan() {
 					doReadFrames.push_back( true );
 
 					// Check quality
-					if ( _spidrdaq->packetsLostCountFrame() != 0 ) { // from any of the chips connected
+                    if ( _spidrdaq->lostCountFrame() != 0 ) { // The total number of lost packets/pixels detected in the current frame
 						// schedule a bad frame.  Don't 'continue' the loop or release frame just yet !
 						cout << "bad frame, thl: " << _thlItr << endl;
 						doReadFrames[framesCntr] = false;
@@ -938,7 +938,6 @@ void ThlScan::EqualizationScan() {
 					if ( doReadFrames[framesCntr] ) {
 
 						int size_in_bytes = -1;
-
 
 						int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
 						// Go through all chips avoiding those not present

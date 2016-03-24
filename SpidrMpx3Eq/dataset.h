@@ -84,7 +84,7 @@ class Dataset//TODO: specify starting corner?
   Dataset * obCorrection = nullptr;//!< A pointer to the Dataset used for the flat-field correction.
   int getLayerIndex(int threshold);
   int newLayer(int layer);//!<Adds a new layer at the specified threshold.
-  void reloadScores();
+  void rewindScores();
 
 public:
   Dataset(int x, int y, int framesPerLayer = 1, int pixelDepthBits = 12);
