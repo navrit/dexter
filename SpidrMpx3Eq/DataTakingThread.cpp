@@ -40,7 +40,6 @@ void DataTakingThread::ConnectToHardware() {
 
 void DataTakingThread::run() {
 
-    rewindScoring();
 
     // Open a new temporary connection to the spider to avoid collisions to the main one
     int ipaddr[4] = { 1, 1, 168, 192 };
@@ -401,6 +400,9 @@ void DataTakingThread::run() {
         // If called to Stop
         if ( _stop ) break;
 
+        // Fake a stop if the number of frames to be taken has been reached
+        if ( _score.missingToCompleteJob == nFramesKept ) break;
+
     }
 
     if ( _stop ) { // if the data taking was stopped
@@ -489,6 +491,7 @@ bool DataTakingThread::ThereIsAFalse(vector<bool> v) {
 void DataTakingThread::rewindScoring() {
     _score.framesKept = 0;
     _score.framesReceived = 0;
+    _score.framesRequested = 0;
 }
 
 void DataTakingThread::on_busy_drawing() {

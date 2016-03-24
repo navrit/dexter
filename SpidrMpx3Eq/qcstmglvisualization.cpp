@@ -94,15 +94,16 @@ void QCstmGLVisualization::updateETA() {
 }
 
 
-void QCstmGLVisualization::StartDataTaking(){
+void QCstmGLVisualization::StartDataTaking(bool clear){
 
     // The Start button becomes the Stop button
 
     if ( !_takingData ) {
 
         // Clear previous data first
-        GetMpx3GUI()->clear_data( false );
-
+        if ( clear ) {
+            GetMpx3GUI()->clear_data( false );
+        }
         // Threads
         if ( _dataTakingThread ) {
             if ( _dataTakingThread->isRunning() ) {
@@ -116,6 +117,12 @@ void QCstmGLVisualization::StartDataTaking(){
         // Create the thread
         _dataTakingThread = new DataTakingThread(_mpx3gui, this);
         _dataTakingThread->ConnectToHardware();
+        if ( clear ) {
+            _dataTakingThread->rewindScoring();
+            _missingToReachJob = _mpx3gui->getConfig()->getNTriggers();
+        }
+        _dataTakingThread->setFramesRequested( _mpx3gui->getConfig()->getNTriggers() );
+        _dataTakingThread->setMissingToCompleteJob( _missingToReachJob );
 
         // Change the Start button to Stop
         ui->startButton->setText( "Stop" );
@@ -233,8 +240,30 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
         // At this point I need to decide if the data taking is really finished.
         // If the user is requesting that all frames are needed we look at
         if ( ui->completeFramesCheckBox->isChecked() ) {
+
             DataTakingThread::datataking_score_info score = _dataTakingThread->getScoreInfo();
-            qDebug() << "kept : " << score.framesKept << " | received : " << score.framesReceived;
+
+            // The following can happen if packets have been lost
+            // On user request, keep taking data until the framesRequested has been reached
+
+             qDebug() << "Missing : " << _missingToReachJob;
+
+            _missingToReachJob -= score.framesKept;
+
+            qDebug() << "kept : " << score.framesKept
+                     << " | received : " << score.framesReceived
+                     << " | requested : " << score.framesRequested
+                     << " | missing : " << _missingToReachJob;
+
+            if ( _missingToReachJob > 0 ) {
+
+                // Keep taking data without erasing previous and
+                //  without rewinding scorers
+                StartDataTaking( false );
+
+                return;
+            }
+
         }
 
         // Change the Stop button to Start

@@ -34,13 +34,16 @@ public:
 	bool ThereIsAFalse(vector<bool> v);
 
     typedef struct {
-        int framesKept;
+        int missingToCompleteJob;
+        int framesRequested;
         int framesReceived;
+        int framesKept;
     } datataking_score_info;
 
     datataking_score_info getScoreInfo() { return _score; }
     void rewindScoring();
-
+    void setFramesRequested(int nf){ _score.framesRequested = nf; }
+    void setMissingToCompleteJob(int nf) { _score.missingToCompleteJob = nf; }
 
 private:
 
