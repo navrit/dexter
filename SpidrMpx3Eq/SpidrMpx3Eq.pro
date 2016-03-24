@@ -9,7 +9,7 @@ TARGET = Mpx3GUI
 
 # QT       += core gui network
 # Use as shared library
-DEFINES += QCUSTOMPLOT_USE_LIBRARY
+#DEFINES += QCUSTOMPLOT_USE_LIBRARY
 greaterThan(QT_MAJOR_VERSION, 4) {
 	QT += widgets printsupport
 } else {
@@ -40,8 +40,12 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 INCLUDEPATH += ../SpidrMpx3Lib
 #INCLUDEPATH += ../QCustomPlot
 win32 {
-  INCLUDEPATH += "C:/Program Files/Phidgets"
+
+  INCLUDEPATH += C:/boost_1_60_0
+  LIBS       += "-LC:/boost_1_60_0/stage/lib"
+  INCLUDEPATH += "C:/Program Files/Phidgets/"
   LIBS        += "-LC:/Program Files/Phidgets"
+
 }
 
 LIBS += -lSpidrMpx3Lib

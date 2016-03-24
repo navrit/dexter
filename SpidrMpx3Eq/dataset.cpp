@@ -233,7 +233,8 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
         double nMean = 0.;
         for(unsigned int j = 0; j < getPixelsPerLayer(); j++) {
             // See if the pixel is inside the region
-            QPointF pix = XtoXY(j, isize.width());
+            //QPointF pix = XtoXY(j, isize.width());  //Not correct conversion from j to XY.//A
+            QPointF pix = jtoXY(j);//A
             if ( RoI.contains( pix ) ) {
                 mean += currentLayer[j];
                 nMean++;
@@ -243,7 +244,7 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
 
         //cout.precision(1);
         cout << "\t" << mean;
-        mean_v.push_back( mean ); // save the man values for calculation of stdev
+        mean_v.push_back( mean ); // save the mean values for calculation of stdev
 
     }
     cout << endl;
@@ -257,7 +258,8 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
         double nMean = 0.;
         for(unsigned int j = 0; j < getPixelsPerLayer(); j++) {
             // See if the pixel is inside the region
-            QPointF pix = XtoXY(j, isize.width());
+            //QPointF pix = XtoXY(j, isize.width());//A
+            QPointF pix =jtoXY(j);//A
             if ( RoI.contains( pix ) ) {
                 stdev += (currentLayer[j] - mean_v[i])*(currentLayer[j] - mean_v[i]);
                 nMean++;
@@ -276,6 +278,29 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
 QPointF Dataset::XtoXY(int X, int dimX){
     return QPointF(X % dimX, X/dimX);
 }
+
+QPoint Dataset::jtoXY(int j){ //A
+    int x, y;
+    int nj1 = m_nx*m_nx;    //max number j of each chip
+    int nj2 = 2*m_nx*m_nx;
+    int nj3 = 3* m_nx*m_nx;
+    if(j < nj1)
+    {   x = j/128;
+        y = 128 + j%128;
+    }
+    if(j >= nj1 && j < nj2){
+        x = ceil(255 - (j - nj1)/128);
+        y = 127 - j%128;
+    }
+    if(j >= nj2 && j < nj3){
+        x = (j - nj2)/128;
+        y = (j - nj2)%128;
+    }
+    //else? 4th pixel
+
+    return QPoint(x,y);
+}
+
 
 bool Dataset::isBorderPixel(int p, QSize isize) {
 
@@ -792,7 +817,7 @@ void Dataset::applyOBCorrection() {
         double low = 0;
         if (currentLayer[0] > correctionLayer[0]) min = currentLayer[0];
 
-        //Calculating the minimum and maximum pixel values of the image taken.
+        //Calculating the minimum and maximum pixel values of the image (Data) taken, to get the range.
         double Dmin = (double)currentLayer[0]; //A
         double Dmax = Dmin; //A
 
@@ -801,6 +826,7 @@ void Dataset::applyOBCorrection() {
 
         for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
 
+            //Determine minimum and maximum of the currentdata
             if((double)currentLayer[j]<Dmin) Dmin = currentLayer[j];//A
             if((double)currentLayer[j]>Dmax) Dmax = currentLayer[j];//A
 
@@ -833,13 +859,19 @@ void Dataset::applyOBCorrection() {
         // this ensures that all values can be converted to integers without losing data.
         int correctionFactor = (int)-floor(log10(min));
         int offset = (int)(std::abs(low)*pow(10.0, correctionFactor));
+
+        //To calculate the range in the corrected values
+        double Cmin = offset + round(min*pow(10.0, correctionFactor)); //A
+        double Cmax = offset + round(max*pow(10.0, correctionFactor)); //A
+
         cout << std::setprecision(10) << "low    : " << low << endl;
         cout << std::setprecision(10) << "offset : " << offset << endl;
         cout << std::setprecision(10) << "min    : " << (double)min << endl;
         cout << std::setprecision(10) << "max    : " << (double)max << endl;
         cout << std::setprecision(10) << "correction : " << correctionFactor << endl;
-        cout << std::setprecision(10) << "Corr. Range   : " << (double)max - (double)min << endl;//A
         cout << std::setprecision(10) << "Data Range    : " << (double)Dmax - (double)Dmin << endl;//A
+        cout << std::setprecision(10) << "Corr. Ln Range   : " << (double)max - (double)min << endl;//A
+        cout << std::setprecision(10) << "Corr. Range   : " << (double)Cmax - (double)Cmin << endl;//A
 
         for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
             if (currentLayer[j] != 0)
