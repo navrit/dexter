@@ -230,6 +230,13 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
         // And replot, this also attempts to apply selected corrections
         reload_all_layers( true );
 
+        // At this point I need to decide if the data taking is really finished.
+        // If the user is requesting that all frames are needed we look at
+        if ( ui->completeFramesCheckBox->isChecked() ) {
+            DataTakingThread::datataking_score_info score = _dataTakingThread->getScoreInfo();
+            qDebug() << "kept : " << score.framesKept << " | received : " << score.framesReceived;
+        }
+
         // Change the Stop button to Start
         ui->startButton->setText( "Start" );
 
