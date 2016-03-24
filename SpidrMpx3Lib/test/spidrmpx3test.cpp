@@ -8,33 +8,47 @@
 #include <iomanip>
 using namespace std;
 
+#include <QString>
+
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 #include "mpx3defs.h"
 
-int main( int argc, char *argv[] )
-{
-  SpidrController spidrcontrol( 192, 168, 1, 10 );
+quint32 get_addr_and_port(const char *str, int *portnr);
+void usage();
 
-  // Check if we are properly connected to the SPIDR module
-  if( spidrcontrol.isConnected() )
-    {
-      cout << "Connected to SPIDR: " << spidrcontrol.ipAddressString();
-      int ipaddr;
-      if( spidrcontrol.getIpAddrDest( 0, &ipaddr ) )
-	cout << ", IP dest: "
-	     << ((ipaddr>>24) & 0xFF) << "."
-	     << ((ipaddr>>16) & 0xFF) << "."
-	     << ((ipaddr>> 8) & 0xFF) << "."
-	     << ((ipaddr>> 0) & 0xFF);
-      cout <<  endl;
-    }
-  else
-    {
-      cout << spidrcontrol.connectionStateString() << ": "
-	   << spidrcontrol.connectionErrString() << endl;
-      return 1;
-    }
+// ----------------------------------------------------------------------------
+
+int main(int argc, char *argv[])
+{
+  quint32 ipaddr = 0;
+  int     portnr = 50000;
+
+  // Check argument count
+  if( !(argc == 2) )
+  {
+    usage();
+    return 0;
+  }
+
+  ipaddr = get_addr_and_port(argv[1], &portnr);
+
+  // ----------------------------------------------------------
+  // Open a control connection to the SPIDR module
+  // with the given address and port, or -if the latter was not provided-
+  // the default port number 50000
+  SpidrController spidrcontrol((ipaddr >> 24) & 0xFF,
+    (ipaddr >> 16) & 0xFF,
+    (ipaddr >> 8) & 0xFF,
+    (ipaddr >> 0) & 0xFF, portnr);
+
+  // Are we connected ?
+  if( !spidrcontrol.isConnected() ) {
+    cout << spidrcontrol.ipAddressString() << ": "
+      << spidrcontrol.connectionStateString() << ", "
+      << spidrcontrol.connectionErrString() << endl;
+    return 1;
+  }
 
   SpidrDaq spidrdaq( &spidrcontrol );
   cout << "SpidrDaq: ";
@@ -90,7 +104,7 @@ int main( int argc, char *argv[] )
 	}
       cout << "DAQ frames: " << spidrdaq.framesCount() << ", lost "
 	   << spidrdaq.framesLostCount() << ", lost pkts "
-	   << spidrdaq.packetsLostCount() << ", exp seqnr (dev 0) "
+	   << spidrdaq.lostCount() << ", exp seqnr (dev 0) "
 	   << spidrdaq.expSequenceNr( 0 ) << endl;
     }
 
@@ -98,8 +112,8 @@ int main( int argc, char *argv[] )
        << spidrdaq.framesWrittenCount() << "), proc'd "
        << spidrdaq.framesProcessedCount() << "), lost "
        << spidrdaq.framesLostCount() << ", lost pkts "
-       << spidrdaq.packetsLostCount() << " (file: "
-       << spidrdaq.packetsLostCountFile() << "), pkt size "
+       << spidrdaq.lostCount() << " (file: "
+       << spidrdaq.lostCountFile() << "), pkt size "
        << spidrdaq.packetSize( 0 ) << endl;
   cout << "Lost/frame: ";
   for( i=0; i<8; ++i )
@@ -127,3 +141,14 @@ int main( int argc, char *argv[] )
 
   return 0;
 }
+
+// ----------------------------------------------------------------------------
+
+void usage()
+{
+  cout <<
+    "Usage  :\n"
+    "spidrmpx3test <ipaddr>[:<portnr>]\n";
+}
+
+// ----------------------------------------------------------------------------

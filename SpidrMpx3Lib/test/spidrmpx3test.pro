@@ -13,7 +13,7 @@ TARGET   = spidrmpx3test
 
 # Create a console app
 QT -= gui
-QT += core
+QT += core network
 CONFIG += qt thread console warn_on exceptions debug_and_release
 
 CONFIG(debug, debug|release) {
@@ -36,4 +36,4 @@ LIBS += -lSpidrMpx3Lib
 
 INCLUDEPATH += ..
 
-SOURCES += spidrmpx3test.cpp
+SOURCES += getaddr.cpp spidrmpx3test.cpp

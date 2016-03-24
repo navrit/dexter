@@ -3,31 +3,49 @@
 #include <iomanip>
 using namespace std;
 
+#include <QString>
+
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 #include "mpx3defs.h"
 
-#define USE_SPIDRDAQ
+//#define USE_SPIDRDAQ
+
+quint32 get_addr_and_port(const char *str, int *portnr);
+void usage();
+
+// ----------------------------------------------------------------------------
 
 int main( int argc, char *argv[] )
 {
-  // Open a control connection to SPIDR module with address 192.168.1.10,
-  // port 50000 (default)
-  SpidrController spidrcontrol( 192, 168, 1, 10 );
+  quint32 ipaddr = 0;
+  int     portnr = 50000;
 
-  // Check the connection to the SPIDR module
-  if( !spidrcontrol.isConnected() )
+  // Check argument count
+  if( !(argc == 2) )
     {
-      // No ?
-      cout << spidrcontrol.connectionStateString() << ": "
-           << spidrcontrol.connectionErrString() << endl;
-      return 1;
+      usage();
+      return 0;
     }
-  else
-    {
-      cout << "Connected to SPIDR: "
-	   << spidrcontrol.ipAddressString() <<  endl;
-    }
+
+  ipaddr = get_addr_and_port(argv[1], &portnr);
+
+  // ----------------------------------------------------------
+  // Open a control connection to the SPIDR module
+  // with the given address and port, or -if the latter was not provided-
+  // the default port number 50000
+  SpidrController spidrcontrol((ipaddr >> 24) & 0xFF,
+    (ipaddr >> 16) & 0xFF,
+    (ipaddr >> 8) & 0xFF,
+    (ipaddr >> 0) & 0xFF, portnr);
+
+  // Are we connected ?
+  if( !spidrcontrol.isConnected() ) {
+    cout << spidrcontrol.ipAddressString() << ": "
+      << spidrcontrol.connectionStateString() << ", "
+      << spidrcontrol.connectionErrString() << endl;
+    return 1;
+  }
 
   int devcnt = 0;
   int devids[4];
@@ -48,22 +66,23 @@ int main( int argc, char *argv[] )
       }
   cout << "==> Using device number " << devnr << endl;
 
-  // Adjust readout mask
-  /*
+  // Get current read-out mask
   int mask = 0;
   cout << "(acq mask 0x" << hex;
   if( spidrcontrol.getAcqEnable( &mask ) )
     cout << mask;
   else
     cout << "###";
+  /*
+  // Adjust read-out mask, if necessary
   spidrcontrol.setAcqEnable( 1<<devnr );
   cout << " set to 0x";
   if( spidrcontrol.getAcqEnable( &mask ) )
     cout << mask;
   else
     cout << "###";
-  cout << ")" << dec << endl;
   */
+  cout << ")" << dec << endl;
 
 #ifdef USE_SPIDRDAQ
   SpidrDaq spidrdaq( &spidrcontrol );
@@ -86,19 +105,20 @@ int main( int argc, char *argv[] )
 
   spidrcontrol.setMaxPacketSize( 9000 ); // Not available on Compact-SPIDR
 
-  int pixdepth = 12;
-  spidrcontrol.setPixelDepth( devnr, pixdepth, false );
+  int  pixdepth = 12;
+  bool two_counter_readout = true;
+  spidrcontrol.setPixelDepth( devnr, pixdepth, two_counter_readout );
 #ifdef USE_SPIDRDAQ
   spidrdaq.setPixelDepth( pixdepth );
 #endif
 
-#define USE_THIS
-#ifdef USE_THIS
+#define USE_PIXELCONFIG
+#ifdef USE_PIXELCONFIG
   // Create a (new) pixel configuration (for a Medipix3 device)
   int devtype = MPX_TYPE_NC;
   spidrcontrol.getDeviceType( devnr, &devtype );
   spidrcontrol.resetPixelConfig();
-  int col;
+  int col, row;
   if( devtype == MPX_TYPE_MPX31 )
     {
       cout << "MPX31 pixel config" << endl;
@@ -122,18 +142,39 @@ int main( int argc, char *argv[] )
 	  cout << "### Pixel mask " << col << endl;
 
       // Set test-bit on a number of pixels
+      bool testbit = true;
+      //for( col=63; col<64; ++col )
+      //for( col=2; col<3; ++col )
+      for( col=64; col<128; ++col )
+	{
+	  spidrcontrol.configPixelMpx3rx( col, ALL_PIXELS, 0, 0, testbit );
+	  if( testbit )
+	    spidrcontrol.configCtpr( devnr, col, 1 );
+	}
+
+      /*
       for( col=63; col<64; ++col )
-      //for( col=64; col<128; ++col )
-	spidrcontrol.configPixelMpx3rx( col, ALL_PIXELS, 0, 0, true );
+	for( row=0; row<MPX_PIXEL_ROWS; ++row )
+	  if( row != 0x10 )
+	    spidrcontrol.configPixelMpx3rx( col, row, 0, (row&31) );
+      */
+      //spidrcontrol.configPixelMpx3rx( 4, 5, 31, 6, false );
+      //spidrcontrol.setPixelMaskMpx3rx( 4, 5 );
+      //spidrcontrol.setPixelMaskMpx3rx( 5, 6 );
 
 #ifdef USE_SPIDRDAQ
-      bool read_it_back = true;
+      //bool read_it_back = true;
+      bool read_it_back = false;
       if( read_it_back ) spidrdaq.disableLut( true );
 #else
       bool read_it_back = false;
 #endif
 
-      // Upload the pixel configuration; read/don't read it back
+      // Upload the test pulse configuration
+      if( !spidrcontrol.setCtpr( devnr ) )
+	cout << "### CTPR config: " << spidrcontrol.errorString() << endl;
+
+      // Upload the pixel configuration; optionally read it back
       if( !spidrcontrol.setPixelConfigMpx3rx( devnr, read_it_back ) )
 	cout << "### Pixel config: " << spidrcontrol.errorString() << endl;
 
@@ -143,9 +184,10 @@ int main( int argc, char *argv[] )
 	  // Expect to see the pixelconfiguration returned in a frame..
 	  if( spidrdaq.hasFrame( 100 ) )
 	    {
-	      int size;
-	      int *data = spidrdaq.frameData( 0, &size );
-	      cout << "Received pixconf frame, size=" << size << endl;
+	      int size, lost_count;
+	      int *data = spidrdaq.frameData( 0, &size, &lost_count );
+	      cout << "Received pixconf frame, size=" << size
+		   << " lost=" << lost_count << endl;
 	      cout << hex;
 	      // Display pixels with configuration != 0
 	      int row, col;
@@ -153,7 +195,8 @@ int main( int argc, char *argv[] )
 		for( col=0; col<MPX_PIXEL_ROWS; ++col )
 		  {
 		    if( *data != 0 )
-		      cout << col << "," << row << ": " << *data << endl;
+		      cout << setw(2) << col << ","
+			   << setw(2) << row << ": " << *data << endl;
 		    ++data;
 		  }
 	      cout << dec;
@@ -171,10 +214,9 @@ int main( int argc, char *argv[] )
     {
       cout << "### No device type, no pixel configuration upload" << endl;
     }
-#endif // USE_THIS
+#endif // USE_PIXELCONFIG
 
-  //spidrcontrol.setPixelDepth( devnr, pixdepth, true );
-  spidrcontrol.setPixelDepth( devnr, pixdepth, false );
+  spidrcontrol.setPixelDepth( devnr, pixdepth, two_counter_readout );
 
   /*
   // DACs
@@ -196,9 +238,9 @@ int main( int argc, char *argv[] )
   */
 
   int trig_mode = SHUTTERMODE_AUTO; // Auto-trigger mode
-  int trig_period_us = 10;
+  int trig_period_us = 1000;
   //int trig_freq_hz = 30000;
-  int trig_freq_hz   = 1;
+  int trig_freq_hz   = 10;
   //int nr_of_triggers = 500;
   int nr_of_triggers = 1;
   int trig_pulse_count;
@@ -208,11 +250,11 @@ int main( int argc, char *argv[] )
 
   char ch;
   int i, frame_cnt = 0;
-  //for( i=0; i<10; ++i )
-  for( i=0; i<1; ++i )
+  for( i=0; i<100; ++i )
+  //for( i=0; i<1; ++i )
     {
       cout << "Auto-trig " << i << endl;
-      cin >> ch;
+      //cin >> ch;
 
       //if( 1 )//i==4 ) spidrcontrol.setDac( devnr, 0, i*51 );
       //spidrcontrol.setMaxPacketSize( 512+i*64 );
@@ -228,8 +270,8 @@ int main( int argc, char *argv[] )
 	  cout << "DAQ frames: " << setw(3) << frame_cnt
 	       << " (" << spidrdaq.framesCount() << ")"
 	    //<< ", lost " << spidrdaq.framesLostCount()
-	       << ", lost pkts " << spidrdaq.packetsLostCountFrame();
-	  if( (frame_cnt & 1) == 0 )
+	       << ", lost pkts/pixels " << spidrdaq.lostCountFrame();
+	  if( two_counter_readout && (frame_cnt & 1) == 0 )
 	    {
 	      if( !spidrdaq.isCounterhFrame() )
 		{
@@ -249,7 +291,7 @@ int main( int argc, char *argv[] )
 	  //if( frame_cnt >= 25 ) spidrcontrol.stopAutoTrigger(); // TEST
 	}
 #else
-      Sleep( 1000 );
+      Sleep( 500 );
 #endif
     }
   goto summary;
@@ -278,8 +320,8 @@ int main( int argc, char *argv[] )
   cout << " (file: " << spidrdaq.framesWrittenCount()
        << "), lost " << spidrdaq.framesLostCount()
        << ", recvd packets " << spidrdaq.packetsReceivedCount()
-       << ", lost pkts " << spidrdaq.packetsLostCount()
-       << " (file: "  << spidrdaq.packetsLostCountFile()
+       << ", lost pkts/pix " << spidrdaq.lostCount()
+       << " (file: "  << spidrdaq.lostCountFile()
        << "), pkt size " << spidrdaq.packetSize( 0 ) << endl;
   cout << "Packets lost/frame (of first device present): ";
   for( i=0; i<8; ++i )
@@ -294,9 +336,20 @@ int main( int argc, char *argv[] )
     cout << i << "=" << spidrdaq.pixelsLostCountFrame( 0, i ) << ", ";
   cout << endl;
 
-  cin >> ch;
+  //cin >> ch;
   spidrdaq.stop();
 #endif    
 
   return 0;
 }
+
+// ----------------------------------------------------------------------------
+
+void usage()
+{
+  cout <<
+    "Usage  :\n"
+    "spidrmpx3test-daq <ipaddr>[:<portnr>]\n";
+}
+
+// ----------------------------------------------------------------------------
