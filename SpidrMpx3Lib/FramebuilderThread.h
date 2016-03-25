@@ -58,7 +58,7 @@ class FramebuilderThread : public QThread
   void   setPixelDepth( int nbits );
   void   setDecodeFrames( bool decode );
   void   setCompressFrames( bool compress );
-  void   disableLut( bool disable ) { _applyLut = !disable; }
+  void   setLutEnable( bool enable ) { _applyLut = enable; }
   void   setFlush( bool flush ) { _flush = flush; }
 
   void   setCallbackId( int id ) { _id = id; }

@@ -15,7 +15,8 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x16020100; // Add getFpgaTemp(), get/setFanSpeed()
+const int   VERSION_ID = 0x16032400; // Add bias, LUT and continuous-readout functions
+//const int VERSION_ID = 0x16020100; // Add getFpgaTemp(), get/setFanSpeed()
 //const int VERSION_ID = 0x15092800; // Add pixelconfig read-back option
 //const int VERSION_ID = 0x15082600; // Add getOmr(); optimization in
                                      // request..() functions;
@@ -31,6 +32,11 @@ const int   VERSION_ID = 0x16020100; // Add getFpgaTemp(), get/setFanSpeed()
 //const int VERSION_ID = 0x14111200; // Added setGainMode()
 //const int VERSION_ID = 0x14091600; // Update to SPIDR-TPX3 'standard'
 //const int VERSION_ID = 0x14012100;
+
+// SPIDR register addresses (some of them) and register bits
+#define SPIDR_SHUTTERTRIG_CTRL_I        0x0290
+#define SPIDR_ENA_SHUTTER1_CNTRSEL_BIT  9
+#define SPIDRMPX3_SHUTTER1_PERIOD_I     0x1008
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor
@@ -527,6 +533,35 @@ int SpidrController::dacMaxMpx3rx( int dac_code )
   int index = this->dacIndexMpx3rx( dac_code );
   if( index < 0 || index >= MPX3RX_DAC_COUNT ) return 0;
   return( (1 << MPX3RX_DAC_TABLE[index].bits) - 1 );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setBiasSupplyEna( bool enable )
+{
+  return this->requestSetInt( CMD_BIAS_SUPPLY_ENA, 0, (int) enable );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setBiasVoltage( int volts )
+{
+  // Parameter 'volts' should be between 12 and 104 Volts
+  // (which is the range SPIDR-TPX3 can set)
+  if( volts < 12 ) volts = 12;
+  if( volts > 104 ) volts = 104;
+
+  // Convert the volts to the appropriate DAC value
+  int dac_val = ((volts - 12)*4095)/(104 - 12);
+
+  return this->requestSetInt( CMD_SET_BIAS_ADJUST, 0, dac_val );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setLutEnable( bool enable )
+{
+  return this->requestSetInt( CMD_DECODERS_ENA, 0, (int) enable );
 }
 
 // ----------------------------------------------------------------------------
@@ -1053,6 +1088,27 @@ bool SpidrController::triggerSingleReadout( int countl_or_h )
 }
 
 // ----------------------------------------------------------------------------
+
+bool SpidrController::startContReadout( int freq_hz )
+{
+  int period_25ns;
+  if( freq_hz < 1 ) freq_hz = 1;
+  period_25ns = 40000000/freq_hz;
+  if( !this->setSpidrReg( SPIDRMPX3_SHUTTER1_PERIOD_I, period_25ns ) )
+    return false;
+  return this->setSpidrRegBit( SPIDR_SHUTTERTRIG_CTRL_I,
+			       SPIDR_ENA_SHUTTER1_CNTRSEL_BIT, true );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::stopContReadout()
+{
+  return this->setSpidrRegBit( SPIDR_SHUTTERTRIG_CTRL_I,
+			       SPIDR_ENA_SHUTTER1_CNTRSEL_BIT, false );
+}
+
+// ----------------------------------------------------------------------------
 // Monitoring
 // ----------------------------------------------------------------------------
 
@@ -1144,6 +1200,22 @@ bool SpidrController::getDvddNow( int *mvolt, int *mamp, int *mwatt )
 bool SpidrController::getVddNow( int *mvolt, int *mamp, int *mwatt )
 {
   return this->get3Ints( CMD_GET_VDD_NOW, mvolt, mamp, mwatt );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getBiasVoltage( int *volts )
+{
+  int chan = 4; // SPIDR-MPX3Q ADC input
+  int adc_data = chan;
+  if( this->requestGetInt( CMD_GET_SPIDR_ADC, 0, &adc_data ) )
+    {
+      // Full-scale is 1.5V = 1500mV
+      // and 0.01V represents approximately 1V bias voltage
+      *volts = (((adc_data & 0xFFF)*1500 + 4095) / 4096) / 10;
+      return true;
+    }
+  return false;
 }
 
 // ----------------------------------------------------------------------------

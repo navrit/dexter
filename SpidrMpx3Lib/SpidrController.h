@@ -98,6 +98,9 @@ class MY_LIB_API SpidrController
   std::string dacNameMpx3rx    ( int  dac_code );
   int         dacMaxMpx3       ( int  dac_code );
   int         dacMaxMpx3rx     ( int  dac_code );
+  bool        setBiasSupplyEna ( bool enable );
+  bool        setBiasVoltage   ( int  volts );
+  bool        setLutEnable     ( bool enable );
 
   // Configuration: pixels
   void resetPixelConfig        ( );
@@ -172,6 +175,8 @@ class MY_LIB_API SpidrController
   bool startAutoTrigger        ( );
   bool stopAutoTrigger         ( );
   bool triggerSingleReadout    ( int counterl_or_h = 0 );
+  bool startContReadout        ( int freq_hz );
+  bool stopContReadout         ( );
 
   // Monitoring
   bool getAdc                  ( int *adc_val, int chan, int nr_of_samples = 1 );
@@ -187,6 +192,7 @@ class MY_LIB_API SpidrController
   bool getAvddNow              ( int *mvolt, int *mamp, int *mwatt );
   bool getDvddNow              ( int *mvolt, int *mamp, int *mwatt );
   bool getVddNow               ( int *mvolt, int *mamp, int *mwatt );
+  bool getBiasVoltage          ( int *volts );
   bool getFanSpeed             ( int  index, int *rpm );
   bool setFanSpeed             ( int  index, int percentage );
 

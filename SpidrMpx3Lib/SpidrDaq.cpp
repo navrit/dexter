@@ -8,7 +8,8 @@
 #include "FramebuilderThreadC.h"
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x16030900; // Compact-SPIDR support added
+const int   VERSION_ID = 0x16032400; // Renamed disableLut() to setLutEnable()
+//const int VERSION_ID = 0x16030900; // Compact-SPIDR support added
 //const int VERSION_ID = 0x15101500;
 //const int VERSION_ID = 0x15100100;
 //const int VERSION_ID = 0x15093000;
@@ -281,9 +282,9 @@ void SpidrDaq::setCompressFrames( bool compress )
 
 // ----------------------------------------------------------------------------
 
-void SpidrDaq::disableLut( bool disable )
+void SpidrDaq::setLutEnable( bool enable )
 {
-  _frameBuilder->disableLut( disable );
+  _frameBuilder->setLutEnable( enable );
 }
 
 // ----------------------------------------------------------------------------

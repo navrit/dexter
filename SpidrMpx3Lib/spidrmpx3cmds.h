@@ -88,6 +88,11 @@
 #define CMD_GET_SPIDR_ADC      0x54E
 #define CMD_GET_DVDD_NOW       0x54F
 
+// Configuration: devices (continued)
+#define CMD_BIAS_SUPPLY_ENA    0x55F
+#define CMD_SET_BIAS_ADJUST    0x560
+#define CMD_DECODERS_ENA       0x561
+
 // Monitoring (continued)
 #define CMD_GET_FPGATEMP       0x568
 #define CMD_GET_FANSPEED       0x569
@@ -223,10 +228,10 @@ static const char *CMD_STR[] =
     "-----",             // 0x55C
     "-----",             // 0x55D
     "-----",             // 0x55E
-    "-----",             // 0x55F
+    "BIAS_SUPPLY_ENA  ", // 0x55F
 
-    "-----",             // 0x560
-    "-----",             // 0x561
+    "SET_BIAS_ADJUST  ", // 0x560
+    "DECODERS_ENA     ", // 0x561
     "-----",             // 0x562
     "-----",             // 0x563
     "-----",             // 0x564
