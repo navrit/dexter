@@ -7,6 +7,7 @@
 
 #include <QDataStream>
 #include <QDebug>
+#include <QString> //A
 
 #include <iostream>
 #include <iomanip>
@@ -204,6 +205,8 @@ QVector<int> Dataset::toQVector() {
     return tovec;
 }
 
+
+
 void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
 
     QList<int> keys = m_thresholdsToIndices.keys();
@@ -215,15 +218,13 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
     QRectF RoI;
     RoI.setRect(pixel_init.x(), pixel_init.y(), pixel_end.x() - pixel_init.x(),  pixel_end.y() - pixel_init.y() );
 
-    cout << "-- Basic stats -- ";
-    for(int i = 0; i < keys.length(); i++) {
-        cout << "\t" << keys[i];
-    }
-    cout << endl;
+    //Set in bstats to use in the dialog
+    bstats.init_pixel = pixel_init;
+    bstats.end_pixel = pixel_end;
 
     // Mean
     std::vector<double> mean_v;
-    cout << "   mean\t\t";
+
     for(int i = 0; i < keys.length(); i++) {
 
         int* currentLayer = getLayer(keys[i]);
@@ -242,15 +243,13 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
         }
         if(nMean != 0) mean /= nMean;
 
-        //cout.precision(1);
-        cout << "\t" << mean;
         mean_v.push_back( mean ); // save the mean values for calculation of stdev
-
+        bstats.mean_v.push_back(mean);
     }
-    cout << endl;
 
     // Standard Deviation
-    cout << "   stdev\t";
+    std::vector<double> stdev_v;
+
     for(int i = 0; i < keys.length(); i++) {
 
         int* currentLayer = getLayer(keys[i]);
@@ -258,7 +257,7 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
         double nMean = 0.;
         for(unsigned int j = 0; j < getPixelsPerLayer(); j++) {
             // See if the pixel is inside the region
-            //QPointF pix = XtoXY(j, isize.width());//A
+            //QPointF pix = XtoXY(j, isize.width());//wrong
             QPointF pix =jtoXY(j);//A
             if ( RoI.contains( pix ) ) {
                 stdev += (currentLayer[j] - mean_v[i])*(currentLayer[j] - mean_v[i]);
@@ -267,12 +266,10 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
         }
         if ( stdev != 0 ) stdev /= nMean;
         stdev = sqrt(stdev);
-        //cout.precision(1);
-        cout << "\t" << stdev;
-    }
+        stdev_v.push_back(stdev);
+        bstats.stdev_v.push_back(stdev);
 
-    cout << endl;
-
+     }
 }
 
 QPointF Dataset::XtoXY(int X, int dimX){
@@ -296,8 +293,7 @@ QPoint Dataset::jtoXY(int j){ //A
         x = (j - nj2)/128;
         y = (j - nj2)%128;
     }
-    //else? 4th pixel
-
+    //else? 4th pixel?
     return QPoint(x,y);
 }
 

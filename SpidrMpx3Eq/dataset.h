@@ -67,6 +67,13 @@ class Dataset//TODO: specify starting corner?
       bool operator() (const sortPair &lhs, const sortPair &rhs) { return lhs.thickness < rhs.thickness; }
   } sortByThickness;
 
+  struct bStats {
+      QPoint init_pixel;
+      QPoint end_pixel;
+      std::vector<double>  mean_v;
+      std::vector<double> stdev_v;
+  } bstats;//!Calculated mean and stdev of the selected region of interest.
+
  private:
   int m_nx, m_ny; //!<Pixel size in the x and y direction
   int m_pixelDepthBits;

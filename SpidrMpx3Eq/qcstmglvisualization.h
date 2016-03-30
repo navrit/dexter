@@ -26,6 +26,7 @@ using namespace std;
 class DataTakingThread;
 
 class QCstmCorrectionsDialog;
+class StatsDialog;//A
 
 namespace Ui {
 class QCstmGLVisualization;
@@ -46,6 +47,9 @@ class QCstmGLVisualization : public QWidget
 
     // Corrections
     QCstmCorrectionsDialog * _corrdialog = nullptr;
+
+    //Statistics
+    StatsDialog * _statsdialog = nullptr; //A
 
     // Reco
     Color2DRecoGuided * _reco_Color2DRecoGuided = nullptr;
@@ -82,7 +86,6 @@ private:
     QCPRange _manualRange;
     QCPRange _percentileRange;
     bool _logyPlot = false;
-    int _missingToReachJob = 0;
 
 
     //!Gets the currently active threshold by looking at the value of the layerselector combobox.
@@ -143,8 +146,9 @@ private slots:
 
     void on_logscale(bool);
 
+
 public slots:
-    void StartDataTaking(bool clear = true);
+    void StartDataTaking();
     void setGradient(int index);
     //!Used to inform this object of the availible gradients and their names.
     void availible_gradients_changed(QStringList gradients);
@@ -173,6 +177,8 @@ public slots:
     void fps_update(int);
     void overflow_update(int);
 
+    // Stats dialog
+    void on_user_accepted_stats();
 
 signals:
     void change_hover_text(QString);

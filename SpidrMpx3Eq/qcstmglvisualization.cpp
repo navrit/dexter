@@ -6,6 +6,7 @@
 #include "DataTakingThread.h"
 
 #include "qcstmcorrectionsdialog.h"
+#include "statsdialog.h"
 
 #include "qcstmconfigmonitoring.h"
 #include "ui_qcstmconfigmonitoring.h"
@@ -94,16 +95,15 @@ void QCstmGLVisualization::updateETA() {
 }
 
 
-void QCstmGLVisualization::StartDataTaking(bool clear){
+void QCstmGLVisualization::StartDataTaking(){
 
     // The Start button becomes the Stop button
 
     if ( !_takingData ) {
 
         // Clear previous data first
-        if ( clear ) {
-            GetMpx3GUI()->clear_data( false );
-        }
+        GetMpx3GUI()->clear_data( false );
+
         // Threads
         if ( _dataTakingThread ) {
             if ( _dataTakingThread->isRunning() ) {
@@ -117,12 +117,6 @@ void QCstmGLVisualization::StartDataTaking(bool clear){
         // Create the thread
         _dataTakingThread = new DataTakingThread(_mpx3gui, this);
         _dataTakingThread->ConnectToHardware();
-        if ( clear ) {
-            _dataTakingThread->rewindScoring();
-            _missingToReachJob = _mpx3gui->getConfig()->getNTriggers();
-        }
-        _dataTakingThread->setFramesRequested( _mpx3gui->getConfig()->getNTriggers() );
-        _dataTakingThread->setMissingToCompleteJob( _missingToReachJob );
 
         // Change the Start button to Stop
         ui->startButton->setText( "Stop" );
@@ -240,30 +234,8 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
         // At this point I need to decide if the data taking is really finished.
         // If the user is requesting that all frames are needed we look at
         if ( ui->completeFramesCheckBox->isChecked() ) {
-
             DataTakingThread::datataking_score_info score = _dataTakingThread->getScoreInfo();
-
-            // The following can happen if packets have been lost
-            // On user request, keep taking data until the framesRequested has been reached
-
-             qDebug() << "Missing : " << _missingToReachJob;
-
-            _missingToReachJob -= score.framesKept;
-
-            qDebug() << "kept : " << score.framesKept
-                     << " | received : " << score.framesReceived
-                     << " | requested : " << score.framesRequested
-                     << " | missing : " << _missingToReachJob;
-
-            if ( _missingToReachJob > 0 ) {
-
-                // Keep taking data without erasing previous and
-                //  without rewinding scorers
-                StartDataTaking( false );
-
-                return;
-            }
-
+            qDebug() << "kept : " << score.framesKept << " | received : " << score.framesReceived;
         }
 
         // Change the Stop button to Start
@@ -479,6 +451,18 @@ void QCstmGLVisualization::overflow_update(int ovf_cntr) {
 
 }
 
+void QCstmGLVisualization::on_user_accepted_stats()
+{
+    // delete the corresponding window
+    if ( _statsdialog ) {
+        delete _statsdialog;
+        _statsdialog = nullptr;
+        _mpx3gui->getDataset()->bstats.mean_v.clear();
+        _mpx3gui->getDataset()->bstats.stdev_v.clear();
+    }
+
+}
+
 void QCstmGLVisualization::lost_packets(int packetsLost) {
 
     // Increase the current packet loss
@@ -676,8 +660,22 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
     // Selected item
     if (selectedItem == &calcStats) {
-        // Basic stats
+
+        // Calc basic stats
         _mpx3gui->getDataset()->calcBasicStats(pixel_begin, pixel_end);
+
+        // Now display it
+        if ( _statsdialog ) {
+            delete _statsdialog;
+            _statsdialog = nullptr;
+        }
+
+        _mpx3gui->getDataset()->bstats;
+        _statsdialog = new StatsDialog(this);
+        _statsdialog->SetMpx3GUI(_mpx3gui);
+        _statsdialog->changeText();
+        _statsdialog->show();
+
     }
 
 }
