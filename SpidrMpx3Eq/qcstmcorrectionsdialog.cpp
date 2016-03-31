@@ -116,7 +116,7 @@ void QCstmCorrectionsDialog::on_applyCorr_clicked() {
         _mpx3gui->rewindToOriginalDataset();
 
         // And apply corrections
-        //_mpx3gui->getDataset()->applyCorrections( this );
+        _mpx3gui->getDataset()->applyCorrections( this );
 
         // This applies the correction if necessary
         _vis->reload_all_layers();

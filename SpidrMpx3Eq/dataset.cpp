@@ -7,7 +7,8 @@
 
 #include <QDataStream>
 #include <QDebug>
-#include <QString> //A
+#include <QString>
+#include <QtGui>
 
 #include <iostream>
 #include <iomanip>
@@ -276,7 +277,7 @@ QPointF Dataset::XtoXY(int X, int dimX){
     return QPointF(X % dimX, X/dimX);
 }
 
-QPoint Dataset::jtoXY(int j){ //A
+QPoint Dataset::jtoXY(int j){
     int x, y;
     int nj1 = m_nx*m_nx;    //max number j of each chip
     int nj2 = 2*m_nx*m_nx;
@@ -794,6 +795,11 @@ void Dataset::applyOBCorrection() {
     if (obCorrection == nullptr)
         return;
 
+    //Used
+    bool OBmatch = true;
+    bool use_k = false;
+    double k = 1;
+
     QList<int> keys = m_thresholdsToIndices.keys();
     for (int i = 0; i < keys.length(); i++) {
         //double currentTotal = getTotal(keys[i]), correctionTotal = correction->getTotal(keys[i]);
@@ -813,70 +819,105 @@ void Dataset::applyOBCorrection() {
         double low = 0;
         if (currentLayer[0] > correctionLayer[0]) min = currentLayer[0];
 
-        //Calculating the minimum and maximum pixel values of the image (Data) taken, to get the range.
-        double Dmin = (double)currentLayer[0]; //A
-        double Dmax = Dmin; //A
-
-
-        double k = 10; //A
+        //Setting minimum and maximum of the current Data and OB data.
+        double Dmin = (double)currentLayer[0];
+        double Dmax = Dmin;
+        double OBmin = (double)correctionLayer[0];
+        double OBmax = OBmin;
 
         for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
 
-            //Determine minimum and maximum of the currentdata
-            if((double)currentLayer[j]<Dmin) Dmin = currentLayer[j];//A
-            if((double)currentLayer[j]>Dmax) Dmax = currentLayer[j];//A
+            //Determine minimum and maximum of the current Data and OB Data.
+            if((double)currentLayer[j]<Dmin) Dmin = currentLayer[j];
+            if((double)currentLayer[j]>Dmax) Dmax = currentLayer[j];
+            if((double)correctionLayer[j]<OBmin) OBmin = correctionLayer[j];
+            if((double)correctionLayer[j]>OBmax) OBmax = correctionLayer[j];
 
-            if (currentLayer[j] != 0)
-            {
-                if (correctionLayer[j] > 0) {
+        }
 
-                    normFrame[j] = -1.0*log(((double)currentLayer[j]) / ((double)correctionLayer[j]));
+        //To check wether the OB data is comparable and adjust k-factor accordingly.
+        //Only change OBmatch at first layer, next layers should be handled the same.
 
-                    //set Minimum. Value closest to 0 is taken.
-                    if (std::abs(normFrame[j]) < min && normFrame[j] != 0) {
-                        min = std::abs(normFrame[j]);
-                        //std::cout << std::setprecision(10) << "min = " << min << endl;
-                        //std::cout << std::setprecision(10) << "value " << log(((double)currentLayer[j]) / ((double)correctionLayer[j])) << endl;
+        if( (OBmax-OBmin) <= 0.5*(Dmax - Dmin) || (OBmax-OBmin) >= 2*(Dmax - Dmin)){
+                if(i == 0) OBmatch = false; //Only change influence of OBmatch at first layer
+                k = Dmax/OBmax;
+            }
+
+        //Give the user the choice to apply the correction, ignore the incomparability or cancel and choose another OBcorrectionfile.
+        //Only ask at first layer.
+        if(! OBmatch && i == 0){
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::question(0, "Warning", "The OB correction data is not compatible with the current data.\nDo you want to apply a correction?",
+                              QMessageBox::Yes | QMessageBox::No |QMessageBox::Cancel , QMessageBox::Cancel);
+
+            //Continue with correction:
+            if(reply == QMessageBox::Yes){
+                OBmatch = true;
+                use_k = true;
+            }
+            //Continue without correction:
+            if(reply == QMessageBox::No){
+                OBmatch = true;
+                use_k = false;
+            }
+
+        }
+        if(OBmatch){
+            for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
+
+                if (currentLayer[j] != 0)
+                {
+                    if (correctionLayer[j] > 0) {
+
+                        //Calculation of the correction with and without k-factor
+                        if(use_k)normFrame[j] = -1.0*log(((double)currentLayer[j]) / (k*(double)correctionLayer[j]));
+                        if(!use_k)normFrame[j] = -1.0*log(((double)currentLayer[j]) / ((double)correctionLayer[j]));
+
+                        //set Minimum. Value closest to 0 is taken.
+                        if (std::abs(normFrame[j]) < min && normFrame[j] != 0)
+                            min = std::abs(normFrame[j]);
+                        if (std::abs(normFrame[j]) > max && normFrame[j] != 0)
+                            max = normFrame[j];
+                        if (normFrame[j] < low)
+                            low = normFrame[j];
                     }
-                    if (std::abs(normFrame[j]) > max && normFrame[j] != 0) {
-                        max = normFrame[j];
+                    else {
+                        currentLayer[j] = 0;
                     }
 
-                    if (normFrame[j] < low)	low = normFrame[j];
-                }
-                else {
-                    currentLayer[j] = 0;
                 }
 
             }
 
+            // Calculates the amount of decimals before the first digit of the minimum. eg: 0.03 -> 2.
+            // this ensures that all values can be converted to integers without losing data.
+            int correctionFactor = (int)-floor(log10(min));
+            int offset = (int)(std::abs(low)*pow(10.0, correctionFactor));
+
+            //To calculate the range in the corrected values
+            double Cmin = offset + round(min*pow(10.0, correctionFactor));
+            double Cmax = offset + round(max*pow(10.0, correctionFactor));
+
+            cout << std::setprecision(10) << "low    : " << low << endl;
+            cout << std::setprecision(10) << "offset : " << offset << endl;
+            cout << std::setprecision(10) << "min    : " << (double)min << endl;
+            cout << std::setprecision(10) << "max    : " << (double)max << endl;
+            cout << std::setprecision(10) << "correction : " << correctionFactor << endl;
+            cout << std::setprecision(10) << "Data Range    : " << (double)Dmax - (double)Dmin << endl;
+            cout << std::setprecision(10) << "OB Range   : " << (double)OBmax - (double)OBmin << endl;
+            cout << std::setprecision(10) << "Corr. Ln Range   : " << (double)max - (double)low << endl;
+            cout << std::setprecision(10) << "Corr. Range   : " << (double)Cmax - (double)Cmin << endl;
+
+            for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
+                if (currentLayer[j] != 0)
+                    currentLayer[j] = offset + round(normFrame[j] * pow(10.0, correctionFactor));
+                //if (currentLayer[j] < 0)
+                //    cout << j << endl;
+
+            }
+
+
         }
-        // Calculates the amount of decimals before the first digit of the minimum. eg: 0.03 -> 2.
-        // this ensures that all values can be converted to integers without losing data.
-        int correctionFactor = (int)-floor(log10(min));
-        int offset = (int)(std::abs(low)*pow(10.0, correctionFactor));
-
-        //To calculate the range in the corrected values
-        double Cmin = offset + round(min*pow(10.0, correctionFactor)); //A
-        double Cmax = offset + round(max*pow(10.0, correctionFactor)); //A
-
-        cout << std::setprecision(10) << "low    : " << low << endl;
-        cout << std::setprecision(10) << "offset : " << offset << endl;
-        cout << std::setprecision(10) << "min    : " << (double)min << endl;
-        cout << std::setprecision(10) << "max    : " << (double)max << endl;
-        cout << std::setprecision(10) << "correction : " << correctionFactor << endl;
-        cout << std::setprecision(10) << "Data Range    : " << (double)Dmax - (double)Dmin << endl;//A
-        cout << std::setprecision(10) << "Corr. Ln Range   : " << (double)max - (double)min << endl;//A
-        cout << std::setprecision(10) << "Corr. Range   : " << (double)Cmax - (double)Cmin << endl;//A
-
-        for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
-            if (currentLayer[j] != 0)
-                currentLayer[j] = offset + round(normFrame[j] * pow(10.0, correctionFactor));
-            //if (currentLayer[j] < 0)
-            //    cout << j << endl;
-
-        }
-
         delete[] normFrame;
 
     }
