@@ -277,26 +277,29 @@ QPointF Dataset::XtoXY(int X, int dimX){
     return QPointF(X % dimX, X/dimX);
 }
 
+//Get the right coordinates (on the screen) from the array index j.
 QPoint Dataset::jtoXY(int j){
     int x, y;
     int nj1 = m_nx*m_nx;    //max number j of each chip
     int nj2 = 2*m_nx*m_nx;
     int nj3 = 3* m_nx*m_nx;
-    if(j < nj1)
+    if(j < nj1)                     //pixel 0: upper left
     {   x = j/128;
         y = 128 + j%128;
     }
-    if(j >= nj1 && j < nj2){
+    if(j >= nj1 && j < nj2){        //pixel 1: bottom right
         x = ceil(255 - (j - nj1)/128);
         y = 127 - j%128;
     }
-    if(j >= nj2 && j < nj3){
+    if(j >= nj2 && j < nj3){        //pixel 2: bottom left
         x = (j - nj2)/128;
         y = (j - nj2)%128;
     }
     //else? 4th pixel?
     return QPoint(x,y);
 }
+
+
 
 
 bool Dataset::isBorderPixel(int p, QSize isize) {
@@ -846,9 +849,13 @@ void Dataset::applyOBCorrection() {
         //Give the user the choice to apply the correction, ignore the incomparability or cancel and choose another OBcorrectionfile.
         //Only ask at first layer.
         if(! OBmatch && i == 0){
-            QMessageBox::StandardButton reply;
-            reply = QMessageBox::question(0, "Warning", "The OB correction data is not compatible with the current data.\nDo you want to apply a correction?",
-                              QMessageBox::Yes | QMessageBox::No |QMessageBox::Cancel , QMessageBox::Cancel);
+            QMessageBox msgBox(QMessageBox::Question, "Warning", "The statistics between the OB data and the current data will not yield a proper correction.\nPress 'Cancel' to choose a more compatible OB datafile. \nIt is also possible to apply a k-factor on the OB correction data that is selected to make it match the current data, or to continue anyway.",
+                              QMessageBox::Yes | QMessageBox::No |QMessageBox::Cancel | QMessageBox::Cancel,0);
+
+
+            msgBox.setButtonText(QMessageBox::Yes, "Apply k-factor");
+            msgBox.setButtonText(QMessageBox::No, "Continue");
+            int reply = msgBox.exec();
 
             //Continue with correction:
             if(reply == QMessageBox::Yes){

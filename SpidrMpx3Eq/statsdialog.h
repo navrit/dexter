@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include "mpx3gui.h"
-#include <QString> //A
+#include <QString>
 
 namespace Ui {
 class StatsDialog;
@@ -19,12 +19,12 @@ public:
     void SetMpx3GUI(Mpx3GUI * p);
     void changeText();
 
-private slots:
-    void on_buttonBox_accepted();
-
 private:
     Ui::StatsDialog *ui;
     Mpx3GUI * _mpx3gui;
+
+private slots:
+    void on_buttonBox_accepted();
 
 signals:
     void user_accepted_stats();

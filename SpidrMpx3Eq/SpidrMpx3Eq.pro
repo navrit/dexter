@@ -73,7 +73,8 @@ SOURCES += main.cpp \
     qcstmct.cpp \
     color2drecoguided.cpp \
     qcstmcorrectionsdialog.cpp \
-    statsdialog.cpp
+    statsdialog.cpp \
+    profiledialog.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -105,7 +106,8 @@ HEADERS += mpx3gui.h \
     qcstmct.h \
     color2drecoguided.h \
     qcstmcorrectionsdialog.h \
-    statsdialog.h
+    statsdialog.h \
+    profiledialog.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DataTakingThread.h
@@ -127,7 +129,8 @@ FORMS    += mpx3gui.ui \
     qcstmBHWindow.ui \
     qcstmBHdialog.ui \
     qcstmcorrectionsdialog.ui \
-    statsdialog.ui
+    statsdialog.ui \
+    profiledialog.ui
     qcstmBHdialog.ui
 
 DISTFILES += \

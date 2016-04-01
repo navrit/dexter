@@ -26,7 +26,8 @@ using namespace std;
 class DataTakingThread;
 
 class QCstmCorrectionsDialog;
-class StatsDialog;//A
+class StatsDialog;
+class ProfileDialog;
 
 namespace Ui {
 class QCstmGLVisualization;
@@ -49,7 +50,8 @@ class QCstmGLVisualization : public QWidget
     QCstmCorrectionsDialog * _corrdialog = nullptr;
 
     //Statistics
-    StatsDialog * _statsdialog = nullptr; //A
+    StatsDialog * _statsdialog = nullptr;
+    ProfileDialog * _profiledialog = nullptr;
 
     // Reco
     Color2DRecoGuided * _reco_Color2DRecoGuided = nullptr;
@@ -177,8 +179,9 @@ public slots:
     void fps_update(int);
     void overflow_update(int);
 
-    // Stats dialog
+    //Deleting stats dialog and profile dialog
     void on_user_accepted_stats();
+    void on_user_accepted_profile();
 
 signals:
     void change_hover_text(QString);

@@ -7,6 +7,7 @@
 
 #include "qcstmcorrectionsdialog.h"
 #include "statsdialog.h"
+#include "profiledialog.h"
 
 #include "qcstmconfigmonitoring.h"
 #include "ui_qcstmconfigmonitoring.h"
@@ -463,6 +464,16 @@ void QCstmGLVisualization::on_user_accepted_stats()
 
 }
 
+void QCstmGLVisualization::on_user_accepted_profile()
+{
+    // delete the corresponding window
+    if ( _profiledialog ) {
+        delete _profiledialog;
+        _profiledialog = nullptr;
+    }
+
+}
+
 void QCstmGLVisualization::lost_packets(int packetsLost) {
 
     // Increase the current packet loss
@@ -670,12 +681,33 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
             _statsdialog = nullptr;
         }
 
-        _mpx3gui->getDataset()->bstats;
         _statsdialog = new StatsDialog(this);
         _statsdialog->SetMpx3GUI(_mpx3gui);
         _statsdialog->changeText();
         _statsdialog->show();
 
+    }
+    if(selectedItem == &calcProX){
+        if ( _profiledialog ) {
+            delete _profiledialog;
+            _profiledialog = nullptr;
+        }
+
+        _profiledialog = new ProfileDialog(this);
+        _profiledialog->changeText("X", pixel_begin, pixel_end);
+        _profiledialog->SetMpx3GUI(_mpx3gui);
+        _profiledialog->show();
+    }
+    if(selectedItem == &calcProY){
+        if ( _profiledialog ) {
+            delete _profiledialog;
+            _profiledialog = nullptr;
+        }
+
+        _profiledialog = new ProfileDialog(this);
+        _profiledialog->changeText("Y", pixel_begin, pixel_end);
+        _profiledialog->SetMpx3GUI(_mpx3gui);
+        _profiledialog->show();
     }
 
 }
@@ -1059,4 +1091,3 @@ void QCstmGLVisualization::on_logscale(bool checked)
     ui->histPlot->replot(QCustomPlot::rpQueued);
 
 }
-
