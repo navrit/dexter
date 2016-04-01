@@ -687,26 +687,35 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _statsdialog->show();
 
     }
+
     if(selectedItem == &calcProX){
+
+        _mpx3gui->getDataset()->calcProfile(pixel_begin, pixel_end);
+
+        //Display
         if ( _profiledialog ) {
             delete _profiledialog;
             _profiledialog = nullptr;
         }
 
         _profiledialog = new ProfileDialog(this);
-        _profiledialog->changeText("X", pixel_begin, pixel_end);
         _profiledialog->SetMpx3GUI(_mpx3gui);
+        _profiledialog->changeText("X", pixel_begin, pixel_end);
+        _profiledialog->plotProfileX(pixel_begin, pixel_end);
         _profiledialog->show();
     }
     if(selectedItem == &calcProY){
+
+
+        //Display
         if ( _profiledialog ) {
             delete _profiledialog;
             _profiledialog = nullptr;
         }
-
         _profiledialog = new ProfileDialog(this);
-        _profiledialog->changeText("Y", pixel_begin, pixel_end);
         _profiledialog->SetMpx3GUI(_mpx3gui);
+        _profiledialog->changeText("Y", pixel_begin, pixel_end);
+        _profiledialog->plotProfileY(pixel_begin, pixel_end);
         _profiledialog->show();
     }
 

@@ -17,6 +17,8 @@ public:
     ~ProfileDialog();
     void SetMpx3GUI(Mpx3GUI * p);
     void changeText(QString axis, QPoint pixel_begin, QPoint pixel_end);
+    void plotProfileX(QPoint pixel_begin, QPoint pixel_end);
+    void plotProfileY(QPoint pixel_begin, QPoint pixel_end);
 
 private:
     Ui::ProfileDialog *ui;

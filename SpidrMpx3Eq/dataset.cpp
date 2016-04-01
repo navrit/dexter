@@ -236,7 +236,7 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
         for(unsigned int j = 0; j < getPixelsPerLayer(); j++) {
             // See if the pixel is inside the region
             //QPointF pix = XtoXY(j, isize.width());  //Not correct conversion from j to XY.//A
-            QPointF pix = jtoXY(j);//A
+            QPoint pix = jtoXY(j);
             if ( RoI.contains( pix ) ) {
                 mean += currentLayer[j];
                 nMean++;
@@ -257,9 +257,9 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
         double stdev = 0.;
         double nMean = 0.;
         for(unsigned int j = 0; j < getPixelsPerLayer(); j++) {
-            // See if the pixel is inside the region
+            //See if the pixel is inside the region
             //QPointF pix = XtoXY(j, isize.width());//wrong
-            QPointF pix =jtoXY(j);//A
+            QPoint pix =jtoXY(j);
             if ( RoI.contains( pix ) ) {
                 stdev += (currentLayer[j] - mean_v[i])*(currentLayer[j] - mean_v[i]);
                 nMean++;
@@ -272,6 +272,33 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
 
      }
 }
+
+void Dataset::calcProfile(QPoint pixel_init, QPoint pixel_end){
+/*
+    int* currentLayer = getLayer(keys[i]);
+
+    //Region of Interest
+    QRectF RoI;
+    RoI.setRect(pixel_init.x(), pixel_init.y(), pixel_end.x() - pixel_init.x(),  pixel_end.y() - pixel_init.y() );
+
+    std::vector<std::vector<int> > rows;
+    std::vector<std::vector<int> >::iterator i = rows.begin();
+    std::vector<std::vector<int> >::iterator iE = rows.end();
+
+    for(int j = 0; j < getPixelsPerLayer(); j++){
+
+        QPoint pix = jtoXY(j);
+        if(RoI.contains(pix)){
+            for(; i < iE; i++){
+                if((*i).begin == pix.x()) (*i).push_back(currentLayer[j]);
+            }
+            std::vector<int> row;
+            row.push_back();
+        }
+    }
+*/
+}
+
 
 QPointF Dataset::XtoXY(int X, int dimX){
     return QPointF(X % dimX, X/dimX);
@@ -298,9 +325,6 @@ QPoint Dataset::jtoXY(int j){
     //else? 4th pixel?
     return QPoint(x,y);
 }
-
-
-
 
 bool Dataset::isBorderPixel(int p, QSize isize) {
 
