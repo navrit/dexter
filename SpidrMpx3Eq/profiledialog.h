@@ -4,6 +4,8 @@
 #include <QDialog>
 #include "mpx3gui.h"
 
+class QCPGraph;
+
 namespace Ui {
 class ProfileDialog;
 }
@@ -17,8 +19,8 @@ public:
     ~ProfileDialog();
     void SetMpx3GUI(Mpx3GUI * p);
     void changeText(QString axis, QPoint pixel_begin, QPoint pixel_end);
-    void plotProfileX(QPoint pixel_begin, QPoint pixel_end);
-    void plotProfileY(QPoint pixel_begin, QPoint pixel_end);
+    void plotProfileX(QPoint pixel_begin, QPoint pixel_end, QMap<int, int> Xmap);
+    void plotProfileY(QPoint pixel_begin, QPoint pixel_end, QMap<int, int> Ymap);
 
 private:
     Ui::ProfileDialog *ui;

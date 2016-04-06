@@ -690,7 +690,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
     if(selectedItem == &calcProX){
 
-        _mpx3gui->getDataset()->calcProfile(pixel_begin, pixel_end);
+
 
         //Display
         if ( _profiledialog ) {
@@ -701,7 +701,12 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _profiledialog = new ProfileDialog(this);
         _profiledialog->SetMpx3GUI(_mpx3gui);
         _profiledialog->changeText("X", pixel_begin, pixel_end);
-        _profiledialog->plotProfileX(pixel_begin, pixel_end);
+
+        //Calculate the profile
+        QMap<int, int> Xmap = _mpx3gui->getDataset()->calcProfile('x', pixel_begin, pixel_end);
+
+        _profiledialog->plotProfileX(pixel_begin, pixel_end, Xmap);
+
         _profiledialog->show();
     }
     if(selectedItem == &calcProY){
@@ -715,7 +720,11 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _profiledialog = new ProfileDialog(this);
         _profiledialog->SetMpx3GUI(_mpx3gui);
         _profiledialog->changeText("Y", pixel_begin, pixel_end);
-        _profiledialog->plotProfileY(pixel_begin, pixel_end);
+
+        //Calculate the profile
+        QMap<int, int> Ymap = _mpx3gui->getDataset()->calcProfile('y', pixel_begin, pixel_end);
+
+        _profiledialog->plotProfileY(pixel_begin, pixel_end, Ymap);
         _profiledialog->show();
     }
 

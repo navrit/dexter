@@ -121,10 +121,11 @@ public:
   void applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
   int applyColor2DRecoGuided(Color2DRecoGuided * );
   void calcBasicStats(QPoint pixel_init, QPoint pixel_end);
-  void calcProfile(QPoint pixel_init, QPoint pixel_end);
+  QMap<int, int> calcProfile(char axis, QPoint pixel_init, QPoint pixel_end);
   QPointF XtoXY(int X, int dimX);
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
-  QPoint jtoXY(int X);
+  QPoint jtoXY(int X); //!<Converts the j'th element in the data to the right coordinates on the screen.
+
 
   void setOrientation(QVector<int> orientations){for(int i = 0; i < orientations.length();i++)setOrientation(i, orientations[i]);}
   void setOrientation(int index, int orientation){m_frameOrientation[index] = orientation;}

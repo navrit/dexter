@@ -273,30 +273,42 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
      }
 }
 
-void Dataset::calcProfile(QPoint pixel_init, QPoint pixel_end){
-/*
-    int* currentLayer = getLayer(keys[i]);
+QMap<int, int> Dataset::calcProfile(char axis, QPoint pixel_init, QPoint pixel_end){
+    QList<int> keys = m_thresholdsToIndices.keys();
 
-    //Region of Interest
-    QRectF RoI;
-    RoI.setRect(pixel_init.x(), pixel_init.y(), pixel_end.x() - pixel_init.x(),  pixel_end.y() - pixel_init.y() );
+    for(int i = 0; i < keys.length(); i++) {
+        int* currentLayer = getLayer(keys[i]);
 
-    std::vector<std::vector<int> > rows;
-    std::vector<std::vector<int> >::iterator i = rows.begin();
-    std::vector<std::vector<int> >::iterator iE = rows.end();
+        //Region of Interest
+        QRectF RoI;
+        RoI.setRect(pixel_init.x(), pixel_init.y(), pixel_end.x() - pixel_init.x(),  pixel_end.y() - pixel_init.y() );
 
-    for(int j = 0; j < getPixelsPerLayer(); j++){
+        QMap<int, int> profilevals;
+        if(axis == 'x')
+            for( int j =0; j < getPixelsPerLayer(); j++) {
+                QPoint pix = jtoXY(j);
 
-        QPoint pix = jtoXY(j);
-        if(RoI.contains(pix)){
-            for(; i < iE; i++){
-                if((*i).begin == pix.x()) (*i).push_back(currentLayer[j]);
+                if(RoI.contains(pix)){
+                    if(profilevals.contains(pix.x()))
+                        profilevals[pix.x()] += currentLayer[j];
+                    else profilevals[pix.x()] = currentLayer[j];
+
+                }
             }
-            std::vector<int> row;
-            row.push_back();
-        }
+        if(axis == 'y')
+            for( int j =0; j < getPixelsPerLayer(); j++) {
+                QPoint pix = jtoXY(j);
+
+                if(RoI.contains(pix)){
+                    if(profilevals.contains(pix.y()))
+                        profilevals[pix.y()] += currentLayer[j];
+                    else profilevals[pix.y()] = currentLayer[j];
+
+                }
+            }
+
+        return profilevals;
     }
-*/
 }
 
 
