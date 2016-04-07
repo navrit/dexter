@@ -1034,14 +1034,14 @@ bool SpidrController::validDacs( int dev_nr, bool *valid )
 
 bool SpidrController::setShutterTriggerConfig( int trigger_mode,
 					       int trigger_period_us,
-					       int trigger_freq_hz,
+					       int trigger_freq_mhz,
 					       int nr_of_triggers,
 					       int trigger_pulse_count )
 {
   int datawords[5];
   datawords[0] = trigger_mode;
   datawords[1] = trigger_period_us;
-  datawords[2] = trigger_freq_hz;
+  datawords[2] = trigger_freq_mhz;
   datawords[3] = nr_of_triggers;
   datawords[4] = trigger_pulse_count;
   return this->requestSetInts( CMD_SET_TRIGCONFIG, 0, 5, datawords );
@@ -1051,7 +1051,7 @@ bool SpidrController::setShutterTriggerConfig( int trigger_mode,
 
 bool SpidrController::getShutterTriggerConfig( int *trigger_mode,
 					       int *trigger_period_us,
-					       int *trigger_freq_hz,
+					       int *trigger_freq_mhz,
 					       int *nr_of_triggers,
 					       int *trigger_pulse_count )
 {
@@ -1060,7 +1060,7 @@ bool SpidrController::getShutterTriggerConfig( int *trigger_mode,
     return false;
   *trigger_mode        = data[0];
   *trigger_period_us   = data[1];
-  *trigger_freq_hz     = data[2];
+  *trigger_freq_mhz    = data[2];
   *nr_of_triggers      = data[3];
   *trigger_pulse_count = data[4];
   return true;
