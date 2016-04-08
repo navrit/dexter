@@ -40,11 +40,6 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     ui->dropFramesCheckBox->setChecked( true );
     ui->summingCheckbox->setChecked( true );
 
-    // packets lost counter
-    //QFont font1("Courier New");
-    //ui->lostPacketsLabel->setFont( font1 );
-    ui->lostPacketsLabel->setTextFormat( Qt::RichText );
-
     // Range selection on histogram. Init values
     _manualRange = QCPRange( 0, 1 ); // This is quite arbitrary. It doesn't really matter here.
     _percentileRange = QCPRange( 0.025, 0.975 ); // These instead are reasonable percentile cuts
@@ -52,6 +47,9 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
 
     // Log Scale for histogram
     connect(ui->logCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_logscale(bool)));
+
+    // Stats string
+    clearStatsString();
 
 }
 
@@ -121,7 +119,7 @@ void QCstmGLVisualization::StartDataTaking(){
 
         // Change the Start button to Stop
         ui->startButton->setText( "Stop" );
-        ui->overflowLabel->setText( "" );
+        ui->singleshotPushButton->setText( "Stop" );
 
         // Start data taking
         // FIXME, depends on the mode !
@@ -151,6 +149,8 @@ void QCstmGLVisualization::StartDataTaking(){
 
         // Change the Stop button to Start
         ui->startButton->setText( "Start" );
+        ui->singleshotPushButton->setText( "Start" );
+
         _takingData = false;
 
         // force the GUI to update
@@ -218,6 +218,25 @@ void QCstmGLVisualization::setRangeSpinBoxesPercentile()
 
 }
 
+void QCstmGLVisualization::clearStatsString()
+{
+
+    _statsString.counts.clear();
+    _statsString.lostPackets.clear();
+    _statsString.overflow.clear();
+    _statsString.overflowFlg = false;
+
+    _statsString.displayString.clear();
+
+}
+
+void QCstmGLVisualization::initStatsString()
+{
+    // when offline or upon startup
+
+    _statsString.displayString = "offline";
+}
+
 void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
     if ( _takingData ) {
@@ -241,12 +260,13 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
         // Change the Stop button to Start
         ui->startButton->setText( "Start" );
+        ui->singleshotPushButton->setText( "single" );
 
         // If single shot, recover previous NTriggers
         if ( _singleShot ) {
-            _mpx3gui->getConfig()->setNTriggers( _singleShotSaveNTriggers );
+            ui->nTriggersSpinBox->setValue( _singleShotSaveCurrentNTriggers );
             _singleShot = false;
-            _singleShotSaveNTriggers = 0;
+            _singleShotSaveCurrentNTriggers = 0;
         }
 
         emit sig_statusBarAppend("done","blue");
@@ -346,6 +366,7 @@ void QCstmGLVisualization::ConnectionStatusChanged() {
 
     ui->startButton->setEnabled(true); // Enable or disable the button depending on the connection status.
     ui->singleshotPushButton->setEnabled(true);
+    ui->recoPushButton->setEnabled(true);
 
     // TODO
     // Configure the chip, provided that the Adj mask is loaded
@@ -407,14 +428,31 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
              _mpx3gui->getConfigMonitoring()->getUI()->triggerLengthSpinner,
              SLOT(setValue(int)));
 
+    // This one need both the connection to the mirror combo box and the signal to the Configuration to take place
+    connect( ui->operationModeComboBox_Vis, SIGNAL(activated(int)),
+             _mpx3gui->getConfigMonitoring()->getUI()->operationModeComboBox,
+             SLOT( setCurrentIndex(int) ) );
+    connect( ui->operationModeComboBox_Vis, SIGNAL(activated(int)),
+             _mpx3gui->getConfig(),
+             SLOT( setOperationMode(int) ) );
+
+
     // Defaults
-    emit mode_changed(ui->summingCheckbox->isChecked());
+    emit mode_changed( ui->summingCheckbox->isChecked() );
+
 }
 
-void QCstmGLVisualization::changeBinCount(int count){
+void QCstmGLVisualization::startupActions()
+{
+
+    _mpx3gui->open_data_with_path(false, true, "icons/startupimage.bin" );
+
+}
+
+void QCstmGLVisualization::changeBinCount(int count) {
     ui->histPlot->changeBinCount(count);
     QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
-    for(int i = 0; i < thresholds.size(); i++){
+    for ( int i = 0; i < thresholds.size(); i++ ) {
         addThresholdToSelector(thresholds[i]);
         ui->histPlot->setHistogram(thresholds[i], _mpx3gui->getDataset()->getLayer(thresholds[i]), _mpx3gui->getDataset()->getPixelsPerLayer());
     }
@@ -438,17 +476,76 @@ void QCstmGLVisualization::overflow_update(int ovf_cntr) {
 
     if ( ovf_cntr > 0 ) {
 
-        QString ovfS = "<font color=\"red\">";
-        ovfS += "overflow</font>";
-        ui->overflowLabel->setText( ovfS );
+        BuildStatsStringOverflow( true );
 
         // Bring the user to full range so the hot spots can be seen
         ui->fullRangeRadio->setChecked( true );
-        on_fullRangeRadio_toggled(true);
+        on_fullRangeRadio_toggled( true );
 
     } else {
-        ui->overflowLabel->setText( "" );
+
+        BuildStatsStringOverflow( false );
+
     }
+
+}
+
+void QCstmGLVisualization::BuildStatsString() {
+
+    // Build the string to show
+    _statsString.displayString  = "fired: ";
+    _statsString.displayString += _statsString.counts;
+
+    _statsString.displayString += " | lost: ";
+    _statsString.displayString += _statsString.lostPackets;
+
+    if ( _statsString.overflowFlg ) {
+        _statsString.displayString += " | ";
+        _statsString.displayString += _statsString.overflow;
+    }
+
+    // Use the string to set the label
+    ui->statsLabel->setText( _statsString.displayString );
+
+}
+
+void QCstmGLVisualization::BuildStatsStringCounts(uint64_t counts)
+{
+
+    QString plS = "<font color=\"black\">";
+    plS += QString::number( counts, 'd', 0 );
+    plS += "</font>";
+
+    _statsString.counts = plS;
+
+    BuildStatsString();
+}
+
+void QCstmGLVisualization::BuildStatsStringLostPackets(uint64_t lostPackets)
+{
+    // Retrieve the counter and display
+    QString plS = "<font color=\"black\">";
+    plS += QString::number( lostPackets, 'd', 0 );
+    plS += "</font>";
+
+    _statsString.lostPackets = plS;
+
+}
+
+void QCstmGLVisualization::BuildStatsStringOverflow(bool overflow)
+{
+
+    if ( overflow ) {
+        QString ovfS = "<font color=\"red\">";
+        ovfS += "overflow</font>";
+        _statsString.overflow = ovfS;
+        _statsString.overflowFlg = true;
+    } else {
+        _statsString.overflow = "";
+        _statsString.overflowFlg = false;
+    }
+
+    BuildStatsString();
 
 }
 
@@ -479,12 +576,7 @@ void QCstmGLVisualization::lost_packets(int packetsLost) {
     // Increase the current packet loss
     _mpx3gui->getDataset()->increasePacketsLost( packetsLost );
 
-    // Retrieve the counter and display
-    QString plS = "<font color=\"red\">";
-    plS += QString::number( _mpx3gui->getDataset()->getPacketsLost(), 'd', 0 );
-    plS += "</font>";
-
-    ui->lostPacketsLabel->setText( plS );
+    BuildStatsStringLostPackets( _mpx3gui->getDataset()->getPacketsLost() );
 
 }
 
@@ -632,8 +724,10 @@ void QCstmGLVisualization::active_frame_changed(){
     int layer = _mpx3gui->getDataset()->thresholdToIndex(this->getActiveThreshold());
     ui->glPlot->getPlot()->setActive(layer);
     ui->histPlot->setActive(layer);
-    //ui->overflowLabel->setText(QString("%1").arg(_mpx3gui->getDataset()->getOverflow(getActiveThreshold())));
-    ui->countsLabel->setText(QString("%1").arg(_mpx3gui->getDataset()->getActivePixels(getActiveThreshold())));
+
+    BuildStatsStringCounts( _mpx3gui->getDataset()->getActivePixels(getActiveThreshold()) );
+    //ui->countsLabel->setText(QString("%1").arg(_mpx3gui->getDataset()->getActivePixels(getActiveThreshold())));
+
     if(ui->percentileRangeRadio->isChecked())
         on_percentileRangeRadio_toggled(true);
     else if(ui->fullRangeRadio->isChecked())
@@ -1034,8 +1128,10 @@ void QCstmGLVisualization::on_singleshotPushButton_clicked()
 
     // Temporarily change the configuration to a single shot
     _singleShot = true;
-    _singleShotSaveNTriggers =  _mpx3gui->getConfig()->getNTriggers();
-    _mpx3gui->getConfig()->setNTriggers( 1 );
+    _singleShotSaveCurrentNTriggers = _mpx3gui->getConfig()->getNTriggers();
+
+    // Select only one trigger
+    ui->nTriggersSpinBox->setValue( 1 );
 
     // And just start taking data
     StartDataTaking();
@@ -1057,12 +1153,12 @@ void QCstmGLVisualization::on_lowerSpin_editingFinished()
         return;
     }
 
-    if(ui->manualRangeRadio->isChecked()) {
+    if( ui->manualRangeRadio->isChecked() ) {
         _manualRange = QCPRange( ui->lowerSpin->value(), ui->upperSpin->value() );
         on_manualRangeRadio_toggled(ui->manualRangeRadio->isChecked());
     }
 
-    if(ui->percentileRangeRadio->isChecked()) {
+    if( ui->percentileRangeRadio->isChecked() ) {
         _percentileRange = QCPRange( ui->lowerSpin->value(), ui->upperSpin->value() );
         on_percentileRangeRadio_toggled(ui->percentileRangeRadio->isChecked());
     }

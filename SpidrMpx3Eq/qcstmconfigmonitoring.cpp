@@ -246,7 +246,6 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(ui->readBothCountersCheckBox, SIGNAL(clicked(bool)), config, SLOT(setReadBothCounters(bool)));
     connect(config, SIGNAL(readBothCountersChanged(bool)), ui->readBothCountersCheckBox, SLOT(setChecked(bool)));
 
-
     connect(ui->csmSpmSpinner, SIGNAL(valueChanged(int)), config, SLOT(setCsmSpm(int)));
     connect(config, SIGNAL(csmSpmChanged(int)), ui->csmSpmSpinner, SLOT(setValue(int)));
 
@@ -269,12 +268,15 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
             _mpx3gui->getVisualization()->GetUI()->nTriggersSpinBox,
             SLOT(setValue(int)));
 
-
     connect(ui->operationModeComboBox, SIGNAL(activated(int)), config, SLOT(setOperationMode(int)));
     connect(config, SIGNAL(operationModeChanged(int)), ui->operationModeComboBox, SLOT(setCurrentIndex(int)));
+    // connection ni the viewer
+    connect(ui->operationModeComboBox, SIGNAL(activated(int)),
+            _mpx3gui->getVisualization()->GetUI()->operationModeComboBox_Vis,
+            SLOT(setCurrentIndex(int)));
 
-    connect(ui->pixelDepthSpinner, SIGNAL(valueChanged(int)), config, SLOT(setPixelDepth(int)));
-    connect(config, SIGNAL(pixelDepthChanged(int)), ui->pixelDepthSpinner, SLOT(setValue(int)));
+    connect(ui->pixelDepthComboBox, SIGNAL(activated(int)), config, SLOT(setPixelDepthByIndex(int)));
+    connect(config, SIGNAL(pixelDepthChanged(int)), ui->pixelDepthComboBox, SLOT(setCurrentIndex(int)));
 
     connect(ui->triggerLengthSpinner, SIGNAL(valueChanged(int)), config, SLOT(setTriggerLength(int)));
     connect(config, SIGNAL(TriggerLengthChanged(int)), ui->triggerLengthSpinner, SLOT(setValue(int)));
@@ -285,7 +287,6 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
 
     connect(ui->triggerDowntimeSpinner, SIGNAL(editingFinished()), config, SLOT(setTriggerDowntime()));
     connect(config, SIGNAL(TriggerDowntimeChanged(int)), ui->triggerDowntimeSpinner, SLOT(setValue(int)));
-
 
     connect(ui->triggerModeSpinner, SIGNAL(valueChanged(int)), config, SLOT(setTriggerMode(int)));
     connect(config, SIGNAL(TriggerModeChanged(int)), ui->triggerModeSpinner, SLOT(setValue(int)));
@@ -308,17 +309,33 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     //connect(ui->speedSpinBox, SIGNAL(valueChanged(double)), config, SLOT(setStepperConfigSpeed(double)));
     //connect(config, SIGNAL(SpeedChanged(double)), ui->speedSpinBox, SLOT(setValue(double)));
 
-
     // When the slider released, talk to the hardware
     QObject::connect( ui->motorDial, SIGNAL(sliderReleased()), this, SLOT(motorDialReleased()) );
     QObject::connect( ui->motorDial, SIGNAL(sliderMoved(int)), this, SLOT(motorDialMoved(int)) );
 
-
-
-    // camera
+    // Camera
     connect(ui->cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeCamera(int)));
 
+    // Pixel depth
+    ui->pixelDepthComboBox->addItem( QString::number( config->getPixelDepthFromIndex( 0 ), 'f', 0 ) ) ;
+    ui->pixelDepthComboBox->addItem( QString::number( config->getPixelDepthFromIndex( 1 ), 'f', 0 ) ) ;
+    ui->pixelDepthComboBox->addItem( QString::number( config->getPixelDepthFromIndex( 2 ), 'f', 0 ) ) ;
+    ui->pixelDepthComboBox->addItem( QString::number( config->getPixelDepthFromIndex( 3 ), 'f', 0 ) ) ;
+    ui->pixelDepthComboBox->setCurrentIndex( config->getPixelDepth12BitsIndex() );
+
 }
+
+void QCstmConfigMonitoring::widgetInfoPropagation()
+{
+    // Part of this interface reflects on others, here's when
+    // The operation mode shows also in the Visualization tab
+    int nItems = ui->operationModeComboBox->count();
+    for ( int ii = 0 ; ii < nItems ; ii++ ) {
+        _mpx3gui->getVisualization()->GetUI()->operationModeComboBox_Vis->addItem( ui->operationModeComboBox->itemText( ii ) );
+    }
+
+}
+
 
 void QCstmConfigMonitoring::timerEvent(QTimerEvent *) {
 

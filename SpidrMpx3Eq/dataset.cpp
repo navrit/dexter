@@ -959,8 +959,11 @@ void Dataset::applyOBCorrection() {
 
         //Give the user the choice to apply the correction, ignore the incomparability or cancel and choose another OBcorrectionfile.
         //Only ask at first layer.
-        if(! OBmatch && i == 0){
-            QMessageBox msgBox(QMessageBox::Question, "Warning", "The statistics between the OB data and the current data will not yield a proper correction.\nPress 'Cancel' to choose a more compatible OB datafile. \nIt is also possible to apply a k-factor on the OB correction data that is selected to make it match the current data, or to continue anyway.",
+        if ( ! OBmatch && i == 0 ) {
+            QMessageBox msgBox(QMessageBox::Question, "Warning", "The statistics in the OB data and the current data are such that the OB correction will not yield a good image.\n"
+                                                                 "- Press 'Cancel' to stop and choose a more compatible OB datafile.\n"
+                                                                 "- It is also possible to apply a k-factor on the OB correction to make it match the current data.\n"
+                                                                 "- Press 'Continue' to use the selected OB file as it is.",
                               QMessageBox::Yes | QMessageBox::No |QMessageBox::Cancel | QMessageBox::Cancel,0);
 
 

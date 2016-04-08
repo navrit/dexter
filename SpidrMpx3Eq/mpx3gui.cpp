@@ -91,6 +91,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
 
     //Config & monitoring
     _ui->CnMWidget->SetMpx3GUI(this);
+    _ui->CnMWidget->widgetInfoPropagation();
 
     // CT
     _ui->ctTab->SetMpx3GUI( this );
@@ -210,6 +211,15 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 
 Mpx3Config* Mpx3GUI::getConfig() {
     return config;
+}
+
+void Mpx3GUI::startupActions()
+{
+    /////////////////////////////////////////////////////////
+    // startup actions
+    if ( ! gradients.empty() ) {
+        _ui->visualizationGL->startupActions();
+    }
 }
 
 void Mpx3GUI::saveOriginalDataset()
@@ -458,6 +468,18 @@ QString Mpx3GUI::removeOneMessage(QString fullMess)
     return fullMess;
 }
 
+void Mpx3GUI::on_applicationStateChanged(Qt::ApplicationState s)
+{
+
+    // When the application comes in Active for the first time
+    //  take some startup actions
+    if ( s == Qt::ApplicationActive && !m_appActiveFirstTime ) {
+        startupActions();
+        m_appActiveFirstTime = true;
+    }
+
+}
+
 
 void Mpx3GUI::generateFrame(){//TODO: put into Dataset
     //int thresholds[] = {0,1,2,3};
@@ -616,7 +638,7 @@ void Mpx3GUI::open_data(bool saveOriginal){
 
     QString filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("binary files (*.bin)"));
     QFile saveFile(filename);
-    if (!saveFile.open(QIODevice::ReadOnly)) {
+    if ( ! saveFile.open(QIODevice::ReadOnly) ) {
         string messg = "Couldn't open: ";
         messg += filename.toStdString();
         messg += "\nNo output written!";
@@ -625,10 +647,10 @@ void Mpx3GUI::open_data(bool saveOriginal){
         return;
     }
     clear_data();
-    getDataset()->fromByteArray(saveFile.readAll());
+    getDataset()->fromByteArray( saveFile.readAll() );
     saveFile.close();
     set_mode_normal();
-    QList<int> thresholds = getDataset()->getThresholds();
+    //QList<int> thresholds = getDataset()->getThresholds();
 
     // required signals
     QRectF bbox = getDataset()->computeBoundingBox();
@@ -652,8 +674,10 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
         filename = path;
     }
 
+    qDebug() << filename;
+
     QFile saveFile(filename);
-    if (!saveFile.open(QIODevice::ReadOnly)) {
+    if ( ! saveFile.open(QIODevice::ReadOnly) ) {
         string messg = "Couldn't open: ";
         messg += path.toStdString();
         messg += "\nNo output written!";
@@ -711,12 +735,15 @@ void Mpx3GUI::clear_configuration(){
     if ( _ui->equalizationWidget ) {
 
         int ndev = config->getNDevicesSupported();
-        for(int i = 0 ; i < ndev ; i++) {
+        for ( int i = 0 ; i < ndev ; i++ ) {
+
+            if ( ! config->detectorResponds( i ) ) continue;
+
             if ( _ui->equalizationWidget->GetEqualizationResults( i ) ) {
 
-                cout << "[INFO] clearing adjustment bits and mask." << endl;
+                qDebug() << "[INFO] clearing adjustment bits and mask for devId : " << i;
 
-                _ui->equalizationWidget->ClearAllAdjustmentBits();
+                _ui->equalizationWidget->ClearAllAdjustmentBits( i );
 
             } else {
                 noEqualization = true;
@@ -726,7 +753,7 @@ void Mpx3GUI::clear_configuration(){
     } else { noEqualization = true; }
 
     if ( noEqualization ) {
-        cout << "[INFO] No equalization has been loaded. Nothing to clear." << endl;
+        qDebug() << "[INFO] No equalization has been loaded. Nothing to clear.";
     }
 
 }

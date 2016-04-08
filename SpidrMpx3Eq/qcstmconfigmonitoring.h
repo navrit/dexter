@@ -25,6 +25,7 @@ class QCstmConfigMonitoring : public QWidget
 
 public:
   void SetMpx3GUI(Mpx3GUI * p);
+  void widgetInfoPropagation();
   explicit QCstmConfigMonitoring(QWidget *parent = 0);
   ~QCstmConfigMonitoring();
   Ui::QCstmConfigMonitoring * getUI() { return ui; }

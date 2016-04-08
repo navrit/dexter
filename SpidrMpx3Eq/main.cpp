@@ -14,8 +14,7 @@ int main(int argc, char *argv[])
     format.setVersion(3, 3 );
     QSurfaceFormat::setDefaultFormat(format);
 
-        // Instantiate the main class
-    //Mpx3GUI w( &a );
+    // Instantiate the main class
     Mpx3GUI w;
     // status for startup
     w.setWindowWidgetsStatus();
@@ -25,5 +24,9 @@ int main(int argc, char *argv[])
 
     // If all ok go into the event loop
     w.show();
+
+    QObject::connect( &a, &QApplication::applicationStateChanged,
+             &w, &Mpx3GUI::on_applicationStateChanged);
+
     return a.exec();
 }

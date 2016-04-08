@@ -68,6 +68,7 @@ public:
     void SetMpx3GUI(Mpx3GUI * p);
     Mpx3GUI * GetMpx3GUI() { return _mpx3gui; };
     Ui::QCstmGLVisualization * GetUI(){ return ui; };
+    void startupActions();
 
     pair<int, int> XtoXY(int X, int dimX);
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
@@ -80,16 +81,29 @@ public:
     void setRangeSpinBoxesManual();
     void setRangeSpinBoxesPercentile();
 
+    void clearStatsString();
+    void initStatsString();
+
 private:
+
     Ui::QCstmGLVisualization * ui = nullptr;
     DataTakingThread * _dataTakingThread = nullptr;
     bool _savePNGWithScales = false;
     bool _singleShot = false;
-    int _singleShotSaveNTriggers = 0;
+    int _singleShotSaveCurrentNTriggers = 0;
     QCPRange _manualRange;
     QCPRange _percentileRange;
     bool _logyPlot = false;
 
+    typedef struct {
+        QString counts;
+        QString lostPackets;
+        QString overflow;
+        bool overflowFlg;
+        QString displayString; // this is the composition actually being displayed
+    } stats_str;
+
+    stats_str _statsString;
 
     //!Gets the currently active threshold by looking at the value of the layerselector combobox.
     int getActiveThreshold();
@@ -98,6 +112,12 @@ private:
     void changeThresholdToNameAndUpdateSelector(int threshold, QString name);
     //!Adds the specified threshold if it didn't exist yet. Then switches to it.
     void setThreshold(int threshold);
+
+    void BuildStatsString();
+    void BuildStatsStringCounts(uint64_t counts);
+    void BuildStatsStringLostPackets(uint64_t lostPackets);
+    void BuildStatsStringOverflow(bool overflow);
+
 
 private slots:
     void ConnectionStatusChanged();
@@ -175,8 +195,9 @@ public slots:
     void changeBinCount(int count);
     void updateETA();
 
-
     void lost_packets(int);
+
+
     void fps_update(int);
     void overflow_update(int);
 

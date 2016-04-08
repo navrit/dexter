@@ -40,6 +40,10 @@ class Mpx3Config: public QObject {
 	bool stepperUseCalib = false;
 	double stepperAcceleration = -1., stepperSpeed = -1., stepperCalibPos0 = -1., stepperCalibAngle0 = -1., stepperCalibPos1 = -1., stepperCalibAngle1 = -1.;
 
+    // Some constants in the configuration (MPX3 manual pag. 18)
+    const unsigned int __pixelDepthMap[4] = { 1 , 6 , 12 , 24 };
+    const unsigned int __pixelDepth12BitsIndex = 2;
+
     typedef enum {
         __operationMode_SequentialRW = 0,
         __operationMode_ContinuousRW,
@@ -78,6 +82,8 @@ public:
 	QVector<int>  getActiveDevices(){return _activeChips;}
 	int getIDIndex(int id){return _activeChips.indexOf(id);}
 	int getTriggerPeriodMS(){return _trigPeriod_ms;}
+    unsigned int getPixelDepthFromIndex(int indx);
+    unsigned int getPixelDepth12BitsIndex() { return __pixelDepth12BitsIndex; }
 
 	void checkChipResponse(int devIndx, detector_response dr);
 	bool detectorResponds(int devIndx);
@@ -215,12 +221,24 @@ void setOperationMode(int newVal){
 void updateOperationMode(){}
 
 
-void setPixelDepth(int newVal){
-	if(newVal != PixelDepth){
+void setPixelDepthByIndex(int indx) {
+    setPixelDepth( indx, false );
+}
+void setPixelDepth(int newVal, bool byValue = true) {
+
+    if ( ! byValue ) {
+        // in this case newVal is an index, not the pixel depth value
+        newVal = __pixelDepthMap[ newVal ]; // by index
+    }
+
+    qDebug() << "pixel depth : " << newVal;
+
+    if ( newVal != PixelDepth ) {
 		PixelDepth = newVal; emit pixelDepthChanged(newVal);
 		//updatePixelDepth();
 	}
 	SendConfiguration();
+
 }
 void updatePixelDepth(){}
 
@@ -281,12 +299,15 @@ void setTriggerDowntime();
 void setTriggerDowntime(int);
 void updateTriggerDowntime(){}
 
-void setNTriggers(int newVal){
-	if(newVal != nTriggers){
+void setNTriggers(int newVal) {
+
+    if(newVal != nTriggers){
 		nTriggers = newVal; emit nTriggersChanged(newVal);
 		//updateNTriggers();
 	}
+
 	SendConfiguration();
+
 }
 void updateNTriggers(){}
 

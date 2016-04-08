@@ -67,8 +67,17 @@ void DataTakingThread::run() {
     //spidrcontrol->setLogLevel( 2 );
     spidrcontrol->setLogLevel( 0 );
 
+    /*
+    spidrcontrol->setShutterTriggerConfig (
+            4,
+            40000,
+            200000,
+            100
+    );
+    */
+
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
-        cout << "[ERR ] Device not connected !" << endl;
+        qDebug() << "[ERR ] Device not connected !";
         return;
     }
 
@@ -87,7 +96,7 @@ void DataTakingThread::run() {
     connect(this, SIGNAL(overflow_update(int)), _vis, SLOT(overflow_update(int)) );
 
 
-    cout << "Acquiring ... " << endl;
+    qDebug() << "[INFO] Acquiring ... ";
     //_mpx3gui->GetUI()->startButton->setActive(false);
 
     // Get the list of id's for active devices
@@ -146,12 +155,7 @@ void DataTakingThread::run() {
 
         overflowCntr = 0;
 
-        for(int i = 0 ; i < activeDevices.size() ; i++) {
-
-            // record the frameId for the first device available (it's the same for all of them)
-            frameId = spidrdaq->frameShutterCounter( i );
-
-        }
+        frameId = spidrdaq->frameShutterCounter( 0 );
 
         // If bad flip happened I wait until the first counterL shows up
         if ( badFlipping ) {
@@ -159,7 +163,7 @@ void DataTakingThread::run() {
             if ( !spidrdaq->isCounterhFrame(firstDevId) && frameId != prevFrameId ) {
 
                 // Out of the bad flip condition
-                cout << "[INFO] recovering from bad flip ... " << endl;
+                qDebug() << "[INFO] recovering from bad flip ... ";
                 badFlipping = false;
 
             } else {
@@ -178,7 +182,7 @@ void DataTakingThread::run() {
         // If taking care of a counterL, start by rewinding the flags
         if ( !spidrdaq->isCounterhFrame( firstDevId ) ) {
 
-            //cout << "[INFO] Cleaning up" << endl;
+            //qDebug() << "[INFO] Cleaning up";
             doReadFrames_L = true;
             doReadFrames_H = true;
 
@@ -201,6 +205,7 @@ void DataTakingThread::run() {
         // report the loss
         emit lost_packets( packetsLost );
 
+
         if ( _vis->GetUI()->dropFramesCheckBox->isChecked() ) {
 
             if ( packetsLost != 0 ) { // from any of the chips connected
@@ -218,6 +223,7 @@ void DataTakingThread::run() {
 
         // If in color mode, check flipping L,H -- L,H -- .... L,H
         if ( _mpx3gui->getConfig()->getColourMode() && _mpx3gui->getConfig()->getReadBothCounters() ) {
+
             // the flip is wrong
             if ( (bool)(nFramesReceived%2) != spidrdaq->isCounterhFrame(firstDevId) ) {
                 // Keep a local count of number of frames
@@ -254,7 +260,6 @@ void DataTakingThread::run() {
             // and keep going
             continue;
         }
-
 
 
         for(int i = 0 ; i < activeDevices.size() ; i++) {
@@ -432,12 +437,11 @@ void DataTakingThread::run() {
     _score.framesKept = nFramesKept;
     _score.framesReceived = nFramesReceived;
 
-    cout << "received : " << nFramesReceived
-         << " | frames kept : " << nFramesKept
-         << " | lost frames : " << spidrdaq->framesLostCount()
-         << " | lost packets(ML605)/pixels(compactSPIDR) : " << spidrdaq->lostCountFrame()
-         << " | frames count : " << spidrdaq->framesCount()
-         << endl;
+    qDebug() << "[INFO] received : " << nFramesReceived
+             << " | frames kept : " << nFramesKept
+             << " | lost frames : " << spidrdaq->framesLostCount()
+             << " | lost packets(ML605)/pixels(compactSPIDR) : " << spidrdaq->lostCount()
+             << " | frames count : " << spidrdaq->framesCount();
 
     //for ( int i = 0 ; i < activeDevices.size() ; i++ ) {
     //    cout << "devId = " << i << " | packetsReceivedCount = " << spidrdaq->packetsReceivedCount( i ) << endl;

@@ -193,7 +193,7 @@ public:
 	void SetAllAdjustmentBits(SpidrController * spidrcontrol);
 	//void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId );
 	void SetAllAdjustmentBits();
-	void ClearAllAdjustmentBits();
+    void ClearAllAdjustmentBits(int devId = 0);
 
 	void AppendToTextBrowser(QString s);
 	void ClearTextBrowser();

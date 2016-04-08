@@ -79,12 +79,15 @@ private:
     QLabel m_statusBarMessageLabel;
     QString m_statusBarMessageString;
 
+    bool m_appActiveFirstTime = false;
+
 public:
 
     Mpx3Config* getConfig();
     Dataset* getDataset(){return workingSet;}
     Dataset* getOriginalDataset(){return originalSet;}
     bool isArmedOk(){return _armedOk;}
+    void startupActions();
 
     void saveOriginalDataset();
     void rewindToOriginalDataset();
@@ -164,6 +167,8 @@ public slots:
     void statusBarWrite(QString mess, QString colorString);
     void statusBarClean();
     QString removeOneMessage(QString fullMess);
+
+    void on_applicationStateChanged(Qt::ApplicationState);
 
 private slots:
     void LoadEqualization();

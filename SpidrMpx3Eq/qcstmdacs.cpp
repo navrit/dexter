@@ -1126,7 +1126,7 @@ void ScanDACsThread::run() {
         for ( int dacValI = 0 ; dacValI < MPX3RX_DAC_TABLE[i].dflt * 2 - 1 ; dacValI += _dacs->GetScanStep() ) {
 
 
-            if( !spidrcontrol->setDac( _dacs->GetDeviceIndex(), MPX3RX_DAC_TABLE[i].code, dacValI ) ) {
+            if ( !spidrcontrol->setDac( _dacs->GetDeviceIndex(), MPX3RX_DAC_TABLE[i].code, dacValI ) ) {
 
                 qDebug() << "setDac[" << i << "] | " << spidrcontrol->errorString().c_str();
 

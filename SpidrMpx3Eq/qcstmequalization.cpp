@@ -320,7 +320,8 @@ void QCstmEqualization::InitEqualization(int chipId) {
     // And step
     _stepScan = __default_step_scan;
     _ui->eqStepSpinBox->setValue( _stepScan );
-
+    // Clear the list of chips
+    Rewind();
 
     // Check if we can talk to the chip
     if ( chipId != -1 ) {
@@ -1460,10 +1461,10 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
             QSet<int>::iterator i = tomask.begin();
             QSet<int>::iterator iE = tomask.end();
             pair<int, int> pix;
-            qDebug() << "[INFO] Masking ";
+            qDebug() << "[INFO] Masking ...";
             for ( ; i != iE ; i++ ) {
                 pix = XtoXY( (*i), __matrix_size_x );
-                cout << "     devid:" << chipIndex << " | " << pix.first << "," << pix.second << endl;
+                //qDebug() << "     devid:" << chipIndex << " | " << pix.first << "," << pix.second;
                 spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second);
             }
         } else { // When the mask is empty go ahead and set all to zero
@@ -1478,12 +1479,12 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 
 }
 
-void QCstmEqualization::ClearAllAdjustmentBits() {
+void QCstmEqualization::ClearAllAdjustmentBits(int devId) {
 
     // Clear all data structures
-    _eqMap[_deviceIndex]->ClearAdj();
-    _eqMap[_deviceIndex]->ClearMasked();
-    _eqMap[_deviceIndex]->ClearReactiveThresholds();
+    _eqMap[devId]->ClearAdj();
+    _eqMap[devId]->ClearMasked();
+    _eqMap[devId]->ClearReactiveThresholds();
 
     // And now set it up
     SetAllAdjustmentBits();
@@ -1979,7 +1980,14 @@ void QCstmEqualization::CleanEqualization() {
 void QCstmEqualization::ConnectionStatusChanged(bool conn) {
 
     if ( conn ) {
+
         setWindowWidgetsStatus( win_status::connected );
+
+        // Select first device ID in case of a single chip equalization
+        QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
+        _ui->devIdSpinBox->setValue( activeDevices.at( 0 ) );
+
+
     } else {
         setWindowWidgetsStatus( win_status::disconnected );
     }
