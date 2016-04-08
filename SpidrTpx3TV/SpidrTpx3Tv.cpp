@@ -183,6 +183,8 @@ void SpidrTpx3Tv::onOff()
 
       _cbTestMode->setEnabled( true );
       _pbShutter->setEnabled( true );
+      _sbDacCoarse->setEnabled( true );
+      _sliderDacFine->setEnabled( true );
     }
   else
     {
@@ -198,6 +200,8 @@ void SpidrTpx3Tv::onOff()
       this->statusBar()->clearMessage();
       _cbTestMode->setEnabled( false );
       _pbShutter->setEnabled( false );
+      _sbDacCoarse->setEnabled( false );
+      _sliderDacFine->setEnabled( false );
     }
 }
 
@@ -386,6 +390,7 @@ void SpidrTpx3Tv::changeShutter( bool open )
 
 void SpidrTpx3Tv::setDacCoarse( int dac_val )
 {
+  if( !_controller ) return;
   if( !_controller->setDac( _deviceNr, TPX3_VTHRESH_COARSE, dac_val ) )
     this->displayError( "Set Vthr-Coarse failed" );
 }
@@ -394,6 +399,7 @@ void SpidrTpx3Tv::setDacCoarse( int dac_val )
 
 void SpidrTpx3Tv::setDacFine( int dac_val )
 {
+  if( !_controller ) return;
   if( !_controller->setDac( _deviceNr, TPX3_VTHRESH_FINE, dac_val ) )
     this->displayError( "Set Vthr-Fine failed" );
 }
@@ -404,7 +410,8 @@ void SpidrTpx3Tv::displayError( const char *str )
 {
   QString qs( str );
   qs += ": ";
-  qs += QString::fromStdString( _controller->errorString() );
+  if( _controller )
+    qs += QString::fromStdString( _controller->errorString() );
   this->statusBar()->showMessage( qs );
 }
 
