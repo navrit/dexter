@@ -18,19 +18,40 @@ public:
     explicit ProfileDialog(QWidget *parent = 0);
     ~ProfileDialog();
     void SetMpx3GUI(Mpx3GUI * p);
-    void changeText(QString axis, QPoint pixel_begin, QPoint pixel_end);
-    void plotProfileX(QPoint pixel_begin, QPoint pixel_end, QMap<int, int> Xmap);
-    void plotProfileY(QPoint pixel_begin, QPoint pixel_end, QMap<int, int> Ymap);
+    void setPixels(QPoint pixel_begin, QPoint pixel_end){_begin = pixel_begin; _end = pixel_end;}
+    void setAxisMap(QMap<int,int> Axismap){_Axismap = Axismap;}
+    void changeTitle(QString axis);
+    void changeText(QString text);
+    void plotProfileX();
+    void plotProfileY();
 
 private:
     Ui::ProfileDialog *ui;
     Mpx3GUI * _mpx3gui;
+    QPoint _begin; //! The coordinates of the pixel where the selected region begins.
+    QPoint _end; //! The coordinates of the pixel where the selected region ends.
+    QMap<int, int> _Axismap; //! Contains a total pixelvalue for each X or Y value in the selected profile region.
 
 private slots:
     void on_buttonBox_accepted();
 
+    void on_checkBox_toggled(bool checked);
+
+    void on_pushButton_clicked();
+
+    void on_plainTextEdit_textChanged();
+
+    void on_plainTextEdit_2_textChanged();
+
+    void on_plainTextEdit_3_textChanged();
+
+    void on_plainTextEdit_4_textChanged();
+
+    void on_comboBox_currentIndexChanged(int index);
+
 signals:
     void user_accepted_profile();
+
 };
 
 #endif // PROFILEDIALOG_H

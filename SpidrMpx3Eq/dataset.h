@@ -93,6 +93,8 @@ class Dataset//TODO: specify starting corner?
   int newLayer(int layer);//!<Adds a new layer at the specified threshold.
   void rewindScores();
 
+  QVector<int> Profilepoints; //!The points on a profile that are used to calculate the CNR.
+
 public:
   Dataset(int x, int y, int framesPerLayer = 1, int pixelDepthBits = 12);
   Dataset();
@@ -121,10 +123,13 @@ public:
   void applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
   int applyColor2DRecoGuided(Color2DRecoGuided * );
   void calcBasicStats(QPoint pixel_init, QPoint pixel_end);
-  QMap<int, int> calcProfile(char axis, QPoint pixel_init, QPoint pixel_end);
+  QMap<int, int> calcProfile(char axis, int layerIndex, QPoint pixel_init, QPoint pixel_end);
+  QString calcCNR(QMap<int,int> Axismap, int width);
+  double calcRegionMean(int begin, int end, QMap<int, int> Axismap);
+  double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);
   QPointF XtoXY(int X, int dimX);
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
-  QPoint jtoXY(int X); //!<Converts the j'th element in the data to the right coordinates on the screen.
+  QPoint jtoXY(int X); //!<Converts the j'th element in the data to the right coordinates on the screen. Depends on orientation.
 
 
   void setOrientation(QVector<int> orientations){for(int i = 0; i < orientations.length();i++)setOrientation(i, orientations[i]);}
@@ -139,10 +144,12 @@ public:
   void setPixel(int x, int y, int threshold, int val);//!< Set a pixel value for a given threshold (x,y) (assembly coordinates !)
   unsigned int sumFrame(int *frame, int index, int threshold);//!< Adds the data pointed to by frame to the data of chip index at the specified threshold.
   void toJson(); //!<return JSON object to save.
+  void setProfilepoint(int index, int pos);
 
   QVector<QPoint> getLayoutVector(){return m_frameLayouts;}
   QList<int> getThresholds(){return m_thresholdsToIndices.keys();}
   QVector<int> getOrientationVector(){return m_frameOrientation;}
+  QVector<int> getProfileVector(){return Profilepoints;}
   int getFrameCount() const{return m_nFrames;}
   int getLayerCount() const{return m_layers.count();}
   int getLayerSize() const{return m_nFrames*m_nx*m_ny;}
@@ -162,6 +169,7 @@ public:
   int x() const{return m_nx;}
   int y() const{return m_ny;}
   int getPixelDepthBits() const { return m_pixelDepthBits; }
+
 
   // Simple tools
   typedef enum {

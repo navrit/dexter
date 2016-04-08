@@ -690,8 +690,6 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
     if(selectedItem == &calcProX){
 
-
-
         //Display
         if ( _profiledialog ) {
             delete _profiledialog;
@@ -700,13 +698,14 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
         _profiledialog = new ProfileDialog(this);
         _profiledialog->SetMpx3GUI(_mpx3gui);
-        _profiledialog->changeText("X", pixel_begin, pixel_end);
+        _profiledialog->setPixels(pixel_begin, pixel_end);
+        _profiledialog->changeTitle("X");
 
-        //Calculate the profile
-        QMap<int, int> Xmap = _mpx3gui->getDataset()->calcProfile('x', pixel_begin, pixel_end);
+        //Calculate the profile of the selected region of the selected layer
+        int layerIndex = getActiveThreshold();
+        _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile('x', layerIndex, pixel_begin, pixel_end));
 
-        _profiledialog->plotProfileX(pixel_begin, pixel_end, Xmap);
-
+        _profiledialog->plotProfileX();
         _profiledialog->show();
     }
     if(selectedItem == &calcProY){
@@ -719,12 +718,14 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         }
         _profiledialog = new ProfileDialog(this);
         _profiledialog->SetMpx3GUI(_mpx3gui);
-        _profiledialog->changeText("Y", pixel_begin, pixel_end);
+        _profiledialog->setPixels(pixel_begin, pixel_end);
+        _profiledialog->changeTitle("Y");
 
-        //Calculate the profile
-        QMap<int, int> Ymap = _mpx3gui->getDataset()->calcProfile('y', pixel_begin, pixel_end);
+        //Calculate the profile of the selected region of the selected layer
+        int layerIndex = getActiveThreshold();
+        _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile('y',layerIndex, pixel_begin, pixel_end));
 
-        _profiledialog->plotProfileY(pixel_begin, pixel_end, Ymap);
+        _profiledialog->plotProfileY();
         _profiledialog->show();
     }
 

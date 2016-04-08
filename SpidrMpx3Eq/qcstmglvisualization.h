@@ -51,6 +51,7 @@ class QCstmGLVisualization : public QWidget
 
     //Statistics
     StatsDialog * _statsdialog = nullptr;
+
     ProfileDialog * _profiledialog = nullptr;
 
     // Reco

@@ -23,27 +23,34 @@ void ProfileDialog::SetMpx3GUI(Mpx3GUI * p )
 //             &QCstmGLVisualization::on_user_accepted_stats );
 }
 
+
 void ProfileDialog::on_buttonBox_accepted() {
     // talk back to the main gui
     emit user_accepted_profile();
 }
 
-void ProfileDialog::changeText(QString axis, QPoint pixel_begin, QPoint pixel_end){
+void ProfileDialog::changeTitle(QString axis){
     QString T = "Profile in the " + axis + " direction";
-    T += QString(" from (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y());
+    T += QString(" from (%1, %2)-->(%3, %4)").arg(_begin.x()).arg(_begin.y()).arg(_end.x()).arg(_end.y());
     ui->groupBox->setTitle(T);
 }
 
-void ProfileDialog::plotProfileX(QPoint pixel_begin, QPoint pixel_end, QMap<int, int> Xmap)
+void ProfileDialog::changeText(QString text){
+    ui->textBrowser->setText(text);
+    //update();
+}
+
+void ProfileDialog::plotProfileX()
 {
+    ui->profilePlot->clearGraphs();
     ui->profilePlot->xAxis->setLabel("x-axis");
     ui->profilePlot->yAxis->setLabel("Total pixel count");
-    ui->profilePlot->xAxis->setRange(pixel_begin.x(), pixel_end.x());
+    ui->profilePlot->xAxis->setRange(_begin.x(), _end.x());
     ui->profilePlot->addGraph();
 
     //Add all the datapoints of the map to the data that is to be plotted.
-    QMap<int, int>::const_iterator i = Xmap.constBegin();
-    while( i != Xmap.constEnd()){
+    QMap<int, int>::const_iterator i = _Axismap.constBegin();
+    while( i != _Axismap.constEnd()){
         ui->profilePlot->graph(0)->addData(double(i.key()), double(i.value()));
         i++;
     }
@@ -52,20 +59,61 @@ void ProfileDialog::plotProfileX(QPoint pixel_begin, QPoint pixel_end, QMap<int,
     ui->profilePlot->replot( QCustomPlot::rpQueued );
 }
 
-void ProfileDialog::plotProfileY(QPoint pixel_begin, QPoint pixel_end, QMap<int, int> Ymap)
+void ProfileDialog::plotProfileY()
 {
+    ui->profilePlot->clearGraphs();
     ui->profilePlot->xAxis->setLabel("y-axis");
     ui->profilePlot->yAxis->setLabel("Total pixel count");
-    ui->profilePlot->xAxis->setRange(pixel_begin.y(), pixel_end.y());
+    ui->profilePlot->xAxis->setRange(_begin.y(), _end.y());
     ui->profilePlot->addGraph();
 
     //Add all the datapoints of the map to the data that is to be plotted.
-    QMap<int, int>::const_iterator i = Ymap.constBegin();
-    while( i != Ymap.constEnd()){
+    QMap<int, int>::const_iterator i = _Axismap.constBegin();
+    while( i != _Axismap.constEnd()){
         ui->profilePlot->graph(0)->addData(double(i.key()), double(i.value()));
         i++;
     }
 
     ui->profilePlot->rescaleAxes();
     ui->profilePlot->replot( QCustomPlot::rpQueued );
+}
+
+void ProfileDialog::on_checkBox_toggled(bool checked)
+{   //Logarithmic scale
+    if(checked) ui->profilePlot->yAxis->setScaleType(QCPAxis::stLogarithmic);
+    else ui->profilePlot->yAxis->setScaleType(QCPAxis::stLinear);
+    ui->profilePlot->replot(  );
+}
+
+void ProfileDialog::on_pushButton_clicked()
+{   //Calc CNR
+    int profile_width = _end.y()-_begin.y(); //for an X-profile...
+    QString CNRdata = _mpx3gui->getDataset()->calcCNR(_Axismap, profile_width);
+    changeText(CNRdata);
+}
+
+void ProfileDialog::on_plainTextEdit_textChanged()
+{   //first
+    _mpx3gui->getDataset()->setProfilepoint(0, ui->plainTextEdit->toPlainText().toInt());
+}
+
+void ProfileDialog::on_plainTextEdit_2_textChanged()
+{   //second
+    _mpx3gui->getDataset()->setProfilepoint(1, ui->plainTextEdit_2->toPlainText().toInt());
+}
+
+void ProfileDialog::on_plainTextEdit_3_textChanged()
+{   //third
+    _mpx3gui->getDataset()->setProfilepoint(2, ui->plainTextEdit_3->toPlainText().toInt());
+}
+
+void ProfileDialog::on_plainTextEdit_4_textChanged()
+{   //fourth
+    _mpx3gui->getDataset()->setProfilepoint(3, ui->plainTextEdit_4->toPlainText().toInt());
+}
+
+void ProfileDialog::on_comboBox_currentIndexChanged(int index)
+{
+    //TO DO: Change the layer of which the profile is made, make new plot.
+
 }
