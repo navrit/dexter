@@ -182,6 +182,7 @@ void SpidrTpx3Tv::onOff()
       _pbConnect->setText( "Disconnect" );
 
       _cbTestMode->setEnabled( true );
+      _pbShutter->setEnabled( true );
     }
   else
     {
@@ -196,6 +197,7 @@ void SpidrTpx3Tv::onOff()
       _controller = 0;
       this->statusBar()->clearMessage();
       _cbTestMode->setEnabled( false );
+      _pbShutter->setEnabled( false );
     }
 }
 
@@ -323,6 +325,8 @@ void SpidrTpx3Tv::changeTestMode( int state )
 
 void SpidrTpx3Tv::changeShutter( bool open )
 {
+  if( !_controller ) return;
+
   if( open )
     {
       if( !_controller->resetPixels( _deviceNr ) )
