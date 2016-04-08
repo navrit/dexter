@@ -8,7 +8,8 @@
 #include "FramebuilderThreadC.h"
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x16032400; // Renamed disableLut() to setLutEnable()
+const int   VERSION_ID = 0x16040800; // Add parameter readout_mask to c'tor
+//const int VERSION_ID = 0x16032400; // Renamed disableLut() to setLutEnable()
 //const int VERSION_ID = 0x16030900; // Compact-SPIDR support added
 //const int VERSION_ID = 0x15101500;
 //const int VERSION_ID = 0x15100100;
@@ -33,22 +34,32 @@ SpidrDaq::SpidrDaq( int ipaddr3,
 		    int ipaddr2,
 		    int ipaddr1,
 		    int ipaddr0,
-		    SpidrController *spidrctrl )
+		    int port,
+		    int readout_mask )
 {
-  // If a SpidrController object is provided use it to find out the SPIDR's
-  // Medipix device configuration, or else assume a single device
-  // with a default port number
+  // Start data-acquisition with the given read-out mask
+  // on the SPIDR module with the given IP address and port number
   int ipaddr[4] = { ipaddr0, ipaddr1, ipaddr2, ipaddr3 };
   int ids[4]    = { 0, 0, 0, 0 };
-  int ports[4]  = { 8192, 0, 0, 0 };
+  int ports[4]  = { port, port+1, port+2, port+3 };
   int types[4]  = { 0, 0, 0, 0 };
-  if( spidrctrl ) this->getIdsPortsTypes( spidrctrl, ids, ports, types );
-  this->init( ipaddr, ids, ports, types, spidrctrl );
+
+  // Adjust SPIDR read-out mask if requested:
+  // Reset unwanted ports/devices to 0
+  for( int i=0; i<4; ++i )
+    if( (readout_mask & (1<<i)) == 0 ) ports[i] = 0;
+  // Read out the remaining devices
+  readout_mask = 0;
+  for( int i=0; i<4; ++i )
+    if( ports[i] != 0 ) readout_mask |= (1<<i);
+
+  this->init( ipaddr, ids, ports, types, 0 );
 }
 
 // ----------------------------------------------------------------------------
 
-SpidrDaq::SpidrDaq( SpidrController *spidrctrl )
+SpidrDaq::SpidrDaq( SpidrController *spidrctrl,
+		    int              readout_mask )
 {
   // If a SpidrController object is provided use it to find out the SPIDR's
   // Medipix device configuration and IP destination address, or else assume
@@ -71,6 +82,20 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl )
 	}
 
       this->getIdsPortsTypes( spidrctrl, ids, ports, types );
+
+      // Adjust SPIDR read-out mask if requested:
+      // Reset unwanted ports/devices to 0
+      for( int i=0; i<4; ++i )
+	if( (readout_mask & (1<<i)) == 0 ) ports[i] = 0;
+      // Read out the remaining devices
+      readout_mask = 0;
+      for( int i=0; i<4; ++i )
+	if( ports[i] != 0 ) readout_mask |= (1<<i);
+
+      // Set the new read-out mask if required
+      int device_mask;
+      if( spidrctrl->getAcqEnable(&device_mask) && device_mask != readout_mask )
+	spidrctrl->setAcqEnable( readout_mask );
     }
   this->init( ipaddr, ids, ports, types, spidrctrl );
 }
@@ -89,14 +114,16 @@ void SpidrDaq::getIdsPortsTypes( SpidrController *spidrctrl,
 
   // Get the device port numbers from the SPIDR module
   // but only for devices whose ID could be determined (i.e. is unequal to 0)
-  int i;
-  for( i=0; i<4; ++i ) { ports[i] = 0; types[i] = 0; }
-  for( i=0; i<4; ++i )
-    if( ids[i] != 0 )
-      {
-	spidrctrl->getServerPort( i, &ports[i] );
-	spidrctrl->getDeviceType( i, &types[i] );
-      }
+  for( int i=0; i<4; ++i )
+    {
+      ports[i] = 0;
+      types[i] = 0;
+      if( ids[i] != 0 )
+	{
+	  spidrctrl->getServerPort( i, &ports[i] );
+	  spidrctrl->getDeviceType( i, &types[i] );
+	}
+    }
 }
 
 // ----------------------------------------------------------------------------

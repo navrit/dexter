@@ -28,13 +28,12 @@ class MY_LIB_API SpidrDaq
  public:
   // C'tor, d'tor
   SpidrDaq( int ipaddr3, int ipaddr2, int ipaddr1, int ipaddr0,
-            SpidrController *spidrctrl = 0 );
-  SpidrDaq( SpidrController *spidrctrl );
+	    int port, int readout_mask = 0xF );
+  SpidrDaq( SpidrController *spidrctrl, int readout_mask = 0xF );
   ~SpidrDaq();
 
-  void stop();
-
   // General
+  void        stop              ( ); // To be called before exiting/deleting
   int         classVersion      ( ); // Version of this class
   std::string ipAddressString   ( int index );
   std::string errorString       ( );
