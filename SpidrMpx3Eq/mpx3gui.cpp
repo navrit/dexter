@@ -8,6 +8,7 @@
 #include "qcstmequalization.h"
 #include "qcstmglvisualization.h"
 #include "ui_mpx3gui.h"
+#include "ui_qcstmconfigmonitoring.h"
 
 #include "qcustomplot.h"
 #include "mpx3eq_common.h"
@@ -34,6 +35,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     QMainWindow(parent),
     _ui(new Ui::Mpx3GUI)
 {
+
 
     // Instantiate everything in the UI
     _ui->setupUi(this);
@@ -215,11 +217,22 @@ Mpx3Config* Mpx3GUI::getConfig() {
 
 void Mpx3GUI::startupActions()
 {
+
     /////////////////////////////////////////////////////////
     // startup actions
     if ( ! gradients.empty() ) {
         _ui->visualizationGL->startupActions();
     }
+
+    // A few widgets couldn't really be initialized in constructors
+    // Pixel depth
+    getConfigMonitoring()->getUI()->pixelDepthComboBox->addItem( QString("%1 bits").arg( config->getPixelDepthFromIndex( 0 ) ) );
+    getConfigMonitoring()->getUI()->pixelDepthComboBox->addItem( QString("%1 bits").arg( config->getPixelDepthFromIndex( 1 ) ) );
+    getConfigMonitoring()->getUI()->pixelDepthComboBox->addItem( QString("%1 bits").arg( config->getPixelDepthFromIndex( 2 ) ) );
+    getConfigMonitoring()->getUI()->pixelDepthComboBox->addItem( QString("%1 bits").arg( config->getPixelDepthFromIndex( 3 ) ) );
+
+    getConfigMonitoring()->getUI()->pixelDepthComboBox->setCurrentIndex( config->getPixelDepth12BitsIndex() );
+
 }
 
 void Mpx3GUI::saveOriginalDataset()

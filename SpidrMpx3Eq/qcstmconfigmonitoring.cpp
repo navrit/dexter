@@ -217,6 +217,7 @@ void QCstmConfigMonitoring::activateItemsGUI(){
     ui->currentISpinBox->setEnabled( true );
     ui->motorIdSpinBox->setEnabled( true );
     ui->stepperSetZeroPushButton->setEnabled( true );
+
 }
 
 void QCstmConfigMonitoring::deactivateItemsGUI(){
@@ -316,12 +317,11 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     // Camera
     connect(ui->cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeCamera(int)));
 
-    // Pixel depth
-    ui->pixelDepthComboBox->addItem( QString::number( config->getPixelDepthFromIndex( 0 ), 'f', 0 ) ) ;
-    ui->pixelDepthComboBox->addItem( QString::number( config->getPixelDepthFromIndex( 1 ), 'f', 0 ) ) ;
-    ui->pixelDepthComboBox->addItem( QString::number( config->getPixelDepthFromIndex( 2 ), 'f', 0 ) ) ;
-    ui->pixelDepthComboBox->addItem( QString::number( config->getPixelDepthFromIndex( 3 ), 'f', 0 ) ) ;
-    ui->pixelDepthComboBox->setCurrentIndex( config->getPixelDepth12BitsIndex() );
+
+    //ui->pixelDepthComboBox->addItem( QString::number( config->getPixelDepthFromIndex( 1 ), 'f', 0 ) ) ;
+    //ui->pixelDepthComboBox->addItem( QString::number( config->getPixelDepthFromIndex( 2 ), 'f', 0 ) ) ;
+    //ui->pixelDepthComboBox->addItem( QString::number( config->getPixelDepthFromIndex( 3 ), 'f', 0 ) ) ;
+    //ui->pixelDepthComboBox->setCurrentIndex( config->getPixelDepth12BitsIndex() );
 
 }
 

@@ -65,7 +65,7 @@ private:
     //QApplication * _coreApp;
     Ui::Mpx3GUI * _ui;
 
-    Mpx3Config * config;
+    Mpx3Config * config = nullptr;
     Dataset * workingSet;
     Dataset * originalSet;
 
