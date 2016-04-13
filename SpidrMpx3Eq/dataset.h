@@ -124,7 +124,7 @@ public:
   int applyColor2DRecoGuided(Color2DRecoGuided * );
   void calcBasicStats(QPoint pixel_init, QPoint pixel_end);
   QMap<int, int> calcProfile(char axis, int layerIndex, QPoint pixel_init, QPoint pixel_end);
-  QString calcCNR(QMap<int,int> Axismap, int width);
+  QString calcCNR(QMap<int,int> Axismap);
   double calcRegionMean(int begin, int end, QMap<int, int> Axismap);
   double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);
   QPointF XtoXY(int X, int dimX);

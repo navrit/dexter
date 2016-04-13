@@ -770,10 +770,10 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _mpx3gui->getDataset()->calcBasicStats(pixel_begin, pixel_end);
 
         // Now display it
-        if ( _statsdialog ) {
-            delete _statsdialog;
-            _statsdialog = nullptr;
-        }
+//        if ( _statsdialog ) {
+//            delete _statsdialog;
+//            _statsdialog = nullptr;
+//        }
 
         _statsdialog = new StatsDialog(this);
         _statsdialog->SetMpx3GUI(_mpx3gui);
@@ -784,12 +784,13 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
     if(selectedItem == &calcProX){
 
-        //Display
-        if ( _profiledialog ) {
-            delete _profiledialog;
-            _profiledialog = nullptr;
-        }
+        //We want multiple windows open at once.
+//        if ( _profiledialog ) {
+//            delete _profiledialog;
+//            _profiledialog = nullptr;
+//        }
 
+        //Display
         _profiledialog = new ProfileDialog(this);
         _profiledialog->SetMpx3GUI(_mpx3gui);
         _profiledialog->setPixels(pixel_begin, pixel_end);
@@ -806,10 +807,10 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
 
         //Display
-        if ( _profiledialog ) {
-            delete _profiledialog;
-            _profiledialog = nullptr;
-        }
+//        if ( _profiledialog ) {
+//            delete _profiledialog;
+//            _profiledialog = nullptr;
+//        }
         _profiledialog = new ProfileDialog(this);
         _profiledialog->SetMpx3GUI(_mpx3gui);
         _profiledialog->setPixels(pixel_begin, pixel_end);

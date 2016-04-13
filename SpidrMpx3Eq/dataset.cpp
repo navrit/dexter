@@ -235,6 +235,10 @@ QPoint Dataset::jtoXY(int j){
 
 void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
 
+    //Delete previous stats from other regions
+    bstats.mean_v.clear();
+    bstats.stdev_v.clear();
+
     QList<int> keys = m_thresholdsToIndices.keys();
 
     QSize isize = QSize(computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y());
@@ -338,7 +342,7 @@ QMap<int, int> Dataset::calcProfile(char axis, int layerIndex, QPoint pixel_init
     //}
 }
 //Calculate the Contrast to Noise Ratio of a region.
-QString Dataset::calcCNR(QMap<int, int> Axismap, int width){
+QString Dataset::calcCNR(QMap<int, int> Axismap){
     QString data;
     double mean;
     double stdev;
@@ -357,16 +361,16 @@ QString Dataset::calcCNR(QMap<int, int> Axismap, int width){
             //double mean = calcRegionMean(Profilepoints[i], Profilepoints[i+1], Axismap);
             //double stdev = calcRegionStdev(Profilepoints[i], Profilepoints[i+1], Axismap, mean);
             mean_v.push_back(calcRegionMean(Profilepoints[i], Profilepoints[i+1], Axismap));
-            stdev_v.push_back(calcRegionStdev(Profilepoints[i], Profilepoints[i+1], Axismap, mean));
+            stdev_v.push_back(calcRegionStdev(Profilepoints[i], Profilepoints[i+1], Axismap, mean_v[i]));
 
         }
-        data += "Region 1\tRegion2\tRegion3\tRegion4\n" ;
+        data += "\tRegion 1\tRegion2\tRegion3\n" ;
         data += QString("Mean:\t%1\t%2\t%3\n").arg(mean_v[0]).arg(mean_v[1]).arg(mean_v[2]);
         data += QString("Stdev:\t%1\t%2\t%3\n").arg(stdev_v[0]).arg(stdev_v[1]).arg(stdev_v[2]);
 
-        double cnr = mean_v[2] - 0.5*(mean_v[1] + mean_v[3]);
-        cnr /= 0.5*(stdev_v[1] + stdev_v[3]);
-        cnr += sqrt((Profilepoints[2] - Profilepoints[1])*width);//times the width of the RoI
+        double cnr = mean_v[1] - 0.5*(mean_v[0] + mean_v[2]);
+        cnr /= 0.5*(stdev_v[0] + stdev_v[2]);
+        cnr *= sqrt((Profilepoints[2] - Profilepoints[1])); //Number of pixelcolumns that the signal (region 2) spans.
 
         data += QString("\nCNR:\t%1").arg(cnr);
     }

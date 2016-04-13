@@ -39,15 +39,15 @@ private slots:
 
     void on_pushButton_clicked();
 
-    void on_plainTextEdit_textChanged();
-
-    void on_plainTextEdit_2_textChanged();
-
-    void on_plainTextEdit_3_textChanged();
-
-    void on_plainTextEdit_4_textChanged();
-
     void on_comboBox_currentIndexChanged(int index);
+
+    void on_lineEdit_editingFinished();
+
+    void on_lineEdit_2_cursorPositionChanged(int arg1, int arg2);
+
+    void on_lineEdit_3_editingFinished();
+
+    void on_lineEdit_4_editingFinished();
 
 signals:
     void user_accepted_profile();
