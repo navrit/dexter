@@ -24,6 +24,13 @@ Mpx3Config::Mpx3Config()
 
     controller = nullptr;
 
+    __pixelDepthMap = new unsigned int[4];
+    __pixelDepthMap[0] = 1;
+    __pixelDepthMap[1] = 6;
+    __pixelDepthMap[2] = 12;
+    __pixelDepthMap[3] = 24;
+
+
 }
 
 void Mpx3Config::SendConfiguration(){

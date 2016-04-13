@@ -41,7 +41,7 @@ class Mpx3Config: public QObject {
 	double stepperAcceleration = -1., stepperSpeed = -1., stepperCalibPos0 = -1., stepperCalibAngle0 = -1., stepperCalibPos1 = -1., stepperCalibAngle1 = -1.;
 
     // Some constants in the configuration (MPX3 manual pag. 18)
-    const unsigned int __pixelDepthMap[4] = { 1 , 6 , 12 , 24 };
+    unsigned int * __pixelDepthMap;// = { 1 , 6 , 12 , 24 };
     const unsigned int __pixelDepth12BitsIndex = 2;
 
     typedef enum {
