@@ -257,8 +257,36 @@ SpidrController * Mpx3Config::establishConnection(){
 
         if ( id != 0 ) {
 
-            dbg << "Id :" << id << "|";
+            QString idStr = QString::number( id, 16 ).toUpper();
+            QString idStrCpy(idStr); idStrCpy.prepend("0x");
+            //idStr.prepend("0");
+            ///////////////////////////////////////////////
+            // Wafer number first three nibbles
+            int waferId = 0;
+            for ( int i = 3 ; i > 0 ; i-- ) {
+                waferId += (idStr.left(1).toInt(false, 16)) * pow(16, i-1);
+                idStr = idStr.remove(0, 1);
+            }
+
+            // 4th is X (by letter id in the alphabet)
+            QString XStr = idStr.left(1);
+            idStr = idStr.remove(0, 1);
+            QChar xQC = *(XStr.data()); // use an uchar and offter to the alphabet
+            uchar xC = xQC.cell();
+            xC += 0x10; // offset to get to the alphabet in ascii
+
+            // 5th is Y
+            int Ycoor = 0;
+            Ycoor = (idStr.left(1).toInt(false, 16));
+            QString decodedId = "W";
+            decodedId.append( QString::number( waferId ) );
+            decodedId.append( "_" );
+            decodedId.append( xC );
+            decodedId.append( QString::number( Ycoor ) );
+
+            dbg.noquote().nospace() << "ID : " << decodedId << " (" << idStrCpy << ") | ";
             _devicePresenceLayout.push_back( QPoint(__default_matrixSizePerChip_X, __default_matrixSizePerChip_Y) );
+            _deviceWaferIdMap.push_back( decodedId );
             _nDevicesPresent++;
 
             // If connected check response

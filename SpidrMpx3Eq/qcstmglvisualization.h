@@ -101,9 +101,11 @@ private:
         QString overflow;
         bool overflowFlg;
         QString displayString; // this is the composition actually being displayed
+        QString devicesIdString;
     } stats_str;
 
     stats_str _statsString;
+    QLabel * _devicesNamesLabel = nullptr;
 
     //!Gets the currently active threshold by looking at the value of the layerselector combobox.
     int getActiveThreshold();

@@ -368,6 +368,24 @@ void QCstmGLVisualization::ConnectionStatusChanged() {
     ui->singleshotPushButton->setEnabled(true);
     ui->recoPushButton->setEnabled(true);
 
+    // Report the chip ID's
+    // Make space in the dataTakingGridLayout
+    QVector<int> devs = _mpx3gui->getConfig()->getActiveDevices();
+    QVector<int>::const_iterator i  = devs.begin();
+    QVector<int>::const_iterator iE = devs.end();
+    _statsString.devicesIdString.clear();
+    for ( ; i != iE ; i++ ) {
+        _statsString.devicesIdString.append( _mpx3gui->getConfig()->getDeviceWaferId( *i ) );
+        if ( (i+1) != iE ) _statsString.devicesIdString.append( " | " );
+    }
+    if ( _devicesNamesLabel == nullptr ) {
+        _devicesNamesLabel = new QLabel(this);
+        _devicesNamesLabel->setAlignment( Qt::AlignRight );
+    }
+    _devicesNamesLabel->setText( _statsString.devicesIdString );
+    int colCount = ui->dataTakingGridLayout->columnCount();
+    ui->dataTakingGridLayout->addWidget( _devicesNamesLabel, 1, 0, 1, colCount );
+
     // TODO
     // Configure the chip, provided that the Adj mask is loaded
     // now done from the configuration
@@ -496,8 +514,10 @@ void QCstmGLVisualization::BuildStatsString() {
     _statsString.displayString  = "fired: ";
     _statsString.displayString += _statsString.counts;
 
-    _statsString.displayString += " | lost: ";
-    _statsString.displayString += _statsString.lostPackets;
+    if ( ! _statsString.lostPackets.isEmpty() ) {
+        _statsString.displayString += " | lost: ";
+        _statsString.displayString += _statsString.lostPackets;
+    }
 
     if ( _statsString.overflowFlg ) {
         _statsString.displayString += " | ";
@@ -523,6 +543,13 @@ void QCstmGLVisualization::BuildStatsStringCounts(uint64_t counts)
 
 void QCstmGLVisualization::BuildStatsStringLostPackets(uint64_t lostPackets)
 {
+
+    if ( lostPackets == 0 )  {
+        _statsString.lostPackets.clear();
+        return;
+    }
+
+
     // Retrieve the counter and display
     QString plS = "<font color=\"black\">";
     plS += QString::number( lostPackets, 'd', 0 );
@@ -770,10 +797,10 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _mpx3gui->getDataset()->calcBasicStats(pixel_begin, pixel_end);
 
         // Now display it
-//        if ( _statsdialog ) {
-//            delete _statsdialog;
-//            _statsdialog = nullptr;
-//        }
+        //        if ( _statsdialog ) {
+        //            delete _statsdialog;
+        //            _statsdialog = nullptr;
+        //        }
 
         _statsdialog = new StatsDialog(this);
         _statsdialog->SetMpx3GUI(_mpx3gui);
@@ -785,10 +812,10 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     if(selectedItem == &calcProX){
 
         //We want multiple windows open at once.
-//        if ( _profiledialog ) {
-//            delete _profiledialog;
-//            _profiledialog = nullptr;
-//        }
+        //        if ( _profiledialog ) {
+        //            delete _profiledialog;
+        //            _profiledialog = nullptr;
+        //        }
 
         //Display
         _profiledialog = new ProfileDialog(this);
@@ -807,10 +834,10 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
 
         //Display
-//        if ( _profiledialog ) {
-//            delete _profiledialog;
-//            _profiledialog = nullptr;
-//        }
+        //        if ( _profiledialog ) {
+        //            delete _profiledialog;
+        //            _profiledialog = nullptr;
+        //        }
         _profiledialog = new ProfileDialog(this);
         _profiledialog->SetMpx3GUI(_mpx3gui);
         _profiledialog->setPixels(pixel_begin, pixel_end);

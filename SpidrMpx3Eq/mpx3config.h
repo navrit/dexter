@@ -80,6 +80,7 @@ public:
 	int getNDevicesSupported() { return _nDevicesSupported; };
 	int getNActiveDevices(){return _activeChips.size();}
 	QVector<int>  getActiveDevices(){return _activeChips;}
+    QString getDeviceWaferId(int id){return _deviceWaferIdMap.at(id); }
 	int getIDIndex(int id){return _activeChips.indexOf(id);}
 	int getTriggerPeriodMS(){return _trigPeriod_ms;}
     unsigned int getPixelDepthFromIndex(int indx);
@@ -132,6 +133,7 @@ private:
 	Mpx3GUI * _mpx3gui;
 	// Layout of the matrix. Each QPoint is a chip connected with X,Y sizes.
 	QVector<QPoint> _devicePresenceLayout;
+    QVector<QString> _deviceWaferIdMap;
 	int _nDevicesPresent;
 	int _nDevicesSupported;
 

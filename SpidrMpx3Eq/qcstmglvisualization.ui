@@ -181,7 +181,7 @@
            </layout>
           </item>
           <item>
-           <layout class="QGridLayout" name="gridLayout_4">
+           <layout class="QGridLayout" name="dataTakingGridLayout">
             <item row="0" column="2">
              <widget class="QLabel" name="etaCntr">
               <property name="sizePolicy">
