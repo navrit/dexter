@@ -8,31 +8,73 @@
 #include <iomanip>
 using namespace std;
 
+#include <QString>
+
 #include "SpidrController.h"
-#include "SpidrDaq.h"
 #include "tpx3defs.h"
 
 #define error_out(str) cout<<str<<": "<<spidrctrl.errorString()<<endl
 
-//int main( int argc, char *argv[] )
-int main()
-{
-  SpidrController spidrctrl( 192, 168, 100, 10 );
+quint32 get_addr_and_port(const char *str, int *portnr);
+void usage();
 
-  // Are we connected to the SPIDR-TPX3 module?
+// ----------------------------------------------------------------------------
+
+int main( int argc, char *argv[] )
+{
+  quint32 ipaddr = 0;
+  int     portnr = 50000;
+  int     device_nr = 0;
+
+  // Check argument count
+  if( !(argc == 2 || argc == 3) )
+    {
+      usage();
+      return 0;
+    }
+
+  ipaddr = get_addr_and_port(argv[1], &portnr);
+
+  if( argc == 3 )
+    {
+      bool ok;
+      device_nr = QString(argv[2]).toUInt( &ok );
+      if( !ok )
+	{
+	  cout << "### Invalid device-number: " << string(argv[2]) << endl;
+	  usage();
+	  return 0;
+	}
+      else if( device_nr > 3 || device_nr < 0 )
+	{
+	  cout << "### Device-number out-of-range <0-3>" << endl;
+	  return 0;
+	}
+    }
+
+  // ----------------------------------------------------------
+  // Open a control connection to the SPIDR module
+  // with the given address and port, or -if the latter was not provided-
+  // the default port number 50000
+  SpidrController spidrctrl((ipaddr >> 24) & 0xFF,
+    (ipaddr >> 16) & 0xFF,
+    (ipaddr >> 8) & 0xFF,
+    (ipaddr >> 0) & 0xFF, portnr);
+
+  // Are we connected ?
   if( !spidrctrl.isConnected() ) {
     cout << spidrctrl.ipAddressString() << ": "
-         << spidrctrl.connectionStateString() << ", "
-         << spidrctrl.connectionErrString() << endl;
+      << spidrctrl.connectionStateString() << ", "
+      << spidrctrl.connectionErrString() << endl;
     return 1;
   }
 
-  int errstat;
-  if( spidrctrl.reset( &errstat ) ) {
-    cout << "errorstat " << hex << errstat << dec << endl;
-  }
+  //int errstat;
+  //if( spidrctrl.reset( &errstat ) ) {
+  //  cout << "errorstat " << hex << errstat << dec << endl;
+  //}
 
-  int i, device_nr = 0;
+  int i;
   unsigned char *ctpr;
 
   // Enable test-pulses for (some or all) columns
@@ -66,3 +108,14 @@ int main()
 
   return 0;
 }
+
+// ----------------------------------------------------------------------------
+
+void usage()
+{
+  cout <<
+    "Usage  :\n"
+    "spidrtest-ctpr <ipaddr>[:<portnr>] [devnr]\n";
+}
+
+// ----------------------------------------------------------------------------

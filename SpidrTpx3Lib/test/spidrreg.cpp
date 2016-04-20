@@ -9,7 +9,7 @@ spidrreg <ipaddr>[:<portnr>] <addr> [<value>]
      <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10.
      <portnr> : current SPIDR controller IP port number, default 50000.
      <addr>   : SPIDR register address (hex, minus offset of 0x800A0000).
-     <value>  : if provided, value to write to register.
+     <value>  : if provided, value to write to register, or else read it.
 
 History:
 04FEB2016; HenkB; Created.
@@ -124,12 +124,12 @@ void usage()
   cout <<
     "Usage  :\n"
     "spidrreg <ipaddr>[:<portnr>] <addr> [<value>]\n"
-    "   Read or set the fan speeds of a SPIDR module.\n"
+    "   Read or write the register with the given address.\n"
     "     <ipaddr> : current SPIDR IP address, e.g. 192.168.100.10.\n"
     "     <portnr> : current SPIDR controller IP port number, default 50000.\n"
     "     <addr>   : SPIDR register address "
     "(hex, minus offset of 0x800A0000).\n"
-    "     <value>  : if provided, value to write to register.\n";
+    "     <value>  : if provided, value to write to register, or else read it.\n";
 }
 
 // ----------------------------------------------------------------------------

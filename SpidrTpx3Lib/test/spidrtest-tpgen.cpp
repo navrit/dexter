@@ -8,32 +8,54 @@
 #include <iomanip>
 using namespace std;
 
+#include <QString>
+
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 #include "tpx3defs.h"
 
 #define error_out(str) cout<<str<<": "<<spidrctrl.errorString()<<endl
 
-//int main( int argc, char *argv[] )
-int main()
-{
-  // ----------------------------------------------------------
-  // Open a control connection to SPIDR-TPX3 module
-  // with address 192.168.100.10, default port number 50000
-  SpidrController spidrctrl( 192, 168, 10, 10 );
+quint32 get_addr_and_port(const char *str, int *portnr);
+void usage();
 
-  // Are we connected to the SPIDR-TPX3 module?
+// ----------------------------------------------------------------------------
+
+int main( int argc, char *argv[] )
+{
+  quint32 ipaddr = 0;
+  int     portnr = 50000;
+
+  // Check argument count
+  if( !(argc == 2) )
+    {
+      usage();
+      return 0;
+    }
+
+  ipaddr = get_addr_and_port(argv[1], &portnr);
+
+  // ----------------------------------------------------------
+  // Open a control connection to the SPIDR module
+  // with the given address and port, or -if the latter was not provided-
+  // the default port number 50000
+  SpidrController spidrctrl((ipaddr >> 24) & 0xFF,
+    (ipaddr >> 16) & 0xFF,
+    (ipaddr >> 8) & 0xFF,
+    (ipaddr >> 0) & 0xFF, portnr);
+
+  // Are we connected ?
   if( !spidrctrl.isConnected() ) {
     cout << spidrctrl.ipAddressString() << ": "
-         << spidrctrl.connectionStateString() << ", "
-         << spidrctrl.connectionErrString() << endl;
+      << spidrctrl.connectionStateString() << ", "
+      << spidrctrl.connectionErrString() << endl;
     return 1;
   }
 
-  int errstat;
-  if( spidrctrl.reset( &errstat ) ) {
-    cout << "errorstat " << hex << errstat << dec << endl;
-  }
+  //int errstat;
+  //if( spidrctrl.reset( &errstat ) ) {
+  //  cout << "errorstat " << hex << errstat << dec << endl;
+  //}
 
   int device_nr = 0;
 
@@ -141,3 +163,14 @@ int main()
 
   return 0;
 }
+
+// ----------------------------------------------------------------------------
+
+void usage()
+{
+  cout <<
+    "Usage  :\n"
+    "spidrtest-tpgen <ipaddr>[:<portnr>]\n";
+}
+
+// ----------------------------------------------------------------------------
