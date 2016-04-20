@@ -19,6 +19,7 @@ class SpidrMpx3Tv : public QMainWindow, Ui_SpidrTv
  private slots:
   void onOff();
   void changeCounterDepth();
+  void changeLutEnabled();
 
  private:
   SpidrController *_controller;

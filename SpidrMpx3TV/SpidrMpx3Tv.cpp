@@ -5,7 +5,8 @@
 
 #include <QHostAddress>
 
-QString VERSION( "v2.0.0   22-Jul-2013" );
+QString   VERSION( "v2.1.0   24-Mar-2016" );
+//QString VERSION( "v2.0.0   22-Jul-2013" );
 
 // ----------------------------------------------------------------------------
 
@@ -25,8 +26,11 @@ SpidrMpx3Tv::SpidrMpx3Tv()
 
   connect( _tbOn, SIGNAL(clicked()), this, SLOT(onOff()) );
 
-  connect( _cbCounterDepth, SIGNAL(currentIndexChanged(int)),
+  connect( _comboBoxCounterDepth, SIGNAL(currentIndexChanged(int)),
 	   this, SLOT(changeCounterDepth()) );
+
+  connect( _checkBoxLutEnable, SIGNAL(stateChanged(int)),
+	   this, SLOT(changeLutEnabled()) );
 
   // Initializes _counterDepth
   this->changeCounterDepth();
@@ -185,7 +189,10 @@ void SpidrMpx3Tv::onOff()
 	  return;
 	}
 
-      _daq = new SpidrDaq( _controller );
+      int readout_mask = _comboBoxDeviceMask->currentIndex();
+      if( readout_mask == 0 ) readout_mask = 0xF;
+
+      _daq = new SpidrDaq( _controller, readout_mask );
       std::string str = _daq->errorString();
       if( !str.empty() )
 	{
@@ -200,7 +207,9 @@ void SpidrMpx3Tv::onOff()
 	}
 
       _tbOn->setText( "Off" );
-      _cbCounterDepth->setEnabled( false );
+      _comboBoxCounterDepth->setEnabled( false );
+      _comboBoxDeviceMask->setEnabled( false );
+      _checkBoxLutEnable->setEnabled( true );
 
       // Get the host adapter IP address SPIDR uses, to display
       int ipaddr;
@@ -214,12 +223,13 @@ void SpidrMpx3Tv::onOff()
 	  _leHostIpAddr->setText( "" );
 	}
 
-      // Determine the number of devices
+      // Determine the number of devices, taking part in readout
       int ids[4];
       _controller->getDeviceIds( ids );
       _deviceCount = 0;
       for( int i=0; i<4; ++i )
-	if( ids[i] != 0 ) ++_deviceCount;
+	if( ids[i] != 0 && (readout_mask & (1<<i)) )
+	  ++_deviceCount;
       if( _deviceCount > 1 )
 	_lbPorts->setText( "Data IP ports" );
       else
@@ -229,7 +239,7 @@ void SpidrMpx3Tv::onOff()
       int port;
       QString qs;
       for( int i=0; i<4; ++i )
-	if( ids[i] != 0 )
+	if( ids[i] != 0 && (readout_mask & (1<<i)) )
 	  {
 	    if( _controller->getServerPort( i, &port ) )
 	      {
@@ -241,33 +251,33 @@ void SpidrMpx3Tv::onOff()
 
       // Get the device type of its first device, to display
       for( int i=0; i<4; ++i )
-	if( ids[i] != 0 )
+	if( ids[i] != 0 && (readout_mask & (1<<i)) )
 	  {
 	    int type;
 	    if( _controller->getDeviceType( i, &type ) )
 	      {
 		if( type == MPX_TYPE_MPX31 )
 		  {
-		    _cbDeviceType->setCurrentIndex( 0 );
+		    _comboBoxDeviceType->setCurrentIndex( 0 );
 		    // Medipix3.1 features a 4-bit option
-		    int i = _cbCounterDepth->findText( "6" );
-		    if( i > -1 ) _cbCounterDepth->setItemText( i, "4" );
+		    int i = _comboBoxCounterDepth->findText( "6" );
+		    if( i > -1 ) _comboBoxCounterDepth->setItemText( i, "4" );
 		  }
 		else if( type == MPX_TYPE_MPX3RX )
 		  {
-		    _cbDeviceType->setCurrentIndex( 1 );
+		    _comboBoxDeviceType->setCurrentIndex( 1 );
 		    // Medipix3RX features a 6-bit option
-		    int i = _cbCounterDepth->findText( "4" );
-		    if( i > -1 ) _cbCounterDepth->setItemText( i, "6" );
+		    int i = _comboBoxCounterDepth->findText( "4" );
+		    if( i > -1 ) _comboBoxCounterDepth->setItemText( i, "6" );
 		  }
 		else
 		  {
-		    _cbDeviceType->setCurrentIndex( 2 ); // "UNKNOWN DEVICE"
+		    _comboBoxDeviceType->setCurrentIndex( 2 ); // "UNKNOWN DEVICE"
 		  }
 	      }
 	    else
 	      {
-		_cbDeviceType->setCurrentIndex( 3 );  // "NO DEVICE"
+		_comboBoxDeviceType->setCurrentIndex( 3 );  // "NO DEVICE"
 	      }
 	    break;
 	  }
@@ -300,7 +310,7 @@ void SpidrMpx3Tv::onOff()
       _leHostIpAddr->setText( "" );
       _lePort->setText( "" );
       _lePacketSize->setText( "" );
-      _cbDeviceType->setCurrentIndex( 3 );  // "NO DEVICE"
+      _comboBoxDeviceType->setCurrentIndex( 3 );  // "NO DEVICE"
       _daq->stop();
       delete _daq;
       _daq = 0;
@@ -308,7 +318,9 @@ void SpidrMpx3Tv::onOff()
       _controller = 0;
       this->statusBar()->clearMessage();
       _deviceCount = 0;
-      _cbCounterDepth->setEnabled( true );
+      _comboBoxCounterDepth->setEnabled( true );
+      _comboBoxDeviceMask->setEnabled( true );
+      _checkBoxLutEnable->setEnabled( false );
     }
 }
 
@@ -316,7 +328,7 @@ void SpidrMpx3Tv::onOff()
 
 void SpidrMpx3Tv::changeCounterDepth()
 {
-  _counterDepth = _cbCounterDepth->currentText().toInt();
+  _counterDepth = _comboBoxCounterDepth->currentText().toInt();
 
   _sbMinValue->setMaximum( (1<<_counterDepth)-1 );
   _sbMaxValue->setMaximum( (1<<_counterDepth)-1 );
@@ -325,6 +337,24 @@ void SpidrMpx3Tv::changeCounterDepth()
 
   if( _sbMinValue->value() > _sbMaxValue->value() )
     _sbMinValue->setValue( 0 );
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrMpx3Tv::changeLutEnabled()
+{
+  if( _checkBoxLutEnable->isChecked() )
+    {
+      // Look-Up-Table decoding done by (SPIDR) hardware, not (SpidrDaq) API
+      if( _controller ) _controller->setLutEnable( true );
+      if( _daq ) _daq->setLutEnable( false );
+    }
+  else
+    {
+      // Look-Up-Table decoding done by (SpidrDaq) API, not (SPIDR) hardware
+      if( _controller ) _controller->setLutEnable( false );
+      if( _daq ) _daq->setLutEnable( true );
+    }
 }
 
 // ----------------------------------------------------------------------------
