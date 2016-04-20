@@ -113,19 +113,20 @@ int main( int argc, char **argv )
     }
 
   unsigned char *flashmem = mcs.mem();
-  int  address         = mcs.minAddr();
-  int  bytes_to_do     = mcs.maxAddr() - mcs.minAddr();
-  int  bytes_done      = 0;
-  int  percentage      = -1;
+  int  address       = mcs.minAddr();
+  int  bytes_todo    = mcs.maxAddr() - mcs.minAddr();
+  int  bytes_done    = 0;
+  int  bytes_per_pkt = 512; //1024; // Send: Linux problem, IP packet split up
+  int  percentage    = -1;
   int  nbytes;
   unsigned char databytes[2048];
   if( dump_it )
     {
       // Just dump the contents of the flash device
-      address     = 0;
-      bytes_to_do = 0x1000000; // 16 MByte
+      address    = 0;
+      bytes_todo = 0x1000000; // 16 MByte
       cout << hex << uppercase << setfill('0');
-      while( bytes_done < bytes_to_do )
+      while( bytes_done < bytes_todo )
 	{
 	  if( spidrctrl.readFlash( flash_i, address, &nbytes, databytes ) )
 	    {
@@ -159,15 +160,15 @@ int main( int argc, char **argv )
       //if( (address & 0xFFFF) != 0 ) // N25Q128 sector size is 64 KByte
       if( (address & 0xFFF) != 0 )    // N25Q128 subsector size is 4 KByte
 	{
-	  bytes_to_do += (address & 0xFFF);
-	  address     &= 0xFFFFF000;
+	  bytes_todo += (address & 0xFFF);
+	  address    &= 0xFFFFF000;
 	}
       flashmem += address;
 
       cout << "Programming...     ";
-      while( bytes_done < bytes_to_do )
+      while( bytes_done < bytes_todo )
 	{
-	  if( spidrctrl.writeFlash( flash_i, address, 1024, flashmem ) )
+	  if( spidrctrl.writeFlash(flash_i, address, bytes_per_pkt, flashmem) )
 	    {
 	      /* DEBUG
 	      cout << hex << uppercase << setfill('0');
@@ -180,14 +181,14 @@ int main( int argc, char **argv )
 		}
 	      cout << endl << dec;
 	      */
-	      flashmem   += 1024;
-	      address    += 1024;
-	      bytes_done += 1024;
+	      flashmem   += bytes_per_pkt;
+	      address    += bytes_per_pkt;
+	      bytes_done += bytes_per_pkt;
 
 	      // Display percentage done
-	      if( (100*bytes_done)/bytes_to_do != percentage )
+	      if( (100*bytes_done)/bytes_todo != percentage )
 		{
-		  int p = (100*bytes_done)/bytes_to_do;
+		  int p = (100*bytes_done)/bytes_todo;
 		  cout << "\b\b\b\b\b    \b\b\b\b" << setw(3) << p << "% ";
 		  percentage = p;
 		}
@@ -203,7 +204,7 @@ int main( int argc, char **argv )
     {
       cout << "Verifying...     ";
       flashmem += address;
-      while( bytes_done < bytes_to_do )
+      while( bytes_done < bytes_todo )
 	{
 	  if( spidrctrl.readFlash( flash_i, address, &nbytes, databytes ) )
 	    {
@@ -238,9 +239,9 @@ int main( int argc, char **argv )
 	      bytes_done += nbytes;
 
 	      // Display percentage done
-	      if( (100*bytes_done)/bytes_to_do != percentage )
+	      if( (100*bytes_done)/bytes_todo != percentage )
 		{
-		  int p = (100*bytes_done)/bytes_to_do;
+		  int p = (100*bytes_done)/bytes_todo;
 		  cout << "\b\b\b\b\b    \b\b\b\b" << setw(3) << p << "% ";
 		  percentage = p;
 		}
@@ -251,7 +252,7 @@ int main( int argc, char **argv )
 	      break;
 	    }
 	}
-      if( bytes_done >= bytes_to_do )
+      if( bytes_done >= bytes_todo )
 	cout << endl << "Verified OKAY!" << endl;
     }
   return 0;
