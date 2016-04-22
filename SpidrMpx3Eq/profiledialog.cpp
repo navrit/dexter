@@ -62,6 +62,16 @@ void ProfileDialog::plotProfile(QString axis)
 
     ui->profilePlot->rescaleAxes();
     ui->profilePlot->replot( QCustomPlot::rpQueued );
+
+    //Add 4 dots for the regions of CNR calculation
+    for(int i = 1; i <= 4; i++){
+        ui->profilePlot->addGraph(); //Add dot at indicated position
+        ui->profilePlot->graph(i)->setPen(QPen(Qt::red));
+        ui->profilePlot->graph(i)->setLineStyle(QCPGraph::lsNone);
+        ui->profilePlot->graph(i)->setScatterStyle(QCPScatterStyle::ssDisc);
+        ui->profilePlot->graph(i)->addData(0, -1);
+    }
+
 }
 
 void ProfileDialog::on_checkBox_toggled(bool checked)
@@ -92,29 +102,43 @@ void ProfileDialog::on_lineEdit_editingFinished()
 {
     _mpx3gui->getDataset()->setProfilepoint(0, ui->lineEdit->text().toInt());
 
-    ui->profilePlot->addGraph(); //Add dot at indicated position
-    ui->profilePlot->graph(1)->setPen(QPen(Qt::red));
-    ui->profilePlot->graph(1)->setLineStyle(QCPGraph::lsNone);
-    ui->profilePlot->graph(1)->setScatterStyle(QCPScatterStyle::ssDisc);
     int x = ui->lineEdit->text().toInt();
+    ui->profilePlot->graph(1)->clearData();
     ui->profilePlot->graph(1)->addData(x, _Axismap[x]);
 
     ui->profilePlot->replot();
-    ui->profilePlot->removeGraph(1);
 }
 
 void ProfileDialog::on_lineEdit_2_editingFinished()
 {
     _mpx3gui->getDataset()->setProfilepoint(1, ui->lineEdit_2->text().toInt());
 
+    int x = ui->lineEdit_2->text().toInt();
+    ui->profilePlot->graph(2)->clearData();
+    ui->profilePlot->graph(2)->addData(x, _Axismap[x]);
+
+    ui->profilePlot->replot();
 }
 
 void ProfileDialog::on_lineEdit_3_editingFinished()
 {
     _mpx3gui->getDataset()->setProfilepoint(2, ui->lineEdit_3->text().toInt());
+
+    int x = ui->lineEdit_3->text().toInt();
+    ui->profilePlot->graph(3)->clearData();
+    ui->profilePlot->graph(3)->addData(x, _Axismap[x]);
+
+    ui->profilePlot->replot();
 }
 
 void ProfileDialog::on_lineEdit_4_editingFinished()
 {
     _mpx3gui->getDataset()->setProfilepoint(3, ui->lineEdit_4->text().toInt());
+
+    int x = ui->lineEdit_4->text().toInt();
+    ui->profilePlot->graph(4)->clearData();
+    ui->profilePlot->graph(4)->addData(x, _Axismap[x]);
+
+    ui->profilePlot->replot();
+
 }
