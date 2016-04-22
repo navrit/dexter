@@ -296,14 +296,13 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
 }
 
 void Dataset::setProfilepoint(int index, int pos){
-    if(Profilepoints.empty()){
-        Profilepoints.resize(4);
-        Profilepoints.fill(pos);
-    }
-    else Profilepoints[index] = pos;
+
+    if(!Profilepoints.empty() && Profilepoints.size() > index) Profilepoints[index] = pos;
+    else  Profilepoints << pos;
+
 }
 
-QMap<int, int> Dataset::calcProfile(char axis, int layerIndex, QPoint pixel_init, QPoint pixel_end){
+QMap<int, int> Dataset::calcProfile(QString axis, int layerIndex, QPoint pixel_init, QPoint pixel_end){
     QList<int> keys = m_thresholdsToIndices.keys();
 
     //for(int i = 0; i < keys.length(); i++) {
@@ -315,7 +314,7 @@ QMap<int, int> Dataset::calcProfile(char axis, int layerIndex, QPoint pixel_init
         RoI.setRect(pixel_init.x(), pixel_init.y(), pixel_end.x() - pixel_init.x(),  pixel_end.y() - pixel_init.y() );
 
         QMap<int, int> profilevals;
-        if(axis == 'x')
+        if(axis == "X")
             for( int j =0; j < getPixelsPerLayer(); j++) {
                 QPoint pix = jtoXY(j);
 
@@ -323,10 +322,9 @@ QMap<int, int> Dataset::calcProfile(char axis, int layerIndex, QPoint pixel_init
                     if(profilevals.contains(pix.x()))
                         profilevals[pix.x()] += currentLayer[j];
                     else profilevals[pix.x()] = currentLayer[j];
-
                 }
             }
-        if(axis == 'y')
+        if(axis == "Y")
             for( int j =0; j < getPixelsPerLayer(); j++) {
                 QPoint pix = jtoXY(j);
 
@@ -334,46 +332,72 @@ QMap<int, int> Dataset::calcProfile(char axis, int layerIndex, QPoint pixel_init
                     if(profilevals.contains(pix.y()))
                         profilevals[pix.y()] += currentLayer[j];
                     else profilevals[pix.y()] = currentLayer[j];
-
                 }
             }
 
         return profilevals;
     //}
 }
-//Calculate the Contrast to Noise Ratio of a region.
+//Calculate the Contrast to Noise Ratio of a regionprofile.
 QString Dataset::calcCNR(QMap<int, int> Axismap){
-    QString data;
+    QString data = "";
     double mean;
     double stdev;
 
-    if(Profilepoints.empty()){
+    if(Profilepoints.empty() || Profilepoints.size() < 3){
         mean = calcRegionMean(Axismap.begin().key(), Axismap.end().key(), Axismap);
         stdev = calcRegionStdev(Axismap.begin().key(), Axismap.end().key(), Axismap, mean);
-        data = QString("Please choose four points for the calculation of the CNR.\nMean: %1 \nStdev: %2").arg(mean).arg(stdev);
+        data = QString("Please choose at least three points for the calculation of the CNR.\nMean: %1 \nStdev: %2").arg(mean).arg(stdev);
     }
 
-    else{
+    else {
+        qSort(Profilepoints);
+
         QVector<double> mean_v;
         QVector<double> stdev_v;
+        double cnr;
 
         for(int i=0; i<Profilepoints.length()-1; i++){
             //double mean = calcRegionMean(Profilepoints[i], Profilepoints[i+1], Axismap);
             //double stdev = calcRegionStdev(Profilepoints[i], Profilepoints[i+1], Axismap, mean);
             mean_v.push_back(calcRegionMean(Profilepoints[i], Profilepoints[i+1], Axismap));
             stdev_v.push_back(calcRegionStdev(Profilepoints[i], Profilepoints[i+1], Axismap, mean_v[i]));
-
         }
-        data += "\tRegion 1\tRegion2\tRegion3\n" ;
-        data += QString("Mean:\t%1\t%2\t%3\n").arg(mean_v[0]).arg(mean_v[1]).arg(mean_v[2]);
-        data += QString("Stdev:\t%1\t%2\t%3\n").arg(stdev_v[0]).arg(stdev_v[1]).arg(stdev_v[2]);
 
-        double cnr = mean_v[1] - 0.5*(mean_v[0] + mean_v[2]);
-        cnr /= 0.5*(stdev_v[0] + stdev_v[2]);
-        cnr *= sqrt((Profilepoints[2] - Profilepoints[1])); //Number of pixelcolumns that the signal (region 2) spans.
+
+
+        //Assuming the signal is larger than the background...
+        if(Profilepoints.size() == 4){
+            cnr = mean_v[1] - 0.5*(mean_v[0] + mean_v[2]);
+            cnr /= 0.5*(stdev_v[0] + stdev_v[2]);
+            cnr *= sqrt((Profilepoints[2] - Profilepoints[1])); //Number of pixelcolumns that the signal (region 2) spans.
+
+            data += "\tRegion 1\tRegion2\tRegion3\n" ;
+            data += QString("Mean:\t%1\t%2\t%3\n").arg(mean_v[0]).arg(mean_v[1]).arg(mean_v[2]);
+            data += QString("Stdev:\t%1\t%2\t%3\n").arg(stdev_v[0]).arg(stdev_v[1]).arg(stdev_v[2]);
+        }
+
+        //If only 2 regions are indicated:
+        if(Profilepoints.size() == 3){
+            if(mean_v[0] > mean_v[1]){ //region 1 is the signal
+                cnr = mean_v[0] - (mean_v[1]);
+                cnr /= stdev_v[1];
+                cnr *= sqrt((Profilepoints[1] - Profilepoints[0])); //Number of pixelcolumns that the signal spans.
+            }
+            if(mean_v[0] < mean_v[1]){//region 2 is the signal
+                cnr = mean_v[1] - (mean_v[0]);
+                cnr /= stdev_v[0];
+                cnr *= sqrt((Profilepoints[2] - Profilepoints[1])); //Number of pixelcolumns that the signal spans.
+            }
+
+            data += "\tRegion 1\tRegion2\n" ;
+            data += QString("Mean:\t%1\t%2\n").arg(mean_v[0]).arg(mean_v[1]);
+            data += QString("Stdev:\t%1\t%2\n").arg(stdev_v[0]).arg(stdev_v[1]);
+        }
 
         data += QString("\nCNR:\t%1").arg(cnr);
     }
+
 
     return data;
 }

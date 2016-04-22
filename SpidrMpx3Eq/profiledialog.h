@@ -22,8 +22,8 @@ public:
     void setAxisMap(QMap<int,int> Axismap){_Axismap = Axismap;}
     void changeTitle(QString axis);
     void changeText(QString text);
-    void plotProfileX();
-    void plotProfileY();
+    void plotProfile(QString axis);
+
 
 private:
     Ui::ProfileDialog *ui;
@@ -43,7 +43,7 @@ private slots:
 
     void on_lineEdit_editingFinished();
 
-    void on_lineEdit_2_cursorPositionChanged(int arg1, int arg2);
+    void on_lineEdit_2_editingFinished();
 
     void on_lineEdit_3_editingFinished();
 

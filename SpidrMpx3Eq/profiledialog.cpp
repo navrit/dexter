@@ -1,6 +1,7 @@
 #include "profiledialog.h"
 #include "ui_profiledialog.h"
 #include "qcustomplot.h"
+#include "qcstmglvisualization.h"
 
 ProfileDialog::ProfileDialog(QWidget *parent) :
     QDialog(parent),
@@ -18,9 +19,9 @@ void ProfileDialog::SetMpx3GUI(Mpx3GUI * p )
 {
     _mpx3gui = p;
 
-//    connect( this, &StatsDialog::user_accepted_stats,
-//             _mpx3gui->getVisualization(),
-//             &QCstmGLVisualization::on_user_accepted_stats );
+    connect( this, &ProfileDialog::user_accepted_profile,
+             _mpx3gui->getVisualization(),
+             &QCstmGLVisualization::on_user_accepted_profile );
 }
 
 
@@ -40,12 +41,16 @@ void ProfileDialog::changeText(QString text){
     //update();
 }
 
-void ProfileDialog::plotProfileX()
+void ProfileDialog::plotProfile(QString axis)
 {
     ui->profilePlot->clearGraphs();
-    ui->profilePlot->xAxis->setLabel("x-axis");
+    ui->profilePlot->xAxis->setLabel(axis + "-axis");
     ui->profilePlot->yAxis->setLabel("Total pixel count");
-    ui->profilePlot->xAxis->setRange(_begin.x(), _end.x());
+
+    //Use the difference in X or Y between the begin and end point as range for the x-axis of the plot.
+    if(axis == "X") ui->profilePlot->xAxis->setRange(_begin.x(), _end.x());
+    if(axis == "Y") ui->profilePlot->xAxis->setRange(_begin.y(), _end.y());
+
     ui->profilePlot->addGraph();
 
     //Add all the datapoints of the map to the data that is to be plotted.
@@ -55,26 +60,6 @@ void ProfileDialog::plotProfileX()
         i++;
     }
 
-    ui->profilePlot->rescaleAxes();
-    ui->profilePlot->replot( QCustomPlot::rpQueued );
-}
-
-void ProfileDialog::plotProfileY()
-{
-    ui->profilePlot->clearGraphs();
-    ui->profilePlot->xAxis->setLabel("y-axis");
-    ui->profilePlot->yAxis->setLabel("Total pixel count");
-    ui->profilePlot->xAxis->setRange(_begin.y(), _end.y());
-    ui->profilePlot->addGraph();
-
-    //Add all the datapoints of the map to the data that is to be plotted.
-    QMap<int, int>::const_iterator i = _Axismap.constBegin();
-    while( i != _Axismap.constEnd()){
-        ui->profilePlot->graph(0)->addData(double(i.key()), double(i.value()));
-        i++;
-    }
-
-    //ui->profilePlot->yAxis->setNumberFormat("b"); //does nothing?
     ui->profilePlot->rescaleAxes();
     ui->profilePlot->replot( QCustomPlot::rpQueued );
 }
@@ -106,11 +91,22 @@ void ProfileDialog::on_comboBox_currentIndexChanged(int index)
 void ProfileDialog::on_lineEdit_editingFinished()
 {
     _mpx3gui->getDataset()->setProfilepoint(0, ui->lineEdit->text().toInt());
+
+    ui->profilePlot->addGraph(); //Add dot at indicated position
+    ui->profilePlot->graph(1)->setPen(QPen(Qt::red));
+    ui->profilePlot->graph(1)->setLineStyle(QCPGraph::lsNone);
+    ui->profilePlot->graph(1)->setScatterStyle(QCPScatterStyle::ssDisc);
+    int x = ui->lineEdit->text().toInt();
+    ui->profilePlot->graph(1)->addData(x, _Axismap[x]);
+
+    ui->profilePlot->replot();
+    ui->profilePlot->removeGraph(1);
 }
 
-void ProfileDialog::on_lineEdit_2_cursorPositionChanged(int arg1, int arg2)
+void ProfileDialog::on_lineEdit_2_editingFinished()
 {
     _mpx3gui->getDataset()->setProfilepoint(1, ui->lineEdit_2->text().toInt());
+
 }
 
 void ProfileDialog::on_lineEdit_3_editingFinished()

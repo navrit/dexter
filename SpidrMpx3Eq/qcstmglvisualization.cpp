@@ -590,10 +590,11 @@ void QCstmGLVisualization::on_user_accepted_stats()
 
 void QCstmGLVisualization::on_user_accepted_profile()
 {
-    // delete the corresponding window
+    //Celete the corresponding window
     if ( _profiledialog ) {
         delete _profiledialog;
         _profiledialog = nullptr;
+        _mpx3gui->getDataset()->clearProfilepoints(); //Clear the Profilepoints list for new CNR calculation in new dialog
     }
 
 }
@@ -797,10 +798,6 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _mpx3gui->getDataset()->calcBasicStats(pixel_begin, pixel_end);
 
         // Now display it
-        //        if ( _statsdialog ) {
-        //            delete _statsdialog;
-        //            _statsdialog = nullptr;
-        //        }
 
         _statsdialog = new StatsDialog(this);
         _statsdialog->SetMpx3GUI(_mpx3gui);
@@ -809,48 +806,25 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
     }
 
-    if(selectedItem == &calcProX){
+    else if(selectedItem != nullptr) {
 
-        //We want multiple windows open at once.
-        //        if ( _profiledialog ) {
-        //            delete _profiledialog;
-        //            _profiledialog = nullptr;
-        //        }
+        QString axis;
+        if(selectedItem == &calcProX) axis = "X";
+        if(selectedItem == &calcProY) axis = "Y";
 
-        //Display
+            //Display
         _profiledialog = new ProfileDialog(this);
         _profiledialog->SetMpx3GUI(_mpx3gui);
         _profiledialog->setPixels(pixel_begin, pixel_end);
-        _profiledialog->changeTitle("X");
+        _profiledialog->changeTitle(axis);
 
         //Calculate the profile of the selected region of the selected layer
         int layerIndex = getActiveThreshold();
-        _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile('x', layerIndex, pixel_begin, pixel_end));
-
-        _profiledialog->plotProfileX();
+        _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, layerIndex, pixel_begin, pixel_end));
+        _profiledialog->plotProfile(axis);
         _profiledialog->show();
+
     }
-    if(selectedItem == &calcProY){
-
-
-        //Display
-        //        if ( _profiledialog ) {
-        //            delete _profiledialog;
-        //            _profiledialog = nullptr;
-        //        }
-        _profiledialog = new ProfileDialog(this);
-        _profiledialog->SetMpx3GUI(_mpx3gui);
-        _profiledialog->setPixels(pixel_begin, pixel_end);
-        _profiledialog->changeTitle("Y");
-
-        //Calculate the profile of the selected region of the selected layer
-        int layerIndex = getActiveThreshold();
-        _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile('y',layerIndex, pixel_begin, pixel_end));
-
-        _profiledialog->plotProfileY();
-        _profiledialog->show();
-    }
-
 }
 
 void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){

@@ -93,7 +93,7 @@ class Dataset//TODO: specify starting corner?
   int newLayer(int layer);//!<Adds a new layer at the specified threshold.
   void rewindScores();
 
-  QVector<int> Profilepoints; //!The points on a profile that are used to calculate the CNR.
+  QList<int> Profilepoints; //!The points on a profile that are used to calculate the CNR.
 
 public:
   Dataset(int x, int y, int framesPerLayer = 1, int pixelDepthBits = 12);
@@ -123,7 +123,7 @@ public:
   void applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
   int applyColor2DRecoGuided(Color2DRecoGuided * );
   void calcBasicStats(QPoint pixel_init, QPoint pixel_end);
-  QMap<int, int> calcProfile(char axis, int layerIndex, QPoint pixel_init, QPoint pixel_end);
+  QMap<int, int> calcProfile(QString axis, int layerIndex, QPoint pixel_init, QPoint pixel_end);
   QString calcCNR(QMap<int,int> Axismap);
   double calcRegionMean(int begin, int end, QMap<int, int> Axismap);
   double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);
@@ -145,11 +145,12 @@ public:
   unsigned int sumFrame(int *frame, int index, int threshold);//!< Adds the data pointed to by frame to the data of chip index at the specified threshold.
   void toJson(); //!<return JSON object to save.
   void setProfilepoint(int index, int pos);
+  void clearProfilepoints(){Profilepoints.clear();}
 
   QVector<QPoint> getLayoutVector(){return m_frameLayouts;}
   QList<int> getThresholds(){return m_thresholdsToIndices.keys();}
   QVector<int> getOrientationVector(){return m_frameOrientation;}
-  QVector<int> getProfileVector(){return Profilepoints;}
+  QList<int> getProfileVector(){return Profilepoints;}
   int getFrameCount() const{return m_nFrames;}
   int getLayerCount() const{return m_layers.count();}
   int getLayerSize() const{return m_nFrames*m_nx*m_ny;}
