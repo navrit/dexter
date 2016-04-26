@@ -93,7 +93,7 @@ class Dataset//TODO: specify starting corner?
   int newLayer(int layer);//!<Adds a new layer at the specified threshold.
   void rewindScores();
 
-  QList<int> Profilepoints; //!The points on a profile that are used to calculate the CNR.
+  QList<int> Profilepoints = QList<int>() << -1 << -1 << -1 << -1; //!The points on a profile that are used to calculate the CNR. Initialized to -1 to indicate that no value has been specified (yet).
 
 public:
   Dataset(int x, int y, int framesPerLayer = 1, int pixelDepthBits = 12);
@@ -124,13 +124,13 @@ public:
   int applyColor2DRecoGuided(Color2DRecoGuided * );
   void calcBasicStats(QPoint pixel_init, QPoint pixel_end);
   QMap<int, int> calcProfile(QString axis, int layerIndex, QPoint pixel_init, QPoint pixel_end);
-  QString calcCNR(QMap<int,int> Axismap);
+  QString calcCNR(QMap<int,int> Axismap); //!Calculates the contrast to noise ratio of the region indicated by the Profilepoints.
   double calcRegionMean(int begin, int end, QMap<int, int> Axismap);
   double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);
   QPointF XtoXY(int X, int dimX);
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
   QPoint jtoXY(int X); //!<Converts the j'th element in the data to the right coordinates on the screen. Depends on orientation.
-
+  int countProfilepoints();
 
   void setOrientation(QVector<int> orientations){for(int i = 0; i < orientations.length();i++)setOrientation(i, orientations[i]);}
   void setOrientation(int index, int orientation){m_frameOrientation[index] = orientation;}
@@ -144,7 +144,7 @@ public:
   void setPixel(int x, int y, int threshold, int val);//!< Set a pixel value for a given threshold (x,y) (assembly coordinates !)
   unsigned int sumFrame(int *frame, int index, int threshold);//!< Adds the data pointed to by frame to the data of chip index at the specified threshold.
   void toJson(); //!<return JSON object to save.
-  void setProfilepoint(int index, int pos);
+  void setProfilepoint(int index, QString pos);
   void clearProfilepoints(){Profilepoints.clear();}
 
   QVector<QPoint> getLayoutVector(){return m_frameLayouts;}
