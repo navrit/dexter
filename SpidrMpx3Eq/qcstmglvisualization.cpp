@@ -48,6 +48,9 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     // Log Scale for histogram
     connect(ui->logCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_logscale(bool)));
 
+    _extraWidgets.devicesNamesLabel = nullptr;
+    _extraWidgets.correctionsDialogueButton = nullptr;
+
     // Stats string
     clearStatsString();
 
