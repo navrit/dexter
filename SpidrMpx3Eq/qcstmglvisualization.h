@@ -104,8 +104,13 @@ private:
         QString devicesIdString;
     } stats_str;
 
+    typedef struct {
+        QLabel * devicesNamesLabel = nullptr;
+        QPushButton * correctionsDialogueButton = nullptr;
+    } extra_widgets;
+
     stats_str _statsString;
-    QLabel * _devicesNamesLabel = nullptr;
+    extra_widgets _extraWidgets;
 
     //!Gets the currently active threshold by looking at the value of the layerselector combobox.
     int getActiveThreshold();
@@ -171,6 +176,7 @@ private slots:
 
     void on_logscale(bool);
 
+    void correctionDialogueButtonClicked();
 
 public slots:
     void StartDataTaking();

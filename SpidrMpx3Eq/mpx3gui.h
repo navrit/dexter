@@ -93,6 +93,7 @@ public:
     void rewindToOriginalDataset();
     void setWindowWidgetsStatus(win_status s = win_status::startup);
 
+
     QCstmEqualization * getEqualization();
     QCstmGLVisualization * getVisualization();
     QCstmDacs * getDACs();

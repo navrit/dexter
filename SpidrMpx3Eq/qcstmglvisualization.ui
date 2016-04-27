@@ -115,9 +115,9 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout">
             <item>
-             <widget class="QCheckBox" name="checkBox_2">
+             <widget class="QCheckBox" name="saveDataContinuousCheckBox">
               <property name="toolTip">
-               <string>save data</string>
+               <string>keep saving data continuously</string>
               </property>
               <property name="text">
                <string>save</string>
@@ -125,10 +125,17 @@
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit"/>
+             <widget class="QLineEdit" name="lineEdit">
+              <property name="toolTip">
+               <string>path</string>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="pushButton_2">
+              <property name="toolTip">
+               <string>select path dialogue</string>
+              </property>
               <property name="text">
                <string>...</string>
               </property>
@@ -137,9 +144,15 @@
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <layout class="QHBoxLayout" name="dataTakingOptionsLayout">
             <item>
              <widget class="QCheckBox" name="summingCheckbox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="toolTip">
                <string>integrate data</string>
               </property>
@@ -150,6 +163,12 @@
             </item>
             <item>
              <widget class="QCheckBox" name="dropFramesCheckBox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="toolTip">
                <string>drop a frame if there are lost packets</string>
               </property>
@@ -160,8 +179,14 @@
             </item>
             <item>
              <widget class="QCheckBox" name="completeFramesCheckBox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="toolTip">
-               <string>if information is lost the system keeps dataking data until the goal is reached</string>
+               <string>if information is lost the system keeps taking data until the goal is reached</string>
               </property>
               <property name="text">
                <string>complete</string>
@@ -170,6 +195,12 @@
             </item>
             <item>
              <widget class="QCheckBox" name="correctionsDialogCheckBox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="toolTip">
                <string>apply selected corrections</string>
               </property>
@@ -331,7 +362,7 @@
                </sizepolicy>
               </property>
               <property name="toolTip">
-               <string>Operation mode</string>
+               <string>operation mode</string>
               </property>
              </widget>
             </item>
@@ -466,6 +497,9 @@
             </item>
             <item row="2" column="0" colspan="2">
              <widget class="QPushButton" name="generateDataButton">
+              <property name="toolTip">
+               <string>generates test data (offline)</string>
+              </property>
               <property name="text">
                <string>Test data</string>
               </property>
@@ -543,7 +577,11 @@
              </widget>
             </item>
             <item row="0" column="0" colspan="7">
-             <widget class="QCstmPlotHistogram" name="histPlot" native="true"/>
+             <widget class="QCstmPlotHistogram" name="histPlot" native="true">
+              <property name="toolTip">
+               <string>histogram</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>

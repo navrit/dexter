@@ -255,16 +255,45 @@ SpidrController * Mpx3Config::establishConnection(){
         QDebug dbg(QtInfoMsg);
         dbg << "--- Device [" << i << "] ---";
 
+        // This is how it goes (page 57 Medipix3RS manual v1.4)
+        // Efuse [0:31]
+        // NU     : not used
+        // X[0:3] : Alphabet letter from A to M
+        // Y[0:3] : Number from 1 to 11
+        //
+        // NU[0:1]  MOD_VAL[0:7] MOD[0:1]     WAFER#[0:11]    X[0:3]  Y[0:3]
+        //   00       00000000      00       0000 0000 0000    0000    0000
+        // It comes in a 32 bits word
+        // A minimum of 5 nibbles is necessary
+        // The last three bring the correction and the not used part
+
         if ( id != 0 ) {
 
             QString idStr = QString::number( id, 16 ).toUpper();
+
+            // I need 8 nibbles in the idStr (hex number).
+            // If it's all zeroes they may not come in the string.
+            // Fill with zeroes the most significant bits if needed.
+            while ( idStr.size() < __efuse_Nnibbles ) {
+                idStr.prepend( '0' );
+            }
+
             QString idStrCpy(idStr); idStrCpy.prepend("0x");
-            //idStr.prepend("0");
+
             ///////////////////////////////////////////////
-            // Wafer number first three nibbles
+            // Correction first three nibbles
+            // NU[0:1] + MOD_VAL[0:7] + MOD[0:1]
+            //
+            for ( int i = 3 ; i > 0 ; i-- ) {
+                // TODO ! work out the correction here, see manual !
+                idStr = idStr.remove(0, 1);
+            }
+
+            ///////////////////////////////////////////////
+            // Wafer number next three nibbles
             int waferId = 0;
             for ( int i = 3 ; i > 0 ; i-- ) {
-                waferId += (idStr.left(1).toInt(false, 16)) * pow(16, i-1);
+                waferId += ( idStr.left(1).toInt(false, 16) ) * pow(16, i-1);
                 idStr = idStr.remove(0, 1);
             }
 

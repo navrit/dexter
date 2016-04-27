@@ -20,6 +20,9 @@ class Mpx3GUI;
 #define __default_matrixSizePerChip_X 	256
 #define __default_matrixSizePerChip_Y 	256
 
+#define __efuse_Nnibbles 8
+//#define
+
 //#define __operationMode_SequentialRW  0
 //#define __operationMode_ContinuousRW  1
 
@@ -81,7 +84,7 @@ public:
 	int getNActiveDevices(){return _activeChips.size();}
 	QVector<int>  getActiveDevices(){return _activeChips;}
     QString getDeviceWaferId(int id){return _deviceWaferIdMap.at(id); }
-	int getIDIndex(int id){return _activeChips.indexOf(id);}
+    int getIndexFromID(int id){return _activeChips.indexOf(id);}
 	int getTriggerPeriodMS(){return _trigPeriod_ms;}
     unsigned int getPixelDepthFromIndex(int indx);
     unsigned int getPixelDepth12BitsIndex() { return __pixelDepth12BitsIndex; }

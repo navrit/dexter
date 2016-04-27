@@ -271,6 +271,10 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
         emit sig_statusBarAppend("done","blue");
 
+        /////////////////////////////
+        // TEST
+        _mpx3gui->getDataset()->dumpAllActivePixels();
+
     }
 
     // Also we will inform the visualization to go straight to the very last frame to be drawn
@@ -375,16 +379,17 @@ void QCstmGLVisualization::ConnectionStatusChanged() {
     QVector<int>::const_iterator iE = devs.end();
     _statsString.devicesIdString.clear();
     for ( ; i != iE ; i++ ) {
-        _statsString.devicesIdString.append( _mpx3gui->getConfig()->getDeviceWaferId( *i ) );
+        int indx = _mpx3gui->getConfig()->getIndexFromID( *i );
+        _statsString.devicesIdString.append( _mpx3gui->getConfig()->getDeviceWaferId( indx ) );
         if ( (i+1) != iE ) _statsString.devicesIdString.append( " | " );
     }
-    if ( _devicesNamesLabel == nullptr ) {
-        _devicesNamesLabel = new QLabel(this);
-        _devicesNamesLabel->setAlignment( Qt::AlignRight );
+    if ( _extraWidgets.devicesNamesLabel == nullptr ) {
+        _extraWidgets.devicesNamesLabel = new QLabel(this);
+        _extraWidgets.devicesNamesLabel->setAlignment( Qt::AlignRight );
     }
-    _devicesNamesLabel->setText( _statsString.devicesIdString );
+    _extraWidgets.devicesNamesLabel->setText( _statsString.devicesIdString );
     int colCount = ui->dataTakingGridLayout->columnCount();
-    ui->dataTakingGridLayout->addWidget( _devicesNamesLabel, 1, 0, 1, colCount );
+    ui->dataTakingGridLayout->addWidget( _extraWidgets.devicesNamesLabel, 1, 0, 1, colCount );
 
     // TODO
     // Configure the chip, provided that the Adj mask is loaded
@@ -1083,10 +1088,55 @@ void QCstmGLVisualization::on_correctionsDialogCheckBox_toggled(bool checked)
 
     }
 
+    // Create the button to change corrections settings
+    //  in case the corrections are selected but the dialogue
+    //  has been closed by the user
+    if ( checked && ! _extraWidgets.correctionsDialogueButton ) {
+        _extraWidgets.correctionsDialogueButton = new QPushButton( "...", this );
+        _extraWidgets.correctionsDialogueButton->setToolTip("change corrections settings");
+        ui->dataTakingOptionsLayout->addWidget(
+                    _extraWidgets.correctionsDialogueButton
+                    );
+        _extraWidgets.correctionsDialogueButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        // make a connection to functionality
+        connect( _extraWidgets.correctionsDialogueButton , &QPushButton::clicked,
+                 this, &QCstmGLVisualization::correctionDialogueButtonClicked);
+
+    }
+    // Get rid of the button if not checked
+    if ( ! checked ) {
+        int col_count = ui->dataTakingOptionsLayout->count();
+        // we are trying to remove the very last item
+        QLayoutItem * it = ui->dataTakingOptionsLayout->itemAt( col_count - 1 );
+        ui->dataTakingOptionsLayout->removeItem( it );
+        // disconnect and delete the widget
+        disconnect( _extraWidgets.correctionsDialogueButton , &QPushButton::clicked,
+                    this, &QCstmGLVisualization::correctionDialogueButtonClicked);
+
+        delete _extraWidgets.correctionsDialogueButton;
+        _extraWidgets.correctionsDialogueButton = nullptr;
+    }
+
     //  Activate or deactivate the corrections
     _corrdialog->setCorrectionsActive( checked );
 
 }
+
+void QCstmGLVisualization::correctionDialogueButtonClicked()
+{
+
+    // Simply show the dialogue
+    if ( _corrdialog ) {
+
+        // If already created
+        _corrdialog->show();
+        _corrdialog->raise();
+        _corrdialog->activateWindow();
+
+    }
+
+}
+
 
 void QCstmGLVisualization::on_recoPushButton_clicked()
 {
@@ -1208,3 +1258,4 @@ void QCstmGLVisualization::on_logscale(bool checked)
     ui->histPlot->replot(QCustomPlot::rpQueued);
 
 }
+

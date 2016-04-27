@@ -1119,6 +1119,28 @@ void Dataset::applyOBCorrection() {
 
 }
 
+#include <fstream>      // std::ofstream
+
+void Dataset::dumpAllActivePixels() {
+
+
+    QList<int> keys = m_thresholdsToIndices.keys();
+    std::ofstream ofs ("test.txt", std::ofstream::out);
+
+    for (int i = 0; i < keys.length(); i++) {
+
+        int * currentLayer = getLayer(keys[i]);
+
+        for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
+
+                if ( currentLayer[j] > 0 ) ofs << j << " ";
+
+        }
+
+    }
+
+}
+
 /*
 void Dataset::applyBHCorrection(QVector<double> thickness, Dataset* originalSet, QMap<double, Dataset> map)
 //Makes signal to thickness conversion
@@ -1428,7 +1450,7 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui) {
 
         // - Get the layer
         // The data comes organized per chip.
-        dataIndx = mpx3gui->getConfig()->getIDIndex(i);
+        dataIndx = mpx3gui->getConfig()->getIndexFromID(i);
         if ( dataIndx >= 0 ) chipdata = getFrame( dataIndx , threshold);
         else chipdata = nullptr;
 

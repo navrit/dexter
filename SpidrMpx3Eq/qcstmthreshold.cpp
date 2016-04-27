@@ -509,7 +509,7 @@ void CustomScanThread::run() {
 
                 // On a single chip scan
                 int chipScanId = _cstmThreshold->GetUI()->devIdSpinBox->value();
-                int dataIdForChip = _mpx3gui->getConfig()->getIDIndex( chipScanId );
+                int dataIdForChip = _mpx3gui->getConfig()->getIndexFromID( chipScanId );
                 _data = spidrdaq->frameData(dataIdForChip, &size_in_bytes);
                 pixelsReactive += PixelsReactive( _data, size_in_bytes, dacItr );
 
