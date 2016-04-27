@@ -89,9 +89,9 @@ void SpidrMon::connectOrDisconnect()
       _lineEditAvddMvolt->setEnabled( false );
       _lineEditAvddMamp->setEnabled( false );
       _lineEditAvddMwatt->setEnabled( false );
-      _lineEditDvddMvolt->setEnabled( false );
-      _lineEditDvddMamp->setEnabled( false );
-      _lineEditDvddMwatt->setEnabled( false );
+      _lineEditVddMvolt->setEnabled( false );
+      _lineEditVddMamp->setEnabled( false );
+      _lineEditVddMwatt->setEnabled( false );
       _lineEditVdda->setEnabled( false );
       _lineEditBias->setEnabled( false );
       _lineEditFanSpidr->setEnabled( false );
@@ -106,9 +106,9 @@ void SpidrMon::connectOrDisconnect()
       _lineEditAvddMvolt_2->setEnabled( false );
       _lineEditAvddMamp_2->setEnabled( false );
       _lineEditAvddMwatt_2->setEnabled( false );
-      _lineEditDvddMvolt_2->setEnabled( false );
-      _lineEditDvddMamp_2->setEnabled( false );
-      _lineEditDvddMwatt_2->setEnabled( false );
+      _lineEditVddMvolt_2->setEnabled( false );
+      _lineEditVddMamp_2->setEnabled( false );
+      _lineEditVddMwatt_2->setEnabled( false );
       _lineEditVdda_2->setEnabled( false );
       _lineEditBias_2->setEnabled( false );
       _lineEditDac1_2->setEnabled( false );
@@ -158,9 +158,9 @@ void SpidrMon::connectOrDisconnect()
 	  _lineEditAvddMvolt->setEnabled( true );
 	  _lineEditAvddMamp->setEnabled( true );
 	  _lineEditAvddMwatt->setEnabled( true );
-	  _lineEditDvddMvolt->setEnabled( true );
-	  _lineEditDvddMamp->setEnabled( true );
-	  _lineEditDvddMwatt->setEnabled( true );
+	  _lineEditVddMvolt->setEnabled( true );
+	  _lineEditVddMamp->setEnabled( true );
+	  _lineEditVddMwatt->setEnabled( true );
 	  _lineEditVdda->setEnabled( true );
 	  _lineEditBias->setEnabled( true );
 	  _lineEditFanSpidr->setEnabled( true );
@@ -175,9 +175,9 @@ void SpidrMon::connectOrDisconnect()
 	  _lineEditAvddMvolt_2->setEnabled( true );
 	  _lineEditAvddMamp_2->setEnabled( true );
 	  _lineEditAvddMwatt_2->setEnabled( true );
-	  _lineEditDvddMvolt_2->setEnabled( true );
-	  _lineEditDvddMamp_2->setEnabled( true );
-	  _lineEditDvddMwatt_2->setEnabled( true );
+	  _lineEditVddMvolt_2->setEnabled( true );
+	  _lineEditVddMamp_2->setEnabled( true );
+	  _lineEditVddMwatt_2->setEnabled( true );
 	  _lineEditVdda_2->setEnabled( true );
 	  _lineEditBias_2->setEnabled( true );
 
@@ -298,18 +298,18 @@ void SpidrMon::timerEvent(QTimerEvent *)
       _lineEditAvddMamp->setText( "----" );
       _lineEditAvddMwatt->setText( "----" );
     }
-  if( _spidrController->getDvddNow( &mvolt, &mamp, &mwatt ) )
+  if( _spidrController->getVddNow( &mvolt, &mamp, &mwatt ) )
     {
-      _lineEditDvddMvolt->setText( QString::number( mvolt ) );
-      _lineEditDvddMwatt->setText( QString::number( mwatt ) );
+      _lineEditVddMvolt->setText( QString::number( mvolt ) );
+      _lineEditVddMwatt->setText( QString::number( mwatt ) );
       QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
-      _lineEditDvddMamp->setText( qs );
+      _lineEditVddMamp->setText( qs );
     }
   else
     {
-      _lineEditDvddMvolt->setText( "----" );
-      _lineEditDvddMamp->setText( "----" );
-      _lineEditDvddMwatt->setText( "----" );
+      _lineEditVddMvolt->setText( "----" );
+      _lineEditVddMamp->setText( "----" );
+      _lineEditVddMwatt->setText( "----" );
     }
 
   if( _spidrController->getBiasVoltage( &mvolt ) )
@@ -471,18 +471,18 @@ void SpidrMon::timerEvent(QTimerEvent *)
       _lineEditAvddMamp_2->setText( "----" );
       _lineEditAvddMwatt_2->setText( "----" );
     }
-  if( _spidrController->getDvddNow( &mvolt, &mamp, &mwatt ) )
+  if( _spidrController->getVddNow( &mvolt, &mamp, &mwatt ) )
     {
-      _lineEditDvddMvolt_2->setText( QString::number( mvolt ) );
-      _lineEditDvddMwatt_2->setText( QString::number( mwatt ) );
+      _lineEditVddMvolt_2->setText( QString::number( mvolt ) );
+      _lineEditVddMwatt_2->setText( QString::number( mwatt ) );
       QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
-      _lineEditDvddMamp_2->setText( qs );
+      _lineEditVddMamp_2->setText( qs );
     }
   else
     {
-      _lineEditDvddMvolt_2->setText( "----" );
-      _lineEditDvddMamp_2->setText( "----" );
-      _lineEditDvddMwatt_2->setText( "----" );
+      _lineEditVddMvolt_2->setText( "----" );
+      _lineEditVddMamp_2->setText( "----" );
+      _lineEditVddMwatt_2->setText( "----" );
     }
 
   if( _spidrController->getBiasVoltage( &mvolt ) )
@@ -598,9 +598,9 @@ void SpidrMon::initDataDisplay()
   _lineEditAvddMvolt->setText( "----" );
   _lineEditAvddMamp->setText( "----" );
   _lineEditAvddMwatt->setText( "----" );
-  _lineEditDvddMvolt->setText( "----" );
-  _lineEditDvddMamp->setText( "----" );
-  _lineEditDvddMwatt->setText( "----" );
+  _lineEditVddMvolt->setText( "----" );
+  _lineEditVddMamp->setText( "----" );
+  _lineEditVddMwatt->setText( "----" );
   _lineEditVdda->setText( "----" );
   _lineEditBias->setText( "----" );
   _lineEditFanSpidr->setText( "----" );

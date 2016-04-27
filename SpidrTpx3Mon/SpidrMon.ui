@@ -621,7 +621,7 @@
            <set>Qt::AlignCenter</set>
           </property>
          </widget>
-         <widget class="QLineEdit" name="_lineEditDvddMwatt">
+         <widget class="QLineEdit" name="_lineEditVddMwatt">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -640,7 +640,7 @@
            <bool>true</bool>
           </property>
          </widget>
-         <widget class="QLineEdit" name="_lineEditDvddMvolt">
+         <widget class="QLineEdit" name="_lineEditVddMvolt">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -659,7 +659,7 @@
            <bool>true</bool>
           </property>
          </widget>
-         <widget class="QLineEdit" name="_lineEditDvddMamp">
+         <widget class="QLineEdit" name="_lineEditVddMamp">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -726,7 +726,7 @@
            <set>Qt::AlignCenter</set>
           </property>
          </widget>
-         <widget class="QLabel" name="labelDvdd">
+         <widget class="QLabel" name="labelVdd">
           <property name="geometry">
            <rect>
             <x>5</x>
@@ -736,7 +736,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>DVDD</string>
+           <string>VDD</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1069,7 +1069,7 @@
            <set>Qt::AlignCenter</set>
           </property>
          </widget>
-         <widget class="QLineEdit" name="_lineEditDvddMwatt_2">
+         <widget class="QLineEdit" name="_lineEditVddMwatt_2">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -1088,7 +1088,7 @@
            <bool>true</bool>
           </property>
          </widget>
-         <widget class="QLineEdit" name="_lineEditDvddMvolt_2">
+         <widget class="QLineEdit" name="_lineEditVddMvolt_2">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -1107,7 +1107,7 @@
            <bool>true</bool>
           </property>
          </widget>
-         <widget class="QLineEdit" name="_lineEditDvddMamp_2">
+         <widget class="QLineEdit" name="_lineEditVddMamp_2">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -1174,7 +1174,7 @@
            <set>Qt::AlignCenter</set>
           </property>
          </widget>
-         <widget class="QLabel" name="labelDvdd_2">
+         <widget class="QLabel" name="labelVdd_2">
           <property name="geometry">
            <rect>
             <x>5</x>
@@ -1184,7 +1184,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>DVDD</string>
+           <string>VDD</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
