@@ -416,7 +416,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Remote</string>
+     <string>Device</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -432,7 +432,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Local</string>
+     <string>Board</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -461,7 +461,7 @@
     <property name="geometry">
      <rect>
       <x>144</x>
-      <y>122</y>
+      <y>144</y>
       <width>55</width>
       <height>20</height>
      </rect>
@@ -480,7 +480,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>122</y>
+      <y>144</y>
       <width>55</width>
       <height>20</height>
      </rect>
@@ -499,7 +499,7 @@
     <property name="geometry">
      <rect>
       <x>82</x>
-      <y>122</y>
+      <y>144</y>
       <width>55</width>
       <height>20</height>
      </rect>
@@ -518,7 +518,7 @@
     <property name="geometry">
      <rect>
       <x>144</x>
-      <y>146</y>
+      <y>121</y>
       <width>55</width>
       <height>20</height>
      </rect>
@@ -537,7 +537,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>146</y>
+      <y>121</y>
       <width>55</width>
       <height>20</height>
      </rect>
@@ -556,7 +556,7 @@
     <property name="geometry">
      <rect>
       <x>82</x>
-      <y>146</y>
+      <y>121</y>
       <width>55</width>
       <height>20</height>
      </rect>
@@ -620,7 +620,7 @@
     <property name="geometry">
      <rect>
       <x>206</x>
-      <y>124</y>
+      <y>146</y>
       <width>43</width>
       <height>16</height>
      </rect>
@@ -636,7 +636,7 @@
     <property name="geometry">
      <rect>
       <x>206</x>
-      <y>148</y>
+      <y>123</y>
       <width>43</width>
       <height>16</height>
      </rect>
