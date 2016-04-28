@@ -15,7 +15,8 @@ using namespace std;
 #include "tpx3dacsdescr.h" // Depends on tpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x15051100;
+const int   VERSION_ID = 0x16042700;
+//const int VERSION_ID = 0x15051100;
 //const int VERSION_ID = 0x15040600;
 //const int VERSION_ID = 0x15031300;
 //const int VERSION_ID = 0x15012200;
@@ -1315,11 +1316,12 @@ bool SpidrController::getShutterTriggerConfig( int *trigger_mode,
 bool SpidrController::setShutterTriggerCfg( int trigger_mode,
 					    int trigger_delay_ns,
 					    int trigger_length_ns,
-					    int trigger_freq_hz,
+					    int trigger_freq_mhz,
 					    int trigger_count )
 {
   // New version of setShutterTriggerConfig() with all times in nanoseconds
-  // instead of microseconds, and all but parameter 'trigger_mode' optional
+  // instead of microseconds, frequency in milliHertz instead of Hertz
+  // and all but parameter 'trigger_mode' optional
   // (uses individual register write operations)
   // NB: maximum resolution is only 25ns (at 40MHz)
   // NB: parameter order changed with respect to setShutterTriggerConfig()
@@ -1339,9 +1341,11 @@ bool SpidrController::setShutterTriggerCfg( int trigger_mode,
     {
       // Frequency and count
       if( !this->setSpidrReg( SPIDR_SHUTTERTRIG_FREQ_I,
-			      40000000/trigger_freq_hz ) ) return false;
-      if( !this->setSpidrReg( SPIDR_SHUTTERTRIG_CNT_I,
-			      trigger_count ) ) return false;
+			      (int) (((double)40000000.0/
+				      (double)trigger_freq_mhz)*1000.0) ) )
+	return false;
+      if( !this->setSpidrReg( SPIDR_SHUTTERTRIG_CNT_I, trigger_count ) )
+	return false;
     }
   else
     {
@@ -1355,7 +1359,7 @@ bool SpidrController::setShutterTriggerCfg( int trigger_mode,
     {
       // Duration (length)
       if( !this->setSpidrReg( SPIDR_SHUTTERTRIG_LENGTH_I,
-			      trigger_length_ns/25 ) ) return false;
+			      (trigger_length_ns+24)/25 ) ) return false;
     }
   return true;
 }
@@ -1365,11 +1369,12 @@ bool SpidrController::setShutterTriggerCfg( int trigger_mode,
 bool SpidrController::getShutterTriggerCfg( int *trigger_mode,
 					    int *trigger_delay_ns,
 					    int *trigger_length_ns,
-					    int *trigger_freq_hz,
+					    int *trigger_freq_mhz,
 					    int *trigger_count )
 {
   // New version of getShutterTriggerConfig() with all times in nanoseconds
   // instead of microseconds, including new parameter 'trigger_delay_ns'
+  // and frequency in milliHertz instead of Hertz
   // NB: maximum resolution is only 25ns (at 40MHz)
   // NB: parameter order changed with respect to getShutterTriggerConfig()
   int reg;
@@ -1392,10 +1397,10 @@ bool SpidrController::getShutterTriggerCfg( int *trigger_mode,
       *trigger_length_ns = reg * 25;
     }
   // Frequency
-  if( trigger_freq_hz )
+  if( trigger_freq_mhz )
     {
       if( !this->getSpidrReg( SPIDR_SHUTTERTRIG_FREQ_I, &reg ) ) return false;
-      *trigger_freq_hz = 40000000 / reg;
+      *trigger_freq_mhz = (int) (((double)40000000.0 / (double)reg) * 1000.0);
     }
   // Count
   if( trigger_count )
@@ -1647,6 +1652,13 @@ bool SpidrController::getAvdd( int *mvolts, int *mamps, int *mwatts )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::getVdd( int *mvolts, int *mamps, int *mwatts )
+{
+  return this->get3Ints( CMD_GET_VDD, mvolts, mamps, mwatts );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::getDvdd( int *mvolts, int *mamps, int *mwatts )
 {
   return this->get3Ints( CMD_GET_DVDD, mvolts, mamps, mwatts );
@@ -1657,6 +1669,13 @@ bool SpidrController::getDvdd( int *mvolts, int *mamps, int *mwatts )
 bool SpidrController::getAvddNow( int *mvolts, int *mamps, int *mwatts )
 {
   return this->get3Ints( CMD_GET_AVDD_NOW, mvolts, mamps, mwatts );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getVddNow( int *mvolts, int *mamps, int *mwatts )
+{
+  return this->get3Ints( CMD_GET_VDD_NOW, mvolts, mamps, mwatts );
 }
 
 // ----------------------------------------------------------------------------
@@ -1893,7 +1912,7 @@ void SpidrController::setBitsBigEndianReversed( unsigned char *buffer,
 {
   // Store bits 'big-endian': highest position first
   // but reversed within the bytes, i.e. the most-significant bit
-  // is stored in bit position 0 of byte 0 (for SPIDR-TPX3).
+  // is stored in bit position 7 of byte 0 (for SPIDR-TPX3).
   // This function stores up to 32 bits from 'value'.
   int bytpos, bitmask;
   unsigned char *byt;
@@ -2136,7 +2155,7 @@ bool SpidrController::request( int cmd,     int dev_nr,
   // Reply expected ?
   if( cmd & CMD_NOREPLY ) return true;
 
-  if( !_sock->waitForReadyRead( 2000 ) )
+  if( !_sock->waitForReadyRead( 8000 ) ) // Increased from 2k to 8k for reset?
     {
       this->clearErrorString();
       _errString << "Time-out receiving reply";

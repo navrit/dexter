@@ -19,7 +19,8 @@
 #define CMD_DISPLAY_INFO       0x90B
 #define CMD_SET_TIMEOFDAY      0x90C
 #define CMD_GET_DEVICECOUNT    0x90D
-#define CMD_GET_PORTCOUNT      0x90E // ### OBSOLETE
+//#define CMD_GET_PORTCOUNT    0x90E // ### OBSOLETE
+#define CMD_GET_BOARDID        0x90E
 #define CMD_GET_CHIPBOARDID    0x90F
 
 // Configuration: devices
@@ -129,8 +130,10 @@
 #define CMD_GET_FANSPEED       0x569
 #define CMD_SET_FANSPEED       0x56A
 #define CMD_SELECT_CHIPBOARD   0x56B
-#define CMD_GET_HUMIDITY       0x56C
-#define CMD_GET_PRESSURE       0x56D
+#define CMD_GET_VDD            0x56C
+#define CMD_GET_VDD_NOW        0x56D
+#define CMD_GET_HUMIDITY       0x56E
+#define CMD_GET_PRESSURE       0x56F
 
 // Configuration: non-volatile onboard storage
 #define CMD_STORE_ADDRPORTS    0x670
@@ -158,6 +161,7 @@
 #define CMD_GET_SPIDRREG       0x783
 #define CMD_SET_SPIDRREG       0x784
 #define CMD_SET_CHIPBOARDID    0x785
+#define CMD_SET_BOARDID        0x786
 
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
@@ -177,7 +181,8 @@ static const char *CMD_STR[] =
     "DISPLAY_INFO     ", // 0x90B
     "SET_TIMEOFDAY    ", // 0x90C
     "GET_DEVICECOUNT  ", // 0x90D
-    "GET_PORTCOUNT    ", // 0x90E
+//  "GET_PORTCOUNT    ", // 0x90E
+    "GET_BOARDID      ", // 0x90E
     "GET_CHIPBOARDID  ", // 0x90F
 
     "GET_DEVICEID     ", // 0x110
@@ -280,10 +285,10 @@ static const char *CMD_STR[] =
     "GET_FANSPEED     ", // 0x569
     "SET_FANSPEED     ", // 0x56A
     "SELECT_CHIPBOARD ", // 0x56B
-    "GET_HUMIDITY     ", // 0x56C
-    "GET_PRESSURE     ", // 0x56D
-    "-----",             // 0x56E
-    "-----",             // 0x56F
+    "GET_VDD          ", // 0x56C
+    "GET_VDD_NOW      ", // 0x56D
+    "GET_HUMIDITY     ", // 0x56E
+    "GET_PRESSURE     ", // 0x56F
 
     "STORE_ADDRPORTS  ", // 0x670
     "STORE_DACS       ", // 0x671
@@ -307,7 +312,8 @@ static const char *CMD_STR[] =
     "SET_GPIO_PIN     ", // 0x782
     "GET_SPIDRREG     ", // 0x783
     "SET_SPIDRREG     ", // 0x784
-    "SET_CHIPBOARDID  "  // 0x785
+    "SET_CHIPBOARDID  ", // 0x785
+    "SET_BOARDID      "  // 0x786
   };
 
 // Reply bit: set in the reply message in the command identifier

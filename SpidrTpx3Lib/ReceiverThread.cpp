@@ -209,7 +209,8 @@ long long ReceiverThread::bytesAvailable()
       else
 	// Give the number of bytes left up to the end of the buffer
 	// (so that the consumer does not have to deal with buffer wrap-around)
-	bytes = _headEnd - _tail;
+	//bytes = _headEnd - _tail;
+	bytes = _headEnd - t;
     }
   return bytes;
 }

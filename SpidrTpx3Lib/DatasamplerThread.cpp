@@ -2,7 +2,7 @@
 #include <QDir>
 
 //#define RETURN_AVAILABLE_SAMPLE // ###THERE'S A PROBLEM WITH THIS...
-#define USE_BIGENDIAN
+#define USE_BIGENDIAN_OPTION
 
 #include "DatasamplerThread.h"
 #include "ReceiverThread.h"
@@ -459,7 +459,7 @@ bool DatasamplerThread::nextPixel( int *x,
   u64 pixdata, header, dcol, spix, pix;
   while( _pixIndex < _sampleIndex )
     {
-#ifdef USE_BIGENDIAN
+#ifdef USE_BIGENDIAN_OPTION
       if( _bigEndian )
 	{
 	  // Reverse the byte order
@@ -513,7 +513,7 @@ u64 DatasamplerThread::nextPixel()
   u64 pixdata, header;
   while( _pixIndex < _sampleIndex )
     {
-#ifdef USE_BIGENDIAN
+#ifdef USE_BIGENDIAN_OPTION
       if( _bigEndian )
 	{
 	  // Reverse the byte order
@@ -554,7 +554,7 @@ u64 DatasamplerThread::nextPacket()
   u64 pixdata=0;
   if( _pixIndex < _sampleIndex )
     {
-#ifdef USE_BIGENDIAN
+#ifdef USE_BIGENDIAN_OPTION
       if( _bigEndian )
         {
           // Reverse the byte order
@@ -626,7 +626,7 @@ int DatasamplerThread::copyFrameToBuffer()
   // Find the first End-of-Readout Timepix3 packet
   while( size < bytes )
     {
-#ifdef USE_BIGENDIAN
+#ifdef USE_BIGENDIAN_OPTION
       if( _bigEndian )
 	{
 	  hdr1 = *data;

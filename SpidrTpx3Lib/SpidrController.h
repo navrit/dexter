@@ -195,12 +195,12 @@ class MY_LIB_API SpidrController
   bool setShutterTriggerCfg    ( int  trigger_mode,
                                  int  trigger_delay_ns = 0,
                                  int  trigger_length_ns = 25,
-                                 int  trigger_freq_hz = 1,
+                                 int  trigger_freq_mhz = 1000,
                                  int  trigger_count = 1 );
   bool getShutterTriggerCfg    ( int *trigger_mode,
                                  int *trigger_delay_ns = 0,
                                  int *trigger_length_ns = 0,
-                                 int *trigger_freq_hz = 0,
+                                 int *trigger_freq_mhz = 0,
                                  int *trigger_count = 0 );
   bool startAutoTrigger        ( );
   bool stopAutoTrigger         ( );
@@ -242,8 +242,10 @@ class MY_LIB_API SpidrController
   bool getLocalTemp            ( int *mdegrees ); // SPIDR board temperature
   bool getFpgaTemp             ( int *mdegrees ); // SPIDR FPGA temperature
   bool getAvdd                 ( int *mvolts, int *mamps, int *mwatts );
+  bool getVdd                  ( int *mvolts, int *mamps, int *mwatts );
   bool getDvdd                 ( int *mvolts, int *mamps, int *mwatts );
   bool getAvddNow              ( int *mvolts, int *mamps, int *mwatts );
+  bool getVddNow               ( int *mvolts, int *mamps, int *mwatts );
   bool getDvddNow              ( int *mvolts, int *mamps, int *mwatts );
   bool getBiasVoltage          ( int *volts );
   bool getVdda                 ( int *mvolts );
