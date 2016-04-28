@@ -151,7 +151,7 @@ public:
   QVector<QPoint> getLayoutVector(){return m_frameLayouts;}
   QList<int> getThresholds(){return m_thresholdsToIndices.keys();}
   QVector<int> getOrientationVector(){return m_frameOrientation;}
-  QList<int> getProfileVector(){return Profilepoints;}
+  QList<int> getProfilepoints(){return Profilepoints;}
   int getFrameCount() const{return m_nFrames;}
   int getLayerCount() const{return m_layers.count();}
   int getLayerSize() const{return m_nFrames*m_nx*m_ny;}

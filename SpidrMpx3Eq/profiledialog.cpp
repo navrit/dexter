@@ -75,8 +75,16 @@ void ProfileDialog::plotProfile(QString axis)
 }
 
 void ProfileDialog::addMeanLines(QString data){
-    //QStringList datalist = data.split("\n");
-    //QStringList meanlist = datalist[2].split("\t");
+    QStringList datalist = data.split("\n");
+    QStringList meanlist = datalist[1].split("\t");
+
+    for(int i = 1; i < meanlist.length(); i++){
+        //Add horizontal lines
+        ui->profilePlot->addGraph();
+        meanlist[i];
+        ui->profilePlot->graph(5)->setPen(QPen(Qt::red));
+        //ui->profilePlot->graph(5)->addData();
+    }
 }
 
 void ProfileDialog::on_checkBox_toggled(bool checked)
