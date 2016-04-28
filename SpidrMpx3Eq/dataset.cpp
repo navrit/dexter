@@ -297,7 +297,7 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
 
 void Dataset::setProfilepoint(int index, QString pos){
     int p;
-    if(pos == "") p = -1;
+    if(pos.isEmpty()) p = -1;
     else p = pos.toInt();
 
     Profilepoints[index] = p;

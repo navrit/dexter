@@ -21,7 +21,6 @@ public:
     void setPixels(QPoint pixel_begin, QPoint pixel_end){_begin = pixel_begin; _end = pixel_end;}
     void setAxisMap(QMap<int,int> Axismap){_Axismap = Axismap;}
     void changeTitle(QString axis);
-    void changeText(QString text);
     void plotProfile(QString axis);
 
 
@@ -31,6 +30,10 @@ private:
     QPoint _begin; //! The coordinates of the pixel where the selected region begins.
     QPoint _end; //! The coordinates of the pixel where the selected region ends.
     QMap<int, int> _Axismap; //! Contains a total pixelvalue for each X or Y value in the selected profile region.
+
+    //Functions:
+    void addMeanLines(QString data);
+    void changeText(QString text);
 
 private slots:
     void on_buttonBox_accepted();

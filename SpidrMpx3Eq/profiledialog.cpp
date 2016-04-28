@@ -69,9 +69,14 @@ void ProfileDialog::plotProfile(QString axis)
         ui->profilePlot->graph(i)->setPen(QPen(Qt::red));
         ui->profilePlot->graph(i)->setLineStyle(QCPGraph::lsNone);
         ui->profilePlot->graph(i)->setScatterStyle(QCPScatterStyle::ssDisc);
-        ui->profilePlot->graph(i)->addData(0, -1);
+        ui->profilePlot->graph(i)->addData(0, -1); //Initilized so they're not in view.
     }
 
+}
+
+void ProfileDialog::addMeanLines(QString data){
+    //QStringList datalist = data.split("\n");
+    //QStringList meanlist = datalist[2].split("\t");
 }
 
 void ProfileDialog::on_checkBox_toggled(bool checked)
@@ -94,6 +99,7 @@ void ProfileDialog::on_pushButton_clicked()
 
     QString CNRdata = _mpx3gui->getDataset()->calcCNR(_Axismap);
     changeText(CNRdata);
+    addMeanLines(CNRdata);
 }
 
 void ProfileDialog::on_comboBox_currentIndexChanged(int index)
