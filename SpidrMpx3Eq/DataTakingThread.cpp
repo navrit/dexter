@@ -83,6 +83,7 @@ void DataTakingThread::run() {
 
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
+
     connect(this, SIGNAL(reload_all_layers()), _vis, SLOT(reload_all_layers()));
     connect(this, SIGNAL(reload_layer(int)), _vis, SLOT(reload_layer(int)));
     connect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(data_taking_finished(int)));
@@ -141,7 +142,7 @@ void DataTakingThread::run() {
     int timeOutTime =
             _mpx3gui->getConfig()->getTriggerLength_ms()
             +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
-            + 500; // ms
+            + 100; // ms
     // TODO ! The extra 500ms is a combination of delay in the network plus
     // system overhead.  This should be predicted and not hard-coded. TODO !
 
@@ -368,7 +369,6 @@ void DataTakingThread::run() {
             }
 
         }
-
 
         // Keep a local count of number of frames
         nFramesReceived++;

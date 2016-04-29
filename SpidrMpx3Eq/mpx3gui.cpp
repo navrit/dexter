@@ -107,6 +107,12 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
         return;
     }
 
+    // shortcuts
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+1", "Switch to viewer") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+2", "Switch to configuratoin and monitoring") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+3", "Switch to DAC control") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+4", "Switch to Equalization") ), this)  );
+
     // Signals and slots for this part
     SetupSignalsAndSlots();
     //emit frame_added();
@@ -126,6 +132,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     //_ui->statusBar->set
     //m_statusBarMessageLabel.setAlignment( Qt::AlignLeft );
     m_statusBarMessageString.clear( );
+
 
 }
 
@@ -208,6 +215,30 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
     connect( this, &Mpx3GUI::sig_statusBarWrite, this, &Mpx3GUI::statusBarWrite );
     connect( this, &Mpx3GUI::sig_statusBarClean, this, &Mpx3GUI::statusBarClean );
+
+    for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {
+        connect( _shortcutsSwitchPages[i], &QShortcut::activated,
+                this, &Mpx3GUI::on_shortcutsSwithPages );
+    }
+
+}
+
+void Mpx3GUI::on_shortcutsSwithPages() {
+
+    // figure out who sent it
+    QShortcut * sc = static_cast<QShortcut*> ( QObject::sender() );
+    if ( ! sc ) return;
+
+    QKeySequence k = sc->key();
+    if ( k.matches( QKeySequence(tr("Ctrl+1")) ) ) {
+        _ui->stackedWidget->setCurrentIndex( 0 );
+    } else if ( k.matches( QKeySequence(tr("Ctrl+2")) ) ) {
+        _ui->stackedWidget->setCurrentIndex( 1 );
+    } else if ( k.matches( QKeySequence(tr("Ctrl+3")) ) ) {
+        _ui->stackedWidget->setCurrentIndex( 2 );
+    } else if ( k.matches( QKeySequence(tr("Ctrl+4")) ) ) {
+        _ui->stackedWidget->setCurrentIndex( 3 );
+    }
 
 }
 
@@ -363,7 +394,7 @@ bool Mpx3GUI::establish_connection() {
     getConfig()->SendConfiguration();
 
     // Load equalization if possible
-    LoadEqualization();
+    //LoadEqualization();
 
     // Emit
     emit ConnectionStatusChanged(true);

@@ -16,7 +16,8 @@
 class Mpx3GUI;
 
 #include <stdint.h>
-#define DEFAULT_IP  "192.168.1.10"
+#define __default_IP  "192.168.1.10"
+#define __default_port 50000
 #define __default_matrixSizePerChip_X 	256
 #define __default_matrixSizePerChip_Y 	256
 
@@ -167,15 +168,42 @@ private:
 
 
 public slots:
-void setIpAddress(QString ip){
-	if(ip != this->getIpAddress()){
-		SpidrAddress.setAddress(ip);
+void setIpAddress(QString ip) {
+
+    /*
+    // The ip and port will come in the string.
+    // 192.168.10:50000
+    QStringList list = ipn.split(':', QString::SkipEmptyParts);
+    // expect the ip address in the first part
+    QString ip = list.at( 0 );
+    QString portS = list.at( 1 );
+
+    qDebug() << ip << " : " << port;
+*/
+    // IP
+    if ( ip != this->getIpAddress() ) {
+
+        SpidrAddress.setAddress(ip);
 		if(SpidrAddress.toString().length() == 0)
-			SpidrAddress.setAddress(DEFAULT_IP);
-		emit IpAdressChanged(this->getIpAddress());
+            SpidrAddress.setAddress( __default_IP );
+        emit IpAdressChanged( this->getIpAddress() );
         //establishConnection();
 	}
+/*
+    // Port
+    bool ok = true;
+    int newVal = portS.toInt( &ok );
+    if ( newVal != port && ok ) {
+        port = newVal;
+        emit portChanged(newVal);
+        //establishConnection();
+    } else {
+        port = __default_port;
+        emit portChanged( __default_port );
+    }
+*/
 }
+
 void setPort(int newVal){
 	if(newVal != port){
 		port = newVal;

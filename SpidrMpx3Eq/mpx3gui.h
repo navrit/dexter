@@ -14,6 +14,7 @@
 #include <iostream>
 #include <vector>
 #include <QScrollBar>
+#include <QShortcut>
 
 #include <qcustomplot.h>
 
@@ -64,6 +65,7 @@ private:
     int mode = 0;
     //QApplication * _coreApp;
     Ui::Mpx3GUI * _ui;
+    QVector<QShortcut *> _shortcutsSwitchPages;
 
     Mpx3Config * config = nullptr;
     Dataset * workingSet;
@@ -148,6 +150,7 @@ signals:
     void sig_statusBarClean();
 
 public slots:
+    void on_shortcutsSwithPages();
     void addLayer(int* data);
     void addLayer(int* data, int layer);
     void generateFrame(); //Debugging function to generate data when not connected
