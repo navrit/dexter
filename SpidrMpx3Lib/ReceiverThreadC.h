@@ -26,16 +26,18 @@ class ReceiverThreadC : public ReceiverThread
   virtual ~ReceiverThreadC();
   
   virtual void readDatagrams();
-  void nextFrame();
-  virtual int dataSizeFrame()          { return _frameSize[_tail]; }
+  void         nextFrame();
+  virtual int  dataSizeFrame()          { return _frameSize[_tail]; }
 
-  virtual int pixelsReceived()         { return _pixelsReceived; }
-  virtual int pixelsLost()             { return _pixelsLost; }
-  virtual int pixelsLostFrame()        { return _pixelsLostFrame[_tail]; }
-  virtual int pixelsLostFrame( int i ) { return _pixelsLostFrame[i]; }
+  virtual int  pixelsReceived()         { return _pixelsReceived; }
+  virtual int  pixelsLost()             { return _pixelsLost; }
+  virtual int  pixelsLostFrame()        { return _pixelsLostFrame[_tail]; }
+  virtual int  pixelsLostFrame( int i ) { return _pixelsLostFrame[i]; }
 
-  virtual int lostCount()              { return pixelsLost(); }
-  virtual int lostCountFrame()         { return pixelsLostFrame(); }
+  virtual int  lostCount()              { return pixelsLost(); }
+  virtual int  lostCountFrame()         { return pixelsLostFrame(); }
+  virtual void resetLost()              { ReceiverThread::resetLost();
+                                          _pixelsLost = 0; }
 
  private:
   // Expected frame data

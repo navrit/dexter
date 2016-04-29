@@ -66,7 +66,7 @@ class ReceiverThread : public QThread
   int  framesLost()       { return _framesLost; }
   int  packetsReceived()  { return _packetsReceived; }
   int  packetsLost()      { return _packetsLost; }
-  void resetLost()        { _framesLost = 0; _packetsLost = 0; }
+  virtual void resetLost(){ _framesLost = 0; _packetsLost = 0; }
   int  packetSize()       { return _expPayloadSize + SPIDR_HEADER_SIZE; }
   int  expSequenceNr()    { return _expSequenceNr; }
 
