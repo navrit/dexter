@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include "mpx3gui.h"
+#include "ui_profiledialog.h"
 
 class QCPGraph;
 
@@ -20,8 +21,9 @@ public:
     void SetMpx3GUI(Mpx3GUI * p);
     void setPixels(QPoint pixel_begin, QPoint pixel_end){_begin = pixel_begin; _end = pixel_end;}
     void setAxisMap(QMap<int,int> Axismap){_Axismap = Axismap;}
-    void changeTitle(QString axis);
-    void plotProfile(QString axis);
+    void setAxis(QString axis){_axis = axis;}
+    void changeTitle();
+    void plotProfile();
 
 
 private:
@@ -30,10 +32,12 @@ private:
     QPoint _begin; //! The coordinates of the pixel where the selected region begins.
     QPoint _end; //! The coordinates of the pixel where the selected region ends.
     QMap<int, int> _Axismap; //! Contains a total pixelvalue for each X or Y value in the selected profile region.
+    QString _axis; //!The axis that is currently used as the horizontal axis in the profileplot.
 
     //Functions:
     void addMeanLines(QString data);
     void changeText(QString text);
+    bool valueinRange(int value);
 
 private slots:
     void on_buttonBox_accepted();
@@ -51,6 +55,10 @@ private slots:
     void on_lineEdit_3_editingFinished();
 
     void on_lineEdit_4_editingFinished();
+
+    void on_lineEdit_5_editingFinished();
+
+    void on_lineEdit_6_editingFinished();
 
 signals:
     void user_accepted_profile();

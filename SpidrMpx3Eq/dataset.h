@@ -93,7 +93,7 @@ class Dataset//TODO: specify starting corner?
   int newLayer(int layer);//!<Adds a new layer at the specified threshold.
   void rewindScores();
 
-  QList<int> Profilepoints = QList<int>() << -1 << -1 << -1 << -1; //!The points on a profile that are used to calculate the CNR. Initialized to -1 to indicate that no value has been specified (yet).
+  QList<int> Profilepoints = QList<int>() << -1 << -1 << -1 << -1 << -1 << -1; //!The points on a profile that are used to calculate the CNR. Initialized to -1 to indicate that no value has been specified (yet).
 
 public:
   Dataset(int x, int y, int framesPerLayer = 1, int pixelDepthBits = 12);

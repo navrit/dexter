@@ -301,9 +301,6 @@ void Dataset::setProfilepoint(int index, QString pos){
     else p = pos.toInt();
 
     Profilepoints[index] = p;
-    //if(!Profilepoints.empty() && Profilepoints.size() > index) Profilepoints[index] = p;
-    //else  Profilepoints << pos;
-
 }
 
 QMap<int, int> Dataset::calcProfile(QString axis, int layerIndex, QPoint pixel_init, QPoint pixel_end){
@@ -350,10 +347,10 @@ QString Dataset::calcCNR(QMap<int, int> Axismap){
     int Npoints = countProfilepoints();
 
     //Show message and stats of the profile when only 1 or 2 numbers are filled in.
-    if(Npoints < 3){
+    if(Npoints < 4 || Npoints == 5){
         mean = calcRegionMean(Axismap.begin().key(), Axismap.end().key(), Axismap);
         stdev = calcRegionStdev(Axismap.begin().key(), Axismap.end().key(), Axismap, mean);
-        data = QString("Please choose at least three points for the calculation of the CNR.\nMean: %1 \nStdev: %2").arg(mean).arg(stdev);
+        data = QString("Please choose four or six points, indicating two or three regions, for the calculation of the CNR.\nMean: %1 \nStdev: %2").arg(mean).arg(stdev);
     }
 
     else {
@@ -366,72 +363,97 @@ QString Dataset::calcCNR(QMap<int, int> Axismap){
         double snr;
 
 
-        for(int i=0; i < Profilepoints.size()-1; i++){
+        for(int i = 0; i < Profilepoints.size() - 1; i += 2){
             //double mean = calcRegionMean(Profilepoints[i], Profilepoints[i+1], Axismap);
             //double stdev = calcRegionStdev(Profilepoints[i], Profilepoints[i+1], Axismap, mean);
-            if(Profilepoints[i] != -1)// && Profilepoints[i+1] != -1){
-                if(Profilepoints[i+1] != -1){
-                    double mean =calcRegionMean(Profilepoints[i], Profilepoints[i+1], Axismap);
-                    mean_v.push_back(mean);
-                    stdev_v.push_back(calcRegionStdev(Profilepoints[i], Profilepoints[i+1], Axismap, mean));
-                }
-                else if(i < 2 && Profilepoints[i+2] != -1){
-                    double mean =calcRegionMean(Profilepoints[i], Profilepoints[i+2], Axismap);
-                    mean_v.push_back(mean);
-                    stdev_v.push_back(calcRegionStdev(Profilepoints[i], Profilepoints[i+2], Axismap, mean));
-                }
+
+            if(Profilepoints[i] != -1){
+                double mean =calcRegionMean(Profilepoints[i], Profilepoints[i+1], Axismap);
+                mean_v.push_back(mean);
+                stdev_v.push_back(calcRegionStdev(Profilepoints[i], Profilepoints[i+1], Axismap, mean));
             }
 
+//The following code uses 4 boundary points instead of 6.
+//            if(Profilepoints[i] != -1)// && Profilepoints[i+1] != -1){
+//                if(Profilepoints[i+1] != -1){
+//                    double mean =calcRegionMean(Profilepoints[i], Profilepoints[i+1], Axismap);
+//                    mean_v.push_back(mean);
+//                    stdev_v.push_back(calcRegionStdev(Profilepoints[i], Profilepoints[i+1], Axismap, mean));
+//                }
+//                else if(i < 2 && Profilepoints[i+2] != -1){
+//                    double mean =calcRegionMean(Profilepoints[i], Profilepoints[i+2], Axismap);
+//                    mean_v.push_back(mean);
+//                    stdev_v.push_back(calcRegionStdev(Profilepoints[i], Profilepoints[i+2], Axismap, mean));
+//                }
+            }
 
-        //Assuming the signal is larger than the background...
-        if(Npoints == 4){
+        if(Npoints == 6){
             cnr = mean_v[1] - 0.5*(mean_v[0] + mean_v[2]);
+            //if(obCorrection == nullptr) cnr = -1 *cnr;
             cnr /= 0.5*(stdev_v[0] + stdev_v[2]);
-            cnr *= sqrt((Profilepoints[2] - Profilepoints[1])); //Number of pixelcolumns that the signal (region 2) spans.
+            cnr *= sqrt(Profilepoints[3] - Profilepoints[2]);
 
             snr = mean_v[1];
             snr /= 0.5*(mean_v[0] + mean_v[2]);
             snr = 10*log10(snr);
 
-            data += "\tBackground\tSignal\tBackground\n" ;
+            data += "\tBackground\tSignal\tBackground\n";
             data += QString("Mean:\t%1\t%2\t%3\n").arg(mean_v[0]).arg(mean_v[1]).arg(mean_v[2]);
             data += QString("Stdev:\t%1\t%2\t%3\n").arg(stdev_v[0]).arg(stdev_v[1]).arg(stdev_v[2]);
         }
 
-        //If only 2 regions are indicated:
-        if(Npoints == 3){
-            if(mean_v[0] > mean_v[1]){ //region 1 (left) is the signal
-                cnr = mean_v[0] - (mean_v[1]);
-                cnr /= stdev_v[1];
 
-                if(Profilepoints[1] != -1)
-                cnr *= sqrt((Profilepoints[1] - Profilepoints[0])); //Number of pixelcolumns that the signal spans.
-                else cnr *= sqrt((Profilepoints[2] - Profilepoints[0])); //First region is from [0] to [2], field [1] is empty.
 
-                snr = mean_v[0]/mean_v[1];
-                snr = 10*log10(snr);
+//The following code takes the turnup into account i.e. uses 4 boundary points instead of 6.
+//        //Assuming the signal is larger than the background...
+//        if(Npoints == 4){
+//            cnr = mean_v[1] - 0.5*(mean_v[0] + mean_v[2]);
+//            cnr /= 0.5*(stdev_v[0] + stdev_v[2]);
+//            cnr *= sqrt((Profilepoints[2] - Profilepoints[1])); //Number of pixelcolumns that the signal (region 2) spans.
 
-                data += "\tSignal\tBackground\n";
-            }
-            if(mean_v[0] < mean_v[1]){//region 2 (right) is the signal
-                cnr = mean_v[1] - (mean_v[0]);
-                cnr /= stdev_v[0];
+//            snr = mean_v[1];
+//            snr /= 0.5*(mean_v[0] + mean_v[2]);
+//            snr = 10*log10(snr);
 
-                if(Profilepoints[2] != -1 && Profilepoints[3] != -1)
-                    cnr *= sqrt((Profilepoints[3] - Profilepoints[2])); //Number of pixelcolumns that the signal spans.
-                else if(Profilepoints[2] == -1) cnr *= sqrt((Profilepoints[3] - Profilepoints[1]));
-                else if(Profilepoints[3] == -1) cnr *= sqrt((Profilepoints[2] - Profilepoints[1]));
+//            data += "\tBackground\tSignal\tBackground\n" ;
+//            data += QString("Mean:\t%1\t%2\t%3\n").arg(mean_v[0]).arg(mean_v[1]).arg(mean_v[2]);
+//            data += QString("Stdev:\t%1\t%2\t%3\n").arg(stdev_v[0]).arg(stdev_v[1]).arg(stdev_v[2]);
+//        }
 
-                snr = mean_v[1]/mean_v[0];
-                snr = 10*log10(snr);
+//        //If only 2 regions are indicated:
+//        if(Npoints == 3){
+//            if(mean_v[0] > mean_v[1]){ //region 1 (left) is the signal
+//                cnr = mean_v[0] - (mean_v[1]);
+//                cnr /= stdev_v[1];
 
-                data += "\tBackground\tSignal\n";
-            }
+//                if(Profilepoints[1] != -1)
+//                cnr *= sqrt((Profilepoints[1] - Profilepoints[0])); //Number of pixelcolumns that the signal spans.
+//                else cnr *= sqrt((Profilepoints[2] - Profilepoints[0])); //First region is from [0] to [2], field [1] is empty.
 
-            //data += "\tRegion 1\tRegion2\n" ;
-            data += QString("Mean:\t%1\t%2\n").arg(mean_v[0]).arg(mean_v[1]);
-            data += QString("Stdev:\t%1\t%2\n").arg(stdev_v[0]).arg(stdev_v[1]);
-        }
+//                snr = mean_v[0]/mean_v[1];
+//                snr = 10*log10(snr);
+
+//                data += "\tSignal\tBackground\n";
+//            }
+//            if(mean_v[0] < mean_v[1]){//region 2 (right) is the signal
+//                cnr = mean_v[1] - (mean_v[0]);
+//                cnr /= stdev_v[0];
+
+//                if(Profilepoints[2] != -1 && Profilepoints[3] != -1)
+//                    cnr *= sqrt((Profilepoints[3] - Profilepoints[2])); //Number of pixelcolumns that the signal spans.
+//                else if(Profilepoints[2] == -1) cnr *= sqrt((Profilepoints[3] - Profilepoints[1]));
+//                else if(Profilepoints[3] == -1) cnr *= sqrt((Profilepoints[2] - Profilepoints[1]));
+
+//                snr = mean_v[1]/mean_v[0];
+//                snr = 10*log10(snr);
+
+//                data += "\tBackground\tSignal\n";
+//            }
+
+//            //data += "\tRegion 1\tRegion2\n" ;
+//            data += QString("Mean:\t%1\t%2\n").arg(mean_v[0]).arg(mean_v[1]);
+//            data += QString("Stdev:\t%1\t%2\n").arg(stdev_v[0]).arg(stdev_v[1]);
+//        }
 
         data += QString("\nCNR:\t%1\nSNR:\t%2 dB").arg(cnr).arg(snr);
     }

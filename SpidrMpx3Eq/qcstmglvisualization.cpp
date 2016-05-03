@@ -824,12 +824,13 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _profiledialog = new ProfileDialog(this);
         _profiledialog->SetMpx3GUI(_mpx3gui);
         _profiledialog->setPixels(pixel_begin, pixel_end);
-        _profiledialog->changeTitle(axis);
+        _profiledialog->setAxis(axis);
+        _profiledialog->changeTitle();
 
         //Calculate the profile of the selected region of the selected layer
         int layerIndex = getActiveThreshold();
         _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, layerIndex, pixel_begin, pixel_end));
-        _profiledialog->plotProfile(axis);
+        _profiledialog->plotProfile();
         _profiledialog->show();
 
     }
