@@ -88,6 +88,9 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
 
     _ui->equalizationTypeCombo->addItem( QString("Noise edge") );
     _ui->equalizationTypeCombo->addItem( QString("Noise centroid") );
+    _ui->equalizationTypeCombo->addItem( QString("Noise edge FAST") );
+    _ui->equalizationTypeCombo->addItem( QString("Noise centroid FAST") );
+
     _equalizationType = __NoiseEdge; // item 0
 
     _ui->equalizationSelectTHLTHHCombo->addItem( QString("Show THL") );
@@ -168,7 +171,7 @@ void QCstmEqualization::on_logYCheckBox_toggled(bool checked) {
         } else {
             GetBarChart(_workChipsIndx[i])->SetLogY( false );
         }
-        GetBarChart(_workChipsIndx[i])->replot();
+        GetBarChart(_workChipsIndx[i])->replot( QCustomPlot::rpQueued );
     }
 
 }
@@ -844,10 +847,25 @@ void QCstmEqualization::StartEqualization() {
 
         }
 
-        AppendToTextBrowser("3) Fine tuning ...");
+        // If fast equalization, skip finetunning, same for all chips
+        if ( _steeringInfo[0]->equalizationType == __NoiseCentroidFAST
+             ||
+             _steeringInfo[0]->equalizationType == __NoiseEdgeFAST
+             ) {
 
-        // 5) Attempt fine tuning
-        FineTunning( );
+            // Go directly to next scan
+            // Go to next step, except for fine tuning where I use the same previous scan
+            _stepDone[_eqStatus] = true;
+            _eqStatus++;
+            StartEqualization( );
+
+        } else {
+
+            AppendToTextBrowser("3) Fine tuning ...");
+
+            // 5) Attempt fine tuning
+            FineTunning( );
+        }
 
     }  else if ( EQ_NEXT_STEP( __FineTunning ) ) {
 
@@ -1522,7 +1540,7 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     SetAllAdjustmentBits(spidrcontrol, devId, 0x0, 0x0);
 
     // OMR
-    spidrcontrol->setPolarity( _deviceIndex, true );		// true: Holes collection
+    spidrcontrol->setPolarity( _deviceIndex, _mpx3gui->getConfig()->getPolarity() );		// true: Holes collection
     //spidrcontrol->setInternalTestPulse( true ); 			// Internal tests pulse
     spidrcontrol->setPixelDepth( devId, 12 );
     spidrcontrol->setColourMode( devId, _mpx3gui->getConfig()->getColourMode() ); 		// false = Fine Pitch
@@ -1825,7 +1843,7 @@ void QCstmEqualization::ShowEqualization(Mpx3EqualizationResults::lowHighSel sel
     int * fulladjdata = _resdataset->getLayer( 0 );
     // Plot
     UpdateHeatMap(fulladjdata, _fullsize_x, _fullsize_y);
-    _ui->_intermediatePlot->replot();
+    _ui->_intermediatePlot->replot( QCustomPlot::rpQueued );
 
     /*
     // Display the equalization
@@ -1872,7 +1890,7 @@ void QCstmEqualization::SetupSignalsAndSlots() {
     connect( _ui->fineTuningLoopsSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setFineTuningLoops(int)) );
 
     connect( _ui->equalizationTHLTHHCombo, SIGNAL(activated(int)), this, SLOT(setEqualizationTHLTHH(int)) );
-    //connect( _ui->equalizationTypeCombo, SIGNAL(activated(int)), this, SLOT(setEqualizationType(int)) );
+    connect( _ui->equalizationTypeCombo, SIGNAL(activated(int)), this, SLOT(setEqualizationTHLType(int)) );
     connect( _ui->equalizationSelectTHLTHHCombo, SIGNAL(activated(int)), this, SLOT(setEqualizationShowTHLTHH(int)) );
 
 }
@@ -1989,7 +2007,9 @@ void QCstmEqualization::ConnectionStatusChanged(bool conn) {
 
 
     } else {
+
         setWindowWidgetsStatus( win_status::disconnected );
+
     }
 
     // WARNING

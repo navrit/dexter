@@ -71,10 +71,10 @@ int Color2DRecoGuided::BuildAndInvertMuMatrix() {
 //    energies.append(  15.E-3 ); //
 //    energies.append(  20.E-3 ); //
 
-    energies.append( 4.8E-3 );
-    energies.append( 7.2E-3 );
-    energies.append( 9.6E-3 );
-    energies.append( 11.9E-3 );
+    energies.append( 4.8E-3 ); // 0
+    energies.append( 7.2E-3 ); // 2
+    energies.append( 9.6E-3 ); // 4
+    energies.append( 11.9E-3 );  // 6
 
 //      energies.append(  4.8E-3 );
 //      energies.append( 10.0E-3 );

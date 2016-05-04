@@ -323,9 +323,13 @@ void ThlScan::FineTuning() {
                 disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelLoopProgress, SLOT( setText(QString)) );
 
                 // Set a mask
-                int nMasked = 0;
+                int nMasked = 0, pmasked = 0;
                 for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
-                    nMasked += SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y);
+                    if ( ! SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
+                        // something went wrong !
+                        return;
+                    }
+                    nMasked += pmasked;
                 }
                 cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y
                      <<  " | N pixels unmasked = " << ((int)_workChipsIndx.size()*__matrix_size) - nMasked << endl;
@@ -849,7 +853,7 @@ void ThlScan::EqualizationScan() {
     bool accelerationApplied = false;
     int accelerationFlagCntr = 0;
     //int oldStep = _equalization->GetUI()->eqStepSpinBox->value();
-    int nMasked = 0;
+    int nMasked = 0, pmasked = 0;
 
     int progressMax = _numberOfLoops;
     if ( _numberOfLoops < 0 ) progressMax = _spacing * _spacing;
@@ -868,8 +872,15 @@ void ThlScan::EqualizationScan() {
 
             // Set mask
             nMasked = 0;
+            pmasked = 0;
             for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
-                nMasked += SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y);
+
+                if ( ! SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
+                    // something went wrong
+                    return;
+                }
+
+                nMasked += pmasked;
             }
             cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  " | N pixels unmasked = " << ((int)_workChipsIndx.size()*__matrix_size) - nMasked << endl;
 
@@ -926,7 +937,7 @@ void ThlScan::EqualizationScan() {
                 int timeOutTime =
                         _mpx3gui->getConfig()->getTriggerLength_ms()
                         +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
-                        + 500; // 500ms extra
+                        + 10; // 10ms extra, this is about twice the time a frame needs to come in (1Gbit)
 
                 while ( _spidrdaq->hasFrame( timeOutTime ) ) {
 
@@ -1828,7 +1839,7 @@ set<int> ThlScan::GetReworkSubset(set<int> reworkSet, int spacing, int offset_x,
 /**
  * Create and apply the mask with a given spacing
  */
-int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int devId, int spacing, int offset_x, int offset_y) {
+bool ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int devId, int spacing, int offset_x, int offset_y, int * nmasked) {
 
     // Clear previous mask.  Not sending the configuration yet !
     ClearMask(spidrcontrol, devId, false);
@@ -1861,9 +1872,13 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int devId, int 
 
     }
 
-    spidrcontrol->setPixelConfigMpx3rx( devId );
+    if ( ! spidrcontrol->setPixelConfigMpx3rx( devId ) ) {
+        return false;
+    }
 
-    return (int) _maskedSet.size();
+    *nmasked =  _maskedSet.size();
+
+    return true; // success
 }
 
 /**

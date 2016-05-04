@@ -276,7 +276,7 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
         /////////////////////////////
         // TEST
-        _mpx3gui->getDataset()->dumpAllActivePixels();
+        //_mpx3gui->getDataset()->dumpAllActivePixels();
 
     }
 
@@ -505,8 +505,8 @@ void QCstmGLVisualization::overflow_update(int ovf_cntr) {
         BuildStatsStringOverflow( true );
 
         // Bring the user to full range so the hot spots can be seen
-        ui->fullRangeRadio->setChecked( true );
-        on_fullRangeRadio_toggled( true );
+        //ui->fullRangeRadio->setChecked( true );
+        //on_fullRangeRadio_toggled( true );
 
     } else {
 

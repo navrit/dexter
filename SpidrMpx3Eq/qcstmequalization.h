@@ -299,6 +299,9 @@ private:
 	int _equalizationCombination;
 	enum {
 		__NoiseEdge = 0,
+        __NoiseCentroid,  // upper than this, fast equalizations
+        __NoiseEdgeFAST,
+        __NoiseCentroidFAST,
 		__nEQTypes
 	};
 	int _equalizationType;
