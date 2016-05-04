@@ -89,6 +89,7 @@ class Dataset//TODO: specify starting corner?
   QMap <int, int> m_thresholdsToIndices;//!<Translate threshold values to indices in the vectors.
   QVector<int*> m_layers;//!<Actual data, one pointer per threshold.
   Dataset * obCorrection = nullptr;//!< A pointer to the Dataset used for the flat-field correction.
+  bool obCorrected; //!indicates whether or not an image has been OBcorrected.
   int getLayerIndex(int threshold);
   int newLayer(int layer);//!<Adds a new layer at the specified threshold.
   void rewindScores();
@@ -147,6 +148,7 @@ public:
   void toJson(); //!<return JSON object to save.
   void setProfilepoint(int index, QString pos);
   void clearProfilepoints(){Profilepoints.clear();}
+  void setOBcorrected(bool status){obCorrected = status;}
 
   QVector<QPoint> getLayoutVector(){return m_frameLayouts;}
   QList<int> getThresholds(){return m_thresholdsToIndices.keys();}

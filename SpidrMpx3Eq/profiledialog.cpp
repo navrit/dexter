@@ -91,6 +91,10 @@ void ProfileDialog::addMeanLines(QString data){
         QList<int> profilevector = _mpx3gui->getDataset()->getProfilepoints();
         bool ok;
 
+        //Clear any existing graphdata
+        for(int i = 7; i < 10; i++)
+            ui->profilePlot->graph(i)->clearData();
+
         //Add horizontal lines at the level of the mean for every region.
         for(int i = 0; i < meanlist.length(); i ++){
             QString mean = meanlist.at(i);
