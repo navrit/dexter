@@ -720,6 +720,11 @@ void Mpx3GUI::open_data(bool saveOriginal){
     // And keep a copy just as in QCstmGLVisualization::data_taking_finished
     if ( saveOriginal ) saveOriginalDataset();
 
+//    //Ask whether the loaded data is already OBcorrected or not.
+//    QMessageBox::StandardButton reply = QMessageBox::question( this, tr("Specify data"), tr("Is this data OB corrected?"), QMessageBox::Yes | QMessageBox::No);
+//    if(reply== QMessageBox::Yes) getDataset()->setOBcorrected(true);
+//    else getDataset()->setOBcorrected(false);
+
     return;
 }
 

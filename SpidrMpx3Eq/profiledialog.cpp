@@ -236,3 +236,21 @@ void ProfileDialog::on_lineEdit_6_editingFinished()
     ui->profilePlot->replot(QCustomPlot::rpQueued);
 }
 
+
+void ProfileDialog::on_comboBox_currentIndexChanged(const QString &arg1)
+{
+    QString s = arg1;
+    s.remove("Threshold", Qt::CaseInsensitive);
+    int layerIndex = s.toInt();
+    setLayer(layerIndex);
+    setAxisMap(_mpx3gui->getDataset()->calcProfile(_axis, layerIndex, _begin, _end));
+    plotProfile();
+    show();
+}
+
+void ProfileDialog::mousePressEvent(QMouseEvent *event)
+{
+    if(event->button() == Qt::LeftButton){
+
+    }
+}

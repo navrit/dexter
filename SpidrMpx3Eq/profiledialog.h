@@ -24,7 +24,7 @@ public:
     void setAxis(QString axis){_axis = axis;}
     void changeTitle();
     void plotProfile();
-
+    void setLayer(int layerIndex) { ui->comboBox->setCurrentText(QString("Threshold %1").arg(layerIndex));}
 
 private:
     Ui::ProfileDialog *ui;
@@ -38,6 +38,9 @@ private:
     void addMeanLines(QString data);
     void changeText(QString text);
     bool valueinRange(int value);
+
+    //Events:
+    void mousePressEvent(QMouseEvent *event);
 
 private slots:
     void on_buttonBox_accepted();
@@ -59,6 +62,8 @@ private slots:
     void on_lineEdit_5_editingFinished();
 
     void on_lineEdit_6_editingFinished();
+
+    void on_comboBox_currentIndexChanged(const QString &arg1);
 
 signals:
     void user_accepted_profile();
