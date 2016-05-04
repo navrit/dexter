@@ -156,8 +156,10 @@ void Mpx3GUI::addLayer(int *data){
     return addLayer(data, -1);
 }
 
-unsigned int Mpx3GUI::addFrame(int *frame, int index, int layer){
+unsigned int Mpx3GUI::addFrame(int *frame, int index, int layer) {
+
     //cout << "index : " << index << " | layer : " << layer << " | mode : " << mode << endl;
+
     unsigned int ovfcntr = 0;
     if(mode == 1){
         ovfcntr = getDataset()->sumFrame(frame,index, layer);
@@ -346,6 +348,16 @@ bool Mpx3GUI::establish_connection() {
 
         return false; // No use in continuing if we can't connect.
     }
+
+    // See if there is any chips connected
+    if ( config->getActiveDevices().size() == 0 ) {
+        QMessageBox::critical(this, "Connection error",
+                              tr("Could not find any devices.")
+                              );
+        config->destroyController();
+        emit ConnectionStatusChanged(false);
+    }
+
 
     // Get version numbers
     *dbg << "\n";
@@ -595,6 +607,8 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
     saveFile.write(getDataset()->toByteArray());
     saveFile.close();
 
+    /*
+
     ///////////////////////////////////////////////////////////
     // ASCII
 
@@ -644,6 +658,8 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
 
 
     // end of for loop that cycles through the layers (threshold)
+
+    */
 
     return;
 }
