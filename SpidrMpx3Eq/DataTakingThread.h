@@ -23,54 +23,61 @@ class SpidrDaq;
 
 class DataTakingThread : public QThread {
 
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit DataTakingThread(Mpx3GUI *, QCstmGLVisualization *);
-	void ConnectToHardware();
-	void SeparateThresholds(int id, int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
-	pair<int, int> XtoXY(int X, int dimX);
-	int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
-	bool ThereIsAFalse(vector<bool> v);
+    explicit DataTakingThread(Mpx3GUI *, QCstmGLVisualization *);
+    void ConnectToHardware();
+    void SeparateThresholds(int id, int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
+    pair<int, int> XtoXY(int X, int dimX);
+    int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
+    bool ThereIsAFalse(vector<bool> v);
 
     typedef struct {
         int missingToCompleteJob;
         int framesRequested;
         int framesReceived;
         int framesKept;
+        bool tocomplete;
     } datataking_score_info;
 
-    datataking_score_info getScoreInfo() { return _score; }
+    //datataking_score_info getScoreInfo() { return _score; }
     void rewindScoring();
-    void setFramesRequested(int nf){ _score.framesRequested = nf; }
-    void setMissingToCompleteJob(int nf) { _score.missingToCompleteJob = nf; }
+    bool isACompleteJob() { return _score.tocomplete; }
+    int getMissingFramesToCompleteJob() { return _score.missingToCompleteJob; }
+    int getFramesReceived() { return _score.framesReceived; }
+    int calcScoreDifference();
+    void setFramesRequested(int nf) {
+        _score.framesRequested = nf;
+        if ( ! _score.tocomplete ) _score.missingToCompleteJob = nf;
+    }
 
 private:
 
-	void run();
+    void run();
 
-	Mpx3GUI * _mpx3gui;
-	QCstmGLVisualization * _vis;
-	bool _stop;
-	bool _canDraw;
+    Mpx3GUI * _mpx3gui;
+    QCstmGLVisualization * _vis;
+    bool _stop;
+    bool _canDraw;
     datataking_score_info _score;
 
-	// IP source address (SPIDR network interface)
-	int _srcAddr;
+    // IP source address (SPIDR network interface)
+    int _srcAddr;
 
 public slots:
-	void on_stop_data_taking_thread();
-	void on_busy_drawing();
-	void on_free_to_draw();
+    void on_stop_data_taking_thread();
+    void on_busy_drawing();
+    void on_free_to_draw();
 
 signals:
-	// drawing signals calling back to QCstmGLVisualization
-	void reload_all_layers();
-	void reload_layer(int);
-	void data_taking_finished(int);
-	void progress(int);
-	void lost_packets(int);
-	void fps_update(int);
+    // drawing signals calling back to QCstmGLVisualization
+    void reload_all_layers();
+    void reload_layer(int);
+    void data_taking_finished(int);
+    void progress(int);
+    void lost_packets(int);
+    void fps_update(int);
     void overflow_update(int);
 
 };

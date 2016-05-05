@@ -97,14 +97,25 @@ void QCstmGLVisualization::updateETA() {
 }
 
 
-void QCstmGLVisualization::StartDataTaking(){
+void QCstmGLVisualization::StartDataTaking() {
 
     // The Start button becomes the Stop button
 
-    if ( !_takingData ) {
+    if ( ! _takingData ) {
 
-        // Clear previous data first
-        GetMpx3GUI()->clear_data( false );
+        // In the situation where data has been lost and
+        //  the system is trying to complete the requested
+        //  number of frames the data shouldn't be cleared.
+        bool clearpreviousdata = true;
+        if ( _dataTakingThread ) {
+            if ( _dataTakingThread->isACompleteJob() ) {
+                qDebug() << "[INFO] continue with "
+                         << _dataTakingThread->getMissingFramesToCompleteJob()
+                         << "missing frames";
+                clearpreviousdata = false;
+            }
+        }
+        if ( clearpreviousdata ) _mpx3gui->clear_data( false );
 
         // Threads
         if ( _dataTakingThread ) {
@@ -112,13 +123,20 @@ void QCstmGLVisualization::StartDataTaking(){
                 return;
             }
             //disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
-            delete _dataTakingThread;
-            _dataTakingThread = 0x0;
+
+            // If this is a complete job, keep the same thread
+            if ( ! _dataTakingThread->isACompleteJob() ) {
+                delete _dataTakingThread;
+                _dataTakingThread = nullptr;
+            }
+
         }
 
         // Create the thread
-        _dataTakingThread = new DataTakingThread(_mpx3gui, this);
-        _dataTakingThread->ConnectToHardware();
+        if ( ! _dataTakingThread ) {
+            _dataTakingThread = new DataTakingThread(_mpx3gui, this);
+            _dataTakingThread->ConnectToHardware();
+        }
 
         // Change the Start button to Stop
         ui->startButton->setText( "Stop" );
@@ -131,6 +149,9 @@ void QCstmGLVisualization::StartDataTaking(){
 
         // Free to draw now
         FreeBusyState();
+        _dataTakingThread->setFramesRequested (
+                    _mpx3gui->getConfig()->getNTriggers()
+                    );
 
         _takingData = true;
         _dataTakingThread->start();
@@ -256,9 +277,18 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
         // At this point I need to decide if the data taking is really finished.
         // If the user is requesting that all frames are needed we look at
+
         if ( ui->completeFramesCheckBox->isChecked() ) {
-            DataTakingThread::datataking_score_info score = _dataTakingThread->getScoreInfo();
-            qDebug() << "kept : " << score.framesKept << " | received : " << score.framesReceived;
+
+            int missing = _dataTakingThread->calcScoreDifference();
+
+            if ( missing != 0 ) {
+                //qDebug() << "[INFO] missing : " << missing;
+                StartDataTaking();
+            } else {
+                _dataTakingThread->rewindScoring();
+            }
+
         }
 
         // Change the Stop button to Start
@@ -683,7 +713,15 @@ void QCstmGLVisualization::reload_layer(int threshold){
 
 void QCstmGLVisualization::progress_signal(int framecntr) {
 
-    QString prog = QString("%1/%2").arg( framecntr ).arg(_mpx3gui->getConfig()->getNTriggers() );
+    // framecntr: frames kept
+    int argcntr = framecntr;
+    if ( _dataTakingThread ) {
+        if ( _dataTakingThread->isACompleteJob() ) {
+            argcntr += _dataTakingThread->getFramesReceived();
+        }
+    }
+
+    QString prog = QString("%1/%2").arg( argcntr ).arg(_mpx3gui->getConfig()->getNTriggers() );
     ui->frameCntr->setText( prog );
 
 }
@@ -822,7 +860,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         if(selectedItem == &calcProX) axis = "X";
         if(selectedItem == &calcProY) axis = "Y";
 
-            //Display
+        //Display
         _profiledialog = new ProfileDialog(this);
         _profiledialog->SetMpx3GUI(_mpx3gui);
         _profiledialog->setPixels(pixel_begin, pixel_end);

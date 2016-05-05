@@ -22,8 +22,7 @@ DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, QCstmGLVisualization * dt)
     _stop = false;
     _canDraw = true;
 
-    _score.framesKept = 0;
-    _score.framesReceived = 0;
+    rewindScoring();
 
 }
 
@@ -390,8 +389,8 @@ void DataTakingThread::run() {
         if ( _canDraw ) {
 
             // When reading both counters 1 full frame is made of 2 frames received
-            if ( _mpx3gui->getConfig()->getReadBothCounters() ) emit progress( nFramesReceived/2 );
-            else  emit progress( nFramesReceived );
+            if ( _mpx3gui->getConfig()->getReadBothCounters() ) emit progress( nFramesKept/2 );
+            else  emit progress( nFramesKept );
 
             if( _mpx3gui->getConfig()->getColourMode() ) {
                 emit reload_all_layers();
@@ -406,8 +405,10 @@ void DataTakingThread::run() {
         if ( _stop ) break;
 
         // Fake a stop if the number of frames to be taken has been reached
-        if ( _score.missingToCompleteJob == nFramesKept ) break;
-
+        if ( _score.missingToCompleteJob == nFramesKept ) {
+            // If this happened
+            break;
+        }
     }
 
     if ( _stop ) { // if the data taking was stopped
@@ -420,8 +421,8 @@ void DataTakingThread::run() {
     // Force last draw if not reached
     if ( nFramesReceived != lastDrawn ) {
 
-        if ( _mpx3gui->getConfig()->getReadBothCounters() ) emit progress( nFramesReceived/2 );
-        else  emit progress( nFramesReceived );
+        if ( _mpx3gui->getConfig()->getReadBothCounters() ) emit progress( nFramesKept/2 );
+        else  emit progress( nFramesKept );
 
         /*
         if( _mpx3gui->getConfig()->getColourMode() ) {
@@ -435,7 +436,6 @@ void DataTakingThread::run() {
 
     // Keep some scoring info for later
     _score.framesKept = nFramesKept;
-    _score.framesReceived = nFramesReceived;
 
     qDebug() << "[INFO] received : " << nFramesReceived
              << " | frames kept : " << nFramesKept
@@ -453,7 +453,7 @@ void DataTakingThread::run() {
     // QCstmGLVisualization could be having a hard time trying
     //  to keep up with the drawing.  At that moment something
     //  needs to happens to avoid blocking.
-    emit data_taking_finished( nFramesReceived );
+    emit data_taking_finished( 0 );
 
     disconnect( this, SIGNAL(reload_all_layers()), _vis, SLOT(reload_all_layers()));
     disconnect( this, SIGNAL(reload_layer(int)), _vis, SLOT(reload_layer(int)));
@@ -496,6 +496,22 @@ void DataTakingThread::rewindScoring() {
     _score.framesKept = 0;
     _score.framesReceived = 0;
     _score.framesRequested = 0;
+    _score.missingToCompleteJob = 0;
+    _score.tocomplete = false;
+}
+
+int DataTakingThread::calcScoreDifference() {
+
+    // counting down
+    _score.missingToCompleteJob -= _score.framesKept;
+
+    // counting up
+    _score.framesReceived += _score.framesKept;
+
+    if ( _score.missingToCompleteJob != 0 ) _score.tocomplete = true;
+    else _score.tocomplete = false;
+
+    return _score.missingToCompleteJob;
 }
 
 void DataTakingThread::on_busy_drawing() {

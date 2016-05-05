@@ -960,11 +960,14 @@ void Dataset::applyOBCorrection() {
         // Let the operation happen in float point and then we'll normalize to pass to the int map.
         // Allocate some scratch memory
         double * normFrame = new double[getPixelsPerLayer()];
+
         // Find the smallest value.  Initialize it for the search.
-        double min = -1.0*log(((double)currentLayer[0]) / ((double)correctionLayer[0]));
+        double min = 1.;
+        if ( currentLayer[0] > 0 ) min = -1.0*log(((double)currentLayer[0]) / ((double)correctionLayer[0]));
+
         double max = min;
         double low = 0;
-        if (currentLayer[0] > correctionLayer[0]) min = currentLayer[0];
+        if ( currentLayer[0] > correctionLayer[0] )  min = currentLayer[0];
 
         //Setting minimum and maximum of the current Data and OB data.
         double Dmin = (double)currentLayer[0];
@@ -1021,11 +1024,11 @@ void Dataset::applyOBCorrection() {
 
                 if (currentLayer[j] != 0)
                 {
-                    if (correctionLayer[j] > 0) {
+                    if (correctionLayer[j] > 0 && currentLayer[j] > 0) {
 
                         //Calculation of the correction with and without k-factor
-                        if(use_k)normFrame[j] = -1.0*log(((double)currentLayer[j]) / (k*(double)correctionLayer[j]));
-                        if(!use_k)normFrame[j] = -1.0*log(((double)currentLayer[j]) / ((double)correctionLayer[j]));
+                        if (  use_k ) normFrame[j] = -1.0*log(((double)currentLayer[j]) / (k*(double)correctionLayer[j]));
+                        if ( !use_k ) normFrame[j] = -1.0*log(((double)currentLayer[j]) / ((double)correctionLayer[j]));
 
                         //set Minimum. Value closest to 0 is taken.
                         if (std::abs(normFrame[j]) < min && normFrame[j] != 0)
@@ -1235,8 +1238,12 @@ unsigned int Dataset::sumFrame(int *frame, int index, int threshold){
 
     // and keep an eye on overflow frames
     unsigned int overflowCntr = 0;
-    for(int i = 0 ; i < m_nx*m_ny;i++) {
+    for ( int i = 0 ; i < m_nx*m_ny ; i++ ) {
         newFrame[i] += frame[i];
+
+        // TO REMOVE !!!!!!!!!!!
+        //if ( newFrame[i] > 10 ) newFrame[i] = 0;
+
         // overflow check on the current single frame
         if ( frame[i] >= m_pixelDepthCntr ) overflowCntr++;
     }
