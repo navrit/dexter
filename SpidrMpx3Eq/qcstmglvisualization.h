@@ -94,6 +94,7 @@ private:
     QCPRange _manualRange;
     QCPRange _percentileRange;
     bool _logyPlot = false;
+    bool _infDataTaking = false;
 
     typedef struct {
         QString counts;
@@ -177,6 +178,12 @@ private slots:
     void on_logscale(bool);
 
     void correctionDialogueButtonClicked();
+
+    void on_infDataTakingCheckBox_toggled(bool checked);
+
+    void ntriggers_edit();
+
+    void triggerLength_edit();
 
 public slots:
     void StartDataTaking();

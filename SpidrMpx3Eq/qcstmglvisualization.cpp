@@ -100,7 +100,6 @@ void QCstmGLVisualization::updateETA() {
 void QCstmGLVisualization::StartDataTaking() {
 
     // The Start button becomes the Stop button
-
     if ( ! _takingData ) {
 
         // In the situation where data has been lost and
@@ -115,6 +114,8 @@ void QCstmGLVisualization::StartDataTaking() {
                 clearpreviousdata = false;
             }
         }
+        if ( _infDataTaking ) clearpreviousdata = false;
+
         if ( clearpreviousdata ) _mpx3gui->clear_data( false );
 
         // Threads
@@ -173,7 +174,7 @@ void QCstmGLVisualization::StartDataTaking() {
 
         // Change the Stop button to Start
         ui->startButton->setText( "Start" );
-        ui->singleshotPushButton->setText( "Start" );
+        ui->singleshotPushButton->setText( "single" );
 
         _takingData = false;
 
@@ -275,25 +276,34 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
         // And replot, this also attempts to apply selected corrections
         reload_all_layers( true );
 
-        // At this point I need to decide if the data taking is really finished.
-        // If the user is requesting that all frames are needed we look at
-
-        if ( ui->completeFramesCheckBox->isChecked() ) {
-
-            int missing = _dataTakingThread->calcScoreDifference();
-
-            if ( missing != 0 ) {
-                //qDebug() << "[INFO] missing : " << missing;
-                StartDataTaking();
-            } else {
-                _dataTakingThread->rewindScoring();
-            }
-
-        }
-
         // Change the Stop button to Start
         ui->startButton->setText( "Start" );
         ui->singleshotPushButton->setText( "single" );
+
+        // At this point I need to decide if the data taking is really finished.
+        // If the user is requesting that all frames are needed we look at
+        // Inf data taking takes priority here
+        if ( _infDataTaking ) {
+
+            _dataTakingThread->rewindScoring();
+            StartDataTaking();
+
+        } else {
+
+            if ( ui->completeFramesCheckBox->isChecked() ) {
+
+                int missing = _dataTakingThread->calcScoreDifference();
+
+                if ( missing != 0 ) {
+                    //qDebug() << "[INFO] missing : " << missing;
+                    StartDataTaking();
+                } else {
+                    _dataTakingThread->rewindScoring();
+                }
+
+            }
+        }
+
 
         // If single shot, recover previous NTriggers
         if ( _singleShot ) {
@@ -476,13 +486,15 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect( this, &QCstmGLVisualization::sig_statusBarClean, _mpx3gui, &Mpx3GUI::statusBarClean );
 
     // connection to configuration
-    connect( ui->nTriggersSpinBox, SIGNAL(valueChanged(int)),
-             _mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner,
-             SLOT(setValue(int)));
+    connect( ui->nTriggersSpinBox, SIGNAL(editingFinished()),
+             //_mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner,
+             //SLOT(setValue(int)));
+             this, SLOT(ntriggers_edit()) );
 
-    connect( ui->triggerLengthSpinBox, SIGNAL(valueChanged(int)),
-             _mpx3gui->getConfigMonitoring()->getUI()->triggerLengthSpinner,
-             SLOT(setValue(int)));
+    connect( ui->triggerLengthSpinBox, SIGNAL(editingFinished()),
+             //_mpx3gui->getConfigMonitoring()->getUI()->triggerLengthSpinner,
+             //SLOT(setValue(int)));
+             this, SLOT(triggerLength_edit()) );
 
     // This one need both the connection to the mirror combo box and the signal to the Configuration to take place
     connect( ui->operationModeComboBox_Vis, SIGNAL(activated(int)),
@@ -496,6 +508,18 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     // Defaults
     emit mode_changed( ui->summingCheckbox->isChecked() );
 
+}
+
+void QCstmGLVisualization::ntriggers_edit() {
+    _mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner->setValue(
+                ui->nTriggersSpinBox->value()
+                );
+}
+
+void QCstmGLVisualization::triggerLength_edit() {
+    _mpx3gui->getConfigMonitoring()->getUI()->triggerLengthSpinner->setValue(
+                ui->triggerLengthSpinBox->value()
+                );
 }
 
 void QCstmGLVisualization::startupActions()
@@ -727,7 +751,7 @@ void QCstmGLVisualization::progress_signal(int framecntr) {
 }
 
 
-void QCstmGLVisualization::reload_all_layers(bool corrections){
+void QCstmGLVisualization::reload_all_layers(bool corrections) {
 
     // Get busy
     SetBusyState();
@@ -874,7 +898,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
         //Calculate the profile of the selected region of the selected layer
         int layerIndex = getActiveThreshold();
-        _profiledialog->setLayer(layerIndex);
+        //_profiledialog->setLayer(layerIndex);
         _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, layerIndex, pixel_begin, pixel_end));
         _profiledialog->plotProfile();
 
@@ -1308,5 +1332,11 @@ void QCstmGLVisualization::on_logscale(bool checked)
 
     ui->histPlot->replot(QCustomPlot::rpQueued);
 
+}
+
+
+void QCstmGLVisualization::on_infDataTakingCheckBox_toggled(bool checked)
+{
+    _infDataTaking = checked;
 }
 

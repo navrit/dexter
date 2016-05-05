@@ -60,8 +60,12 @@ public:
     Ui::Mpx3GUI * GetUI() { return _ui; }
 
 private:
+    // ML605 layout
     vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
     vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
+    // compactSPIDR layout
+    //vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL, Dataset::orientationTtBRtL};
+    //vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(1, 1), QPoint(1, 0), QPoint(0, 0), QPoint(0, 1)};
     int mode = 0;
     //QApplication * _coreApp;
     Ui::Mpx3GUI * _ui;
