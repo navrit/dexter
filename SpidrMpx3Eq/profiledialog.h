@@ -26,6 +26,9 @@ public:
     void plotProfile();
     void setLayer(int layerIndex) { ui->comboBox->setCurrentText(QString("Threshold %1").arg(layerIndex));}
 
+    //Events:
+    void mousePressEvent(QMouseEvent *event);
+
 private:
     Ui::ProfileDialog *ui;
     Mpx3GUI * _mpx3gui;
@@ -39,8 +42,6 @@ private:
     void changeText(QString text);
     bool valueinRange(int value);
 
-    //Events:
-    void mousePressEvent(QMouseEvent *event);
 
 private slots:
     void on_buttonBox_accepted();
