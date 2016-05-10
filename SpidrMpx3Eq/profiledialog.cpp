@@ -10,6 +10,9 @@ ProfileDialog::ProfileDialog(QWidget *parent) :
     ui(new Ui::ProfileDialog)
 {
     ui->setupUi(this);
+
+    makeEditsList();
+
 }
 
 ProfileDialog::~ProfileDialog()
@@ -24,7 +27,10 @@ void ProfileDialog::SetMpx3GUI(Mpx3GUI * p )
     connect( this, &ProfileDialog::user_accepted_profile,
              _mpx3gui->getVisualization(),
              &QCstmGLVisualization::on_user_accepted_profile );
+
+    connect( ui->profilePlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mousePressEvent(QMouseEvent*)));
 }
+
 
 
 void ProfileDialog::on_buttonBox_accepted() {
@@ -84,27 +90,36 @@ void ProfileDialog::plotProfile()
 
 void ProfileDialog::addMeanLines(QString data){
     if(data != ""){
-        QStringList datalist = data.split("\n");
-        QStringList meanlist = datalist[1].split("\t");
+        QStringList meanlist = data.split("\n");
+        meanlist = meanlist[1].split("\t");
         meanlist.removeFirst();
 
         QList<int> profilevector = _mpx3gui->getDataset()->getProfilepoints();
         bool ok;
 
         //Clear any existing graphdata
+        //MyGraphs contains the profilegraph, 6 dots and then 3 graphs for the mean lines.
         for(int i = 7; i < 10; i++)
             ui->profilePlot->graph(i)->clearData();
 
         //Add horizontal lines at the level of the mean for every region.
         for(int i = 0; i < meanlist.length(); i ++){
             QString mean = meanlist.at(i);
-            ui->profilePlot->graph(7+i)->addData(profilevector[i*2], mean.toDouble(&ok)); //MyGraphs contains the profilegraph, 6 dots and then 3 graphs for the mean lines.
-            ui->profilePlot->graph(7+i)->addData(profilevector[i*2+1], mean.toDouble(&ok));
+
+            if(meanlist.length() == 2 && profilevector[0] == -1){//The left meanline is not drawn.
+                ui->profilePlot->graph(8+i)->addData(profilevector[i*2+2], mean.toDouble(&ok));
+                ui->profilePlot->graph(8+i)->addData(profilevector[i*2+3], mean.toDouble(&ok));
+            }
+            else {
+                ui->profilePlot->graph(7+i)->addData(profilevector[i*2], mean.toDouble(&ok));
+                ui->profilePlot->graph(7+i)->addData(profilevector[i*2+1], mean.toDouble(&ok));
+            }
         if(!ok)changeText("An error has occured with converting the means to integers.");
         }
 
         ui->profilePlot->replot(QCustomPlot::rpQueued);
     }
+    else ; //TODO
 }
 
 void ProfileDialog::on_checkBox_toggled(bool checked)
@@ -122,23 +137,14 @@ void ProfileDialog::on_pushButton_clicked()
 {   //Assign boundary Profilepoints
     bool inRange = true;
 
-    QList<QObject*> list = ui->groupBox->children();
-    QList<QLineEdit*> editsList;
-    for(int i = 0; i < list.length(); i++){
-        if(qobject_cast<QLineEdit*>(list[i]) !=0) editsList.append( qobject_cast<QLineEdit*>(list[i]) );
-    }
-
     for(int i = 0 ; i < editsList.length(); i++){
-        //If the child object is a LineEdit, the value is extraced
+        //For every QLineEdit the value is extracted
         //and passed to ProfilePoints only if it lies within the selected region.
        QString text = editsList[i]->text();
-       if(text!= ""){
-            int value = text.toInt();
-            if(valueinRange(value)){
-                _mpx3gui->getDataset()->setProfilepoint(i, text);
-            }
-            else inRange = false;
-       }
+       if(text!= "")
+            if(!valueinRange(text.toInt())) inRange = false;
+
+       _mpx3gui->getDataset()->setProfilepoint(i, text);
     }
 
     //And calculate the CNR or display error message.
@@ -175,8 +181,6 @@ void ProfileDialog::on_comboBox_currentIndexChanged(int index)
 
 void ProfileDialog::on_lineEdit_editingFinished()
 {
-   // _mpx3gui->getDataset()->setProfilepoint(0, ui->lineEdit->text().toInt());
-
     int x = ui->lineEdit->text().toInt();
     ui->profilePlot->graph(1)->clearData();
     ui->profilePlot->graph(1)->addData(x, _Axismap[x]);
@@ -186,8 +190,6 @@ void ProfileDialog::on_lineEdit_editingFinished()
 
 void ProfileDialog::on_lineEdit_2_editingFinished()
 {
-    //_mpx3gui->getDataset()->setProfilepoint(1, ui->lineEdit_2->text().toInt());
-
     int x = ui->lineEdit_2->text().toInt();
     ui->profilePlot->graph(2)->clearData();
     ui->profilePlot->graph(2)->addData(x, _Axismap[x]);
@@ -197,8 +199,6 @@ void ProfileDialog::on_lineEdit_2_editingFinished()
 
 void ProfileDialog::on_lineEdit_3_editingFinished()
 {
-    //_mpx3gui->getDataset()->setProfilepoint(2, ui->lineEdit_3->text().toInt());
-
     int x = ui->lineEdit_3->text().toInt();
     ui->profilePlot->graph(3)->clearData();
     ui->profilePlot->graph(3)->addData(x, _Axismap[x]);
@@ -208,8 +208,6 @@ void ProfileDialog::on_lineEdit_3_editingFinished()
 
 void ProfileDialog::on_lineEdit_4_editingFinished()
 {
-    //_mpx3gui->getDataset()->setProfilepoint(3, ui->lineEdit_4->text().toInt());
-
     int x = ui->lineEdit_4->text().toInt();
     ui->profilePlot->graph(4)->clearData();
     ui->profilePlot->graph(4)->addData(x, _Axismap[x]);
@@ -249,8 +247,44 @@ void ProfileDialog::on_comboBox_currentIndexChanged(const QString &arg1)
 }
 
 void ProfileDialog::mousePressEvent(QMouseEvent *event)
-{
-    if(event->button() == Qt::LeftButton){
+{   int i;
 
+    //i = _mpx3gui->getDataset()->countProfilepoints();
+    i = _mpx3gui->getDataset()->getProfilepoints().indexOf(-1);
+
+    if(event->button() == Qt::LeftButton){
+        if(i == 6) {
+            //Do nothing for now.
+//            i = 1;
+//            for(int j = 1; j <= 6; j++)
+//                ui->profilePlot->graph(j)->clearData();
+        }
+        else{
+            int x = ui->profilePlot->xAxis->pixelToCoord(event->x());
+            ui->profilePlot->graph(i+1)->addData(x, _Axismap[x]);
+            editsList[i]->setText(QString("%1").arg(x));
+            _mpx3gui->getDataset()->setProfilepoint(i, x); //Get's done by on_pushbutton_clicked()
+
+        }
+    }
+}
+
+void ProfileDialog::closeEvent(QCloseEvent *event)
+{
+    emit user_accepted_profile();
+}
+
+void ProfileDialog::makeEditsList(){ //Depends on the ui layoutstructure...
+    QList<QObject*> list = ui->groupBox_2->children();
+    for(int i = 0; i < list.length(); i++){
+        if(qobject_cast<QLineEdit*>(list[i]) != 0) editsList.append( qobject_cast<QLineEdit*>(list[i]) );
+    }
+    list = ui->groupBox_3->children();
+    for(int i = 0; i < list.length(); i++){
+        if(qobject_cast<QLineEdit*>(list[i]) != 0) editsList.append( qobject_cast<QLineEdit*>(list[i]) );
+    }
+    list = ui->groupBox_4->children();
+    for(int i = 0; i < list.length(); i++){
+        if(qobject_cast<QLineEdit*>(list[i]) != 0) editsList.append( qobject_cast<QLineEdit*>(list[i]) );
     }
 }

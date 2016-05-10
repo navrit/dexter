@@ -303,6 +303,12 @@ void Dataset::setProfilepoint(int index, QString pos){
     Profilepoints[index] = p;
 }
 
+void Dataset::clearProfilepoints()
+{
+    for(int i = 0; i < Profilepoints.length(); i++)
+        Profilepoints[i] = -1;
+}
+
 QMap<int, int> Dataset::calcProfile(QString axis, int layerIndex, QPoint pixel_init, QPoint pixel_end){
     QList<int> keys = m_thresholdsToIndices.keys();
 
@@ -350,7 +356,7 @@ QString Dataset::calcCNR(QMap<int, int> Axismap){
     if(Npoints < 4 || Npoints == 5){
         mean = calcRegionMean(Axismap.begin().key(), Axismap.end().key(), Axismap);
         stdev = calcRegionStdev(Axismap.begin().key(), Axismap.end().key(), Axismap, mean);
-        data = QString("Please choose four or six points, indicating two or three regions, for the calculation of the CNR.\nMean: %1 \nStdev: %2").arg(mean).arg(stdev);
+        return QString("Please choose four or six points, indicating two or three regions, for the calculation of the CNR.\nMean: %1 \nStdev: %2").arg(mean).arg(stdev);
     }
 
     else {
@@ -358,29 +364,32 @@ QString Dataset::calcCNR(QMap<int, int> Axismap){
 
         QVector<double> mean_v;
         QVector<double> stdev_v;
-        double cnr;
-        //Calculating "loudness"/SNR(log) in dB:
+        double cnr;        
         double snr;
+        bool left = false;
+        bool right = false;
 
 
-        for(int i = 0; i < Profilepoints.size() - 1; i += 2){
-            //double mean = calcRegionMean(Profilepoints[i], Profilepoints[i+1], Axismap);
-            //double stdev = calcRegionStdev(Profilepoints[i], Profilepoints[i+1], Axismap, mean);
-
+        for(int i = 0; i < Profilepoints.size(); i += 2){
             if(Profilepoints[i] != -1){
-                double mean =calcRegionMean(Profilepoints[i], Profilepoints[i+1], Axismap);
-                mean_v.push_back(mean);
-                stdev_v.push_back(calcRegionStdev(Profilepoints[i], Profilepoints[i+1], Axismap, mean));
+                if(Profilepoints[i+1] == -1) data = QString("Please choose boundary points for two or three areas.");
+                else {
+                    double mean = calcRegionMean(Profilepoints[i], Profilepoints[i+1], Axismap);
+                    mean_v.push_back(mean);
+                    stdev_v.push_back(calcRegionStdev(Profilepoints[i], Profilepoints[i+1], Axismap, mean));
+                    if(i < 2) left = true;
+                    if(i > 3) right = true;
+                }
             }
+        }
 
-            }
-
-        if(Npoints == 6){
+        if (mean_v.length() == 3){
             cnr = mean_v[1] - 0.5*(mean_v[0] + mean_v[2]);
             // if(!obCorrected) cnr *= -1;
             cnr /= 0.5*(stdev_v[0] + stdev_v[2]);
             cnr *= sqrt(Profilepoints[3] - Profilepoints[2]);
 
+            //Calculating "loudness"/SNR(log) in dB:
             snr = mean_v[1];
             snr /= 0.5*(mean_v[0] + mean_v[2]);
             snr = 10*log10(snr);
@@ -390,6 +399,40 @@ QString Dataset::calcCNR(QMap<int, int> Axismap){
             data += QString("Stdev:\t%1\t%2\t%3\n").arg(stdev_v[0]).arg(stdev_v[1]).arg(stdev_v[2]);
         }
 
+        else if (mean_v.length() == 2){
+
+            if (mean_v[0] >= mean_v[1]){
+                cnr = mean_v[0] - mean_v[1];
+                if(!obCorrected) cnr *= -1;
+                if(stdev_v[1] != 0) cnr /= stdev_v[1];
+                    else ; //error msg
+
+                if (left) cnr *= sqrt(Profilepoints[1] - Profilepoints[0]);
+                if (right) cnr *= sqrt(Profilepoints[3] - Profilepoints[2]);
+
+                data += "\tSignal\tBackground\n";/*
+                data += QString("Mean:\t%1\t%2\n").arg(mean_v[0]).arg(mean_v[1]);
+                data += QString("Stdev:\t%1\t%2\n").arg(stdev_v[0]).arg(stdev_v[1]);*/
+            }
+            else {
+                cnr = mean_v[1] - mean_v[0];
+                if(!obCorrected) cnr *= -1;
+                if(stdev_v[0] != 0) cnr /= stdev_v[0];
+                    else ; //Error message?
+
+                if (left) cnr *= sqrt(Profilepoints[3] - Profilepoints[2]);
+                if (right) cnr *= sqrt(Profilepoints[5] - Profilepoints[4]);
+
+                data += "\tBackground\tSignal\n";/*
+                data += QString("Mean:\t%1\t%2\n").arg(mean_v[0]).arg(mean_v[1]);
+                data += QString("Stdev:\t%1\t%2\n").arg(stdev_v[0]).arg(stdev_v[1]);*/
+            }
+
+            data += QString("Mean:\t%1\t%2\n").arg(mean_v[0]).arg(mean_v[1]);
+            data += QString("Stdev:\t%1\t%2\n").arg(stdev_v[0]).arg(stdev_v[1]);
+        }
+
+        else return QString("Something went wrong, please choose boundary points for two or three areas.");
 
         data += QString("\nCNR:\t%1\nSNR:\t%2 dB").arg(cnr).arg(snr);
     }
@@ -402,7 +445,6 @@ int Dataset::countProfilepoints(){
     for(int i=0; i < Profilepoints.size(); i++){
         if(Profilepoints[i]!= -1) n++;
     }
-
     return n;
 }
 
@@ -421,6 +463,7 @@ double Dataset::calcRegionMean(int begin, int end, QMap<int, int> Axismap){
         i++;
     }
     if(nMean != 0) mean /= nMean;
+
 
     return mean;
 }

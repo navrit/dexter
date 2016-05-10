@@ -26,8 +26,6 @@ public:
     void plotProfile();
     void setLayer(int layerIndex) { ui->comboBox->setCurrentText(QString("Threshold %1").arg(layerIndex));}
 
-    //Events:
-    void mousePressEvent(QMouseEvent *event);
 
 private:
     Ui::ProfileDialog *ui;
@@ -36,11 +34,14 @@ private:
     QPoint _end; //! The coordinates of the pixel where the selected region ends.
     QMap<int, int> _Axismap; //! Contains a total pixelvalue for each X or Y value in the selected profile region.
     QString _axis; //!The axis that is currently used as the horizontal axis in the profileplot.
+    QList<QLineEdit*> editsList; //!Contains the QLineEdits
+    //bool _left; //When 2 regions are selected, indicates if these are the two on the left.
 
     //Functions:
     void addMeanLines(QString data);
     void changeText(QString text);
     bool valueinRange(int value);
+    void makeEditsList();
 
 
 private slots:
@@ -65,6 +66,10 @@ private slots:
     void on_lineEdit_6_editingFinished();
 
     void on_comboBox_currentIndexChanged(const QString &arg1);
+
+    //Eventhandlers:
+    void mousePressEvent(QMouseEvent *event);
+    void closeEvent(QCloseEvent *event);
 
 signals:
     void user_accepted_profile();

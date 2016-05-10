@@ -147,7 +147,8 @@ public:
   unsigned int sumFrame(int *frame, int index, int threshold);//!< Adds the data pointed to by frame to the data of chip index at the specified threshold.
   void toJson(); //!<return JSON object to save.
   void setProfilepoint(int index, QString pos);
-  void clearProfilepoints(){Profilepoints.clear();}
+  void setProfilepoint(int index, int pos){ if(pos > 0 && pos < 256) setProfilepoint(index, QString("%1").arg(pos));}
+  void clearProfilepoints();
   void setOBcorrected(bool status){obCorrected = status;}
 
   QVector<QPoint> getLayoutVector(){return m_frameLayouts;}

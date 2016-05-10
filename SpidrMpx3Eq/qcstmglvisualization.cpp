@@ -657,8 +657,8 @@ void QCstmGLVisualization::on_user_accepted_profile()
         delete _profiledialog;
         _profiledialog = nullptr;
 
-        //causes aray index error:
-        //_mpx3gui->getDataset()->clearProfilepoints(); //Clear the Profilepoints list for new CNR calculation in new dialog
+        //Re-initialize the Profilepoints list for new CNR calculation in new dialog
+        _mpx3gui->getDataset()->clearProfilepoints();
     }
 
 }
