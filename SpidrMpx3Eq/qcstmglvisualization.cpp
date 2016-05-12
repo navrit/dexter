@@ -188,6 +188,8 @@ void QCstmGLVisualization::StartDataTaking() {
         emit sig_statusBarAppend("stop","orange");
     }
 
+    //Set corrected status of the newly taken data to false.
+    _mpx3gui->getDataset()->setCorrected(false);
 }
 
 void QCstmGLVisualization::ETAToZero() {
@@ -1252,7 +1254,6 @@ void QCstmGLVisualization::on_saveWithScaleCheckBox_toggled(bool checked)
 
 void QCstmGLVisualization::on_singleshotPushButton_clicked()
 {
-
     // Temporarily change the configuration to a single shot
     _singleShot = true;
     _singleShotSaveCurrentNTriggers = _mpx3gui->getConfig()->getNTriggers();

@@ -85,7 +85,8 @@ void ProfileDialog::plotProfile()
         ui->profilePlot->addGraph();
         ui->profilePlot->graph(6+i)->setPen(QPen(Qt::red));
     }
-
+    //Make sure profilepoints does not contain any points before they are indicated.
+    _mpx3gui->getDataset()->clearProfilepoints();
 }
 
 void ProfileDialog::addMeanLines(QString data){
@@ -253,11 +254,8 @@ void ProfileDialog::mousePressEvent(QMouseEvent *event)
     i = _mpx3gui->getDataset()->getProfilepoints().indexOf(-1);
 
     if(event->button() == Qt::LeftButton){
-        if(i == 6) {
-            //Do nothing for now.
-//            i = 1;
-//            for(int j = 1; j <= 6; j++)
-//                ui->profilePlot->graph(j)->clearData();
+        if(i == -1) {
+            changeText("There are already 6 boundary points indicated.");
         }
         else{
             int x = ui->profilePlot->xAxis->pixelToCoord(event->x());

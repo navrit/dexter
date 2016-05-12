@@ -385,7 +385,7 @@ QString Dataset::calcCNR(QMap<int, int> Axismap){
 
         if (mean_v.length() == 3){
             cnr = mean_v[1] - 0.5*(mean_v[0] + mean_v[2]);
-            // if(!obCorrected) cnr *= -1;
+            if(!corrected) cnr *= -1;
             cnr /= 0.5*(stdev_v[0] + stdev_v[2]);
             cnr *= sqrt(Profilepoints[3] - Profilepoints[2]);
 
@@ -403,29 +403,31 @@ QString Dataset::calcCNR(QMap<int, int> Axismap){
 
             if (mean_v[0] >= mean_v[1]){
                 cnr = mean_v[0] - mean_v[1];
-                if(!obCorrected) cnr *= -1;
-                if(stdev_v[1] != 0) cnr /= stdev_v[1];
-                    else ; //error msg
+                if(!corrected) {//If not corrected, the lower mean [1] is the signal.
+                    cnr *= -1;
+                    if(stdev_v[0] != 0) cnr /= stdev_v[0];
+                }
+                else if(stdev_v[1] != 0) cnr /= stdev_v[1];
+                else ;//error message?
 
                 if (left) cnr *= sqrt(Profilepoints[1] - Profilepoints[0]);
                 if (right) cnr *= sqrt(Profilepoints[3] - Profilepoints[2]);
 
-                data += "\tSignal\tBackground\n";/*
-                data += QString("Mean:\t%1\t%2\n").arg(mean_v[0]).arg(mean_v[1]);
-                data += QString("Stdev:\t%1\t%2\n").arg(stdev_v[0]).arg(stdev_v[1]);*/
+                data += "\tSignal\tBackground\n";
             }
             else {
                 cnr = mean_v[1] - mean_v[0];
-                if(!obCorrected) cnr *= -1;
-                if(stdev_v[0] != 0) cnr /= stdev_v[0];
-                    else ; //Error message?
+                if(!corrected) {//If not corrected, the lower mean [0] is the signal.
+                    cnr *= -1;
+                    if(stdev_v[1] != 0) cnr /= stdev_v[1];
+                }
+                else if(stdev_v[0] != 0) cnr /= stdev_v[0];
+                else ; //Error message?
 
                 if (left) cnr *= sqrt(Profilepoints[3] - Profilepoints[2]);
                 if (right) cnr *= sqrt(Profilepoints[5] - Profilepoints[4]);
 
-                data += "\tBackground\tSignal\n";/*
-                data += QString("Mean:\t%1\t%2\n").arg(mean_v[0]).arg(mean_v[1]);
-                data += QString("Stdev:\t%1\t%2\n").arg(stdev_v[0]).arg(stdev_v[1]);*/
+                data += "\tBackground\tSignal\n";
             }
 
             data += QString("Mean:\t%1\t%2\n").arg(mean_v[0]).arg(mean_v[1]);
@@ -984,8 +986,7 @@ void Dataset::applyOBCorrection() {
     if (obCorrection == nullptr)
         return;
 
-    //Used
-    bool obCorrected = true;
+    //bool corrected = true;
     bool OBmatch = true;
     bool use_k = false;
     double k = 1;
