@@ -354,8 +354,8 @@ QString Dataset::calcCNR(QMap<int, int> Axismap){
 
     //Show message and stats of the profile when only 1 or 2 numbers are filled in.
     if(Npoints < 4 || Npoints == 5){
-        mean = calcRegionMean(Axismap.begin().key(), Axismap.end().key(), Axismap);
-        stdev = calcRegionStdev(Axismap.begin().key(), Axismap.end().key(), Axismap, mean);
+        mean = calcRegionMean(Axismap.firstKey(), Axismap.lastKey(), Axismap);
+        stdev = calcRegionStdev(Axismap.firstKey(), Axismap.lastKey(), Axismap, mean);
         return QString("Please choose four or six points, indicating two or three regions, for the calculation of the CNR.\nMean: %1 \nStdev: %2").arg(mean).arg(stdev);
     }
 
