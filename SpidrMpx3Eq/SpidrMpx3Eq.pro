@@ -83,6 +83,7 @@ SOURCES += qcstmBHWindow.cpp
 SOURCES += qcstmBHdialog.cpp
 SOURCES += StepperMotorController.cpp
 SOURCES += qcustomplot.cpp
+SOURCES += mtadialog.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -115,6 +116,7 @@ HEADERS += qcstmBHWindow.h
 HEADERS += qcstmBHdialog.h
 HEADERS += StepperMotorController.h
 HEADERS += qcustomplot.h
+HEADERS += mtadialog.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \
@@ -130,8 +132,9 @@ FORMS    += mpx3gui.ui \
     qcstmBHdialog.ui \
     qcstmcorrectionsdialog.ui \
     statsdialog.ui \
-    profiledialog.ui
-    qcstmBHdialog.ui
+    profiledialog.ui \
+    qcstmBHdialog.ui \
+    mtadialog.ui
 
 DISTFILES += \
     shaders/heatmap.frag \
