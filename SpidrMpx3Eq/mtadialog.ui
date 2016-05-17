@@ -174,7 +174,7 @@
         <widget class="BarChart" name="barChartHisto" native="true"/>
        </item>
        <item>
-        <widget class="QCstmPlotTimePlot" name="timePlot" native="true"/>
+        <widget class="QWidget" name="timePlot" native="true"/>
        </item>
       </layout>
      </item>
@@ -193,12 +193,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>QCstmPlotTimePlot</class>
-   <extends>QWidget</extends>
-   <header>qcstmplottimeplot.h</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>BarChart</class>
    <extends>QWidget</extends>
