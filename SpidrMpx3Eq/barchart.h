@@ -6,6 +6,10 @@
 #ifndef _BAR_CHART_H_
 #define _BAR_CHART_H_
 
+#include <QObject>
+#include <QWidget>
+#include <QResizeEvent>
+
 #include "qcustomplot.h"
 
 #include <vector>
@@ -33,7 +37,7 @@ class BarChart: public QCustomPlot
 
 public:
 
-	BarChart( QWidget * parent );
+    explicit BarChart( QWidget * parent );
 	~BarChart();
 
 	QCPBars * GetDataSet(int id) { return _barSets.at(id); };
@@ -46,9 +50,15 @@ public:
 	void SetLogX(bool setl);
 
 	void SetValueInSet(unsigned int setId, double val, double weight = 1);
-	//void PushBackToSet(unsigned int setId, double val, double weight = 1);
+    void SetValueInSetNonAcc(unsigned int setId, double val, double weight = 1);
+
+    //void PushBackToSet(unsigned int setId, double val, double weight = 1);
 	//void DumpData();
 	void Clean();
+
+    //void mouseDoubleClickEvent(QMouseEvent *event);
+
+    void fitToHeight();
 
 private:
 

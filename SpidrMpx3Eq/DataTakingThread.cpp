@@ -102,6 +102,7 @@ void DataTakingThread::run() {
     // Get the list of id's for active devices
     QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
     int nChips = activeDevices.size();
+    //KoreaHack int nChips = 4;
     int firstDevId = activeDevices[0];
 
     // Data structures for all 8 thresholds
@@ -262,10 +263,14 @@ void DataTakingThread::run() {
         }
 
 
+
         for(int i = 0 ; i < activeDevices.size() ; i++) {
+        //KoreaHack for(int i = 0 ; i < 4 ; i++) {
 
             // retreive data for a given chip
             framedata = spidrdaq->frameData(i, &size_in_bytes);
+            //KoreaHackif ( i != 3 ) framedata = spidrdaq->frameData(i, &size_in_bytes);
+            //KoreaHackif ( i == 3 ) framedata = spidrdaq->frameData(1, &size_in_bytes);
 
             //cout << "chip id : " << activeDevices[i] << " | SpidrDaq::frameShutterCounter: " << spidrdaq->frameShutterCounter(i) << endl;
             // if ( size_in_bytes == 0 ) continue; // this may happen
@@ -284,6 +289,8 @@ void DataTakingThread::run() {
                     th2[i] = new QVector<int>(sizeReduced, 0);
                     th4[i] = new QVector<int>(sizeReduced, 0);
                     th6[i] = new QVector<int>(sizeReduced, 0);
+
+                    //qDebug() << size_in_bytes << sizeReduced;
 
                     SeparateThresholds(i, framedata, size, th0[i], th2[i], th4[i], th6[i], sizeReduced);
 
@@ -473,9 +480,11 @@ void DataTakingThread::run() {
     // clear counters in SpidrDac
     spidrdaq->resetLostCount();
 
+
     delete spidrcontrol;
 
 }
+
 
 pair<int, int> DataTakingThread::XtoXY(int X, int dimX){
     return make_pair(X % dimX, X/dimX);

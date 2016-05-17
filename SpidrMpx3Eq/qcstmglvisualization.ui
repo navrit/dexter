@@ -344,43 +344,14 @@
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
            <layout class="QGridLayout" name="gridLayout_3">
-            <item row="1" column="7">
-             <widget class="QSpinBox" name="triggerLengthSpinBox">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>trigger length</string>
-              </property>
-              <property name="maximum">
-               <number>999999999</number>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="2" colspan="2">
-             <widget class="QComboBox" name="operationModeComboBox_Vis">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>operation mode</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="4">
+            <item row="1" column="2">
              <widget class="QLabel" name="label_2">
               <property name="text">
                <string>Triggers</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="5">
+            <item row="1" column="3">
              <widget class="QSpinBox" name="nTriggersSpinBox">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -396,14 +367,56 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="6">
+            <item row="1" column="5">
+             <widget class="QSpinBox" name="triggerLengthSpinBox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string>trigger length</string>
+              </property>
+              <property name="maximum">
+               <number>999999999</number>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="2">
+             <widget class="QComboBox" name="operationModeComboBox_Vis">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string>operation mode</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="4">
              <widget class="QLabel" name="label">
               <property name="text">
                <string>Length</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="2" colspan="6">
+            <item row="2" column="0">
+             <widget class="QPushButton" name="multiThresholdAnalysisPushButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>MTA</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="5">
              <widget class="QLabel" name="statsLabel">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">

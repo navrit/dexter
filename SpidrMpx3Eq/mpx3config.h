@@ -44,6 +44,9 @@ class Mpx3Config: public QObject {
 	bool stepperUseCalib = false;
 	double stepperAcceleration = -1., stepperSpeed = -1., stepperCalibPos0 = -1., stepperCalibAngle0 = -1., stepperCalibPos1 = -1., stepperCalibAngle1 = -1.;
 
+    // Bias
+    double biasVolt = 0.;
+
     // Some constants in the configuration (MPX3 manual pag. 18)
     unsigned int * __pixelDepthMap;// = { 1 , 6 , 12 , 24 };
     const unsigned int __pixelDepth12BitsIndex = 2;
@@ -89,6 +92,7 @@ public:
 	int getTriggerPeriodMS(){return _trigPeriod_ms;}
     unsigned int getPixelDepthFromIndex(int indx);
     unsigned int getPixelDepth12BitsIndex() { return __pixelDepth12BitsIndex; }
+    double getBiasVoltage() { return biasVolt; }
 
 	void checkChipResponse(int devIndx, detector_response dr);
 	bool detectorResponds(int devIndx);
@@ -122,9 +126,9 @@ public:
 	int getTriggerDowntime(){return TriggerDowntime_us;}
 	int getTriggerDowntime_ms(){return TriggerDowntime_us/1000;}
 
-	int getNTriggers(){return nTriggers;}
+    int getNTriggers(){ return nTriggers; }
 
-	bool getStepperUseCalib(){ return stepperUseCalib; }
+    bool getStepperUseCalib() { return stepperUseCalib; }
 	double getStepperAcceleration() { return stepperAcceleration; }
 	double getStepperSpeed() { return stepperSpeed; }
 	double getStepperCalibPos0() { return stepperCalibPos0; }
@@ -165,9 +169,18 @@ private:
 	void CalibAngle0Changed(double);
 	void CalibPos1Changed(double);
 	void CalibAngle1Changed(double);
-
+    void BiasVoltageChanged(double);
 
 public slots:
+
+void setBiasVoltage(double volt) {
+        if ( volt != this->getBiasVoltage() ) {
+            biasVolt = volt;
+            BiasVoltageChanged(volt);
+        }
+        SendConfiguration();
+}
+
 void setIpAddress(QString ip) {
 
     /*

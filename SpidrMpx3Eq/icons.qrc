@@ -11,5 +11,12 @@
         <file>icons/Actions-document-open-icon.png</file>
         <file>icons/Button-Turn-On-icon.png</file>
         <file>icons/switch-turn-off-icon.png</file>
+        <file>icons/Visualization_logo.png</file>
+        <file>icons/load_equalisation_logo.png</file>
+        <file>icons/eraser_equalisation_logo.png</file>
+        <file>icons/Equalisation_logo.png</file>
+        <file>icons/DACs_logo.png</file>
+        <file>icons/Config_logo.png</file>
+        <file>icons/ASI_algorithms_logo.png</file>
     </qresource>
 </RCC>

@@ -77,7 +77,7 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
     if ( checked ) {
         // Get a quick read first to let the user see immediately and start the timer.
         // The timer will keep refreshing periodically.
-        readTemp();
+        readMonitoringInfo();
         _timerId = this->startTimer( ui->samplingSpinner->value()*1000 ); // value comes in seconds from GUI.  Convert to ms.
     } else {
         this->killTimer( _timerId );
@@ -259,6 +259,9 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(ui->polarityComboBox, SIGNAL(activated(int)), config, SLOT(setPolarity(int)));
     connect(config, SIGNAL(polarityChanged(int)), ui->polarityComboBox, SLOT(setCurrentIndex(int)));
 
+    connect(ui->biasVoltageSpinner, SIGNAL(editingFinished()), this, SLOT(biasVoltageChanged()) );
+    connect(config, SIGNAL(BiasVoltageChanged(double)), ui->biasVoltageSpinner, SLOT(setValue(double)));
+
     connect(ui->maxPacketSizeSpinner, SIGNAL(valueChanged(int)), config, SLOT(setMaxPacketSize(int)));
     connect(config, SIGNAL(MaxPacketSizeChanged(int)), ui->maxPacketSizeSpinner, SLOT(setValue(int)));
 
@@ -325,6 +328,12 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
 
 }
 
+void QCstmConfigMonitoring::biasVoltageChanged(){
+
+    _mpx3gui->getConfig()->setBiasVoltage( ui->biasVoltageSpinner->value() );
+
+}
+
 void QCstmConfigMonitoring::widgetInfoPropagation()
 {
     // Part of this interface reflects on others, here's when
@@ -339,11 +348,11 @@ void QCstmConfigMonitoring::widgetInfoPropagation()
 
 void QCstmConfigMonitoring::timerEvent(QTimerEvent *) {
 
-    readTemp();
+    readMonitoringInfo();
 
 }
 
-void QCstmConfigMonitoring::readTemp() {
+void QCstmConfigMonitoring::readMonitoringInfo() {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
@@ -351,17 +360,24 @@ void QCstmConfigMonitoring::readTemp() {
 
         int mdegrees;
         if( spidrcontrol->getRemoteTemp( &mdegrees ) ) {
-            QString qs = QString("%1.%2").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
+            QString qs = QString("%1.%2 C").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
             ui->remoteTempMeasLabel->setText( qs );
         } else {
             ui->remoteTempMeasLabel->setText( "--.---" );
         }
 
         if( spidrcontrol->getLocalTemp( &mdegrees ) ) {
-            QString qs = QString("%1.%2").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
+            QString qs = QString("%1.%2 C").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
             ui->localTempMeasLabel->setText( qs );
         } else {
             ui->localTempMeasLabel->setText( "--.---" );
+        }
+        int biasVolts;
+        if ( spidrcontrol->getBiasVoltage(&biasVolts) ) {
+            QString qs = QString("%1 V").arg( biasVolts );
+            ui->biasVoltageMeasLabel->setText( qs );
+        } else {
+            ui->biasVoltageMeasLabel->setText( "--.---" );
         }
 
     }

@@ -3,8 +3,6 @@
 #include <QMap>
 #include <QPair>
 
-//QCstmPlotHistogram::QCstmPlotHistogram(QWidget*& parent)
-//    : QCustomPlot ( parent )
 QCstmPlotHistogram::QCstmPlotHistogram(QWidget * parent)
     : QCustomPlot ( parent )
 {

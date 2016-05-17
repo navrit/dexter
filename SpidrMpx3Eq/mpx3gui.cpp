@@ -233,13 +233,13 @@ void Mpx3GUI::on_shortcutsSwithPages() {
 
     QKeySequence k = sc->key();
     if ( k.matches( QKeySequence(tr("Ctrl+1")) ) ) {
-        _ui->stackedWidget->setCurrentIndex( 0 );
+        _ui->stackedWidget->setCurrentIndex( __visualization_page_Id );
     } else if ( k.matches( QKeySequence(tr("Ctrl+2")) ) ) {
-        _ui->stackedWidget->setCurrentIndex( 1 );
+        _ui->stackedWidget->setCurrentIndex( __configuration_page_Id );
     } else if ( k.matches( QKeySequence(tr("Ctrl+3")) ) ) {
-        _ui->stackedWidget->setCurrentIndex( 2 );
+        _ui->stackedWidget->setCurrentIndex( __dacs_page_Id );
     } else if ( k.matches( QKeySequence(tr("Ctrl+4")) ) ) {
-        _ui->stackedWidget->setCurrentIndex( 3 );
+        _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
     }
 
 }
@@ -420,13 +420,25 @@ bool Mpx3GUI::establish_connection() {
     int chipSize = config->getColourMode()? __matrix_size_x /2: __matrix_size_x ;
     workingSet = new Dataset(chipSize, chipSize, config->getNActiveDevices(), config->getPixelDepth()); //TODO: get framesize from config, load offsets & orientation from config
     originalSet = new Dataset(chipSize, chipSize, config->getNActiveDevices(), config->getPixelDepth());
+    //KoreaHack workingSet = new Dataset(chipSize, chipSize, 4, config->getPixelDepth()); //TODO: get framesize from config, load offsets & orientation from config
+    //KoreaHack originalSet = new Dataset(chipSize, chipSize, 4, config->getPixelDepth());
 
     clear_data( false );
+
     QVector<int> activeDevices = config->getActiveDevices();
     for ( int i = 0 ; i < activeDevices.size() ; i++ ) {
         getDataset()->setLayout(i, _MPX3RX_LAYOUT[activeDevices[i]]);
         getDataset()->setOrientation(i, _MPX3RX_ORIENTATION[activeDevices[i]]);
     }
+
+    //KoreaHack
+    /*
+    for ( int i = 0 ; i < 4 ; i++ ) {
+        getDataset()->setLayout(i, _MPX3RX_LAYOUT[i]);
+        getDataset()->setOrientation(i, _MPX3RX_ORIENTATION[i]);
+    }
+    */
+
     /*for(int i = 0; i < workingSet->getLayerCount();i++)
     updateHistogram(i);*/
     //emit frames_reload();
@@ -855,3 +867,23 @@ void Mpx3GUI::on_actionConnect_triggered() {
 
 }
 
+
+void Mpx3GUI::on_actionVisualization_triggered()
+{
+    _ui->stackedWidget->setCurrentIndex( __visualization_page_Id );
+}
+
+void Mpx3GUI::on_actionConfiguration_triggered()
+{
+    _ui->stackedWidget->setCurrentIndex( __configuration_page_Id );
+}
+
+void Mpx3GUI::on_actionDACs_triggered()
+{
+    _ui->stackedWidget->setCurrentIndex( __dacs_page_Id );
+}
+
+void Mpx3GUI::on_actionEqualization_triggered()
+{
+    _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
+}

@@ -16,6 +16,8 @@
 #include "gradient.h"
 #include "histogram.h"
 
+#include "mtadialog.h"
+
 #define __display_eta_granularity 200 // ms
 #define __networkOverhead 0.1
 
@@ -95,6 +97,8 @@ private:
     QCPRange _percentileRange;
     bool _logyPlot = false;
     bool _infDataTaking = false;
+
+    MTADialog * _mtadialog = nullptr;
 
     typedef struct {
         QString counts;
@@ -184,6 +188,11 @@ private slots:
     void ntriggers_edit();
 
     void triggerLength_edit();
+
+    void on_multiThresholdAnalysisPushButton_clicked();
+
+    void on_MTAClosed();
+
 
 public slots:
     void StartDataTaking();

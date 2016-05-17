@@ -318,7 +318,7 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
         /////////////////////////////
         // TEST
-        //_mpx3gui->getDataset()->dumpAllActivePixels();
+        _mpx3gui->getDataset()->dumpAllActivePixels();
 
     }
 
@@ -608,7 +608,7 @@ void QCstmGLVisualization::BuildStatsStringCounts(uint64_t counts)
 void QCstmGLVisualization::BuildStatsStringLostPackets(uint64_t lostPackets)
 {
 
-    if ( lostPackets == 0 )  {
+    if ( lostPackets == 0 ) {
         _statsString.lostPackets.clear();
         return;
     }
@@ -654,7 +654,7 @@ void QCstmGLVisualization::on_user_accepted_stats()
 
 void QCstmGLVisualization::on_user_accepted_profile()
 {
-    //Celete the corresponding window
+    //Delete the corresponding window
     if ( _profiledialog ) {
         delete _profiledialog;
         _profiledialog = nullptr;
@@ -932,7 +932,7 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
     if(selectedItem == &mask){
         if(_mpx3gui->getConfig()->getColourMode()){
 
-            qDebug() << "nat: "
+            qDebug() << "Nat[" << deviceID << "]:"
                      << naturalFlatCoord
                      << naturalFlatCoord+1
                      << naturalFlatCoord+_mpx3gui->getX()*2
@@ -1341,3 +1341,26 @@ void QCstmGLVisualization::on_infDataTakingCheckBox_toggled(bool checked)
     _infDataTaking = checked;
 }
 
+
+void QCstmGLVisualization::on_multiThresholdAnalysisPushButton_clicked()
+{
+
+    if ( ! _mtadialog ) {
+        _mtadialog = new MTADialog(_mpx3gui, this);
+        connect(_mtadialog, &MTADialog::finished, this, &QCstmGLVisualization::on_MTAClosed);
+    }
+
+    _mtadialog->show(); // modeless
+
+}
+
+void QCstmGLVisualization::on_MTAClosed()
+{
+
+    if ( _mtadialog ) {
+        disconnect(_mtadialog, &MTADialog::finished, this, &QCstmGLVisualization::on_MTAClosed);
+        delete _mtadialog;
+        _mtadialog = nullptr;
+    }
+
+}

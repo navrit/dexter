@@ -43,6 +43,25 @@ void Mpx3Config::SendConfiguration(){
         }
     }
 
+    // Globals
+    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+    if ( ! spidrcontrol ) return;
+
+    // Bias
+    if ( getBiasVoltage() > 0 ) {
+
+        spidrcontrol->setBiasSupplyEna( true );
+
+        if ( spidrcontrol->setBiasVoltage( getBiasVoltage() ) ) {
+            qDebug() << "[CONF] setting bias volate to: " << getBiasVoltage() << "(V)";
+        } else {
+            qDebug() << "[ERR ] error setting internal bias voltage";
+        }
+
+    } else {
+        spidrcontrol->setBiasSupplyEna( false );
+    }
+
 }
 
 void Mpx3Config::Configuration(bool reset, int deviceIndex) {
@@ -131,9 +150,11 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
                 nr_of_triggers
                 );
 
-    //cout << endl;
-}
 
+
+    //cout << endl;
+
+}
 
 void Mpx3Config::Configuration(bool reset, int deviceIndex, scan_config_parameters extrapars) {
     cout << "[INFO] Configuring chip " << deviceIndex;
@@ -352,10 +373,10 @@ void Mpx3Config::destroyController()
 }
 
 /*
- * If there is only one device connected, no matter what the devIndx is, the data is always at DataBuffer 0
- * Otherwise, for instance if only devices 0 and 2 are connected.  The data will be found in 0,1.
- * This member computes that transform using the detected status of the chips.
- */
+                * If there is only one device connected, no matter what the devIndx is, the data is always at DataBuffer 0
+                * Otherwise, for instance if only devices 0 and 2 are connected.  The data will be found in 0,1.
+                * This member computes that transform using the detected status of the chips.
+                */
 int Mpx3Config::getDataBufferId(int devIndx) {
 
     // If there is only one device connected, no matter what the devIndx is, the data is always at DataBuffer 0
@@ -552,6 +573,11 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
         it = JSobject.find("DecodeFrames");
         if(it != JSobject.end())
             setDecodeFrames(it.value().toBool());
+
+        it = JSobject.find("BiasVoltage");
+        if(it != JSobject.end())
+            setBiasVoltage(it.value().toDouble());
+
     }
 
     itParent = JSobjectParent.find("StepperConfig");

@@ -47,7 +47,7 @@ public:
   void cameraSearch(int indexRequest = -1);
   void cameraResize();
 
-  void readTemp();
+  void readMonitoringInfo();
 
 private slots:
   void on_SaveButton_clicked();
@@ -87,6 +87,8 @@ private slots:
   void on_motorTestButton_clicked();
 
   void stepperGotoTargetFinished();
+
+  void biasVoltageChanged();
 
 private:
   Ui::QCstmConfigMonitoring *ui;

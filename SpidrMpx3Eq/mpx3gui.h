@@ -42,7 +42,10 @@ class QCstmEqualization;
 class QCstmGLVisualization;
 class QCstmConfigMonitoring;
 
-
+#define __visualization_page_Id     0
+#define __configuration_page_Id     1
+#define __dacs_page_Id              2
+#define __equalization_page_Id      3
 
 namespace Ui {
 class Mpx3GUI;
@@ -182,6 +185,10 @@ private slots:
     void LoadEqualization();
     void on_actionExit_triggered();
     void on_actionConnect_triggered();
+    void on_actionVisualization_triggered();
+    void on_actionConfiguration_triggered();
+    void on_actionDACs_triggered();
+    void on_actionEqualization_triggered();
 };
 
 

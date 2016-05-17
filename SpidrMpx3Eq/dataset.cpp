@@ -71,7 +71,7 @@ int64_t Dataset::getTotal(int threshold) {
 //! Overflow is checked on a frame per frame basis, not on the integral
 int64_t Dataset::getOverflow(int threshold)
 {
-/*
+    /*
     int index = thresholdToIndex(threshold);
     if(index == -1)
         return 0;
@@ -107,7 +107,7 @@ Dataset::Dataset( const Dataset& other ):
     m_frameLayouts(other.m_frameLayouts),
     m_frameOrientation(other.m_frameOrientation),
     m_thresholdsToIndices(other.m_thresholdsToIndices)
-    //m_layers(other.m_layers)
+  //m_layers(other.m_layers)
 {
 
     // copy the dimensions
@@ -141,11 +141,11 @@ Dataset& Dataset::operator=( const Dataset& tocopy){
         // Still the rest of the properties need to be copied
         this->m_boundingBox = copy.m_boundingBox;
         this->m_scores = copy.m_scores,
-        this->m_frameLayouts = copy.m_frameLayouts,
-        this->m_frameOrientation = copy.m_frameOrientation,
-        this->m_thresholdsToIndices = copy.m_thresholdsToIndices,
-        //this->m_layers = tocopy.m_layers;
-        this->m_nx = copy.x();
+                this->m_frameLayouts = copy.m_frameLayouts,
+                this->m_frameOrientation = copy.m_frameOrientation,
+                this->m_thresholdsToIndices = copy.m_thresholdsToIndices,
+                //this->m_layers = tocopy.m_layers;
+                this->m_nx = copy.x();
         this->m_ny = copy.y();
         this->m_nFrames = copy.getFrameCount();
         this->m_pixelDepthBits = copy.getPixelDepthBits();
@@ -292,7 +292,7 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
         stdev = sqrt(stdev);
         bstats.stdev_v.push_back(stdev);
 
-     }
+    }
 }
 
 void Dataset::setProfilepoint(int index, QString pos){
@@ -314,35 +314,35 @@ QMap<int, int> Dataset::calcProfile(QString axis, int layerIndex, QPoint pixel_i
 
     //for(int i = 0; i < keys.length(); i++) {
     //Do it for the layer that is selected in the main gui:
-        int* currentLayer = getLayer(layerIndex); //keys[i]);
+    int* currentLayer = getLayer(layerIndex); //keys[i]);
 
-        //Region of Interest
-        QRectF RoI;
-        RoI.setRect(pixel_init.x(), pixel_init.y(), pixel_end.x() - pixel_init.x(),  pixel_end.y() - pixel_init.y() );
+    //Region of Interest
+    QRectF RoI;
+    RoI.setRect(pixel_init.x(), pixel_init.y(), pixel_end.x() - pixel_init.x(),  pixel_end.y() - pixel_init.y() );
 
-        QMap<int, int> profilevals;
-        if(axis == "X")
-            for( int j =0; j < getPixelsPerLayer(); j++) {
-                QPoint pix = jtoXY(j);
+    QMap<int, int> profilevals;
+    if(axis == "X")
+        for( int j =0; j < getPixelsPerLayer(); j++) {
+            QPoint pix = jtoXY(j);
 
-                if(RoI.contains(pix)){
-                    if(profilevals.contains(pix.x()))
-                        profilevals[pix.x()] += currentLayer[j];
-                    else profilevals[pix.x()] = currentLayer[j];
-                }
+            if(RoI.contains(pix)){
+                if(profilevals.contains(pix.x()))
+                    profilevals[pix.x()] += currentLayer[j];
+                else profilevals[pix.x()] = currentLayer[j];
             }
-        if(axis == "Y")
-            for( int j =0; j < getPixelsPerLayer(); j++) {
-                QPoint pix = jtoXY(j);
+        }
+    if(axis == "Y")
+        for( int j =0; j < getPixelsPerLayer(); j++) {
+            QPoint pix = jtoXY(j);
 
-                if(RoI.contains(pix)){
-                    if(profilevals.contains(pix.y()))
-                        profilevals[pix.y()] += currentLayer[j];
-                    else profilevals[pix.y()] = currentLayer[j];
-                }
+            if(RoI.contains(pix)){
+                if(profilevals.contains(pix.y()))
+                    profilevals[pix.y()] += currentLayer[j];
+                else profilevals[pix.y()] = currentLayer[j];
             }
+        }
 
-        return profilevals;
+    return profilevals;
     //}
 }
 //Calculate the Contrast to Noise Ratio of a regionprofile.
@@ -1033,9 +1033,9 @@ void Dataset::applyOBCorrection() {
         //Only change OBmatch at first layer, next layers should be handled the same.
 
         if( (OBmax-OBmin) <= 0.5*(Dmax - Dmin) || (OBmax-OBmin) >= 2*(Dmax - Dmin)){
-                if(i == 0) OBmatch = false; //Only change influence of OBmatch at first layer
-                k = Dmax/OBmax;
-            }
+            if(i == 0) OBmatch = false; //Only change influence of OBmatch at first layer
+            k = Dmax/OBmax;
+        }
 
         //Give the user the choice to apply the correction, ignore the incomparability or cancel and choose another OBcorrectionfile.
         //Only ask at first layer.
@@ -1044,7 +1044,7 @@ void Dataset::applyOBCorrection() {
                                                                  "- Press 'Cancel' to stop and choose a more compatible OB datafile.\n"
                                                                  "- It is also possible to apply a k-factor on the OB correction to make it match the current data.\n"
                                                                  "- Press 'Continue' to use the selected OB file as it is.",
-                              QMessageBox::Yes | QMessageBox::No |QMessageBox::Cancel | QMessageBox::Cancel,0);
+                               QMessageBox::Yes | QMessageBox::No |QMessageBox::Cancel | QMessageBox::Cancel,0);
 
 
             msgBox.setButtonText(QMessageBox::Yes, "Apply k-factor");
@@ -1139,7 +1139,7 @@ void Dataset::dumpAllActivePixels() {
 
         for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
 
-                if ( currentLayer[j] > 0 ) ofs << j << " ";
+            if ( currentLayer[j] > 0 ) ofs << j << " ";
 
         }
 
@@ -1265,7 +1265,8 @@ unsigned int Dataset::setFrame(int *frame, int index, int threshold){
     // and keep an eye on overflow frames
     unsigned int overflowCntr = 0;
 
-    for(int i = 0 ; i < m_nx*m_ny;i++) {
+    for (int i = 0 ; i < m_nx*m_ny;i++) {
+
         newFrame[i] = frame[i];
         // overflow check on the current single frame
         if ( frame[i] >= m_pixelDepthCntr ) overflowCntr++;
@@ -1282,15 +1283,19 @@ unsigned int Dataset::sumFrame(int *frame, int index, int threshold){
 
     // and keep an eye on overflow frames
     unsigned int overflowCntr = 0;
-    for ( int i = 0 ; i < m_nx*m_ny ; i++ ) {
-        newFrame[i] += frame[i];
 
-        // TO REMOVE !!!!!!!!!!!
-        //if ( newFrame[i] > 10 ) newFrame[i] = 0;
+    for ( int i = 0 ; i < m_nx*m_ny ; i++ ) {
+
+        newFrame[i] += frame[i];
 
         // overflow check on the current single frame
         if ( frame[i] >= m_pixelDepthCntr ) overflowCntr++;
+
     }
+
+    // Now on index == 3 I have copy data.  Shuffle it !
+    // Erase straight lines
+
 
     return overflowCntr;
 }
@@ -1534,3 +1539,30 @@ int* Dataset::getLayer(int threshold){
         return nullptr;
     return m_layers[layerIndex];
 }
+
+/*
+////////////////////////////////////////////////
+int val = frame[i];
+// TO REMOVE !!!!!!!!!!!
+// Remove singles quickly
+if ( val > 1 ) val = 0;
+// Remove singles which are
+if ( val != 0
+     && i > m_nx
+     && i < ((m_nx*m_ny)-1)-m_nx
+     && i%m_nx!=0
+     && (i%(m_nx-1))!=0 ) {
+    if ( frame[i+1] == 0
+         &&
+         frame[i-1] == 0
+         &&
+         frame[i+m_nx] == 0
+         &&
+         frame[i-m_nx] == 0
+         ) {
+        val = 0;
+    }
+}
+newFrame[i] += val;
+////////////////////////////////////////////////
+*/
