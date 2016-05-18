@@ -42,7 +42,7 @@ public:
 
 	QCPBars * GetDataSet(int id) { return _barSets.at(id); };
 	vector<BarChartProperties> GetBarChartProperties(){ return _bp; };
-	void AppendSet(BarChartProperties);
+    void AppendSet(BarChartProperties, bool showlegend = true);
 	unsigned int GetNsets(){return _nSets; };
 
 
@@ -58,7 +58,7 @@ public:
 
     //void mouseDoubleClickEvent(QMouseEvent *event);
 
-    void fitToHeight();
+    void fitToHeight(double min = 0.);
 
 private:
 

@@ -44,7 +44,7 @@ void BarChart::Clean() {
 
 }
 
-void BarChart::fitToHeight()
+void BarChart::fitToHeight(double min)
 {
 
     // see that there are histograms
@@ -68,14 +68,14 @@ void BarChart::fitToHeight()
 */
 
     this->yAxis->setRangeUpper( ymax * 1.2 );
+    this->yAxis->setRangeLower( min );
 
     // replot
-    this->replot( QCustomPlot::rpQueued);
-
+    replot( QCustomPlot::rpQueued );
 
 }
 
-void BarChart::AppendSet(BarChartProperties bp) {
+void BarChart::AppendSet(BarChartProperties bp, bool showlegend) {
 
     // Create the set and push it back in the vector of sets
     _barSets.push_back( new QCPBars(this->xAxis, this->yAxis) );
@@ -119,7 +119,9 @@ void BarChart::AppendSet(BarChartProperties bp) {
         this->yAxis->grid()->setSubGridPen(gridPen);
 
         // setup legend:
-        this->legend->setVisible(true);
+        if ( showlegend ) this->legend->setVisible(true);
+        else this->legend->setVisible(false);
+
         this->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignHCenter);
         this->legend->setBrush(QColor(255, 255, 255, 200));
         QPen legendPen;
@@ -163,12 +165,12 @@ void BarChart::SetValueInSet(unsigned int setId, double val, double weight) {
     (*(GetDataSet(setId)->data()))[val] = bin_content;
 
     // Revisit limits // TODO .. not working yet
-    QCPRange rangeY = this->yAxis->range();
-    if ( rangeY.upper < bin_content.value + weight ) {
-        this->yAxis->setRange(0, ( bin_content.value + weight) * 1.1 );
-    }
+    //QCPRange rangeY = this->yAxis->range();
+    //if ( rangeY.upper < bin_content.value + weight ) {
+    //    this->yAxis->setRange(0, ( bin_content.value + weight) * 1.1 );
+    //}
 
-    replot();
+    replot( QCustomPlot::rpQueued );
 }
 
 void BarChart::SetValueInSetNonAcc(unsigned int setId, double val, double weight)
@@ -182,12 +184,12 @@ void BarChart::SetValueInSetNonAcc(unsigned int setId, double val, double weight
     (*(GetDataSet(setId)->data()))[val] = bin_content;
 
     // Revisit limits // TODO .. not working yet
-    QCPRange rangeY = this->yAxis->range();
-    if ( rangeY.upper < bin_content.value + weight ) {
-        this->yAxis->setRange(0, ( bin_content.value + weight) * 1.1 );
-    }
+    //QCPRange rangeY = this->yAxis->range();
+    //if ( rangeY.upper < bin_content.value + weight ) {
+    //    this->yAxis->setRange(0, ( bin_content.value + weight) * 1.1 );
+    //}
 
-    replot();
+    replot( QCustomPlot::rpQueued );
 }
 
 /*
