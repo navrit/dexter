@@ -9,8 +9,10 @@ MTADialog::MTADialog(Mpx3GUI * mg, QWidget * parent) :
     ui->setupUi(this);
 
     // The Logo
-    QPixmap pix("icons/ASI_algorithms_logo.png");
-    pix = pix.scaled(pix.width() / 2, pix.height() / 2, Qt::KeepAspectRatio);
+    QPixmap pix("icons/ASI_logo.png");
+    //pix = pix.scaled(pix.width() / 10., pix.height() / 10., Qt::KeepAspectRatio);
+    pix = pix.scaled(200., 70., Qt::KeepAspectRatio);
+    qDebug() << pix.width() << " " << pix.height();
     ui->logoLabel->setPixmap( pix );
 
     // get the timer going

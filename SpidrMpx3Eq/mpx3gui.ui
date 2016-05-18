@@ -14,7 +14,7 @@
    <string>Mpx3GUI</string>
   </property>
   <property name="toolTip">
-   <string>Visualization</string>
+   <string/>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -85,7 +85,7 @@
    </widget>
    <widget class="QMenu" name="menu_Window">
     <property name="title">
-     <string>&amp;Window</string>
+     <string>&amp;Views</string>
     </property>
     <addaction name="actionVisualization"/>
     <addaction name="actionConfiguration"/>
@@ -225,7 +225,7 @@
     <string>Wizard</string>
    </property>
    <property name="toolTip">
-    <string>Configure the system with a wizard</string>
+    <string>Configure the system easily using a wizard</string>
    </property>
   </action>
   <action name="actionVisualization">
@@ -237,7 +237,7 @@
     <string>Visualization</string>
    </property>
    <property name="toolTip">
-    <string>(Ctrl+1)</string>
+    <string>Visualization (Ctrl+1)</string>
    </property>
   </action>
   <action name="actionConfiguration">
@@ -249,7 +249,7 @@
     <string>Configuration</string>
    </property>
    <property name="toolTip">
-    <string>(Ctrl+2)</string>
+    <string>Configuration (Ctrl+2)</string>
    </property>
   </action>
   <action name="actionDACs">
@@ -261,7 +261,7 @@
     <string>DACs</string>
    </property>
    <property name="toolTip">
-    <string>(Ctrl+3)</string>
+    <string>DACs (Ctrl+3)</string>
    </property>
   </action>
   <action name="actionEqualization">
@@ -273,7 +273,7 @@
     <string>Equalization</string>
    </property>
    <property name="toolTip">
-    <string>(Ctrl+4)</string>
+    <string>Equalization (Ctrl+4)</string>
    </property>
   </action>
  </widget>

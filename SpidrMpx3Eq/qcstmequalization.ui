@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="toolTip">
+   <string>Equalization</string>
+  </property>
   <layout class="QHBoxLayout" name="horizontalLayout_10">
    <item>
     <widget class="QSplitter" name="mainSplitter">

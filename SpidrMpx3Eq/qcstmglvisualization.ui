@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="toolTip">
+   <string>Visualization</string>
+  </property>
   <property name="layoutDirection">
    <enum>Qt::LeftToRight</enum>
   </property>
@@ -411,8 +414,11 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="toolTip">
+               <string>Multi-threshold reconstruction input summary</string>
+              </property>
               <property name="text">
-               <string>MTA</string>
+               <string>MTR</string>
               </property>
              </widget>
             </item>
