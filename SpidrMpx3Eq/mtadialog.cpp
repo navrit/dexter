@@ -35,7 +35,7 @@ MTADialog::MTADialog(Mpx3GUI * mg, QWidget * parent) :
     cprop.color_r = 0;
     cprop.color_g = 127;
     cprop.color_b = 0;
-    ui->barChartHisto->AppendSet( cprop );
+    ui->barChartHisto->AppendSet( cprop, false );
     ui->barChartHisto->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
 
     this->setWindowTitle( tr("Color reconstruction input summary") );
@@ -43,6 +43,25 @@ MTADialog::MTADialog(Mpx3GUI * mg, QWidget * parent) :
     // Defaults
     ui->radioButtonSelPixelsON->setChecked( true );
     _displayMode = __pixelsON;
+
+    //
+    _lcds.push_back( ui->lcdNumber0 );
+    _lcds.push_back( ui->lcdNumber1 );
+    _lcds.push_back( ui->lcdNumber2 );
+    _lcds.push_back( ui->lcdNumber3 );
+    _lcds.push_back( ui->lcdNumber4 );
+    _lcds.push_back( ui->lcdNumber5 );
+    _lcds.push_back( ui->lcdNumber6 );
+    _lcds.push_back( ui->lcdNumber7 );
+
+    _labels.push_back( ui->thl0Label );
+    _labels.push_back( ui->thl1Label );
+    _labels.push_back( ui->thl2Label );
+    _labels.push_back( ui->thl3Label );
+    _labels.push_back( ui->thl4Label );
+    _labels.push_back( ui->thl5Label );
+    _labels.push_back( ui->thl6Label );
+    _labels.push_back( ui->thl7Label );
 
 }
 
@@ -55,10 +74,11 @@ MTADialog::~MTADialog()
 void MTADialog::timerEvent(QTimerEvent *)
 {
 
-    ui->lcdNumber0->display( QString::number( _mpx3gui->getDataset()->getActivePixels( 0 ), 'f', 0 ) );
-    ui->lcdNumber2->display( QString::number( _mpx3gui->getDataset()->getActivePixels( 2 ), 'f', 0 ) );
-    ui->lcdNumber4->display( QString::number( _mpx3gui->getDataset()->getActivePixels( 4 ), 'f', 0 ) );
-    ui->lcdNumber6->display( QString::number( _mpx3gui->getDataset()->getActivePixels( 6 ), 'f', 0 ) );
+
+    int nLCDs = _lcds.size();
+    for ( int i = 0 ; i < nLCDs ; i++ ) {
+        _lcds.at( i )->display( QString::number( _mpx3gui->getDataset()->getActivePixels( i ), 'f', 0 ) );
+    }
 
     QString sE = "<font color=\"blue\">";
     sE += QString::number( 10.2, 'f', 1 );
@@ -90,10 +110,12 @@ void MTADialog::timerEvent(QTimerEvent *)
     ui->barChartHisto->SetValueInSetNonAcc( 0, 6, _mpx3gui->getDataset()->getActivePixels( 6 ) );
 
 
-    ui->barChartHisto->fitToHeight();
+    if ( _barCharLogY ) ui->barChartHisto->fitToHeight( __range_min_whenLog );
+    else ui->barChartHisto->fitToHeight( );
 
     // Life feed
     //ui->timePlot
+    //ui->barChartHisto->replot( QCustomPlot::rpQueued );
 
 }
 

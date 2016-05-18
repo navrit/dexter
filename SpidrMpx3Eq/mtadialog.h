@@ -2,6 +2,7 @@
 #define MTADIALOG_H
 
 #include <QDialog>
+#include <QVector>
 
 #include "mpx3gui.h"
 
@@ -41,6 +42,8 @@ private:
 
     Mpx3GUI * _mpx3gui = nullptr;
     Ui::MTADialog * ui = nullptr;
+    QVector<QLCDNumber *> _lcds;
+    QVector<QLabel *> _labels;
 
     typedef enum {
         __counts = 0,
