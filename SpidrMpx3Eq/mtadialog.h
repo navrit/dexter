@@ -19,10 +19,34 @@ public:
 
     void timerEvent( QTimerEvent * );
 
-private:
-    Mpx3GUI * _mpx3gui;
-    Ui::MTADialog * ui;
+private slots:
 
+    void on_radioButtonSelCounts_toggled(bool checked);
+
+    void on_radioButtonSelMean_toggled(bool checked);
+
+    void on_radioButtonSelStdv_toggled(bool checked);
+
+    void on_radioButtonSelPixelsON_toggled(bool checked);
+
+    void on_radioButtonSelNumberOfClusters_toggled(bool checked);
+
+private:
+
+    Mpx3GUI * _mpx3gui = nullptr;
+    Ui::MTADialog * ui = nullptr;
+
+    typedef enum {
+        __counts = 0,
+        __mean,
+        __stdv,
+        __pixelsON,
+        __NofClusters,
+        __numberOfModes
+    } display_mode;
+
+    // modes
+    display_mode _displayMode = __pixelsON;
 
 };
 

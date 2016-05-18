@@ -38,6 +38,10 @@ MTADialog::MTADialog(Mpx3GUI * mg, QWidget * parent) :
 
     this->setWindowTitle( tr("Color reconstruction input summary") );
 
+    // Defaults
+    ui->radioButtonSelPixelsON->setChecked( true );
+    _displayMode = __pixelsON;
+
 }
 
 MTADialog::~MTADialog()
@@ -91,4 +95,32 @@ void MTADialog::timerEvent(QTimerEvent *)
 
 }
 
+
+
+// Oriented to imaging
+void MTADialog::on_radioButtonSelCounts_toggled(bool checked)
+{
+    if ( checked ) _displayMode = __counts;
+}
+
+void MTADialog::on_radioButtonSelMean_toggled(bool checked)
+{
+    if ( checked ) _displayMode = __mean;
+}
+
+void MTADialog::on_radioButtonSelStdv_toggled(bool checked)
+{
+    if ( checked ) _displayMode = __stdv;
+}
+
+// Oriented to tracking
+void MTADialog::on_radioButtonSelPixelsON_toggled(bool checked)
+{
+   if ( checked ) _displayMode = __pixelsON;
+}
+
+void MTADialog::on_radioButtonSelNumberOfClusters_toggled(bool checked)
+{
+    if ( checked ) _displayMode = __NofClusters;
+}
 
