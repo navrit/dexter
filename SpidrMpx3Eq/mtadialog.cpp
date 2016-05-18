@@ -1,6 +1,8 @@
 #include "mtadialog.h"
 #include "ui_mtadialog.h"
 
+#include "qcstmplothistogram.h"
+
 MTADialog::MTADialog(Mpx3GUI * mg, QWidget * parent) :
     _mpx3gui(mg),
     QDialog(parent),
@@ -95,32 +97,92 @@ void MTADialog::timerEvent(QTimerEvent *)
 
 }
 
+void MTADialog::changePlotsProperties()
+{
+
+    switch ( _displayMode ) {
+    case __counts:
+        ui->barChartHisto->yAxis->setLabel( "total counts" );
+        break;
+    case __mean:
+        ui->barChartHisto->yAxis->setLabel( "mean" );
+        break;
+    case __stdv:
+        ui->barChartHisto->yAxis->setLabel( "stdv" );
+        break;
+    case __pixelsON:
+        ui->barChartHisto->yAxis->setLabel( "pixels ON" );
+        break;
+    case __NofClusters:
+        ui->barChartHisto->yAxis->setLabel( "N. of clusters" );
+        break;
+
+    default:
+        ui->barChartHisto->yAxis->setLabel( "pixels ON" );
+        break;
+    }
+
+    // replot
+    ui->barChartHisto->replot( QCustomPlot::rpQueued );
+
+}
 
 
 // Oriented to imaging
 void MTADialog::on_radioButtonSelCounts_toggled(bool checked)
 {
     if ( checked ) _displayMode = __counts;
+
+    changePlotsProperties();
 }
 
 void MTADialog::on_radioButtonSelMean_toggled(bool checked)
 {
     if ( checked ) _displayMode = __mean;
+
+    changePlotsProperties();
 }
 
 void MTADialog::on_radioButtonSelStdv_toggled(bool checked)
 {
     if ( checked ) _displayMode = __stdv;
+
+    changePlotsProperties();
 }
 
 // Oriented to tracking
 void MTADialog::on_radioButtonSelPixelsON_toggled(bool checked)
 {
    if ( checked ) _displayMode = __pixelsON;
+
+   changePlotsProperties();
 }
 
 void MTADialog::on_radioButtonSelNumberOfClusters_toggled(bool checked)
 {
     if ( checked ) _displayMode = __NofClusters;
+
+    changePlotsProperties();
 }
 
+
+void MTADialog::on_barCharLogYCheckBox_clicked(bool checked)
+{
+    _barCharLogY = checked;
+
+    if ( _barCharLogY ) {
+        ui->barChartHisto->yAxis->setScaleType( QCPAxis::stLogarithmic );
+        ui->barChartHisto->yAxis->setRangeLower( __range_min_whenLog );
+    } else {
+        ui->barChartHisto->yAxis->setScaleType( QCPAxis::stLinear );
+        ui->barChartHisto->yAxis->setRangeLower( 0 );
+    }
+
+    ui->barChartHisto->replot( QCustomPlot::rpQueued );
+
+}
+
+void MTADialog::on_timePlotLogYCheckBox_clicked(bool checked)
+{
+    _timePlotLogY = checked;
+}

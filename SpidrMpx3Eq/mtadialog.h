@@ -19,6 +19,8 @@ public:
 
     void timerEvent( QTimerEvent * );
 
+    void changePlotsProperties();
+
 private slots:
 
     void on_radioButtonSelCounts_toggled(bool checked);
@@ -30,6 +32,10 @@ private slots:
     void on_radioButtonSelPixelsON_toggled(bool checked);
 
     void on_radioButtonSelNumberOfClusters_toggled(bool checked);
+
+    void on_barCharLogYCheckBox_clicked(bool checked);
+
+    void on_timePlotLogYCheckBox_clicked(bool checked);
 
 private:
 
@@ -47,6 +53,8 @@ private:
 
     // modes
     display_mode _displayMode = __pixelsON;
+    bool _barCharLogY  = false;
+    bool _timePlotLogY = false;
 
 };
 
