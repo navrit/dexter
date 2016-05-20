@@ -345,53 +345,79 @@ QMap<int, int> Dataset::calcProfile(QString axis, int layerIndex, QPoint pixel_i
     return profilevals;
     //}
 }
-//Calculate the Contrast to Noise Ratio of a regionprofile.
+
+//!Calculates the Contrast to Noise Ratio of a regionprofile.
 QString Dataset::calcCNR(QMap<int, int> Axismap){
     QString data = "";
     double mean;
     double stdev;
-    int Npoints = countProfilepoints();
+    int Npoints = countProfilePoints();
+    int Nregions = countProfileRegions();
 
     //Show message and stats of the profile when only 1 or 2 numbers are filled in.
-    if(Npoints < 4 || Npoints == 5){
+    if(Npoints < 4){//Nregions != TWO_Regions && Nregions != THREE_Regions && Nregions != BG_Regions){
         mean = calcRegionMean(Axismap.firstKey(), Axismap.lastKey(), Axismap);
         stdev = calcRegionStdev(Axismap.firstKey(), Axismap.lastKey(), Axismap, mean);
         return QString("Please choose four or six points, indicating two or three regions, for the calculation of the CNR.\nMean: %1 \nStdev: %2").arg(mean).arg(stdev);
     }
 
     else {
-        //qSort(Profilepoints);
-
         QVector<double> mean_v;
         QVector<double> stdev_v;
         double cnr;        
-        double snr;
+        double snr; //Signal to Noise Ratio in dB.
         bool left = false;
-        bool right = false;
+        //bool right = false;
+        int signal;
+        int bg;
+        double meanfactor = 0.5; //can be adjusted to the number of regions later on if wanted
 
-
-        for(int i = 0; i < Profilepoints.size(); i += 2){
+        for(int i = 0; i < Profilepoints.size(); i += stepsize){
             if(Profilepoints[i] != -1){
-                if(Profilepoints[i+1] == -1) data = QString("Please choose boundary points for two or three areas.");
+                if(Profilepoints[i+1] == -1) return "Please choose boundary points for two or three areas.";
                 else {
                     double mean = calcRegionMean(Profilepoints[i], Profilepoints[i+1], Axismap);
                     mean_v.push_back(mean);
                     stdev_v.push_back(calcRegionStdev(Profilepoints[i], Profilepoints[i+1], Axismap, mean));
-                    if(i < 2) left = true;
-                    if(i > 3) right = true;
+                    if(i < stepsize) left = true;
+                    if(i >= 2*stepsize ) left = false; //right = true;
                 }
             }
         }
 
-        if (mean_v.length() == 3){
-            cnr = mean_v[1] - 0.5*(mean_v[0] + mean_v[2]);
-            if(!corrected) cnr *= -1;
-            cnr /= 0.5*(stdev_v[0] + stdev_v[2]);
-            cnr *= sqrt(Profilepoints[3] - Profilepoints[2]);
+        if (Nregions == BG_Regions){
+            data += "Two background signals have been selected. No CNR calculation has been done\n\n";
+            data += "\tBackground 1\tBackground 2\n";
+            data += QString("Mean:\t%1\t%2\n").arg(mean_v[0]).arg(mean_v[1]);
+            data += QString("Stdev:\t%1\t%2\n").arg(stdev_v[0]).arg(stdev_v[1]);
+        }
 
-            //Calculating "loudness"/SNR(log) in dB:
-            snr = mean_v[1];
-            snr /= 0.5*(mean_v[0] + mean_v[2]);
+        else if (Nregions == THREE_Regions){
+            signal = 1;
+            cnr = mean_v[signal];
+            snr = mean_v[signal];
+            double cnrdiv;
+            double snrdiv;
+
+            for(int i = 0; i < mean_v.length(); i++)
+                    if(i!= signal) cnr -= meanfactor*mean_v[i];
+
+            if(!corrected) cnr *= -1;
+
+            //Dividing by the mean of the background sigma and mean respectively for cnr and snr.
+            for(int i = 0; i < mean_v.length(); i++){
+                if(i!=signal){
+                    cnrdiv += meanfactor*stdev_v[i];
+                    snrdiv += meanfactor*mean_v[i];
+                }
+            }
+            if(snrdiv != 0) snr /= snrdiv;
+            if(cnrdiv != 0) cnr /= cnrdiv;
+
+            cnr *= sqrt(Profilepoints[signal * stepsize + 1] - Profilepoints[signal * stepsize]);
+
+            if(!corrected && snr !=0) snr = 1/snr;
+            //else snr /= 0.5*(mean_v[0] + mean_v[2]);
             snr = 10*log10(snr);
 
             data += "\tBackground\tSignal\tBackground\n";
@@ -399,54 +425,61 @@ QString Dataset::calcCNR(QMap<int, int> Axismap){
             data += QString("Stdev:\t%1\t%2\t%3\n").arg(stdev_v[0]).arg(stdev_v[1]).arg(stdev_v[2]);
         }
 
-        else if (mean_v.length() == 2){
+        else if (Nregions == TWO_Regions){
 
-            if (mean_v[0] >= mean_v[1]){
-                cnr = mean_v[0] - mean_v[1];
-                if(!corrected) {//If not corrected, the lower mean [1] is the signal.
-                    cnr *= -1;
-                    if(stdev_v[0] != 0) cnr /= stdev_v[0];
-                }
-                else if(stdev_v[1] != 0) cnr /= stdev_v[1];
-                else ;//error message?
-
-                if (left) cnr *= sqrt(Profilepoints[1] - Profilepoints[0]);
-                if (right) cnr *= sqrt(Profilepoints[3] - Profilepoints[2]);
-
-                data += "\tSignal\tBackground\n";
+            if(mean_v[0] >= mean_v[1]){
+                signal = 0;
+                bg = 1;
             }
             else {
-                cnr = mean_v[1] - mean_v[0];
-                if(!corrected) {//If not corrected, the lower mean [0] is the signal.
-                    cnr *= -1;
-                    if(stdev_v[1] != 0) cnr /= stdev_v[1];
-                }
-                else if(stdev_v[0] != 0) cnr /= stdev_v[0];
-                else ; //Error message?
-
-                if (left) cnr *= sqrt(Profilepoints[3] - Profilepoints[2]);
-                if (right) cnr *= sqrt(Profilepoints[5] - Profilepoints[4]);
-
-                data += "\tBackground\tSignal\n";
+                signal = 1;
+                bg = 0;
             }
 
-            data += QString("Mean:\t%1\t%2\n").arg(mean_v[0]).arg(mean_v[1]);
-            data += QString("Stdev:\t%1\t%2\n").arg(stdev_v[0]).arg(stdev_v[1]);
+            cnr = mean_v[signal] - mean_v[bg];
+            if(!corrected){ //signal and bg are reversed
+                cnr *= -1;
+                if(stdev_v[signal] != 0) cnr/= stdev_v[signal];
+            }
+            else if (stdev_v[bg] != 0) cnr /= stdev_v[bg];
+            else return "Attempting to divide by 0!";
+
+            if(left) cnr *= sqrt(Profilepoints[signal * stepsize + 1] - Profilepoints[signal * stepsize]);
+            else cnr *= sqrt(Profilepoints[signal * stepsize + stepsize + 1] - Profilepoints[signal * stepsize + stepsize]);
+
+            if(mean_v[bg] != 0) snr = mean_v[signal] / mean_v[bg];
+            if(!corrected) snr = 1/snr;
+            snr = 10*log10(snr);
+
+            data += "\tBackground\tSignal\n";
+            data += QString("Mean:\t%1\t%2\n").arg(mean_v[bg]).arg(mean_v[signal]);
+            data += QString("Stdev:\t%1\t%2\n").arg(stdev_v[bg]).arg(stdev_v[signal]);
         }
 
         else return QString("Something went wrong, please choose boundary points for two or three areas.");
 
         data += QString("\nCNR:\t%1\nSNR:\t%2 dB").arg(cnr).arg(snr);
-    }
 
+    }
     return data;
 }
 
-int Dataset::countProfilepoints(){
+int Dataset::countProfilePoints(){
     int n=0;
     for(int i=0; i < Profilepoints.size(); i++){
         if(Profilepoints[i]!= -1) n++;
     }
+    return n;
+}
+
+int Dataset::countProfileRegions(){
+    int n=0;
+
+    if(Profilepoints[signalpt1] == -1 || Profilepoints[signalpt2] == -1)
+        return -1; //Only backgrounds are selected (or less this gets checked in CNR).
+
+    for(int i=0; i < Profilepoints.size(); i += stepsize)
+        if(Profilepoints[i] != -1 && Profilepoints[i+1] != -1) n++;
     return n;
 }
 

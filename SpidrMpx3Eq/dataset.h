@@ -51,6 +51,15 @@ class Dataset//TODO: specify starting corner?
     orientationBtTRtL=7
   };
 
+  enum cnr_constants {
+      stepsize = 2,
+      signalpt1 = 2,
+      signalpt2 = 3,
+      BG_Regions = -1,
+      TWO_Regions = 2,
+      THREE_Regions = 3
+  };
+
   typedef struct {
 	  int packetsLost;
   } score_info;
@@ -87,7 +96,7 @@ class Dataset//TODO: specify starting corner?
   QVector<int> m_frameOrientation;//!<The orientation of the detectors. see the enum.
 
   QMap <int, int> m_thresholdsToIndices;//!<Translate threshold values to indices in the vectors.
-  QVector<int*> m_layers;//!<Actual data, one pointer per threshold.
+  QVector<int*>  m_layers;//!<Actual data, one pointer per threshold.
   Dataset * obCorrection = nullptr;//!< A pointer to the Dataset used for the flat-field correction.
   bool corrected; //!indicates whether or not an image has been corrected.
   int getLayerIndex(int threshold);
@@ -132,7 +141,8 @@ public:
   QPointF XtoXY(int X, int dimX);
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
   QPoint jtoXY(int X); //!<Converts the j'th element in the data to the right coordinates on the screen. Depends on orientation.
-  int countProfilepoints();
+  int countProfilePoints();
+  int countProfileRegions();
 
   void setOrientation(QVector<int> orientations){for(int i = 0; i < orientations.length();i++)setOrientation(i, orientations[i]);}
   void setOrientation(int index, int orientation){m_frameOrientation[index] = orientation;}

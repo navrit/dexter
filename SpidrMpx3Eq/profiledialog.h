@@ -15,6 +15,12 @@ class ProfileDialog : public QDialog
 {
     Q_OBJECT
 
+    enum constants{
+        kdf_index = 1,
+        N_maingraphs = 2, //The profile itself and the kernel density function.
+        N_meangraphs = 3
+    };
+
 public:
     explicit ProfileDialog(QWidget *parent = 0);
     ~ProfileDialog();
@@ -34,42 +40,41 @@ private:
     QPoint _end; //! The coordinates of the pixel where the selected region ends.
     QMap<int, int> _Axismap; //! Contains a total pixelvalue for each X or Y value in the selected profile region.
     QString _axis; //!The axis that is currently used as the horizontal axis in the profileplot.
-    QList<QLineEdit*> editsList; //!Contains the QLineEdits
+    QList<QLineEdit*> editsList; //!Contains the QLineEdits that specify the points on the profile for CNR calculation.
     //bool _left; //When 2 regions are selected, indicates if these are the two on the left.
+    QVector<double> par_v;
 
     //Functions:
     void addMeanLines(QString data);
     void changeText(QString text);
     bool valueinRange(int value);
     void makeEditsList();
-
+    void useKernelDensityFunction(double bandwidth);
+    void createKernelDensityFunction(int Npoints, QVector<double> hist, double bandwidth);
+    double GausFuncAdd(double x, QVector<double> par);
+    void calcPoints(QVector<double> function);
+    double FivePointsStencil(QVector<double> func, int x, double bw);
 
 private slots:
     void on_buttonBox_accepted();
 
     void on_checkBox_toggled(bool checked);
 
-    void on_pushButton_clicked();
+    void on_CNRbutton_clicked();
 
-    void on_comboBox_currentIndexChanged(int index);
+    void on_KDFbutton_clicked();
 
-    void on_lineEdit_editingFinished();
-
-    void on_lineEdit_2_editingFinished();
-
-    void on_lineEdit_3_editingFinished();
-
-    void on_lineEdit_4_editingFinished();
-
-    void on_lineEdit_5_editingFinished();
-
-    void on_lineEdit_6_editingFinished();
+    void on_pointEdit_editingFinished();
 
     void on_comboBox_currentIndexChanged(const QString &arg1);
+
 
     //Eventhandlers:
     void mousePressEvent(QMouseEvent *event);
     void closeEvent(QCloseEvent *event);
+
+
+    void on_clearbutton_clicked();
 
 signals:
     void user_accepted_profile();
