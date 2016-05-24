@@ -52,8 +52,10 @@ private:
     void useKernelDensityFunction(double bandwidth);
     void createKernelDensityFunction(int Npoints, QVector<double> hist, double bandwidth);
     double GausFuncAdd(double x, QVector<double> par);
-    void calcPoints(QVector<double> function);
+    QVector<double> calcPoints(QVector<double> function, int Nder, int bw);
     double FivePointsStencil(QVector<double> func, int x, double bw);
+    double secderFivePointsStencil(QVector<double> func, int x, double bw);
+    void setInflectionPoints(QVector<int> infls, int begin, int Npoints);
 
 private slots:
     void on_buttonBox_accepted();

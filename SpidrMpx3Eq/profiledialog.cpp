@@ -97,6 +97,11 @@ void ProfileDialog::plotProfile()
     }
     //Make sure profilepoints does not contain any points before they are indicated.
     _mpx3gui->getDataset()->clearProfilepoints();
+
+    //Add (2) graphs for testing the kdf function
+    ui->profilePlot->addGraph();
+    ui->profilePlot->addGraph();
+    ui->profilePlot->addGraph(); //for the straight line
 }
 
 void ProfileDialog::addMeanLines(QString data){
@@ -145,6 +150,8 @@ void ProfileDialog::useKernelDensityFunction(double bandwidth)
 {   //Determine the number of points to be used in the kdf
     int Npoints;
     int begin;
+    int bw = bandwidth;
+
     if (_axis == "X") {
         Npoints = _end.x() - _begin.x() + 1;
         begin = _begin.x();
@@ -166,19 +173,68 @@ void ProfileDialog::useKernelDensityFunction(double bandwidth)
 
     createKernelDensityFunction(Npoints, hist, bandwidth);
 
+    ui->profilePlot->graph(kdf_index)->clearData();
+    ui->profilePlot->graph(12)->clearData();
+    ui->profilePlot->graph(11)->clearData();
+    ui->profilePlot->graph(13)->clearData();
+
+    //Calculating kdf values and adding them to a graph and vector.
     QVector<double> kdf;
     double value;
-    ui->profilePlot->graph(kdf_index)->clearData();
-    for(int i = 0; i < Npoints; i++){
+    int kdf_offset = 10;
+
+    for(int i = kdf_offset; i < Npoints - kdf_offset ; i++){
         value = GausFuncAdd(points[i], par_v);
         kdf.append(value);
-        ui->profilePlot->graph(kdf_index)->addData(i + begin, value);
+            ui->profilePlot->graph(kdf_index)->addData(i + begin, value);
     }
+
+
+    int offset = begin + kdf_offset + bw*2;  //bw*2 because of the 5-point stencil.
+    //First derivative for calculating the max (or min)
+    int maxpt = 0;
+    QVector<double> stencil = calcPoints(kdf, 1, bw);
+
+    for(int i = 1; i < stencil.length(); i++){
+        if(stencil[i] > 0 && stencil[i-1] < 0) maxpt = offset + i;
+        if(stencil[i] < 0 && stencil[i-1] > 0) maxpt = offset + i;
+    }
+
+    //second derivative with seperate calculation
+    QVector<double> stencil3 = calcPoints(kdf, 2, bw);
+    //Draw
+    QVector<int> infls; //Save inflection points
+    for(int i = 1; i < stencil3.length(); i++){
+        ui->profilePlot->graph(11)->addData(i + offset, stencil3[i]*10 + kdf[Npoints/2]); //* +kdf[middle] for visualization
+        if(stencil3[i] > 0 && stencil3[i-1] < 0)
+            infls.append(i + offset);
+        if(stencil3[i] < 0 && stencil3[i-1] > 0)
+            infls.append(i + offset);
+    }
+
+//    //Second derivative using stencil twice (graph for testing)
+//    QVector<double> stencil2 = calcPoints(stencil, 1, bw);
+//    offset += 2*bw;
+//    //Draw
+//    QVector<int> inflections; //Save the inflecton points
+//    for(int i = 1; i < stencil2.length(); i++){
+//        ui->profilePlot->graph(12)->addData(i + offset, stencil2[i]*10 + kdf[Npoints/2]); //* +kdf[middle] for visualization
+//        if(stencil2[i] > 0 && stencil2[i-1] < 0) inflections.append(offset + i);
+//        if(stencil2[i] < 0 && stencil2[i-1] > 0) inflections.append(offset + i);
+//    }
+
+    ui->profilePlot->graph(11)->setPen(QPen(Qt::red));
+    ui->profilePlot->graph(12)->setPen(QPen(Qt::green));
+    //straight line...
+    ui->profilePlot->graph(13)->setPen(QPen(Qt::black));
+    ui->profilePlot->graph(13)->addData(begin, kdf[Npoints/2]);
+    ui->profilePlot->graph(13)->addData(begin + Npoints - 1, kdf[Npoints/2]);
+
+
+    setInflectionPoints(infls, begin, Npoints);
 
     ui->profilePlot->rescaleAxes();
     ui->profilePlot->replot(QCustomPlot::rpQueued);
-
-    calcPoints(kdf);
 }
 
 void ProfileDialog::createKernelDensityFunction(int Npoints, QVector<double> hist, double bandwidth){
@@ -204,17 +260,6 @@ void ProfileDialog::createKernelDensityFunction(int Npoints, QVector<double> his
         par_v[i + 2*Npoints] = bandwidth; // sigma
 
     }
-
-//	// Final kernel density
-//	TString kernelname = "kernel_";
-//	kernelname += m_calhandler->GetSourcename();
-//	kernelname += "_";
-//	kernelname += pix;
-//	//cout << "Creating kernel function : " << kernelname << endl;
-//	TF1 * fker = new TF1(kernelname, GausFuncAdd, 0, m_nbins, 3 * m_nbins + 1);
-//	fker->SetParameters( par );
-
-//	return fker;
 }
 
 double ProfileDialog::GausFuncAdd(double x, QVector<double> par) {
@@ -243,12 +288,18 @@ double ProfileDialog::GausFuncAdd(double x, QVector<double> par) {
     return func;
 }
 
-void ProfileDialog::calcPoints(QVector<double> function){
+QVector<double> ProfileDialog::calcPoints(QVector<double> function, int Nder, int bw){
 
     QVector<double> stencil;
+    if(Nder == 1)
+        for(int x = 2*bw; x < function.length()- 2*bw; x++)
+           stencil.append(FivePointsStencil(function, x, bw));
 
-    for(int x = 2; x < function.length()-2; x++)
-           stencil.append(FivePointsStencil(function, x, 1));
+    if(Nder == 2)
+        for(int x = 2*bw; x < function.length()- 2*bw; x++)
+           stencil.append(secderFivePointsStencil(function, x, bw));
+
+    return stencil;
 }
 
 double ProfileDialog::FivePointsStencil(QVector<double> func, int x, double bw) {
@@ -262,18 +313,44 @@ double ProfileDialog::FivePointsStencil(QVector<double> func, int x, double bw) 
     der /= 12.*bw;
 
     return der;
+}
 
-//	double sten = 0.;
+double ProfileDialog::secderFivePointsStencil(QVector<double> func, int x, double bw) {
 
-//	sten  =      q.front();     q.pop(); // get oldest element and remove
-//	sten -= 8. * q.front();     q.pop();
+    double der = 0.;
 
-//	q.pop();                             // middle element not needed in the stencil
+    der -=       func[ x + 2*bw ];
+    der += 16. * func[ x +   bw ];
+    der -= 30. * func[ x        ];
+    der += 16. * func[ x -   bw ];
+    der -=       func[ x - 2*bw ];
+    der /= 12.*bw*bw;
 
-//	sten += 8. * q.front();     q.pop();
-//	sten -=      q.front();     q.pop();
+    return der;
+}
 
-//	return sten/12.;
+void ProfileDialog::setInflectionPoints(QVector<int> infls, int begin, int Npoints)
+{   int i;
+    int offset = 5;
+    for(i = 0; i < 6; i++) ui->profilePlot->graph(N_maingraphs + i)->clearData();
+
+    QVector<int> points;
+
+    if(infls.length() == 2){
+        points.append(               begin);
+        points.append(  infls[0] - offset);
+        points.append(  infls[0] + offset);
+        points.append(  infls[1] - offset);
+        points.append(  infls[1] + offset);
+        points.append( begin + Npoints - 1);
+
+        for(i = 0; i < 6; i++){
+            ui->profilePlot->graph(N_maingraphs + i)->addData( points[i], _Axismap.value(points[i]) );
+            _mpx3gui->getDataset()->setProfilepoint(i, points.at(i));
+            editsList[i]->setText(QString::number(points.at(i)));
+        }
+    }
+
 }
 
 void ProfileDialog::on_checkBox_toggled(bool checked)
@@ -322,9 +399,10 @@ void ProfileDialog::on_KDFbutton_clicked()
 {   //USE KDF CLICKED
 
     double bw = ui->bandwidth_edit->text().toDouble();
-    if(bw == 0) bw = 1;
-    ui->bandwidth_edit->text() = "1";
-    changeText("A bandwidth of 0.0 is not allowed, a default value of 1 has been used.");
+    if(bw == 0){ bw = 1;
+        ui->bandwidth_edit->setText("1");
+        changeText("A bandwidth of 0.0 is not allowed, a default value of 1 has been used.");
+    }
     useKernelDensityFunction(bw);
 }
 
@@ -361,73 +439,6 @@ void ProfileDialog::on_pointEdit_editingFinished(){
     }
 }
 
-//void ProfileDialog::on_pointEdit_0_editingFinished()
-//{
-//    int x;
-//    ui->profilePlot->graph(N_maingraphs)->clearData();
-
-//    QString text = ui->pointEdit_0->text();
-//    if(! text.isEmpty()){
-//        x = text.toInt();
-//        ui->profilePlot->graph(N_maingraphs)->addData(x, _Axismap[x]);
-//        ui->profilePlot->replot(QCustomPlot::rpQueued);
-//    }
-
-//    int x = ui->pointEdit_0->text().toInt();
-//    ui->profilePlot->graph(N_maingraphs)->clearData();
-//    ui->profilePlot->graph(N_maingraphs)->addData(x, _Axismap[x]);
-
-//    ui->profilePlot->replot(QCustomPlot::rpQueued);
-//}
-
-//void ProfileDialog::on_pointEdit_1_editingFinished()
-//{
-//    int x = ui->pointEdit_1->text().toInt();
-//    ui->profilePlot->graph(N_maingraphs + 1)->clearData();
-//    ui->profilePlot->graph(N_maingraphs + 1)->addData(x, _Axismap[x]);
-
-//    ui->profilePlot->replot(QCustomPlot::rpQueued);
-//}
-
-//void ProfileDialog::on_pointEdit_2_editingFinished()
-//{
-//    int x = ui->pointEdit_2->text().toInt();
-//    ui->profilePlot->graph(N_maingraphs + 2)->clearData();
-//    ui->profilePlot->graph(N_maingraphs + 2)->addData(x, _Axismap[x]);
-
-//    ui->profilePlot->replot(QCustomPlot::rpQueued);
-//}
-
-//void ProfileDialog::on_pointEdit_3_editingFinished()
-//{
-//    int x = ui->pointEdit_3->text().toInt();
-//    ui->profilePlot->graph(N_maingraphs + 3)->clearData();
-//    ui->profilePlot->graph(N_maingraphs + 3)->addData(x, _Axismap[x]);
-
-//    ui->profilePlot->replot(QCustomPlot::rpQueued);
-
-//}
-
-//void ProfileDialog::on_pointEdit_4_editingFinished()
-//{
-
-//    int x = ui->pointEdit_4->text().toInt();
-//    ui->profilePlot->graph(N_maingraphs + 4)->clearData();
-//    ui->profilePlot->graph(N_maingraphs + 4)->addData(x, _Axismap[x]);
-
-//    ui->profilePlot->replot(QCustomPlot::rpQueued);
-//}
-
-//void ProfileDialog::on_pointEdit_5_editingFinished()
-//{
-//    int x = ui->pointEdit_5->text().toInt();
-//    ui->profilePlot->graph(N_maingraphs + 5)->clearData();
-//    ui->profilePlot->graph(N_maingraphs + 5)->addData(x, _Axismap[x]);
-
-//    ui->profilePlot->replot(QCustomPlot::rpQueued);
-//}
-
-
 void ProfileDialog::on_comboBox_currentIndexChanged(const QString &arg1)
 {
     QString s = arg1;
@@ -442,7 +453,6 @@ void ProfileDialog::on_comboBox_currentIndexChanged(const QString &arg1)
 void ProfileDialog::mousePressEvent(QMouseEvent *event)
 {   int i;
 
-    //i = _mpx3gui->getDataset()->countProfilepoints();
     i = _mpx3gui->getDataset()->getProfilepoints().indexOf(-1);
 
     if(event->button() == Qt::LeftButton){
@@ -453,7 +463,7 @@ void ProfileDialog::mousePressEvent(QMouseEvent *event)
             int x = ui->profilePlot->xAxis->pixelToCoord(event->x());
             ui->profilePlot->graph(N_maingraphs + i)->addData(x, _Axismap[x]);
             editsList[i]->setText(QString("%1").arg(x));
-            _mpx3gui->getDataset()->setProfilepoint(i, x); //Needed for setting i.
+            _mpx3gui->getDataset()->setProfilepoint(i, x); //Needed for setting i on next mousepress-event.
         }
     }
 }
