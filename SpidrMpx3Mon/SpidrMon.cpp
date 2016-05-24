@@ -17,7 +17,8 @@ const int UPDATE_INTERVAL_MS = 500;
 SpidrMon::SpidrMon()
   : QDialog(),
     _spidrController( 0 ),
-    _skipVdd( false )
+    _skipDvdd( false ),
+    _skipBias( false )
 {
   this->setupUi(this);
 
@@ -67,12 +68,16 @@ void SpidrMon::connectOrDisconnect()
       _lineEditAvddMvolt->setEnabled( false );
       _lineEditAvddMamp->setEnabled( false );
       _lineEditAvddMwatt->setEnabled( false );
-      _lineEditDvddMvolt->setEnabled( false );
-      _lineEditDvddMamp->setEnabled( false );
-      _lineEditDvddMwatt->setEnabled( false );
       _lineEditVddMvolt->setEnabled( false );
       _lineEditVddMamp->setEnabled( false );
       _lineEditVddMwatt->setEnabled( false );
+      _lineEditDvddMvolt->setEnabled( false );
+      _lineEditDvddMamp->setEnabled( false );
+      _lineEditDvddMwatt->setEnabled( false );
+      _lineEditBias->setEnabled( false );
+
+      _skipDvdd = false;
+      _skipBias = false;
     }
   else
     {
@@ -108,12 +113,13 @@ void SpidrMon::connectOrDisconnect()
 	  _lineEditAvddMvolt->setEnabled( true );
 	  _lineEditAvddMamp->setEnabled( true );
 	  _lineEditAvddMwatt->setEnabled( true );
-	  _lineEditDvddMvolt->setEnabled( true );
-	  _lineEditDvddMamp->setEnabled( true );
-	  _lineEditDvddMwatt->setEnabled( true );
 	  _lineEditVddMvolt->setEnabled( true );
 	  _lineEditVddMamp->setEnabled( true );
 	  _lineEditVddMwatt->setEnabled( true );
+	  _lineEditDvddMvolt->setEnabled( true );
+	  _lineEditDvddMamp->setEnabled( true );
+	  _lineEditDvddMwatt->setEnabled( true );
+	  _lineEditBias->setEnabled( true );
 
 	  _timerId = this->startTimer( UPDATE_INTERVAL_MS );
 	}
@@ -179,34 +185,47 @@ void SpidrMon::timerEvent(QTimerEvent *)
       _lineEditAvddMamp->setText( "----" );
       _lineEditAvddMwatt->setText( "----" );
     }
-  if( _spidrController->getDvddNow( &mvolt, &mamp, &mwatt ) )
+  if( _spidrController->getVddNow( &mvolt, &mamp, &mwatt ) )
     {
-      _lineEditDvddMvolt->setText( QString::number( mvolt ) );
-      _lineEditDvddMwatt->setText( QString::number( mwatt ) );
+      _lineEditVddMvolt->setText( QString::number( mvolt ) );
+      _lineEditVddMwatt->setText( QString::number( mwatt ) );
       QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
-      _lineEditDvddMamp->setText( qs );
+      _lineEditVddMamp->setText( qs );
     }
   else
     {
-      _lineEditDvddMvolt->setText( "----" );
-      _lineEditDvddMamp->setText( "----" );
-      _lineEditDvddMwatt->setText( "----" );
+      _lineEditVddMvolt->setText( "----" );
+      _lineEditVddMamp->setText( "----" );
+      _lineEditVddMwatt->setText( "----" );
     }
-  if( !_skipVdd )
+  if( !_skipDvdd )
     {
-      if( _spidrController->getVddNow( &mvolt, &mamp, &mwatt ) )
+      if( _spidrController->getDvddNow( &mvolt, &mamp, &mwatt ) )
 	{
-	  _lineEditVddMvolt->setText( QString::number( mvolt ) );
-	  _lineEditVddMwatt->setText( QString::number( mwatt ) );
+	  _lineEditDvddMvolt->setText( QString::number( mvolt ) );
+	  _lineEditDvddMwatt->setText( QString::number( mwatt ) );
 	  QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
-	  _lineEditVddMamp->setText( qs );
+	  _lineEditDvddMamp->setText( qs );
 	}
       else
 	{
-	  _skipVdd = true; // SPIDR-TPX3 does not have VDD
-	  _lineEditVddMvolt->setText( "----" );
-	  _lineEditVddMamp->setText( "----" );
-	  _lineEditVddMwatt->setText( "----" );
+	  _skipDvdd = true; // SPIDR-TPX3 does not have VDD
+	  _lineEditDvddMvolt->setText( "----" );
+	  _lineEditDvddMamp->setText( "----" );
+	  _lineEditDvddMwatt->setText( "----" );
+	}
+    }
+  if( !_skipBias )
+    {
+      int volts;
+      if( _spidrController->getBiasVoltage( &volts ) )
+	{
+	  _lineEditBias->setText( QString::number( volts ) );
+	}
+      else
+	{
+	  _skipBias = true; // SPIDR-MPX3/SPIDR-TPX3 does not have bias supply
+	  _lineEditBias->setText( "----" );
 	}
     }
 
@@ -223,12 +242,13 @@ void SpidrMon::initDataDisplay()
   _lineEditAvddMvolt->setText( "----" );
   _lineEditAvddMamp->setText( "----" );
   _lineEditAvddMwatt->setText( "----" );
-  _lineEditDvddMvolt->setText( "----" );
-  _lineEditDvddMamp->setText( "----" );
-  _lineEditDvddMwatt->setText( "----" );
   _lineEditVddMvolt->setText( "----" );
   _lineEditVddMamp->setText( "----" );
   _lineEditVddMwatt->setText( "----" );
+  _lineEditDvddMvolt->setText( "----" );
+  _lineEditDvddMamp->setText( "----" );
+  _lineEditDvddMwatt->setText( "----" );
+  _lineEditBias->setText( "----" );
 }
 
 // ----------------------------------------------------------------------------
