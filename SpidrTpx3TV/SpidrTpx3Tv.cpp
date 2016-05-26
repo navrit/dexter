@@ -357,6 +357,16 @@ void SpidrTpx3Tv::changeShutter( bool open )
 	  QApplication::processEvents();
 
 	  _controller->resetPixelConfig();
+
+	  /* ----- TEST -----
+	  for( int x=0; x<256; ++x )
+	    for( int y=0; y<256; ++y )
+	      {
+		//_controller->setPixelThreshold( x, y, y/16 );
+		if( x >= 192 && x < 193 )
+		  _controller->setPixelMask( x, y );
+	      }*/
+
 	  if( !_controller->setPixelConfig( _deviceNr ) )
 	    this->displayError( "Pixelconfig upload failed" );
 	  _resetPixelConfig = false;
@@ -391,7 +401,9 @@ void SpidrTpx3Tv::changeShutter( bool open )
 void SpidrTpx3Tv::setDacCoarse( int dac_val )
 {
   if( !_controller ) return;
-  if( !_controller->setDac( _deviceNr, TPX3_VTHRESH_COARSE, dac_val ) )
+  if( _controller->setDac( _deviceNr, TPX3_VTHRESH_COARSE, dac_val ) )
+    this->statusBar()->clearMessage();
+  else
     this->displayError( "Set Vthr-Coarse failed" );
 }
 
@@ -401,7 +413,14 @@ void SpidrTpx3Tv::setDacFine( int dac_val )
 {
   if( !_controller ) return;
   if( !_controller->setDac( _deviceNr, TPX3_VTHRESH_FINE, dac_val ) )
-    this->displayError( "Set Vthr-Fine failed" );
+    {
+      this->displayError( "Set Vthr-Fine failed" );
+    }
+  else
+    {
+      _labelDacFine->setText( QString("DAC Vthr-fine %1").arg(dac_val) );
+      this->statusBar()->clearMessage();
+    }
 }
 
 // ----------------------------------------------------------------------------
