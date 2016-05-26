@@ -129,14 +129,20 @@ void ProfileDialog::addMeanLines(QString data){
                 QString mean = meanlist.at(i);
 
                 if(meanlist.length() == 2 && profilevector[0] == -1){//The left meanline is not drawn.
-                    ui->profilePlot->graph(graphindex + i + 1)->addData(profilevector[i*2+2], mean.toDouble(&ok));
-                    ui->profilePlot->graph(graphindex + i +1)->addData(profilevector[i*2+3], mean.toDouble(&ok));
+                    ui->profilePlot->graph(graphindex + i + 1)->addData(profilevector[i*N_left + N_left], mean.toDouble(&ok));
+                    ui->profilePlot->graph(graphindex + i +1)->addData(profilevector[i*N_left + N_left + 1], mean.toDouble(&ok));
                 }
-                else if(meanlist.length() == 2 && profilevector[2] == -1);
-                else {
-                    ui->profilePlot->graph(graphindex + i)->addData(profilevector[i*2], mean.toDouble(&ok));
-                    ui->profilePlot->graph(graphindex + i)->addData(profilevector[i*2+1], mean.toDouble(&ok));
+                else if(meanlist.length() == 2 && profilevector[N_left] == -1); //Two backgrounds...
+//                else if(meanlist.length() == 2){
+//                    ui->profilePlot->graph(graphindex + i + 1)->addData(profilevector[i*N_left + N_left], mean.toDouble(&ok));
+//                    ui->profilePlot->graph(graphindex + i +1)->addData(profilevector[i*N_left + N_left + 1], mean.toDouble(&ok));
+//                }
+                else if(meanlist.length() >= 2){
+                    ui->profilePlot->graph(graphindex + i)->addData(profilevector[i*N_left], mean.toDouble(&ok));
+                    ui->profilePlot->graph(graphindex + i)->addData(profilevector[i*N_left + 1], mean.toDouble(&ok));
                 }
+                else ;//Do nothing if there is only one mean.
+
             if(!ok)changeText("An error has occured with converting the means to integers.");
             }
 
@@ -174,7 +180,7 @@ void ProfileDialog::useKernelDensityFunction(double bandwidth)
     createKernelDensityFunction(Npoints, hist, bandwidth);
 
     ui->profilePlot->graph(kdf_index)->clearData();
-    ui->profilePlot->graph(12)->clearData();
+    //ui->profilePlot->graph(12)->clearData();
     ui->profilePlot->graph(11)->clearData();
     ui->profilePlot->graph(13)->clearData();
 
@@ -193,19 +199,34 @@ void ProfileDialog::useKernelDensityFunction(double bandwidth)
     int offset = begin + kdf_offset + bw*2;  //bw*2 because of the 5-point stencil.
     //First derivative for calculating the max (or min)
     int maxpt = 0;
+    QVector<int> maxpts;
     QVector<double> stencil = calcPoints(kdf, 1, bw);
 
     for(int i = 1; i < stencil.length(); i++){
-        if(stencil[i] > 0 && stencil[i-1] < 0) maxpt = offset + i;
-        if(stencil[i] < 0 && stencil[i-1] > 0) maxpt = offset + i;
+        if(stencil[i] > 0 && stencil[i-1] < 0) maxpts.append(offset + i);
+        if(stencil[i] < 0 && stencil[i-1] > 0) maxpts.append(offset + i);
     }
+    if(maxpts.length() == 1) maxpt = maxpts[0];
+
+    else if(maxpts.length() >= 3){//Take the extremum closest to the middle, left or right, respectively.
+        if(_left && _right) maxpt = maxpts[ closestToAt( maxpts, begin + Npoints/2 ) ];
+        else if(_left) maxpt = maxpts[ closestToAt( maxpts, begin ) ];
+        else if(_right) maxpt = maxpts [ closestToAt( maxpts, begin + Npoints ) ];
+    }
+
+    else {  //= 0 maxima. Just take the middle, beginning or end of the profile.
+        if (_left && _right) maxpt = begin + Npoints/2;
+        else if (_left) maxpt = begin;
+        else if (_right) maxpt = begin + Npoints;
+    }
+
 
     //second derivative with seperate calculation
     QVector<double> stencil3 = calcPoints(kdf, 2, bw);
     //Draw
     QVector<int> infls; //Save inflection points
     for(int i = 1; i < stencil3.length(); i++){
-        ui->profilePlot->graph(11)->addData(i + offset, stencil3[i]*10 + kdf[Npoints/2]); //* +kdf[middle] for visualization
+        ui->profilePlot->graph(11)->addData(i + offset, stencil3[i]*10 + kdf[kdf.length()/2]); //* +kdf[middle] for visualization
         if(stencil3[i] > 0 && stencil3[i-1] < 0)
             infls.append(i + offset);
         if(stencil3[i] < 0 && stencil3[i-1] > 0)
@@ -224,14 +245,14 @@ void ProfileDialog::useKernelDensityFunction(double bandwidth)
 //    }
 
     ui->profilePlot->graph(11)->setPen(QPen(Qt::red));
-    ui->profilePlot->graph(12)->setPen(QPen(Qt::green));
+    //ui->profilePlot->graph(12)->setPen(QPen(Qt::green));
     //straight line...
     ui->profilePlot->graph(13)->setPen(QPen(Qt::black));
-    ui->profilePlot->graph(13)->addData(begin, kdf[Npoints/2]);
-    ui->profilePlot->graph(13)->addData(begin + Npoints - 1, kdf[Npoints/2]);
+    ui->profilePlot->graph(13)->addData(begin, kdf[kdf.length()/2]);
+    ui->profilePlot->graph(13)->addData(begin + Npoints - 1, kdf[kdf.length()/2]);
 
 
-    setInflectionPoints(infls, begin, Npoints);
+    setInflectionPoints(infls, begin, Npoints, maxpt);
 
     ui->profilePlot->rescaleAxes();
     ui->profilePlot->replot(QCustomPlot::rpQueued);
@@ -329,28 +350,114 @@ double ProfileDialog::secderFivePointsStencil(QVector<double> func, int x, doubl
     return der;
 }
 
-void ProfileDialog::setInflectionPoints(QVector<int> infls, int begin, int Npoints)
+void ProfileDialog::setInflectionPoints(QVector<int> infls, int begin, int Npoints, int maxpt)
 {   int i;
-    int offset = 5;
+    int stepin_division = 3;
     for(i = 0; i < 6; i++) ui->profilePlot->graph(N_maingraphs + i)->clearData();
 
     QVector<int> points;
 
-    if(infls.length() == 2){
-        points.append(               begin);
-        points.append(  infls[0] - offset);
-        points.append(  infls[0] + offset);
-        points.append(  infls[1] - offset);
-        points.append(  infls[1] + offset);
-        points.append( begin + Npoints - 1);
-
-        for(i = 0; i < 6; i++){
-            ui->profilePlot->graph(N_maingraphs + i)->addData( points[i], _Axismap.value(points[i]) );
-            _mpx3gui->getDataset()->setProfilepoint(i, points.at(i));
-            editsList[i]->setText(QString::number(points.at(i)));
+    if(infls.length() == 4){
+        //Remove the point furthest from the top. (Do this twice.)
+        //Might give faulty points, but better than doing nothing.
+        int dmax = 0;
+        int imax = 0;
+        for(i = 0; i < infls.length(); i++){
+            int d = abs(maxpt - infls[i]);
+            if(d > dmax){
+                dmax = d;
+                imax = i;
+            }
         }
+        infls.removeAt(imax);
+        changeText("You might want to adjust one or more of the boundary points.");
     }
 
+    if(infls.length() == 3){    //Remove the point furthest from the top.
+        int dmax = 0;
+        int imax = 0;
+        for(i = 0; i < infls.length(); i++){
+            int d = abs(maxpt - infls[i]);
+            if(d > dmax){
+                dmax = d;
+                imax = i;
+            }
+        }
+        infls.removeAt(imax);
+        changeText("You might want to adjust one or more of the boundary points.");
+    }
+
+    if(infls.length() == 2){
+
+        int offset = ((maxpt - infls[0]) + (infls[1] - maxpt)) / (2*stepin_division); //Divide and take the mean (divide by 2).
+
+        points.append(               begin);
+        points.append(   infls[0] - offset);
+        points.append(   infls[0] + offset);
+        points.append(   infls[1] - offset);
+        points.append(   infls[1] + offset);
+        points.append( begin + Npoints - 1);
+
+//        for(i = 0; i < 6; i++){
+//            ui->profilePlot->graph(N_maingraphs + i)->addData( points[i], _Axismap.value(points[i]) );
+//            //_mpx3gui->getDataset()->setProfilepoint(i, points.at(i)); //unnecessary. Done by on_CNRbutton_clicked.
+//            editsList[i]->setText(QString::number(points.at(i)));
+//        }
+    }
+    if(infls.length() == 1){//Try using only two regions
+        int offset = abs(maxpt - infls[0])/stepin_division;
+
+        points.append(               begin);
+        points.append(   infls[0] - offset);
+        points.append(   infls[0] + offset);
+        //
+        points.append( begin + Npoints - 1);
+
+        changeText("You might want to adjust one or more of the boundary points.");
+
+        if(!_left)
+            for(i = 0; i < points.length(); i++){
+                ui->profilePlot->graph(N_maingraphs + i + N_left)->addData( points[i], _Axismap.value(points[i]) );
+                editsList[i + N_left]->setText(QString::number(points.at(i)));
+            }
+    }
+
+    if (_left)
+        for(i = 0; i < points.length(); i++){
+        ui->profilePlot->graph(N_maingraphs + i)->addData( points[i], _Axismap.value(points[i]) );
+        //_mpx3gui->getDataset()->setProfilepoint(i, points.at(i)); //unnecessary. Done by on_CNRbutton_clicked.
+        editsList[i]->setText(QString::number(points.at(i)));
+        }
+}
+
+int ProfileDialog::farthestFromAt(QVector<int> list, int x)
+{
+    int dmax = 0;
+    int imax;
+    int d;
+    for(int i = 0; i < list.length(); i++){
+        d = abs(x - list[i]);
+        if(d > dmax){
+            dmax = d;
+            imax = i;
+        }
+    }
+    return imax;
+}
+
+int ProfileDialog::closestToAt(QVector<int> list, int x)
+{
+    int dmin = x;
+    int imin;
+    int d;
+        for(int i = 0; i < list.length(); i++){
+            d = abs(x - list[i]);
+            if(d < dmin){
+                dmin = d;
+                imin = i;
+            }
+        }
+    return imin;
 }
 
 void ProfileDialog::on_checkBox_toggled(bool checked)
@@ -383,7 +490,7 @@ void ProfileDialog::on_CNRbutton_clicked()
 
     QList<int> profilepoints = _mpx3gui->getDataset()->getProfilepoints();
     for(i = 1; i < profilepoints.length(); i++)
-            if(profilepoints[i] < profilepoints[i-1]) inOrder = false;
+            if(profilepoints[i] != -1 && profilepoints[i] < profilepoints[i-1]) inOrder = false;
 
     //And calculate the CNR or display error message.
     if (inOrder && inRange){
@@ -404,6 +511,19 @@ void ProfileDialog::on_KDFbutton_clicked()
         changeText("A bandwidth of 0.0 is not allowed, a default value of 1 has been used.");
     }
     useKernelDensityFunction(bw);
+}
+
+void ProfileDialog::on_clearbutton_clicked()
+{   int i;
+    _mpx3gui->getDataset()->clearProfilepoints();
+    for(i = 0; i < editsList.length(); i++){
+        editsList[i]->setText("");
+        ui->profilePlot->graph(N_maingraphs + i)->clearData();
+    }
+    for(i = 0; i < N_meangraphs; i++)
+        ui->profilePlot->graph(N_maingraphs + editsList.length() + i)->clearData();
+
+    ui->profilePlot->replot(QCustomPlot::rpQueued);
 }
 
 bool ProfileDialog::valueinRange(int value){
@@ -480,10 +600,14 @@ void ProfileDialog::makeEditsList(){
         if(list[i]->objectName().contains("pointEdit")) editsList.append(list[i]);
 }
 
-void ProfileDialog::on_clearbutton_clicked()
+
+void ProfileDialog::on_checkBox_left_toggled(bool checked)
 {
-    _mpx3gui->getDataset()->clearProfilepoints();
-    for(int i = 0; i < editsList.length(); i++)
-        editsList[i]->setText("");
+    _left = checked;
 }
 
+void ProfileDialog::on_checkBox_right_toggled(bool checked)
+{
+    _right = checked;
+
+}

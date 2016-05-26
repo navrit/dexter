@@ -426,14 +426,23 @@ QString Dataset::calcCNR(QMap<int, int> Axismap){
         }
 
         else if (Nregions == TWO_Regions){
+//            For easy printing
+//            int first;
+//            int second;
 
             if(mean_v[0] >= mean_v[1]){
                 signal = 0;
                 bg = 1;
+                data+="\tSignal\tBackground\n";
+//                first = signal;
+//                second = background;
             }
             else {
                 signal = 1;
                 bg = 0;
+                data += "\tBackground\tSignal\n";
+//                first = background;
+//                second = signal;
             }
 
             cnr = mean_v[signal] - mean_v[bg];
@@ -451,9 +460,8 @@ QString Dataset::calcCNR(QMap<int, int> Axismap){
             if(!corrected) snr = 1/snr;
             snr = 10*log10(snr);
 
-            data += "\tBackground\tSignal\n";
-            data += QString("Mean:\t%1\t%2\n").arg(mean_v[bg]).arg(mean_v[signal]);
-            data += QString("Stdev:\t%1\t%2\n").arg(stdev_v[bg]).arg(stdev_v[signal]);
+            data += QString("Mean:\t%1\t%2\n").arg(mean_v[0]).arg(mean_v[1]);
+            data += QString("Stdev:\t%1\t%2\n").arg(stdev_v[0]).arg(stdev_v[1]);
         }
 
         else return QString("Something went wrong, please choose boundary points for two or three areas.");

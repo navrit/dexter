@@ -18,7 +18,8 @@ class ProfileDialog : public QDialog
     enum constants{
         kdf_index = 1,
         N_maingraphs = 2, //The profile itself and the kernel density function.
-        N_meangraphs = 3
+        N_meangraphs = 3,
+        N_left = 2  //number of fields/points a signal has to be shifted when on the left or right.
     };
 
 public:
@@ -41,7 +42,8 @@ private:
     QMap<int, int> _Axismap; //! Contains a total pixelvalue for each X or Y value in the selected profile region.
     QString _axis; //!The axis that is currently used as the horizontal axis in the profileplot.
     QList<QLineEdit*> editsList; //!Contains the QLineEdits that specify the points on the profile for CNR calculation.
-    //bool _left; //When 2 regions are selected, indicates if these are the two on the left.
+    bool _left = true; //Indicates whether a left background is present.
+    bool _right = true; //Indicates whether a right background is present.
     QVector<double> par_v;
 
     //Functions:
@@ -55,7 +57,9 @@ private:
     QVector<double> calcPoints(QVector<double> function, int Nder, int bw);
     double FivePointsStencil(QVector<double> func, int x, double bw);
     double secderFivePointsStencil(QVector<double> func, int x, double bw);
-    void setInflectionPoints(QVector<int> infls, int begin, int Npoints);
+    void setInflectionPoints(QVector<int> infls, int begin, int Npoints, int maxpt);
+    int farthestFromAt(QVector<int> list, int x);
+    int closestToAt(QVector<int> list, int x);
 
 private slots:
     void on_buttonBox_accepted();
@@ -77,6 +81,10 @@ private slots:
 
 
     void on_clearbutton_clicked();
+
+    void on_checkBox_left_toggled(bool checked);
+
+    void on_checkBox_right_toggled(bool checked);
 
 signals:
     void user_accepted_profile();

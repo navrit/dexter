@@ -258,6 +258,8 @@ void QCstmBHWindow::on_applyBHCorrection()
             _mpx3gui->getDataset()->getLayer(keys[i])[j] = currentLayer[j];
         }
     }
+
+    _mpx3gui->getDataset()->setCorrected(true);
     emit updateProgressBar(100);
 }
 
