@@ -25,9 +25,9 @@ static const int MEM_SECTOR_SZ = 0x10000;
 
 McsReader::McsReader()
   : _valid( false ),
-    _maxAddr( -1 ),
     _minAddr( -1 ),
-    _lineNo( 0 ),
+    _maxAddr(-1),
+    _lineNo(0),
     _mem( 0 )
 {
   // Allocate storage for full FLASH or EEPROM memory image;
