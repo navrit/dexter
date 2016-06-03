@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>928</width>
-    <height>720</height>
+    <height>730</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -71,7 +71,7 @@
    <property name="minimumSize">
     <size>
      <width>250</width>
-     <height>691</height>
+     <height>695</height>
     </size>
    </property>
    <property name="features">
@@ -609,6 +609,13 @@
          <string>1111</string>
         </property>
        </item>
+      </widget>
+     </item>
+     <item row="14" column="1">
+      <widget class="QCheckBox" name="_checkBoxIntegrate">
+       <property name="text">
+        <string>Integrating</string>
+       </property>
       </widget>
      </item>
     </layout>

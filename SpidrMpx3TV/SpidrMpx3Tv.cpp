@@ -16,7 +16,9 @@ SpidrMpx3Tv::SpidrMpx3Tv()
     _isCompactSpidr( false ),
     _image1( QSize(256,256), QImage::Format_Indexed8 ),
     _image4( QSize(512,512), QImage::Format_Indexed8 ),
-    _deviceCount( 0 )
+    _deviceCount( 0 ),
+    _integrating( false ),
+    _pixData( 0 )
 {
   this->setupUi(this);
 
@@ -32,8 +34,13 @@ SpidrMpx3Tv::SpidrMpx3Tv()
   connect( _checkBoxLutEnable, SIGNAL(stateChanged(int)),
 	   this, SLOT(changeLutEnabled()) );
 
+  connect( _checkBoxIntegrate, SIGNAL(stateChanged(int)),
+	   this, SLOT(changeIntegrating()) );
+
   // Initializes _counterDepth
   this->changeCounterDepth();
+
+  _pixData = new int[4*256*256];
 
   startTimer( 50 );
 }
@@ -43,6 +50,7 @@ SpidrMpx3Tv::SpidrMpx3Tv()
 SpidrMpx3Tv::~SpidrMpx3Tv()
 {
   if( _controller ) this->onOff();
+  if( _pixData ) delete [] _pixData;
 }
 
 // ----------------------------------------------------------------------------
@@ -62,6 +70,13 @@ void SpidrMpx3Tv::decodeAndDisplay()
       uchar *img = _image1.bits();
       int    val;
       pixeldata = _daq->frameData( 0, &size );
+      if( _integrating )
+	{
+	  int *pix = &_pixData[0];
+	  for( int i=0; i<256*256; ++i, ++pix, ++pixeldata )
+	    *pix += *pixeldata;
+	  pixeldata = &_pixData[0];
+	}
       for( int i=0; i<256*256; ++i, ++img, ++pixeldata )
 	{
 	  val = *pixeldata;
@@ -84,6 +99,13 @@ void SpidrMpx3Tv::decodeAndDisplay()
 	  //  device numbers in a 'quad' are as follows: 0 1
 	  //                                             3 2
 	  pixeldata = _daq->frameData( dev, &size );
+	  if( _integrating )
+	    {
+	      int *pix = &_pixData[dev*256*256];
+	      for( int i=0; i<256*256; ++i, ++pix, ++pixeldata )
+		*pix += *pixeldata;
+	      pixeldata = &_pixData[dev*256*256];
+	    }
 	  x_offs = 0;
 	  y_offs = 0;
 	  if( dev == 1 || dev == 2 ) x_offs = 256;
@@ -303,6 +325,15 @@ void SpidrMpx3Tv::onOff()
       // Let SpidrDaq decode the frame data (otherwise it will simply absorb
       // all frames when no output file is opened..)
       _daq->setDecodeFrames( true );
+
+      // Initialize integrated pixel data
+      int *pix;
+      for( int dev=0; dev<4; ++dev )
+	{
+	  pix = &_pixData[dev*256*256];
+	  for( int i=0; i<256*256; ++i )
+	    pix[i] = 0;
+	}
     }
   else
     {
@@ -331,7 +362,10 @@ void SpidrMpx3Tv::changeCounterDepth()
   _counterDepth = _comboBoxCounterDepth->currentText().toInt();
 
   _sbMinValue->setMaximum( (1<<_counterDepth)-1 );
-  _sbMaxValue->setMaximum( (1<<_counterDepth)-1 );
+  if( _integrating )
+    _sbMaxValue->setMaximum( 0x7fffffff );
+  else
+    _sbMaxValue->setMaximum( (1<<_counterDepth)-1 );
 
   _sbMaxValue->setValue( (1<<_counterDepth)-1 );
 
@@ -354,6 +388,21 @@ void SpidrMpx3Tv::changeLutEnabled()
       // Look-Up-Table decoding done by (SpidrDaq) API, not (SPIDR) hardware
       if( _controller ) _controller->setLutEnable( false );
       if( _daq ) _daq->setLutEnable( true );
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+void SpidrMpx3Tv::changeIntegrating()
+{
+  _integrating = _checkBoxIntegrate->isChecked();
+  if( _integrating )
+    {
+      _sbMaxValue->setMaximum( 0x7fffffff );
+    }
+  else
+    {
+      _sbMaxValue->setMaximum( (1<<_counterDepth)-1 );
     }
 }
 

@@ -20,6 +20,7 @@ class SpidrMpx3Tv : public QMainWindow, Ui_SpidrTv
   void onOff();
   void changeCounterDepth();
   void changeLutEnabled();
+  void changeIntegrating();
 
  private:
   SpidrController *_controller;
@@ -28,6 +29,8 @@ class SpidrMpx3Tv : public QMainWindow, Ui_SpidrTv
   QImage           _image1, _image4;
   int              _deviceCount;
   int              _counterDepth;
+  bool             _integrating;
+  int             *_pixData; // To store integrated pixel data
 
   void decodeAndDisplay();
 };
