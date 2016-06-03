@@ -113,17 +113,17 @@ void DataTakingThread::run() {
     QVector<int> ** th4 = new QVector<int>*[nChips];
     QVector<int> ** th6 = new QVector<int>*[nChips];
     for ( int i = 0 ; i < nChips ; i++ ) {
-        th0[i] = 0x0;
-        th2[i] = 0x0;
-        th4[i] = 0x0;
-        th6[i] = 0x0;
+        th0[i] = nullptr;
+        th2[i] = nullptr;
+        th4[i] = nullptr;
+        th6[i] = nullptr;
     }
     // counterH
     // I don't need to buffer the high counters
-    QVector<int> * th1 = 0x0;
-    QVector<int> * th3 = 0x0;
-    QVector<int> * th5 = 0x0;
-    QVector<int> * th7 = 0x0;
+    QVector<int> * th1 = nullptr;
+    QVector<int> * th3 = nullptr;
+    QVector<int> * th5 = nullptr;
+    QVector<int> * th7 = nullptr;
 
     int nFramesReceived = 0, lastDrawn = 0;
     int nFramesKept = 0;
@@ -190,10 +190,10 @@ void DataTakingThread::run() {
             // Buffering for the counterL
             for ( int i = 0 ; i < nChips ; i++ ) {
 
-                if ( th0[i] ) { delete th0[i]; th0[i] = 0x0; }
-                if ( th2[i] ) { delete th2[i]; th2[i] = 0x0; }
-                if ( th4[i] ) { delete th4[i]; th4[i] = 0x0; }
-                if ( th6[i] ) { delete th6[i]; th6[i] = 0x0; }
+                if ( th0[i] ) { delete th0[i]; th0[i] = nullptr; }
+                if ( th2[i] ) { delete th2[i]; th2[i] = nullptr; }
+                if ( th4[i] ) { delete th4[i]; th4[i] = nullptr; }
+                if ( th6[i] ) { delete th6[i]; th6[i] = nullptr; }
 
             }
             // counterH is erased as soon as is used.
@@ -265,12 +265,13 @@ void DataTakingThread::run() {
 
 
         for(int i = 0 ; i < activeDevices.size() ; i++) {
-        //KoreaHack for(int i = 0 ; i < 4 ; i++) {
+            //KoreaHack for(int i = 0 ; i < 4 ; i++) {
 
             // retreive data for a given chip
             framedata = spidrdaq->frameData(i, &size_in_bytes);
-            //KoreaHackif ( i != 3 ) framedata = spidrdaq->frameData(i, &size_in_bytes);
-            //KoreaHackif ( i == 3 ) framedata = spidrdaq->frameData(1, &size_in_bytes);
+            //KoreaHack  if ( i != 3 ) framedata = spidrdaq->frameData(i, &size_in_bytes);
+            //KoreaHack  if ( i == 3 ) framedata = spidrdaq->frameData(1, &size_in_bytes);
+            //KoreaHack
 
             //cout << "chip id : " << activeDevices[i] << " | SpidrDaq::frameShutterCounter: " << spidrdaq->frameShutterCounter(i) << endl;
             // if ( size_in_bytes == 0 ) continue; // this may happen
@@ -362,10 +363,10 @@ void DataTakingThread::run() {
                     //delete th7; th7 = 0x0;
 
                     // Get ready with the high thresholds
-                    if ( th1 ) { delete th1; th1 = 0x0; }
-                    if ( th3 ) { delete th3; th3 = 0x0; }
-                    if ( th5 ) { delete th5; th5 = 0x0; }
-                    if ( th7 ) { delete th7; th7 = 0x0; }
+                    if ( th1 ) { delete th1; th1 = nullptr; }
+                    if ( th3 ) { delete th3; th3 = nullptr; }
+                    if ( th5 ) { delete th5; th5 = nullptr; }
+                    if ( th7 ) { delete th7; th7 = nullptr; }
 
                 }
 
@@ -480,6 +481,18 @@ void DataTakingThread::run() {
     // clear counters in SpidrDac
     spidrdaq->resetLostCount();
 
+    // Clear memory
+
+    for ( int i = 0 ; i < nChips ; i++ ) {
+        if ( th0[i] ) { delete th0[i]; th0[i] = nullptr; }
+        if ( th2[i] ) { delete th2[i]; th2[i] = nullptr; }
+        if ( th4[i] ) { delete th4[i]; th4[i] = nullptr; }
+        if ( th6[i] ) { delete th6[i]; th6[i] = nullptr; }
+    }
+    if ( th0 ) delete [] th0;
+    if ( th2 ) delete [] th2;
+    if ( th4 ) delete [] th4;
+    if ( th6 ) delete [] th6;
 
     delete spidrcontrol;
 

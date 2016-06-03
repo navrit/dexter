@@ -1308,6 +1308,8 @@ unsigned int Dataset::setFrame(int *frame, int index, int threshold){
 
     for (int i = 0 ; i < m_nx*m_ny;i++) {
 
+        //if ( frame[i] > 1 ) continue;
+
         newFrame[i] = frame[i];
         // overflow check on the current single frame
         if ( frame[i] >= m_pixelDepthCntr ) overflowCntr++;
@@ -1327,16 +1329,14 @@ unsigned int Dataset::sumFrame(int *frame, int index, int threshold){
 
     for ( int i = 0 ; i < m_nx*m_ny ; i++ ) {
 
+        //if ( frame[i] > 1 ) continue;
+
         newFrame[i] += frame[i];
 
         // overflow check on the current single frame
         if ( frame[i] >= m_pixelDepthCntr ) overflowCntr++;
 
     }
-
-    // Now on index == 3 I have copy data.  Shuffle it !
-    // Erase straight lines
-
 
     return overflowCntr;
 }

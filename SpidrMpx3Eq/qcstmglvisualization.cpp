@@ -104,7 +104,7 @@ void QCstmGLVisualization::StartDataTaking() {
 
         // In the situation where data has been lost and
         //  the system is trying to complete the requested
-        //  number of frames the data shouldn't be cleared.
+        //  number of frames, the data shouldn't be cleared.
         bool clearpreviousdata = true;
         if ( _dataTakingThread ) {
             if ( _dataTakingThread->isACompleteJob() ) {
@@ -318,7 +318,7 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
         /////////////////////////////
         // TEST
-        _mpx3gui->getDataset()->dumpAllActivePixels();
+        //_mpx3gui->getDataset()->dumpAllActivePixels();
 
     }
 

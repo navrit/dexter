@@ -220,7 +220,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 
     for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {
         connect( _shortcutsSwitchPages[i], &QShortcut::activated,
-                this, &Mpx3GUI::on_shortcutsSwithPages );
+                 this, &Mpx3GUI::on_shortcutsSwithPages );
     }
 
 }
@@ -426,6 +426,8 @@ bool Mpx3GUI::establish_connection() {
     clear_data( false );
 
     QVector<int> activeDevices = config->getActiveDevices();
+
+
     for ( int i = 0 ; i < activeDevices.size() ; i++ ) {
         getDataset()->setLayout(i, _MPX3RX_LAYOUT[activeDevices[i]]);
         getDataset()->setOrientation(i, _MPX3RX_ORIENTATION[activeDevices[i]]);
