@@ -26,8 +26,8 @@ void usage();
 
 int main( int argc, char *argv[] )
 {
-  quint32 ipaddr = 0;
-  int     portnr = 50000;
+  quint32 ipaddr    = 0;
+  int     portnr    = 50000;
   int     device_nr = 0;
 
   // Check argument count
@@ -85,7 +85,8 @@ int main( int argc, char *argv[] )
     {
       spidrctrl.selectPixelConfig( cnf );
       for( y=10; y<250; ++y )
-	for( x=0; x<255; ++x )
+	//for( x=0; x<255; ++x )
+	for( x=254; x<255; ++x )
 	  {
 	    spidrctrl.setPixelTestEna( x, y );
 	    if( x == 34 || x == 37 ) spidrctrl.setPixelThreshold( x, y, 5 );
@@ -106,7 +107,8 @@ int main( int argc, char *argv[] )
   spidrctrl.selectPixelConfig( 0 );
   spidrctrl.setPixelMask( 130, 131 );
   spidrctrl.setPixelMask( 213, 222 );
-  spidrctrl.setPixelTestEna( 0, 0 );
+  //spidrctrl.setPixelTestEna( 0, 0 );
+  spidrctrl.setPixelThreshold( 213, 223, 5 );
 
   // Compare configurations
   cout << "Modified pixconf #0:" << endl;
@@ -119,8 +121,8 @@ int main( int argc, char *argv[] )
   // Upload pixel configuration #0 to selected chip
   cout << "setPixCfg #0 start:" << time_str() << endl;
   spidrctrl.selectPixelConfig( 0 );
-  //if( !spidrctrl.setPixelConfig( device_nr, true ) )// Preformatted 6-bit cfg
-  if( !spidrctrl.setPixelConfig( device_nr, false ) ) // 8-bit cfg 
+  if( !spidrctrl.setPixelConfig( device_nr, true ) )// Preformatted 6-bit cfg
+  //if( !spidrctrl.setPixelConfig( device_nr, false ) ) // 8-bit cfg 
     error_out( "###setPixelConfig" );
   cout << "setPixCfg    stop :" << time_str() << endl;
   //return 0;
@@ -135,6 +137,53 @@ int main( int argc, char *argv[] )
   cout << "1+2: " << spidrctrl.comparePixelConfig( 1, 2 ) << endl;
   cout << "2+3: " << spidrctrl.comparePixelConfig( 2, 3 ) << endl;
 
+  unsigned char *cfg = spidrctrl.pixelConfig();
+  unsigned int val;
+  for( int y=0; y<256; ++y )
+    for( int x=0; x<256; ++x )
+      {
+	val = (unsigned int) cfg[y*256 + x]; 
+	if( val != 0 )
+	  cout << x << "," << y << ": " << val << endl;
+      }
+
+#define PIXCNF_TEST_ALL
+#ifdef PIXCNF_TEST_ALL
+  // Test every possible pixel configuration value
+  cout << "PixCfg val:" << endl; 
+  unsigned char byt;
+  for( byt=0; byt<64; ++byt )
+    {
+      spidrctrl.resetPixels( device_nr );
+
+      spidrctrl.selectPixelConfig( 0 );
+      cfg = spidrctrl.pixelConfig();
+      memset( (void *) cfg, byt, 256*256 );
+      //for( int y=0; y<256; ++y )
+      //for( int x=0; x<256; ++x )
+      //  cfg[y*256 + x] = byt;
+
+      if( !spidrctrl.setPixelConfig( device_nr, true ) ) // Pref'ed 6-bit cfg
+	//if( !spidrctrl.setPixelConfig( device_nr, false ) ) // 8-bit cfg 
+	error_out( "###setPixelConfig" );
+
+      cout << (unsigned int) byt << ": ";
+
+      spidrctrl.selectPixelConfig( 1 );
+      if( spidrctrl.getPixelConfig( device_nr ) )
+	{
+	  if( spidrctrl.comparePixelConfig( 0, 1 ) == 0 )
+	    cout << "OKAY";
+	  else
+	    cout << "###ERROR";
+	  cout << endl;
+	}
+      else
+	{
+	  error_out( "###getPixelConfig" );
+	}
+    }
+#endif
   return 0;
 }
 
