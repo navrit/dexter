@@ -35,7 +35,6 @@
 
 #define CMD_RESET_DEVICE       0x124
 #define CMD_RESET_DEVICES      0x125
-#define CMD_GET_EFUSES         0x128
 
 // Configuration: pixels
 #define CMD_SET_PIXCONF        0x22A
@@ -60,12 +59,6 @@
 #define CMD_GET_SPIDR_ADC      0x54E
 #define CMD_GET_DVDD_NOW       0x54F
 
-// Configuration: timer
-#define CMD_RESTART_TIMERS     0x550
-#define CMD_RESET_TIMER        0x551
-#define CMD_GET_TIMER          0x552
-#define CMD_SET_TIMER          0x553
-
 // Trigger (continued)
 #define CMD_GET_SHUTTERSTART   0x554
 #define CMD_GET_SHUTTEREND     0x555
@@ -77,9 +70,6 @@
 #define CMD_GET_FPGATEMP       0x568
 #define CMD_GET_FANSPEED       0x569
 #define CMD_SET_FANSPEED       0x56A
-#define CMD_SELECT_CHIPBOARD   0x56B
-#define CMD_GET_HUMIDITY       0x56C
-#define CMD_GET_PRESSURE       0x56D
 
 // Configuration: non-volatile onboard storage
 #define CMD_STORE_ADDRPORTS    0x670
@@ -96,9 +86,6 @@
 #define CMD_VALID_PIXCONF      0x67B
 #define CMD_STORE_STARTOPTS    0x67C
 #define CMD_GET_STARTOPTS      0x67D
-
-#define CMD_READ_FLASH         0x67E
-#define CMD_WRITE_FLASH        0x67F
 
 // Other
 #define CMD_GET_VPXREG         0x780
@@ -152,7 +139,7 @@ static const char *CMD_STR[] =
     "RESET_DEVICES    ", // 0x125
     "-----",             // 0x126
     "-----",             // 0x127
-    "GET_EFUSES       ", // 0x128
+    "-----",             // 0x128
     "-----",             // 0x129
 
     "SET_PIXCONF      ", // 0x22A
@@ -197,10 +184,10 @@ static const char *CMD_STR[] =
     "GET_SPIDR_ADC    ", // 0x54E
     "GET_DVDD_NOW     ", // 0x54F
 
-    "RESTART_TIMERS   ", // 0x550
-    "RESET_TIMER      ", // 0x551
-    "GET_TIMER        ", // 0x552
-    "SET_TIMER        ", // 0x553
+    "-----",             // 0x550
+    "-----",             // 0x551
+    "-----",             // 0x552
+    "-----",             // 0x553
 
     "GET_SHUTTERSTART ", // 0x554
     "GET_SHUTTEREND   ", // 0x555
@@ -226,9 +213,9 @@ static const char *CMD_STR[] =
     "GET_FPGATEMP     ", // 0x568
     "GET_FANSPEED     ", // 0x569
     "SET_FANSPEED     ", // 0x56A
-    "SELECT_CHIPBOARD ", // 0x56B
-    "GET_HUMIDITY     ", // 0x56C
-    "GET_PRESSURE     ", // 0x56D
+    "-----",             // 0x56B
+    "-----",             // 0x56C
+    "-----",             // 0x56D
     "-----",             // 0x56E
     "-----",             // 0x56F
 
@@ -246,8 +233,8 @@ static const char *CMD_STR[] =
     "VALID_PIXCONF    ", // 0x67B
     "STORE_STARTOPTS  ", // 0x67C
     "GET_STARTOPTS    ", // 0x67D
-    "READ_FLASH       ", // 0x67E
-    "WRITE_FLASH      ", // 0x67F
+    "-----",             // 0x67E
+    "-----",             // 0x67F
 
     "GET_VPXREG       ", // 0x780
     "SET_VPXREG       ", // 0x781

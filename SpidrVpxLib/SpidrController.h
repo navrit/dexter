@@ -51,8 +51,7 @@ class MY_LIB_API SpidrController
   std::string errorString          ( );
   void        clearErrorString     ( );
   int         errorId              ( );
-  bool        reset                ( int *errorstat,
-                                     int  readout_speed = 0 );
+  bool        reset                ( int *errorstat );
   bool        setBusy              ( );
   bool        clearBusy            ( );
   void        setBusyRequest       ( ); // For internal use
@@ -77,6 +76,15 @@ class MY_LIB_API SpidrController
   bool        setServerPort    ( int  index,  int  port_nr );
 
   // Configuration: device
+  bool        getVpxReg        ( int  address, int  size,
+                                 unsigned char *bytes );
+  bool        getVpxReg32      ( int  address, int *val );
+  bool        getVpxReg16      ( int  address, int *val );
+  bool        setVpxReg        ( int  address, int  size,
+                                 unsigned char *bytes );
+  bool        setVpxReg32      ( int  address, int  val );
+  bool        setVpxReg16      ( int  address, int  val );
+  int         vpxRegStatus     ( ) { return _vpxRegStatus; }
   bool        resetDevice      ( int  dev_nr );
   bool        resetDevices     ();
   bool        getDeviceId      ( int  dev_nr, int *id );
@@ -85,7 +93,6 @@ class MY_LIB_API SpidrController
   bool        setDacsDflt      ( int  dev_nr );
   std::string dacName          ( int  dac_code );
   int         dacMax           ( int  dac_code );
-  bool        readEfuses       ( int  dev_nr, int *efuses );
 
   // Configuration: device pixels
   int  pixelConfigCount        ( );
@@ -112,14 +119,6 @@ class MY_LIB_API SpidrController
   // (used through provided tools only:)
   bool storeStartupOptions     ( int  startopts );
   bool getStartupOptions       ( int *startopts );
-  bool readFlash               ( int  flash_id,
-				 int  address,
-				 int *nbytes,
-				 unsigned char *databytes );
-  bool writeFlash              ( int  flash_id,
-				 int  address,
-				 int  nbytes,
-				 unsigned char *databytes );
 
   // Shutter trigger
   bool setShutterTriggerConfig ( int  trigger_mode,
@@ -170,8 +169,6 @@ class MY_LIB_API SpidrController
   bool getVdda                 ( int *mvolts );
   bool getFanSpeed             ( int  index, int *rpm );
   bool setFanSpeed             ( int  index, int percentage );
-  bool getHumidity             ( int *percentage );
-  bool getPressure             ( int *mbar );
   bool getDataPacketCounter    ( int *cntr );
   bool getMonPacketCounter     ( int *cntr );
   bool getPausePacketCounter   ( int *cntr );
@@ -184,14 +181,6 @@ class MY_LIB_API SpidrController
   bool getSpidrReg             ( int  address, int *val );
   bool setSpidrReg             ( int  address, int  val );
   bool setSpidrRegBit          ( int  address, int  bitnr, bool set = true );
-  bool getVpxReg               ( int  address, int  size,
-				 unsigned char *bytes );
-  bool getVpxReg32             ( int  address, int *val );
-  bool getVpxReg16             ( int  address, int *val );
-  bool setVpxReg               ( int  address, int  size,
-				 unsigned char *bytes );
-  bool setVpxReg32             ( int  address, int  val );
-  bool setVpxReg16             ( int  address, int  val );
 
  private:
   bool setPixelBit             ( int x, int y, unsigned char bitmask, bool b );
@@ -206,13 +195,13 @@ class MY_LIB_API SpidrController
   bool requestGetInts          ( int cmd, int dev_nr,
                                  int expected_ints, int *datawords );
   bool requestGetBytes         ( int cmd, int dev_nr,
-				 int expected_bytes, unsigned char *databytes );
+                                 int expected_bytes, unsigned char *databytes );
   bool requestGetIntAndBytes   ( int cmd, int dev_nr, int *dataword,
                                  int expected_bytes, unsigned char *databytes );
   bool requestSetInt           ( int cmd, int dev_nr, int dataword );
   bool requestSetInts          ( int cmd, int dev_nr,
                                  int nwords, int *datawords );
-  bool requestSetIntAndBytes   ( int cmd, int dev_nr, int dataword,
+  bool requestSetIntAndBytes   ( int cmd, int dev_nr, int *dataword,
                                  int nbytes, unsigned char *bytes );
   bool request                 ( int cmd, int dev_nr,
                                  int req_len, int exp_reply_len );
@@ -244,6 +233,8 @@ class MY_LIB_API SpidrController
   // Busy request counter
   // (busy is set and is only removed when the counter goes to zero)
   int _busyRequests;
+
+  int _vpxRegStatus;
 };
 
 #endif // SPIDRCONTROLLER_H

@@ -11,11 +11,10 @@ using namespace std;
 #include "SpidrController.h"
 #include "spidrvpxcmds.h"
 #include "vpxdefs.h"
-
 #include "vpxdacsdescr.h" // Depends on vpxdefs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int VERSION_ID = 0x16033000;
+const int VERSION_ID = 0x16061400;
 
 // SPIDR register addresses (some of them)
 #define SPIDR_SHUTTERTRIG_CTRL_I     0x0290
@@ -23,9 +22,7 @@ const int VERSION_ID = 0x16033000;
 #define SPIDR_SHUTTERTRIG_FREQ_I     0x0298
 #define SPIDR_SHUTTERTRIG_LENGTH_I   0x029C
 #define SPIDR_SHUTTERTRIG_DELAY_I    0x02AC
-#define SPIDR_DEVICES_AND_PORTS_I    0x02C0
 #define SPIDR_TDC_TRIGGERCOUNTER_I   0x02F8
-#define SPIDR_FE_GTX_CTRL_STAT_I     0x0300
 #define SPIDR_PIXEL_PKTCOUNTER_I     0x0340
 #define SPIDR_IPMUX_CONFIG_I         0x0380
 #define SPIDR_UDP_PKTCOUNTER_I       0x0384
@@ -45,7 +42,8 @@ SpidrController::SpidrController( int ipaddr3,
     _pixelConfigIndex( 0 ),
     _pixelConfig( _pixelConfigData ),
     _errId( 0 ),
-    _busyRequests( 0 )
+    _busyRequests( 0 ),
+    _vpxRegStatus( 0 )
 {
   _sock = new QTcpSocket;
 
@@ -175,14 +173,8 @@ int SpidrController::errorId()
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::reset( int *errorstat, int readout_speed )
+bool SpidrController::reset( int *errorstat )
 {
-  if( readout_speed == 1 )
-    *errorstat = 0x89ABCDEF; // Magic number forcing high-speed Timepix3 readout
-  else if( readout_speed == -1 )
-    *errorstat = 0x12345678; // Magic number forcing low-speed Timepix3 readout
-  else
-    *errorstat = 0; // Use default SPIDR<->Timepix3 readout speed
   return this->requestGetInt( CMD_RESET_MODULE, 0, errorstat );
 }
 
@@ -340,6 +332,100 @@ bool SpidrController::setServerPort( int index, int port_nr )
 // Configuration: device
 // ----------------------------------------------------------------------------
 
+bool SpidrController::getVpxReg( int address, int size, unsigned char *bytes )
+{
+  int parameter = (address & 0x0000FFFF) | (size << 16);
+  if( !this->requestGetIntAndBytes( CMD_GET_VPXREG, 0,
+				    &parameter, size, bytes ) )
+    return false;
+
+  // Returned address should match
+  if( (parameter & 0xFFFF) != (address & 0xFFFF) )
+    return false;
+
+  // Upper 16 bits of 'parameter' contains Velopix status word
+  _vpxRegStatus = (parameter >> 16) & 0xFFFF;
+
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getVpxReg32( int address, int *val )
+{
+  // Assume here a 4-byte register
+  *val = 0; 
+  unsigned char bytes[4];
+  if( !this->getVpxReg( address, 4, bytes ) )
+    return false;
+
+  // Map bytes to the integer value
+  for( int i=0; i<4; ++i )
+    *val |= (int) ((unsigned int) bytes[i] << (i*8));
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getVpxReg16( int address, int *val )
+{
+  // Assume here a 2-byte register
+  *val = 0; 
+  unsigned char bytes[2];
+  if( !this->getVpxReg( address, 2, bytes ) )
+    return false;
+
+  // Map bytes to the integer value
+  for( int i=0; i<2; ++i )
+    *val |= (int) ((unsigned int) bytes[i] << (i*8));
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setVpxReg( int address, int size, unsigned char *bytes )
+{
+  int parameter = (address & 0x0000FFFF) | (size << 16);
+  if( !this->requestSetIntAndBytes( CMD_SET_VPXREG, 0,
+				   &parameter, size, bytes ) )
+    return false;
+
+  // Returned address should match
+  if( (parameter & 0xFFFF) != (address & 0xFFFF) )
+    return false;
+
+  // Upper 16 bits of 'parameter' contains Velopix status word
+  _vpxRegStatus = (parameter >> 16) & 0xFFFF;
+
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setVpxReg32( int address, int val )
+{
+  // Map the integer value to a byte array
+  unsigned char bytes[4];
+  for( int i=0; i<4; ++i )
+    bytes[i] = (unsigned char) ((val>>(i*8)) & 0xFF);
+
+  return this->setVpxReg( address, 4, bytes );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setVpxReg16( int address, int val )
+{
+  // Map the integer value to a byte array
+  unsigned char bytes[2];
+  for( int i=0; i<2; ++i )
+    bytes[i] = (unsigned char) ((val>>(i*8)) & 0xFF);
+
+  return this->setVpxReg( address, 2, bytes );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::resetDevice( int dev_nr )
 {
   return this->requestSetInt( CMD_RESET_DEVICE, dev_nr, 0 );
@@ -412,13 +498,6 @@ int SpidrController::dacMax( int dac_code )
   return( (1<<VPX_DAC_TABLE[index].bits) - 1 );
 }
 
-// ----------------------------------------------------------------------------
-
-bool SpidrController::readEfuses( int dev_nr, int *efuses )
-{
-  return this->requestGetInt( CMD_GET_EFUSES, dev_nr, efuses );
-}
-  
 // ----------------------------------------------------------------------------
 // Configuration: pixels
 // ----------------------------------------------------------------------------
@@ -591,39 +670,6 @@ bool SpidrController::storeStartupOptions( int startopts )
 bool SpidrController::getStartupOptions( int *startopts )
 {
   return this->requestGetInt( CMD_GET_STARTOPTS, 0, startopts );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::readFlash( int            flash_id,
-				 int            address,
-				 int           *nbytes,
-				 unsigned char *databytes )
-{
-  int addr = (address & 0x00FFFFFF) | (flash_id << 24);
-  *nbytes = 0;
-  if( !this->requestGetIntAndBytes( CMD_READ_FLASH, 0,
-				    &addr, 1024, databytes ) )
-    return false;
-
-  // Returned address should match
-  if( addr != ((address & 0x00FFFFFF) | (flash_id << 24)) )
-    return false;
-
-  *nbytes = 1024;
-  return true;
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::writeFlash( int            flash_id,
-				  int            address,
-				  int            nbytes,
-				  unsigned char *databytes )
-{
-  int addr = (address & 0x00FFFFFF) | (flash_id << 24);
-  return this->requestSetIntAndBytes( CMD_WRITE_FLASH, 0,
-				      addr, nbytes, databytes );
 }
 
 // ----------------------------------------------------------------------------
@@ -841,10 +887,6 @@ bool SpidrController::setMonitorStreamEna( bool enable )
 }
 
 // ----------------------------------------------------------------------------
-// Timers
-// ----------------------------------------------------------------------------
-
-// ----------------------------------------------------------------------------
 // Monitoring
 // ----------------------------------------------------------------------------
 
@@ -961,7 +1003,8 @@ bool SpidrController::getVdda( int *mvolts )
 
 bool SpidrController::getFanSpeed( int index, int *rpm )
 {
-  // Index indicates fan speed to return (chipboard or SPIDR/VC707 resp.)
+  // Index indicates fan speed to read (Velopix chipboard or SPIDR/VC707 resp.)
+  if( index == 0 ) index = 2;
   *rpm = index;
   return this->requestGetInt( CMD_GET_FANSPEED, 0, rpm );
 }
@@ -970,22 +1013,9 @@ bool SpidrController::getFanSpeed( int index, int *rpm )
 
 bool SpidrController::setFanSpeed( int index, int percentage )
 {
-  // Index indicates fan speed to set (chipboard or SPIDR/VC707 resp.)
+  // Index indicates fan speed to set (Velopix chipboard or SPIDR/VC707 resp.)
+  if( index == 0 ) index = 2;
   return this->requestSetInt( CMD_SET_FANSPEED, 0, (index << 16) | percentage );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::getHumidity( int *percentage )
-{
-  return this->requestGetInt( CMD_GET_HUMIDITY, 0, percentage );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::getPressure( int *mbar )
-{
-  return this->requestGetInt( CMD_GET_PRESSURE, 0, mbar );
 }
 
 // ----------------------------------------------------------------------------
@@ -1075,86 +1105,6 @@ bool SpidrController::setSpidrRegBit( int address, int bitnr, bool set )
   else
     reg &= ~(1 << bitnr);
   return this->setSpidrReg( address, reg );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::getVpxReg( int address, int size, unsigned char *bytes )
-{
-  int addr = (address & 0x0000FFFF) | (size << 16);
-  if( !this->requestGetIntAndBytes( CMD_GET_VPXREG, 0,
-				    &addr, size, bytes ) )
-    return false;
-
-  // Returned address should match
-  if( addr != ((address & 0x0000FFFF) | (size << 16)) ) return false;
-
-  return true;
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::getVpxReg32( int address, int *val )
-{
-  // Assume here a 4-byte register
-  *val = 0; 
-  unsigned char bytes[4];
-  if( !this->getVpxReg( address, 4, bytes ) )
-    return false;
-
-  // Map bytes to the integer value
-  for( int i=0; i<4; ++i )
-    *val |= (int) ((unsigned int) bytes[i] << (i*8));
-  return true;
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::getVpxReg16( int address, int *val )
-{
-  // Assume here a 2-byte register
-  *val = 0; 
-  unsigned char bytes[2];
-  if( !this->getVpxReg( address, 2, bytes ) )
-    return false;
-
-  // Map bytes to the integer value
-  for( int i=0; i<2; ++i )
-    *val |= (int) ((unsigned int) bytes[i] << (i*8));
-  return true;
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setVpxReg( int address, int size, unsigned char *bytes )
-{
-  int addr = (address & 0x0000FFFF) | (size << 16);
-  return this->requestSetIntAndBytes( CMD_SET_VPXREG, 0,
-				      addr, size, bytes );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setVpxReg32( int address, int val )
-{
-  // Map the integer value to a byte array
-  unsigned char bytes[4];
-  for( int i=0; i<4; ++i )
-    bytes[i] = (unsigned char) ((val>>(i*8)) & 0xFF);
-
-  return this->setVpxReg( address, 4, bytes );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setVpxReg16( int address, int val )
-{
-  // Map the integer value to a byte array
-  unsigned char bytes[2];
-  for( int i=0; i<2; ++i )
-    bytes[i] = (unsigned char) ((val>>(i*8)) & 0xFF);
-
-  return this->setVpxReg( address, 2, bytes );
 }
 
 // ----------------------------------------------------------------------------
@@ -1406,16 +1356,21 @@ bool SpidrController::requestSetInts( int cmd, int dev_nr,
 // ----------------------------------------------------------------------------
 
 bool SpidrController::requestSetIntAndBytes( int cmd, int dev_nr,
-					     int dataword,
+					     int *dataword,
 					     int nbytes,
 					     unsigned char *bytes )
 {
   int req_len = (4+1)*4 + nbytes;
-  _reqMsg[4] = htonl( dataword );
+  _reqMsg[4] = htonl( *dataword );
   memcpy( static_cast<void *> (&_reqMsg[5]),
 	  static_cast<void *> (bytes), nbytes );
   int expected_len = (4+1)*4;
-  return this->request( cmd, dev_nr, req_len, expected_len );
+  if( this->request( cmd, dev_nr, req_len, expected_len ) )
+    {
+      *dataword = ntohl( _replyMsg[4] ); // Reply may contain status
+      return true;
+    }
+  return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -1491,7 +1446,14 @@ bool SpidrController::request( int cmd,     int dev_nr,
 
 static const char *VPX_ERR_STR[] =
   {
-    "no error"
+    "VPX_ERR_PARAMETER",
+    "VPX_ERR_RX_TIMEOUT",
+    "VPX_ERR_TX_TIMEOUT",
+    "VPX_ERR_EMPTY",
+    "VPX_ERR_FULL",
+    "VPX_ERR_NOTEMPTY",
+    "VPX_ERR_UNEXP_REPLY",
+    "VPX_ERR_REPLY"
   };
 
 static const char *SPIDR_ERR_STR[] =
@@ -1537,11 +1499,13 @@ std::string SpidrController::spidrErrString( int err )
     {
       errid = (err & 0xFF00) >> 8;
       errstr += ", ";
-      // Error identifier is a number
-      if( errid >= (sizeof(VPX_ERR_STR)/sizeof(char*)) )
-	errstr += "<unknown>";
-      else
-	errstr += VPX_ERR_STR[errid];
+      // Error identifier is a bitmask
+      for( int bit=0; bit<8; ++bit )
+	if( errid & (1<<bit) )
+	  {
+	    errstr += VPX_ERR_STR[bit];
+	    errstr += " ";
+	  }
     }
   else if( errid == ERR_MON_HARDW )
     {
