@@ -8,7 +8,8 @@
 #include "FramebuilderThreadC.h"
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x16040800; // Add parameter readout_mask to c'tor
+const int   VERSION_ID = 0x16061400; // Add info header processing (ReceiverThreadC)
+//const int VERSION_ID = 0x16040800; // Add parameter readout_mask to c'tor
 //const int VERSION_ID = 0x16032400; // Renamed disableLut() to setLutEnable()
 //const int VERSION_ID = 0x16030900; // Compact-SPIDR support added
 //const int VERSION_ID = 0x15101500;
