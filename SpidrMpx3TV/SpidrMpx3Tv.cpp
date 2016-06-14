@@ -327,10 +327,9 @@ void SpidrMpx3Tv::onOff()
       _daq->setDecodeFrames( true );
 
       // Initialize integrated pixel data
-      int *pix;
       for( int dev=0; dev<4; ++dev )
 	{
-	  pix = &_pixData[dev*256*256];
+	  int *pix = &_pixData[dev*256*256];
 	  for( int i=0; i<256*256; ++i )
 	    pix[i] = 0;
 	}
@@ -399,6 +398,14 @@ void SpidrMpx3Tv::changeIntegrating()
   if( _integrating )
     {
       _sbMaxValue->setMaximum( 0x7fffffff );
+
+      // Initialize integrated pixel data
+      for( int dev=0; dev<4; ++dev )
+	{
+	  int *pix = &_pixData[dev*256*256];
+	  for( int i=0; i<256*256; ++i )
+	    pix[i] = 0;
+	}
     }
   else
     {
