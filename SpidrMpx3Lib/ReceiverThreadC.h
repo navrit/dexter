@@ -46,6 +46,8 @@ class ReceiverThreadC : public ReceiverThread
   int     _frameSize[NR_OF_FRAMEBUFS];
   u16     _shutterCnt;
   bool    _bigEndian;
+  char    _infoHeader[256/8]; // Storage for a single info header
+  int     _infoIndex;
 
   // Statistics
   int     _pixelsReceived;

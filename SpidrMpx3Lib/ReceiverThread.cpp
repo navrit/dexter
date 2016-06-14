@@ -364,7 +364,8 @@ void ReceiverThread::nextFrameBuffer()
 {
   // Time-stamp the completion of a frame
   // (only done by the receiver that has and notifies a 'framebuilder')
-  if( _frameBuilder ) _timeStamp[_head] = QDateTime::currentDateTime();
+  if( _frameBuilder )
+    _timeStamp[_head] = QDateTime::currentDateTime();
 
   // Update the frame buffer management
   _mutex.lock();

@@ -15,11 +15,12 @@ ReceiverThreadC::ReceiverThreadC( int *ipaddr,
 				QObject *parent )
   : _rowCnt( 0 ),
     _rowPixels( MPX_PIXEL_COLUMNS ),
-    _pixelsReceived( 0 ),
-    _pixelsLost( 0 ),
     _framePtr( (u64 *)_frameBuffer[0] ),
     _shutterCnt( 1 ),
     _bigEndian( false ),
+    _infoIndex( 0 ),
+    _pixelsReceived( 0 ),
+    _pixelsLost( 0 ),
     ReceiverThread( ipaddr, port, parent )
 {
   for( u32 i=0; i<NR_OF_FRAMEBUFS; ++i )
@@ -165,6 +166,50 @@ void ReceiverThreadC::readDatagrams()
 		}
 	      break;
 
+	    case INFO_HEADER_SOF:
+	    case INFO_HEADER_MID:
+	    case INFO_HEADER_EOF:
+	      {
+		char *p = (char *) pixelpkt;
+		if( type == INFO_HEADER_SOF )
+		  _infoIndex = 0;
+		if( _infoIndex <= 256/8-4 )
+		  for( int i=0; i<4; ++i, ++_infoIndex )
+		    _infoHeader[_infoIndex] = p[i];
+		if( type == INFO_HEADER_EOF )
+		  {
+		    // Format and interpret:
+		    // e.g. OMR has to be mirrored per byte;
+		    // in order to distinguish CounterL from CounterH readout
+		    // it's sufficient to look at the last byte, containing
+		    // the three operation mode bits
+		    char byt = _infoHeader[_infoIndex];
+		    // Mirroring of byte with bits 'abcdefgh':
+		    byt = ((byt & 0xF0)>>4) | ((byt & 0x0F)<<4);// efghabcd
+		    byt = ((byt & 0xCC)>>2) | ((byt & 0x33)<<2);// ghefcdab
+		    byt = ((byt & 0xAA)>>1) | ((byt & 0x55)<<1);// hgfedcba
+		    if( (byt & 0x7) == 0x4 ) // 'Read CounterH'
+		      _isCounterhFrame[_head] = true;
+		    else
+		      _isCounterhFrame[_head] = false;
+		    /*
+		    // Mirror all bytes...
+		    for( int i=0; i<256/8; ++i )
+		      {
+			char byt = _infoHeader[i];
+			// Mirroring of byte with bits 'abcdefgh':
+			byt = ((byt & 0xF0)>>4) | ((byt & 0x0F)<<4);// efghabcd
+			byt = ((byt & 0xCC)>>2) | ((byt & 0x33)<<2);// ghefcdab
+			byt = ((byt & 0xAA)>>1) | ((byt & 0x55)<<1);// hgfedcba
+			_infoHeader[i] = byt;
+		      }
+		    */
+		  }
+	      }
+	      // Skip this packet
+	      copy = false;
+	      break;
+
 	    default:
 	      // Skip this packet
 	      copy = false;
@@ -195,7 +240,7 @@ void ReceiverThreadC::readDatagrams()
 
 void ReceiverThreadC::nextFrame()
 {
-  // Count our losses...
+  // Count our losses, if any...
   if( _rowCnt < MPX_PIXEL_ROWS )
     {
       // Lost whole pixel rows ?
