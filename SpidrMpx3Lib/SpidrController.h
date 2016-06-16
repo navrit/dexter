@@ -101,6 +101,7 @@ class MY_LIB_API SpidrController
   bool        setBiasSupplyEna ( bool enable );
   bool        setBiasVoltage   ( int  volts );
   bool        setLutEnable     ( bool enable );
+  bool        setMpx3Clock     ( int  mhz );
 
   // Configuration: pixels
   void resetPixelConfig        ( );
@@ -198,8 +199,9 @@ class MY_LIB_API SpidrController
 
   // Other
   bool getSpidrReg             ( int  addr, int *val );
-  bool setSpidrReg             ( int  addr, int  val );
-  bool setSpidrRegBit          ( int  addr, int bitnr, bool set = true );
+  bool setSpidrReg             ( int  addr, int  val,   bool verify = false );
+  bool setSpidrRegBit          ( int  addr, int  bitnr, bool set = true,
+                                 bool verify = false );
 
  private:
   bool loadOmr              ( int  dev_nr );

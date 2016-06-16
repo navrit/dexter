@@ -15,7 +15,8 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x16032400; // Add bias, LUT and continuous-readout functions
+const int   VERSION_ID = 0x16061600; // Add setMpx3Clock()
+//const int VERSION_ID = 0x16032400; // Add bias, LUT and continuous-readout functions
 //const int VERSION_ID = 0x16020100; // Add getFpgaTemp(), get/setFanSpeed()
 //const int VERSION_ID = 0x15092800; // Add pixelconfig read-back option
 //const int VERSION_ID = 0x15082600; // Add getOmr(); optimization in
@@ -37,6 +38,7 @@ const int   VERSION_ID = 0x16032400; // Add bias, LUT and continuous-readout fun
 #define SPIDR_SHUTTERTRIG_CTRL_I        0x0290
 #define SPIDR_ENA_SHUTTER1_CNTRSEL_BIT  9
 #define SPIDRMPX3_SHUTTER1_PERIOD_I     0x1008
+#define SPIDRMPX3_MPX3_CLOCK_I          0x10B0
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor
@@ -562,6 +564,29 @@ bool SpidrController::setBiasVoltage( int volts )
 bool SpidrController::setLutEnable( bool enable )
 {
   return this->requestSetInt( CMD_DECODERS_ENA, 0, (int) enable );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setMpx3Clock( int mhz )
+{
+  int id;
+  if( mhz == 64 )
+    id = 0;
+  else if( mhz == 100 )
+    id = 1;
+  else if( mhz == 128 )
+    id = 2;
+  else if( mhz == 200 )
+    id = 3;
+  else
+    {
+      this->clearErrorString();
+      _errString << "Invalid frequency parameter";
+      return false;
+    }
+  // Write and verify
+  return this->setSpidrReg( SPIDRMPX3_MPX3_CLOCK_I, id, true );
 }
 
 // ----------------------------------------------------------------------------
@@ -1253,17 +1278,35 @@ bool SpidrController::getSpidrReg( int addr, int *val )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setSpidrReg( int addr, int val )
+bool SpidrController::setSpidrReg( int addr, int val, bool verify )
 {
   int data[2];
   data[0] = addr;
   data[1] = val;
-  return this->requestSetInts( CMD_SET_SPIDRREG, 0, 2, data );
+  if( this->requestSetInts( CMD_SET_SPIDRREG, 0, 2, data ) )
+    {
+      if( verify )
+	{
+	  int readval;
+	  if( !this->getSpidrReg( addr, &readval ) )
+	    return false;
+	  if( readval != val )
+	    {
+	      this->clearErrorString();
+	      _errString << "Verify failed: wrote " << hex
+			 << val << ", read " << readval << dec;
+	      return false;
+	    }
+	}
+      return true;
+    }
+  return false;
 }
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setSpidrRegBit( int addr, int bitnr, bool set )
+ bool SpidrController::setSpidrRegBit( int addr, int bitnr, bool set,
+				       bool verify )
 {
   if( bitnr < 0 || bitnr > 31 ) return false;
   int reg;
@@ -1273,7 +1316,7 @@ bool SpidrController::setSpidrRegBit( int addr, int bitnr, bool set )
     reg |= (1 << bitnr);
   else
     reg &= ~(1 << bitnr);
-  return this->setSpidrReg( addr, reg );
+  return this->setSpidrReg( addr, reg, verify );
 }
 
 // ----------------------------------------------------------------------------
