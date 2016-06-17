@@ -101,7 +101,7 @@ class MY_LIB_API SpidrController
   bool        setBiasSupplyEna ( bool enable );
   bool        setBiasVoltage   ( int  volts );
   bool        setLutEnable     ( bool enable );
-  bool        setMpx3Clock     ( int  mhz );
+  bool        setMpx3Clock     ( int  megahertz );
 
   // Configuration: pixels
   void resetPixelConfig        ( );

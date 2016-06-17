@@ -77,7 +77,7 @@ int main( int argc, char *argv[] )
 
 #ifdef USE_SPIDRDAQ
   // Added readout mask to constructor (7 Apr 2016)
-  SpidrDaq spidrdaq( &spidrcontrol );// , 0x4 );
+  SpidrDaq spidrdaq( &spidrcontrol, 0x4 );
   cout << "SpidrDaq: ";
   for( int i=0; i<4; ++i )
     cout << spidrdaq.ipAddressString( i ) << " ";
@@ -102,7 +102,7 @@ int main( int argc, char *argv[] )
   spidrcontrol.setMaxPacketSize( 9000 ); // Not available on Compact-SPIDR
 
   int  pixdepth = 12;
-  bool two_counter_readout = false;
+  bool two_counter_readout = true;
   //spidrcontrol.setPixelDepth(devnr, pixdepth, two_counter_readout); DO AFTER PIXEL CONFIGURATION!
 #ifdef USE_SPIDRDAQ
   spidrdaq.setPixelDepth( pixdepth );
@@ -133,10 +133,14 @@ int main( int argc, char *argv[] )
       cout << "MPX3RX pixel config" << endl;
 
       // Mask a number of pixel rows (columns)...
-      for( row=128; row<129; ++row )
+      for( row=32; row<40; ++row )
 	if( !spidrcontrol.setPixelMaskMpx3rx(row,ALL_PIXELS) )
-	  //if( !spidrcontrol.setPixelMaskMpx3rx(ALL_PIXELS, row) )
-	    cout << "### Pixel mask row " << row << endl;
+	//if( !spidrcontrol.setPixelMaskMpx3rx(ALL_PIXELS, row) )
+	  cout << "### Pixel mask row " << row << endl;
+      for( row = 160; row<192; ++row )
+	//if( !spidrcontrol.setPixelMaskMpx3rx(row,ALL_PIXELS) )
+	if( !spidrcontrol.setPixelMaskMpx3rx(ALL_PIXELS, row) )
+	  cout << "### Pixel mask row " << row << endl;
 
       // Set test-bit on a number of pixels
       bool testbit = true;
@@ -162,8 +166,8 @@ int main( int argc, char *argv[] )
       //spidrcontrol.setPixelMaskMpx3rx( 5, 6 );
 
 #ifdef USE_SPIDRDAQ
-      bool read_it_back = true;
-      //bool read_it_back = false;
+      //bool read_it_back = true;
+      bool read_it_back = false;
       if( read_it_back ) spidrdaq.setLutEnable( false );
       //spidrcontrol.setLutEnable( true );
 #else
@@ -220,7 +224,7 @@ int main( int argc, char *argv[] )
 #endif // USE_PIXELCONFIG
 
 #ifdef USE_SPIDRDAQ
-  spidrdaq.stop(); return 0;
+  //spidrdaq.stop(); return 0;
 #endif
 
   spidrcontrol.setPixelDepth( devnr, pixdepth, two_counter_readout );
@@ -247,9 +251,9 @@ int main( int argc, char *argv[] )
   int trig_mode = SHUTTERMODE_AUTO; // Auto-trigger mode
   int trig_period_us = 40000;
   //int trig_freq_hz = 30000;
-  int trig_freq_hz   = 5;
+  int trig_freq_hz   = 2;
   //int nr_of_triggers = 500;
-  int nr_of_triggers = 500;
+  int nr_of_triggers = 40;
   int trig_pulse_count;
   spidrcontrol.setShutterTriggerConfig( trig_mode, trig_period_us,
 					trig_freq_hz*1000, nr_of_triggers );
@@ -269,7 +273,7 @@ int main( int argc, char *argv[] )
       spidrcontrol.startAutoTrigger();
 #ifdef USE_SPIDRDAQ
 
-      while( spidrdaq.hasFrame( 200 ) )
+      while( spidrdaq.hasFrame( 1000 ) )
 	{
 	  ++frame_cnt;
 	  /*cout << "counterh=" << spidrdaq.isCounterhFrame() << ", cntr="
@@ -298,6 +302,7 @@ int main( int argc, char *argv[] )
 	  //if( frame_cnt >= 25 ) spidrcontrol.stopAutoTrigger(); // TEST
 	}
 #else
+      //Sleep( 1000 + 1000*((nr_of_triggers+trig_freq_hz-1)/trig_freq_hz) );
       Sleep( 1500 );
 #endif
     }

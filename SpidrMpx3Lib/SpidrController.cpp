@@ -568,16 +568,16 @@ bool SpidrController::setLutEnable( bool enable )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setMpx3Clock( int mhz )
+bool SpidrController::setMpx3Clock( int megahertz )
 {
   int id;
-  if( mhz == 64 )
+  if( megahertz == 64 )
     id = 0;
-  else if( mhz == 100 )
+  else if( megahertz == 100 )
     id = 1;
-  else if( mhz == 128 )
+  else if( megahertz == 128 )
     id = 2;
-  else if( mhz == 200 )
+  else if( megahertz == 200 )
     id = 3;
   else
     {
