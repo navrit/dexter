@@ -73,23 +73,19 @@ int main( int argc, char *argv[] )
     cout << mask;
   else
     cout << "###";
-  /*
-  // Adjust read-out mask, if necessary
-  spidrcontrol.setAcqEnable( 1<<devnr );
-  cout << " set to 0x";
-  if( spidrcontrol.getAcqEnable( &mask ) )
-    cout << mask;
-  else
-    cout << "###";
-  */
   cout << ")" << dec << endl;
 
 #ifdef USE_SPIDRDAQ
+  // Added readout mask to constructor (7 Apr 2016)
   SpidrDaq spidrdaq( &spidrcontrol );
   cout << "SpidrDaq: ";
   for( int i=0; i<4; ++i )
     cout << spidrdaq.ipAddressString( i ) << " ";
-  cout << "#chips: " << spidrdaq.numberOfDevices();
+  cout << "#chips: " << spidrdaq.numberOfDevices() << " acq mask: ";
+  if( spidrcontrol.getAcqEnable(&mask) )
+    cout << mask;
+  else
+    cout << "###";
   cout << endl;
   Sleep( 1000 );
   cout << spidrdaq.errorString() << endl;
@@ -98,8 +94,7 @@ int main( int argc, char *argv[] )
 
   int  pixdepth = 12;
   bool two_counter_readout = false;
-  // ###DO AFTER PIXEL CONFIGURATION!:
-  //spidrcontrol.setPixelDepth(devnr, pixdepth, two_counter_readout);
+  //spidrcontrol.setPixelDepth(devnr, pixdepth, two_counter_readout); DO AFTER PIXEL CONFIGURATION!
 #ifdef USE_SPIDRDAQ
   spidrdaq.setPixelDepth( pixdepth );
 #endif
@@ -138,8 +133,8 @@ int main( int argc, char *argv[] )
   //spidrcontrol.configCtpr( devnr, col, 1 );
 
   // Upload the test pulse configuration
-  if( !spidrcontrol.setCtpr( devnr ) )
-    cout << "### CTPR config: " << spidrcontrol.errorString() << endl;
+  //if( !spidrcontrol.setCtpr( devnr ) )
+    //cout << "### CTPR config: " << spidrcontrol.errorString() << endl;
 
   // Upload the pixel configuration
   if( !spidrcontrol.setPixelConfigMpx3rx( devnr ) )
@@ -147,28 +142,6 @@ int main( int argc, char *argv[] )
 #endif // USE_PIXELCONFIG
 
   spidrcontrol.setPixelDepth( devnr, pixdepth, two_counter_readout );
-
-  /*
-  // DACs
-  cout << "Before" << endl;
-  int dacnr, dacval;
-  for( dacnr=0; dacnr<30; ++dacnr )
-    {
-      spidrcontrol.getDac( devnr, dacnr, &dacval );
-      cout << dacnr << ": " << dacval << endl;
-    }
-  spidrcontrol.setDac( devnr, 10, 10 );
-  //spidrcontrol.setDacsDflt( devnr );
-  cout << "After" << endl;
-  for( dacnr=0; dacnr<30; ++dacnr )
-    {
-      spidrcontrol.getDac( devnr, dacnr, &dacval );
-      cout << dacnr << ": " << dacval << endl;
-    }
-  */
-
-  spidrcontrol.setContRdWr( devnr, true );
-  spidrcontrol.setReady();
 
   int trig_mode = SHUTTERMODE_POS_EXT;
   int trig_period_us = 10000;
@@ -181,7 +154,7 @@ int main( int argc, char *argv[] )
 					trig_freq_hz, nr_of_triggers );
   //spidrcontrol.clearBusy();
 
-  int freq_hz = 1;
+  int freq_hz = 2;
   spidrcontrol.startContReadout( freq_hz );
 
   Sleep( 5000 );
@@ -190,7 +163,7 @@ int main( int argc, char *argv[] )
 
   return 0;
 
-  char ch;
+  //char ch;
   int i, frame_cnt = 0;
   //for( i=0; i<20; ++i )
   for( i=0; i<1; ++i )

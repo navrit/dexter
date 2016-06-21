@@ -183,7 +183,7 @@ void ReceiverThreadC::readDatagrams()
 		    // in order to distinguish CounterL from CounterH readout
 		    // it's sufficient to look at the last byte, containing
 		    // the three operation mode bits
-		    char byt = _infoHeader[_infoIndex];
+		    char byt = _infoHeader[_infoIndex-1];
 		    // Mirroring of byte with bits 'abcdefgh':
 		    byt = ((byt & 0xF0)>>4) | ((byt & 0x0F)<<4);// efghabcd
 		    byt = ((byt & 0xCC)>>2) | ((byt & 0x33)<<2);// ghefcdab
@@ -192,18 +192,16 @@ void ReceiverThreadC::readDatagrams()
 		      _isCounterhFrame[_head] = true;
 		    else
 		      _isCounterhFrame[_head] = false;
-		    /*
 		    // Mirror all bytes...
-		    for( int i=0; i<256/8; ++i )
-		      {
-			char byt = _infoHeader[i];
+		    //for( int i=0; i<256/8; ++i )
+		    //  {
+			//char byt = _infoHeader[i];
 			// Mirroring of byte with bits 'abcdefgh':
-			byt = ((byt & 0xF0)>>4) | ((byt & 0x0F)<<4);// efghabcd
-			byt = ((byt & 0xCC)>>2) | ((byt & 0x33)<<2);// ghefcdab
-			byt = ((byt & 0xAA)>>1) | ((byt & 0x55)<<1);// hgfedcba
-			_infoHeader[i] = byt;
-		      }
-		    */
+			//byt = ((byt & 0xF0)>>4) | ((byt & 0x0F)<<4);// efghabcd
+			//byt = ((byt & 0xCC)>>2) | ((byt & 0x33)<<2);// ghefcdab
+			//byt = ((byt & 0xAA)>>1) | ((byt & 0x55)<<1);// hgfedcba
+			//_infoHeader[i] = byt;
+		    //  }
 		  }
 	      }
 	      // Skip this packet

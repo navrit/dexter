@@ -15,7 +15,9 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x16061600; // Add setMpx3Clock()
+const int   VERSION_ID = 0x16062100; // Add open/closeShutter(), startContReadout();
+                                     // bug fix in ReceiverThreadC.cpp.
+//const int VERSION_ID = 0x16061600; // Add setMpx3Clock()
 //const int VERSION_ID = 0x16032400; // Add bias, LUT and continuous-readout functions
 //const int VERSION_ID = 0x16020100; // Add getFpgaTemp(), get/setFanSpeed()
 //const int VERSION_ID = 0x15092800; // Add pixelconfig read-back option
@@ -1107,6 +1109,23 @@ bool SpidrController::stopAutoTrigger()
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::openShutter()
+{
+  // It is sufficient to set the trigger period to zero (June 2014)
+  if( !this->setShutterTriggerConfig( SHUTTERMODE_AUTO, 0, 10000, 1 ) )
+    return false;
+  return this->startAutoTrigger();
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::closeShutter()
+{
+  return this->stopAutoTrigger();
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::triggerSingleReadout( int countl_or_h )
 {
   return this->requestSetInt( CMD_TRIGGER_READOUT, 0, countl_or_h );
@@ -1116,21 +1135,40 @@ bool SpidrController::triggerSingleReadout( int countl_or_h )
 
 bool SpidrController::startContReadout( int freq_hz )
 {
+  if( !this->setReady() )
+    return false;
+
+  for( int devnr=0; devnr<4; ++devnr )
+    this->setContRdWr( devnr, true );
+
+  // Configure read-out frequency (period)
   int period_25ns;
   if( freq_hz < 1 ) freq_hz = 1;
   period_25ns = 40000000/freq_hz;
   if( !this->setSpidrReg( SPIDRMPX3_SHUTTER1_PERIOD_I, period_25ns ) )
     return false;
-  return this->setSpidrRegBit( SPIDR_SHUTTERTRIG_CTRL_I,
-			       SPIDR_ENA_SHUTTER1_CNTRSEL_BIT, true );
+
+  if( !this->setSpidrRegBit( SPIDR_SHUTTERTRIG_CTRL_I,
+			     SPIDR_ENA_SHUTTER1_CNTRSEL_BIT, true ) )
+    return false;
+
+  // Open shutter
+  if( !this->openShutter() )
+    return false;
+
+  return true;
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrController::stopContReadout()
 {
-  return this->setSpidrRegBit( SPIDR_SHUTTERTRIG_CTRL_I,
-			       SPIDR_ENA_SHUTTER1_CNTRSEL_BIT, false );
+  for( int devnr=0; devnr<4; ++devnr )
+    this->setContRdWr( devnr, false );
+
+  this->setSpidrRegBit( SPIDR_SHUTTERTRIG_CTRL_I,
+			SPIDR_ENA_SHUTTER1_CNTRSEL_BIT, false );
+  return this->closeShutter();
 }
 
 // ----------------------------------------------------------------------------

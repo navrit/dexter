@@ -14,6 +14,8 @@ using namespace std;
 quint32 get_addr_and_port(const char *str, int *portnr);
 void usage();
 
+void displaySpidrRegs( SpidrController *sc );
+
 // ----------------------------------------------------------------------------
 
 int main( int argc, char *argv[] )
@@ -99,7 +101,7 @@ int main( int argc, char *argv[] )
   */
 #endif
 
-  spidrcontrol.setMaxPacketSize( 9000 ); // Not available on Compact-SPIDR
+  //spidrcontrol.setMaxPacketSize( 9000 ); // Not available on Compact-SPIDR
 
   int  pixdepth = 12;
   bool two_counter_readout = true;
@@ -175,7 +177,7 @@ int main( int argc, char *argv[] )
 #endif
 
       // Upload the test pulse configuration
-      //if( !spidrcontrol.setCtpr(devnr) )
+   //if( !spidrcontrol.setCtpr( devnr ) )
 	//cout << "### CTPR config: " << spidrcontrol.errorString() << endl;
 
       // Upload the pixel configuration; optionally read it back
@@ -229,35 +231,18 @@ int main( int argc, char *argv[] )
 
   spidrcontrol.setPixelDepth( devnr, pixdepth, two_counter_readout );
 
-  /*
-  // DACs
-  cout << "Before" << endl;
-  int dacnr, dacval;
-  for( dacnr=0; dacnr<30; ++dacnr )
-    {
-      spidrcontrol.getDac( devnr, dacnr, &dacval );
-      cout << dacnr << ": " << dacval << endl;
-    }
-  spidrcontrol.setDac( devnr, 10, 10 );
-  //spidrcontrol.setDacsDflt( devnr );
-  cout << "After" << endl;
-  for( dacnr=0; dacnr<30; ++dacnr )
-    {
-      spidrcontrol.getDac( devnr, dacnr, &dacval );
-      cout << dacnr << ": " << dacval << endl;
-    }
-  */
-
   int trig_mode = SHUTTERMODE_AUTO; // Auto-trigger mode
-  int trig_period_us = 40000;
+  int trig_period_us = 4000;
   //int trig_freq_hz = 30000;
   int trig_freq_hz   = 2;
   //int nr_of_triggers = 500;
-  int nr_of_triggers = 40;
+  int nr_of_triggers = 4;
   int trig_pulse_count;
   spidrcontrol.setShutterTriggerConfig( trig_mode, trig_period_us,
 					trig_freq_hz*1000, nr_of_triggers );
   //spidrcontrol.clearBusy();
+
+  displaySpidrRegs( &spidrcontrol );
 
   char ch;
   int i, frame_cnt = 0;
@@ -275,8 +260,10 @@ int main( int argc, char *argv[] )
 
       while( spidrdaq.hasFrame( 1000 ) )
 	{
+	  displaySpidrRegs( &spidrcontrol );
+
 	  ++frame_cnt;
-	  /*cout << "counterh=" << spidrdaq.isCounterhFrame() << ", cntr="
+	  cout << "counterh=" << spidrdaq.isCounterhFrame() << ", cntr="
 	       << spidrdaq.frameShutterCounter() << endl;
 	  cout << "DAQ frames: " << setw(3) << frame_cnt
 	       << " (" << spidrdaq.framesCount() << ")"
@@ -297,7 +284,7 @@ int main( int argc, char *argv[] )
 		  cout << " ***";
 		}
 	    }
-	  cout << endl;*/
+	  cout << endl;
 	  spidrdaq.releaseFrame();
 	  //if( frame_cnt >= 25 ) spidrcontrol.stopAutoTrigger(); // TEST
 	}
@@ -353,6 +340,24 @@ int main( int argc, char *argv[] )
 #endif    
 
   return 0;
+}
+
+// ----------------------------------------------------------------------------
+
+void displaySpidrRegs( SpidrController *sc )
+{
+  int regaddr[] = { 0x1044, 0x1048, 0x1030, 0x1034,
+		    0x1038, 0x1054, 0x0290, 0x0294,
+		    0x0298, 0x029C, 0x02AC, 0x1008, 0x1040 };
+  if( sc == 0 ) return;
+  cout << hex << setfill( '0' );
+  int val;
+  for( int i=0; i<sizeof(regaddr)/sizeof(int); ++i )
+    {
+      sc->getSpidrReg( regaddr[i], &val );
+      cout << "0x" << setw(4) << regaddr[i] << ": " << val << endl;
+    }
+  cout << endl << dec;
 }
 
 // ----------------------------------------------------------------------------

@@ -175,6 +175,8 @@ class MY_LIB_API SpidrController
                                  int *trig_pulse_count );
   bool startAutoTrigger        ( );
   bool stopAutoTrigger         ( );
+  bool openShutter             ( );
+  bool closeShutter            ( );
   bool triggerSingleReadout    ( int counterl_or_h = 0 );
   bool startContReadout        ( int freq_hz );
   bool stopContReadout         ( );
