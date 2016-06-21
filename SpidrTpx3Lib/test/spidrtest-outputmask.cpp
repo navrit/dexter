@@ -7,20 +7,46 @@
 #include <iomanip>
 using namespace std;
 
+#include <QString>
+
 #include "SpidrController.h"
 #include "tpx3defs.h"
 
+#define error_out(str) cout<<str<<": "<<spidrctrl.errorString()<<endl
+
+quint32 get_addr_and_port(const char *str, int *portnr);
+void usage();
+
+// ----------------------------------------------------------------------------
+
 int main( int argc, char *argv[] )
 {
-  // Open a control connection to SPIDR-TPX3 module
-  // with address 192.168.1(00).10, default port number 50000
-  SpidrController spidrctrl( 192, 168, 100, 10 );
+  quint32 ipaddr = 0;
+  int     portnr = 50000;
 
-  // Are we connected to the SPIDR-TPX3 module?
+  // Check argument count
+  if( argc < 2 )
+    {
+      usage();
+      return 0;
+    }
+
+  ipaddr = get_addr_and_port(argv[1], &portnr);
+
+  // ----------------------------------------------------------
+  // Open a control connection to the SPIDR module
+  // with the given address and port, or -if the latter was not provided-
+  // the default port number 50000
+  SpidrController spidrctrl((ipaddr >> 24) & 0xFF,
+    (ipaddr >> 16) & 0xFF,
+    (ipaddr >> 8) & 0xFF,
+    (ipaddr >> 0) & 0xFF, portnr);
+
+  // Are we connected ?
   if( !spidrctrl.isConnected() ) {
     cout << spidrctrl.ipAddressString() << ": "
-	 << spidrctrl.connectionStateString() << ", "
-	 << spidrctrl.connectionErrString() << endl;
+      << spidrctrl.connectionStateString() << ", "
+      << spidrctrl.connectionErrString() << endl;
     return 1;
   }
 
@@ -28,24 +54,24 @@ int main( int argc, char *argv[] )
   cout << hex;
 
   if( !spidrctrl.getDeviceId( device_nr, &id ) )
-    cout << "###getDevId: " << spidrctrl.errorString() << endl;
+    error_out( "###getDeviceId" );
   else
     cout << "DeviceID=" << id << endl;
 
   // --------------------
 
   //if( !spidrctrl.setTpxPowerEna( true ) )
-  //  cout << "###setTpxPowerEna: " << spidrctrl.errorString() << endl;
+  //  error_out( "###setTpxPowerEna" );
 
   int speed;
   if( spidrctrl.getReadoutSpeed( device_nr, &speed ) )
     cout << "Link speed (before reset): " << dec << speed << hex << endl;
   else
-    cout << "###getReadoutSpeed: " << spidrctrl.errorString() << endl;
+    error_out( "###getReadoutSpeed" );
 
   int stat;
   //spidrctrl.reset( &stat );     // Default readout speed
-  if( argc > 1 )
+  if( argc > 2 )
     spidrctrl.reset( &stat, -1 ); // Force low-speed readout
   else
     spidrctrl.reset( &stat,  1 ); // Force high-speed readout
@@ -54,16 +80,16 @@ int main( int argc, char *argv[] )
   if( spidrctrl.getReadoutSpeed( device_nr, &speed ) )
     cout << "Link speed: " << dec << speed << hex << endl;
   else
-    cout << "###getReadoutSpeed: " << spidrctrl.errorString() << endl;
+    error_out( "###getReadoutSpeed" );
 
   int config;
   if( !spidrctrl.getOutBlockConfig( device_nr, &config ) )
-    cout << "###getOutBlockConfig: " << spidrctrl.errorString() << endl;
+    error_out( "###getOutBlockConfig" );
   else
     cout << "OutConfig=" << config << endl;
 
   if( !spidrctrl.getPllConfig( device_nr, &config ) )
-    cout << "###getPllConfig: " << spidrctrl.errorString() << endl;
+    error_out( "###getPllConfig" );
   else
     cout << "PllConfig=" << config << endl;
 
@@ -71,14 +97,15 @@ int main( int argc, char *argv[] )
   if( spidrctrl.getLinkCount( &linkcount ) )
     cout << "Link count: " << dec << linkcount << hex << endl;
   else
-    cout << "###getLinkCount: " << spidrctrl.errorString() << endl;
+    error_out( "###getLinkCount" );
 
   int i;
   int ena_mask, lock_mask, output_mask = 0x00, dac;
   for( i=0; i<linkcount*2; ++i )
     {
       cout << endl;
-
+	
+      //output_mask = (1 << (i%linkcount)); // 1 link at a time
       if( i >= linkcount )
 	{
 	  if( i == linkcount ) output_mask = 0x00;
@@ -88,30 +115,34 @@ int main( int argc, char *argv[] )
 	{
 	  output_mask = (1 << i); // 1 link at a time
 	}
-      if( !spidrctrl.setOutputMask( device_nr, output_mask ) )
-	cout << "###setOutputMask: " << spidrctrl.errorString() << endl;
+      if( speed == 640 ) output_mask |= 1;
+      if( !spidrctrl.setOutputMask(device_nr, output_mask) )
+	error_out( "###setOutputMask" );
       else
 	cout << "OutputMask=> " << output_mask << endl;
 
       if( !spidrctrl.getLinkStatus( device_nr, &ena_mask, &lock_mask ) )
-	cout << "###getLinkStatus: " << spidrctrl.errorString() << endl;
+	error_out( "###getLinkStatus" );
       else
 	cout << "LinkStatus = " << ena_mask << ", " << lock_mask << endl;
 
-      if( !spidrctrl.getOutBlockConfig( device_nr, &config ) )
-	cout << "###getOutBlockConfig: " << spidrctrl.errorString() << endl;
-      else
-	cout << "OutConfig=" << config << endl;
+      for( int k=0; k<2; ++k )
+	{
+	  if( !spidrctrl.getOutBlockConfig( device_nr, &config ) )
+	    cout << "###getOutBlockConfig: " << spidrctrl.errorString() << endl;
+	  else
+	    cout << "OutConfig=" << config << endl;
 
-      if( !spidrctrl.getPllConfig( device_nr, &config ) )
-	cout << "###getPllConfig: " << spidrctrl.errorString() << endl;
-      else
-	cout << "PllConfig=" << config << endl;
+	  if( !spidrctrl.getPllConfig( device_nr, &config ) )
+	    cout << "###getPllConfig: " << spidrctrl.errorString() << endl;
+	  else
+	    cout << "PllConfig=" << config << endl;
 
-      if( !spidrctrl.getDac( device_nr, i+1, &dac ) )
-	cout << "###getDac: " << spidrctrl.errorString() << endl;
-      else
-	cout << "DAC = " << dac << endl;
+	  if( !spidrctrl.getDac( device_nr, i+1, &dac ) )
+	    cout << "###getDac: " << spidrctrl.errorString() << endl;
+	  else
+	    cout << "DAC = " << dac << endl;
+	}
 
       if( i == 9 )
 	{
@@ -142,3 +173,14 @@ int main( int argc, char *argv[] )
 
   return 0;
 }
+
+// ----------------------------------------------------------------------------
+
+void usage()
+{
+  cout <<
+    "Usage  :\n"
+    "spidrtest-outputmask <ipaddr>[:<portnr>]\n";
+}
+
+// ----------------------------------------------------------------------------
