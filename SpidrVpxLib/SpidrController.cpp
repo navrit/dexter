@@ -30,6 +30,379 @@ const int VERSION_ID = 0x16061400;
 #define SPIDR_UDPPAUSE_PKTCOUNTER_I  0x038C
 
 // ----------------------------------------------------------------------------
+// Velopix register and register fields descriptions
+
+// Structure describing a Velopix register
+typedef struct vpxreg_s
+{
+  int addr;
+  const char *name;
+  int nbytes;
+  int count;
+  int nbits; // Size of item group in bits if its items have count > 1
+} vpxreg_t;
+
+// Structure describing a Velopix register item
+typedef struct vpxreg_item_s
+{
+  int item;
+  const char *name;
+  int addr;
+  int bitindex;
+  int nbits;
+  int count;
+} vpxreg_item_t;
+
+const vpxreg_t VPX_REG[] = {
+  { REG_SP,              "REG_SP",               256/8,   128, 4 },
+  { REG_PIXEL,           "REG_PIXEL",            1536/8,  256, 6 },
+  { REG_BX_ID,           "REG_BX_ID",            2,       1,   0 },
+  { REG_EOCDP,           "REG_EOCDP",            2,       1,   0 },
+  { REG_MATRIX_RST_CONF, "REG_MATRIX_RST_CONF",  2,       1,   0 },
+  //{ REG_EOCFAB,        "REG_EOCFAB",           2,       1,   0 },
+  { REG_ROUTER,          "REG_ROUTER",           2,       1,   0 },
+  { REG_GENDIGCONF,      "REG_GENDIGCONF",       2,       1,   0 },
+  { REG_SLVS,            "REG_SLVS",             2,       1,   0 }
+};
+
+const vpxreg_item_t VPX_REG_ITEM[] = {
+  { SP_TOT_THRESHOLD, "SP_TOT_THRESHOLD",
+    REG_SP,                1,  2,  64 },
+  { SP_MASK_BIT,      "SP_MASK_BIT",
+    REG_SP,                0,  1,  64 },
+
+  { PIXEL_TEST_BIT, "PIXEL_TEST_BIT",
+    REG_PIXEL,             5,  1, 256 },
+  { PIXEL_MASK_BIT, "PIXEL_MASK_BIT",
+    REG_PIXEL,             4,  1, 256 },
+  { PIXEL_THR_BIT,  "PIXEL_THR_BIT",
+    REG_PIXEL,             0,  4, 256 },
+
+  { BXID_GRAY_OR_BIN,      "BXID_GRAY_OR_BIN",
+    REG_BX_ID,            14,  1,   1 },
+  { BXID_ENABLE,           "BXID_ENABLE",
+    REG_BX_ID,            13,  1,   1 },
+  { BXID_OVERFLOW_CONTROL, "BXID_OVERFLOW_CONTROL",
+    REG_BX_ID,            12,  1,   1 },
+  { BXID_PRESET_VAL,       "BXID_PRESET_VAL",
+    REG_BX_ID,             0, 12,   1 },
+
+  { EOCDP_BX2COL_GRAY, "EOCDP_BX2COL_GRAY",
+    REG_EOCDP,             5,  1,   1 },
+  { EOCDP_EN_PACKET_FILTER, "EOCDP_EN_PACKET_FILTER",
+    REG_EOCDP,             3,  2,   1 },
+  { EOCDP_BX_ID_EDGE,  "EOCDP_BX_ID_EDGE",
+    REG_EOCDP,             2,  1,   1 },
+  { EOCDP_SHIFT_PRIOR, "EOCDP_SHIFT_PRIOR",
+    REG_EOCDP,             0,  2,   1 },
+
+  { MATRIXRSTCONF_RST_MATRIX_ON_FE_RST, "MATRIXRSTCONF_RST_MATRIX_ON_FE_RST",
+    REG_MATRIX_RST_CONF,   9,  1,   1 },
+  { MATRIXRSTCONF_RESET_DURATION,       "MATRIXRSTCONF_RESET_DURATION",
+    REG_MATRIX_RST_CONF,   6,  3,   1 },
+  { MATRIXRSTCONF_NUM_OF_BANKS,         "MATRIXRSTCONF_NUM_OF_BANKS",
+    REG_MATRIX_RST_CONF,   3,  3,   1 },
+  { MATRIXRSTCONF_COLS_PER_BANK,        "MATRIXRSTCONF_COLS_PER_BANK",
+    REG_MATRIX_RST_CONF,   0,  3,   1 },
+
+  { ROUTER_CHAN_ENABLE, "ROUTER_CHAN_ENABLE",
+    REG_ROUTER,            0,  4,   1 },
+};
+
+/*
+Register: General digital configuration register
+{ GENDIGCONF_RESPONSE_TO_BROADCAST, REG_GENDIGCONF
+{ GENDIGCONF_PERIODIC_SHUTTER, REG_GENDIGCONF
+{ GENDIGCONF_LINK_SHUTTER_AND_TP, REG_GENDIGCONF
+{ GENDIGCONF_SHUTTER_MODE, REG_GENDIGCONF
+{ GENDIGCONF_SELECT_PC_TOT, REG_GENDIGCONF
+{ GENDIGCONF_SELECTOVERFLOW_FULLRANGE_TOTOVERFLOW, REG_GENDIGCONF
+{ GENDIGCONF_SELECT_1HITTOT_ITOT, REG_GENDIGCONF
+{ GENDIGCONF_READ_SEU, REG_GENDIGCONF
+{ GENDIGCONF_SP_MON_MODE_EN, REG_GENDIGCONF
+{ GENDIGCONF_PIXEL_CONFIG_OR_LFSR, REG_GENDIGCONF
+{ GENDIGCONF_SELECT_TP_ANALOG_DIG, REG_GENDIGCONF
+
+Register: SLVS configuration register
+SLVS_TX_CURRENT, REG_SLVS
+
+Register: Shutter enabled register
+SHIFT_DURATION
+DURATION
+
+Register: Shutter disabled register
+SHIFT_DURATION
+DURATION
+
+Register: Bunch counter max value register
+AUTO_RST_ON_MAX_VAL
+MAX_VAL
+
+Register: Output mode register
+TFC_ALIGN_MODE
+GWT_MODE
+LF_MODE
+
+Register: PacketProcessor config register
+ENABLE_PROC
+DISCARD_PACKETS
+MAX_HITS_PER_PACKET
+MAX_LATENCY
+
+Register: Test output select register
+SELECT
+
+Register: TFC FlagCounterNeg register
+FLAGCOUNTERNEG
+
+Register: TFC FlagCounterPos register
+FLAGCOUNTERPOS
+
+Register: TFC Configuration register 1
+RESETSEED
+FLAGCOUNTENABLE
+FLAGCOUNTRESET
+RESYNC
+EDGESET
+
+Register: Fuse program config register
+FUSESELECTION
+FUSEPROGRAMWIDTH
+
+Register: PLL configuration register
+RESETDURATIONLL
+EXTRESETVCO
+BYPASSPLL
+
+Register: DACOut register
+ENABLEDACOUT
+SELECTDACOUT
+
+Register: Clock enable register
+EN_CLK_320
+EN_CLK_160
+EN_CLK_80
+EN_CLK_40
+EN_CLK_40_tp
+
+Register: Test pulse number register
+TP_NUMBER
+
+Register: Test pulse enable register
+TP_PERIOD_ON
+
+Register: Test pulse disable register
+TP_PERIOD_OFF
+
+Register: Test pulse config register
+TP_CLOSE_SHUTTER
+TP_PHASE
+SHUTTER2TP_LAT
+
+Register: Monitoring Encoding register
+GRAY_OR_BIN
+
+Register: Monitoring Enable register
+ENABLE
+
+Register: Readout channel config register
+ECS_SEL
+PAT_SEL
+SCRAMBLERENABLE
+
+Register: GWT config register 0
+DLLCONFIRMCOUNTSELECT
+GWT_EN
+CP_CUR_8UA
+CP_CUR_4UA
+CP_CUR_2UA
+START_UP_EN
+DLLRESETDURATION
+
+Register: GWT config register 1
+THRESHOLD_FOR_DLL_LOCK
+
+Register: PLL config register 0
+EXTMODE
+extDataRate
+extReferenceFreq
+extReadROMConfig
+extControlOverride
+extCODivideBy6
+extCOEnableFD
+extCOEnablePD
+extCOEnablePFD
+extCOInternalCalibration
+extCOExternalCalibration
+
+Register: PLL config register 1
+extCOEnablePhase
+extTrimResWienBridge
+extResetControlBlock
+extResetLockFilter
+
+Register: PLL config register 2
+extSelectClockPhaseCoarse
+extSelectClockPhaseFine
+extIcpFD
+extIcpPD
+
+Register: PLL config register 3
+extIcpPFD
+extTrimCDRCap
+extTrimPLLCap
+extTrimCDRRes
+extTrimPLLRes
+
+Register: PLL config register BIST0
+extBISTtestCycles
+extResetBIST
+extBISTstartTest
+extBISTmakeOneMeasurement
+
+Register: PLL config register BIST1
+extBISTfreqCounterGatingCounter
+
+Register: PLL monitoring register 0
+monDivideBy6A
+monEnablePhaseB
+monTrimRes
+monInternalCalibrationC
+
+Register: PLL monitoring register 1
+statusSmStateB
+monCapA
+monResB
+monEnableFDC
+monEnablePDA
+monIcpFDC
+
+Register: PLL monitoring register 2
+monIcpPD_PFDA
+monExternalCalibrationB
+statusInstantLockFilterLockedA
+statusLockFilterLockedB
+statusLockFilterlossOfLockCountC
+statusLockFilterResetA
+
+Register: PLL monitoring register 3
+monEnablePFDB
+statusSmUnlockedCounterC
+monBISTsMuxEnableTestA
+monBISTsMuxRampdnB
+monBISTsMuxHoldC
+statusBISTsmstateB
+
+Register: PLL monitoring register BIST 0
+statusBISTCounter0
+
+Register: PLL monitoring register BIST 1
+statusBISTCounter1
+
+Register: PLL monitoring register BIST 2
+statusBISTCounter2
+
+Register: PLL monitoring register BIST 3
+statusBISTCounter3
+
+Register: PLL monitoring register BIST 4
+statusBISTCounter4
+
+Register: Monitoring counter config
+ecs_error_mask
+gwt_dll_mon_mask
+enc_seu_mon
+enable_seu_mon
+
+Register: Column Test Pulse Register
+tp_enable
+
+RegisterBank: DAC Register
+DAC_IPREAMP
+DAC_IKRUM
+DAC_IDISC
+DAC_IPIXELDAC
+DAC_VTPCOARSE
+DAC_VTPFINE
+DAC_VPREAMP_CAS
+DAC_VFBK
+DAC_VTHR
+DAC_VCASDISC
+DAC_VINCAS
+DAC_VREFSLVS
+DAC_IBIASSLVS
+DAC_RES_BIAS
+
+Register: Monitoring counters
+COUNTER_VALUE
+
+Register: SEU Monitoring counter
+COUNTER_VALUE
+
+Register: ECS Pattern Register2
+ECS2
+
+Register: Chip ID register
+FUSE_31_15
+CHIP_ID
+
+Register: Packet header select register
+INV_PACKET_HEADER
+PACKET3_HEADER
+PACKET2_HEADER
+PACKET1_HEADER
+PACKET0_HEADER
+
+Register: Invalid packet register
+inv_packet_data
+
+Register: TFC Sync packet register
+tfc_sync_packet_data
+
+Register: TFC Latency register
+DisableNoSyncBlock
+ShutterDelay
+SyncDelay
+SnapshotDelay
+CalibrationDelay
+FEResetDelay
+BxID_ResetDelay
+
+Register: TFC Snapshot register
+count_value
+
+Register: ECS Snapshot register
+count_value
+
+Register: PLL Snapshot register
+count_value
+
+Register: DLL Snapshot register
+count_value
+
+Register: SEU Snapshot register
+count_value
+
+Register: Periphery command register
+pcmd_op_code
+
+Register: Pixel matrix control register
+matrix_op_code
+shutter_mode_ecs_tfc
+tp_mode_ecs_tfc
+fe_reset_mode_ecs_tfc
+matrix_shutter
+matrix_tp_enable
+MATRIX_READOUT_ENABLE
+MATRIX_RST_ENABLE
+
+Register: Bunch ID snapshot register
+BX_ID
+
+Register: Bunch ID diff snapshot register
+BX_ID_DIFF
+*/
+// ----------------------------------------------------------------------------
 // Constructor / destructor
 // ----------------------------------------------------------------------------
 
@@ -283,44 +656,12 @@ bool SpidrController::getDevicePort( int index, int *port_nr )
 }
 
 // ----------------------------------------------------------------------------
-/*
-### Probably won't be used, so outcommented, at least for now (Jan 2014)
-bool SpidrController::getDevicePorts( int *port_nrs )
-{
-  int nr_of_ports;
-  *port_nrs = 0;
-  if( this->getPortCount( &nr_of_ports ) )
-    return this->requestGetInts( CMD_GET_DEVICEPORTS, 0,
-				 nr_of_ports, port_nrs );
-  return false;
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setDevicePort( int index, int port_nr )
-{
-  return this->requestSetInt( CMD_SET_DEVICEPORT, index, port_nr );
-}
-*/
-// ----------------------------------------------------------------------------
 
 bool SpidrController::getServerPort( int index, int *port_nr )
 {
   return this->requestGetInt( CMD_GET_SERVERPORT, index, port_nr );
 }
 
-// ----------------------------------------------------------------------------
-/*
-bool SpidrController::getServerPorts( int *port_nrs )
-{
-  int nr_of_ports;
-  *port_nrs = 0;
-  if( this->getPortCount( &nr_of_ports ) )
-    return this->requestGetInts( CMD_GET_SERVERPORTS, 0,
-				 nr_of_ports, port_nrs );
-  return false;
-}
-*/
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setServerPort( int index, int port_nr )
@@ -330,6 +671,67 @@ bool SpidrController::setServerPort( int index, int port_nr )
 
 // ----------------------------------------------------------------------------
 // Configuration: device
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getVpxItem( int item, int *value )
+{
+  return this->getVpxItem( item, 0, 0, value );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getVpxItem( int item, int item_i, int reg_i,
+				  int *value )
+{
+  // Find the item in our item list
+  int  index;
+  if( !this->findVpxItem( item, item_i, &index ) )
+    return false;
+
+  // Item info
+  int addr     = VPX_REG_ITEM[index].addr;
+  int bitindex = VPX_REG_ITEM[index].bitindex;
+  int nbits    = VPX_REG_ITEM[index].nbits;
+
+  // Find the register containing the item in our register list
+  if( !this->findVpxReg( addr, reg_i, &index ) )
+    return false;
+
+  // Register info
+  int nbytes = VPX_REG[index].nbytes;
+
+  // Read the register containing the item
+  unsigned char bytes[1536/8];
+  if( !this->getVpxReg( addr + reg_i, nbytes, bytes ) )
+    return false;
+
+  // Extract the item from the register data and return in 'value',
+  // i.e. return nbits starting from (offset + bitindex)-th bit
+  int offset = VPX_REG[index].nbits * item_i + bitindex;
+  int byte_i = offset/8;
+  int bit_i  = offset - byte_i*8;
+  int val    = 0;
+  while( nbits > 0 )
+    {
+      val <<= 1;
+      // Bit equal to 1?
+      if( (bytes[byte_i] & (1<<bit_i)) != 0 )
+	val |= 1;
+      // Next bit
+      ++bit_i;
+      if( bit_i == 8 )
+	{
+	  // Next byte
+	  ++byte_i;
+	  bit_i = 0;
+	}
+      --nbits;
+    }
+  *value = val;
+
+  return true;
+}
+
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getVpxReg( int address, int size, unsigned char *bytes )
@@ -378,6 +780,67 @@ bool SpidrController::getVpxReg16( int address, int *val )
   // Map bytes to the integer value
   for( int i=0; i<2; ++i )
     *val |= (int) ((unsigned int) bytes[i] << (i*8));
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setVpxItem( int item, int value )
+{
+  return this->setVpxItem( item, 0, 0, value );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setVpxItem( int item, int item_i, int reg_i,
+				  int value )
+{
+  // Find the item in our item list
+  int  index;
+  if( !this->findVpxItem( item, item_i, &index ) )
+    return false;
+
+  // Item info
+  int addr     = VPX_REG_ITEM[index].addr;
+  int bitindex = VPX_REG_ITEM[index].bitindex;
+  int nbits    = VPX_REG_ITEM[index].nbits;
+
+  // Find the register containing the item in our register list
+  if( !this->findVpxReg( addr, reg_i, &index ) )
+    return false;
+
+  // Register info
+  int nbytes = VPX_REG[index].nbytes;
+
+  // Read the register containing the item
+  unsigned char bytes[1536/8];
+  if( !this->getVpxReg( addr + reg_i, nbytes, bytes ) )
+    return false;
+
+  // Replace the item in the register data by 'value',
+  // i.e. writing nbits starting from (offset + bitindex)-th bit
+  int offset = VPX_REG[index].nbits * item_i + bitindex;
+  int byte_i = offset/8;
+  int bit_i  = offset - byte_i*8;
+  int val    = value;
+  while( nbits > 0 )
+    {
+      if( val & 1 )
+	bytes[byte_i] |= (1 << bit_i);
+      else
+	bytes[byte_i] &= ~(1 << bit_i);
+      val >>= 1;
+      // Next bit
+      ++bit_i;
+      if( bit_i == 8 )
+	{
+	  // Next byte
+	  ++byte_i;
+	  bit_i = 0;
+	}
+      --nbits;
+    }
+
   return true;
 }
 
@@ -1109,6 +1572,71 @@ bool SpidrController::setSpidrRegBit( int address, int bitnr, bool set )
 
 // ----------------------------------------------------------------------------
 // Private functions
+// ----------------------------------------------------------------------------
+
+bool SpidrController::findVpxItem( int item, int item_i, int *index )
+{
+  bool found = false;
+  int  i;
+  for( i=0; i<sizeof(VPX_REG_ITEM)/sizeof(vpxreg_item_t); ++i )
+    {
+      if( VPX_REG_ITEM[i].item == item )
+	{
+	  found = true;
+	  break;
+	}
+    }
+  if( !found )
+    {
+      this->clearErrorString();
+      _errString << "Undefined item identifier: " << item;
+      return false;
+    }
+  int item_count = VPX_REG_ITEM[i].count;
+  if( item_i >= item_count || item_i < 0 )
+    {
+      this->clearErrorString();
+      _errString << "Item index " << item_i << "out-of-range: 0.."
+		 << item_count-1;
+      return false;
+    }
+  *index = i;
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::findVpxReg( int addr, int reg_i, int *index )
+{
+  // Find the register and its size in the register list
+  bool found = false;
+  int  i;
+  for( i=0; i<sizeof(VPX_REG)/sizeof(vpxreg_t); ++i )
+    {
+      if( VPX_REG[i].addr == addr )
+	{
+	  found = true;
+	  break;
+	}
+    }
+  if( !found )
+    {
+      this->clearErrorString();
+      _errString << "Undefined register: " << hex << addr << dec;
+      return false;
+    }
+  int reg_count = VPX_REG[i].count;
+  if( reg_i >= reg_count || reg_i < 0 )
+    {
+      this->clearErrorString();
+      _errString << "Register index " << reg_i << "out-of-range: 0.."
+		 << reg_count-1;
+      return false;
+    }
+  *index = i;
+  return true;
+}
+
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setPixelBit( int x, int y, unsigned char bitmask, bool b )

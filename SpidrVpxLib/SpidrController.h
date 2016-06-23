@@ -76,10 +76,16 @@ class MY_LIB_API SpidrController
   bool        setServerPort    ( int  index,  int  port_nr );
 
   // Configuration: device
+  bool        getVpxItem       ( int  item,    int *value );
+  bool        getVpxItem       ( int  item,    int  item_i, int reg_i,
+                                 int *value );
   bool        getVpxReg        ( int  address, int  size,
                                  unsigned char *bytes );
   bool        getVpxReg32      ( int  address, int *val );
   bool        getVpxReg16      ( int  address, int *val );
+  bool        setVpxItem       ( int  item,    int value );
+  bool        setVpxItem       ( int  item,    int  item_i, int reg_i,
+                                 int  value );
   bool        setVpxReg        ( int  address, int  size,
                                  unsigned char *bytes );
   bool        setVpxReg32      ( int  address, int  val );
@@ -183,6 +189,8 @@ class MY_LIB_API SpidrController
   bool setSpidrRegBit          ( int  address, int  bitnr, bool set = true );
 
  private:
+  bool findVpxItem             ( int item, int item_i, int *index );
+  bool findVpxReg              ( int addr, int reg_i, int *index );
   bool setPixelBit             ( int x, int y, unsigned char bitmask, bool b );
   void setBitsBigEndianReversed( unsigned char *buffer,
                                  int pos, int nbits, unsigned int value,
