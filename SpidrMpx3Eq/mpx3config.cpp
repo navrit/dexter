@@ -151,6 +151,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
                 );
 
 
+    //spidrcontrol->setMpx3Clock( 200 );
 
     //cout << endl;
 

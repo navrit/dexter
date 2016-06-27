@@ -90,6 +90,7 @@ private:
 
     bool m_appActiveFirstTime = false;
 
+
 public:
 
     Mpx3Config* getConfig();
@@ -110,7 +111,10 @@ public:
 
     SpidrController * GetSpidrController();
     SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
-    unsigned int addFrame(int *frame, int index, int layer);
+    unsigned int addFrame(int * frame, int index, int layer);
+    unsigned int addLayer(int * data, int layer);
+    unsigned int addLayer(int * data);
+
     Gradient* getGradient(int index);
     void resize(int x, int y);
     //histogram* getHist(int index){return hists[index];}
@@ -158,8 +162,6 @@ signals:
 
 public slots:
     void on_shortcutsSwithPages();
-    void addLayer(int* data);
-    void addLayer(int* data, int layer);
     void generateFrame(); //Debugging function to generate data when not connected
     void clear_data(bool clearStatusBar = true);
     void save_data();
@@ -172,6 +174,7 @@ public slots:
     void save_config();
     void load_config();
     void onConnectionStatusChanged(bool);
+    unsigned int dataReady(int layer);
 
     // status bar
     void statusBarAppend(QString mess, QString colorString);
