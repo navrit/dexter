@@ -179,47 +179,6 @@
            </property>
           </widget>
          </item>
-         <item row="14" column="0">
-          <widget class="QLabel" name="label_19">
-           <property name="text">
-            <string>Time units</string>
-           </property>
-          </widget>
-         </item>
-         <item row="14" column="1">
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <item>
-            <widget class="QRadioButton" name="radioButtonS">
-             <property name="layoutDirection">
-              <enum>Qt::RightToLeft</enum>
-             </property>
-             <property name="text">
-              <string>s</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="radioButtonMS">
-             <property name="layoutDirection">
-              <enum>Qt::RightToLeft</enum>
-             </property>
-             <property name="text">
-              <string>ms</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="radioButtonUS">
-             <property name="layoutDirection">
-              <enum>Qt::RightToLeft</enum>
-             </property>
-             <property name="text">
-              <string>us</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
          <item row="4" column="1">
           <widget class="QComboBox" name="pixelDepthComboBox"/>
          </item>
@@ -280,6 +239,57 @@
             <double>0.500000000000000</double>
            </property>
           </widget>
+         </item>
+         <item row="14" column="0">
+          <widget class="QLabel" name="label_22">
+           <property name="text">
+            <string>MPX3 clock (MHz)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="14" column="1">
+          <widget class="QComboBox" name="mpx3ClockComboBox"/>
+         </item>
+         <item row="15" column="0">
+          <widget class="QLabel" name="label_19">
+           <property name="text">
+            <string>Time units</string>
+           </property>
+          </widget>
+         </item>
+         <item row="15" column="1">
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QRadioButton" name="radioButtonS">
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
+             <property name="text">
+              <string>s</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="radioButtonMS">
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
+             <property name="text">
+              <string>ms</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="radioButtonUS">
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
+             <property name="text">
+              <string>us</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>

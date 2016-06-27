@@ -52,9 +52,16 @@ public:
         if ( ! _score.tocomplete ) _score.missingToCompleteJob = nf;
     }
 
+    QVector<int> getData(int layer);
+
+protected:
+
+    void run() Q_DECL_OVERRIDE;
+
 private:
 
-    void run();
+    QMutex _mutex;
+    QWaitCondition _condition;
 
     Mpx3GUI * _mpx3gui;
     QCstmGLVisualization * _vis;
@@ -64,6 +71,17 @@ private:
 
     // IP source address (SPIDR network interface)
     int _srcAddr;
+
+    QVector<int> ** _th0;
+    QVector<int> ** _th2;
+    QVector<int> ** _th4;
+    QVector<int> ** _th6;
+
+    // Incoming data. One per chip(index)
+    QQueue<QVector<int>> _incomingDataTH0;
+    QQueue<QVector<int>> _incomingDataTH2;
+    QQueue<QVector<int>> _incomingDataTH4;
+    QQueue<QVector<int>> _incomingDataTH6;
 
 public slots:
     void on_stop_data_taking_thread();
@@ -79,6 +97,8 @@ signals:
     void lost_packets(int);
     void fps_update(int);
     void overflow_update(int);
+    void dataReady(int layer);
+
 
 };
 

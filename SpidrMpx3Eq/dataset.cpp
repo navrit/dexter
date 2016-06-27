@@ -1323,7 +1323,7 @@ unsigned int Dataset::sumFrame(int *frame, int index, int threshold){
 
     if(!m_thresholdsToIndices.contains(threshold))
         newLayer(threshold);
-    int *newFrame = getFrame(index, threshold);
+    int * newFrame = getFrame(index, threshold);
 
     // and keep an eye on overflow frames
     unsigned int overflowCntr = 0;
@@ -1433,16 +1433,34 @@ void Dataset::setFramesPerLayer(int newFrameCount){
     }
 }
 
-void Dataset::setLayer(int *data, int threshold){
+unsigned int Dataset::setLayer(int *data, int threshold){
+
+    unsigned int overflowCntr = 0;
+
     int layerIndex = getLayerIndex(threshold);
-    for(int i = 0; i < m_nFrames*m_nx*m_ny;i++)
+    for(int i = 0; i < m_nFrames*m_nx*m_ny;i++) {
+
         m_layers[layerIndex][i] = data[i];
+        if ( data[i] >= m_pixelDepthCntr ) overflowCntr++;
+
+    }
+
+    return overflowCntr;
 }
 
-void Dataset::addLayer(int *data, int threshold){
+unsigned int Dataset::addLayer(int *data, int threshold){
+
+    unsigned int overflowCntr = 0;
+
     int layerIndex = getLayerIndex(threshold);
-    for(int i = 0; i < m_nFrames*m_nx*m_ny;i++)
+    for(int i = 0; i < m_nFrames*m_nx*m_ny;i++) {
+
         m_layers[layerIndex][i] += data[i];
+        if ( data[i] >= m_pixelDepthCntr ) overflowCntr++;
+
+    }
+
+    return overflowCntr;
 }
 
 int * Dataset::getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui) {

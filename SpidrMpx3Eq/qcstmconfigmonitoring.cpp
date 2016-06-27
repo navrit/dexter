@@ -31,6 +31,12 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     ui->operationModeComboBox->addItem("Sequential R/W");
     ui->operationModeComboBox->addItem("Continuous R/W");
 
+    // Configurable clock
+    ui->mpx3ClockComboBox->addItem("64");
+    ui->mpx3ClockComboBox->addItem("100");
+    ui->mpx3ClockComboBox->addItem("128");
+    ui->mpx3ClockComboBox->addItem("200");
+
     ui->motorDial->setNotchesVisible(true);
 
     _stepperThread = nullptr;

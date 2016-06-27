@@ -18,6 +18,9 @@
 
 #include "mtadialog.h"
 
+#include <QQueue>
+#include <QVector>
+
 #define __display_eta_granularity 200 // ms
 #define __networkOverhead 0.1
 
@@ -59,6 +62,7 @@ class QCstmGLVisualization : public QWidget
     // Reco
     Color2DRecoGuided * _reco_Color2DRecoGuided = nullptr;
 
+
 public:
     explicit QCstmGLVisualization(QWidget *parent = 0);
     ~QCstmGLVisualization();
@@ -70,6 +74,7 @@ public:
     void SetMpx3GUI(Mpx3GUI * p);
     Mpx3GUI * GetMpx3GUI() { return _mpx3gui; };
     Ui::QCstmGLVisualization * GetUI(){ return ui; };
+    DataTakingThread * dataTakingThread(){ return _dataTakingThread; };
     void startupActions();
 
     pair<int, int> XtoXY(int X, int dimX);
@@ -87,6 +92,7 @@ public:
     void initStatsString();
 
 private:
+
 
     Ui::QCstmGLVisualization * ui = nullptr;
     DataTakingThread * _dataTakingThread = nullptr;

@@ -21,8 +21,12 @@ DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, QCstmGLVisualization * dt)
     _srcAddr = 0;
     _stop = false;
     _canDraw = true;
-
     rewindScoring();
+
+    // Build local structure
+    QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
+    int nChips = activeDevices.size();
+    qDebug() << "Working with " << nChips << " chips";
 
 }
 
@@ -39,6 +43,10 @@ void DataTakingThread::ConnectToHardware() {
 
 void DataTakingThread::run() {
 
+    // Work an protect local variables
+    _mutex.lock();
+    datataking_score_info score = this->_score;
+    _mutex.unlock();
 
     // Open a new temporary connection to the spider to avoid collisions to the main one
     int ipaddr[4] = { 1, 1, 168, 192 };
@@ -66,22 +74,12 @@ void DataTakingThread::run() {
     //spidrcontrol->setLogLevel( 2 );
     spidrcontrol->setLogLevel( 0 );
 
-    /*
-    spidrcontrol->setShutterTriggerConfig (
-            4,
-            40000,
-            200000,
-            100
-    );
-    */
-
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
         qDebug() << "[ERR ] Device not connected !";
         return;
     }
 
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
-
 
     connect(this, SIGNAL(reload_all_layers()), _vis, SLOT(reload_all_layers()));
     connect(this, SIGNAL(reload_layer(int)), _vis, SLOT(reload_layer(int)));
@@ -95,6 +93,7 @@ void DataTakingThread::run() {
     connect(this, SIGNAL(fps_update(int)), _vis, SLOT(fps_update(int)) );
     connect(this, SIGNAL(overflow_update(int)), _vis, SLOT(overflow_update(int)) );
 
+    connect(this, &DataTakingThread::dataReady, _mpx3gui, &Mpx3GUI::dataReady);
 
     qDebug() << "[INFO] Acquiring ... ";
     //_mpx3gui->GetUI()->startButton->setActive(false);
@@ -108,16 +107,30 @@ void DataTakingThread::run() {
     // Data structures for all 8 thresholds
     // counterL
     // I need to buffer the counterL in case the counterH is not correct.
-    QVector<int> ** th0 = new QVector<int>*[nChips]; // have as many pointers as chips
-    QVector<int> ** th2 = new QVector<int>*[nChips];
-    QVector<int> ** th4 = new QVector<int>*[nChips];
-    QVector<int> ** th6 = new QVector<int>*[nChips];
+    // Protect data and work on the copy
+
+    _mutex.lock();
+    QVector<int> ** th0 = nullptr;
+    QVector<int> ** th2 = nullptr;
+    QVector<int> ** th4 = nullptr;
+    QVector<int> ** th6 = nullptr;
+    th0 = new QVector<int>*[nChips];
+    th2 = new QVector<int>*[nChips];
+    th4 = new QVector<int>*[nChips];
+    th6 = new QVector<int>*[nChips];
     for ( int i = 0 ; i < nChips ; i++ ) {
         th0[i] = nullptr;
         th2[i] = nullptr;
         th4[i] = nullptr;
         th6[i] = nullptr;
     }
+    _th0 = th0;
+    _th2 = th2;
+    _th4 = th4;
+    _th6 = th6;
+    _mutex.unlock();
+
+
     // counterH
     // I don't need to buffer the high counters
     QVector<int> * th1 = nullptr;
@@ -187,15 +200,18 @@ void DataTakingThread::run() {
             doReadFrames_L = true;
             doReadFrames_H = true;
 
+            /*
+            _mutex.lock();
             // Buffering for the counterL
             for ( int i = 0 ; i < nChips ; i++ ) {
-
                 if ( th0[i] ) { delete th0[i]; th0[i] = nullptr; }
                 if ( th2[i] ) { delete th2[i]; th2[i] = nullptr; }
                 if ( th4[i] ) { delete th4[i]; th4[i] = nullptr; }
                 if ( th6[i] ) { delete th6[i]; th6[i] = nullptr; }
-
             }
+            _mutex.unlock();
+            */
+
             // counterH is erased as soon as is used.
             // No need to buffer for that counterH
         }
@@ -262,19 +278,16 @@ void DataTakingThread::run() {
             continue;
         }
 
-
+        int sizeReduced = 0; // data will be 4*sizeReduced
+        QVector<int> dataTH0;
+        QVector<int> dataTH2;
+        QVector<int> dataTH4;
+        QVector<int> dataTH6;
 
         for(int i = 0 ; i < activeDevices.size() ; i++) {
-            //KoreaHack for(int i = 0 ; i < 4 ; i++) {
 
             // retreive data for a given chip
             framedata = spidrdaq->frameData(i, &size_in_bytes);
-            //KoreaHack  if ( i != 3 ) framedata = spidrdaq->frameData(i, &size_in_bytes);
-            //KoreaHack  if ( i == 3 ) framedata = spidrdaq->frameData(1, &size_in_bytes);
-            //KoreaHack
-
-            //cout << "chip id : " << activeDevices[i] << " | SpidrDaq::frameShutterCounter: " << spidrdaq->frameShutterCounter(i) << endl;
-            // if ( size_in_bytes == 0 ) continue; // this may happen
 
             // In color mode the separation of thresholds needs to be done
             if ( _mpx3gui->getConfig()->getColourMode() ) {
@@ -284,12 +297,14 @@ void DataTakingThread::run() {
                     //cout << "low , frameId = " << nFramesReceived << endl;
 
                     int size = size_in_bytes / __nThresholdsPerSpectroscopicPixel;
-                    int sizeReduced = size / __nThresholdsPerSpectroscopicPixel;    // 4 thresholds per 110um pixel
+                    sizeReduced = size / __nThresholdsPerSpectroscopicPixel;    // 4 thresholds per 110um pixel
 
-                    th0[i] = new QVector<int>(sizeReduced, 0);
-                    th2[i] = new QVector<int>(sizeReduced, 0);
-                    th4[i] = new QVector<int>(sizeReduced, 0);
-                    th6[i] = new QVector<int>(sizeReduced, 0);
+                    _mutex.lock();
+
+                    if ( ! th0[i] ) th0[i] = new QVector<int>(sizeReduced, 0);
+                    if ( ! th2[i] ) th2[i] = new QVector<int>(sizeReduced, 0);
+                    if ( ! th4[i] ) th4[i] = new QVector<int>(sizeReduced, 0);
+                    if ( ! th6[i] ) th6[i] = new QVector<int>(sizeReduced, 0);
 
                     //qDebug() << size_in_bytes << sizeReduced;
 
@@ -297,19 +312,35 @@ void DataTakingThread::run() {
 
                     // Send if if we are not reading counterH
                     // counterL
+
                     if ( ! _mpx3gui->getConfig()->getReadBothCounters() ) {
-                        overflowCntr += _mpx3gui->addFrame(th0[i]->data(), i, 0);
+
+                        for ( int j = 0 ; j < sizeReduced ; j++) {
+                            dataTH0.append( th0[i]->at(j) );
+                            dataTH2.append( th2[i]->at(j) );
+                            dataTH4.append( th4[i]->at(j) );
+                            dataTH6.append( th6[i]->at(j) );
+                        }
+                        //emit dataReady(i, 0);
+
+                        //overflowCntr += _mpx3gui->addFrame(th0[i]->data(), i, 0);
+                        //emit addFrame(*(th0[i]), i, 0);
                         //delete th0;
 
-                        overflowCntr += _mpx3gui->addFrame(th2[i]->data(), i, 2);
+                        //overflowCntr += _mpx3gui->addFrame(th2[i]->data(), i, 2);
+                        //emit addFrame(*(th2[i]), i, 2);
                         //delete th2;
 
-                        overflowCntr += _mpx3gui->addFrame(th4[i]->data(), i, 4);
+                        //overflowCntr += _mpx3gui->addFrame(th4[i]->data(), i, 4);
+                        //emit addFrame(*(th4[i]), i, 4);
                         //delete th4;
 
-                        overflowCntr += _mpx3gui->addFrame(th6[i]->data(), i, 6);
+                        //overflowCntr += _mpx3gui->addFrame(th6[i]->data(), i, 6);
+                        //emit addFrame(*(th6[i]), i, 6);
                         //delete th6;
                     }
+
+                    _mutex.unlock();
 
                 }
 
@@ -328,6 +359,7 @@ void DataTakingThread::run() {
 
                     SeparateThresholds(i, framedata, size, th1, th3, th5, th7, sizeReduced);
 
+                    /*
                     // Now send all the thresholds for the give chip.
                     // !!! WARNING: They have to enter in order !!!
                     // TH0
@@ -361,6 +393,7 @@ void DataTakingThread::run() {
                     // TH7
                     overflowCntr += _mpx3gui->addFrame(th7->data(), i, 7);
                     //delete th7; th7 = 0x0;
+*/
 
                     // Get ready with the high thresholds
                     if ( th1 ) { delete th1; th1 = nullptr; }
@@ -368,14 +401,21 @@ void DataTakingThread::run() {
                     if ( th5 ) { delete th5; th5 = nullptr; }
                     if ( th7 ) { delete th7; th7 = nullptr; }
 
-                }
 
+                }
 
             } else {
                 overflowCntr += _mpx3gui->addFrame(framedata, i, 0);
             }
 
         }
+
+        _incomingDataTH0.enqueue( dataTH0 ); emit dataReady( 0 );
+        _incomingDataTH2.enqueue( dataTH2 );
+        _incomingDataTH4.enqueue( dataTH4 );
+        _incomingDataTH6.enqueue( dataTH6 );
+
+        qDebug() << _incomingDataTH0.size();
 
         // Keep a local count of number of frames
         nFramesReceived++;
@@ -475,6 +515,15 @@ void DataTakingThread::run() {
     disconnect( this, SIGNAL(fps_update(int)), _vis, SLOT(fps_update(int)) );
     disconnect( this, SIGNAL(overflow_update(int)), _vis, SLOT(overflow_update(int)) );
 
+    disconnect(this, &DataTakingThread::dataReady, _mpx3gui, &Mpx3GUI::dataReady);
+
+    // In case I need the thread to go to sleep.  Not the case here.
+    //_mutex.lock();
+    //_condition.wait(&_mutex);
+    //_mutex.unlock();
+
+    qDebug() << "Thread finishing";
+
     // In case the thread is reused
     _stop = false;
 
@@ -536,6 +585,24 @@ int DataTakingThread::calcScoreDifference() {
     return _score.missingToCompleteJob;
 }
 
+QVector<int> DataTakingThread::getData(int layer)
+{
+    if ( layer == 0 ) {
+        return _incomingDataTH0.dequeue();
+        //return _th0[index]->data();
+    } else if ( layer == 2 ) {
+        return _incomingDataTH2.dequeue();
+        //return _th2[index]->data();
+    } else if ( layer == 4 ) {
+        return _incomingDataTH4.dequeue();
+        //return _th4[index]->data();
+    } else if ( layer == 6 ) {
+        return _incomingDataTH6.dequeue();
+        //return _th6[index]->data();
+    }
+
+}
+
 void DataTakingThread::on_busy_drawing() {
     _canDraw = false;
 }
@@ -595,6 +662,8 @@ void DataTakingThread::SeparateThresholds(int /*id*/, int * data, int /*size*/, 
             }
             if( (i % 2) == 0 && (j % 2) == 1) {
                 (*th0)[indxRed] = data[indx]; // P1
+                //if ( indxRed %4 == 0 ) (*th0)[indxRed] = 1;
+                //else (*th0)[indxRed] = 0;
             }
             if( (i % 2) == 1 && (j % 2) == 0) {
                 (*th6)[indxRed] = data[indx]; // P4

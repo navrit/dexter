@@ -9,6 +9,7 @@
 #include "qcstmglvisualization.h"
 #include "ui_mpx3gui.h"
 #include "ui_qcstmconfigmonitoring.h"
+#include "DataTakingThread.h"
 
 #include "qcustomplot.h"
 #include "mpx3eq_common.h"
@@ -152,32 +153,55 @@ void Mpx3GUI::resize(int x, int y) {
     emit sizeChanged(bbox.width() * x, bbox.height() * y); // goes to qcstmglplot
 }
 
-void Mpx3GUI::addLayer(int *data){
+unsigned int Mpx3GUI::addLayer(int *data){
     return addLayer(data, -1);
 }
 
-unsigned int Mpx3GUI::addFrame(int *frame, int index, int layer) {
+unsigned int Mpx3GUI::dataReady(int layer)
+{
+
+    QVector<int> dataLayer = getVisualization()->dataTakingThread()->getData(layer);
+    //QVector<int> activeDevices = getConfig()->getActiveDevices();
+
+    unsigned int ovflcntr = 0;
+
+    addLayer( dataLayer.data(), layer );
+
+    /*
+        ovflcntr += addFrame(
+                    ,
+                    index,
+                    layer
+                    );
+                    */
+
+    return ovflcntr;
+}
+
+unsigned int Mpx3GUI::addFrame(int * frame, int index, int layer) {
 
     //cout << "index : " << index << " | layer : " << layer << " | mode : " << mode << endl;
 
     unsigned int ovfcntr = 0;
-    if(mode == 1){
-        ovfcntr = getDataset()->sumFrame(frame,index, layer);
-    }
-    else{
+    if ( mode == 1 ) {
+        ovfcntr = getDataset()->sumFrame(frame, index, layer);
+    } else {
         ovfcntr = getDataset()->setFrame(frame, index, layer);
     }
     return ovfcntr;
 }
 
-void Mpx3GUI::addLayer(int *data, int layer){
+unsigned int Mpx3GUI::addLayer(int * data, int layer) {
+
+    unsigned int ovfcntr = 0;
     if(mode == 1){
-        getDataset()->addLayer(data, layer);
+        ovfcntr = getDataset()->addLayer(data, layer);
     }
-    else{
-        getDataset()->setLayer(data, layer);
+    else {
+        ovfcntr = getDataset()->setLayer(data, layer);
     }
-    emit reload_layer(layer);
+    //emit reload_layer(layer);
+    return ovfcntr;
 }
 
 Gradient* Mpx3GUI::getGradient(int index){
@@ -315,6 +339,22 @@ bool Mpx3GUI::establish_connection() {
 
     QDebug * dbg = new QDebug(QtInfoMsg);
 
+    // See if there is any chips connected
+    if ( config->getActiveDevices().size() == 0 ) {
+
+        *dbg << "[ERRO] Could not find any devices";
+        // Dump the verbose here.
+        delete dbg;
+
+        QMessageBox::critical(this, "Connection error",
+                              tr("Could not find any devices.")
+                              );
+        config->destroyController();
+        emit ConnectionStatusChanged(false);
+
+        return false;
+    }
+
     // Check if we are properly connected to the SPIDR module
     if ( spidrcontrol->isConnected() ) {
         *dbg << "Connected to SPIDR: " << spidrcontrol->ipAddressString().c_str() << "[" << config->getNDevicesPresent();
@@ -349,14 +389,7 @@ bool Mpx3GUI::establish_connection() {
         return false; // No use in continuing if we can't connect.
     }
 
-    // See if there is any chips connected
-    if ( config->getActiveDevices().size() == 0 ) {
-        QMessageBox::critical(this, "Connection error",
-                              tr("Could not find any devices.")
-                              );
-        config->destroyController();
-        emit ConnectionStatusChanged(false);
-    }
+
 
 
     // Get version numbers
@@ -707,6 +740,7 @@ void Mpx3GUI::onConnectionStatusChanged(bool conn)
     }
 
 }
+
 
 void Mpx3GUI::open_data(bool saveOriginal){
 
