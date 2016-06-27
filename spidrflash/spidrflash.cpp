@@ -190,6 +190,7 @@ int main( int argc, char **argv )
 		{
 		  int p = (100*bytes_done)/bytes_todo;
 		  cout << "\b\b\b\b\b    \b\b\b\b" << setw(3) << p << "% ";
+		  cout.flush();
 		  percentage = p;
 		}
 	    }
@@ -243,6 +244,7 @@ int main( int argc, char **argv )
 		{
 		  int p = (100*bytes_done)/bytes_todo;
 		  cout << "\b\b\b\b\b    \b\b\b\b" << setw(3) << p << "% ";
+		  cout.flush();
 		  percentage = p;
 		}
 	    }
