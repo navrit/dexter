@@ -27,6 +27,7 @@
       <widget class="QCstmThreshold" name="ThresholdTab"/>
       <widget class="QCstmCT" name="ctTab"/>
       <widget class="QCstmVoxeltab" name="voxelTab"/>
+      <widget class="QCstmDQE" name="dqeAnalysis"/>
      </widget>
     </item>
    </layout>
@@ -37,7 +38,7 @@
      <x>0</x>
      <y>0</y>
      <width>1110</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -154,7 +155,7 @@
   </action>
   <action name="actionSave_data">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/Actions-document-save-icon.png</normaloff>:/icons/Actions-document-save-icon.png</iconset>
    </property>
    <property name="text">
@@ -163,7 +164,7 @@
   </action>
   <action name="actionOpen_data">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/Actions-document-open-icon.png</normaloff>:/icons/Actions-document-open-icon.png</iconset>
    </property>
    <property name="text">
@@ -182,7 +183,7 @@
   </action>
   <action name="actionClear_data">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/Actions-edit-clear-icon.png</normaloff>:/icons/Actions-edit-clear-icon.png</iconset>
    </property>
    <property name="text">
@@ -194,7 +195,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/Button-Turn-On-icon.png</normaloff>
      <normalon>:/icons/switch-turn-off-icon.png</normalon>:/icons/Button-Turn-On-icon.png</iconset>
    </property>
@@ -204,7 +205,7 @@
   </action>
   <action name="actionDisconnect">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/switch-turn-off-icon.png</normaloff>:/icons/switch-turn-off-icon.png</iconset>
    </property>
    <property name="text">
@@ -218,7 +219,7 @@
   </action>
   <action name="actionWizard">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/Actions-tools-wizard-icon.png</normaloff>:/icons/Actions-tools-wizard-icon.png</iconset>
    </property>
    <property name="text">
@@ -230,7 +231,7 @@
   </action>
   <action name="actionVisualization">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/Visualization_logo.png</normaloff>:/icons/Visualization_logo.png</iconset>
    </property>
    <property name="text">
@@ -242,7 +243,7 @@
   </action>
   <action name="actionConfiguration">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/Config_logo.png</normaloff>:/icons/Config_logo.png</iconset>
    </property>
    <property name="text">
@@ -254,7 +255,7 @@
   </action>
   <action name="actionDACs">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/DACs_logo.png</normaloff>:/icons/DACs_logo.png</iconset>
    </property>
    <property name="text">
@@ -266,7 +267,7 @@
   </action>
   <action name="actionEqualization">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/Equalisation_logo.png</normaloff>:/icons/Equalisation_logo.png</iconset>
    </property>
    <property name="text">
@@ -324,10 +325,14 @@
    <header>qcstmct.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>QCstmDQE</class>
+   <extends>QWidget</extends>
+   <header>qcstmdqe.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
- <resources>
-  <include location="icons.qrc"/>
- </resources>
+ <resources/>
  <connections/>
  <slots>
   <signal>frame_added()</signal>
