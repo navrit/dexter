@@ -97,11 +97,6 @@ void ProfileDialog::plotProfile()
     }
     //Make sure profilepoints does not contain any points before they are indicated.
     _mpx3gui->getDataset()->clearProfilepoints();
-
-    //Add (2) graphs for testing the kdf function
-    ui->profilePlot->addGraph();
-    ui->profilePlot->addGraph();
-    ui->profilePlot->addGraph(); //for the straight line
 }
 
 void ProfileDialog::addMeanLines(QString data){
@@ -180,9 +175,6 @@ void ProfileDialog::useKernelDensityFunction(double bandwidth)
     createKernelDensityFunction(Npoints, hist, bandwidth);
 
     ui->profilePlot->graph(kdf_index)->clearData();
-    //ui->profilePlot->graph(12)->clearData();
-    ui->profilePlot->graph(11)->clearData();
-    ui->profilePlot->graph(13)->clearData();
 
     //Calculating kdf values and adding them to a graph and vector.
     QVector<double> kdf;
@@ -226,31 +218,12 @@ void ProfileDialog::useKernelDensityFunction(double bandwidth)
     //Draw
     QVector<int> infls; //Save inflection points
     for(int i = 1; i < stencil3.length(); i++){
-        ui->profilePlot->graph(11)->addData(i + offset, stencil3[i]*10 + kdf[kdf.length()/2]); //* +kdf[middle] for visualization
+        //ui->profilePlot->graph(11)->addData(i + offset, stencil3[i]*10 + kdf[kdf.length()/2]); //* +kdf[middle] for visualization
         if(stencil3[i] > 0 && stencil3[i-1] < 0)
             infls.append(i + offset);
         if(stencil3[i] < 0 && stencil3[i-1] > 0)
             infls.append(i + offset);
     }
-
-//    //Second derivative using stencil twice (graph for testing)
-//    QVector<double> stencil2 = calcPoints(stencil, 1, bw);
-//    offset += 2*bw;
-//    //Draw
-//    QVector<int> inflections; //Save the inflecton points
-//    for(int i = 1; i < stencil2.length(); i++){
-//        ui->profilePlot->graph(12)->addData(i + offset, stencil2[i]*10 + kdf[Npoints/2]); //* +kdf[middle] for visualization
-//        if(stencil2[i] > 0 && stencil2[i-1] < 0) inflections.append(offset + i);
-//        if(stencil2[i] < 0 && stencil2[i-1] > 0) inflections.append(offset + i);
-//    }
-
-    ui->profilePlot->graph(11)->setPen(QPen(Qt::red));
-    //ui->profilePlot->graph(12)->setPen(QPen(Qt::green));
-    //straight line...
-    ui->profilePlot->graph(13)->setPen(QPen(Qt::black));
-    ui->profilePlot->graph(13)->addData(begin, kdf[kdf.length()/2]);
-    ui->profilePlot->graph(13)->addData(begin + Npoints - 1, kdf[kdf.length()/2]);
-
 
     setInflectionPoints(infls, begin, Npoints, maxpt);
 

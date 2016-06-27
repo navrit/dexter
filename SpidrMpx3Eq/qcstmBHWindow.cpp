@@ -235,7 +235,8 @@ void QCstmBHWindow::on_applyBHCorrection()
         }
         //!Apply the correction.
         //! Makes some checks to ensure that the spline algorithm doesn't crash.
-        int * currentLayer = _mpx3gui->getOriginalDataset()->getLayer(keys[i]);
+        int * currentLayer = _mpx3gui->getOriginalDataset()->getLayer(keys[i]); //Doesn't take into account other corrections.
+        //int * currentLayer = _mpx3gui->getDataset()->getLayer(keys[i]); //Use this instead?
         for(unsigned int j = 0; j< _mpx3gui->getDataset()->getPixelsPerLayer(); j++){
             QVector<double> temp = bhData[j];
 

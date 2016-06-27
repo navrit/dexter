@@ -288,7 +288,7 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
                 nMean++;
             }
         }
-        if ( nMean != 0 ) stdev /= nMean;
+        if ( nMean != 1 ) stdev /= (nMean - 1);
         stdev = sqrt(stdev);
         bstats.stdev_v.push_back(stdev);
 
@@ -917,9 +917,10 @@ void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
 
         // Corrections
         if ( corrdiag->isSelectedOBCorr() ) applyOBCorrection();
+        if ( corrdiag->isSelectedBHCorr()) corrdiag->callBHCorrection();
         if ( corrdiag->isSelectedDeadPixelsInter() ) applyDeadPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
         if ( corrdiag->isSelectedHighPixelsInter() ) applyHighPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
-        if ( corrdiag->isSelectedBHCorr()) corrdiag->callBHCorrection();
+
     }
 
 }
