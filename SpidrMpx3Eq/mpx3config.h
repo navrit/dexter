@@ -2,7 +2,6 @@
 #define MPX3CONFIG_H
 #include "mpx3defs.h"
 #include "qcstmdacs.h"
-//#include "mpx3gui.h"
 
 #include <QComboBox>
 #include <QObject>
@@ -232,14 +231,7 @@ void setPort(int newVal){
 	}
 }
 
-void setColourMode(bool mode){
-	if(mode != colourMode){
-		colourMode =mode; emit colourModeChanged(mode);
-
-		//updateColourMode();
-	}
-	SendConfiguration();
-}
+void setColourMode(bool mode);
 void updateColourMode(){}
 
 void setReadBothCounters(bool rbc) {

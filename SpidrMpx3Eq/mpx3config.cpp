@@ -2,6 +2,7 @@
 #include "qcstmconfigmonitoring.h"
 #include "ui_qcstmconfigmonitoring.h"
 #include "mpx3dacsdescr.h"
+#include "mpx3gui.h"
 #include <iterator>
 #include <iostream>
 
@@ -723,4 +724,12 @@ void  Mpx3Config::setStepperConfigCalib(QStandardItem * item) {
 
 }
 
-
+void Mpx3Config::setColourMode(bool mode){
+    if(mode != colourMode){
+        colourMode =mode; emit colourModeChanged(mode);
+        // When changing mode data needs to be cleared
+        _mpx3gui->clear_data();
+        //updateColourMode();
+    }
+    SendConfiguration();
+}

@@ -288,6 +288,7 @@ void DataTakingThread::run() {
 
             // retreive data for a given chip
             framedata = spidrdaq->frameData(i, &size_in_bytes);
+            int size = size_in_bytes/4;
 
             // In color mode the separation of thresholds needs to be done
             if ( _mpx3gui->getConfig()->getColourMode() ) {
@@ -296,57 +297,29 @@ void DataTakingThread::run() {
 
                     //cout << "low , frameId = " << nFramesReceived << endl;
 
-                    int size = size_in_bytes / __nThresholdsPerSpectroscopicPixel;
+                    size = size_in_bytes / __nThresholdsPerSpectroscopicPixel;
                     sizeReduced = size / __nThresholdsPerSpectroscopicPixel;    // 4 thresholds per 110um pixel
-
-
 
                     if ( ! th0[i] ) th0[i] = new QVector<int>(sizeReduced, 0);
                     if ( ! th2[i] ) th2[i] = new QVector<int>(sizeReduced, 0);
                     if ( ! th4[i] ) th4[i] = new QVector<int>(sizeReduced, 0);
                     if ( ! th6[i] ) th6[i] = new QVector<int>(sizeReduced, 0);
 
-                    //qDebug() << size_in_bytes << sizeReduced;
-
                     SeparateThresholds(i, framedata, size, th0[i], th2[i], th4[i], th6[i], sizeReduced);
-
-                    // Send if if we are not reading counterH
-                    // counterL
 
                     if ( ! _mpx3gui->getConfig()->getReadBothCounters() ) {
 
                         for ( int j = 0 ; j < sizeReduced ; j++) {
-                            dataTH0.append( th0[i]->at(j) );
+                            dataTH0.append( th0[i]->at(j) ); // Append chip per chip index:i. Pixel index:j.
                             dataTH2.append( th2[i]->at(j) );
                             dataTH4.append( th4[i]->at(j) );
                             dataTH6.append( th6[i]->at(j) );
                         }
-                        //emit dataReady(i, 0);
-
-                        //overflowCntr += _mpx3gui->addFrame(th0[i]->data(), i, 0);
-                        //emit addFrame(*(th0[i]), i, 0);
-                        //delete th0;
-
-                        //overflowCntr += _mpx3gui->addFrame(th2[i]->data(), i, 2);
-                        //emit addFrame(*(th2[i]), i, 2);
-                        //delete th2;
-
-                        //overflowCntr += _mpx3gui->addFrame(th4[i]->data(), i, 4);
-                        //emit addFrame(*(th4[i]), i, 4);
-                        //delete th4;
-
-                        //overflowCntr += _mpx3gui->addFrame(th6[i]->data(), i, 6);
-                        //emit addFrame(*(th6[i]), i, 6);
-                        //delete th6;
                     }
-
-
 
                 }
 
                 if ( spidrdaq->isCounterhFrame(firstDevId) && _mpx3gui->getConfig()->getReadBothCounters() ) {
-
-                    //cout << "high , frameId = " << nFramesReceived << endl;
 
 
                     int size = size_in_bytes / __nThresholdsPerSpectroscopicPixel;
@@ -394,22 +367,21 @@ void DataTakingThread::run() {
                     overflowCntr += _mpx3gui->addFrame(th7->data(), i, 7);
                     //delete th7; th7 = 0x0;
 */
-
                     // Get ready with the high thresholds
                     if ( th1 ) { delete th1; th1 = nullptr; }
                     if ( th3 ) { delete th3; th3 = nullptr; }
                     if ( th5 ) { delete th5; th5 = nullptr; }
                     if ( th7 ) { delete th7; th7 = nullptr; }
 
-
                 }
 
             } else {
-                overflowCntr += _mpx3gui->addFrame(framedata, i, 0);
+                for ( int j = 0 ; j < size ; j++) {
+                    dataTH0.append( framedata[j] );
+                }
             }
 
         }
-
 
         _mutex.lock();
         _incomingDataTH0.enqueue( dataTH0 ); emit dataReady( 0 );
@@ -418,7 +390,7 @@ void DataTakingThread::run() {
         _incomingDataTH6.enqueue( dataTH6 ); emit dataReady( 6 );
          _mutex.unlock();
 
-         qDebug() << _incomingDataTH0.size();
+        //qDebug() << _incomingDataTH0.size();
 
         // Keep a local count of number of frames
         nFramesReceived++;
