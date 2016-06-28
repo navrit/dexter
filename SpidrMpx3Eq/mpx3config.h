@@ -101,11 +101,18 @@ public:
 		int nTriggers;
 		bool equalizationBit;
 		int DiscCsmSpm;
-	} scan_config_parameters;
+    } extra_config_parameters;
+
+    typedef struct {
+        int V_TP_Ref;
+        int V_TP_RefA;
+        int V_TP_RefB;
+    } testpulses_config_parameters;
+
 
 	void SendConfiguration();
 	void Configuration(bool reset, int deviceIndex);
-	void Configuration(bool reset, int deviceIndex, scan_config_parameters);
+    void Configuration(bool reset, int deviceIndex, extra_config_parameters);
 
 	quint32 getIpAddressInt(){return SpidrAddress.toIPv4Address();}
 	uint16_t getIpAddressPort(){return port;}

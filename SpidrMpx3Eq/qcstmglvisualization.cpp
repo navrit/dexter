@@ -8,6 +8,7 @@
 #include "qcstmcorrectionsdialog.h"
 #include "statsdialog.h"
 #include "profiledialog.h"
+#include "testpulses.h"
 
 #include "qcstmconfigmonitoring.h"
 #include "ui_qcstmconfigmonitoring.h"
@@ -1362,5 +1363,30 @@ void QCstmGLVisualization::on_MTAClosed()
         delete _mtadialog;
         _mtadialog = nullptr;
     }
+
+}
+
+void QCstmGLVisualization::on_testPulsesClosed()
+{
+
+    if ( _testPulsesDialog ) {
+        disconnect(_mtadialog, &MTADialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
+        delete _testPulsesDialog;
+        _testPulsesDialog = nullptr;
+    }
+
+}
+
+void QCstmGLVisualization::on_testPulsesPushButton_clicked()
+{
+
+    if ( ! _testPulsesDialog ) {
+
+        _testPulsesDialog = new TestPulses(_mpx3gui, this);
+        connect(_testPulsesDialog, &MTADialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
+
+    }
+
+    _testPulsesDialog->show(); // modeless
 
 }

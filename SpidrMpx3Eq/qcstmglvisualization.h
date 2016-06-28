@@ -33,6 +33,7 @@ class DataTakingThread;
 class QCstmCorrectionsDialog;
 class StatsDialog;
 class ProfileDialog;
+class TestPulses;
 
 namespace Ui {
 class QCstmGLVisualization;
@@ -105,6 +106,7 @@ private:
     bool _infDataTaking = false;
 
     MTADialog * _mtadialog = nullptr;
+    TestPulses * _testPulsesDialog = nullptr;
 
     typedef struct {
         QString counts;
@@ -199,6 +201,9 @@ private slots:
 
     void on_MTAClosed();
 
+    void on_testPulsesClosed();
+
+    void on_testPulsesPushButton_clicked();
 
 public slots:
     void StartDataTaking();

@@ -299,7 +299,7 @@ void DataTakingThread::run() {
                     int size = size_in_bytes / __nThresholdsPerSpectroscopicPixel;
                     sizeReduced = size / __nThresholdsPerSpectroscopicPixel;    // 4 thresholds per 110um pixel
 
-                    _mutex.lock();
+
 
                     if ( ! th0[i] ) th0[i] = new QVector<int>(sizeReduced, 0);
                     if ( ! th2[i] ) th2[i] = new QVector<int>(sizeReduced, 0);
@@ -340,7 +340,7 @@ void DataTakingThread::run() {
                         //delete th6;
                     }
 
-                    _mutex.unlock();
+
 
                 }
 
@@ -410,12 +410,15 @@ void DataTakingThread::run() {
 
         }
 
-        _incomingDataTH0.enqueue( dataTH0 ); emit dataReady( 0 );
-        _incomingDataTH2.enqueue( dataTH2 );
-        _incomingDataTH4.enqueue( dataTH4 );
-        _incomingDataTH6.enqueue( dataTH6 );
 
-        qDebug() << _incomingDataTH0.size();
+        _mutex.lock();
+        _incomingDataTH0.enqueue( dataTH0 ); emit dataReady( 0 );
+        _incomingDataTH2.enqueue( dataTH2 ); emit dataReady( 2 );
+        _incomingDataTH4.enqueue( dataTH4 ); emit dataReady( 4 );
+        _incomingDataTH6.enqueue( dataTH6 ); emit dataReady( 6 );
+         _mutex.unlock();
+
+         qDebug() << _incomingDataTH0.size();
 
         // Keep a local count of number of frames
         nFramesReceived++;
@@ -618,6 +621,43 @@ void DataTakingThread::on_stop_data_taking_thread() {
 
 }
 
+
+//void DataTakingThread::SeparateThresholds( int /*id*/,
+//                                           int * data,
+//                                           int /*size*/,
+//                                           QVector<int> * th0,
+//                                           QVector<int> * th2,
+//                                           QVector<int> * th4,
+//                                           QVector<int> * th6,
+//                                           int /*sizeReduced*/)
+//{
+//  int indxRed = 0;
+//  for (int j = 0 ; j < __matrix_size_y ; j++) {
+//    if( j & 1 ) {
+//      indxRed -= __matrix_size_x/2;
+//      for (int i = 0 ; i < __matrix_size_x  ; i++) {
+//        if( i & 1 ) {
+//          (*th4)[indxRed] = *data; // P3
+//          ++indxRed;
+//        } else {
+//          (*th0)[indxRed] = *data; // P1
+//        }
+//        ++data;
+//      }
+//    } else {
+//      for (int i = 0 ; i < __matrix_size_x  ; i++) {
+//        if( i & 1 ) {
+//          (*th6)[indxRed] = *data; // P4
+//          ++indxRed;
+//        } else {
+//          (*th2)[indxRed] = *data; // P2
+//        }
+//        ++data;
+//      }
+//    }
+//  }
+//}
+
 void DataTakingThread::SeparateThresholds(int /*id*/, int * data, int /*size*/, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int /*sizeReduced*/) {
 
     // Layout of 110um pixel
@@ -672,20 +712,20 @@ void DataTakingThread::SeparateThresholds(int /*id*/, int * data, int /*size*/, 
                 (*th4)[indxRed] = data[indx]; // P3
             }
 
-            /*
-            if( (i % 2) == 0 && (j % 2) == 0) {
-                (*th6)[indxRed] = data[indx]; // P4
-            }
-            if( (i % 2) == 0 && (j % 2) == 1) {
-                (*th4)[indxRed] = data[indx]; // P3
-            }
-            if( (i % 2) == 1 && (j % 2) == 0) {
-                (*th2)[indxRed] = data[indx]; // P2
-            }
-            if( (i % 2) == 1 && (j % 2) == 1) {
-                (*th0)[indxRed] = data[indx]; // P1
-            }
-             */
+
+            //if( (i % 2) == 0 && (j % 2) == 0) {
+            //    (*th6)[indxRed] = data[indx]; // P4
+            //}
+            //if( (i % 2) == 0 && (j % 2) == 1) {
+            //    (*th4)[indxRed] = data[indx]; // P3
+            //}
+            //if( (i % 2) == 1 && (j % 2) == 0) {
+            //    (*th2)[indxRed] = data[indx]; // P2
+            //}
+            //if( (i % 2) == 1 && (j % 2) == 1) {
+            //    (*th0)[indxRed] = data[indx]; // P1
+            //}
+
 
             if (i % 2 == 1) redi++;
             //if (i % 2 == 0) redi++;
@@ -698,3 +738,4 @@ void DataTakingThread::SeparateThresholds(int /*id*/, int * data, int /*size*/, 
 
     //fs.close();
 }
+

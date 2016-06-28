@@ -251,6 +251,8 @@ public:
 
     void setWindowWidgetsStatus(win_status s = win_status::startup);
 
+    bool equalizationHasBeenLoaded(){return _equalizationLoaded; };
+
 private:
 
 	Ui::QCstmEqualization * _ui;
@@ -272,6 +274,7 @@ private:
 
 	QApplication * _coreApp;
 
+    bool _equalizationLoaded = false;
 	int _setId;
 	int _deviceIndex;
 	int _nTriggers;

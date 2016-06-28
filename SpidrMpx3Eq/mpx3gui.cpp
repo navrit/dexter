@@ -216,6 +216,50 @@ void Mpx3GUI::LoadEqualization(){
     _ui->equalizationWidget->LoadEqualization();
 }
 
+bool Mpx3GUI::equalizationLoaded(){
+    return _ui->equalizationWidget->equalizationHasBeenLoaded();
+}
+
+void Mpx3GUI::setTestPulses() {
+
+    int devId = 0;
+
+    if ( ! _ui->equalizationWidget->equalizationHasBeenLoaded() ) {
+
+        SpidrController * spidrcontrol = GetSpidrController();
+
+        pair<int, int> pix;
+        bool testbit = false;
+        for ( int i = 0 ; i < __matrix_size ; i++ ) {
+
+            pix = XtoXY(i, __array_size_x);
+
+            testbit = false;
+            if ( pix.first <= 2 && pix.second <= 2) {
+                testbit = true;
+            }
+
+
+            spidrcontrol->configPixelMpx3rx(pix.first,
+                                            pix.second,
+                                            15,
+                                            15,
+                                            testbit);
+
+        }
+
+        spidrcontrol->setPixelConfigMpx3rx( devId );
+
+        // CTPR
+        spidrcontrol->configCtpr( devId, 0, 0 );
+        spidrcontrol->configCtpr( devId, 0, 1 );
+
+        spidrcontrol->setCtpr( 0 );
+    }
+
+
+}
+
 void Mpx3GUI::SetupSignalsAndSlots(){
 
     connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );

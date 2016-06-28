@@ -175,7 +175,7 @@ void QCstmThreshold::StartCalibration() {
     ui->plot->replot();
 
     // Configure the chip.  Custom configuration for a scan
-    Mpx3Config::scan_config_parameters expars;
+    Mpx3Config::extra_config_parameters expars;
     expars.nTriggers = ui->nTriggersSpinBox->value();
     expars.equalizationBit = false;
     // Debug bits in this context.  Disc_CSM_SPM.

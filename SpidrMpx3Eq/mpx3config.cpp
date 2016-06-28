@@ -150,14 +150,13 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
                 nr_of_triggers
                 );
 
-
     //spidrcontrol->setMpx3Clock( 200 );
 
     //cout << endl;
 
 }
 
-void Mpx3Config::Configuration(bool reset, int deviceIndex, scan_config_parameters extrapars) {
+void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_parameters extrapars) {
     cout << "[INFO] Configuring chip " << deviceIndex;
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();

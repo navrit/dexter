@@ -1467,7 +1467,11 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 
         pix = XtoXY(i, __array_size_x);
         //qDebug() << _eqMap[chipIndex]->GetPixelAdj(i) << _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H);
-        spidrcontrol->configPixelMpx3rx(pix.first, pix.second, _eqMap[chipIndex]->GetPixelAdj(i), _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H) );
+        spidrcontrol->configPixelMpx3rx(pix.first,
+                                        pix.second,
+                                        _eqMap[chipIndex]->GetPixelAdj(i),
+                                        _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H)
+                                        );
 
     }
 
@@ -1757,7 +1761,7 @@ void QCstmEqualization::setWindowWidgetsStatus(win_status s)
     }
 }
 
-void QCstmEqualization::LoadEqualization(){
+void QCstmEqualization::LoadEqualization() {
 
     _ui->equalizationSelectTHLTHHCombo->setEnabled( true );
 
@@ -1797,6 +1801,8 @@ void QCstmEqualization::LoadEqualization(){
             QMessageBox::warning(this, tr("Loading Equalization"), tr("Failed. Can not open file: %1").arg(adjfn) );
             return;
         }
+
+        _equalizationLoaded = true;
 
         // And talk to the hardware loading also the mask
         SetAllAdjustmentBits( _mpx3gui->GetSpidrController(), i, true );

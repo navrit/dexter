@@ -102,6 +102,9 @@ public:
     void saveOriginalDataset();
     void rewindToOriginalDataset();
     void setWindowWidgetsStatus(win_status s = win_status::startup);
+    pair<int, int> XtoXY(int X, int dimX){
+        return make_pair(X % dimX, X/dimX);
+    }
 
 
     QCstmEqualization * getEqualization();
@@ -134,6 +137,9 @@ public:
 
     bool establish_connection();
 
+    bool equalizationLoaded();
+
+    void setTestPulses();
 
 signals:
     void dataChanged();
