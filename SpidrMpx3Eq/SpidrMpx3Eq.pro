@@ -74,7 +74,8 @@ SOURCES += main.cpp \
     color2drecoguided.cpp \
     qcstmcorrectionsdialog.cpp \
     statsdialog.cpp \
-    profiledialog.cpp
+    profiledialog.cpp \
+    testpulses.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -108,7 +109,8 @@ HEADERS += mpx3gui.h \
     color2drecoguided.h \
     qcstmcorrectionsdialog.h \
     statsdialog.h \
-    profiledialog.h
+    profiledialog.h \
+    testpulses.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DataTakingThread.h
@@ -134,7 +136,8 @@ FORMS    += mpx3gui.ui \
     statsdialog.ui \
     profiledialog.ui \
     qcstmBHdialog.ui \
-    mtadialog.ui
+    mtadialog.ui \
+    testpulses.ui
 
 DISTFILES += \
     shaders/heatmap.frag \
