@@ -385,10 +385,12 @@ void DataTakingThread::run() {
 
         _mutex.lock();
         _incomingDataTH0.enqueue( dataTH0 ); emit dataReady( 0 );
-        _incomingDataTH2.enqueue( dataTH2 ); emit dataReady( 2 );
-        _incomingDataTH4.enqueue( dataTH4 ); emit dataReady( 4 );
-        _incomingDataTH6.enqueue( dataTH6 ); emit dataReady( 6 );
-         _mutex.unlock();
+        if ( _mpx3gui->getConfig()->getColourMode() ) {
+            _incomingDataTH2.enqueue( dataTH2 ); emit dataReady( 2 );
+            _incomingDataTH4.enqueue( dataTH4 ); emit dataReady( 4 );
+            _incomingDataTH6.enqueue( dataTH6 ); emit dataReady( 6 );
+        }
+        _mutex.unlock();
 
         //qDebug() << _incomingDataTH0.size();
 
