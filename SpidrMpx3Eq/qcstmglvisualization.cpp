@@ -726,7 +726,12 @@ void QCstmGLVisualization::reload_layer(int threshold){
 
     //int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
-    ui->histPlot->setHistogram(threshold, _mpx3gui->getDataset()->getLayer(threshold), _mpx3gui->getDataset()->getPixelsPerLayer());
+    ui->histPlot->setHistogram(threshold,
+                               _mpx3gui->getDataset()->getLayer(threshold),
+                               _mpx3gui->getDataset()->getPixelsPerLayer(),
+                               _manualRange.lower,
+                               _manualRange.upper);
+
     setThreshold(threshold);
 
     // done
@@ -767,14 +772,17 @@ void QCstmGLVisualization::reload_all_layers(bool corrections) {
     QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
     for (int i = 0; i < thresholds.size(); i++) {
         addThresholdToSelector(thresholds[i]);
-        ui->histPlot->setHistogram(thresholds[i], _mpx3gui->getDataset()->getLayer(thresholds[i]), _mpx3gui->getDataset()->getPixelsPerLayer());
+        ui->histPlot->setHistogram(thresholds[i],
+                                   _mpx3gui->getDataset()->getLayer(thresholds[i]),
+                                   _mpx3gui->getDataset()->getPixelsPerLayer(),
+                                   _manualRange.lower,
+                                   _manualRange.upper);
     }
-    //setThreshold(thresholds[0]);
 
     // done
     active_frame_changed();
 
-    ui->glPlot->update();
+    //ui->glPlot->update();
 
     // Get free
     FreeBusyState();
@@ -1016,7 +1024,7 @@ void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
 
     // Before toogle save the current range to percentile
     // If unselecting save the info
-    if ( !checked ) _manualRange = QCPRange( ui->lowerSpin->value(), ui->upperSpin->value() );
+    if ( ! checked ) _manualRange = QCPRange( ui->lowerSpin->value(), ui->upperSpin->value() );
 
     if ( checked ) {
 
@@ -1052,10 +1060,19 @@ void QCstmGLVisualization::on_fullRangeRadio_toggled(bool checked)
         int activeTHL = getActiveThreshold();
 
         if ( activeTHL >= 0 ) {
-            // when toggling here recompute the min and max
-            _manualRange = QCPRange( ui->histPlot->getMin( activeTHL ),
-                                     ui->histPlot->getMax( activeTHL )
-                                     );
+
+            // When toggling here recompute the min and max
+            int * data = _mpx3gui->getDataset()->getLayer( activeTHL );
+            int size = _mpx3gui->getDataset()->getPixelsPerLayer();
+            int min = INT_MAX, max = INT_MIN;
+            for(int i = 0; i < size; i++) {
+                if(data[i] < min)
+                    min = data[i];
+                if(data[i] > max)
+                    max = data[i];
+            }
+            _manualRange = QCPRange( min, max );
+
         } else {
             _manualRange = QCPRange( 0,1 );
         }

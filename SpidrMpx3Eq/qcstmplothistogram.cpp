@@ -72,37 +72,39 @@ void QCstmPlotHistogram::mouseDoubleClickEvent(QMouseEvent *event)
     }
 }
 
-void QCstmPlotHistogram::setHistogram(int threshold, QVector<int> data){
+void QCstmPlotHistogram::setHistogram(int threshold, QVector<int> data, int min, int max){
     if ( threshold < 0 ) return;
-    setHistogram(threshold, data.data(), data.size());
+    setHistogram(threshold, data.data(), data.size(), min, max);
 }
 
-void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size){
+void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size, int min, int max){
+
     if ( threshold < 0 ) return;
     int index;
-    if(m_mapping.contains(threshold) ){
-        index =m_mapping[threshold].first;
+    if( m_mapping.contains(threshold) ){
+        index = m_mapping[threshold].first;
         delete m_mapping[threshold].second;
-    }
-    else
+    } else {
         index = generateGraph();
-
-    //QElapsedTimer timer;
-    //timer.start();
-    //hist->setWidth(m_binSize);
-    int min = INT_MAX, max = INT_MIN;
-    for(int i = 0; i < size; i++){
-        if(data[i] < min)
-            min = data[i];
-        if(data[i] > max)
-            max = data[i];
     }
 
-    // This could happen
-    if ( min == INT_MIN ) min = 0;
+    // Figure out range.  The user may want a fixed range in the case.
+    if ( min == 0 && max == 0) {
+        min = INT_MAX, max = INT_MIN;
+        for(int i = 0; i < size; i++){
+            if(data[i] < min)
+                min = data[i];
+            if(data[i] > max)
+                max = data[i];
+        }
+
+        // This could happen
+        if ( min == INT_MIN ) min = 0;
+
+    }
 
     int binWidth = (max-min)/m_binCount == 0? 1 : (max-min)/m_binCount;
-    Histogram *hist = new Histogram(min, max, binWidth);
+    Histogram * hist = new Histogram(min, max, binWidth);
     hist->addRange(data, size);
     //qDebug() << "Histogram creation took" << timer.elapsed() << "milliseconds";
 

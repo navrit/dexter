@@ -55,8 +55,8 @@ public:
 
 public:
 
-    void setHistogram(int threshold, int* data, int size);
-    void setHistogram(int threshold, QVector<int> data);
+    void setHistogram(int threshold, int* data, int size, int min = 0, int max = 0);
+    void setHistogram(int threshold, QVector<int> data, int min = 0, int max = 0);
 
     void addHistogram(int threshold, int* data, int size);
     void addHistogram(int threshold, QVector<int> data);

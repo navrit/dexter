@@ -273,7 +273,11 @@ void QCstmGLPlot::setActive(int layer){
 	this->makeCurrent();
 	program.bind();
 	program.setUniformValue(layerLoc, layer*offsets.length());
-	this->update();
+
+    //setZoom(_lastZoom);
+    //addOffset(_lastdisplacementX, _lastdisplacementY);
+
+    this->update();
 }
 
 void QCstmGLPlot::setZoom(float newZoom){
@@ -341,7 +345,10 @@ void QCstmGLPlot::wheelEvent(QWheelEvent *event){
 	}
 	GLfloat displacementX = oldX*(1-deltaZoom); GLfloat displacementY = oldY*(1-deltaZoom);
 	//qDebug() << "got zoom event, newZoom = " <<  newZoom;
-	setZoom(newZoom);
+    _lastZoom = newZoom;
+    _lastdisplacementX = displacementX;
+    _lastdisplacementY = displacementY;
+    setZoom(newZoom);
 	addOffset(displacementX, displacementY);
 	event->accept();
 	//paintGL();

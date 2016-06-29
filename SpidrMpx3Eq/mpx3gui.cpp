@@ -161,19 +161,8 @@ unsigned int Mpx3GUI::dataReady(int layer)
 {
 
     QVector<int> dataLayer = getVisualization()->dataTakingThread()->getData(layer);
-    //QVector<int> activeDevices = getConfig()->getActiveDevices();
 
-    unsigned int ovflcntr = 0;
-
-    addLayer( dataLayer.data(), layer );
-
-    /*
-        ovflcntr += addFrame(
-                    ,
-                    index,
-                    layer
-                    );
-                    */
+    unsigned int ovflcntr = addLayer( dataLayer.data(), layer );
 
     return ovflcntr;
 }
