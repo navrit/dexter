@@ -46,6 +46,7 @@ class QCstmConfigMonitoring;
 #define __configuration_page_Id     1
 #define __dacs_page_Id              2
 #define __equalization_page_Id      3
+#define __dqe_page_Id               4
 
 namespace Ui {
 class Mpx3GUI;

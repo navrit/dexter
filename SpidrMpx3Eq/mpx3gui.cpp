@@ -113,6 +113,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+2", "Switch to configuratoin and monitoring") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+3", "Switch to DAC control") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+4", "Switch to Equalization") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+5", "Switch to DQE calculation") ), this)  );
 
     // Signals and slots for this part
     SetupSignalsAndSlots();
@@ -297,6 +298,8 @@ void Mpx3GUI::on_shortcutsSwithPages() {
         _ui->stackedWidget->setCurrentIndex( __dacs_page_Id );
     } else if ( k.matches( QKeySequence(tr("Ctrl+4")) ) ) {
         _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
+    } else if ( k.matches(QKeySequence(tr("Ctrl+5")) ) ){
+        _ui->stackedWidget->setCurrentIndex( __dqe_page_Id );
     }
 
 }
