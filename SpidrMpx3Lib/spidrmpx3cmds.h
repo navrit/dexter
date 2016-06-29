@@ -65,6 +65,7 @@
 #define CMD_SET_COLOURMODE     0x336
 #define CMD_SET_CSMSPM         0x337
 #define CMD_SET_SENSEDAC       0x338
+#define CMD_SET_PS             0x339
 
 #define CMD_SET_EXTDAC         0x33A
 #define CMD_WRITE_OMR          0x33B
@@ -187,7 +188,7 @@ static const char *CMD_STR[] =
     "SET_COLOURMODE   ", // 0x336
     "SET_CSMSPM       ", // 0x337
     "SET_SENSEDAC     ", // 0x338
-    "-----",             // 0x339
+    "SET_PS           ", // 0x339
     "SET_EXTDAC       ", // 0x33A
     "WRITE_OMR        ", // 0x33B
     "SET_GAINMODE     ", // 0x33C

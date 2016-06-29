@@ -15,8 +15,9 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x16062100; // Add open/closeShutter(), startContReadout();
-                                     // bug fix in ReceiverThreadC.cpp.
+const int   VERSION_ID = 0x16062900; // Add setTpSwitch(), setPs()
+//const int VERSION_ID = 0x16062100; // Add open/closeShutter(), startContReadout();
+                                     // bug fix in ReceiverThreadC.cpp
 //const int VERSION_ID = 0x16061600; // Add setMpx3Clock()
 //const int VERSION_ID = 0x16032400; // Add bias, LUT and continuous-readout functions
 //const int VERSION_ID = 0x16020100; // Add getFpgaTemp(), get/setFanSpeed()
@@ -40,6 +41,8 @@ const int   VERSION_ID = 0x16062100; // Add open/closeShutter(), startContReadou
 #define SPIDR_SHUTTERTRIG_CTRL_I        0x0290
 #define SPIDR_ENA_SHUTTER1_CNTRSEL_BIT  9
 #define SPIDRMPX3_SHUTTER1_PERIOD_I     0x1008
+#define SPIDRMPX3_MPX3_CTRL_I           0x1090
+#define SPIDRMPX3_TP_SWITCH_BIT         3
 #define SPIDRMPX3_MPX3_CLOCK_I          0x10B0
 
 // ----------------------------------------------------------------------------
@@ -505,42 +508,6 @@ bool SpidrController::setReady()
 
 // ----------------------------------------------------------------------------
 
-std::string SpidrController::dacNameMpx3( int dac_code )
-{
-  int index = this->dacIndexMpx3( dac_code );
-  if( index < 0 ) return string( "????" ); 
-  return string( MPX3_DAC_TABLE[index].name );
-}
-
-// ----------------------------------------------------------------------------
-
-std::string SpidrController::dacNameMpx3rx( int dac_code )
-{
-  int index = this->dacIndexMpx3rx( dac_code );
-  if( index < 0 ) return string( "????" ); 
-  return string( MPX3RX_DAC_TABLE[index].name );
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrController::dacMaxMpx3( int dac_code )
-{
-  int index = this->dacIndexMpx3( dac_code );
-  if( index < 0 ) return 0;
-  return( (1 << MPX3_DAC_TABLE[index].bits) - 1 );
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrController::dacMaxMpx3rx( int dac_code )
-{
-  int index = this->dacIndexMpx3rx( dac_code );
-  if( index < 0 || index >= MPX3RX_DAC_COUNT ) return 0;
-  return( (1 << MPX3RX_DAC_TABLE[index].bits) - 1 );
-}
-
-// ----------------------------------------------------------------------------
-
 bool SpidrController::setBiasSupplyEna( bool enable )
 {
   return this->requestSetInt( CMD_BIAS_SUPPLY_ENA, 0, (int) enable );
@@ -589,6 +556,15 @@ bool SpidrController::setMpx3Clock( int megahertz )
     }
   // Write and verify
   return this->setSpidrReg( SPIDRMPX3_MPX3_CLOCK_I, id, true );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::setTpSwitch( int val )
+{
+  // If 'val' > 0 set the bit, otherwise reset it; verify it
+  return this->setSpidrRegBit( SPIDRMPX3_MPX3_CTRL_I, SPIDRMPX3_TP_SWITCH_BIT,
+			       (val > 0), true );
 }
 
 // ----------------------------------------------------------------------------
@@ -884,6 +860,13 @@ bool SpidrController::setPolarity( int dev_nr, bool polarity )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::setPs( int dev_nr, int ps )
+{
+  return this->requestSetInt( CMD_SET_PS, dev_nr, ps );
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::setDiscCsmSpm( int dev_nr, int disc )
 {
   // For Medipix3RX only
@@ -908,7 +891,7 @@ bool SpidrController::setPixelDepth( int dev_nr, int bits,
   if( bits == 1 )
     pixelcounterdepth_id = 0;   // 1-bit
   else if( bits == 4 || bits == 6 )
-    pixelcounterdepth_id = 1;   // 4-bit (MPX3) or 6-bit (MPX3RX)
+    pixelcounterdepth_id = 1;   // 6-bit (MPX3RX) or 4-bit (MPX3)
   else if( bits == 24 )
     pixelcounterdepth_id = 3;   // 24-bit
 
@@ -1355,6 +1338,42 @@ bool SpidrController::setSpidrReg( int addr, int val, bool verify )
   else
     reg &= ~(1 << bitnr);
   return this->setSpidrReg( addr, reg, verify );
+}
+
+// ----------------------------------------------------------------------------
+
+std::string SpidrController::dacNameMpx3( int dac_code )
+{
+  int index = this->dacIndexMpx3( dac_code );
+  if( index < 0 ) return string( "????" ); 
+  return string( MPX3_DAC_TABLE[index].name );
+}
+
+// ----------------------------------------------------------------------------
+
+std::string SpidrController::dacNameMpx3rx( int dac_code )
+{
+  int index = this->dacIndexMpx3rx( dac_code );
+  if( index < 0 ) return string( "????" ); 
+  return string( MPX3RX_DAC_TABLE[index].name );
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrController::dacMaxMpx3( int dac_code )
+{
+  int index = this->dacIndexMpx3( dac_code );
+  if( index < 0 ) return 0;
+  return( (1 << MPX3_DAC_TABLE[index].bits) - 1 );
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrController::dacMaxMpx3rx( int dac_code )
+{
+  int index = this->dacIndexMpx3rx( dac_code );
+  if( index < 0 || index >= MPX3RX_DAC_COUNT ) return 0;
+  return( (1 << MPX3RX_DAC_TABLE[index].bits) - 1 );
 }
 
 // ----------------------------------------------------------------------------

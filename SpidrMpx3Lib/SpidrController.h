@@ -94,14 +94,11 @@ class MY_LIB_API SpidrController
   bool        resetDevice      ( int  dev_nr );
   bool        resetDevices     ( );
   bool        setReady         ( );
-  std::string dacNameMpx3      ( int  dac_code );
-  std::string dacNameMpx3rx    ( int  dac_code );
-  int         dacMaxMpx3       ( int  dac_code );
-  int         dacMaxMpx3rx     ( int  dac_code );
   bool        setBiasSupplyEna ( bool enable );
   bool        setBiasVoltage   ( int  volts );
   bool        setLutEnable     ( bool enable );
   bool        setMpx3Clock     ( int  megahertz );
+  bool        setTpSwitch      ( int  val );
 
   // Configuration: pixels
   void resetPixelConfig        ( );
@@ -135,6 +132,7 @@ class MY_LIB_API SpidrController
   bool setContRdWr             ( int  dev_nr, bool crw );
   bool setPolarity             ( int  dev_nr, bool polarity );
   bool setDiscCsmSpm           ( int  dev_nr, int  disc );
+  bool setPs                   ( int  dev_nr, int  ps );
   bool setInternalTestPulse    ( int  dev_nr, bool internal );
   bool setPixelDepth           ( int  dev_nr, int  bits,
                                  bool two_counter_readout = false );
@@ -204,6 +202,10 @@ class MY_LIB_API SpidrController
   bool setSpidrReg             ( int  addr, int  val,   bool verify = false );
   bool setSpidrRegBit          ( int  addr, int  bitnr, bool set = true,
                                  bool verify = false );
+  std::string dacNameMpx3      ( int  dac_code );
+  std::string dacNameMpx3rx    ( int  dac_code );
+  int         dacMaxMpx3       ( int  dac_code );
+  int         dacMaxMpx3rx     ( int  dac_code );
 
  private:
   bool loadOmr              ( int  dev_nr );

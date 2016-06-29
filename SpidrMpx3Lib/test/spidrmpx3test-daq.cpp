@@ -104,7 +104,7 @@ int main( int argc, char *argv[] )
   //spidrcontrol.setMaxPacketSize( 9000 ); // Not available on Compact-SPIDR
 
   int  pixdepth = 12;
-  bool two_counter_readout = true;
+  bool two_counter_readout = false;
   //spidrcontrol.setPixelDepth(devnr, pixdepth, two_counter_readout); DO AFTER PIXEL CONFIGURATION!
 #ifdef USE_SPIDRDAQ
   spidrdaq.setPixelDepth( pixdepth );
@@ -135,16 +135,22 @@ int main( int argc, char *argv[] )
       cout << "MPX3RX pixel config" << endl;
 
       // Mask a number of pixel rows (columns)...
-      for( row=32; row<40; ++row )
-	if( !spidrcontrol.setPixelMaskMpx3rx(row,ALL_PIXELS) )
-	//if( !spidrcontrol.setPixelMaskMpx3rx(ALL_PIXELS, row) )
-	  cout << "### Pixel mask row " << row << endl;
-      for( row = 160; row<192; ++row )
-	//if( !spidrcontrol.setPixelMaskMpx3rx(row,ALL_PIXELS) )
+      for( col=32; col<40; ++col )
+	if( !spidrcontrol.setPixelMaskMpx3rx(col,ALL_PIXELS) )
+	  cout << "### Pixel mask col " << col << endl;
+      for( row = 160; row<180; ++row )
 	if( !spidrcontrol.setPixelMaskMpx3rx(ALL_PIXELS, row) )
 	  cout << "### Pixel mask row " << row << endl;
 
-      // Set test-bit on a number of pixels
+      for( row = 0; row < 256; ++row ) {
+	if( row > 1 ) spidrcontrol.setPixelMaskMpx3rx(row - 2, row);
+	if( row > 0 ) spidrcontrol.setPixelMaskMpx3rx(row - 1, row);
+	spidrcontrol.setPixelMaskMpx3rx(row, row);
+	if( row < 255 ) spidrcontrol.setPixelMaskMpx3rx(row + 1, row);
+	if( row < 254 ) spidrcontrol.setPixelMaskMpx3rx(row + 2, row);
+      }
+	
+// Set test-bit on a number of pixels
       bool testbit = true;
       for( col=128; col<129; ++col )
       //for( col=2; col<3; ++col )
@@ -230,13 +236,14 @@ int main( int argc, char *argv[] )
 #endif
 
   spidrcontrol.setPixelDepth( devnr, pixdepth, two_counter_readout );
+  spidrcontrol.setPs( devnr, 0 );
 
   int trig_mode = SHUTTERMODE_AUTO; // Auto-trigger mode
-  int trig_period_us = 4000;
+  int trig_period_us = 100;
   //int trig_freq_hz = 30000;
-  int trig_freq_hz   = 2;
+  int trig_freq_hz   = 10;
   //int nr_of_triggers = 500;
-  int nr_of_triggers = 4;
+  int nr_of_triggers = 200;
   int trig_pulse_count;
   spidrcontrol.setShutterTriggerConfig( trig_mode, trig_period_us,
 					trig_freq_hz*1000, nr_of_triggers );
