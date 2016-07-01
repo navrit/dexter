@@ -58,24 +58,24 @@ int main( int argc, char *argv[] )
     cout << setw(8) << devids[i] << " ";
   cout << dec << setfill(' ') << endl;
 
+  // Get current read-out mask
+  int mask = 0;
+  cout << "(acq mask 0x" << hex;
+  if( spidrcontrol.getAcqEnable(&mask) )
+    cout << mask;
+  else
+    cout << "###";
+  cout << ")" << dec << endl;
+
   // Find first available device
   int devnr = 0;
   for( int i=0; i<devcnt; ++i )
-    if( devids[i] != 0 )
+    if( devids[i] != 0 && (mask & (1<<i)) )
       {
 	devnr = i;
 	break;
       }
   cout << "==> Using device number " << devnr << endl;
-
-  // Get current read-out mask
-  int mask = 0;
-  cout << "(acq mask 0x" << hex;
-  if( spidrcontrol.getAcqEnable( &mask ) )
-    cout << mask;
-  else
-    cout << "###";
-  cout << ")" << dec << endl;
 
 #ifdef USE_SPIDRDAQ
   // Added readout mask to constructor (7 Apr 2016)
@@ -237,13 +237,14 @@ int main( int argc, char *argv[] )
 
   spidrcontrol.setPixelDepth( devnr, pixdepth, two_counter_readout );
   spidrcontrol.setPs( devnr, 0 );
+  spidrcontrol.setTpSwitch(1);
 
   int trig_mode = SHUTTERMODE_AUTO; // Auto-trigger mode
   int trig_period_us = 100;
   //int trig_freq_hz = 30000;
-  int trig_freq_hz   = 10;
+  int trig_freq_hz   = 50;
   //int nr_of_triggers = 500;
-  int nr_of_triggers = 200;
+  int nr_of_triggers = 100;
   int trig_pulse_count;
   spidrcontrol.setShutterTriggerConfig( trig_mode, trig_period_us,
 					trig_freq_hz*1000, nr_of_triggers );

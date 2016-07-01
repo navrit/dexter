@@ -98,7 +98,7 @@ class MY_LIB_API SpidrController
   bool        setBiasVoltage   ( int  volts );
   bool        setLutEnable     ( bool enable );
   bool        setMpx3Clock     ( int  megahertz );
-  bool        setTpSwitch      ( int  val );
+  bool        setTpSwitch      ( int  val, int freq_mhz = 200000 );
 
   // Configuration: pixels
   void resetPixelConfig        ( );

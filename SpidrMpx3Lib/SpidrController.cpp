@@ -44,6 +44,7 @@ const int   VERSION_ID = 0x16062900; // Add setTpSwitch(), setPs()
 #define SPIDRMPX3_MPX3_CTRL_I           0x1090
 #define SPIDRMPX3_TP_SWITCH_BIT         3
 #define SPIDRMPX3_MPX3_CLOCK_I          0x10B0
+#define SPIDRMPX3_TPSWITCH_FREQ_I       0x10B4
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor
@@ -560,8 +561,12 @@ bool SpidrController::setMpx3Clock( int megahertz )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setTpSwitch( int val )
+bool SpidrController::setTpSwitch( int val, int freq_mhz )
 {
+  // Configure the TP_Switch period (frequency): 25ns per count
+  this->setSpidrReg( SPIDRMPX3_TPSWITCH_FREQ_I,
+		     (int) (((double) 40000000.0/(double) freq_mhz)*1000.0) );
+
   // If 'val' > 0 set the bit, otherwise reset it; verify it
   return this->setSpidrRegBit( SPIDRMPX3_MPX3_CTRL_I, SPIDRMPX3_TP_SWITCH_BIT,
 			       (val > 0), true );
