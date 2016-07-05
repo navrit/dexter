@@ -76,19 +76,19 @@ class MY_LIB_API SpidrController
   bool        setServerPort    ( int  index,  int  port_nr );
 
   // Configuration: device
-  bool        getVpxItem       ( int  item,    int *value );
-  bool        getVpxItem       ( int  item,    int  item_i, int reg_i,
-                                 int *value );
-  bool        getVpxReg        ( int  address, int  size,
+  bool        getVpxItem       ( int  id,     int *val );
+  bool        setVpxItem       ( int  id,     int  val );
+  bool        getVpxItem       ( int  id,     int  item_i, int reg_i,
+                                 int *val );
+  bool        setVpxItem       ( int  id,     int  item_i, int reg_i,
+                                 int  val );
+  bool        getVpxReg        ( int  address, int *size,
                                  unsigned char *bytes );
-  bool        getVpxReg32      ( int  address, int *val );
-  bool        getVpxReg16      ( int  address, int *val );
-  bool        setVpxItem       ( int  item,    int value );
-  bool        setVpxItem       ( int  item,    int  item_i, int reg_i,
-                                 int  value );
   bool        setVpxReg        ( int  address, int  size,
                                  unsigned char *bytes );
+  bool        getVpxReg32      ( int  address, int *val );
   bool        setVpxReg32      ( int  address, int  val );
+  bool        getVpxReg16      ( int  address, int *val );
   bool        setVpxReg16      ( int  address, int  val );
   int         vpxRegStatus     ( ) { return _vpxRegStatus; }
   bool        resetDevice      ( int  dev_nr );
@@ -187,9 +187,13 @@ class MY_LIB_API SpidrController
   bool getSpidrReg             ( int  address, int *val );
   bool setSpidrReg             ( int  address, int  val );
   bool setSpidrRegBit          ( int  address, int  bitnr, bool set = true );
+  static int itemId            ( const char *name, std::string &info );
+  static int regAddr           ( const char *name, std::string &info );
+  static std::string regName   ( int  address );
+  static int vpxRegBytes       ( int  address );
 
  private:
-  bool findVpxItem             ( int item, int item_i, int *index );
+  bool findVpxItem             ( int id,   int item_i, int *index );
   bool findVpxReg              ( int addr, int reg_i, int *index );
   bool setPixelBit             ( int x, int y, unsigned char bitmask, bool b );
   void setBitsBigEndianReversed( unsigned char *buffer,

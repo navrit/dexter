@@ -71,7 +71,7 @@ int main( int argc, char *argv[] )
   if( spidrctrl.getVpxReg32( 0x0530, &val ) ) // Chip ID
     cout << "VPX reg 0x400: " << hex << val << dec << endl;
   else
-    error_out( "getVpxReg()" );
+    error_out( "###getVpxReg()" );
 
   return 0;
 }

@@ -35,22 +35,22 @@ const int VERSION_ID = 0x16061400;
 // Structure describing a Velopix register
 typedef struct vpxreg_s
 {
-  int addr;
+  int addr;     // Velopix register address
   const char *name;
-  int nbytes;
-  int count;
-  int nbits; // Size of item group in bits if its items have count > 1
+  int nbytes;   // Register size in bytes
+  int count;    // Number of registers
+  int nbits;    // Size of item group in bits if its items have count > 1
 } vpxreg_t;
 
-// Structure describing a Velopix register item
+// Structure describing a Velopix register field item
 typedef struct vpxreg_item_s
 {
-  int item;
+  int id;       // Item identifier
   const char *name;
-  int addr;
-  int bitindex;
-  int nbits;
-  int count;
+  int addr;     // Address of register containing item
+  int bitindex; // Index of first bit of item
+  int nbits;    // Size of item in bits
+  int count;    // Number of items per register
 } vpxreg_item_t;
 
 const vpxreg_t VPX_REG[] = {
@@ -59,84 +59,65 @@ const vpxreg_t VPX_REG[] = {
   { REG_BX_ID,           "REG_BX_ID",            2,       1,   0 },
   { REG_EOCDP,           "REG_EOCDP",            2,       1,   0 },
   { REG_MATRIX_RST_CONF, "REG_MATRIX_RST_CONF",  2,       1,   0 },
-  //{ REG_EOCFAB,        "REG_EOCFAB",           2,       1,   0 },
   { REG_ROUTER,          "REG_ROUTER",           2,       1,   0 },
   { REG_GENDIGCONF,      "REG_GENDIGCONF",       2,       1,   0 },
   { REG_SLVS,            "REG_SLVS",             2,       1,   0 }
 };
 
 const vpxreg_item_t VPX_REG_ITEM[] = {
-  { SP_TOT_THRESHOLD, "SP_TOT_THRESHOLD",
-    REG_SP,                1,  2,  64 },
-  { SP_MASK_BIT,      "SP_MASK_BIT",
-    REG_SP,                0,  1,  64 },
+  { SP_TOT_THRESHOLD, "SP_TOT_THRESHOLD",             REG_SP,                1,  2,  64 },
+  { SP_MASK_BIT,      "SP_MASK_BIT",                  REG_SP,                0,  1,  64 },
 
-  { PIXEL_TEST_BIT, "PIXEL_TEST_BIT",
-    REG_PIXEL,             5,  1, 256 },
-  { PIXEL_MASK_BIT, "PIXEL_MASK_BIT",
-    REG_PIXEL,             4,  1, 256 },
-  { PIXEL_THR_BIT,  "PIXEL_THR_BIT",
-    REG_PIXEL,             0,  4, 256 },
+  { PIXEL_TEST_BIT, "PIXEL_TEST_BIT",                 REG_PIXEL,             5,  1, 256 },
+  { PIXEL_MASK_BIT, "PIXEL_MASK_BIT",                 REG_PIXEL,             4,  1, 256 },
+  { PIXEL_THR_BIT,  "PIXEL_THR_BIT",                  REG_PIXEL,             0,  4, 256 },
 
-  { BXID_GRAY_OR_BIN,      "BXID_GRAY_OR_BIN",
-    REG_BX_ID,            14,  1,   1 },
-  { BXID_ENABLE,           "BXID_ENABLE",
-    REG_BX_ID,            13,  1,   1 },
-  { BXID_OVERFLOW_CONTROL, "BXID_OVERFLOW_CONTROL",
-    REG_BX_ID,            12,  1,   1 },
-  { BXID_PRESET_VAL,       "BXID_PRESET_VAL",
-    REG_BX_ID,             0, 12,   1 },
+  { BXID_GRAY_OR_BIN,      "BXID_GRAY_OR_BIN",        REG_BX_ID,            14,  1,   1 },
+  { BXID_ENABLE,           "BXID_ENABLE",             REG_BX_ID,            13,  1,   1 },
+  { BXID_OVERFLOW_CONTROL, "BXID_OVERFLOW_CONTROL",   REG_BX_ID,            12,  1,   1 },
+  { BXID_PRESET_VAL,       "BXID_PRESET_VAL",         REG_BX_ID,             0, 12,   1 },
 
-  { EOCDP_BX2COL_GRAY, "EOCDP_BX2COL_GRAY",
-    REG_EOCDP,             5,  1,   1 },
-  { EOCDP_EN_PACKET_FILTER, "EOCDP_EN_PACKET_FILTER",
-    REG_EOCDP,             3,  2,   1 },
-  { EOCDP_BX_ID_EDGE,  "EOCDP_BX_ID_EDGE",
-    REG_EOCDP,             2,  1,   1 },
-  { EOCDP_SHIFT_PRIOR, "EOCDP_SHIFT_PRIOR",
-    REG_EOCDP,             0,  2,   1 },
+  { EOCDP_BX2COL_GRAY,      "EOCDP_BX2COL_GRAY",      REG_EOCDP,             5,  1,   1 },
+  { EOCDP_EN_PACKET_FILTER, "EOCDP_EN_PACKET_FILTER", REG_EOCDP,             3,  2,   1 },
+  { EOCDP_BX_ID_EDGE,       "EOCDP_BX_ID_EDGE",       REG_EOCDP,             2,  1,   1 },
+  { EOCDP_SHIFT_PRIOR,      "EOCDP_SHIFT_PRIOR",      REG_EOCDP,             0,  2,   1 },
 
-  { MATRIXRSTCONF_RST_MATRIX_ON_FE_RST, "MATRIXRSTCONF_RST_MATRIX_ON_FE_RST",
-    REG_MATRIX_RST_CONF,   9,  1,   1 },
-  { MATRIXRSTCONF_RESET_DURATION,       "MATRIXRSTCONF_RESET_DURATION",
-    REG_MATRIX_RST_CONF,   6,  3,   1 },
-  { MATRIXRSTCONF_NUM_OF_BANKS,         "MATRIXRSTCONF_NUM_OF_BANKS",
-    REG_MATRIX_RST_CONF,   3,  3,   1 },
-  { MATRIXRSTCONF_COLS_PER_BANK,        "MATRIXRSTCONF_COLS_PER_BANK",
-    REG_MATRIX_RST_CONF,   0,  3,   1 },
+  { MATRIXRSTCONF_RST_MATRIX_ON_FE_RST, "MATRIXRSTCONF_RST_MATRIX_ON_FE_RST", REG_MATRIX_RST_CONF,   9,  1,   1 },
+  { MATRIXRSTCONF_RESET_DURATION,       "MATRIXRSTCONF_RESET_DURATION",       REG_MATRIX_RST_CONF,   6,  3,   1 },
+  { MATRIXRSTCONF_NUM_OF_BANKS,         "MATRIXRSTCONF_NUM_OF_BANKS",         REG_MATRIX_RST_CONF,   3,  3,   1 },
+  { MATRIXRSTCONF_COLS_PER_BANK,        "MATRIXRSTCONF_COLS_PER_BANK",        REG_MATRIX_RST_CONF,   0,  3,   1 },
 
-  { ROUTER_CHAN_ENABLE, "ROUTER_CHAN_ENABLE",
-    REG_ROUTER,            0,  4,   1 },
+  { ROUTER_CHAN_ENABLE, "ROUTER_CHAN_ENABLE",         REG_ROUTER,            0,  4,   1 },
 };
 
 /*
 Register: General digital configuration register
-{ GENDIGCONF_RESPONSE_TO_BROADCAST, REG_GENDIGCONF
-{ GENDIGCONF_PERIODIC_SHUTTER, REG_GENDIGCONF
-{ GENDIGCONF_LINK_SHUTTER_AND_TP, REG_GENDIGCONF
-{ GENDIGCONF_SHUTTER_MODE, REG_GENDIGCONF
-{ GENDIGCONF_SELECT_PC_TOT, REG_GENDIGCONF
-{ GENDIGCONF_SELECTOVERFLOW_FULLRANGE_TOTOVERFLOW, REG_GENDIGCONF
-{ GENDIGCONF_SELECT_1HITTOT_ITOT, REG_GENDIGCONF
-{ GENDIGCONF_READ_SEU, REG_GENDIGCONF
-{ GENDIGCONF_SP_MON_MODE_EN, REG_GENDIGCONF
-{ GENDIGCONF_PIXEL_CONFIG_OR_LFSR, REG_GENDIGCONF
-{ GENDIGCONF_SELECT_TP_ANALOG_DIG, REG_GENDIGCONF
+{ GENDIGCONF_RESPONSE_TO_BROADCAST, "GENDIGCONF_RESPONSE_TO_BROADCAST", REG_GENDIGCONF
+{ GENDIGCONF_PERIODIC_SHUTTER, "GENDIGCONF_PERIODIC_SHUTTER", REG_GENDIGCONF
+{ GENDIGCONF_LINK_SHUTTER_AND_TP, "GENDIGCONF_LINK_SHUTTER_AND_TP", REG_GENDIGCONF
+{ GENDIGCONF_SHUTTER_MODE, "GENDIGCONF_SHUTTER_MODE", REG_GENDIGCONF
+{ GENDIGCONF_SELECT_PC_TOT, "GENDIGCONF_SELECT_PC_TOT",  REG_GENDIGCONF
+{ GENDIGCONF_SELECTOVERFLOW_FULLRANGE_TOTOVERFLOW, "GENDIGCONF_SELECTOVERFLOW_FULLRANGE_TOTOVERFLOW", REG_GENDIGCONF
+{ GENDIGCONF_SELECT_1HITTOT_ITOT,  "GENDIGCONF_SELECT_1HITTOT_ITOT", REG_GENDIGCONF
+{ GENDIGCONF_READ_SEU,       "GENDIGCONF_READ_SEU", REG_GENDIGCONF
+{ GENDIGCONF_SP_MON_MODE_EN, "GENDIGCONF_SP_MON_MODE_EN", REG_GENDIGCONF
+{ GENDIGCONF_PIXEL_CONFIG_OR_LFSR, "GENDIGCONF_PIXEL_CONFIG_OR_LFSR", REG_GENDIGCONF
+{ GENDIGCONF_SELECT_TP_ANALOG_DIG, "GENDIGCONF_SELECT_TP_ANALOG_DIG", REG_GENDIGCONF
 
 Register: SLVS configuration register
-SLVS_TX_CURRENT, REG_SLVS
+{ SLVS_TX_CURRENT, SLVS_TX_CURRENT, REG_SLVS
 
 Register: Shutter enabled register
-SHIFT_DURATION
-DURATION
+{ SHUTTERON_SHIFT_DURATION, "SHUTTERON_SHIFT_DURATION", REG_SHUTTER_ON
+{ SHUTTERON_DURATION, "SHUTTERON_DURATION", REG_SHUTTER_ON
 
 Register: Shutter disabled register
-SHIFT_DURATION
-DURATION
+{ SHUTTEROFF_SHIFT_DURATION, "SHUTTEROFF_SHIFT_DURATION", REG_SHUTTER_OFF
+{ SHUTTEROFF_DURATION, "SHUTTEROFF_DURATION", REG_SHUTTER_OFF
 
 Register: Bunch counter max value register
-AUTO_RST_ON_MAX_VAL
-MAX_VAL
+{ BXIDMAX_AUTO_RST_ON_MAX_VAL,
+{ BXIDMAX_MAX_VAL,
 
 Register: Output mode register
 TFC_ALIGN_MODE
@@ -222,6 +203,7 @@ DLLRESETDURATION
 Register: GWT config register 1
 THRESHOLD_FOR_DLL_LOCK
 
+>>>>************ NOT NECESSARY *************
 Register: PLL config register 0
 EXTMODE
 extDataRate
@@ -307,6 +289,7 @@ statusBISTCounter3
 
 Register: PLL monitoring register BIST 4
 statusBISTCounter4
+<<<<************ NOT NECESSARY *************
 
 Register: Monitoring counter config
 ecs_error_mask
@@ -680,12 +663,19 @@ bool SpidrController::getVpxItem( int item, int *value )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getVpxItem( int item, int item_i, int reg_i,
+bool SpidrController::setVpxItem( int item, int value )
+{
+  return this->setVpxItem( item, 0, 0, value );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getVpxItem( int id, int item_i, int reg_i,
 				  int *value )
 {
   // Find the item in our item list
   int  index;
-  if( !this->findVpxItem( item, item_i, &index ) )
+  if( !this->findVpxItem( id, item_i, &index ) )
     return false;
 
   // Item info
@@ -697,12 +687,10 @@ bool SpidrController::getVpxItem( int item, int item_i, int reg_i,
   if( !this->findVpxReg( addr, reg_i, &index ) )
     return false;
 
-  // Register info
-  int nbytes = VPX_REG[index].nbytes;
-
   // Read the register containing the item
+  int nbytes;
   unsigned char bytes[1536/8];
-  if( !this->getVpxReg( addr + reg_i, nbytes, bytes ) )
+  if( !this->getVpxReg( addr + reg_i, &nbytes, bytes ) )
     return false;
 
   // Extract the item from the register data and return in 'value',
@@ -734,70 +722,12 @@ bool SpidrController::getVpxItem( int item, int item_i, int reg_i,
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getVpxReg( int address, int size, unsigned char *bytes )
-{
-  int parameter = (address & 0x0000FFFF) | (size << 16);
-  if( !this->requestGetIntAndBytes( CMD_GET_VPXREG, 0,
-				    &parameter, size, bytes ) )
-    return false;
-
-  // Returned address should match
-  if( (parameter & 0xFFFF) != (address & 0xFFFF) )
-    return false;
-
-  // Upper 16 bits of 'parameter' contains Velopix status word
-  _vpxRegStatus = (parameter >> 16) & 0xFFFF;
-
-  return true;
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::getVpxReg32( int address, int *val )
-{
-  // Assume here a 4-byte register
-  *val = 0; 
-  unsigned char bytes[4];
-  if( !this->getVpxReg( address, 4, bytes ) )
-    return false;
-
-  // Map bytes to the integer value
-  for( int i=0; i<4; ++i )
-    *val |= (int) ((unsigned int) bytes[i] << (i*8));
-  return true;
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::getVpxReg16( int address, int *val )
-{
-  // Assume here a 2-byte register
-  *val = 0; 
-  unsigned char bytes[2];
-  if( !this->getVpxReg( address, 2, bytes ) )
-    return false;
-
-  // Map bytes to the integer value
-  for( int i=0; i<2; ++i )
-    *val |= (int) ((unsigned int) bytes[i] << (i*8));
-  return true;
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setVpxItem( int item, int value )
-{
-  return this->setVpxItem( item, 0, 0, value );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setVpxItem( int item, int item_i, int reg_i,
+bool SpidrController::setVpxItem( int id, int item_i, int reg_i,
 				  int value )
 {
   // Find the item in our item list
   int  index;
-  if( !this->findVpxItem( item, item_i, &index ) )
+  if( !this->findVpxItem( id, item_i, &index ) )
     return false;
 
   // Item info
@@ -809,12 +739,10 @@ bool SpidrController::setVpxItem( int item, int item_i, int reg_i,
   if( !this->findVpxReg( addr, reg_i, &index ) )
     return false;
 
-  // Register info
-  int nbytes = VPX_REG[index].nbytes;
-
   // Read the register containing the item
   unsigned char bytes[1536/8];
-  if( !this->getVpxReg( addr + reg_i, nbytes, bytes ) )
+  int nbytes;
+  if( !this->getVpxReg( addr + reg_i, &nbytes, bytes ) )
     return false;
 
   // Replace the item in the register data by 'value',
@@ -841,6 +769,34 @@ bool SpidrController::setVpxItem( int item, int item_i, int reg_i,
       --nbits;
     }
 
+  // Now write the new value to the register
+  if( !this->setVpxReg( addr + reg_i, nbytes, bytes ) )
+    return false;
+
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getVpxReg( int address, int *size, unsigned char *bytes )
+{
+  // The number of bytes in this register
+  int nbytes = SpidrController::vpxRegBytes( address );
+
+  int parameter = (address & 0x0000FFFF) | (nbytes << 16);
+  *size = 0;
+  if( !this->requestGetIntAndBytes( CMD_GET_VPXREG, 0,
+				    &parameter, nbytes, bytes ) )
+    return false;
+  *size = nbytes;
+
+  // Returned address should match
+  if( (parameter & 0xFFFF) != (address & 0xFFFF) )
+    return false;
+
+  // Upper 16 bits of 'parameter' contains Velopix status word
+  _vpxRegStatus = (parameter >> 16) & 0xFFFF;
+
   return true;
 }
 
@@ -865,6 +821,31 @@ bool SpidrController::setVpxReg( int address, int size, unsigned char *bytes )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::getVpxReg32( int address, int *val )
+{
+  // Assume here a 4-byte register
+  *val = 0; 
+  int nbytes;
+  unsigned char bytes[1536/8]; // Enough space for any register size
+  if( !this->getVpxReg( address, &nbytes, bytes ) )
+    return false;
+
+  if( nbytes != 4 )
+    {
+      // Not what we expected...
+      this->clearErrorString();
+      _errString << "Register has size " << nbytes << " bytes, not 4";
+      return false;
+    }
+
+  // Map bytes to the integer value
+  for( int i=0; i<4; ++i )
+    *val |= (int) ((unsigned int) bytes[i] << (i*8));
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
 bool SpidrController::setVpxReg32( int address, int val )
 {
   // Map the integer value to a byte array
@@ -873,6 +854,31 @@ bool SpidrController::setVpxReg32( int address, int val )
     bytes[i] = (unsigned char) ((val>>(i*8)) & 0xFF);
 
   return this->setVpxReg( address, 4, bytes );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getVpxReg16( int address, int *val )
+{
+  // Assume here a 2-byte register
+  *val = 0; 
+  int nbytes;
+  unsigned char bytes[1536/8]; // Enough space for any register size
+  if( !this->getVpxReg( address, &nbytes, bytes ) )
+    return false;
+
+  if( nbytes != 2 )
+    {
+      // Not what we expected...
+      this->clearErrorString();
+      _errString << "Register has size " << nbytes << " bytes, not 2";
+      return false;
+    }
+
+  // Map bytes to the integer value
+  for( int i=0; i<2; ++i )
+    *val |= (int) ((unsigned int) bytes[i] << (i*8));
+  return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -1571,16 +1577,183 @@ bool SpidrController::setSpidrRegBit( int address, int bitnr, bool set )
 }
 
 // ----------------------------------------------------------------------------
+
+int SpidrController::itemId( const char *item_name, std::string &info )
+{
+  // Search for the item name in the list and return its identifier;
+  // the name should be exact or should be a unique substring;
+  // return -1 if not found
+  bool found = false;
+  int  i, id = -1;
+  for( i=0; i<sizeof(VPX_REG_ITEM)/sizeof(vpxreg_item_t); ++i )
+    {
+      if( strcmp(VPX_REG_ITEM[i].name, item_name) == 0 )
+	{
+	  found = true;
+	  break;
+	}
+    }
+
+  if( !found )
+    {
+      // Check if the name is at least unique
+      int len = strlen( item_name );
+      int cnt = 0;
+      for( i=0; i<sizeof(VPX_REG_ITEM)/sizeof(vpxreg_item_t); ++i )
+	{
+	  if( strncmp(VPX_REG_ITEM[i].name, item_name, len) == 0 )
+	    {
+	      ++cnt;
+	      id = VPX_REG_ITEM[i].id;
+	      break;
+	    }
+	}
+      if( cnt == 1 )
+	found = true;
+      else
+	id = -1; // Not found, or found more than one option
+    }
+
+  if( found )
+    {
+      const vpxreg_item_t *pitem = &VPX_REG_ITEM[i];
+      id = pitem->id;
+
+      ostringstream oss;
+      oss << setfill( '0' )
+	  << "addr=0x" << hex << setw(4) << pitem->addr << dec
+	  << " bit[" << pitem->bitindex << ".."
+	  << pitem->bitindex + pitem->nbits << "]";
+      if( pitem->count > 1 )
+	{
+	  found = false;
+	  for( i=0; i<sizeof(VPX_REG)/sizeof(vpxreg_t); ++i )
+	    {
+	      if( VPX_REG[i].addr == pitem->addr )
+		{
+		  found = true;
+		  break;
+		}
+	    }
+	  if( found )
+	    oss << " (" << pitem->count << " items/reg in "
+		<< VPX_REG[i].count << " regs)";
+	  else
+	    oss << ", ###reg not found!?";
+	}
+      info = oss.str();
+    }
+
+  return id;
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrController::regAddr( const char *reg_name, std::string &info )
+{
+  // Search for the register name in the list and return its address;
+  // the name should be exact or should be a unique substring;
+  // return -1 if not found
+  bool found = false;
+  int  i, addr = -1;
+  for( i=0; i<sizeof(VPX_REG)/sizeof(vpxreg_t); ++i )
+    {
+      if( strcmp(VPX_REG[i].name, reg_name) == 0 )
+	{
+	  found = true;
+	  break;
+	}
+    }
+
+  if( !found )
+    {
+      // Check if the name is at least unique
+      int len = strlen( reg_name );
+      int cnt = 0;
+      for( i=0; i<sizeof(VPX_REG)/sizeof(vpxreg_t); ++i )
+	{
+	  if( strncmp(VPX_REG[i].name, reg_name, len) == 0 )
+	    {
+	      ++cnt;
+	      addr = VPX_REG[i].addr;
+	      break;
+	    }
+	}
+      if( cnt == 1 )
+	found = true;
+      else
+	addr = -1; // Not found, or found more than one option
+    }
+
+  if( found )
+    {
+      const vpxreg_t *preg = &VPX_REG[i];
+      addr = preg->addr;
+
+      ostringstream oss;
+      oss << setfill( '0' )
+	  << "addr=0x" << hex << setw(4) << preg->addr << dec
+	  << " bits=" << preg->nbytes * 8;
+      info = oss.str();
+    }
+
+  return addr;
+}
+
+// ----------------------------------------------------------------------------
+
+std::string SpidrController::regName( int address )
+{
+  // Search for the register address in the list and return its name
+  std::string name( "<unknown>" );
+  bool found = false;
+  int  i;
+  for( i=0; i<sizeof(VPX_REG)/sizeof(vpxreg_t); ++i )
+    {
+      if( address >= VPX_REG[i].addr &&
+	  address < VPX_REG[i].addr + VPX_REG[i].count )
+	{
+	  found = true;
+	  break;
+	}
+    }
+  if( found )
+    name = std::string( VPX_REG[i].name );
+  return name;
+}
+
+// ----------------------------------------------------------------------------
+
+int SpidrController::vpxRegBytes( int addr )
+{
+  // Find the register and its size in the register list
+  bool found = false;
+  int  i;
+  for( i=0; i<sizeof(VPX_REG)/sizeof(vpxreg_t); ++i )
+    {
+      if( VPX_REG[i].addr == addr )
+	{
+	  found = true;
+	  break;
+	}
+    }
+  int nbytes = 0;
+  if( found )
+    nbytes = VPX_REG[i].nbytes;
+  return nbytes;
+}
+
+// ----------------------------------------------------------------------------
 // Private functions
 // ----------------------------------------------------------------------------
 
-bool SpidrController::findVpxItem( int item, int item_i, int *index )
+bool SpidrController::findVpxItem( int id, int item_i, int *index )
 {
   bool found = false;
   int  i;
   for( i=0; i<sizeof(VPX_REG_ITEM)/sizeof(vpxreg_item_t); ++i )
     {
-      if( VPX_REG_ITEM[i].item == item )
+      if( VPX_REG_ITEM[i].id == id )
 	{
 	  found = true;
 	  break;
@@ -1589,7 +1762,7 @@ bool SpidrController::findVpxItem( int item, int item_i, int *index )
   if( !found )
     {
       this->clearErrorString();
-      _errString << "Undefined item identifier: " << item;
+      _errString << "Undefined item identifier: " << id;
       return false;
     }
   int item_count = VPX_REG_ITEM[i].count;
