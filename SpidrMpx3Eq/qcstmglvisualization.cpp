@@ -15,6 +15,9 @@
 
 #include "color2drecoguided.h"
 
+//#include "mpx3gui.h"
+#include "ui_mpx3gui.h"
+
 #include <stdio.h>
 #include <QDialog>
 #include <QDebug>
@@ -861,14 +864,29 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
     //int deviceID = _mpx3gui->getConfig()->getActiveDevices()[frameIndex];
     QMenu contextMenu;
-    QAction calcStats(QString("Calc stats (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+
+    //Have the region only in the header:
+        QLabel* label = new QLabel(QString("For region (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y())
+                               , this);
+    QWidgetAction wid(&contextMenu);
+    wid.setDefaultWidget(label);
+    contextMenu.addAction(&wid);
+
+    QAction calcStats(QString("Calc stats"), &contextMenu);
+    //QAction calcStats(QString("Calc stats (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&calcStats);
 
-    QAction calcProX(QString("ProfileX (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    QAction calcProX(QString("ProfileX"), &contextMenu);
+    //QAction calcProX(QString("ProfileX (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&calcProX);
 
-    QAction calcProY(QString("ProfileY (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    QAction calcProY(QString("ProfileY"), &contextMenu);
+    //QAction calcProY(QString("ProfileY (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&calcProY);
+
+    QAction gotoDQE(QString("Use for DQE"),&contextMenu);
+    //QAction gotoDQE(QString("Use for DQE (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    contextMenu.addAction(&gotoDQE);
 
 
     // Show the menu
@@ -886,6 +904,11 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _statsdialog->SetMpx3GUI(_mpx3gui);
         _statsdialog->changeText();
         _statsdialog->show();
+
+    }
+
+    if (selectedItem == &gotoDQE){
+        _mpx3gui->GetUI()->stackedWidget->setCurrentIndex(__dqe_page_Id);
 
     }
 
@@ -916,6 +939,9 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _profiledialog->show();
 
     }
+
+//    delete label;
+//    delete a;
 }
 
 void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){

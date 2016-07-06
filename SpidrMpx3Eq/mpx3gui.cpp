@@ -99,6 +99,10 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     // CT
     _ui->ctTab->SetMpx3GUI( this );
 
+
+    // DQE
+    _ui->dqeTab->SetMpx3GUI(this);
+
     // Read the configuration
     QString configFile = "./config/mpx3.json";
     if ( ! config->fromJsonFile( configFile ) ) {

@@ -24,7 +24,7 @@
       <widget class="QCstmConfigMonitoring" name="CnMWidget"/>
       <widget class="QCstmDacs" name="DACsWidget"/>
       <widget class="QCstmEqualization" name="equalizationWidget"/>
-      <widget class="QCstmDQE" name="dqeAnalysis"/>
+      <widget class="QCstmDQE" name="dqeTab"/>
       <widget class="QCstmThreshold" name="ThresholdTab"/>
       <widget class="QCstmCT" name="ctTab"/>
       <widget class="QCstmVoxeltab" name="voxelTab"/>
