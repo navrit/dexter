@@ -61,7 +61,7 @@ const vpxreg_t VPX_REG[] = {
   { REG_MATRIX_RST_CONF, "REG_MATRIX_RST_CONF",  2,       1,   0 },
   { REG_ROUTER,          "REG_ROUTER",           2,       1,   0 },
   { REG_GENDIGCONF,      "REG_GENDIGCONF",       2,       1,   0 },
-  { REG_SLVS,            "REG_SLVS",             2,       1,   0 }
+  { REG_SLVS,            "REG_SLVS",             2,       1,   0 },
 };
 
 const vpxreg_item_t VPX_REG_ITEM[] = {
@@ -87,23 +87,23 @@ const vpxreg_item_t VPX_REG_ITEM[] = {
   { MATRIXRSTCONF_NUM_OF_BANKS,         "MATRIXRSTCONF_NUM_OF_BANKS",         REG_MATRIX_RST_CONF,   3,  3,   1 },
   { MATRIXRSTCONF_COLS_PER_BANK,        "MATRIXRSTCONF_COLS_PER_BANK",        REG_MATRIX_RST_CONF,   0,  3,   1 },
 
-  { ROUTER_CHAN_ENABLE, "ROUTER_CHAN_ENABLE",         REG_ROUTER,            0,  4,   1 },
+  { ROUTER_CHAN_ENABLE,                 "ROUTER_CHAN_ENABLE",                 REG_ROUTER,            0,  4,   1 },
+
+  { GENDIGCONF_RESPONSE_TO_BROADCAST,   "GENDIGCONF_RESPONSE_TO_BROADCAST",   REG_GENDIGCONF, 10, 1, 1 },
+  { GENDIGCONF_PERIODIC_SHUTTER,        "GENDIGCONF_PERIODIC_SHUTTER",        REG_GENDIGCONF, 9, 1, 1 },
+  { GENDIGCONF_LINK_SHUTTER_AND_TP,     "GENDIGCONF_LINK_SHUTTER_AND_TP",     REG_GENDIGCONF, 8, 1, 1 },
+  { GENDIGCONF_SHUTTER_MODE,            "GENDIGCONF_SHUTTER_MODE",            REG_GENDIGCONF, 7, 1, 1 },
+  { GENDIGCONF_SELECT_PC_TOT,           "GENDIGCONF_SELECT_PC_TOT",           REG_GENDIGCONF, 6, 1, 1 },
+  { GENDIGCONF_SELECTOVERFLOW_FULLRANGE_TOTOVERFLOW, "GENDIGCONF_SELECTOVERFLOW_FULLRANGE_TOTOVERFLOW",
+    REG_GENDIGCONF, 5, 1, 1 },
+  { GENDIGCONF_SELECT_1HITTOT_ITOT,     "GENDIGCONF_SELECT_1HITTOT_ITOT",     REG_GENDIGCONF, 4, 1, 1 },
+  { GENDIGCONF_READ_SEU,                "GENDIGCONF_READ_SEU",                REG_GENDIGCONF, 3, 1, 1 },
+  { GENDIGCONF_SP_MON_MODE_EN,          "GENDIGCONF_SP_MON_MODE_EN",          REG_GENDIGCONF, 2, 1, 1 },
+  { GENDIGCONF_PIXEL_CONFIG_OR_LFSR,    "GENDIGCONF_PIXEL_CONFIG_OR_LFSR",    REG_GENDIGCONF, 1, 1, 1 },
+  { GENDIGCONF_SELECT_TP_ANALOG_DIG,    "GENDIGCONF_SELECT_TP_ANALOG_DIG",    REG_GENDIGCONF, 0, 1, 1 },
 };
 
 /*
-Register: General digital configuration register
-{ GENDIGCONF_RESPONSE_TO_BROADCAST, "GENDIGCONF_RESPONSE_TO_BROADCAST", REG_GENDIGCONF
-{ GENDIGCONF_PERIODIC_SHUTTER, "GENDIGCONF_PERIODIC_SHUTTER", REG_GENDIGCONF
-{ GENDIGCONF_LINK_SHUTTER_AND_TP, "GENDIGCONF_LINK_SHUTTER_AND_TP", REG_GENDIGCONF
-{ GENDIGCONF_SHUTTER_MODE, "GENDIGCONF_SHUTTER_MODE", REG_GENDIGCONF
-{ GENDIGCONF_SELECT_PC_TOT, "GENDIGCONF_SELECT_PC_TOT",  REG_GENDIGCONF
-{ GENDIGCONF_SELECTOVERFLOW_FULLRANGE_TOTOVERFLOW, "GENDIGCONF_SELECTOVERFLOW_FULLRANGE_TOTOVERFLOW", REG_GENDIGCONF
-{ GENDIGCONF_SELECT_1HITTOT_ITOT,  "GENDIGCONF_SELECT_1HITTOT_ITOT", REG_GENDIGCONF
-{ GENDIGCONF_READ_SEU,       "GENDIGCONF_READ_SEU", REG_GENDIGCONF
-{ GENDIGCONF_SP_MON_MODE_EN, "GENDIGCONF_SP_MON_MODE_EN", REG_GENDIGCONF
-{ GENDIGCONF_PIXEL_CONFIG_OR_LFSR, "GENDIGCONF_PIXEL_CONFIG_OR_LFSR", REG_GENDIGCONF
-{ GENDIGCONF_SELECT_TP_ANALOG_DIG, "GENDIGCONF_SELECT_TP_ANALOG_DIG", REG_GENDIGCONF
-
 Register: SLVS configuration register
 { SLVS_TX_CURRENT, SLVS_TX_CURRENT, REG_SLVS
 
@@ -1598,20 +1598,28 @@ int SpidrController::itemId( const char *item_name, std::string &info )
     {
       // Check if the name is at least unique
       int len = strlen( item_name );
-      int cnt = 0;
-      for( i=0; i<sizeof(VPX_REG_ITEM)/sizeof(vpxreg_item_t); ++i )
+      int j, cnt = 0;
+      ostringstream oss;
+      for( j=0; j<sizeof(VPX_REG_ITEM)/sizeof(vpxreg_item_t); ++j )
 	{
-	  if( strncmp(VPX_REG_ITEM[i].name, item_name, len) == 0 )
+	  if( strncmp(VPX_REG_ITEM[j].name, item_name, len) == 0 )
 	    {
 	      ++cnt;
-	      id = VPX_REG_ITEM[i].id;
-	      break;
+	      i = j;
+	      id = VPX_REG_ITEM[j].id;
+	      oss << VPX_REG_ITEM[j].name << endl;
 	    }
 	}
       if( cnt == 1 )
-	found = true;
+	{
+	  // Name is unique
+	  found = true;
+	}
       else
-	id = -1; // Not found, or found more than one option
+	{
+	  id = -1; // Not found, or found more than one option
+	  info = oss.str(); // Provide the caller with all options..
+	}
     }
 
   if( found )
@@ -1669,20 +1677,28 @@ int SpidrController::regAddr( const char *reg_name, std::string &info )
     {
       // Check if the name is at least unique
       int len = strlen( reg_name );
-      int cnt = 0;
-      for( i=0; i<sizeof(VPX_REG)/sizeof(vpxreg_t); ++i )
+      int j, cnt = 0;
+      ostringstream oss;
+      for( j=0; j<sizeof(VPX_REG)/sizeof(vpxreg_t); ++j )
 	{
-	  if( strncmp(VPX_REG[i].name, reg_name, len) == 0 )
+	  if( strncmp(VPX_REG[j].name, reg_name, len) == 0 )
 	    {
 	      ++cnt;
-	      addr = VPX_REG[i].addr;
-	      break;
+	      i = j;
+	      addr = VPX_REG[j].addr;
+	      oss << VPX_REG[j].name << endl;
 	    }
 	}
       if( cnt == 1 )
-	found = true;
+	{
+	  // Name is unique
+	  found = true;
+	}
       else
-	addr = -1; // Not found, or found more than one option
+	{
+	  addr = -1; // Not found, or found more than one option
+	  info = oss.str(); // Provide the caller with all options..
+	}
     }
 
   if( found )

@@ -125,15 +125,19 @@ int main( int argc, char *argv[] )
 	{
 	  if( id >= 0 )
 	    cout << item_name << ": " << info << endl;
-	  else
+	  else if( info.empty() )
 	    cout << "### Item \"" << item_name << "\" not found" << endl;
+	  else
+	    cout << "Available options:" << endl << info;
 	}
       else if( reg_name )
 	{
 	  if( id >= 0 )
 	    cout << reg_name << ": " << info << endl;
-	  else
+	  else if( info.empty() )
 	    cout << "### Reg \"" << reg_name << "\" not found" << endl;
+	  else
+	    cout << "Available options:" << endl << info;
 	}
       else
 	{
@@ -147,15 +151,18 @@ int main( int argc, char *argv[] )
     {
       if( id < 0 )
 	{
-	  if( item_name )
+	  if( !info.empty() )
 	    {
-	      cout << "### Item \"" << item_name << "\" not found" << endl;
+	      cout << "Available options:" << endl << info;
 	    }
-	  else if( reg_name )
+	  else
 	    {
-	      cout << "### Reg \"" << reg_name << "\" not found" << endl;
+	      if( item_name )
+		cout << "### Item \"" << item_name << "\" not found" << endl;
+	      else if( reg_name )
+		cout << "### Reg \"" << reg_name << "\" not found" << endl;
+	      return 1;
 	    }
-	  return 1;
 	}
 
       // Open a control connection to the SPIDR module

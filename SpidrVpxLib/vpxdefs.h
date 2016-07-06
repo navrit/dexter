@@ -47,6 +47,29 @@ History:
 #define REG_SHUTTER_ON                      0x0207
 #define REG_SHUTTER_OFF                     0x0208
 #define REG_BX_ID_MAX                       0x0209
+#define REG_OMODE                           0x0210
+#define REG_PPROC                           0x0211
+#define REG_TEST_OUT                        0x0212
+#define REG_TFC_NEG                         0x0220
+#define REG_TFC_POS                         0x0221
+#define REG_TFC1                            0x0222
+#define REG_EFUSE                           0x0302
+#define REG_PLLRST                          0x0303
+#define REG_DACOUT                          0x0304
+#define REG_CLK_EN                          0x0305
+#define REG_TP_NUM                          0x0307
+#define REG_TP_ON                           0x0308
+#define REG_TP_OFF                          0x0309
+#define REG_TP_CONF                         0x030A
+#define REG_MONENC                          0x030B
+#define REG_MONENA                          0x030C
+#define REG_ROCHAN                          0x030D
+#define REG_GWT                             0x030E
+#define REG_GWT1                            0x030F
+// PLL registers skipped...
+#define REG_MONCONF                         0x031F
+#define REG_CTPR                            0x0320
+#define REG_DAC                             0x0400
 
 // Register items
 #define SP_TOT_THRESHOLD                    0
@@ -72,6 +95,18 @@ History:
 #define MATRIXRSTCONF_COLS_PER_BANK         43
 
 #define ROUTER_CHAN_ENABLE                  50
+
+#define GENDIGCONF_RESPONSE_TO_BROADCAST    60
+#define GENDIGCONF_PERIODIC_SHUTTER         61
+#define GENDIGCONF_LINK_SHUTTER_AND_TP      62
+#define GENDIGCONF_SHUTTER_MODE             63
+#define GENDIGCONF_SELECT_PC_TOT            64
+#define GENDIGCONF_SELECTOVERFLOW_FULLRANGE_TOTOVERFLOW 65
+#define GENDIGCONF_SELECT_1HITTOT_ITOT      66
+#define GENDIGCONF_READ_SEU                 67
+#define GENDIGCONF_SP_MON_MODE_EN           68
+#define GENDIGCONF_PIXEL_CONFIG_OR_LFSR     69
+#define GENDIGCONF_SELECT_TP_ANALOG_DIG     70
 
 // ----------------------------------------------------------------------------
 #endif // VPXDEFS_H_
