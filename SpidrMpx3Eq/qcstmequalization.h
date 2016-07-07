@@ -253,6 +253,8 @@ public:
 
     bool equalizationHasBeenLoaded(){return _equalizationLoaded; };
 
+    QMap<int, Mpx3EqualizationResults *> getEqMap(){ return _eqMap; };
+
 private:
 
 	Ui::QCstmEqualization * _ui;

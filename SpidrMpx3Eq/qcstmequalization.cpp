@@ -540,8 +540,8 @@ BarChart * QCstmEqualization::GetAdjBarChart(int chipIdx, Mpx3EqualizationResult
 
     // There should be twice as many AdjBarChart objects as chips to be equalized
     //  Low and High
-    if ( _workChipsIndx.size() != _adjchart_L.size() ) return 0x0;
-    if ( _workChipsIndx.size() != _adjchart_H.size() ) return 0x0;
+    if ( _workChipsIndx.size() != _adjchart_L.size() ) return nullptr;
+    if ( _workChipsIndx.size() != _adjchart_H.size() ) return nullptr;
 
     for (int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
         // return the corresponding results Ptr
@@ -551,7 +551,7 @@ BarChart * QCstmEqualization::GetAdjBarChart(int chipIdx, Mpx3EqualizationResult
         }
     }
 
-    return 0x0; // otherwise
+    return nullptr; // otherwise
 }
 
 BarChart * QCstmEqualization::GetBarChart(int chipIdx) {
@@ -1473,6 +1473,10 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
                                         _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H)
                                         );
 
+        // Fill adj distributions
+        _adjchart_L[chipIndex]->SetValueInSet(0, _eqMap[chipIndex]->GetPixelAdj(i));
+        _adjchart_H[chipIndex]->SetValueInSet(0, _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H));
+
     }
 
     // This may not the moment for a mask
@@ -1804,11 +1808,22 @@ void QCstmEqualization::LoadEqualization() {
 
         _equalizationLoaded = true;
 
+        //if ( GetAdjBarChart(i, Mpx3EqualizationResults::__ADJ_H) != nullptr ) {
+        //    GetAdjBarChart(i, Mpx3EqualizationResults::__ADJ_H)->show();
+        //}
+
         // And talk to the hardware loading also the mask
         SetAllAdjustmentBits( _mpx3gui->GetSpidrController(), i, true );
 
+        // Show the related histograms
+        if ( GetAdjBarChart(i, Mpx3EqualizationResults::__ADJ_L) != nullptr ) {
+            GetAdjBarChart(i, Mpx3EqualizationResults::__ADJ_L)->show();
+            //GetAdjBarChart(i, Mpx3EqualizationResults::__ADJ_L)->fitToHeight();
+        }
+
     }
 
+    // And show
     ShowEqualization( _equalizationShow );
 
 }
@@ -1833,15 +1848,12 @@ void QCstmEqualization::ShowEqualization(Mpx3EqualizationResults::lowHighSel sel
         }
 
         // Get adj matrix for one chip
-        int * adj_matrix = _eqMap[i]->GetAdjustementMatrix(sel);
+        int * adj_matrix = _eqMap[i]->GetAdjustementMatrix( sel );
         //for( int j = 0 ; j < __matrix_size ; j++ ){
         //	adj_matrix[j] = j;
         //}
         // Stack
         _resdataset->setFrame(adj_matrix, i, 0);
-
-        // Show the related histograms
-        if ( GetAdjBarChart(i, sel) != 0x0 ) GetAdjBarChart(i, sel)->show();
 
     }
 

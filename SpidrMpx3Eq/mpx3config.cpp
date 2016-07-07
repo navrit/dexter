@@ -39,9 +39,13 @@ void Mpx3Config::SendConfiguration(){
     // Configure the chips
     int nDevSupported = getNDevicesSupported();
     for ( int i = 0 ; i < nDevSupported ; i++ ) {
+
+
+
         if ( detectorResponds( i ) ) {
             Configuration( false, i );
         }
+
     }
 
     // Globals
@@ -69,6 +73,9 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+
+    // Number of links ! // TODO
+    spidrcontrol->setPs( deviceIndex, 0 );
 
     // Reset pixel configuration
     if ( reset ) spidrcontrol->resetPixelConfig();
@@ -162,6 +169,9 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+
+    // Number of links ! // TODO
+    spidrcontrol->setPs( deviceIndex, 0 );
 
     // Reset pixel configuration
     if ( reset ) spidrcontrol->resetPixelConfig();

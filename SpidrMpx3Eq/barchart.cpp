@@ -170,7 +170,7 @@ void BarChart::SetValueInSet(unsigned int setId, double val, double weight) {
     //    this->yAxis->setRange(0, ( bin_content.value + weight) * 1.1 );
     //}
 
-    replot( QCustomPlot::rpQueued );
+    //replot( QCustomPlot::rpQueued );
 }
 
 void BarChart::SetValueInSetNonAcc(unsigned int setId, double val, double weight)

@@ -9,6 +9,8 @@ TestPulses::TestPulses(Mpx3GUI * mg,QWidget *parent) :
     ui(new Ui::TestPulses)
 {
     ui->setupUi(this);
+
+    this->setWindowTitle( tr("Test pulses configuration") );
 }
 
 TestPulses::~TestPulses()

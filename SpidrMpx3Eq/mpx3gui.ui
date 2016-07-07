@@ -38,7 +38,7 @@
      <x>0</x>
      <y>0</y>
      <width>1110</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -121,6 +121,7 @@
    <addaction name="actionConfiguration"/>
    <addaction name="actionDACs"/>
    <addaction name="actionEqualization"/>
+   <addaction name="actionScans"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionExit">
@@ -275,6 +276,14 @@
    </property>
    <property name="toolTip">
     <string>Equalization (Ctrl+4)</string>
+   </property>
+  </action>
+  <action name="actionScans">
+   <property name="text">
+    <string>Scans</string>
+   </property>
+   <property name="toolTip">
+    <string>Scans (Ctrl+5)</string>
    </property>
   </action>
  </widget>

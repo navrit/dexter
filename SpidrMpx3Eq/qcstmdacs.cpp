@@ -954,7 +954,6 @@ void SenseDACsThread::run() {
                 progress( floor( ( (double)i / MPX3RX_DAC_COUNT) * 100 ) );
                 //cout << i << " --> " << adc_val << endl;
 
-
             }
 
         }
@@ -1123,7 +1122,7 @@ void ScanDACsThread::run() {
         disconnect( this, SIGNAL( fillText(QString) ), _dacs->GetLabelsList()[i], SLOT( setText(QString)) );
 
         // Scan !
-        for ( int dacValI = 0 ; dacValI < MPX3RX_DAC_TABLE[i].dflt * 2 - 1 ; dacValI += _dacs->GetScanStep() ) {
+        for ( int dacValI = 0 ; dacValI < (1<<MPX3RX_DAC_TABLE[i].bits) ; dacValI += _dacs->GetScanStep() ) {
 
 
             if ( !spidrcontrol->setDac( _dacs->GetDeviceIndex(), MPX3RX_DAC_TABLE[i].code, dacValI ) ) {
