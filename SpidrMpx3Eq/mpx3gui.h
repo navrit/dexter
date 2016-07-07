@@ -47,6 +47,7 @@ class QCstmConfigMonitoring;
 #define __dacs_page_Id              2
 #define __equalization_page_Id      3
 #define __dqe_page_Id               4
+#define __scans_page_Id             5
 
 namespace Ui {
 class Mpx3GUI;
@@ -65,11 +66,11 @@ public:
 
 private:
     // ML605 layout
-    vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
-    vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
+    //vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
+    //vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
     // compactSPIDR layout
-    //vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL, Dataset::orientationTtBRtL};
-    //vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(1, 1), QPoint(1, 0), QPoint(0, 0), QPoint(0, 1)};
+    vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL, Dataset::orientationTtBRtL};
+    vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(1, 1), QPoint(1, 0), QPoint(0, 0), QPoint(0, 1)};
     int mode = 0;
     //QApplication * _coreApp;
     Ui::Mpx3GUI * _ui;
@@ -199,6 +200,7 @@ private slots:
     void on_actionConfiguration_triggered();
     void on_actionDACs_triggered();
     void on_actionEqualization_triggered();
+    void on_actionScans_triggered();
 };
 
 

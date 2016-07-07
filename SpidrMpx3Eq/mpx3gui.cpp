@@ -3,7 +3,6 @@
  * Nikhef, 2014.
  */
 
-
 #include "mpx3gui.h"
 #include "qcstmequalization.h"
 #include "qcstmglvisualization.h"
@@ -118,6 +117,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+3", "Switch to DAC control") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+4", "Switch to Equalization") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+5", "Switch to DQE calculation") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+6", "Switch to Scans") ), this)  );
 
     // Signals and slots for this part
     SetupSignalsAndSlots();
@@ -218,7 +218,7 @@ void Mpx3GUI::setTestPulses() {
 
     int devId = 0;
 
-    if ( ! _ui->equalizationWidget->equalizationHasBeenLoaded() ) {
+    if ( _ui->equalizationWidget->equalizationHasBeenLoaded() ) {
 
         SpidrController * spidrcontrol = GetSpidrController();
 
@@ -228,27 +228,28 @@ void Mpx3GUI::setTestPulses() {
 
             pix = XtoXY(i, __array_size_x);
 
-            testbit = false;
-            if ( pix.first <= 2 && pix.second <= 2) {
-                testbit = true;
-            }
 
+            if ( pix.first % 2 == 0 && pix.second % 2 == 0 ) {
+                testbit = true;
+                if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
+            } else {
+                testbit = false;
+                if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
+            }
 
             spidrcontrol->configPixelMpx3rx(pix.first,
                                             pix.second,
-                                            15,
-                                            15,
+                                            _ui->equalizationWidget->getEqMap()[devId]->GetPixelAdj(i),
+                                            _ui->equalizationWidget->getEqMap()[devId]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
                                             testbit);
 
         }
 
         spidrcontrol->setPixelConfigMpx3rx( devId );
+        spidrcontrol->setCtpr( devId );
 
-        // CTPR
-        spidrcontrol->configCtpr( devId, 0, 0 );
-        spidrcontrol->configCtpr( devId, 0, 1 );
+        spidrcontrol->setTpSwitch( 0, 200000 );
 
-        spidrcontrol->setCtpr( 0 );
     }
 
 
@@ -302,8 +303,10 @@ void Mpx3GUI::on_shortcutsSwithPages() {
         _ui->stackedWidget->setCurrentIndex( __dacs_page_Id );
     } else if ( k.matches( QKeySequence(tr("Ctrl+4")) ) ) {
         _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
-    } else if ( k.matches(QKeySequence(tr("Ctrl+5")) ) ){
+    } else if ( k.matches( QKeySequence(tr("Ctrl+5")) ) ){
         _ui->stackedWidget->setCurrentIndex( __dqe_page_Id );
+    } else if ( k.matches( QKeySequence(tr("Ctrl+6")) ) ){
+        _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
     }
 
 }
@@ -962,4 +965,9 @@ void Mpx3GUI::on_actionDACs_triggered()
 void Mpx3GUI::on_actionEqualization_triggered()
 {
     _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
+}
+
+void Mpx3GUI::on_actionScans_triggered()
+{
+    _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
 }
