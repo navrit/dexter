@@ -45,8 +45,9 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     ui->summingCheckbox->setChecked( true );
 
     // Range selection on histogram. Init values
-    _manualRange = QCPRange( 0, 1 ); // This is quite arbitrary. It doesn't really matter here.
+    _manualRange = QCPRange( 0, 0 ); // No image loaded yet.
     _percentileRange = QCPRange( 0.025, 0.975 ); // These instead are reasonable percentile cuts
+    _percentileRangeNatural =  QCPRange( 0, 0 );
     setRangeSpinBoxesPercentile();
 
     // Log Scale for histogram
@@ -768,12 +769,15 @@ void QCstmGLVisualization::reload_all_layers(bool corrections) {
     SetBusyState();
 
     _mpx3gui->saveOriginalDataset();
+
     // Corrections
-    if ( corrections && _corrdialog ) _mpx3gui->getDataset()->applyCorrections( _corrdialog );
+    if ( corrections && _corrdialog ) {
+        _mpx3gui->getDataset()->applyCorrections( _corrdialog );
+    }
 
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
     QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
-    for (int i = 0; i < thresholds.size(); i++) {
+    for ( int i = 0 ; i < thresholds.size() ; i++ ) {
         addThresholdToSelector(thresholds[i]);
         ui->histPlot->setHistogram(thresholds[i],
                                    _mpx3gui->getDataset()->getLayer(thresholds[i]),
@@ -866,7 +870,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     QMenu contextMenu;
 
     //Have the region only in the header:
-        QLabel* label = new QLabel(QString("For region (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y())
+    QLabel* label = new QLabel(QString("For region (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y())
                                , this);
     QWidgetAction wid(&contextMenu);
     wid.setDefaultWidget(label);
@@ -940,8 +944,8 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
     }
 
-//    delete label;
-//    delete a;
+    //    delete label;
+    //    delete a;
 }
 
 void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
@@ -996,78 +1000,39 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
 }
 
-void QCstmGLVisualization::on_lowerPercentileSpin_editingFinished()
-{
-    //if(ui->lowerPercentileSpin->value() > ui->upperPercentileSpin->value())
-    //    ui->upperPercentileSpin->setValue(ui->lowerPercentileSpin->value());
-
-    if(ui->lowerSpin->value() > ui->upperSpin->value())
-        ui->upperSpin->setValue(ui->lowerSpin->value());
-
-    if(ui->percentileRangeRadio->isChecked())
-        on_percentileRangeRadio_toggled(ui->percentileRangeRadio->isChecked());
-}
-
-void QCstmGLVisualization::on_upperPercentileSpin_editingFinished()
-{
-    //if(ui->upperPercentileSpin->value() < ui->lowerPercentileSpin->value())
-    //    ui->lowerPercentileSpin->setValue(ui->upperPercentileSpin->value());
-
-    if(ui->upperSpin->value() < ui->lowerSpin->value())
-        ui->lowerSpin->setValue(ui->upperSpin->value());
-
-    if(ui->percentileRangeRadio->isChecked())
-        on_percentileRangeRadio_toggled(ui->percentileRangeRadio->isChecked());
-}
-
-void QCstmGLVisualization::on_lowerManualSpin_editingFinished()
-{
-    //if(ui->upperManualSpin->value() < ui->lowerManualSpin->value())
-    //    ui->upperManualSpin->setValue(ui->lowerManualSpin->value());
-
-    if(ui->upperSpin->value() < ui->lowerSpin->value())
-        ui->upperSpin->setValue(ui->lowerSpin->value());
-
-    if(ui->manualRangeRadio->isChecked())
-        on_manualRangeRadio_toggled(ui->manualRangeRadio->isChecked());
-
-}
-
-void QCstmGLVisualization::on_upperManualSpin_editingFinished()
-{
-    //if(ui->lowerManualSpin->value() > ui->upperManualSpin->value())
-    //    ui->lowerManualSpin->setValue(ui->upperManualSpin->value());
-
-    if(ui->lowerSpin->value() > ui->upperSpin->value())
-        ui->lowerSpin->setValue(ui->upperSpin->value());
-
-    if(ui->manualRangeRadio->isChecked())
-        on_manualRangeRadio_toggled(ui->manualRangeRadio->isChecked());
-}
 
 void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
 {
 
     // Before toogle save the current range to percentile
     // If unselecting save the info
-    if ( ! checked ) _manualRange = QCPRange( ui->lowerSpin->value(), ui->upperSpin->value() );
+    if ( ! checked ) {
+        if ( _manualRangePicked ) {
+            _manualRangeSave = _manualRange;
+        }
+    }
 
     if ( checked ) {
 
         // When toggling here recompute the min and max
         // if the range is still the initial (0,1)
+        //if ( _manualRange == QCPRange( 0,0 ) ) {
+        // current threshold
+        int activeTHL = getActiveThreshold();
+        if ( activeTHL >= 0 ) {
 
-        if ( _manualRange == QCPRange( 0,1 ) ) {
-            // current threshold
-            int activeTHL = getActiveThreshold();
-            if ( activeTHL >= 0 ) {
-                _manualRange = QCPRange( ui->histPlot->getMin( activeTHL ),
-                                         ui->histPlot->getMax( activeTHL )
-                                         );
+            // Throw a recomendation here to the user.  If manual has never been set, then use
+            //  the values from percentile.
+            if ( ! _manualRangePicked ) {
+                _manualRange = _percentileRangeNatural;
             } else {
-                _manualRange = QCPRange( 0,1 );
+                _manualRange = _manualRangeSave;
             }
+
+        } else {
+            _manualRange = QCPRange( 0, 0 );
         }
+        //}
 
         setRangeSpinBoxesManual();
         ui->histPlot->changeRange( _manualRange );
@@ -1125,9 +1090,9 @@ void QCstmGLVisualization::on_percentileRangeRadio_toggled(bool checked)
         //ui->histPlot->set_scale_percentile(getActiveThreshold(),
         //                                   ui->lowerPercentileSpin->value(),
         //                                   ui->upperPercentileSpin->value());
-        ui->histPlot->set_scale_percentile(getActiveThreshold(),
-                                           ui->lowerSpin->value(),
-                                           ui->upperSpin->value());
+        _percentileRangeNatural = ui->histPlot->set_scale_percentile(getActiveThreshold(),
+                                                                     ui->lowerSpin->value(),
+                                                                     ui->upperSpin->value());
         ui->histPlot->scaleToInterest();
     }
 
@@ -1319,14 +1284,19 @@ void QCstmGLVisualization::on_lowerSpin_editingFinished()
 
     // Then decide what to do
     if ( ui->fullRangeRadio->isChecked() ) { // go to manual
-        _manualRange = QCPRange( ui->lowerSpin->value(), ui->upperSpin->value() );
+        _manualRangeSave.lower = ui->lowerSpin->value();
+        if ( ! _manualRangePicked ) {
+            _manualRangeSave.upper = ui->upperSpin->value();
+            _manualRangePicked = true;
+        }
         ui->manualRangeRadio->setChecked( true );
         on_manualRangeRadio_toggled(ui->manualRangeRadio->isChecked());
         return;
     }
 
     if( ui->manualRangeRadio->isChecked() ) {
-        _manualRange = QCPRange( ui->lowerSpin->value(), ui->upperSpin->value() );
+        _manualRangePicked = true;
+        _manualRangeSave.lower = ui->lowerSpin->value();
         on_manualRangeRadio_toggled(ui->manualRangeRadio->isChecked());
     }
 
@@ -1344,14 +1314,19 @@ void QCstmGLVisualization::on_upperSpin_editingFinished()
 
     // Then decide what to do
     if ( ui->fullRangeRadio->isChecked() ) { // go to manual
-        _manualRange = QCPRange( ui->lowerSpin->value(), ui->upperSpin->value() );
+        _manualRangeSave.upper = ui->upperSpin->value();
+        if ( ! _manualRangePicked ) {
+            _manualRangeSave.lower = ui->lowerSpin->value();
+            _manualRangePicked = true;
+        }
         ui->manualRangeRadio->setChecked( true );
         on_manualRangeRadio_toggled(ui->manualRangeRadio->isChecked());
         return;
     }
 
     if(ui->manualRangeRadio->isChecked()) {
-        _manualRange = QCPRange( ui->lowerSpin->value(), ui->upperSpin->value() );
+        _manualRangePicked = true;
+        _manualRangeSave.upper = ui->upperSpin->value();
         on_manualRangeRadio_toggled(ui->manualRangeRadio->isChecked());
     }
 

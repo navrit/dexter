@@ -81,7 +81,7 @@ void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size, int mi
 
     if ( threshold < 0 ) return;
     int index;
-    if( m_mapping.contains(threshold) ){
+    if ( m_mapping.contains(threshold) ) {
         index = m_mapping[threshold].first;
         delete m_mapping[threshold].second;
     } else {
@@ -89,7 +89,7 @@ void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size, int mi
     }
 
     // Figure out range.  The user may want a fixed range in the case.
-    if ( min == 0 && max == 0) {
+    if ( min == 0 && max == 0 ) {
         min = INT_MAX, max = INT_MIN;
         for(int i = 0; i < size; i++){
             if(data[i] < min)
@@ -240,10 +240,10 @@ void QCstmPlotHistogram::set_scale_full(int threshold){
     this->replot(QCustomPlot::rpQueued);
 }
 
-void QCstmPlotHistogram::set_scale_percentile(int threshold, double lowerPercentile, double upperPercentile){
-    if ( threshold < 0 ) return;
+QCPRange QCstmPlotHistogram::set_scale_percentile(int threshold, double lowerPercentile, double upperPercentile){
+    if ( threshold < 0 ) return QCPRange(0,0);
     if(this->graphCount() == 0)
-        return;
+        return QCPRange(0,0);
     Histogram *hist = m_mapping[threshold].second;
     uint64_t total = 0, partialSum  = 0;
     for(int i = 0; i < hist->size(); i++)
@@ -257,8 +257,10 @@ void QCstmPlotHistogram::set_scale_percentile(int threshold, double lowerPercent
     lowerBound = hist->getMin()+(index-1)*hist->getWidth();
     while(partialSum < (unsigned)maxBound)
         partialSum += hist->atIndex(index++);
-    upperBound = hist->getMin()+(index)*hist->getWidth();;
+    upperBound = hist->getMin()+(index)*hist->getWidth();
     this->changeRange(QCPRange(lowerBound, upperBound));
+
+    return QCPRange(lowerBound, upperBound);
 }
 
 void QCstmPlotHistogram::mouseReleaseEvent(QMouseEvent *event){

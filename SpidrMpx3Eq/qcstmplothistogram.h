@@ -97,7 +97,7 @@ signals:
 
 public slots:
     void set_scale_full(int threshold);
-    void set_scale_percentile(int threshold, double lower, double upper);
+    QCPRange set_scale_percentile(int threshold, double lower, double upper);
     void setActive(int index);
     void changeRange(QCPRange newRange);
     void minClampChanged(double min);

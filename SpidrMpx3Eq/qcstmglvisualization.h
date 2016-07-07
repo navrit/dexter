@@ -101,7 +101,10 @@ private:
     bool _singleShot = false;
     int _singleShotSaveCurrentNTriggers = 0;
     QCPRange _manualRange;
+    QCPRange _manualRangeSave;
+    bool _manualRangePicked = false;
     QCPRange _percentileRange;
+    QCPRange _percentileRangeNatural;
     bool _logyPlot = false;
     bool _infDataTaking = false;
 
@@ -142,14 +145,6 @@ private:
 private slots:
     void ConnectionStatusChanged();
     void on_percentileRangeRadio_toggled(bool checked);
-
-    void on_lowerPercentileSpin_editingFinished();
-
-    void on_upperPercentileSpin_editingFinished();
-
-    void on_lowerManualSpin_editingFinished();
-
-    void on_upperManualSpin_editingFinished();
 
     //! Gets called when the current display needs to be reloaded. Uses the layerselector combo-box to determine what layer to load.
     void active_frame_changed();

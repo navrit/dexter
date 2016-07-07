@@ -830,7 +830,7 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
         filename = path;
     }
 
-    qDebug() << filename;
+    qDebug() << "[INFO] loading splash image: " << filename;
 
     QFile saveFile(filename);
     if ( ! saveFile.open(QIODevice::ReadOnly) ) {
@@ -842,7 +842,7 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
         return;
     }
     clear_data();
-    getDataset()->fromByteArray(saveFile.readAll());
+    getDataset()->fromByteArray( saveFile.readAll() );
     saveFile.close();
     set_mode_normal();
     QList<int> thresholds = getDataset()->getThresholds();

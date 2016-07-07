@@ -29,6 +29,23 @@ class Mpx3GUI;
 class Mpx3Config: public QObject {
 
 	Q_OBJECT
+
+public:
+
+    typedef enum {
+        __operationMode_SequentialRW = 0,
+        __operationMode_ContinuousRW,
+        __operationMode_NumberOf
+    } operation_mode;
+
+    typedef enum {
+        __NOT_RESPONDING = 0,
+        __CONTROLLER_OK,
+        __DAC_OK
+    } detector_response;
+
+private:
+
 	//Spidr stuff
     SpidrController * controller = nullptr;
 	bool connected = false;
@@ -50,20 +67,9 @@ class Mpx3Config: public QObject {
     unsigned int * __pixelDepthMap;// = { 1 , 6 , 12 , 24 };
     const unsigned int __pixelDepth12BitsIndex = 2;
 
-    typedef enum {
-        __operationMode_SequentialRW = 0,
-        __operationMode_ContinuousRW,
-        __operationMode_NumberOf
-    } operation_mode;
+    QVector<detector_response> _responseChips;
+    QVector<int> _activeChips;
 
-	typedef enum {
-		__NOT_RESPONDING = 0,
-		__CONTROLLER_OK,
-		__DAC_OK
-	} detector_response;
-
-	QVector<detector_response> _responseChips;
-	QVector<int> _activeChips;
 
 public:
 

@@ -160,7 +160,13 @@ void DataTakingThread::run() {
     // system overhead.  This should be predicted and not hard-coded. TODO !
 
     // Start the trigger as configured
-    spidrcontrol->startAutoTrigger();
+
+     if ( _mpx3gui->getConfig()->getOperationMode()
+          == Mpx3Config::__operationMode_ContinuousRW ) {
+         spidrcontrol->startContReadout( 10 );
+     } else {
+         spidrcontrol->startAutoTrigger();
+     }
 
     // keep an eye on overflow
     unsigned int overflowCntr = 0;
