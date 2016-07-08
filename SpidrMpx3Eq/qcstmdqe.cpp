@@ -23,6 +23,12 @@ void QCstmDQE::SetMpx3GUI(Mpx3GUI *p) {
 
 }
 
+void QCstmDQE::CalcMTF()
+{
+
+    _mpx3gui->getDataset()->determinePointsROI(_currentThreshold, _pixel_begin, _pixel_end);
+}
+
 
 void QCstmDQE::on_takeDataPushButton_clicked()
 {
@@ -30,3 +36,5 @@ void QCstmDQE::on_takeDataPushButton_clicked()
    emit start_takingData();
 
 }
+
+

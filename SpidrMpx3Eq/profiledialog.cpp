@@ -14,7 +14,7 @@ ProfileDialog::ProfileDialog(QWidget *parent) :
     makeEditsList();
 
     for(int i = 0; i < editsList.length(); i++)
-        connect( editsList[i], SIGNAL(editingFinished()), this, SLOT(on_pointEdit_editingFinished()));
+        connect( editsList[i], SIGNAL(editingFinished()), this, SLOT(onpointEdit_editingFinished()));
 
 }
 
@@ -172,24 +172,25 @@ void ProfileDialog::useKernelDensityFunction(double bandwidth)
         i++;
     }
 
+    //Fill parameter vector.
     createKernelDensityFunction(Npoints, hist, bandwidth);
 
     ui->profilePlot->graph(kdf_index)->clearData();
 
-    //Calculating kdf values and adding them to a graph and vector.
     QVector<double> kdf;
     double value;
     int kdf_offset = 10;
 
+    //Calculating kdf values and adding them to a graph and vector.
     for(int i = kdf_offset; i < Npoints - kdf_offset ; i++){
         value = GausFuncAdd(points[i], par_v);
         kdf.append(value);
             ui->profilePlot->graph(kdf_index)->addData(i + begin, value);
     }
 
-
     int offset = begin + kdf_offset + bw*2;  //bw*2 because of the 5-point stencil.
-    //First derivative for calculating the max (or min)
+
+    //First derivative for calculating the max (or min).
     int maxpt = 0;
     QVector<int> maxpts;
     QVector<double> stencil = calcPoints(kdf, 1, bw);
@@ -213,7 +214,7 @@ void ProfileDialog::useKernelDensityFunction(double bandwidth)
     }
 
 
-    //second derivative with seperate calculation
+    //second derivative with seperate five-point-stencil calculation
     QVector<double> stencil3 = calcPoints(kdf, 2, bw);
     //Draw
     QVector<int> infls; //Save inflection points
@@ -513,10 +514,12 @@ bool ProfileDialog::valueinRange(int value){
         else if(value >= _end.y() && value <= _begin.y()) return true;
         else return false;
     }
-    else changeText("No axis defined.");
+    else {changeText("No axis defined.");
+        return false;
+    }
 }
 
-void ProfileDialog::on_pointEdit_editingFinished(){
+void ProfileDialog::onpointEdit_editingFinished(){
 
     int x;
     QString txt = sender()->objectName().split("_")[1];

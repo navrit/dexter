@@ -89,7 +89,7 @@ class Dataset//TODO: specify starting corner?
   int m_pixelDepthCntr;
   QRectF m_boundingBox;//!<A rectangular box which encompasses all the chips. Hence the name.
   int m_nFrames; //!< The amount of detectors, a.k.a. frames here.
-  score_info m_scores; //!< some 'score' info about this frame. A buch of counters.
+  score_info m_scores; //!< some 'score' info about this frame. A bunch of counters.
   int * m_plainImageBuff = nullptr;
 
   QVector<QPoint>  m_frameLayouts; //!<A vector containing the bottom-left corners of the detectors, (0,0) is bottom, left , (1,0) is to the right, (0,1) above.
@@ -138,9 +138,10 @@ public:
   QString calcCNR(QMap<int,int> Axismap); //!Calculates the contrast to noise ratio of the region indicated by the Profilepoints.
   double calcRegionMean(int begin, int end, QMap<int, int> Axismap);
   double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);
+  QVector<QPoint> determinePointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end);
   QPointF XtoXY(int X, int dimX);
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
-  QPoint jtoXY(int X); //!<Converts the j'th element in the data to the right coordinates on the screen. Depends on orientation.
+  QPoint jtoXY(int X); //<Converts the j'th element in the data to the right coordinates on the screen.//TO DO: Depends on orientation.
   int countProfilePoints();
   int countProfileRegions();
 

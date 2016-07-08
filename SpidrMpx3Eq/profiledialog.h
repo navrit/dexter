@@ -44,7 +44,7 @@ private:
     QList<QLineEdit*> editsList; //!Contains the QLineEdits that specify the points on the profile for CNR calculation.
     bool _left = true; //Indicates whether a left background is present.
     bool _right = true; //Indicates whether a right background is present.
-    QVector<double> par_v;
+    QVector<double> par_v;//Vector containing parameters for the kernel density function.
 
     //Functions:
     void addMeanLines(QString data);
@@ -70,7 +70,7 @@ private slots:
 
     void on_KDFbutton_clicked();
 
-    void on_pointEdit_editingFinished();
+    void onpointEdit_editingFinished(); //without _ to break pattern searching, object name changed.. to editlist[i]
 
     void on_comboBox_currentIndexChanged(const QString &arg1);
 

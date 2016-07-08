@@ -911,8 +911,9 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
     }
 
-    if (selectedItem == &gotoDQE){
+    else if (selectedItem == &gotoDQE){
         _mpx3gui->GetUI()->stackedWidget->setCurrentIndex(__dqe_page_Id);
+        _mpx3gui->GetUI()->dqeTab->CalcMTF();
 
     }
 

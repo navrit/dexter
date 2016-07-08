@@ -206,12 +206,30 @@ QVector<int> Dataset::toQVector() {
     return tovec;
 }
 
+QVector<QPoint> Dataset::determinePointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end)
+{
+    int* currentLayer = getLayer(layerIndex);
+
+    //Region of Interest
+    QRectF RoI;
+    RoI.setRect(pixel_init.x(), pixel_init.y(), pixel_end.x() - pixel_init.x(),  pixel_end.y() - pixel_init.y() );
+
+    QVector<QPoint> pointsinRoI;
+
+    for( int j = 0; j < getPixelsPerLayer(); j++){
+        QPoint pix = jtoXY(j);
+        if(RoI.contains(pix)) pointsinRoI.append(pix);
+    }
+
+    return pointsinRoI;
+}
 
 QPointF Dataset::XtoXY(int X, int dimX){
     return QPointF(X % dimX, X/dimX);
 }
 
 //Get the right coordinates (on the screen) from the array index j.
+//TODO: make independent of orientation of the chips.
 QPoint Dataset::jtoXY(int j){
     int x, y;
     int nj1 = m_nx*m_nx;    //max number j of each chip
@@ -229,7 +247,7 @@ QPoint Dataset::jtoXY(int j){
         x = (j - nj2)/128;
         y = (j - nj2)%128;
     }
-    //else? 4th pixel?
+    //TODO: 4th chip.
     return QPoint(x,y);
 }
 
@@ -310,7 +328,7 @@ void Dataset::clearProfilepoints()
 }
 
 QMap<int, int> Dataset::calcProfile(QString axis, int layerIndex, QPoint pixel_init, QPoint pixel_end){
-    QList<int> keys = m_thresholdsToIndices.keys();
+    //QList<int> keys = m_thresholdsToIndices.keys();
 
     //for(int i = 0; i < keys.length(); i++) {
     //Do it for the layer that is selected in the main gui:
@@ -530,6 +548,8 @@ double Dataset::calcRegionStdev(int begin, int end, QMap<int, int> Axismap, doub
 
     return stdev;
 }
+
+
 
 bool Dataset::isBorderPixel(int p, QSize isize) {
 
