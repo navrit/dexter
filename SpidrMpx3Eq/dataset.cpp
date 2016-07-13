@@ -315,19 +315,19 @@ QMap<int, int> Dataset::calcProfile(QString axis, int layerIndex, QPoint pixel_i
     //For each X or Y value (resp.) add up the pixel values.
     QMap<int, int> profilevals;
     if(axis == "X")
-        for(int y = 0; y <= height; y++){
-            for(int x = 0; x <= width; x++){
+        for(int y = pixel_init.y(); y >= pixel_init.y() - height; y--){     //pixel_init is upper left corner.
+            for(int x = pixel_init.x(); x <= pixel_init.x() + width; x++){
                 if(profilevals.contains( x ))
-                    profilevals[ x ] += sample( pixel_init.x() + x, pixel_init.y() - y, layerIndex); //pixel_init is upper left corner.
-                else profilevals[ x ] = sample( pixel_init.x() + x, pixel_init.y() - y, layerIndex);
+                    profilevals[ x ] += sample( x, y, layerIndex);
+                else profilevals[ x ] = sample( x, y, layerIndex);
             }
         }
     if(axis == "Y")
-        for(int y = 0; y <= height; y++){
-            for(int x = 0; x <= width; x++){
+        for(int y = pixel_init.y(); y >= pixel_init.y() - height; y--){     //pixel_init is upper left corner.
+            for(int x = pixel_init.x(); x <= pixel_init.x() + width; x++){
                 if(profilevals.contains( y ))
-                    profilevals[ y ] += sample( pixel_init.x() + x, pixel_init.y() - y, layerIndex);
-                else profilevals[ y ] = sample( pixel_init.x() + x, pixel_init.y() - y, layerIndex);
+                    profilevals[ y ] += sample( x, y, layerIndex);
+                else profilevals[ y ] = sample( x, y, layerIndex);
             }
         }
     return profilevals;
