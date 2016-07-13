@@ -867,6 +867,9 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     //}
 
     //int deviceID = _mpx3gui->getConfig()->getActiveDevices()[frameIndex];
+
+    int layerIndex = getActiveThreshold();
+
     QMenu contextMenu;
 
     //Have the region only in the header:
@@ -876,20 +879,16 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     wid.setDefaultWidget(label);
     contextMenu.addAction(&wid);
 
-    QAction calcStats(QString("Calc stats"), &contextMenu);
-    //QAction calcStats(QString("Calc stats (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    QAction calcStats(QString("Calc stats"), &contextMenu);    //QAction calcStats(QString("Calc stats (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&calcStats);
 
-    QAction calcProX(QString("ProfileX"), &contextMenu);
-    //QAction calcProX(QString("ProfileX (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    QAction calcProX(QString("ProfileX"), &contextMenu);    //QAction calcProX(QString("ProfileX (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&calcProX);
 
-    QAction calcProY(QString("ProfileY"), &contextMenu);
-    //QAction calcProY(QString("ProfileY (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    QAction calcProY(QString("ProfileY"), &contextMenu);    //QAction calcProY(QString("ProfileY (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&calcProY);
 
-    QAction gotoDQE(QString("Use for DQE"),&contextMenu);
-    //QAction gotoDQE(QString("Use for DQE (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    QAction gotoDQE(QString("Use for DQE"),&contextMenu);    //QAction gotoDQE(QString("Use for DQE (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&gotoDQE);
 
 
@@ -912,9 +911,12 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     }
 
     else if (selectedItem == &gotoDQE){
+        _mpx3gui->GetUI()->dqeTab->setPixels(pixel_begin, pixel_end);
+        _mpx3gui->getDataset()->collectPointsROI(layerIndex, pixel_begin, pixel_end);
+        _mpx3gui->GetUI()->dqeTab->setLayer(layerIndex);
         _mpx3gui->GetUI()->stackedWidget->setCurrentIndex(__dqe_page_Id);
-        _mpx3gui->GetUI()->dqeTab->CalcMTF();
 
+        _mpx3gui->GetUI()->dqeTab->plotESF();
     }
 
     else if(selectedItem != nullptr) {
@@ -930,13 +932,13 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _profiledialog->setAxis(axis);
         _profiledialog->changeTitle();
 
-        QList<int> thresholdlist = _mpx3gui->getDataset()->getThresholds();
-        QStringList combolist;
-        for(int i = 0; i < thresholdlist.length(); i++)
-            combolist.append(QString("Threshold %1").arg(thresholdlist[i]));
+//        QList<int> thresholdlist = _mpx3gui->getDataset()->getThresholds();
+//        QStringList combolist;
+//        for(int i = 0; i < thresholdlist.length(); i++)
+//            combolist.append(QString("Threshold %1").arg(thresholdlist[i]));
 
         //Calculate the profile of the selected region of the selected layer
-        int layerIndex = getActiveThreshold();
+
         _profiledialog->setLayer(layerIndex);
         _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, layerIndex, pixel_begin, pixel_end));
         _profiledialog->plotProfile();

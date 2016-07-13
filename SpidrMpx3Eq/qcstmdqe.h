@@ -17,18 +17,21 @@ public:
     ~QCstmDQE();
     Ui::QCstmDQE * GetUI(){ return ui; };
     void SetMpx3GUI(Mpx3GUI *p);
-    void setThreshold(int threshold){ _currentThreshold = threshold;}
-    void setPixels(QPoint pixel_begin, QPoint pixel_end) {_pixel_begin = pixel_begin; _pixel_end = pixel_end;}
-    void CalcMTF();
+    void setLayer(int threshold){ _currentlayer = threshold;}
+    void setPixels(QPoint pixel_begin, QPoint pixel_end) {_beginpix = pixel_begin;_endpix = pixel_end;}
+    void plotMTF();
+    void plotESF();
 
 private slots:
     void on_takeDataPushButton_clicked();
 
+    void on_comboBox_currentIndexChanged(const QString &arg1);
+
 private:
     Ui::QCstmDQE *ui;
     Mpx3GUI * _mpx3gui;
-    int _currentThreshold;
-    QPoint _pixel_begin, _pixel_end;
+    int _currentlayer;
+    QPoint _beginpix, _endpix;
 
 signals:
     void start_takingData();

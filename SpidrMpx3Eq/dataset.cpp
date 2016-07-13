@@ -206,49 +206,37 @@ QVector<int> Dataset::toQVector() {
     return tovec;
 }
 
-QVector<QPoint> Dataset::determinePointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end)
+void Dataset::collectPointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end)
 {
-    int* currentLayer = getLayer(layerIndex);
+    //int* currentLayer = getLayer(layerIndex);
 
-    //Region of Interest
-    QRectF RoI;
-    RoI.setRect(pixel_init.x(), pixel_init.y(), pixel_end.x() - pixel_init.x(),  pixel_end.y() - pixel_init.y() );
+    //Region of Interest.
+    //QRectF RoI;
+    //RoI.setRect(pixel_init.x(), pixel_init.y(), pixel_end.x() - pixel_init.x(),  pixel_end.y() - pixel_init.y() );
+    int height = abs( pixel_end.y() - pixel_init.y() );
+    int width = abs( pixel_end.x() - pixel_init.x() );
 
-    QVector<QPoint> pointsinRoI;
-
-    for( int j = 0; j < getPixelsPerLayer(); j++){
-        QPoint pix = jtoXY(j);
-        if(RoI.contains(pix)) pointsinRoI.append(pix);
+    //Setup data matrix of size x*y.
+    if(!valuesinRoI.empty()){
+        valuesinRoI.clear();
+        //valuesinRoI.squeeze();//Release all memory previously reserved (??)
+    }
+    valuesinRoI.resize(height + 1);
+    for(int i = 0; i <= height; i++){
+        valuesinRoI[i].resize(width + 1);
     }
 
-    return pointsinRoI;
+    //Fill data matrix with values within the RoI.
+    for(int y = 0; y <= height; y++){
+        for(int x = 0; x <= width; x++){
+            //int j = XYtoj( QPoint( pixel_init.x() + x , pixel_init.y() - y ) );
+            valuesinRoI[y][x] = sample( pixel_init.x() + x, pixel_init.y() - y, layerIndex);
+        }
+    }
 }
 
 QPointF Dataset::XtoXY(int X, int dimX){
     return QPointF(X % dimX, X/dimX);
-}
-
-//Get the right coordinates (on the screen) from the array index j.
-//TODO: make independent of orientation of the chips.
-QPoint Dataset::jtoXY(int j){
-    int x, y;
-    int nj1 = m_nx*m_nx;    //max number j of each chip
-    int nj2 = 2*m_nx*m_nx;
-    int nj3 = 3* m_nx*m_nx;
-    if(j < nj1)                     //pixel 0: upper left
-    {   x = j/128;
-        y = 128 + j%128;
-    }
-    if(j >= nj1 && j < nj2){        //pixel 1: bottom right
-        x = ceil(255 - (j - nj1)/128);
-        y = 127 - j%128;
-    }
-    if(j >= nj2 && j < nj3){        //pixel 2: bottom left
-        x = (j - nj2)/128;
-        y = (j - nj2)%128;
-    }
-    //TODO: 4th chip.
-    return QPoint(x,y);
 }
 
 void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
@@ -257,33 +245,28 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
     bstats.mean_v.clear();
     bstats.stdev_v.clear();
 
-    QList<int> keys = m_thresholdsToIndices.keys();
+    QList<int> keys = m_thresholdsToIndices.keys(); //Layerindices
 
-    QSize isize = QSize(computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y());
-
+    //QSize isize = QSize(computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y()); //For what?
 
     // Region of interest
-    QRectF RoI;
-    RoI.setRect(pixel_init.x(), pixel_init.y(), pixel_end.x() - pixel_init.x(),  pixel_end.y() - pixel_init.y() );
+    int height = abs( pixel_end.y() - pixel_init.y() );
+    int width = abs( pixel_end.x() - pixel_init.x() );
 
     //Set in bstats to use in the dialog
     bstats.init_pixel = pixel_init;
     bstats.end_pixel = pixel_end;
 
+    double nMean, mean, stdev;
+
     // Mean
     for(int i = 0; i < keys.length(); i++) {
+       mean = 0.;
+       nMean = 0.;
 
-        int* currentLayer = getLayer(keys[i]);
-
-        // Calc mean on the interesting pixels
-        double mean = 0.;
-        double nMean = 0.;
-        for(unsigned int j = 0; j < getPixelsPerLayer(); j++) {
-            // See if the pixel is inside the region
-            //QPointF pix = XtoXY(j, isize.width());  //Not correct conversion from j to XY.//A
-            QPoint pix = jtoXY(j);
-            if ( RoI.contains( pix ) ) {
-                mean += currentLayer[j];
+        for(int y = 0; y <= height; y++){
+            for(int x = 0; x <= width; x++){
+                mean += sample( pixel_init.x() + x, pixel_init.y() - y, keys[i]); //pixel_init is upper left corner.
                 nMean++;
             }
         }
@@ -293,19 +276,16 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
 
     // Standard Deviation
     for(int i = 0; i < keys.length(); i++) {
+        stdev = 0.;
+        nMean = 0.;
 
-        int* currentLayer = getLayer(keys[i]);
-        double stdev = 0.;
-        double nMean = 0.;
-        for(unsigned int j = 0; j < getPixelsPerLayer(); j++) {
-            //See if the pixel is inside the region
-            //QPointF pix = XtoXY(j, isize.width());//wrong
-            QPoint pix =jtoXY(j);
-            if ( RoI.contains( pix ) ) {
-                stdev += (currentLayer[j] - bstats.mean_v[i])*(currentLayer[j] - bstats.mean_v[i]);
-                nMean++;
+            for(int y = 0; y <= height; y++){
+                for(int x = 0; x <= width; x++){
+                    int val = sample( pixel_init.x() + x, pixel_init.y() - y, keys[i] );
+                    stdev += ( val - bstats.mean_v[i] ) * ( val - bstats.mean_v[i] );
+                    nMean++;
+                }
             }
-        }
         if ( nMean != 1 ) stdev /= (nMean - 1);
         stdev = sqrt(stdev);
         bstats.stdev_v.push_back(stdev);
@@ -328,40 +308,29 @@ void Dataset::clearProfilepoints()
 }
 
 QMap<int, int> Dataset::calcProfile(QString axis, int layerIndex, QPoint pixel_init, QPoint pixel_end){
-    //QList<int> keys = m_thresholdsToIndices.keys();
 
-    //for(int i = 0; i < keys.length(); i++) {
-    //Do it for the layer that is selected in the main gui:
-    int* currentLayer = getLayer(layerIndex); //keys[i]);
+    int height = abs( pixel_end.y() - pixel_init.y() );
+    int width = abs( pixel_end.x() - pixel_init.x() );
 
-    //Region of Interest
-    QRectF RoI;
-    RoI.setRect(pixel_init.x(), pixel_init.y(), pixel_end.x() - pixel_init.x(),  pixel_end.y() - pixel_init.y() );
-
+    //For each X or Y value (resp.) add up the pixel values.
     QMap<int, int> profilevals;
     if(axis == "X")
-        for( int j =0; j < getPixelsPerLayer(); j++) {
-            QPoint pix = jtoXY(j);
-
-            if(RoI.contains(pix)){
-                if(profilevals.contains(pix.x()))
-                    profilevals[pix.x()] += currentLayer[j];
-                else profilevals[pix.x()] = currentLayer[j];
+        for(int y = 0; y <= height; y++){
+            for(int x = 0; x <= width; x++){
+                if(profilevals.contains( x ))
+                    profilevals[ x ] += sample( pixel_init.x() + x, pixel_init.y() - y, layerIndex); //pixel_init is upper left corner.
+                else profilevals[ x ] = sample( pixel_init.x() + x, pixel_init.y() - y, layerIndex);
             }
         }
     if(axis == "Y")
-        for( int j =0; j < getPixelsPerLayer(); j++) {
-            QPoint pix = jtoXY(j);
-
-            if(RoI.contains(pix)){
-                if(profilevals.contains(pix.y()))
-                    profilevals[pix.y()] += currentLayer[j];
-                else profilevals[pix.y()] = currentLayer[j];
+        for(int y = 0; y <= height; y++){
+            for(int x = 0; x <= width; x++){
+                if(profilevals.contains( y ))
+                    profilevals[ y ] += sample( pixel_init.x() + x, pixel_init.y() - y, layerIndex);
+                else profilevals[ y ] = sample( pixel_init.x() + x, pixel_init.y() - y, layerIndex);
             }
         }
-
     return profilevals;
-    //}
 }
 
 //!Calculates the Contrast to Noise Ratio of a regionprofile.
@@ -414,8 +383,8 @@ QString Dataset::calcCNR(QMap<int, int> Axismap){
             signal = 1;
             cnr = mean_v[signal];
             snr = mean_v[signal];
-            double cnrdiv;
-            double snrdiv;
+            double cnrdiv = 0;
+            double snrdiv = 0 ;
 
             for(int i = 0; i < mean_v.length(); i++)
                     if(i!= signal) cnr -= meanfactor*mean_v[i];
@@ -549,6 +518,104 @@ double Dataset::calcRegionStdev(int begin, int end, QMap<int, int> Axismap, doub
     return stdev;
 }
 
+QVector<QVector<double> > Dataset::calcESFdata()
+{   //Setup data vectors of proper size.
+    QVector<QVector<double> > esfData;
+    esfData.resize(2); //We need a vector for the
+    int Nx = valuesinRoI[0].length(); //The number of columns i.e. number of pixels in the x-direction.
+    int Ny = valuesinRoI.length(); //The number of rows i.e. number of pixels in the y-direction.
+    int i;
+    for(i = 0; i < 2; i++){
+        esfData[i].resize( Ny * Nx ); //Assumes all rows of valuesinRoI have equal length, which they do for a rectangular RoI.
+    }
+
+    QPoint ab = calcMidLine();
+    double a = ab.x();
+    double b = ab.y();
+    double ap = -1.0, bp;   //Of a line perpendicular to the edge line, through a certain point.
+    if(a!=0) ap /= a;
+    double xi, yi;  //Point of intersection of perpendicular line and edge line.
+    double d;       //Distance of a point to the line, in #pixels.
+    double bright = 0., dark = 0.;
+
+    //Calculate mean values for the bright and dark part.
+    int nx = Nx/6; //Some part of the brightest and darkest part.
+    int Nmean = 0;
+    for(int y=0; y < Ny; y++)
+        for (i=0; i < nx; i++){
+            bright += valuesinRoI[y][i];
+            dark   += valuesinRoI[y][Nx - nx];
+            Nmean++;
+        }
+
+    if(Nmean != 0){
+        bright /= Nmean;
+        dark   /= Nmean;
+    }
+
+    i =0;
+    for(int y = 0; y < valuesinRoI.length(); y++)
+        for(int x = 0; x < valuesinRoI[y].length(); x++){
+            bp  = y - ap * x;
+            xi  = bp - b;
+            if(a- ap != 0) xi /= a - ap;
+            else ; //TO DO: stop calculation and show error message.
+            yi  = a * xi + b;
+
+            d = sqrt((xi - x) * (xi - x) + (yi - y) * (yi - y));
+            if(x < xi) d = -d;
+
+            esfData[0][i] = d;
+            esfData[1][i] = (valuesinRoI[y][x] - dark) / (bright - dark) ;
+            i++;
+        }
+
+    return esfData;
+}
+
+QPoint Dataset::calcMidLine()
+{
+    int Nx = valuesinRoI[0].length(); //The number of columns i.e. number of pixels in the x-direction.
+    int Ny = valuesinRoI.length(); //The number of rows i.e. number of pixels in the y-direction.
+
+    //Determine the edge line.
+    //Find the middle for the top and bottom rows.
+    int nx = Nx/6; //Some part of the brightest and darkest part.
+    double LmeanU = 0, RmeanU=0, LmeanB = 0, RmeanB = 0;
+
+    //Calculate the mean of a part on the left and right of the upper and bottom row, respectively. (LeftmeanUpperrow etc.)
+    for(int i = 0; i < nx; i++){
+        LmeanU += valuesinRoI[0][i];
+        RmeanU += valuesinRoI[0][Nx - 1 - i];
+        LmeanB += valuesinRoI[Ny - 1][i];
+        RmeanB += valuesinRoI[Ny - 1][i];
+    }
+    if(nx!=0){
+        LmeanU /= nx;
+        RmeanU /= nx;
+        LmeanB /= nx;
+        RmeanB /= nx;
+    }
+    else; //Warning message? Too little points.
+    double meanU, meanB;
+    meanU = 0.5*(LmeanU + RmeanU);
+    meanB = 0.5*(LmeanB + RmeanB);
+
+    double mindiffU = meanU, mindiffB = meanB;
+    int midU, midB;
+
+    //Find points in upper and bottom row that are closest to the half-value.
+    for(int i = 0; i < Nx; i++){
+        if( abs(valuesinRoI[0][i] - meanU) < mindiffU) midU = i;
+        if( abs(valuesinRoI[Ny - 1][i] - meanB) < mindiffB) midB = i;
+    }
+
+    double a = Ny;
+    a /= midU - midB;     //a= Dy/Dx.
+    double b = -a * (midB + 0.5); //b= y1 - a*x1. y1=0
+
+return QPoint(a, b);
+}
 
 
 bool Dataset::isBorderPixel(int p, QSize isize) {

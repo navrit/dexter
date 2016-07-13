@@ -104,6 +104,7 @@ class Dataset//TODO: specify starting corner?
   void rewindScores();
 
   QList<int> Profilepoints = QList<int>() << -1 << -1 << -1 << -1 << -1 << -1; //!The points on a profile that are used to calculate the CNR. Initialized to -1 to indicate that no value has been specified (yet).
+  QVector<QVector<int> > valuesinRoI;//!A matrix of the values of the pixels contained in the region of interest. Each row corresponds to a row of pixels, from the top down.
 
 public:
   Dataset(int x, int y, int framesPerLayer = 1, int pixelDepthBits = 12);
@@ -138,10 +139,11 @@ public:
   QString calcCNR(QMap<int,int> Axismap); //!Calculates the contrast to noise ratio of the region indicated by the Profilepoints.
   double calcRegionMean(int begin, int end, QMap<int, int> Axismap);
   double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);
-  QVector<QPoint> determinePointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end);
+  void collectPointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end);
+  QVector<QVector<double> > calcESFdata();
+  QPoint calcMidLine();
   QPointF XtoXY(int X, int dimX);
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
-  QPoint jtoXY(int X); //<Converts the j'th element in the data to the right coordinates on the screen.//TO DO: Depends on orientation.
   int countProfilePoints();
   int countProfileRegions();
 
