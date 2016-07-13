@@ -248,7 +248,7 @@ void Mpx3GUI::setTestPulses() {
         spidrcontrol->setPixelConfigMpx3rx( devId );
         spidrcontrol->setCtpr( devId );
 
-        spidrcontrol->setTpSwitch( 0, 200000 );
+        spidrcontrol->setTpSwitch( 1, 200000 );
 
     }
 

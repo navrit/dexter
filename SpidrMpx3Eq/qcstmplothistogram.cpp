@@ -79,6 +79,8 @@ void QCstmPlotHistogram::setHistogram(int threshold, QVector<int> data, int min,
 
 void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size, int min, int max){
 
+    if ( data == nullptr ) return;
+
     if ( threshold < 0 ) return;
     int index;
     if ( m_mapping.contains(threshold) ) {
@@ -91,7 +93,7 @@ void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size, int mi
     // Figure out range.  The user may want a fixed range in the case.
     if ( min == 0 && max == 0 ) {
         min = INT_MAX, max = INT_MIN;
-        for(int i = 0; i < size; i++){
+        for ( int i = 0; i < size; i++ ) {
             if(data[i] < min)
                 min = data[i];
             if(data[i] > max)
@@ -100,6 +102,7 @@ void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size, int mi
 
         // This could happen
         if ( min == INT_MIN ) min = 0;
+
 
     }
 

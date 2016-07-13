@@ -16,7 +16,11 @@
         <file>icons/eraser_equalisation_logo.png</file>
         <file>icons/Equalisation_logo.png</file>
         <file>icons/DACs_logo.png</file>
-        <file>icons/Config_logo.png</file>
         <file>icons/ASI_algorithms_logo.png</file>
+        <file>icons/config_logo.png</file>
+        <file>icons/config_logo(active).png</file>
+        <file>icons/Visualization_logo(active).png</file>
+        <file>icons/Equalisation_logo(active).png</file>
+        <file>icons/DACs_logo(active).png</file>
     </qresource>
 </RCC>

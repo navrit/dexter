@@ -1612,7 +1612,7 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui) {
     return m_plainImageBuff;
 }
 
-int* Dataset::getLayer(int threshold){
+int * Dataset::getLayer(int threshold){
 
     int layerIndex = thresholdToIndex(threshold);
     if(layerIndex == -1)

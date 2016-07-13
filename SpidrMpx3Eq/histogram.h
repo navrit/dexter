@@ -83,7 +83,9 @@ public:
   void setRange(int min, int max);
   unsigned getYMaxCount();
   //! Returns the amount of bins.
-  inline int size() const{return (m_max-m_min+1)/m_binWidth+1;}
+  inline int size() const{
+      return (m_max-m_min+1)/m_binWidth+1;
+  }
   //!Returns the size of the bin corresponding to value. If value is out-of-bounds, returns 0.
   inline int at(int value){return (value <= m_max && value >= m_min)? m_bins[valueToBin(value)] : 0;} //bounds checking version of [], non-reference because OOB references.
    //! Returns the size of the bin at the specified index. Does not do bounds checking.

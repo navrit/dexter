@@ -442,6 +442,12 @@ void DataTakingThread::run() {
         }
     }
 
+
+    if ( _mpx3gui->getConfig()->getOperationMode()
+         == Mpx3Config::__operationMode_ContinuousRW ) {
+        spidrcontrol->stopContReadout();
+    }
+
     if ( _stop ) { // if the data taking was stopped
         spidrcontrol->stopAutoTrigger();
     }
