@@ -7,15 +7,15 @@
     <x>0</x>
     <y>0</y>
     <width>1009</width>
-    <height>555</height>
+    <height>556</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_7">
+  <layout class="QVBoxLayout" name="verticalLayout_8">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_6">
+    <layout class="QVBoxLayout" name="verticalLayout_7">
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
@@ -95,6 +95,9 @@
                   <property name="text">
                    <string>Edge</string>
                   </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
                  </widget>
                 </item>
                 <item>
@@ -143,25 +146,15 @@
        </item>
        <item>
         <widget class="QGroupBox" name="groupBox_2">
+         <property name="minimumSize">
+          <size>
+           <width>181</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="title">
           <string>NPS</string>
          </property>
-         <widget class="QCustomPlot" name="widget" native="true">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>210</y>
-            <width>246</width>
-            <height>141</height>
-           </rect>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>171</width>
-            <height>0</height>
-           </size>
-          </property>
-         </widget>
          <widget class="QPushButton" name="pushButton_2">
           <property name="geometry">
            <rect>
@@ -173,6 +166,38 @@
           </property>
           <property name="text">
            <string>Load data</string>
+          </property>
+         </widget>
+         <widget class="QTableView" name="tableView">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>52</y>
+            <width>141</width>
+            <height>284</height>
+           </rect>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>141</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
+         <widget class="QCustomPlot" name="widget" native="true">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>342</y>
+            <width>246</width>
+            <height>151</height>
+           </rect>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>171</width>
+            <height>151</height>
+           </size>
           </property>
          </widget>
         </widget>

@@ -208,29 +208,27 @@ QVector<int> Dataset::toQVector() {
 
 void Dataset::collectPointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end)
 {
-    //int* currentLayer = getLayer(layerIndex);
-
     //Region of Interest.
     //QRectF RoI;
     //RoI.setRect(pixel_init.x(), pixel_init.y(), pixel_end.x() - pixel_init.x(),  pixel_end.y() - pixel_init.y() );
-    int height = abs( pixel_end.y() - pixel_init.y() );
-    int width = abs( pixel_end.x() - pixel_init.x() );
+    int Ny = abs( pixel_end.y() - pixel_init.y() ) + 1;
+    int Nx = abs( pixel_end.x() - pixel_init.x() ) + 1;
 
     //Setup data matrix of size x*y.
     if(!valuesinRoI.empty()){
         valuesinRoI.clear();
         //valuesinRoI.squeeze();//Release all memory previously reserved (??)
     }
-    valuesinRoI.resize(height + 1);
-    for(int i = 0; i <= height; i++){
-        valuesinRoI[i].resize(width + 1);
+    valuesinRoI.resize(Ny);
+    for(int i = 0; i < Ny; i++){
+        valuesinRoI[i].resize(Nx);
     }
 
     //Fill data matrix with values within the RoI.
-    for(int y = 0; y <= height; y++){
-        for(int x = 0; x <= width; x++){
-            //int j = XYtoj( QPoint( pixel_init.x() + x , pixel_init.y() - y ) );
-            valuesinRoI[y][x] = sample( pixel_init.x() + x, pixel_init.y() - y, layerIndex);
+    for(int y = 0; y < Ny; y++){
+        for(int x = 0; x < Nx; x++){
+            //Let y start from the bottom up and let x go from left to right.
+            valuesinRoI[Ny - 1 - y][x] = sample( pixel_init.x() + x, pixel_init.y() - y, layerIndex);
         }
     }
 }
@@ -478,6 +476,25 @@ int Dataset::countProfileRegions(){
     return n;
 }
 
+QPoint Dataset::LinearRegression(QVector<double> x, QVector<double> y)
+{   double a, b; //The slope and point of intersection of a straight line y= ax+b.
+    double Sx = 0, Sy = 0, Sxx = 0, Sxy = 0;
+    int n = x.length();
+    for(int i = 0; i < n; i++)
+    {
+        Sx  += x[i];
+        Sxx += x[i]*x[i];
+        Sy  += y[i];
+        Sxy += x[i]*y[i];
+    }
+
+    a  = n * Sxy - Sx*Sy;
+    a /= n*Sxx - Sx*Sx;
+    b = Sy/n - a * Sx /n;
+
+    return QPoint(a, b);
+}
+
 double Dataset::calcRegionMean(int begin, int end, QMap<int, int> Axismap){
 
     double mean =0.;
@@ -521,7 +538,8 @@ double Dataset::calcRegionStdev(int begin, int end, QMap<int, int> Axismap, doub
 QVector<QVector<double> > Dataset::calcESFdata()
 {   //Setup data vectors of proper size.
     QVector<QVector<double> > esfData;
-    esfData.resize(2); //We need a vector for the
+    //We need a vector for the distance  one for the pixel values.
+    esfData.resize(2);
     int Nx = valuesinRoI[0].length(); //The number of columns i.e. number of pixels in the x-direction.
     int Ny = valuesinRoI.length(); //The number of rows i.e. number of pixels in the y-direction.
     int i;
@@ -529,18 +547,10 @@ QVector<QVector<double> > Dataset::calcESFdata()
         esfData[i].resize( Ny * Nx ); //Assumes all rows of valuesinRoI have equal length, which they do for a rectangular RoI.
     }
 
-    QPoint ab = calcMidLine();
-    double a = ab.x();
-    double b = ab.y();
-    double ap = -1.0, bp;   //Of a line perpendicular to the edge line, through a certain point.
-    if(a!=0) ap /= a;
-    double xi, yi;  //Point of intersection of perpendicular line and edge line.
-    double d;       //Distance of a point to the line, in #pixels.
-    double bright = 0., dark = 0.;
-
     //Calculate mean values for the bright and dark part.
     int nx = Nx/6; //Some part of the brightest and darkest part.
     int Nmean = 0;
+    double bright = 0., dark = 0.;
     for(int y=0; y < Ny; y++)
         for (i=0; i < nx; i++){
             bright += valuesinRoI[y][i];
@@ -552,6 +562,15 @@ QVector<QVector<double> > Dataset::calcESFdata()
         bright /= Nmean;
         dark   /= Nmean;
     }
+
+    QPoint ab = calcMidLine(bright, dark);
+    double a = ab.x();
+    double b = ab.y();
+    double ap = -1.0, bp;   //Of a line perpendicular to the edge line, through a certain point.
+    if(a!=0) ap /= a;
+    double xi, yi;  //Point of intersection of perpendicular line and edge line.
+    double d;       //Distance of a point to the line, in #pixels.
+
 
     i =0;
     for(int y = 0; y < valuesinRoI.length(); y++)
@@ -566,55 +585,90 @@ QVector<QVector<double> > Dataset::calcESFdata()
             if(x < xi) d = -d;
 
             esfData[0][i] = d;
-            esfData[1][i] = (valuesinRoI[y][x] - dark) / (bright - dark) ;
+            esfData[1][i] += (valuesinRoI[y][x] - dark) / (bright - dark) ;
             i++;
         }
 
     return esfData;
 }
 
-QPoint Dataset::calcMidLine()
+QPoint Dataset::calcMidLine(double bright, double dark)
 {
     int Nx = valuesinRoI[0].length(); //The number of columns i.e. number of pixels in the x-direction.
     int Ny = valuesinRoI.length(); //The number of rows i.e. number of pixels in the y-direction.
 
-    //Determine the edge line.
-    //Find the middle for the top and bottom rows.
-    int nx = Nx/6; //Some part of the brightest and darkest part.
-    double LmeanU = 0, RmeanU=0, LmeanB = 0, RmeanB = 0;
+//    //Determine the edge line.
+//    //Find the middle for the top and bottom rows.
+//    int nx = Nx/6; //Some part of the brightest and darkest part.
+//    double LmeanU = 0, RmeanU=0, LmeanB = 0, RmeanB = 0;
 
-    //Calculate the mean of a part on the left and right of the upper and bottom row, respectively. (LeftmeanUpperrow etc.)
-    for(int i = 0; i < nx; i++){
-        LmeanU += valuesinRoI[0][i];
-        RmeanU += valuesinRoI[0][Nx - 1 - i];
-        LmeanB += valuesinRoI[Ny - 1][i];
-        RmeanB += valuesinRoI[Ny - 1][i];
-    }
-    if(nx!=0){
-        LmeanU /= nx;
-        RmeanU /= nx;
-        LmeanB /= nx;
-        RmeanB /= nx;
-    }
-    else; //Warning message? Too little points.
-    double meanU, meanB;
-    meanU = 0.5*(LmeanU + RmeanU);
-    meanB = 0.5*(LmeanB + RmeanB);
+//    //Calculate the mean of a part on the left and right of the upper and bottom row, respectively. (LeftmeanUpperrow etc.)
+//    for(int i = 0; i < nx; i++){
+//        LmeanU += valuesinRoI[0][i];
+//        RmeanU += valuesinRoI[0][Nx - 1 - i];
+//        LmeanB += valuesinRoI[Ny - 1][i];
+//        RmeanB += valuesinRoI[Ny - 1][Nx - 1 - i];
+//    }
+//    if(nx!=0){
+//        LmeanU /= nx;
+//        RmeanU /= nx;
+//        LmeanB /= nx;
+//        RmeanB /= nx;
+//    }
+//    else; //Warning message? Too little points.
+//    double meanU, meanB;
+//    meanU = 0.5*(LmeanU + RmeanU);
+//    meanB = 0.5*(LmeanB + RmeanB);
 
-    double mindiffU = meanU, mindiffB = meanB;
-    int midU, midB;
+//    double mindiffU = 2*meanU, mindiffB = 2*meanB;  //?
+//    int midU, midB;
 
     //Find points in upper and bottom row that are closest to the half-value.
-    for(int i = 0; i < Nx; i++){
-        if( abs(valuesinRoI[0][i] - meanU) < mindiffU) midU = i;
-        if( abs(valuesinRoI[Ny - 1][i] - meanB) < mindiffB) midB = i;
-    }
+//    for(int i = 0; i < Nx; i++){
+//        double diffU = abs(valuesinRoI[0][i] - meanU);
+//        double diffB = abs(valuesinRoI[Ny - 1][i] - meanB);
 
-    double a = Ny;
-    a /= midU - midB;     //a= Dy/Dx.
-    double b = -a * (midB + 0.5); //b= y1 - a*x1. y1=0
+//        if( diffU < mindiffU) {
+//            midU = i;
+//            mindiffU = diffU;
+//        }
+//        if( diffB < mindiffB){
+//            midB = i;
+//            mindiffB = diffB;
+//        }
+//    }
 
-return QPoint(a, b);
+//    double a = Ny;
+//    a /= midU - midB;     //a= Dy/Dx.
+//    double b = -a * (midB + 0.5); //b= y1 - a*x1. y1=0
+
+    QVector<double> xm(Ny); //An x value for the middle of each row.
+    QVector<double> ym(Ny); //And a yvalue..
+    double mid = 0.5*(bright + dark);
+
+    //TODO: only goes from light to dark... include dark to light.
+    //Look for the first pixel that is dark, take middle of row between light and dark pixel.
+    for(int y = 0; y < Ny; y++)
+        for(int x = 0; x < Nx; x++){
+            if(valuesinRoI[y][x] < mid)
+                if(x > 0)
+                if(valuesinRoI[y][x - 1] > mid)
+                    if(x < Nx - 1)
+                    if(valuesinRoI[y][x + 1] < mid){//To check it's not just an randomly dark pixel.
+                        xm[y] = x;          //Distance to in between pixel x-1 (centered at x-1+0.5) and x (centered at x+0.5).
+                        ym[y] = y + 0.5;    //Middle of the pixel.
+                    }
+        }
+
+
+    QPoint ab = LinearRegression(xm, ym);
+
+    return ab;
+}
+
+void Dataset::fitESF(QVector<QVector<double> > esfdata)
+{
+
 }
 
 

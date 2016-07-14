@@ -141,11 +141,13 @@ public:
   double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);
   void collectPointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end);
   QVector<QVector<double> > calcESFdata();
-  QPoint calcMidLine();
+  QPoint calcMidLine(double bright, double dark);
+  void fitESF(QVector<QVector<double> > esfdata);
   QPointF XtoXY(int X, int dimX);
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
   int countProfilePoints();
   int countProfileRegions();
+  QPoint LinearRegression(QVector<double> x, QVector<double> y);
 
   void setOrientation(QVector<int> orientations){for(int i = 0; i < orientations.length();i++)setOrientation(i, orientations[i]);}
   void setOrientation(int index, int orientation){m_frameOrientation[index] = orientation;}
