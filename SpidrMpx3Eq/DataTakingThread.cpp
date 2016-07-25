@@ -59,6 +59,9 @@ void DataTakingThread::run() {
 
     SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 
+    // +i
+    spidrcontrol->resetCounters();
+
     //! Work around
     //! If we attempt a connection while the system is already sending data
     //! (this may happen if for instance the program died for whatever reason,

@@ -15,7 +15,8 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x16062900; // Add setTpSwitch(), setPs()
+const int   VERSION_ID = 0x16071800; // Add resetCounters()
+//const int VERSION_ID = 0x16062900; // Add setTpSwitch(), setPs()
 //const int VERSION_ID = 0x16062100; // Add open/closeShutter(), startContReadout();
                                      // bug fix in ReceiverThreadC.cpp
 //const int VERSION_ID = 0x16061600; // Add setMpx3Clock()
@@ -1157,6 +1158,13 @@ bool SpidrController::stopContReadout()
   this->setSpidrRegBit( SPIDR_SHUTTERTRIG_CTRL_I,
 			SPIDR_ENA_SHUTTER1_CNTRSEL_BIT, false );
   return this->closeShutter();
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::resetCounters()
+{
+  return this->requestSetInt( CMD_RESET_COUNTERS, 0, 0 );
 }
 
 // ----------------------------------------------------------------------------

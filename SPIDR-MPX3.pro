@@ -26,4 +26,5 @@ SUBDIRS += QCustomPlot/QCustomPlot.pro
 #SUBDIRS += SpidrMpx3Mon/SpidrMon.pro
 #SUBDIRS += spidrloglevel/spidrloglevel.pro
 #SUBDIRS += SpidrMpx3Lib/test/spidrmpx3test.pro
+#SUBDIRS += spidrflash/spidrflash.pro
 SUBDIRS += SpidrMpx3Eq/SpidrMpx3Eq.pro

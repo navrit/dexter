@@ -178,6 +178,7 @@ class MY_LIB_API SpidrController
   bool triggerSingleReadout    ( int counterl_or_h = 0 );
   bool startContReadout        ( int freq_hz );
   bool stopContReadout         ( );
+  bool resetCounters           ( );
 
   // Monitoring
   bool getAdc                  ( int *adc_val, int chan, int nr_of_samples = 1 );

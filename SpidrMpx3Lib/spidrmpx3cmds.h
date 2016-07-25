@@ -89,6 +89,9 @@
 #define CMD_GET_SPIDR_ADC      0x54E
 #define CMD_GET_DVDD_NOW       0x54F
 
+// Trigger (continued)
+#define CMD_RESET_COUNTERS     0x558
+
 // Configuration: devices (continued)
 #define CMD_BIAS_SUPPLY_ENA    0x55F
 #define CMD_SET_BIAS_ADJUST    0x560
@@ -222,7 +225,7 @@ static const char *CMD_STR[] =
     "-----",             // 0x555
     "-----",             // 0x556
     "-----",             // 0x557
-    "-----",             // 0x558
+    "RESET_COUNTERS   ", // 0x558
     "-----",             // 0x559
     "-----",             // 0x55A
     "-----",             // 0x55B

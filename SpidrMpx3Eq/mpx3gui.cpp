@@ -36,7 +36,6 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _ui(new Ui::Mpx3GUI)
 {
 
-
     // Instantiate everything in the UI
     _ui->setupUi(this);
     workingSet = new Dataset(128,128, 4);
@@ -52,6 +51,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     getDataset()->setOrientation(1, _MPX3RX_ORIENTATION[1]);
     getDataset()->setOrientation(2, _MPX3RX_ORIENTATION[2]);
     getDataset()->setOrientation(3,_MPX3RX_ORIENTATION[3]);
+
     // The layout is the position of the chip in the assembly.
     getDataset()->setLayout(0,  _MPX3RX_LAYOUT[0]);
     getDataset()->setLayout(1,  _MPX3RX_LAYOUT[1]);

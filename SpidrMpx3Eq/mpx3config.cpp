@@ -75,7 +75,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex) {
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
     // Number of links ! // TODO
-    spidrcontrol->setPs( deviceIndex, 0 );
+    spidrcontrol->setPs( deviceIndex, 3 );
 
     // Reset pixel configuration
     if ( reset ) spidrcontrol->resetPixelConfig();
@@ -171,7 +171,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
     // Number of links ! // TODO
-    spidrcontrol->setPs( deviceIndex, 0 );
+    spidrcontrol->setPs( deviceIndex, 3 );
 
     // Reset pixel configuration
     if ( reset ) spidrcontrol->resetPixelConfig();
