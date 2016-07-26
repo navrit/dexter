@@ -26,7 +26,7 @@ public:
     explicit ProfileDialog(QWidget *parent = 0);
     ~ProfileDialog();
     void SetMpx3GUI(Mpx3GUI * p);
-    void setPixels(QPoint pixel_begin, QPoint pixel_end){_begin = pixel_begin; _end = pixel_end;}
+    void setRegion(QPoint pixel_begin, QPoint pixel_end){_begin = pixel_begin; _end = pixel_end;}
     void setAxisMap(QMap<int,int> Axismap){_Axismap = Axismap;}
     void setAxis(QString axis){_axis = axis;}
     void changeTitle();

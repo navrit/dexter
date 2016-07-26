@@ -911,11 +911,10 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     }
 
     else if (selectedItem == &gotoDQE){
-        _mpx3gui->GetUI()->dqeTab->setPixels(pixel_begin, pixel_end);
-        _mpx3gui->getDataset()->collectPointsROI(layerIndex, pixel_begin, pixel_end);
+        _mpx3gui->GetUI()->dqeTab->setRegion(pixel_begin, pixel_end);
         _mpx3gui->GetUI()->dqeTab->setLayer(layerIndex);
+        _mpx3gui->getDataset()->collectPointsROI(layerIndex, pixel_begin, pixel_end);
         _mpx3gui->GetUI()->stackedWidget->setCurrentIndex(__dqe_page_Id);
-
         _mpx3gui->GetUI()->dqeTab->plotESF();
     }
 
@@ -928,7 +927,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         //Display
         _profiledialog = new ProfileDialog(this);
         _profiledialog->SetMpx3GUI(_mpx3gui);
-        _profiledialog->setPixels(pixel_begin, pixel_end);
+        _profiledialog->setRegion(pixel_begin, pixel_end);
         _profiledialog->setAxis(axis);
         _profiledialog->changeTitle();
 

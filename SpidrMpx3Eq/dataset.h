@@ -22,9 +22,10 @@
 #include <vector>
 #include "spline.h"
 
-
+#include <dlib/optimization.h>
 
 using namespace std;
+//using namespace dlib;
 
 namespace Ui {
   class QCstmGLVisualization;
@@ -34,6 +35,13 @@ class Mpx3GUI;
 class Color2DRecoGuided;
 class CorrectionItem;
 class QCstmCorrectionsDialog;
+
+typedef dlib::matrix<double,2,1> input_vector;
+typedef dlib::matrix<double,3,1> parameter_vector;
+
+//prototypes:
+double model(const input_vector &input, const parameter_vector &params);
+double residual(const std::pair<input_vector, double> &data, const parameter_vector &params);
 
 
 class Dataset//TODO: specify starting corner?
@@ -83,6 +91,11 @@ class Dataset//TODO: specify starting corner?
       std::vector<double> stdev_v;
   } bstats;//!Calculated mean and stdev of the selected region of interest.
 
+  //-------------------- testing -- Comment
+//  typedef dlib::matrix<double,2,1> input_vector;
+//  typedef dlib::matrix<double,3,1> parameter_vector;
+  //-------------------------------
+
  private:
   int m_nx, m_ny; //!<Pixel size in the x and y direction
   int m_pixelDepthBits;
@@ -104,7 +117,8 @@ class Dataset//TODO: specify starting corner?
   void rewindScores();
 
   QList<int> Profilepoints = QList<int>() << -1 << -1 << -1 << -1 << -1 << -1; //!The points on a profile that are used to calculate the CNR. Initialized to -1 to indicate that no value has been specified (yet).
-  QVector<QVector<int> > valuesinRoI;//!A matrix of the values of the pixels contained in the region of interest. Each row corresponds to a row of pixels, from the top down.
+  QVector<QVector<int> > valuesinRoI;//!A matrix of the values of the pixels contained in the region of interest. Each row corresponds to a row of pixels (LtR), from Bottom to Top.
+
 
 public:
   Dataset(int x, int y, int framesPerLayer = 1, int pixelDepthBits = 12);
@@ -141,13 +155,13 @@ public:
   double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);
   void collectPointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end);
   QVector<QVector<double> > calcESFdata();
-  QPoint calcMidLine(double bright, double dark);
-  void fitESF(QVector<QVector<double> > esfdata);
+  QPair<double, double> calcMidLine(double bright, double dark);
+  QVector<QVector<double> > fitESF(QVector<QVector<double> > esfdata);
   QPointF XtoXY(int X, int dimX);
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
   int countProfilePoints();
   int countProfileRegions();
-  QPoint LinearRegression(QVector<double> x, QVector<double> y);
+  QPair<double, double> LinearRegression(QVector<double> x, QVector<double> y);
 
   void setOrientation(QVector<int> orientations){for(int i = 0; i < orientations.length();i++)setOrientation(i, orientations[i]);}
   void setOrientation(int index, int orientation){m_frameOrientation[index] = orientation;}

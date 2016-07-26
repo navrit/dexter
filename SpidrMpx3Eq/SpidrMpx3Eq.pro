@@ -42,10 +42,10 @@ INCLUDEPATH += ../SpidrMpx3Lib
 win32 {
 
   INCLUDEPATH += C:/boost_1_60_0
-  LIBS       += "-LC:/boost_1_60_0/stage/lib"
+  LIBS        += "-LC:/boost_1_60_0/stage/lib"
   INCLUDEPATH += "C:/Program Files/Phidgets/"
   LIBS        += "-LC:/Program Files/Phidgets"
-
+  INCLUDEPATH += "C:/dlib/dlib-19.0"
 }
 
 LIBS += -lSpidrMpx3Lib
@@ -86,6 +86,7 @@ SOURCES += qcstmBHdialog.cpp
 SOURCES += StepperMotorController.cpp
 SOURCES += qcustomplot.cpp
 SOURCES += mtadialog.cpp
+SOURCES += ../../dlib/dlib-19.0/dlib/all/source.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \

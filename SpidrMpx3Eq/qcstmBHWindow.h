@@ -83,7 +83,7 @@ private slots:
   void on_plot();
 
 private:
-
+//TO DO: Add descriptions...
   Ui::QCstmBHWindow *ui;
   QCstmCorrectionsDialog * _corr;
   Mpx3GUI * _mpx3gui; 
