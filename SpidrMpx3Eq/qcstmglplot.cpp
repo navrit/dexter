@@ -149,7 +149,7 @@ void QCstmGLPlot::loadGradient(){
 	gradientTex->setSize(gradient->getLength());
 	gradientTex->allocateStorage();
 	gradientTex->setData(QOpenGLTexture::RGB, QOpenGLTexture::Float32, gradient->getArray());
-	gradientTex->setWrapMode(QOpenGLTexture::ClampToEdge);//Clamp to Border not valid for 1D?
+    gradientTex->setWrapMode(QOpenGLTexture::ClampToEdge);//Clamp to Border not valid for 1D?
 
 	gradientTex->setMagnificationFilter(QOpenGLTexture::Linear);//Do not interpolate when zooming in.
 	gradientTex->setMinificationFilter(QOpenGLTexture::Linear);
@@ -352,7 +352,7 @@ void QCstmGLPlot::wheelEvent(QWheelEvent *event){
 	addOffset(displacementX, displacementY);
 	event->accept();
 	//paintGL();
-	update();
+    update();
 }
 
 void QCstmGLPlot::mousePressEvent(QMouseEvent *event){
