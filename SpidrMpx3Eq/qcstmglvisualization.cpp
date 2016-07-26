@@ -46,6 +46,7 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
 
     // Range selection on histogram. Init values
     _manualRange = QCPRange( 0, 0 ); // No image loaded yet.
+    _manualRangeSave = _manualRange;
     _percentileRange = QCPRange( 0.025, 0.975 ); // These instead are reasonable percentile cuts
     _percentileRangeNatural =  QCPRange( 0, 0 );
     setRangeSpinBoxesPercentile();
@@ -1028,6 +1029,7 @@ void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
             //  the values from percentile.
             if ( ! _manualRangePicked ) {
                 _manualRange = _percentileRangeNatural;
+                _manualRangeSave = _manualRange;
             } else {
                 _manualRange = _manualRangeSave;
             }
