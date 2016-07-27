@@ -614,7 +614,7 @@ QVector<QVector<double> > Dataset::calcESFdata()
         dark   /= Nmean;
     }
 
-    QPair<double, double> ab = calcMidLine(bright, dark);
+    QPair<double, double> ab = calcMidLine(bright, dark, BtD);
 
     double a = ab.first;
     double b = ab.second;
@@ -662,7 +662,51 @@ QVector<QVector<double> > Dataset::calcESFdata()
     return esfData;
 }
 
-QPair<double, double> Dataset::calcMidLine(double bright, double dark)
+QVector<QVector<double> > Dataset::calcESFfitData(parameter_vector params, double start, int length, double stepsize)
+{
+    int fitlength = length/stepsize;
+    QVector<QVector<double> > fitdata;
+    //parameter_vector params;
+    input_vector fitxv;
+    QVector<double> fitxdata;
+    QVector<double> fitydata;
+
+    //Setup plotdata to return
+    double scaling = params(0,0);
+    double a = params(2,0);
+
+    if(scaling != 0 && a != 0){
+
+        //Make x (distance) input_vector to put in model
+        //and a QVector of all distances and a QVector of all the fitted curve values to return.
+        for(int j = 0; j < fitlength; j++){
+            double distance = start + j*stepsize;
+            fitxv(0) = distance;
+            fitxdata[j] = distance;
+            fitydata[j] = model(fitxv, params);
+        }
+
+        fitdata.push_back(fitxdata);
+        fitdata.push_back(fitydata);
+    }
+        return fitdata;
+}
+
+QVector<QVector<double> > Dataset::calcPSFdata(parameter_vector params, double start, int length, double stepsize)
+{   //Create function
+    QVector<QVector<double> > data(2);
+    int fitlength = length / stepsize;
+    QVector<double> x(fitlength);
+    QVector<double> y(fitlength);
+
+    for(int i = 0; i < fitlength; i++){
+        i += start;
+    //TEEST
+    }
+    return data;
+}
+
+QPair<double, double> Dataset::calcMidLine(double bright, double dark, bool BtD)
 {
     int Nx = valuesinRoI[0].length(); //The number of columns i.e. number of pixels in the x-direction.
     int Ny = valuesinRoI.length();    //The number of rows i.e. number of pixels in the y-direction (BtT).
@@ -673,24 +717,38 @@ QPair<double, double> Dataset::calcMidLine(double bright, double dark)
     double diff = bright - dark;
     double borderval = dark + 0.1 * diff; //???     Not 0.5*(bright + dark): gives a bordervalue that is too high.
 
-    //TODO: This only holds for edges that go from light to dark... include edge from dark to light.
+    //TODO: This only holds for edges that go from light/bright to dark... include edge from dark to light.
     //Look for the first pixel that is dark, take middle of row as y and x between light and dark pixel.
-    for(int y = 0; y < Ny; y++)
-        for(int x = 0; x < Nx; x++){
-            if(valuesinRoI[y][x] < borderval)
-                if(x > 0)
-                if(valuesinRoI[y][x - 1] > borderval)
-                    if(x < Nx - 1)
-                    if(valuesinRoI[y][x + 1] < borderval){  //To check it's not just a randomly dark pixel.
-                        xm[y] = x;                          //Distance to the middle of pixel x-1 (centered at x-1+0.5 = x-0.5) and x (centered at x+0.5).
-                        ym[y] = y + 0.5;                    //Middle of the pixel.
-                    }
-        }
+    if(BtD) //Bright to Dark
+        for(int y = 0; y < Ny; y++)
+            for(int x = 0; x < Nx; x++){
+                if(valuesinRoI[y][x] < borderval)
+                    if(x > 0)
+                    if(valuesinRoI[y][x - 1] > borderval)
+                        if(x < Nx - 1)
+                        if(valuesinRoI[y][x + 1] < borderval){  //To check it's not just a randomly dark pixel.
+                            xm[y] = x;                          //Distance to the middle of pixel x-1 (centered at x-1+0.5 = x-0.5) and x (centered at x+0.5).
+                            ym[y] = y + 0.5;                    //Middle of the pixel.
+                        }
+            }
+    else //Dark to Bright
+        for(int y = 0; y < Ny; y++)
+            for(int x = 0; x < Nx; x++){
+                if(valuesinRoI[y][x] > borderval)
+                    if(x > 0)
+                    if(valuesinRoI[y][x - 1] < borderval)
+                        if(x < Nx - 1)
+                        if(valuesinRoI[y][x + 1] > borderval){  //To check it's not just a randomly brighter pixel.
+                            xm[y] = x;                          //Distance to the middle of pixel x-1 (centered at x-1+0.5 = x-0.5) and x (centered at x+0.5).
+                            ym[y] = y + 0.5;                    //Middle of the pixel.
+                        }
+            }
+
 
      return LinearRegression(xm, ym);
 }
 
-QVector<QVector<double> > Dataset::fitESF(QVector<QVector<double> > esfdata)
+parameter_vector Dataset::fitESFparams(QVector<QVector<double> > esfdata)
 {
     std::vector<std::pair<input_vector, double> > data; //vector of pairs of variable going in and the value coming out.
     int length = esfdata[0].length();
@@ -703,70 +761,72 @@ QVector<QVector<double> > Dataset::fitESF(QVector<QVector<double> > esfdata)
         data.push_back( make_pair(input, output) );     //std
     }
 
-    double stepsize = 0.20; //#pixels between points used for plotting.
-    int fitlength;// = length/stepsize;
+    //double stepsize = 0.20; //#pixels between points used for plotting.
+    //int fitlength;// = length/stepsize;
     QVector<QVector<double> > fitdata;
     parameter_vector params;
     input_vector fitxv;
     QVector<double> fitxdata;
     QVector<double> fitydata;
-    double min = esfdata[0][0], max = min;
+    //double min = esfdata[0][0], max = min;
 
     try
     {   //Initialize parameters
         params = 1;
         params(1,0) = 0;
-//        cout << "Use Levenberg-Marquardt, approximate derivatives" << endl;
-//        // If we didn't create the residual_derivative function then we could
-//        // have used this method which numerically approximates the derivatives for you.
-//        dlib::solve_least_squares_lm(dlib::objective_delta_stop_strategy(1e-7).be_verbose(),
-//                                     residual,
-//                                     dlib::derivative(residual),
-//                                     data,
-//                                     params);
+        cout << "Use Levenberg-Marquardt, approximate derivatives" << endl;
+        // If we didn't create the residual_derivative function then we could
+        // have used this method which numerically approximates the derivatives for you.
+        dlib::solve_least_squares_lm(dlib::objective_delta_stop_strategy(1e-7).be_verbose(),
+                                     residual,
+                                     dlib::derivative(residual),
+                                     data,
+                                     params);
 
-//        cout << "inferred parameters: "<< dlib::trans(params) << endl;
+        cout << "inferred parameters: "<< dlib::trans(params) << endl;
 
 
-        //Setup plotdata to return
-        double scaling = params(0,0);
-        double offset = params(1,0);
-        double a = params(2,0);
+//        //Setup plotdata to return
+//        double scaling = params(0,0);
+//        //double offset = params(1,0);
+//        double a = params(2,0);
 
-        if(scaling != 0 && a != 0){
-            //Find lowest x to start the fit from.
-            for(int i = 0; i < length; i++){
-                if(esfdata[0][i] < min)
-                    min = esfdata[0][i];
-                if(esfdata[0][i] > max)
-                    max = esfdata[0][i];
-            }
+//        //-------------------------------------------------------------
+//        if(scaling != 0 && a != 0){
+//            //Find lowest x to start the fit from.
+//            for(int i = 0; i < length; i++){
+//                if(esfdata[0][i] < min)
+//                    min = esfdata[0][i];
+//                if(esfdata[0][i] > max)
+//                    max = esfdata[0][i];
+//            }
 
-            fitlength = (max - min) / stepsize;
-            fitxdata.resize(fitlength);
-            fitydata.resize(fitlength);
+//            fitlength = (max - min) / stepsize;
+//            fitxdata.resize(fitlength);
+//            fitydata.resize(fitlength);
 
-            //Make x (distance) input_vector to put in model
-            //a QVector of all distances and a QVector of all the fitted curve values to return.
-            for(int j = 0; j < fitlength; j++){
-                double distance = min + j*stepsize;
-                fitxv(0) = distance;
-                fitxdata[j] = distance;
-                fitydata[j] = model(fitxv, params);
-            }
+//            //Make x (distance) input_vector to put in model
+//            //a QVector of all distances and a QVector of all the fitted curve values to return.
+//            for(int j = 0; j < fitlength; j++){
+//                double distance = min + j*stepsize;
+//                fitxv(0) = distance;
+//                fitxdata[j] = distance;
+//                fitydata[j] = model(fitxv, params);
+//            }
 
-            fitdata.push_back(fitxdata);
-            fitdata.push_back(fitydata);
+//            fitdata.push_back(fitxdata);
+//            fitdata.push_back(fitydata);
 
-            return fitdata;
-        }
-        else{
-            if(a == 0){ QMessageBox msgbox(QMessageBox::Warning, "Error", "Cannot divide by zero.",0); msgbox.exec();}
-            else{ QMessageBox msgbox(QMessageBox::Warning, "Error", "Scaling parameter is zero.",0); msgbox.exec();}
+//            return fitdata;
+        return params;
+//      }
+//        else{
+//            if(a == 0){ QMessageBox msgbox(QMessageBox::Warning, "Error", "Cannot divide by zero.",0); msgbox.exec();}
+//            else{ QMessageBox msgbox(QMessageBox::Warning, "Error", "Scaling parameter is zero.",0); msgbox.exec();}
 
-            fitdata.clear();
-            return fitdata;
-        }
+//            params = 0;
+//            return params;
+//        }
 
     }
     catch (std::exception& e)
@@ -779,14 +839,14 @@ QVector<QVector<double> > Dataset::fitESF(QVector<QVector<double> > esfdata)
 }
 
 double model(const input_vector &input, const parameter_vector &params){ //Types designed for the optimization algorithm.
-    const double x = input(0);    
-    const double a = params(0);
-    const double scaling = params(1);
-    const double offset = params(2);
+    const double x = input(0);
+    const double scaling = params(0);
+    const double offset = params(1);
+    const double a = params(2);
     double arg = 0;
-    if (a!= 0)  arg = - x / a;
+    if (a!= 0)  arg = - (x - offset) / a;
 
-    return 0.5 * erfc(arg);
+    return scaling * erfc(arg);
 }
 
 double residual(const std::pair<input_vector, double>& data, const parameter_vector& params)

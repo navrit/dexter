@@ -2,6 +2,7 @@
 #include "ui_qcstmdqe.h"
 //#include "mpx3gui.h"
 #include "ui_mpx3gui.h"
+#include "dataset.h"
 
 QCstmDQE::QCstmDQE(QWidget *parent) :
     QWidget(parent),
@@ -74,24 +75,36 @@ void QCstmDQE::plotFitESF()
     //Add graph for the fit
     ui->ESFplot->addGraph();
     ui->ESFplot->graph(1)->setPen(QPen(Qt::red));
+    double stepsize = 0.2; //Specify the distance between datapoints of the plot in pixels.
 
     //Params contains the scaling, offset and half-width a of the erfc, respectively.
-    QVector<QVector<double> > fitdata = _mpx3gui->getDataset()->fitESF(_data);
-    if(fitdata.empty()){
-        QMessageBox msgbox(QMessageBox::Warning, "Error", "No fitting data.",0);
-        msgbox.exec();
-    }
-    else{
-        QVector<double> x = fitdata[0];
-        QVector<double> y = fitdata[1];
+    //QVector<QVector<double> > fitdata = _mpx3gui->getDataset()->fitESF(_data);
+    parameter_vector params = _mpx3gui->getDataset()->fitESFparams(_data);
+//    if(fitdata.empty()){
+//        QMessageBox msgbox(QMessageBox::Warning, "Error", "No fitting data.",0);
+//        msgbox.exec();
+//    }
 
-            ui->ESFplot->graph(1)->setData(x, y);
+    double min = _data[0][0], max = min;
+
+    for(int i = 0; i < _data.length(); i++){
+        if(_data[0][i] < min)
+            min = _data[0][i];
+        if(_data[0][i] > max)
+            max = _data[0][i];
+    }
+
+    int plotlength = max - min;
+    QVector<QVector<double> > fitdata = _mpx3gui->getDataset()->calcESFfitData(params, min, plotlength, stepsize);
+
+    QVector<double> x = fitdata[0];
+    QVector<double> y = fitdata[1];
+
+    ui->ESFplot->graph(1)->setData(x, y);
     //        ui->ESFplot->xAxis->setRange(-5., 5.);
     //        ui->ESFplot->yAxis->setRange(-0.2, 1.2);
-            ui->ESFplot->rescaleAxes();
-            ui->ESFplot->replot( QCustomPlot::rpQueued );
-
-    }
+    ui->ESFplot->rescaleAxes();
+    ui->ESFplot->replot( QCustomPlot::rpQueued );
 
 }
 

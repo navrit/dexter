@@ -91,11 +91,6 @@ class Dataset//TODO: specify starting corner?
       std::vector<double> stdev_v;
   } bstats;//!Calculated mean and stdev of the selected region of interest.
 
-  //-------------------- testing -- Comment
-//  typedef dlib::matrix<double,2,1> input_vector;
-//  typedef dlib::matrix<double,3,1> parameter_vector;
-  //-------------------------------
-
  private:
   int m_nx, m_ny; //!<Pixel size in the x and y direction
   int m_pixelDepthBits;
@@ -155,8 +150,10 @@ public:
   double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);
   void collectPointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end);
   QVector<QVector<double> > calcESFdata();
-  QPair<double, double> calcMidLine(double bright, double dark);
-  QVector<QVector<double> > fitESF(QVector<QVector<double> > esfdata);
+  QVector<QVector<double> > calcESFfitData(parameter_vector params, double start, int length, double stepsize);
+  QVector<QVector<double> > calcPSFdata(parameter_vector params, double start, int length, double stepsize);
+  QPair<double, double> calcMidLine(double bright, double dark, bool BtD);
+  parameter_vector fitESFparams(QVector<QVector<double> > esfdata);
   QPointF XtoXY(int X, int dimX);
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
   int countProfilePoints();
