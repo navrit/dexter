@@ -59,6 +59,7 @@ class Dataset//TODO: specify starting corner?
     orientationBtTRtL=7
   };
 
+
   enum cnr_constants {
       stepsize = 2,
       signalpt1 = 2,
@@ -150,8 +151,8 @@ public:
   double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);
   void collectPointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end);
   QVector<QVector<double> > calcESFdata();
-  QVector<QVector<double> > calcESFfitData(parameter_vector params, double start, int length, double stepsize);
-  QVector<QVector<double> > calcPSFdata(parameter_vector params, double start, int length, double stepsize);
+  //QVector<QVector<double> > calcESFfitData(parameter_vector params, double start, int length, double stepsize);
+  //QVector<QVector<double> > calcPSFdata(parameter_vector params, double start, int length, double stepsize);
   QPair<double, double> calcMidLine(double bright, double dark, bool BtD);
   parameter_vector fitESFparams(QVector<QVector<double> > esfdata);
   QPointF XtoXY(int X, int dimX);

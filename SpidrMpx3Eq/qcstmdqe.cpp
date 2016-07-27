@@ -3,6 +3,9 @@
 //#include "mpx3gui.h"
 #include "ui_mpx3gui.h"
 #include "dataset.h"
+#include <boost/math/constants/constants.hpp>
+
+//using namespace boost::math::constants;
 
 QCstmDQE::QCstmDQE(QWidget *parent) :
     QWidget(parent),
@@ -48,21 +51,29 @@ void QCstmDQE::plotESF()
     _data = _mpx3gui->getDataset()->calcESFdata();
 
     if(!_data.empty()){
-        ui->ESFplot->xAxis->setLabel("Distance (px)");
-        ui->ESFplot->yAxis->setLabel("Counts");
-        ui->ESFplot->xAxis->setRange(_beginpix.x(), _endpix.x());
+        double min = _data[0][0], max = min;
+
+        for(int i = 0; i < _data[0].length(); i++){
+            if(_data[0][i] < min)
+                min = _data[0][i];
+            if(_data[0][i] > max)
+                max = _data[0][i];
+        }
+        _xstart = min;
+        _plotrange = max - min;
 
         //Plot data points
         ui->ESFplot->addGraph();
         ui->ESFplot->graph(0)->setLineStyle(QCPGraph::lsNone);
         ui->ESFplot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::white, 5));
+        ui->ESFplot->xAxis->setLabel("Distance (px)");
+        ui->ESFplot->yAxis->setLabel("Normalised signal (au)");
+        ui->ESFplot->xAxis->setRange(_xstart, _xstart + _plotrange);
 
         ui->ESFplot->graph(0)->setData(_data[0], _data[1]);
 
         ui->ESFplot->rescaleAxes();
         ui->ESFplot->replot( QCustomPlot::rpQueued );
-
-
     }
     else{
         QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
@@ -72,40 +83,124 @@ void QCstmDQE::plotESF()
 
 void QCstmDQE::plotFitESF()
 {
-    //Add graph for the fit
-    ui->ESFplot->addGraph();
-    ui->ESFplot->graph(1)->setPen(QPen(Qt::red));
-    double stepsize = 0.2; //Specify the distance between datapoints of the plot in pixels.
+    if(!_data.empty()){
+        //Add graph for the fit
+        ui->ESFplot->addGraph();
+        ui->ESFplot->graph(1)->setPen(QPen(Qt::red));
+        //double stepsize = 0.2; //Specify the distance between datapoints of the plot in pixels.
 
-    //Params contains the scaling, offset and half-width a of the erfc, respectively.
-    //QVector<QVector<double> > fitdata = _mpx3gui->getDataset()->fitESF(_data);
-    parameter_vector params = _mpx3gui->getDataset()->fitESFparams(_data);
-//    if(fitdata.empty()){
-//        QMessageBox msgbox(QMessageBox::Warning, "Error", "No fitting data.",0);
-//        msgbox.exec();
-//    }
+        //Params contains the scaling, offset and half-width a of the erfc, respectively.
+        //QVector<QVector<double> > fitdata = _mpx3gui->getDataset()->fitESF(_data);
+        _params = _mpx3gui->getDataset()->fitESFparams(_data);
 
-    double min = _data[0][0], max = min;
+        QVector<QVector<double> > fitdata = calcESFfitData();
 
-    for(int i = 0; i < _data.length(); i++){
-        if(_data[0][i] < min)
-            min = _data[0][i];
-        if(_data[0][i] > max)
-            max = _data[0][i];
+        if(fitdata[0].empty() || fitdata[1].empty()){
+            QMessageBox msgbox(QMessageBox::Warning, "Error", "No fitting data could be generated.",0);
+            msgbox.exec();
+        }
+        ui->ESFplot->graph(1)->setData(fitdata[0], fitdata[1]);
+        //        ui->ESFplot->xAxis->setRange(-5., 5.);
+        //        ui->ESFplot->yAxis->setRange(-0.2, 1.2);
+        ui->ESFplot->rescaleAxes();
+        ui->ESFplot->replot( QCustomPlot::rpQueued );
     }
+    else{
+        QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
+        msgbox.exec();
+    }
+}
 
-    int plotlength = max - min;
-    QVector<QVector<double> > fitdata = _mpx3gui->getDataset()->calcESFfitData(params, min, plotlength, stepsize);
+void QCstmDQE::plotPSF()
+{
+    if(!_data.empty()){
+        if(ui->PSFplot->graphCount() != 0)
+            ui->PSFplot->clearGraphs();
+        ui->PSFplot->addGraph();
 
-    QVector<double> x = fitdata[0];
-    QVector<double> y = fitdata[1];
+        ui->PSFplot->xAxis->setLabel("Distance (px)");
+        ui->PSFplot->yAxis->setLabel("Normalised signal (au)");
+        ui->PSFplot->xAxis->setRange(_beginpix.x(), _endpix.x());
 
-    ui->ESFplot->graph(1)->setData(x, y);
-    //        ui->ESFplot->xAxis->setRange(-5., 5.);
-    //        ui->ESFplot->yAxis->setRange(-0.2, 1.2);
-    ui->ESFplot->rescaleAxes();
-    ui->ESFplot->replot( QCustomPlot::rpQueued );
+        //Plot data points
+        //ui->PSFplot->addGraph();
+        QVector<QVector<double> > data = calcPSFdata();
+        ui->PSFplot->graph(0)->setData(data[0], data[1]);
 
+
+        ui->PSFplot->rescaleAxes();
+        ui->PSFplot->replot( QCustomPlot::rpQueued );
+    }
+    else{
+        QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
+        msgbox.exec();
+    }
+}
+
+QVector<QVector<double> > QCstmDQE::calcESFfitData()
+{
+    int fitlength = _plotrange/_stepsize;
+    QVector<QVector<double> > fitdata;
+    //parameter_vector params;
+    input_vector fitxv;
+    QVector<double> fitxdata(fitlength);
+    QVector<double> fitydata(fitlength);
+
+    //Setup plotdata to return
+    double scaling = _params(0,0);
+    double a = _params(2,0);
+
+    if(scaling != 0 && a != 0){
+
+        //Make x (distance) input_vector to put in model
+        //and a QVector of all distances and a QVector of all the fitted curve values to return.
+        for(int j = 0; j < fitlength; j++){
+            double distance = _xstart + j*_stepsize;
+            fitxv(0) = distance;
+            fitxdata[j] = distance;
+            fitydata[j] = model(fitxv, _params);
+        }
+
+        fitdata.push_back(fitxdata);
+        fitdata.push_back(fitydata);
+    }
+        return fitdata;
+}
+
+QVector<QVector<double> > QCstmDQE::calcPSFdata()
+{   //Create function
+    QVector<QVector<double> > data;
+    int fitlength = _plotrange / _stepsize;
+    QVector<double> x(fitlength);
+    QVector<double> y(fitlength);
+
+    double scaling  = _params(0, 0);
+    double offset   = _params(1, 0);
+    double a        = _params(2, 0);
+    double xval=0, yval=0;
+
+    if(a != 0){
+        //Calculate the values for the derivative of the erfc function, given the parameters used for the fit.
+        for(int i = 0; i < fitlength; i++){
+            xval = _xstart + i*_stepsize;
+            double arg = (xval - offset) / a;
+            yval = exp(-arg * arg);
+            yval *= 2 * scaling / a;
+            yval = boost::math::constants::root_pi<double>();
+
+            x[i] = xval;
+            y[i] = yval;
+        }
+
+        data.push_back(x);
+        data.push_back(y);
+        return data;
+    }
+    else{
+        QMessageBox msgbox(QMessageBox::Warning, "Error", "Cannot divide by zero",0);
+        msgbox.exec();
+        return data;
+    }
 }
 
 void QCstmDQE::plotEdge(QPoint ab)
@@ -143,4 +238,11 @@ void QCstmDQE::on_comboBox_currentIndexChanged(const QString &arg1)
 void QCstmDQE::on_fitPushButton_clicked()
 {
     plotFitESF();
+}
+
+
+
+void QCstmDQE::on_plotPSFpushButton_clicked()
+{
+    plotPSF();
 }

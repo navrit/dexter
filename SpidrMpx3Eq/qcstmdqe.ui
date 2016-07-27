@@ -139,6 +139,13 @@
              </widget>
             </item>
             <item>
+             <widget class="QPushButton" name="plotPSFpushButton">
+              <property name="text">
+               <string>Plot PSF</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="mtfPushButton">
               <property name="text">
                <string>Calculate MTF</string>
@@ -153,10 +160,10 @@
          <widget class="QCustomPlot" name="ESFplot" native="true"/>
         </item>
         <item>
-         <widget class="QCustomPlot" name="MTFplot" native="true"/>
+         <widget class="QCustomPlot" name="PSFplot" native="true"/>
         </item>
         <item>
-         <widget class="QCustomPlot" name="PSFplot" native="true"/>
+         <widget class="QCustomPlot" name="MTFplot" native="true"/>
         </item>
        </layout>
       </widget>

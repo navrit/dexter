@@ -662,49 +662,49 @@ QVector<QVector<double> > Dataset::calcESFdata()
     return esfData;
 }
 
-QVector<QVector<double> > Dataset::calcESFfitData(parameter_vector params, double start, int length, double stepsize)
-{
-    int fitlength = length/stepsize;
-    QVector<QVector<double> > fitdata;
-    //parameter_vector params;
-    input_vector fitxv;
-    QVector<double> fitxdata;
-    QVector<double> fitydata;
+//QVector<QVector<double> > Dataset::calcESFfitData(parameter_vector params, double start, int length, double stepsize)
+//{
+//    int fitlength = length/stepsize;
+//    QVector<QVector<double> > fitdata;
+//    //parameter_vector params;
+//    input_vector fitxv;
+//    QVector<double> fitxdata;
+//    QVector<double> fitydata;
 
-    //Setup plotdata to return
-    double scaling = params(0,0);
-    double a = params(2,0);
+//    //Setup plotdata to return
+//    double scaling = params(0,0);
+//    double a = params(2,0);
 
-    if(scaling != 0 && a != 0){
+//    if(scaling != 0 && a != 0){
 
-        //Make x (distance) input_vector to put in model
-        //and a QVector of all distances and a QVector of all the fitted curve values to return.
-        for(int j = 0; j < fitlength; j++){
-            double distance = start + j*stepsize;
-            fitxv(0) = distance;
-            fitxdata[j] = distance;
-            fitydata[j] = model(fitxv, params);
-        }
+//        //Make x (distance) input_vector to put in model
+//        //and a QVector of all distances and a QVector of all the fitted curve values to return.
+//        for(int j = 0; j < fitlength; j++){
+//            double distance = start + j*stepsize;
+//            fitxv(0) = distance;
+//            fitxdata[j] = distance;
+//            fitydata[j] = model(fitxv, params);
+//        }
 
-        fitdata.push_back(fitxdata);
-        fitdata.push_back(fitydata);
-    }
-        return fitdata;
-}
+//        fitdata.push_back(fitxdata);
+//        fitdata.push_back(fitydata);
+//    }
+//        return fitdata;
+//}
 
-QVector<QVector<double> > Dataset::calcPSFdata(parameter_vector params, double start, int length, double stepsize)
-{   //Create function
-    QVector<QVector<double> > data(2);
-    int fitlength = length / stepsize;
-    QVector<double> x(fitlength);
-    QVector<double> y(fitlength);
+//QVector<QVector<double> > Dataset::calcPSFdata(parameter_vector params, double start, int length, double stepsize)
+//{   //Create function
+//    QVector<QVector<double> > data(2);
+//    int fitlength = length / stepsize;
+//    QVector<double> x(fitlength);
+//    QVector<double> y(fitlength);
 
-    for(int i = 0; i < fitlength; i++){
-        i += start;
-    //TEEST
-    }
-    return data;
-}
+//    for(int i = 0; i < fitlength; i++){
+//        i += start;
+//    //TEESTINGG
+//    }
+//    return data;
+//}
 
 QPair<double, double> Dataset::calcMidLine(double bright, double dark, bool BtD)
 {
