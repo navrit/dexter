@@ -127,8 +127,8 @@ void QCstmDQE::plotPSF()
         QVector<QVector<double> > data = calcPSFdata();
         ui->PSFplot->graph(0)->setData(data[0], data[1]);
 
-
         ui->PSFplot->rescaleAxes();
+        ui->PSFplot->xAxis->setRange(-5, 5);
         ui->PSFplot->replot( QCustomPlot::rpQueued );
     }
     else{
@@ -182,14 +182,15 @@ QVector<QVector<double> > QCstmDQE::calcPSFdata()
     if(a != 0){
         //Calculate the values for the derivative of the erfc function, given the parameters used for the fit.
         for(int i = 0; i < fitlength; i++){
-            xval = _xstart + i*_stepsize;
+            xval  = _xstart + i*_stepsize;
             double arg = (xval - offset) / a;
-            yval = exp(-arg * arg);
+            yval  = -arg*arg;
+            yval  = exp(yval);
             yval *= 2 * scaling / a;
-            yval = boost::math::constants::root_pi<double>();
+            yval /= boost::math::constants::root_pi<double>();
 
-            x[i] = xval;
-            y[i] = yval;
+            x[i]  = xval;
+            y[i]  = yval;
         }
 
         data.push_back(x);
