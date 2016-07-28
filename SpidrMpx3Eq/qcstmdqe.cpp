@@ -11,7 +11,10 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::QCstmDQE)
 {
-    ui->setupUi(this);
+    ui->setupUi(this);    
+
+    connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
+    connect( this, &QCstmDQE::open_data, _mpx3gui, &Mpx3GUI::open_data_with_path);
 }
 
 QCstmDQE::~QCstmDQE()
@@ -19,13 +22,6 @@ QCstmDQE::~QCstmDQE()
     delete ui;
 }
 
-void QCstmDQE::SetMpx3GUI(Mpx3GUI *p) {
-
-    _mpx3gui = p;
-
-    connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
-
-}
 
 void QCstmDQE::setRegion(QPoint pixel_begin, QPoint pixel_end)
 {
@@ -227,11 +223,11 @@ void QCstmDQE::on_comboBox_currentIndexChanged(const QString &arg1)
 //    setLayer(layerIndex);
     QStringList split = arg1.split(' ');
     int threshold = split.last().toInt();
-    int layerIndex = _mpx3gui->getDataset()->thresholdToIndex(threshold);
-    setLayer(layerIndex);
+    //int layerIndex = _mpx3gui->getDataset()->thresholdToIndex(threshold);
+    setSelectedThreshold(threshold);
 
     //Collect new dataset.
-    _mpx3gui->getDataset()->collectPointsROI(layerIndex, _beginpix, _endpix);
+    _mpx3gui->getDataset()->collectPointsROI(threshold, _beginpix, _endpix);
     //And do everything again for this set..
 
 }
@@ -246,4 +242,22 @@ void QCstmDQE::on_fitPushButton_clicked()
 void QCstmDQE::on_plotPSFpushButton_clicked()
 {
     plotPSF();
+}
+
+void QCstmDQE::on_loadDataPushButton_clicked()
+{
+    QString filepath = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("binary files (*.bin)") );
+
+    if(!filepath.isNull()){
+        emit open_data(false, true, filepath);
+
+        QStringList split = filepath.split('/');
+        QString filename = split.last();
+
+        //TODO: Add listitem with appropriate name.
+        ui->listWidget->addItem(filename);
+        ui->listWidget->setCurrentRow(0);
+
+        //TODO: Load and add multiple files.
+    }
 }

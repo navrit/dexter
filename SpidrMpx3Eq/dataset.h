@@ -145,7 +145,7 @@ public:
   void applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
   int applyColor2DRecoGuided(Color2DRecoGuided * );
   void calcBasicStats(QPoint pixel_init, QPoint pixel_end);
-  QMap<int, int> calcProfile(QString axis, int layerIndex, QPoint pixel_init, QPoint pixel_end);
+  QMap<int, int> calcProfile(QString axis, int threshold, QPoint pixel_init, QPoint pixel_end);
   QString calcCNR(QMap<int,int> Axismap); //!Calculates the contrast to noise ratio of the region indicated by the Profilepoints.
   double calcRegionMean(int begin, int end, QMap<int, int> Axismap);
   double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);

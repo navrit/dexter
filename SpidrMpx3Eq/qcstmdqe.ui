@@ -192,27 +192,11 @@
          <string>Load data</string>
         </property>
        </widget>
-       <widget class="QTableView" name="tableView">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>52</y>
-          <width>141</width>
-          <height>284</height>
-         </rect>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>141</width>
-          <height>16777215</height>
-         </size>
-        </property>
-       </widget>
        <widget class="QCustomPlot" name="widget" native="true">
         <property name="geometry">
          <rect>
-          <x>10</x>
-          <y>342</y>
+          <x>0</x>
+          <y>400</y>
           <width>246</width>
           <height>151</height>
          </rect>
@@ -221,6 +205,22 @@
          <size>
           <width>171</width>
           <height>151</height>
+         </size>
+        </property>
+       </widget>
+       <widget class="QListWidget" name="listWidget">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>70</y>
+          <width>161</width>
+          <height>211</height>
+         </rect>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>161</width>
+          <height>16777215</height>
          </size>
         </property>
        </widget>

@@ -869,7 +869,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
     //int deviceID = _mpx3gui->getConfig()->getActiveDevices()[frameIndex];
 
-    int layerIndex = getActiveThreshold();
+    int threshold = getActiveThreshold();
 
     QMenu contextMenu;
 
@@ -913,8 +913,8 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
     else if (selectedItem == &gotoDQE){
         _mpx3gui->GetUI()->dqeTab->setRegion(pixel_begin, pixel_end);
-        _mpx3gui->GetUI()->dqeTab->setLayer(layerIndex);
-        _mpx3gui->getDataset()->collectPointsROI(layerIndex, pixel_begin, pixel_end);
+        _mpx3gui->GetUI()->dqeTab->setSelectedThreshold(threshold);
+        _mpx3gui->getDataset()->collectPointsROI(threshold, pixel_begin, pixel_end);
         _mpx3gui->GetUI()->stackedWidget->setCurrentIndex(__dqe_page_Id);
         _mpx3gui->GetUI()->dqeTab->plotESF();
     }
@@ -932,15 +932,10 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _profiledialog->setAxis(axis);
         _profiledialog->changeTitle();
 
-//        QList<int> thresholdlist = _mpx3gui->getDataset()->getThresholds();
-//        QStringList combolist;
-//        for(int i = 0; i < thresholdlist.length(); i++)
-//            combolist.append(QString("Threshold %1").arg(thresholdlist[i]));
-
         //Calculate the profile of the selected region of the selected layer
 
-        _profiledialog->setLayer(layerIndex);
-        _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, layerIndex, pixel_begin, pixel_end));
+        _profiledialog->setSelectedThreshold(threshold);
+        _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, threshold, pixel_begin, pixel_end));
         _profiledialog->plotProfile();
 
         _profiledialog->show();

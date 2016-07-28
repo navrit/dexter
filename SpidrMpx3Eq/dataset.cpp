@@ -215,7 +215,7 @@ QVector<int> Dataset::toQVector() {
     return tovec;
 }
 
-void Dataset::collectPointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end)
+void Dataset::collectPointsROI(int threshold, QPoint pixel_init, QPoint pixel_end)
 {
     int Ny = abs( pixel_end.y() - pixel_init.y() ) + 1;//Number of pixels in the y-direction.
     int Nx = abs( pixel_end.x() - pixel_init.x() ) + 1;
@@ -235,7 +235,7 @@ void Dataset::collectPointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_e
         for(int x = 0; x < Nx; x++){
             //Let y go from bottom to top and let x go from left to right in valuesinRoI.
             //y = 0 is bottom row and is filled last in this loop.
-            valuesinRoI[Ny - 1 - y][x] = sample( pixel_init.x() + x, pixel_init.y() - y, layerIndex);
+            valuesinRoI[Ny - 1 - y][x] = sample( pixel_init.x() + x, pixel_init.y() - y, threshold);
         }
     }
 }
@@ -312,7 +312,7 @@ void Dataset::clearProfilepoints()
         Profilepoints[i] = -1;
 }
 
-QMap<int, int> Dataset::calcProfile(QString axis, int layerIndex, QPoint pixel_init, QPoint pixel_end){
+QMap<int, int> Dataset::calcProfile(QString axis, int threshold, QPoint pixel_init, QPoint pixel_end){
 
     int height = abs( pixel_end.y() - pixel_init.y() );
     int width = abs( pixel_end.x() - pixel_init.x() );
@@ -323,16 +323,16 @@ QMap<int, int> Dataset::calcProfile(QString axis, int layerIndex, QPoint pixel_i
         for(int y = pixel_init.y(); y >= pixel_init.y() - height; y--){     //pixel_init is upper left corner.
             for(int x = pixel_init.x(); x <= pixel_init.x() + width; x++){
                 if(profilevals.contains( x ))
-                    profilevals[ x ] += sample( x, y, layerIndex);
-                else profilevals[ x ] = sample( x, y, layerIndex);
+                    profilevals[ x ] += sample( x, y, threshold);
+                else profilevals[ x ] = sample( x, y, threshold);
             }
         }
     if(axis == "Y")
         for(int y = pixel_init.y(); y >= pixel_init.y() - height; y--){     //pixel_init is upper left corner.
             for(int x = pixel_init.x(); x <= pixel_init.x() + width; x++){
                 if(profilevals.contains( y ))
-                    profilevals[ y ] += sample( x, y, layerIndex);
-                else profilevals[ y ] = sample( x, y, layerIndex);
+                    profilevals[ y ] += sample( x, y, threshold);
+                else profilevals[ y ] = sample( x, y, threshold);
             }
         }
     return profilevals;
