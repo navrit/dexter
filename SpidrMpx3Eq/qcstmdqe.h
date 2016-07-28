@@ -18,7 +18,7 @@ public:
     explicit QCstmDQE(QWidget *parent = 0);
     ~QCstmDQE();
     //Ui::QCstmDQE * GetUI(){ return ui; };
-    void SetMpx3GUI(Mpx3GUI *p){ _mpx3gui = p;}
+    void SetMpx3GUI(Mpx3GUI *p);
     void setSelectedThreshold(int threshold){ ui->comboBox->setCurrentText(QString("Threshold %1").arg(threshold)); }
     //void updateSelectedThreshold(){ui->comboBox->setCurrentText( QString("Threshold %1").arg(_mpx3gui->getVisualization()->getActiveThreshold()) ); }
     void setRegion(QPoint pixel_begin, QPoint pixel_end);
@@ -26,7 +26,7 @@ public:
     void setParams(parameter_vector params){_params = params;}
     void setxStart(double start){_xstart = start;}
     void setPlotLength(int length){_plotrange = length;}
-
+    void clearDataAndPlots();
 
 private slots:
     void on_takeDataPushButton_clicked();

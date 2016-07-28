@@ -13,15 +13,20 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
 {
     ui->setupUi(this);    
 
-    connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
-    connect( this, &QCstmDQE::open_data, _mpx3gui, &Mpx3GUI::open_data_with_path);
+//    connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
+//    connect( this, &QCstmDQE::open_data, _mpx3gui, &Mpx3GUI::open_data_with_path);
 }
 
 QCstmDQE::~QCstmDQE()
 {
     delete ui;
 }
+void QCstmDQE::SetMpx3GUI(Mpx3GUI *p){
+    _mpx3gui = p;
 
+    connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
+    connect( this, &QCstmDQE::open_data, _mpx3gui, &Mpx3GUI::open_data_with_path);
+}
 
 void QCstmDQE::setRegion(QPoint pixel_begin, QPoint pixel_end)
 {
@@ -45,6 +50,8 @@ void QCstmDQE::plotESF()
 
     _data.clear();
     _data = _mpx3gui->getDataset()->calcESFdata();
+
+    _params = 0; //Sets all parameters to zero.
 
     if(!_data.empty()){
         double min = _data[0][0], max = min;
@@ -75,6 +82,18 @@ void QCstmDQE::plotESF()
         QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
         msgbox.exec();
     }
+}
+
+void QCstmDQE::clearDataAndPlots()
+{
+    ui->ESFplot->clearGraphs();     ui->ESFplot->replot(QCustomPlot::rpQueued);
+    ui->PSFplot->clearGraphs();     ui->PSFplot->replot(QCustomPlot::rpQueued);
+    ui->MTFplot->clearGraphs();     ui->MTFplot->replot(QCustomPlot::rpQueued);
+
+    _data.clear();
+    _params = 0; //Sets all parameters to zero. (CHECK when using!)
+    //_xstart = 0;
+    //_plotrange = 0;
 }
 
 void QCstmDQE::plotFitESF()
@@ -121,11 +140,13 @@ void QCstmDQE::plotPSF()
         //Plot data points
         //ui->PSFplot->addGraph();
         QVector<QVector<double> > data = calcPSFdata();
-        ui->PSFplot->graph(0)->setData(data[0], data[1]);
+        if(!data.empty()){
+            ui->PSFplot->graph(0)->setData(data[0], data[1]);
 
-        ui->PSFplot->rescaleAxes();
-        ui->PSFplot->xAxis->setRange(-5, 5);
-        ui->PSFplot->replot( QCustomPlot::rpQueued );
+            ui->PSFplot->rescaleAxes();
+            ui->PSFplot->xAxis->setRange(-5, 5);
+            ui->PSFplot->replot( QCustomPlot::rpQueued );
+        }
     }
     else{
         QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
@@ -241,7 +262,12 @@ void QCstmDQE::on_fitPushButton_clicked()
 
 void QCstmDQE::on_plotPSFpushButton_clicked()
 {
-    plotPSF();
+    if(_params(0,0) == 0 && _params(1,0)==0 && _params(2,0)==0){
+        QMessageBox msgbox(QMessageBox::Warning, "Error", "No fitting parameters.",0);
+        msgbox.exec();
+    }
+
+    else plotPSF();
 }
 
 void QCstmDQE::on_loadDataPushButton_clicked()
