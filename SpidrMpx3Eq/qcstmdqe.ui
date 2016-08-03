@@ -139,9 +139,9 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="plotPSFpushButton">
+             <widget class="QPushButton" name="plotLSFpushButton">
               <property name="text">
-               <string>Plot PSF</string>
+               <string>Plot LSF</string>
               </property>
              </widget>
             </item>
@@ -160,7 +160,7 @@
          <widget class="QCustomPlot" name="ESFplot" native="true"/>
         </item>
         <item>
-         <widget class="QCustomPlot" name="PSFplot" native="true"/>
+         <widget class="QCustomPlot" name="LSFplot" native="true"/>
         </item>
         <item>
          <widget class="QCustomPlot" name="MTFplot" native="true"/>
@@ -179,19 +179,6 @@
        <property name="title">
         <string>NPS</string>
        </property>
-       <widget class="QPushButton" name="loadDataPushButton">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>23</y>
-          <width>75</width>
-          <height>23</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Load data</string>
-        </property>
-       </widget>
        <widget class="QCustomPlot" name="widget" native="true">
         <property name="geometry">
          <rect>
@@ -208,21 +195,56 @@
          </size>
         </property>
        </widget>
-       <widget class="QListWidget" name="listWidget">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>70</y>
-          <width>161</width>
-          <height>211</height>
+          <y>23</y>
+          <width>163</width>
+          <height>256</height>
          </rect>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>161</width>
-          <height>16777215</height>
-         </size>
-        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_8">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_7">
+           <item>
+            <widget class="QPushButton" name="loadDataPushButton">
+             <property name="text">
+              <string>Load data</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <item>
+              <widget class="QPushButton" name="removeDataFilePushButton">
+               <property name="text">
+                <string>Remove</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="clearDataFilesPushButton">
+               <property name="text">
+                <string>Clear</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QListWidget" name="listWidget">
+           <property name="maximumSize">
+            <size>
+             <width>161</width>
+             <height>16777215</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </widget>
      </item>

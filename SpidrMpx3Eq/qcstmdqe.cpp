@@ -87,7 +87,7 @@ void QCstmDQE::plotESF()
 void QCstmDQE::clearDataAndPlots()
 {
     ui->ESFplot->clearGraphs();     ui->ESFplot->replot(QCustomPlot::rpQueued);
-    ui->PSFplot->clearGraphs();     ui->PSFplot->replot(QCustomPlot::rpQueued);
+    ui->LSFplot->clearGraphs();     ui->LSFplot->replot(QCustomPlot::rpQueued);
     ui->MTFplot->clearGraphs();     ui->MTFplot->replot(QCustomPlot::rpQueued);
 
     _data.clear();
@@ -126,26 +126,28 @@ void QCstmDQE::plotFitESF()
     }
 }
 
-void QCstmDQE::plotPSF()
+void QCstmDQE::plotLSF()
 {
     if(!_data.empty()){
-        if(ui->PSFplot->graphCount() != 0)
-            ui->PSFplot->clearGraphs();
-        ui->PSFplot->addGraph();
+        if(ui->LSFplot->graphCount() != 0)
+            ui->LSFplot->clearGraphs();
+        ui->LSFplot->addGraph();
 
-        ui->PSFplot->xAxis->setLabel("Distance (px)");
-        ui->PSFplot->yAxis->setLabel("Normalised signal (au)");
-        ui->PSFplot->xAxis->setRange(_beginpix.x(), _endpix.x());
+        ui->LSFplot->xAxis->setLabel("Distance (px)");
+        ui->LSFplot->yAxis->setLabel("Normalised signal (au)");
+        ui->LSFplot->xAxis->setRange(_beginpix.x(), _endpix.x());
+
+        ui->LSFplot->graph(0)->setLineStyle(QCPGraph::lsStepLeft);
 
         //Plot data points
-        //ui->PSFplot->addGraph();
-        QVector<QVector<double> > data = calcPSFdata();
+        //ui->LSFplot->addGraph();
+        QVector<QVector<double> > data = calcLSFdata();
         if(!data.empty()){
-            ui->PSFplot->graph(0)->setData(data[0], data[1]);
+            ui->LSFplot->graph(0)->setData(data[0], data[1]);
 
-            ui->PSFplot->rescaleAxes();
-            ui->PSFplot->xAxis->setRange(-5, 5);
-            ui->PSFplot->replot( QCustomPlot::rpQueued );
+            ui->LSFplot->rescaleAxes();
+            ui->LSFplot->xAxis->setRange(-5, 5);
+            ui->LSFplot->replot( QCustomPlot::rpQueued );
         }
     }
     else{
@@ -184,10 +186,10 @@ QVector<QVector<double> > QCstmDQE::calcESFfitData()
         return fitdata;
 }
 
-QVector<QVector<double> > QCstmDQE::calcPSFdata()
+QVector<QVector<double> > QCstmDQE::calcLSFdata()
 {   //Create function
     QVector<QVector<double> > data;
-    int fitlength = _plotrange / _stepsize;
+    int fitlength = _plotrange / _histStep;
     QVector<double> x(fitlength);
     QVector<double> y(fitlength);
 
@@ -199,7 +201,7 @@ QVector<QVector<double> > QCstmDQE::calcPSFdata()
     if(a != 0){
         //Calculate the values for the derivative of the erfc function, given the parameters used for the fit.
         for(int i = 0; i < fitlength; i++){
-            xval  = _xstart + i*_stepsize;
+            xval  = (int)_xstart + i*_histStep; //Begin on the left side of a pixel.
             double arg = (xval - offset) / a;
             yval  = -arg*arg;
             yval  = exp(yval);
@@ -260,30 +262,71 @@ void QCstmDQE::on_fitPushButton_clicked()
 
 
 
-void QCstmDQE::on_plotPSFpushButton_clicked()
+void QCstmDQE::on_plotLSFpushButton_clicked()
 {
     if(_params(0,0) == 0 && _params(1,0)==0 && _params(2,0)==0){
         QMessageBox msgbox(QMessageBox::Warning, "Error", "No fitting parameters.",0);
         msgbox.exec();
     }
 
-    else plotPSF();
+    else plotLSF();
 }
 
 void QCstmDQE::on_loadDataPushButton_clicked()
 {
-    QString filepath = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("binary files (*.bin)") );
+    _NPSfilepaths = QFileDialog::getOpenFileNames(this, tr("Read Data"), tr("."), tr("binary files (*.bin)") );
+    QString filepath;
 
-    if(!filepath.isNull()){
-        emit open_data(false, true, filepath);
+    for(int i = 0; i < _NPSfilepaths.length(); i++){
+        filepath = _NPSfilepaths[i];
+        if(!filepath.isNull()){
+            if(i==0) emit open_data(false, true, filepath);
 
-        QStringList split = filepath.split('/');
-        QString filename = split.last();
+            QStringList split = filepath.split('/');
+            QString filename = split.last();
 
-        //TODO: Add listitem with appropriate name.
-        ui->listWidget->addItem(filename);
-        ui->listWidget->setCurrentRow(0);
+            //TODO: Add listitem with appropriate name.
+            ui->listWidget->addItem(filename);
 
-        //TODO: Load and add multiple files.
+            //TODO: Load and add multiple files.
+        }
+        else{   QMessageBox msgbox(QMessageBox::Warning, "Error", QString("Something went wrong when trying to open a file.\nPath does not exist."),0); //path does not exist?
+                msgbox.exec();
+        }
     }
+    if(ui->listWidget->count() != 0)  ui->listWidget->setCurrentRow(0);
+    else{   QMessageBox msgbox(QMessageBox::Warning, "Error", QString("No files could be opened."),0);
+            msgbox.exec();
+    }
+
+}
+
+void QCstmDQE::on_listWidget_currentRowChanged(int currentRow)
+{
+    emit open_data(false, true, _NPSfilepaths[currentRow]);
+}
+
+void QCstmDQE::on_removeDataFilePushButton_clicked()
+{
+    int index = ui->listWidget->currentRow();
+    int nr = ui->listWidget->count();
+
+
+//    ui->listWidget->removeItemWidget( ui->listWidget->itemAt(index) );
+    ui->listWidget->takeItem(index);
+
+    //However, now the indices of the other items change... in pathfiles.. make again.
+//    _NPSfilepaths.clear();
+
+//    for(int i=0; i < nr; i++){
+//        _NPSfilepaths.append(ui->listWidget->item(i)->text());
+//    }
+
+    //Not full paths, instead, find and remove the right path.
+
+}
+
+void QCstmDQE::on_clearDataFilesPushButton_clicked()
+{
+
 }

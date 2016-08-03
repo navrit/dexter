@@ -35,9 +35,15 @@ private slots:
 
     void on_fitPushButton_clicked();
 
-    void on_plotPSFpushButton_clicked();
+    void on_plotLSFpushButton_clicked();
 
     void on_loadDataPushButton_clicked();
+
+    void on_listWidget_currentRowChanged(int currentRow);
+
+    void on_removeDataFilePushButton_clicked();
+
+    void on_clearDataFilesPushButton_clicked();
 
 private:
     Ui::QCstmDQE *ui;
@@ -48,15 +54,17 @@ private:
     parameter_vector _params;
     double _xstart;
     double _plotrange;
-    double _stepsize = 0.2; //Specify the distance between datapoints of the plot in pixels.
+    double _stepsize = 0.2; //Specify the distance between datapoints of the fitplot in pixels.
+    double _histStep = 0.1; //Specify the distance between datapoints in the histogram for LSF.
+    QStringList _NPSfilepaths;
 
     //functions:
     QVector<QVector<double> > calcESFfitData();
-    QVector<QVector<double> > calcPSFdata();
+    QVector<QVector<double> > calcLSFdata();
     void plotMTF();
 
     void plotFitESF();
-    void plotPSF();
+    void plotLSF();
     void plotEdge(QPoint ab);
 
 signals:
