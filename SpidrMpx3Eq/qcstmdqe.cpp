@@ -4,6 +4,8 @@
 #include "ui_mpx3gui.h"
 #include "dataset.h"
 #include <boost/math/constants/constants.hpp>
+#include <dlib/algs.h>
+#include <complex>
 
 //using namespace boost::math::constants;
 
@@ -35,32 +37,39 @@ void QCstmDQE::setRegion(QPoint pixel_begin, QPoint pixel_end)
     ui->regionLabel->setText(QString("Region of interest: (%1, %2)-->(%3, %4)").arg(_beginpix.x()).arg(_beginpix.y()).arg(_endpix.x()).arg(_endpix.y()) );
 }
 
-
-
-void QCstmDQE::plotMTF()
+void QCstmDQE::clearDataAndPlots()
 {
+    ui->ESFplot->clearGraphs();     ui->ESFplot->replot(QCustomPlot::rpQueued);
+    ui->LSFplot->clearGraphs();     ui->LSFplot->replot(QCustomPlot::rpQueued);
+    ui->MTFplot->clearGraphs();     ui->MTFplot->replot(QCustomPlot::rpQueued);
 
-    //_mpx3gui->getDataset()->determinePointsROI(_currentThreshold, _pixel_begin, _pixel_end);
+    _ESFdata.clear();
+    _LSFdata.clear();
+    _params = 0; //Sets all parameters to zero. (CHECK when using!)
+    //_xstart = 0;
+    //_plotrange = 0;
 }
+
+
 
 void QCstmDQE::plotESF()
 {
-    if(ui->ESFplot->graphCount() != 0)
+    //if(ui->ESFplot->graphCount() != 0)
         ui->ESFplot->clearGraphs();
 
-    _data.clear();
-    _data = _mpx3gui->getDataset()->calcESFdata();
+    _ESFdata.clear();
+    _ESFdata = _mpx3gui->getDataset()->calcESFdata();
 
     _params = 0; //Sets all parameters to zero.
 
-    if(!_data.empty()){
-        double min = _data[0][0], max = min;
+    if(!_ESFdata.empty()){
+        double min = _ESFdata[0][0], max = min;
 
-        for(int i = 0; i < _data[0].length(); i++){
-            if(_data[0][i] < min)
-                min = _data[0][i];
-            if(_data[0][i] > max)
-                max = _data[0][i];
+        for(int i = 0; i < _ESFdata[0].length(); i++){
+            if(_ESFdata[0][i] < min)
+                min = _ESFdata[0][i];
+            if(_ESFdata[0][i] > max)
+                max = _ESFdata[0][i];
         }
         _xstart = min;
         _plotrange = max - min;
@@ -73,7 +82,7 @@ void QCstmDQE::plotESF()
         ui->ESFplot->yAxis->setLabel("Normalised signal (au)");
         ui->ESFplot->xAxis->setRange(_xstart, _xstart + _plotrange);
 
-        ui->ESFplot->graph(0)->setData(_data[0], _data[1]);
+        ui->ESFplot->graph(0)->setData(_ESFdata[0], _ESFdata[1]);
 
         ui->ESFplot->rescaleAxes();
         ui->ESFplot->replot( QCustomPlot::rpQueued );
@@ -84,21 +93,8 @@ void QCstmDQE::plotESF()
     }
 }
 
-void QCstmDQE::clearDataAndPlots()
-{
-    ui->ESFplot->clearGraphs();     ui->ESFplot->replot(QCustomPlot::rpQueued);
-    ui->LSFplot->clearGraphs();     ui->LSFplot->replot(QCustomPlot::rpQueued);
-    ui->MTFplot->clearGraphs();     ui->MTFplot->replot(QCustomPlot::rpQueued);
-
-    _data.clear();
-    _params = 0; //Sets all parameters to zero. (CHECK when using!)
-    //_xstart = 0;
-    //_plotrange = 0;
-}
-
 void QCstmDQE::plotFitESF()
 {
-    if(!_data.empty()){
         //Add graph for the fit
         ui->ESFplot->addGraph();
         ui->ESFplot->graph(1)->setPen(QPen(Qt::red));
@@ -106,7 +102,7 @@ void QCstmDQE::plotFitESF()
 
         //Params contains the scaling, offset and half-width a of the erfc, respectively.
         //QVector<QVector<double> > fitdata = _mpx3gui->getDataset()->fitESF(_data);
-        _params = _mpx3gui->getDataset()->fitESFparams(_data);
+        _params = _mpx3gui->getDataset()->fitESFparams(_ESFdata);
 
         QVector<QVector<double> > fitdata = calcESFfitData();
 
@@ -119,17 +115,12 @@ void QCstmDQE::plotFitESF()
         //        ui->ESFplot->yAxis->setRange(-0.2, 1.2);
         ui->ESFplot->rescaleAxes();
         ui->ESFplot->replot( QCustomPlot::rpQueued );
-    }
-    else{
-        QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
-        msgbox.exec();
-    }
+
 }
 
 void QCstmDQE::plotLSF()
 {
-    if(!_data.empty()){
-        if(ui->LSFplot->graphCount() != 0)
+        //if(ui->LSFplot->graphCount() != 0)
             ui->LSFplot->clearGraphs();
         ui->LSFplot->addGraph();
 
@@ -141,19 +132,39 @@ void QCstmDQE::plotLSF()
 
         //Plot data points
         //ui->LSFplot->addGraph();
-        QVector<QVector<double> > data = calcLSFdata();
-        if(!data.empty()){
-            ui->LSFplot->graph(0)->setData(data[0], data[1]);
+         _LSFdata = calcLSFdata();
+        if(!_LSFdata.empty()){
+            ui->LSFplot->graph(0)->setData(_LSFdata[0], _LSFdata[1]);
 
             ui->LSFplot->rescaleAxes();
             ui->LSFplot->xAxis->setRange(-5, 5);
             ui->LSFplot->replot( QCustomPlot::rpQueued );
         }
+}
+
+
+void QCstmDQE::plotMTF()
+{
+    //if(ui->MTFplot->graphCount() != 0) //check necessary?
+    ui->MTFplot->clearGraphs();
+    ui->MTFplot->addGraph();
+
+    ui->MTFplot->xAxis->setLabel("Spatial frequency (1/px)");
+    ui->MTFplot->yAxis->setLabel("Normalised response");
+
+    QVector<QVector<double> > data = calcMTFdata();
+    if(!data.empty()){
+        ui->MTFplot->graph(0)->setData(data[0], data[1]);
+
+        //ui->MTFplot->graph(0)->setScatterStyle( QCPScatterStyle(QCPScatterStyle::ssCross, Qt::red, 6) );
+
+        ui->MTFplot->rescaleAxes();
+        ui->MTFplot->xAxis->setRange(0, 0.50);
+        ui->MTFplot->replot( QCustomPlot::rpQueued );
     }
-    else{
-        QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
-        msgbox.exec();
-    }
+
+
+    //_mpx3gui->getDataset()->determinePointsROI(_currentThreshold, _pixel_begin, _pixel_end);
 }
 
 QVector<QVector<double> > QCstmDQE::calcESFfitData()
@@ -223,6 +234,81 @@ QVector<QVector<double> > QCstmDQE::calcLSFdata()
     }
 }
 
+QVector<QVector<double> > QCstmDQE::calcMTFdata()
+{
+
+    int length = _LSFdata[0].length();
+
+    //check if length is a power of two, or else adapt data
+    int N = 0; //remember the number of corrections to the length..
+    for(int i = 0; i < length; i++){
+        if(dlib::is_power_of_two(length)) break;
+        else{
+            length--;
+            N++;
+        }
+    }
+
+    //Convert to type compatible with dlib function...
+    dlib::matrix<complex<double> > cdata(1, length);
+    dlib::matrix<complex<double> > fdata(1, length);
+
+//    cdata(0, 1) = {5.7, 0};
+//    cdata(0, 2) = {0, 1};
+//    double a = cdata(0, 1).real();
+//    double b = cdata(0, 2).real(); //testing.. works.. not easy in debug mode...
+
+    int offset = N / 2; //Take half of the removed length away from beginning and end.
+
+    for(int i = 0; i < length; i++ ){
+        cdata(0, i) = {_LSFdata[1][offset + i], 0}; //imaginary part is zero
+    }
+    //The LSFdata should be equally spaced (bins).
+
+//testen
+//    N = 128;
+//    int Nk = 256;
+//    //testen
+//    dlib::matrix<complex<double> > testdata(1, N); //Testen cos functie.
+//    dlib::matrix<complex<double> > dftdata(1, N); //Testen cos functie met DFT.
+
+//    for(int n = 0; n < N; n++){
+//        double arg = 2*n*boost::math::constants::pi<double>();
+//        arg /= 10;
+//        testdata(0, n) = {cos( arg ), 0}; //{real, imaginary}
+//    }
+
+    fdata = dlib::fft(cdata);
+
+    //To convert back to something plottable...
+    QVector<QVector<double> > mtfdata(2);
+    for(int i = 0; i < mtfdata.length(); i++) mtfdata[i].resize(length);
+    double Norm = abs(fdata(0, 0)); //Normalization factor. Value at zero spatial frequency.
+
+    for(double i = 0; i < length ; i++ ){ //Length/2 is Nyquist frequency...
+        mtfdata[0][i]   = i / length;
+        mtfdata[1][i]   = abs(fdata(0, i));
+        mtfdata[1][i]  /= Norm;
+    }
+
+//testen
+//    fdata = dlib::fft(testdata);
+
+//    complex<double> im_i(0.0, 1.0);
+//    for(int k = 0; k < N; k++)
+//        for(int n = 0; n < N; n++){
+//            complex<double> argu = -2.0*boost::math::constants::pi<double>()* im_i * double(k) * double(n);
+//            argu /= N;
+//            dftdata(0, k) += testdata(0, n) * exp(argu);
+//        }
+//    for(double i = 0; i < N; i++){
+//        mtfdata[0][i]   = i / N;
+//        mtfdata[1][i]   = abs(dftdata(0, i));
+//    }
+
+    return mtfdata;
+}
+
 void QCstmDQE::plotEdge(QPoint ab)
 {   //Display the midline edge in the heatmap glplot...?
 
@@ -257,7 +343,11 @@ void QCstmDQE::on_comboBox_currentIndexChanged(const QString &arg1)
 
 void QCstmDQE::on_fitPushButton_clicked()
 {
-    plotFitESF();
+    if(!_ESFdata.empty())   plotFitESF();
+    else{
+        QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
+        msgbox.exec();
+    }
 }
 
 
@@ -266,6 +356,10 @@ void QCstmDQE::on_plotLSFpushButton_clicked()
 {
     if(_params(0,0) == 0 && _params(1,0)==0 && _params(2,0)==0){
         QMessageBox msgbox(QMessageBox::Warning, "Error", "No fitting parameters.",0);
+        msgbox.exec();
+    }
+    else if(_ESFdata.empty()) {
+        QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
         msgbox.exec();
     }
 
@@ -285,10 +379,7 @@ void QCstmDQE::on_loadDataPushButton_clicked()
             QStringList split = filepath.split('/');
             QString filename = split.last();
 
-            //TODO: Add listitem with appropriate name.
             ui->listWidget->addItem(filename);
-
-            //TODO: Load and add multiple files.
         }
         else{   QMessageBox msgbox(QMessageBox::Warning, "Error", QString("Something went wrong when trying to open a file.\nPath does not exist."),0); //path does not exist?
                 msgbox.exec();
@@ -303,7 +394,7 @@ void QCstmDQE::on_loadDataPushButton_clicked()
 
 void QCstmDQE::on_listWidget_currentRowChanged(int currentRow)
 {
-    emit open_data(false, true, _NPSfilepaths[currentRow]);
+    if(currentRow >= 0) emit open_data(false, true, _NPSfilepaths[currentRow]);
 }
 
 void QCstmDQE::on_removeDataFilePushButton_clicked()
@@ -312,21 +403,26 @@ void QCstmDQE::on_removeDataFilePushButton_clicked()
     int nr = ui->listWidget->count();
 
 
-//    ui->listWidget->removeItemWidget( ui->listWidget->itemAt(index) );
-    ui->listWidget->takeItem(index);
+    QString filename = ui->listWidget->currentItem()->text();
+    delete ui->listWidget->item(index);
 
-    //However, now the indices of the other items change... in pathfiles.. make again.
-//    _NPSfilepaths.clear();
-
-//    for(int i=0; i < nr; i++){
-//        _NPSfilepaths.append(ui->listWidget->item(i)->text());
-//    }
-
-    //Not full paths, instead, find and remove the right path.
-
+    for(int i = 0; i < _NPSfilepaths.length(); i++){
+        QString filepath = _NPSfilepaths[i];
+        if(filepath.contains(filename)) _NPSfilepaths.removeAt(i);
+    }
 }
 
 void QCstmDQE::on_clearDataFilesPushButton_clicked()
 {
+    ui->listWidget->clear();
+    _NPSfilepaths.clear();
+}
 
+void QCstmDQE::on_mtfPushButton_clicked()
+{
+    if(_LSFdata.empty()) {
+        QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
+        msgbox.exec();
+    }
+    else plotMTF();
 }

@@ -45,12 +45,15 @@ private slots:
 
     void on_clearDataFilesPushButton_clicked();
 
+    void on_mtfPushButton_clicked();
+
 private:
     Ui::QCstmDQE *ui;
     Mpx3GUI * _mpx3gui;
     //int _currentThreshold;
     QPoint _beginpix, _endpix;
-    QVector<QVector<double> > _data; //Contains a vector for the distances and one for the pixel values of the esf data.
+    QVector<QVector<double> > _ESFdata; //Contains a vector for the distances and one for the pixel values of the esf data.
+    QVector<QVector<double> > _LSFdata;
     parameter_vector _params;
     double _xstart;
     double _plotrange;
@@ -61,6 +64,7 @@ private:
     //functions:
     QVector<QVector<double> > calcESFfitData();
     QVector<QVector<double> > calcLSFdata();
+    QVector<QVector<double> > calcMTFdata();
     void plotMTF();
 
     void plotFitESF();

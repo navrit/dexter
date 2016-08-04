@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1072</width>
-    <height>614</height>
+    <width>1041</width>
+    <height>631</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,6 +18,12 @@
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <widget class="QPushButton" name="takeDataPushButton">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>23</height>
+        </size>
+       </property>
        <property name="text">
         <string>Take Data</string>
        </property>
@@ -29,6 +35,12 @@
         <size>
          <width>81</width>
          <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>20</height>
         </size>
        </property>
        <item>
@@ -55,6 +67,12 @@
      </item>
      <item>
       <widget class="QLabel" name="regionLabel">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>23</height>
+        </size>
+       </property>
        <property name="font">
         <font>
          <pointsize>9</pointsize>
@@ -67,6 +85,12 @@
      </item>
      <item>
       <spacer name="horizontalSpacer">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>23</height>
+        </size>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -83,150 +107,76 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
-      <widget class="QGroupBox" name="groupBox">
-       <property name="title">
-        <string>MTF</string>
+      <widget class="QSplitter" name="splitter_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <item>
-             <widget class="QRadioButton" name="radioButton">
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>17</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Edge</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radioButton_2">
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>17</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Slit</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QVBoxLayout" name="verticalLayout">
-            <item>
-             <widget class="QPushButton" name="fitPushButton">
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>23</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Fit ESF</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="plotLSFpushButton">
-              <property name="text">
-               <string>Plot LSF</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="mtfPushButton">
-              <property name="text">
-               <string>Calculate MTF</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="QCustomPlot" name="ESFplot" native="true"/>
-        </item>
-        <item>
-         <widget class="QCustomPlot" name="LSFplot" native="true"/>
-        </item>
-        <item>
-         <widget class="QCustomPlot" name="MTFplot" native="true"/>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="QGroupBox" name="groupBox_2">
-       <property name="minimumSize">
-        <size>
-         <width>181</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="title">
-        <string>NPS</string>
-       </property>
-       <widget class="QCustomPlot" name="widget" native="true">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>400</y>
-          <width>246</width>
-          <height>151</height>
-         </rect>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="title">
+         <string>MTF</string>
         </property>
-        <property name="minimumSize">
-         <size>
-          <width>171</width>
-          <height>151</height>
-         </size>
-        </property>
-       </widget>
-       <widget class="QWidget" name="layoutWidget">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>23</y>
-          <width>163</width>
-          <height>256</height>
-         </rect>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_8">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_7">
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
            <item>
-            <widget class="QPushButton" name="loadDataPushButton">
-             <property name="text">
-              <string>Load data</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
-              <widget class="QPushButton" name="removeDataFilePushButton">
+              <widget class="QRadioButton" name="radioButton">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>17</height>
+                </size>
+               </property>
                <property name="text">
-                <string>Remove</string>
+                <string>Edge</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="clearDataFilesPushButton">
+              <widget class="QRadioButton" name="radioButton_2">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>17</height>
+                </size>
+               </property>
                <property name="text">
-                <string>Clear</string>
+                <string>Slit</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout">
+             <item>
+              <widget class="QPushButton" name="fitPushButton">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>23</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Fit ESF</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="plotLSFpushButton">
+               <property name="text">
+                <string>Plot LSF</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="mtfPushButton">
+               <property name="text">
+                <string>Calculate MTF</string>
                </property>
               </widget>
              </item>
@@ -235,13 +185,144 @@
           </layout>
          </item>
          <item>
-          <widget class="QListWidget" name="listWidget">
-           <property name="maximumSize">
-            <size>
-             <width>161</width>
-             <height>16777215</height>
-            </size>
+          <widget class="QSplitter" name="splitter">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
            </property>
+           <widget class="QCustomPlot" name="ESFplot" native="true">
+            <property name="minimumSize">
+             <size>
+              <width>242</width>
+              <height>149</height>
+             </size>
+            </property>
+           </widget>
+           <widget class="QCustomPlot" name="LSFplot" native="true">
+            <property name="minimumSize">
+             <size>
+              <width>242</width>
+              <height>150</height>
+             </size>
+            </property>
+           </widget>
+           <widget class="QCustomPlot" name="MTFplot" native="true">
+            <property name="minimumSize">
+             <size>
+              <width>242</width>
+              <height>149</height>
+             </size>
+            </property>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="minimumSize">
+         <size>
+          <width>181</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>NPS</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_10">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_9">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_8">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_7">
+               <item>
+                <widget class="QPushButton" name="loadDataPushButton">
+                 <property name="text">
+                  <string>Load data</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_6">
+                 <item>
+                  <widget class="QPushButton" name="removeDataFilePushButton">
+                   <property name="text">
+                    <string>Remove</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="clearDataFilesPushButton">
+                   <property name="text">
+                    <string>Clear</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QListWidget" name="listWidget"/>
+             </item>
+             <item>
+              <spacer name="verticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QCustomPlot" name="widget" native="true">
+             <property name="minimumSize">
+              <size>
+               <width>171</width>
+               <height>151</height>
+              </size>
+             </property>
+             <zorder></zorder>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="layoutWidget">
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="QGroupBox" name="groupBox_3">
+           <property name="title">
+            <string>DQE(0)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_4">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="title">
+            <string>DQE</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QCustomPlot" name="DQEplot" native="true">
+              <property name="minimumSize">
+               <size>
+                <width>219</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>
@@ -249,94 +330,54 @@
       </widget>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_5">
-       <item>
-        <widget class="QGroupBox" name="groupBox_3">
-         <property name="title">
-          <string>DQE(0)</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_4">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="title">
-          <string>DQE</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
+      <widget class="QGroupBox" name="groupBox_5">
+       <property name="maximumSize">
+        <size>
+         <width>151</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="title">
+        <string>Log</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QTextBrowser" name="textBrowser"/>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QCustomPlot" name="DQEplot" native="true">
-            <property name="minimumSize">
+           <widget class="QPushButton" name="savePushButton">
+            <property name="maximumSize">
              <size>
-              <width>219</width>
-              <height>0</height>
+              <width>81</width>
+              <height>800</height>
              </size>
+            </property>
+            <property name="text">
+             <string>Save</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="clearPushButton">
+            <property name="maximumSize">
+             <size>
+              <width>80</width>
+              <height>800</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Clear</string>
             </property>
            </widget>
           </item>
          </layout>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_4">
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="maximumSize">
-          <size>
-           <width>169</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Log</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTextBrowser" name="textBrowser">
-         <property name="maximumSize">
-          <size>
-           <width>169</width>
-           <height>800</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QPushButton" name="savePushButton">
-           <property name="maximumSize">
-            <size>
-             <width>81</width>
-             <height>800</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Save</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="clearPushButton">
-           <property name="maximumSize">
-            <size>
-             <width>80</width>
-             <height>800</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Clear</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
+        </item>
+       </layout>
+       <zorder>textBrowser</zorder>
+       <zorder></zorder>
+      </widget>
      </item>
     </layout>
    </item>
