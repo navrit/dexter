@@ -16,10 +16,6 @@ ProfileDialog::ProfileDialog(QWidget *parent) :
     for(int i = 0; i < editsList.length(); i++)
         connect( editsList[i], SIGNAL(editingFinished()), this, SLOT(onpointEdit_editingFinished()));
 
-    connect( this, &ProfileDialog::user_accepted_profile,
-             _mpx3gui->getVisualization(),
-             &QCstmGLVisualization::on_user_accepted_profile );
-
     connect( ui->profilePlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mousePressEvent(QMouseEvent*)));
 
 }
@@ -33,6 +29,9 @@ void ProfileDialog::SetMpx3GUI(Mpx3GUI * p )
 {
     _mpx3gui = p;
 
+    connect( this, &ProfileDialog::user_accepted_profile,
+             _mpx3gui->getVisualization(),
+             &QCstmGLVisualization::on_user_accepted_profile );
 
     //setSelectedThreshold(_mpx3gui->getVisualization()->getActiveThreshold());
 

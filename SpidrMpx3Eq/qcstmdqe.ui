@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1041</width>
-    <height>631</height>
+    <width>1004</width>
+    <height>643</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_6">
+  <layout class="QVBoxLayout" name="verticalLayout_11">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
@@ -105,7 +105,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
      <item>
       <widget class="QSplitter" name="splitter_2">
        <property name="orientation">
@@ -115,37 +115,48 @@
         <property name="title">
          <string>MTF</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <layout class="QVBoxLayout" name="verticalLayout_10">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout">
+            <layout class="QVBoxLayout" name="verticalLayout_6">
              <item>
-              <widget class="QRadioButton" name="radioButton">
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>17</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Edge</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
+              <layout class="QHBoxLayout" name="horizontalLayout">
+               <item>
+                <widget class="QRadioButton" name="radioButton">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>17</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Edge</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="radioButton_2">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>17</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Slit</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
              <item>
-              <widget class="QRadioButton" name="radioButton_2">
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>17</height>
-                </size>
-               </property>
+              <widget class="QPushButton" name="pushButton">
                <property name="text">
-                <string>Slit</string>
+                <string>Options</string>
                </property>
               </widget>
              </item>
@@ -154,7 +165,7 @@
            <item>
             <layout class="QVBoxLayout" name="verticalLayout">
              <item>
-              <widget class="QPushButton" name="fitPushButton">
+              <widget class="QPushButton" name="fitESFpushButton">
                <property name="maximumSize">
                 <size>
                  <width>16777215</width>
@@ -167,16 +178,34 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="plotLSFpushButton">
-               <property name="text">
-                <string>Plot LSF</string>
+              <widget class="Line" name="line">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
                </property>
               </widget>
              </item>
              <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <item>
+                <widget class="QPushButton" name="discreteLSFpushButton">
+                 <property name="text">
+                  <string>Plot LSF</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="fitLSFpushButton">
+                 <property name="text">
+                  <string>Plot Fit LSF</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
               <widget class="QPushButton" name="mtfPushButton">
                <property name="text">
-                <string>Calculate MTF</string>
+                <string>Calculate PMTF</string>
                </property>
               </widget>
              </item>
@@ -218,16 +247,10 @@
         </layout>
        </widget>
        <widget class="QGroupBox" name="groupBox_2">
-        <property name="minimumSize">
-         <size>
-          <width>181</width>
-          <height>0</height>
-         </size>
-        </property>
         <property name="title">
          <string>NPS</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_10">
+        <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_9">
            <item>
@@ -287,7 +310,6 @@
                <height>151</height>
               </size>
              </property>
-             <zorder></zorder>
             </widget>
            </item>
           </layout>
@@ -340,7 +362,7 @@
        <property name="title">
         <string>Log</string>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QTextBrowser" name="textBrowser"/>
         </item>

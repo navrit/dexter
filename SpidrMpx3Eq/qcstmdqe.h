@@ -10,6 +10,15 @@ namespace Ui {
 class QCstmDQE;
 }
 
+//Necessary datatypes for dlib.
+typedef dlib::matrix<double,2,1> input_vector;
+typedef dlib::matrix<double,3,1> parameter_vector;
+
+//prototypes:
+double model(const input_vector &input, const parameter_vector &params);
+double residual(const std::pair<input_vector, double> &data, const parameter_vector &params);
+
+
 class QCstmDQE : public QWidget
 {
     Q_OBJECT
@@ -33,9 +42,9 @@ private slots:
 
     void on_comboBox_currentIndexChanged(const QString &arg1);
 
-    void on_fitPushButton_clicked();
+    void on_fitESFpushButton_clicked();
 
-    void on_plotLSFpushButton_clicked();
+    void on_fitLSFpushButton_clicked();
 
     void on_loadDataPushButton_clicked();
 
@@ -57,11 +66,13 @@ private:
     parameter_vector _params;
     double _xstart;
     double _plotrange;
-    double _stepsize = 0.2; //Specify the distance between datapoints of the fitplot in pixels.
-    double _histStep = 0.1; //Specify the distance between datapoints in the histogram for LSF.
+    double _stepsize = 0.1; //Specify the distance between datapoints of the fitplot in pixels.
+    double _histStep = 0.1;   //Specify the distance between datapoints in the histogram for LSF.
+    double _binsize = 0.1;
     QStringList _NPSfilepaths;
 
     //functions:
+    QVector<QVector<double> > calcESFbinData();
     QVector<QVector<double> > calcESFfitData();
     QVector<QVector<double> > calcLSFdata();
     QVector<QVector<double> > calcMTFdata();
@@ -69,7 +80,8 @@ private:
 
     void plotFitESF();
     void plotLSF();
-    void plotEdge(QPoint ab);
+    void plotEdge(QPoint ab);    
+    parameter_vector fitESFparams(QVector<QVector<double> > esfdata);
 
 signals:
     void start_takingData();

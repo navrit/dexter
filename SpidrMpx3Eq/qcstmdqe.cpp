@@ -15,6 +15,18 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
 {
     ui->setupUi(this);    
 
+    ui->ESFplot->xAxis->setLabel("Distance (px)");
+    ui->ESFplot->yAxis->setLabel("Normalised ESF");
+    // add title layout element:(font is too big)
+//    ui->ESFplot->plotLayout()->insertRow(0);
+//    ui->ESFplot->plotLayout()->addElement(0, 0, new QCPPlotTitle(ui->ESFplot, "ESF"));
+
+    ui->LSFplot->xAxis->setLabel("Distance (px)");
+    ui->LSFplot->yAxis->setLabel("Normalised LSF");
+
+    ui->MTFplot->xAxis->setLabel("Spatial frequency (Fnq)");
+    ui->MTFplot->yAxis->setLabel("Normalised Presampled MTF");
+
 //    connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
 //    connect( this, &QCstmDQE::open_data, _mpx3gui, &Mpx3GUI::open_data_with_path);
 }
@@ -55,7 +67,7 @@ void QCstmDQE::clearDataAndPlots()
 void QCstmDQE::plotESF()
 {
     //if(ui->ESFplot->graphCount() != 0)
-        ui->ESFplot->clearGraphs();
+    ui->ESFplot->clearGraphs();
 
     _ESFdata.clear();
     _ESFdata = _mpx3gui->getDataset()->calcESFdata();
@@ -78,8 +90,7 @@ void QCstmDQE::plotESF()
         ui->ESFplot->addGraph();
         ui->ESFplot->graph(0)->setLineStyle(QCPGraph::lsNone);
         ui->ESFplot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::white, 5));
-        ui->ESFplot->xAxis->setLabel("Distance (px)");
-        ui->ESFplot->yAxis->setLabel("Normalised signal (au)");
+
         ui->ESFplot->xAxis->setRange(_xstart, _xstart + _plotrange);
 
         ui->ESFplot->graph(0)->setData(_ESFdata[0], _ESFdata[1]);
@@ -102,7 +113,7 @@ void QCstmDQE::plotFitESF()
 
         //Params contains the scaling, offset and half-width a of the erfc, respectively.
         //QVector<QVector<double> > fitdata = _mpx3gui->getDataset()->fitESF(_data);
-        _params = _mpx3gui->getDataset()->fitESFparams(_ESFdata);
+        _params = fitESFparams(_ESFdata);
 
         QVector<QVector<double> > fitdata = calcESFfitData();
 
@@ -115,7 +126,6 @@ void QCstmDQE::plotFitESF()
         //        ui->ESFplot->yAxis->setRange(-0.2, 1.2);
         ui->ESFplot->rescaleAxes();
         ui->ESFplot->replot( QCustomPlot::rpQueued );
-
 }
 
 void QCstmDQE::plotLSF()
@@ -124,8 +134,6 @@ void QCstmDQE::plotLSF()
             ui->LSFplot->clearGraphs();
         ui->LSFplot->addGraph();
 
-        ui->LSFplot->xAxis->setLabel("Distance (px)");
-        ui->LSFplot->yAxis->setLabel("Normalised signal (au)");
         ui->LSFplot->xAxis->setRange(_beginpix.x(), _endpix.x());
 
         ui->LSFplot->graph(0)->setLineStyle(QCPGraph::lsStepLeft);
@@ -149,9 +157,6 @@ void QCstmDQE::plotMTF()
     ui->MTFplot->clearGraphs();
     ui->MTFplot->addGraph();
 
-    ui->MTFplot->xAxis->setLabel("Spatial frequency (1/px)");
-    ui->MTFplot->yAxis->setLabel("Normalised response");
-
     QVector<QVector<double> > data = calcMTFdata();
     if(!data.empty()){
         ui->MTFplot->graph(0)->setData(data[0], data[1]);
@@ -159,12 +164,118 @@ void QCstmDQE::plotMTF()
         //ui->MTFplot->graph(0)->setScatterStyle( QCPScatterStyle(QCPScatterStyle::ssCross, Qt::red, 6) );
 
         ui->MTFplot->rescaleAxes();
-        ui->MTFplot->xAxis->setRange(0, 0.50);
+        ui->MTFplot->xAxis->setRange(0, 1.0); //Plot untill the Nyquist frequency.
         ui->MTFplot->replot( QCustomPlot::rpQueued );
     }
 
 
     //_mpx3gui->getDataset()->determinePointsROI(_currentThreshold, _pixel_begin, _pixel_end);
+}
+
+parameter_vector QCstmDQE::fitESFparams(QVector<QVector<double> > esfdata)
+{
+    std::vector<std::pair<input_vector, double> > data; //vector of pairs of variable going in and the value coming out.
+    int length = esfdata[0].length();
+    input_vector input;     //must be in dlib::matrix form...
+
+    for(int i = 0; i < length; i++){
+        input(0) = esfdata[0][i];           //x
+        const double output = esfdata[1][i];//y
+
+        data.push_back( make_pair(input, output) );     //std
+    }
+
+    //double stepsize = 0.20; //#pixels between points used for plotting.
+    //int fitlength;// = length/stepsize;
+    QVector<QVector<double> > fitdata;
+    parameter_vector params;
+    input_vector fitxv;
+    QVector<double> fitxdata;
+    QVector<double> fitydata;
+    //double min = esfdata[0][0], max = min;
+
+    try
+    {   //Initialize parameters
+        params = 1;
+        params(1,0) = 0;
+        cout << "Use Levenberg-Marquardt, approximate derivatives" << endl;
+        // If we didn't create the residual_derivative function then we could
+        // have used this method which numerically approximates the derivatives for you.
+        dlib::solve_least_squares_lm(dlib::objective_delta_stop_strategy(1e-7).be_verbose(),
+                                     residual,
+                                     dlib::derivative(residual),
+                                     data,
+                                     params);
+
+        cout << "inferred parameters: "<< dlib::trans(params) << endl;
+
+
+//        //Setup plotdata to return
+//        double scaling = params(0,0);
+//        //double offset = params(1,0);
+//        double a = params(2,0);
+
+//        //-------------------------------------------------------------
+//        if(scaling != 0 && a != 0){
+//            //Find lowest x to start the fit from.
+//            for(int i = 0; i < length; i++){
+//                if(esfdata[0][i] < min)
+//                    min = esfdata[0][i];
+//                if(esfdata[0][i] > max)
+//                    max = esfdata[0][i];
+//            }
+
+//            fitlength = (max - min) / stepsize;
+//            fitxdata.resize(fitlength);
+//            fitydata.resize(fitlength);
+
+//            //Make x (distance) input_vector to put in model
+//            //a QVector of all distances and a QVector of all the fitted curve values to return.
+//            for(int j = 0; j < fitlength; j++){
+//                double distance = min + j*stepsize;
+//                fitxv(0) = distance;
+//                fitxdata[j] = distance;
+//                fitydata[j] = model(fitxv, params);
+//            }
+
+//            fitdata.push_back(fitxdata);
+//            fitdata.push_back(fitydata);
+
+//            return fitdata;
+        return params;
+//      }
+//        else{
+//            if(a == 0){ QMessageBox msgbox(QMessageBox::Warning, "Error", "Cannot divide by zero.",0); msgbox.exec();}
+//            else{ QMessageBox msgbox(QMessageBox::Warning, "Error", "Scaling parameter is zero.",0); msgbox.exec();}
+
+//            params = 0;
+//            return params;
+//        }
+
+    }
+    catch (std::exception& e)
+    {
+        cout << e.what() << endl;
+        QMessageBox msgbox(QMessageBox::Warning, "Error", "An error has occurred.",0);
+        msgbox.exec();
+    }
+
+}
+
+double model(const input_vector &input, const parameter_vector &params){ //Types designed for the optimization algorithm.
+    const double x = input(0);
+    const double scaling = params(0);
+    const double offset = params(1);
+    const double a = params(2);
+    double arg = 0;
+    if (a!= 0)  arg = - (x - offset) / a;
+
+    return scaling * erfc(arg);
+}
+
+double residual(const std::pair<input_vector, double>& data, const parameter_vector& params)
+{
+    return model(data.first, params) - data.second;
 }
 
 QVector<QVector<double> > QCstmDQE::calcESFfitData()
@@ -252,16 +363,14 @@ QVector<QVector<double> > QCstmDQE::calcMTFdata()
     //Convert to type compatible with dlib function...
     dlib::matrix<complex<double> > cdata(1, length);
     dlib::matrix<complex<double> > fdata(1, length);
-
-//    cdata(0, 1) = {5.7, 0};
-//    cdata(0, 2) = {0, 1};
-//    double a = cdata(0, 1).real();
-//    double b = cdata(0, 2).real(); //testing.. works.. not easy in debug mode...
+//    dlib::matrix<complex<double> > mtfData(2, length);
 
     int offset = N / 2; //Take half of the removed length away from beginning and end.
 
     for(int i = 0; i < length; i++ ){
-        cdata(0, i) = {_LSFdata[1][offset + i], 0}; //imaginary part is zero
+        cdata(0, i)     = {_LSFdata[1][offset + i], 0};     //imaginary part is zero
+//        mtfData(1, i)   = {_LSFdata[1][offset + i], 0};     //imaginary part is zero
+//        mtfData(0, i)   = 2* i / length;                    //Normalize x-axis (1/L) to Nyquist frequency: 1/2*1/L.
     }
     //The LSFdata should be equally spaced (bins).
 
@@ -285,8 +394,8 @@ QVector<QVector<double> > QCstmDQE::calcMTFdata()
     for(int i = 0; i < mtfdata.length(); i++) mtfdata[i].resize(length);
     double Norm = abs(fdata(0, 0)); //Normalization factor. Value at zero spatial frequency.
 
-    for(double i = 0; i < length ; i++ ){ //Length/2 is Nyquist frequency...
-        mtfdata[0][i]   = i / length;
+    for(double i = 0; i < length; i++ ){
+        mtfdata[0][i]   = 2* i / length;    //Normalized to Nyquist frequency: Length/2.
         mtfdata[1][i]   = abs(fdata(0, i));
         mtfdata[1][i]  /= Norm;
     }
@@ -314,7 +423,6 @@ void QCstmDQE::plotEdge(QPoint ab)
 
 }
 
-
 void QCstmDQE::on_takeDataPushButton_clicked()
 {
    _mpx3gui->GetUI()->stackedWidget->setCurrentIndex(__visualization_page_Id);
@@ -341,7 +449,7 @@ void QCstmDQE::on_comboBox_currentIndexChanged(const QString &arg1)
 
 }
 
-void QCstmDQE::on_fitPushButton_clicked()
+void QCstmDQE::on_fitESFpushButton_clicked()
 {
     if(!_ESFdata.empty())   plotFitESF();
     else{
@@ -352,7 +460,7 @@ void QCstmDQE::on_fitPushButton_clicked()
 
 
 
-void QCstmDQE::on_plotLSFpushButton_clicked()
+void QCstmDQE::on_fitLSFpushButton_clicked()
 {
     if(_params(0,0) == 0 && _params(1,0)==0 && _params(2,0)==0){
         QMessageBox msgbox(QMessageBox::Warning, "Error", "No fitting parameters.",0);
@@ -425,4 +533,67 @@ void QCstmDQE::on_mtfPushButton_clicked()
         msgbox.exec();
     }
     else plotMTF();
+}
+
+QVector<QVector<double> > QCstmDQE::calcESFbinData() //TO DO use for other way of MTF.
+{
+    QMap<double, QPair<double, double> > bindata;
+    QVector<QVector<double> > esfbindata(2);
+    QVector<int> Npoints;
+    double dmin, dmax;
+    dmin = _ESFdata[0][0];
+    dmax = dmin;
+    int i;
+
+    //Find beginning and end of the data.
+    for(i = 0; i < _ESFdata.length(); i++){
+        double d = _ESFdata[0][i];
+        if(d < dmin) dmin = d;
+        if(d > dmax) dmax = d;
+    }
+    int length = (dmax - dmin) / _binsize;
+
+    for(i = 0; i < esfbindata.length(); i++ )
+        esfbindata[i].resize(length);
+
+    Npoints.resize(length);
+
+    for(i = 0; i < length; i++){
+        esfbindata[0][i] = dmin + i*_binsize;
+        Npoints[i] = 0;
+    }
+
+    for(i = 0; i < _ESFdata[0].length(); i++){
+        double d = _ESFdata[0][i];
+        for(int j = 0; j < length; j++){
+            double binleft = esfbindata[0][i];
+            double dif = d - binleft;
+            if(dif >= 0 && dif < 0.1){
+                esfbindata[1][i] += _ESFdata[1][i];
+                Npoints[i]++;
+                break;
+            }
+
+        }
+    }
+
+    //Take the mean value for each bin and use the middle of the bin.
+    for(i = 0; i < length; i++){
+        esfbindata[1][i] /= Npoints[i];
+        esfbindata[0][i] += _binsize /2;
+    }
+
+//    for(int i = 0; i < _ESFdata[0].length(); i++){
+//        double distance = _ESFdata[0][i];
+//        double value = _ESFdata[1][i];
+
+//        if(bindata.contains( distance ))
+//            bindata[distance].first += value;
+//        else{
+//            bindata[distance].second = value;
+//        }
+//    }
+
+
+    return esfbindata;
 }

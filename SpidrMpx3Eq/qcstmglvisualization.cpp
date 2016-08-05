@@ -939,7 +939,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, threshold, pixel_begin, pixel_end));
         _profiledialog->plotProfile();
 
-//        _profiledialog->show();
+        _profiledialog->show();
 
     }
 

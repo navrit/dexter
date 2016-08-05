@@ -36,14 +36,6 @@ class Color2DRecoGuided;
 class CorrectionItem;
 class QCstmCorrectionsDialog;
 
-typedef dlib::matrix<double,2,1> input_vector;
-typedef dlib::matrix<double,3,1> parameter_vector;
-
-//prototypes:
-double model(const input_vector &input, const parameter_vector &params);
-double residual(const std::pair<input_vector, double> &data, const parameter_vector &params);
-
-
 class Dataset//TODO: specify starting corner?
 {
  public:
@@ -154,7 +146,7 @@ public:
   //QVector<QVector<double> > calcESFfitData(parameter_vector params, double start, int length, double stepsize);
   //QVector<QVector<double> > calcPSFdata(parameter_vector params, double start, int length, double stepsize);
   QPair<double, double> calcMidLine(double bright, double dark, bool BtD);
-  parameter_vector fitESFparams(QVector<QVector<double> > esfdata);
+  //parameter_vector fitESFparams(QVector<QVector<double> > esfdata);
   QPointF XtoXY(int X, int dimX);
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
   int countProfilePoints();
