@@ -618,7 +618,7 @@ QVector<QVector<double> > Dataset::calcESFdata()
 
     double a = ab.first;
     double b = ab.second;
-    if(a==0 && b==0){
+    if(a==0 && b==0 ||  isnan(a) || isnan(b) ){
         esfData.clear();   //Return empty data...Midline doesn't make sense.
         QMessageBox msgbox; msgbox.setText("An error has occurred in the calculation of the position of the edge. \n"); msgbox.setIcon(QMessageBox::Warning);
         msgbox.exec();
@@ -674,7 +674,6 @@ QPair<double, double> Dataset::calcMidLine(double bright, double dark, bool BtD)
     double diff = bright - dark;
     double borderval = dark + 0.1 * diff; //???     Not 0.5*(bright + dark): gives a bordervalue that is too high.
 
-    //TODO: This only holds for edges that go from light/bright to dark... include edge from dark to light.
     //Look for the first pixel that is dark, take middle of row as y and x between light and dark pixel.
     if(BtD) //Bright to Dark
         for(int y = 0; y < Ny; y++)
@@ -683,7 +682,7 @@ QPair<double, double> Dataset::calcMidLine(double bright, double dark, bool BtD)
                     if(x > 0)
                     if(valuesinRoI[y][x - 1] > borderval)
                         if(x < Nx - 1)
-                        if(valuesinRoI[y][x + 1] < borderval){  //To check it's not just a randomly dark pixel.
+                        if(valuesinRoI[y][x + 1] < borderval){  //To check it's not just a randomly darker pixel.
                             xm[y] = x;                          //Distance to the middle of pixel x-1 (centered at x-1+0.5 = x-0.5) and x (centered at x+0.5).
                             ym[y] = y + 0.5;                    //Middle of the pixel.
                         }
@@ -704,8 +703,6 @@ QPair<double, double> Dataset::calcMidLine(double bright, double dark, bool BtD)
 
      return LinearRegression(xm, ym);
 }
-
-
 
 
 bool Dataset::isBorderPixel(int p, QSize isize) {

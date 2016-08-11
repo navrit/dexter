@@ -917,6 +917,7 @@ void Mpx3GUI::clear_configuration(){
 void Mpx3GUI::clear_data(bool clearStatusBar) {
 
     getDataset()->clear();
+    _ui->dqeTab->clearDataAndPlots();
     //getVisualization()->cle
     emit data_cleared();
 
