@@ -141,7 +141,7 @@ public:
   QString calcCNR(QMap<int,int> Axismap); //!Calculates the contrast to noise ratio of the region indicated by the Profilepoints.
   double calcRegionMean(int begin, int end, QMap<int, int> Axismap);
   double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);
-  void collectPointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end);
+  QVector<QVector<int> > collectPointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end);
   QVector<QVector<double> > calcESFdata();
   //QVector<QVector<double> > calcESFfitData(parameter_vector params, double start, int length, double stepsize);
   //QVector<QVector<double> > calcPSFdata(parameter_vector params, double start, int length, double stepsize);

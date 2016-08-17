@@ -6,6 +6,7 @@
 #include <boost/math/constants/constants.hpp>
 #include <dlib/algs.h>
 #include <complex>
+#include <QtDataVisualization>
 
 //using namespace boost::math::constants;
 
@@ -66,7 +67,9 @@ void QCstmDQE::clearDataAndPlots()
 }
 
 
+//------------------------MTF (Modulation Transfer Function)---------------------------------------------------------------------------------------
 
+//!Plots the Edge Spread Function.
 void QCstmDQE::plotESF()
 {
     //if(ui->ESFplot->graphCount() != 0)
@@ -188,10 +191,7 @@ void QCstmDQE::plotMTF()
 void QCstmDQE::fitESFparams(QVector<QVector<double> > esfdata)
 {
     std::vector<std::pair<input_vector, double> > data; //vector of pairs of variable going in and the value coming out.
-//    if(_ESFbinData.isEmpty() || _ESFdata.isEmpty()){
-//        QMessageBox::warning ( this, tr("Error fitting parameters"), tr( "No ESF data!" ) );
-//        return;
-//    } //Checked on pushbutton_clicked
+
     int length = _ESFbinData[0].length(); //esfdata[0].length();
     input_vector input;     //must be in dlib::matrix form...
 
@@ -451,6 +451,8 @@ double QCstmDQE::FivePointsStencil(QVector<double> func, int x, double bw) {
     return der;
 }
 
+
+
 QVector<QVector<double> > QCstmDQE::calcLSFfromFitdata()
 {   //Create function
     QVector<QVector<double> > data;
@@ -575,6 +577,230 @@ void QCstmDQE::plotEdge(QPoint ab)
 {   //Display the midline edge in the heatmap glplot...?
 
 }
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+//---------------------NPS (Noise Power Spectrum)------------------------------------------------------------------------------------------------
+
+void QCstmDQE::calcFTsquareRoI()
+{
+    //Let's try it for the selected RoI first..
+
+    //The data is constructed as follows:
+    //      - Each row represents an horizontal row of pixels, starting from the bottom of the selected RoI.
+    //      - The elements in each row represent the pixels in the row, starting from the left.
+    //The data can thus be seen as a normal cartesion system, where the left side of each pixel is the index.
+    //To get datapoints in the middle of each pixel, a correction of +0.5 pixel has to be added in both the x and y direction.
+    QVector<QVector<int> >  datainRoI = _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix);
+    int xlength = datainRoI[0].length(); //Assuming the RoI is rectangular, i.e. every row has the same length.
+    int ylength = datainRoI.length();
+
+
+    //Fit planar ramp.
+    parameter_vector params = fitPlaneParams(datainRoI);
+    input_vector input;
+    double z;
+    //For test plotting:
+    QtDataVisualization::QScatterDataArray data3D;
+
+    //Correct for the fitted plane (substract)
+//    for(int y = 0; y < ylength; y++){
+//            for(int x = 0; x < xlength; x++){
+//                input(0) = x + 0.5;
+//                input(1) = y + 0.5;
+//                z = planeModel(input, params);
+//                datainRoI[y][x] -= z;
+//                data3D.push_back( QVector3D(input(0), input(1), datainRoI[y][x]) );
+
+//            }
+//    }
+
+    //Testpatroon.
+    xlength = 64;
+    ylength = 64;
+
+    dlib::matrix<complex<double> > datamatrix(ylength, xlength);
+
+    int ymid = ylength/2;
+    int xmid = xlength/2;
+    int hh = 10;
+    int hw = 15;
+
+    for(int y = 0; y < 64; y++){
+        for(int x = 0; x < 64; x++){
+            if(y >= ymid - hh && y <= ymid + hh)
+                if(x >= xmid - hw && x <= xmid + hw){
+                    data3D.push_back(QVector3D( x, y, 10));
+                    datamatrix(y, x) = { 10, 0};
+                }
+                else{
+                    data3D.push_back(QVector3D( x, y, 0));
+                    datamatrix(y, x) = { 0, 0};
+                }
+            else{
+                data3D.push_back(QVector3D( x, y, 0));
+                datamatrix(y, x) = { 0, 0};
+            }
+        }
+    }
+
+//Only Qt> 5.7----
+//    plotData3D(data3D);
+//----------------
+
+//    int end = xlength;
+//    for(int i = 0; i < 1000; i++){
+//        if( dlib::is_power_of_two( datainRoI[0].length() ) ) break;
+//        else{
+//            //Pad one zero in each row.
+//            for(int j = 0; j < ylength; j++)
+//                datainRoI[j].push_back(0);
+//            xlength++ ;
+//        }
+//    }
+//    end = ylength;
+//    for(int i = 0; i < 1000; i++){
+//        if( dlib::is_power_of_two( datainRoI.length() ) ) break;
+//        else{
+//            //Pad one row of zeros.
+//            QVector<int> zeros(xlength, 0);
+//            datainRoI.push_back(zeros);
+////            for(int j = 0; j < xlength; j++)
+////                datainRoI[j].push_back(0);
+//            ylength++ ;
+//        }
+//    }
+
+    //Put the data in a matrix with complex values for FFT calculation...
+//    dlib::matrix<complex<double> > datamatrix(ylength, xlength);
+    dlib::matrix<complex<double> > FTmatrix(ylength, xlength);
+
+//    for(int y = 0; y < ylength; y++){
+//            for(int x = 0; x < xlength; x++){
+//                datamatrix(y, x) = {double(datainRoI[y][x]), 0.0};
+//            }
+//    }
+
+    FTmatrix = dlib::fft(datamatrix);
+
+
+    //Let's see what this looks like..
+    QCustomPlot *ftplot = new QCustomPlot;
+    ftplot->setParent(_mpx3gui, Qt::Window);
+    ftplot->setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
+    ftplot->axisRect()->setupFullAxesBox(true);
+    ftplot->xAxis->setLabel("x");
+    ftplot->yAxis->setLabel("y");
+    //Set up QCPColorMap:
+    QCPColorMap *colorMap = new QCPColorMap(ftplot->xAxis, ftplot->yAxis);
+    ftplot->addPlottable(colorMap);
+    colorMap->data()->setSize(xlength, ylength); // we want the color map to have nx * ny data points
+    //colorMap->data()->setRange(QCPRange(-4, 4), QCPRange(-4, 4)); // and span the coordinate range -4..4 in both key (x) and value (y) dimensions
+
+
+    for(int y = 0; y < ylength; y++){
+            for(int x = 0; x < xlength; x++){
+                //double z = norm( FTmatrix(y, x) ); //Norm gives the squared magnitude of the complex number in the FTmatrix.
+                double z = abs ( FTmatrix(y, x) );
+                colorMap->data()->setCell(x, y, z);
+                //TODO: save the values for other purposes in normal vector.
+            }
+    }
+    //Add a color scale:
+    QCPColorScale *colorScale = new QCPColorScale(ftplot);
+    ftplot->plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
+    colorScale->setType(QCPAxis::atRight); // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
+    colorMap->setColorScale(colorScale); // associate the color map with the color scale
+    //colorScale->axis()->setLabel("Magnetic Field Strength");
+
+    // set the color gradient of the color map to one of the presets:
+    colorMap->setGradient(QCPColorGradient::gpPolar);
+    // rescale the data dimension (color) such that all data points lie in the span visualized by the color gradient:
+    colorMap->rescaleDataRange();
+    ftplot->rescaleAxes();
+    ftplot->show();
+}
+
+parameter_vector QCstmDQE::fitPlaneParams(QVector<QVector<int> > dataRoI)
+{
+    std::vector<std::pair<input_vector, double> > data; //vector of pairs of variable going in and the value coming out.
+
+    int xlength = dataRoI[0].length();
+    int ylength = dataRoI.length();
+    input_vector input;
+    parameter_vector params;
+    QtDataVisualization::QScatterDataArray data3D;
+
+
+    for(int y = 0; y < ylength; y++){
+        for(int x = 0; x < xlength; x++){
+            input(0) = x + 0.5;
+            input(1) = y + 0.5;
+            double output = dataRoI[y][x];
+
+            data.push_back( make_pair(input, output) );
+            data3D.push_back( QVector3D(input(0), input(1), output) );
+        }
+    }
+
+    try{
+        //Let's display the data in a 3Dplot using Qt data visualization (Qt 5.7 onwards only)
+        //plotData3D(data3D);
+
+        params(0,0) = 1;
+        params(1,0) = 1;
+        params(2,0) = dataRoI[0][0];
+        //Now use the least-squares algorithm to fit a plane.
+        dlib::solve_least_squares_lm(dlib::objective_delta_stop_strategy(1e-7).be_verbose(),
+                                     planeResidual,
+                                     dlib::derivative(planeResidual),
+                                     data,
+                                     params);
+
+        //Calculate mean quared error:
+        double res, mse;
+        std::vector<std::pair<input_vector, double>>::size_type i ;
+        for(i = 0; i != data.size(); i++){
+            res = residual( data.at(i), params );
+            mse += res*res;
+        }
+        mse /= data.size();
+        _logtext += QString("Mean Squared Error of the plane fit: %1\n").arg(mse) ;
+    }
+    catch(std::exception& e){
+        QMessageBox::warning ( this, tr("Error"), tr( e.what() ) );
+        cout << e.what() << endl;
+    }
+
+    return params;
+}
+
+void QCstmDQE::plotData3D(QtDataVisualization::QScatterDataArray data3D)
+{
+    QtDataVisualization::Q3DScatter *scatter = new QtDataVisualization::Q3DScatter();
+    QWidget *container = QWidget::createWindowContainer(scatter, _mpx3gui, Qt::Window );
+    container->setParent(_mpx3gui);
+    //container->setAttribute( Qt::WA_DeleteOnClose );
+    scatter->setFlags(scatter->flags() ^ Qt::FramelessWindowHint);
+    QtDataVisualization::QScatter3DSeries *series = new QtDataVisualization::QScatter3DSeries;
+    series->dataProxy()->addItems(data3D);
+    scatter->addSeries(series);
+    container->show();
+}
+
+double planeModel(const input_vector &input, const parameter_vector &params){ //Types designed for the optimization algorithm.
+   //Returns z = ax + by + c.
+    return params(0)*input(0) + params(1)*input(1) + params(2);
+}
+
+double planeResidual(const std::pair<input_vector, double>& data, const parameter_vector& params)
+{
+    return planeModel(data.first, params) - data.second;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void QCstmDQE::on_takeDataPushButton_clicked()
 {
@@ -791,4 +1017,14 @@ void QCstmDQE::on_binSizeLineEdit_editingFinished()
     else QMessageBox::warning ( this, tr("Error"), tr( "No data!" ) );
 
     ui->binSizeLineEdit->blockSignals(false);
+}
+
+void QCstmDQE::on_npsPushButton_clicked()
+{
+    calcFTsquareRoI();
+}
+
+void QCstmDQE::ConnectionStatusChanged(bool connected)
+{
+    ui->takeDataPushButton->setEnabled( connected );
 }

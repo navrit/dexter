@@ -215,8 +215,15 @@ QVector<int> Dataset::toQVector() {
     return tovec;
 }
 
-void Dataset::collectPointsROI(int threshold, QPoint pixel_init, QPoint pixel_end)
+
+QVector<QVector<int> > Dataset::collectPointsROI(int threshold, QPoint pixel_init, QPoint pixel_end)
 {
+    //The data is made so that:
+    //      - Each row represents an horizontal row of pixels, starting from the bottom of the selected RoI.
+    //      - The elements in each row represent the pixels in the row, starting from the left.
+    //The data can thus be seen as a normal cartesion system, where the left side of each pixel is the index.
+    //To get datapoints in the middle of each pixel, a correction of +0.5 pixel has to be added in both the x and y direction, when working with the data..
+
     int Ny = abs( pixel_end.y() - pixel_init.y() ) + 1;//Number of pixels in the y-direction.
     int Nx = abs( pixel_end.x() - pixel_init.x() ) + 1;
 
@@ -238,6 +245,8 @@ void Dataset::collectPointsROI(int threshold, QPoint pixel_init, QPoint pixel_en
             valuesinRoI[Ny - 1 - y][x] = sample( pixel_init.x() + x, pixel_init.y() - y, threshold);
         }
     }
+
+    return valuesinRoI;
 }
 
 QPointF Dataset::XtoXY(int X, int dimX){
@@ -573,6 +582,7 @@ double Dataset::calcRegionStdev(int begin, int end, QMap<int, int> Axismap, doub
     return stdev;
 }
 
+//!Calculates the Edge Spread Function to be plotted in the DQEview, to calculate the MTF.
 QVector<QVector<double> > Dataset::calcESFdata()
 {   //Setup data vectors of proper size.
     QVector<QVector<double> > esfData(2);
