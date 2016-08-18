@@ -97,7 +97,6 @@ public:
 
 private:
 
-
     Ui::QCstmGLVisualization * ui = nullptr;
     DataTakingThread * _dataTakingThread = nullptr;
     bool _savePNGWithScales = false;
@@ -133,14 +132,14 @@ private:
     stats_str _statsString;
     extra_widgets _extraWidgets;
 
-    //!Gets the currently active threshold by looking at the value of the layerselector combobox.
-    int getActiveThreshold();
+
     //!Adds the specified threshold to the layerselector combobox
     void addThresholdToSelector(int threshold);
     void changeThresholdToNameAndUpdateSelector(int threshold, QString name);
     //!Adds the specified threshold if it didn't exist yet. Then switches to it.
     void setThreshold(int threshold);
-
+    //!Gets the currently active threshold by looking at the value of the layerselector combobox.
+    int getActiveThreshold();
     void BuildStatsString();
     void BuildStatsStringCounts(uint64_t counts);
     void BuildStatsStringLostPackets(uint64_t lostPackets);

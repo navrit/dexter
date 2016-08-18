@@ -7,6 +7,8 @@
 TEMPLATE = app
 TARGET = Mpx3GUI
 
+
+
 # QT       += core gui network
 # Use as shared library
 #DEFINES += QCUSTOMPLOT_USE_LIBRARY
@@ -18,6 +20,10 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 QT += network opengl multimedia multimediawidgets
 CONFIG   +=  c++11 debug_and_release
 
+#Testing visualization:
+#greaterThan(QT_MAJOR_VERSION, 5.7){
+#    QT += datavisualization
+#}
 
 CONFIG(debug, debug|release) {
   OBJECTS_DIR = debug
@@ -42,10 +48,12 @@ INCLUDEPATH += ../SpidrMpx3Lib
 win32 {
 
   INCLUDEPATH += C:/boost_1_60_0
-  LIBS       += "-LC:/boost_1_60_0/stage/lib"
+  LIBS        += "-LC:/boost_1_60_0/stage/lib"
   INCLUDEPATH += "C:/Program Files/Phidgets/"
   LIBS        += "-LC:/Program Files/Phidgets"
-
+  INCLUDEPATH += "C:/dlib/dlib-19.0"
+  #INCLUDEPATH += "C:/Qt/5.7/msvc2013_64/mkspecs/modules"
+  #LIBS        += "-LC:/Qt/5.7/msvc2013_64/mkspecs/modules/qt_lib_datavisualization"
 }
 
 LIBS += -lSpidrMpx3Lib
@@ -86,6 +94,7 @@ SOURCES += qcstmBHdialog.cpp
 SOURCES += StepperMotorController.cpp
 SOURCES += qcustomplot.cpp
 SOURCES += mtadialog.cpp
+SOURCES += ../../dlib/dlib-19.0/dlib/all/source.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \

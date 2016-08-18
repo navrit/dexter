@@ -26,12 +26,12 @@ public:
     explicit ProfileDialog(QWidget *parent = 0);
     ~ProfileDialog();
     void SetMpx3GUI(Mpx3GUI * p);
-    void setPixels(QPoint pixel_begin, QPoint pixel_end){_begin = pixel_begin; _end = pixel_end;}
+    void setRegion(QPoint pixel_begin, QPoint pixel_end){_begin = pixel_begin; _end = pixel_end;}
     void setAxisMap(QMap<int,int> Axismap){_Axismap = Axismap;}
     void setAxis(QString axis){_axis = axis;}
     void changeTitle();
     void plotProfile();
-    void setLayer(int layerIndex) { ui->comboBox->setCurrentText(QString("Threshold %1").arg(layerIndex));}
+    void setSelectedThreshold(int threshold) { ui->comboBox->setCurrentText(QString("Threshold %1").arg(threshold));}
 
 
 private:
@@ -42,9 +42,9 @@ private:
     QMap<int, int> _Axismap; //! Contains a total pixelvalue for each X or Y value in the selected profile region.
     QString _axis; //!The axis that is currently used as the horizontal axis in the profileplot.
     QList<QLineEdit*> editsList; //!Contains the QLineEdits that specify the points on the profile for CNR calculation.
-    bool _left = true; //Indicates whether a left background is present.
-    bool _right = true; //Indicates whether a right background is present.
-    QVector<double> par_v;//Vector containing parameters for the kernel density function.
+    bool _left = true; //!Indicates whether a left background is present.
+    bool _right = true; //!Indicates whether a right background is present.
+    QVector<double> par_v;//!Vector containing parameters for the kernel density function.
 
     //Functions:
     void addMeanLines(QString data);

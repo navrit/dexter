@@ -69,8 +69,8 @@ private:
     //vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
     //vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
     // compactSPIDR layout
-    vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL, Dataset::orientationTtBRtL};
-    vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(1, 1), QPoint(1, 0), QPoint(0, 0), QPoint(0, 1)};
+    std::vector<int> _MPX3RX_ORIENTATION = std::vector< int > {Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL, Dataset::orientationTtBRtL};
+    std::vector<QPoint> _MPX3RX_LAYOUT = std::vector<QPoint> {QPoint(1, 1), QPoint(1, 0), QPoint(0, 0), QPoint(0, 1)};
     int mode = 0;
     //QApplication * _coreApp;
     Ui::Mpx3GUI * _ui;
@@ -124,8 +124,8 @@ public:
     void resize(int x, int y);
     //histogram* getHist(int index){return hists[index];}
 
-    vector<int> getOrientation() { return _MPX3RX_ORIENTATION; }
-    vector<QPoint> getLayout() { return _MPX3RX_LAYOUT; }
+    std::vector<int> getOrientation() { return _MPX3RX_ORIENTATION; }
+    std::vector<QPoint> getLayout() { return _MPX3RX_LAYOUT; }
 
     QPoint  getSize();
     void getSize(int *x, int *y);

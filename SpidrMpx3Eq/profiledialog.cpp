@@ -16,6 +16,8 @@ ProfileDialog::ProfileDialog(QWidget *parent) :
     for(int i = 0; i < editsList.length(); i++)
         connect( editsList[i], SIGNAL(editingFinished()), this, SLOT(onpointEdit_editingFinished()));
 
+    connect( ui->profilePlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mousePressEvent(QMouseEvent*)));
+
 }
 
 ProfileDialog::~ProfileDialog()
@@ -31,7 +33,8 @@ void ProfileDialog::SetMpx3GUI(Mpx3GUI * p )
              _mpx3gui->getVisualization(),
              &QCstmGLVisualization::on_user_accepted_profile );
 
-    connect( ui->profilePlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mousePressEvent(QMouseEvent*)));
+    //setSelectedThreshold(_mpx3gui->getVisualization()->getActiveThreshold());
+
 }
 
 
@@ -522,7 +525,7 @@ bool ProfileDialog::valueinRange(int value){
 void ProfileDialog::onpointEdit_editingFinished(){
 
     int x;
-    QString txt = sender()->objectName().split("_")[1];
+    QString txt = sender()->objectName().split("_")[1]; //Depends on the naming of the pointEdits..
     int index = txt.toInt();
 
     ui->profilePlot->graph(N_maingraphs + index)->clearData();
@@ -537,11 +540,10 @@ void ProfileDialog::onpointEdit_editingFinished(){
 
 void ProfileDialog::on_comboBox_currentIndexChanged(const QString &arg1)
 {
-    QString s = arg1;
-    s.remove("Threshold", Qt::CaseInsensitive);
-    int layerIndex = s.toInt();
-    setLayer(layerIndex);
-    setAxisMap(_mpx3gui->getDataset()->calcProfile(_axis, layerIndex, _begin, _end));
+    QStringList split = arg1.split(' ');
+    int threshold = split.last().toInt();
+    setSelectedThreshold(threshold);
+    setAxisMap(_mpx3gui->getDataset()->calcProfile(_axis, threshold, _begin, _end));
     plotProfile();
     show();
 }

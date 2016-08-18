@@ -276,6 +276,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged() ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->dqeTab, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, &Mpx3GUI::ConnectionStatusChanged, &Mpx3GUI::onConnectionStatusChanged );
 
     connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
@@ -377,7 +378,7 @@ bool Mpx3GUI::establish_connection() {
     // See if there is any chips connected
     if ( config->getActiveDevices().size() == 0 ) {
 
-        *dbg << "[ERRO] Could not find any devices";
+        *dbg << "[ERROR] Could not find any devices";
         // Dump the verbose here.
         delete dbg;
 
@@ -911,6 +912,7 @@ void Mpx3GUI::clear_configuration(){
 void Mpx3GUI::clear_data(bool clearStatusBar) {
 
     getDataset()->clear();
+    _ui->dqeTab->clearDataAndPlots();
     //getVisualization()->cle
     emit data_cleared();
 
