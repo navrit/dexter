@@ -44,7 +44,7 @@ public:
           qDebug() << "Out of bounds!" << index << "/" << m_bins.size();
        m_bins[valueToBin(value)] += count;
       }
-    else{
+    else {
       switch(m_edgeCaseBehaviour){
         case edgesClamp:
           if(value > m_max)

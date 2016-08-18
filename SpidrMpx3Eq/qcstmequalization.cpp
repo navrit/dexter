@@ -1541,8 +1541,16 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
+    // Number of links ! // TODO
+    spidrcontrol->setPs( devId, 3 );
+    spidrcontrol->setLutEnable( true );
+    spidrdaq->setLutEnable( false );
+
     // Reset pixel configuration
     if ( reset ) spidrcontrol->resetPixelConfig();
+
+    // Force operating in SequeantialR/W for equalization
+    spidrcontrol->setContRdWr( devId, false );
 
     // All adjustment bits to zero
     SetAllAdjustmentBits(spidrcontrol, devId, 0x0, 0x0);
@@ -1550,7 +1558,7 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     // OMR
     spidrcontrol->setPolarity( _deviceIndex, _mpx3gui->getConfig()->getPolarity() );		// true: Holes collection
     //spidrcontrol->setInternalTestPulse( true ); 			// Internal tests pulse
-    spidrcontrol->setPixelDepth( devId, 12 );
+    spidrcontrol->setPixelDepth( devId, _mpx3gui->getConfig()->getPixelDepth() );
     spidrcontrol->setColourMode( devId, _mpx3gui->getConfig()->getColourMode() ); 		// false = Fine Pitch
     spidrcontrol->setCsmSpm( devId, 0 );				// Single Pixel mode
 

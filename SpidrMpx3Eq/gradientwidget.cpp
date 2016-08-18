@@ -4,7 +4,7 @@
 #include <stdio.h>
 GradientWidget::GradientWidget(QWidget *parent) : QWidget(parent){
 
-    this->setStyleSheet("font-family: Arial;font-style: normal;font-size: 10pt;font-weight: bold;");
+    this->setStyleSheet("font-family: Arial;font-style: normal;font-size: 9pt;font-weight: bold;");
 }
 
 GradientWidget::~GradientWidget()
@@ -18,7 +18,6 @@ GradientWidget::~GradientWidget()
 
 void GradientWidget::paintEvent(QPaintEvent * /*event*/){ //TODO: caching, auto-formating of labels.
 
-
     if ( !m_gradient ) return;
 
     int requiredWidth = 0;
@@ -29,31 +28,30 @@ void GradientWidget::paintEvent(QPaintEvent * /*event*/){ //TODO: caching, auto-
         painter.begin(this);
     m_label_spacing = this->height()/((float) m_nlabels);
 
-    // draw first the max of the scale
+    // Draw first the max of the scale
     QRectF boundingBox;
     QString label;
     label.sprintf(" %.0f", m_max);
-    qDebug() << this->width() << " , " << this->height();
     painter.drawText(QRectF(30,0, this->width(), this->height()),Qt::AlignTop,
                      label, &boundingBox);
     requiredWidth = (requiredWidth < 30+boundingBox.width()? 30+boundingBox.width() : requiredWidth);
     //painter.drawRect(boundingBox);
     float spacingTop = boundingBox.height();
 
+
     // Now the minimum
     label.sprintf(" %.0f", m_min);
-
     painter.drawText(QRectF(30,0, this->width(), this->height()),Qt::AlignBottom,
                      label, &boundingBox);
     requiredWidth = (requiredWidth < 30+boundingBox.width()? 30+boundingBox.width() : requiredWidth);
 
-    //painter.drawRect(boundingBox);
+
+    // Draw the rest
     float spacingBottom = boundingBox.height();
     float span = this->height()-spacingBottom/2-spacingTop/2;
     painter.drawPixmap(0,(int)spacingTop/2, 30, (int)(span), m_gradient_pixmap);
     m_label_spacing = (this->height()-spacingBottom-spacingTop)/m_nlabels;
 
-    // Draw the rest
     for(int i = 0; i < m_nlabels; i++){
         QRectF newBounds(30, i*m_label_spacing+spacingTop, this->width()-m_gradient_image->width(), m_label_spacing);
         label.sprintf(" %.0f", m_max-(m_max-m_min)*(newBounds.y()+0.5*newBounds.height()-spacingTop/2)/span);

@@ -18,7 +18,7 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     ui->setupUi(this);
 
     _timerId = -1;
-    ui->samplingSpinner->setValue( 1.0 );
+    //ui->samplingSpinner->setValue( 1.0 );
 
     ui->gainModeCombobox->addItem("Super High Gain Mode");
     ui->gainModeCombobox->addItem("Low Gain Mode");
@@ -31,13 +31,44 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     ui->operationModeComboBox->addItem("Sequential R/W");
     ui->operationModeComboBox->addItem("Continuous R/W");
 
-    // Configurable clock
-    ui->mpx3ClockComboBox->addItem("64");
-    ui->mpx3ClockComboBox->addItem("100");
-    ui->mpx3ClockComboBox->addItem("128");
-    ui->mpx3ClockComboBox->addItem("200");
+    // Pixel depth
+    __pixelDepthMap.push_back( 1 );
+    __pixelDepthMap.push_back( 6 );
+    __pixelDepthMap.push_back( 12 );
+    __pixelDepthMap.push_back( 24 );
+    ui->pixelDepthCombo->addItem( QString("%1 bit").arg( __pixelDepthMap[0] ) );
+    ui->pixelDepthCombo->addItem( QString("%1 bits").arg( __pixelDepthMap[1] ) );
+    ui->pixelDepthCombo->addItem( QString("%1 bits").arg( __pixelDepthMap[2] ) );
+    ui->pixelDepthCombo->addItem( QString("%1 bits").arg( __pixelDepthMap[3] ) );
+    ui->pixelDepthCombo->setCurrentIndex( 2 );
 
-    ui->motorDial->setNotchesVisible(true);
+    // Trigger mode
+    __triggerModeMap.push_back( 4 );
+    ui->triggerModeCombo->addItem( "Auto" );
+    ui->triggerModeCombo->setCurrentIndex( 0 );
+
+    // Configurable clock
+    ui->mpx3ClockComboBox->setEnabled( false );
+    //ui->mpx3ClockComboBox->addItem("64");
+    //ui->mpx3ClockComboBox->addItem("100");
+    //ui->mpx3ClockComboBox->addItem("128");
+    //ui->mpx3ClockComboBox->addItem("200");
+
+    // CSM_SPM
+    __csmSpmMap.push_back( 0 );
+    __csmSpmMap.push_back( 1 );
+    ui->csmSpmCombo->addItem( "OFF" );
+    ui->csmSpmCombo->addItem( "ON" );
+    ui->csmSpmCombo->setCurrentIndex( 0 );
+
+    // Packet size
+    ui->maxPacketSizeSpinner->setEnabled( false );
+
+    // Time units
+    ui->radioButtonS->setEnabled( false );
+    ui->radioButtonMS->setEnabled( false );
+
+    ui->motorDial->setNotchesVisible( true );
 
     _stepperThread = nullptr;
     _stepper = nullptr;
@@ -67,6 +98,14 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
 
 }
 
+unsigned int QCstmConfigMonitoring::getPixelDepthFromIndex(int indx) {
+
+    int sizev = __pixelDepthMap.size();
+    if ( indx >= sizev ) return __pixelDepthMap[ __pixelDepth12BitsIndex ]; // 12 bits
+
+    return __pixelDepthMap[indx];
+}
+
 QCstmConfigMonitoring::~QCstmConfigMonitoring()
 {
     if( _stepperThread ) delete _stepperThread;
@@ -85,12 +124,61 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
         // The timer will keep refreshing periodically.
         readMonitoringInfo();
         _timerId = this->startTimer( ui->samplingSpinner->value()*1000 ); // value comes in seconds from GUI.  Convert to ms.
+
+        ui->remoteTempMeasLineEdit->setEnabled( true );
+        ui->localTempMeasLineEdit->setEnabled( true );
+        ui->biasVoltageMeasLineEdit->setEnabled( true );
+
+        ui->avddmamp->setEnabled( true );
+        ui->avddmvolt->setEnabled( true );
+        ui->avddmwatt->setEnabled( true );
+
+        ui->vddmamp->setEnabled( true );
+        ui->vddmvolt->setEnabled( true );
+        ui->vddmwatt->setEnabled( true );
+
+        ui->dvddmamp->setEnabled( true );
+        ui->dvddmvolt->setEnabled( true );
+        ui->dvddmwatt->setEnabled( true );
+
     } else {
+
         this->killTimer( _timerId );
         _timerId = -1;
+
         // clean the temp display
-        ui->remoteTempMeasLabel->setText("");
-        ui->localTempMeasLabel->setText("");
+        ui->remoteTempMeasLineEdit->setText("");
+        ui->localTempMeasLineEdit->setText("");
+        ui->biasVoltageMeasLineEdit->setText("");
+
+        ui->avddmamp->setText("");
+        ui->avddmvolt->setText("");
+        ui->avddmwatt->setText("");
+
+        ui->vddmamp->setText("");
+        ui->vddmvolt->setText("");
+        ui->vddmwatt->setText("");
+
+        ui->dvddmamp->setText("");
+        ui->dvddmvolt->setText("");
+        ui->dvddmwatt->setText("");
+
+        ui->remoteTempMeasLineEdit->setEnabled( false );
+        ui->localTempMeasLineEdit->setEnabled( false );
+        ui->biasVoltageMeasLineEdit->setEnabled( false );
+
+        ui->avddmamp->setEnabled( false );
+        ui->avddmvolt->setEnabled( false );
+        ui->avddmwatt->setEnabled( false );
+
+        ui->vddmamp->setEnabled( false );
+        ui->vddmvolt->setEnabled( false );
+        ui->vddmwatt->setEnabled( false );
+
+        ui->dvddmamp->setEnabled( false );
+        ui->dvddmvolt->setEnabled( false );
+        ui->dvddmwatt->setEnabled( false );
+
     }
 
 }
@@ -247,65 +335,118 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     _mpx3gui = p;
     Mpx3Config *config = _mpx3gui->getConfig();
 
-    connect(ui->ColourModeCheckBox, SIGNAL(clicked(bool)), config, SLOT(setColourMode(bool)));
-    connect(config, SIGNAL(colourModeChanged(bool)), ui->ColourModeCheckBox, SLOT(setChecked(bool)));
-
-    connect(ui->readBothCountersCheckBox, SIGNAL(clicked(bool)), config, SLOT(setReadBothCounters(bool)));
-    connect(config, SIGNAL(readBothCountersChanged(bool)), ui->readBothCountersCheckBox, SLOT(setChecked(bool)));
-
-    connect(ui->csmSpmSpinner, SIGNAL(valueChanged(int)), config, SLOT(setCsmSpm(int)));
-    connect(config, SIGNAL(csmSpmChanged(int)), ui->csmSpmSpinner, SLOT(setValue(int)));
-
-    connect(ui->decodeFramesCheckbox, SIGNAL(clicked(bool)), config, SLOT(setDecodeFrames(bool)));
-    connect(config, SIGNAL(decodeFramesChanged(bool)), ui->decodeFramesCheckbox, SLOT(setChecked(bool)));
-
-    connect(ui->gainModeCombobox, SIGNAL(activated(int)), config, SLOT(setGainMode(int)));
-    connect(config, SIGNAL(gainModeChanged(int)), ui->gainModeCombobox, SLOT(setCurrentIndex(int)));
-
-    connect(ui->polarityComboBox, SIGNAL(activated(int)), config, SLOT(setPolarity(int)));
-    connect(config, SIGNAL(polarityChanged(int)), ui->polarityComboBox, SLOT(setCurrentIndex(int)));
-
-    connect(ui->biasVoltageSpinner, SIGNAL(editingFinished()), this, SLOT(biasVoltageChanged()) );
-    connect(config, SIGNAL(BiasVoltageChanged(double)), ui->biasVoltageSpinner, SLOT(setValue(double)));
-
-    connect(ui->maxPacketSizeSpinner, SIGNAL(valueChanged(int)), config, SLOT(setMaxPacketSize(int)));
-    connect(config, SIGNAL(MaxPacketSizeChanged(int)), ui->maxPacketSizeSpinner, SLOT(setValue(int)));
-
-    connect(ui->nTriggersSpinner, SIGNAL(valueChanged(int)), config, SLOT(setNTriggers(int)));
+    // nTriggers
+    connect(ui->nTriggersSpinner, SIGNAL( editingFinished() ), this, SLOT( nTriggersEdited() ) );
     connect(config, SIGNAL(nTriggersChanged(int)), ui->nTriggersSpinner, SLOT(setValue(int)));
     // connection in the viewer
     connect(ui->nTriggersSpinner, SIGNAL(valueChanged(int)),
             _mpx3gui->getVisualization()->GetUI()->nTriggersSpinBox,
             SLOT(setValue(int)));
 
-    connect(ui->operationModeComboBox, SIGNAL(activated(int)), config, SLOT(setOperationMode(int)));
-    connect(config, SIGNAL(operationModeChanged(int)), ui->operationModeComboBox, SLOT(setCurrentIndex(int)));
-    // connection ni the viewer
-    connect(ui->operationModeComboBox, SIGNAL(activated(int)),
-            _mpx3gui->getVisualization()->GetUI()->operationModeComboBox_Vis,
-            SLOT(setCurrentIndex(int)));
-
-    connect(ui->pixelDepthComboBox, SIGNAL(activated(int)), config, SLOT(setPixelDepthByIndex(int)));
-    connect(config, SIGNAL(pixelDepthChanged(int)), ui->pixelDepthComboBox, SLOT(setCurrentIndex(int)));
-
-    connect(ui->triggerLengthSpinner, SIGNAL(valueChanged(int)), config, SLOT(setTriggerLength(int)));
-    connect(config, SIGNAL(TriggerLengthChanged(int)), ui->triggerLengthSpinner, SLOT(setValue(int)));
+    // contRW
+    connect(ui->contRWFreq, SIGNAL( valueChanged(int) ), this, SLOT( ContRWFreqEdited() ) );
+    connect(config, SIGNAL(ContRWFreqChanged(int)), ui->contRWFreq, SLOT(setValue(int)));
     // connection in the viewer
     connect(ui->triggerLengthSpinner, SIGNAL(valueChanged(int)),
             _mpx3gui->getVisualization()->GetUI()->triggerLengthSpinBox,
             SLOT(setValue(int)));
 
-    connect(ui->triggerDowntimeSpinner, SIGNAL(editingFinished()), config, SLOT(setTriggerDowntime()));
+    // Shutter Length
+    connect(ui->triggerLengthSpinner, SIGNAL(editingFinished()), this, SLOT(TriggerLengthEdited()) );
+    connect(config, SIGNAL(TriggerLengthChanged(int)), ui->triggerLengthSpinner, SLOT(setValue(int)));
+
+    // Trigger Down
+    connect(ui->triggerDowntimeSpinner, SIGNAL(editingFinished()), this, SLOT(TriggerDowntimeEdited()) );
     connect(config, SIGNAL(TriggerDowntimeChanged(int)), ui->triggerDowntimeSpinner, SLOT(setValue(int)));
 
-    connect(ui->triggerModeSpinner, SIGNAL(valueChanged(int)), config, SLOT(setTriggerMode(int)));
-    connect(config, SIGNAL(TriggerModeChanged(int)), ui->triggerModeSpinner, SLOT(setValue(int)));
+    // Operation Mode
+    connect(ui->operationModeComboBox, SIGNAL(activated(int)), config, SLOT(setOperationMode(int)));
+    connect(config, SIGNAL(operationModeChanged(int)), ui->operationModeComboBox, SLOT(setCurrentIndex(int)));
+    // connection in the viewer
+    connect(ui->operationModeComboBox, SIGNAL(activated(int)),
+            _mpx3gui->getVisualization()->GetUI()->operationModeComboBox_Vis,
+            SLOT(setCurrentIndex(int)));
+    // extra actions on OperationMode change
+    connect(ui->operationModeComboBox, SIGNAL(activated(int)),
+            this,
+            SLOT(OperationModeSwitched(int)));
+    connect(ui->operationModeComboBox, SIGNAL(activated(int)),
+            _mpx3gui->getVisualization(),
+            SLOT(OperationModeSwitched(int)));
 
+    // Polarity
+    connect(ui->polarityComboBox, SIGNAL(activated(int)), config, SLOT(setPolarity(int)));
+    connect(config, SIGNAL(polarityChanged(int)), ui->polarityComboBox, SLOT(setCurrentIndex(int)));
+
+    // Gain Mode
+    connect(ui->gainModeCombobox, SIGNAL(activated(int)), config, SLOT(setGainMode(int)));
+    connect(config, SIGNAL(gainModeChanged(int)), ui->gainModeCombobox, SLOT(setCurrentIndex(int)));
+
+    // Pixel Depth
+    connect(ui->pixelDepthCombo, SIGNAL(activated(int)), this, SLOT(setPixelDepthByIndex(int)) );
+    connect(config, SIGNAL(pixelDepthChanged(int)), this, SLOT(pixelDepthChangedByValue(int)) );
+
+    // Trigger mode
+    connect(ui->triggerModeCombo, SIGNAL(activated(int)), this, SLOT(setTriggerModeByIndex(int)) );
+    connect(config, SIGNAL(TriggerModeChanged(int)), this, SLOT( triggerModeChangedByValue(int) ) );
+
+    // Bias Voltage
+    connect(ui->biasVoltageSpinner, SIGNAL(editingFinished()), this, SLOT(biasVoltageChanged()) );
+    connect(config, SIGNAL(BiasVoltageChanged(double)), ui->biasVoltageSpinner, SLOT(setValue(double)));
+
+    // CSM SPM
+    connect(ui->csmSpmCombo, SIGNAL(activated(int)), this, SLOT( setCsmSpmByIndex(int) ) );
+    connect(config, SIGNAL(csmSpmChanged(int)), this, SLOT( csmSpmChangedByValue(int)) );
+
+
+
+    // BothCounters
+    connect(ui->readBothCountersCheckBox, SIGNAL(clicked(bool)), config, SLOT(setReadBothCounters(bool)));
+    connect(config, SIGNAL(readBothCountersChanged(bool)), ui->readBothCountersCheckBox, SLOT(setChecked(bool)));
+
+    // ColourMode
+    connect(ui->ColourModeCheckBox, SIGNAL(clicked(bool)), config, SLOT(setColourMode(bool)));
+    connect(config, SIGNAL(colourModeChanged(bool)), ui->ColourModeCheckBox, SLOT(setChecked(bool)));
+
+    // LUTEnable
+    connect(ui->LUTCheckbox, SIGNAL(clicked(bool)), config, SLOT(setLUTEnable(bool)));
+    connect(config, SIGNAL(LUTEnableChanged(bool)), ui->LUTCheckbox, SLOT(setChecked(bool)));
+
+    // DecodeFrames
+    connect(ui->decodeFramesCheckbox, SIGNAL(clicked(bool)), config, SLOT(setDecodeFrames(bool)));
+    connect(config, SIGNAL(decodeFramesChanged(bool)), ui->decodeFramesCheckbox, SLOT(setChecked(bool)));
+
+    // IP
+    connect(ui->ipLineEdit, SIGNAL( editingFinished() ), this, SLOT( IpAddressEditFinished() ) );// config, SLOT(setIpAddress(QString)) );
+    connect(config, SIGNAL(IpAdressChanged(QString)), ui->ipLineEdit, SLOT(setText(QString)) );
+
+    // Port
     connect(ui->portSpinner, SIGNAL(valueChanged(int)), config, SLOT(setPort(int)));
     connect(config, SIGNAL(portChanged(int)), ui->portSpinner, SLOT(setValue(int)));
 
-    connect(config, SIGNAL(IpAdressChanged(QString)), ui->ipLineEdit, SLOT(setText(QString)));
-    //connect(ui->ipLineEdit, SIGNAL(textEdited(QString)), config, SLOT(setIpAddress(QString)));//Can't turn of keyboard tracking for this
+
+    // Max packet size
+    connect( ui->maxPacketSizeSpinner, SIGNAL(editingFinished()), this, SLOT(maxPacketSizeEdited()) );
+    connect(config, SIGNAL(MaxPacketSizeChanged(int)), ui->maxPacketSizeSpinner, SLOT(setValue(int)));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     // stepper
@@ -334,11 +475,129 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
 
 }
 
-void QCstmConfigMonitoring::biasVoltageChanged(){
+void QCstmConfigMonitoring::nTriggersEdited() {
 
-    _mpx3gui->getConfig()->setBiasVoltage( ui->biasVoltageSpinner->value() );
+    _mpx3gui->getConfig()->setNTriggers(
+                ui->nTriggersSpinner->value()
+                );
+
+    //else if ( _mpx3gui->getConfig()->getOperationMode()
+    //            == Mpx3Config::__operationMode_ContinuousRW ) {
+    //    // contRWFreq
+    //    _mpx3gui->getConfig()->setContRWFreq(
+    //                ui->nTriggersSpinner->value()
+    //                );
+    //}
 
 }
+
+void QCstmConfigMonitoring::ContRWFreqEdited()
+{
+
+    _mpx3gui->getConfig()->setContRWFreq(
+                ui->contRWFreq->value()
+                );
+
+}
+
+void QCstmConfigMonitoring::TriggerLengthEdited()
+{
+    _mpx3gui->getConfig()->setTriggerLength(
+                ui->triggerLengthSpinner->value()
+                );
+}
+
+void QCstmConfigMonitoring::TriggerDowntimeEdited()
+{
+    _mpx3gui->getConfig()->setTriggerDowntime(
+                ui->triggerDowntimeSpinner->value()
+                );
+}
+
+void QCstmConfigMonitoring::biasVoltageChanged(){
+
+    _mpx3gui->getConfig()->setBiasVoltage(
+                ui->biasVoltageSpinner->value()
+                );
+
+}
+
+void QCstmConfigMonitoring::OperationModeSwitched(int indx)
+{
+    if ( indx == Mpx3Config::__operationMode_SequentialRW ) {
+        ui->triggerLengthSpinner->setEnabled( true );
+        ui->triggerDowntimeSpinner->setEnabled( true );
+        ui->contRWFreq->setEnabled( false );
+    } else if ( indx == Mpx3Config::__operationMode_ContinuousRW ) {
+        ui->triggerLengthSpinner->setEnabled( false );
+        ui->triggerDowntimeSpinner->setEnabled( false );
+        ui->contRWFreq->setEnabled( true );
+    }
+}
+
+void QCstmConfigMonitoring::setPixelDepthByIndex(int newValIndx)
+{
+    _mpx3gui->getConfig()->setPixelDepth (
+                __pixelDepthMap[ newValIndx ] // by index
+                );
+}
+
+void QCstmConfigMonitoring::setTriggerModeByIndex(int newValIndx) {
+    _mpx3gui->getConfig()->setTriggerMode(
+                __triggerModeMap[ newValIndx ]
+                );
+}
+
+void QCstmConfigMonitoring::setCsmSpmByIndex(int newValIndx)
+{
+    _mpx3gui->getConfig()->setCsmSpm(
+                __csmSpmMap[newValIndx]
+                );
+}
+
+void QCstmConfigMonitoring::csmSpmChangedByValue(int val)
+{
+    int sizea = __csmSpmMap.size();
+    for ( int i = 0 ; i < sizea ; i++ ) {
+        if ( __csmSpmMap[i] == val ) {
+            ui->csmSpmCombo->setCurrentIndex( i );
+            return;
+        }
+    }
+    ui->csmSpmCombo->setCurrentIndex( 0 );
+}
+
+void QCstmConfigMonitoring::IpAddressEditFinished()
+{
+    // The string should be of the form
+    //  192.168.1.10:50000
+
+
+}
+
+void QCstmConfigMonitoring::pixelDepthChangedByValue(int val)
+{
+    int sizea = __pixelDepthMap.size();
+    for ( int i = 0 ; i < sizea ; i++ ) {
+        if ( __pixelDepthMap[i] == val ) {
+            ui->pixelDepthCombo->setCurrentIndex( i );
+            return;
+        }
+    }
+    ui->pixelDepthCombo->setCurrentIndex( 0 );
+}
+
+void QCstmConfigMonitoring::triggerModeChangedByValue(int val) {
+    int sizea = __triggerModeMap.size();
+    for ( int i = 0 ; i < sizea ; i++ ) {
+        if ( __triggerModeMap[i] == val ) {
+            ui->triggerModeCombo->setCurrentIndex( i );
+            return;
+        }
+    }
+    ui->triggerModeCombo->setCurrentIndex( 0 );
+}
+
 
 void QCstmConfigMonitoring::widgetInfoPropagation()
 {
@@ -367,78 +626,67 @@ void QCstmConfigMonitoring::readMonitoringInfo() {
         int mdegrees;
         if( spidrcontrol->getRemoteTemp( &mdegrees ) ) {
             QString qs = QString("%1.%2 C").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
-            ui->remoteTempMeasLabel->setText( qs );
+            ui->remoteTempMeasLineEdit->setText( qs );
         } else {
-            ui->remoteTempMeasLabel->setText( "--.---" );
+            ui->remoteTempMeasLineEdit->setText( "--.--" );
         }
 
         if( spidrcontrol->getLocalTemp( &mdegrees ) ) {
             QString qs = QString("%1.%2 C").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
-            ui->localTempMeasLabel->setText( qs );
+            ui->localTempMeasLineEdit->setText( qs );
         } else {
-            ui->localTempMeasLabel->setText( "--.---" );
+            ui->localTempMeasLineEdit->setText( "--.--" );
         }
         int biasVolts;
         if ( spidrcontrol->getBiasVoltage(&biasVolts) ) {
             QString qs = QString("%1 V").arg( biasVolts );
-            ui->biasVoltageMeasLabel->setText( qs );
+            ui->biasVoltageMeasLineEdit->setText( qs );
         } else {
-            ui->biasVoltageMeasLabel->setText( "--.---" );
+            ui->biasVoltageMeasLineEdit->setText( "--.-" );
         }
 
-    }
-
-
-    /*
-    int mvolt, mamp, mwatt;
-    if( _spidrController->getAvddNow( &mvolt, &mamp, &mwatt ) )
-    {
-        _lineEditAvddMvolt->setText( QString::number( mvolt ) );
-        _lineEditAvddMwatt->setText( QString::number( mwatt ) );
-        QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
-        _lineEditAvddMamp->setText( qs );
-    }
-    else
-    {
-        _lineEditAvddMvolt->setText( "----" );
-        _lineEditAvddMamp->setText( "----" );
-        _lineEditAvddMwatt->setText( "----" );
-    }
-    if( _spidrController->getDvddNow( &mvolt, &mamp, &mwatt ) )
-    {
-        _lineEditDvddMvolt->setText( QString::number( mvolt ) );
-        _lineEditDvddMwatt->setText( QString::number( mwatt ) );
-        QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
-        _lineEditDvddMamp->setText( qs );
-    }
-    else
-    {
-        _lineEditDvddMvolt->setText( "----" );
-        _lineEditDvddMamp->setText( "----" );
-        _lineEditDvddMwatt->setText( "----" );
-    }
-    if( !_skipVdd )
-    {
-        if( _spidrController->getVddNow( &mvolt, &mamp, &mwatt ) )
-        {
-            _lineEditVddMvolt->setText( QString::number( mvolt ) );
-            _lineEditVddMwatt->setText( QString::number( mwatt ) );
+        int mvolt, mamp, mwatt;
+        if( spidrcontrol->getAvddNow( &mvolt, &mamp, &mwatt ) ) {
+            ui->avddmvolt->setText( QString::number( mvolt ) );
+            ui->avddmwatt->setText( QString::number( mwatt ) );
             QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
-            _lineEditVddMamp->setText( qs );
+            ui->avddmamp->setText( qs );
+        } else {
+            ui->avddmvolt->setText( "----" ) ;
+            ui->avddmwatt->setText( "----" );
+            ui->avddmamp->setText( "----" );
         }
-        else
-        {
-            _skipVdd = true; // SPIDR-TPX3 does not have VDD
-            _lineEditVddMvolt->setText( "----" );
-            _lineEditVddMamp->setText( "----" );
-            _lineEditVddMwatt->setText( "----" );
+
+        if( spidrcontrol->getVddNow( &mvolt, &mamp, &mwatt ) ) {
+            ui->vddmvolt->setText( QString::number( mvolt ) );
+            ui->vddmwatt->setText( QString::number( mwatt ) );
+            QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
+            ui->vddmamp->setText( qs );
+        } else {
+            ui->vddmvolt->setText( "----" );
+            ui->vddmwatt->setText( "----" );
+            ui->vddmamp->setText( "----" );
+        }
+
+        if( spidrcontrol->getDvddNow( &mvolt, &mamp, &mwatt ) ) {
+            ui->dvddmvolt->setText( QString::number( mvolt ) );
+            ui->dvddmwatt->setText( QString::number( mwatt ) );
+            QString qs = QString("%1.%2").arg( mamp/10 ).arg( mamp%10 );
+            ui->dvddmamp->setText( qs );
+        } else {
+            ui->dvddmvolt->setText( "----" );
+            ui->dvddmwatt->setText( "----" );
+            ui->dvddmamp->setText( "----" );
         }
     }
 
-    _leUpdateLed->show();
-    QTimer::singleShot( UPDATE_INTERVAL_MS/4, this, SLOT(updateLedOff()) );
-     */
+}
 
+void QCstmConfigMonitoring::maxPacketSizeEdited()
+{
+    _mpx3gui->getConfig()->setMaxPacketSize(
+                ui->maxPacketSizeSpinner->value()
+                );
 }
 
 void QCstmConfigMonitoring::on_SaveButton_clicked()//TODO: automatically append .json
@@ -448,6 +696,7 @@ void QCstmConfigMonitoring::on_SaveButton_clicked()//TODO: automatically append 
     saveDialog.setDefaultSuffix("json");
     //saveDialog.setDirectory("./config");
     saveDialog.exec();
+    if( saveDialog.selectedFiles().empty() ) return; // the user hit Cancel
     QString filename = saveDialog.selectedFiles().first();
     //QFileDialog dialog;
     //dialog.setDefaultSuffix("json");//Bugged under Linux?
@@ -1141,7 +1390,6 @@ void QCstmConfigMonitoring::on_motorTestButton_clicked()
     _stepperThread->start();
     _stepper->goToTarget( (long long int)targetPos, motorId );
 
-
 }
 
 
@@ -1188,3 +1436,4 @@ void QCstmConfigMonitoring::stepperGotoTargetFinished()
     }
 
 }
+
