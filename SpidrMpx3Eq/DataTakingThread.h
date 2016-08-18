@@ -54,6 +54,8 @@ public:
 
     QVector<int> getData(int layer);
 
+    void run2();
+
 protected:
 
     void run() Q_DECL_OVERRIDE;
@@ -95,6 +97,10 @@ signals:
     void data_taking_finished(int);
     void progress(int);
     void lost_packets(int);
+    void lost_frames(int);
+    void data_misaligned(bool);
+    void mpx3clock_stops(int);
+
     void fps_update(int);
     void overflow_update(int);
     void dataReady(int layer);

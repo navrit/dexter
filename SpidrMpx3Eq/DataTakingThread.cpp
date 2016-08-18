@@ -43,6 +43,54 @@ void DataTakingThread::ConnectToHardware() {
 
 void DataTakingThread::run() {
 
+    // Open a new temporary connection to the spider to avoid collisions to the main one
+    int ipaddr[4] = { 1, 1, 168, 192 };
+    if( _srcAddr != 0 ) {
+        ipaddr[3] = (_srcAddr >> 24) & 0xFF;
+        ipaddr[2] = (_srcAddr >> 16) & 0xFF;
+        ipaddr[1] = (_srcAddr >>  8) & 0xFF;
+        ipaddr[0] = (_srcAddr >>  0) & 0xFF;
+    }
+
+    // New instance.  This all belongs to this thread
+    SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
+    if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
+        qDebug() << "[ERR ] Device not connected !";
+        return;
+    }
+    spidrcontrol->resetCounters();
+    spidrcontrol->setLogLevel( 0 );
+    //! Work around
+    //! If we attempt a connection while the system is already sending data
+    //! (this may happen if for instance the program was killed by the user,
+    //!  or when it is close while a very long data taking has been lauched and
+    //! the system failed to stop the data taking).  If this happens we ought
+    //! to stop data taking, and give the system a bit of delay.
+    spidrcontrol->stopAutoTrigger();
+    Sleep( 100 );
+
+    SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+
+    connect(this, SIGNAL(progress(int)), _vis, SLOT(progress_signal(int)));
+    connect(this, SIGNAL(lost_packets(int)), _vis, SLOT(lost_packets(int)) );
+    connect(this, SIGNAL(lost_frames(int)), _vis, SLOT(lost_frames(int)) );
+    connect(this, SIGNAL(data_misaligned(bool)), _vis, SLOT(data_misaligned(bool)) );
+    connect(this, SIGNAL(mpx3clock_stops(int)), _vis, SLOT(mpx3clock_stops(int)) );
+    connect(this, SIGNAL(fps_update(int)), _vis, SLOT(fps_update(int)) );
+    connect(this, SIGNAL(overflow_update(int)), _vis, SLOT(overflow_update(int)) );
+
+    if ( _mpx3gui->getConfig()->getOperationMode()
+         == Mpx3Config::__operationMode_ContinuousRW ) {
+        spidrcontrol->startContReadout( _mpx3gui->getConfig()->getContRWFreq() );
+    } else {
+        spidrcontrol->startAutoTrigger();
+    }
+
+
+}
+
+void DataTakingThread::run2() {
+
     // Work an protect local variables
     _mutex.lock();
     datataking_score_info score = this->_score;
@@ -87,19 +135,21 @@ void DataTakingThread::run() {
     connect(this, SIGNAL(reload_all_layers()), _vis, SLOT(reload_all_layers()));
     connect(this, SIGNAL(reload_layer(int)), _vis, SLOT(reload_layer(int)));
     connect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(data_taking_finished(int)));
-    connect(this, SIGNAL(progress(int)), _vis, SLOT(progress_signal(int)));
     connect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
     connect(_vis, SIGNAL(free_to_draw()), this, SLOT(on_free_to_draw()) );
     connect(_vis, SIGNAL(busy_drawing()), this, SLOT(on_busy_drawing()) );
 
+    connect(this, SIGNAL(progress(int)), _vis, SLOT(progress_signal(int)));
     connect(this, SIGNAL(lost_packets(int)), _vis, SLOT(lost_packets(int)) );
+    connect(this, SIGNAL(lost_frames(int)), _vis, SLOT(lost_frames(int)) );
+    connect(this, SIGNAL(data_misaligned(bool)), _vis, SLOT(data_misaligned(bool)) );
+    connect(this, SIGNAL(mpx3clock_stops(int)), _vis, SLOT(mpx3clock_stops(int)) );
     connect(this, SIGNAL(fps_update(int)), _vis, SLOT(fps_update(int)) );
     connect(this, SIGNAL(overflow_update(int)), _vis, SLOT(overflow_update(int)) );
 
     connect(this, &DataTakingThread::dataReady, _mpx3gui, &Mpx3GUI::dataReady);
 
     qDebug() << "[INFO] Acquiring ... ";
-    //_mpx3gui->GetUI()->startButton->setActive(false);
 
     // Get the list of id's for active devices
     QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
@@ -181,6 +231,7 @@ void DataTakingThread::run() {
         frameId = spidrdaq->frameShutterCounter( 0 );
 
         // If bad flip happened I wait until the first counterL shows up
+        /*
         if ( badFlipping ) {
 
             if ( !spidrdaq->isCounterhFrame(firstDevId) && frameId != prevFrameId ) {
@@ -201,37 +252,42 @@ void DataTakingThread::run() {
             }
 
         }
+        */
 
         // If taking care of a counterL, start by rewinding the flags
+        /*
         if ( !spidrdaq->isCounterhFrame( firstDevId ) ) {
 
             //qDebug() << "[INFO] Cleaning up";
             doReadFrames_L = true;
             doReadFrames_H = true;
 
-            /*
-            _mutex.lock();
-            // Buffering for the counterL
-            for ( int i = 0 ; i < nChips ; i++ ) {
-                if ( th0[i] ) { delete th0[i]; th0[i] = nullptr; }
-                if ( th2[i] ) { delete th2[i]; th2[i] = nullptr; }
-                if ( th4[i] ) { delete th4[i]; th4[i] = nullptr; }
-                if ( th6[i] ) { delete th6[i]; th6[i] = nullptr; }
-            }
-            _mutex.unlock();
-            */
+
+            //_mutex.lock();
+            //// Buffering for the counterL
+            //for ( int i = 0 ; i < nChips ; i++ ) {
+            //    if ( th0[i] ) { delete th0[i]; th0[i] = nullptr; }
+            //    if ( th2[i] ) { delete th2[i]; th2[i] = nullptr; }
+            //    if ( th4[i] ) { delete th4[i]; th4[i] = nullptr; }
+            //    if ( th6[i] ) { delete th6[i]; th6[i] = nullptr; }
+            //}
+            //_mutex.unlock();
+
 
             // counterH is erased as soon as is used.
             // No need to buffer for that counterH
         }
+        */
 
         size_in_bytes = -1;
 
-        int packetsLost = spidrdaq->lostCountFrame(); // The total number of lost packets/pixels detected in the current frame
+        //int packetsLost = spidrdaq->lostCountFrame(); // The total number of lost packets/pixels detected in the current frame
+        //int framesLost = spidrdaq->framesLostCount();
         // report the loss
-        emit lost_packets( packetsLost );
+        emit lost_packets( spidrdaq->lostCount() );
 
 
+        /*
         if ( _vis->GetUI()->dropFramesCheckBox->isChecked() ) {
 
             if ( packetsLost != 0 ) { // from any of the chips connected
@@ -246,8 +302,10 @@ void DataTakingThread::run() {
             }
 
         }
+*/
 
         // If in color mode, check flipping L,H -- L,H -- .... L,H
+        /*
         if ( _mpx3gui->getConfig()->getColourMode() && _mpx3gui->getConfig()->getReadBothCounters() ) {
 
             // the flip is wrong
@@ -268,9 +326,11 @@ void DataTakingThread::run() {
             }
 
         }
+*/
 
         // If the frame is not good to read just keep going.
         // If both counters are to be read then drop both counterL and counterH.
+        /*
         if ( !doReadFrames_L || !doReadFrames_H ) {
 
             // Keep a local count of number of frames
@@ -286,6 +346,7 @@ void DataTakingThread::run() {
             // and keep going
             continue;
         }
+        */
 
         int sizeReduced = 0; // data will be 4*sizeReduced
         QVector<int> dataTH0;
@@ -479,9 +540,23 @@ void DataTakingThread::run() {
 
     qDebug() << "[INFO] received : " << nFramesReceived
              << " | frames kept : " << nFramesKept
-             << " | lost frames : " << spidrdaq->framesLostCount()
+             << " | lost frames : " << spidrdaq->framesLostCount() / nChips
              << " | lost packets(ML605)/pixels(compactSPIDR) : " << spidrdaq->lostCount()
              << " | frames count : " << spidrdaq->framesCount();
+
+    // If framesLostCount() is not divisible by the number of chips, then the data is missaligned
+    if ( spidrdaq->framesLostCount() % nChips != 0 ) {
+         emit data_misaligned( true );
+         qDebug() << "[FATAL] Data is missaligned !!! | frames lots in all chips () = "
+                  << spidrdaq->framesLostCount() << " |  can't divide by " << nChips ;
+    }
+    emit lost_frames( spidrdaq->framesLostCount() / nChips );
+    int val;
+
+    // In case the MPX3 clock was stopped by the SPIDR (when running too fast). Address 0x10b8 look SPIDR register map.
+    spidrcontrol->getSpidrReg( 0x10b8, &val );
+    emit mpx3clock_stops( val );
+
 
     //for ( int i = 0 ; i < activeDevices.size() ; i++ ) {
     //    cout << "devId = " << i << " | packetsReceivedCount = " << spidrdaq->packetsReceivedCount( i ) << endl;
