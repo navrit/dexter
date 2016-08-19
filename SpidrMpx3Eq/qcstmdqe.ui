@@ -122,7 +122,7 @@
       <property name="title">
        <string>MTF</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
+      <layout class="QVBoxLayout" name="verticalLayout_8">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
@@ -228,7 +228,20 @@
           <enum>Qt::Vertical</enum>
          </property>
          <widget class="QCustomPlot" name="ESFplot" native="true"/>
-         <widget class="QCustomPlot" name="LSFplot" native="true"/>
+         <widget class="QWidget" name="layoutWidget">
+          <layout class="QVBoxLayout" name="verticalLayout">
+           <item>
+            <widget class="QCustomPlot" name="LSFplot" native="true"/>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="logScaleCheckBox">
+             <property name="text">
+              <string>CheckBox</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
          <widget class="QCustomPlot" name="MTFplot" native="true"/>
         </widget>
        </item>

@@ -14,7 +14,7 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::QCstmDQE)
 {
-    ui->setupUi(this);    
+    ui->setupUi(this);
 
     ui->ESFplot->xAxis->setLabel("Distance (px)");
     ui->ESFplot->yAxis->setLabel("Normalised ESF");
@@ -117,6 +117,7 @@ void QCstmDQE::plotESF()
     }
 }
 
+//!Plots the error function  or smoothed (locally fitted) function that is fitted to the ESF data.
 void QCstmDQE::plotFitESF()
 {
         //Add graph for the fit
@@ -125,12 +126,20 @@ void QCstmDQE::plotFitESF()
         ui->ESFplot->graph(graphNr)->setPen(QPen(Qt::blue));
         //double stepsize = 0.2; //Specify the distance between datapoints of the plot in pixels.
 
-        fitESFparams(_ESFdata);
+        QVector<QVector<double> > fitdata;
 
-        QVector<QVector<double> > fitdata = calcESFfitData();
+        if(useErrorFunc){
+            fitESFparams(_ESFdata);
 
-        if(fitdata[0].empty() || fitdata[1].empty())
-             QMessageBox::warning ( this, tr("Error"), tr( "No fitting data could be generated." ) );
+            fitdata = calcESFfitData();
+
+            if(fitdata[0].empty() || fitdata[1].empty())
+                 QMessageBox::warning ( this, tr("Error"), tr( "No fitting data could be generated." ) );
+
+        }
+        else{
+            QVector<QVector<double> > fitdata = calcSmoothedESFdata(_ESFbinData);
+        }
 
         ui->ESFplot->graph(graphNr)->setData(fitdata[0], fitdata[1]);
         //        ui->ESFplot->xAxis->setRange(-5., 5.);
@@ -157,7 +166,7 @@ void QCstmDQE::plotLSF()
 
         if(!_LSFdata.empty()){
             ui->LSFplot->graph(0)->setData(_LSFdata[0], _LSFdata[1]);
-            ui->LSFplot->yAxis->setScaleType(QCPAxis::stLogarithmic);
+            if (ui->logScaleCheckBox->isChecked()) ui->LSFplot->yAxis->setScaleType(QCPAxis::stLogarithmic);
             ui->LSFplot->rescaleAxes();
             //ui->LSFplot->xAxis->setRange(-5, 5);
             ui->LSFplot->replot( QCustomPlot::rpQueued );
@@ -416,6 +425,59 @@ QVector<QVector<double> > QCstmDQE::calcESFfitData()
     return fitdata;
 }
 
+QVector<QVector<double> > QCstmDQE::calcSmoothedESFdata(QVector<QVector<double> > data)
+{   int i;
+    int windowW = 11; //Set window width (TO DO user option).
+    int offset = (windowW - 1) / 2;
+    std::vector<std::pair<input_vector, double> > windowData(windowW); //vector of pairs of the variable going in and the value coming out.
+    parameter_vector params;
+    params = 1;
+    input_vector input;
+    QVector<QVector<double> > smoothData(2);
+    smoothData[0] = data[0];
+    smoothData[1].resize(data[0].length());
+
+    for(i = 0; i < windowW; i++){
+        input(0) = data[0][i];       //x
+        double output = data[1][i];  //y
+        windowData.at(i) = make_pair(input, output);
+    }
+
+    for(i = offset; i < data[0].length() - offset; i++){
+        if(i > offset){
+            //Shift window by one spot.
+            windowData.erase(windowData.begin());
+            input(0) = data[0][i + offset];
+            windowData.push_back( make_pair( input , data[1][i + offset] ) );
+        }
+
+        //Find parameters for the fit to this window of data.
+        dlib::solve_least_squares_lm(dlib::objective_delta_stop_strategy(1e-7).be_verbose(),
+                                     polyResidual,
+                                     dlib::derivative(polyResidual),
+                                     windowData,
+                                     params);
+
+        //Use fitted polynomial to find the value yi for point xi.
+        input(0) = data[0][i];
+        smoothData[1][i] = polyModel(input, params);
+    }
+
+    return smoothData;
+}
+
+double polyModel(const input_vector &input, const parameter_vector &params){ //Types designed for the optimization algorithm.
+
+    double x = input(0);
+
+    return params(0)*x*x*x*x + params(1)*x*x*x + params(2)*x*x + params(3)*x + params(4);
+}
+
+double polyResidual(const std::pair<input_vector, double>& data, const parameter_vector& params)
+{
+    return (model(data.first, params) - data.second); //multiply by the square root of the weighting factor.
+}
+
 QVector<QVector<double> > QCstmDQE::calcNumDerivativeOfdata(QVector<QVector<double> > data){
     //!Calculates the numerical derivative of the ESF bindata, giving the LSF.
     int length = data[0].length();
@@ -458,7 +520,7 @@ double QCstmDQE::FivePointsStencil(QVector<double> func, int x, double bw) {
 QVector<QVector<double> > QCstmDQE::calcLSFdata()
 {   //Create function
     QVector<QVector<double> > data;
-
+    int i;
     _histStep = _binsize; //?
 
     int fitlength = _plotrange / _histStep;
@@ -473,7 +535,7 @@ QVector<QVector<double> > QCstmDQE::calcLSFdata()
 
         if(a != 0){
             //Calculate the values for the derivative of the erfc function, given the parameters used for the fit.
-            for(int i = 0; i < fitlength; i++){
+            for(i = 0; i < fitlength; i++){
                 xval  = (int)_xstart + i*_histStep; //Begin on the left side of a pixel.
                 double arg = (xval - offset) / a;
                 yval  = -arg*arg;
@@ -498,6 +560,18 @@ QVector<QVector<double> > QCstmDQE::calcLSFdata()
         data = calcNumDerivativeOfdata(_ESFbinData);
         //TO DO: take the derivative of the smoothed bindata.
     }
+
+    //Calculate maximum value of the ESFdata and normalize to one.
+    double max = 0;
+    int length = data[1].length();
+    for(i = 0; i < length; i++){
+        double val = data[1][i];
+        if( val > max) max = val;
+    }
+    for(i = 0; i < length; i++){
+        data[1][i] /= max;
+    }
+
     return data;
 }
 
@@ -1030,4 +1104,12 @@ void QCstmDQE::on_npsPushButton_clicked()
 void QCstmDQE::ConnectionStatusChanged(bool connected)
 {
     ui->takeDataPushButton->setEnabled( connected );
+}
+
+void QCstmDQE::on_logScaleCheckBox_toggled(bool checked)
+{
+    if(checked) ui->LSFplot->yAxis->setScaleType(QCPAxis::stLogarithmic);
+    else        ui->LSFplot->yAxis->setScaleType(QCPAxis::stLinear);
+    ui->LSFplot->replot( QCustomPlot::rpQueued );
+
 }
