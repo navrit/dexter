@@ -44,7 +44,7 @@ class QCstmGLVisualization : public QWidget
     Q_OBJECT
     Mpx3GUI * _mpx3gui = nullptr;
     bool _takingData;
-    bool _busyDrawing;
+    bool _busyDrawing = false;
     QElapsedTimer * _etatimer = nullptr;
     QTimer * _timer = nullptr;
     int _estimatedETA;
@@ -83,6 +83,7 @@ public:
     void GetAFrame();
     void SetBusyState();
     void FreeBusyState();
+    bool isBusyDrawing();
     void DestroyTimer();
     void ArmAndStartTimer();
     void ETAToZero();
@@ -91,6 +92,8 @@ public:
 
     void clearStatsString();
     void initStatsString();
+
+    void rewindHistoLimits();
 
 private:
 
@@ -113,6 +116,8 @@ private:
     typedef struct {
         QString counts;
         QString lostPackets;
+        QString lostFrames;
+        QString mpx3ClockStops;
         QString overflow;
         bool overflowFlg;
         QString displayString; // this is the composition actually being displayed
@@ -138,6 +143,8 @@ private:
     void BuildStatsString();
     void BuildStatsStringCounts(uint64_t counts);
     void BuildStatsStringLostPackets(uint64_t lostPackets);
+    void BuildStatsStringLostFrames(uint64_t lostFrames);
+    void BuildStatsStringMpx3ClockStops(uint64_t stops);
     void BuildStatsStringOverflow(bool overflow);
 
 
@@ -225,7 +232,9 @@ public slots:
     void updateETA();
 
     void lost_packets(int);
-
+    void lost_frames(int);
+    void data_misaligned(bool);
+    void mpx3clock_stops(int);
 
     void fps_update(int);
     void overflow_update(int);
@@ -233,6 +242,8 @@ public slots:
     //Deleting stats dialog and profile dialog
     void on_user_accepted_stats();
     void on_user_accepted_profile();
+    void OperationModeSwitched(int);
+
 
 signals:
     void change_hover_text(QString);
