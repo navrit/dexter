@@ -147,6 +147,9 @@
              </item>
              <item>
               <widget class="QRadioButton" name="radioButton_2">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="maximumSize">
                 <size>
                  <width>16777215</width>
@@ -159,6 +162,16 @@
               </widget>
              </item>
             </layout>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="derivCheckBox">
+             <property name="text">
+              <string>Derivative of fit</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -272,7 +285,14 @@
           </layout>
          </item>
          <item>
-          <widget class="QListWidget" name="listWidget"/>
+          <widget class="QListWidget" name="listWidget">
+           <property name="maximumSize">
+            <size>
+             <width>110</width>
+             <height>16777215</height>
+            </size>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -335,12 +355,6 @@
       </layout>
      </widget>
      <widget class="QGroupBox" name="groupBox_5">
-      <property name="maximumSize">
-       <size>
-        <width>151</width>
-        <height>16777215</height>
-       </size>
-      </property>
       <property name="title">
        <string>Log</string>
       </property>

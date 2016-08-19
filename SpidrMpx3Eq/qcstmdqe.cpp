@@ -152,12 +152,12 @@ void QCstmDQE::plotLSF()
         //Plot data points
         //ui->LSFplot->addGraph();
 
-        _LSFdata = calcLSFfromFitdata();
-        //_LSFdata = calcNumDerivativeOfdata(_ESFbinData);
+        _useDerFit = ui->derivCheckBox->isChecked(); //let's use the numerical derivative.
+        _LSFdata = calcLSFdata();
 
         if(!_LSFdata.empty()){
             ui->LSFplot->graph(0)->setData(_LSFdata[0], _LSFdata[1]);
-
+            ui->LSFplot->yAxis->setScaleType(QCPAxis::stLogarithmic);
             ui->LSFplot->rescaleAxes();
             //ui->LSFplot->xAxis->setRange(-5, 5);
             ui->LSFplot->replot( QCustomPlot::rpQueued );
@@ -430,13 +430,15 @@ QVector<QVector<double> > QCstmDQE::calcNumDerivativeOfdata(QVector<QVector<doub
         derData[i].resize(length);
     }
 
-    for(int i = offset; i < length - offset; i++){
+    for(int i = 1; i < length - 1; i++){//int i = offset; i < length - offset; i++){
         derData[0][i] = data[0][i];
-        derData[1][i] = FivePointsStencil(data[1], i, bw);
+        //derData[1][i] = FivePointsStencil(data[1], i, bw);
+        derData[1][i] = 0.5 * (data[1][i+1] - data[1][i-1]); //3-point difference equation
     }
 
     return derData;
 }
+
 
 double QCstmDQE::FivePointsStencil(QVector<double> func, int x, double bw) {
 
@@ -453,7 +455,7 @@ double QCstmDQE::FivePointsStencil(QVector<double> func, int x, double bw) {
 
 
 
-QVector<QVector<double> > QCstmDQE::calcLSFfromFitdata()
+QVector<QVector<double> > QCstmDQE::calcLSFdata()
 {   //Create function
     QVector<QVector<double> > data;
 
@@ -485,17 +487,18 @@ QVector<QVector<double> > QCstmDQE::calcLSFfromFitdata()
 
             data.push_back(x);
             data.push_back(y);
-            return data;
+            //return data;
         }
         else{
             QMessageBox::warning ( this, tr("Error"), tr( "Cannot divide by zero!" ) );
-            return data; //empty
+            //return data; //empty
         }
     }
     else{ //Take derivative of the binned data..
         data = calcNumDerivativeOfdata(_ESFbinData);
         //TO DO: take the derivative of the smoothed bindata.
     }
+    return data;
 }
 
 QVector<QVector<double> > QCstmDQE::calcMTFdata()
@@ -937,8 +940,8 @@ void QCstmDQE::on_mtfPushButton_clicked()
             }
             else{
                 plotMTF();
-                _logtext += "The Modulation Transfer Function has been calculated by taking the Fast Fourier Transform of the calculated LSF.\n";
-                //TO DO:
+                _logtext += "\nThe Modulation Transfer Function has been calculated by taking the Fast Fourier Transform of the calculated LSF.\n";
+                //TO DO:..?
             }
 
         }

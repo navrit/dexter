@@ -98,7 +98,7 @@ private:
     //functions:
     QVector<QVector<double> > calcESFbinData();     //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.
     QVector<QVector<double> > calcESFfitData();     //!Creates the datapoints of the fitted function by using the parameters calculated by the fitting in the used function model.
-    QVector<QVector<double> > calcLSFfromFitdata(); //!Creates the datapoints of the derivative of the fitted function, by using the parameters calculated by the fitting and using them in the theoretical derivative of the function model.
+    QVector<QVector<double> > calcLSFdata(); //!Creates the datapoints of the derivative of the fitted function, by using the parameters calculated by the fitting and using them in the theoretical derivative of the function model.
     QVector<QVector<double> > calcNumDerivativeOfdata(QVector<QVector<double> > data);  //!Calculates the numerical derivative of a given set of data. Used for LSF.
     QVector<QVector<double> > calcMTFdata();        //!Calculates the datapoints for the MTF, by taking the Fourier Transform of the LSF.
     void plotMTF();
@@ -114,7 +114,8 @@ private:
     parameter_vector fitPlaneParams(QVector<QVector<int> > dataROI);
     void plotData3D(QtDataVisualization::QScatterDataArray data3D);
 
-signals:
+
+ signals:
     void start_takingData();
     void open_data(bool, bool, QString);
 
