@@ -13,9 +13,6 @@ HeatmapDisplay::HeatmapDisplay(QWidget *parent) :
   //ui->heatmap->setSize(512, 512);
   ui->NRuler->setOrientation(QCstmRuler::orientationTop);
   ui->NRuler->setMargin(25);
-
-  this->setStyleSheet("font-family: Arial;font-style: normal;font-size: 9pt;font-weight: bold;");
-
 }
 
 HeatmapDisplay::~HeatmapDisplay()
@@ -50,7 +47,7 @@ void HeatmapDisplay::setSize(int x, int y){
   ui->WRuler->set_cutoff(x,y);
 }
 
-void HeatmapDisplay::set_range(QCPRange range) {
+void HeatmapDisplay::set_range(QCPRange range){
   ui->heatmap->setRange(range);
   ui->gradient->set_range(range);
 }

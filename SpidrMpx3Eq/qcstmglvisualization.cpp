@@ -45,7 +45,11 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     ui->summingCheckbox->setChecked( true );
 
     // Range selection on histogram. Init values
-    rewindHistoLimits();
+    _manualRange = QCPRange( 0, 0 ); // No image loaded yet.
+    _manualRangeSave = _manualRange;
+    _percentileRange = QCPRange( 0.025, 0.975 ); // These instead are reasonable percentile cuts
+    _percentileRangeNatural =  QCPRange( 0, 0 );
+    setRangeSpinBoxesPercentile();
 
     // Log Scale for histogram
     connect(ui->logCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_logscale(bool)));
@@ -56,23 +60,10 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     // Stats string
     clearStatsString();
 
-    // Initial stretch of the splitter.  Give more space to visualization Matrix
-    ui->splitter->setStretchFactor(0, 3);
-    ui->splitter->setStretchFactor(1, 1);
-
 }
 
 QCstmGLVisualization::~QCstmGLVisualization() {
     delete ui;
-}
-
-void QCstmGLVisualization::rewindHistoLimits() {
-    _manualRange = QCPRange( 0, 0 ); // No image loaded yet.
-    _manualRangeSave = _manualRange;
-    _manualRangePicked = false;
-    _percentileRange = QCPRange( 0.025, 0.975 ); // These instead are reasonable percentile cuts
-    _percentileRangeNatural =  QCPRange( 0, 0 );
-    setRangeSpinBoxesPercentile();
 }
 
 void QCstmGLVisualization::SetBusyState() {
@@ -89,12 +80,9 @@ void QCstmGLVisualization::FreeBusyState() {
 
 }
 
-bool QCstmGLVisualization::isBusyDrawing() {
-    return  _busyDrawing;
-}
 
 void QCstmGLVisualization::UnlockWaitingForFrame() {
-    qDebug() << "QCstmGLVisualization::UnlockWaitingForFrame ...";
+    cout << "..." << endl;
 }
 
 void QCstmGLVisualization::updateETA() {
@@ -134,10 +122,7 @@ void QCstmGLVisualization::StartDataTaking() {
         }
         if ( _infDataTaking ) clearpreviousdata = false;
 
-        if ( clearpreviousdata ) {
-            _mpx3gui->clear_data( false );
-            rewindHistoLimits();
-        }
+        if ( clearpreviousdata ) _mpx3gui->clear_data( false );
 
         // Threads
         if ( _dataTakingThread ) {
@@ -271,8 +256,6 @@ void QCstmGLVisualization::clearStatsString()
 
     _statsString.counts.clear();
     _statsString.lostPackets.clear();
-    _statsString.lostFrames.clear();
-    _statsString.mpx3ClockStops.clear();
     _statsString.overflow.clear();
     _statsString.overflowFlg = false;
 
@@ -528,18 +511,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect( ui->operationModeComboBox_Vis, SIGNAL(activated(int)),
              _mpx3gui->getConfig(),
              SLOT( setOperationMode(int) ) );
-    // What to do over a switch of Operation Mode
-    connect( ui->operationModeComboBox_Vis, SIGNAL(activated(int)),
-             this,
-             SLOT( OperationModeSwitched(int) ));
-    connect( ui->operationModeComboBox_Vis, SIGNAL(activated(int)),
-             _mpx3gui->getConfigMonitoring(),
-             SLOT( OperationModeSwitched(int) ));
 
-
-    //
-    connect(ui->glPlot->getPlot(), &QCstmGLPlot::double_click,
-            this, &QCstmGLVisualization::reload_all_layers);
 
     // Defaults
     emit mode_changed( ui->summingCheckbox->isChecked() );
@@ -547,28 +519,12 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 }
 
 void QCstmGLVisualization::ntriggers_edit() {
-
-    // Depends on the mode, the same box is used for
-    // Ntriggers    --> SequentialRW
-    // Freq         --> ContinuousRW
-
-    if ( _mpx3gui->getConfig()->getOperationMode()
-         == Mpx3Config::__operationMode_SequentialRW ) {
-        // triggerLength
-        _mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner->setValue(
-                    ui->nTriggersSpinBox->value()
-                    );
-    } else if ( _mpx3gui->getConfig()->getOperationMode()
-                == Mpx3Config::__operationMode_ContinuousRW ) {
-        // contRWFreq
-        _mpx3gui->getConfigMonitoring()->getUI()->contRWFreq->setValue(
-                    ui->nTriggersSpinBox->value()
-                    );
-    }
+    _mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner->setValue(
+                ui->nTriggersSpinBox->value()
+                );
 }
 
 void QCstmGLVisualization::triggerLength_edit() {
-
     _mpx3gui->getConfigMonitoring()->getUI()->triggerLengthSpinner->setValue(
                 ui->triggerLengthSpinBox->value()
                 );
@@ -628,30 +584,15 @@ void QCstmGLVisualization::BuildStatsString() {
     _statsString.displayString  = "fired: ";
     _statsString.displayString += _statsString.counts;
 
-    if ( ! _statsString.lostFrames.isEmpty() ) {
-        _statsString.displayString += " | lf: ";
-        _statsString.displayString += _statsString.lostFrames;
-    }
-
     if ( ! _statsString.lostPackets.isEmpty() ) {
-        _statsString.displayString += " | lp: ";
+        _statsString.displayString += " | lost: ";
         _statsString.displayString += _statsString.lostPackets;
-    }
-
-    if ( ! _statsString.mpx3ClockStops.isEmpty() ) {
-        _statsString.displayString += " | clk: ";
-        _statsString.displayString += _statsString.mpx3ClockStops;
     }
 
     if ( _statsString.overflowFlg ) {
         _statsString.displayString += " | ";
         _statsString.displayString += _statsString.overflow;
     }
-
-    if ( _mpx3gui->getDataset()->isDataMisaligned() ) {
-        _statsString.displayString += " | MISALIGNED !";
-    }
-
 
     // Use the string to set the label
     ui->statsLabel->setText( _statsString.displayString );
@@ -662,8 +603,6 @@ void QCstmGLVisualization::BuildStatsStringCounts(uint64_t counts)
 {
 
     QString plS = "<font color=\"black\">";
-    if ( _mpx3gui->getDataset()->isDataMisaligned() ) plS = "<font color=\"red\">";
-
     plS += QString::number( counts, 'd', 0 );
     plS += "</font>";
 
@@ -680,49 +619,13 @@ void QCstmGLVisualization::BuildStatsStringLostPackets(uint64_t lostPackets)
         return;
     }
 
+
     // Retrieve the counter and display
     QString plS = "<font color=\"black\">";
-    if ( _mpx3gui->getDataset()->isDataMisaligned() ) plS = "<font color=\"red\">";
     plS += QString::number( lostPackets, 'd', 0 );
     plS += "</font>";
 
     _statsString.lostPackets = plS;
-
-}
-
-void QCstmGLVisualization::BuildStatsStringLostFrames(uint64_t lostFrames)
-{
-
-    if ( lostFrames == 0 ) {
-        _statsString.lostFrames.clear();
-        return;
-    }
-
-    // Retrieve the counter and display
-    QString plS = "<font color=\"black\">";
-    if ( _mpx3gui->getDataset()->isDataMisaligned() ) plS = "<font color=\"red\">";
-    plS += QString::number( lostFrames, 'd', 0 );
-    plS += "</font>";
-
-    _statsString.lostFrames = plS;
-
-}
-
-void QCstmGLVisualization::BuildStatsStringMpx3ClockStops(uint64_t stops)
-{
-
-    if ( stops == 0 ) {
-        _statsString.mpx3ClockStops.clear();
-        return;
-    }
-
-    // Retrieve the counter and display
-    QString plS = "<font color=\"black\">";
-    if ( _mpx3gui->getDataset()->isDataMisaligned() ) plS = "<font color=\"red\">";
-    plS += QString::number( stops, 'd', 0 );
-    plS += "</font>";
-
-    _statsString.mpx3ClockStops = plS;
 
 }
 
@@ -768,30 +671,6 @@ void QCstmGLVisualization::on_user_accepted_profile()
 
 }
 
-void QCstmGLVisualization::OperationModeSwitched(int indx)
-{
-
-    if ( indx == Mpx3Config::__operationMode_SequentialRW ) {
-
-        ui->triggerLengthSpinBoxLabel->show();
-        ui->triggerLengthSpinBox->show();
-        ui->nTriggersSpinBoxLabel->setText( "Triggers" );
-
-        ui->nTriggersSpinBox->setValue( _mpx3gui->getConfig()->getNTriggers() );
-
-    } else if ( indx == Mpx3Config::__operationMode_ContinuousRW ) {
-
-        ui->triggerLengthSpinBoxLabel->hide();
-        ui->triggerLengthSpinBox->hide();
-        ui->nTriggersSpinBoxLabel->setText( "Freq(Hz)" );
-
-        ui->nTriggersSpinBox->setValue( _mpx3gui->getConfig()->getContRWFreq() );
-
-    }
-    //ui->triggerLengthSpinBox
-    //ui->nTriggersSpinBox;
-}
-
 void QCstmGLVisualization::lost_packets(int packetsLost) {
 
     // Increase the current packet loss
@@ -800,33 +679,6 @@ void QCstmGLVisualization::lost_packets(int packetsLost) {
     BuildStatsStringLostPackets( _mpx3gui->getDataset()->getPacketsLost() );
 
 }
-
-void QCstmGLVisualization::lost_frames(int framesLost) {
-
-    // Increase the current packet loss
-    _mpx3gui->getDataset()->increaseFramesLost( framesLost );
-
-    BuildStatsStringLostFrames( _mpx3gui->getDataset()->getFramesLost() );
-
-}
-
-void QCstmGLVisualization::data_misaligned(bool misaligned) {
-
-    // Increase the current packet loss
-    _mpx3gui->getDataset()->setDataMisaligned( misaligned );
-
-}
-
-
-void QCstmGLVisualization::mpx3clock_stops(int stops) {
-
-    // Increase the current packet loss
-    _mpx3gui->getDataset()->increaseMpx3ClockStops( stops );
-
-    BuildStatsStringMpx3ClockStops( _mpx3gui->getDataset()->getMpx3ClockStops() );
-
-}
-
 
 void QCstmGLVisualization::range_changed(QCPRange newRange){
     //ui->lowerManualSpin->setValue(newRange.lower);
@@ -873,19 +725,17 @@ void QCstmGLVisualization::reload_layer(int threshold){
     // Get busy
     SetBusyState();
 
-    //_mpx3gui->saveOriginalDataset();
+    _mpx3gui->saveOriginalDataset();
     // Corrections
     //if( _corrdialog ) _mpx3gui->getDataset()->applyCorrections( _corrdialog );
 
     //int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
-
     ui->histPlot->setHistogram(threshold,
                                _mpx3gui->getDataset()->getLayer(threshold),
                                _mpx3gui->getDataset()->getPixelsPerLayer(),
                                _manualRange.lower,
                                _manualRange.upper);
-
 
     setThreshold(threshold);
 
@@ -919,27 +769,23 @@ void QCstmGLVisualization::reload_all_layers(bool corrections) {
     // Get busy
     SetBusyState();
 
-    //_mpx3gui->saveOriginalDataset();
+    _mpx3gui->saveOriginalDataset();
 
     // Corrections
     if ( corrections && _corrdialog ) {
         _mpx3gui->getDataset()->applyCorrections( _corrdialog );
     }
 
-    /*
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
     QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
     for ( int i = 0 ; i < thresholds.size() ; i++ ) {
         addThresholdToSelector(thresholds[i]);
-
         ui->histPlot->setHistogram(thresholds[i],
                                    _mpx3gui->getDataset()->getLayer(thresholds[i]),
                                    _mpx3gui->getDataset()->getPixelsPerLayer(),
                                    _manualRange.lower,
                                    _manualRange.upper);
-
     }
-*/
 
     // done
     active_frame_changed();
@@ -1005,6 +851,7 @@ void QCstmGLVisualization::active_frame_changed(){
         on_percentileRangeRadio_toggled(true);
     else if(ui->fullRangeRadio->isChecked())
         on_fullRangeRadio_toggled(true);
+
 
 }
 
@@ -1086,10 +933,10 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _profiledialog->setAxis(axis);
         _profiledialog->changeTitle();
 
-        //        QList<int> thresholdlist = _mpx3gui->getDataset()->getThresholds();
-        //        QStringList combolist;
-        //        for(int i = 0; i < thresholdlist.length(); i++)
-        //            combolist.append(QString("Threshold %1").arg(thresholdlist[i]));
+//        QList<int> thresholdlist = _mpx3gui->getDataset()->getThresholds();
+//        QStringList combolist;
+//        for(int i = 0; i < thresholdlist.length(); i++)
+//            combolist.append(QString("Threshold %1").arg(thresholdlist[i]));
 
         //Calculate the profile of the selected region of the selected layer
 

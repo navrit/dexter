@@ -38,14 +38,9 @@ public:
   ~QCstmGLPlot();
   //void loadFrames(int nx, int ny, int nFrames, GLint **data );
  private:
-  const double _minimumRefreshDistance = 3.0;
   void loadGradient();
   bool initialized = false;
   GLuint  vao;
-  bool _drawSelectionRectangle = false;
-  QPoint _startSelectionPoint;
-  QPoint _lastSelectionPoint;
-  QPoint _currentSelectionPoint;
   //TODO: optimize this handling. Merge different vbos/coordinates when possible.
   GLuint  vbo[4];//square, offsets, texture coords, orientation.
   QOpenGLShaderProgram program;
@@ -80,8 +75,6 @@ public:
   void populateTextures(Dataset &data);
   void readLayouts(Dataset &data);
   void readOrientations(Dataset &data);
-  int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
-  int XYtoX(QPoint p, int dimX) { return XYtoX(p.x(), p.y(), dimX); }
 
 public: //functions
   //! Computes and emits the coordinates of the viewport. This is used by the Ruler class to determine what it should display.
@@ -89,14 +82,12 @@ public: //functions
   QPoint pixelAt(QPoint position);
   Gradient* getGradient(){return gradient;}
   void setGradient(Gradient *gradient);
-  double distance2D(QPoint p1, QPoint p2);
 public: //events
   void wheelEvent(QWheelEvent *event);
   void mouseMoveEvent(QMouseEvent *event);
   void keyPressEvent(QKeyEvent *event);
   void mousePressEvent(QMouseEvent *event);//{if(event->buttons()== Qt::LeftButton){this->setCursor(Qt::ClosedHandCursor); clickedLocation = event->pos();clicked = true;}}
   void mouseReleaseEvent(QMouseEvent * event);//{this->setCursor(Qt::ArrowCursor); clicked = false;}
-  void mouseDoubleClickEvent(QMouseEvent * event);
   //void contextMenuEvent(QContextMenuEvent *);
   int getNx(){return nx;}
   int getNy(){return ny;}
@@ -120,7 +111,6 @@ public slots:
   void zoom_changed(float zoom);
   void size_changed(QPoint size);
   void bounds_changed(QRectF bounds);
-  void double_click(bool with_corrections = false);
 };
 
 #endif // QCSTMGLPLOT_H

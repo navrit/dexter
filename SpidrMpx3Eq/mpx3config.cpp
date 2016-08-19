@@ -25,187 +25,165 @@ Mpx3Config::Mpx3Config()
 
     controller = nullptr;
 
+    __pixelDepthMap = new unsigned int[4];
+    __pixelDepthMap[0] = 1;
+    __pixelDepthMap[1] = 6;
+    __pixelDepthMap[2] = 12;
+    __pixelDepthMap[3] = 24;
+
+
 }
 
-bool Mpx3Config::RequiredOnEveryChipConfig(Mpx3Config::config_items item) {
-    return (
-             item == __ALL ||
-              (
-              item != __nTriggers &&
-              item != __triggerLength &&
-              item != __triggerDowntime &&
-              item != __triggerMode &&
-              item != __biasVoltage
-              )
-            );
-}
+void Mpx3Config::SendConfiguration(){
 
-bool Mpx3Config::RequiredOnGlobalConfig(Mpx3Config::config_items item)
-{
-    return (
-             item == __ALL ||
-             item == __nTriggers ||
-             item == __triggerLength ||
-             item == __triggerDowntime ||
-             item == __triggerMode
-            );
-}
+    // Configure the chips
+    int nDevSupported = getNDevicesSupported();
+    for ( int i = 0 ; i < nDevSupported ; i++ ) {
 
-void Mpx3Config::SendConfiguration( config_items item ) {
 
-    // Before the globals, the configuration for each chip
-    // has to be loaded (otherwise there's a conflict with
-    // the initization of ReceiverThreadC
 
-    ////////////////////////////////////////////////////////////
-    // Items which don't need any communication to the device
-    if ( item == __contRWFreq ) return;
-
-    ////////////////////////////////////////////////////////////
-    // Configuration required on every chip
-    if ( RequiredOnEveryChipConfig( item ) ) {
-
-        int nDevSupported = getNDevicesSupported();
-        for ( int i = 0 ; i < nDevSupported ; i++ ) {
-
-            if ( detectorResponds( i ) ) {
-                Configuration(false, i, item);
-            }
-
+        if ( detectorResponds( i ) ) {
+            Configuration( false, i );
         }
+
     }
 
-    ////////////////////////////////////////////////////////////
-    // Global configurations
+    // Globals
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-    if ( spidrcontrol == nullptr ) return;
-
-    if ( RequiredOnGlobalConfig( item ) ) {
-
-        // Trigger config
-        int trig_mode      = getTriggerMode();       // Auto-trigger mode = 4
-        int trig_length_us = getTriggerLength();     // This time shouldn't be longer than the period defined by trig_freq_hz
-        int trig_deadtime_us = getTriggerDowntime();
-        int trig_freq_mhz   = (int) 1000 * ( 1. / ((double)( trig_length_us + trig_deadtime_us )/1000000) );
-        // Get the trigger period for information.  This is NOT the trigger length !
-        _trigPeriod_ms = (int) (1E6 * (1./(double)trig_freq_mhz));
-        int nr_of_triggers = getNTriggers();    // This is the number of shutter open i get
-
-        spidrcontrol->setShutterTriggerConfig (
-                    trig_mode,
-                    trig_length_us,
-                    trig_freq_mhz,
-                    nr_of_triggers
-                    );
-        qDebug() << "[GLOB] trig_mode:" << trig_mode
-                 << "| trig_length_us:" << trig_length_us
-                 << "| trig_deadtime_us: " << trig_deadtime_us
-                 << "| trig_freq_mhz:" <<  trig_freq_mhz
-                 << "| nr_of_triggers:" << nr_of_triggers;
-    }
+    if ( ! spidrcontrol ) return;
 
     // Bias
-    if( item == __ALL || item == __biasVoltage ) {
-        if ( getBiasVoltage() > 0 ) {
+    if ( getBiasVoltage() > 0 ) {
 
-            spidrcontrol->setBiasSupplyEna( true );
+        spidrcontrol->setBiasSupplyEna( true );
 
-            if ( spidrcontrol->setBiasVoltage( getBiasVoltage() ) ) {
-                qDebug() << "[CONF] setting bias volate to: " << getBiasVoltage() << "(V)";
-            } else {
-                qDebug() << "[ERR ] error setting internal bias voltage";
-            }
-
+        if ( spidrcontrol->setBiasVoltage( getBiasVoltage() ) ) {
+            qDebug() << "[CONF] setting bias volate to: " << getBiasVoltage() << "(V)";
         } else {
-            spidrcontrol->setBiasSupplyEna( false );
+            qDebug() << "[ERR ] error setting internal bias voltage";
         }
-    }
 
-    // Done with globals
+    } else {
+        spidrcontrol->setBiasSupplyEna( false );
+    }
 
 }
 
-void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
+void Mpx3Config::Configuration(bool reset, int deviceIndex) {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
-    // Number of links
-    if ( item == __ALL ) spidrcontrol->setPs( deviceIndex, 3 );
-    if ( item == __ALL || item == __LUTEnable ) spidrdaq->setLutEnable( getLUTEnable() );
+    // Number of links ! // TODO
+    spidrcontrol->setPs( deviceIndex, 3 );
 
     // Reset pixel configuration
     if ( reset ) spidrcontrol->resetPixelConfig();
 
+    // All adjustment bits to zero
+    //SetAllAdjustmentBits(0x0, 0x0);
+
     // Operation mode
-    if ( item == __ALL || item == __operationMode ) {
-        if ( OperationMode == __operationMode_SequentialRW ) {
-            spidrcontrol->setContRdWr( deviceIndex, false );
-        } else if ( OperationMode == __operationMode_ContinuousRW ) {
-            spidrcontrol->setContRdWr( deviceIndex, true );
-        } else {
-            spidrcontrol->setContRdWr( deviceIndex, false );
-        }
+    if ( OperationMode == __operationMode_SequentialRW ) {
+        spidrcontrol->setContRdWr( deviceIndex, false );
+    } else if ( OperationMode == __operationMode_ContinuousRW ) {
+        spidrcontrol->setContRdWr( deviceIndex, true );
+    } else {
+        spidrcontrol->setContRdWr( deviceIndex, false );
     }
 
     // OMR
-    if ( item == __ALL || item == __polarity ) spidrcontrol->setPolarity( deviceIndex, getPolarity() );		// true: Holes collection
-    //_spidrcontrol->setDiscCsmSpm( 0 );		   // DiscL used
+    spidrcontrol->setPolarity( deviceIndex, getPolarity() );		// true: Holes collection
+    //cout << " | polarity: " << getPolarity();
+    //_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
     //_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
 
     // Not an equalization
-    if ( item == __ALL ) spidrcontrol->setEqThreshH( deviceIndex, false );
+    spidrcontrol->setEqThreshH( deviceIndex, false );
 
-    if ( item == __ALL || item == __colourMode ) spidrcontrol->setColourMode( deviceIndex, getColourMode() ); // false 	// Fine Pitch
-    if ( item == __ALL || item == __CsmSpm ) spidrcontrol->setCsmSpm( deviceIndex, getCsmSpm() ); // 0 );				// Single Pixel mode
+    spidrcontrol->setColourMode( deviceIndex, getColourMode() ); // false 	// Fine Pitch
+    spidrcontrol->setCsmSpm( deviceIndex, getCsmSpm() ); // 0 );				// Single Pixel mode
 
     // Particular for Equalization
     //spidrcontrol->setEqThreshH( deviceIndex, true );
     //spidrcontrol->setDiscCsmSpm( deviceIndex, 0 );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
+    //_spidrcontrol->setGainMode( 1 );
 
-    // Gain
+    // Gain ?!
     // 00: SHGM  0
     // 10: HGM   2
     // 01: LGM   1
     // 11: SLGM  3
-    if ( item == __ALL || item == __gainMode ) spidrcontrol->setGainMode( deviceIndex, getGainMode() );
+    spidrcontrol->setGainMode( deviceIndex, getGainMode() );
 
     // Other OMR
-    if ( item == __ALL || item == __decodeFrames ) spidrdaq->setDecodeFrames(  getDecodeFrames() );
-    if ( item == __ALL || item == __pixelDepth || item == __readBothCounters ) spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters() ); // third parameter : true = read two counters
-    if ( item == __ALL || item == __pixelDepth ) spidrdaq->setPixelDepth( getPixelDepth() );
+    spidrdaq->setDecodeFrames(  getDecodeFrames() ); //  true );
+    //qDebug() << " (" << getPixelDepth() << ":" << getReadBothCounters() << ") ";
+    spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters() ); // third parameter : true = read two counters
+    spidrdaq->setPixelDepth( getPixelDepth() );
+    spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
 
-    // Packet size reports NOT IMPLEMENTED in the Leon software
-    //if ( item == __ALL || item == __maxPacketSize ) spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
+    // Write OMR ... i shouldn't call this here
+    //_spidrcontrol->writeOmr( 0 );
+
+    // Trigger config
+    int trig_mode      = getTriggerMode();       // Auto-trigger mode = 4
+    int trig_length_us = getTriggerLength();     // This time shouldn't be longer than the period defined by trig_freq_hz
+    int trig_deadtime_us = getTriggerDowntime();
+
+    //int trig_freq_mhz   = (int) 1000 * ( 1. / (2.*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
+    //int trig_freq_mhz   = (int) 1000 * ( 1. / (1.1*((double)trig_length_us/1000000)) );   //
+    int trig_freq_mhz   = (int) 1000 * ( 1. / ((double)( trig_length_us + trig_deadtime_us )/1000000) );
+    //int trig_freq_hz   = (int) ( 1. / ((double)( trig_length_us + trig_deadtime_us )/1000000) );
+
+    //cout << " | configured freq is " << trig_freq_mhz << "mHz";
+
+    // Get the trigger period for information.  This is NOT the trigger length !
+    _trigPeriod_ms = (int) (1E6 * (1./(double)trig_freq_mhz));
+    //_trigPeriod_ms /= 1000;
+    int nr_of_triggers = getNTriggers();    // This is the number of shutter open i get
+
+    qDebug() << "[CONF] id:" << deviceIndex
+             << "| trig_mode:" << trig_mode
+             << "| trig_length_us:" << trig_length_us
+             << "| trig_deadtime_us: " << trig_deadtime_us
+             << "| trig_freq_mhz:" <<  trig_freq_mhz
+             << "| nr_of_triggers:" << nr_of_triggers;
+
+    // Send off the trigger settings
+    spidrcontrol->setShutterTriggerConfig (
+                trig_mode,
+                trig_length_us,
+                trig_freq_mhz,
+                nr_of_triggers
+                );
+
+    //spidrcontrol->setMpx3Clock( 200 );
+
+    //cout << endl;
 
 }
 
-void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_parameters extrapars, config_items item) {
-
+void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_parameters extrapars) {
     cout << "[INFO] Configuring chip " << deviceIndex;
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
-    // Number of links
-    if( item == __ALL ) spidrcontrol->setPs( deviceIndex, 3 );
-    if( item == __ALL || item == __LUTEnable ) spidrdaq->setLutEnable( getLUTEnable() );
+    // Number of links ! // TODO
+    spidrcontrol->setPs( deviceIndex, 3 );
 
     // Reset pixel configuration
     if ( reset ) spidrcontrol->resetPixelConfig();
 
     // Operation mode
-    if ( item == __ALL || item == __operationMode ) {
-        if ( OperationMode == __operationMode_SequentialRW ) {
-            spidrcontrol->setContRdWr( deviceIndex, false );
-        } else if ( OperationMode == __operationMode_ContinuousRW ) {
-            spidrcontrol->setContRdWr( deviceIndex, true );
-        } else {
-            spidrcontrol->setContRdWr( deviceIndex, false );
-        }
+    if ( OperationMode == __operationMode_SequentialRW ) {
+        spidrcontrol->setContRdWr( deviceIndex, false );
+    } else if ( OperationMode == __operationMode_ContinuousRW ) {
+        spidrcontrol->setContRdWr( deviceIndex, true );
+    } else {
+        spidrcontrol->setContRdWr( deviceIndex, false );
     }
-
-    if ( item == __ALL || item == __polarity ) spidrcontrol->setPolarity( deviceIndex, getPolarity() );		// true: Holes collection
 
     // All adjustment bits to zero
     //SetAllAdjustmentBits(0x0, 0x0);
@@ -216,14 +194,14 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
     //_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
 
     // Not an equalization
-    if( item == __ALL ) spidrcontrol->setEqThreshH( deviceIndex, extrapars.equalizationBit );
+    spidrcontrol->setEqThreshH( deviceIndex, extrapars.equalizationBit );
 
-    if( item == __ALL || item == __colourMode ) spidrcontrol->setColourMode( deviceIndex, getColourMode() ); // false       // Fine Pitch
-    if( item == __ALL || item == __CsmSpm ) spidrcontrol->setCsmSpm( deviceIndex, getCsmSpm() ); // 0 );				// Single Pixel mode
+    spidrcontrol->setColourMode( deviceIndex, getColourMode() ); // false 	// Fine Pitch
+    spidrcontrol->setCsmSpm( deviceIndex, getCsmSpm() ); // 0 );				// Single Pixel mode
 
     // Particular for Equalization
     //spidrcontrol->setEqThreshH( deviceIndex, true );
-    if( item == __ALL ) spidrcontrol->setDiscCsmSpm( deviceIndex, extrapars.DiscCsmSpm );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
+    spidrcontrol->setDiscCsmSpm( deviceIndex, extrapars.DiscCsmSpm );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
     //_spidrcontrol->setGainMode( 1 );
 
     // Gain ?!
@@ -231,15 +209,13 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
     // 10: HGM   2
     // 01: LGM   1
     // 11: SLGM  3
-    if( item == __ALL || item == __gainMode ) spidrcontrol->setGainMode( deviceIndex, getGainMode() );
+    spidrcontrol->setGainMode( deviceIndex, getGainMode() );
 
     // Other OMR
-    if( item == __ALL || item == __decodeFrames ) spidrdaq->setDecodeFrames(  getDecodeFrames() );
-    if( item == __ALL || item == __pixelDepth || item == __readBothCounters ) spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters() ); // third parameter : true = read two counters
-    if( item == __ALL || item == __pixelDepth ) spidrdaq->setPixelDepth( getPixelDepth() );
-
-    // Packet size reports NOT IMPLEMENTED in the Leon software
-    //if( item == __ALL || item == __maxPacketSize ) spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
+    spidrdaq->setDecodeFrames(  getDecodeFrames() ); //  true );
+    spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters() ); // third parameter : true = read two counters
+    spidrdaq->setPixelDepth( getPixelDepth() );
+    spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
 
     // Write OMR ... i shouldn't call this here
     //_spidrcontrol->writeOmr( 0 );
@@ -257,49 +233,14 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
     //_trigPeriod_ms /= 1000;
     //int nr_of_triggers = getNTriggers();    // This is the number of shutter open i get
 
+    qDebug() << "[CONF] id:" << deviceIndex
+             << "| trig_mode:" << trig_mode
+             << "| trig_length_us:" << trig_length_us
+             << "| trig_freq_mhz:" <<  trig_freq_mhz
+             << "| nr_of_triggers:" << extrapars.nTriggers;
 
-
-    if( item == __ALL || item == __nTriggers ) {
-
-        spidrcontrol->setShutterTriggerConfig( trig_mode,
-                                               trig_length_us,
-                                               trig_freq_mhz,
-                                               extrapars.nTriggers );
-
-        qDebug() << "[CONF] id:" << deviceIndex
-                 << "| trig_mode:" << trig_mode
-                 << "| trig_length_us:" << trig_length_us
-                 << "| trig_freq_mhz:" <<  trig_freq_mhz
-                 << "| nr_of_triggers:" << extrapars.nTriggers;
-    }
-    // Bias
-    if( item == __ALL ) {
-        if ( getBiasVoltage() > 0 ) {
-
-            spidrcontrol->setBiasSupplyEna( true );
-
-            if ( spidrcontrol->setBiasVoltage( getBiasVoltage() ) ) {
-                qDebug() << "[CONF] setting bias volate to: " << getBiasVoltage() << "(V)";
-            } else {
-                qDebug() << "[ERR ] error setting internal bias voltage";
-            }
-
-        } else {
-            spidrcontrol->setBiasSupplyEna( false );
-        }
-    }
-
-}
-
-void Mpx3Config::setColourMode(bool mode) {
-
-    if(mode != colourMode) {
-        colourMode =mode; emit colourModeChanged(mode);
-        // When changing mode data needs to be cleared
-        _mpx3gui->clear_data();
-        //updateColourMode();
-        SendConfiguration( __colourMode );
-    }
+    spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
+                                           trig_freq_mhz, extrapars.nTriggers );
 
 }
 
@@ -462,6 +403,13 @@ int Mpx3Config::getDataBufferId(int devIndx) {
     return -1;
 }
 
+unsigned int Mpx3Config::getPixelDepthFromIndex(int indx) {
+
+    int size = sizeof(__pixelDepthMap) / sizeof(const unsigned int);
+    if ( indx >= size ) return __pixelDepthMap[ __pixelDepth12BitsIndex ]; // 12 bits
+
+    return __pixelDepthMap[indx];
+}
 
 void Mpx3Config::checkChipResponse(int devIndx, detector_response dr) {
 
@@ -482,7 +430,30 @@ void Mpx3Config::checkChipResponse(int devIndx, detector_response dr) {
 
 }
 
+void Mpx3Config::setTriggerDowntime(int newVal) {
+
+    // There's a minimum setting for downtime
+    if ( newVal < __min_trigger_deadtime_ms ) newVal = __min_trigger_deadtime_ms;
+
+    if ( newVal != TriggerDowntime_us ) {
+        TriggerDowntime_us = newVal; emit TriggerDowntimeChanged(newVal);
+        //updateTriggerLength();
+    }
+    SendConfiguration();
+}
+
+// This is connected to QAbstractSpinBox::editingFinished() which takes no argument.
+// Pick the value from the spin-box directly.
+void Mpx3Config::setTriggerDowntime() {
+
+    int newVal = _mpx3gui->getConfigMonitoring()->getUI()->triggerDowntimeSpinner->value();
+    setTriggerDowntime( newVal );
+
+}
+
+
 void Mpx3Config::setPolarityByString(QString itemS, int indx) {
+
 
     bool polarityChange = Polarity;
 
@@ -506,8 +477,9 @@ void Mpx3Config::setPolarityByString(QString itemS, int indx) {
         emit polarityChanged(indx);
         //updateGainMode();
         cout << "Polarity : " << itemS.toStdString() << " | item : " << indx << endl;
-        SendConfiguration( __polarity );
+
     }
+    SendConfiguration();
 
 }
 
@@ -601,10 +573,6 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
         if(it != JSobject.end())
             setTriggerDowntime(it.value().toInt());
 
-        it = JSobject.find("ContRWFreq");
-        if(it != JSobject.end())
-            setContRWFreq(it.value().toInt());
-
         it = JSobject.find("nTriggers");
         if(it != JSobject.end())
             setNTriggers(it.value().toInt());
@@ -612,10 +580,6 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
         it = JSobject.find("ColourMode");
         if(it != JSobject.end())
             setColourMode(it.value().toBool());
-
-        it = JSobject.find("LUTEnable");
-        if(it != JSobject.end())
-            setLUTEnable(it.value().toBool());
 
         it = JSobject.find("DecodeFrames");
         if(it != JSobject.end())
@@ -702,12 +666,9 @@ bool Mpx3Config::toJsonFile(QString filename, bool includeDacs){
     objDetector.insert("MaxPacketSize", this->MaxPacketSize);
     objDetector.insert("TriggerMode", this->TriggerMode);
     objDetector.insert("TriggerLength_us", this->TriggerLength_us);
-    objDetector.insert("ContRWFreq", this->ContRWFreq);
-
     objDetector.insert("TriggerDeadtime_us", this->TriggerDowntime_us);
     objDetector.insert("nTriggers", this->nTriggers);
     objDetector.insert("ColourMode", this->colourMode);
-    objDetector.insert("LUTEnable", this->LUTEnable);
     objDetector.insert("DecodeFrames", this->decodeFrames);
 
     objStepper.insert("Acceleration", this->stepperAcceleration);
@@ -771,4 +732,14 @@ void  Mpx3Config::setStepperConfigCalib(QStandardItem * item) {
         setStepperConfigCalibAngle1( dval );
     }
 
+}
+
+void Mpx3Config::setColourMode(bool mode){
+    if(mode != colourMode){
+        colourMode =mode; emit colourModeChanged(mode);
+        // When changing mode data needs to be cleared
+        _mpx3gui->clear_data();
+        //updateColourMode();
+    }
+    SendConfiguration();
 }

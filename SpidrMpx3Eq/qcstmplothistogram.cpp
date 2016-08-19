@@ -103,18 +103,10 @@ void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size, int mi
         // This could happen
         if ( min == INT_MIN ) min = 0;
 
+
     }
 
     int binWidth = (max-min)/m_binCount == 0? 1 : (max-min)/m_binCount;
-
-    // When bad data comes from the SPIDR max and min can be numbers too big
-    // max-min can overflow a signed int.
-    if ( binWidth < 0 ) {
-        min = 0;
-        max = INT_MAX;
-        binWidth = (max-min)/m_binCount;
-    }
-
     Histogram * hist = new Histogram(min, max, binWidth);
     hist->addRange(data, size);
     //qDebug() << "Histogram creation took" << timer.elapsed() << "milliseconds";

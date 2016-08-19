@@ -120,18 +120,16 @@
     "DetectorConfig": {
         "OperationMode" : 0,
         "ColourMode": true,
-        "LUTEnable" : false,
         "CsmSpm": 0,
         "DecodeFrames": true,
         "GainMode": 1,
         "MaxPacketSize": 9000,
         "PixelDepth": 12,
         "Polarity": true,
-        "TriggerDeadtime_us": 2000,
-        "TriggerLength_us": 2000,
-        "ContRWFreq" : 100,
+        "TriggerDeadtime_us": 50000,
+        "TriggerLength_us": 50000,
         "TriggerMode": 4,
-        "nTriggers": 1000,
+        "nTriggers": 100,
         "BiasVoltage" : 100
     },
     "IPConfig": {
