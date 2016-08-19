@@ -552,9 +552,6 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
         it = JSobject.find("SpidrControllerIp");
         if(it != JSobject.end())
             setIpAddress(it.value().toString());
-        it = JSobject.find("SpidrControllerPort");
-        if(it != JSobject.end())
-            setPort(it.value().toInt());
     }
     itParent = JSobjectParent.find("DetectorConfig");
     if(itParent != JSobjectParent.end()){
@@ -681,6 +678,51 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
     }
 
     return true;
+}
+
+
+void Mpx3Config::setIpAddress(QString ipn) {
+
+    // The ip and port will come in the string.
+    // 192.168.1.10:50000
+    qDebug() << ipn;
+    QStringList list = ipn.split(':', QString::SkipEmptyParts);
+    // expect the ip address in the first part
+    QString ip = list.at( 0 );
+
+    uint16_t newPort;
+    if ( list.size() < 2 ) { // if the separator wasn't found
+        newPort = __default_port;
+    } else {
+        QString portS = list.at( 1 );
+        // check that is numeric
+        bool ok = false;
+        newPort = portS.toInt(&ok);
+        if ( ! ok ) newPort = __default_port;
+    }
+
+    // Port, change only the value
+    port = newPort;
+
+    // Check that the parts are fine
+    qDebug() << " parse --> " << ip << " : " << newPort;
+
+    // IP
+    if ( ip != this->getIpAddress() ) {
+        SpidrAddress.setAddress(ip);
+        if(SpidrAddress.toString().length() == 0)
+            SpidrAddress.setAddress( __default_IP );
+        //establishConnection();
+    }
+
+    emit IpAdressChanged( this->getIpAddressPortString() );
+
+}
+
+QString Mpx3Config::getIpAddressPortString() {
+    QString fullS = this->getIpAddress();
+    fullS += QString(":%1").arg(this->getIpAddressPort());
+    return fullS;
 }
 
 bool Mpx3Config::toJsonFile(QString filename, bool includeDacs){

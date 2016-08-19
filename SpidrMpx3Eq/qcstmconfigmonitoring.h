@@ -69,8 +69,6 @@ private slots:
 
     void IpAddressEditFinished();
 
-    void maxPacketSizeEdited();
-
     void nTriggersEdited();
     void ContRWFreqEdited();
     void TriggerLengthEdited();
@@ -79,8 +77,6 @@ private slots:
     void on_SaveButton_clicked();
 
     void on_LoadButton_clicked();
-
-    void on_ipLineEdit_editingFinished();
 
     void on_ColourModeCheckBox_toggled(bool checked);
 

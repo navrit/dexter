@@ -61,9 +61,6 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     ui->csmSpmCombo->addItem( "ON" );
     ui->csmSpmCombo->setCurrentIndex( 0 );
 
-    // Packet size
-    ui->maxPacketSizeSpinner->setEnabled( false );
-
     // Time units
     ui->radioButtonS->setEnabled( false );
     ui->radioButtonMS->setEnabled( false );
@@ -416,40 +413,13 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(ui->decodeFramesCheckbox, SIGNAL(clicked(bool)), config, SLOT(setDecodeFrames(bool)));
     connect(config, SIGNAL(decodeFramesChanged(bool)), ui->decodeFramesCheckbox, SLOT(setChecked(bool)));
 
-    // IP
+    // IP and Port
     connect(ui->ipLineEdit, SIGNAL( editingFinished() ), this, SLOT( IpAddressEditFinished() ) );// config, SLOT(setIpAddress(QString)) );
     connect(config, SIGNAL(IpAdressChanged(QString)), ui->ipLineEdit, SLOT(setText(QString)) );
 
-    // Port
-    connect(ui->portSpinner, SIGNAL(valueChanged(int)), config, SLOT(setPort(int)));
-    connect(config, SIGNAL(portChanged(int)), ui->portSpinner, SLOT(setValue(int)));
 
 
-    // Max packet size
-    connect( ui->maxPacketSizeSpinner, SIGNAL(editingFinished()), this, SLOT(maxPacketSizeEdited()) );
-    connect(config, SIGNAL(MaxPacketSizeChanged(int)), ui->maxPacketSizeSpinner, SLOT(setValue(int)));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // stepper
+    // Stepper Motor Controller
     _stepper = 0x0;
     //connect(ui->stepperUseCalibCheckBox, SIGNAL(clicked(bool)), config, SLOT(setStepperConfigUseCalib(bool)));
     //connect(config, SIGNAL(UseCalibChanged(bool)), ui->stepperUseCalibCheckBox, SLOT(setChecked(bool)));
@@ -571,7 +541,8 @@ void QCstmConfigMonitoring::IpAddressEditFinished()
 {
     // The string should be of the form
     //  192.168.1.10:50000
-
+    QString ipLine = ui->ipLineEdit->text();
+    _mpx3gui->getConfig()->setIpAddress( ipLine );
 
 }
 
@@ -682,13 +653,6 @@ void QCstmConfigMonitoring::readMonitoringInfo() {
 
 }
 
-void QCstmConfigMonitoring::maxPacketSizeEdited()
-{
-    _mpx3gui->getConfig()->setMaxPacketSize(
-                ui->maxPacketSizeSpinner->value()
-                );
-}
-
 void QCstmConfigMonitoring::on_SaveButton_clicked()//TODO: automatically append .json
 {
     QFileDialog saveDialog(this, tr("Save configuration"), tr("./config"), tr("Json files (*.json)"));
@@ -707,10 +671,6 @@ void QCstmConfigMonitoring::on_SaveButton_clicked()//TODO: automatically append 
 void QCstmConfigMonitoring::on_LoadButton_clicked() {
     QString filename = QFileDialog::getOpenFileName(this, tr("Open configuration"), tr("./config"), tr("Json files (*.json)"));
     _mpx3gui->getConfig()->fromJsonFile(filename, ui->IncludeDacsCheck->isChecked());
-}
-
-void QCstmConfigMonitoring::on_ipLineEdit_editingFinished() {
-    _mpx3gui->getConfig()->setIpAddress(ui->ipLineEdit->text());
 }
 
 void QCstmConfigMonitoring::on_ColourModeCheckBox_toggled(bool checked) {

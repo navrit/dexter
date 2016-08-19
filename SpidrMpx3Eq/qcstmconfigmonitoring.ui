@@ -51,40 +51,6 @@ QGroupBox::title {
         <bool>false</bool>
        </property>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="2" column="0" colspan="2">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Operation Mode</string>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="0">
-         <widget class="QLabel" name="label_11">
-          <property name="text">
-           <string>IP Address</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="5" colspan="3">
-         <widget class="QLabel" name="label_22">
-          <property name="text">
-           <string>Clock (MHz)</string>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="3">
-         <widget class="QSpinBox" name="maxPacketSizeSpinner">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="keyboardTracking">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>999999999</number>
-          </property>
-         </widget>
-        </item>
         <item row="3" column="4">
          <spacer name="horizontalSpacer">
           <property name="orientation">
@@ -98,10 +64,172 @@ QGroupBox::title {
           </property>
          </spacer>
         </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Gain Mode</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="5">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Csm Spm</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="3">
+         <widget class="QComboBox" name="triggerModeCombo">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="9">
+         <widget class="QComboBox" name="polarityComboBox">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>Shutter Length</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="9">
+         <widget class="QSpinBox" name="contRWFreq">
+          <property name="toolTip">
+           <string>ContinuousRW frequency (Hz)</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="maximum">
+           <number>1300</number>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="5" colspan="3">
+         <widget class="QLabel" name="label_23">
+          <property name="toolTip">
+           <string>ContinuousRW frequency (Hz)</string>
+          </property>
+          <property name="text">
+           <string>CRW freq (Hz)</string>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="5" colspan="2">
          <widget class="QLabel" name="label_17">
           <property name="text">
            <string>Shutter down</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="5">
+         <widget class="QLabel" name="label_19">
+          <property name="text">
+           <string>Time units</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="9">
+         <widget class="QComboBox" name="pixelDepthCombo">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="9">
+         <widget class="QCheckBox" name="decodeFramesCheckbox">
+          <property name="text">
+           <string>Decode frames</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="3">
+         <widget class="QCheckBox" name="ColourModeCheckBox">
+          <property name="text">
+           <string>Colour mode</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="5">
+         <widget class="QLabel" name="label_16">
+          <property name="text">
+           <string>Polarity</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QSpinBox" name="triggerLengthSpinner">
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="keyboardTracking">
+           <bool>false</bool>
+          </property>
+          <property name="maximum">
+           <number>999999999</number>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="5">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Pixel Depth</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Operation Mode</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="3">
+         <widget class="QComboBox" name="gainModeCombobox">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QSpinBox" name="nTriggersSpinner">
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="keyboardTracking">
+           <bool>false</bool>
+          </property>
+          <property name="maximum">
+           <number>999999999</number>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="3">
+         <widget class="QDoubleSpinBox" name="biasVoltageSpinner">
+          <property name="toolTip">
+           <string>Sets internal bias. To disable set a value of 0V.</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <double>150.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>100.000000000000000</double>
           </property>
          </widget>
         </item>
@@ -112,7 +240,105 @@ QGroupBox::title {
           </property>
          </widget>
         </item>
-        <item row="8" column="8" colspan="2">
+        <item row="5" column="9">
+         <widget class="QComboBox" name="csmSpmCombo">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0" colspan="2">
+         <widget class="QLabel" name="label_20">
+          <property name="toolTip">
+           <string>Sets internal bias. To disable set a value of 0V.</string>
+          </property>
+          <property name="text">
+           <string>Bias voltage (V)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0">
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>IP Address</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_9">
+          <property name="text">
+           <string>N. of Triggers</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0" colspan="3">
+         <widget class="QCheckBox" name="readBothCountersCheckBox">
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="text">
+           <string>Both counters</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="3">
+         <widget class="QLineEdit" name="ipLineEdit">
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="frame">
+           <bool>true</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="placeholderText">
+           <string>0.0.0.0:0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="5" colspan="3">
+         <widget class="QLabel" name="label_22">
+          <property name="text">
+           <string>Clock (MHz)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>Trigger Mode</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="9">
+         <widget class="QSpinBox" name="triggerDowntimeSpinner">
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="minimum">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <number>999999999</number>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3">
+         <widget class="QComboBox" name="operationModeComboBox">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="5">
+         <widget class="QCheckBox" name="LUTCheckbox">
+          <property name="text">
+           <string>LUT</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="9">
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
            <widget class="QRadioButton" name="radioButtonS">
@@ -149,248 +375,6 @@ QGroupBox::title {
           </item>
          </layout>
         </item>
-        <item row="6" column="3">
-         <widget class="QCheckBox" name="ColourModeCheckBox">
-          <property name="text">
-           <string>Colour mode</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="5" colspan="3">
-         <widget class="QLabel" name="label_23">
-          <property name="toolTip">
-           <string>ContinuousRW frequency (Hz)</string>
-          </property>
-          <property name="text">
-           <string>CRW freq (Hz)</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="3">
-         <widget class="QSpinBox" name="nTriggersSpinner">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="keyboardTracking">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>999999999</number>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="5">
-         <widget class="QLabel" name="label_16">
-          <property name="text">
-           <string>Polarity</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="9">
-         <widget class="QSpinBox" name="triggerDowntimeSpinner">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="minimum">
-           <number>0</number>
-          </property>
-          <property name="maximum">
-           <number>999999999</number>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_9">
-          <property name="text">
-           <string>N. of Triggers</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="3">
-         <widget class="QComboBox" name="gainModeCombobox">
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="5">
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>Csm Spm</string>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="5">
-         <widget class="QLabel" name="label_19">
-          <property name="text">
-           <string>Time units</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_6">
-          <property name="text">
-           <string>Gain Mode</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="label_7">
-          <property name="text">
-           <string>Trigger Mode</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0" colspan="2">
-         <widget class="QLabel" name="label_20">
-          <property name="toolTip">
-           <string>Sets internal bias. To disable set a value of 0V.</string>
-          </property>
-          <property name="text">
-           <string>Bias voltage (V)</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="9">
-         <widget class="QSpinBox" name="contRWFreq">
-          <property name="toolTip">
-           <string>ContinuousRW frequency (Hz)</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="maximum">
-           <number>1300</number>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="9">
-         <widget class="QComboBox" name="polarityComboBox">
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_8">
-          <property name="text">
-           <string>Shutter Length</string>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="5">
-         <widget class="QLabel" name="label_12">
-          <property name="text">
-           <string>Port:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0" colspan="3">
-         <widget class="QCheckBox" name="readBothCountersCheckBox">
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-          <property name="text">
-           <string>Both counters</string>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="9">
-         <widget class="QSpinBox" name="portSpinner">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="maximum">
-           <number>65535</number>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="5">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Pixel Depth</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="3">
-         <widget class="QComboBox" name="operationModeComboBox">
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QSpinBox" name="triggerLengthSpinner">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="keyboardTracking">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>999999999</number>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="5">
-         <widget class="QCheckBox" name="LUTCheckbox">
-          <property name="text">
-           <string>LUT</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="3">
-         <widget class="QDoubleSpinBox" name="biasVoltageSpinner">
-          <property name="toolTip">
-           <string>Sets internal bias. To disable set a value of 0V.</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <double>150.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>100.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="0">
-         <widget class="QLabel" name="label_4">
-          <property name="text">
-           <string>Packet Size</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="9">
-         <widget class="QCheckBox" name="decodeFramesCheckbox">
-          <property name="text">
-           <string>Decode frames</string>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="3">
-         <widget class="QLineEdit" name="ipLineEdit">
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-          <property name="frame">
-           <bool>true</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="placeholderText">
-           <string>0.0.0.0</string>
-          </property>
-         </widget>
-        </item>
         <item row="9" column="0" colspan="10">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
@@ -415,27 +399,6 @@ QGroupBox::title {
            </widget>
           </item>
          </layout>
-        </item>
-        <item row="3" column="9">
-         <widget class="QComboBox" name="pixelDepthCombo">
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="3">
-         <widget class="QComboBox" name="triggerModeCombo">
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="9">
-         <widget class="QComboBox" name="csmSpmCombo">
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-         </widget>
         </item>
        </layout>
        <zorder>label_3</zorder>
@@ -462,19 +425,15 @@ QGroupBox::title {
        <zorder>ColourModeCheckBox</zorder>
        <zorder>label_11</zorder>
        <zorder>ipLineEdit</zorder>
-       <zorder>label_12</zorder>
-       <zorder>portSpinner</zorder>
-       <zorder>label_4</zorder>
-       <zorder>maxPacketSizeSpinner</zorder>
-       <zorder>label_19</zorder>
        <zorder>label_5</zorder>
        <zorder>decodeFramesCheckbox</zorder>
        <zorder>LUTCheckbox</zorder>
        <zorder>horizontalSpacer</zorder>
-       <zorder></zorder>
        <zorder>pixelDepthCombo</zorder>
        <zorder>triggerModeCombo</zorder>
        <zorder>csmSpmCombo</zorder>
+       <zorder>label_19</zorder>
+       <zorder></zorder>
       </widget>
      </item>
      <item row="1" column="0">

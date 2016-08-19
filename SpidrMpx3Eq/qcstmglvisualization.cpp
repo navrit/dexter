@@ -510,15 +510,11 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect( this, &QCstmGLVisualization::sig_statusBarWrite, _mpx3gui, &Mpx3GUI::statusBarWrite );
     connect( this, &QCstmGLVisualization::sig_statusBarClean, _mpx3gui, &Mpx3GUI::statusBarClean );
 
-    // connection to configuration
+    // Connection to configuration
     connect( ui->nTriggersSpinBox, SIGNAL(editingFinished()),
-             //_mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner,
-             //SLOT(setValue(int)));
              this, SLOT(ntriggers_edit()) );
 
     connect( ui->triggerLengthSpinBox, SIGNAL(editingFinished()),
-             //_mpx3gui->getConfigMonitoring()->getUI()->triggerLengthSpinner,
-             //SLOT(setValue(int)));
              this, SLOT(triggerLength_edit()) );
 
     // This one need both the connection to the mirror combo box and the signal to the Configuration to take place
@@ -528,6 +524,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect( ui->operationModeComboBox_Vis, SIGNAL(activated(int)),
              _mpx3gui->getConfig(),
              SLOT( setOperationMode(int) ) );
+
     // What to do over a switch of Operation Mode
     connect( ui->operationModeComboBox_Vis, SIGNAL(activated(int)),
              this,
@@ -548,30 +545,47 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 
 void QCstmGLVisualization::ntriggers_edit() {
 
-    // Depends on the mode, the same box is used for
-    // Ntriggers    --> SequentialRW
-    // Freq         --> ContinuousRW
+    // Modify the spinner on the config side
+    _mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner->setValue(
+                ui->nTriggersSpinBox->value()
+                );
 
-    if ( _mpx3gui->getConfig()->getOperationMode()
-         == Mpx3Config::__operationMode_SequentialRW ) {
-        // triggerLength
-        _mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner->setValue(
-                    ui->nTriggersSpinBox->value()
-                    );
-    } else if ( _mpx3gui->getConfig()->getOperationMode()
-                == Mpx3Config::__operationMode_ContinuousRW ) {
-        // contRWFreq
-        _mpx3gui->getConfigMonitoring()->getUI()->contRWFreq->setValue(
-                    ui->nTriggersSpinBox->value()
-                    );
-    }
+    // And try to send the new config
+    _mpx3gui->getConfig()->setNTriggers(
+                ui->nTriggersSpinBox->value()
+                );
+
 }
 
 void QCstmGLVisualization::triggerLength_edit() {
 
-    _mpx3gui->getConfigMonitoring()->getUI()->triggerLengthSpinner->setValue(
-                ui->triggerLengthSpinBox->value()
-                );
+    // Depends on the mode, the same box is used for
+    // triggerLength --> SequentialRW
+    // Freq          --> ContinuousRW
+
+    if ( _mpx3gui->getConfig()->getOperationMode()
+         == Mpx3Config::__operationMode_SequentialRW ) {
+        // triggerLength
+        _mpx3gui->getConfigMonitoring()->getUI()->triggerLengthSpinner->setValue(
+                    ui->triggerLengthSpinBox->value()
+                    );
+        // Send the new config
+        _mpx3gui->getConfig()->setTriggerLength(
+                    ui->triggerLengthSpinBox->value()
+                    );
+
+    } else if ( _mpx3gui->getConfig()->getOperationMode()
+                == Mpx3Config::__operationMode_ContinuousRW )  {
+        // contRWFreq
+        _mpx3gui->getConfigMonitoring()->getUI()->contRWFreq->setValue(
+                    ui->triggerLengthSpinBox->value()
+                    );
+        // send the new config --> contRWFreq
+        _mpx3gui->getConfig()->setContRWFreq(
+                    ui->triggerLengthSpinBox->value()
+                    );
+    }
+
 }
 
 void QCstmGLVisualization::startupActions()
@@ -771,25 +785,19 @@ void QCstmGLVisualization::on_user_accepted_profile()
 void QCstmGLVisualization::OperationModeSwitched(int indx)
 {
 
+    // Swith the triggerLengthSpinBox into ContRWFreq if in ContinuousRW mode
     if ( indx == Mpx3Config::__operationMode_SequentialRW ) {
 
-        ui->triggerLengthSpinBoxLabel->show();
-        ui->triggerLengthSpinBox->show();
-        ui->nTriggersSpinBoxLabel->setText( "Triggers" );
-
-        ui->nTriggersSpinBox->setValue( _mpx3gui->getConfig()->getNTriggers() );
+        ui->triggerLengthSpinBoxLabel->setText( "Length" );
+        ui->triggerLengthSpinBox->setValue( _mpx3gui->getConfig()->getTriggerLength() );
 
     } else if ( indx == Mpx3Config::__operationMode_ContinuousRW ) {
 
-        ui->triggerLengthSpinBoxLabel->hide();
-        ui->triggerLengthSpinBox->hide();
-        ui->nTriggersSpinBoxLabel->setText( "Freq(Hz)" );
-
-        ui->nTriggersSpinBox->setValue( _mpx3gui->getConfig()->getContRWFreq() );
+        ui->triggerLengthSpinBoxLabel->setText( "CRW freq(Hz)" );
+        ui->triggerLengthSpinBox->setValue( _mpx3gui->getConfig()->getContRWFreq() );
 
     }
-    //ui->triggerLengthSpinBox
-    //ui->nTriggersSpinBox;
+
 }
 
 void QCstmGLVisualization::lost_packets(int packetsLost) {

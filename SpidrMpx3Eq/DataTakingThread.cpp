@@ -52,6 +52,7 @@ void DataTakingThread::run() {
         ipaddr[0] = (_srcAddr >>  0) & 0xFF;
     }
 
+
     // New instance.  This all belongs to this thread
     SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
@@ -86,6 +87,60 @@ void DataTakingThread::run() {
         spidrcontrol->startAutoTrigger();
     }
 
+    // Timeout
+    int timeOutTime =
+            _mpx3gui->getConfig()->getTriggerLength_ms()
+            +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
+            + 100; // ms
+
+    QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
+    int nChips = activeDevices.size();
+    int * framedata = nullptr;
+    int size_in_bytes = -1;
+    int nFramesReceived = 0;
+
+     while ( spidrdaq->hasFrame( timeOutTime ) ) {
+
+
+         for(int i = 0 ; i < nChips ; i++) {
+
+             // retreive data for a given chip
+             framedata = spidrdaq->frameData(i, &size_in_bytes);
+
+         }
+
+         // Keep a local count of number of frames
+         nFramesReceived++;
+
+         // Reports
+         emit fps_update( nFramesReceived );
+
+         // Release frame
+         spidrdaq->releaseFrame();
+
+         if ( _stop ) { // if the data taking was stopped
+             spidrcontrol->stopAutoTrigger();
+         }
+
+         if ( _mpx3gui->getConfig()->getOperationMode()
+              == Mpx3Config::__operationMode_ContinuousRW ) {
+             if ( nFramesReceived == _score.framesRequested ) spidrcontrol->stopContReadout();
+         }
+
+     }
+
+    if ( _mpx3gui->getConfig()->getOperationMode()
+         == Mpx3Config::__operationMode_ContinuousRW ) {
+        spidrcontrol->stopContReadout();
+    }
+
+    disconnect(this, SIGNAL(progress(int)), _vis, SLOT(progress_signal(int)));
+    disconnect(this, SIGNAL(lost_packets(int)), _vis, SLOT(lost_packets(int)) );
+    disconnect(this, SIGNAL(lost_frames(int)), _vis, SLOT(lost_frames(int)) );
+    disconnect(this, SIGNAL(data_misaligned(bool)), _vis, SLOT(data_misaligned(bool)) );
+    disconnect(this, SIGNAL(mpx3clock_stops(int)), _vis, SLOT(mpx3clock_stops(int)) );
+    disconnect(this, SIGNAL(fps_update(int)), _vis, SLOT(fps_update(int)) );
+    disconnect(this, SIGNAL(overflow_update(int)), _vis, SLOT(overflow_update(int)) );
 
 }
 
