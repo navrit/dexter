@@ -80,6 +80,8 @@ void DataTakingThread::run() {
     connect(this, SIGNAL(fps_update(int)), _vis, SLOT(fps_update(int)) );
     connect(this, SIGNAL(overflow_update(int)), _vis, SLOT(overflow_update(int)) );
 
+    connect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(data_taking_finished(int)));
+
     if ( _mpx3gui->getConfig()->getOperationMode()
          == Mpx3Config::__operationMode_ContinuousRW ) {
         spidrcontrol->startContReadout( _mpx3gui->getConfig()->getContRWFreq() );
@@ -99,40 +101,36 @@ void DataTakingThread::run() {
     int size_in_bytes = -1;
     int nFramesReceived = 0;
 
-     while ( spidrdaq->hasFrame( timeOutTime ) ) {
+    while ( spidrdaq->hasFrame( timeOutTime ) ) {
 
 
-         for(int i = 0 ; i < nChips ; i++) {
+        for(int i = 0 ; i < nChips ; i++) {
+            // retreive data for a given chip
+            framedata = spidrdaq->frameData(i, &size_in_bytes);
+        }
 
-             // retreive data for a given chip
-             framedata = spidrdaq->frameData(i, &size_in_bytes);
+        // Keep a local count of number of frames
+        nFramesReceived++;
 
-         }
+        // Reports
+        emit fps_update( nFramesReceived );
+        emit progress( nFramesReceived );
 
-         // Keep a local count of number of frames
-         nFramesReceived++;
+        // Release frame
+        spidrdaq->releaseFrame();
 
-         // Reports
-         emit fps_update( nFramesReceived );
+        if ( _stop ) { // if the data taking was stopped
+            spidrcontrol->stopAutoTrigger();
+        }
 
-         // Release frame
-         spidrdaq->releaseFrame();
+        if ( _mpx3gui->getConfig()->getOperationMode()
+             == Mpx3Config::__operationMode_ContinuousRW ) {
+            if ( nFramesReceived == _score.framesRequested ) spidrcontrol->stopContReadout();
+        }
 
-         if ( _stop ) { // if the data taking was stopped
-             spidrcontrol->stopAutoTrigger();
-         }
-
-         if ( _mpx3gui->getConfig()->getOperationMode()
-              == Mpx3Config::__operationMode_ContinuousRW ) {
-             if ( nFramesReceived == _score.framesRequested ) spidrcontrol->stopContReadout();
-         }
-
-     }
-
-    if ( _mpx3gui->getConfig()->getOperationMode()
-         == Mpx3Config::__operationMode_ContinuousRW ) {
-        spidrcontrol->stopContReadout();
     }
+
+    emit data_taking_finished( 0 );
 
     disconnect(this, SIGNAL(progress(int)), _vis, SLOT(progress_signal(int)));
     disconnect(this, SIGNAL(lost_packets(int)), _vis, SLOT(lost_packets(int)) );
@@ -141,6 +139,9 @@ void DataTakingThread::run() {
     disconnect(this, SIGNAL(mpx3clock_stops(int)), _vis, SLOT(mpx3clock_stops(int)) );
     disconnect(this, SIGNAL(fps_update(int)), _vis, SLOT(fps_update(int)) );
     disconnect(this, SIGNAL(overflow_update(int)), _vis, SLOT(overflow_update(int)) );
+
+    disconnect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(data_taking_finished(int)));
+
 
 }
 
@@ -269,12 +270,12 @@ void DataTakingThread::run2() {
 
     // Start the trigger as configured
 
-     if ( _mpx3gui->getConfig()->getOperationMode()
-          == Mpx3Config::__operationMode_ContinuousRW ) {
-         spidrcontrol->startContReadout( 10 );
-     } else {
-         spidrcontrol->startAutoTrigger();
-     }
+    if ( _mpx3gui->getConfig()->getOperationMode()
+         == Mpx3Config::__operationMode_ContinuousRW ) {
+        spidrcontrol->startContReadout( 10 );
+    } else {
+        spidrcontrol->startAutoTrigger();
+    }
 
     // keep an eye on overflow
     unsigned int overflowCntr = 0;
@@ -601,9 +602,9 @@ void DataTakingThread::run2() {
 
     // If framesLostCount() is not divisible by the number of chips, then the data is missaligned
     if ( spidrdaq->framesLostCount() % nChips != 0 ) {
-         emit data_misaligned( true );
-         qDebug() << "[FATAL] Data is missaligned !!! | frames lots in all chips () = "
-                  << spidrdaq->framesLostCount() << " |  can't divide by " << nChips ;
+        emit data_misaligned( true );
+        qDebug() << "[FATAL] Data is missaligned !!! | frames lots in all chips () = "
+                 << spidrdaq->framesLostCount() << " |  can't divide by " << nChips ;
     }
     emit lost_frames( spidrdaq->framesLostCount() / nChips );
     int val;
