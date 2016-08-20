@@ -916,7 +916,11 @@ void QCstmGLVisualization::progress_signal(int framecntr) {
         }
     }
 
-    QString prog = QString("%1/%2").arg( argcntr ).arg(_mpx3gui->getConfig()->getNTriggers() );
+    int nTriggers = _mpx3gui->getConfig()->getNTriggers();
+    QString prog;
+    if ( nTriggers > 0 ) prog = QString("%1/%2").arg( argcntr ).arg( nTriggers );
+    else prog = QString("%1/*").arg( argcntr ); // nTriggers=0 is keep taking data forever
+
     ui->frameCntr->setText( prog );
 
 }

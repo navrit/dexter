@@ -109,6 +109,9 @@ void DataTakingThread::run() {
             framedata = spidrdaq->frameData(i, &size_in_bytes);
         }
 
+        // Release frame
+        spidrdaq->releaseFrame();
+
         // Keep a local count of number of frames
         nFramesReceived++;
 
@@ -116,17 +119,22 @@ void DataTakingThread::run() {
         emit fps_update( nFramesReceived );
         emit progress( nFramesReceived );
 
-        // Release frame
-        spidrdaq->releaseFrame();
-
+        // User stop condition
         if ( _stop ) { // if the data taking was stopped
-            spidrcontrol->stopAutoTrigger();
+            if ( _mpx3gui->getConfig()->getOperationMode()
+                 == Mpx3Config::__operationMode_ContinuousRW ) {
+                spidrcontrol->stopContReadout();
+            } else {
+                spidrcontrol->stopAutoTrigger();
+            }
         }
 
+        /*
         if ( _mpx3gui->getConfig()->getOperationMode()
              == Mpx3Config::__operationMode_ContinuousRW ) {
             if ( nFramesReceived == _score.framesRequested ) spidrcontrol->stopContReadout();
         }
+        */
 
     }
 
