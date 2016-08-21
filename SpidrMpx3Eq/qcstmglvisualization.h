@@ -68,6 +68,10 @@ public:
     explicit QCstmGLVisualization(QWidget *parent = 0);
     ~QCstmGLVisualization();
 
+    void timerEvent( QTimerEvent * );
+    void refreshScoringInfo();
+    void rewindScoring();
+
     //void SeparateThresholds(int * data, int size, int * th0, int * th2, int * th4, int * th6, int sizeReduced);
     void SeparateThresholds(int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
     bool isTakingData(){ return _takingData; }
@@ -95,6 +99,8 @@ public:
 
     void rewindHistoLimits();
 
+    bool getDropFrames(){return _dropFrames;}
+
 private:
 
     Ui::QCstmGLVisualization * ui = nullptr;
@@ -109,9 +115,20 @@ private:
     QCPRange _percentileRangeNatural;
     bool _logyPlot = false;
     bool _infDataTaking = false;
+    bool _dropFrames = true;
 
     MTADialog * _mtadialog = nullptr;
     TestPulses * _testPulsesDialog = nullptr;
+
+    typedef struct {
+        unsigned int nFramesReceived;
+        unsigned int nFramesKept;
+        unsigned int lostFrames;
+        unsigned int lostPackets;
+        unsigned int framesCount;
+        unsigned int mpx3clock_stops;
+        bool dataMisaligned;
+    } scoring;
 
     typedef struct {
         QString counts;
@@ -130,7 +147,9 @@ private:
     } extra_widgets;
 
     stats_str _statsString;
+    scoring _score;
     extra_widgets _extraWidgets;
+    int _timerId;
 
 
     //!Adds the specified threshold to the layerselector combobox
@@ -206,6 +225,8 @@ private slots:
 
     void on_testPulsesPushButton_clicked();
 
+    void on_dropFramesCheckBox_clicked(bool checked);
+
 public slots:
     void StartDataTaking();
     void setGradient(int index);
@@ -231,8 +252,6 @@ public slots:
     void changeBinCount(int count);
     void updateETA();
 
-    void lost_packets(int);
-    void lost_frames(int);
     void data_misaligned(bool);
     void mpx3clock_stops(int);
 
@@ -244,6 +263,7 @@ public slots:
     void on_user_accepted_profile();
     void OperationModeSwitched(int);
 
+    void on_scoring(int, int, int, int, int, int, bool);
 
 signals:
     void change_hover_text(QString);

@@ -26,7 +26,8 @@ class DataTakingThread : public QThread {
     Q_OBJECT
 
 public:
-    explicit DataTakingThread(Mpx3GUI *, QCstmGLVisualization *);
+    explicit DataTakingThread(Mpx3GUI *, QObject * parent);
+    ~DataTakingThread();
     void ConnectToHardware();
     void SeparateThresholds(int id, int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
     pair<int, int> XtoXY(int X, int dimX);
@@ -56,6 +57,8 @@ public:
 
     void run2();
 
+    void takedata();
+
 protected:
 
     void run() Q_DECL_OVERRIDE;
@@ -64,6 +67,8 @@ private:
 
     QMutex _mutex;
     QWaitCondition _condition;
+    bool _restart;
+    bool _abort;
 
     Mpx3GUI * _mpx3gui;
     QCstmGLVisualization * _vis;
@@ -95,16 +100,11 @@ signals:
     void reload_all_layers();
     void reload_layer(int);
     void data_taking_finished(int);
-    void progress(int);
-    void lost_packets(int);
-    void lost_frames(int);
-    void data_misaligned(bool);
-    void mpx3clock_stops(int);
 
-    void fps_update(int);
-    void overflow_update(int);
     void dataReady(int layer);
 
+
+    void scoring_sig(int, int, int, int, int, int, bool);
 
 };
 
