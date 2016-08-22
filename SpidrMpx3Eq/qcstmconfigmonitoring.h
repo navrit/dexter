@@ -55,6 +55,8 @@ public:
 public slots:
 
     void OperationModeSwitched(int indx);
+    void on_taking_data_gui();
+    void on_idling_gui();
 
 private slots:
 
@@ -83,6 +85,7 @@ private slots:
     void on_tempReadingActivateCheckBox_toggled(bool checked);
 
     void on_readOMRPushButton_clicked();
+
 
     ////////////////////////////////////////////////////////////
     // Stepper

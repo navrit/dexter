@@ -280,7 +280,17 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 
 }
 
-void QCstmConfigMonitoring::activeInGUI(){
+void QCstmConfigMonitoring::on_taking_data_gui()
+{
+    ui->groupBoxConfiguration->setEnabled( false );
+}
+
+void QCstmConfigMonitoring::on_idling_gui()
+{
+    ui->groupBoxConfiguration->setEnabled( true );
+}
+
+void QCstmConfigMonitoring::activeInGUI() {
 
     // stepper part
     if ( _stepper ) {
@@ -502,10 +512,7 @@ void QCstmConfigMonitoring::OperationModeSwitched(int indx)
         ui->triggerLengthSpinner->setEnabled( false );
         ui->triggerDowntimeSpinner->setEnabled( false );
         ui->contRWFreq->setEnabled( true );
-
     }
-
-
 
 }
 

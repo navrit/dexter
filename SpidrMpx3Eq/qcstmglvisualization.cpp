@@ -173,6 +173,38 @@ void QCstmGLVisualization::FinishDataTakingThread() {
     }
 }
 
+void QCstmGLVisualization::StopDataTakingThread()
+{
+    _dataTakingThread->stop();
+}
+
+
+
+void QCstmGLVisualization::ConfigureGUIForDataTaking() {
+
+    emit taking_data_gui();
+
+    ui->startButton->setText( "Stop" );
+    ui->singleshotPushButton->setText( "Stop" );
+    emit sig_statusBarAppend("start","blue");
+
+    ui->groupBoxConfigAndStats->setEnabled( false );
+    ui->statsLabel->setEnabled( true ); // keep the stats label alive
+
+}
+
+void QCstmGLVisualization::ConfigureGUIForIdling() {
+
+    emit idling_gui();
+
+    ui->startButton->setText( "Start" );
+    ui->singleshotPushButton->setText( "single" );
+    emit sig_statusBarAppend("done","blue");
+
+    ui->groupBoxConfigAndStats->setEnabled( true );
+
+}
+
 void QCstmGLVisualization::StartDataTaking() {
 
     if ( !_dataTakingThread ) {
@@ -188,11 +220,12 @@ void QCstmGLVisualization::StartDataTaking() {
     ArmAndStartTimer();
 
     // GUI
-    ui->startButton->setText( "Stop" );
-    ui->singleshotPushButton->setText( "Stop" );
-    emit sig_statusBarAppend("start","blue");
+    ConfigureGUIForDataTaking();
+
+
     // info refresh
     _timerId = this->startTimer( 100 ); // 100 ms is a good compromise to refresh the scoreing info
+
 
     /*
     // The Start button becomes the Stop button
@@ -372,10 +405,7 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
     DestroyTimer();
     ETAToZero();
 
-    // GUI
-    ui->startButton->setText( "Start" );
-    ui->singleshotPushButton->setText( "single" );
-    emit sig_statusBarAppend("done","blue");
+    ConfigureGUIForIdling();
 
     rewindScoring();
 
@@ -645,6 +675,13 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     //
     connect(ui->glPlot->getPlot(), &QCstmGLPlot::double_click,
             this, &QCstmGLVisualization::reload_all_layers);
+
+    // DataTaking / idling actions
+    connect( this, &QCstmGLVisualization::taking_data_gui,
+            _mpx3gui->getConfigMonitoring(), &QCstmConfigMonitoring::on_taking_data_gui );
+    connect( this, &QCstmGLVisualization::idling_gui,
+            _mpx3gui->getConfigMonitoring(), &QCstmConfigMonitoring::on_idling_gui );
+
 
     // Defaults
     emit mode_changed( ui->summingCheckbox->isChecked() );

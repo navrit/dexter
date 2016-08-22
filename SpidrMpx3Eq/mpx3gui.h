@@ -168,6 +168,8 @@ signals:
     void sig_statusBarWrite(QString mess, QString colorString);
     void sig_statusBarClean();
 
+    void exitApp(int);
+
 public slots:
     void on_shortcutsSwithPages();
     void generateFrame(); //Debugging function to generate data when not connected

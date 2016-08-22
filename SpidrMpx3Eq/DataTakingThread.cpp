@@ -29,14 +29,9 @@ DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, QObject * parent)
     _canDraw = true;
     rewindScoring();
 
-    // Build local structure
-    QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
-    int nChips = activeDevices.size();
-    qDebug() << "Working with " << nChips << " chips";
-
 }
 
-DataTakingThread::~DataTakingThread(){
+DataTakingThread::~DataTakingThread() {
 
     _mutex.lock();
     _abort = true;          // will stop run as soon as possible
@@ -49,7 +44,7 @@ DataTakingThread::~DataTakingThread(){
 
 }
 
-void DataTakingThread::takedata(){
+void DataTakingThread::takedata() {
 
     QMutexLocker locker( &_mutex );
 
@@ -205,7 +200,7 @@ void DataTakingThread::run() {
 
         // If the data taking was stopped
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
-            //spidrcontrol->stopContReadout();
+            spidrcontrol->stopContReadout();
         } else {
             spidrcontrol->stopAutoTrigger();
         }

@@ -89,6 +89,8 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
         emit availible_gradients_changed(gradientNames);
 
     }
+    //_ui->visualizationGL->ConfigureGUIForIdling();
+
     // Prepare THL Calibration
     _ui->ThresholdTab->SetMpx3GUI(this);
 
@@ -926,9 +928,17 @@ QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; 
 void Mpx3GUI::on_actionExit_triggered()
 {
 
-    qDebug() << "exit ...";
 
-    //_coreApp->exit();
+    // Stop data taking
+    getVisualization()->StopDataTakingThread();
+
+    getVisualization()->FinishDataTakingThread();
+
+    // Wait until it is done !
+
+    // Save data if any --> dialogue
+
+    emit exitApp( 0 );
 }
 
 void Mpx3GUI::on_actionConnect_triggered() {

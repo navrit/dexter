@@ -101,6 +101,12 @@ public:
 
     bool getDropFrames(){return _dropFrames;}
 
+    void ConfigureGUIForDataTaking();
+    void ConfigureGUIForIdling();
+
+    void FinishDataTakingThread();
+    void StopDataTakingThread();
+
 private:
 
     Ui::QCstmGLVisualization * ui = nullptr;
@@ -165,7 +171,6 @@ private:
     void BuildStatsStringLostFrames(uint64_t lostFrames);
     void BuildStatsStringMpx3ClockStops(uint64_t stops);
     void BuildStatsStringOverflow(bool overflow);
-    void FinishDataTakingThread();
 
 private slots:
     void ConnectionStatusChanged(bool connecting);
@@ -266,6 +271,10 @@ public slots:
     void on_scoring(int, int, int, int, int, int, bool);
 
 signals:
+    void taking_data_gui();
+    void idling_gui();
+
+signals:
     void change_hover_text(QString);
     void stop_data_taking_thread();
     void free_to_draw();
@@ -275,6 +284,7 @@ signals:
     void sig_statusBarAppend(QString mess, QString colorString);
     void sig_statusBarWrite(QString mess, QString colorString);
     void sig_statusBarClean();
+
 
 };
 

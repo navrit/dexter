@@ -82,6 +82,7 @@
     </property>
     <addaction name="actionConnect"/>
     <addaction name="actionDisconnect"/>
+    <addaction name="separator"/>
     <addaction name="actionDefibrillator"/>
    </widget>
    <widget class="QMenu" name="menu_Window">
@@ -101,6 +102,9 @@
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>toolBar</string>
+   </property>
+   <property name="toolTip">
+    <string>Force a reset of the device</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -122,6 +126,8 @@
    <addaction name="actionDACs"/>
    <addaction name="actionEqualization"/>
    <addaction name="actionScans"/>
+   <addaction name="separator"/>
+   <addaction name="actionDefibrillator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionExit">
@@ -214,6 +220,10 @@
    </property>
   </action>
   <action name="actionDefibrillator">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/Automated_External_Defibrillator.png</normaloff>icons/Automated_External_Defibrillator.png</iconset>
+   </property>
    <property name="text">
     <string>Defibrillator</string>
    </property>

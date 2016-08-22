@@ -44,6 +44,7 @@ public:
 
     //datataking_score_info getScoreInfo() { return _score; }
     void rewindScoring();
+    void stop() { _stop = true; }
     bool isACompleteJob() { return _score.tocomplete; }
     int getMissingFramesToCompleteJob() { return _score.missingToCompleteJob; }
     int getFramesReceived() { return _score.framesReceived; }
