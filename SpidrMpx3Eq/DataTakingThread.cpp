@@ -45,6 +45,8 @@ DataTakingThread::~DataTakingThread(){
 
     wait(); // wait 'til run has exited before the base class destructor is invoked
 
+    //qDebug() << "thread finished";
+
 }
 
 void DataTakingThread::takedata(){
@@ -128,6 +130,9 @@ void DataTakingThread::run() {
 
     forever {
 
+        // When abort execution. Triggered as the destructor is called.
+        if( _abort ) return;
+
         // Fetch new parameters
         // After a start or restart
         _mutex.lock();
@@ -173,7 +178,7 @@ void DataTakingThread::run() {
             // Reports
             emit scoring_sig(nFramesReceived,
                              nFramesKept,
-                             spidrdaq->framesLostCount() / nChips,  // lost frames
+                             spidrdaq->framesLostCount() / nChips,  //
                              spidrdaq->lostCount(),                 // lost packets(ML605)/pixels(compactSPIDR)
                              spidrdaq->framesCount(),               // ?
                              0,
@@ -195,9 +200,6 @@ void DataTakingThread::run() {
 
             // 3) User restart condition
             if ( _restart ) break;
-
-            // 4) Abort execution
-            if( _abort ) return;
 
         }
 
@@ -227,10 +229,7 @@ void DataTakingThread::run() {
         _restart = false;
         _mutex.unlock();
 
-
     } // forever
-
-
 
 
     ///////////////////////////////////////////////////////////////////////////////////

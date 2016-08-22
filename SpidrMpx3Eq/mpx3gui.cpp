@@ -275,9 +275,9 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     // Inform every module of changes in connection status
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool) ) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged() ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->dqeTab, SLOT( ConnectionStatusChanged(bool) ) );
-    connect( this, &Mpx3GUI::ConnectionStatusChanged, &Mpx3GUI::onConnectionStatusChanged );
+    connect( this, &Mpx3GUI::ConnectionStatusChanged, this, &Mpx3GUI::onConnectionStatusChanged );
 
     connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
     connect( this, &Mpx3GUI::sig_statusBarWrite, this, &Mpx3GUI::statusBarWrite );
@@ -425,9 +425,6 @@ bool Mpx3GUI::establish_connection() {
         return false; // No use in continuing if we can't connect.
     }
 
-
-
-
     // Get version numbers
     *dbg << "\n";
     *dbg << "SpidrController class: "
@@ -441,7 +438,7 @@ bool Mpx3GUI::establish_connection() {
 
     // SpidrDaq
     _spidrdaq = new SpidrDaq( spidrcontrol );
-    *dbg << "SpidrDaq: ";
+    *dbg << "SpidrDaq[" << _spidrdaq << "]";
 
     for( int i=0; i<4; ++i ) *dbg << _spidrdaq->ipAddressString( i ).c_str() << " ";
     *dbg << "\n";
@@ -928,6 +925,9 @@ QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; 
 
 void Mpx3GUI::on_actionExit_triggered()
 {
+
+    qDebug() << "exit ...";
+
     //_coreApp->exit();
 }
 
@@ -966,4 +966,35 @@ void Mpx3GUI::on_actionEqualization_triggered()
 void Mpx3GUI::on_actionScans_triggered()
 {
     _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
+}
+
+void Mpx3GUI::on_actionDisconnect_triggered(bool checked)
+{
+
+    qDebug() << "disconnecting ... " << checked;
+
+    // See if there is anything running
+
+    // Go through the process of disconnecting
+    // SpidrDaq
+    if ( _spidrdaq ) {
+        _spidrdaq->stop();
+        delete _spidrdaq;
+        _spidrdaq = nullptr;
+    }
+    // SpirdController
+    getConfig()->closeConnection();
+
+    //
+    emit ConnectionStatusChanged( checked ); // false when disconnecting
+}
+
+void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
+{
+    SpidrController * sc = config->getController();
+    int errorstat;
+    if ( sc ) {
+        qDebug() << "[INFO] Trying to hot-reset ...";
+        sc->reset( &errorstat );
+    }
 }

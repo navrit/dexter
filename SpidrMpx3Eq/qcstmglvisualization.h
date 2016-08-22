@@ -165,10 +165,10 @@ private:
     void BuildStatsStringLostFrames(uint64_t lostFrames);
     void BuildStatsStringMpx3ClockStops(uint64_t stops);
     void BuildStatsStringOverflow(bool overflow);
-
+    void FinishDataTakingThread();
 
 private slots:
-    void ConnectionStatusChanged();
+    void ConnectionStatusChanged(bool connecting);
     void on_percentileRangeRadio_toggled(bool checked);
 
     //! Gets called when the current display needs to be reloaded. Uses the layerselector combo-box to determine what layer to load.

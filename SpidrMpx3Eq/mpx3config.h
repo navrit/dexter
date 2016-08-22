@@ -73,7 +73,7 @@ public:
 private:
 
     //Spidr stuff
-    SpidrController * controller = nullptr;
+    SpidrController * _controller = nullptr;
     bool connected = false;
     QHostAddress SpidrAddress;
     uint16_t port;
@@ -102,8 +102,9 @@ public:
     bool toJsonFile(QString filename, bool includeDacs = true);
     QString getIpAddress(){return SpidrAddress.toString();}
     QString getIpAddressPortString();
-    SpidrController * getController(){return controller;}
+    SpidrController * getController(){return _controller;}
     SpidrController * establishConnection();
+    void closeConnection();
     void destroyController();
     int getDacCount() { return _dacVals[0].length(); }
     int getDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
@@ -310,7 +311,7 @@ public slots:
         }
         SendConfiguration( __maxPacketSize );
     }
-    void updateMaxPacketSize(){controller->setMaxPacketSize(MaxPacketSize);}
+    void updateMaxPacketSize(){_controller->setMaxPacketSize(MaxPacketSize);}
 
 
     void setTriggerMode(int newVal) {

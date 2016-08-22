@@ -23,7 +23,7 @@ Mpx3Config::Mpx3Config()
     _nDevicesPresent = 0;
     _trigPeriod_ms = 0;
 
-    controller = nullptr;
+    _controller = nullptr;
 
 }
 
@@ -315,15 +315,15 @@ SpidrController * Mpx3Config::establishConnection(){
     //cout << SpidrAddress.toString().toStdString() << endl;
 
     // If previously connected
-    if ( controller ) delete controller;
-    controller = new SpidrController(((ipaddr>>24) & 0xFF), ((ipaddr>>16) & 0xFF), ((ipaddr>>8) & 0xFF), ((ipaddr>>0) & 0xFF), port);
-    connected = controller->isConnected();
+    if ( _controller ) delete _controller;
+    _controller = new SpidrController(((ipaddr>>24) & 0xFF), ((ipaddr>>16) & 0xFF), ((ipaddr>>8) & 0xFF), ((ipaddr>>0) & 0xFF), port);
+    connected = _controller->isConnected();
 
     // Connection failed
-    if ( ! connected ) return controller;
+    if ( ! connected ) return _controller;
 
     // number of device that the system can support
-    controller->getDeviceCount(&_nDevicesSupported);
+    _controller->getDeviceCount(&_nDevicesSupported);
 
     //! Work around
     //! If we attempt a connection while the system is already sending data
@@ -331,7 +331,7 @@ SpidrController * Mpx3Config::establishConnection(){
     //!  or when it is close while a very long data taking has been lauched and
     //! the system failed to stop the data taking).  If this happens we ought
     //! to stop data taking, and give the system a bit of delay.
-    controller->stopAutoTrigger();
+    _controller->stopAutoTrigger();
     Sleep( 100 );
 
     // Response
@@ -341,7 +341,7 @@ SpidrController * Mpx3Config::establishConnection(){
     for(int i = 0 ; i < _nDevicesSupported ; i++) {
 
         int id = 0;
-        controller->getDeviceId(i, &id);
+        _controller->getDeviceId(i, &id);
 
         QDebug dbg(QtInfoMsg);
         dbg << "--- Device [" << i << "] ---";
@@ -431,14 +431,19 @@ SpidrController * Mpx3Config::establishConnection(){
 
     }
 
-    return controller;
+    return _controller;
+}
+
+void Mpx3Config::closeConnection()
+{
+    destroyController();
 }
 
 void Mpx3Config::destroyController()
 {
-    if ( controller != nullptr ) {
-        delete controller;
-        controller = nullptr;
+    if ( _controller != nullptr ) {
+        delete _controller;
+        _controller = nullptr;
     }
 }
 
@@ -470,7 +475,7 @@ void Mpx3Config::checkChipResponse(int devIndx, detector_response dr) {
         // For instance try to read a DAC
         int dac_val = 0;
 
-        if ( ! controller->setDac( devIndx, MPX3RX_DAC_TABLE[0].code, dac_val ) ) {
+        if ( ! _controller->setDac( devIndx, MPX3RX_DAC_TABLE[0].code, dac_val ) ) {
             //cout << "chip response failed : "  << controller->errorString();
             _responseChips[devIndx] = __NOT_RESPONDING;
         } else {

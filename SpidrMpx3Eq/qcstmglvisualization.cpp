@@ -100,7 +100,7 @@ void QCstmGLVisualization::refreshScoringInfo()
     //
     BuildStatsString();
 
-    qDebug() << "ref .. " << _score.nFramesReceived;
+    //qDebug() << "ref .. " << _score.nFramesReceived;
 
 }
 
@@ -166,6 +166,12 @@ void QCstmGLVisualization::updateETA() {
 
 }
 
+void QCstmGLVisualization::FinishDataTakingThread() {
+    if ( _dataTakingThread ) {
+        delete _dataTakingThread;
+        _dataTakingThread = nullptr;
+    }
+}
 
 void QCstmGLVisualization::StartDataTaking() {
 
@@ -525,30 +531,41 @@ pair<int, int> QCstmGLVisualization::XtoXY(int X, int dimX){
 }
 
 
-void QCstmGLVisualization::ConnectionStatusChanged() {
+void QCstmGLVisualization::ConnectionStatusChanged(bool connecting) {
 
-    ui->startButton->setEnabled(true); // Enable or disable the button depending on the connection status.
-    ui->singleshotPushButton->setEnabled(true);
-    ui->recoPushButton->setEnabled(true);
+    if ( connecting ) {
 
-    // Report the chip ID's
-    // Make space in the dataTakingGridLayout
-    QVector<int> devs = _mpx3gui->getConfig()->getActiveDevices();
-    QVector<int>::const_iterator i  = devs.begin();
-    QVector<int>::const_iterator iE = devs.end();
-    _statsString.devicesIdString.clear();
-    for ( ; i != iE ; i++ ) {
-        int indx = _mpx3gui->getConfig()->getIndexFromID( *i );
-        _statsString.devicesIdString.append( _mpx3gui->getConfig()->getDeviceWaferId( indx ) );
-        if ( (i+1) != iE ) _statsString.devicesIdString.append( " | " );
+        ui->startButton->setEnabled( true ); // Enable or disable the button depending on the connection status.
+        ui->singleshotPushButton->setEnabled( true );
+        //ui->recoPushButton->setEnabled( true );
+
+        // Report the chip ID's
+        // Make space in the dataTakingGridLayout
+        QVector<int> devs = _mpx3gui->getConfig()->getActiveDevices();
+        QVector<int>::const_iterator i  = devs.begin();
+        QVector<int>::const_iterator iE = devs.end();
+        _statsString.devicesIdString.clear();
+        for ( ; i != iE ; i++ ) {
+            int indx = _mpx3gui->getConfig()->getIndexFromID( *i );
+            _statsString.devicesIdString.append( _mpx3gui->getConfig()->getDeviceWaferId( indx ) );
+            if ( (i+1) != iE ) _statsString.devicesIdString.append( " | " );
+        }
+        if ( _extraWidgets.devicesNamesLabel == nullptr ) {
+            _extraWidgets.devicesNamesLabel = new QLabel(this);
+            _extraWidgets.devicesNamesLabel->setAlignment( Qt::AlignRight );
+        }
+        _extraWidgets.devicesNamesLabel->setText( _statsString.devicesIdString );
+        int colCount = ui->dataTakingGridLayout->columnCount();
+        ui->dataTakingGridLayout->addWidget( _extraWidgets.devicesNamesLabel, 1, 0, 1, colCount );
+
+    } else {
+
+        FinishDataTakingThread();
+        ui->startButton->setEnabled( false );
+        ui->singleshotPushButton->setEnabled( false );
+        //ui->recoPushButton->setEnabled( false );
+
     }
-    if ( _extraWidgets.devicesNamesLabel == nullptr ) {
-        _extraWidgets.devicesNamesLabel = new QLabel(this);
-        _extraWidgets.devicesNamesLabel->setAlignment( Qt::AlignRight );
-    }
-    _extraWidgets.devicesNamesLabel->setText( _statsString.devicesIdString );
-    int colCount = ui->dataTakingGridLayout->columnCount();
-    ui->dataTakingGridLayout->addWidget( _extraWidgets.devicesNamesLabel, 1, 0, 1, colCount );
 
     // TODO
     // Configure the chip, provided that the Adj mask is loaded

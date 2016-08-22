@@ -104,7 +104,8 @@ signals:
     void dataReady(int layer);
 
 
-    void scoring_sig(int, int, int, int, int, int, bool);
+    void scoring_sig(int nFramesReceived, int nFramesKept, int lost_frames,
+                     int lost_packets, int frames_count, int mpx3clock_stops, bool misaligned);
 
 };
 

@@ -502,7 +502,11 @@ void QCstmConfigMonitoring::OperationModeSwitched(int indx)
         ui->triggerLengthSpinner->setEnabled( false );
         ui->triggerDowntimeSpinner->setEnabled( false );
         ui->contRWFreq->setEnabled( true );
+
     }
+
+
+
 }
 
 void QCstmConfigMonitoring::setPixelDepthByIndex(int newValIndx)
