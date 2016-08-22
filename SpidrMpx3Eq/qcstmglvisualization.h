@@ -145,7 +145,7 @@ private slots:
     void ConnectionStatusChanged();
     void on_percentileRangeRadio_toggled(bool checked);
 
-    //! Gets called when the current display needs to be reloaded. Uses the layerselector combo-box to determine what layer to load.
+    //! Gets called when the current display needs to be reloaded. Uses the  combo-box to determine what layer to load.
     void active_frame_changed();
 
     //! Gets called when a new data range was selected in the histogram plot.
@@ -159,7 +159,7 @@ private slots:
 
     void on_summingCheckbox_toggled(bool checked);
 
-    void on_layerSelector_activated(const QString &arg1);
+
 
     void UnlockWaitingForFrame();
 
@@ -226,6 +226,7 @@ public slots:
 
     void lost_packets(int);
 
+    void on_layerSelector_activated(const QString &arg1);
 
     void fps_update(int);
     void overflow_update(int);

@@ -41,6 +41,7 @@ void QCstmDQE::SetMpx3GUI(Mpx3GUI *p){
 
     connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
     connect( this, &QCstmDQE::open_data, _mpx3gui, &Mpx3GUI::open_data_with_path);
+    connect( ui->comboBox, SIGNAL(currentIndexChanged(QString)), _mpx3gui->GetUI()->visualizationGL, SLOT(on_layerSelector_activated(QString)) );
 }
 
 void QCstmDQE::setRegion(QPoint pixel_begin, QPoint pixel_end)
@@ -120,32 +121,45 @@ void QCstmDQE::plotESF()
 //!Plots the error function  or smoothed (locally fitted) function that is fitted to the ESF data.
 void QCstmDQE::plotFitESF()
 {
-        //Add graph for the fit
+
+    int graphNr = ui->ESFplot->graphCount();
+    if(graphNr <  4){
+        //Add graph for the error function fit (if not available)
         ui->ESFplot->addGraph();
-        int graphNr = ui->ESFplot->graphCount() - 1;
         ui->ESFplot->graph(graphNr)->setPen(QPen(Qt::blue));
-        //double stepsize = 0.2; //Specify the distance between datapoints of the plot in pixels.
+        //And for the smoothing fit
+        ui->ESFplot->addGraph();
+        ui->ESFplot->graph(graphNr + 1)->setPen(QPen(Qt::magenta));
+    }
 
-        QVector<QVector<double> > fitdata;
+    graphNr = ui->ESFplot->graphCount();
 
-        if(useErrorFunc){
-            fitESFparams(_ESFdata);
+    QVector<QVector<double> > fitdata;
 
-            fitdata = calcESFfitData();
+    if(_useErrorFunc){
+        fitESFparams(_ESFdata);
 
-            if(fitdata[0].empty() || fitdata[1].empty())
-                 QMessageBox::warning ( this, tr("Error"), tr( "No fitting data could be generated." ) );
+        fitdata = calcESFfitData();
 
-        }
-        else{
-            QVector<QVector<double> > fitdata = calcSmoothedESFdata(_ESFbinData);
-        }
+        if(fitdata[0].empty() || fitdata[1].empty())
+            QMessageBox::warning ( this, tr("Error"), tr( "No fitting data could be generated." ) );
+        else _logtext += QString("Function has been fitted to the binned ESF data with \n binsize = %1 pixels\n and parameters:\n scaling = %2\n offset = %3\n a = %4\n \n").arg(_binsize).arg(_params(0, 0)).arg(_params(1,0)).arg(_params(2,0));
 
-        ui->ESFplot->graph(graphNr)->setData(fitdata[0], fitdata[1]);
-        //        ui->ESFplot->xAxis->setRange(-5., 5.);
-        //        ui->ESFplot->yAxis->setRange(-0.2, 1.2);
-        ui->ESFplot->rescaleAxes();
-        ui->ESFplot->replot( QCustomPlot::rpQueued );
+        ui->ESFplot->graph(graphNr - 2)->setData(fitdata[0], fitdata[1]);
+    }
+    else{
+        fitdata = calcSmoothedESFdata(_ESFbinData);
+        _ESFsmoothData = fitdata;
+        _logtext += QString("Smoothing 4th order polynomial function has been fitted locally to the binned ESF data with \n binsize = %1\n").arg(_binsize);
+
+        ui->ESFplot->graph(graphNr - 1)->setData(fitdata[0], fitdata[1]);
+    }
+
+
+    //        ui->ESFplot->xAxis->setRange(-5., 5.);
+    //        ui->ESFplot->yAxis->setRange(-0.2, 1.2);
+    ui->ESFplot->rescaleAxes();
+    ui->ESFplot->replot( QCustomPlot::rpQueued );
 }
 
 void QCstmDQE::plotLSF()
@@ -161,7 +175,7 @@ void QCstmDQE::plotLSF()
         //Plot data points
         //ui->LSFplot->addGraph();
 
-        _useDerFit = ui->derivCheckBox->isChecked(); //let's use the numerical derivative.
+//        _useDerFit = ui->derivCheckBox->isChecked(); //let's use the numerical derivative.
         _LSFdata = calcLSFdata();
 
         if(!_LSFdata.empty()){
@@ -189,7 +203,7 @@ void QCstmDQE::plotMTF()
 
         ui->MTFplot->rescaleAxes();
         ui->MTFplot->xAxis->setRange(0, 1.1); //Plot until the Nyquist frequency
-        ui->MTFplot->yAxis->setRange(0, 1.1);
+        ui->MTFplot->yAxis->rescale();//setRange(0, 1.1);
         ui->MTFplot->replot( QCustomPlot::rpQueued );
     }
 
@@ -427,28 +441,42 @@ QVector<QVector<double> > QCstmDQE::calcESFfitData()
 
 QVector<QVector<double> > QCstmDQE::calcSmoothedESFdata(QVector<QVector<double> > data)
 {   int i;
-    int windowW = 11; //Set window width (TO DO user option).
+    windowW = 11; //Set window width (TO DO user option).
     int offset = (windowW - 1) / 2;
     std::vector<std::pair<input_vector, double> > windowData(windowW); //vector of pairs of the variable going in and the value coming out.
     parameter_vector params;
     params = 1;
     input_vector input;
     QVector<QVector<double> > smoothData(2);
-    smoothData[0] = data[0];
-    smoothData[1].resize(data[0].length());
+    //smoothData[0] = data[0]; //No.. smoothdata is 2*offset shorter...
+    int lengthSmooth = data[0].length() - 2* offset;
+    smoothData[0].resize(lengthSmooth);
+    smoothData[1].resize(lengthSmooth);
 
-    for(i = 0; i < windowW; i++){
-        input(0) = data[0][i];       //x
-        double output = data[1][i];  //y
-        windowData.at(i) = make_pair(input, output);
-    }
+//    for(i = 0; i < windowW; i++){
+//        input(0) = data[0][i];       //x
+//        input(1) = - 0.5*(windowW - 1) + i; //Position of datapoint in array wrt middle (for weighting)
+//        double output = data[1][i];  //y
+//        windowData.at(i) = make_pair(input, output);
+//    }
 
-    for(i = offset; i < data[0].length() - offset; i++){
-        if(i > offset){
-            //Shift window by one spot.
-            windowData.erase(windowData.begin());
-            input(0) = data[0][i + offset];
-            windowData.push_back( make_pair( input , data[1][i + offset] ) );
+    for(int j = 0; j < lengthSmooth; j++){//For every point(index) to be fitted and put in smoothdata.
+//        if(i > offset){
+//            //Shift window by one spot.
+//            windowData.erase(windowData.begin());
+//            input(0) = data[0][i + offset];
+//            windowData.push_back( make_pair( input , data[1][i + offset] ) );
+//        }
+        int imiddle = j + offset;
+
+        int begin   = - 0.5*(windowW-1);
+        int end     =   0.5*(windowW-1);
+
+        for(i = begin; i <= end; i++){
+            input(0) = data[0][imiddle + i];                        //x
+            input(1) = i;                                           //Position of datapoint in array wrt middle (for weighting)
+            double output = data[1][imiddle + i];                   //y
+            windowData.at(offset + i) = make_pair(input, output);
         }
 
         //Find parameters for the fit to this window of data.
@@ -458,9 +486,10 @@ QVector<QVector<double> > QCstmDQE::calcSmoothedESFdata(QVector<QVector<double> 
                                      windowData,
                                      params);
 
-        //Use fitted polynomial to find the value yi for point xi.
-        input(0) = data[0][i];
-        smoothData[1][i] = polyModel(input, params);
+        //Use fitted polynomial to find the value yi for point ximiddle and put in smoothData.
+        input(0) = data[0][imiddle];
+        smoothData[0][j] = data[0][imiddle];
+        smoothData[1][j] = polyModel(input, params);
     }
 
     return smoothData;
@@ -475,7 +504,17 @@ double polyModel(const input_vector &input, const parameter_vector &params){ //T
 
 double polyResidual(const std::pair<input_vector, double>& data, const parameter_vector& params)
 {
-    return (model(data.first, params) - data.second); //multiply by the square root of the weighting factor.
+    return (polyModel(data.first, params) - data.second)*polyWeightRoot((data.first)); //multiply by the square root of the weighting factor.
+}
+
+double polyWeightRoot(input_vector input){
+    //Gaussian weights, (Samei et al. (1998))
+    double i = input(1);
+    double arg = 4*i/( 11 - 1);
+    arg *= - arg; //- arg2
+
+    double f = exp(arg);
+    return sqrt(f);
 }
 
 QVector<QVector<double> > QCstmDQE::calcNumDerivativeOfdata(QVector<QVector<double> > data){
@@ -527,7 +566,7 @@ QVector<QVector<double> > QCstmDQE::calcLSFdata()
     QVector<double> x(fitlength);
     QVector<double> y(fitlength);
 
-    if(_useDerFit){
+    if(_useErrorFunc && _useDerFit){
         double scaling  = _params(0, 0);
         double offset   = _params(1, 0);
         double a        = _params(2, 0);
@@ -550,15 +589,23 @@ QVector<QVector<double> > QCstmDQE::calcLSFdata()
             data.push_back(x);
             data.push_back(y);
             //return data;
+            _logtext += "A Line Spread Function has been calculated, using the fitting parameters and the derivative of the corresponding error function.\n";
+
         }
         else{
             QMessageBox::warning ( this, tr("Error"), tr( "Cannot divide by zero!" ) );
             //return data; //empty
         }
     }
-    else{ //Take derivative of the binned data..
+    else if(_useDerFit){//Take derivative of smoothed datafit.
+        data = calcNumDerivativeOfdata(_ESFsmoothData);
+        if(!data.isEmpty()) _logtext += "A Line Spread Function has been calculated, using a numerical derivative of the smoothed Edge Spread Function.\n";
+    }
+
+    else { //Take derivative of the binned data..
         data = calcNumDerivativeOfdata(_ESFbinData);
-        //TO DO: take the derivative of the smoothed bindata.
+        if(!data.isEmpty()) _logtext += "A Line Spread Function has been calculated, using a numerical derivative of the binned Edge Spread Function.\n";
+        else QMessageBox::warning ( this, tr("Error"), tr( "Something went wrong with the numerical derivative." ) );
     }
 
     //Calculate maximum value of the ESFdata and normalize to one.
@@ -899,6 +946,8 @@ void QCstmDQE::on_comboBox_currentIndexChanged(const QString &arg1)
     //int layerIndex = _mpx3gui->getDataset()->thresholdToIndex(threshold);
     setSelectedThreshold(threshold);
 
+//    _mpx3gui->GetUI()->visualizationGL->setThreshold(threshold); //connected..
+
     //Collect new dataset.
     _mpx3gui->getDataset()->collectPointsROI(threshold, _beginpix, _endpix);
     //And do everything again for this set..
@@ -992,21 +1041,22 @@ void QCstmDQE::on_mtfPushButton_clicked()
     }
     else{
         plotFitESF();
-        _logtext += QString("Function has been fitted to the binned ESF data with \n binsize = %1 pixels\n and parameters:\n scaling = %2\n offset = %3\n a = %4\n \n").arg(_binsize).arg(_params(0, 0)).arg(_params(1,0)).arg(_params(2,0));
+//        if(_useErrorFunc)_logtext += QString("Function has been fitted to the binned ESF data with \n binsize = %1 pixels\n and parameters:\n scaling = %2\n offset = %3\n a = %4\n \n").arg(_binsize).arg(_params(0, 0)).arg(_params(1,0)).arg(_params(2,0));
+//        else _logtext += QString("Smoothing 4th order polynomial function has been fitted locally to the binned ESF data with \n binsize = %1\n").arg(_binsize);
 
-        if(_params(0,0) == 0 && _params(1,0)==0 && _params(2,0)==0){
+        if(_params(0,0) == 0 && _params(1,0)==0 && _params(2,0)==0 && _useErrorFunc && _useDerFit){
             QMessageBox msgbox(QMessageBox::Warning, "Error", "No fitting parameters.",0);
             msgbox.exec();
         }
-        else if(_ESFdata.empty()) {
-            QMessageBox msgbox(QMessageBox::Warning, "Error", "No ESF data.",0);
-            msgbox.exec();
-        }
+//        else if(_ESFdata.empty()) {
+//            QMessageBox msgbox(QMessageBox::Warning, "Error", "No ESF data.",0);
+//            msgbox.exec();
+//        }
 
         else{
             plotLSF();
-            if(_useDerFit) _logtext += "A Line Spread Function has been calculated, using the fitting parameters and the derivative of the corresponding error function.\n";
-            else _logtext += "A Line Spread Function has been calculated, using a numerical derivative of the (smoothed) binned Edge Spread Function.\n";
+//            if(_useDerFit) _logtext += "A Line Spread Function has been calculated, using the fitting parameters and the derivative of the corresponding error function.\n";
+//            else _logtext += "A Line Spread Function has been calculated, using a numerical derivative of the (smoothed) binned Edge Spread Function.\n";
 
             if(_LSFdata.empty()) {
                 QMessageBox msgbox(QMessageBox::Warning, "Error", "No LSF data.",0);
@@ -1112,4 +1162,14 @@ void QCstmDQE::on_logScaleCheckBox_toggled(bool checked)
     else        ui->LSFplot->yAxis->setScaleType(QCPAxis::stLinear);
     ui->LSFplot->replot( QCustomPlot::rpQueued );
 
+}
+
+void QCstmDQE::on_derivCheckBox_toggled(bool checked)
+{
+    _useDerFit = checked;
+}
+
+void QCstmDQE::on_errorFuncCheckBox_toggled(bool checked)
+{
+    _useErrorFunc = checked;
 }

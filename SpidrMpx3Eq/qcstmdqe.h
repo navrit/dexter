@@ -22,7 +22,7 @@ double planeModel(const input_vector &input, const parameter_vector &params);   
 double planeResidual(const std::pair<input_vector, double> &data, const parameter_vector &params);   //!Calculates the residual, difference between the data value and plane model value.
 double polyModel(const input_vector &input, const parameter_vector &params);    //!The function model of a 4th order polynomial that is to be fitted to the data within a window.
 double polyResidual(const std::pair<input_vector, double> &data, const parameter_vector &params);   //!Calculates the residual, difference between the data value and polynomial model value.
-
+double polyWeightRoot(input_vector input); //!Provides the square root of the weighting factor for the fitting, to be used in polyResidual.
 
 class QCstmDQE : public QWidget
 {
@@ -42,6 +42,7 @@ public:
     //void setPlotLength(int length){_plotrange = length;}
     void clearDataAndPlots(); //!Clears all data and plots in the dqe view when new data is loaded or when a new region is selected.
     void refreshLog(bool emptylog){ if(emptylog)ui->textBrowser->clear(); else ui->textBrowser->setText(_logtext);} //!Changes or empties (when emptylog == true) the log.
+    //double polyWeightRoot(int i);
 
 private slots:
     void on_takeDataPushButton_clicked();
@@ -76,6 +77,10 @@ private slots:
 
     void on_logScaleCheckBox_toggled(bool checked);
 
+    void on_derivCheckBox_toggled(bool checked);
+
+    void on_errorFuncCheckBox_toggled(bool checked);
+
 private:
     Ui::QCstmDQE *ui;
     Mpx3GUI * _mpx3gui;
@@ -90,16 +95,17 @@ private:
     double _xstart;
     double _plotrange;
     int _currentThreshold;
+    int windowW;
 
     QStringList _NPSfilepaths;  //!Holds the filepaths of all the loaded datafiles.
     QString _logtext;   //!A QString that holds the text that is to appear in the log window.
 
     //Options
-    bool _useDerFit = true;     //! Indicates whether the LSF should be made of the theoretical derivative using the calculated parameters (true) or the numerical derivative of the (smoothed) binned data.
+    bool _useDerFit = false;     //! Indicates whether the LSF should be made of the theoretical derivative using the calculated parameters (true) or the numerical derivative of the (smoothed) binned data.
     double _binsize = 1;        //!Specifies the size of the bins to be used for the ESF data.
     double _stepsize = 0.1;     //!Specifies the distance between datapoints of the fitplot in pixels.
     double _histStep = 0.5;     //!Specifies the distance between datapoints in the LSF (in pixels)
-    bool useErrorFunc = false;
+    bool _useErrorFunc = false;
 
     //functions:
     QVector<QVector<double> > calcESFbinData();     //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.
@@ -123,7 +129,8 @@ private:
     void plotData3D(QtDataVisualization::QScatterDataArray data3D);
 
 
- signals:
+
+signals:
     void start_takingData();
     void open_data(bool, bool, QString);
 

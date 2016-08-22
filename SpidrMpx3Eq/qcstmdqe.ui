@@ -122,11 +122,11 @@
       <property name="title">
        <string>MTF</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_8">
+      <layout class="QVBoxLayout" name="verticalLayout_9">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_10">
+          <layout class="QVBoxLayout" name="verticalLayout_8">
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
@@ -164,14 +164,25 @@
             </layout>
            </item>
            <item>
-            <widget class="QCheckBox" name="derivCheckBox">
-             <property name="text">
-              <string>Derivative of fit</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QCheckBox" name="errorFuncCheckBox">
+               <property name="text">
+                <string>Error function</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="derivCheckBox">
+               <property name="text">
+                <string>Func der</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -236,7 +247,7 @@
            <item>
             <widget class="QCheckBox" name="logScaleCheckBox">
              <property name="text">
-              <string>CheckBox</string>
+              <string>Logarithmic scale</string>
              </property>
             </widget>
            </item>

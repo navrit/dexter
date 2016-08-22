@@ -14551,7 +14551,7 @@ void QCPGraph::setData(QCPDataMap *data, bool copy)
 */
 void QCPGraph::setData(const QVector<double> &key, const QVector<double> &value)
 {
-  mData->clear();
+   mData->clear();
   int n = key.size();
   n = qMin(n, value.size());
   QCPData newData;

@@ -81,7 +81,7 @@ void DataTakingThread::run() {
 
     if ( _mpx3gui->getConfig()->getOperationMode()
          == Mpx3Config::__operationMode_ContinuousRW ) {
-        spidrcontrol->startContReadout( _mpx3gui->getConfig()->getContRWFreq() );
+        //spidrcontrol->startContReadout( _mpx3gui->getConfig()->getContRWFreq() );
     } else {
         spidrcontrol->startAutoTrigger();
     }
