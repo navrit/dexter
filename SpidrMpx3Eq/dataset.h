@@ -63,6 +63,9 @@ class Dataset//TODO: specify starting corner?
 
   typedef struct {
 	  int packetsLost;
+      int framesLost;
+      bool dataMisaligned;
+      int mpx3ClockStops;
   } score_info;
 
 
@@ -181,7 +184,14 @@ public:
   bool isBorderPixel(int pixel, QSize isize); //!<Determines if the pixel is at the border (x) (assembly coordinates !)
   bool isBorderPixel(int x, int y, QSize isize); //!<Determines if the pixel is at the border (x,y) (assembly coordinates !)
   void increasePacketsLost(int val) { m_scores.packetsLost += val; }
+  void increaseFramesLost(int val) { m_scores.framesLost += val; }
+  void setDataMisaligned(bool val) { m_scores.dataMisaligned = val; }
+  void increaseMpx3ClockStops(int val) { m_scores.mpx3ClockStops += val; }
+
   int getPacketsLost() { return m_scores.packetsLost; }
+  int getFramesLost() { return m_scores.framesLost; }
+  int getMpx3ClockStops() { return m_scores.mpx3ClockStops; }
+  int isDataMisaligned(){ return m_scores.dataMisaligned; }
 
   QPoint getSize(){return QPoint(m_nx, m_ny);}
   int * getFrame(int index, int threshold); //!< returns a pointer to the data of chip index at the specified threshold.
