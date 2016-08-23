@@ -180,12 +180,17 @@ void QCstmGLVisualization::StopDataTakingThread()
 
 bool QCstmGLVisualization::DataTakingThreadIsRunning()
 {
-    return _dataTakingThread->isRunning();
+    if ( _dataTakingThread ) return _dataTakingThread->isRunning();
+    return false;
 }
 
+// Not idling means that is actively taking data or that there is
+//  no DataTakingThread at all. This has to be used in combination
+//  with DataTakingThreadIsRunning
 bool QCstmGLVisualization::DataTakingThreadIsIdling()
 {
-    return _dataTakingThread->isIdling();
+    if ( _dataTakingThread ) return _dataTakingThread->isIdling();
+    return false;
 }
 
 

@@ -47,7 +47,8 @@ bool Mpx3Config::RequiredOnGlobalConfig(Mpx3Config::config_items item)
              item == __nTriggers ||
              item == __triggerLength ||
              item == __triggerDowntime ||
-             item == __triggerMode
+             item == __triggerMode ||
+             item == __operationMode // operation mode requires trigger config too !
             );
 }
 
@@ -80,7 +81,7 @@ void Mpx3Config::SendConfiguration( config_items item ) {
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     if ( spidrcontrol == nullptr ) return;
 
-    if ( RequiredOnGlobalConfig( item ) ) {
+    if ( RequiredOnGlobalConfig( item ) && getOperationMode() == __operationMode_SequentialRW ) {
 
         // Trigger config
         int trig_mode      = getTriggerMode();       // Auto-trigger mode = 4
@@ -437,6 +438,7 @@ SpidrController * Mpx3Config::establishConnection(){
 void Mpx3Config::closeConnection()
 {
     destroyController();
+    connected = false;
 }
 
 void Mpx3Config::destroyController()
@@ -444,6 +446,7 @@ void Mpx3Config::destroyController()
     if ( _controller != nullptr ) {
         delete _controller;
         _controller = nullptr;
+
     }
 }
 

@@ -927,8 +927,6 @@ QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; 
 void Mpx3GUI::on_actionExit_triggered()
 {
 
-
-
     // Check if something is running
     if ( getVisualization()->DataTakingThreadIsRunning() ) { // This means there's a thread ongoing
 
@@ -941,6 +939,11 @@ void Mpx3GUI::on_actionExit_triggered()
         }
         // Now just kill the data taking thread
         getVisualization()->FinishDataTakingThread();
+    }
+
+    // Check if it's connected
+    if ( getConfig()->isConnected() ) {
+        on_actionDisconnect_triggered( false );
     }
 
     // Save data --> dialogue
@@ -992,9 +995,20 @@ void Mpx3GUI::on_actionScans_triggered()
 void Mpx3GUI::on_actionDisconnect_triggered(bool checked)
 {
 
-    qDebug() << "disconnecting ... " << checked;
-
     // See if there is anything running
+    // Check if something is running
+    if ( getVisualization()->DataTakingThreadIsRunning() ) { // This means there's a thread ongoing
+
+        if ( ! getVisualization()->DataTakingThreadIsIdling() ) { // actually taking data
+            getVisualization()->StopDataTakingThread();
+            QMessageBox::warning ( this,
+                                   tr("Exit - pending actions"),
+                                   tr("Attempting to disconnect while taking data.\n"
+                                      "Data taking has been stopped." ) );
+        }
+        // Now just kill the data taking thread
+        getVisualization()->FinishDataTakingThread();
+    }
 
     // Go through the process of disconnecting
     // SpidrDaq
@@ -1008,14 +1022,42 @@ void Mpx3GUI::on_actionDisconnect_triggered(bool checked)
 
     //
     emit ConnectionStatusChanged( checked ); // false when disconnecting
+
+    emit sig_statusBarAppend( "Disconnected", "red" );
 }
 
 void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
 {
+
+    QProgressDialog pd("System reset in progress ... ", "Cancel", 1, 4, this);
+    pd.setWindowModality(Qt::WindowModal);
+    pd.setMinimumDuration( 0 ); // show immediately
+    //pd.setAutoReset( false );
+    //pd.setAutoClose( false );
+
+    //pd.setWindowTitle("Reset");
+    //pd.show();
+
+    // Hot reset
+    pd.setValue( 1 );
     SpidrController * sc = config->getController();
     int errorstat;
     if ( sc ) {
         qDebug() << "[INFO] Trying to hot-reset ...";
         sc->reset( &errorstat );
+        emit sig_statusBarAppend( "reset", "black" );
     }
+
+    // Disconnect
+    pd.setValue( 2 );
+    on_actionDisconnect_triggered( false );
+
+    // Reconnnect
+    pd.setValue( 3 );
+    on_actionConnect_triggered();
+
+    // Done
+    pd.setValue( 4 );
+    //pd.close();
+
 }

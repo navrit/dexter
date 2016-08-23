@@ -210,9 +210,10 @@ void DataTakingThread::run() {
         //    spidrdaq->clearFrameData( i );
         //}
 
+        if ( ! _restart ) emit data_taking_finished( 0 );
+
         qDebug() << " ... freeze ... | goal:" << goalAchieved << " | frames:" << nFramesReceived ;
 
-        if ( ! _restart ) emit data_taking_finished( 0 );
 
         // Rewind local variables
         nFramesReceived = 0;
