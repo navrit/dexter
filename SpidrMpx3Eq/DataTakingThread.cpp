@@ -21,6 +21,7 @@ DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, QObject * parent)
     _restart = false;
     _abort = false;
     _idling = false;
+    _stop = false;
 
     _vis = static_cast<QCstmGLVisualization*>( parent );
     _mpx3gui = mpx3gui;
@@ -35,6 +36,7 @@ DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, QObject * parent)
 DataTakingThread::~DataTakingThread() {
 
     _mutex.lock();
+    _stop = false;
     _abort = true;          // will stop run as soon as possible
     _condition.wakeOne();   // wake up if sleeping
     _mutex.unlock();
@@ -50,8 +52,10 @@ void DataTakingThread::takedata() {
     QMutexLocker locker( &_mutex );
 
     if ( ! isRunning() ) {
+        _stop = false;
         start( HighestPriority );
     } else {
+        _stop = false;
         _restart = true;
         _condition.wakeOne();
     }

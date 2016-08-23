@@ -1053,17 +1053,21 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
             emit sig_statusBarAppend( "reset", "black" );
         }
 
+        // Hardware reset
+        pd.setValue( 2 );
+        sc->setSpidrReg( 0x814, 1, true);
 
         // Disconnect
-        pd.setValue( 2 );
-        on_actionDisconnect_triggered( false );
+        //pd.setValue( 2 );
+        //on_actionDisconnect_triggered( false );
+
 
         // Reconnnect
-        pd.setValue( 3 );
-        on_actionConnect_triggered();
+        //pd.setValue( 3 );
+        //on_actionConnect_triggered();
 
         // Done
-        //pd.setValue( 3 );
+        pd.setValue( 4 );
         //pd.close();
 
     }

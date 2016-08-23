@@ -260,11 +260,12 @@ void QCstmGLVisualization::StartDataTaking() {
 
         // info refresh
         _timerId = this->startTimer( 100 ); // 100 ms is a good compromise to refresh the scoreing info
+        qDebug() << "Start : " << _timerId;
 
     } else { // stop
 
         // By premature user signal !
-        data_taking_finished( 0 );
+        _dataTakingThread->stop(); // this calls by SIGNAL/SLOT the data_taking_finished
 
     }
 
@@ -533,6 +534,8 @@ void QCstmGLVisualization::ArmAndStartTimer(){
 }
 
 void QCstmGLVisualization::DestroyTimer() {
+
+    qDebug() << "Destroy : " << _timerId;
 
     // refresh scoring timer (local)
     this->killTimer( _timerId );

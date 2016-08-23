@@ -120,7 +120,7 @@
     "DetectorConfig": {
         "OperationMode" : 0,
         "ColourMode": true,
-        "LUTEnable" : false,
+        "LUTEnable" : true,
         "CsmSpm": 0,
         "DecodeFrames": true,
         "GainMode": 1,
