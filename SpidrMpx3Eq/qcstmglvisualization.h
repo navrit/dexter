@@ -108,6 +108,7 @@ public:
     void StopDataTakingThread();
     bool DataTakingThreadIsRunning();
     bool DataTakingThreadIsIdling();
+    void CalcETA();
 
 private:
 
@@ -123,6 +124,7 @@ private:
     QCPRange _percentileRangeNatural;
     bool _logyPlot = false;
     bool _infDataTaking = false;
+    unsigned int _nTriggersSave;
     bool _dropFrames = true;
 
     MTADialog * _mtadialog = nullptr;

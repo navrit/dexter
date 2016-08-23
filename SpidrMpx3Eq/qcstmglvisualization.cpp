@@ -153,7 +153,7 @@ void QCstmGLVisualization::updateETA() {
     //_estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms
     //_estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.  FIXME  to be calculated at startup
 
-    if ( _etatimer ) {
+    if ( _etatimer && ! _infDataTaking ) {
         // show eta in display
         // h must be in the range 0 to 23, m and s must be in the range 0 to 59, and ms must be in the range 0 to 999.
         QTime n(0, 0, 0);                // n == 00:00:00
@@ -162,6 +162,8 @@ void QCstmGLVisualization::updateETA() {
         if (diff > 0) t = n.addMSecs( _estimatedETA - _etatimer->elapsed() );
         QString textT = t.toString("hh:mm:ss");
         ui->etaCntr->setText( textT );
+    } else {
+        ui->etaCntr->setText( "--:--:--" );
     }
 
 }
@@ -205,6 +207,8 @@ void QCstmGLVisualization::ConfigureGUIForDataTaking() {
     ui->groupBoxConfigAndStats->setEnabled( false );
     ui->statsLabel->setEnabled( true ); // keep the stats label alive
 
+    ui->infDataTakingCheckBox->setEnabled( false );
+
 }
 
 void QCstmGLVisualization::ConfigureGUIForIdling() {
@@ -216,6 +220,21 @@ void QCstmGLVisualization::ConfigureGUIForIdling() {
     emit sig_statusBarAppend("done","blue");
 
     ui->groupBoxConfigAndStats->setEnabled( true );
+
+    ui->infDataTakingCheckBox->setEnabled( true );
+
+}
+
+void QCstmGLVisualization::CalcETA() {
+
+    if ( _mpx3gui->getConfig()->getOperationMode() == Mpx3Config::__operationMode_SequentialRW ) {
+        _estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms.
+        _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.  TODO to be calculated at startup.
+    } else {
+        double period_ms =  (1. / (double)(_mpx3gui->getConfig()->getContRWFreq())) * 1000;
+        _estimatedETA = period_ms * _mpx3gui->getConfig()->getNTriggers(); // ETA in ms.
+        _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.  TODO to be calculated at startup.
+    }
 
 }
 
@@ -230,8 +249,7 @@ void QCstmGLVisualization::StartDataTaking() {
 
         _takingData = true;
 
-        _estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms
-        _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.  FIXME  to be calculated at startup
+        CalcETA();
 
         _dataTakingThread->setFramesRequested( _mpx3gui->getConfig()->getNTriggers() );
         _dataTakingThread->takedata();
@@ -1702,7 +1720,20 @@ void QCstmGLVisualization::on_logscale(bool checked)
 
 void QCstmGLVisualization::on_infDataTakingCheckBox_toggled(bool checked)
 {
+
     _infDataTaking = checked;
+
+    if ( checked ) {
+        _nTriggersSave = _mpx3gui->getConfig()->getNTriggers();
+        // In this case configure the system for 0 triggers.  It will do for both operation modes
+        _mpx3gui->getConfig()->setNTriggers( 0 );
+        //
+        ui->nTriggersSpinBox->setEnabled( false );
+    } else {
+        _mpx3gui->getConfig()->setNTriggers( _nTriggersSave );
+        ui->nTriggersSpinBox->setEnabled( true );
+    }
+
 }
 
 

@@ -145,6 +145,9 @@ QGroupBox::title {
         </item>
         <item row="6" column="9">
          <widget class="QCheckBox" name="decodeFramesCheckbox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>Decode frames</string>
           </property>

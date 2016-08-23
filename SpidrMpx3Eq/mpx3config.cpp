@@ -133,8 +133,10 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
 
     // Number of links
     if ( item == __ALL ) spidrcontrol->setPs( deviceIndex, 3 );
-    if ( item == __ALL || item == __LUTEnable ) spidrdaq->setLutEnable( getLUTEnable() );
-
+    if ( item == __ALL || item == __LUTEnable ) {
+        spidrcontrol->setLutEnable( ! getLUTEnable() );
+        spidrdaq->setLutEnable( getLUTEnable() );
+    }
     // Reset pixel configuration
     if ( reset ) spidrcontrol->resetPixelConfig();
 
@@ -190,8 +192,10 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
 
     // Number of links
     if( item == __ALL ) spidrcontrol->setPs( deviceIndex, 3 );
-    if( item == __ALL || item == __LUTEnable ) spidrdaq->setLutEnable( getLUTEnable() );
-
+    if( item == __ALL || item == __LUTEnable ) {
+        spidrcontrol->setLutEnable( ! getLUTEnable() );
+        spidrdaq->setLutEnable( getLUTEnable() );
+    }
     // Reset pixel configuration
     if ( reset ) spidrcontrol->resetPixelConfig();
 
