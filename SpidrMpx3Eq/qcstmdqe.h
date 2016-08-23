@@ -44,46 +44,12 @@ public:
     void refreshLog(bool emptylog){ if(emptylog)ui->textBrowser->clear(); else ui->textBrowser->setText(_logtext);} //!Changes or empties (when emptylog == true) the log.
     //double polyWeightRoot(int i);
 
-private slots:
-    void on_takeDataPushButton_clicked();
 
-    void on_comboBox_currentIndexChanged(const QString &arg1);
-
-//    void on_fitESFpushButton_clicked();
-
-//    void on_fitLSFpushButton_clicked();
-
-    void on_loadDataPushButton_clicked();
-
-    void on_listWidget_currentRowChanged(int currentRow);
-
-    void on_removeDataFilePushButton_clicked();
-
-    void on_clearDataFilesPushButton_clicked();
-
-    void on_mtfPushButton_clicked();
-
-    void on_saveMTFpushButton_clicked();
-
-    void on_logClearPushButton_clicked();
-
-    void on_logSavePushButton_clicked();
-
-    void on_binSizeLineEdit_editingFinished();
-
-    void on_npsPushButton_clicked();
-
-    void ConnectionStatusChanged(bool connected);
-
-    void on_logScaleCheckBox_toggled(bool checked);
-
-    void on_derivCheckBox_toggled(bool checked);
-
-    void on_errorFuncCheckBox_toggled(bool checked);
 
 private:
     Ui::QCstmDQE *ui;
     Mpx3GUI * _mpx3gui;
+    QCPItemTracer * tracer;
     //int _currentThreshold;
     QPoint _beginpix, _endpix;
     QVector<QVector<double> > _ESFdata; //Contains a vector for the distances and one for the pixel values of the esf data.
@@ -128,7 +94,46 @@ private:
     parameter_vector fitPlaneParams(QVector<QVector<int> > dataROI);
     void plotData3D(QtDataVisualization::QScatterDataArray data3D);
 
+private slots:
+    void on_takeDataPushButton_clicked();
 
+    void on_comboBox_currentIndexChanged(const QString &arg1);
+
+//    void on_fitESFpushButton_clicked();
+
+//    void on_fitLSFpushButton_clicked();
+
+    void on_loadDataPushButton_clicked();
+
+    void on_listWidget_currentRowChanged(int currentRow);
+
+    void on_removeDataFilePushButton_clicked();
+
+    void on_clearDataFilesPushButton_clicked();
+
+    void on_mtfPushButton_clicked();
+
+    void on_saveMTFpushButton_clicked();
+
+    void on_logClearPushButton_clicked();
+
+    void on_logSavePushButton_clicked();
+
+    void on_binSizeLineEdit_editingFinished();
+
+    void on_npsPushButton_clicked();
+
+    void ConnectionStatusChanged(bool connected);
+
+    void on_logScaleCheckBox_toggled(bool checked);
+
+    void on_derivCheckBox_toggled(bool checked);
+
+    void on_errorFuncCheckBox_toggled(bool checked);
+
+    void on_mouseMove_showPlotPoint(QMouseEvent * event);
+
+//    void on_mouseClick_showPlotPoint(QMouseEvent * event);
 
 signals:
     void start_takingData();

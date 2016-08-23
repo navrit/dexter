@@ -30,6 +30,25 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
 
 //    connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
 //    connect( this, &QCstmDQE::open_data, _mpx3gui, &Mpx3GUI::open_data_with_path);
+
+
+    connect( ui->ESFplot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
+    connect( ui->LSFplot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
+    connect( ui->MTFplot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
+
+    //Tracer.. doesn't move. TO DO: fix
+//    connect( ui->LSFplot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(on_mouseClick_showPlotPoint(QMouseEvent*)) );
+
+//    tracer = new QCPItemTracer(ui->LSFplot);
+//    tracer->setGraph(ui->LSFplot->graph(0));
+//    tracer->setGraphKey(0.0);
+//    tracer->setInterpolating(false);
+//    tracer->setStyle(QCPItemTracer::tsCircle);
+//    tracer->setPen(QPen(Qt::red));
+//    tracer->setBrush(Qt::red);
+//    tracer->setSize(7);
+//    ui->LSFplot->addItem(tracer);
+
 }
 
 QCstmDQE::~QCstmDQE()
@@ -106,10 +125,10 @@ void QCstmDQE::plotESF()
         ui->ESFplot->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::white, 5));
         ui->ESFplot->graph(1)->setErrorType(QCPGraph::etValue);
 
-        ui->ESFplot->graph(0)->setData(_ESFdata[0], _ESFdata[1]);
+//        ui->ESFplot->graph(0)->setData(_ESFdata[0], _ESFdata[1]);
         ui->ESFplot->graph(1)->setDataValueError(_ESFbinData[0], _ESFbinData[1], _ESFbinData[2]);
 
-        ui->ESFplot->yAxis->rescale();
+        ui->ESFplot->yAxis->rescale();         
         ui->ESFplot->replot( QCustomPlot::rpQueued );
     }
     else{
@@ -143,14 +162,14 @@ void QCstmDQE::plotFitESF()
 
         if(fitdata[0].empty() || fitdata[1].empty())
             QMessageBox::warning ( this, tr("Error"), tr( "No fitting data could be generated." ) );
-        else _logtext += QString("Function has been fitted to the binned ESF data with \n binsize = %1 pixels\n and parameters:\n scaling = %2\n offset = %3\n a = %4\n \n").arg(_binsize).arg(_params(0, 0)).arg(_params(1,0)).arg(_params(2,0));
+        else _logtext += QString("Error function fitted to binned ESF data with \n binsize = %1 pixels\n and parameters:\n scaling = %2\n offset = %3\n a = %4\n \n").arg(_binsize).arg(_params(0, 0)).arg(_params(1,0)).arg(_params(2,0));
 
         ui->ESFplot->graph(graphNr - 2)->setData(fitdata[0], fitdata[1]);
     }
     else{
         fitdata = calcSmoothedESFdata(_ESFbinData);
         _ESFsmoothData = fitdata;
-        _logtext += QString("Smoothing 4th order polynomial function has been fitted locally to the binned ESF data with \n binsize = %1\n").arg(_binsize);
+        _logtext += QString("Smoothing 4th order polynomial function fitted to binned ESF data with \n binsize = %1\n").arg(_binsize);
 
         ui->ESFplot->graph(graphNr - 1)->setData(fitdata[0], fitdata[1]);
     }
@@ -164,28 +183,31 @@ void QCstmDQE::plotFitESF()
 
 void QCstmDQE::plotLSF()
 {
-        //if(ui->LSFplot->graphCount() != 0)
-            ui->LSFplot->clearGraphs();
-        ui->LSFplot->addGraph();
+    //if(ui->LSFplot->graphCount() != 0)
+    ui->LSFplot->clearGraphs();
+    ui->LSFplot->addGraph();
 
-        ui->LSFplot->xAxis->setRange(_beginpix.x(), _endpix.x());
+    ui->LSFplot->xAxis->setRange(_beginpix.x(), _endpix.x());
 
-        ui->LSFplot->graph(0)->setLineStyle(QCPGraph::lsStepLeft);
-
+    ui->LSFplot->graph(0)->setLineStyle(QCPGraph::lsStepCenter);
+//        ui->LSFplot->graph(0)->setScatterStyle(QCPGraph::);
+    ui->LSFplot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::white, 5));
         //Plot data points
         //ui->LSFplot->addGraph();
 
 //        _useDerFit = ui->derivCheckBox->isChecked(); //let's use the numerical derivative.
-        _LSFdata = calcLSFdata();
+    _LSFdata = calcLSFdata();
 
-        if(!_LSFdata.empty()){
-            ui->LSFplot->graph(0)->setData(_LSFdata[0], _LSFdata[1]);
-            if (ui->logScaleCheckBox->isChecked()) ui->LSFplot->yAxis->setScaleType(QCPAxis::stLogarithmic);
-            ui->LSFplot->rescaleAxes();
-            //ui->LSFplot->xAxis->setRange(-5, 5);
-            ui->LSFplot->replot( QCustomPlot::rpQueued );
-        }
-        else  QMessageBox::warning ( this, tr("Error"), tr( "No LSF data!" ) );
+    if(!_LSFdata.empty()){
+        ui->LSFplot->graph(0)->setData(_LSFdata[0], _LSFdata[1]);
+        if (ui->logScaleCheckBox->isChecked()) ui->LSFplot->yAxis->setScaleType(QCPAxis::stLogarithmic);
+        ui->LSFplot->rescaleAxes();
+        //ui->LSFplot->xAxis->setRange(-5, 5);
+        ui->LSFplot->replot( QCustomPlot::rpQueued );
+    }
+    else  QMessageBox::warning ( this, tr("Error"), tr( "No LSF data!" ) );
+
+
 }
 
 
@@ -523,18 +545,20 @@ QVector<QVector<double> > QCstmDQE::calcNumDerivativeOfdata(QVector<QVector<doub
 
     QVector<QVector<double> > derData(2);
 
-    double bw = _binsize;
-    int offset = 2*bw;
+//    double bw = _binsize;
+//    int offset = 2*bw; //5point
+    int offset = 1; //3point
     length -= 2*offset;
 
     for(int i = 0; i < derData.length(); i++){
         derData[i].resize(length);
     }
 
-    for(int i = 1; i < length - 1; i++){//int i = offset; i < length - offset; i++){
-        derData[0][i] = data[0][i];
+    for(int i = 0; i < length; i++){
+        int j = i + offset;
+        derData[0][i] = data[0][j];
         //derData[1][i] = FivePointsStencil(data[1], i, bw);
-        derData[1][i] = 0.5 * (data[1][i+1] - data[1][i-1]); //3-point difference equation
+        derData[1][i] = (data[1][j+1] - data[1][j-1])/(2*_binsize); //3-point difference equation
     }
 
     return derData;
@@ -589,7 +613,7 @@ QVector<QVector<double> > QCstmDQE::calcLSFdata()
             data.push_back(x);
             data.push_back(y);
             //return data;
-            _logtext += "A Line Spread Function has been calculated, using the fitting parameters and the derivative of the corresponding error function.\n";
+            _logtext += "LSF calculated using fitting parameters and derivative of corresponding Error function.\n";
 
         }
         else{
@@ -599,12 +623,12 @@ QVector<QVector<double> > QCstmDQE::calcLSFdata()
     }
     else if(_useDerFit){//Take derivative of smoothed datafit.
         data = calcNumDerivativeOfdata(_ESFsmoothData);
-        if(!data.isEmpty()) _logtext += "A Line Spread Function has been calculated, using a numerical derivative of the smoothed Edge Spread Function.\n";
+        if(!data.isEmpty()) _logtext += "LSF calculated using numerical derivative of the Smoothed ESF.\n";
     }
 
     else { //Take derivative of the binned data..
         data = calcNumDerivativeOfdata(_ESFbinData);
-        if(!data.isEmpty()) _logtext += "A Line Spread Function has been calculated, using a numerical derivative of the binned Edge Spread Function.\n";
+        if(!data.isEmpty()) _logtext += "LSF calculated, using numerical derivative of the Binned ESF.\n";
         else QMessageBox::warning ( this, tr("Error"), tr( "Something went wrong with the numerical derivative." ) );
     }
 
@@ -980,12 +1004,13 @@ void QCstmDQE::on_comboBox_currentIndexChanged(const QString &arg1)
 
 void QCstmDQE::on_loadDataPushButton_clicked()
 {
-    _NPSfilepaths = QFileDialog::getOpenFileNames(this, tr("Read Data"), tr("."), tr("binary files (*.bin)") );
+    QStringList filepaths = QFileDialog::getOpenFileNames(this, tr("Read Data"), tr("."), tr("binary files (*.bin)") );
     QString filepath;
 
-    for(int i = 0; i < _NPSfilepaths.length(); i++){
-        filepath = _NPSfilepaths[i];
+    for(int i = 0; i < filepaths.length(); i++){
+        filepath = filepaths[i];
         if(!filepath.isNull()){
+            _NPSfilepaths += filepath;
             if(i==0) emit open_data(false, true, filepath);
 
             QStringList split = filepath.split('/');
@@ -1064,14 +1089,14 @@ void QCstmDQE::on_mtfPushButton_clicked()
             }
             else{
                 plotMTF();
-                _logtext += "\nThe Modulation Transfer Function has been calculated by taking the Fast Fourier Transform of the calculated LSF.\n";
+                _logtext += "MTF calculated by Fast Fourier Transform of the calculated LSF.\n";
                 //TO DO:..?
             }
 
         }
 
     }
-
+    _logtext += "\n";
     refreshLog(false);
 }
 
@@ -1172,4 +1197,24 @@ void QCstmDQE::on_derivCheckBox_toggled(bool checked)
 void QCstmDQE::on_errorFuncCheckBox_toggled(bool checked)
 {
     _useErrorFunc = checked;
+}
+
+//void QCstmDQE::on_mouseClick_showPlotPoint(QMouseEvent *event)
+//{
+//    double x = ui->LSFplot->xAxis->pixelToCoord(event->pos().x());
+//    tracer->setGraphKey(x);
+
+//    tracer->updatePosition();
+//    ui->LSFplot->replot( QCustomPlot::rpQueued );
+//}
+
+void QCstmDQE::on_mouseMove_showPlotPoint(QMouseEvent *event)
+{
+    QCustomPlot* plot = qobject_cast<QCustomPlot*>(sender());
+//    int x = ui->LSFplot->xAxis->pixelToCoord(event->pos().x());
+//    int y = ui->LSFplot->yAxis->pixelToCoord(event->pos().y());
+    double x = plot->xAxis->pixelToCoord(event->pos().x());
+    double y = plot->yAxis->pixelToCoord(event->pos().y());
+
+    ui->pointLabel->setText(QString("(%1 , %2)").arg(x).arg(y));
 }
