@@ -255,7 +255,6 @@ void Mpx3GUI::setTestPulses() {
 
     }
 
-
 }
 
 void Mpx3GUI::SetupSignalsAndSlots(){
@@ -929,17 +928,29 @@ void Mpx3GUI::on_actionExit_triggered()
 {
 
 
-    // Stop data taking
-    getVisualization()->StopDataTakingThread();
 
-    getVisualization()->FinishDataTakingThread();
+    // Check if something is running
+    if ( getVisualization()->DataTakingThreadIsRunning() ) { // This means there's a thread ongoing
 
-    // Wait until it is done !
+        if ( ! getVisualization()->DataTakingThreadIsIdling() ) { // actually taking data
+            getVisualization()->StopDataTakingThread();
+            QMessageBox::warning ( this,
+                                   tr("Exit - pending actions"),
+                                   tr("Attempting to exit while taking data.\n"
+                                      "Data taking has been stopped." ) );
+        }
+        // Now just kill the data taking thread
+        getVisualization()->FinishDataTakingThread();
+    }
 
-    // Save data if any --> dialogue
+    // Save data --> dialogue
+    save_data();
 
     emit exitApp( 0 );
 }
+
+//void Mpx3GUI::
+
 
 void Mpx3GUI::on_actionConnect_triggered() {
 

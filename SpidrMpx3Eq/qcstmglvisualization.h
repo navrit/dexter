@@ -106,6 +106,8 @@ public:
 
     void FinishDataTakingThread();
     void StopDataTakingThread();
+    bool DataTakingThreadIsRunning();
+    bool DataTakingThreadIsIdling();
 
 private:
 

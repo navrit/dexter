@@ -175,9 +175,18 @@ void QCstmGLVisualization::FinishDataTakingThread() {
 
 void QCstmGLVisualization::StopDataTakingThread()
 {
-    _dataTakingThread->stop();
+    if ( _dataTakingThread ) _dataTakingThread->stop();
 }
 
+bool QCstmGLVisualization::DataTakingThreadIsRunning()
+{
+    return _dataTakingThread->isRunning();
+}
+
+bool QCstmGLVisualization::DataTakingThreadIsIdling()
+{
+    return _dataTakingThread->isIdling();
+}
 
 
 void QCstmGLVisualization::ConfigureGUIForDataTaking() {

@@ -43,6 +43,7 @@ public:
     } datataking_score_info;
 
     //datataking_score_info getScoreInfo() { return _score; }
+    bool isIdling(){ return _idling; }
     void rewindScoring();
     void stop() { _stop = true; }
     bool isACompleteJob() { return _score.tocomplete; }
@@ -70,6 +71,7 @@ private:
     QWaitCondition _condition;
     bool _restart;
     bool _abort;
+    bool _idling;
 
     Mpx3GUI * _mpx3gui;
     QCstmGLVisualization * _vis;

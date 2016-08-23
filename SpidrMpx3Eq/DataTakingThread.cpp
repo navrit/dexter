@@ -20,6 +20,7 @@ DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, QObject * parent)
 
     _restart = false;
     _abort = false;
+    _idling = false;
 
     _vis = static_cast<QCstmGLVisualization*>( parent );
     _mpx3gui = mpx3gui;
@@ -220,7 +221,11 @@ void DataTakingThread::run() {
 
         // Put the thread to wait
         _mutex.lock();
-        if ( !_restart ) _condition.wait( &_mutex );
+        if ( !_restart ) {
+            _idling = true;
+            _condition.wait( &_mutex );
+        }
+        _idling = false;
         _restart = false;
         _mutex.unlock();
 
