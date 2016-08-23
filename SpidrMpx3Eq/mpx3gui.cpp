@@ -1029,35 +1029,43 @@ void Mpx3GUI::on_actionDisconnect_triggered(bool checked)
 void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
 {
 
-    QProgressDialog pd("System reset in progress ... ", "Cancel", 1, 4, this);
-    pd.setWindowModality(Qt::WindowModal);
-    pd.setMinimumDuration( 0 ); // show immediately
-    //pd.setAutoReset( false );
-    //pd.setAutoClose( false );
+    if ( getConfig()->isConnected() ) {
 
-    //pd.setWindowTitle("Reset");
-    //pd.show();
+        QProgressDialog pd("System reset in progress ... ", "Cancel", 0, 4, this);
+        pd.setCancelButton( 0 ); // no cancel button
+        pd.setWindowModality(Qt::WindowModal);
+        pd.setMinimumDuration( 0 ); // show immediately
+        pd.setWindowTitle("Reset");
+        //pd.setAutoReset( false );
+        //pd.setAutoClose( false );
 
-    // Hot reset
-    pd.setValue( 1 );
-    SpidrController * sc = config->getController();
-    int errorstat;
-    if ( sc ) {
-        qDebug() << "[INFO] Trying to hot-reset ...";
-        sc->reset( &errorstat );
-        emit sig_statusBarAppend( "reset", "black" );
+        //pd.setWindowTitle("Reset");
+        //pd.show();
+
+        // Hot reset
+        pd.setValue( 0 );
+        SpidrController * sc = config->getController();
+        int errorstat;
+        if ( sc ) {
+            pd.setValue( 1 );
+            qDebug() << "[INFO] Trying to hot-reset ...";
+            sc->reset( &errorstat );
+            emit sig_statusBarAppend( "reset", "black" );
+        }
+
+
+        // Disconnect
+        pd.setValue( 2 );
+        on_actionDisconnect_triggered( false );
+
+        // Reconnnect
+        pd.setValue( 3 );
+        on_actionConnect_triggered();
+
+        // Done
+        //pd.setValue( 3 );
+        //pd.close();
+
     }
-
-    // Disconnect
-    pd.setValue( 2 );
-    on_actionDisconnect_triggered( false );
-
-    // Reconnnect
-    pd.setValue( 3 );
-    on_actionConnect_triggered();
-
-    // Done
-    pd.setValue( 4 );
-    //pd.close();
 
 }

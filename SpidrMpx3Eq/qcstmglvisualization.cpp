@@ -31,7 +31,7 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     _dataTakingThread = 0x0;
 
     FreeBusyState();
-    _takingData = false; // important for offline work
+    _takingData = false;
 
     _busyDrawing = false;
     _etatimer = 0x0;
@@ -226,20 +226,29 @@ void QCstmGLVisualization::StartDataTaking() {
         _dataTakingThread->ConnectToHardware();
     }
 
-    _estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms
-    _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.  FIXME  to be calculated at startup
+    if ( ! _takingData ) { // new data
 
-    _dataTakingThread->setFramesRequested( _mpx3gui->getConfig()->getNTriggers() );
-    _dataTakingThread->takedata();
-    ArmAndStartTimer();
+        _takingData = true;
 
-    // GUI
-    ConfigureGUIForDataTaking();
+        _estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms
+        _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.  FIXME  to be calculated at startup
 
+        _dataTakingThread->setFramesRequested( _mpx3gui->getConfig()->getNTriggers() );
+        _dataTakingThread->takedata();
+        ArmAndStartTimer();
 
-    // info refresh
-    _timerId = this->startTimer( 100 ); // 100 ms is a good compromise to refresh the scoreing info
+        // GUI
+        ConfigureGUIForDataTaking();
 
+        // info refresh
+        _timerId = this->startTimer( 100 ); // 100 ms is a good compromise to refresh the scoreing info
+
+    } else { // stop
+
+        // By premature user signal !
+        data_taking_finished( 0 );
+
+    }
 
     /*
     // The Start button becomes the Stop button
@@ -415,6 +424,8 @@ void QCstmGLVisualization::initStatsString()
 }
 
 void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
+
+    _takingData = false;
 
     DestroyTimer();
     ETAToZero();
@@ -692,9 +703,9 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 
     // DataTaking / idling actions
     connect( this, &QCstmGLVisualization::taking_data_gui,
-            _mpx3gui->getConfigMonitoring(), &QCstmConfigMonitoring::on_taking_data_gui );
+             _mpx3gui->getConfigMonitoring(), &QCstmConfigMonitoring::on_taking_data_gui );
     connect( this, &QCstmGLVisualization::idling_gui,
-            _mpx3gui->getConfigMonitoring(), &QCstmConfigMonitoring::on_idling_gui );
+             _mpx3gui->getConfigMonitoring(), &QCstmConfigMonitoring::on_idling_gui );
 
 
     // Defaults
