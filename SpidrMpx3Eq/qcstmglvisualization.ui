@@ -301,6 +301,9 @@
             </item>
             <item row="0" column="7">
              <widget class="QPushButton" name="recoPushButton">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="toolTip">
                <string>magic !</string>
               </property>

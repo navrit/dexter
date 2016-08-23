@@ -168,6 +168,8 @@ signals:
     void sig_statusBarWrite(QString mess, QString colorString);
     void sig_statusBarClean();
 
+    void exitApp(int);
+
 public slots:
     void on_shortcutsSwithPages();
     void generateFrame(); //Debugging function to generate data when not connected
@@ -201,6 +203,8 @@ private slots:
     void on_actionDACs_triggered();
     void on_actionEqualization_triggered();
     void on_actionScans_triggered();
+    void on_actionDisconnect_triggered(bool checked);
+    void on_actionDefibrillator_triggered(bool checked);
 };
 
 

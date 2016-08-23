@@ -26,7 +26,9 @@ int main(int argc, char *argv[])
     w.show();
 
     QObject::connect( &a, &QApplication::applicationStateChanged,
-             &w, &Mpx3GUI::on_applicationStateChanged);
+                      &w, &Mpx3GUI::on_applicationStateChanged);
+    QObject::connect( &w, &Mpx3GUI::exitApp,
+                      &a, &QApplication::exit);
 
     //qRegisterMetaType<QVector<int> >("QVector<int>");
 

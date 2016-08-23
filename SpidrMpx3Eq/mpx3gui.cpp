@@ -88,6 +88,8 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
         emit availible_gradients_changed(gradientNames);
 
     }
+    //_ui->visualizationGL->ConfigureGUIForIdling();
+
     // Prepare THL Calibration
     _ui->ThresholdTab->SetMpx3GUI(this);
 
@@ -252,7 +254,6 @@ void Mpx3GUI::setTestPulses() {
 
     }
 
-
 }
 
 void Mpx3GUI::SetupSignalsAndSlots(){
@@ -274,9 +275,9 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     // Inform every module of changes in connection status
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool) ) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged() ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->dqeTab, SLOT( ConnectionStatusChanged(bool) ) );
-    connect( this, &Mpx3GUI::ConnectionStatusChanged, &Mpx3GUI::onConnectionStatusChanged );
+    connect( this, &Mpx3GUI::ConnectionStatusChanged, this, &Mpx3GUI::onConnectionStatusChanged );
 
     connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
     connect( this, &Mpx3GUI::sig_statusBarWrite, this, &Mpx3GUI::statusBarWrite );
@@ -433,9 +434,6 @@ bool Mpx3GUI::establish_connection() {
         return false; // No use in continuing if we can't connect.
     }
 
-
-
-
     // Get version numbers
     *dbg << "\n";
     *dbg << "SpidrController class: "
@@ -449,7 +447,7 @@ bool Mpx3GUI::establish_connection() {
 
     // SpidrDaq
     _spidrdaq = new SpidrDaq( spidrcontrol );
-    *dbg << "SpidrDaq: ";
+    *dbg << "SpidrDaq[" << _spidrdaq << "]";
 
     for( int i=0; i<4; ++i ) *dbg << _spidrdaq->ipAddressString( i ).c_str() << " ";
     *dbg << "\n";
@@ -934,8 +932,34 @@ QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; 
 
 void Mpx3GUI::on_actionExit_triggered()
 {
-    //_coreApp->exit();
+
+    // Check if something is running
+    if ( getVisualization()->DataTakingThreadIsRunning() ) { // This means there's a thread ongoing
+
+        if ( ! getVisualization()->DataTakingThreadIsIdling() ) { // actually taking data
+            getVisualization()->StopDataTakingThread();
+            QMessageBox::warning ( this,
+                                   tr("Exit - pending actions"),
+                                   tr("Attempting to exit while taking data.\n"
+                                      "Data taking has been stopped." ) );
+        }
+        // Now just kill the data taking thread
+        getVisualization()->FinishDataTakingThread();
+    }
+
+    // Check if it's connected
+    if ( getConfig()->isConnected() ) {
+        on_actionDisconnect_triggered( false );
+    }
+
+    // Save data --> dialogue
+    save_data();
+
+    emit exitApp( 0 );
 }
+
+//void Mpx3GUI::
+
 
 void Mpx3GUI::on_actionConnect_triggered() {
 
@@ -972,4 +996,86 @@ void Mpx3GUI::on_actionEqualization_triggered()
 void Mpx3GUI::on_actionScans_triggered()
 {
     _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
+}
+
+void Mpx3GUI::on_actionDisconnect_triggered(bool checked)
+{
+
+    // See if there is anything running
+    // Check if something is running
+    if ( getVisualization()->DataTakingThreadIsRunning() ) { // This means there's a thread ongoing
+
+        if ( ! getVisualization()->DataTakingThreadIsIdling() ) { // actually taking data
+            getVisualization()->StopDataTakingThread();
+            QMessageBox::warning ( this,
+                                   tr("Exit - pending actions"),
+                                   tr("Attempting to disconnect while taking data.\n"
+                                      "Data taking has been stopped." ) );
+        }
+        // Now just kill the data taking thread
+        getVisualization()->FinishDataTakingThread();
+    }
+
+    // Go through the process of disconnecting
+    // SpidrDaq
+    if ( _spidrdaq ) {
+        _spidrdaq->stop();
+        delete _spidrdaq;
+        _spidrdaq = nullptr;
+    }
+    // SpirdController
+    getConfig()->closeConnection();
+
+    //
+    emit ConnectionStatusChanged( checked ); // false when disconnecting
+
+    emit sig_statusBarAppend( "Disconnected", "red" );
+}
+
+void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
+{
+
+    if ( getConfig()->isConnected() ) {
+
+        QProgressDialog pd("System reset in progress ... ", "Cancel", 0, 4, this);
+        pd.setCancelButton( 0 ); // no cancel button
+        pd.setWindowModality(Qt::WindowModal);
+        pd.setMinimumDuration( 0 ); // show immediately
+        pd.setWindowTitle("Reset");
+        //pd.setAutoReset( false );
+        //pd.setAutoClose( false );
+
+        //pd.setWindowTitle("Reset");
+        //pd.show();
+
+        // Hot reset
+        pd.setValue( 0 );
+        SpidrController * sc = config->getController();
+        int errorstat;
+        if ( sc ) {
+            pd.setValue( 1 );
+            qDebug() << "[INFO] Trying to hot-reset ...";
+            sc->reset( &errorstat );
+            emit sig_statusBarAppend( "reset", "black" );
+        }
+
+        // Hardware reset
+        pd.setValue( 2 );
+        sc->setSpidrReg( 0x814, 1, true);
+
+        // Disconnect
+        //pd.setValue( 2 );
+        //on_actionDisconnect_triggered( false );
+
+
+        // Reconnnect
+        //pd.setValue( 3 );
+        //on_actionConnect_triggered();
+
+        // Done
+        pd.setValue( 4 );
+        //pd.close();
+
+    }
+
 }

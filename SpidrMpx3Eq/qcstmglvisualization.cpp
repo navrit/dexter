@@ -31,11 +31,9 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     _dataTakingThread = 0x0;
 
     FreeBusyState();
-    _takingData = false; // important for offline work
+    _takingData = false;
 
     _busyDrawing = false;
-    // By default don't drop frames
-    ui->dropFramesCheckBox->setChecked( false );
     _etatimer = 0x0;
     _timer = 0x0;
     _estimatedETA = 0;
@@ -43,13 +41,10 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     // Defaults from GUI
     ui->dropFramesCheckBox->setChecked( true );
     ui->summingCheckbox->setChecked( true );
+    _dropFrames = true;
 
     // Range selection on histogram. Init values
-    _manualRange = QCPRange( 0, 0 ); // No image loaded yet.
-    _manualRangeSave = _manualRange;
-    _percentileRange = QCPRange( 0.025, 0.975 ); // These instead are reasonable percentile cuts
-    _percentileRangeNatural =  QCPRange( 0, 0 );
-    setRangeSpinBoxesPercentile();
+    rewindHistoLimits();
 
     // Log Scale for histogram
     connect(ui->logCheckBox, SIGNAL(clicked(bool)), this, SLOT(on_logscale(bool)));
@@ -60,10 +55,74 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     // Stats string
     clearStatsString();
 
+    // Initial stretch of the splitter.  Give more space to visualization Matrix
+    ui->splitter->setStretchFactor(0, 3);
+    ui->splitter->setStretchFactor(1, 1);
+
 }
 
 QCstmGLVisualization::~QCstmGLVisualization() {
     delete ui;
+}
+
+
+
+void QCstmGLVisualization::timerEvent(QTimerEvent *)
+{
+    refreshScoringInfo();
+}
+
+void QCstmGLVisualization::refreshScoringInfo()
+{
+
+    updateETA();
+
+    // Progress
+    int nTriggers = _mpx3gui->getConfig()->getNTriggers();
+    QString prog;
+    if ( nTriggers > 0 ) prog = QString("%1/%2").arg( _score.nFramesKept ).arg( nTriggers );
+    else prog = QString("%1").arg( _score.nFramesKept ); // nTriggers=0 is keep taking data forever
+    ui->frameCntr->setText( prog );
+
+    // Fps
+    double fpsVal = ((double)_score.nFramesReceived) / ((double)_etatimer->elapsed() / 1000.); // elapsed() comes in milliseconds
+    QString fpsS = QString::number( round( fpsVal ) , 'd', 0 );
+    fpsS += " fps";
+    ui->fpsLabel->setText( fpsS );
+
+    //
+    BuildStatsStringLostFrames( _score.lostFrames );
+
+    //
+    BuildStatsStringLostPackets( _score.lostPackets );
+
+
+    //
+    BuildStatsString();
+
+    //qDebug() << "ref .. " << _score.nFramesReceived;
+
+}
+
+void QCstmGLVisualization::rewindScoring()
+{
+    _score.nFramesReceived = 0;
+    _score.nFramesKept = 0;
+    _score.lostFrames = 0;
+    _score.lostPackets = 0;
+    _score.framesCount = 0;
+    _score.mpx3clock_stops = 0;
+    _score.dataMisaligned = false;
+
+}
+
+void QCstmGLVisualization::rewindHistoLimits() {
+    _manualRange = QCPRange( 0, 0 ); // No image loaded yet.
+    _manualRangeSave = _manualRange;
+    _manualRangePicked = false;
+    _percentileRange = QCPRange( 0.025, 0.975 ); // These instead are reasonable percentile cuts
+    _percentileRangeNatural =  QCPRange( 0, 0 );
+    setRangeSpinBoxesPercentile();
 }
 
 void QCstmGLVisualization::SetBusyState() {
@@ -80,9 +139,12 @@ void QCstmGLVisualization::FreeBusyState() {
 
 }
 
+bool QCstmGLVisualization::isBusyDrawing() {
+    return  _busyDrawing;
+}
 
 void QCstmGLVisualization::UnlockWaitingForFrame() {
-    cout << "..." << endl;
+    qDebug() << "QCstmGLVisualization::UnlockWaitingForFrame ...";
 }
 
 void QCstmGLVisualization::updateETA() {
@@ -91,20 +153,123 @@ void QCstmGLVisualization::updateETA() {
     //_estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms
     //_estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.  FIXME  to be calculated at startup
 
-    // show eta in display
-    // h must be in the range 0 to 23, m and s must be in the range 0 to 59, and ms must be in the range 0 to 999.
-    QTime n(0, 0, 0);                // n == 00:00:00
-    QTime t(0, 0, 0);
-    int diff = _estimatedETA - _etatimer->elapsed();
-    if (diff > 0) t = n.addMSecs( _estimatedETA - _etatimer->elapsed() );
-    QString textT = t.toString("hh:mm:ss");
-    ui->etaCntr->setText( textT );
+    if ( _etatimer && ! _infDataTaking ) {
+        // show eta in display
+        // h must be in the range 0 to 23, m and s must be in the range 0 to 59, and ms must be in the range 0 to 999.
+        QTime n(0, 0, 0);                // n == 00:00:00
+        QTime t(0, 0, 0);
+        int diff = _estimatedETA - _etatimer->elapsed();
+        if (diff > 0) t = n.addMSecs( _estimatedETA - _etatimer->elapsed() );
+        QString textT = t.toString("hh:mm:ss");
+        ui->etaCntr->setText( textT );
+    } else {
+        ui->etaCntr->setText( "--:--:--" );
+    }
 
 }
 
+void QCstmGLVisualization::FinishDataTakingThread() {
+    if ( _dataTakingThread ) {
+        delete _dataTakingThread;
+        _dataTakingThread = nullptr;
+    }
+}
+
+void QCstmGLVisualization::StopDataTakingThread()
+{
+    if ( _dataTakingThread ) _dataTakingThread->stop();
+}
+
+bool QCstmGLVisualization::DataTakingThreadIsRunning()
+{
+    if ( _dataTakingThread ) return _dataTakingThread->isRunning();
+    return false;
+}
+
+// Not idling means that is actively taking data or that there is
+//  no DataTakingThread at all. This has to be used in combination
+//  with DataTakingThreadIsRunning
+bool QCstmGLVisualization::DataTakingThreadIsIdling()
+{
+    if ( _dataTakingThread ) return _dataTakingThread->isIdling();
+    return false;
+}
+
+
+void QCstmGLVisualization::ConfigureGUIForDataTaking() {
+
+    emit taking_data_gui();
+
+    ui->startButton->setText( "Stop" );
+    ui->singleshotPushButton->setText( "Stop" );
+    emit sig_statusBarAppend("start","blue");
+
+    ui->groupBoxConfigAndStats->setEnabled( false );
+    ui->statsLabel->setEnabled( true ); // keep the stats label alive
+
+    ui->infDataTakingCheckBox->setEnabled( false );
+
+}
+
+void QCstmGLVisualization::ConfigureGUIForIdling() {
+
+    emit idling_gui();
+
+    ui->startButton->setText( "Start" );
+    ui->singleshotPushButton->setText( "single" );
+    emit sig_statusBarAppend("done","blue");
+
+    ui->groupBoxConfigAndStats->setEnabled( true );
+
+    ui->infDataTakingCheckBox->setEnabled( true );
+
+}
+
+void QCstmGLVisualization::CalcETA() {
+
+    if ( _mpx3gui->getConfig()->getOperationMode() == Mpx3Config::__operationMode_SequentialRW ) {
+        _estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms.
+        _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.  TODO to be calculated at startup.
+    } else {
+        double period_ms =  (1. / (double)(_mpx3gui->getConfig()->getContRWFreq())) * 1000;
+        _estimatedETA = period_ms * _mpx3gui->getConfig()->getNTriggers(); // ETA in ms.
+        _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.  TODO to be calculated at startup.
+    }
+
+}
 
 void QCstmGLVisualization::StartDataTaking() {
 
+    if ( !_dataTakingThread ) {
+        _dataTakingThread = new DataTakingThread(_mpx3gui, this);
+        _dataTakingThread->ConnectToHardware();
+    }
+
+    if ( ! _takingData ) { // new data
+
+        _takingData = true;
+
+        CalcETA();
+
+        _dataTakingThread->setFramesRequested( _mpx3gui->getConfig()->getNTriggers() );
+        _dataTakingThread->takedata();
+        ArmAndStartTimer();
+
+        // GUI
+        ConfigureGUIForDataTaking();
+
+        // info refresh
+        _timerId = this->startTimer( 100 ); // 100 ms is a good compromise to refresh the scoreing info
+        qDebug() << "Start : " << _timerId;
+
+    } else { // stop
+
+        // By premature user signal !
+        _dataTakingThread->stop(); // this calls by SIGNAL/SLOT the data_taking_finished
+
+    }
+
+    /*
     // The Start button becomes the Stop button
     if ( ! _takingData ) {
 
@@ -122,7 +287,10 @@ void QCstmGLVisualization::StartDataTaking() {
         }
         if ( _infDataTaking ) clearpreviousdata = false;
 
-        if ( clearpreviousdata ) _mpx3gui->clear_data( false );
+        if ( clearpreviousdata ) {
+            _mpx3gui->clear_data( false );
+            rewindHistoLimits();
+        }
 
         // Threads
         if ( _dataTakingThread ) {
@@ -196,6 +364,8 @@ void QCstmGLVisualization::StartDataTaking() {
 
     //Set corrected status of the newly taken data to false.
     _mpx3gui->getDataset()->setCorrected(false);
+    */
+
 }
 
 void QCstmGLVisualization::ETAToZero() {
@@ -256,6 +426,8 @@ void QCstmGLVisualization::clearStatsString()
 
     _statsString.counts.clear();
     _statsString.lostPackets.clear();
+    _statsString.lostFrames.clear();
+    _statsString.mpx3ClockStops.clear();
     _statsString.overflow.clear();
     _statsString.overflowFlg = false;
 
@@ -272,17 +444,29 @@ void QCstmGLVisualization::initStatsString()
 
 void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
+    _takingData = false;
+
+    DestroyTimer();
+    ETAToZero();
+
+    ConfigureGUIForIdling();
+
+    rewindScoring();
+
+    /*
     if ( _takingData ) {
 
         _takingData = false;
         DestroyTimer();
         ETAToZero();
 
+        _dataTakingThread->rewindScoring();
+
         // When finished taking data save the original data
         //_mpx3gui->saveOriginalDataset();
 
         // And replot, this also attempts to apply selected corrections
-        reload_all_layers( true );
+        //reload_all_layers( true );
 
         // Change the Stop button to Start
         ui->startButton->setText( "Start" );
@@ -291,6 +475,7 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
         // At this point I need to decide if the data taking is really finished.
         // If the user is requesting that all frames are needed we look at
         // Inf data taking takes priority here
+
         if ( _infDataTaking ) {
 
             _dataTakingThread->rewindScoring();
@@ -327,7 +512,7 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
         //_mpx3gui->getDataset()->dumpAllActivePixels();
 
     }
-
+*/
     // Also we will inform the visualization to go straight to the very last frame to be drawn
     //  in case the data taking thread was too fast compared to drawing
 
@@ -349,6 +534,11 @@ void QCstmGLVisualization::ArmAndStartTimer(){
 }
 
 void QCstmGLVisualization::DestroyTimer() {
+
+    qDebug() << "Destroy : " << _timerId;
+
+    // refresh scoring timer (local)
+    this->killTimer( _timerId );
 
     // timer
     disconnect(_timer, SIGNAL(timeout()), this, SLOT(updateETA()));
@@ -417,30 +607,41 @@ pair<int, int> QCstmGLVisualization::XtoXY(int X, int dimX){
 }
 
 
-void QCstmGLVisualization::ConnectionStatusChanged() {
+void QCstmGLVisualization::ConnectionStatusChanged(bool connecting) {
 
-    ui->startButton->setEnabled(true); // Enable or disable the button depending on the connection status.
-    ui->singleshotPushButton->setEnabled(true);
-    ui->recoPushButton->setEnabled(true);
+    if ( connecting ) {
 
-    // Report the chip ID's
-    // Make space in the dataTakingGridLayout
-    QVector<int> devs = _mpx3gui->getConfig()->getActiveDevices();
-    QVector<int>::const_iterator i  = devs.begin();
-    QVector<int>::const_iterator iE = devs.end();
-    _statsString.devicesIdString.clear();
-    for ( ; i != iE ; i++ ) {
-        int indx = _mpx3gui->getConfig()->getIndexFromID( *i );
-        _statsString.devicesIdString.append( _mpx3gui->getConfig()->getDeviceWaferId( indx ) );
-        if ( (i+1) != iE ) _statsString.devicesIdString.append( " | " );
+        ui->startButton->setEnabled( true ); // Enable or disable the button depending on the connection status.
+        ui->singleshotPushButton->setEnabled( true );
+        //ui->recoPushButton->setEnabled( true );
+
+        // Report the chip ID's
+        // Make space in the dataTakingGridLayout
+        QVector<int> devs = _mpx3gui->getConfig()->getActiveDevices();
+        QVector<int>::const_iterator i  = devs.begin();
+        QVector<int>::const_iterator iE = devs.end();
+        _statsString.devicesIdString.clear();
+        for ( ; i != iE ; i++ ) {
+            int indx = _mpx3gui->getConfig()->getIndexFromID( *i );
+            _statsString.devicesIdString.append( _mpx3gui->getConfig()->getDeviceWaferId( indx ) );
+            if ( (i+1) != iE ) _statsString.devicesIdString.append( " | " );
+        }
+        if ( _extraWidgets.devicesNamesLabel == nullptr ) {
+            _extraWidgets.devicesNamesLabel = new QLabel(this);
+            _extraWidgets.devicesNamesLabel->setAlignment( Qt::AlignRight );
+        }
+        _extraWidgets.devicesNamesLabel->setText( _statsString.devicesIdString );
+        int colCount = ui->dataTakingGridLayout->columnCount();
+        ui->dataTakingGridLayout->addWidget( _extraWidgets.devicesNamesLabel, 1, 0, 1, colCount );
+
+    } else {
+
+        FinishDataTakingThread();
+        ui->startButton->setEnabled( false );
+        ui->singleshotPushButton->setEnabled( false );
+        //ui->recoPushButton->setEnabled( false );
+
     }
-    if ( _extraWidgets.devicesNamesLabel == nullptr ) {
-        _extraWidgets.devicesNamesLabel = new QLabel(this);
-        _extraWidgets.devicesNamesLabel->setAlignment( Qt::AlignRight );
-    }
-    _extraWidgets.devicesNamesLabel->setText( _statsString.devicesIdString );
-    int colCount = ui->dataTakingGridLayout->columnCount();
-    ui->dataTakingGridLayout->addWidget( _extraWidgets.devicesNamesLabel, 1, 0, 1, colCount );
 
     // TODO
     // Configure the chip, provided that the Adj mask is loaded
@@ -493,15 +694,11 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect( this, &QCstmGLVisualization::sig_statusBarWrite, _mpx3gui, &Mpx3GUI::statusBarWrite );
     connect( this, &QCstmGLVisualization::sig_statusBarClean, _mpx3gui, &Mpx3GUI::statusBarClean );
 
-    // connection to configuration
+    // Connection to configuration
     connect( ui->nTriggersSpinBox, SIGNAL(editingFinished()),
-             //_mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner,
-             //SLOT(setValue(int)));
              this, SLOT(ntriggers_edit()) );
 
     connect( ui->triggerLengthSpinBox, SIGNAL(editingFinished()),
-             //_mpx3gui->getConfigMonitoring()->getUI()->triggerLengthSpinner,
-             //SLOT(setValue(int)));
              this, SLOT(triggerLength_edit()) );
 
     // This one need both the connection to the mirror combo box and the signal to the Configuration to take place
@@ -512,6 +709,25 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
              _mpx3gui->getConfig(),
              SLOT( setOperationMode(int) ) );
 
+    // What to do over a switch of Operation Mode
+    connect( ui->operationModeComboBox_Vis, SIGNAL(activated(int)),
+             this,
+             SLOT( OperationModeSwitched(int) ));
+    connect( ui->operationModeComboBox_Vis, SIGNAL(activated(int)),
+             _mpx3gui->getConfigMonitoring(),
+             SLOT( OperationModeSwitched(int) ));
+
+
+    //
+    connect(ui->glPlot->getPlot(), &QCstmGLPlot::double_click,
+            this, &QCstmGLVisualization::reload_all_layers);
+
+    // DataTaking / idling actions
+    connect( this, &QCstmGLVisualization::taking_data_gui,
+             _mpx3gui->getConfigMonitoring(), &QCstmConfigMonitoring::on_taking_data_gui );
+    connect( this, &QCstmGLVisualization::idling_gui,
+             _mpx3gui->getConfigMonitoring(), &QCstmConfigMonitoring::on_idling_gui );
+
 
     // Defaults
     emit mode_changed( ui->summingCheckbox->isChecked() );
@@ -519,15 +735,48 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 }
 
 void QCstmGLVisualization::ntriggers_edit() {
+
+    // Modify the spinner on the config side
     _mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner->setValue(
                 ui->nTriggersSpinBox->value()
                 );
+
+    // And try to send the new config
+    _mpx3gui->getConfig()->setNTriggers(
+                ui->nTriggersSpinBox->value()
+                );
+
 }
 
 void QCstmGLVisualization::triggerLength_edit() {
-    _mpx3gui->getConfigMonitoring()->getUI()->triggerLengthSpinner->setValue(
-                ui->triggerLengthSpinBox->value()
-                );
+
+    // Depends on the mode, the same box is used for
+    // triggerLength --> SequentialRW
+    // Freq          --> ContinuousRW
+
+    if ( _mpx3gui->getConfig()->getOperationMode()
+         == Mpx3Config::__operationMode_SequentialRW ) {
+        // triggerLength
+        _mpx3gui->getConfigMonitoring()->getUI()->triggerLengthSpinner->setValue(
+                    ui->triggerLengthSpinBox->value()
+                    );
+        // Send the new config
+        _mpx3gui->getConfig()->setTriggerLength(
+                    ui->triggerLengthSpinBox->value()
+                    );
+
+    } else if ( _mpx3gui->getConfig()->getOperationMode()
+                == Mpx3Config::__operationMode_ContinuousRW )  {
+        // contRWFreq
+        _mpx3gui->getConfigMonitoring()->getUI()->contRWFreq->setValue(
+                    ui->triggerLengthSpinBox->value()
+                    );
+        // send the new config --> contRWFreq
+        _mpx3gui->getConfig()->setContRWFreq(
+                    ui->triggerLengthSpinBox->value()
+                    );
+    }
+
 }
 
 void QCstmGLVisualization::startupActions()
@@ -584,15 +833,30 @@ void QCstmGLVisualization::BuildStatsString() {
     _statsString.displayString  = "fired: ";
     _statsString.displayString += _statsString.counts;
 
+    if ( ! _statsString.lostFrames.isEmpty() ) {
+        _statsString.displayString += " | lf: ";
+        _statsString.displayString += _statsString.lostFrames;
+    }
+
     if ( ! _statsString.lostPackets.isEmpty() ) {
-        _statsString.displayString += " | lost: ";
+        _statsString.displayString += " | lp: ";
         _statsString.displayString += _statsString.lostPackets;
+    }
+
+    if ( ! _statsString.mpx3ClockStops.isEmpty() ) {
+        _statsString.displayString += " | clk: ";
+        _statsString.displayString += _statsString.mpx3ClockStops;
     }
 
     if ( _statsString.overflowFlg ) {
         _statsString.displayString += " | ";
         _statsString.displayString += _statsString.overflow;
     }
+
+    if ( _mpx3gui->getDataset()->isDataMisaligned() ) {
+        _statsString.displayString += " | MISALIGNED !";
+    }
+
 
     // Use the string to set the label
     ui->statsLabel->setText( _statsString.displayString );
@@ -603,6 +867,8 @@ void QCstmGLVisualization::BuildStatsStringCounts(uint64_t counts)
 {
 
     QString plS = "<font color=\"black\">";
+    if ( _mpx3gui->getDataset()->isDataMisaligned() ) plS = "<font color=\"red\">";
+
     plS += QString::number( counts, 'd', 0 );
     plS += "</font>";
 
@@ -619,13 +885,49 @@ void QCstmGLVisualization::BuildStatsStringLostPackets(uint64_t lostPackets)
         return;
     }
 
-
     // Retrieve the counter and display
     QString plS = "<font color=\"black\">";
+    if ( _mpx3gui->getDataset()->isDataMisaligned() ) plS = "<font color=\"red\">";
     plS += QString::number( lostPackets, 'd', 0 );
     plS += "</font>";
 
     _statsString.lostPackets = plS;
+
+}
+
+void QCstmGLVisualization::BuildStatsStringLostFrames(uint64_t lostFrames)
+{
+
+    if ( lostFrames == 0 ) {
+        _statsString.lostFrames.clear();
+        return;
+    }
+
+    // Retrieve the counter and display
+    QString plS = "<font color=\"black\">";
+    if ( _mpx3gui->getDataset()->isDataMisaligned() ) plS = "<font color=\"red\">";
+    plS += QString::number( lostFrames, 'd', 0 );
+    plS += "</font>";
+
+    _statsString.lostFrames = plS;
+
+}
+
+void QCstmGLVisualization::BuildStatsStringMpx3ClockStops(uint64_t stops)
+{
+
+    if ( stops == 0 ) {
+        _statsString.mpx3ClockStops.clear();
+        return;
+    }
+
+    // Retrieve the counter and display
+    QString plS = "<font color=\"black\">";
+    if ( _mpx3gui->getDataset()->isDataMisaligned() ) plS = "<font color=\"red\">";
+    plS += QString::number( stops, 'd', 0 );
+    plS += "</font>";
+
+    _statsString.mpx3ClockStops = plS;
 
 }
 
@@ -671,14 +973,42 @@ void QCstmGLVisualization::on_user_accepted_profile()
 
 }
 
-void QCstmGLVisualization::lost_packets(int packetsLost) {
+void QCstmGLVisualization::OperationModeSwitched(int indx)
+{
 
-    // Increase the current packet loss
-    _mpx3gui->getDataset()->increasePacketsLost( packetsLost );
+    // Swith the triggerLengthSpinBox into ContRWFreq if in ContinuousRW mode
+    if ( indx == Mpx3Config::__operationMode_SequentialRW ) {
 
-    BuildStatsStringLostPackets( _mpx3gui->getDataset()->getPacketsLost() );
+        ui->triggerLengthSpinBoxLabel->setText( "Length" );
+        ui->triggerLengthSpinBox->setValue( _mpx3gui->getConfig()->getTriggerLength() );
+
+    } else if ( indx == Mpx3Config::__operationMode_ContinuousRW ) {
+
+        ui->triggerLengthSpinBoxLabel->setText( "CRW freq(Hz)" );
+        ui->triggerLengthSpinBox->setValue( _mpx3gui->getConfig()->getContRWFreq() );
+
+    }
 
 }
+
+
+void QCstmGLVisualization::data_misaligned(bool misaligned) {
+
+    // Increase the current packet loss
+    _mpx3gui->getDataset()->setDataMisaligned( misaligned );
+
+}
+
+
+void QCstmGLVisualization::mpx3clock_stops(int stops) {
+
+    // Increase the current packet loss
+    _mpx3gui->getDataset()->increaseMpx3ClockStops( stops );
+
+    BuildStatsStringMpx3ClockStops( _mpx3gui->getDataset()->getMpx3ClockStops() );
+
+}
+
 
 void QCstmGLVisualization::range_changed(QCPRange newRange){
     //ui->lowerManualSpin->setValue(newRange.lower);
@@ -725,17 +1055,19 @@ void QCstmGLVisualization::reload_layer(int threshold){
     // Get busy
     SetBusyState();
 
-    _mpx3gui->saveOriginalDataset();
+    //_mpx3gui->saveOriginalDataset();
     // Corrections
     //if( _corrdialog ) _mpx3gui->getDataset()->applyCorrections( _corrdialog );
 
     //int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
+
     ui->histPlot->setHistogram(threshold,
                                _mpx3gui->getDataset()->getLayer(threshold),
                                _mpx3gui->getDataset()->getPixelsPerLayer(),
                                _manualRange.lower,
                                _manualRange.upper);
+
 
     setThreshold(threshold);
 
@@ -747,9 +1079,30 @@ void QCstmGLVisualization::reload_layer(int threshold){
 
 }
 
+// All the bits needed to process the progress of the data taking
+void QCstmGLVisualization::on_scoring(int nFramesReceived,
+                                      int nFramesKept,
+                                      int lostFrames,
+                                      int lostPackets,
+                                      int framesCount,
+                                      int mpx3clock_stops,
+                                      bool dataMisaligned) {
+
+    _score.nFramesReceived = nFramesReceived;
+    _score.nFramesKept = nFramesKept;
+    _score.lostFrames = lostFrames;
+    _score.lostPackets = lostPackets;
+    _score.framesCount = framesCount;
+    _score.mpx3clock_stops = mpx3clock_stops;
+    _score.dataMisaligned = dataMisaligned;
+
+}
 
 void QCstmGLVisualization::progress_signal(int framecntr) {
 
+    _score.nFramesReceived = framecntr;
+
+    /*
     // framecntr: frames kept
     int argcntr = framecntr;
     if ( _dataTakingThread ) {
@@ -758,8 +1111,13 @@ void QCstmGLVisualization::progress_signal(int framecntr) {
         }
     }
 
-    QString prog = QString("%1/%2").arg( argcntr ).arg(_mpx3gui->getConfig()->getNTriggers() );
+    int nTriggers = _mpx3gui->getConfig()->getNTriggers();
+    QString prog;
+    if ( nTriggers > 0 ) prog = QString("%1/%2").arg( argcntr ).arg( nTriggers );
+    else prog = QString("%1").arg( argcntr ); // nTriggers=0 is keep taking data forever
+
     ui->frameCntr->setText( prog );
+    */
 
 }
 
@@ -769,23 +1127,27 @@ void QCstmGLVisualization::reload_all_layers(bool corrections) {
     // Get busy
     SetBusyState();
 
-    _mpx3gui->saveOriginalDataset();
+    //_mpx3gui->saveOriginalDataset();
 
     // Corrections
     if ( corrections && _corrdialog ) {
         _mpx3gui->getDataset()->applyCorrections( _corrdialog );
     }
 
+    /*
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
     QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
     for ( int i = 0 ; i < thresholds.size() ; i++ ) {
         addThresholdToSelector(thresholds[i]);
+
         ui->histPlot->setHistogram(thresholds[i],
                                    _mpx3gui->getDataset()->getLayer(thresholds[i]),
                                    _mpx3gui->getDataset()->getPixelsPerLayer(),
                                    _manualRange.lower,
                                    _manualRange.upper);
+
     }
+*/
 
     // done
     active_frame_changed();
@@ -851,7 +1213,6 @@ void QCstmGLVisualization::active_frame_changed(){
         on_percentileRangeRadio_toggled(true);
     else if(ui->fullRangeRadio->isChecked())
         on_fullRangeRadio_toggled(true);
-
 
 }
 
@@ -933,10 +1294,10 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _profiledialog->setAxis(axis);
         _profiledialog->changeTitle();
 
-//        QList<int> thresholdlist = _mpx3gui->getDataset()->getThresholds();
-//        QStringList combolist;
-//        for(int i = 0; i < thresholdlist.length(); i++)
-//            combolist.append(QString("Threshold %1").arg(thresholdlist[i]));
+        //        QList<int> thresholdlist = _mpx3gui->getDataset()->getThresholds();
+        //        QStringList combolist;
+        //        for(int i = 0; i < thresholdlist.length(); i++)
+        //            combolist.append(QString("Threshold %1").arg(thresholdlist[i]));
 
         //Calculate the profile of the selected region of the selected layer
 
@@ -1117,6 +1478,7 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
 
     ui->glPlot->getPlot()->setActive(layer);
     ui->histPlot->setActive(layer);
+    //_mpx3gui->set_active_frame(threshold);
     ui->layerSelector->setCurrentIndex(layer);
     _mpx3gui->GetUI()->dqeTab->setSelectedThreshold(threshold);
 //    _mpx3gui->set_active_frame(threshold);
@@ -1364,7 +1726,20 @@ void QCstmGLVisualization::on_logscale(bool checked)
 
 void QCstmGLVisualization::on_infDataTakingCheckBox_toggled(bool checked)
 {
+
     _infDataTaking = checked;
+
+    if ( checked ) {
+        _nTriggersSave = _mpx3gui->getConfig()->getNTriggers();
+        // In this case configure the system for 0 triggers.  It will do for both operation modes
+        _mpx3gui->getConfig()->setNTriggers( 0 );
+        //
+        ui->nTriggersSpinBox->setEnabled( false );
+    } else {
+        _mpx3gui->getConfig()->setNTriggers( _nTriggersSave );
+        ui->nTriggersSpinBox->setEnabled( true );
+    }
+
 }
 
 
@@ -1415,3 +1790,10 @@ void QCstmGLVisualization::on_testPulsesPushButton_clicked()
     _testPulsesDialog->show(); // modeless
 
 }
+
+
+void QCstmGLVisualization::on_dropFramesCheckBox_clicked(bool checked)
+{
+    _dropFrames = checked;
+}
+

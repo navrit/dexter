@@ -7,6 +7,8 @@
 #include "qcstmglvisualization.h"
 #include <QtDataVisualization>
 
+using namespace QtDataVisualization;
+
 namespace Ui {
 class QCstmDQE;
 }

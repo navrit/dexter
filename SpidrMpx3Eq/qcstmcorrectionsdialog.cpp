@@ -9,6 +9,9 @@ QCstmCorrectionsDialog::QCstmCorrectionsDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     _vis = dynamic_cast<QCstmGLVisualization*>(parent);
+
+    this->setWindowTitle( tr("Corrections") );
+
 }
 
 QCstmCorrectionsDialog::~QCstmCorrectionsDialog()

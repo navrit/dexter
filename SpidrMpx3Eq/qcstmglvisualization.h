@@ -44,7 +44,7 @@ class QCstmGLVisualization : public QWidget
     Q_OBJECT
     Mpx3GUI * _mpx3gui = nullptr;
     bool _takingData;
-    bool _busyDrawing;
+    bool _busyDrawing = false;
     QElapsedTimer * _etatimer = nullptr;
     QTimer * _timer = nullptr;
     int _estimatedETA;
@@ -68,6 +68,10 @@ public:
     explicit QCstmGLVisualization(QWidget *parent = 0);
     ~QCstmGLVisualization();
 
+    void timerEvent( QTimerEvent * );
+    void refreshScoringInfo();
+    void rewindScoring();
+
     //void SeparateThresholds(int * data, int size, int * th0, int * th2, int * th4, int * th6, int sizeReduced);
     void SeparateThresholds(int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
     bool isTakingData(){ return _takingData; }
@@ -83,6 +87,7 @@ public:
     void GetAFrame();
     void SetBusyState();
     void FreeBusyState();
+    bool isBusyDrawing();
     void DestroyTimer();
     void ArmAndStartTimer();
     void ETAToZero();
@@ -91,6 +96,19 @@ public:
 
     void clearStatsString();
     void initStatsString();
+
+    void rewindHistoLimits();
+
+    bool getDropFrames(){return _dropFrames;}
+
+    void ConfigureGUIForDataTaking();
+    void ConfigureGUIForIdling();
+
+    void FinishDataTakingThread();
+    void StopDataTakingThread();
+    bool DataTakingThreadIsRunning();
+    bool DataTakingThreadIsIdling();
+    void CalcETA();
 
 private:
 
@@ -106,13 +124,27 @@ private:
     QCPRange _percentileRangeNatural;
     bool _logyPlot = false;
     bool _infDataTaking = false;
+    unsigned int _nTriggersSave;
+    bool _dropFrames = true;
 
     MTADialog * _mtadialog = nullptr;
     TestPulses * _testPulsesDialog = nullptr;
 
     typedef struct {
+        unsigned int nFramesReceived;
+        unsigned int nFramesKept;
+        unsigned int lostFrames;
+        unsigned int lostPackets;
+        unsigned int framesCount;
+        unsigned int mpx3clock_stops;
+        bool dataMisaligned;
+    } scoring;
+
+    typedef struct {
         QString counts;
         QString lostPackets;
+        QString lostFrames;
+        QString mpx3ClockStops;
         QString overflow;
         bool overflowFlg;
         QString displayString; // this is the composition actually being displayed
@@ -125,7 +157,9 @@ private:
     } extra_widgets;
 
     stats_str _statsString;
+    scoring _score;
     extra_widgets _extraWidgets;
+    int _timerId;
 
 
     //!Adds the specified threshold to the layerselector combobox
@@ -138,14 +172,15 @@ private:
     void BuildStatsString();
     void BuildStatsStringCounts(uint64_t counts);
     void BuildStatsStringLostPackets(uint64_t lostPackets);
+    void BuildStatsStringLostFrames(uint64_t lostFrames);
+    void BuildStatsStringMpx3ClockStops(uint64_t stops);
     void BuildStatsStringOverflow(bool overflow);
 
-
 private slots:
-    void ConnectionStatusChanged();
+    void ConnectionStatusChanged(bool connecting);
     void on_percentileRangeRadio_toggled(bool checked);
 
-    //! Gets called when the current display needs to be reloaded. Uses the  combo-box to determine what layer to load.
+    //! Gets called when the current display needs to be reloaded. Uses the layerselector combo-box to determine what layer to load.
     void active_frame_changed();
 
     //! Gets called when a new data range was selected in the histogram plot.
@@ -159,7 +194,7 @@ private slots:
 
     void on_summingCheckbox_toggled(bool checked);
 
-
+    void on_layerSelector_activated(const QString &arg1);
 
     void UnlockWaitingForFrame();
 
@@ -199,6 +234,8 @@ private slots:
 
     void on_testPulsesPushButton_clicked();
 
+    void on_dropFramesCheckBox_clicked(bool checked);
+
 public slots:
     void StartDataTaking();
     void setGradient(int index);
@@ -224,9 +261,8 @@ public slots:
     void changeBinCount(int count);
     void updateETA();
 
-    void lost_packets(int);
-
-    void on_layerSelector_activated(const QString &arg1);
+    void data_misaligned(bool);
+    void mpx3clock_stops(int);
 
     void fps_update(int);
     void overflow_update(int);
@@ -234,6 +270,13 @@ public slots:
     //Deleting stats dialog and profile dialog
     void on_user_accepted_stats();
     void on_user_accepted_profile();
+    void OperationModeSwitched(int);
+
+    void on_scoring(int, int, int, int, int, int, bool);
+
+signals:
+    void taking_data_gui();
+    void idling_gui();
 
 signals:
     void change_hover_text(QString);
@@ -245,6 +288,7 @@ signals:
     void sig_statusBarAppend(QString mess, QString colorString);
     void sig_statusBarWrite(QString mess, QString colorString);
     void sig_statusBarClean();
+
 
 };
 
