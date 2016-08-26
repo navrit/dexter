@@ -13,7 +13,7 @@ class QCstmDQE;
 
 
 typedef dlib::matrix<double,2,1> input_vector;      //!Necessary datatype for dlib algorithm, contains the variables going into the fitting model function.
-typedef dlib::matrix<double,5,1> parameter_vector;  //!Necessary datatype for dlib algorithm, contains the parameters used for fitting. 3 for error function, 5 for 4th order poly
+typedef dlib::matrix<double,6,1> parameter_vector;  //!Necessary datatype for dlib algorithm, contains the parameters used for fitting. 3 for error function, 5 (+1 for windowWidth) for 4th order polynomial.
 
 //prototypes:
 double model(const input_vector &input, const parameter_vector &params);    //!The function model that is to be fitted to the data.
@@ -22,11 +22,17 @@ double planeModel(const input_vector &input, const parameter_vector &params);   
 double planeResidual(const std::pair<input_vector, double> &data, const parameter_vector &params);   //!Calculates the residual, difference between the data value and plane model value.
 double polyModel(const input_vector &input, const parameter_vector &params);    //!The function model of a 4th order polynomial that is to be fitted to the data within a window.
 double polyResidual(const std::pair<input_vector, double> &data, const parameter_vector &params);   //!Calculates the residual, difference between the data value and polynomial model value.
-double polyWeightRoot(input_vector input); //!Provides the square root of the weighting factor for the fitting, to be used in polyResidual.
+double polyWeightRoot(input_vector input, int windowW); //!Provides the square root of the weighting factor for the fitting, to be used in polyResidual.
 
 class QCstmDQE : public QWidget
 {
     Q_OBJECT
+
+    enum constants{ //and indices
+//        N_esfDatagraph = 2,
+        i_esfFitgraph = 2
+    };
+
 
 public:
     explicit QCstmDQE(QWidget *parent = 0);
@@ -61,7 +67,7 @@ private:
     double _xstart;
     double _plotrange;
     int _currentThreshold;
-    int windowW;
+    int _windowW = 11;
 
     QStringList _NPSfilepaths;  //!Holds the filepaths of all the loaded datafiles.
     QString _logtext;   //!A QString that holds the text that is to appear in the log window.
@@ -71,7 +77,7 @@ private:
     double _binsize = 1;        //!Specifies the size of the bins to be used for the ESF data.
     double _stepsize = 0.1;     //!Specifies the distance between datapoints of the fitplot in pixels.
     double _histStep = 0.5;     //!Specifies the distance between datapoints in the LSF (in pixels)
-    bool _useErrorFunc = false;
+    bool _useErrorFunc = true;  //!Specifies whether the errorfunction (or rather local smoothing) should be used.
 
     //functions:
     QVector<QVector<double> > calcESFbinData();     //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.
@@ -129,11 +135,21 @@ private slots:
 
     void on_derivCheckBox_toggled(bool checked);
 
-    void on_errorFuncCheckBox_toggled(bool checked);
+//    void on_errorFuncCheckBox_toggled(bool checked);
 
     void on_mouseMove_showPlotPoint(QMouseEvent * event);
 
 //    void on_mouseClick_showPlotPoint(QMouseEvent * event);
+
+    void on_dataCheckbox_toggled(bool checked);
+
+    void on_fitComboBox_currentIndexChanged(const QString &arg1);
+
+    void on_windowLineEdit_editingFinished();
+
+    void on_clearFitsPushButton_clicked();
+
+    void on_optionsNPSpushButton_clicked();
 
 signals:
     void start_takingData();

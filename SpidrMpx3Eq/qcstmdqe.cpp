@@ -125,11 +125,15 @@ void QCstmDQE::plotESF()
         ui->ESFplot->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::white, 5));
         ui->ESFplot->graph(1)->setErrorType(QCPGraph::etValue);
 
-//        ui->ESFplot->graph(0)->setData(_ESFdata[0], _ESFdata[1]);
+        ui->ESFplot->graph(0)->setData(_ESFdata[0], _ESFdata[1]);
         ui->ESFplot->graph(1)->setDataValueError(_ESFbinData[0], _ESFbinData[1], _ESFbinData[2]);
+        _logtext += QString("ESF data was binned using\n binsize = %1").arg(_binsize);
 
-        ui->ESFplot->yAxis->rescale();         
+        ui->ESFplot->yAxis->rescale();
         ui->ESFplot->replot( QCustomPlot::rpQueued );
+
+//        ui->dataCheckbox->setChecked(true);
+        ui->dataCheckbox->setEnabled(true);
     }
     else{
         QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
@@ -162,16 +166,20 @@ void QCstmDQE::plotFitESF()
 
         if(fitdata[0].empty() || fitdata[1].empty())
             QMessageBox::warning ( this, tr("Error"), tr( "No fitting data could be generated." ) );
-        else _logtext += QString("Error function fitted to binned ESF data with \n binsize = %1 pixels\n and parameters:\n scaling = %2\n offset = %3\n a = %4\n \n").arg(_binsize).arg(_params(0, 0)).arg(_params(1,0)).arg(_params(2,0));
+        else _logtext += QString("Error function fitted to binned ESF data with \n binsize = %1 pixels\n and parameters:\n scaling = %2\n offset = %3\n a = %4\n").arg(_binsize).arg(_params(0, 0)).arg(_params(1,0)).arg(_params(2,0));
 
+        if(fitdata[0].length() != fitdata[1].length())
+            QMessageBox::warning ( this, tr("Error"), tr( "Something is wrong with the data. Input and output arrays are not the same size." ) );
         ui->ESFplot->graph(graphNr - 2)->setData(fitdata[0], fitdata[1]);
     }
     else{
         fitdata = calcSmoothedESFdata(_ESFbinData);
         _ESFsmoothData = fitdata;
-        _logtext += QString("Smoothing 4th order polynomial function fitted to binned ESF data with \n binsize = %1\n").arg(_binsize);
+//        _logtext += QString("Smoothing 4th order polynomial function fitted to binned ESF data with \n binsize = %1\n window width = %2").arg(_binsize).arg(_windowW);
 
-        ui->ESFplot->graph(graphNr - 1)->setData(fitdata[0], fitdata[1]);
+        if(fitdata[0].length() != fitdata[1].length())
+            QMessageBox::warning ( this, tr("Error"), tr( "Something is wrong with the data. Input and output arrays are not the same size." ) );
+        ui->ESFplot->graph(graphNr - 1)->setData(fitdata[0], fitdata[1]);        
     }
 
 
@@ -179,6 +187,8 @@ void QCstmDQE::plotFitESF()
     //        ui->ESFplot->yAxis->setRange(-0.2, 1.2);
     ui->ESFplot->rescaleAxes();
     ui->ESFplot->replot( QCustomPlot::rpQueued );
+
+    ui->clearFitsPushButton->setEnabled(true); //Enable button to clear fitplots
 }
 
 void QCstmDQE::plotLSF()
@@ -463,11 +473,12 @@ QVector<QVector<double> > QCstmDQE::calcESFfitData()
 
 QVector<QVector<double> > QCstmDQE::calcSmoothedESFdata(QVector<QVector<double> > data)
 {   int i;
-    windowW = 11; //Set window width (TO DO user option).
-    int offset = (windowW - 1) / 2;
-    std::vector<std::pair<input_vector, double> > windowData(windowW); //vector of pairs of the variable going in and the value coming out.
+//    _windowW = 11; //Set window width (TO DO user option).
+    int offset = (_windowW - 1) / 2;
+    std::vector<std::pair<input_vector, double> > windowData(_windowW); //vector of pairs of the variable going in and the value coming out.
     parameter_vector params;
     params = 1;
+    params(5) = _windowW;
     input_vector input;
     QVector<QVector<double> > smoothData(2);
     //smoothData[0] = data[0]; //No.. smoothdata is 2*offset shorter...
@@ -483,6 +494,7 @@ QVector<QVector<double> > QCstmDQE::calcSmoothedESFdata(QVector<QVector<double> 
 //    }
 
     for(int j = 0; j < lengthSmooth; j++){//For every point(index) to be fitted and put in smoothdata.
+
 //        if(i > offset){
 //            //Shift window by one spot.
 //            windowData.erase(windowData.begin());
@@ -491,8 +503,8 @@ QVector<QVector<double> > QCstmDQE::calcSmoothedESFdata(QVector<QVector<double> 
 //        }
         int imiddle = j + offset;
 
-        int begin   = - 0.5*(windowW-1);
-        int end     =   0.5*(windowW-1);
+        int begin   = - 0.5*(_windowW-1);
+        int end     =   0.5*(_windowW-1);
 
         for(i = begin; i <= end; i++){
             input(0) = data[0][imiddle + i];                        //x
@@ -514,6 +526,11 @@ QVector<QVector<double> > QCstmDQE::calcSmoothedESFdata(QVector<QVector<double> 
         smoothData[1][j] = polyModel(input, params);
     }
 
+    if(smoothData[0].empty() || smoothData[1].empty())
+        QMessageBox::warning ( this, tr("Error"), tr( "No smoothing data could be generated." ) );
+    else _logtext += QString("Smoothing 4th order polynomial function fitted to binned ESF data with \n binsize = %1\n window width = %2\n").arg(_binsize).arg(_windowW);
+
+
     return smoothData;
 }
 
@@ -526,13 +543,13 @@ double polyModel(const input_vector &input, const parameter_vector &params){ //T
 
 double polyResidual(const std::pair<input_vector, double>& data, const parameter_vector& params)
 {
-    return (polyModel(data.first, params) - data.second)*polyWeightRoot((data.first)); //multiply by the square root of the weighting factor.
+    return (polyModel(data.first, params) - data.second)*polyWeightRoot((data.first), params(5)); //multiply by the square root of the weighting factor.
 }
 
-double polyWeightRoot(input_vector input){
+double polyWeightRoot(input_vector input, int windowW){
     //Gaussian weights, (Samei et al. (1998))
     double i = input(1);
-    double arg = 4*i/( 11 - 1);
+    double arg = 4*i/( windowW - 1);
     arg *= - arg; //- arg2
 
     double f = exp(arg);
@@ -623,13 +640,14 @@ QVector<QVector<double> > QCstmDQE::calcLSFdata()
     }
     else if(_useDerFit){//Take derivative of smoothed datafit.
         data = calcNumDerivativeOfdata(_ESFsmoothData);
-        if(!data.isEmpty()) _logtext += "LSF calculated using numerical derivative of the Smoothed ESF.\n";
+        if(!data.isEmpty()) _logtext += "LSF calculated using numerical derivative of the SMOOTHED ESF.\n";
+        else QMessageBox::warning ( this, tr("Error"), tr( "Something went wrong while taking the numerical derivative." ) );
     }
 
     else { //Take derivative of the binned data..
         data = calcNumDerivativeOfdata(_ESFbinData);
-        if(!data.isEmpty()) _logtext += "LSF calculated, using numerical derivative of the Binned ESF.\n";
-        else QMessageBox::warning ( this, tr("Error"), tr( "Something went wrong with the numerical derivative." ) );
+        if(!data.isEmpty()) _logtext += "LSF calculated, using numerical derivative of the BINNED ESF.\n";
+        else QMessageBox::warning ( this, tr("Error"), tr( "Something went wrong while taking the numerical derivative." ) );
     }
 
     //Calculate maximum value of the ESFdata and normalize to one.
@@ -736,7 +754,7 @@ void QCstmDQE::calcFTsquareRoI()
     //Let's try it for the selected RoI first..
 
     //The data is constructed as follows:
-    //      - Each row represents an horizontal row of pixels, starting from the bottom of the selected RoI.
+    //      - Each row represents a horizontal row of pixels, starting from the bottom of the selected RoI.
     //      - The elements in each row represent the pixels in the row, starting from the left.
     //The data can thus be seen as a normal cartesion system, where the left side of each pixel is the index.
     //To get datapoints in the middle of each pixel, a correction of +0.5 pixel has to be added in both the x and y direction.
@@ -1194,10 +1212,10 @@ void QCstmDQE::on_derivCheckBox_toggled(bool checked)
     _useDerFit = checked;
 }
 
-void QCstmDQE::on_errorFuncCheckBox_toggled(bool checked)
-{
-    _useErrorFunc = checked;
-}
+//void QCstmDQE::on_errorFuncCheckBox_toggled(bool checked)
+//{
+//    _useErrorFunc = checked;
+//}
 
 //void QCstmDQE::on_mouseClick_showPlotPoint(QMouseEvent *event)
 //{
@@ -1217,4 +1235,47 @@ void QCstmDQE::on_mouseMove_showPlotPoint(QMouseEvent *event)
     double y = plot->yAxis->pixelToCoord(event->pos().y());
 
     ui->pointLabel->setText(QString("(%1 , %2)").arg(x).arg(y));
+}
+
+void QCstmDQE::on_dataCheckbox_toggled(bool checked)
+{
+    if(checked)
+        ui->ESFplot->graph(0)->setData(_ESFdata[0], _ESFdata[1]);
+    else
+        ui->ESFplot->graph(0)->clearData();
+
+    ui->ESFplot->replot( QCustomPlot::rpQueued );
+
+}
+
+void QCstmDQE::on_fitComboBox_currentIndexChanged(const QString &arg1)
+{
+    if(arg1.contains("Error")){
+        _useErrorFunc = true;
+        ui->windowLabel->setEnabled(false);
+        ui->windowLineEdit->setEnabled(false);
+    }
+    if(arg1.contains("Smoothing")){
+        _useErrorFunc = false;
+        ui->windowLabel->setEnabled(true);
+        ui->windowLineEdit->setEnabled(true);
+    }
+}
+
+void QCstmDQE::on_windowLineEdit_editingFinished()
+{
+    _windowW = ui->windowLineEdit->text().toInt();
+}
+
+void QCstmDQE::on_clearFitsPushButton_clicked()
+{
+    ui->ESFplot->graph(i_esfFitgraph)->clearData();
+    ui->ESFplot->graph(i_esfFitgraph + 1)->clearData();
+
+    ui->ESFplot->replot( QCustomPlot::rpQueued );
+}
+
+void QCstmDQE::on_optionsNPSpushButton_clicked()
+{
+
 }
