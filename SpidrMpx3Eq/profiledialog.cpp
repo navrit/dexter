@@ -601,6 +601,15 @@ void ProfileDialog::on_select_xy_currentIndexChanged(int index)
     setLayer(layerIndex);
     setAxisMap(_mpx3gui->getDataset()->calcProfile(_axis, layerIndex, _begin, _end));
     plotProfile();
+    ui->pointEdit_0->clear();
+    ui->pointEdit_1->clear();
+    ui->pointEdit_2->clear();
+    ui->pointEdit_3->clear();
+    ui->pointEdit_4->clear();
+    ui->pointEdit_5->clear();
+
+    ui->textBrowser->clear();
+
     show();
 
 }
