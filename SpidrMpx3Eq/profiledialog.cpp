@@ -594,7 +594,6 @@ void ProfileDialog::on_checkBox_right_toggled(bool checked)
 
 void ProfileDialog::on_select_xy_currentIndexChanged(int index)
 {
-    cout <<  index << endl;
 
     if (index==0) _axis = "X";
     if (index==1) _axis = "Y";
