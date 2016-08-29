@@ -49,6 +49,9 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
 //    tracer->setSize(7);
 //    ui->LSFplot->addItem(tracer);
 
+    ui->windowLabel->setToolTip(tr("used for local fitting, must be an uneven number"));
+    ui->windowLineEdit->setToolTip(tr("must be an uneven number"));
+
 }
 
 QCstmDQE::~QCstmDQE()
@@ -1264,7 +1267,24 @@ void QCstmDQE::on_fitComboBox_currentIndexChanged(const QString &arg1)
 
 void QCstmDQE::on_windowLineEdit_editingFinished()
 {
-    _windowW = ui->windowLineEdit->text().toInt();
+    int width = ui->windowLineEdit->text().toInt();
+    if(width <= 2){
+        width = 3;
+        ui->windowLineEdit->setText(QString("%1").arg(width));
+        QMessageBox::warning ( this, tr("Warning"), tr( "The window width must be bigger than 2." ) );
+    }
+    if(width % 2 == 0){
+        width ++; //The window width must be an uneven number.
+        ui->windowLineEdit->setText(QString("%1").arg(width));
+        QMessageBox::warning ( this, tr("Warning"), tr( "The window width must be an uneven number." ) );
+    }
+    if(width > _ESFbinData[0].length()){
+        width = _ESFbinData[0].length();
+        ui->windowLineEdit->setText(QString("%1").arg(width));
+        QMessageBox::warning ( this, tr("Warning"), tr( "The window width can not be larger than the number of data points." ) );
+    }
+
+    _windowW = width;
 }
 
 void QCstmDQE::on_clearFitsPushButton_clicked()
