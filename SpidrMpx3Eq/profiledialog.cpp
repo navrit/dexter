@@ -5,8 +5,6 @@
 
 #include <QString>
 
-// tst git
-
 ProfileDialog::ProfileDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ProfileDialog)
