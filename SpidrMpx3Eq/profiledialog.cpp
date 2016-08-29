@@ -16,8 +16,6 @@ ProfileDialog::ProfileDialog(QWidget *parent) :
     for(int i = 0; i < editsList.length(); i++)
         connect( editsList[i], SIGNAL(editingFinished()), this, SLOT(onpointEdit_editingFinished()));
 
-    connect( ui->profilePlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mousePressEvent(QMouseEvent*)));
-
 }
 
 ProfileDialog::~ProfileDialog()
@@ -33,8 +31,7 @@ void ProfileDialog::SetMpx3GUI(Mpx3GUI * p )
              _mpx3gui->getVisualization(),
              &QCstmGLVisualization::on_user_accepted_profile );
 
-    //setSelectedThreshold(_mpx3gui->getVisualization()->getActiveThreshold());
-
+    connect( ui->profilePlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mousePressEvent(QMouseEvent*)));
 }
 
 
@@ -525,7 +522,7 @@ bool ProfileDialog::valueinRange(int value){
 void ProfileDialog::onpointEdit_editingFinished(){
 
     int x;
-    QString txt = sender()->objectName().split("_")[1]; //Depends on the naming of the pointEdits..
+    QString txt = sender()->objectName().split("_")[1];
     int index = txt.toInt();
 
     ui->profilePlot->graph(N_maingraphs + index)->clearData();
@@ -540,10 +537,11 @@ void ProfileDialog::onpointEdit_editingFinished(){
 
 void ProfileDialog::on_comboBox_currentIndexChanged(const QString &arg1)
 {
-    QStringList split = arg1.split(' ');
-    int threshold = split.last().toInt();
-    setSelectedThreshold(threshold);
-    setAxisMap(_mpx3gui->getDataset()->calcProfile(_axis, threshold, _begin, _end));
+    QString s = arg1;
+    s.remove("Threshold", Qt::CaseInsensitive);
+    int layerIndex = s.toInt();
+    setLayer(layerIndex);
+    setAxisMap(_mpx3gui->getDataset()->calcProfile(_axis, layerIndex, _begin, _end));
     plotProfile();
     show();
 }
@@ -587,5 +585,22 @@ void ProfileDialog::on_checkBox_left_toggled(bool checked)
 void ProfileDialog::on_checkBox_right_toggled(bool checked)
 {
     _right = checked;
+
+}
+
+void ProfileDialog::on_select_xy_currentIndexChanged(int index)
+{
+    cout <<  index << endl;
+
+    if (index==0) _axis = "X";
+    if (index==1) _axis = "Y";
+
+    QString s = ui->comboBox->currentText();
+    s.remove("Threshold", Qt::CaseInsensitive);
+    int layerIndex = s.toInt();
+    setLayer(layerIndex);
+    setAxisMap(_mpx3gui->getDataset()->calcProfile(_axis, layerIndex, _begin, _end));
+    plotProfile();
+    show();
 
 }
