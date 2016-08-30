@@ -7,6 +7,8 @@
 #include <dlib/algs.h>
 #include <complex>
 #include <QtDataVisualization>
+#include "optionsdialog.h"
+#include "ui_optionsdialog.h"
 
 //using namespace boost::math::constants;
 
@@ -52,6 +54,8 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
     ui->windowLabel->setToolTip(tr("used for local fitting, must be an uneven number"));
     ui->windowLineEdit->setToolTip(tr("must be an uneven number"));
 
+    _optionsDialog = new optionsDialog(this);
+
 }
 
 QCstmDQE::~QCstmDQE()
@@ -64,6 +68,8 @@ void QCstmDQE::SetMpx3GUI(Mpx3GUI *p){
     connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
     connect( this, &QCstmDQE::open_data, _mpx3gui, &Mpx3GUI::open_data_with_path);
     connect( ui->comboBox, SIGNAL(currentIndexChanged(QString)), _mpx3gui->GetUI()->visualizationGL, SLOT(on_layerSelector_activated(QString)) );
+
+    _optionsDialog->SetMpx3GUI(_mpx3gui);
 }
 
 void QCstmDQE::setRegion(QPoint pixel_begin, QPoint pixel_end)
@@ -130,13 +136,14 @@ void QCstmDQE::plotESF()
 
         ui->ESFplot->graph(0)->setData(_ESFdata[0], _ESFdata[1]);
         ui->ESFplot->graph(1)->setDataValueError(_ESFbinData[0], _ESFbinData[1], _ESFbinData[2]);
-        _logtext += QString("ESF data was binned using\n binsize = %1").arg(_binsize);
 
         ui->ESFplot->yAxis->rescale();
         ui->ESFplot->replot( QCustomPlot::rpQueued );
 
-//        ui->dataCheckbox->setChecked(true);
         ui->dataCheckbox->setEnabled(true);
+        _optionsDialog->setDataRange(_plotrange);
+        _logtext += QString("ESF data was binned using\n binsize = %1\n").arg(_binsize);
+        refreshLog(false);
     }
     else{
         QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
@@ -1251,41 +1258,42 @@ void QCstmDQE::on_dataCheckbox_toggled(bool checked)
 
 }
 
-void QCstmDQE::on_fitComboBox_currentIndexChanged(const QString &arg1)
-{
-    if(arg1.contains("Error")){
-        _useErrorFunc = true;
-        ui->windowLabel->setEnabled(false);
-        ui->windowLineEdit->setEnabled(false);
-    }
-    if(arg1.contains("Smoothing")){
-        _useErrorFunc = false;
-        ui->windowLabel->setEnabled(true);
-        ui->windowLineEdit->setEnabled(true);
-    }
-}
+//void QCstmDQE::on_fitComboBox_currentIndexChanged(const QString &arg1)
+//{
+//    if(arg1.contains("Error")){
+//        _useErrorFunc = true;
+//        ui->windowLabel->setEnabled(false);
+//        ui->windowLineEdit->setEnabled(false);
+//    }
+//    if(arg1.contains("Smoothing")){
+//        _useErrorFunc = false;
+//        ui->windowLabel->setEnabled(true);
+//        ui->windowLineEdit->setEnabled(true);
+//    }
+//}
 
-void QCstmDQE::on_windowLineEdit_editingFinished()
-{
-    int width = ui->windowLineEdit->text().toInt();
-    if(width <= 2){
-        width = 3;
-        ui->windowLineEdit->setText(QString("%1").arg(width));
-        QMessageBox::warning ( this, tr("Warning"), tr( "The window width must be bigger than 2." ) );
-    }
-    if(width % 2 == 0){
-        width ++; //The window width must be an uneven number.
-        ui->windowLineEdit->setText(QString("%1").arg(width));
-        QMessageBox::warning ( this, tr("Warning"), tr( "The window width must be an uneven number." ) );
-    }
-    if(width > _ESFbinData[0].length()){
-        width = _ESFbinData[0].length();
-        ui->windowLineEdit->setText(QString("%1").arg(width));
-        QMessageBox::warning ( this, tr("Warning"), tr( "The window width can not be larger than the number of data points." ) );
-    }
+//void QCstmDQE::on_windowLineEdit_editingFinished()
+//{
+//    int width = ui->windowLineEdit->text().toInt();
+////    int width = _optionsDialog->ui->lineEdit();
+//    if(width <= 2){
+//        width = 3;
+//        ui->windowLineEdit->setText(QString("%1").arg(width));
+//        QMessageBox::warning ( this, tr("Warning"), tr( "The window width must be bigger than 2." ) );
+//    }
+//    if(width % 2 == 0){
+//        width ++; //The window width must be an uneven number.
+//        ui->windowLineEdit->setText(QString("%1").arg(width));
+//        QMessageBox::warning ( this, tr("Warning"), tr( "The window width must be an uneven number." ) );
+//    }
+//    if(width > _ESFbinData[0].length()){
+//        width = _ESFbinData[0].length();
+//        ui->windowLineEdit->setText(QString("%1").arg(width));
+//        QMessageBox::warning ( this, tr("Warning"), tr( "The window width can not be larger than the number of data points." ) );
+//    }
 
-    _windowW = width;
-}
+//    _windowW = width;
+//}
 
 void QCstmDQE::on_clearFitsPushButton_clicked()
 {
@@ -1295,7 +1303,38 @@ void QCstmDQE::on_clearFitsPushButton_clicked()
     ui->ESFplot->replot( QCustomPlot::rpQueued );
 }
 
-void QCstmDQE::on_optionsNPSpushButton_clicked()
+void QCstmDQE::on_optionsPushButton_clicked()
 {
+    _optionsDialog->show();
+//    _optionsDialog->setCurrentSettings();
+}
+
+void QCstmDQE::on_apply_options(QHash<QString, int> options)
+{
+    //Set all options values in variables.
+    if(options.value("edge")    == 0);
+    if(options.value("error")   == 0) _useErrorFunc = false;
+        else _useErrorFunc = true;
+    if(options.value("fitder")  == 0) _useDerFit = false;
+        else _useDerFit = true;
+
+    _windowW = options.value("windowW");
+
+    if(_binsize != options.value("binsize")){
+        _binsize = options.value("binsize");
+        plotESF();
+    }
+
+
+}
+
+void QCstmDQE::on_close_optionsDialog()
+{
+//    if(_optionsDialog){
+//        delete _optionsDialog;
+//        _optionsDialog = nullptr;
+//    }
+
+    _optionsDialog->close();
 
 }

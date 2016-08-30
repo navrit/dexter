@@ -5,8 +5,10 @@
 #include "mpx3gui.h"
 #include "ui_qcstmdqe.h"
 #include "qcstmglvisualization.h"
+//#include "optionsdialog.h"
 #include <QtDataVisualization>
 
+class optionsDialog;
 namespace Ui {
 class QCstmDQE;
 }
@@ -55,7 +57,8 @@ public:
 private:
     Ui::QCstmDQE *ui;
     Mpx3GUI * _mpx3gui;
-    QCPItemTracer * tracer;
+    optionsDialog * _optionsDialog;
+//    QCPItemTracer * tracer;
     //int _currentThreshold;
     QPoint _beginpix, _endpix;
     QVector<QVector<double> > _ESFdata; //Contains a vector for the distances and one for the pixel values of the esf data.
@@ -67,17 +70,18 @@ private:
     double _xstart;
     double _plotrange;
     int _currentThreshold;
-    int _windowW = 11;
 
     QStringList _NPSfilepaths;  //!Holds the filepaths of all the loaded datafiles.
     QString _logtext;   //!A QString that holds the text that is to appear in the log window.
 
     //Options
-    bool _useDerFit = false;     //! Indicates whether the LSF should be made of the theoretical derivative using the calculated parameters (true) or the numerical derivative of the (smoothed) binned data.
+    bool _useDerFit = false;    //!Indicates whether the LSF should be made of the theoretical derivative using the calculated parameters (true) or the numerical derivative of the (smoothed) binned data.
     double _binsize = 1;        //!Specifies the size of the bins to be used for the ESF data.
     double _stepsize = 0.1;     //!Specifies the distance between datapoints of the fitplot in pixels.
     double _histStep = 0.5;     //!Specifies the distance between datapoints in the LSF (in pixels)
-    bool _useErrorFunc = true;  //!Specifies whether the errorfunction (or rather local smoothing) should be used.
+    bool _useErrorFunc = true;  //!Indicates whether the errorfunction (or rather local smoothing) should be used.
+    int _windowW = 11;          //!Specifies the width of the window to be used for local fitting. Must be uneven, larger than(>=)3 and smaller(<=) than the total amount of data.
+
 
     //functions:
     QVector<QVector<double> > calcESFbinData();     //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.
@@ -143,13 +147,17 @@ private slots:
 
     void on_dataCheckbox_toggled(bool checked);
 
-    void on_fitComboBox_currentIndexChanged(const QString &arg1);
+//    void on_fitComboBox_currentIndexChanged(const QString &arg1);
 
-    void on_windowLineEdit_editingFinished();
+//    void on_windowLineEdit_editingFinished();
 
     void on_clearFitsPushButton_clicked();
 
-    void on_optionsNPSpushButton_clicked();
+    void on_optionsPushButton_clicked();
+
+public slots:
+    void on_close_optionsDialog();    
+    void on_apply_options(QHash<QString, int> options);
 
 signals:
     void start_takingData();

@@ -20,6 +20,7 @@
 
 using namespace std;
 class Mpx3Config;
+//class QcstmDQE;
 
 #include "dataset.h"
 #include "gradient.h"
@@ -41,6 +42,7 @@ class BarChartProperties;
 class QCstmEqualization;
 class QCstmGLVisualization;
 class QCstmConfigMonitoring;
+//class QcstmDQE;
 
 #define __visualization_page_Id     0
 #define __configuration_page_Id     1
@@ -113,6 +115,7 @@ public:
     QCstmGLVisualization * getVisualization();
     QCstmDacs * getDACs();
     QCstmConfigMonitoring * getConfigMonitoring();
+//    QCstmDQE * getDQE();
 
     SpidrController * GetSpidrController();
     SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }

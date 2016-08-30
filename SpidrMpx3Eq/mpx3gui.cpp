@@ -930,7 +930,7 @@ QCstmEqualization * Mpx3GUI::getEqualization(){return _ui->equalizationWidget;}
 QCstmGLVisualization * Mpx3GUI::getVisualization() { return _ui->visualizationGL; }
 QCstmDacs * Mpx3GUI::getDACs() { return _ui->DACsWidget; }
 QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; }
-
+//QCstmDQE * Mpx3GUI::getDQE(){ return _ui->dqeTab; }
 
 void Mpx3GUI::on_actionExit_triggered()
 {
