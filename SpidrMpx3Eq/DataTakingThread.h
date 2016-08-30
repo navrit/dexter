@@ -20,13 +20,14 @@ using namespace std;
 class QCstmGLVisualization;
 class SpidrController;
 class SpidrDaq;
+class DataConsumerThread;
 
 class DataTakingThread : public QThread {
 
     Q_OBJECT
 
 public:
-    explicit DataTakingThread(Mpx3GUI *, QObject * parent);
+    explicit DataTakingThread(Mpx3GUI *, DataConsumerThread *, QObject * parent);
     ~DataTakingThread();
     void ConnectToHardware();
     void SeparateThresholds(int id, int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
@@ -69,6 +70,7 @@ private:
 
     QMutex _mutex;
     QWaitCondition _condition;
+    DataConsumerThread * _consumer;
     bool _restart;
     bool _abort;
     bool _idling;

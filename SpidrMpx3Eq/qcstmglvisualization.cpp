@@ -4,6 +4,7 @@
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 #include "DataTakingThread.h"
+#include "dataconsumerthread.h"
 
 #include "qcstmcorrectionsdialog.h"
 #include "statsdialog.h"
@@ -241,8 +242,12 @@ void QCstmGLVisualization::CalcETA() {
 void QCstmGLVisualization::StartDataTaking() {
 
     if ( !_dataTakingThread ) {
-        _dataTakingThread = new DataTakingThread(_mpx3gui, this);
+
+        _dataConsumerThread = new DataConsumerThread(_mpx3gui, this);
+
+        _dataTakingThread = new DataTakingThread(_mpx3gui, _dataConsumerThread, this);
         _dataTakingThread->ConnectToHardware();
+
     }
 
     if ( ! _takingData ) { // new data

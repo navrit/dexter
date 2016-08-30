@@ -9,12 +9,13 @@
 
 #include "SpidrController.h"
 #include "SpidrDaq.h"
+#include "dataconsumerthread.h"
 
 #include "mpx3eq_common.h"
 #include "mpx3gui.h"
 #include "ui_mpx3gui.h"
 
-DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, QObject * parent)
+DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, DataConsumerThread * consumer, QObject * parent)
     : QThread( parent )
 {
 
@@ -25,6 +26,8 @@ DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, QObject * parent)
 
     _vis = static_cast<QCstmGLVisualization*>( parent );
     _mpx3gui = mpx3gui;
+
+    _consumer = consumer;
 
     _srcAddr = 0;
     _stop = false;
@@ -163,6 +166,12 @@ void DataTakingThread::run() {
             for ( int i = 0 ; i < nChips ; i++ ) {
                 // retreive data for a given chip
                 framedata = spidrdaq->frameData(i, &size_in_bytes);
+
+                // Copy data in the consumer using the semaphores
+                _consumer->freeFrames->acquire(); // Acquire space for 1 chip in one frame
+                _consumer->copydata( framedata, size_in_bytes );
+                _consumer->usedFrames->release();
+
             }
 
             // Queue the data and keep going as fast as possible

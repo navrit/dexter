@@ -1031,7 +1031,8 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
 
     if ( getConfig()->isConnected() ) {
 
-        QProgressDialog pd("System reset in progress ... ", "Cancel", 0, 4, this);
+
+        QProgressDialog pd("System reset in progress ... ", "Cancel", 0, 3, this);
         pd.setCancelButton( 0 ); // no cancel button
         pd.setWindowModality(Qt::WindowModal);
         pd.setMinimumDuration( 0 ); // show immediately
@@ -1051,24 +1052,21 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
             qDebug() << "[INFO] Trying to hot-reset ...";
             sc->reset( &errorstat );
             emit sig_statusBarAppend( "reset", "black" );
-        }
 
-        // Hardware reset
-        pd.setValue( 2 );
-        sc->setSpidrReg( 0x814, 1, true);
+            // Hardware reset
+            pd.setValue( 2 );
+            sc->setSpidrReg( 0x814, 1 ); // write only register
+        }
 
         // Disconnect
         //pd.setValue( 2 );
         //on_actionDisconnect_triggered( false );
-
-
         // Reconnnect
         //pd.setValue( 3 );
         //on_actionConnect_triggered();
 
         // Done
-        pd.setValue( 4 );
-        //pd.close();
+        pd.setValue( 3 );
 
     }
 

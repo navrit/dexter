@@ -29,6 +29,7 @@
 using namespace std;
 
 class DataTakingThread;
+class DataConsumerThread;
 
 class QCstmCorrectionsDialog;
 class StatsDialog;
@@ -114,6 +115,7 @@ private:
 
     Ui::QCstmGLVisualization * ui = nullptr;
     DataTakingThread * _dataTakingThread = nullptr;
+    DataConsumerThread * _dataConsumerThread = nullptr;
     bool _savePNGWithScales = false;
     bool _singleShot = false;
     int _singleShotSaveCurrentNTriggers = 0;

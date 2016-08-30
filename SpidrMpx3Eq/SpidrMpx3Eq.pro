@@ -82,7 +82,8 @@ SOURCES += main.cpp \
     statsdialog.cpp \
     profiledialog.cpp \
     testpulses.cpp \
-    qcstmdqe.cpp
+    qcstmdqe.cpp \
+    dataconsumerthread.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -118,7 +119,8 @@ HEADERS += mpx3gui.h \
     statsdialog.h \
     profiledialog.h \
     testpulses.h \
-    qcstmdqe.h
+    qcstmdqe.h \
+    dataconsumerthread.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DataTakingThread.h
