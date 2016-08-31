@@ -9,6 +9,7 @@
 #include <QtDataVisualization>
 #include "optionsdialog.h"
 #include "ui_optionsdialog.h"
+#include "dlib/statistics.h"
 
 //using namespace boost::math::constants;
 
@@ -168,9 +169,16 @@ void QCstmDQE::plotFitESF()
     graphNr = ui->ESFplot->graphCount();
 
     QVector<QVector<double> > fitdata;
+    QVector<QVector<double> > data;
+
+    if(_usebins) data = _ESFbinData;
+    else data = _ESFdata;
+
+    std::vector<double> fity(data[0].length());
+    std::vector<double> y(data[0].length());
 
     if(_useErrorFunc){
-        fitESFparams(_ESFdata);
+        fitESFparams(data);
 
         fitdata = calcESFfitData();
 
@@ -181,17 +189,43 @@ void QCstmDQE::plotFitESF()
         if(fitdata[0].length() != fitdata[1].length())
             QMessageBox::warning ( this, tr("Error"), tr( "Something is wrong with the data. Input and output arrays are not the same size." ) );
         ui->ESFplot->graph(graphNr - 2)->setData(fitdata[0], fitdata[1]);
+
+        //Calculate the values of the fit at the original data positions.
+        input_vector input;
+        for(int i = 0; i < fity.size(); i++){
+            input(0) = data[0][i];
+            fity.at(i) = model(input, _params);    //model value
+            y.at(i) = data[1][i];                  //actual data value
+        }
     }
     else{
-        fitdata = calcSmoothedESFdata(_ESFbinData);
+        fitdata = calcSmoothedESFdata(data);
         _ESFsmoothData = fitdata;
 //        _logtext += QString("Smoothing 4th order polynomial function fitted to binned ESF data with \n binsize = %1\n window width = %2").arg(_binsize).arg(_windowW);
 
         if(fitdata[0].length() != fitdata[1].length())
             QMessageBox::warning ( this, tr("Error"), tr( "Something is wrong with the data. Input and output arrays are not the same size." ) );
         ui->ESFplot->graph(graphNr - 1)->setData(fitdata[0], fitdata[1]);        
+
+        for(int i = 0; i < fitdata[0].length(); i++){
+            fity.at(i) = fitdata[1][i];
+            y.at(i) = data[1][i];
+        }
+
     }
 
+    //std::vectors required for dlib
+//    int length = fitdata[0].length();
+//    std::vector<double> fity(length);
+//    std::vector<double> y(length);
+//    for(int i = 0; i < length; i++){
+//        fity.at(i) = fitdata[1][i];
+//        y.at(i) = data[1][i];
+//    }
+
+    double R2 = dlib::r_squared(fity, y);
+    _logtext += QString("R squared = %1\n").arg(R2);
+    refreshLog(false);
 
     //        ui->ESFplot->xAxis->setRange(-5., 5.);
     //        ui->ESFplot->yAxis->setRange(-0.2, 1.2);
@@ -257,12 +291,12 @@ void QCstmDQE::fitESFparams(QVector<QVector<double> > esfdata)
 {
     std::vector<std::pair<input_vector, double> > data; //vector of pairs of variable going in and the value coming out.
 
-    int length = _ESFbinData[0].length(); //esfdata[0].length();
+    int length = esfdata.length(); //esfdata[0].length();
     input_vector input;     //must be in dlib::matrix form...
 
     for(int i = 0; i < length; i++){
-        input(0) = _ESFbinData[0][i];           //x
-        const double output = _ESFbinData[1][i];//y
+        input(0) = esfdata[0][i];           //x
+        const double output = esfdata[1][i];//y
 
         data.push_back( make_pair(input, output) );     //std
     }
@@ -290,14 +324,15 @@ void QCstmDQE::fitESFparams(QVector<QVector<double> > esfdata)
 
         double res;
         double res2;
-        double test;
+        double Res;
         std::vector<std::pair<input_vector, double>>::size_type i ;
         for(i = 0; i != data.size(); i++){
 
             res = residual( data.at(i), params );
             res2 = res * res;
-            test = res2 / _ESFbinData[2][i]; //divide by st.dev. -> Normalized residual..
-            red_chi_squared += test;
+            if(_usebins) Res = res2 / esfdata[2][i]; //divide by st.dev. -> Normalized residual..
+                else Res = res2;
+            red_chi_squared += Res;
             mse += res2;
         }
 
@@ -465,7 +500,6 @@ QVector<QVector<double> > QCstmDQE::calcESFfitData()
     double a = _params(2,0);
 
     if(scaling != 0 && a != 0){
-
         //Make x (distance) input_vector to put in model
         //and a QVector of all distances and a QVector of all the fitted curve values to return.
         for(int j = 0; j < fitlength; j++){
@@ -1312,7 +1346,7 @@ void QCstmDQE::on_optionsPushButton_clicked()
 void QCstmDQE::on_apply_options(QHash<QString, int> options)
 {
     //Set all options values in variables.
-    if(options.value("edge")    == 0);
+//    if(options.value("edge")    == 0);
     if(options.value("error")   == 0) _useErrorFunc = false;
         else _useErrorFunc = true;
     if(options.value("fitder")  == 0) _useDerFit = false;
@@ -1320,9 +1354,11 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
 
     _windowW = options.value("windowW");
 
+    if(options.value("bindata") == 0) _usebins = false;
+        else _usebins = true;
     if(_binsize != options.value("binsize")){
         _binsize = options.value("binsize");
-        plotESF();
+        plotESF(); //TO DO: only replot the BINNED data. Seperate functions
     }
 
 

@@ -155,6 +155,9 @@
             <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
               <widget class="QRadioButton" name="radioButton">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="maximumSize">
                 <size>
                  <width>16777215</width>
@@ -191,6 +194,9 @@
             <layout class="QHBoxLayout" name="horizontalLayout_3">
              <item>
               <widget class="QComboBox" name="fitComboBox">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <item>
                 <property name="text">
                  <string>Error Function</string>
@@ -205,6 +211,9 @@
              </item>
              <item>
               <widget class="QCheckBox" name="derivCheckBox">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string>Func der</string>
                </property>
@@ -219,6 +228,9 @@
             <layout class="QHBoxLayout" name="horizontalLayout_5">
              <item>
               <widget class="QLabel" name="label">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string>Binsize: </string>
                </property>
@@ -226,6 +238,9 @@
              </item>
              <item>
               <widget class="QLineEdit" name="binSizeLineEdit">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="maximumSize">
                 <size>
                  <width>35</width>
@@ -239,6 +254,9 @@
              </item>
              <item>
               <widget class="QLabel" name="label_2">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string>pix</string>
                </property>

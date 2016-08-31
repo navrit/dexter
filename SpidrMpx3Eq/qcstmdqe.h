@@ -75,19 +75,20 @@ private:
     QString _logtext;   //!A QString that holds the text that is to appear in the log window.
 
     //Options
-    bool _useDerFit = false;    //!Indicates whether the LSF should be made of the theoretical derivative using the calculated parameters (true) or the numerical derivative of the (smoothed) binned data.
-    double _binsize = 1;        //!Specifies the size of the bins to be used for the ESF data.
-    double _stepsize = 0.1;     //!Specifies the distance between datapoints of the fitplot in pixels.
-    double _histStep = 0.5;     //!Specifies the distance between datapoints in the LSF (in pixels)
-    bool _useErrorFunc = true;  //!Indicates whether the errorfunction (or rather local smoothing) should be used.
-    int _windowW = 11;          //!Specifies the width of the window to be used for local fitting. Must be uneven, larger than(>=)3 and smaller(<=) than the total amount of data.
+    bool    _useDerFit      = false;    //!Indicates whether the LSF should be made of the theoretical derivative using the calculated parameters (true) or the numerical derivative of the (smoothed) binned data.
+    bool    _usebins        = true;     //!Indicates whether the data should be binned and this data should be used for further calculations.
+    double  _binsize        = 1;        //!Specifies the size of the bins to be used for the ESF data.
+    double  _stepsize       = 0.10;      //!Specifies the distance between datapoints of the fitplot in pixels.
+    double  _histStep       = 0.5;      //!Specifies the distance between datapoints in the LSF (in pixels)
+    bool    _useErrorFunc   = true;     //!Indicates whether the errorfunction (or rather local smoothing) should be used.
+    int     _windowW        = 11;       //!Specifies the width of the window to be used for local fitting. Must be uneven, larger than(>=)3 and smaller(<=) than the total amount of data.
 
 
     //functions:
     QVector<QVector<double> > calcESFbinData();     //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.
     QVector<QVector<double> > calcESFfitData();     //!Creates the datapoints of the fitted function by using the parameters calculated by the fitting in the used function model.
     QVector<QVector<double> > calcSmoothedESFdata(QVector<QVector<double> > data);
-    QVector<QVector<double> > calcLSFdata(); //!Creates the datapoints of the derivative of the fitted function, by using the parameters calculated by the fitting and using them in the theoretical derivative of the function model.
+    QVector<QVector<double> > calcLSFdata();        //!Creates the datapoints of the derivative of the fitted function, by using the parameters calculated by the fitting and using them in the theoretical derivative of the function model.
     QVector<QVector<double> > calcNumDerivativeOfdata(QVector<QVector<double> > data);  //!Calculates the numerical derivative of a given set of data. Used for LSF.
     QVector<QVector<double> > calcMTFdata();        //!Calculates the datapoints for the MTF, by taking the Fourier Transform of the LSF.
     void plotMTF();
