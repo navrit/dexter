@@ -498,25 +498,29 @@ void ProfileDialog::on_clearbutton_clicked()
         ui->profilePlot->graph(N_maingraphs + editsList.length() + i)->clearData();
 
     ui->profilePlot->replot(QCustomPlot::rpQueued);
+
+    ui->textBrowser->clear();
 }
 
 bool ProfileDialog::valueinRange(int value){
     if(_axis == "X"){
-        if(_begin.x() <= _end.x())
+        if(_begin.x() <= _end.x()) {
             if(value >= _begin.x() && value <= _end.x()) return true;
+        }
         else if(value >= _end.x() && value <= _begin.x()) return true;
 
-        else return false;
-    }
-    if(_axis == "Y"){
-        if(_begin.y() <= _end.y())
-            if(value >= _begin.y() && value <= _end.y()) return true;
-        else if(value >= _end.y() && value <= _begin.y()) return true;
-        else return false;
-    }
-    else {changeText("No axis defined.");
         return false;
     }
+    if(_axis == "Y"){
+        if(_begin.y() <= _end.y()) {
+            if(value >= _begin.y() && value <= _end.y()) return true;
+        }
+        else if(value >= _end.y() && value <= _begin.y()) return true;
+
+        return false;
+    }
+    changeText("No axis defined.");
+    return false;
 }
 
 void ProfileDialog::onpointEdit_editingFinished(){
@@ -590,7 +594,6 @@ void ProfileDialog::on_checkBox_right_toggled(bool checked)
 
 void ProfileDialog::on_select_xy_currentIndexChanged(int index)
 {
-    cout <<  index << endl;
 
     if (index==0) _axis = "X";
     if (index==1) _axis = "Y";
@@ -601,15 +604,8 @@ void ProfileDialog::on_select_xy_currentIndexChanged(int index)
     setLayer(layerIndex);
     setAxisMap(_mpx3gui->getDataset()->calcProfile(_axis, layerIndex, _begin, _end));
     plotProfile();
-    ui->pointEdit_0->clear();
-    ui->pointEdit_1->clear();
-    ui->pointEdit_2->clear();
-    ui->pointEdit_3->clear();
-    ui->pointEdit_4->clear();
-    ui->pointEdit_5->clear();
 
-    ui->textBrowser->clear();
+    on_clearbutton_clicked();
 
     show();
-
 }
