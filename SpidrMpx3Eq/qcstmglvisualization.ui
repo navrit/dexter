@@ -488,7 +488,7 @@ QGroupBox::title {
              </widget>
             </item>
             <item row="3" column="3" colspan="3">
-             <widget class="QProgressBar" name="progressBar_2">
+             <widget class="QProgressBar" name="bufferOccupancy">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>

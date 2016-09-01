@@ -229,7 +229,7 @@ void DataTakingThread::run() {
 
         if ( ! _restart ) emit data_taking_finished( 0 );
 
-        qDebug() << "   lock DataTakingThread | goal:" << goalAchieved << " | frames:" << nFramesReceived ;
+        //qDebug() << "   lock DataTakingThread | goal:" << goalAchieved << " | frames:" << nFramesReceived ;
 
         // Rewind local variables
         nFramesReceived = 0;

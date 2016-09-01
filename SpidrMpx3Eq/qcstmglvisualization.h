@@ -239,6 +239,7 @@ private slots:
 
     void on_dropFramesCheckBox_clicked(bool checked);
 
+
 public slots:
     void StartDataTaking();
     void setGradient(int index);
@@ -276,6 +277,8 @@ public slots:
     void OperationModeSwitched(int);
 
     void on_scoring(int, int, int, int, int, int, bool);
+
+    void bufferOccupancySlot(int);
 
 signals:
     void taking_data_gui();

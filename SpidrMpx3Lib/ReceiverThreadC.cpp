@@ -24,7 +24,10 @@ ReceiverThreadC::ReceiverThreadC( int *ipaddr,
     ReceiverThread( ipaddr, port, parent )
 {
   for( u32 i=0; i<NR_OF_FRAMEBUFS; ++i )
-    _frameSize[i] = 0;
+    {
+      _frameSize[i]  = 0;
+      _frameFlags[i] = 0;
+    }
 
   for( u32 i=0; i<NR_OF_FRAMEBUFS; ++i )
     _pixelsLostFrame[i] = 8888;
@@ -147,6 +150,9 @@ void ReceiverThreadC::readDatagrams()
 		  // Don't count them again at next SOF/SOR
 		  _rowPixels = MPX_PIXEL_COLUMNS;
 		}
+	      // Extract the FLAGS word
+	      _frameFlags[_head] = (((*pixelpkt) & FRAME_FLAGS_MASK) >>
+				    FRAME_FLAGS_SHIFT);
 	      break;
 
 	    case PIXEL_DATA_MID:
@@ -255,6 +261,7 @@ void ReceiverThreadC::nextFrame()
   // Additional initializations
   _framePtr               = (u64 *) _frameBuffer[_head];
   _frameSize[_head]       = 0;
+  _frameFlags[_head]      = 0;
   _rowCnt                 = 0;
   _pixelsLostFrame[_head] = 0;
 

@@ -36,7 +36,9 @@ protected:
 
     void run() Q_DECL_OVERRIDE;
 
-    //signals:
+signals:
+
+    void bufferOccupancySig(int);
 
 private:
 
@@ -47,7 +49,7 @@ private:
 
     Mpx3GUI * _mpx3gui;
 
-    const uint _nFramesBuffer = 200;
+    const uint _nFramesBuffer = 1024;
     uint _nChips;
     bool _bothCounters;
     uint _bufferSize;

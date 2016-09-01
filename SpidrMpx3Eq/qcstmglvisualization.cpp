@@ -105,6 +105,8 @@ void QCstmGLVisualization::refreshScoringInfo()
 
     //qDebug() << "ref .. " << _score.nFramesReceived;
 
+    // Network comsuption
+
 }
 
 void QCstmGLVisualization::drawFrameImage()
@@ -1827,5 +1829,12 @@ void QCstmGLVisualization::on_testPulsesPushButton_clicked()
 void QCstmGLVisualization::on_dropFramesCheckBox_clicked(bool checked)
 {
     _dropFrames = checked;
+}
+
+void QCstmGLVisualization::bufferOccupancySlot(int occ)
+{
+
+    ui->bufferOccupancy->setValue( occ );
+
 }
 

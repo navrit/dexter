@@ -50,7 +50,12 @@ DataConsumerThread::~DataConsumerThread() {
 
     wait(); // wait 'til run has exited before the base class destructor is invoked
 
-    // color structure
+    // Signals
+    disconnect( this, &DataConsumerThread::bufferOccupancySig,
+             _mpx3gui->getVisualization(), &QCstmGLVisualization::bufferOccupancySlot );
+
+
+    // Color structure
     for (int i = 0 ; i < __max_colors ; i++) delete [] _colordata[i];
     delete [] _colordata;
 
@@ -62,7 +67,13 @@ void DataConsumerThread::consume()
     QMutexLocker locker(&_mutex);
 
     if ( !isRunning() ) {
+
+        connect( this, &DataConsumerThread::bufferOccupancySig,
+                 _mpx3gui->getVisualization(), &QCstmGLVisualization::bufferOccupancySlot );
+
+        // Start !
         start( HighPriority );
+
     } else {
         _restart = true;
         _condition.wakeOne();
@@ -86,6 +97,7 @@ void DataConsumerThread::run()
 {
 
     int bothCountersMod = 1;
+    uint descriptorDistance = 0;
 
     forever {
 
@@ -144,13 +156,20 @@ void DataConsumerThread::run()
             // or rewind
             if ( readdescriptor >= _bufferSize ) readdescriptor = 0;
 
-            qDebug() << "   Occupancy : "
-                     << 100.0*(descriptor/(double)_bufferSize)
-                     << "\% | readdescriptor --> " << readdescriptor << " | descriptor : " << descriptor << " | buffer : " << _bufferSize;
+            // Report how far are we from reaching the descriptor
+            if ( descriptor >= readdescriptor) descriptorDistance = descriptor - readdescriptor;
+            else descriptorDistance = _bufferSize - readdescriptor + descriptor;
+
+            // Fraction
+            emit bufferOccupancySig( (int)(100*(descriptorDistance/(double)_bufferSize)) );
+
+            //qDebug() << "   Occupancy : "
+            //         << 100.0*(descriptor/(double)_bufferSize)
+            //         << "\% | readdescriptor --> " << readdescriptor << " | descriptor : " << descriptor << " | buffer : " << _bufferSize;
 
         }
 
-        qDebug() << "   lock DataConsumerThread";
+        //qDebug() << "   lock DataConsumerThread";
         _mutex.lock();
         if (!_restart)
             _condition.wait(&_mutex);

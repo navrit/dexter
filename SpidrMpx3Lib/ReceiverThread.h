@@ -55,6 +55,7 @@ class ReceiverThread : public QThread
   int  packetsLostFrame() { return _packetsLostFrame[_tail]; }
   int  packetsLostFrame( int i ) { return _packetsLostFrame[i]; }
   i64  timeStampFrame( int i );
+  virtual int frameFlags() { return 0; }
 
   void setPixelDepth( int nbits );
 
