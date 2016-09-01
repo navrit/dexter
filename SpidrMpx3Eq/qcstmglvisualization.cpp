@@ -481,6 +481,14 @@ void QCstmGLVisualization::initStatsString()
 
 void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
+    // Recover from single shot if it was requested
+    if ( _singleShot ) {
+        _singleShot = false;
+        _mpx3gui->getConfig()->setNTriggers( _singleShotSaveCurrentNTriggers );
+    }
+
+    _mpx3gui->saveOriginalDataset();
+
     _takingData = false;
 
     DestroyTimer();
@@ -648,7 +656,7 @@ void QCstmGLVisualization::ConnectionStatusChanged(bool connecting) {
 
         ui->startButton->setEnabled( true ); // Enable or disable the button depending on the connection status.
         ui->singleshotPushButton->setEnabled( true );
-        //ui->recoPushButton->setEnabled( true );
+        ui->recoPushButton->setEnabled( true );
 
         // Report the chip ID's
         // Make space in the dataTakingGridLayout
@@ -674,7 +682,7 @@ void QCstmGLVisualization::ConnectionStatusChanged(bool connecting) {
         FinishDataTakingThread();
         ui->startButton->setEnabled( false );
         ui->singleshotPushButton->setEnabled( false );
-        //ui->recoPushButton->setEnabled( false );
+        ui->recoPushButton->setEnabled( false );
 
     }
 
@@ -1674,7 +1682,7 @@ void QCstmGLVisualization::on_singleshotPushButton_clicked()
     _singleShotSaveCurrentNTriggers = _mpx3gui->getConfig()->getNTriggers();
 
     // Select only one trigger
-    ui->nTriggersSpinBox->setValue( 1 );
+    _mpx3gui->getConfig()->setNTriggers( 1 );
 
     // And just start taking data
     StartDataTaking();
