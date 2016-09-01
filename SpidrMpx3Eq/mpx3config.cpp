@@ -404,8 +404,9 @@ SpidrController * Mpx3Config::establishConnection(){
             ///////////////////////////////////////////////
             // Wafer number next three nibbles
             int waferId = 0;
+            bool okw = false;
             for ( int i = 3 ; i > 0 ; i-- ) {
-                waferId += ( idStr.left(1).toInt(false, 16) ) * pow(16, i-1);
+                waferId += ( idStr.left(1).toInt(&okw, 16) ) * pow(16, i-1);
                 idStr = idStr.remove(0, 1);
             }
 
@@ -418,7 +419,7 @@ SpidrController * Mpx3Config::establishConnection(){
 
             // 5th is Y
             int Ycoor = 0;
-            Ycoor = (idStr.left(1).toInt(false, 16));
+            Ycoor = (idStr.left(1).toInt(&okw, 16));
             QString decodedId = "W";
             decodedId.append( QString::number( waferId ) );
             decodedId.append( "_" );
