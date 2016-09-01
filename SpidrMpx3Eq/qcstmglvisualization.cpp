@@ -71,6 +71,8 @@ QCstmGLVisualization::~QCstmGLVisualization() {
 void QCstmGLVisualization::timerEvent(QTimerEvent *)
 {
     refreshScoringInfo();
+
+    drawFrameImage();
 }
 
 void QCstmGLVisualization::refreshScoringInfo()
@@ -102,6 +104,18 @@ void QCstmGLVisualization::refreshScoringInfo()
     BuildStatsString();
 
     //qDebug() << "ref .. " << _score.nFramesReceived;
+
+}
+
+void QCstmGLVisualization::drawFrameImage()
+{
+    // On data cleared the active threshold is -1
+    // Force it here to be at least the first threshold
+    //int actTHL = getActiveThreshold();
+    //if ( actTHL < 0 ) actTHL = 0;
+    //reload_layer( actTHL );
+
+    reload_all_layers();
 
 }
 
@@ -254,10 +268,16 @@ void QCstmGLVisualization::StartDataTaking() {
 
         _takingData = true;
 
+        // ETA
         CalcETA();
 
+        // Producer and Consumer threads
         _dataTakingThread->setFramesRequested( _mpx3gui->getConfig()->getNTriggers() );
         _dataTakingThread->takedata();
+        // The data taking thread will awake the consumer
+        //_dataConsumerThread->consume();
+
+        // Timers
         ArmAndStartTimer();
 
         // GUI
@@ -265,7 +285,7 @@ void QCstmGLVisualization::StartDataTaking() {
 
         // info refresh
         _timerId = this->startTimer( 100 ); // 100 ms is a good compromise to refresh the scoreing info
-        qDebug() << "Start : " << _timerId;
+        //qDebug() << "Start : " << _timerId;
 
     } else { // stop
 
@@ -539,8 +559,6 @@ void QCstmGLVisualization::ArmAndStartTimer(){
 }
 
 void QCstmGLVisualization::DestroyTimer() {
-
-    qDebug() << "Destroy : " << _timerId;
 
     // refresh scoring timer (local)
     this->killTimer( _timerId );
@@ -987,11 +1005,16 @@ void QCstmGLVisualization::OperationModeSwitched(int indx)
         ui->triggerLengthSpinBoxLabel->setText( "Length" );
         ui->triggerLengthSpinBox->setValue( _mpx3gui->getConfig()->getTriggerLength() );
 
+        ui->triggerLengthSpinBoxLabel->setToolTip( tr("Trigger length") );
+        ui->triggerLengthSpinBox->setToolTip( tr("Trigger length") );
+
     } else if ( indx == Mpx3Config::__operationMode_ContinuousRW ) {
 
-        ui->triggerLengthSpinBoxLabel->setText( "CRW freq(Hz)" );
+        ui->triggerLengthSpinBoxLabel->setText( "CRW(Hz)" );
         ui->triggerLengthSpinBox->setValue( _mpx3gui->getConfig()->getContRWFreq() );
 
+        ui->triggerLengthSpinBoxLabel->setToolTip( tr("ContinuousRW Mode. Enter frequency in Hz.") );
+        ui->triggerLengthSpinBox->setToolTip( tr("ContinuousRW Mode. Enter frequency in Hz.") );
     }
 
 }
@@ -1139,10 +1162,11 @@ void QCstmGLVisualization::reload_all_layers(bool corrections) {
         _mpx3gui->getDataset()->applyCorrections( _corrdialog );
     }
 
-    /*
+
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
     QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
     for ( int i = 0 ; i < thresholds.size() ; i++ ) {
+
         addThresholdToSelector(thresholds[i]);
 
         ui->histPlot->setHistogram(thresholds[i],
@@ -1152,7 +1176,6 @@ void QCstmGLVisualization::reload_all_layers(bool corrections) {
                                    _manualRange.upper);
 
     }
-*/
 
     // done
     active_frame_changed();

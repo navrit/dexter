@@ -161,7 +161,7 @@ void Mpx3GUI::resize(int x, int y) {
     emit sizeChanged(bbox.width() * x, bbox.height() * y); // goes to qcstmglplot
 }
 
-unsigned int Mpx3GUI::addLayer(int *data){
+unsigned int Mpx3GUI::addLayer(int *data) {
     return addLayer(data, -1);
 }
 

@@ -71,6 +71,7 @@ public:
 
     void timerEvent( QTimerEvent * );
     void refreshScoringInfo();
+    void drawFrameImage();
     void rewindScoring();
 
     //void SeparateThresholds(int * data, int size, int * th0, int * th2, int * th4, int * th6, int sizeReduced);

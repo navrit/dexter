@@ -1,4 +1,26 @@
 {
+    "DetectorConfig": {
+        "OperationMode" : 0,
+        "ColourMode": true,
+        "LUTEnable" : true,
+        "CsmSpm": 0,
+        "DecodeFrames": true,
+        "GainMode": 1,
+        "MaxPacketSize": 9000,
+        "PixelDepth": 12,
+        "Polarity": true,
+        "TriggerDeadtime_us": 2000,
+        "TriggerLength_us": 2000,
+        "ContRWFreq" : 100,
+        "TriggerMode": 4,
+        "nTriggers": 150,
+        "BiasVoltage" : 100
+    },
+    "IPConfig": {
+        "SpidrControllerIp": "192.168.100.10:50000",
+        "SpidrControllerPort": 50000
+    },
+
     "DACs": [
         {
             "Cas": 191,
@@ -117,27 +139,6 @@
             "Threshold[7]": 74
         }
     ],
-    "DetectorConfig": {
-        "OperationMode" : 0,
-        "ColourMode": true,
-        "LUTEnable" : true,
-        "CsmSpm": 0,
-        "DecodeFrames": true,
-        "GainMode": 1,
-        "MaxPacketSize": 9000,
-        "PixelDepth": 12,
-        "Polarity": true,
-        "TriggerDeadtime_us": 2000,
-        "TriggerLength_us": 2000,
-        "ContRWFreq" : 100,
-        "TriggerMode": 4,
-        "nTriggers": 150,
-        "BiasVoltage" : 100
-    },
-    "IPConfig": {
-        "SpidrControllerIp": "192.168.100.10:50000",
-        "SpidrControllerPort": 50000
-    },
     "StepperConfig": {
         "Acceleration": 500000,
         "CalibAngle0": 90,

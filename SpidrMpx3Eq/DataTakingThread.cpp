@@ -46,7 +46,7 @@ DataTakingThread::~DataTakingThread() {
 
     wait(); // wait 'til run has exited before the base class destructor is invoked
 
-    //qDebug() << "thread finished";
+    qDebug() << "   DataTakingThread finished";
 
 }
 
@@ -146,7 +146,7 @@ void DataTakingThread::run() {
         opMode = _mpx3gui->getConfig()->getOperationMode();
         contRWFreq = _mpx3gui->getConfig()->getContRWFreq();
         dropFrames = _vis->getDropFrames();
-        qDebug() << score.framesRequested << " | " << opMode << " | " << contRWFreq;
+        //qDebug() << score.framesRequested << " | " << opMode << " | " << contRWFreq;
         _mutex.unlock();
 
         // Reset
@@ -164,18 +164,22 @@ void DataTakingThread::run() {
 
             // I need to keep extracting data even if the goal has been achieved
             for ( int i = 0 ; i < nChips ; i++ ) {
+
                 // retreive data for a given chip
                 framedata = spidrdaq->frameData(i, &size_in_bytes);
 
-                // Copy data in the consumer using the semaphores
+                // Copy data in the consumer using the Semaphores
                 _consumer->freeFrames->acquire(); // Acquire space for 1 chip in one frame
                 _consumer->copydata( framedata, size_in_bytes );
                 _consumer->usedFrames->release();
 
             }
 
+            // Awake the consumer thread if neccesary
+            _consumer->consume();
+
             // Queue the data and keep going as fast as possible
-            if ( ! goalAchieved ) { }
+            //if ( ! goalAchieved ) { }
 
             // Release frame
             spidrdaq->releaseFrame();
@@ -225,8 +229,7 @@ void DataTakingThread::run() {
 
         if ( ! _restart ) emit data_taking_finished( 0 );
 
-        qDebug() << " ... freeze ... | goal:" << goalAchieved << " | frames:" << nFramesReceived ;
-
+        qDebug() << "   lock DataTakingThread | goal:" << goalAchieved << " | frames:" << nFramesReceived ;
 
         // Rewind local variables
         nFramesReceived = 0;
@@ -242,6 +245,7 @@ void DataTakingThread::run() {
         _idling = false;
         _restart = false;
         _mutex.unlock();
+        //qDebug() << "   +++ unlock DataTakingThread";
 
     } // forever
 
@@ -902,7 +906,14 @@ void DataTakingThread::on_stop_data_taking_thread() {
 //  }
 //}
 
-void DataTakingThread::SeparateThresholds(int /*id*/, int * data, int /*size*/, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int /*sizeReduced*/) {
+void DataTakingThread::SeparateThresholds(int /*id*/,
+                                          int * data,
+                                          int /*size*/,
+                                          QVector<int> * th0,
+                                          QVector<int> * th2,
+                                          QVector<int> * th4,
+                                          QVector<int> * th6,
+                                          int /*sizeReduced*/) {
 
     // Layout of 110um pixel
     //  -------------   ---------------------
@@ -983,3 +994,40 @@ void DataTakingThread::SeparateThresholds(int /*id*/, int * data, int /*size*/, 
     //fs.close();
 }
 
+
+/*
+for( int j = 0 ; j < size_in_bytes/4 ; j++ )
+{
+    pair<int,int> pix = XtoXY(j, 256);
+    if( i == 0 ) {
+        if ( pix.first == pix.second ) {
+
+            framedata[j] = 1;
+        } else {
+            framedata[j] = 0;
+        }
+    } else if ( i == 1 ) {
+
+        if ( pix.first != pix.second ) {
+            framedata[j] = 1;
+        } else {
+            framedata[j] = 0;
+        }
+    } else if ( i == 2 ) {
+
+        if ( pix.first == 128 ) {
+            framedata[j] = 1;
+        } else {
+            framedata[j] = 0;
+        }
+    } else if ( i == 3 ) {
+
+        if ( pix.second == 128 ) {
+            framedata[j] = 1;
+        } else {
+            framedata[j] = 0;
+        }
+    }
+
+}
+*/
