@@ -937,7 +937,7 @@ void Mpx3GUI::on_actionExit_triggered()
                                    tr("Attempting to exit while taking data.\n"
                                       "Data taking has been stopped." ) );
         }
-        // Now just kill the data taking thread
+        // Now just kill the data taking thread and consumer thread
         getVisualization()->FinishDataTakingThread();
     }
 

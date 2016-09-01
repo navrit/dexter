@@ -184,10 +184,17 @@ void QCstmGLVisualization::updateETA() {
 }
 
 void QCstmGLVisualization::FinishDataTakingThread() {
+
     if ( _dataTakingThread ) {
         delete _dataTakingThread;
         _dataTakingThread = nullptr;
     }
+
+    if( _dataConsumerThread ) {
+        delete _dataConsumerThread;
+        _dataConsumerThread = nullptr;
+    }
+
 }
 
 void QCstmGLVisualization::StopDataTakingThread()

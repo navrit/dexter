@@ -34,7 +34,7 @@ DataConsumerThread::DataConsumerThread(Mpx3GUI * mpx3gui, QObject * parent)
     // When working in color mode.
     // The user might select ColorMode in the middle of an operation.
     // Allocating the data just in case.
-    _colordata = new int*[ __max_colors ]; // 8 thresholds
+    _colordata = new int*[ __max_colors ]; // 8 thresholds(colors)
     for (int i = 0 ; i < __max_colors ; i++) {
         _colordata[i] = new int[ __matrix_size_color * _nChips ];
     }
@@ -85,53 +85,68 @@ void DataConsumerThread::copydata(int * source, size_t num )
 void DataConsumerThread::run()
 {
 
-    QVector<int> th0;
-    QVector<int> th2;
-    QVector<int> th4;
-    QVector<int> th6;
+    int bothCountersMod = 1;
 
     forever {
+
+        // When abort execution. Triggered as the destructor is called.
+        if( _abort ) return;
 
         //_mutex.lock();
         // local variables to scope variables
         //_mutex.unlock();
 
-        // Run after the producer
-        while ( readdescriptor < descriptor ) {
+        // Go chasing the producer
+        while ( readdescriptor != descriptor ) {
 
-            qDebug() << "   Occupancy : "
-                     << 100.0*(descriptor/(double)_bufferSize)
-                     << " | readdescriptor --> " << readdescriptor;
-
+            /////////////////
+            // Colour Mode //
             if ( _mpx3gui->getConfig()->getColourMode() ) {
 
-                // SeparateThresholds
+                // SeparateThresholds -> use the Semaphores (here's where I use the share resource)
                 for ( int ci = 0 ; ci < _nChips ; ci++ ) {
+                    usedFrames->acquire(); // ! it's one per chip to keep the right counting with the producer !
                     SeparateThresholds(0,
                                        buffer + readdescriptor,
                                        ci);
+                    freeFrames->release();
+
                 }
 
-                usedFrames->acquire();
-                _mpx3gui->addLayer( _colordata[0], 0 );
-                _mpx3gui->addLayer( _colordata[2], 2 );
-                _mpx3gui->addLayer( _colordata[4], 4 );
-                _mpx3gui->addLayer( _colordata[6], 6 );
-                freeFrames->release();
+                // Check single or both counters
+                if ( ! _mpx3gui->getConfig()->getReadBothCounters() ) bothCountersMod = 2; // do 0,2,4,6
+                else bothCountersMod = 1; // do all of them (8)
 
+                for ( int i = 0 ; i < __max_colors ; i++ ) {
+                    if ( i % bothCountersMod == 0 ) _mpx3gui->addLayer( _colordata[i], i );
+                }
+
+                /////////////
+                // FP Mode //
             } else {
 
+                // Check single or both counters
+                if ( ! _mpx3gui->getConfig()->getReadBothCounters() ) bothCountersMod = 1; // do 0 only
+                else bothCountersMod = 2; // do 0,1
+
+                // Send the info -> use the Semaphores (here's where I use the share resource)
                 usedFrames->acquire();
-                _mpx3gui->addLayer( buffer + readdescriptor, 0 );
+                for ( int i = 0 ; i < bothCountersMod ; i++ ) {
+                    _mpx3gui->addLayer( buffer + readdescriptor, i );
+                }
                 freeFrames->release();
 
             }
 
-            // move the reading descriptor
+            // Move the reading descriptor
             if ( _bothCounters ) readdescriptor += 2*_bufferSizeOneFrame;
             else readdescriptor += _bufferSizeOneFrame;
             // or rewind
             if ( readdescriptor >= _bufferSize ) readdescriptor = 0;
+
+            qDebug() << "   Occupancy : "
+                     << 100.0*(descriptor/(double)_bufferSize)
+                     << "\% | readdescriptor --> " << readdescriptor << " | descriptor : " << descriptor << " | buffer : " << _bufferSize;
 
         }
 
