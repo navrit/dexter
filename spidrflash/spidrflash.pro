@@ -32,9 +32,9 @@ CONFIG(release, debug|release) {
   LIBS       += -L../Release
 }
 
-LIBS += -lSpidrMpx3Lib
+LIBS += -lSpidrTpx3Lib
 
-INCLUDEPATH += ../SpidrMpx3Lib
+INCLUDEPATH += ../SpidrTpx3Lib
 
 SOURCES += McsReader.cpp
 SOURCES += spidrflash.cpp

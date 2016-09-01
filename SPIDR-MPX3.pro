@@ -17,6 +17,8 @@ TEMPLATE = subdirs
 
 # Libraries
 SUBDIRS += SpidrMpx3Lib/SpidrMpx3Lib.pro
+SUBDIRS += SpidrTpx3Lib/SpidrTpx3Lib.pro
+
 SUBDIRS += QCustomPlot/QCustomPlot.pro
 #SUBDIRS += SpidrMpx3Pixelman/SpidrPixelman.pro
 

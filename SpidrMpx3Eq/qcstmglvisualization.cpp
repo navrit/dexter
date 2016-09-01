@@ -228,6 +228,7 @@ void QCstmGLVisualization::ConfigureGUIForDataTaking() {
     ui->singleshotPushButton->setText( "Stop" );
     emit sig_statusBarAppend("start","blue");
 
+    // Config stats
     ui->groupBoxConfigAndStats->setEnabled( false );
     ui->statsLabel->setEnabled( true ); // keep the stats label alive
 
@@ -243,7 +244,9 @@ void QCstmGLVisualization::ConfigureGUIForIdling() {
     ui->singleshotPushButton->setText( "single" );
     emit sig_statusBarAppend("done","blue");
 
+    // Config stats
     ui->groupBoxConfigAndStats->setEnabled( true );
+
 
     ui->infDataTakingCheckBox->setEnabled( true );
 

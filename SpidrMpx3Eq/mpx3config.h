@@ -139,6 +139,7 @@ public:
 
 
     void SendConfiguration(config_items item = __ALL);
+    void PickupStaticConfigurationFigures();
     void Configuration(bool reset, int deviceIndex, config_items item = __ALL);
     void Configuration(bool reset, int deviceIndex, extra_config_parameters, config_items item = __ALL);
 

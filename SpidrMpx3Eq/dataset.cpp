@@ -1626,7 +1626,7 @@ unsigned int Dataset::setLayer(int *data, int threshold){
     unsigned int overflowCntr = 0;
 
     int layerIndex = getLayerIndex(threshold);
-    qDebug() << "   layerIndex : " << layerIndex;
+
     for(int i = 0; i < m_nFrames*m_nx*m_ny;i++) {
 
         m_layers[layerIndex][i] = data[i];
