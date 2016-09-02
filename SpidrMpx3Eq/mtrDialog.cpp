@@ -67,17 +67,15 @@ MTRDialog::MTRDialog(Mpx3GUI * mg, QWidget * parent) :
 
 MTRDialog::~MTRDialog()
 {
-
     delete ui;
 }
 
 void MTRDialog::timerEvent(QTimerEvent *)
 {
-
-
     int nLCDs = _lcds.size();
     for ( int i = 0 ; i < nLCDs ; i++ ) {
-        _lcds.at( i )->display( QString::number( _mpx3gui->getDataset()->getActivePixels( i ), 'f', 0 ) );
+        QString lcdText = "<b><font color=\"black\" font-size=\"30px\">" + QString::number( _mpx3gui->getDataset()->getActivePixels( i ), 'f', 0) + " </font></b>";
+        _lcds.at(i)->setText(lcdText);
     }
 
     QString sE = "<font color=\"blue\">";
@@ -86,7 +84,7 @@ void MTRDialog::timerEvent(QTimerEvent *)
     ui->thl0Label->setText( sE );
 
     sE.clear();
-    sE = "<font color=\"blue\">";
+    sE = "<font colour=\"blue\">";
     sE += QString::number( 20.4, 'f', 1 );
     sE += " keV </font>";
     ui->thl2Label->setText( sE );
@@ -124,23 +122,23 @@ void MTRDialog::changePlotsProperties()
 
     switch ( _displayMode ) {
     case __counts:
-        ui->barChartHisto->yAxis->setLabel( "total counts" );
+        ui->barChartHisto->yAxis->setLabel( "Total counts" );
         break;
     case __mean:
-        ui->barChartHisto->yAxis->setLabel( "mean" );
+        ui->barChartHisto->yAxis->setLabel( "Mean" );
         break;
     case __stdv:
-        ui->barChartHisto->yAxis->setLabel( "stdv" );
+        ui->barChartHisto->yAxis->setLabel( "Standard Deviation" );
         break;
     case __pixelsON:
-        ui->barChartHisto->yAxis->setLabel( "pixels ON" );
+        ui->barChartHisto->yAxis->setLabel( "Pixels ON" );
         break;
     case __NofClusters:
-        ui->barChartHisto->yAxis->setLabel( "N. of clusters" );
+        ui->barChartHisto->yAxis->setLabel( "Number of clusters" );
         break;
 
     default:
-        ui->barChartHisto->yAxis->setLabel( "pixels ON" );
+        ui->barChartHisto->yAxis->setLabel( "Pixels ON" );
         break;
     }
 
