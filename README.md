@@ -11,9 +11,15 @@ Steps to get this repository up and running.
 * Summary of set up
 * Configuration
 * Dependencies
-    * GCC
+    * Qt 5.7.0+
+    * cmake
+    * GCC 64 bit
+          * In /usr/bin
     * dlib (19.0+)
+          * Compile http://dlib.net/compile.html
+          * Copy folder to ../mpx3gui/ - so dlib/ is at same level as mpx3gui/
     * Boost (1.60+)
+          * libboost-all-dev
     * Phidget (21)
           * libusb-1.0-0-dev
           * http://www.phidgets.com/docs/OS_-_Linux
@@ -21,15 +27,16 @@ Steps to get this repository up and running.
           * libblas-dev
           * libblas3
     * Lapack
+          * liblapack-dev
+          * liblapack3
     * ICU http://apps.icu-project.org/icu-jsp/downloadPage.jsp?ver=56.1&base=c&svn=release-56-1
+          * Download then extract to top level system folder (/)
 * How to run tests
 * Deployment instructions
 
 ### Contribution guidelines ###
 
 * Writing tests
-* Code review
-* Other guidelines
 
 ### Who do I talk to? ###
 
