@@ -102,8 +102,10 @@ private:
     double FivePointsStencil(QVector<double> func, int x, double bw);   //! Used for numerical derivation.
 
     void calcFTsquareRoI();
+//    void plotFTnps(QVector<QVector<double> > data);
     parameter_vector fitPlaneParams(QVector<QVector<int> > dataROI);
-    void plotData3D(QtDataVisualization::QScatterDataArray data3D);
+    void plotData3D(QtDataVisualization::QScatterDataArray data3D);    
+
 
 private slots:
     void on_takeDataPushButton_clicked();
