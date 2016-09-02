@@ -15,6 +15,8 @@ Steps to get this repository up and running.
     * dlib (19.0+)
     * Boost (1.60+)
     * Phidget (21)
+          * libusb-1.0-0-dev
+          * http://www.phidgets.com/docs/OS_-_Linux
     * Openblas 
           * libblas-dev
           * libblas3
