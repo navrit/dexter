@@ -1,12 +1,12 @@
-#include "mtadialog.h"
-#include "ui_mtadialog.h"
+#include "mtrDialog.h"
+#include "ui_mtrDialog.h"
 
 #include "qcstmplothistogram.h"
 
-MTADialog::MTADialog(Mpx3GUI * mg, QWidget * parent) :
+MTRDialog::MTRDialog(Mpx3GUI * mg, QWidget * parent) :
     _mpx3gui(mg),
     QDialog(parent),
-    ui(new Ui::MTADialog)
+    ui(new Ui::MTRDialog)
 {
     ui->setupUi(this);
 
@@ -65,13 +65,13 @@ MTADialog::MTADialog(Mpx3GUI * mg, QWidget * parent) :
 
 }
 
-MTADialog::~MTADialog()
+MTRDialog::~MTRDialog()
 {
 
     delete ui;
 }
 
-void MTADialog::timerEvent(QTimerEvent *)
+void MTRDialog::timerEvent(QTimerEvent *)
 {
 
 
@@ -119,7 +119,7 @@ void MTADialog::timerEvent(QTimerEvent *)
 
 }
 
-void MTADialog::changePlotsProperties()
+void MTRDialog::changePlotsProperties()
 {
 
     switch ( _displayMode ) {
@@ -151,21 +151,21 @@ void MTADialog::changePlotsProperties()
 
 
 // Oriented to imaging
-void MTADialog::on_radioButtonSelCounts_toggled(bool checked)
+void MTRDialog::on_radioButtonSelCounts_toggled(bool checked)
 {
     if ( checked ) _displayMode = __counts;
 
     changePlotsProperties();
 }
 
-void MTADialog::on_radioButtonSelMean_toggled(bool checked)
+void MTRDialog::on_radioButtonSelMean_toggled(bool checked)
 {
     if ( checked ) _displayMode = __mean;
 
     changePlotsProperties();
 }
 
-void MTADialog::on_radioButtonSelStdv_toggled(bool checked)
+void MTRDialog::on_radioButtonSelStdv_toggled(bool checked)
 {
     if ( checked ) _displayMode = __stdv;
 
@@ -173,14 +173,14 @@ void MTADialog::on_radioButtonSelStdv_toggled(bool checked)
 }
 
 // Oriented to tracking
-void MTADialog::on_radioButtonSelPixelsON_toggled(bool checked)
+void MTRDialog::on_radioButtonSelPixelsON_toggled(bool checked)
 {
    if ( checked ) _displayMode = __pixelsON;
 
    changePlotsProperties();
 }
 
-void MTADialog::on_radioButtonSelNumberOfClusters_toggled(bool checked)
+void MTRDialog::on_radioButtonSelNumberOfClusters_toggled(bool checked)
 {
     if ( checked ) _displayMode = __NofClusters;
 
@@ -188,7 +188,7 @@ void MTADialog::on_radioButtonSelNumberOfClusters_toggled(bool checked)
 }
 
 
-void MTADialog::on_barCharLogYCheckBox_clicked(bool checked)
+void MTRDialog::on_barCharLogYCheckBox_clicked(bool checked)
 {
     _barCharLogY = checked;
 
@@ -204,7 +204,7 @@ void MTADialog::on_barCharLogYCheckBox_clicked(bool checked)
 
 }
 
-void MTADialog::on_timePlotLogYCheckBox_clicked(bool checked)
+void MTRDialog::on_timePlotLogYCheckBox_clicked(bool checked)
 {
     _timePlotLogY = checked;
 }

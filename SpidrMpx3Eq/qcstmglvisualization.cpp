@@ -1791,22 +1791,22 @@ void QCstmGLVisualization::on_infDataTakingCheckBox_toggled(bool checked)
 void QCstmGLVisualization::on_multiThresholdAnalysisPushButton_clicked()
 {
 
-    if ( ! _mtadialog ) {
-        _mtadialog = new MTADialog(_mpx3gui, this);
-        connect(_mtadialog, &MTADialog::finished, this, &QCstmGLVisualization::on_MTAClosed);
+    if ( ! _mtrDialog ) {
+        _mtrDialog = new MTRDialog(_mpx3gui, this);
+        connect(_mtrDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_MTRClosed);
     }
 
-    _mtadialog->show(); // modeless
+    _mtrDialog->show(); // modeless
 
 }
 
-void QCstmGLVisualization::on_MTAClosed()
+void QCstmGLVisualization::on_MTRClosed()
 {
 
-    if ( _mtadialog ) {
-        disconnect(_mtadialog, &MTADialog::finished, this, &QCstmGLVisualization::on_MTAClosed);
-        delete _mtadialog;
-        _mtadialog = nullptr;
+    if ( _mtrDialog ) {
+        disconnect(_mtrDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_MTRClosed);
+        delete _mtrDialog;
+        _mtrDialog = nullptr;
     }
 
 }
@@ -1815,7 +1815,7 @@ void QCstmGLVisualization::on_testPulsesClosed()
 {
 
     if ( _testPulsesDialog ) {
-        disconnect(_mtadialog, &MTADialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
+        disconnect(_mtrDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
         delete _testPulsesDialog;
         _testPulsesDialog = nullptr;
     }
@@ -1828,7 +1828,7 @@ void QCstmGLVisualization::on_testPulsesPushButton_clicked()
     if ( ! _testPulsesDialog ) {
 
         _testPulsesDialog = new TestPulses(_mpx3gui, this);
-        connect(_testPulsesDialog, &MTADialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
+        connect(_testPulsesDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
 
     }
 

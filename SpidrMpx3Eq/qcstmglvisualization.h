@@ -16,7 +16,7 @@
 #include "gradient.h"
 #include "histogram.h"
 
-#include "mtadialog.h"
+#include "mtrDialog.h"
 
 #include <QQueue>
 #include <QVector>
@@ -130,7 +130,7 @@ private:
     unsigned int _nTriggersSave;
     bool _dropFrames = true;
 
-    MTADialog * _mtadialog = nullptr;
+    MTRDialog * _mtrDialog = nullptr;
     TestPulses * _testPulsesDialog = nullptr;
 
     typedef struct {
@@ -231,7 +231,7 @@ private slots:
 
     void on_multiThresholdAnalysisPushButton_clicked();
 
-    void on_MTAClosed();
+    void on_MTRClosed();
 
     void on_testPulsesClosed();
 
