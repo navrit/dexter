@@ -97,7 +97,7 @@ class MY_LIB_API SpidrController
   bool        setBiasSupplyEna ( bool enable );
   bool        setBiasVoltage   ( int  volts );
   bool        setLutEnable     ( bool enable );
-  bool        setMpx3Clock     ( int  megahertz );
+  bool        getMpx3Clock     ( int *megahertz );
   bool        setTpSwitch      ( int  val, int freq_mhz = 200000 );
 
   // Configuration: pixels
@@ -159,6 +159,14 @@ class MY_LIB_API SpidrController
   bool storePixelConfig        ( int  dev_nr );              // ###TODO
   bool erasePixelConfig        ( int  dev_nr );              // ###TODO
   bool validPixelConfig        ( int  dev_nr, bool *valid ); // ###TODO
+  bool readFlash               ( int  flash_id,
+                                 int  address,
+                                 int *nbytes,
+                                 unsigned char *databytes );
+  bool writeFlash              ( int  flash_id,
+                                 int  address,
+                                 int  nbytes,
+                                 unsigned char *databytes );
 
   // Shutter trigger
   bool setShutterTriggerConfig ( int  trig_mode,
@@ -178,6 +186,9 @@ class MY_LIB_API SpidrController
   bool triggerSingleReadout    ( int counterl_or_h = 0 );
   bool startContReadout        ( int freq_hz );
   bool stopContReadout         ( );
+  bool getExtShutterCounter    ( int *cntr );
+  bool getShutterCounter       ( int *cntr );
+  bool getShutterInhibitCounter( int *cntr );
   bool resetCounters           ( );
 
   // Monitoring

@@ -301,6 +301,9 @@
             </item>
             <item row="0" column="7">
              <widget class="QPushButton" name="recoPushButton">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="toolTip">
                <string>magic !</string>
               </property>
@@ -354,22 +357,6 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="3">
-             <widget class="QSpinBox" name="nTriggersSpinBox">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>triggers</string>
-              </property>
-              <property name="maximum">
-               <number>999999999</number>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="5">
              <widget class="QSpinBox" name="triggerLengthSpinBox">
               <property name="sizePolicy">
@@ -386,43 +373,7 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0" colspan="2">
-             <widget class="QComboBox" name="operationModeComboBox_Vis">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>operation mode</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="4">
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>Length</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QPushButton" name="multiThresholdAnalysisPushButton">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>Multi-threshold reconstruction input summary</string>
-              </property>
-              <property name="text">
-               <string>MTR</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="5">
+            <item row="4" column="5">
              <widget class="QLabel" name="statsLabel">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -444,10 +395,108 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
+            <item row="4" column="1">
              <widget class="QPushButton" name="testPulsesPushButton">
               <property name="text">
                <string>Testpulses</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="QSpinBox" name="nTriggersSpinBox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string>triggers</string>
+              </property>
+              <property name="maximum">
+               <number>999999999</number>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="4">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Length</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QPushButton" name="multiThresholdAnalysisPushButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string>Multi-threshold reconstruction input summary</string>
+              </property>
+              <property name="text">
+               <string>MTR</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="2">
+             <widget class="QComboBox" name="operationModeComboBox_Vis">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string>operation mode</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="3" colspan="3">
+             <widget class="QProgressBar" name="bufferOccupancy">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>15</height>
+               </size>
+              </property>
+              <property name="value">
+               <number>0</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="3" colspan="3">
+             <widget class="QProgressBar" name="progressBar">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>15</height>
+               </size>
+              </property>
+              <property name="value">
+               <number>0</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Network</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="2">
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Buffers</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>

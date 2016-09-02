@@ -8,6 +8,8 @@
 //#include "optionsdialog.h"
 #include <QtDataVisualization>
 
+using namespace QtDataVisualization;
+
 class optionsDialog;
 namespace Ui {
 class QCstmDQE;

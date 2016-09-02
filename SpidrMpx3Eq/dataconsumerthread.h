@@ -1,0 +1,62 @@
+#ifndef DATACONSUMERTHREAD_H
+#define DATACONSUMERTHREAD_H
+
+#include <QThread>
+#include <QSemaphore>
+#include <QObject>
+
+#include "mpx3gui.h"
+#include "mpx3defs.h"
+
+class DataConsumerThread : public QThread
+{
+
+    Q_OBJECT;
+
+public:
+
+    explicit DataConsumerThread(Mpx3GUI *, QObject * parent = 0);
+    ~DataConsumerThread();
+    void copydata(int * source, size_t num);
+
+    void consume();
+    void SeparateThresholds(int /*id*/,
+                       int * data,
+                       int chipOffset
+                       );
+    int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
+
+    QSemaphore * freeFrames;
+    QSemaphore * usedFrames;
+    int * buffer;
+    uint descriptor = 0;
+    uint readdescriptor = 0;
+
+protected:
+
+    void run() Q_DECL_OVERRIDE;
+
+signals:
+
+    void bufferOccupancySig(int);
+
+private:
+
+    QMutex _mutex;
+    QWaitCondition _condition;
+    bool _restart;
+    bool _abort;
+
+    Mpx3GUI * _mpx3gui;
+
+    const uint _nFramesBuffer = 1024;
+    uint _nChips;
+    bool _bothCounters;
+    uint _bufferSize;
+    uint _bufferSizeOneFrame;
+
+    int ** _colordata = nullptr;
+
+};
+
+#endif // DATACONSUMERTHREAD_H

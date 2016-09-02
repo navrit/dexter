@@ -58,6 +58,7 @@ class MY_LIB_API SpidrDaq
   void      clearFrameData      ( int index );
   int       frameShutterCounter ( int index = -1 );
   bool      isCounterhFrame     ( int index = -1 );
+  int       frameFlags          ( int index );
   long long frameTimestamp      ( );
   long long frameTimestamp      ( int buf_i );        // For debugging
   long long frameTimestampSpidr ( );

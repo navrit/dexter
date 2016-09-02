@@ -628,8 +628,9 @@ QVector<QVector<double> > Dataset::calcESFdata()
 
     double a = ab.first;
     double b = ab.second;
-    if(a==0 && b==0 ||  isnan(a) || isnan(b) ){
-        esfData.clear();   //Return empty data...Midline doesn't make sense.
+    //if ( a==0 && b==0 ||  isnan(a) || isnan(b) ) {
+    if ( a==0 && b==0 ||  a!=a || b!=b ) {
+    esfData.clear();   //Return empty data...Midline doesn't make sense.
         QMessageBox msgbox; msgbox.setText("An error has occurred in the calculation of the position of the edge. \n"); msgbox.setIcon(QMessageBox::Warning);
         msgbox.exec();
         return esfData;
@@ -1622,6 +1623,7 @@ unsigned int Dataset::setLayer(int *data, int threshold){
     unsigned int overflowCntr = 0;
 
     int layerIndex = getLayerIndex(threshold);
+
     for(int i = 0; i < m_nFrames*m_nx*m_ny;i++) {
 
         m_layers[layerIndex][i] = data[i];

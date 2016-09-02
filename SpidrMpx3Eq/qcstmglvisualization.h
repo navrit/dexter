@@ -16,7 +16,7 @@
 #include "gradient.h"
 #include "histogram.h"
 
-#include "mtadialog.h"
+#include "mtrDialog.h"
 
 #include <QQueue>
 #include <QVector>
@@ -29,6 +29,7 @@
 using namespace std;
 
 class DataTakingThread;
+class DataConsumerThread;
 
 class QCstmCorrectionsDialog;
 class StatsDialog;
@@ -68,6 +69,11 @@ public:
     explicit QCstmGLVisualization(QWidget *parent = 0);
     ~QCstmGLVisualization();
 
+    void timerEvent( QTimerEvent * );
+    void refreshScoringInfo();
+    void drawFrameImage();
+    void rewindScoring();
+
     //void SeparateThresholds(int * data, int size, int * th0, int * th2, int * th4, int * th6, int sizeReduced);
     void SeparateThresholds(int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
     bool isTakingData(){ return _takingData; }
@@ -92,10 +98,22 @@ public:
     void clearStatsString();
     void initStatsString();
 
+    bool getDropFrames(){return _dropFrames;}
+
+    void ConfigureGUIForDataTaking();
+    void ConfigureGUIForIdling();
+
+    void FinishDataTakingThread();
+    void StopDataTakingThread();
+    bool DataTakingThreadIsRunning();
+    bool DataTakingThreadIsIdling();
+    void CalcETA();
+
 private:
 
     Ui::QCstmGLVisualization * ui = nullptr;
     DataTakingThread * _dataTakingThread = nullptr;
+    DataConsumerThread * _dataConsumerThread = nullptr;
     bool _savePNGWithScales = false;
     bool _singleShot = false;
     int _singleShotSaveCurrentNTriggers = 0;
@@ -106,9 +124,21 @@ private:
     QCPRange _percentileRangeNatural;
     bool _logyPlot = false;
     bool _infDataTaking = false;
+    unsigned int _nTriggersSave;
+    bool _dropFrames = true;
 
-    MTADialog * _mtadialog = nullptr;
+    MTRDialog * _mtrDialog = nullptr;
     TestPulses * _testPulsesDialog = nullptr;
+
+    typedef struct {
+        unsigned int nFramesReceived;
+        unsigned int nFramesKept;
+        unsigned int lostFrames;
+        unsigned int lostPackets;
+        unsigned int framesCount;
+        unsigned int mpx3clock_stops;
+        bool dataMisaligned;
+    } scoring;
 
     typedef struct {
         QString counts;
@@ -125,7 +155,9 @@ private:
     } extra_widgets;
 
     stats_str _statsString;
+    scoring _score;
     extra_widgets _extraWidgets;
+    int _timerId;
 
 
     //!Adds the specified threshold to the layerselector combobox
@@ -140,9 +172,8 @@ private:
     void BuildStatsStringLostPackets(uint64_t lostPackets);
     void BuildStatsStringOverflow(bool overflow);
 
-
 private slots:
-    void ConnectionStatusChanged();
+    void ConnectionStatusChanged(bool connecting);
     void on_percentileRangeRadio_toggled(bool checked);
 
     //! Gets called when the current display needs to be reloaded. Uses the  combo-box to determine what layer to load.
@@ -159,6 +190,7 @@ private slots:
 
     void on_summingCheckbox_toggled(bool checked);
 
+    void on_layerSelector_activated(const QString &arg1);
 
 
     void UnlockWaitingForFrame();
@@ -193,11 +225,14 @@ private slots:
 
     void on_multiThresholdAnalysisPushButton_clicked();
 
-    void on_MTAClosed();
+    void on_MTRClosed();
 
     void on_testPulsesClosed();
 
     void on_testPulsesPushButton_clicked();
+
+    void on_dropFramesCheckBox_clicked(bool checked);
+
 
 public slots:
     void StartDataTaking();
@@ -224,9 +259,9 @@ public slots:
     void changeBinCount(int count);
     void updateETA();
 
-    void lost_packets(int);
+    void data_misaligned(bool);
+    void mpx3clock_stops(int);
 
-    void on_layerSelector_activated(const QString &arg1);
 
     void fps_update(int);
     void overflow_update(int);
@@ -234,6 +269,15 @@ public slots:
     //Deleting stats dialog and profile dialog
     void on_user_accepted_stats();
     void on_user_accepted_profile();
+    void OperationModeSwitched(int);
+
+    void on_scoring(int, int, int, int, int, int, bool);
+
+    void bufferOccupancySlot(int);
+
+signals:
+    void taking_data_gui();
+    void idling_gui();
 
 signals:
     void change_hover_text(QString);
@@ -245,6 +289,7 @@ signals:
     void sig_statusBarAppend(QString mess, QString colorString);
     void sig_statusBarWrite(QString mess, QString colorString);
     void sig_statusBarClean();
+
 
 };
 
