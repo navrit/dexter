@@ -23,5 +23,7 @@ Steps to get this repository up and running.
 
 ### Who do I talk to? ###
 
-* John Idarraga idarraga@amscins.com
-* Navrit Bal navrit@amscins.com
+* John Idarraga 
+    * idarraga@amscins.com
+* Navrit Bal
+    * navrit@amscins.com
