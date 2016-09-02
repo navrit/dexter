@@ -11,7 +11,8 @@ Steps to get this repository up and running.
 * Summary of set up
 * Configuration
 * Dependencies
-    * http://apps.icu-project.org/icu-jsp/downloadPage.jsp?ver=56.1&base=c&svn=release-56-1
+    * Phidget
+    * [ICU]http://apps.icu-project.org/icu-jsp/downloadPage.jsp?ver=56.1&base=c&svn=release-56-1
 * How to run tests
 * Deployment instructions
 
