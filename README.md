@@ -11,8 +11,15 @@ Steps to get this repository up and running.
 * Summary of set up
 * Configuration
 * Dependencies
-    * Phidget
-    * [ICU]http://apps.icu-project.org/icu-jsp/downloadPage.jsp?ver=56.1&base=c&svn=release-56-1
+    * GCC
+    * dlib (19.0+)
+    * Boost (1.60+)
+    * Phidget (21)
+    * Openblas 
+          * libblas-dev
+          * libblas3
+    * Lapack
+    * ICU http://apps.icu-project.org/icu-jsp/downloadPage.jsp?ver=56.1&base=c&svn=release-56-1
 * How to run tests
 * Deployment instructions
 
