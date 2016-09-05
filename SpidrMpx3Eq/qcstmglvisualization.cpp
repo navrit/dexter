@@ -59,13 +59,11 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     // Initial stretch of the splitter.  Give more space to visualization Matrix
     ui->splitter->setStretchFactor(0, 3);
     ui->splitter->setStretchFactor(1, 1);
-
 }
 
 QCstmGLVisualization::~QCstmGLVisualization() {
     delete ui;
 }
-
 
 
 void QCstmGLVisualization::timerEvent(QTimerEvent *)
@@ -1261,6 +1259,7 @@ void QCstmGLVisualization::active_frame_changed(){
 
 }
 
+
 void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position){
 
     //if(!_mpx3gui->getConfig()->isConnected())
@@ -1280,7 +1279,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     QMenu contextMenu;
 
     //Have the region only in the header:
-    QLabel* label = new QLabel(QString("For region (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y())
+    QLabel* label = new QLabel(QString("\n    For region (%1, %2) --> (%3, %4) \n").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y())
                                , this);
     QWidgetAction wid(&contextMenu);
     wid.setDefaultWidget(label);
@@ -1302,6 +1301,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     //QAction gotoDQE(QString("Use for DQE (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&gotoDQE);
 
+    contextMenu.setMinimumWidth(300);
 
     // Show the menu
     QAction * selectedItem = contextMenu.exec(position);

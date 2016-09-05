@@ -39,6 +39,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
 
     // Instantiate everything in the UI
     _ui->setupUi(this);
+    this->setWindowTitle("ASI Medipix3");
     workingSet = new Dataset(128,128, 4);
     originalSet = new Dataset(128,128, 4);
     config = new Mpx3Config;
@@ -75,7 +76,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
 
     // Prepare DACs panel
     _ui->DACsWidget->SetMpx3GUI( this );
-    _ui->DACsWidget->setWindowWidgetsStatus(); // statup status
+    _ui->DACsWidget->setWindowWidgetsStatus(); // startup status
 
     // Prepare Equalization
     _ui->equalizationWidget->SetMpx3GUI( this );
@@ -808,6 +809,8 @@ void Mpx3GUI::open_data(bool saveOriginal){
     QMessageBox::StandardButton reply = QMessageBox::question( this, tr("Specify data"), tr("Is this data corrected?"), QMessageBox::Yes | QMessageBox::No);
     if(reply== QMessageBox::Yes) getDataset()->setCorrected(true);
     else getDataset()->setCorrected(false);
+
+    this->setWindowTitle("ASI Medipix3 "+filename);
 
     return;
 }

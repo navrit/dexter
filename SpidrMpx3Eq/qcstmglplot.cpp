@@ -7,6 +7,8 @@ QCstmGLPlot::QCstmGLPlot(QWidget* &parent){
 	gradientTex = new QOpenGLTexture(QOpenGLTexture::Target1D);
 	this->setFocusPolicy(Qt::WheelFocus);
 	this->setMouseTracking(true);
+
+    rubberBand = 0;
 }
 
 QCstmGLPlot::~QCstmGLPlot()
@@ -405,19 +407,24 @@ void QCstmGLPlot::wheelEvent(QWheelEvent *event){
 }
 
 void QCstmGLPlot::mousePressEvent(QMouseEvent *event){
+    // Change to the hand cursor
+    if(event->buttons()== Qt::LeftButton){
+        this->setCursor(Qt::ClosedHandCursor);
+        clickedLocation = event->pos();
+        clicked = true;
+    } else if ( event->buttons()== Qt::RightButton ) { // Describe an area
+        // Start point
+        clickedLocation = event->pos();
+        rightClicked = true;
+        //qDebug() << "click: "<< pixelAt(clickedLocation).x() << "," << pixelAt(clickedLocation).y();
+        _startSelectionPoint = pixelAt(clickedLocation);
 
-
-	// Change to the hand cursor
-	if(event->buttons()== Qt::LeftButton){
-		this->setCursor(Qt::ClosedHandCursor);
-		clickedLocation = event->pos();
-		clicked = true;
-	} else if ( event->buttons()== Qt::RightButton ) { // Describe an area
-		// Start point
-		clickedLocation = event->pos();
-		rightClicked = true;
-		//qDebug() << "click: "<< pixelAt(clickedLocation).x() << "," << pixelAt(clickedLocation).y();
-	}
+        if(!rubberBand){
+            rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
+        }
+        rubberBand->setGeometry(QRect(clickedLocation, QSize()));
+        rubberBand->show();
+    }
 
 }
 
@@ -431,7 +438,6 @@ void QCstmGLPlot::mouseReleaseEvent(QMouseEvent * event){
 	if(clicked) clicked = false;
 
 	if(rightClicked) {
-
         // No more selection
         _drawSelectionRectangle = false;
 
@@ -443,6 +449,10 @@ void QCstmGLPlot::mouseReleaseEvent(QMouseEvent * event){
         }
 
         rightClicked = false;
+
+        if (rubberBand)
+            rubberBand->hide();
+
         event->accept(); // Done with the event, this has been handled and nobody else gets it.
 
     }
@@ -461,32 +471,32 @@ void QCstmGLPlot::mouseDoubleClickEvent(QMouseEvent *event)
 }
 
 void QCstmGLPlot::keyPressEvent(QKeyEvent *event){//Doesn't really work that well for controls.
-	//Can't seem to handle multiple presses at once and stutters quite badly.
-	const GLfloat speed = zoom*0.05;
-	switch(event->key()){
-	case Qt::Key_Left:
-		addOffset(+speed, 0);
-		event->accept();
-		break;
-	case Qt::Key_Right:
-		addOffset(-speed, 0);
-		event->accept();
-		break;
-	case Qt::Key_Up:
-		addOffset(0, -speed);
-		event->accept();
-		break;
-	case Qt::Key_Down:
-		addOffset(0, +speed);
-		event->accept();
-		break;
-	case Qt::Key_Space:
-		setOffset(0,0);
-		setZoom(1.0);
-		event->accept();
-	default:
-		event->ignore();
-	}
+    //Can't seem to handle multiple presses at once and stutters quite badly.
+    const GLfloat speed = zoom*0.05;
+    switch(event->key()){
+    case Qt::Key_Left:
+        addOffset(+speed, 0);
+        event->accept();
+        break;
+    case Qt::Key_Right:
+        addOffset(-speed, 0);
+        event->accept();
+        break;
+    case Qt::Key_Up:
+        addOffset(0, -speed);
+        event->accept();
+        break;
+    case Qt::Key_Down:
+        addOffset(0, +speed);
+        event->accept();
+        break;
+    case Qt::Key_Space:
+        setOffset(0,0);
+        setZoom(1.0);
+        event->accept();
+    default:
+        event->ignore();
+    }
 }
 
 /*
@@ -525,6 +535,11 @@ void QCstmGLPlot::mouseMoveEvent(QMouseEvent *event){//TODO: verify dragspeed sh
 
 
     }
+
+    if(rubberBand){
+        rubberBand->setGeometry(QRect(clickedLocation, event->pos()).normalized());
+    }
+
     //QPointF pixelHovered = pixelAt(event->pos());
     emit(hovered_pixel_changed(pixelAt(event->pos())));// QString("%1, %2, ??").arg(pixelHovered.x()).arg(pixelHovered.y())));
 }
