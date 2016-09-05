@@ -1283,10 +1283,11 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     QMenu contextMenu;
 
     //Have the region only in the header:
-    QLabel* label = new QLabel(QString("For region (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y())
+    QLabel* label = new QLabel(QString("\n    For region (%1, %2) --> (%3, %4) \n").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y())
                                , this);
     QWidgetAction wid(&contextMenu);
     wid.setDefaultWidget(label);
+    //wid.set
     contextMenu.addAction(&wid);
 
     QAction calcStats(QString("Calc stats"), &contextMenu);    //QAction calcStats(QString("Calc stats (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
@@ -1301,6 +1302,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     QAction gotoDQE(QString("Use for DQE"),&contextMenu);    //QAction gotoDQE(QString("Use for DQE (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&gotoDQE);
 
+    contextMenu.setMinimumWidth(300);
 
     // Show the menu
     QAction * selectedItem = contextMenu.exec(position);
