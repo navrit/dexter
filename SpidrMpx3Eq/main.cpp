@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
     //
     QApplication a(argc, argv);
 
-    a.setWindowIcon( QIcon("./icons/ASI/ASI_sq.png"));
+    a.setWindowIcon( QIcon("./icons/ASI/ASI_sq_1100x1100.png"));
 
     QSurfaceFormat format;
     format.setDepthBufferSize(24);

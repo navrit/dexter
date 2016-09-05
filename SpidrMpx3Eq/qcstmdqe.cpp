@@ -7,6 +7,9 @@
 #include <dlib/algs.h>
 #include <complex>
 #include <QtDataVisualization>
+#include "optionsdialog.h"
+#include "ui_optionsdialog.h"
+#include "dlib/statistics.h"
 
 //using namespace boost::math::constants;
 
@@ -49,6 +52,11 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
 //    tracer->setSize(7);
 //    ui->LSFplot->addItem(tracer);
 
+    ui->windowLabel->setToolTip(tr("used for local fitting, must be an uneven number"));
+    ui->windowLineEdit->setToolTip(tr("must be an uneven number"));
+
+    _optionsDialog = new optionsDialog(this);
+
 }
 
 QCstmDQE::~QCstmDQE()
@@ -61,6 +69,8 @@ void QCstmDQE::SetMpx3GUI(Mpx3GUI *p){
     connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
     connect( this, &QCstmDQE::open_data, _mpx3gui, &Mpx3GUI::open_data_with_path);
     connect( ui->comboBox, SIGNAL(currentIndexChanged(QString)), _mpx3gui->GetUI()->visualizationGL, SLOT(on_layerSelector_activated(QString)) );
+
+    _optionsDialog->SetMpx3GUI(_mpx3gui);
 }
 
 void QCstmDQE::setRegion(QPoint pixel_begin, QPoint pixel_end)
@@ -86,6 +96,11 @@ void QCstmDQE::clearDataAndPlots()
     refreshLog(true);
 }
 
+void QCstmDQE::refreshLog(bool emptylog){
+    if(emptylog) ui->textBrowser->clear();
+        else ui->textBrowser->setText(_logtext);
+    ui->textBrowser->verticalScrollBar()->setValue(ui->textBrowser->verticalScrollBar()->maximum()); //Scroll down.
+}
 
 //------------------------MTF (Modulation Transfer Function)---------------------------------------------------------------------------------------
 
@@ -125,11 +140,16 @@ void QCstmDQE::plotESF()
         ui->ESFplot->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, Qt::white, 5));
         ui->ESFplot->graph(1)->setErrorType(QCPGraph::etValue);
 
-//        ui->ESFplot->graph(0)->setData(_ESFdata[0], _ESFdata[1]);
+        ui->ESFplot->graph(0)->setData(_ESFdata[0], _ESFdata[1]);
         ui->ESFplot->graph(1)->setDataValueError(_ESFbinData[0], _ESFbinData[1], _ESFbinData[2]);
 
-        ui->ESFplot->yAxis->rescale();         
+        ui->ESFplot->yAxis->rescale();
         ui->ESFplot->replot( QCustomPlot::rpQueued );
+
+        ui->dataCheckbox->setEnabled(true);
+        _optionsDialog->setDataRange(_plotrange);
+        _logtext += QString("ESF data was binned using\n binsize = %1\n").arg(_binsize);
+        refreshLog(false);
     }
     else{
         QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
@@ -154,31 +174,85 @@ void QCstmDQE::plotFitESF()
     graphNr = ui->ESFplot->graphCount();
 
     QVector<QVector<double> > fitdata;
+    QVector<QVector<double> > data;
+
+    if(_usebins) data = _ESFbinData;
+    else data = _ESFdata;
+
+    std::vector<double> fity(data[0].length());
+    std::vector<double> y(data[0].length());
 
     if(_useErrorFunc){
-        fitESFparams(_ESFdata);
+        fitESFparams(data);
 
         fitdata = calcESFfitData();
 
         if(fitdata[0].empty() || fitdata[1].empty())
             QMessageBox::warning ( this, tr("Error"), tr( "No fitting data could be generated." ) );
-        else _logtext += QString("Error function fitted to binned ESF data with \n binsize = %1 pixels\n and parameters:\n scaling = %2\n offset = %3\n a = %4\n \n").arg(_binsize).arg(_params(0, 0)).arg(_params(1,0)).arg(_params(2,0));
-
+        else{
+            _logtext += "Error function fitted to ";
+            if(_usebins) _logtext += "BINNED ESF data ";
+                else _logtext += "prebinned ESF data ";
+            _logtext += QString("with parameters:\n scaling = %1\n offset = %2\n a = %3\n").arg(_params(0, 0)).arg(_params(1,0)).arg(_params(2,0));
+        }
+        if(fitdata[0].length() != fitdata[1].length())
+            QMessageBox::warning ( this, tr("Error"), tr( "Something is wrong with the data. Input and output arrays are not the same size." ) );
         ui->ESFplot->graph(graphNr - 2)->setData(fitdata[0], fitdata[1]);
+
+        //Calculate the values of the fit at the original data positions.
+        input_vector input;
+        for(int i = 0; i < fity.size(); i++){
+            input(0) = data[0][i];
+            fity.at(i) = model(input, _params);    //model value
+            y.at(i) = data[1][i];                  //actual data value
+        }
     }
     else{
-        fitdata = calcSmoothedESFdata(_ESFbinData);
+        fitdata = calcSmoothedESFdata(data);
         _ESFsmoothData = fitdata;
-        _logtext += QString("Smoothing 4th order polynomial function fitted to binned ESF data with \n binsize = %1\n").arg(_binsize);
+//        _logtext += QString("Smoothing 4th order polynomial function fitted to binned ESF data with \n binsize = %1\n window width = %2").arg(_binsize).arg(_windowW);
+
+
+
+        if(fitdata[0].length() != fitdata[1].length())
+            QMessageBox::warning ( this, tr("Error"), tr( "Something is wrong with the data. Input and output arrays are not the same size." ) );
+        else if(fitdata[0].empty() || fitdata[1].empty())
+            QMessageBox::warning ( this, tr("Error"), tr( "No smoothing data could be generated." ) );
+        else{
+            _logtext += "Smoothing 4th order polynomial function fitted to ";
+            if(_usebins) _logtext += "BINNED ESF data ";
+                else _logtext += "prebinned ESF data ";
+            _logtext += QString("with \n window width = %1\n").arg(_windowW);
+        }
 
         ui->ESFplot->graph(graphNr - 1)->setData(fitdata[0], fitdata[1]);
+
+        for(int i = 0; i < fitdata[0].length(); i++){
+            fity.at(i) = fitdata[1][i];
+            y.at(i) = data[1][i];
+        }
+
     }
 
+    //std::vectors required for dlib
+//    int length = fitdata[0].length();
+//    std::vector<double> fity(length);
+//    std::vector<double> y(length);
+//    for(int i = 0; i < length; i++){
+//        fity.at(i) = fitdata[1][i];
+//        y.at(i) = data[1][i];
+//    }
+
+    double R2 = dlib::r_squared(fity, y);
+    _logtext += QString("R squared = %1\n").arg(R2);
+    refreshLog(false);
 
     //        ui->ESFplot->xAxis->setRange(-5., 5.);
     //        ui->ESFplot->yAxis->setRange(-0.2, 1.2);
     ui->ESFplot->rescaleAxes();
     ui->ESFplot->replot( QCustomPlot::rpQueued );
+
+    ui->clearFitsPushButton->setEnabled(true); //Enable button to clear fitplots
 }
 
 void QCstmDQE::plotLSF()
@@ -237,12 +311,12 @@ void QCstmDQE::fitESFparams(QVector<QVector<double> > esfdata)
 {
     std::vector<std::pair<input_vector, double> > data; //vector of pairs of variable going in and the value coming out.
 
-    int length = _ESFbinData[0].length(); //esfdata[0].length();
+    int length = esfdata.length(); //esfdata[0].length();
     input_vector input;     //must be in dlib::matrix form...
 
     for(int i = 0; i < length; i++){
-        input(0) = _ESFbinData[0][i];           //x
-        const double output = _ESFbinData[1][i];//y
+        input(0) = esfdata[0][i];           //x
+        const double output = esfdata[1][i];//y
 
         data.push_back( make_pair(input, output) );     //std
     }
@@ -270,14 +344,15 @@ void QCstmDQE::fitESFparams(QVector<QVector<double> > esfdata)
 
         double res;
         double res2;
-        double test;
+        double Res;
         std::vector<std::pair<input_vector, double>>::size_type i ;
         for(i = 0; i != data.size(); i++){
 
             res = residual( data.at(i), params );
             res2 = res * res;
-            test = res2 / _ESFbinData[2][i]; //divide by st.dev. -> Normalized residual..
-            red_chi_squared += test;
+            if(_usebins) Res = res2 / esfdata[2][i]; //divide by st.dev. -> Normalized residual..
+                else Res = res2;
+            red_chi_squared += Res;
             mse += res2;
         }
 
@@ -291,7 +366,7 @@ void QCstmDQE::fitESFparams(QVector<QVector<double> > esfdata)
         //#dof is undefined for a non-linear model fit.
 
         mse /= length;
-        cout << "Mean Squared error: " << mse << endl;
+//        cout << "Mean Squared error: " << mse << endl;
         _logtext += QString("Mean Squared Error of the fit: %1\n").arg(mse) ;
     }
     catch (std::exception& e)
@@ -445,7 +520,6 @@ QVector<QVector<double> > QCstmDQE::calcESFfitData()
     double a = _params(2,0);
 
     if(scaling != 0 && a != 0){
-
         //Make x (distance) input_vector to put in model
         //and a QVector of all distances and a QVector of all the fitted curve values to return.
         for(int j = 0; j < fitlength; j++){
@@ -463,11 +537,12 @@ QVector<QVector<double> > QCstmDQE::calcESFfitData()
 
 QVector<QVector<double> > QCstmDQE::calcSmoothedESFdata(QVector<QVector<double> > data)
 {   int i;
-    windowW = 11; //Set window width (TO DO user option).
-    int offset = (windowW - 1) / 2;
-    std::vector<std::pair<input_vector, double> > windowData(windowW); //vector of pairs of the variable going in and the value coming out.
+//    _windowW = 11; //Set window width (TO DO user option).
+    int offset = (_windowW - 1) / 2;
+    std::vector<std::pair<input_vector, double> > windowData(_windowW); //vector of pairs of the variable going in and the value coming out.
     parameter_vector params;
     params = 1;
+    params(5) = _windowW;
     input_vector input;
     QVector<QVector<double> > smoothData(2);
     //smoothData[0] = data[0]; //No.. smoothdata is 2*offset shorter...
@@ -483,6 +558,7 @@ QVector<QVector<double> > QCstmDQE::calcSmoothedESFdata(QVector<QVector<double> 
 //    }
 
     for(int j = 0; j < lengthSmooth; j++){//For every point(index) to be fitted and put in smoothdata.
+
 //        if(i > offset){
 //            //Shift window by one spot.
 //            windowData.erase(windowData.begin());
@@ -491,8 +567,8 @@ QVector<QVector<double> > QCstmDQE::calcSmoothedESFdata(QVector<QVector<double> 
 //        }
         int imiddle = j + offset;
 
-        int begin   = - 0.5*(windowW-1);
-        int end     =   0.5*(windowW-1);
+        int begin   = - 0.5*(_windowW-1);
+        int end     =   0.5*(_windowW-1);
 
         for(i = begin; i <= end; i++){
             input(0) = data[0][imiddle + i];                        //x
@@ -526,13 +602,13 @@ double polyModel(const input_vector &input, const parameter_vector &params){ //T
 
 double polyResidual(const std::pair<input_vector, double>& data, const parameter_vector& params)
 {
-    return (polyModel(data.first, params) - data.second)*polyWeightRoot((data.first)); //multiply by the square root of the weighting factor.
+    return (polyModel(data.first, params) - data.second)*polyWeightRoot((data.first), params(5)); //multiply by the square root of the weighting factor.
 }
 
-double polyWeightRoot(input_vector input){
+double polyWeightRoot(input_vector input, int windowW){
     //Gaussian weights, (Samei et al. (1998))
     double i = input(1);
-    double arg = 4*i/( 11 - 1);
+    double arg = 4*i/( windowW - 1);
     arg *= - arg; //- arg2
 
     double f = exp(arg);
@@ -623,13 +699,14 @@ QVector<QVector<double> > QCstmDQE::calcLSFdata()
     }
     else if(_useDerFit){//Take derivative of smoothed datafit.
         data = calcNumDerivativeOfdata(_ESFsmoothData);
-        if(!data.isEmpty()) _logtext += "LSF calculated using numerical derivative of the Smoothed ESF.\n";
+        if(!data.isEmpty()) _logtext += "LSF calculated using numerical derivative of the SMOOTHED ESF.\n";
+        else QMessageBox::warning ( this, tr("Error"), tr( "Something went wrong while taking the numerical derivative." ) );
     }
 
     else { //Take derivative of the binned data..
         data = calcNumDerivativeOfdata(_ESFbinData);
-        if(!data.isEmpty()) _logtext += "LSF calculated, using numerical derivative of the Binned ESF.\n";
-        else QMessageBox::warning ( this, tr("Error"), tr( "Something went wrong with the numerical derivative." ) );
+        if(!data.isEmpty()) _logtext += "LSF calculated, using numerical derivative of the BINNED ESF.\n";
+        else QMessageBox::warning ( this, tr("Error"), tr( "Something went wrong while taking the numerical derivative." ) );
     }
 
     //Calculate maximum value of the ESFdata and normalize to one.
@@ -731,16 +808,36 @@ void QCstmDQE::plotEdge(QPoint ab)
 
 //---------------------NPS (Noise Power Spectrum)------------------------------------------------------------------------------------------------
 
-void QCstmDQE::calcFTsquareRoI()
+void QCstmDQE::on_npsPushButton_clicked()
+{
+    if(_singleNPS){
+        QVector<QVector<double> > FTdata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
+        //get1D ftdata... for now use FTdata[0]
+        plotNPS(FTdata[0]);
+    }
+    else{
+        ui->listWidget->count();
+        for( int i = 0; i < ui->listWidget->count(); i++){ //QListWidgetItem item : ui->listWidget){
+            QString filetest = ui->listWidget->item(i)->text();
+            emit open_data(false, true, filetest);
+
+            calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, _beginpix, _endpix));
+
+        }
+    }
+}
+
+QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(const QVector<QVector<int> > &datainRoI )
 {
     //Let's try it for the selected RoI first..
 
     //The data is constructed as follows:
-    //      - Each row represents an horizontal row of pixels, starting from the bottom of the selected RoI.
+    //      - Each row represents a horizontal row of pixels, starting from the bottom of the selected RoI.
     //      - The elements in each row represent the pixels in the row, starting from the left.
     //The data can thus be seen as a normal cartesion system, where the left side of each pixel is the index.
     //To get datapoints in the middle of each pixel, a correction of +0.5 pixel has to be added in both the x and y direction.
-    QVector<QVector<int> >  datainRoI = _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix);
+
+//    QVector<QVector<int> >  datainRoI = _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix);
     int xlength = datainRoI[0].length(); //Assuming the RoI is rectangular, i.e. every row has the same length.
     int ylength = datainRoI.length();
 
@@ -765,33 +862,56 @@ void QCstmDQE::calcFTsquareRoI()
 //    }
 
     //Testpatroon.
-    xlength = 64;
-    ylength = 64;
+    xlength = 8;
+    ylength = 8;
 
-    dlib::matrix<complex<double> > datamatrix(ylength, xlength);
+    dlib::matrix<complex<double> > datamatrix(xlength, ylength);
 
-    int ymid = ylength/2;
-    int xmid = xlength/2;
-    int hh = 10;
-    int hw = 15;
+    //Center rectangle testpattern...
+//    int ymid = ylength/2;
+//    int xmid = xlength/2;
+//    int hh = 4;
+//    int hw = 5;
+//    for(int y = 0; y < 64; y++){
+//        for(int x = 0; x < 64; x++){
+//            if(y >= ymid - hh && y <= ymid + hh)
+//                if(x >= xmid - hw && x <= xmid + hw){
+//                    data3D.push_back(QVector3D( x, y, 10));
+//                    datamatrix(y, x) = { 10, 0};
+//                }
+//                else{
+//                    data3D.push_back(QVector3D( x, y, 0));
+//                    datamatrix(y, x) = { 0, 0};
+//                }
+//            else{
+//                data3D.push_back(QVector3D( x, y, 0));
+//                datamatrix(y, x) = { 0, 0};
+//            }
+//        }
+//    }
 
-    for(int y = 0; y < 64; y++){
-        for(int x = 0; x < 64; x++){
-            if(y >= ymid - hh && y <= ymid + hh)
-                if(x >= xmid - hw && x <= xmid + hw){
-                    data3D.push_back(QVector3D( x, y, 10));
-                    datamatrix(y, x) = { 10, 0};
-                }
-                else{
-                    data3D.push_back(QVector3D( x, y, 0));
-                    datamatrix(y, x) = { 0, 0};
-                }
-            else{
-                data3D.push_back(QVector3D( x, y, 0));
-                datamatrix(y, x) = { 0, 0};
+    //Make a stripy testpattern.
+    for(int y = 0; y < ylength; y++){
+        for(int x = 0; x < xlength; x++){
+            if( x <  2){
+                data3D.push_back(QVector3D(x, y, 10));
+                datamatrix(x, y) = { 10, 0};
+            }
+            else if( x <  4) {
+                data3D.push_back(QVector3D(x, y,  0));
+                datamatrix(x, y) = {  0, 0};
+            }
+            else if( x < 6) {
+                data3D.push_back(QVector3D(x, y, 10));
+                datamatrix(x, y) = { 10, 0};
+            }
+            else if( x < 8) {
+                data3D.push_back(QVector3D(x, y,  0));
+                datamatrix(x, y) = {  0, 0};
             }
         }
     }
+
 
 //Only Qt> 5.7----
 //    plotData3D(data3D);
@@ -822,7 +942,8 @@ void QCstmDQE::calcFTsquareRoI()
 
     //Put the data in a matrix with complex values for FFT calculation...
 //    dlib::matrix<complex<double> > datamatrix(ylength, xlength);
-    dlib::matrix<complex<double> > FTmatrix(ylength, xlength);
+//    dlib::matrix<complex<double> > FTmatrix(ylength, xlength);
+    dlib::matrix<complex<double> > FTmatrix(xlength, ylength); //right?
 
 //    for(int y = 0; y < ylength; y++){
 //            for(int x = 0; x < xlength; x++){
@@ -830,6 +951,7 @@ void QCstmDQE::calcFTsquareRoI()
 //            }
 //    }
 
+    plotData3D(data3D);
     FTmatrix = dlib::fft(datamatrix);
 
 
@@ -846,17 +968,25 @@ void QCstmDQE::calcFTsquareRoI()
     QCPColorMap *colorMap = new QCPColorMap(ftplot->xAxis, ftplot->yAxis);
     ftplot->addPlottable(colorMap);
     colorMap->data()->setSize(xlength, ylength); // we want the color map to have nx * ny data points
-    //colorMap->data()->setRange(QCPRange(-4, 4), QCPRange(-4, 4)); // and span the coordinate range -4..4 in both key (x) and value (y) dimensions
+    colorMap->data()->setRange(QCPRange(0, 1), QCPRange(0, 1));
+    colorMap->setInterpolate(false);
 
 
+    //Just to see data in Debugger::
+    QVector<QVector<double> > ftdata(ylength);
+    for(int y = 0; y < ylength; y++){
+        ftdata[y].resize(xlength);
+    }
     for(int y = 0; y < ylength; y++){
             for(int x = 0; x < xlength; x++){
                 //double z = norm( FTmatrix(y, x) ); //Norm gives the squared magnitude of the complex number in the FTmatrix.
-                double z = abs ( FTmatrix(y, x) );
+                double z = abs ( FTmatrix(x, y) );
                 colorMap->data()->setCell(x, y, z);
                 //TODO: save the values for other purposes in normal vector.
+                ftdata[y][x] = z;
             }
     }
+
     //Add a color scale:
     QCPColorScale *colorScale = new QCPColorScale(ftplot);
     ftplot->plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
@@ -870,9 +1000,12 @@ void QCstmDQE::calcFTsquareRoI()
     colorMap->rescaleDataRange();
     ftplot->rescaleAxes();
     ftplot->show();
+
+    return ftdata;
+
 }
 
-parameter_vector QCstmDQE::fitPlaneParams(QVector<QVector<int> > dataRoI)
+parameter_vector QCstmDQE::fitPlaneParams(QVector<QVector<int> > dataRoI) //Creates error onlt when running in debug mode...
 {
     std::vector<std::pair<input_vector, double> > data; //vector of pairs of variable going in and the value coming out.
 
@@ -882,19 +1015,18 @@ parameter_vector QCstmDQE::fitPlaneParams(QVector<QVector<int> > dataRoI)
     parameter_vector params;
     QtDataVisualization::QScatterDataArray data3D;
 
-
-    for(int y = 0; y < ylength; y++){
-        for(int x = 0; x < xlength; x++){
-            input(0) = x + 0.5;
-            input(1) = y + 0.5;
-            double output = dataRoI[y][x];
-
-            data.push_back( make_pair(input, output) );
-            data3D.push_back( QVector3D(input(0), input(1), output) );
-        }
-    }
-
     try{
+        for(int y = 0; y < ylength; y++){
+            for(int x = 0; x < xlength; x++){
+                input(0) = x + 0.5;
+                input(1) = y + 0.5;
+                double output = dataRoI[y][x];
+
+                data.push_back( make_pair(input, output) );
+                data3D.push_back( QVector3D(input(0), input(1), output) );
+            }
+        }
+
         //Let's display the data in a 3Dplot using Qt data visualization (Qt 5.7 onwards only)
         //plotData3D(data3D);
 
@@ -926,6 +1058,16 @@ parameter_vector QCstmDQE::fitPlaneParams(QVector<QVector<int> > dataRoI)
     return params;
 }
 
+double planeModel(const input_vector &input, const parameter_vector &params){ //Types designed for the optimization algorithm.
+   //Returns z = ax + by + c.
+    return params(0)*input(0) + params(1)*input(1) + params(2);
+}
+
+double planeResidual(const std::pair<input_vector, double>& data, const parameter_vector& params)
+{
+    return planeModel(data.first, params) - data.second;
+}
+
 void QCstmDQE::plotData3D(QtDataVisualization::QScatterDataArray data3D)
 {
     QtDataVisualization::Q3DScatter *scatter = new QtDataVisualization::Q3DScatter();
@@ -939,15 +1081,20 @@ void QCstmDQE::plotData3D(QtDataVisualization::QScatterDataArray data3D)
     container->show();
 }
 
-double planeModel(const input_vector &input, const parameter_vector &params){ //Types designed for the optimization algorithm.
-   //Returns z = ax + by + c.
-    return params(0)*input(0) + params(1)*input(1) + params(2);
+void QCstmDQE::plotNPS(const QVector<double> &data){
+    double stepsize = 1 / double(data.length());
+    ui->NPSplot->clearGraphs();
+    ui->NPSplot->addGraph();
+    ui->NPSplot->graph(0)->setLineStyle(QCPGraph::lsImpulse);
+
+    for(double i = 0; i < data.length(); i++){
+        ui->NPSplot->graph(0)->addData( i * stepsize, data[i] ); //Plot the values for fx (fy=0).
+    }
+    ui->NPSplot->rescaleAxes();
+    ui->NPSplot->xAxis->setRange(-0.01, 1.01);
+    ui->NPSplot->replot( QCustomPlot::rpQueued );
 }
 
-double planeResidual(const std::pair<input_vector, double>& data, const parameter_vector& params)
-{
-    return planeModel(data.first, params) - data.second;
-}
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1108,12 +1255,13 @@ void QCstmDQE::on_saveMTFpushButton_clicked()
 {
     QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("Text files (*.txt)"));
     QString pngfilename;
-    // Force the .bin in the data filename
+    // Force the .txt in the data filename
     if ( ! filename.contains(".txt") ) {
         pngfilename = filename.append(".png");
         filename.append(".txt");
     }
-    else{ pngfilename = filename.remove(".txt");
+    else{ pngfilename = filename;
+        pngfilename.remove(".txt");
         pngfilename.append(".png");
     }
 
@@ -1130,9 +1278,10 @@ void QCstmDQE::on_saveMTFpushButton_clicked()
     ui->MTFplot->savePng(pngfilename, 0, 0, 2);
 
     QTextStream out(&saveFile);
-    out << dataToString(_MTFdata);
+    if(!_MTFdata.isEmpty()) out << dataToString(_MTFdata);
+    else QMessageBox::warning ( this, tr("Error"), tr( "No MTF data." ) );
 //    saveFile.write(dataToString(_MTFdata));
-//    saveFile.close();
+    saveFile.close();
 }
 
 void QCstmDQE::on_logClearPushButton_clicked()
@@ -1173,11 +1322,6 @@ void QCstmDQE::on_binSizeLineEdit_editingFinished()
     ui->binSizeLineEdit->blockSignals(false);
 }
 
-void QCstmDQE::on_npsPushButton_clicked()
-{
-    calcFTsquareRoI();
-}
-
 void QCstmDQE::ConnectionStatusChanged(bool connected)
 {
     ui->takeDataPushButton->setEnabled( connected );
@@ -1196,10 +1340,10 @@ void QCstmDQE::on_derivCheckBox_toggled(bool checked)
     _useDerFit = checked;
 }
 
-void QCstmDQE::on_errorFuncCheckBox_toggled(bool checked)
-{
-    _useErrorFunc = checked;
-}
+//void QCstmDQE::on_errorFuncCheckBox_toggled(bool checked)
+//{
+//    _useErrorFunc = checked;
+//}
 
 //void QCstmDQE::on_mouseClick_showPlotPoint(QMouseEvent *event)
 //{
@@ -1219,4 +1363,103 @@ void QCstmDQE::on_mouseMove_showPlotPoint(QMouseEvent *event)
     double y = plot->yAxis->pixelToCoord(event->pos().y());
 
     ui->pointLabel->setText(QString("(%1 , %2)").arg(x).arg(y));
+}
+
+void QCstmDQE::on_dataCheckbox_toggled(bool checked)
+{
+    if(checked)
+        ui->ESFplot->graph(0)->setData(_ESFdata[0], _ESFdata[1]);
+    else
+        ui->ESFplot->graph(0)->clearData();
+
+    ui->ESFplot->replot( QCustomPlot::rpQueued );
+
+}
+
+//void QCstmDQE::on_fitComboBox_currentIndexChanged(const QString &arg1)
+//{
+//    if(arg1.contains("Error")){
+//        _useErrorFunc = true;
+//        ui->windowLabel->setEnabled(false);
+//        ui->windowLineEdit->setEnabled(false);
+//    }
+//    if(arg1.contains("Smoothing")){
+//        _useErrorFunc = false;
+//        ui->windowLabel->setEnabled(true);
+//        ui->windowLineEdit->setEnabled(true);
+//    }
+//}
+
+//void QCstmDQE::on_windowLineEdit_editingFinished()
+//{
+//    int width = ui->windowLineEdit->text().toInt();
+////    int width = _optionsDialog->ui->lineEdit();
+//    if(width <= 2){
+//        width = 3;
+//        ui->windowLineEdit->setText(QString("%1").arg(width));
+//        QMessageBox::warning ( this, tr("Warning"), tr( "The window width must be bigger than 2." ) );
+//    }
+//    if(width % 2 == 0){
+//        width ++; //The window width must be an uneven number.
+//        ui->windowLineEdit->setText(QString("%1").arg(width));
+//        QMessageBox::warning ( this, tr("Warning"), tr( "The window width must be an uneven number." ) );
+//    }
+//    if(width > _ESFbinData[0].length()){
+//        width = _ESFbinData[0].length();
+//        ui->windowLineEdit->setText(QString("%1").arg(width));
+//        QMessageBox::warning ( this, tr("Warning"), tr( "The window width can not be larger than the number of data points." ) );
+//    }
+
+//    _windowW = width;
+//}
+
+void QCstmDQE::on_clearFitsPushButton_clicked()
+{
+    ui->ESFplot->graph(i_esfFitgraph)->clearData();
+    ui->ESFplot->graph(i_esfFitgraph + 1)->clearData();
+
+    ui->ESFplot->replot( QCustomPlot::rpQueued );
+}
+
+void QCstmDQE::on_optionsPushButton_clicked()
+{
+    _optionsDialog->show();
+//    _optionsDialog->setCurrentSettings();
+}
+
+void QCstmDQE::on_apply_options(QHash<QString, int> options)
+{
+    //Set all options values in variables.
+//    if(options.value("edge")    == 0);
+    if(options.value("error")   == 0) _useErrorFunc = false;
+        else _useErrorFunc = true;
+    if(options.value("fitder")  == 0) _useDerFit = false;
+        else _useDerFit = true;
+
+    _windowW = options.value("windowW");
+
+    if(options.value("bindata") == 0) _usebins = false;
+        else _usebins = true;
+    if(_binsize != options.value("binsize")){
+        _binsize = options.value("binsize");
+        plotESF(); //TO DO: only replot the BINNED data. Seperate functions
+    }
+
+
+}
+
+void QCstmDQE::on_close_optionsDialog()
+{
+//    if(_optionsDialog){
+//        delete _optionsDialog;
+//        _optionsDialog = nullptr;
+//    }
+
+    _optionsDialog->close();
+
+}
+
+void QCstmDQE::on_singleFileCheckBox_toggled(bool checked)
+{
+    _singleNPS = checked;
 }

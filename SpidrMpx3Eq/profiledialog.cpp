@@ -16,8 +16,6 @@ ProfileDialog::ProfileDialog(QWidget *parent) :
     for(int i = 0; i < editsList.length(); i++)
         connect( editsList[i], SIGNAL(editingFinished()), this, SLOT(onpointEdit_editingFinished()));
 
-    connect( ui->profilePlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mousePressEvent(QMouseEvent*)));
-
 }
 
 ProfileDialog::~ProfileDialog()
@@ -33,8 +31,7 @@ void ProfileDialog::SetMpx3GUI(Mpx3GUI * p )
              _mpx3gui->getVisualization(),
              &QCstmGLVisualization::on_user_accepted_profile );
 
-    //setSelectedThreshold(_mpx3gui->getVisualization()->getActiveThreshold());
-
+    connect( ui->profilePlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mousePressEvent(QMouseEvent*)));
 }
 
 
@@ -501,31 +498,35 @@ void ProfileDialog::on_clearbutton_clicked()
         ui->profilePlot->graph(N_maingraphs + editsList.length() + i)->clearData();
 
     ui->profilePlot->replot(QCustomPlot::rpQueued);
+
+    ui->textBrowser->clear();
 }
 
 bool ProfileDialog::valueinRange(int value){
     if(_axis == "X"){
-        if(_begin.x() <= _end.x())
+        if(_begin.x() <= _end.x()) {
             if(value >= _begin.x() && value <= _end.x()) return true;
+        }
         else if(value >= _end.x() && value <= _begin.x()) return true;
 
-        else return false;
-    }
-    if(_axis == "Y"){
-        if(_begin.y() <= _end.y())
-            if(value >= _begin.y() && value <= _end.y()) return true;
-        else if(value >= _end.y() && value <= _begin.y()) return true;
-        else return false;
-    }
-    else {changeText("No axis defined.");
         return false;
     }
+    if(_axis == "Y"){
+        if(_begin.y() <= _end.y()) {
+            if(value >= _begin.y() && value <= _end.y()) return true;
+        }
+        else if(value >= _end.y() && value <= _begin.y()) return true;
+
+        return false;
+    }
+    changeText("No axis defined.");
+    return false;
 }
 
 void ProfileDialog::onpointEdit_editingFinished(){
 
     int x;
-    QString txt = sender()->objectName().split("_")[1]; //Depends on the naming of the pointEdits..
+    QString txt = sender()->objectName().split("_")[1];
     int index = txt.toInt();
 
     ui->profilePlot->graph(N_maingraphs + index)->clearData();
@@ -540,10 +541,11 @@ void ProfileDialog::onpointEdit_editingFinished(){
 
 void ProfileDialog::on_comboBox_currentIndexChanged(const QString &arg1)
 {
-    QStringList split = arg1.split(' ');
-    int threshold = split.last().toInt();
-    setSelectedThreshold(threshold);
-    setAxisMap(_mpx3gui->getDataset()->calcProfile(_axis, threshold, _begin, _end));
+    QString s = arg1;
+    s.remove("Threshold", Qt::CaseInsensitive);
+    int layerIndex = s.toInt();
+    setLayer(layerIndex);
+    setAxisMap(_mpx3gui->getDataset()->calcProfile(_axis, layerIndex, _begin, _end));
     plotProfile();
     show();
 }
@@ -588,4 +590,22 @@ void ProfileDialog::on_checkBox_right_toggled(bool checked)
 {
     _right = checked;
 
+}
+
+void ProfileDialog::on_select_xy_currentIndexChanged(int index)
+{
+
+    if (index==0) _axis = "X";
+    if (index==1) _axis = "Y";
+
+    QString s = ui->comboBox->currentText();
+    s.remove("Threshold", Qt::CaseInsensitive);
+    int layerIndex = s.toInt();
+    setLayer(layerIndex);
+    setAxisMap(_mpx3gui->getDataset()->calcProfile(_axis, layerIndex, _begin, _end));
+    plotProfile();
+
+    on_clearbutton_clicked();
+
+    show();
 }

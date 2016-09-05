@@ -123,6 +123,30 @@
     </layout>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_11">
+     <item>
+      <widget class="QPushButton" name="optionsPushButton">
+       <property name="text">
+        <string>Options</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>37</width>
+         <height>17</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="QSplitter" name="splitter_2">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -137,15 +161,18 @@
       <property name="title">
        <string>MTF</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_9">
+      <layout class="QVBoxLayout" name="verticalLayout_12">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_8">
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_8">
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
               <widget class="QRadioButton" name="radioButton">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="maximumSize">
                 <size>
                  <width>16777215</width>
@@ -181,14 +208,27 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_3">
              <item>
-              <widget class="QCheckBox" name="errorFuncCheckBox">
-               <property name="text">
-                <string>Error function</string>
+              <widget class="QComboBox" name="fitComboBox">
+               <property name="enabled">
+                <bool>false</bool>
                </property>
+               <item>
+                <property name="text">
+                 <string>Error Function</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Smoothing </string>
+                </property>
+               </item>
               </widget>
              </item>
              <item>
               <widget class="QCheckBox" name="derivCheckBox">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string>Func der</string>
                </property>
@@ -203,6 +243,9 @@
             <layout class="QHBoxLayout" name="horizontalLayout_5">
              <item>
               <widget class="QLabel" name="label">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string>Binsize: </string>
                </property>
@@ -210,6 +253,9 @@
              </item>
              <item>
               <widget class="QLineEdit" name="binSizeLineEdit">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="maximumSize">
                 <size>
                  <width>35</width>
@@ -223,6 +269,9 @@
              </item>
              <item>
               <widget class="QLabel" name="label_2">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string>pix</string>
                </property>
@@ -231,20 +280,67 @@
             </layout>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton">
-             <property name="text">
-              <string>Options</string>
-             </property>
-            </widget>
+            <layout class="QHBoxLayout" name="horizontalLayout_8">
+             <item>
+              <widget class="QLabel" name="windowLabel">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Window width:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="windowLineEdit">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>31</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>11</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_3">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </item>
           </layout>
          </item>
          <item>
-          <widget class="QPushButton" name="mtfPushButton">
-           <property name="text">
-            <string>Calculate PMTF</string>
-           </property>
-          </widget>
+          <layout class="QVBoxLayout" name="verticalLayout_11">
+           <item>
+            <widget class="QPushButton" name="mtfPushButton">
+             <property name="text">
+              <string>Calculate PMTF</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="pointLabel">
+             <property name="text">
+              <string>(0,0)</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
@@ -253,7 +349,28 @@
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
-         <widget class="QCustomPlot" name="ESFplot" native="true"/>
+         <widget class="QWidget" name="layoutWidget">
+          <layout class="QVBoxLayout" name="verticalLayout_9">
+           <item>
+            <widget class="QCustomPlot" name="ESFplot" native="true">
+             <layout class="QVBoxLayout" name="verticalLayout_10"/>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="dataCheckbox">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Show prebinning data</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
          <widget class="QWidget" name="layoutWidget">
           <layout class="QVBoxLayout" name="verticalLayout">
            <item>
@@ -275,8 +392,31 @@
         <layout class="QHBoxLayout" name="horizontalLayout_9">
          <item>
           <widget class="QPushButton" name="saveMTFpushButton">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
            <property name="text">
             <string>Save MTF data</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="clearFitsPushButton">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Clear fits</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="clearPushButton">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Clear all</string>
            </property>
           </widget>
          </item>
@@ -292,13 +432,6 @@
             </size>
            </property>
           </spacer>
-         </item>
-         <item>
-          <widget class="QLabel" name="pointLabel">
-           <property name="text">
-            <string>(0,0)</string>
-           </property>
-          </widget>
          </item>
         </layout>
        </item>
@@ -342,6 +475,13 @@
             </layout>
            </item>
            <item>
+            <widget class="QCheckBox" name="singleFileCheckBox">
+             <property name="text">
+              <string>Single file</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QPushButton" name="npsPushButton">
              <property name="text">
               <string>Calculate NPS</string>
@@ -376,7 +516,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QCustomPlot" name="widget" native="true">
+        <widget class="QCustomPlot" name="NPSplot" native="true">
          <property name="minimumSize">
           <size>
            <width>171</width>

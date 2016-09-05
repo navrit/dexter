@@ -99,8 +99,8 @@ public:
     void clearStatsString();
     void initStatsString();
 
-    void rewindHistoLimits();
 
+    void rewindHistoLimits();
     bool getDropFrames(){return _dropFrames;}
 
     void ConfigureGUIForDataTaking();
@@ -111,6 +111,7 @@ public:
     bool DataTakingThreadIsRunning();
     bool DataTakingThreadIsIdling();
     void CalcETA();
+
 
 private:
 
@@ -267,6 +268,7 @@ public slots:
 
     void data_misaligned(bool);
     void mpx3clock_stops(int);
+
 
     void fps_update(int);
     void overflow_update(int);

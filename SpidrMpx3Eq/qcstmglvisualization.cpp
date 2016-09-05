@@ -909,7 +909,6 @@ void QCstmGLVisualization::BuildStatsStringCounts(uint64_t counts)
 
     QString plS = "<font color=\"black\">";
     if ( _mpx3gui->getDataset()->isDataMisaligned() ) plS = "<font color=\"red\">";
-
     plS += QString::number( counts, 'd', 0 );
     plS += "</font>";
 
@@ -1288,16 +1287,20 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     wid.setDefaultWidget(label);
     contextMenu.addAction(&wid);
 
-    QAction calcStats(QString("Calc stats"), &contextMenu);    //QAction calcStats(QString("Calc stats (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    QAction calcStats(QString("Calc stats"), &contextMenu);
+    //QAction calcStats(QString("Calc stats (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&calcStats);
 
-    QAction calcProX(QString("ProfileX"), &contextMenu);    //QAction calcProX(QString("ProfileX (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    QAction calcProX(QString("ProfileX"), &contextMenu);
+    //QAction calcProX(QString("ProfileX (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&calcProX);
 
-    QAction calcProY(QString("ProfileY"), &contextMenu);    //QAction calcProY(QString("ProfileY (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    QAction calcProY(QString("ProfileY"), &contextMenu);
+    //QAction calcProY(QString("ProfileY (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&calcProY);
 
-    QAction gotoDQE(QString("Use for DQE"),&contextMenu);    //QAction gotoDQE(QString("Use for DQE (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    QAction gotoDQE(QString("Use for DQE"),&contextMenu);
+    //QAction gotoDQE(QString("Use for DQE (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&gotoDQE);
 
     contextMenu.setMinimumWidth(300);
@@ -1327,9 +1330,11 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _mpx3gui->getDataset()->collectPointsROI(threshold, pixel_begin, pixel_end);
         _mpx3gui->GetUI()->stackedWidget->setCurrentIndex(__dqe_page_Id);
         _mpx3gui->GetUI()->dqeTab->plotESF();
+
     }
 
     else if(selectedItem == &calcProX || selectedItem == &calcProY) {
+    //else if(selectedItem != nullptr) {
 
         QString axis;
         if(selectedItem == &calcProX) axis = "X";
@@ -1342,15 +1347,19 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _profiledialog->setAxis(axis);
         _profiledialog->changeTitle();
 
-        //        QList<int> thresholdlist = _mpx3gui->getDataset()->getThresholds();
-        //        QStringList combolist;
-        //        for(int i = 0; i < thresholdlist.length(); i++)
-        //            combolist.append(QString("Threshold %1").arg(thresholdlist[i]));
+        //QList<int> thresholdlist = _mpx3gui->getDataset()->getThresholds();
+        //QStringList combolist;
+        //for(int i = 0; i < thresholdlist.length(); i++)
+        //    combolist.append(QString("Threshold %1").arg(thresholdlist[i]));
 
         //Calculate the profile of the selected region of the selected layer
 
-        _profiledialog->setSelectedThreshold(threshold);
-        _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, threshold, pixel_begin, pixel_end));
+        //_profiledialog->setSelectedThreshold(threshold);
+        //_profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, threshold, pixel_begin, pixel_end));
+
+        int layerIndex = getActiveThreshold();
+         _profiledialog->setLayer(layerIndex);
+        _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, layerIndex, pixel_begin, pixel_end));
         _profiledialog->plotProfile();
 
         _profiledialog->show();
@@ -1526,6 +1535,8 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
 
     ui->glPlot->getPlot()->setActive(layer);
     ui->histPlot->setActive(layer);
+    ui->layerSelector->setCurrentIndex(layer);
+    _mpx3gui->GetUI()->dqeTab->setSelectedThreshold(threshold);
     //_mpx3gui->set_active_frame(threshold);
     this->active_frame_changed();
 }

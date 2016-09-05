@@ -28,10 +28,15 @@ public:
     void SetMpx3GUI(Mpx3GUI * p);
     void setRegion(QPoint pixel_begin, QPoint pixel_end){_begin = pixel_begin; _end = pixel_end;}
     void setAxisMap(QMap<int,int> Axismap){_Axismap = Axismap;}
-    void setAxis(QString axis){_axis = axis;}
+    void setAxis(QString axis){
+        _axis = axis;
+        if (_axis=="X" ) ui->select_xy->setCurrentIndex(0);
+        if (_axis=="Y" ) ui->select_xy->setCurrentIndex(1);
+
+    }
     void changeTitle();
     void plotProfile();
-    void setSelectedThreshold(int threshold) { ui->comboBox->setCurrentText(QString("Threshold %1").arg(threshold));}
+    void setLayer(int layerIndex) { ui->comboBox->setCurrentText(QString("Threshold %1").arg(layerIndex));}
 
 
 private:
@@ -85,6 +90,8 @@ private slots:
     void on_checkBox_left_toggled(bool checked);
 
     void on_checkBox_right_toggled(bool checked);
+
+    void on_select_xy_currentIndexChanged(int index);
 
 signals:
     void user_accepted_profile();
