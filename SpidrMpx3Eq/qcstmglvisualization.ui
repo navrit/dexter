@@ -19,82 +19,109 @@
   <property name="layoutDirection">
    <enum>Qt::LeftToRight</enum>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_6">
+  <property name="styleSheet">
+   <string notr="true">QGroupBox {
+    border: 1px solid gray;
+    border-radius: 4px;
+    margin-top: 0.5em;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 3px 0 3px;
+}
+</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout_2">
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="layoutDirection">
       <enum>Qt::LeftToRight</enum>
      </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QWidget" name="layoutWidget">
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="5">
-        <widget class="QLabel" name="mouseOverLabel">
-         <property name="text">
-          <string>@</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0" colspan="4">
-        <widget class="QComboBox" name="layerSelector"/>
-       </item>
-       <item row="2" column="1" colspan="3">
-        <widget class="QCheckBox" name="outOfBoundsCheckbox">
-         <property name="text">
-          <string>Drop out-of-bounds</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="7">
-        <widget class="QCheckBox" name="saveWithScaleCheckBox">
-         <property name="text">
-          <string>With scale</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0" colspan="8">
-        <widget class="HeatmapDisplay" name="glPlot" native="true"/>
-       </item>
-       <item row="2" column="0">
-        <widget class="QComboBox" name="gradientSelector"/>
-       </item>
-       <item row="0" column="6">
-        <spacer name="horizontalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>168</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="2" column="5" colspan="2">
-        <widget class="QPushButton" name="saveBitmapPushButton">
-         <property name="text">
-          <string>save image</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="4">
-        <spacer name="horizontalSpacer_5">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
+     <property name="handleWidth">
+      <number>6</number>
+     </property>
+     <widget class="QGroupBox" name="groupBoxVisualization">
+      <property name="title">
+       <string>Visualization</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
+          <widget class="QComboBox" name="layerSelector"/>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLabel" name="mouseOverLabel">
+           <property name="text">
+            <string>@</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2" colspan="3">
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>168</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="0" colspan="6">
+          <widget class="HeatmapDisplay" name="glPlot" native="true"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QComboBox" name="gradientSelector"/>
+         </item>
+         <item row="2" column="1" colspan="2">
+          <widget class="QCheckBox" name="outOfBoundsCheckbox">
+           <property name="text">
+            <string>Drop out-of-bounds</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="3">
+          <spacer name="horizontalSpacer_5">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="2" column="4">
+          <widget class="QPushButton" name="saveBitmapPushButton">
+           <property name="text">
+            <string>save image</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="5">
+          <widget class="QCheckBox" name="saveWithScaleCheckBox">
+           <property name="text">
+            <string>With scale</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -104,7 +131,7 @@
         <number>3</number>
        </property>
        <item>
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="groupBoxDataTaking">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -337,7 +364,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_2">
+        <widget class="QGroupBox" name="groupBoxConfigAndStats">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -351,9 +378,12 @@
           <item>
            <layout class="QGridLayout" name="gridLayout_3">
             <item row="1" column="2">
-             <widget class="QLabel" name="label_2">
+             <widget class="QLabel" name="nTriggersSpinBoxLabel">
               <property name="text">
                <string>Triggers</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
@@ -419,9 +449,12 @@
              </widget>
             </item>
             <item row="1" column="4">
-             <widget class="QLabel" name="label">
+             <widget class="QLabel" name="triggerLengthSpinBoxLabel">
               <property name="text">
                <string>Length</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
@@ -506,7 +539,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_Histo">
+        <widget class="QGroupBox" name="groupBoxHistogram">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>

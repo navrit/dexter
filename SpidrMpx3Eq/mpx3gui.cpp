@@ -19,6 +19,7 @@
 #include "ThlScan.h"
 #include "gradient.h"
 #include "dataset.h"
+#include "mpx3config.h"
 
 #include <QMessageBox>
 #include <QDebug>
@@ -326,15 +327,6 @@ void Mpx3GUI::startupActions()
         _ui->visualizationGL->startupActions();
     }
 
-    // A few widgets couldn't really be initialized in constructors
-    // Pixel depth
-    getConfigMonitoring()->getUI()->pixelDepthComboBox->addItem( QString("%1 bits").arg( config->getPixelDepthFromIndex( 0 ) ) );
-    getConfigMonitoring()->getUI()->pixelDepthComboBox->addItem( QString("%1 bits").arg( config->getPixelDepthFromIndex( 1 ) ) );
-    getConfigMonitoring()->getUI()->pixelDepthComboBox->addItem( QString("%1 bits").arg( config->getPixelDepthFromIndex( 2 ) ) );
-    getConfigMonitoring()->getUI()->pixelDepthComboBox->addItem( QString("%1 bits").arg( config->getPixelDepthFromIndex( 3 ) ) );
-
-    getConfigMonitoring()->getUI()->pixelDepthComboBox->setCurrentIndex( config->getPixelDepth12BitsIndex() );
-
 }
 
 void Mpx3GUI::saveOriginalDataset()
@@ -478,13 +470,15 @@ bool Mpx3GUI::establish_connection() {
     // If passed this point we are ready to work !
 
     // Here the chips can be configured
-    getConfig()->SendConfiguration();
+    // Default operation mode
+    getConfigMonitoring()->OperationModeSwitched( Mpx3Config::__operationMode_SequentialRW );
+    getConfig()->SendConfiguration( Mpx3Config::__ALL );
 
     // Load equalization if possible
     //LoadEqualization();
 
     // Emit
-    emit ConnectionStatusChanged(true);
+    emit ConnectionStatusChanged( true );
 
     // A working set had been instantiated before just to have a Dataset
     //  working on startup.  Now upon connection a new one will be

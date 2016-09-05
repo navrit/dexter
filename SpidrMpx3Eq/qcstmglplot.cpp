@@ -161,6 +161,13 @@ void QCstmGLPlot::setGradient(Gradient *gradient){
 	update();
 }
 
+double QCstmGLPlot::distance2D(QPoint p1, QPoint p2) {
+    return qSqrt( (p2.y()-p1.y())*(p2.y()-p1.y())
+                  +
+                  (p2.x()-p1.x())*(p2.x()-p1.x())
+                  );
+}
+
 void QCstmGLPlot::setAlphaBlending(bool setOn){
 	if(!initialized)
 		return;
@@ -197,29 +204,71 @@ void QCstmGLPlot::readData(Dataset &data){//TODO: only update textures.
 }
 
 void QCstmGLPlot::populateTextures(Dataset &data){
-	if(!initialized)
-		return;
-	this->makeCurrent();
-	if(dataTex->isCreated()){
-		dataTex->destroy();
-	}
-	dataTex->create();
-	dataTex->bind(0); //bind to unit 0;
-	dataTex->setFormat(QOpenGLTexture::R32I);
-	dataTex->setWrapMode(QOpenGLTexture::Repeat);
-	dataTex->setLayers(data.getFrameCount()*data.getLayerCount());
-	nx = data.x();
-	ny  = data.y();
-	dataTex->setSize(nx, ny);//TODO: set to nx, ny
-	dataTex->allocateStorage();
-	for(int i = 0; i < data.getLayerCount();i++){
-		for(int j = 0; j < data.getFrameCount();j++){
-			int *frame =     data.getFrameAt(j,i);
-			dataTex->setData(0,i*data.getFrameCount()+j,QOpenGLTexture::Red_Integer,QOpenGLTexture::Int32, frame);
-		}
-	}
-	dataTex->setMagnificationFilter(QOpenGLTexture::Nearest);//Do not interpolate when zooming in.
-	dataTex->setMinificationFilter(QOpenGLTexture::Nearest);
+
+    if(!initialized)
+        return;
+    this->makeCurrent();
+    if(dataTex->isCreated()){
+        dataTex->destroy();
+    }
+    dataTex->create();
+    dataTex->bind(0); //bind to unit 0;
+    dataTex->setFormat(QOpenGLTexture::R32I);
+    dataTex->setWrapMode(QOpenGLTexture::Repeat);
+    dataTex->setLayers(data.getFrameCount()*data.getLayerCount());
+    nx = data.x();
+    ny  = data.y();
+    dataTex->setSize(nx, ny);//TODO: set to nx, ny
+    dataTex->allocateStorage();
+    int xmin = 0, xmax = 0, ymin = 0, ymax = 0;
+    QPoint xminNat, xmaxNat, yminNat, ymaxNat;
+    QSet<int> contained;
+
+    for (int i = 0; i < data.getLayerCount();i++) {
+
+        if ( _drawSelectionRectangle ) {
+            // This limits determine the area to be highlighted
+            xmin = _startSelectionPoint.x();
+            xmax = _currentSelectionPoint.x();
+            ymin = _startSelectionPoint.y();
+            ymax = _currentSelectionPoint.y();
+            contained.insert( data.getContainingFrame(QPoint(xmin,ymin)) );
+            contained.insert( data.getContainingFrame(QPoint(xmax,ymax)) );
+        }
+
+        for(int j = 0; j < data.getFrameCount();j++) {
+
+            int * frame = data.getFrameAt(j,i); // chip,layer(THL)
+
+            // See if the data has to be altered because something has to be drawn on top
+            // Case1: Selection rectangle
+            if ( _drawSelectionRectangle ) {
+
+                // See if we have to draw anything in this chip
+                if ( contained.contains( j ) ) {
+
+                    // Determine if any of the pixels in this area belong to this chip
+                    xminNat = data.getNaturalCoordinates(QPoint(xmin, ymin), j);
+                    xmaxNat = data.getNaturalCoordinates(QPoint(xmax, ymin), j);
+
+                    for ( int kx = xminNat.x() ; kx < xmaxNat.x() ; kx++ ) {
+                        qDebug() << "[" << j << "] : " << kx;
+                        frame [ XYtoX(kx, ymin, data.x()) ] = 100;
+                    }
+
+                }
+
+            }
+
+            dataTex->setData(0,i*data.getFrameCount()+j,QOpenGLTexture::Red_Integer,QOpenGLTexture::Int32, frame);
+
+        }
+
+    }
+
+    dataTex->setMagnificationFilter(QOpenGLTexture::Nearest);//Do not interpolate when zooming in.
+    dataTex->setMinificationFilter(QOpenGLTexture::Nearest);
+
 }
 
 void QCstmGLPlot::readLayouts(Dataset &data){
@@ -383,18 +432,31 @@ void QCstmGLPlot::mouseReleaseEvent(QMouseEvent * event){
 
 	if(rightClicked) {
 
-		// if in the same pixel
-		if (clickedLocation == clickReleaseLocation) {
-			emit( pixel_selected( pixelAt(event->pos()), event->globalPos()) );
-		} else {
-			emit( region_selected( pixelAt(clickedLocation), pixelAt(clickReleaseLocation), event->globalPos()) );
-		}
+        // No more selection
+        _drawSelectionRectangle = false;
 
-		rightClicked = false;
-		event->accept(); // Done with the event, this has been handled and nobody else gets it.
-	}
+        // if in the same pixel
+        if (clickedLocation == clickReleaseLocation) {
+            emit( pixel_selected( pixelAt(event->pos()), event->globalPos()) );
+        } else {
+            emit( region_selected( pixelAt(clickedLocation), pixelAt(clickReleaseLocation), event->globalPos()) );
+        }
 
-	//qDebug() << "click release: " << pixelAt(clickReleaseLocation).x() << "," << pixelAt(clickReleaseLocation).y();
+        rightClicked = false;
+        event->accept(); // Done with the event, this has been handled and nobody else gets it.
+
+    }
+
+    //qDebug() << "click release: " << pixelAt(clickReleaseLocation).x() << "," << pixelAt(clickReleaseLocation).y();
+
+}
+
+void QCstmGLPlot::mouseDoubleClickEvent(QMouseEvent *event)
+{
+
+    // Double click brings back to full view
+    setZoom(0.5);
+    emit double_click();
 
 }
 
@@ -445,9 +507,24 @@ void QCstmGLPlot::mouseMoveEvent(QMouseEvent *event){//TODO: verify dragspeed sh
 
 	} else if(rightClicked) {
 
-		// If dragging the mouse draw the rectangle
+        // If dragging the mouse to draw a selection area
+        _currentSelectionPoint = pixelAt( event->pos() );
 
-	}
-	//QPointF pixelHovered = pixelAt(event->pos());
-	emit(hovered_pixel_changed(pixelAt(event->pos())));// QString("%1, %2, ??").arg(pixelHovered.x()).arg(pixelHovered.y())));
+        // When pertinent send a signal so the drawing happens
+        //  Every two pixels spanned or so.
+        if ( distance2D( _currentSelectionPoint, _lastSelectionPoint ) > _minimumRefreshDistance ) {
+
+            //
+            _drawSelectionRectangle = true;
+            emit double_click();
+
+            _lastSelectionPoint = _currentSelectionPoint;
+        } else {
+            _drawSelectionRectangle = false;
+        }
+
+
+    }
+    //QPointF pixelHovered = pixelAt(event->pos());
+    emit(hovered_pixel_changed(pixelAt(event->pos())));// QString("%1, %2, ??").arg(pixelHovered.x()).arg(pixelHovered.y())));
 }

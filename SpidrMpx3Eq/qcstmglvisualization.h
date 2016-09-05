@@ -45,7 +45,7 @@ class QCstmGLVisualization : public QWidget
     Q_OBJECT
     Mpx3GUI * _mpx3gui = nullptr;
     bool _takingData;
-    bool _busyDrawing;
+    bool _busyDrawing = false;
     QElapsedTimer * _etatimer = nullptr;
     QTimer * _timer = nullptr;
     int _estimatedETA;
@@ -89,6 +89,7 @@ public:
     void GetAFrame();
     void SetBusyState();
     void FreeBusyState();
+    bool isBusyDrawing();
     void DestroyTimer();
     void ArmAndStartTimer();
     void ETAToZero();
@@ -98,6 +99,7 @@ public:
     void clearStatsString();
     void initStatsString();
 
+    void rewindHistoLimits();
     bool getDropFrames(){return _dropFrames;}
 
     void ConfigureGUIForDataTaking();
@@ -143,6 +145,8 @@ private:
     typedef struct {
         QString counts;
         QString lostPackets;
+        QString lostFrames;
+        QString mpx3ClockStops;
         QString overflow;
         bool overflowFlg;
         QString displayString; // this is the composition actually being displayed
@@ -170,13 +174,15 @@ private:
     void BuildStatsString();
     void BuildStatsStringCounts(uint64_t counts);
     void BuildStatsStringLostPackets(uint64_t lostPackets);
+    void BuildStatsStringLostFrames(uint64_t lostFrames);
+    void BuildStatsStringMpx3ClockStops(uint64_t stops);
     void BuildStatsStringOverflow(bool overflow);
 
 private slots:
     void ConnectionStatusChanged(bool connecting);
     void on_percentileRangeRadio_toggled(bool checked);
 
-    //! Gets called when the current display needs to be reloaded. Uses the  combo-box to determine what layer to load.
+    //! Gets called when the current display needs to be reloaded. Uses the layerselector combo-box to determine what layer to load.
     void active_frame_changed();
 
     //! Gets called when a new data range was selected in the histogram plot.

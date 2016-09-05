@@ -86,7 +86,8 @@ SOURCES += main.cpp \
     qcstmdqe.cpp \
     dataconsumerthread.cpp \
     mtrDialog.cpp\
-    optionsdialog.cppSOURCES += mpx3gui.cpp
+    optionsdialog.cpp
+SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
 SOURCES += DataTakingThread.cpp

@@ -1335,18 +1335,13 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     //else if(selectedItem != nullptr) {
 
         QString axis;
-        if(selectedItem == &calcProX) {
-            axis = "X";
-        }
-        if(selectedItem == &calcProY) {
-            axis = "Y";
-        }
+        if(selectedItem == &calcProX) axis = "X";
+        if(selectedItem == &calcProY) axis = "Y";
 
         //Display
         _profiledialog = new ProfileDialog(this);
         _profiledialog->SetMpx3GUI(_mpx3gui);
-        //_profiledialog->setPixels(pixel_begin, pixel_end);
-
+        _profiledialog->setRegion(pixel_begin, pixel_end);
         _profiledialog->setAxis(axis);
         _profiledialog->changeTitle();
 
