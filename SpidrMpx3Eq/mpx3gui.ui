@@ -38,7 +38,7 @@
      <x>0</x>
      <y>0</y>
      <width>1366</width>
-     <height>20</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -242,7 +242,7 @@
   </action>
   <action name="actionVisualization">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="icon">
     <iconset resource="icons.qrc">
@@ -255,14 +255,8 @@
    <property name="toolTip">
     <string>Visualization (Ctrl+1)</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+1</string>
-   </property>
   </action>
   <action name="actionConfiguration">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/icons/config_logo.png</normaloff>
@@ -274,14 +268,8 @@
    <property name="toolTip">
     <string>Configuration (Ctrl+2)</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+2</string>
-   </property>
   </action>
   <action name="actionDACs">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/icons/DACs_logo.png</normaloff>
@@ -293,14 +281,8 @@
    <property name="toolTip">
     <string>DACs (Ctrl+3)</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+3</string>
-   </property>
   </action>
   <action name="actionEqualization">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/icons/Equalisation_logo.png</normaloff>
@@ -311,9 +293,6 @@
    </property>
    <property name="toolTip">
     <string>Equalization (Ctrl+4)</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+4</string>
    </property>
   </action>
   <action name="actionScans">

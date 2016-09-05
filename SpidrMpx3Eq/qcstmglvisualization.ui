@@ -177,7 +177,7 @@ QGroupBox::title {
           </sizepolicy>
          </property>
          <property name="title">
-          <string>Data Taking</string>
+          <string>Data recording</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
