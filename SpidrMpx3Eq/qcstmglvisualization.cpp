@@ -59,13 +59,11 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     // Initial stretch of the splitter.  Give more space to visualization Matrix
     ui->splitter->setStretchFactor(0, 3);
     ui->splitter->setStretchFactor(1, 1);
-
 }
 
 QCstmGLVisualization::~QCstmGLVisualization() {
     delete ui;
 }
-
 
 
 void QCstmGLVisualization::timerEvent(QTimerEvent *)
@@ -1264,6 +1262,7 @@ void QCstmGLVisualization::active_frame_changed(){
 
 }
 
+
 void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position){
 
     //if(!_mpx3gui->getConfig()->isConnected())
@@ -1287,7 +1286,6 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
                                , this);
     QWidgetAction wid(&contextMenu);
     wid.setDefaultWidget(label);
-    //wid.set
     contextMenu.addAction(&wid);
 
     QAction calcStats(QString("Calc stats"), &contextMenu);    //QAction calcStats(QString("Calc stats (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
