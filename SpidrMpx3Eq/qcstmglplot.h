@@ -97,10 +97,7 @@ public: //functions
 
 public: //events
     void wheelEvent(QWheelEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
-    void mousePressEvent(QMouseEvent *event);//{if(event->buttons()== Qt::LeftButton){this->setCursor(Qt::ClosedHandCursor); clickedLocation = event->pos();clicked = true;}}
-    void mouseReleaseEvent(QMouseEvent * event);//{this->setCursor(Qt::ArrowCursor); clicked = false;}
     void mouseDoubleClickEvent(QMouseEvent * event);
     //void contextMenuEvent(QContextMenuEvent *);
     int getNx(){return nx;}
@@ -120,11 +117,9 @@ public slots:
     void addOffset(GLfloat x, GLfloat y);//!< Adds an offset to the current one.
 
 private slots:
-    void mousePress(QMouseEvent* mevent);
-
-    void mouseMove(QMouseEvent *mevent);
-
-    void mouseRelease(QMouseEvent *mevent);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event);//{if(event->buttons()== Qt::LeftButton){this->setCursor(Qt::ClosedHandCursor); clickedLocation = event->pos();clicked = true;}}
+    void mouseReleaseEvent(QMouseEvent * event);//{this->setCursor(Qt::ArrowCursor); clicked = false;}
 
 signals:
     void hovered_pixel_changed(QPoint); //!< The pixel hovered by the mouse-cursor has changed. Passes the coordinate of the hovered pixel.
