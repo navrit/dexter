@@ -692,6 +692,8 @@ void QCstmDQE::calcFTsquareRoI()
     ftplot->axisRect()->setupFullAxesBox(true);
     ftplot->xAxis->setLabel("x");
     ftplot->yAxis->setLabel("y");
+    ftplot->setMinimumHeight(400);
+    ftplot->setMinimumWidth(500);
     //Set up QCPColorMap:
     QCPColorMap *colorMap = new QCPColorMap(ftplot->xAxis, ftplot->yAxis);
     ftplot->addPlottable(colorMap);
