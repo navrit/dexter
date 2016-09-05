@@ -7,6 +7,8 @@ QCstmGLPlot::QCstmGLPlot(QWidget* &parent){
     gradientTex = new QOpenGLTexture(QOpenGLTexture::Target1D);
     this->setFocusPolicy(Qt::WheelFocus);
     this->setMouseTracking(true);
+
+    rubberBand = 0;
 }
 
 QCstmGLPlot::~QCstmGLPlot()
@@ -406,8 +408,6 @@ void QCstmGLPlot::wheelEvent(QWheelEvent *event){
 }
 
 void QCstmGLPlot::mousePressEvent(QMouseEvent *event){
-
-
     // Change to the hand cursor
     if(event->buttons()== Qt::LeftButton){
         this->setCursor(Qt::ClosedHandCursor);
@@ -417,8 +417,14 @@ void QCstmGLPlot::mousePressEvent(QMouseEvent *event){
         // Start point
         clickedLocation = event->pos();
         rightClicked = true;
-        qDebug() << "click: "<< pixelAt(clickedLocation).x() << "," << pixelAt(clickedLocation).y();
+        //qDebug() << "click: "<< pixelAt(clickedLocation).x() << "," << pixelAt(clickedLocation).y();
         _startSelectionPoint = pixelAt(clickedLocation);
+
+        if(!rubberBand){
+            rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
+        }
+        rubberBand->setGeometry(QRect(clickedLocation, QSize()));
+        rubberBand->show();
     }
 
 }
@@ -433,7 +439,6 @@ void QCstmGLPlot::mouseReleaseEvent(QMouseEvent * event){
     if(clicked) clicked = false;
 
     if(rightClicked) {
-
         // No more selection
         _drawSelectionRectangle = false;
 
@@ -445,6 +450,10 @@ void QCstmGLPlot::mouseReleaseEvent(QMouseEvent * event){
         }
 
         rightClicked = false;
+
+        if (rubberBand)
+            rubberBand->hide();
+
         event->accept(); // Done with the event, this has been handled and nobody else gets it.
 
     }
@@ -527,6 +536,11 @@ void QCstmGLPlot::mouseMoveEvent(QMouseEvent *event){//TODO: verify dragspeed sh
 
 
     }
+
+    if(rubberBand){
+        rubberBand->setGeometry(QRect(clickedLocation, event->pos()).normalized());
+    }
+
     //QPointF pixelHovered = pixelAt(event->pos());
     emit(hovered_pixel_changed(pixelAt(event->pos())));// QString("%1, %2, ??").arg(pixelHovered.x()).arg(pixelHovered.y())));
 }

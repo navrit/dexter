@@ -41,9 +41,15 @@ typedef enum {
 
 #define __matrix_size_x 256
 #define __matrix_size_y 256
-#define __array_size_x 	__matrix_size_x
-#define __array_size_y 	__matrix_size_y
-#define __matrix_size 	(__array_size_x*__array_size_y)
+#define __matrix_size_color_x 128
+#define __matrix_size_color_y 128
+#define __max_colors            8
+
+#define __array_size_x          __matrix_size_x
+#define __array_size_y          __matrix_size_y
+#define __matrix_size           (__array_size_x*__array_size_y)
+#define __matrix_size_color 	(__matrix_size_color_x*__matrix_size_color_y)
+
 #define __max_adj_val  	0x1F // 0x1F = 31 is the max adjustment with 5 bits
 
 #ifndef WIN32

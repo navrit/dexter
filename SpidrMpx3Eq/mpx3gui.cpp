@@ -39,6 +39,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
 
     // Instantiate everything in the UI
     _ui->setupUi(this);
+    this->setWindowTitle("ASI Medipix3");
     workingSet = new Dataset(128,128, 4);
     originalSet = new Dataset(128,128, 4);
     config = new Mpx3Config;
@@ -75,7 +76,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
 
     // Prepare DACs panel
     _ui->DACsWidget->SetMpx3GUI( this );
-    _ui->DACsWidget->setWindowWidgetsStatus(); // statup status
+    _ui->DACsWidget->setWindowWidgetsStatus(); // startup status
 
     // Prepare Equalization
     _ui->equalizationWidget->SetMpx3GUI( this );
@@ -161,7 +162,7 @@ void Mpx3GUI::resize(int x, int y) {
     emit sizeChanged(bbox.width() * x, bbox.height() * y); // goes to qcstmglplot
 }
 
-unsigned int Mpx3GUI::addLayer(int *data){
+unsigned int Mpx3GUI::addLayer(int *data) {
     return addLayer(data, -1);
 }
 
@@ -809,6 +810,8 @@ void Mpx3GUI::open_data(bool saveOriginal){
     if(reply== QMessageBox::Yes) getDataset()->setCorrected(true);
     else getDataset()->setCorrected(false);
 
+    this->setWindowTitle("ASI Medipix3 "+filename);
+
     return;
 }
 
@@ -937,7 +940,7 @@ void Mpx3GUI::on_actionExit_triggered()
                                    tr("Attempting to exit while taking data.\n"
                                       "Data taking has been stopped." ) );
         }
-        // Now just kill the data taking thread
+        // Now just kill the data taking thread and consumer thread
         getVisualization()->FinishDataTakingThread();
     }
 
@@ -1031,7 +1034,8 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
 
     if ( getConfig()->isConnected() ) {
 
-        QProgressDialog pd("System reset in progress ... ", "Cancel", 0, 4, this);
+
+        QProgressDialog pd("System reset in progress ... ", "Cancel", 0, 3, this);
         pd.setCancelButton( 0 ); // no cancel button
         pd.setWindowModality(Qt::WindowModal);
         pd.setMinimumDuration( 0 ); // show immediately
@@ -1051,24 +1055,21 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
             qDebug() << "[INFO] Trying to hot-reset ...";
             sc->reset( &errorstat );
             emit sig_statusBarAppend( "reset", "black" );
-        }
 
-        // Hardware reset
-        pd.setValue( 2 );
-        sc->setSpidrReg( 0x814, 1, true);
+            // Hardware reset
+            pd.setValue( 2 );
+            sc->setSpidrReg( 0x814, 1 ); // write only register
+        }
 
         // Disconnect
         //pd.setValue( 2 );
         //on_actionDisconnect_triggered( false );
-
-
         // Reconnnect
         //pd.setValue( 3 );
         //on_actionConnect_triggered();
 
         // Done
-        pd.setValue( 4 );
-        //pd.close();
+        pd.setValue( 3 );
 
     }
 

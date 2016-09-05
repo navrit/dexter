@@ -23,19 +23,19 @@ QT += datavisualization
 #}
 
 CONFIG(debug, debug|release) {
-  OBJECTS_DIR = debug
-  MOC_DIR     = debug
-  UI_DIR      = debug
-  DESTDIR     = ../Debug
-  LIBS       += -L../Debug
+    OBJECTS_DIR = debug
+    MOC_DIR     = debug
+    UI_DIR      = debug
+    DESTDIR     = ../Debug
+    LIBS       += -L../Debug
 }
 
 CONFIG(release, debug|release) {
-  OBJECTS_DIR = release
-  MOC_DIR     = release
-  UI_DIR      = release
-  DESTDIR     = ../Release
-  LIBS       += -L../Release
+    OBJECTS_DIR = release
+    MOC_DIR     = release
+    UI_DIR      = release
+    DESTDIR     = ../Release
+    LIBS       += -L../Release
 }
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -43,15 +43,16 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 INCLUDEPATH += ../SpidrMpx3Lib
 
 win32 {
-  INCLUDEPATH += C:/boost_1_60_0
-  LIBS        += "-LC:/boost_1_60_0/stage/lib"
-  INCLUDEPATH += "C:/Program Files/Phidgets/"
-  LIBS        += "-LC:/Program Files/Phidgets"
-  INCLUDEPATH += "C:/dlib/dlib-19.0"
+    INCLUDEPATH += C:/boost_1_60_0
+    LIBS        += "-LC:/boost_1_60_0/stage/lib"
+    INCLUDEPATH += "C:/Program Files/Phidgets/"
+    LIBS        += "-LC:/Program Files/Phidgets"
+    INCLUDEPATH += "C:/dlib/dlib-19.0"
 }
 
 unix {
     LIBS += -licuuc -licui18n -licudata -lopenblas -llapack
+    INCLUDEPATH += ../../dlib-19.1
 }
 
 LIBS += -lSpidrMpx3Lib
@@ -82,7 +83,9 @@ SOURCES += main.cpp \
     statsdialog.cpp \
     profiledialog.cpp \
     testpulses.cpp \
-    qcstmdqe.cpp
+    qcstmdqe.cpp \
+    dataconsumerthread.cpp \
+    mtrDialog.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -91,7 +94,7 @@ SOURCES += qcstmBHWindow.cpp
 SOURCES += qcstmBHdialog.cpp
 SOURCES += StepperMotorController.cpp
 SOURCES += qcustomplot.cpp
-SOURCES += mtadialog.cpp
+SOURCES +=
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -118,7 +121,9 @@ HEADERS += mpx3gui.h \
     statsdialog.h \
     profiledialog.h \
     testpulses.h \
-    qcstmdqe.h
+    qcstmdqe.h \
+    dataconsumerthread.h \
+    mtrDialog.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DataTakingThread.h
@@ -126,7 +131,7 @@ HEADERS += qcstmBHWindow.h
 HEADERS += qcstmBHdialog.h
 HEADERS += StepperMotorController.h
 HEADERS += qcustomplot.h
-HEADERS += mtadialog.h
+HEADERS +=
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \
@@ -144,9 +149,9 @@ FORMS    += mpx3gui.ui \
     statsdialog.ui \
     profiledialog.ui \
     qcstmBHdialog.ui \
-    mtadialog.ui \
     testpulses.ui \
-    qcstmdqe.ui
+    qcstmdqe.ui \
+    mtrDialog.ui
 
 DISTFILES += \
     shaders/heatmap.frag \

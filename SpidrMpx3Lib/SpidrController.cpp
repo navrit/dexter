@@ -15,7 +15,8 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x16071800; // Add resetCounters()
+const int   VERSION_ID = 0x16082900; // Add getMpx3Clock(), remove setMpx3Clock()
+//const int VERSION_ID = 0x16071800; // Add resetCounters() and counter reads
 //const int VERSION_ID = 0x16062900; // Add setTpSwitch(), setPs()
 //const int VERSION_ID = 0x16062100; // Add open/closeShutter(), startContReadout();
                                      // bug fix in ReceiverThreadC.cpp
@@ -40,12 +41,15 @@ const int   VERSION_ID = 0x16071800; // Add resetCounters()
 
 // SPIDR register addresses (some of them) and register bits
 #define SPIDR_SHUTTERTRIG_CTRL_I        0x0290
+#define SPIDR_EXT_SHUTTER_CNTR_I        0x02A0
+#define SPIDR_SHUTTER_CNTR_I            0x02A4
 #define SPIDR_ENA_SHUTTER1_CNTRSEL_BIT  9
 #define SPIDRMPX3_SHUTTER1_PERIOD_I     0x1008
 #define SPIDRMPX3_MPX3_CTRL_I           0x1090
 #define SPIDRMPX3_TP_SWITCH_BIT         3
 #define SPIDRMPX3_MPX3_CLOCK_I          0x10B0
 #define SPIDRMPX3_TPSWITCH_FREQ_I       0x10B4
+#define SPIDRMPX3_SHUTTER_INH_CNTR_I    0x10B8
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor
@@ -539,6 +543,13 @@ bool SpidrController::setLutEnable( bool enable )
 
 // ----------------------------------------------------------------------------
 
+bool SpidrController::getMpx3Clock( int *megahertz )
+{
+  return this->getSpidrReg( SPIDRMPX3_MPX3_CLOCK_I, megahertz );
+}
+
+// ----------------------------------------------------------------------------
+/*
 bool SpidrController::setMpx3Clock( int megahertz )
 {
   int id;
@@ -559,7 +570,7 @@ bool SpidrController::setMpx3Clock( int megahertz )
   // Write and verify
   return this->setSpidrReg( SPIDRMPX3_MPX3_CLOCK_I, id, true );
 }
-
+*/
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setTpSwitch( int val, int freq_mhz )
@@ -1045,6 +1056,38 @@ bool SpidrController::validDacs( int dev_nr, bool *valid )
 }
 
 // ----------------------------------------------------------------------------
+
+bool SpidrController::readFlash( int            flash_id,
+				 int            address,
+				 int           *nbytes,
+				 unsigned char *databytes )
+{
+  int addr = (address & 0x00FFFFFF) | (flash_id << 24);
+  *nbytes = 0;
+  if( !this->requestGetIntAndBytes( CMD_READ_FLASH, 0,
+				    &addr, 1024, databytes ) )
+    return false;
+
+  // Returned address should match
+  if( addr != ((address & 0x00FFFFFF) | (flash_id << 24)) ) return false;
+
+  *nbytes = 1024;
+  return true;
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::writeFlash( int            flash_id,
+				  int            address,
+				  int            nbytes,
+				  unsigned char *databytes )
+{
+  int addr = (address & 0x00FFFFFF) | (flash_id << 24);
+  return this->requestSetIntAndBytes( CMD_WRITE_FLASH, 0,
+				      addr, nbytes, databytes );
+}
+
+// ----------------------------------------------------------------------------
 // Shutter Trigger
 // ----------------------------------------------------------------------------
 
@@ -1158,6 +1201,27 @@ bool SpidrController::stopContReadout()
   this->setSpidrRegBit( SPIDR_SHUTTERTRIG_CTRL_I,
 			SPIDR_ENA_SHUTTER1_CNTRSEL_BIT, false );
   return this->closeShutter();
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getExtShutterCounter( int *cntr )
+{
+  return this->getSpidrReg( SPIDR_EXT_SHUTTER_CNTR_I, cntr );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getShutterCounter( int *cntr )
+{
+  return this->getSpidrReg( SPIDR_SHUTTER_CNTR_I, cntr );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getShutterInhibitCounter( int *cntr )
+{
+  return this->getSpidrReg( SPIDRMPX3_SHUTTER_INH_CNTR_I, cntr );
 }
 
 // ----------------------------------------------------------------------------

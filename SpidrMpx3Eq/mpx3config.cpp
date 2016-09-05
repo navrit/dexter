@@ -52,11 +52,27 @@ bool Mpx3Config::RequiredOnGlobalConfig(Mpx3Config::config_items item)
             );
 }
 
+void Mpx3Config::PickupStaticConfigurationFigures() {
+
+    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+    if ( spidrcontrol == nullptr ) return;
+
+    //
+    int clockMHz;
+    spidrcontrol->getMpx3Clock( &clockMHz );
+    qDebug() << "clock : " << clockMHz;
+
+
+}
+
 void Mpx3Config::SendConfiguration( config_items item ) {
 
     // Before the globals, the configuration for each chip
     // has to be loaded (otherwise there's a conflict with
     // the initization of ReceiverThreadC
+
+    // This are configuration bits which are not settable like the system clock
+    if ( item == __ALL ) PickupStaticConfigurationFigures();
 
     ////////////////////////////////////////////////////////////
     // Items which don't need any communication to the device
@@ -388,8 +404,9 @@ SpidrController * Mpx3Config::establishConnection(){
             ///////////////////////////////////////////////
             // Wafer number next three nibbles
             int waferId = 0;
+            bool okw = false;
             for ( int i = 3 ; i > 0 ; i-- ) {
-                waferId += ( idStr.left(1).toInt(false, 16) ) * pow(16, i-1);
+                waferId += ( idStr.left(1).toInt(&okw, 16) ) * pow(16, i-1);
                 idStr = idStr.remove(0, 1);
             }
 
@@ -402,7 +419,7 @@ SpidrController * Mpx3Config::establishConnection(){
 
             // 5th is Y
             int Ycoor = 0;
-            Ycoor = (idStr.left(1).toInt(false, 16));
+            Ycoor = (idStr.left(1).toInt(&okw, 16));
             QString decodedId = "W";
             decodedId.append( QString::number( waferId ) );
             decodedId.append( "_" );

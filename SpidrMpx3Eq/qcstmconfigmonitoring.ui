@@ -999,7 +999,7 @@ QGroupBox::title {
         <enum>Qt::LeftToRight</enum>
        </property>
        <property name="title">
-        <string>Network</string>
+        <string>Load</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -1010,10 +1010,10 @@ QGroupBox::title {
           <item row="0" column="1">
            <widget class="QLabel" name="label_26">
             <property name="toolTip">
-             <string>Network activity (Download)</string>
+             <string>Buffers load</string>
             </property>
             <property name="text">
-             <string>D</string>
+             <string>B</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -1023,10 +1023,10 @@ QGroupBox::title {
           <item row="0" column="0">
            <widget class="QLabel" name="label_25">
             <property name="toolTip">
-             <string>Network activity (Upload)</string>
+             <string>Network activity</string>
             </property>
             <property name="text">
-             <string>U</string>
+             <string>N</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>

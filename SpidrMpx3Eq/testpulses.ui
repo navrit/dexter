@@ -19,7 +19,7 @@
      <item>
       <widget class="QCheckBox" name="activateCheckBox">
        <property name="text">
-        <string>activate</string>
+        <string>Activate</string>
        </property>
       </widget>
      </item>

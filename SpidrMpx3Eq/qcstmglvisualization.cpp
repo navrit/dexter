@@ -4,6 +4,7 @@
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 #include "DataTakingThread.h"
+#include "dataconsumerthread.h"
 
 #include "qcstmcorrectionsdialog.h"
 #include "statsdialog.h"
@@ -58,7 +59,6 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     // Initial stretch of the splitter.  Give more space to visualization Matrix
     ui->splitter->setStretchFactor(0, 3);
     ui->splitter->setStretchFactor(1, 1);
-
 }
 
 QCstmGLVisualization::~QCstmGLVisualization() {
@@ -66,10 +66,11 @@ QCstmGLVisualization::~QCstmGLVisualization() {
 }
 
 
-
 void QCstmGLVisualization::timerEvent(QTimerEvent *)
 {
     refreshScoringInfo();
+
+    drawFrameImage();
 }
 
 void QCstmGLVisualization::refreshScoringInfo()
@@ -101,6 +102,20 @@ void QCstmGLVisualization::refreshScoringInfo()
     BuildStatsString();
 
     //qDebug() << "ref .. " << _score.nFramesReceived;
+
+    // Network comsuption
+
+}
+
+void QCstmGLVisualization::drawFrameImage()
+{
+    // On data cleared the active threshold is -1
+    // Force it here to be at least the first threshold
+    //int actTHL = getActiveThreshold();
+    //if ( actTHL < 0 ) actTHL = 0;
+    //reload_layer( actTHL );
+
+    reload_all_layers();
 
 }
 
@@ -169,10 +184,17 @@ void QCstmGLVisualization::updateETA() {
 }
 
 void QCstmGLVisualization::FinishDataTakingThread() {
+
     if ( _dataTakingThread ) {
         delete _dataTakingThread;
         _dataTakingThread = nullptr;
     }
+
+    if( _dataConsumerThread ) {
+        delete _dataConsumerThread;
+        _dataConsumerThread = nullptr;
+    }
+
 }
 
 void QCstmGLVisualization::StopDataTakingThread()
@@ -204,6 +226,7 @@ void QCstmGLVisualization::ConfigureGUIForDataTaking() {
     ui->singleshotPushButton->setText( "Stop" );
     emit sig_statusBarAppend("start","blue");
 
+    // Config stats
     ui->groupBoxConfigAndStats->setEnabled( false );
     ui->statsLabel->setEnabled( true ); // keep the stats label alive
 
@@ -219,7 +242,9 @@ void QCstmGLVisualization::ConfigureGUIForIdling() {
     ui->singleshotPushButton->setText( "single" );
     emit sig_statusBarAppend("done","blue");
 
+    // Config stats
     ui->groupBoxConfigAndStats->setEnabled( true );
+
 
     ui->infDataTakingCheckBox->setEnabled( true );
 
@@ -241,18 +266,28 @@ void QCstmGLVisualization::CalcETA() {
 void QCstmGLVisualization::StartDataTaking() {
 
     if ( !_dataTakingThread ) {
-        _dataTakingThread = new DataTakingThread(_mpx3gui, this);
+
+        _dataConsumerThread = new DataConsumerThread(_mpx3gui, this);
+
+        _dataTakingThread = new DataTakingThread(_mpx3gui, _dataConsumerThread, this);
         _dataTakingThread->ConnectToHardware();
+
     }
 
     if ( ! _takingData ) { // new data
 
         _takingData = true;
 
+        // ETA
         CalcETA();
 
+        // Producer and Consumer threads
         _dataTakingThread->setFramesRequested( _mpx3gui->getConfig()->getNTriggers() );
         _dataTakingThread->takedata();
+        // The data taking thread will awake the consumer
+        //_dataConsumerThread->consume();
+
+        // Timers
         ArmAndStartTimer();
 
         // GUI
@@ -260,7 +295,7 @@ void QCstmGLVisualization::StartDataTaking() {
 
         // info refresh
         _timerId = this->startTimer( 100 ); // 100 ms is a good compromise to refresh the scoreing info
-        qDebug() << "Start : " << _timerId;
+        //qDebug() << "Start : " << _timerId;
 
     } else { // stop
 
@@ -444,6 +479,14 @@ void QCstmGLVisualization::initStatsString()
 
 void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
+    // Recover from single shot if it was requested
+    if ( _singleShot ) {
+        _singleShot = false;
+        _mpx3gui->getConfig()->setNTriggers( _singleShotSaveCurrentNTriggers );
+    }
+
+    _mpx3gui->saveOriginalDataset();
+
     _takingData = false;
 
     DestroyTimer();
@@ -535,8 +578,6 @@ void QCstmGLVisualization::ArmAndStartTimer(){
 
 void QCstmGLVisualization::DestroyTimer() {
 
-    qDebug() << "Destroy : " << _timerId;
-
     // refresh scoring timer (local)
     this->killTimer( _timerId );
 
@@ -613,7 +654,7 @@ void QCstmGLVisualization::ConnectionStatusChanged(bool connecting) {
 
         ui->startButton->setEnabled( true ); // Enable or disable the button depending on the connection status.
         ui->singleshotPushButton->setEnabled( true );
-        //ui->recoPushButton->setEnabled( true );
+        ui->recoPushButton->setEnabled( true );
 
         // Report the chip ID's
         // Make space in the dataTakingGridLayout
@@ -639,7 +680,7 @@ void QCstmGLVisualization::ConnectionStatusChanged(bool connecting) {
         FinishDataTakingThread();
         ui->startButton->setEnabled( false );
         ui->singleshotPushButton->setEnabled( false );
-        //ui->recoPushButton->setEnabled( false );
+        ui->recoPushButton->setEnabled( false );
 
     }
 
@@ -982,11 +1023,16 @@ void QCstmGLVisualization::OperationModeSwitched(int indx)
         ui->triggerLengthSpinBoxLabel->setText( "Length" );
         ui->triggerLengthSpinBox->setValue( _mpx3gui->getConfig()->getTriggerLength() );
 
+        ui->triggerLengthSpinBoxLabel->setToolTip( tr("Trigger length") );
+        ui->triggerLengthSpinBox->setToolTip( tr("Trigger length") );
+
     } else if ( indx == Mpx3Config::__operationMode_ContinuousRW ) {
 
-        ui->triggerLengthSpinBoxLabel->setText( "CRW freq(Hz)" );
+        ui->triggerLengthSpinBoxLabel->setText( "CRW(Hz)" );
         ui->triggerLengthSpinBox->setValue( _mpx3gui->getConfig()->getContRWFreq() );
 
+        ui->triggerLengthSpinBoxLabel->setToolTip( tr("ContinuousRW Mode. Enter frequency in Hz.") );
+        ui->triggerLengthSpinBox->setToolTip( tr("ContinuousRW Mode. Enter frequency in Hz.") );
     }
 
 }
@@ -1134,10 +1180,11 @@ void QCstmGLVisualization::reload_all_layers(bool corrections) {
         _mpx3gui->getDataset()->applyCorrections( _corrdialog );
     }
 
-    /*
+
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset()); //TODO: only read specific layer.
     QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
     for ( int i = 0 ; i < thresholds.size() ; i++ ) {
+
         addThresholdToSelector(thresholds[i]);
 
         ui->histPlot->setHistogram(thresholds[i],
@@ -1147,7 +1194,6 @@ void QCstmGLVisualization::reload_all_layers(bool corrections) {
                                    _manualRange.upper);
 
     }
-*/
 
     // done
     active_frame_changed();
@@ -1216,6 +1262,7 @@ void QCstmGLVisualization::active_frame_changed(){
 
 }
 
+
 void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position){
 
     //if(!_mpx3gui->getConfig()->isConnected())
@@ -1235,7 +1282,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     QMenu contextMenu;
 
     //Have the region only in the header:
-    QLabel* label = new QLabel(QString("For region (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y())
+    QLabel* label = new QLabel(QString("\n    For region (%1, %2) --> (%3, %4) \n").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y())
                                , this);
     QWidgetAction wid(&contextMenu);
     wid.setDefaultWidget(label);
@@ -1253,6 +1300,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     QAction gotoDQE(QString("Use for DQE"),&contextMenu);    //QAction gotoDQE(QString("Use for DQE (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&gotoDQE);
 
+    contextMenu.setMinimumWidth(300);
 
     // Show the menu
     QAction * selectedItem = contextMenu.exec(position);
@@ -1634,7 +1682,7 @@ void QCstmGLVisualization::on_singleshotPushButton_clicked()
     _singleShotSaveCurrentNTriggers = _mpx3gui->getConfig()->getNTriggers();
 
     // Select only one trigger
-    ui->nTriggersSpinBox->setValue( 1 );
+    _mpx3gui->getConfig()->setNTriggers( 1 );
 
     // And just start taking data
     StartDataTaking();
@@ -1743,22 +1791,22 @@ void QCstmGLVisualization::on_infDataTakingCheckBox_toggled(bool checked)
 void QCstmGLVisualization::on_multiThresholdAnalysisPushButton_clicked()
 {
 
-    if ( ! _mtadialog ) {
-        _mtadialog = new MTADialog(_mpx3gui, this);
-        connect(_mtadialog, &MTADialog::finished, this, &QCstmGLVisualization::on_MTAClosed);
+    if ( ! _mtrDialog ) {
+        _mtrDialog = new MTRDialog(_mpx3gui, this);
+        connect(_mtrDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_MTRClosed);
     }
 
-    _mtadialog->show(); // modeless
+    _mtrDialog->show(); // modeless
 
 }
 
-void QCstmGLVisualization::on_MTAClosed()
+void QCstmGLVisualization::on_MTRClosed()
 {
 
-    if ( _mtadialog ) {
-        disconnect(_mtadialog, &MTADialog::finished, this, &QCstmGLVisualization::on_MTAClosed);
-        delete _mtadialog;
-        _mtadialog = nullptr;
+    if ( _mtrDialog ) {
+        disconnect(_mtrDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_MTRClosed);
+        delete _mtrDialog;
+        _mtrDialog = nullptr;
     }
 
 }
@@ -1767,7 +1815,7 @@ void QCstmGLVisualization::on_testPulsesClosed()
 {
 
     if ( _testPulsesDialog ) {
-        disconnect(_mtadialog, &MTADialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
+        disconnect(_mtrDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
         delete _testPulsesDialog;
         _testPulsesDialog = nullptr;
     }
@@ -1780,7 +1828,7 @@ void QCstmGLVisualization::on_testPulsesPushButton_clicked()
     if ( ! _testPulsesDialog ) {
 
         _testPulsesDialog = new TestPulses(_mpx3gui, this);
-        connect(_testPulsesDialog, &MTADialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
+        connect(_testPulsesDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
 
     }
 
@@ -1792,5 +1840,12 @@ void QCstmGLVisualization::on_testPulsesPushButton_clicked()
 void QCstmGLVisualization::on_dropFramesCheckBox_clicked(bool checked)
 {
     _dropFrames = checked;
+}
+
+void QCstmGLVisualization::bufferOccupancySlot(int occ)
+{
+
+    ui->bufferOccupancy->setValue( occ );
+
 }
 

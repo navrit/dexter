@@ -16,7 +16,7 @@
 #include "gradient.h"
 #include "histogram.h"
 
-#include "mtadialog.h"
+#include "mtrDialog.h"
 
 #include <QQueue>
 #include <QVector>
@@ -29,6 +29,7 @@
 using namespace std;
 
 class DataTakingThread;
+class DataConsumerThread;
 
 class QCstmCorrectionsDialog;
 class StatsDialog;
@@ -70,6 +71,7 @@ public:
 
     void timerEvent( QTimerEvent * );
     void refreshScoringInfo();
+    void drawFrameImage();
     void rewindScoring();
 
     //void SeparateThresholds(int * data, int size, int * th0, int * th2, int * th4, int * th6, int sizeReduced);
@@ -114,6 +116,7 @@ private:
 
     Ui::QCstmGLVisualization * ui = nullptr;
     DataTakingThread * _dataTakingThread = nullptr;
+    DataConsumerThread * _dataConsumerThread = nullptr;
     bool _savePNGWithScales = false;
     bool _singleShot = false;
     int _singleShotSaveCurrentNTriggers = 0;
@@ -127,7 +130,7 @@ private:
     unsigned int _nTriggersSave;
     bool _dropFrames = true;
 
-    MTADialog * _mtadialog = nullptr;
+    MTRDialog * _mtrDialog = nullptr;
     TestPulses * _testPulsesDialog = nullptr;
 
     typedef struct {
@@ -228,13 +231,14 @@ private slots:
 
     void on_multiThresholdAnalysisPushButton_clicked();
 
-    void on_MTAClosed();
+    void on_MTRClosed();
 
     void on_testPulsesClosed();
 
     void on_testPulsesPushButton_clicked();
 
     void on_dropFramesCheckBox_clicked(bool checked);
+
 
 public slots:
     void StartDataTaking();
@@ -273,6 +277,8 @@ public slots:
     void OperationModeSwitched(int);
 
     void on_scoring(int, int, int, int, int, int, bool);
+
+    void bufferOccupancySlot(int);
 
 signals:
     void taking_data_gui();

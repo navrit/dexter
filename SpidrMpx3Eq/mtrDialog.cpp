@@ -1,12 +1,12 @@
-#include "mtadialog.h"
-#include "ui_mtadialog.h"
+#include "mtrDialog.h"
+#include "ui_mtrDialog.h"
 
 #include "qcstmplothistogram.h"
 
-MTADialog::MTADialog(Mpx3GUI * mg, QWidget * parent) :
+MTRDialog::MTRDialog(Mpx3GUI * mg, QWidget * parent) :
     _mpx3gui(mg),
     QDialog(parent),
-    ui(new Ui::MTADialog)
+    ui(new Ui::MTRDialog)
 {
     ui->setupUi(this);
 
@@ -65,19 +65,17 @@ MTADialog::MTADialog(Mpx3GUI * mg, QWidget * parent) :
 
 }
 
-MTADialog::~MTADialog()
+MTRDialog::~MTRDialog()
 {
-
     delete ui;
 }
 
-void MTADialog::timerEvent(QTimerEvent *)
+void MTRDialog::timerEvent(QTimerEvent *)
 {
-
-
     int nLCDs = _lcds.size();
     for ( int i = 0 ; i < nLCDs ; i++ ) {
-        _lcds.at( i )->display( QString::number( _mpx3gui->getDataset()->getActivePixels( i ), 'f', 0 ) );
+        QString lcdText = "<b><font color=\"black\" font-size=\"30px\">" + QString::number( _mpx3gui->getDataset()->getActivePixels( i ), 'f', 0) + " </font></b>";
+        _lcds.at(i)->setText(lcdText);
     }
 
     QString sE = "<font color=\"blue\">";
@@ -86,7 +84,7 @@ void MTADialog::timerEvent(QTimerEvent *)
     ui->thl0Label->setText( sE );
 
     sE.clear();
-    sE = "<font color=\"blue\">";
+    sE = "<font colour=\"blue\">";
     sE += QString::number( 20.4, 'f', 1 );
     sE += " keV </font>";
     ui->thl2Label->setText( sE );
@@ -119,28 +117,28 @@ void MTADialog::timerEvent(QTimerEvent *)
 
 }
 
-void MTADialog::changePlotsProperties()
+void MTRDialog::changePlotsProperties()
 {
 
     switch ( _displayMode ) {
     case __counts:
-        ui->barChartHisto->yAxis->setLabel( "total counts" );
+        ui->barChartHisto->yAxis->setLabel( "Total counts" );
         break;
     case __mean:
-        ui->barChartHisto->yAxis->setLabel( "mean" );
+        ui->barChartHisto->yAxis->setLabel( "Mean" );
         break;
     case __stdv:
-        ui->barChartHisto->yAxis->setLabel( "stdv" );
+        ui->barChartHisto->yAxis->setLabel( "Standard Deviation" );
         break;
     case __pixelsON:
-        ui->barChartHisto->yAxis->setLabel( "pixels ON" );
+        ui->barChartHisto->yAxis->setLabel( "Pixels ON" );
         break;
     case __NofClusters:
-        ui->barChartHisto->yAxis->setLabel( "N. of clusters" );
+        ui->barChartHisto->yAxis->setLabel( "Number of clusters" );
         break;
 
     default:
-        ui->barChartHisto->yAxis->setLabel( "pixels ON" );
+        ui->barChartHisto->yAxis->setLabel( "Pixels ON" );
         break;
     }
 
@@ -151,21 +149,21 @@ void MTADialog::changePlotsProperties()
 
 
 // Oriented to imaging
-void MTADialog::on_radioButtonSelCounts_toggled(bool checked)
+void MTRDialog::on_radioButtonSelCounts_toggled(bool checked)
 {
     if ( checked ) _displayMode = __counts;
 
     changePlotsProperties();
 }
 
-void MTADialog::on_radioButtonSelMean_toggled(bool checked)
+void MTRDialog::on_radioButtonSelMean_toggled(bool checked)
 {
     if ( checked ) _displayMode = __mean;
 
     changePlotsProperties();
 }
 
-void MTADialog::on_radioButtonSelStdv_toggled(bool checked)
+void MTRDialog::on_radioButtonSelStdv_toggled(bool checked)
 {
     if ( checked ) _displayMode = __stdv;
 
@@ -173,14 +171,14 @@ void MTADialog::on_radioButtonSelStdv_toggled(bool checked)
 }
 
 // Oriented to tracking
-void MTADialog::on_radioButtonSelPixelsON_toggled(bool checked)
+void MTRDialog::on_radioButtonSelPixelsON_toggled(bool checked)
 {
    if ( checked ) _displayMode = __pixelsON;
 
    changePlotsProperties();
 }
 
-void MTADialog::on_radioButtonSelNumberOfClusters_toggled(bool checked)
+void MTRDialog::on_radioButtonSelNumberOfClusters_toggled(bool checked)
 {
     if ( checked ) _displayMode = __NofClusters;
 
@@ -188,7 +186,7 @@ void MTADialog::on_radioButtonSelNumberOfClusters_toggled(bool checked)
 }
 
 
-void MTADialog::on_barCharLogYCheckBox_clicked(bool checked)
+void MTRDialog::on_barCharLogYCheckBox_clicked(bool checked)
 {
     _barCharLogY = checked;
 
@@ -204,7 +202,7 @@ void MTADialog::on_barCharLogYCheckBox_clicked(bool checked)
 
 }
 
-void MTADialog::on_timePlotLogYCheckBox_clicked(bool checked)
+void MTRDialog::on_timePlotLogYCheckBox_clicked(bool checked)
 {
     _timePlotLogY = checked;
 }

@@ -1,5 +1,5 @@
-#ifndef MTADIALOG_H
-#define MTADIALOG_H
+#ifndef MTRDialog_H
+#define MTRDialog_H
 
 #include <QDialog>
 #include <QVector>
@@ -7,16 +7,16 @@
 #include "mpx3gui.h"
 
 namespace Ui {
-class MTADialog;
+class MTRDialog;
 }
 
-class MTADialog : public QDialog
+class MTRDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit MTADialog(Mpx3GUI *, QWidget *parent = 0);
-    ~MTADialog();
+    explicit MTRDialog(Mpx3GUI *, QWidget *parent = 0);
+    ~MTRDialog();
 
     void timerEvent( QTimerEvent * );
 
@@ -41,8 +41,8 @@ private slots:
 private:
 
     Mpx3GUI * _mpx3gui = nullptr;
-    Ui::MTADialog * ui = nullptr;
-    QVector<QLCDNumber *> _lcds;
+    Ui::MTRDialog * ui = nullptr;
+    QVector<QLabel *> _lcds;
     QVector<QLabel *> _labels;
 
     typedef enum {
@@ -61,4 +61,4 @@ private:
 
 };
 
-#endif // MTADIALOG_H
+#endif // MTRDialog_H
