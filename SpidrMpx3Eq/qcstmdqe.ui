@@ -457,6 +457,13 @@
             </layout>
            </item>
            <item>
+            <widget class="QCheckBox" name="singleFileCheckBox">
+             <property name="text">
+              <string>Single file</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QPushButton" name="npsPushButton">
              <property name="text">
               <string>Calculate NPS</string>

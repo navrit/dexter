@@ -51,7 +51,7 @@ public:
     //void setxStart(double start){_xstart = start;}
     //void setPlotLength(int length){_plotrange = length;}
     void clearDataAndPlots(); //!Clears all data and plots in the dqe view when new data is loaded or when a new region is selected.
-    void refreshLog(bool emptylog){ if(emptylog)ui->textBrowser->clear(); else ui->textBrowser->setText(_logtext);} //!Changes or empties (when emptylog == true) the log.
+    void refreshLog(bool emptylog);//!Changes or empties (when emptylog == true) the log.
     //double polyWeightRoot(int i);
 
 
@@ -83,8 +83,8 @@ private:
     double  _stepsize       = 0.10;      //!Specifies the distance between datapoints of the fitplot in pixels.
     double  _histStep       = 0.5;      //!Specifies the distance between datapoints in the LSF (in pixels)
     bool    _useErrorFunc   = true;     //!Indicates whether the errorfunction (or rather local smoothing) should be used.
-    int     _windowW        = 11;       //!Specifies the width of the window to be used for local fitting. Must be uneven, larger than(>=)3 and smaller(<=) than the total amount of data.
-
+    int     _windowW        = 11;       //!Specifies the width of the window to be used for local fitting. Must be uneven, larger than(>=)3 and smaller(<=) than the total amount of data.    
+    bool    _singleNPS      = true;    //!Specifies whether the NPS should be calculated for a single file (true), or averaged for all files (false).
 
     //functions:
     QVector<QVector<double> > calcESFbinData();     //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.
@@ -103,11 +103,11 @@ private:
     QString dataToString(QVector<QVector<double> > data);   //!Turns the given data into a string for saving to a textfile.
     double FivePointsStencil(QVector<double> func, int x, double bw);   //! Used for numerical derivation.
 
-    void calcFTsquareRoI();
+    QVector<QVector<double> > calcFTsquareRoI(const QVector<QVector<int> > &datainRoI );
 //    void plotFTnps(QVector<QVector<double> > data);
     parameter_vector fitPlaneParams(QVector<QVector<int> > dataROI);
     void plotData3D(QtDataVisualization::QScatterDataArray data3D);    
-
+    void plotNPS(const QVector<double> &data);
 
 private slots:
     void on_takeDataPushButton_clicked();
@@ -159,6 +159,8 @@ private slots:
     void on_clearFitsPushButton_clicked();
 
     void on_optionsPushButton_clicked();
+
+    void on_singleFileCheckBox_toggled(bool checked);
 
 public slots:
     void on_close_optionsDialog();    

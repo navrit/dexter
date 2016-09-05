@@ -96,6 +96,11 @@ void QCstmDQE::clearDataAndPlots()
     refreshLog(true);
 }
 
+void QCstmDQE::refreshLog(bool emptylog){
+    if(emptylog) ui->textBrowser->clear();
+        else ui->textBrowser->setText(_logtext);
+    ui->textBrowser->verticalScrollBar()->setValue(ui->textBrowser->verticalScrollBar()->maximum()); //Scroll down.
+}
 
 //------------------------MTF (Modulation Transfer Function)---------------------------------------------------------------------------------------
 
@@ -805,16 +810,24 @@ void QCstmDQE::plotEdge(QPoint ab)
 
 void QCstmDQE::on_npsPushButton_clicked()
 {
-    calcFTsquareRoI();
+    if(_singleNPS){
+        QVector<QVector<double> > FTdata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
+        //get1D ftdata... for now use FTdata[0]
+        plotNPS(FTdata[0]);
+    }
+    else{
+        ui->listWidget->count();
+        for( int i = 0; i < ui->listWidget->count(); i++){ //QListWidgetItem item : ui->listWidget){
+            QString filetest = ui->listWidget->item(i)->text();
+            emit open_data(false, true, filetest);
+
+            calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, _beginpix, _endpix));
+
+        }
+    }
 }
 
-//void QCstmDQE::plotFTnps(QVector<QVector<double> > data )
-//{
-//   ui->NPSplot->addGraph();
-//   ui->NPSplot->graph(0)->setData();
-//}
-
-void QCstmDQE::calcFTsquareRoI()
+QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(const QVector<QVector<int> > &datainRoI )
 {
     //Let's try it for the selected RoI first..
 
@@ -823,7 +836,8 @@ void QCstmDQE::calcFTsquareRoI()
     //      - The elements in each row represent the pixels in the row, starting from the left.
     //The data can thus be seen as a normal cartesion system, where the left side of each pixel is the index.
     //To get datapoints in the middle of each pixel, a correction of +0.5 pixel has to be added in both the x and y direction.
-    QVector<QVector<int> >  datainRoI = _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix);
+
+//    QVector<QVector<int> >  datainRoI = _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix);
     int xlength = datainRoI[0].length(); //Assuming the RoI is rectangular, i.e. every row has the same length.
     int ylength = datainRoI.length();
 
@@ -985,17 +999,7 @@ void QCstmDQE::calcFTsquareRoI()
     ftplot->rescaleAxes();
     ftplot->show();
 
-    double stepsize = 1 / double(xlength);
-    ui->NPSplot->clearGraphs();
-    ui->NPSplot->addGraph();
-    ui->NPSplot->graph(0)->setLineStyle(QCPGraph::lsImpulse);
-
-    for(double i = 0; i < ftdata[0].length(); i++){
-        ui->NPSplot->graph(0)->addData( i * stepsize, ftdata[0][i] ); //Plot the values for fx (fy=0).
-    }
-    ui->NPSplot->rescaleAxes();
-    ui->NPSplot->xAxis->setRange(-0.01, 1.01);
-    ui->NPSplot->replot( QCustomPlot::rpQueued );
+    return ftdata;
 
 }
 
@@ -1008,9 +1012,6 @@ parameter_vector QCstmDQE::fitPlaneParams(QVector<QVector<int> > dataRoI) //Crea
     input_vector input;
     parameter_vector params;
     QtDataVisualization::QScatterDataArray data3D;
-
-
-
 
     try{
         for(int y = 0; y < ylength; y++){
@@ -1055,6 +1056,16 @@ parameter_vector QCstmDQE::fitPlaneParams(QVector<QVector<int> > dataRoI) //Crea
     return params;
 }
 
+double planeModel(const input_vector &input, const parameter_vector &params){ //Types designed for the optimization algorithm.
+   //Returns z = ax + by + c.
+    return params(0)*input(0) + params(1)*input(1) + params(2);
+}
+
+double planeResidual(const std::pair<input_vector, double>& data, const parameter_vector& params)
+{
+    return planeModel(data.first, params) - data.second;
+}
+
 void QCstmDQE::plotData3D(QtDataVisualization::QScatterDataArray data3D)
 {
     QtDataVisualization::Q3DScatter *scatter = new QtDataVisualization::Q3DScatter();
@@ -1068,15 +1079,20 @@ void QCstmDQE::plotData3D(QtDataVisualization::QScatterDataArray data3D)
     container->show();
 }
 
-double planeModel(const input_vector &input, const parameter_vector &params){ //Types designed for the optimization algorithm.
-   //Returns z = ax + by + c.
-    return params(0)*input(0) + params(1)*input(1) + params(2);
+void QCstmDQE::plotNPS(const QVector<double> &data){
+    double stepsize = 1 / double(data.length());
+    ui->NPSplot->clearGraphs();
+    ui->NPSplot->addGraph();
+    ui->NPSplot->graph(0)->setLineStyle(QCPGraph::lsImpulse);
+
+    for(double i = 0; i < data.length(); i++){
+        ui->NPSplot->graph(0)->addData( i * stepsize, data[i] ); //Plot the values for fx (fy=0).
+    }
+    ui->NPSplot->rescaleAxes();
+    ui->NPSplot->xAxis->setRange(-0.01, 1.01);
+    ui->NPSplot->replot( QCustomPlot::rpQueued );
 }
 
-double planeResidual(const std::pair<input_vector, double>& data, const parameter_vector& params)
-{
-    return planeModel(data.first, params) - data.second;
-}
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1304,8 +1320,6 @@ void QCstmDQE::on_binSizeLineEdit_editingFinished()
     ui->binSizeLineEdit->blockSignals(false);
 }
 
-
-
 void QCstmDQE::ConnectionStatusChanged(bool connected)
 {
     ui->takeDataPushButton->setEnabled( connected );
@@ -1441,4 +1455,9 @@ void QCstmDQE::on_close_optionsDialog()
 
     _optionsDialog->close();
 
+}
+
+void QCstmDQE::on_singleFileCheckBox_toggled(bool checked)
+{
+    _singleNPS = checked;
 }
