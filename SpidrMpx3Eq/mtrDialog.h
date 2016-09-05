@@ -42,7 +42,7 @@ private:
 
     Mpx3GUI * _mpx3gui = nullptr;
     Ui::MTRDialog * ui = nullptr;
-    QVector<QLCDNumber *> _lcds;
+    QVector<QLabel *> _lcds;
     QVector<QLabel *> _labels;
 
     typedef enum {
