@@ -417,11 +417,10 @@ void QCstmGLPlot::mousePressEvent(QMouseEvent *event){
         // Start point
         clickedLocation = event->pos();
         rightClicked = true;
-        qDebug() << "click: "<< pixelAt(clickedLocation).x() << "," << pixelAt(clickedLocation).y();
+        //qDebug() << "click: "<< pixelAt(clickedLocation).x() << "," << pixelAt(clickedLocation).y();
         _startSelectionPoint = pixelAt(clickedLocation);
 
         if(!rubberBand){
-            qDebug() << "Make new band";
             rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
         }
         rubberBand->setGeometry(QRect(clickedLocation, QSize()));
@@ -452,7 +451,6 @@ void QCstmGLPlot::mouseReleaseEvent(QMouseEvent * event){
 
         rightClicked = false;
 
-        qDebug() << "Mouse released";
         if (rubberBand)
             rubberBand->hide();
 
