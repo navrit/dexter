@@ -8,6 +8,8 @@ int main(int argc, char *argv[])
     //
     QApplication a(argc, argv);
 
+    a.setWindowIcon( QIcon("./icons/ASI/ASI_sq.png"));
+
     QSurfaceFormat format;
     format.setDepthBufferSize(24);
     //format.setStencilBufferSize(8);
