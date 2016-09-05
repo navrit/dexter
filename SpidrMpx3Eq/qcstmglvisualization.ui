@@ -56,10 +56,35 @@ QGroupBox::title {
        <item>
         <layout class="QGridLayout" name="gridLayout_2">
          <item row="0" column="0">
-          <widget class="QComboBox" name="layerSelector"/>
+          <widget class="QComboBox" name="layerSelector">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>130</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
          </item>
          <item row="0" column="1">
           <widget class="QLabel" name="mouseOverLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="text">
             <string>@</string>
            </property>
@@ -68,27 +93,18 @@ QGroupBox::title {
            </property>
           </widget>
          </item>
-         <item row="0" column="2" colspan="3">
-          <spacer name="horizontalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>168</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item row="1" column="0" colspan="6">
-          <widget class="HeatmapDisplay" name="glPlot" native="true"/>
-         </item>
          <item row="2" column="0">
-          <widget class="QComboBox" name="gradientSelector"/>
+          <widget class="QComboBox" name="gradientSelector">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Colouring modes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
          </item>
          <item row="2" column="1" colspan="2">
           <widget class="QCheckBox" name="outOfBoundsCheckbox">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Drop out-of-bounds pixels&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>Drop out-of-bounds</string>
            </property>
@@ -109,17 +125,39 @@ QGroupBox::title {
          </item>
          <item row="2" column="4">
           <widget class="QPushButton" name="saveBitmapPushButton">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save image to your computer&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
-            <string>save image</string>
+            <string>Save image</string>
            </property>
           </widget>
          </item>
          <item row="2" column="5">
           <widget class="QCheckBox" name="saveWithScaleCheckBox">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save image including the scale&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>With scale</string>
            </property>
           </widget>
+         </item>
+         <item row="1" column="0" colspan="6">
+          <widget class="HeatmapDisplay" name="glPlot" native="true"/>
+         </item>
+         <item row="0" column="2" colspan="3">
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>120</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </item>
@@ -150,7 +188,7 @@ QGroupBox::title {
                <string>keep saving data continuously</string>
               </property>
               <property name="text">
-               <string>save</string>
+               <string>Save</string>
               </property>
              </widget>
             </item>
@@ -187,7 +225,7 @@ QGroupBox::title {
                <string>integrate data</string>
               </property>
               <property name="text">
-               <string>integrate</string>
+               <string>Integrate</string>
               </property>
              </widget>
             </item>
@@ -203,7 +241,7 @@ QGroupBox::title {
                <string>drop a frame if there are lost packets</string>
               </property>
               <property name="text">
-               <string>drop</string>
+               <string>Drop</string>
               </property>
              </widget>
             </item>
@@ -226,7 +264,7 @@ QGroupBox::title {
                <string>if information is lost the system keeps taking data until the goal is reached</string>
               </property>
               <property name="text">
-               <string>complete</string>
+               <string>Complete</string>
               </property>
              </widget>
             </item>
@@ -242,7 +280,7 @@ QGroupBox::title {
                <string>apply selected corrections</string>
               </property>
               <property name="text">
-               <string>corrections</string>
+               <string>Corrections</string>
               </property>
              </widget>
             </item>
@@ -580,7 +618,7 @@ QGroupBox::title {
                </sizepolicy>
               </property>
               <property name="text">
-               <string>manual</string>
+               <string>Manual</string>
               </property>
              </widget>
             </item>
@@ -593,7 +631,7 @@ QGroupBox::title {
                </sizepolicy>
               </property>
               <property name="text">
-               <string>percentile</string>
+               <string>Percentile</string>
               </property>
               <property name="checked">
                <bool>true</bool>
@@ -613,7 +651,7 @@ QGroupBox::title {
             <item row="2" column="0" colspan="2">
              <widget class="QPushButton" name="generateDataButton">
               <property name="toolTip">
-               <string>generates test data (offline)</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generates (offline) test data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Test data</string>
@@ -635,8 +673,11 @@ QGroupBox::title {
             </item>
             <item row="2" column="5">
              <widget class="QLabel" name="binWidthLabel">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bin count&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
-               <string>bin count:</string>
+               <string>Bin count:</string>
               </property>
              </widget>
             </item>
