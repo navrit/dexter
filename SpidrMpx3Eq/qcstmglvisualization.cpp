@@ -216,7 +216,6 @@ bool QCstmGLVisualization::DataTakingThreadIsIdling()
     return false;
 }
 
-
 void QCstmGLVisualization::ConfigureGUIForDataTaking() {
 
     emit taking_data_gui();
@@ -646,7 +645,6 @@ pair<int, int> QCstmGLVisualization::XtoXY(int X, int dimX){
     return make_pair(X % dimX, X/dimX);
 }
 
-
 void QCstmGLVisualization::ConnectionStatusChanged(bool connecting) {
 
     if ( connecting ) {
@@ -1033,14 +1031,12 @@ void QCstmGLVisualization::OperationModeSwitched(int indx)
     }
 }
 
-
 void QCstmGLVisualization::data_misaligned(bool misaligned) {
 
     // Increase the current packet loss
     _mpx3gui->getDataset()->setDataMisaligned( misaligned );
 
 }
-
 
 void QCstmGLVisualization::mpx3clock_stops(int stops) {
 
@@ -1050,7 +1046,6 @@ void QCstmGLVisualization::mpx3clock_stops(int stops) {
     BuildStatsStringMpx3ClockStops( _mpx3gui->getDataset()->getMpx3ClockStops() );
 
 }
-
 
 void QCstmGLVisualization::range_changed(QCPRange newRange){
     //ui->lowerManualSpin->setValue(newRange.lower);
@@ -1258,7 +1253,6 @@ void QCstmGLVisualization::active_frame_changed(){
 
 }
 
-
 void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position){
 
     //if(!_mpx3gui->getConfig()->isConnected())
@@ -1419,7 +1413,6 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
 }
 
-
 void QCstmGLVisualization::on_manualRangeRadio_toggled(bool checked)
 {
 
@@ -1538,13 +1531,11 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
     this->active_frame_changed();
 }
 
-
 void QCstmGLVisualization::on_summingCheckbox_toggled(bool checked)
 {
     emit mode_changed(checked);
     //on_reload_all_layers();
 }
-
 
 void QCstmGLVisualization::on_saveBitmapPushButton_clicked()
 {
@@ -1567,67 +1558,22 @@ void QCstmGLVisualization::on_saveBitmapPushButton_clicked()
 
 }
 
-
-void QCstmGLVisualization::on_noisyPixelMeanMultiplier_valueChanged(double arg1)
-{
+void QCstmGLVisualization::on_noisyPixelMeanMultiplier_valueChanged(double arg1){
 
 }
 
-void QCstmGLVisualization::on_correctionsDialogCheckBox_toggled(bool checked)
-{
+void QCstmGLVisualization::on_correctionsDialogPushButton_clicked(){
+    // Setup corrections and be ready to apply them
+    _corrdialog = new QCstmCorrectionsDialog(this);
+    _corrdialog->SetMpx3GUI( _mpx3gui );
 
-    if ( !_corrdialog && checked ) {
+    // non Modal
+    _corrdialog->show();
+    _corrdialog->raise();
+    _corrdialog->activateWindow();
 
-        // Setup corrections and be ready to apply them
-        _corrdialog = new QCstmCorrectionsDialog(this);
-        _corrdialog->SetMpx3GUI( _mpx3gui );
-
-        // non Modal
-        _corrdialog->show();
-        _corrdialog->raise();
-        _corrdialog->activateWindow();
-
-    } else if ( _corrdialog && checked ) {
-
-        // If already created
-        _corrdialog->show();
-        _corrdialog->raise();
-        _corrdialog->activateWindow();
-
-    }
-
-    // Create the button to change corrections settings
-    //  in case the corrections are selected but the dialogue
-    //  has been closed by the user
-    if ( checked && ! _extraWidgets.correctionsDialogueButton ) {
-        _extraWidgets.correctionsDialogueButton = new QPushButton( "...", this );
-        _extraWidgets.correctionsDialogueButton->setToolTip("change corrections settings");
-        ui->dataTakingOptionsLayout->addWidget(
-                    _extraWidgets.correctionsDialogueButton
-                    );
-        _extraWidgets.correctionsDialogueButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-        // make a connection to functionality
-        connect( _extraWidgets.correctionsDialogueButton , &QPushButton::clicked,
-                 this, &QCstmGLVisualization::correctionDialogueButtonClicked);
-
-    }
-    // Get rid of the button if not checked
-    if ( ! checked ) {
-        int col_count = ui->dataTakingOptionsLayout->count();
-        // we are trying to remove the very last item
-        QLayoutItem * it = ui->dataTakingOptionsLayout->itemAt( col_count - 1 );
-        ui->dataTakingOptionsLayout->removeItem( it );
-        // disconnect and delete the widget
-        disconnect( _extraWidgets.correctionsDialogueButton , &QPushButton::clicked,
-                    this, &QCstmGLVisualization::correctionDialogueButtonClicked);
-
-        delete _extraWidgets.correctionsDialogueButton;
-        _extraWidgets.correctionsDialogueButton = nullptr;
-    }
-
-    //  Activate or deactivate the corrections
+    // Activate or deactivate the corrections
     _corrdialog->setCorrectionsActive( checked );
-
 }
 
 void QCstmGLVisualization::correctionDialogueButtonClicked()
@@ -1644,7 +1590,6 @@ void QCstmGLVisualization::correctionDialogueButtonClicked()
     }
 
 }
-
 
 void QCstmGLVisualization::on_recoPushButton_clicked()
 {
@@ -1776,7 +1721,6 @@ void QCstmGLVisualization::on_logscale(bool checked)
 
 }
 
-
 void QCstmGLVisualization::on_infDataTakingCheckBox_toggled(bool checked)
 {
 
@@ -1794,7 +1738,6 @@ void QCstmGLVisualization::on_infDataTakingCheckBox_toggled(bool checked)
     }
 
 }
-
 
 void QCstmGLVisualization::on_multiThresholdAnalysisPushButton_clicked()
 {
@@ -1843,7 +1786,6 @@ void QCstmGLVisualization::on_testPulsesPushButton_clicked()
     _testPulsesDialog->show(); // modeless
 
 }
-
 
 void QCstmGLVisualization::on_dropFramesCheckBox_clicked(bool checked)
 {

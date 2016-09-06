@@ -208,7 +208,7 @@ private slots:
     //!Spinbox for noisyPixelMeanMultiplier parameter
     void on_noisyPixelMeanMultiplier_valueChanged(double arg1);
 
-    void on_correctionsDialogCheckBox_toggled(bool checked);
+    void on_correctionsDialogPushButton_clicked();
 
     void on_recoPushButton_clicked();
 
