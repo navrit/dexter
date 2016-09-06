@@ -20,8 +20,7 @@ QCstmBHWindow::QCstmBHWindow(QWidget *parent) :
   _corr = dynamic_cast<QCstmCorrectionsDialog*>(parent); //!makes _corr object for signal purposes.
 }
 
-QCstmBHWindow::~QCstmBHWindow()
-{
+QCstmBHWindow::~QCstmBHWindow(){
   delete ui;
 }
 
