@@ -38,7 +38,7 @@
      <x>0</x>
      <y>0</y>
      <width>1366</width>
-     <height>23</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -60,15 +60,15 @@
      <property name="title">
       <string>Load configuration</string>
      </property>
-     <addaction name="actionLoad_DACs"/>
      <addaction name="actionLoad_Equalization"/>
+     <addaction name="actionLoad_DACs"/>
     </widget>
     <widget class="QMenu" name="menuSave_configuration">
      <property name="title">
       <string>Save configuration</string>
      </property>
-     <addaction name="actionSave_DACs"/>
      <addaction name="actionSave_Equalization"/>
+     <addaction name="actionSave_DACs"/>
     </widget>
     <addaction name="actionClear_configuration"/>
     <addaction name="menuLoad_configuration"/>
@@ -94,8 +94,8 @@
     <addaction name="actionDACs"/>
     <addaction name="actionEqualization"/>
    </widget>
-   <addaction name="menuMpx3Eq"/>
    <addaction name="menuSystem"/>
+   <addaction name="menuMpx3Eq"/>
    <addaction name="menuConfig"/>
    <addaction name="menu_Window"/>
   </widget>
@@ -119,6 +119,9 @@
    <addaction name="actionSave_data"/>
    <addaction name="actionClear_data"/>
    <addaction name="separator"/>
+   <addaction name="actionLoad_Equalization"/>
+   <addaction name="actionClear_configuration"/>
+   <addaction name="separator"/>
    <addaction name="actionWizard"/>
    <addaction name="separator"/>
    <addaction name="actionVisualization"/>
@@ -138,6 +141,10 @@
    </property>
   </action>
   <action name="actionClear_configuration">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/eraser_equalisation_logo.png</normaloff>:/icons/eraser_equalisation_logo.png</iconset>
+   </property>
    <property name="text">
     <string>Clear configuration</string>
    </property>
@@ -148,6 +155,10 @@
    </property>
   </action>
   <action name="actionLoad_Equalization">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/load_equalisation_logo.png</normaloff>:/icons/load_equalisation_logo.png</iconset>
+   </property>
    <property name="text">
     <string>Load Equalization</string>
    </property>
@@ -229,8 +240,8 @@
   </action>
   <action name="actionDefibrillator">
    <property name="icon">
-    <iconset>
-     <normaloff>icons/Automated_External_Defibrillator.png</normaloff>icons/Automated_External_Defibrillator.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/Automated_External_Defibrillator.png</normaloff>:/icons/Automated_External_Defibrillator.png</iconset>
    </property>
    <property name="text">
     <string>Defibrillator</string>
