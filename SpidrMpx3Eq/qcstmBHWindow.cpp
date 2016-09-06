@@ -14,6 +14,7 @@ QCstmBHWindow::QCstmBHWindow(QWidget *parent) :
   ui(new Ui::QCstmBHWindow)
 {
   ui->setupUi(this);
+  this->setWindowTitle("BH Correction");
   connect(this,&QCstmBHWindow::loadSignal,this, &QCstmBHWindow::on_loadButton_clicked);
   connect(this,SIGNAL(loadData()), this, SLOT(on_loadButton_clicked()));
   _corr = dynamic_cast<QCstmCorrectionsDialog*>(parent); //!makes _corr object for signal purposes.

@@ -322,7 +322,7 @@ QGroupBox::title {
                <string>single shot (use it to check pixel depth overflow)</string>
               </property>
               <property name="text">
-               <string>single</string>
+               <string>Single</string>
               </property>
              </widget>
             </item>
@@ -453,7 +453,7 @@ QGroupBox::title {
                <enum>Qt::RightToLeft</enum>
               </property>
               <property name="text">
-               <string>offline</string>
+               <string>Offline</string>
               </property>
               <property name="textFormat">
                <enum>Qt::RichText</enum>
