@@ -1777,11 +1777,20 @@ void QCstmEqualization::LoadEqualization() {
 
     int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
 
+    QProgressDialog pd("Loading adjustment bits ... ", "Cancel", 0, nChips, this);
+    pd.setCancelButton( 0 ); // no cancel button
+    pd.setWindowModality(Qt::WindowModal);
+    pd.setMinimumDuration( 0 ); // show immediately
+    pd.setWindowTitle("Load equalization");
+
+    pd.setValue( 0 );
+
     for(int i = 0 ; i < nChips ; i++) {
 
         // And clear all previous adjustements
         // In case an equalization was done in the same session
         //ClearAllAdjustmentBits();
+
 
         // Check if the device is alive
         if ( ! _mpx3gui->getConfig()->detectorResponds( i ) ) {
@@ -1820,6 +1829,9 @@ void QCstmEqualization::LoadEqualization() {
             GetAdjBarChart(i, Mpx3EqualizationResults::__ADJ_L)->show();
             //GetAdjBarChart(i, Mpx3EqualizationResults::__ADJ_L)->fitToHeight();
         }
+
+        // progress
+        pd.setValue( i+1 );
 
     }
 
