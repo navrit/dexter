@@ -853,7 +853,7 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
 
     if(getDataset()->getLayer(0)[0]==0)
     {
-        qDebug() << getDataset()->getLayer(0)[0];
+        qDebug() << "Mpx3GUI::open_data_with_path : "<< getDataset()->getLayer(0)[0];
     }
 
     if(!requestPath)
