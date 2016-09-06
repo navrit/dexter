@@ -10,20 +10,21 @@
 //! User can start the correction from this screen, or from the "corrections" window ( qcstmcorrectionsdialog ).
 
 QCstmBHWindow::QCstmBHWindow(QWidget *parent) :
-	QDialog(parent),
-  ui(new Ui::QCstmBHWindow)
+    QDialog(parent),
+    ui(new Ui::QCstmBHWindow)
 {
-  ui->setupUi(this);
-  this->setWindowTitle("BH Correction");
+    ui->setupUi(this);
+    this->setWindowTitle("BH Correction");
 
-  connect(this,&QCstmBHWindow::loadSignal,this, &QCstmBHWindow::on_loadButton_clicked);
-  connect(this,SIGNAL(loadData()), this, SLOT(on_loadButton_clicked()));
+    connect(this,&QCstmBHWindow::loadSignal,this, &QCstmBHWindow::on_loadButton_clicked);
+    connect(this,SIGNAL(loadData()), this, SLOT(on_loadButton_clicked()));
 
-  _corr = dynamic_cast<QCstmCorrectionsDialog*>(parent); //!makes _corr object for signal purposes.
+    _corr = dynamic_cast<QCstmCorrectionsDialog*>(parent); //!makes _corr object for signal purposes.
 }
 
 QCstmBHWindow::~QCstmBHWindow(){
-  delete ui;
+
+    delete ui;
 }
 
 void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
@@ -35,6 +36,8 @@ void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
     connect(this, SIGNAL(updateProgressBar(int)),this, SLOT(on_progressBar_valueChanged(int)));
     connect(this,SIGNAL(applyCorrection()),this, SLOT(on_applyBHCorrection()));
     connect(_corr, SIGNAL(applyBHCorrection()), this, SLOT(on_applyBHCorrection()));
+
+    connect(this, SIGNAL(sendFilename(QString)), _corr, SLOT(receiveFilename(QString)));
 }
 
 void QCstmBHWindow::on_addButton_clicked()
@@ -321,6 +324,7 @@ void QCstmBHWindow::on_loadJsonButton_clicked(){
             if(it != JSobject.end()){
                 usePath = true;
                 correctionPath = it.value().toString();
+                emit sendFilename(fileName);
                 selectedItemNo = i;
                 emit loadData();
                 usePath = false; // set to false to prevent accidents further down the road.

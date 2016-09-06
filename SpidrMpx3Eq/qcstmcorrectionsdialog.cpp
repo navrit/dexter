@@ -10,6 +10,7 @@ QCstmCorrectionsDialog::QCstmCorrectionsDialog(QWidget *parent) :
     ui->setupUi(this);
     _vis = dynamic_cast<QCstmGLVisualization*>(parent);
 
+
     this->setWindowTitle( tr("Corrections") );
 }
 
@@ -19,9 +20,7 @@ QCstmCorrectionsDialog::~QCstmCorrectionsDialog()
 }
 
 void QCstmCorrectionsDialog::SetMpx3GUI(Mpx3GUI * p){
-
     _mpx3gui = p;
-
 }
 
 bool QCstmCorrectionsDialog::isCorrectionsActive() {
@@ -107,7 +106,6 @@ void QCstmCorrectionsDialog::on_obcorrCheckbox_toggled(bool checked) {
 
 }
 
-
 /**
  * On an existing image
  */
@@ -129,4 +127,8 @@ void QCstmCorrectionsDialog::on_applyCorr_clicked() {
 
 void QCstmCorrectionsDialog::callBHCorrection(){
     emit applyBHCorrection();
+}
+
+void QCstmCorrectionsDialog::receiveFilename(QString filename){
+    ui->bhcorrLineEdit->setText(filename);
 }

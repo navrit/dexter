@@ -86,11 +86,15 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="1" colspan="2">
-         <widget class="QLineEdit" name="obcorrLineEdit"/>
-        </item>
         <item row="2" column="1" colspan="2">
-         <widget class="QLineEdit" name="bhcorrLineEdit"/>
+         <widget class="QLineEdit" name="bhcorrLineEdit">
+          <property name="dragEnabled">
+           <bool>false</bool>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item row="0" column="1">
          <widget class="QCheckBox" name="highinterpolationCheckbox">
@@ -102,6 +106,16 @@
           </property>
           <property name="text">
            <string>interhigh</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" colspan="2">
+         <widget class="QLineEdit" name="obcorrLineEdit">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
