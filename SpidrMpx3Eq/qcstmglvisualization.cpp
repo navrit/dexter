@@ -65,7 +65,6 @@ QCstmGLVisualization::~QCstmGLVisualization() {
     delete ui;
 }
 
-
 void QCstmGLVisualization::timerEvent(QTimerEvent *)
 {
     refreshScoringInfo();
@@ -1015,7 +1014,6 @@ void QCstmGLVisualization::on_user_accepted_profile()
 
 void QCstmGLVisualization::OperationModeSwitched(int indx)
 {
-
     // Swith the triggerLengthSpinBox into ContRWFreq if in ContinuousRW mode
     if ( indx == Mpx3Config::__operationMode_SequentialRW ) {
 
@@ -1033,7 +1031,6 @@ void QCstmGLVisualization::OperationModeSwitched(int indx)
         ui->triggerLengthSpinBoxLabel->setToolTip( tr("ContinuousRW Mode. Enter frequency in Hz.") );
         ui->triggerLengthSpinBox->setToolTip( tr("ContinuousRW Mode. Enter frequency in Hz.") );
     }
-
 }
 
 
