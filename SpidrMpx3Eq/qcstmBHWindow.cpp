@@ -15,8 +15,10 @@ QCstmBHWindow::QCstmBHWindow(QWidget *parent) :
 {
   ui->setupUi(this);
   this->setWindowTitle("BH Correction");
+
   connect(this,&QCstmBHWindow::loadSignal,this, &QCstmBHWindow::on_loadButton_clicked);
   connect(this,SIGNAL(loadData()), this, SLOT(on_loadButton_clicked()));
+
   _corr = dynamic_cast<QCstmCorrectionsDialog*>(parent); //!makes _corr object for signal purposes.
 }
 
@@ -47,7 +49,6 @@ void QCstmBHWindow::on_addButton_clicked()
      }
 }
 
-
 void QCstmBHWindow::on_talkToForm(double thickness, QString material){
     //! Is called after user finishes with dialog that adds a correction item.
 
@@ -73,7 +74,6 @@ void QCstmBHWindow::on_talkToForm(double thickness, QString material){
     }
 }
 
-
 void QCstmBHWindow::on_clearButton_clicked()
 {
     //! Removes selected correction item from the list.
@@ -96,8 +96,9 @@ void QCstmBHWindow::on_clearButton_clicked()
         ui->startButton->setEnabled(true);
 }
 
-void QCstmBHWindow::on_clearAllButton_clicked()
-{
+void QCstmBHWindow::on_clearAllButton_clicked(){
+    this->setWindowTitle(QString("BH Corrections"));
+
     //! Clears everything in the window.
     thicknessvctr.clear();
     correctionMap.clear();
@@ -130,7 +131,6 @@ void QCstmBHWindow::on_loadButton_clicked(){
     if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )
         ui->startButton->setEnabled(true);    
 }
-
 
 void QCstmBHWindow::on_plot(){
     //! Plots the average count of the first layer of each correction item.
@@ -264,22 +264,18 @@ void QCstmBHWindow::on_applyBHCorrection()
     emit updateProgressBar(100);
 }
 
-
 void QCstmBHWindow::on_open_data_failed(){
     dataOpened = false;
 }
-
 
 void QCstmBHWindow::on_list_doubleClicked(const QModelIndex &index){
     emit loadSignal();
 }
 
-
 void QCstmBHWindow::on_progressBar_valueChanged(int value){
     ui->progressBar->setValue(value);
     ui->progressBar->update();
 }
-
 
 void QCstmBHWindow::on_okButton_clicked(){
     if(emptyCorrectionCounter != 0 || thicknessvctr.size()<3 ){
@@ -299,6 +295,7 @@ void QCstmBHWindow::on_loadJsonButton_clicked(){
         printf("Couldn't open configuration file %s\n", fileName.toStdString().c_str());
         return;
     }
+    this->setWindowTitle(QString(fileName));
     thicknessvctr.clear();
     correctionMap.clear();
     correctionMaterial.clear();
@@ -335,7 +332,6 @@ void QCstmBHWindow::on_loadJsonButton_clicked(){
     }
 }
 
-
 void QCstmBHWindow::on_saveJsonButton_clicked()
 {
     //! Saves current list of correction items to .json file.
@@ -362,6 +358,3 @@ void QCstmBHWindow::on_saveJsonButton_clicked()
      doc.setObject(JSobjectParent);
      loadFile.write(doc.toJson());
 }
-
-
-
