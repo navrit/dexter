@@ -90,7 +90,7 @@
          <widget class="QLineEdit" name="obcorrLineEdit"/>
         </item>
         <item row="2" column="1" colspan="2">
-         <widget class="QLineEdit" name="lineEdit"/>
+         <widget class="QLineEdit" name="bhcorrLineEdit"/>
         </item>
         <item row="0" column="1">
          <widget class="QCheckBox" name="highinterpolationCheckbox">
