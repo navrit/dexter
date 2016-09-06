@@ -1571,9 +1571,6 @@ void QCstmGLVisualization::on_correctionsDialogPushButton_clicked(){
     _corrdialog->show();
     _corrdialog->raise();
     _corrdialog->activateWindow();
-
-    // Activate or deactivate the corrections
-    _corrdialog->setCorrectionsActive( checked );
 }
 
 void QCstmGLVisualization::correctionDialogueButtonClicked()
