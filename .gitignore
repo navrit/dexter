@@ -2,5 +2,6 @@
 # User specific preference file #
 #################################
 *.pro.user
+*.pro.user.*
 *.autosave
 
