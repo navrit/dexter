@@ -1318,7 +1318,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     }
 
     else if (selectedItem == &gotoDQE){
-        _mpx3gui->GetUI()->dqeTab->clearDataAndPlots();
+        _mpx3gui->GetUI()->dqeTab->clearDataAndPlots(false);
         _mpx3gui->GetUI()->dqeTab->setRegion(pixel_begin, pixel_end);
         _mpx3gui->GetUI()->dqeTab->setSelectedThreshold(threshold);
         _mpx3gui->getDataset()->collectPointsROI(threshold, pixel_begin, pixel_end);
