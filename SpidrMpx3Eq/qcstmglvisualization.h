@@ -240,6 +240,8 @@ private slots:
 
     void on_dropFramesCheckBox_clicked(bool checked);
 
+    void on_resetViewPushButton_clicked();
+
 
 public slots:
     void StartDataTaking();

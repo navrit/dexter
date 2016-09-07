@@ -756,9 +756,12 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
              SLOT( OperationModeSwitched(int) ));
 
 
-    //
+    // Double click to reset view
+    // Linked to on_resetViewPushButton_clicked()
     connect(ui->glPlot->getPlot(), &QCstmGLPlot::double_click,
             this, &QCstmGLVisualization::reload_all_layers);
+    connect(ui->resetViewPushButton, SIGNAL(pressed()),
+            this, SLOT(on_resetViewPushButton_clicked()));
 
     // DataTaking / idling actions
     connect( this, &QCstmGLVisualization::taking_data_gui,
@@ -1531,14 +1534,12 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
     this->active_frame_changed();
 }
 
-void QCstmGLVisualization::on_summingCheckbox_toggled(bool checked)
-{
+void QCstmGLVisualization::on_summingCheckbox_toggled(bool checked){
     emit mode_changed(checked);
     //on_reload_all_layers();
 }
 
-void QCstmGLVisualization::on_saveBitmapPushButton_clicked()
-{
+void QCstmGLVisualization::on_saveBitmapPushButton_clicked(){
     QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), QStandardPaths::displayName(QStandardPaths::PicturesLocation), tr("location"));
 
     // Get the image
@@ -1573,8 +1574,7 @@ void QCstmGLVisualization::on_correctionsDialogPushButton_clicked(){
     _corrdialog->activateWindow();
 }
 
-void QCstmGLVisualization::correctionDialogueButtonClicked()
-{
+void QCstmGLVisualization::correctionDialogueButtonClicked(){
 
     // Simply show the dialogue
     if ( _corrdialog ) {
@@ -1588,8 +1588,7 @@ void QCstmGLVisualization::correctionDialogueButtonClicked()
 
 }
 
-void QCstmGLVisualization::on_recoPushButton_clicked()
-{
+void QCstmGLVisualization::on_recoPushButton_clicked(){
 
     _mpx3gui->rewindToOriginalDataset();
 
@@ -1748,51 +1747,41 @@ void QCstmGLVisualization::on_multiThresholdAnalysisPushButton_clicked()
 
 }
 
-void QCstmGLVisualization::on_MTRClosed()
-{
-
+void QCstmGLVisualization::on_MTRClosed(){
     if ( _mtrDialog ) {
         disconnect(_mtrDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_MTRClosed);
         delete _mtrDialog;
         _mtrDialog = nullptr;
     }
-
 }
 
-void QCstmGLVisualization::on_testPulsesClosed()
-{
-
+void QCstmGLVisualization::on_testPulsesClosed(){
     if ( _testPulsesDialog ) {
         disconnect(_mtrDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
         delete _testPulsesDialog;
         _testPulsesDialog = nullptr;
     }
-
 }
 
-void QCstmGLVisualization::on_testPulsesPushButton_clicked()
-{
-
+void QCstmGLVisualization::on_testPulsesPushButton_clicked(){
     if ( ! _testPulsesDialog ) {
 
         _testPulsesDialog = new TestPulses(_mpx3gui, this);
         connect(_testPulsesDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
-
     }
 
     _testPulsesDialog->show(); // modeless
-
 }
 
-void QCstmGLVisualization::on_dropFramesCheckBox_clicked(bool checked)
-{
+void QCstmGLVisualization::on_dropFramesCheckBox_clicked(bool checked){
     _dropFrames = checked;
 }
 
-void QCstmGLVisualization::bufferOccupancySlot(int occ)
-{
-
+void QCstmGLVisualization::bufferOccupancySlot(int occ){
     ui->bufferOccupancy->setValue( occ );
-
 }
 
+// Resets the view - uses same function as double clicking
+void QCstmGLVisualization::on_resetViewPushButton_clicked(){
+    reload_all_layers();
+}
