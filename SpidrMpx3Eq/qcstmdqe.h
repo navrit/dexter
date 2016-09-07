@@ -86,28 +86,31 @@ private:
     int     _windowW        = 11;       //!Specifies the width of the window to be used for local fitting. Must be uneven, larger than(>=)3 and smaller(<=) than the total amount of data.    
     bool    _singleNPS      = true;    //!Specifies whether the NPS should be calculated for a single file (true), or averaged for all files (false).
 
-    //functions:
+    //Main calculations:
     QVector<QVector<double> > calcESFbinData();     //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.
     QVector<QVector<double> > calcESFfitData();     //!Creates the datapoints of the fitted function by using the parameters calculated by the fitting in the used function model.
     QVector<QVector<double> > calcSmoothedESFdata(QVector<QVector<double> > data);
     QVector<QVector<double> > calcLSFdata();        //!Creates the datapoints of the derivative of the fitted function, by using the parameters calculated by the fitting and using them in the theoretical derivative of the function model.
     QVector<QVector<double> > calcNumDerivativeOfdata(QVector<QVector<double> > data);  //!Calculates the numerical derivative of a given set of data. Used for LSF.
     QVector<QVector<double> > calcMTFdata();        //!Calculates the datapoints for the MTF, by taking the Fourier Transform of the LSF.
+    QVector<double> calcNPSdata();
+    QVector<QVector<double> > calcFTsquareRoI(const QVector<QVector<int> > &data );
+
+    //Plotting
     void plotMTF();
     void plotFitESF();
     void plotLSF();
     void plotEdge(QPoint ab);
-    void fitESFparams(QVector<QVector<double> > esfdata);   //!Determines the parameters in the function model that best suit the data by performing a least squares fitting algorithm.
+    void plotNPS(const QVector<double> &data);
+    void plotData3D(QtDataVisualization::QScatterDataArray data3D);
 
+    void fitESFparams(QVector<QVector<double> > esfdata);   //!Determines the parameters in the function model that best suit the data by performing a least squares fitting algorithm.
+    parameter_vector fitPlaneParams(QVector<QVector<int> > dataROI);
 
     QString dataToString(QVector<QVector<double> > data);   //!Turns the given data into a string for saving to a textfile.
     double FivePointsStencil(QVector<double> func, int x, double bw);   //! Used for numerical derivation.
-
-    QVector<QVector<double> > calcFTsquareRoI(const QVector<QVector<int> > &datainRoI );
 //    void plotFTnps(QVector<QVector<double> > data);
-    parameter_vector fitPlaneParams(QVector<QVector<int> > dataROI);
-    void plotData3D(QtDataVisualization::QScatterDataArray data3D);    
-    void plotNPS(const QVector<double> &data);
+
 
 private slots:
     void on_takeDataPushButton_clicked();

@@ -107,7 +107,6 @@ void QCstmDQE::refreshLog(bool emptylog){
 //!Plots the Edge Spread Function.
 void QCstmDQE::plotESF()
 {
-    //if(ui->ESFplot->graphCount() != 0)
     ui->ESFplot->clearGraphs();
     _params = 0; //Sets all parameters to zero.
     _ESFdata.clear();
@@ -796,7 +795,9 @@ QVector<QVector<double> > QCstmDQE::calcMTFdata()
 
     _MTFdata = mtfdata;
     return mtfdata;
-}
+    }
+
+
 
 void QCstmDQE::plotEdge(QPoint ab)
 {   //Display the midline edge in the heatmap glplot...?
@@ -808,26 +809,52 @@ void QCstmDQE::plotEdge(QPoint ab)
 
 //---------------------NPS (Noise Power Spectrum)------------------------------------------------------------------------------------------------
 
-void QCstmDQE::on_npsPushButton_clicked()
+
+
+QVector<double> QCstmDQE::calcNPSdata()
 {
+    QVector<QVector<double> > ft2Ddata;
+    QVector<QVector<double> > ftROIdata;
+    QVector<double> npsdata;
+
     if(_singleNPS){
-        QVector<QVector<double> > FTdata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
+        ft2Ddata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
         //get1D ftdata... for now use FTdata[0]
-        plotNPS(FTdata[0]);
+
+        npsdata = ft2Ddata[0];
     }
     else{
-        ui->listWidget->count();
+        int Nfiles = ui->listWidget->count();
         for( int i = 0; i < ui->listWidget->count(); i++){ //QListWidgetItem item : ui->listWidget){
-            QString filetest = ui->listWidget->item(i)->text();
-            emit open_data(false, true, filetest);
+//            QString filetest = ui->listWidget->item(i)->text();
+            QString filename = _NPSfilepaths[i];
+            emit open_data(false, true, filename);
 
-            calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, _beginpix, _endpix));
+            ftROIdata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, _beginpix, _endpix));
 
+            int xlength = ftROIdata[0].length();
+            int ylength = ftROIdata.length();
+
+            ft2Ddata.resize(ylength);
+
+            for(int i = 0; i < ylength; i++){
+                ft2Ddata[i].resize(xlength);
+            }
+
+            for(int y = 0; y < ftROIdata.length(); y++){
+                for(int x; x < ftROIdata[0].length(); x++){ //assuming all rows are equal length
+                    ft2Ddata[y][x] += ftROIdata[y][x];//init!
+                }
+            }
         }
+        npsdata = ft2Ddata[0];
     }
+
+    return npsdata;
+
 }
 
-QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(const QVector<QVector<int> > &datainRoI )
+QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(const QVector<QVector<int> > &data )
 {
     //Let's try it for the selected RoI first..
 
@@ -838,12 +865,12 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(const QVector<QVector<int> >
     //To get datapoints in the middle of each pixel, a correction of +0.5 pixel has to be added in both the x and y direction.
 
 //    QVector<QVector<int> >  datainRoI = _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix);
-    int xlength = datainRoI[0].length(); //Assuming the RoI is rectangular, i.e. every row has the same length.
-    int ylength = datainRoI.length();
+    int xlength = data[0].length(); //Assuming the RoI is rectangular, i.e. every row has the same length.
+    int ylength = data.length();
 
 
     //Fit planar ramp.
-    parameter_vector params = fitPlaneParams(datainRoI);
+    parameter_vector params = fitPlaneParams(data);
     input_vector input;
     double z;
     //For test plotting:
@@ -1081,7 +1108,10 @@ void QCstmDQE::plotData3D(QtDataVisualization::QScatterDataArray data3D)
     container->show();
 }
 
-void QCstmDQE::plotNPS(const QVector<double> &data){
+void QCstmDQE::plotNPS(){
+
+    QVector<double> data = calcNPSdata();
+
     double stepsize = 1 / double(data.length());
     ui->NPSplot->clearGraphs();
     ui->NPSplot->addGraph();
@@ -1249,7 +1279,13 @@ void QCstmDQE::on_mtfPushButton_clicked()
     refreshLog(false);
 }
 
+void QCstmDQE::on_npsPushButton_clicked()
+{
+    plotNPS(calcNPSdata());
 
+//    calcNPSdata();
+
+}
 
 void QCstmDQE::on_saveMTFpushButton_clicked()
 {
