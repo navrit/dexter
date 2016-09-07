@@ -825,7 +825,7 @@ QVector<double> QCstmDQE::calcNPSdata()
     }
     else{
         int Nfiles = ui->listWidget->count();
-        for( int i = 0; i < ui->listWidget->count(); i++){ //QListWidgetItem item : ui->listWidget){
+        for( int i = 0; i < Nfiles; i++){ //QListWidgetItem item : ui->listWidget){
 //            QString filetest = ui->listWidget->item(i)->text();
             QString filename = _NPSfilepaths[i];
             emit open_data(false, true, filename);
@@ -1281,7 +1281,7 @@ void QCstmDQE::on_mtfPushButton_clicked()
 
 void QCstmDQE::on_npsPushButton_clicked()
 {
-    plotNPS(calcNPSdata());
+    plotNPS();
 
 //    calcNPSdata();
 

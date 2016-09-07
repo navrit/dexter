@@ -101,7 +101,7 @@ private:
     void plotFitESF();
     void plotLSF();
     void plotEdge(QPoint ab);
-    void plotNPS(const QVector<double> &data);
+    void plotNPS();
     void plotData3D(QtDataVisualization::QScatterDataArray data3D);
 
     void fitESFparams(QVector<QVector<double> > esfdata);   //!Determines the parameters in the function model that best suit the data by performing a least squares fitting algorithm.
