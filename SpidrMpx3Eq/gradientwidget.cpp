@@ -33,7 +33,7 @@ void GradientWidget::paintEvent(QPaintEvent * /*event*/){ //TODO: caching, auto-
     QRectF boundingBox;
     QString label;
     label.sprintf(" %.0f", m_max);
-    qDebug() << this->width() << " , " << this->height();
+    //qDebug() << this->width() << " , " << this->height();
     painter.drawText(QRectF(30,0, this->width(), this->height()),Qt::AlignTop,
                      label, &boundingBox);
     requiredWidth = (requiredWidth < 30+boundingBox.width()? 30+boundingBox.width() : requiredWidth);

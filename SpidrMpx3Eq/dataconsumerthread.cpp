@@ -102,7 +102,7 @@ void DataConsumerThread::run()
     forever {
 
         // When abort execution. Triggered as the destructor is called.
-        if( _abort ) return;
+        if ( _abort ) return;
 
         //_mutex.lock();
         // local variables to scope variables

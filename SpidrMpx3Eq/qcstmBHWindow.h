@@ -51,6 +51,8 @@ signals:
 
   void updateProgressBar(int value);
 
+  void sendFilename(QString filename);
+
 private slots:
   void on_addButton_clicked();
 

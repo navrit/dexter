@@ -31,6 +31,9 @@ public:
 
     void callBHCorrection();
 
+public slots:
+    void receiveFilename(QString filename);
+
 private slots:
     void on_obcorrCheckbox_toggled(bool checked);
     void on_bhcorrCheckbox_toggled(bool checked);

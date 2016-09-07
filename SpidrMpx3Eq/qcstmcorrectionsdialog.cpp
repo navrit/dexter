@@ -5,13 +5,13 @@
 
 QCstmCorrectionsDialog::QCstmCorrectionsDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::QCstmCorrectionsDialog)
-{
+    ui(new Ui::QCstmCorrectionsDialog){
+
     ui->setupUi(this);
     _vis = dynamic_cast<QCstmGLVisualization*>(parent);
 
-    this->setWindowTitle( tr("Corrections") );
 
+    this->setWindowTitle( tr("Corrections") );
 }
 
 QCstmCorrectionsDialog::~QCstmCorrectionsDialog()
@@ -20,9 +20,7 @@ QCstmCorrectionsDialog::~QCstmCorrectionsDialog()
 }
 
 void QCstmCorrectionsDialog::SetMpx3GUI(Mpx3GUI * p){
-
     _mpx3gui = p;
-
 }
 
 bool QCstmCorrectionsDialog::isCorrectionsActive() {
@@ -55,6 +53,7 @@ double QCstmCorrectionsDialog::getNoisyPixelMeanMultiplier()
 
 //!Load a BH correction
 void QCstmCorrectionsDialog::on_bhcorrCheckbox_toggled(bool checked) {
+    ui->bhcorrLineEdit->setText("MY FILENAME SHOULD BE HEEEEEERE");
 
     // Deal with the separate BH window
     if ( !_bhwindow && checked && _mpx3gui->getDataset()->getLayer(0)!= nullptr) {
@@ -111,7 +110,6 @@ void QCstmCorrectionsDialog::on_obcorrCheckbox_toggled(bool checked) {
  * On an existing image
  */
 void QCstmCorrectionsDialog::on_applyCorr_clicked() {
-
     if ( ! _vis->isTakingData() ) {
 
         // This is done off data taking
@@ -127,8 +125,10 @@ void QCstmCorrectionsDialog::on_applyCorr_clicked() {
     }
 }
 
-void QCstmCorrectionsDialog::callBHCorrection()
-{
+void QCstmCorrectionsDialog::callBHCorrection(){
     emit applyBHCorrection();
 }
 
+void QCstmCorrectionsDialog::receiveFilename(QString filename){
+    ui->bhcorrLineEdit->setText(filename);
+}

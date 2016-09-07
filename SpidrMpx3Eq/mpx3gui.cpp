@@ -853,7 +853,7 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
 
     if(getDataset()->getLayer(0)[0]==0)
     {
-        qDebug() << getDataset()->getLayer(0)[0];
+        qDebug() << "Mpx3GUI::open_data_with_path : "<< getDataset()->getLayer(0)[0];
     }
 
     if(!requestPath)
@@ -879,6 +879,7 @@ void Mpx3GUI::set_mode_normal(){
 
 void Mpx3GUI::clear_configuration(){
 
+
     // Clear adjustement bits
     QMessageBox::StandardButton ans = QMessageBox::question(this, tr("Clear configuration"), tr("The adjustment matrix and the pixel mask will be cleared.  Continue ?") );
     if ( ans == QMessageBox::No ) return;
@@ -887,6 +888,15 @@ void Mpx3GUI::clear_configuration(){
     if ( _ui->equalizationWidget ) {
 
         int ndev = config->getNDevicesSupported();
+
+        QProgressDialog pd("Clear adjustment bits ... ", "Cancel", 0, ndev, this);
+        pd.setCancelButton( 0 ); // no cancel button
+        pd.setWindowModality(Qt::WindowModal);
+        pd.setMinimumDuration( 0 ); // show immediately
+        pd.setWindowTitle("Clear equalization");
+
+        pd.setValue( 0 );
+
         for ( int i = 0 ; i < ndev ; i++ ) {
 
             if ( ! config->detectorResponds( i ) ) continue;
@@ -900,6 +910,8 @@ void Mpx3GUI::clear_configuration(){
             } else {
                 noEqualization = true;
             }
+
+            pd.setValue( i+1 );
         }
 
     } else { noEqualization = true; }

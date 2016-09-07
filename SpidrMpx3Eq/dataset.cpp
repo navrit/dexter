@@ -754,6 +754,7 @@ double Dataset::calcPadMean(int thlkey, QSize isize) {
         for(int x = 0 ; x < isize.width() ; x++) {
 
             // Around pixel (29,30)(dead) for info
+            /*
             if ( x == 29 && y == 30 ) {
                 cout
                         << sample(x, y+1, thlkey)
@@ -762,6 +763,7 @@ double Dataset::calcPadMean(int thlkey, QSize isize) {
                         << ", " << sample(x-1, y, thlkey)
                         << endl;
             }
+            */
 
             // sample and skip if it's a dead pixel
             int sampling = sample(x, y, thlkey);

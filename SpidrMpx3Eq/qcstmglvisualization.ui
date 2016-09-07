@@ -86,7 +86,7 @@ QGroupBox::title {
             </size>
            </property>
            <property name="text">
-            <string>@</string>
+            <string/>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -269,16 +269,7 @@ QGroupBox::title {
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="correctionsDialogCheckBox">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>apply selected corrections</string>
-              </property>
+             <widget class="QPushButton" name="correctionsDialogPushButton">
               <property name="text">
                <string>Corrections</string>
               </property>
@@ -322,7 +313,7 @@ QGroupBox::title {
                <string>single shot (use it to check pixel depth overflow)</string>
               </property>
               <property name="text">
-               <string>single</string>
+               <string>Single</string>
               </property>
              </widget>
             </item>
@@ -453,7 +444,7 @@ QGroupBox::title {
                <enum>Qt::RightToLeft</enum>
               </property>
               <property name="text">
-               <string>offline</string>
+               <string>Offline</string>
               </property>
               <property name="textFormat">
                <enum>Qt::RichText</enum>
@@ -466,7 +457,7 @@ QGroupBox::title {
             <item row="4" column="1">
              <widget class="QPushButton" name="testPulsesPushButton">
               <property name="text">
-               <string>Testpulses</string>
+               <string>Test pulses</string>
               </property>
              </widget>
             </item>
@@ -612,7 +603,7 @@ QGroupBox::title {
           </sizepolicy>
          </property>
          <property name="title">
-          <string>Histogram</string>
+          <string>Histogram of events distribution per pixel</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
@@ -677,6 +668,12 @@ QGroupBox::title {
             </item>
             <item row="2" column="0" colspan="2">
              <widget class="QPushButton" name="generateDataButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generates (offline) test data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>

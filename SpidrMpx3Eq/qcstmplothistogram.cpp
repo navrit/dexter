@@ -15,8 +15,8 @@ QCstmPlotHistogram::QCstmPlotHistogram(QWidget * parent)
     //this->addGraph();
     setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
     axisRect()->setupFullAxesBox(true);
-    xAxis->setLabel("signal");
-    yAxis->setLabel("count");
+    xAxis->setLabel("Events per pixel [1/px]");
+    yAxis->setLabel("Number of pixels [px]");
     //this->graph(0)->setLineStyle(QCPGraph::lsStepCenter);
     //this->graph(0)->setPen(QPen(Qt::black));
     lowClamp = new QCPItemStraightLine(this);    highClamp = new QCPItemStraightLine(this);
