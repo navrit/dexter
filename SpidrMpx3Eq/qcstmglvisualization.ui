@@ -291,6 +291,19 @@ QGroupBox::title {
              </widget>
             </item>
             <item>
+             <spacer name="horizontalSpacer_4">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
              <widget class="QPushButton" name="correctionsDialogPushButton">
               <property name="text">
                <string>Corrections</string>
@@ -320,7 +333,7 @@ QGroupBox::title {
               </property>
              </widget>
             </item>
-            <item row="0" column="6">
+            <item row="0" column="7">
              <widget class="QPushButton" name="singleshotPushButton">
               <property name="enabled">
                <bool>false</bool>
@@ -358,7 +371,7 @@ QGroupBox::title {
               </property>
              </widget>
             </item>
-            <item row="0" column="3" colspan="3">
+            <item row="0" column="4" colspan="3">
              <widget class="QPushButton" name="startButton">
               <property name="enabled">
                <bool>false</bool>
@@ -377,7 +390,7 @@ QGroupBox::title {
               </property>
              </widget>
             </item>
-            <item row="0" column="7">
+            <item row="0" column="8">
              <widget class="QPushButton" name="recoPushButton">
               <property name="enabled">
                <bool>false</bool>
@@ -409,6 +422,19 @@ QGroupBox::title {
               </property>
              </widget>
             </item>
+            <item row="0" column="3">
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
            </layout>
           </item>
          </layout>
@@ -428,8 +454,14 @@ QGroupBox::title {
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
            <layout class="QGridLayout" name="gridLayout_3">
-            <item row="1" column="2">
+            <item row="3" column="2">
              <widget class="QLabel" name="nTriggersSpinBoxLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="text">
                <string>Triggers</string>
               </property>
@@ -438,10 +470,10 @@ QGroupBox::title {
               </property>
              </widget>
             </item>
-            <item row="1" column="5">
+            <item row="3" column="5">
              <widget class="QSpinBox" name="triggerLengthSpinBox">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -454,39 +486,10 @@ QGroupBox::title {
               </property>
              </widget>
             </item>
-            <item row="4" column="5">
-             <widget class="QLabel" name="statsLabel">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="text">
-               <string>Offline</string>
-              </property>
-              <property name="textFormat">
-               <enum>Qt::RichText</enum>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QPushButton" name="testPulsesPushButton">
-              <property name="text">
-               <string>Test pulses</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="3">
+            <item row="3" column="3">
              <widget class="QSpinBox" name="nTriggersSpinBox">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -499,8 +502,14 @@ QGroupBox::title {
               </property>
              </widget>
             </item>
-            <item row="1" column="4">
+            <item row="3" column="4">
              <widget class="QLabel" name="triggerLengthSpinBoxLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="text">
                <string>Length</string>
               </property>
@@ -509,37 +518,14 @@ QGroupBox::title {
               </property>
              </widget>
             </item>
-            <item row="4" column="0">
-             <widget class="QPushButton" name="multiThresholdAnalysisPushButton">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>Multi-threshold reconstruction input summary</string>
-              </property>
-              <property name="text">
-               <string>MTR</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0" colspan="2">
-             <widget class="QComboBox" name="operationModeComboBox_Vis">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>operation mode</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="3" colspan="3">
+            <item row="4" column="3" colspan="3">
              <widget class="QProgressBar" name="progressBar">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -569,8 +555,14 @@ QGroupBox::title {
               </property>
              </widget>
             </item>
-            <item row="2" column="2">
+            <item row="4" column="2">
              <widget class="QLabel" name="label">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="text">
                <string>Network</string>
               </property>
@@ -579,8 +571,14 @@ QGroupBox::title {
               </property>
              </widget>
             </item>
-            <item row="3" column="2">
+            <item row="5" column="2">
              <widget class="QLabel" name="label_2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="text">
                <string>Buffers</string>
               </property>
@@ -589,8 +587,14 @@ QGroupBox::title {
               </property>
              </widget>
             </item>
-            <item row="3" column="3" colspan="3">
+            <item row="5" column="3" colspan="3">
              <widget class="QProgressBar" name="bufferOccupancy">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -611,6 +615,83 @@ QGroupBox::title {
               </property>
              </widget>
             </item>
+            <item row="3" column="0">
+             <widget class="QPushButton" name="multiThresholdAnalysisPushButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>94</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>Multi-threshold reconstruction input summary</string>
+              </property>
+              <property name="text">
+               <string>MTR</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1" rowspan="6">
+             <widget class="Line" name="line">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="5">
+             <widget class="QLabel" name="statsLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string>Offline</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::RichText</enum>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QPushButton" name="testPulsesPushButton">
+              <property name="minimumSize">
+               <size>
+                <width>94</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Test pulses</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3" colspan="3">
+             <widget class="QComboBox" name="operationModeComboBox_Vis">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string>operation mode</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
          </layout>
@@ -625,7 +706,7 @@ QGroupBox::title {
           </sizepolicy>
          </property>
          <property name="title">
-          <string>Histogram of events distribution per pixel</string>
+          <string>Events distribution histogram</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
@@ -783,6 +864,8 @@ QGroupBox::title {
               <property name="toolTip">
                <string>histogram</string>
               </property>
+              <zorder></zorder>
+              <zorder></zorder>
              </widget>
             </item>
            </layout>
