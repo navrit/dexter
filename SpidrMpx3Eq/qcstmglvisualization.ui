@@ -457,7 +457,7 @@ QGroupBox::title {
             <item row="4" column="1">
              <widget class="QPushButton" name="testPulsesPushButton">
               <property name="text">
-               <string>Testpulses</string>
+               <string>Test pulses</string>
               </property>
              </widget>
             </item>
@@ -603,7 +603,7 @@ QGroupBox::title {
           </sizepolicy>
          </property>
          <property name="title">
-          <string>Histogram</string>
+          <string>Histogram of events distribution per pixel</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
@@ -668,6 +668,12 @@ QGroupBox::title {
             </item>
             <item row="2" column="0" colspan="2">
              <widget class="QPushButton" name="generateDataButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generates (offline) test data&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
