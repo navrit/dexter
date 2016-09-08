@@ -1273,9 +1273,55 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     int threshold = getActiveThreshold();
 
     QMenu contextMenu;
+    QPoint pixel_begin_checked = pixel_begin;
+    QPoint pixel_end_checked = pixel_end;
+
+    //##################################
+    // Do basic out-of-bounds type check
+    if (pixel_begin.x() < 0) {
+        pixel_begin_checked.setX(0);
+    }
+    if (pixel_begin.y() < 0) {
+        pixel_begin_checked.setY(0);
+    }
+    // User is for sure trying to break the program...
+    if (pixel_end.x() < 0 || pixel_end.y() < 0) {
+        // Negative end pixel input - try again;
+        QMessageBox *msgBox = new QMessageBox(this);
+        msgBox->setWindowTitle("Input error");
+        msgBox->setInformativeText("You selected a pixel range with at least one negative end coordinate. \n\n Try again by ending your selection within the image.");
+        msgBox->setDefaultButton(QMessageBox::Cancel);
+
+        QSpacerItem* horizontalSpacer = new QSpacerItem(400, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
+        QGridLayout* layout = (QGridLayout*)msgBox->layout();
+        layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+
+        msgBox->exec();
+        return;
+    }
+
+    int xImageLength = _mpx3gui->getDataset()->x()*_mpx3gui->getDataset()->getNChipsX();
+    int yImageLength = _mpx3gui->getDataset()->y()*_mpx3gui->getDataset()->getNChipsY();
+    if (pixel_begin.x() > xImageLength || pixel_begin.y() > yImageLength) {
+        // Stop being an idiot
+        return;
+    }
+    if (pixel_begin.x() > xImageLength) {
+        pixel_begin_checked.setX(xImageLength);
+    }
+    if (pixel_begin.y() > yImageLength) {
+        pixel_begin_checked.setY(yImageLength);
+    }
+    if (pixel_end.x() > xImageLength) {
+        pixel_end_checked.setX(xImageLength);
+    }
+    if (pixel_end.y() > yImageLength) {
+        pixel_end_checked.setY(yImageLength);
+    }
+    //##################################
 
     //Have the region only in the header:
-    QLabel* label = new QLabel(QString("\n    For region (%1, %2) --> (%3, %4) \n").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y())
+    QLabel* label = new QLabel(QString("\n    For region (%1, %2) --> (%3, %4) \n").arg(pixel_begin_checked.x()).arg(pixel_begin_checked.y()).arg(pixel_end_checked.x()).arg(pixel_end_checked.y())
                                , this);
     QWidgetAction wid(&contextMenu);
     wid.setDefaultWidget(label);
@@ -1302,32 +1348,11 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     // Show the menu
     QAction * selectedItem = contextMenu.exec(position);
 
-    // Do basic out-of-bounds type check
-
-    qDebug() << "#26 " << pixel_begin.x() << ", " << pixel_begin.y();
-    qDebug() << "    " << pixel_end.x() << ", " << pixel_end.y() << "\n";
-    qDebug() << _mpx3gui->getDataset()->getNChipsX() << ", " << _mpx3gui->getDataset()->getNChipsY() << " \n";
-
-    if (pixel_begin.x() < 0 || pixel_begin.y() < 0 || pixel_end.x() < 0 || pixel_end.y() < 0){
-        // Negative pixel input - try again;
-        QMessageBox *msgBox = new QMessageBox(this);
-        msgBox->setWindowTitle("Input error");
-        msgBox->setInformativeText("You selected a pixel range with at least one negative coordinate. \n\n Try again by selecting only within the image.");
-        msgBox->setDefaultButton(QMessageBox::Cancel);
-
-        QSpacerItem* horizontalSpacer = new QSpacerItem(400, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
-        QGridLayout* layout = (QGridLayout*)msgBox->layout();
-        layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
-
-        msgBox->exec();
-        return;
-    }
-
     // Selected item
     if (selectedItem == &calcStats) {
 
         // Calc basic stats
-        _mpx3gui->getDataset()->calcBasicStats(pixel_begin, pixel_end);
+        _mpx3gui->getDataset()->calcBasicStats(pixel_begin_checked, pixel_end_checked);
 
         // Now display it
 
@@ -1340,9 +1365,9 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
     else if (selectedItem == &gotoDQE){
         _mpx3gui->GetUI()->dqeTab->clearDataAndPlots(false);
-        _mpx3gui->GetUI()->dqeTab->setRegion(pixel_begin, pixel_end);
+        _mpx3gui->GetUI()->dqeTab->setRegion(pixel_begin_checked, pixel_end_checked);
         _mpx3gui->GetUI()->dqeTab->setSelectedThreshold(threshold);
-        _mpx3gui->getDataset()->collectPointsROI(threshold, pixel_begin, pixel_end);
+        _mpx3gui->getDataset()->collectPointsROI(threshold, pixel_begin_checked, pixel_end_checked);
         _mpx3gui->GetUI()->stackedWidget->setCurrentIndex(__dqe_page_Id);
         _mpx3gui->GetUI()->dqeTab->plotESF();
 
@@ -1358,7 +1383,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         //Display
         _profiledialog = new ProfileDialog(this);
         _profiledialog->SetMpx3GUI(_mpx3gui);
-        _profiledialog->setRegion(pixel_begin, pixel_end);
+        _profiledialog->setRegion(pixel_begin_checked, pixel_end_checked);
         _profiledialog->setAxis(axis);
         _profiledialog->changeTitle();
 
@@ -1370,11 +1395,11 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         //Calculate the profile of the selected region of the selected layer
 
         //_profiledialog->setSelectedThreshold(threshold);
-        //_profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, threshold, pixel_begin, pixel_end));
+        //_profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, threshold, pixel_begin_checked, pixel_end_checked));
 
         int layerIndex = getActiveThreshold();
          _profiledialog->setLayer(layerIndex);
-        _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, layerIndex, pixel_begin, pixel_end));
+        _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, layerIndex, pixel_begin_checked, pixel_end_checked));
         _profiledialog->plotProfile();
 
         _profiledialog->show();
