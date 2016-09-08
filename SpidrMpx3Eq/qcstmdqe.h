@@ -55,7 +55,6 @@ public:
     //double polyWeightRoot(int i);
 
 
-
 private:
     Ui::QCstmDQE *ui;
     Mpx3GUI * _mpx3gui;
@@ -92,7 +91,7 @@ private:
     bool    _useErrorFunc   = true;     //!Indicates whether the errorfunction (or rather local smoothing) should be used.
     int     _windowW        = 11;       //!Specifies the width of the window to be used for local fitting. Must be uneven, larger than(>=)3 and smaller(<=) than the total amount of data.    
     bool    _singleNPS      = false;    //!Specifies whether the NPS should be calculated for a single file (true), or averaged for all files (false).
-    bool    _fitNPSplane    = false;    //!Specifies whether a flat plane should be fitted to the NPS data and removed before further calculation.
+    bool    _fitPlane       = false;    //!Specifies whether a flat plane should be fitted to the NPS data and removed before further calculation.
 
     //Main calculations:
     QVector<QVector<double> > calcESFbinData();     //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.
@@ -102,7 +101,7 @@ private:
     QVector<QVector<double> > calcNumDerivativeOfdata(QVector<QVector<double> > data);  //!Calculates the numerical derivative of a given set of data. Used for LSF.
     QVector<QVector<double> > calcMTFdata();        //!Calculates the datapoints for the MTF, by taking the Fourier Transform of the LSF.
     QVector<double> calcNPSdata();
-    QVector<QVector<double> > calcFTsquareRoI(const QVector<QVector<int> > &data );
+    QVector<QVector<double> > calcFTsquareRoI(QVector<QVector<int> > data );
 
     //Plotting
     void plotMTF();
@@ -180,7 +179,8 @@ private slots:
 public slots:
     void on_close_optionsDialog();    
     void on_apply_options(QHash<QString, int> options);
-    void on_maindata_changed();
+    void on_maindata_changed(QString filename);
+    void addNPSfile(QString filepath);
 
 signals:
     void start_takingData();

@@ -73,9 +73,9 @@ void QCstmDQE::SetMpx3GUI(Mpx3GUI *p){
 
     _optionsDialog->SetMpx3GUI(_mpx3gui);
 
-    connect( _mpx3gui,SIGNAL(reload_all_layers()), this, SLOT(on_maindata_changed()) );
+//    connect( _mpx3gui,SIGNAL(returnFilename(QString)), this, SLOT(on_maindata_changed(QString)) );
 //    connect( _mpx3gui, &Mpx3GUI::reload_all_layers, this, &QCstmDQE::on_maindata_changed ); //Both work, different syntax only.
-
+          connect( _mpx3gui,SIGNAL(returnFilename(QString)), this, SLOT(addNPSfile(QString)) );
 }
 
 void QCstmDQE::setRegion(QPoint pixel_begin, QPoint pixel_end)
@@ -823,8 +823,9 @@ QVector<double> QCstmDQE::calcNPSdata()
         QMessageBox::warning ( this, tr("Error"), tr( "No data files." ) );
         return npsdata;
     }
-    if(Nfiles == 1)
-        ui->singleFileCheckBox->setChecked(true);
+//    if(Nfiles == 1)
+//        ui->singleFileCheckBox->setChecked(true);
+    //Annoying when adding a file
 
     if(_singleNPS){
         ft2Ddata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
@@ -862,7 +863,7 @@ QVector<double> QCstmDQE::calcNPSdata()
 
 }
 
-QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(const QVector<QVector<int> > &data )
+QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data )
 {
     //The data is constructed as follows:
     //      - Each row represents a horizontal row of pixels, starting from the bottom of the selected RoI.
@@ -873,14 +874,15 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(const QVector<QVector<int> >
     int xlength = data[0].length(); //Assuming the RoI is rectangular, i.e. every row has the same length.
     int ylength = data.length();
 
+    //For test plotting:
+    QtDataVisualization::QScatterDataArray data3D;
+
 
     if(_fitPlane){
         //Fit planar ramp.
         parameter_vector params = fitPlaneParams(data);
         input_vector input;
         double z;
-        //For test plotting:
-        QtDataVisualization::QScatterDataArray data3D;
 
         //Correct for the fitted plane (substract)
         for(int y = 0; y < ylength; y++){
@@ -888,14 +890,14 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(const QVector<QVector<int> >
                     input(0) = x + 0.5;
                     input(1) = y + 0.5;
                     z = planeModel(input, params);
-                    datainRoI[y][x] -= z;
-                    data3D.push_back( QVector3D(input(0), input(1), datainRoI[y][x]) );
+                    data[y][x] -= z;
+                    data3D.push_back( QVector3D(input(0), input(1), data[y][x]) );
 
                 }
         }
     }
 
-//    //Testpatroon.
+//    //Test pattern.
 //    xlength = 8;
 //    ylength = 8;
 
@@ -924,45 +926,45 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(const QVector<QVector<int> >
 //    }
 
 
-//Only Qt> 5.7----
-//    plotData3D(data3D);
-//----------------
+//Only Qt > 5.7----
+    plotData3D(data3D);
+//-----------------
 
-//    int end = xlength;
-//    for(int i = 0; i < 1000; i++){
-//        if( dlib::is_power_of_two( datainRoI[0].length() ) ) break;
-//        else{
-//            //Pad one zero in each row.
-//            for(int j = 0; j < ylength; j++)
-//                datainRoI[j].push_back(0);
-//            xlength++ ;
-//        }
-//    }
-//    end = ylength;
-//    for(int i = 0; i < 1000; i++){
-//        if( dlib::is_power_of_two( datainRoI.length() ) ) break;
-//        else{
-//            //Pad one row of zeros.
-//            QVector<int> zeros(xlength, 0);
-//            datainRoI.push_back(zeros);
-////            for(int j = 0; j < xlength; j++)
-////                datainRoI[j].push_back(0);
-//            ylength++ ;
-//        }
-//    }
+    int end = xlength;
+    for(int i = 0; i < 1000; i++){
+        if( dlib::is_power_of_two( data[0].length() ) ) break;
+        else{
+            //Pad one zero in each row.
+            for(int j = 0; j < ylength; j++)
+                data[j].push_back(0);
+            xlength++ ;
+        }
+    }
+    end = ylength;
+    for(int i = 0; i < 1000; i++){
+        if( dlib::is_power_of_two( data.length() ) ) break;
+        else{
+            //Pad one row of zeros.
+            QVector<int> zeros(xlength, 0);
+            data.push_back(zeros);
+//            for(int j = 0; j < xlength; j++)
+//                data[j].push_back(0);
+            ylength++ ;
+        }
+    }
 
     //Put the data in a matrix with complex values for FFT calculation...
-//    dlib::matrix<complex<double> > datamatrix(ylength, xlength);
+    dlib::matrix<complex<double> > datamatrix(xlength, ylength);
 //    dlib::matrix<complex<double> > FTmatrix(ylength, xlength);
     dlib::matrix<complex<double> > FTmatrix(xlength, ylength); //right?
 
     for(int y = 0; y < ylength; y++){
             for(int x = 0; x < xlength; x++){
-                datamatrix(x, y) = {double(datainRoI[y][x]), 0.0};
+                datamatrix(x, y) = {double(data[y][x]), 0.0};
             }
     }
 
-    plotData3D(data3D);
+//    plotData3D(data3D);
     FTmatrix = dlib::fft(datamatrix);
 
 
@@ -1172,24 +1174,42 @@ void QCstmDQE::on_loadDataPushButton_clicked()
     for(int i = 0; i < filepaths.length(); i++){
         filepath = filepaths[i];
         if(!filepath.isNull()){
-            _NPSfilepaths += filepath;
+
+//            _NPSfilepaths += filepath;
             if(i==0) emit open_data(false, true, filepath);
 
-            QStringList split = filepath.split('/');
-            QString filename = split.last();
+            addNPSfile(filepath);
 
-            ui->listWidget->addItem(filename);
+//            QStringList split = filepath.split('/');
+//            QString filename = split.last();
+
+//            ui->listWidget->addItem(filename);
         }
-        else{   QMessageBox msgbox(QMessageBox::Warning, "Error", QString("Something went wrong when trying to open a file.\nPath does not exist."),0); //path does not exist?
-                msgbox.exec();
-        }
+        else QMessageBox::warning ( this, tr("Error"), tr( "Something went wrong when trying to open a file.\nPath does not exist.") );
+
     }
-    if(ui->listWidget->count() != 0)  ui->listWidget->setCurrentRow(0);
-    else{   QMessageBox msgbox(QMessageBox::Warning, "Error", QString("No files could be opened."),0);
-            msgbox.exec();
-    }
+//    int count = ui->listWidget->count();
+//    if(ui->listWidget->count() != 0)  ui->listWidget->setCurrentRow(0);
+    if(ui->listWidget->count() == 0)
+        QMessageBox::warning ( this, tr("Error"), tr( "No files could be opened." ) );
 
     _openingNPSfile = false;
+}
+
+void QCstmDQE::addNPSfile(QString filepath){
+
+    if(!_openingNPSfile) clearDataAndPlots(true);
+
+    _NPSfilepaths += filepath;
+
+    QStringList split = filepath.split('/');
+    QString filename = split.last();
+
+    ui->listWidget->addItem(filename);
+
+    int count = ui->listWidget->count();
+    if(count != 0)  ui->listWidget->setCurrentRow(count - 1);
+        else ui->listWidget->setCurrentRow(0);
 }
 
 void QCstmDQE::on_listWidget_currentRowChanged(int currentRow)
@@ -1233,8 +1253,7 @@ void QCstmDQE::on_mtfPushButton_clicked()
 //        else _logtext += QString("Smoothing 4th order polynomial function has been fitted locally to the binned ESF data with \n binsize = %1\n").arg(_binsize);
 
         if(_params(0,0) == 0 && _params(1,0)==0 && _params(2,0)==0 && _useErrorFunc && _useDerFit){
-            QMessageBox msgbox(QMessageBox::Warning, "Error", "No fitting parameters.",0);
-            msgbox.exec();
+            QMessageBox::warning ( this, tr("Error"), tr( "No fitting parameters." ) );
         }
 //        else if(_ESFdata.empty()) {
 //            QMessageBox msgbox(QMessageBox::Warning, "Error", "No ESF data.",0);
@@ -1247,8 +1266,7 @@ void QCstmDQE::on_mtfPushButton_clicked()
 //            else _logtext += "A Line Spread Function has been calculated, using a numerical derivative of the (smoothed) binned Edge Spread Function.\n";
 
             if(_LSFdata.empty()) {
-                QMessageBox msgbox(QMessageBox::Warning, "Error", "No LSF data.",0);
-                msgbox.exec();
+                QMessageBox::warning ( this, tr("Error"), tr( "No LSF data." ) );
             }
             else{
                 plotMTF();
@@ -1265,7 +1283,10 @@ void QCstmDQE::on_mtfPushButton_clicked()
 
 void QCstmDQE::on_npsPushButton_clicked()
 {
-    plotNPS();
+    if(ui->regionLabel->text().contains("Choose"))
+        QMessageBox::warning ( this, tr("Cannot calculate NPS"), tr( "Please choose a region of interest." ) );
+
+    else plotNPS();
 
 //    calcNPSdata();
 
@@ -1471,9 +1492,17 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
         else _fitPlane = true;
 }
 
-void QCstmDQE::on_maindata_changed()
+void QCstmDQE::on_maindata_changed(QString filename)
 {
-    if(!_openingNPSfile) clearDataAndPlots(true);
+    if(!_openingNPSfile){
+        clearDataAndPlots(true);
+//        QStringList list = filename.split("/");
+//        filename = list.last();
+//        ui->listWidget->addItem( filename );
+
+//        int count = ui->listWidget->count();
+//        if(count != 0) ui->listWidget->setCurrentRow(0);
+    }
 }
 
 void QCstmDQE::on_close_optionsDialog()

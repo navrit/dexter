@@ -812,6 +812,8 @@ void Mpx3GUI::open_data(bool saveOriginal){
 
     this->setWindowTitle("ASI Medipix3 "+filename);
 
+    emit returnFilename(filename);
+
     return;
 }
 
