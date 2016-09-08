@@ -3,10 +3,15 @@
 
 #include <QMainWindow>
 
-class heatmapDockWidgetWrapper
+class heatmapDockWidgetWrapper : public MainWindow
 {
+    Q_OBJECT
+
 public:
     heatmapDockWidgetWrapper();
+
+private:
+    void createDockWindow();
 };
 
 #endif // HEATMAPDOCKWIDGETWRAPPER_H
