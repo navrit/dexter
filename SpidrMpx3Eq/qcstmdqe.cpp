@@ -814,23 +814,26 @@ void QCstmDQE::plotEdge(QPoint ab)
 
 
 
-QVector<double> QCstmDQE::calcNPSdata()
+void QCstmDQE::calcNPSdata()
 {
     QVector<QVector<double> > ft2Ddata;
     QVector<QVector<double> > ftROIdata;
-    QVector<double> npsdata;
+//    QVector<double> npsdata;
+
+    _NPSdata.clear();
+    _NPSdata.resize(2);
 
     int Nfiles = ui->listWidget->count();
     if(Nfiles == 0){
         QMessageBox::warning ( this, tr("Error"), tr( "No data files." ) );
-        return npsdata;
+        return ;//npsdata;
     }
 
     if(_singleNPS){
         ft2Ddata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
         //get1D ftdata... for now use FTdata[0]
 
-        npsdata = ft2Ddata[0];
+        _NPSdata[0] = ft2Ddata[0];
     }
     else{
 
@@ -865,16 +868,14 @@ QVector<double> QCstmDQE::calcNPSdata()
         }
 
 //        npsdata = ft2Ddata[0];
-        npsdata = calc1Dnps(ft2Ddata);
+        calc1Dnps(ft2Ddata);
     }
-
-    return npsdata;
 
 }
 
-QVector<double> QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
+void QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
 {
-    return ftdata[0];
+    _NPSdata[0] = ftdata[0];
 }
 
 QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data )
@@ -1100,23 +1101,23 @@ void QCstmDQE::plotData3D(QtDataVisualization::QScatterDataArray data3D)
 
 void QCstmDQE::plotNPS(){
 
-    QVector<double> data = calcNPSdata();
+    calcNPSdata();
 
-    int datalength = data.length();
+    int datalength = _NPSdata.length();
     if(datalength == 0){
         return ;
     }
-    double stepsize = 1 / double(data.length());
-    ui->NPSplot->clearGraphs();
-    ui->NPSplot->addGraph();
-    ui->NPSplot->graph(0)->setLineStyle(QCPGraph::lsImpulse);
+    double stepsize = 1 / double(_NPSdata.length());
+    ui->xNPSplot->clearGraphs();
+    ui->xNPSplot->addGraph();
+    ui->xNPSplot->graph(0)->setLineStyle(QCPGraph::lsImpulse);
 
-    for(double i = 0; i < data.length(); i++){
-        ui->NPSplot->graph(0)->addData( i * stepsize, data[i] ); //Plot the values for fx (fy=0).
+    for(double i = 0; i < _NPSdata.length(); i++){
+        ui->xNPSplot->graph(0)->addData( i * stepsize, _NPSdata[0][i] ); //Plot the values for fx (fy=0).
     }
-    ui->NPSplot->rescaleAxes();
-    ui->NPSplot->xAxis->setRange(-0.01, 1.01);
-    ui->NPSplot->replot( QCustomPlot::rpQueued );
+    ui->xNPSplot->rescaleAxes();
+    ui->xNPSplot->xAxis->setRange(-0.01, 1.01);
+    ui->xNPSplot->replot( QCustomPlot::rpQueued );
 }
 
 
@@ -1535,8 +1536,8 @@ void QCstmDQE::on_singleFileCheckBox_toggled(bool checked)
 
 void QCstmDQE::on_clearNPSpushButton_clicked()
 {
-    ui->NPSplot->clearGraphs();
-    ui->NPSplot->replot(QCustomPlot::rpQueued);
+    ui->xNPSplot->clearGraphs();
+    ui->xNPSplot->replot(QCustomPlot::rpQueued);
     _NPSdata.clear();
 
     //TODO: Close 3D plotting windows, if they are kept in final program.

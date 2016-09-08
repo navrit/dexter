@@ -100,9 +100,9 @@ private:
     QVector<QVector<double> > calcLSFdata();        //!Creates the datapoints of the derivative of the fitted function, by using the parameters calculated by the fitting and using them in the theoretical derivative of the function model.
     QVector<QVector<double> > calcNumDerivativeOfdata(QVector<QVector<double> > data);  //!Calculates the numerical derivative of a given set of data. Used for LSF.
     QVector<QVector<double> > calcMTFdata();        //!Calculates the datapoints for the MTF, by taking the Fourier Transform of the LSF.
-    QVector<double> calcNPSdata();
+    void calcNPSdata(); //!Calculates the datapoints for the NPS in the x and y directon.
     QVector<QVector<double> > calcFTsquareRoI(QVector<QVector<int> > data );
-    QVector<double> calc1Dnps(const QVector<QVector<double> > &ftdata);
+    void calc1Dnps(const QVector<QVector<double> > &ftdata);
 
     //Plotting
     void plotMTF();
