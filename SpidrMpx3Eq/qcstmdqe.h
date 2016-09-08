@@ -92,6 +92,7 @@ private:
     bool    _useErrorFunc   = true;     //!Indicates whether the errorfunction (or rather local smoothing) should be used.
     int     _windowW        = 11;       //!Specifies the width of the window to be used for local fitting. Must be uneven, larger than(>=)3 and smaller(<=) than the total amount of data.    
     bool    _singleNPS      = false;    //!Specifies whether the NPS should be calculated for a single file (true), or averaged for all files (false).
+    bool    _fitNPSplane    = false;    //!Specifies whether a flat plane should be fitted to the NPS data and removed before further calculation.
 
     //Main calculations:
     QVector<QVector<double> > calcESFbinData();     //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.

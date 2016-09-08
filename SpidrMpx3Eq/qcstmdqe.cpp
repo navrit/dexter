@@ -864,88 +864,64 @@ QVector<double> QCstmDQE::calcNPSdata()
 
 QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(const QVector<QVector<int> > &data )
 {
-    //Let's try it for the selected RoI first..
-
     //The data is constructed as follows:
     //      - Each row represents a horizontal row of pixels, starting from the bottom of the selected RoI.
     //      - The elements in each row represent the pixels in the row, starting from the left.
     //The data can thus be seen as a normal cartesion system, where the left side of each pixel is the index.
     //To get datapoints in the middle of each pixel, a correction of +0.5 pixel has to be added in both the x and y direction.
 
-//    QVector<QVector<int> >  datainRoI = _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix);
     int xlength = data[0].length(); //Assuming the RoI is rectangular, i.e. every row has the same length.
     int ylength = data.length();
 
 
-    //Fit planar ramp.
-    parameter_vector params = fitPlaneParams(data);
-    input_vector input;
-    double z;
-    //For test plotting:
-    QtDataVisualization::QScatterDataArray data3D;
+    if(_fitPlane){
+        //Fit planar ramp.
+        parameter_vector params = fitPlaneParams(data);
+        input_vector input;
+        double z;
+        //For test plotting:
+        QtDataVisualization::QScatterDataArray data3D;
 
-    //Correct for the fitted plane (substract)
+        //Correct for the fitted plane (substract)
+        for(int y = 0; y < ylength; y++){
+                for(int x = 0; x < xlength; x++){
+                    input(0) = x + 0.5;
+                    input(1) = y + 0.5;
+                    z = planeModel(input, params);
+                    datainRoI[y][x] -= z;
+                    data3D.push_back( QVector3D(input(0), input(1), datainRoI[y][x]) );
+
+                }
+        }
+    }
+
+//    //Testpatroon.
+//    xlength = 8;
+//    ylength = 8;
+
+//    dlib::matrix<complex<double> > datamatrix(xlength, ylength);
+
+//    //Make a stripy testpattern.
 //    for(int y = 0; y < ylength; y++){
-//            for(int x = 0; x < xlength; x++){
-//                input(0) = x + 0.5;
-//                input(1) = y + 0.5;
-//                z = planeModel(input, params);
-//                datainRoI[y][x] -= z;
-//                data3D.push_back( QVector3D(input(0), input(1), datainRoI[y][x]) );
-
+//        for(int x = 0; x < xlength; x++){
+//            if( x <  2){
+//                data3D.push_back(QVector3D(x, y, 10));
+//                datamatrix(x, y) = { 10, 0};
 //            }
-//    }
-
-    //Testpatroon.
-    xlength = 8;
-    ylength = 8;
-
-    dlib::matrix<complex<double> > datamatrix(xlength, ylength);
-
-    //Center rectangle testpattern...
-//    int ymid = ylength/2;
-//    int xmid = xlength/2;
-//    int hh = 4;
-//    int hw = 5;
-//    for(int y = 0; y < 64; y++){
-//        for(int x = 0; x < 64; x++){
-//            if(y >= ymid - hh && y <= ymid + hh)
-//                if(x >= xmid - hw && x <= xmid + hw){
-//                    data3D.push_back(QVector3D( x, y, 10));
-//                    datamatrix(y, x) = { 10, 0};
-//                }
-//                else{
-//                    data3D.push_back(QVector3D( x, y, 0));
-//                    datamatrix(y, x) = { 0, 0};
-//                }
-//            else{
-//                data3D.push_back(QVector3D( x, y, 0));
-//                datamatrix(y, x) = { 0, 0};
+//            else if( x <  4) {
+//                data3D.push_back(QVector3D(x, y,  0));
+//                datamatrix(x, y) = {  0, 0};
+//            }
+//            else if( x < 6) {
+//                data3D.push_back(QVector3D(x, y, 10));
+//                datamatrix(x, y) = { 10, 0};
+//            }
+//            else if( x < 8) {
+//                data3D.push_back(QVector3D(x, y,  0));
+//                datamatrix(x, y) = {  0, 0};
 //            }
 //        }
 //    }
-
-    //Make a stripy testpattern.
-    for(int y = 0; y < ylength; y++){
-        for(int x = 0; x < xlength; x++){
-            if( x <  2){
-                data3D.push_back(QVector3D(x, y, 10));
-                datamatrix(x, y) = { 10, 0};
-            }
-            else if( x <  4) {
-                data3D.push_back(QVector3D(x, y,  0));
-                datamatrix(x, y) = {  0, 0};
-            }
-            else if( x < 6) {
-                data3D.push_back(QVector3D(x, y, 10));
-                datamatrix(x, y) = { 10, 0};
-            }
-            else if( x < 8) {
-                data3D.push_back(QVector3D(x, y,  0));
-                datamatrix(x, y) = {  0, 0};
-            }
-        }
-    }
 
 
 //Only Qt> 5.7----
@@ -980,11 +956,11 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(const QVector<QVector<int> >
 //    dlib::matrix<complex<double> > FTmatrix(ylength, xlength);
     dlib::matrix<complex<double> > FTmatrix(xlength, ylength); //right?
 
-//    for(int y = 0; y < ylength; y++){
-//            for(int x = 0; x < xlength; x++){
-//                datamatrix(y, x) = {double(datainRoI[y][x]), 0.0};
-//            }
-//    }
+    for(int y = 0; y < ylength; y++){
+            for(int x = 0; x < xlength; x++){
+                datamatrix(x, y) = {double(datainRoI[y][x]), 0.0};
+            }
+    }
 
     plotData3D(data3D);
     FTmatrix = dlib::fft(datamatrix);
@@ -1017,7 +993,6 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(const QVector<QVector<int> >
                 //double z = norm( FTmatrix(y, x) ); //Norm gives the squared magnitude of the complex number in the FTmatrix.
                 double z = abs ( FTmatrix(x, y) );
                 colorMap->data()->setCell(x, y, z);
-                //TODO: save the values for other purposes in normal vector.
                 ftdata[y][x] = z;
             }
     }
@@ -1027,17 +1002,12 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(const QVector<QVector<int> >
     ftplot->plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
     colorScale->setType(QCPAxis::atRight); // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
     colorMap->setColorScale(colorScale); // associate the color map with the color scale
-    //colorScale->axis()->setLabel("Magnetic Field Strength");
-
-    // set the color gradient of the color map to one of the presets:
     colorMap->setGradient(QCPColorGradient::gpPolar);
-    // rescale the data dimension (color) such that all data points lie in the span visualized by the color gradient:
     colorMap->rescaleDataRange();
     ftplot->rescaleAxes();
     ftplot->show();
 
     return ftdata;
-
 }
 
 parameter_vector QCstmDQE::fitPlaneParams(QVector<QVector<int> > dataRoI) //Creates error onlt when running in debug mode...
@@ -1482,21 +1452,23 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
 {
     //Set all options values in variables.
 //    if(options.value("edge")    == 0);
-    if(options.value("error")   == 0) _useErrorFunc = false;
+    if(options.value("error")   == 0)   _useErrorFunc = false;
         else _useErrorFunc = true;
-    if(options.value("fitder")  == 0) _useDerFit = false;
+    if(options.value("fitder")  == 0)   _useDerFit = false;
         else _useDerFit = true;
 
     _windowW = options.value("windowW");
 
-    if(options.value("bindata") == 0) _usebins = false;
+    if(options.value("bindata") == 0)   _usebins = false;
         else _usebins = true;
+
     if(_binsize != options.value("binsize")){
         _binsize = options.value("binsize");
-        plotESF(); //TO DO: only replot the BINNED data. Seperate functions
+        plotESF();      //TO DO: only replot the BINNED data. Seperate functions?
     }
 
-
+    if(options.value("fitplane") == 0)  _fitPlane = false;
+        else _fitPlane = true;
 }
 
 void QCstmDQE::on_maindata_changed()

@@ -38,7 +38,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <property name="documentMode">
       <bool>false</bool>
@@ -272,6 +272,13 @@
           </layout>
          </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="fitPlaneCheckBox">
+         <property name="text">
+          <string>Correct with plane function</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

@@ -60,6 +60,9 @@ void optionsDialog::setCurrentSettings()
         ui->windowLineEdit->setText( QString("%1").arg(windowW) );
     }
     _currentSettings["windowW"] = windowW;
+
+    if(ui->fitPlaneCheckBox->isChecked()) _currentSettings["fitplane"] = 1;
+        else _currentSettings["fitplane"] = 0;
 }
 
 void optionsDialog::resetSettings()
@@ -79,6 +82,9 @@ void optionsDialog::resetSettings()
     ui->binSizeLineEdit->setText( QString("%1").arg(_currentSettings.value("binsize")) );
 
     ui->binSizeLineEdit->setText( QString("%1").arg(_currentSettings.value("windowW")) );
+
+    if(_currentSettings.value("fitplane") == 0) ui->fitPlaneCheckBox->setChecked(false);
+        else ui->fitPlaneCheckBox->setChecked(true);
 }
 
 void optionsDialog::on_buttonBox_clicked(QAbstractButton *button)
