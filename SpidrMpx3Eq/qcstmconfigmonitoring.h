@@ -44,7 +44,7 @@ public:
     void cameraSetup();
     void cameraOn();
     void cameraOff();
-    void cameraSearch(int indexRequest = -1);
+    bool cameraSearch(int indexRequest = -1);
     void cameraResize();
 
     void readMonitoringInfo();
