@@ -102,6 +102,7 @@ private:
     QVector<QVector<double> > calcMTFdata();        //!Calculates the datapoints for the MTF, by taking the Fourier Transform of the LSF.
     QVector<double> calcNPSdata();
     QVector<QVector<double> > calcFTsquareRoI(QVector<QVector<int> > data );
+    QVector<double> calc1Dnps(const QVector<QVector<double> > &ftdata);
 
     //Plotting
     void plotMTF();

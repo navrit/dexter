@@ -825,9 +825,6 @@ QVector<double> QCstmDQE::calcNPSdata()
         QMessageBox::warning ( this, tr("Error"), tr( "No data files." ) );
         return npsdata;
     }
-//    if(Nfiles == 1)
-//        ui->singleFileCheckBox->setChecked(true);
-    //Annoying when adding a file
 
     if(_singleNPS){
         ft2Ddata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
@@ -852,17 +849,32 @@ QVector<double> QCstmDQE::calcNPSdata()
                 ft2Ddata[i].resize(xlength);
             }
 
+            //Calculate total of multiple files.
             for(int y = 0; y < ftROIdata.length(); y++){
                 for(int x = 0; x < ftROIdata[0].length(); x++){ //assuming all rows are equal length
-                    ft2Ddata[y][x] += ftROIdata[y][x];//init!
+                    ft2Ddata[y][x] += ftROIdata[y][x];
                 }
             }
+
         }
-        npsdata = ft2Ddata[0];
+        //Calculate mean FT squared.
+        for(int y = 0; y < ftROIdata.length(); y++){
+            for(int x = 0; x < ftROIdata[0].length(); x++){ //assuming all rows are equal length
+                ft2Ddata[y][x] /= Nfiles;
+            }
+        }
+
+//        npsdata = ft2Ddata[0];
+        npsdata = calc1Dnps(ft2Ddata);
     }
 
     return npsdata;
 
+}
+
+QVector<double> QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
+{
+    return ftdata[0];
 }
 
 QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data )
@@ -893,8 +905,6 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
                     input(1) = y + 0.5;
                     z = planeModel(input, params);
                     data[y][x] -= z;
-                    data3D.push_back( QVector3D(input(0), input(1), data[y][x]) );
-
                 }
         }
     }
@@ -927,10 +937,6 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
 //        }
 //    }
 
-
-//Only Qt > 5.7----
-    plotData3D(data3D);
-//-----------------
 
     int end = xlength;
     for(int i = 0; i < 1000; i++){
@@ -1013,6 +1019,8 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
 
     return ftdata;
 }
+
+
 
 parameter_vector QCstmDQE::fitPlaneParams(QVector<QVector<int> > dataRoI) //Creates error onlt when running in debug mode...
 {
