@@ -830,19 +830,15 @@ void QCstmConfigMonitoring::on_cameraCheckBox_toggled(bool checked) {
 
     if ( ! _cameraOn && checked ) {
 
-        cameraSearch();
-
-        //cameraResize();
-
-        cameraSetup();
-
-        cameraOn();
+        if (cameraSearch()) {
+            //cameraResize();
+            cameraSetup();
+            cameraOn();
+        }
 
 
     } else if ( ! checked ) {
-
         cameraOff();
-
     }
 
     // temporarily disconnect the reaction to changes in the list
@@ -859,14 +855,14 @@ void QCstmConfigMonitoring::changeCamera(int index) {
     cameraOff();
 
     // Pick up this camera
-    cameraSearch( index );
 
-    // temporarily disconnect the reaction to changes in the list
-    connect(ui->cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeCamera(int)));
+    if (cameraSearch( index )) {
+        // temporarily disconnect the reaction to changes in the list
+        connect(ui->cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeCamera(int)));
 
-    cameraSetup();
-
-    cameraOn();
+        cameraSetup();
+        cameraOn();
+    }
 
 }
 
@@ -905,7 +901,7 @@ void QCstmConfigMonitoring::cameraOff() {
 
 }
 
-void QCstmConfigMonitoring::cameraSearch (int indexRequest){
+bool QCstmConfigMonitoring::cameraSearch (int indexRequest){
 
     // temporarily disconnect the reaction to changes in the list
     disconnect(ui->cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeCamera(int)));
@@ -915,6 +911,8 @@ void QCstmConfigMonitoring::cameraSearch (int indexRequest){
     } else {
         string messg = "No camera present";
         QMessageBox::warning ( this, tr("Connect camera"), tr( messg.c_str() ) );
+        ui->cameraCheckBox->setChecked(0);
+        return 0;
     }
 
 
@@ -946,6 +944,8 @@ void QCstmConfigMonitoring::cameraSearch (int indexRequest){
     // connect it back
     connect(ui->cameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeCamera(int)));
 
+    return 1;
+
 }
 
 
@@ -960,7 +960,7 @@ void QCstmConfigMonitoring::cameraSetup() {
 
     //cameraResize();
 
-    //_viewfinder->setParent( ui->videoDockWidget );
+    _viewfinder->setParent( ui->videoDockWidget );
 
     ui->videoDockWidget->setWidget( _viewfinder );
     ui->videoDockWidget->toggleViewAction();

@@ -50,7 +50,7 @@ QCstmThreshold::QCstmThreshold(QWidget *parent) :  QWidget(parent),  ui(new Ui::
     ui->plot->yAxis->setLabelFont( f );
     // The labels:
     ui->plot->xAxis->setLabel("DAC");
-    ui->plot->yAxis->setLabel("counts");
+    ui->plot->yAxis->setLabel("Counts");
 
     /*
     ui->framePlot->axisRect()->setupFullAxesBox(true);
