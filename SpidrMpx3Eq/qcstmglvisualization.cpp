@@ -1256,6 +1256,10 @@ void QCstmGLVisualization::active_frame_changed(){
 
 }
 
+
+/*  ISSUE #26
+ *  Crash at region out of bounds for DQE
+*/
 void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position){
 
     //if(!_mpx3gui->getConfig()->isConnected())
@@ -1301,6 +1305,27 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
     // Show the menu
     QAction * selectedItem = contextMenu.exec(position);
+
+    // #26 partially addressed. 7/9/16
+    // Do basic out-of-bounds type check
+
+    qDebug() << "#26 " << pixel_begin.x() << ", " << pixel_begin.y();
+    qDebug() << "    " << pixel_end.x() << ", " << pixel_end.y() << "\n";
+
+    if (pixel_begin.x() < 0 || pixel_begin.y() < 0 || pixel_end.x() < 0 || pixel_end.y() < 0){
+        // Negative pixel input - try again;
+        QMessageBox *msgBox = new QMessageBox(this);
+        msgBox->setWindowTitle("Input error");
+        msgBox->setInformativeText("You selected a pixel range with at least one negative coordinate. \n\n Try again by selecting only within the image.");
+        msgBox->setDefaultButton(QMessageBox::Cancel);
+
+        QSpacerItem* horizontalSpacer = new QSpacerItem(400, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
+        QGridLayout* layout = (QGridLayout*)msgBox->layout();
+        layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+
+        msgBox->exec();
+        return;
+    }
 
     // Selected item
     if (selectedItem == &calcStats) {
