@@ -58,6 +58,8 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
 
     _optionsDialog = new optionsDialog(this);
 
+    addNPSfile("icons/startupimage.bin"); //Set startupimage data in NPS files list.
+
 }
 
 QCstmDQE::~QCstmDQE()
@@ -1286,7 +1288,9 @@ void QCstmDQE::on_npsPushButton_clicked()
     if(ui->regionLabel->text().contains("Choose"))
         QMessageBox::warning ( this, tr("Cannot calculate NPS"), tr( "Please choose a region of interest." ) );
 
-    else plotNPS();
+    else{
+        plotNPS();
+    }
 
 //    calcNPSdata();
 
