@@ -39,6 +39,7 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
     connect( ui->LSFplot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
     connect( ui->MTFplot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
 
+
     //Tracer.. doesn't move. TO DO: fix
 //    connect( ui->LSFplot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(on_mouseClick_showPlotPoint(QMouseEvent*)) );
 
@@ -52,8 +53,8 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
 //    tracer->setSize(7);
 //    ui->LSFplot->addItem(tracer);
 
-    ui->windowLabel->setToolTip(tr("used for local fitting, must be an uneven number"));
-    ui->windowLineEdit->setToolTip(tr("must be an uneven number"));
+//    ui->windowLabel->setToolTip(tr("used for local fitting, must be an uneven number"));
+//    ui->windowLineEdit->setToolTip(tr("must be an uneven number"));
 
     _optionsDialog = new optionsDialog(this);
 
@@ -71,6 +72,10 @@ void QCstmDQE::SetMpx3GUI(Mpx3GUI *p){
     connect( ui->comboBox, SIGNAL(currentIndexChanged(QString)), _mpx3gui->GetUI()->visualizationGL, SLOT(on_layerSelector_activated(QString)) );
 
     _optionsDialog->SetMpx3GUI(_mpx3gui);
+
+    connect( _mpx3gui,SIGNAL(reload_all_layers()), this, SLOT(on_maindata_changed()) );
+//    connect( _mpx3gui, &Mpx3GUI::reload_all_layers, this, &QCstmDQE::on_maindata_changed ); //Both work, different syntax only.
+
 }
 
 void QCstmDQE::setRegion(QPoint pixel_begin, QPoint pixel_end)
@@ -80,26 +85,22 @@ void QCstmDQE::setRegion(QPoint pixel_begin, QPoint pixel_end)
     ui->regionLabel->setText(QString("Region of interest: (%1, %2)-->(%3, %4)").arg(_beginpix.x()).arg(_beginpix.y()).arg(_endpix.x()).arg(_endpix.y()) );
 }
 
-void QCstmDQE::clearDataAndPlots()
+void QCstmDQE::clearDataAndPlots(bool clearNPS)
 {
-    ui->ESFplot->clearGraphs();     ui->ESFplot->replot(QCustomPlot::rpQueued);
-    ui->LSFplot->clearGraphs();     ui->LSFplot->replot(QCustomPlot::rpQueued);
-    ui->MTFplot->clearGraphs();     ui->MTFplot->replot(QCustomPlot::rpQueued);
-
-    _ESFdata.clear();
-    _ESFbinData.clear();
-    _LSFdata.clear();
-    _params = 0; //Sets all parameters to zero. (CHECK when using!)
-    //_xstart = 0;
-    //_plotrange = 0;
-    _logtext.clear();
-    refreshLog(true);
+//    emit ui->clearMTFpushButton->clicked();
+//    if(clearNPS) emit ui->clearNPSpushButton->clicked();
+//    emit ui->logClearPushButton->clicked(); //SLOW
+    on_clearMTFpushButton_clicked();
+    if(clearNPS) on_clearNPSpushButton_clicked();
+    on_logClearPushButton_clicked();
 }
 
 void QCstmDQE::refreshLog(bool emptylog){
     if(emptylog) ui->textBrowser->clear();
-        else ui->textBrowser->setText(_logtext);
-    ui->textBrowser->verticalScrollBar()->setValue(ui->textBrowser->verticalScrollBar()->maximum()); //Scroll down.
+    else{
+        ui->textBrowser->setText(_logtext);
+        ui->textBrowser->verticalScrollBar()->setValue(ui->textBrowser->verticalScrollBar()->maximum()); //Scroll down.
+    }
 }
 
 //------------------------MTF (Modulation Transfer Function)---------------------------------------------------------------------------------------
@@ -817,6 +818,14 @@ QVector<double> QCstmDQE::calcNPSdata()
     QVector<QVector<double> > ftROIdata;
     QVector<double> npsdata;
 
+    int Nfiles = ui->listWidget->count();
+    if(Nfiles == 0){
+        QMessageBox::warning ( this, tr("Error"), tr( "No data files." ) );
+        return npsdata;
+    }
+    if(Nfiles == 1)
+        ui->singleFileCheckBox->setChecked(true);
+
     if(_singleNPS){
         ft2Ddata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
         //get1D ftdata... for now use FTdata[0]
@@ -824,9 +833,8 @@ QVector<double> QCstmDQE::calcNPSdata()
         npsdata = ft2Ddata[0];
     }
     else{
-        int Nfiles = ui->listWidget->count();
-        for( int i = 0; i < Nfiles; i++){ //QListWidgetItem item : ui->listWidget){
-//            QString filetest = ui->listWidget->item(i)->text();
+
+        for( int i = 0; i < Nfiles; i++){
             QString filename = _NPSfilepaths[i];
             emit open_data(false, true, filename);
 
@@ -842,7 +850,7 @@ QVector<double> QCstmDQE::calcNPSdata()
             }
 
             for(int y = 0; y < ftROIdata.length(); y++){
-                for(int x; x < ftROIdata[0].length(); x++){ //assuming all rows are equal length
+                for(int x = 0; x < ftROIdata[0].length(); x++){ //assuming all rows are equal length
                     ft2Ddata[y][x] += ftROIdata[y][x];//init!
                 }
             }
@@ -1112,6 +1120,10 @@ void QCstmDQE::plotNPS(){
 
     QVector<double> data = calcNPSdata();
 
+    int datalength = data.length();
+    if(datalength == 0){
+        return ;
+    }
     double stepsize = 1 / double(data.length());
     ui->NPSplot->clearGraphs();
     ui->NPSplot->addGraph();
@@ -1183,6 +1195,7 @@ void QCstmDQE::on_comboBox_currentIndexChanged(const QString &arg1)
 
 void QCstmDQE::on_loadDataPushButton_clicked()
 {
+    _openingNPSfile = true;
     QStringList filepaths = QFileDialog::getOpenFileNames(this, tr("Read Data"), tr("."), tr("binary files (*.bin)") );
     QString filepath;
 
@@ -1206,6 +1219,7 @@ void QCstmDQE::on_loadDataPushButton_clicked()
             msgbox.exec();
     }
 
+    _openingNPSfile = false;
 }
 
 void QCstmDQE::on_listWidget_currentRowChanged(int currentRow)
@@ -1322,7 +1336,8 @@ void QCstmDQE::on_saveMTFpushButton_clicked()
 
 void QCstmDQE::on_logClearPushButton_clicked()
 {
-    ui->textBrowser->clear();
+    _logtext.clear();
+    refreshLog(true);
 }
 
 void QCstmDQE::on_logSavePushButton_clicked()
@@ -1341,22 +1356,22 @@ void QCstmDQE::on_logSavePushButton_clicked()
     out << ui->textBrowser->document()->toPlainText();
 }
 
-void QCstmDQE::on_binSizeLineEdit_editingFinished()
-{   ui->binSizeLineEdit->blockSignals(true); //Prevents double signals sent by pressing 'Enter' to interfere.
+//void QCstmDQE::on_binSizeLineEdit_editingFinished()
+//{   ui->binSizeLineEdit->blockSignals(true); //Prevents double signals sent by pressing 'Enter' to interfere.
 
-    double binsize = ui->binSizeLineEdit->text().toDouble();
+//    double binsize = ui->binSizeLineEdit->text().toDouble();
 
-    if(binsize <= 0){
-        QMessageBox::warning ( this, tr("Error"), tr( "Binsize cannot be zero or negative!" ) );
-        ui->binSizeLineEdit->setText( QString("%1").arg(_binsize) );
-    }
-    else _binsize = binsize;
+//    if(binsize <= 0){
+//        QMessageBox::warning ( this, tr("Error"), tr( "Binsize cannot be zero or negative!" ) );
+//        ui->binSizeLineEdit->setText( QString("%1").arg(_binsize) );
+//    }
+//    else _binsize = binsize;
 
-    if(!_ESFdata.isEmpty()) plotESF();
-    else QMessageBox::warning ( this, tr("Error"), tr( "No data!" ) );
+//    if(!_ESFdata.isEmpty()) plotESF();
+//    else QMessageBox::warning ( this, tr("Error"), tr( "No data!" ) );
 
-    ui->binSizeLineEdit->blockSignals(false);
-}
+//    ui->binSizeLineEdit->blockSignals(false);
+//}
 
 void QCstmDQE::ConnectionStatusChanged(bool connected)
 {
@@ -1484,6 +1499,11 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
 
 }
 
+void QCstmDQE::on_maindata_changed()
+{
+    if(!_openingNPSfile) clearDataAndPlots(true);
+}
+
 void QCstmDQE::on_close_optionsDialog()
 {
 //    if(_optionsDialog){
@@ -1498,4 +1518,28 @@ void QCstmDQE::on_close_optionsDialog()
 void QCstmDQE::on_singleFileCheckBox_toggled(bool checked)
 {
     _singleNPS = checked;
+}
+
+void QCstmDQE::on_clearNPSpushButton_clicked()
+{
+    ui->NPSplot->clearGraphs();
+    ui->NPSplot->replot(QCustomPlot::rpQueued);
+    _NPSdata.clear();
+
+    //TODO: Close 3D plotting windows, if they are kept in final program.
+}
+
+void QCstmDQE::on_clearMTFpushButton_clicked()
+{
+//    clearDataAndPlots();
+    ui->ESFplot->clearGraphs();     ui->ESFplot->replot(QCustomPlot::rpQueued);
+    ui->LSFplot->clearGraphs();     ui->LSFplot->replot(QCustomPlot::rpQueued);
+    ui->MTFplot->clearGraphs();     ui->MTFplot->replot(QCustomPlot::rpQueued);
+
+    _ESFdata.clear();
+    _ESFbinData.clear();
+    _LSFdata.clear();
+    _params = 0; //Sets all parameters to zero. (CHECK when using!)
+    //_xstart = 0;
+    //_plotrange = 0;
 }

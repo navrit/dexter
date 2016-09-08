@@ -50,7 +50,7 @@ public:
     //void setParams(parameter_vector params){_params = params;}
     //void setxStart(double start){_xstart = start;}
     //void setPlotLength(int length){_plotrange = length;}
-    void clearDataAndPlots(); //!Clears all data and plots in the dqe view when new data is loaded or when a new region is selected.
+    void clearDataAndPlots(bool clearNPS); //!Clears all data and plots in the dqe view when new data is loaded or when a new region is selected.
     void refreshLog(bool emptylog);//!Changes or empties (when emptylog == true) the log.
     //double polyWeightRoot(int i);
 
@@ -62,19 +62,26 @@ private:
     optionsDialog * _optionsDialog;
 //    QCPItemTracer * tracer;
     //int _currentThreshold;
+
     QPoint _beginpix, _endpix;
-    QVector<QVector<double> > _ESFdata; //Contains a vector for the distances and one for the pixel values of the esf data.
+
+    //Actual data:
+    QVector<QVector<double> > _ESFdata; //Contains one vector for the distances to the edge and one for the corresponding pixel values.
     QVector<QVector<double> > _ESFbinData; //Necessary?? //Contains a vector for the middle of distance bins and one for the mean pixel values of the esf data.
-    QVector<QVector<double> > _ESFsmoothData; //?
+    QVector<QVector<double> > _ESFsmoothData;
     QVector<QVector<double> > _LSFdata;
-    QVector<QVector<double> > _MTFdata;
+    QVector<QVector<double> > _MTFdata; //!Contains MTF data to be used for final DQE calculation.
+    QVector<QVector<double> > _NPSdata; //!Contains NPS data to be used for final DQE calculation.
+
     parameter_vector _params;   //!Contains the parameters of the error function used for the fitting.
     double _xstart;
     double _plotrange;
     int _currentThreshold;
 
+    bool _openingNPSfile = false;
     QStringList _NPSfilepaths;  //!Holds the filepaths of all the loaded datafiles.
     QString _logtext;   //!A QString that holds the text that is to appear in the log window.
+
 
     //Options
     bool    _useDerFit      = false;    //!Indicates whether the LSF should be made of the theoretical derivative using the calculated parameters (true) or the numerical derivative of the (smoothed) binned data.
@@ -84,7 +91,7 @@ private:
     double  _histStep       = 0.5;      //!Specifies the distance between datapoints in the LSF (in pixels)
     bool    _useErrorFunc   = true;     //!Indicates whether the errorfunction (or rather local smoothing) should be used.
     int     _windowW        = 11;       //!Specifies the width of the window to be used for local fitting. Must be uneven, larger than(>=)3 and smaller(<=) than the total amount of data.    
-    bool    _singleNPS      = true;    //!Specifies whether the NPS should be calculated for a single file (true), or averaged for all files (false).
+    bool    _singleNPS      = false;    //!Specifies whether the NPS should be calculated for a single file (true), or averaged for all files (false).
 
     //Main calculations:
     QVector<QVector<double> > calcESFbinData();     //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.
@@ -137,7 +144,7 @@ private slots:
 
     void on_logSavePushButton_clicked();
 
-    void on_binSizeLineEdit_editingFinished();
+//    void on_binSizeLineEdit_editingFinished();
 
     void on_npsPushButton_clicked();
 
@@ -165,9 +172,14 @@ private slots:
 
     void on_singleFileCheckBox_toggled(bool checked);
 
+    void on_clearNPSpushButton_clicked();
+
+    void on_clearMTFpushButton_clicked();
+
 public slots:
     void on_close_optionsDialog();    
     void on_apply_options(QHash<QString, int> options);
+    void on_maindata_changed();
 
 signals:
     void start_takingData();
