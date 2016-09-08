@@ -961,7 +961,9 @@ void QCstmEqualization::UpdateHeatMap(int * data, int sizex, int sizey) {
     }
 
     _ui->_intermediatePlot->setData( _plotdata, sizex, sizey);
-
+    /*_ui->dockWidget->setWidget(_ui->_intermediatePlot);
+    addDockWidget???
+    */
 }
 
 

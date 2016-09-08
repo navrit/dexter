@@ -65,12 +65,17 @@
        <enum>Qt::Vertical</enum>
       </property>
       <widget class="QWidget" name="layoutWidget">
-       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1,0">
+       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,1,0">
         <item>
          <widget class="QSpinBox" name="frameSpinner">
           <property name="maximum">
            <number>99999</number>
           </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDockWidget" name="dockWidget">
+          <widget class="QWidget" name="dockWidgetContents"/>
          </widget>
         </item>
         <item>
