@@ -204,14 +204,13 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
-    try {
-        qDebug() << ">> HMM";
-        spidrcontrol->getOmr( dev_nr, omr );
-        qDebug() << ">> Right...";
-    } catch (...) {
-        QMessageBox::warning(this, "Fuck up", "Whatever");
+    qDebug() << "BUG >> This will crash if no file opened";
+    if ((spidrcontrol->getOmr( dev_nr, omr ))){
+        qDebug() << ">> 2";
+        QMessageBox::warning(this, "Error", "#32 getOmr crash");
         return;
     }
+    qDebug() << ">> 3";
 
     cout << "[OMR ]" << endl;
 
