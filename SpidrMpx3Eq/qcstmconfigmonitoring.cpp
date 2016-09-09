@@ -79,11 +79,15 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
 
     ui->stepperCalibrationTableView->setModel( tvmodel );
 
-    ui->stepperMotorCheckBox->setToolTip( "enable/disable stepper motor control" );
+    //ui->stepperMotorCheckBox
 
     QFont font1("Courier New");
     ui->omrDisplayLabel->setFont( font1 );
     ui->omrDisplayLabel->setTextFormat( Qt::RichText );
+
+    ui->label->setHidden(1);
+    ui->cameraComboBox->setHidden(1);
+    ui->videoDockWidget->setHidden(1);
 
     ///////////////////////////////////////////////
     // Camera
@@ -832,6 +836,10 @@ void QCstmConfigMonitoring::on_cameraCheckBox_toggled(bool checked) {
 
         if (cameraSearch()) {
             //cameraResize();
+            ui->label->setHidden(0);
+            ui->cameraComboBox->setHidden(0);
+            ui->videoDockWidget->setHidden(0);
+
             cameraSetup();
             cameraOn();
         }
@@ -989,7 +997,10 @@ void QCstmConfigMonitoring::cameraOn() {
 void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
 
     // if the handler hasn't been initialized
-    if ( ! _stepper ) _stepper = new StepperMotorController;
+    if ( ! _stepper ) {
+        QMessageBox::information(this, tr("Starting search for stepper motor"), tr("This should take less than 10s"));
+        _stepper = new StepperMotorController;
+    }
 
     // Make the table unsensitive with respect to the config for a moment.
     // This reconnects at the end of this function.
@@ -1004,7 +1015,13 @@ void QCstmConfigMonitoring::on_stepperMotorCheckBox_toggled(bool checked) {
     // On turn on --> setup, on turn off --> close
     if ( checked == true ) {
 
-        if ( ! _stepper->arm_stepper( ) ) return; // problems attaching
+        if ( ! _stepper->arm_stepper() ) {
+            ui->stepperMotorCheckBox->setChecked(false);
+
+            QMessageBox::warning ( this, tr("Connect stepper motor"), tr("Could not find stepper motor, check your connections.") );
+
+            return; // problems attaching
+        }
 
         // make stuff needed active
         activeInGUI();
