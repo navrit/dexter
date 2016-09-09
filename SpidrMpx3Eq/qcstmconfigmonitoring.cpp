@@ -188,14 +188,13 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
 #define __nbits_OMR 48 // 6 words of 8 bits
 
 void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
-
-    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-
     int  dev_nr = 2;
     unsigned char omr[6];
-    spidrcontrol->getOmr( dev_nr, omr );
 
-    // <font color=\"blue\">Hello</font> <font color=\"red\">World</font><font color=\"green">!</font>
+    unsigned char endMask = 0x100; // 1 00000000 (ninth bit)
+    char bits16Save[__nbits_OMR];
+    int lateRunningBitCntr = 0;
+    int bitCntr = 0;
 
     QString toDisplay;
     QString formatNoSpace_gui;
@@ -203,12 +202,19 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
     QString formatNoSpace_console;
     QString formatWithSpace_console;
 
-    unsigned char endMask = 0x100; // 1 00000000 (ninth bit)
-    char bits16Save[__nbits_OMR];
-    int lateRunningBitCntr = 0;
+    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
+    try {
+        qDebug() << ">> HMM";
+        spidrcontrol->getOmr( dev_nr, omr );
+        qDebug() << ">> Right...";
+    } catch (...) {
+        QMessageBox::warning(this, "Fuck up", "Whatever");
+        return;
+    }
 
     cout << "[OMR ]" << endl;
-    int bitCntr = 0;
+
     for ( int i = 0 ; i < __nwords_OMR ; i++ ) { // this comes packed in 6 bytes
         // extract each bit
         unsigned char mask = 0x1;
