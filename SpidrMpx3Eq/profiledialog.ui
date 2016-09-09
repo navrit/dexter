@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>691</width>
-    <height>599</height>
+    <height>668</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -77,6 +77,12 @@
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <widget class="QComboBox" name="comboBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="minimumSize">
            <size>
             <width>91</width>
@@ -85,8 +91,8 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>91</width>
-            <height>20</height>
+            <width>16777215</width>
+            <height>16777215</height>
            </size>
           </property>
           <item>
@@ -372,6 +378,12 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>150</height>
+         </size>
+        </property>
        </widget>
       </item>
      </layout>
@@ -379,8 +391,6 @@
      <zorder>profilePlot</zorder>
      <zorder></zorder>
      <zorder></zorder>
-     <zorder>select_xy</zorder>
-     <zorder>horizontalSpacer_4</zorder>
     </widget>
    </item>
    <item>
