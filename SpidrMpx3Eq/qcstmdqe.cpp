@@ -874,6 +874,24 @@ void QCstmDQE::calcNPSdata()
         calc1Dnps(ft2Ddata);
     }
 
+    //Now normalize the NPS
+    int max = 0, i;
+    double value;
+    for(i = 0; i < _NPSdata[0].length(); i++){
+        value = _NPSdata[0][i];
+        if(value > max) max = value;
+    }
+    for(i = 0; i < _NPSdata[0].length(); i++)
+        _NPSdata[0][i] /= max;
+
+    max = 0;
+    for(int i = 0; i < _NPSdata[1].length(); i++){
+        value = _NPSdata[1][i];
+        if(value > max) max = value;
+    }
+    for(i = 0; i < _NPSdata[1].length(); i++)
+        _NPSdata[1][i] /= max;
+
 }
 
 void QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
@@ -885,6 +903,9 @@ void QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
     for(int i = 0; i < ysize; i++){
         _NPSdata[1][i] = ftdata[i][0]; //y-axis (x=0)
     }
+
+
+
 }
 
 QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data )
@@ -1116,18 +1137,25 @@ void QCstmDQE::plotNPS(){
     if(datalength == 0){
         return ;
     }
-    double stepsize = 1 / double(_NPSdata[0].length());
-    ui->xNPSplot->clearGraphs();                                ui->yNPSplot->clearGraphs();
-    ui->xNPSplot->addGraph();                                   ui->yNPSplot->addGraph();
-    ui->xNPSplot->graph(0)->setLineStyle(QCPGraph::lsImpulse);  ui->yNPSplot->graph(0)->setLineStyle(QCPGraph::lsImpulse);
 
-    for(double i = 0; i < _NPSdata.length(); i++){
-        ui->xNPSplot->graph(0)->addData( i * stepsize, _NPSdata[0][i] );    //Plot the values for fx (fy=0).
-        ui->yNPSplot->graph(0)->addData( i * stepsize, _NPSdata[1][i] );    //Plot the values for fy (fx=0)
-    }
-    ui->xNPSplot->rescaleAxes();
-    ui->xNPSplot->xAxis->setRange(-0.01, 1.01);
-    ui->xNPSplot->replot( QCustomPlot::rpQueued );
+    int xlength = _NPSdata[0].length();
+    int ylength = _NPSdata[1].length();
+    double i;
+    double xstepsize = 1 / double( xlength );
+    double ystepsize = 1 / double( ylength );
+    ui->xNPSplot->clearGraphs();                                    ui->yNPSplot->clearGraphs();
+    ui->xNPSplot->addGraph();                                       ui->yNPSplot->addGraph();
+    ui->xNPSplot->graph(0)->setLineStyle(QCPGraph::lsImpulse);      ui->yNPSplot->graph(0)->setLineStyle(QCPGraph::lsImpulse);
+
+    for(i = 0.0; i < xlength; i++)
+        ui->xNPSplot->graph(0)->addData( i * xstepsize, _NPSdata[0][i] );    //Plot the values for fx (fy=0).
+
+    for(i = 0.0; i < ylength; i++)
+        ui->yNPSplot->graph(0)->addData( i * ystepsize, _NPSdata[1][i] );    //Plot the values for fy (fx=0)
+
+    ui->xNPSplot->rescaleAxes();                        ui->yNPSplot->rescaleAxes();
+    ui->xNPSplot->xAxis->setRange(-0.01, 1.01);         ui->yNPSplot->xAxis->setRange(-0.01, 1.01);
+    ui->xNPSplot->replot( QCustomPlot::rpQueued );      ui->yNPSplot->replot( QCustomPlot::rpQueued );
 }
 
 
@@ -1548,6 +1576,8 @@ void QCstmDQE::on_clearNPSpushButton_clicked()
 {
     ui->xNPSplot->clearGraphs();
     ui->xNPSplot->replot(QCustomPlot::rpQueued);
+    ui->yNPSplot->clearGraphs();
+    ui->yNPSplot->replot(QCustomPlot::rpQueued);
     _NPSdata.clear();
 
     //TODO: Close 3D plotting windows, if they are kept in final program.
