@@ -831,9 +831,10 @@ void QCstmDQE::calcNPSdata()
 
     if(_singleNPS){
         ft2Ddata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
-        //get1D ftdata... for now use FTdata[0]
 
-        _NPSdata[0] = ft2Ddata[0];
+        //get1D ftdata... for now use FTdata[0]
+//        _NPSdata[0] = ft2Ddata[0];
+        calc1Dnps(ft2Ddata);
     }
     else{
 
@@ -861,9 +862,11 @@ void QCstmDQE::calcNPSdata()
 
         }
         //Calculate mean FT squared.
-        for(int y = 0; y < ftROIdata.length(); y++){
-            for(int x = 0; x < ftROIdata[0].length(); x++){ //assuming all rows are equal length
-                ft2Ddata[y][x] /= Nfiles;
+        if(Nfiles > 1){
+            for(int y = 0; y < ftROIdata.length(); y++){
+                for(int x = 0; x < ftROIdata[0].length(); x++){ //assuming all rows are equal length
+                    ft2Ddata[y][x] /= Nfiles;
+                }
             }
         }
 
@@ -875,7 +878,13 @@ void QCstmDQE::calcNPSdata()
 
 void QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
 {
-    _NPSdata[0] = ftdata[0];
+    _NPSdata[0] = ftdata[0]; //x-axis (y=0)
+
+    int ysize = ftdata.size();
+    _NPSdata[1].resize( ysize );
+    for(int i = 0; i < ysize; i++){
+        _NPSdata[1][i] = ftdata[i][0]; //y-axis (x=0)
+    }
 }
 
 QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data )
@@ -1107,13 +1116,14 @@ void QCstmDQE::plotNPS(){
     if(datalength == 0){
         return ;
     }
-    double stepsize = 1 / double(_NPSdata.length());
-    ui->xNPSplot->clearGraphs();
-    ui->xNPSplot->addGraph();
-    ui->xNPSplot->graph(0)->setLineStyle(QCPGraph::lsImpulse);
+    double stepsize = 1 / double(_NPSdata[0].length());
+    ui->xNPSplot->clearGraphs();                                ui->yNPSplot->clearGraphs();
+    ui->xNPSplot->addGraph();                                   ui->yNPSplot->addGraph();
+    ui->xNPSplot->graph(0)->setLineStyle(QCPGraph::lsImpulse);  ui->yNPSplot->graph(0)->setLineStyle(QCPGraph::lsImpulse);
 
     for(double i = 0; i < _NPSdata.length(); i++){
-        ui->xNPSplot->graph(0)->addData( i * stepsize, _NPSdata[0][i] ); //Plot the values for fx (fy=0).
+        ui->xNPSplot->graph(0)->addData( i * stepsize, _NPSdata[0][i] );    //Plot the values for fx (fy=0).
+        ui->yNPSplot->graph(0)->addData( i * stepsize, _NPSdata[1][i] );    //Plot the values for fy (fx=0)
     }
     ui->xNPSplot->rescaleAxes();
     ui->xNPSplot->xAxis->setRange(-0.01, 1.01);
