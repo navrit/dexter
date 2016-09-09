@@ -863,6 +863,8 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
         emit returnFilename(filename);
     }
 
+    _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
+
     return;
 }
 void Mpx3GUI::set_mode_integral(){
