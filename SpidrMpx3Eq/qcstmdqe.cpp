@@ -910,19 +910,18 @@ void QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
     }
     else _NPSdata[0].resize(xlength);
 
-    if(_NlinesNPS > 0){
-        for(int n = 0; n < _NlinesNPS; n++){
-            for( i = 0; i < xlength; i++){
-                _NPSdata[0][i] += ftdata[n][i];
-//                _NPSdata[0][i] += ftdata[xlength - n][i];  //? include symmetric (/negative)
-            }
-            for ( i = 0; i < ylength; i++){
-                _NPSdata[1][i] += ftdata[i][n];
-//                _NPSdata[1][i] += ftdata[i][ylength - n];
-            }
-        }
-
-    }
+//    if(_NlinesNPS > 0){
+//        for(int n = 1; n <= _NlinesNPS; n++){
+//            for( i = 0; i < xlength; i++){
+//                _NPSdata[0][i] += ftdata[n][i];
+////                _NPSdata[0][i] += ftdata[xlength - n][i];  //? include symmetric (/negative)
+//            }
+//            for ( i = 0; i < ylength; i++){
+//                _NPSdata[1][i] += ftdata[i][n];
+////                _NPSdata[1][i] += ftdata[i][ylength - n];
+//            }
+//        }
+//    }
 
 
 }
@@ -1029,6 +1028,7 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
     //Let's see what this looks like..
     QCustomPlot *ftplot = new QCustomPlot;
     ftplot->setParent(_mpx3gui, Qt::Window);
+    ftplot->setAttribute(Qt::WA_DeleteOnClose);
     ftplot->setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
     ftplot->axisRect()->setupFullAxesBox(true);
     ftplot->xAxis->setLabel("x");
@@ -1043,7 +1043,7 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
     colorMap->setInterpolate(false);
 
 
-    //Just to see data in Debugger::
+    //Just to see data in Debugger :
     QVector<QVector<double> > ftdata(ylength);
     for(int y = 0; y < ylength; y++){
         ftdata[y].resize(xlength);
