@@ -89,6 +89,10 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     ui->cameraComboBox->setHidden(1);
     ui->videoDockWidget->setHidden(1);
 
+    #ifndef EXPERT_MODE
+        ui->readOMRPushButton->setHidden(1);
+    #endif
+
     ///////////////////////////////////////////////
     // Camera
     _cameraOn = false;
@@ -189,9 +193,7 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
 
 void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 
-    #ifndef EXPERT_MODE
-        return;
-    #endif
+    #ifdef EXPERT_MODE
 
     int  dev_nr = 2;
     unsigned char omr[6];
@@ -211,11 +213,10 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 
 
     qDebug() << "BUG >> This will crash if no file opened";
-    if ((spidrcontrol->getOmr( dev_nr, omr ))){
+    if ((spidrcontrol->getOmr( dev_nr, omr ))){             // This is the screwy line.
         QMessageBox::warning(this, "Error", "#32 getOmr crash");
         return;
     }
-
 
     cout << "[OMR ]" << endl;
 
@@ -292,6 +293,9 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 
     ui->omrDisplayLabel->setText( toDisplay );
 
+    #else
+        return;
+    #endif
 }
 
 void QCstmConfigMonitoring::on_taking_data_gui()
