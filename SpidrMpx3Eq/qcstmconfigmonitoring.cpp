@@ -187,8 +187,13 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
 #define __nwords_OMR 6
 #define __nbits_OMR 48 // 6 words of 8 bits
 
-void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
+#ifdef EXPERT_MODE
+bool expertMode = EXPERT_MODE;
+#endif
 
+void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
+    qDebug() << ">> " << expertMode ;
+    if (!expertMode) { return; }
 
     int  dev_nr = 2;
     unsigned char omr[6];
