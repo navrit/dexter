@@ -65,16 +65,14 @@ void QCstmCorrectionsDialog::on_bhcorrCheckbox_toggled(bool checked) {
         _bhwindow->activateWindow();
     }
 
-    if(_mpx3gui->getDataset()->getLayer(0)== nullptr && checked)
-    {
+    if(_mpx3gui->getDataset()->getLayer(0)== nullptr && checked) {
         QMessageBox msgBox;
         msgBox.setText("Please first load / take data.");
         msgBox.exec();
         ui->bhcorrCheckbox->setChecked(false);
     }
 
-if(_mpx3gui->getDataset()->getLayer(0)!= nullptr)
-    {
+    if(_mpx3gui->getDataset()->getLayer(0)!= nullptr) {
         if ( ! checked ) {
             _bhwindow->close();
         } else {
@@ -110,6 +108,9 @@ void QCstmCorrectionsDialog::on_obcorrCheckbox_toggled(bool checked) {
  * On an existing image
  */
 void QCstmCorrectionsDialog::on_applyCorr_clicked() {
+    if ( ui->bhcorrLineEdit->text().isEmpty() && ui->obcorrLineEdit->text().isEmpty()) {
+        return;
+    }
     if ( ! _vis->isTakingData() ) {
 
         // This is done off data taking
