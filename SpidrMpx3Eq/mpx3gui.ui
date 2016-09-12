@@ -58,6 +58,10 @@
      <string>&amp;File</string>
     </property>
     <addaction name="separator"/>
+    <addaction name="actionConnect"/>
+    <addaction name="actionDisconnect"/>
+    <addaction name="actionDefibrillator"/>
+    <addaction name="separator"/>
     <addaction name="actionOpen_data"/>
     <addaction name="actionSave_data"/>
     <addaction name="actionClear_data"/>
@@ -66,7 +70,7 @@
    </widget>
    <widget class="QMenu" name="menuConfig">
     <property name="title">
-     <string>Config</string>
+     <string>Configuration</string>
     </property>
     <widget class="QMenu" name="menuLoad_configuration">
      <property name="title">
@@ -88,15 +92,6 @@
     <addaction name="separator"/>
     <addaction name="actionWizard"/>
    </widget>
-   <widget class="QMenu" name="menuSystem">
-    <property name="title">
-     <string>&amp;System</string>
-    </property>
-    <addaction name="actionConnect"/>
-    <addaction name="actionDisconnect"/>
-    <addaction name="separator"/>
-    <addaction name="actionDefibrillator"/>
-   </widget>
    <widget class="QMenu" name="menu_Window">
     <property name="title">
      <string>&amp;Views</string>
@@ -106,10 +101,9 @@
     <addaction name="actionDACs"/>
     <addaction name="actionEqualization"/>
    </widget>
-   <addaction name="menuSystem"/>
    <addaction name="menuMpx3Eq"/>
-   <addaction name="menuConfig"/>
    <addaction name="menu_Window"/>
+   <addaction name="menuConfig"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
@@ -244,7 +238,7 @@
   <action name="actionDisconnect">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/icons/switch-turn-off-icon.png</normaloff>:/icons/switch-turn-off-icon.png</iconset>
+     <normaloff>:/icons/system-shutdown.png</normaloff>:/icons/system-shutdown.png</iconset>
    </property>
    <property name="text">
     <string>Disconnect</string>
