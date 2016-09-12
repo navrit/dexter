@@ -94,7 +94,7 @@ private:
         //NPS
     bool    _singleNPS      = false;    //!Specifies whether the NPS should be calculated for a single file (true), or averaged for all files (false).
     bool    _fitPlane       = false;    //!Specifies whether a flat plane should be fitted to the NPS data and removed before further calculation.
-    bool    _use0freq       = false;
+    bool    _useZeroFreq    = false;
     int     _NlinesNPS      = 1;
 
     //Main calculations:

@@ -53,7 +53,6 @@ double QCstmCorrectionsDialog::getNoisyPixelMeanMultiplier()
 
 //!Load a BH correction
 void QCstmCorrectionsDialog::on_bhcorrCheckbox_toggled(bool checked) {
-    ui->bhcorrLineEdit->setText("MY FILENAME SHOULD BE HEEEEEERE");
 
     // Deal with the separate BH window
     if ( !_bhwindow && checked && _mpx3gui->getDataset()->getLayer(0)!= nullptr) {

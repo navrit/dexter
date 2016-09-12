@@ -826,7 +826,8 @@ void QCstmDQE::calcNPSdata()
     int Nfiles = ui->listWidget->count();
     if(Nfiles == 0){
         QMessageBox::warning ( this, tr("Error"), tr( "No data files." ) );
-        return ;//npsdata;
+        _NPSdata.clear();
+        return ;    //npsdata is empty;
     }
 
     if(_singleNPS){
@@ -901,7 +902,7 @@ void QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
     int ylength = ftdata.length();
     _NPSdata[1].resize( ylength );
 
-    if(_use0freq){
+    if(_useZeroFreq){
         _NPSdata[0] = ftdata[0]; //x-axis (y=0)
 
         for( i = 0; i < ylength; i++){
@@ -911,7 +912,7 @@ void QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
     else _NPSdata[0].resize(xlength);
 
     if(_NlinesNPS > 0){
-        for(int n = 0; n < _NlinesNPS; n++){
+        for(int n = 1; n <= _NlinesNPS; n++){
             for( i = 0; i < xlength; i++){
                 _NPSdata[0][i] += ftdata[n][i];
 //                _NPSdata[0][i] += ftdata[xlength - n][i];  //? include symmetric (/negative)
@@ -921,7 +922,6 @@ void QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
 //                _NPSdata[1][i] += ftdata[i][ylength - n];
             }
         }
-
     }
 
 
@@ -988,7 +988,7 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
 //    }
 
 
-    int end = xlength;
+//    int end = xlength;
     for(int i = 0; i < 1000; i++){
         if( dlib::is_power_of_two( data[0].length() ) ) break;
         else{
@@ -998,7 +998,7 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
             xlength++ ;
         }
     }
-    end = ylength;
+//    end = ylength;
     for(int i = 0; i < 1000; i++){
         if( dlib::is_power_of_two( data.length() ) ) break;
         else{
@@ -1043,7 +1043,7 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
     colorMap->setInterpolate(false);
 
 
-    //Just to see data in Debugger::
+    //Just to see data in Debugger :
     QVector<QVector<double> > ftdata(ylength);
     for(int y = 0; y < ylength; y++){
         ftdata[y].resize(xlength);
@@ -1565,8 +1565,8 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
     if(options.value("fitplane") == 0)  _fitPlane = false;
         else _fitPlane = true;
 
-    if(options.value("zerofreq") == 0) _use0freq = false;
-        else _use0freq = true;
+    if(options.value("zerofreq") == 0) _useZeroFreq = false;
+        else _useZeroFreq = true;
 
     _NlinesNPS = options.value("nlines");
 }
