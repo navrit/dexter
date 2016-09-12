@@ -187,13 +187,11 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
 #define __nwords_OMR 6
 #define __nbits_OMR 48 // 6 words of 8 bits
 
-#ifdef EXPERT_MODE
-bool expertMode = EXPERT_MODE;
-#endif
-
 void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
-    qDebug() << ">> " << expertMode ;
-    if (!expertMode) { return; }
+
+    #ifndef EXPERT_MODE
+        return;
+    #endif
 
     int  dev_nr = 2;
     unsigned char omr[6];
@@ -211,11 +209,13 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
+
     qDebug() << "BUG >> This will crash if no file opened";
     if ((spidrcontrol->getOmr( dev_nr, omr ))){
         QMessageBox::warning(this, "Error", "#32 getOmr crash");
         return;
     }
+
 
     cout << "[OMR ]" << endl;
 

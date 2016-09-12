@@ -29,7 +29,7 @@ CONFIG(debug, debug|release) {
     DESTDIR     = ../Debug
     LIBS       += -L../Debug
 
-    DEFINES    += EXPERT_MODE=1
+    #DEFINES    += EXPERT_MODE
 }
 
 CONFIG(release, debug|release) {
@@ -39,10 +39,10 @@ CONFIG(release, debug|release) {
     DESTDIR     = ../Release
     LIBS       += -L../Release
 
-    DEFINES    += EXPERT_MODE=0
+    #DEFINES    += EXPERT_MODE
 }
 
-DEFINES    *= EXPERT_MODE=0
+#DEFINES    *= EXPERT_MODE
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
