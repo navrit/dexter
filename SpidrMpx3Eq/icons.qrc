@@ -3,14 +3,11 @@
         <file>icons/Action-icon_64.png</file>
         <file>icons/Action-icon_256.png</file>
         <file>icons/Action-icon_128.png</file>
-        <file>icons/Actions-edit-clear-icon.png</file>
-        <file>icons/Actions-tools-wizard-icon.png</file>
         <file>icons/Actions-document-save-icon.png</file>
         <file>icons/Actions-document-save-all-icon.png</file>
         <file>icons/Actions-configure-icon_256.png</file>
         <file>icons/Actions-document-open-icon.png</file>
         <file>icons/Button-Turn-On-icon.png</file>
-        <file>icons/switch-turn-off-icon.png</file>
         <file>icons/Visualization_logo.png</file>
         <file>icons/load_equalisation_logo.png</file>
         <file>icons/eraser_equalisation_logo.png</file>
@@ -23,11 +20,17 @@
         <file>icons/Equalisation_logo(active).png</file>
         <file>icons/DACs_logo(active).png</file>
         <file>icons/Automated_External_Defibrillator.png</file>
-        <file>icons/system-shutdown.png</file>
-        <file>icons/document-revert.png</file>
-        <file>icons/document-open.png</file>
-        <file>icons/document-save.png</file>
-        <file>icons/applications-system.png</file>
-        <file>icons/preferences-system.png</file>
+        <file>icons/power-button-off.png</file>
+        <file>icons/power-button-on.png</file>
+        <file>icons/open-folder.png</file>
+        <file>icons/download-arrow.png</file>
+        <file>icons/undo-button.png</file>
+        <file>icons/clear-button.png</file>
+        <file>icons/magic-wand.png</file>
+        <file>icons/visible-opened-eye-interface-option.png</file>
+        <file>icons/settings.png</file>
+        <file>icons/equalizer.png</file>
+        <file>icons/health-care.png</file>
+        <file>icons/graph-curve.png</file>
     </qresource>
 </RCC>

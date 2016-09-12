@@ -347,6 +347,7 @@ void Mpx3GUI::setWindowWidgetsStatus(win_status s)
         // Startup status
         _ui->actionConnect->setVisible(1);
         _ui->actionDisconnect->setVisible(0);
+        _ui->actionDefibrillator->setVisible(0);
         break;
 
     case win_status::connected:
@@ -1070,7 +1071,7 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
             pd.setValue( 1 );
             qDebug() << "[INFO] Trying to hot-reset ...";
             sc->reset( &errorstat );
-            emit sig_statusBarAppend( "reset", "black" );
+            emit sig_statusBarAppend( "Reset", "black" );
 
             // Hardware reset
             pd.setValue( 2 );
@@ -1089,4 +1090,9 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
 
     }
 
+}
+
+void Mpx3GUI::on_actionRevert_triggered(bool checked){
+    qDebug() << ">> Rewinding to original dataset? TEST ME";
+    rewindToOriginalDataset();
 }
