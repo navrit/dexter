@@ -143,7 +143,6 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     //m_statusBarMessageLabel.setAlignment( Qt::AlignLeft );
     m_statusBarMessageString.clear( );
 
-
 }
 
 
@@ -346,14 +345,15 @@ void Mpx3GUI::setWindowWidgetsStatus(win_status s)
 
     case win_status::startup:
         // Startup status
-        _ui->actionConnect->setEnabled( true );
-        _ui->actionDisconnect->setEnabled( false );
+        _ui->actionConnect->setVisible(1);
+        _ui->actionDisconnect->setVisible(0);
         break;
 
     case win_status::connected:
         // Startup status
-        _ui->actionConnect->setEnabled( true );
-        _ui->actionDisconnect->setEnabled( false );
+        _ui->actionConnect->setVisible(1);
+        _ui->actionDisconnect->setVisible(0);
+        _ui->actionDefibrillator->setVisible(1);
         break;
 
     default:
@@ -768,12 +768,12 @@ void Mpx3GUI::onConnectionStatusChanged(bool conn)
 {
     // Specific to the main window
     if( conn ) {
-        _ui->actionConnect->setEnabled( false );
-        _ui->actionDisconnect->setEnabled( true );
+        _ui->actionConnect->setVisible(0);
+        _ui->actionDisconnect->setVisible(1);
 
     } else {
-        _ui->actionConnect->setEnabled( true );
-        _ui->actionDisconnect->setEnabled( false );
+        _ui->actionConnect->setVisible(1);
+        _ui->actionDisconnect->setVisible(0);
     }
 
 }

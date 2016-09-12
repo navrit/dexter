@@ -23,5 +23,11 @@
         <file>icons/Equalisation_logo(active).png</file>
         <file>icons/DACs_logo(active).png</file>
         <file>icons/Automated_External_Defibrillator.png</file>
+        <file>icons/system-shutdown.png</file>
+        <file>icons/document-revert.png</file>
+        <file>icons/document-open.png</file>
+        <file>icons/document-save.png</file>
+        <file>icons/applications-system.png</file>
+        <file>icons/preferences-system.png</file>
     </qresource>
 </RCC>
