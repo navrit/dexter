@@ -896,14 +896,33 @@ void QCstmDQE::calcNPSdata()
 
 void QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
 {
-    _NPSdata[0] = ftdata[0]; //x-axis (y=0)
+    int i;
+    int xlength = ftdata[0].length();
+    int ylength = ftdata.length();
+    _NPSdata[1].resize( ylength );
 
-    int ysize = ftdata.size();
-    _NPSdata[1].resize( ysize );
-    for(int i = 0; i < ysize; i++){
-        _NPSdata[1][i] = ftdata[i][0]; //y-axis (x=0)
+    if(_use0freq){
+        _NPSdata[0] = ftdata[0]; //x-axis (y=0)
+
+        for( i = 0; i < ylength; i++){
+            _NPSdata[1][i] = ftdata[i][0]; //y-axis (x=0)
+        }
     }
+    else _NPSdata[0].resize(xlength);
 
+    if(_NlinesNPS > 0){
+        for(int n = 0; n < _NlinesNPS; n++){
+            for( i = 0; i < xlength; i++){
+                _NPSdata[0][i] += ftdata[n][i];
+//                _NPSdata[0][i] += ftdata[xlength - n][i];  //? include symmetric (/negative)
+            }
+            for ( i = 0; i < ylength; i++){
+                _NPSdata[1][i] += ftdata[i][n];
+//                _NPSdata[1][i] += ftdata[i][ylength - n];
+            }
+        }
+
+    }
 
 
 }
@@ -1523,7 +1542,9 @@ void QCstmDQE::on_optionsPushButton_clicked()
 void QCstmDQE::on_apply_options(QHash<QString, int> options)
 {
     //Set all options values in variables.
-//    if(options.value("edge")    == 0);
+
+    //MTF
+    //    if(options.value("edge")    == 0);
     if(options.value("error")   == 0)   _useErrorFunc = false;
         else _useErrorFunc = true;
     if(options.value("fitder")  == 0)   _useDerFit = false;
@@ -1539,8 +1560,15 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
         plotESF();      //TO DO: only replot the BINNED data. Seperate functions?
     }
 
+    //NPS
+    //TODO: roinumber, roisize, edge.
     if(options.value("fitplane") == 0)  _fitPlane = false;
         else _fitPlane = true;
+
+    if(options.value("zerofreq") == 0) _use0freq = false;
+        else _use0freq = true;
+
+    _NlinesNPS = options.value("nlines");
 }
 
 void QCstmDQE::on_maindata_changed(QString filename)

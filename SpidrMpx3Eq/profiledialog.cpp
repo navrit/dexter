@@ -50,6 +50,7 @@ void ProfileDialog::changeTitle(){
 void ProfileDialog::changeText(QString text){
     ui->textBrowser->setText(text);
     //update();
+
 }
 
 void ProfileDialog::plotProfile()

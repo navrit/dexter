@@ -226,6 +226,13 @@
              </property>
             </widget>
            </item>
+           <item>
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>#lines averaged </string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
          <item>
@@ -234,7 +241,7 @@
             <widget class="QLineEdit" name="roiSizeLineEdit">
              <property name="maximumSize">
               <size>
-               <width>51</width>
+               <width>50</width>
                <height>16777215</height>
               </size>
              </property>
@@ -247,7 +254,7 @@
             <widget class="QLineEdit" name="roiNumberLineEdit">
              <property name="maximumSize">
               <size>
-               <width>51</width>
+               <width>50</width>
                <height>16777215</height>
               </size>
              </property>
@@ -260,7 +267,7 @@
             <widget class="QLineEdit" name="edgeLineEdit">
              <property name="maximumSize">
               <size>
-               <width>51</width>
+               <width>50</width>
                <height>16777215</height>
               </size>
              </property>
@@ -269,9 +276,26 @@
              </property>
             </widget>
            </item>
+           <item>
+            <widget class="QLineEdit" name="nLinesLineEdit">
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="zeroFreqCheckBox">
+         <property name="text">
+          <string>Use zero frequency</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QCheckBox" name="fitPlaneCheckBox">

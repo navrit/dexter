@@ -590,7 +590,7 @@ QVector<QVector<double> > Dataset::calcESFdata()
 {   //Setup data vectors of proper size.
     QVector<QVector<double> > esfData(2);
     //We need a vector for the distance  one for the pixel values.
-    //esfData.resize(2);
+
     int Nx = valuesinRoI[0].length();   //The number of columns i.e. number of pixels in the x-direction.
     int Ny = valuesinRoI.length();      //The number of rows i.e. number of pixels in the y-direction.
     int i;
@@ -599,11 +599,11 @@ QVector<QVector<double> > Dataset::calcESFdata()
     }
 
     //Calculate mean values for the bright and dark part.
-    int nx = Nx/6; //Take some part of the brightest and darkest area's.
+    int nx = Nx/6;  //Take some part of the brightest and darkest area's.
     int Nmean = 0;
     double mleft = 0, mright = 0;
     double bright = 0., dark = 0.;
-    bool BtD = false, DtB = false; //Bright to Dark and vice versa.
+    bool BtD = false, DtB = false;  //Bright to Dark and vice versa.
 
     for(int y=0; y < Ny; y++)
         for (i=0; i < nx; i++){
@@ -633,12 +633,13 @@ QVector<QVector<double> > Dataset::calcESFdata()
     double b = ab.second;
     //if ( a==0 && b==0 ||  isnan(a) || isnan(b) ) {
     if ( a==0 && b==0 ||  a!=a || b!=b ) {
-    esfData.clear();   //Return empty data...Midline doesn't make sense.
+        esfData.clear();   //Return empty data...Midline doesn't make sense.
+
         QMessageBox msgbox;
         msgbox.setText("An error has occurred in the calculation of the position of the edge. \n");
         msgbox.setIcon(QMessageBox::Warning);
-
         msgbox.exec();
+
         return esfData;
     }
 

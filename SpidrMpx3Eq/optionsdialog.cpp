@@ -29,11 +29,11 @@ optionsDialog::~optionsDialog()
 
 void optionsDialog::setCurrentSettings()
 {
-    //Saved in a QHash, which saves int values stored per String.
+    //Saved in a QHash, which saves int values stored by string.
     //This way more options can be stored, without worrying about numbering
 
-    _currentSettings["roiNumber"] = ui->roiNumberLineEdit->text().toInt();
-    _currentSettings["roiSize"] = ui->roiSizeLineEdit->text().toInt();
+    _currentSettings["roinumber"] = ui->roiNumberLineEdit->text().toInt();
+    _currentSettings["roisize"] = ui->roiSizeLineEdit->text().toInt();
     _currentSettings["edge"] = ui->edgeLineEdit->text().toInt();
 
     if(ui->edgeRadioButton->isChecked()) _currentSettings["edge"] = 1;
@@ -63,14 +63,17 @@ void optionsDialog::setCurrentSettings()
 
     if(ui->fitPlaneCheckBox->isChecked()) _currentSettings["fitplane"] = 1;
         else _currentSettings["fitplane"] = 0;
+
+    _currentSettings["nlines"] = ui->nLinesLineEdit->text().toInt();
+
+    if(ui->zeroFreqCheckBox->isChecked()) _currentSettings["zerofreq"] = 1;
+        else _currentSettings["zerofreq"] = 0;
+
 }
 
 void optionsDialog::resetSettings()
 {
-    ui->roiNumberLineEdit->setText( QString("%1").arg(_currentSettings.value("roiNumber")) );
-    ui->roiSizeLineEdit->setText( QString("%1").arg(_currentSettings.value("roiSize")) );
-    ui->edgeLineEdit->setText( QString("%1").arg(_currentSettings.value("edge")) );
-
+    //MTF options
     if(_currentSettings.value("edge") == 0) ui->edgeRadioButton->setChecked(false);
         else ui->edgeRadioButton->setChecked(true);
     ui->fitComboBox->setCurrentIndex( _currentSettings.value("error") );
@@ -83,8 +86,17 @@ void optionsDialog::resetSettings()
 
     ui->binSizeLineEdit->setText( QString("%1").arg(_currentSettings.value("windowW")) );
 
+    //NPS options
+    ui->roiNumberLineEdit->setText( QString("%1").arg(_currentSettings.value("roiNumber")) );
+    ui->roiSizeLineEdit->setText( QString("%1").arg(_currentSettings.value("roiSize")) );
+    ui->edgeLineEdit->setText( QString("%1").arg(_currentSettings.value("edge")) );
+
     if(_currentSettings.value("fitplane") == 0) ui->fitPlaneCheckBox->setChecked(false);
         else ui->fitPlaneCheckBox->setChecked(true);
+    if(_currentSettings.value("zerofreq") == 0) ui->zeroFreqCheckBox->setChecked(false);
+        else ui->zeroFreqCheckBox->setChecked(true);
+
+    ui->nLinesLineEdit->setText( QString("%1").arg(_currentSettings.value("nlines")) );
 }
 
 void optionsDialog::on_buttonBox_clicked(QAbstractButton *button)

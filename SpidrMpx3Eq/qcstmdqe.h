@@ -83,6 +83,7 @@ private:
 
 
     //Options
+        //MTF
     bool    _useDerFit      = false;    //!Indicates whether the LSF should be made of the theoretical derivative using the calculated parameters (true) or the numerical derivative of the (smoothed) binned data.
     bool    _usebins        = true;     //!Indicates whether the data should be binned and this data should be used for further calculations.
     double  _binsize        = 1;        //!Specifies the size of the bins to be used for the ESF data.
@@ -90,8 +91,11 @@ private:
     double  _histStep       = 0.5;      //!Specifies the distance between datapoints in the LSF (in pixels)
     bool    _useErrorFunc   = true;     //!Indicates whether the errorfunction (or rather local smoothing) should be used.
     int     _windowW        = 11;       //!Specifies the width of the window to be used for local fitting. Must be uneven, larger than(>=)3 and smaller(<=) than the total amount of data.    
+        //NPS
     bool    _singleNPS      = false;    //!Specifies whether the NPS should be calculated for a single file (true), or averaged for all files (false).
     bool    _fitPlane       = false;    //!Specifies whether a flat plane should be fitted to the NPS data and removed before further calculation.
+    bool    _use0freq       = false;
+    int     _NlinesNPS      = 1;
 
     //Main calculations:
     QVector<QVector<double> > calcESFbinData();     //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.
