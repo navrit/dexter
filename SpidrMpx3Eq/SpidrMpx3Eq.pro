@@ -28,6 +28,8 @@ CONFIG(debug, debug|release) {
     UI_DIR      = debug
     DESTDIR     = ../Debug
     LIBS       += -L../Debug
+
+    DEFINES    += EXPERT_MODE=1
 }
 
 CONFIG(release, debug|release) {
@@ -36,7 +38,11 @@ CONFIG(release, debug|release) {
     UI_DIR      = release
     DESTDIR     = ../Release
     LIBS       += -L../Release
+
+    DEFINES    += EXPERT_MODE=0
 }
+
+DEFINES    *= EXPERT_MODE=0
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
