@@ -143,12 +143,6 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     //m_statusBarMessageLabel.setAlignment( Qt::AlignLeft );
     m_statusBarMessageString.clear( );
 
-    #ifdef EXPERT_MODE
-    _ui->actionDefibrillator->setVisible(1);
-    #else
-    _ui->actionDefibrillator->setVisible(0);
-    #endif
-
 }
 
 
@@ -359,6 +353,7 @@ void Mpx3GUI::setWindowWidgetsStatus(win_status s)
         // Startup status
         _ui->actionConnect->setVisible(1);
         _ui->actionDisconnect->setVisible(0);
+        _ui->actionDefibrillator->setVisible(1);
         break;
 
     default:
