@@ -17,16 +17,9 @@ TEMPLATE = subdirs
 
 # Libraries
 SUBDIRS += SpidrMpx3Lib/SpidrMpx3Lib.pro
-#SUBDIRS += SpidrTpx3Lib/SpidrTpx3Lib.pro
-
-#SUBDIRS += QCustomPlot/QCustomPlot.pro
-#SUBDIRS += SpidrMpx3Pixelman/SpidrPixelman.pro
 
 # Executables
-#SUBDIRS += SpidrMpx3TV/SpidrMTV.pro
-#SUBDIRS += SpidrTV/SpidrTV.pro
-#SUBDIRS += SpidrMpx3Mon/SpidrMon.pro
-#SUBDIRS += spidrloglevel/spidrloglevel.pro
-#SUBDIRS += SpidrMpx3Lib/test/spidrmpx3test.pro
 SUBDIRS += spidrflash/spidrflash.pro
 SUBDIRS += SpidrMpx3Eq/SpidrMpx3Eq.pro
+
+CONFIG += ordered
