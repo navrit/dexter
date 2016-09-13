@@ -117,7 +117,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
 
     // shortcuts
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+1", "Switch to viewer") ), this)  );
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+2", "Switch to configuratoin and monitoring") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+2", "Switch to configuration and monitoring") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+3", "Switch to DAC control") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+4", "Switch to Equalization") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+5", "Switch to DQE calculation") ), this)  );
@@ -1136,8 +1136,12 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
 
 }
 
+
+// TODO(#28): Implement this
 void Mpx3GUI::on_actionRevert_triggered(bool checked){
     qDebug() << ">> Rewinding to original dataset? TEST ME";
+    //_ui->visualizationGL->
+    _ui->visualizationGL->reload_all_layers();
     rewindToOriginalDataset();
 }
 
