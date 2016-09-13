@@ -77,7 +77,7 @@ void QCstmDQE::SetMpx3GUI(Mpx3GUI *p){
 
 //    connect( _mpx3gui,SIGNAL(returnFilename(QString)), this, SLOT(on_maindata_changed(QString)) );
 //    connect( _mpx3gui, &Mpx3GUI::reload_all_layers, this, &QCstmDQE::on_maindata_changed ); //Both work, different syntax only.
-          connect( _mpx3gui,SIGNAL(returnFilename(QString)), this, SLOT(addNPSfile(QString)) );
+    connect( _mpx3gui,SIGNAL(returnFilename(QString)), this, SLOT(addNPSfile(QString)) );
 }
 
 void QCstmDQE::setRegion(QPoint pixel_begin, QPoint pixel_end)
@@ -1071,7 +1071,6 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
 }
 
 
-
 parameter_vector QCstmDQE::fitPlaneParams(QVector<QVector<int> > dataRoI) //Creates error onlt when running in debug mode...
 {
     std::vector<std::pair<input_vector, double> > data; //vector of pairs of variable going in and the value coming out.
@@ -1180,15 +1179,10 @@ void QCstmDQE::plotNPS(){
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-void QCstmDQE::on_takeDataPushButton_clicked()
-{
-   _mpx3gui->GetUI()->stackedWidget->setCurrentIndex(__visualization_page_Id);
-   emit start_takingData();
-
+void QCstmDQE::on_takeDataPushButton_clicked() {
+    _mpx3gui->GetUI()->stackedWidget->setCurrentIndex(__visualization_page_Id);
+    emit start_takingData();
 }
-
-
 
 void QCstmDQE::on_comboBox_currentIndexChanged(const QString &arg1)
 {
