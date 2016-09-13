@@ -291,6 +291,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 
 }
 
+// Change me when adding extra views
 void Mpx3GUI::on_shortcutsSwithPages() {
 
     // figure out who sent it
@@ -299,17 +300,29 @@ void Mpx3GUI::on_shortcutsSwithPages() {
 
     QKeySequence k = sc->key();
     if ( k.matches( QKeySequence(tr("Ctrl+1")) ) ) {
+        uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __visualization_page_Id );
+        _ui->actionVisualization->setChecked(1);
     } else if ( k.matches( QKeySequence(tr("Ctrl+2")) ) ) {
+        uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __configuration_page_Id );
+        _ui->actionConfiguration->setChecked(1);
     } else if ( k.matches( QKeySequence(tr("Ctrl+3")) ) ) {
+        uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __dacs_page_Id );
+        _ui->actionDACs->setChecked(1);
     } else if ( k.matches( QKeySequence(tr("Ctrl+4")) ) ) {
+        uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
+        _ui->actionEqualization->setChecked(1);
     } else if ( k.matches( QKeySequence(tr("Ctrl+5")) ) ){
+        //uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __dqe_page_Id );
+        //_ui->actionDQE->setChecked(1);
     } else if ( k.matches( QKeySequence(tr("Ctrl+6")) ) ){
+        //uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
+        //_ui->actionScans->setChecked(1);
     }
 
 }
@@ -348,6 +361,8 @@ void Mpx3GUI::setWindowWidgetsStatus(win_status s)
         _ui->actionConnect->setVisible(1);
         _ui->actionDisconnect->setVisible(0);
         _ui->actionDefibrillator->setVisible(0);
+
+        _ui->actionVisualization->setChecked(1);
         break;
 
     case win_status::connected:
@@ -813,6 +828,15 @@ void Mpx3GUI::open_data(bool saveOriginal){
 
     this->setWindowTitle("ASI Medipix3 "+filename);
 
+    // If not in DQE - change back to Visualisation
+    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
+        uncheckAllToolbarButtons();
+        _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
+        _ui->actionVisualization->setChecked(1);
+    }
+
+
+
     emit returnFilename(filename);
 
     return;
@@ -854,17 +878,23 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
     // And keep a copy just as in QCstmGLVisualization::data_taking_finished
     if ( saveOriginal ) saveOriginalDataset();
 
-    if(getDataset()->getLayer(0)[0]==0)
-    {
+    if(getDataset()->getLayer(0)[0]==0) {
         qDebug() << "Mpx3GUI::open_data_with_path : "<< getDataset()->getLayer(0)[0];
     }
 
-    if(!requestPath)
-    {
+    if(!requestPath) {
         emit returnFilename(filename);
     }
 
-    _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
+    // If not in DQE - change back to Visualisation
+    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
+        _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
+    }
+
+    /*if (!fileOpen){
+        _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
+    }
+    fileOpen = true;*/
 
     return;
 }

@@ -93,6 +93,7 @@ private:
     QString m_statusBarMessageString;
 
     bool m_appActiveFirstTime = false;
+    //bool m_fileOpen = false;
 
     void uncheckAllToolbarButtons();
 
