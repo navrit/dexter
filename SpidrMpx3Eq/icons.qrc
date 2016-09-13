@@ -32,5 +32,6 @@
         <file>icons/equalizer.png</file>
         <file>icons/health-care.png</file>
         <file>icons/graph-curve.png</file>
+        <file>icons/info.png</file>
     </qresource>
 </RCC>
