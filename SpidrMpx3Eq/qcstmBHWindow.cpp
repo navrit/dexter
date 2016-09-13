@@ -60,6 +60,7 @@ void QCstmBHWindow::on_talkToForm(double thickness, QString material){
         if(thicknessvctr[i]==thickness){
             contained = true;
             QMessageBox msgBox;
+            msgBox.setWindowTitle("Error");
             msgBox.setText("Please do not use duplicate thicknesses.");
             msgBox.exec();
             break;
@@ -283,6 +284,7 @@ void QCstmBHWindow::on_progressBar_valueChanged(int value){
 void QCstmBHWindow::on_okButton_clicked(){
     if(emptyCorrectionCounter != 0 || thicknessvctr.size()<3 ){
         QMessageBox msgBox;
+        msgBox.setWindowTitle("Error");
         msgBox.setText(tr("You haven't loaded all of the necessary corrections. The beam hardening will not operate. Please load more corrections."));
         msgBox.exec();
     }
