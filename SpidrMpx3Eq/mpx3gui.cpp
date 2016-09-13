@@ -972,7 +972,12 @@ void Mpx3GUI::on_actionExit_triggered()
     emit exitApp( 0 );
 }
 
-//void Mpx3GUI::
+void Mpx3GUI::uncheckAllToolbarButtons(){
+    _ui->actionVisualization->setChecked(0);
+    _ui->actionConfiguration->setChecked(0);
+    _ui->actionDACs->setChecked(0);
+    _ui->actionEqualization->setChecked(0);
+}
 
 
 void Mpx3GUI::on_actionConnect_triggered() {
@@ -989,26 +994,35 @@ void Mpx3GUI::on_actionConnect_triggered() {
 
 void Mpx3GUI::on_actionVisualization_triggered()
 {
+    uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __visualization_page_Id );
+    _ui->actionVisualization->setChecked(1);
 }
 
 void Mpx3GUI::on_actionConfiguration_triggered()
 {
+    uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __configuration_page_Id );
+    _ui->actionConfiguration->setChecked(1);
 }
 
 void Mpx3GUI::on_actionDACs_triggered()
 {
+    uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __dacs_page_Id );
+    _ui->actionDACs->setChecked(1);
 }
 
 void Mpx3GUI::on_actionEqualization_triggered()
 {
+    uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
+    _ui->actionEqualization->setChecked(1);
 }
 
 void Mpx3GUI::on_actionScans_triggered()
 {
+    uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
 }
 
@@ -1095,4 +1109,17 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
 void Mpx3GUI::on_actionRevert_triggered(bool checked){
     qDebug() << ">> Rewinding to original dataset? TEST ME";
     rewindToOriginalDataset();
+}
+
+void Mpx3GUI::on_actionAbout_triggered(bool checked){
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("About");
+
+    QString newDate =  QDate::currentDate().toString("yyyy-MM-dd");
+    QString msg = QString("Compiled: ") + newDate + QString(" - ") + QString(__TIME__) +
+            QString("\n C++: ") + QString::fromStdString(to_string(__cplusplus)) +
+            QString("\n STDC: ") + QString::fromStdString(to_string(__STDC__)) +
+            QString("\n\n ASI B.V. All rights reserved.") ;
+    msgBox.setText( msg );
+    msgBox.exec();
 }
