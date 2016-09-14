@@ -461,13 +461,10 @@ void QCstmGLPlot::mouseReleaseEvent(QMouseEvent * event){
 
 }
 
-void QCstmGLPlot::mouseDoubleClickEvent(QMouseEvent *event)
-{
-
+void QCstmGLPlot::mouseDoubleClickEvent(QMouseEvent *event) {
     // Double click brings back to full view
     setZoom(0.5);
     emit double_click();
-
 }
 
 void QCstmGLPlot::keyPressEvent(QKeyEvent *event){//Doesn't really work that well for controls.
@@ -494,6 +491,7 @@ void QCstmGLPlot::keyPressEvent(QKeyEvent *event){//Doesn't really work that wel
         setOffset(0,0);
         setZoom(1.0);
         event->accept();
+        break;
     default:
         event->ignore();
     }
