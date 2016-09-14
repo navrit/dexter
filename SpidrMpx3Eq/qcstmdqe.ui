@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1055</width>
-    <height>604</height>
+    <height>627</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -342,7 +342,7 @@
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
-         <widget class="QWidget" name="">
+         <widget class="QWidget" name="layoutWidget">
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <property name="bottomMargin">
             <number>0</number>
@@ -450,7 +450,7 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>140</height>
+             <height>160</height>
             </size>
            </property>
           </widget>
@@ -458,7 +458,7 @@
            <property name="minimumSize">
             <size>
              <width>140</width>
-             <height>140</height>
+             <height>160</height>
             </size>
            </property>
           </widget>
@@ -590,7 +590,7 @@
   <customwidget>
    <class>QCustomPlot</class>
    <extends>QWidget</extends>
-   <header location="global">qcustomplot.h</header>
+   <header>qcustomplot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
