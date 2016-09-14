@@ -303,24 +303,29 @@ void Mpx3GUI::on_shortcutsSwithPages() {
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __visualization_page_Id );
         _ui->actionVisualization->setChecked(1);
+
     } else if ( k.matches( QKeySequence(tr("Ctrl+2")) ) ) {
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __configuration_page_Id );
         _ui->actionConfiguration->setChecked(1);
+
     } else if ( k.matches( QKeySequence(tr("Ctrl+3")) ) ) {
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __dacs_page_Id );
         _ui->actionDACs->setChecked(1);
+
     } else if ( k.matches( QKeySequence(tr("Ctrl+4")) ) ) {
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
         _ui->actionEqualization->setChecked(1);
+
     } else if ( k.matches( QKeySequence(tr("Ctrl+5")) ) ){
-        //uncheckAllToolbarButtons();
+        uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __dqe_page_Id );
         //_ui->actionDQE->setChecked(1);
+
     } else if ( k.matches( QKeySequence(tr("Ctrl+6")) ) ){
-        //uncheckAllToolbarButtons();
+        uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
         //_ui->actionScans->setChecked(1);
     }
@@ -993,11 +998,13 @@ void Mpx3GUI::on_actionExit_triggered()
     emit exitApp( 0 );
 }
 
+// Change me when adding extra views
 void Mpx3GUI::uncheckAllToolbarButtons(){
     _ui->actionVisualization->setChecked(0);
     _ui->actionConfiguration->setChecked(0);
     _ui->actionDACs->setChecked(0);
     _ui->actionEqualization->setChecked(0);
+    //TODO _ui-> NEW ACTION ->setChecked(0);
 }
 
 
