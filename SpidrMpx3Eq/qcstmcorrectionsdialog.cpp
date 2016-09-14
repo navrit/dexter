@@ -27,8 +27,14 @@ void QCstmCorrectionsDialog::SetMpx3GUI(Mpx3GUI * p){
 //     return _correctionsActive;
 //}
 
-bool QCstmCorrectionsDialog::isSelectedOBCorr() {
+bool QCstmCorrectionsDialog::isSelectedOBCorr()
+{
     return ui->obcorrCheckbox->isChecked();
+}
+
+bool QCstmCorrectionsDialog::isSelectedBHCorr()
+{
+    return ui->bhcorrCheckbox->isChecked();
 }
 
 bool QCstmCorrectionsDialog::isSelectedDeadPixelsInter()
@@ -41,11 +47,6 @@ bool QCstmCorrectionsDialog::isSelectedHighPixelsInter()
     return ui->highinterpolationCheckbox->isChecked();
 }
 
-bool QCstmCorrectionsDialog::isSelectedBHCorr()
-{
-    return ui->bhcorrCheckbox->isChecked();
-}
-
 double QCstmCorrectionsDialog::getNoisyPixelMeanMultiplier()
 {
     return ui->noisyPixelMeanMultiplier->value();
@@ -53,6 +54,22 @@ double QCstmCorrectionsDialog::getNoisyPixelMeanMultiplier()
 
 //!Load a BH correction
 void QCstmCorrectionsDialog::on_bhcorrCheckbox_toggled(bool checked) {
+
+    if (!checked){
+        ui->obcorrCheckbox->setEnabled(1);
+        ui->obcorrLineEdit->setEnabled(1);
+        ui->bhcorrLineEdit->setEnabled(1);
+        ui->bhcorrLineEdit->setText("");
+    } else {
+        ui->obcorrCheckbox->setEnabled(0);
+        ui->obcorrCheckbox->setChecked(0);
+
+        ui->obcorrLineEdit->setEnabled(0);
+        ui->obcorrLineEdit->setText("");
+
+        ui->bhcorrLineEdit->setEnabled(1);
+    }
+
 
     // Deal with the separate BH window
     if ( !_bhwindow && checked && _mpx3gui->getDataset()->getLayer(0)!= nullptr) {
@@ -64,7 +81,7 @@ void QCstmCorrectionsDialog::on_bhcorrCheckbox_toggled(bool checked) {
         _bhwindow->activateWindow();
     }
 
-    if(_mpx3gui->getDataset()->getLayer(0)== nullptr && checked) {
+    if(_mpx3gui->getDataset()->getLayer(0) == nullptr && checked) {
         QMessageBox msgBox;
         msgBox.setWindowTitle("Error");
         msgBox.setText("Please first load / take data.");
@@ -86,11 +103,26 @@ void QCstmCorrectionsDialog::on_bhcorrCheckbox_toggled(bool checked) {
 void QCstmCorrectionsDialog::on_obcorrCheckbox_toggled(bool checked) {
 
     if(!checked) {
-        _mpx3gui->getDataset()->removeCorrection();
+        ui->bhcorrCheckbox->setEnabled(1);
+        ui->bhcorrLineEdit->setEnabled(1);
+        ui->obcorrLineEdit->setEnabled(1);
         ui->obcorrLineEdit->setText("");
+
     } else {
+        _mpx3gui->getDataset()->removeCorrection();
+
+        ui->bhcorrCheckbox->setEnabled(0);
+        ui->bhcorrCheckbox->setChecked(0);
+
+        ui->bhcorrLineEdit->setEnabled(0);
+        ui->bhcorrLineEdit->setText("");
+
+        ui->obcorrLineEdit->setEnabled(1);
+
+
         QString filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("binary files (*.bin)"));
         QFile saveFile(filename);
+
         if ( !saveFile.open(QIODevice::ReadOnly) ) {
             string messg = "Couldn't open: ";
             messg += filename.toStdString();
@@ -98,7 +130,9 @@ void QCstmCorrectionsDialog::on_obcorrCheckbox_toggled(bool checked) {
             QMessageBox::warning ( this, tr("Error opening data"), tr( messg.c_str() ) );
             return;
         }
+
         _mpx3gui->getDataset()->loadCorrection(saveFile.readAll());
+
         ui->obcorrLineEdit->setText(filename);
     }
 
