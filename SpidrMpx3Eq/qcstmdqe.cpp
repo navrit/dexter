@@ -1029,6 +1029,7 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
     //Let's see what this looks like..
     QCustomPlot *ftplot = new QCustomPlot;
     ftplot->setParent(_mpx3gui, Qt::Window);
+    ftplot->setAttribute( Qt::WA_DeleteOnClose );
     ftplot->setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
     ftplot->axisRect()->setupFullAxesBox(true);
     ftplot->xAxis->setLabel("x");
@@ -1139,7 +1140,7 @@ void QCstmDQE::plotData3D(QtDataVisualization::QScatterDataArray data3D)
     QtDataVisualization::Q3DScatter *scatter = new QtDataVisualization::Q3DScatter();
     QWidget *container = QWidget::createWindowContainer(scatter, _mpx3gui, Qt::Window );
     container->setParent(_mpx3gui);
-    //container->setAttribute( Qt::WA_DeleteOnClose );
+    container->setAttribute( Qt::WA_DeleteOnClose );
     scatter->setFlags(scatter->flags() ^ Qt::FramelessWindowHint);
     QtDataVisualization::QScatter3DSeries *series = new QtDataVisualization::QScatter3DSeries;
     series->dataProxy()->addItems(data3D);

@@ -1108,7 +1108,7 @@ void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
 
     if ( ! corrdiag ) return;
 
-    if ( corrdiag->isCorrectionsActive() ) {
+//    if ( corrdiag->isCorrectionsActive() ) {  //Always false. previously set by checkbox.
 
         QMap<int, double> meanvals = Dataset::GetPadMean();
 
@@ -1118,7 +1118,7 @@ void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
         if ( corrdiag->isSelectedDeadPixelsInter() ) applyDeadPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
         if ( corrdiag->isSelectedHighPixelsInter() ) applyHighPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
 
-    }
+//    }
 
 }
 

@@ -26,7 +26,7 @@ public:
     bool isSelectedHighPixelsInter();
     bool isSelectedBHCorr();
 
-    void setCorrectionsActive(bool s){ _correctionsActive = s; }
+    void setCorrectionsActive(bool s){ _correctionsActive = s; } //Not used!
     double getNoisyPixelMeanMultiplier();
 
     void callBHCorrection();
