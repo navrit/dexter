@@ -52,6 +52,7 @@ double QCstmCorrectionsDialog::getNoisyPixelMeanMultiplier()
     return ui->noisyPixelMeanMultiplier->value();
 }
 
+
 //!Load a BH correction
 void QCstmCorrectionsDialog::on_bhcorrCheckbox_toggled(bool checked) {
 
@@ -98,6 +99,8 @@ void QCstmCorrectionsDialog::on_bhcorrCheckbox_toggled(bool checked) {
             _bhwindow->activateWindow();
         }
     }
+
+
 }
 
 void QCstmCorrectionsDialog::on_obcorrCheckbox_toggled(bool checked) {
@@ -141,11 +144,23 @@ void QCstmCorrectionsDialog::on_obcorrCheckbox_toggled(bool checked) {
 /**
  * On an existing image
  */
+bool firstBHCorr = true;
+
 void QCstmCorrectionsDialog::on_applyCorr_clicked() {
     if ( ui->bhcorrLineEdit->text().isEmpty() && ui->obcorrLineEdit->text().isEmpty()) {
         return;
     }
     if ( ! _vis->isTakingData() ) {
+
+        // Warn user if they want to apply another BH correction
+        if (!firstBHCorr){
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::question(this, "Warning", "Do you really want to apply another beam hardening correction?",
+                                          QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::No) {
+                return;
+            }
+        }
 
         // This is done off data taking
         // Recover first the saved data to operate on the original
@@ -157,6 +172,7 @@ void QCstmCorrectionsDialog::on_applyCorr_clicked() {
         // This applies the correction if necessary
         _vis->reload_all_layers();
 
+        firstBHCorr = false;
     }
 }
 
