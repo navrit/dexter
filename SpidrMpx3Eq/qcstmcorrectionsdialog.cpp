@@ -23,9 +23,9 @@ void QCstmCorrectionsDialog::SetMpx3GUI(Mpx3GUI * p){
     _mpx3gui = p;
 }
 
-bool QCstmCorrectionsDialog::isCorrectionsActive() {
-     return _correctionsActive;
-}
+//bool QCstmCorrectionsDialog::isCorrectionsActive() {
+//     return _correctionsActive;
+//}
 
 bool QCstmCorrectionsDialog::isSelectedOBCorr() {
     return ui->obcorrCheckbox->isChecked();

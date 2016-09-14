@@ -20,13 +20,13 @@ public:
     ~QCstmCorrectionsDialog();
     void SetMpx3GUI(Mpx3GUI *p);
 
-    bool isCorrectionsActive();
+//    bool isCorrectionsActive();
     bool isSelectedOBCorr();
     bool isSelectedDeadPixelsInter();
     bool isSelectedHighPixelsInter();
     bool isSelectedBHCorr();
 
-    void setCorrectionsActive(bool s){ _correctionsActive = s; } //Not used!
+//    void setCorrectionsActive(bool s){ _correctionsActive = s; } //Not used!
     double getNoisyPixelMeanMultiplier();
 
     void callBHCorrection();
@@ -45,7 +45,7 @@ private:
     QCstmGLVisualization * _vis;
     Mpx3GUI * _mpx3gui;
     QCstmBHWindow * _bhwindow = nullptr;
-    bool _correctionsActive = false;
+//    bool _correctionsActive = false;
 
 signals:
     void applyBHCorrection();

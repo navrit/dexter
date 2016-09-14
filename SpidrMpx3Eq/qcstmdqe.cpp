@@ -833,8 +833,8 @@ void QCstmDQE::calcNPSdata()
     if(_singleNPS){
         ft2Ddata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
 
-        //get1D ftdata... for now use FTdata[0]
-//        _NPSdata[0] = ft2Ddata[0];
+        if(_showFT) plotFTsquare(ft2Ddata);
+
         calc1Dnps(ft2Ddata);
     }
     else{
@@ -861,6 +861,8 @@ void QCstmDQE::calcNPSdata()
                 }
             }
 
+
+
         }
         //Calculate mean FT squared.
         if(Nfiles > 1){
@@ -871,7 +873,8 @@ void QCstmDQE::calcNPSdata()
             }
         }
 
-//        npsdata = ft2Ddata[0];
+        if(_showFT) plotFTsquare(ft2Ddata);
+
         calc1Dnps(ft2Ddata);
     }
 
@@ -1025,25 +1028,6 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
 //    plotData3D(data3D);
     FTmatrix = dlib::fft(datamatrix);
 
-
-    //Let's see what this looks like..
-    QCustomPlot *ftplot = new QCustomPlot;
-    ftplot->setParent(_mpx3gui, Qt::Window);
-    ftplot->setAttribute( Qt::WA_DeleteOnClose );
-    ftplot->setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
-    ftplot->axisRect()->setupFullAxesBox(true);
-    ftplot->xAxis->setLabel("x");
-    ftplot->yAxis->setLabel("y");
-    ftplot->setMinimumHeight(400);
-    ftplot->setMinimumWidth(500);
-    //Set up QCPColorMap:
-    QCPColorMap *colorMap = new QCPColorMap(ftplot->xAxis, ftplot->yAxis);
-    ftplot->addPlottable(colorMap);
-    colorMap->data()->setSize(xlength, ylength); // we want the color map to have nx * ny data points
-    colorMap->data()->setRange(QCPRange(0, 1), QCPRange(0, 1));
-    colorMap->setInterpolate(false);
-
-
     //Just to see data in Debugger :
     QVector<QVector<double> > ftdata(ylength);
     for(int y = 0; y < ylength; y++){
@@ -1053,20 +1037,10 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
             for(int x = 0; x < xlength; x++){
                 //double z = norm( FTmatrix(y, x) ); //Norm gives the squared magnitude of the complex number in the FTmatrix.
                 double z = abs ( FTmatrix(x, y) );
-                colorMap->data()->setCell(x, y, z);
+//                colorMap->data()->setCell(x, y, z);
                 ftdata[y][x] = z;
             }
     }
-
-    //Add a color scale:
-    QCPColorScale *colorScale = new QCPColorScale(ftplot);
-    ftplot->plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
-    colorScale->setType(QCPAxis::atRight); // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
-    colorMap->setColorScale(colorScale); // associate the color map with the color scale
-    colorMap->setGradient(QCPColorGradient::gpPolar);
-    colorMap->rescaleDataRange();
-    ftplot->rescaleAxes();
-    ftplot->show();
 
     return ftdata;
 }
@@ -1146,6 +1120,46 @@ void QCstmDQE::plotData3D(QtDataVisualization::QScatterDataArray data3D)
     series->dataProxy()->addItems(data3D);
     scatter->addSeries(series);
     container->show();
+}
+
+void QCstmDQE::plotFTsquare(const QVector<QVector<double> > &ftdata)
+{
+    int xlength = ftdata[0].length();
+    int ylength = ftdata.length();
+
+    QCustomPlot *ftplot = new QCustomPlot;
+    ftplot->setParent(_mpx3gui, Qt::Window);
+    ftplot->setAttribute( Qt::WA_DeleteOnClose );
+    ftplot->setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
+    ftplot->axisRect()->setupFullAxesBox(true);
+    ftplot->xAxis->setLabel("x");
+    ftplot->yAxis->setLabel("y");
+    ftplot->setMinimumHeight(400);
+    ftplot->setMinimumWidth(500);
+
+    //Set up QCPColorMap:
+    QCPColorMap *colorMap = new QCPColorMap(ftplot->xAxis, ftplot->yAxis);
+    ftplot->addPlottable(colorMap);
+    colorMap->data()->setSize(xlength, ylength); // we want the color map to have nx * ny data points
+    colorMap->data()->setRange(QCPRange(0, 1), QCPRange(0, 1));
+    colorMap->setInterpolate(false);
+
+    for(int y = 0; y < ylength; y++){
+            for(int x = 0; x < xlength; x++){
+                double z = ftdata[y][x];
+                colorMap->data()->setCell(x, y, z);
+            }
+    }
+
+    //Add a color scale:
+    QCPColorScale *colorScale = new QCPColorScale(ftplot);
+    ftplot->plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
+    colorScale->setType(QCPAxis::atRight); // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
+    colorMap->setColorScale(colorScale); // associate the color map with the color scale
+    colorMap->setGradient(QCPColorGradient::gpPolar);
+    colorMap->rescaleDataRange();
+    ftplot->rescaleAxes();
+    ftplot->show();
 }
 
 void QCstmDQE::plotNPS(){
@@ -1562,6 +1576,7 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
 
     if(options.value("zerofreq") == 0) _useZeroFreq = false;
         else _useZeroFreq = true;
+    if(options.value("showft") == 0) _showFT = false;
 
     _NlinesNPS = options.value("nlines");
 }

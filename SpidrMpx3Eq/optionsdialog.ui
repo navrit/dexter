@@ -239,6 +239,9 @@
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
             <widget class="QLineEdit" name="roiSizeLineEdit">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="maximumSize">
               <size>
                <width>50</width>
@@ -252,6 +255,9 @@
            </item>
            <item>
             <widget class="QLineEdit" name="roiNumberLineEdit">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="maximumSize">
               <size>
                <width>50</width>
@@ -265,6 +271,9 @@
            </item>
            <item>
             <widget class="QLineEdit" name="edgeLineEdit">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="maximumSize">
               <size>
                <width>50</width>
@@ -304,6 +313,13 @@
         <widget class="QCheckBox" name="fitPlaneCheckBox">
          <property name="text">
           <string>Correct with plane function</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="showFTcheckBox">
+         <property name="text">
+          <string>Show Fourier Transform</string>
          </property>
         </widget>
        </item>

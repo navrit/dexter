@@ -69,6 +69,9 @@ void optionsDialog::setCurrentSettings()
     if(ui->zeroFreqCheckBox->isChecked()) _currentSettings["zerofreq"] = 1;
         else _currentSettings["zerofreq"] = 0;
 
+    if(ui->showFTcheckBox->isChecked()) _currentSettings["showft"] = 1;
+        else _currentSettings["showft"] = 0;
+
 }
 
 void optionsDialog::resetSettings()
@@ -95,8 +98,10 @@ void optionsDialog::resetSettings()
         else ui->fitPlaneCheckBox->setChecked(true);
     if(_currentSettings.value("zerofreq") == 0) ui->zeroFreqCheckBox->setChecked(false);
         else ui->zeroFreqCheckBox->setChecked(true);
+    if(_currentSettings.value("showft") == 0) ui->showFTcheckBox->setChecked(false);
+        else ui->showFTcheckBox->setChecked(true);
 
-    ui->nLinesLineEdit->setText( QString("%1").arg(_currentSettings.value("nlines")) );
+    ui->nLinesLineEdit->setText( QString("%1").arg(_currentSettings.value("nlines")) );        
 }
 
 void optionsDialog::on_buttonBox_clicked(QAbstractButton *button)
