@@ -42,7 +42,7 @@ CONFIG(release, debug|release) {
     #DEFINES    += EXPERT_MODE
 }
 
-#DEFINES    *= EXPERT_MODE
+DEFINES    *= EXPERT_MODE
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

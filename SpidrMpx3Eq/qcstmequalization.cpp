@@ -304,7 +304,7 @@ void QCstmEqualization::NewRunInitEqualization() {
 
 }
 
-void QCstmEqualization::InitEqualization(int chipId) {
+bool QCstmEqualization::InitEqualization(int chipId) {
 
     // Rewind state machine variables
     _eqStatus = __INIT;
@@ -329,7 +329,7 @@ void QCstmEqualization::InitEqualization(int chipId) {
     // Check if we can talk to the chip
     if ( chipId != -1 ) {
         if ( ! _mpx3gui->getConfig()->detectorResponds( chipId ) ) {
-            return;   // NOTHING TO WORK WITH
+            return false;   // NOTHING TO WORK WITH
         }
         // Only this chip
         _workChipsIndx.push_back( chipId );
@@ -343,7 +343,7 @@ void QCstmEqualization::InitEqualization(int chipId) {
             // push back the indexes of the good chips
             _workChipsIndx.push_back( devIdx );
         }
-        if ( _workChipsIndx.size() == 0 ) return;   // NOTHING TO WORK WITH
+        if ( _workChipsIndx.size() == 0 ) return false;   // NOTHING TO WORK WITH
     }
 
     // _workChipsIndx
@@ -429,6 +429,7 @@ void QCstmEqualization::InitEqualization(int chipId) {
         _eqMap[_workChipsIndx[i]] = new Mpx3EqualizationResults;
     }
 
+    return true;
 }
 
 void QCstmEqualization::InitializeBarChartsEqualization() {
@@ -641,22 +642,17 @@ void QCstmEqualization::KeepOtherChipsQuiet() {
         for ( int i = 0 ; i < chipListSize ; i++ ) if ( _workChipsIndx[i] == idx ) continue;
 
         //
-        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_0,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].bits) / 4);
-        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_1,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].bits) / 4);
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_0,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0-1].bits) / 2);
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_1,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1-1].bits) / 2);
         // Work with all the thresholds if operating in Colour mode
-        if ( _mpx3gui->getConfig()->getColourMode() ) {
-            SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_2,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_2].bits) / 4);
-            SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_3,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_3].bits) / 4);
-            SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_4,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_4].bits) / 4);
-            SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_5,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5].bits) / 4);
-            SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_6,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_6].bits) / 4);
-            SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_7,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7].bits) / 4);
-            cout << "thl 6 y 7 : " << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_6].bits << ","
-                 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7].bits << endl;
-            cout << "  codes : " << MPX3RX_DAC_THRESH_6 << ","
-                 << MPX3RX_DAC_THRESH_7 << endl;
-
-        }
+        //if ( _mpx3gui->getConfig()->getColourMode() ) {
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_2,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_2-1].bits) / 2);
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_3,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_3-1].bits) / 2);
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_4,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_4-1].bits) / 2);
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_5,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5-1].bits) / 2);
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_6,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_6-1].bits) / 2);
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_7,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7-1].bits) / 2);
+        //}
     }
 
 }
@@ -668,9 +664,12 @@ void QCstmEqualization::StartEqualizationSingleChip() {
     _scanAllChips = false;
 
     // Init
-    InitEqualization( _deviceIndex );
+    if ( ! InitEqualization( _deviceIndex ) ) return;
 
     KeepOtherChipsQuiet();
+
+    // Send Configuration
+    //_mpx3gui->getConfig()->SendConfiguration( Mpx3Config::__ALL );
 
     StartEqualization( );
 
@@ -683,7 +682,7 @@ void QCstmEqualization::StartEqualizationAllChips() {
     _scanAllChips = true;
 
     // Init
-    InitEqualization( -1 );
+    if ( ! InitEqualization( -1 ) ) return;
 
     StartEqualization( ); // Default will equalize all chips
 
@@ -1549,22 +1548,19 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     // All adjustment bits to zero
     SetAllAdjustmentBits(spidrcontrol, devId, 0x0, 0x0);
 
+    spidrcontrol->setLutEnable( ! _mpx3gui->getConfig()->getLUTEnable() );
+    spidrdaq->setLutEnable( _mpx3gui->getConfig()->getLUTEnable() );
+
+    // Force operation mode to sequential
+    spidrcontrol->setContRdWr( _deviceIndex, false );
+
     // OMR
     spidrcontrol->setPolarity( _deviceIndex, _mpx3gui->getConfig()->getPolarity() );		// true: Holes collection
-    //spidrcontrol->setInternalTestPulse( true ); 			// Internal tests pulse
-    spidrcontrol->setPixelDepth( devId, 12 );
-    spidrcontrol->setColourMode( devId, _mpx3gui->getConfig()->getColourMode() ); 		// false = Fine Pitch
-    spidrcontrol->setCsmSpm( devId, 0 );				// Single Pixel mode
-
-    ////////////////////////////////////////////////////////////////////////////////
     // For Equalization
     spidrcontrol->setEqThreshH( devId, true );
-    // When equalizing the TH1 (threshold high)
-    if ( THx == MPX3RX_DAC_THRESH_1 ) {
-        spidrcontrol->setDiscCsmSpm( devId, 1 );		// DiscH used
-    } else {
-        spidrcontrol->setDiscCsmSpm( devId, 0 );		// DiscL used
-    }
+    //spidrcontrol->setInternalTestPulse( true ); 			// Internal tests pulse
+    spidrcontrol->setColourMode( devId, _mpx3gui->getConfig()->getColourMode() ); 		// false = Fine Pitch
+    spidrcontrol->setCsmSpm( devId, 0 );                    // Single Pixel mode
 
     // Gain ?!
     // 00: SHGM  0
@@ -1572,26 +1568,34 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     // 01: LGM   1
     // 11: SLGM  3
     spidrcontrol->setGainMode( devId, 3 ); // SuperLow Gain Mode for Equalization
-
-    // Other OMR
     spidrdaq->setDecodeFrames( true );
     spidrcontrol->setPixelDepth( devId, 12 );
     spidrdaq->setPixelDepth( 12 );
-    spidrcontrol->setMaxPacketSize( 1024 );
 
-    // Write OMR ... i shouldn't call this here
-    //_spidrcontrol->writeOmr( 0 );
+    ////////////////////////////////////////////////////////////////////////////////
+
+    // When equalizing the TH1 (threshold high)
+    if ( THx == MPX3RX_DAC_THRESH_1 ) {
+        spidrcontrol->setDiscCsmSpm( devId, 1 );		// DiscH used
+    } else {
+        spidrcontrol->setDiscCsmSpm( devId, 0 );		// DiscL used
+    }
+
+    // Packet size reports NOT IMPLEMENTED in the Leon software
+    // spidrcontrol->setMaxPacketSize( 1024 );
 
     ///////////////////////////////////////////////////////////
     // Trigger config
     // Sequential R/W
     int trig_mode      = SHUTTERMODE_AUTO;     // Auto-trigger mode
     int trig_length_us = 5000;  // This time shouldn't be longer than the period defined by trig_freq_hz
-    int trig_freq_hz   = 100;   // One trigger every 10ms
+    int trig_freq_hz   = 50;   // One trigger every 20ms
     int nr_of_triggers = _nTriggers;    // This is the number of shutter open i get
     //int trig_pulse_count;
-    spidrcontrol->setShutterTriggerConfig( trig_mode, trig_length_us,
-                                           trig_freq_hz, nr_of_triggers );
+    spidrcontrol->setShutterTriggerConfig( trig_mode,
+                                           trig_length_us,
+                                           trig_freq_hz,
+                                           nr_of_triggers );
 
     ///////////////////////////////////////////////////////////
     // Continues R/W

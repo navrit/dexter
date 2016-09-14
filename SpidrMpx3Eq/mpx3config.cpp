@@ -96,6 +96,7 @@ void Mpx3Config::SendConfiguration( config_items item ) {
     // Global configurations
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     if ( spidrcontrol == nullptr ) return;
+    spidrcontrol->setLogLevel( 2 );
 
     if ( RequiredOnGlobalConfig( item ) && getOperationMode() == __operationMode_SequentialRW ) {
 
@@ -147,14 +148,15 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
+    // Reset pixel configuration if requested
+    if ( reset ) spidrcontrol->resetPixelConfig();
+
     // Number of links
     if ( item == __ALL ) spidrcontrol->setPs( deviceIndex, 3 );
     if ( item == __ALL || item == __LUTEnable ) {
         spidrcontrol->setLutEnable( ! getLUTEnable() );
         spidrdaq->setLutEnable( getLUTEnable() );
     }
-    // Reset pixel configuration
-    if ( reset ) spidrcontrol->resetPixelConfig();
 
     // Operation mode
     if ( item == __ALL || item == __operationMode ) {
@@ -175,8 +177,8 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
     // Not an equalization
     if ( item == __ALL ) spidrcontrol->setEqThreshH( deviceIndex, false );
 
-    if ( item == __ALL || item == __colourMode ) spidrcontrol->setColourMode( deviceIndex, getColourMode() ); // false 	// Fine Pitch
-    if ( item == __ALL || item == __CsmSpm ) spidrcontrol->setCsmSpm( deviceIndex, getCsmSpm() ); // 0 );				// Single Pixel mode
+    if ( item == __ALL || item == __colourMode ) spidrcontrol->setColourMode( deviceIndex, getColourMode() );   // false: Fine Pitch
+    if ( item == __ALL || item == __CsmSpm ) spidrcontrol->setCsmSpm( deviceIndex, getCsmSpm() );   			// 0: Single Pixel mode
 
     // Particular for Equalization
     //spidrcontrol->setEqThreshH( deviceIndex, true );
@@ -201,7 +203,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
 
 void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_parameters extrapars, config_items item) {
 
-    cout << "[INFO] Configuring chip " << deviceIndex;
+    qDebug() << "[INFO] Configuring chip [" << deviceIndex << "] for equalization.";
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
