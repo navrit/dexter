@@ -33,7 +33,6 @@ void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
     connect(this, &QCstmBHWindow::openData2, _mpx3gui, &Mpx3GUI::open_data_with_path);
     connect(this, SIGNAL(reload()),_mpx3gui->getVisualization(),SLOT(reload_all_layers()));
     connect(_mpx3gui, SIGNAL(open_data_failed()),this,SLOT(on_open_data_failed()));
-    connect(this, SIGNAL(updateProgressBar(int)),this, SLOT(on_progressBar_valueChanged(int)));
     connect(this,SIGNAL(applyCorrection()),this, SLOT(on_applyBHCorrection()));
     connect(_corr, SIGNAL(applyBHCorrection()), this, SLOT(on_applyBHCorrection()));
 
@@ -74,30 +73,27 @@ void QCstmBHWindow::on_talkToForm(double thickness, QString material){
         ui->list->addItem(material);
         thicknessvctr.push_back(thickness);
         emptyCorrectionCounter++;
-        ui->startButton->setEnabled(false);
+        //ui->startButton->setEnabled(false); Disabled start button
     }
 }
 
-void QCstmBHWindow::on_clearButton_clicked()
-{
+void QCstmBHWindow::on_clearButton_clicked() {
     //! Removes selected correction item from the list.
     if(!correctionMap.contains(thicknessvctr[selectedItemNo])) emptyCorrectionCounter--;
 	delete ui->list->item(selectedItemNo);
     correctionMap.remove(thicknessvctr[selectedItemNo]);
     thicknessvctr.erase (thicknessvctr.begin()+selectedItemNo);
-    if(selectedItemNo>1)
-    {
+    if(selectedItemNo>1) {
         selectedItemNo--;
         ui->list->item(selectedItemNo)->setSelected(true);
-    }else
-    {
+    } else {
         selectedItemNo = 0;
         ui->clearButton->setEnabled(false);
         ui->loadButton->setEnabled(false);
-        ui->startButton->setEnabled(false);
+        //ui->startButton->setEnabled(false); Disabled start button
     }
-  if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )
-        ui->startButton->setEnabled(true);
+    // if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )
+        //ui->startButton->setEnabled(true); Disabled start button
 }
 
 void QCstmBHWindow::on_clearAllButton_clicked(){
@@ -132,8 +128,8 @@ void QCstmBHWindow::on_loadButton_clicked(){
         ui->loadButton->setEnabled(false);
         on_plot();
     }
-    if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )
-        ui->startButton->setEnabled(true);    
+    //if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )     Disabled start button
+        //ui->startButton->setEnabled(true);                         Disabled start button
 }
 
 void QCstmBHWindow::on_plot(){
@@ -196,12 +192,13 @@ void QCstmBHWindow::on_plot(){
 
 }
 
-void QCstmBHWindow::on_startButton_clicked(){
+// Disabled start button
+/*void QCstmBHWindow::on_startButton_clicked(){
   //! Starts the correction (calls on_applyCorrection)
 
   emit applyCorrection();
   emit reload();
-}
+}*/
 
 void QCstmBHWindow::on_list_itemClicked(QListWidgetItem *item){
     //! Enables / disables buttons that should or should not be used. Also loads the selected dataset into Mpx3Gui.
@@ -255,9 +252,7 @@ void QCstmBHWindow::on_applyBHCorrection()
             }
             if(a == currentLayer[j])
                 currentLayer[j] = 0;
-            if(j % (_mpx3gui->getDataset()->getPixelsPerLayer() / 1000) == 0){
-                emit updateProgressBar( (100 / keys.size()) * (i) + j * (100 / keys.size()) / _mpx3gui->getDataset()->getPixelsPerLayer() );
-            }
+
         }
         for(unsigned int j = 0; j< _mpx3gui->getDataset()->getPixelsPerLayer(); j++){
             _mpx3gui->getDataset()->getLayer(keys[i])[j] = currentLayer[j];
@@ -265,7 +260,6 @@ void QCstmBHWindow::on_applyBHCorrection()
     }
 
     _mpx3gui->getDataset()->setCorrected(true);
-    emit updateProgressBar(100);
 }
 
 void QCstmBHWindow::on_open_data_failed(){
@@ -274,11 +268,6 @@ void QCstmBHWindow::on_open_data_failed(){
 
 void QCstmBHWindow::on_list_doubleClicked(const QModelIndex &index){
     emit loadSignal();
-}
-
-void QCstmBHWindow::on_progressBar_valueChanged(int value){
-    ui->progressBar->setValue(value);
-    ui->progressBar->update();
 }
 
 void QCstmBHWindow::on_okButton_clicked(){
