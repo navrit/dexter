@@ -1186,9 +1186,9 @@ void QCstmDQE::plotNPS(){
     for(i = 0.0; i < ylength; i++)
         ui->yNPSplot->graph(0)->addData( i * ystepsize, _NPSdata[1][i] );    //Plot the values for fy (fx=0)
 
-    ui->xNPSplot->rescaleAxes();                        ui->yNPSplot->rescaleAxes();
-    ui->xNPSplot->xAxis->setRange(-0.01, 1.01);         ui->yNPSplot->xAxis->setRange(-0.01, 1.01);
-    ui->xNPSplot->replot( QCustomPlot::rpQueued );      ui->yNPSplot->replot( QCustomPlot::rpQueued );
+    ui->xNPSplot->rescaleAxes();                                    ui->yNPSplot->rescaleAxes();
+    ui->xNPSplot->xAxis->setRange(-0.01, 1.01);                     ui->yNPSplot->xAxis->setRange(-0.01, 1.01);
+    ui->xNPSplot->replot( QCustomPlot::rpQueued );                  ui->yNPSplot->replot( QCustomPlot::rpQueued );
 }
 
 
@@ -1577,6 +1577,7 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
     if(options.value("zerofreq") == 0) _useZeroFreq = false;
         else _useZeroFreq = true;
     if(options.value("showft") == 0) _showFT = false;
+        else _showFT = true;
 
     _NlinesNPS = options.value("nlines");
 }

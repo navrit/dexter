@@ -23,9 +23,6 @@
 #include <vector>
 using namespace std;
 
-//ThlScan::ThlScan() {
-//}
-
 ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 
     // keep these pointers

@@ -158,10 +158,8 @@ void QCstmBHWindow::on_plot(){
         for(int i = 0; i<xPlot.size(); i++){
             yPlot.push_back(plotMap[xPlot[i]]);
         }
-        double minX = 0;
-        double maxX = 0;
-        double minY = 0;
-        double maxY = 0;
+        double minX = 0, maxX = 0;
+        double minY = 0, maxY = 0;
         for(int i = 0; i < xPlot.size(); i++ ){
             minX = std::min(minX, xPlot[i]);
             maxX = std::max(maxX, xPlot[i]);

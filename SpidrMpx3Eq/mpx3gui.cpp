@@ -1142,7 +1142,7 @@ void Mpx3GUI::on_actionAbout_triggered(bool checked){
     QString newDate =  QDate::currentDate().toString("yyyy-MM-dd");
     QString msg = QString("Compiled: ") + newDate + QString(" - ") + QString(__TIME__) +
             QString("\n C++: ") + QString::fromStdString(to_string(__cplusplus)) +
-            QString("\n STDC: ") + QString::fromStdString(to_string(__STDC__)) +
+//            QString("\n STDC: ") + QString::fromStdString(to_string(__STDC__)) +
             QString("\n\n ASI B.V. All rights reserved.") ;
     msgBox.setText( msg );
     msgBox.exec();
