@@ -222,7 +222,7 @@ void QCstmGLVisualization::ConfigureGUIForDataTaking() {
 
     ui->startButton->setText( "Stop" );
     ui->singleshotPushButton->setText( "Stop" );
-    emit sig_statusBarAppend("start","blue");
+    emit sig_statusBarAppend("Start","blue");
 
     // Config stats
     ui->groupBoxConfigAndStats->setEnabled( false );

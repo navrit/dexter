@@ -93,6 +93,9 @@ private:
     QString m_statusBarMessageString;
 
     bool m_appActiveFirstTime = false;
+    //bool m_fileOpen = false;
+
+    void uncheckAllToolbarButtons();
 
 
 public:
@@ -209,6 +212,7 @@ private slots:
     void on_actionDisconnect_triggered(bool checked);
     void on_actionDefibrillator_triggered(bool checked);
     void on_actionRevert_triggered(bool checked);
+    void on_actionAbout_triggered(bool checked);
 };
 
 

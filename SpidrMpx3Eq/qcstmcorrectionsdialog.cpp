@@ -66,6 +66,7 @@ void QCstmCorrectionsDialog::on_bhcorrCheckbox_toggled(bool checked) {
 
     if(_mpx3gui->getDataset()->getLayer(0)== nullptr && checked) {
         QMessageBox msgBox;
+        msgBox.setWindowTitle("Error");
         msgBox.setText("Please first load / take data.");
         msgBox.exec();
         ui->bhcorrCheckbox->setChecked(false);

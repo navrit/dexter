@@ -101,9 +101,16 @@
     <addaction name="actionDACs"/>
     <addaction name="actionEqualization"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
    <addaction name="menuMpx3Eq"/>
    <addaction name="menu_Window"/>
    <addaction name="menuConfig"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
@@ -268,12 +275,12 @@
   </action>
   <action name="actionVisualization">
    <property name="checkable">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/icons/visible-opened-eye-interface-option.png</normaloff>
-     <normalon>:/icons/Visualization_logo(active).png</normalon>:/icons/visible-opened-eye-interface-option.png</iconset>
+     <normalon>:/icons/visible-opened-eye-interface-option.png</normalon>:/icons/visible-opened-eye-interface-option.png</iconset>
    </property>
    <property name="text">
     <string>Visualization</string>
@@ -283,10 +290,13 @@
    </property>
   </action>
   <action name="actionConfiguration">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/icons/settings.png</normaloff>
-     <normalon>:/icons/config_logo(active).png</normalon>:/icons/settings.png</iconset>
+     <normalon>:/icons/settings.png</normalon>:/icons/settings.png</iconset>
    </property>
    <property name="text">
     <string>Configuration</string>
@@ -296,10 +306,13 @@
    </property>
   </action>
   <action name="actionDACs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/icons/equalizer.png</normaloff>
-     <normalon>:/icons/DACs_logo(active).png</normalon>:/icons/equalizer.png</iconset>
+     <normalon>:/icons/equalizer.png</normalon>:/icons/equalizer.png</iconset>
    </property>
    <property name="text">
     <string>DACs</string>
@@ -309,10 +322,13 @@
    </property>
   </action>
   <action name="actionEqualization">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/icons/graph-curve.png</normaloff>
-     <normalon>:/icons/Equalisation_logo(active).png</normalon>:/icons/graph-curve.png</iconset>
+     <normalon>:/icons/graph-curve.png</normalon>:/icons/graph-curve.png</iconset>
    </property>
    <property name="text">
     <string>Equalization</string>
@@ -334,6 +350,15 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/info.png</normaloff>:/icons/info.png</iconset>
+   </property>
+   <property name="text">
+    <string>About</string>
    </property>
   </action>
  </widget>
