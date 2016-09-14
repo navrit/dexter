@@ -342,13 +342,11 @@ void Mpx3GUI::startupActions()
 
 }
 
-void Mpx3GUI::saveOriginalDataset()
-{
+void Mpx3GUI::saveOriginalDataset(){
     *originalSet = *workingSet;
 }
 
-void Mpx3GUI::rewindToOriginalDataset()
-{
+void Mpx3GUI::rewindToOriginalDataset(){
     *workingSet = *originalSet;
 }
 
@@ -513,7 +511,6 @@ bool Mpx3GUI::establish_connection() {
 
     QVector<int> activeDevices = config->getActiveDevices();
 
-
     for ( int i = 0 ; i < activeDevices.size() ; i++ ) {
         getDataset()->setLayout(i, _MPX3RX_LAYOUT[activeDevices[i]]);
         getDataset()->setOrientation(i, _MPX3RX_ORIENTATION[activeDevices[i]]);
@@ -578,8 +575,6 @@ void Mpx3GUI::statusBarAppend(QString mess, QString colorString)
 
 }
 
-
-
 void Mpx3GUI::statusBarWrite(QString mess, QString colorString)
 {
 
@@ -601,8 +596,7 @@ void Mpx3GUI::statusBarWrite(QString mess, QString colorString)
 
 }
 
-void Mpx3GUI::statusBarClean()
-{
+void Mpx3GUI::statusBarClean() {
 
     m_statusBarMessageString.clear();
     m_statusBarMessageLabel.setText( m_statusBarMessageString );
@@ -613,8 +607,7 @@ void Mpx3GUI::statusBarClean()
 
 }
 
-QString Mpx3GUI::removeOneMessage(QString fullMess)
-{
+QString Mpx3GUI::removeOneMessage(QString fullMess){
 
     int indx = fullMess.indexOf(" | ");
     if ( indx != -1 ) {
@@ -624,8 +617,7 @@ QString Mpx3GUI::removeOneMessage(QString fullMess)
     return fullMess;
 }
 
-void Mpx3GUI::on_applicationStateChanged(Qt::ApplicationState s)
-{
+void Mpx3GUI::on_applicationStateChanged(Qt::ApplicationState s) {
 
     // When the application comes in Active for the first time
     //  take some startup actions
@@ -636,7 +628,7 @@ void Mpx3GUI::on_applicationStateChanged(Qt::ApplicationState s)
 
 }
 
-
+//Debugging function to generate data when not connected
 void Mpx3GUI::generateFrame(){//TODO: put into Dataset
     //int thresholds[] = {0,1,2,3};
     QVector<int> data(getDataset()->x()*getDataset()->y()*getDataset()->getFrameCount());
@@ -683,7 +675,6 @@ int Mpx3GUI::getFrameCount(){
     return getDataset()->getFrameCount();
 }
 
-
 void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
 
     //! Native format
@@ -691,7 +682,7 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
     QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("binary files (*.bin)"));
 
     // Force the .bin in the data filename
-    if ( ! filename.contains(".bin") ) {
+    if ( ! filename.contains(".bin")  && !filename.isEmpty()) {
         filename.append(".bin");
     }
 
@@ -964,7 +955,7 @@ void Mpx3GUI::clear_data(bool clearStatusBar) {
     //getVisualization()->cle
     emit data_cleared();
 
-    if ( clearStatusBar ) emit sig_statusBarAppend("clear data","orange");
+    if ( clearStatusBar ) emit sig_statusBarAppend("Clear data","orange");
 
 }
 
@@ -1021,43 +1012,37 @@ void Mpx3GUI::on_actionConnect_triggered() {
 
 }
 
-
-void Mpx3GUI::on_actionVisualization_triggered()
-{
+void Mpx3GUI::on_actionVisualization_triggered(){
     uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __visualization_page_Id );
     _ui->actionVisualization->setChecked(1);
 }
 
-void Mpx3GUI::on_actionConfiguration_triggered()
-{
+void Mpx3GUI::on_actionConfiguration_triggered(){
     uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __configuration_page_Id );
     _ui->actionConfiguration->setChecked(1);
 }
 
-void Mpx3GUI::on_actionDACs_triggered()
-{
+void Mpx3GUI::on_actionDACs_triggered(){
     uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __dacs_page_Id );
     _ui->actionDACs->setChecked(1);
 }
 
-void Mpx3GUI::on_actionEqualization_triggered()
-{
+void Mpx3GUI::on_actionEqualization_triggered(){
     uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
     _ui->actionEqualization->setChecked(1);
 }
 
-void Mpx3GUI::on_actionScans_triggered()
-{
+void Mpx3GUI::on_actionScans_triggered(){
     uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
+    //TODO ->setChecked(1);
 }
 
-void Mpx3GUI::on_actionDisconnect_triggered(bool checked)
-{
+void Mpx3GUI::on_actionDisconnect_triggered(bool checked){
 
     // See if there is anything running
     // Check if something is running
@@ -1090,8 +1075,7 @@ void Mpx3GUI::on_actionDisconnect_triggered(bool checked)
     emit sig_statusBarAppend( "Disconnected", "red" );
 }
 
-void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
-{
+void Mpx3GUI::on_actionDefibrillator_triggered(bool checked){
 
     if ( getConfig()->isConnected() ) {
 
@@ -1138,11 +1122,10 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
 
 
 // TODO(#28): Implement this
-void Mpx3GUI::on_actionRevert_triggered(bool checked){
+void Mpx3GUI::on_actionRevert_triggered(bool checked) {
     qDebug() << ">> Rewinding to original dataset? TEST ME";
-    //_ui->visualizationGL->
-    _ui->visualizationGL->reload_all_layers();
     rewindToOriginalDataset();
+    _ui->visualizationGL->reload_all_layers(false);
 }
 
 void Mpx3GUI::on_actionAbout_triggered(bool checked){
