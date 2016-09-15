@@ -88,7 +88,7 @@ void QCstmPlotHistogram::mouseDoubleClickEvent(QMouseEvent *event)
 
 void QCstmPlotHistogram::setHistogram(int threshold, QVector<int> data, int min, int max){
     if ( threshold < 0 ) return;
-    setHistogram(threshold, data.data(), data.size(), min, (10*max));
+    setHistogram(threshold, data.data(), data.size(), min, max);
 }
 
 void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size, int min, int max){
