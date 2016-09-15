@@ -37,6 +37,7 @@ void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
     connect(_corr, SIGNAL(applyBHCorrection()), this, SLOT(on_applyBHCorrection()));
 
     connect(this, SIGNAL(sendFilename(QString)), _corr, SLOT(receiveFilename(QString)));
+    connect(this, SIGNAL(sendChecked_BHCorrCheckbox(bool)), _corr, SLOT(setChecked_BHCorrCheckbox(bool)));
 }
 
 void QCstmBHWindow::on_addButton_clicked()
@@ -108,6 +109,9 @@ void QCstmBHWindow::on_clearAllButton_clicked(){
     ui->plotWidget->clearGraphs();
     ui->plotWidget->clearItems();
     ui->plotWidget->replot();
+    //! UI update - Correction Dialog
+    emit sendFilename(QString(""));
+    emit sendChecked_BHCorrCheckbox(false);
 }
 
 void QCstmBHWindow::on_loadButton_clicked(){
@@ -273,6 +277,9 @@ void QCstmBHWindow::on_okButton_clicked(){
         QMessageBox msgBox;
         msgBox.setWindowTitle("Error");
         msgBox.setText(tr("You haven't loaded all of the necessary corrections. The beam hardening will not operate. Please load more corrections."));
+        //! UI update - Corrections Dialog
+        emit sendFilename(QString(""));
+        emit sendChecked_BHCorrCheckbox(false);
         msgBox.exec();
     }
     this->close();
@@ -313,6 +320,7 @@ void QCstmBHWindow::on_loadJsonButton_clicked(){
             if(it != JSobject.end()){
                 usePath = true;
                 correctionPath = it.value().toString();
+                //! UI update - send file name to Corrections Dialog
                 emit sendFilename(fileName);
                 selectedItemNo = i;
                 emit loadData();

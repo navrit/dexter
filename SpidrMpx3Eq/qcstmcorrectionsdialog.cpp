@@ -10,7 +10,6 @@ QCstmCorrectionsDialog::QCstmCorrectionsDialog(QWidget *parent) :
     ui->setupUi(this);
     _vis = dynamic_cast<QCstmGLVisualization*>(parent);
 
-
     this->setWindowTitle( tr("Corrections") );
 }
 
@@ -182,4 +181,9 @@ void QCstmCorrectionsDialog::callBHCorrection(){
 
 void QCstmCorrectionsDialog::receiveFilename(QString filename){
     ui->bhcorrLineEdit->setText(filename);
+}
+
+void QCstmCorrectionsDialog::setChecked_BHCorrCheckbox(bool b)
+{
+    ui->bhcorrCheckbox->setChecked(b);
 }
