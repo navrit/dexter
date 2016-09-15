@@ -43,6 +43,7 @@ signals:
     void loadSignal();
     void applyCorrection();
     void sendFilename(QString filename);
+    void sendChecked_BHCorrCheckbox(bool);
 
 private slots:
     void on_addButton_clicked();

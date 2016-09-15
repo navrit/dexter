@@ -33,6 +33,7 @@ public:
 
 public slots:
     void receiveFilename(QString filename);
+    void setChecked_BHCorrCheckbox(bool b);
 
 private slots:
     void on_obcorrCheckbox_toggled(bool checked);
