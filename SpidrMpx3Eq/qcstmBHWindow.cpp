@@ -5,9 +5,9 @@
 
 //! GUI for the beam hardening correction.
 
-//! Allows the user to make a list of ob corrections.
-//! Can be saved to / loaded from json.
-//! User can start the correction from this screen, or from the "corrections" window ( qcstmcorrectionsdialog ).
+//! Allows the user to make a list of OB (Open Beam) corrections.
+//! Can be saved to / loaded from JSON files.
+//! User can start the correction from this screen, or from the "Corrections" window ( qcstmcorrectionsdialog ).
 
 QCstmBHWindow::QCstmBHWindow(QWidget *parent) :
     QDialog(parent),
@@ -40,8 +40,8 @@ void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
     connect(this, SIGNAL(sendChecked_BHCorrCheckbox(bool)), _corr, SLOT(setChecked_BHCorrCheckbox(bool)));
 }
 
-void QCstmBHWindow::on_addButton_clicked()
-{   //! Creates dialog where user can add a correction item, specify its thickness and material.
+//! Creates dialog where user can add a correction item, specify its thickness and material.
+void QCstmBHWindow::on_addButton_clicked() {
 	_bhdialog = nullptr;
     if (!_bhdialog){
 		_bhdialog = new qcstmBHdialog(this);
@@ -52,10 +52,10 @@ void QCstmBHWindow::on_addButton_clicked()
      }
 }
 
+//! Is called after user finishes with dialog that adds a correction item.
 void QCstmBHWindow::on_talkToForm(double thickness, QString material){
-    //! Is called after user finishes with dialog that adds a correction item.
-
     bool contained = false;
+
     for(int i = 0; i<thicknessvctr.size(); i++){
         if(thicknessvctr[i]==thickness){
             contained = true;
