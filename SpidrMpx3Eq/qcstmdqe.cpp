@@ -100,6 +100,10 @@ void QCstmDQE::clearDataAndPlots(bool clearNPS)
     on_clearMTFpushButton_clicked();
     if(clearNPS) on_clearNPSpushButton_clicked();
     on_logClearPushButton_clicked();
+
+    _beginpix   = QPoint(-1, -1);
+    _endpix     = QPoint(-1, -1);
+
 }
 
 void QCstmDQE::refreshLog(bool emptylog){
@@ -108,6 +112,20 @@ void QCstmDQE::refreshLog(bool emptylog){
         ui->textBrowser->setText(_logtext);
         ui->textBrowser->verticalScrollBar()->setValue(ui->textBrowser->verticalScrollBar()->maximum()); //Scroll down.
     }
+}
+
+bool QCstmDQE::isValidRegionSelected()
+{
+    if( _beginpix.x()   < 0)
+        return false;
+    if( _beginpix.y()   < 0)
+        return false;
+    if( _endpix.x()     < 0)
+        return false;
+    if( _endpix.y()     < 0)
+        return false;
+
+    return true;
 }
 
 //------------------------MTF (Modulation Transfer Function)---------------------------------------------------------------------------------------
@@ -158,10 +176,8 @@ void QCstmDQE::plotESF()
         _logtext += QString("ESF data was binned using\n binsize = %1\n").arg(_binsize);
         refreshLog(false);
     }
-    else{
-        QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
-        msgbox.exec();
-    }
+    else  QMessageBox::warning ( this, tr("Error"), tr( "No data." ) );
+
 }
 
 //!Plots the error function  or smoothed (locally fitted) function that is fitted to the ESF data.
@@ -1576,8 +1592,9 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
     }
 
     //NPS
-    //TODO: roinumber, roisize, edge.
-
+    _nRoI = options.value("roinumber");
+    _sizeRoI = QPoint( options.value("roixsize"), options.value("roiysize"));
+    _nPixEdge = options.value("npixedge");
 
     if(options.value("fitplane") == 0)  _fitPlane = false;
         else _fitPlane = true;
@@ -1643,4 +1660,11 @@ void QCstmDQE::on_clearMTFpushButton_clicked()
     _params = 0; //Sets all parameters to zero. (CHECK when using!)
     //_xstart = 0;
     //_plotrange = 0;
+}
+
+void QCstmDQE::on_clearAllPushButton_clicked()
+{
+    clearDataAndPlots(true);
+
+    ui->regionLabel->setText("Choose a region of interest");
 }

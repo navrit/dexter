@@ -88,7 +88,7 @@ class Dataset//TODO: specify starting corner?
   } bstats;//!Calculated mean and stdev of the selected region of interest.
 
  private:
-  int m_nx, m_ny; //!<Pixel size in the x and y direction
+  int m_nx, m_ny; //!<Pixel size in the x and y direction, per detector.
   int m_pixelDepthBits;
   int m_pixelDepthCntr;
   QRectF m_boundingBox;//!<A rectangular box which encompasses all the chips. Hence the name.
@@ -150,6 +150,8 @@ public:
   //QVector<QVector<double> > calcPSFdata(parameter_vector params, double start, int length, double stepsize);
   QPair<double, double> calcMidLine(double bright, double dark, bool BtD);
   //parameter_vector fitESFparams(QVector<QVector<double> > esfdata);
+  int calcMaxNroi(int xroi, int yroi);
+
   QPointF XtoXY(int X, int dimX);
   int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
   int countProfilePoints();

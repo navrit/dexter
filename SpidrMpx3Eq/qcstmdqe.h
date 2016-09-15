@@ -53,7 +53,7 @@ public:
     void clearDataAndPlots(bool clearNPS); //!Clears all data and plots in the dqe view when new data is loaded or when a new region is selected.
     void refreshLog(bool emptylog);//!Changes or empties (when emptylog == true) the log.
     //double polyWeightRoot(int i);
-
+    bool isValidRegionSelected();
 
 private:
     Ui::QCstmDQE *ui;
@@ -62,8 +62,8 @@ private:
 //    QCPItemTracer * tracer;
     //int _currentThreshold;
 
-    QPoint _beginpix = QPoint(0,0);
-    QPoint _endpix = QPoint(0,0);
+    QPoint _beginpix    = QPoint(-1, -1);
+    QPoint _endpix      = QPoint(-1, -1);
 
     //Actual data:
     QVector<QVector<double> > _ESFdata; //Contains one vector for the distances to the edge and one for the corresponding pixel values.
@@ -186,6 +186,8 @@ private slots:
     void on_clearNPSpushButton_clicked();
 
     void on_clearMTFpushButton_clicked();
+
+    void on_clearAllPushButton_clicked();
 
 public slots:
     void on_close_optionsDialog();    

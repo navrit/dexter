@@ -34,6 +34,14 @@ private slots:
 
     void on_windowLineEdit_editingFinished();
 
+    void on_manualRadioButton_toggled(bool checked);
+
+    void on_roiXsizeLineEdit_editingFinished();
+
+    void on_roiYsizeLineEdit_editingFinished();
+
+    void on_selectedRoIRadioButton_toggled(bool checked);
+
 signals:
     void close_optionsDialog();
     void apply_options(QHash<QString, int>);

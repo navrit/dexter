@@ -722,7 +722,15 @@ QPair<double, double> Dataset::calcMidLine(double bright, double dark, bool BtD)
             }
 
 
-     return LinearRegression(xm, ym);
+    return LinearRegression(xm, ym);
+}
+
+int Dataset::calcMaxNroi(int xroi, int yroi)
+{
+    int Nx = m_nx / xroi;
+    int Ny = m_ny / yroi;
+
+    return Nx * Ny * m_nFrames;
 }
 
 
