@@ -1368,6 +1368,7 @@ void QCstmDQE::on_npsPushButton_clicked()
     if(ui->regionLabel->text().contains("Choose"))
         QMessageBox::warning ( this, tr("Cannot calculate NPS"), tr( "Please choose a region of interest." ) );
 
+
     else{
         plotNPS();
     }
@@ -1576,6 +1577,8 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
 
     //NPS
     //TODO: roinumber, roisize, edge.
+
+
     if(options.value("fitplane") == 0)  _fitPlane = false;
         else _fitPlane = true;
 

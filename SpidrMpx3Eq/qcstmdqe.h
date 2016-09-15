@@ -62,7 +62,8 @@ private:
 //    QCPItemTracer * tracer;
     //int _currentThreshold;
 
-    QPoint _beginpix, _endpix;
+    QPoint _beginpix = QPoint(0,0);
+    QPoint _endpix = QPoint(0,0);
 
     //Actual data:
     QVector<QVector<double> > _ESFdata; //Contains one vector for the distances to the edge and one for the corresponding pixel values.
@@ -84,19 +85,22 @@ private:
 
     //Options
         //MTF
-    bool    _useDerFit      = false;    //!Indicates whether the LSF should be made of the theoretical derivative using the calculated parameters (true) or the numerical derivative of the (smoothed) binned data.
-    bool    _usebins        = true;     //!Indicates whether the data should be binned and this data should be used for further calculations.
-    double  _binsize        = 1;        //!Specifies the size of the bins to be used for the ESF data.
-    double  _stepsize       = 0.10;     //!Specifies the distance between datapoints of the fitplot in pixels.
-    double  _histStep       = 0.5;      //!Specifies the distance between datapoints in the LSF (in pixels)
-    bool    _useErrorFunc   = true;     //!Indicates whether the errorfunction (or rather local smoothing) should be used.
-    int     _windowW        = 11;       //!Specifies the width of the window to be used for local fitting. Must be uneven, larger than(>=)3 and smaller(<=) than the total amount of data.    
+    bool    _useDerFit      = false;            //!Indicates whether the LSF should be made of the theoretical derivative using the calculated parameters (true) or the numerical derivative of the (smoothed) binned data.
+    bool    _usebins        = true;             //!Indicates whether the data should be binned and this data should be used for further calculations.
+    double  _binsize        = 1;                //!Specifies the size of the bins to be used for the ESF data.
+    double  _stepsize       = 0.10;             //!Specifies the distance between datapoints of the fitplot in pixels.
+    double  _histStep       = 0.5;              //!Specifies the distance between datapoints in the LSF (in pixels)
+    bool    _useErrorFunc   = true;             //!Indicates whether the errorfunction (or rather local smoothing) should be used.
+    int     _windowW        = 11;               //!Specifies the width of the window to be used for local fitting. Must be uneven, larger than(>=)3 and smaller(<=) than the total amount of data.
         //NPS
-    bool    _singleNPS      = false;    //!Indicates whether the NPS should be calculated for a single file (true), or averaged for all files (false).
-    bool    _fitPlane       = false;    //!Indicates whether a flat plane should be fitted to the NPS data and removed before further calculation.
-    bool    _useZeroFreq    = false;    //!Indicates whether the zero frequency values of the Fourier Transform should be included in the NPS.
-    int     _NlinesNPS      = 1;        //!Specifies how many lines next to either side of the axes should be used for the NPS calculation.
-    bool    _showFT         = false;    //!Indicates whether the Fourier Transform amplitude plots should be shown.
+    int     _nRoI           = 1;                //!Specifies the number of RoI's that should be used for NPs calculation...
+    QPoint  _sizeRoI        = QPoint(10, 10);   //!Specifies the size of the RoI's used for the NPS calculation.
+    int     _nPixEdge       = 0;                //!Specifies how many pixels the RoI should stay away from the edge of the image. The same for x and y.
+    bool    _singleNPS      = false;            //!Indicates whether the NPS should be calculated for a single file (true), or averaged for all files (false).
+    bool    _fitPlane       = false;            //!Indicates whether a flat plane should be fitted to the NPS data and removed before further calculation.
+    bool    _useZeroFreq    = false;            //!Indicates whether the zero frequency values of the Fourier Transform should be included in the NPS.
+    int     _NlinesNPS      = 1;                //!Specifies how many lines next to either side of the axes should be used for the NPS calculation.
+    bool    _showFT         = false;            //!Indicates whether the Fourier Transform amplitude plots should be shown.
 
     //Main calculations:
     QVector<QVector<double> > calcESFbinData();     //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.

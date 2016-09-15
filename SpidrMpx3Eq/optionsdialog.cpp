@@ -29,8 +29,8 @@ optionsDialog::~optionsDialog()
 
 void optionsDialog::setCurrentSettings()
 {
-    //Saved in a QHash, which saves int values stored by string.
-    //This way more options can be stored, without worrying about numbering
+    //Saved in a QHash, which (in this case) saves int values stored by Qstring.
+    //This way more options can be added at any point, without worrying about numbering
 
     _currentSettings["roinumber"] = ui->roiNumberLineEdit->text().toInt();
     _currentSettings["roisize"] = ui->roiSizeLineEdit->text().toInt();
@@ -40,7 +40,7 @@ void optionsDialog::setCurrentSettings()
         else _currentSettings["edge"] = 0;
 
     QString arg = ui->fitComboBox->currentText();
-    if(arg.contains("Error")) _currentSettings["error"] = 1 ; //_useErrorFunc = true;
+    if(arg.contains("Error")) _currentSettings["error"] = 1 ;
         else _currentSettings["error"] = 0;
 
     if(ui->fitDerCheckBox->isChecked()) _currentSettings["fitder"] = 1;
@@ -108,15 +108,15 @@ void optionsDialog::on_buttonBox_clicked(QAbstractButton *button)
 {
     QDialogButtonBox::ButtonRole role = ui->buttonBox->buttonRole(button);
     if(role == QDialogButtonBox::ApplyRole){
-        //Apply changes, leave window open.
+        //Apply changes
         setCurrentSettings();
         emit apply_options(_currentSettings);
+        //leave window open.
     }
 
     if(role == QDialogButtonBox::AcceptRole){
-        //Apply changes and talk back to dqe (TODO)
+        //Apply changes
         setCurrentSettings();
-
         emit apply_options(_currentSettings);
 
         //close window
@@ -125,7 +125,6 @@ void optionsDialog::on_buttonBox_clicked(QAbstractButton *button)
 
     if(role == QDialogButtonBox::RejectRole){
         //Set back any changes made to how they were when opening the dialog.
-        //Using _currentSettings
         resetSettings();
 
         //close window

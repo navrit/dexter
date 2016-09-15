@@ -823,7 +823,7 @@ void QCstmGLVisualization::triggerLength_edit() {
 void QCstmGLVisualization::startupActions()
 {
 
-    _mpx3gui->open_data_with_path(false, true, "icons/startupimage.bin" );
+    _mpx3gui->open_data_with_path(true, true, "icons/startupimage.bin" );
 
 }
 
