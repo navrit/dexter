@@ -15,16 +15,30 @@ QCstmPlotHistogram::QCstmPlotHistogram(QWidget * parent)
     //this->addGraph();
     setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
     axisRect()->setupFullAxesBox(true);
-    xAxis->setLabel("Events per pixel [1/px]");
-    yAxis->setLabel("Number of pixels [px]");
+
+    xAxis->setLabel("Pixel counts");
+    yAxis->setLabel("Number of pixels");
+
     //this->graph(0)->setLineStyle(QCPGraph::lsStepCenter);
     //this->graph(0)->setPen(QPen(Qt::black));
-    lowClamp = new QCPItemStraightLine(this);    highClamp = new QCPItemStraightLine(this);
-    lowClamp->setLayer("overlay"); highClamp->setLayer("overlay");
-    lowClamp->setPen(QPen(Qt::blue)); highClamp->setPen(QPen(Qt::blue));
-    lowClamp->point1->setCoords(-DBL_MAX,0); lowClamp->point2->setCoords(-DBL_MAX,1);
-    highClamp->point1->setCoords(DBL_MAX,0); highClamp->point2->setCoords(DBL_MAX,1);
-    this->addItem(lowClamp); this->addItem(highClamp);
+
+    lowClamp = new QCPItemStraightLine(this);
+    highClamp = new QCPItemStraightLine(this);
+
+    lowClamp->setLayer("overlay");
+    highClamp->setLayer("overlay");
+
+    lowClamp->setPen(QPen(Qt::blue));
+    highClamp->setPen(QPen(Qt::blue));
+
+    lowClamp->point1->setCoords(-DBL_MAX,0);
+    lowClamp->point2->setCoords(-DBL_MAX,1);
+
+    highClamp->point1->setCoords(DBL_MAX,0);
+    highClamp->point2->setCoords(DBL_MAX,1);
+
+    this->addItem(lowClamp);
+    this->addItem(highClamp);
 
 
     // Being aware of changes in the scale type for histogram
@@ -64,7 +78,7 @@ void QCstmPlotHistogram::mouseDoubleClickEvent(QMouseEvent *event)
             this->yAxis->setRangeLower( __range_min_whenLog );
         }
 
-        this->yAxis->setRangeUpper( ymax );
+        this->yAxis->setRangeUpper( 1.1 * ymax );
 
         // replot
         this->replot( QCustomPlot::rpQueued);
@@ -74,7 +88,7 @@ void QCstmPlotHistogram::mouseDoubleClickEvent(QMouseEvent *event)
 
 void QCstmPlotHistogram::setHistogram(int threshold, QVector<int> data, int min, int max){
     if ( threshold < 0 ) return;
-    setHistogram(threshold, data.data(), data.size(), min, max);
+    setHistogram(threshold, data.data(), data.size(), min, (10*max));
 }
 
 void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size, int min, int max){
