@@ -9,8 +9,8 @@
 #include <QCameraImageCapture>
 #include <QtWidgets>
 
-class StepperMotorController;
-class ConfigStepperThread; // defined in this file at the bottom
+//class StepperMotorController;
+//class ConfigStepperThread; // defined in this file at the bottom
 
 namespace Ui {
 class QCstmConfigMonitoring;
@@ -33,13 +33,13 @@ public:
     void timerEvent( QTimerEvent * );
 
 
-    StepperMotorController * getMotorController() { return _stepper; }
-    void activeInGUI();
-    void activateItemsGUI();
-    void deactivateItemsGUI();
+//    StepperMotorController * getMotorController() { return _stepper; }
+//    void activeInGUI();
+//    void activateItemsGUI();
+//    void deactivateItemsGUI();
 
-    void angleModeGUI();
-    void stepsModeGUI();
+//    void angleModeGUI();
+//    void stepsModeGUI();
 
     void cameraSetup();
     void cameraOn();
@@ -87,32 +87,30 @@ private slots:
     void on_readOMRPushButton_clicked();
 
 
-    ////////////////////////////////////////////////////////////
-    // Stepper
-    void on_stepperMotorCheckBox_toggled(bool checked);
-    void on_stepperUseCalibCheckBox_toggled(bool checked);
-    void on_motorGoToTargetButton_clicked();
-    void on_motorResetButton_clicked();
-    void on_stepperSetZeroPushButton_clicked();
-    //void ConfigCalibAngle1Changed(double);
+//    ////////////////////////////////////////////////////////////
+//    // Stepper
+//    void on_stepperMotorCheckBox_toggled(bool checked);
+//    void on_stepperUseCalibCheckBox_toggled(bool checked);
+//    void on_motorGoToTargetButton_clicked();
+//    void on_motorResetButton_clicked();
+//    void on_stepperSetZeroPushButton_clicked();
+//    //void ConfigCalibAngle1Changed(double);
 
-    // dial
-    void motorDialReleased();
-    void motorDialMoved(int);
-    // spins
-    void setAcceleration(double);
-    void setSpeed(double);
-    void setCurrentILimit(double);
+//    // dial
+//    void motorDialReleased();
+//    void motorDialMoved(int);
+//    // spins
+//    void setAcceleration(double);
+//    void setSpeed(double);
+//    void setCurrentILimit(double);
 
     ////////////////////////////////////////////////////////////
     // Camera
     void on_cameraCheckBox_toggled(bool checked);
     void changeCamera(int);
 
-    void on_motorTestButton_clicked();
-
-    void stepperGotoTargetFinished();
-
+//    void on_motorTestButton_clicked();
+//    void stepperGotoTargetFinished();
     void biasVoltageChanged();
 
 
@@ -120,16 +118,16 @@ private:
     Ui::QCstmConfigMonitoring *ui;
     int _timerId;
 
-    StepperMotorController * _stepper;
-    ConfigStepperThread * _stepperThread;
+//    StepperMotorController * _stepper;
+//    ConfigStepperThread * _stepperThread;
 
     bool _cameraOn;
     QCamera * _camera;
     QCameraViewfinder * _viewfinder;
     QCameraImageCapture * _imageCapture;
     int _cameraId;
-    QVector<double> m_stepperTestSequence;
-    int m_stepperTestCurrentStep = 0;
+//    QVector<double> m_stepperTestSequence;
+//    int m_stepperTestCurrentStep = 0;
 
     // Some constants in the configuration (MPX3 manual pag. 18)
     vector<unsigned int> __pixelDepthMap; // = { 1 , 6 , 12 , 24 };
@@ -141,26 +139,26 @@ private:
 
 };
 
-class ConfigStepperThread : public QThread {
+//class ConfigStepperThread : public QThread {
 
-    Q_OBJECT
+//    Q_OBJECT
 
-public:
-    explicit ConfigStepperThread(Mpx3GUI *, Ui::QCstmConfigMonitoring  *, QCstmConfigMonitoring *);
-    void ConnectToHardware( );
+//public:
+//    explicit ConfigStepperThread(Mpx3GUI *, Ui::QCstmConfigMonitoring  *, QCstmConfigMonitoring *);
+//    void ConnectToHardware( );
 
-private:
+//private:
 
-    void run();
+//    void run();
 
-    Mpx3GUI * _mpx3gui;
-    Ui::QCstmConfigMonitoring * _ui;
-    QCstmConfigMonitoring * _stepperController;
-    //public slots:
+//    Mpx3GUI * _mpx3gui;
+//    Ui::QCstmConfigMonitoring * _ui;
+//    QCstmConfigMonitoring * _stepperController;
+//    //public slots:
 
-    //signals:
+//    //signals:
 
-};
+//};
 
 
 #endif // QCSTMCONFIGMONITORING_H
