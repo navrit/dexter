@@ -174,7 +174,7 @@
      <item row="5" column="0" colspan="5">
       <widget class="QTableView" name="stepperCalibrationTableView"/>
      </item>
-     <item row="2" column="0">
+     <item row="2" column="7">
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
