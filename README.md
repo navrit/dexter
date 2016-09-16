@@ -64,6 +64,7 @@ Steps to get this repository up and running and developers information (formerly
         Ui::CLASSNAME *ui;
         Mpx3GUI * _mpx3gui;
     - Include your <ui_HEADERNAME.h>
+    - **NOTE: THE ORDER OF YOUR TAB IN THE STACKED WIDGET GIVES IT AN INDEX NUMBER which affects things like keyboard shortcuts.** You cannot search for this. Use the Qt Designer to change the order to match what the __...id variables say.
 
 4. Add functionalities to the newly made class (widget) as you would for a normal widget, dialog or window.  
 
