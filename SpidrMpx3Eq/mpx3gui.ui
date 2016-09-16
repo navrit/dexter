@@ -39,8 +39,8 @@
       <widget class="QCstmDQE" name="dqeTab"/>
       <widget class="QCstmThreshold" name="ThresholdTab"/>
       <widget class="QCstmCT" name="ctTab"/>
-      <widget class="QCstmVoxeltab" name="voxelTab"/>
       <widget class="QCstmStepperMotor" name="stepperMotorTab"/>
+      <widget class="QCstmVoxeltab" name="voxelTab"/>
      </widget>
     </item>
    </layout>
