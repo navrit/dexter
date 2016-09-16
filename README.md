@@ -90,9 +90,7 @@ structures used in the rest of the code are converted to these dlib
 structures when a dlib function is needed, through simple for loops.
 
 Simpler and/or better libraries are available for
-the optimization and fft, 
-
-separately.
+the optimization and fft, **separately**.
 To reduce the number of dependencies, this library was chosen, even
 if it means temporarily converting to other (unwieldy) data
 structures.
@@ -100,22 +98,15 @@ structures.
 If however having separate libraries may prove to
 be superior/preferred, a developer is free to change all this.
 
-FFT – used in _
-
-calcMTFdata()_
+### FFT – used in *calcMTFdata()*
 
 The number of rows and columns of the input matrix
 to calculate the fast Fourier transform, must be powers of 2. This
-means the data used must be 
-
-‘cropped’
-in some way or padded with zeros
-to assure this. To do this a dlib function called _order_of_two_
+means the data used must be (IGNORE? ‘cropped’ in some way or) padded with zeros
+to assure this. To do this a dlib function called *order_of_two*
 is also used.
 
-Optimization – used in _
-
-fitESFparams()_
+### Optimization – used in *fitESFparams()*
 
 For fitting the ESF data, a least squares method
 was used. Dlib provides a function that expects its own input _vector
@@ -126,45 +117,20 @@ function that is to be fitted to the data, the second calculates the
 difference between the value that comes out of this model function
 and the data, at each data point. 
 
-It however does not provide a ‘goodness of fit’
-parameter. This has to be calculated separately. For now, the Mean
-Squared Error and R squared is
-reported. (χ
-
-2 is
-not suitable for a non-linear model). 
+It however does not provide a ‘goodness of fit’ parameter. This has to be calculated separately. For now, the Mean Squared Error and R squared is reported. (χ^2 (chi-squared) is not suitable for a non-linear model). 
 
   
 
-R
+### R^2 – used in *plotFitESF()*
 
-2
-
-–
-used in _
-
-plotFitESF()_
-
-Dlib provides a function _r_squared_
-that calculates the R
-
-2,
-given two vectors: the fitvalues and the datavalues. R
-
-2
-is also called the coefficient of determination and ranges from 0 –
-1. 1 being a perfect fit and 0 being a poor fit. 
+Dlib provides a function *r_squared* that calculates the R^2, given two vectors: the fitvalues and the datavalues. R^2
+is also called the coefficient of determination and ranges from 0–1. 1 being a perfect fit and 0 being a poor fit. 
 
 ## Calculation of MTF, NPS, DQE:
 
 ### Overview DQE calculation:
 
-**DQE (n) = NEQ(n) /
-SNR**
-
-**2**
-
-**ideal**
+**DQE (n) = NEQ(n) / SNR**^2_ideal
 
 For the DQE we need :
 
