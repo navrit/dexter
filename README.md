@@ -67,7 +67,7 @@ Steps to get this repository up and running and developers information (formerly
 
 4. Add functionalities to the newly made class (widget) as you would for a normal widget, dialog or window.  
 
-- Make sure to have a private variable __mpx3gui_ (or something similar) and a public setter (_setMpx3GUI_) that sets the private variable to the main GUI, to have access to the other objects, in particular _dataset_. 
+- Make sure to have a private variable *_mpx3gui* (or something similar) and a public setter (_setMpx3GUI_) that sets the private variable to the main GUI, to have access to the other objects, in particular _dataset_. 
 
 1. Add an Action to the menubar in the designer of Qt to mpx3gui.ui. Add an icon to the _icons_ folder in the _SpidrMpx3Eq_ folder. 
 2. Optional: add a shortcut to the view in mpx3gui.cpp 
