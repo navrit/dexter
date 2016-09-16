@@ -51,11 +51,11 @@ Steps to get this repository up and running and developers information (formerly
 
 1. The 'view' are QWidgets that are part of a
 	StackedWidget. In QtCreator, go to the design form of the main
-	window and right-click on the stackedWidget -&gt; Insert page. A new
+	window and right-click on the stackedWidget -> Insert page. A new
 	QWidget is then added to the stackedWidget. 
 2. Create a new Qt Designer Form Class with QWidget
 	as its base class.  
-3. Promote the QWidget to the newly made class. &gt;&gt; I can’t see the newly
+3. Promote the QWidget to the newly made class. >> I can’t see the newly
 	made class in mpx3gui.ui? (designer view) 
 4. Add functionalities to the newly made class
 	(widget) as you would for a normal widget, dialog or window.  
