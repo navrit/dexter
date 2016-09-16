@@ -191,22 +191,12 @@ al. (1998). This method consists of the following steps:
 	parameters were chosen based on a test performed on simulated edge
 	images… (Can we use this then? Do we need to do a similar test?) 
 - The ESF_k array is numerically differentiated. 
-- The baseline of the LSF is substracted using a
-	linear fit to the 10-nm-long portions of the LSF tails. 
-- A Hanning filter with a window width of 20 mm is
-	applied to the LSF to establish a sampling rate of 0.05 cycles/mm. 
-- Presampling MTF is obtained by a Fast Fourier
-	Transform of the LSF.  
-- This is repeated for 17 angles in an +-0.16
-	degrees, by varying by 0.02 degrees each time. The MTF’s are each
-	integrated from 0 – 2 cycles/mm and the angle associated with the
-	maximum of this MTF integral is identified as the best estimate for
-	the edge angle and its MTF is the result.  
+- The baseline of the LSF is substracted using a linear fit to the 10-nm-long portions of the LSF tails. 
+- A Hanning filter with a window width of 20 mm is applied to the LSF to establish a sampling rate of 0.05 cycles/mm. 
+- Presampling MTF is obtained by a Fast Fourier Transform of the LSF.  
+- This is repeated for 17 angles in an +-0.16 degrees, by varying by 0.02 degrees each time. The MTF’s are each integrated from 0-2 cycles/mm and the angle associated with the maximum of this MTF integral is identified as the best estimate for the edge angle and its MTF is the result.  
 
-The extent of the regions used by Samei are not
-feasible for the Medipix3… But we CAN use the iterative MTF
-maximization by varying the angle. Only one parameter changes and
-then the entire “Calc MTF” procedure can be repeated:
+The extent of the regions used by Samei are not feasible for the Medipix3… But we CAN use the iterative MTF maximization by varying the angle. Only one parameter changes and then the entire “Calc MTF” procedure can be repeated:
 
 #### (still) TO DO for MTF calculation:
 
