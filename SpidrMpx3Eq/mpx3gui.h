@@ -20,7 +20,6 @@
 
 using namespace std;
 class Mpx3Config;
-//class QcstmDQE;
 
 #include "dataset.h"
 #include "gradient.h"
@@ -40,13 +39,14 @@ class QCstmDacs;
 class ThlScan;
 class BarChart;
 class BarChartProperties;
-// Change me when adding extra views ???
+// Change me when adding extra views
 class QCstmEqualization;
 class QCstmGLVisualization;
 class QCstmConfigMonitoring;
 //class QcstmDQE;
 class QCstmStepperMotor;
 
+// Change me when adding extra views
 #define __visualization_page_Id     0
 #define __configuration_page_Id     1
 #define __dacs_page_Id              2

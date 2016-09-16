@@ -114,7 +114,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _ui->dqeTab->SetMpx3GUI(this);
 
     // Stepper Motor control view
-    //_ui->stepperMotorTab->SetMpx3GUI(this);
+    _ui->stepperMotorTab->SetMpx3GUI(this);
 
 
 
@@ -136,7 +136,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+6", "Switch to Scans") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+6", "Switch to CT") ), this)  );
 
-    //_shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+8", "Switch to Stepper Motor Control") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+8", "Switch to Stepper Motor Control") ), this)  );
 
 
     // Signals and slots for this part
@@ -295,7 +295,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->dqeTab, SLOT( ConnectionStatusChanged(bool) ) );
-    //connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool) ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, &Mpx3GUI::ConnectionStatusChanged, this, &Mpx3GUI::onConnectionStatusChanged );
 
     connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
@@ -980,7 +980,6 @@ void Mpx3GUI::clear_configuration(){
 }
 
 void Mpx3GUI::clear_data(bool clearStatusBar) {
-
     getDataset()->clear();
 //    _ui->dqeTab->clearDataAndPlots(true);
     //getVisualization()->cle
