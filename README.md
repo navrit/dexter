@@ -49,28 +49,16 @@ Steps to get this repository up and running and developers information (formerly
 
 ## Setting up a new view in mpx3gui software using QtCreator
 
-1. The 'view' are QWidgets that are part of a
-	StackedWidget. In QtCreator, go to the design form of the main
-	window and right-click on the stackedWidget -> Insert page. A new
-	QWidget is then added to the stackedWidget. 
-2. Create a new Qt Designer Form Class with QWidget
-	as its base class.  
-3. Promote the QWidget to the newly made class. >> I can’t see the newly
-	made class in mpx3gui.ui? (designer view) 
-4. Add functionalities to the newly made class
-	(widget) as you would for a normal widget, dialog or window.  
+1. The 'view' are QWidgets that are part of a StackedWidget. In QtCreator, go to the design form of the main window and right-click on the stackedWidget -> Insert page. A new QWidget is then added to the stackedWidget. 
+2. Create a new Qt Designer Form Class with QWidget as its base class.  
+3. Promote the QWidget to the newly made class. 
+    - I can’t see the newly made class in mpx3gui.ui? (designer view) 
+4. Add functionalities to the newly made class (widget) as you would for a normal widget, dialog or window.  
 
-- Make sure to have a private variable __mpx3gui_
-	(or something similar) and a public setter (_setMpx3GUI_)
-	that sets the private variable to the main GUI, to have access to
-	the other objects, in particular _dataset_. 
+- Make sure to have a private variable __mpx3gui_ (or something similar) and a public setter (_setMpx3GUI_) that sets the private variable to the main GUI, to have access to the other objects, in particular _dataset_. 
 
-1. Add an Action to the menubar in the designer of
-	Qt to mpx3gui.ui. Add an icon to the _icons_
-	folder in the _SpidrMpx3Eq_
-	folder. 
-2. Optional: add a shortcut to the view in
-	mpx3gui.cpp 
+1. Add an Action to the menubar in the designer of Qt to mpx3gui.ui. Add an icon to the _icons_ folder in the _SpidrMpx3Eq_ folder. 
+2. Optional: add a shortcut to the view in mpx3gui.cpp 
 
 ## Dlib
 
