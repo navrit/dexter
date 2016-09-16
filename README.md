@@ -46,10 +46,9 @@ Steps to get this repository up and running.
     * navrit@amscins.com
 
 
-### Developers Notes ###
+# Developers Notes
 
-## Setting up a new view in mpx3gui software using
-QtCreator
+## Setting up a new view in mpx3gui software using QtCreator
 
 1. The 'view' are QWidgets that are part of a
 	StackedWidget. In QtCreator, go to the design form of the main
