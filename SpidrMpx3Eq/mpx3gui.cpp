@@ -74,6 +74,14 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
             gradientNames.append(gradients[i]->getName());
     }
 
+
+
+
+    // Change me when adding extra views
+    //! Preparation of extra new views - add a new tab in the UI file.
+    //! - Look for the widgets by name from the ones below here
+    //! CHANGE the tab class type in the UI file by text
+
     // Prepare DACs panel
     _ui->DACsWidget->SetMpx3GUI( this );
     _ui->DACsWidget->setWindowWidgetsStatus(); // startup status
@@ -102,9 +110,13 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     // CT
     _ui->ctTab->SetMpx3GUI( this );
 
-
     // DQE
     _ui->dqeTab->SetMpx3GUI(this);
+
+    // Stepper Motor control view
+    //_ui->stepperMotorTab->SetMpx3GUI(this);
+
+
 
     // Read the configuration
     QString configFile = "./config/mpx3.json";
@@ -122,6 +134,10 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+4", "Switch to Equalization") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+5", "Switch to DQE calculation") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+6", "Switch to Scans") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+6", "Switch to CT") ), this)  );
+
+    //_shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+8", "Switch to Stepper Motor Control") ), this)  );
+
 
     // Signals and slots for this part
     SetupSignalsAndSlots();
@@ -273,11 +289,13 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect(_ui->actionClear_data, SIGNAL(triggered()), this, SLOT(clear_data()));
     connect(_ui->actionClear_configuration, SIGNAL(triggered()), this, SLOT(clear_configuration()) );
 
+    // Change me when adding extra views
     // Inform every module of changes in connection status
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->dqeTab, SLOT( ConnectionStatusChanged(bool) ) );
+    //connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, &Mpx3GUI::ConnectionStatusChanged, this, &Mpx3GUI::onConnectionStatusChanged );
 
     connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
@@ -328,6 +346,14 @@ void Mpx3GUI::on_shortcutsSwithPages() {
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
         //_ui->actionScans->setChecked(1);
+    /*} else if ( k.matches( QKeySequence(tr("Ctrl+7")) ) ){
+        uncheckAllToolbarButtons();
+        _ui->stackedWidget->setCurrentIndex( __ct_page_Id );
+        //_ui-> actionXXX ->setChecked(1);*/
+    } else if ( k.matches( QKeySequence(tr("Ctrl+8")) ) ){
+        uncheckAllToolbarButtons();
+        _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
+        //_ui->actionStepper_Motor_control->setChecked(1);
     }
 
 }
@@ -964,6 +990,7 @@ void Mpx3GUI::clear_data(bool clearStatusBar) {
 
 }
 
+// Change me when adding extra views???
 QCstmEqualization * Mpx3GUI::getEqualization(){return _ui->equalizationWidget;}
 QCstmGLVisualization * Mpx3GUI::getVisualization() { return _ui->visualizationGL; }
 QCstmDacs * Mpx3GUI::getDACs() { return _ui->DACsWidget; }
@@ -1004,6 +1031,8 @@ void Mpx3GUI::uncheckAllToolbarButtons(){
     _ui->actionConfiguration->setChecked(0);
     _ui->actionDACs->setChecked(0);
     _ui->actionEqualization->setChecked(0);
+
+    _ui->actionStepper_Motor_control->setChecked(0);
     //TODO _ui-> NEW ACTION ->setChecked(0);
 }
 
@@ -1048,6 +1077,34 @@ void Mpx3GUI::on_actionScans_triggered(){
     _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
     //TODO ->setChecked(1);
 }
+
+//! TODO: Implement revert more fully?
+void Mpx3GUI::on_actionRevert_triggered(bool) {
+    qDebug() << ">> Rewinding to original dataset? TEST ME";
+    rewindToOriginalDataset();
+    _ui->visualizationGL->reload_all_layers(false);
+}
+
+void Mpx3GUI::on_actionAbout_triggered(bool){
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("About");
+
+    QString newDate =  QDate::currentDate().toString("yyyy-MM-dd");
+    QString msg = QString("Compiled: ") + newDate + QString(" - ") + QString(__TIME__) +
+            QString("\n C++: ") + QString::fromStdString(to_string(__cplusplus)) +
+//            QString("\n STDC: ") + QString::fromStdString(to_string(__STDC__)) +
+            QString("\n\n ASI B.V. All rights reserved.") ;
+    msgBox.setText( msg );
+    msgBox.exec();
+}
+
+/*void Mpx3GUI::on_actionStepper_Motor_control_triggered(bool)
+{
+    uncheckAllToolbarButtons();
+    _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
+    qDebug() << ">> Stepper motor control opened";
+}*/
+
 
 void Mpx3GUI::on_actionDisconnect_triggered(bool checked){
 
@@ -1128,22 +1185,4 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked){
 }
 
 
-// TODO(#28): Implement this
-void Mpx3GUI::on_actionRevert_triggered(bool checked) {
-    qDebug() << ">> Rewinding to original dataset? TEST ME";
-    rewindToOriginalDataset();
-    _ui->visualizationGL->reload_all_layers(false);
-}
 
-void Mpx3GUI::on_actionAbout_triggered(bool checked){
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("About");
-
-    QString newDate =  QDate::currentDate().toString("yyyy-MM-dd");
-    QString msg = QString("Compiled: ") + newDate + QString(" - ") + QString(__TIME__) +
-            QString("\n C++: ") + QString::fromStdString(to_string(__cplusplus)) +
-//            QString("\n STDC: ") + QString::fromStdString(to_string(__STDC__)) +
-            QString("\n\n ASI B.V. All rights reserved.") ;
-    msgBox.setText( msg );
-    msgBox.exec();
-}

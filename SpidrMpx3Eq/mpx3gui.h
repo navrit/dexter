@@ -39,6 +39,7 @@ class QCstmDacs;
 class ThlScan;
 class BarChart;
 class BarChartProperties;
+// Change me when adding extra views ???
 class QCstmEqualization;
 class QCstmGLVisualization;
 class QCstmConfigMonitoring;
@@ -50,6 +51,7 @@ class QCstmConfigMonitoring;
 #define __equalization_page_Id      3
 #define __dqe_page_Id               4
 #define __scans_page_Id             5
+#define __stepperMotor_page_Id      7
 
 namespace Ui {
 class Mpx3GUI;

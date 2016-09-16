@@ -92,8 +92,7 @@ SOURCES += main.cpp \
     qcstmdqe.cpp \
     dataconsumerthread.cpp \
     mtrDialog.cpp\
-    optionsdialog.cpp \
-    qcstmStepperMotor.cpp
+    optionsdialog.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -131,8 +130,7 @@ HEADERS += mpx3gui.h \
     qcstmdqe.h \
     dataconsumerthread.h \
     mtrDialog.h\
-    optionsdialog.h \
-    qcstmStepperMotor.h
+    optionsdialog.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DataTakingThread.h
@@ -160,8 +158,7 @@ FORMS    += mpx3gui.ui \
     testpulses.ui \
     qcstmdqe.ui \
     mtrDialog.ui\
-    optionsdialog.ui \
-    qcstmStepperMotor.ui
+    optionsdialog.ui
 
 DISTFILES += \
     shaders/heatmap.frag \
