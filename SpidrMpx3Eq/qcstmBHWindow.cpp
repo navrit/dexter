@@ -28,7 +28,7 @@ QCstmBHWindow::~QCstmBHWindow(){
 }
 
 void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
-	_mpx3gui = p;
+    _mpx3gui = p;
     _mpx3gui->saveOriginalDataset();    //! Keep a copy of the original dataset
     connect(this, &QCstmBHWindow::openData2, _mpx3gui, &Mpx3GUI::open_data_with_path);
     connect(this, SIGNAL(reload()),_mpx3gui->getVisualization(),SLOT(reload_all_layers()));
@@ -42,14 +42,14 @@ void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
 
 //! Creates dialog where user can add a correction item, specify its thickness and material.
 void QCstmBHWindow::on_addButton_clicked() {
-	_bhdialog = nullptr;
+    _bhdialog = nullptr;
     if (!_bhdialog){
-		_bhdialog = new qcstmBHdialog(this);
+        _bhdialog = new qcstmBHdialog(this);
         _bhdialog->open();
-		_bhdialog->raise();
-		_bhdialog->activateWindow();
+        _bhdialog->raise();
+        _bhdialog->activateWindow();
         connect(_bhdialog, SIGNAL(talkToForm(double, QString)), this, SLOT(on_talkToForm(double, QString)));
-     }
+    }
 }
 
 //! Is called after user finishes with dialog that adds a correction item.
@@ -81,7 +81,7 @@ void QCstmBHWindow::on_talkToForm(double thickness, QString material){
 void QCstmBHWindow::on_clearButton_clicked() {
     //! Removes selected correction item from the list.
     if(!correctionMap.contains(thicknessvctr[selectedItemNo])) emptyCorrectionCounter--;
-	delete ui->list->item(selectedItemNo);
+    delete ui->list->item(selectedItemNo);
     correctionMap.remove(thicknessvctr[selectedItemNo]);
     thicknessvctr.erase (thicknessvctr.begin()+selectedItemNo);
     if(selectedItemNo>1) {
@@ -94,7 +94,7 @@ void QCstmBHWindow::on_clearButton_clicked() {
         //ui->startButton->setEnabled(false); Disabled start button
     }
     // if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )
-        //ui->startButton->setEnabled(true); Disabled start button
+    //ui->startButton->setEnabled(true); Disabled start button
 }
 
 void QCstmBHWindow::on_clearAllButton_clicked(){
@@ -133,48 +133,48 @@ void QCstmBHWindow::on_loadButton_clicked(){
         on_plot();
     }
     //if(emptyCorrectionCounter == 0 && thicknessvctr.size()>2 )     Disabled start button
-        //ui->startButton->setEnabled(true);                         Disabled start button
+    //ui->startButton->setEnabled(true);                         Disabled start button
 }
 
 void QCstmBHWindow::on_plot(){
     //! Plots the average count of the first layer of each correction item.
     //! Has to start from scratch everytime, since items may not be sorted.
 
-        QVector<double> yPlot, xPlot;
-        QMap<double, double> plotMap;
-        for(int i = 0; i<thicknessvctr.size(); i++){
-            if(correctionMap.contains(thicknessvctr[i])) xPlot.push_back(thicknessvctr[i]);
+    QVector<double> yPlot, xPlot;
+    QMap<double, double> plotMap;
+    for(int i = 0; i<thicknessvctr.size(); i++){
+        if(correctionMap.contains(thicknessvctr[i])) xPlot.push_back(thicknessvctr[i]);
+    }
+    for(int i = 0; i< xPlot.size(); i++){
+        double count = 0;
+        for(int j = 0; j< _mpx3gui->getDataset()->getPixelsPerLayer(); j++ ){
+            count += correctionMap[xPlot[i]].getLayer(0)[j];
         }
-        for(int i = 0; i< xPlot.size(); i++){
-            double count = 0;
-            for(int j = 0; j< _mpx3gui->getDataset()->getPixelsPerLayer(); j++ ){
-                count += correctionMap[xPlot[i]].getLayer(0)[j];
-            }
-            count /= _mpx3gui->getDataset()->getPixelsPerLayer(); //average of threshold 0
-            plotMap.insert(xPlot[i], count);
-        }
+        count /= _mpx3gui->getDataset()->getPixelsPerLayer(); //average of threshold 0
+        plotMap.insert(xPlot[i], count);
+    }
 
-        std::sort(xPlot.begin(), xPlot.end());
-        for(int i = 0; i<xPlot.size(); i++){
-            yPlot.push_back(plotMap[xPlot[i]]);
-        }
-        double minX = 0, maxX = 0;
-        double minY = 0, maxY = 0;
-        for(int i = 0; i < xPlot.size(); i++ ){
-            minX = std::min(minX, xPlot[i]);
-            maxX = std::max(maxX, xPlot[i]);
-            minY = std::min(minY, yPlot[i]);
-            maxY = std::max(maxY, yPlot[i]);
-        }
-        ui->plotWidget->addGraph();
-        ui->plotWidget->graph(0)->setData(xPlot, yPlot);
-        ui->plotWidget->xAxis->setLabel("Thickness");
-        ui->plotWidget->yAxis->setLabel("Signal");
-        ui->plotWidget->xAxis->setRange(minX, maxX);
-        ui->plotWidget->yAxis->setRange(minY, maxY);
-        ui->plotWidget->replot();
-        //! Do interpolation - Disabled because QPlot automatically does linear interpolation and spline cubic does not work well
-        /*
+    std::sort(xPlot.begin(), xPlot.end());
+    for(int i = 0; i<xPlot.size(); i++){
+        yPlot.push_back(plotMap[xPlot[i]]);
+    }
+    double minX = 0, maxX = 0;
+    double minY = 0, maxY = 0;
+    for(int i = 0; i < xPlot.size(); i++ ){
+        minX = std::min(minX, xPlot[i]);
+        maxX = std::max(maxX, xPlot[i]);
+        minY = std::min(minY, yPlot[i]);
+        maxY = std::max(maxY, yPlot[i]);
+    }
+    ui->plotWidget->addGraph();
+    ui->plotWidget->graph(0)->setData(xPlot, yPlot);
+    ui->plotWidget->xAxis->setLabel("Thickness");
+    ui->plotWidget->yAxis->setLabel("Signal");
+    ui->plotWidget->xAxis->setRange(minX, maxX);
+    ui->plotWidget->yAxis->setRange(minY, maxY);
+    ui->plotWidget->replot();
+    //! Do interpolation - Disabled because QPlot automatically does linear interpolation and spline cubic does not work well
+    /*
         if(xPlot.size()>2){
             tk::spline s;
             //sort(xPlot.begin(), xPlot.end());
@@ -206,15 +206,15 @@ void QCstmBHWindow::on_list_itemClicked(QListWidgetItem *item){
     //! Enables / disables buttons that should or should not be used. Also loads the selected dataset into Mpx3Gui.
     //! selectedItemNo is used throughout the code to know which listitem is selected.
 
-	selectedItemNo = item->listWidget()->row(item);
+    selectedItemNo = item->listWidget()->row(item);
     ui->clearButton->setEnabled(true);
     if(!correctionMap.contains(thicknessvctr[selectedItemNo])){
         ui->loadButton->setEnabled(true);
     }else{
         ui->loadButton->setEnabled(false);
         if(_mpx3gui->getDataset()->getLayer(0)[0] != correctionMap[thicknessvctr[selectedItemNo]].getLayer(0)[0]){
-                *(_mpx3gui->getDataset()) = correctionMap[thicknessvctr[selectedItemNo]];
-                emit reload();
+            *(_mpx3gui->getDataset()) = correctionMap[thicknessvctr[selectedItemNo]];
+            emit reload();
         }
     }
 }
@@ -233,8 +233,8 @@ void QCstmBHWindow::on_applyBHCorrection()
         QVector<QVector<double>> bhData(_mpx3gui->getDataset()->getPixelsPerLayer());
         std::sort(thicknessvctr.begin(), thicknessvctr.end(), cstmSortStruct);
         for(int j = 0; j<thicknessvctr.size(); j++){
-                int * layer = correctionMap[thicknessvctr[j]].getLayer(keys[i]);
-                for(unsigned int k = 0; k<_mpx3gui->getDataset()->getPixelsPerLayer(); k++){ bhData[k].push_back(layer[k]); }
+            int * layer = correctionMap[thicknessvctr[j]].getLayer(keys[i]);
+            for(unsigned int k = 0; k<_mpx3gui->getDataset()->getPixelsPerLayer(); k++){ bhData[k].push_back(layer[k]); }
         }
         //!Apply the correction.
         //! Makes some checks to ensure that the spline algorithm doesn't crash.
@@ -249,8 +249,8 @@ void QCstmBHWindow::on_applyBHCorrection()
             }
             int a = currentLayer[j];
             if(temp[0]!= 0 && temp[0] < 50000 && ascending){
-                 m_spline->set_points(temp.toStdVector(),thicknessvctr.toStdVector(), false);
-                 currentLayer[j] = (*m_spline)(currentLayer[j]); //Do the interpolation
+                m_spline->set_points(temp.toStdVector(),thicknessvctr.toStdVector(), false);
+                currentLayer[j] = (*m_spline)(currentLayer[j]); //Do the interpolation
             }
             if(a == currentLayer[j])
                 currentLayer[j] = 0;
@@ -339,23 +339,23 @@ void QCstmBHWindow::on_saveJsonButton_clicked()
     //! json file contains material, thickness and path to dataset.
     fileName= QFileDialog::getSaveFileName(this, tr("Save to Json"),"",tr("Json files (*.JSON)"));
     if (!fileName.endsWith(".JSON")&&!fileName.endsWith(".json")&&!fileName.endsWith("Json"))
-       fileName += ".json";
+        fileName += ".json";
     QFile loadFile(fileName);
     if(!loadFile.open(QIODevice::WriteOnly)){
         printf("Couldn't open configuration file %s\n", fileName.toStdString().c_str());
         return;
-        }
-     QJsonObject JSobjectParent;
-     for(int i = 0; i<thicknessvctr.length(); i++)     {
-         QJsonObject objcorr;
-         objcorr.insert("mat", correctionMaterial[thicknessvctr[i]]);
-         objcorr.insert("thickness", thicknessvctr[i]);
-         objcorr.insert("path", correctionPaths[thicknessvctr[i]]);
-         QString objname = "corr";
-         objname+=QString::number(i);
-         JSobjectParent.insert(objname, objcorr);
-     }
-     QJsonDocument doc;
-     doc.setObject(JSobjectParent);
-     loadFile.write(doc.toJson());
+    }
+    QJsonObject JSobjectParent;
+    for(int i = 0; i<thicknessvctr.length(); i++)     {
+        QJsonObject objcorr;
+        objcorr.insert("mat", correctionMaterial[thicknessvctr[i]]);
+        objcorr.insert("thickness", thicknessvctr[i]);
+        objcorr.insert("path", correctionPaths[thicknessvctr[i]]);
+        QString objname = "corr";
+        objname+=QString::number(i);
+        JSobjectParent.insert(objname, objcorr);
+    }
+    QJsonDocument doc;
+    doc.setObject(JSobjectParent);
+    loadFile.write(doc.toJson());
 }
