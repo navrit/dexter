@@ -28,6 +28,7 @@ class Mpx3Config;
 #include "mpx3eq_common.h"
 #include "qcstmvoxeltab.h"
 #include "mpx3config.h"
+#include "qcstmsteppermotor.h"
 
 
 class Mpx3Config;
@@ -44,6 +45,7 @@ class QCstmEqualization;
 class QCstmGLVisualization;
 class QCstmConfigMonitoring;
 //class QcstmDQE;
+class QCstmStepperMotor;
 
 #define __visualization_page_Id     0
 #define __configuration_page_Id     1

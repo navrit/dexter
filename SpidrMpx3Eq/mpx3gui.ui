@@ -40,6 +40,7 @@
       <widget class="QCstmThreshold" name="ThresholdTab"/>
       <widget class="QCstmCT" name="ctTab"/>
       <widget class="QCstmVoxeltab" name="voxelTab"/>
+      <widget class="QCstmStepperMotor" name="stepperMotorTab"/>
      </widget>
     </item>
    </layout>
@@ -370,6 +371,18 @@
     <string>About</string>
    </property>
   </action>
+  <action name="actionStepper_Motor">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/motor.png</normaloff>:/icons/motor.png</iconset>
+   </property>
+   <property name="text">
+    <string>Stepper Motor</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -422,6 +435,12 @@
    <class>QCstmDQE</class>
    <extends>QWidget</extends>
    <header>qcstmdqe.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QCstmStepperMotor</class>
+   <extends>QWidget</extends>
+   <header>qcstmsteppermotor.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
