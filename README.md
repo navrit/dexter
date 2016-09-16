@@ -60,6 +60,7 @@ Steps to get this repository up and running and developers information (formerly
     - Add in private
         Ui::CLASSNAME *ui;
         Mpx3GUI * _mpx3gui;
+    - #include <ui_HEADERNAME.h>
 
 4. Add functionalities to the newly made class (widget) as you would for a normal widget, dialog or window.  
 
