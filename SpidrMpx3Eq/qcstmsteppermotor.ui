@@ -12,7 +12,7 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>1200</width>
+    <width>1024</width>
     <height>600</height>
    </size>
   </property>
@@ -22,21 +22,22 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="1" column="3">
-      <widget class="QPushButton" name="stepperSetZeroPushButton">
-       <property name="text">
-        <string>Set Zero</string>
-       </property>
-      </widget>
+     <property name="leftMargin">
+      <number>5</number>
+     </property>
+     <property name="rightMargin">
+      <number>5</number>
+     </property>
+     <item row="2" column="4">
+      <widget class="QDoubleSpinBox" name="speedSpinBox"/>
      </item>
-     <item row="1" column="2">
-      <widget class="QCheckBox" name="stepperUseCalibCheckBox">
-       <property name="text">
-        <string>Use calibration</string>
-       </property>
-      </widget>
+     <item row="1" column="6">
+      <widget class="QDoubleSpinBox" name="motorIdSpinBox"/>
      </item>
-     <item row="2" column="2">
+     <item row="5" column="5" colspan="2">
+      <widget class="QDial" name="motorDial"/>
+     </item>
+     <item row="2" column="3">
       <widget class="QLabel" name="label_2">
        <property name="layoutDirection">
         <enum>Qt::LeftToRight</enum>
@@ -49,34 +50,7 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="3">
-      <widget class="QDoubleSpinBox" name="speedSpinBox"/>
-     </item>
-     <item row="5" column="0" colspan="4">
-      <widget class="QTableView" name="stepperCalibrationTableView"/>
-     </item>
-     <item row="3" column="1">
-      <widget class="QPushButton" name="motorTestButton">
-       <property name="text">
-        <string> Test</string>
-       </property>
-       <property name="icon">
-        <iconset resource="icons.qrc">
-         <normaloff>:/icons/config_logo.png</normaloff>:/icons/config_logo.png</iconset>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="4" colspan="2">
-      <widget class="QDial" name="motorDial"/>
-     </item>
-     <item row="0" column="0">
-      <widget class="QCheckBox" name="stepperMotorCheckBox">
-       <property name="text">
-        <string>Enable</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="4" colspan="2">
+     <item row="4" column="5" colspan="2">
       <widget class="QPushButton" name="motorGoToTargetButton">
        <property name="text">
         <string> Go to target</string>
@@ -93,10 +67,18 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="5">
-      <widget class="QDoubleSpinBox" name="motorIdSpinBox"/>
+     <item row="3" column="1">
+      <widget class="QPushButton" name="motorTestButton">
+       <property name="text">
+        <string> Test</string>
+       </property>
+       <property name="icon">
+        <iconset resource="icons.qrc">
+         <normaloff>:/icons/config_logo.png</normaloff>:/icons/config_logo.png</iconset>
+       </property>
+      </widget>
      </item>
-     <item row="2" column="4">
+     <item row="2" column="5">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>Current (I):</string>
@@ -106,46 +88,30 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="3">
-      <widget class="QDoubleSpinBox" name="targetPosSpinBox"/>
-     </item>
-     <item row="3" column="4">
-      <widget class="QLabel" name="stepperCurrentPosLabel">
-       <property name="text">
-        <string>Current position:</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="5">
-      <widget class="QLCDNumber" name="motorCurrentPoslcdNumber"/>
-     </item>
-     <item row="2" column="1">
-      <widget class="QPushButton" name="motorResetButton">
-       <property name="text">
-        <string>Reset stepper</string>
-       </property>
-      </widget>
+     <item row="2" column="6">
+      <widget class="QDoubleSpinBox" name="currentISpinBox"/>
      </item>
      <item row="1" column="1">
       <widget class="QDoubleSpinBox" name="accelerationSpinBox"/>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_1">
+     <item row="1" column="4">
+      <widget class="QPushButton" name="stepperSetZeroPushButton">
        <property name="text">
-        <string>Acc:</string>
+        <string>Set Zero</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="5">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Motor Id:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
      </item>
-     <item row="2" column="5">
-      <widget class="QDoubleSpinBox" name="currentISpinBox"/>
-     </item>
-     <item row="3" column="2">
+     <item row="3" column="3">
       <widget class="QLabel" name="stepperTargetPosLabel">
        <property name="layoutDirection">
         <enum>Qt::LeftToRight</enum>
@@ -158,15 +124,68 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="4">
-      <widget class="QLabel" name="label_4">
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_1">
        <property name="text">
-        <string>Motor Id:</string>
+        <string>Acc:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
+     </item>
+     <item row="3" column="4">
+      <widget class="QDoubleSpinBox" name="targetPosSpinBox"/>
+     </item>
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="stepperMotorCheckBox">
+       <property name="text">
+        <string>Enable</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QCheckBox" name="stepperUseCalibCheckBox">
+       <property name="text">
+        <string>Use calibration</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="5">
+      <widget class="QLabel" name="stepperCurrentPosLabel">
+       <property name="text">
+        <string>Current position:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QPushButton" name="motorResetButton">
+       <property name="text">
+        <string>Reset stepper</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="6">
+      <widget class="QLCDNumber" name="motorCurrentPoslcdNumber"/>
+     </item>
+     <item row="5" column="0" colspan="5">
+      <widget class="QTableView" name="stepperCalibrationTableView"/>
+     </item>
+     <item row="2" column="0">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>
