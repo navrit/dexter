@@ -1318,7 +1318,7 @@ void QCstmDQE::on_listWidget_currentRowChanged(int currentRow)
 void QCstmDQE::on_removeDataFilePushButton_clicked()
 {
     int index = ui->listWidget->currentRow();
-    int nr = ui->listWidget->count();
+    //int nr = ui->listWidget->count();
 
 
     QString filename = ui->listWidget->currentItem()->text();
@@ -1607,7 +1607,7 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
     _NlinesNPS = options.value("nlines");
 }
 
-void QCstmDQE::on_maindata_changed(QString filename)
+void QCstmDQE::on_maindata_changed(QString /*filename*/)
 {
     if(!_openingNPSfile){
         clearDataAndPlots(true);

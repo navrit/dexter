@@ -33,7 +33,7 @@ void BarChart::SetLogX(bool setl) {
 
 void BarChart::Clean() {
 
-    int nCleared = this->clearPlottables();
+    //int nCleared = this->clearPlottables();
     //cout << "[INFO] Number of plots cleared : " << nCleared << endl;
 
     _nSets = 0;
