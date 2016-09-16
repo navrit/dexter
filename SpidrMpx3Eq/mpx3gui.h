@@ -53,6 +53,7 @@ class QCstmStepperMotor;
 #define __equalization_page_Id      3
 #define __dqe_page_Id               4
 #define __scans_page_Id             5
+#define __ct_page_Id                6
 #define __stepperMotor_page_Id      7
 
 namespace Ui {
@@ -123,6 +124,7 @@ public:
     QCstmDacs * getDACs();
     QCstmConfigMonitoring * getConfigMonitoring();
 //    QCstmDQE * getDQE();
+    QCstmStepperMotor * getStepperMotor();
 
     SpidrController * GetSpidrController();
     SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
@@ -217,6 +219,7 @@ private slots:
     void on_actionDefibrillator_triggered(bool checked);
     void on_actionRevert_triggered(bool checked);
     void on_actionAbout_triggered(bool checked);
+    void on_actionStepper_Motor_triggered(bool checked);
 };
 
 

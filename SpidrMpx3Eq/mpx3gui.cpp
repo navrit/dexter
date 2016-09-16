@@ -134,8 +134,8 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+4", "Switch to Equalization") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+5", "Switch to DQE calculation") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+6", "Switch to Scans") ), this)  );
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+6", "Switch to CT") ), this)  );
 
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+7", "Switch to CT") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+8", "Switch to Stepper Motor Control") ), this)  );
 
 
@@ -353,7 +353,7 @@ void Mpx3GUI::on_shortcutsSwithPages() {
     } else if ( k.matches( QKeySequence(tr("Ctrl+8")) ) ){
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
-        //_ui->actionStepper_Motor_control->setChecked(1);
+        _ui->actionStepper_Motor->setChecked(1);
     }
 
 }
@@ -995,6 +995,7 @@ QCstmGLVisualization * Mpx3GUI::getVisualization() { return _ui->visualizationGL
 QCstmDacs * Mpx3GUI::getDACs() { return _ui->DACsWidget; }
 QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; }
 //QCstmDQE * Mpx3GUI::getDQE(){ return _ui->dqeTab; }
+QCstmStepperMotor * Mpx3GUI::getStepperMotor() {return _ui->stepperMotorTab; }
 
 void Mpx3GUI::on_actionExit_triggered()
 {
@@ -1031,7 +1032,7 @@ void Mpx3GUI::uncheckAllToolbarButtons(){
     _ui->actionDACs->setChecked(0);
     _ui->actionEqualization->setChecked(0);
 
-    //_ui->actionStepper_Motor_control->setChecked(0);
+    _ui->actionStepper_Motor->setChecked(0);
     //TODO _ui-> NEW ACTION ->setChecked(0);
 }
 
@@ -1097,12 +1098,11 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
     msgBox.exec();
 }
 
-/*void Mpx3GUI::on_actionStepper_Motor_control_triggered(bool)
+void Mpx3GUI::on_actionStepper_Motor_triggered(bool)
 {
     uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
-    qDebug() << ">> Stepper motor control opened";
-}*/
+}
 
 
 void Mpx3GUI::on_actionDisconnect_triggered(bool checked){
