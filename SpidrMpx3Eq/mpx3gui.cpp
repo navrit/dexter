@@ -1032,7 +1032,7 @@ void Mpx3GUI::uncheckAllToolbarButtons(){
     _ui->actionDACs->setChecked(0);
     _ui->actionEqualization->setChecked(0);
 
-    _ui->actionStepper_Motor_control->setChecked(0);
+    //_ui->actionStepper_Motor_control->setChecked(0);
     //TODO _ui-> NEW ACTION ->setChecked(0);
 }
 
