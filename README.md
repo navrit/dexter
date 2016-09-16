@@ -53,6 +53,14 @@ Steps to get this repository up and running and developers information (formerly
 2. Create a new Qt Designer Form Class with QWidget as its base class.  
 3. Promote the QWidget to the newly made class. 
     - I can’t see the newly made class in mpx3gui.ui? (designer view) 
+    - Add new class and header to mpx3gui.h?
+    - Add to new header in public
+        Ui::CLASSNAME * GetUI(){ return ui; };
+        void SetMpx3GUI(Mpx3GUI *p);
+    - Add in private
+        Ui::CLASSNAME *ui;
+        Mpx3GUI * _mpx3gui;
+
 4. Add functionalities to the newly made class (widget) as you would for a normal widget, dialog or window.  
 
 - Make sure to have a private variable __mpx3gui_ (or something similar) and a public setter (_setMpx3GUI_) that sets the private variable to the main GUI, to have access to the other objects, in particular _dataset_. 
