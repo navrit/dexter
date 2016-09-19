@@ -135,7 +135,7 @@ is also called the coefficient of determination and ranges from 0–1. 1 being a
 For the DQE we need :
 
 - **NEQ**  
-**NEQ = [MTF(n)]^2/ NPS(n)**  
+**NEQ = G^2 [MTF(n)]^2/ NPS(n)**  
 for this we need: 
     - **(E or P)MTF (n)**(Dobbins, 1995) or (Flynn & Samei, 1999) resp. 
     - EMTF can be estimated by averaging several PMTF:  
@@ -152,13 +152,18 @@ for this we need:
     for this we need: 
         - **Fourier Transform **  
         of RoI’s open beam image(s) 
+    - **G^2**
+    The system gain.
 
 - **SNR^2_ideal**  
 for this we need: 
     - **SNR^2_ideal / exposure**  
     a quantity that can be obtained by: 
         - Tabulated values for specific beam qualities. (Dobbins, 1995) (Hoeschen, 2001) 
-        - Estimation by computational modelling. (Flynn & Samei, 1999) 
+        - Estimation by computational modelling. (Flynn & Samei, 1999) See included screen captures.
+        They use mass-energy absorption coefficients from: http://physics.nist.gov/PhysRefData/XrayMassCoef/
+        In dry air: http://physics.nist.gov/PhysRefData/XrayMassCoef/ComTab/air.html
+
 
     - The **exposure**  used in the measurements of MTF and NPS. 
 
