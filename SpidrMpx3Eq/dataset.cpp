@@ -17,7 +17,6 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 #include <boost/numeric/ublas/io.hpp>
-//#include <dlib/optimization.h>
 
 #include <dlib/optimization.h>
 //#include <iostream>
@@ -184,6 +183,7 @@ int Dataset::getLayerIndex(int threshold){
 
 QByteArray Dataset::toByteArray() {
 
+    // Add header function here???
     QByteArray ret(0);
     ret += QByteArray::fromRawData((const char*)&m_nx, (int)sizeof(m_nx));
     ret += QByteArray::fromRawData((const char*)&m_ny, (int)sizeof(m_ny));
