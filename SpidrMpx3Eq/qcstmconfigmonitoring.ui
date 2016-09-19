@@ -916,6 +916,13 @@ QGroupBox::title {
        </layout>
       </widget>
      </item>
+     <item row="1" column="0">
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Preferences</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
