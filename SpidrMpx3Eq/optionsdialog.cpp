@@ -33,22 +33,13 @@ void optionsDialog::setCurrentSettings()
     //This way more options can be added at any point, without worrying about numbering
 
     //MTF
-    if(ui->edgeRadioButton->isChecked())
-         _currentSettings["edge"] = 1;
-    else _currentSettings["edge"] = 0;
+    _currentSettings["edge"] = ui->edgeRadioButton->isChecked();
 
     QString arg = ui->fitComboBox->currentText();
-    if(arg.contains("Error"))
-         _currentSettings["error"] = 1;
-    else _currentSettings["error"] = 0;
+    _currentSettings["error"] = arg.contains("Error");
 
-    if(ui->fitDerCheckBox->isChecked())
-         _currentSettings["fitder"] = 1;
-    else _currentSettings["fitder"] = 0;
-
-    if(ui->binDataCheckBox->isChecked())
-         _currentSettings["bindata"] = 1;
-    else _currentSettings["bindata"] = 0;
+    _currentSettings["fitder"]  = ui->fitDerCheckBox->isChecked();
+    _currentSettings["bindata"] = ui->binDataCheckBox->isChecked();
 
     _currentSettings["binsize"] = ui->binSizeLineEdit->text().toDouble();
 
@@ -63,73 +54,50 @@ void optionsDialog::setCurrentSettings()
     _currentSettings["windowW"] = windowW;
 
     //NPS
-    if(ui->fullImageRadioButton->isChecked())
-         _currentSettings["fullimage"] = 1;
-    else _currentSettings["fullimage"] = 0;
-    if(ui->selectedRoIRadioButton->isChecked())
-         _currentSettings["selectedroi"] = 1;
-    else _currentSettings["selectedroi"] = 0;
-
+    _currentSettings["fullimage"]   = ui->fullImageRadioButton->isChecked();
+    _currentSettings["selectedroi"] = ui->selectedRoIRadioButton->isChecked();
+    _currentSettings["manualroi"]   = ui->manualRadioButton->isChecked();
 
     _currentSettings["roinumber"]   = ui->roiNumberSpinBox->value();
     _currentSettings["roixsize"]    = ui->roiXsizeLineEdit->text().toInt();
     _currentSettings["roiysize"]    = ui->roiYsizeLineEdit->text().toInt();
     _currentSettings["npixedge"]    = ui->edgeLineEdit->text().toInt();
-    _currentSettings["nlines"] = ui->nLinesLineEdit->text().toInt();
+    _currentSettings["nlines"]      = ui->nLinesLineEdit->text().toInt();
 
-    if(ui->fitPlaneCheckBox->isChecked())
-         _currentSettings["fitplane"] = 1;
-    else _currentSettings["fitplane"] = 0;
-
-    if(ui->zeroFreqCheckBox->isChecked())
-         _currentSettings["zerofreq"] = 1;
-    else _currentSettings["zerofreq"] = 0;
-
-    if(ui->showFTcheckBox->isChecked())
-         _currentSettings["showft"] = 1;
-    else _currentSettings["showft"] = 0;
+    _currentSettings["fitplane"]    = ui->fitPlaneCheckBox->isChecked();
+    _currentSettings["zerofreq"]    = ui->zeroFreqCheckBox->isChecked();
+    _currentSettings["showft"]      = ui->showFTcheckBox->isChecked();
+    _currentSettings["normmaxnps"]  = ui->normMaxNpsCheckBox->isChecked();
 }
 
 void optionsDialog::resetSettings()
 {
     //MTF options
-    if(_currentSettings.value("edge") == 0)
-         ui->edgeRadioButton->setChecked( false );
-    else ui->edgeRadioButton->setChecked( true  );
-
-    ui->fitComboBox->setCurrentIndex( _currentSettings.value("error") );
-
-    if(_currentSettings.value("fitder") == 0)
-         ui->fitDerCheckBox->setChecked( false );
-    else ui->fitDerCheckBox->setChecked( true  );
-
-    if(_currentSettings.value("bindata") == 0)
-         ui->binDataCheckBox->setChecked( false );
-    else ui->binDataCheckBox->setChecked( true  );
+    ui->edgeRadioButton->setChecked(    _currentSettings.value("edge")  );
+    ui->fitComboBox->setCurrentIndex(   _currentSettings.value("error") );
+    ui->fitDerCheckBox->setChecked(     _currentSettings.value("fitder") );
+    ui->binDataCheckBox->setChecked(    _currentSettings.value("bindata") );
 
     ui->binSizeLineEdit->setText( QString("%1").arg( _currentSettings.value("binsize")) );
     ui->binSizeLineEdit->setText( QString("%1").arg( _currentSettings.value("windowW")) );
 
     //NPS options
+    if( _currentSettings.value("fullimage") )
+         ui->fullImageRadioButton->setChecked(true);
+    else if( _currentSettings.value("selectedroi") )
+         ui->selectedRoIRadioButton->setChecked(true);
+    else ui->manualRadioButton->setChecked(true);
+
     ui->roiNumberSpinBox->setValue( _currentSettings.value("roinumber") );
     ui->roiXsizeLineEdit->setText(  QString("%1").arg( _currentSettings.value("roixsize")) );
     ui->roiYsizeLineEdit->setText(  QString("%1").arg( _currentSettings.value("roiysize")) );
     ui->edgeLineEdit->setText(      QString("%1").arg( _currentSettings.value("npixedge")) );
     ui->nLinesLineEdit->setText(    QString("%1").arg( _currentSettings.value("nlines"))   );
 
-    if(_currentSettings.value("fitplane") == 0)
-         ui->fitPlaneCheckBox->setChecked( false );
-    else ui->fitPlaneCheckBox->setChecked( true  );
-
-    if(_currentSettings.value("zerofreq") == 0)
-         ui->zeroFreqCheckBox->setChecked( false );
-    else ui->zeroFreqCheckBox->setChecked( true  );
-
-    if(_currentSettings.value("showft") == 0)
-         ui->showFTcheckBox->setChecked( false );
-    else ui->showFTcheckBox->setChecked( true  );
-
-
+    ui->fitPlaneCheckBox->setChecked(   _currentSettings.value("fitplane") );
+    ui->zeroFreqCheckBox->setChecked(   _currentSettings.value("zerofreq") );
+    ui->showFTcheckBox->setChecked(     _currentSettings.value("showft") );
+    ui->normMaxNpsCheckBox->setChecked( _currentSettings.value("normmaxnps") );
 }
 
 void optionsDialog::on_buttonBox_clicked(QAbstractButton *button)
@@ -235,7 +203,7 @@ void optionsDialog::on_selectedRoIRadioButton_toggled(bool checked)
             ui->selectedRoIRadioButton->setChecked( false );
             ui->fullImageRadioButton->setChecked(   true  );
 
-            QMessageBox::warning ( this, tr("No region selected"), tr( "Please select a region of interest." ) );
+            QMessageBox::warning ( this, tr("No valid region selected"), tr( "Please select a region of interest that lies within the image." ) );
             _mpx3gui->GetUI()->stackedWidget->setCurrentIndex( __visualization_page_Id );
         }
     }

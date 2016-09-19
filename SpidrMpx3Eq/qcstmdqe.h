@@ -93,14 +93,18 @@ private:
     bool    _useErrorFunc   = true;             //!Indicates whether the errorfunction (or rather local smoothing) should be used.
     int     _windowW        = 11;               //!Specifies the width of the window to be used for local fitting. Must be uneven, larger than(>=)3 and smaller(<=) than the total amount of data.
         //NPS
+    bool    _useFullimage   = false;            //!Indicates whether the RoI used for NPS calculation should be the full image.
+    bool    _useSelectedRoI = true;             //!Indicates whether the RoI used for NPS calculation should be the Region of Interest selected by the user.
+    bool    _useManualRoI   = false;            //!Indicates whether the RoI used for NPS calculation should be regions of a size that is set manually in the optionsdialog.
     int     _nRoI           = 1;                //!Specifies the number of RoI's that should be used for NPs calculation...
     QPoint  _sizeRoI        = QPoint(10, 10);   //!Specifies the size of the RoI's used for the NPS calculation.
     int     _nPixEdge       = 0;                //!Specifies how many pixels the RoI should stay away from the edge of the image. The same for x and y.
-    bool    _singleNPS      = false;            //!Indicates whether the NPS should be calculated for a single file (true), or averaged for all files (false).
+    bool    _singleFileNPS  = false;            //!Indicates whether the NPS should be calculated for a single file (true), or averaged for all files (false).
     bool    _fitPlane       = false;            //!Indicates whether a flat plane should be fitted to the NPS data and removed before further calculation.
     bool    _useZeroFreq    = false;            //!Indicates whether the zero frequency values of the Fourier Transform should be included in the NPS.
     int     _NlinesNPS      = 1;                //!Specifies how many lines next to either side of the axes should be used for the NPS calculation.
     bool    _showFT         = false;            //!Indicates whether the Fourier Transform amplitude plots should be shown.
+    bool    _normNPSmax     = true;             //!Indicates whether the NPS that is plotted should be normalized to its maximum value.
 
     //Main calculations:
     QVector<QVector<double> > calcESFbinData();     //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.
@@ -112,6 +116,7 @@ private:
     void calcNPSdata(); //!Calculates the datapoints for the NPS in the x and y directon.
     QVector<QVector<double> > calcFTsquareRoI(QVector<QVector<int> > data );
     void calc1Dnps(const QVector<QVector<double> > &ftdata);
+    void calcNormNPS();
 
     //Plotting
     void plotMTF();
@@ -128,6 +133,7 @@ private:
     QString dataToString(QVector<QVector<double> > data);   //!Turns the given data into a string for saving to a textfile.
     double FivePointsStencil(QVector<double> func, int x, double bw);   //! Used for numerical derivation.
 //    void plotFTnps(QVector<QVector<double> > data);
+
 
 
 private slots:

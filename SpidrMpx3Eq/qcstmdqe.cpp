@@ -851,7 +851,7 @@ void QCstmDQE::calcNPSdata()
         return ;    //npsdata is empty;
     }
 
-    if(_singleNPS){
+    if(_singleFileNPS){
         ft2Ddata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
 
         if(_showFT) plotFTsquare(ft2Ddata);
@@ -881,17 +881,13 @@ void QCstmDQE::calcNPSdata()
                     ft2Ddata[y][x] += ftROIdata[y][x];
                 }
             }
-
-
-
         }
         //Calculate mean FT squared.
         if(Nfiles > 1){
-            for(int y = 0; y < ftROIdata.length(); y++){
+            for(int y = 0; y < ftROIdata.length(); y++)
                 for(int x = 0; x < ftROIdata[0].length(); x++){ //assuming all rows are equal length
                     ft2Ddata[y][x] /= Nfiles;
                 }
-            }
         }
 
         if(_showFT) plotFTsquare(ft2Ddata);
@@ -899,7 +895,13 @@ void QCstmDQE::calcNPSdata()
         calc1Dnps(ft2Ddata);
     }
 
-    //Now normalize the NPS
+    //Now normalize the NPS to its maximum value.
+    if(_normNPSmax) calcNormNPS();
+
+}
+
+void QCstmDQE::calcNormNPS(){
+    //Normalize the NPS to its maximum value.
     int max = 0, i;
     double value;
     for(i = 0; i < _NPSdata[0].length(); i++){
@@ -916,7 +918,6 @@ void QCstmDQE::calcNPSdata()
     }
     for(i = 0; i < _NPSdata[1].length(); i++)
         _NPSdata[1][i] /= max;
-
 }
 
 void QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
@@ -1576,15 +1577,18 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
 
     //MTF
     //    if(options.value("edge")    == 0);
-    if(options.value("error")   == 0)   _useErrorFunc = false;
-        else _useErrorFunc = true;
-    if(options.value("fitder")  == 0)   _useDerFit = false;
-        else _useDerFit = true;
+    if(options.value("error")   == 0)
+         _useErrorFunc = false;
+    else _useErrorFunc = true;
+    if(options.value("fitder")  == 0)
+         _useDerFit = false;
+    else _useDerFit = true;
 
     _windowW = options.value("windowW");
 
-    if(options.value("bindata") == 0)   _usebins = false;
-        else _usebins = true;
+    if(options.value("bindata") == 0)
+         _usebins = false;
+    else _usebins = true;
 
     if(_binsize != options.value("binsize")){
         _binsize = options.value("binsize");
@@ -1592,19 +1596,29 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
     }
 
     //NPS
+    if(options.value("fullimage") == 1)
+         _useFullimage      = true;
+    else if(options.value("selectedroi") == 1)
+         _useSelectedRoI    = true;
+    else _useManualRoI      = true;
+
     _nRoI = options.value("roinumber");
     _sizeRoI = QPoint( options.value("roixsize"), options.value("roiysize"));
     _nPixEdge = options.value("npixedge");
 
-    if(options.value("fitplane") == 0)  _fitPlane = false;
-        else _fitPlane = true;
+    if(options.value("fitplane") == 0)
+         _fitPlane = false;
+    else _fitPlane = true;
 
-    if(options.value("zerofreq") == 0) _useZeroFreq = false;
-        else _useZeroFreq = true;
-    if(options.value("showft") == 0) _showFT = false;
-        else _showFT = true;
+    if(options.value("zerofreq") == 0)
+         _useZeroFreq = false;
+    else _useZeroFreq = true;
+    if(options.value("showft") == 0)
+         _showFT = false;
+    else _showFT = true;
 
     _NlinesNPS = options.value("nlines");
+    _normNPSmax = options.value("normmaxnps");
 }
 
 void QCstmDQE::on_maindata_changed(QString filename)
@@ -1626,14 +1640,13 @@ void QCstmDQE::on_close_optionsDialog()
 //        delete _optionsDialog;
 //        _optionsDialog = nullptr;
 //    }
-
     _optionsDialog->close();
 
 }
 
 void QCstmDQE::on_singleFileCheckBox_toggled(bool checked)
 {
-    _singleNPS = checked;
+    _singleFileNPS = checked;
 }
 
 void QCstmDQE::on_clearNPSpushButton_clicked()
@@ -1665,6 +1678,5 @@ void QCstmDQE::on_clearMTFpushButton_clicked()
 void QCstmDQE::on_clearAllPushButton_clicked()
 {
     clearDataAndPlots(true);
-
     ui->regionLabel->setText("Choose a region of interest");
 }
