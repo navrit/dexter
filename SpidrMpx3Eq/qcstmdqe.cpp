@@ -28,13 +28,13 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
     ui->LSFplot->xAxis->setLabel("Distance (px)");
     ui->LSFplot->yAxis->setLabel("Normalised LSF");
 
-    ui->MTFplot->xAxis->setLabel("Spatial frequency (Fnq)");
+    ui->MTFplot->xAxis->setLabel("Spatial frequency (F_Nyquist)");
     ui->MTFplot->yAxis->setLabel("Normalised Presampled MTF");
 
     ui->xNPSplot->xAxis->setLabel("Spatial frequency (1/x)");
-    ui->xNPSplot->yAxis->setLabel("Normalised NPS x-direction");
+    ui->xNPSplot->yAxis->setLabel("Normalised NPS X direction");
     ui->yNPSplot->xAxis->setLabel("Spatial frequency (1/y)");
-    ui->yNPSplot->yAxis->setLabel("Normalised NPS y-direction");
+    ui->yNPSplot->yAxis->setLabel("Normalised NPS Y direction");
 
 //    connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
 //    connect( this, &QCstmDQE::open_data, _mpx3gui, &Mpx3GUI::open_data_with_path);
