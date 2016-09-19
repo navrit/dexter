@@ -34,7 +34,7 @@
   <property name="windowTitle">
    <string>Beam Hardening corrections</string>
   </property>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>13</x>
@@ -81,6 +81,12 @@
           </property>
           <property name="text">
            <string>Add</string>
+          </property>
+          <property name="autoDefault">
+           <bool>true</bool>
+          </property>
+          <property name="default">
+           <bool>true</bool>
           </property>
          </widget>
         </item>

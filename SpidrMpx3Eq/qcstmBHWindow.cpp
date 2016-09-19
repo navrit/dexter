@@ -424,8 +424,7 @@ void QCstmBHWindow::saveJSON(QString fileName){
 
 bool QCstmBHWindow::getFileSaved() const
 {
-    //#44 Another corrections enhancement
-    //return fileSaved;
+    return fileSaved;
 }
 
 void QCstmBHWindow::setFileSaved(bool value)
