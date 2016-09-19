@@ -632,7 +632,7 @@ QVector<QVector<double> > Dataset::calcESFdata()
     double a = ab.first;
     double b = ab.second;
     //if ( a==0 && b==0 ||  isnan(a) || isnan(b) ) {
-    if ( a==0 && b==0 ||  a!=a || b!=b ) {
+    if ( (a==0 && b==0) ||  (a!=a || b!=b) ) {
         esfData.clear();   //Return empty data...Midline doesn't make sense.
 
         QMessageBox msgbox;

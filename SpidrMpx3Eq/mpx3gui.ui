@@ -39,6 +39,7 @@
       <widget class="QCstmDQE" name="dqeTab"/>
       <widget class="QCstmThreshold" name="ThresholdTab"/>
       <widget class="QCstmCT" name="ctTab"/>
+      <widget class="QCstmStepperMotor" name="stepperMotorTab"/>
       <widget class="QCstmVoxeltab" name="voxelTab"/>
      </widget>
     </item>
@@ -117,7 +118,16 @@
     <string>toolBar</string>
    </property>
    <property name="toolTip">
-    <string>Force a reset of the device</string>
+    <string/>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="floatable">
+    <bool>false</bool>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -142,6 +152,7 @@
    <addaction name="actionConfiguration"/>
    <addaction name="actionDACs"/>
    <addaction name="actionEqualization"/>
+   <addaction name="actionStepper_Motor"/>
    <addaction name="separator"/>
    <addaction name="actionDefibrillator"/>
   </widget>
@@ -361,6 +372,21 @@
     <string>About</string>
    </property>
   </action>
+  <action name="actionStepper_Motor">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/motor.png</normaloff>:/icons/motor.png</iconset>
+   </property>
+   <property name="text">
+    <string>Stepper Motor</string>
+   </property>
+   <property name="toolTip">
+    <string>Stepper Motor</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -413,6 +439,12 @@
    <class>QCstmDQE</class>
    <extends>QWidget</extends>
    <header>qcstmdqe.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QCstmStepperMotor</class>
+   <extends>QWidget</extends>
+   <header>qcstmsteppermotor.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

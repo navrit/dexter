@@ -20,7 +20,6 @@
 
 using namespace std;
 class Mpx3Config;
-//class QcstmDQE;
 
 #include "dataset.h"
 #include "gradient.h"
@@ -28,6 +27,7 @@ class Mpx3Config;
 #include "mpx3eq_common.h"
 #include "qcstmvoxeltab.h"
 #include "mpx3config.h"
+#include "qcstmsteppermotor.h"
 
 
 class Mpx3Config;
@@ -39,17 +39,22 @@ class QCstmDacs;
 class ThlScan;
 class BarChart;
 class BarChartProperties;
+// Change me when adding extra views
 class QCstmEqualization;
 class QCstmGLVisualization;
 class QCstmConfigMonitoring;
 //class QcstmDQE;
+class QCstmStepperMotor;
 
+// Change me when adding extra views
 #define __visualization_page_Id     0
 #define __configuration_page_Id     1
 #define __dacs_page_Id              2
 #define __equalization_page_Id      3
 #define __dqe_page_Id               4
 #define __scans_page_Id             5
+#define __ct_page_Id                6
+#define __stepperMotor_page_Id      7
 
 namespace Ui {
 class Mpx3GUI;
@@ -119,6 +124,7 @@ public:
     QCstmDacs * getDACs();
     QCstmConfigMonitoring * getConfigMonitoring();
 //    QCstmDQE * getDQE();
+    QCstmStepperMotor * getStepperMotor();
 
     SpidrController * GetSpidrController();
     SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
@@ -166,7 +172,7 @@ signals:
     void reload_layer(int layer);
     void reload_all_layers();
     void sizeChanged(int, int);
-    void open_data_failed();
+    void open_data_failed(); //! Ignore this error: QMetaObject::connectSlotsByName: No matching signal for on_open_data_failed()
     void returnFilename(QString);
 
     // status bar
@@ -213,6 +219,7 @@ private slots:
     void on_actionDefibrillator_triggered(bool checked);
     void on_actionRevert_triggered(bool checked);
     void on_actionAbout_triggered(bool checked);
+    void on_actionStepper_Motor_triggered(bool checked);
 };
 
 

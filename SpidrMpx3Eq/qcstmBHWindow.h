@@ -29,9 +29,45 @@ public:
 
     void SetMpx3GUI(Mpx3GUI *p);
 
+    //#44 Another corrections enhancement
+    bool getFileSaved() const;
+    void setFileSaved(bool value);
+    //-----------------------------------
+
 private:
 
     qcstmBHdialog * _bhdialog;
+
+    void saveJSON(QString);
+    bool fileSaved;
+
+    //TO DO: Add descriptions...
+    Ui::QCstmBHWindow *ui;
+    QCstmCorrectionsDialog * _corr;
+    Mpx3GUI * _mpx3gui;
+
+    int selectedItemNo = 0;
+    int emptyCorrectionCounter = 0;
+
+    QMap<double,Dataset> correctionMap;
+    QMap<double,QString> correctionPaths;
+    QMap<double,QString> correctionMaterial;
+
+    QVector<double> thicknessvctr;
+
+    QString fileName;
+    QString correctionPath;
+
+    bool dataOpened;
+    bool usePath = false;
+
+    QCustomPlot* customPlot;
+    tk::spline* m_spline = nullptr; //!< spline interpolation
+
+    struct sortStruct {
+        bool operator() (int a,int b) { return (a>b);}
+    } cstmSortStruct;
+
 
 signals:
 
@@ -60,27 +96,6 @@ private slots:
     void on_loadJsonButton_clicked();
     void on_saveJsonButton_clicked();
     void on_plot();
-
-private:
-    //TO DO: Add descriptions...
-    Ui::QCstmBHWindow *ui;
-    QCstmCorrectionsDialog * _corr;
-    Mpx3GUI * _mpx3gui;
-    int selectedItemNo = 0;
-    int emptyCorrectionCounter = 0;
-    QMap<double,Dataset> correctionMap;
-    QMap<double,QString> correctionPaths;
-    QMap<double,QString> correctionMaterial;
-    QVector<double> thicknessvctr;
-    QString fileName;
-    QString correctionPath;
-    bool dataOpened;
-    bool usePath = false;
-    QCustomPlot* customPlot;
-    tk::spline* m_spline = nullptr; //!< spline interpolation
-    struct sortStruct {
-        bool operator() (int a,int b) { return (a>b);}
-    } cstmSortStruct;
 
 };
 
