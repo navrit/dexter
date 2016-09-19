@@ -101,8 +101,8 @@ private:
     int     _nPixEdge       = 0;                //!Specifies how many pixels the RoI should stay away from the edge of the image. The same for x and y.
     bool    _singleFileNPS  = false;            //!Indicates whether the NPS should be calculated for a single file (true), or averaged for all files (false).
     bool    _fitPlane       = false;            //!Indicates whether a flat plane should be fitted to the NPS data and removed before further calculation.
-    bool    _useZeroFreq    = false;            //!Indicates whether the zero frequency values of the Fourier Transform should be included in the NPS.
-    int     _NlinesNPS      = 1;                //!Specifies how many lines next to either side of the axes should be used for the NPS calculation.
+    bool    _useZeroFreq    = true;             //!Indicates whether the zero frequency values of the Fourier Transform should be included in the NPS.
+    int     _NlinesNPS      = 0;                //!Specifies how many lines next to either side of the axes should be used for the NPS calculation.
     bool    _showFT         = false;            //!Indicates whether the Fourier Transform amplitude plots should be shown.
     bool    _normNPSmax     = true;             //!Indicates whether the NPS that is plotted should be normalized to its maximum value.
 

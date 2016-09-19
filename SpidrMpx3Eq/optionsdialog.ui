@@ -38,7 +38,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <property name="documentMode">
       <bool>false</bool>
@@ -47,152 +47,170 @@
       <attribute name="title">
        <string>MTF</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <layout class="QVBoxLayout" name="verticalLayout_7">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
-         <item>
-          <widget class="QRadioButton" name="edgeRadioButton">
-           <property name="text">
-            <string>Edge</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="slitRadioButton">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="text">
-            <string>Slit</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>Data</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <widget class="QRadioButton" name="edgeRadioButton">
+              <property name="text">
+               <string>Edge</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="slitRadioButton">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Slit</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <item>
+             <widget class="QCheckBox" name="binDataCheckBox">
+              <property name="text">
+               <string>Bin data</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>Binsize</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="binSizeLineEdit">
+              <property name="maximumSize">
+               <size>
+                <width>41</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>1</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_6">
+              <property name="text">
+               <string>pixels</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
-         <item>
-          <widget class="QCheckBox" name="binDataCheckBox">
-           <property name="text">
-            <string>Bin data</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>Binsize</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="binSizeLineEdit">
-           <property name="maximumSize">
-            <size>
-             <width>41</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>1</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>pixels</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_7">
-         <item>
-          <widget class="QComboBox" name="fitComboBox">
-           <item>
-            <property name="text">
-             <string>Error Function</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Smoothing</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="fitDerCheckBox">
-           <property name="text">
-            <string>Fit derivative</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
-         <item>
-          <widget class="QLabel" name="windowLabel">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="text">
-            <string>Window width</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="windowLineEdit">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>41</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>11</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Manipulation</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <item>
+             <widget class="QComboBox" name="fitComboBox">
+              <item>
+               <property name="text">
+                <string>Error Function</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Smoothing</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="fitDerCheckBox">
+              <property name="text">
+               <string>Fit derivative</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QLabel" name="windowLabel">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Window width</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="windowLineEdit">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>41</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>11</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
        </item>
        <item>
         <spacer name="verticalSpacer">
@@ -222,108 +240,21 @@
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
            <layout class="QGridLayout" name="gridLayout">
-            <item row="0" column="0" colspan="3">
-             <widget class="QRadioButton" name="fullImageRadioButton">
+            <item row="1" column="0" colspan="2">
+             <widget class="QRadioButton" name="selectedRoIRadioButton">
               <property name="text">
-               <string>Use full image</string>
+               <string>User selection</string>
               </property>
               <property name="checked">
                <bool>true</bool>
               </property>
              </widget>
             </item>
-            <item row="1" column="0" colspan="3">
-             <widget class="QRadioButton" name="selectedRoIRadioButton">
-              <property name="text">
-               <string>User selection</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QRadioButton" name="manualRadioButton">
-              <property name="text">
-               <string>Manual:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1" colspan="2">
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>RoI size</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="5">
-             <widget class="QLabel" name="label_8">
-              <property name="text">
-               <string>x</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="6">
-             <widget class="QLineEdit" name="roiYsizeLineEdit">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>50</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>1</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0" colspan="2">
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>Nr. of Regions</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0" colspan="4">
-             <widget class="QLabel" name="label_3">
-              <property name="text">
-               <string>Nr. of pixels from edge</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="4" colspan="3">
-             <widget class="QLineEdit" name="edgeLineEdit">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>50</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>0</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="4">
-             <widget class="QLineEdit" name="roiXsizeLineEdit">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>50</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>1</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="4">
+            <item row="3" column="3">
              <widget class="QSpinBox" name="roiNumberSpinBox">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="maximumSize">
                <size>
                 <width>100</width>
@@ -332,6 +263,87 @@
               </property>
               <property name="minimum">
                <number>1</number>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="3">
+             <widget class="QSpinBox" name="edgeSpinBox">
+              <property name="maximum">
+               <number>128</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>RoI size</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="4">
+             <widget class="QLabel" name="label_8">
+              <property name="text">
+               <string>x</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Nr. of Regions</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QRadioButton" name="manualRadioButton">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Manual:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0" colspan="2">
+             <widget class="QRadioButton" name="fullImageRadioButton">
+              <property name="text">
+               <string>Use full image</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0" colspan="2">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Nr. of pixels from edge</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="5">
+             <widget class="QSpinBox" name="roiYsizeSpinBox">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>128</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="3">
+             <widget class="QSpinBox" name="roiXsizeSpinBox">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>128</number>
               </property>
              </widget>
             </item>
@@ -355,48 +367,60 @@
          <layout class="QVBoxLayout" name="verticalLayout_5">
           <item>
            <layout class="QGridLayout" name="gridLayout_2">
-            <item row="0" column="0" colspan="2">
+            <item row="4" column="1">
+             <widget class="QSpinBox" name="nLinesSpinBox">
+              <property name="toolTip">
+               <string>Must be at least 0 if zero frequency is not used.</string>
+              </property>
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>10</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0" colspan="3">
+             <widget class="QCheckBox" name="zeroFreqCheckBox">
+              <property name="toolTip">
+               <string>Use axis values for NPS.</string>
+              </property>
+              <property name="text">
+               <string>Use zero frequency</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0" colspan="3">
              <widget class="QCheckBox" name="showFTcheckBox">
+              <property name="toolTip">
+               <string>Shows a colour map of the Fourier transforms.</string>
+              </property>
               <property name="text">
                <string>Show Fourier Transform</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="0" colspan="2">
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_5">
+              <property name="toolTip">
+               <string>Lines close to the axis that are averaged. </string>
+              </property>
+              <property name="text">
+               <string>#lines off axis </string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="3">
              <widget class="QLabel" name="label_7">
               <property name="text">
                <string>For 1D NPS calculaion: </string>
               </property>
              </widget>
             </item>
-            <item row="2" column="0" colspan="2">
-             <widget class="QCheckBox" name="zeroFreqCheckBox">
-              <property name="text">
-               <string>Use zero frequency</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_5">
-              <property name="text">
-               <string>#lines off axis </string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QLineEdit" name="nLinesLineEdit">
-              <property name="maximumSize">
-               <size>
-                <width>50</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>1</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="2">
+            <item row="4" column="2">
              <spacer name="horizontalSpacer_3">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>

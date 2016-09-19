@@ -139,12 +139,12 @@ public:
   void applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
   void applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
   int applyColor2DRecoGuided(Color2DRecoGuided * );
-  void calcBasicStats(QPoint pixel_init, QPoint pixel_end);
-  QMap<int, int> calcProfile(QString axis, int threshold, QPoint pixel_init, QPoint pixel_end);
+  void calcBasicStats(QPoint pixel_init, QPoint pixel_end); //!Calculates the Mean and standard deviation of the pixel values in the selected region.
+  QMap<int, int> calcProfile(QString axis, int threshold, QPoint pixel_init, QPoint pixel_end); //!Calculates the profile of the pixelvalues in the selected region in the direction of the specified axis.
   QString calcCNR(QMap<int,int> Axismap); //!Calculates the contrast to noise ratio of the region indicated by the Profilepoints.
-  double calcRegionMean(int begin, int end, QMap<int, int> Axismap);
-  double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);
-  QVector<QVector<int> > collectPointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end);
+  double calcRegionMean(int begin, int end, QMap<int, int> Axismap); //!Calculates the mean of a region.
+  double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);   //!Calculates the standard deviation of a region.
+  QVector<QVector<int> > collectPointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end); //!Collects the data of a region of interest. for a specific layer/threshold.
   QVector<QVector<double> > calcESFdata();
   //QVector<QVector<double> > calcESFfitData(parameter_vector params, double start, int length, double stepsize);
   //QVector<QVector<double> > calcPSFdata(parameter_vector params, double start, int length, double stepsize);
@@ -183,8 +183,8 @@ public:
   int getLayerCount() const{return m_layers.count();}
   int getLayerSize() const{return m_nFrames*m_nx*m_ny;}
   uint64_t getPixelsPerLayer() const{return m_nFrames*m_nx*m_ny;}
-  bool isBorderPixel(int pixel, QSize isize); //!<Determines if the pixel is at the border (x) (assembly coordinates !)
-  bool isBorderPixel(int x, int y, QSize isize); //!<Determines if the pixel is at the border (x,y) (assembly coordinates !)
+  bool isBorderPixel(int pixel, QSize isize);       //!<Determines if the pixel is at the border (x) (assembly coordinates !)
+  bool isBorderPixel(int x, int y, QSize isize);    //!<Determines if the pixel is at the border (x,y) (assembly coordinates !)
   void increasePacketsLost(int val) { m_scores.packetsLost += val; }
   void increaseFramesLost(int val) { m_scores.framesLost += val; }
   void setDataMisaligned(bool val) { m_scores.dataMisaligned = val; }

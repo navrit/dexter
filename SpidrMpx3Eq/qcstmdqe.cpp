@@ -824,7 +824,7 @@ QVector<QVector<double> > QCstmDQE::calcMTFdata()
 
 
 void QCstmDQE::plotEdge(QPoint ab)
-{   //Display the midline edge in the heatmap glplot...?
+{   //Display the midline/edge in the heatmap glplot...?
 
 }
 
@@ -852,17 +852,37 @@ void QCstmDQE::calcNPSdata()
     }
 
     if(_singleFileNPS){
-        ft2Ddata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
+        _logtext += "NPS calculated for a single file.\n";
+        if(_useSelectedRoI){
+            if(isValidRegionSelected())
+                ft2Ddata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
+
+            _logtext += QString("Region (%1, %2)->(%3, %4) was used.\n").arg(_beginpix.x()).arg(_beginpix.y()).arg(_endpix.x()).arg(_endpix.y());
+
+        }
+        else if(_useFullimage){
+            //Give the upper left and lower right points of the image to collectPointsROI
+            QPoint dsize = _mpx3gui->getDataset()->getSize();
+            int Nd = _mpx3gui->getDataset()->getFrameCount();
+            int Nx = sqrt( double(Nd) ) * dsize.x();
+            int Ny = sqrt( double(Nd) ) * dsize.y();
+
+            ft2Ddata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, QPoint(0, Ny), QPoint(Nx, 0) ) );
+
+                _logtext += QString("Region (%1, %2)->(%3, %4) was used.\n").arg(0).arg(Ny).arg(Nx).arg(0);
+        }
 
         if(_showFT) plotFTsquare(ft2Ddata);
 
         calc1Dnps(ft2Ddata);
     }
     else{
+        _logtext += "Mean NPS calculated for multiple files:\n";
 
         for( int i = 0; i < Nfiles; i++){
             QString filename = _NPSfilepaths[i];
             emit open_data(false, true, filename);
+            _logtext += "  " + filename + "\n";
 
             ftROIdata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, _beginpix, _endpix));
 
@@ -875,7 +895,7 @@ void QCstmDQE::calcNPSdata()
                 ft2Ddata[i].resize(xlength);
             }
 
-            //Calculate total of multiple files.
+            //Add to total of multiple files.
             for(int y = 0; y < ftROIdata.length(); y++){
                 for(int x = 0; x < ftROIdata[0].length(); x++){ //assuming all rows are equal length
                     ft2Ddata[y][x] += ftROIdata[y][x];
@@ -902,6 +922,8 @@ void QCstmDQE::calcNPSdata()
 
 void QCstmDQE::calcNormNPS(){
     //Normalize the NPS to its maximum value.
+    if(_NPSdata.isEmpty()) return;
+
     int max = 0, i;
     double value;
     for(i = 0; i < _NPSdata[0].length(); i++){
@@ -927,28 +949,37 @@ void QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
     int ylength = ftdata.length();
     _NPSdata[1].resize( ylength );
 
-    if(_useZeroFreq){
-        _NPSdata[0] = ftdata[0]; //x-axis (y=0)
+    //Should not be possible anymore.
+//    if(!_useZeroFreq && _NlinesNPS == 0){
+//        QMessageBox::warning ( this, tr("Nothing to use for 1D NPS"), tr( "Please specify whether the zero frequency axes and/or off-axis lines should be used." ) );
+//        _NPSdata.clear();
+//        return;
+//    }
+        if(_useZeroFreq){
+            _NPSdata[0] = ftdata[0]; //x-axis (y=0)
 
-        for( i = 0; i < ylength; i++){
-            _NPSdata[1][i] = ftdata[i][0]; //y-axis (x=0)
-        }
-    }
-    else _NPSdata[0].resize(xlength);
-
-    if(_NlinesNPS > 0){
-        for(int n = 1; n <= _NlinesNPS; n++){
-            for( i = 0; i < xlength; i++){
-                _NPSdata[0][i] += ftdata[n][i];
-//                _NPSdata[0][i] += ftdata[xlength - n][i];  //? include symmetric (/negative)
+            for( i = 0; i < ylength; i++){
+                _NPSdata[1][i] = ftdata[i][0]; //y-axis (x=0)
             }
-            for ( i = 0; i < ylength; i++){
-                _NPSdata[1][i] += ftdata[i][n];
-//                _NPSdata[1][i] += ftdata[i][ylength - n];
-            }
+            _logtext += "Zero frequency included in 1D NPS calculation.\n";
         }
-    }
+        else _NPSdata[0].resize(xlength);
 
+        if(_NlinesNPS > 0){
+            for(int n = 1; n <= _NlinesNPS; n++){
+                for( i = 0; i < xlength; i++){
+                    _NPSdata[0][i] += ftdata[n][i];
+    //                _NPSdata[0][i] += ftdata[xlength - n][i];  //? include symmetric (/negative)
+                }
+                for ( i = 0; i < ylength; i++){
+                    _NPSdata[1][i] += ftdata[i][n];
+    //                _NPSdata[1][i] += ftdata[i][ylength - n];
+                }
+            }
+
+            if(_NlinesNPS == 1) _logtext += "1 off-axis line was used in 1D NPS calculation.\n";
+            else _logtext += QString("%1 off-axis lines were used in 1D NPS calculation.\n").arg(_NlinesNPS);
+        }
 
 }
 
@@ -1190,6 +1221,7 @@ void QCstmDQE::plotNPS(){
 
     int datalength = _NPSdata.length();
     if(datalength == 0){
+        QMessageBox::warning ( this, tr("Error when plotting NPS"), tr( "No data!" ) );
         return ;
     }
 
@@ -1211,6 +1243,7 @@ void QCstmDQE::plotNPS(){
     ui->xNPSplot->rescaleAxes();                                    ui->yNPSplot->rescaleAxes();
     ui->xNPSplot->xAxis->setRange(-0.01, 1.01);                     ui->yNPSplot->xAxis->setRange(-0.01, 1.01);
     ui->xNPSplot->replot( QCustomPlot::rpQueued );                  ui->yNPSplot->replot( QCustomPlot::rpQueued );
+
 }
 
 
@@ -1382,12 +1415,16 @@ void QCstmDQE::on_mtfPushButton_clicked()
 
 void QCstmDQE::on_npsPushButton_clicked()
 {
-    if(ui->regionLabel->text().contains("Choose"))
+    if(_useSelectedRoI && !isValidRegionSelected()){
         QMessageBox::warning ( this, tr("Cannot calculate NPS"), tr( "Please choose a region of interest." ) );
-
+        _mpx3gui->GetUI()->stackedWidget->setCurrentIndex(__visualization_page_Id);
+    }
 
     else{
+        _logtext += "\n";
+        refreshLog(false);
         plotNPS();
+        refreshLog(false);
     }
 
 //    calcNPSdata();
@@ -1596,11 +1633,9 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
     }
 
     //NPS
-    if(options.value("fullimage") == 1)
-         _useFullimage      = true;
-    else if(options.value("selectedroi") == 1)
-         _useSelectedRoI    = true;
-    else _useManualRoI      = true;
+    _useFullimage   = options.value("fullimage");
+    _useSelectedRoI = options.value("selectedroi");
+    _useManualRoI   = options.value("manualroi");
 
     _nRoI = options.value("roinumber");
     _sizeRoI = QPoint( options.value("roixsize"), options.value("roiysize"));
@@ -1679,4 +1714,9 @@ void QCstmDQE::on_clearAllPushButton_clicked()
 {
     clearDataAndPlots(true);
     ui->regionLabel->setText("Choose a region of interest");
+}
+
+void QCstmDQE::on_toolButton_clicked()
+{
+    //Open an explaining dialog.
 }

@@ -59,10 +59,10 @@ void optionsDialog::setCurrentSettings()
     _currentSettings["manualroi"]   = ui->manualRadioButton->isChecked();
 
     _currentSettings["roinumber"]   = ui->roiNumberSpinBox->value();
-    _currentSettings["roixsize"]    = ui->roiXsizeLineEdit->text().toInt();
-    _currentSettings["roiysize"]    = ui->roiYsizeLineEdit->text().toInt();
-    _currentSettings["npixedge"]    = ui->edgeLineEdit->text().toInt();
-    _currentSettings["nlines"]      = ui->nLinesLineEdit->text().toInt();
+    _currentSettings["roixsize"]    = ui->roiXsizeSpinBox->value();
+    _currentSettings["roiysize"]    = ui->roiYsizeSpinBox->value();
+    _currentSettings["npixedge"]    = ui->edgeSpinBox->value();
+    _currentSettings["nlines"]      = ui->nLinesSpinBox->value();
 
     _currentSettings["fitplane"]    = ui->fitPlaneCheckBox->isChecked();
     _currentSettings["zerofreq"]    = ui->zeroFreqCheckBox->isChecked();
@@ -88,11 +88,11 @@ void optionsDialog::resetSettings()
          ui->selectedRoIRadioButton->setChecked(true);
     else ui->manualRadioButton->setChecked(true);
 
-    ui->roiNumberSpinBox->setValue( _currentSettings.value("roinumber") );
-    ui->roiXsizeLineEdit->setText(  QString("%1").arg( _currentSettings.value("roixsize")) );
-    ui->roiYsizeLineEdit->setText(  QString("%1").arg( _currentSettings.value("roiysize")) );
-    ui->edgeLineEdit->setText(      QString("%1").arg( _currentSettings.value("npixedge")) );
-    ui->nLinesLineEdit->setText(    QString("%1").arg( _currentSettings.value("nlines"))   );
+    ui->roiNumberSpinBox->setValue( _currentSettings.value("roinumber"));
+    ui->roiXsizeSpinBox->setValue(  _currentSettings.value("roixsize") );
+    ui->roiYsizeSpinBox->setValue(  _currentSettings.value("roiysize") );
+    ui->edgeSpinBox->setValue(      _currentSettings.value("npixedge") );
+    ui->nLinesSpinBox->setValue(    _currentSettings.value("nlines")   );
 
     ui->fitPlaneCheckBox->setChecked(   _currentSettings.value("fitplane") );
     ui->zeroFreqCheckBox->setChecked(   _currentSettings.value("zerofreq") );
@@ -170,27 +170,28 @@ void optionsDialog::on_windowLineEdit_editingFinished()
 
 void optionsDialog::on_manualRadioButton_toggled(bool checked)
 {
-    ui->roiXsizeLineEdit->setEnabled(checked);
-    ui->roiYsizeLineEdit->setEnabled(checked);
+    ui->roiXsizeSpinBox->setEnabled(checked);
+    ui->roiYsizeSpinBox->setEnabled(checked);
+    ui->roiNumberSpinBox->setEnabled(checked);
 
     if(!checked){
-        ui->roiNumberSpinBox->setMaximum( 1 );
+//        ui->roiNumberSpinBox->setMaximum( 1 );
         ui->roiNumberSpinBox->setValue(   1 );
     }
 }
 
-void optionsDialog::on_roiXsizeLineEdit_editingFinished()
+void optionsDialog::on_roiXsizeSpinBox_editingFinished()
 {
-//    int x = ui->roiXsizeLineEdit->text().toInt(); //debugging
-//    int y = ui->roiYsizeLineEdit->text().toInt();
-    int Nmax = _mpx3gui->getDataset()->calcMaxNroi( ui->roiXsizeLineEdit->text().toInt(), ui->roiYsizeLineEdit->text().toInt() );
+    int Nmax = _mpx3gui->getDataset()->calcMaxNroi( ui->roiXsizeSpinBox->value(), ui->roiYsizeSpinBox->value());
     ui->roiNumberSpinBox->setMaximum( Nmax );
     ui->roiNumberSpinBox->setValue( Nmax );
 }
 
-void optionsDialog::on_roiYsizeLineEdit_editingFinished()
+void optionsDialog::on_roiYsizeSpinBox_editingFinished()
 {
-    int Nmax = _mpx3gui->getDataset()->calcMaxNroi( ui->roiXsizeLineEdit->text().toInt(), ui->roiYsizeLineEdit->text().toInt() );
+    int x = ui->roiXsizeSpinBox->value();
+    int y = ui->roiYsizeSpinBox->value();
+    int Nmax = _mpx3gui->getDataset()->calcMaxNroi( ui->roiXsizeSpinBox->value(), ui->roiYsizeSpinBox->value() );
     ui->roiNumberSpinBox->setMaximum( Nmax );
     ui->roiNumberSpinBox->setValue( Nmax );
 }
@@ -207,4 +208,11 @@ void optionsDialog::on_selectedRoIRadioButton_toggled(bool checked)
             _mpx3gui->GetUI()->stackedWidget->setCurrentIndex( __visualization_page_Id );
         }
     }
+}
+
+void optionsDialog::on_zeroFreqCheckBox_toggled(bool checked)
+{
+    //Prevents the case that neither the zero axis as any off-axis lines are used. (No data)
+    if(checked) ui->nLinesSpinBox->setMinimum(0);
+    else ui->nLinesSpinBox->setMinimum(1);
 }
