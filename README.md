@@ -152,7 +152,7 @@ for this we need:
     for this we need: 
         - **Fourier Transform **  
         of RoI’s open beam image(s) 
-    - G^2
+    - **G^2**
     The system gain.
 
 - **SNR^2_ideal**  
