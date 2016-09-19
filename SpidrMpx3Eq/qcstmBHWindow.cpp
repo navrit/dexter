@@ -14,7 +14,7 @@ QCstmBHWindow::QCstmBHWindow(QWidget *parent) :
     ui(new Ui::QCstmBHWindow)
 {
     ui->setupUi(this);
-    this->setWindowTitle("BH Correction");
+    this->setWindowTitle("Beam hardening correction");
 
     connect(this,&QCstmBHWindow::loadSignal,this, &QCstmBHWindow::on_loadButton_clicked);
     connect(this,SIGNAL(loadData()), this, SLOT(on_loadButton_clicked()));
