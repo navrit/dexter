@@ -1432,20 +1432,26 @@ void QCstmDQE::on_npsPushButton_clicked()
 }
 
 void QCstmDQE::on_saveMTFpushButton_clicked()
-{ //FIX ME!! >>>>
+{
     QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("Text files (*.txt)"));
     QString pngfilename;
     // Force the .txt in the data filename
-    if ( ! filename.contains(".txt") ) {
-        pngfilename = filename.append(".png");
-        filename.append(".txt");
-    }
-    else{ pngfilename = filename;
-        pngfilename.remove(".txt");
-        pngfilename.append(".png");
+    // Also check to see if a filename has been entered at all
+    if (!filename.isEmpty()){
+        if ( ! filename.contains(".txt") ) {
+            pngfilename = filename.append(".png");
+            filename.append(".txt");
+        }
+        else{
+            pngfilename = filename;
+            pngfilename.remove(".txt");
+            pngfilename.append(".png");
+        }
+    } else {
+        return;
     }
 
-    // And save
+    // Save the file with some error handling
     QFile saveFile(filename);
     if (!saveFile.open(QIODevice::WriteOnly)) {
         string messg = "Couldn't open: ";
