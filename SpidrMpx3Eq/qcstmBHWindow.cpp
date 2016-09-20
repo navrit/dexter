@@ -235,22 +235,24 @@ void QCstmBHWindow::on_applyBHCorrection()
 
     //! Loop over different layers in the Dataset.
     for (int i = 0; i < keys.length(); i++){
-        //!Create a datastructure that can be analysed.
-        QVector<QVector<double>> bhData(_mpx3gui->getDataset()->getPixelsPerLayer());
+        //!Create a datastructure that can be analysed. bhData contains a vector for each pixel, containing the values at different thicknesses.
+        QVector<QVector<double> > bhData(_mpx3gui->getDataset()->getPixelsPerLayer());
         std::sort(thicknessvctr.begin(), thicknessvctr.end(), cstmSortStruct);
 
+        //Add thickness data to each pixel.
         for(int j = 0; j<thicknessvctr.size(); j++){
             int * layer = correctionMap[thicknessvctr[j]].getLayer(keys[i]);
-            for(unsigned int k = 0; k<_mpx3gui->getDataset()->getPixelsPerLayer(); k++){ bhData[k].push_back(layer[k]); }
+            for(unsigned int k = 0; k < _mpx3gui->getDataset()->getPixelsPerLayer(); k++)
+                bhData[k].push_back(layer[k]);
         }
 
         //! Apply the correction.
-        //! Makes some checks to ensure that the spline algorithm doesn't crash.
+        //! Make some checks to ensure that the spline algorithm doesn't crash.
         int * currentLayer = _mpx3gui->getOriginalDataset()->getLayer(keys[i]); //Doesn't take into account other corrections.
         //int * currentLayer = _mpx3gui->getDataset()->getLayer(keys[i]); //Use this instead?
 
         for(unsigned int j = 0; j< _mpx3gui->getDataset()->getPixelsPerLayer(); j++){
-            QVector<double> temp = bhData[j];
+            QVector<double> temp = bhData[j]; //Thickness data of 1 pixel
             bool ascending = true;
 
             for(int q = 0; q<temp.size()-1; q++){
@@ -259,9 +261,10 @@ void QCstmBHWindow::on_applyBHCorrection()
 
             int a = currentLayer[j];
 
+            //Do the interpolation per pixel
             if(temp[0]!= 0 && temp[0] < 50000 && ascending){
-                m_spline->set_points(temp.toStdVector(),thicknessvctr.toStdVector(), false);
-                currentLayer[j] = (*m_spline)(currentLayer[j]); //Do the interpolation
+                m_spline->set_points(temp.toStdVector(),thicknessvctr.toStdVector(), false);    //Set up spline for all thickness signals.
+                currentLayer[j] = (*m_spline)(currentLayer[j]);                                 //Get thickness of the current signal according to spline.
             }
 
             if(a == currentLayer[j])
@@ -269,6 +272,7 @@ void QCstmBHWindow::on_applyBHCorrection()
 
         }
 
+        //Change the currentLayer in dataset.
         for(unsigned int j = 0; j< _mpx3gui->getDataset()->getPixelsPerLayer(); j++){
             _mpx3gui->getDataset()->getLayer(keys[i])[j] = currentLayer[j];
         }

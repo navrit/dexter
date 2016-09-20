@@ -41,15 +41,15 @@ void optionsDialog::setCurrentSettings()
     _currentSettings["fitder"]  = ui->fitDerCheckBox->isChecked();
     _currentSettings["bindata"] = ui->binDataCheckBox->isChecked();
 
-    _currentSettings["binsize"] = ui->binSizeLineEdit->text().toDouble();
+    _currentSettings["binsize"] = ui->binSizeSpinBox->value();
 
     //Check if the window width is not larger than the dataset.
     int maxlength = _datarange / _currentSettings.value("binsize");
-    int windowW = ui->windowLineEdit->text().toInt();
+    int windowW = ui->windowSpinBox->value();
     if( windowW > maxlength){
         windowW = maxlength;
         QMessageBox::warning ( this, tr("Warning"), tr( "The window width cannot be larger than the number of data points." ) );
-        ui->windowLineEdit->setText( QString("%1").arg(windowW) );
+        ui->windowSpinBox->setValue( windowW );
     }
     _currentSettings["windowW"] = windowW;
 
@@ -78,8 +78,8 @@ void optionsDialog::resetSettings()
     ui->fitDerCheckBox->setChecked(     _currentSettings.value("fitder") );
     ui->binDataCheckBox->setChecked(    _currentSettings.value("bindata") );
 
-    ui->binSizeLineEdit->setText( QString("%1").arg( _currentSettings.value("binsize")) );
-    ui->binSizeLineEdit->setText( QString("%1").arg( _currentSettings.value("windowW")) );
+    ui->binSizeSpinBox->setValue( _currentSettings.value("binsize") );
+    ui->binSizeSpinBox->setValue(_currentSettings.value("windowW") );
 
     //NPS options
     if( _currentSettings.value("fullimage") )
@@ -135,36 +135,36 @@ void optionsDialog::on_fitComboBox_currentIndexChanged(const QString &arg1)
     if(arg1.contains("Error")){
 //        _useErrorFunc = true;
         ui->windowLabel->setEnabled(false);
-        ui->windowLineEdit->setEnabled(false);
+        ui->windowSpinBox->setEnabled(false);
     }
     if(arg1.contains("Smoothing")){
 //        _useErrorFunc = false;
         ui->windowLabel->setEnabled(true);
-        ui->windowLineEdit->setEnabled(true);
+        ui->windowSpinBox->setEnabled(true);
     }
 }
 
-void optionsDialog::on_windowLineEdit_editingFinished()
+void optionsDialog::on_windowSpinBox_editingFinished()
 {
-    int width = ui->windowLineEdit->text().toInt();
-    int binsize = ui->binSizeLineEdit->text().toInt();
+    int width = ui->windowSpinBox->value();
+    int binsize = ui->binSizeSpinBox->value();
     int maxlength = _datarange / binsize;
     if(maxlength % 2 ==0) maxlength--;
 
     if(width <= 2){
         width = 3;
                 QMessageBox::warning ( this, tr("Warning"), tr( "The window width must be bigger than 2." ) );
-        ui->windowLineEdit->setText(QString("%1").arg(width));
+        ui->windowSpinBox->setValue(width);
     }
     if(width % 2 == 0){
         width ++; //The window width must be an uneven number.
         QMessageBox::warning ( this, tr("Warning"), tr( "The window width must be an uneven number." ) );
-        ui->windowLineEdit->setText(QString("%1").arg(width));
+        ui->windowSpinBox->setValue(width);
     }
     if(width > maxlength){
         width = maxlength;
         QMessageBox::warning ( this, tr("Warning"), tr( "The window width can not be larger than the number of data points." ) );
-        ui->windowLineEdit->setText(QString("%1").arg(width));
+        ui->windowSpinBox->setValue(width);
     }
 }
 
@@ -215,4 +215,9 @@ void optionsDialog::on_zeroFreqCheckBox_toggled(bool checked)
     //Prevents the case that neither the zero axis as any off-axis lines are used. (No data)
     if(checked) ui->nLinesSpinBox->setMinimum(0);
     else ui->nLinesSpinBox->setMinimum(1);
+}
+
+void optionsDialog::on_binSizeSpinBox_editingFinished()
+{
+    //TODO: Check if the binsize is smaller than the dataset. No errors, but no bindata.. Warn user.
 }

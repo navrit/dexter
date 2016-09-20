@@ -32,7 +32,7 @@ private slots:
 
     void on_fitComboBox_currentIndexChanged(const QString &arg1);
 
-    void on_windowLineEdit_editingFinished();
+    void on_windowSpinBox_editingFinished();
 
     void on_manualRadioButton_toggled(bool checked);
 
@@ -43,6 +43,8 @@ private slots:
     void on_selectedRoIRadioButton_toggled(bool checked);
 
     void on_zeroFreqCheckBox_toggled(bool checked);
+
+    void on_binSizeSpinBox_editingFinished();
 
 signals:
     void close_optionsDialog();

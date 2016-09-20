@@ -195,6 +195,8 @@ private slots:
 
     void on_clearAllPushButton_clicked();
 
+    void on_toolButton_clicked();
+
 public slots:
     void on_close_optionsDialog();    
     void on_apply_options(QHash<QString, int> options);
