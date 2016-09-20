@@ -394,7 +394,6 @@ void QCstmBHWindow::on_saveJsonButton_clicked()
         if (!fileName.endsWith(".JSON") && !fileName.endsWith(".json") && !fileName.endsWith("Json"))
             fileName += ".json";
     } else {
-        qDebug() << "Empty JSON filename - return;";
         return;
     }
 
