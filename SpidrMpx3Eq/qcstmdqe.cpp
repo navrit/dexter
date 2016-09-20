@@ -1432,7 +1432,7 @@ void QCstmDQE::on_npsPushButton_clicked()
 }
 
 void QCstmDQE::on_saveMTFpushButton_clicked()
-{
+{ //FIX ME!! >>>>
     QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("Text files (*.txt)"));
     QString pngfilename;
     // Force the .txt in the data filename
