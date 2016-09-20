@@ -848,7 +848,7 @@ void Mpx3GUI::open_data(bool saveOriginal){
     if(reply== QMessageBox::Yes) getDataset()->setCorrected(true);
     else getDataset()->setCorrected(false);
 
-    this->setWindowTitle("ASI Medipix3 "+filename);
+    this->setWindowTitle( _softwareName + filename);
 
     // If not in DQE - change back to Visualisation
     if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
@@ -956,7 +956,8 @@ void Mpx3GUI::clear_configuration(){
 
         for ( int i = 0 ; i < ndev ; i++ ) {
 
-            if ( ! config->detectorResponds( i ) ) continue;
+            if ( ! config->detectorResponds( i ) )
+                continue;
 
             if ( _ui->equalizationWidget->GetEqualizationResults( i ) ) {
 
@@ -971,7 +972,9 @@ void Mpx3GUI::clear_configuration(){
             pd.setValue( i+1 );
         }
 
-    } else { noEqualization = true; }
+    } else {
+        noEqualization = true;
+    }
 
     if ( noEqualization ) {
         qDebug() << "[INFO] No equalization has been loaded. Nothing to clear.";
@@ -985,7 +988,8 @@ void Mpx3GUI::clear_data(bool clearStatusBar) {
     //getVisualization()->cle
     emit data_cleared();
 
-    if ( clearStatusBar ) emit sig_statusBarAppend("Clear data","orange");
+    if ( clearStatusBar )
+        emit sig_statusBarAppend("Clear data","orange");
 
 }
 

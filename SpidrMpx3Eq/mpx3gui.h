@@ -56,6 +56,8 @@ class QCstmStepperMotor;
 #define __ct_page_Id                6
 #define __stepperMotor_page_Id      7
 
+const QString _softwareName = "ASI Medipix3";
+
 namespace Ui {
 class Mpx3GUI;
 }
