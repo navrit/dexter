@@ -20,7 +20,6 @@
 #include "gradient.h"
 #include "dataset.h"
 #include "mpx3config.h"
-#include "qcstmexternalgraph.h"
 
 #include <QMessageBox>
 #include <QDebug>
@@ -40,7 +39,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
 
     // Instantiate everything in the UI
     _ui->setupUi(this);
-    this->setWindowTitle("ASI Medipix3");
+    this->setWindowTitle(_softwareName);
     workingSet = new Dataset(128,128, 4);
     originalSet = new Dataset(128,128, 4);
     config = new Mpx3Config;
@@ -159,10 +158,6 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     //_ui->statusBar->set
     //m_statusBarMessageLabel.setAlignment( Qt::AlignLeft );
     m_statusBarMessageString.clear( );
-
-    QCstmExternalGraph *dialog = new QCstmExternalGraph;
-    dialog->SetMpx3GUI(this);
-    dialog->show();
 
 }
 
@@ -374,6 +369,7 @@ void Mpx3GUI::startupActions()
     // startup actions
     if ( ! gradients.empty() ) {
         _ui->visualizationGL->startupActions();
+
     }
 
 }
@@ -850,7 +846,7 @@ void Mpx3GUI::open_data(bool saveOriginal){
 
     //Ask whether the loaded data is already OBcorrected or not.
     QMessageBox::StandardButton reply = QMessageBox::question( this, tr("Specify data"), tr("Is this data corrected?"), QMessageBox::Yes | QMessageBox::No);
-    if(reply== QMessageBox::Yes) getDataset()->setCorrected(true);
+    if(reply == QMessageBox::Yes) getDataset()->setCorrected(true);
     else getDataset()->setCorrected(false);
 
     this->setWindowTitle( _softwareName + filename);

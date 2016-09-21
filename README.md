@@ -217,7 +217,7 @@ the Handbook of Medical Imaging (Beutel et al.) and by
 The method is described by the steps below in order of the
 calculation. Which is not necessarily the order of implementation.
 
-#### TO DO:
+#### Steps:
 
 - Determine characteristic curve.  
 - Convert pixel values to be linearly proportional to exposure (using characteristic curve). 
@@ -233,7 +233,7 @@ calculation. Which is not necessarily the order of implementation.
 According to the method used for the NPS, it is
 then not too difficult to calculate the DQE. (see overview)
 
-#### TO DO:
+#### Steps:
 
 - Calculate SNR^2_ideal per exposure from the x-ray spectrum.
 - Determine the exposure.
@@ -326,7 +326,7 @@ To add an option, a few things have to be done:
 3. In _optionsDialog.cpp_,
 	add the appropriate expression for saving the option to _setCurrentSettings()_.  
     [For example: the binsize is set like this:  
-    > _currentSettings["binsize"]=ui-&gt;binSizeLineEdit-&gt;text().toInt();] 
+    > _currentSettings["binsize"]=ui->binSizeLineEdit->text().toInt();] 
 
 4. Also add an expression for resetting the option in _resetSettings()._ 
 
