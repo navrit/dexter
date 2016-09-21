@@ -31,10 +31,10 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
     ui->MTFplot->xAxis->setLabel("Spatial frequency (F_Nyquist)");
     ui->MTFplot->yAxis->setLabel("Normalised Presampled MTF");
 
-    ui->xNPSplot->xAxis->setLabel("Spatial frequency (1/x)");
-    ui->xNPSplot->yAxis->setLabel("NPS X direction");
-    ui->yNPSplot->xAxis->setLabel("Spatial frequency (1/y)");
-    ui->yNPSplot->yAxis->setLabel("NPS Y direction");
+    ui->xNPSplot->xAxis->setLabel("Spatial frequency X (1/pix)");
+    ui->xNPSplot->yAxis->setLabel("NPS X direction (mm^2)");
+    ui->yNPSplot->xAxis->setLabel("Spatial frequency Y (1/pix)");
+    ui->yNPSplot->yAxis->setLabel("NPS Y direction (mm^2)");
 
 //    connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
 //    connect( this, &QCstmDQE::open_data, _mpx3gui, &Mpx3GUI::open_data_with_path);
@@ -890,40 +890,12 @@ void QCstmDQE::calcNPSdata()
 
     if(_singleFileNPS){
         _logtext += "NPS calculated for a single file.\n";
-        if(_useSelectedRoI){            
-            roidata = vectorIntToDouble( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
+        roidata = collectRoIdata();
 
-            _logtext += QString("Region (%1, %2)->(%3, %4) was used.\n").arg(_beginpix.x()).arg(_beginpix.y()).arg(_endpix.x()).arg(_endpix.y());
-
-        }
-        else if(_useFullimage){
-
-            //Give the upper left and lower right points of the image to collectPointsROI
-            QPoint dsize = _mpx3gui->getDataset()->getSize();
-            int Nd = _mpx3gui->getDataset()->getFrameCount();
-            int Nx = sqrt( double(Nd) ) * dsize.x();
-            int Ny = sqrt( double(Nd) ) * dsize.y();
-
-            QPoint begin, end;
-            begin   = QPoint(0, Ny);
-            end     = QPoint(Nx, 0);
-
-            //Go away from the edge, if set by user.
-            if(_nPixEdge > 0){
-                begin   += QPoint(  _nPixEdge, - _nPixEdge); //top left
-                end     += QPoint(- _nPixEdge,   _nPixEdge); //bottom right
-            }
-
-            roidata = vectorIntToDouble( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, begin, end ) );
-
-            _logtext += QString("Region (%1, %2)->(%3, %4) was used.\n").arg(begin.x()).arg(begin.y()).arg(end.x()).arg(end.y());
-        }
-
-//        ftROIdata = vectorIntToDouble(roidata);
-        if(_fitPlane)   correctPlaneRoI( roidata );
+        if(_fitPlane) correctPlaneRoI( roidata );
         ftROIdata = calcFTsquareRoI( roidata );
-        if(_showFT)     plotFTsquare( ftROIdata );
-        calc1Dnps( ftROIdata );
+
+        if(_showFT) plotFTsquare( ftROIdata );
 
     }
     else{
@@ -936,10 +908,11 @@ void QCstmDQE::calcNPSdata()
             emit open_data(false, true, filename);
             _logtext += "  " + filename + "\n";
 
-            roidata = vectorIntToDouble( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
+//            roidata = vectorIntToDouble( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
+            roidata = collectRoIdata();
 
-
-            if(_fitPlane) correctPlaneRoI( roidata );
+            if(_fitPlane)
+                correctPlaneRoI( roidata );
             ftROIdata = calcFTsquareRoI( roidata );
 //            ftROIdata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, _beginpix, _endpix));
 
@@ -970,8 +943,26 @@ void QCstmDQE::calcNPSdata()
 
         if(_showFT) plotFTsquare(ft2Ddata); //Only plot the mean FT squared.
 
-        calc1Dnps(ft2Ddata);
+//        calc1Dnps(ft2Ddata);
     }
+
+    //Actually multiply other NPS factor
+    double factor = _pixelsize * _pixelsize;
+    QPoint dif = _endpix - _beginpix;
+    int Nx = abs( dif.x() );
+    int Ny = abs( dif.y() );
+    if(Nx != 0 && Ny != 0)
+        factor /= Nx*Ny;
+    else qDebug() << "Attempting to divide by zero in calcNPSdata";
+
+    for(int y=0; y < ftROIdata.length(); y++)
+        for(int x = 0; x < ftROIdata[0].length(); x++){
+            ftROIdata[y][x] *= factor;
+        }
+
+    if(_showFT) plotFTsquare(ftROIdata);
+
+    calc1Dnps( ftROIdata );
 
     //Now normalize the NPS to its maximum value.
     if(_normNPSmax) calcNormNPS();
@@ -982,11 +973,13 @@ void QCstmDQE::calcNormNPS(){
     //Normalize the NPS to its maximum value.
     if(_NPSdata.isEmpty()) return;
 
-    int max = 0, i;
+    int i;
+    double max = 0;
     double value;
     for(i = 0; i < _NPSdata[0].length(); i++){
         value = _NPSdata[0][i];
-        if(value > max) max = value;
+        if(value > max)
+            max = value;
     }
     for(i = 0; i < _NPSdata[0].length(); i++)
         _NPSdata[0][i] /= max;
@@ -1686,8 +1679,13 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
          _showFT = false;
     else _showFT = true;
 
-    _NlinesNPS = options.value("nlines");
+    _NlinesNPS  = options.value("nlines");
     _normNPSmax = options.value("normmaxnps");
+    _pixelsize  = 0.001*double(options.value("pixelsize")); //to micrometer
+
+    if(options.value("1/mm"))   _unitNPS    = "1/mm";
+    if(options.value("1/pix"))  _unitNPS    = "1/pix";
+    if(options.value("lp/mm"))  _unitNPS    = "lp/mm";
 }
 
 void QCstmDQE::on_maindata_changed(QString /*filename*/)

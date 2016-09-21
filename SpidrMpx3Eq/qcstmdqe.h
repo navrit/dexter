@@ -103,7 +103,10 @@ private:
     bool    _useZeroFreq    = true;             //!Indicates whether the zero frequency values of the Fourier Transform should be included in the NPS.
     int     _NlinesNPS      = 0;                //!Specifies how many lines next to either side of the axes should be used for the NPS calculation.
     bool    _showFT         = false;            //!Indicates whether the Fourier Transform amplitude plots should be shown.
-    bool    _normNPSmax     = true;             //!Indicates whether the NPS that is plotted should be normalized to its maximum value.
+    bool    _normNPSmax     = false;            //!Indicates whether the NPS that is plotted should be normalized to its maximum value.
+
+    double  _pixelsize      = 0.110;            //!Pixelsize in millimeters.
+    QString _unitNPS        = "1/pix";
 
     //Main calculations:
     QVector<QVector<double> > calcESFbinData();                 //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.

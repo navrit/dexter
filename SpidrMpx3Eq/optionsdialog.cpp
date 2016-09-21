@@ -68,6 +68,11 @@ void optionsDialog::setCurrentSettings()
     _currentSettings["zerofreq"]    = ui->zeroFreqCheckBox->isChecked();
     _currentSettings["showft"]      = ui->showFTcheckBox->isChecked();
     _currentSettings["normmaxnps"]  = ui->normMaxNpsCheckBox->isChecked();
+
+    _currentSettings["pixelsize"]   = ui->pixelSizeLineEdit->text().toInt();
+    for(int i = 0; i < ui->unitsNpsComboBox->count(); i++)
+        _currentSettings[ ui->unitsNpsComboBox->itemText(i) ] = 0;
+    _currentSettings[ ui->unitsNpsComboBox->currentText() ] = 1;
 }
 
 void optionsDialog::resetSettings()
@@ -98,6 +103,13 @@ void optionsDialog::resetSettings()
     ui->zeroFreqCheckBox->setChecked(   _currentSettings.value("zerofreq") );
     ui->showFTcheckBox->setChecked(     _currentSettings.value("showft") );
     ui->normMaxNpsCheckBox->setChecked( _currentSettings.value("normmaxnps") );
+
+    ui->pixelSizeLineEdit->setText( QString("%1").arg(_currentSettings.value("pixelsize")) );
+
+    if(_currentSettings.value("1/pix"))   ui->unitsNpsComboBox->setCurrentText("1/pix");
+    if(_currentSettings.value("1/mm"))    ui->unitsNpsComboBox->setCurrentText("1/mm");
+    if(_currentSettings.value("lp/mm"))   ui->unitsNpsComboBox->setCurrentText("lp/mm");
+
 }
 
 void optionsDialog::on_buttonBox_clicked(QAbstractButton *button)
@@ -208,6 +220,7 @@ void optionsDialog::on_selectedRoIRadioButton_toggled(bool checked)
             _mpx3gui->GetUI()->stackedWidget->setCurrentIndex( __visualization_page_Id );
         }
     }
+    ui->edgeSpinBox->setEnabled(checked);
 }
 
 void optionsDialog::on_zeroFreqCheckBox_toggled(bool checked)
