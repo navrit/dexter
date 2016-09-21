@@ -380,17 +380,16 @@ void QCstmDQE::fitESFparams(QVector<QVector<double> > esfdata)
             mse += res2;
         }
 
-        cout << "Normalized residuals: " << red_chi_squared;
+//        cout << "Normalized residuals: " << red_chi_squared;
 
         red_chi_squared /= length - (int)params.size();
 
-        cout << " 'Reduced Chi squared:' "<< red_chi_squared << endl;
+//        cout << " 'Reduced Chi squared:' "<< red_chi_squared << endl;
 
         //TO DO: find a more appropriate way to represent the quality of the fit.
         //#dof is undefined for a non-linear model fit.
 
         mse /= length;
-//        cout << "Mean Squared error: " << mse << endl;
         _logtext += QString("Mean Squared Error of the fit: %1\n").arg(mse) ;
     }
     catch (std::exception& e)
@@ -469,7 +468,7 @@ QVector<QVector<double> > QCstmDQE::calcESFbinData()
     Npoints.resize(length);
 
     //Calculating the total pixelvalue and #points in each bin.
-    //_ESFdata is not in order of distance...
+    //_ESFdata is not in order of distance, so we have to look for the right bin.
     double d, binleft, dif;
     for(i = 0; i < _ESFdata[0].length(); i++){
         d = _ESFdata[0][i];
@@ -560,8 +559,8 @@ QVector<QVector<double> > QCstmDQE::calcESFfitData()
 }
 
 QVector<QVector<double> > QCstmDQE::calcSmoothedESFdata(QVector<QVector<double> > data)
-{   int i;
-//    _windowW = 11; //Set window width (TO DO user option).
+{
+    int i;
     int offset = (_windowW - 1) / 2;
     std::vector<std::pair<input_vector, double> > windowData(_windowW); //vector of pairs of the variable going in and the value coming out.
     parameter_vector params;
@@ -574,21 +573,8 @@ QVector<QVector<double> > QCstmDQE::calcSmoothedESFdata(QVector<QVector<double> 
     smoothData[0].resize(lengthSmooth);
     smoothData[1].resize(lengthSmooth);
 
-//    for(i = 0; i < windowW; i++){
-//        input(0) = data[0][i];       //x
-//        input(1) = - 0.5*(windowW - 1) + i; //Position of datapoint in array wrt middle (for weighting)
-//        double output = data[1][i];  //y
-//        windowData.at(i) = make_pair(input, output);
-//    }
-
     for(int j = 0; j < lengthSmooth; j++){//For every point(index) to be fitted and put in smoothdata.
 
-//        if(i > offset){
-//            //Shift window by one spot.
-//            windowData.erase(windowData.begin());
-//            input(0) = data[0][i + offset];
-//            windowData.push_back( make_pair( input , data[1][i + offset] ) );
-//        }
         int imiddle = j + offset;
 
         int begin   = - 0.5*(_windowW-1);
@@ -633,7 +619,7 @@ double polyWeightRoot(input_vector input, int windowW){
     //Gaussian weights, (Samei et al. (1998))
     double i = input(1);
     double arg = 4*i/( windowW - 1);
-    arg *= - arg; //- arg2
+    arg *= - arg;
 
     double f = exp(arg);
     return sqrt(f);
@@ -645,8 +631,6 @@ QVector<QVector<double> > QCstmDQE::calcNumDerivativeOfdata(QVector<QVector<doub
 
     QVector<QVector<double> > derData(2);
 
-//    double bw = _binsize;
-//    int offset = 2*bw; //5point
     int offset = 1; //3point
     length -= 2*offset;
 
@@ -665,18 +649,18 @@ QVector<QVector<double> > QCstmDQE::calcNumDerivativeOfdata(QVector<QVector<doub
 }
 
 
-double QCstmDQE::FivePointsStencil(QVector<double> func, int x, double bw) {
+//double QCstmDQE::FivePointsStencil(QVector<double> func, int x, double bw) {
 
-    double der = 0.;
+//    double der = 0.;
 
-    der -=      func[ x + 2*bw ];
-    der += 8. * func[ x +   bw ];
-    der -= 8. * func[ x -   bw ];
-    der +=      func[ x - 2*bw ];
-    der /= 12.*bw;
+//    der -=      func[ x + 2*bw ];
+//    der += 8. * func[ x +   bw ];
+//    der -= 8. * func[ x -   bw ];
+//    der +=      func[ x - 2*bw ];
+//    der /= 12.*bw;
 
-    return der;
-}
+//    return der;
+//}
 
 QVector<QVector<double> > QCstmDQE::vectorIntToDouble(const QVector<QVector<int> > &intvector )
 {
@@ -694,6 +678,41 @@ QVector<QVector<double> > QCstmDQE::vectorIntToDouble(const QVector<QVector<int>
             doublevector[y][x] = double(intvector[y][x]);
 
     return doublevector;
+}
+
+QVector<QVector<double> > QCstmDQE::collectRoIdata()
+{
+    QVector<QVector<double> > roidata;
+    if(_useSelectedRoI){
+        roidata = vectorIntToDouble( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
+
+        _logtext += QString("Region (%1, %2)->(%3, %4) was used.\n").arg(_beginpix.x()).arg(_beginpix.y()).arg(_endpix.x()).arg(_endpix.y());
+
+    }
+    else if(_useFullimage){
+
+        //Give the upper left and lower right points of the image to collectPointsROI
+        QPoint dsize = _mpx3gui->getDataset()->getSize();
+        int Nd = _mpx3gui->getDataset()->getFrameCount();
+        int Nx = sqrt( double(Nd) ) * dsize.x();
+        int Ny = sqrt( double(Nd) ) * dsize.y();
+
+        QPoint begin, end;
+        begin   = QPoint(0, Ny);
+        end     = QPoint(Nx, 0);
+
+        //Go away from the edge, if set by user.
+        if(_nPixEdge > 0){
+            begin   += QPoint(  _nPixEdge, - _nPixEdge); //top left
+            end     += QPoint(- _nPixEdge,   _nPixEdge); //bottom right
+        }
+
+        roidata = vectorIntToDouble( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, begin, end ) );
+
+        _logtext += QString("Region (%1, %2)->(%3, %4) was used.\n").arg(begin.x()).arg(begin.y()).arg(end.x()).arg(end.y());
+    }
+
+    return roidata;
 }
 
 
@@ -878,15 +897,26 @@ void QCstmDQE::calcNPSdata()
 
         }
         else if(_useFullimage){
+
             //Give the upper left and lower right points of the image to collectPointsROI
             QPoint dsize = _mpx3gui->getDataset()->getSize();
             int Nd = _mpx3gui->getDataset()->getFrameCount();
             int Nx = sqrt( double(Nd) ) * dsize.x();
             int Ny = sqrt( double(Nd) ) * dsize.y();
 
-            roidata = vectorIntToDouble( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, QPoint(0, Ny), QPoint(Nx, 0) ) );
+            QPoint begin, end;
+            begin   = QPoint(0, Ny);
+            end     = QPoint(Nx, 0);
 
-            _logtext += QString("Region (%1, %2)->(%3, %4) was used.\n").arg(0).arg(Ny).arg(Nx).arg(0);
+            //Go away from the edge, if set by user.
+            if(_nPixEdge > 0){
+                begin   += QPoint(  _nPixEdge, - _nPixEdge); //top left
+                end     += QPoint(- _nPixEdge,   _nPixEdge); //bottom right
+            }
+
+            roidata = vectorIntToDouble( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, begin, end ) );
+
+            _logtext += QString("Region (%1, %2)->(%3, %4) was used.\n").arg(begin.x()).arg(begin.y()).arg(end.x()).arg(end.y());
         }
 
 //        ftROIdata = vectorIntToDouble(roidata);
@@ -907,6 +937,8 @@ void QCstmDQE::calcNPSdata()
             _logtext += "  " + filename + "\n";
 
             roidata = vectorIntToDouble( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
+
+
             if(_fitPlane) correctPlaneRoI( roidata );
             ftROIdata = calcFTsquareRoI( roidata );
 //            ftROIdata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, _beginpix, _endpix));
@@ -984,7 +1016,6 @@ void QCstmDQE::correctPlaneRoI(QVector<QVector<double> > &roidata)
                 input(0) = x + 0.5;
                 input(1) = y + 0.5;
                 z = planeModel(input, params);
-//                roidata[y][x] -= z;
                 roidata[y][x] -= z;
             }
     }
@@ -1124,7 +1155,7 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<double> > &d
 }
 
 
-parameter_vector QCstmDQE::fitPlaneParams(const QVector<QVector<double> > &dataRoI) //Creates error onlt when running in debug mode...
+parameter_vector QCstmDQE::fitPlaneParams(const QVector<QVector<double> > &dataRoI) //Creates error only when running in debug mode...
 {
     std::vector<std::pair<input_vector, double> > data; //vector of pairs of variable going in and the value coming out.
 

@@ -60,7 +60,6 @@ private:
     Mpx3GUI * _mpx3gui;
     optionsDialog * _optionsDialog;
 //    QCPItemTracer * tracer;
-    //int _currentThreshold;
 
     QPoint _beginpix    = QPoint(-1, -1);
     QPoint _endpix      = QPoint(-1, -1);
@@ -133,20 +132,15 @@ private:
     parameter_vector fitPlaneParams(const QVector<QVector<double> > &dataROI);
 
     QString dataToString(QVector<QVector<double> > data);               //!Turns the given data into a string for saving to a textfile.
-    double FivePointsStencil(QVector<double> func, int x, double bw);   //! Used for numerical derivation.
-//    void plotFTnps(QVector<QVector<double> > data);
+//    double FivePointsStencil(QVector<double> func, int x, double bw);   //! (not) used for numerical derivation.
     QVector<QVector<double> > vectorIntToDouble(const QVector<QVector<int> > &intvector);//!Converts a given 2D vector of ints to a 2D vector of doubles, when doubles are required for calculation.
-
+    QVector<QVector<double> > collectRoIdata();
 
 
 private slots:
     void on_takeDataPushButton_clicked();
 
     void on_comboBox_currentIndexChanged(const QString &arg1);
-
-//    void on_fitESFpushButton_clicked();
-
-//    void on_fitLSFpushButton_clicked();
 
     void on_loadDataPushButton_clicked();
 
