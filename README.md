@@ -326,7 +326,7 @@ To add an option, a few things have to be done:
 3. In _optionsDialog.cpp_,
 	add the appropriate expression for saving the option to _setCurrentSettings()_.  
     [For example: the binsize is set like this:  
-    > _currentSettings["binsize"]=ui-&gt;binSizeLineEdit-&gt;text().toInt();] 
+    > _currentSettings["binsize"]=ui->binSizeLineEdit->text().toInt();] 
 
 4. Also add an expression for resetting the option in _resetSettings()._ 
 
