@@ -173,8 +173,8 @@ void QCstmBHWindow::on_plot(){
     }
     ui->plotWidget->addGraph();
     ui->plotWidget->graph(0)->setData(xPlot, yPlot);
-    ui->plotWidget->xAxis->setLabel("Thickness");
-    ui->plotWidget->yAxis->setLabel("Signal");
+    ui->plotWidget->xAxis->setLabel("Thickness (μm)");
+    ui->plotWidget->yAxis->setLabel("Number of pixels");
     ui->plotWidget->xAxis->setRange(minX, maxX);
     ui->plotWidget->yAxis->setRange(minY, maxY);
     ui->plotWidget->replot();
