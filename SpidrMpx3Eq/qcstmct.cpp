@@ -15,17 +15,15 @@ QCstmCT::~QCstmCT()
   delete ui;
 }
 
-void QCstmCT::SetMpx3GUI(Mpx3GUI *p) {
-
+void QCstmCT::SetMpx3GUI(Mpx3GUI *p)
+{
 	_mpx3gui = p;
 	setGradient(0);
-
 }
 
-void QCstmCT::setGradient(int index) {
-
+void QCstmCT::setGradient(int index)
+{
 	ui->displayCT->setGradient( _mpx3gui->getGradient(index) );
-
 }
 
 void QCstmCT::rotatePushButton_clicked() {

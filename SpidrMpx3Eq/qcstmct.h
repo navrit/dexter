@@ -20,7 +20,7 @@ public:
 
   explicit QCstmCT(QWidget *parent = 0);
   ~QCstmCT();
-  Ui::QCstmCT *GetUI(){ return ui; };
+  Ui::QCstmCT *GetUI(){ return ui; }
 
   void SetMpx3GUI(Mpx3GUI *p);
   void setGradient(int index);
