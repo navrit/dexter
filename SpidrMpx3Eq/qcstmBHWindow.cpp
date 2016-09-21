@@ -113,7 +113,7 @@ void QCstmBHWindow::on_clearAllButton_clicked(){
     ui->plotWidget->clearItems();
     ui->plotWidget->replot();
     //! UI update - Correction Dialog
-    emit sendFilename(QString(""));
+    emit sendFilename(QString("No file loaded"));
     emit sendChecked_BHCorrCheckbox(false);
 
     //TODO BUG Why does this close the window?
@@ -295,8 +295,8 @@ void QCstmBHWindow::on_okButton_clicked(){
         QMessageBox msgBox;
         msgBox.setWindowTitle("Error");
         msgBox.setText(tr("You haven't loaded all of the necessary corrections. The beam hardening will not operate. Please load more corrections."));
-        //! UI update - Corrections Dialog - reset to blank
-        emit sendFilename(QString(""));
+        //! UI update - Corrections Dialog - "Error: File not loaded"
+        emit sendFilename(QString("Error: File not loaded"));
         emit sendChecked_BHCorrCheckbox(false);
         msgBox.exec();
     }
