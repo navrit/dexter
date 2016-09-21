@@ -32,9 +32,9 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
     ui->MTFplot->yAxis->setLabel("Normalised Presampled MTF");
 
     ui->xNPSplot->xAxis->setLabel("Spatial frequency (1/x)");
-    ui->xNPSplot->yAxis->setLabel("Normalised NPS X direction");
+    ui->xNPSplot->yAxis->setLabel("NPS X direction");
     ui->yNPSplot->xAxis->setLabel("Spatial frequency (1/y)");
-    ui->yNPSplot->yAxis->setLabel("Normalised NPS Y direction");
+    ui->yNPSplot->yAxis->setLabel("NPS Y direction");
 
 //    connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
 //    connect( this, &QCstmDQE::open_data, _mpx3gui, &Mpx3GUI::open_data_with_path);
@@ -137,6 +137,7 @@ void QCstmDQE::plotESF()
     _params = 0; //Sets all parameters to zero.
     _ESFdata.clear();
 
+    _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix);
     _ESFdata = _mpx3gui->getDataset()->calcESFdata();
 
     if(!_ESFdata.empty()){
@@ -677,6 +678,23 @@ double QCstmDQE::FivePointsStencil(QVector<double> func, int x, double bw) {
     return der;
 }
 
+QVector<QVector<double> > QCstmDQE::vectorIntToDouble(const QVector<QVector<int> > &intvector )
+{
+    int xlength = intvector[0].length();
+    int ylength = intvector.length();
+
+    QVector<QVector<double> > doublevector(ylength);
+
+    for(int i = 0; i < ylength; i++){
+        doublevector[i].resize(xlength);
+    }
+
+    for(int y = 0; y < ylength; y++)
+        for(int x = 0; x < xlength; x++)
+            doublevector[y][x] = double(intvector[y][x]);
+
+    return doublevector;
+}
 
 
 QVector<QVector<double> > QCstmDQE::calcLSFdata()
@@ -837,7 +855,7 @@ void QCstmDQE::plotEdge(QPoint ab)
 
 void QCstmDQE::calcNPSdata()
 {
-    QVector<QVector<double> > ft2Ddata;
+    QVector<QVector<double> > roidata;
     QVector<QVector<double> > ftROIdata;
 //    QVector<double> npsdata;
 
@@ -853,9 +871,8 @@ void QCstmDQE::calcNPSdata()
 
     if(_singleFileNPS){
         _logtext += "NPS calculated for a single file.\n";
-        if(_useSelectedRoI){
-            if(isValidRegionSelected())
-                ft2Ddata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
+        if(_useSelectedRoI){            
+            roidata = vectorIntToDouble( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
 
             _logtext += QString("Region (%1, %2)->(%3, %4) was used.\n").arg(_beginpix.x()).arg(_beginpix.y()).arg(_endpix.x()).arg(_endpix.y());
 
@@ -867,32 +884,41 @@ void QCstmDQE::calcNPSdata()
             int Nx = sqrt( double(Nd) ) * dsize.x();
             int Ny = sqrt( double(Nd) ) * dsize.y();
 
-            ft2Ddata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, QPoint(0, Ny), QPoint(Nx, 0) ) );
+            roidata = vectorIntToDouble( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, QPoint(0, Ny), QPoint(Nx, 0) ) );
 
-                _logtext += QString("Region (%1, %2)->(%3, %4) was used.\n").arg(0).arg(Ny).arg(Nx).arg(0);
+            _logtext += QString("Region (%1, %2)->(%3, %4) was used.\n").arg(0).arg(Ny).arg(Nx).arg(0);
         }
 
-        if(_showFT) plotFTsquare(ft2Ddata);
+//        ftROIdata = vectorIntToDouble(roidata);
+        if(_fitPlane)   correctPlaneRoI( roidata );
+        ftROIdata = calcFTsquareRoI( roidata );
+        if(_showFT)     plotFTsquare( ftROIdata );
+        calc1Dnps( ftROIdata );
 
-        calc1Dnps(ft2Ddata);
     }
     else{
         _logtext += "Mean NPS calculated for multiple files:\n";
+
+        QVector<QVector<double> > ft2Ddata;
 
         for( int i = 0; i < Nfiles; i++){
             QString filename = _NPSfilepaths[i];
             emit open_data(false, true, filename);
             _logtext += "  " + filename + "\n";
 
-            ftROIdata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, _beginpix, _endpix));
+            roidata = vectorIntToDouble( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
+            if(_fitPlane) correctPlaneRoI( roidata );
+            ftROIdata = calcFTsquareRoI( roidata );
+//            ftROIdata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, _beginpix, _endpix));
 
-            int xlength = ftROIdata[0].length();
-            int ylength = ftROIdata.length();
+            if(i == 0){ //Only do this once.. Assumes all regions are of equal size.
+                int xlength = ftROIdata[0].length();
+                int ylength = ftROIdata.length();
 
-            ft2Ddata.resize(ylength);
-
-            for(int i = 0; i < ylength; i++){
-                ft2Ddata[i].resize(xlength);
+                ft2Ddata.resize(ylength);
+                for(int i = 0; i < ylength; i++){
+                    ft2Ddata[i].resize(xlength);
+                }
             }
 
             //Add to total of multiple files.
@@ -910,7 +936,7 @@ void QCstmDQE::calcNPSdata()
                 }
         }
 
-        if(_showFT) plotFTsquare(ft2Ddata);
+        if(_showFT) plotFTsquare(ft2Ddata); //Only plot the mean FT squared.
 
         calc1Dnps(ft2Ddata);
     }
@@ -940,6 +966,28 @@ void QCstmDQE::calcNormNPS(){
     }
     for(i = 0; i < _NPSdata[1].length(); i++)
         _NPSdata[1][i] /= max;
+}
+
+void QCstmDQE::correctPlaneRoI(QVector<QVector<double> > &roidata)
+{
+    int xlength = roidata[0].length();
+    int ylength = roidata.length();
+
+    //Fit planar ramp.
+    parameter_vector params = fitPlaneParams(roidata);
+    input_vector input;
+    double z;
+
+    //Correct for the fitted plane (substract)
+    for(int y = 0; y < ylength; y++){
+            for(int x = 0; x < xlength; x++){
+                input(0) = x + 0.5;
+                input(1) = y + 0.5;
+                z = planeModel(input, params);
+//                roidata[y][x] -= z;
+                roidata[y][x] -= z;
+            }
+    }
 }
 
 void QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
@@ -983,7 +1031,7 @@ void QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
 
 }
 
-QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data )
+QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<double> > &data )
 {
     //The data is constructed as follows:
     //      - Each row represents a horizontal row of pixels, starting from the bottom of the selected RoI.
@@ -995,33 +1043,14 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
     int ylength = data.length();
 
     //For test plotting:
-    QtDataVisualization::QScatterDataArray data3D;
+//    QtDataVisualization::QScatterDataArray data3D;
 
-
-    if(_fitPlane){
-        //Fit planar ramp.
-        parameter_vector params = fitPlaneParams(data);
-        input_vector input;
-        double z;
-
-        //Correct for the fitted plane (substract)
-        for(int y = 0; y < ylength; y++){
-                for(int x = 0; x < xlength; x++){
-                    input(0) = x + 0.5;
-                    input(1) = y + 0.5;
-                    z = planeModel(input, params);
-                    data[y][x] -= z;
-                }
-        }
-    }
-
-//    //Test pattern.
+//    //Make a stripy testpattern with simple known FT.
 //    xlength = 8;
 //    ylength = 8;
 
 //    dlib::matrix<complex<double> > datamatrix(xlength, ylength);
 
-//    //Make a stripy testpattern.
 //    for(int y = 0; y < ylength; y++){
 //        for(int x = 0; x < xlength; x++){
 //            if( x <  2){
@@ -1042,9 +1071,9 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
 //            }
 //        }
 //    }
+//    plotData3D(data3D);
 
-
-//    int end = xlength;
+    //TODO:  make this more efficient >>>>
     for(int i = 0; i < 1000; i++){
         if( dlib::is_power_of_two( data[0].length() ) ) break;
         else{
@@ -1054,23 +1083,21 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
             xlength++ ;
         }
     }
-//    end = ylength;
+
     for(int i = 0; i < 1000; i++){
         if( dlib::is_power_of_two( data.length() ) ) break;
         else{
             //Pad one row of zeros.
-            QVector<int> zeros(xlength, 0);
+            QVector<double> zeros(xlength, 0.0);
             data.push_back(zeros);
-//            for(int j = 0; j < xlength; j++)
-//                data[j].push_back(0);
             ylength++ ;
         }
     }
+    //>>>>
 
     //Put the data in a matrix with complex values for FFT calculation...
     dlib::matrix<complex<double> > datamatrix(xlength, ylength);
-//    dlib::matrix<complex<double> > FTmatrix(ylength, xlength);
-    dlib::matrix<complex<double> > FTmatrix(xlength, ylength); //right?
+    dlib::matrix<complex<double> > FTmatrix(xlength, ylength);
 
     for(int y = 0; y < ylength; y++){
             for(int x = 0; x < xlength; x++){
@@ -1078,11 +1105,10 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
             }
     }
 
-//    plotData3D(data3D);
     FTmatrix = dlib::fft(datamatrix);
 
-    //Just to see data in Debugger :
     QVector<QVector<double> > ftdata(ylength);
+
     for(int y = 0; y < ylength; y++){
         ftdata[y].resize(xlength);
     }
@@ -1090,7 +1116,6 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
             for(int x = 0; x < xlength; x++){
                 //double z = norm( FTmatrix(y, x) ); //Norm gives the squared magnitude of the complex number in the FTmatrix.
                 double z = abs ( FTmatrix(x, y) );
-//                colorMap->data()->setCell(x, y, z);
                 ftdata[y][x] = z;
             }
     }
@@ -1099,7 +1124,7 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<int> > data 
 }
 
 
-parameter_vector QCstmDQE::fitPlaneParams(QVector<QVector<int> > dataRoI) //Creates error onlt when running in debug mode...
+parameter_vector QCstmDQE::fitPlaneParams(const QVector<QVector<double> > &dataRoI) //Creates error onlt when running in debug mode...
 {
     std::vector<std::pair<input_vector, double> > data; //vector of pairs of variable going in and the value coming out.
 
@@ -1256,10 +1281,6 @@ void QCstmDQE::on_takeDataPushButton_clicked() {
 
 void QCstmDQE::on_comboBox_currentIndexChanged(const QString &arg1)
 {
-//    QString s = arg1;
-//    s.remove("Threshold", Qt::CaseInsensitive);
-//    int layerIndex = s.toInt();
-//    setLayer(layerIndex);
     QStringList split = arg1.split(' ');
     int threshold = split.last().toInt();
     //int layerIndex = _mpx3gui->getDataset()->thresholdToIndex(threshold);
@@ -1270,32 +1291,8 @@ void QCstmDQE::on_comboBox_currentIndexChanged(const QString &arg1)
     //Collect new dataset.
     _mpx3gui->getDataset()->collectPointsROI(threshold, _beginpix, _endpix);
     //And do everything again for this set..
-
+    //TODO.
 }
-
-//void QCstmDQE::on_fitESFpushButton_clicked()
-//{
-//    if(!_ESFdata.isEmpty() && !_ESFbinData.isEmpty())   plotFitESF();
-//    else{
-//        QMessageBox::warning ( this, tr("Error fitting parameters"), tr( "No data!" ) );
-//    }
-//}
-
-
-
-//void QCstmDQE::on_fitLSFpushButton_clicked()
-//{
-//    if(_params(0,0) == 0 && _params(1,0)==0 && _params(2,0)==0){
-//        QMessageBox msgbox(QMessageBox::Warning, "Error", "No fitting parameters.",0);
-//        msgbox.exec();
-//    }
-//    else if(_ESFdata.empty()) {
-//        QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
-//        msgbox.exec();
-//    }
-
-//    else plotLSF();
-//}
 
 void QCstmDQE::on_loadDataPushButton_clicked()
 {
@@ -1422,7 +1419,7 @@ void QCstmDQE::on_npsPushButton_clicked()
 
     else{
         _logtext += "\n";
-        refreshLog(false);
+//        refreshLog(false);
         plotNPS();
         refreshLog(false);
     }

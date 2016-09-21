@@ -1367,7 +1367,6 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _mpx3gui->GetUI()->dqeTab->clearDataAndPlots(false);
         _mpx3gui->GetUI()->dqeTab->setRegion(pixel_begin_checked, pixel_end_checked);
         _mpx3gui->GetUI()->dqeTab->setSelectedThreshold(threshold);
-        _mpx3gui->getDataset()->collectPointsROI(threshold, pixel_begin_checked, pixel_end_checked);
 
         _mpx3gui->GetUI()->stackedWidget->setCurrentIndex(__dqe_page_Id);
         _mpx3gui->GetUI()->actionVisualization->setChecked(false);

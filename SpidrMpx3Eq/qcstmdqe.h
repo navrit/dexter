@@ -74,13 +74,13 @@ private:
     QVector<QVector<double> > _NPSdata; //!Contains NPS data to be used for final DQE calculation.
 
     parameter_vector _params;   //!Contains the parameters of the error function used for the fitting.
-    double _xstart;
+    double _xstart;             //!Specifies the starting point of the Edge Spread Function plot. The point most left from the edge.
     double _plotrange;
     int _currentThreshold;
 
-    bool _openingNPSfile = false;
-    QStringList _NPSfilepaths;  //!Holds the filepaths of all the loaded datafiles.
-    QString _logtext;   //!A QString that holds the text that is to appear in the log window.
+    bool _openingNPSfile = false;   //!Indicates whether an NPS file is being opened or if a file is opened through elsewhere.
+    QStringList _NPSfilepaths;      //!Holds the filepaths of all the loaded datafiles.
+    QString _logtext;               //!A QString that holds the text that is to appear in the log window.
 
 
     //Options
@@ -107,16 +107,18 @@ private:
     bool    _normNPSmax     = true;             //!Indicates whether the NPS that is plotted should be normalized to its maximum value.
 
     //Main calculations:
-    QVector<QVector<double> > calcESFbinData();     //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.
-    QVector<QVector<double> > calcESFfitData();     //!Creates the datapoints of the fitted function by using the parameters calculated by the fitting in the used function model.
+    QVector<QVector<double> > calcESFbinData();                 //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.
+    QVector<QVector<double> > calcESFfitData();                 //!Creates the datapoints of the fitted function by using the parameters calculated by the fitting in the used function model.
     QVector<QVector<double> > calcSmoothedESFdata(QVector<QVector<double> > data);
-    QVector<QVector<double> > calcLSFdata();        //!Creates the datapoints of the derivative of the fitted function, by using the parameters calculated by the fitting and using them in the theoretical derivative of the function model.
+    QVector<QVector<double> > calcLSFdata();                    //!Creates the datapoints of the derivative of the fitted function, by using the parameters calculated by the fitting and using them in the theoretical derivative of the function model.
     QVector<QVector<double> > calcNumDerivativeOfdata(QVector<QVector<double> > data);  //!Calculates the numerical derivative of a given set of data. Used for LSF.
-    QVector<QVector<double> > calcMTFdata();        //!Calculates the datapoints for the MTF, by taking the Fourier Transform of the LSF.
-    void calcNPSdata(); //!Calculates the datapoints for the NPS in the x and y directon.
-    QVector<QVector<double> > calcFTsquareRoI(QVector<QVector<int> > data );
+    QVector<QVector<double> > calcMTFdata();                    //!Calculates the datapoints for the MTF, by taking the Fourier Transform of the LSF.
+    void calcNPSdata();                                         //!Calculates the datapoints for the NPS in the x and y directon.
+    void correctPlaneRoI(QVector<QVector<double> > &roidata);   //!Corrects the data of the Region of Interest by fitting a flat plane and substracting thid from the data. (Optional)
+    QVector<QVector<double> > calcFTsquareRoI(QVector<QVector<double> > &data );        //!Calculates the two dimensional Fast Fourier Transform of
     void calc1Dnps(const QVector<QVector<double> > &ftdata);
     void calcNormNPS();
+
 
     //Plotting
     void plotMTF();
@@ -128,11 +130,12 @@ private:
     void plotFTsquare(const QVector<QVector<double> > &ftdata);
 
     void fitESFparams(QVector<QVector<double> > esfdata);   //!Determines the parameters in the function model that best suit the data by performing a least squares fitting algorithm.
-    parameter_vector fitPlaneParams(QVector<QVector<int> > dataROI);
+    parameter_vector fitPlaneParams(const QVector<QVector<double> > &dataROI);
 
-    QString dataToString(QVector<QVector<double> > data);   //!Turns the given data into a string for saving to a textfile.
+    QString dataToString(QVector<QVector<double> > data);               //!Turns the given data into a string for saving to a textfile.
     double FivePointsStencil(QVector<double> func, int x, double bw);   //! Used for numerical derivation.
 //    void plotFTnps(QVector<QVector<double> > data);
+    QVector<QVector<double> > vectorIntToDouble(const QVector<QVector<int> > &intvector);//!Converts a given 2D vector of ints to a 2D vector of doubles, when doubles are required for calculation.
 
 
 
