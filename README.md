@@ -357,3 +357,6 @@ radiography systems. _Medical Physics_.
 
 Hoeschen, D. (2001). DQE of digital x-ray imaging
 systems: a challenge. _SPIE_.
+
+
+Last change: 21-09-2016
