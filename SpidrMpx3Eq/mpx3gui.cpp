@@ -20,7 +20,6 @@
 #include "gradient.h"
 #include "dataset.h"
 #include "mpx3config.h"
-#include "qcstmexternalgraph.h"
 
 #include <QMessageBox>
 #include <QDebug>
@@ -371,9 +370,6 @@ void Mpx3GUI::startupActions()
     if ( ! gradients.empty() ) {
         _ui->visualizationGL->startupActions();
 
-        QCstmExternalGraph *dialog = new QCstmExternalGraph;
-        dialog->SetMpx3GUI(this);
-        dialog->show();
     }
 
 }
@@ -850,7 +846,7 @@ void Mpx3GUI::open_data(bool saveOriginal){
 
     //Ask whether the loaded data is already OBcorrected or not.
     QMessageBox::StandardButton reply = QMessageBox::question( this, tr("Specify data"), tr("Is this data corrected?"), QMessageBox::Yes | QMessageBox::No);
-    if(reply== QMessageBox::Yes) getDataset()->setCorrected(true);
+    if(reply == QMessageBox::Yes) getDataset()->setCorrected(true);
     else getDataset()->setCorrected(false);
 
     this->setWindowTitle( _softwareName + filename);
