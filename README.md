@@ -178,9 +178,9 @@ The way that is implemented works by the following steps:
 - Binning these points using a binsize set by the user. This gives the discrete ESF. 
 - Making a fit through the (binned) datapoints using an error function.
 - Differentiation of this fitted function gives the LSF.  
-    - Differentiation by fitting parameters or numerical?  
+    - Differentiation by using the fitting parameters or numerical differentiation are both possible (see options).  
 - Fast Fourier Transforming of the LSF gives the MTF.  
-- TODO: (Maximization of MTF? See below). 
+- Maximization of MTF (TO DO, see below). 
 
 Another implementation is discussed by Samei et.
 al. (1998). This method consists of the following steps:
@@ -199,23 +199,15 @@ al. (1998). This method consists of the following steps:
 - Presampling MTF is obtained by a Fast Fourier Transform of the LSF.  
 - This is repeated for 17 angles in an +-0.16 degrees, by varying by 0.02 degrees each time. The MTF’s are each integrated from 0-2 cycles/mm and the angle associated with the maximum of this MTF integral is identified as the best estimate for the edge angle and its MTF is the result.  
 
-The extent of the regions used by Samei are not feasible for the Medipix3… But we CAN use the iterative MTF maximization by varying the angle. Only one parameter changes and then the entire “Calc MTF” procedure can be repeated:
+The extent of the regions used by Samei are not feasible for the Medipix3… The LSF looks significantly different than ours, so the Hanning filter and baseline substraction or extrapolation of the tails (as in other papers) might not be the way to go. (?)
+But we CAN use the iterative MTF maximization by varying the angle. Only one parameter changes and then the entire “Calc MTF” procedure can be repeated:
 
 #### (still) TO DO for MTF calculation:
 
-- Allow user to specify options: 
-    - Slit or Edge calculation 
-    - Binsize 
-    - Numerical or function fit derivative. 
-- DONE *Use Gaussian smoothed function instead of error function.* 
-    - DONE *Use numerical derivative of smoothed bin function.*
-- Try Fujita’s slit method. (“Simple”). 
-- DONE *Automate MTF calculation.*
+- Implement slit method.  Try Fujita’s slit method. (“Simple”). 
 - Maximize MTF by angle variation.  
-- ?Better quantization of goodness of fit. 
-- Implement slit method.  
-- As always, add appropriate comments and doxygen in-code-documentation. 
 - Get the calculation to work for horizontal edges. 
+- (?)Better quantization of goodness of fit. -> R^2 and the mean squared error are given.
 
 ### NPS calculation
 
@@ -231,10 +223,10 @@ calculation. Which is not necessarily the order of implementation.
 - Convert pixel values to be linearly proportional to exposure (using characteristic curve). 
 - Take multiple flat field images (at multiple exposures). 
 - Determine best size of ROI (N) and number of ROI. (M) 
-- DONE *Correct for background trends from ROI by fitting a planar ramp.*
-- Calculate the 2D squared Fourier transforms of the ROI. 
-- Take the ensemble average of all these FT of ROIs NPS. 
-- Calculate 1D NPS.  
+- *Correct for background trends from ROI by fitting a planar ramp.*[DONE] 
+- Calculate the 2D squared Fourier transforms of the ROI. [DONE] 
+- Take the ensemble average of all these FT of ROIs NPS. [DONE] 
+- Calculate 1D NPS by using the x=0 and y=0 values and/or averaging a few lines close to the axes (determined by the user).[DONE] 
 
 ### DQE
 
@@ -243,6 +235,8 @@ then not too difficult to calculate the DQE. (see overview)
 
 #### TO DO:
 
+- Calculate SNR^2_ideal per exposure from the x-ray spectrum.
+- Determine the exposure.
 - Calculate NEQ. 
 - Use EMTF for NEQ calculation (in addition to the PMTF, both should be reported). (Dobbins, 1995) 
 - Determine (given by manufacturer or measurements and simulations  (Flynn & Samei,	1999)) the SNR^2 of the incident x-ray beam. 
