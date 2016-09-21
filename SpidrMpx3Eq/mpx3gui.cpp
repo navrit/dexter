@@ -20,6 +20,7 @@
 #include "gradient.h"
 #include "dataset.h"
 #include "mpx3config.h"
+#include "qcstmexternalgraph.h"
 
 #include <QMessageBox>
 #include <QDebug>
@@ -158,6 +159,10 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     //_ui->statusBar->set
     //m_statusBarMessageLabel.setAlignment( Qt::AlignLeft );
     m_statusBarMessageString.clear( );
+
+    QCstmExternalGraph *dialog = new QCstmExternalGraph;
+    dialog->SetMpx3GUI(this);
+    dialog->show();
 
 }
 

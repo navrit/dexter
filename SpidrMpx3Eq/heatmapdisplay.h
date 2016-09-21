@@ -22,14 +22,17 @@ class HeatmapDisplay : public QWidget
 public:
   explicit HeatmapDisplay(QWidget *parent = 0);
   ~HeatmapDisplay();
+
 private:
   Ui::HeatmapDisplay *ui;
   void setupSignalsAndSlots();
+
 public slots:
   void setGradient(Gradient* gradient);
   void setSize(QPoint size);
   void setSize(int x, int y);
   void set_range(QCPRange range);
+
  public:
   QCstmGLPlot *getPlot();
 };

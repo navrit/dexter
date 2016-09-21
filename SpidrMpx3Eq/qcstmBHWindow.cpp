@@ -65,7 +65,7 @@ void QCstmBHWindow::on_talkToForm(double thickness, QString material){
             contained = true;
             QMessageBox msgBox;
             msgBox.setWindowTitle("Error");
-            msgBox.setText("Please do not use duplicate thicknesses.");
+            msgBox.setText("Do not use duplicate thicknesses.");
             msgBox.exec();
             break;
         }
@@ -74,7 +74,7 @@ void QCstmBHWindow::on_talkToForm(double thickness, QString material){
         correctionMaterial.insert(thickness,material);
         material += " ";
         material.append(QString("%1").arg(thickness));
-        material += " um";
+        material += " μm";
         ui->list->addItem(material);
         thicknessvctr.push_back(thickness);
         emptyCorrectionCounter++;
@@ -102,7 +102,6 @@ void QCstmBHWindow::on_clearButton_clicked() {
 }
 
 void QCstmBHWindow::on_clearAllButton_clicked(){
-    this->setWindowTitle(QString("BH Corrections"));
 
     //! Clears everything in the window.
     thicknessvctr.clear();
@@ -116,6 +115,8 @@ void QCstmBHWindow::on_clearAllButton_clicked(){
     //! UI update - Correction Dialog
     emit sendFilename(QString(""));
     emit sendChecked_BHCorrCheckbox(false);
+
+    //TODO BUG Why does this close the window?
 }
 
 void QCstmBHWindow::on_loadButton_clicked(){
