@@ -17,6 +17,7 @@ void QCstmExternalGraph::SetMpx3GUI(Mpx3GUI *p)
 {
     _mpx3gui = p;
     setGradient(0);
+    this->setWindowTitle(QString("External visualiser"));
 }
 
 void QCstmExternalGraph::setGradient(int index)
