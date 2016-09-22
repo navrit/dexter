@@ -67,10 +67,11 @@ private:
     //Actual data:
     QVector<QVector<double> > _ESFdata; //Contains one vector for the distances to the edge and one for the corresponding pixel values.
     QVector<QVector<double> > _ESFbinData; //Necessary?? //Contains a vector for the middle of distance bins and one for the mean pixel values of the esf data.
-    QVector<QVector<double> > _ESFsmoothData;
-    QVector<QVector<double> > _LSFdata;
+    QVector<QVector<double> > _ESFsmoothData; //?
+    QVector<QVector<double> > _LSFdata; //?
     QVector<QVector<double> > _MTFdata; //!Contains MTF data to be used for final DQE calculation.
     QVector<QVector<double> > _NPSdata; //!Contains NPS data to be used for final DQE calculation.
+    QVector<QVector<double> > _DQEdata; //!Contains final DQE data.
 
     parameter_vector _params;   //!Contains the parameters of the error function used for the fitting.
     double _xstart;             //!Specifies the starting point of the Edge Spread Function plot. The point most left from the edge.
@@ -84,7 +85,7 @@ private:
 
     //Options
         //MTF
-    bool    _useDerFit      = false;            //!Indicates whether the LSF should be made of the theoretical derivative using the calculated parameters (true) or the numerical derivative of the (smoothed) binned data.
+    bool    _useDerFit      = true;            //!Indicates whether the LSF should be made of the theoretical derivative using the calculated parameters (true) or the numerical derivative of the (smoothed) binned data.
     bool    _usebins        = true;             //!Indicates whether the data should be binned and this data should be used for further calculations.
     double  _binsize        = 1;                //!Specifies the size of the bins to be used for the ESF data.
     double  _stepsize       = 0.10;             //!Specifies the distance between datapoints of the fitplot in pixels.
@@ -120,7 +121,7 @@ private:
     QVector<QVector<double> > calcFTsquareRoI(QVector<QVector<double> > &data );        //!Calculates the two dimensional Fast Fourier Transform of
     void calc1Dnps(const QVector<QVector<double> > &ftdata);
     void calcNormNPS();
-
+    void calcDQE();
 
     //Plotting
     void plotMTF();
@@ -130,6 +131,7 @@ private:
     void plotNPS();
     void plotData3D(QtDataVisualization::QScatterDataArray data3D);
     void plotFTsquare(const QVector<QVector<double> > &ftdata);
+    void plotDQE();
 
     void fitESFparams(QVector<QVector<double> > esfdata);   //!Determines the parameters in the function model that best suit the data by performing a least squares fitting algorithm.
     parameter_vector fitPlaneParams(const QVector<QVector<double> > &dataROI);
@@ -139,6 +141,7 @@ private:
     QVector<QVector<double> > vectorIntToDouble(const QVector<QVector<int> > &intvector);//!Converts a given 2D vector of ints to a 2D vector of doubles, when doubles are required for calculation.
     QVector<QVector<double> > collectRoIdata();
 
+    void savePlot(QString plot);
 
 private slots:
     void on_takeDataPushButton_clicked();
@@ -153,15 +156,11 @@ private slots:
 
     void on_clearDataFilesPushButton_clicked();
 
-    void on_mtfPushButton_clicked();
-
-    void on_saveMTFpushButton_clicked();
+    void on_mtfPushButton_clicked();    
 
     void on_logClearPushButton_clicked();
 
     void on_logSavePushButton_clicked();
-
-//    void on_binSizeLineEdit_editingFinished();
 
     void on_npsPushButton_clicked();
 
@@ -171,17 +170,9 @@ private slots:
 
     void on_derivCheckBox_toggled(bool checked);
 
-//    void on_errorFuncCheckBox_toggled(bool checked);
-
     void on_mouseMove_showPlotPoint(QMouseEvent * event);
 
-//    void on_mouseClick_showPlotPoint(QMouseEvent * event);
-
     void on_dataCheckbox_toggled(bool checked);
-
-//    void on_fitComboBox_currentIndexChanged(const QString &arg1);
-
-//    void on_windowLineEdit_editingFinished();
 
     void on_clearFitsPushButton_clicked();
 
@@ -196,6 +187,14 @@ private slots:
     void on_clearAllPushButton_clicked();
 
     void on_toolButton_clicked();
+
+    void on_saveMTFpushButton_clicked(){  savePlot("mtf"); }
+    void on_saveNPSpushButton_clicked(){  savePlot("nps"); }
+    void on_saveDQEpushButton_clicked(){  savePlot("dqe"); }
+
+    void on_dqePushButton_clicked();
+
+    void on_clearDQEpushButton_clicked();
 
 public slots:
     void on_close_optionsDialog();    

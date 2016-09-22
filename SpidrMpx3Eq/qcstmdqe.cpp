@@ -29,16 +29,18 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
     ui->LSFplot->yAxis->setLabel("Normalised LSF");
 
     ui->MTFplot->xAxis->setLabel("Spatial frequency (F_Nyquist)");
-    ui->MTFplot->yAxis->setLabel("Normalised Presampled MTF");
+    ui->MTFplot->yAxis->setLabel("Presampled MTF");
 
     ui->xNPSplot->xAxis->setLabel("Spatial frequency X (1/pix)");
     ui->xNPSplot->yAxis->setLabel("NPS X direction (mm^2)");
     ui->yNPSplot->xAxis->setLabel("Spatial frequency Y (1/pix)");
     ui->yNPSplot->yAxis->setLabel("NPS Y direction (mm^2)");
 
+    ui->DQEplot->xAxis->setLabel("Spatial frequency (1/pix)");
+    ui->DQEplot->yAxis->setLabel("DQE");
+
 //    connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
 //    connect( this, &QCstmDQE::open_data, _mpx3gui, &Mpx3GUI::open_data_with_path);
-
 
     connect( ui->ESFplot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
     connect( ui->LSFplot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
@@ -281,37 +283,27 @@ void QCstmDQE::plotFitESF()
 
 void QCstmDQE::plotLSF()
 {
-    //if(ui->LSFplot->graphCount() != 0)
     ui->LSFplot->clearGraphs();
     ui->LSFplot->addGraph();
 
     ui->LSFplot->xAxis->setRange(_beginpix.x(), _endpix.x());
 
     ui->LSFplot->graph(0)->setLineStyle(QCPGraph::lsStepCenter);
-//        ui->LSFplot->graph(0)->setScatterStyle(QCPGraph::);
     ui->LSFplot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::white, 5));
-        //Plot data points
-        //ui->LSFplot->addGraph();
 
-//        _useDerFit = ui->derivCheckBox->isChecked(); //let's use the numerical derivative.
     _LSFdata = calcLSFdata();
 
     if(!_LSFdata.empty()){
         ui->LSFplot->graph(0)->setData(_LSFdata[0], _LSFdata[1]);
         if (ui->logScaleCheckBox->isChecked()) ui->LSFplot->yAxis->setScaleType(QCPAxis::stLogarithmic);
         ui->LSFplot->rescaleAxes();
-        //ui->LSFplot->xAxis->setRange(-5, 5);
         ui->LSFplot->replot( QCustomPlot::rpQueued );
     }
     else  QMessageBox::warning ( this, tr("Error"), tr( "No LSF data!" ) );
-
-
 }
-
 
 void QCstmDQE::plotMTF()
 {
-    //if(ui->MTFplot->graphCount() != 0) //check necessary?
     ui->MTFplot->clearGraphs();
     ui->MTFplot->addGraph();
 
@@ -319,30 +311,29 @@ void QCstmDQE::plotMTF()
     if(!data.empty()){
         ui->MTFplot->graph(0)->setData(data[0], data[1]);
 
-        //ui->MTFplot->graph(0)->setScatterStyle( QCPScatterStyle(QCPScatterStyle::ssCross, Qt::red, 6) );
-
         ui->MTFplot->rescaleAxes();
         ui->MTFplot->xAxis->setRange(0, 1.1); //Plot until the Nyquist frequency
-        ui->MTFplot->yAxis->rescale();//setRange(0, 1.1);
+        ui->MTFplot->yAxis->setRange(0, 1.1); //Plot full mtfrange 0 -> 1
         ui->MTFplot->replot( QCustomPlot::rpQueued );
     }
 
-
-    //_mpx3gui->getDataset()->determinePointsROI(_currentThreshold, _pixel_begin, _pixel_end);
+    ui->saveMTFpushButton->setEnabled(true);
+    ui->clearFitsPushButton->setEnabled(true);
+    ui->clearMTFpushButton->setEnabled(true);
 }
 
 void QCstmDQE::fitESFparams(QVector<QVector<double> > esfdata)
 {
     std::vector<std::pair<input_vector, double> > data; //vector of pairs of variable going in and the value coming out.
 
-    int length = esfdata.length(); //esfdata[0].length();
+    int length = esfdata.length();
     input_vector input;     //must be in dlib::matrix form...
 
     for(int i = 0; i < length; i++){
         input(0) = esfdata[0][i];           //x
         const double output = esfdata[1][i];//y
 
-        data.push_back( make_pair(input, output) );     //std
+        data.push_back( make_pair(input, output) ); //std
     }
 
     parameter_vector params;
@@ -438,7 +429,6 @@ QString QCstmDQE::dataToString(QVector<QVector<double> > data)
 QVector<QVector<double> > QCstmDQE::calcESFbinData()
 {   //TO DO Check/fix and use for other way of MTF.
 
-    //QMap<double, QPair<double, double> > bindata;
     QVector<QVector<double> > esfbindata(3); //3rd for st.dev.
     QVector<int> Npoints;
     double dmin, dmax;
@@ -462,7 +452,6 @@ QVector<QVector<double> > QCstmDQE::calcESFbinData()
 
     for(i = 0; i < length; i++){
         esfbindata[0][i] = dmin + i*_binsize;
-        //Npoints[i] = 0;
     }
 
     Npoints.resize(length);
@@ -522,7 +511,6 @@ QVector<QVector<double> > QCstmDQE::calcESFbinData()
 
     //Use the middle of the bin for plotting.
     for(i = 0; i < length; i++){
-        //esfbindata[1][i] /= Npoints[i]; //already taken in stdev loop.
         esfbindata[0][i] += _binsize /2;
     }
 
@@ -568,7 +556,6 @@ QVector<QVector<double> > QCstmDQE::calcSmoothedESFdata(QVector<QVector<double> 
     params(5) = _windowW;
     input_vector input;
     QVector<QVector<double> > smoothData(2);
-    //smoothData[0] = data[0]; //No.. smoothdata is 2*offset shorter...
     int lengthSmooth = data[0].length() - 2* offset;
     smoothData[0].resize(lengthSmooth);
     smoothData[1].resize(lengthSmooth);
@@ -716,11 +703,12 @@ QVector<QVector<double> > QCstmDQE::collectRoIdata()
 }
 
 
+
 QVector<QVector<double> > QCstmDQE::calcLSFdata()
 {   //Create function
     QVector<QVector<double> > data;
     int i;
-    _histStep = _binsize; //?
+    _histStep = _binsize; //??
 
     int fitlength = _plotrange / _histStep;
     QVector<double> x(fitlength);
@@ -748,25 +736,30 @@ QVector<QVector<double> > QCstmDQE::calcLSFdata()
 
             data.push_back(x);
             data.push_back(y);
-            //return data;
             _logtext += "LSF calculated using fitting parameters and derivative of corresponding Error function.\n";
 
         }
         else{
             QMessageBox::warning ( this, tr("Error"), tr( "Cannot divide by zero!" ) );
-            //return data; //empty
+            return data; //empty
         }
     }
     else if(_useDerFit){//Take derivative of smoothed datafit.
         data = calcNumDerivativeOfdata(_ESFsmoothData);
         if(!data.isEmpty()) _logtext += "LSF calculated using numerical derivative of the SMOOTHED ESF.\n";
-        else QMessageBox::warning ( this, tr("Error"), tr( "Something went wrong while taking the numerical derivative." ) );
+        else{
+            QMessageBox::warning ( this, tr("Error"), tr( "Something went wrong while taking the numerical derivative." ) );
+            return data; //empty
+        }
     }
 
     else { //Take derivative of the binned data..
         data = calcNumDerivativeOfdata(_ESFbinData);
         if(!data.isEmpty()) _logtext += "LSF calculated, using numerical derivative of the BINNED ESF.\n";
-        else QMessageBox::warning ( this, tr("Error"), tr( "Something went wrong while taking the numerical derivative." ) );
+        else{
+            QMessageBox::warning ( this, tr("Error"), tr( "Something went wrong while taking the numerical derivative." ) );
+            return data; //empty
+        }
     }
 
     //Calculate maximum value of the ESFdata and normalize to one.
@@ -789,6 +782,7 @@ QVector<QVector<double> > QCstmDQE::calcMTFdata()
     int length = _LSFdata[0].length();
 
     //TO DO: pad with zeros instead of removing data.
+
     //check if length is a power of two, or else adapt data
     int N = 0; //remember the number of corrections to the length..
     for(int i = 0; i < length; i++){
@@ -802,29 +796,12 @@ QVector<QVector<double> > QCstmDQE::calcMTFdata()
     //Convert to type compatible with dlib function...
     dlib::matrix<complex<double> > cdata(1, length);
     dlib::matrix<complex<double> > fdata(1, length);
-//    dlib::matrix<complex<double> > mtfData(2, length);
-
     int offset = N / 2; //Take half of the removed length away from beginning and end.
 
     for(int i = 0; i < length; i++ ){
         cdata(0, i)     = {_LSFdata[1][offset + i], 0};     //imaginary part is zero
-//        mtfData(1, i)   = {_LSFdata[1][offset + i], 0};     //imaginary part is zero
-//        mtfData(0, i)   = 2* i / length;                    //Normalize x-axis (1/L) to Nyquist frequency: 1/2*1/L.
     }
     //The LSFdata should be equally spaced (bins).
-
-//testen
-//    N = 128;
-//    int Nk = 256;
-//    //testen
-//    dlib::matrix<complex<double> > testdata(1, N); //Testen cos functie.
-//    dlib::matrix<complex<double> > dftdata(1, N); //Testen cos functie met DFT.
-
-//    for(int n = 0; n < N; n++){
-//        double arg = 2*n*boost::math::constants::pi<double>();
-//        arg /= 10;
-//        testdata(0, n) = {cos( arg ), 0}; //{real, imaginary}
-//    }
 
     fdata = dlib::fft(cdata);
 
@@ -838,21 +815,6 @@ QVector<QVector<double> > QCstmDQE::calcMTFdata()
         mtfdata[1][i]   = abs(fdata(0, i));
         mtfdata[1][i]  /= Norm;
     }
-
-//testen
-//    fdata = dlib::fft(testdata);
-
-//    complex<double> im_i(0.0, 1.0);
-//    for(int k = 0; k < N; k++)
-//        for(int n = 0; n < N; n++){
-//            complex<double> argu = -2.0*boost::math::constants::pi<double>()* im_i * double(k) * double(n);
-//            argu /= N;
-//            dftdata(0, k) += testdata(0, n) * exp(argu);
-//        }
-//    for(double i = 0; i < N; i++){
-//        mtfdata[0][i]   = i / N;
-//        mtfdata[1][i]   = abs(dftdata(0, i));
-//    }
 
     _MTFdata = mtfdata;
     return mtfdata;
@@ -1293,11 +1255,38 @@ void QCstmDQE::plotNPS(){
     ui->xNPSplot->xAxis->setRange(-0.01, 1.01);                     ui->yNPSplot->xAxis->setRange(-0.01, 1.01);
     ui->xNPSplot->replot( QCustomPlot::rpQueued );                  ui->yNPSplot->replot( QCustomPlot::rpQueued );
 
+    ui->saveNPSpushButton->setEnabled( true);
+    ui->clearNPSpushButton->setEnabled(true);
 }
 
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+//----end NPS--------------------------------------------------------------------------------------------------------------------------------------
 
+
+//----DQE------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void QCstmDQE::plotDQE()
+{
+    calcDQE();
+
+    ui->LSFplot->clearGraphs();
+    ui->LSFplot->addGraph();
+
+    if(!_DQEdata.empty()){
+        ui->DQEplot->graph(0)->setData(_DQEdata[0], _DQEdata[1]);
+        ui->DQEplot->rescaleAxes();
+        ui->DQEplot->replot( QCustomPlot::rpQueued );
+    }
+    else  QMessageBox::warning ( this, tr("Error"), tr( "No DQE data!" ) );
+}
+
+void QCstmDQE::calcDQE()
+{
+    //Calculate DQE
+}
+
+//----end DQE-------------------------------------------------------------------------------------------------------------------------------------
 void QCstmDQE::on_takeDataPushButton_clicked() {
     _mpx3gui->GetUI()->stackedWidget->setCurrentIndex(__visualization_page_Id);
     emit start_takingData();
@@ -1402,33 +1391,20 @@ void QCstmDQE::on_mtfPushButton_clicked()
     }
     else{
         plotFitESF();
-//        if(_useErrorFunc)_logtext += QString("Function has been fitted to the binned ESF data with \n binsize = %1 pixels\n and parameters:\n scaling = %2\n offset = %3\n a = %4\n \n").arg(_binsize).arg(_params(0, 0)).arg(_params(1,0)).arg(_params(2,0));
-//        else _logtext += QString("Smoothing 4th order polynomial function has been fitted locally to the binned ESF data with \n binsize = %1\n").arg(_binsize);
 
         if(_params(0,0) == 0 && _params(1,0)==0 && _params(2,0)==0 && _useErrorFunc && _useDerFit){
             QMessageBox::warning ( this, tr("Error"), tr( "No fitting parameters." ) );
         }
-//        else if(_ESFdata.empty()) {
-//            QMessageBox msgbox(QMessageBox::Warning, "Error", "No ESF data.",0);
-//            msgbox.exec();
-//        }
-
         else{
             plotLSF();
-//            if(_useDerFit) _logtext += "A Line Spread Function has been calculated, using the fitting parameters and the derivative of the corresponding error function.\n";
-//            else _logtext += "A Line Spread Function has been calculated, using a numerical derivative of the (smoothed) binned Edge Spread Function.\n";
-
             if(_LSFdata.empty()) {
                 QMessageBox::warning ( this, tr("Error"), tr( "No LSF data." ) );
             }
             else{
                 plotMTF();
-                _logtext += "MTF calculated by Fast Fourier Transform of the calculated LSF.\n";
-                //TO DO:..?
+                _logtext += "MTF calculated by Fast Fourier Transform of the calculated LSF.\n";              
             }
-
         }
-
     }
     _logtext += "\n";
     refreshLog(false);
@@ -1450,45 +1426,6 @@ void QCstmDQE::on_npsPushButton_clicked()
 
 //    calcNPSdata();
 
-}
-
-void QCstmDQE::on_saveMTFpushButton_clicked()
-{
-    QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("Text files (*.txt)"));
-    QString pngfilename;
-    // Force the .txt in the data filename
-    // Also check to see if a filename has been entered at all
-    if (!filename.isEmpty()){
-        if ( ! filename.contains(".txt") ) {
-            pngfilename = filename.append(".png");
-            filename.append(".txt");
-        }
-        else{
-            pngfilename = filename;
-            pngfilename.remove(".txt");
-            pngfilename.append(".png");
-        }
-    } else {
-        return;
-    }
-
-    // Save the file with some error handling
-    QFile saveFile(filename);
-    if (!saveFile.open(QIODevice::WriteOnly)) {
-        string messg = "Couldn't open: ";
-        messg += filename.toStdString();
-        messg += "\nNo output written!";
-        QMessageBox::warning ( this, tr("Error saving data"), tr( messg.c_str() ) );
-        return;
-    }
-
-    ui->MTFplot->savePng(pngfilename, 0, 0, 2);
-
-    QTextStream out(&saveFile);
-    if(!_MTFdata.isEmpty()) out << dataToString(_MTFdata);
-    else QMessageBox::warning ( this, tr("Error"), tr( "No MTF data." ) );
-//    saveFile.write(dataToString(_MTFdata));
-    saveFile.close();
 }
 
 void QCstmDQE::on_logClearPushButton_clicked()
@@ -1627,6 +1564,12 @@ void QCstmDQE::on_clearFitsPushButton_clicked()
     ui->ESFplot->graph(i_esfFitgraph + 1)->clearData();
 
     ui->ESFplot->replot( QCustomPlot::rpQueued );
+
+    ui->LSFplot->clearGraphs();     ui->LSFplot->replot( QCustomPlot::rpQueued );
+    ui->MTFplot->clearGraphs();     ui->MTFplot->replot( QCustomPlot::rpQueued );
+
+    ui->saveMTFpushButton->setEnabled(   false);
+    ui->clearFitsPushButton->setEnabled( false);
 }
 
 void QCstmDQE::on_optionsPushButton_clicked()
@@ -1718,18 +1661,18 @@ void QCstmDQE::on_singleFileCheckBox_toggled(bool checked)
 
 void QCstmDQE::on_clearNPSpushButton_clicked()
 {
-    ui->xNPSplot->clearGraphs();
-    ui->xNPSplot->replot(QCustomPlot::rpQueued);
-    ui->yNPSplot->clearGraphs();
-    ui->yNPSplot->replot(QCustomPlot::rpQueued);
+    ui->xNPSplot->clearGraphs();    ui->xNPSplot->replot(QCustomPlot::rpQueued);
+    ui->yNPSplot->clearGraphs();    ui->yNPSplot->replot(QCustomPlot::rpQueued);
     _NPSdata.clear();
+
+    ui->saveNPSpushButton->setEnabled(false);
+    ui->clearNPSpushButton->setEnabled(false);
 
     //TODO: Close 3D plotting windows, if they are kept in final program.
 }
 
 void QCstmDQE::on_clearMTFpushButton_clicked()
 {
-//    clearDataAndPlots();
     ui->ESFplot->clearGraphs();     ui->ESFplot->replot(QCustomPlot::rpQueued);
     ui->LSFplot->clearGraphs();     ui->LSFplot->replot(QCustomPlot::rpQueued);
     ui->MTFplot->clearGraphs();     ui->MTFplot->replot(QCustomPlot::rpQueued);
@@ -1740,6 +1683,10 @@ void QCstmDQE::on_clearMTFpushButton_clicked()
     _params = 0; //Sets all parameters to zero. (CHECK when using!)
     //_xstart = 0;
     //_plotrange = 0;
+
+    ui->saveMTFpushButton->setEnabled(   false);
+    ui->clearFitsPushButton->setEnabled( false);
+    ui->clearMTFpushButton->setEnabled(  false);
 }
 
 void QCstmDQE::on_clearAllPushButton_clicked()
@@ -1751,4 +1698,76 @@ void QCstmDQE::on_clearAllPushButton_clicked()
 void QCstmDQE::on_toolButton_clicked()
 {
     //Open an explaining dialog.
+}
+
+//void QCstmDQE::on_saveMTFpushButton_clicked(){  savePlot("mtf"); }
+//void QCstmDQE::on_saveNPSpushButton_clicked(){  savePlot("nps"); }
+//void QCstmDQE::on_saveDQEpushButton_clicked(){  savePlot("dqe"); }
+
+void QCstmDQE::savePlot(QString plot)
+{
+    //FIRST check if data is nog empty.
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("Text files (*.txt)"));
+    QString pngfilename;
+    // Force the .txt in the data filename
+    // Also check to see if a filename has been entered at all
+    if (!filename.isEmpty()){
+        if ( ! filename.contains(".txt") ) {
+            pngfilename = filename.append(".png");
+            filename.append(".txt");
+        }
+        else{
+            pngfilename = filename;
+            pngfilename.remove(".txt");
+            pngfilename.append(".png");
+        }
+    } else {
+        return;
+    }
+
+    // Save the file with some error handling
+    QFile saveFile(filename);
+    if (!saveFile.open(QIODevice::WriteOnly)) {
+        string messg = "Couldn't open: ";
+        messg += filename.toStdString();
+        messg += "\nNo output written!";
+        QMessageBox::warning ( this, tr("Error saving data"), tr( messg.c_str() ) );
+        return;
+    }
+
+    QTextStream out(&saveFile);
+
+    if(plot == "mtf"){
+        ui->MTFplot->savePng(pngfilename, 0, 0, 2);
+
+        if(!_MTFdata.isEmpty()) out << dataToString(_MTFdata);
+        else QMessageBox::warning ( this, tr("Error"), tr( "No MTF data." ) );
+    }
+    else if(plot == "nps"){
+        ui->xNPSplot->savePng(pngfilename, 0, 0, 2);
+        ui->yNPSplot->savePng(pngfilename, 0, 0, 2);
+
+        if(!_NPSdata.isEmpty()) out << dataToString(_NPSdata);
+        else QMessageBox::warning ( this, tr("Error"), tr( "No NPS data." ) );
+    }
+    else if(plot == "dqe"){
+        ui->DQEplot->savePng(pngfilename, 0, 0, 2);
+        if(!_DQEdata.isEmpty()) out << dataToString(_DQEdata);
+        else QMessageBox::warning ( this, tr("Error"), tr( "No DQE data." ) );
+    }
+
+    saveFile.close();
+}
+
+void QCstmDQE::on_dqePushButton_clicked()
+{
+    plotDQE();
+}
+
+void QCstmDQE::on_clearDQEpushButton_clicked()
+{
+    ui->DQEplot->clearGraphs();
+    ui->DQEplot->replot(QCustomPlot::rpQueued);
+
+    _DQEdata.clear();
 }

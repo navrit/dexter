@@ -38,7 +38,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <property name="documentMode">
       <bool>false</bool>
@@ -55,8 +55,8 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
-            <item>
+           <layout class="QGridLayout" name="gridLayout_4">
+            <item row="0" column="0">
              <widget class="QRadioButton" name="edgeRadioButton">
               <property name="text">
                <string>Edge</string>
@@ -66,7 +66,14 @@
               </property>
              </widget>
             </item>
-            <item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>Binsize</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1" colspan="2">
              <widget class="QRadioButton" name="slitRadioButton">
               <property name="enabled">
                <bool>false</bool>
@@ -76,11 +83,7 @@
               </property>
              </widget>
             </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_5">
-            <item>
+            <item row="1" column="0" colspan="2">
              <widget class="QCheckBox" name="binDataCheckBox">
               <property name="text">
                <string>Bin data</string>
@@ -90,14 +93,14 @@
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QLabel" name="label_4">
+            <item row="2" column="2">
+             <widget class="QLabel" name="label_6">
               <property name="text">
-               <string>Binsize</string>
+               <string>pixels</string>
               </property>
              </widget>
             </item>
-            <item>
+            <item row="2" column="1">
              <widget class="QSpinBox" name="binSizeSpinBox">
               <property name="minimum">
                <number>1</number>
@@ -107,14 +110,7 @@
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QLabel" name="label_6">
-              <property name="text">
-               <string>pixels</string>
-              </property>
-             </widget>
-            </item>
-            <item>
+            <item row="2" column="3">
              <spacer name="horizontalSpacer">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -139,8 +135,8 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_7">
-            <item>
+           <layout class="QGridLayout" name="gridLayout_5">
+            <item row="0" column="0" colspan="2">
              <widget class="QComboBox" name="fitComboBox">
               <item>
                <property name="text">
@@ -154,18 +150,17 @@
               </item>
              </widget>
             </item>
-            <item>
+            <item row="0" column="2" colspan="2">
              <widget class="QCheckBox" name="fitDerCheckBox">
               <property name="text">
                <string>Fit derivative</string>
               </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
              </widget>
             </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
-            <item>
+            <item row="1" column="0">
              <widget class="QLabel" name="windowLabel">
               <property name="enabled">
                <bool>false</bool>
@@ -175,7 +170,7 @@
               </property>
              </widget>
             </item>
-            <item>
+            <item row="1" column="1" colspan="2">
              <widget class="QSpinBox" name="windowSpinBox">
               <property name="minimum">
                <number>3</number>
@@ -185,7 +180,7 @@
               </property>
              </widget>
             </item>
-            <item>
+            <item row="1" column="3">
              <spacer name="horizontalSpacer_2">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
