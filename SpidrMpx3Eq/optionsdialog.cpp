@@ -29,8 +29,8 @@ optionsDialog::~optionsDialog()
 
 void optionsDialog::setCurrentSettings()
 {
-    //Saved in a QHash, which (in this case) saves int values stored by Qstring.
-    //This way more options can be added at any point, without worrying about numbering
+    //Saved in a QHash, which (in this case) saves int values stored by Qstring (in a random order).
+    //This way more options can be added at any point, without worrying about numbering.
 
     //MTF
     _currentSettings["edge"] = ui->edgeRadioButton->isChecked();
@@ -78,13 +78,18 @@ void optionsDialog::setCurrentSettings()
 void optionsDialog::resetSettings()
 {
     //MTF options
-    ui->edgeRadioButton->setChecked(    _currentSettings.value("edge")  );
-    ui->fitComboBox->setCurrentIndex(   _currentSettings.value("error") );
-    ui->fitDerCheckBox->setChecked(     _currentSettings.value("fitder") );
-    ui->binDataCheckBox->setChecked(    _currentSettings.value("bindata") );
+    ui->edgeRadioButton->setChecked(    _currentSettings.value("edge")      );
+    ui->slitRadioButton->setChecked(    _currentSettings.value("slit")      );
 
-    ui->binSizeSpinBox->setValue( _currentSettings.value("binsize") );
-    ui->binSizeSpinBox->setValue(_currentSettings.value("windowW") );
+    if(_currentSettings.value("error") )
+         ui->fitComboBox->setCurrentIndex( 0 ); //Error function fitting is the first option.
+    else ui->fitComboBox->setCurrentIndex( 1 ); //CHANGE when adding more fitting types.
+
+    ui->fitDerCheckBox->setChecked(     _currentSettings.value("fitder")    );
+    ui->binDataCheckBox->setChecked(    _currentSettings.value("bindata")   );
+
+    ui->binSizeSpinBox->setValue(       _currentSettings.value("binsize")   );
+    ui->windowSpinBox->setValue(        _currentSettings.value("windowW")   );
 
     //NPS options
     if( _currentSettings.value("fullimage") )
@@ -107,7 +112,7 @@ void optionsDialog::resetSettings()
     ui->pixelSizeLineEdit->setText( QString("%1").arg(_currentSettings.value("pixelsize")) );
 
     if(_currentSettings.value("1/pix"))   ui->unitsNpsComboBox->setCurrentText("1/pix");
-    if(_currentSettings.value("1/mm"))    ui->unitsNpsComboBox->setCurrentText("1/mm");
+    if(_currentSettings.value("1/mm"))    ui->unitsNpsComboBox->setCurrentText("1/mm" );
     if(_currentSettings.value("lp/mm"))   ui->unitsNpsComboBox->setCurrentText("lp/mm");
 
 }

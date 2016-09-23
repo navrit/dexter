@@ -54,6 +54,7 @@ public:
     void refreshLog(bool emptylog);//!Changes or empties (when emptylog == true) the log.
     //double polyWeightRoot(int i);
     bool isValidRegionSelected();
+    bool openingNPSfile = false;   //!Indicates whether an NPS file is being opened or if a file is opened through elsewhere.
 
 private:
     Ui::QCstmDQE *ui;
@@ -78,7 +79,6 @@ private:
     double _plotrange;
     int _currentThreshold;
 
-    bool _openingNPSfile = false;   //!Indicates whether an NPS file is being opened or if a file is opened through elsewhere.
     QStringList _NPSfilepaths;      //!Holds the filepaths of all the loaded datafiles.
     QString _logtext;               //!A QString that holds the text that is to appear in the log window.
 

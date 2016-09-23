@@ -844,21 +844,20 @@ void Mpx3GUI::open_data(bool saveOriginal){
     // And keep a copy just as in QCstmGLVisualization::data_taking_finished
     if ( saveOriginal ) saveOriginalDataset();
 
-    //Ask whether the loaded data is already OBcorrected or not.
-    QMessageBox::StandardButton reply = QMessageBox::question( this, tr("Specify data"), tr("Is this data corrected?"), QMessageBox::Yes | QMessageBox::No);
-    if(reply == QMessageBox::Yes) getDataset()->setCorrected(true);
-    else getDataset()->setCorrected(false);
-
     this->setWindowTitle( _softwareName + filename);
 
-    // If not in DQE - change back to Visualisation
-    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
+//    // If not in DQE - change back to Visualisation
+//    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
+    if(!_ui->dqeTab->openingNPSfile){
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
         _ui->actionVisualization->setChecked(1);
     }
 
-
+    //Ask whether the loaded data is already OBcorrected or not.
+    QMessageBox::StandardButton reply = QMessageBox::question( this, tr("Specify data"), tr("Is this data corrected?"), QMessageBox::Yes | QMessageBox::No);
+    if(reply == QMessageBox::Yes) getDataset()->setCorrected(true);
+    else getDataset()->setCorrected(false);
 
     emit returnFilename(filename);
 
@@ -910,14 +909,14 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
     }
 
     // If not in DQE - change back to Visualisation
-    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
+//    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
+//        _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
+//    }
+    if(!_ui->dqeTab->openingNPSfile){
+        uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
+        _ui->actionVisualization->setChecked(1);
     }
-
-    /*if (!fileOpen){
-        _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
-    }
-    fileOpen = true;*/
 
     return;
 }

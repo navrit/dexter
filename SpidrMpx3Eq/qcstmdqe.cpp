@@ -19,13 +19,13 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->ESFplot->xAxis->setLabel("Distance (px)");
+    ui->ESFplot->xAxis->setLabel("Distance (pix)");
     ui->ESFplot->yAxis->setLabel("Normalised ESF");
     // add title layout element:(font is too big)
 //    ui->ESFplot->plotLayout()->insertRow(0);
 //    ui->ESFplot->plotLayout()->addElement(0, 0, new QCPPlotTitle(ui->ESFplot, "ESF"));
 
-    ui->LSFplot->xAxis->setLabel("Distance (px)");
+    ui->LSFplot->xAxis->setLabel("Distance (pix)");
     ui->LSFplot->yAxis->setLabel("Normalised LSF");
 
     ui->MTFplot->xAxis->setLabel("Spatial frequency (F_Nyquist)");
@@ -367,29 +367,30 @@ void QCstmDQE::fitESFparams(QVector<QVector<double> > esfdata)
             res2 = res * res;
             if(_usebins) Res = res2 / esfdata[2][i]; //divide by st.dev. -> Normalized residual..
                 else Res = res2;
-            red_chi_squared += Res;
+//            red_chi_squared += Res;
             mse += res2;
         }
 
 //        cout << "Normalized residuals: " << red_chi_squared;
 
-        red_chi_squared /= length - (int)params.size();
+        if(length > 0){
+//            red_chi_squared /= length - (int)params.size();
+            mse /= length;
+        }
+        else qDebug() << "Attempting to divide by zero in fitESFparams";
+
+        _logtext += QString("Mean Squared Error of the fit: %1\n").arg(mse) ;
 
 //        cout << " 'Reduced Chi squared:' "<< red_chi_squared << endl;
 
         //TO DO: find a more appropriate way to represent the quality of the fit.
         //#dof is undefined for a non-linear model fit.
-
-        mse /= length;
-        _logtext += QString("Mean Squared Error of the fit: %1\n").arg(mse) ;
     }
     catch (std::exception& e)
     {
         cout << e.what() << endl;
         QMessageBox::warning ( this, tr("An error has occurred"), tr( e.what() ) );
-
     }
-
 }
 
 double model(const input_vector &input, const parameter_vector &params){ //Types designed for the optimization algorithm.
@@ -476,7 +477,7 @@ QVector<QVector<double> > QCstmDQE::calcESFbinData()
     for(i = length - 1; i >= 0; i--){
         if(Npoints[i] == 0){
             Npoints.remove(i);
-            for(int j=0; j<esfbindata.length(); j++)
+            for(int j=0; j < esfbindata.length(); j++)
                 esfbindata[j].remove(i);
             length--;
         }
@@ -677,7 +678,6 @@ QVector<QVector<double> > QCstmDQE::collectRoIdata()
 
     }
     else if(_useFullimage){
-
         //Give the upper left and lower right points of the image to collectPointsROI
         QPoint dsize = _mpx3gui->getDataset()->getSize();
         int Nd = _mpx3gui->getDataset()->getFrameCount();
@@ -820,14 +820,12 @@ QVector<QVector<double> > QCstmDQE::calcMTFdata()
     return mtfdata;
     }
 
-
-
 void QCstmDQE::plotEdge(QPoint ab)
 {   //Display the midline/edge in the heatmap glplot...?
 
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
+//---------------------end MTF---------------------------------------------------------------------------------------------------------------------
 
 
 //---------------------NPS (Noise Power Spectrum)------------------------------------------------------------------------------------------------
@@ -1263,7 +1261,7 @@ void QCstmDQE::plotNPS(){
 //----end NPS--------------------------------------------------------------------------------------------------------------------------------------
 
 
-//----DQE------------------------------------------------------------------------------------------------------------------------------------------
+//----DQE (Detective Quantum Efficiency)--------------------------------------------------------------------------------------------------------
 
 
 void QCstmDQE::plotDQE()
@@ -1283,7 +1281,7 @@ void QCstmDQE::plotDQE()
 
 void QCstmDQE::calcDQE()
 {
-    //Calculate DQE
+    //Calculate DQE data and put in _DQEdata
 }
 
 //----end DQE-------------------------------------------------------------------------------------------------------------------------------------
@@ -1309,7 +1307,7 @@ void QCstmDQE::on_comboBox_currentIndexChanged(const QString &arg1)
 
 void QCstmDQE::on_loadDataPushButton_clicked()
 {
-    _openingNPSfile = true;
+    openingNPSfile = true;
     QStringList filepaths = QFileDialog::getOpenFileNames(this, tr("Read Data"), tr("."), tr("binary files (*.bin)") );
     QString filepath;
 
@@ -1335,12 +1333,12 @@ void QCstmDQE::on_loadDataPushButton_clicked()
     if(ui->listWidget->count() == 0)
         QMessageBox::warning ( this, tr("Error"), tr( "No files could be opened." ) );
 
-    _openingNPSfile = false;
+    openingNPSfile = false;
 }
 
 void QCstmDQE::addNPSfile(QString filepath){
 
-    if(!_openingNPSfile) clearDataAndPlots(true);
+    if(!openingNPSfile) clearDataAndPlots(true);
 
     _NPSfilepaths += filepath;
 
@@ -1386,7 +1384,7 @@ void QCstmDQE::on_mtfPushButton_clicked()
         QMessageBox msgbox(QMessageBox::Warning, "Error", "No data.",0);
         msgbox.exec();
 
-        _logtext += "No data available, not able to calculate anything.\n"; //Is it necessary to put warnings in log as well as Qmessagebox??
+        _logtext += "\nNo data available, not able to calculate anything.\n"; //Is it necessary to put warnings in log as well as Qmessagebox??
 
     }
     else{
@@ -1633,7 +1631,7 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
 
 void QCstmDQE::on_maindata_changed(QString /*filename*/)
 {
-    if(!_openingNPSfile){
+    if(!openingNPSfile){
         clearDataAndPlots(true);
 //        QStringList list = filename.split("/");
 //        filename = list.last();
