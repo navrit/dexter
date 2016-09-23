@@ -32,9 +32,9 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
     ui->MTFplot->yAxis->setLabel("Presampled MTF");
 
     ui->xNPSplot->xAxis->setLabel("Spatial frequency X (1/pix)");
-    ui->xNPSplot->yAxis->setLabel("NPS X direction (mm^2)");
+    ui->xNPSplot->yAxis->setLabel("NPS X (mm^2)");
     ui->yNPSplot->xAxis->setLabel("Spatial frequency Y (1/pix)");
-    ui->yNPSplot->yAxis->setLabel("NPS Y direction (mm^2)");
+    ui->yNPSplot->yAxis->setLabel("NPS Y (mm^2)");
 
     ui->DQEplot->xAxis->setLabel("Spatial frequency (1/pix)");
     ui->DQEplot->yAxis->setLabel("DQE");
@@ -42,10 +42,12 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
 //    connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
 //    connect( this, &QCstmDQE::open_data, _mpx3gui, &Mpx3GUI::open_data_with_path);
 
-    connect( ui->ESFplot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
-    connect( ui->LSFplot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
-    connect( ui->MTFplot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
-
+    connect( ui->ESFplot,  SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
+    connect( ui->LSFplot,  SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
+    connect( ui->MTFplot,  SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
+    connect( ui->xNPSplot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
+    connect( ui->yNPSplot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
+    connect( ui->DQEplot,  SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
 
     //Tracer.. doesn't move. TO DO: fix
 //    connect( ui->LSFplot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(on_mouseClick_showPlotPoint(QMouseEvent*)) );
@@ -1500,12 +1502,27 @@ void QCstmDQE::on_derivCheckBox_toggled(bool checked)
 void QCstmDQE::on_mouseMove_showPlotPoint(QMouseEvent *event)
 {
     QCustomPlot* plot = qobject_cast<QCustomPlot*>(sender());
-//    int x = ui->LSFplot->xAxis->pixelToCoord(event->pos().x());
-//    int y = ui->LSFplot->yAxis->pixelToCoord(event->pos().y());
     double x = plot->xAxis->pixelToCoord(event->pos().x());
     double y = plot->yAxis->pixelToCoord(event->pos().y());
 
-    ui->pointLabel->setText(QString("(%1 , %2)").arg(x).arg(y));
+    if(plot->yAxis->label().contains("DQE")){
+        ui->pointDqeLabel->setText(QString("(%1 , %2)").arg(x).arg(y));
+        ui->pointDqeLabel->setEnabled(true );
+        ui->pointMtfLabel->setEnabled(false);
+        ui->pointNpsLabel->setEnabled(false);
+    }
+    else if(plot->yAxis->label().contains("NPS")){
+        ui->pointNpsLabel->setText(QString("(%1 , %2)").arg(x).arg(y));
+        ui->pointDqeLabel->setEnabled(false);
+        ui->pointMtfLabel->setEnabled(false);
+        ui->pointNpsLabel->setEnabled(true);
+    }
+    else{
+        ui->pointMtfLabel->setText(QString("(%1 , %2)").arg(x).arg(y));
+        ui->pointDqeLabel->setEnabled(false );
+        ui->pointMtfLabel->setEnabled(true);
+        ui->pointNpsLabel->setEnabled(false);
+    }
 }
 
 void QCstmDQE::on_dataCheckbox_toggled(bool checked)
@@ -1626,7 +1643,7 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
 
     if(options.value("1/mm"))   _unitNPS    = "1/mm";
     if(options.value("1/pix"))  _unitNPS    = "1/pix";
-    if(options.value("lp/mm"))  _unitNPS    = "lp/mm";
+    if(options.value("lp/mm"))  _unitNPS    = "lp/mm"; //Line pairs per mm.
 }
 
 void QCstmDQE::on_maindata_changed(QString /*filename*/)
