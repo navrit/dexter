@@ -39,9 +39,6 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
     ui->DQEplot->xAxis->setLabel("Spatial frequency (1/pix)");
     ui->DQEplot->yAxis->setLabel("DQE");
 
-//    connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
-//    connect( this, &QCstmDQE::open_data, _mpx3gui, &Mpx3GUI::open_data_with_path);
-
     connect( ui->ESFplot,  SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
     connect( ui->LSFplot,  SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
     connect( ui->MTFplot,  SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
@@ -62,9 +59,6 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
 //    tracer->setSize(7);
 //    ui->LSFplot->addItem(tracer);
 
-//    ui->windowLabel->setToolTip(tr("used for local fitting, must be an uneven number"));
-//    ui->windowLineEdit->setToolTip(tr("must be an uneven number"));
-
     _optionsDialog = new optionsDialog(this);
 
     addNPSfile("icons/startupimage.bin"); //Set startupimage data in NPS files list.
@@ -84,9 +78,7 @@ void QCstmDQE::SetMpx3GUI(Mpx3GUI *p){
 
     _optionsDialog->SetMpx3GUI(_mpx3gui);
 
-//    connect( _mpx3gui,SIGNAL(returnFilename(QString)), this, SLOT(on_maindata_changed(QString)) );
-//    connect( _mpx3gui, &Mpx3GUI::reload_all_layers, this, &QCstmDQE::on_maindata_changed ); //Both work, different syntax only.
-    connect( _mpx3gui,SIGNAL(returnFilename(QString)), this, SLOT(addNPSfile(QString)) );
+    connect( _mpx3gui,SIGNAL(returnFilename(QString)), this, SLOT(on_maindata_changed(QString)) );
 }
 
 void QCstmDQE::setRegion(QPoint pixel_begin, QPoint pixel_end)
@@ -98,12 +90,10 @@ void QCstmDQE::setRegion(QPoint pixel_begin, QPoint pixel_end)
 
 void QCstmDQE::clearDataAndPlots(bool clearNPS)
 {
-//    emit ui->clearMTFpushButton->clicked();
-//    if(clearNPS) emit ui->clearNPSpushButton->clicked();
-//    emit ui->logClearPushButton->clicked(); //SLOW
     on_clearMTFpushButton_clicked();
     if(clearNPS) on_clearNPSpushButton_clicked();
     on_logClearPushButton_clicked();
+    on_clearDQEpushButton_clicked();
 
     _beginpix   = QPoint(-1, -1);
     _endpix     = QPoint(-1, -1);
@@ -145,7 +135,7 @@ void QCstmDQE::plotESF()
     _ESFdata = _mpx3gui->getDataset()->calcESFdata();
 
     if(!_ESFdata.empty()){
-        _ESFbinData = calcESFbinData();
+
 
         double min = _ESFdata[0][0], max = min;
 
@@ -171,13 +161,19 @@ void QCstmDQE::plotESF()
         ui->ESFplot->graph(1)->setErrorType(QCPGraph::etValue);
 
         ui->ESFplot->graph(0)->setData(_ESFdata[0], _ESFdata[1]);
-        ui->ESFplot->graph(1)->setDataValueError(_ESFbinData[0], _ESFbinData[1], _ESFbinData[2]);
+
+        if(_usebins){
+            _ESFbinData = calcESFbinData();
+            ui->ESFplot->graph(1)->setDataValueError(_ESFbinData[0], _ESFbinData[1], _ESFbinData[2]);
+        }
 
         ui->ESFplot->yAxis->rescale();
         ui->ESFplot->replot( QCustomPlot::rpQueued );
 
         ui->dataCheckbox->setEnabled(true);
-        _optionsDialog->setDataRange(_plotrange);
+
+        _optionsDialog->setDataRange( _plotrange );
+
         _logtext += QString("ESF data was binned using\n binsize = %1\n").arg(_binsize);
         refreshLog(false);
     }
@@ -676,7 +672,7 @@ QVector<QVector<double> > QCstmDQE::collectRoIdata()
     if(_useSelectedRoI){
         roidata = vectorIntToDouble( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
 
-        _logtext += QString("Region (%1, %2)->(%3, %4) was used.\n").arg(_beginpix.x()).arg(_beginpix.y()).arg(_endpix.x()).arg(_endpix.y());
+        _logtext += QString("Region (%1, %2)->(%3, %4)\n").arg(_beginpix.x()).arg(_beginpix.y()).arg(_endpix.x()).arg(_endpix.y());
 
     }
     else if(_useFullimage){
@@ -865,8 +861,11 @@ void QCstmDQE::calcNPSdata()
 
         QVector<QVector<double> > ft2Ddata;
 
+        openingNPSfile = true;
+
         for( int i = 0; i < Nfiles; i++){
             QString filename = _NPSfilepaths[i];
+
             emit open_data(false, true, filename);
             _logtext += "  " + filename + "\n";
 
@@ -895,6 +894,9 @@ void QCstmDQE::calcNPSdata()
                 }
             }
         }
+
+        openingNPSfile = false;
+
         //Calculate mean FT squared.
         if(Nfiles > 1){
             for(int y = 0; y < ftROIdata.length(); y++)
@@ -1302,7 +1304,6 @@ void QCstmDQE::on_comboBox_currentIndexChanged(const QString &arg1)
 //    _mpx3gui->GetUI()->visualizationGL->setThreshold(threshold); //connected..
 
     //Collect new dataset.
-    _mpx3gui->getDataset()->collectPointsROI(threshold, _beginpix, _endpix);
     //And do everything again for this set..
     //TODO.
 }
@@ -1315,23 +1316,15 @@ void QCstmDQE::on_loadDataPushButton_clicked()
 
     for(int i = 0; i < filepaths.length(); i++){
         filepath = filepaths[i];
+
         if(!filepath.isNull()){
-
-//            _NPSfilepaths += filepath;
-            if(i==0) emit open_data(false, true, filepath);
-
+            if(i==0)
+                emit open_data(false, true, filepath);
             addNPSfile(filepath);
-
-//            QStringList split = filepath.split('/');
-//            QString filename = split.last();
-
-//            ui->listWidget->addItem(filename);
         }
         else QMessageBox::warning ( this, tr("Error"), tr( "Something went wrong when trying to open a file.\nPath does not exist.") );
-
     }
-//    int count = ui->listWidget->count();
-//    if(ui->listWidget->count() != 0)  ui->listWidget->setCurrentRow(0);
+
     if(ui->listWidget->count() == 0)
         QMessageBox::warning ( this, tr("Error"), tr( "No files could be opened." ) );
 
@@ -1339,9 +1332,6 @@ void QCstmDQE::on_loadDataPushButton_clicked()
 }
 
 void QCstmDQE::addNPSfile(QString filepath){
-
-    if(!openingNPSfile) clearDataAndPlots(true);
-
     _NPSfilepaths += filepath;
 
     QStringList split = filepath.split('/');
@@ -1362,16 +1352,22 @@ void QCstmDQE::on_listWidget_currentRowChanged(int currentRow)
 void QCstmDQE::on_removeDataFilePushButton_clicked()
 {
     int index = ui->listWidget->currentRow();
-    //int nr = ui->listWidget->count();
-
-
     QString filename = ui->listWidget->currentItem()->text();
     delete ui->listWidget->item(index);
 
-    for(int i = 0; i < _NPSfilepaths.length(); i++){
+    int i = 0;
+    for(; i < _NPSfilepaths.length(); i++){
         QString filepath = _NPSfilepaths[i];
-        if(filepath.contains(filename)) _NPSfilepaths.removeAt(i);
+        if(filepath.contains(filename)){
+            _NPSfilepaths.removeAt(i);
+            break;
+        }
     }
+    if(index != 0){
+        emit open_data(false, true, _NPSfilepaths[i-1]);
+    }
+
+
 }
 
 void QCstmDQE::on_clearDataFilesPushButton_clicked()
@@ -1423,9 +1419,6 @@ void QCstmDQE::on_npsPushButton_clicked()
         plotNPS();
         refreshLog(false);
     }
-
-//    calcNPSdata();
-
 }
 
 void QCstmDQE::on_logClearPushButton_clicked()
@@ -1598,24 +1591,25 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
     //Set all options values in variables.
 
     //MTF
-    //    if(options.value("edge")    == 0);
-    if(options.value("error")   == 0)
-         _useErrorFunc = false;
-    else _useErrorFunc = true;
-    if(options.value("fitder")  == 0)
-         _useDerFit = false;
-    else _useDerFit = true;
+    if(!options.value("bindata")){
+         _usebins   = false;
+         ui->ESFplot->graph(1)->clearData();
+         ui->ESFplot->replot(QCustomPlot::rpQueued);
+    }
+    else{
+        _usebins   = true;
 
+         if( _binsize != options.value("binsize")){
+             _binsize  = options.value("binsize");
+             plotESF();      //TO DO: only replot the BINNED data. Seperate functions?
+         }
+         else plotESF();
+    }
+
+    _useErrorFunc = options.value("error");
+    _useDerFit = options.value("fitder");
     _windowW = options.value("windowW");
 
-    if(options.value("bindata") == 0)
-         _usebins = false;
-    else _usebins = true;
-
-    if(_binsize != options.value("binsize")){
-        _binsize = options.value("binsize");
-        plotESF();      //TO DO: only replot the BINNED data. Seperate functions?
-    }
 
     //NPS
     _useFullimage   = options.value("fullimage");
@@ -1646,18 +1640,17 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
     if(options.value("lp/mm"))  _unitNPS    = "lp/mm"; //Line pairs per mm.
 }
 
-void QCstmDQE::on_maindata_changed(QString /*filename*/)
+void QCstmDQE::on_maindata_changed(QString filepath)
 {
-    if(!openingNPSfile){
+    if(!openingNPSfile){//Data opened from visualisation, clear mtf, nps, dqe.
         clearDataAndPlots(true);
-//        QStringList list = filename.split("/");
-//        filename = list.last();
-//        ui->listWidget->addItem( filename );
+    }   
+    else on_clearNPSpushButton_clicked(); //Clear NPS plots
 
-//        int count = ui->listWidget->count();
-//        if(count != 0) ui->listWidget->setCurrentRow(0);
-    }
+    //Add opened file to the NPS files by default, can be removed easily if not wanted, but prevents double opening.
+    addNPSfile(filepath);
 }
+
 
 void QCstmDQE::on_close_optionsDialog()
 {

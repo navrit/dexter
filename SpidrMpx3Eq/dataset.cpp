@@ -1332,9 +1332,7 @@ void Dataset::applyOBCorrection() {
                     else {
                         currentLayer[j] = 0;
                     }
-
                 }
-
             }
 
             // Calculates the amount of decimals before the first digit of the minimum. eg: 0.03 -> 2.
@@ -1361,10 +1359,7 @@ void Dataset::applyOBCorrection() {
                     currentLayer[j] = offset + round(normFrame[j] * pow(10.0, correctionFactor));
                 //if (currentLayer[j] < 0)
                 //    cout << j << endl;
-
             }
-
-
         }
         delete[] normFrame;
 

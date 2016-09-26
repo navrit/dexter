@@ -847,8 +847,9 @@ void Mpx3GUI::open_data(bool saveOriginal){
     this->setWindowTitle( _softwareName + filename);
 
 //    // If not in DQE - change back to Visualisation
-    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
-//    if(!_ui->dqeTab->openingNPSfile){
+//    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
+
+    if(!_ui->dqeTab->openingNPSfile){       //CHECK ME >>>>>>>>>>>>>>
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
         _ui->actionVisualization->setChecked(1);
@@ -909,14 +910,14 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
     }
 
     // If not in DQE - change back to Visualisation
-    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
-        _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
-    }
-//    if(!_ui->dqeTab->openingNPSfile){
-//        uncheckAllToolbarButtons();
+//    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
 //        _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
-//        _ui->actionVisualization->setChecked(1);
 //    }
+    if(!_ui->dqeTab->openingNPSfile){
+        uncheckAllToolbarButtons();
+        _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
+        _ui->actionVisualization->setChecked(1);
+    }
 
     return;
 }

@@ -18,13 +18,13 @@ public:
     ~optionsDialog();
     void setCurrentSettings();
     void SetMpx3GUI(Mpx3GUI *p);
-    void setDataRange(int range){_datarange = range;}
+    void setDataRange(int range){ _datarange = range; }
 
 private:
     Ui::optionsDialog *ui;
     Mpx3GUI *_mpx3gui;
     QHash<QString, int> _currentSettings;
-    int _datarange;
+    int _datarange = -1;
     void resetSettings();
 
 private slots:
