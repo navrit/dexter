@@ -143,7 +143,8 @@ void QCstmCorrectionsDialog::on_obcorrCheckbox_toggled(bool checked) {
 /**
  * On an existing image
  */
-bool firstBHCorr = true;
+// DISABLED #BH_warning_dialog
+// bool firstBHCorr = true;
 
 void QCstmCorrectionsDialog::on_applyCorr_clicked() {
     if ( ui->bhcorrLineEdit->text().isEmpty() && ui->obcorrLineEdit->text().isEmpty()) {
@@ -151,7 +152,10 @@ void QCstmCorrectionsDialog::on_applyCorr_clicked() {
     }
     if ( ! _vis->isTakingData() ) {
 
+        /* DISABLED #BH_warning_dialog - implement this properly if the desire arises
+
         // Warn user if they want to apply another BH correction
+
         if (!firstBHCorr){
             QMessageBox::StandardButton reply;
             reply = QMessageBox::question(this, "Warning", "Do you really want to apply another beam hardening correction?",
@@ -160,8 +164,10 @@ void QCstmCorrectionsDialog::on_applyCorr_clicked() {
                 return;
             }
         }
+        */
 
-        // This is done off data taking
+        // This is done off data taking - WHAT DOES THIS EVEN MEAN
+        //
         // Recover first the saved data to operate on the original
         _mpx3gui->rewindToOriginalDataset();
 
@@ -171,7 +177,8 @@ void QCstmCorrectionsDialog::on_applyCorr_clicked() {
         // This applies the correction if necessary
         _vis->reload_all_layers();
 
-        firstBHCorr = false;
+        // DISABLED #BH_warning_dialog
+        // firstBHCorr = false;
     }
 }
 
