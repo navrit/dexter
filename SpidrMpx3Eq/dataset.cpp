@@ -679,7 +679,6 @@ QVector<QVector<double> > Dataset::calcESFdata()
                 i++;
             }
     }
-
     return esfData;
 }
 
@@ -693,7 +692,7 @@ QPair<double, double> Dataset::calcMidLine(double bright, double dark, bool BtD)
     QVector<double> xm(Ny);
     QVector<double> ym(Ny);
     double diff = bright - dark;
-    double borderval = dark + 0.1 * diff; //???     Not 0.5*(bright + dark): gives a bordervalue that is too high.
+    double borderval = dark + 0.1 * diff; //??     Not 0.5*(bright + dark): gives a bordervalue that is too high.
 
     //Look for the first pixel that is dark, take middle of row as y and x between light and dark pixel.
     if(BtD) //Bright to Dark
@@ -732,7 +731,6 @@ int Dataset::calcMaxNroi(int xroi, int yroi)
 
     return Nx * Ny * m_nFrames;
 }
-
 
 bool Dataset::isBorderPixel(int p, QSize isize) {
 

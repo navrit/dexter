@@ -21,9 +21,6 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
 
     ui->ESFplot->xAxis->setLabel("Distance (pix)");
     ui->ESFplot->yAxis->setLabel("Normalised signal");
-    // add title layout element:(font is too big)
-//    ui->ESFplot->plotLayout()->insertRow(0);
-//    ui->ESFplot->plotLayout()->addElement(0, 0, new QCPPlotTitle(ui->ESFplot, "ESF"));
 
     ui->LSFplot->xAxis->setLabel("Distance (pix)");
     ui->LSFplot->yAxis->setLabel("Normalised signal");
@@ -84,7 +81,6 @@ void QCstmDQE::SetMpx3GUI(Mpx3GUI *p){
 void QCstmDQE::setRegion(QPoint pixel_begin, QPoint pixel_end)
 {
     _beginpix = pixel_begin; _endpix = pixel_end;
-    //ui->regionLabel->text();
     ui->regionLabel->setText(QString("Region of interest: (%1, %2)-->(%3, %4)").arg(_beginpix.x()).arg(_beginpix.y()).arg(_endpix.x()).arg(_endpix.y()) );
 }
 
@@ -302,8 +298,8 @@ void QCstmDQE::plotMTF()
         ui->MTFplot->graph(0)->setData(data[0], data[1]);
 
         ui->MTFplot->rescaleAxes();
-        ui->MTFplot->xAxis->setRange(0, 1.1); //Plot until the Nyquist frequency
-        ui->MTFplot->yAxis->setRange(0, 1.1); //Plot full mtfrange 0 -> 1
+        ui->MTFplot->xAxis->setRange(0, 1.1);       //Plot until the Nyquist frequency
+        ui->MTFplot->yAxis->setRange(0, 1.1);       //Plot full mtfrange 0 -> 1
         ui->MTFplot->replot( QCustomPlot::rpQueued );
     }
 
@@ -317,7 +313,7 @@ void QCstmDQE::fitESFparams(QVector<QVector<double> > esfdata)
     std::vector<std::pair<input_vector, double> > data; //vector of pairs of variable going in and the value coming out.
 
     int length = esfdata[0].length();
-    input_vector input;     //must be in dlib::matrix form...
+    input_vector input;     //must be in dlib::matrix form.
 
     for(int i = 0; i < length; i++){
         input(0) = esfdata[0][i];           //x
@@ -382,7 +378,8 @@ void QCstmDQE::fitESFparams(QVector<QVector<double> > esfdata)
     }
 }
 
-double model(const input_vector &input, const parameter_vector &params){ //Types designed for the optimization algorithm.
+double model(const input_vector &input, const parameter_vector &params) //Types designed for the optimization algorithm.
+{
     const double x = input(0);
     const double scaling = params(0);
     const double offset = params(1);
@@ -417,9 +414,9 @@ QString QCstmDQE::dataToString(QVector<QVector<double> > data)
 }
 
 QVector<QVector<double> > QCstmDQE::calcESFbinData()
-{   //TO DO Check/fix and use for other way of MTF.
+{   //TO DO implement slit method.
 
-    QVector<QVector<double> > esfbindata(3); //3rd for st.dev.
+    QVector<QVector<double> > esfbindata(3); //3rd row for standard deviation.
     QVector<int> Npoints;
     double dmin, dmax;
     dmin = _ESFdata[0][0];
@@ -511,7 +508,6 @@ QVector<QVector<double> > QCstmDQE::calcESFfitData()
 {
     int fitlength = _plotrange/_stepsize;
     QVector<QVector<double> > fitdata;
-    //parameter_vector params;
     input_vector fitxv;
     QVector<double> fitxdata(fitlength);
     QVector<double> fitydata(fitlength);
@@ -521,8 +517,9 @@ QVector<QVector<double> > QCstmDQE::calcESFfitData()
     double a = _params(2,0);
 
     if(scaling != 0 && a != 0){
-        //Make x (distance) input_vector to put in model
-        //and a QVector of all distances and a QVector of all the fitted curve values to return.
+        //Make x (distance) input_vector to put in model,
+        //a QVector of all distances and
+        //a QVector of all the fitted curve values to return.
         for(int j = 0; j < fitlength; j++){
             double distance = _xstart + j*_stepsize;
             fitxv(0) = distance;
@@ -558,7 +555,6 @@ QVector<QVector<double> > QCstmDQE::calcSmoothedESFdata(QVector<QVector<double> 
     smoothData[1].resize(lengthSmooth);
 
     for(int j = 0; j < lengthSmooth; j++){//For every point(index) to be fitted and put in smoothdata.
-
         int imiddle = j + offset;
 
         int begin   = - 0.5*(_windowW-1);
@@ -587,19 +583,20 @@ QVector<QVector<double> > QCstmDQE::calcSmoothedESFdata(QVector<QVector<double> 
     return smoothData;
 }
 
-double polyModel(const input_vector &input, const parameter_vector &params){ //Types designed for the optimization algorithm.
-
+double polyModel(const input_vector &input, const parameter_vector &params)//Types designed for the optimization algorithm.
+{
     double x = input(0);
-
     return params(0)*x*x*x*x + params(1)*x*x*x + params(2)*x*x + params(3)*x + params(4);
 }
 
 double polyResidual(const std::pair<input_vector, double>& data, const parameter_vector& params)
 {
-    return (polyModel(data.first, params) - data.second)*polyWeightRoot((data.first), params(5)); //multiply by the square root of the weighting factor.
+    //multiply by the square root of the weighting factor.
+    return (polyModel(data.first, params) - data.second)*polyWeightRoot((data.first), params(5));
 }
 
-double polyWeightRoot(input_vector input, int windowW){
+double polyWeightRoot(input_vector input, int windowW)
+{
     //Gaussian weights, (Samei et al. (1998))
     double i = input(1);
     double arg = 4*i/( windowW - 1);
@@ -609,7 +606,8 @@ double polyWeightRoot(input_vector input, int windowW){
     return sqrt(f);
 }
 
-QVector<QVector<double> > QCstmDQE::calcNumDerivativeOfdata(QVector<QVector<double> > data){
+QVector<QVector<double> > QCstmDQE::calcNumDerivativeOfdata(QVector<QVector<double> > data)
+{
     //!Calculates the numerical derivative of the ESF bindata, giving the LSF.
     int length = data[0].length();
 
@@ -869,13 +867,11 @@ void QCstmDQE::calcNPSdata()
             emit open_data(false, true, filename);
             _logtext += "  " + filename + "\n";
 
-//            roidata = vectorIntToDouble( _mpx3gui->getDataset()->collectPointsROI(_currentThreshold, _beginpix, _endpix) );
             roidata = collectRoIdata();
 
             if(_fitPlane)
                 correctPlaneRoI( roidata );
             ftROIdata = calcFTsquareRoI( roidata );
-//            ftROIdata = calcFTsquareRoI( _mpx3gui->getDataset()->collectPointsROI( _currentThreshold, _beginpix, _endpix));
 
             if(i == 0){ //Only do this once.. Assumes all regions are of equal size.
                 int xlength = ftROIdata[0].length();
@@ -892,7 +888,7 @@ void QCstmDQE::calcNPSdata()
                 for(int x = 0; x < ftROIdata[0].length(); x++){ //assuming all rows are equal length
                     ft2Ddata[y][x] += ftROIdata[y][x];
                 }
-            }
+            }            
         }
 
         openingNPSfile = false;
@@ -904,10 +900,7 @@ void QCstmDQE::calcNPSdata()
                     ft2Ddata[y][x] /= Nfiles;
                 }
         }
-
-        if(_showFT) plotFTsquare(ft2Ddata); //Only plot the mean FT squared.
-
-//        calc1Dnps(ft2Ddata);
+        ftROIdata = ft2Ddata;
     }
 
     //Actually multiply other NPS factor
@@ -930,7 +923,6 @@ void QCstmDQE::calcNPSdata()
 
     //Now normalize the NPS to its maximum value.
     if(_normNPSmax) calcNormNPS();
-
 }
 
 void QCstmDQE::calcNormNPS(){
@@ -985,12 +977,6 @@ void QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
     int ylength = ftdata.length();
     _NPSdata[1].resize( ylength );
 
-    //Should not be possible anymore.
-//    if(!_useZeroFreq && _NlinesNPS == 0){
-//        QMessageBox::warning ( this, tr("Nothing to use for 1D NPS"), tr( "Please specify whether the zero frequency axes and/or off-axis lines should be used." ) );
-//        _NPSdata.clear();
-//        return;
-//    }
         if(_useZeroFreq){
             _NPSdata[0] = ftdata[0]; //x-axis (y=0)
 
@@ -1016,7 +1002,6 @@ void QCstmDQE::calc1Dnps(const QVector<QVector<double> > &ftdata)
             if(_NlinesNPS == 1) _logtext += "1 off-axis line was used in 1D NPS calculation.\n";
             else _logtext += QString("%1 off-axis lines were used in 1D NPS calculation.\n").arg(_NlinesNPS);
         }
-
 }
 
 QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<double> > &data )
@@ -1102,7 +1087,6 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<double> > &d
     }
     for(int y = 0; y < ylength; y++){
             for(int x = 0; x < xlength; x++){
-                //double z = norm( FTmatrix(y, x) ); //Norm gives the squared magnitude of the complex number in the FTmatrix.
                 double z = abs ( FTmatrix(x, y) );
                 ftdata[y][x] = z;
             }
@@ -1134,8 +1118,7 @@ parameter_vector QCstmDQE::fitPlaneParams(const QVector<QVector<double> > &dataR
             }
         }
 
-        //Let's display the data in a 3Dplot using Qt data visualization (Qt 5.7 onwards only)
-        //plotData3D(data3D);
+        //plotData3D(data3D); //Display the data in a 3Dplot using Qt data visualization (Qt 5.7 onwards only)
 
         params(0,0) = 1;
         params(1,0) = 1;
@@ -1166,7 +1149,7 @@ parameter_vector QCstmDQE::fitPlaneParams(const QVector<QVector<double> > &dataR
 }
 
 double planeModel(const input_vector &input, const parameter_vector &params){ //Types designed for the optimization algorithm.
-   //Returns z = ax + by + c.
+    //Returns z = ax + by + c.
     return params(0)*input(0) + params(1)*input(1) + params(2);
 }
 
@@ -1228,8 +1211,8 @@ void QCstmDQE::plotFTsquare(const QVector<QVector<double> > &ftdata)
     ftplot->show();
 }
 
-void QCstmDQE::plotNPS(){
-
+void QCstmDQE::plotNPS()
+{
     calcNPSdata();
 
     int datalength = _NPSdata.length();
@@ -1343,7 +1326,9 @@ void QCstmDQE::addNPSfile(QString filepath){
 
 void QCstmDQE::on_listWidget_currentRowChanged(int currentRow)
 {
+    openingNPSfile = true;
     if(currentRow >= 0) emit open_data(false, true, _NPSfilepaths[currentRow]);
+    openingNPSfile = false;
 }
 
 void QCstmDQE::on_removeDataFilePushButton_clicked()
@@ -1363,15 +1348,13 @@ void QCstmDQE::on_removeDataFilePushButton_clicked()
     if(index != 0){
         emit open_data(false, true, _NPSfilepaths[i-1]);
     }
-
-
 }
 
 void QCstmDQE::on_clearDataFilesPushButton_clicked()
 {
     ui->listWidget->clear();
     _NPSfilepaths.clear();
-//    on_clearNPSpushButton_clicked();
+    on_clearNPSpushButton_clicked();
 }
 
 void QCstmDQE::on_mtfPushButton_clicked()
