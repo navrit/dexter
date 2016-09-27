@@ -200,7 +200,7 @@ al. (1998). This method consists of the following steps:
 The extent of the regions used by Samei are not feasible for the Medipix3… The LSF looks significantly different than ours, so the Hanning filter and baseline substraction or extrapolation of the tails (as in other papers) might not be the way to go. (?)
 But we CAN use the iterative MTF maximization by varying the angle. Only one parameter changes and then the entire “Calc MTF” procedure can be repeated:
 
-#### (still) TO DO for MTF calculation:
+#### TO DO for MTF calculation:
 
 - Implement slit method.  Try Fujita’s slit method. (“Simple”). 
 - Maximize MTF by angle variation.  
@@ -237,7 +237,6 @@ then not too difficult to calculate the DQE. (see overview)
 - Determine the exposure.
 - Calculate NEQ. 
 - Use EMTF for NEQ calculation (in addition to the PMTF, both should be reported). (Dobbins, 1995) 
-- Determine (given by manufacturer or measurements and simulations  (Flynn & Samei,	1999)) the SNR^2 of the incident x-ray beam. 
 - Calculate DQE. 
 - Calculate DQE(0) by extrapolation of the low-frequency part back to zero. 
 
@@ -340,8 +339,6 @@ To add an option, a few things have to be done:
     
 6. Test.  
   
-  
- 
 
 ## Works Cited
 
@@ -357,4 +354,4 @@ Hoeschen, D. (2001). DQE of digital x-ray imaging
 systems: a challenge. _SPIE_.
 
 
-Last change: 21-09-2016
+Last change: 27-09-2016
