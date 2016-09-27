@@ -13,12 +13,18 @@ class optionsDialog : public QDialog
 {
     Q_OBJECT
 
+    enum indices{
+        __mtfIndex = 0,
+        __npsIndex = 1
+    };
+
 public:
     explicit optionsDialog(QWidget *parent = 0);
     ~optionsDialog();
     void setCurrentSettings();
     void SetMpx3GUI(Mpx3GUI *p);
     void setDataRange(int range){ _datarange = range; }
+    QString getCurrentTab();
 
 private:
     Ui::optionsDialog *ui;

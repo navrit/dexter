@@ -182,7 +182,7 @@ private slots:
 
     void on_clearNPSpushButton_clicked();
 
-    void on_clearMTFpushButton_clicked();
+    void on_clearMTFpushButton_clicked(bool clearESFdata);
 
     void on_clearAllPushButton_clicked();
 

@@ -26,6 +26,14 @@ void optionsDialog::SetMpx3GUI(Mpx3GUI * p )
     connect( this, SIGNAL(apply_options(QHash<QString, int>)), _mpx3gui->GetUI()->dqeTab, SLOT(on_apply_options(QHash<QString, int>)) );
 }
 
+QString optionsDialog::getCurrentTab()
+{
+    if(ui->tabWidget->currentIndex() == __mtfIndex)
+        return "mtf";
+    else if(ui->tabWidget->currentIndex() == __npsIndex)
+        return "nps";
+}
+
 //void optionsDialog::setDataRange(int NdataESF)
 //{
 //    ui->binSizeSpinBox->setMaximum( NdataESF );
