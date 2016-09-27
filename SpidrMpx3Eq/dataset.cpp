@@ -17,7 +17,6 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 #include <boost/numeric/ublas/io.hpp>
-//#include <dlib/optimization.h>
 
 #include <dlib/optimization.h>
 //#include <iostream>
@@ -184,6 +183,7 @@ int Dataset::getLayerIndex(int threshold){
 
 QByteArray Dataset::toByteArray() {
 
+    // Add header function here???
     QByteArray ret(0);
     ret += QByteArray::fromRawData((const char*)&m_nx, (int)sizeof(m_nx));
     ret += QByteArray::fromRawData((const char*)&m_ny, (int)sizeof(m_ny));
@@ -632,7 +632,7 @@ QVector<QVector<double> > Dataset::calcESFdata()
     double a = ab.first;
     double b = ab.second;
     //if ( a==0 && b==0 ||  isnan(a) || isnan(b) ) {
-    if ( a==0 && b==0 ||  a!=a || b!=b ) {
+    if ( (a==0 && b==0) ||  (a!=a || b!=b) ) {
         esfData.clear();   //Return empty data...Midline doesn't make sense.
 
         QMessageBox msgbox;
@@ -679,7 +679,6 @@ QVector<QVector<double> > Dataset::calcESFdata()
                 i++;
             }
     }
-
     return esfData;
 }
 
@@ -693,7 +692,7 @@ QPair<double, double> Dataset::calcMidLine(double bright, double dark, bool BtD)
     QVector<double> xm(Ny);
     QVector<double> ym(Ny);
     double diff = bright - dark;
-    double borderval = dark + 0.1 * diff; //???     Not 0.5*(bright + dark): gives a bordervalue that is too high.
+    double borderval = dark + 0.1 * diff; //??     Not 0.5*(bright + dark): gives a bordervalue that is too high.
 
     //Look for the first pixel that is dark, take middle of row as y and x between light and dark pixel.
     if(BtD) //Bright to Dark
@@ -722,9 +721,16 @@ QPair<double, double> Dataset::calcMidLine(double bright, double dark, bool BtD)
             }
 
 
-     return LinearRegression(xm, ym);
+    return LinearRegression(xm, ym);
 }
 
+int Dataset::calcMaxNroi(int xroi, int yroi)
+{
+    int Nx = m_nx / xroi;
+    int Ny = m_ny / yroi;
+
+    return Nx * Ny * m_nFrames;
+}
 
 bool Dataset::isBorderPixel(int p, QSize isize) {
 
@@ -1108,7 +1114,7 @@ void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
 
     if ( ! corrdiag ) return;
 
-    if ( corrdiag->isCorrectionsActive() ) {
+//    if ( corrdiag->isCorrectionsActive() ) {  //Always false. previously set by checkbox.
 
         QMap<int, double> meanvals = Dataset::GetPadMean();
 
@@ -1118,7 +1124,7 @@ void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
         if ( corrdiag->isSelectedDeadPixelsInter() ) applyDeadPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
         if ( corrdiag->isSelectedHighPixelsInter() ) applyHighPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
 
-    }
+//    }
 
 }
 
@@ -1324,9 +1330,7 @@ void Dataset::applyOBCorrection() {
                     else {
                         currentLayer[j] = 0;
                     }
-
                 }
-
             }
 
             // Calculates the amount of decimals before the first digit of the minimum. eg: 0.03 -> 2.
@@ -1353,10 +1357,7 @@ void Dataset::applyOBCorrection() {
                     currentLayer[j] = offset + round(normFrame[j] * pow(10.0, correctionFactor));
                 //if (currentLayer[j] < 0)
                 //    cout << j << endl;
-
             }
-
-
         }
         delete[] normFrame;
 

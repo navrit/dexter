@@ -661,7 +661,7 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
         QJsonObject JSobject = itParent.value().toObject();
 
         it = JSobject.find("Acceleration");
-        double t1 = it.value().toDouble();
+        //double t1 = it.value().toDouble();
         if(it != JSobject.end())
             setStepperConfigAcceleration(it.value().toDouble());
 

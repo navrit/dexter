@@ -439,175 +439,6 @@ QGroupBox::title {
        <zorder></zorder>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QGroupBox" name="groupBoxStepperMotonControl">
-       <property name="toolTip">
-        <string>Stepper Motor Control</string>
-       </property>
-       <property name="title">
-        <string>Stepper Motor Control</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_3">
-        <item row="1" column="11">
-         <widget class="QDoubleSpinBox" name="currentISpinBox">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="7" colspan="2">
-         <widget class="QDoubleSpinBox" name="speedSpinBox">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="decimals">
-           <number>1</number>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="5" colspan="2">
-         <widget class="QCheckBox" name="stepperUseCalibCheckBox">
-          <property name="text">
-           <string>use calib</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1" colspan="2">
-         <widget class="QCheckBox" name="stepperMotorCheckBox">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable/disable stepper motor control.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;This should take lesss than 10s.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Enable</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="9" colspan="2">
-         <widget class="QLabel" name="label_18">
-          <property name="text">
-           <string>Current (I):</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="11">
-         <widget class="QSpinBox" name="motorIdSpinBox">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="5" colspan="2">
-         <widget class="QLabel" name="label_13">
-          <property name="text">
-           <string>Speed:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="11" rowspan="2">
-         <widget class="QLCDNumber" name="motorCurrentPoslcdNumber"/>
-        </item>
-        <item row="2" column="7" rowspan="2" colspan="2">
-         <widget class="QDoubleSpinBox" name="targetPosSpinBox">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="minimum">
-           <double>-1000000.000000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>1000000.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="5" colspan="2">
-         <widget class="QLabel" name="stepperTargetPosLabel">
-          <property name="text">
-           <string>Target:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLabel" name="label_15">
-          <property name="text">
-           <string>Acc:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2" rowspan="2" colspan="3">
-         <widget class="QDoubleSpinBox" name="accelerationSpinBox">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="decimals">
-           <number>1</number>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="7" colspan="5">
-         <widget class="QPushButton" name="motorGoToTargetButton">
-          <property name="text">
-           <string>Go to target</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="9" rowspan="2" colspan="2">
-         <widget class="QLabel" name="stepperCurrentPosLabel">
-          <property name="text">
-           <string>Current pos:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="9" colspan="3">
-         <widget class="QDial" name="motorDial">
-          <property name="maximum">
-           <number>360</number>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="9">
-         <widget class="QLabel" name="label_14">
-          <property name="text">
-           <string>Motor Id:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="1" colspan="8">
-         <widget class="QTableView" name="stepperCalibrationTableView">
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="7" colspan="2">
-         <widget class="QPushButton" name="stepperSetZeroPushButton">
-          <property name="text">
-           <string>SetZero</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="2" colspan="3">
-         <widget class="QPushButton" name="motorResetButton">
-          <property name="text">
-           <string>Reset stepper</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="2" colspan="3">
-         <widget class="QPushButton" name="motorTestButton">
-          <property name="text">
-           <string>Test</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
      <item row="0" column="2">
       <widget class="QGroupBox" name="groupBoxMonitoring">
        <property name="toolTip">
@@ -1083,6 +914,71 @@ QGroupBox::title {
          </layout>
         </item>
        </layout>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Preferences</string>
+       </property>
+       <widget class="QWidget" name="gridLayoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>561</width>
+          <height>341</height>
+         </rect>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="2" column="0">
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="pushButton_2">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Reset hidden dialogs</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QPushButton" name="pushButton">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Polarity check</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </item>
     </layout>

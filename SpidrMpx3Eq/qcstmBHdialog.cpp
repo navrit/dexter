@@ -6,6 +6,7 @@ qcstmBHdialog::qcstmBHdialog(QWidget *parent) :
     ui(new Ui::qcstmBHdialog)
 {
     ui->setupUi(this);
+    this->setWindowTitle("Adding thickness to beam hardening");
 }
 
 qcstmBHdialog::~qcstmBHdialog()

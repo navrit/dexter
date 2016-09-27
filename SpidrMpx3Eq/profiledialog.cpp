@@ -137,9 +137,12 @@ void ProfileDialog::addMeanLines(QString data){
                     ui->profilePlot->graph(graphindex + i)->addData(profilevector[i*N_left], mean.toDouble(&ok));
                     ui->profilePlot->graph(graphindex + i)->addData(profilevector[i*N_left + 1], mean.toDouble(&ok));
                 }
-                else ;//Do nothing if there is only one mean.
+                else {
+                    //Do nothing if there is only one mean.
+                }
 
-            if(!ok)changeText("An error has occured with converting the means to integers.");
+            if(!ok)
+                changeText("An error has occured with converting the means to integers.");
             }
 
             ui->profilePlot->replot(QCustomPlot::rpQueued);

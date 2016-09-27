@@ -53,60 +53,75 @@ public:
     void clearDataAndPlots(bool clearNPS); //!Clears all data and plots in the dqe view when new data is loaded or when a new region is selected.
     void refreshLog(bool emptylog);//!Changes or empties (when emptylog == true) the log.
     //double polyWeightRoot(int i);
-
+    bool isValidRegionSelected();
+    bool openingNPSfile = false;   //!Indicates whether an NPS file is being opened or if a file is opened through elsewhere.
 
 private:
     Ui::QCstmDQE *ui;
     Mpx3GUI * _mpx3gui;
     optionsDialog * _optionsDialog;
 //    QCPItemTracer * tracer;
-    //int _currentThreshold;
 
-    QPoint _beginpix, _endpix;
+    QPoint _beginpix    = QPoint(-1, -1);
+    QPoint _endpix      = QPoint(-1, -1);
 
     //Actual data:
     QVector<QVector<double> > _ESFdata; //Contains one vector for the distances to the edge and one for the corresponding pixel values.
     QVector<QVector<double> > _ESFbinData; //Necessary?? //Contains a vector for the middle of distance bins and one for the mean pixel values of the esf data.
-    QVector<QVector<double> > _ESFsmoothData;
-    QVector<QVector<double> > _LSFdata;
+    QVector<QVector<double> > _ESFsmoothData; //?
+    QVector<QVector<double> > _LSFdata; //?
     QVector<QVector<double> > _MTFdata; //!Contains MTF data to be used for final DQE calculation.
     QVector<QVector<double> > _NPSdata; //!Contains NPS data to be used for final DQE calculation.
+    QVector<QVector<double> > _DQEdata; //!Contains final DQE data.
 
     parameter_vector _params;   //!Contains the parameters of the error function used for the fitting.
-    double _xstart;
+    double _xstart;             //!Specifies the starting point of the Edge Spread Function plot. The point most left from the edge.
     double _plotrange;
     int _currentThreshold;
 
-    bool _openingNPSfile = false;
-    QStringList _NPSfilepaths;  //!Holds the filepaths of all the loaded datafiles.
-    QString _logtext;   //!A QString that holds the text that is to appear in the log window.
+    QStringList _NPSfilepaths;      //!Holds the filepaths of all the loaded datafiles.
+    QString _logtext;               //!A QString that holds the text that is to appear in the log window.
 
 
     //Options
         //MTF
-    bool    _useDerFit      = false;    //!Indicates whether the LSF should be made of the theoretical derivative using the calculated parameters (true) or the numerical derivative of the (smoothed) binned data.
-    bool    _usebins        = true;     //!Indicates whether the data should be binned and this data should be used for further calculations.
-    double  _binsize        = 1;        //!Specifies the size of the bins to be used for the ESF data.
-    double  _stepsize       = 0.10;      //!Specifies the distance between datapoints of the fitplot in pixels.
-    double  _histStep       = 0.5;      //!Specifies the distance between datapoints in the LSF (in pixels)
-    bool    _useErrorFunc   = true;     //!Indicates whether the errorfunction (or rather local smoothing) should be used.
-    int     _windowW        = 11;       //!Specifies the width of the window to be used for local fitting. Must be uneven, larger than(>=)3 and smaller(<=) than the total amount of data.    
+    bool    _useDerFit      = true;            //!Indicates whether the LSF should be made of the theoretical derivative using the calculated parameters (true) or the numerical derivative of the (smoothed) binned data.
+    bool    _usebins        = true;             //!Indicates whether the data should be binned and this data should be used for further calculations.
+    double  _binsize        = 1;                //!Specifies the size of the bins to be used for the ESF data.
+    double  _stepsize       = 0.10;             //!Specifies the distance between datapoints of the fitplot in pixels.
+    double  _histStep       = 0.5;              //!Specifies the distance between datapoints in the LSF (in pixels)
+    bool    _useErrorFunc   = true;             //!Indicates whether the errorfunction (or rather local smoothing) should be used.
+    int     _windowW        = 11;               //!Specifies the width of the window to be used for local fitting. Must be uneven, larger than(>=)3 and smaller(<=) than the total amount of data.
         //NPS
-    bool    _singleNPS      = false;    //!Specifies whether the NPS should be calculated for a single file (true), or averaged for all files (false).
-    bool    _fitPlane       = false;    //!Specifies whether a flat plane should be fitted to the NPS data and removed before further calculation.
-    bool    _useZeroFreq    = false;
-    int     _NlinesNPS      = 1;
+    bool    _useFullimage   = false;            //!Indicates whether the RoI used for NPS calculation should be the full image.
+    bool    _useSelectedRoI = true;             //!Indicates whether the RoI used for NPS calculation should be the Region of Interest selected by the user.
+    bool    _useManualRoI   = false;            //!Indicates whether the RoI used for NPS calculation should be regions of a size that is set manually in the optionsdialog.
+    int     _nRoI           = 1;                //!Specifies the number of RoI's that should be used for NPs calculation...
+    QPoint  _sizeRoI        = QPoint(10, 10);   //!Specifies the size of the RoI's used for the NPS calculation.
+    int     _nPixEdge       = 0;                //!Specifies how many pixels the RoI should stay away from the edge of the image. The same for x and y.
+    bool    _singleFileNPS  = false;            //!Indicates whether the NPS should be calculated for a single file (true), or averaged for all files (false).
+    bool    _fitPlane       = false;            //!Indicates whether a flat plane should be fitted to the NPS data and removed before further calculation.
+    bool    _useZeroFreq    = true;             //!Indicates whether the zero frequency values of the Fourier Transform should be included in the NPS.
+    int     _NlinesNPS      = 0;                //!Specifies how many lines next to either side of the axes should be used for the NPS calculation.
+    bool    _showFT         = false;            //!Indicates whether the Fourier Transform amplitude plots should be shown.
+    bool    _normNPSmax     = false;            //!Indicates whether the NPS that is plotted should be normalized to its maximum value.
+
+    double  _pixelsize      = 0.110;            //!Pixelsize in millimeters.
+    QString _unitNPS        = "1/pix";
 
     //Main calculations:
-    QVector<QVector<double> > calcESFbinData();     //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.
-    QVector<QVector<double> > calcESFfitData();     //!Creates the datapoints of the fitted function by using the parameters calculated by the fitting in the used function model.
+    QVector<QVector<double> > calcESFbinData();                 //!Puts the Edge Spread Function data that is calculated in calcESFdata() into bins of size _binsize.
+    QVector<QVector<double> > calcESFfitData();                 //!Creates the datapoints of the fitted function by using the parameters calculated by the fitting in the used function model.
     QVector<QVector<double> > calcSmoothedESFdata(QVector<QVector<double> > data);
-    QVector<QVector<double> > calcLSFdata();        //!Creates the datapoints of the derivative of the fitted function, by using the parameters calculated by the fitting and using them in the theoretical derivative of the function model.
+    QVector<QVector<double> > calcLSFdata();                    //!Creates the datapoints of the derivative of the fitted function, by using the parameters calculated by the fitting and using them in the theoretical derivative of the function model.
     QVector<QVector<double> > calcNumDerivativeOfdata(QVector<QVector<double> > data);  //!Calculates the numerical derivative of a given set of data. Used for LSF.
-    QVector<QVector<double> > calcMTFdata();        //!Calculates the datapoints for the MTF, by taking the Fourier Transform of the LSF.
-    void calcNPSdata(); //!Calculates the datapoints for the NPS in the x and y directon.
-    QVector<QVector<double> > calcFTsquareRoI(QVector<QVector<int> > data );
+    QVector<QVector<double> > calcMTFdata();                    //!Calculates the datapoints for the MTF, by taking the Fourier Transform of the LSF.
+    void calcNPSdata();                                         //!Calculates the datapoints for the NPS in the x and y directon.
+    void correctPlaneRoI(QVector<QVector<double> > &roidata);   //!Corrects the data of the Region of Interest by fitting a flat plane and substracting thid from the data. (Optional)
+    QVector<QVector<double> > calcFTsquareRoI(QVector<QVector<double> > &data );        //!Calculates the two dimensional Fast Fourier Transform of
     void calc1Dnps(const QVector<QVector<double> > &ftdata);
+    void calcNormNPS();
+    void calcDQE();
 
     //Plotting
     void plotMTF();
@@ -115,23 +130,23 @@ private:
     void plotEdge(QPoint ab);
     void plotNPS();
     void plotData3D(QtDataVisualization::QScatterDataArray data3D);
+    void plotFTsquare(const QVector<QVector<double> > &ftdata);
+    void plotDQE();
 
     void fitESFparams(QVector<QVector<double> > esfdata);   //!Determines the parameters in the function model that best suit the data by performing a least squares fitting algorithm.
-    parameter_vector fitPlaneParams(QVector<QVector<int> > dataROI);
+    parameter_vector fitPlaneParams(const QVector<QVector<double> > &dataROI);
 
-    QString dataToString(QVector<QVector<double> > data);   //!Turns the given data into a string for saving to a textfile.
-    double FivePointsStencil(QVector<double> func, int x, double bw);   //! Used for numerical derivation.
-//    void plotFTnps(QVector<QVector<double> > data);
+    QString dataToString(QVector<QVector<double> > data);               //!Turns the given data into a string for saving to a textfile.
+//    double FivePointsStencil(QVector<double> func, int x, double bw);   //! (not) used for numerical derivation.
+    QVector<QVector<double> > vectorIntToDouble(const QVector<QVector<int> > &intvector);//!Converts a given 2D vector of ints to a 2D vector of doubles, when doubles are required for calculation.
+    QVector<QVector<double> > collectRoIdata();
 
+    void savePlot(QString plot);
 
 private slots:
     void on_takeDataPushButton_clicked();
 
     void on_comboBox_currentIndexChanged(const QString &arg1);
-
-//    void on_fitESFpushButton_clicked();
-
-//    void on_fitLSFpushButton_clicked();
 
     void on_loadDataPushButton_clicked();
 
@@ -141,15 +156,11 @@ private slots:
 
     void on_clearDataFilesPushButton_clicked();
 
-    void on_mtfPushButton_clicked();
-
-    void on_saveMTFpushButton_clicked();
+    void on_mtfPushButton_clicked();    
 
     void on_logClearPushButton_clicked();
 
     void on_logSavePushButton_clicked();
-
-//    void on_binSizeLineEdit_editingFinished();
 
     void on_npsPushButton_clicked();
 
@@ -159,17 +170,9 @@ private slots:
 
     void on_derivCheckBox_toggled(bool checked);
 
-//    void on_errorFuncCheckBox_toggled(bool checked);
-
     void on_mouseMove_showPlotPoint(QMouseEvent * event);
 
-//    void on_mouseClick_showPlotPoint(QMouseEvent * event);
-
     void on_dataCheckbox_toggled(bool checked);
-
-//    void on_fitComboBox_currentIndexChanged(const QString &arg1);
-
-//    void on_windowLineEdit_editingFinished();
 
     void on_clearFitsPushButton_clicked();
 
@@ -179,12 +182,24 @@ private slots:
 
     void on_clearNPSpushButton_clicked();
 
-    void on_clearMTFpushButton_clicked();
+    void on_clearMTFpushButton_clicked(bool clearESFdata);
+
+    void on_clearAllPushButton_clicked();
+
+    void on_toolButton_clicked();
+
+    void on_saveMTFpushButton_clicked(){  savePlot("mtf"); }
+    void on_saveNPSpushButton_clicked(){  savePlot("nps"); }
+    void on_saveDQEpushButton_clicked(){  savePlot("dqe"); }
+
+    void on_dqePushButton_clicked();
+
+    void on_clearDQEpushButton_clicked();
 
 public slots:
     void on_close_optionsDialog();    
     void on_apply_options(QHash<QString, int> options);
-    void on_maindata_changed(QString filename);
+    void on_maindata_changed(QString filepath);
     void addNPSfile(QString filepath);
 
 signals:

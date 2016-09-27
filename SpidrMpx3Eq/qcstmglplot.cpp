@@ -461,13 +461,10 @@ void QCstmGLPlot::mouseReleaseEvent(QMouseEvent * event){
 
 }
 
-void QCstmGLPlot::mouseDoubleClickEvent(QMouseEvent *event)
-{
-
+void QCstmGLPlot::mouseDoubleClickEvent(QMouseEvent *event) {
     // Double click brings back to full view
     setZoom(0.5);
     emit double_click();
-
 }
 
 void QCstmGLPlot::keyPressEvent(QKeyEvent *event){//Doesn't really work that well for controls.
@@ -494,6 +491,7 @@ void QCstmGLPlot::keyPressEvent(QKeyEvent *event){//Doesn't really work that wel
         setOffset(0,0);
         setZoom(1.0);
         event->accept();
+        break;
     default:
         event->ignore();
     }
@@ -524,9 +522,9 @@ void QCstmGLPlot::mouseMoveEvent(QMouseEvent *event){//TODO: verify dragspeed sh
         //  Every two pixels spanned or so.
         if ( distance2D( _currentSelectionPoint, _lastSelectionPoint ) > _minimumRefreshDistance ) {
 
-            //
             _drawSelectionRectangle = true;
-            emit double_click();
+            // Disabled next line so when zoommed in, you can select an area without resetting the view
+            //emit double_click(); // Was this here for a reason ??
 
             _lastSelectionPoint = _currentSelectionPoint;
         } else {

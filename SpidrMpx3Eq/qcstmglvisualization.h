@@ -79,9 +79,9 @@ public:
     bool isTakingData(){ return _takingData; }
 
     void SetMpx3GUI(Mpx3GUI * p);
-    Mpx3GUI * GetMpx3GUI() { return _mpx3gui; };
-    Ui::QCstmGLVisualization * GetUI(){ return ui; };
-    DataTakingThread * dataTakingThread(){ return _dataTakingThread; };
+    Mpx3GUI * GetMpx3GUI() { return _mpx3gui; }
+    Ui::QCstmGLVisualization * GetUI(){ return ui; }
+    DataTakingThread * dataTakingThread(){ return _dataTakingThread; }
     void startupActions();
 
     pair<int, int> XtoXY(int X, int dimX);
@@ -221,8 +221,6 @@ private slots:
     void on_upperSpin_editingFinished();
 
     void on_logscale(bool);
-
-    void correctionDialogueButtonClicked();
 
     void on_infDataTakingCheckBox_toggled(bool checked);
 

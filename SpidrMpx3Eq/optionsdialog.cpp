@@ -10,8 +10,12 @@ optionsDialog::optionsDialog(QWidget *parent) :
     ui(new Ui::optionsDialog)
 {
     ui->setupUi(this);
+    setCurrentSettings();
 
     ui->buttonBox->button(QDialogButtonBox::Apply)->setDefault(true);
+    //    ui->windowLabel->setToolTip(tr("used for local fitting, must be an uneven number"));
+    //    ui->windowLineEdit->setToolTip(tr("must be an uneven number"));
+
 }
 
 void optionsDialog::SetMpx3GUI(Mpx3GUI * p )
@@ -22,6 +26,20 @@ void optionsDialog::SetMpx3GUI(Mpx3GUI * p )
     connect( this, SIGNAL(apply_options(QHash<QString, int>)), _mpx3gui->GetUI()->dqeTab, SLOT(on_apply_options(QHash<QString, int>)) );
 }
 
+QString optionsDialog::getCurrentTab()
+{
+    if(ui->tabWidget->currentIndex() == __mtfIndex)
+        return "mtf";
+    else if(ui->tabWidget->currentIndex() == __npsIndex)
+        return "nps";
+}
+
+//void optionsDialog::setDataRange(int NdataESF)
+//{
+//    ui->binSizeSpinBox->setMaximum( NdataESF );
+//    ui->windowSpinBox->setMaximum( NdataESF );
+//}
+
 optionsDialog::~optionsDialog()
 {
     delete ui;
@@ -29,89 +47,125 @@ optionsDialog::~optionsDialog()
 
 void optionsDialog::setCurrentSettings()
 {
-    //Saved in a QHash, which saves int values stored by string.
-    //This way more options can be stored, without worrying about numbering
+    //Saved in a QHash, which (in this case) saves int values stored by Qstring (in a random order).
+    //This way more options can be added at any point, without worrying about numbering.
 
-    _currentSettings["roinumber"] = ui->roiNumberLineEdit->text().toInt();
-    _currentSettings["roisize"] = ui->roiSizeLineEdit->text().toInt();
-    _currentSettings["edge"] = ui->edgeLineEdit->text().toInt();
-
-    if(ui->edgeRadioButton->isChecked()) _currentSettings["edge"] = 1;
-        else _currentSettings["edge"] = 0;
+    //MTF
+    _currentSettings["edge"] = ui->edgeRadioButton->isChecked();
 
     QString arg = ui->fitComboBox->currentText();
-    if(arg.contains("Error")) _currentSettings["error"] = 1 ; //_useErrorFunc = true;
-        else _currentSettings["error"] = 0;
+    _currentSettings["error"] = arg.contains("Error");
 
-    if(ui->fitDerCheckBox->isChecked()) _currentSettings["fitder"] = 1;
-        else _currentSettings["fitder"] = 0;
+    _currentSettings["fitder"]  = ui->fitDerCheckBox->isChecked();
+    _currentSettings["bindata"] = ui->binDataCheckBox->isChecked();
 
-    if(ui->binDataCheckBox->isChecked()) _currentSettings["bindata"] = 1;
-        else _currentSettings["bindata"] = 0;
-
-    _currentSettings["binsize"] = ui->binSizeLineEdit->text().toDouble();
+    //Check if binsize is not larger than the dataset.
+    int binsize = ui->binSizeSpinBox->value();
+    if(_datarange != -1){
+        int maxlength = _datarange; /// _currentSettings.value("binsize");
+        if( binsize > maxlength ){
+            binsize = maxlength;
+            QMessageBox::warning ( this, tr("Warning"), tr( "The binsize cannot be larger than the number of data points." ) );
+            ui->binSizeSpinBox->setValue( binsize );
+        }
+    }
 
     //Check if the window width is not larger than the dataset.
-    int maxlength = _datarange / _currentSettings.value("binsize");
-    int windowW = ui->windowLineEdit->text().toInt();
-    if( windowW > maxlength){
-        windowW = maxlength;
-        QMessageBox::warning ( this, tr("Warning"), tr( "The window width cannot be larger than the number of data points." ) );
-        ui->windowLineEdit->setText( QString("%1").arg(windowW) );
+    //Only if the window width matters..
+    int windowW = ui->windowSpinBox->value();
+    if(ui->windowSpinBox->isEnabled() && _currentSettings.value("binsize") != binsize){
+        if(_datarange != -1){
+            int maxlength = _datarange / binsize;
+            if( windowW > maxlength){
+                windowW = maxlength;
+                QMessageBox::warning ( this, tr("Warning"), tr( "The window width cannot be larger than the number of data points." ) );
+                ui->windowSpinBox->setValue( windowW );
+            }
+        }
     }
     _currentSettings["windowW"] = windowW;
+    _currentSettings["binsize"] = binsize;
 
-    if(ui->fitPlaneCheckBox->isChecked()) _currentSettings["fitplane"] = 1;
-        else _currentSettings["fitplane"] = 0;
+//    _currentSettings["binsize"] = ui->binSizeSpinBox->value();
+//    _currentSettings["windowW"] = ui->windowSpinBox->value();
 
-    _currentSettings["nlines"] = ui->nLinesLineEdit->text().toInt();
+    //NPS
+    _currentSettings["fullimage"]   = ui->fullImageRadioButton->isChecked();
+    _currentSettings["selectedroi"] = ui->selectedRoIRadioButton->isChecked();
+    _currentSettings["manualroi"]   = ui->manualRadioButton->isChecked();
 
-    if(ui->zeroFreqCheckBox->isChecked()) _currentSettings["zerofreq"] = 1;
-        else _currentSettings["zerofreq"] = 0;
+    _currentSettings["roinumber"]   = ui->roiNumberSpinBox->value();
+    _currentSettings["roixsize"]    = ui->roiXsizeSpinBox->value();
+    _currentSettings["roiysize"]    = ui->roiYsizeSpinBox->value();
+    _currentSettings["npixedge"]    = ui->edgeSpinBox->value();
+    _currentSettings["nlines"]      = ui->nLinesSpinBox->value();
 
+    _currentSettings["fitplane"]    = ui->fitPlaneCheckBox->isChecked();
+    _currentSettings["zerofreq"]    = ui->zeroFreqCheckBox->isChecked();
+    _currentSettings["showft"]      = ui->showFTcheckBox->isChecked();
+    _currentSettings["normmaxnps"]  = ui->normMaxNpsCheckBox->isChecked();
+
+    _currentSettings["pixelsize"]   = ui->pixelSizeLineEdit->text().toInt();
+    for(int i = 0; i < ui->unitsNpsComboBox->count(); i++)
+        _currentSettings[ ui->unitsNpsComboBox->itemText(i) ] = 0;
+    _currentSettings[ ui->unitsNpsComboBox->currentText() ] = 1;
 }
 
 void optionsDialog::resetSettings()
 {
     //MTF options
-    if(_currentSettings.value("edge") == 0) ui->edgeRadioButton->setChecked(false);
-        else ui->edgeRadioButton->setChecked(true);
-    ui->fitComboBox->setCurrentIndex( _currentSettings.value("error") );
-    if(_currentSettings.value("fitder") == 0) ui->fitDerCheckBox->setChecked(false);
-        else ui->fitDerCheckBox->setChecked(false);
-    if(_currentSettings.value("bindata") == 0) ui->binDataCheckBox->setChecked(false);
-        else ui->binDataCheckBox->setChecked(true);
+    ui->edgeRadioButton->setChecked(    _currentSettings.value("edge")      );
+    ui->slitRadioButton->setChecked(    _currentSettings.value("slit")      );
 
-    ui->binSizeLineEdit->setText( QString("%1").arg(_currentSettings.value("binsize")) );
+    if(_currentSettings.value("error") )
+         ui->fitComboBox->setCurrentIndex( 0 ); //Error function fitting is the first option.
+    else ui->fitComboBox->setCurrentIndex( 1 ); //CHANGE when adding more fitting types.
 
-    ui->binSizeLineEdit->setText( QString("%1").arg(_currentSettings.value("windowW")) );
+    ui->fitDerCheckBox->setChecked(     _currentSettings.value("fitder")    );
+    ui->binDataCheckBox->setChecked(    _currentSettings.value("bindata")   );
+
+    ui->binSizeSpinBox->setValue(       _currentSettings.value("binsize")   );
+    ui->windowSpinBox->setValue(        _currentSettings.value("windowW")   );
 
     //NPS options
-    ui->roiNumberLineEdit->setText( QString("%1").arg(_currentSettings.value("roiNumber")) );
-    ui->roiSizeLineEdit->setText( QString("%1").arg(_currentSettings.value("roiSize")) );
-    ui->edgeLineEdit->setText( QString("%1").arg(_currentSettings.value("edge")) );
+    if( _currentSettings.value("fullimage") )
+         ui->fullImageRadioButton->setChecked(true);
+    else if( _currentSettings.value("selectedroi") )
+         ui->selectedRoIRadioButton->setChecked(true);
+    else ui->manualRadioButton->setChecked(true);
 
-    if(_currentSettings.value("fitplane") == 0) ui->fitPlaneCheckBox->setChecked(false);
-        else ui->fitPlaneCheckBox->setChecked(true);
-    if(_currentSettings.value("zerofreq") == 0) ui->zeroFreqCheckBox->setChecked(false);
-        else ui->zeroFreqCheckBox->setChecked(true);
+    ui->roiNumberSpinBox->setValue( _currentSettings.value("roinumber"));
+    ui->roiXsizeSpinBox->setValue(  _currentSettings.value("roixsize") );
+    ui->roiYsizeSpinBox->setValue(  _currentSettings.value("roiysize") );
+    ui->edgeSpinBox->setValue(      _currentSettings.value("npixedge") );
+    ui->nLinesSpinBox->setValue(    _currentSettings.value("nlines")   );
 
-    ui->nLinesLineEdit->setText( QString("%1").arg(_currentSettings.value("nlines")) );
+    ui->fitPlaneCheckBox->setChecked(   _currentSettings.value("fitplane") );
+    ui->zeroFreqCheckBox->setChecked(   _currentSettings.value("zerofreq") );
+    ui->showFTcheckBox->setChecked(     _currentSettings.value("showft") );
+    ui->normMaxNpsCheckBox->setChecked( _currentSettings.value("normmaxnps") );
+
+    ui->pixelSizeLineEdit->setText( QString("%1").arg(_currentSettings.value("pixelsize")) );
+
+    if(_currentSettings.value("1/pix"))   ui->unitsNpsComboBox->setCurrentText("1/pix");
+    if(_currentSettings.value("1/mm"))    ui->unitsNpsComboBox->setCurrentText("1/mm" );
+    if(_currentSettings.value("lp/mm"))   ui->unitsNpsComboBox->setCurrentText("lp/mm");
+
 }
 
 void optionsDialog::on_buttonBox_clicked(QAbstractButton *button)
 {
     QDialogButtonBox::ButtonRole role = ui->buttonBox->buttonRole(button);
     if(role == QDialogButtonBox::ApplyRole){
-        //Apply changes, leave window open.
+        //Apply changes
         setCurrentSettings();
         emit apply_options(_currentSettings);
+        //leave window open.
     }
 
     if(role == QDialogButtonBox::AcceptRole){
-        //Apply changes and talk back to dqe (TODO)
+        //Apply changes
         setCurrentSettings();
-
         emit apply_options(_currentSettings);
 
         //close window
@@ -120,7 +174,6 @@ void optionsDialog::on_buttonBox_clicked(QAbstractButton *button)
 
     if(role == QDialogButtonBox::RejectRole){
         //Set back any changes made to how they were when opening the dialog.
-        //Using _currentSettings
         resetSettings();
 
         //close window
@@ -133,37 +186,93 @@ void optionsDialog::on_buttonBox_clicked(QAbstractButton *button)
 void optionsDialog::on_fitComboBox_currentIndexChanged(const QString &arg1)
 {
     if(arg1.contains("Error")){
-//        _useErrorFunc = true;
         ui->windowLabel->setEnabled(false);
-        ui->windowLineEdit->setEnabled(false);
+        ui->windowSpinBox->setEnabled(false);
     }
     if(arg1.contains("Smoothing")){
-//        _useErrorFunc = false;
         ui->windowLabel->setEnabled(true);
-        ui->windowLineEdit->setEnabled(true);
+        ui->windowSpinBox->setEnabled(true);
     }
 }
 
-void optionsDialog::on_windowLineEdit_editingFinished()
-{
-    int width = ui->windowLineEdit->text().toInt();
-    int binsize = ui->binSizeLineEdit->text().toInt();
+void optionsDialog::on_windowSpinBox_editingFinished()
+{   ui->windowSpinBox->blockSignals(true);
+
+    int width = ui->windowSpinBox->value();
+    int binsize = ui->binSizeSpinBox->value();
     int maxlength = _datarange / binsize;
     if(maxlength % 2 ==0) maxlength--;
 
     if(width <= 2){
         width = 3;
                 QMessageBox::warning ( this, tr("Warning"), tr( "The window width must be bigger than 2." ) );
-        ui->windowLineEdit->setText(QString("%1").arg(width));
+        ui->windowSpinBox->setValue(width);
+    }
+    if(width > maxlength){
+        width = maxlength;
+        QMessageBox::warning ( this, tr("Warning"), tr( "The window width can not be larger than the number of (binned) data points." ) );
+        ui->windowSpinBox->setValue(width);
     }
     if(width % 2 == 0){
         width ++; //The window width must be an uneven number.
         QMessageBox::warning ( this, tr("Warning"), tr( "The window width must be an uneven number." ) );
-        ui->windowLineEdit->setText(QString("%1").arg(width));
+        ui->windowSpinBox->setValue(width);
     }
-    if(width > maxlength){
-        width = maxlength;
-        QMessageBox::warning ( this, tr("Warning"), tr( "The window width can not be larger than the number of data points." ) );
-        ui->windowLineEdit->setText(QString("%1").arg(width));
+
+    ui->windowSpinBox->blockSignals(false);
+}
+
+void optionsDialog::on_manualRadioButton_toggled(bool checked)
+{
+    ui->roiXsizeSpinBox->setEnabled(checked);
+    ui->roiYsizeSpinBox->setEnabled(checked);
+    ui->roiNumberSpinBox->setEnabled(checked);
+
+    if(!checked){
+//        ui->roiNumberSpinBox->setMaximum( 1 );
+        ui->roiNumberSpinBox->setValue(   1 );
     }
+}
+
+void optionsDialog::on_roiXsizeSpinBox_editingFinished()
+{
+    int Nmax = _mpx3gui->getDataset()->calcMaxNroi( ui->roiXsizeSpinBox->value(), ui->roiYsizeSpinBox->value());
+    ui->roiNumberSpinBox->setMaximum( Nmax );
+    ui->roiNumberSpinBox->setValue( Nmax );
+}
+
+void optionsDialog::on_roiYsizeSpinBox_editingFinished()
+{
+    int x = ui->roiXsizeSpinBox->value();
+    int y = ui->roiYsizeSpinBox->value();
+    int Nmax = _mpx3gui->getDataset()->calcMaxNroi( ui->roiXsizeSpinBox->value(), ui->roiYsizeSpinBox->value() );
+    ui->roiNumberSpinBox->setMaximum( Nmax );
+    ui->roiNumberSpinBox->setValue( Nmax );
+}
+
+void optionsDialog::on_selectedRoIRadioButton_toggled(bool checked)
+{
+    if(checked){
+        //Check if a region of interest is selected.
+        if(!_mpx3gui->GetUI()->dqeTab->isValidRegionSelected()){
+            ui->selectedRoIRadioButton->setChecked( false );
+            ui->fullImageRadioButton->setChecked(   true  );
+
+            QMessageBox::warning ( this, tr("No valid region selected"), tr( "Please select a region of interest that lies within the image." ) );
+            _mpx3gui->GetUI()->stackedWidget->setCurrentIndex( __visualization_page_Id );
+        }
+    }
+    ui->edgeSpinBox->setEnabled(checked);
+}
+
+void optionsDialog::on_zeroFreqCheckBox_toggled(bool checked)
+{
+    //Prevents the case that neither the zero axis as any off-axis lines are used. (No data)
+    if(checked) ui->nLinesSpinBox->setMinimum(0);
+    else ui->nLinesSpinBox->setMinimum(1);
+}
+
+void optionsDialog::on_binSizeSpinBox_editingFinished()
+{
+    //TODO: Check if the binsize is smaller than the dataset. No errors, but no bindata.. Warn user.
 }

@@ -823,7 +823,7 @@ void QCstmGLVisualization::triggerLength_edit() {
 void QCstmGLVisualization::startupActions()
 {
 
-    _mpx3gui->open_data_with_path(false, true, "icons/startupimage.bin" );
+    _mpx3gui->open_data_with_path(true, true, "icons/startupimage.bin" );
 
 }
 
@@ -1367,8 +1367,10 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _mpx3gui->GetUI()->dqeTab->clearDataAndPlots(false);
         _mpx3gui->GetUI()->dqeTab->setRegion(pixel_begin_checked, pixel_end_checked);
         _mpx3gui->GetUI()->dqeTab->setSelectedThreshold(threshold);
-        _mpx3gui->getDataset()->collectPointsROI(threshold, pixel_begin_checked, pixel_end_checked);
+
         _mpx3gui->GetUI()->stackedWidget->setCurrentIndex(__dqe_page_Id);
+        _mpx3gui->GetUI()->actionVisualization->setChecked(false);
+
         _mpx3gui->GetUI()->dqeTab->plotESF();
 
     }
@@ -1570,7 +1572,7 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
     QStringList split = arg1.split(' ');
     int threshold = split.last().toInt();
     int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
-    cout << "[INDEX] " << threshold << " --> " << layer << endl;
+    //cout << "[INDEX] " << threshold << " --> " << layer << endl;
 
     ui->glPlot->getPlot()->setActive(layer);
     ui->histPlot->setActive(layer);
@@ -1605,32 +1607,25 @@ void QCstmGLVisualization::on_saveBitmapPushButton_clicked(){
 
 }
 
+// Unused argument and function
 void QCstmGLVisualization::on_noisyPixelMeanMultiplier_valueChanged(double arg1){
-
+    qDebug() << "void QCstmGLVisualization::on_noisyPixelMeanMultiplier_valueChanged(double arg1): " << arg1;
 }
 
 void QCstmGLVisualization::on_correctionsDialogPushButton_clicked(){
-    // Setup corrections and be ready to apply them
-    _corrdialog = new QCstmCorrectionsDialog(this);
-    _corrdialog->SetMpx3GUI( _mpx3gui );
+    if (!_corrdialog) {
+        // Setup corrections and be ready to apply them
+        _corrdialog = new QCstmCorrectionsDialog(this);
+        _corrdialog->SetMpx3GUI( _mpx3gui );
 
-    // non Modal
+    } else {
+        // _corrDialog already made
+    }
+
+    //! Continue to make the user use the existing dialog or dismiss it with a "non-modal dialog"
     _corrdialog->show();
     _corrdialog->raise();
     _corrdialog->activateWindow();
-}
-
-void QCstmGLVisualization::correctionDialogueButtonClicked(){
-
-    // Simply show the dialogue
-    if ( _corrdialog ) {
-
-        // If already created
-        _corrdialog->show();
-        _corrdialog->raise();
-        _corrdialog->activateWindow();
-
-    }
 
 }
 

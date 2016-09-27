@@ -125,7 +125,7 @@ void DataTakingThread::run() {
     int nFramesReceived = 0, nFramesKept = 0;
     bool dropFrames = false;
 
-    bool goalAchieved = false;
+    bool goalAchieved = false; //The compiler thinks this is unused, it is used...
 
     ///////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////
@@ -277,7 +277,7 @@ void DataTakingThread::run2() {
 
     // Work an protect local variables
     _mutex.lock();
-    datataking_score_info score = this->_score;
+    //datataking_score_info score = this->_score;
     _mutex.unlock();
 
     // Open a new temporary connection to the spider to avoid collisions to the main one

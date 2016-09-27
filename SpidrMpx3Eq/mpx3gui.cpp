@@ -39,7 +39,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
 
     // Instantiate everything in the UI
     _ui->setupUi(this);
-    this->setWindowTitle("ASI Medipix3");
+    this->setWindowTitle(_softwareName);
     workingSet = new Dataset(128,128, 4);
     originalSet = new Dataset(128,128, 4);
     config = new Mpx3Config;
@@ -74,6 +74,14 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
             gradientNames.append(gradients[i]->getName());
     }
 
+
+
+
+    // Change me when adding extra views
+    //! Preparation of extra new views - add a new tab in the UI file.
+    //! - Look for the widgets by name from the ones below here
+    //! CHANGE the tab class type in the UI file by text
+
     // Prepare DACs panel
     _ui->DACsWidget->SetMpx3GUI( this );
     _ui->DACsWidget->setWindowWidgetsStatus(); // startup status
@@ -102,9 +110,13 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     // CT
     _ui->ctTab->SetMpx3GUI( this );
 
-
     // DQE
     _ui->dqeTab->SetMpx3GUI(this);
+
+    // Stepper Motor control view
+    _ui->stepperMotorTab->SetMpx3GUI(this);
+
+
 
     // Read the configuration
     QString configFile = "./config/mpx3.json";
@@ -122,6 +134,10 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+4", "Switch to Equalization") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+5", "Switch to DQE calculation") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+6", "Switch to Scans") ), this)  );
+
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+7", "Switch to CT") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+8", "Switch to Stepper Motor Control") ), this)  );
+
 
     // Signals and slots for this part
     SetupSignalsAndSlots();
@@ -273,11 +289,13 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect(_ui->actionClear_data, SIGNAL(triggered()), this, SLOT(clear_data()));
     connect(_ui->actionClear_configuration, SIGNAL(triggered()), this, SLOT(clear_configuration()) );
 
+    // Change me when adding extra views
     // Inform every module of changes in connection status
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->dqeTab, SLOT( ConnectionStatusChanged(bool) ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, &Mpx3GUI::ConnectionStatusChanged, this, &Mpx3GUI::onConnectionStatusChanged );
 
     connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
@@ -303,26 +321,39 @@ void Mpx3GUI::on_shortcutsSwithPages() {
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __visualization_page_Id );
         _ui->actionVisualization->setChecked(1);
+
     } else if ( k.matches( QKeySequence(tr("Ctrl+2")) ) ) {
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __configuration_page_Id );
         _ui->actionConfiguration->setChecked(1);
+
     } else if ( k.matches( QKeySequence(tr("Ctrl+3")) ) ) {
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __dacs_page_Id );
         _ui->actionDACs->setChecked(1);
+
     } else if ( k.matches( QKeySequence(tr("Ctrl+4")) ) ) {
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
         _ui->actionEqualization->setChecked(1);
+
     } else if ( k.matches( QKeySequence(tr("Ctrl+5")) ) ){
-        //uncheckAllToolbarButtons();
+        uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __dqe_page_Id );
         //_ui->actionDQE->setChecked(1);
+
     } else if ( k.matches( QKeySequence(tr("Ctrl+6")) ) ){
-        //uncheckAllToolbarButtons();
+        uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
         //_ui->actionScans->setChecked(1);
+    /*} else if ( k.matches( QKeySequence(tr("Ctrl+7")) ) ){
+        uncheckAllToolbarButtons();
+        _ui->stackedWidget->setCurrentIndex( __ct_page_Id );
+        //_ui-> actionXXX ->setChecked(1);*/
+    } else if ( k.matches( QKeySequence(tr("Ctrl+8")) ) ){
+        uncheckAllToolbarButtons();
+        _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
+        _ui->actionStepper_Motor->setChecked(1);
     }
 
 }
@@ -338,17 +369,16 @@ void Mpx3GUI::startupActions()
     // startup actions
     if ( ! gradients.empty() ) {
         _ui->visualizationGL->startupActions();
+
     }
 
 }
 
-void Mpx3GUI::saveOriginalDataset()
-{
+void Mpx3GUI::saveOriginalDataset(){
     *originalSet = *workingSet;
 }
 
-void Mpx3GUI::rewindToOriginalDataset()
-{
+void Mpx3GUI::rewindToOriginalDataset(){
     *workingSet = *originalSet;
 }
 
@@ -513,7 +543,6 @@ bool Mpx3GUI::establish_connection() {
 
     QVector<int> activeDevices = config->getActiveDevices();
 
-
     for ( int i = 0 ; i < activeDevices.size() ; i++ ) {
         getDataset()->setLayout(i, _MPX3RX_LAYOUT[activeDevices[i]]);
         getDataset()->setOrientation(i, _MPX3RX_ORIENTATION[activeDevices[i]]);
@@ -578,8 +607,6 @@ void Mpx3GUI::statusBarAppend(QString mess, QString colorString)
 
 }
 
-
-
 void Mpx3GUI::statusBarWrite(QString mess, QString colorString)
 {
 
@@ -601,8 +628,7 @@ void Mpx3GUI::statusBarWrite(QString mess, QString colorString)
 
 }
 
-void Mpx3GUI::statusBarClean()
-{
+void Mpx3GUI::statusBarClean() {
 
     m_statusBarMessageString.clear();
     m_statusBarMessageLabel.setText( m_statusBarMessageString );
@@ -613,8 +639,7 @@ void Mpx3GUI::statusBarClean()
 
 }
 
-QString Mpx3GUI::removeOneMessage(QString fullMess)
-{
+QString Mpx3GUI::removeOneMessage(QString fullMess){
 
     int indx = fullMess.indexOf(" | ");
     if ( indx != -1 ) {
@@ -624,8 +649,7 @@ QString Mpx3GUI::removeOneMessage(QString fullMess)
     return fullMess;
 }
 
-void Mpx3GUI::on_applicationStateChanged(Qt::ApplicationState s)
-{
+void Mpx3GUI::on_applicationStateChanged(Qt::ApplicationState s) {
 
     // When the application comes in Active for the first time
     //  take some startup actions
@@ -636,7 +660,7 @@ void Mpx3GUI::on_applicationStateChanged(Qt::ApplicationState s)
 
 }
 
-
+//Debugging function to generate data when not connected
 void Mpx3GUI::generateFrame(){//TODO: put into Dataset
     //int thresholds[] = {0,1,2,3};
     QVector<int> data(getDataset()->x()*getDataset()->y()*getDataset()->getFrameCount());
@@ -683,7 +707,6 @@ int Mpx3GUI::getFrameCount(){
     return getDataset()->getFrameCount();
 }
 
-
 void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
 
     //! Native format
@@ -691,7 +714,7 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
     QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("binary files (*.bin)"));
 
     // Force the .bin in the data filename
-    if ( ! filename.contains(".bin") ) {
+    if ( ! filename.contains(".bin")  && !filename.isEmpty()) {
         filename.append(".bin");
     }
 
@@ -821,21 +844,21 @@ void Mpx3GUI::open_data(bool saveOriginal){
     // And keep a copy just as in QCstmGLVisualization::data_taking_finished
     if ( saveOriginal ) saveOriginalDataset();
 
-    //Ask whether the loaded data is already OBcorrected or not.
-    QMessageBox::StandardButton reply = QMessageBox::question( this, tr("Specify data"), tr("Is this data corrected?"), QMessageBox::Yes | QMessageBox::No);
-    if(reply== QMessageBox::Yes) getDataset()->setCorrected(true);
-    else getDataset()->setCorrected(false);
+    this->setWindowTitle( _softwareName + filename);
 
-    this->setWindowTitle("ASI Medipix3 "+filename);
+//    // If not in DQE - change back to Visualisation
+//    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
 
-    // If not in DQE - change back to Visualisation
-    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
+    if(!_ui->dqeTab->openingNPSfile){       //CHECK ME >>>>>>>>>>>>>>
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
         _ui->actionVisualization->setChecked(1);
     }
 
-
+    //Ask whether the loaded data is already OBcorrected or not.
+    QMessageBox::StandardButton reply = QMessageBox::question( this, tr("Specify data"), tr("Is this data corrected?"), QMessageBox::Yes | QMessageBox::No);
+    if(reply == QMessageBox::Yes) getDataset()->setCorrected(true);
+    else getDataset()->setCorrected(false);
 
     emit returnFilename(filename);
 
@@ -887,14 +910,14 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
     }
 
     // If not in DQE - change back to Visualisation
-    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
+//    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
+//        _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
+//    }
+    if(!_ui->dqeTab->openingNPSfile){
+        uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
+        _ui->actionVisualization->setChecked(1);
     }
-
-    /*if (!fileOpen){
-        _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
-    }
-    fileOpen = true;*/
 
     return;
 }
@@ -934,7 +957,8 @@ void Mpx3GUI::clear_configuration(){
 
         for ( int i = 0 ; i < ndev ; i++ ) {
 
-            if ( ! config->detectorResponds( i ) ) continue;
+            if ( ! config->detectorResponds( i ) )
+                continue;
 
             if ( _ui->equalizationWidget->GetEqualizationResults( i ) ) {
 
@@ -949,7 +973,9 @@ void Mpx3GUI::clear_configuration(){
             pd.setValue( i+1 );
         }
 
-    } else { noEqualization = true; }
+    } else {
+        noEqualization = true;
+    }
 
     if ( noEqualization ) {
         qDebug() << "[INFO] No equalization has been loaded. Nothing to clear.";
@@ -958,21 +984,23 @@ void Mpx3GUI::clear_configuration(){
 }
 
 void Mpx3GUI::clear_data(bool clearStatusBar) {
-
     getDataset()->clear();
 //    _ui->dqeTab->clearDataAndPlots(true);
     //getVisualization()->cle
     emit data_cleared();
 
-    if ( clearStatusBar ) emit sig_statusBarAppend("clear data","orange");
+    if ( clearStatusBar )
+        emit sig_statusBarAppend("Clear data","orange");
 
 }
 
+// Change me when adding extra views???
 QCstmEqualization * Mpx3GUI::getEqualization(){return _ui->equalizationWidget;}
 QCstmGLVisualization * Mpx3GUI::getVisualization() { return _ui->visualizationGL; }
 QCstmDacs * Mpx3GUI::getDACs() { return _ui->DACsWidget; }
 QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; }
 //QCstmDQE * Mpx3GUI::getDQE(){ return _ui->dqeTab; }
+QCstmStepperMotor * Mpx3GUI::getStepperMotor() {return _ui->stepperMotorTab; }
 
 void Mpx3GUI::on_actionExit_triggered()
 {
@@ -1002,11 +1030,15 @@ void Mpx3GUI::on_actionExit_triggered()
     emit exitApp( 0 );
 }
 
+// Change me when adding extra views
 void Mpx3GUI::uncheckAllToolbarButtons(){
     _ui->actionVisualization->setChecked(0);
     _ui->actionConfiguration->setChecked(0);
     _ui->actionDACs->setChecked(0);
     _ui->actionEqualization->setChecked(0);
+
+    _ui->actionStepper_Motor->setChecked(0);
+    //TODO _ui-> NEW ACTION ->setChecked(0);
 }
 
 
@@ -1021,43 +1053,64 @@ void Mpx3GUI::on_actionConnect_triggered() {
 
 }
 
-
-void Mpx3GUI::on_actionVisualization_triggered()
-{
+void Mpx3GUI::on_actionVisualization_triggered(){
     uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __visualization_page_Id );
     _ui->actionVisualization->setChecked(1);
 }
 
-void Mpx3GUI::on_actionConfiguration_triggered()
-{
+void Mpx3GUI::on_actionConfiguration_triggered(){
     uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __configuration_page_Id );
     _ui->actionConfiguration->setChecked(1);
 }
 
-void Mpx3GUI::on_actionDACs_triggered()
-{
+void Mpx3GUI::on_actionDACs_triggered(){
     uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __dacs_page_Id );
     _ui->actionDACs->setChecked(1);
 }
 
-void Mpx3GUI::on_actionEqualization_triggered()
-{
+void Mpx3GUI::on_actionEqualization_triggered(){
     uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
     _ui->actionEqualization->setChecked(1);
 }
 
-void Mpx3GUI::on_actionScans_triggered()
-{
+void Mpx3GUI::on_actionScans_triggered(){
     uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
+    //TODO ->setChecked(1);
 }
 
-void Mpx3GUI::on_actionDisconnect_triggered(bool checked)
+//! TODO: Implement revert more fully?
+void Mpx3GUI::on_actionRevert_triggered(bool) {
+    qDebug() << ">> Rewinding to original dataset? TEST ME";
+    rewindToOriginalDataset();
+    _ui->visualizationGL->reload_all_layers(false);
+}
+
+void Mpx3GUI::on_actionAbout_triggered(bool){
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("About");
+
+    QString newDate =  QDate::currentDate().toString("yyyy-MM-dd");
+    QString msg = QString("Compiled: ") + newDate + QString(" - ") + QString(__TIME__) +
+            QString("\n C++: ") + QString::fromStdString(to_string(__cplusplus)) +
+//            QString("\n STDC: ") + QString::fromStdString(to_string(__STDC__)) +
+            QString("\n\n ASI B.V. All rights reserved.") ;
+    msgBox.setText( msg );
+    msgBox.exec();
+}
+
+void Mpx3GUI::on_actionStepper_Motor_triggered(bool)
 {
+    uncheckAllToolbarButtons();
+    _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
+}
+
+
+void Mpx3GUI::on_actionDisconnect_triggered(bool checked){
 
     // See if there is anything running
     // Check if something is running
@@ -1090,8 +1143,7 @@ void Mpx3GUI::on_actionDisconnect_triggered(bool checked)
     emit sig_statusBarAppend( "Disconnected", "red" );
 }
 
-void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
-{
+void Mpx3GUI::on_actionDefibrillator_triggered(bool checked){
 
     if ( getConfig()->isConnected() ) {
 
@@ -1137,23 +1189,4 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked)
 }
 
 
-// TODO(#28): Implement this
-void Mpx3GUI::on_actionRevert_triggered(bool checked){
-    qDebug() << ">> Rewinding to original dataset? TEST ME";
-    //_ui->visualizationGL->
-    _ui->visualizationGL->reload_all_layers();
-    rewindToOriginalDataset();
-}
 
-void Mpx3GUI::on_actionAbout_triggered(bool checked){
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("About");
-
-    QString newDate =  QDate::currentDate().toString("yyyy-MM-dd");
-    QString msg = QString("Compiled: ") + newDate + QString(" - ") + QString(__TIME__) +
-            QString("\n C++: ") + QString::fromStdString(to_string(__cplusplus)) +
-            QString("\n STDC: ") + QString::fromStdString(to_string(__STDC__)) +
-            QString("\n\n ASI B.V. All rights reserved.") ;
-    msgBox.setText( msg );
-    msgBox.exec();
-}

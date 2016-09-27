@@ -23,9 +23,6 @@
 #include <vector>
 using namespace std;
 
-//ThlScan::ThlScan() {
-//}
-
 ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 
     // keep these pointers
@@ -851,7 +848,7 @@ void ThlScan::EqualizationScan() {
     // The data buffer id doesn't necessarily corresponds to _deviceIndex
     int idDataFetch = -1;
     bool accelerationApplied = false;
-    int accelerationFlagCntr = 0;
+    int accelerationFlagCntr = 0; //The compiler thinks this is unused, it is used...
     //int oldStep = _equalization->GetUI()->eqStepSpinBox->value();
     int nMasked = 0, pmasked = 0;
 
@@ -1261,7 +1258,7 @@ void ThlScan::DumpSet(set<int> theset, QString name, int max) {
 
 }
 
-bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> activeMask) {
+bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> /*activeMask*/) {
 
     // End the scan if
     //  1) all the pixels involved have touched (reactTHL val) the equalization target OR passed over it
