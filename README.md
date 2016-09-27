@@ -189,9 +189,7 @@ al. (1998). This method consists of the following steps:
 - Image is converted to an 8-bit binary image by supplying a threshold value (average of the signal of the two sides). 
 - Determination of angle and position of the edge with double Hough transformation. 
 - Projection of points to the distance s from the edge. And collection into bins of 0.1*pixelsize. This gives the ESF_k array, the discrete ESF. 
-- This ESF_k array is smoothed using a 4th order, Gaussian-weighted, moving polynomial fit. Local smoothing does not confine the ESF to a particular mathematical form: for each element in the ESF_k array, a polynomial function is fit using adjacent elements and the initial element value is replaced by the value predicted by the fit.
-
-“A least-squares fit is employed for which values near the center-point are strongly weighted by entering a different variance value for each point.” ?? Weighting function is a Gaussian (see form in article), of which parameters were chosen based on a test performed on simulated edge images… (Can we use this then? Do we need to do a similar test?) 
+- This ESF_k array is smoothed using a 4th order, Gaussian-weighted, moving polynomial fit. Local smoothing does not confine the ESF to a particular mathematical form: for each element in the ESF_k array, a polynomial function is fit using adjacent elements and the initial element value is replaced by the value predicted by the fit. “A least-squares fit is employed for which values near the center-point are strongly weighted by entering a different variance value for each point.” ?? Weighting function is a Gaussian (see form in article), of which parameters were chosen based on a test performed on simulated edge images… (Can we use this then? Do we need to do a similar test?) 
 
 - The ESF_k array is numerically differentiated. 
 - The baseline of the LSF is substracted using a linear fit to the 10-nm-long portions of the LSF tails. 
@@ -202,7 +200,7 @@ al. (1998). This method consists of the following steps:
 The extent of the regions used by Samei are not feasible for the Medipix3… The LSF looks significantly different than ours, so the Hanning filter and baseline substraction or extrapolation of the tails (as in other papers) might not be the way to go. (?)
 But we CAN use the iterative MTF maximization by varying the angle. Only one parameter changes and then the entire “Calc MTF” procedure can be repeated:
 
-#### (still) TO DO for MTF calculation:
+#### TO DO for MTF calculation:
 
 - Implement slit method.  Try Fujita’s slit method. (“Simple”). 
 - Maximize MTF by angle variation.  
@@ -239,7 +237,6 @@ then not too difficult to calculate the DQE. (see overview)
 - Determine the exposure.
 - Calculate NEQ. 
 - Use EMTF for NEQ calculation (in addition to the PMTF, both should be reported). (Dobbins, 1995) 
-- Determine (given by manufacturer or measurements and simulations  (Flynn & Samei,	1999)) the SNR^2 of the incident x-ray beam. 
 - Calculate DQE. 
 - Calculate DQE(0) by extrapolation of the low-frequency part back to zero. 
 
@@ -342,8 +339,6 @@ To add an option, a few things have to be done:
     
 6. Test.  
   
-  
- 
 
 ## Works Cited
 
@@ -359,4 +354,4 @@ Hoeschen, D. (2001). DQE of digital x-ray imaging
 systems: a challenge. _SPIE_.
 
 
-Last change: 21-09-2016
+Last change: 27-09-2016
