@@ -20,16 +20,16 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
     ui->setupUi(this);
 
     ui->ESFplot->xAxis->setLabel("Distance (pix)");
-    ui->ESFplot->yAxis->setLabel("Normalised ESF");
+    ui->ESFplot->yAxis->setLabel("Normalised signal");
     // add title layout element:(font is too big)
 //    ui->ESFplot->plotLayout()->insertRow(0);
 //    ui->ESFplot->plotLayout()->addElement(0, 0, new QCPPlotTitle(ui->ESFplot, "ESF"));
 
     ui->LSFplot->xAxis->setLabel("Distance (pix)");
-    ui->LSFplot->yAxis->setLabel("Normalised LSF");
+    ui->LSFplot->yAxis->setLabel("Normalised signal");
 
     ui->MTFplot->xAxis->setLabel("Spatial frequency (F_Nyquist)");
-    ui->MTFplot->yAxis->setLabel("Presampled MTF");
+    ui->MTFplot->yAxis->setLabel("Normalised signal");
 
     ui->xNPSplot->xAxis->setLabel("Spatial frequency X (1/pix)");
     ui->xNPSplot->yAxis->setLabel("NPS X (mm^2)");
@@ -1301,11 +1301,8 @@ void QCstmDQE::on_comboBox_currentIndexChanged(const QString &arg1)
     //int layerIndex = _mpx3gui->getDataset()->thresholdToIndex(threshold);
     setSelectedThreshold(threshold);
 
-//    _mpx3gui->GetUI()->visualizationGL->setThreshold(threshold); //connected..
-
-    //Collect new dataset.
-    //And do everything again for this set..
-    //TODO.
+    //Collect new dataset and plot.
+    plotESF();
 }
 
 void QCstmDQE::on_loadDataPushButton_clicked()

@@ -19,7 +19,7 @@
      <item>
       <widget class="QComboBox" name="comboBox">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -239,6 +239,9 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edge Spread Function&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
                <property name="text">
                 <string>ESF</string>
                </property>
@@ -264,7 +267,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>100</height>
+               <height>120</height>
               </size>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10"/>
@@ -313,6 +316,9 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Line Spread Function&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
                <property name="text">
                 <string>LSF</string>
                </property>
@@ -338,7 +344,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>100</height>
+               <height>120</height>
               </size>
              </property>
             </widget>
@@ -392,8 +398,11 @@
                  <height>20</height>
                 </size>
                </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Presampled Modulation Transfer Function&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
                <property name="text">
-                <string>MTF</string>
+                <string>PMTF</string>
                </property>
               </widget>
              </item>
@@ -417,7 +426,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>180</height>
+               <height>145</height>
               </size>
              </property>
             </widget>
