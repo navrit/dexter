@@ -1475,8 +1475,8 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
                                         );
 
         // Fill adj distributions
-        _adjchart_L[chipIndex]->SetValueInSet(0, _eqMap[chipIndex]->GetPixelAdj(i));
-        _adjchart_H[chipIndex]->SetValueInSet(0, _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H));
+        //_adjchart_L[chipIndex]->SetValueInSet(0, _eqMap[chipIndex]->GetPixelAdj(i));
+        //_adjchart_H[chipIndex]->SetValueInSet(0, _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H));
 
     }
 
