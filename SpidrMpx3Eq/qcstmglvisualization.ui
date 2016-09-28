@@ -39,6 +39,9 @@ QGroupBox::title {
 }
 </string>
   </property>
+  <property name="locale">
+   <locale language="English" country="UnitedKingdom"/>
+  </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2">
    <item>
     <widget class="QSplitter" name="splitter">
@@ -897,6 +900,12 @@ QGroupBox::title {
  </widget>
  <customwidgets>
   <customwidget>
+   <class>HeatmapDisplay</class>
+   <extends>QWidget</extends>
+   <header>heatmapdisplay.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>QCstmPlotHistogram</class>
    <extends>QWidget</extends>
    <header>qcstmplothistogram.h</header>
@@ -909,12 +918,6 @@ QGroupBox::title {
     <slot>changeRange(QCPRange)</slot>
     <slot>setActive(int)</slot>
    </slots>
-  </customwidget>
-  <customwidget>
-   <class>HeatmapDisplay</class>
-   <extends>QWidget</extends>
-   <header>heatmapdisplay.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

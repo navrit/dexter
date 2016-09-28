@@ -16,6 +16,9 @@
   <property name="toolTip">
    <string>DACs</string>
   </property>
+  <property name="locale">
+   <locale language="English" country="UnitedKingdom"/>
+  </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0,0,0">

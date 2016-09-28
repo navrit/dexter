@@ -34,6 +34,9 @@
   <property name="windowTitle">
    <string>Beam Hardening corrections</string>
   </property>
+  <property name="locale">
+   <locale language="English" country="UnitedKingdom"/>
+  </property>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>

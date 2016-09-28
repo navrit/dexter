@@ -28,6 +28,9 @@
   <property name="toolTip">
    <string/>
   </property>
+  <property name="locale">
+   <locale language="English" country="UnitedKingdom"/>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
@@ -51,7 +54,7 @@
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>23</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -167,7 +170,7 @@
   </action>
   <action name="actionClear_configuration">
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/eraser_equalisation_logo.png</normaloff>:/icons/eraser_equalisation_logo.png</iconset>
    </property>
    <property name="text">
@@ -181,7 +184,7 @@
   </action>
   <action name="actionLoad_Equalization">
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/load_equalisation_logo.png</normaloff>:/icons/load_equalisation_logo.png</iconset>
    </property>
    <property name="text">
@@ -200,7 +203,7 @@
   </action>
   <action name="actionSave_data">
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/download-arrow.png</normaloff>:/icons/download-arrow.png</iconset>
    </property>
    <property name="text">
@@ -212,7 +215,7 @@
   </action>
   <action name="actionOpen_data">
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/open-folder.png</normaloff>:/icons/open-folder.png</iconset>
    </property>
    <property name="text">
@@ -234,7 +237,7 @@
   </action>
   <action name="actionClear_data">
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/clear-button.png</normaloff>:/icons/clear-button.png</iconset>
    </property>
    <property name="text">
@@ -246,7 +249,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/power-button-on.png</normaloff>
      <normalon>:/icons/switch-turn-off-icon.png</normalon>:/icons/power-button-on.png</iconset>
    </property>
@@ -256,7 +259,7 @@
   </action>
   <action name="actionDisconnect">
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/power-button-off.png</normaloff>:/icons/power-button-off.png</iconset>
    </property>
    <property name="text">
@@ -265,7 +268,7 @@
   </action>
   <action name="actionDefibrillator">
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/health-care.png</normaloff>:/icons/health-care.png</iconset>
    </property>
    <property name="text">
@@ -274,7 +277,7 @@
   </action>
   <action name="actionWizard">
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/magic-wand.png</normaloff>:/icons/magic-wand.png</iconset>
    </property>
    <property name="text">
@@ -289,7 +292,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/visible-opened-eye-interface-option.png</normaloff>
      <normalon>:/icons/visible-opened-eye-interface-option.png</normalon>:/icons/visible-opened-eye-interface-option.png</iconset>
    </property>
@@ -305,7 +308,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/settings.png</normaloff>
      <normalon>:/icons/settings.png</normalon>:/icons/settings.png</iconset>
    </property>
@@ -321,7 +324,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/equalizer.png</normaloff>
      <normalon>:/icons/equalizer.png</normalon>:/icons/equalizer.png</iconset>
    </property>
@@ -337,7 +340,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/graph-curve.png</normaloff>
      <normalon>:/icons/graph-curve.png</normalon>:/icons/graph-curve.png</iconset>
    </property>
@@ -350,7 +353,7 @@
   </action>
   <action name="actionRevert">
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/undo-button.png</normaloff>:/icons/undo-button.png</iconset>
    </property>
    <property name="text">
@@ -365,7 +368,7 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/info.png</normaloff>:/icons/info.png</iconset>
    </property>
    <property name="text">
@@ -377,7 +380,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/motor.png</normaloff>:/icons/motor.png</iconset>
    </property>
    <property name="text">
@@ -448,7 +451,9 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
  <slots>
   <signal>frame_added()</signal>
