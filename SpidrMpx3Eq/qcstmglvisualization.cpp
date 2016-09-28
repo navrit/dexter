@@ -1608,32 +1608,25 @@ void QCstmGLVisualization::on_saveBitmapPushButton_clicked(){
 
 }
 
+// Unused argument and function
 void QCstmGLVisualization::on_noisyPixelMeanMultiplier_valueChanged(double arg1){
-
+    qDebug() << "void QCstmGLVisualization::on_noisyPixelMeanMultiplier_valueChanged(double arg1): " << arg1;
 }
 
 void QCstmGLVisualization::on_correctionsDialogPushButton_clicked(){
-    // Setup corrections and be ready to apply them
-    _corrdialog = new QCstmCorrectionsDialog(this);
-    _corrdialog->SetMpx3GUI( _mpx3gui );
+    if (!_corrdialog) {
+        // Setup corrections and be ready to apply them
+        _corrdialog = new QCstmCorrectionsDialog(this);
+        _corrdialog->SetMpx3GUI( _mpx3gui );
 
-    // non Modal
+    } else {
+        // _corrDialog already made
+    }
+
+    //! Continue to make the user use the existing dialog or dismiss it with a "non-modal dialog"
     _corrdialog->show();
     _corrdialog->raise();
     _corrdialog->activateWindow();
-}
-
-void QCstmGLVisualization::correctionDialogueButtonClicked(){
-
-    // Simply show the dialogue
-    if ( _corrdialog ) {
-
-        // If already created
-        _corrdialog->show();
-        _corrdialog->raise();
-        _corrdialog->activateWindow();
-
-    }
 
 }
 

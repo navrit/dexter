@@ -222,8 +222,6 @@ private slots:
 
     void on_logscale(bool);
 
-    void correctionDialogueButtonClicked();
-
     void on_infDataTakingCheckBox_toggled(bool checked);
 
     void ntriggers_edit();

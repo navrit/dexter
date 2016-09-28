@@ -182,7 +182,7 @@ private slots:
 
     void on_clearNPSpushButton_clicked();
 
-    void on_clearMTFpushButton_clicked();
+    void on_clearMTFpushButton_clicked(bool clearESFdata);
 
     void on_clearAllPushButton_clicked();
 
@@ -199,7 +199,7 @@ private slots:
 public slots:
     void on_close_optionsDialog();    
     void on_apply_options(QHash<QString, int> options);
-    void on_maindata_changed(QString filename);
+    void on_maindata_changed(QString filepath);
     void addNPSfile(QString filepath);
 
 signals:

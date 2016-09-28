@@ -10,8 +10,12 @@ optionsDialog::optionsDialog(QWidget *parent) :
     ui(new Ui::optionsDialog)
 {
     ui->setupUi(this);
+    setCurrentSettings();
 
     ui->buttonBox->button(QDialogButtonBox::Apply)->setDefault(true);
+    //    ui->windowLabel->setToolTip(tr("used for local fitting, must be an uneven number"));
+    //    ui->windowLineEdit->setToolTip(tr("must be an uneven number"));
+
 }
 
 void optionsDialog::SetMpx3GUI(Mpx3GUI * p )
@@ -21,6 +25,20 @@ void optionsDialog::SetMpx3GUI(Mpx3GUI * p )
     connect( this, SIGNAL(close_optionsDialog()), _mpx3gui->GetUI()->dqeTab, SLOT(on_close_optionsDialog()) );
     connect( this, SIGNAL(apply_options(QHash<QString, int>)), _mpx3gui->GetUI()->dqeTab, SLOT(on_apply_options(QHash<QString, int>)) );
 }
+
+QString optionsDialog::getCurrentTab()
+{
+    if(ui->tabWidget->currentIndex() == __mtfIndex)
+        return "mtf";
+    else if(ui->tabWidget->currentIndex() == __npsIndex)
+        return "nps";
+}
+
+//void optionsDialog::setDataRange(int NdataESF)
+//{
+//    ui->binSizeSpinBox->setMaximum( NdataESF );
+//    ui->windowSpinBox->setMaximum( NdataESF );
+//}
 
 optionsDialog::~optionsDialog()
 {
@@ -41,17 +59,35 @@ void optionsDialog::setCurrentSettings()
     _currentSettings["fitder"]  = ui->fitDerCheckBox->isChecked();
     _currentSettings["bindata"] = ui->binDataCheckBox->isChecked();
 
-    _currentSettings["binsize"] = ui->binSizeSpinBox->value();
+    //Check if binsize is not larger than the dataset.
+    int binsize = ui->binSizeSpinBox->value();
+    if(_datarange != -1){
+        int maxlength = _datarange; /// _currentSettings.value("binsize");
+        if( binsize > maxlength ){
+            binsize = maxlength;
+            QMessageBox::warning ( this, tr("Warning"), tr( "The binsize cannot be larger than the number of data points." ) );
+            ui->binSizeSpinBox->setValue( binsize );
+        }
+    }
 
     //Check if the window width is not larger than the dataset.
-    int maxlength = _datarange / _currentSettings.value("binsize");
+    //Only if the window width matters..
     int windowW = ui->windowSpinBox->value();
-    if( windowW > maxlength){
-        windowW = maxlength;
-        QMessageBox::warning ( this, tr("Warning"), tr( "The window width cannot be larger than the number of data points." ) );
-        ui->windowSpinBox->setValue( windowW );
+    if(ui->windowSpinBox->isEnabled() && _currentSettings.value("binsize") != binsize){
+        if(_datarange != -1){
+            int maxlength = _datarange / binsize;
+            if( windowW > maxlength){
+                windowW = maxlength;
+                QMessageBox::warning ( this, tr("Warning"), tr( "The window width cannot be larger than the number of data points." ) );
+                ui->windowSpinBox->setValue( windowW );
+            }
+        }
     }
     _currentSettings["windowW"] = windowW;
+    _currentSettings["binsize"] = binsize;
+
+//    _currentSettings["binsize"] = ui->binSizeSpinBox->value();
+//    _currentSettings["windowW"] = ui->windowSpinBox->value();
 
     //NPS
     _currentSettings["fullimage"]   = ui->fullImageRadioButton->isChecked();
@@ -150,19 +186,18 @@ void optionsDialog::on_buttonBox_clicked(QAbstractButton *button)
 void optionsDialog::on_fitComboBox_currentIndexChanged(const QString &arg1)
 {
     if(arg1.contains("Error")){
-//        _useErrorFunc = true;
         ui->windowLabel->setEnabled(false);
         ui->windowSpinBox->setEnabled(false);
     }
     if(arg1.contains("Smoothing")){
-//        _useErrorFunc = false;
         ui->windowLabel->setEnabled(true);
         ui->windowSpinBox->setEnabled(true);
     }
 }
 
 void optionsDialog::on_windowSpinBox_editingFinished()
-{
+{   ui->windowSpinBox->blockSignals(true);
+
     int width = ui->windowSpinBox->value();
     int binsize = ui->binSizeSpinBox->value();
     int maxlength = _datarange / binsize;
@@ -173,16 +208,18 @@ void optionsDialog::on_windowSpinBox_editingFinished()
                 QMessageBox::warning ( this, tr("Warning"), tr( "The window width must be bigger than 2." ) );
         ui->windowSpinBox->setValue(width);
     }
+    if(width > maxlength){
+        width = maxlength;
+        QMessageBox::warning ( this, tr("Warning"), tr( "The window width can not be larger than the number of (binned) data points." ) );
+        ui->windowSpinBox->setValue(width);
+    }
     if(width % 2 == 0){
         width ++; //The window width must be an uneven number.
         QMessageBox::warning ( this, tr("Warning"), tr( "The window width must be an uneven number." ) );
         ui->windowSpinBox->setValue(width);
     }
-    if(width > maxlength){
-        width = maxlength;
-        QMessageBox::warning ( this, tr("Warning"), tr( "The window width can not be larger than the number of data points." ) );
-        ui->windowSpinBox->setValue(width);
-    }
+
+    ui->windowSpinBox->blockSignals(false);
 }
 
 void optionsDialog::on_manualRadioButton_toggled(bool checked)
