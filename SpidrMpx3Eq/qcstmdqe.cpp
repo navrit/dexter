@@ -1279,13 +1279,18 @@ void QCstmDQE::on_takeDataPushButton_clicked() {
 
 void QCstmDQE::on_comboBox_currentIndexChanged(const QString &arg1)
 {
-    QStringList split = arg1.split(' ');
-    int threshold = split.last().toInt();
-    //int layerIndex = _mpx3gui->getDataset()->thresholdToIndex(threshold);
-    setSelectedThreshold(threshold);
+    // if current tab is DQE tab ...
+    // else this is probably in
+    if (_mpx3gui->GetUI()->stackedWidget->currentIndex() == __dqe_page_Id) {
+        QStringList split = arg1.split(' ');
+        int threshold = split.last().toInt();
+        //int layerIndex = _mpx3gui->getDataset()->thresholdToIndex(threshold);
+        setSelectedThreshold(threshold);
 
-    //Collect new dataset and plot.
-    plotESF();
+        //Collect new dataset and plot.
+        plotESF();
+    }
+
 }
 
 void QCstmDQE::on_loadDataPushButton_clicked()
