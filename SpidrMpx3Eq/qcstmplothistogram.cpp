@@ -55,7 +55,7 @@ QCstmPlotHistogram::~QCstmPlotHistogram()
 /**
  * @brief QCstmPlotHistogram::mouseDoubleClickEvent.  This method
  *  will recover the proper strecht in Y (full image visible in the
- *  Y-range) if the user wants it.
+ *  Y-range - 1.1 * max height) if the user wants it.
  *
  * @param event
  */
@@ -286,12 +286,22 @@ void QCstmPlotHistogram::mouseReleaseEvent(QMouseEvent *event){
     {
         clicked = false;
         xReleased = xAxis->pixelToCoord(event->x());
+        // Prevents users from looking at negative pixel counts
+        if (xClicked < 0){
+            xClicked = 0;
+            minClampChanged(xClicked);
+        }
         maxClampChanged(xReleased);
         if(xReleased < xClicked){
+            // Prevents users from looking at negative pixel counts
+            if (xReleased < 0){
+                xReleased = 0;
+                maxClampChanged(xReleased);
+            }
             double tmp = xReleased;
             xReleased = xClicked;
             xClicked = tmp;
-        };
+        }
         //this->changeRange(QCPRange(xClicked, xReleased));
         emit new_range_dragged(QCPRange(xClicked, xReleased));
     }

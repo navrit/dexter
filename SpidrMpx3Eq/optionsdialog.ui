@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>310</width>
-    <height>504</height>
+    <height>583</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,6 +24,9 @@
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
+  </property>
+  <property name="locale">
+   <locale language="English" country="UnitedKingdom"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>

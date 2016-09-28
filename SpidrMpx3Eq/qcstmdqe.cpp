@@ -19,21 +19,21 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->ESFplot->xAxis->setLabel("Distance (pix)");
+    ui->ESFplot->xAxis->setLabel("Distance (px)");
     ui->ESFplot->yAxis->setLabel("Normalised signal");
 
-    ui->LSFplot->xAxis->setLabel("Distance (pix)");
+    ui->LSFplot->xAxis->setLabel("Distance (px)");
     ui->LSFplot->yAxis->setLabel("Normalised signal");
 
     ui->MTFplot->xAxis->setLabel("Spatial frequency (F_Nyquist)");
     ui->MTFplot->yAxis->setLabel("Normalised signal");
 
-    ui->xNPSplot->xAxis->setLabel("Spatial frequency X (1/pix)");
+    ui->xNPSplot->xAxis->setLabel("Spatial frequency X (1/px)");
     ui->xNPSplot->yAxis->setLabel("NPS X (mm^2)");
-    ui->yNPSplot->xAxis->setLabel("Spatial frequency Y (1/pix)");
+    ui->yNPSplot->xAxis->setLabel("Spatial frequency Y (1/px)");
     ui->yNPSplot->yAxis->setLabel("NPS Y (mm^2)");
 
-    ui->DQEplot->xAxis->setLabel("Spatial frequency (1/pix)");
+    ui->DQEplot->xAxis->setLabel("Spatial frequency (1/px)");
     ui->DQEplot->yAxis->setLabel("DQE");
 
     connect( ui->ESFplot,  SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(on_mouseMove_showPlotPoint(QMouseEvent*)) );
@@ -1279,13 +1279,18 @@ void QCstmDQE::on_takeDataPushButton_clicked() {
 
 void QCstmDQE::on_comboBox_currentIndexChanged(const QString &arg1)
 {
-    QStringList split = arg1.split(' ');
-    int threshold = split.last().toInt();
-    //int layerIndex = _mpx3gui->getDataset()->thresholdToIndex(threshold);
-    setSelectedThreshold(threshold);
+    // if current tab is DQE tab ...
+    // else this is probably in
+    if (_mpx3gui->GetUI()->stackedWidget->currentIndex() == __dqe_page_Id) {
+        QStringList split = arg1.split(' ');
+        int threshold = split.last().toInt();
+        //int layerIndex = _mpx3gui->getDataset()->thresholdToIndex(threshold);
+        setSelectedThreshold(threshold);
 
-    //Collect new dataset and plot.
-    plotESF();
+        //Collect new dataset and plot.
+        plotESF();
+    }
+
 }
 
 void QCstmDQE::on_loadDataPushButton_clicked()
@@ -1618,7 +1623,7 @@ void QCstmDQE::on_apply_options(QHash<QString, int> options)
     _pixelsize  = 0.001*double(options.value("pixelsize")); //to micrometer
 
     if(options.value("1/mm"))   _unitNPS    = "1/mm";
-    if(options.value("1/pix"))  _unitNPS    = "1/pix";
+    if(options.value("1/px"))  _unitNPS    = "1/px";
     if(options.value("lp/mm"))  _unitNPS    = "lp/mm"; //Line pairs per mm.
 
     //Clear plots

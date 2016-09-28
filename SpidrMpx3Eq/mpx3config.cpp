@@ -129,7 +129,7 @@ void Mpx3Config::SendConfiguration( config_items item ) {
             spidrcontrol->setBiasSupplyEna( true );
 
             if ( spidrcontrol->setBiasVoltage( getBiasVoltage() ) ) {
-                qDebug() << "[CONF] setting bias volate to: " << getBiasVoltage() << "(V)";
+                qDebug() << "[CONF] setting bias voltage to: " << getBiasVoltage() << "(V)";
             } else {
                 qDebug() << "[ERR ] error setting internal bias voltage";
             }
@@ -302,7 +302,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
             spidrcontrol->setBiasSupplyEna( true );
 
             if ( spidrcontrol->setBiasVoltage( getBiasVoltage() ) ) {
-                qDebug() << "[CONF] setting bias volate to: " << getBiasVoltage() << "(V)";
+                qDebug() << "[CONF] setting bias voltage to: " << getBiasVoltage() << "(V)";
             } else {
                 qDebug() << "[ERR ] error setting internal bias voltage";
             }
