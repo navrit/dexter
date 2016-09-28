@@ -390,7 +390,6 @@ void Mpx3GUI::setWindowWidgetsStatus(win_status s)
         // Startup status
         _ui->actionConnect->setVisible(1);
         _ui->actionDisconnect->setVisible(0);
-        _ui->actionDefibrillator->setVisible(0);
 
         _ui->actionVisualization->setChecked(1);
         break;
@@ -399,10 +398,10 @@ void Mpx3GUI::setWindowWidgetsStatus(win_status s)
         // Startup status
         _ui->actionConnect->setVisible(1);
         _ui->actionDisconnect->setVisible(0);
-        _ui->actionDefibrillator->setVisible(1);
         break;
 
     default:
+        _ui->actionDefibrillator->setVisible(1);
         break;
 
     }
