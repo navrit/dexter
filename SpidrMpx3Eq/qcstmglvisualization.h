@@ -286,7 +286,6 @@ signals:
     void taking_data_gui();
     void idling_gui();
 
-signals:
     void change_hover_text(QString);
     void stop_data_taking_thread();
     void free_to_draw();
@@ -296,7 +295,6 @@ signals:
     void sig_statusBarAppend(QString mess, QString colorString);
     void sig_statusBarWrite(QString mess, QString colorString);
     void sig_statusBarClean();
-
 
 };
 

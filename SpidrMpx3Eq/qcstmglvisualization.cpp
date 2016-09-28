@@ -1079,6 +1079,8 @@ void QCstmGLVisualization::on_clear(){
     ui->histPlot->clear();
     ui->layerSelector->clear();
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset());
+
+    // Why can't I call reload_all_layers() here without it crsahing? !??!?!??!?!?!
     //on_reload_all_layers();
 }
 
