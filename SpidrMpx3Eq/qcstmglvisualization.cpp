@@ -1078,6 +1078,7 @@ void QCstmGLVisualization::on_clear(){
     ui->layerSelector->clear();
     ui->histPlot->clear();
     ui->layerSelector->clear();
+    ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset());
     //on_reload_all_layers();
 }
 
