@@ -635,13 +635,13 @@ QVector<QVector<double> > Dataset::calcESFdata()
     if ( (a==0 && b==0) ||  (a!=a || b!=b) ) {
         esfData.clear();   //Return empty data...Midline doesn't make sense.
 
-        //QMessageBox msgbox;
-        //msgbox.setWindowTitle("Edge calculation error");
-        //msgbox.setText("An error has occurred in the calculation of the position of the edge. This happens when the selected "
-        //               "region is not large enough to distinguish 'bright area' and 'dark area' values to determine the edge position."
-        //               "\n \n Try making the selected region larger.");
-        //msgbox.setIcon(QMessageBox::Warning);
-        //msgbox.exec();
+        QMessageBox msgbox;
+        msgbox.setWindowTitle("Edge calculation error");
+        msgbox.setText("An error has occurred in the calculation of the position of the edge. This happens when the selected "
+                       "region is not large enough to distinguish 'bright area' and 'dark area' values to determine the edge position."
+                       "\n \n Try making the selected region larger.");
+        msgbox.setIcon(QMessageBox::Warning);
+        msgbox.exec();
 
         return esfData;
     }

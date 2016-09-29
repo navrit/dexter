@@ -1580,7 +1580,7 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
     ui->glPlot->getPlot()->setActive(layer);
     ui->histPlot->setActive(layer);
     ui->layerSelector->setCurrentIndex(layer);
-    //_mpx3gui->GetUI()->dqeTab->setSelectedThreshold(threshold); // [DISABLED]
+    _mpx3gui->GetUI()->dqeTab->setSelectedThreshold(threshold);
     //_mpx3gui->set_active_frame(threshold);
     this->active_frame_changed();
 }
