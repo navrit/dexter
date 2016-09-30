@@ -293,14 +293,14 @@ void QCstmBHWindow::on_list_doubleClicked(const QModelIndex &index){
 void QCstmBHWindow::on_okButton_clicked(){
     if(emptyCorrectionCounter != 0 || thicknessvctr.size() < 3 ){
 
-        //TODO FIX ME Comes up when it shouldn't????
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Error");
-        msgBox.setText(tr("You haven't loaded all of the necessary corrections. The beam hardening will not operate. Please load more corrections."));
-        //! UI update - Corrections Dialog - "Error: File not loaded"
-        emit sendFilename(QString("Error: File not loaded"));
-        emit sendChecked_BHCorrCheckbox(false);
-        msgBox.exec();
+//        //TODO [DISABLED] FIX ME Comes up when it shouldn't????
+//        QMessageBox msgBox;
+//        msgBox.setWindowTitle("Error");
+//        msgBox.setText(tr("You haven't loaded all of the necessary corrections. The beam hardening will not operate. Please load more corrections."));
+//        //! UI update - Corrections Dialog - "Error: File not loaded"
+//        emit sendFilename(QString("Error: File not loaded"));
+//        emit sendChecked_BHCorrCheckbox(false);
+//        msgBox.exec();
     }
 
     this->close();
