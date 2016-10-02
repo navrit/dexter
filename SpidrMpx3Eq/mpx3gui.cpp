@@ -127,16 +127,17 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
         return;
     }
 
-    // shortcuts
+    // View keyboard shortcuts
+    // NOTE: Change on_shortcutsSwithPages to match this
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+1", "Switch to viewer") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+2", "Switch to configuration and monitoring") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+3", "Switch to DAC control") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+4", "Switch to Equalization") ), this)  );
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+5", "Switch to DQE calculation") ), this)  );
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+6", "Switch to Scans") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+5", "Switch to DQE calculation") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+6", "Switch to Scans") ), this)  );
 
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+7", "Switch to CT") ), this)  );
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+8", "Switch to Stepper Motor Control") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+7", "Switch to CT") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+8", "Switch to Stepper Motor Control") ), this)  );
 
 
     // Signals and slots for this part
@@ -337,20 +338,20 @@ void Mpx3GUI::on_shortcutsSwithPages() {
         _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
         _ui->actionEqualization->setChecked(1);
 
-    } else if ( k.matches( QKeySequence(tr("Ctrl+5")) ) ){
+    } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+5")) ) ){
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __dqe_page_Id );
         //_ui->actionDQE->setChecked(1);
 
-    } else if ( k.matches( QKeySequence(tr("Ctrl+6")) ) ){
+    } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+6")) ) ){
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
         //_ui->actionScans->setChecked(1);
-    /*} else if ( k.matches( QKeySequence(tr("Ctrl+7")) ) ){
+    } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+7")) ) ){
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __ct_page_Id );
-        //_ui-> actionXXX ->setChecked(1);*/
-    } else if ( k.matches( QKeySequence(tr("Ctrl+8")) ) ){
+        //_ui-> actionXXX ->setChecked(1);
+    } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+8")) ) ){
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
         _ui->actionStepper_Motor->setChecked(1);
