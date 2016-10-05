@@ -441,9 +441,14 @@ bool Mpx3GUI::establish_connection() {
 
     // Check if we are properly connected to the SPIDR module
     if ( spidrcontrol->isConnected() ) {
+
         *dbg << "Connected to SPIDR: " << spidrcontrol->ipAddressString().c_str() << "[" << config->getNDevicesPresent();
+
         if(config->getNDevicesPresent() > 1) *dbg << " chips found] ";
         else *dbg << " chip found] ";
+
+        m_numberOfChipsFound = QString("\nNumber of chips found: ")
+                + QString::number( config->getNDevicesPresent() );
 
         int ipaddr;
         // This call takes device number 0 'cause it is not really addressed to a chip in particular
@@ -474,14 +479,25 @@ bool Mpx3GUI::establish_connection() {
     }
 
     // Get version numbers
+    int version;
+    m_SPIDRControllerVersion = QString("\n SPIDR Controller version: ") +
+            QString (spidrcontrol->versionToString( spidrcontrol->classVersion() ).c_str());
+
     *dbg << "\n";
     *dbg << "SpidrController class: "
-         << spidrcontrol->versionToString( spidrcontrol->classVersion() ).c_str() << "\n";
-    int version;
-    if( spidrcontrol->getFirmwVersion( &version ) )
-        *dbg << "SPIDR firmware  : " << spidrcontrol->versionToString( version ).c_str() << "\n";
-    if( spidrcontrol->getSoftwVersion( &version ) )
-        *dbg << "SPIDR software  : " << spidrcontrol->versionToString( version ).c_str() << "\n";
+         <<  m_SPIDRControllerVersion << "\n";
+
+    if( spidrcontrol->getFirmwVersion( &version ) ) {
+        m_SPIDRFirmwareVersion = QString("\n SPIDR Firmware version: ") +
+                QString(spidrcontrol->versionToString( version ).c_str());
+        *dbg << "SPIDR firmware  : " << m_SPIDRFirmwareVersion << "\n";
+    }
+
+    if( spidrcontrol->getSoftwVersion( &version ) ){
+        m_SPIDRSoftwareVersion = QString("\n SPIDR Software version: ") +
+                QString(spidrcontrol->versionToString( version ).c_str());
+        *dbg << "SPIDR software  : " << m_SPIDRSoftwareVersion << "\n";
+    }
 
 
     // SpidrDaq
@@ -813,6 +829,11 @@ void Mpx3GUI::onConnectionStatusChanged(bool conn)
     } else {
         _ui->actionConnect->setVisible(1);
         _ui->actionDisconnect->setVisible(0);
+
+        m_SPIDRControllerVersion = "";
+        m_SPIDRFirmwareVersion = "";
+        m_SPIDRSoftwareVersion = "";
+        m_numberOfChipsFound = "";
     }
 
 }
@@ -1094,11 +1115,21 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
     QMessageBox msgBox;
     msgBox.setWindowTitle("About");
 
+    QString newLine = "\n";
+
     QString newDate =  QDate::currentDate().toString("yyyy-MM-dd");
-    QString msg = QString("Compiled: ") + newDate + QString(" - ") + QString(__TIME__) +
-            QString("\n C++: ") + QString::fromStdString(to_string(__cplusplus)) +
-//            QString("\n STDC: ") + QString::fromStdString(to_string(__STDC__)) +
-            QString("\n\n ASI B.V. All rights reserved.") ;
+    QString msg = QString("Compiled: ") + newDate + QString("  ") + QString(__TIME__) +
+            newLine +
+            QString("C++: ") + QString::fromStdString(to_string(__cplusplus)) +
+            newLine +
+            m_SPIDRControllerVersion +
+            m_SPIDRFirmwareVersion +
+            m_SPIDRSoftwareVersion +
+            newLine +
+            m_numberOfChipsFound +
+            newLine +
+            newLine +
+            QString("ASI B.V. All rights reserved.") ;
     msgBox.setText( msg );
     msgBox.exec();
 }

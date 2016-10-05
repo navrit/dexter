@@ -104,7 +104,6 @@ private:
 
     void uncheckAllToolbarButtons();
 
-
 public:
 
     Mpx3Config* getConfig();
@@ -156,6 +155,11 @@ public:
     bool equalizationLoaded();
 
     void setTestPulses();
+
+    QString m_SPIDRControllerVersion = "";
+    QString m_SPIDRFirmwareVersion = "";
+    QString m_SPIDRSoftwareVersion = "";
+    QString m_numberOfChipsFound = "";
 
 signals:
     void dataChanged();
