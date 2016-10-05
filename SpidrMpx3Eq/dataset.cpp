@@ -1119,8 +1119,12 @@ void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
         QMap<int, double> meanvals = Dataset::GetPadMean();
 
         // Corrections
-        if ( corrdiag->isSelectedOBCorr() ) applyOBCorrection();
-        if ( corrdiag->isSelectedBHCorr()) corrdiag->callBHCorrection();
+        if ( corrdiag->isSelectedOBCorr() ) {
+            applyOBCorrection();
+        }
+        if ( corrdiag->isSelectedBHCorr()) {
+            corrdiag->callBHCorrection();
+        }
         if ( corrdiag->isSelectedDeadPixelsInter() ) applyDeadPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
         if ( corrdiag->isSelectedHighPixelsInter() ) applyHighPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
 
@@ -1285,6 +1289,11 @@ void Dataset::applyOBCorrection() {
         //Give the user the choice to apply the correction, ignore the incomparability or cancel and choose another OBcorrectionfile.
         //Only ask at first layer.
         if ( ! OBmatch && i == 0 ) {
+            qDebug() << "[FAIL] if( (OBmax-OBmin) <= 0.5*(Dmax - Dmin) || (OBmax-OBmin) >= 2*(Dmax - Dmin))";
+            qDebug() << "(OBmax-OBmin)" << (OBmax-OBmin);
+            qDebug() << "0.5*(Dmax - Dmin)" << 0.5*(Dmax - Dmin);
+            qDebug() << "2*(Dmax - Dmin)" << 2*(Dmax - Dmin);
+
             QMessageBox msgBox(QMessageBox::Question, "Warning", "The statistics in the OB data and the current data are such that the OB correction will not yield a good image.\n"
                                                                  "- Press 'Cancel' to stop and choose a more compatible OB datafile.\n"
                                                                  "- It is also possible to apply a k-factor on the OB correction to make it match the current data.\n"
