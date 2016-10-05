@@ -1,7 +1,7 @@
 /**
  * \class HeatmapDisplay
  *
- * \brief A wrapper widget for displaying heatmaps. Use QCstmGLPlot, GradientWidget and QCstmRuler.
+ * \brief A wrapper widget for displaying heatmaps. Uses QCstmGLPlot, GradientWidget and QCstmRuler.
  *
  */
 

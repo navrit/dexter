@@ -4,8 +4,11 @@
 #include <QResizeEvent>
 QCstmRuler::QCstmRuler(QWidget *parent) : QWidget(parent)
 {
-    m_display_min.setX(0); m_display_min.setY(0);
-    m_display_max.setY(1); m_display_max.setX(1);
+    m_display_min.setX(0);
+    m_display_min.setY(0);
+
+    m_display_max.setY(1);
+    m_display_max.setX(1);
     this->setStyleSheet("font-family: Arial;font-style: normal;font-size: 7pt;");
 }
 
