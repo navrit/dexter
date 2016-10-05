@@ -1,5 +1,6 @@
-# Ignore debug files
+# Ignore compile files
 /Debug/*
+/Release/*
 
 # Ignore temporary files
 *~
