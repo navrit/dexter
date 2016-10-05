@@ -396,7 +396,7 @@ QGroupBox::title {
              <enum>Qt::RightToLeft</enum>
             </property>
             <property name="text">
-             <string>us</string>
+             <string>μs</string>
             </property>
             <property name="checked">
              <bool>true</bool>
