@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
     //
     QApplication a(argc, argv);
 
+    //! Set main application icon
     a.setWindowIcon( QIcon("./icons/ASI/ASI_sq_1100x1100.png"));
 
     QSurfaceFormat format;
@@ -16,12 +17,12 @@ int main(int argc, char *argv[])
     format.setVersion(3, 3 );
     QSurfaceFormat::setDefaultFormat(format);
 
-    // Instantiate the main class
+    //! Instantiate the main class
     Mpx3GUI w;
-    // status for startup
+    //! Status for startup
     w.setWindowWidgetsStatus();
 
-    // If the configuration was not loaded properly this won't let the program run
+    //! If the configuration was not loaded properly this won't let the program run
     if ( ! w.isArmedOk() ) return EXIT_FAILURE;
 
     // If all ok go into the event loop
