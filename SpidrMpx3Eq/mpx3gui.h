@@ -110,6 +110,8 @@ public:
     Mpx3Config* getConfig();
     Dataset* getDataset(){return workingSet;}
     Dataset* getOriginalDataset(){return originalSet;}
+    void rebuildCurrentSets(int x, int y, int framesPerLayer);
+
     bool isArmedOk(){return _armedOk;}
     void startupActions();
 

@@ -10,6 +10,7 @@
 #include <QDebug>
 #include <QString>
 #include <QtGui>
+#include <QMessageBox>
 
 #include <iostream>
 #include <iomanip>
@@ -278,8 +279,8 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
 
     // Mean
     for(int i = 0; i < keys.length(); i++) {
-       mean = 0.;
-       nMean = 0.;
+        mean = 0.;
+        nMean = 0.;
 
         for(int y = 0; y <= height; y++){
             for(int x = 0; x <= width; x++){
@@ -296,13 +297,13 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
         stdev = 0.;
         nMean = 0.;
 
-            for(int y = 0; y <= height; y++){
-                for(int x = 0; x <= width; x++){
-                    int val = sample( pixel_init.x() + x, pixel_init.y() - y, keys[i] );
-                    stdev += ( val - bstats.mean_v[i] ) * ( val - bstats.mean_v[i] );
-                    nMean++;
-                }
+        for(int y = 0; y <= height; y++){
+            for(int x = 0; x <= width; x++){
+                int val = sample( pixel_init.x() + x, pixel_init.y() - y, keys[i] );
+                stdev += ( val - bstats.mean_v[i] ) * ( val - bstats.mean_v[i] );
+                nMean++;
             }
+        }
         if ( nMean != 1 ) stdev /= (nMean - 1);
         stdev = sqrt(stdev);
         bstats.stdev_v.push_back(stdev);
@@ -368,7 +369,7 @@ QString Dataset::calcCNR(QMap<int, int> Axismap){
     else {
         QVector<double> mean_v;
         QVector<double> stdev_v;
-        double cnr;        
+        double cnr;
         double snr; //Signal to Noise Ratio in dB.
         bool left = false;
         //bool right = false;
@@ -404,7 +405,7 @@ QString Dataset::calcCNR(QMap<int, int> Axismap){
             double snrdiv = 0 ;
 
             for(int i = 0; i < mean_v.length(); i++)
-                    if(i!= signal) cnr -= meanfactor*mean_v[i];
+                if(i!= signal) cnr -= meanfactor*mean_v[i];
 
             if(!corrected) cnr *= -1;
 
@@ -494,26 +495,26 @@ QPair<double, double> Dataset::LinearRegression(QVector<double> x, QVector<doubl
     int n = x.length();
 
     if(n != 0){
-    //Normal least squares regression:
-//    for(int i = 0; i < n; i++)
-//    {
-//        Sx  += x[i];
-//        Sxx += x[i]*x[i];
-//        Sy  += y[i];
-//        Sxy += x[i]*y[i];
-//    }
-    //Look at the horizontal distances for least squares.
-    //Consider y as x-coordinate and x as y-coordinate.
-    //Since y goes in the other direction, y = - y in that follows i.
-//    for(int i = 0; i < n; i++)
-//    {
-//        Sx  += - y[i];
-//        Sxx += y[i]*y[i];
-//        Sy  += x[i];
-//        Sxy += - x[i]*y[i];
-//    }
+        //Normal least squares regression:
+        //    for(int i = 0; i < n; i++)
+        //    {
+        //        Sx  += x[i];
+        //        Sxx += x[i]*x[i];
+        //        Sy  += y[i];
+        //        Sxy += x[i]*y[i];
+        //    }
+        //Look at the horizontal distances for least squares.
+        //Consider y as x-coordinate and x as y-coordinate.
+        //Since y goes in the other direction, y = - y in that follows i.
+        //    for(int i = 0; i < n; i++)
+        //    {
+        //        Sx  += - y[i];
+        //        Sxx += y[i]*y[i];
+        //        Sy  += x[i];
+        //        Sxy += - x[i]*y[i];
+        //    }
 
-    //Use Deming Regression, looking at both the horizontal and vertical distances.
+        //Use Deming Regression, looking at both the horizontal and vertical distances.
         for(int i = 0; i < n; i++){
             xm += x[i];
             ym += y[i];
@@ -537,10 +538,10 @@ QPair<double, double> Dataset::LinearRegression(QVector<double> x, QVector<doubl
 
         b = ym - a * xm;
 
-//        a  = n * Sxy - Sx*Sy;
-//        a /= n*Sxx - Sx*Sx;
-//        b  = (Sy - a * Sx );
-//        b /= n;
+        //        a  = n * Sxy - Sx*Sy;
+        //        a /= n*Sxx - Sx*Sx;
+        //        b  = (Sy - a * Sx );
+        //        b /= n;
     }
     return qMakePair(a, b);
 }
@@ -700,24 +701,24 @@ QPair<double, double> Dataset::calcMidLine(double bright, double dark, bool BtD)
             for(int x = 0; x < Nx; x++){
                 if(valuesinRoI[y][x] < borderval)
                     if(x > 0)
-                    if(valuesinRoI[y][x - 1] > borderval)
-                        if(x < Nx - 1)
-                        if(valuesinRoI[y][x + 1] < borderval){  //To check it's not just a randomly darker pixel.
-                            xm[y] = x;                          //Distance to the middle of pixel x-1 (centered at x-1+0.5 = x-0.5) and x (centered at x+0.5).
-                            ym[y] = y + 0.5;                    //Middle of the pixel.
-                        }
+                        if(valuesinRoI[y][x - 1] > borderval)
+                            if(x < Nx - 1)
+                                if(valuesinRoI[y][x + 1] < borderval){  //To check it's not just a randomly darker pixel.
+                                    xm[y] = x;                          //Distance to the middle of pixel x-1 (centered at x-1+0.5 = x-0.5) and x (centered at x+0.5).
+                                    ym[y] = y + 0.5;                    //Middle of the pixel.
+                                }
             }
     else //Dark to Bright
         for(int y = 0; y < Ny; y++)
             for(int x = 0; x < Nx; x++){
                 if(valuesinRoI[y][x] > borderval)
                     if(x > 0)
-                    if(valuesinRoI[y][x - 1] < borderval)
-                        if(x < Nx - 1)
-                        if(valuesinRoI[y][x + 1] > borderval){  //To check it's not just a randomly brighter pixel.
-                            xm[y] = x;                          //Distance to the middle of pixel x-1 (centered at x-1+0.5 = x-0.5) and x (centered at x+0.5).
-                            ym[y] = y + 0.5;                    //Middle of the pixel.
-                        }
+                        if(valuesinRoI[y][x - 1] < borderval)
+                            if(x < Nx - 1)
+                                if(valuesinRoI[y][x + 1] > borderval){  //To check it's not just a randomly brighter pixel.
+                                    xm[y] = x;                          //Distance to the middle of pixel x-1 (centered at x-1+0.5 = x-0.5) and x (centered at x+0.5).
+                                    ym[y] = y + 0.5;                    //Middle of the pixel.
+                                }
             }
 
 
@@ -1114,17 +1115,17 @@ void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
 
     if ( ! corrdiag ) return;
 
-//    if ( corrdiag->isCorrectionsActive() ) {  //Always false. previously set by checkbox.
+    //    if ( corrdiag->isCorrectionsActive() ) {  //Always false. previously set by checkbox.
 
-        QMap<int, double> meanvals = Dataset::GetPadMean();
+    QMap<int, double> meanvals = Dataset::GetPadMean();
 
-        // Corrections
-        if ( corrdiag->isSelectedOBCorr() ) applyOBCorrection();
-        if ( corrdiag->isSelectedBHCorr()) corrdiag->callBHCorrection();
-        if ( corrdiag->isSelectedDeadPixelsInter() ) applyDeadPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
-        if ( corrdiag->isSelectedHighPixelsInter() ) applyHighPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
+    // Corrections
+    if ( corrdiag->isSelectedOBCorr() ) applyOBCorrection();
+    if ( corrdiag->isSelectedBHCorr()) corrdiag->callBHCorrection();
+    if ( corrdiag->isSelectedDeadPixelsInter() ) applyDeadPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
+    if ( corrdiag->isSelectedHighPixelsInter() ) applyHighPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
 
-//    }
+    //    }
 
 }
 
@@ -1428,7 +1429,7 @@ void Dataset::fromByteArray(QByteArray serialized){
     QDataStream in(&serialized, QIODevice::ReadOnly);
     in.readRawData((char*)&m_nx, (int)sizeof(m_nx));
     in.readRawData((char*)&m_ny, (int)sizeof(m_ny));
-    in.readRawData((char*)&m_nFrames, (int)sizeof(m_nFrames));
+    in.readRawData((char*)&m_nFrames, (int)sizeof(m_nFrames)); // nChips
     setFramesPerLayer(m_nFrames);
     int layerCount;
     in.readRawData((char*)&layerCount, (int)sizeof(layerCount));
@@ -1444,6 +1445,81 @@ void Dataset::fromByteArray(QByteArray serialized){
             this->setFrame(frameBuffer.data(), j, keys[i]);
         }
     }
+}
+
+void Dataset::fromASCIIMatrixGetSizeAndLayers(QFile * file, int *x, int *y, int *framesPerLayer)
+{
+
+    QTextStream in(file);
+    QString line;
+    int rowCntr = 0, colCntr = 0;
+    int cols = 0;
+    bool ok = false;
+
+    while ( in.readLineInto( &line ) ) {
+        QStringList values = line.split('\t',QString::SkipEmptyParts);
+        QStringList::const_iterator itr = values.begin();
+        for ( ; itr != values.end() ; itr++ ) {
+            // values are forced to be integers
+            //int val = (int) ( (*itr).toDouble( &ok ) );
+            // check the convertion
+            //if ( !ok ) return;
+            colCntr++;
+        }
+        cols = colCntr; // save the value
+        colCntr = 0;
+        rowCntr++;
+    }
+
+    *x = cols;
+    *y = rowCntr;
+    *framesPerLayer = 1; // Not loading chips yet // TODO
+}
+
+void Dataset::fromASCIIMatrix(QFile * file, int x, int y, int framesPerLayer)
+{
+
+    QTextStream in(file);
+    in.seek(0); // go to the beggining, this descriptor has been scaned before
+    QString line;
+    int rowCntr = 0, colCntr = 0;
+    bool ok = false;
+
+    // Fill data structure
+    m_nx = x;
+    m_ny = y;
+    m_nFrames = framesPerLayer;
+    int layerCount = 1;         // Not loading layers yet // TODO
+    m_frameLayouts[0] = QPoint(0,0);
+    m_frameOrientation[0] = orientationLtRTtB;
+    QVector<int> keys(layerCount);
+    keys[0] = 0;
+    QVector<int> frameBuffer(m_nx*m_ny);
+
+    rowCntr = 0; colCntr = 0;
+    // read data now
+    while ( in.readLineInto( &line ) ) {
+        QStringList values = line.split('\t',QString::SkipEmptyParts);
+        QStringList::const_iterator itr = values.begin();
+        for ( ; itr != values.end() ; itr++ ) {
+            // values are forced to be integers
+            int val = (int) ( (*itr).toDouble( &ok ) );
+            if ( !ok ) return;
+            // Pass to 1-dim
+            frameBuffer[ XYtoX(colCntr, rowCntr, m_nx ) ] = val;
+            // check the convertion
+            colCntr++;
+        }
+        colCntr = 0;
+        rowCntr++;
+    }
+
+    this->setFrame(frameBuffer.data(), 0, keys[0]); // 1 layer, 1 chip
+
+    qDebug() << "Reading from ASCII file:";
+    qDebug() << "   Number of rows    : " << m_nx;
+    qDebug() << "   Number of columns : " << m_ny;
+
 }
 
 void Dataset::clear() {

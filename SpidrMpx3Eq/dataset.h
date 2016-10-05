@@ -18,6 +18,7 @@
 #include <QPointF>
 #include <QRect>
 #include <QMap>
+#include <QFile>
 #include <stdint.h>
 #include <vector>
 #include "spline.h"
@@ -131,6 +132,8 @@ public:
   QByteArray toByteArray(); //!< Serializes the dataset for saving.
   QVector<int> toQVector(); //!< Serializes the dataset for saving.
   void fromByteArray(QByteArray serialized); //!< Restores the dataset from a previously serialized set.
+  void fromASCIIMatrix(QFile * file, int x, int y, int framesPerLayer);
+  void fromASCIIMatrixGetSizeAndLayers(QFile * file, int *x, int *y, int *framesPerLayer);
   void loadCorrection(QByteArray serialized);//!< Loads and sets the correction to a previously serialized set.
   void applyCorrections(QCstmCorrectionsDialog * corrdiag);//<!Handles all corrections.  This function is blocking for the moment !
   void applyOBCorrection();//!< Computes and applies the flat-field correction

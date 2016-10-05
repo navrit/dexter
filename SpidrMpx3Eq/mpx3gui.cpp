@@ -362,6 +362,16 @@ Mpx3Config* Mpx3GUI::getConfig() {
     return config;
 }
 
+void Mpx3GUI::rebuildCurrentSets(int x, int y, int framesPerLayer)
+{
+    delete workingSet;
+    workingSet = new Dataset(x, y, framesPerLayer);
+    workingSet->setOrientation(0, _MPX3RX_ORIENTATION[0]);
+    workingSet->setLayout(0,  _MPX3RX_LAYOUT[0]);
+    delete originalSet;
+    originalSet = new Dataset(x, y, framesPerLayer);
+}
+
 void Mpx3GUI::startupActions()
 {
 
@@ -819,9 +829,10 @@ void Mpx3GUI::onConnectionStatusChanged(bool conn)
 
 void Mpx3GUI::open_data(bool saveOriginal){
 
-    QString filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("binary files (*.bin)"));
-    QFile saveFile(filename);
-    if ( ! saveFile.open(QIODevice::ReadOnly) ) {
+    QString selectedFilter;
+    QString filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("Native binary files (*.bin);;ASCII matrix (*.txt)"), &selectedFilter);
+    QFile * toOpenFile = new QFile(filename);
+    if ( ! toOpenFile->open(QIODevice::ReadOnly) ) {
         string messg = "Couldn't open: ";
         messg += filename.toStdString();
         messg += "\nNo output written!";
@@ -830,8 +841,27 @@ void Mpx3GUI::open_data(bool saveOriginal){
         return;
     }
     clear_data();
-    getDataset()->fromByteArray( saveFile.readAll() );
-    saveFile.close();
+
+    if ( selectedFilter.contains("Native binary") ) {
+        getDataset()->fromByteArray( toOpenFile->readAll() );
+    } else if ( selectedFilter.contains("ASCII matrix") ) {
+
+        // For now I read a simple ASCII matrix format
+        // No info about the number of layers.
+        // No info about the number of chips
+        // Single layer
+        int x,y,framesPerLayer;
+        getDataset()->fromASCIIMatrixGetSizeAndLayers( toOpenFile,
+                                                       &x,
+                                                       &y,
+                                                       &framesPerLayer);
+        rebuildCurrentSets(x, y, framesPerLayer);
+        getDataset()->fromASCIIMatrix( toOpenFile , x, y, framesPerLayer);
+    }
+
+    toOpenFile->close();
+    delete toOpenFile;
+
     set_mode_normal();
     //QList<int> thresholds = getDataset()->getThresholds();
 
@@ -845,21 +875,23 @@ void Mpx3GUI::open_data(bool saveOriginal){
 
     this->setWindowTitle( _softwareName + filename);
 
+    // DQE ! ... this is on the way here !!!
 //    // If not in DQE - change back to Visualisation
 //    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
 
-    if(!_ui->dqeTab->openingNPSfile){       //CHECK ME >>>>>>>>>>>>>>
-        uncheckAllToolbarButtons();
-        _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
-        _ui->actionVisualization->setChecked(1);
-    }
+    //if(!_ui->dqeTab->openingNPSfile){       //CHECK ME >>>>>>>>>>>>>>
+    //    uncheckAllToolbarButtons();
+    //    _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
+    //    _ui->actionVisualization->setChecked(1);
+    //}
 
     //Ask whether the loaded data is already OBcorrected or not.
     QMessageBox::StandardButton reply = QMessageBox::question( this, tr("Specify data"), tr("Is this data corrected?"), QMessageBox::Yes | QMessageBox::No);
     if(reply == QMessageBox::Yes) getDataset()->setCorrected(true);
     else getDataset()->setCorrected(false);
 
-    emit returnFilename(filename);
+    // DQE ! ... this is on the way here !!!
+    //emit returnFilename(filename);
 
     return;
 }
@@ -870,12 +902,12 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
     QString filename;
     if(!requestPath)
     {
-        filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("binary files (*.bin)"));
-    }else{
+        filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("Native binary files (*.bin);;ASCII matrix (*.txt)"));
+    } else {
         filename = path;
     }
 
-    qDebug() << "[INFO] loading splash image: " << filename;
+    qDebug() << "[INFO] loading image: " << filename;
 
     QFile saveFile(filename);
     if ( ! saveFile.open(QIODevice::ReadOnly) ) {
@@ -886,6 +918,7 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
         emit open_data_failed();
         return;
     }
+
     clear_data();
     getDataset()->fromByteArray( saveFile.readAll() );
     saveFile.close();
