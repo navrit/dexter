@@ -167,6 +167,9 @@ QGroupBox::title {
         </item>
         <item row="6" column="3">
          <widget class="QCheckBox" name="ColourModeCheckBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Detector dependant.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If incorrect, you will see very obvious artifacts, 3/4 of the pixels exactly will be 0 if you select colour mode when using fine mode.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Colour mode</string>
           </property>
@@ -174,6 +177,9 @@ QGroupBox::title {
         </item>
         <item row="2" column="5">
          <widget class="QLabel" name="label_16">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Detector polarity. Normally positive for silicon.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If incorrectly set, you will get nearly no signal.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Polarity</string>
           </property>
