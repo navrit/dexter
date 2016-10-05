@@ -607,3 +607,27 @@ int CustomScanThread::PixelsReactive(int * data, int size_in_bytes, int /*thl*/)
 
     return pixelsActive;
 }
+
+void QCstmThreshold::on_pushButtonSave_clicked()
+{
+    // Save the different groups of data
+    for ( int i = 0 ; i < _plotIdxCntr ; i++ ) {
+
+        QString fn = "scan_";
+        fn += QString::number(i);
+        fn += ".txt";
+        qDebug() << "[DUMP] plot : " << i << " | file : " << fn;
+
+        std::ofstream ofs (fn.toStdString(), std::ofstream::out);
+
+        QCPGraph * graph = ui->plot->graph( i );
+        QMap<double, QCPData> * dm = graph->data();
+        QMap<double, QCPData>::const_iterator itr  = dm->begin();
+        QMap<double, QCPData>::const_iterator itrE = dm->end();
+        for ( ; itr != itrE ; itr++ ) {
+            ofs << (*itr).key << "\t" << (*itr).value << std::endl;
+        }
+        ofs.close();
+    }
+
+}

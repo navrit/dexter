@@ -51,6 +51,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QPushButton" name="pushButtonSave">
+           <property name="text">
+            <string>save</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QCheckBox" name="keepCheckbox">
            <property name="text">
             <string>keep</string>

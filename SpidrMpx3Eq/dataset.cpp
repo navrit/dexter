@@ -1116,9 +1116,7 @@ void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
     if ( ! corrdiag ) return;
 
     //    if ( corrdiag->isCorrectionsActive() ) {  //Always false. previously set by checkbox.
-
     QMap<int, double> meanvals = Dataset::GetPadMean();
-
 
     // Corrections
     if ( corrdiag->isSelectedDeadPixelsInter() ) applyDeadPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
@@ -1138,7 +1136,7 @@ int Dataset::applyColor2DRecoGuided(Color2DRecoGuided * reco) {
 
     // Following the approach
     //  lambda = Mu \prod t
-    // Mu^-1 \prod lambda = 1 \prod t --> which yields every thickness for every material
+    //  Mu^-1 \prod lambda = 1 \prod t --> which yields every thickness for every material
 
     // Check that the OB correction data has been loaded by the user
     if (obCorrection == nullptr) {

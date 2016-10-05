@@ -68,6 +68,8 @@ private slots:
     //void UpdateHeatMap();
     void UpdateChart(int setId, int thlValue);
 
+    void on_pushButtonSave_clicked();
+
 signals:
     void slideAndSpin(int, int);
     //void UpdateHeatMapSignal();
