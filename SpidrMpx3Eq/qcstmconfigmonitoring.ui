@@ -76,6 +76,9 @@ QGroupBox::title {
         </item>
         <item row="5" column="5">
          <widget class="QLabel" name="label_5">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Charge summing mode&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Csm Spm</string>
           </property>
@@ -97,8 +100,11 @@ QGroupBox::title {
         </item>
         <item row="1" column="0">
          <widget class="QLabel" name="label_8">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shutter closed length in selected time units&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
-           <string>Shutter Length</string>
+           <string>Shutter open length</string>
           </property>
          </widget>
         </item>
@@ -127,8 +133,11 @@ QGroupBox::title {
         </item>
         <item row="1" column="5" colspan="2">
          <widget class="QLabel" name="label_17">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shutter closed length in selected time units&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
-           <string>Shutter down</string>
+           <string>Shutter down length</string>
           </property>
          </widget>
         </item>
@@ -185,6 +194,9 @@ QGroupBox::title {
         </item>
         <item row="3" column="5">
          <widget class="QLabel" name="label_2">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pixel bitrate depth&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Pixel Depth</string>
           </property>
@@ -248,6 +260,9 @@ QGroupBox::title {
         </item>
         <item row="5" column="9">
          <widget class="QComboBox" name="csmSpmCombo">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Charge summing mode&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="layoutDirection">
            <enum>Qt::RightToLeft</enum>
           </property>
@@ -272,8 +287,11 @@ QGroupBox::title {
         </item>
         <item row="0" column="0">
          <widget class="QLabel" name="label_9">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of frames/triggers&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
-           <string>N. of Triggers</string>
+           <string>N. of Frames</string>
           </property>
          </widget>
         </item>
@@ -708,7 +726,7 @@ QGroupBox::title {
            <string>SPIDR monitoring</string>
           </property>
           <property name="text">
-           <string>mon</string>
+           <string>Enable</string>
           </property>
          </widget>
         </item>
