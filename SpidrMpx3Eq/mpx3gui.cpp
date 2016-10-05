@@ -733,6 +733,10 @@ int Mpx3GUI::getFrameCount(){
     return getDataset()->getFrameCount();
 }
 
+QString Mpx3GUI::getLoadButtonFilename() {
+    return loadButtonFilenamePath;
+}
+
 void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
 
     //! Native format
@@ -740,7 +744,7 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
     QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("binary files (*.bin)"));
 
     // Force the .bin in the data filename
-    if ( ! filename.contains(".bin")  && !filename.isEmpty()) {
+    if ( ! filename.toLower().contains(".bin")  && !filename.isEmpty()) {
         filename.append(".bin");
     }
 
@@ -928,6 +932,7 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
         filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("Native binary files (*.bin);;ASCII matrix (*.txt)"));
     } else {
         filename = path;
+        loadButtonFilenamePath = path;
     }
 
     qDebug() << "[INFO] loading image: " << filename;
@@ -1252,6 +1257,3 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked){
     }
 
 }
-
-
-

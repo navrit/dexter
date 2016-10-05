@@ -104,6 +104,8 @@ private:
 
     void uncheckAllToolbarButtons();
 
+    QString loadButtonFilenamePath = "";
+
 public:
 
     Mpx3Config* getConfig();
@@ -149,6 +151,8 @@ public:
     int getY();
     int getPixelAt(int x, int y, int layer);
     int getFrameCount();
+
+    QString getLoadButtonFilename();
 
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; };
 
