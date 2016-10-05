@@ -472,7 +472,7 @@ void QCstmGLVisualization::initStatsString()
 {
     // when offline or upon startup
 
-    _statsString.displayString = "offline";
+    _statsString.displayString = "Offline";
 }
 
 void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
@@ -661,7 +661,8 @@ void QCstmGLVisualization::ConnectionStatusChanged(bool connecting) {
         _statsString.devicesIdString.clear();
         for ( ; i != iE ; i++ ) {
             int indx = _mpx3gui->getConfig()->getIndexFromID( *i );
-            _statsString.devicesIdString.append( _mpx3gui->getConfig()->getDeviceWaferId( indx ) );
+            QString devID = QString("[") + QString::number(*i) + QString("] ");
+            _statsString.devicesIdString.append( devID +_mpx3gui->getConfig()->getDeviceWaferId( indx ) );
             if ( (i+1) != iE ) _statsString.devicesIdString.append( " | " );
         }
         if ( _extraWidgets.devicesNamesLabel == nullptr ) {
