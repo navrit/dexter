@@ -830,6 +830,7 @@ void Mpx3GUI::onConnectionStatusChanged(bool conn)
         _ui->actionConnect->setVisible(1);
         _ui->actionDisconnect->setVisible(0);
 
+        // Resets About dialog variables to reflect current program state
         m_SPIDRControllerVersion = "";
         m_SPIDRFirmwareVersion = "";
         m_SPIDRSoftwareVersion = "";

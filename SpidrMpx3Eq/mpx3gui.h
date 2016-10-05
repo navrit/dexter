@@ -156,6 +156,7 @@ public:
 
     void setTestPulses();
 
+    // SPIDR information strings for About dialog
     QString m_SPIDRControllerVersion = "";
     QString m_SPIDRFirmwareVersion = "";
     QString m_SPIDRSoftwareVersion = "";

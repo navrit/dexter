@@ -659,27 +659,28 @@ void QCstmGLVisualization::ConnectionStatusChanged(bool connecting) {
         QVector<int>::const_iterator i  = devs.begin();
         QVector<int>::const_iterator iE = devs.end();
         _statsString.devicesIdString.clear();
+
         for ( ; i != iE ; i++ ) {
             int indx = _mpx3gui->getConfig()->getIndexFromID( *i );
             QString devID = QString("[") + QString::number(*i) + QString("] ");
             _statsString.devicesIdString.append( devID +_mpx3gui->getConfig()->getDeviceWaferId( indx ) );
             if ( (i+1) != iE ) _statsString.devicesIdString.append( " | " );
         }
+
         if ( _extraWidgets.devicesNamesLabel == nullptr ) {
             _extraWidgets.devicesNamesLabel = new QLabel(this);
             _extraWidgets.devicesNamesLabel->setAlignment( Qt::AlignRight );
         }
+
         _extraWidgets.devicesNamesLabel->setText( _statsString.devicesIdString );
         int colCount = ui->dataTakingGridLayout->columnCount();
         ui->dataTakingGridLayout->addWidget( _extraWidgets.devicesNamesLabel, 1, 0, 1, colCount );
 
     } else {
-
         FinishDataTakingThread();
         ui->startButton->setEnabled( false );
         ui->singleshotPushButton->setEnabled( false );
         ui->recoPushButton->setEnabled( false );
-
     }
 
     // TODO
