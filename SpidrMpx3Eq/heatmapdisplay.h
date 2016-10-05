@@ -12,29 +12,29 @@
 #include "gradient.h"
 #include "qcstmglplot.h"
 namespace Ui {
-  class HeatmapDisplay;
+class HeatmapDisplay;
 }
 
 class HeatmapDisplay : public QWidget
 {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  explicit HeatmapDisplay(QWidget *parent = 0);
-  ~HeatmapDisplay();
+    explicit HeatmapDisplay(QWidget *parent = 0);
+    ~HeatmapDisplay();
 
 private:
-  Ui::HeatmapDisplay *ui;
-  void setupSignalsAndSlots();
+    Ui::HeatmapDisplay *ui;
+    void setupSignalsAndSlots();
 
 public slots:
-  void setGradient(Gradient* gradient);
-  void setSize(QPoint size);
-  void setSize(int x, int y);
-  void set_range(QCPRange range);
+    void setGradient(Gradient* gradient);
+    void setSize(QPoint size);
+    void setSize(int x, int y);
+    void set_range(QCPRange range);
 
- public:
-  QCstmGLPlot *getPlot();
+public:
+    QCstmGLPlot *getPlot();
 };
 
 #endif // HEATMAPDISPLAY_H
