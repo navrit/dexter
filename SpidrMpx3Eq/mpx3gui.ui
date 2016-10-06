@@ -174,7 +174,7 @@
      <normaloff>:/icons/eraser_equalisation_logo.png</normaloff>:/icons/eraser_equalisation_logo.png</iconset>
    </property>
    <property name="text">
-    <string>Clear configuration</string>
+    <string>Clear equalisation</string>
    </property>
   </action>
   <action name="actionLoad_DACs">
