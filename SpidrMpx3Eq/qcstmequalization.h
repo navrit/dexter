@@ -325,37 +325,38 @@ private:
 	QVector<ThlScan * > _scans;
 
 public slots:
-void SaveEqualization();
-void on_logYCheckBox_toggled(bool checked);
+    void SaveEqualization();
+    void on_logYCheckBox_toggled(bool checked);
 
 private slots:
 
-void setFineTuningLoops(int);
-void setNHits(int);
-void ScanThreadFinished();
-void StartEqualizationSingleChip();
-void StartEqualizationAllChips();
-void ChangeNTriggers(int);
-void ChangeDeviceIndex(int);
-void ChangeSpacing(int);
-void ChangeMin(int);
-void ChangeMax(int);
-void ChangeStep(int);
-void ConnectionStatusChanged(bool);
-void StopEqualization();
-void CleanEqualization();
-void setEqualizationTHLTHH(int);
-void setEqualizationShowTHLTHH(int);
-void setEqualizationTHLType(int);
-void ShowEqualizationForChip(bool checked);
+    void setFineTuningLoops(int);
+    void setNHits(int);
+    void ScanThreadFinished();
+    void StartEqualizationSingleChip();
+    void StartEqualizationAllChips();
+    void ChangeNTriggers(int);
+    void ChangeDeviceIndex(int);
+    void ChangeSpacing(int);
+    void ChangeMin(int);
+    void ChangeMax(int);
+    void ChangeStep(int);
+    void ConnectionStatusChanged(bool);
+    void StopEqualization();
+    void CleanEqualization();
+    void setEqualizationTHLTHH(int);
+    void setEqualizationShowTHLTHH(int);
+    void setEqualizationTHLType(int);
+    void ShowEqualizationForChip(bool checked);
 
-//void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
-//void on_openfileButton_clicked();
+    //void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
+    //void on_openfileButton_clicked();
 
 signals:
-void slideAndSpin(int, int);
-void stop_data_taking_thread();
+    void slideAndSpin(int, int);
+    void stop_data_taking_thread();
 
+    void sig_statusBarAppend(QString mess, QString colorString);
 };
 
 #endif // QCSTMEQUALIZATION_H
