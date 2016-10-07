@@ -509,6 +509,9 @@ QGroupBox::title {
         </item>
         <item row="11" column="0">
          <widget class="QPushButton" name="readOMRPushButton">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;O... Master Register&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Read OMR</string>
           </property>
