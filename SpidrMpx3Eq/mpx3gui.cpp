@@ -303,6 +303,11 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect( this, &Mpx3GUI::sig_statusBarWrite, this, &Mpx3GUI::statusBarWrite );
     connect( this, &Mpx3GUI::sig_statusBarClean, this, &Mpx3GUI::statusBarClean );
 
+    //! Part 4: Send equalisation loaded from ... to mpx3gui status bar
+    // Connect signal from QCstmEqualization widget to slot here
+    connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend);
+
+
     for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {
         connect( _shortcutsSwitchPages[i], &QShortcut::activated,
                  this, &Mpx3GUI::on_shortcutsSwithPages );

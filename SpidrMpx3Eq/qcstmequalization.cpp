@@ -1778,7 +1778,7 @@ void QCstmEqualization::LoadEqualization() {
     // Init the data structures necessary to hold the equalization for all the chips
     InitializeEqualizationStructure();
 
-    // Get the BardCharts in place
+    // Get the BarCharts in place
     InitializeBarChartsAdjustements();
 
     int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
@@ -1787,14 +1787,17 @@ void QCstmEqualization::LoadEqualization() {
     pd.setCancelButton( 0 ); // no cancel button
     pd.setWindowModality(Qt::WindowModal);
     pd.setMinimumDuration( 0 ); // show immediately
-    pd.setWindowTitle("Load equalization");
-
+    pd.setWindowTitle("Load equalisation");
     pd.setValue( 0 );
+
+    //! Part 1: Send equalisation loaded from ... to mpx3gui status bar
+    // Initialise string with prefix
+    QString msg = QString("Equalisation loaded from: ");
 
     for(int i = 0 ; i < nChips ; i++) {
 
         // And clear all previous adjustements
-        // In case an equalization was done in the same session
+        // In case an equalisation was done in the same session
         //ClearAllAdjustmentBits();
 
 
@@ -1812,12 +1815,17 @@ void QCstmEqualization::LoadEqualization() {
         QString maskfn = "config/mask_";
         maskfn += QString::number(i, 10);
 
+        //! Part 2: Send equalisation loaded from ... to mpx3gui status bar
+        // Append new equalisation paths
+        msg += adjfn + QString(" ") + maskfn;
+
+
         if ( ! _eqMap[i]->ReadAdjBinaryFile( adjfn ) ) {
-            QMessageBox::warning(this, tr("Loading Equalization"), tr("Failed. Can not open file: %1").arg(adjfn) );
+            QMessageBox::warning(this, tr("Loading equalisation"), tr("Failed. Can not open file: %1").arg(adjfn) );
             return;
         }
         if ( ! _eqMap[i]->ReadMaskBinaryFile( maskfn ) ) {
-            QMessageBox::warning(this, tr("Loading Equalization"), tr("Failed. Can not open file: %1").arg(adjfn) );
+            QMessageBox::warning(this, tr("Loading equalisation"), tr("Failed. Can not open file: %1").arg(adjfn) );
             return;
         }
 
@@ -1841,6 +1849,10 @@ void QCstmEqualization::LoadEqualization() {
 
     }
 
+    //! Part 3: Send equalisation loaded from ... to mpx3gui status bar
+    // Actually send the equalisation data to the status bar
+    emit sig_statusBarAppend(msg, "black");
+
     // And show
     ShowEqualization( _equalizationShow );
 
@@ -1857,7 +1869,7 @@ void QCstmEqualization::ShowEqualization(Mpx3EqualizationResults::lowHighSel sel
     for(int i = 0 ; i < nChips ; i++) {
 
         // And clear all previous adjustments
-        // In case an equalization was done in the same session
+        // In case an equalisation was done in the same session
         //ClearAllAdjustmentBits();
 
         // Check if the device is alive
@@ -1882,7 +1894,7 @@ void QCstmEqualization::ShowEqualization(Mpx3EqualizationResults::lowHighSel sel
     _ui->_intermediatePlot->replot( QCustomPlot::rpQueued );
 
     /*
-    // Display the equalization
+    // Display the equalisation
     int * adj_matrix = _eqMap[i]->GetAdjustementMatrix();
 
     for (int j = 0 ; j < __matrix_size_x * __matrix_size_y ; j++) {
@@ -1928,7 +1940,6 @@ void QCstmEqualization::SetupSignalsAndSlots() {
     connect( _ui->equalizationTHLTHHCombo, SIGNAL(activated(int)), this, SLOT(setEqualizationTHLTHH(int)) );
     connect( _ui->equalizationTypeCombo, SIGNAL(activated(int)), this, SLOT(setEqualizationTHLType(int)) );
     connect( _ui->equalizationSelectTHLTHHCombo, SIGNAL(activated(int)), this, SLOT(setEqualizationShowTHLTHH(int)) );
-
 }
 
 void QCstmEqualization::setEqualizationShowTHLTHH(int sel) {
@@ -2037,7 +2048,7 @@ void QCstmEqualization::ConnectionStatusChanged(bool conn) {
 
         setWindowWidgetsStatus( win_status::connected );
 
-        // Select first device ID in case of a single chip equalization
+        // Select first device ID in case of a single chip equalisation
         QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
         _ui->devIdSpinBox->setValue( activeDevices.at( 0 ) );
 
@@ -2340,7 +2351,7 @@ void Mpx3EqualizationResults::ExtrapolateAdjToTarget(int target, double eta_Adj_
             //  I need to adjust the linear behavior to every particular pixel.  Let's obtain the
             //  cut.
             double pixel_cut = _pixId_Adj_L[i] - (eta_Adj_THL * _pixId_Thl_L[i]);
-            // Now I can throw the extrapolation for every pixel to the equalization target
+            // Now I can throw the extrapolation for every pixel to the equalisation target
             int adj = floor( (eta_Adj_THL * (double)target)  +  pixel_cut );
 
             if ( i < 2 ) {
@@ -2368,7 +2379,7 @@ void Mpx3EqualizationResults::ExtrapolateAdjToTarget(int target, double eta_Adj_
             //  I need to adjust the linear behavior to every particular pixel.  Let's obtain the
             //  cut.
             double pixel_cut = _pixId_Adj_H[i] - (eta_Adj_THL * _pixId_Thl_H[i]);
-            // Now I can throw the extrapolation for every pixel to the equalization target
+            // Now I can throw the extrapolation for every pixel to the equalisation target
             int adj = floor( (eta_Adj_THL * (double)target)  +  pixel_cut );
 
 
