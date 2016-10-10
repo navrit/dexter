@@ -659,32 +659,56 @@ void QCstmEqualization::KeepOtherChipsQuiet() {
 
 void QCstmEqualization::StartEqualizationSingleChip() {
 
-    // Get busy !
-    _busy = true;
-    _scanAllChips = false;
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Equalisation information");
+    msgBox.setText("This operation will take a long time, get some tea/coffee.");
+    msgBox.addButton(QMessageBox::Ok);
+    msgBox.addButton(QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Ok);
 
-    // Init
-    if ( ! InitEqualization( _deviceIndex ) ) return;
+    if(msgBox.exec() == QMessageBox::Ok){
+        // Get busy !
+        _busy = true;
+        _scanAllChips = false;
 
-    KeepOtherChipsQuiet();
+        // Init
+        if ( ! InitEqualization( _deviceIndex ) ) return;
 
-    // Send Configuration
-    //_mpx3gui->getConfig()->SendConfiguration( Mpx3Config::__ALL );
+        KeepOtherChipsQuiet();
 
-    StartEqualization( );
+        // Send Configuration
+        //_mpx3gui->getConfig()->SendConfiguration( Mpx3Config::__ALL );
+
+        StartEqualization( );
+
+    } else {
+        return;
+    }
 
 }
 
 void QCstmEqualization::StartEqualizationAllChips() {
 
-    // Get busy !
-    _busy = true;
-    _scanAllChips = true;
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Equalisation information");
+    msgBox.setText("This operation will take a long time, get some tea/coffee.");
+    msgBox.addButton(QMessageBox::Ok);
+    msgBox.addButton(QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Ok);
 
-    // Init
-    if ( ! InitEqualization( -1 ) ) return;
+    if(msgBox.exec() == QMessageBox::Ok){
+        // Get busy !
+        _busy = true;
+        _scanAllChips = true;
 
-    StartEqualization( ); // Default will equalize all chips
+        // Init
+        if ( ! InitEqualization( -1 ) ) return;
+
+        StartEqualization( ); // Default will equalize all chips
+
+    } else {
+        return;
+    }
 
 }
 
