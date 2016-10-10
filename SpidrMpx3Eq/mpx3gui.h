@@ -56,7 +56,7 @@ class QCstmStepperMotor;
 #define __ct_page_Id                6
 #define __stepperMotor_page_Id      7
 
-const QString _softwareName = "ASI Dexter???";
+const QString _softwareName = "ASI DAQster";
 
 namespace Ui {
 class Mpx3GUI;
@@ -90,7 +90,7 @@ private:
     Dataset * originalSet;
 
     SpidrDaq * _spidrdaq = nullptr;
-    bool _armedOk = true; // it won't let the application go into the event loop if set to false
+    bool _armedOk = true; //! It won't let the application go into the event loop if set to false
 
     QVector<Gradient*>  gradients;
     //QVector<istogram*> hists;
@@ -162,7 +162,7 @@ public:
 
     void setTestPulses();
 
-    // SPIDR information strings for About dialog
+    //! SPIDR information strings for About dialog
     QString m_SPIDRControllerVersion = "";
     QString m_SPIDRFirmwareVersion = "";
     QString m_SPIDRSoftwareVersion = "";
@@ -188,7 +188,7 @@ signals:
     void open_data_failed(); //! Ignore this error: QMetaObject::connectSlotsByName: No matching signal for on_open_data_failed()
     void returnFilename(QString);
 
-    // status bar
+    //! Status bar signal functions
     void sig_statusBarAppend(QString mess, QString colorString);
     void sig_statusBarWrite(QString mess, QString colorString);
     void sig_statusBarClean();
@@ -197,7 +197,7 @@ signals:
 
 public slots:
     void on_shortcutsSwithPages();
-    void generateFrame(); //Debugging function to generate data when not connected
+    void generateFrame(); //! Debugging function to generate data when not connected
     void clear_data(bool clearStatusBar = true);
     void save_data();
     void open_data(bool saveOriginal = true);
@@ -211,7 +211,7 @@ public slots:
     void onConnectionStatusChanged(bool);
     unsigned int dataReady(int layer);
 
-    // status bar
+    //! Status bar slot functions
     void statusBarAppend(QString mess, QString colorString);
     void statusBarWrite(QString mess, QString colorString);
     void statusBarClean();
