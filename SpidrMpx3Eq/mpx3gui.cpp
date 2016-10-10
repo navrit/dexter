@@ -753,8 +753,9 @@ QString Mpx3GUI::getLoadButtonFilename() {
 void Mpx3GUI::saveMetadataToJSON(QString filename){
 
     QJsonObject JSobjectParent, objBin;
+    // Which bin(s) are we taling about
     objBin.insert("binFilePath", filename);
-    JSobjectParent.insert("whatever", objBin);
+
     /*
 
     QJsonArray objDacsArray;
@@ -773,6 +774,10 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
         JSobjectParent.insert("DACs", objDacsArray);
     }
     */
+
+    JSobjectParent.insert("Date_time", ( QDateTime::currentDateTime().toString(Qt::ISODate) ));
+    JSobjectParent.insert("Unix_time", (QDateTime::currentMSecsSinceEpoch() / 1000));
+    JSobjectParent.insert("Metadata", objBin);
     QJsonDocument doc;
     doc.setObject(JSobjectParent);
 
@@ -783,9 +788,6 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     }
     saveFile.write(doc.toJson());
     saveFile.close();
-    qDebug() << saveFile.fileName();
-    qDebug() << doc;
-    qDebug() << ">> JSON????";
 
 }
 
