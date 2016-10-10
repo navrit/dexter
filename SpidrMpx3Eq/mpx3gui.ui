@@ -192,7 +192,7 @@
     <string>Load Equalisation</string>
    </property>
    <property name="toolTip">
-    <string>Load Equalisation</string>
+    <string>Load Default Equalisation from config/</string>
    </property>
   </action>
   <action name="actionSave_DACs">
@@ -214,7 +214,7 @@
      <normaloff>:/icons/download-arrow.png</normaloff>:/icons/download-arrow.png</iconset>
    </property>
    <property name="text">
-    <string>Save</string>
+    <string>Save .bin file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -227,6 +227,9 @@
    </property>
    <property name="text">
     <string>Open</string>
+   </property>
+   <property name="toolTip">
+    <string>Open .bin file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -263,6 +266,9 @@
    <property name="text">
     <string>&amp;Connect</string>
    </property>
+   <property name="shortcut">
+    <string>Space</string>
+   </property>
   </action>
   <action name="actionDisconnect">
    <property name="icon">
@@ -271,6 +277,9 @@
    </property>
    <property name="text">
     <string>Disconnect</string>
+   </property>
+   <property name="shortcut">
+    <string>Esc</string>
    </property>
   </action>
   <action name="actionDefibrillator">
@@ -411,6 +420,9 @@
    <property name="toolTip">
     <string>Load equalisation from folder where equalisation files are.
 adj_* and mask_*</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
    </property>
   </action>
  </widget>
