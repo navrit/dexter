@@ -221,6 +221,7 @@ public slots:
 
 private slots:
     void LoadEqualization();
+    void loadEqualisationFromPath();
     void on_actionExit_triggered();
     void on_actionConnect_triggered();
     void on_actionVisualization_triggered();

@@ -86,7 +86,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _ui->DACsWidget->SetMpx3GUI( this );
     _ui->DACsWidget->setWindowWidgetsStatus(); // startup status
 
-    // Prepare Equalization
+    // Prepare Equalisation
     _ui->equalizationWidget->SetMpx3GUI( this );
     _ui->equalizationWidget->setWindowWidgetsStatus();
 
@@ -230,6 +230,11 @@ void Mpx3GUI::LoadEqualization(){
     _ui->equalizationWidget->LoadEqualization();
 }
 
+void Mpx3GUI::loadEqualisationFromPath(){
+    bool getPath = true;
+    _ui->equalizationWidget->LoadEqualization(getPath);
+}
+
 bool Mpx3GUI::equalizationLoaded(){
     return _ui->equalizationWidget->equalizationHasBeenLoaded();
 }
@@ -277,6 +282,8 @@ void Mpx3GUI::setTestPulses() {
 void Mpx3GUI::SetupSignalsAndSlots(){
 
     connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );
+    connect( _ui->actionLoad_equalisation_from_folder, SIGNAL(triggered()), this, SLOT( loadEqualisationFromPath()) );
+
     connect( _ui->actionSave_DACs, SIGNAL(triggered()), this, SLOT( save_config()) );
     connect( _ui->actionLoad_DACs, SIGNAL(triggered()), this, SLOT( load_config()) );
     //connect( _ui->actionConnect, SIGNAL(triggered()), this, SLOT( establish_connection() ) );
@@ -306,6 +313,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     //! Part 4: Send equalisation loaded from ... to mpx3gui status bar
     // Connect signal from QCstmEqualization widget to slot here
     connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend);
+    connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarClean, this, &Mpx3GUI::statusBarClean);
 
 
     for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {

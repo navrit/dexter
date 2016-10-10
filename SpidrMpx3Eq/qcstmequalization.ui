@@ -39,28 +39,15 @@
        <item>
         <widget class="QLabel" name="label_equalisationHistogram">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="minimumSize">
-          <size>
-           <width>150</width>
-           <height>0</height>
-          </size>
-         </property>
          <property name="font">
           <font>
            <pointsize>12</pointsize>
-           <stylestrategy>PreferDefault</stylestrategy>
           </font>
-         </property>
-         <property name="toolTipDuration">
-          <number>-1</number>
-         </property>
-         <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
          </property>
          <property name="text">
           <string>Equalisation histogram</string>

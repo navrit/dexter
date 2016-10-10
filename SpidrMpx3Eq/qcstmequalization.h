@@ -231,7 +231,7 @@ public:
 
 	string BuildChartName(int val, QString leg);
 
-	void LoadEqualization();
+    void LoadEqualization(bool getPath = false);
 	void ShowEqualization(Mpx3EqualizationResults::lowHighSel sel);
 
 	void InitializeEqualizationStructure(); //<! on a normal run, when the user load the equalization after connecting
@@ -356,6 +356,8 @@ signals:
     void slideAndSpin(int, int);
     void stop_data_taking_thread();
 
+    //! Status bar signal functions
+    void sig_statusBarClean();
     void sig_statusBarAppend(QString mess, QString colorString);
 };
 

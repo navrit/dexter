@@ -1795,7 +1795,24 @@ void QCstmEqualization::setWindowWidgetsStatus(win_status s)
     }
 }
 
-void QCstmEqualization::LoadEqualization() {
+void QCstmEqualization::LoadEqualization(bool getPath) {
+    QString path = "config/";
+
+    //! Non-default path, get the folder from a QFileDialog
+    if (getPath){
+        // Absolute folder path
+        path = QFileDialog::getExistingDirectory(
+                    this,
+                    tr("Select a Directory"),
+                    QDir::currentPath() );
+        path += "/";
+        if( !path.isNull() )
+        {
+            qDebug() << path;
+        } else {
+            return;
+        }
+    }
 
     _ui->equalizationSelectTHLTHHCombo->setEnabled( true );
 
@@ -1808,15 +1825,15 @@ void QCstmEqualization::LoadEqualization() {
     int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
 
     QProgressDialog pd("Loading adjustment bits ... ", "Cancel", 0, nChips, this);
-    pd.setCancelButton( 0 ); // no cancel button
+    pd.setCancelButton( 0 ); // Enable cancel button just in case
     pd.setWindowModality(Qt::WindowModal);
     pd.setMinimumDuration( 0 ); // show immediately
-    pd.setWindowTitle("Load equalisation");
+    pd.setWindowTitle(tr("Load equalisation"));
     pd.setValue( 0 );
 
     //! Part 1: Send equalisation loaded from ... to mpx3gui status bar
     // Initialise string with prefix
-    QString msg = QString("Equalisation loaded from: ");
+    QString msg = QString(tr("Equalisation loaded from: "));
 
     for(int i = 0 ; i < nChips ; i++) {
 
@@ -1825,7 +1842,7 @@ void QCstmEqualization::LoadEqualization() {
         //ClearAllAdjustmentBits();
 
 
-        // Check if the device is alive
+        //! Check if the device is alive
         if ( ! _mpx3gui->getConfig()->detectorResponds( i ) ) {
             continue;
         }
@@ -1834,14 +1851,17 @@ void QCstmEqualization::LoadEqualization() {
         //ChangeDeviceIndex( i );
         //_ui->devIdSpinBox->setValue( i );
 
-        QString adjfn = "config/adj_";
+        QString adjfn = path + "adj_";
         adjfn += QString::number(i, 10);
-        QString maskfn = "config/mask_";
+        QString maskfn = path + "mask_";
         maskfn += QString::number(i, 10);
 
-        //! Part 2: Send equalisation loaded from ... to mpx3gui status bar
-        // Append new equalisation paths
-        msg += adjfn + QString(" ") + maskfn;
+        //! Part 2.1: Send equalisation loaded from ... to mpx3gui status bar
+        //! Append new equalisation paths
+        if (!getPath){
+            //! Default path
+            msg += adjfn + QString(" ") + maskfn + QString(" ");
+        }
 
 
         if ( ! _eqMap[i]->ReadAdjBinaryFile( adjfn ) ) {
@@ -1873,8 +1893,16 @@ void QCstmEqualization::LoadEqualization() {
 
     }
 
+    //! Part 2.2: Send equalisation loaded from ... to mpx3gui status bar
+    //! Append new equalisation paths
+    if (getPath){
+        //! Just print the folder that files were loaded from
+        msg += path;
+    }
+
     //! Part 3: Send equalisation loaded from ... to mpx3gui status bar
     // Actually send the equalisation data to the status bar
+    emit sig_statusBarClean();
     emit sig_statusBarAppend(msg, "black");
 
     // And show
