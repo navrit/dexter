@@ -1796,6 +1796,7 @@ void QCstmEqualization::setWindowWidgetsStatus(win_status s)
 }
 
 void QCstmEqualization::LoadEqualization(bool getPath) {
+
     QString path = "config/";
 
     //! Non-default path, get the folder from a QFileDialog
@@ -1806,41 +1807,51 @@ void QCstmEqualization::LoadEqualization(bool getPath) {
                     tr("Select a Directory"),
                     QDir::currentPath() );
         path += "/";
-        if( !path.isNull() )
-        {
-            qDebug() << path;
+        if( !path.isNull() ) {
+            //! Very basic check to proceed or not by seeing if the bare minimum files exist (adj_0 and mask_0) in the given path
+            QString testAdjFile = path + QString("adj_0");
+            QString testMaskFile = path + QString("mask_0");
+
+            if (!(QFileInfo::exists(testAdjFile) && QFileInfo::exists(testMaskFile))){
+                //! Failed to find adj_0 and mask_0, the bare minimum for this to work
+                //! Return with no warnings or prompts
+                emit sig_statusBarAppend(tr("Nothing loaded from equalisation"), "orange");
+                qDebug() << "[INFO] Nothing loaded from equalisation, doing nothing.";
+                return;
+            }
+
         } else {
+            //! Nothing selected, return with no prompt or warning
+            qDebug() << "[INFO] Null path input, doing nothing.";
             return;
         }
     }
 
-    _ui->equalizationSelectTHLTHHCombo->setEnabled( true );
-
-    // Init the data structures necessary to hold the equalization for all the chips
-    InitializeEqualizationStructure();
-
-    // Get the BarCharts in place
-    InitializeBarChartsAdjustements();
-
     int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
-
-    QProgressDialog pd("Loading adjustment bits ... ", "Cancel", 0, nChips, this);
-    pd.setCancelButton( 0 ); // Enable cancel button just in case
+    QProgressDialog pd(tr("Loading adjustment bits..."), tr("Cancel"), 0, nChips, this);
+    pd.setCancelButton( 0 ); // No cancel button
     pd.setWindowModality(Qt::WindowModal);
     pd.setMinimumDuration( 0 ); // show immediately
     pd.setWindowTitle(tr("Load equalisation"));
     pd.setValue( 0 );
 
+    _ui->equalizationSelectTHLTHHCombo->setEnabled( true );
+
+    //! Initialise the data structures necessary to hold the equalization for all the chips
+    InitializeEqualizationStructure();
+
+    //! Get the BarCharts in place
+    InitializeBarChartsAdjustements();
+
     //! Part 1: Send equalisation loaded from ... to mpx3gui status bar
-    // Initialise string with prefix
-    QString msg = QString(tr("Equalisation loaded from: "));
+    //! Initialise string with prefix
+    QString msg = QString(tr("Equalisations loaded from: "));
 
     for(int i = 0 ; i < nChips ; i++) {
 
-        // And clear all previous adjustements
+        // And clear all previous adjustments
         // In case an equalisation was done in the same session
         //ClearAllAdjustmentBits();
-
 
         //! Check if the device is alive
         if ( ! _mpx3gui->getConfig()->detectorResponds( i ) ) {
@@ -1851,6 +1862,7 @@ void QCstmEqualization::LoadEqualization(bool getPath) {
         //ChangeDeviceIndex( i );
         //_ui->devIdSpinBox->setValue( i );
 
+        //! Builg strings for adj and mask file paths
         QString adjfn = path + "adj_";
         adjfn += QString::number(i, 10);
         QString maskfn = path + "mask_";
@@ -1862,7 +1874,6 @@ void QCstmEqualization::LoadEqualization(bool getPath) {
             //! Default path
             msg += adjfn + QString(" ") + maskfn + QString(" ");
         }
-
 
         if ( ! _eqMap[i]->ReadAdjBinaryFile( adjfn ) ) {
             QMessageBox::warning(this, tr("Loading equalisation"), tr("Failed. Can not open file: %1").arg(adjfn) );
@@ -1888,22 +1899,22 @@ void QCstmEqualization::LoadEqualization(bool getPath) {
             //GetAdjBarChart(i, Mpx3EqualizationResults::__ADJ_L)->fitToHeight();
         }
 
-        // progress
+        // Progression
         pd.setValue( i+1 );
 
     }
 
     //! Part 2.2: Send equalisation loaded from ... to mpx3gui status bar
-    //! Append new equalisation paths
+    //! Append new equalisation path
     if (getPath){
         //! Just print the folder that files were loaded from
         msg += path;
     }
 
     //! Part 3: Send equalisation loaded from ... to mpx3gui status bar
-    // Actually send the equalisation data to the status bar
+    //! Actually send the equalisation data to the status bar
     emit sig_statusBarClean();
-    emit sig_statusBarAppend(msg, "black");
+    emit sig_statusBarAppend(msg, "green");
 
     // And show
     ShowEqualization( _equalizationShow );
