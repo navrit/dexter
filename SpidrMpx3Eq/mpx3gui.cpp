@@ -957,7 +957,7 @@ void Mpx3GUI::open_data(bool saveOriginal){
     // And keep a copy just as in QCstmGLVisualization::data_taking_finished
     if ( saveOriginal ) saveOriginalDataset();
 
-    this->setWindowTitle( _softwareName + filename);
+    this->setWindowTitle( _softwareName + QString(": ")+ filename);
 
     // DQE ! ... this is on the way here !!!
 //    // If not in DQE - change back to Visualisation
