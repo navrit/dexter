@@ -106,6 +106,8 @@ private:
 
     QString loadButtonFilenamePath = "";
 
+    void saveMetadataToJSON(QString);
+
 public:
 
     Mpx3Config* getConfig();

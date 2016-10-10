@@ -750,11 +750,50 @@ QString Mpx3GUI::getLoadButtonFilename() {
     return loadButtonFilenamePath;
 }
 
+void Mpx3GUI::saveMetadataToJSON(QString filename){
+
+    QJsonObject JSobjectParent, objBin;
+    objBin.insert("binFilePath", filename);
+    JSobjectParent.insert("whatever", objBin);
+    /*
+
+    QJsonArray objDacsArray;
+    objBin.insert("binFilePath", );
+    objBin.insert("", );
+
+    JSobjectParent.insert("IPConfig", objIp);
+
+    if(includeDacs){
+        for(int j = 0; j < this->getDacCount(); j++){
+            QJsonObject obj;
+            for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++)
+                obj.insert(MPX3RX_DAC_TABLE[i].name, _dacVals[i][j]);
+            objDacsArray.insert(j, obj);
+        }
+        JSobjectParent.insert("DACs", objDacsArray);
+    }
+    */
+    QJsonDocument doc;
+    doc.setObject(JSobjectParent);
+
+    QFile saveFile(filename.replace(QString(".bin"), QString(".json")));
+    if(!saveFile.open(QIODevice::WriteOnly)){
+        qDebug() << "[WARN] JSON file is write only, aborting";
+        return;
+    }
+    saveFile.write(doc.toJson());
+    saveFile.close();
+    qDebug() << saveFile.fileName();
+    qDebug() << doc;
+    qDebug() << ">> JSON????";
+
+}
+
 void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
 
     //! Native format
     // User dialog
-    QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("binary files (*.bin)"));
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("Binary files (*.bin)"));
 
     // Force the .bin in the data filename
     if ( ! filename.toLower().contains(".bin")  && !filename.isEmpty()) {
@@ -772,6 +811,9 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
     }
     saveFile.write(getDataset()->toByteArray());
     saveFile.close();
+
+    //-------------------  JSON METADATA --------------------------------
+    saveMetadataToJSON(filename);
 
     /*
 
@@ -1095,10 +1137,10 @@ void Mpx3GUI::on_actionExit_triggered()
     // Check if it's connected
     if ( getConfig()->isConnected() ) {
         on_actionDisconnect_triggered( false );
-    }
 
-    // Save data --> dialogue
-    save_data();
+        // Save data --> dialogue
+        save_data();
+    }
 
     emit exitApp( 0 );
 }
