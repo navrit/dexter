@@ -22,32 +22,61 @@
   <layout class="QHBoxLayout" name="horizontalLayout_10">
    <item>
     <widget class="QSplitter" name="mainSplitter">
+     <property name="toolTipDuration">
+      <number>-1</number>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QWidget" name="layoutWidget">
-      <layout class="QVBoxLayout" name="verticalLayoutBarChartEq" stretch="0,0">
+      <property name="toolTipDuration">
+       <number>-1</number>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayoutBarChartEq" stretch="0,0,0">
+       <property name="rightMargin">
+        <number>6</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="label_equalisationHistogram">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+           <stylestrategy>PreferDefault</stylestrategy>
+          </font>
+         </property>
+         <property name="toolTipDuration">
+          <number>-1</number>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="text">
+          <string>Equalisation histogram</string>
+         </property>
+        </widget>
+       </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayoutEqHistos"/>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <widget class="QCheckBox" name="logYCheckBox">
-           <property name="text">
-            <string>logy</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="checkBox">
-           <property name="text">
-            <string>adj hist</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <spacer name="horizontalSpacer_2">
+           <property name="toolTipDuration">
+            <number>-1</number>
+           </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -59,66 +88,180 @@
            </property>
           </spacer>
          </item>
+         <item>
+          <widget class="QCheckBox" name="logYCheckBox">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;y log scale&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="toolTipDuration">
+            <number>-1</number>
+           </property>
+           <property name="text">
+            <string>Log y</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Adjust histogram&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="toolTipDuration">
+            <number>-1</number>
+           </property>
+           <property name="text">
+            <string>Adj hist</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>
      </widget>
      <widget class="QSplitter" name="histSetupSplitter">
+      <property name="minimumSize">
+       <size>
+        <width>400</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="toolTipDuration">
+       <number>-1</number>
+      </property>
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
       <widget class="QWidget" name="layoutWidget">
-       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,1,0">
+       <property name="toolTipDuration">
+        <number>-1</number>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,1,0">
+        <item>
+         <widget class="QLabel" name="label_frameSelector">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frame selector&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Frame selector</string>
+          </property>
+         </widget>
+        </item>
         <item>
          <widget class="QSpinBox" name="frameSpinner">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frame selector&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="toolTipDuration">
+           <number>-1</number>
+          </property>
           <property name="maximum">
            <number>99999</number>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QDockWidget" name="dockWidget">
-          <widget class="QWidget" name="dockWidgetContents"/>
+         <widget class="QLabel" name="label_equalisationHeatmap">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Equalisation heatmap&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Equalisation heatmap</string>
+          </property>
          </widget>
         </item>
         <item>
-         <widget class="QCstmPlotHeatmap" name="_intermediatePlot" native="true"/>
+         <widget class="QCstmPlotHeatmap" name="_intermediatePlot" native="true">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Equalisation heatmap preview&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="toolTipDuration">
+           <number>-1</number>
+          </property>
+         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QComboBox" name="equalizationTHLTHHCombo"/>
+           <widget class="QComboBox" name="equalizationTHLTHHCombo">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;THL - Threshold Low&lt;/p&gt;&lt;p&gt;THH - Theshold High&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="toolTipDuration">
+             <number>-1</number>
+            </property>
+           </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="equalizationTypeCombo"/>
+           <widget class="QComboBox" name="equalizationTypeCombo">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Equalisation type&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="toolTipDuration">
+             <number>-1</number>
+            </property>
+           </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="equalizationSelectTHLTHHCombo"/>
+           <widget class="QComboBox" name="equalizationSelectTHLTHHCombo">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show THL or THH&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="toolTipDuration">
+             <number>-1</number>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
        </layout>
       </widget>
       <widget class="QWidget" name="layoutWidget">
+       <property name="toolTipDuration">
+        <number>-1</number>
+       </property>
        <layout class="QVBoxLayout" name="verticalLayout_10">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
            <widget class="QPushButton" name="_startEqAll">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start all chips&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="toolTipDuration">
+             <number>-1</number>
+            </property>
             <property name="text">
-             <string>Start (all chips)</string>
+             <string>Start All</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="_startEq">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Start single chip&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="toolTipDuration">
+             <number>-1</number>
+            </property>
             <property name="text">
-             <string>Start (single chip)</string>
+             <string>Start Single</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="_stopEq">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Stop equalisation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="toolTipDuration">
+             <number>-1</number>
+            </property>
             <property name="text">
              <string>Stop</string>
             </property>
@@ -132,20 +275,35 @@
            <layout class="QGridLayout" name="gridLayout">
             <item row="0" column="1">
              <widget class="QSpinBox" name="nTriggersSpinBox">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of frames per threshold taken&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
               <property name="keyboardTracking">
                <bool>false</bool>
               </property>
              </widget>
             </item>
-            <item row="1" column="3">
-             <widget class="QLabel" name="label_2">
+            <item row="2" column="6">
+             <widget class="QLabel" name="eqSigmaMaskingSpinBox">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fine tuning - sigma masking&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
               <property name="text">
-               <string>end</string>
+               <string>FT Loops</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="5">
-             <spacer name="horizontalSpacer_6">
+            <item row="0" column="2">
+             <spacer name="horizontalSpacer_5">
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -157,88 +315,102 @@
               </property>
              </spacer>
             </item>
-            <item row="0" column="3">
-             <widget class="QLabel" name="eqLabelDevId">
+            <item row="3" column="0">
+             <widget class="QLabel" name="thxLabel">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Threshold Low&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
               <property name="text">
-               <string>Dev Id</string>
+               <string>THL:</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="eqLabelnTriggers">
-              <property name="text">
-               <string>nTriggers</string>
+            <item row="3" column="3">
+             <widget class="QLabel" name="label_6">
+              <property name="toolTip">
+               <string>Mask loop progress</string>
               </property>
-             </widget>
-            </item>
-            <item row="1" column="6">
-             <widget class="QLabel" name="label_3">
-              <property name="text">
-               <string>step</string>
+              <property name="toolTipDuration">
+               <number>-1</number>
               </property>
-             </widget>
-            </item>
-            <item row="0" column="4">
-             <widget class="QSpinBox" name="devIdSpinBox">
-              <property name="keyboardTracking">
-               <bool>false</bool>
+              <property name="text">
+               <string>Loop:</string>
               </property>
              </widget>
             </item>
             <item row="0" column="7">
              <widget class="QSpinBox" name="spacingSpinBox">
-              <property name="keyboardTracking">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>start</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="6">
-             <widget class="QLabel" name="eqLabelSpacing">
-              <property name="text">
-               <string>Spacing</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QSpinBox" name="eqMinSpinBox">
-              <property name="keyboardTracking">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="7">
-             <widget class="QSpinBox" name="eqStepSpinBox">
-              <property name="keyboardTracking">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="4">
-             <widget class="QSpinBox" name="eqMaxSpinBox">
-              <property name="keyboardTracking">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="4">
-             <widget class="QLabel" name="eqLabelLoopProgress">
               <property name="toolTip">
-               <string>Mask loop progress</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Spacing between thresholds&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
+              <property name="keyboardTracking">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <widget class="QSpinBox" name="devIdSpinBox">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Device ID&lt;/p&gt;&lt;p&gt;See &amp;quot;Data recording&amp;quot; under visualiser (Ctrl+1) for which chip this corresponds to&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
+              <property name="keyboardTracking">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="QLabel" name="label_2">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ending threshold&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
               </property>
               <property name="text">
-               <string/>
+               <string>End</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="5">
+             <spacer name="horizontalSpacer_6">
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="2" column="4">
+             <widget class="QSpinBox" name="nHitsSpinBox">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of hits&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
               </property>
              </widget>
             </item>
             <item row="1" column="2">
              <spacer name="horizontalSpacer">
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -250,51 +422,124 @@
               </property>
              </spacer>
             </item>
-            <item row="0" column="2">
-             <spacer name="horizontalSpacer_5">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="3" column="3">
-             <widget class="QLabel" name="label_6">
+            <item row="1" column="7">
+             <widget class="QSpinBox" name="eqStepSpinBox">
               <property name="toolTip">
-               <string>Mask loop progress</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Step&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
-              <property name="text">
-               <string>Loop:</string>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
+              <property name="keyboardTracking">
+               <bool>false</bool>
               </property>
              </widget>
             </item>
-            <item row="3" column="7">
-             <widget class="QLabel" name="eqLabelFineTuningLoopProgress">
+            <item row="0" column="0">
+             <widget class="QLabel" name="eqLabelnTriggers">
               <property name="toolTip">
-               <string>Fine tuning loop progress</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of frames per threshold taken&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
+              <property name="text">
+               <string>nFrames</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="4">
+             <widget class="QLabel" name="eqLabelLoopProgress">
+              <property name="toolTip">
+               <string>Mask loop progress</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
               </property>
               <property name="text">
                <string/>
               </property>
              </widget>
             </item>
-            <item row="3" column="6">
-             <widget class="QLabel" name="label_4">
+            <item row="3" column="1">
+             <widget class="QLabel" name="eqLabelTHLCurrentValue">
               <property name="toolTip">
-               <string>Fine tuning loop progress</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Threshold Low&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
               </property>
               <property name="text">
-               <string>FTLoop:</string>
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QLabel" name="eqLabelDevId">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Device ID&lt;/p&gt;&lt;p&gt;See &amp;quot;Data recording&amp;quot; under visualiser (Ctrl+1) for which chip this corresponds to&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
+              <property name="text">
+               <string>Dev ID</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="eqMinSpinBox">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Starting threshold&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
+              <property name="keyboardTracking">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="4">
+             <widget class="QSpinBox" name="eqMaxSpinBox">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ending threshold&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
+              <property name="keyboardTracking">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLabel" name="eqLabelNPixelsReactive">
+              <property name="toolTip">
+               <string>Number of pixels reacting</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string/>
               </property>
              </widget>
             </item>
             <item row="2" column="7">
              <widget class="QSpinBox" name="fineTuningLoopsSpinBox">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fine tuning - sigma masking&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
               <property name="minimum">
                <number>1</number>
               </property>
@@ -306,50 +551,55 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="6">
-             <widget class="QLabel" name="eqSigmaMaskingSpinBox">
+            <item row="0" column="6">
+             <widget class="QLabel" name="eqLabelSpacing">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Spacing between thresholds&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
               <property name="text">
-               <string>FTloops</string>
+               <string>Spacing</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="4">
-             <widget class="QSpinBox" name="nHitsSpinBox"/>
+            <item row="3" column="6">
+             <widget class="QLabel" name="label_4">
+              <property name="toolTip">
+               <string>Fine tuning loop progress</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
+              <property name="text">
+               <string>FT Loop:</string>
+              </property>
+             </widget>
             </item>
             <item row="2" column="3">
              <widget class="QLabel" name="label_8">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of hits&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
               <property name="text">
                <string>nHits</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
-             <widget class="QLabel" name="eqLabelTHLCurrentValue">
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QLabel" name="eqLabelNPixelsReactive">
+            <item row="1" column="6">
+             <widget class="QLabel" name="label_3">
               <property name="toolTip">
-               <string>Number of pixels reacting</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Step&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
+              <property name="toolTipDuration">
+               <number>-1</number>
               </property>
               <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="thxLabel">
-              <property name="text">
-               <string>THL:</string>
+               <string>Step</string>
               </property>
              </widget>
             </item>
@@ -358,8 +608,37 @@
               <property name="toolTip">
                <string>Number of pixels reacting</string>
               </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
               <property name="text">
                <string>Reactive:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Starting threshold&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
+              <property name="text">
+               <string>Start</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="7">
+             <widget class="QLabel" name="eqLabelFineTuningLoopProgress">
+              <property name="toolTip">
+               <string>Fine tuning loop progress</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
+              <property name="text">
+               <string/>
               </property>
              </widget>
             </item>
@@ -368,7 +647,14 @@
          </layout>
         </item>
         <item>
-         <widget class="QTextBrowser" name="eqTextBrowser"/>
+         <widget class="QTextBrowser" name="eqTextBrowser">
+          <property name="toolTip">
+           <string>Log output</string>
+          </property>
+          <property name="toolTipDuration">
+           <number>-1</number>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
