@@ -659,14 +659,7 @@ void QCstmEqualization::KeepOtherChipsQuiet() {
 
 void QCstmEqualization::StartEqualizationSingleChip() {
 
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("Equalisation information");
-    msgBox.setText("This operation will take a long time, get some tea/coffee.");
-    msgBox.addButton(QMessageBox::Ok);
-    msgBox.addButton(QMessageBox::Cancel);
-    msgBox.setDefaultButton(QMessageBox::Ok);
-
-    if(msgBox.exec() == QMessageBox::Ok){
+    if(makeTeaCoffeeDialog()){
         // Get busy !
         _busy = true;
         _scanAllChips = false;
@@ -689,14 +682,7 @@ void QCstmEqualization::StartEqualizationSingleChip() {
 
 void QCstmEqualization::StartEqualizationAllChips() {
 
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("Equalisation information");
-    msgBox.setText("This operation will take a long time, get some tea/coffee.");
-    msgBox.addButton(QMessageBox::Ok);
-    msgBox.addButton(QMessageBox::Cancel);
-    msgBox.setDefaultButton(QMessageBox::Ok);
-
-    if(msgBox.exec() == QMessageBox::Ok){
+    if(makeTeaCoffeeDialog()){
         // Get busy !
         _busy = true;
         _scanAllChips = true;
@@ -1795,6 +1781,22 @@ void QCstmEqualization::setWindowWidgetsStatus(win_status s)
     }
 }
 
+bool QCstmEqualization::makeTeaCoffeeDialog()
+{
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Equalisation information");
+    msgBox.setText("This operation will take a long time, get some tea/coffee.\n IMPORTANT: Check polarity!");
+    msgBox.addButton(QMessageBox::Ok);
+    msgBox.addButton(QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+
+    if (msgBox.exec() == QMessageBox::Ok){
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void QCstmEqualization::LoadEqualization(bool getPath) {
 
     QString path = "config/";
@@ -1804,8 +1806,9 @@ void QCstmEqualization::LoadEqualization(bool getPath) {
         // Absolute folder path
         path = QFileDialog::getExistingDirectory(
                     this,
-                    tr("Select a Directory"),
-                    QDir::currentPath() );
+                    tr("Select a directory containing equalisation files (adj_* and mask_*)"),
+                    QDir::currentPath(),
+                    QFileDialog::ShowDirsOnly);
         path += "/";
         if( !path.isNull() ) {
             //! Very basic check to proceed or not by seeing if the bare minimum files exist (adj_0 and mask_0) in the given path

@@ -324,6 +324,8 @@ private:
 	// Object in charge of performing Thl scans
 	QVector<ThlScan * > _scans;
 
+    bool makeTeaCoffeeDialog();
+
 public slots:
     void SaveEqualization();
     void on_logYCheckBox_toggled(bool checked);
