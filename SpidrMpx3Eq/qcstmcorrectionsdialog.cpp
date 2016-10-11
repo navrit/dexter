@@ -147,9 +147,11 @@ void QCstmCorrectionsDialog::on_obcorrCheckbox_toggled(bool checked) {
 // bool firstBHCorr = true;
 
 void QCstmCorrectionsDialog::on_applyCorr_clicked() {
-    if ( ui->bhcorrLineEdit->text().isEmpty() && ui->obcorrLineEdit->text().isEmpty()) {
-        return;
-    }
+
+    //if ( ui->bhcorrLineEdit->text().isEmpty() && ui->obcorrLineEdit->text().isEmpty()) {
+    //    return;
+    //}
+
     if ( ! _vis->isTakingData() ) {
 
         /* DISABLED #BH_warning_dialog - implement this properly if the desire arises
