@@ -25,6 +25,10 @@
 #include <QDebug>
 #include <QStatusBar>
 
+#include <boost/uuid/uuid.hpp>            // uuid class
+#include <boost/uuid/uuid_generators.hpp> // generators
+#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
+
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -754,7 +758,7 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
 
     QJsonObject JSobjectParent, objBin;
     // Which bin(s) are we taling about
-    objBin.insert("binFilePath", filename);
+    objBin.insert("binPaths", filename);
 
     /*
 
@@ -775,9 +779,47 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     }
     */
 
-    JSobjectParent.insert("Date_time", ( QDateTime::currentDateTime().toString(Qt::ISODate) ));
-    JSobjectParent.insert("Unix_time", (QDateTime::currentMSecsSinceEpoch() / 1000));
-    JSobjectParent.insert("Metadata", objBin);
+    boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    QString uuid_str = boost::uuids::to_string(uuid).c_str();
+    JSobjectParent.insert("Measurement_UUID", uuid_str);
+
+    JSobjectParent.insert("Build_ABI", QSysInfo::buildAbi());
+    JSobjectParent.insert("CPU_arch_current", QSysInfo::currentCpuArchitecture());
+    JSobjectParent.insert("CPU_arch_build", QSysInfo::buildCpuArchitecture());
+    JSobjectParent.insert("Win_version", QSysInfo::WindowsVersion);
+    JSobjectParent.insert("OS_version", QSysInfo::productVersion());
+    JSobjectParent.insert("OS_type", QSysInfo::productType());
+    JSobjectParent.insert("OS_prettyProductName", QSysInfo::prettyProductName());
+    JSobjectParent.insert("Machine_hostName", QSysInfo::machineHostName());
+    JSobjectParent.insert("Kernel_typeAndVersion", (QSysInfo::kernelType() + QSysInfo::kernelVersion()));
+    JSobjectParent.insert("Compile_dateTime", compileDateTime);
+    JSobjectParent.insert("C++_version", QString::fromStdString(to_string(__cplusplus)));
+    JSobjectParent.insert("Unix_time_s", (QDateTime::currentMSecsSinceEpoch() / 1000));
+    JSobjectParent.insert("Date_time_local", ( QDateTime::currentDateTime().toString(Qt::ISODate) ));
+    JSobjectParent.insert("Date_time_UTC", ( QDateTime::currentDateTimeUtc().toString(Qt::ISODate) ));
+
+    int sizex = getDataset()->x();
+    int sizey = getDataset()->y();
+    int nchipsx =  getDataset()->getNChipsX();
+    int nchipsy = getDataset()->getNChipsY();
+
+    QList <int> thresholds = getDataset()->getThresholds();
+    QString thresholds_str;
+    for (int i=0; i<thresholds.size(); i++){
+        thresholds_str += QString::number(thresholds[i]);
+        if(i < (thresholds.size()-1)){
+            thresholds_str += ", ";
+        }
+    }
+    JSobjectParent.insert("ChipSize_x", sizex);
+    JSobjectParent.insert("ChipSize_y", sizey);
+    JSobjectParent.insert("nChips_x", nchipsx);
+    JSobjectParent.insert("nChips_y", nchipsy);
+    JSobjectParent.insert("Length_x", sizex*nchipsx);
+    JSobjectParent.insert("Length_y", sizey*nchipsy);
+    JSobjectParent.insert("Thresholds", thresholds_str);
+
+    JSobjectParent.insert("bins", objBin);
     QJsonDocument doc;
     doc.setObject(JSobjectParent);
 
@@ -984,8 +1026,7 @@ void Mpx3GUI::open_data(bool saveOriginal){
 void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString path)
 {
     QString filename;
-    if(!requestPath)
-    {
+    if(!requestPath) {
         filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("Native binary files (*.bin);;ASCII matrix (*.txt)"));
     } else {
         filename = path;
@@ -1213,8 +1254,7 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
 
     QString newLine = "\n";
 
-    QString newDate =  QDate::currentDate().toString("yyyy-MM-dd");
-    QString msg = QString("Compiled: ") + newDate + QString("  ") + QString(__TIME__) +
+    QString msg = QString("Compiled: ") + compileDateTime +
             newLine +
             QString("C++: ") + QString::fromStdString(to_string(__cplusplus)) +
             newLine +

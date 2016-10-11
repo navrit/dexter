@@ -170,6 +170,8 @@ public:
     QString m_SPIDRSoftwareVersion = "";
     QString m_numberOfChipsFound = "";
 
+    QString compileDateTime = QDate::currentDate().toString("yyyy-MM-dd") + QString(" ") + QString(__TIME__);
+
 signals:
     void dataChanged();
     void data_cleared();
