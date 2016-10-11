@@ -865,7 +865,7 @@ void Dataset::applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, doub
                     map< pair<int, int>, int > actives = activeNeighbors(x, y, keys[i], isize, __bigger, 0);
                     // And check how many of its neighbors are not noisy
                     map< pair<int, int>, int > notNoisy = activeNeighbors(x, y, keys[i], isize, __less, qRound(meanMultiplier * mean) );
-                    // The average will be made on the intersection of actives and notNoisy
+                    // The average will be made on the intersection of actives and notNoisy --> the good ones
                     std::vector<int> toAverage = getIntersection(actives, notNoisy);
 
                     // Request at least two active neighbors to consider filling up by averaging

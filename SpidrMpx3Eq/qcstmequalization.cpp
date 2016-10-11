@@ -1785,7 +1785,7 @@ bool QCstmEqualization::makeTeaCoffeeDialog()
 {
     QMessageBox msgBox;
     msgBox.setWindowTitle("Equalisation information");
-    msgBox.setText("This operation will take a long time, get some tea/coffee.\n IMPORTANT: Check polarity!");
+    msgBox.setText("This operation will take a long time, get some tea/coffee.\n\nIMPORTANT: Check polarity and activate bias voltage!");
     msgBox.addButton(QMessageBox::Ok);
     msgBox.addButton(QMessageBox::Cancel);
     msgBox.setDefaultButton(QMessageBox::Ok);
