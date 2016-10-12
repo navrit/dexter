@@ -512,18 +512,22 @@ bool Mpx3GUI::establish_connection() {
 
     *dbg << "\n";
     *dbg << "SpidrController class: "
-         <<  m_SPIDRControllerVersion << "\n";
+         <<  m_SPIDRControllerVersion.replace(QString("\n"), QString("")) << "\n";
 
     if( spidrcontrol->getFirmwVersion( &version ) ) {
         m_SPIDRFirmwareVersion = QString("\n SPIDR Firmware version: ") +
                 QString(spidrcontrol->versionToString( version ).c_str());
-        *dbg << "SPIDR firmware  : " << m_SPIDRFirmwareVersion << "\n";
+        *dbg << "SPIDR firmware  : "
+             << m_SPIDRFirmwareVersion.replace(QString("\n"), QString(""))
+             << "\n";
     }
 
     if( spidrcontrol->getSoftwVersion( &version ) ){
         m_SPIDRSoftwareVersion = QString("\n SPIDR Software version: ") +
                 QString(spidrcontrol->versionToString( version ).c_str());
-        *dbg << "SPIDR software  : " << m_SPIDRSoftwareVersion << "\n";
+        *dbg << "SPIDR software  : "
+             << m_SPIDRSoftwareVersion.replace(QString("\n"), QString(""))
+             << "\n";
     }
 
 
