@@ -463,7 +463,7 @@ void QCstmGLPlot::mouseReleaseEvent(QMouseEvent * event){
 
 void QCstmGLPlot::mouseDoubleClickEvent(QMouseEvent *event) {
     // Double click brings back to full view
-    setZoom(0.49);
+    setZoom(0.45);
     emit double_click();
 }
 

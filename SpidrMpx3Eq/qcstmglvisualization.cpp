@@ -237,15 +237,13 @@ void QCstmGLVisualization::ConfigureGUIForIdling() {
     emit idling_gui();
 
     ui->startButton->setText( "Start" );
-    ui->singleshotPushButton->setText( "single" );
-    emit sig_statusBarAppend("done","blue");
+    ui->singleshotPushButton->setText( "Single" );
+    emit sig_statusBarAppend("Done","blue");
 
     // Config stats
     ui->groupBoxConfigAndStats->setEnabled( true );
 
-
     ui->infDataTakingCheckBox->setEnabled( true );
-
 }
 
 void QCstmGLVisualization::CalcETA() {
@@ -824,9 +822,7 @@ void QCstmGLVisualization::triggerLength_edit() {
 
 void QCstmGLVisualization::startupActions()
 {
-
     _mpx3gui->open_data_with_path(true, true, "icons/startupimage.bin" );
-
 }
 
 void QCstmGLVisualization::changeBinCount(int count) {
@@ -1827,7 +1823,7 @@ void QCstmGLVisualization::bufferOccupancySlot(int occ){
     ui->bufferOccupancy->setValue( occ );
 }
 
-// Resets the view - uses same function as double clicking
+//! Resets the view - uses same function as double clicking
 void QCstmGLVisualization::on_resetViewPushButton_clicked(){
     reload_all_layers();
 }
