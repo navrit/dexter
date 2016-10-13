@@ -42,8 +42,8 @@ void ProfileDialog::on_buttonBox_accepted() {
 }
 
 void ProfileDialog::changeTitle(){
-    QString T = "Profile in the " + _axis + " direction";
-    T += QString(" from (%1, %2)-->(%3, %4)").arg(_begin.x()).arg(_begin.y()).arg(_end.x()).arg(_end.y());
+    QString T = "Profile ";
+    T += QString("of (%1, %2) --> (%3, %4)").arg(_begin.x()).arg(_begin.y()).arg(_end.x()).arg(_end.y());
     ui->groupBox->setTitle(T);
 }
 

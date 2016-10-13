@@ -1015,6 +1015,7 @@ QVector<QVector<double> > QCstmDQE::calcFTsquareRoI(QVector<QVector<double> > &d
     int xlength = data[0].length(); //Assuming the RoI is rectangular, i.e. every row has the same length.
     int ylength = data.length();
 
+    // TODO 3D PLOTTING
     //For test plotting:
 //    QtDataVisualization::QScatterDataArray data3D;
 

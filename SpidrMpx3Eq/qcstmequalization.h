@@ -231,7 +231,7 @@ public:
 
 	string BuildChartName(int val, QString leg);
 
-	void LoadEqualization();
+    void LoadEqualization(bool getPath = false);
 	void ShowEqualization(Mpx3EqualizationResults::lowHighSel sel);
 
 	void InitializeEqualizationStructure(); //<! on a normal run, when the user load the equalization after connecting
@@ -324,38 +324,43 @@ private:
 	// Object in charge of performing Thl scans
 	QVector<ThlScan * > _scans;
 
+    bool makeTeaCoffeeDialog();
+
 public slots:
-void SaveEqualization();
-void on_logYCheckBox_toggled(bool checked);
+    void SaveEqualization();
+    void on_logYCheckBox_toggled(bool checked);
 
 private slots:
 
-void setFineTuningLoops(int);
-void setNHits(int);
-void ScanThreadFinished();
-void StartEqualizationSingleChip();
-void StartEqualizationAllChips();
-void ChangeNTriggers(int);
-void ChangeDeviceIndex(int);
-void ChangeSpacing(int);
-void ChangeMin(int);
-void ChangeMax(int);
-void ChangeStep(int);
-void ConnectionStatusChanged(bool);
-void StopEqualization();
-void CleanEqualization();
-void setEqualizationTHLTHH(int);
-void setEqualizationShowTHLTHH(int);
-void setEqualizationTHLType(int);
-void ShowEqualizationForChip(bool checked);
+    void setFineTuningLoops(int);
+    void setNHits(int);
+    void ScanThreadFinished();
+    void StartEqualizationSingleChip();
+    void StartEqualizationAllChips();
+    void ChangeNTriggers(int);
+    void ChangeDeviceIndex(int);
+    void ChangeSpacing(int);
+    void ChangeMin(int);
+    void ChangeMax(int);
+    void ChangeStep(int);
+    void ConnectionStatusChanged(bool);
+    void StopEqualization();
+    void CleanEqualization();
+    void setEqualizationTHLTHH(int);
+    void setEqualizationShowTHLTHH(int);
+    void setEqualizationTHLType(int);
+    void ShowEqualizationForChip(bool checked);
 
-//void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
-//void on_openfileButton_clicked();
+    //void on_heatmapCombobox_currentIndexChanged(const QString &arg1);
+    //void on_openfileButton_clicked();
 
 signals:
-void slideAndSpin(int, int);
-void stop_data_taking_thread();
+    void slideAndSpin(int, int);
+    void stop_data_taking_thread();
 
+    //! Status bar signal functions
+    void sig_statusBarClean();
+    void sig_statusBarAppend(QString mess, QString colorString);
 };
 
 #endif // QCSTMEQUALIZATION_H

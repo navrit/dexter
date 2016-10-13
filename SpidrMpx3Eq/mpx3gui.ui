@@ -147,6 +147,7 @@
    <addaction name="actionClear_data"/>
    <addaction name="separator"/>
    <addaction name="actionLoad_Equalization"/>
+   <addaction name="actionLoad_equalisation_from_folder"/>
    <addaction name="actionClear_configuration"/>
    <addaction name="separator"/>
    <addaction name="actionWizard"/>
@@ -171,10 +172,10 @@
   <action name="actionClear_configuration">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/icons/eraser_equalisation_logo.png</normaloff>:/icons/eraser_equalisation_logo.png</iconset>
+     <normaloff>:/icons/equalisation-clear.png</normaloff>:/icons/equalisation-clear.png</iconset>
    </property>
    <property name="text">
-    <string>Clear configuration</string>
+    <string>Clear equalisation</string>
    </property>
   </action>
   <action name="actionLoad_DACs">
@@ -185,10 +186,13 @@
   <action name="actionLoad_Equalization">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/icons/load_equalisation_logo.png</normaloff>:/icons/load_equalisation_logo.png</iconset>
+     <normaloff>:/icons/equalisation_default.png</normaloff>:/icons/equalisation_default.png</iconset>
    </property>
    <property name="text">
-    <string>Load Equalization</string>
+    <string>Load Equalisation</string>
+   </property>
+   <property name="toolTip">
+    <string>Load Default Equalisation from config/</string>
    </property>
   </action>
   <action name="actionSave_DACs">
@@ -198,7 +202,10 @@
   </action>
   <action name="actionSave_Equalization">
    <property name="text">
-    <string>Save Equalization</string>
+    <string>Save Equalisation</string>
+   </property>
+   <property name="toolTip">
+    <string>Save Equalisation</string>
    </property>
   </action>
   <action name="actionSave_data">
@@ -207,7 +214,7 @@
      <normaloff>:/icons/download-arrow.png</normaloff>:/icons/download-arrow.png</iconset>
    </property>
    <property name="text">
-    <string>Save</string>
+    <string>Save .bin file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -220,6 +227,9 @@
    </property>
    <property name="text">
     <string>Open</string>
+   </property>
+   <property name="toolTip">
+    <string>Open .bin file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -256,6 +266,9 @@
    <property name="text">
     <string>&amp;Connect</string>
    </property>
+   <property name="shortcut">
+    <string>Space</string>
+   </property>
   </action>
   <action name="actionDisconnect">
    <property name="icon">
@@ -264,6 +277,9 @@
    </property>
    <property name="text">
     <string>Disconnect</string>
+   </property>
+   <property name="shortcut">
+    <string>Esc</string>
    </property>
   </action>
   <action name="actionDefibrillator">
@@ -297,10 +313,10 @@
      <normalon>:/icons/visible-opened-eye-interface-option.png</normalon>:/icons/visible-opened-eye-interface-option.png</iconset>
    </property>
    <property name="text">
-    <string>Visualization</string>
+    <string>Visualisation</string>
    </property>
    <property name="toolTip">
-    <string>Visualization (Ctrl+1)</string>
+    <string>Visualisation (Ctrl+1)</string>
    </property>
   </action>
   <action name="actionConfiguration">
@@ -345,10 +361,10 @@
      <normalon>:/icons/graph-curve.png</normalon>:/icons/graph-curve.png</iconset>
    </property>
    <property name="text">
-    <string>Equalization</string>
+    <string>Equalisation</string>
    </property>
    <property name="toolTip">
-    <string>Equalization (Ctrl+4)</string>
+    <string>Equalisation (Ctrl+4)</string>
    </property>
   </action>
   <action name="actionRevert">
@@ -374,6 +390,9 @@
    <property name="text">
     <string>About</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
+   </property>
   </action>
   <action name="actionStepper_Motor">
    <property name="checkable">
@@ -388,6 +407,22 @@
    </property>
    <property name="toolTip">
     <string>Stepper Motor</string>
+   </property>
+  </action>
+  <action name="actionLoad_equalisation_from_folder">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/open-equalisation-folder-black.png</normaloff>:/icons/open-equalisation-folder-black.png</iconset>
+   </property>
+   <property name="text">
+    <string>Load equalisation from folder</string>
+   </property>
+   <property name="toolTip">
+    <string>Load equalisation from folder where equalisation files are.
+adj_* and mask_*</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
    </property>
   </action>
  </widget>

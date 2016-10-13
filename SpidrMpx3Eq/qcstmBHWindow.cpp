@@ -128,8 +128,11 @@ void QCstmBHWindow::on_loadButton_clicked(){
 
     if(correctionMap.contains(thicknessvctr[selectedItemNo])) return;
     dataOpened = true;
+
     emit openData2(false, usePath, correctionPath);
-    if(!correctionMap.contains(thicknessvctr[selectedItemNo])&&dataOpened){
+    correctionPath = _mpx3gui->getLoadButtonFilename();
+
+    if(!correctionMap.contains(thicknessvctr[selectedItemNo]) && dataOpened){
         ui->list->item(selectedItemNo)->setBackground(QBrush(Qt::cyan));
         correctionMap.insert(thicknessvctr[selectedItemNo], *_mpx3gui->getDataset());
         correctionPaths.insert(thicknessvctr[selectedItemNo], correctionPath);
@@ -174,7 +177,7 @@ void QCstmBHWindow::on_plot(){
     ui->plotWidget->addGraph();
     ui->plotWidget->graph(0)->setData(xPlot, yPlot);
     ui->plotWidget->xAxis->setLabel("Thickness (μm)");
-    ui->plotWidget->yAxis->setLabel("Average pixel value");
+    ui->plotWidget->yAxis->setLabel("Average pixel events");
     ui->plotWidget->xAxis->setRange(minX, maxX);
     ui->plotWidget->yAxis->setRange(minY, maxY);
     ui->plotWidget->replot();

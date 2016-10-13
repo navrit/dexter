@@ -1,25 +1,7 @@
 <RCC>
     <qresource prefix="/">
-        <file>icons/Action-icon_64.png</file>
-        <file>icons/Action-icon_256.png</file>
-        <file>icons/Action-icon_128.png</file>
-        <file>icons/Actions-document-save-icon.png</file>
-        <file>icons/Actions-document-save-all-icon.png</file>
-        <file>icons/Actions-configure-icon_256.png</file>
-        <file>icons/Actions-document-open-icon.png</file>
-        <file>icons/Button-Turn-On-icon.png</file>
-        <file>icons/Visualization_logo.png</file>
-        <file>icons/load_equalisation_logo.png</file>
-        <file>icons/eraser_equalisation_logo.png</file>
         <file>icons/Equalisation_logo.png</file>
-        <file>icons/DACs_logo.png</file>
         <file>icons/ASI_algorithms_logo.png</file>
-        <file>icons/config_logo.png</file>
-        <file>icons/config_logo(active).png</file>
-        <file>icons/Visualization_logo(active).png</file>
-        <file>icons/Equalisation_logo(active).png</file>
-        <file>icons/DACs_logo(active).png</file>
-        <file>icons/Automated_External_Defibrillator.png</file>
         <file>icons/power-button-off.png</file>
         <file>icons/power-button-on.png</file>
         <file>icons/open-folder.png</file>
@@ -34,5 +16,8 @@
         <file>icons/graph-curve.png</file>
         <file>icons/info.png</file>
         <file>icons/motor.png</file>
+        <file>icons/equalisation-clear.png</file>
+        <file>icons/open-equalisation-folder-black.png</file>
+        <file>icons/equalisation_default.png</file>
     </qresource>
 </RCC>

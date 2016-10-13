@@ -28,8 +28,6 @@ CONFIG(debug, debug|release) {
     UI_DIR      = debug
     DESTDIR     = ../Debug
     LIBS       += -L../Debug
-
-    #DEFINES    += EXPERT_MODE
 }
 
 CONFIG(release, debug|release) {
@@ -38,8 +36,6 @@ CONFIG(release, debug|release) {
     UI_DIR      = release
     DESTDIR     = ../Release
     LIBS       += -L../Release
-
-    #DEFINES    += EXPERT_MODE
 }
 
 DEFINES    += EXPERT_MODE

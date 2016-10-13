@@ -25,6 +25,10 @@
 #include <QDebug>
 #include <QStatusBar>
 
+#include <boost/uuid/uuid.hpp>            // uuid class
+#include <boost/uuid/uuid_generators.hpp> // generators
+#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
+
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -86,7 +90,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _ui->DACsWidget->SetMpx3GUI( this );
     _ui->DACsWidget->setWindowWidgetsStatus(); // startup status
 
-    // Prepare Equalization
+    // Prepare Equalisation
     _ui->equalizationWidget->SetMpx3GUI( this );
     _ui->equalizationWidget->setWindowWidgetsStatus();
 
@@ -230,6 +234,11 @@ void Mpx3GUI::LoadEqualization(){
     _ui->equalizationWidget->LoadEqualization();
 }
 
+void Mpx3GUI::loadEqualisationFromPath(){
+    bool getPath = true;
+    _ui->equalizationWidget->LoadEqualization(getPath);
+}
+
 bool Mpx3GUI::equalizationLoaded(){
     return _ui->equalizationWidget->equalizationHasBeenLoaded();
 }
@@ -277,6 +286,8 @@ void Mpx3GUI::setTestPulses() {
 void Mpx3GUI::SetupSignalsAndSlots(){
 
     connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );
+    connect( _ui->actionLoad_equalisation_from_folder, SIGNAL(triggered()), this, SLOT( loadEqualisationFromPath()) );
+
     connect( _ui->actionSave_DACs, SIGNAL(triggered()), this, SLOT( save_config()) );
     connect( _ui->actionLoad_DACs, SIGNAL(triggered()), this, SLOT( load_config()) );
     //connect( _ui->actionConnect, SIGNAL(triggered()), this, SLOT( establish_connection() ) );
@@ -302,6 +313,12 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
     connect( this, &Mpx3GUI::sig_statusBarWrite, this, &Mpx3GUI::statusBarWrite );
     connect( this, &Mpx3GUI::sig_statusBarClean, this, &Mpx3GUI::statusBarClean );
+
+    //! Part 4: Send equalisation loaded from ... to mpx3gui status bar
+    // Connect signal from QCstmEqualization widget to slot here
+    connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend);
+    connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarClean, this, &Mpx3GUI::statusBarClean);
+
 
     for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {
         connect( _shortcutsSwitchPages[i], &QShortcut::activated,
@@ -495,18 +512,22 @@ bool Mpx3GUI::establish_connection() {
 
     *dbg << "\n";
     *dbg << "SpidrController class: "
-         <<  m_SPIDRControllerVersion << "\n";
+         <<  m_SPIDRControllerVersion.replace(QString("\n"), QString("")) << "\n";
 
     if( spidrcontrol->getFirmwVersion( &version ) ) {
         m_SPIDRFirmwareVersion = QString("\n SPIDR Firmware version: ") +
                 QString(spidrcontrol->versionToString( version ).c_str());
-        *dbg << "SPIDR firmware  : " << m_SPIDRFirmwareVersion << "\n";
+        *dbg << "SPIDR firmware  : "
+             << m_SPIDRFirmwareVersion.replace(QString("\n"), QString(""))
+             << "\n";
     }
 
     if( spidrcontrol->getSoftwVersion( &version ) ){
         m_SPIDRSoftwareVersion = QString("\n SPIDR Software version: ") +
                 QString(spidrcontrol->versionToString( version ).c_str());
-        *dbg << "SPIDR software  : " << m_SPIDRSoftwareVersion << "\n";
+        *dbg << "SPIDR software  : "
+             << m_SPIDRSoftwareVersion.replace(QString("\n"), QString(""))
+             << "\n";
     }
 
 
@@ -733,14 +754,97 @@ int Mpx3GUI::getFrameCount(){
     return getDataset()->getFrameCount();
 }
 
+QString Mpx3GUI::getLoadButtonFilename() {
+    return loadButtonFilenamePath;
+}
+
+void Mpx3GUI::saveMetadataToJSON(QString filename){
+
+    QJsonObject JSobjectParent, objBin;
+    // Which bin(s) are we taling about
+    objBin.insert("binPaths", filename);
+
+    /*
+
+    QJsonArray objDacsArray;
+    objBin.insert("binFilePath", );
+    objBin.insert("", );
+
+    JSobjectParent.insert("IPConfig", objIp);
+
+    if(includeDacs){
+        for(int j = 0; j < this->getDacCount(); j++){
+            QJsonObject obj;
+            for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++)
+                obj.insert(MPX3RX_DAC_TABLE[i].name, _dacVals[i][j]);
+            objDacsArray.insert(j, obj);
+        }
+        JSobjectParent.insert("DACs", objDacsArray);
+    }
+    */
+
+    boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    QString uuid_str = boost::uuids::to_string(uuid).c_str();
+    JSobjectParent.insert("Measurement_UUID", uuid_str);
+
+    JSobjectParent.insert("Build_ABI", QSysInfo::buildAbi());
+    JSobjectParent.insert("CPU_arch_current", QSysInfo::currentCpuArchitecture());
+    JSobjectParent.insert("CPU_arch_build", QSysInfo::buildCpuArchitecture());
+    JSobjectParent.insert("Win_version", QSysInfo::WindowsVersion);
+    JSobjectParent.insert("OS_version", QSysInfo::productVersion());
+    JSobjectParent.insert("OS_type", QSysInfo::productType());
+    JSobjectParent.insert("OS_prettyProductName", QSysInfo::prettyProductName());
+    JSobjectParent.insert("Machine_hostName", QSysInfo::machineHostName());
+    JSobjectParent.insert("Kernel_typeAndVersion", (QSysInfo::kernelType() + QSysInfo::kernelVersion()));
+    JSobjectParent.insert("Compile_dateTime", compileDateTime);
+    JSobjectParent.insert("C++_version", QString::fromStdString(to_string(__cplusplus)));
+    JSobjectParent.insert("Unix_time_s", (QDateTime::currentMSecsSinceEpoch() / 1000));
+    JSobjectParent.insert("Date_time_local", ( QDateTime::currentDateTime().toString(Qt::ISODate) ));
+    JSobjectParent.insert("Date_time_UTC", ( QDateTime::currentDateTimeUtc().toString(Qt::ISODate) ));
+
+    int sizex = getDataset()->x();
+    int sizey = getDataset()->y();
+    int nchipsx =  getDataset()->getNChipsX();
+    int nchipsy = getDataset()->getNChipsY();
+
+    QList <int> thresholds = getDataset()->getThresholds();
+    QString thresholds_str;
+    for (int i=0; i<thresholds.size(); i++){
+        thresholds_str += QString::number(thresholds[i]);
+        if(i < (thresholds.size()-1)){
+            thresholds_str += ", ";
+        }
+    }
+    JSobjectParent.insert("ChipSize_x", sizex);
+    JSobjectParent.insert("ChipSize_y", sizey);
+    JSobjectParent.insert("nChips_x", nchipsx);
+    JSobjectParent.insert("nChips_y", nchipsy);
+    JSobjectParent.insert("Length_x", sizex*nchipsx);
+    JSobjectParent.insert("Length_y", sizey*nchipsy);
+    JSobjectParent.insert("Thresholds", thresholds_str);
+
+    JSobjectParent.insert("bins", objBin);
+    QJsonDocument doc;
+    doc.setObject(JSobjectParent);
+
+    QFile saveFile(filename.replace(QString(".bin"), QString(".json")));
+    if(!saveFile.open(QIODevice::WriteOnly)){
+        qDebug() << "[WARN] JSON file is write only, aborting";
+        return;
+    }
+    saveFile.write(doc.toJson());
+    saveFile.close();
+
+}
+
 void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
 
     //! Native format
     // User dialog
-    QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("binary files (*.bin)"));
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("Binary files (*.bin)"));
 
     // Force the .bin in the data filename
-    if ( ! filename.contains(".bin")  && !filename.isEmpty()) {
+    if ( ! filename.toLower().contains(".bin")  && !filename.isEmpty()) {
         filename.append(".bin");
     }
 
@@ -755,6 +859,9 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
     }
     saveFile.write(getDataset()->toByteArray());
     saveFile.close();
+
+    //-------------------  JSON METADATA --------------------------------
+    saveMetadataToJSON(filename);
 
     /*
 
@@ -896,7 +1003,7 @@ void Mpx3GUI::open_data(bool saveOriginal){
     // And keep a copy just as in QCstmGLVisualization::data_taking_finished
     if ( saveOriginal ) saveOriginalDataset();
 
-    this->setWindowTitle( _softwareName + filename);
+    this->setWindowTitle( _softwareName + QString(": ")+ filename);
 
     // DQE ! ... this is on the way here !!!
 //    // If not in DQE - change back to Visualisation
@@ -923,11 +1030,11 @@ void Mpx3GUI::open_data(bool saveOriginal){
 void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString path)
 {
     QString filename;
-    if(!requestPath)
-    {
+    if(!requestPath) {
         filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("Native binary files (*.bin);;ASCII matrix (*.txt)"));
     } else {
         filename = path;
+        loadButtonFilenamePath = path;
     }
 
     qDebug() << "[INFO] loading image: " << filename;
@@ -1077,10 +1184,10 @@ void Mpx3GUI::on_actionExit_triggered()
     // Check if it's connected
     if ( getConfig()->isConnected() ) {
         on_actionDisconnect_triggered( false );
-    }
 
-    // Save data --> dialogue
-    save_data();
+        // Save data --> dialogue
+        save_data();
+    }
 
     emit exitApp( 0 );
 }
@@ -1151,8 +1258,7 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
 
     QString newLine = "\n";
 
-    QString newDate =  QDate::currentDate().toString("yyyy-MM-dd");
-    QString msg = QString("Compiled: ") + newDate + QString("  ") + QString(__TIME__) +
+    QString msg = QString("Compiled: ") + compileDateTime +
             newLine +
             QString("C++: ") + QString::fromStdString(to_string(__cplusplus)) +
             newLine +
@@ -1252,6 +1358,3 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked){
     }
 
 }
-
-
-

@@ -22,6 +22,7 @@
 #include <dlib/optimization.h>
 //#include <iostream>
 #include <vector>
+#include <fstream>      // std::ofstream
 
 
 using namespace std;
@@ -193,6 +194,7 @@ QByteArray Dataset::toByteArray() {
     ret += QByteArray::fromRawData((const char*)&layerCount, (int)sizeof(layerCount));
     ret += QByteArray::fromRawData((const char*)m_frameLayouts.data(),(int)(m_nFrames*sizeof(*m_frameLayouts.data())));
     ret += QByteArray::fromRawData((const char*)m_frameOrientation.data(), (int)(m_nFrames*sizeof(*m_frameOrientation.data())));
+    // Keys are Thresholds
     QList<int> keys = m_thresholdsToIndices.keys();
     ret += QByteArray::fromRawData((const char*)keys.toVector().data(),(int)(keys.size()*sizeof(int))); //thresholds
     for(int i = 0; i < keys.length(); i++)
@@ -800,6 +802,7 @@ double Dataset::calcPadMean(int thlkey, QSize isize) {
     return mean;
 }
 
+//! Interhigh interpolation
 void Dataset::applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals) {
 
     QList<int> keys = m_thresholdsToIndices.keys();
@@ -842,6 +845,7 @@ void Dataset::applyHighPixelsInterpolation(double meanMultiplier, QMap<int, doub
 
 }
 
+//! Interlow interpolation
 void Dataset::applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals) {
 
     // The keys are the thresholds
@@ -865,7 +869,7 @@ void Dataset::applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, doub
                     map< pair<int, int>, int > actives = activeNeighbors(x, y, keys[i], isize, __bigger, 0);
                     // And check how many of its neighbors are not noisy
                     map< pair<int, int>, int > notNoisy = activeNeighbors(x, y, keys[i], isize, __less, qRound(meanMultiplier * mean) );
-                    // The average will be made on the intersection of actives and notNoisy
+                    // The average will be made on the intersection of actives and notNoisy --> the good ones
                     std::vector<int> toAverage = getIntersection(actives, notNoisy);
 
                     // Request at least two active neighbors to consider filling up by averaging
@@ -1373,8 +1377,6 @@ void Dataset::applyOBCorrection() {
 
 }
 
-#include <fstream>      // std::ofstream
-
 void Dataset::dumpAllActivePixels() {
 
 
@@ -1487,7 +1489,7 @@ void Dataset::fromASCIIMatrix(QFile * file, int x, int y, int framesPerLayer)
 {
 
     QTextStream in(file);
-    in.seek(0); // go to the beggining, this descriptor has been scaned before
+    in.seek(0); // go to the beginning, this descriptor has been scanned before
     QString line;
     int rowCntr = 0, colCntr = 0;
     bool ok = false;
@@ -1688,7 +1690,7 @@ void Dataset::setPixel(int x, int y, int threshold, int val) {
 
 }
 
-int  Dataset::sampleFrameAt(int index, int layer, int x, int y){
+int Dataset::sampleFrameAt(int index, int layer, int x, int y){
     int* frame = getFrameAt(index, layer);
     int orientation = m_frameOrientation[index];
     if(!(orientation&1))
@@ -1754,8 +1756,8 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui) {
     // I want the layout of the whole chip.  I will build it again
 
     int nChips = getNChipsX() * getNChipsY();
-    std::vector<QPoint> frameLayouts = mpx3gui->getLayout();
-    std::vector<int> frameOrientation = mpx3gui->getOrientation();
+    std::vector<QPoint> frameLayouts = mpx3gui->getLayout(); // Positions in the pad
+    std::vector<int> frameOrientation = mpx3gui->getOrientation(); // Orientations
 
     // - Now work out the offsets
     QVector<QPoint> offsets;
