@@ -20,6 +20,8 @@ public:
 private slots:
     void on_activateCheckBox_clicked(bool checked);
 
+    void on_pushButtonSet_clicked();
+
 private:
     Mpx3GUI * _mpx3gui = nullptr;
     Ui::TestPulses *ui = nullptr;

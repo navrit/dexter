@@ -27,6 +27,20 @@
       </widget>
      </item>
      <item>
+      <widget class="QSpinBox" name="spinBox">
+       <property name="maximum">
+        <number>31</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonSet">
+       <property name="text">
+        <string>set</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QDialogButtonBox" name="buttonBox">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>

@@ -41,3 +41,14 @@ void TestPulses::on_activateCheckBox_clicked(bool checked)
     }
 
 }
+
+void TestPulses::on_pushButtonSet_clicked()
+{
+    int val = ui->spinBox->value();
+    qDebug() << "Setting : " << val;
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x10A0, val, true);
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x10A4, val, true);
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x10A8, val, true);
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x10AC, val, true);
+
+}
