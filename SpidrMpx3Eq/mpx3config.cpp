@@ -148,6 +148,8 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
+    spidrcontrol->setLogLevel( 2 );
+
     // Reset pixel configuration if requested
     if ( reset ) spidrcontrol->resetPixelConfig();
 
