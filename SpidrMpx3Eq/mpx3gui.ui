@@ -290,6 +290,9 @@
    <property name="text">
     <string>Defibrillator</string>
    </property>
+   <property name="toolTip">
+    <string>Defibrillator - online reset. Use this if the detector hangs before power cycling</string>
+   </property>
   </action>
   <action name="actionWizard">
    <property name="icon">
