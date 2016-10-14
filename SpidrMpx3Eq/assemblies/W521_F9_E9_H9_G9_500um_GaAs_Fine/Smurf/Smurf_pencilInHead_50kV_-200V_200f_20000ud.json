@@ -1,0 +1,27 @@
+{
+    "Build_ABI": "x86_64-little_endian-lp64",
+    "C++_version": "201103",
+    "CPU_arch_build": "x86_64",
+    "CPU_arch_current": "x86_64",
+    "ChipSize_x": 256,
+    "ChipSize_y": 256,
+    "Compile_dateTime": "2016-10-14 12:01:59",
+    "Date_time_UTC": "2016-10-14T12:38:32Z",
+    "Date_time_local": "2016-10-14T14:38:32",
+    "Kernel_typeAndVersion": "linux4.4.0-42-generic",
+    "Length_x": 512,
+    "Length_y": 512,
+    "Machine_hostName": "cube1",
+    "Measurement_UUID": "2afc5869-18d7-4374-aa08-2886919233b2",
+    "OS_prettyProductName": "Ubuntu 14.04.5 LTS",
+    "OS_type": "ubuntu",
+    "OS_version": "14.04",
+    "Thresholds": "0",
+    "Unix_time_s": 1476448712,
+    "Win_version": 0,
+    "bins": {
+        "binPaths": "/home/asi/tmp/mpx3gui/SpidrMpx3Eq/assemblies/W521_F9_E9_H9_G9_500um_GaAs_Fine/Smurf/Smurf_pencilInHead_50kV_-200V_200f_20000ud.bin"
+    },
+    "nChips_x": 2,
+    "nChips_y": 2
+}
