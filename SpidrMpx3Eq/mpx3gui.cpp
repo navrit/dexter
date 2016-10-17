@@ -295,7 +295,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect(_ui->actionSumming, SIGNAL(triggered()), this, SLOT(set_mode_integral()));
     connect(_ui->actionDiscrete, SIGNAL(triggered()), this, SLOT(set_mode_normal()));
 
-    connect(_ui->actionSave_data, SIGNAL(triggered()), this, SLOT(save_data(bool)));
+    connect(_ui->actionSave_data, SIGNAL(triggered(bool)), this, SLOT(save_data(bool)));
     connect(_ui->actionSave_Equalization, SIGNAL(triggered()), _ui->equalizationWidget, SLOT(SaveEqualization()));
     connect(_ui->actionOpen_data, SIGNAL(triggered()), this, SLOT(open_data()));
     connect(_ui->actionClear_data, SIGNAL(triggered()), this, SLOT(clear_data()));
@@ -308,6 +308,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->dqeTab, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool) ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->CnMWidget , SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, &Mpx3GUI::ConnectionStatusChanged, this, &Mpx3GUI::onConnectionStatusChanged );
 
     connect( this, &Mpx3GUI::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend );
@@ -507,27 +508,18 @@ bool Mpx3GUI::establish_connection() {
 
     // Get version numbers
     int version;
-    m_SPIDRControllerVersion = QString("\n SPIDR Controller version: ") +
+    m_SPIDRControllerVersion = QString("\nSPIDR Controller version: ") +
             QString (spidrcontrol->versionToString( spidrcontrol->classVersion() ).c_str());
 
-    *dbg << "\n";
-    *dbg << "SpidrController class: "
-         <<  m_SPIDRControllerVersion.replace(QString("\n"), QString("")) << "\n";
-
     if( spidrcontrol->getFirmwVersion( &version ) ) {
-        m_SPIDRFirmwareVersion = QString("\n SPIDR Firmware version: ") +
+        m_SPIDRFirmwareVersion = QString("\nSPIDR Firmware version: ") +
                 QString(spidrcontrol->versionToString( version ).c_str());
-        *dbg << "SPIDR firmware  : "
-             << m_SPIDRFirmwareVersion.replace(QString("\n"), QString(""))
-             << "\n";
     }
 
     if( spidrcontrol->getSoftwVersion( &version ) ){
-        m_SPIDRSoftwareVersion = QString("\n SPIDR Software version: ") +
-                QString(spidrcontrol->versionToString( version ).c_str());
-        *dbg << "SPIDR software  : "
-             << m_SPIDRSoftwareVersion.replace(QString("\n"), QString(""))
-             << "\n";
+        m_SPIDRSoftwareVersion = QString("\nSPIDR Software version: ") +
+                QString(spidrcontrol->versionToString( version ).c_str())
+                +QString("\n");
     }
 
 
@@ -760,17 +752,25 @@ QString Mpx3GUI::getLoadButtonFilename() {
 
 void Mpx3GUI::saveMetadataToJSON(QString filename){
 
-    QJsonObject JSobjectParent, objBin;
-    // Which bin(s) are we taling about
-    objBin.insert("binPaths", filename);
+    //! Get configuration JSON document
+    QJsonDocument docConfig = getConfig()->buildConfigJSON(true);
+    //! Extract config JSON object
+    QJsonObject objParent = docConfig.object();
 
-    /*
+    QJsonDocument doc;
+
+    //QJsonArray objBinsPathArray;
+    // Which bin(s) are we taling about
+    objParent.insert("binPath", filename);
+
+    /* Use this as inspiration for when multiple bins are saved
+     * Dump bin paths into a QJsonArray
 
     QJsonArray objDacsArray;
     objBin.insert("binFilePath", );
     objBin.insert("", );
 
-    JSobjectParent.insert("IPConfig", objIp);
+    objParent.insert("IPConfig", objIp);
 
     if(includeDacs){
         for(int j = 0; j < this->getDacCount(); j++){
@@ -779,29 +779,31 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
                 obj.insert(MPX3RX_DAC_TABLE[i].name, _dacVals[i][j]);
             objDacsArray.insert(j, obj);
         }
-        JSobjectParent.insert("DACs", objDacsArray);
+        objParent.insert("DACs", objDacsArray);
     }
     */
 
+    //-----------
     boost::uuids::uuid uuid = boost::uuids::random_generator()();
     QString uuid_str = boost::uuids::to_string(uuid).c_str();
-    JSobjectParent.insert("Measurement_UUID", uuid_str);
+    objParent.insert("Measurement_UUID", uuid_str);
+    //-----------
+    objParent.insert("Build_ABI", QSysInfo::buildAbi());
+    objParent.insert("CPU_arch_current", QSysInfo::currentCpuArchitecture());
+    objParent.insert("CPU_arch_build", QSysInfo::buildCpuArchitecture());
+    objParent.insert("WindowsVersion", QSysInfo::WindowsVersion);
+    objParent.insert("OS_productVersion", QSysInfo::productVersion());
+    objParent.insert("OS_productType", QSysInfo::productType());
+    objParent.insert("OS_prettyProductName", QSysInfo::prettyProductName());
+    objParent.insert("Machine_hostName", QSysInfo::machineHostName());
+    objParent.insert("Kernel_typeAndVersion", (QSysInfo::kernelType() + QSysInfo::kernelVersion()));
+    objParent.insert("Compile_dateTime", compileDateTime);
+    objParent.insert("C++_version", QString::fromStdString(to_string(__cplusplus)));
+    objParent.insert("Unix_time_s", (QDateTime::currentMSecsSinceEpoch() / 1000));
+    objParent.insert("Date_time_local", ( QDateTime::currentDateTime().toString(Qt::ISODate) ));
+    objParent.insert("Date_time_UTC", ( QDateTime::currentDateTimeUtc().toString(Qt::ISODate) ));
 
-    JSobjectParent.insert("Build_ABI", QSysInfo::buildAbi());
-    JSobjectParent.insert("CPU_arch_current", QSysInfo::currentCpuArchitecture());
-    JSobjectParent.insert("CPU_arch_build", QSysInfo::buildCpuArchitecture());
-    JSobjectParent.insert("Win_version", QSysInfo::WindowsVersion);
-    JSobjectParent.insert("OS_version", QSysInfo::productVersion());
-    JSobjectParent.insert("OS_type", QSysInfo::productType());
-    JSobjectParent.insert("OS_prettyProductName", QSysInfo::prettyProductName());
-    JSobjectParent.insert("Machine_hostName", QSysInfo::machineHostName());
-    JSobjectParent.insert("Kernel_typeAndVersion", (QSysInfo::kernelType() + QSysInfo::kernelVersion()));
-    JSobjectParent.insert("Compile_dateTime", compileDateTime);
-    JSobjectParent.insert("C++_version", QString::fromStdString(to_string(__cplusplus)));
-    JSobjectParent.insert("Unix_time_s", (QDateTime::currentMSecsSinceEpoch() / 1000));
-    JSobjectParent.insert("Date_time_local", ( QDateTime::currentDateTime().toString(Qt::ISODate) ));
-    JSobjectParent.insert("Date_time_UTC", ( QDateTime::currentDateTimeUtc().toString(Qt::ISODate) ));
-
+    // ------------------ Calculations -------------------------------
     int sizex = getDataset()->x();
     int sizey = getDataset()->y();
     int nchipsx =  getDataset()->getNChipsX();
@@ -815,21 +817,25 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
             thresholds_str += ", ";
         }
     }
-    JSobjectParent.insert("ChipSize_x", sizex);
-    JSobjectParent.insert("ChipSize_y", sizey);
-    JSobjectParent.insert("nChips_x", nchipsx);
-    JSobjectParent.insert("nChips_y", nchipsy);
-    JSobjectParent.insert("Length_x", sizex*nchipsx);
-    JSobjectParent.insert("Length_y", sizey*nchipsy);
-    JSobjectParent.insert("Thresholds", thresholds_str);
+    // ----------------------------------------------------------------
+    objParent.insert("ChipSize_x", sizex);
+    objParent.insert("ChipSize_y", sizey);
+    objParent.insert("nChips_x", nchipsx);
+    objParent.insert("nChips_y", nchipsy);
+    objParent.insert("Length_x", sizex*nchipsx);
+    objParent.insert("Length_y", sizey*nchipsy);
+    objParent.insert("Thresholds", thresholds_str);
 
-    JSobjectParent.insert("bins", objBin);
-    QJsonDocument doc;
-    doc.setObject(JSobjectParent);
+    // TODO JSON
+//    objParent.insert("Number of frames", );
+
+
+    doc.setObject(objParent);
 
     QFile saveFile(filename.replace(QString(".bin"), QString(".json")));
     if(!saveFile.open(QIODevice::WriteOnly)){
-        qDebug() << "[WARN] JSON file is write only, aborting";
+        qDebug() << "[WARN] JSON file CANNOT be opened as QIODevice::WriteOnly, aborting";
+        sig_statusBarAppend(tr("Cannot write JSON metadata, skipping."),"red");
         return;
     }
     saveFile.write(doc.toJson());

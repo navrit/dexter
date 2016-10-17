@@ -49,7 +49,57 @@ bool Mpx3Config::RequiredOnGlobalConfig(Mpx3Config::config_items item)
              item == __triggerDowntime ||
              item == __triggerMode ||
              item == __operationMode // operation mode requires trigger config too !
-            );
+                );
+}
+
+QJsonDocument Mpx3Config::buildConfigJSON(bool includeDacs)
+{
+    QJsonObject JSobjectParent, objIp, objDetector, objStepper;
+    QJsonArray objDacsArray;
+    objIp.insert("SpidrControllerIp", SpidrAddress.toString());
+    objIp.insert("SpidrControllerPort", this->port);
+
+    objDetector.insert("OperationMode", this->OperationMode);
+    objDetector.insert("PixelDepth", this->PixelDepth);
+    objDetector.insert("Polarity", this->Polarity);
+    objDetector.insert("CsmSpm", this->CsmSpm);
+    objDetector.insert("GainMode", this->GainMode);
+    objDetector.insert("MaxPacketSize", this->MaxPacketSize);
+    objDetector.insert("TriggerMode", this->TriggerMode);
+    objDetector.insert("TriggerLength_us", this->TriggerLength_us);
+    objDetector.insert("ContRWFreq", this->ContRWFreq);
+
+    objDetector.insert("TriggerDeadtime_us", this->TriggerDowntime_us);
+    objDetector.insert("nTriggers", this->nTriggers);
+    objDetector.insert("ColourMode", this->colourMode);
+    objDetector.insert("LUTEnable", this->LUTEnable);
+    objDetector.insert("DecodeFrames", this->decodeFrames);
+
+    objStepper.insert("Acceleration", this->stepperAcceleration);
+    objStepper.insert("Speed", this->stepperSpeed);
+    objStepper.insert("UseCalib", this->stepperUseCalib);
+    objStepper.insert("CalibPos0", this->stepperCalibPos0);
+    objStepper.insert("CalibAngle0", this->stepperCalibAngle0);
+    objStepper.insert("CalibPos1", this->stepperCalibPos1);
+    objStepper.insert("CalibAngle1", this->stepperCalibAngle1);
+
+    JSobjectParent.insert("IPConfig", objIp);
+    JSobjectParent.insert("DetectorConfig", objDetector);
+    JSobjectParent.insert("StepperConfig", objStepper);
+
+    if(includeDacs){
+        for(int j = 0; j < this->getDacCount(); j++){
+            QJsonObject obj;
+            for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++)
+                obj.insert(MPX3RX_DAC_TABLE[i].name, _dacVals[i][j]);
+            objDacsArray.insert(j, obj);
+        }
+        JSobjectParent.insert("DACs", objDacsArray);
+    }
+    QJsonDocument doc;
+    doc.setObject(JSobjectParent);
+
+    return doc;
 }
 
 void Mpx3Config::PickupStaticConfigurationFigures() {
@@ -60,8 +110,7 @@ void Mpx3Config::PickupStaticConfigurationFigures() {
     //
     int clockMHz;
     spidrcontrol->getMpx3Clock( &clockMHz );
-    qDebug() << "clock : " << clockMHz;
-
+    qDebug() << "Clock: " << clockMHz;
 
 }
 
@@ -764,50 +813,9 @@ bool Mpx3Config::toJsonFile(QString filename, bool includeDacs){
         printf("Couldn't open configuration file %s\n", filename.toStdString().c_str());
         return false;
     }
-    QJsonObject JSobjectParent, objIp, objDetector, objStepper;
-    QJsonArray objDacsArray;
-    objIp.insert("SpidrControllerIp", SpidrAddress.toString());
-    objIp.insert("SpidrControllerPort", this->port);
 
-    objDetector.insert("OperationMode", this->OperationMode);
-    objDetector.insert("PixelDepth", this->PixelDepth);
-    objDetector.insert("Polarity", this->Polarity);
-    objDetector.insert("CsmSpm", this->CsmSpm);
-    objDetector.insert("GainMode", this->GainMode);
-    objDetector.insert("MaxPacketSize", this->MaxPacketSize);
-    objDetector.insert("TriggerMode", this->TriggerMode);
-    objDetector.insert("TriggerLength_us", this->TriggerLength_us);
-    objDetector.insert("ContRWFreq", this->ContRWFreq);
+    QJsonDocument doc = buildConfigJSON(includeDacs);
 
-    objDetector.insert("TriggerDeadtime_us", this->TriggerDowntime_us);
-    objDetector.insert("nTriggers", this->nTriggers);
-    objDetector.insert("ColourMode", this->colourMode);
-    objDetector.insert("LUTEnable", this->LUTEnable);
-    objDetector.insert("DecodeFrames", this->decodeFrames);
-
-    objStepper.insert("Acceleration", this->stepperAcceleration);
-    objStepper.insert("Speed", this->stepperSpeed);
-    objStepper.insert("UseCalib", this->stepperUseCalib);
-    objStepper.insert("CalibPos0", this->stepperCalibPos0);
-    objStepper.insert("CalibAngle0", this->stepperCalibAngle0);
-    objStepper.insert("CalibPos1", this->stepperCalibPos1);
-    objStepper.insert("CalibAngle1", this->stepperCalibAngle1);
-
-    JSobjectParent.insert("IPConfig", objIp);
-    JSobjectParent.insert("DetectorConfig", objDetector);
-    JSobjectParent.insert("StepperConfig", objStepper);
-
-    if(includeDacs){
-        for(int j = 0; j < this->getDacCount(); j++){
-            QJsonObject obj;
-            for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++)
-                obj.insert(MPX3RX_DAC_TABLE[i].name, _dacVals[i][j]);
-            objDacsArray.insert(j, obj);
-        }
-        JSobjectParent.insert("DACs", objDacsArray);
-    }
-    QJsonDocument doc;
-    doc.setObject(JSobjectParent);
     loadFile.write(doc.toJson());
 
     return true;
