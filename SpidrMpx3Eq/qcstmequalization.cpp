@@ -1179,13 +1179,49 @@ void QCstmEqualization::DAC_Disc_Optimization (int devId, ScanResults * res_100,
 
 void QCstmEqualization::SaveEqualization() {
 
+    // TODO CHECK THIS untested
+    qDebug() << "[DISABLED] TODO CHECK THIS untested: QCstmEqualization::SaveEqualization \n _mpx3gui->getConfig()->toJsonFile(filename)...";
+
+    //! Get folder to save equalisation files to
+    QString path = QFileDialog::getExistingDirectory(this, tr("Open Directory to save equalisations to"),
+                                                     QDir::currentPath(),
+                                                     QFileDialog::ShowDirsOnly);
+    //! User pressed cancel, offer another go at saving
+    if (path.isEmpty()){
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::warning(this,
+                                     tr("Warning"),
+                                     tr("Are you sure you do not want to save equalisations and config files?"),
+                                     QMessageBox::Save|QMessageBox::Cancel);
+        if (reply == QMessageBox::Save) {
+            path = QFileDialog::getExistingDirectory(this,
+                                                     tr("Open Directory to save equalisations to"),
+                                                     QDir::currentPath(),
+                                                     QFileDialog::ShowDirsOnly);
+        } else {
+            sig_statusBarAppend(tr("Equalisation not saved, you may save them manually"),"red");
+            return;
+        }
+
+    }
+    path.append("/");
+    QString filenameEqualisation = path;
+    filenameEqualisation.append("config.json");
+
+    //! Save equalisations with DACs when you run an equalisation
+    _mpx3gui->getConfig()->toJsonFile(filenameEqualisation, true);
+
     int chipListSize = (int)_workChipsIndx.size();
 
+    //! Build adj and mask filename+path strings and save them
     for ( int i = 0 ; i < chipListSize ; i++ ) {
 
-        QString adjfn = "adj_";
+        QString adjfn = path;
+        adjfn += "adj_";
         adjfn += QString::number(_workChipsIndx[i], 10);
-        QString maskfn = "mask_";
+
+        QString maskfn = path;
+        maskfn += "mask_";
         maskfn += QString::number(_workChipsIndx[i], 10);
 
         // Binary file
