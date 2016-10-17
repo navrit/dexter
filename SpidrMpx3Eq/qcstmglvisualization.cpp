@@ -303,9 +303,10 @@ void QCstmGLVisualization::StartDataTaking() {
 
         // By premature user signal !
         _dataTakingThread->stop(); // this calls by SIGNAL/SLOT the data_taking_finished
-
+        //! TODO FIX BUG - Use inf mode then press stop makes the program fuck up
     }
 
+    //! TODO Why is this all commented out?
     /*
     // The Start button becomes the Stop button
     if ( ! _takingData ) {
@@ -786,7 +787,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     // Defaults
     emit mode_changed( ui->summingCheckbox->isChecked() );
 
-    connect( ui->saveCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_saveCheckBox_clicked()));
+    connect( ui->saveCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_saveCheckBox_toggled()));
 }
 
 void QCstmGLVisualization::ntriggers_edit() {
