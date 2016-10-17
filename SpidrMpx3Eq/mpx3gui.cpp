@@ -295,7 +295,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect(_ui->actionSumming, SIGNAL(triggered()), this, SLOT(set_mode_integral()));
     connect(_ui->actionDiscrete, SIGNAL(triggered()), this, SLOT(set_mode_normal()));
 
-    connect(_ui->actionSave_data, SIGNAL(triggered()), this, SLOT(save_data()));
+    connect(_ui->actionSave_data, SIGNAL(triggered()), this, SLOT(save_data(bool)));
     connect(_ui->actionSave_Equalization, SIGNAL(triggered()), _ui->equalizationWidget, SLOT(SaveEqualization()));
     connect(_ui->actionOpen_data, SIGNAL(triggered()), this, SLOT(open_data()));
     connect(_ui->actionClear_data, SIGNAL(triggered()), this, SLOT(clear_data()));
@@ -835,16 +835,28 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     saveFile.write(doc.toJson());
     saveFile.close();
 
+    qDebug() << "[INFO] JSON File saved";
 }
 
-void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
+void Mpx3GUI::save_data(bool requestPath){//TODO: REIMPLEMENT
 
-    //! Native format
-    // User dialog
-    QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), tr("."), tr("Binary files (*.bin)"));
+    QString filename;
+    QString path;
+    if (!requestPath){
+        //! Native format - User dialog
+        filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", tr("Binary files (*.bin)"));
 
-    // Force the .bin in the data filename
-    if ( ! filename.toLower().contains(".bin")  && !filename.isEmpty()) {
+        //! Force the .bin in the data filename
+        if ( ! filename.toLower().contains(".bin")  && !filename.isEmpty()) {
+            filename.append(".bin");
+        }
+    } else {
+        //! Get the visualisation dialog UI saveLineEdit text and assign to filename
+        path = getVisualization()->getsaveLineEdit_Text();
+        //! Build the filename+path string up by adding  "/", the current UTC date in ISO format and ".bin"
+        filename = path;
+        filename.append("/");
+        filename.append(QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
         filename.append(".bin");
     }
 
@@ -859,6 +871,11 @@ void Mpx3GUI::save_data(){//TODO: REIMPLEMENT
     }
     saveFile.write(getDataset()->toByteArray());
     saveFile.close();
+
+    qDebug() << "[INFO] .bin file saved: ..." << filename;
+    QString msg = "Auto-saved: ...";
+    msg.append(filename.section('/',-3,-1));
+    emit sig_statusBarAppend(msg,"green");
 
     //-------------------  JSON METADATA --------------------------------
     saveMetadataToJSON(filename);
@@ -1150,6 +1167,7 @@ void Mpx3GUI::clear_data(bool clearStatusBar) {
 //    _ui->dqeTab->clearDataAndPlots(true);
     //getVisualization()->cle
     emit data_cleared();
+    this->setWindowTitle( _softwareName);
 
     if ( clearStatusBar )
         emit sig_statusBarAppend("Clear data","orange");
@@ -1186,7 +1204,7 @@ void Mpx3GUI::on_actionExit_triggered()
         on_actionDisconnect_triggered( false );
 
         // Save data --> dialogue
-        save_data();
+        save_data(false);
     }
 
     emit exitApp( 0 );
