@@ -835,7 +835,7 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     QFile saveFile(filename.replace(QString(".bin"), QString(".json")));
     if(!saveFile.open(QIODevice::WriteOnly)){
         qDebug() << "[WARN] JSON file CANNOT be opened as QIODevice::WriteOnly, aborting";
-        sig_statusBarAppend(tr("Cannot write JSON metadata, skipping."),"red");
+        sig_statusBarAppend(tr("Cannot write JSON metadata, skipping"),"red");
         return;
     }
     saveFile.write(doc.toJson());

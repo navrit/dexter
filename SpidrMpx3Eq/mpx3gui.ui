@@ -253,6 +253,12 @@
    <property name="text">
     <string>Clear data</string>
    </property>
+   <property name="toolTip">
+    <string>Clear data (Delete)</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
   </action>
   <action name="actionConnect">
    <property name="checkable">
@@ -266,6 +272,9 @@
    <property name="text">
     <string>&amp;Connect</string>
    </property>
+   <property name="toolTip">
+    <string>Connect (Space)</string>
+   </property>
    <property name="shortcut">
     <string>Space</string>
    </property>
@@ -277,6 +286,9 @@
    </property>
    <property name="text">
     <string>Disconnect</string>
+   </property>
+   <property name="toolTip">
+    <string>Disconnect (Esc)</string>
    </property>
    <property name="shortcut">
     <string>Esc</string>
@@ -295,6 +307,9 @@
    </property>
   </action>
   <action name="actionWizard">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/icons/magic-wand.png</normaloff>:/icons/magic-wand.png</iconset>
