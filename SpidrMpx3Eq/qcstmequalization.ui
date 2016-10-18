@@ -125,6 +125,9 @@
        <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,1,0">
         <item>
          <widget class="QLabel" name="label_frameSelector">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="toolTip">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frame selector&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
@@ -135,6 +138,9 @@
         </item>
         <item>
          <widget class="QSpinBox" name="frameSpinner">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="toolTip">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frame selector&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>

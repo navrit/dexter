@@ -259,6 +259,12 @@ void QCstmGLVisualization::CalcETA() {
 
 }
 
+//! Used in Mpx3GUI::save_data to send the save file path from the UI to save_data.
+//! This is done after
+QString QCstmGLVisualization::getsaveLineEdit_Text() {
+    return ui->saveLineEdit->text();
+}
+
 void QCstmGLVisualization::StartDataTaking() {
 
     if ( !_dataTakingThread ) {
@@ -297,9 +303,10 @@ void QCstmGLVisualization::StartDataTaking() {
 
         // By premature user signal !
         _dataTakingThread->stop(); // this calls by SIGNAL/SLOT the data_taking_finished
-
+        //! TODO FIX BUG - Use inf mode then press stop makes the program fuck up
     }
 
+    //! TODO Why is this all commented out?
     /*
     // The Start button becomes the Stop button
     if ( ! _takingData ) {
@@ -492,6 +499,12 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
     rewindScoring();
 
+    //! If Save checkbox is checked and Save line edit is not empty,
+    //!    Save the data to .bin file with path obtained from UI
+    if(ui->saveCheckBox->isChecked() && !(ui->saveLineEdit->text().isEmpty())){
+        _mpx3gui->save_data(true);
+    }
+
     /*
     if ( _takingData ) {
 
@@ -676,6 +689,7 @@ void QCstmGLVisualization::ConnectionStatusChanged(bool connecting) {
 
     } else {
         FinishDataTakingThread();
+
         ui->startButton->setEnabled( false );
         ui->singleshotPushButton->setEnabled( false );
         ui->recoPushButton->setEnabled( false );
@@ -773,6 +787,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     // Defaults
     emit mode_changed( ui->summingCheckbox->isChecked() );
 
+    connect( ui->saveCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_saveCheckBox_toggled()));
 }
 
 void QCstmGLVisualization::ntriggers_edit() {
@@ -984,6 +999,19 @@ void QCstmGLVisualization::BuildStatsStringOverflow(bool overflow)
 
     BuildStatsString();
 
+}
+
+QString QCstmGLVisualization::getPath(QString msg)
+{
+    QString path = "";
+    path = QFileDialog::getExistingDirectory(
+                this,
+                msg,
+                QDir::currentPath(),
+                QFileDialog::ShowDirsOnly);
+
+    // We WILL get a path before exiting this function
+    return path;
 }
 
 void QCstmGLVisualization::on_user_accepted_stats()
@@ -1328,8 +1356,8 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     wid.setDefaultWidget(label);
     contextMenu.addAction(&wid);
 
-    QAction calcStats(QString("Calc stats"), &contextMenu);
-    //QAction calcStats(QString("Calc stats (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    QAction calcStats(QString("Calculate statistics"), &contextMenu);
+    //QAction calcStats(QString("Calculate statistics (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&calcStats);
 
     QAction calcProX(QString("ProfileX"), &contextMenu);
@@ -1591,6 +1619,12 @@ void QCstmGLVisualization::on_summingCheckbox_toggled(bool checked){
 void QCstmGLVisualization::on_saveBitmapPushButton_clicked(){
     QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), QStandardPaths::displayName(QStandardPaths::PicturesLocation), tr("location"));
 
+    //! Fixes a bug where if you tried to save but cancelled, it would save empty files called _histogram.dat, _histogram.png and _.png
+    if (filename.isEmpty()){
+        qDebug() << "[INFO] User tried to save and cancelled or input an empty string somehow";
+        return;
+    }
+
     // Get the image
     if ( _savePNGWithScales ) ui->glPlot->grab().save(filename+".png"); // with all children
     else ui->glPlot->getPlot()->grabFramebuffer().save(filename+".png"); // only image
@@ -1826,4 +1860,30 @@ void QCstmGLVisualization::bufferOccupancySlot(int occ){
 //! Resets the view - uses same function as double clicking
 void QCstmGLVisualization::on_resetViewPushButton_clicked(){
     reload_all_layers();
+}
+
+//! Clear saveLineEdit on_saveCheckBox_toggled, every time
+void QCstmGLVisualization::on_saveCheckBox_toggled(){
+    ui->saveLineEdit->clear();
+
+    //! Open file dialog, get path and set saveLineEdit to given path and continue
+    if(ui->saveCheckBox->isChecked()){
+
+        //! Get the Absolute folder path
+        QString msg = tr("Select a directory to auto-save recorded files to");
+        QString path = getPath(msg);
+
+        //! GUI update - save LineEdit set to path from dialog
+        ui->saveLineEdit->setText(path);
+
+        //! If user selected nothing, path comes back empty (or "/" ?)
+        if(path.isEmpty()){
+            ui->saveCheckBox->setChecked(0);
+            ui->saveLineEdit->clear();
+        }
+
+        //! When finished, see data_taking_finished() where the data is saved
+
+        return;
+    }
 }

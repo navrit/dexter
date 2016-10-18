@@ -1,0 +1,27 @@
+{
+    "Build_ABI": "x86_64-little_endian-lp64",
+    "C++_version": "201103",
+    "CPU_arch_build": "x86_64",
+    "CPU_arch_current": "x86_64",
+    "ChipSize_x": 256,
+    "ChipSize_y": 256,
+    "Compile_dateTime": "2016-10-14 12:01:59",
+    "Date_time_UTC": "2016-10-14T13:02:07Z",
+    "Date_time_local": "2016-10-14T15:02:07",
+    "Kernel_typeAndVersion": "linux4.4.0-42-generic",
+    "Length_x": 512,
+    "Length_y": 512,
+    "Machine_hostName": "cube1",
+    "Measurement_UUID": "81a9ccbc-f683-48f2-8d64-a08b40e762a9",
+    "OS_prettyProductName": "Ubuntu 14.04.5 LTS",
+    "OS_type": "ubuntu",
+    "OS_version": "14.04",
+    "Thresholds": "0",
+    "Unix_time_s": 1476450127,
+    "Win_version": 0,
+    "bins": {
+        "binPaths": "/home/asi/tmp/mpx3gui/SpidrMpx3Eq/assemblies/W521_F9_E9_H9_G9_500um_GaAs_Fine/Samsung S6/QIChargerPossibly_2.bin"
+    },
+    "nChips_x": 2,
+    "nChips_y": 2
+}

@@ -177,6 +177,8 @@ public:
     bool RequiredOnEveryChipConfig(config_items);
     bool RequiredOnGlobalConfig(config_items item);
 
+    QJsonDocument buildConfigJSON(bool includeDacs);
+
 private:
 
     Mpx3GUI * _mpx3gui;

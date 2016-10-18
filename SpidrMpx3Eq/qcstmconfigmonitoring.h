@@ -32,6 +32,8 @@ public:
 
     void timerEvent( QTimerEvent * );
 
+    void setWindowWidgetsStatus(win_status s = win_status::startup);
+
 
 //    StepperMotorController * getMotorController() { return _stepper; }
 //    void activeInGUI();
@@ -59,6 +61,7 @@ public slots:
     void on_idling_gui();
 
 private slots:
+    void ConnectionStatusChanged(bool);
 
     void setPixelDepthByIndex(int newValIndx);
     void pixelDepthChangedByValue(int val);

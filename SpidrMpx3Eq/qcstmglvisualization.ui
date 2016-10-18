@@ -214,29 +214,41 @@ QGroupBox::title {
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout">
             <item>
-             <widget class="QCheckBox" name="saveDataContinuousCheckBox">
+             <widget class="QCheckBox" name="saveCheckBox">
               <property name="toolTip">
-               <string>keep saving data continuously</string>
+               <string>Keep saving data continuously</string>
               </property>
               <property name="text">
-               <string>Save</string>
+               <string>Auto-save</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit">
+             <widget class="QLineEdit" name="saveLineEdit">
               <property name="toolTip">
-               <string>path</string>
+               <string>Save file(s) to this path when finished taking data</string>
+              </property>
+              <property name="text">
+               <string notr="true"/>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+              <property name="placeholderText">
+               <string>Save file(s) to this path when finished taking data</string>
+              </property>
+              <property name="clearButtonEnabled">
+               <bool>false</bool>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_2">
+             <widget class="QPushButton" name="selectSaveFolderDialog">
               <property name="toolTip">
-               <string>select path dialogue</string>
+               <string>Select path dialog - which folder to save files to</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>Select folder</string>
               </property>
              </widget>
             </item>
@@ -253,7 +265,7 @@ QGroupBox::title {
                </sizepolicy>
               </property>
               <property name="toolTip">
-               <string>integrate data</string>
+               <string>Integrate data during acquisition</string>
               </property>
               <property name="text">
                <string>Integrate</string>
@@ -265,6 +277,9 @@ QGroupBox::title {
             </item>
             <item>
              <widget class="QCheckBox" name="dropFramesCheckBox">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -272,7 +287,7 @@ QGroupBox::title {
                </sizepolicy>
               </property>
               <property name="toolTip">
-               <string>drop a frame if there are lost packets</string>
+               <string>Drop a frame if there are lost packets</string>
               </property>
               <property name="text">
                <string>Drop</string>
@@ -281,8 +296,11 @@ QGroupBox::title {
             </item>
             <item>
              <widget class="QCheckBox" name="infDataTakingCheckBox">
+              <property name="toolTip">
+               <string>Inifinite data acquisition</string>
+              </property>
               <property name="text">
-               <string>inf</string>
+               <string>Inf</string>
               </property>
              </widget>
             </item>
@@ -295,7 +313,7 @@ QGroupBox::title {
                </sizepolicy>
               </property>
               <property name="toolTip">
-               <string>if information is lost the system keeps taking data until the goal is reached</string>
+               <string>Keep acquiring data until frame number goal is reached.</string>
               </property>
               <property name="text">
                <string>Complete</string>
@@ -317,6 +335,9 @@ QGroupBox::title {
             </item>
             <item>
              <widget class="QPushButton" name="correctionsDialogPushButton">
+              <property name="toolTip">
+               <string>Open Corrections dialog</string>
+              </property>
               <property name="text">
                <string>Corrections</string>
               </property>
@@ -562,6 +583,9 @@ QGroupBox::title {
                 <height>0</height>
                </size>
               </property>
+              <property name="toolTip">
+               <string>Make sure this doesn't reach 100%!</string>
+              </property>
               <property name="value">
                <number>0</number>
               </property>
@@ -625,6 +649,9 @@ QGroupBox::title {
                 <height>15</height>
                </size>
               </property>
+              <property name="toolTip">
+               <string>Make sure this doesn't reach 100%!</string>
+              </property>
               <property name="value">
                <number>0</number>
               </property>
@@ -635,6 +662,9 @@ QGroupBox::title {
             </item>
             <item row="3" column="0">
              <widget class="QPushButton" name="multiThresholdAnalysisPushButton">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -689,6 +719,9 @@ QGroupBox::title {
             </item>
             <item row="4" column="0">
              <widget class="QPushButton" name="testPulsesPushButton">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="minimumSize">
                <size>
                 <width>94</width>

@@ -212,11 +212,8 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
 
-    qDebug() << "BUG >> This will crash if no file opened";
-    if ((spidrcontrol->getOmr( dev_nr, omr ))){             // This is the screwy line.
-        QMessageBox::warning(this, "Error", "#32 getOmr crash");
-        return;
-    }
+    // This will crash if not connected
+    spidrcontrol->getOmr( dev_nr, omr );
 
     cout << "[OMR ]" << endl;
 
@@ -306,6 +303,23 @@ void QCstmConfigMonitoring::on_taking_data_gui()
 void QCstmConfigMonitoring::on_idling_gui()
 {
     ui->groupBoxConfiguration->setEnabled( true );
+}
+
+void QCstmConfigMonitoring::ConnectionStatusChanged(bool conn) {
+
+    if ( conn ) {
+
+        setWindowWidgetsStatus( win_status::connected );
+
+        ui->readOMRPushButton->setEnabled(true);
+
+
+    } else {
+
+        setWindowWidgetsStatus( win_status::disconnected );
+        ui->readOMRPushButton->setEnabled(false);
+
+    }
 }
 
 //void QCstmConfigMonitoring::activeInGUI() {
@@ -615,6 +629,23 @@ void QCstmConfigMonitoring::timerEvent(QTimerEvent *) {
 
     readMonitoringInfo();
 
+}
+
+void QCstmConfigMonitoring::setWindowWidgetsStatus(win_status s){
+    switch (s) {
+
+    case win_status::startup:
+        this->setEnabled( false );
+        break;
+
+    case win_status::connected:
+        this->setEnabled( true );
+        break;
+
+    default:
+        break;
+
+    }
 }
 
 void QCstmConfigMonitoring::readMonitoringInfo() {

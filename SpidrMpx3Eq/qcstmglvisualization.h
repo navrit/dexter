@@ -112,6 +112,7 @@ public:
     bool DataTakingThreadIsIdling();
     void CalcETA();
 
+    QString getsaveLineEdit_Text();
 
 private:
 
@@ -180,6 +181,8 @@ private:
     void BuildStatsStringMpx3ClockStops(uint64_t stops);
     void BuildStatsStringOverflow(bool overflow);
 
+    QString getPath(QString msg);
+
 private slots:
     void ConnectionStatusChanged(bool connecting);
     void on_percentileRangeRadio_toggled(bool checked);
@@ -239,6 +242,8 @@ private slots:
     void on_dropFramesCheckBox_clicked(bool checked);
 
     void on_resetViewPushButton_clicked();
+
+    void on_saveCheckBox_toggled();
 
 
 public slots:
