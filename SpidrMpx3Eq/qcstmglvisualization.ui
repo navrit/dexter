@@ -242,16 +242,6 @@ QGroupBox::title {
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QPushButton" name="selectSaveFolderDialog">
-              <property name="toolTip">
-               <string>Select path dialog - which folder to save files to</string>
-              </property>
-              <property name="text">
-               <string>Select folder</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
           <item>
