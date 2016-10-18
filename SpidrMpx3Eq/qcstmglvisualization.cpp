@@ -1356,8 +1356,8 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     wid.setDefaultWidget(label);
     contextMenu.addAction(&wid);
 
-    QAction calcStats(QString("Calc stats"), &contextMenu);
-    //QAction calcStats(QString("Calc stats (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    QAction calcStats(QString("Calculate statistics"), &contextMenu);
+    //QAction calcStats(QString("Calculate statistics (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&calcStats);
 
     QAction calcProX(QString("ProfileX"), &contextMenu);
