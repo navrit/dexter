@@ -1146,6 +1146,7 @@ void Mpx3GUI::clear_configuration(){
 }
 
 void Mpx3GUI::clear_data(bool clearStatusBar) {
+
     getDataset()->clear();
 //    _ui->dqeTab->clearDataAndPlots(true);
     //getVisualization()->cle
@@ -1153,6 +1154,9 @@ void Mpx3GUI::clear_data(bool clearStatusBar) {
 
     if ( clearStatusBar )
         emit sig_statusBarAppend("Clear data","orange");
+
+
+    //getVisualization()->on_fullRangeRadio_toggled();
 
 }
 

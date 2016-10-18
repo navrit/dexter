@@ -286,24 +286,19 @@ void QCstmPlotHistogram::mouseReleaseEvent(QMouseEvent *event){
     {
         clicked = false;
         xReleased = xAxis->pixelToCoord(event->x());
-        // Prevents users from looking at negative pixel counts
-        if (xClicked < 0){
-            xClicked = 0;
-            minClampChanged(xClicked);
+
+        double min = xClicked, max = xReleased;
+
+        // Reverse selection
+        if ( xReleased < xClicked ) {
+            max = xClicked;
+            min = xReleased;
         }
-        maxClampChanged(xReleased);
-        if(xReleased < xClicked){
-            // Prevents users from looking at negative pixel counts
-            if (xReleased < 0){
-                xReleased = 0;
-                maxClampChanged(xReleased);
-            }
-            double tmp = xReleased;
-            xReleased = xClicked;
-            xClicked = tmp;
-        }
-        //this->changeRange(QCPRange(xClicked, xReleased));
-        emit new_range_dragged(QCPRange(xClicked, xReleased));
+
+        minClampChanged(min);
+        maxClampChanged(max);
+
+        emit new_range_dragged(QCPRange(min, max));
     }
 }
 
