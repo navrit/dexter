@@ -286,6 +286,9 @@ QGroupBox::title {
             </item>
             <item>
              <widget class="QCheckBox" name="infDataTakingCheckBox">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="toolTip">
                <string>Inifinite data acquisition</string>
               </property>
@@ -691,7 +694,7 @@ QGroupBox::title {
                </sizepolicy>
               </property>
               <property name="toolTip">
-               <string>Device ID in [] followed by chip ID code</string>
+               <string>Statistics label</string>
               </property>
               <property name="layoutDirection">
                <enum>Qt::RightToLeft</enum>

@@ -684,6 +684,7 @@ void QCstmGLVisualization::ConnectionStatusChanged(bool connecting) {
         }
 
         _extraWidgets.devicesNamesLabel->setText( _statsString.devicesIdString );
+        _extraWidgets.devicesNamesLabel->setToolTip(tr("Device ID in [] followed by chip ID code"));
         int colCount = ui->dataTakingGridLayout->columnCount();
         ui->dataTakingGridLayout->addWidget( _extraWidgets.devicesNamesLabel, 1, 0, 1, colCount );
 
@@ -1617,7 +1618,10 @@ void QCstmGLVisualization::on_summingCheckbox_toggled(bool checked){
 }
 
 void QCstmGLVisualization::on_saveBitmapPushButton_clicked(){
-    QString filename = QFileDialog::getSaveFileName(this, tr("Save Data"), QStandardPaths::displayName(QStandardPaths::PicturesLocation), tr("location"));
+    QString filename = QFileDialog::getSaveFileName(this,
+                                                    tr("Save as image"),
+                                                    ".",
+                                                    tr("Image files (*.png)"));
 
     //! Fixes a bug where if you tried to save but cancelled, it would save empty files called _histogram.dat, _histogram.png and _.png
     if (filename.isEmpty()){
@@ -1625,20 +1629,34 @@ void QCstmGLVisualization::on_saveBitmapPushButton_clicked(){
         return;
     }
 
-    // Get the image
-    if ( _savePNGWithScales ) ui->glPlot->grab().save(filename+".png"); // with all children
-    else ui->glPlot->getPlot()->grabFramebuffer().save(filename+".png"); // only image
+    //! Force the .bin in the data filename
+    if ( ! filename.toLower().contains(".png")) {
+        filename.append(".png");
+    }
 
-    // And the histogram
+    //! Get the image
+    if ( _savePNGWithScales ) {
+        ui->glPlot->grab().save(filename); // with all children
+    }
+    else {
+        ui->glPlot->getPlot()->grabFramebuffer().save(filename); // only image
+    }
+
+    //! Save and get the histogram
+    filename.remove(".png");
     ui->histPlot->savePng(filename+"_histogram.png");
     QFile histogramDat(filename+"_histogram.dat");
-    if(!histogramDat.open(QIODevice::WriteOnly)){
+
+    //! Error handling for histogram dat file
+    if(!histogramDat.open(QIODevice::WriteOnly)) {
+        sig_statusBarAppend("Histogram dat file cannot be written to","red");
         qDebug() << histogramDat.errorString();
         return;
     }
     Histogram *hist = ui->histPlot->getHistogram(getActiveThreshold());
-    for(int i = 0; i < hist->size();i++)
+    for(int i = 0; i < hist->size();i++) {
         histogramDat.write(QString("%1 %2\n").arg(hist->keyAt(i)).arg(hist->atIndex(i)).toStdString().c_str());
+    }
 
 }
 
