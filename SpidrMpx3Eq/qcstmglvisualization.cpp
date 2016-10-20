@@ -1405,7 +1405,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     }
 
     else if(selectedItem == &calcProX || selectedItem == &calcProY) {
-    //else if(selectedItem != nullptr) {
+        //else if(selectedItem != nullptr) {
 
         QString axis;
         if(selectedItem == &calcProX) axis = "X";
@@ -1429,7 +1429,7 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         //_profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, threshold, pixel_begin_checked, pixel_end_checked));
 
         int layerIndex = getActiveThreshold();
-         _profiledialog->setLayer(layerIndex);
+        _profiledialog->setLayer(layerIndex);
         _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, layerIndex, pixel_begin_checked, pixel_end_checked));
         _profiledialog->plotProfile();
 
@@ -1455,20 +1455,27 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
     }
     int deviceID = _mpx3gui->getConfig()->getActiveDevices()[frameIndex];
     QMenu contextMenu;
-    QAction mask(QString("Mask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu), unmask(QString("Unmask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu);
+    QAction mask(QString("Mask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu),
+            unmask(QString("Unmask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu),
+            maskAllOverflow(QString("Mask all pixels in overflow"), &contextMenu),
+            maskAllActive(QString("Mask all active pixels"), &contextMenu);
+
     contextMenu.addAction(&mask);
     contextMenu.addAction(&unmask);
+    contextMenu.addAction(&maskAllOverflow);
+    contextMenu.addAction(&maskAllActive);
+
     QAction* selectedItem = contextMenu.exec(position);
     if(!_mpx3gui->getConfig()->isConnected())
         return;
     if(selectedItem == &mask){
-        if(_mpx3gui->getConfig()->getColourMode()){
+        if ( _mpx3gui->getConfig()->getColourMode() ) {
 
-            qDebug() << "Nat[" << deviceID << "]:"
-                     << naturalFlatCoord
-                     << naturalFlatCoord+1
-                     << naturalFlatCoord+_mpx3gui->getX()*2
-                     << naturalFlatCoord+1+_mpx3gui->getX()*2;
+            //qDebug() << "Nat[" << deviceID << "]:"
+            //       << naturalFlatCoord
+            //       << naturalFlatCoord+1
+            //       << naturalFlatCoord+_mpx3gui->getX()*2
+            //       << naturalFlatCoord+1+_mpx3gui->getX()*2;
 
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord);
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord+1);
@@ -1488,6 +1495,73 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
         else
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord);
     }
+    else if(selectedItem == &maskAllOverflow){
+
+        // Find all pixels in overflow
+        int nx = _mpx3gui->getDataset()->x();
+        int ny = _mpx3gui->getDataset()->y();
+        int nChipsX = _mpx3gui->getDataset()->getNChipsX();
+        int nChipsY = _mpx3gui->getDataset()->getNChipsY();
+        int overflowval = _mpx3gui->getDataset()->getPixelDepthBits();
+        overflowval = (1<<overflowval) - 1;
+
+        QVector<QPoint> toMask;
+        for ( int xi = 0 ; xi < nx*nChipsX ; xi++ ) {
+            for ( int yi = 0 ; yi < ny*nChipsY ; yi++ ) {
+                if ( _mpx3gui->getDataset()->sample(xi, yi, getActiveThreshold()) == overflowval ) toMask.push_back( QPoint(xi, yi) );
+            }
+        }
+
+        // Now find out the natural coords for all of them
+        // Well have up to 4 groups, one per chip
+        // QMap < containingframe, naturalcoordsVector >
+        QMap<int, QVector<int>> naturalFlatCoords;
+
+        QVector<QPoint>::const_iterator itr  = toMask.begin();
+        QVector<QPoint>::const_iterator itrE = toMask.end();
+        for ( ; itr != itrE ; itr++ ) {
+            int chipId = _mpx3gui->getDataset()->getContainingFrame( *itr );
+            QPoint naturalCoords = _mpx3gui->getDataset()->getNaturalCoordinates( *itr, chipId );
+            if(_mpx3gui->getConfig()->getColourMode()) {
+                naturalFlatCoords[ chipId ].push_back(
+                            4*naturalCoords.y()*_mpx3gui->getDataset()->x() + 2*naturalCoords.x()
+                            );
+            } else {
+                naturalFlatCoords[ chipId ].push_back(
+                            naturalCoords.y()*_mpx3gui->getDataset()->x()+naturalCoords.x()
+                            );
+            }
+        }
+
+        // done, now mask them all
+        QMap<int, QVector<int>>::const_iterator itrM  = naturalFlatCoords.begin();
+        QMap<int, QVector<int>>::const_iterator itrME = naturalFlatCoords.end();
+
+        for ( ; itrM != itrME ; itrM++ ) {
+
+            int chip = (itrM).key();
+            int vsize = (*itrM).size();
+            //qDebug() << chip << " --> " << vsize;
+
+            for ( int iv = 0 ; iv < vsize ; iv++ ) {
+                if ( _mpx3gui->getConfig()->getColourMode() ) {
+
+                    _mpx3gui->getEqualization()->GetEqualizationResults( chip )->maskPixel( (*itrM).value(iv) );
+                    _mpx3gui->getEqualization()->GetEqualizationResults( chip )->maskPixel( (*itrM).value(iv)+1 );
+                    _mpx3gui->getEqualization()->GetEqualizationResults( chip )->maskPixel( (*itrM).value(iv)+_mpx3gui->getX()*2);
+                    _mpx3gui->getEqualization()->GetEqualizationResults( chip )->maskPixel( (*itrM).value(iv)+1+_mpx3gui->getX()*2);
+                } else {
+                    _mpx3gui->getEqualization()->GetEqualizationResults( chip )->maskPixel( (*itrM).value(iv) );
+                }
+            }
+
+        }
+
+    }
+    else if(selectedItem == &maskAllActive){
+
+    }
+
     if(selectedItem != nullptr)
         _mpx3gui->getEqualization()->SetAllAdjustmentBits( _mpx3gui->getConfig()->getController(), deviceID, true);
 

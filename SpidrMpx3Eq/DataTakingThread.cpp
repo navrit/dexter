@@ -142,7 +142,7 @@ void DataTakingThread::run() {
         datataking_score_info score = _score;
         timeOutTime = _mpx3gui->getConfig()->getTriggerLength_ms()
                 +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
-                + 100; // ms
+                + 200; // ms
         opMode = _mpx3gui->getConfig()->getOperationMode();
         contRWFreq = _mpx3gui->getConfig()->getContRWFreq();
         dropFrames = _vis->getDropFrames();

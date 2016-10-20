@@ -205,8 +205,8 @@ public:
     int * getLayer(int threshold);
     int * getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui);
     int sample(int x, int y, int threshold);//!<Returns the value of the pixel at (x,y) (assembly coordinates) and the specified threshold.
-    int x() const{return m_nx;}
-    int y() const{return m_ny;}
+    int x() const{return m_nx;} // per chip
+    int y() const{return m_ny;} // per chip
     int getPixelDepthBits() const { return m_pixelDepthBits; }
 
 
