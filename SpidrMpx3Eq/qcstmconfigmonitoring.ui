@@ -86,6 +86,9 @@ QGroupBox::title {
         </item>
         <item row="4" column="3">
          <widget class="QComboBox" name="triggerModeCombo">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="layoutDirection">
            <enum>Qt::RightToLeft</enum>
           </property>
@@ -124,7 +127,7 @@ QGroupBox::title {
         <item row="0" column="5" colspan="3">
          <widget class="QLabel" name="label_23">
           <property name="toolTip">
-           <string>ContinuousRW frequency (Hz)</string>
+           <string>Continuous Read/Write frequency (Hz)</string>
           </property>
           <property name="text">
            <string>CRW freq (Hz)</string>
@@ -168,7 +171,9 @@ QGroupBox::title {
         <item row="6" column="3">
          <widget class="QCheckBox" name="ColourModeCheckBox">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Detector dependant.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If incorrect, you will see very obvious artifacts, 3/4 of the pixels exactly will be 0 if you select colour mode when using fine mode.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>Fine pitch or spectroscopic (colour) mode.
+
+Detector dependant. If incorrect, you will see very obvious artifacts, 3/4 of the pixels exactly will be 0 if you select colour mode when using fine mode.</string>
           </property>
           <property name="text">
            <string>Colour mode</string>
@@ -259,6 +264,9 @@ QGroupBox::title {
         </item>
         <item row="4" column="9">
          <widget class="QComboBox" name="mpx3ClockComboBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="layoutDirection">
            <enum>Qt::RightToLeft</enum>
           </property>
@@ -303,6 +311,9 @@ QGroupBox::title {
         </item>
         <item row="6" column="0" colspan="3">
          <widget class="QCheckBox" name="readBothCountersCheckBox">
+          <property name="toolTip">
+           <string>Get either 2 thresholds per pixel or twice the acquisition speed per pixel</string>
+          </property>
           <property name="layoutDirection">
            <enum>Qt::LeftToRight</enum>
           </property>
@@ -329,6 +340,9 @@ QGroupBox::title {
         </item>
         <item row="4" column="5" colspan="3">
          <widget class="QLabel" name="label_22">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>Clock (MHz)</string>
           </property>
@@ -336,6 +350,9 @@ QGroupBox::title {
         </item>
         <item row="4" column="0">
          <widget class="QLabel" name="label_7">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>Trigger Mode</string>
           </property>
@@ -363,8 +380,16 @@ QGroupBox::title {
         </item>
         <item row="6" column="5">
          <widget class="QCheckBox" name="LUTCheckbox">
+          <property name="toolTip">
+           <string>Lookup Table. Should be enabled by default.
+
+Moves the load of the LUT unit from the Desktop application to the FPGA.  This results in better performance</string>
+          </property>
           <property name="text">
            <string>LUT</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
