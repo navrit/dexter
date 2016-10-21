@@ -9,9 +9,9 @@ TARGET = Mpx3GUI
 
 # QT       += core gui network
 greaterThan(QT_MAJOR_VERSION, 4) {
-	QT += widgets printsupport
+        QT += widgets printsupport
 } else {
-	QT += core gui
+        QT += core gui
 }
 QT += network opengl multimedia multimediawidgets
 CONFIG   +=  c++11 debug_and_release
@@ -45,6 +45,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 INCLUDEPATH += ../SpidrMpx3Lib
 
 win32 {
+    message(Win32)
     INCLUDEPATH += C:/boost_1_60_0
     LIBS        += "-LC:/boost_1_60_0/stage/lib"
     INCLUDEPATH += "C:/Program Files/Phidgets/"
@@ -53,6 +54,7 @@ win32 {
 }
 
 unix {
+    message(Unix)
     LIBS += -licuuc -licui18n -licudata -lopenblas -llapack
     INCLUDEPATH += ../../dlib-19.1
 }
@@ -64,7 +66,7 @@ LIBS += -lphidget21
 SOURCES += main.cpp \
     qcstmplotheatmap.cpp \
     histogram.cpp \
-    qcstmplothistogram.cpp \ 
+    qcstmplothistogram.cpp \
     qcstmequalization.cpp \
     qcstmdacs.cpp \
     gradientwidget.cpp \
@@ -102,7 +104,7 @@ SOURCES += qcustomplot.cpp
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
     histogram.h \
-    qcstmplothistogram.h \ 
+    qcstmplothistogram.h \
     qcstmequalization.h \
     qcstmdacs.h \
     gradientwidget.h \

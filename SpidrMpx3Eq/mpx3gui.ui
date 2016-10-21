@@ -81,6 +81,7 @@
       <string>Load configuration</string>
      </property>
      <addaction name="actionLoad_Equalization"/>
+     <addaction name="actionLoad_equalisation_from_folder"/>
      <addaction name="actionLoad_DACs"/>
     </widget>
     <widget class="QMenu" name="menuSave_configuration">
@@ -156,7 +157,6 @@
    <addaction name="actionConfiguration"/>
    <addaction name="actionDACs"/>
    <addaction name="actionEqualization"/>
-   <addaction name="actionStepper_Motor"/>
    <addaction name="separator"/>
    <addaction name="actionDefibrillator"/>
   </widget>
@@ -331,7 +331,7 @@
      <normalon>:/icons/visible-opened-eye-interface-option.png</normalon>:/icons/visible-opened-eye-interface-option.png</iconset>
    </property>
    <property name="text">
-    <string>Visualisation</string>
+    <string>Visualisation (Ctrl+1)</string>
    </property>
    <property name="toolTip">
     <string>Visualisation (Ctrl+1)</string>
@@ -347,7 +347,7 @@
      <normalon>:/icons/settings.png</normalon>:/icons/settings.png</iconset>
    </property>
    <property name="text">
-    <string>Configuration</string>
+    <string>Configuration (Ctrl+2)</string>
    </property>
    <property name="toolTip">
     <string>Configuration (Ctrl+2)</string>
@@ -363,7 +363,7 @@
      <normalon>:/icons/equalizer.png</normalon>:/icons/equalizer.png</iconset>
    </property>
    <property name="text">
-    <string>DACs</string>
+    <string>DACs (Ctrl+3)</string>
    </property>
    <property name="toolTip">
     <string>DACs (Ctrl+3)</string>
@@ -379,7 +379,7 @@
      <normalon>:/icons/graph-curve.png</normalon>:/icons/graph-curve.png</iconset>
    </property>
    <property name="text">
-    <string>Equalisation</string>
+    <string>Equalisation (Ctrl+4)</string>
    </property>
    <property name="toolTip">
     <string>Equalisation (Ctrl+4)</string>
@@ -394,7 +394,7 @@
     <string>Revert</string>
    </property>
    <property name="toolTip">
-    <string>Revert back to uncorrected original dataset</string>
+    <string>Revert back to uncorrected previous dataset</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Z</string>
@@ -415,6 +415,9 @@
   <action name="actionStepper_Motor">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
    </property>
    <property name="icon">
     <iconset resource="icons.qrc">
