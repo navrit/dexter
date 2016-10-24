@@ -16,7 +16,7 @@ QCstmPlotHistogram::QCstmPlotHistogram(QWidget * parent)
     setInteractions(QCP::iRangeDrag|QCP::iRangeZoom);
     axisRect()->setupFullAxesBox(true);
 
-    xAxis->setLabel("Pixel counts");
+    xAxis->setLabel("Counts per pixel");
     yAxis->setLabel("Number of pixels");
 
     //this->graph(0)->setLineStyle(QCPGraph::lsStepCenter);
