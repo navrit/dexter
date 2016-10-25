@@ -34,9 +34,9 @@ static const QColor COLOR_TABLE[] = {
 };
 
 typedef enum {
-	__VERBL_ERR = 0,
-	__VERBL_INFO,
-	__VERBL_DEBUG
+    __VERBL_ERR = 0,
+    __VERBL_INFO,
+    __VERBL_DEBUG
 } verblev;
 
 #define __matrix_size_x 256
@@ -61,6 +61,7 @@ typedef enum {
 // #define __voltage_DACS_MAX 	(3.3/2.) // This is how it's setup in hardware
 // #define __maxADCCounts	       65535 // 16 bits
 #define __voltage_DACS_MAX 	     3.3//1.5 // This is how it's setup in hardware
+                                    //! This is the reference voltage - not passed to the analog circuit (it gets ~1.6V)
 #define __maxADCCounts	        4095 // 12 bits
 #define __max_DAC_range			 512
 
