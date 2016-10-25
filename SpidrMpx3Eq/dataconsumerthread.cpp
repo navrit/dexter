@@ -91,7 +91,7 @@ void DataConsumerThread::copydata(int * source, size_t num )
     // rewind descriptor -- circular buffer
     if ( descriptor >= _bufferSize ) {
         descriptor = 0;
-        readdescriptor = 0;
+        //readdescriptor = 0;
         emit bufferFull( 0 );
     }
 }
