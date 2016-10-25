@@ -83,11 +83,11 @@ void QCstmGLVisualization::refreshScoringInfo()
     QString prog;
     if ( nTriggers > 0 ) {
         prog = QString("%1").arg( _score.nFramesKept );
-        if ( _score.lostFrames != 0 ) prog += QString("(%1)").arg( _score.lostFrames );
+        if ( _score.lostFrames != 0 ) prog += QString("<font color=\"red\">(%1)</font>").arg( _score.lostFrames );
         prog += QString("/%1").arg( nTriggers );
     } else {
         prog = QString("%1").arg( _score.nFramesKept ); // nTriggers=0 is keep taking data forever
-        if ( _score.lostFrames != 0 ) prog += QString("(%1)").arg( _score.lostFrames );
+        if ( _score.lostFrames != 0 ) prog += QString("<font color=\"red\">(%1)</font>").arg( _score.lostFrames );
     }
     ui->frameCntr->setText( prog );
 
