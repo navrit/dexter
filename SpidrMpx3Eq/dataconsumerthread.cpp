@@ -20,6 +20,7 @@ DataConsumerThread::DataConsumerThread(Mpx3GUI * mpx3gui, QObject * parent)
     _bufferSizeOneFrame = _bufferSize;
     if ( _bothCounters ) _bufferSize *= 2; // two counters if necessary
     _bufferSize *= _nFramesBuffer;
+    _bufferSizeHalf = _bufferSize/2;
 
     // Circular buffer
     buffer = new int[ _bufferSize ];
@@ -92,7 +93,6 @@ void DataConsumerThread::copydata(int * source, size_t num )
     if ( descriptor >= _bufferSize ) {
         descriptor = 0;
         //readdescriptor = 0;
-        emit bufferFull( 0 );
     }
 }
 
@@ -162,6 +162,9 @@ void DataConsumerThread::run()
             // Report how far are we from reaching the descriptor
             if ( descriptor >= readdescriptor) descriptorDistance = descriptor - readdescriptor;
             else descriptorDistance = _bufferSize - readdescriptor + descriptor;
+
+            // Too loaded
+            if ( descriptorDistance >= _bufferSizeHalf ) emit bufferFull( 0 );
 
             // Fraction
             emit bufferOccupancySig( (int)(100*(descriptorDistance/(double)_bufferSize)) );

@@ -54,6 +54,8 @@ private:
     uint _nChips;
     bool _bothCounters;
     uint _bufferSize;
+    uint _bufferSizeHalf;
+
     uint _bufferSizeOneFrame;
 
     int ** _colordata = nullptr;
