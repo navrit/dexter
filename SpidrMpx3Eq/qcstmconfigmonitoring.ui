@@ -481,24 +481,8 @@ QGroupBox::title {
         <set>Qt::AlignCenter</set>
        </property>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="6" column="2" colspan="3">
-         <widget class="QLabel" name="labelMvolt_2">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>[mA]</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="1">
-         <widget class="QLineEdit" name="vddmvolt">
+        <item row="11" column="5">
+         <widget class="QLineEdit" name="dvddmwatt">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -510,63 +494,17 @@ QGroupBox::title {
           </property>
          </widget>
         </item>
-        <item row="11" column="0">
-         <widget class="QPushButton" name="readOMRPushButton">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;O... Master Register&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
+        <item row="10" column="0">
+         <widget class="QLabel" name="labelVdd">
           <property name="text">
-           <string>Read OMR</string>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="1">
-         <widget class="QLineEdit" name="avddmvolt">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="0">
-         <widget class="QLabel" name="labelAvdd">
-          <property name="text">
-           <string>AVDD</string>
+           <string>VDD</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
-        <item row="1" column="4">
-         <widget class="QLabel" name="label_21">
-          <property name="text">
-           <string>Bias (V):</string>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="5">
-         <widget class="QLineEdit" name="avddmwatt">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="5">
+        <item row="8" column="5">
          <widget class="QLabel" name="labelMvolt_3">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -595,35 +533,8 @@ QGroupBox::title {
           </property>
          </widget>
         </item>
-        <item row="9" column="0">
-         <widget class="QLabel" name="labelDvdd">
-          <property name="text">
-           <string>DVDD</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLabel" name="label_0">
-          <property name="text">
-           <string>Rem temp:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="4">
-         <widget class="QLabel" name="label_24">
-          <property name="toolTip">
-           <string>Sample every (s)</string>
-          </property>
-          <property name="text">
-           <string>Samp(s):</string>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="1">
-         <widget class="QLineEdit" name="dvddmvolt">
+        <item row="2" column="2">
+         <widget class="QLineEdit" name="localTempMeasLineEdit">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -631,48 +542,113 @@ QGroupBox::title {
            <set>Qt::AlignCenter</set>
           </property>
           <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="5">
-         <widget class="QLineEdit" name="dvddmwatt">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="0">
-         <widget class="QLabel" name="labelVdd">
-          <property name="text">
-           <string>VDD</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="11" column="1" colspan="5">
-         <widget class="QLabel" name="omrDisplayLabel">
-          <property name="text">
-           <string/>
-          </property>
-          <property name="textFormat">
-           <enum>Qt::RichText</enum>
-          </property>
-          <property name="scaledContents">
            <bool>true</bool>
           </property>
          </widget>
         </item>
         <item row="8" column="2" colspan="3">
-         <widget class="QLineEdit" name="vddmamp">
+         <widget class="QLabel" name="labelMvolt_2">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>[mA]</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="5">
+         <widget class="QLineEdit" name="vddmwatt">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="tempReadingActivateCheckBox">
+          <property name="toolTip">
+           <string>SPIDR monitoring</string>
+          </property>
+          <property name="text">
+           <string>Enable</string>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="1">
+         <widget class="QLineEdit" name="vddmvolt">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="13" column="0">
+         <widget class="QPushButton" name="readOMRPushButton">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;O... Master Register&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Read OMR</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="1">
+         <widget class="QLabel" name="labelMvolt">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>[mV]</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="5">
+         <widget class="QLineEdit" name="biasVoltageMeasLineEdit">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLabel" name="label_10">
+          <property name="text">
+           <string>Loc temp:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="2" colspan="3">
+         <widget class="QLineEdit" name="dvddmamp">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -709,7 +685,7 @@ QGroupBox::title {
           </property>
          </widget>
         </item>
-        <item row="7" column="2" colspan="3">
+        <item row="9" column="2" colspan="3">
          <widget class="QLineEdit" name="avddmamp">
           <property name="enabled">
            <bool>false</bool>
@@ -722,8 +698,32 @@ QGroupBox::title {
           </property>
          </widget>
         </item>
-        <item row="8" column="5">
-         <widget class="QLineEdit" name="vddmwatt">
+        <item row="11" column="0">
+         <widget class="QLabel" name="labelDvdd">
+          <property name="text">
+           <string>DVDD</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLabel" name="label_0">
+          <property name="text">
+           <string>Rem temp:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
+         <widget class="QLabel" name="label_21">
+          <property name="text">
+           <string>Bias (V):</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="5">
+         <widget class="QLineEdit" name="avddmwatt">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -735,34 +735,67 @@ QGroupBox::title {
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QCheckBox" name="tempReadingActivateCheckBox">
+        <item row="9" column="1">
+         <widget class="QLineEdit" name="avddmvolt">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="0">
+         <widget class="QLabel" name="labelAvdd">
+          <property name="text">
+           <string>AVDD</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="13" column="1" colspan="5">
+         <widget class="QLabel" name="omrDisplayLabel">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::RichText</enum>
+          </property>
+          <property name="scaledContents">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="2" colspan="3">
+         <widget class="QLineEdit" name="vddmamp">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="4">
+         <widget class="QLabel" name="label_24">
           <property name="toolTip">
-           <string>SPIDR monitoring</string>
+           <string>Sample every (s)</string>
           </property>
           <property name="text">
-           <string>Enable</string>
+           <string>Samp(s):</string>
           </property>
          </widget>
         </item>
-        <item row="6" column="1">
-         <widget class="QLabel" name="labelMvolt">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>[mV]</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="5">
-         <widget class="QLineEdit" name="biasVoltageMeasLineEdit">
+        <item row="11" column="1">
+         <widget class="QLineEdit" name="dvddmvolt">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -774,36 +807,20 @@ QGroupBox::title {
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
-         <widget class="QLabel" name="label_10">
+        <item row="3" column="1">
+         <widget class="QLabel" name="label_4">
           <property name="text">
-           <string>Loc temp:</string>
+           <string>FPGA Temp:</string>
           </property>
          </widget>
         </item>
-        <item row="9" column="2" colspan="3">
-         <widget class="QLineEdit" name="dvddmamp">
+        <item row="3" column="2">
+         <widget class="QLineEdit" name="FpgaTempMeasLineEdit">
           <property name="enabled">
            <bool>false</bool>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="2">
-         <widget class="QLineEdit" name="localTempMeasLineEdit">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
           </property>
          </widget>
         </item>

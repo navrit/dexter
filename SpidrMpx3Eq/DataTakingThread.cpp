@@ -122,10 +122,15 @@ void DataTakingThread::run() {
     int opMode = Mpx3Config::__operationMode_SequentialRW;
 
     int size_in_bytes = -1;
-    int nFramesReceived = 0, nFramesKept = 0;
+    int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0;
     bool dropFrames = false;
 
-    bool goalAchieved = false; //The compiler thinks this is unused, it is used...
+    const int goalTries = 100;
+    const int semAcqTries = 10000;
+
+    int goalAchieved = 0;
+    int semAcq = 0;
+    bool clearToCopy = true;
 
     ///////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////
@@ -134,7 +139,7 @@ void DataTakingThread::run() {
     forever {
 
         // When abort execution. Triggered as the destructor is called.
-        if( _abort ) return;
+        if ( _abort ) return;
 
         // Fetch new parameters
         // After a start or restart
@@ -142,7 +147,7 @@ void DataTakingThread::run() {
         datataking_score_info score = _score;
         timeOutTime = _mpx3gui->getConfig()->getTriggerLength_ms()
                 +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
-                + 200; // ms
+                + 50; // ms
         opMode = _mpx3gui->getConfig()->getOperationMode();
         contRWFreq = _mpx3gui->getConfig()->getContRWFreq();
         dropFrames = _vis->getDropFrames();
@@ -160,61 +165,89 @@ void DataTakingThread::run() {
             spidrcontrol->startAutoTrigger();
         }
 
-        while ( spidrdaq->hasFrame( timeOutTime ) ) {
+        // Keep trying if we are running too fast
+        //  but only 'goalTries' times.
+        //while ( goalAchieved < goalTries && !_stop && !_restart ) {
 
-            // I need to keep extracting data even if the goal has been achieved
-            for ( int i = 0 ; i < nChips ; i++ ) {
+            // Ask SpidrDaq for frames
+            while ( spidrdaq->hasFrame( timeOutTime ) ) {
 
-                // retreive data for a given chip
-                framedata = spidrdaq->frameData(i, &size_in_bytes);
+                // rewind if we finally made it to catch a frame
+                //if ( goalAchieved != 0 ) qDebug() << " goal " << goalAchieved;
+                //goalAchieved = 0;
 
-                // Copy data in the consumer using the Semaphores
-                _consumer->freeFrames->acquire(); // Acquire space for 1 chip in one frame
-                _consumer->copydata( framedata, size_in_bytes );
-                _consumer->usedFrames->release();
+                // I need to keep extracting data even if the goal has been achieved
+                for ( int i = 0 ; i < nChips ; i++ ) {
+                    // retreive data for a given chip
+                    framedata = spidrdaq->frameData(i, &size_in_bytes);
+                    clearToCopy = true;
+                    // Copy data in the consumer using the Semaphores
+                    while ( ! _consumer->freeFrames->tryAcquire() ) { // Acquire space for 1 chip in one frame
+                        //if ( semAcq == 0 ) _consumer->consume(); // awake the consumer once
+                        qDebug() << " acq1  | " << i << semAcq;
+                        if ( ++semAcq > semAcqTries ) {
+                            semAcq = 0;
+                            clearToCopy = false;
+                            break; // breaks the while
+                        }
+                    }
+                    qDebug() << "---> " << i;
+                    semAcq = 0;
+                    if ( clearToCopy ) {
+                        _consumer->copydata( framedata, size_in_bytes );
+                        _consumer->usedFrames->release();
+                    } //else { // rewind and loose this frame } // TODO
 
-            }
-
-            // Awake the consumer thread if neccesary
-            _consumer->consume();
-
-            // Queue the data and keep going as fast as possible
-            //if ( ! goalAchieved ) { }
-
-            // Release frame
-            spidrdaq->releaseFrame();
-
-            // Keep a local count of number of frames
-            nFramesReceived++;
-            if ( ! ( spidrdaq->lostCount() > 0 && dropFrames ) ) nFramesKept++;
-
-            // Reports
-            emit scoring_sig(nFramesReceived,
-                             nFramesKept,
-                             spidrdaq->framesLostCount() / nChips,  //
-                             spidrdaq->lostCount(),                 // lost packets(ML605)/pixels(compactSPIDR)
-                             spidrdaq->framesCount(),               // ?
-                             0,
-                             spidrdaq->framesLostCount() % nChips   // Data misaligned
-                             );
-
-            /////////////////////////////////////////////
-            // How to stop
-            // 1) See Note 1 at the bottom
-            if ( nFramesReceived == score.framesRequested ) {
-                goalAchieved = true;
-                if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
-                    spidrcontrol->stopContReadout();
                 }
+
+                // Awake the consumer thread if neccesary
+                _consumer->consume();
+
+                // Queue the data and keep going as fast as possible
+                //if ( ! goalAchieved ) { }
+
+                // Release frame
+                spidrdaq->releaseFrame();
+
+                // Keep a local count of number of frames
+                nFramesReceived++;
+                if ( ! ( spidrdaq->lostCount() > 0 && dropFrames ) ) nFramesKept++;
+
+                // Reports
+                lostFrames = spidrdaq->framesLostCount() / nChips;
+                emit scoring_sig(nFramesReceived,
+                                 nFramesKept,
+                                 lostFrames,  //
+                                 spidrdaq->lostCount(),                 // lost packets(ML605)/pixels(compactSPIDR)
+                                 spidrdaq->framesCount(),               // ?
+                                 0,
+                                 spidrdaq->framesLostCount() % nChips   // Data misaligned
+                                 );
+
+                /////////////////////////////////////////////
+                // How to stop
+                // 1) See Note 1 at the bottom
+                if ( nFramesReceived + lostFrames == score.framesRequested ) {
+                    //goalAchieved = goalTries; // don't keep trying
+                    if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
+                        spidrcontrol->stopContReadout();
+                    }
+                }
+
+                // 2) User stop condition
+                if ( _stop ) break;
+
+                // 3) User restart condition
+                if ( _restart ) break;
+
+
             }
 
-            // 2) User stop condition
-            if ( _stop ) break;
+            //goalAchieved++;
 
-            // 3) User restart condition
-            if ( _restart ) break;
+        //}
 
-        }
+        //Sleep( 1000 );
 
         // If the data taking was stopped
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
@@ -229,7 +262,21 @@ void DataTakingThread::run() {
 
         if ( ! _restart ) emit data_taking_finished( 0 );
 
-        //qDebug() << "   lock DataTakingThread | goal:" << goalAchieved << " | frames:" << nFramesReceived ;
+        qDebug() << "   lock DataTakingThread | goal:" << goalAchieved << " | frames:" << nFramesReceived << " |  lost : " << lostFrames;
+
+        // Try to wake up the consumer in case frames are still in the pipeline
+        //_consumer->consume();
+
+        // Final report
+        emit scoring_sig(nFramesReceived,
+                         nFramesKept,
+                         lostFrames,  //
+                         spidrdaq->lostCount(),                 // lost packets(ML605)/pixels(compactSPIDR)
+                         spidrdaq->framesCount(),               // ?
+                         0,
+                         spidrdaq->framesLostCount() % nChips   // Data misaligned
+                         );
+
 
         // Rewind local variables
         nFramesReceived = 0;

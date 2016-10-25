@@ -132,6 +132,7 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
 
         ui->remoteTempMeasLineEdit->setEnabled( true );
         ui->localTempMeasLineEdit->setEnabled( true );
+        ui->FpgaTempMeasLineEdit->setEnabled( true );
         ui->biasVoltageMeasLineEdit->setEnabled( true );
 
         ui->avddmamp->setEnabled( true );
@@ -154,6 +155,7 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
         // clean the temp display
         ui->remoteTempMeasLineEdit->setText("");
         ui->localTempMeasLineEdit->setText("");
+        ui->FpgaTempMeasLineEdit->setText("");
         ui->biasVoltageMeasLineEdit->setText("");
 
         ui->avddmamp->setText("");
@@ -170,6 +172,7 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
 
         ui->remoteTempMeasLineEdit->setEnabled( false );
         ui->localTempMeasLineEdit->setEnabled( false );
+        ui->FpgaTempMeasLineEdit->setEnabled( false );
         ui->biasVoltageMeasLineEdit->setEnabled( false );
 
         ui->avddmamp->setEnabled( false );
@@ -668,6 +671,14 @@ void QCstmConfigMonitoring::readMonitoringInfo() {
         } else {
             ui->localTempMeasLineEdit->setText( "--.--" );
         }
+        if( spidrcontrol->getFpgaTemp( &mdegrees ) ) {
+            QString qs = QString("%1.%2 C").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
+            ui->FpgaTempMeasLineEdit->setText( qs );
+        } else {
+            ui->FpgaTempMeasLineEdit->setText( "--.--" );
+        }
+
+
         int biasVolts;
         if ( spidrcontrol->getBiasVoltage(&biasVolts) ) {
             QString qs = QString("%1 V").arg( biasVolts );
