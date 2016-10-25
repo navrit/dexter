@@ -803,6 +803,12 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     objParent.insert("Date_time_local", ( QDateTime::currentDateTime().toString(Qt::ISODate) ));
     objParent.insert("Date_time_UTC", ( QDateTime::currentDateTimeUtc().toString(Qt::ISODate) ));
 
+    objParent.insert("SPIDR_Controller_version", m_SPIDRControllerVersion);
+    objParent.insert("SPIDR_Firmware_version", m_SPIDRFirmwareVersion);
+    objParent.insert("SPIDR_Software_version", m_SPIDRSoftwareVersion);
+
+    //objParent.insert("", );
+
     // ------------------ Calculations -------------------------------
     int sizex = getDataset()->x();
     int sizey = getDataset()->y();
