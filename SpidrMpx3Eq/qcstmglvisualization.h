@@ -245,6 +245,7 @@ private slots:
 
     void on_saveCheckBox_toggled();
 
+    void consumerBufferFull(int);
 
 public slots:
     void StartDataTaking();

@@ -29,7 +29,8 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
 {
 
     ui->setupUi(this);
-    _dataTakingThread = 0x0;
+    _dataTakingThread = nullptr;
+    _dataConsumerThread = nullptr;
 
     FreeBusyState();
     _takingData = false;
@@ -270,6 +271,8 @@ void QCstmGLVisualization::StartDataTaking() {
     if ( !_dataTakingThread ) {
 
         _dataConsumerThread = new DataConsumerThread(_mpx3gui, this);
+        connect( _dataConsumerThread, &DataConsumerThread::bufferFull,
+                 this, &QCstmGLVisualization::consumerBufferFull);
 
         _dataTakingThread = new DataTakingThread(_mpx3gui, _dataConsumerThread, this);
         _dataTakingThread->ConnectToHardware();
@@ -1978,4 +1981,12 @@ void QCstmGLVisualization::on_saveCheckBox_toggled(){
 
         return;
     }
+}
+
+void QCstmGLVisualization::consumerBufferFull(int)
+{
+
+    QMessageBox::critical(this, tr("System buffer full"),
+                          tr("You system can't handle this speed\n or you are trying to run above specs."));
+
 }

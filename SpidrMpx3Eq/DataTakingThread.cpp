@@ -126,7 +126,7 @@ void DataTakingThread::run() {
     bool dropFrames = false;
 
     const int goalTries = 100;
-    const int semAcqTries = 10000;
+    const int semAcqTries = 1000;
 
     int goalAchieved = 0;
     int semAcq = 0;
@@ -147,7 +147,7 @@ void DataTakingThread::run() {
         datataking_score_info score = _score;
         timeOutTime = _mpx3gui->getConfig()->getTriggerLength_ms()
                 +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
-                + 50; // ms
+                + 100; // ms
         opMode = _mpx3gui->getConfig()->getOperationMode();
         contRWFreq = _mpx3gui->getConfig()->getContRWFreq();
         dropFrames = _vis->getDropFrames();
@@ -181,17 +181,21 @@ void DataTakingThread::run() {
                     // retreive data for a given chip
                     framedata = spidrdaq->frameData(i, &size_in_bytes);
                     clearToCopy = true;
+                    _consumer->freeFrames->acquire();
+/*
                     // Copy data in the consumer using the Semaphores
                     while ( ! _consumer->freeFrames->tryAcquire() ) { // Acquire space for 1 chip in one frame
+                        Sleep(4); // ~ the time 1 packet takes to come in
                         //if ( semAcq == 0 ) _consumer->consume(); // awake the consumer once
-                        qDebug() << " acq1  | " << i << semAcq;
+                        //qDebug() << " acq1  | " << i << semAcq;
                         if ( ++semAcq > semAcqTries ) {
                             semAcq = 0;
                             clearToCopy = false;
                             break; // breaks the while
                         }
                     }
-                    qDebug() << "---> " << i;
+                    //qDebug() << "---> " << i;
+                    */
                     semAcq = 0;
                     if ( clearToCopy ) {
                         _consumer->copydata( framedata, size_in_bytes );

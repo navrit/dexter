@@ -39,6 +39,7 @@ protected:
 signals:
 
     void bufferOccupancySig(int);
+    void bufferFull(int);
 
 private:
 
