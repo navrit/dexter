@@ -1122,7 +1122,11 @@ void Mpx3GUI::set_mode_normal(){
 
 void Mpx3GUI::clear_configuration(){
 
-
+    //! None of the following code should be run unless connected (Connect button is visible)
+    if (_ui->actionConnect->isVisible()){
+        sig_statusBarAppend(tr("Clear equalisation only works when connected"),"black");
+        return;
+    }
     // Clear adjustement bits
     QMessageBox::StandardButton ans = QMessageBox::question(this, tr("Clear configuration"), tr("The adjustment matrix and the pixel mask will be cleared.  Continue ?") );
     if ( ans == QMessageBox::No ) return;
