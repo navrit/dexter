@@ -210,6 +210,11 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 
     #ifdef EXPERT_MODE
 
+    QMessageBox::StandardButton ans = QMessageBox::warning(this, tr("Warning"), tr("This will set the device to a mode unsuitable for imaging, you will have to power cycle to image again. Continue?"));
+    if ( ans == QMessageBox::No ) {
+            return;
+    }
+
     int  dev_nr = 2;
     unsigned char omr[6];
 

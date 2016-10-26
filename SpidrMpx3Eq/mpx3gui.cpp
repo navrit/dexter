@@ -1133,7 +1133,7 @@ void Mpx3GUI::clear_configuration(){
         sig_statusBarAppend(tr("Clear equalisation only works when connected"),"black");
         return;
     }
-    // Clear adjustement bits
+    // Clear adjustment bits
     QMessageBox::StandardButton ans = QMessageBox::question(this, tr("Clear configuration"), tr("The adjustment matrix and the pixel mask will be cleared.  Continue ?") );
     if ( ans == QMessageBox::No ) return;
 
