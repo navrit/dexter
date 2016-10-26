@@ -190,7 +190,9 @@ void DataTakingThread::run() {
                         //if ( semAcq == 0 ) _consumer->consume(); // awake the consumer once
                         //qDebug() << " acq1  | " << i << semAcq;
                         if ( ++semAcq > semAcqTries ) {
-                            semAcq = 0;
+home/asi/tmp/mpx3gui/SpidrMpx3Eq/assemblies/W521_Q6_G6_F6_D6_300um_Si_Fine/mask_3
+[INFO] Consumer. Buffer size:  268435456
+   lock DataTakingThread | goal: 0  | frames: 167  |  lost :  7                    semAcq = 0;
                             clearToCopy = false;
                             break; // breaks the while
                         }
