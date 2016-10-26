@@ -49,16 +49,6 @@ void TestPulses::on_pushButtonSet_clicked()
     //int val = ui->spinBox->value();
     //qDebug() << "Setting : " << val;
 
-    // Good configuration for external shutter
-    unsigned int val1 = 0x5; // External shutter IN
-    val1 = val1;
-    unsigned int val2 = 0x4; // Debug shutter (read back)
-    val2 = val2 << 8;
-    // mask
-    unsigned int val = val1 | val2;
-    qDebug() << "Setting : " << val;
-    _mpx3gui->GetSpidrController()->setSpidrReg(0x0810, val, true);
-
     // IDELAY
     /*
     int val = ui->spinBox->value();

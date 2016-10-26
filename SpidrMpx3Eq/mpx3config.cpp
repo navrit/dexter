@@ -212,7 +212,9 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
     if ( reset ) spidrcontrol->resetPixelConfig();
 
     // Number of links
-    if ( item == __ALL ) spidrcontrol->setPs( deviceIndex, 3 ); // 3: 8 links
+    if ( item == __ALL ) {
+        spidrcontrol->setPs( deviceIndex, 3 ); // 3: 8 links
+    }
     if ( item == __ALL || item == __LUTEnable ) {
         spidrcontrol->setLutEnable( ! getLUTEnable() );
         spidrdaq->setLutEnable( getLUTEnable() );
@@ -258,6 +260,19 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
 
     // Packet size reports NOT IMPLEMENTED in the Leon software
     //if ( item == __ALL || item == __maxPacketSize ) spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
+
+    // HDMI cable config
+    if ( item == __ALL ) {
+        // Good configuration for external shutter
+        unsigned int val1 = 0x5; // External shutter IN | Connector 1, signal 1
+        val1 = val1;
+        unsigned int val2 = 0x4; // Debug shutter OUT (read back) | Connector 1, signal 3
+        val2 = val2 << 8;
+        // mask
+        unsigned int val = val1 | val2;
+        qDebug() << "Setting : " << val;
+        spidrcontrol->setSpidrReg(0x0810, val, true);
+    }
 
 }
 
