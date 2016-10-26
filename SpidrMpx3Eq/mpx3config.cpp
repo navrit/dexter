@@ -61,7 +61,16 @@ QJsonDocument Mpx3Config::buildConfigJSON(bool includeDacs)
 
     objDetector.insert("OperationMode", this->OperationMode);
     objDetector.insert("PixelDepth", this->PixelDepth);
-    objDetector.insert("Polarity", this->Polarity);
+
+    QString polarity_string = "";
+    if (this->Polarity) {
+        polarity_string = "Positive";
+    } else {
+        polarity_string = "Negative";
+    }
+
+    objDetector.insert("Polarity", polarity_string);
+
     objDetector.insert("CsmSpm", this->CsmSpm);
     objDetector.insert("GainMode", this->GainMode);
     objDetector.insert("MaxPacketSize", this->MaxPacketSize);
