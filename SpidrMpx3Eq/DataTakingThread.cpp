@@ -148,6 +148,7 @@ void DataTakingThread::run() {
         timeOutTime = _mpx3gui->getConfig()->getTriggerLength_ms()
                 +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
                 + 100; // ms
+                //! May wish to use 10000 for trigger mode testing
         opMode = _mpx3gui->getConfig()->getOperationMode();
         contRWFreq = _mpx3gui->getConfig()->getContRWFreq();
         dropFrames = _vis->getDropFrames();
