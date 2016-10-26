@@ -43,8 +43,20 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     ui->pixelDepthCombo->setCurrentIndex( 2 );
 
     // Trigger mode
-    __triggerModeMap.push_back( 4 );
+    __triggerModeMap.push_back( SHUTTERMODE_AUTO );
+    __triggerModeMap.push_back( SHUTTERMODE_POS_EXT );
+    __triggerModeMap.push_back( SHUTTERMODE_NEG_EXT );
+    __triggerModeMap.push_back( SHUTTERMODE_POS_EXT_TIMER );
+    __triggerModeMap.push_back( SHUTTERMODE_NEG_EXT_TIMER );
+    __triggerModeMap.push_back( SHUTTERTRIG_POS_EXT_CNTR );
+
     ui->triggerModeCombo->addItem( "Auto" );
+    ui->triggerModeCombo->addItem( "Positive Ext" );
+    ui->triggerModeCombo->addItem( "Negative Ext" );
+    ui->triggerModeCombo->addItem( "Positive Ext Timer" );
+    ui->triggerModeCombo->addItem( "Negative Ext Timer" );
+    ui->triggerModeCombo->addItem( "Positive Ext Counter" );
+
     ui->triggerModeCombo->setCurrentIndex( 0 );
 
     // Configurable clock

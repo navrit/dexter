@@ -44,11 +44,28 @@ void TestPulses::on_activateCheckBox_clicked(bool checked)
 
 void TestPulses::on_pushButtonSet_clicked()
 {
+
+    // Ext trigger
+    //int val = ui->spinBox->value();
+    //qDebug() << "Setting : " << val;
+    unsigned int val1 = 0x5;
+    val1 = val1;
+    unsigned int val2 = 0x4;
+    val2 = val2 << 8;
+    // mask
+    unsigned int val = val1 | val2;
+
+    qDebug() << "Setting : " << val;
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x0810, val, true);
+
+    // IDELAY
+    /*
     int val = ui->spinBox->value();
     qDebug() << "Setting : " << val;
     _mpx3gui->GetSpidrController()->setSpidrReg(0x10A0, val, true);
     _mpx3gui->GetSpidrController()->setSpidrReg(0x10A4, val, true);
     _mpx3gui->GetSpidrController()->setSpidrReg(0x10A8, val, true);
     _mpx3gui->GetSpidrController()->setSpidrReg(0x10AC, val, true);
+    */
 
 }
