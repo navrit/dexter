@@ -141,17 +141,16 @@
    </attribute>
    <addaction name="actionConnect"/>
    <addaction name="actionDisconnect"/>
-   <addaction name="separator"/>
    <addaction name="actionOpen_data"/>
    <addaction name="actionSave_data"/>
+   <addaction name="separator"/>
    <addaction name="actionRevert"/>
    <addaction name="actionClear_data"/>
    <addaction name="separator"/>
+   <addaction name="actionLoad_DACs"/>
    <addaction name="actionLoad_Equalization"/>
    <addaction name="actionLoad_equalisation_from_folder"/>
    <addaction name="actionClear_configuration"/>
-   <addaction name="separator"/>
-   <addaction name="actionWizard"/>
    <addaction name="separator"/>
    <addaction name="actionVisualization"/>
    <addaction name="actionConfiguration"/>
@@ -179,8 +178,15 @@
    </property>
   </action>
   <action name="actionLoad_DACs">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/magic-wand.png</normaloff>:/icons/magic-wand.png</iconset>
+   </property>
    <property name="text">
-    <string>Load Config+DACs</string>
+    <string>Load Configuration and DACs</string>
+   </property>
+   <property name="toolTip">
+    <string>Load Configuration and DACs</string>
    </property>
   </action>
   <action name="actionLoad_Equalization">
@@ -197,7 +203,10 @@
   </action>
   <action name="actionSave_DACs">
    <property name="text">
-    <string>Save Config+DACs</string>
+    <string>Save Configuration and DACs</string>
+   </property>
+   <property name="toolTip">
+    <string>Save Configuration and DACs</string>
    </property>
   </action>
   <action name="actionSave_Equalization">
