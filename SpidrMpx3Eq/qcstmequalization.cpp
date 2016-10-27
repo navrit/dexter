@@ -914,6 +914,9 @@ void QCstmEqualization::StartEqualization() {
 
     }
 
+    QString msg = "Finished equalisation on: " + _mpx3gui->getVisualization()->getStatsString_deviceId();
+    emit sig_statusBarAppend(msg, "green");
+
     // Second) First interpolation.  Coming close to the equalization target
     ////setId = PrepareInterpolation(setId, MPX3RX_DAC_DISC_L);
 

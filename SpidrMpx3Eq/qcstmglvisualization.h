@@ -113,6 +113,7 @@ public:
     void CalcETA();
 
     QString getsaveLineEdit_Text();
+    QString getStatsString_deviceId();
 
 private:
 

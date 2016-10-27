@@ -272,6 +272,11 @@ QString QCstmGLVisualization::getsaveLineEdit_Text() {
     return ui->saveLineEdit->text();
 }
 
+QString QCstmGLVisualization::getStatsString_deviceId()
+{
+    return _statsString.devicesIdString;
+}
+
 void QCstmGLVisualization::StartDataTaking() {
 
     if ( !_dataTakingThread ) {
