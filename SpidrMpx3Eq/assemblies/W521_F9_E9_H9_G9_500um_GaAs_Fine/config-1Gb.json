@@ -1,4 +1,6 @@
 {
+    "DACs": [
+    ],
     "DetectorConfig": {
         "ColourMode": false,
         "ContRWFreq": 100,
@@ -9,7 +11,7 @@
         "MaxPacketSize": 9000,
         "OperationMode": 0,
         "PixelDepth": 12,
-        "Polarity": false,
+        "Polarity": "Negative",
         "TriggerDeadtime_us": 20000,
         "TriggerLength_us": 20000,
         "TriggerMode": 4,
