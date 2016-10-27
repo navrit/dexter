@@ -245,9 +245,9 @@ private slots:
 
     void on_saveCheckBox_toggled();
 
-    void consumerBufferFull(int);
 
 public slots:
+
     void StartDataTaking();
     void setGradient(int index);
     //!Used to inform this object of the availible gradients and their names.
@@ -287,6 +287,8 @@ public slots:
     void on_scoring(int, int, int, int, int, int, bool);
 
     void bufferOccupancySlot(int);
+
+    void consumerBufferFull(int);
 
 signals:
     void taking_data_gui();

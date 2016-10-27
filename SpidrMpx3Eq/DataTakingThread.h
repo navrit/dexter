@@ -105,7 +105,7 @@ signals:
     void reload_all_layers();
     void reload_layer(int);
     void data_taking_finished(int);
-
+    void bufferFull(int);
     void dataReady(int layer);
 
 

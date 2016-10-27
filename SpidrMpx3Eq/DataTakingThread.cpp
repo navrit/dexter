@@ -113,6 +113,8 @@ void DataTakingThread::run() {
 
     connect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(data_taking_finished(int)));
     connect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
+    connect( this, &DataTakingThread::bufferFull,
+             _vis, &QCstmGLVisualization::consumerBufferFull);
 
     int timeOutTime = 0;
     int contRWFreq = 0;
@@ -125,14 +127,9 @@ void DataTakingThread::run() {
     int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0;
     bool dropFrames = false;
 
-    const int goalTries = 100;
-    const int semAcqTries = 1000;
-
     int goalAchieved = 0;
-    int semAcq = 0;
     unsigned int oneFrameChipCntr = 0;
-
-    bool clearToCopy = true;
+    uint halfSemaphoreSize = 0;
 
     ///////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////
@@ -150,10 +147,11 @@ void DataTakingThread::run() {
         timeOutTime = _mpx3gui->getConfig()->getTriggerLength_ms()
                 +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
                 + 100; // ms
-                //! May wish to use 10000 for trigger mode testing
+        //! May wish to use 10000 for trigger mode testing
         opMode = _mpx3gui->getConfig()->getOperationMode();
         contRWFreq = _mpx3gui->getConfig()->getContRWFreq();
         dropFrames = _vis->getDropFrames();
+        halfSemaphoreSize = _consumer->getSemaphoreSize()/2.;
         //qDebug() << score.framesRequested << " | " << opMode << " | " << contRWFreq;
         _mutex.unlock();
 
@@ -168,114 +166,88 @@ void DataTakingThread::run() {
             spidrcontrol->startAutoTrigger();
         }
 
-        // Keep trying if we are running too fast
-        //  but only 'goalTries' times.
-        //while ( goalAchieved < goalTries && !_stop && !_restart ) {
+        // Ask SpidrDaq for frames
+        while ( spidrdaq->hasFrame( timeOutTime ) ) {
 
-            // Ask SpidrDaq for frames
-        qDebug() << "available : " << _consumer->freeFrames->available();
-
-            while ( spidrdaq->hasFrame( timeOutTime ) ) {
-
-                // rewind if we finally made it to catch a frame
-                //if ( goalAchieved != 0 ) qDebug() << " goal " << goalAchieved;
-                //goalAchieved = 0;
-
-                // I need to keep extracting data even if the goal has been achieved
-                oneFrameChipCntr = 0;
-                for ( int i = 0 ; i < nChips ; i++ ) {
-                    // retreive data for a given chip
-                    framedata = spidrdaq->frameData(i, &size_in_bytes);
-                    //clearToCopy = true;
-                    _consumer->freeFrames->acquire();
-/*
-                    // Copy data in the consumer using the Semaphores
-                    while ( ! _consumer->freeFrames->tryAcquire() ) { // Acquire space for 1 chip in one frame
-                        Sleep(4); // ~ the time 1 packet takes to come in
-                        //if ( semAcq == 0 ) _consumer->consume(); // awake the consumer once
-                        //qDebug() << " acq1  | " << i << semAcq;
-                        if ( ++semAcq > semAcqTries ) {
-home/asi/tmp/mpx3gui/SpidrMpx3Eq/assemblies/W521_Q6_G6_F6_D6_300um_Si_Fine/mask_3
-[INFO] Consumer. Buffer size:  268435456
-   lock DataTakingThread | goal: 0  | frames: 167  |  lost :  7                    semAcq = 0;
-                            clearToCopy = false;
-                            break; // breaks the while
-                        }
-                    }
-                    //qDebug() << "---> " << i;
-                    */
-                    //semAcq = 0;
-                    //if ( clearToCopy ) {
-                        _consumer->copydata( framedata, size_in_bytes );
-                        _consumer->usedFrames->release();
-                        oneFrameChipCntr++;
-                    //} //else { // rewind and loose this frame } // TODO
-
-                }
-
-                // The consumer thread is expecting N chips to be loaded
-                // It can happen that the information from 1 or more chips
-                // doesn't come through. This will put the consumer out of
-                // sync since the descriptor can stay behind the readdescriptor.
-                // In this case we will drop the frame.
-
-                if ( oneFrameChipCntr != nChips ) {
-                     _consumer->rewindcopydata(oneFrameChipCntr, size_in_bytes);
-                     qDebug() << " !!! REWIND !!! ";
-                } else {
-                    // Awake the consumer thread if neccesary
-                    _consumer->consume();
-                }
-
-                // Release frame
-                spidrdaq->releaseFrame();
-
-                // Queue the data and keep going as fast as possible
-                //if ( ! goalAchieved ) { }
-
-                // Keep a local count of number of frames
-                nFramesReceived++;
-                if ( ! ( spidrdaq->lostCount() > 0 && dropFrames ) ) nFramesKept++;
-
-                // Reports
-                lostFrames = spidrdaq->framesLostCount() / nChips;
-
-                emit scoring_sig(nFramesReceived,
-                                 nFramesKept,
-                                 lostFrames,  //
-                                 spidrdaq->lostCount(),                 // lost packets(ML605)/pixels(compactSPIDR)
-                                 spidrdaq->framesCount(),               // ?
-                                 0,
-                                 spidrdaq->framesLostCount() % nChips   // Data misaligned
-                                 );
-
-                /////////////////////////////////////////////
-                // How to stop
-                // 1) See Note 1 at the bottom
-                if ( nFramesReceived + lostFrames == score.framesRequested ) {
-                    //goalAchieved = goalTries; // don't keep trying
-                    if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
-                        spidrcontrol->stopContReadout();
-                    } else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
-                        spidrcontrol->stopAutoTrigger();
-                    }
-                }
-
-                // 2) User stop condition
-                if ( _stop ) break;
-
-                // 3) User restart condition
-                if ( _restart ) break;
-
+            if ( _consumer->freeFrames->available() < halfSemaphoreSize ) {
+                //qDebug() << " defibrilate ... and try to stop ";
+                 _consumer->consume();
+                 emit bufferFull( 0 );
+                 if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
+                     spidrcontrol->stopContReadout();
+                 } else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
+                     spidrcontrol->stopAutoTrigger();
+                 }
             }
 
-            qDebug() << "+" << nFramesReceived;
+            oneFrameChipCntr = 0;
+            for ( int i = 0 ; i < nChips ; i++ ) {
+                // retreive data for a given chip
+                framedata = spidrdaq->frameData(i, &size_in_bytes);
+                //clearToCopy = true;
+                _consumer->freeFrames->acquire();
+                _consumer->copydata( framedata, size_in_bytes );
+                _consumer->usedFrames->release();
+                oneFrameChipCntr++;
+            }
 
-            //goalAchieved++;
+            // The consumer thread is expecting N chips to be loaded
+            // It can happen that the information from 1 or more chips
+            // doesn't come through. This will put the consumer out of
+            // sync since the descriptor can stay behind the readdescriptor.
+            // In this case we will drop the frame.
 
-        //}
+            if ( oneFrameChipCntr != nChips ) {
+                for ( int i = 0 ; i < oneFrameChipCntr ; i++ ) {
+                    // Free the resources and rewind descriptor
+                    _consumer->usedFrames->acquire();
+                    _consumer->rewindcopydata(size_in_bytes);
+                    _consumer->freeFrames->release();
+                }
+                qDebug() << " !!! REWIND !!! ";
+            }
 
-        //Sleep( 1000 );
+            // Awake the consumer thread
+            _consumer->consume();
+
+            // Release frame
+            spidrdaq->releaseFrame();
+
+            // Keep a local count of number of frames
+            nFramesReceived++;
+            if ( ! ( spidrdaq->lostCount() > 0 && dropFrames ) ) nFramesKept++;
+
+            // Reports
+            lostFrames = spidrdaq->framesLostCount() / nChips;
+
+            emit scoring_sig(nFramesReceived,
+                             nFramesKept,
+                             lostFrames,  //
+                             spidrdaq->lostCount(),                 // lost packets(ML605)/pixels(compactSPIDR)
+                             spidrdaq->framesCount(),               // ?
+                             0,
+                             spidrdaq->framesLostCount() % nChips   // Data misaligned
+                             );
+
+            /////////////////////////////////////////////
+            // How to stop
+            // 1) See Note 1 at the bottom
+            if ( nFramesReceived + lostFrames == score.framesRequested ) {
+                //goalAchieved = goalTries; // don't keep trying
+                if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
+                    spidrcontrol->stopContReadout();
+                } else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
+                    spidrcontrol->stopAutoTrigger();
+                }
+            }
+
+            // 2) User stop condition
+            if ( _stop ) break;
+
+            // 3) User restart condition
+            if ( _restart ) break;
+
+        }
 
         // If the data taking was stopped
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
@@ -290,10 +262,7 @@ home/asi/tmp/mpx3gui/SpidrMpx3Eq/assemblies/W521_Q6_G6_F6_D6_300um_Si_Fine/mask_
 
         if ( ! _restart ) emit data_taking_finished( 0 );
 
-        qDebug() << "   lock DataTakingThread | goal:" << goalAchieved << " | frames:" << nFramesReceived << " |  lost : " << lostFrames;
-
-        // Try to wake up the consumer in case frames are still in the pipeline
-        //_consumer->consume();
+        //qDebug() << "   lock DataTakingThread | goal:" << goalAchieved << " | frames:" << nFramesReceived << " |  lost : " << lostFrames;
 
         // Final report
         emit scoring_sig(nFramesReceived,

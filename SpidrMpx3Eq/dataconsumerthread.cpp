@@ -29,6 +29,7 @@ DataConsumerThread::DataConsumerThread(Mpx3GUI * mpx3gui, QObject * parent)
 
     // The Semaphores
     // _nFramesBuffer is the number of resources
+    _semaphoreSize = _nFramesBuffer * _nChips;
     freeFrames = new QSemaphore( _nFramesBuffer * _nChips ); // nChips per frame
     usedFrames = new QSemaphore;
 
@@ -84,24 +85,23 @@ void DataConsumerThread::consume()
 void DataConsumerThread::copydata(int * source, size_t num )
 {
 
-    //qDebug() << "   Copy --> descriptor : " << descriptor;
-
     memcpy( buffer + descriptor, source, num );
     descriptor += num/4;            // 4 bytes per integer
 
     // rewind descriptor -- circular buffer
     if ( descriptor >= _bufferSize ) {
         descriptor = 0;
-        qDebug() << " ... circ buffer ... ";
-        //readdescriptor = 0;
+        //qDebug() << " ... circ buffer ... ";
     }
 }
 
 void DataConsumerThread::rewindcopydata(int nChipsRewind, size_t num) {
-
     descriptor -= nChipsRewind * (num/4);
-
 }
+void DataConsumerThread::rewindcopydata(size_t num) {
+    descriptor -= num/4;
+}
+
 
 void DataConsumerThread::run()
 {
@@ -127,14 +127,14 @@ void DataConsumerThread::run()
             //
             else {  // This should only happen when we went around the circ buffer
                 //descriptorDistance = _bufferSize - readdescriptor + descriptor;
-                qDebug() << " !!! ACK CIRC !!! ";
+                //qDebug() << " ACK CIRC ";
             }
 
             // If the distance is not a full frame, the consumer needs to wait until
             //  the produces wakes him up again.  It could be that the consumer is runing
             //  too fast.
-            if ( descriptorDistance < _bufferSizeOneFrame) {
-                qDebug() << "   Shenkie in de koelkast !! --> " << descriptorDistance;
+            if ( descriptorDistance < _bufferSizeOneFrame ) {
+                //qDebug() << "   Shenkie in de koelkast !! --> " << descriptorDistance;
                 break;
             }
 
@@ -188,7 +188,7 @@ void DataConsumerThread::run()
             //if ( descriptorDistance >= _bufferSizeHalf ) emit bufferFull( 0 );
 
             // Fraction
-            emit bufferOccupancySig( (int)(100*(descriptorDistance/(double)_bufferSize)) );
+            emit bufferOccupancySig( (int)(100*(usedFrames->available()/ (double)(_nFramesBuffer*_nChips) ) ) );
 
             /*
             qDebug() << "   Position : "

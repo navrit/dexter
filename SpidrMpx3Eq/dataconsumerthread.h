@@ -19,6 +19,8 @@ public:
     ~DataConsumerThread();
     void copydata(int * source, size_t num);
     void rewindcopydata(int nChipsRewind, size_t num);
+    void rewindcopydata(size_t num);
+    uint getSemaphoreSize(){return _semaphoreSize;}
 
     void consume();
     void SeparateThresholds(int /*id*/,
@@ -52,6 +54,7 @@ private:
     Mpx3GUI * _mpx3gui;
 
     const uint _nFramesBuffer = 1024;
+    uint _semaphoreSize;
     uint _nChips;
     bool _bothCounters;
     uint _bufferSize;
