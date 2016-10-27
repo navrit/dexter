@@ -97,6 +97,12 @@ void DataConsumerThread::copydata(int * source, size_t num )
     }
 }
 
+void DataConsumerThread::rewindcopydata(int nChipsRewind, size_t num) {
+
+    descriptor -= nChipsRewind * (num/4);
+
+}
+
 void DataConsumerThread::run()
 {
 
@@ -112,15 +118,32 @@ void DataConsumerThread::run()
         // local variables to scope variables
         //_mutex.unlock();
 
+
         // Go chasing the producer
         while ( readdescriptor != descriptor ) {
+
+            // Report how far are we from reaching the descriptor
+            if ( descriptor >= readdescriptor) descriptorDistance = descriptor - readdescriptor;
+            //
+            else {  // This should only happen when we went around the circ buffer
+                //descriptorDistance = _bufferSize - readdescriptor + descriptor;
+                qDebug() << " !!! ACK CIRC !!! ";
+            }
+
+            // If the distance is not a full frame, the consumer needs to wait until
+            //  the produces wakes him up again.  It could be that the consumer is runing
+            //  too fast.
+            if ( descriptorDistance < _bufferSizeOneFrame) {
+                qDebug() << "   Shenkie in de koelkast !! --> " << descriptorDistance;
+                break;
+            }
 
             /////////////////
             // Colour Mode //
             if ( _mpx3gui->getConfig()->getColourMode() ) {
 
                 // SeparateThresholds -> use the Semaphores (here's where I use the share resource)
-                for ( int ci = 0 ; ci < _nChips ; ci++ ) {
+                for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
                     usedFrames->acquire(); // ! it's one per chip to keep the right counting with the producer !
                     SeparateThresholds(0,
                                        buffer + readdescriptor,
@@ -146,11 +169,12 @@ void DataConsumerThread::run()
                 else bothCountersMod = 2; // do 0,1
 
                 // Send the info -> use the Semaphores (here's where I use the share resource)
-                usedFrames->acquire();
+                // Acquire and realease for N chips
+                for ( uint ci = 0 ; ci < _nChips ; ci++ ) usedFrames->acquire();
                 for ( int i = 0 ; i < bothCountersMod ; i++ ) {
                     _mpx3gui->addLayer( buffer + readdescriptor, i );
                 }
-                freeFrames->release();
+                for ( uint ci = 0 ; ci < _nChips ; ci++ ) freeFrames->release();
 
             }
 
@@ -160,23 +184,23 @@ void DataConsumerThread::run()
             // or rewind
             if ( readdescriptor >= _bufferSize ) readdescriptor = 0;
 
-            // Report how far are we from reaching the descriptor
-            if ( descriptor >= readdescriptor) descriptorDistance = descriptor - readdescriptor;
-            else descriptorDistance = _bufferSize - readdescriptor + descriptor;
-
             // Too loaded
-            if ( descriptorDistance >= _bufferSizeHalf ) emit bufferFull( 0 );
+            //if ( descriptorDistance >= _bufferSizeHalf ) emit bufferFull( 0 );
 
             // Fraction
             emit bufferOccupancySig( (int)(100*(descriptorDistance/(double)_bufferSize)) );
 
-            //qDebug() << "   Occupancy : "
-            //         << 100.0*(descriptor/(double)_bufferSize)
-            //         << "\% | readdescriptor --> " << readdescriptor << " | descriptor : " << descriptor << " | buffer : " << _bufferSize;
-
+            /*
+            qDebug() << "   Position : "
+                     << 100.0*(descriptor/(double)_bufferSize)
+                     << "\% | readdescriptor --> " << readdescriptor
+                     << " | descriptor : " << descriptor
+                     << " | dist : " << descriptorDistance
+                     << " | buffer : " << _bufferSize;
+        */
         }
 
-        //qDebug() << "   lock DataConsumerThread";
+        //qDebug() << "   --- lock DataConsumerThread";
         _mutex.lock();
         if (!_restart)
             _condition.wait(&_mutex);

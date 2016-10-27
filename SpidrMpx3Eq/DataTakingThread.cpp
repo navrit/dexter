@@ -130,6 +130,8 @@ void DataTakingThread::run() {
 
     int goalAchieved = 0;
     int semAcq = 0;
+    unsigned int oneFrameChipCntr = 0;
+
     bool clearToCopy = true;
 
     ///////////////////////////////////////////////////////////////////////////////////
@@ -171,6 +173,8 @@ void DataTakingThread::run() {
         //while ( goalAchieved < goalTries && !_stop && !_restart ) {
 
             // Ask SpidrDaq for frames
+        qDebug() << "available : " << _consumer->freeFrames->available();
+
             while ( spidrdaq->hasFrame( timeOutTime ) ) {
 
                 // rewind if we finally made it to catch a frame
@@ -178,10 +182,11 @@ void DataTakingThread::run() {
                 //goalAchieved = 0;
 
                 // I need to keep extracting data even if the goal has been achieved
+                oneFrameChipCntr = 0;
                 for ( int i = 0 ; i < nChips ; i++ ) {
                     // retreive data for a given chip
                     framedata = spidrdaq->frameData(i, &size_in_bytes);
-                    clearToCopy = true;
+                    //clearToCopy = true;
                     _consumer->freeFrames->acquire();
 /*
                     // Copy data in the consumer using the Semaphores
@@ -199,22 +204,34 @@ home/asi/tmp/mpx3gui/SpidrMpx3Eq/assemblies/W521_Q6_G6_F6_D6_300um_Si_Fine/mask_
                     }
                     //qDebug() << "---> " << i;
                     */
-                    semAcq = 0;
-                    if ( clearToCopy ) {
+                    //semAcq = 0;
+                    //if ( clearToCopy ) {
                         _consumer->copydata( framedata, size_in_bytes );
                         _consumer->usedFrames->release();
-                    } //else { // rewind and loose this frame } // TODO
+                        oneFrameChipCntr++;
+                    //} //else { // rewind and loose this frame } // TODO
 
                 }
 
-                // Awake the consumer thread if neccesary
-                _consumer->consume();
+                // The consumer thread is expecting N chips to be loaded
+                // It can happen that the information from 1 or more chips
+                // doesn't come through. This will put the consumer out of
+                // sync since the descriptor can stay behind the readdescriptor.
+                // In this case we will drop the frame.
 
-                // Queue the data and keep going as fast as possible
-                //if ( ! goalAchieved ) { }
+                if ( oneFrameChipCntr != nChips ) {
+                     _consumer->rewindcopydata(oneFrameChipCntr, size_in_bytes);
+                     qDebug() << " !!! REWIND !!! ";
+                } else {
+                    // Awake the consumer thread if neccesary
+                    _consumer->consume();
+                }
 
                 // Release frame
                 spidrdaq->releaseFrame();
+
+                // Queue the data and keep going as fast as possible
+                //if ( ! goalAchieved ) { }
 
                 // Keep a local count of number of frames
                 nFramesReceived++;
@@ -222,6 +239,7 @@ home/asi/tmp/mpx3gui/SpidrMpx3Eq/assemblies/W521_Q6_G6_F6_D6_300um_Si_Fine/mask_
 
                 // Reports
                 lostFrames = spidrdaq->framesLostCount() / nChips;
+
                 emit scoring_sig(nFramesReceived,
                                  nFramesKept,
                                  lostFrames,  //
@@ -238,6 +256,8 @@ home/asi/tmp/mpx3gui/SpidrMpx3Eq/assemblies/W521_Q6_G6_F6_D6_300um_Si_Fine/mask_
                     //goalAchieved = goalTries; // don't keep trying
                     if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
                         spidrcontrol->stopContReadout();
+                    } else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
+                        spidrcontrol->stopAutoTrigger();
                     }
                 }
 
@@ -247,8 +267,9 @@ home/asi/tmp/mpx3gui/SpidrMpx3Eq/assemblies/W521_Q6_G6_F6_D6_300um_Si_Fine/mask_
                 // 3) User restart condition
                 if ( _restart ) break;
 
-
             }
+
+            qDebug() << "+" << nFramesReceived;
 
             //goalAchieved++;
 
