@@ -124,7 +124,7 @@ void DataTakingThread::run() {
     int opMode = Mpx3Config::__operationMode_SequentialRW;
 
     int size_in_bytes = -1;
-    int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0;
+    int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0, lostPackets = 0;
     bool dropFrames = false;
     bool emergencyStop = false;
 
@@ -160,6 +160,8 @@ void DataTakingThread::run() {
         goalAchieved = false;
         spidrcontrol->resetCounters();
         spidrdaq->resetLostCount();
+        nFramesReceived = 0; nFramesKept = 0; lostFrames = 0; lostPackets = 0;
+        emergencyStop = false;
 
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
             spidrcontrol->startContReadout( contRWFreq );
@@ -174,12 +176,12 @@ void DataTakingThread::run() {
                 //qDebug() << " defibrilate ... and try to stop ";
                 if ( ! emergencyStop ) {
                     emit bufferFull( 0 );
-                    _consumer->consume();
                     if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
                         spidrcontrol->stopContReadout();
                     } else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
                         spidrcontrol->stopAutoTrigger();
                     }
+                    _consumer->consume();
                 }
                 emergencyStop = true;
             }
@@ -218,16 +220,18 @@ void DataTakingThread::run() {
             spidrdaq->releaseFrame();
 
             // Keep a local count of number of frames
+            lostPackets += spidrdaq->lostCount();
             nFramesReceived++;
             if ( ! ( spidrdaq->lostCount() > 0 && dropFrames ) ) nFramesKept++;
+            else spidrdaq->resetLostCount();
 
             // Reports
             lostFrames = spidrdaq->framesLostCount() / nChips;
 
             emit scoring_sig(nFramesReceived,
                              nFramesKept,
-                             lostFrames,  //
-                             spidrdaq->lostCount(),                 // lost packets(ML605)/pixels(compactSPIDR)
+                             lostFrames,                  //
+                             lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
                              spidrdaq->framesCount(),               // ?
                              0,
                              spidrdaq->framesLostCount() % nChips   // Data misaligned
