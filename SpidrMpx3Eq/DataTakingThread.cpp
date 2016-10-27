@@ -126,6 +126,7 @@ void DataTakingThread::run() {
     int size_in_bytes = -1;
     int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0;
     bool dropFrames = false;
+    bool emergencyStop = false;
 
     int goalAchieved = 0;
     unsigned int oneFrameChipCntr = 0;
@@ -171,13 +172,16 @@ void DataTakingThread::run() {
 
             if ( _consumer->freeFrames->available() < halfSemaphoreSize ) {
                 //qDebug() << " defibrilate ... and try to stop ";
-                 _consumer->consume();
-                 emit bufferFull( 0 );
-                 if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
-                     spidrcontrol->stopContReadout();
-                 } else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
-                     spidrcontrol->stopAutoTrigger();
-                 }
+                if ( ! emergencyStop ) {
+                    emit bufferFull( 0 );
+                    _consumer->consume();
+                    if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
+                        spidrcontrol->stopContReadout();
+                    } else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
+                        spidrcontrol->stopAutoTrigger();
+                    }
+                }
+                emergencyStop = true;
             }
 
             oneFrameChipCntr = 0;

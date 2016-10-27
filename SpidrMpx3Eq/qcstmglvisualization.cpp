@@ -1991,6 +1991,6 @@ void QCstmGLVisualization::consumerBufferFull(int)
 {
 
     QMessageBox::critical(this, tr("System buffer"),
-                          tr("This whole thing is going too fast baby ;) ..."));
+                          tr("The system can't keep up. Please review your settings."));
 
 }
