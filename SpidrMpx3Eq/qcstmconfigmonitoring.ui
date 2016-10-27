@@ -629,7 +629,8 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
            <bool>false</bool>
           </property>
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;O... Master Register&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>Operation Mode Register
+A word added to each command - controls some functionality that changes regularly, like the operation type or counting mode.</string>
           </property>
           <property name="text">
            <string>Read OMR</string>
