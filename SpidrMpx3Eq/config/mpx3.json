@@ -17,7 +17,7 @@
         "BiasVoltage" : 100
     },
     "IPConfig": {
-        "SpidrControllerIp": "192.168.1.10:50000",
+        "SpidrControllerIp": "192.168.100.10:50000",
         "SpidrControllerPort": 50000
     },
 
