@@ -1,0 +1,32 @@
+{
+    "corr0": {
+        "mat": "Al",
+        "path": "/home/asi/tmp/50kV/LG/0um.bin",
+        "thickness": 0
+    },
+    "corr1": {
+        "mat": "Al",
+        "path": "/home/asi/tmp/50kV/LG/50um.bin",
+        "thickness": 50
+    },
+    "corr2": {
+        "mat": "Al",
+        "path": "/home/asi/tmp/50kV/LG/100um.bin",
+        "thickness": 100
+    },
+    "corr3": {
+        "mat": "Al",
+        "path": "/home/asi/tmp/50kV/LG/200um.bin",
+        "thickness": 200
+    },
+    "corr4": {
+        "mat": "Al",
+        "path": "/home/asi/tmp/50kV/LG/500um.bin",
+        "thickness": 500
+    },
+    "corr5": {
+        "mat": "Al",
+        "path": "/home/asi/tmp/50kV/LG/1000um.bin",
+        "thickness": 1000
+    }
+}
