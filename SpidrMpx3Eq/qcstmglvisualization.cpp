@@ -700,6 +700,8 @@ void QCstmGLVisualization::ConnectionStatusChanged(bool connecting) {
         int colCount = ui->dataTakingGridLayout->columnCount();
         ui->dataTakingGridLayout->addWidget( _extraWidgets.devicesNamesLabel, 1, 0, 1, colCount );
 
+        sig_statusBarAppend(_statsString.devicesIdString,"green");
+
     } else {
         FinishDataTakingThread();
 
