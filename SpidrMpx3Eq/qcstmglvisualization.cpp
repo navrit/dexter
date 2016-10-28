@@ -308,7 +308,7 @@ void QCstmGLVisualization::StartDataTaking() {
         ConfigureGUIForDataTaking();
 
         // info refresh
-        _timerId = this->startTimer( 100 ); // 100 ms is a good compromise to refresh the scoreing info
+        _timerId = this->startTimer( 100 ); // 42 ); //100 ); // 100 ms is a good compromise to refresh the scoreing info
         //qDebug() << "Start : " << _timerId;
 
     } else { // stop

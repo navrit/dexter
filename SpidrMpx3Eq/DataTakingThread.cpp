@@ -288,6 +288,12 @@ void DataTakingThread::run() {
         nFramesKept = 0;
         goalAchieved = false;
 
+        // If this was an emergency stop
+        // Have the consumer free resources
+        if ( emergencyStop ) {
+            _consumer->freeResources();
+        }
+
         // Put the thread to wait
         _mutex.lock();
         if ( !_restart ) {

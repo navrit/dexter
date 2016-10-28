@@ -20,6 +20,7 @@ public:
     void copydata(int * source, size_t num);
     void rewindcopydata(int nChipsRewind, size_t num);
     void rewindcopydata(size_t num);
+    void freeResources();
     uint getSemaphoreSize(){return _semaphoreSize;}
 
     void consume();
@@ -50,6 +51,7 @@ private:
     QWaitCondition _condition;
     bool _restart;
     bool _abort;
+    bool _stop;
 
     Mpx3GUI * _mpx3gui;
 

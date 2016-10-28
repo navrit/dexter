@@ -10,6 +10,7 @@ DataConsumerThread::DataConsumerThread(Mpx3GUI * mpx3gui, QObject * parent)
 
     _restart = false;
     _abort = false;
+    _stop = false;
 
     _mpx3gui = mpx3gui;
 
@@ -102,6 +103,34 @@ void DataConsumerThread::rewindcopydata(size_t num) {
     descriptor -= num/4;
 }
 
+void DataConsumerThread::freeResources() {
+
+    // Force the thread to abort and go to sleep
+    _mutex.lock();
+    _stop = true;          // will stop run as soon as possible
+    _mutex.unlock();
+
+    // Now see where we stand and rewind
+    //qDebug() << "free: " << freeFrames->available();
+    //qDebug() << "used: " << usedFrames->available();
+    while ( freeFrames->available() < _semaphoreSize ) {
+        freeFrames->release();
+    }
+    while ( usedFrames->available() > 0 ) {
+        usedFrames->acquire();
+    }
+    // rewind descriptors
+    descriptor = 0;
+    readdescriptor = 0;
+    //qDebug() << "free: " << freeFrames->available();
+    //qDebug() << "used: " << usedFrames->available();
+
+    // don't stop next time it wakes up
+    _mutex.lock();
+    _stop = false;
+    _mutex.unlock();
+
+}
 
 void DataConsumerThread::run()
 {
@@ -188,7 +217,7 @@ void DataConsumerThread::run()
             //if ( descriptorDistance >= _bufferSizeHalf ) emit bufferFull( 0 );
 
             // Fraction
-            emit bufferOccupancySig( (int)(100*(usedFrames->available()/ (double)(_nFramesBuffer*_nChips) ) ) );
+            emit bufferOccupancySig( (int)(100*(usedFrames->available()/ (double)(_semaphoreSize) ) ) );
 
             /*
             qDebug() << "   Position : "
@@ -198,6 +227,7 @@ void DataConsumerThread::run()
                      << " | dist : " << descriptorDistance
                      << " | buffer : " << _bufferSize;
         */
+            if ( _stop ) break;
         }
 
         //qDebug() << "   --- lock DataConsumerThread";
