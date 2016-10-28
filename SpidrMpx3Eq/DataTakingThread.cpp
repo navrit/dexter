@@ -128,10 +128,9 @@ void DataTakingThread::run() {
     bool dropFrames = false;
     bool emergencyStop = false;
 
-    int goalAchieved = 0;
     unsigned int oneFrameChipCntr = 0;
     uint halfSemaphoreSize = 0;
-    bool contRWStop = false;
+    bool reachLimitStop = false;
 
     ///////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////
@@ -158,12 +157,11 @@ void DataTakingThread::run() {
         _mutex.unlock();
 
         // Reset
-        goalAchieved = false;
         spidrcontrol->resetCounters();
         spidrdaq->resetLostCount();
         nFramesReceived = 0; nFramesKept = 0; lostFrames = 0; lostPackets = 0;
         emergencyStop = false;
-        contRWStop = false;
+        reachLimitStop = false;
 
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
             spidrcontrol->startContReadout( contRWFreq );
@@ -174,33 +172,40 @@ void DataTakingThread::run() {
         // Ask SpidrDaq for frames
         while ( spidrdaq->hasFrame( timeOutTime ) ) {
 
-            if ( ! contRWStop ) {
-
-                if ( _consumer->freeFrames->available() < halfSemaphoreSize ) {
-                    //qDebug() << " defibrilate ... and try to stop ";
-                    if ( ! emergencyStop ) {
-                        emit bufferFull( 0 );
-                        if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
-                            spidrcontrol->stopContReadout();
-                        } else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
-                            spidrcontrol->stopAutoTrigger();
-                        }
-                        _consumer->consume();
-                    }
-                    emergencyStop = true;
-                }
-
-                oneFrameChipCntr = 0;
-                for ( int i = 0 ; i < nChips ; i++ ) {
-                    // retreive data for a given chip
-                    framedata = spidrdaq->frameData(i, &size_in_bytes);
-                    //clearToCopy = true;
-                    _consumer->freeFrames->acquire();
-                    _consumer->copydata( framedata, size_in_bytes );
-                    _consumer->usedFrames->release();
-                    oneFrameChipCntr++;
-                }
+            // If trying to stop a ContRW I only need to do this
+            if ( reachLimitStop ) {
+                spidrdaq->releaseFrame();
+                _consumer->consume();
+                continue;
             }
+
+            // An emergency stop
+            if ( _consumer->freeFrames->available() < halfSemaphoreSize ) {
+                //qDebug() << " defibrilate ... and try to stop ";
+                if ( ! emergencyStop ) {
+                    emit bufferFull( 0 );
+                    if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
+                        spidrcontrol->stopContReadout();
+                    } else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
+                        spidrcontrol->stopAutoTrigger();
+                    }
+                    _consumer->consume();
+                }
+                emergencyStop = true;
+            }
+
+            // Read data
+            oneFrameChipCntr = 0;
+            for ( int i = 0 ; i < nChips ; i++ ) {
+                // retreive data for a given chip
+                framedata = spidrdaq->frameData(i, &size_in_bytes);
+                //clearToCopy = true;
+                _consumer->freeFrames->acquire();
+                _consumer->copydata( framedata, size_in_bytes );
+                _consumer->usedFrames->release();
+                oneFrameChipCntr++;
+            }
+
 
             // Release frame
             spidrdaq->releaseFrame();
@@ -214,59 +219,46 @@ void DataTakingThread::run() {
             // Another reason to rewind is when there are lost packets
             // and the user has picked to drop the frames with lost packets
 
-            if ( ! contRWStop ) {
+            lostPackets += spidrdaq->lostCount();
 
-                lostPackets += spidrdaq->lostCount();
-
-                if ( (oneFrameChipCntr != nChips) || (lostPackets > 0 && dropFrames) ) {
-                    for ( int i = 0 ; i < oneFrameChipCntr ; i++ ) {
-                        // Free the resources and rewind descriptor
-                        _consumer->usedFrames->acquire();
-                        _consumer->rewindcopydata(size_in_bytes);
-                        _consumer->freeFrames->release();
-                    }
-                    //qDebug() << " !!! REWIND !!! [" << oneFrameChipCntr << "]";
+            if ( (oneFrameChipCntr != nChips) || (lostPackets > 0 && dropFrames) ) {
+                for ( int i = 0 ; i < oneFrameChipCntr ; i++ ) {
+                    // Free the resources and rewind descriptor
+                    _consumer->usedFrames->acquire();
+                    _consumer->rewindcopydata(size_in_bytes);
+                    _consumer->freeFrames->release();
                 }
-
+                //qDebug() << " !!! REWIND !!! [" << oneFrameChipCntr << "]";
             }
 
             // Awake the consumer thread
             _consumer->consume();
 
-            if ( ! contRWStop ) {
-                // Keep a local count of number of frames
-                nFramesReceived++;
-                if ( ! ( spidrdaq->lostCount() > 0 && dropFrames ) ) nFramesKept++;
-                else spidrdaq->resetLostCount();
+            // Keep a local count of number of frames
+            nFramesReceived++;
+            if ( ! ( spidrdaq->lostCount() > 0 && dropFrames ) ) nFramesKept++;
+            else spidrdaq->resetLostCount();
 
-                // Reports
-                lostFrames = spidrdaq->framesLostCount() / nChips;
+            // Reports
+            lostFrames = spidrdaq->framesLostCount() / nChips;
 
-                emit scoring_sig(nFramesReceived,
-                                 nFramesKept,
-                                 lostFrames,                  //
-                                 lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
-                                 spidrdaq->framesCount(),               // ?
-                                 0,
-                                 spidrdaq->framesLostCount() % nChips   // Data misaligned
-                                 );
+            emit scoring_sig(nFramesReceived,
+                             nFramesKept,
+                             lostFrames,                  //
+                             lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
+                             spidrdaq->framesCount(),               // ?
+                             0,
+                             spidrdaq->framesLostCount() % nChips   // Data misaligned
+                             );
 
-                /////////////////////////////////////////////
-                // How to stop in ContRW
-                // 1) See Note 1 at the bottom
-                if ( nFramesReceived + lostFrames == score.framesRequested ) {
-                    //goalAchieved = goalTries; // don't keep trying
-                    if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
-                        spidrcontrol->stopContReadout();
-                        contRWStop = true;
-                    }
-                    //else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
-                    //    spidrcontrol->stopAutoTrigger();
-                    //}
-                    //_consumer->consume();
-                    //break;
+            /////////////////////////////////////////////
+            // How to stop in ContRW
+            // 1) See Note 1 at the bottom
+            if ( nFramesReceived + lostFrames == score.framesRequested ) {
+                if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
+                    spidrcontrol->stopContReadout();
                 }
-
+                reachLimitStop = true;
             }
 
             // 2) User stop condition
@@ -277,20 +269,7 @@ void DataTakingThread::run() {
 
         }
 
-        // If the data taking was stopped
-        if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
-            spidrcontrol->stopContReadout();
-        } else {
-            spidrcontrol->stopAutoTrigger();
-        }
-        // Clear
-        //for ( int i = 0 ; i < nChips ; i++ ) {
-        //    spidrdaq->clearFrameData( i );
-        //}
-
         if ( ! _restart ) emit data_taking_finished( 0 );
-
-        //qDebug() << "   lock DataTakingThread | goal:" << goalAchieved << " | frames:" << nFramesReceived << " |  lost : " << lostFrames;
 
         // Final report
         emit scoring_sig(nFramesReceived,
@@ -302,11 +281,6 @@ void DataTakingThread::run() {
                          spidrdaq->framesLostCount() % nChips   // Data misaligned
                          );
 
-
-        // Rewind local variables
-        nFramesReceived = 0;
-        nFramesKept = 0;
-        goalAchieved = false;
 
         // If this was an emergency stop
         // Have the consumer free resources
