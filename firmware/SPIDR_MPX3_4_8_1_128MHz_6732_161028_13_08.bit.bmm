@@ -1,0 +1,87 @@
+/* FILE : fpga.bmm
+*  Define a BRAM map for the AHBROM memory space. The
+*  address space 0x0000 - 0x0fff, 4 KB (=1 Kwords 32 bits wide).
+*  Run ISE Translate -> "Floorplan Area/IO/Logic (PlanAhead)" once (without this BMM file
+*  attached to the ISE Project) to find out that there are 16 ramloops and each RAMB18E1
+*  is configured as 36K? x 2 bit
+*  Note: *THE RAMLOOP ORDER IS VERY IMPORTANT!!!*
+*        Define ramloop 15 downto 0 and databits 31 downto 0 !!! Otherwise the memory
+*        content will be swapped and the program fails to execute. Aperently the ramloop
+*        number and bit definitions are not read by data2mem.
+*RAMB32
+****************************************************************************************/
+ADDRESS_MAP myTop PPC405 0
+
+ADDRESS_SPACE ahbram1 RAMB32  [0x40000000:0x4003FFFF]
+  BUS_BLOCK
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_8  [31] PLACED = X2Y4;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_7  [30] PLACED = X2Y6;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_6  [29] PLACED = X4Y17;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_5  [28] PLACED = X6Y12;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_4  [27] PLACED = X4Y12;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_3  [26] PLACED = X0Y11;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_2  [25] PLACED = X2Y13;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_1  [24] PLACED = X5Y12;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_8  [23] PLACED = X1Y8;
+  	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_7  [22] PLACED = X0Y13;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_6  [21] PLACED = X4Y19;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_5  [20] PLACED = X3Y13;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_4  [19] PLACED = X0Y15;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_3  [18] PLACED = X1Y6;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_2  [17] PLACED = X1Y16;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_1  [16] PLACED = X0Y7;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_8  [15] PLACED = X1Y12;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_7  [14] PLACED = X1Y14;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_6  [13] PLACED = X0Y9;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_5  [12] PLACED = X6Y10;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_4  [11] PLACED = X4Y10;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_3  [10] PLACED = X3Y20;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_2  [9]  PLACED = X2Y15;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_1  [8]  PLACED = X7Y10;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_8  [7]  PLACED = X5Y10;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_7  [6]  PLACED = X2Y8;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_6  [5]  PLACED = X3Y27;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_5  [4]  PLACED = X4Y21;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_4  [3]  PLACED = X7Y12;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_3  [2]  PLACED = X2Y2;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_2  [1]  PLACED = X3Y18;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_1  [0]  PLACED = X2Y10;
+	END_BUS_BLOCK;                                                                       
+
+  BUS_BLOCK	
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_16  [31] PLACED = X2Y5;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_15  [30] PLACED = X2Y7;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_14  [29] PLACED = X4Y18;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_13  [28] PLACED = X6Y13;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_12  [27] PLACED = X4Y13;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_11  [26] PLACED = X0Y12;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_10  [25] PLACED = X2Y14;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_3_x0_xc2v_x0_a15_x_memarr_9   [24] PLACED = X5Y13;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_16  [23] PLACED = X1Y9;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_15  [22] PLACED = X0Y14;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_14  [21] PLACED = X4Y20;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_13  [20] PLACED = X3Y14;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_12  [19] PLACED = X0Y16;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_11  [18] PLACED = X1Y7;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_10  [17] PLACED = X1Y17;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_2_x0_xc2v_x0_a15_x_memarr_9   [16] PLACED = X0Y8;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_16  [15] PLACED = X1Y13;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_15  [14] PLACED = X1Y15;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_14  [13] PLACED = X0Y10;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_13  [12] PLACED = X6Y11;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_12  [11] PLACED = X4Y11;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_11  [10] PLACED = X3Y21;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_10  [9] PLACED = X2Y16;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_1_x0_xc2v_x0_a15_x_memarr_9   [8] PLACED = X7Y11;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_16  [7] PLACED = X5Y11;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_15  [6] PLACED = X2Y9;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_14  [5] PLACED = X3Y28;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_13  [4] PLACED = X4Y22;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_12  [3] PLACED = X7Y13;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_11  [2] PLACED = X2Y3;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_10  [1] PLACED = X3Y19;
+	FPGA0/leon3_system0/u0/cpu/ahbramgen_ahbram0_aram_nosbw_rx_0_x0_xc2v_x0_a15_x_memarr_9   [0] PLACED = X2Y11;
+  END_BUS_BLOCK;                                                                       
+END_ADDRESS_SPACE;
+
+END_ADDRESS_MAP;
