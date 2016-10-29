@@ -297,7 +297,7 @@ void DataTakingThread::run() {
         }
 
         // Put the thread to wait
-        qDebug() << "   ... lock DataTakingThread";
+        //qDebug() << "   ... lock DataTakingThread";
         _mutex.lock();
         if ( !_restart ) {
             _idling = true;
