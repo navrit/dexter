@@ -59,3 +59,5 @@ HEADERS += ReceiverThread.h
 HEADERS += ReceiverThreadC.h
 HEADERS += FramebuilderThread.h
 HEADERS += FramebuilderThreadC.h
+
+CONFIG   += static

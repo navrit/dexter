@@ -56,6 +56,7 @@ win32 {
 unix {
     message(Unix)
     LIBS += -licuuc -licui18n -licudata -lopenblas -llapack
+    #LIBS += -licuuc -licui -licudata -lopenblas -llapack
     INCLUDEPATH += ../../dlib-19.1
 }
 

@@ -254,7 +254,8 @@ void DataTakingThread::run() {
             /////////////////////////////////////////////
             // How to stop in ContRW
             // 1) See Note 1 at the bottom
-            if ( nFramesReceived + lostFrames == score.framesRequested ) {
+            //  note than score.framesRequested=0 when asking for infinite frames
+            if ( (nFramesReceived + lostFrames == score.framesRequested) && score.framesRequested != 0) {
                 if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
                     spidrcontrol->stopContReadout();
                 }
@@ -267,6 +268,13 @@ void DataTakingThread::run() {
             // 3) User restart condition
             if ( _restart ) break;
 
+        }
+
+
+        if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
+            spidrcontrol->stopContReadout();
+        } else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
+            spidrcontrol->stopAutoTrigger();
         }
 
         if ( ! _restart ) emit data_taking_finished( 0 );
@@ -289,6 +297,7 @@ void DataTakingThread::run() {
         }
 
         // Put the thread to wait
+        qDebug() << "   ... lock DataTakingThread";
         _mutex.lock();
         if ( !_restart ) {
             _idling = true;

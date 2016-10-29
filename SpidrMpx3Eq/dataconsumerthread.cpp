@@ -230,7 +230,7 @@ void DataConsumerThread::run()
             if ( _stop ) break;
         }
 
-        //qDebug() << "   --- lock DataConsumerThread";
+        qDebug() << "   --- lock DataConsumerThread";
         _mutex.lock();
         if (!_restart)
             _condition.wait(&_mutex);
