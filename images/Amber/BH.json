@@ -1,0 +1,32 @@
+{
+    "corr0": {
+        "mat": "Al",
+        "path": "/home/asi/tmp/Amber/BH_20kV_0umAl.bin",
+        "thickness": 0
+    },
+    "corr1": {
+        "mat": "Al",
+        "path": "/home/asi/tmp/Amber/BH_20kV_50umAl.bin",
+        "thickness": 50
+    },
+    "corr2": {
+        "mat": "Al",
+        "path": "/home/asi/tmp/Amber/BH_20kV_100umAl.bin",
+        "thickness": 100
+    },
+    "corr3": {
+        "mat": "Al",
+        "path": "/home/asi/tmp/Amber/BH_20kV_200umAl.bin",
+        "thickness": 200
+    },
+    "corr4": {
+        "mat": "Al",
+        "path": "/home/asi/tmp/Amber/BH_20kV_500umAl.bin",
+        "thickness": 500
+    },
+    "corr5": {
+        "mat": "Al",
+        "path": "/home/asi/tmp/Amber/BH_20kV_1000umAl.bin",
+        "thickness": 1000
+    }
+}

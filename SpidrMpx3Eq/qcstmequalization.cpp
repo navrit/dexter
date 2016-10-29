@@ -1936,10 +1936,10 @@ void QCstmEqualization::LoadEqualization(bool getPath) {
         SetAllAdjustmentBits( _mpx3gui->GetSpidrController(), i, true );
 
         // Show the related histograms
-        if ( GetAdjBarChart(i, Mpx3EqualizationResults::__ADJ_L) != nullptr ) {
-            GetAdjBarChart(i, Mpx3EqualizationResults::__ADJ_L)->show();
-            //GetAdjBarChart(i, Mpx3EqualizationResults::__ADJ_L)->fitToHeight();
-        }
+//        if ( GetAdjBarChart(i, Mpx3EqualizationResults::__ADJ_L) != nullptr ) {
+//            GetAdjBarChart(i, Mpx3EqualizationResults::__ADJ_L)->show();
+//            //GetAdjBarChart(i, Mpx3EqualizationResults::__ADJ_L)->fitToHeight();
+//        }
 
         // Progression
         pd.setValue( i+1 );

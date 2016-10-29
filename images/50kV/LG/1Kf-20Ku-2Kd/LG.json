@@ -1,0 +1,31 @@
+{
+    "DetectorConfig": {
+        "ColourMode": true,
+        "ContRWFreq": 100,
+        "CsmSpm": 0,
+        "DecodeFrames": true,
+        "GainMode": 1,
+        "LUTEnable": true,
+        "MaxPacketSize": 9000,
+        "OperationMode": 0,
+        "PixelDepth": 12,
+        "Polarity": true,
+        "TriggerDeadtime_us": 2000,
+        "TriggerLength_us": 20000,
+        "TriggerMode": 4,
+        "nTriggers": 1000
+    },
+    "IPConfig": {
+        "SpidrControllerIp": "192.168.100.10",
+        "SpidrControllerPort": 50000
+    },
+    "StepperConfig": {
+        "Acceleration": 500000,
+        "CalibAngle0": 90,
+        "CalibAngle1": 0,
+        "CalibPos0": 21500,
+        "CalibPos1": 0,
+        "Speed": 12500,
+        "UseCalib": true
+    }
+}
