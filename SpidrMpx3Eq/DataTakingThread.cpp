@@ -253,10 +253,9 @@ void DataTakingThread::run() {
             nFramesReceived++;
             // Keep a track of frames actually kept
             if ( ! ( spidrdaq->lostCount() > 0 && _vis->getDropFrames() ) ) nFramesKept++;
-            else spidrdaq->resetLostCount();
 
             // Final report
-            lostFrames = spidrdaq->framesLostCount() / nChips;
+            lostFrames += spidrdaq->framesLostCount() / nChips;
 
             emit scoring_sig(nFramesReceived,
                              nFramesKept,
@@ -266,6 +265,8 @@ void DataTakingThread::run() {
                              0,
                              spidrdaq->framesLostCount() % nChips   // Data misaligned
                              );
+
+            spidrdaq->resetLostCount();
 
             /////////////////////////////////////////////
             // How to stop in ContRW
