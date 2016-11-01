@@ -1045,6 +1045,11 @@ void QCstmConfigMonitoring::cameraSetup() {
 
     ui->videoDockWidget->setWidget( _viewfinder );
     ui->videoDockWidget->toggleViewAction();
+    ui->videoDockWidget->setFeatures(
+                QDockWidget::DockWidgetClosable |
+                QDockWidget::DockWidgetMovable |
+                QDockWidget::DockWidgetFloatable
+                );
 
 
 }

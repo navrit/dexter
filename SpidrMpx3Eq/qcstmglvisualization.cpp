@@ -235,7 +235,7 @@ void QCstmGLVisualization::ConfigureGUIForDataTaking() {
     ui->groupBoxConfigAndStats->setEnabled( false );
     ui->statsLabel->setEnabled( true ); // keep the stats label alive
 
-    ui->infDataTakingCheckBox->setEnabled( false );
+    //ui->infDataTakingCheckBox->setEnabled( false );
 
     // Don't let the user change DACs while taking data
     _mpx3gui->getDACs()->setEnabled( false );
@@ -253,7 +253,7 @@ void QCstmGLVisualization::ConfigureGUIForIdling() {
     // Config stats
     ui->groupBoxConfigAndStats->setEnabled( true );
 
-    ui->infDataTakingCheckBox->setEnabled( true );
+    //ui->infDataTakingCheckBox->setEnabled( true );
 
     _mpx3gui->getDACs()->setEnabled( true );
 }

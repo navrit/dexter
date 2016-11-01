@@ -74,11 +74,10 @@ private:
     bool _restart;
     bool _abort;
     bool _idling;
+    bool _stop;
 
     Mpx3GUI * _mpx3gui;
     QCstmGLVisualization * _vis;
-    bool _stop;
-    bool _canDraw;
     datataking_score_info _score;
 
     // IP source address (SPIDR network interface)
@@ -97,8 +96,8 @@ private:
 
 public slots:
     void on_stop_data_taking_thread();
-    void on_busy_drawing();
-    void on_free_to_draw();
+    //void on_busy_drawing();
+    //void on_free_to_draw();
 
 signals:
     // drawing signals calling back to QCstmGLVisualization

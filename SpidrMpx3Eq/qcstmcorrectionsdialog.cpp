@@ -123,19 +123,25 @@ void QCstmCorrectionsDialog::on_obcorrCheckbox_toggled(bool checked) {
 
 
         QString filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("binary files (*.bin)"));
-        QFile saveFile(filename);
+        if (  filename.isNull() ) { // the user clicked cancel
 
-        if ( !saveFile.open(QIODevice::ReadOnly) ) {
-            string messg = "Couldn't open: ";
-            messg += filename.toStdString();
-            messg += "\nNo output written!";
-            QMessageBox::warning ( this, tr("Error opening data"), tr( messg.c_str() ) );
-            return;
+            ui->obcorrCheckbox->setChecked( false );
+
+        } else {
+            QFile saveFile(filename);
+
+            if ( !saveFile.open(QIODevice::ReadOnly) ) {
+                string messg = "Couldn't open: ";
+                messg += filename.toStdString();
+                messg += "\nNo output written!";
+                QMessageBox::warning ( this, tr("Error opening data"), tr( messg.c_str() ) );
+                return;
+            }
+
+            _mpx3gui->getDataset()->loadCorrection(saveFile.readAll());
+
+            ui->obcorrLineEdit->setText(filename);
         }
-
-        _mpx3gui->getDataset()->loadCorrection(saveFile.readAll());
-
-        ui->obcorrLineEdit->setText(filename);
     }
 
 }
