@@ -1973,9 +1973,11 @@ void QCstmGLVisualization::on_resetViewPushButton_clicked(){
     reload_all_layers();
 }
 
-//! Clear saveLineEdit on_saveCheckBox_toggled, every time
-void QCstmGLVisualization::on_saveCheckBox_toggled(){
+//! Clear saveLineEdit on_saveCheckBox_clicked by a user, every time
+void QCstmGLVisualization::on_saveCheckBox_clicked(){
     ui->saveLineEdit->clear();
+
+    qDebug() << ui->saveCheckBox->isChecked();
 
     //! Open file dialog, get path and set saveLineEdit to given path and continue
     if(ui->saveCheckBox->isChecked()){
@@ -2003,6 +2005,6 @@ void QCstmGLVisualization::consumerBufferFull(int)
 {
 
     QMessageBox::critical(this, tr("System buffer"),
-                          tr("The system can't keep up. Please review your settings."));
+                          tr("The system can't keep up. Please review your settings. Increasing UDP kernel buffer size or getting a faster CPU may help."));
 
 }

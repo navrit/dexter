@@ -244,7 +244,7 @@ private slots:
 
     void on_resetViewPushButton_clicked();
 
-    void on_saveCheckBox_toggled();
+    void on_saveCheckBox_clicked();
 
 
 public slots:
