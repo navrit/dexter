@@ -77,10 +77,10 @@ QGroupBox::title {
         <item row="5" column="5">
          <widget class="QLabel" name="label_5">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Charge summing mode&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>CSM SPM</string>
           </property>
           <property name="text">
-           <string>Csm Spm</string>
+           <string>Charge Summing Mode</string>
           </property>
          </widget>
         </item>
@@ -275,7 +275,7 @@ Detector dependant. If incorrect, you will see very obvious artifacts, 3/4 of th
         <item row="5" column="9">
          <widget class="QComboBox" name="csmSpmCombo">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Charge summing mode&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>CSM SPM</string>
           </property>
           <property name="layoutDirection">
            <enum>Qt::RightToLeft</enum>
@@ -669,7 +669,7 @@ A word added to each command - controls some functionality that changes regularl
         <item row="2" column="1">
          <widget class="QLabel" name="label_10">
           <property name="text">
-           <string>Board temp:</string>
+           <string>Board Temp:</string>
           </property>
          </widget>
         </item>
@@ -737,14 +737,14 @@ A word added to each command - controls some functionality that changes regularl
         <item row="1" column="1">
          <widget class="QLabel" name="label_0">
           <property name="text">
-           <string>Chip temp:</string>
+           <string>Chip Temp:</string>
           </property>
          </widget>
         </item>
         <item row="1" column="4">
          <widget class="QLabel" name="label_21">
           <property name="text">
-           <string>Bias (V):</string>
+           <string>Bias V:</string>
           </property>
          </widget>
         </item>
@@ -816,7 +816,7 @@ A word added to each command - controls some functionality that changes regularl
            <string>Sample every (s)</string>
           </property>
           <property name="text">
-           <string>Samp(s):</string>
+           <string>Samples (s):</string>
           </property>
          </widget>
         </item>
