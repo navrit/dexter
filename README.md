@@ -12,23 +12,17 @@ Steps to get this repository up and running and developers information (formerly
 * Configuration
 * Dependencies
     * Qt 5.7.0+
-    * cmake
+          * https://www.qt.io/download-open-source/#section-2
     * GCC 64 bit
           * In /usr/bin
     * dlib (19.0+)
           * Compile http://dlib.net/compile.html
           * Copy folder to ../mpx3gui/ - so dlib/ is at same level as mpx3gui/
     * Boost (1.60+)
-          * libboost-all-dev
     * Phidget (21)
-          * libusb-1.0-0-dev
           * http://www.phidgets.com/docs/OS_-_Linux
     * Openblas 
-          * libblas-dev
-          * libblas3
     * Lapack
-          * liblapack-dev
-          * liblapack3
     * ICU http://apps.icu-project.org/icu-jsp/downloadPage.jsp?ver=56.1&base=c&svn=release-56-1
           * Download then extract to top level system folder (/)
 
@@ -59,6 +53,7 @@ sudo apt-get -qy install python-setuptools
 sudo apt-get -qy install python-pip
 sudo apt-get -qy install cmake
 sudo apt-get -qy install libusb-dev
+sudo apt-get -qy install libblas3
 
 sudo apt-get autoremove
 
