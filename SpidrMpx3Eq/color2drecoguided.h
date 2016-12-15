@@ -43,11 +43,8 @@ public:
 private:
 
     Mpx3GUI * _mpx3gui;
-	  QString _datafiles[4];
-	  double  _densities[4];
-
-	//QString _datafiles[4];
-	//double _densities[4];
+    QString _datafiles[4];
+    double  _densities[4]; //! Density units in g/cm^3
 
     QMap<int, QString> _nameMap_TotAttWCohScatt; // Contains the names
     QMap<int, tk::spline *> _splineMap_TotAttWCohScatt;  // Contain the interpolations
@@ -58,6 +55,11 @@ private:
 
     int _nMaterials = -1;
     int _nEnergies = -1;
+
+    QString txt_H20    = "H2O.txt",
+            txt_Al_Z13 = "Al_Z13.txt",
+            txt_Ca_Z20 = "Ca_Z20.txt",
+            txt_Cu_Z29 = "Cu_Z29.txt";
 
 };
 

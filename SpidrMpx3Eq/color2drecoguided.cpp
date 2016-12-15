@@ -13,28 +13,28 @@ template<class T> bool InvertMatrix(const matrix<T>& input, matrix<T>& inverse);
 
 Color2DRecoGuided::Color2DRecoGuided(Mpx3GUI * mg) {
     _mpx3gui = mg;
-	_datafiles[0] = "H2O.txt";
-	_datafiles[1] = "Al_Z13.txt";
-    _datafiles[2] = "Ca_Z20.txt";
-    _datafiles[3] = "Cu_Z29.txt";
+    _datafiles[0] = txt_H20 ;
+    _datafiles[1] = txt_Al_Z13;
+    _datafiles[2] = txt_Ca_Z20;
+    _datafiles[3] = txt_Cu_Z29;
 
-	_densities[0] = 1.0;
-	_densities[1] = 2.7;
-	_densities[2] = 1.55;
-	_densities[3] = 8.96;
+    _densities[0] = 1.0;
+    _densities[1] = 2.7;
+    _densities[2] = 1.55;
+    _densities[3] = 8.96;
 }
 
 Color2DRecoGuided::Color2DRecoGuided() {
 
-	_datafiles[0] = "H2O.txt";
-	_datafiles[1] = "Al_Z13.txt";
-	_datafiles[2] = "Ca_Z20.txt";
-	_datafiles[3] = "Cu_Z29.txt";
+    _datafiles[0] = txt_H20 ;
+    _datafiles[1] = txt_Al_Z13;
+    _datafiles[2] = txt_Ca_Z20;
+    _datafiles[3] = txt_Cu_Z29;
 
-	_densities[0] = 1.0;
-	_densities[1] = 2.7;
-	_densities[2] = 1.55;
-	_densities[3] = 8.96;
+    _densities[0] = 1.0;
+    _densities[1] = 2.7;
+    _densities[2] = 1.55;
+    _densities[3] = 8.96;
 }
 
 
@@ -66,20 +66,20 @@ int Color2DRecoGuided::BuildAndInvertMuMatrix() {
     // To obtain the energies per thresholds we need a calibration, TODO !
     // Probably available through the Config ?
     QList<double> energies;
-//    energies.append(  3.6E-3 ); // !!! NIST data comes in MeV !!!
-//    energies.append(  10.E-3 ); //
-//    energies.append(  15.E-3 ); //
-//    energies.append(  20.E-3 ); //
+    //    energies.append(  3.6E-3 ); // !!! NIST data comes in MeV !!!
+    //    energies.append(  10.E-3 ); //
+    //    energies.append(  15.E-3 ); //
+    //    energies.append(  20.E-3 ); //
 
     energies.append( 4.8E-3 ); // 0
     energies.append( 7.2E-3 ); // 2
     energies.append( 9.6E-3 ); // 4
     energies.append( 11.9E-3 );  // 6
 
-//      energies.append(  4.8E-3 );
-//      energies.append( 10.0E-3 );
-//      energies.append( 15.0E-3 );
-//      energies.append( 20.0E-3 );
+    //      energies.append(  4.8E-3 );
+    //      energies.append( 10.0E-3 );
+    //      energies.append( 15.0E-3 );
+    //      energies.append( 20.0E-3 );
 
     // Materials
     _nMaterials = getNTotAttWCohScattDatasets();
