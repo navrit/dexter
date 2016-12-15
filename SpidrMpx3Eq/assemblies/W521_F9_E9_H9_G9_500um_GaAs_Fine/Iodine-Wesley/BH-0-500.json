@@ -1,0 +1,27 @@
+{
+    "corr0": {
+        "mat": "Al",
+        "path": "/home/navrit/dev/mpx3gui/SpidrMpx3Eq/assemblies/W521_F9_E9_H9_G9_500um_GaAs_Fine/Iodine-Wesley/OB-50kV-100f.bin",
+        "thickness": 0
+    },
+    "corr1": {
+        "mat": "Al",
+        "path": "/home/navrit/dev/mpx3gui/SpidrMpx3Eq/assemblies/W521_F9_E9_H9_G9_500um_GaAs_Fine/Iodine-Wesley/50um.bin",
+        "thickness": 50
+    },
+    "corr2": {
+        "mat": "Al",
+        "path": "/home/navrit/dev/mpx3gui/SpidrMpx3Eq/assemblies/W521_F9_E9_H9_G9_500um_GaAs_Fine/Iodine-Wesley/100um.bin",
+        "thickness": 100
+    },
+    "corr3": {
+        "mat": "Al",
+        "path": "/home/navrit/dev/mpx3gui/SpidrMpx3Eq/assemblies/W521_F9_E9_H9_G9_500um_GaAs_Fine/Iodine-Wesley/200um.bin",
+        "thickness": 200
+    },
+    "corr4": {
+        "mat": "Al",
+        "path": "/home/navrit/dev/mpx3gui/SpidrMpx3Eq/assemblies/W521_F9_E9_H9_G9_500um_GaAs_Fine/Iodine-Wesley/500um.bin",
+        "thickness": 500
+    }
+}
