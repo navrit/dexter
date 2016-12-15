@@ -17,19 +17,11 @@
 /SpidrMpx3Eq/assemblies/W520_H10_G10_F10_E10_Si500um_Spec/mpx3.json
 /SpidrMpx3Eq/assemblies/W521_F9_E9_H9_G9_500um_GaAs_Fine/configMammography1G
 /SpidrMpx3Eq/assemblies/W521_F9_E9_H9_G9_500um_GaAs_Fine/configMammography1Gb.json
-/SpidrMpx3Eq/callgrind.out.17836
-/SpidrMpx3Eq/callgrind.out.17968
-/SpidrMpx3Eq/callgrind.out.18004
-/SpidrMpx3Eq/callgrind.out.18047
-/SpidrMpx3Eq/callgrind.out.18098
-/SpidrMpx3Eq/img_Firmware_16090114.png
-/SpidrMpx3Eq/img_Firmware_16090114_histogram.dat
-/SpidrMpx3Eq/img_Firmware_16090114_histogram.png
+/SpidrMpx3Eq/callgrind.out.*
+/SpidrMpx3Eq/img_Firmware_16090114.*
 /SpidrMpx3Eq/mpx3.json
 /SpidrMpx3Eq/qcstmglvisualization.cpp_mine
-/SpidrMpx3Eq/scan_0.txt
-/SpidrMpx3Eq/scan_1.txt
-/SpidrMpx3Eq/scan_2.txt
+/SpidrMpx3Eq/scan_*
 /firmware/#notes.txt#
 /firmware/.#notes.txt
 /firmware/SPIDR_MPX3_4_8_1_128MHz_6572_160824_10_43.bit
@@ -81,6 +73,8 @@ build-spidrflash-Desktop_Qt_5_7_0_GCC_64bit-Release/
 # Ignore compile files
 /Debug/*
 /Release/*
+build-SpidrMpx3Eq-Desktop_Qt_5_7_0_GCC_64bit-Release/
+build-SpidrMpx3Eq-Desktop_Qt_5_7_0_GCC_64bit-Debug/
 
 # Ignore temporary files
 *~

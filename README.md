@@ -12,25 +12,54 @@ Steps to get this repository up and running and developers information (formerly
 * Configuration
 * Dependencies
     * Qt 5.7.0+
-    * cmake
+          * https://www.qt.io/download-open-source/#section-2
     * GCC 64 bit
           * In /usr/bin
     * dlib (19.0+)
           * Compile http://dlib.net/compile.html
           * Copy folder to ../mpx3gui/ - so dlib/ is at same level as mpx3gui/
     * Boost (1.60+)
-          * libboost-all-dev
     * Phidget (21)
-          * libusb-1.0-0-dev
           * http://www.phidgets.com/docs/OS_-_Linux
     * Openblas 
-          * libblas-dev
-          * libblas3
     * Lapack
-          * liblapack-dev
-          * liblapack3
     * ICU http://apps.icu-project.org/icu-jsp/downloadPage.jsp?ver=56.1&base=c&svn=release-56-1
           * Download then extract to top level system folder (/)
+
+
+```
+#!sh
+
+#!/bin/bash
+echo "\n"
+echo "Navrit Bal"
+echo "2016-11-16 \n"
+
+echo "\n Installer for ASI Dexter support packages \n"
+
+sudo apt-get update
+
+sudo apt-get -qy install qtbase5-dev
+sudo apt-get -qy install qt5-default
+sudo apt-get -qy install libqt5opengl5
+sudo apt-get -qy install libqt5opengl5-dev
+sudo apt-get -qy install qt5-qmake
+sudo apt-get -qy install qtbase5-gles-dev
+sudo apt-get -qy install libqt5core5a
+sudo apt-get -qy install libboost-all-dev
+sudo apt-get -qy install libopenblas-dev
+sudo apt-get -qy install liblapack-dev
+sudo apt-get -qy install python-setuptools
+sudo apt-get -qy install python-pip
+sudo apt-get -qy install cmake
+sudo apt-get -qy install libusb-dev
+sudo apt-get -qy install libblas3
+
+sudo apt-get autoremove
+
+```
+
+
 * Deployment instructions
 
 ### Contribution guidelines ###
