@@ -40,7 +40,7 @@
         <string> Test</string>
        </property>
        <property name="icon">
-        <iconset resource="icons.qrc">
+        <iconset>
          <normaloff>:/icons/config_logo.png</normaloff>:/icons/config_logo.png</iconset>
        </property>
       </widget>
@@ -143,7 +143,11 @@
       </widget>
      </item>
      <item row="3" column="4">
-      <widget class="QDoubleSpinBox" name="targetPosSpinBox"/>
+      <widget class="QDoubleSpinBox" name="targetPosSpinBox">
+       <property name="maximum">
+        <double>360.000000000000000</double>
+       </property>
+      </widget>
      </item>
      <item row="0" column="0">
       <widget class="QCheckBox" name="stepperMotorCheckBox">

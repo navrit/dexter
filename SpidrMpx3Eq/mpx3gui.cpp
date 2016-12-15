@@ -320,6 +320,8 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend);
     connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarClean, this, &Mpx3GUI::statusBarClean);
 
+    connect( _ui->stepperMotorTab, &QCstmStepperMotor::sig_statusBarAppend , this, &Mpx3GUI::statusBarAppend);
+
 
     for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {
         connect( _shortcutsSwitchPages[i], &QShortcut::activated,

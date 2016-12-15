@@ -44,16 +44,21 @@ private:
     QVector<double> m_stepperTestSequence;
     int m_stepperTestCurrentStep = 0;
 
+signals:
+    //! Status bar signal function
+    void sig_statusBarAppend(QString mess, QString colorString);
+
 
 private slots:
     void ConnectionStatusChanged(bool);
 
     //! Stepper slots
-    void on_stepperMotorCheckBox_toggled(bool checked);
     void on_stepperUseCalibCheckBox_toggled(bool checked);
     void on_motorGoToTargetButton_clicked();
     void on_motorResetButton_clicked();
     void on_stepperSetZeroPushButton_clicked();
+    //! Used in CT view also
+    void on_stepperMotorCheckBox_toggled(bool checked);
     //void ConfigCalibAngle1Changed(double);
 
     // Dial

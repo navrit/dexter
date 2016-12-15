@@ -60,6 +60,7 @@ private slots:
     void on_rangeDirectionCheckBox_toggled(bool checked);
     void on_keepCheckbox_toggled(bool checked);
     void on_logyCheckBox_toggled(bool checked);
+    void on_thlCalibDifferentiateCheckBox_toggled(bool checked);
 
     void addData(int dacIdx, int dacVal, double adcVal );
     void addData(int);

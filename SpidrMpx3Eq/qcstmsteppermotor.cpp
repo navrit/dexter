@@ -68,15 +68,12 @@ void QCstmStepperMotor::setWindowWidgetsStatus(win_status s)
     switch (s) {
 
     case win_status::startup:
-
         break;
 
     case win_status::connected:
-
         break;
 
     default:
-
         break;
 
     }
@@ -90,9 +87,6 @@ void QCstmStepperMotor::ConnectionStatusChanged(bool conn) {
     } else {
         setWindowWidgetsStatus( win_status::disconnected );
     }
-
-    // Do something here?
-    //if ( conn ) ...;
 
 }
 
@@ -111,6 +105,7 @@ void QCstmStepperMotor::activeInGUI()
 }
 
 void QCstmStepperMotor::activateItemsGUI(){
+    emit sig_statusBarAppend(tr("Connected to motor"),"green");
     ui->motorDial->setEnabled( true );
     ui->motorGoToTargetButton->setEnabled( true );
     ui->motorResetButton->setEnabled( true );
@@ -126,6 +121,7 @@ void QCstmStepperMotor::activateItemsGUI(){
 }
 
 void QCstmStepperMotor::deactivateItemsGUI(){
+    emit sig_statusBarAppend(tr("Disconnected from motor"),"black");
     ui->motorDial->setDisabled( true );
     ui->motorGoToTargetButton->setDisabled( true );
     ui->motorResetButton->setDisabled( true );
@@ -168,7 +164,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked)
     disconnect(ui->speedSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeed(double)) );
     disconnect(ui->currentISpinBox, SIGNAL(valueChanged(double)), this, SLOT(setCurrentILimit(double)) );
 
-    // the missing boolead (ui->stepperUseCalibCheckBox) is managed by an implicit slot (on_stepperUseCalibCheckBox_toggled)
+    // the missing boolean (ui->stepperUseCalibCheckBox) is managed by an implicit slot (on_stepperUseCalibCheckBox_toggled)
 
     // On turn on --> setup, on turn off --> close
     if ( checked == true ) {
@@ -187,7 +183,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked)
         // Block the maximum and minimum number of motors
         ui->motorIdSpinBox->setMinimum( 0 );
         ui->motorIdSpinBox->setMaximum( _stepper->getNumMotors() - 1 );
-        QString motorIdS = "supported motors: ";
+        QString motorIdS = "Supported motors: ";
         motorIdS += QString::number( _stepper->getNumMotors() , 'd', 0 );
         ui->motorIdSpinBox->setToolTip( motorIdS );
 
@@ -278,7 +274,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked)
     connect(ui->speedSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeed(double)) );
     connect(ui->currentISpinBox, SIGNAL(valueChanged(double)), this, SLOT(setCurrentILimit(double)) );
 
-    // the missing boolead (ui->stepperUseCalibCheckBox) is managed by an implicit slot (on_stepperUseCalibCheckBox_toggled)
+    // the missing boolean (ui->stepperUseCalibCheckBox) is managed by an implicit slot (on_stepperUseCalibCheckBox_toggled)
 
 }
 
@@ -528,9 +524,9 @@ void QCstmStepperMotor::on_motorTestButton_clicked()
 {
     /*! Follow a sequeance of angles and back-to-zero to test.
      Every time on_motorGoToTargetButton_clicked is called,
-      which launches the StepperThread. Then when the tread
+      which launches the StepperThread. Then when the thread
       is finished and sends its signal we can continue
-      checkin if the sequence has been exahusted.
+      checking if the sequence has been exhausted.
     */
 
     // Fill in a sequance
@@ -673,9 +669,10 @@ void ConfigStepperThread::run() {
 
     }
 
-    // At the end the following may happen
-    // Say the user request and angle of 3 degrees.  With a given resolution (ex. 0.9 deg per step)
-    //  the bets the stepper can do is 2.7 degrees.  In that case color the LCD
+    /** At the end the following may happen
+    * Say the user request and angle of 3 degrees.  With a given resolution (ex. 0.9 deg per step)
+    *  the best the stepper can do is 2.7 degrees.  In that case color the LCD
+    */
     if ( posDisplay != _ui->targetPosSpinBox->value() ) {
         _ui->motorCurrentPoslcdNumber->setPalette(Qt::yellow);
         _ui->motorCurrentPoslcdNumber->setToolTip("Requested target couldn't be reached exactly.");
@@ -684,6 +681,6 @@ void ConfigStepperThread::run() {
         _ui->motorCurrentPoslcdNumber->setToolTip("Target reached.");
     }
 
-    qDebug() << "thread done";
+    qDebug() << "ConfigStepperThread done";
 
 }

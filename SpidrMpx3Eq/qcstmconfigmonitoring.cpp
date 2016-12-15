@@ -699,7 +699,7 @@ void QCstmConfigMonitoring::readMonitoringInfo() {
         int biasVolts;
         if ( spidrcontrol->getBiasVoltage(&biasVolts) ) {
             QString qs;
-            if (biasVolts < 11) {
+            if (biasVolts < 12) {
                 qs = QString("Ext. (%1)").arg( biasVolts );
             } else {
                 qs = QString("%1 V").arg( biasVolts );

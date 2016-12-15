@@ -116,6 +116,17 @@ void QCstmThreshold::on_logyCheckBox_toggled(bool checked) {
     ui->plot->replot();
 }
 
+void QCstmThreshold::on_thlCalibDifferentiateCheckBox_toggled(bool checked)
+{
+    if (checked){
+        //! Smooth threshold scan then calculate and show 5 point stencil differentiation.
+        //! Change y units to "Energy (KeV)"
+    } else {
+        //! Hide differentiation and switch back to raw data
+    }
+
+}
+
 int QCstmThreshold::getActiveTargetCode() {
     return MPX3RX_DAC_TABLE[ui->scanTargetComboBox->currentIndex()].code;
 }
