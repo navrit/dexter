@@ -17,7 +17,7 @@ Steps to get this repository up and running and developers information (formerly
           * In /usr/bin
     * dlib (19.0+)
           * Compile http://dlib.net/compile.html
-          * Copy folder to ../mpx3gui/ - so dlib/ is at same level as mpx3gui/
+          * Copy folder to /home/asi/opt - so dlib-19.1/ is in that folder. Otherwise Qt won't be able to find dlib and you'll get errors.
     * Boost (1.60+)
     * Phidget (21)
           * http://www.phidgets.com/docs/OS_-_Linux
