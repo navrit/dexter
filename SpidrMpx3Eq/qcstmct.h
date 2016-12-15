@@ -29,10 +29,17 @@ private:
 
   Ui::QCstmCT *ui;
   Mpx3GUI * _mpx3gui;
+  void resetMotor();
+  void startCT(); // MAIN FUNCTION
+  void stopCT();  // MAIN INTERRUPT
+
+signals:
+  void sig_connectToMotors( bool );
 
 private slots:
 
-  void rotatePushButton_clicked();
+  void  on_CTPushButton_clicked();
+  //void rotatePushButton_clicked();
 
 };
 
