@@ -57,7 +57,7 @@ unix {
     message(Unix)
     LIBS += -licuuc -licui18n -licudata -lopenblas -llapack
     #LIBS += -licuuc -licui -licudata -lopenblas -llapack
-    INCLUDEPATH += ../../dlib-19.1
+    INCLUDEPATH += /home/asi/opt/dlib-19.1
 }
 
 LIBS += -lSpidrMpx3Lib
