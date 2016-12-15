@@ -216,6 +216,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
         spidrcontrol->setPs( deviceIndex, 3 ); // 3: 8 links
     }
     if ( item == __ALL || item == __LUTEnable ) {
+        // We need look up table decoding ether hadware or software
         spidrcontrol->setLutEnable( ! getLUTEnable() );
         spidrdaq->setLutEnable( getLUTEnable() );
     }
