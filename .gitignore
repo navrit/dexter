@@ -68,6 +68,7 @@
 /firmware/spidr_MPX3_4_8_1_6566_160823_14_22-plus-elf-rel.mcs
 /firmware/spidr_MPX3_4_8_1_6566_160823_14_22-plus-elf-rel.zip
 /firmware/timing_summary.rpx
+build-spidrflash-Desktop_Qt_5_7_0_GCC_64bit-Release/
 
 # Ignore compile files
 /Debug/*
@@ -84,3 +85,15 @@ build-SpidrMpx3Eq-Desktop_Qt_5_7_0_GCC_64bit-Debug/
 *.pro.user.*
 *.autosave
 /SpidrMpx3Eq/notes/.~lock.Developers notes.rtf#
+/SpidrMpx3Eq/eq
+/SpidrMpx3Eq/config/last_setting.json
+/SpidrMpx3Eq/config/alex_last.json
+/SpidrMpx3Eq/config/last_eq/adj_0
+/SpidrMpx3Eq/config/last_eq/adj_1
+/SpidrMpx3Eq/config/last_eq/adj_2
+/SpidrMpx3Eq/config/last_eq/adj_3
+/SpidrMpx3Eq/config/last_eq/config.json
+/SpidrMpx3Eq/config/last_eq/mask_0
+/SpidrMpx3Eq/config/last_eq/mask_1
+/SpidrMpx3Eq/config/last_eq/mask_2
+/SpidrMpx3Eq/config/last_eq/mask_3
