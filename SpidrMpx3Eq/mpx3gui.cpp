@@ -461,7 +461,7 @@ bool Mpx3GUI::establish_connection() {
         delete dbg;
 
         QMessageBox::critical(this, "Connection error",
-                              tr("Could not find any devices.")
+                              tr("Could not find any devices. Check the IP address is either 192.168.1.10 or 192.168.100.10")
                               );
         config->destroyController();
         emit ConnectionStatusChanged(false);
