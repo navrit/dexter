@@ -861,10 +861,10 @@ void Mpx3GUI::save_data(bool requestPath){//TODO: REIMPLEMENT
     QString path;
     if (!requestPath){
         //! Native format - User dialog
-        filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", tr("Binary files (*.bin)"));
+        filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", tr("Binary files (*.bin)")); //;;TIFF (*.tif)
 
         //! Force the .bin in the data filename
-        if ( ! filename.toLower().contains(".bin")  && !filename.isEmpty()) {
+        if ( ! filename.toLower().contains(".bin")  /*&& ! filename.toLower().contains(".tif")*/  && !filename.isEmpty()) {
             filename.append(".bin");
         }
     } else {
@@ -886,11 +886,23 @@ void Mpx3GUI::save_data(bool requestPath){//TODO: REIMPLEMENT
         QMessageBox::warning ( this, tr("Error saving data"), tr( messg.c_str() ) );
         return;
     }
+//    if (filename.toLower().contains(".tif")){
+//        // TODO Save to TIF
+//        QImage image = QImage::fromData(getDataset()->toByteArray());
+//        QFile outFile(filename);
+//        if (outFile.open(QIODevice::WriteOnly)) {
+//          image.save(&outFile, "TIF");
+//          outFile.close();
+//        }
+
+//    } else {
+//        saveFile.write(getDataset()->toByteArray());
+//    }
     saveFile.write(getDataset()->toByteArray());
     saveFile.close();
 
-    qDebug() << "[INFO] .bin file saved: ..." << filename;
-    QString msg = "Auto-saved: ...";
+    qDebug() << "[INFO] File saved: ..." << filename;
+    QString msg = "Saved: ...";
     msg.append(filename.section('/',-3,-1));
     emit sig_statusBarAppend(msg,"green");
 
