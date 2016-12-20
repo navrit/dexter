@@ -32,9 +32,15 @@ private:
   void resetMotor();
   void startCT(); // MAIN FUNCTION
   void stopCT();  // MAIN INTERRUPT
+  bool _stop = false;
+
+  bool activeMotors = false;
 
 signals:
   void sig_connectToMotors( bool );
+
+public slots:
+  void slot_connectedToMotors();
 
 private slots:
 

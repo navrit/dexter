@@ -86,9 +86,21 @@
           </widget>
          </item>
          <item row="3" column="2">
-          <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+          <widget class="QDoubleSpinBox" name="spinBox_ExposureTimePerPosition">
            <property name="suffix">
-            <string> μs</string>
+            <string> s</string>
+           </property>
+           <property name="decimals">
+            <number>3</number>
+           </property>
+           <property name="maximum">
+            <double>100.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>1.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>1.000000000000000</double>
            </property>
           </widget>
          </item>
@@ -98,17 +110,26 @@
             <number>1</number>
            </property>
            <property name="maximum">
-            <number>1000</number>
+            <number>10000</number>
+           </property>
+           <property name="value">
+            <number>600</number>
            </property>
           </widget>
          </item>
          <item row="2" column="2">
-          <widget class="QDoubleSpinBox" name="doubleSpinBox">
+          <widget class="QDoubleSpinBox" name="spinBox_rotationAngle">
            <property name="suffix">
             <string> °</string>
            </property>
+           <property name="decimals">
+            <number>1</number>
+           </property>
            <property name="maximum">
             <double>360.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>180.000000000000000</double>
            </property>
           </widget>
          </item>
