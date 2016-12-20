@@ -172,6 +172,8 @@ public:
 
     QString compileDateTime = QDate::currentDate().toString("yyyy-MM-dd") + QString(" ") + QString(__TIME__);
 
+    int getStepperMotorPageID();
+
 signals:
     void dataChanged();
     void data_cleared();

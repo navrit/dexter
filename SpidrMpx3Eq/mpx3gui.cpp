@@ -111,16 +111,14 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _ui->CnMWidget->SetMpx3GUI(this);
     _ui->CnMWidget->widgetInfoPropagation();
 
-    // CT
-    _ui->ctTab->SetMpx3GUI( this );
-
     // DQE
     _ui->dqeTab->SetMpx3GUI(this);
 
     // Stepper Motor control view
     _ui->stepperMotorTab->SetMpx3GUI(this);
 
-
+    // CT
+    _ui->ctTab->SetMpx3GUI( this );
 
     // Read the configuration
     QString configFile = "./config/mpx3.json";
@@ -281,6 +279,11 @@ void Mpx3GUI::setTestPulses() {
 
     }
 
+}
+
+int Mpx3GUI::getStepperMotorPageID()
+{
+    return __stepperMotor_page_Id;
 }
 
 void Mpx3GUI::SetupSignalsAndSlots(){
