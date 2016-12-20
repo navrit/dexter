@@ -48,17 +48,17 @@ signals:
     //! Status bar signal function
     void sig_statusBarAppend(QString mess, QString colorString);
 
+    void sig_motorsConnected();
 
-private slots:
+public slots:
     void ConnectionStatusChanged(bool);
 
     //! Stepper slots
     void on_stepperUseCalibCheckBox_toggled(bool checked);
-    void on_motorGoToTargetButton_clicked();
     void on_motorResetButton_clicked();
     void on_stepperSetZeroPushButton_clicked();
-    //! Used in CT view also
     void on_stepperMotorCheckBox_toggled(bool checked);
+    void on_motorGoToTargetButton_clicked();
     //void ConfigCalibAngle1Changed(double);
 
     // Dial
@@ -81,6 +81,8 @@ class ConfigStepperThread : public QThread {
 public:
     explicit ConfigStepperThread(Mpx3GUI *, Ui::QCstmStepperMotor  *, QCstmStepperMotor *);
     void ConnectToHardware( );
+
+    bool reachedTarget = false;
 
 private:
 

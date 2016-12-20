@@ -60,6 +60,8 @@ void QCstmStepperMotor::SetMpx3GUI(Mpx3GUI *p)
     // When the slider released, talk to the hardware
     QObject::connect( ui->motorDial, SIGNAL(sliderReleased()), this, SLOT(motorDialReleased()) );
     QObject::connect( ui->motorDial, SIGNAL(sliderMoved(int)), this, SLOT(motorDialMoved(int)) );
+
+    connect( this, SIGNAL(sig_motorsConnected()), _mpx3gui->GetUI()->ctTab, SLOT(slot_connectedToMotors()) );
 }
 
 //TODO Maybe use this???
@@ -106,6 +108,7 @@ void QCstmStepperMotor::activeInGUI()
 
 void QCstmStepperMotor::activateItemsGUI(){
     emit sig_statusBarAppend(tr("Connected to motor"),"green");
+    emit sig_motorsConnected();
     ui->motorDial->setEnabled( true );
     ui->motorGoToTargetButton->setEnabled( true );
     ui->motorResetButton->setEnabled( true );
@@ -632,7 +635,7 @@ ConfigStepperThread::ConfigStepperThread(Mpx3GUI * mpx3gui, Ui::QCstmStepperMoto
  */
 void ConfigStepperThread::run() {
 
-    bool reachedTarget = false;
+    reachedTarget = false;
     int motorId = _ui->motorIdSpinBox->value();
     long long int curr_pos = 0;
 
@@ -681,6 +684,5 @@ void ConfigStepperThread::run() {
         _ui->motorCurrentPoslcdNumber->setToolTip("Target reached.");
     }
 
-    qDebug() << "ConfigStepperThread done";
-
+    qDebug() << "Stepper motor ConfigStepperThread done";
 }
