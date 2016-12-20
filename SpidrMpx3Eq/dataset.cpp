@@ -197,6 +197,7 @@ QByteArray Dataset::toByteArray() {
     // Keys are Thresholds
     QList<int> keys = m_thresholdsToIndices.keys();
     ret += QByteArray::fromRawData((const char*)keys.toVector().data(),(int)(keys.size()*sizeof(int))); //thresholds
+    // Note: 68 bit offset to image
     for(int i = 0; i < keys.length(); i++)
         ret += QByteArray::fromRawData((const char*)this->getLayer(keys[i]), (int)(sizeof(float)*getLayerSize()));
 
