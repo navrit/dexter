@@ -30,6 +30,10 @@ private:
   Ui::QCstmCT *ui;
   Mpx3GUI * _mpx3gui;
   void resetMotor();
+  void setAcceleration(double acceleration);
+  void setSpeed(double speed);
+  void setTargetPosition(double position);
+  void motor_goToTarget();
   void startCT(); // MAIN FUNCTION
   void stopCT();  // MAIN INTERRUPT
   bool _stop = false;
