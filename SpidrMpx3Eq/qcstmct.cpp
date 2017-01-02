@@ -71,6 +71,15 @@ void QCstmCT::motor_goToTarget()
     _mpx3gui->getStepperMotor()->on_motorGoToTargetButton_clicked();
 }
 
+void QCstmCT::update_timeGUI(int i, int numberOfProjections)
+{
+    double timeLeft = (((numberOfProjections+2) * ui->spinBox_ExposureTimePerPosition->value()) - (i*ui->spinBox_ExposureTimePerPosition->value()));
+    // Fudge factor
+    timeLeft *= 1.2;
+    ui->label_timeLeft->setText( QString::number(timeLeft) + " s" );
+    ui->progressBar->setValue( float(i) / float(numberOfProjections+1) * 100);
+}
+
 void QCstmCT::startCT()
 {
     _stop = false;
@@ -86,36 +95,50 @@ void QCstmCT::startCT()
         // Auto-save to ~/ASI-Medipix3RX-CT-measurements/<DATE TIME>
 
         double targetAngle = 0;
-        double currentAngle = 0;
-        int numberOfProjections = ui->spinBox_numberOfProjections->value();
         float angleDelta = ui->spinBox_rotationAngle->value()/ui->spinBox_numberOfProjections->value();
+        int numberOfProjections = ui->spinBox_numberOfProjections->value();
 
-        qDebug() << "[CT] Rotate by a small angle increment: " << angleDelta;
-        qDebug() << "[CT] Take " << ui->spinBox_numberOfProjections->value()+1 << "frames";
+        qDebug() << "[CT] Rotate by a small angle increment: " << angleDelta << "°";
+        qDebug() << "[CT] Take" << numberOfProjections+1 << "frames";
         qDebug() << "[CT] --------------------------------------";
 
-        // Begin CT loop
-        for (int i = 0; i < numberOfProjections; i++) {
-            setSpeed(16384);
-            setAcceleration(102000);
+        ui->label_timeLeft->setText(QString::number((numberOfProjections+1) * ui->spinBox_ExposureTimePerPosition->value()));
 
-            // When it's at the target angle (within 1%), wait, rotate, update
-            QString tooltip = _mpx3gui->getStepperMotor()->GetUI()->motorCurrentPoslcdNumber->toolTip();
-            if( tooltip == "Requested target couldn't be reached exactly." || tooltip == "Target reached."){
-                // Take some frames
-                qDebug() << "[CT] Sleeping for " << int(ui->spinBox_ExposureTimePerPosition->value());
+        int i = 0;
+        QElapsedTimer timer;
+        timer.start();
+
+        // Begin CT loop
+        while (i < (numberOfProjections+1)) {
+            // These numbers happen to work reliably
+            setSpeed(32000);
+            setAcceleration(500000);
+            update_timeGUI(i, numberOfProjections);
+
+            //
+            if( _mpx3gui->getStepperMotor()->GetUI()->label_positionStatus->text() == "Stopped" ){
+
+                // Take frames
+                // ---------------------------------------------------------------------------
+                // Simulate taking frames for now
+                //qDebug() << "[CT] Sleeping for " << int(ui->spinBox_ExposureTimePerPosition->value());
                 usleep(1000000 * int(ui->spinBox_ExposureTimePerPosition->value()));
+                // ---------------------------------------------------------------------------
 
                 // Correct image?
 
+                // Save/send file?
 
-                // Save File
+
 
                 // Rotate by a small angle
+                // ---------------------------------------------------------------------------
+                // Angular change per rotation
                 angleDelta = ui->spinBox_rotationAngle->value()/ui->spinBox_numberOfProjections->value();
 
                 // Update stepper motor UI
                 setTargetPosition(targetAngle + angleDelta);
+
                 // Move the motor
                 motor_goToTarget();
 
@@ -123,24 +146,35 @@ void QCstmCT::startCT()
                 targetAngle += angleDelta;
 
                 qDebug() << "[CT] Target angle: " << targetAngle;
+                // ---------------------------------------------------------------------------
+
+
+
+                qDebug() << timer.elapsed();
+                i++;
+
+            } else {
+                usleep(10000);
             }
-
-//            if ((targetAngle*0.99 <= currentAngle && currentAngle <= targetAngle*1.01) || (targetAngle == currentAngle)){
-
-//            }
 
             // Update UI
 
         } // End CT loop
 
-        qDebug() << "[CT] > End CT <";
+        qDebug() << timer.elapsed();
+
+        ui->progressBar->setValue(100);
+        ui->label_timeLeft->setText( QString::number(0) );
+        qDebug() << "[CT]                                    >> End CT <<";
 
         // Cleanup - finished CT. Get ready to start again.
 
 
         // Reset back to 0 ready for another measurement
-        setSpeed(16384);
+        setSpeed(32000);
         resetMotor();
+
+        ui->progressBar->setValue(0);
 
         _stop = true;
     }

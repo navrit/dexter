@@ -4,7 +4,7 @@
 #include <QWidget>
 #include "mpx3gui.h"
 #include "gradient.h"
-
+#include <QElapsedTimer>
 //#include <stdio.h>
 //#include <phidget21.h>
 
@@ -34,6 +34,7 @@ private:
   void setSpeed(double speed);
   void setTargetPosition(double position);
   void motor_goToTarget();
+  void update_timeGUI(int i, int numberOfProjections);
   void startCT(); // MAIN FUNCTION
   void stopCT();  // MAIN INTERRUPT
   bool _stop = false;

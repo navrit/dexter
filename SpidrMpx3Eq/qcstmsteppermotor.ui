@@ -69,91 +69,6 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QLabel" name="label_1">
-       <property name="text">
-        <string>Acc:</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLabel" name="label_2">
-       <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
-       </property>
-       <property name="text">
-        <string>Speed:</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <widget class="QDoubleSpinBox" name="accelerationSpinBox"/>
-     </item>
-     <item row="2" column="2">
-      <widget class="QDoubleSpinBox" name="speedSpinBox"/>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLabel" name="stepperTargetPosLabel">
-       <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
-       </property>
-       <property name="text">
-        <string>Target:</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="2">
-      <widget class="QDoubleSpinBox" name="targetPosSpinBox">
-       <property name="maximum">
-        <double>360.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="3">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Motor ID:</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="4">
-      <widget class="QDoubleSpinBox" name="motorIdSpinBox"/>
-     </item>
-     <item row="2" column="3">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>Current:</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="4">
-      <widget class="QDoubleSpinBox" name="currentISpinBox"/>
-     </item>
-     <item row="3" column="4">
-      <widget class="QCheckBox" name="stepperUseCalibCheckBox">
-       <property name="layoutDirection">
-        <enum>Qt::RightToLeft</enum>
-       </property>
-       <property name="text">
-        <string>Use calibration</string>
-       </property>
-      </widget>
-     </item>
      <item row="3" column="6">
       <widget class="QPushButton" name="motorGoToTargetButton">
        <property name="text">
@@ -183,6 +98,104 @@
      </item>
      <item row="1" column="6">
       <widget class="QLCDNumber" name="motorCurrentPoslcdNumber"/>
+     </item>
+     <item row="1" column="4">
+      <widget class="QDoubleSpinBox" name="accelerationSpinBox"/>
+     </item>
+     <item row="1" column="3">
+      <widget class="QLabel" name="label_1">
+       <property name="text">
+        <string>Acceleration:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="4">
+      <widget class="QDoubleSpinBox" name="speedSpinBox"/>
+     </item>
+     <item row="2" column="3">
+      <widget class="QLabel" name="label_2">
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="text">
+        <string>Speed:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="4">
+      <widget class="QDoubleSpinBox" name="targetPosSpinBox">
+       <property name="maximum">
+        <double>360.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="3">
+      <widget class="QLabel" name="stepperTargetPosLabel">
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="text">
+        <string>Target:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Current:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QDoubleSpinBox" name="currentISpinBox"/>
+     </item>
+     <item row="3" column="2">
+      <widget class="QCheckBox" name="stepperUseCalibCheckBox">
+       <property name="layoutDirection">
+        <enum>Qt::RightToLeft</enum>
+       </property>
+       <property name="text">
+        <string>Use calibration</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Motor ID:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QDoubleSpinBox" name="motorIdSpinBox"/>
+     </item>
+     <item row="0" column="6">
+      <widget class="QLabel" name="label_positionStatus">
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
