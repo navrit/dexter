@@ -115,6 +115,9 @@ public:
     QString getsaveLineEdit_Text();
     QString getStatsString_deviceId();
 
+    // Used in CT
+    void saveImage(QString filename);
+
 private:
 
     Ui::QCstmGLVisualization * ui = nullptr;
