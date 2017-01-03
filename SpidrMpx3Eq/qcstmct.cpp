@@ -12,6 +12,7 @@ QCstmCT::QCstmCT(QWidget *parent) :
   ui(new Ui::QCstmCT)
 {
     ui->setupUi(this);
+
     // Do rest of UI init here like labels
     // Connect signals
 
@@ -85,6 +86,14 @@ void QCstmCT::startCT()
     _stop = false;
 
     while (!_stop){
+        double targetAngle = 0;
+        float angleDelta = ui->spinBox_rotationAngle->value()/ui->spinBox_numberOfProjections->value();
+        int numberOfProjections = ui->spinBox_numberOfProjections->value();
+        ui->label_timeLeft->setText(QString::number((numberOfProjections+1) * ui->spinBox_ExposureTimePerPosition->value()));
+
+        QElapsedTimer timer;
+        timer.start();
+
         qDebug() << "[CT] --------------------------------------";
         qDebug() << "[CT] Starting CT function - stop and shoot.";
         // Get acquisition settings from other view
@@ -94,21 +103,13 @@ void QCstmCT::startCT()
         // Initialise for measurement
         // Auto-save to ~/ASI-Medipix3RX-CT-measurements/<DATE TIME>
 
-        double targetAngle = 0;
-        float angleDelta = ui->spinBox_rotationAngle->value()/ui->spinBox_numberOfProjections->value();
-        int numberOfProjections = ui->spinBox_numberOfProjections->value();
-
         qDebug() << "[CT] Rotate by a small angle increment: " << angleDelta << "°";
         qDebug() << "[CT] Take" << numberOfProjections+1 << "frames";
         qDebug() << "[CT] --------------------------------------";
 
-        ui->label_timeLeft->setText(QString::number((numberOfProjections+1) * ui->spinBox_ExposureTimePerPosition->value()));
-
-        int i = 0;
-        QElapsedTimer timer;
-        timer.start();
 
         // Begin CT loop
+        int i = 0;
         while (i < (numberOfProjections+1)) {
             // These numbers happen to work reliably
             setSpeed(32000);
@@ -120,15 +121,25 @@ void QCstmCT::startCT()
 
                 // Take frames
                 // ---------------------------------------------------------------------------
-                // Simulate taking frames for now
-                //qDebug() << "[CT] Sleeping for " << int(ui->spinBox_ExposureTimePerPosition->value());
-                usleep(1000000 * int(ui->spinBox_ExposureTimePerPosition->value()));
+
+                while ( !_mpx3gui->getVisualization()->isTakingData() ) {
+                    qDebug() << "[CT] STARTED DT";
+                    _mpx3gui->getVisualization()->StartDataTaking();
+
+                    //! TODO Replace this usleep rubbish with mutex locks
+                    //! or something
+                    qDebug() << "[CT] Sleeping for " << int(ui->spinBox_ExposureTimePerPosition->value());
+                    usleep(1000000 * int(ui->spinBox_ExposureTimePerPosition->value()));
+                }
+
                 // ---------------------------------------------------------------------------
 
                 // Correct image?
 
                 // Save/send file?
-
+                QString filename = "/home/navrit/CT/img_"+QString::number(i)+".png";
+                qDebug() << "[CT] Saving to: " << filename;
+                _mpx3gui->getVisualization()->saveImage(filename);
 
 
                 // Rotate by a small angle
