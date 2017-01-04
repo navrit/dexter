@@ -890,7 +890,7 @@ void Mpx3GUI::save_data(bool requestPath){//TODO: REIMPLEMENT
     saveFile.close();
 
     //! TODO Save to TIFF/TIF - problem with getting data into a scanline or whatever
-    //getDataset()->toTIFF(filename);
+    getDataset()->toTIFF(filename);
 
     qDebug() << "[INFO] .bin file saved: ..." << filename;
     QString msg = "Auto-saved: ...";
