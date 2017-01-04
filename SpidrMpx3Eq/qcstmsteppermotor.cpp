@@ -198,7 +198,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked)
         // Speed
         ui->speedSpinBox->setMinimum( parsMap[motorid].minVel );
         ui->speedSpinBox->setMaximum( parsMap[motorid].maxVel );
-        ui->speedSpinBox->setValue( parsMap[motorid].vel );
+        ui->speedSpinBox->setValue( parsMap[motorid].maxVel * 0.8 );        // Could be .vel
         QString speedS = "Set velocity from ";
         speedS += QString::number( parsMap[motorid].minVel , 'f', 1 );
         speedS += " to ";
@@ -208,7 +208,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked)
         // Acc
         ui->accelerationSpinBox->setMinimum( parsMap[motorid].minAcc );
         ui->accelerationSpinBox->setMaximum( parsMap[motorid].maxAcc );
-        ui->accelerationSpinBox->setValue( parsMap[motorid].acc );
+        ui->accelerationSpinBox->setValue( parsMap[motorid].maxAcc * 0.2 ); // Could be .acc
         QString accS = "Set acceleration from ";
         accS += QString::number( parsMap[motorid].minAcc , 'f', 1 );
         accS += " to ";
@@ -470,6 +470,8 @@ void QCstmStepperMotor::on_stepperSetZeroPushButton_clicked()
         posS = QString::number( 0 , 'lld', 0 );
         ui->motorCurrentPoslcdNumber->display( posS );
     }
+
+    ui->motorDial->setValue(0);
 }
 
 void QCstmStepperMotor::motorDialReleased()
@@ -645,6 +647,8 @@ void ConfigStepperThread::run() {
     double posDisplay;
     while ( ! reachedTarget ) {
 
+        _ui->label_positionStatus->setText(tr("Moving"));
+
         // get current position
         curr_pos = _stepperController->getMotorController()->getCurrPos( motorId );
 
@@ -672,6 +676,8 @@ void ConfigStepperThread::run() {
 
     }
 
+    _ui->label_positionStatus->setText(tr("Stopped"));
+
     /** At the end the following may happen
     * Say the user request and angle of 3 degrees.  With a given resolution (ex. 0.9 deg per step)
     *  the best the stepper can do is 2.7 degrees.  In that case color the LCD
@@ -684,5 +690,5 @@ void ConfigStepperThread::run() {
         _ui->motorCurrentPoslcdNumber->setToolTip("Target reached.");
     }
 
-    qDebug() << "Stepper motor ConfigStepperThread done";
+    //qDebug() << "Stepper motor ConfigStepperThread done";
 }

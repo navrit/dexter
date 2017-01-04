@@ -24,6 +24,7 @@
 #include <vector>
 #include <fstream>      // std::ofstream
 
+#include <tiffio.h> /* Sam Leffler's libtiff library. */
 
 using namespace std;
 using namespace boost::numeric::ublas;
@@ -185,7 +186,7 @@ int Dataset::getLayerIndex(int threshold){
 
 QByteArray Dataset::toByteArray() {
 
-    // Add header function here???
+    // 68 bit header start offset
     QByteArray ret(0);
     ret += QByteArray::fromRawData((const char*)&m_nx, (int)sizeof(m_nx));
     ret += QByteArray::fromRawData((const char*)&m_ny, (int)sizeof(m_ny));
@@ -197,7 +198,7 @@ QByteArray Dataset::toByteArray() {
     // Keys are Thresholds
     QList<int> keys = m_thresholdsToIndices.keys();
     ret += QByteArray::fromRawData((const char*)keys.toVector().data(),(int)(keys.size()*sizeof(int))); //thresholds
-    // Note: 68 bit offset to image
+    // 68 bit header end offset
     for(int i = 0; i < keys.length(); i++)
         ret += QByteArray::fromRawData((const char*)this->getLayer(keys[i]), (int)(sizeof(float)*getLayerSize()));
 
@@ -222,13 +223,103 @@ QVector<int> Dataset::toQVector() {
     return tovec;
 }
 
+/*!
+ * \brief Dataset::toTIFF
+ * \param filename
+ * \remark Writes grayscale image to a 32-bit TIFF file.
+ *         Maximum value per pixel is sizeof(uint32).
+ */
+void Dataset::toTIFF(QString filename)
+{
+    //! http://research.cs.wisc.edu/graphics/Courses/638-f1999/libtiff_tutorial.htm
+    //! https://schneide.wordpress.com/2015/11/16/multi-page-tiffs-with-cpp/
+    //! http://ridl.cfd.rit.edu/products/manuals/Leach/new/Drivers/ARC_API_SRC_3/3.0/CTiffFile/CTiffFile.cpp
+    //!
+    //! Note: TIFFScanlineSize returns the number of bytes in a decoded scanline, as returned by TIFFReadScanline.
+    //!
+    //!
+    //! Note: This is weak AF - improve it.
+
+    // dRows - Number of rows in image data.
+    // dCols - Number of cols in image data.
+    const static int  dRows = 512;
+    const static int dCols = 512;
+
+    const static int SAMPLES_PER_PIXEL  = 1; // This is greyscale - 3 for RGB, 4 for RGBA
+    const static int BPP32 = 32; // Bits per pixel - gives ~4 billion per pixel upper limit before loss of signal
+
+    filename = filename.replace(".bin",".tiff");
+    qDebug() << "[INFO] Saving to " << filename;
+
+    if (filename.isEmpty()){
+        qDebug() << ">> ERROR empty filename, cancelling.";
+        return;
+    }
+
+    // Open the TIFF file
+    TIFF* m_pTiff = TIFFOpen(filename.toLatin1().data(), "w");
+
+
+    // Should be 1Mb
+    tsize_t tTotalDataSize = dCols * dRows * SAMPLES_PER_PIXEL * sizeof( uint32 );
+    assert(tTotalDataSize==1048576);
+    qDebug() << "Passed 1st assertion";
+
+    if (m_pTiff) {
+        //  Write TIFF header tags
+        TIFFSetField(m_pTiff, TIFFTAG_IMAGEWIDTH, dCols);  // set the width of the image
+        TIFFSetField(m_pTiff, TIFFTAG_IMAGELENGTH, dRows);    // set the height of the image
+        TIFFSetField(m_pTiff, TIFFTAG_SAMPLESPERPIXEL, SAMPLES_PER_PIXEL);   // set number of channels per pixel
+        TIFFSetField(m_pTiff, TIFFTAG_BITSPERSAMPLE, BPP32);    // set the size of the channels
+        TIFFSetField(m_pTiff, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);    // set the origin of the image.
+
+        TIFFSetField(m_pTiff, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
+        TIFFSetField(m_pTiff, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG); // No idea what this does but it's necessary
+        TIFFSetField(m_pTiff, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
+        //TIFFSetField(m_pTiff, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB); //Remove if weird
+
+        //  We set the strip size of the file to be size of one row of pixels
+        TIFFSetField(m_pTiff, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(m_pTiff, dCols*SAMPLES_PER_PIXEL));
+        // Should this not be 1 ????????????
+
+        //  Copy the image data to libtiff buffer. Must be this way or it won't work!
+        uint32* pU32TiffBuf = ( uint32 * )_TIFFmalloc( tTotalDataSize );
+
+        int rowBuffer [512] = {};
+
+        for ( int row = 0; row<dRows ; row++ ) {
+            for ( int col = 0; col<dCols; col++ ) {
+                rowBuffer[col] = sample(col, row, 0);
+            }
+
+            if ( TIFFWriteScanline( m_pTiff, &pU32TiffBuf[ row * dCols ], row, 0 ) < 0 ) {
+                qDebug() << "[FAIL] writing row #" << row;
+            }
+        }
+        _TIFFfree( pU32TiffBuf );
+
+    } else if (m_pTiff == NULL) {
+        qDebug() << ">> Unable to write TIFF file";
+    } else {
+        qDebug() << ">> Unknown TIFF file write failure.";
+    }
+
+    // Cleanup code
+    if ( m_pTiff != NULL ) {
+        TIFFClose( m_pTiff );
+    }
+
+    m_pTiff = NULL;
+
+}
+
 
 QVector<QVector<int> > Dataset::collectPointsROI(int threshold, QPoint pixel_init, QPoint pixel_end)
 {
     //The data is made so that:
     //      - Each row represents an horizontal row of pixels, starting from the bottom of the selected RoI.
     //      - The elements in each row represent the pixels in the row, starting from the left.
-    //The data can thus be seen as a normal cartesion system, where the left side of each pixel is the index.
+    //The data can thus be seen as a normal cartesian system, where the left side of each pixel is the index.
     //To get datapoints in the middle of each pixel, a correction of +0.5 pixel has to be added in both the x and y direction, when working with the data..
 
     int Ny = abs( pixel_end.y() - pixel_init.y() ) + 1;//Number of pixels in the y-direction.

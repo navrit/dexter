@@ -282,6 +282,11 @@ QString QCstmGLVisualization::getStatsString_deviceId()
     return _statsString.devicesIdString;
 }
 
+void QCstmGLVisualization::saveImage(QString filename)
+{
+    ui->glPlot->getPlot()->grabFramebuffer().save(filename);
+}
+
 void QCstmGLVisualization::StartDataTaking() {
 
     if ( !_dataTakingThread ) {
@@ -313,14 +318,13 @@ void QCstmGLVisualization::StartDataTaking() {
         ConfigureGUIForDataTaking();
 
         // info refresh
-        _timerId = this->startTimer( 100 ); // 42 ); //100 ); // 100 ms is a good compromise to refresh the scoreing info
+        _timerId = this->startTimer( 100 ); // 42 (answer to life) // 100 ms is a good compromise to refresh the scoring info
         //qDebug() << "Start : " << _timerId;
 
     } else { // stop
 
         // By premature user signal !
         _dataTakingThread->stop(); // this calls by SIGNAL/SLOT the data_taking_finished
-        //! TODO FIX BUG - Use inf mode then press stop makes the program fuck up
     }
 
     //! TODO Why is this all commented out?

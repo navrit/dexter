@@ -12,6 +12,7 @@ QCstmCT::QCstmCT(QWidget *parent) :
   ui(new Ui::QCstmCT)
 {
     ui->setupUi(this);
+
     // Do rest of UI init here like labels
     // Connect signals
 
@@ -43,8 +44,41 @@ void QCstmCT::setGradient(int index)
 
 void QCstmCT::resetMotor()
 {
-    qDebug() << "Resetting motor to position 0";
+    qDebug() << "[CT] Resetting motor to position 0";
 
+    // Update stepper motor UI to 0
+    setTargetPosition(0);
+    // Move the motor
+    motor_goToTarget();
+}
+
+void QCstmCT::setAcceleration(double acceleration)
+{
+    _mpx3gui->getStepperMotor()->GetUI()->speedSpinBox->setValue(acceleration);
+}
+
+void QCstmCT::setSpeed(double speed)
+{
+    _mpx3gui->getStepperMotor()->GetUI()->speedSpinBox->setValue(speed);
+}
+
+void QCstmCT::setTargetPosition(double position)
+{
+    _mpx3gui->getStepperMotor()->GetUI()->targetPosSpinBox->setValue(position);
+}
+
+void QCstmCT::motor_goToTarget()
+{
+    _mpx3gui->getStepperMotor()->on_motorGoToTargetButton_clicked();
+}
+
+void QCstmCT::update_timeGUI(int i, int numberOfProjections)
+{
+    double timeLeft = (((numberOfProjections+2) * ui->spinBox_ExposureTimePerPosition->value()) - (i*ui->spinBox_ExposureTimePerPosition->value()));
+    // Fudge factor
+    timeLeft *= 1.2;
+    ui->label_timeLeft->setText( QString::number(timeLeft) + " s" );
+    ui->progressBar->setValue( float(i) / float(numberOfProjections+1) * 100);
 }
 
 void QCstmCT::startCT()
@@ -52,7 +86,16 @@ void QCstmCT::startCT()
     _stop = false;
 
     while (!_stop){
-        qDebug() << ">> Starting CT function - stop and shoot.";
+        double targetAngle = 0;
+        float angleDelta = ui->spinBox_rotationAngle->value()/ui->spinBox_numberOfProjections->value();
+        int numberOfProjections = ui->spinBox_numberOfProjections->value();
+        ui->label_timeLeft->setText(QString::number((numberOfProjections+1) * ui->spinBox_ExposureTimePerPosition->value()));
+
+        QElapsedTimer timer;
+        timer.start();
+
+        qDebug() << "[CT] --------------------------------------";
+        qDebug() << "[CT] Starting CT function - stop and shoot.";
         // Get acquisition settings from other view
 
         // Get corrections from other view?
@@ -60,64 +103,89 @@ void QCstmCT::startCT()
         // Initialise for measurement
         // Auto-save to ~/ASI-Medipix3RX-CT-measurements/<DATE TIME>
 
-        double targetAngle = 0;
-        double currentAngle = 0;
-        int numberOfProjections = ui->spinBox_numberOfProjections->value();
-        float angleDelta = ui->spinBox_rotationAngle->value()/ui->spinBox_numberOfProjections->value();
+        qDebug() << "[CT] Rotate by a small angle increment: " << angleDelta << "°";
+        qDebug() << "[CT] Take" << numberOfProjections+1 << "frames";
+        qDebug() << "[CT] --------------------------------------";
 
-        qDebug() << "Rotate by a small angle increment: " << angleDelta;
-        qDebug() << "Take " << ui->spinBox_numberOfProjections->value()+1 << "frames";
 
         // Begin CT loop
-        for (int i = 0; i < numberOfProjections; i++) {
-            _mpx3gui->getStepperMotor()->GetUI()->speedSpinBox->setValue(16384);
-            _mpx3gui->getStepperMotor()->GetUI()->accelerationSpinBox->setValue(102000);
+        int i = 0;
+        while (i < (numberOfProjections+1)) {
+            // These numbers happen to work reliably
+            setSpeed(32000);
+            setAcceleration(500000);
+            update_timeGUI(i, numberOfProjections);
 
-            // When it's at the target angle (within 1%), wait, rotate, update
-            QString tooltip = _mpx3gui->getStepperMotor()->GetUI()->motorCurrentPoslcdNumber->toolTip();
-            if( tooltip == "Requested target couldn't be reached exactly." || tooltip == "Target reached."){
-                // Take some frames
-                qDebug() << "Sleeping for " << int(ui->spinBox_ExposureTimePerPosition->value());
-                usleep(1000000 * int(ui->spinBox_ExposureTimePerPosition->value()));
+            //
+            if( _mpx3gui->getStepperMotor()->GetUI()->label_positionStatus->text() == "Stopped" ){
+
+                // Take frames
+                // ---------------------------------------------------------------------------
+
+                while ( !_mpx3gui->getVisualization()->isTakingData() ) {
+                    qDebug() << "[CT] STARTED DT";
+                    _mpx3gui->getVisualization()->StartDataTaking();
+
+                    //! TODO Replace this usleep rubbish with mutex locks
+                    //! or something
+                    qDebug() << "[CT] Sleeping for " << int(ui->spinBox_ExposureTimePerPosition->value());
+                    usleep(1000000 * int(ui->spinBox_ExposureTimePerPosition->value()));
+                }
+
+                // ---------------------------------------------------------------------------
 
                 // Correct image?
 
+                // Save/send file?
+                QString filename = "/home/navrit/CT/img_"+QString::number(i)+".png";
+                qDebug() << "[CT] Saving to: " << filename;
+                _mpx3gui->getVisualization()->saveImage(filename);
 
-                // Save File
 
                 // Rotate by a small angle
+                // ---------------------------------------------------------------------------
+                // Angular change per rotation
                 angleDelta = ui->spinBox_rotationAngle->value()/ui->spinBox_numberOfProjections->value();
 
                 // Update stepper motor UI
-                _mpx3gui->getStepperMotor()->GetUI()->targetPosSpinBox->setValue(targetAngle + angleDelta);
+                setTargetPosition(targetAngle + angleDelta);
+
                 // Move the motor
-                _mpx3gui->getStepperMotor()->on_motorGoToTargetButton_clicked();
+                motor_goToTarget();
 
                 // Update target angle to match new rotation state.
                 targetAngle += angleDelta;
 
-                qDebug() << "Target angle: " << targetAngle;
+                qDebug() << "[CT] Target angle: " << targetAngle;
+                // ---------------------------------------------------------------------------
+
+
+
+                qDebug() << timer.elapsed();
+                i++;
+
+            } else {
+                usleep(10000);
             }
-
-//            if ((targetAngle*0.99 <= currentAngle && currentAngle <= targetAngle*1.01) || (targetAngle == currentAngle)){
-
-//            }
 
             // Update UI
 
         } // End CT loop
 
-        qDebug() << "> End CT <";
+        qDebug() << timer.elapsed();
+
+        ui->progressBar->setValue(100);
+        ui->label_timeLeft->setText( QString::number(0) );
+        qDebug() << "[CT]                                    >> End CT <<";
 
         // Cleanup - finished CT. Get ready to start again.
 
 
         // Reset back to 0 ready for another measurement
-        // Update stepper motor UI
-        _mpx3gui->getStepperMotor()->GetUI()->targetPosSpinBox->setValue(0);
-        _mpx3gui->getStepperMotor()->GetUI()->speedSpinBox->setValue(32768);
-        // Move the motor
-        _mpx3gui->getStepperMotor()->on_motorGoToTargetButton_clicked();
+        setSpeed(32000);
+        resetMotor();
+
+        ui->progressBar->setValue(0);
 
         _stop = true;
     }
@@ -126,7 +194,7 @@ void QCstmCT::startCT()
 
 void QCstmCT::stopCT()
 {
-    qDebug() << ">> GUI Interrupt: Stopping CT function.";
+    qDebug() << "[CT] GUI Interrupt: Stopping CT function.";
 
 
     // Cleanup
@@ -146,7 +214,7 @@ void QCstmCT::on_CTPushButton_clicked()
 
     if ( ui->CTPushButton->text() == "Connect to motors" ){
         // Connect to motors
-        qDebug() << "Connect to motors";
+        qDebug() << "[CT] Connect to motors";
 
         if ( activeMotors ){
 
@@ -182,7 +250,7 @@ void QCstmCT::on_CTPushButton_clicked()
         ui->CTPushButton->setText("Stop CT");
 
     } else {
-        qDebug() << "---------------------\n CT MASSIVE ERROR \n-----------------------\n";
+        qDebug() << "[CT] ---------------------\n WEIRD AF ERROR \n-----------------------\n";
         return;
     }
 }
