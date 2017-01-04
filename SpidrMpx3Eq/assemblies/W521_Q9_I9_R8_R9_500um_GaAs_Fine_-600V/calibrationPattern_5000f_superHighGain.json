@@ -1,4 +1,11 @@
 {
+    "Build_ABI": "x86_64-little_endian-lp64",
+    "C++_version": "201103",
+    "CPU_arch_build": "x86_64",
+    "CPU_arch_current": "x86_64",
+    "ChipSize_x": 256,
+    "ChipSize_y": 256,
+    "Compile_dateTime": "2016-12-19 14:38:49",
     "DACs": [
         {
             "Cas": 191,
@@ -117,12 +124,14 @@
             "Threshold[7]": 74
         }
     ],
+    "Date_time_UTC": "2016-12-19T15:54:35Z",
+    "Date_time_local": "2016-12-19T16:54:35",
     "DetectorConfig": {
         "ColourMode": false,
         "ContRWFreq": 275,
         "CsmSpm": 0,
         "DecodeFrames": true,
-        "GainMode": 1,
+        "GainMode": 0,
         "LUTEnable": true,
         "MaxPacketSize": 9000,
         "OperationMode": 1,
@@ -131,12 +140,23 @@
         "TriggerDeadtime_us": 20000,
         "TriggerLength_us": 20000,
         "TriggerMode": 4,
-        "nTriggers": 1000
+        "nTriggers": 5000
     },
     "IPConfig": {
         "SpidrControllerIp": "192.168.1.10",
         "SpidrControllerPort": 50000
     },
+    "Kernel_typeAndVersion": "linux4.4.0-51-generic",
+    "Length_x": 512,
+    "Length_y": 512,
+    "Machine_hostName": "cube1.amscins.com",
+    "Measurement_UUID": "2f07205c-06fb-483c-9a15-24bfb0c2f935",
+    "OS_prettyProductName": "Ubuntu 16.04.1 LTS",
+    "OS_productType": "ubuntu",
+    "OS_productVersion": "16.04",
+    "SPIDR_Controller_version": "\nSPIDR Controller version: 16082900",
+    "SPIDR_Firmware_version": "\nSPIDR Firmware version: 16102713",
+    "SPIDR_Software_version": "\nSPIDR Software version: 1607200A\n",
     "StepperConfig": {
         "Acceleration": 500000,
         "CalibAngle0": 90,
@@ -145,5 +165,11 @@
         "CalibPos1": 0,
         "Speed": 12500,
         "UseCalib": true
-    }
+    },
+    "Thresholds": "0",
+    "Unix_time_s": 1482162875,
+    "WindowsVersion": 0,
+    "binPath": "/home/asi/tmp/mpx3gui/SpidrMpx3Eq/assemblies/W521_Q9_I9_R8_R9_500um_GaAs_Fine_-600V/calibrationPattern_5000f_superHighGain.bin",
+    "nChips_x": 2,
+    "nChips_y": 2
 }
