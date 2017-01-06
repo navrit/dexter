@@ -756,6 +756,14 @@ QString Mpx3GUI::getLoadButtonFilename() {
 }
 
 void Mpx3GUI::saveMetadataToJSON(QString filename){
+    if (filename.toLower().contains(".bin")){
+        filename = filename.replace(".bin",".json");
+    } else if (filename.toLower().contains(".tif")){
+        filename = filename.replace(".tif",".json");
+    } else {
+        qDebug() << "[ERROR] failed writing the JSON file, input name didn't include .bin or .tif";
+        return;
+    }
 
     //! Get configuration JSON document
     QJsonDocument docConfig = getConfig()->buildConfigJSON(true);
@@ -843,7 +851,7 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
 
     doc.setObject(objParent);
 
-    QFile saveFile(filename.replace(QString(".bin"), QString(".json")));
+    QFile saveFile(filename);
     if(!saveFile.open(QIODevice::WriteOnly)){
         qDebug() << "[WARN] JSON file CANNOT be opened as QIODevice::WriteOnly, aborting";
         sig_statusBarAppend(tr("Cannot write JSON metadata, skipping"),"red");
@@ -861,10 +869,10 @@ void Mpx3GUI::save_data(bool requestPath){//TODO: REIMPLEMENT
     QString path;
     if (!requestPath){
         //! Native format - User dialog
-        filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", tr("Binary files (*.bin)")); //;;TIFF (*.tif)
+        filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", tr("Binary (*.bin);;TIFF (*.tif)")); //
 
         //! Force the .bin in the data filename
-        if ( ! filename.toLower().contains(".bin")  /*&& ! filename.toLower().contains(".tif")*/  && !filename.isEmpty()) {
+        if ( ! filename.toLower().contains(".bin") && ! filename.toLower().contains(".tif") && !filename.isEmpty()) {
             filename.append(".bin");
         }
     } else {
@@ -886,25 +894,17 @@ void Mpx3GUI::save_data(bool requestPath){//TODO: REIMPLEMENT
         QMessageBox::warning ( this, tr("Error saving data"), tr( messg.c_str() ) );
         return;
     }
-//    if (filename.toLower().contains(".tif")){
-//        // TODO Save to TIF
-//        QImage image = QImage::fromData(getDataset()->toByteArray());
-//        QFile outFile(filename);
-//        if (outFile.open(QIODevice::WriteOnly)) {
-//          image.save(&outFile, "TIF");
-//          outFile.close();
-//        }
 
-//    } else {
-//        saveFile.write(getDataset()->toByteArray());
-//    }
-    saveFile.write(getDataset()->toByteArray());
+    if (filename.toLower().contains(".tif")){
+        getDataset()->toTIFF(filename);
+        filename.replace(".bin",".tif");
+    } else {
+        saveFile.write(getDataset()->toByteArray());
+    }
+
     saveFile.close();
-
     qDebug() << "[INFO] File saved: ..." << filename;
     QString msg = "Saved: ...";
-    //! TODO Save to TIFF/TIF - problem with getting data into a scanline or whatever
-    getDataset()->toTIFF(filename);
 
     msg.append(filename.section('/',-3,-1));
     emit sig_statusBarAppend(msg,"green");
