@@ -117,21 +117,21 @@ void QCstmCT::startCT()
             update_timeGUI(i, numberOfProjections);
 
             //
-            if( _mpx3gui->getStepperMotor()->GetUI()->label_positionStatus->text() == "Stopped" ){
+            if( _mpx3gui->getStepperMotor()->GetUI()->label_positionStatus->text() == "Stopped"
+                    && !_mpx3gui->getVisualization()->isTakingData() ){
 
                 // Take frames
                 // ---------------------------------------------------------------------------
+                qDebug() << "[CT] STARTED DT";
+                _mpx3gui->getVisualization()->StartDataTaking();
 
-                while ( !_mpx3gui->getVisualization()->isTakingData() ) {
-                    qDebug() << "[CT] STARTED DT";
-                    _mpx3gui->getVisualization()->StartDataTaking();
-
+                // Wait until data taking finished, check every 100ms
+                while ( _mpx3gui->getVisualization()->isTakingData() ) {
                     //! TODO Replace this usleep rubbish with mutex locks
                     //! or something
-                    qDebug() << "[CT] Sleeping for " << int(ui->spinBox_ExposureTimePerPosition->value());
-                    usleep(1000000 * int(ui->spinBox_ExposureTimePerPosition->value()));
+                    //qDebug() << "[CT] Sleeping for " << int(ui->spinBox_ExposureTimePerPosition->value());
+                    usleep(100000);
                 }
-
                 // ---------------------------------------------------------------------------
 
                 // Correct image?
@@ -150,22 +150,21 @@ void QCstmCT::startCT()
                 // Update stepper motor UI
                 setTargetPosition(targetAngle + angleDelta);
 
-                // Move the motor
-                motor_goToTarget();
-
                 // Update target angle to match new rotation state.
                 targetAngle += angleDelta;
 
+                // Move the motor
+                motor_goToTarget();
+
                 qDebug() << "[CT] Target angle: " << targetAngle;
                 // ---------------------------------------------------------------------------
-
 
 
                 qDebug() << timer.elapsed();
                 i++;
 
             } else {
-                usleep(10000);
+                usleep(50000);
             }
 
             // Update UI
