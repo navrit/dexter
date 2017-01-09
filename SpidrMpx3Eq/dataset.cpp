@@ -274,7 +274,7 @@ void Dataset::toTIFF(QString filename)
     //! Should always be 1Mb exactly
     tsize_t tTotalDataSize = width * height * SAMPLES_PER_PIXEL * sizeof( uint32_t );
     assert(tTotalDataSize==1048576);
-    qDebug() << "Passed 1Mb assertion";
+    //qDebug() << "Passed 1Mb assertion";
 
     if (m_pTiff) {
         //! Write TIFF header tags

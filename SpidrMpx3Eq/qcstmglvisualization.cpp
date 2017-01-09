@@ -511,8 +511,6 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
     _mpx3gui->saveOriginalDataset();
 
-    _takingData = false;
-
     DestroyTimer();
     ETAToZero();
 
@@ -525,6 +523,10 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
     if(ui->saveCheckBox->isChecked() && !(ui->saveLineEdit->text().isEmpty())){
         _mpx3gui->save_data(true);
     }
+
+    _takingData = false;
+
+    emit sig_resumeCT();
 
     /*
     if ( _takingData ) {
@@ -812,6 +814,9 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     emit mode_changed( ui->summingCheckbox->isChecked() );
 
     connect( ui->saveCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_saveCheckBox_toggled()));
+
+    // CT shit
+    connect( this, SIGNAL(sig_resumeCT()), _mpx3gui->getCT() , SLOT(resumeCT()));
 }
 
 void QCstmGLVisualization::ntriggers_edit() {

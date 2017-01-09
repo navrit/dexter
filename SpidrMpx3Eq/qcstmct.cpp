@@ -116,23 +116,19 @@ void QCstmCT::startCT()
             setAcceleration(500000);
             update_timeGUI(i, numberOfProjections);
 
+            QString motorPositionStatus = _mpx3gui->getStepperMotor()->GetUI()->label_positionStatus->text();
             //
-            if( _mpx3gui->getStepperMotor()->GetUI()->label_positionStatus->text() == "Stopped"
-                    && !_mpx3gui->getVisualization()->isTakingData() ){
+            if( motorPositionStatus == "Stopped" || motorPositionStatus == "..."){
 
                 // Take frames
                 // ---------------------------------------------------------------------------
                 qDebug() << "[CT] STARTED DT";
                 _mpx3gui->getVisualization()->StartDataTaking();
-
-                // Wait until data taking finished, check every 100ms
-                while ( _mpx3gui->getVisualization()->isTakingData() ) {
-                    //! TODO Replace this usleep rubbish with mutex locks
-                    //! or something
-                    //qDebug() << "[CT] Sleeping for " << int(ui->spinBox_ExposureTimePerPosition->value());
-                    usleep(100000);
-                }
                 // ---------------------------------------------------------------------------
+
+                //qDebug() << "[CT] Sleeping for " << int(ui->spinBox_ExposureTimePerPosition->value());
+                qDebug() << QDateTime::currentDateTimeUtc();
+                //usleep(int(ui->spinBox_ExposureTimePerPosition->value()*1000*1000));
 
                 // Correct image?
 
@@ -194,7 +190,7 @@ void QCstmCT::startCT()
 void QCstmCT::stopCT()
 {
     qDebug() << "[CT] GUI Interrupt: Stopping CT function.";
-
+    _stop = true;
 
     // Cleanup
 
@@ -205,6 +201,11 @@ void QCstmCT::slot_connectedToMotors()
     activeMotors = _mpx3gui->getStepperMotor()->GetUI()->stepperMotorCheckBox->isChecked();
     // Update UI
     ui->CTPushButton->setText("Start CT");
+}
+
+void QCstmCT::resumeCT()
+{
+    qDebug() << "[CT] RESUMED";
 }
 
 void QCstmCT::on_CTPushButton_clicked()

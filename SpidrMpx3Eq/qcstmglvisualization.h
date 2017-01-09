@@ -308,6 +308,9 @@ signals:
     void sig_statusBarWrite(QString mess, QString colorString);
     void sig_statusBarClean();
 
+    //! Used to run CT shit
+    void sig_resumeCT();
+
 };
 
 #endif // QCSTMGLVISUALIZATION_H

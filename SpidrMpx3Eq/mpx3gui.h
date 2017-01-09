@@ -28,6 +28,7 @@ class Mpx3Config;
 #include "qcstmvoxeltab.h"
 #include "mpx3config.h"
 #include "qcstmsteppermotor.h"
+#include "qcstmct.h"
 
 
 class Mpx3Config;
@@ -45,6 +46,7 @@ class QCstmGLVisualization;
 class QCstmConfigMonitoring;
 //class QcstmDQE;
 class QCstmStepperMotor;
+class QCstmCT;
 
 // Change me when adding extra views
 #define __visualization_page_Id     0
@@ -132,6 +134,7 @@ public:
     QCstmConfigMonitoring * getConfigMonitoring();
 //    QCstmDQE * getDQE();
     QCstmStepperMotor * getStepperMotor();
+    QCstmCT * getCT();
 
     SpidrController * GetSpidrController();
     SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }

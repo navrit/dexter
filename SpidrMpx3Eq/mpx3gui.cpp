@@ -1221,6 +1221,7 @@ QCstmDacs * Mpx3GUI::getDACs() { return _ui->DACsWidget; }
 QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; }
 //QCstmDQE * Mpx3GUI::getDQE(){ return _ui->dqeTab; }
 QCstmStepperMotor * Mpx3GUI::getStepperMotor() {return _ui->stepperMotorTab; }
+QCstmCT * Mpx3GUI::getCT() { return _ui->ctTab; }
 
 void Mpx3GUI::on_actionExit_triggered()
 {
