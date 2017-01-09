@@ -137,8 +137,8 @@ void QCstmCT::startCT()
                 // Correct image?
 
                 // Save/send file?
-                QString filename = "/home/navrit/CT/img_"+QString::number(i)+".png";
-                qDebug() << "[CT] Saving to: " << filename;
+                QString filename = "/home/navrit/CT/img_"+QString::number(i)+".tif";
+                qDebug() << "[CT] Saving TIFF to: " << filename;
                 _mpx3gui->getVisualization()->saveImage(filename);
 
 

@@ -284,7 +284,7 @@ QString QCstmGLVisualization::getStatsString_deviceId()
 
 void QCstmGLVisualization::saveImage(QString filename)
 {
-    ui->glPlot->getPlot()->grabFramebuffer().save(filename);
+    _mpx3gui->getDataset()->toTIFF(filename);
 }
 
 void QCstmGLVisualization::StartDataTaking() {
