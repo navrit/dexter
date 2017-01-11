@@ -425,6 +425,7 @@ void QCstmStepperMotor::on_motorGoToTargetButton_clicked()
     if ( ! _stepperThread ) {
         _stepperThread = new ConfigStepperThread( _mpx3gui, ui, this );
         connect(_stepperThread, SIGNAL(finished()), this, SLOT(stepperGotoTargetFinished()) );
+        connect(_stepperThread, SIGNAL(finished()), _mpx3gui->getCT(), SLOT(slot_motorReachedTarget()) );
     }
 
     _stepperThread->start();
@@ -573,6 +574,7 @@ void QCstmStepperMotor::on_motorTestButton_clicked()
 
         _stepperThread = new ConfigStepperThread( _mpx3gui, ui, this );
         connect(_stepperThread, SIGNAL(finished()), this, SLOT(stepperGotoTargetFinished()) );
+        connect(_stepperThread, SIGNAL(finished()), _mpx3gui->getCT(), SLOT(slot_motorReachedTarget()) );
 
     }
 
@@ -608,7 +610,7 @@ void QCstmStepperMotor::stepperGotoTargetFinished()
 
             _stepperThread = new ConfigStepperThread( _mpx3gui, ui, this );
             connect(_stepperThread, SIGNAL(finished()), this, SLOT(stepperGotoTargetFinished()) );
-
+            connect(_stepperThread, SIGNAL(finished()), _mpx3gui->getCT(), SLOT(slot_motorReachedTarget()) );
         }
 
         // go !

@@ -43,6 +43,7 @@ private:
     void startCT(); // MAIN FUNCTION
     void stopCT();  // MAIN INTERRUPT
     bool _stop = false;
+    bool isMotorMoving = false;
 
     bool activeMotors = false;
 
@@ -51,6 +52,7 @@ signals:
 
 public slots:
     void slot_connectedToMotors();
+    void slot_motorReachedTarget();
     void resumeCT();
 
 private slots:

@@ -53,11 +53,8 @@ void QCstmCT::setTargetPosition(double position)
 
 void QCstmCT::motor_goToTarget()
 {
+    isMotorMoving = true;
     _mpx3gui->getStepperMotor()->on_motorGoToTargetButton_clicked();
-    // moving variable - slot on_motor_finished
-    while (getMotorPositionStatus() != "Stopped"){
-        usleep(10);
-    }
 }
 
 void QCstmCT::update_timeGUI()
@@ -140,13 +137,21 @@ void QCstmCT::slot_connectedToMotors()
     ui->CTPushButton->setText("Start CT");
 }
 
+void QCstmCT::slot_motorReachedTarget()
+{
+    isMotorMoving = false;
+
+    iteration++;
+    startDataTakingThread();
+}
+
 void QCstmCT::resumeCT()
 {
     if (_stop){
         return;
     }
 
-    if (iteration < numberOfProjections) {
+    if (iteration < numberOfProjections-1) {
         // Correct image?
 
         // Save/send file?
@@ -173,8 +178,7 @@ void QCstmCT::resumeCT()
         qDebug() << "[CT] Target angle: " << targetAngle;
         // ---------------------------------------------------------------------------
 
-        iteration++;
-        startDataTakingThread();
+
 
     } else {
         qDebug() << "[CT] ------------ End ------------";
