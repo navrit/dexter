@@ -23,7 +23,6 @@ public:
     Ui::QCstmCT *GetUI(){ return ui; }
 
     void SetMpx3GUI(Mpx3GUI *p);
-    void setGradient(int index);
 
 private:
 
@@ -34,7 +33,13 @@ private:
     void setSpeed(double speed);
     void setTargetPosition(double position);
     void motor_goToTarget();
-    void update_timeGUI(int i, int numberOfProjections);
+    void update_timeGUI();
+    int  iteration = 0;
+    double targetAngle = 0;
+    float angleDelta = 0;
+    int numberOfProjections = 0;
+    QString getMotorPositionStatus();
+    void startDataTakingThread();
     void startCT(); // MAIN FUNCTION
     void stopCT();  // MAIN INTERRUPT
     bool _stop = false;

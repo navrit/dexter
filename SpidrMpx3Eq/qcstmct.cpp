@@ -13,10 +13,6 @@ QCstmCT::QCstmCT(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // Do rest of UI init here like labels
-    // Connect signals
-
-    //connect(this, SIGNAL(sig_moveMotor), _mpx3gui->GetUI()->stepperMotorTab, SLOT(on_motorGoToTargetButton_clicked()));
 }
 
 QCstmCT::~QCstmCT()
@@ -27,19 +23,7 @@ QCstmCT::~QCstmCT()
 void QCstmCT::SetMpx3GUI(Mpx3GUI *p)
 {
     _mpx3gui = p;
-    setGradient(0);
 
-    //TODO implement this
-    /*
-    connect( this, SIGNAL(start_takingData()), _mpx3gui->GetUI()->visualizationGL, SLOT(StartDataTaking()) );
-    connect( ui->comboBox, SIGNAL(currentIndexChanged(QString)), _mpx3gui->GetUI()->visualizationGL, SLOT(on_layerSelector_activated(QString)) );
-    */
-
-}
-
-void QCstmCT::setGradient(int index)
-{
-    ui->displayCT->setGradient( _mpx3gui->getGradient(index) );
 }
 
 void QCstmCT::resetMotor()
@@ -70,121 +54,74 @@ void QCstmCT::setTargetPosition(double position)
 void QCstmCT::motor_goToTarget()
 {
     _mpx3gui->getStepperMotor()->on_motorGoToTargetButton_clicked();
+    // moving variable - slot on_motor_finished
+    while (getMotorPositionStatus() != "Stopped"){
+        usleep(10);
+    }
 }
 
-void QCstmCT::update_timeGUI(int i, int numberOfProjections)
+void QCstmCT::update_timeGUI()
 {
-    double timeLeft = (((numberOfProjections+2) * ui->spinBox_ExposureTimePerPosition->value()) - (i*ui->spinBox_ExposureTimePerPosition->value()));
+    double timeLeft = (((numberOfProjections+1) * ui->spinBox_ExposureTimePerPosition->value()) - (iteration*ui->spinBox_ExposureTimePerPosition->value()));
     // Fudge factor
     timeLeft *= 1.2;
     ui->label_timeLeft->setText( QString::number(timeLeft) + " s" );
-    ui->progressBar->setValue( float(i) / float(numberOfProjections+1) * 100);
+    ui->progressBar->setValue( float(iteration) / float(numberOfProjections) * 100);
+}
+
+QString QCstmCT::getMotorPositionStatus()
+{
+    return _mpx3gui->getStepperMotor()->GetUI()->label_positionStatus->text();
+}
+
+void QCstmCT::startDataTakingThread()
+{
+    if( getMotorPositionStatus() == "Stopped" || getMotorPositionStatus() == "..."){
+        qDebug() << "[CT] STARTED DT @ " << QDateTime::currentDateTimeUtc();
+
+        _mpx3gui->getVisualization()->StartDataTaking(true);
+
+        //! Note: MUST end function here to return back to Qt event loop
+    }
 }
 
 void QCstmCT::startCT()
 {
     _stop = false;
+    iteration = 0;
+    targetAngle = 0;
+    _mpx3gui->getDataset()->clear();
 
-    while (!_stop){
-        double targetAngle = 0;
-        float angleDelta = ui->spinBox_rotationAngle->value()/ui->spinBox_numberOfProjections->value();
-        int numberOfProjections = ui->spinBox_numberOfProjections->value();
-        ui->label_timeLeft->setText(QString::number((numberOfProjections+1) * ui->spinBox_ExposureTimePerPosition->value()));
+    angleDelta = ui->spinBox_rotationAngle->value()/ui->spinBox_numberOfProjections->value();
+    numberOfProjections = ui->spinBox_numberOfProjections->value() + 1;
 
-        QElapsedTimer timer;
-        timer.start();
+    ui->label_timeLeft->setText(QString::number((numberOfProjections) * ui->spinBox_ExposureTimePerPosition->value()));
+    ui->progressBar->setValue(0);
+    ui->CTPushButton->setText("Stop CT");
 
-        qDebug() << "[CT] --------------------------------------";
-        qDebug() << "[CT] Starting CT function - stop and shoot.";
-        // Get acquisition settings from other view
+    qDebug() << "[CT] --------------------------------------";
+    qDebug() << "[CT] Starting CT function - stop and shoot.";
+    // Get acquisition settings from other view
 
-        // Get corrections from other view?
+    // Get corrections from other view?
 
-        // Initialise for measurement
-        // Auto-save to ~/ASI-Medipix3RX-CT-measurements/<DATE TIME>
+    // Initialise for measurement
+    // Auto-save to ~/ASI-Medipix3RX-CT-measurements/<DATE TIME>
 
-        qDebug() << "[CT] Rotate by a small angle increment: " << angleDelta << "°";
-        qDebug() << "[CT] Take" << numberOfProjections+1 << "frames";
-        qDebug() << "[CT] --------------------------------------";
+    qDebug() << "[CT] Rotate by a small angle increment: " << angleDelta << "°";
+    qDebug() << "[CT] Take" << numberOfProjections << "frames";
+    qDebug() << "[CT] --------------------------------------";
 
+    setSpeed(32768);
+    resetMotor();
+    // These numbers happen to work reliably
+    setSpeed(32000);
+    setAcceleration(500000);
 
-        // Begin CT loop
-        int i = 0;
-        while (i < (numberOfProjections+1)) {
-            // These numbers happen to work reliably
-            setSpeed(32000);
-            setAcceleration(500000);
-            update_timeGUI(i, numberOfProjections);
+    update_timeGUI();
+    ui->CTPushButton->setText("Stop CT");
 
-            QString motorPositionStatus = _mpx3gui->getStepperMotor()->GetUI()->label_positionStatus->text();
-            //
-            if( motorPositionStatus == "Stopped" || motorPositionStatus == "..."){
-
-                // Take frames
-                // ---------------------------------------------------------------------------
-                qDebug() << "[CT] STARTED DT";
-                _mpx3gui->getVisualization()->StartDataTaking();
-                // ---------------------------------------------------------------------------
-
-                //qDebug() << "[CT] Sleeping for " << int(ui->spinBox_ExposureTimePerPosition->value());
-                qDebug() << QDateTime::currentDateTimeUtc();
-                //usleep(int(ui->spinBox_ExposureTimePerPosition->value()*1000*1000));
-
-                // Correct image?
-
-                // Save/send file?
-                QString filename = "/home/navrit/CT/img_"+QString::number(i)+".tif";
-                qDebug() << "[CT] Saving TIFF to: " << filename;
-                _mpx3gui->getVisualization()->saveImage(filename);
-
-
-                // Rotate by a small angle
-                // ---------------------------------------------------------------------------
-                // Angular change per rotation
-                angleDelta = ui->spinBox_rotationAngle->value()/ui->spinBox_numberOfProjections->value();
-
-                // Update stepper motor UI
-                setTargetPosition(targetAngle + angleDelta);
-
-                // Update target angle to match new rotation state.
-                targetAngle += angleDelta;
-
-                // Move the motor
-                motor_goToTarget();
-
-                qDebug() << "[CT] Target angle: " << targetAngle;
-                // ---------------------------------------------------------------------------
-
-
-                qDebug() << timer.elapsed();
-                i++;
-
-            } else {
-                usleep(50000);
-            }
-
-            // Update UI
-
-        } // End CT loop
-
-        qDebug() << timer.elapsed();
-
-        ui->progressBar->setValue(100);
-        ui->label_timeLeft->setText( QString::number(0) );
-        qDebug() << "[CT]                                    >> End CT <<";
-
-        // Cleanup - finished CT. Get ready to start again.
-
-
-        // Reset back to 0 ready for another measurement
-        setSpeed(32000);
-        resetMotor();
-
-        ui->progressBar->setValue(0);
-
-        _stop = true;
-    }
-
+    startDataTakingThread();
 }
 
 void QCstmCT::stopCT()
@@ -205,7 +142,48 @@ void QCstmCT::slot_connectedToMotors()
 
 void QCstmCT::resumeCT()
 {
-    qDebug() << "[CT] RESUMED";
+    if (_stop){
+        return;
+    }
+
+    if (iteration < numberOfProjections) {
+        // Correct image?
+
+        // Save/send file?
+        QString filename = "/home/navrit/ownCloud/ASI/img_"+QString::number(iteration)+".tif";
+        //qDebug() << "[CT] Saving TIFF:" << filename;
+        _mpx3gui->getVisualization()->saveImage(filename);
+        _mpx3gui->getDataset()->clear();
+
+
+        // Rotate by a small angle
+        // ---------------------------------------------------------------------------
+        // Angular change per rotation
+        angleDelta = ui->spinBox_rotationAngle->value()/ui->spinBox_numberOfProjections->value();
+
+        // Update stepper motor UI
+        setTargetPosition(targetAngle + angleDelta);
+
+        // Update target angle to match new rotation state.
+        targetAngle += angleDelta;
+
+        // Move the motor
+        motor_goToTarget();
+
+        qDebug() << "[CT] Target angle: " << targetAngle;
+        // ---------------------------------------------------------------------------
+
+        iteration++;
+        startDataTakingThread();
+
+    } else {
+        qDebug() << "[CT] ------------ End ------------";
+        resetMotor();
+        ui->CTPushButton->setText("Start CT");
+        _stop = true;
+        return;
+    }
+
 }
 
 void QCstmCT::on_CTPushButton_clicked()

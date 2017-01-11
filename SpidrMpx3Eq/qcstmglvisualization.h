@@ -117,6 +117,7 @@ public:
 
     // Used in CT
     void saveImage(QString filename);
+    bool runningCT = false;
 
 private:
 
@@ -252,7 +253,7 @@ private slots:
 
 public slots:
 
-    void StartDataTaking();
+    void StartDataTaking(bool CtMode);
     void setGradient(int index);
     //!Used to inform this object of the availible gradients and their names.
     void availible_gradients_changed(QStringList gradients);

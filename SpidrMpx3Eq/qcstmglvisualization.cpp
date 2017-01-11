@@ -287,7 +287,8 @@ void QCstmGLVisualization::saveImage(QString filename)
     _mpx3gui->getDataset()->toTIFF(filename);
 }
 
-void QCstmGLVisualization::StartDataTaking() {
+void QCstmGLVisualization::StartDataTaking(bool CtMode = false) {
+    runningCT = CtMode;
 
     if ( !_dataTakingThread ) {
 
@@ -526,7 +527,9 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
     _takingData = false;
 
-    emit sig_resumeCT();
+    if (runningCT){
+        emit sig_resumeCT();
+    }
 
     /*
     if ( _takingData ) {
@@ -742,7 +745,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     //connect(_mpx3gui, SIGNAL(ConnectionStatusChanged(bool)), ui->singleshotPushButton, SLOT(setEnabled(bool))); //enable the button on connection
 
     connect(_mpx3gui, SIGNAL(sizeChanged(int, int)), ui->glPlot, SLOT(setSize(int, int)));
-    connect(ui->startButton, SIGNAL(clicked(bool)), this, SLOT(StartDataTaking()));
+    connect(ui->startButton, SIGNAL(clicked(bool)), this, SLOT(StartDataTaking(bool)));
     connect(this, SIGNAL(mode_changed(bool)), _mpx3gui, SLOT(set_summing(bool)));
     connect(_mpx3gui, SIGNAL(summing_set(bool)), ui->summingCheckbox, SLOT(setChecked(bool)));
     connect(ui->gradientSelector, SIGNAL(activated(int)), this, SLOT(setGradient(int)));
