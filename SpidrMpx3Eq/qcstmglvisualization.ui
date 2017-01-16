@@ -921,7 +921,7 @@ QGroupBox::title {
             <item row="0" column="0" colspan="7">
              <widget class="QCstmPlotHistogram" name="histPlot" native="true">
               <property name="toolTip">
-               <string>histogram</string>
+               <string>Events distribution histogram</string>
               </property>
              </widget>
             </item>
