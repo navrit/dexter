@@ -157,7 +157,12 @@ void QCstmCT::resumeCT()
         // Correct image?
 
         // Save/send file?
-        QString filename = "/home/navrit/ownCloud/ASI/img_"+QString::number(iteration)+".tif";
+        QString filename = "/home/navrit/ownCloud/ASI/" +
+                QDateTime::currentDateTimeUtc().toString(Qt::ISODate) +
+                "_img_" +
+                QString::number(iteration) +
+                ".tif";
+
         //qDebug() << "[CT] Saving TIFF:" << filename;
         _mpx3gui->getVisualization()->saveImage(filename);
         _mpx3gui->getDataset()->clear();
@@ -177,6 +182,8 @@ void QCstmCT::resumeCT()
         // Move the motor
         motor_goToTarget();
 
+        update_timeGUI();
+
         qDebug() << "[CT] Target angle: " << targetAngle;
         // ---------------------------------------------------------------------------
 
@@ -184,6 +191,9 @@ void QCstmCT::resumeCT()
 
     } else {
         qDebug() << "[CT] ------------ End ------------";
+        ui->label_timeLeft->setText("Done");
+        ui->progressBar->setValue(100);
+
         resetMotor();
         ui->CTPushButton->setText("Start CT");
         _stop = true;

@@ -870,7 +870,7 @@ void Mpx3GUI::save_data(bool requestPath){
     QString filename, path, selectedFilter;
     if (!requestPath){
         //! Native format - User dialog
-        filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", BIN_FILES";;"TIFF_FILES, &selectedFilter);
+        filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", BIN_FILES ";;" TIFF_FILES, &selectedFilter);
 
         if (filename.isNull()){
             return;
