@@ -897,7 +897,7 @@ void Mpx3GUI::save_data(bool requestPath){
     if (!saveFile.open(QIODevice::WriteOnly)) {
         string messg = "Couldn't open: ";
         messg += filename.toStdString();
-        messg += "\nNo output written!";
+        messg += "\nNo output written.";
         QMessageBox::warning ( this, tr("Error saving data"), tr( messg.c_str() ) );
         return;
     }

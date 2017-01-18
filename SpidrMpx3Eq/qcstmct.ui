@@ -30,9 +30,9 @@
           <number>0</number>
          </property>
          <item row="5" column="1" colspan="2">
-          <widget class="QPlainTextEdit" name="plainTextEdit">
+          <widget class="QPlainTextEdit" name="textEdit">
            <property name="enabled">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="documentTitle">
             <string/>

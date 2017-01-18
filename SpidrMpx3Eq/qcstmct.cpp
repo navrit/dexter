@@ -157,7 +157,7 @@ void QCstmCT::resumeCT()
         // Correct image?
 
         // Save/send file?
-        QString filename = "/home/navrit/ownCloud/ASI/" +
+        QString filename = CTfolder +
                 QDateTime::currentDateTimeUtc().toString(Qt::ISODate) +
                 "_img_" +
                 QString::number(iteration) +
@@ -190,13 +190,30 @@ void QCstmCT::resumeCT()
 
 
     } else {
-        qDebug() << "[CT] ------------ End ------------";
         ui->label_timeLeft->setText("Done");
         ui->progressBar->setValue(100);
 
         resetMotor();
+
         ui->CTPushButton->setText("Start CT");
         _stop = true;
+
+        QString filename = CTfolder +
+                QDateTime::currentDateTimeUtc().toString(Qt::ISODate) +
+                "_notes.txt";
+        QFile saveNotes(filename);
+        if (!saveNotes.open(QIODevice::WriteOnly)) {
+            string messg = "Couldn't open: ";
+            messg.append(filename.toStdString());
+            messg.append("\nNo output written.");
+            QMessageBox::warning ( this, tr("Error saving data"), tr(messg.c_str()) );
+            return;
+        }
+        QTextStream stream(&saveNotes);
+        stream << ui->textEdit->toPlainText();
+        saveNotes.close();
+
+        qDebug() << "[CT] ------------ End ------------";
         return;
     }
 
