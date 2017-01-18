@@ -247,6 +247,16 @@ void Dataset::toTIFF(QString filename)
     uint32_t image[height*width];
     TIFF * m_pTiff = nullptr;
 
+    if (filename.isEmpty()){
+        qDebug() << ">> ERROR empty filename, cancelling.";
+        return;
+    }
+
+    //! Should always be 1Mb exactly
+    tsize_t tTotalDataSize = width * height * SAMPLES_PER_PIXEL * sizeof( uint32_t );
+    assert(tTotalDataSize==1048576);
+    //qDebug() << "Passed 1Mb assertion";
+
     for (int y=0; y < height; y++) {
         for (int x=0; x < width; x++) {
             if (x==255 || x==256 || y==255 || y==256){
@@ -260,21 +270,11 @@ void Dataset::toTIFF(QString filename)
     }
     //-----------------------------------------------------
 
-    filename = filename.replace(".bin",".tiff");
     qDebug() << "[INFO] Saving to " << filename;
 
-    if (filename.isEmpty()){
-        qDebug() << ">> ERROR empty filename, cancelling.";
-        return;
-    }
 
     //! Open the TIFF file, write mode
     m_pTiff = TIFFOpen(filename.toLatin1().data(), "w");
-
-    //! Should always be 1Mb exactly
-    tsize_t tTotalDataSize = width * height * SAMPLES_PER_PIXEL * sizeof( uint32_t );
-    assert(tTotalDataSize==1048576);
-    //qDebug() << "Passed 1Mb assertion";
 
     if (m_pTiff) {
         //! Write TIFF header tags

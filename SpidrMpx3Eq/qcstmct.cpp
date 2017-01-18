@@ -145,12 +145,14 @@ void QCstmCT::slot_motorReachedTarget()
     startDataTakingThread();
 }
 
+//! Most of the time will be spent in this function
 void QCstmCT::resumeCT()
 {
     if (_stop){
         return;
     }
 
+    // Essentially a global for (i < numberOfProjections) loop
     if (iteration < numberOfProjections-1) {
         // Correct image?
 

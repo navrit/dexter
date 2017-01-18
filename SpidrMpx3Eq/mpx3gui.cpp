@@ -863,19 +863,26 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     qDebug() << "[INFO] JSON File saved";
 }
 
-void Mpx3GUI::save_data(bool requestPath){//TODO: REIMPLEMENT
+void Mpx3GUI::save_data(bool requestPath){
+    #define BIN_FILES "Binary (*.bin)"
+    #define TIFF_FILES "TIFF (*.tif)"
 
-    QString filename;
-    QString path;
+    QString filename, path, selectedFilter;
     if (!requestPath){
         //! Native format - User dialog
-        filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", tr("Binary (*.bin);;TIFF (*.tif)")); //
+        filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", BIN_FILES";;"TIFF_FILES, &selectedFilter);
 
-        //! Force the .bin in the data filename
-        if ( ! filename.toLower().contains(".bin") && ! filename.toLower().contains(".tif") && !filename.isEmpty()) {
-            filename.append(".bin");
+        if (filename.isNull()){
+            return;
         }
+        if (selectedFilter == BIN_FILES && !filename.toLower().toLatin1().contains(".bin")){
+            filename.append(".bin");
+        } else if (selectedFilter == TIFF_FILES && !filename.toLower().toLatin1().contains(".tif")){
+            filename.append(".tif");
+        }
+
     } else {
+        //! Autosave
         //! Get the visualisation dialog UI saveLineEdit text and assign to filename
         path = getVisualization()->getsaveLineEdit_Text();
         //! Build the filename+path string up by adding  "/", the current UTC date in ISO format and ".bin"
@@ -895,11 +902,10 @@ void Mpx3GUI::save_data(bool requestPath){//TODO: REIMPLEMENT
         return;
     }
 
-    if (filename.toLower().contains(".tif")){
-        getDataset()->toTIFF(filename);
-        filename.replace(".bin",".tif");
-    } else {
+    if (selectedFilter == BIN_FILES){
         saveFile.write(getDataset()->toByteArray());
+    } else if (selectedFilter == TIFF_FILES){
+        getDataset()->toTIFF(filename);
     }
 
     saveFile.close();
