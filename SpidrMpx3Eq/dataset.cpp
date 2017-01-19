@@ -226,8 +226,9 @@ QVector<int> Dataset::toQVector() {
 /*!
  * \brief Dataset::toTIFF
  * \param filename - absolute file path to save to
- * \remark Writes a 32 bit, greyscale, 512x512, vertically flipped TIFF image to `filename`,
+ * \remark Writes a 32 bit, greyscale, dynamic sized, vertically flipped TIFF image to `filename`,
  *          currently only writes the first threshold
+ *          Does cross correction for non spectroscopic mode ONLY - spectroscopic images have a non constant ratio??? #SpecialPixels
  */
 void Dataset::toTIFF(QString filename)
 {
@@ -241,70 +242,124 @@ void Dataset::toTIFF(QString filename)
     //----------------------------------------------------
     const static int SAMPLES_PER_PIXEL = 1; // This is greyscale - 3 for RGB, 4 for RGBA
                                             // Maybe make this the number of thresholds?
-    const static int BPP = 32; // Bits per pixel - gives ~4 billion per pixel upper limit before loss of signal
-    const int width = 512;
-    const int height = 512;
-    uint32_t image[height*width];
-    TIFF * m_pTiff = nullptr;
+    const static int BPP      = 32; // Bits per pixel - gives ~4 billion per pixel upper limit before loss of signal
+    const int extraPixels     = 2;
+    const int width           = ((m_nx+ extraPixels)*getNChipsX()); // Should always be 516 or 260 for a quad
+    const int height          = ((m_ny+ extraPixels)*getNChipsY()); // ""
+    int edgePixelMagicNumber  = 2.8;
 
     if (filename.isEmpty()){
         qDebug() << ">> ERROR empty filename, cancelling.";
         return;
     }
 
-    //! Should always be 1Mb exactly
-    tsize_t tTotalDataSize = width * height * SAMPLES_PER_PIXEL * sizeof( uint32_t );
-    assert(tTotalDataSize==1048576);
-    //qDebug() << "Passed 1Mb assertion";
+    // Should always be an exact multiple of 128Kb exactly
+//    tsize_t tTotalDataSize = width * height * SAMPLES_PER_PIXEL * sizeof( uint32_t );
+//    assert((tTotalDataSize % 131072) == 0);
+//    qDebug() << "Passed size assertion";
 
-    for (int y=0; y < height; y++) {
-        for (int x=0; x < width; x++) {
-            if (x==255 || x==256 || y==255 || y==256){
-                //! Hard coded cross correction
-                image[y*width + x] = sample(x, y, 0) / 2.8;
-            } else {
-                //! Default option, sample the pixels directly
-                image[y*width + x] = sample(x, y, 0);
+    //! Save for all thresholds in separate files
+    //! Note: Could use TIFF pages but this is a much clearer approach for the user and is more compatible cross systems
+    QList<int> thresholds = m_thresholdsToIndices.keys();
+    for(int i = 0; i < thresholds.length(); i++) {
+
+        uint32_t image[height*width];
+        uint32_t imageSpatialCorrected[height*width];
+        TIFF * m_pTiff = nullptr;
+
+        //! Normal SPM mode - can do actual cross correction
+        if (getThresholds().count() < 1) {
+            for (int y=0; y < height; y++) {
+                for (int x=0; x < width; x++) {
+                    if (x==(width/2)-1 || x==(width/2) || y==(height/2)-1 || y==(height/2)){
+                        //! Hard coded cross correction
+                        image[y*width + x] = sample(x, y, thresholds[i]) / edgePixelMagicNumber;
+                    } else {
+                        //! Default option, sample the pixels directly
+                        image[y*width + x] = sample(x, y, thresholds[i]);
+                    }
+                }
+            }
+        //! Spectral don't try cross correction it doesn't work properly
+        } else {
+            for (int y=0; y < height; y++) {
+                for (int x=0; x < width; x++) {
+                    //! Sample the pixels directly
+                    image[y*width + x] = sample(x, y, thresholds[i]);
+                }
             }
         }
-    }
-    //-----------------------------------------------------
 
-    qDebug() << "[INFO] Saving to " << filename;
+        //! Do spatial correction here
+        for (int y=0; y < height; y++) {
+            for (int x=0; x < width; x++) {
 
+                if        (y < (height/2)-extraPixels && x < (width/2)-extraPixels){        // top left
+                    // Directly sample
+                    imageSpatialCorrected[y*width + x] = sample(x, y, thresholds[i]);
+                } else if (y < (height/2)-extraPixels && x >= (width/2)+extraPixels) {      // top right
+                    imageSpatialCorrected[y*width + x] = 20;
+                } else if (y >= (height/2)+extraPixels && x < (width/2)-extraPixels) {      // bottom left
+                    imageSpatialCorrected[y*width + x] = 30;
+                } else if (y >= (height/2)+extraPixels && x >= (width/2)+extraPixels) {     // bottom right
+                    imageSpatialCorrected[y*width + x] = 40;
+                } else if (x >= (width/2)-extraPixels &&
+                           x < (width/2)+extraPixels &&
+                           y >= (height/2)-extraPixels &&
+                           y < (height/2)+extraPixels){                                     // central square
+                    imageSpatialCorrected[y*width + x] = 50;
+                }
+                else if (x >= (width/2)-extraPixels && x < (width/2)+extraPixels){          // vertical centre
+                    if (x == (width/2)-extraPixels ){
+                        //set 127, 128, 129 as 1/3 of 127
+                        imageSpatialCorrected[y*width + (width/2)-extraPixels-1] = imageSpatialCorrected[(width/2)-extraPixels, y]/edgePixelMagicNumber;
+                        imageSpatialCorrected[y*width + (width/2)-extraPixels  ] = imageSpatialCorrected[(width/2)-extraPixels, y]/edgePixelMagicNumber;
+                        imageSpatialCorrected[y*width + (width/2)-extraPixels+1] = imageSpatialCorrected[(width/2)-extraPixels, y]/edgePixelMagicNumber;
+                    } else if (x == (width/2)+extraPixels) {
+                        qDebug() << x; //imageSpatialCorrected[y*width + (width/2)+extraPixels+1] = sample((width/2)+extraPixels, y, thresholds[i])/edgePixelMagicNumber;
+                    }
+                } else if (y >= (height/2)-extraPixels && y < (height/2)+extraPixels){      // horizontal centre
+                    imageSpatialCorrected[y*width + x] = 70;
+                }
+            }
+        }
+        //-----------------------------------------------------
 
-    //! Open the TIFF file, write mode
-    m_pTiff = TIFFOpen(filename.toLatin1().data(), "w");
+        QString tmpFilename = filename;
+        tmpFilename.replace(".tif", "-thl" + QString::number(thresholds[i]) + ".tif");
 
-    if (m_pTiff) {
-        //! Write TIFF header tags
-        TIFFSetField(m_pTiff, TIFFTAG_IMAGEWIDTH,      width);                  // set the width of the image
-        TIFFSetField(m_pTiff, TIFFTAG_IMAGELENGTH,     height);                 // set the height of the image
-        TIFFSetField(m_pTiff, TIFFTAG_SAMPLESPERPIXEL, SAMPLES_PER_PIXEL);      // set number of channels per pixel
-        TIFFSetField(m_pTiff, TIFFTAG_BITSPERSAMPLE,   BPP);                    // set the size of the channels
-        TIFFSetField(m_pTiff, TIFFTAG_ORIENTATION,     ORIENTATION_TOPLEFT);    // set the origin of the image.
+        //! Open the TIFF file, write mode
+        m_pTiff = TIFFOpen(tmpFilename.toLatin1().data(), "w");
 
-        TIFFSetField(m_pTiff, TIFFTAG_COMPRESSION,     COMPRESSION_NONE);
-        TIFFSetField(m_pTiff, TIFFTAG_PLANARCONFIG,    PLANARCONFIG_CONTIG);    // No idea what this does but it's necessary
-        TIFFSetField(m_pTiff, TIFFTAG_PHOTOMETRIC,     PHOTOMETRIC_MINISBLACK);
+        if (m_pTiff) {
+            //! Write TIFF header tags
+            TIFFSetField(m_pTiff, TIFFTAG_IMAGEWIDTH,      width);                  // set the width of the image
+            TIFFSetField(m_pTiff, TIFFTAG_IMAGELENGTH,     height);                 // set the height of the image
+            TIFFSetField(m_pTiff, TIFFTAG_SAMPLESPERPIXEL, SAMPLES_PER_PIXEL);      // set number of channels per pixel
+            TIFFSetField(m_pTiff, TIFFTAG_BITSPERSAMPLE,   BPP);                    // set the size of the channels
+            TIFFSetField(m_pTiff, TIFFTAG_ORIENTATION,     ORIENTATION_TOPLEFT);    // set the origin of the image.
 
-        for (int r=0; r < height; r++) {
-            TIFFWriteScanline(m_pTiff, &image[r*width], r, 0);
+            TIFFSetField(m_pTiff, TIFFTAG_COMPRESSION,     COMPRESSION_NONE);
+            TIFFSetField(m_pTiff, TIFFTAG_PLANARCONFIG,    PLANARCONFIG_CONTIG);    // No idea what this does but it's necessary
+            TIFFSetField(m_pTiff, TIFFTAG_PHOTOMETRIC,     PHOTOMETRIC_MINISBLACK);
+
+            for (int r=0; r < height; r++) {
+                TIFFWriteScanline(m_pTiff, &imageSpatialCorrected[r*width], r, 0);
+            }
+
+        } else if (m_pTiff == nullptr) {
+            qDebug() << "[ERROR] Unable to write TIFF file";
+        } else {
+            qDebug() << "[ERROR] Unknown TIFF file write failure.";
         }
 
-    } else if (m_pTiff == nullptr) {
-        qDebug() << "[ERROR] Unable to write TIFF file";
-    } else {
-        qDebug() << "[ERROR] Unknown TIFF file write failure.";
-    }
-
-    //! Cleanup code - close the file when done
-    if ( m_pTiff ) {
-        TIFFClose( m_pTiff );
+        //! Cleanup code - close the file when done
+        if ( m_pTiff ) {
+            TIFFClose( m_pTiff );
+        }
     }
 
 }
-
 
 QVector<QVector<int> > Dataset::collectPointsROI(int threshold, QPoint pixel_init, QPoint pixel_end)
 {

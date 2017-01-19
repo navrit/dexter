@@ -177,7 +177,7 @@ public:
     unsigned int setFrame(int *frame, int index, int threshold);//!< Overwrites the data of chip index at the specified threshold with the data pointed to by frame.
     void setPixel(int x, int y, int threshold, int val);//!< Set a pixel value for a given threshold (x,y) (assembly coordinates !)
     unsigned int sumFrame(int *frame, int index, int threshold);//!< Adds the data pointed to by frame to the data of chip index at the specified threshold.
-    void toJson(); //!<return JSON object to save.
+    void toJson(); //!<Saves JSON log file with measurement settings
     void setProfilepoint(int index, QString pos);
     void setProfilepoint(int index, int pos){ if(pos > 0 && pos < 256) setProfilepoint(index, QString("%1").arg(pos));}
     void clearProfilepoints();

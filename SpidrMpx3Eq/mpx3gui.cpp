@@ -890,23 +890,24 @@ void Mpx3GUI::save_data(bool requestPath){
         filename.append(".bin");
     }
 
-    // And save
-    QFile saveFile(filename);
-    if (!saveFile.open(QIODevice::WriteOnly)) {
-        string messg = "Couldn't open: ";
-        messg += filename.toStdString();
-        messg += "\nNo output written.";
-        QMessageBox::warning ( this, tr("Error saving data"), tr( messg.c_str() ) );
-        return;
-    }
-
     if (selectedFilter == BIN_FILES){
+        // And save
+        QFile saveFile(filename);
+        if (!saveFile.open(QIODevice::WriteOnly)) {
+            string messg = "Couldn't open: ";
+            messg += filename.toStdString();
+            messg += "\nNo output written.";
+            QMessageBox::warning ( this, tr("Error saving data"), tr( messg.c_str() ) );
+            return;
+        }
         saveFile.write(getDataset()->toByteArray());
+        saveFile.close();
+
     } else if (selectedFilter == TIFF_FILES){
         getDataset()->toTIFF(filename);
     }
 
-    saveFile.close();
+
     qDebug() << "[INFO] File saved: ..." << filename;
     QString msg = "Saved: ...";
 
