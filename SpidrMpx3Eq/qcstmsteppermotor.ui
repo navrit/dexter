@@ -201,6 +201,21 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>stepperMotorCheckBox</tabstop>
+  <tabstop>stepperSetZeroPushButton</tabstop>
+  <tabstop>motorResetButton</tabstop>
+  <tabstop>motorTestButton</tabstop>
+  <tabstop>currentISpinBox</tabstop>
+  <tabstop>motorIdSpinBox</tabstop>
+  <tabstop>stepperUseCalibCheckBox</tabstop>
+  <tabstop>accelerationSpinBox</tabstop>
+  <tabstop>speedSpinBox</tabstop>
+  <tabstop>targetPosSpinBox</tabstop>
+  <tabstop>motorGoToTargetButton</tabstop>
+  <tabstop>motorDial</tabstop>
+  <tabstop>stepperCalibrationTableView</tabstop>
+ </tabstops>
  <resources>
   <include location="icons.qrc"/>
  </resources>
