@@ -34,6 +34,9 @@ private:
     void setTargetPosition(double position);
     void motor_goToTarget();
     void update_timeGUI();
+    void applyCorrection(QString correctionMethod);
+    QString getCorrectionFile();
+    QString correctionFilename;
     int  iteration = 0;
     double targetAngle = 0;
     float angleDelta = 0;

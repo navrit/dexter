@@ -58,6 +58,10 @@ class QCstmCT;
 #define __ct_page_Id                6
 #define __stepperMotor_page_Id      7
 
+#define BIN_FILES "Binary (*.bin)"
+#define TIFF_FILES "TIFF (*.tif)"
+#define JSON_FILES "BH JSON file(*.json)"
+
 const QString _softwareName = "ASI Dexter";
 
 namespace Ui {

@@ -66,6 +66,49 @@ void QCstmCT::update_timeGUI()
     ui->progressBar->setValue( float(iteration) / float(numberOfProjections) * 100);
 }
 
+void QCstmCT::applyCorrection(QString correctionMethod)
+{
+    if (correctionMethod == "None") {
+        return;
+    } else if (correctionMethod == "Open Beam"){
+        // Get an Open Beam image
+        qDebug() << "----- Open Beam" << correctionFilename << endl;
+
+        _mpx3gui->getDataset()->removeCorrection();
+        QFile OBfile(correctionFilename);
+        if ( !OBfile.open(QIODevice::ReadOnly) ) {
+            string messg = "Couldn't open: ";
+            messg += correctionFilename.toStdString();
+            messg += "\nNo output written!";
+            QMessageBox::warning ( this, tr("Error opening data"), tr( messg.c_str() ) );
+            return;
+        }
+
+        _mpx3gui->getDataset()->loadCorrection(OBfile.readAll());
+        _mpx3gui->getDataset()->applyOBCorrection();
+
+    } else if (correctionMethod == "Beam Hardening"){
+        // Get a Beam hardening JSON
+        qDebug() << "----- Beam Hardening";
+
+    } else {
+        qDebug() << "----- Unknown option?!?!?!";
+        return;
+    }
+}
+
+QString QCstmCT::getCorrectionFile()
+{
+    if (ui->correctionMethod->currentText() == "Open Beam"){
+        return QFileDialog::getOpenFileName(this, tr("Select Open Beam image"), ".", BIN_FILES );
+    } else if (ui->correctionMethod->currentText() == "Beam Hardening") {
+        return QFileDialog::getOpenFileName(this, tr("Select Beam Hardening JSON"), ".", JSON_FILES );
+    } else {
+        return "";
+    }
+
+}
+
 QString QCstmCT::getMotorPositionStatus()
 {
     return _mpx3gui->getStepperMotor()->GetUI()->label_positionStatus->text();
@@ -84,34 +127,35 @@ void QCstmCT::startDataTakingThread()
 
 void QCstmCT::startCT()
 {
+    //! Use acquisition settings from other view
     _stop = false;
     iteration = 0;
     targetAngle = 0;
     _mpx3gui->getDataset()->clear();
 
-    angleDelta = ui->spinBox_rotationAngle->value()/ui->spinBox_numberOfProjections->value();
+    angleDelta = ui->spinBox_rotationAngle->value() /
+            ui->spinBox_numberOfProjections->value();
     numberOfProjections = ui->spinBox_numberOfProjections->value() + 1;
 
-    ui->label_timeLeft->setText(QString::number((numberOfProjections) * ui->spinBox_ExposureTimePerPosition->value()));
+    //! Get correction file
+    correctionFilename = getCorrectionFile();
+
+    ui->label_timeLeft->setText(QString::number((numberOfProjections) *
+                                                ui->spinBox_ExposureTimePerPosition->value()));
     ui->progressBar->setValue(0);
     ui->CTPushButton->setText("Stop CT");
 
     qDebug() << "[CT] --------------------------------------";
     qDebug() << "[CT] Starting CT function - stop and shoot.";
-    // Get acquisition settings from other view
 
-    // Get corrections from other view?
-
-    // Initialise for measurement
-    // Auto-save to ~/ASI-Medipix3RX-CT-measurements/<DATE TIME>
-
-    qDebug() << "[CT] Rotate by a small angle increment: " << angleDelta << "°";
-    qDebug() << "[CT] Take" << numberOfProjections << "frames";
+    //! Initialise for measurement
+    //qDebug() << "[CT] Rotate by a small angle increment: " << angleDelta << "°";
+    //qDebug() << "[CT] Take" << numberOfProjections << "frames";
     qDebug() << "[CT] --------------------------------------";
 
     setSpeed(32768);
     resetMotor();
-    // These numbers happen to work reliably
+    // These numbers happen to work reliably and are fast
     setSpeed(32000);
     setAcceleration(500000);
 
@@ -127,7 +171,8 @@ void QCstmCT::stopCT()
     _stop = true;
 
     // Cleanup
-
+    ui->label_timeLeft->setText("GUI Interrupted at " +
+                                QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
 }
 
 void QCstmCT::slot_connectedToMotors()
@@ -154,9 +199,10 @@ void QCstmCT::resumeCT()
 
     // Essentially a global for (i < numberOfProjections) loop
     if (iteration < numberOfProjections-1) {
-        // Correct image?
+        // Correct image
+        applyCorrection( ui->correctionMethod->currentText() );
 
-        // Save/send file?
+        // Save/send file?l
         QString filename = CTfolder +
                 QDateTime::currentDateTimeUtc().toString(Qt::ISODate) +
                 "_img_" +
@@ -171,13 +217,13 @@ void QCstmCT::resumeCT()
         // Rotate by a small angle
         // ---------------------------------------------------------------------------
         // Angular change per rotation
-        angleDelta = ui->spinBox_rotationAngle->value()/ui->spinBox_numberOfProjections->value();
-
-        // Update stepper motor UI
-        setTargetPosition(targetAngle + angleDelta);
+        angleDelta = ui->spinBox_rotationAngle->value() / ui->spinBox_numberOfProjections->value();
 
         // Update target angle to match new rotation state.
         targetAngle += angleDelta;
+
+        // Update stepper motor UI
+        setTargetPosition(targetAngle);
 
         // Move the motor
         motor_goToTarget();
@@ -187,10 +233,8 @@ void QCstmCT::resumeCT()
         qDebug() << "[CT] Target angle: " << targetAngle;
         // ---------------------------------------------------------------------------
 
-
-
     } else {
-        ui->label_timeLeft->setText("Done");
+        ui->label_timeLeft->setText(tr("Done"));
         ui->progressBar->setValue(100);
 
         resetMotor();
@@ -246,9 +290,6 @@ void QCstmCT::on_CTPushButton_clicked()
 
         startCT();
 
-        // Update UI
-        ui->CTPushButton->setText("Start CT");
-
     } else if ( ui->CTPushButton->text() == "Stop CT" ) {
         // Stop CT
 
@@ -256,9 +297,6 @@ void QCstmCT::on_CTPushButton_clicked()
         ui->CTPushButton->setText("Start CT");
 
         stopCT();
-
-        // Update UI
-        ui->CTPushButton->setText("Stop CT");
 
     } else {
         qDebug() << "[CT] ---------------------\n WEIRD AF ERROR \n-----------------------\n";

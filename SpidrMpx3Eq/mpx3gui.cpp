@@ -864,8 +864,6 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
 }
 
 void Mpx3GUI::save_data(bool requestPath){
-    #define BIN_FILES "Binary (*.bin)"
-    #define TIFF_FILES "TIFF (*.tif)"
 
     QString filename, path, selectedFilter;
     if (!requestPath){
