@@ -149,8 +149,8 @@ void QCstmCT::startCT()
     qDebug() << "[CT] Starting CT function - stop and shoot.";
 
     //! Initialise for measurement
-    //qDebug() << "[CT] Rotate by a small angle increment: " << angleDelta << "°";
-    //qDebug() << "[CT] Take" << numberOfProjections << "frames";
+    qDebug() << "[CT] Rotate by a small angle increment: " << angleDelta << "°";
+    qDebug() << "[CT] Take" << numberOfProjections << "frames";
     qDebug() << "[CT] --------------------------------------";
 
     setSpeed(32768);
@@ -204,8 +204,8 @@ void QCstmCT::resumeCT()
 
         // Save/send file?l
         QString filename = CTfolder +
-                QDateTime::currentDateTimeUtc().toString(Qt::ISODate) +
-                "_img_" +
+                //QDateTime::currentDateTimeUtc().toString(Qt::ISODate) +
+                "img_" +
                 QString::number(iteration) +
                 ".tif";
 

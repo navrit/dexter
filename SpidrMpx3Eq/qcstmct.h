@@ -47,7 +47,7 @@ private:
     void stopCT();  // MAIN INTERRUPT
     bool _stop = false;
     bool isMotorMoving = false;
-    QString CTfolder = "/home/navrit/ownCloud/ASI/";
+    QString CTfolder = "/home/navrit/ownCloud/ASI/20170120/";
 
     bool activeMotors = false;
 
