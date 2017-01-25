@@ -208,8 +208,10 @@ public:
     int * getFrameAt(int index, int layer); //!< returns a pointer to the data of chip index at the specified layer-index. (i.e. does not call thresholdToLayer(layer))
     int sampleFrameAt(int index, int layer, int x, int y);//!< Returns the value of the pixel at (x,y), in the coordinate-system of the assembly, of chip index directly at the specified layer. Does take into account the orientation of the chip.
     int * getLayer(int threshold);
-    int * getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui);
-    int sample(int x, int y, int threshold);//!<Returns the value of the pixel at (x,y) (assembly coordinates) and the specified threshold.
+    //int * getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui);    // Remove probably
+    int sample(int x, int y, int threshold); //!<Returns the value of the pixel at (x,y) (assembly coordinates) and the specified threshold.
+    int getWidth();
+    int getHeight();
     int x() const{return m_nx;} // per chip
     int y() const{return m_ny;} // per chip
     int getPixelDepthBits() const { return m_pixelDepthBits; }

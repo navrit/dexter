@@ -244,8 +244,10 @@ void Dataset::toTIFF(QString filename)
                                             // Maybe make this the number of thresholds?
     const static int BPP      = 32; // Bits per pixel - gives ~4 billion per pixel upper limit before loss of signal
     const int extraPixels     = 2;
-    const int width           = ((m_nx+ extraPixels)*getNChipsX()); // Should always be 516 or 260 for a quad
-    const int height          = ((m_ny+ extraPixels)*getNChipsY()); // ""
+//    const int width           = ((m_nx+ extraPixels)*getNChipsX()); // Should always be 516 or 260 for a quad
+//    const int height          = ((m_ny+ extraPixels)*getNChipsY()); // ""
+    const int width           = getWidth(); // Should always be 512 or 256 for a quad without spatial correction
+    const int height          = getHeight(); // ""
     int edgePixelMagicNumber  = 2.8;
 
     if (filename.isEmpty()){
@@ -1814,6 +1816,14 @@ int Dataset::sample(int x, int y, int threshold){
     return frame[coordinate.y()*m_nx+coordinate.x()];
 }
 
+int Dataset::getWidth() {
+    return ((m_nx)*getNChipsX());
+}
+
+int Dataset::getHeight() {
+    return ((m_ny)*getNChipsY());
+}
+
 void Dataset::setPixel(int x, int y, int threshold, int val) {
 
     int layerIndex = thresholdToIndex(threshold);
@@ -1886,7 +1896,7 @@ unsigned int Dataset::addLayer(int *data, int threshold){
     return overflowCntr;
 }
 
-int * Dataset::getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui) {
+/*int * Dataset::getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui) {
 
     // This two members carry all the information about the layout
     // QVector<QPoint>  m_frameLayouts // positions in the pad
@@ -2005,15 +2015,16 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui) {
 
     }
 
-    /*
-    for ( int i = 0 ; i < getPixelsPerLayer() ; i++ ) {
-        if ( i<10 || (i>127&&i<137) ) qDebug() << "[" << i << "] " << layer[i];
-        if ( i>=16384 && i<(16384+10) ) qDebug() << "[" << i << "] " << layer[i];
-    }
-    */
+
+//    for ( int i = 0 ; i < getPixelsPerLayer() ; i++ ) {
+//        if ( i<10 || (i>127&&i<137) ) qDebug() << "[" << i << "] " << layer[i];
+//        if ( i>=16384 && i<(16384+10) ) qDebug() << "[" << i << "] " << layer[i];
+//    }
+
 
     return m_plainImageBuff;
 }
+*/
 
 int * Dataset::getLayer(int threshold){
 

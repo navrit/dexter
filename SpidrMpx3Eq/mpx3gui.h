@@ -60,6 +60,7 @@ class QCstmCT;
 
 #define BIN_FILES "Binary (*.bin)"
 #define TIFF_FILES "TIFF (*.tif)"
+#define ASCII_FILES "ASCII (*.txt)"
 #define JSON_FILES "BH JSON file(*.json)"
 
 const QString _softwareName = "ASI Dexter";
