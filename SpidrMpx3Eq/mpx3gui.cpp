@@ -760,6 +760,8 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
         filename = filename.replace(".bin",".json");
     } else if (filename.toLower().contains(".tif")){
         filename = filename.replace(".tif",".json");
+    } else if (filename.toLower().contains(".txt")) {
+        filename = filename.replace(".txt",".json");
     } else {
         qDebug() << "[ERROR] failed writing the JSON file, input name didn't include .bin or .tif";
         return;
@@ -893,76 +895,12 @@ void Mpx3GUI::save_data(bool requestPath) {
     }
 
     if (selectedFilter == BIN_FILES){
-        // And save
-        QFile saveFile(filename);
-        if (!saveFile.open(QIODevice::WriteOnly)) {
-            string messg = "Couldn't open: ";
-            messg += filename.toStdString();
-            messg += "\nNo output written.";
-            QMessageBox::warning ( this, tr("Error saving data"), tr( messg.c_str() ) );
-            return;
-        }
-        saveFile.write(getDataset()->toByteArray());
-        saveFile.close();
-
+        getDataset()->saveBIN(filename);
     } else if (selectedFilter == TIFF_FILES){
         getDataset()->toTIFF(filename);
     } else if (selectedFilter == ASCII_FILES) {
-        ///////////////////////////////////////////////////////////
-        // ASCII
-
-        int sizex = getDataset()->x();
-        int sizey = getDataset()->y();
-        int nchipsx =  getDataset()->getNChipsX();
-        int nchipsy = getDataset()->getNChipsY();
-        int len = sizex * sizey * nchipsx * nchipsy;
-
-        QList <int> thresholds = getDataset()->getThresholds();
-        QList<int>::iterator it = thresholds.begin();
-        QList<int>::iterator itE = thresholds.end();
-
-        // Do the different thresholds
-        for (; it != itE; it++) {
-
-            const int width   = getDataset()->getWidth();  // Should always be 512 or 256 for a quad without spatial correction
-            const int height  = getDataset()->getHeight(); // ""
-            uint32_t fullFrame[height*width];
-
-            for (int y=0; y < height; y++) {
-                for (int x=0; x < width; x++) {
-                    //! Sample the pixels directly
-                    fullFrame[y*width + x] = getDataset()->sample(x, height-y-1, thresholds[* it]);
-                }
-            }
-
-            // Create string containing file location
-            QString plS = filename;
-            plS.replace(".txt","");
-            plS += "_thl-";
-            plS += QString::number(*it, 'd', 0);
-            plS += ".txt";
-            string saveLoc = plS.toStdString();
-
-            //qDebug() << "nchipsx : " << nchipsx << " | nchipsy : " << nchipsy << " --> " << getDataset()->getPixelsPerLayer();
-
-            // Save file
-            ofstream of;
-            of.open(saveLoc);
-            if (of.is_open()) {
-                for (int i = 0; i < len; i++) {
-
-                    of << fullFrame[i] << " ";
-
-                    // new line
-                    if ((i + 1) % (sizex*nchipsx) == 0) of << "\r\n";
-
-                }
-            }
-
-            of.close();
-
-        }
-    } // end of for loop that cycles through the layers (threshold)
+        getDataset()->toASCII(filename);
+    }
 
 
     qDebug() << "[INFO] File saved: ..." << filename;

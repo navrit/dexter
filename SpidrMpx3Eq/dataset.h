@@ -133,7 +133,9 @@ public:
 
     QByteArray toByteArray(); //!< Serializes the dataset for saving.
     QVector<int> toQVector(); //!< Serializes the dataset for saving.
-    void toTIFF(QString filename); //! Puts the dataset into a TIFF format for saving.
+    void saveBIN(QString filename);   //! Puts the dataset into a BIN format and saves.
+    void toTIFF(QString filename);  //! Puts the dataset into a TIFF format and saves.
+    void toASCII(QString filename); //! Puts the dataset into ASCII format and saves.
 
     void fromByteArray(QByteArray serialized); //!< Restores the dataset from a previously serialized set.
     void fromASCIIMatrix(QFile * file, int x, int y, int framesPerLayer);

@@ -223,6 +223,21 @@ QVector<int> Dataset::toQVector() {
     return tovec;
 }
 
+void Dataset::saveBIN(QString filename)
+{
+    // And save
+    QFile saveFile(filename);
+    if (!saveFile.open(QIODevice::WriteOnly)) {
+        string messg = "Couldn't open: ";
+        messg += filename.toStdString();
+        messg += "\nNo output written.";
+        QMessageBox::warning ( this, tr("Error saving data"), tr( messg.c_str() ) );
+        return;
+    }
+    saveFile.write(toByteArray());
+    saveFile.close();
+}
+
 /*!
  * \brief Dataset::toTIFF
  * \param filename - absolute file path to save to
@@ -363,6 +378,59 @@ void Dataset::toTIFF(QString filename)
         }
     }
 
+}
+
+void Dataset::toASCII(QString filename)
+{
+    int sizex = x();
+    int sizey = y();
+    int nchipsx =  getNChipsX();
+    int nchipsy = getNChipsY();
+    int len = sizex * sizey * nchipsx * nchipsy;
+
+    QList <int> thresholds = getThresholds();
+    QList<int>::iterator it = thresholds.begin();
+    QList<int>::iterator itE = thresholds.end();
+
+    // Do the different thresholds
+    for (; it != itE; it++) {
+
+        const int width   = getWidth();  // Should always be 512 or 256 for a quad without spatial correction
+        const int height  = getHeight(); // ""
+        uint32_t fullFrame[height*width];
+
+        for (int y=0; y < height; y++) {
+            for (int x=0; x < width; x++) {
+                //! Sample the pixels directly
+                fullFrame[y*width + x] = sample(x, height-y-1, thresholds[* it]);
+            }
+        }
+
+        QString tmp = filename.replace(".txt","");
+        tmp.append("_thl-");
+        tmp.append(QString::number(*it, 'd', 0));
+        tmp.append(".txt");
+        string saveLoc = tmp.toStdString();
+
+        //qDebug() << "nchipsx : " << nchipsx << " | nchipsy : " << nchipsy << " --> " << getDataset()->getPixelsPerLayer();
+
+        // Save file
+        ofstream of;
+        of.open(saveLoc);
+        if (of.is_open()) {
+            for (int i = 0; i < len; i++) {
+
+                of << fullFrame[i] << " ";
+
+                // new line
+                if ((i + 1) % (sizex*nchipsx) == 0) of << "\r\n";
+
+            }
+        }
+
+        of.close();
+
+    } // end of for loop that cycles through the layers (threshold)
 }
 
 QVector<QVector<int> > Dataset::collectPointsROI(int threshold, QPoint pixel_init, QPoint pixel_end)
