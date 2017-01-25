@@ -292,43 +292,45 @@ void Dataset::toTIFF(QString filename)
             }
         }
 
-        //! Do spatial correction here
-        for (int y=0; y < height; y++) {
-            for (int x=0; x < width; x++) {
+//        //! Do spatial correction here
+//        for (int y=0; y < height; y++) {
+//            for (int x=0; x < width; x++) {
 
-                if        (y < (height/2)-extraPixels && x < (width/2)-extraPixels){        // top left
-                    // Directly sample
-                    imageSpatialCorrected[y*width + x] = sample(x, y, thresholds[i]);
-                } else if (y < (height/2)-extraPixels && x >= (width/2)+extraPixels) {      // top right
-                    imageSpatialCorrected[y*width + x] = 20;
-                } else if (y >= (height/2)+extraPixels && x < (width/2)-extraPixels) {      // bottom left
-                    imageSpatialCorrected[y*width + x] = 30;
-                } else if (y >= (height/2)+extraPixels && x >= (width/2)+extraPixels) {     // bottom right
-                    imageSpatialCorrected[y*width + x] = 40;
-                } else if (x >= (width/2)-extraPixels &&
-                           x < (width/2)+extraPixels &&
-                           y >= (height/2)-extraPixels &&
-                           y < (height/2)+extraPixels){                                     // central square
-                    imageSpatialCorrected[y*width + x] = 50;
-                }
-                else if (x >= (width/2)-extraPixels && x < (width/2)+extraPixels){          // vertical centre
-                    if (x == (width/2)-extraPixels ){
-                        //set 127, 128, 129 as 1/3 of 127
-                        imageSpatialCorrected[y*width + (width/2)-extraPixels-1] = imageSpatialCorrected[(width/2)-extraPixels, y]/edgePixelMagicNumber;
-                        imageSpatialCorrected[y*width + (width/2)-extraPixels  ] = imageSpatialCorrected[(width/2)-extraPixels, y]/edgePixelMagicNumber;
-                        imageSpatialCorrected[y*width + (width/2)-extraPixels+1] = imageSpatialCorrected[(width/2)-extraPixels, y]/edgePixelMagicNumber;
-                    } else if (x == (width/2)+extraPixels) {
-                        qDebug() << x; //imageSpatialCorrected[y*width + (width/2)+extraPixels+1] = sample((width/2)+extraPixels, y, thresholds[i])/edgePixelMagicNumber;
-                    }
-                } else if (y >= (height/2)-extraPixels && y < (height/2)+extraPixels){      // horizontal centre
-                    imageSpatialCorrected[y*width + x] = 70;
-                }
-            }
-        }
+//                if        (y < (height/2)-extraPixels && x < (width/2)-extraPixels){        // top left
+//                    // Directly sample
+//                    imageSpatialCorrected[y*width + x] = sample(x, y, thresholds[i]);
+//                } else if (y < (height/2)-extraPixels && x >= (width/2)+extraPixels) {      // top right
+//                    imageSpatialCorrected[y*width + x] = 20;
+//                } else if (y >= (height/2)+extraPixels && x < (width/2)-extraPixels) {      // bottom left
+//                    imageSpatialCorrected[y*width + x] = 30;
+//                } else if (y >= (height/2)+extraPixels && x >= (width/2)+extraPixels) {     // bottom right
+//                    imageSpatialCorrected[y*width + x] = 40;
+//                } else if (x >= (width/2)-extraPixels &&
+//                           x < (width/2)+extraPixels &&
+//                           y >= (height/2)-extraPixels &&
+//                           y < (height/2)+extraPixels){                                     // central square
+//                    imageSpatialCorrected[y*width + x] = 50;
+//                }
+//                else if (x >= (width/2)-extraPixels && x < (width/2)+extraPixels){          // vertical centre
+//                    if (x == (width/2)-extraPixels ){
+//                        //set 127, 128, 129 as 1/3 of 127
+//                        imageSpatialCorrected[y*width + (width/2)-extraPixels-1] = imageSpatialCorrected[(width/2)-extraPixels, y]/edgePixelMagicNumber;
+//                        imageSpatialCorrected[y*width + (width/2)-extraPixels  ] = imageSpatialCorrected[(width/2)-extraPixels, y]/edgePixelMagicNumber;
+//                        imageSpatialCorrected[y*width + (width/2)-extraPixels+1] = imageSpatialCorrected[(width/2)-extraPixels, y]/edgePixelMagicNumber;
+//                    } else if (x == (width/2)+extraPixels) {
+//                        qDebug() << x; //imageSpatialCorrected[y*width + (width/2)+extraPixels+1] = sample((width/2)+extraPixels, y, thresholds[i])/edgePixelMagicNumber;
+//                    }
+//                } else if (y >= (height/2)-extraPixels && y < (height/2)+extraPixels){      // horizontal centre
+//                    imageSpatialCorrected[y*width + x] = 70;
+//                }
+//            }
+//        }
         //-----------------------------------------------------
 
         QString tmpFilename = filename;
-        tmpFilename.replace(".tif", "-thl" + QString::number(thresholds[i]) + ".tif");
+        /*if (QString::number(thresholds[i] != 0)){
+            tmpFilename.replace(".tif", "-thl" + QString::number(thresholds[i]) + ".tif");
+        }*/
 
         //! Open the TIFF file, write mode
         m_pTiff = TIFFOpen(tmpFilename.toLatin1().data(), "w");
@@ -346,7 +348,7 @@ void Dataset::toTIFF(QString filename)
             TIFFSetField(m_pTiff, TIFFTAG_PHOTOMETRIC,     PHOTOMETRIC_MINISBLACK);
 
             for (int r=0; r < height; r++) {
-                TIFFWriteScanline(m_pTiff, &imageSpatialCorrected[r*width], r, 0);
+                TIFFWriteScanline(m_pTiff, &image[r*width], r, 0);
             }
 
         } else if (m_pTiff == nullptr) {
@@ -1432,35 +1434,35 @@ void Dataset::applyOBCorrection() {
 
         //Give the user the choice to apply the correction, ignore the incomparability or cancel and choose another OBcorrectionfile.
         //Only ask at first layer.
-        if ( ! OBmatch && i == 0 ) {
-            qDebug() << "[FAIL] if( (OBmax-OBmin) <= 0.5*(Dmax - Dmin) || (OBmax-OBmin) >= 2*(Dmax - Dmin))";
-            qDebug() << "(OBmax-OBmin)" << (OBmax-OBmin);
-            qDebug() << "0.5*(Dmax - Dmin)" << 0.5*(Dmax - Dmin);
-            qDebug() << "2*(Dmax - Dmin)" << 2*(Dmax - Dmin);
+//        if ( ! OBmatch && i == 0 ) {
+//            qDebug() << "[FAIL] if( (OBmax-OBmin) <= 0.5*(Dmax - Dmin) || (OBmax-OBmin) >= 2*(Dmax - Dmin))";
+//            qDebug() << "(OBmax-OBmin)" << (OBmax-OBmin);
+//            qDebug() << "0.5*(Dmax - Dmin)" << 0.5*(Dmax - Dmin);
+//            qDebug() << "2*(Dmax - Dmin)" << 2*(Dmax - Dmin);
 
-            QMessageBox msgBox(QMessageBox::Question, "Warning", "The statistics in the OB data and the current data are such that the OB correction will not yield a good image.\n"
-                                                                 "- Press 'Cancel' to stop and choose a more compatible OB datafile.\n"
-                                                                 "- It is also possible to apply a k-factor on the OB correction to make it match the current data.\n"
-                                                                 "- Press 'Continue' to use the selected OB file as it is.",
-                               QMessageBox::Yes | QMessageBox::No |QMessageBox::Cancel | QMessageBox::Cancel,0);
+//            QMessageBox msgBox(QMessageBox::Question, "Warning", "The statistics in the OB data and the current data are such that the OB correction will not yield a good image.\n"
+//                                                                 "- Press 'Cancel' to stop and choose a more compatible OB datafile.\n"
+//                                                                 "- It is also possible to apply a k-factor on the OB correction to make it match the current data.\n"
+//                                                                 "- Press 'Continue' to use the selected OB file as it is.",
+//                               QMessageBox::Yes | QMessageBox::No |QMessageBox::Cancel | QMessageBox::Cancel,0);
 
 
-            msgBox.setButtonText(QMessageBox::Yes, "Apply k-factor");
-            msgBox.setButtonText(QMessageBox::No, "Continue");
-            int reply = msgBox.exec();
+//            msgBox.setButtonText(QMessageBox::Yes, "Apply k-factor");
+//            msgBox.setButtonText(QMessageBox::No, "Continue");
+//            int reply = msgBox.exec();
 
-            //Continue with correction:
-            if(reply == QMessageBox::Yes){
-                OBmatch = true;
-                use_k = true;
-            }
-            //Continue without correction:
-            if(reply == QMessageBox::No){
-                OBmatch = true;
-                use_k = false;
-            }
+//            //Continue with correction:
+//            if(reply == QMessageBox::Yes){
+//                OBmatch = true;
+//                use_k = true;
+//            }
+//            //Continue without correction:
+//            if(reply == QMessageBox::No){
+//                OBmatch = true;
+//                use_k = false;
+//            }
 
-        }
+//        }
         if(OBmatch){
             for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
 
