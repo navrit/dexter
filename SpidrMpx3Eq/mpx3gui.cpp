@@ -957,6 +957,9 @@ void Mpx3GUI::open_data(bool saveOriginal){
 
     QString selectedFilter;
     QString filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("Native binary files (*.bin);;ASCII matrix (*.txt)"), &selectedFilter);
+    if (filename.isEmpty() || filename.isNull()){
+        return;
+    }
     QFile * toOpenFile = new QFile(filename);
     if ( ! toOpenFile->open(QIODevice::ReadOnly) ) {
         string messg = "Couldn't open: ";
