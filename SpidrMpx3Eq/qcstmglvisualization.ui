@@ -290,7 +290,7 @@ QGroupBox::title {
                <bool>true</bool>
               </property>
               <property name="toolTip">
-               <string>Inifinite data acquisition</string>
+               <string>Infinite data acquisition</string>
               </property>
               <property name="text">
                <string>Inf</string>
