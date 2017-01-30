@@ -1772,7 +1772,7 @@ void ThlScan::UpdateChart(int devId, int setId, int thlValue) {
 
     if ( cntr > 0 ) {
         _equalization->GetBarChart(devId)->SetValueInSet( setId , thlValue, cntr );
-        _equalization->GetBarChart(devId)->replot( QCustomPlot::rpQueued );
+        _equalization->GetBarChart(devId)->fitToHeight(); //replot( QCustomPlot::rpQueued );
     }
 
 }

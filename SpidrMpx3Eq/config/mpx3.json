@@ -118,6 +118,7 @@
         }
     ],
     "DetectorConfig": {
+        "BothCounters": true,
         "ColourMode": false,
         "ContRWFreq": 100,
         "CsmSpm": 0,
@@ -131,7 +132,7 @@
         "TriggerDeadtime_us": 20000,
         "TriggerLength_us": 20000,
         "TriggerMode": 4,
-        "nTriggers": 150,
+        "nTriggers": 10,
         "BiasVoltage" : 100
     },
     "IPConfig": {
