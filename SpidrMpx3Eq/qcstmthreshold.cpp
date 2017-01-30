@@ -49,8 +49,8 @@ QCstmThreshold::QCstmThreshold(QWidget *parent) :  QWidget(parent),  ui(new Ui::
     ui->plot->xAxis->setLabelFont( f );
     ui->plot->yAxis->setLabelFont( f );
     // The labels:
-    ui->plot->xAxis->setLabel("DAC");
-    ui->plot->yAxis->setLabel("Counts");
+    ui->plot->xAxis->setLabel(defaultXLabel);
+    ui->plot->yAxis->setLabel(defaultYLabel);
 
     /*
     ui->framePlot->axisRect()->setupFullAxesBox(true);
@@ -62,32 +62,9 @@ QCstmThreshold::QCstmThreshold(QWidget *parent) :  QWidget(parent),  ui(new Ui::
         ui->scanTargetComboBox->addItem(MPX3RX_DAC_TABLE[i].name);
     }
 
-    // Defaults
-    ui->eqMinSpinBox->setValue( 0 );
-    ui->eqMaxSpinBox->setValue( 100 );
-    ui->eqStepSpinBox->setValue( 2 );
-    ui->nTriggersSpinBox->setValue( 3 );
-    // Get the current one in the DACs
-    ui->devIdSpinBox->setValue( 2 );
-    ui->onAllChipsCheckBox->setChecked( false );
-    // After equalization spacing is not necessary for the scans.
-    // If not equalization present the user should tweak this value
-    //  to specific needs.
-    ui->spacingSpinBox->setValue( 0 );
-
-    ui->rangeDirectionCheckBox->setToolTip("When checked the scan is descendant");
     _scanDescendant = true;
-    ui->rangeDirectionCheckBox->setChecked( true );
 
-    ui->keepCheckbox->setToolTip("When checked the previous plots are kept");
     _keepPlots = true;
-    ui->keepCheckbox->setChecked( true );
-
-    ui->setEqualizationBitCheckBox->setToolTip("When checked the OMR equalization bit is turned on (debug)");
-    ui->setEqualizationBitCheckBox->setChecked( false );
-
-    ui->setDiscCsmSpmBitCheckBox->setToolTip("When checked the OMR Disc_CSM_SPM bit is turned on (debug)");
-    ui->setDiscCsmSpmBitCheckBox->setChecked( false );
 
     _logyPlot = false;
 
@@ -121,8 +98,10 @@ void QCstmThreshold::on_thlCalibDifferentiateCheckBox_toggled(bool checked)
     if (checked){
         //! Smooth threshold scan then calculate and show 5 point stencil differentiation.
         //! Change y units to "Energy (KeV)"
+        ui->plot->yAxis->setLabel(tr("Energy (KeV)"));
     } else {
         //! Hide differentiation and switch back to raw data
+        ui->plot->yAxis->setLabel(tr("Energy (KeV)"));
     }
 
 }
