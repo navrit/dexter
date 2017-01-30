@@ -56,7 +56,7 @@ private:
     bool _logyPlot;
 
     QString defaultYLabel = tr("Counts");
-    QString defaultXLabel = tr("DAC THL");
+    QString defaultXLabel = tr("THL (DAC Units)");
     QString altYLabel =     tr("Energy (KeV)");
 
 private slots:

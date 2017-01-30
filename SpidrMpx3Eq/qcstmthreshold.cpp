@@ -63,9 +63,7 @@ QCstmThreshold::QCstmThreshold(QWidget *parent) :  QWidget(parent),  ui(new Ui::
     }
 
     _scanDescendant = true;
-
     _keepPlots = true;
-
     _logyPlot = false;
 
 }
@@ -98,12 +96,13 @@ void QCstmThreshold::on_thlCalibDifferentiateCheckBox_toggled(bool checked)
     if (checked){
         //! Smooth threshold scan then calculate and show 5 point stencil differentiation.
         //! Change y units to "Energy (KeV)"
-        ui->plot->yAxis->setLabel(tr("Energy (KeV)"));
+        ui->plot->yAxis->setLabel(altYLabel);
     } else {
         //! Hide differentiation and switch back to raw data
-        ui->plot->yAxis->setLabel(tr("Energy (KeV)"));
+        ui->plot->yAxis->setLabel(defaultYLabel);
     }
 
+    ui->plot->replot();
 }
 
 int QCstmThreshold::getActiveTargetCode() {
@@ -372,7 +371,7 @@ void CustomScanThread::run() {
     //! Work around
     //! If we attempt a connection while the system is already sending data
     //! (this may happen if for instance the program died for whatever reason,
-    //!  or when it is close while a very long data taking has been lauched and
+    //!  or when it is close while a very long data taking has been launched and
     //! the system failed to stop the data taking).  If this happens we ought
     //! to stop data taking, and give the system a bit of delay.
     spidrcontrol->stopAutoTrigger();
