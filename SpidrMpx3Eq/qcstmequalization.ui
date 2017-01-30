@@ -673,6 +673,26 @@
    </slots>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>frameSpinner</tabstop>
+  <tabstop>equalizationTHLTHHCombo</tabstop>
+  <tabstop>equalizationTypeCombo</tabstop>
+  <tabstop>equalizationSelectTHLTHHCombo</tabstop>
+  <tabstop>_startEqAll</tabstop>
+  <tabstop>_startEq</tabstop>
+  <tabstop>_stopEq</tabstop>
+  <tabstop>nTriggersSpinBox</tabstop>
+  <tabstop>devIdSpinBox</tabstop>
+  <tabstop>spacingSpinBox</tabstop>
+  <tabstop>eqMinSpinBox</tabstop>
+  <tabstop>eqMaxSpinBox</tabstop>
+  <tabstop>eqStepSpinBox</tabstop>
+  <tabstop>nHitsSpinBox</tabstop>
+  <tabstop>fineTuningLoopsSpinBox</tabstop>
+  <tabstop>eqTextBrowser</tabstop>
+  <tabstop>logYCheckBox</tabstop>
+  <tabstop>checkBox</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

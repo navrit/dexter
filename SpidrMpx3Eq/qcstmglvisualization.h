@@ -115,6 +115,10 @@ public:
     QString getsaveLineEdit_Text();
     QString getStatsString_deviceId();
 
+    // Used in CT
+    void saveImage(QString filename);
+    bool runningCT = false;
+
 private:
 
     Ui::QCstmGLVisualization * ui = nullptr;
@@ -244,12 +248,12 @@ private slots:
 
     void on_resetViewPushButton_clicked();
 
-    void on_saveCheckBox_toggled();
+    void on_saveCheckBox_clicked();
 
 
 public slots:
 
-    void StartDataTaking();
+    void StartDataTaking(bool CtMode);
     void setGradient(int index);
     //!Used to inform this object of the availible gradients and their names.
     void availible_gradients_changed(QStringList gradients);
@@ -304,6 +308,9 @@ signals:
     void sig_statusBarAppend(QString mess, QString colorString);
     void sig_statusBarWrite(QString mess, QString colorString);
     void sig_statusBarClean();
+
+    //! Used to run CT shit
+    void sig_resumeCT();
 
 };
 

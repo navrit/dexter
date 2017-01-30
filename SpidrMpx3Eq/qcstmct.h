@@ -4,35 +4,65 @@
 #include <QWidget>
 #include "mpx3gui.h"
 #include "gradient.h"
-
+#include <QElapsedTimer>
 //#include <stdio.h>
 //#include <phidget21.h>
 
 namespace Ui {
-  class QCstmCT;
+class QCstmCT;
 }
 
 class QCstmCT : public QWidget
 {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
 
-  explicit QCstmCT(QWidget *parent = 0);
-  ~QCstmCT();
-  Ui::QCstmCT *GetUI(){ return ui; }
+    explicit QCstmCT(QWidget *parent = 0);
+    ~QCstmCT();
+    Ui::QCstmCT *GetUI(){ return ui; }
 
-  void SetMpx3GUI(Mpx3GUI *p);
-  void setGradient(int index);
+    void SetMpx3GUI(Mpx3GUI *p);
 
 private:
 
-  Ui::QCstmCT *ui;
-  Mpx3GUI * _mpx3gui;
+    Ui::QCstmCT *ui;
+    Mpx3GUI * _mpx3gui;
+    void resetMotor();
+    void setAcceleration(double acceleration);
+    void setSpeed(double speed);
+    void setTargetPosition(double position);
+    void motor_goToTarget();
+    void update_timeGUI();
+    void applyCorrection(QString correctionMethod);
+    QString getCorrectionFile();
+    QString correctionFilename;
+    int  iteration = 0;
+    double targetAngle = 0;
+    float angleDelta = 0;
+    int numberOfProjections = 0;
+    QString getMotorPositionStatus();
+    void startDataTakingThread();
+    void startCT(); // MAIN FUNCTION
+    void stopCT();  // MAIN INTERRUPT
+    bool _stop = false;
+    bool isMotorMoving = false;
+    QString CTfolder = "/home/navrit/ownCloud/ASI/20170120/";
+
+    bool activeMotors = false;
+
+signals:
+    void sig_connectToMotors( bool );
+
+public slots:
+    void slot_connectedToMotors();
+    void slot_motorReachedTarget();
+    void resumeCT();
 
 private slots:
 
-  void rotatePushButton_clicked();
+    void  on_CTPushButton_clicked();
+    //void rotatePushButton_clicked();
 
 };
 

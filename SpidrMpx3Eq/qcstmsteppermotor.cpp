@@ -60,6 +60,8 @@ void QCstmStepperMotor::SetMpx3GUI(Mpx3GUI *p)
     // When the slider released, talk to the hardware
     QObject::connect( ui->motorDial, SIGNAL(sliderReleased()), this, SLOT(motorDialReleased()) );
     QObject::connect( ui->motorDial, SIGNAL(sliderMoved(int)), this, SLOT(motorDialMoved(int)) );
+
+    connect( this, SIGNAL(sig_motorsConnected()), _mpx3gui->GetUI()->ctTab, SLOT(slot_connectedToMotors()) );
 }
 
 //TODO Maybe use this???
@@ -68,15 +70,12 @@ void QCstmStepperMotor::setWindowWidgetsStatus(win_status s)
     switch (s) {
 
     case win_status::startup:
-
         break;
 
     case win_status::connected:
-
         break;
 
     default:
-
         break;
 
     }
@@ -90,9 +89,6 @@ void QCstmStepperMotor::ConnectionStatusChanged(bool conn) {
     } else {
         setWindowWidgetsStatus( win_status::disconnected );
     }
-
-    // Do something here?
-    //if ( conn ) ...;
 
 }
 
@@ -111,6 +107,8 @@ void QCstmStepperMotor::activeInGUI()
 }
 
 void QCstmStepperMotor::activateItemsGUI(){
+    emit sig_statusBarAppend(tr("Connected to motor"),"green");
+    emit sig_motorsConnected();
     ui->motorDial->setEnabled( true );
     ui->motorGoToTargetButton->setEnabled( true );
     ui->motorResetButton->setEnabled( true );
@@ -126,6 +124,7 @@ void QCstmStepperMotor::activateItemsGUI(){
 }
 
 void QCstmStepperMotor::deactivateItemsGUI(){
+    emit sig_statusBarAppend(tr("Disconnected from motor"),"black");
     ui->motorDial->setDisabled( true );
     ui->motorGoToTargetButton->setDisabled( true );
     ui->motorResetButton->setDisabled( true );
@@ -168,7 +167,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked)
     disconnect(ui->speedSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeed(double)) );
     disconnect(ui->currentISpinBox, SIGNAL(valueChanged(double)), this, SLOT(setCurrentILimit(double)) );
 
-    // the missing boolead (ui->stepperUseCalibCheckBox) is managed by an implicit slot (on_stepperUseCalibCheckBox_toggled)
+    // the missing boolean (ui->stepperUseCalibCheckBox) is managed by an implicit slot (on_stepperUseCalibCheckBox_toggled)
 
     // On turn on --> setup, on turn off --> close
     if ( checked == true ) {
@@ -187,7 +186,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked)
         // Block the maximum and minimum number of motors
         ui->motorIdSpinBox->setMinimum( 0 );
         ui->motorIdSpinBox->setMaximum( _stepper->getNumMotors() - 1 );
-        QString motorIdS = "supported motors: ";
+        QString motorIdS = "Supported motors: ";
         motorIdS += QString::number( _stepper->getNumMotors() , 'd', 0 );
         ui->motorIdSpinBox->setToolTip( motorIdS );
 
@@ -199,7 +198,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked)
         // Speed
         ui->speedSpinBox->setMinimum( parsMap[motorid].minVel );
         ui->speedSpinBox->setMaximum( parsMap[motorid].maxVel );
-        ui->speedSpinBox->setValue( parsMap[motorid].vel );
+        ui->speedSpinBox->setValue( parsMap[motorid].maxVel * 0.8 );        // Could be .vel
         QString speedS = "Set velocity from ";
         speedS += QString::number( parsMap[motorid].minVel , 'f', 1 );
         speedS += " to ";
@@ -209,7 +208,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked)
         // Acc
         ui->accelerationSpinBox->setMinimum( parsMap[motorid].minAcc );
         ui->accelerationSpinBox->setMaximum( parsMap[motorid].maxAcc );
-        ui->accelerationSpinBox->setValue( parsMap[motorid].acc );
+        ui->accelerationSpinBox->setValue( parsMap[motorid].maxAcc * 0.2 ); // Could be .acc
         QString accS = "Set acceleration from ";
         accS += QString::number( parsMap[motorid].minAcc , 'f', 1 );
         accS += " to ";
@@ -278,7 +277,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked)
     connect(ui->speedSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setSpeed(double)) );
     connect(ui->currentISpinBox, SIGNAL(valueChanged(double)), this, SLOT(setCurrentILimit(double)) );
 
-    // the missing boolead (ui->stepperUseCalibCheckBox) is managed by an implicit slot (on_stepperUseCalibCheckBox_toggled)
+    // the missing boolean (ui->stepperUseCalibCheckBox) is managed by an implicit slot (on_stepperUseCalibCheckBox_toggled)
 
 }
 
@@ -426,6 +425,7 @@ void QCstmStepperMotor::on_motorGoToTargetButton_clicked()
     if ( ! _stepperThread ) {
         _stepperThread = new ConfigStepperThread( _mpx3gui, ui, this );
         connect(_stepperThread, SIGNAL(finished()), this, SLOT(stepperGotoTargetFinished()) );
+        connect(_stepperThread, SIGNAL(finished()), _mpx3gui->getCT(), SLOT(slot_motorReachedTarget()) );
     }
 
     _stepperThread->start();
@@ -471,6 +471,8 @@ void QCstmStepperMotor::on_stepperSetZeroPushButton_clicked()
         posS = QString::number( 0 , 'lld', 0 );
         ui->motorCurrentPoslcdNumber->display( posS );
     }
+
+    ui->motorDial->setValue(0);
 }
 
 void QCstmStepperMotor::motorDialReleased()
@@ -528,9 +530,9 @@ void QCstmStepperMotor::on_motorTestButton_clicked()
 {
     /*! Follow a sequeance of angles and back-to-zero to test.
      Every time on_motorGoToTargetButton_clicked is called,
-      which launches the StepperThread. Then when the tread
+      which launches the StepperThread. Then when the thread
       is finished and sends its signal we can continue
-      checkin if the sequence has been exahusted.
+      checking if the sequence has been exhausted.
     */
 
     // Fill in a sequance
@@ -572,6 +574,7 @@ void QCstmStepperMotor::on_motorTestButton_clicked()
 
         _stepperThread = new ConfigStepperThread( _mpx3gui, ui, this );
         connect(_stepperThread, SIGNAL(finished()), this, SLOT(stepperGotoTargetFinished()) );
+        connect(_stepperThread, SIGNAL(finished()), _mpx3gui->getCT(), SLOT(slot_motorReachedTarget()) );
 
     }
 
@@ -607,7 +610,7 @@ void QCstmStepperMotor::stepperGotoTargetFinished()
 
             _stepperThread = new ConfigStepperThread( _mpx3gui, ui, this );
             connect(_stepperThread, SIGNAL(finished()), this, SLOT(stepperGotoTargetFinished()) );
-
+            connect(_stepperThread, SIGNAL(finished()), _mpx3gui->getCT(), SLOT(slot_motorReachedTarget()) );
         }
 
         // go !
@@ -636,7 +639,7 @@ ConfigStepperThread::ConfigStepperThread(Mpx3GUI * mpx3gui, Ui::QCstmStepperMoto
  */
 void ConfigStepperThread::run() {
 
-    bool reachedTarget = false;
+    reachedTarget = false;
     int motorId = _ui->motorIdSpinBox->value();
     long long int curr_pos = 0;
 
@@ -645,6 +648,8 @@ void ConfigStepperThread::run() {
     // Keep running until the stepper has reached the desired position
     double posDisplay;
     while ( ! reachedTarget ) {
+
+        _ui->label_positionStatus->setText(tr("Moving"));
 
         // get current position
         curr_pos = _stepperController->getMotorController()->getCurrPos( motorId );
@@ -673,9 +678,12 @@ void ConfigStepperThread::run() {
 
     }
 
-    // At the end the following may happen
-    // Say the user request and angle of 3 degrees.  With a given resolution (ex. 0.9 deg per step)
-    //  the bets the stepper can do is 2.7 degrees.  In that case color the LCD
+    _ui->label_positionStatus->setText(tr("Stopped"));
+
+    /** At the end the following may happen
+    * Say the user request and angle of 3 degrees.  With a given resolution (ex. 0.9 deg per step)
+    *  the best the stepper can do is 2.7 degrees.  In that case color the LCD
+    */
     if ( posDisplay != _ui->targetPosSpinBox->value() ) {
         _ui->motorCurrentPoslcdNumber->setPalette(Qt::yellow);
         _ui->motorCurrentPoslcdNumber->setToolTip("Requested target couldn't be reached exactly.");
@@ -684,6 +692,5 @@ void ConfigStepperThread::run() {
         _ui->motorCurrentPoslcdNumber->setToolTip("Target reached.");
     }
 
-    qDebug() << "thread done";
-
+    //qDebug() << "Stepper motor ConfigStepperThread done";
 }

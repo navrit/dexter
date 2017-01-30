@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <vector>
 #include "spline.h"
+#include <tiffio.h> /* Sam Leffler's libtiff library. */
 
 #include <dlib/optimization.h>
 
@@ -129,11 +130,17 @@ public:
     QRectF computeBoundingBox(); //!< Computes the minimum bounding box of the set of chips. Returns coordinates and sizes in units of "chips", so e.g. (0,2)x(0,2) instead of (0,512)x(0,512) for a quad.
     int getNChipsX();
     int getNChipsY();
+
     QByteArray toByteArray(); //!< Serializes the dataset for saving.
     QVector<int> toQVector(); //!< Serializes the dataset for saving.
+    void saveBIN(QString filename);   //! Puts the dataset into a BIN format and saves.
+    void toTIFF(QString filename, bool crossCorrection = true );  //! Puts the dataset into a TIFF format and saves.
+    void toASCII(QString filename); //! Puts the dataset into ASCII format and saves.
+
     void fromByteArray(QByteArray serialized); //!< Restores the dataset from a previously serialized set.
     void fromASCIIMatrix(QFile * file, int x, int y, int framesPerLayer);
     void fromASCIIMatrixGetSizeAndLayers(QFile * file, int *x, int *y, int *framesPerLayer);
+
     void loadCorrection(QByteArray serialized);//!< Loads and sets the correction to a previously serialized set.
     void applyCorrections(QCstmCorrectionsDialog * corrdiag);//<!Handles all corrections.  This function is blocking for the moment !
     void applyOBCorrection();//!< Computes and applies the flat-field correction
@@ -172,7 +179,7 @@ public:
     unsigned int setFrame(int *frame, int index, int threshold);//!< Overwrites the data of chip index at the specified threshold with the data pointed to by frame.
     void setPixel(int x, int y, int threshold, int val);//!< Set a pixel value for a given threshold (x,y) (assembly coordinates !)
     unsigned int sumFrame(int *frame, int index, int threshold);//!< Adds the data pointed to by frame to the data of chip index at the specified threshold.
-    void toJson(); //!<return JSON object to save.
+    void toJson(); //!<Saves JSON log file with measurement settings
     void setProfilepoint(int index, QString pos);
     void setProfilepoint(int index, int pos){ if(pos > 0 && pos < 256) setProfilepoint(index, QString("%1").arg(pos));}
     void clearProfilepoints();
@@ -203,8 +210,10 @@ public:
     int * getFrameAt(int index, int layer); //!< returns a pointer to the data of chip index at the specified layer-index. (i.e. does not call thresholdToLayer(layer))
     int sampleFrameAt(int index, int layer, int x, int y);//!< Returns the value of the pixel at (x,y), in the coordinate-system of the assembly, of chip index directly at the specified layer. Does take into account the orientation of the chip.
     int * getLayer(int threshold);
-    int * getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui);
-    int sample(int x, int y, int threshold);//!<Returns the value of the pixel at (x,y) (assembly coordinates) and the specified threshold.
+    //int * getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui);    // Remove probably
+    int sample(int x, int y, int threshold); //!<Returns the value of the pixel at (x,y) (assembly coordinates) and the specified threshold.
+    int getWidth();
+    int getHeight();
     int x() const{return m_nx;} // per chip
     int y() const{return m_ny;} // per chip
     int getPixelDepthBits() const { return m_pixelDepthBits; }

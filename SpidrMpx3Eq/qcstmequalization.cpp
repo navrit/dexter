@@ -1234,6 +1234,8 @@ void QCstmEqualization::SaveEqualization() {
 
     }
 
+    //! Save DACs because we forget to do this every single time
+    _mpx3gui->save_config();
 }
 
 

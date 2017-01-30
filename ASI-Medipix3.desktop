@@ -1,0 +1,11 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Categories=Applications;
+Comment=Start ASI Medipix3
+Exec=/home/mpx3/ASI-Dexter/ASI-Medipix3RX.sh
+Icon=/home/mpx3/ASI-Dexter/icons/ASI/ASI_sq_1100x1100.png
+Name=ASI-Medipix3RX
+Terminal=false
+Type=Application
+

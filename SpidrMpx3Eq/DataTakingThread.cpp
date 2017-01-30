@@ -118,7 +118,7 @@ void DataTakingThread::run() {
     int timeOutTime = 0;
     int contRWFreq = 0;
     QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
-    int nChips = activeDevices.size();
+    unsigned int nChips = activeDevices.size();
     int * framedata = nullptr;
     int opMode = Mpx3Config::__operationMode_SequentialRW;
 
@@ -246,7 +246,8 @@ void DataTakingThread::run() {
             lostPackets += spidrdaq->lostCount();
 
             if ( (oneFrameChipCntr != nChips) || (lostPackets > 0 && _vis->getDropFrames()) ) {
-                for ( int i = 0 ; i < oneFrameChipCntr ; i++ ) {
+                for ( unsigned int i = 0 ; i < oneFrameChipCntr ; i++ ) {
+                    qDebug() << ">> " << i;
                     // Free the resources and rewind descriptor
                     _consumer->usedFrames->acquire();
                     _consumer->rewindcopydata(size_in_bytes);

@@ -282,7 +282,13 @@ QString QCstmGLVisualization::getStatsString_deviceId()
     return _statsString.devicesIdString;
 }
 
-void QCstmGLVisualization::StartDataTaking() {
+void QCstmGLVisualization::saveImage(QString filename)
+{
+    _mpx3gui->getDataset()->toTIFF(filename);
+}
+
+void QCstmGLVisualization::StartDataTaking(bool CtMode = false) {
+    runningCT = CtMode;
 
     if ( !_dataTakingThread ) {
 
@@ -313,14 +319,13 @@ void QCstmGLVisualization::StartDataTaking() {
         ConfigureGUIForDataTaking();
 
         // info refresh
-        _timerId = this->startTimer( 100 ); // 42 ); //100 ); // 100 ms is a good compromise to refresh the scoreing info
+        _timerId = this->startTimer( 100 ); // 42 (answer to life) // 100 ms is a good compromise to refresh the scoring info
         //qDebug() << "Start : " << _timerId;
 
     } else { // stop
 
         // By premature user signal !
         _dataTakingThread->stop(); // this calls by SIGNAL/SLOT the data_taking_finished
-        //! TODO FIX BUG - Use inf mode then press stop makes the program fuck up
     }
 
     //! TODO Why is this all commented out?
@@ -507,8 +512,6 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
     _mpx3gui->saveOriginalDataset();
 
-    _takingData = false;
-
     DestroyTimer();
     ETAToZero();
 
@@ -520,6 +523,12 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
     //!    Save the data to .bin file with path obtained from UI
     if(ui->saveCheckBox->isChecked() && !(ui->saveLineEdit->text().isEmpty())){
         _mpx3gui->save_data(true);
+    }
+
+    _takingData = false;
+
+    if (runningCT){
+        emit sig_resumeCT();
     }
 
     /*
@@ -736,7 +745,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     //connect(_mpx3gui, SIGNAL(ConnectionStatusChanged(bool)), ui->singleshotPushButton, SLOT(setEnabled(bool))); //enable the button on connection
 
     connect(_mpx3gui, SIGNAL(sizeChanged(int, int)), ui->glPlot, SLOT(setSize(int, int)));
-    connect(ui->startButton, SIGNAL(clicked(bool)), this, SLOT(StartDataTaking()));
+    connect(ui->startButton, SIGNAL(clicked(bool)), this, SLOT(StartDataTaking(bool)));
     connect(this, SIGNAL(mode_changed(bool)), _mpx3gui, SLOT(set_summing(bool)));
     connect(_mpx3gui, SIGNAL(summing_set(bool)), ui->summingCheckbox, SLOT(setChecked(bool)));
     connect(ui->gradientSelector, SIGNAL(activated(int)), this, SLOT(setGradient(int)));
@@ -808,6 +817,9 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     emit mode_changed( ui->summingCheckbox->isChecked() );
 
     connect( ui->saveCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_saveCheckBox_toggled()));
+
+    // CT shit
+    connect( this, SIGNAL(sig_resumeCT()), _mpx3gui->getCT() , SLOT(resumeCT()));
 }
 
 void QCstmGLVisualization::ntriggers_edit() {
@@ -1973,9 +1985,11 @@ void QCstmGLVisualization::on_resetViewPushButton_clicked(){
     reload_all_layers();
 }
 
-//! Clear saveLineEdit on_saveCheckBox_toggled, every time
-void QCstmGLVisualization::on_saveCheckBox_toggled(){
+//! Clear saveLineEdit on_saveCheckBox_clicked by a user, every time
+void QCstmGLVisualization::on_saveCheckBox_clicked(){
     ui->saveLineEdit->clear();
+
+    qDebug() << ui->saveCheckBox->isChecked();
 
     //! Open file dialog, get path and set saveLineEdit to given path and continue
     if(ui->saveCheckBox->isChecked()){
@@ -2003,6 +2017,6 @@ void QCstmGLVisualization::consumerBufferFull(int)
 {
 
     QMessageBox::critical(this, tr("System buffer"),
-                          tr("The system can't keep up. Please review your settings."));
+                          tr("The system can't keep up. Please review your settings. Increasing UDP kernel buffer size or getting a faster CPU may help."));
 
 }

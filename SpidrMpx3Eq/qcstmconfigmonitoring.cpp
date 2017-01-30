@@ -676,20 +676,20 @@ void QCstmConfigMonitoring::readMonitoringInfo() {
 
         int mdegrees;
         if( spidrcontrol->getRemoteTemp( &mdegrees ) ) {
-            QString qs = QString("%1.%2 C").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
+            QString qs = QString("%1.%2 °C").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
             ui->remoteTempMeasLineEdit->setText( qs );
         } else {
             ui->remoteTempMeasLineEdit->setText( "--.--" );
         }
 
         if( spidrcontrol->getLocalTemp( &mdegrees ) ) {
-            QString qs = QString("%1.%2 C").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
+            QString qs = QString("%1.%2 °C").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
             ui->localTempMeasLineEdit->setText( qs );
         } else {
             ui->localTempMeasLineEdit->setText( "--.--" );
         }
         if( spidrcontrol->getFpgaTemp( &mdegrees ) ) {
-            QString qs = QString("%1.%2 C").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
+            QString qs = QString("%1.%2 °C").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
             ui->FpgaTempMeasLineEdit->setText( qs );
         } else {
             ui->FpgaTempMeasLineEdit->setText( "--.--" );
@@ -698,7 +698,12 @@ void QCstmConfigMonitoring::readMonitoringInfo() {
 
         int biasVolts;
         if ( spidrcontrol->getBiasVoltage(&biasVolts) ) {
-            QString qs = QString("%1 V").arg( biasVolts );
+            QString qs;
+            if (biasVolts < 12) {
+                qs = QString("Ext. (%1)").arg( biasVolts );
+            } else {
+                qs = QString("%1 V").arg( biasVolts );
+            }
             ui->biasVoltageMeasLineEdit->setText( qs );
         } else {
             ui->biasVoltageMeasLineEdit->setText( "--.-" );

@@ -921,7 +921,7 @@ QGroupBox::title {
             <item row="0" column="0" colspan="7">
              <widget class="QCstmPlotHistogram" name="histPlot" native="true">
               <property name="toolTip">
-               <string>histogram</string>
+               <string>Events distribution histogram</string>
               </property>
              </widget>
             </item>
@@ -958,6 +958,37 @@ QGroupBox::title {
    </slots>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>layerSelector</tabstop>
+  <tabstop>gradientSelector</tabstop>
+  <tabstop>outOfBoundsCheckbox</tabstop>
+  <tabstop>resetViewPushButton</tabstop>
+  <tabstop>saveBitmapPushButton</tabstop>
+  <tabstop>saveWithScaleCheckBox</tabstop>
+  <tabstop>saveCheckBox</tabstop>
+  <tabstop>saveLineEdit</tabstop>
+  <tabstop>summingCheckbox</tabstop>
+  <tabstop>dropFramesCheckBox</tabstop>
+  <tabstop>infDataTakingCheckBox</tabstop>
+  <tabstop>completeFramesCheckBox</tabstop>
+  <tabstop>correctionsDialogPushButton</tabstop>
+  <tabstop>startButton</tabstop>
+  <tabstop>singleshotPushButton</tabstop>
+  <tabstop>recoPushButton</tabstop>
+  <tabstop>operationModeComboBox_Vis</tabstop>
+  <tabstop>nTriggersSpinBox</tabstop>
+  <tabstop>triggerLengthSpinBox</tabstop>
+  <tabstop>multiThresholdAnalysisPushButton</tabstop>
+  <tabstop>testPulsesPushButton</tabstop>
+  <tabstop>fullRangeRadio</tabstop>
+  <tabstop>manualRangeRadio</tabstop>
+  <tabstop>percentileRangeRadio</tabstop>
+  <tabstop>lowerSpin</tabstop>
+  <tabstop>upperSpin</tabstop>
+  <tabstop>logCheckBox</tabstop>
+  <tabstop>binCountSpinner</tabstop>
+  <tabstop>generateDataButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

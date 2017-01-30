@@ -111,16 +111,14 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _ui->CnMWidget->SetMpx3GUI(this);
     _ui->CnMWidget->widgetInfoPropagation();
 
-    // CT
-    _ui->ctTab->SetMpx3GUI( this );
-
     // DQE
     _ui->dqeTab->SetMpx3GUI(this);
 
     // Stepper Motor control view
     _ui->stepperMotorTab->SetMpx3GUI(this);
 
-
+    // CT
+    _ui->ctTab->SetMpx3GUI( this );
 
     // Read the configuration
     QString configFile = "./config/mpx3.json";
@@ -283,6 +281,11 @@ void Mpx3GUI::setTestPulses() {
 
 }
 
+int Mpx3GUI::getStepperMotorPageID()
+{
+    return __stepperMotor_page_Id;
+}
+
 void Mpx3GUI::SetupSignalsAndSlots(){
 
     connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );
@@ -319,6 +322,8 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     // Connect signal from QCstmEqualization widget to slot here
     connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend);
     connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarClean, this, &Mpx3GUI::statusBarClean);
+
+    connect( _ui->stepperMotorTab, &QCstmStepperMotor::sig_statusBarAppend , this, &Mpx3GUI::statusBarAppend);
 
 
     for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {
@@ -459,7 +464,7 @@ bool Mpx3GUI::establish_connection() {
         delete dbg;
 
         QMessageBox::critical(this, "Connection error",
-                              tr("Could not find any devices.")
+                              tr("Could not find any devices. Check the IP address is either 192.168.1.10 or 192.168.100.10")
                               );
         config->destroyController();
         emit ConnectionStatusChanged(false);
@@ -751,6 +756,16 @@ QString Mpx3GUI::getLoadButtonFilename() {
 }
 
 void Mpx3GUI::saveMetadataToJSON(QString filename){
+    if (filename.toLower().contains(".bin")){
+        filename = filename.replace(".bin",".json");
+    } else if (filename.toLower().contains(".tif")){
+        filename = filename.replace(".tif",".json");
+    } else if (filename.toLower().contains(".txt")) {
+        filename = filename.replace(".txt",".json");
+    } else {
+        qDebug() << "[ERROR] failed writing the JSON file, input name didn't include .bin or .tif";
+        return;
+    }
 
     //! Get configuration JSON document
     QJsonDocument docConfig = getConfig()->buildConfigJSON(true);
@@ -838,7 +853,7 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
 
     doc.setObject(objParent);
 
-    QFile saveFile(filename.replace(QString(".bin"), QString(".json")));
+    QFile saveFile(filename);
     if(!saveFile.open(QIODevice::WriteOnly)){
         qDebug() << "[WARN] JSON file CANNOT be opened as QIODevice::WriteOnly, aborting";
         sig_statusBarAppend(tr("Cannot write JSON metadata, skipping"),"red");
@@ -850,19 +865,26 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     qDebug() << "[INFO] JSON File saved";
 }
 
-void Mpx3GUI::save_data(bool requestPath){//TODO: REIMPLEMENT
+void Mpx3GUI::save_data(bool requestPath) {
 
-    QString filename;
-    QString path;
+    QString filename, path, selectedFilter;
     if (!requestPath){
         //! Native format - User dialog
-        filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", tr("Binary files (*.bin)"));
+        filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", BIN_FILES ";;" TIFF_FILES ";;" ASCII_FILES, &selectedFilter);
 
-        //! Force the .bin in the data filename
-        if ( ! filename.toLower().contains(".bin")  && !filename.isEmpty()) {
-            filename.append(".bin");
+        if (filename.isNull()){
+            return;
         }
+        if (selectedFilter == BIN_FILES && !filename.toLower().toLatin1().contains(".bin")){
+            filename.append(".bin");
+        } else if (selectedFilter == TIFF_FILES && !filename.toLower().toLatin1().contains(".tif")){
+            filename.append(".tif");
+        } else if (selectedFilter == ASCII_FILES && !filename.toLower().toLatin1().contains(".txt")){
+            filename.append(".txt");
+        }
+
     } else {
+        //! Autosave
         //! Get the visualisation dialog UI saveLineEdit text and assign to filename
         path = getVisualization()->getsaveLineEdit_Text();
         //! Build the filename+path string up by adding  "/", the current UTC date in ISO format and ".bin"
@@ -872,81 +894,26 @@ void Mpx3GUI::save_data(bool requestPath){//TODO: REIMPLEMENT
         filename.append(".bin");
     }
 
-    // And save
-    QFile saveFile(filename);
-    if (!saveFile.open(QIODevice::WriteOnly)) {
-        string messg = "Couldn't open: ";
-        messg += filename.toStdString();
-        messg += "\nNo output written!";
-        QMessageBox::warning ( this, tr("Error saving data"), tr( messg.c_str() ) );
-        return;
+    if (selectedFilter == BIN_FILES){
+        getDataset()->saveBIN(filename);
+    } else if (selectedFilter == TIFF_FILES){
+        getDataset()->toTIFF(filename);
+    } else if (selectedFilter == ASCII_FILES) {
+        getDataset()->toASCII(filename);
     }
-    saveFile.write(getDataset()->toByteArray());
-    saveFile.close();
 
-    qDebug() << "[INFO] .bin file saved: ..." << filename;
-    QString msg = "Auto-saved: ...";
+
+    qDebug() << "[INFO] File saved: ..." << filename;
+    QString msg = "Saved: ...";
+
     msg.append(filename.section('/',-3,-1));
     emit sig_statusBarAppend(msg,"green");
 
     //-------------------  JSON METADATA --------------------------------
     saveMetadataToJSON(filename);
 
-    /*
-
-    ///////////////////////////////////////////////////////////
-    // ASCII
-
-    int sizex = getDataset()->x();
-    int sizey = getDataset()->y();
-    int nchipsx =  getDataset()->getNChipsX();
-    int nchipsy = getDataset()->getNChipsY();
-    int len = sizex * sizey * nchipsx * nchipsy;
-
-    QList <int> thresholds = getDataset()->getThresholds();
-    QList<int>::iterator it = thresholds.begin();
-    QList<int>::iterator itE = thresholds.end();
-
-    // Do the different thresholds
-    for (; it != itE; it++) {
-
-        int * fullFrame = getDataset()->getFullImageAsArrayWithLayout(*it, this);
-
-
-        // Create string containing file location
-        QString plS = filename;
-        plS.remove(plS.size() - 4, 4); // get rid of the .bin extension
-        plS += "_frame_ascii_";
-        plS += QString::number(*it, 'd', 0);
-        plS += ".txt";
-        string saveLoc = plS.toStdString();
-
-        //qDebug() << "nchipsx : " << nchipsx << " | nchipsy : " << nchipsy << " --> " << getDataset()->getPixelsPerLayer();
-
-        // Save file
-        ofstream of;
-        of.open(saveLoc);
-        if (of.is_open()) {
-            for (int i = 0; i < len; i++) {
-
-                of << fullFrame[i] << " ";
-
-                // new line
-                if ((i + 1) % (sizex*nchipsx) == 0) of << "\r\n";
-
-            }
-        }
-
-        of.close();
-
-    }
-
-
-    // end of for loop that cycles through the layers (threshold)
-
-    */
-
     return;
+
 }
 
 void Mpx3GUI::save_config(){
@@ -990,6 +957,9 @@ void Mpx3GUI::open_data(bool saveOriginal){
 
     QString selectedFilter;
     QString filename = QFileDialog::getOpenFileName(this, tr("Read Data"), tr("."), tr("Native binary files (*.bin);;ASCII matrix (*.txt)"), &selectedFilter);
+    if (filename.isEmpty() || filename.isNull()){
+        return;
+    }
     QFile * toOpenFile = new QFile(filename);
     if ( ! toOpenFile->open(QIODevice::ReadOnly) ) {
         string messg = "Couldn't open: ";
@@ -1201,6 +1171,7 @@ QCstmDacs * Mpx3GUI::getDACs() { return _ui->DACsWidget; }
 QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; }
 //QCstmDQE * Mpx3GUI::getDQE(){ return _ui->dqeTab; }
 QCstmStepperMotor * Mpx3GUI::getStepperMotor() {return _ui->stepperMotorTab; }
+QCstmCT * Mpx3GUI::getCT() { return _ui->ctTab; }
 
 void Mpx3GUI::on_actionExit_triggered()
 {

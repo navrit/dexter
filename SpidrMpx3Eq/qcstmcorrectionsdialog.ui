@@ -273,6 +273,16 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>deadpixelsinterpolationCheckbox</tabstop>
+  <tabstop>highinterpolationCheckbox</tabstop>
+  <tabstop>noisyPixelMeanMultiplier</tabstop>
+  <tabstop>obcorrCheckbox</tabstop>
+  <tabstop>obcorrLineEdit</tabstop>
+  <tabstop>bhcorrCheckbox</tabstop>
+  <tabstop>bhcorrLineEdit</tabstop>
+  <tabstop>applyCorr</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

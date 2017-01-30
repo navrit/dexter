@@ -28,6 +28,7 @@ class Mpx3Config;
 #include "qcstmvoxeltab.h"
 #include "mpx3config.h"
 #include "qcstmsteppermotor.h"
+#include "qcstmct.h"
 
 
 class Mpx3Config;
@@ -45,6 +46,7 @@ class QCstmGLVisualization;
 class QCstmConfigMonitoring;
 //class QcstmDQE;
 class QCstmStepperMotor;
+class QCstmCT;
 
 // Change me when adding extra views
 #define __visualization_page_Id     0
@@ -56,7 +58,12 @@ class QCstmStepperMotor;
 #define __ct_page_Id                6
 #define __stepperMotor_page_Id      7
 
-const QString _softwareName = "ASI DAQster";
+#define BIN_FILES "Binary (*.bin)"
+#define TIFF_FILES "TIFF (*.tif)"
+#define ASCII_FILES "ASCII (*.txt)"
+#define JSON_FILES "BH JSON file(*.json)"
+
+const QString _softwareName = "ASI Dexter";
 
 namespace Ui {
 class Mpx3GUI;
@@ -132,6 +139,7 @@ public:
     QCstmConfigMonitoring * getConfigMonitoring();
 //    QCstmDQE * getDQE();
     QCstmStepperMotor * getStepperMotor();
+    QCstmCT * getCT();
 
     SpidrController * GetSpidrController();
     SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
@@ -171,6 +179,8 @@ public:
     QString m_numberOfChipsFound = "";
 
     QString compileDateTime = QDate::currentDate().toString("yyyy-MM-dd") + QString(" ") + QString(__TIME__);
+
+    int getStepperMotorPageID();
 
 signals:
     void dataChanged();

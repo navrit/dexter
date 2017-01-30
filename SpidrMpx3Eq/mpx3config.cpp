@@ -218,6 +218,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
         spidrcontrol->setPs( deviceIndex, 3 ); // 3: 8 links
     }
     if ( item == __ALL || item == __LUTEnable ) {
+        // We need look up table decoding ether hadware or software
         spidrcontrol->setLutEnable( ! getLUTEnable() );
         spidrdaq->setLutEnable( getLUTEnable() );
     }
@@ -803,7 +804,7 @@ void Mpx3Config::setIpAddress(QString ipn) {
 
     // The ip and port will come in the string.
     // 192.168.1.10:50000
-    qDebug() << ipn;
+
     QStringList list = ipn.split(':', QString::SkipEmptyParts);
     // expect the ip address in the first part
     QString ip = list.at( 0 );
@@ -823,7 +824,7 @@ void Mpx3Config::setIpAddress(QString ipn) {
     port = newPort;
 
     // Check that the parts are fine
-    qDebug() << " parse --> " << ip << " : " << newPort;
+    //qDebug() << " parse --> " << ip << " : " << newPort;
 
     // IP
     if ( ip != this->getIpAddress() ) {
