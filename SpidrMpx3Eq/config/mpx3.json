@@ -132,12 +132,8 @@
         "TriggerDeadtime_us": 20000,
         "TriggerLength_us": 20000,
         "TriggerMode": 4,
-<<<<<<< HEAD
         "nTriggers": 10,
         "BiasVoltage" : 100
-=======
-        "nTriggers": 150
->>>>>>> 70d834cf1375551aa69290433ac7770c8d70ff9f
     },
     "IPConfig": {
         "SpidrControllerIp": "192.168.1.10",
