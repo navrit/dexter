@@ -82,7 +82,9 @@ QJsonDocument Mpx3Config::buildConfigJSON(bool includeDacs)
     objDetector.insert("nTriggers", this->nTriggers);
     objDetector.insert("ColourMode", this->colourMode);
     objDetector.insert("LUTEnable", this->LUTEnable);
+    objDetector.insert("BothCounters", this->readBothCounters);
     objDetector.insert("DecodeFrames", this->decodeFrames);
+    objDetector.insert("BiasVoltage", this->biasVolt);
 
     objStepper.insert("Acceleration", this->stepperAcceleration);
     objStepper.insert("Speed", this->stepperSpeed);
@@ -256,7 +258,10 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
 
     // Other OMR
     if ( item == __ALL || item == __decodeFrames ) spidrdaq->setDecodeFrames(  getDecodeFrames() );
-    if ( item == __ALL || item == __pixelDepth || item == __readBothCounters ) spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters() ); // third parameter : true = read two counters
+    if ( item == __ALL || item == __pixelDepth || item == __readBothCounters ) {
+        spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters() ); // third parameter : true = read two counters
+        //qDebug() << "both cntr : " << getReadBothCounters();
+    }
     if ( item == __ALL || item == __pixelDepth ) spidrdaq->setPixelDepth( getPixelDepth() );
 
     // Packet size reports NOT IMPLEMENTED in the Leon software
@@ -334,7 +339,10 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
 
     // Other OMR
     if( item == __ALL || item == __decodeFrames ) spidrdaq->setDecodeFrames(  getDecodeFrames() );
-    if( item == __ALL || item == __pixelDepth || item == __readBothCounters ) spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters() ); // third parameter : true = read two counters
+    if( item == __ALL || item == __pixelDepth || item == __readBothCounters ) {
+        spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters() ); // third parameter : true = read two counters
+        //qDebug() << "both cntr : " << getReadBothCounters();
+    }
     if( item == __ALL || item == __pixelDepth ) spidrdaq->setPixelDepth( getPixelDepth() );
 
     // Packet size reports NOT IMPLEMENTED in the Leon software
@@ -724,6 +732,10 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
         it = JSobject.find("DecodeFrames");
         if(it != JSobject.end())
             setDecodeFrames(it.value().toBool());
+
+        it = JSobject.find("BothCounters");
+        if(it != JSobject.end())
+            setReadBothCounters(it.value().toBool());
 
         it = JSobject.find("BiasVoltage");
         if(it != JSobject.end())

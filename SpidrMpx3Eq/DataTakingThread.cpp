@@ -110,10 +110,10 @@ void DataTakingThread::run() {
     connect(this, SIGNAL(scoring_sig(int,int,int,int,int,int,bool)),
             _vis,   SLOT( on_scoring(int,int,int,int,int,int,bool)) );
 
-    connect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(data_taking_finished(int)));
-    connect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
+    connect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(data_taking_finished(int)) );
+    connect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread()) ); // stop signal from qcstmglvis
     connect( this, &DataTakingThread::bufferFull,
-             _vis, &QCstmGLVisualization::consumerBufferFull);
+             _vis, &QCstmGLVisualization::consumerBufferFull );
 
     int timeOutTime = 0;
     int contRWFreq = 0;
@@ -126,6 +126,8 @@ void DataTakingThread::run() {
     int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0, lostPackets = 0;
     bool emergencyStop = false;
     bool bothCounters = false;
+    int totalFramesExpected = 0;
+    unsigned int cntrLH = 0;
 
     unsigned int oneFrameChipCntr = 0;
     uint halfSemaphoreSize = 0;
@@ -155,6 +157,9 @@ void DataTakingThread::run() {
         halfSemaphoreSize = _consumer->getSemaphoreSize()/2.;
         bothCounters = _mpx3gui->getConfig()->getReadBothCounters();
         //qDebug() << score.framesRequested << " | " << opMode << " | " << contRWFreq;
+        totalFramesExpected = score.framesRequested;
+        if ( bothCounters ) totalFramesExpected *= 2;
+        //qDebug() << "total = " << totalFramesExpected;
         _mutex.unlock();
 
         // Reset
@@ -163,6 +168,7 @@ void DataTakingThread::run() {
         nFramesReceived = 0; nFramesKept = 0; lostFrames = 0; lostPackets = 0;
         emergencyStop = false;
         reachLimitStop = false;
+        cntrLH = 1;
 
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
             spidrcontrol->startContReadout( contRWFreq );
@@ -170,10 +176,14 @@ void DataTakingThread::run() {
             spidrcontrol->startAutoTrigger();
         }
 
-        qDebug() << "double cntr : " << bothCounters;
-
         // Ask SpidrDaq for frames
         while ( spidrdaq->hasFrame( timeOutTime ) ) {
+
+            // When using both counters keep track of which Counter we are reading now
+            // cntrLH%2 == 0  Cntr0 (THL0)
+            // cntrLH%2 == 1  Cntr1 (THL1)
+            cntrLH++;
+            //qDebug() << cntrLH;
 
             // 2) User stop condition
             if ( _stop ||  _restart  ) {
@@ -221,7 +231,6 @@ void DataTakingThread::run() {
                 oneFrameChipCntr++;
             }
 
-
             // Release frame
             spidrdaq->releaseFrame();
 
@@ -247,6 +256,11 @@ void DataTakingThread::run() {
                 //qDebug() << " !!! REWIND !!! [" << oneFrameChipCntr << "]";
             }
 
+            // If we are working with 2 counters, go get
+            // the second frame associated before it continues.
+            //qDebug() << "cntrLH : " << cntrLH;
+            if ( bothCounters && (cntrLH%2 == 0) ) continue;
+
             // Awake the consumer thread
             _consumer->consume();
 
@@ -254,8 +268,7 @@ void DataTakingThread::run() {
             nFramesReceived++;
             // Keep a track of frames actually kept
             if ( ! ( spidrdaq->lostCount() > 0 && _vis->getDropFrames() ) ) nFramesKept++;
-
-            // Final report
+            // lost
             lostFrames += spidrdaq->framesLostCount() / nChips;
 
             emit scoring_sig(nFramesReceived,
@@ -282,6 +295,8 @@ void DataTakingThread::run() {
 
         }
 
+        _consumer->consume();
+
         if ( ! _restart ) emit data_taking_finished( 0 );
 
         // Final report
@@ -293,7 +308,6 @@ void DataTakingThread::run() {
                          0,
                          spidrdaq->framesLostCount() % nChips   // Data misaligned
                          );
-
 
         // If this was an emergency stop
         // Have the consumer free resources

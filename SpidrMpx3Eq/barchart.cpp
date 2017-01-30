@@ -52,10 +52,15 @@ void BarChart::fitToHeight(double min)
 
     // Get the max
     int si = _barSets.size();
+
     int ymax = 0;
     for ( int i = 0 ; i < si ; i++ ) {
-        QCPBarData bin_content = (*(GetDataSet(i)->data()))[0];
-        if ( bin_content.value > ymax ) ymax = bin_content.value;
+
+        for ( int j = 0 ; j < GetDataSet(i)->data()->size() ; j++ ) {
+            QCPBarData bin_content = (*(GetDataSet(i)->data()))[j];
+            if ( bin_content.value > ymax ) ymax = bin_content.value;
+        }
+
     }
 
     // Change range
@@ -67,8 +72,11 @@ void BarChart::fitToHeight(double min)
         }
 */
 
-    this->yAxis->setRangeUpper( ymax * 1.2 );
-    this->yAxis->setRangeLower( min );
+    if ( ymax > 0 ) {
+        this->yAxis->setRangeUpper( ymax * 1.2 );
+        //if ( _scaleTypeHistogram == QCPAxis::stLinear ) this->yAxis->setRangeLower( min );
+        //else this->yAxis->setRangeLower( 1 );
+    }
 
     // replot
     replot( QCustomPlot::rpQueued );

@@ -55,7 +55,7 @@ DataConsumerThread::~DataConsumerThread() {
 
     // Signals
     disconnect( this, &DataConsumerThread::bufferOccupancySig,
-             _mpx3gui->getVisualization(), &QCstmGLVisualization::bufferOccupancySlot );
+                _mpx3gui->getVisualization(), &QCstmGLVisualization::bufferOccupancySlot );
 
 
     // Color structure
@@ -136,6 +136,7 @@ void DataConsumerThread::run()
 {
 
     int bothCountersMod = 1;
+    int delvrCounters = 1;
     uint descriptorDistance = 0;
 
     forever {
@@ -167,49 +168,59 @@ void DataConsumerThread::run()
                 break;
             }
 
+            // Check single or both counters
+            if ( _mpx3gui->getConfig()->getReadBothCounters() ) {
+                bothCountersMod = 2;
+                delvrCounters = 1; // do all of them (8)
+            } else {
+                bothCountersMod = 1;
+                delvrCounters = 2; // do 0,2,4,6
+            }
+
             /////////////////
             // Colour Mode //
             if ( _mpx3gui->getConfig()->getColourMode() ) {
 
-                // SeparateThresholds -> use the Semaphores (here's where I use the share resource)
-                for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
-                    usedFrames->acquire(); // ! it's one per chip to keep the right counting with the producer !
-                    SeparateThresholds(0,
+                for ( int i = 0 ; i < bothCountersMod ; i++ ) {
+                    // SeparateThresholds -> I can do it on a chip per chip basis
+                    for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
+                        usedFrames->acquire();
+                        SeparateThresholds(0,
                                        buffer + readdescriptor,
                                        ci);
-                    freeFrames->release();
-
+                        freeFrames->release();
+                    }
+                    // Move the reading descriptor
+                    readdescriptor += _bufferSizeOneFrame;
                 }
 
-                // Check single or both counters
-                if ( ! _mpx3gui->getConfig()->getReadBothCounters() ) bothCountersMod = 2; // do 0,2,4,6
-                else bothCountersMod = 1; // do all of them (8)
-
-                for ( int i = 0 ; i < __max_colors ; i++ ) {
-                    if ( i % bothCountersMod == 0 ) _mpx3gui->addLayer( _colordata[i], i );
+                // Add the corresponding layers
+                for ( int i = 0 ; i < __max_colors ; i+= delvrCounters ) {
+                    _mpx3gui->addLayer( _colordata[i], i );
                 }
 
                 /////////////
                 // FP Mode //
             } else {
 
-                // Check single or both counters
-                if ( ! _mpx3gui->getConfig()->getReadBothCounters() ) bothCountersMod = 1; // do 0 only
-                else bothCountersMod = 2; // do 0,1
-
                 // Send the info -> use the Semaphores (here's where I use the share resource)
                 // Acquire and realease for N chips
-                for ( uint ci = 0 ; ci < _nChips ; ci++ ) usedFrames->acquire();
                 for ( int i = 0 ; i < bothCountersMod ; i++ ) {
+                    // I need the info for ALL the 4 chips acquired first
+                    for ( uint ci = 0 ; ci < _nChips ; ci++ ) usedFrames->acquire();
+                    // Now I can work on the layer
                     _mpx3gui->addLayer( buffer + readdescriptor, i );
+                    // Move the reading descriptor
+                    readdescriptor += _bufferSizeOneFrame;
+                    // Then I can release
+                    for ( uint ci = 0 ; ci < _nChips ; ci++ ) freeFrames->release();
                 }
-                for ( uint ci = 0 ; ci < _nChips ; ci++ ) freeFrames->release();
 
             }
 
             // Move the reading descriptor
-            if ( _bothCounters ) readdescriptor += 2*_bufferSizeOneFrame;
-            else readdescriptor += _bufferSizeOneFrame;
+            //if ( _bothCounters ) readdescriptor += 2*_bufferSizeOneFrame;
+            //else readdescriptor += _bufferSizeOneFrame;
             // or rewind
             if ( readdescriptor >= _bufferSize ) readdescriptor = 0;
 

@@ -210,9 +210,7 @@ void QCstmEqualization::ShowEqualizationForChip(bool /*checked*/) {
 
 }
 
-
 void QCstmEqualization::NewRunInitEqualization() {
-
 
     // Rewind min and max suggesting a descendant scan.
     SetMinScan( (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].bits) / 2 );
@@ -910,12 +908,14 @@ void QCstmEqualization::StartEqualization() {
             // done
             QString doneS =  "[DONE]";
             AppendToTextBrowser( doneS );
+
+            QString msg = "Finished equalisation on: " + _mpx3gui->getVisualization()->getStatsString_deviceId();
+            emit sig_statusBarAppend(msg, "green");
+
         }
 
     }
 
-    QString msg = "Finished equalisation on: " + _mpx3gui->getVisualization()->getStatsString_deviceId();
-    emit sig_statusBarAppend(msg, "green");
 
     // Second) First interpolation.  Coming close to the equalization target
     ////setId = PrepareInterpolation(setId, MPX3RX_DAC_DISC_L);
@@ -1542,7 +1542,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
             qDebug() << "[INFO] Masking ...";
             for ( ; i != iE ; i++ ) {
                 pix = XtoXY( (*i), __matrix_size_x );
-                //qDebug() << "     devid:" << chipIndex << " | " << pix.first << "," << pix.second;
+                qDebug() << "     devid:" << chipIndex << " | " << pix.first << "," << pix.second << " | " << XYtoX(pix.first, pix.second, _mpx3gui->getDataset()->x());
                 spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second);
             }
         } else { // When the mask is empty go ahead and set all to zero
