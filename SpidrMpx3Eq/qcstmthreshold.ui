@@ -53,28 +53,37 @@
          <item>
           <widget class="QPushButton" name="pushButtonSave">
            <property name="text">
-            <string>save</string>
+            <string>Save</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QCheckBox" name="keepCheckbox">
+           <property name="toolTip">
+            <string>When checked the previous plots are kept.</string>
+           </property>
            <property name="text">
-            <string>keep</string>
+            <string>Keep</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QCheckBox" name="thlCalibDifferentiateCheckBox">
+           <property name="toolTip">
+            <string>Use 5 point stencil with fixed window size and other parameters to differentiate. Gives Energy vs. THL</string>
+           </property>
            <property name="text">
-            <string>differentiate</string>
+            <string>Differentiate</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QCheckBox" name="logyCheckBox">
            <property name="text">
-            <string>logy</string>
+            <string>log y</string>
            </property>
           </widget>
          </item>
@@ -127,6 +136,12 @@
                <property name="keyboardTracking">
                 <bool>false</bool>
                </property>
+               <property name="maximum">
+                <number>15</number>
+               </property>
+               <property name="value">
+                <number>0</number>
+               </property>
               </widget>
              </item>
              <item row="0" column="0">
@@ -139,14 +154,14 @@
              <item row="1" column="3">
               <widget class="QLabel" name="label_2">
                <property name="text">
-                <string>max</string>
+                <string>Max</string>
                </property>
               </widget>
              </item>
              <item row="0" column="3">
               <widget class="QLabel" name="eqLabelDevId">
                <property name="text">
-                <string>Dev Id</string>
+                <string>Chip Id</string>
                </property>
               </widget>
              </item>
@@ -171,6 +186,9 @@
                <property name="maximum">
                 <number>10000</number>
                </property>
+               <property name="value">
+                <number>100</number>
+               </property>
               </widget>
              </item>
              <item row="0" column="8">
@@ -178,12 +196,18 @@
                <property name="keyboardTracking">
                 <bool>false</bool>
                </property>
+               <property name="maximum">
+                <number>999</number>
+               </property>
+               <property name="value">
+                <number>0</number>
+               </property>
               </widget>
              </item>
              <item row="1" column="0">
               <widget class="QLabel" name="label">
                <property name="text">
-                <string>min</string>
+                <string>Min</string>
                </property>
               </widget>
              </item>
@@ -192,12 +216,15 @@
                <property name="keyboardTracking">
                 <bool>false</bool>
                </property>
+               <property name="value">
+                <number>0</number>
+               </property>
               </widget>
              </item>
              <item row="1" column="7">
               <widget class="QLabel" name="label_3">
                <property name="text">
-                <string>step</string>
+                <string>Step</string>
                </property>
               </widget>
              </item>
@@ -212,6 +239,9 @@
               <widget class="QSpinBox" name="nTriggersSpinBox">
                <property name="keyboardTracking">
                 <bool>false</bool>
+               </property>
+               <property name="value">
+                <number>3</number>
                </property>
               </widget>
              </item>
@@ -239,6 +269,9 @@
               <widget class="QSpinBox" name="eqStepSpinBox">
                <property name="keyboardTracking">
                 <bool>false</bool>
+               </property>
+               <property name="value">
+                <number>2</number>
                </property>
               </widget>
              </item>
@@ -275,13 +308,22 @@
              </item>
              <item row="1" column="5">
               <widget class="QCheckBox" name="rangeDirectionCheckBox">
+               <property name="toolTip">
+                <string>When checked the scan descends THL values.</string>
+               </property>
                <property name="text">
                 <string>desc</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
              <item row="2" column="5">
               <widget class="QCheckBox" name="setEqualizationBitCheckBox">
+               <property name="toolTip">
+                <string>When checked the OMR equalization bit is turned on (debug).</string>
+               </property>
                <property name="text">
                 <string>Eqbit</string>
                </property>
@@ -289,6 +331,9 @@
              </item>
              <item row="2" column="7">
               <widget class="QCheckBox" name="setDiscCsmSpmBitCheckBox">
+               <property name="toolTip">
+                <string>When checked the OMR Disc_CSM_SPM bit is turned on (debug)</string>
+               </property>
                <property name="text">
                 <string>DiscCsmSpm</string>
                </property>

@@ -55,6 +55,10 @@ private:
     bool _keepPlots;
     bool _logyPlot;
 
+    QString defaultYLabel = tr("Counts");
+    QString defaultXLabel = tr("DAC THL");
+    QString altYLabel =     tr("Energy (KeV)");
+
 private slots:
 
     void on_rangeDirectionCheckBox_toggled(bool checked);
