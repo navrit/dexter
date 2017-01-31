@@ -48,6 +48,8 @@ private:
     // Currently active graph
     QCPGraph * _graph;
 
+    std::vector<double> derivativeFivePointStencil(std::vector<int> x, std::vector<double> f);
+
     int * _data;
     map<int, int> _plotIdxMap; // keep track of plot's indexes
     int _plotIdxCntr;
