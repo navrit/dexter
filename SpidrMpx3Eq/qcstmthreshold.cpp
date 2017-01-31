@@ -96,7 +96,18 @@ void QCstmThreshold::on_thlCalibDifferentiateCheckBox_toggled(bool checked)
     if (checked){
         //! Smooth threshold scan then calculate and show 5 point stencil differentiation.
         //! Change y units to "Energy (KeV)"
+
         ui->plot->yAxis->setLabel(altYLabel);
+
+//        qDebug() << &_data << endl;
+
+
+//        if (ui->plot->selectedGraphs().length() > 0){
+//            const QCPDataMap *dataMap = ui->plot->selectedGraphs().first()->data();
+//            qDebug() << dataMap;
+//        }
+
+
     } else {
         //! Hide differentiation and switch back to raw data
         ui->plot->yAxis->setLabel(defaultYLabel);
@@ -411,7 +422,6 @@ void CustomScanThread::run() {
     // Scan iterator observing direction
     int dacItr = minScan;
     if ( _cstmThreshold->isScanDescendant() ) dacItr = maxScan;
-    bool scanContinue = true;
 
     for ( ; scanContinue ; ) {
 
@@ -561,10 +571,10 @@ void CustomScanThread::run() {
 
         // See the termination condition
         if ( _cstmThreshold->isScanDescendant() ) {
-            if ( dacItr >= minScan ) scanContinue = true;
+            if ( dacItr >= minScan && !abort ) scanContinue = true;
             else scanContinue = false;
         } else {
-            if ( dacItr <= maxScan ) scanContinue = true;
+            if ( dacItr <= maxScan && !abort ) scanContinue = true;
             else scanContinue = false;
         }
 
@@ -597,6 +607,17 @@ int CustomScanThread::PixelsReactive(int * data, int size_in_bytes, int /*thl*/)
     return pixelsActive;
 }
 
+bool CustomScanThread::getAbort()
+{
+    return abort;
+}
+
+void CustomScanThread::setAbort(bool arg)
+{
+    abort = arg;
+    return;
+}
+
 void QCstmThreshold::on_pushButtonSave_clicked()
 {
     // Save the different groups of data
@@ -619,4 +640,17 @@ void QCstmThreshold::on_pushButtonSave_clicked()
         ofs.close();
     }
 
+}
+
+
+void QCstmThreshold::on_thlCalibStop_clicked()
+{
+    //qDebug() << ">> Stop clicked";
+    if (_scanThread->isRunning()) {
+        //qDebug() << ">> Scan is running, let's kill this biatch";
+        _scanThread->setAbort(true);
+    } else {
+        //qDebug() << ">> Scan is not running, do NOTHING";
+        return;
+    }
 }
