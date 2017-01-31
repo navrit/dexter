@@ -75,6 +75,8 @@ private slots:
 
     void on_pushButtonSave_clicked();
 
+    void on_thlCalibStop_clicked();
+
 signals:
     void slideAndSpin(int, int);
     //void UpdateHeatMapSignal();
@@ -92,6 +94,9 @@ public:
     void ConnectToHardware();
     int PixelsReactive(int * data, int size_in_bytes, int thl);
 
+    bool getAbort();
+    void setAbort(bool);
+
 private:
 
     void run();
@@ -104,6 +109,9 @@ private:
     // IP source address (SPIDR network interface)
     int _srcAddr;
     int * _data;
+
+    bool scanContinue = true;
+    bool abort = false;
 
 public slots:
     void UpdateHeatMap(int, int);
