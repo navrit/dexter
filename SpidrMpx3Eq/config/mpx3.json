@@ -118,7 +118,8 @@
         }
     ],
     "DetectorConfig": {
-        "BothCounters": true,
+        "BiasVoltage": 100,
+        "BothCounters": false,
         "ColourMode": false,
         "ContRWFreq": 100,
         "CsmSpm": 0,
