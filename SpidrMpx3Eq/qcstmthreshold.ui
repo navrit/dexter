@@ -240,6 +240,9 @@
                <property name="keyboardTracking">
                 <bool>false</bool>
                </property>
+               <property name="minimum">
+                <number>1</number>
+               </property>
                <property name="value">
                 <number>3</number>
                </property>
@@ -269,6 +272,9 @@
               <widget class="QSpinBox" name="eqStepSpinBox">
                <property name="keyboardTracking">
                 <bool>false</bool>
+               </property>
+               <property name="minimum">
+                <number>1</number>
                </property>
                <property name="value">
                 <number>2</number>
