@@ -79,6 +79,15 @@ void QCstmCorrectionsDialog::on_bhcorrCheckbox_toggled(bool checked) {
         _bhwindow->show(); // nonModal
         _bhwindow->raise();
         _bhwindow->activateWindow();
+
+    }
+
+    // Determine the number of layers in the image to correct
+    // if not _nLayersInCurrentImage = -1 which means there's no image
+    if ( _mpx3gui->getOriginalDataset()->getLayer(0)!= nullptr ) {
+        _bhwindow->SetNLayersCurrentImage( _mpx3gui->getOriginalDataset()->getLayerCount() );
+    } else {
+        _bhwindow->SetNLayersCurrentImage( -1 );
     }
 
     if(_mpx3gui->getDataset()->getLayer(0) == nullptr && checked) {

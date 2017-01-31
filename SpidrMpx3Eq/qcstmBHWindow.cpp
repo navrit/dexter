@@ -21,6 +21,7 @@ QCstmBHWindow::QCstmBHWindow(QWidget *parent) :
 
     _corr = dynamic_cast<QCstmCorrectionsDialog*>(parent); //!makes _corr object for signal purposes.
 
+    _nLayersInCurrentImage = -1;
     //#44 Another corrections enhancement
     //setFileSaved(false);
 }
@@ -42,6 +43,13 @@ void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
 
     connect(this, SIGNAL(sendFilename(QString)), _corr, SLOT(receiveFilename(QString)));
     connect(this, SIGNAL(sendChecked_BHCorrCheckbox(bool)), _corr, SLOT(setChecked_BHCorrCheckbox(bool)));
+
+}
+
+void QCstmBHWindow::SetNLayersCurrentImage(int nl){
+
+    _nLayersInCurrentImage = nl;
+
 }
 
 //! Creates dialog where user can add a correction item, specify its thickness and material.
@@ -130,6 +138,10 @@ void QCstmBHWindow::on_loadButton_clicked(){
     dataOpened = true;
 
     emit openData2(false, usePath, correctionPath);
+
+    // At this point we know how many layers the correction brings
+    _nLayersInCorrectionData = _mpx3gui->getDataset()->getLayerCount();
+
     correctionPath = _mpx3gui->getLoadButtonFilename();
 
     if(!correctionMap.contains(thicknessvctr[selectedItemNo]) && dataOpened){
@@ -230,10 +242,19 @@ void QCstmBHWindow::on_list_itemClicked(QListWidgetItem *item){
 void QCstmBHWindow::on_applyBHCorrection()
 //! Makes signal to thickness conversion.
 {
-    if(emptyCorrectionCounter != 0 || thicknessvctr.size()<3 ){
+    QList<int> keys = _mpx3gui->getDataset()->getThresholds();
+
+    // Not possible in the following cases
+    if(
+            emptyCorrectionCounter != 0
+            ||
+            thicknessvctr.size() < 3
+            ||
+            _nLayersInCurrentImage != _nLayersInCorrectionData
+            ){
+
         return;
     }
-    QList<int> keys = _mpx3gui->getDataset()->getThresholds();
 
     if(m_spline==nullptr)
         m_spline = new tk::spline;  // instantiate spline if not defined
@@ -295,7 +316,16 @@ void QCstmBHWindow::on_list_doubleClicked(const QModelIndex &index){
 }
 
 void QCstmBHWindow::on_okButton_clicked(){
-    if(emptyCorrectionCounter != 0 || thicknessvctr.size() < 3 ){
+
+    QList<int> keys = _mpx3gui->getDataset()->getThresholds();
+
+    if(
+            emptyCorrectionCounter != 0
+            ||
+            thicknessvctr.size() < 3
+            ||
+            _nLayersInCurrentImage != _nLayersInCorrectionData
+            ){
 
         //TODO FIX ME Comes up when it shouldn't????
         qDebug() << ">> emptyCorrectionCounter: " << emptyCorrectionCounter;
@@ -303,7 +333,11 @@ void QCstmBHWindow::on_okButton_clicked(){
 
         QMessageBox msgBox;
         msgBox.setWindowTitle("Error");
-        msgBox.setText(tr("You haven't loaded all of the necessary corrections. The beam hardening will not operate. Please load more corrections."));
+        msgBox.setText(tr("- You haven't loaded all of the necessary corrections."
+                          "\n  Please load more correction layers."
+                          "\n\nOR\n\n"
+                          "- The number of layers in the current image and "
+                          "\n  the correction images is not the same."));
         //! UI update - Corrections Dialog - "Error: File not loaded"
         emit sendFilename(QString("Error: File not loaded"));
         emit sendChecked_BHCorrCheckbox(false);
