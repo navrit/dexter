@@ -28,6 +28,7 @@ public:
     Ui::QCstmBHWindow * GetUI(){ return ui; }
 
     void SetMpx3GUI(Mpx3GUI *p);
+    void SetNLayersCurrentImage(int);
 
     //#44 Another corrections enhancement
     bool getFileSaved() const;
@@ -54,6 +55,8 @@ private:
     QMap<double,QString> correctionMaterial;
 
     QVector<double> thicknessvctr;
+    int _nLayersInCorrectionData;
+    int _nLayersInCurrentImage;
 
     QString fileName;
     QString correctionPath;
