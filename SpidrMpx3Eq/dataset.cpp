@@ -306,14 +306,18 @@ void Dataset::toTIFF(QString filename, bool crossCorrection)
             //! Spectroscopic mode don't try cross correction - it doesn't work properly
             //! due to a non constant factor between the edge pixels and the main pixels
             //!
-            //! Ask John for details
-            //!
-            //! Implement later if necessary
+            //! Implementing now - don't expect much
             } else {
+                edgePixelMagicNumber = 2; // Spectro shizzle vertical line seems to have a factor of 2 instead of 2.8
                 for (int y=0; y < height; y++) {
                     for (int x=0; x < width; x++) {
-                        //! Sample the pixels directly
-                        image[y*width + x] = sample(x, y, thresholds[i]);
+                        if (x==(width/2)-1 || x==(width/2) || y==(height/2)-1 || y==(height/2)){
+                            //! Hard coded cross correction
+                            image[y*width + x] = sample(x, y, thresholds[i]) / edgePixelMagicNumber;
+                        } else {
+                            //! Default option, sample the pixels directly
+                            image[y*width + x] = sample(x, y, thresholds[i]);
+                        }
                     }
                 }
                 tmpFilename.replace(".tif", "-thl" + QString::number(thresholds[i]) + ".tif");
