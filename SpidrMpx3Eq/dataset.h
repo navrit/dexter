@@ -71,14 +71,14 @@ public:
     } score_info;
 
 
-    struct sortPair{
+    struct sortPair {
         double thickness;
         double value;
         sortPair(double t, double v){thickness = t; value = v;}
         sortPair() {}
     };
 
-    struct sortingStruct{
+    struct sortingStruct {
         bool operator() (const sortPair &lhs, const sortPair &rhs) { return lhs.thickness < rhs.thickness; }
     } sortByThickness;
 
