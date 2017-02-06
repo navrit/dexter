@@ -228,10 +228,10 @@ void Dataset::saveBIN(QString filename)
     // And save
     QFile saveFile(filename);
     if (!saveFile.open(QIODevice::WriteOnly)) {
-//        string messg = "Couldn't open: ";
-//        messg += filename.toStdString();
-//        messg += "\nNo output written.";
-//        QMessageBox::warning ( this, QString("Error saving data"), QString(messg.c_str()) );
+        //        string messg = "Couldn't open: ";
+        //        messg += filename.toStdString();
+        //        messg += "\nNo output written.";
+        //        QMessageBox::warning ( this, QString("Error saving data"), QString(messg.c_str()) );
         return;
     }
     saveFile.write(toByteArray());
@@ -256,7 +256,7 @@ void Dataset::toTIFF(QString filename, bool crossCorrection)
 
     //----------------------------------------------------
     const static int SAMPLES_PER_PIXEL = 1; // This is greyscale - 3 for RGB, 4 for RGBA
-                                            // Maybe make this the number of thresholds?
+    // Maybe make this the number of thresholds?
     const static int BPP        = 32; // Bits per pixel - gives ~4 billion per pixel upper limit before loss of signal
     const int extraPixels       = 2;
     int width                   = getWidth()+2*extraPixels;  // Should always be 512 or 256 for a quad without spatial correction
@@ -306,10 +306,14 @@ void Dataset::toTIFF(QString filename, bool crossCorrection)
                         }
                     }
                 }
-            //! Spectroscopic mode don't try cross correction - it doesn't work properly
-            //! due to a non constant factor between the edge pixels and the main pixels
-            //!
-            //! Implementing now - don't expect much
+
+                //! Spectroscopic mode don't try cross correction - it doesn't work properly
+                //! due to a non constant factor between the edge pixels and the main pixels
+                //!
+                //! Ask John for details
+                //!
+                //! Implement later if necessary
+
             } else {
                 for (int y=0; y < height; y++) {
                     for (int x=0; x < width; x++) {
@@ -350,13 +354,13 @@ void Dataset::toTIFF(QString filename, bool crossCorrection)
                             //Set 255, 256, 257 as 1/2.8 of 255
                             // qDebug() << "[L]" << tmp << x << y;
                             if (y <= height/2 - extraPixels || y >= height/2 + extraPixels + 1){
+
                                 int tmp;
                                 if (width == 260){ // If spectro mode
                                     tmp = imageCorrected[y*width + x-1] / edgePixelMagicNumberSpectroVertical;
                                 } else {
                                     tmp = imageCorrected[y*width + x-1] / edgePixelMagicNumber;
                                 }
-
                                 //qDebug() << tmp << x-1 << y << x << y;
                                 imageCorrected[y*width + x-1  ] = tmp;
                                 imageCorrected[y*width + x    ] = tmp;
@@ -367,13 +371,14 @@ void Dataset::toTIFF(QString filename, bool crossCorrection)
                             //qDebug() << "[R]" << tmp << x << y;
 
                             if (y <= height/2 - extraPixels || y >= height/2 + extraPixels + 1) {
+
                                 int tmp;
                                 if (width == 260){ // If spectro mode
                                     tmp = imageCorrected[y*width + x] / edgePixelMagicNumberSpectroVertical;
                                 } else {
                                     tmp = imageCorrected[y*width + x] / edgePixelMagicNumber;
                                 }
-//                                qDebug() << tmp << x << y;
+                                //                                qDebug() << tmp << x << y;
                                 imageCorrected[y*width + x-2  ] = tmp;
                                 imageCorrected[y*width + x-1  ] = tmp;
                                 imageCorrected[y*width + x    ] = tmp;
@@ -445,7 +450,7 @@ void Dataset::toTIFF(QString filename, bool crossCorrection)
                             y >= (height/2)-extraPixels &&
                             y < (height/2)+extraPixels){                                     // central square
                         int tmp = sample(x,y, thresholds[i]) / edgePixelMagicNumber;
-//                        qDebug() << "[CENTRAL]" << tmp << x << y;
+                        //                        qDebug() << "[CENTRAL]" << tmp << x << y;
                         if        (x == (width/2)-extraPixels && y == (height/2)-extraPixels){      //TL
                             //qDebug() << "[TL]" << image[y*width + x] << x << y;
                             //! Following commented code does this:
@@ -461,7 +466,7 @@ void Dataset::toTIFF(QString filename, bool crossCorrection)
                             imageCorrected[ y   *width + x + 1] = tmp;
                             imageCorrected[ y   *width + x - 1] = tmp;
                         } else if (x == (width/2)+extraPixels/2 && y == (height/2)-extraPixels) {     //TR
-//                            qDebug() << "[TR]" << tmp << x << y;
+                            //                            qDebug() << "[TR]" << tmp << x << y;
                             int tmp = (imageCorrected[(y-extraPixels)*width + x]+imageCorrected[y*width + x + extraPixels])/2;
                             imageCorrected[ y   *width + x    ] = tmp;
                             imageCorrected[(y-1)*width + x - 1] = tmp;
@@ -473,7 +478,7 @@ void Dataset::toTIFF(QString filename, bool crossCorrection)
                             imageCorrected[ y   *width + x + 1] = tmp;
                             imageCorrected[ y   *width + x - 1] = tmp;
                         } else if (x == (width/2)-extraPixels && y == (height/2)+extraPixels/2) {     //BL
-//                            qDebug() << "[BL]" << tmp << x << y;
+                            //                            qDebug() << "[BL]" << tmp << x << y;
                             int tmp = (imageCorrected[(y+extraPixels)*width + x]+imageCorrected[y*width + x - extraPixels])/2;
                             imageCorrected[ y   *width + x    ] = tmp;
                             imageCorrected[(y-1)*width + x - 1] = tmp;
@@ -485,7 +490,7 @@ void Dataset::toTIFF(QString filename, bool crossCorrection)
                             imageCorrected[ y   *width + x + 1] = tmp;
                             imageCorrected[ y   *width + x - 1] = tmp;
                         } else if (x == (width/2)+extraPixels/2 && y == (height/2)+extraPixels/2) {     //BR
-//                            qDebug() << "[BR]" << tmp << x << y;
+                            //                            qDebug() << "[BR]" << tmp << x << y;
                             int tmp = (imageCorrected[(y+extraPixels)*width + x]+imageCorrected[y*width + x + extraPixels])/2;
                             imageCorrected[ y   *width + x    ] = tmp;
                             imageCorrected[(y-1)*width + x - 1] = tmp;
@@ -655,11 +660,22 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
 
     //QSize isize = QSize(computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y()); //For what?
 
-    // Region of interest
-    int height = abs( pixel_end.y() - pixel_init.y() );
-    int width = abs( pixel_end.x() - pixel_init.x() );
+    // Region of interest. Find corners.
+    int minx = pixel_init.x();
+    int maxx = pixel_end.x();
+    if ( minx > maxx ) {
+        minx = pixel_end.x();
+        maxx = pixel_init.x();
+    }
 
-    //Set in bstats to use in the dialog
+    int miny = pixel_init.y();
+    int maxy = pixel_end.y();
+    if ( miny > maxy ) {
+        miny = pixel_end.y();
+        maxy = pixel_init.y();
+    }
+
+    // Set in bstats to use somewhere else
     bstats.init_pixel = pixel_init;
     bstats.end_pixel = pixel_end;
 
@@ -670,9 +686,9 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
         mean = 0.;
         nMean = 0.;
 
-        for(int y = 0; y <= height; y++){
-            for(int x = 0; x <= width; x++){
-                mean += sample( pixel_init.x() + x, pixel_init.y() - y, keys[i]); //pixel_init is upper left corner.
+        for(int y = miny; y <= maxy; y++){
+            for(int x = minx; x <= maxx; x++){
+                mean += sample( x, y, keys[i]); //pixel_init is upper left corner.
                 nMean++;
             }
         }
@@ -685,9 +701,9 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
         stdev = 0.;
         nMean = 0.;
 
-        for(int y = 0; y <= height; y++){
-            for(int x = 0; x <= width; x++){
-                int val = sample( pixel_init.x() + x, pixel_init.y() - y, keys[i] );
+        for(int y = miny; y <= maxy; y++){
+            for(int x = minx; x <= maxx; x++){
+                int val = sample( x, y, keys[i] );
                 stdev += ( val - bstats.mean_v[i] ) * ( val - bstats.mean_v[i] );
                 nMean++;
             }
@@ -1506,7 +1522,7 @@ void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
     if ( ! corrdiag ) return;
 
     //    if ( corrdiag->isCorrectionsActive() ) {  //Always false. previously set by checkbox.
-    QMap<int, double> meanvals = Dataset::GetPadMean();
+    QMap<int, double> meanvals;// = Dataset::GetPadMean();
 
     // Corrections
     if ( corrdiag->isSelectedDeadPixelsInter() ) applyDeadPixelsInterpolation( corrdiag->getNoisyPixelMeanMultiplier(), meanvals );
@@ -1651,21 +1667,41 @@ void Dataset::applyOBCorrection() {
         double low = 0;
         if ( currentLayer[0] > correctionLayer[0] )  min = currentLayer[0];
 
-        //Setting minimum and maximum of the current Data and OB data.
-        double Dmin = (double)currentLayer[0];
-        double Dmax = Dmin;
-        double OBmin = (double)correctionLayer[0];
-        double OBmax = OBmin;
+        // Setting minimum and maximum of the current Data and OB data.
+        calcBasicStats(QPoint(0,0), QPoint(x()*getNChipsX(), y()*getNChipsY()));
+        // The acceptance for min and max finding would be
+        double mean   = bstats.mean_v[i];
+        double stdevs = bstats.stdev_v[i]; //
+        //qDebug() << "\nDATA --> Mean: " << mean << " | " << "dev: " << bstats.stdev_v[i];
+        double Dmin = mean;
+        double Dmax = mean;
 
+        // Get the values for the OB correction
+        obCorrection->calcBasicStats(QPoint(0,0), QPoint(x()*getNChipsX(), y()*getNChipsY()));
+        double meanOB   = obCorrection->bstats.mean_v[i];
+        double stdevsOB = obCorrection->bstats.stdev_v[i]; //
+        //qDebug() << "\nOB   --> Mean: " << meanOB << " | " << "dev: " << obCorrection->bstats.stdev_v[i];
+
+        double OBmin = meanOB;
+        double OBmax = meanOB;
+
+        // This needs to be done avoiding noisy pixels
         for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
 
             //Determine minimum and maximum of the current Data and OB Data.
-            if((double)currentLayer[j]<Dmin) Dmin = currentLayer[j];
-            if((double)currentLayer[j]>Dmax) Dmax = currentLayer[j];
-            if((double)correctionLayer[j]<OBmin) OBmin = correctionLayer[j];
-            if((double)correctionLayer[j]>OBmax) OBmax = correctionLayer[j];
+            if( currentLayer[j] > mean - stdevs && currentLayer[j] < mean + stdevs ) {
+                if((double)currentLayer[j]<Dmin) Dmin = currentLayer[j];
+                if((double)currentLayer[j]>Dmax) Dmax = currentLayer[j];
+            }
+            if ( correctionLayer[j] > meanOB - stdevsOB && correctionLayer[j] < meanOB + stdevsOB) {
+                if((double)correctionLayer[j]<OBmin) OBmin = correctionLayer[j];
+                if((double)correctionLayer[j]>OBmax) OBmax = correctionLayer[j];
+            }
 
         }
+
+        qDebug() << "Image(min, max): " << Dmin  << ", " << Dmax;
+        qDebug() << "OB   (min, max): " << OBmin << ", " << OBmax;
 
         //To check wether the OB data is comparable and adjust k-factor accordingly.
         //Only change OBmatch at first layer, next layers should be handled the same.
@@ -1675,37 +1711,40 @@ void Dataset::applyOBCorrection() {
             k = Dmax/OBmax;
         }
 
+        /////////////////////// !!!!!!!!!!!!!!!!!!!!!!!!!!
+        OBmatch = true;
+
         //Give the user the choice to apply the correction, ignore the incomparability or cancel and choose another OBcorrectionfile.
         //Only ask at first layer.
-//        if ( ! OBmatch && i == 0 ) {
-//            qDebug() << "[FAIL] if( (OBmax-OBmin) <= 0.5*(Dmax - Dmin) || (OBmax-OBmin) >= 2*(Dmax - Dmin))";
-//            qDebug() << "(OBmax-OBmin)" << (OBmax-OBmin);
-//            qDebug() << "0.5*(Dmax - Dmin)" << 0.5*(Dmax - Dmin);
-//            qDebug() << "2*(Dmax - Dmin)" << 2*(Dmax - Dmin);
+        //        if ( ! OBmatch && i == 0 ) {
+        //            qDebug() << "[FAIL] if( (OBmax-OBmin) <= 0.5*(Dmax - Dmin) || (OBmax-OBmin) >= 2*(Dmax - Dmin))";
+        //            qDebug() << "(OBmax-OBmin)" << (OBmax-OBmin);
+        //            qDebug() << "0.5*(Dmax - Dmin)" << 0.5*(Dmax - Dmin);
+        //            qDebug() << "2*(Dmax - Dmin)" << 2*(Dmax - Dmin);
 
-//            QMessageBox msgBox(QMessageBox::Question, "Warning", "The statistics in the OB data and the current data are such that the OB correction will not yield a good image.\n"
-//                                                                 "- Press 'Cancel' to stop and choose a more compatible OB datafile.\n"
-//                                                                 "- It is also possible to apply a k-factor on the OB correction to make it match the current data.\n"
-//                                                                 "- Press 'Continue' to use the selected OB file as it is.",
-//                               QMessageBox::Yes | QMessageBox::No |QMessageBox::Cancel | QMessageBox::Cancel,0);
+        //            QMessageBox msgBox(QMessageBox::Question, "Warning", "The statistics in the OB data and the current data are such that the OB correction will not yield a good image.\n"
+        //                                                                 "- Press 'Cancel' to stop and choose a more compatible OB datafile.\n"
+        //                                                                 "- It is also possible to apply a k-factor on the OB correction to make it match the current data.\n"
+        //                                                                 "- Press 'Continue' to use the selected OB file as it is.",
+        //                               QMessageBox::Yes | QMessageBox::No |QMessageBox::Cancel | QMessageBox::Cancel,0);
 
 
-//            msgBox.setButtonText(QMessageBox::Yes, "Apply k-factor");
-//            msgBox.setButtonText(QMessageBox::No, "Continue");
-//            int reply = msgBox.exec();
+        //            msgBox.setButtonText(QMessageBox::Yes, "Apply k-factor");
+        //            msgBox.setButtonText(QMessageBox::No, "Continue");
+        //            int reply = msgBox.exec();
 
-//            //Continue with correction:
-//            if(reply == QMessageBox::Yes){
-//                OBmatch = true;
-//                use_k = true;
-//            }
-//            //Continue without correction:
-//            if(reply == QMessageBox::No){
-//                OBmatch = true;
-//                use_k = false;
-//            }
+        //            //Continue with correction:
+        //            if(reply == QMessageBox::Yes){
+        //                OBmatch = true;
+        //                use_k = true;
+        //            }
+        //            //Continue without correction:
+        //            if(reply == QMessageBox::No){
+        //                OBmatch = true;
+        //                use_k = false;
+        //            }
 
-//        }
+        //        }
         if(OBmatch){
             for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
 

@@ -113,7 +113,7 @@ void QCstmCorrectionsDialog::on_bhcorrCheckbox_toggled(bool checked) {
 
 void QCstmCorrectionsDialog::on_obcorrCheckbox_toggled(bool checked) {
 
-    if(!checked) {
+    if ( ! checked ) {
         ui->bhcorrCheckbox->setEnabled(1);
         ui->bhcorrLineEdit->setEnabled(1);
         ui->obcorrLineEdit->setEnabled(1);

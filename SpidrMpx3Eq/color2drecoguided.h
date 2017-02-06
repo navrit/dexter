@@ -59,7 +59,8 @@ private:
     QString txt_H20    = "H2O.txt",
             txt_Al_Z13 = "Al_Z13.txt",
             txt_Ca_Z20 = "Ca_Z20.txt",
-            txt_Cu_Z29 = "Cu_Z29.txt";
+            txt_Cu_Z29 = "Cu_Z29.txt",
+            txt_Au_Z79 = "Au_Z79.txt";
 
 };
 
