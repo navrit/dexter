@@ -240,6 +240,7 @@ public:
     int newLayer(int layer);//!<Adds a new layer at the specified threshold.
 
     void runImageCalculator(QString imgOperator, int index1, int index2);
+    void calcAllEnergyBins();
 
 };
 

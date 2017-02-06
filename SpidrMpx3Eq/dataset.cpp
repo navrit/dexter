@@ -2051,7 +2051,12 @@ void Dataset::runImageCalculator(QString imgOperator, int index1, int index2)
 //    }
 
 //    _ui->visualizationGL->setThreshold(keys.last()+1);
-//    _ui->visualizationGL->active_frame_changed();
+    //    _ui->visualizationGL->active_frame_changed();
+}
+
+void Dataset::calcAllEnergyBins()
+{
+    qDebug() << "[INFO] Dataset::calcAllEnergyBins() : Calculate all energy bins";
 }
 
 unsigned int Dataset::setFrame(int *frame, int index, int threshold){

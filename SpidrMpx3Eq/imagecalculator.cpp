@@ -55,3 +55,8 @@ void ImageCalculator::on_pushButton_removeLayer_clicked()
     int index = ui->comboBox_removeLayer->currentIndex();
     qDebug() << "[INFO] ImageCalculator::on_pushButton_removeLayer_clicked() :" << "Removing index" << index;
 }
+
+void ImageCalculator::on_pushButton_calcAllEnergyBins_clicked()
+{
+    _mpx3gui->getDataset()->calcAllEnergyBins();
+}
