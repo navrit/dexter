@@ -625,10 +625,6 @@ void QCstmGLVisualization::DestroyTimer() {
 
 }
 
-void QCstmGLVisualization::GetAFrame() {
-
-}
-
 void QCstmGLVisualization::SeparateThresholds(int * data, int /*size*/, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int /*sizeReduced*/) {
 
     // Layout of 110um pixel
@@ -2023,7 +2019,6 @@ void QCstmGLVisualization::consumerBufferFull(int)
 
 void QCstmGLVisualization::on_imageCalculatorPushButton_clicked()
 {
-    qDebug() << "CLICKED";
     if ( ! _imageCalcDialog ) {
 
         _imageCalcDialog = new ImageCalculator(_mpx3gui, this);

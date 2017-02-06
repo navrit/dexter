@@ -90,7 +90,6 @@ public:
 
     pair<int, int> XtoXY(int X, int dimX);
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
-    void GetAFrame();
     void SetBusyState();
     void FreeBusyState();
     bool isBusyDrawing();
@@ -122,6 +121,13 @@ public:
     // Used in CT
     void saveImage(QString filename);
     bool runningCT = false;
+
+    //!Adds the specified threshold if it didn't exist yet. Then switches to it.
+    void setThreshold(int threshold);
+
+    void changeThresholdToNameAndUpdateSelector(int threshold, QString name);
+    //!Gets the currently active threshold by looking at the value of the layerselector combobox.
+    int getActiveThreshold();
 
 private:
 
@@ -175,14 +181,6 @@ private:
     extra_widgets _extraWidgets;
     int _timerId;
 
-
-    //!Adds the specified threshold to the layerselector combobox
-    void addThresholdToSelector(int threshold);
-    void changeThresholdToNameAndUpdateSelector(int threshold, QString name);
-    //!Adds the specified threshold if it didn't exist yet. Then switches to it.
-    void setThreshold(int threshold);
-    //!Gets the currently active threshold by looking at the value of the layerselector combobox.
-    int getActiveThreshold();
     void BuildStatsString();
     void BuildStatsStringCounts(uint64_t counts);
     void BuildStatsStringLostPackets(uint64_t lostPackets);
@@ -190,14 +188,15 @@ private:
     void BuildStatsStringMpx3ClockStops(uint64_t stops);
     void BuildStatsStringOverflow(bool overflow);
 
+    //!Adds the specified threshold to the layerselector combobox
+    void addThresholdToSelector(int threshold);
+
     QString getPath(QString msg);
 
 private slots:
     void ConnectionStatusChanged(bool connecting);
     void on_percentileRangeRadio_toggled(bool checked);
 
-    //! Gets called when the current display needs to be reloaded. Uses the layerselector combo-box to determine what layer to load.
-    void active_frame_changed();
 
     //! Gets called when a new data range was selected in the histogram plot.
     void new_range_dragged(QCPRange newRange);
@@ -299,6 +298,9 @@ public slots:
     void bufferOccupancySlot(int);
 
     void consumerBufferFull(int);
+
+    //! Gets called when the current display needs to be reloaded. Uses the layerselector combo-box to determine what layer to load.
+    void active_frame_changed();
 
 signals:
     void taking_data_gui();

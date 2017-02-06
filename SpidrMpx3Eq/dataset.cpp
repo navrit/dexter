@@ -1967,6 +1967,54 @@ int Dataset::newLayer(int threshold){
     return m_layers.size()-1;
 }
 
+void Dataset::runImageCalculator(QString imgOperator, int index1, int index2)
+{
+    int width = getWidth();
+    int height = getHeight();
+    QList<int> keys = getThresholds();
+    int nThresholds = keys.size();
+    uint64_t image[height*width];
+
+    //qDebug() << keys << nThresholds;
+
+    if ( nThresholds == 0 ) {
+        QMessageBox::information(0,"Error","No thresholds. Failed operation/");
+        return;
+    }
+
+    if (imgOperator == "-") {
+        for(int y = 0; y < height; y++) {
+            for(int x = 0; x < width; x++) {
+                image[y*width + x] = sample(x,y,keys[index1]) - sample(x,y,keys[index2]);
+                setPixel(x,y,keys[0],image[y*width + x]);
+            }
+        }
+    } else if (imgOperator == "+") {
+        for(int y = 0; y < height; y++) {
+            for(int x = 0; x < width; x++) {
+                image[y*width + x] = sample(x,y,keys[index1]) + sample(x,y,keys[index2]);
+                setPixel(x,y,keys[0],image[y*width + x]);
+            }
+        }
+    } else {
+        qDebug() << "[FAIL] Dataset::runImageCalculator --> selected image operator not implemented. Do it.";
+        return;
+    }
+
+
+    qDebug() << keys[0] << "-" << keys[1];
+    //setPixel(0,0,0,1);
+
+
+//    //! Loop over different layers in the Dataset.
+//    for (int i = 0; i < keys.length(); i++){
+
+//    }
+
+//    _ui->visualizationGL->setThreshold(keys.last()+1);
+//    _ui->visualizationGL->active_frame_changed();
+}
+
 unsigned int Dataset::setFrame(int *frame, int index, int threshold){
 
     if(!m_thresholdsToIndices.contains(threshold))
@@ -2141,6 +2189,14 @@ unsigned int Dataset::addLayer(int *data, int threshold){
     return overflowCntr;
 }
 
+int * Dataset::getLayer(int threshold){
+
+    int layerIndex = thresholdToIndex(threshold);
+    if(layerIndex == -1)
+        return nullptr;
+    return m_layers[layerIndex];
+}
+
 /*int * Dataset::getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui) {
 
     // This two members carry all the information about the layout
@@ -2271,13 +2327,6 @@ unsigned int Dataset::addLayer(int *data, int threshold){
 }
 */
 
-int * Dataset::getLayer(int threshold){
-
-    int layerIndex = thresholdToIndex(threshold);
-    if(layerIndex == -1)
-        return nullptr;
-    return m_layers[layerIndex];
-}
 
 /*
 ////////////////////////////////////////////////

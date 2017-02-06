@@ -95,6 +95,7 @@ private:
     int m_pixelDepthCntr;
     QRectF m_boundingBox;//!<A rectangular box which encompasses all the chips. Hence the name.
     int m_nFrames; //!< The amount of detectors, a.k.a. frames here.
+                   //!< This is unclear?...
     score_info m_scores; //!< some 'score' info about this frame. A bunch of counters.
     int * m_plainImageBuff = nullptr;
 
@@ -106,7 +107,6 @@ private:
     Dataset * obCorrection = nullptr;//!< A pointer to the Dataset used for the flat-field correction.
     bool corrected; //!indicates whether or not an image has been corrected.
     int getLayerIndex(int threshold);
-    int newLayer(int layer);//!<Adds a new layer at the specified threshold.
     void rewindScores();
 
     QList<int> Profilepoints = QList<int>() << -1 << -1 << -1 << -1 << -1 << -1; //!The points on a profile that are used to calculate the CNR. Initialized to -1 to indicate that no value has been specified (yet).
@@ -236,6 +236,10 @@ public:
     void DumpSmallMap(map< pair<int, int>, int > m1);
 
     QMap<int, double> GetPadMean();
+
+    int newLayer(int layer);//!<Adds a new layer at the specified threshold.
+
+    void runImageCalculator(QString imgOperator, int index1, int index2);
 
 };
 

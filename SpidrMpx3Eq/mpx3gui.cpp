@@ -1256,7 +1256,6 @@ void Mpx3GUI::on_actionScans_triggered(){
 
 //! TODO: Implement revert more fully?
 void Mpx3GUI::on_actionRevert_triggered(bool) {
-    qDebug() << ">> Rewinding to original dataset? TEST ME";
     rewindToOriginalDataset();
     _ui->visualizationGL->reload_all_layers(false);
 }
