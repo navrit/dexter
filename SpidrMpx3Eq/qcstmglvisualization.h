@@ -17,6 +17,7 @@
 #include "histogram.h"
 
 #include "mtrDialog.h"
+#include "imagecalculator.h"
 
 #include <QQueue>
 #include <QVector>
@@ -35,6 +36,7 @@ class QCstmCorrectionsDialog;
 class StatsDialog;
 class ProfileDialog;
 class TestPulses;
+class ImageCalculator;
 
 namespace Ui {
 class QCstmGLVisualization;
@@ -63,6 +65,8 @@ class QCstmGLVisualization : public QWidget
 
     // Reco
     Color2DRecoGuided * _reco_Color2DRecoGuided = nullptr;
+
+    ImageCalculator * _imageCalcDialog = nullptr;
 
 
 public:
@@ -250,6 +254,7 @@ private slots:
 
     void on_saveCheckBox_clicked();
 
+    void on_imageCalculatorPushButton_clicked();
 
 public slots:
 

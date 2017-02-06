@@ -64,16 +64,6 @@ QGroupBox::title {
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
         <layout class="QGridLayout" name="gridLayout_2">
-         <item row="2" column="5">
-          <widget class="QPushButton" name="saveBitmapPushButton">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save image to your computer&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Save image</string>
-           </property>
-          </widget>
-         </item>
          <item row="2" column="1">
           <widget class="QPushButton" name="resetViewPushButton">
            <property name="sizePolicy">
@@ -112,19 +102,6 @@ QGroupBox::title {
             </size>
            </property>
           </widget>
-         </item>
-         <item row="2" column="4">
-          <spacer name="horizontalSpacer_5">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
          </item>
          <item row="1" column="0" colspan="7">
           <widget class="HeatmapDisplay" name="glPlot" native="true"/>
@@ -187,6 +164,36 @@ QGroupBox::title {
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2">
+          <spacer name="horizontalSpacer_5">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="2" column="4">
+          <widget class="QPushButton" name="imageCalculatorPushButton">
+           <property name="text">
+            <string>Image Calculator</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="5">
+          <widget class="QPushButton" name="saveBitmapPushButton">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save image to your computer&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Save image</string>
            </property>
           </widget>
          </item>
@@ -963,7 +970,6 @@ QGroupBox::title {
   <tabstop>gradientSelector</tabstop>
   <tabstop>outOfBoundsCheckbox</tabstop>
   <tabstop>resetViewPushButton</tabstop>
-  <tabstop>saveBitmapPushButton</tabstop>
   <tabstop>saveWithScaleCheckBox</tabstop>
   <tabstop>saveCheckBox</tabstop>
   <tabstop>saveLineEdit</tabstop>

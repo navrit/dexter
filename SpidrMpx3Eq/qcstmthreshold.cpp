@@ -98,21 +98,57 @@ void QCstmThreshold::on_thlCalibDifferentiateCheckBox_toggled(bool checked)
         //! Change y units to "Energy (KeV)"
 
         ui->plot->yAxis->setLabel(altYLabel);
+        //int graphNumber = ui->plot->graphCount();
 
-//        qDebug() << &_data << endl;
+        for ( int i = 0 ; i < _plotIdxCntr ; i++ ) {
+            QCPGraph * graph = ui->plot->graph( i );
+            QMap<double, QCPData> * dm = graph->data();
+            QMap<double, QCPData>::const_iterator itr  = dm->begin();
+            QMap<double, QCPData>::const_iterator itrE = dm->end();
+            std::vector<int>    x;
+            std::vector<double> y;
 
+            //! Extract points in a useful way
+            for ( ; itr != itrE ; itr++ ) {
+                x.push_back( int    ((*itr).key)  );
+                y.push_back( double ((*itr).value));
+            }
 
-//        if (ui->plot->selectedGraphs().length() > 0){
-//            const QCPDataMap *dataMap = ui->plot->selectedGraphs().first()->data();
-//            qDebug() << dataMap;
-//        }
+            //! Test data
+//            std::vector<int>    x = {0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,104,106,108,110,112,114,116,118,120,122,124,126,128,130,132,134,136,138,140,142,144,146,148,150,152,154,156,158,160,162,164,166,168,170,172,174,176,178,180,182,184,186,188,190,192,194,196,198,200};
+//            std::vector<double> y = {64452,65295.3,65477.7,65505.3,65509,65509,65509,65510,65510,65510,65510,65510,65510,65510,65510,65510,65509.7,65509.3,65509.7,65508.3,65509,65508,65508,65508,65507.7,65507,65506.3,65505.7,65504.3,65505.7,65503.7,65500,65496.3,65499,65491.7,65491,65479,65481.3,65470.7,65462.7,65450.3,65425.7,65406.3,65388.3,65348.7,65310,65273.3,65186.3,65087.3,64962.7,64764.3,64537.3,64228.3,63711,63111,62291,61135.3,59679.3,58064.7,55990.7,53583.7,51015.3,48145.3,45225,42253,39526.3,36757,34447.3,31789,29294.3,26869.3,24247,21741,19423,17131,14856,12924,10889,9241.67,7796,6305,5058,4012.33,3127.33,2390.33,1788.33,1324.67,938.667,678.333,445.333,327.333,216.667,145.667,114.333,80.6667,55.3333,38,26.6667,19,18,12.3333};
+
+            std::vector<double> f = derivativeFivePointStencil(x,y);
+//            qDebug() << f.size() << " | " << x.size();
+
+            //! Put points from array on graph
+            for ( int i = 0; i < x.size() ; i++ ) {
+//                qDebug() << x[j] << f[j];
+                setPoint(QPointF(x[i],f[i]), _plotIdxCntr);
+            }
+            QCPGraph * graphNew = ui->plot->graph( i+1 );
+            auto biggest = std::max_element(std::begin(f), std::end(f));
+            auto peak = std::min_element(std::begin(f), std::end(f)) + std::distance(std::begin(f), biggest);
+            double xAtPeak = 0;
+
+            for ( int i = 0; i < x.size() ; i++ ) {
+                if (f[i] == *peak){
+                    auto minX = std::min_element(std::begin(x), std::end(x));
+                    xAtPeak = i + *minX;
+                }
+            }
+            graphNew->setName( "dC/dTHL Peak @ " + QString::number(xAtPeak) + ", " + QString::number(*peak) );
+        }
 
 
     } else {
         //! Hide differentiation and switch back to raw data
         ui->plot->yAxis->setLabel(defaultYLabel);
+
+        ui->plot->removeGraph((_plotIdxCntr));
     }
 
+    ui->plot->rescaleAxes();
     ui->plot->replot();
 }
 
@@ -123,7 +159,6 @@ int QCstmThreshold::getActiveTargetCode() {
 QString QCstmThreshold::getActiveTargetName() {
     return QString(MPX3RX_DAC_TABLE[ui->scanTargetComboBox->currentIndex()].name);
 }
-
 
 void QCstmThreshold::StartCalibration() {
 
@@ -293,7 +328,6 @@ void QCstmThreshold::addPoint(QPointF data, int plot){
     return setPoint(QPointF(data.x(), data.y()+getPoint(data.x(),plot)), plot);
 }
 
-
 void QCstmThreshold::addData(int dacIdx, int dacVal, double adcVal ) {
 
     _graph = ui->plot->graph( _plotIdxMap[dacIdx] ); // the right vector index
@@ -329,6 +363,80 @@ void QCstmThreshold::addData(int dacIdx) {
     ui->plot->legend->setVisible( true );
 
 }
+
+std::vector<double> QCstmThreshold::derivativeFivePointStencil(std::vector<int> x, std::vector<double> f)
+{
+    std::vector<double> f_prime;
+
+    for (int i = 0 ; i < x.size() ; i++) {
+        if (i < (x.size() - 2)){
+            double der;
+            der +=   -f[i + 2]; // f1
+            der +=  8.*f[i    ]; // f2
+            der += -8.*f[i    ]; // f3
+            der +=    f[i - 2]; // f4
+            der /= 12.;
+            //qDebug() << x[i] << ", "<< f[i] << ", " << der;
+            // We don't care about negative values at all
+            if (der < 0){
+                der = 0;
+            }
+            f_prime.push_back(der);
+        } else {
+            f_prime.push_back(0);
+        }
+    }
+
+    auto f_primeMax = std::max_element(std::begin(f_prime), std::end(f_prime));
+    auto distToMax = std::distance(std::begin(f_prime), f_primeMax);
+    double fPeak = f[distToMax];
+    auto a = *f_primeMax / fPeak;
+
+    //! Normalise to max of input (x)
+    // Meant to be f_prime = f_prime * a but this isn't Python
+    for (int i = 0 ; i < x.size() ; i++) {
+        f_prime[i] = f_prime[i] / a;
+    }
+    return f_prime;
+}
+
+void QCstmThreshold::on_pushButtonSave_clicked()
+{
+    // Save the different groups of data
+    for ( int i = 0 ; i < _plotIdxCntr ; i++ ) {
+
+        QString fn = "scan_";
+        fn += QString::number(i);
+        fn += ".txt";
+        qDebug() << "[DUMP] plot : " << i << " | file : " << fn;
+
+        std::ofstream ofs (fn.toStdString(), std::ofstream::out);
+
+        QCPGraph * graph = ui->plot->graph( i );
+        QMap<double, QCPData> * dm = graph->data();
+        QMap<double, QCPData>::const_iterator itr  = dm->begin();
+        QMap<double, QCPData>::const_iterator itrE = dm->end();
+        for ( ; itr != itrE ; itr++ ) {
+            ofs << (*itr).key << "\t" << (*itr).value << std::endl;
+        }
+        ofs.close();
+    }
+
+}
+
+void QCstmThreshold::on_thlCalibStop_clicked()
+{
+    //qDebug() << ">> Stop clicked";
+    if (_scanThread->isRunning()) {
+        //qDebug() << ">> Scan is running, let's kill this biatch";
+        _scanThread->setAbort(true);
+    } else {
+        //qDebug() << ">> Scan is not running, do NOTHING";
+        return;
+    }
+}
+
+
 
 CustomScanThread::CustomScanThread(Mpx3GUI * mpx3gui, QCstmThreshold * cstmThreshold) {
 
@@ -616,41 +724,4 @@ void CustomScanThread::setAbort(bool arg)
 {
     abort = arg;
     return;
-}
-
-void QCstmThreshold::on_pushButtonSave_clicked()
-{
-    // Save the different groups of data
-    for ( int i = 0 ; i < _plotIdxCntr ; i++ ) {
-
-        QString fn = "scan_";
-        fn += QString::number(i);
-        fn += ".txt";
-        qDebug() << "[DUMP] plot : " << i << " | file : " << fn;
-
-        std::ofstream ofs (fn.toStdString(), std::ofstream::out);
-
-        QCPGraph * graph = ui->plot->graph( i );
-        QMap<double, QCPData> * dm = graph->data();
-        QMap<double, QCPData>::const_iterator itr  = dm->begin();
-        QMap<double, QCPData>::const_iterator itrE = dm->end();
-        for ( ; itr != itrE ; itr++ ) {
-            ofs << (*itr).key << "\t" << (*itr).value << std::endl;
-        }
-        ofs.close();
-    }
-
-}
-
-
-void QCstmThreshold::on_thlCalibStop_clicked()
-{
-    //qDebug() << ">> Stop clicked";
-    if (_scanThread->isRunning()) {
-        //qDebug() << ">> Scan is running, let's kill this biatch";
-        _scanThread->setAbort(true);
-    } else {
-        //qDebug() << ">> Scan is not running, do NOTHING";
-        return;
-    }
 }

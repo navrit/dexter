@@ -2020,3 +2020,15 @@ void QCstmGLVisualization::consumerBufferFull(int)
                           tr("The system can't keep up. Please review your settings. Increasing UDP kernel buffer size or getting a faster CPU may help."));
 
 }
+
+void QCstmGLVisualization::on_imageCalculatorPushButton_clicked()
+{
+    qDebug() << "CLICKED";
+    if ( ! _imageCalcDialog ) {
+
+        _imageCalcDialog = new ImageCalculator(_mpx3gui, this);
+        //connect(_imageCalcDialog, SIGNAL(), this, SLOT());
+    }
+
+    _imageCalcDialog->show(); // modeless
+}
