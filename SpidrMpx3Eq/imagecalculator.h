@@ -23,6 +23,8 @@ private slots:
     void on_comboBox_removeLayer_currentIndexChanged(int index); //! Remove selected item by index
                                                                  //! Note: Intended for manual cleanup of operations without major interruption
 
+    void on_pushButton_removeLayer_clicked();
+
 private:
     Ui::ImageCalculator *ui = nullptr;
     Mpx3GUI *_mpx3gui = nullptr;

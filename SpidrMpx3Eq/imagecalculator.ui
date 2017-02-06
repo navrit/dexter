@@ -41,27 +41,27 @@
      <item>
       <widget class="QGroupBox" name="groupBox_2">
        <property name="title">
-        <string>Pre-defined</string>
+        <string>Pre-defined functions</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="1">
+          <item row="2" column="1">
+           <widget class="QPushButton" name="pushButton_removeLayer">
+            <property name="text">
+             <string>Remove</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QComboBox" name="comboBox_removeLayer"/>
+          </item>
+          <item row="1" column="1">
            <widget class="QPushButton" name="pushButton_calcAllEnergyBins">
             <property name="text">
              <string>Calculate all energy bins</string>
             </property>
            </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>Remove layer</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="comboBox_removeLayer"/>
           </item>
          </layout>
         </item>

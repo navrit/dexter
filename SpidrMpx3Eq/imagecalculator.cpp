@@ -19,7 +19,8 @@ ImageCalculator::ImageCalculator(Mpx3GUI * mg, QWidget *parent) :
     ui->comboBox_removeLayer->addItems(stringList);
 
     //! Connect comboBox remove signal to slot to remove that item
-    connect(ui->comboBox_removeLayer, SIGNAL(activated(int)), this, SLOT(on_comboBox_removeLayer_currentIndexChanged(int)));
+    //!  Apparently this happens automagically somewhere, somehow
+    //connect(ui->comboBox_removeLayer, SIGNAL(activated(int)), this, SLOT(on_comboBox_removeLayer_currentIndexChanged(int)));
 }
 
 ImageCalculator::~ImageCalculator()
@@ -46,6 +47,11 @@ void ImageCalculator::on_okCancelBox_rejected()
 
 void ImageCalculator::on_comboBox_removeLayer_currentIndexChanged(int index)
 {
-    //! WHY IS THIS CALLED TWICE??!?!?!@?!?!?
     qDebug() << "[INFO] ImageCalculator::on_comboBox_removeLayer_currentIndexChanged :" << index;
+}
+
+void ImageCalculator::on_pushButton_removeLayer_clicked()
+{
+    int index = ui->comboBox_removeLayer->currentIndex();
+    qDebug() << "[INFO] ImageCalculator::on_pushButton_removeLayer_clicked() :" << "Removing index" << index;
 }
