@@ -506,13 +506,17 @@ void Dataset::toTIFF(QString filename, bool crossCorrection)
                 }
             }
         } else {
-            //! Raw - No cross correction or spatial correction
-            for (int y=0; y < getHeight(); y++) {
-                for (int x=0; x < getWidth(); x++) {
+            width  = getWidth();
+            height = getHeight();
+            qDebug() << getThresholds().count();
+
+            for (int y=0; y < height; y++) {
+                for (int x=0; x < width; x++) {
                     //! Sample the pixels directly
-                    image[y*getWidth() + x] = sample(x, y, thresholds[i]);
+                    image[y*width + x] = sample(x, y, thresholds[i]);
                 }
             }
+            tmpFilename.replace(".tif", "-thl" + QString::number(thresholds[i]) + ".tif");
         }
 
         //! Open the TIFF file, write mode

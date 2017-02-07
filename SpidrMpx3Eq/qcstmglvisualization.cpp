@@ -1129,7 +1129,6 @@ void QCstmGLVisualization::new_range_dragged(QCPRange newRange){
 
 void QCstmGLVisualization::on_clear(){
     layerNames.clear();
-    ui->layerSelector->clear();
     ui->histPlot->clear();
     ui->layerSelector->clear();
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset());

@@ -870,13 +870,15 @@ void Mpx3GUI::save_data(bool requestPath) {
     QString filename, path, selectedFilter;
     if (!requestPath){
         //! Native format - User dialog
-        filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", BIN_FILES ";;" TIFF_FILES ";;" ASCII_FILES, &selectedFilter);
+        filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", BIN_FILES ";;" RAW_TIFF_FILES ";;" TIFF_FILES ";;" ASCII_FILES, &selectedFilter);
 
         if (filename.isNull()){
             return;
         }
         if (selectedFilter == BIN_FILES && !filename.toLower().toLatin1().contains(".bin")){
             filename.append(".bin");
+        } else if (selectedFilter == RAW_TIFF_FILES && !filename.toLower().toLatin1().contains("_raw.tif")){
+            filename.append("_raw.tif");
         } else if (selectedFilter == TIFF_FILES && !filename.toLower().toLatin1().contains(".tif")){
             filename.append(".tif");
         } else if (selectedFilter == ASCII_FILES && !filename.toLower().toLatin1().contains(".txt")){
@@ -896,6 +898,8 @@ void Mpx3GUI::save_data(bool requestPath) {
 
     if (selectedFilter == BIN_FILES){
         getDataset()->saveBIN(filename);
+    } else if (selectedFilter == RAW_TIFF_FILES){
+        getDataset()->toTIFF(filename, false);
     } else if (selectedFilter == TIFF_FILES){
         getDataset()->toTIFF(filename);
     } else if (selectedFilter == ASCII_FILES) {
