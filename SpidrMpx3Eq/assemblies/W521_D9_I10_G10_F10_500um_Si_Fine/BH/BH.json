@@ -21,11 +21,6 @@
     },
     "corr4": {
         "mat": "Al",
-        "path": "/home/navrit/dev/mpx3gui/SpidrMpx3Eq/assemblies/W521_D9_I10_G10_F10_500um_Si_Fine/BH/500um.bin",
-        "thickness": 500
-    },
-    "corr5": {
-        "mat": "Al",
         "path": "/home/navrit/dev/mpx3gui/SpidrMpx3Eq/assemblies/W521_D9_I10_G10_F10_500um_Si_Fine/BH/1000um.bin",
         "thickness": 1000
     }
