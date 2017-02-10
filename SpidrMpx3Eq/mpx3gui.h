@@ -60,6 +60,7 @@ class QCstmCT;
 
 #define BIN_FILES "Binary (*.bin)"
 #define TIFF_FILES "TIFF (*.tif)"
+#define SPATIAL_TIFF_FILES "TIFF (*_spatialCorrected.tif)"
 #define RAW_TIFF_FILES "TIFF (*_raw.tif)"
 #define ASCII_FILES "ASCII (*.txt)"
 #define JSON_FILES "BH JSON file(*.json)"

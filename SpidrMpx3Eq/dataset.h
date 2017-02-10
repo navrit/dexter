@@ -134,7 +134,7 @@ public:
     QByteArray toByteArray(); //!< Serializes the dataset for saving.
     QVector<int> toQVector(); //!< Serializes the dataset for saving.
     void saveBIN(QString filename);   //! Puts the dataset into a BIN format and saves.
-    void toTIFF(QString filename, bool crossCorrection = true );  //! Puts the dataset into a TIFF format and saves.
+    void toTIFF(QString filename, bool crossCorrection = true , bool spatialOnly = false);  //! Puts the dataset into a TIFF format and saves.
     void toASCII(QString filename); //! Puts the dataset into ASCII format and saves.
 
     void fromByteArray(QByteArray serialized); //!< Restores the dataset from a previously serialized set.
@@ -239,7 +239,7 @@ public:
 
     int newLayer(int layer);//!<Adds a new layer at the specified threshold.
 
-    void runImageCalculator(QString imgOperator, int index1, int index2);
+    void runImageCalculator(QString imgOperator, int index1, int index2, int threshold = 0);
     void calcAllEnergyBins();
 
 };
