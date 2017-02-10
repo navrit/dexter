@@ -117,6 +117,9 @@ private slots:
     void biasVoltageChanged();
 
 
+    void on_checkBox_sendDataToIP_toggled(bool checked);
+    void on_sendDataToIPlineEdit_editingFinished();
+
 private:
     Ui::QCstmConfigMonitoring *ui;
     int _timerId;
