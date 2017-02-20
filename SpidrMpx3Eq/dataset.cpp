@@ -245,7 +245,7 @@ void Dataset::saveBIN(QString filename)
  *          currently only writes the first threshold
  *          Does cross correction for non spectroscopic mode ONLY - spectroscopic images have a non constant ratio??? #SpecialPixels
  */
-void Dataset::toTIFF(QString filename, bool crossCorrection)
+void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
 {
     //! http://research.cs.wisc.edu/graphics/Courses/638-f1999/libtiff_tutorial.htm
     //! http://ridl.cfd.rit.edu/products/manuals/Leach/new/Drivers/ARC_API_SRC_3/3.0/CTiffFile/CTiffFile.cpp
@@ -280,6 +280,12 @@ void Dataset::toTIFF(QString filename, bool crossCorrection)
         qDebug() << "[INFO] TIFF size check passed : " <<  tTotalDataSize;
     }*/
 
+    if (spatialOnly){
+        edgePixelMagicNumber = 1;
+        edgePixelMagicNumberSpectro = 1;
+        edgePixelMagicNumberSpectroHorizontal = 1;
+        edgePixelMagicNumberSpectroVertical = 1;
+    }
     //! Save for all thresholds in separate files
     //! Note: Could use TIFF pages but this is a much clearer approach for the user and is more compatible cross systems
     QList<int> thresholds = m_thresholdsToIndices.keys();
@@ -347,10 +353,10 @@ void Dataset::toTIFF(QString filename, bool crossCorrection)
                 for (int x=0; x < width; x++) {
                     if (x >= (width/2)-extraPixels && x <= (width/2)+extraPixels){               // vertical centre
                         /*if (y > (height/2)-extraPixels-1 && y <= (height/2)+extraPixels ) {
-                            //qDebug() << "[CENTRAL] " << x << y;
-                            continue;
+                                //qDebug() << "[CENTRAL] " << x << y;
+                                continue;
 
-                        } else*/ if (x == (width/2)-extraPixels ) {                              // L
+                            } else*/ if (x == (width/2)-extraPixels ) {                              // L
                             //Set 255, 256, 257 as 1/2.8 of 255
                             // qDebug() << "[L]" << tmp << x << y;
                             if (y <= height/2 - extraPixels || y >= height/2 + extraPixels + 1){
@@ -2010,7 +2016,7 @@ int Dataset::newLayer(int threshold){
     return m_layers.size()-1;
 }
 
-void Dataset::runImageCalculator(QString imgOperator, int index1, int index2)
+void Dataset::runImageCalculator(QString imgOperator, int index1, int index2, int threshold)
 {
     int width = getWidth();
     int height = getHeight();
@@ -2046,6 +2052,22 @@ void Dataset::runImageCalculator(QString imgOperator, int index1, int index2)
 
 
     qDebug() << keys[0] << "-" << keys[1];
+
+
+    //threshold = 7;
+
+    //! This shiiiiieeet
+
+    /*
+    if(!m_thresholdsToIndices.contains(threshold))
+        newLayer(threshold);
+    int *newFrame = getFrame(index1, threshold);
+
+    for (int i = 0 ; i < m_nx*m_ny;i++) {
+
+        newFrame[i] = image[i];
+    }
+    */
     //setPixel(0,0,0,1);
 
 

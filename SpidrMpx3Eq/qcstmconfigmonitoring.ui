@@ -397,6 +397,9 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
            <widget class="QRadioButton" name="radioButtonS">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="layoutDirection">
              <enum>Qt::RightToLeft</enum>
             </property>
@@ -407,6 +410,9 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
           </item>
           <item>
            <widget class="QRadioButton" name="radioButtonMS">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="layoutDirection">
              <enum>Qt::RightToLeft</enum>
             </property>
@@ -458,20 +464,13 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
           </item>
          </layout>
         </item>
-        <item row="8" column="0">
-         <widget class="QLabel" name="label_12">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Send data to IP</string>
-          </property>
-         </widget>
-        </item>
         <item row="8" column="3">
          <widget class="QLineEdit" name="sendDataToIPlineEdit">
           <property name="enabled">
            <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>127.0.0.1:60000</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -529,7 +528,6 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
        <zorder>csmSpmCombo</zorder>
        <zorder>label_19</zorder>
        <zorder></zorder>
-       <zorder>label_12</zorder>
        <zorder>sendDataToIPlineEdit</zorder>
        <zorder>label_13</zorder>
        <zorder>logLevelSpinner</zorder>

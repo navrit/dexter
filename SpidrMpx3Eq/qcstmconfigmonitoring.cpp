@@ -1517,3 +1517,19 @@ void QCstmConfigMonitoring::cameraOn() {
 
 //}
 
+
+void QCstmConfigMonitoring::on_checkBox_sendDataToIP_toggled(bool checked)
+{
+    if (checked){
+        ui->sendDataToIPlineEdit->setEnabled(true);
+    } else {
+        ui->sendDataToIPlineEdit->setEnabled(false);
+    }
+}
+
+void QCstmConfigMonitoring::on_sendDataToIPlineEdit_editingFinished()
+{
+    if (ui->checkBox_sendDataToIP->isChecked()){
+        qDebug() << "QCstmConfigMonitoring::on_sendDataToIPlineEdit_editingFinished() :" << ui->sendDataToIPlineEdit->text();
+    }
+}
