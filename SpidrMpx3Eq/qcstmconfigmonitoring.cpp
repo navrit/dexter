@@ -146,6 +146,7 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
         ui->localTempMeasLineEdit->setEnabled( true );
         ui->FpgaTempMeasLineEdit->setEnabled( true );
         ui->biasVoltageMeasLineEdit->setEnabled( true );
+        ui->systemClockLineEdit->setEnabled( true );
 
         ui->avddmamp->setEnabled( true );
         ui->avddmvolt->setEnabled( true );
@@ -169,6 +170,7 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
         ui->localTempMeasLineEdit->setText("");
         ui->FpgaTempMeasLineEdit->setText("");
         ui->biasVoltageMeasLineEdit->setText("");
+        ui->systemClockLineEdit->setText("");
 
         ui->avddmamp->setText("");
         ui->avddmvolt->setText("");
@@ -186,6 +188,7 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
         ui->localTempMeasLineEdit->setEnabled( false );
         ui->FpgaTempMeasLineEdit->setEnabled( false );
         ui->biasVoltageMeasLineEdit->setEnabled( false );
+        ui->systemClockLineEdit->setEnabled( false );
 
         ui->avddmamp->setEnabled( false );
         ui->avddmvolt->setEnabled( false );
@@ -479,6 +482,9 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(ui->ipLineEdit, SIGNAL( editingFinished() ), this, SLOT( IpAddressEditFinished() ) );// config, SLOT(setIpAddress(QString)) );
     connect(config, SIGNAL(IpAdressChanged(QString)), ui->ipLineEdit, SLOT(setText(QString)) );
 
+    // Log level
+    connect(ui->logLevelSpinner, SIGNAL( editingFinished() ), this, SLOT( setLogLevel() ) );
+    connect(config, SIGNAL(logLevelChanged(int)), ui->logLevelSpinner, SLOT(setValue(int)) );
 
 
 //    // Stepper Motor Controller
@@ -552,6 +558,12 @@ void QCstmConfigMonitoring::biasVoltageChanged(){
                 ui->biasVoltageSpinner->value()
                 );
 
+}
+
+void QCstmConfigMonitoring::setLogLevel(){
+    _mpx3gui->getConfig()->setLogLevel(
+                ui->logLevelSpinner->value()
+                );
 }
 
 void QCstmConfigMonitoring::OperationModeSwitched(int indx)
@@ -674,7 +686,7 @@ void QCstmConfigMonitoring::readMonitoringInfo() {
 
     if ( spidrcontrol ) {
 
-        int mdegrees;
+        int mdegrees, clockMHz;
         if( spidrcontrol->getRemoteTemp( &mdegrees ) ) {
             QString qs = QString("%1.%2 °C").arg( mdegrees/1000 ).arg( mdegrees%1000, 3, 10, QChar('0') );
             ui->remoteTempMeasLineEdit->setText( qs );
@@ -695,6 +707,12 @@ void QCstmConfigMonitoring::readMonitoringInfo() {
             ui->FpgaTempMeasLineEdit->setText( "--.--" );
         }
 
+        if ( spidrcontrol->getMpx3Clock( &clockMHz ) ) {
+            QString qs = QString("%1 MHz").arg( clockMHz );
+            ui->systemClockLineEdit->setText( qs );
+        } else {
+            ui->systemClockLineEdit->setText( "---" );
+        }
 
         int biasVolts;
         if ( spidrcontrol->getBiasVoltage(&biasVolts) ) {

@@ -29,26 +29,26 @@ Mpx3Config::Mpx3Config()
 
 bool Mpx3Config::RequiredOnEveryChipConfig(Mpx3Config::config_items item) {
     return (
-             item == __ALL ||
-              (
-              item != __nTriggers &&
-              item != __triggerLength &&
-              item != __triggerDowntime &&
-              item != __triggerMode &&
-              item != __biasVoltage
-              )
-            );
+                item == __ALL ||
+                (
+                    item != __nTriggers &&
+            item != __triggerLength &&
+            item != __triggerDowntime &&
+            item != __triggerMode &&
+            item != __biasVoltage
+            )
+                );
 }
 
 bool Mpx3Config::RequiredOnGlobalConfig(Mpx3Config::config_items item)
 {
     return (
-             item == __ALL ||
-             item == __nTriggers ||
-             item == __triggerLength ||
-             item == __triggerDowntime ||
-             item == __triggerMode ||
-             item == __operationMode // operation mode requires trigger config too !
+                item == __ALL ||
+                item == __nTriggers ||
+                item == __triggerLength ||
+                item == __triggerDowntime ||
+                item == __triggerMode ||
+                item == __operationMode // operation mode requires trigger config too !
                 );
 }
 
@@ -120,8 +120,9 @@ void Mpx3Config::PickupStaticConfigurationFigures() {
 
     //
     int clockMHz;
-    spidrcontrol->getMpx3Clock( &clockMHz );
-    qDebug() << "Clock: " << clockMHz;
+    if ( spidrcontrol->getMpx3Clock( &clockMHz ) ) {
+        SystemClock = clockMHz;
+    }
 
 }
 
@@ -156,7 +157,6 @@ void Mpx3Config::SendConfiguration( config_items item ) {
     // Global configurations
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     if ( spidrcontrol == nullptr ) return;
-    spidrcontrol->setLogLevel( 2 );
 
     if ( RequiredOnGlobalConfig( item ) && getOperationMode() == __operationMode_SequentialRW ) {
 
@@ -180,6 +180,11 @@ void Mpx3Config::SendConfiguration( config_items item ) {
                  << "| trig_deadtime_us: " << trig_deadtime_us
                  << "| trig_freq_mhz:" <<  trig_freq_mhz
                  << "| nr_of_triggers:" << nr_of_triggers;
+    }
+
+    // Log level
+    if ( item == __logLevel ) {
+        spidrcontrol->setLogLevel( getLogLevel() );
     }
 
     // Bias
@@ -207,8 +212,6 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
-
-    spidrcontrol->setLogLevel( 0 );
 
     // Reset pixel configuration if requested
     if ( reset ) spidrcontrol->resetPixelConfig();
@@ -740,6 +743,10 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
         it = JSobject.find("BiasVoltage");
         if(it != JSobject.end())
             setBiasVoltage(it.value().toDouble());
+
+        it = JSobject.find("LogLevel");
+        if(it != JSobject.end())
+            setLogLevel(it.value().toInt());
 
     }
 

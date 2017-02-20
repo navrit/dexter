@@ -115,7 +115,7 @@ private slots:
 //    void on_motorTestButton_clicked();
 //    void stepperGotoTargetFinished();
     void biasVoltageChanged();
-
+    void setLogLevel();
 
 private:
     Ui::QCstmConfigMonitoring *ui;

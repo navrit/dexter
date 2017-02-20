@@ -241,7 +241,7 @@ bool Mpx3GUI::equalizationLoaded(){
     return _ui->equalizationWidget->equalizationHasBeenLoaded();
 }
 
-void Mpx3GUI::setTestPulses() {
+bool Mpx3GUI::setTestPulses() {
 
     int devId = 0;
 
@@ -251,10 +251,10 @@ void Mpx3GUI::setTestPulses() {
 
         pair<int, int> pix;
         bool testbit = false;
+        int testBitTrue = 0;
         for ( int i = 0 ; i < __matrix_size ; i++ ) {
 
             pix = XtoXY(i, __array_size_x);
-
 
             if ( pix.first % 2 == 0 && pix.second % 2 == 0 ) {
                 testbit = true;
@@ -270,15 +270,19 @@ void Mpx3GUI::setTestPulses() {
                                             _ui->equalizationWidget->getEqMap()[devId]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
                                             testbit);
 
+            if ( testbit ) testBitTrue++;
         }
+
+        qDebug() << "[TEST] Number of pixels testBit ON : "<< testBitTrue;
 
         spidrcontrol->setPixelConfigMpx3rx( devId );
         spidrcontrol->setCtpr( devId );
 
         spidrcontrol->setTpSwitch( 1, 200000 );
 
-    }
+    } else return false; // equalization missing
 
+    return true;
 }
 
 int Mpx3GUI::getStepperMotorPageID()
@@ -848,7 +852,7 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     objParent.insert("Thresholds", thresholds_str);
 
     // TODO JSON
-//    objParent.insert("Number of frames", );
+    //    objParent.insert("Number of frames", );
 
 
     doc.setObject(objParent);
@@ -1009,8 +1013,8 @@ void Mpx3GUI::open_data(bool saveOriginal){
     this->setWindowTitle( _softwareName + QString(": ")+ filename);
 
     // DQE ! ... this is on the way here !!!
-//    // If not in DQE - change back to Visualisation
-//    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
+    //    // If not in DQE - change back to Visualisation
+    //    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
 
     //if(!_ui->dqeTab->openingNPSfile){       //CHECK ME >>>>>>>>>>>>>>
     //    uncheckAllToolbarButtons();
@@ -1075,9 +1079,9 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
     }
 
     // If not in DQE - change back to Visualisation
-//    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
-//        _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
-//    }
+    //    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
+    //        _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
+    //    }
     if(!_ui->dqeTab->openingNPSfile){
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
@@ -1155,7 +1159,7 @@ void Mpx3GUI::clear_configuration(){
 void Mpx3GUI::clear_data(bool clearStatusBar) {
 
     getDataset()->clear();
-//    _ui->dqeTab->clearDataAndPlots(true);
+    //    _ui->dqeTab->clearDataAndPlots(true);
     //getVisualization()->cle
     emit data_cleared();
     this->setWindowTitle( _softwareName);

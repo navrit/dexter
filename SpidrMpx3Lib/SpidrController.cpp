@@ -576,8 +576,8 @@ bool SpidrController::setMpx3Clock( int megahertz )
 bool SpidrController::setTpSwitch( int val, int freq_mhz )
 {
   // Configure the TP_Switch period (frequency): 25ns per count
-  this->setSpidrReg( SPIDRMPX3_TPSWITCH_FREQ_I,
-		     (int) (((double) 40000000.0/(double) freq_mhz)*1000.0) );
+  //this->setSpidrReg( SPIDRMPX3_TPSWITCH_FREQ_I,
+  //  	     (int) (((double) 40000000.0/(double) freq_mhz)*1000.0) );
 
   // If 'val' > 0 set the bit, otherwise reset it; verify it
   return this->setSpidrRegBit( SPIDRMPX3_MPX3_CTRL_I, SPIDRMPX3_TP_SWITCH_BIT,

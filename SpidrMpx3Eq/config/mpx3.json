@@ -134,7 +134,8 @@
         "TriggerLength_us": 20000,
         "TriggerMode": 4,
         "nTriggers": 10,
-        "BiasVoltage" : 100
+        "BiasVoltage" : 100,
+        "LogLevel" : 1
     },
     "IPConfig": {
         "SpidrControllerIp": "192.168.1.10",

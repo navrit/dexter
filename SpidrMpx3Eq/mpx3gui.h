@@ -171,7 +171,7 @@ public:
 
     bool equalizationLoaded();
 
-    void setTestPulses();
+    bool setTestPulses();
 
     //! SPIDR information strings for About dialog
     QString m_SPIDRControllerVersion = "";

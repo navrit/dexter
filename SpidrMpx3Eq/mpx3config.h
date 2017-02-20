@@ -61,6 +61,7 @@ public:
         __colourMode,
         __LUTEnable,
         __decodeFrames,
+        __logLevel,
 
 
         __maxPacketSize,
@@ -81,6 +82,9 @@ private:
     //Operation stuff
     bool colourMode = false, LUTEnable = false, decodeFrames = false, readBothCounters = false, Polarity = true;
     int OperationMode = -1, PixelDepth = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, ContRWFreq = -1, TriggerMode =-1, TriggerLength_us = -1, TriggerDowntime_us = -1, nTriggers = -1;
+    int LogLevel = -1;
+    // The following are static characteristics read from the SPIDR, not configurable.
+    int SystemClock = -1;
     QVector<int> _dacVals[MPX3RX_DAC_COUNT];
     // Stepper
     bool stepperUseCalib = false;
@@ -156,6 +160,7 @@ public:
     int getGainMode(){return GainMode;}
     int getMaxPacketSize(){return MaxPacketSize;}
     int getTriggerMode(){return TriggerMode;}
+    int getLogLevel(){return LogLevel;}
 
     int getContRWFreq(){return ContRWFreq;}
     int getTriggerLength(){return TriggerLength_us;}
@@ -198,6 +203,7 @@ signals:
     void pixelDepthChanged(int);
     void polarityChanged(int);
     void csmSpmChanged(int);
+    void logLevelChanged(int);
     void gainModeChanged(int);
     void MaxPacketSizeChanged(int);
     void TriggerModeChanged(int);
@@ -216,6 +222,14 @@ signals:
     void BiasVoltageChanged(double);
 
 public slots:
+
+    void setLogLevel(int newVal) {
+        if ( newVal != LogLevel ) {
+            LogLevel = newVal; emit logLevelChanged(newVal);
+            //updateCsmSpm();
+            SendConfiguration( __logLevel );
+        }
+    }
 
     void setBiasVoltage(double volt) {
         if ( volt != this->getBiasVoltage() ) {
