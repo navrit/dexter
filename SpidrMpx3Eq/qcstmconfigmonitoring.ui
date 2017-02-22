@@ -494,6 +494,13 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
           </property>
          </widget>
         </item>
+        <item row="8" column="0">
+         <widget class="QCheckBox" name="checkBox_sendDataToIP">
+          <property name="text">
+           <string>Send data to IP</string>
+          </property>
+         </widget>
+        </item>
        </layout>
        <zorder>label_3</zorder>
        <zorder>operationModeComboBox</zorder>
@@ -531,6 +538,7 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
        <zorder>sendDataToIPlineEdit</zorder>
        <zorder>label_13</zorder>
        <zorder>logLevelSpinner</zorder>
+       <zorder>checkBox_sendDataToIP</zorder>
       </widget>
      </item>
      <item row="0" column="2">
