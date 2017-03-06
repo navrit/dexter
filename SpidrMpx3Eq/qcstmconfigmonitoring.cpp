@@ -123,6 +123,11 @@ unsigned int QCstmConfigMonitoring::getPixelDepthFromIndex(int indx) {
     return __pixelDepthMap[indx];
 }
 
+QString QCstmConfigMonitoring::getSendDataToIP()
+{
+    return ui->sendDataToIPlineEdit->text();
+}
+
 QCstmConfigMonitoring::~QCstmConfigMonitoring()
 {
 //    if( _stepperThread ) delete _stepperThread;

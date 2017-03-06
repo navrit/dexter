@@ -515,6 +515,8 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
     DestroyTimer();
     ETAToZero();
 
+    qDebug() << _mpx3gui->getConfigMonitoring()->getSendDataToIP();
+
     ConfigureGUIForIdling();
 
     rewindScoring();
