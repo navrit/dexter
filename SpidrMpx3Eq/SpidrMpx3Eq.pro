@@ -164,27 +164,15 @@ FORMS    += mpx3gui.ui \
     qcstmsteppermotor.ui \
     imagecalculator.ui
 
-DISTFILES += \
-    shaders/heatmap.frag \
-    shaders/passthrough.vert \
-    config/heatmaps.json \
-    shaders/simple3d.vert \
-    shaders/simple3d.frag \
-    NOTES.txt \
-    config/mpx3.json \
-    ../../Downloads/Automated_External_Defibrillator.png \
-    icons/Automated_External_Defibrillator.png
-
-
-    copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/config\" &
-    copydata.commands += $(COPY_DIR)  \"$$PWD/shaders\" \"$$DESTDIR/shaders\" &
+    copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/\" &
     first.depends = $(first) copydata
     export(first.depends)
     export(copydata.commands)
     QMAKE_EXTRA_TARGETS += first copydata
 
 RESOURCES += \
-    icons.qrc
+    icons.qrc \
+    shaders.qrc
 
 CONFIG   += static
 

@@ -33,8 +33,8 @@ void QCstmGLPlot::initializeLocations(){
 }
 
 void QCstmGLPlot::initializeShaders(){
-    program.addShaderFromSourceFile(QOpenGLShader::Vertex, "./shaders/passthrough.vert");
-    program.addShaderFromSourceFile(QOpenGLShader::Fragment, "./shaders/heatmap.frag");
+    program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/shaders/passthrough.vert");
+    program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/shaders/heatmap.frag");
     for(int i = 0; i < program.shaders().length();i++)
         if(program.shaders()[i]->log().length() != 0)
             std::cout << program.shaders()[i]->log().toStdString();

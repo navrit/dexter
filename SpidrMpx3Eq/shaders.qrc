@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/shaders">
+        <file>shaders/heatmap.frag</file>
+        <file>shaders/passthrough.vert</file>
+        <file>shaders/simple3d.frag</file>
+        <file>shaders/simple3d.vert</file>
+    </qresource>
+</RCC>

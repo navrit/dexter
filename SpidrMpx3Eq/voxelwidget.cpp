@@ -86,11 +86,11 @@ void VoxelWidget::setModelView(){
 }
 
 void VoxelWidget::initShaders(){
-  if (!program.addShaderFromSourceFile(QOpenGLShader::Vertex, "./shaders/simple3d.vert")){
+  if (!program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/shaders/simple3d.vert")){
           std::cout << "Couldn't open vertex shader!\n";
           //return;
     }
-  if (!program.addShaderFromSourceFile(QOpenGLShader::Fragment, "./shaders/simple3d.frag")){
+  if (!program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/shaders/simple3d.frag")){
           std::cout <<  "Couldn't open fragment shader!\n";
           //return;
     }

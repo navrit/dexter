@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/files">
+        <file>icons/startupimage.bin</file>
+    </qresource>
+</RCC>
