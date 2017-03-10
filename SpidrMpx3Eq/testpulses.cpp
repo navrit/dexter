@@ -82,14 +82,17 @@ void TestPulses::on_pushButtonSet_clicked()
     double adc_volt = (__voltage_DACS_MAX/(double)__maxADCCounts) * (((double)adc_val)/nSamples);
     qDebug() << "RPZ[255] : " << adc_val << " | volts : " << adc_volt;
 
-    // IDELAY
-    /*
-                    int val = ui->spinBox->value();
-                    qDebug() << "Setting : " << val;
-                    _mpx3gui->GetSpidrController()->setSpidrReg(0x10A0, val, true);
-                    _mpx3gui->GetSpidrController()->setSpidrReg(0x10A4, val, true);
-                    _mpx3gui->GetSpidrController()->setSpidrReg(0x10A8, val, true);
-                    _mpx3gui->GetSpidrController()->setSpidrReg(0x10AC, val, true);
-                    */
 
+}
+
+void TestPulses::on_pushButton_clicked()
+{
+    // IDELAY
+
+    int val = ui->spinBox_2->value();
+    qDebug() << "IDELAY Setting : " << val;
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x10A0, val, true);
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x10A4, val, true);
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x10A8, val, true);
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x10AC, val, true);
 }

@@ -22,6 +22,8 @@ private slots:
 
     void on_pushButtonSet_clicked();
 
+    void on_pushButton_clicked();
+
 private:
     Mpx3GUI * _mpx3gui = nullptr;
     Ui::TestPulses *ui = nullptr;
