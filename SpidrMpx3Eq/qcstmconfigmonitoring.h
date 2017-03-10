@@ -75,6 +75,7 @@ private slots:
     void csmSpmChangedByValue(int val);
 
     void IpAddressEditFinished();
+    void sendDataToIpAddressEditFinished();
 
     void nTriggersEdited();
     void ContRWFreqEdited();
