@@ -133,7 +133,14 @@ void Mpx3Config::SendConfiguration( config_items item ) {
     // the initization of ReceiverThreadC
 
     // This are configuration bits which are not settable like the system clock
-    if ( item == __ALL ) PickupStaticConfigurationFigures();
+    if ( item == __ALL ) {
+        _mpx3gui->GetSpidrController()->setSpidrReg(0x10A0, __IDELAY, true);
+        _mpx3gui->GetSpidrController()->setSpidrReg(0x10A4, __IDELAY, true);
+        _mpx3gui->GetSpidrController()->setSpidrReg(0x10A8, __IDELAY, true);
+        _mpx3gui->GetSpidrController()->setSpidrReg(0x10AC, __IDELAY, true);
+        PickupStaticConfigurationFigures();
+
+    }
 
     ////////////////////////////////////////////////////////////
     // Items which don't need any communication to the device
