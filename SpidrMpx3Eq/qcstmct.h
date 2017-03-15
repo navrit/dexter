@@ -48,13 +48,14 @@ private:
     void stopCT();  // MAIN INTERRUPT
     bool _stop = false;
     bool isMotorMoving = false;
-    void doBHCorrection(QString corrFilename);
     QString CTfolder = QDir::homePath() + "/";
 
     bool activeMotors = false;
 
 signals:
     void sig_connectToMotors( bool );
+    void sig_loadBHJSON(bool);
+    void sig_applyBHCorrection();
 
 public slots:
     void slot_connectedToMotors();

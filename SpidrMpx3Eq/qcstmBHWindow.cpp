@@ -38,7 +38,9 @@ void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
     connect(this, &QCstmBHWindow::openData2, _mpx3gui, &Mpx3GUI::open_data_with_path);
     connect(this, SIGNAL(reload()),_mpx3gui->getVisualization(),SLOT(reload_all_layers()));
     connect(_mpx3gui, SIGNAL(open_data_failed()), this, SLOT(on_open_data_failed())); //! Ignore no matching signal error - it's whiny
-    connect(this,SIGNAL(applyCorrection()),this, SLOT(on_applyBHCorrection()));
+    connect(_mpx3gui->getCT(), SIGNAL(sig_loadBHJSON(bool)), this, SLOT(on_loadJsonButton_clicked(bool)));
+    connect(_mpx3gui->getCT(), SIGNAL(sig_applyBHCorrection()), this, SLOT(on_applyBHCorrection()));
+    connect(this,SIGNAL(applyCorrection()), this, SLOT(on_applyBHCorrection()));
     connect(_corr, SIGNAL(applyBHCorrection()), this, SLOT(on_applyBHCorrection()));
 
     connect(this, SIGNAL(sendFilename(QString)), _corr, SLOT(receiveFilename(QString)));
@@ -242,6 +244,7 @@ void QCstmBHWindow::on_list_itemClicked(QListWidgetItem *item){
 void QCstmBHWindow::on_applyBHCorrection()
 //! Makes signal to thickness conversion.
 {
+    qDebug() << "QCstmBHWindow::on_applyBHCorrection() -------- Applying BH Correction";
     QList<int> keys = _mpx3gui->getDataset()->getThresholds();
 
     // Not possible in the following cases
@@ -367,20 +370,43 @@ void QCstmBHWindow::on_okButton_clicked(){
 
 }
 
-void QCstmBHWindow::on_loadJsonButton_clicked(){
+void QCstmBHWindow::on_loadJsonButton_clicked(bool ctMode){
     //! Loads a .json file from which a number of correction items are made.
     //! json file contains material, thickness and path to dataset.
 
-    fileName = QFileDialog::getOpenFileName(this,tr("Json files (*.JSON)"));
-    QFile loadFile(fileName);
+    //! Only ask for filename with stupid dialog if not in CT mode and if not first CT run
 
+    qDebug() << "[CT] ctMode :" << ctMode;
+    QString filename = "";
+
+    if (ctMode){
+        // Just use last filename, don't pester the user!! Unless it's the first time
+        if (firstRun){
+            filename = QFileDialog::getOpenFileName(this,tr("Json files (*.JSON)"));
+            qDebug() << "First run";
+        } else {
+            filename = lastFilename;
+            qDebug() << "NOT first run";
+        }
+    } else {
+        qDebug() << "Normal run";
+        filename = QFileDialog::getOpenFileName(this,tr("Json files (*.JSON)"));
+        lastFilename = filename;
+    }
+
+    firstRun = false;
+
+    if (filename == ""){
+        qDebug() << "[WARN] No BH Correction applied - empty filename";
+    }
+
+    QFile loadFile(filename);
     if(!loadFile.open(QIODevice::ReadOnly)){
-        printf("Couldn't open configuration file %s\n", fileName.toStdString().c_str());
+        printf("Couldn't open configuration file %s\n", filename.toStdString().c_str());
         return;
     }
 
-    this->setWindowTitle(QString(fileName));
-
+    this->setWindowTitle(QString(filename));
     thicknessvctr.clear();
     correctionMap.clear();
     correctionMaterial.clear();
@@ -415,7 +441,7 @@ void QCstmBHWindow::on_loadJsonButton_clicked(){
                 correctionPath = it.value().toString();
 
                 //! UI update - send file name to Corrections Dialog
-                emit sendFilename(fileName);
+                emit sendFilename(filename);
                 selectedItemNo = i;
                 emit loadData();
                 usePath = false; // set to false to prevent accidents further down the road.

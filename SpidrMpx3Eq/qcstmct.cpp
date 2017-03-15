@@ -72,7 +72,7 @@ void QCstmCT::applyCorrection(QString correctionMethod)
         return;
     } else if (correctionMethod == "Open Beam"){
         // Get an Open Beam image
-        qDebug() << "----- Open Beam" << correctionFilename << endl;
+        qDebug() << "[CT] Correction: Open Beam" << correctionFilename << endl;
 
         _mpx3gui->getDataset()->removeCorrection();
         QFile OBfile(correctionFilename);
@@ -89,11 +89,13 @@ void QCstmCT::applyCorrection(QString correctionMethod)
 
     } else if (correctionMethod == "Beam Hardening"){
         // Get a Beam hardening JSON
-        qDebug() << "----- Beam Hardening";
-        doBHCorrection(correctionFilename);
+        qDebug() << "[CT] Correction: Beam Hardening";
+        _mpx3gui->getDataset()->removeCorrection();
+        emit sig_loadBHJSON(true);
+        emit sig_applyBHCorrection();
 
     } else {
-        qDebug() << "----- Unknown option?!?!?!";
+        qDebug() << "[CT] Correction: Unknown option?!?!?!";
         return;
     }
 }
@@ -107,13 +109,6 @@ QString QCstmCT::getCorrectionFile()
     } else {
         return "";
     }
-
-}
-
-void QCstmCT::doBHCorrection(QString corrFilename)
-{
-    // Call on_applyBHCorrection signal in BHWindow
-    qDebug() << "QCstmCT::doBHCorrection   on filename: " << corrFilename;
 
 }
 
@@ -250,20 +245,22 @@ void QCstmCT::resumeCT()
         ui->CTPushButton->setText("Start CT");
         _stop = true;
 
-        QString filename = CTfolder +
-                QDateTime::currentDateTimeUtc().toString(Qt::ISODate) +
-                "_notes.txt";
-        QFile saveNotes(filename);
-        if (!saveNotes.open(QIODevice::WriteOnly)) {
-            string messg = "Couldn't open: ";
-            messg.append(filename.toStdString());
-            messg.append("\nNo output written.");
-            QMessageBox::warning ( this, tr("Error saving data"), tr(messg.c_str()) );
-            return;
+        if (!ui->textEdit->toPlainText().isEmpty()){
+            QString filename = CTfolder +
+                    QDateTime::currentDateTimeUtc().toString(Qt::ISODate) +
+                    "_notes.txt";
+            QFile saveNotes(filename);
+            if (!saveNotes.open(QIODevice::WriteOnly)) {
+                string messg = "Couldn't open: ";
+                messg.append(filename.toStdString());
+                messg.append("\nNo output written.");
+                QMessageBox::warning ( this, tr("Error saving data"), tr(messg.c_str()) );
+                return;
+            }
+            QTextStream stream(&saveNotes);
+            stream << ui->textEdit->toPlainText();
+            saveNotes.close();
         }
-        QTextStream stream(&saveNotes);
-        stream << ui->textEdit->toPlainText();
-        saveNotes.close();
 
         qDebug() << "[CT] ------------ End ------------";
         return;
