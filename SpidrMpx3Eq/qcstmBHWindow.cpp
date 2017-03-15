@@ -433,9 +433,9 @@ void QCstmBHWindow::on_loadJsonButton_clicked(){
 void QCstmBHWindow::on_saveJsonButton_clicked()
 {
     // Opens dialog, add .json to filename if not present
-    fileName = QFileDialog::getSaveFileName(this, tr("Save to Json"),"",tr("Json files (*.JSON)"));
+    fileName = QFileDialog::getSaveFileName(this, tr("Save to Json"),"",tr("Json files (*.json)"));
     if (!fileName.isEmpty()){
-        if (!fileName.endsWith(".JSON") && !fileName.endsWith(".json") && !fileName.endsWith("Json"))
+        if (!fileName.toLatin1().toLower().endsWith(".json"))
             fileName += ".json";
     } else {
         return;

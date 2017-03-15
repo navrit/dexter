@@ -90,6 +90,7 @@ void QCstmCT::applyCorrection(QString correctionMethod)
     } else if (correctionMethod == "Beam Hardening"){
         // Get a Beam hardening JSON
         qDebug() << "----- Beam Hardening";
+        doBHCorrection(correctionFilename);
 
     } else {
         qDebug() << "----- Unknown option?!?!?!";
@@ -106,6 +107,13 @@ QString QCstmCT::getCorrectionFile()
     } else {
         return "";
     }
+
+}
+
+void QCstmCT::doBHCorrection(QString corrFilename)
+{
+    // Call on_applyBHCorrection signal in BHWindow
+    qDebug() << "QCstmCT::doBHCorrection   on filename: " << corrFilename;
 
 }
 

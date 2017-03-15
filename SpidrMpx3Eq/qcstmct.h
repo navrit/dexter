@@ -5,6 +5,7 @@
 #include "mpx3gui.h"
 #include "gradient.h"
 #include <QElapsedTimer>
+#include <QDir>
 //#include <stdio.h>
 //#include <phidget21.h>
 
@@ -47,7 +48,8 @@ private:
     void stopCT();  // MAIN INTERRUPT
     bool _stop = false;
     bool isMotorMoving = false;
-    QString CTfolder = "/home/navrit/";
+    void doBHCorrection(QString corrFilename);
+    QString CTfolder = QDir::homePath() + "/";
 
     bool activeMotors = false;
 
