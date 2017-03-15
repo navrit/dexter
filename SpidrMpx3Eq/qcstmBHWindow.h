@@ -87,8 +87,7 @@ signals:
     void sendChecked_BHCorrCheckbox(bool);
 
 public slots:
-    void on_loadJsonButton_clicked(bool ctMode);
-    void on_applyBHCorrection();
+    void on_doBHCorrection();
 
 private slots:
     void on_addButton_clicked();
@@ -103,6 +102,8 @@ private slots:
     void on_okButton_clicked();
     void on_saveJsonButton_clicked();
     void on_plot();
+    void on_loadJsonButton_clicked(bool ctMode);
+    void on_applyBHCorrection();
 
 };
 

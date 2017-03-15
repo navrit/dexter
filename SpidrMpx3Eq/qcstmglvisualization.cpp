@@ -287,6 +287,14 @@ void QCstmGLVisualization::saveImage(QString filename)
     _mpx3gui->getDataset()->toTIFF(filename);
 }
 
+void QCstmGLVisualization::saveImage(QString filename, QString corrMethod)
+{
+    if (corrMethod == "Beam Hardening"){
+        //! Only do spatial correction in this mode
+        _mpx3gui->getDataset()->toTIFF(filename, false, true);
+    }
+}
+
 void QCstmGLVisualization::StartDataTaking(bool CtMode = false) {
     runningCT = CtMode;
 

@@ -90,9 +90,7 @@ void QCstmCT::applyCorrection(QString correctionMethod)
     } else if (correctionMethod == "Beam Hardening"){
         // Get a Beam hardening JSON
         qDebug() << "[CT] Correction: Beam Hardening";
-        _mpx3gui->getDataset()->removeCorrection();
-        emit sig_loadBHJSON(true);
-        emit sig_applyBHCorrection();
+        emit doBHCorrection();
 
     } else {
         qDebug() << "[CT] Correction: Unknown option?!?!?!";
@@ -203,9 +201,10 @@ void QCstmCT::resumeCT()
     // Essentially a global for (i < numberOfProjections) loop
     if (iteration < numberOfProjections-1) {
         // Correct image
-        applyCorrection( ui->correctionMethod->currentText() );
+        QString corrMethod = ui->correctionMethod->currentText();
+        applyCorrection( corrMethod );
 
-        // Save/send file?l
+        // Save/send file?
         QString filename = CTfolder +
                 //QDateTime::currentDateTimeUtc().toString(Qt::ISODate) +
                 "img_" +
@@ -213,7 +212,11 @@ void QCstmCT::resumeCT()
                 ".tif";
 
         //qDebug() << "[CT] Saving TIFF:" << filename;
-        _mpx3gui->getVisualization()->saveImage(filename);
+        if (corrMethod == "Beam Hardening"){
+            _mpx3gui->getVisualization()->saveImage(filename, corrMethod);
+        } else {
+            _mpx3gui->getVisualization()->saveImage(filename);
+        }
         _mpx3gui->getDataset()->clear();
 
 

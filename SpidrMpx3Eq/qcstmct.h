@@ -54,8 +54,7 @@ private:
 
 signals:
     void sig_connectToMotors( bool );
-    void sig_loadBHJSON(bool);
-    void sig_applyBHCorrection();
+    void doBHCorrection();
 
 public slots:
     void slot_connectedToMotors();
