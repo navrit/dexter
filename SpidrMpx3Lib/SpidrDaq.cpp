@@ -8,8 +8,16 @@
 #include "FramebuilderThreadC.h"
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x16082900; // Add frameFlags()
-//const int VERSION_ID = 0x16061400; // Add info header processing (ReceiverThreadC)
+
+// - Fix 24-bit bug in ReceiverThread::setPixelDepth().
+// - Tolerate SOF out-of-order in ReceiverThreadC::readDatagrams().
+// - Use row counter in EOR/EOF pixel packets in
+//   FramebuilderThreadC::mpx3RawToPixel().
+const int   VERSION_ID = 0x17020200;
+
+//const int VERSION_ID = 0x16082900; // Add frameFlags()
+//const int VERSION_ID = 0x16061400; // Add info header processing
+                                     // (ReceiverThreadC)
 //const int VERSION_ID = 0x16040800; // Add parameter readout_mask to c'tor
 //const int VERSION_ID = 0x16032400; // Renamed disableLut() to setLutEnable()
 //const int VERSION_ID = 0x16030900; // Compact-SPIDR support added

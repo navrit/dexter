@@ -869,10 +869,10 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     qDebug() << "[INFO] JSON File saved";
 }
 
-void Mpx3GUI::save_data(bool requestPath) {
+void Mpx3GUI::save_data(bool requestPath, int frameId) {
 
     QString filename, path, selectedFilter;
-    if (!requestPath){
+    if ( !requestPath ) {
         //! Native format - User dialog
         filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", BIN_FILES ";;" RAW_TIFF_FILES ";;" SPATIAL_TIFF_FILES ";;" TIFF_FILES ";;" ASCII_FILES, &selectedFilter);
 
@@ -899,7 +899,13 @@ void Mpx3GUI::save_data(bool requestPath) {
         filename = path;
         filename.append("/");
         filename.append(QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
-        filename.append(".bin");
+        // if saving all frames, append the frame Id too (more than 1 frame may be saved within 1 second)
+        if ( getVisualization()->isSaveAllFramesChecked() ) {
+            filename.append( QString("_%1").arg(frameId) );
+        }
+        //filename.append(".bin");
+        filename.append(".txt");
+        selectedFilter = ASCII_FILES;
     }
 
     if (selectedFilter == BIN_FILES){

@@ -27,7 +27,9 @@ FramebuilderThreadC::~FramebuilderThreadC()
 
 // ----------------------------------------------------------------------------
 // NB: processFrame() identical to FramebuilderThread::processFrame()
-//     except for the function name for QtConcurrent::run()
+//     except for the function name for QtConcurrent::run().
+//     Note that the implementation of mpx3RawTpPixel() *is* indeed
+//     completely different from the implemention in FramebuilderThread.
 
 void FramebuilderThreadC::processFrame()
 {
@@ -107,7 +109,7 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
 					 //int          device_type,
 					 bool           compress )
 {
-  // Convert Compact-SPIDR MPX3 data stream
+  // Translate Compact-SPIDR MPX3 data stream
   // into n-bits pixel values in array 'pixel' (with n=counter_depth)
   int counter_bits, pix_per_word, pixel_mask;
 
@@ -120,7 +122,8 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
   pixel_mask   = (1<<counter_bits)-1;
 
   // Parse and unpack the pixel packets
-  int *pixelrow = &pixels[0];
+  int  temp[MPX_PIXEL_COLUMNS]; // Temporary storage for a pixel row
+  //int *pixelrow = &pixels[0];
   int  index    = 0;
   int  rownr    = -1;
   u64 *pixelpkt = (u64 *) raw_bytes;
@@ -135,22 +138,47 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
 	{
 	case PIXEL_DATA_SOR:
 	case PIXEL_DATA_SOF:
-	  ++rownr;
-	  pixelrow = &pixels[rownr * MPX_PIXEL_COLUMNS];
+	  //++rownr;
+	  //pixelrow = &pixels[rownr * MPX_PIXEL_COLUMNS];
 	  index = 0;
-	  // 'break' left out intentionally
-	case PIXEL_DATA_EOR:
-	case PIXEL_DATA_EOF:
+	  memset( temp, 0, MPX_PIXEL_COLUMNS );
+	  // 'break' left out intentionally;
+	  // continue unpacking the pixel packet
+
 	case PIXEL_DATA_MID:
 	  // Unpack the pixel packet
 	  for( j=0; j<pix_per_word; ++j, ++index )
 	    {
 	      // Make sure not to write outside the current pixel row
 	      if( index < MPX_PIXEL_COLUMNS )
-		pixelrow[index] = pixelword & pixel_mask;
+		//pixelrow[index] = pixelword & pixel_mask;
+		temp[index] = pixelword & pixel_mask;
 	      pixelword >>= counter_bits;
 	    }
 	  break;
+
+	case PIXEL_DATA_EOR:
+	case PIXEL_DATA_EOF:
+	  // Extract the row counter from the data
+	  rownr = (int) ((pixelword & ROW_COUNT_MASK) >> ROW_COUNT_SHIFT);
+
+	  // Unpack the pixel packet
+	  for( j=0; j<pix_per_word; ++j, ++index )
+	    {
+	      // Make sure not to write outside the current pixel row
+	      if( index < MPX_PIXEL_COLUMNS )
+		//pixelrow[index] = pixelword & pixel_mask;
+		temp[index] = pixelword & pixel_mask;
+	      pixelword >>= counter_bits;
+	    }
+
+	  // Pixel row should be complete now:
+	  // Copy the row (compiled in the temporary array)
+	  // to its proper location in the frame
+	  memcpy( &pixels[rownr * MPX_PIXEL_COLUMNS], temp,
+		  MPX_PIXEL_COLUMNS * sizeof(int) );
+	  break;
+
 	default:
 	  // Skip this packet
 	  break;
@@ -188,19 +216,18 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
     }
 
   // Return a size in bytes
-  int size = (MPX_PIXELS * sizeof(int));
+  int size = MPX_PIXELS * sizeof(int);
   if( !compress ) return size;
-  
-  // Compress 4- and 6-bit frames into 1 byte per pixel
-  // and 12-bit frames into 2 bytes per pixel (1-bit frames already
-  // available 'compressed' into 1 bit per pixel in array 'raw_bytes')
+
+  // Compress 4- and 6-bit frames into 1 byte per pixel and 12-bit frames
+  // into 2 bytes per pixel and 1-bit frames into 1 bit per pixel
   if( counter_depth == 12 )
     {
       u16 *pixels16 = (u16 *) pixels;
       int *pixels32 = (int *) pixels;
       for( int i=0; i<MPX_PIXELS; ++i, ++pixels16, ++pixels32 )
 	*pixels16 = (u16) ((*pixels32) & 0xFFFF);
-      size = (MPX_PIXELS * sizeof( u16 ));
+      size = MPX_PIXELS * sizeof( u16 );
     }
   else if( counter_depth == 4 || counter_depth == 6 )
     {
@@ -208,7 +235,7 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
       int *pixels32 = (int *) pixels;
       for( int i=0; i<MPX_PIXELS; ++i, ++pixels8, ++pixels32 )
 	*pixels8 = (u8) ((*pixels32) & 0xFF);
-      size = (MPX_PIXELS * sizeof( u8 ));
+      size = MPX_PIXELS * sizeof( u8 );
     }
   else if( counter_depth == 1 )
     {
@@ -226,6 +253,7 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
 	      ++pixels1;
 	    }
 	}
+      size = MPX_PIXELS / 8;
     }
   return size;
 }

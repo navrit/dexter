@@ -22,6 +22,7 @@ public:
     void rewindcopydata(size_t num);
     void freeResources();
     uint getSemaphoreSize(){return _semaphoreSize;}
+    void dataTakingSaysIFinished();
 
     void consume();
     void SeparateThresholds(int /*id*/,
@@ -43,6 +44,7 @@ protected:
 signals:
 
     void bufferOccupancySig(int);
+    void doneWithOneFrame(int);
     void bufferFull(int);
 
 private:
@@ -52,6 +54,7 @@ private:
     bool _restart;
     bool _abort;
     bool _stop;
+    int _frameId;
 
     Mpx3GUI * _mpx3gui;
 

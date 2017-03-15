@@ -80,7 +80,7 @@
 #define CMD_TRIGGER_READOUT    0x444
 
 // Monitoring
-#define CMD_GET_ADC            0x548
+//#define CMD_GET_ADC          0x548
 #define CMD_GET_REMOTETEMP     0x549
 #define CMD_GET_LOCALTEMP      0x54A
 #define CMD_GET_AVDD           0x54B
@@ -103,6 +103,8 @@
 #define CMD_SET_FANSPEED       0x56A
 #define CMD_GET_VDD            0x56C
 #define CMD_GET_VDD_NOW        0x56D
+#define CMD_GET_HUMIDITY       0x56E
+#define CMD_GET_PRESSURE       0x56F
 
 // Configuration: non-volatile onboard storage
 #define CMD_STORE_ADDRPORTS    0x670
@@ -118,6 +120,7 @@
 #define CMD_VALID_REGISTERS    0x67A
 #define CMD_VALID_PIXCONF      0x67B
 
+// Firmware update
 #define CMD_READ_FLASH         0x67E
 #define CMD_WRITE_FLASH        0x67F
 
@@ -126,6 +129,7 @@
 #define CMD_SET_SPIDRREG       0x784
 #define CMD_SET_CHIPBOARDID    0x785
 #define CMD_SET_BOARDID        0x786
+#define CMD_REINIT_MACADDR     0x787
 
 // Short strings describing the commands
 // (indexed by the lower byte of the command identifier)
@@ -208,7 +212,7 @@ static const char *CMD_STR[] =
     "-----",             // 0x446
     "-----",             // 0x447
 
-    "GET_ADC          ", // 0x548
+    "-----",             // 0x548
     "GET_REMOTETEMP   ", // 0x549
     "GET_LOCALTEMP    ", // 0x54A
     "GET_AVDD         ", // 0x54B
@@ -248,8 +252,8 @@ static const char *CMD_STR[] =
     "-----",             // 0x56B
     "GET_VDD          ", // 0x56C
     "GET_VDD_NOW      ", // 0x56D
-    "-----",             // 0x56E
-    "-----",             // 0x56F
+    "GET_HUMIDITY     ", // 0x56E
+    "GET_PRESSURE     ", // 0x56F
 
     "STORE_ADDRPORTS  ", // 0x670
     "STORE_DACS       ", // 0x671
@@ -274,7 +278,8 @@ static const char *CMD_STR[] =
     "GET_SPIDRREG     ", // 0x783
     "SET_SPIDRREG     ", // 0x784
     "SET_CHIPBOARDID  ", // 0x785
-    "SET_BOARDID      "  // 0x786
+    "SET_BOARDID      ", // 0x786
+    "REINIT_MACADDR   "  // 0x787
   };
 
 // Reply bit: set in the reply message in the command identifier

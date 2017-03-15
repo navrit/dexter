@@ -521,7 +521,14 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
     //! If Save checkbox is checked and Save line edit is not empty,
     //!    Save the data to .bin file with path obtained from UI
-    if(ui->saveCheckBox->isChecked() && !(ui->saveLineEdit->text().isEmpty())){
+    if(
+            ui->saveCheckBox->isChecked()
+            &&
+            !(ui->saveLineEdit->text().isEmpty())
+            &&
+            !isSaveAllFramesChecked() // if it's checked the last was already saved
+            )
+    {
         _mpx3gui->save_data(true);
     }
 
@@ -529,6 +536,11 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
     if (runningCT){
         emit sig_resumeCT();
+    }
+
+    // inform the consumer that the data taking is finished
+    if ( _dataConsumerThread->isRunning() ) {
+        _dataConsumerThread->dataTakingSaysIFinished();
     }
 
     /*
@@ -1295,6 +1307,11 @@ int QCstmGLVisualization::getActiveThreshold(){
     return list[valIdx].toInt();
 }
 
+bool QCstmGLVisualization::isSaveAllFramesChecked()
+{
+    return ui->saveAllCheckBox->isChecked();
+}
+
 void QCstmGLVisualization::active_frame_changed(){
 
     //ui->layerSelector->addItem(QString("%1").arg(threshold));
@@ -1975,6 +1992,22 @@ void QCstmGLVisualization::bufferOccupancySlot(int occ){
     ui->bufferOccupancy->setValue( occ );
 }
 
+void QCstmGLVisualization::consumerFinishedOneFrame(int frameId){
+
+    //! If Save checkbox is checked and Save line edit is not empty,
+    //! AND the used requested every frame to be saved.
+    //! Save the data to .bin file with path obtained from UI
+    if(
+            ui->saveCheckBox->isChecked()
+            &&
+            !(ui->saveLineEdit->text().isEmpty())
+            &&
+            ui->saveAllCheckBox->isChecked()
+            ){
+        _mpx3gui->save_data(true, frameId);
+    }
+}
+
 //! Resets the view - uses same function as double clicking
 void QCstmGLVisualization::on_resetViewPushButton_clicked(){
     reload_all_layers();
@@ -1984,7 +2017,7 @@ void QCstmGLVisualization::on_resetViewPushButton_clicked(){
 void QCstmGLVisualization::on_saveCheckBox_clicked(){
     ui->saveLineEdit->clear();
 
-    qDebug() << ui->saveCheckBox->isChecked();
+    //qDebug() << ui->saveCheckBox->isChecked();
 
     //! Open file dialog, get path and set saveLineEdit to given path and continue
     if(ui->saveCheckBox->isChecked()){
@@ -2025,4 +2058,14 @@ void QCstmGLVisualization::on_imageCalculatorPushButton_clicked()
     }
 
     _imageCalcDialog->show(); // modeless
+}
+
+void QCstmGLVisualization::on_saveAllCheckBox_toggled(bool checked)
+{
+    if ( checked ) {
+        if ( ! ui->saveCheckBox->isChecked() ) {
+            ui->saveCheckBox->setChecked( true );
+            on_saveCheckBox_clicked();
+        }
+    }
 }

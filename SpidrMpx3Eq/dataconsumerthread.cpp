@@ -11,6 +11,7 @@ DataConsumerThread::DataConsumerThread(Mpx3GUI * mpx3gui, QObject * parent)
     _restart = false;
     _abort = false;
     _stop = false;
+    _frameId = 0;
 
     _mpx3gui = mpx3gui;
 
@@ -56,6 +57,10 @@ DataConsumerThread::~DataConsumerThread() {
     // Signals
     disconnect( this, &DataConsumerThread::bufferOccupancySig,
                 _mpx3gui->getVisualization(), &QCstmGLVisualization::bufferOccupancySlot );
+    disconnect ( this, &DataConsumerThread::doneWithOneFrame,
+              _mpx3gui->getVisualization(),
+              &QCstmGLVisualization::consumerFinishedOneFrame
+              );
 
 
     // Color structure
@@ -72,7 +77,13 @@ void DataConsumerThread::consume()
     if ( !isRunning() ) {
 
         connect( this, &DataConsumerThread::bufferOccupancySig,
-                 _mpx3gui->getVisualization(), &QCstmGLVisualization::bufferOccupancySlot );
+                 _mpx3gui->getVisualization(),
+                 &QCstmGLVisualization::bufferOccupancySlot
+                 );
+        connect ( this, &DataConsumerThread::doneWithOneFrame,
+                  _mpx3gui->getVisualization(),
+                  &QCstmGLVisualization::consumerFinishedOneFrame
+                  );
 
         // Start !
         start( HighPriority );
@@ -132,6 +143,7 @@ void DataConsumerThread::freeResources() {
 
 }
 
+
 void DataConsumerThread::run()
 {
 
@@ -145,6 +157,7 @@ void DataConsumerThread::run()
         if ( _abort ) return;
 
         //_mutex.lock();
+        //_frameId = 0;
         // local variables to scope variables
         //_mutex.unlock();
 
@@ -186,8 +199,8 @@ void DataConsumerThread::run()
                     for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
                         usedFrames->acquire();
                         SeparateThresholds(0,
-                                       buffer + readdescriptor,
-                                       ci);
+                                           buffer + readdescriptor,
+                                           ci);
                         freeFrames->release();
                     }
                     // Move the reading descriptor
@@ -237,9 +250,13 @@ void DataConsumerThread::run()
                      << " | descriptor : " << descriptor
                      << " | dist : " << descriptorDistance
                      << " | buffer : " << _bufferSize;
-        */
+            */
+
+            emit doneWithOneFrame( _frameId++ );
+
             if ( _stop ) break;
         }
+
 
         //qDebug() << "   --- lock DataConsumerThread";
         _mutex.lock();
@@ -253,6 +270,14 @@ void DataConsumerThread::run()
 
 }
 
+void DataConsumerThread::dataTakingSaysIFinished()
+{
+    // Then rewind the counter
+    _mutex.lock();
+    _frameId = 0;
+    // local variables to scope variables
+    _mutex.unlock();
+}
 
 void DataConsumerThread::SeparateThresholds(int /*id*/,
                                             int * data,

@@ -249,6 +249,17 @@ QGroupBox::title {
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QCheckBox" name="saveAllCheckBox">
+              <property name="toolTip">
+               <string>Auto save every frame.
+If you run too fast this feature should not be used.</string>
+              </property>
+              <property name="text">
+               <string>all</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
           <item>

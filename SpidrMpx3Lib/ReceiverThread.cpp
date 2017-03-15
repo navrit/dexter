@@ -20,8 +20,8 @@ typedef int SOCKET;
 // ----------------------------------------------------------------------------
 
 ReceiverThread::ReceiverThread( int *ipaddr,
-                int  port,
-                QObject *parent )
+				int  port,
+				QObject *parent )
   : QThread( parent ),
     _sock( 0 ),
     _port( port ),
@@ -46,11 +46,11 @@ ReceiverThread::ReceiverThread( int *ipaddr,
 {
   _spidrHeader = (SpidrHeader_t *) _recvBuffer;
   _addr = (((ipaddr[3] & 0xFF) << 24) | ((ipaddr[2] & 0xFF) << 16) |
-       ((ipaddr[1] & 0xFF) << 8) | ((ipaddr[0] & 0xFF) << 0));
+	   ((ipaddr[1] & 0xFF) << 8) | ((ipaddr[0] & 0xFF) << 0));
   _addrStr = (QString::number( ipaddr[3] ) + '.' +
-          QString::number( ipaddr[2] ) + '.' +
-          QString::number( ipaddr[1] ) + '.' +
-          QString::number( ipaddr[0] ));
+	      QString::number( ipaddr[2] ) + '.' +
+	      QString::number( ipaddr[1] ) + '.' +
+	      QString::number( ipaddr[0] ));
   for( u32 i=0; i<NR_OF_FRAMEBUFS; ++i )
     {
       _packetsLostFrame[i] = 9999;
@@ -94,7 +94,7 @@ void ReceiverThread::run()
   if( !_sock->bind( QHostAddress(_addr), _port ) )
     {
       _errString = QString("Failed to bind to adapter/port ") + _addrStr +
-    QString(": ") + _sock->errorString();
+	QString(": ") + _sock->errorString();
       _stop = true;
     }
   // ### Cannot get this to work in combination with exec() below?
@@ -113,12 +113,12 @@ void ReceiverThread::run()
   if( err != 0 )
     {
       _errString = (QString( "WSAStartup failed, error code " ) +
-            QString::number( err ));
+		    QString::number( err ));
     }
   else if( wsadata.wVersion != 0x0202 )
     {
       _errString = (QString( "Winsock version: " ) +
-            QString::number( wsadata.wVersion, 16 ));
+		    QString::number( wsadata.wVersion, 16 ));
     }
   else
 #endif // WIN32
@@ -127,70 +127,66 @@ void ReceiverThread::run()
       sk = socket( AF_INET, SOCK_DGRAM, 0 );
 
       if( sk != INVALID_SOCKET )
-    {
-      // Set socket option(s)
-      bool err_opt = false;
+	{
+	  // Set socket option(s)
+	  bool err_opt = false;
 
-      // Receive buffer size
-      int rcvbufsz = MPX_PIXELS * 64; // Will that be enough?
-      if( setsockopt( sk, SOL_SOCKET, SO_RCVBUF,
-              reinterpret_cast<char *> ( &rcvbufsz ),
-              sizeof( int ) ) != 0 )
-        {
-          _errString = QString("Failed to set socket option SO_RCVBUF");
-          err_opt = true;
-        }
-      /*
-      // Inspect the receive time-out setting..
+	  // Receive buffer size
+	  int rcvbufsz = MPX_PIXELS * 64; // Will that be enough?
+	  if( setsockopt( sk, SOL_SOCKET, SO_RCVBUF,
+			  reinterpret_cast<char *> ( &rcvbufsz ),
+			  sizeof( int ) ) != 0 )
+	    {
+	      _errString = QString("Failed to set socket option SO_RCVBUF");
+	      err_opt = true;
+	    }
+	  /*
+	  // Inspect the receive time-out setting..
 #ifdef WIN32
-      int to;
-      typedef int socklen_t;
+	  int to;
+	  typedef int socklen_t;
 #else
-      struct timeval to;
+	  struct timeval to;
 #endif // WIN32
-      socklen_t len;
-      getsockopt( sk, SOL_SOCKET, SO_RCVTIMEO,
-              reinterpret_cast<char *> ( &to ), &len );
-      */
-      if( !err_opt )
-        {
-          // Bind the socket
-          struct sockaddr_in saddr;
-          saddr.sin_family      = AF_INET;
-          saddr.sin_port        = htons( _port );
-          saddr.sin_addr.s_addr = htonl( _addr );
-          if( bind( sk, ( struct sockaddr * ) &saddr,
-            sizeof( struct sockaddr_in ) ) == 0 )
-        {
-          // Assign the native socket to the Qt socket object
-          if( _sock->setSocketDescriptor( sk ) )
-            _stop = false;
-          else
-            _errString = QString("Failed to set descriptor");
-        }
-          else
-        {
-          _errString = QString("Failed to bind");
-        }
-        }
-    }
+	  socklen_t len;
+	  getsockopt( sk, SOL_SOCKET, SO_RCVTIMEO,
+		      reinterpret_cast<char *> ( &to ), &len );
+	  */
+	  if( !err_opt )
+	    {
+	      // Bind the socket
+	      struct sockaddr_in saddr;
+	      saddr.sin_family      = AF_INET;
+	      saddr.sin_port        = htons( _port );
+	      saddr.sin_addr.s_addr = htonl( _addr );
+	      if( bind( sk, ( struct sockaddr * ) &saddr,
+			sizeof( struct sockaddr_in ) ) == 0 )
+		{
+		  // Assign the native socket to the Qt socket object
+		  if( _sock->setSocketDescriptor( sk ) )
+		    _stop = false;
+		  else
+		    _errString = QString("Failed to set descriptor");
+		}
+	      else
+		{
+		  _errString = QString("Failed to bind");
+		}
+	    }
+	}
       else
-    {
-      _errString = QString("Failed to create socket");
-    }
+	{
+	  _errString = QString("Failed to create socket");
+	}
     }
 #endif // USE_NATIVE_SOCKET
-
-  printf("_pixelDepth=%d",_pixelDepth);
-  QDebug * dbg = new QDebug(QtInfoMsg);
-  *dbg << "_pixelDepth=" << _pixelDepth;
 
   while( !_stop )
     {
       if( _sock->waitForReadyRead( 100 ) )
-    this->readDatagrams();
+	this->readDatagrams();
       else
-    this->handleFrameTimeout();
+	this->handleFrameTimeout();
     }
 
   _sock->close();
@@ -223,21 +219,21 @@ void ReceiverThread::readDatagrams()
       // the expected number of packets per frame
       // (redo this at every new frame start, see below)
       if( _currShutterCnt == -1 )
-    {
-      _currShutterCnt = shutter_cnt;
+	{
+	  _currShutterCnt = shutter_cnt;
 
-      // Determine the used payload size
-      _expPayloadSize = recvd_sz - SPIDR_HEADER_SIZE;
+	  // Determine the used payload size
+	  _expPayloadSize = recvd_sz - SPIDR_HEADER_SIZE;
 
-      // ..and from that the expected number of packets per frame
-      // (including a last packet that may contain less data)
-      _expPacketsPerFrame = ((_expFrameSize + (_expPayloadSize-1)) /
-                 _expPayloadSize);
+	  // ..and from that the expected number of packets per frame
+	  // (including a last packet that may contain less data)
+	  _expPacketsPerFrame = ((_expFrameSize + (_expPayloadSize-1)) /
+				 _expPayloadSize);
 
-      // Need to initialize the first loss count(down)!
-      // (subsequent counters are initialized in nextFrameBuffer())
-      _packetsLostFrame[_head] = _expPacketsPerFrame;
-    }
+	  // Need to initialize the first loss count(down)!
+	  // (subsequent counters are initialized in nextFrameBuffer())
+	  _packetsLostFrame[_head] = _expPacketsPerFrame;
+	}
 
       // For the 'two counters' readout the sequence number continues to
       // increase for the second frame containing the data from the 'high'
@@ -253,58 +249,58 @@ void ReceiverThread::readDatagrams()
       //          doing twice the same code results only in the first one
       //          having an unordered packet sequence)
       if( shutter_cnt != _currShutterCnt ||
-      // Another frame with the same shutter counter as previously?
-      // (happens e.g. with auto-trigger with just 1 trigger per sequence):
-      sequence_nr_modulo < _expSequenceNr )
-    {
-      _currShutterCnt = shutter_cnt;
+	  // Another frame with the same shutter counter as previously?
+	  // (happens e.g. with auto-trigger with just 1 trigger per sequence):
+	  sequence_nr_modulo < _expSequenceNr )
+	{
+	  _currShutterCnt = shutter_cnt;
 
-      if( _expSequenceNr != _expPacketsPerFrame )
-        {
-          // Starting a new frame/image, but prematurely apparently,
-          // since '_expSequenceNr != _expPacketsPerFrame' means
-          // the frame wasn't complete yet...
-          // (see further down where a frame properly completes)
-          ++_framesReceived;
-          this->nextFrameBuffer();
-        }
+	  if( _expSequenceNr != _expPacketsPerFrame )
+	    {
+	      // Starting a new frame/image, but prematurely apparently,
+	      // since '_expSequenceNr != _expPacketsPerFrame' means
+	      // the frame wasn't complete yet...
+	      // (see further down where a frame properly completes)
+	      ++_framesReceived;
+	      this->nextFrameBuffer();
+	    }
 
-      // For the 'two counters' readout the sequence number continues to
-      // increase for the next frame containing the data from the second
-      // counter (added 21 Sep 2015), so if the sequence number exceeds
-      // the expected number we assume here the second counter ('CounterH')
-      // is being read out (added 30 Sep 2015)
-      if( sequence_nr == _expPacketsPerFrame )
-        _isCounterhFrame[_head] = true;
-      // NB: now done in releaseFrame():
-      //else if( sequence_nr == 0 )
-      //_isCounterhFrame[_head] = false;
+	  // For the 'two counters' readout the sequence number continues to
+	  // increase for the next frame containing the data from the second
+	  // counter (added 21 Sep 2015), so if the sequence number exceeds
+	  // the expected number we assume here the second counter ('CounterH')
+	  // is being read out (added 30 Sep 2015)
+	  if( sequence_nr == _expPacketsPerFrame )
+	    _isCounterhFrame[_head] = true;
+	  // NB: now done in releaseFrame():
+	  //else if( sequence_nr == 0 )
+	  //_isCounterhFrame[_head] = false;
 
-      // Any final packets lost in the previous sequence
-      // or any lost packets at the start of this new sequence ?
-      _packetsLost += (_expPacketsPerFrame - _expSequenceNr +
-               sequence_nr_modulo);
+	  // Any final packets lost in the previous sequence
+	  // or any lost packets at the start of this new sequence ?
+	  _packetsLost += (_expPacketsPerFrame - _expSequenceNr +
+			   sequence_nr_modulo);
 
-      // The packet size may have changed (added 30 Sep 2015):
-      if( _expPayloadSize != recvd_sz - SPIDR_HEADER_SIZE )
-        {
-          // Determine the new payload size
-          _expPayloadSize = recvd_sz - SPIDR_HEADER_SIZE;
+	  // The packet size may have changed (added 30 Sep 2015):
+	  if( _expPayloadSize != recvd_sz - SPIDR_HEADER_SIZE )
+	    {
+	      // Determine the new payload size
+	      _expPayloadSize = recvd_sz - SPIDR_HEADER_SIZE;
 
-          // ..and from that the expected number of packets per frame
-          // (including a last packet that may contain less data)
-          _expPacketsPerFrame = ((_expFrameSize + (_expPayloadSize-1)) /
-                     _expPayloadSize);
+	      // ..and from that the expected number of packets per frame
+	      // (including a last packet that may contain less data)
+	      _expPacketsPerFrame = ((_expFrameSize + (_expPayloadSize-1)) /
+				     _expPayloadSize);
 
-          // (Re)initialize the number of lost packets for this frame
-          _packetsLostFrame[_head] = _expPacketsPerFrame;
-        }
-    }
+	      // (Re)initialize the number of lost packets for this frame
+	      _packetsLostFrame[_head] = _expPacketsPerFrame;
+	    }
+	}
       else if( sequence_nr_modulo > _expSequenceNr )
-    {
-      // One or more packets lost in the ongoing frame sequence
-      _packetsLost += sequence_nr_modulo - _expSequenceNr;
-    }
+	{
+	  // One or more packets lost in the ongoing frame sequence
+	  _packetsLost += sequence_nr_modulo - _expSequenceNr;
+	}
 
       // Next expected packet sequence number (NB: minus 1 compared to SPIDR)
       _expSequenceNr = sequence_nr_modulo + 1;
@@ -312,26 +308,26 @@ void ReceiverThread::readDatagrams()
       // Copy the packet's payload to its expected location in the frame buffer
       // (but only when the sequence number is valid..)
       if( sequence_nr_modulo < _expPacketsPerFrame )
-    {
-      memcpy( &_currFrameBuffer[sequence_nr_modulo * _expPayloadSize],
-          &_recvBuffer[SPIDR_HEADER_SIZE],
-          recvd_sz - SPIDR_HEADER_SIZE );
-      --_packetsLostFrame[_head]; // Is a countdown counter...
-    }
+	{
+	  memcpy( &_currFrameBuffer[sequence_nr_modulo * _expPayloadSize],
+		  &_recvBuffer[SPIDR_HEADER_SIZE],
+		  recvd_sz - SPIDR_HEADER_SIZE );
+	  --_packetsLostFrame[_head]; // Is a countdown counter...
+	}
 
       if( _copySpidrHeader )
-    {
-      // Copy the SPIDR header
-      memcpy( _headerBuffer[_head], _recvBuffer, SPIDR_HEADER_SIZE );
-      _copySpidrHeader = false;
-    }
+	{
+	  // Copy the SPIDR header
+	  memcpy( _headerBuffer[_head], _recvBuffer, SPIDR_HEADER_SIZE );
+	  _copySpidrHeader = false;
+	}
 
       if( _expSequenceNr == _expPacketsPerFrame )
-    {
-      // The current frame is now complete so go for a new frame/image
-      ++_framesReceived;
-      this->nextFrameBuffer();
-    }
+	{
+	  // The current frame is now complete so go for a new frame/image
+	  ++_framesReceived;
+	  this->nextFrameBuffer();
+	}
     }
 }
 
@@ -346,15 +342,15 @@ void ReceiverThread::handleFrameTimeout()
     {
       ++_recvTimeoutCount;
       if( _recvTimeoutCount == 2 )
-    {
-      // Most probably we lost the last packet(s) for this frame,
-      // declare the frame complete, count the loss and continue...
-      ++_framesReceived;
-      this->nextFrameBuffer();
+	{
+	  // Most probably we lost the last packet(s) for this frame,
+	  // declare the frame complete, count the loss and continue...
+	  ++_framesReceived;
+	  this->nextFrameBuffer();
 
-      _expSequenceNr = _expPacketsPerFrame; // Don't count losses again
-      _recvTimeoutCount = 0;
-    }
+	  _expSequenceNr = _expPacketsPerFrame; // Don't count losses again
+	  _recvTimeoutCount = 0;
+	}
     }
   else
     {
@@ -380,9 +376,9 @@ void ReceiverThread::nextFrameBuffer()
       // Oops, no more buffers: going to overwrite the last frame received...
       ++_framesLost;
       if( _head == 0 )
-    _head = NR_OF_FRAMEBUFS - 1;
+	_head = NR_OF_FRAMEBUFS - 1;
       else
-    --_head;
+	--_head;
     }
   _mutex.unlock();
 
@@ -470,8 +466,8 @@ i64 ReceiverThread::timeStampFrameSpidr()
 {
   SpidrHeader_t *spidrhdr = (SpidrHeader_t *) _headerBuffer[_tail];
   i64 ts = (((i64) spidrhdr->timeLo) |
-        (((i64) spidrhdr->timeMi) << 16) |
-        (((i64) spidrhdr->timeHi) << 32));
+	    (((i64) spidrhdr->timeMi) << 16) |
+	    (((i64) spidrhdr->timeHi) << 32));
   return ts;
 }
 
@@ -487,6 +483,8 @@ void ReceiverThread::setPixelDepth( int nbits )
       nbits == 12 ||
       nbits == 24 )
     {
+      if( nbits == 24 )
+	nbits = 12; // A 24-bits frame is composed of two 12-bits frames
       _expFrameSize = (MPX_PIXELS * nbits) / 8;
       _pixelDepth = nbits;
     }
