@@ -30,6 +30,12 @@ quint32 get_addr_and_port( const char *str, int *portnr )
       // Remove the port number from the string
       qstr = qstr.section( ':', 0, 0 );
     }
+  if( !qstr.contains( QChar('.') ) )
+    {
+      cout << "### Provide IP address as e.g \"192.168.1.10\"" << endl;
+      usage();
+      exit( 0 );
+    }
   QHostAddress qaddr;
   if( !qaddr.setAddress( qstr ) )
     {

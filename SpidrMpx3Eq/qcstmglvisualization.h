@@ -128,6 +128,7 @@ public:
     void changeThresholdToNameAndUpdateSelector(int threshold, QString name);
     //!Gets the currently active threshold by looking at the value of the layerselector combobox.
     int getActiveThreshold();
+    bool isSaveAllFramesChecked();
 
 private:
 
@@ -255,6 +256,8 @@ private slots:
 
     void on_imageCalculatorPushButton_clicked();
 
+    void on_saveAllCheckBox_toggled(bool checked);
+
 public slots:
 
     void StartDataTaking(bool CtMode);
@@ -296,6 +299,7 @@ public slots:
     void on_scoring(int, int, int, int, int, int, bool);
 
     void bufferOccupancySlot(int);
+    void consumerFinishedOneFrame(int frameId);
 
     void consumerBufferFull(int);
 

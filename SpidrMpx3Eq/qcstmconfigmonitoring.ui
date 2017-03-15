@@ -492,6 +492,16 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
+          <property name="maximum">
+           <number>2</number>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0">
+         <widget class="QCheckBox" name="checkBox_sendDataToIP">
+          <property name="text">
+           <string>Send data to IP</string>
+          </property>
          </widget>
         </item>
         <item row="8" column="0">

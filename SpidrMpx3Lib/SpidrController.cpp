@@ -15,7 +15,9 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x16082900; // Add getMpx3Clock(), remove setMpx3Clock()
+const int   VERSION_ID = 0x17020800; // Remove getAdc(int, int *)
+//const int VERSION_ID = 0x17020700; // Add reinitMacAddr(), getHumidity/Pressure()
+//const int VERSION_ID = 0x16082900; // Add getMpx3Clock(), remove setMpx3Clock()
 //const int VERSION_ID = 0x16071800; // Add resetCounters() and counter reads
 //const int VERSION_ID = 0x16062900; // Add setTpSwitch(), setPs()
 //const int VERSION_ID = 0x16062100; // Add open/closeShutter(), startContReadout();
@@ -389,6 +391,15 @@ bool SpidrController::setServerPort( int dev_nr, int port_nr )
 }
 
 // ----------------------------------------------------------------------------
+
+bool SpidrController::reinitMacAddr()
+{
+  // Let SPIDR reinitialize the MAC addresses associated with
+  // the UDP device data streams
+  return this->requestSetInt( CMD_REINIT_MACADDR, 0, 0 );
+}
+
+// ----------------------------------------------------------------------------
 // Configuration: devices
 // ----------------------------------------------------------------------------
 
@@ -576,8 +587,8 @@ bool SpidrController::setMpx3Clock( int megahertz )
 bool SpidrController::setTpSwitch( int val, int freq_mhz )
 {
   // Configure the TP_Switch period (frequency): 25ns per count
-  //this->setSpidrReg( SPIDRMPX3_TPSWITCH_FREQ_I,
-  //  	     (int) (((double) 40000000.0/(double) freq_mhz)*1000.0) );
+  this->setSpidrReg( SPIDRMPX3_TPSWITCH_FREQ_I,
+		     (int) (((double) 40000000.0/(double) freq_mhz)*1000.0) );
 
   // If 'val' > 0 set the bit, otherwise reset it; verify it
   return this->setSpidrRegBit( SPIDRMPX3_MPX3_CTRL_I, SPIDRMPX3_TP_SWITCH_BIT,
@@ -1244,15 +1255,6 @@ bool SpidrController::getAdc( int *adc_val, int chan, int nr_of_samples )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::getAdc( int dev_nr, int *adc_val )
-{
-  // Get an ADC sample of the Medipix3 'DACOut' output
-  // (### OBSOLETE MEMBER: use getDacOut() instead)
-  return this->requestGetInt( CMD_GET_ADC, dev_nr, adc_val );
-}
-
-// ----------------------------------------------------------------------------
-
 bool SpidrController::getDacOut( int  dev_nr,
 				 int *dacout_val,
 				 int  nr_of_samples )
@@ -1356,6 +1358,20 @@ bool SpidrController::setFanSpeed( int index, int percentage )
 {
   // Index indicates fan speed to set (chipboard or SPIDR resp.)
   return this->requestSetInt( CMD_SET_FANSPEED, 0, (index << 16) | percentage );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getHumidity( int *percentage )
+{
+  return this->requestGetInt( CMD_GET_HUMIDITY, 0, percentage );
+}
+
+// ----------------------------------------------------------------------------
+
+bool SpidrController::getPressure( int *mbar )
+{
+  return this->requestGetInt( CMD_GET_PRESSURE, 0, mbar );
 }
 
 // ----------------------------------------------------------------------------

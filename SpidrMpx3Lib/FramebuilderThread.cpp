@@ -16,7 +16,7 @@
 // ----------------------------------------------------------------------------
 
 FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
-                    QObject *parent )
+					QObject *parent )
   : QThread( parent ),
     _receivers( recvrs ),
     _stop( false ),
@@ -61,7 +61,7 @@ FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
       _devHdr[i].deviceId   = (i+1) * 0x11111111; // Dummy ID
       _devHdr[i].deviceType = MPX_TYPE_NC; // Not connected
       for( u32 j=0; j<sizeof(_devHdr[i].unused)/sizeof(u32); ++j )
-    _devHdr[i].unused[j] = HEADER_FILLER_WORD;
+	_devHdr[i].unused[j] = HEADER_FILLER_WORD;
     }
 
   // Generate the 6-bit look-up table (LUT) for Medipix3RX decoding
@@ -88,7 +88,7 @@ FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
       pixcode = ((pixcode << 1) | bit) & 0xFFF;
     }
 
-  // Start the thread
+  // Start the thread 
   this->start();
 }
 
@@ -126,35 +126,35 @@ void FramebuilderThread::run()
   while( !_stop )
     {
       if( _receivers[0]->hasFrame() )
-    {
-      // Wait for the other receivers if necessary, before proceeding
-      _abortFrame = false; // Allows us to abort waiting for frame data
-      for( i=1; i<_n; ++i )
-        while( !(_receivers[i]->hasFrame() || _abortFrame) );
+	{
+	  // Wait for the other receivers if necessary, before proceeding
+	  _abortFrame = false; // Allows us to abort waiting for frame data
+	  for( i=1; i<_n; ++i )
+	    while( !(_receivers[i]->hasFrame() || _abortFrame) );
 
-      if( _fileOpen )
-        this->writeFrameToFile();
+	  if( _fileOpen )
+	    this->writeFrameToFile();
+	  else
+	    this->processFrame();
+
+	  // Release this frame buffer on all receivers
+	  // (###NB: how do we prevent 1 receiver to start filling
+	  //  the newly released buffer while another receiver
+	  //  still has a full buffer and starts (again) overwriting
+	  //  its last received frame, potentially causing desynchronized
+	  //  event buffers in the various receivers?
+	  //  A task for a busy/inhibit mechanism?: set busy before
+	  //  filling up any buffer)
+	  for( i=0; i<_n; ++i ) _receivers[i]->releaseFrame();
+
+	  ++_framesReceived;
+	}
       else
-        this->processFrame();
-
-      // Release this frame buffer on all receivers
-      // (###NB: how do we prevent 1 receiver to start filling
-      //  the newly released buffer while another receiver
-      //  still has a full buffer and starts (again) overwriting
-      //  its last received frame, potentially causing desynchronized
-      //  event buffers in the various receivers?
-      //  A task for a busy/inhibit mechanism?: set busy before
-      //  filling up any buffer)
-      for( i=0; i<_n; ++i ) _receivers[i]->releaseFrame();
-
-      ++_framesReceived;
-    }
-      else
-    {
-      _mutex.lock();
-      if( !_receivers[0]->hasFrame() ) _inputCondition.wait( &_mutex );
-      _mutex.unlock();
-    }
+	{
+	  _mutex.lock();
+	  if( !_receivers[0]->hasFrame() ) _inputCondition.wait( &_mutex );
+	  _mutex.unlock();
+	}
     }
 }
 
@@ -203,47 +203,47 @@ void FramebuilderThread::processFrame()
       // in separate threads (i.e. by QtConcurrent)
 #ifdef _USE_QTCONCURRENT
       if( _n > 1 )
-    {
-      QFuture<int> qf[4];
-      for( i=0; i<_n; ++i )
-        qf[i] = QtConcurrent::run( this,
-                       &FramebuilderThread::mpx3RawToPixel,
-                       _receivers[i]->frameData(),
-                       _receivers[i]->dataSizeFrame(),
-                       &_decodedFrame[i][0],
-                       _evtHdr.pixelDepth,
-                       //_devHdr[i].deviceType,
-                       _compress );
-      // Wait for threads to finish and get the results...
-      for( i=0; i<_n; ++i )
-        _frameSz[i] = qf[i].result();
-    }
+	{
+	  QFuture<int> qf[4];
+	  for( i=0; i<_n; ++i )
+	    qf[i] = QtConcurrent::run( this,
+				       &FramebuilderThread::mpx3RawToPixel,
+				       _receivers[i]->frameData(),
+				       _receivers[i]->dataSizeFrame(),
+				       &_decodedFrame[i][0],
+				       _evtHdr.pixelDepth,
+				       //_devHdr[i].deviceType,
+				       _compress );
+	  // Wait for threads to finish and get the results...
+	  for( i=0; i<_n; ++i )
+	    _frameSz[i] = qf[i].result();
+	}
       else
 #endif // _USE_QTCONCURRENT
-    {
-      for( i=0; i<_n; ++i )
-        _frameSz[i] = this->mpx3RawToPixel( _receivers[i]->frameData(),
-                        _receivers[i]->dataSizeFrame(),
-                        _decodedFrame[i],
-                        _evtHdr.pixelDepth,
-                        //_devHdr[i].deviceType,
-                        _compress );
-    }
+	{
+	  for( i=0; i<_n; ++i )
+	    _frameSz[i] = this->mpx3RawToPixel( _receivers[i]->frameData(),
+						_receivers[i]->dataSizeFrame(),
+						_decodedFrame[i],
+						_evtHdr.pixelDepth,
+						//_devHdr[i].deviceType,
+						_compress );
+	}
 
       // Collect various information on the frames from their receivers
       _timeStamp = _receivers[0]->timeStampFrame();
       _timeStampSpidr = _receivers[0]->timeStampFrameSpidr();
       for( i=0; i<_n; ++i )
-    {
-      // Copy (part of) the SPIDR 'header' (6 short ints: 3 copied)
-      memcpy( (void *) &_spidrHeader[i],
-          (void *) _receivers[i]->spidrHeaderFrame(),
-          SPIDR_HEADER_SIZE/2 ); // Only half of it needed here
+	{
+	  // Copy (part of) the SPIDR 'header' (6 short ints: 3 copied)
+	  memcpy( (void *) &_spidrHeader[i],
+		  (void *) _receivers[i]->spidrHeaderFrame(),
+		  SPIDR_HEADER_SIZE/2 ); // Only half of it needed here
 
-      _isCounterhFrame[i] = _receivers[i]->isCounterhFrame();
+	  _isCounterhFrame[i] = _receivers[i]->isCounterhFrame();
 
-      _lostCountFrame[i] = _receivers[i]->packetsLostFrame();
-    }
+	  _lostCountFrame[i] = _receivers[i]->packetsLostFrame();
+	}
 
       _hasFrame = true;
       ++_framesProcessed;
@@ -304,13 +304,13 @@ void FramebuilderThread::writeRawFrameToFile()
 
       // Copy the saved SPIDR 'header' (6 short ints)
       memcpy( (void *) p_devhdr->spidrHeader,
-          (void *) _receivers[i]->spidrHeaderFrame(),
-          SPIDR_HEADER_SIZE );
+	      (void *) _receivers[i]->spidrHeaderFrame(),
+	      SPIDR_HEADER_SIZE );
       _file.write( (const char *) p_devhdr, DEV_HEADER_SIZE );
 
       // Write the raw frame data of this device
       _file.write( (const char *) _receivers[i]->frameData(),
-           p_devhdr->dataSize );
+		   p_devhdr->dataSize );
     }
 }
 
@@ -325,11 +325,11 @@ void FramebuilderThread::writeDecodedFrameToFile()
   int frame_sz[4];
   for( i=0; i<_n; ++i )
     frame_sz[i] = this->mpx3RawToPixel( _receivers[i]->frameData(),
-                    _receivers[i]->dataSizeFrame(),
-                    _decodedFrame[i],
-                    _evtHdr.pixelDepth,
-                    //_devHdr[i].deviceType,
-                    _compress );
+					_receivers[i]->dataSizeFrame(),
+					_decodedFrame[i],
+					_evtHdr.pixelDepth,
+					//_devHdr[i].deviceType,
+					_compress );
 
   // Fill the headers with the frame data sizes
   int evt_sz = _n * DEV_HEADER_SIZE;
@@ -360,8 +360,8 @@ void FramebuilderThread::writeDecodedFrameToFile()
 
       // Copy the saved SPIDR 'header' (6 short ints)
       memcpy( (void *) p_devhdr->spidrHeader,
-          (void *) _receivers[i]->spidrHeaderFrame(),
-          SPIDR_HEADER_SIZE );
+	      (void *) _receivers[i]->spidrHeaderFrame(),
+	      SPIDR_HEADER_SIZE );
       _file.write( (const char *) p_devhdr, DEV_HEADER_SIZE );
 
       // Write the decoded frame data of this device
@@ -386,8 +386,8 @@ bool FramebuilderThread::hasFrame( unsigned long timeout_ms )
 // ----------------------------------------------------------------------------
 
 int *FramebuilderThread::frameData( int  index,
-                    int *size,
-                    int *lost_count )
+				    int *size,
+				    int *lost_count )
 {
   if( _hasFrame )
     *size = _frameSz[index];
@@ -405,7 +405,7 @@ void FramebuilderThread::clearFrameData( int index )
 {
   index &= 0x3;
   memset( static_cast<void *> (_decodedFrame[index]),
-      0, MPX_PIXELS * sizeof(int) );
+	  0, MPX_PIXELS * sizeof(int) );
 }
 
 // ----------------------------------------------------------------------------
@@ -451,8 +451,8 @@ int FramebuilderThread::frameShutterCounter( int index )
       // otherwise return -1
       int cnt = (int) _spidrHeader[0].shutterCnt;
       for( u32 i=1; i<_n; ++i )
-    if( cnt != (int) _spidrHeader[i].shutterCnt )
-      return -1;
+	if( cnt != (int) _spidrHeader[i].shutterCnt )
+	  return -1;
       return byteswap( cnt );
     }
   else
@@ -472,8 +472,8 @@ bool FramebuilderThread::isCounterhFrame( int index )
       // otherwise return false
       bool b = _isCounterhFrame[0];
       for( u32 i=1; i<_n; ++i )
-    if( b != _isCounterhFrame[i] )
-      return false;
+	if( b != _isCounterhFrame[i] )
+	  return false;
       return b;
     }
   else
@@ -486,10 +486,10 @@ bool FramebuilderThread::isCounterhFrame( int index )
 // ----------------------------------------------------------------------------
 
 void FramebuilderThread::setAddrInfo( int *ipaddr,
-                      int *ports )
+				      int *ports )
 {
   _evtHdr.ipAddress = ((ipaddr[0] << 0)  | (ipaddr[1] << 8) |
-               (ipaddr[2] << 16) | (ipaddr[3] << 24));
+		       (ipaddr[2] << 16) | (ipaddr[3] << 24));
   u32 ndevs = 0;
   for( int i=0; i<4; ++i )
     {
@@ -509,9 +509,9 @@ void FramebuilderThread::setDeviceIdsAndTypes( int *ids, int *types )
   for( i=0; i<4; ++i )
     if( ids[i] != 0 )
       {
-    _devHdr[index].deviceId   = ids[i];
-    _devHdr[index].deviceType = types[i];
-    ++index;
+	_devHdr[index].deviceId   = ids[i];
+	_devHdr[index].deviceType = types[i];
+	++index;
       }
 }
 
@@ -530,9 +530,9 @@ void FramebuilderThread::setDecodeFrames( bool decode )
   for( int i=0; i<4; ++i )
     {
       if( decode )
-    _devHdr[i].format |= DEV_DATA_DECODED;
+	_devHdr[i].format |= DEV_DATA_DECODED;
       else
-    _devHdr[i].format &= ~DEV_DATA_DECODED;
+	_devHdr[i].format &= ~DEV_DATA_DECODED;
     }
 }
 
@@ -544,9 +544,9 @@ void FramebuilderThread::setCompressFrames( bool compress )
   for( int i=0; i<4; ++i )
     {
       if( compress )
-    _devHdr[i].format |= DEV_DATA_COMPRESSED;
+	_devHdr[i].format |= DEV_DATA_COMPRESSED;
       else
-    _devHdr[i].format &= ~DEV_DATA_COMPRESSED;
+	_devHdr[i].format &= ~DEV_DATA_COMPRESSED;
     }
 }
 
@@ -572,7 +572,7 @@ bool FramebuilderThread::openFile( std::string filename, bool overwrite )
       _fileOpen = true;
       return true;
     }
-  _errString = "Failed to open file \"" + fname + "\"";
+  _errString = "Failed to open file \"" + fname + "\"";  
   return false;
 }
 
@@ -594,7 +594,8 @@ bool FramebuilderThread::closeFile()
 int FramebuilderThread::lostCountFrame()
 {
   int lost = 0;
-  for( u32 i=0; i<_n; ++i ) lost += _lostCountFrame[i];
+  for( u32 i=0; i<_n; ++i )
+    lost += _lostCountFrame[i];
   return lost;
 }
 
@@ -610,11 +611,11 @@ std::string FramebuilderThread::errString()
 // ----------------------------------------------------------------------------
 
 int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
-                    int            nbytes,
-                    int           *pixels,
-                    int            counter_depth,
-                    //int          device_type,
-                    bool           compress )
+					int            nbytes,
+					int           *pixels,
+					int            counter_depth,
+					//int          device_type,
+					bool           compress )
 {
   // Convert MPX3 raw bit stream in byte array 'raw_bytes'
   // into n-bits pixel values in array 'pixel' (with n=counter_depth)
@@ -652,52 +653,52 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
     {
       bitmask = (1 << (counter_bits-1));
       for( pixelbit=counter_bits-1; pixelbit>=0; --pixelbit )
-    {
-      ppix = &pixels[offset];
-      // All bits 'pixelbit' of one pixel row (= 256 pixels or columns)
-      for( col=0; col<MPX_PIXEL_COLUMNS; col+=8 )
-        {
-          // Process raw data byte-by-byte
-          byte = *praw;
-          if( byte != 0 )
-        {
-          /*
-          if( byte & 0x01 ) ppix[0] |= bitmask;
-          if( byte & 0x02 ) ppix[1] |= bitmask;
-          if( byte & 0x04 ) ppix[2] |= bitmask;
-          if( byte & 0x08 ) ppix[3] |= bitmask;
-          if( byte & 0x10 ) ppix[4] |= bitmask;
-          if( byte & 0x20 ) ppix[5] |= bitmask;
-          if( byte & 0x40 ) ppix[6] |= bitmask;
-          if( byte & 0x80 ) ppix[7] |= bitmask;
-          ppix += 8;
-          */
-          // Faster ?
-          if( byte & 0x01 ) *ppix |= bitmask;
-          ++ppix;
-          if( byte & 0x02 ) *ppix |= bitmask;
-          ++ppix;
-          if( byte & 0x04 ) *ppix |= bitmask;
-          ++ppix;
-          if( byte & 0x08 ) *ppix |= bitmask;
-          ++ppix;
-          if( byte & 0x10 ) *ppix |= bitmask;
-          ++ppix;
-          if( byte & 0x20 ) *ppix |= bitmask;
-          ++ppix;
-          if( byte & 0x40 ) *ppix |= bitmask;
-          ++ppix;
-          if( byte & 0x80 ) *ppix |= bitmask;
-          ++ppix;
-        }
-          else
-        {
-          ppix += 8;
-        }
-          ++praw; // Next raw byte
-        }
-      bitmask >>= 1;
-    }
+	{
+	  ppix = &pixels[offset];
+	  // All bits 'pixelbit' of one pixel row (= 256 pixels or columns)
+	  for( col=0; col<MPX_PIXEL_COLUMNS; col+=8 )
+	    {
+	      // Process raw data byte-by-byte
+	      byte = *praw;
+	      if( byte != 0 )
+		{
+		  /*
+		  if( byte & 0x01 ) ppix[0] |= bitmask;
+		  if( byte & 0x02 ) ppix[1] |= bitmask;
+		  if( byte & 0x04 ) ppix[2] |= bitmask;
+		  if( byte & 0x08 ) ppix[3] |= bitmask;
+		  if( byte & 0x10 ) ppix[4] |= bitmask;
+		  if( byte & 0x20 ) ppix[5] |= bitmask;
+		  if( byte & 0x40 ) ppix[6] |= bitmask;
+		  if( byte & 0x80 ) ppix[7] |= bitmask;
+		  ppix += 8;
+		  */
+		  // Faster ?
+		  if( byte & 0x01 ) *ppix |= bitmask;
+		  ++ppix;
+		  if( byte & 0x02 ) *ppix |= bitmask;
+		  ++ppix;
+		  if( byte & 0x04 ) *ppix |= bitmask;
+		  ++ppix;
+		  if( byte & 0x08 ) *ppix |= bitmask;
+		  ++ppix;
+		  if( byte & 0x10 ) *ppix |= bitmask;
+		  ++ppix;
+		  if( byte & 0x20 ) *ppix |= bitmask;
+		  ++ppix;
+		  if( byte & 0x40 ) *ppix |= bitmask;
+		  ++ppix;
+		  if( byte & 0x80 ) *ppix |= bitmask;
+		  ++ppix;
+		}
+	      else
+		{
+		  ppix += 8;
+		}
+	      ++praw; // Next raw byte
+	    }
+	  bitmask >>= 1;
+	}
       offset += MPX_PIXEL_COLUMNS;
     }
 
@@ -707,57 +708,57 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
     {
       offset = 0;
       for( row=0; row<MPX_PIXEL_ROWS; ++row )
-    {
-      bitmask = (1 << (24-1));
-      for( pixelbit=24-1; pixelbit>=12; --pixelbit )
-        {
-          ppix = &pixels[offset];
-          // All bits 'pixelbit' of one pixel row (= 256 pixels or columns)
-          for( col=0; col<MPX_PIXEL_COLUMNS; col+=8 )
-        {
-          // Process raw data byte-by-byte
-          byte = *praw;
-          if( byte != 0 )
-            {
-              /*
-              if( byte & 0x01 ) ppix[0] |= bitmask;
-              if( byte & 0x02 ) ppix[1] |= bitmask;
-              if( byte & 0x04 ) ppix[2] |= bitmask;
-              if( byte & 0x08 ) ppix[3] |= bitmask;
-              if( byte & 0x10 ) ppix[4] |= bitmask;
-              if( byte & 0x20 ) ppix[5] |= bitmask;
-              if( byte & 0x40 ) ppix[6] |= bitmask;
-              if( byte & 0x80 ) ppix[7] |= bitmask;
-              ppix += 8;
-              */
-              // Faster ?
-              if( byte & 0x01 ) *ppix |= bitmask;
-              ++ppix;
-              if( byte & 0x02 ) *ppix |= bitmask;
-              ++ppix;
-              if( byte & 0x04 ) *ppix |= bitmask;
-              ++ppix;
-              if( byte & 0x08 ) *ppix |= bitmask;
-              ++ppix;
-              if( byte & 0x10 ) *ppix |= bitmask;
-              ++ppix;
-              if( byte & 0x20 ) *ppix |= bitmask;
-              ++ppix;
-              if( byte & 0x40 ) *ppix |= bitmask;
-              ++ppix;
-              if( byte & 0x80 ) *ppix |= bitmask;
-              ++ppix;
-            }
-          else
-            {
-              ppix += 8;
-            }
-          ++praw; // Next raw byte
-        }
-          bitmask >>= 1;
-        }
-      offset += MPX_PIXEL_COLUMNS;
-    }
+	{
+	  bitmask = (1 << (24-1));
+	  for( pixelbit=24-1; pixelbit>=12; --pixelbit )
+	    {
+	      ppix = &pixels[offset];
+	      // All bits 'pixelbit' of one pixel row (= 256 pixels or columns)
+	      for( col=0; col<MPX_PIXEL_COLUMNS; col+=8 )
+		{
+		  // Process raw data byte-by-byte
+		  byte = *praw;
+		  if( byte != 0 )
+		    {
+		      /*
+		      if( byte & 0x01 ) ppix[0] |= bitmask;
+		      if( byte & 0x02 ) ppix[1] |= bitmask;
+		      if( byte & 0x04 ) ppix[2] |= bitmask;
+		      if( byte & 0x08 ) ppix[3] |= bitmask;
+		      if( byte & 0x10 ) ppix[4] |= bitmask;
+		      if( byte & 0x20 ) ppix[5] |= bitmask;
+		      if( byte & 0x40 ) ppix[6] |= bitmask;
+		      if( byte & 0x80 ) ppix[7] |= bitmask;
+		      ppix += 8;
+		      */
+		      // Faster ?
+		      if( byte & 0x01 ) *ppix |= bitmask;
+		      ++ppix;
+		      if( byte & 0x02 ) *ppix |= bitmask;
+		      ++ppix;
+		      if( byte & 0x04 ) *ppix |= bitmask;
+		      ++ppix;
+		      if( byte & 0x08 ) *ppix |= bitmask;
+		      ++ppix;
+		      if( byte & 0x10 ) *ppix |= bitmask;
+		      ++ppix;
+		      if( byte & 0x20 ) *ppix |= bitmask;
+		      ++ppix;
+		      if( byte & 0x40 ) *ppix |= bitmask;
+		      ++ppix;
+		      if( byte & 0x80 ) *ppix |= bitmask;
+		      ++ppix;
+		    }
+		  else
+		    {
+		      ppix += 8;
+		    }
+		  ++praw; // Next raw byte
+		}
+	      bitmask >>= 1;
+	    }
+	  offset += MPX_PIXEL_COLUMNS;
+	}
     }
 
   // If necessary, apply a look-up table (LUT)
@@ -766,34 +767,34 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
     {
       // Medipix3RX device: apply LUT
       if( counter_depth == 6 )
-    {
-      for( int i=0; i<MPX_PIXELS; ++i )
-        pixels[i] = _mpx3Rx6BitsLut[pixels[i] & 0x3F];
-    }
+	{
+	  for( int i=0; i<MPX_PIXELS; ++i )
+	    pixels[i] = _mpx3Rx6BitsLut[pixels[i] & 0x3F];
+	}
       else if( counter_depth == 12 )
-    {
-      for( int i=0; i<MPX_PIXELS; ++i )
-        pixels[i] = _mpx3Rx12BitsLut[pixels[i] & 0xFFF];
-    }
+	{
+	  for( int i=0; i<MPX_PIXELS; ++i )
+	    pixels[i] = _mpx3Rx12BitsLut[pixels[i] & 0xFFF];
+	}
       else if( counter_depth == 24 )
-    {
-      int pixval;
-      for( int i=0; i<MPX_PIXELS; ++i )
-        {
-          pixval     = pixels[i];
-          // Lower 12 bits
-          pixels[i]  = _mpx3Rx12BitsLut[pixval & 0xFFF];
-          // Upper 12 bits
-          pixval     = (pixval >> 12) & 0xFFF;
-          pixels[i] |= (_mpx3Rx12BitsLut[pixval] << 12);
-        }
-    }
+	{
+	  int pixval;
+	  for( int i=0; i<MPX_PIXELS; ++i )
+	    {
+	      pixval     = pixels[i];
+	      // Lower 12 bits
+	      pixels[i]  = _mpx3Rx12BitsLut[pixval & 0xFFF];
+	      // Upper 12 bits
+	      pixval     = (pixval >> 12) & 0xFFF;
+	      pixels[i] |= (_mpx3Rx12BitsLut[pixval] << 12);
+	    }
+	}
     }
 
   // Return a size in bytes
   int size = (MPX_PIXELS * sizeof(int));
   if( !compress ) return size;
-
+  
   // Compress 4- and 6-bit frames into 1 byte per pixel
   // and 12-bit frames into 2 bytes per pixel (1-bit frames already
   // available 'compressed' into 1 bit per pixel in array 'raw_bytes')
@@ -802,7 +803,7 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
       u16 *pixels16 = (u16 *) pixels;
       int *pixels32 = (int *) pixels;
       for( int i=0; i<MPX_PIXELS; ++i, ++pixels16, ++pixels32 )
-    *pixels16 = (u16) ((*pixels32) & 0xFFFF);
+	*pixels16 = (u16) ((*pixels32) & 0xFFFF);
       size = (MPX_PIXELS * sizeof( u16 ));
     }
   else if( counter_depth == 4 || counter_depth == 6 )
@@ -810,7 +811,7 @@ int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
       u8  *pixels8  = (u8 *)  pixels;
       int *pixels32 = (int *) pixels;
       for( int i=0; i<MPX_PIXELS; ++i, ++pixels8, ++pixels32 )
-    *pixels8 = (u8) ((*pixels32) & 0xFF);
+	*pixels8 = (u8) ((*pixels32) & 0xFF);
       size = (MPX_PIXELS * sizeof( u8 ));
     }
   else if( counter_depth == 1 )

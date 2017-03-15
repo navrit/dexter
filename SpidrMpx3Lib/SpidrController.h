@@ -77,6 +77,7 @@ class MY_LIB_API SpidrController
   bool        getDevicePort    ( int  index,  int *port_nr );
   bool        getServerPort    ( int  index,  int *port_nr );
   bool        setServerPort    ( int  index,  int  port_nr );
+  bool        reinitMacAddr    ( );
 
   // Configuration: devices
   bool        getDeviceId      ( int  dev_nr, int *id );
@@ -193,7 +194,6 @@ class MY_LIB_API SpidrController
 
   // Monitoring
   bool getAdc                  ( int *adc_val, int chan, int nr_of_samples = 1 );
-  bool getAdc                  ( int  dev_nr,  int *adc_val );
   bool getDacOut               ( int  dev_nr,  int *dacout_val,
                                  int  nr_of_samples = 1 );
   bool getRemoteTemp           ( int *mdegrees ); // Device temperature
@@ -208,6 +208,8 @@ class MY_LIB_API SpidrController
   bool getBiasVoltage          ( int *volts );
   bool getFanSpeed             ( int  index, int *rpm );
   bool setFanSpeed             ( int  index, int percentage );
+  bool getHumidity             ( int *percentage );
+  bool getPressure             ( int *mbar );
 
   // Other
   bool getSpidrReg             ( int  addr, int *val );
