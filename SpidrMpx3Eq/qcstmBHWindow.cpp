@@ -382,6 +382,7 @@ void QCstmBHWindow::on_loadJsonButton_clicked(bool ctMode){
         // Just use last filename, don't pester the user!! Unless it's the first time
         if (firstRun){
             filename = QFileDialog::getOpenFileName(this,tr("Json files (*.JSON)"));
+            lastFilename = filename;
             qDebug() << "First run";
         } else {
             filename = lastFilename;
@@ -390,7 +391,6 @@ void QCstmBHWindow::on_loadJsonButton_clicked(bool ctMode){
     } else {
         qDebug() << "Normal run";
         filename = QFileDialog::getOpenFileName(this,tr("Json files (*.JSON)"));
-        lastFilename = filename;
     }
 
     firstRun = false;
