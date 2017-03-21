@@ -56,9 +56,12 @@ void BarChart::fitToHeight(double min)
     int ymax = 0;
     for ( int i = 0 ; i < si ; i++ ) {
 
-        for ( int j = 0 ; j < GetDataSet(i)->data()->size() ; j++ ) {
-            QCPBarData bin_content = (*(GetDataSet(i)->data()))[j];
-            if ( bin_content.value > ymax ) ymax = bin_content.value;
+        QCPBarDataMap * dataMap = GetDataSet(i)->data();
+        QCPBarDataMap::const_iterator itr  = dataMap->begin();
+        QCPBarDataMap::const_iterator itrE = dataMap->end();
+
+        for ( ; itr != itrE ; itr++ ) {
+            if ( (*itr).value > ymax ) ymax = (*itr).value;
         }
 
     }
@@ -70,7 +73,7 @@ void BarChart::fitToHeight(double min)
         } else {
             this->yAxis->setRangeLower( __range_min_whenLog );
         }
-*/
+    */
 
     if ( ymax > 0 ) {
         this->yAxis->setRangeUpper( ymax * 1.2 );
