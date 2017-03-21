@@ -120,6 +120,7 @@ public:
 
     // Used in CT
     void saveImage(QString filename);
+    void saveImage(QString filename, QString corrMethod);
     bool runningCT = false;
 
     //!Adds the specified threshold if it didn't exist yet. Then switches to it.

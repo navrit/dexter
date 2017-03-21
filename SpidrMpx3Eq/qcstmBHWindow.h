@@ -71,6 +71,8 @@ private:
         bool operator() (int a,int b) { return (a>b);}
     } cstmSortStruct;
 
+    QString lastFilename;
+    bool firstRun = true;
 
 signals:
 
@@ -84,6 +86,9 @@ signals:
     void sendFilename(QString filename);
     void sendChecked_BHCorrCheckbox(bool);
 
+public slots:
+    void on_doBHCorrection();
+
 private slots:
     void on_addButton_clicked();
     void on_clearButton_clicked();
@@ -94,11 +99,11 @@ private slots:
     //void on_startButton_clicked(); Disabled start button
     void on_open_data_failed();
     void on_list_doubleClicked(const QModelIndex &index);
-    void on_applyBHCorrection();
     void on_okButton_clicked();
-    void on_loadJsonButton_clicked();
     void on_saveJsonButton_clicked();
     void on_plot();
+    void on_loadJsonButton_clicked(bool ctMode);
+    void on_applyBHCorrection();
 
 };
 
