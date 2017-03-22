@@ -1297,6 +1297,10 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
             m_numberOfChipsFound +
             newLine +
             newLine +
+            QString("Authors: ") +
+            QString("John Idarraga (2015-2017), Navrit Bal (2016-), Amber van Keeken (2016), Frans Schreuder, Henk Boterenbrood, Martin van Beuzekom, Roel Deckers, Cyrano Chatziantoniou") +
+            newLine +
+            newLine +
             QString("ASI B.V. All rights reserved.") ;
     msgBox.setText( msg );
     msgBox.exec();
