@@ -130,7 +130,7 @@
         "OperationMode": 0,
         "PixelDepth": 12,
         "Polarity": "Positive",
-        "TriggerDeadtime_us": 20000,
+        "TriggerDeadtime_us": 2000,
         "TriggerLength_us": 20000,
         "TriggerMode": 4,
         "nTriggers": 10,
