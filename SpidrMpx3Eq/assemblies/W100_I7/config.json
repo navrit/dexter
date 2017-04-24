@@ -1,16 +1,9 @@
 {
-    "Build_ABI": "x86_64-little_endian-lp64",
-    "C++_version": "201103",
-    "CPU_arch_build": "x86_64",
-    "CPU_arch_current": "x86_64",
-    "ChipSize_x": 256,
-    "ChipSize_y": 256,
-    "Compile_dateTime": "2016-10-25 16:06:17",
     "DACs": [
         {
             "Cas": 191,
-            "DAC_DiscH": 77,
-            "DAC_DiscL": 65,
+            "DAC_DiscH": 169,
+            "DAC_DiscL": 149,
             "DAC_test": 100,
             "Delay": 50,
             "Disc": 125,
@@ -27,8 +20,8 @@
             "TP_REF": 80,
             "TP_REFA": 400,
             "TP_REFB": 400,
-            "Threshold[0]": 42,
-            "Threshold[1]": 44,
+            "Threshold[0]": 128,
+            "Threshold[1]": 0,
             "Threshold[2]": 52,
             "Threshold[3]": 54,
             "Threshold[4]": 62,
@@ -124,9 +117,9 @@
             "Threshold[7]": 74
         }
     ],
-    "Date_time_UTC": "2016-10-25T15:16:11Z",
-    "Date_time_local": "2016-10-25T17:16:11",
     "DetectorConfig": {
+        "BiasVoltage": 100,
+        "BothCounters": false,
         "ColourMode": false,
         "ContRWFreq": 100,
         "CsmSpm": 0,
@@ -136,40 +129,23 @@
         "MaxPacketSize": 9000,
         "OperationMode": 0,
         "PixelDepth": 12,
-        "Polarity": true,
+        "Polarity": "Positive",
         "TriggerDeadtime_us": 20000,
         "TriggerLength_us": 20000,
         "TriggerMode": 4,
-        "nTriggers": 150
+        "nTriggers": 10
     },
     "IPConfig": {
         "SpidrControllerIp": "192.168.1.10",
         "SpidrControllerPort": 50000
     },
-    "Kernel_typeAndVersion": "linux4.4.0-42-generic",
-    "Length_x": 512,
-    "Length_y": 512,
-    "Machine_hostName": "cube1",
-    "Measurement_UUID": "f7fc3a05-fd28-4465-a8ae-e20a23c045ea",
-    "OS_prettyProductName": "Ubuntu 14.04.5 LTS",
-    "OS_productType": "ubuntu",
-    "OS_productVersion": "14.04",
-    "SPIDR_Controller_version": "\nSPIDR Controller version: 16082900",
-    "SPIDR_Firmware_version": "\nSPIDR Firmware version: 16082314",
-    "SPIDR_Software_version": "\nSPIDR Software version: 1607200A\n",
     "StepperConfig": {
-        "Acceleration": 500000,
-        "CalibAngle0": 90,
+        "Acceleration": 128000,
+        "CalibAngle0": 360,
         "CalibAngle1": 0,
-        "CalibPos0": 21500,
+        "CalibPos0": 576000,
         "CalibPos1": 0,
-        "Speed": 12500,
+        "Speed": 20000,
         "UseCalib": true
-    },
-    "Thresholds": "0",
-    "Unix_time_s": 1477408571,
-    "WindowsVersion": 0,
-    "binPath": "/home/asi/tmp/mpx3gui/SpidrMpx3Eq/assemblies/W521_Q6_G6_F6_D6_300um_Si_Fine_newAssembly_4_8_1_6536_160819_15_26.with_elf/16082314-smurf.bin",
-    "nChips_x": 2,
-    "nChips_y": 2
+    }
 }
