@@ -54,7 +54,7 @@
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>19</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -111,6 +111,7 @@
      <string>Help</string>
     </property>
     <addaction name="actionAbout"/>
+    <addaction name="actionDeveloper_mode"/>
    </widget>
    <addaction name="menuMpx3Eq"/>
    <addaction name="menu_Window"/>
@@ -314,6 +315,9 @@
    <property name="toolTip">
     <string>Defibrillator - online reset. Use this if the detector hangs before power cycling</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionWizard">
    <property name="enabled">
@@ -453,6 +457,11 @@ adj_* and mask_*</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="actionDeveloper_mode">
+   <property name="text">
+    <string>Developer mode</string>
    </property>
   </action>
  </widget>

@@ -308,6 +308,8 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect(_ui->actionClear_data, SIGNAL(triggered()), this, SLOT(clear_data()));
     connect(_ui->actionClear_configuration, SIGNAL(triggered()), this, SLOT(clear_configuration()) );
 
+    connect(_ui->actionDeveloper_mode, SIGNAL(triggered()), this, SLOT(developerMode()));
+
     // Change me when adding extra views
     // Inform every module of changes in connection status
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool) ) );
@@ -439,7 +441,7 @@ void Mpx3GUI::setWindowWidgetsStatus(win_status s)
         break;
 
     default:
-        _ui->actionDefibrillator->setVisible(1);
+
         break;
 
     }
@@ -869,10 +871,30 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     qDebug() << "[INFO] JSON File saved";
 }
 
+void Mpx3GUI::developerMode()
+{
+    if (devMode){
+        //! Have to click on menu item to enable/disable buttons
+        //! Disables a bunch of GUI items
+
+        qDebug() << "[INFO] Disabling items";
+        _ui->visualizationGL->developerMode(false);
+        _ui->actionDefibrillator->setVisible(false);
+        devMode = false;
+    } else {
+        // Default
+        qDebug() << "[INFO] Enabling items";
+        _ui->visualizationGL->developerMode(true);
+        _ui->actionDefibrillator->setVisible(true);
+        devMode = true;
+    }
+}
+
 void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType) {
 
     QString filename, path, selectedFilter;
-    if ( !requestPath ) {
+    //! Manual or autosave
+    if (!requestPath){
         //! Native format - User dialog
         filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", BIN_FILES ";;" RAW_TIFF_FILES ";;" SPATIAL_TIFF_FILES ";;" TIFF_FILES ";;" ASCII_FILES, &selectedFilter);
 
@@ -931,7 +953,7 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
     }
 
     //! Send data to be saved by the relevant function with the correct arguments etc.
-    //!
+
     if (selectedFilter == BIN_FILES){
         getDataset()->saveBIN(filename);
     } else if (selectedFilter == SPATIAL_TIFF_FILES){

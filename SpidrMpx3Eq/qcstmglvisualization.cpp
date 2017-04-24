@@ -60,6 +60,8 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     // Initial stretch of the splitter.  Give more space to visualization Matrix
     ui->splitter->setStretchFactor(0, 3);
     ui->splitter->setStretchFactor(1, 1);
+
+    developerMode(false);
 }
 
 QCstmGLVisualization::~QCstmGLVisualization() {
@@ -1060,6 +1062,43 @@ QString QCstmGLVisualization::getPath(QString msg)
 
     // We WILL get a path before exiting this function
     return path;
+}
+
+void QCstmGLVisualization::developerMode(bool enabled)
+{
+    if (enabled){
+        //! Enable a bunch of 'advanced' buttons
+        ui->multiThresholdAnalysisPushButton->show();
+        ui->testPulsesPushButton->show();
+        ui->line->show();
+        ui->generateDataButton->show();
+        ui->imageCalculatorPushButton->show();
+        ui->recoPushButton->show();
+        ui->dropFramesCheckBox->show();
+        ui->saveBitmapPushButton->show();
+        ui->saveWithScaleCheckBox->show();
+        ui->bufferOccupancy->show();
+        ui->label->show();
+        ui->progressBar->show();
+        ui->label_2->show();
+        ui->completeFramesCheckBox->show();
+    } else {
+        //! Disable a bunch of 'advanced' buttons
+        ui->multiThresholdAnalysisPushButton->hide();
+        ui->testPulsesPushButton->hide();
+        ui->line->hide();
+        ui->generateDataButton->hide();
+        ui->imageCalculatorPushButton->hide();
+        ui->recoPushButton->hide();
+        ui->dropFramesCheckBox->hide();
+        ui->saveBitmapPushButton->hide();
+        ui->saveWithScaleCheckBox->hide();
+        ui->bufferOccupancy->hide();
+        ui->label->hide();
+        ui->progressBar->hide();
+        ui->label_2->hide();
+        ui->completeFramesCheckBox->hide();
+    }
 }
 
 void QCstmGLVisualization::on_user_accepted_stats()

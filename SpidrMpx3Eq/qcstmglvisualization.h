@@ -131,6 +131,9 @@ public:
     int getActiveThreshold();
     bool isSaveAllFramesChecked();
 
+    //! Called from Mpx3GUI to disable/enable specific GUI element for developer mode
+    void developerMode(bool enabled = false);
+
 private:
 
     Ui::QCstmGLVisualization * ui = nullptr;

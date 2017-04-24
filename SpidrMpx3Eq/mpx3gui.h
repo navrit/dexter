@@ -117,6 +117,8 @@ private:
 
     void saveMetadataToJSON(QString);
 
+    bool devMode = false;
+
 public:
 
     Mpx3Config* getConfig();
@@ -234,6 +236,8 @@ public slots:
     QString removeOneMessage(QString fullMess);
 
     void on_applicationStateChanged(Qt::ApplicationState);
+
+    void developerMode();
 
 private slots:
     void LoadEqualization();
