@@ -968,18 +968,25 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         getDataset()->saveBIN(filename);
     }
 
+    if (!requestPath){
+        // Manual saving
+        //qDebug() << "[INFO] File saved: ..." << filename;
+        QString msg = "Saved: ...";
+        msg.append(filename.section('/',-3,-1));
+        emit sig_statusBarAppend(msg,"green");
 
-    qDebug() << "[INFO] File saved: ..." << filename;
-    QString msg = "Saved: ...";
+        saveMetadataToJSON(filename);
+    } else {
+        // Autosave
 
-    msg.append(filename.section('/',-3,-1));
-    emit sig_statusBarAppend(msg,"green");
+        // Clear dataset
+        getDataset()->clear();
 
-    //-------------------  JSON METADATA --------------------------------
-    saveMetadataToJSON(filename);
+        // Not good for high speed without some buffer system
+        //saveMetadataToJSON(filename);
+    }
 
     return;
-
 }
 
 void Mpx3GUI::save_config(){
