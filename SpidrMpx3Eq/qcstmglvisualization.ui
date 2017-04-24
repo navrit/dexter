@@ -256,8 +256,27 @@ QGroupBox::title {
 If you run too fast this feature should not be used.</string>
               </property>
               <property name="text">
-               <string>all</string>
+               <string>All</string>
               </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="saveFileComboBox">
+              <item>
+               <property name="text">
+                <string>TIFF</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Raw TIFF</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Text</string>
+               </property>
+              </item>
              </widget>
             </item>
            </layout>

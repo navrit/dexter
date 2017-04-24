@@ -869,7 +869,7 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     qDebug() << "[INFO] JSON File saved";
 }
 
-void Mpx3GUI::save_data(bool requestPath, int frameId) {
+void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType) {
 
     QString filename, path, selectedFilter;
     if ( !requestPath ) {
@@ -893,21 +893,45 @@ void Mpx3GUI::save_data(bool requestPath, int frameId) {
 
     } else {
         //! Autosave
+        //!
         //! Get the visualisation dialog UI saveLineEdit text and assign to filename
         path = getVisualization()->getsaveLineEdit_Text();
+
         //! Build the filename+path string up by adding  "/", the current UTC date in ISO format and ".bin"
         filename = path;
         filename.append("/");
         filename.append(QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
-        // if saving all frames, append the frame Id too (more than 1 frame may be saved within 1 second)
+        //! if saving all frames, append the frame Id too (more than 1 frame may be saved within 1 second)
         if ( getVisualization()->isSaveAllFramesChecked() ) {
             filename.append( QString("_%1").arg(frameId) );
         }
-        //filename.append(".bin");
-        filename.append(".txt");
-        selectedFilter = ASCII_FILES;
+
+        //! Handle the different file types that you can autosave to via
+        //! the QCstmGLVisualization saveFileComboBox and propogate correct
+        //! information forwards.
+
+        if (selectedFileType == ""){
+            filename.append(".txt");
+            selectedFilter = ASCII_FILES;
+        } else if (selectedFileType == "TIFF"){
+            filename.append(".tif");
+            selectedFilter = TIFF_FILES;
+        } else if (selectedFileType == "Raw TIFF"){
+            filename.append("_raw.tif");
+            selectedFilter = RAW_TIFF_FILES;
+        } else if (selectedFileType == "Text"){
+            filename.append(".txt");
+            selectedFilter = ASCII_FILES;
+        } else {
+            filename.append(".txt");
+            selectedFilter = ASCII_FILES;
+        }
+
+
     }
 
+    //! Send data to be saved by the relevant function with the correct arguments etc.
+    //!
     if (selectedFilter == BIN_FILES){
         getDataset()->saveBIN(filename);
     } else if (selectedFilter == SPATIAL_TIFF_FILES){

@@ -2004,15 +2004,14 @@ void QCstmGLVisualization::consumerFinishedOneFrame(int frameId){
 
     //! If Save checkbox is checked and Save line edit is not empty,
     //! AND the used requested every frame to be saved.
-    //! Save the data to .bin file with path obtained from UI
+    //! Save the data to .tiff file with path obtained from UI
     if(
-            ui->saveCheckBox->isChecked()
-            &&
-            !(ui->saveLineEdit->text().isEmpty())
-            &&
+            ui->saveCheckBox->isChecked() &&
+            !(ui->saveLineEdit->text().isEmpty()) &&
             ui->saveAllCheckBox->isChecked()
             ){
-        _mpx3gui->save_data(true, frameId);
+        QString selectedFileType = ui->saveFileComboBox->currentText();
+        _mpx3gui->save_data(true, frameId, selectedFileType);
     }
 }
 
