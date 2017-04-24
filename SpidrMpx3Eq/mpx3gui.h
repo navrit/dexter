@@ -66,6 +66,7 @@ class QCstmCT;
 #define JSON_FILES "BH JSON file(*.json)"
 
 const QString _softwareName = "ASI Dexter";
+const QString _softwareVersion = "1.2.0";
 
 namespace Ui {
 class Mpx3GUI;

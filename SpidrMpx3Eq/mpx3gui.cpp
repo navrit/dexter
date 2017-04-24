@@ -1339,7 +1339,10 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
 
     QString newLine = "\n";
 
-    QString msg = QString("Compiled: ") + compileDateTime +
+    QString msg = QString("Version: ") + _softwareVersion +
+            newLine +
+            newLine +
+            QString("Compiled: ") + compileDateTime +
             newLine +
             QString("C++: ") + QString::fromStdString(to_string(__cplusplus)) +
             newLine +
@@ -1351,7 +1354,11 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
             newLine +
             newLine +
             QString("Authors: ") +
-            QString("John Idarraga (2015-2017), Navrit Bal (2016-), Amber van Keeken (2016), Frans Schreuder, Henk Boterenbrood, Martin van Beuzekom, Roel Deckers, Cyrano Chatziantoniou") +
+            QString("John Idarraga (2014-2017), Navrit Bal (2016-), Amber van Keeken (2016), Roel Deckers, Cyrano Chatziantoniou") +
+            newLine +
+            newLine +
+            QString("Contributors: ") +
+            QString("Frans Schreuder, Henk Boterenbrood, Martin van Beuzekom") +
             newLine +
             newLine +
             QString("ASI B.V. All rights reserved.") ;
