@@ -20,10 +20,10 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     _timerId = -1;
     //ui->samplingSpinner->setValue( 1.0 );
 
-    ui->gainModeCombobox->addItem("Super High Gain Mode");
+    ui->gainModeCombobox->addItem("Super Low Gain Mode");
     ui->gainModeCombobox->addItem("Low Gain Mode");
     ui->gainModeCombobox->addItem("High Gain Mode");
-    ui->gainModeCombobox->addItem("Super Low Gain Mode");
+    ui->gainModeCombobox->addItem("Super High Gain Mode");
 
     ui->polarityComboBox->addItem("Positive");
     ui->polarityComboBox->addItem("Negative");
@@ -331,6 +331,36 @@ void QCstmConfigMonitoring::on_taking_data_gui()
 void QCstmConfigMonitoring::on_idling_gui()
 {
     ui->groupBoxConfiguration->setEnabled( true );
+}
+
+void QCstmConfigMonitoring::shortcutGainModeSLGM()
+{
+    ui->gainModeCombobox->setCurrentIndex(0);
+}
+
+void QCstmConfigMonitoring::shortcutGainModeLGM()
+{
+    ui->gainModeCombobox->setCurrentIndex(1);
+}
+
+void QCstmConfigMonitoring::shortcutGainModeHGM()
+{
+    ui->gainModeCombobox->setCurrentIndex(2);
+}
+
+void QCstmConfigMonitoring::shortcutGainModeSHGM()
+{
+    ui->gainModeCombobox->setCurrentIndex(3);
+}
+
+void QCstmConfigMonitoring::shortcutCSMOff()
+{
+    ui->csmSpmCombo->setCurrentIndex(0);
+}
+
+void QCstmConfigMonitoring::shortcutCSMOn()
+{
+    ui->csmSpmCombo->setCurrentIndex(1);
 }
 
 void QCstmConfigMonitoring::ConnectionStatusChanged(bool conn) {

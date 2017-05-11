@@ -228,6 +228,9 @@ QGroupBox::title {
               <property name="text">
                <string>Auto-save</string>
               </property>
+              <property name="shortcut">
+               <string>A</string>
+              </property>
              </widget>
             </item>
             <item>
@@ -296,6 +299,9 @@ If you run too fast this feature should not be used.</string>
               </property>
               <property name="text">
                <string>Integrate</string>
+              </property>
+              <property name="shortcut">
+               <string>Ctrl+S</string>
               </property>
               <property name="checked">
                <bool>true</bool>

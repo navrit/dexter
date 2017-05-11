@@ -481,6 +481,18 @@ void QCstmDacs::SetLimits() {
 
 }
 
+void QCstmDacs::shortcutTH0()
+{
+    qDebug() << "[INFO] Focus on DAC 0: TH0";
+    ui->dac0SpinBox->setFocus();
+}
+
+void QCstmDacs::shortcutIkrum()
+{
+    qDebug() << "[INFO] Focus on DAC 9: Ikrum";
+    ui->dac9SpinBox->setFocus();
+}
+
 void QCstmDacs::UncheckAllDACs() {
 
     for (int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {

@@ -141,6 +141,36 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+7", "Switch to CT") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+8", "Switch to Stepper Motor Control") ), this)  );
 
+    // Make Dexter somewhat scriptable via the GUI
+
+    // Connections to Visualisation
+    QShortcut *shortcutStart = new QShortcut(QKeySequence("s"), this);
+    connect(shortcutStart, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutStart()));
+    QShortcut *shortcutIntegrate = new QShortcut(QKeySequence("i"), this);
+    connect(shortcutIntegrate, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutIntegrate()));
+    QShortcut *shortcutIntegrateToggle = new QShortcut(QKeySequence("Alt+i"), this);
+    connect(shortcutIntegrateToggle, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutIntegrateToggle()));
+
+    // Connections to Configuration and settings
+    QShortcut *shortcutGainModeSLGM = new QShortcut(QKeySequence("g, 1"), this);
+    connect(shortcutGainModeSLGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeSLGM()));
+    QShortcut *shortcutGainModeLGM = new QShortcut(QKeySequence("g, 2"), this);
+    connect(shortcutGainModeLGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeLGM()));
+    QShortcut *shortcutGainModeHGM = new QShortcut(QKeySequence("g, 3"), this);
+    connect(shortcutGainModeHGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeHGM()));
+    QShortcut *shortcutGainModeSHGM = new QShortcut(QKeySequence("g, 4"), this);
+    connect(shortcutGainModeSHGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeSHGM()));
+
+    QShortcut *shortcutCSMOff = new QShortcut(QKeySequence("c, 0"), this);
+    connect(shortcutCSMOff, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutCSMOff()));
+    QShortcut *shortcutCSMOn = new QShortcut(QKeySequence("c, 1"), this);
+    connect(shortcutCSMOn, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutCSMOn()));
+
+    // Connections to DACs
+    QShortcut *shortcutTH0 = new QShortcut(QKeySequence("t, 0"), this);
+    connect(shortcutTH0, SIGNAL(activated()), _ui->DACsWidget, SLOT(shortcutTH0()));
+    QShortcut *shortcutIkrum = new QShortcut(QKeySequence("Ctrl+D, i"), this);
+    connect(shortcutIkrum, SIGNAL(activated()), _ui->DACsWidget, SLOT(shortcutIkrum()));
 
     // Signals and slots for this part
     SetupSignalsAndSlots();

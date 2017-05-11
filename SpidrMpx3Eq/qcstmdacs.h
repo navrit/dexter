@@ -128,6 +128,9 @@ private:
     QSignalMapper * _signalMapperSlider;
     QSignalMapper * _signalMapperSpinBox;
 
+public slots:
+    void shortcutTH0();
+    void shortcutIkrum();
 
 private slots:
 

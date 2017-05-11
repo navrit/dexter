@@ -1376,6 +1376,30 @@ void QCstmGLVisualization::active_frame_changed(){
 
 }
 
+void QCstmGLVisualization::shortcutStart()
+{
+    ui->startButton->animateClick();
+}
+
+void QCstmGLVisualization::shortcutIntegrate()
+// You always want integrate checked having pressed this key
+{
+    if (ui->summingCheckbox->isChecked()){
+        qDebug() << "[INFO] Integrate checkbox already checked, doing nothing";
+    } else {
+        ui->summingCheckbox->setChecked(true);
+    }
+}
+
+void QCstmGLVisualization::shortcutIntegrateToggle()
+{
+    if (ui->summingCheckbox->isChecked()){
+        ui->summingCheckbox->setChecked(false);
+    } else {
+        ui->summingCheckbox->setChecked(true);
+    }
+}
+
 void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position){
 
     //if(!_mpx3gui->getConfig()->isConnected())
