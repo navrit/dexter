@@ -191,6 +191,9 @@ Detector dependant. If incorrect, you will see very obvious artifacts, 3/4 of th
           <property name="text">
            <string>Colour mode</string>
           </property>
+          <property name="shortcut">
+           <string>C, M</string>
+          </property>
          </widget>
         </item>
         <item row="2" column="5">
@@ -512,6 +515,7 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
          </widget>
         </item>
        </layout>
+       <zorder>checkBox_sendDataToIP</zorder>
        <zorder>label_3</zorder>
        <zorder>operationModeComboBox</zorder>
        <zorder>label_16</zorder>

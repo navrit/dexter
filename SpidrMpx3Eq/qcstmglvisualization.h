@@ -310,6 +310,10 @@ public slots:
     //! Gets called when the current display needs to be reloaded. Uses the layerselector combo-box to determine what layer to load.
     void active_frame_changed();
 
+    void shortcutStart();
+    void shortcutIntegrate();
+    void shortcutIntegrateToggle();
+
 signals:
     void taking_data_gui();
     void idling_gui();

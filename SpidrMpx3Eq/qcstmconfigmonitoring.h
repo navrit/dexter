@@ -62,6 +62,13 @@ public slots:
     void on_taking_data_gui();
     void on_idling_gui();
 
+    void shortcutGainModeSLGM();
+    void shortcutGainModeLGM();
+    void shortcutGainModeHGM();
+    void shortcutGainModeSHGM();
+    void shortcutCSMOff();
+    void shortcutCSMOn();
+
 private slots:
     void ConnectionStatusChanged(bool);
 

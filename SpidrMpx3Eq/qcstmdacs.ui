@@ -218,12 +218,18 @@
          <property name="text">
           <string/>
          </property>
+         <property name="shortcut">
+          <string>T, 0</string>
+         </property>
         </widget>
        </item>
        <item row="1" column="0">
         <widget class="QCheckBox" name="dac1CheckBox">
          <property name="text">
           <string/>
+         </property>
+         <property name="shortcut">
+          <string>T, 1</string>
          </property>
         </widget>
        </item>
@@ -232,6 +238,9 @@
          <property name="text">
           <string/>
          </property>
+         <property name="shortcut">
+          <string>T, 2</string>
+         </property>
         </widget>
        </item>
        <item row="3" column="0">
@@ -239,12 +248,18 @@
          <property name="text">
           <string/>
          </property>
+         <property name="shortcut">
+          <string>T, 3</string>
+         </property>
         </widget>
        </item>
        <item row="4" column="0">
         <widget class="QCheckBox" name="dac4CheckBox">
          <property name="text">
           <string/>
+         </property>
+         <property name="shortcut">
+          <string>T, 4</string>
          </property>
         </widget>
        </item>
@@ -456,6 +471,9 @@
          <property name="text">
           <string/>
          </property>
+         <property name="shortcut">
+          <string>T, 5</string>
+         </property>
         </widget>
        </item>
        <item row="6" column="0">
@@ -463,12 +481,18 @@
          <property name="text">
           <string/>
          </property>
+         <property name="shortcut">
+          <string>T, 6</string>
+         </property>
         </widget>
        </item>
        <item row="7" column="0">
         <widget class="QCheckBox" name="dac7CheckBox">
          <property name="text">
           <string/>
+         </property>
+         <property name="shortcut">
+          <string>T, 7</string>
          </property>
         </widget>
        </item>
@@ -483,6 +507,9 @@
         <widget class="QCheckBox" name="dac9CheckBox">
          <property name="text">
           <string/>
+         </property>
+         <property name="shortcut">
+          <string>I, K</string>
          </property>
         </widget>
        </item>
