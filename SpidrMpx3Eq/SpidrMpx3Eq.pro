@@ -174,5 +174,6 @@ RESOURCES += \
     icons.qrc \
     shaders.qrc
 
+# Remove if not compiling using a static Qt build, if you don't know what this means, then you need to comment the next line
 CONFIG   += static
 

@@ -211,7 +211,7 @@ unsigned int Mpx3GUI::addLayer(int * data, int layer) {
 
     unsigned int ovfcntr = 0;
     if(mode == 1){
-        ovfcntr = getDataset()->addLayer(data, layer);
+         ovfcntr = getDataset()->addLayer(data, layer);
     }
     else {
         ovfcntr = getDataset()->setLayer(data, layer);
