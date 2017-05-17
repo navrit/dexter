@@ -86,7 +86,7 @@ void DataConsumerThread::consume()
                   );
 
         // Start !
-        start( HighPriority );
+        start( TimeCriticalPriority );
 
     } else {
         _restart = true;

@@ -55,7 +55,7 @@ void DataTakingThread::takedata() {
 
     if ( ! isRunning() ) {
         _stop = false;
-        start( HighestPriority );
+        start( TimeCriticalPriority );
     } else {
         _stop = false;
         _restart = true;
