@@ -150,6 +150,10 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     connect(shortcutIntegrate, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutIntegrate()));
     QShortcut *shortcutIntegrateToggle = new QShortcut(QKeySequence("Alt+i"), this);
     connect(shortcutIntegrateToggle, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutIntegrateToggle()));
+    QShortcut *shortcutFrameLength = new QShortcut(QKeySequence("l"), this);
+    connect(shortcutFrameLength, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutFrameLength()));
+    QShortcut *shortcutFrameNumber = new QShortcut(QKeySequence("f"), this);
+    connect(shortcutFrameNumber, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutFrameNumber()));
 
     // Connections to Configuration and settings
     QShortcut *shortcutGainModeSLGM = new QShortcut(QKeySequence("g, 1"), this);

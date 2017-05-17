@@ -1400,6 +1400,16 @@ void QCstmGLVisualization::shortcutIntegrateToggle()
     }
 }
 
+void QCstmGLVisualization::shortcutFrameLength()
+{
+    ui->triggerLengthSpinBox->setFocus();
+}
+
+void QCstmGLVisualization::shortcutFrameNumber()
+{
+    ui->nTriggersSpinBox->setFocus();
+}
+
 void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position){
 
     //if(!_mpx3gui->getConfig()->isConnected())
