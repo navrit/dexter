@@ -53,6 +53,8 @@ void ReceiverThreadC::readDatagrams()
   bool copy;
   u64 *pixelpkt, pixelword;
   u64  type;
+  while (_pixelDepth == 0)
+      usleep(100);
   int  pix_per_word = 60/_pixelDepth;
 
 #ifndef USE_NATIVE_SOCKET
