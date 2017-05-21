@@ -313,6 +313,8 @@ public slots:
     void shortcutStart();
     void shortcutIntegrate();
     void shortcutIntegrateToggle();
+    void shortcutFrameLength();
+    void shortcutFrameNumber();
 
 signals:
     void taking_data_gui();
