@@ -303,8 +303,10 @@ void QCstmGLVisualization::StartDataTaking(bool CtMode = false) {
     if ( !_dataTakingThread ) {
 
         _dataConsumerThread = new DataConsumerThread(_mpx3gui, this);
+        _dataConsumerThread->setObjectName("Consumer thread");
 
         _dataTakingThread = new DataTakingThread(_mpx3gui, _dataConsumerThread, this);
+        _dataTakingThread->setObjectName("Producer thread");
         _dataTakingThread->ConnectToHardware();
 
     }
