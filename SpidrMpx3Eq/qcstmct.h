@@ -6,8 +6,6 @@
 #include "gradient.h"
 #include <QElapsedTimer>
 #include <QDir>
-//#include <stdio.h>
-//#include <phidget21.h>
 
 namespace Ui {
 class QCstmCT;

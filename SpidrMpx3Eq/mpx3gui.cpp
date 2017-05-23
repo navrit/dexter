@@ -9,6 +9,7 @@
 #include "ui_mpx3gui.h"
 #include "ui_qcstmconfigmonitoring.h"
 #include "DataTakingThread.h"
+#include "thresholdscan.h"
 
 #include "qcustomplot.h"
 #include "mpx3eq_common.h"
@@ -135,6 +136,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+2", "Switch to configuration and monitoring") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+3", "Switch to DAC control") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+4", "Switch to Equalization") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+5", "Switch to Threshold Scan") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+5", "Switch to DQE calculation") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+6", "Switch to Scans") ), this)  );
 
@@ -400,6 +402,11 @@ void Mpx3GUI::on_shortcutsSwithPages() {
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
         _ui->actionEqualization->setChecked(1);
+
+    } else if ( k.matches( QKeySequence(tr("Ctrl+5")) ) ) {
+        uncheckAllToolbarButtons();
+        _ui->stackedWidget->setCurrentIndex( __thresholdScan_page_Id );
+        _ui->actionThreshold_Scan->setChecked(1);
 
     } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+5")) ) ){
         uncheckAllToolbarButtons();
@@ -1279,6 +1286,7 @@ QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; 
 //QCstmDQE * Mpx3GUI::getDQE(){ return _ui->dqeTab; }
 QCstmStepperMotor * Mpx3GUI::getStepperMotor() {return _ui->stepperMotorTab; }
 QCstmCT * Mpx3GUI::getCT() { return _ui->ctTab; }
+thresholdScan * Mpx3GUI::getTHScan() { return _ui->THScan; }
 
 void Mpx3GUI::on_actionExit_triggered()
 {
@@ -1314,7 +1322,7 @@ void Mpx3GUI::uncheckAllToolbarButtons(){
     _ui->actionConfiguration->setChecked(0);
     _ui->actionDACs->setChecked(0);
     _ui->actionEqualization->setChecked(0);
-
+    _ui->actionThreshold_Scan->setChecked(0);
     _ui->actionStepper_Motor->setChecked(0);
     //TODO _ui-> NEW ACTION ->setChecked(0);
 }
@@ -1483,4 +1491,11 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked){
 
     }
 
+}
+
+void Mpx3GUI::on_actionThreshold_Scan_triggered(bool)
+{
+    uncheckAllToolbarButtons();
+    _ui->stackedWidget->setCurrentIndex( __thresholdScan_page_Id );
+    _ui->actionThreshold_Scan->setChecked(1);
 }

@@ -44,6 +44,7 @@
       <widget class="QCstmCT" name="ctTab"/>
       <widget class="QCstmStepperMotor" name="stepperMotorTab"/>
       <widget class="QCstmVoxeltab" name="voxelTab"/>
+      <widget class="thresholdScan" name="THScan"/>
      </widget>
     </item>
    </layout>
@@ -54,7 +55,7 @@
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>25</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -157,6 +158,7 @@
    <addaction name="actionConfiguration"/>
    <addaction name="actionDACs"/>
    <addaction name="actionEqualization"/>
+   <addaction name="actionThreshold_Scan"/>
    <addaction name="separator"/>
    <addaction name="actionDefibrillator"/>
   </widget>
@@ -464,6 +466,18 @@ adj_* and mask_*</string>
     <string>Developer mode</string>
    </property>
   </action>
+  <action name="actionThreshold_Scan">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/rainbow.png</normaloff>:/icons/rainbow.png</iconset>
+   </property>
+   <property name="text">
+    <string>Threshold Scan (Ctrl+5)</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -522,6 +536,12 @@ adj_* and mask_*</string>
    <class>QCstmStepperMotor</class>
    <extends>QWidget</extends>
    <header>qcstmsteppermotor.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>thresholdScan</class>
+   <extends>QWidget</extends>
+   <header>thresholdscan.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -92,7 +92,8 @@ SOURCES += main.cpp \
     mtrDialog.cpp\
     optionsdialog.cpp \
     qcstmsteppermotor.cpp \
-    imagecalculator.cpp
+    imagecalculator.cpp \
+    thresholdscan.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -132,7 +133,8 @@ HEADERS += mpx3gui.h \
     mtrDialog.h\
     optionsdialog.h \
     qcstmsteppermotor.h \
-    imagecalculator.h
+    imagecalculator.h \
+    thresholdscan.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DataTakingThread.h
@@ -162,7 +164,8 @@ FORMS    += mpx3gui.ui \
     mtrDialog.ui\
     optionsdialog.ui \
     qcstmsteppermotor.ui \
-    imagecalculator.ui
+    imagecalculator.ui \
+    thresholdscan.ui
 
     copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/\" &
     first.depends = $(first) copydata

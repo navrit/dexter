@@ -23,7 +23,6 @@ QCstmCT::~QCstmCT()
 void QCstmCT::SetMpx3GUI(Mpx3GUI *p)
 {
     _mpx3gui = p;
-
 }
 
 void QCstmCT::resetMotor()

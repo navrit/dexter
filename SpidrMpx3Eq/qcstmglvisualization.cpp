@@ -548,6 +548,8 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
     if (runningCT){
         emit sig_resumeCT();
+    } else if (runningTHScan){
+        emit sig_resumeTHScan();
     }
 
     // inform the consumer that the data taking is finished
@@ -838,8 +840,11 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 
     connect( ui->saveCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_saveCheckBox_toggled()));
 
-    // CT shit
+    // CT stuff
     connect( this, SIGNAL(sig_resumeCT()), _mpx3gui->getCT() , SLOT(resumeCT()));
+
+    // Threshold scan
+    connect( this, SIGNAL(sig_resumeTHScan()), _mpx3gui->getTHScan(), SLOT(resumeScan()));
 }
 
 void QCstmGLVisualization::ntriggers_edit() {

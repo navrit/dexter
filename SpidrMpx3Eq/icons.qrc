@@ -21,5 +21,6 @@
         <file>icons/equalisation_default.png</file>
         <file>icons/startupimage.bin</file>
         <file>icons/ASI/ASI_sq_1100x1100.png</file>
+        <file>icons/rainbow.png</file>
     </qresource>
 </RCC>
