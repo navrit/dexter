@@ -123,11 +123,6 @@ unsigned int QCstmConfigMonitoring::getPixelDepthFromIndex(int indx) {
     return __pixelDepthMap[indx];
 }
 
-QString QCstmConfigMonitoring::getSendDataToIP()
-{
-    return ui->sendDataToIPlineEdit->text();
-}
-
 QCstmConfigMonitoring::~QCstmConfigMonitoring()
 {
 //    if( _stepperThread ) delete _stepperThread;
@@ -517,8 +512,6 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(ui->ipLineEdit, SIGNAL( editingFinished() ), this, SLOT( IpAddressEditFinished() ) );// config, SLOT(setIpAddress(QString)) );
     connect(config, SIGNAL(IpAdressChanged(QString)), ui->ipLineEdit, SLOT(setText(QString)) );
 
-    connect(ui->sendDataToIPlineEdit, SIGNAL( editingFinished() ), this, SLOT( sendDataToIpAddressEditFinished() ) );
-
     // Log level
     connect(ui->logLevelSpinner, SIGNAL( editingFinished() ), this, SLOT( setLogLevel() ) );
     connect(config, SIGNAL(logLevelChanged(int)), ui->logLevelSpinner, SLOT(setValue(int)) );
@@ -656,13 +649,6 @@ void QCstmConfigMonitoring::IpAddressEditFinished()
     QString ipLine = ui->ipLineEdit->text();
     _mpx3gui->getConfig()->setIpAddress( ipLine );
 
-}
-
-void QCstmConfigMonitoring::sendDataToIpAddressEditFinished(){
-    // The string should be of the form
-    //  127.0.0.1:60000
-    QString ipLine = ui->sendDataToIPlineEdit->text();
-    //_mpx3gui->getConfig()->setSendDataToIpAddress( ipLine );
 }
 
 void QCstmConfigMonitoring::pixelDepthChangedByValue(int val)
@@ -1561,19 +1547,3 @@ void QCstmConfigMonitoring::cameraOn() {
 
 //}
 
-
-void QCstmConfigMonitoring::on_checkBox_sendDataToIP_toggled(bool checked)
-{
-    if (checked){
-        ui->sendDataToIPlineEdit->setEnabled(true);
-    } else {
-        ui->sendDataToIPlineEdit->setEnabled(false);
-    }
-}
-
-void QCstmConfigMonitoring::on_sendDataToIPlineEdit_editingFinished()
-{
-    if (ui->checkBox_sendDataToIP->isChecked()){
-        qDebug() << "QCstmConfigMonitoring::on_sendDataToIPlineEdit_editingFinished() :" << ui->sendDataToIPlineEdit->text();
-    }
-}
