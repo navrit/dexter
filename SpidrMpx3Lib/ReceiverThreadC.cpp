@@ -1,3 +1,10 @@
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#define Sleep(ms) usleep(ms*1000)
+#endif
+
 #include <QUdpSocket>
 #include <QAbstractSocket>
 
@@ -54,7 +61,7 @@ void ReceiverThreadC::readDatagrams()
   u64 *pixelpkt, pixelword;
   u64  type;
   while (_pixelDepth == 0)
-      usleep(100);
+      Sleep(0.1);
   int  pix_per_word = 60/_pixelDepth;
 
 #ifndef USE_NATIVE_SOCKET
