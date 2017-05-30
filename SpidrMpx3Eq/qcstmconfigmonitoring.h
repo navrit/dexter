@@ -54,8 +54,6 @@ public:
     unsigned int getPixelDepthFromIndex(int indx);
     unsigned int getPixelDepth12BitsIndex() { return __pixelDepth12BitsIndex; }
 
-    QString getSendDataToIP();
-
 public slots:
 
     void OperationModeSwitched(int indx);
@@ -82,7 +80,6 @@ private slots:
     void csmSpmChangedByValue(int val);
 
     void IpAddressEditFinished();
-    void sendDataToIpAddressEditFinished();
 
     void nTriggersEdited();
     void ContRWFreqEdited();
@@ -126,9 +123,6 @@ private slots:
 //    void stepperGotoTargetFinished();
     void biasVoltageChanged();
     void setLogLevel();
-
-    void on_checkBox_sendDataToIP_toggled(bool checked);
-    void on_sendDataToIPlineEdit_editingFinished();
 
 private:
     Ui::QCstmConfigMonitoring *ui;

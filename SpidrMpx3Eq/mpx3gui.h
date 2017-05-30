@@ -29,7 +29,7 @@ class Mpx3Config;
 #include "mpx3config.h"
 #include "qcstmsteppermotor.h"
 #include "qcstmct.h"
-
+#include "thresholdscan.h"
 
 class Mpx3Config;
 class QCustomPlot;
@@ -47,6 +47,7 @@ class QCstmConfigMonitoring;
 //class QcstmDQE;
 class QCstmStepperMotor;
 class QCstmCT;
+class thresholdScan;
 
 // Change me when adding extra views
 #define __visualization_page_Id     0
@@ -57,6 +58,7 @@ class QCstmCT;
 #define __scans_page_Id             5
 #define __ct_page_Id                6
 #define __stepperMotor_page_Id      7
+#define __thresholdScan_page_Id     9
 
 #define BIN_FILES "Binary (*.bin)"
 #define TIFF_FILES "TIFF (*.tif)"
@@ -66,7 +68,7 @@ class QCstmCT;
 #define JSON_FILES "BH JSON file(*.json)"
 
 const QString _softwareName = "ASI Dexter";
-const QString _softwareVersion = "1.2.3";
+const QString _softwareVersion = "1.2.4";
 
 namespace Ui {
 class Mpx3GUI;
@@ -145,6 +147,7 @@ public:
 //    QCstmDQE * getDQE();
     QCstmStepperMotor * getStepperMotor();
     QCstmCT * getCT();
+    thresholdScan * getTHScan();
 
     SpidrController * GetSpidrController();
     SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
@@ -255,6 +258,7 @@ private slots:
     void on_actionRevert_triggered(bool checked);
     void on_actionAbout_triggered(bool checked);
     void on_actionStepper_Motor_triggered(bool checked);
+    void on_actionThreshold_Scan_triggered(bool);
 };
 
 

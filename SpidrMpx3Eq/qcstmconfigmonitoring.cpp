@@ -123,11 +123,6 @@ unsigned int QCstmConfigMonitoring::getPixelDepthFromIndex(int indx) {
     return __pixelDepthMap[indx];
 }
 
-QString QCstmConfigMonitoring::getSendDataToIP()
-{
-    return ui->sendDataToIPlineEdit->text();
-}
-
 QCstmConfigMonitoring::~QCstmConfigMonitoring()
 {
 //    if( _stepperThread ) delete _stepperThread;
@@ -457,34 +452,34 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(config, SIGNAL(TriggerDowntimeChanged(int)), ui->triggerDowntimeSpinner, SLOT(setValue(int)));
 
     // Operation Mode
-    connect(ui->operationModeComboBox, SIGNAL(activated(int)), config, SLOT(setOperationMode(int)));
+    connect(ui->operationModeComboBox, SIGNAL(currentIndexChanged(int)), config, SLOT(setOperationMode(int)));
     connect(config, SIGNAL(operationModeChanged(int)), ui->operationModeComboBox, SLOT(setCurrentIndex(int)));
     // connection in the viewer
-    connect(ui->operationModeComboBox, SIGNAL(activated(int)),
+    connect(ui->operationModeComboBox, SIGNAL(currentIndexChanged(int)),
             _mpx3gui->getVisualization()->GetUI()->operationModeComboBox_Vis,
             SLOT(setCurrentIndex(int)));
     // extra actions on OperationMode change
-    connect(ui->operationModeComboBox, SIGNAL(activated(int)),
+    connect(ui->operationModeComboBox, SIGNAL(currentIndexChanged(int)),
             this,
             SLOT(OperationModeSwitched(int)));
-    connect(ui->operationModeComboBox, SIGNAL(activated(int)),
+    connect(ui->operationModeComboBox, SIGNAL(currentIndexChanged(int)),
             _mpx3gui->getVisualization(),
             SLOT(OperationModeSwitched(int)));
 
     // Polarity
-    connect(ui->polarityComboBox, SIGNAL(activated(int)), config, SLOT(setPolarity(int)));
+    connect(ui->polarityComboBox, SIGNAL(currentIndexChanged(int)), config, SLOT(setPolarity(int)));
     connect(config, SIGNAL(polarityChanged(int)), ui->polarityComboBox, SLOT(setCurrentIndex(int)));
 
     // Gain Mode
-    connect(ui->gainModeCombobox, SIGNAL(activated(int)), config, SLOT(setGainMode(int)));
+    connect(ui->gainModeCombobox, SIGNAL(currentIndexChanged(int)), config, SLOT(setGainMode(int)));
     connect(config, SIGNAL(gainModeChanged(int)), ui->gainModeCombobox, SLOT(setCurrentIndex(int)));
 
     // Pixel Depth
-    connect(ui->pixelDepthCombo, SIGNAL(activated(int)), this, SLOT(setPixelDepthByIndex(int)) );
+    connect(ui->pixelDepthCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(setPixelDepthByIndex(int)) );
     connect(config, SIGNAL(pixelDepthChanged(int)), this, SLOT(pixelDepthChangedByValue(int)) );
 
     // Trigger mode
-    connect(ui->triggerModeCombo, SIGNAL(activated(int)), this, SLOT(setTriggerModeByIndex(int)) );
+    connect(ui->triggerModeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(setTriggerModeByIndex(int)) );
     connect(config, SIGNAL(TriggerModeChanged(int)), this, SLOT( triggerModeChangedByValue(int) ) );
 
     // Bias Voltage
@@ -492,32 +487,30 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(config, SIGNAL(BiasVoltageChanged(double)), ui->biasVoltageSpinner, SLOT(setValue(double)));
 
     // CSM SPM
-    connect(ui->csmSpmCombo, SIGNAL(activated(int)), this, SLOT( setCsmSpmByIndex(int) ) );
+    connect(ui->csmSpmCombo, SIGNAL(currentIndexChanged(int)), this, SLOT( setCsmSpmByIndex(int) ) );
     connect(config, SIGNAL(csmSpmChanged(int)), this, SLOT( csmSpmChangedByValue(int)) );
 
 
 
     // BothCounters
-    connect(ui->readBothCountersCheckBox, SIGNAL(clicked(bool)), config, SLOT(setReadBothCounters(bool)));
+    connect(ui->readBothCountersCheckBox, SIGNAL(toggled(bool)), config, SLOT(setReadBothCounters(bool)));
     connect(config, SIGNAL(readBothCountersChanged(bool)), ui->readBothCountersCheckBox, SLOT(setChecked(bool)));
 
     // ColourMode
-    connect(ui->ColourModeCheckBox, SIGNAL(clicked(bool)), config, SLOT(setColourMode(bool)));
+    connect(ui->ColourModeCheckBox, SIGNAL(toggled(bool)), config, SLOT(setColourMode(bool)));
     connect(config, SIGNAL(colourModeChanged(bool)), ui->ColourModeCheckBox, SLOT(setChecked(bool)));
 
     // LUTEnable
-    connect(ui->LUTCheckbox, SIGNAL(clicked(bool)), config, SLOT(setLUTEnable(bool)));
+    connect(ui->LUTCheckbox, SIGNAL(toggled(bool)), config, SLOT(setLUTEnable(bool)));
     connect(config, SIGNAL(LUTEnableChanged(bool)), ui->LUTCheckbox, SLOT(setChecked(bool)));
 
     // DecodeFrames
-    connect(ui->decodeFramesCheckbox, SIGNAL(clicked(bool)), config, SLOT(setDecodeFrames(bool)));
+    connect(ui->decodeFramesCheckbox, SIGNAL(toggled(bool)), config, SLOT(setDecodeFrames(bool)));
     connect(config, SIGNAL(decodeFramesChanged(bool)), ui->decodeFramesCheckbox, SLOT(setChecked(bool)));
 
     // IP and Port
     connect(ui->ipLineEdit, SIGNAL( editingFinished() ), this, SLOT( IpAddressEditFinished() ) );// config, SLOT(setIpAddress(QString)) );
     connect(config, SIGNAL(IpAdressChanged(QString)), ui->ipLineEdit, SLOT(setText(QString)) );
-
-    connect(ui->sendDataToIPlineEdit, SIGNAL( editingFinished() ), this, SLOT( sendDataToIpAddressEditFinished() ) );
 
     // Log level
     connect(ui->logLevelSpinner, SIGNAL( editingFinished() ), this, SLOT( setLogLevel() ) );
@@ -656,13 +649,6 @@ void QCstmConfigMonitoring::IpAddressEditFinished()
     QString ipLine = ui->ipLineEdit->text();
     _mpx3gui->getConfig()->setIpAddress( ipLine );
 
-}
-
-void QCstmConfigMonitoring::sendDataToIpAddressEditFinished(){
-    // The string should be of the form
-    //  127.0.0.1:60000
-    QString ipLine = ui->sendDataToIPlineEdit->text();
-    //_mpx3gui->getConfig()->setSendDataToIpAddress( ipLine );
 }
 
 void QCstmConfigMonitoring::pixelDepthChangedByValue(int val)
@@ -1561,19 +1547,3 @@ void QCstmConfigMonitoring::cameraOn() {
 
 //}
 
-
-void QCstmConfigMonitoring::on_checkBox_sendDataToIP_toggled(bool checked)
-{
-    if (checked){
-        ui->sendDataToIPlineEdit->setEnabled(true);
-    } else {
-        ui->sendDataToIPlineEdit->setEnabled(false);
-    }
-}
-
-void QCstmConfigMonitoring::on_sendDataToIPlineEdit_editingFinished()
-{
-    if (ui->checkBox_sendDataToIP->isChecked()){
-        qDebug() << "QCstmConfigMonitoring::on_sendDataToIPlineEdit_editingFinished() :" << ui->sendDataToIPlineEdit->text();
-    }
-}

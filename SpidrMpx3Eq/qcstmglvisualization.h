@@ -123,6 +123,9 @@ public:
     void saveImage(QString filename, QString corrMethod);
     bool runningCT = false;
 
+    // Used in Threshold Scan
+    bool runningTHScan = false;
+
     //!Adds the specified threshold if it didn't exist yet. Then switches to it.
     void setThreshold(int threshold);
 
@@ -330,8 +333,10 @@ signals:
     void sig_statusBarWrite(QString mess, QString colorString);
     void sig_statusBarClean();
 
-    //! Used to run CT shit
+    //! Used to run CT
     void sig_resumeCT();
+    //! Used to run Threshold scan
+    void sig_resumeTHScan();
 
 };
 

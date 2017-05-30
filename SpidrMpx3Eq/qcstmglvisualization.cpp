@@ -303,8 +303,10 @@ void QCstmGLVisualization::StartDataTaking(bool CtMode = false) {
     if ( !_dataTakingThread ) {
 
         _dataConsumerThread = new DataConsumerThread(_mpx3gui, this);
+        _dataConsumerThread->setObjectName("Consumer thread");
 
         _dataTakingThread = new DataTakingThread(_mpx3gui, _dataConsumerThread, this);
+        _dataTakingThread->setObjectName("Producer thread");
         _dataTakingThread->ConnectToHardware();
 
     }
@@ -546,6 +548,8 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
     if (runningCT){
         emit sig_resumeCT();
+    } else if (runningTHScan){
+        emit sig_resumeTHScan();
     }
 
     // inform the consumer that the data taking is finished
@@ -836,8 +840,11 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 
     connect( ui->saveCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_saveCheckBox_toggled()));
 
-    // CT shit
+    // CT stuff
     connect( this, SIGNAL(sig_resumeCT()), _mpx3gui->getCT() , SLOT(resumeCT()));
+
+    // Threshold scan
+    connect( this, SIGNAL(sig_resumeTHScan()), _mpx3gui->getTHScan(), SLOT(resumeScan()));
 }
 
 void QCstmGLVisualization::ntriggers_edit() {

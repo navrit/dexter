@@ -169,7 +169,7 @@ void QCstmThreshold::StartCalibration() {
         }
         //disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
         delete _scanThread;
-        _scanThread = 0x0;
+        _scanThread = nullptr;
     }
 
     if ( ! _keepPlots ) {
@@ -213,6 +213,7 @@ void QCstmThreshold::StartCalibration() {
     Mpx3Config::extra_config_parameters expars;
     expars.nTriggers = ui->nTriggersSpinBox->value();
     expars.equalizationBit = false;
+    //! TODO: What are these debug bits?
     // Debug bits in this context.  Disc_CSM_SPM.
     if ( ui->setDiscCsmSpmBitCheckBox->isChecked() ) { expars.DiscCsmSpm = 0x1; }
     else { expars.DiscCsmSpm = 0x0; }
