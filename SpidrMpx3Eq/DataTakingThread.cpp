@@ -206,7 +206,7 @@ void DataTakingThread::run() {
 
             // An emergency stop when the consumer thread can't keep up
             if ( _consumer->freeFrames->available() < halfSemaphoreSize ) {
-                //qDebug() << " ... try to stop ";
+                qDebug() << " ... try to stop ";
                 if ( ! emergencyStop ) {
                     emit bufferFull( 0 );
                     if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
@@ -245,16 +245,17 @@ void DataTakingThread::run() {
 
             lostPackets += spidrdaq->lostCount();
 
-            if ( (oneFrameChipCntr != nChips) || (lostPackets > 0 && _vis->getDropFrames()) ) {
-                for ( unsigned int i = 0 ; i < oneFrameChipCntr ; i++ ) {
-                    qDebug() << ">> " << i;
-                    // Free the resources and rewind descriptor
-                    _consumer->usedFrames->acquire();
-                    _consumer->rewindcopydata(size_in_bytes);
-                    _consumer->freeFrames->release();
-                }
-                //qDebug() << " !!! REWIND !!! [" << oneFrameChipCntr << "]";
-            }
+            //! TODO Make this work as intended
+//            if ( (oneFrameChipCntr != nChips) || (lostPackets > 0 && _vis->getDropFrames()) ) {
+//                for ( unsigned int i = 0 ; i < oneFrameChipCntr ; i++ ) {
+//                    qDebug() << "Rewind >> " << i; // 0,1,2,3
+//                    // Free the resources and rewind descriptor
+//                    _consumer->usedFrames->acquire();
+//                    _consumer->rewindcopydata(size_in_bytes);
+//                    _consumer->freeFrames->release();
+//                }
+//                //qDebug() << " !!! REWIND !!! [" << oneFrameChipCntr << "]";
+//            }
 
             // If we are working with 2 counters, go get
             // the second frame associated before it continues.
