@@ -26,7 +26,6 @@ CONFIG(debug, debug|release) {
   MOC_DIR     = debug
   UI_DIR      = debug
   DESTDIR     = ../Debug
-  LIBS       += -L/home/asi/Qt/5.7/gcc_64/lib
 }
 
 CONFIG(release, debug|release) {
@@ -34,7 +33,6 @@ CONFIG(release, debug|release) {
   MOC_DIR     = release
   UI_DIR      = release
   DESTDIR     = ../Release
-  LIBS       += -L../Debug -L/home/asi/Qt/5.7/gcc_64/lib
 }
 
 win32 {

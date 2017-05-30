@@ -10,6 +10,8 @@ using namespace std;
 #include "mpx3defs.h"
 
 //#define USE_SPIDRDAQ
+//#define USE_PIXELCONFIG
+//#define DEBUGGING_IT
 
 quint32 get_addr_and_port(const char *str, int *portnr);
 int     my_atoi(const char *c);
@@ -61,6 +63,7 @@ int main( int argc, char *argv[] )
     cout << setw(8) << devids[i] << " ";
   cout << dec << setfill(' ') << endl;
 
+  // ----------------------------------------------------------
   // Get current read-out mask
   int mask = 0;
   cout << "(acq mask 0x" << hex;
@@ -80,6 +83,7 @@ int main( int argc, char *argv[] )
       }
   cout << "==> Using device number " << devnr << endl;
 
+  // ----------------------------------------------------------
 #ifdef USE_SPIDRDAQ
   // Added readout mask to constructor (7 Apr 2016)
   SpidrDaq spidrdaq( &spidrcontrol );
@@ -97,14 +101,18 @@ int main( int argc, char *argv[] )
   spidrdaq.setDecodeFrames( true );
 #endif
 
+  // ----------------------------------------------------------
+  //spidrcontrol.setMaxPacketSize( 9000 ); // Not available on Compact-SPIDR
+
   int  pixdepth = 12;
   bool two_counter_readout = false;
-  //spidrcontrol.setPixelDepth(devnr, pixdepth, two_counter_readout); DO AFTER PIXEL CONFIGURATION!
+
+  // DO AFTER PIXEL CONFIGURATION! :
+  //spidrcontrol.setPixelDepth(devnr, pixdepth, two_counter_readout);
 #ifdef USE_SPIDRDAQ
   spidrdaq.setPixelDepth( pixdepth );
 #endif
 
-//#define USE_PIXELCONFIG
 #ifdef USE_PIXELCONFIG
   // Create a (new) pixel configuration (for a Medipix3 device)
   int devtype = MPX_TYPE_NC;
@@ -225,7 +233,7 @@ int main( int argc, char *argv[] )
 
 #ifdef USE_SPIDRDAQ
   // DAQ summary:
-  cout << "DAQ frames: " << spidrdaq.framesCount() << " (";
+  cout << endl << "DAQ frames: " << spidrdaq.framesCount() << " (";
   for( i=0; i<4; ++i ) cout << spidrdaq.framesCount(i) << " ";
   cout << ")" << endl;
   cout << " (file: " << spidrdaq.framesWrittenCount()

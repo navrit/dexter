@@ -160,7 +160,8 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
 	case PIXEL_DATA_EOR:
 	case PIXEL_DATA_EOF:
 	  // Extract the row counter from the data
-	  rownr = (int) ((pixelword & ROW_COUNT_MASK) >> ROW_COUNT_SHIFT);
+	  //rownr = (int) ((pixelword & ROW_COUNT_MASK) >> ROW_COUNT_SHIFT);
+	  ++rownr;
 
 	  // Unpack the pixel packet
 	  for( j=0; j<pix_per_word; ++j, ++index )

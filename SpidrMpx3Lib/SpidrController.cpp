@@ -1103,14 +1103,14 @@ bool SpidrController::writeFlash( int            flash_id,
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setShutterTriggerConfig( int trigger_mode,
-					       int trigger_period_us,
+					       int trigger_width_us,
 					       int trigger_freq_mhz,
 					       int nr_of_triggers,
 					       int trigger_pulse_count )
 {
   int datawords[5];
   datawords[0] = trigger_mode;
-  datawords[1] = trigger_period_us;
+  datawords[1] = trigger_width_us;
   datawords[2] = trigger_freq_mhz;
   datawords[3] = nr_of_triggers;
   datawords[4] = trigger_pulse_count;
@@ -1120,7 +1120,7 @@ bool SpidrController::setShutterTriggerConfig( int trigger_mode,
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getShutterTriggerConfig( int *trigger_mode,
-					       int *trigger_period_us,
+					       int *trigger_width_us,
 					       int *trigger_freq_mhz,
 					       int *nr_of_triggers,
 					       int *trigger_pulse_count )
@@ -1129,10 +1129,11 @@ bool SpidrController::getShutterTriggerConfig( int *trigger_mode,
   if( !this->requestGetInts( CMD_GET_TRIGCONFIG, 0, 5, data ) )
     return false;
   *trigger_mode        = data[0];
-  *trigger_period_us   = data[1];
+  *trigger_width_us    = data[1];
   *trigger_freq_mhz    = data[2];
   *nr_of_triggers      = data[3];
-  *trigger_pulse_count = data[4];
+  if( trigger_pulse_count )
+    *trigger_pulse_count = data[4];
   return true;
 }
 
@@ -1259,7 +1260,7 @@ bool SpidrController::getDacOut( int  dev_nr,
 				 int *dacout_val,
 				 int  nr_of_samples )
 {
-  // Get (an) ADC sample(s) of the Medipix3 'DACOut' output
+  // Get (an) ADC sample(s) of a Medipix3 device's 'DACOut' output
   int chan = dev_nr; // Assume this is how they are connected to the ADC
   return this->getAdc( dacout_val, chan, nr_of_samples );
 }

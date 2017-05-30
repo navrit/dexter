@@ -171,7 +171,7 @@ class MY_LIB_API SpidrController
 
   // Shutter trigger
   bool setShutterTriggerConfig ( int  trig_mode,
-                                 int  trig_period_us,
+                                 int  trig_width_us,
                                  int  trig_freq_mhz,
                                  int  nr_of_triggers,
                                  int  trig_pulse_count = 0 );
@@ -179,7 +179,7 @@ class MY_LIB_API SpidrController
                                  int *trig_period_us,
                                  int *trig_freq_mhz,
                                  int *nr_of_triggers,
-                                 int *trig_pulse_count );
+                                 int *trig_pulse_count = 0 );
   bool startAutoTrigger        ( );
   bool stopAutoTrigger         ( );
   bool openShutter             ( );
