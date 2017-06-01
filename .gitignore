@@ -70,3 +70,13 @@ SpidrMpx3Eq/hola/config/
 /SpidrMpx3Eq/lh/mask_1
 /SpidrMpx3Eq/lh/mask_2
 /SpidrMpx3Eq/lh/mask_3
+
+*.stash
+
+*.Debug
+
+*.o
+
+*.Release
+
+SpidrMpx3Lib/build-spidrmpx3test-Desktop_Qt_5_7_1_GCC_64bit-Debug/Makefile
