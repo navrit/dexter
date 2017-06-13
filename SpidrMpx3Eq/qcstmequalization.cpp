@@ -2310,20 +2310,24 @@ Mpx3EqualizationResults::eq_status Mpx3EqualizationResults::GetStatus(int pixId,
  */
 bool Mpx3EqualizationResults::ReadAdjBinaryFile(QString fn) {
 
-    qDebug() << "[INFO] Read Adj binary file: " << fn.toStdString().c_str();
+    qDebug() << "Mpx3EqualizationResults::ReadAdjBinaryFile   [INFO] Read Adj binary file: " << fn.toStdString().c_str();
     QFile file(fn);
     if ( !file.open(QIODevice::ReadOnly) ) {
         return false;
     }
 
-    // Read temporarily the entire chunk of 128k
+    //! Read temporarily the entire chunk of 128k
     QByteArray temp_pixId_Adj_X;
     temp_pixId_Adj_X = file.readAll();
     file.close();
     int readSize = temp_pixId_Adj_X.size();
-    qDebug() << "[READ] read " << temp_pixId_Adj_X.size() << " bytes";
+    qDebug() << "Mpx3EqualizationResults::ReadAdjBinaryFile   [INFO] read " << temp_pixId_Adj_X.size() << " bytes";
 
-    // Now split in Low and High
+    //! Now split in Low and High
+    //!
+    //! __matrix_size == 256*256=65536
+    //! Adjustment files are stored as 1xN matrix
+    //! THL: 0-65535, THH: 65536-131072
     for ( int i = 0 ; i < __matrix_size ; i++) {
         _pixId_Adj_L[i] = temp_pixId_Adj_X[i];
     }
@@ -2339,23 +2343,23 @@ bool Mpx3EqualizationResults::ReadAdjBinaryFile(QString fn) {
 bool Mpx3EqualizationResults::WriteAdjBinaryFile(QString fn) {
 
     //ofstream fd;
-    cout << "[INFO] Writing adj file to: " << fn.toStdString() << endl;
+    cout << "Mpx3EqualizationResults::WriteAdjBinaryFile    [INFO] Writing adj file to: " << fn.toStdString() << endl;
 
     QFile file(fn);
     if (!file.open(QIODevice::WriteOnly)) return false;
     //if ( sel == __ADJ_L ) file.write(_pixId_Adj_L);
     //if ( sel == __ADJ_H ) file.write(_pixId_Adj_H);
 
-    cout << "       Write L: " << _pixId_Adj_L.size() << endl;
-    cout << "       Write H: " << _pixId_Adj_H.size() << endl;
+    qDebug() << "Mpx3EqualizationResults::WriteAdjBinaryFile       Write L: " << _pixId_Adj_L.size() << endl;
+    qDebug() << "Mpx3EqualizationResults::WriteAdjBinaryFile       Write H: " << _pixId_Adj_H.size() << endl;
 
     qint64 bytesWritten = file.write(_pixId_Adj_L);
     bytesWritten += file.write(_pixId_Adj_H);
 
-    cout << "       Bytes written: " << bytesWritten << endl;
+    qDebug() << "Mpx3EqualizationResults::WriteAdjBinaryFile       Bytes written: " << bytesWritten << endl;
 
     /*fd.open (fn.toStdString().c_str(), ios::out | ios::binary);
-    cout << "Writing adjustment matrix to: " << fn.toStdString() << endl;
+    qDebug() << "Mpx3EqualizationResults::WriteAdjBinaryFile   Writing adjustment matrix to: " << fn.toStdString() << endl;
     // Each adjustment value is written as 8 bits val.  Each value is actually 5 bits.
     char buffer;
     for( int j = 0 ; j < __matrix_size ; j++ ){
@@ -2374,10 +2378,11 @@ bool Mpx3EqualizationResults::WriteMaskBinaryFile(QString fn) {
 
     ofstream fd;
     fd.open (fn.toStdString().c_str(), ios::out);
-    cout << "Writing mask file to: " << fn.toStdString() << endl;
+    cout << "Mpx3EqualizationResults::WriteMaskBinaryFile   Writing mask file to: " << fn.toStdString() << endl;
 
     for ( int i = 0 ; i < __matrix_size ; i++ ) {
-        if ( _eqStatus_H[i] > __EQUALIZED || _eqStatus_L[i] > __EQUALIZED ) fd << i << endl;  // Equalization failed
+        if ( _eqStatus_H[i] > __EQUALIZED || _eqStatus_L[i] > __EQUALIZED ) fd << i << endl;
+        qDebug() << "Mpx3EqualizationResults::WriteMaskBinaryFile   Equalization failed";
     }
 
     return true;
@@ -2387,7 +2392,7 @@ bool Mpx3EqualizationResults::ReadMaskBinaryFile(QString fn) {
 
     ifstream fd;
     fd.open (fn.toStdString().c_str(), ios::out);
-    qDebug() << "[MASK] Reading mask file from: " << fn.toStdString().c_str();
+    qDebug() << "Mpx3EqualizationResults::ReadMaskBinaryFile   [MASK] Reading mask file from: " << fn.toStdString().c_str();
 
     int val;
     while ( fd.good() ) {
@@ -2425,7 +2430,7 @@ void Mpx3EqualizationResults::ClearAdj(){
             _pixId_Adj_H[i] = 0x0;
         }
     } else {
-        cout << "[ERROR] the pixAdj ByteArray doesn't match the matrix size Mpx3EqualizationResults::ClearAdj()" << endl;
+        qDebug() << "Mpx3EqualizationResults::ClearAdj   [ERROR] the pixAdj ByteArray doesn't match the matrix size" << endl;
     }
 
 }
@@ -2462,7 +2467,7 @@ void Mpx3EqualizationResults::ExtrapolateAdjToTarget(int target, double eta_Adj_
             int adj = floor( (eta_Adj_THL * (double)target)  +  pixel_cut );
 
             if ( i < 2 ) {
-                cout << eta_Adj_THL << ", " << pixel_cut << ", " << adj << endl;
+                qDebug() << eta_Adj_THL << ", " << pixel_cut << ", " << adj << endl;
             }
 
             // Replace the old matrix with this adjustment
@@ -2503,7 +2508,7 @@ void Mpx3EqualizationResults::ExtrapolateAdjToTarget(int target, double eta_Adj_
             if ( int(_pixId_Adj_H[i]) == 0x0 ) atmin++;
         }
     }
-    cout << "[INFO] Extrapolation formula used. Pixels set at max adj : " << atmax << ". Pixels set at min adj : " << atmin << endl;
+    qDebug() << "Mpx3EqualizationResults::ExtrapolateAdjToTarget [INFO] Extrapolation formula used. Pixels set at max adj : " << atmax << ". Pixels set at min adj : " << atmin << endl;
 
 }
 
