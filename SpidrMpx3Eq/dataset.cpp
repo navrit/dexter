@@ -579,20 +579,22 @@ void Dataset::toASCII(QString filename)
     int len = sizex * sizey * nchipsx * nchipsy;
 
     QList <int> thresholds = getThresholds();
+    qDebug() << thresholds;
     QList<int>::iterator it = thresholds.begin();
     QList<int>::iterator itE = thresholds.end();
 
+    const int width   = getWidth();  // Should always be 512 or 256 for a quad without spatial correction
+    const int height  = getHeight(); // ""
+    uint32_t fullFrame[height*width];
+
     // Do the different thresholds
     for (; it != itE; it++) {
-
-        const int width   = getWidth();  // Should always be 512 or 256 for a quad without spatial correction
-        const int height  = getHeight(); // ""
-        uint32_t fullFrame[height*width];
+        memset(fullFrame, 0, sizeof(fullFrame));
 
         for (int y=0; y < height; y++) {
             for (int x=0; x < width; x++) {
                 //! Sample the pixels directly
-                fullFrame[y*width + x] = sample(x, height-y-1, thresholds[* it]);
+                fullFrame[y*width + x] = sample(x, height-y-1, *it);
             }
         }
 
