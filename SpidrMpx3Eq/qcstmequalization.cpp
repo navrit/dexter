@@ -2382,7 +2382,6 @@ bool Mpx3EqualizationResults::WriteMaskBinaryFile(QString fn) {
 
     for ( int i = 0 ; i < __matrix_size ; i++ ) {
         if ( _eqStatus_H[i] > __EQUALIZED || _eqStatus_L[i] > __EQUALIZED ) fd << i << endl;
-        qDebug() << "Mpx3EqualizationResults::WriteMaskBinaryFile   Equalization failed";
     }
 
     return true;

@@ -1,4 +1,9 @@
+#ifdef WIN32
 #include <windows.h>
+#else
+#include <unistd.h>
+#endif
+#define Sleep(ms) usleep(ms*1000)
 #include <iostream>
 #include <iomanip>
 using namespace std;
@@ -172,7 +177,7 @@ int main( int argc, char *argv[] )
         if( row < 255 ) spidrcontrol.setPixelMaskMpx3rx(row + 1, row);
         if( row < 254 ) spidrcontrol.setPixelMaskMpx3rx(row + 2, row);
       }
-        
+
       // Set test-bit on a number of pixels
       bool testbit = true;
       for( col=128; col<130; ++col )
@@ -246,14 +251,14 @@ int main( int argc, char *argv[] )
             }
           spidrdaq.setLutEnable( true );
           spidrcontrol.setLutEnable( false );
-	}
+        }
 #else
       // Upload the pixel configuration to all devices
       for( int i=0; i<devcnt; ++i )
-	if( devids[i] != 0 && (mask & (1<<i)) )
-	  if( !spidrcontrol.setPixelConfigMpx3rx(i, read_back_pixconf) )
-	    cout << "### Pixel config " << i << ": "
-		 << spidrcontrol.errorString() << endl;
+        if( devids[i] != 0 && (mask & (1<<i)) )
+          if( !spidrcontrol.setPixelConfigMpx3rx(i, read_back_pixconf) )
+            cout << "### Pixel config " << i << ": "
+                 << spidrcontrol.errorString() << endl;
 #endif // USE_SPIDRDAQ
     }
   else
@@ -385,7 +390,7 @@ int main( int argc, char *argv[] )
 
   //cin >> ch;
   spidrdaq.stop();
-#endif    
+#endif
   return 0;
 }
 
