@@ -1,16 +1,20 @@
 #include "thresholdscan.h"
 #include "ui_thresholdscan.h"
-
 #include "ui_mpx3gui.h"
+#include "mpx3gui.h"
+#include "SpidrController.h"
 
 #include <QElapsedTimer>
+#include "SpidrDaq.h"
 
-
-thresholdScan::thresholdScan(QWidget *parent) :
+thresholdScan::thresholdScan(Mpx3GUI *parent) :
     QWidget(parent),
     ui(new Ui::thresholdScan)
 {
     ui->setupUi(this);
+    SetMpx3GUI( parent );
+
+    _thresholdScanThread = nullptr;
 }
 
 thresholdScan::~thresholdScan()
@@ -18,16 +22,10 @@ thresholdScan::~thresholdScan()
     delete ui;
 }
 
-void thresholdScan::SetMpx3GUI(Mpx3GUI *p)
-{
-    _mpx3gui = p;
-
-}
-
 void thresholdScan::startScan()
 {
     //! Use acquisition settings from other view
-    resetScan();
+    //resetScan();
 
     //! TODO Test this disable/enable spinbox behaviour - offline attempts are not trivial
     disableSpinBoxes();
@@ -61,7 +59,6 @@ void thresholdScan::startScan()
             //! TODO Take Double counter behaviour into account
             ui->textEdit_log->append("TH:" + QString::number(i) + " frame:" + QString::number(j));
 
-            //! TODO uncomment
             //_mpx3gui->getDataset()->clear();
             startDataTakingThread();
         }
@@ -101,6 +98,7 @@ void thresholdScan::stopScan()
 
 void thresholdScan::resetScan()
 {
+    _mpx3gui->getDataset()->clear();
     _stop = false;
 }
 
@@ -111,11 +109,23 @@ void thresholdScan::resumeScan()
 
 void thresholdScan::startDataTakingThread()
 {
-    return;
-    //! TODO uncomment
     //_mpx3gui->getVisualization()->StartDataTaking(true);
 
-    //! Note: MUST end function here to return back to Qt event loop
+//    if ( _thresholdScanThread ) {
+//        if ( _thresholdScanThread->isRunning() ) {
+//            return;
+//        }
+//        delete _thresholdScanThread;
+//        _thresholdScanThread = nullptr;
+//    }
+
+    // Go on with the scan thread
+    _thresholdScanThread = new ThresholdScanThread( _mpx3gui, this );
+    qDebug() << _mpx3gui;
+
+    _thresholdScanThread->ConnectToHardware();
+    _thresholdScanThread->start();
+
 }
 
 void thresholdScan::enableSpinBoxes()
@@ -143,4 +153,144 @@ void thresholdScan::on_button_startStop_clicked()
         ui->button_startStop->setText("Stop");
         startScan();
     }
+}
+
+ThresholdScanThread::ThresholdScanThread(Mpx3GUI * mpx3gui, thresholdScan * thresholdScanA) {
+    _mpx3gui = mpx3gui;
+    _thresholdScan = thresholdScanA;
+    _ui = _thresholdScan->GetUI();
+}
+
+void ThresholdScanThread::ConnectToHardware()
+{
+    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
+    // I need to do this here and not when already running the thread
+    // Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
+    if( spidrcontrol ) { spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
+    else { _srcAddr = 0; }
+
+}
+
+bool ThresholdScanThread::getAbort()
+{
+    return abort;
+}
+
+void ThresholdScanThread::setAbort(bool arg)
+{
+    abort = arg;
+    return;
+}
+
+void ThresholdScanThread::run()
+{
+    // Open a new temporary connection to the SPIDR to avoid collisions to the main one
+    // Extract the ip address
+    int ipaddr[4] = { 1, 1, 168, 192 };
+    if ( _srcAddr != 0 ) {
+        ipaddr[3] = (_srcAddr >> 24) & 0xFF;
+        ipaddr[2] = (_srcAddr >> 16) & 0xFF;
+        ipaddr[1] = (_srcAddr >>  8) & 0xFF;
+        ipaddr[0] = (_srcAddr >>  0) & 0xFF;
+    }
+    SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
+
+    if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
+        qDebug() << "[ERR ] Device not connected !";
+        return;
+    }
+
+    //! Work around
+    //! If we attempt a connection while the system is already sending data
+    //! (this may happen if for instance the program died for whatever reason,
+    //!  or when it is close while a very long data taking has been launched and
+    //! the system failed to stop the data taking).  If this happens we ought
+    //! to stop data taking, and give the system a bit of delay.
+    spidrcontrol->stopAutoTrigger();
+    Sleep( 100 );
+
+    SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+
+    // Send the existing equalization
+    _mpx3gui->getEqualization()->SetAllAdjustmentBits(spidrcontrol);
+
+    int minScan = _ui->spinBox_minimum->value();
+    int maxScan = _ui->spinBox_maximum->value();
+    int stepScan = _ui->spinBox_spacing->value();
+    int dacCodeToScan = MPX3RX_DAC_THRESH_0;
+    //int deviceIndex = 0; //Assume quad, so this will be [0-3]
+    int nReps = 0;
+    bool doReadFrames = true;
+    int counter = minScan;
+
+    for ( ; scanContinue ; ) {
+
+        // Set DACs on all chips
+        for(int i = 0 ; i < _mpx3gui->getConfig()->getNActiveDevices() ; i++) {
+            if ( !_thresholdScan->GetMpx3GUI()->getConfig()->detectorResponds( i ) ) {
+                qDebug() << "[ERR ] Device " << i << " not responding.";
+            } else {
+                spidrcontrol->setDac( i, dacCodeToScan, minScan );
+            }
+        }
+
+        // Start the trigger as configured
+        spidrcontrol->startAutoTrigger();
+
+        doReadFrames = true;
+        nReps = 0;
+
+        // Timeout
+        int timeOutTime =
+                _mpx3gui->getConfig()->getTriggerLength_ms()
+                +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
+                + 100; // ms
+        // TODO ! The extra ms is a combination of delay in the network plus
+        // system overhead.  This should be predicted and not hard-coded. TODO !
+
+        while ( spidrdaq->hasFrame( timeOutTime ) ) {
+
+            QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
+
+            // A frame is here
+            doReadFrames = true;
+
+            // Check quality, if packets lost don't consider the frame
+            if ( spidrdaq->lostCountFrame() != 0 ) {
+                doReadFrames = false;
+            }
+
+            if ( doReadFrames ) {
+                int size_in_bytes = -1;
+
+                // On all active chips
+                for(int i = 0 ; i < activeDevices.size() ; i++) {
+                    _data = spidrdaq->frameData(i, &size_in_bytes);
+                    _ui->textEdit_log->append("nReps: "+QString::number((nReps)));
+                }
+                nReps++;
+            }
+
+            // Release
+            spidrdaq->releaseFrame();
+        }
+
+        qDebug() << "nReps = " << nReps;
+
+        // increment
+        counter += stepScan;
+
+        // See the termination condition
+        if ( counter <= maxScan && !abort ) {
+            scanContinue = true;
+        }
+        else {
+            scanContinue = false;
+        }
+
+    }
+
+
+    delete spidrcontrol;
 }
