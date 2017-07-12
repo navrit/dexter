@@ -279,46 +279,58 @@ bool Mpx3GUI::equalizationLoaded(){
 
 bool Mpx3GUI::setTestPulses() {
 
-    int devId = 0;
+    for ( int devId = 0 ; devId < 4 ; devId++ ) { //! TODO Remove hardcording for quad
+        if ( _ui->equalizationWidget->equalizationHasBeenLoaded() ) {
 
-    if ( _ui->equalizationWidget->equalizationHasBeenLoaded() ) {
+            SpidrController * spidrcontrol = GetSpidrController();
 
-        SpidrController * spidrcontrol = GetSpidrController();
+            pair<int, int> pix;
+            bool testbit = false;
+            int testBitTrue = 0;
 
-        pair<int, int> pix;
-        bool testbit = false;
-        int testBitTrue = 0;
-        for ( int i = 0 ; i < __matrix_size ; i++ ) {
+            spidrcontrol->setTpSwitch( 1, 200000 ); //! 200 Hz
 
-            pix = XtoXY(i, __array_size_x);
+            //! TODO REVIEW/REWRITE THIS
+            for ( int i = 0 ; i < __matrix_size ; i++ ) {
 
-            if ( pix.first % 2 == 0 && pix.second % 2 == 0 ) {
-                testbit = true;
-                if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
-            } else {
-                testbit = false;
-                if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
+                pix = XtoXY(i, __array_size_x);
+
+    //            //! Makes checkerboard pattern
+    //            if ( pix.first % 2 == 0 && pix.second % 2 == 0 ) {
+    //                testbit = true;
+    //                testBitTrue++;
+    //                if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
+    //            } else {
+    //                testbit = false;
+    //                if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
+    //            }
+
+                testbit = true; // Set all test bits on
+                testBitTrue++;
+                spidrcontrol->configCtpr( devId, pix.first, 1 );
+                spidrcontrol->setCtpr( devId );
+
+                //spidrcontrol->mpx
+
+                spidrcontrol->configPixelMpx3rx(pix.first,
+                                                pix.second,
+                                                _ui->equalizationWidget->getEqMap()[devId]->GetPixelAdj(i),
+                                                _ui->equalizationWidget->getEqMap()[devId]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
+                                                testbit);
             }
 
-            spidrcontrol->configPixelMpx3rx(pix.first,
-                                            pix.second,
-                                            _ui->equalizationWidget->getEqMap()[devId]->GetPixelAdj(i),
-                                            _ui->equalizationWidget->getEqMap()[devId]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
-                                            testbit);
+            qDebug() << "[TEST] Number of pixels testBit ON : "<< testBitTrue;
 
-            if ( testbit ) testBitTrue++;
-        }
+            spidrcontrol->setPixelConfigMpx3rx( devId );
 
-        qDebug() << "[TEST] Number of pixels testBit ON : "<< testBitTrue;
 
-        spidrcontrol->setPixelConfigMpx3rx( devId );
-        spidrcontrol->setCtpr( devId );
 
-        spidrcontrol->setTpSwitch( 1, 200000 );
 
-    } else return false; // equalization missing
+        } else return false; // equalization missing
 
-    return true;
+        return true;
+    }
+
 }
 
 int Mpx3GUI::getStepperMotorPageID()
