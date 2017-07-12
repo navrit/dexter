@@ -1,9 +1,9 @@
 #ifndef QCSTMTHRESHOLD_H
 #define QCSTMTHRESHOLD_H
 
+#include <QWidget>
 #include "mpx3gui.h"
 
-#include <QWidget>
 #include <QPointF>
 
 namespace Ui {
@@ -21,12 +21,14 @@ public:
 
     explicit QCstmThreshold(QWidget *parent = 0);
     ~QCstmThreshold();
+    Ui::QCstmThreshold * GetUI(){ return ui; }
+
     void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
     Mpx3GUI * GetMpx3GUI() { return _mpx3gui; }
+
+
     void SetupSignalsAndSlots();
-    void GUIDefaults();
     int ExtractScanInfo(int * data, int size_in_bytes, int thl);
-    Ui::QCstmThreshold * GetUI(){return ui;}
 
     void setPoint(QPointF data, int plot);
     void addPoint(QPointF data, int plot);
@@ -43,8 +45,9 @@ private:
     Ui::QCstmThreshold *ui;
     // Connectivity between modules
     Mpx3GUI * _mpx3gui;
-    void addFrame(QPoint offset, int layer, int*data);
     CustomScanThread * _scanThread;
+
+    void addFrame(QPoint offset, int layer, int*data);
     // Currently active graph
     QCPGraph * _graph;
 

@@ -142,7 +142,7 @@ void QCstmEqualization::SetLimits(){
     _ui->nTriggersSpinBox->setMaximum( 1000 );
     _ui->nTriggersSpinBox->setValue( _nTriggers );
 
-    _ui->spacingSpinBox->setMinimum( 1 );
+    _ui->spacingSpinBox->setMinimum( 0 );
     _ui->spacingSpinBox->setMaximum( 64 );
     _ui->spacingSpinBox->setValue( _spacing );
 
@@ -632,7 +632,7 @@ void QCstmEqualization::KeepOtherChipsQuiet() {
 
     for ( int idx = 0 ; idx < ndevs ; idx++ ) {
 
-        // if the device is not present continue
+        // If the device is not present continue
         if ( ! _mpx3gui->getConfig()->detectorResponds( idx ) ) continue;
 
         // If the device is present and it is not in the schedule-for-eq list
@@ -653,6 +653,32 @@ void QCstmEqualization::KeepOtherChipsQuiet() {
         //}
     }
 
+}
+
+void QCstmEqualization::resetThresholds()
+{
+    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
+    int ndevs = _mpx3gui->getConfig()->getNDevicesSupported();
+    int default_value = 42;
+
+    for ( int idx = 0 ; idx < ndevs ; idx++ ) {
+
+        // If the device is not present continue
+        if ( ! _mpx3gui->getConfig()->detectorResponds( idx ) ) continue;
+
+        //! Reset THRESH DACs back to "default" values so I don't have to do it manually...
+
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_0,  default_value);
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_1,  default_value+2);
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_2,  default_value+4);
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_3,  default_value+6);
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_4,  default_value+8);
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_5,  default_value+10);
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_6,  default_value+12);
+        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_7,  default_value+14);
+
+    }
 }
 
 void QCstmEqualization::StartEqualizationSingleChip() {
@@ -1211,6 +1237,8 @@ void QCstmEqualization::SaveEqualization() {
     QString filenameEqualisation = path;
     filenameEqualisation.append("config.json");
 
+    resetThresholds();
+
     //! Save equalisations with DACs when you run an equalisation
     _mpx3gui->getConfig()->toJsonFile(filenameEqualisation, true);
 
@@ -1234,8 +1262,6 @@ void QCstmEqualization::SaveEqualization() {
 
     }
 
-    //! Save DACs because we forget to do this every single time
-    _mpx3gui->save_config();
 }
 
 
@@ -1639,9 +1665,11 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     // Trigger config
     // Sequential R/W
     int trig_mode      = SHUTTERMODE_AUTO;     // Auto-trigger mode
+    //! TODO Increase frequency and decreae trigger length to speed up the process?
     int trig_length_us = 5000;  // This time shouldn't be longer than the period defined by trig_freq_hz
     int trig_freq_hz   = 50;   // One trigger every 20ms
-    int nr_of_triggers = _nTriggers;    // This is the number of shutter open i get
+                                //! TODO Units do not match function call. Is it Hz or mhz?
+    int nr_of_triggers = _nTriggers;    // This is the number of shutter open I get
     //int trig_pulse_count;
     spidrcontrol->setShutterTriggerConfig( trig_mode,
                                            trig_length_us,
@@ -2381,6 +2409,7 @@ bool Mpx3EqualizationResults::WriteMaskBinaryFile(QString fn) {
     cout << "Mpx3EqualizationResults::WriteMaskBinaryFile   Writing mask file to: " << fn.toStdString() << endl;
 
     for ( int i = 0 ; i < __matrix_size ; i++ ) {
+        //! If equalisation status is failed, then write the flattened coordinate to file.
         if ( _eqStatus_H[i] > __EQUALIZED || _eqStatus_L[i] > __EQUALIZED ) fd << i << endl;
     }
 

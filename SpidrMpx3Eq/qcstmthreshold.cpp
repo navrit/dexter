@@ -1,6 +1,6 @@
 #include "qcstmthreshold.h"
 #include "ui_qcstmthreshold.h"
-#include  "qcstmdacs.h"
+#include "qcstmdacs.h"
 #include <iterator>
 #include "SpidrController.h"
 #include "SpidrDaq.h"
@@ -12,7 +12,9 @@
 #include "mpx3eq_common.h"
 #include "ui_mpx3gui.h"
 
-QCstmThreshold::QCstmThreshold(QWidget *parent) :  QWidget(parent),  ui(new Ui::QCstmThreshold)
+QCstmThreshold::QCstmThreshold(QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::QCstmThreshold)
 {
     ui->setupUi(this);
     QList<int> defaultSizesMain; //The ratio of the splitters. Defaults to the golden ratio because "oh! fancy".
@@ -30,9 +32,6 @@ QCstmThreshold::QCstmThreshold(QWidget *parent) :  QWidget(parent),  ui(new Ui::
 
     // Signals & Slots
     SetupSignalsAndSlots();
-
-    // GUI defaults
-    GUIDefaults();
 
     ui->plot->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
     // The legend
@@ -236,11 +235,6 @@ void QCstmThreshold::SetupSignalsAndSlots() {
     //std::cout << "[QCstmThreshold] Connecting signals and slots" << std::endl;
     connect( ui->thlCalibStart, SIGNAL(clicked()), this, SLOT( StartCalibration() ) );
 
-}
-
-void QCstmThreshold::GUIDefaults() {
-
-    //ui->thlCalibStart->
 }
 
 int QCstmThreshold::ExtractScanInfo(int * data, int size_in_bytes, int /*thl*/) {
@@ -472,7 +466,7 @@ void CustomScanThread::UpdateHeatMap(int sizex, int sizey) {
 
 void CustomScanThread::run() {
 
-    // Open a new temporary connection to the spider to avoid collisions to the main one
+    // Open a new temporary connection to the SPIDR to avoid collisions to the main one
     // Extract the ip address
     int ipaddr[4] = { 1, 1, 168, 192 };
     if ( _srcAddr != 0 ) {

@@ -152,7 +152,7 @@ public:
 
     explicit QCstmEqualization(QWidget *parent = 0);
     ~QCstmEqualization();
-    void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
+    void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
     Ui::QCstmEqualization * GetUI();
 
     void timerEvent( QTimerEvent * );
@@ -183,6 +183,7 @@ public:
 
     void DisplayStatsInTextBrowser(int adj, int dac_disc, ScanResults * res);
     void KeepOtherChipsQuiet();
+    void resetThresholds();
 
     pair<int, int> XtoXY(int X, int dimX);
     void SetupSignalsAndSlots();
