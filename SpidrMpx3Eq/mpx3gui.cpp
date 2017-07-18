@@ -246,8 +246,8 @@ unsigned int Mpx3GUI::addFrame(int * frame, int index, int layer) {
 unsigned int Mpx3GUI::addLayer(int * data, int layer) {
 
     unsigned int ovfcntr = 0;
-    if(mode == 1){
-         ovfcntr = getDataset()->addLayer(data, layer);
+    if (mode == 1) {
+        ovfcntr = getDataset()->addLayer(data, layer);
     }
     else {
         ovfcntr = getDataset()->setLayer(data, layer);
@@ -949,7 +949,7 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
     //! Manual or autosave
     if (!requestPath){
         //! Native format - User dialog
-        filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", BIN_FILES ";;" RAW_TIFF_FILES ";;" SPATIAL_TIFF_FILES ";;" TIFF_FILES ";;" ASCII_FILES, &selectedFilter);
+        filename = QFileDialog::getSaveFileName(this, tr("Save Data"), ".", BIN_FILES ";;" TIFF_FILES ";;" RAW_TIFF_FILES ";;" BOTH_TIFF_FILES ";;" SPATIAL_TIFF_FILES ";;" ASCII_FILES, &selectedFilter);
 
         if (filename.isNull()){
             return;
@@ -960,6 +960,8 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
             filename.append("_spatialCorrected.tif");
         } else if (selectedFilter == RAW_TIFF_FILES && !filename.toLower().toLatin1().contains("_raw.tif")){
             filename.append("_raw.tif");
+        } else if (selectedFilter == BOTH_TIFF_FILES && !filename.toLower().toLatin1().contains(".tif")){
+            qDebug() << "[INFO] Writing both uncorrected and corrected TIFF files.";
         } else if (selectedFilter == TIFF_FILES && !filename.toLower().toLatin1().contains(".tif")){
             filename.append(".tif");
         } else if (selectedFilter == ASCII_FILES && !filename.toLower().toLatin1().contains(".txt")){
@@ -1007,14 +1009,17 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
 
     //! Send data to be saved by the relevant function with the correct arguments etc.
 
-    if (selectedFilter == BIN_FILES){
+    if (selectedFilter == BIN_FILES) {
         getDataset()->saveBIN(filename);
-    } else if (selectedFilter == SPATIAL_TIFF_FILES){
+    } else if (selectedFilter == SPATIAL_TIFF_FILES) {
         getDataset()->toTIFF(filename, true, true);
-    } else if (selectedFilter == RAW_TIFF_FILES){
+    } else if (selectedFilter == RAW_TIFF_FILES) {
         getDataset()->toTIFF(filename, false);
-    } else if (selectedFilter == TIFF_FILES){
+    } else if (selectedFilter == TIFF_FILES) {
         getDataset()->toTIFF(filename);
+    } else if (selectedFilter == BOTH_TIFF_FILES) {
+        getDataset()->toTIFF(filename+".tif");
+        getDataset()->toTIFF(filename+"_raw.tif", false);
     } else if (selectedFilter == ASCII_FILES) {
         getDataset()->toASCII(filename);
     } else {

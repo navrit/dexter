@@ -217,7 +217,7 @@ void DataConsumerThread::run()
             } else {
 
                 // Send the info -> use the Semaphores (here's where I use the share resource)
-                // Acquire and realease for N chips
+                // Acquire and release for N chips
                 for ( int i = 0 ; i < bothCountersMod ; i++ ) {
                     // I need the info for ALL the 4 chips acquired first
                     for ( uint ci = 0 ; ci < _nChips ; ci++ ) usedFrames->acquire();

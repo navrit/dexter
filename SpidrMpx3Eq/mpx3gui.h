@@ -64,11 +64,12 @@ class thresholdScan;
 #define TIFF_FILES "TIFF (*.tif)"
 #define SPATIAL_TIFF_FILES "TIFF (*_spatialCorrected.tif)"
 #define RAW_TIFF_FILES "TIFF (*_raw.tif)"
+#define BOTH_TIFF_FILES "Corrected and uncorrected TIFFs (*.tif)"
 #define ASCII_FILES "ASCII (*.txt)"
 #define JSON_FILES "BH JSON file(*.json)"
 
 const QString _softwareName = "ASI Dexter";
-const QString _softwareVersion = "1.3.0";
+const QString _softwareVersion = "1.3.1";
 
 namespace Ui {
 class Mpx3GUI;

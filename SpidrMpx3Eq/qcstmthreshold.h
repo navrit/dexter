@@ -62,7 +62,7 @@ private:
 
     QString defaultYLabel = tr("Counts");
     QString defaultXLabel = tr("THL (DAC Units)");
-    QString altYLabel =     tr("Energy (KeV)");
+    QString altYLabel =     tr("dC/dTHL");
 
 private slots:
 

@@ -94,7 +94,7 @@ void QCstmThreshold::on_thlCalibDifferentiateCheckBox_toggled(bool checked)
 {
     if (checked){
         //! Smooth threshold scan then calculate and show 5 point stencil differentiation.
-        //! Change y units to "Energy (KeV)"
+        //! Change y units to "dC/dTHL"
 
         ui->plot->yAxis->setLabel(altYLabel);
         //int graphNumber = ui->plot->graphCount();
