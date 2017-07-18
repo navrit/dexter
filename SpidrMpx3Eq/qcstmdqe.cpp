@@ -58,7 +58,7 @@ QCstmDQE::QCstmDQE(QWidget *parent) :
 
     _optionsDialog = new optionsDialog(this);
 
-    addNPSfile("icons/startupimage.bin"); //Set startupimage data in NPS files list.
+    addNPSfile("://icons/startupimage.bin"); //Set startupimage data in NPS files list.
 
 }
 
@@ -888,7 +888,7 @@ void QCstmDQE::calcNPSdata()
                 for(int x = 0; x < ftROIdata[0].length(); x++){ //assuming all rows are equal length
                     ft2Ddata[y][x] += ftROIdata[y][x];
                 }
-            }            
+            }
         }
 
         openingNPSfile = false;
@@ -1383,10 +1383,10 @@ void QCstmDQE::on_mtfPushButton_clicked()
         else{
             plotLSF();
             if(_LSFdata.empty())
-                QMessageBox::warning ( this, tr("Error"), tr( "No LSF data." ) );            
+                QMessageBox::warning ( this, tr("Error"), tr( "No LSF data." ) );
             else{
                 plotMTF();
-                _logtext += "MTF calculated by Fast Fourier Transform of the calculated LSF.\n";              
+                _logtext += "MTF calculated by Fast Fourier Transform of the calculated LSF.\n";
             }
         }
     }
@@ -1638,7 +1638,7 @@ void QCstmDQE::on_maindata_changed(QString filepath)
 {
     if(!openingNPSfile){//Data opened from visualisation, clear mtf, nps, dqe.
         clearDataAndPlots(true);
-    }   
+    }
     else on_clearNPSpushButton_clicked(); //Clear NPS plots
 
     //Add opened file to the NPS files by default, can be removed easily if not wanted, but prevents double opening.

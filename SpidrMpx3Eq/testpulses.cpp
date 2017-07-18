@@ -48,7 +48,7 @@ void TestPulses::on_activateCheckBox_clicked(bool checked)
 void TestPulses::on_pushButtonSet_clicked()
 {
 
-    // Ext trigger
+    // Ext trigger - what??
     int val = ui->spinBox->value();
     qDebug() << "Setting : " << val;
 

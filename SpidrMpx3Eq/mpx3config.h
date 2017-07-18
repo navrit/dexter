@@ -99,7 +99,7 @@ private:
 public:
 
     Mpx3Config();
-    void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
+    void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
     //void setIpAddress(QString ip, uint16_t port);
     bool isConnected() { return connected; }
     bool fromJsonFile(QString filename, bool includeDacs = true);
@@ -113,10 +113,10 @@ public:
     int getDacCount() { return _dacVals[0].length(); }
     int getDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
     void setDACValue(int chip, int dacIndex, int val) { _dacVals[dacIndex][chip] = val; }
-    QVector<QPoint> getDevicePresenceLayout(){ return _devicePresenceLayout; };
+    QVector<QPoint> getDevicePresenceLayout(){ return _devicePresenceLayout; }
     int getNDevicesPresent() { return _nDevicesPresent; }
     int getDataBufferId(int devIndx);
-    int getNDevicesSupported() { return _nDevicesSupported; };
+    int getNDevicesSupported() { return _nDevicesSupported; }
     int getNActiveDevices(){return _activeChips.size();}
     QVector<int>  getActiveDevices(){return _activeChips;}
     QString getDeviceWaferId(int id){return _deviceWaferIdMap.at(id); }
