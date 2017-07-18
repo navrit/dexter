@@ -68,15 +68,18 @@ sudo apt-get autoremove
 
 ### Who do I talk to? ###
 
-* John Idarraga 
-    * idarraga@amscins.com
 * Navrit Bal
     * navrit@amscins.com
+* John Idarraga 
+    * (Not anymore)
+
+-------------------------------------------------------------
 
 
 # Developers Notes
+Author: Amber van Keeken (primary) & Navrit Bal (notes)
 
-## Setting up a new view in mpx3gui software using QtCreator
+## Setting up a new view (eg. Configuration, DACs etc.) using QtCreator
 
 1. The 'view' are QWidgets that are part of a StackedWidget. In QtCreator, go to the design form of the main window and right-click on the stackedWidget -> Insert page. A new QWidget is then added to the stackedWidget. 
 2. Create a new Qt Designer Form Class with QWidget as its base class.  
