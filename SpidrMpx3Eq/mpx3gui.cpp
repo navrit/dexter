@@ -121,6 +121,9 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     // CT
     _ui->ctTab->SetMpx3GUI( this );
 
+    // Threshold scan
+    _ui->THScan->SetMpx3GUI( this );
+
     // Read the configuration
     QString configFile = "./config/mpx3.json";
     if ( ! config->fromJsonFile( configFile ) ) {
