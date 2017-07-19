@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>615</width>
-    <height>300</height>
+    <height>306</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -183,10 +183,37 @@
        </property>
       </widget>
      </item>
+     <item row="1" column="3">
+      <widget class="QCstmPlotHeatmap" name="framePlot" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>256</width>
+         <height>256</height>
+        </size>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QCstmPlotHeatmap</class>
+   <extends>QWidget</extends>
+   <header>qcstmplotheatmap.h</header>
+   <container>1</container>
+   <slots>
+    <signal>dataRangeChanged(QCPRange)</signal>
+    <signal>plotCountChanged(int)</signal>
+    <signal>activePlotChanged(int)</signal>
+    <signal>nouseOverChanged(QString)</signal>
+    <slot>setHeatmap(QCPColorGradient)</slot>
+    <slot>changeRange(QCPRange)</slot>
+    <slot>setActive(int)</slot>
+   </slots>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

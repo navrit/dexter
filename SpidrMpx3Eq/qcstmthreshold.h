@@ -85,7 +85,7 @@ private slots:
 signals:
     void slideAndSpin(int, int);
     //void UpdateHeatMapSignal();
-    void UpdateChartSignal(int, int);
+    void UpdateChartSignal(int, int); // Not used?
 
 
 };

@@ -1,19 +1,19 @@
 #include "thresholdscan.h"
 #include "ui_thresholdscan.h"
-#include "ui_mpx3gui.h"
+
 #include "mpx3gui.h"
+#include "ui_mpx3gui.h"
+
 #include "SpidrController.h"
 
 #include <QElapsedTimer>
 #include "SpidrDaq.h"
 
-thresholdScan::thresholdScan(Mpx3GUI *parent) :
+thresholdScan::thresholdScan(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::thresholdScan)
 {
     ui->setupUi(this);
-    SetMpx3GUI( parent );
-
     _thresholdScanThread = nullptr;
 }
 
@@ -25,7 +25,7 @@ thresholdScan::~thresholdScan()
 void thresholdScan::startScan()
 {
     //! Use acquisition settings from other view
-    //resetScan();
+    resetScan();
 
     //! TODO Test this disable/enable spinbox behaviour - offline attempts are not trivial
     disableSpinBoxes();
@@ -43,43 +43,31 @@ void thresholdScan::startScan()
     auto startTime = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
     ui->textEdit_log->append("Starting Threshold scan @ " +
                              startTime);
-    QElapsedTimer timer;
-    timer.start();
+//    QElapsedTimer timer;
+//    timer.start();
 
     //! Do the number of frames loop within the threshold scan
-    for (uint i = minTH; i < maxTH; i += 1 + thresholdSpacing){
-        for (uint j = 0; j < framesPerStep; j++){
 
-            //! GUI interrupt - stop ASAP
-            //! Cleanup code in stopScan()
-            if (_stop){
-                return;
-            }
+    //! TODO Take Double counter behaviour into account
 
-            //! TODO Take Double counter behaviour into account
-            ui->textEdit_log->append("TH:" + QString::number(i) + " frame:" + QString::number(j));
-
-            //_mpx3gui->getDataset()->clear();
-            startDataTakingThread();
-        }
-    }
-
+    _running = true;
+    ui->button_startStop->setText(tr("Stop"));
     enableSpinBoxes();
 
-    _running = false;
-    ui->button_startStop->setText(tr("Start"));
 
-    //! Print footer to log box and end timer with relevant units
-    auto stopTime = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
-    ui->textEdit_log->append("Finished Threshold scan @ " +
-                             stopTime);
+    startDataTakingThread();
 
-    auto elapsed = timer.elapsed();
-    if (elapsed < 1000){
-        ui->textEdit_log->append("Elapsed time: " + QString::number(timer.elapsed()) + "ms");
-    } else {
-        ui->textEdit_log->append("Elapsed time: " + QString::number(timer.elapsed()/1000) + "s");
-    }
+//    //! Print footer to log box and end timer with relevant units
+//    auto stopTime = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
+//    //ui->textEdit_log->append("Finished Threshold scan @ " + stopTime);
+//    qDebug() << "Finished Threshold scan @ " + stopTime;
+
+//    auto elapsed = timer.elapsed();
+//    if (elapsed < 1000){
+//        ui->textEdit_log->append("Elapsed time: " + QString::number(timer.elapsed()) + "ms");
+//    } else {
+//        ui->textEdit_log->append("Elapsed time: " + QString::number(timer.elapsed()/1000) + "s");
+//    }
 
 }
 
@@ -92,6 +80,13 @@ void thresholdScan::stopScan()
                             QDateTime::currentDateTimeUtc().toString(Qt::ISODate) +
                              "\n------------------------------------------");
     _stop = true;
+
+    if ( _thresholdScanThread ) {
+        if ( _thresholdScanThread->isRunning() ) {
+            _thresholdScanThread->setAbort(true);
+        }
+    }
+
     _running = false;
 
 }
@@ -102,26 +97,19 @@ void thresholdScan::resetScan()
     _stop = false;
 }
 
-void thresholdScan::resumeScan()
-{
-    //! TODO Figure out how this fits in
-}
-
 void thresholdScan::startDataTakingThread()
 {
-    //_mpx3gui->getVisualization()->StartDataTaking(true);
 
-//    if ( _thresholdScanThread ) {
-//        if ( _thresholdScanThread->isRunning() ) {
-//            return;
-//        }
-//        delete _thresholdScanThread;
-//        _thresholdScanThread = nullptr;
-//    }
+    if ( _thresholdScanThread ) {
+        if ( _thresholdScanThread->isRunning() ) {
+            return;
+        }
+        delete _thresholdScanThread;
+        _thresholdScanThread = nullptr;
+    }
 
     // Go on with the scan thread
     _thresholdScanThread = new ThresholdScanThread( _mpx3gui, this );
-    qDebug() << _mpx3gui;
 
     _thresholdScanThread->ConnectToHardware();
     _thresholdScanThread->start();
@@ -161,6 +149,11 @@ ThresholdScanThread::ThresholdScanThread(Mpx3GUI * mpx3gui, thresholdScan * thre
     _ui = _thresholdScan->GetUI();
 }
 
+void ThresholdScanThread::SetMpx3GUI(Mpx3GUI *p)
+{
+    _mpx3gui = p;
+}
+
 void ThresholdScanThread::ConnectToHardware()
 {
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
@@ -170,6 +163,13 @@ void ThresholdScanThread::ConnectToHardware()
     if( spidrcontrol ) { spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
     else { _srcAddr = 0; }
 
+    _heatmap = _thresholdScan->GetUI()->framePlot;
+
+}
+
+void ThresholdScanThread::UpdateHeatMap(int sizex, int sizey)
+{
+    _heatmap->setData( _data, sizex, sizey);
 }
 
 bool ThresholdScanThread::getAbort()
@@ -213,7 +213,11 @@ void ThresholdScanThread::run()
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
     // Send the existing equalization
-    _mpx3gui->getEqualization()->SetAllAdjustmentBits(spidrcontrol);
+    //_mpx3gui->getEqualization()->SetAllAdjustmentBits(spidrcontrol);
+
+    connect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
+    //connect( this, SIGNAL( addData(int, int, double) ), _thresholdScan, SLOT( addData(int, int, double) ) );
+    //connect( this, SIGNAL( addData(int) ), _thresholdScan, SLOT( addData(int) ) );
 
     int minScan = _ui->spinBox_minimum->value();
     int maxScan = _ui->spinBox_maximum->value();
@@ -231,7 +235,8 @@ void ThresholdScanThread::run()
             if ( !_thresholdScan->GetMpx3GUI()->getConfig()->detectorResponds( i ) ) {
                 qDebug() << "[ERR ] Device " << i << " not responding.";
             } else {
-                spidrcontrol->setDac( i, dacCodeToScan, minScan );
+                qDebug() << "[INFO] Set DACs on :" << i << dacCodeToScan << counter;
+                spidrcontrol->setDac( i, dacCodeToScan, counter );
             }
         }
 
@@ -245,7 +250,7 @@ void ThresholdScanThread::run()
         int timeOutTime =
                 _mpx3gui->getConfig()->getTriggerLength_ms()
                 +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
-                + 100; // ms
+                + 500; // ms
         // TODO ! The extra ms is a combination of delay in the network plus
         // system overhead.  This should be predicted and not hard-coded. TODO !
 
@@ -267,16 +272,24 @@ void ThresholdScanThread::run()
                 // On all active chips
                 for(int i = 0 ; i < activeDevices.size() ; i++) {
                     _data = spidrdaq->frameData(i, &size_in_bytes);
-                    _ui->textEdit_log->append("nReps: "+QString::number((nReps)));
+                    qDebug() << "nReps = " << nReps;
+                    //_ui->textEdit_log->append("nReps: "+ QString::number((nReps)));
                 }
                 nReps++;
             }
 
             // Release
             spidrdaq->releaseFrame();
+
+            // Report to heatmap
+            if (doReadFrames){
+                UpdateHeatMapSignal(_mpx3gui->getDataset()->x(), _mpx3gui->getDataset()->y());
+                qDebug() << "TH:" + QString::number(counter);
+            }
+
         }
 
-        qDebug() << "nReps = " << nReps;
+        //qDebug() << "nReps = " << nReps;
 
         // increment
         counter += stepScan;
@@ -291,6 +304,11 @@ void ThresholdScanThread::run()
 
     }
 
+    spidrcontrol->stopAutoTrigger();
+
+    disconnect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
+    //disconnect( this, SIGNAL( addData(int, int, double) ), _thresholdScan, SLOT( addData(int, int, double) ) );
+    //disconnect( this, SIGNAL( addData(int) ), _thresholdScan, SLOT( addData(int) ) );
 
     delete spidrcontrol;
 }
