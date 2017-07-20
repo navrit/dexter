@@ -24,9 +24,18 @@ public:
     void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
     Mpx3GUI * GetMpx3GUI() { return _mpx3gui; }
 
+    QString getOriginalPath();
+    void setOriginalPath(QString);
+
+    uint getFramesPerStep();
+
 private slots:
 
+    void finishedScan();
+
     void on_button_startStop_clicked();
+
+    void on_pushButton_setPath_clicked();
 
 private:
     Ui::thresholdScan *ui;
@@ -43,14 +52,19 @@ private:
     bool _stop = false;
     bool _running = false;
 
+    QElapsedTimer timer;
+
     uint thresholdSpacing = 1;
     bool saveFrames = true;
     uint minTH = 0;
     uint maxTH = 511;
     uint framesPerStep = 1;
+    QString originalPath;
 
     void enableSpinBoxes();
     void disableSpinBoxes();
+
+    QString getPath(QString);
 };
 
 class ThresholdScanThread : public QThread {
@@ -80,6 +94,9 @@ private:
     // IP source address (SPIDR network interface)
     int _srcAddr;
     int * _data;
+    int * _summedData;
+
+    void sumArrays(int, int);
 
     bool scanContinue = true;
     bool abort = false; // Not used...
@@ -87,7 +104,7 @@ private:
 public slots:
     void UpdateHeatMap(int, int);
 
- signals:
+signals:
     //void addData(int, int, double);
     //void addData(int);
     void UpdateHeatMapSignal(int, int);
