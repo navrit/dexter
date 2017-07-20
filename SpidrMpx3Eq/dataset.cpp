@@ -522,7 +522,9 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
                     image[y*width + x] = sample(x, y, thresholds[i]);
                 }
             }
-            tmpFilename.replace(".tif", "-thl" + QString::number(thresholds[i]) + ".tif");
+            if (getThresholds().count() > 1){
+                tmpFilename.replace(".tif", "-thl" + QString::number(thresholds[i]) + ".tif");
+            }
         }
 
         //! Open the TIFF file, write mode

@@ -319,32 +319,32 @@ void QCstmBHWindow::on_list_doubleClicked(const QModelIndex &index){
 
 void QCstmBHWindow::on_okButton_clicked(){
 
-    QList<int> keys = _mpx3gui->getDataset()->getThresholds();
+//    QList<int> keys = _mpx3gui->getDataset()->getThresholds();
 
-    if(
-            emptyCorrectionCounter != 0
-            ||
-            thicknessvctr.size() < 3
-            ||
-            _nLayersInCurrentImage != _nLayersInCorrectionData
-            ){
+//    if(
+//            emptyCorrectionCounter != 0
+//            ||
+//            thicknessvctr.size() < 3
+//            ||
+//            _nLayersInCurrentImage != _nLayersInCorrectionData
+//            ){
 
-        //TODO FIX ME Comes up when it shouldn't????
-        qDebug() << ">> emptyCorrectionCounter: " << emptyCorrectionCounter;
-        qDebug() << ">> thicknessvctr.size()" << thicknessvctr.size();
+//        //TODO FIX ME Comes up when it shouldn't????
+//        qDebug() << ">> emptyCorrectionCounter: " << emptyCorrectionCounter;
+//        qDebug() << ">> thicknessvctr.size()" << thicknessvctr.size();
 
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Error");
-        msgBox.setText(tr("- You haven't loaded all of the necessary corrections."
-                          "\n  Please load more correction layers."
-                          "\n\nOR\n\n"
-                          "- The number of layers in the current image and "
-                          "\n  the correction images is not the same."));
-        //! UI update - Corrections Dialog - "Error: File not loaded"
-        emit sendFilename(QString("Error: File not loaded"));
-        emit sendChecked_BHCorrCheckbox(false);
-        msgBox.exec();
-    }
+//        QMessageBox msgBox;
+//        msgBox.setWindowTitle("Error");
+//        msgBox.setText(tr("- You haven't loaded all of the necessary corrections."
+//                          "\n  Please load more correction layers."
+//                          "\n\nOR\n\n"
+//                          "- The number of layers in the current image and "
+//                          "\n  the correction images is not the same."));
+//        //! UI update - Corrections Dialog - "Error: File not loaded"
+//        emit sendFilename(QString("Error: File not loaded"));
+//        emit sendChecked_BHCorrCheckbox(false);
+//        msgBox.exec();
+//    }
 
     this->close();
 
