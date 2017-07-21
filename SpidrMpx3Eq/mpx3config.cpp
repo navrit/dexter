@@ -286,7 +286,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
         val2 = val2 << 8;
         // mask
         unsigned int val = val1 | val2;
-        qDebug() << "Setting : " << val;
+        //qDebug() << "HDMI Setting : " << val;
         spidrcontrol->setSpidrReg(0x0810, val, true);
     }
 
@@ -340,7 +340,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
     if( item == __ALL ) spidrcontrol->setDiscCsmSpm( deviceIndex, extrapars.DiscCsmSpm );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
     //_spidrcontrol->setGainMode( 1 );
 
-    // Gain ?!
+    // Gain modes
     // 00: SHGM  0
     // 10: HGM   2
     // 01: LGM   1
@@ -411,7 +411,8 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
 void Mpx3Config::setColourMode(bool mode) {
 
     if(mode != colourMode) {
-        colourMode =mode; emit colourModeChanged(mode);
+        colourMode = mode;
+        emit colourModeChanged(mode);
         // When changing mode data needs to be cleared
         _mpx3gui->clear_data();
         //updateColourMode();
