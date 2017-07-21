@@ -284,9 +284,10 @@ void ThresholdScanThread::run()
     int activeDevices = _mpx3gui->getConfig()->getNActiveDevices();
     int y = _mpx3gui->getDataset()->y();
     int x = _mpx3gui->getDataset()->x();
+    int framesPerStep = _mpx3gui->getTHScan()->getFramesPerStep();
 
     bool summing = false;
-    if (_mpx3gui->getTHScan()->getFramesPerStep() > 1){
+    if (framesPerStep > 1){
         summing = true;
         _summedData = new int [x*y*activeDevices];
         //qDebug() << "[INFO] Allocating bytes :" << sizeof(_summedData) << " " << x*y*activeDevices;
@@ -321,7 +322,9 @@ void ThresholdScanThread::run()
             }
         }
 
-        memset(_summedData, 0, (x*y*activeDevices));
+        if (summing){
+            memset(_summedData, 0, (x*y*activeDevices));
+        }
 
         // Start the trigger as configured
         spidrcontrol->startAutoTrigger();
