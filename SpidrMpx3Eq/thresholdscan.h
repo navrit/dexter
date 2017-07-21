@@ -37,6 +37,12 @@ private slots:
 
     void on_pushButton_setPath_clicked();
 
+    void on_spinBox_minimum_valueChanged(int val);
+
+    void on_spinBox_maximum_valueChanged(int val);
+
+    void on_spinBox_framesPerStep_valueChanged(int val);
+
 private:
     Ui::thresholdScan *ui;
     // Connectivity between modules
@@ -47,7 +53,6 @@ private:
     void startScan();
     void stopScan();
     void resetScan();
-    void resumeScan();
     void startDataTakingThread();
     bool _stop = false;
     bool _running = false;

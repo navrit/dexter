@@ -11,6 +11,9 @@
 #include <iostream>
 #include <fstream>      // std::ofstream
 
+#include "ui_qcstmdacs.h"
+#include "ui_qcstmglvisualization.h"
+
 thresholdScan::thresholdScan(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::thresholdScan)
@@ -180,6 +183,26 @@ void thresholdScan::on_button_startStop_clicked()
         ui->button_startStop->setText("Stop");
         startScan();
     }
+}
+
+void thresholdScan::on_pushButton_setPath_clicked()
+{
+    ui->textEdit_path->setText(getPath("Choose a folder to save the files to."));
+}
+
+void thresholdScan::on_spinBox_minimum_valueChanged(int val)
+{
+    _mpx3gui->getDACs()->GetUI()->dac0SpinBox->setValue(val);
+}
+
+void thresholdScan::on_spinBox_maximum_valueChanged(int val)
+{
+    _mpx3gui->getDACs()->GetUI()->dac1SpinBox->setValue(val);
+}
+
+void thresholdScan::on_spinBox_framesPerStep_valueChanged(int val)
+{
+    _mpx3gui->getVisualization()->GetUI()->nTriggersSpinBox->setValue(val);
 }
 
 ThresholdScanThread::ThresholdScanThread(Mpx3GUI * mpx3gui, thresholdScan * thresholdScanA)
@@ -404,9 +427,4 @@ void ThresholdScanThread::sumArrays(int nx, int ny)
 //             _summedData[y*nx+x] += _data[y*nx+x];
 //        }
 //    }
-}
-
-void thresholdScan::on_pushButton_setPath_clicked()
-{
-    ui->textEdit_path->setText(getPath("Choose a folder to save the files to."));
 }

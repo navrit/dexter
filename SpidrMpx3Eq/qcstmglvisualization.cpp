@@ -14,6 +14,9 @@
 #include "qcstmconfigmonitoring.h"
 #include "ui_qcstmconfigmonitoring.h"
 
+#include "thresholdscan.h"
+#include "ui_thresholdscan.h"
+
 #include "color2drecoguided.h"
 
 //#include "mpx3gui.h"
@@ -548,8 +551,6 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
     if (runningCT){
         emit sig_resumeCT();
-    } else if (runningTHScan){
-        emit sig_resumeTHScan();
     }
 
     // inform the consumer that the data taking is finished
@@ -798,10 +799,10 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect( this, &QCstmGLVisualization::sig_statusBarClean, _mpx3gui, &Mpx3GUI::statusBarClean );
 
     // Connection to configuration
-    connect( ui->nTriggersSpinBox, SIGNAL(editingFinished()),
+    connect( ui->nTriggersSpinBox, SIGNAL(valueChanged(int)),
              this, SLOT(ntriggers_edit()) );
 
-    connect( ui->triggerLengthSpinBox, SIGNAL(editingFinished()),
+    connect( ui->triggerLengthSpinBox, SIGNAL(valueChanged(int)),
              this, SLOT(triggerLength_edit()) );
 
     // This one need both the connection to the mirror combo box and the signal to the Configuration to take place
@@ -842,9 +843,6 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 
     // CT stuff
     connect( this, SIGNAL(sig_resumeCT()), _mpx3gui->getCT() , SLOT(resumeCT()));
-
-    // Threshold scan
-    connect( this, SIGNAL(sig_resumeTHScan()), _mpx3gui->getTHScan(), SLOT(resumeScan()));
 }
 
 void QCstmGLVisualization::ntriggers_edit() {
@@ -853,6 +851,10 @@ void QCstmGLVisualization::ntriggers_edit() {
     _mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner->setValue(
                 ui->nTriggersSpinBox->value()
                 );
+
+    _mpx3gui->getTHScan()->GetUI()->spinBox_framesPerStep->setValue(
+            ui->nTriggersSpinBox->value()
+            );
 
     // And try to send the new config
     _mpx3gui->getConfig()->setNTriggers(

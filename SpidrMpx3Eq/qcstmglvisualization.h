@@ -335,8 +335,6 @@ signals:
 
     //! Used to run CT
     void sig_resumeCT();
-    //! Used to run Threshold scan
-    void sig_resumeTHScan();
 
 };
 
