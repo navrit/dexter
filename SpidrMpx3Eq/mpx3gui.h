@@ -69,7 +69,7 @@ class thresholdScan;
 #define JSON_FILES "BH JSON file(*.json)"
 
 const QString _softwareName = "ASI Dexter";
-const QString _softwareVersion = "1.3.2";
+const QString _softwareVersion = "1.4.0";
 
 namespace Ui {
 class Mpx3GUI;
