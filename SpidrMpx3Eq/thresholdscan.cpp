@@ -45,7 +45,7 @@ void thresholdScan::finishedScan()
     ui->button_startStop->setText(tr("Start"));
     auto stopTime = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
 
-    ui->textEdit_log->append("Finished threshold scan at: " +
+    ui->textEdit_log->append("Finished Threshold scan @ " +
                             stopTime +
                              "\n------------------------------------------");
     resetScan();
@@ -254,18 +254,23 @@ void ThresholdScanThread::run()
     int maxScan = _ui->spinBox_maximum->value();
     int stepScan = _ui->spinBox_spacing->value()+1;
     int dacCodeToScan = MPX3RX_DAC_THRESH_0;
-    //int deviceIndex = 0; //Assume quad, so this will be [0-3]
-    int nReps = 0;
     bool doReadFrames = true;
     int counter = minScan;
     int lastTH = counter-1;
 
+    int activeDevices = _mpx3gui->getConfig()->getNActiveDevices();
     int y = _mpx3gui->getDataset()->y();
     int x = _mpx3gui->getDataset()->x();
 
     bool summing = false;
     if (_mpx3gui->getTHScan()->getFramesPerStep() > 1){
         summing = true;
+        _summedData = new int [x*y*activeDevices];
+        //qDebug() << "[INFO] Allocating bytes :" << sizeof(_summedData) << " " << x*y*activeDevices;
+        if (_summedData == nullptr) {
+            qDebug() << "\n[WARN] summedData could not be allocated memory...\n";
+            return;
+        }
     }
 
     QString newPath = _ui->textEdit_path->toPlainText();
@@ -279,7 +284,7 @@ void ThresholdScanThread::run()
     for ( ; scanContinue ; ) {
 
         // Set DACs on all chips
-        for(int i = 0 ; i < _mpx3gui->getConfig()->getNActiveDevices() ; i++) {
+        for(int i = 0 ; i < activeDevices ; i++) {
             if ( !_thresholdScan->GetMpx3GUI()->getConfig()->detectorResponds( i ) ) {
                 qDebug() << "[ERR ] Device " << i << " not responding.";
             } else {
@@ -293,11 +298,12 @@ void ThresholdScanThread::run()
             }
         }
 
+        memset(_summedData, 0, (x*y*activeDevices));
+
         // Start the trigger as configured
         spidrcontrol->startAutoTrigger();
 
         doReadFrames = true;
-        nReps = 0;
 
         // Timeout
         int timeOutTime =
@@ -325,24 +331,26 @@ void ThresholdScanThread::run()
                 // On all active chips
                 for(int i = 0 ; i < activeDevices.size() ; i++) {
                     _data = spidrdaq->frameData(i, &size_in_bytes);
-                    //qDebug() << "nReps = " << nReps;
                 }
 
-                qDebug() << "Last: " << lastTH <<  "   Now:" << counter;
+                //qDebug() << "Last: " << lastTH <<  "   Now:" << counter;
                 if (summing && lastTH != counter) {
-                    qDebug() << "SUMMING";
-                    //sumArrays(x, y);
+                    sumArrays(x, y);
                 }
 
-                nReps++;
             }
 
             // Release
             spidrdaq->releaseFrame();
 
             // Report to heatmap
-            if (doReadFrames){
+            if (doReadFrames) {
                 emit UpdateHeatMapSignal(x, y);
+
+                //! Replace current frame data with summedData if we're summing
+                if (summing) {
+                    _data = _summedData;
+                }
                 // On all active chips
                 for(int idx = 0 ; idx < activeDevices.size() ; idx++) {
                     _mpx3gui->getDataset()->setFrame(_data, idx, 0);
@@ -356,12 +364,10 @@ void ThresholdScanThread::run()
                 path.append("_raw.tiff");
 
                 //qDebug() << "[INFO] Writing to " << path;
-                _mpx3gui->getDataset()->toTIFF(path, false); // Raw TIFF
+                _mpx3gui->getDataset()->toTIFF(path, false); //! Save raw TIFF
             }
 
         }
-
-        //qDebug() << "nReps = " << nReps;
 
         lastTH = counter;
         // increment
@@ -386,12 +392,18 @@ void ThresholdScanThread::run()
 
 void ThresholdScanThread::sumArrays(int nx, int ny)
 {
+    //! Bram's special pointer method
+    int * s = _summedData;
+    int * d = _data;
+    for (int i = 0; i < nx*ny; i++)
+        *(s++) += *(d++);
 
-    for(unsigned y = 0;  y < (unsigned)ny; y++){
-        for(unsigned x = 0; x < (unsigned)nx;x++){
-            _summedData[y*nx+x] += _data[y*nx+x];
-        }
-    }
+    //! Same as this
+//    for(unsigned y = 0;  y < (unsigned)ny; y++) {
+//        for(unsigned x = 0; x < (unsigned)nx; x++) {
+//             _summedData[y*nx+x] += _data[y*nx+x];
+//        }
+//    }
 }
 
 void thresholdScan::on_pushButton_setPath_clicked()
