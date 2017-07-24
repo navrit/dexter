@@ -575,8 +575,8 @@ void CustomScanThread::run() {
         // Timeout
         int timeOutTime =
                 _mpx3gui->getConfig()->getTriggerLength_ms()
-                +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
-                + 500; // ms
+                + _mpx3gui->getConfig()->getTriggerDowntime_ms()
+                + 50; // ms
         // TODO ! The extra 500ms is a combination of delay in the network plus
         // system overhead.  This should be predicted and not hard-coded. TODO !
 
