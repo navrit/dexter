@@ -52,7 +52,7 @@ void TestPulses::on_pushButtonSet_clicked()
     int val = ui->spinBox->value();
     qDebug() << "Setting : " << val;
 
-    _mpx3gui->GetSpidrController()->setSpidrReg(0x10BC, 200000, true); //
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x10BC, 200000, true); // 200000 x 25ns = 5ms default. Period between TP Switch pulses in 25ns
 
     _mpx3gui->GetSpidrController()->setSpidrReg(0x10C0, val, true);
 

@@ -208,8 +208,10 @@ void DataConsumerThread::run()
                 }
 
                 // Add the corresponding layers
-                for ( int i = 0 ; i < __max_colors ; i+= delvrCounters ) {
-                    _mpx3gui->addLayer( _colordata[i], i );
+                if ( _colordata != 0 ) { //! TODO Yeah?
+                    for ( int i = 0 ; i < __max_colors ; i+= delvrCounters ) {
+                        _mpx3gui->addLayer( _colordata[i], i );
+                    }
                 }
 
                 /////////////
@@ -222,7 +224,7 @@ void DataConsumerThread::run()
                     // I need the info for ALL the 4 chips acquired first
                     for ( uint ci = 0 ; ci < _nChips ; ci++ ) usedFrames->acquire();
                     // Now I can work on the layer
-                    _mpx3gui->addLayer( buffer + readdescriptor, i );
+                    _mpx3gui->addLayer( buffer + readdescriptor, i ); //! TODO fix this bug
                     // Move the reading descriptor
                     readdescriptor += _bufferSizeOneFrame;
                     // Then I can release
