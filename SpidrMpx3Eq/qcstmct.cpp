@@ -20,11 +20,6 @@ QCstmCT::~QCstmCT()
     delete ui;
 }
 
-void QCstmCT::SetMpx3GUI(Mpx3GUI *p)
-{
-    _mpx3gui = p;
-}
-
 void QCstmCT::resetMotor()
 {
     qDebug() << "[CT] Resetting motor to position 0";
@@ -119,7 +114,7 @@ void QCstmCT::startDataTakingThread()
     if( getMotorPositionStatus() == "Stopped" || getMotorPositionStatus() == "..."){
         qDebug() << "[CT] STARTED DT @ " << QDateTime::currentDateTimeUtc();
 
-        _mpx3gui->getVisualization()->StartDataTaking(true);
+        _mpx3gui->getVisualization()->StartDataTaking("CT");
 
         //! Note: MUST end function here to return back to Qt event loop
     }
@@ -193,9 +188,8 @@ void QCstmCT::slot_motorReachedTarget()
 //! Most of the time will be spent in this function
 void QCstmCT::resumeCT()
 {
-    if (_stop){
+    if (_stop)
         return;
-    }
 
     // Essentially a global for (i < numberOfProjections) loop
     if (iteration < numberOfProjections-1) {

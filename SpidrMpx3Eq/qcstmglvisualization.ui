@@ -524,7 +524,7 @@ If you run too fast this feature should not be used.</string>
           </sizepolicy>
          </property>
          <property name="title">
-          <string>Config &amp;&amp; Stats</string>
+          <string>Configuration &amp;&amp; Statistics</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>

@@ -299,7 +299,7 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
         //! Default mode - do cross and spatial corrections
         if (crossCorrection){
             //! Normal Fine Pitch mode - do cross correction
-            qDebug() << getThresholds().count();
+//            qDebug() << getThresholds().count();
             if (getThresholds().count() == 1) {
                 for (int y=0; y < height; y++) {
                     for (int x=0; x < width; x++) {
@@ -316,7 +316,7 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
                 //! Spectroscopic mode don't try cross correction - it doesn't work properly
                 //! due to a non constant factor between the edge pixels and the main pixels
                 //!
-                //! Ask John for details
+                //! Ask Sammi for details. Some manufacturing BS
                 //!
                 //! Implement later if necessary
 
@@ -514,7 +514,7 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
         } else {
             width  = getWidth();
             height = getHeight();
-            qDebug() << getThresholds().count();
+//            qDebug() << getThresholds().count();
 
             for (int y=0; y < height; y++) {
                 for (int x=0; x < width; x++) {
@@ -547,14 +547,14 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
                 for (int r=0; r < height; r++) {
                     TIFFWriteScanline(m_pTiff, &imageCorrected[r*width], r, 0);
                 }
-                qDebug() << "[INFO] Written corrected TIFF";
+//                qDebug() << "[INFO] Written corrected TIFF";
             } else {
                 TIFFSetField(m_pTiff, TIFFTAG_IMAGEWIDTH,      getWidth());                  // set the width of the image
                 TIFFSetField(m_pTiff, TIFFTAG_IMAGELENGTH,     getHeight());                 // set the height of the image
                 for (int r=0; r < getHeight(); r++) {
                     TIFFWriteScanline(m_pTiff, &image[r*getWidth()], r, 0);
                 }
-                qDebug() << "[INFO] Written raw TIFF";
+//                qDebug() << "[INFO] Written raw TIFF";
             }
 
 
@@ -581,7 +581,7 @@ void Dataset::toASCII(QString filename)
     int len = sizex * sizey * nchipsx * nchipsy;
 
     QList <int> thresholds = getThresholds();
-    qDebug() << thresholds;
+//    qDebug() << thresholds;
     QList<int>::iterator it = thresholds.begin();
     QList<int>::iterator itE = thresholds.end();
 

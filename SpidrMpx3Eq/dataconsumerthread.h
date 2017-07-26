@@ -11,7 +11,7 @@
 class DataConsumerThread : public QThread
 {
 
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
 

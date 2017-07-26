@@ -21,7 +21,7 @@ public:
     ~QCstmCT();
     Ui::QCstmCT *GetUI(){ return ui; }
 
-    void SetMpx3GUI(Mpx3GUI *p);
+    void SetMpx3GUI(Mpx3GUI *p) { _mpx3gui = p; }
 
 private:
 

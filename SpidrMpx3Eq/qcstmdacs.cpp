@@ -208,7 +208,7 @@ void QCstmDacs::PopulateDACValues() {
     //   higher priority.
     string defaultDACsFn = __default_DACs_filename;
 
-    qDebug() << "[INFO] setting dacs from defult DACs file.";
+    qDebug() << "[INFO] setting dacs from default DACs file.";
 
     int lastIndexToSet = 0;
     int nChipsToSet = 0;
