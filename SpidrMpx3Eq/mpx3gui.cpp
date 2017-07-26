@@ -282,62 +282,61 @@ bool Mpx3GUI::equalizationLoaded(){
 
 bool Mpx3GUI::setTestPulses() {
 
-    //for ( int devId = 0 ; devId < 4 ; devId++ ) { //! TODO Remove hardcording for quad
-    int devId = 0;
+    QVector<int> activeDevices = getConfig()->getActiveDevices();
+    qDebug() << "[TEST PULSES] activeDevices length" << activeDevices.length();
+
     if ( _ui->equalizationWidget->equalizationHasBeenLoaded() ) {
+        for ( int devId = 0 ; devId < activeDevices.length(); devId++ ) { //! TODO Make it work for quad
 
-        SpidrController * spidrcontrol = GetSpidrController();
-        spidrcontrol->setInternalTestPulse(devId, true);
+            SpidrController * spidrcontrol = GetSpidrController();
+            spidrcontrol->setInternalTestPulse(devId, true);
 
-        pair<int, int> pix;
-        bool testbit = true;
-        int testBitTrue = 0;
+            pair<int, int> pix;
+            bool testbit = true;
+            int testBitTrue = 0;
 
-        spidrcontrol->setTpSwitch( 1, 200000 ); //! 200 Hz?
+            spidrcontrol->setTpSwitch( 1, 200000 ); //! 200 Hz?
 
-        //! TODO REVIEW/REWRITE THIS
-        for ( int i = 0 ; i < __matrix_size ; i++ ) {
+            for ( int i = 0 ; i < __matrix_size ; i++ ) {
 
-            pix = XtoXY(i, __array_size_x);
+                pix = XtoXY(i, __array_size_x);
 
-    //            //! Makes checkerboard pattern
-    //            if ( pix.first % 2 == 0 && pix.second % 2 == 0 ) {
-    //                testbit = true;
-    //                testBitTrue++;
-    //                if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
-    //            } else {
-    //                testbit = false;
-    //                if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
-    //            }
+                //                //! Makes checkerboard pattern
+                //                if ( pix.first % 2 == 0 && pix.second % 2 == 0 ) {
+                //                    testbit = true;
+                //                    testBitTrue++;
+                //                    if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
+                //                } else {
+                //                    testbit = false;
+                //                    if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
+                //                }
 
-                //testbit = true; // Set all test bits on
-            testBitTrue++;
-            if (pix.second == 255) {
-                qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
-                spidrcontrol->configCtpr( devId, pix.first, 1 );
-                spidrcontrol->setCtpr( devId );
+                testBitTrue++;
+                if (pix.second == 0) {
+                    //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
+                    spidrcontrol->configCtpr( devId, pix.first, 1 );
+                    spidrcontrol->setCtpr( devId );
+                }
+
+                spidrcontrol->configPixelMpx3rx(pix.first,
+                                                pix.second,
+                                                _ui->equalizationWidget->getEqMap()[devId]->GetPixelAdj(i),
+                                                _ui->equalizationWidget->getEqMap()[devId]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
+                                                testbit);
             }
+            qDebug() << "[TEST PULSES] CTPRs set on dev" << devId;
 
-            spidrcontrol->configPixelMpx3rx(pix.first,
-                                            pix.second,
-                                            _ui->equalizationWidget->getEqMap()[devId]->GetPixelAdj(i),
-                                            _ui->equalizationWidget->getEqMap()[devId]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
-                                            testbit);
+            qDebug() << "[TEST PULSES] Number of pixels testBit ON : "<< testBitTrue;
+
+            spidrcontrol->setPixelConfigMpx3rx( devId );
+
         }
-
-
-
-        qDebug() << "[TEST] Number of pixels testBit ON : "<< testBitTrue;
-
-        spidrcontrol->setPixelConfigMpx3rx( devId );
 
         return true;
 
     } else {
         return false; // equalization missing
     }
-
-    //}
 
 }
 

@@ -300,8 +300,13 @@ void QCstmGLVisualization::saveImage(QString filename, QString corrMethod)
     }
 }
 
-void QCstmGLVisualization::StartDataTaking(bool CtMode = false) {
-    runningCT = CtMode;
+void QCstmGLVisualization::StartDataTaking(QString mode) {
+
+    if (mode == "CT") {
+        runningCT = true;
+    } else if (mode == "THScan") {
+        runningTHScan = true;
+    }
 
     if ( !_dataTakingThread ) {
 
@@ -549,8 +554,11 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
     _takingData = false;
 
-    if (runningCT){
+    if (runningCT) {
         emit sig_resumeCT();
+    }
+    if (runningTHScan) {
+        emit sig_resumeTHScan();
     }
 
     // inform the consumer that the data taking is finished
@@ -768,7 +776,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     //connect(_mpx3gui, SIGNAL(ConnectionStatusChanged(bool)), ui->singleshotPushButton, SLOT(setEnabled(bool))); //enable the button on connection
 
     connect(_mpx3gui, SIGNAL(sizeChanged(int, int)), ui->glPlot, SLOT(setSize(int, int)));
-    connect(ui->startButton, SIGNAL(clicked(bool)), this, SLOT(StartDataTaking(bool)));
+    connect(ui->startButton, SIGNAL(clicked(bool)), this, SLOT(StartDataTaking()));
     connect(this, SIGNAL(mode_changed(bool)), _mpx3gui, SLOT(set_summing(bool)));
     connect(_mpx3gui, SIGNAL(summing_set(bool)), ui->summingCheckbox, SLOT(setChecked(bool)));
     connect(ui->gradientSelector, SIGNAL(activated(int)), this, SLOT(setGradient(int)));
@@ -842,7 +850,10 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect( ui->saveCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_saveCheckBox_toggled()));
 
     // CT stuff
-    connect( this, SIGNAL(sig_resumeCT()), _mpx3gui->getCT() , SLOT(resumeCT()));
+    connect( this, SIGNAL(sig_resumeCT()), _mpx3gui->getCT(), SLOT(resumeCT()));
+
+    // TH Scan
+    connect( this, SIGNAL(sig_resumeTHScan()), _mpx3gui->getTHScan(), SLOT(resumeTHScan()));
 }
 
 void QCstmGLVisualization::ntriggers_edit() {
@@ -1755,6 +1766,9 @@ void QCstmGLVisualization::on_fullRangeRadio_toggled(bool checked)
 
             // When toggling here recompute the min and max
             int * data = _mpx3gui->getDataset()->getLayer( activeTHL );
+            if (data == nullptr)
+                qDebug() << "WTF IS HAPPENING??";
+                return;
             int size = _mpx3gui->getDataset()->getPixelsPerLayer();
             int min = INT_MAX, max = INT_MIN;
             for(int i = 0; i < size; i++) {

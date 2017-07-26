@@ -267,7 +267,7 @@ private slots:
 
 public slots:
 
-    void StartDataTaking(bool CtMode);
+    void StartDataTaking(QString mode = "");
     void setGradient(int index);
     //!Used to inform this object of the availible gradients and their names.
     void availible_gradients_changed(QStringList gradients);
@@ -335,6 +335,9 @@ signals:
 
     //! Used to run CT
     void sig_resumeCT();
+
+    //! Used to run TH Scan (threshold scan)
+    void sig_resumeTHScan();
 
 };
 

@@ -28,6 +28,44 @@ public:
     void setOriginalPath(QString);
 
     uint getFramesPerStep();
+    void setFramesPerStep(uint val);
+
+private:
+    Ui::thresholdScan *ui;
+    Mpx3GUI * _mpx3gui;
+
+    //ThresholdScanThread * _thresholdScanThread;
+
+    void startScan();
+    void stopScan();
+    void resetScan();
+    void startDataTakingThread();
+    bool _stop = false;
+    bool _running = false;
+
+    void update_timeGUI();
+    QElapsedTimer timer;
+
+    int thresholdSpacing = 1;
+    bool saveFrames = true;
+    int minTH = 0;
+    int maxTH = 511;
+    int framesPerStep = 1;
+    QString originalPath;
+    int iteration = 0;
+    int activeDevices;
+    int dacCodeToScan = 0; //! Need to change this if trying to use more than one threshold to scan with
+    int height;
+    int width;
+    QString newPath;
+
+    void enableSpinBoxes();
+    void disableSpinBoxes();
+
+    QString getPath(QString);
+
+public slots:
+    void resumeTHScan();
 
 private slots:
 
@@ -43,33 +81,7 @@ private slots:
 
     void on_spinBox_framesPerStep_valueChanged(int val);
 
-private:
-    Ui::thresholdScan *ui;
-    // Connectivity between modules
-    Mpx3GUI * _mpx3gui;
 
-    ThresholdScanThread * _thresholdScanThread;
-
-    void startScan();
-    void stopScan();
-    void resetScan();
-    void startDataTakingThread();
-    bool _stop = false;
-    bool _running = false;
-
-    QElapsedTimer timer;
-
-    uint thresholdSpacing = 1;
-    bool saveFrames = true;
-    uint minTH = 0;
-    uint maxTH = 511;
-    uint framesPerStep = 1;
-    QString originalPath;
-
-    void enableSpinBoxes();
-    void disableSpinBoxes();
-
-    QString getPath(QString);
 };
 
 class ThresholdScanThread : public QThread {
