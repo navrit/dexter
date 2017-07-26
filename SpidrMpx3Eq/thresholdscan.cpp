@@ -72,11 +72,10 @@ void thresholdScan::startScan()
     //! Use acquisition settings from other view
     resetScan();
 
-    //! TODO Test this disable/enable spinbox behaviour - offline attempts are not trivial
     disableSpinBoxes();
 
     //! Initialise variables
-    //!
+
     //! Get values from GUI
     minTH = ui->spinBox_minimum->value();
     maxTH = ui->spinBox_maximum->value();
@@ -122,7 +121,6 @@ void thresholdScan::startScan()
 
 }
 
-//! DONE
 void thresholdScan::stopScan()
 {
     enableSpinBoxes();
@@ -131,11 +129,22 @@ void thresholdScan::stopScan()
     //! Print interrupt footer
     ui->textEdit_log->append("GUI Interrupt - stopping Threshold scan at: " +
                             QDateTime::currentDateTimeUtc().toString(Qt::ISODate) +
-                             "\n------------------------------------------");
+                             "\n");
+
+    //! Print footer to log box and end timer with relevant units
+
+    auto elapsed = timer.elapsed();
+    if (elapsed < 1000){
+        ui->textEdit_log->append("Elapsed time: " + QString::number(timer.elapsed()) + "ms");
+    } else {
+        ui->textEdit_log->append("Elapsed time: " + QString::number(timer.elapsed()/1000) + "s");
+    }
+    ui->textEdit_log->append("\n------------------------------------------");
+
     _stop = true;
+    _running = false;
 }
 
-//! DONE
 void thresholdScan::resetScan()
 {
     _mpx3gui->getDataset()->clear();
@@ -143,7 +152,6 @@ void thresholdScan::resetScan()
     _running = false;
 }
 
-//! XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 void thresholdScan::resumeTHScan()
 {
     if (_stop)
@@ -151,9 +159,8 @@ void thresholdScan::resumeTHScan()
 
     //! Main loop through thresholds using 1 counter (TH0)
 
-    //! TODO REVIEW MAIN LOOP MATHS
     if (iteration <= maxTH) {
-        qDebug() << "LOOP " << iteration << maxTH;
+        //qDebug() << "LOOP " << iteration << maxTH;
 
         //! Set DACs on all active chips ------------------------------------------
         for(int i = 0 ; i < activeDevices ; i++) {
@@ -173,36 +180,21 @@ void thresholdScan::resumeTHScan()
             }
         }
 
-        //! Multiple frames per threshold?
-
         //! Save the current dataset ----------------------------------------------
-        QString path = newPath;
-        path.append("/");
-        //path.append(QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
-        path.append("th-");
-        path.append(QString::number(iteration));
-        path.append("_raw.tiff");
-
-        _mpx3gui->getDataset()->toTIFF(path, false); //! Save raw TIFF
-
+        _mpx3gui->getDataset()->toTIFF(makePath(), false); //! Save raw TIFF
 
         update_timeGUI();
         startDataTakingThread();
         //! Increment iteration counter -------------------------------------------
         iteration++;
 
-        //! Clear the dataset? -----------------------------------------------------
+        //! Clear the dataset -----------------------------------------------------
         _mpx3gui->getDataset()->clear();
-//        if (framesPerStep <= 1)
-//            startDataTakingThread();
-
 
     } else {
 
         //! DONE
-        //ui->textEdit_log->append("DONE");
         ui->progressBar->setValue(100);
-
         finishedScan();
 
 //        qDebug() << "[INFO] Threshold scan finished -----------------";
@@ -218,6 +210,18 @@ void thresholdScan::startDataTakingThread()
 void thresholdScan::update_timeGUI()
 {
     ui->progressBar->setValue( (float(iteration-minTH) / float(maxTH-minTH)) * 100.0);
+}
+
+QString thresholdScan::makePath()
+{
+    QString path = newPath;
+    path.append("/");
+    //path.append(QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
+    path.append("th-");
+    path.append(QString::number(iteration));
+    path.append("_raw.tiff");
+
+    return path;
 }
 
 void thresholdScan::enableSpinBoxes()

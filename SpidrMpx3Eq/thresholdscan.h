@@ -59,6 +59,8 @@ private:
     int width;
     QString newPath;
 
+    QString makePath();
+
     void enableSpinBoxes();
     void disableSpinBoxes();
 
