@@ -597,11 +597,6 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
     // Set the slider according to the new value in the Spin Box
     _dacSliders[i]->setValue( val );
 
-    if (i == 0) {
-        _mpx3gui->getTHScan()->GetUI()->spinBox_minimum->setValue(val);
-    } else if (i == 1) {
-        _mpx3gui->getTHScan()->GetUI()->spinBox_maximum->setValue(val);
-    }
 
     //////////////////////////////////////
     // Set DAC

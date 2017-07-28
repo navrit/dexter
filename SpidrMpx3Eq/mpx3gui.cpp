@@ -295,7 +295,7 @@ bool Mpx3GUI::setTestPulses() {
             bool testbit = true;
             int testBitTrue = 0;
 
-            spidrcontrol->setTpSwitch( 1, 200000 ); //! 200 Hz?
+            spidrcontrol->setTpSwitch( 1, TP_PERIOD ); //! 200000 * 25 ns = 5 ms = 200 Hz
 
             for ( int i = 0 ; i < __matrix_size ; i++ ) {
 

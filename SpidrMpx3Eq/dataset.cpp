@@ -2238,6 +2238,11 @@ unsigned int Dataset::setLayer(int *data, int threshold){
 
     int layerIndex = getLayerIndex(threshold);
 
+    if (data == nullptr) {
+        qDebug() << "WTF IS THIS SHIEEEET";
+        return 0;
+    }
+
     for(int i = 0; i < m_nFrames*m_nx*m_ny;i++) {
 
         m_layers[layerIndex][i] = data[i];

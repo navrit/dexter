@@ -1766,12 +1766,16 @@ void QCstmGLVisualization::on_fullRangeRadio_toggled(bool checked)
 
             // When toggling here recompute the min and max
             int * data = _mpx3gui->getDataset()->getLayer( activeTHL );
-            if (data == nullptr)
-                qDebug() << "WTF IS HAPPENING??";
-                return;
+//            if (data == nullptr)
+//                qDebug() << "WTF IS HAPPENING??"; //! TODO FIX THIS SHIT RIGHT NOW
+//                return;
             int size = _mpx3gui->getDataset()->getPixelsPerLayer();
             int min = INT_MAX, max = INT_MIN;
             for(int i = 0; i < size; i++) {
+//                if (data[i] == 0x0) {
+//                    min = 0;
+//                    max = 1;
+//                }
                 if(data[i] < min)
                     min = data[i];
                 if(data[i] > max)

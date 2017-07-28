@@ -147,7 +147,9 @@ void thresholdScan::stopScan()
 
 void thresholdScan::resetScan()
 {
-    _mpx3gui->getDataset()->clear();
+//    _mpx3gui->getDataset()->clear();
+//    _mpx3gui->getVisualization()->reload_all_layers();
+//    _mpx3gui->addLayer(0,0);
     _stop = false;
     _running = false;
 }
@@ -170,12 +172,25 @@ void thresholdScan::resumeTHScan()
                 //! Check if 0 < iteration < 512
                 if  (iteration < 511) {
                     //qDebug() << "[INFO] 1/2 Set DACs on dev:" << i << "DAC:" << dacCodeToScan << " Val:" << iteration;
-                    _mpx3gui->getDACs()->SetDACValueLocalConfig(i, dacCodeToScan, iteration);
+//                    SetDAC_propagateInGUI(i, dacCodeToScan, iteration);
                     _mpx3gui->GetSpidrController()->setDac(i, dacCodeToScan, iteration);
+
+                    connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+                    int dacIndex = _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_THRESH_0 );
+                    slideAndSpin( dacIndex,  iteration );
+                    disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+                    _mpx3gui->getDACs()->SetDACValueLocalConfig(i, dacCodeToScan, iteration);
+
+
                     //qDebug() << "[INFO] 2/2 Set DACs on dev:" << i << "DAC:" << dacCodeToScan+1 << " Val:" << iteration+1;
-                    _mpx3gui->getDACs()->SetDACValueLocalConfig(i, dacCodeToScan+1, iteration+1);
+//                    SetDAC_propagateInGUI(i, dacCodeToScan+1, iteration+1);
                     _mpx3gui->GetSpidrController()->setDac(i, dacCodeToScan+1, iteration+1);
 
+                    connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+                    dacIndex = _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_THRESH_1 );
+                    slideAndSpin( dacIndex,  iteration+1 );
+                    disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+                    _mpx3gui->getDACs()->SetDACValueLocalConfig(i, dacCodeToScan+1, iteration+1);
                 }
             }
         }
@@ -251,6 +266,24 @@ QString thresholdScan::getPath(QString msg)
 
     // We WILL get a path before exiting this function
     return path;
+}
+
+void thresholdScan::SetDAC_propagateInGUI(int devId, int dac_code, int dac_val)
+{
+    //! Actually set DAC
+    _mpx3gui->GetSpidrController()->setDac( devId, dac_code, dac_val );
+
+    //! Important GUI Code -------------------------------------
+    //! Adjust the sliders and the SpinBoxes to the new value
+    connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    //! SlideAndSpin works with the DAC index, no the code.
+    int dacIndex = _mpx3gui->getDACs()->GetDACIndex( dac_code );
+    emit slideAndSpin( dacIndex,  dac_val );
+    disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    // ---------------------------------------------------------
+
+    //! Set DAC in local config.
+    _mpx3gui->getDACs()->SetDACValueLocalConfig( devId, dacIndex, dac_val);
 }
 
 void thresholdScan::on_button_startStop_clicked()

@@ -66,6 +66,8 @@ private:
 
     QString getPath(QString);
 
+    void SetDAC_propagateInGUI(int devId, int dac_code, int dac_val );
+
 public slots:
     void resumeTHScan();
 
@@ -83,7 +85,8 @@ private slots:
 
     void on_spinBox_framesPerStep_valueChanged(int val);
 
-
+signals:
+    void slideAndSpin(int, int);
 };
 
 class ThresholdScanThread : public QThread {

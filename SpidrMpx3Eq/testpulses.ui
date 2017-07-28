@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>383</width>
-    <height>142</height>
+    <width>430</width>
+    <height>230</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,42 +19,38 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QCheckBox" name="activateCheckBox">
-       <property name="text">
-        <string>Activate</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QSpinBox" name="spinBox">
-       <property name="maximum">
-        <number>200000</number>
-       </property>
-       <property name="singleStep">
-        <number>200</number>
-       </property>
-       <property name="value">
-        <number>20000</number>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QPushButton" name="pushButtonSet">
-       <property name="text">
-        <string>Set</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0" colspan="3">
+     <item row="3" column="0" colspan="3">
       <widget class="Line" name="line">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QSpinBox" name="spinBox_2">
+     <item row="1" column="2">
+      <widget class="QPushButton" name="pushButton_setLength">
+       <property name="toolTip">
+        <string>Default 20000 : 0.5 ms</string>
+       </property>
+       <property name="text">
+        <string>Set length</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="spinBox_length">
+       <property name="maximum">
+        <number>2147483647</number>
+       </property>
+       <property name="singleStep">
+        <number>1000</number>
+       </property>
+       <property name="value">
+        <number>40</number>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QSpinBox" name="spinBox_idelay">
        <property name="maximum">
         <number>31</number>
        </property>
@@ -63,14 +59,21 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="2">
-      <widget class="QPushButton" name="pushButton">
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="activateCheckBox">
        <property name="text">
-        <string>Set IDELAY</string>
+        <string>Activate</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="2">
+     <item row="4" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>IDELAY</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="2">
       <widget class="QDialogButtonBox" name="buttonBox">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -80,10 +83,47 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label">
+     <item row="4" column="2">
+      <widget class="QPushButton" name="pushButton_setIDELAY">
        <property name="text">
-        <string>IDELAY</string>
+        <string>Set IDELAY</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>TP Length (25ns)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>TP Period (25ns)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QSpinBox" name="spinBox_period">
+       <property name="maximum">
+        <number>2147483647</number>
+       </property>
+       <property name="singleStep">
+        <number>1000</number>
+       </property>
+       <property name="value">
+        <number>200000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="pushButton_setPeriod">
+       <property name="toolTip">
+        <string>Default 200000 : 5 ms</string>
+       </property>
+       <property name="text">
+        <string>Set period</string>
        </property>
       </widget>
      </item>
@@ -91,6 +131,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>activateCheckBox</tabstop>
+  <tabstop>spinBox_length</tabstop>
+  <tabstop>pushButton_setLength</tabstop>
+  <tabstop>spinBox_period</tabstop>
+  <tabstop>pushButton_setPeriod</tabstop>
+  <tabstop>spinBox_idelay</tabstop>
+  <tabstop>pushButton_setIDELAY</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

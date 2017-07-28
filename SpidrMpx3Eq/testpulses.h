@@ -20,9 +20,11 @@ public:
 private slots:
     void on_activateCheckBox_clicked(bool checked);
 
-    void on_pushButtonSet_clicked();
+    void on_pushButton_setLength_clicked();
 
-    void on_pushButton_clicked();
+    void on_pushButton_setPeriod_clicked();
+
+    void on_pushButton_setIDELAY_clicked();
 
 private:
     Mpx3GUI * _mpx3gui = nullptr;

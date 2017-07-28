@@ -29,31 +29,40 @@ void TestPulses::on_activateCheckBox_clicked(bool checked)
 
     if ( checked ) {
 
-        // 1) Configure pixels with testbit
-        Mpx3Config::testpulses_config_parameters tp_conf;
-        //tp_conf
+        //! TODO Probably remove this.
+//        // 1) Configure pixels with testbit
+//        Mpx3Config::testpulses_config_parameters tp_conf;
+//        tp_conf
 
-        // See if there is an equalization present
+        //! See if there is an equalization present
+        //! I have no idea why...
         if ( ! _mpx3gui->setTestPulses() ) {
             QMessageBox::warning(this, tr("Test pulses error"),
                                  tr("You need to be connected to the detector"
                                     "\nand the Equalization needs to be loaded."));
-            ui->activateCheckBox->setChecked( false );
-        }
+            ui->pushButton_setLength->setChecked(false);
 
+
+        }
+        _mpx3gui->GetSpidrController()->setSpidrReg(0x10C0, 40, true); //! Default 1 us
+        _mpx3gui->GetSpidrController()->setSpidrReg(0x10BC, TP_PERIOD, true);
+
+        qDebug() << "[TEST PULSES] SET Default 1 us length, 5 ms period (200 Hz)";
     }
 
 }
 
-void TestPulses::on_pushButtonSet_clicked()
+void TestPulses::on_pushButton_setPeriod_clicked()
 {
+    int val = ui->spinBox_period->value();
+    qDebug() << "TP Period:" << val *  (25.0/1000000000.0*1000.0) << "ms";
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x10BC, val, true); // 200000 x 25ns = 5ms default. Period between TP Switch pulses in 25ns
+}
 
-    // Ext trigger - what??
-    int val = ui->spinBox->value();
-    qDebug() << "Setting : " << val;
-
-    _mpx3gui->GetSpidrController()->setSpidrReg(0x10BC, 200000, true); // 200000 x 25ns = 5ms default. Period between TP Switch pulses in 25ns
-
+void TestPulses::on_pushButton_setLength_clicked()
+{
+    int val = ui->spinBox_length->value();
+    qDebug() << "TP Length :" << val * (25.0/1000000000.0*1000.0) << "ms";
     _mpx3gui->GetSpidrController()->setSpidrReg(0x10C0, val, true);
 
     // Get the voltage reference
@@ -81,15 +90,12 @@ void TestPulses::on_pushButtonSet_clicked()
     // This can be used as the voltage reference
     double adc_volt = (__voltage_DACS_MAX/(double)__maxADCCounts) * (((double)adc_val)/nSamples);
     qDebug() << "ADC value - RPZ[255] : " << adc_val << " | ADC Voltage : " << adc_volt;
-
-
 }
 
-void TestPulses::on_pushButton_clicked()
-{
-    // IDELAY
 
-    int val = ui->spinBox_2->value();
+void TestPulses::on_pushButton_setIDELAY_clicked()
+{
+    int val = ui->spinBox_idelay->value();
     qDebug() << "IDELAY Setting : " << val;
     _mpx3gui->GetSpidrController()->setSpidrReg(0x10A0, val, true);
     _mpx3gui->GetSpidrController()->setSpidrReg(0x10A4, val, true);
