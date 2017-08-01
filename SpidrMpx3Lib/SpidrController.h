@@ -99,7 +99,9 @@ class MY_LIB_API SpidrController
   bool        setBiasVoltage   ( int  volts );
   bool        setLutEnable     ( bool enable );
   bool        getMpx3Clock     ( int *megahertz );
-  bool        setTpSwitch      ( int  val, int freq_mhz = 200000 );
+  bool        setTpFrequency   ( bool enable,
+                                 int  freq_mhz = -1,
+                                 int  pulse_width = -1 );
 
   // Configuration: pixels
   void resetPixelConfig        ( );
@@ -136,7 +138,8 @@ class MY_LIB_API SpidrController
   bool setPs                   ( int  dev_nr, int  ps );
   bool setInternalTestPulse    ( int  dev_nr, bool internal );
   bool setPixelDepth           ( int  dev_nr, int  bits,
-                                 bool two_counter_readout = false );
+                                 bool two_counter_readout = false,
+                                 bool two_counter_readout_softw = false );
   bool setEqThreshH            ( int  dev_nr, bool equalize );
   bool setColourMode           ( int  dev_nr, bool colour );
   bool setCsmSpm               ( int  dev_nr, int  csm );

@@ -15,7 +15,10 @@ using namespace std;
 #include "mpx3dacsdescr.h" // Depends on mpx3defs.h to be included first
 
 // Version identifier: year, month, day, release number
-const int   VERSION_ID = 0x17020800; // Remove getAdc(int, int *)
+const int   VERSION_ID = 0x17080100; // setPixelDepth(): softw double-cntr read,
+                                     // Bug fix: initialize _pixelDepth,
+                                     // setTpSwitch() -> setTpFrequency()
+//const int VERSION_ID = 0x17020800; // Remove getAdc(int, int *)
 //const int VERSION_ID = 0x17020700; // Add reinitMacAddr(), getHumidity/Pressure()
 //const int VERSION_ID = 0x16082900; // Add getMpx3Clock(), remove setMpx3Clock()
 //const int VERSION_ID = 0x16071800; // Add resetCounters() and counter reads
@@ -49,19 +52,21 @@ const int   VERSION_ID = 0x17020800; // Remove getAdc(int, int *)
 #define SPIDRMPX3_SHUTTER1_PERIOD_I     0x1008
 #define SPIDRMPX3_MPX3_CTRL_I           0x1090
 #define SPIDRMPX3_TP_SWITCH_BIT         3
-#define SPIDRMPX3_MPX3_CLOCK_I          0x10B0
-#define SPIDRMPX3_TPSWITCH_FREQ_I       0x10B4
+#define SPIDRMPX3_MPX3_CLOCK_OLD_I      0x10B0
+#define SPIDRMPX3_MPX3_CLOCK_I          0x10B4
 #define SPIDRMPX3_SHUTTER_INH_CNTR_I    0x10B8
+#define SPIDRMPX3_TPSWITCH_FREQ_I       0x10BC
+#define SPIDRMPX3_TP_LENGTH_I           0x10C0
 
 // ----------------------------------------------------------------------------
 // Constructor / destructor
 // ----------------------------------------------------------------------------
 
 SpidrController::SpidrController( int ipaddr3,
-				  int ipaddr2,
-				  int ipaddr1,
-				  int ipaddr0,
-				  int port )
+                  int ipaddr2,
+                  int ipaddr1,
+                  int ipaddr0,
+                  int port )
 {
   _sock = new QTcpSocket;
 
@@ -438,11 +443,11 @@ bool SpidrController::getDac( int dev_nr, int dac_code, int *dac_val )
     {
       // Extract dac_code and dac_val
       if( (dac >> 16) != dac_code )
-	{
-	  this->clearErrorString();
-	  _errString << "DAC code mismatch in reply";
-	  return false;
-	}
+    {
+      this->clearErrorString();
+      _errString << "DAC code mismatch in reply";
+      return false;
+    }
       *dac_val = dac & 0xFFFF;
       return true;
     }
@@ -584,15 +589,22 @@ bool SpidrController::setMpx3Clock( int megahertz )
 */
 // ----------------------------------------------------------------------------
 
-bool SpidrController::setTpSwitch( int val, int freq_mhz )
+bool SpidrController::setTpFrequency( bool enable, int freq_mhz,
+                                      int pulse_width )
 {
   // Configure the TP_Switch period (frequency): 25ns per count
-  this->setSpidrReg( SPIDRMPX3_TPSWITCH_FREQ_I,
-		     (int) (((double) 40000000.0/(double) freq_mhz)*1000.0) );
+  if( freq_mhz > 0 )
+    this->setSpidrReg( SPIDRMPX3_TPSWITCH_FREQ_I,
+               (int) (((double) 40000000.0/(double) freq_mhz)*1000.0) );
 
-  // If 'val' > 0 set the bit, otherwise reset it; verify it
+  // Configure the TP pulse length: in units of 25ns
+  if( pulse_width > 0 )
+    {
+      this->setSpidrReg( SPIDRMPX3_TP_LENGTH_I, pulse_width );
+    }
+
   return this->setSpidrRegBit( SPIDRMPX3_MPX3_CTRL_I, SPIDRMPX3_TP_SWITCH_BIT,
-			       (val > 0), true );
+                   enable, true );
 }
 
 // ----------------------------------------------------------------------------
@@ -608,13 +620,13 @@ void SpidrController::resetPixelConfig()
 // ----------------------------------------------------------------------------
 
 bool SpidrController::configPixelMpx3( int  x,
-				       int  y,
-				       int  configtha,
-				       int  configthb,
-				       bool configtha4,
-				       bool configthb4,
-				       bool gainmode,
-				       bool testbit )
+                       int  y,
+                       int  configtha,
+                       int  configthb,
+                       bool configtha4,
+                       bool configthb4,
+                       bool gainmode,
+                       bool testbit )
 {
   int xstart, xend;
   int ystart, yend;
@@ -638,20 +650,20 @@ bool SpidrController::configPixelMpx3( int  x,
   for( yi=ystart; yi<yend; ++yi )
     for( xi=xstart; xi<xend; ++xi )
       {
-	pcfg = &_pixelConfig[yi][xi];
-	*pcfg &= MPX3_CFG_MASKBIT; // Set/reset elsewhere
-	if( configtha & 0x1 ) *pcfg |= MPX3_CFG_CONFIGTHA_0;
-	if( configtha & 0x2 ) *pcfg |= MPX3_CFG_CONFIGTHA_1;
-	if( configtha & 0x4 ) *pcfg |= MPX3_CFG_CONFIGTHA_2;
-	if( configtha & 0x8 ) *pcfg |= MPX3_CFG_CONFIGTHA_3;
-	if( configtha4 )      *pcfg |= MPX3_CFG_CONFIGTHA_4;
-	if( configthb & 0x1 ) *pcfg |= MPX3_CFG_CONFIGTHB_0;
-	if( configthb & 0x2 ) *pcfg |= MPX3_CFG_CONFIGTHB_1;
-	if( configthb & 0x4 ) *pcfg |= MPX3_CFG_CONFIGTHB_2;
-	if( configthb & 0x8 ) *pcfg |= MPX3_CFG_CONFIGTHB_3;
-	if( configthb4 )      *pcfg |= MPX3_CFG_CONFIGTHB_4;
-	if( gainmode )        *pcfg |= MPX3_CFG_GAINMODE;
-	if( testbit )         *pcfg |= MPX3_CFG_TESTBIT;
+    pcfg = &_pixelConfig[yi][xi];
+    *pcfg &= MPX3_CFG_MASKBIT; // Set/reset elsewhere
+    if( configtha & 0x1 ) *pcfg |= MPX3_CFG_CONFIGTHA_0;
+    if( configtha & 0x2 ) *pcfg |= MPX3_CFG_CONFIGTHA_1;
+    if( configtha & 0x4 ) *pcfg |= MPX3_CFG_CONFIGTHA_2;
+    if( configtha & 0x8 ) *pcfg |= MPX3_CFG_CONFIGTHA_3;
+    if( configtha4 )      *pcfg |= MPX3_CFG_CONFIGTHA_4;
+    if( configthb & 0x1 ) *pcfg |= MPX3_CFG_CONFIGTHB_0;
+    if( configthb & 0x2 ) *pcfg |= MPX3_CFG_CONFIGTHB_1;
+    if( configthb & 0x4 ) *pcfg |= MPX3_CFG_CONFIGTHB_2;
+    if( configthb & 0x8 ) *pcfg |= MPX3_CFG_CONFIGTHB_3;
+    if( configthb4 )      *pcfg |= MPX3_CFG_CONFIGTHB_4;
+    if( gainmode )        *pcfg |= MPX3_CFG_GAINMODE;
+    if( testbit )         *pcfg |= MPX3_CFG_TESTBIT;
       }
 
   return true;
@@ -667,7 +679,7 @@ bool SpidrController::setPixelMaskMpx3( int x, int y, bool b )
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setPixelConfigMpx3( int  dev_nr,
-					  bool with_replies )
+                      bool with_replies )
 {
   // To be done in 2 stages:
   // 12 bits of configuration (bits 0-11) per pixel to 'Counter0', then
@@ -694,46 +706,46 @@ bool SpidrController::setPixelConfigMpx3( int  dev_nr,
       // Convert the data in _pixelConfig row-by-row into the format
       // required by the Medipix device
       for( row=0; row<256; ++row )
-	{
-	  // Next row
-	  pconfig = &_pixelConfig[row][0];
-	  // Refill pixelrow[]
-	  memset( static_cast<void *> (pixelrow), 0, sizeof(pixelrow) );
-	  // 12 bits of configuration data, starting from MSB
-	  prow = pixelrow;
-	  for( pixelbit=hi_bit; pixelbit>=lo_bit; --pixelbit )
-	    {
-	      pixelbitmask = (1 << pixelbit);
-	      for( column=0; column<256; column+=8 )
-		{
-		  // Fill a byte
-		  byte = 0;
-		  bitmask = 0x01;
-		  for( bit=0; bit<8; ++bit )
-		    {
-		      if( pconfig[column + bit] & pixelbitmask )
-			byte |= bitmask;
-		      bitmask <<= 1;
-		    }
-		  *prow = byte;
-		  ++prow;
-		}
-	    }
+    {
+      // Next row
+      pconfig = &_pixelConfig[row][0];
+      // Refill pixelrow[]
+      memset( static_cast<void *> (pixelrow), 0, sizeof(pixelrow) );
+      // 12 bits of configuration data, starting from MSB
+      prow = pixelrow;
+      for( pixelbit=hi_bit; pixelbit>=lo_bit; --pixelbit )
+        {
+          pixelbitmask = (1 << pixelbit);
+          for( column=0; column<256; column+=8 )
+        {
+          // Fill a byte
+          byte = 0;
+          bitmask = 0x01;
+          for( bit=0; bit<8; ++bit )
+            {
+              if( pconfig[column + bit] & pixelbitmask )
+            byte |= bitmask;
+              bitmask <<= 1;
+            }
+          *prow = byte;
+          ++prow;
+        }
+        }
 
-	  // Even with 'with_replies' false, acknowledge first and last message
-	  /*
-	  if( row == 0 || row == 255 )
-	    cmd &= ~CMD_NOREPLY;
-	  else if( !with_replies )
-	    cmd |= CMD_NOREPLY;
-	  */
-	  // Send this row of formatted configuration data to the SPIDR module
-	  if( this->requestSetIntAndBytes( cmd, dev_nr,
-					   row, // Sequence number
-					   sizeof( pixelrow ),
-					   pixelrow ) == false )
-	    return false;
-	}
+      // Even with 'with_replies' false, acknowledge first and last message
+      /*
+      if( row == 0 || row == 255 )
+        cmd &= ~CMD_NOREPLY;
+      else if( !with_replies )
+        cmd |= CMD_NOREPLY;
+      */
+      // Send this row of formatted configuration data to the SPIDR module
+      if( this->requestSetIntAndBytes( cmd, dev_nr,
+                       row, // Sequence number
+                       sizeof( pixelrow ),
+                       pixelrow ) == false )
+        return false;
+    }
     }
   return true;
 }
@@ -741,10 +753,10 @@ bool SpidrController::setPixelConfigMpx3( int  dev_nr,
 // ----------------------------------------------------------------------------
 
 bool SpidrController::configPixelMpx3rx( int  x,
-					 int  y,
-					 int  discl,
-					 int  disch,
-					 bool testbit )
+                     int  y,
+                     int  discl,
+                     int  disch,
+                     bool testbit )
 {
   int xstart, xend;
   int ystart, yend;
@@ -768,11 +780,11 @@ bool SpidrController::configPixelMpx3rx( int  x,
   for( yi=ystart; yi<yend; ++yi )
     for( xi=xstart; xi<xend; ++xi )
       {
-	pcfg = &_pixelConfig[yi][xi];
-	*pcfg &= MPX3RX_CFG_MASKBIT; // Set/reset elsewhere
-	*pcfg |= (discl << 1);
-	*pcfg |= (disch << 6);
-	if( testbit ) *pcfg |= MPX3RX_CFG_TESTBIT;
+    pcfg = &_pixelConfig[yi][xi];
+    *pcfg &= MPX3RX_CFG_MASKBIT; // Set/reset elsewhere
+    *pcfg |= (discl << 1);
+    *pcfg |= (disch << 6);
+    if( testbit ) *pcfg |= MPX3RX_CFG_TESTBIT;
       }
 
   return true;
@@ -788,8 +800,8 @@ bool SpidrController::setPixelMaskMpx3rx( int x, int y, bool b )
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setPixelConfigMpx3rx( int  dev_nr,
-					    bool readback,
-					    bool with_replies )
+                        bool readback,
+                        bool with_replies )
 {
   // The SPIDR software will see to it that it gets done in 2 stages:
   // the first 128 rows, then the second 128 rows...
@@ -820,30 +832,30 @@ bool SpidrController::setPixelConfigMpx3rx( int  dev_nr,
       // 12 bits of configuration data, starting from MSB
       prow = pixelrow;
       for( pixelbit=11; pixelbit>=0; --pixelbit )
-	{
-	  pixelbitmask = (1 << pixelbit);
-	  for( column=0; column<256; column+=8 )
-	    {
-	      // Fill a byte
-	      byte = 0;
-	      bitmask = 0x01;
-	      for( bit=0; bit<8; ++bit )
-		{
-		  if( pconfig[column + bit] & pixelbitmask )
-		    byte |= bitmask;
-		  bitmask <<= 1;
-		}
-	      *prow = byte;
-	      ++prow;
-	    }
-	}
+    {
+      pixelbitmask = (1 << pixelbit);
+      for( column=0; column<256; column+=8 )
+        {
+          // Fill a byte
+          byte = 0;
+          bitmask = 0x01;
+          for( bit=0; bit<8; ++bit )
+        {
+          if( pconfig[column + bit] & pixelbitmask )
+            byte |= bitmask;
+          bitmask <<= 1;
+        }
+          *prow = byte;
+          ++prow;
+        }
+    }
 
       // Even with 'with_replies' false, acknowledge first and last message
       /*
       if( row == 0 || row == 255 )
-	cmd &= ~CMD_NOREPLY;
+    cmd &= ~CMD_NOREPLY;
       else if( !with_replies )
-	cmd |= CMD_NOREPLY;
+    cmd |= CMD_NOREPLY;
       */
 
       // Trigger read-out to read back the pixel config uploaded just now
@@ -851,10 +863,10 @@ bool SpidrController::setPixelConfigMpx3rx( int  dev_nr,
 
       // Send this row of formatted configuration data to the SPIDR module
       if( this->requestSetIntAndBytes( cmd, dev_nr,
-				       row, // Sequence number
-				       sizeof( pixelrow ),
-				       pixelrow ) == false )
-	return false;
+                       row, // Sequence number
+                       sizeof( pixelrow ),
+                       pixelrow ) == false )
+    return false;
     }
   return true;
 }
@@ -913,7 +925,8 @@ bool SpidrController::setInternalTestPulse( int dev_nr, bool internal )
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setPixelDepth( int dev_nr, int bits,
-				     bool two_counter_readout )
+                                     bool two_counter_readout,
+                                     bool two_counter_readout_softw )
 {
   int pixelcounterdepth_id = 2; // 12-bit
   if( bits == 1 )
@@ -924,10 +937,11 @@ bool SpidrController::setPixelDepth( int dev_nr, int bits,
     pixelcounterdepth_id = 3;   // 24-bit
 
   // Will both counters (per pixel) be read out ?
-  if( two_counter_readout ) pixelcounterdepth_id |= 0x10000;
+  if( two_counter_readout )       pixelcounterdepth_id |= 0x10000;
+  if( two_counter_readout_softw ) pixelcounterdepth_id |= 0x20000;
 
   return this->requestSetInt( CMD_SET_COUNTERDEPTH, dev_nr,
-			      pixelcounterdepth_id );
+                  pixelcounterdepth_id );
 }
 
 // ----------------------------------------------------------------------------
@@ -1004,7 +1018,7 @@ bool SpidrController::getOmr( int dev_nr, unsigned char *omr )
 // ----------------------------------------------------------------------------
 
 bool SpidrController::storeAddrAndPorts( int ipaddr_src,
-					 int ipport )
+                     int ipport )
 {
   // Store SPIDR controller and devices addresses and ports
   // to onboard non-volatile memory; at the same time changes
@@ -1069,14 +1083,14 @@ bool SpidrController::validDacs( int dev_nr, bool *valid )
 // ----------------------------------------------------------------------------
 
 bool SpidrController::readFlash( int            flash_id,
-				 int            address,
-				 int           *nbytes,
-				 unsigned char *databytes )
+                 int            address,
+                 int           *nbytes,
+                 unsigned char *databytes )
 {
   int addr = (address & 0x00FFFFFF) | (flash_id << 24);
   *nbytes = 0;
   if( !this->requestGetIntAndBytes( CMD_READ_FLASH, 0,
-				    &addr, 1024, databytes ) )
+                    &addr, 1024, databytes ) )
     return false;
 
   // Returned address should match
@@ -1089,13 +1103,13 @@ bool SpidrController::readFlash( int            flash_id,
 // ----------------------------------------------------------------------------
 
 bool SpidrController::writeFlash( int            flash_id,
-				  int            address,
-				  int            nbytes,
-				  unsigned char *databytes )
+                  int            address,
+                  int            nbytes,
+                  unsigned char *databytes )
 {
   int addr = (address & 0x00FFFFFF) | (flash_id << 24);
   return this->requestSetIntAndBytes( CMD_WRITE_FLASH, 0,
-				      addr, nbytes, databytes );
+                      addr, nbytes, databytes );
 }
 
 // ----------------------------------------------------------------------------
@@ -1103,10 +1117,10 @@ bool SpidrController::writeFlash( int            flash_id,
 // ----------------------------------------------------------------------------
 
 bool SpidrController::setShutterTriggerConfig( int trigger_mode,
-					       int trigger_width_us,
-					       int trigger_freq_mhz,
-					       int nr_of_triggers,
-					       int trigger_pulse_count )
+                           int trigger_width_us,
+                           int trigger_freq_mhz,
+                           int nr_of_triggers,
+                           int trigger_pulse_count )
 {
   int datawords[5];
   datawords[0] = trigger_mode;
@@ -1120,10 +1134,10 @@ bool SpidrController::setShutterTriggerConfig( int trigger_mode,
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getShutterTriggerConfig( int *trigger_mode,
-					       int *trigger_width_us,
-					       int *trigger_freq_mhz,
-					       int *nr_of_triggers,
-					       int *trigger_pulse_count )
+                           int *trigger_width_us,
+                           int *trigger_freq_mhz,
+                           int *nr_of_triggers,
+                           int *trigger_pulse_count )
 {
   int data[5];
   if( !this->requestGetInts( CMD_GET_TRIGCONFIG, 0, 5, data ) )
@@ -1193,7 +1207,7 @@ bool SpidrController::startContReadout( int freq_hz )
     return false;
 
   if( !this->setSpidrRegBit( SPIDR_SHUTTERTRIG_CTRL_I,
-			     SPIDR_ENA_SHUTTER1_CNTRSEL_BIT, true ) )
+                 SPIDR_ENA_SHUTTER1_CNTRSEL_BIT, true ) )
     return false;
 
   // Open shutter
@@ -1211,7 +1225,7 @@ bool SpidrController::stopContReadout()
     this->setContRdWr( devnr, false );
 
   this->setSpidrRegBit( SPIDR_SHUTTERTRIG_CTRL_I,
-			SPIDR_ENA_SHUTTER1_CNTRSEL_BIT, false );
+            SPIDR_ENA_SHUTTER1_CNTRSEL_BIT, false );
   return this->closeShutter();
 }
 
@@ -1257,8 +1271,8 @@ bool SpidrController::getAdc( int *adc_val, int chan, int nr_of_samples )
 // ----------------------------------------------------------------------------
 
 bool SpidrController::getDacOut( int  dev_nr,
-				 int *dacout_val,
-				 int  nr_of_samples )
+                 int *dacout_val,
+                 int  nr_of_samples )
 {
   // Get (an) ADC sample(s) of a Medipix3 device's 'DACOut' output
   int chan = dev_nr; // Assume this is how they are connected to the ADC
@@ -1401,18 +1415,18 @@ bool SpidrController::setSpidrReg( int addr, int val, bool verify )
   if( this->requestSetInts( CMD_SET_SPIDRREG, 0, 2, data ) )
     {
       if( verify )
-	{
-	  int readval;
-	  if( !this->getSpidrReg( addr, &readval ) )
-	    return false;
-	  if( readval != val )
-	    {
-	      this->clearErrorString();
-	      _errString << "Verify failed: wrote " << hex
-			 << val << ", read " << readval << dec;
-	      return false;
-	    }
-	}
+    {
+      int readval;
+      if( !this->getSpidrReg( addr, &readval ) )
+        return false;
+      if( readval != val )
+        {
+          this->clearErrorString();
+          _errString << "Verify failed: wrote " << hex
+             << val << ", read " << readval << dec;
+          return false;
+        }
+    }
       return true;
     }
   return false;
@@ -1421,7 +1435,7 @@ bool SpidrController::setSpidrReg( int addr, int val, bool verify )
 // ----------------------------------------------------------------------------
 
  bool SpidrController::setSpidrRegBit( int addr, int bitnr, bool set,
-				       bool verify )
+                       bool verify )
 {
   if( bitnr < 0 || bitnr > 31 ) return false;
   int reg;
@@ -1439,7 +1453,7 @@ bool SpidrController::setSpidrReg( int addr, int val, bool verify )
 std::string SpidrController::dacNameMpx3( int dac_code )
 {
   int index = this->dacIndexMpx3( dac_code );
-  if( index < 0 ) return string( "????" ); 
+  if( index < 0 ) return string( "????" );
   return string( MPX3_DAC_TABLE[index].name );
 }
 
@@ -1448,7 +1462,7 @@ std::string SpidrController::dacNameMpx3( int dac_code )
 std::string SpidrController::dacNameMpx3rx( int dac_code )
 {
   int index = this->dacIndexMpx3rx( dac_code );
-  if( index < 0 ) return string( "????" ); 
+  if( index < 0 ) return string( "????" );
   return string( MPX3RX_DAC_TABLE[index].name );
 }
 
@@ -1494,14 +1508,14 @@ bool SpidrController::setPixelBit( int x, int y, unsigned int bitmask, bool b )
   if( b )
     {
       for( yi=ystart; yi<yend; ++yi )
-	for( xi=xstart; xi<xend; ++xi )
-	  _pixelConfig[yi][xi] |= bitmask;
+    for( xi=xstart; xi<xend; ++xi )
+      _pixelConfig[yi][xi] |= bitmask;
     }
   else
     {
       for( yi=ystart; yi<yend; ++yi )
-	for( xi=xstart; xi<xend; ++xi )
-	  _pixelConfig[yi][xi] &= ~bitmask;
+    for( xi=xstart; xi<xend; ++xi )
+      _pixelConfig[yi][xi] &= ~bitmask;
     }
 
   return true;
@@ -1523,8 +1537,8 @@ bool SpidrController::get3Ints( int cmd, int *data0, int *data1, int *data2 )
 // ----------------------------------------------------------------------------
 
 bool SpidrController::validXandY( int x,       int y,
-				  int *xstart, int *xend,
-				  int *ystart, int *yend )
+                  int *xstart, int *xend,
+                  int *ystart, int *yend )
 {
   if( x == ALL_PIXELS )
     {
@@ -1534,16 +1548,16 @@ bool SpidrController::validXandY( int x,       int y,
   else
     {
       if( x >= 0 && x <= 255 )
-	{
-	  *xstart = x;
-	  *xend   = x+1;
-	}
+    {
+      *xstart = x;
+      *xend   = x+1;
+    }
       else
-	{
-	  this->clearErrorString();
-	  _errString << "Invalid x coordinate: " << x;
-	  return false;
-	}
+    {
+      this->clearErrorString();
+      _errString << "Invalid x coordinate: " << x;
+      return false;
+    }
     }
   if( y == ALL_PIXELS )
     {
@@ -1553,16 +1567,16 @@ bool SpidrController::validXandY( int x,       int y,
   else
     {
       if( y >= 0 && y <= 255 )
-	{
-	  *ystart = y;
-	  *yend   = y+1;
-	}
+    {
+      *ystart = y;
+      *yend   = y+1;
+    }
       else
-	{
-	  this->clearErrorString();
-	  _errString << "Invalid y coordinate: " << y;
-	  return false;
-	}
+    {
+      this->clearErrorString();
+      _errString << "Invalid y coordinate: " << y;
+      return false;
+    }
     }
   return true;
 }
@@ -1589,7 +1603,7 @@ bool SpidrController::requestGetInt( int cmd, int dev_nr, int *dataword )
 // ----------------------------------------------------------------------------
 
 bool SpidrController::requestGetInts( int cmd, int dev_nr,
-				      int expected_ints, int *datawords )
+                      int expected_ints, int *datawords )
 {
   int req_len = (4+1)*4;
   _reqMsg[4] = htonl( *datawords ); // May contain an additional parameter!
@@ -1598,7 +1612,7 @@ bool SpidrController::requestGetInts( int cmd, int dev_nr,
     {
       int i;
       for( i=0; i<expected_ints; ++i )
-	datawords[i] = ntohl( _replyMsg[4+i] );
+    datawords[i] = ntohl( _replyMsg[4+i] );
       return true;
     }
   else
@@ -1612,8 +1626,8 @@ bool SpidrController::requestGetInts( int cmd, int dev_nr,
 // ----------------------------------------------------------------------------
 
 bool SpidrController::requestGetBytes( int cmd, int dev_nr,
-				       int expected_bytes,
-				       unsigned char *databytes )
+                       int expected_bytes,
+                       unsigned char *databytes )
 {
   int req_len = (4+1)*4;
   _reqMsg[4] = 0;
@@ -1621,7 +1635,7 @@ bool SpidrController::requestGetBytes( int cmd, int dev_nr,
   if( this->request( cmd, dev_nr, req_len, expected_len ) )
     {
       memcpy( static_cast<void *> (databytes),
-	      static_cast<void *> (&_replyMsg[4]), expected_bytes );
+          static_cast<void *> (&_replyMsg[4]), expected_bytes );
       return true;
     }
   else
@@ -1635,9 +1649,9 @@ bool SpidrController::requestGetBytes( int cmd, int dev_nr,
 // ----------------------------------------------------------------------------
 
 bool SpidrController::requestGetIntAndBytes( int cmd, int dev_nr,
-					     int *dataword,
-					     int expected_bytes,
-					     unsigned char *databytes )
+                         int *dataword,
+                         int expected_bytes,
+                         unsigned char *databytes )
 {
   // Send a message with 1 dataword, expect a reply with a dataword
   // and a number of bytes
@@ -1648,7 +1662,7 @@ bool SpidrController::requestGetIntAndBytes( int cmd, int dev_nr,
     {
       *dataword = ntohl( _replyMsg[4] );
       memcpy( static_cast<void *> (databytes),
-	      static_cast<void *> (&_replyMsg[5]), expected_bytes );
+          static_cast<void *> (&_replyMsg[5]), expected_bytes );
       return true;
     }
   else
@@ -1672,7 +1686,7 @@ bool SpidrController::requestSetInt( int cmd, int dev_nr, int dataword )
 // ----------------------------------------------------------------------------
 
 bool SpidrController::requestSetInts( int cmd, int dev_nr,
-				      int nwords, int *datawords )
+                      int nwords, int *datawords )
 {
   int req_len = (4 + nwords)*4;
   for( int i=0; i<nwords; ++i )
@@ -1684,14 +1698,14 @@ bool SpidrController::requestSetInts( int cmd, int dev_nr,
 // ----------------------------------------------------------------------------
 
 bool SpidrController::requestSetIntAndBytes( int cmd, int dev_nr,
-					     int dataword,
-					     int nbytes,
-					     unsigned char *bytes )
+                         int dataword,
+                         int nbytes,
+                         unsigned char *bytes )
 {
   int req_len = (4+1)*4 + nbytes;
   _reqMsg[4] = htonl( dataword );
   memcpy( static_cast<void *> (&_reqMsg[5]),
-	  static_cast<void *> (bytes), nbytes );
+      static_cast<void *> (bytes), nbytes );
   int expected_len = (4+1)*4;
   return this->request( cmd, dev_nr, req_len, expected_len );
 }
@@ -1699,7 +1713,7 @@ bool SpidrController::requestSetIntAndBytes( int cmd, int dev_nr,
 // ----------------------------------------------------------------------------
 
 bool SpidrController::request( int cmd,     int dev_nr,
-			       int req_len, int exp_reply_len )
+                   int req_len, int exp_reply_len )
 {
   _reqMsg[0] = htonl( cmd );
   _reqMsg[1] = htonl( req_len );
@@ -1737,7 +1751,7 @@ bool SpidrController::request( int cmd,     int dev_nr,
     {
       this->clearErrorString();
       _errString << "Unexpected reply length, got "
-		 << reply_len << ", expected at least " << exp_reply_len;
+         << reply_len << ", expected at least " << exp_reply_len;
       return false;
     }
   int err = ntohl( _replyMsg[2] ); // (Check 'err' before 'reply')
@@ -1746,7 +1760,7 @@ bool SpidrController::request( int cmd,     int dev_nr,
     {
       this->clearErrorString();
       _errString << "Error from SPIDR: " << this->spidrErrString( err )
-		 << " (0x" << hex << err << ")";
+         << " (0x" << hex << err << ")";
       return false;
     }
   int reply = ntohl( _replyMsg[0] );
@@ -1808,7 +1822,7 @@ std::string SpidrController::spidrErrString( int err )
 {
   std::string errstr;
   unsigned int errid = err & 0xFF;
-  
+
   if( errid >= (sizeof(ERR_STR)/sizeof(char*)) )
     errstr = "<unknown>";
   else
@@ -1820,9 +1834,9 @@ std::string SpidrController::spidrErrString( int err )
       errstr += ", ";
       // Error identifier is a number
       if( errid >= (sizeof(MPX3_ERR_STR)/sizeof(char*)) )
-	errstr += "<unknown>";
+    errstr += "<unknown>";
       else
-	errstr += MPX3_ERR_STR[errid];
+    errstr += MPX3_ERR_STR[errid];
     }
   else if( errid == ERR_MON_HARDW )
     {
@@ -1830,11 +1844,11 @@ std::string SpidrController::spidrErrString( int err )
       errstr += ", ";
       // Error identifier is a bitmask
       for( int bit=0; bit<8; ++bit )
-	if( errid & (1<<bit) )
-	  {
-	    errstr += SPIDR_ERR_STR[bit];
-	    errstr += " ";
-	  }
+    if( errid & (1<<bit) )
+      {
+        errstr += SPIDR_ERR_STR[bit];
+        errstr += " ";
+      }
     }
   else if( errid == ERR_FLASH_STORAGE )
     {
@@ -1842,9 +1856,9 @@ std::string SpidrController::spidrErrString( int err )
       errstr += ", ";
       // Error identifier is a number
       if( errid >= (sizeof(STORE_ERR_STR)/sizeof(char*)) )
-	errstr += "<unknown>";
+    errstr += "<unknown>";
       else
-	errstr += STORE_ERR_STR[errid];
+    errstr += STORE_ERR_STR[errid];
     }
 
   return errstr;

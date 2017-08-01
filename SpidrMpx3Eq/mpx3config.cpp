@@ -269,7 +269,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
     // Other OMR
     if ( item == __ALL || item == __decodeFrames ) spidrdaq->setDecodeFrames(  getDecodeFrames() );
     if ( item == __ALL || item == __pixelDepth || item == __readBothCounters ) {
-        spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters() ); // third parameter : true = read two counters
+        spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), false, getReadBothCounters() ); // third parameter : true = read two counters
         //qDebug() << "both cntr : " << getReadBothCounters();
     }
     if ( item == __ALL || item == __pixelDepth ) spidrdaq->setPixelDepth( getPixelDepth() );
@@ -350,7 +350,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
     // Other OMR
     if( item == __ALL || item == __decodeFrames ) spidrdaq->setDecodeFrames(  getDecodeFrames() );
     if( item == __ALL || item == __pixelDepth || item == __readBothCounters ) {
-        spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters() ); // third parameter : true = read two counters
+        spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), false, getReadBothCounters() ); // third parameter : true = read two counters
         //qDebug() << "both cntr : " << getReadBothCounters();
     }
     if( item == __ALL || item == __pixelDepth ) spidrdaq->setPixelDepth( getPixelDepth() );
