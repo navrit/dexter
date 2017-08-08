@@ -1,6 +1,7 @@
 #include "mpx3gui.h"
 #include <QApplication>
 #include <QtGui/QOpenGLFunctions>
+#include "websocketserver.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,6 +17,8 @@ int main(int argc, char *argv[])
     //format.setStencilBufferSize(8);
     format.setVersion(3, 3 );
     QSurfaceFormat::setDefaultFormat(format);
+
+    webSocketServer server(1234);
 
     //! Instantiate the main class
     Mpx3GUI w;
