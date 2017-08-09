@@ -599,9 +599,7 @@ bool SpidrController::setTpFrequency( bool enable, int freq_mhz,
 
   // Configure the TP pulse length: in units of 25ns
   if( pulse_width > 0 )
-    {
-      this->setSpidrReg( SPIDRMPX3_TP_LENGTH_I, pulse_width );
-    }
+    this->setSpidrReg( SPIDRMPX3_TP_LENGTH_I, pulse_width );
 
   return this->setSpidrRegBit( SPIDRMPX3_MPX3_CTRL_I, SPIDRMPX3_TP_SWITCH_BIT,
                    enable, true );
