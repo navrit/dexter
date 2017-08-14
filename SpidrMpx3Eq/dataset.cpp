@@ -273,12 +273,12 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
 
     //! Error checking
     // Should always be an exact multiple of 256x256 (128kB) or 260x260 (~130kB) (256+2*extraPixels)^2 exactly
-    tsize_t tTotalDataSize = width * height * SAMPLES_PER_PIXEL * sizeof( uint32_t );
-    if (!((tTotalDataSize % 131072) == 0 || (tTotalDataSize % 133128) == 0)){
-        qDebug() << "[ERROR] TIFF size check FAILED : " <<  tTotalDataSize;
-    } /*else {
-        qDebug() << "[INFO] TIFF size check passed : " <<  tTotalDataSize;
-    }*/
+//    tsize_t tTotalDataSize = width * height * SAMPLES_PER_PIXEL * sizeof( uint32_t );
+//    if (!((tTotalDataSize % 131072) == 0 || (tTotalDataSize % 133128) == 0)){
+//        qDebug() << "[ERROR] TIFF size check FAILED : " <<  tTotalDataSize;
+//    } /*else {
+//        qDebug() << "[INFO] TIFF size check passed : " <<  tTotalDataSize;
+//    }*/
 
     if (spatialOnly){
         edgePixelMagicNumber = 1;
@@ -2237,11 +2237,6 @@ unsigned int Dataset::setLayer(int *data, int threshold){
     unsigned int overflowCntr = 0;
 
     int layerIndex = getLayerIndex(threshold);
-
-    if (data == nullptr) {
-        qDebug() << "WTF IS THIS SHIEEEET";
-        return 0;
-    }
 
     for(int i = 0; i < m_nFrames*m_nx*m_ny;i++) {
 

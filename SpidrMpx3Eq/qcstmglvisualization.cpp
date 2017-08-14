@@ -547,9 +547,9 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
             !(ui->saveLineEdit->text().isEmpty())
             &&
             !isSaveAllFramesChecked() // if it's checked the last was already saved
-            )
-    {
-        _mpx3gui->save_data(true);
+            ) {
+        QString selectedFileType = ui->saveFileComboBox->currentText();
+        _mpx3gui->save_data(true, 0, selectedFileType);
     }
 
     _takingData = false;

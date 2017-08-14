@@ -95,7 +95,7 @@ private:
     // compactSPIDR layout
     std::vector<int> _MPX3RX_ORIENTATION = std::vector< int > {Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL, Dataset::orientationTtBRtL};
     std::vector<QPoint> _MPX3RX_LAYOUT = std::vector<QPoint> {QPoint(1, 1), QPoint(1, 0), QPoint(0, 0), QPoint(0, 1)};
-    int mode = 0;
+    int mode = 0; //! Summing/integral or 'normal' mode
     //QApplication * _coreApp;
     Ui::Mpx3GUI * _ui;
     QVector<QShortcut *> _shortcutsSwitchPages;
@@ -132,7 +132,7 @@ public:
     Dataset* getOriginalDataset(){return originalSet;}
     void rebuildCurrentSets(int x, int y, int framesPerLayer);
 
-    bool isArmedOk(){return _armedOk;}
+    bool isArmedOk(){ return _armedOk; }
     void startupActions();
 
     void saveOriginalDataset();
@@ -175,7 +175,7 @@ public:
 
     QString getLoadButtonFilename();
 
-    int XYtoX(int x, int y, int dimX) { return y * dimX + x; };
+    int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
 
     bool establish_connection();
 

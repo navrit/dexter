@@ -44,7 +44,7 @@ void VoxelWidget::initializeGL(){
 void VoxelWidget::paintGL(){
   GLenum glErr;
   while((glErr = glGetError()) !=  GL_NO_ERROR)
-   std::cout << "pre-render-error! " << glErr << std::endl;
+   std::cout << "pre-render-error! " << glErr << "\n";
   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
   program.bind();
   glBindBuffer(GL_ARRAY_BUFFER, arrayBuffer);
@@ -98,7 +98,7 @@ void VoxelWidget::initShaders(){
       std::cout << "Couldn't link shaders!\n";
   }
   program.bind();
-  std::cout << program.log().toStdString() << std::endl;
+  std::cout << program.log().toStdString() << "\n";
 }
 
 void VoxelWidget::initUniforms(){
@@ -199,7 +199,7 @@ void VoxelWidget::keyPressEvent(QKeyEvent *event){
         rotations += QVector3D(0,0,360);
       break;
     case(Qt::Key_Space):
-      std::cout << "Reseting!" <<std::endl;
+      std::cout << "Reseting! \n";
       translation = QVector3D(0,0,-3);
       rotations = QVector3D(45,45,45);
       scale = 0.5;

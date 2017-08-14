@@ -238,9 +238,9 @@ unsigned int Mpx3GUI::addFrame(int * frame, int index, int layer) {
     //cout << "index : " << index << " | layer : " << layer << " | mode : " << mode << endl;
 
     unsigned int ovfcntr = 0;
-    if ( mode == 1 ) {
+    if ( mode == 1 ) { //! Summing/integral
         ovfcntr = getDataset()->sumFrame(frame, index, layer);
-    } else {
+    } else { //! Not summing, normal mode
         ovfcntr = getDataset()->setFrame(frame, index, layer);
     }
     return ovfcntr;
@@ -249,13 +249,11 @@ unsigned int Mpx3GUI::addFrame(int * frame, int index, int layer) {
 unsigned int Mpx3GUI::addLayer(int * data, int layer) {
 
     unsigned int ovfcntr = 0;
-    if (mode == 1) {
+    if (mode == 1) { //! Summing/integral
         ovfcntr = getDataset()->addLayer(data, layer);
-    }
-    else {
+    } else { //! Not summing, normal mode
         ovfcntr = getDataset()->setLayer(data, layer);
     }
-    //emit reload_layer(layer);
     return ovfcntr;
 }
 
@@ -315,7 +313,7 @@ bool Mpx3GUI::setTestPulses() {
                 if (pix.second == 0) {
                     //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
                     spidrcontrol->configCtpr( devId, pix.first, 1 );
-                    spidrcontrol->setCtpr( devId );
+                    spidrcontrol->setCtpr( devId ); //! TODO Move this out of the loop?
                 }
 
                 spidrcontrol->configPixelMpx3rx(pix.first,
@@ -984,8 +982,10 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         //! Build the filename+path string up by adding  "/", the current UTC date in ISO format and ".bin"
         filename = path;
         filename.append("/");
-        filename.append(QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
-        //! if saving all frames, append the frame Id too (more than 1 frame may be saved within 1 second)
+        filename.append( QString::number( QDateTime::currentMSecsSinceEpoch()) );
+        //! if saving all frames, append the frame Id too (more than 1 frame may be saved within 1 ms)
+        //!
+        //! TODO extend this using QRunnable (QThreadPool) and a buffer so it works at >1000Hz
         if ( getVisualization()->isSaveAllFramesChecked() ) {
             filename.append( QString("_%1").arg(frameId) );
         }
@@ -1011,7 +1011,6 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
             selectedFilter = ASCII_FILES;
         }
 
-
     }
 
     //! Send data to be saved by the relevant function with the correct arguments etc.
@@ -1030,7 +1029,7 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
     } else if (selectedFilter == ASCII_FILES) {
         getDataset()->toASCII(filename);
     } else {
-        getDataset()->saveBIN(filename);
+        getDataset()->toTIFF(filename, false);
     }
 
     if (!requestPath){
@@ -1044,8 +1043,8 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
     } else {
         // Autosave
 
-        // Clear dataset
-        getDataset()->clear();
+        // You don't need to clear the dataset, that's handled by the "mode" (0 = not summing / 1 = summing)
+        //getDataset()->clear();
 
         // Not good for high speed without some buffer system
         //saveMetadataToJSON(filename);
@@ -1220,6 +1219,7 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
 
     return;
 }
+
 void Mpx3GUI::set_mode_integral(){
     if(mode != 1){
         mode = 1;
@@ -1333,8 +1333,8 @@ void Mpx3GUI::on_actionExit_triggered()
     if ( getConfig()->isConnected() ) {
         on_actionDisconnect_triggered( false );
 
-        // Save data --> dialogue
-        save_data(false);
+//        // Save data --> dialogue
+//        save_data(false);
     }
 
     emit exitApp( 0 );
