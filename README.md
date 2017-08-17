@@ -12,20 +12,19 @@ Steps to get this repository up and running and developers information (formerly
 * Configuration
 * Dependencies
     * Qt 5.7.0+
-          * https://www.qt.io/download-open-source/#section-2
+        * 5.7.0 and 5.7.1 tested. It shouldn't matter if you use a later version
+        * https://www.qt.io/download-open-source/#section-2
     * GCC 64 bit
-          * In /usr/bin
+        * In /usr/bin
     * dlib (19.0+)
-          * Compile http://dlib.net/compile.html
-          * Copy folder to /home/asi/opt - so dlib-19.1/ is in that folder. Otherwise Qt won't be able to find dlib and you'll get errors.
+        * Compile http://dlib.net/compile.html
     * Boost (1.60+)
     * Phidget (21)
-          * http://www.phidgets.com/docs/OS_-_Linux
+        * http://www.phidgets.com/docs/OS_-_Linux
     * Openblas 
     * Lapack
-    * ICU http://apps.icu-project.org/icu-jsp/downloadPage.jsp?ver=56.1&base=c&svn=release-56-1
-          * Download then extract to top level system folder (/)
-
+    * ICU 
+        * http://apps.icu-project.org/icu-jsp/downloadPage.jsp?ver=56.1&base=c&svn=release-56-1
 
 ```
 #!sh
@@ -60,18 +59,14 @@ sudo apt-get autoremove
 ```
 
 
-* Deployment instructions
-
 ### Contribution guidelines ###
 
-* Writing tests
+* Contact me
 
-### Who do I talk to? ###
+### Current owner ###
 
 * Navrit Bal
     * navrit@amscins.com
-* John Idarraga 
-    * (Not anymore)
 
 -------------------------------------------------------------
 ## Release Notes
