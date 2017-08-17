@@ -87,12 +87,12 @@ sudo apt-get autoremove
 * 1.4.0
     * 2017/07/21
     * New feature - Threshold scan
-    * To be extended for spectroscopic units
+        * To be extended for spectroscopic units
 * 1.3.1
     * 2017/07/18
     * Save both TIFFs at once
     * Threshold scan in development
-* 2017/06/13
+    * 2017/06/13
     * Minor bugfix - save as text file with all thresholds
 * 1.3.0
     * 2017/05/30
