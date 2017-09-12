@@ -97,8 +97,10 @@ void thresholdScan::startScan()
     //! Integrating frames?
     if (framesPerStep > 1) {
         _mpx3gui->set_summing(true);
+        qDebug() << "[INFO] Set summing: true";
     } else {
         _mpx3gui->set_summing(false);
+        qDebug() << "[INFO] Set summing: false";
     }
 
     //! Print header to log box and start timer
