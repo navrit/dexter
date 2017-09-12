@@ -14,7 +14,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
         QT += core gui
 }
 QT += network opengl multimedia multimediawidgets websockets
-CONFIG   +=  c++11 debug_and_release
+CONFIG   +=  c++14 debug_and_release
 
 # Testing visualization:
 QT += datavisualization
