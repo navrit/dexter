@@ -12,20 +12,19 @@ Steps to get this repository up and running and developers information (formerly
 * Configuration
 * Dependencies
     * Qt 5.7.0+
-          * https://www.qt.io/download-open-source/#section-2
+        * 5.7.0 and 5.7.1 tested. It shouldn't matter if you use a later version
+        * https://www.qt.io/download-open-source/#section-2
     * GCC 64 bit
-          * In /usr/bin
+        * In /usr/bin
     * dlib (19.0+)
-          * Compile http://dlib.net/compile.html
-          * Copy folder to /home/asi/opt - so dlib-19.1/ is in that folder. Otherwise Qt won't be able to find dlib and you'll get errors.
+        * Compile http://dlib.net/compile.html
     * Boost (1.60+)
     * Phidget (21)
-          * http://www.phidgets.com/docs/OS_-_Linux
+        * http://www.phidgets.com/docs/OS_-_Linux
     * Openblas 
     * Lapack
-    * ICU http://apps.icu-project.org/icu-jsp/downloadPage.jsp?ver=56.1&base=c&svn=release-56-1
-          * Download then extract to top level system folder (/)
-
+    * ICU 
+        * http://apps.icu-project.org/icu-jsp/downloadPage.jsp?ver=56.1&base=c&svn=release-56-1
 
 ```
 #!sh
@@ -60,21 +59,73 @@ sudo apt-get autoremove
 ```
 
 
-* Deployment instructions
-
 ### Contribution guidelines ###
 
-* Writing tests
+* Contact me
 
-### Who do I talk to? ###
+### Current owner ###
 
 * Navrit Bal
     * navrit@amscins.com
-* John Idarraga 
-    * (Not anymore)
 
 -------------------------------------------------------------
+## Release Notes
 
+
+* 1.6.1
+    * 2017/08/14
+    * Autosave bugfix and minor improvements
+* 1.6.0
+    * 2017/08/09
+    * Henk’s Double Counter workaround in LEON software
+* 1.5.0
+    * 2017/08/01
+    * New major chip feature. Test pulses works!
+* 1.4.1
+    * 2017/07/21
+    * Minor bug fix - Threshold scan - number of frames = 1
+* 1.4.0
+    * 2017/07/21
+    * New feature - Threshold scan
+        * To be extended for spectroscopic units
+* 1.3.1
+    * 2017/07/18
+    * Save both TIFFs at once
+    * Threshold scan in development
+    * 2017/06/13
+    * Minor bugfix - save as text file with all thresholds
+* 1.3.0
+    * 2017/05/30
+    * SpidrMpx3Lib big update
+    * Speed tweaking
+    * Added alpha feature - threshold scan
+* 1.2.4
+    * 2017/05/21
+    * Minor bug fix - keyboard shortcut fix
+* 1.2.3
+    * 2017/05/17
+    * Major bug fix - SpidrMpx3Lib fix (crash on connection)
+* 1.2.2
+    * 2017/05/12
+    * Minor bug fix - keyboard shortcut
+* 1.2.1
+    * 2017/05/11
+    * Various keyboard shortcuts for GUI automation added
+* 1.2.0
+    * 2017/04/24
+    * Developer mode added
+    * Autosave improved
+    * Icon fix
+    * Updated Author information
+* 1.1.0
+    * 2017/03/22
+    * Equalisation bug fix
+* 1.0.0
+    * 2017/03/20
+    * First release version
+
+
+-------------------------------------------------------------
 
 # Developers Notes
 Author: Amber van Keeken (primary) & Navrit Bal (notes)
