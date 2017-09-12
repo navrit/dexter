@@ -196,6 +196,7 @@ public:
 signals:
     void dataChanged();
     void data_cleared();
+    void data_zeroed();
     void hist_added(int);
     void hist_changed(int);
     /*void reload_layer(int layer);
@@ -224,6 +225,7 @@ public slots:
     void on_shortcutsSwithPages();
     void generateFrame(); //! Debugging function to generate data when not connected
     void clear_data(bool clearStatusBar = true);
+    void zero_data();
     void save_data(bool requestPath, int frameId = 0, QString selectedFileType = "");
     void open_data(bool saveOriginal = true);
     void open_data_with_path(bool saveOriginal = true, bool requestPath = false, QString path = "");

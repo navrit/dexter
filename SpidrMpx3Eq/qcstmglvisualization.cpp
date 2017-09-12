@@ -782,6 +782,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect(ui->gradientSelector, SIGNAL(activated(int)), this, SLOT(setGradient(int)));
     connect(ui->generateDataButton, SIGNAL(clicked()), _mpx3gui, SLOT(generateFrame()));
     connect(_mpx3gui, SIGNAL(data_cleared()), this, SLOT(on_clear()));
+    connect(_mpx3gui, SIGNAL(data_zeroed()), this, SLOT(on_zero()));
     //connect(_mpx3gui, SIGNAL(frame_added(int)), this, SLOT(on_frame_added(int)));//TODO specify which layer.
     //connect(_mpx3gui, SIGNAL(hist_added(int)), this, SLOT(on_hist_added(int)));
     //connect(_mpx3gui, SIGNAL(hist_changed(int)),this, SLOT(on_hist_changed(int)));
@@ -1214,6 +1215,12 @@ void QCstmGLVisualization::on_clear(){
 
     // Why can't I call reload_all_layers() here without it crsahing? !??!?!??!?!?!
     //on_reload_all_layers();
+}
+
+void QCstmGLVisualization::on_zero()
+{
+    ui->histPlot->clear();
+    ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset());
 }
 
 void QCstmGLVisualization::availible_gradients_changed(QStringList gradients){

@@ -200,13 +200,15 @@ void thresholdScan::resumeTHScan()
         //! Save the current dataset ----------------------------------------------
         _mpx3gui->getDataset()->toTIFF(makePath(), false); //! Save raw TIFF
 
+        //! Clear the dataset -----------------------------------------------------
+        _mpx3gui->getDataset()->zero();
+
+
         update_timeGUI();
-        startDataTakingThread();
         //! Increment iteration counter -------------------------------------------
         iteration++;
 
-        //! Clear the dataset -----------------------------------------------------
-        _mpx3gui->getDataset()->clear();
+        startDataTakingThread();
 
     } else {
 

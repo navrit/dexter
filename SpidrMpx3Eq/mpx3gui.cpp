@@ -354,7 +354,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect(_ui->actionSave_data, SIGNAL(triggered(bool)), this, SLOT(save_data(bool)));
     connect(_ui->actionSave_Equalization, SIGNAL(triggered()), _ui->equalizationWidget, SLOT(SaveEqualization()));
     connect(_ui->actionOpen_data, SIGNAL(triggered()), this, SLOT(open_data()));
-    connect(_ui->actionClear_data, SIGNAL(triggered()), this, SLOT(clear_data()));
+    connect(_ui->actionClear_data, SIGNAL(triggered()), this, SLOT(zero_data()));
     connect(_ui->actionClear_configuration, SIGNAL(triggered()), this, SLOT(clear_configuration()) );
 
     connect(_ui->actionDeveloper_mode, SIGNAL(triggered()), this, SLOT(developerMode()));
@@ -1286,16 +1286,20 @@ void Mpx3GUI::clear_data(bool clearStatusBar) {
 
     getDataset()->clear();
     //    _ui->dqeTab->clearDataAndPlots(true);
-    //getVisualization()->cle
     emit data_cleared();
     this->setWindowTitle( _softwareName);
 
     if ( clearStatusBar )
         emit sig_statusBarAppend("Clear data","orange");
 
+}
 
-    //getVisualization()->on_fullRangeRadio_toggled();
-
+void Mpx3GUI::zero_data()
+{
+    getDataset()->zero();
+    emit data_zeroed();
+    this->setWindowTitle( _softwareName);
+    emit sig_statusBarAppend("Zeroed data", "orange");
 }
 
 // Change me when adding extra views???
