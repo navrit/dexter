@@ -267,12 +267,16 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
     if ( item == __ALL || item == __gainMode ) spidrcontrol->setGainMode( deviceIndex, getGainMode() );
 
     // Other OMR
-    if ( item == __ALL || item == __decodeFrames ) spidrdaq->setDecodeFrames(  getDecodeFrames() );
-    if ( item == __ALL || item == __pixelDepth || item == __readBothCounters ) {
-        spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), false, getReadBothCounters() ); // third parameter : true = read two counters
-        //qDebug() << "both cntr : " << getReadBothCounters();
+    if ( item == __ALL || item == __decodeFrames ) spidrdaq->setDecodeFrames(  getDecodeFrames() ); //! This is not necessary, why would anyone ever not decode frames...
+//    if ( item == __ALL || item == __pixelDepth || item == __readBothCounters ) {
+//        spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), false, getReadBothCounters() ); // third parameter : true = read two counters
+//        qDebug() << "Both counters : " << getReadBothCounters() << " - Pixel depth:" << getPixelDepth();
+//    }
+    if ( item == __ALL || item == __pixelDepth || item == __readBothCounters) {
+        spidrdaq->setPixelDepth( getPixelDepth() );
+        spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), false, getReadBothCounters() );
+        qDebug() << "Both counters : " << getReadBothCounters() << " - Pixel depth:" << getPixelDepth();
     }
-    if ( item == __ALL || item == __pixelDepth ) spidrdaq->setPixelDepth( getPixelDepth() );
 
     // Packet size reports NOT IMPLEMENTED in the Leon software
     //if ( item == __ALL || item == __maxPacketSize ) spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
