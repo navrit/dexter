@@ -11,8 +11,8 @@
 // ----------------------------------------------------------------------------
 
 ReceiverThreadC::ReceiverThreadC( int *ipaddr,
-                int  port,
-                QObject *parent )
+				int  port,
+				QObject *parent )
   : _rowCnt( 0 ),
     _rowPixels( MPX_PIXEL_COLUMNS ),
     _framePtr( (u64 *)_frameBuffer[0] ),
@@ -70,178 +70,178 @@ void ReceiverThreadC::readDatagrams()
       // Parse the data in the received UDP packet
       pixelpkt = (u64 *) _recvBuffer;
       for( i=0; i<recvd_sz/sizeof(u64); ++i, ++pixelpkt )
-    {
+	{
 #ifdef ALLOW_BIGENDIAN_OPTION
-      if( _bigEndian )
-        {
-          // Reverse the byte order
-          char *bytes = (char *) &pixelword;
-          char *p     = (char *) pixelpkt;
-          for( int i=0; i<8; ++i )
-        bytes[i] = p[7-i];
-          *pixelpkt = pixelword;
-        }
+	  if( _bigEndian )
+	    {
+	      // Reverse the byte order
+	      char *bytes = (char *) &pixelword;
+	      char *p     = (char *) pixelpkt;
+	      for( int i=0; i<8; ++i )
+		bytes[i] = p[7-i];
+	      *pixelpkt = pixelword;
+	    }
 #endif // ALLOW_BIGENDIAN_OPTION
 
-      type = (*pixelpkt) & PKT_TYPE_MASK;
-      copy = true;
+	  type = (*pixelpkt) & PKT_TYPE_MASK;
+	  copy = true;
 
-      switch( type )
-        {
-        case PIXEL_DATA_SOR:
-          if( _rowPixels < MPX_PIXEL_COLUMNS )
-        {
-          // Lost some pixels of the previous row?
-          _pixelsLost             += MPX_PIXEL_COLUMNS - _rowPixels;
-          _pixelsLostFrame[_head] += MPX_PIXEL_COLUMNS - _rowPixels;
-        }
-          // Assume SOF may come in a next packet (so out of order),
-          // so outcommented the following if-statement
-          // (seen 2 Feb 2017, Compact-SPIDR with MPX3 quadboard:
-          //  SPIDR: Firmware 0019A6 (Date 1608231422), Software 1607200A)
-          //if( _rowCnt == 0 )
-          //  ++_rowCnt; // Must've missed SOF
-          ++_rowCnt;
-          if( _rowCnt > MPX_PIXEL_ROWS )
-        {
-          // Can't be correct.. what to do?
-          // Start filling a next frame
-          this->nextFrame();
-        }
-          _rowPixels = 0;
-          _rowPixels += pix_per_word;
-          break;
+	  switch( type )
+	    {
+	    case PIXEL_DATA_SOR:
+	      if( _rowPixels < MPX_PIXEL_COLUMNS )
+		{
+		  // Lost some pixels of the previous row?
+		  _pixelsLost             += MPX_PIXEL_COLUMNS - _rowPixels;
+		  _pixelsLostFrame[_head] += MPX_PIXEL_COLUMNS - _rowPixels;
+		}
+	      // Assume SOF may come in a next packet (so out of order),
+	      // so outcommented the following if-statement
+	      // (seen 2 Feb 2017, Compact-SPIDR with MPX3 quadboard:
+	      //  SPIDR: Firmware 0019A6 (Date 1608231422), Software 1607200A)
+	      //if( _rowCnt == 0 )
+	      //  ++_rowCnt; // Must've missed SOF
+	      ++_rowCnt;
+	      if( _rowCnt > MPX_PIXEL_ROWS )
+		{
+		  // Can't be correct.. what to do?
+		  // Start filling a next frame
+		  this->nextFrame();
+		}
+	      _rowPixels = 0;
+	      _rowPixels += pix_per_word;
+	      break;
 
-        case PIXEL_DATA_EOR:
-          _rowPixels += pix_per_word;
-          if( _rowPixels < MPX_PIXEL_COLUMNS )
-        {
-          // Lost some pixels of this row?
-          _pixelsLost             += MPX_PIXEL_COLUMNS - _rowPixels;
-          _pixelsLostFrame[_head] += MPX_PIXEL_COLUMNS - _rowPixels;
-          // Don't count them again at next SOR
-          _rowPixels = MPX_PIXEL_COLUMNS;
-        }
-          if( _rowCnt >= MPX_PIXEL_ROWS )
-        {
-          // Can't be correct.. what to do?
-          _rowPixels = 0;
-          _rowPixels += pix_per_word;
+	    case PIXEL_DATA_EOR:
+	      _rowPixels += pix_per_word;
+	      if( _rowPixels < MPX_PIXEL_COLUMNS )
+		{
+		  // Lost some pixels of this row?
+		  _pixelsLost             += MPX_PIXEL_COLUMNS - _rowPixels;
+		  _pixelsLostFrame[_head] += MPX_PIXEL_COLUMNS - _rowPixels;
+		  // Don't count them again at next SOR
+		  _rowPixels = MPX_PIXEL_COLUMNS;
+		}
+	      if( _rowCnt >= MPX_PIXEL_ROWS )
+		{
+		  // Can't be correct.. what to do?
+		  _rowPixels = 0;
+		  _rowPixels += pix_per_word;
 
-          // Start filling a next frame
-          this->nextFrame();
-        }
-          break;
+		  // Start filling a next frame
+		  this->nextFrame();
+		}
+	      break;
 
-        case PIXEL_DATA_SOF:
-          if( _rowPixels < MPX_PIXEL_COLUMNS )
-        {
-          // Lost some pixels ?
-          _pixelsLost             += MPX_PIXEL_COLUMNS - _rowPixels;
-          _pixelsLostFrame[_head] += MPX_PIXEL_COLUMNS - _rowPixels;
-        }
-          ++_rowCnt;
-          _rowPixels = 0;
-          _rowPixels += pix_per_word;
-          break;
+	    case PIXEL_DATA_SOF:
+	      if( _rowPixels < MPX_PIXEL_COLUMNS )
+		{
+		  // Lost some pixels ?
+		  _pixelsLost             += MPX_PIXEL_COLUMNS - _rowPixels;
+		  _pixelsLostFrame[_head] += MPX_PIXEL_COLUMNS - _rowPixels;
+		}
+	      ++_rowCnt;
+	      _rowPixels = 0;
+	      _rowPixels += pix_per_word;
+	      break;
 
-        case PIXEL_DATA_EOF:
-          _rowPixels += pix_per_word;
-          if( _rowPixels < MPX_PIXEL_COLUMNS )
-        {
-          // Lost some pixels ?
-          _pixelsLost             += MPX_PIXEL_COLUMNS - _rowPixels;
-          _pixelsLostFrame[_head] += MPX_PIXEL_COLUMNS - _rowPixels;
-          // Don't count them again at next SOF/SOR
-          _rowPixels = MPX_PIXEL_COLUMNS;
-        }
-          // Extract the FLAGS word
-          _frameFlags[_head] = (((*pixelpkt) & FRAME_FLAGS_MASK) >>
-                    FRAME_FLAGS_SHIFT);
-          break;
+	    case PIXEL_DATA_EOF:
+	      _rowPixels += pix_per_word;
+	      if( _rowPixels < MPX_PIXEL_COLUMNS )
+		{
+		  // Lost some pixels ?
+		  _pixelsLost             += MPX_PIXEL_COLUMNS - _rowPixels;
+		  _pixelsLostFrame[_head] += MPX_PIXEL_COLUMNS - _rowPixels;
+		  // Don't count them again at next SOF/SOR
+		  _rowPixels = MPX_PIXEL_COLUMNS;
+		}
+	      // Extract the FLAGS word
+	      _frameFlags[_head] = (((*pixelpkt) & FRAME_FLAGS_MASK) >>
+				    FRAME_FLAGS_SHIFT);
+	      break;
 
-        case PIXEL_DATA_MID:
-          _rowPixels += pix_per_word;
-          if( _rowPixels >= MPX_PIXEL_COLUMNS )
-        {
-          // Unexpected: did we miss a SOR ?
-          ++_rowCnt;
-          if( _rowCnt > MPX_PIXEL_ROWS )
-            {
-              // Can't be correct.. what to do?
-              // Start filling a next frame
-              this->nextFrame();
-            }
-          _rowPixels = 0;
-          _rowPixels += pix_per_word;
-        }
-          break;
+	    case PIXEL_DATA_MID:
+	      _rowPixels += pix_per_word;
+	      if( _rowPixels >= MPX_PIXEL_COLUMNS )
+		{
+		  // Unexpected: did we miss a SOR ?
+		  ++_rowCnt;
+		  if( _rowCnt > MPX_PIXEL_ROWS )
+		    {
+		      // Can't be correct.. what to do?
+		      // Start filling a next frame
+		      this->nextFrame();
+		    }
+		  _rowPixels = 0;
+		  _rowPixels += pix_per_word;
+		}
+	      break;
 
-        case INFO_HEADER_SOF:
-        case INFO_HEADER_MID:
-        case INFO_HEADER_EOF:
-          {
-        char *p = (char *) pixelpkt;
-        if( type == INFO_HEADER_SOF )
-          _infoIndex = 0;
-        if( _infoIndex <= 256/8-4 )
-          for( int i=0; i<4; ++i, ++_infoIndex )
-            _infoHeader[_infoIndex] = p[i];
-        if( type == INFO_HEADER_EOF )
-          {
-            // Format and interpret:
-            // e.g. OMR has to be mirrored per byte;
-            // in order to distinguish CounterL from CounterH readout
-            // it's sufficient to look at the last byte, containing
-            // the three operation mode bits
-            char byt = _infoHeader[_infoIndex-1];
-            // Mirroring of byte with bits 'abcdefgh':
-            byt = ((byt & 0xF0)>>4) | ((byt & 0x0F)<<4);// efghabcd
-            byt = ((byt & 0xCC)>>2) | ((byt & 0x33)<<2);// ghefcdab
-            byt = ((byt & 0xAA)>>1) | ((byt & 0x55)<<1);// hgfedcba
-            if( (byt & 0x7) == 0x4 ) // 'Read CounterH'
-              _isCounterhFrame[_head] = true;
-            else
-              _isCounterhFrame[_head] = false;
-            // Mirror all bytes...
-            //for( int i=0; i<256/8; ++i )
-            //  {
-            //char byt = _infoHeader[i];
-            // Mirroring of byte with bits 'abcdefgh':
-            //byt = ((byt & 0xF0)>>4) | ((byt & 0x0F)<<4);// efghabcd
-            //byt = ((byt & 0xCC)>>2) | ((byt & 0x33)<<2);// ghefcdab
-            //byt = ((byt & 0xAA)>>1) | ((byt & 0x55)<<1);// hgfedcba
-            //_infoHeader[i] = byt;
-            //  }
-          }
-          }
-          // Skip this packet
-          copy = false;
-          break;
+	    case INFO_HEADER_SOF:
+	    case INFO_HEADER_MID:
+	    case INFO_HEADER_EOF:
+	      {
+		char *p = (char *) pixelpkt;
+		if( type == INFO_HEADER_SOF )
+		  _infoIndex = 0;
+		if( _infoIndex <= 256/8-4 )
+		  for( int i=0; i<4; ++i, ++_infoIndex )
+		    _infoHeader[_infoIndex] = p[i];
+		if( type == INFO_HEADER_EOF )
+		  {
+		    // Format and interpret:
+		    // e.g. OMR has to be mirrored per byte;
+		    // in order to distinguish CounterL from CounterH readout
+		    // it's sufficient to look at the last byte, containing
+		    // the three operation mode bits
+		    char byt = _infoHeader[_infoIndex-1];
+		    // Mirroring of byte with bits 'abcdefgh':
+		    byt = ((byt & 0xF0)>>4) | ((byt & 0x0F)<<4);// efghabcd
+		    byt = ((byt & 0xCC)>>2) | ((byt & 0x33)<<2);// ghefcdab
+		    byt = ((byt & 0xAA)>>1) | ((byt & 0x55)<<1);// hgfedcba
+		    if( (byt & 0x7) == 0x4 ) // 'Read CounterH'
+		      _isCounterhFrame[_head] = true;
+		    else
+		      _isCounterhFrame[_head] = false;
+		    // Mirror all bytes...
+		    //for( int i=0; i<256/8; ++i )
+		    //  {
+			//char byt = _infoHeader[i];
+			// Mirroring of byte with bits 'abcdefgh':
+			//byt = ((byt & 0xF0)>>4) | ((byt & 0x0F)<<4);// efghabcd
+			//byt = ((byt & 0xCC)>>2) | ((byt & 0x33)<<2);// ghefcdab
+			//byt = ((byt & 0xAA)>>1) | ((byt & 0x55)<<1);// hgfedcba
+			//_infoHeader[i] = byt;
+		    //  }
+		  }
+	      }
+	      // Skip this packet
+	      copy = false;
+	      break;
 
-        default:
-          // Skip this packet
-          copy = false;
-          break;
-        }
+	    default:
+	      // Skip this packet
+	      copy = false;
+	      break;
+	    }
 
-      if( copy )
-        {
-          *_framePtr = *pixelpkt;
-          ++_framePtr;
-          _frameSize[_head] += 8;
-          // Don't count 'padding' (empty/unused) pixel data
-          if( _rowPixels > MPX_PIXEL_COLUMNS )
-        _pixelsReceived += (pix_per_word -
-                    (_rowPixels-MPX_PIXEL_COLUMNS));
-          else
-        _pixelsReceived += pix_per_word;
+	  if( copy )
+	    {
+	      *_framePtr = *pixelpkt;
+	      ++_framePtr;
+	      _frameSize[_head] += 8;
+	      // Don't count 'padding' (empty/unused) pixel data
+	      if( _rowPixels > MPX_PIXEL_COLUMNS )
+		_pixelsReceived += (pix_per_word -
+				    (_rowPixels-MPX_PIXEL_COLUMNS));
+	      else
+		_pixelsReceived += pix_per_word;
 
-          if( type == PIXEL_DATA_EOF )
-        // Start filling a next frame
-        this->nextFrame();
-        }
-    }
+	      if( type == PIXEL_DATA_EOF )
+		// Start filling a next frame
+		this->nextFrame();
+	    }
+	}
     }
 }
 
@@ -255,7 +255,7 @@ void ReceiverThreadC::nextFrame()
       // Lost whole pixel rows ?
       _pixelsLost += (MPX_PIXEL_ROWS-_rowCnt) * MPX_PIXEL_COLUMNS;
       _pixelsLostFrame[_head] +=
-    (MPX_PIXEL_ROWS-_rowCnt) * MPX_PIXEL_COLUMNS;
+	(MPX_PIXEL_ROWS-_rowCnt) * MPX_PIXEL_COLUMNS;
       _rowCnt = MPX_PIXEL_ROWS;
     }
 

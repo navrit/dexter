@@ -123,7 +123,7 @@ int main( int argc, char *argv[] )
   // ----------------------------------------------------------
   //spidrcontrol.setMaxPacketSize( 9000 ); // Not available on Compact-SPIDR
 
-  int  pixdepth = 12;
+  int  pixdepth = 24;
   bool two_counter_readout = false;
   bool two_counter_readout_soft = true;
 
@@ -281,6 +281,7 @@ int main( int argc, char *argv[] )
 	spidrcontrol.setCsmSpm( i, 0 );
 	spidrcontrol.setGainMode( i, 1 );
       }
+  spidrcontrol.setLutEnable( false );
   //spidrcontrol.setTpFrequency( true, 10000*1000 );
   //return 0;
 
@@ -306,7 +307,7 @@ int main( int argc, char *argv[] )
   for( i=0; i<1; ++i )
     {
       //cin >> ch;
-      cout << "Auto-trig " << i << endl;
+      cout << "Auto-trig " << i << ", ntrigs=" << ntrigs << endl;
 
       //if( 1 )//i==4 ) spidrcontrol.setDac( devnr, 0, i*51 );
       //spidrcontrol.setMaxPacketSize( 512+i*64 );
