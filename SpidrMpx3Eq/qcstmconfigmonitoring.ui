@@ -163,6 +163,9 @@ QGroupBox::title {
           <property name="enabled">
            <bool>false</bool>
           </property>
+          <property name="toolTip">
+           <string>There's no reason to ever disable this.</string>
+          </property>
           <property name="text">
            <string>Decode frames</string>
           </property>
