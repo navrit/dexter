@@ -1402,8 +1402,26 @@ void Mpx3GUI::on_actionRevert_triggered(bool) {
 void Mpx3GUI::on_actionAbout_triggered(bool){
     QMessageBox msgBox;
     msgBox.setWindowTitle("About");
+    msgBox.setTextFormat(Qt::RichText);
+    QString newLine = "<br>";
 
-    QString newLine = "\n";
+
+    QString frameworks = QString("This program uses the following frameworks and libraries with their respective licences listed:")
+                        + newLine
+                        + QString("<ul>")
+                        + QString("<li> Qt - Commercial - <a href='https://doc.qt.io/qt-5/licensing.html'>doc.qt.io/qt-5/licensing.html</a> </li>")
+                        + QString("<li> Boost - Boost - <a href='http://www.boost.org/LICENSE_1_0.txt'>boost.org/LICENSE_1_0.txt</a> </li>")
+                        + QString("<li> Dlib - Boost - <a href='http://dlib.net/license.html'>dlib.net/license.html</a> </li>")
+                        + QString("<li> Phidgets - GNU LGPL - <a href='http://phidgets.com/docs/Software_License'>phidgets.com/docs/Software_License</a> </li>")
+                        + QString("<li> OpenBLAS - BSD - <a href='http://openblas.net'>openblas.net</a> </li>")
+                        + QString("<li> LAPACK - BSD-new - <a href='http://netlib.org/lapack/#_licensing'>netlib.org/lapack/#_licensing</a> </li>")
+                        + QString("<li> ICU - BSD - <a href='http://unicode.org/copyright.html#License'>unicode.org/copyright.html#License</a> </li>")
+                        + QString("<li> LibTiff - BSD like - <a href='http://simplesystems.org/libtiff/misc.html'>simplesystems.org/libtiff/misc.html</a> </li>")
+                        + QString("</ul>")
+                        + newLine
+                        + QString("For the BSD licensed software, see the BSD license : <a href='https://opensource.org/licenses/BSD-3-Clause'>opensource.org/licenses/BSD-3-Clause</a>");
+
+
 
     QString msg = QString("Version: ") + _softwareVersion +
             newLine +
@@ -1420,11 +1438,16 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
             newLine +
             newLine +
             QString("Authors: ") +
-            QString("John Idarraga (2014-2017), Navrit Bal (2016-), Amber van Keeken (2016), Roel Deckers, Cyrano Chatziantoniou") +
+            QString("Navrit Bal (2016-), John Idarraga (2014-2017), Amber van Keeken (2016), Roel Deckers, Cyrano Chatziantoniou") +
             newLine +
             newLine +
             QString("Contributors: ") +
             QString("Frans Schreuder, Henk Boterenbrood, Martin van Beuzekom") +
+            newLine +
+            newLine +
+            newLine +
+            frameworks +
+            newLine +
             newLine +
             newLine +
             QString("ASI B.V. All rights reserved.") ;
