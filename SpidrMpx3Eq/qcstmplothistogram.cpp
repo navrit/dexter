@@ -153,20 +153,25 @@ void QCstmPlotHistogram::setPlot(int index, Histogram *hist){
 
     //timer.start();
     QCPGraph *graph = this->graph(index);
-    graph->clearData();
-    int i;
-    int sample, oldSample = hist->atIndex(0)-1;
-    for( i = 0; i < hist->size(); i++){
-        sample = hist->atIndex(i);
-        if(sample != oldSample){
-            graph->addData(i*hist->getWidth()+hist->getMin(), ((double)sample));
-            oldSample = sample;
+    if (graph != nullptr) {
+        graph->clearData();
+        int i;
+        int sample, oldSample = hist->atIndex(0)-1;
+        for( i = 0; i < hist->size(); i++){
+            sample = hist->atIndex(i);
+            if(sample != oldSample){
+                graph->addData(i*hist->getWidth()+hist->getMin(), ((double)sample));
+                oldSample = sample;
+            }
         }
-    }
-    graph->addData(i*hist->getWidth()+hist->getMin(), ((double)hist->atIndex(i-1)));
-    graph->rescaleAxes();
-    replot(QCustomPlot::rpQueued);
-    //qDebug() << "Histogram plot took " << timer.elapsed() << "milliseconds";
+        graph->addData(i*hist->getWidth()+hist->getMin(), ((double)hist->atIndex(i-1)));
+        graph->rescaleAxes();
+        replot(QCustomPlot::rpQueued);
+        //qDebug() << "Histogram plot took " << timer.elapsed() << "milliseconds";
+    } /*else {
+        qDebug() << "Histogram nullptr, apparently this isn't a problem"; //! TODO Fix this?
+    }*/
+
 }
 
 int QCstmPlotHistogram::getCurrentThreshold()
