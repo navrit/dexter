@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <QDialog>
 #include <QDebug>
+#include <QMessageBox>
 
 QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     QWidget(parent),
@@ -1620,6 +1621,10 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
     QAction* selectedItem = contextMenu.exec(position);
     if(!_mpx3gui->getConfig()->isConnected())
         return;
+    if (!_mpx3gui->equalizationLoaded()) {
+        QMessageBox::information(0,"Error","An equalisation must be loaded in order to mask a pixel. Failed operation/");
+        return;
+    }
     if(selectedItem == &mask){
         if ( _mpx3gui->getConfig()->getColourMode() ) {
 

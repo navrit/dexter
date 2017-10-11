@@ -64,16 +64,16 @@ public:
     void SetPixelReactiveThl(int pixId, int thl, lowHighSel = __ADJ_L);
     int GetPixelAdj(int pixId, lowHighSel = __ADJ_L);
     int GetPixelReactiveThl(int pixId, lowHighSel = __ADJ_L);
-    void maskPixel(int pixId){
+    void maskPixel(int pixId) {
         maskedPixels.insert(pixId);
     }
-    void unmaskPixel(int pixId){
+    void unmaskPixel(int pixId) {
         if(maskedPixels.contains(pixId)) maskedPixels.remove(pixId);
     }
-    int GetNMaskedPixels(){
+    int GetNMaskedPixels() {
         return maskedPixels.size();
     }
-    QSet<int> GetMaskedPixels(){
+    QSet<int> GetMaskedPixels() {
         return maskedPixels;
     }
     int * GetAdjustementMatrix(lowHighSel sel = __ADJ_L);
