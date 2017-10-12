@@ -13,7 +13,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 } else {
         QT += core gui
 }
-QT += network opengl multimedia multimediawidgets websockets
+QT += network opengl multimedia multimediawidgets
 CONFIG   +=  c++14 debug_and_release
 
 # Testing visualization:
@@ -39,8 +39,6 @@ CONFIG(release, debug|release) {
 }
 
 DEFINES    += EXPERT_MODE
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 INCLUDEPATH += ../SpidrMpx3Lib
 
@@ -93,8 +91,7 @@ SOURCES += main.cpp \
     optionsdialog.cpp \
     qcstmsteppermotor.cpp \
     imagecalculator.cpp \
-    thresholdscan.cpp \
-    websocketserver.cpp
+    thresholdscan.cpp
 SOURCES += mpx3gui.cpp
 SOURCES += barchart.cpp
 SOURCES += ThlScan.cpp
@@ -135,8 +132,7 @@ HEADERS += mpx3gui.h \
     optionsdialog.h \
     qcstmsteppermotor.h \
     imagecalculator.h \
-    thresholdscan.h \
-    websocketserver.h
+    thresholdscan.h
 HEADERS += barchart.h
 HEADERS += ThlScan.h
 HEADERS += DataTakingThread.h
