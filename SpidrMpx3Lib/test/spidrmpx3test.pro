@@ -32,8 +32,8 @@ CONFIG(release, debug|release) {
   LIBS       += -L../../Release
 }
 
-INCLUDEPATH += ../SpidrMpx3Lib
 LIBS += -lSpidrMpx3Lib
 
-SOURCES += getaddr.cpp spidrmpx3test.cpp #spidrmpx3test-bias.cpp
+INCLUDEPATH += ..
 
+SOURCES += getaddr.cpp spidrmpx3test.cpp

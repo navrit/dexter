@@ -232,7 +232,7 @@ void QCstmThreshold::StartCalibration() {
 
 void QCstmThreshold::SetupSignalsAndSlots() {
 
-    //std::cout << "[QCstmThreshold] Connecting signals and slots" << std::endl;
+    //std::cout << "[QCstmThreshold] Connecting signals and slots \n";
     connect( ui->thlCalibStart, SIGNAL(clicked()), this, SLOT( StartCalibration() ) );
 
 }
@@ -412,7 +412,7 @@ void QCstmThreshold::on_pushButtonSave_clicked()
         QMap<double, QCPData>::const_iterator itr  = dm->begin();
         QMap<double, QCPData>::const_iterator itrE = dm->end();
         for ( ; itr != itrE ; itr++ ) {
-            ofs << (*itr).key << "\t" << (*itr).value << std::endl;
+            ofs << (*itr).key << "\t" << (*itr).value << "\n";
         }
         ofs.close();
     }

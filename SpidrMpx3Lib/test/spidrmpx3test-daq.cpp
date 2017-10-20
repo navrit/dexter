@@ -1,9 +1,4 @@
-#ifdef WIN32
 #include <windows.h>
-#else
-#include <unistd.h>
-#endif
-#define Sleep(ms) usleep(ms*1000)
 #include <iostream>
 #include <iomanip>
 using namespace std;
@@ -96,12 +91,14 @@ int main( int argc, char *argv[] )
         devnr = i;
         break;
       }
+#ifdef USE_SPIDRDAQ
   cout << "==> Using device number " << devnr << endl;
+#endif
 
   // ----------------------------------------------------------
 #ifdef USE_SPIDRDAQ
   // Added readout mask to constructor (7 Apr 2016)
-  SpidrDaq spidrdaq( &spidrcontrol, 0x7 );
+  SpidrDaq spidrdaq( &spidrcontrol, 0x1 );
   cout << "SpidrDaq: ";
   for( int i=0; i<4; ++i )
     cout << spidrdaq.ipAddressString( i ) << " ";
@@ -126,8 +123,9 @@ int main( int argc, char *argv[] )
   // ----------------------------------------------------------
   //spidrcontrol.setMaxPacketSize( 9000 ); // Not available on Compact-SPIDR
 
-  int  pixdepth = 12;
-  bool two_counter_readout = true;
+  int  pixdepth = 24;
+  bool two_counter_readout = false;
+  bool two_counter_readout_soft = true;
 
   // DO AFTER PIXEL CONFIGURATION! :
   //spidrcontrol.setPixelDepth(devnr, pixdepth, two_counter_readout);
@@ -177,14 +175,14 @@ int main( int argc, char *argv[] )
         if( row < 255 ) spidrcontrol.setPixelMaskMpx3rx(row + 1, row);
         if( row < 254 ) spidrcontrol.setPixelMaskMpx3rx(row + 2, row);
       }
-
+        
       // Set test-bit on a number of pixels
       bool testbit = true;
       for( col=128; col<130; ++col )
       //for( col=2; col<3; ++col )
       //for( col=64; col<128; ++col )
         {
-          spidrcontrol.configPixelMpx3rx( col, col+2/*ALL_PIXELS*/,
+          spidrcontrol.configPixelMpx3rx( col, /*col+2*/ALL_PIXELS,
                                           0, 0, testbit );
           if( testbit )
             spidrcontrol.configCtpr( devnr, col, 1 );
@@ -251,14 +249,14 @@ int main( int argc, char *argv[] )
             }
           spidrdaq.setLutEnable( true );
           spidrcontrol.setLutEnable( false );
-        }
+	}
 #else
       // Upload the pixel configuration to all devices
       for( int i=0; i<devcnt; ++i )
-        if( devids[i] != 0 && (mask & (1<<i)) )
-          if( !spidrcontrol.setPixelConfigMpx3rx(i, read_back_pixconf) )
-            cout << "### Pixel config " << i << ": "
-                 << spidrcontrol.errorString() << endl;
+	if( devids[i] != 0 && (mask & (1<<i)) )
+	  if( !spidrcontrol.setPixelConfigMpx3rx(i, read_back_pixconf) )
+	    cout << "### Pixel config " << i << ": "
+		 << spidrcontrol.errorString() << endl;
 #endif // USE_SPIDRDAQ
     }
   else
@@ -271,23 +269,29 @@ int main( int argc, char *argv[] )
   //spidrdaq.stop(); return 0;
 #endif
 
-  spidrcontrol.setPixelDepth( devnr, pixdepth, two_counter_readout );
-  spidrcontrol.setPs( devnr, 3 );
-  spidrcontrol.setPolarity(devnr, true);
-  spidrcontrol.setEqThreshH(devnr, 0);
-  //spidrcontrol.setColourMode(devnr, 1);
-  spidrcontrol.setCsmSpm(devnr, 0);
-  spidrcontrol.setGainMode( devnr, 1 );
-  spidrcontrol.setTpSwitch( 1, 1000000 );
+  for( int i=0; i<devcnt; ++i )
+    if( devids[i] != 0 && (mask & (1<<i)) )
+      {
+	spidrcontrol.setPixelDepth( i, pixdepth, two_counter_readout,
+				    two_counter_readout_soft );
+	spidrcontrol.setPs( i, 3 );
+	spidrcontrol.setPolarity( i, true );
+	spidrcontrol.setEqThreshH( i, 0 );
+	//spidrcontrol.setColourMode( i, 1 );
+	spidrcontrol.setCsmSpm( i, 0 );
+	spidrcontrol.setGainMode( i, 1 );
+      }
+  spidrcontrol.setLutEnable( false );
+  //spidrcontrol.setTpFrequency( true, 10000*1000 );
   //return 0;
 
   // Choose 'deadtime' such that it is enough to read out the frame(s)
   int trig_mode        = SHUTTERMODE_AUTO; // Auto-trigger mode
   int nr_of_triggers   = ntrigs;
   int trig_freq_hz     = freq_hz;
-  int trig_deadtime_us = 4000;
-  int trig_width_us = 10000;
-  //  (int) ((double)1000000.0/(double)trig_freq_hz - (double)trig_deadtime_us);
+  int trig_deadtime_us = 50000;// 4000;
+  int trig_width_us = 1000;
+    //(int) ((double)1000000.0/(double)trig_freq_hz - (double)trig_deadtime_us);
   if( trig_width_us <= 0 )
     cout << "### Frequency too high for current deadtime="
          << trig_deadtime_us << " us" << endl;
@@ -303,7 +307,7 @@ int main( int argc, char *argv[] )
   for( i=0; i<1; ++i )
     {
       //cin >> ch;
-      cout << "Auto-trig " << i << endl;
+      cout << "Auto-trig " << i << ", ntrigs=" << ntrigs << endl;
 
       //if( 1 )//i==4 ) spidrcontrol.setDac( devnr, 0, i*51 );
       //spidrcontrol.setMaxPacketSize( 512+i*64 );
@@ -390,7 +394,7 @@ int main( int argc, char *argv[] )
 
   //cin >> ch;
   spidrdaq.stop();
-#endif
+#endif    
   return 0;
 }
 

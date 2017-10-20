@@ -97,8 +97,10 @@ void thresholdScan::startScan()
     //! Integrating frames?
     if (framesPerStep > 1) {
         _mpx3gui->set_summing(true);
+        qDebug() << "[INFO] Set summing: true";
     } else {
         _mpx3gui->set_summing(false);
+        qDebug() << "[INFO] Set summing: false";
     }
 
     //! Print header to log box and start timer
@@ -198,13 +200,15 @@ void thresholdScan::resumeTHScan()
         //! Save the current dataset ----------------------------------------------
         _mpx3gui->getDataset()->toTIFF(makePath(), false); //! Save raw TIFF
 
+        //! Clear the dataset -----------------------------------------------------
+        _mpx3gui->getDataset()->zero();
+
+
         update_timeGUI();
-        startDataTakingThread();
         //! Increment iteration counter -------------------------------------------
         iteration++;
 
-        //! Clear the dataset -----------------------------------------------------
-        _mpx3gui->getDataset()->clear();
+        startDataTakingThread();
 
     } else {
 

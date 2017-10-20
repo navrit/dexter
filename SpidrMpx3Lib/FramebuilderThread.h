@@ -32,7 +32,7 @@ class FramebuilderThread : public QThread
 
  public:
   FramebuilderThread( std::vector<ReceiverThread *> recvrs,
-		    QObject *parent = 0 );
+                    QObject *parent = 0 );
   virtual ~FramebuilderThread();
 
   void   stop();
@@ -131,11 +131,11 @@ class FramebuilderThread : public QThread
   int           _decodedFrame[NR_OF_DEVICES][256*256];
 
   virtual int mpx3RawToPixel( unsigned char *raw_bytes,
-			      int            nbytes,
-			      int           *pixels,
-			      int            counter_depth,
-			      //int          device_type,
-			      bool           compress );
+                              int            nbytes,
+                              int           *pixels,
+                              int            counter_depth,
+                              //int          device_type,
+                              bool           is_counterh ); //compress );
 };
 
 #endif // FILEWRITERTHREAD_H

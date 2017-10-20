@@ -2,12 +2,6 @@
 #include <windows.h>
 #else
 #include <unistd.h>
-#define Sleep(ms) usleep(ms*1000)
-#endif
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
 #endif
 #include <iostream>
 #include <iomanip>
@@ -61,13 +55,13 @@ int main( int argc, char *argv[] )
   for( volts=0; volts<110; ++volts )
     {
       if( !spidrctrl.setBiasVoltage( volts ) )
-    cout << "###setBiasVoltage " << volts << ": "
-         << spidrctrl.errorString() << endl;
+	cout << "###setBiasVoltage " << volts << ": "
+	     << spidrctrl.errorString() << endl;
       if( (volts % 10) == 0 ) cout << endl << setw(3) << volts << ": ";
 
       if( !spidrctrl.getBiasVoltage( &volts_adc ) )
-    cout << "###getBiasVoltage: "
-         << spidrctrl.errorString() << endl;
+	cout << "###getBiasVoltage: "
+	     << spidrctrl.errorString() << endl;
       cout << volts_adc << " ";
       Sleep( 300 );
     }
@@ -76,7 +70,7 @@ int main( int argc, char *argv[] )
   volts = 0;
   if( !spidrctrl.setBiasVoltage( volts ) )
     cout << "###setBiasVoltage " << volts << ": "
-     << spidrctrl.errorString() << endl;
+	 << spidrctrl.errorString() << endl;
 
   if( !spidrctrl.setBiasSupplyEna( false ) )
     cout << "###setBiasSupplyEna: " << spidrctrl.errorString() << endl;

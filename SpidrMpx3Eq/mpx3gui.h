@@ -71,7 +71,7 @@ class thresholdScan;
 #define TP_PERIOD 200000 //! In units of 25 ns. 200000 * 25 ns = 5 ms = 200 Hz
 
 const QString _softwareName = "ASI Dexter";
-const QString _softwareVersion = "1.6.0";
+const QString _softwareVersion = "1.6.2";
 
 namespace Ui {
 class Mpx3GUI;
@@ -95,7 +95,7 @@ private:
     // compactSPIDR layout
     std::vector<int> _MPX3RX_ORIENTATION = std::vector< int > {Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL, Dataset::orientationTtBRtL};
     std::vector<QPoint> _MPX3RX_LAYOUT = std::vector<QPoint> {QPoint(1, 1), QPoint(1, 0), QPoint(0, 0), QPoint(0, 1)};
-    int mode = 0;
+    int mode = 0; //! Summing/integral or 'normal' mode
     //QApplication * _coreApp;
     Ui::Mpx3GUI * _ui;
     QVector<QShortcut *> _shortcutsSwitchPages;
@@ -132,7 +132,7 @@ public:
     Dataset* getOriginalDataset(){return originalSet;}
     void rebuildCurrentSets(int x, int y, int framesPerLayer);
 
-    bool isArmedOk(){return _armedOk;}
+    bool isArmedOk(){ return _armedOk; }
     void startupActions();
 
     void saveOriginalDataset();
@@ -175,7 +175,7 @@ public:
 
     QString getLoadButtonFilename();
 
-    int XYtoX(int x, int y, int dimX) { return y * dimX + x; };
+    int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
 
     bool establish_connection();
 
@@ -196,6 +196,7 @@ public:
 signals:
     void dataChanged();
     void data_cleared();
+    void data_zeroed();
     void hist_added(int);
     void hist_changed(int);
     /*void reload_layer(int layer);
@@ -224,6 +225,7 @@ public slots:
     void on_shortcutsSwithPages();
     void generateFrame(); //! Debugging function to generate data when not connected
     void clear_data(bool clearStatusBar = true);
+    void zero_data();
     void save_data(bool requestPath, int frameId = 0, QString selectedFileType = "");
     void open_data(bool saveOriginal = true);
     void open_data_with_path(bool saveOriginal = true, bool requestPath = false, QString path = "");

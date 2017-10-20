@@ -9,11 +9,17 @@
 
 // Version identifier: year, month, day, release number
 
+// - Fixes for 24-bit readout in the framebuilders' mpx3RawToPixel() and
+//   processFrame() functions.
+// - Fix for SPIDR-LUT decoded row counter (firmware bug) in
+//   FramebuilderThreadC::mpx3RawToPixel(): just count EOR pixelpackets instead.
+const int   VERSION_ID = 0x17092900;
+
 // - Fix 24-bit bug in ReceiverThread::setPixelDepth().
 // - Tolerate SOF out-of-order in ReceiverThreadC::readDatagrams().
 // - Use row counter in EOR/EOF pixel packets in
 //   FramebuilderThreadC::mpx3RawToPixel().
-const int   VERSION_ID = 0x17020200;
+//const int VERSION_ID = 0x17020200;
 
 //const int VERSION_ID = 0x16082900; // Add frameFlags()
 //const int VERSION_ID = 0x16061400; // Add info header processing

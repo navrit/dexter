@@ -198,7 +198,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked)
         // Speed
         ui->speedSpinBox->setMinimum( parsMap[motorid].minVel );
         ui->speedSpinBox->setMaximum( parsMap[motorid].maxVel );
-        ui->speedSpinBox->setValue( parsMap[motorid].maxVel * 0.8 );        // Could be .vel
+        ui->speedSpinBox->setValue( parsMap[motorid].maxVel * 0.08 );        // Could be .vel
         QString speedS = "Set velocity from ";
         speedS += QString::number( parsMap[motorid].minVel , 'f', 1 );
         speedS += " to ";
@@ -208,7 +208,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked)
         // Acc
         ui->accelerationSpinBox->setMinimum( parsMap[motorid].minAcc );
         ui->accelerationSpinBox->setMaximum( parsMap[motorid].maxAcc );
-        ui->accelerationSpinBox->setValue( parsMap[motorid].maxAcc * 0.2 ); // Could be .acc
+        ui->accelerationSpinBox->setValue( parsMap[motorid].maxAcc * 0.002 ); // Could be .acc
         QString accS = "Set acceleration from ";
         accS += QString::number( parsMap[motorid].minAcc , 'f', 1 );
         accS += " to ";

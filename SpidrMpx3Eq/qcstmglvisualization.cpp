@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <QDialog>
 #include <QDebug>
+#include <QMessageBox>
 
 QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     QWidget(parent),
@@ -547,9 +548,9 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
             !(ui->saveLineEdit->text().isEmpty())
             &&
             !isSaveAllFramesChecked() // if it's checked the last was already saved
-            )
-    {
-        _mpx3gui->save_data(true);
+            ) {
+        QString selectedFileType = ui->saveFileComboBox->currentText();
+        _mpx3gui->save_data(true, 0, selectedFileType);
     }
 
     _takingData = false;
@@ -782,6 +783,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect(ui->gradientSelector, SIGNAL(activated(int)), this, SLOT(setGradient(int)));
     connect(ui->generateDataButton, SIGNAL(clicked()), _mpx3gui, SLOT(generateFrame()));
     connect(_mpx3gui, SIGNAL(data_cleared()), this, SLOT(on_clear()));
+    connect(_mpx3gui, SIGNAL(data_zeroed()), this, SLOT(on_zero()));
     //connect(_mpx3gui, SIGNAL(frame_added(int)), this, SLOT(on_frame_added(int)));//TODO specify which layer.
     //connect(_mpx3gui, SIGNAL(hist_added(int)), this, SLOT(on_hist_added(int)));
     //connect(_mpx3gui, SIGNAL(hist_changed(int)),this, SLOT(on_hist_changed(int)));
@@ -1216,6 +1218,12 @@ void QCstmGLVisualization::on_clear(){
     //on_reload_all_layers();
 }
 
+void QCstmGLVisualization::on_zero()
+{
+    ui->histPlot->clear();
+    ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset());
+}
+
 void QCstmGLVisualization::availible_gradients_changed(QStringList gradients){
     ui->gradientSelector->clear();
     ui->gradientSelector->addItems(gradients);
@@ -1613,6 +1621,10 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
     QAction* selectedItem = contextMenu.exec(position);
     if(!_mpx3gui->getConfig()->isConnected())
         return;
+    if (!_mpx3gui->equalizationLoaded()) {
+        QMessageBox::information(0,"Error","An equalisation must be loaded in order to mask a pixel. Failed operation/");
+        return;
+    }
     if(selectedItem == &mask){
         if ( _mpx3gui->getConfig()->getColourMode() ) {
 

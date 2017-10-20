@@ -27,7 +27,7 @@ DataConsumerThread::DataConsumerThread(Mpx3GUI * mpx3gui, QObject * parent)
     // Circular buffer
     buffer = new int[ _bufferSize ];
     descriptor = 0;         // in number of integers
-    qDebug() << "[INFO] Consumer. Buffer size: " << _bufferSize;
+    qDebug() << "[INFO] Consumer. Buffer size: " << _bufferSize/1024.0/1024.0 << "Mb";
 
     // The Semaphores
     // _nFramesBuffer is the number of resources

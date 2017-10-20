@@ -283,6 +283,8 @@ public slots:
     void region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position);
     //!Called when the data is cleared. Clears all the plots and relevant combo-boxes.
     void on_clear();
+    //!Called when the data is zeroed out, the layers remain the same.
+    void on_zero();
     //!Called when the display range of the data is changed. (so the scale on the heatmap).
     void range_changed(QCPRange);
     void data_taking_finished(int);

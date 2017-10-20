@@ -238,9 +238,9 @@ unsigned int Mpx3GUI::addFrame(int * frame, int index, int layer) {
     //cout << "index : " << index << " | layer : " << layer << " | mode : " << mode << endl;
 
     unsigned int ovfcntr = 0;
-    if ( mode == 1 ) {
+    if ( mode == 1 ) { //! Summing/integral
         ovfcntr = getDataset()->sumFrame(frame, index, layer);
-    } else {
+    } else { //! Not summing, normal mode
         ovfcntr = getDataset()->setFrame(frame, index, layer);
     }
     return ovfcntr;
@@ -249,13 +249,11 @@ unsigned int Mpx3GUI::addFrame(int * frame, int index, int layer) {
 unsigned int Mpx3GUI::addLayer(int * data, int layer) {
 
     unsigned int ovfcntr = 0;
-    if (mode == 1) {
+    if (mode == 1) { //! Summing/integral
         ovfcntr = getDataset()->addLayer(data, layer);
-    }
-    else {
+    } else { //! Not summing, normal mode
         ovfcntr = getDataset()->setLayer(data, layer);
     }
-    //emit reload_layer(layer);
     return ovfcntr;
 }
 
@@ -286,6 +284,9 @@ bool Mpx3GUI::setTestPulses() {
     qDebug() << "[TEST PULSES] activeDevices length" << activeDevices.length();
 
     if ( _ui->equalizationWidget->equalizationHasBeenLoaded() ) {
+        QMap<int, Mpx3EqualizationResults *>  eqMap_L = _ui->equalizationWidget->getEqMap();
+        QMap<int, Mpx3EqualizationResults *>  eqMap_H = _ui->equalizationWidget->getEqMap();
+
         for ( int devId = 0 ; devId < activeDevices.length(); devId++ ) { //! TODO Make it work for quad
 
             SpidrController * spidrcontrol = GetSpidrController();
@@ -293,7 +294,10 @@ bool Mpx3GUI::setTestPulses() {
 
             pair<int, int> pix;
             bool testbit = true;
-            int testBitTrue = 0;
+            int testBitsOn = 0;
+
+            Mpx3EqualizationResults * eqResults_L = eqMap_L[devId];
+            Mpx3EqualizationResults * eqResults_H = eqMap_H[devId];
 
             spidrcontrol->setTpFrequency(true, TP_PERIOD, 40 ); //! Pulse frequency (millihertz) --> 200000 * 25 ns = 5 ms = 200 Hz  Pulse width: 40 --> 1us default
 
@@ -301,32 +305,22 @@ bool Mpx3GUI::setTestPulses() {
 
                 pix = XtoXY(i, __array_size_x);
 
-                //                //! Makes checkerboard pattern
-                //                if ( pix.first % 2 == 0 && pix.second % 2 == 0 ) {
-                //                    testbit = true;
-                //                    testBitTrue++;
-                //                    if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
-                //                } else {
-                //                    testbit = false;
-                //                    if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
-                //                }
-
-                testBitTrue++;
+                testBitsOn++;
                 if (pix.second == 0) {
                     //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
                     spidrcontrol->configCtpr( devId, pix.first, 1 );
-                    spidrcontrol->setCtpr( devId );
                 }
 
                 spidrcontrol->configPixelMpx3rx(pix.first,
                                                 pix.second,
-                                                _ui->equalizationWidget->getEqMap()[devId]->GetPixelAdj(i),
-                                                _ui->equalizationWidget->getEqMap()[devId]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
+                                                eqResults_L->GetPixelAdj(i),
+                                                eqResults_H->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
                                                 testbit);
             }
+            spidrcontrol->setCtpr( devId );
             qDebug() << "[TEST PULSES] CTPRs set on dev" << devId;
 
-            qDebug() << "[TEST PULSES] Number of pixels testBit ON : "<< testBitTrue;
+            qDebug() << "[TEST PULSES] Number of pixels testBit ON :"<< testBitsOn;
 
             spidrcontrol->setPixelConfigMpx3rx( devId );
 
@@ -360,7 +354,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect(_ui->actionSave_data, SIGNAL(triggered(bool)), this, SLOT(save_data(bool)));
     connect(_ui->actionSave_Equalization, SIGNAL(triggered()), _ui->equalizationWidget, SLOT(SaveEqualization()));
     connect(_ui->actionOpen_data, SIGNAL(triggered()), this, SLOT(open_data()));
-    connect(_ui->actionClear_data, SIGNAL(triggered()), this, SLOT(clear_data()));
+    connect(_ui->actionClear_data, SIGNAL(triggered()), this, SLOT(zero_data()));
     connect(_ui->actionClear_configuration, SIGNAL(triggered()), this, SLOT(clear_configuration()) );
 
     connect(_ui->actionDeveloper_mode, SIGNAL(triggered()), this, SLOT(developerMode()));
@@ -984,8 +978,10 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         //! Build the filename+path string up by adding  "/", the current UTC date in ISO format and ".bin"
         filename = path;
         filename.append("/");
-        filename.append(QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
-        //! if saving all frames, append the frame Id too (more than 1 frame may be saved within 1 second)
+        filename.append( QString::number( QDateTime::currentMSecsSinceEpoch()) );
+        //! if saving all frames, append the frame Id too (more than 1 frame may be saved within 1 ms)
+        //!
+        //! TODO extend this using QRunnable (QThreadPool) and a buffer so it works at >1000Hz
         if ( getVisualization()->isSaveAllFramesChecked() ) {
             filename.append( QString("_%1").arg(frameId) );
         }
@@ -1011,7 +1007,6 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
             selectedFilter = ASCII_FILES;
         }
 
-
     }
 
     //! Send data to be saved by the relevant function with the correct arguments etc.
@@ -1030,7 +1025,7 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
     } else if (selectedFilter == ASCII_FILES) {
         getDataset()->toASCII(filename);
     } else {
-        getDataset()->saveBIN(filename);
+        getDataset()->toTIFF(filename, false);
     }
 
     if (!requestPath){
@@ -1044,8 +1039,8 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
     } else {
         // Autosave
 
-        // Clear dataset
-        getDataset()->clear();
+        // You don't need to clear the dataset, that's handled by the "mode" (0 = not summing / 1 = summing)
+        //getDataset()->clear();
 
         // Not good for high speed without some buffer system
         //saveMetadataToJSON(filename);
@@ -1220,6 +1215,7 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
 
     return;
 }
+
 void Mpx3GUI::set_mode_integral(){
     if(mode != 1){
         mode = 1;
@@ -1290,16 +1286,20 @@ void Mpx3GUI::clear_data(bool clearStatusBar) {
 
     getDataset()->clear();
     //    _ui->dqeTab->clearDataAndPlots(true);
-    //getVisualization()->cle
     emit data_cleared();
     this->setWindowTitle( _softwareName);
 
     if ( clearStatusBar )
         emit sig_statusBarAppend("Clear data","orange");
 
+}
 
-    //getVisualization()->on_fullRangeRadio_toggled();
-
+void Mpx3GUI::zero_data()
+{
+    getDataset()->zero();
+    emit data_zeroed();
+    this->setWindowTitle( _softwareName);
+    emit sig_statusBarAppend("Zeroed data", "orange");
 }
 
 // Change me when adding extra views???
@@ -1333,8 +1333,8 @@ void Mpx3GUI::on_actionExit_triggered()
     if ( getConfig()->isConnected() ) {
         on_actionDisconnect_triggered( false );
 
-        // Save data --> dialogue
-        save_data(false);
+//        // Save data --> dialogue
+//        save_data(false);
     }
 
     emit exitApp( 0 );
@@ -1402,8 +1402,26 @@ void Mpx3GUI::on_actionRevert_triggered(bool) {
 void Mpx3GUI::on_actionAbout_triggered(bool){
     QMessageBox msgBox;
     msgBox.setWindowTitle("About");
+    msgBox.setTextFormat(Qt::RichText);
+    QString newLine = "<br>";
 
-    QString newLine = "\n";
+
+    QString frameworks = QString("This program uses the following frameworks and libraries with their respective licences listed:")
+                        + newLine
+                        + QString("<ul>")
+                        + QString("<li> Qt - Commercial - <a href='https://doc.qt.io/qt-5/licensing.html'>doc.qt.io/qt-5/licensing.html</a> </li>")
+                        + QString("<li> Boost - Boost - <a href='http://www.boost.org/LICENSE_1_0.txt'>boost.org/LICENSE_1_0.txt</a> </li>")
+                        + QString("<li> Dlib - Boost - <a href='http://dlib.net/license.html'>dlib.net/license.html</a> </li>")
+                        + QString("<li> Phidgets - GNU LGPL - <a href='http://phidgets.com/docs/Software_License'>phidgets.com/docs/Software_License</a> </li>")
+                        + QString("<li> OpenBLAS - BSD - <a href='http://openblas.net'>openblas.net</a> </li>")
+                        + QString("<li> LAPACK - BSD-new - <a href='http://netlib.org/lapack/#_licensing'>netlib.org/lapack/#_licensing</a> </li>")
+                        + QString("<li> ICU - BSD - <a href='http://unicode.org/copyright.html#License'>unicode.org/copyright.html#License</a> </li>")
+                        + QString("<li> LibTiff - BSD like - <a href='http://simplesystems.org/libtiff/misc.html'>simplesystems.org/libtiff/misc.html</a> </li>")
+                        + QString("</ul>")
+                        + newLine
+                        + QString("For the BSD licensed software, see the BSD license : <a href='https://opensource.org/licenses/BSD-3-Clause'>opensource.org/licenses/BSD-3-Clause</a>");
+
+
 
     QString msg = QString("Version: ") + _softwareVersion +
             newLine +
@@ -1420,11 +1438,16 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
             newLine +
             newLine +
             QString("Authors: ") +
-            QString("John Idarraga (2014-2017), Navrit Bal (2016-), Amber van Keeken (2016), Roel Deckers, Cyrano Chatziantoniou") +
+            QString("Navrit Bal (2016-), John Idarraga (2014-2017), Amber van Keeken (2016), Roel Deckers, Cyrano Chatziantoniou") +
             newLine +
             newLine +
             QString("Contributors: ") +
             QString("Frans Schreuder, Henk Boterenbrood, Martin van Beuzekom") +
+            newLine +
+            newLine +
+            newLine +
+            frameworks +
+            newLine +
             newLine +
             newLine +
             QString("ASI B.V. All rights reserved.") ;
