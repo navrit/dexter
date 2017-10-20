@@ -270,9 +270,12 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
     if ( item == __ALL || item == __decodeFrames ) spidrdaq->setDecodeFrames(  getDecodeFrames() );
     if ( item == __ALL || item == __pixelDepth || item == __readBothCounters ) {
         spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), false, getReadBothCounters() ); // third parameter : true = read two counters
-        //qDebug() << "both cntr : " << getReadBothCounters();
+        qDebug() << "SpidrControl Pixel Depth:" << getPixelDepth() << "Both counter:" << getReadBothCounters();
     }
-    if ( item == __ALL || item == __pixelDepth ) spidrdaq->setPixelDepth( getPixelDepth() );
+    if ( item == __ALL || item == __pixelDepth ) {
+        spidrdaq->setPixelDepth( getPixelDepth() );
+        qDebug() << "SpidrDAQ Pixel Depth:" << getPixelDepth();
+    }
 
     // Packet size reports NOT IMPLEMENTED in the Leon software
     //if ( item == __ALL || item == __maxPacketSize ) spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
