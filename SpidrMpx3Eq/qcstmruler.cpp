@@ -2,6 +2,8 @@
 #include <QPainter>
 #include <stdio.h>
 #include <QResizeEvent>
+#include "math.h"
+
 QCstmRuler::QCstmRuler(QWidget *parent) : QWidget(parent)
 {
     m_display_min.setX(0);
