@@ -26,10 +26,10 @@ class ReceiverThreadC : public ReceiverThread
 
  public:
   ReceiverThreadC( int     *ipaddr,
-		  int      port = 8192,
-		  QObject *parent = 0 );
+          int      port = 8192,
+          QObject *parent = 0 );
   virtual ~ReceiverThreadC();
-  
+
   virtual void readDatagrams();
   void         nextFrame();
   virtual int  dataSizeFrame()          { return _frameSize[_tail]; }
@@ -58,6 +58,7 @@ class ReceiverThreadC : public ReceiverThread
 
   // Statistics
   int     _pixelsReceived;
+  #pragma GCC diagnostic ignored "-Wreorder"
   int     _pixelsLost;
   int     _pixelsLostFrame[NR_OF_FRAMEBUFS];
 };

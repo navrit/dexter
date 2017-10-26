@@ -36,6 +36,16 @@ CONFIG(release, debug|release) {
     UI_DIR      = release
     DESTDIR     = ../Release
     LIBS       += -L../Release
+
+    QMAKE_CFLAGS_RELEASE -= -O1
+    QMAKE_CFLAGS_RELEASE -= -O2
+    QMAKE_CFLAGS_RELEASE *= -O3
+
+    QMAKE_CXXFLAGS_RELEASE -= -O1
+    QMAKE_CXXFLAGS_RELEASE -= -O2
+    QMAKE_CXXFLAGS_RELEASE *= -O3
+
+    CONFIG += warn_off
 }
 
 DEFINES    += EXPERT_MODE
