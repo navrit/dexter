@@ -91,15 +91,15 @@ SOURCES += main.cpp \
     optionsdialog.cpp \
     qcstmsteppermotor.cpp \
     imagecalculator.cpp \
-    thresholdscan.cpp
-SOURCES += mpx3gui.cpp
-SOURCES += barchart.cpp
-SOURCES += ThlScan.cpp
-SOURCES += DataTakingThread.cpp
-SOURCES += qcstmBHWindow.cpp
-SOURCES += qcstmBHdialog.cpp
-SOURCES += StepperMotorController.cpp
-SOURCES += qcustomplot.cpp
+    thresholdscan.cpp \
+    mpx3gui.cpp \
+    barchart.cpp \
+    ThlScan.cpp \
+    DataTakingThread.cpp \
+    qcstmBHWindow.cpp \
+    qcstmBHdialog.cpp \
+    StepperMotorController.cpp \
+    qcustomplot.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -132,14 +132,14 @@ HEADERS += mpx3gui.h \
     optionsdialog.h \
     qcstmsteppermotor.h \
     imagecalculator.h \
-    thresholdscan.h
-HEADERS += barchart.h
-HEADERS += ThlScan.h
-HEADERS += DataTakingThread.h
-HEADERS += qcstmBHWindow.h
-HEADERS += qcstmBHdialog.h
-HEADERS += StepperMotorController.h
-HEADERS += qcustomplot.h
+    thresholdscan.h \
+    barchart.h  \
+    ThlScan.h \
+    DataTakingThread.h \
+    qcstmBHWindow.h \
+    qcstmBHdialog.h \
+    StepperMotorController.h \
+    qcustomplot.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \
