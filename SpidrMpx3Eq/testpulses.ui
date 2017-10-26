@@ -38,6 +38,9 @@
      </item>
      <item row="1" column="1">
       <widget class="QSpinBox" name="spinBox_length">
+       <property name="toolTip">
+        <string>Default: 40 = 1us</string>
+       </property>
        <property name="maximum">
         <number>2147483647</number>
        </property>
@@ -106,6 +109,9 @@
      </item>
      <item row="2" column="1">
       <widget class="QSpinBox" name="spinBox_period">
+       <property name="toolTip">
+        <string>Default: 200000 = 5ms</string>
+       </property>
        <property name="maximum">
         <number>2147483647</number>
        </property>

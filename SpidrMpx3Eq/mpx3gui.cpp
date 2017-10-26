@@ -1056,7 +1056,7 @@ void Mpx3GUI::save_config(){
 }
 
 void Mpx3GUI::load_config(){
-    QString filename = QFileDialog::getOpenFileName(this, tr("Save config"), tr("."), tr("json files (*.json)"));
+    QString filename = QFileDialog::getOpenFileName(this, tr("Load config (DACs)"), tr("."), tr("json files (*.json)"));
     config->fromJsonFile(filename);
 
     // update the dacs

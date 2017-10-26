@@ -36,497 +36,13 @@ QGroupBox::title {
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout_5">
-     <item row="0" column="0">
-      <widget class="QGroupBox" name="groupBoxConfiguration">
-       <property name="toolTip">
-        <string>Detector configuration</string>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="title">
-        <string>Configuration</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-       <property name="flat">
-        <bool>false</bool>
-       </property>
-       <layout class="QGridLayout" name="gridLayout">
-        <item row="3" column="4">
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_6">
-          <property name="text">
-           <string>Gain Mode</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="5">
-         <widget class="QLabel" name="label_5">
-          <property name="toolTip">
-           <string>CSM SPM</string>
-          </property>
-          <property name="text">
-           <string>Charge Summing Mode</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="3">
-         <widget class="QComboBox" name="triggerModeCombo">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="9">
-         <widget class="QComboBox" name="polarityComboBox">
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_8">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shutter closed length in selected time units&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Shutter open length</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="9">
-         <widget class="QSpinBox" name="contRWFreq">
-          <property name="toolTip">
-           <string>ContinuousRW frequency (Hz)</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="maximum">
-           <number>1300</number>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="5" colspan="3">
-         <widget class="QLabel" name="label_23">
-          <property name="toolTip">
-           <string>Continuous Read/Write frequency (Hz)</string>
-          </property>
-          <property name="text">
-           <string>CRW freq (Hz)</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="9">
-         <widget class="QComboBox" name="pixelDepthCombo">
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="5" colspan="2">
-         <widget class="QLabel" name="label_17">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shutter closed length in selected time units&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Shutter down length</string>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="5">
-         <widget class="QLabel" name="label_19">
-          <property name="text">
-           <string>Time units</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="9">
-         <widget class="QCheckBox" name="decodeFramesCheckbox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="toolTip">
-           <string>There's no reason to ever disable this.</string>
-          </property>
-          <property name="text">
-           <string>Decode frames</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QSpinBox" name="triggerLengthSpinner">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="keyboardTracking">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>999999999</number>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="3">
-         <widget class="QCheckBox" name="ColourModeCheckBox">
-          <property name="toolTip">
-           <string>Fine pitch or spectroscopic (colour) mode.
-
-Detector dependant. If incorrect, you will see very obvious artifacts, 3/4 of the pixels exactly will be 0 if you select colour mode when using fine mode.</string>
-          </property>
-          <property name="text">
-           <string>Colour mode</string>
-          </property>
-          <property name="shortcut">
-           <string>C, M</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="5">
-         <widget class="QLabel" name="label_16">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Detector polarity. Normally positive for silicon.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If incorrectly set, you will get nearly no signal.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Polarity</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="5">
-         <widget class="QLabel" name="label_2">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pixel bitrate depth&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Pixel Depth</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0" colspan="2">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Operation Mode</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="3">
-         <widget class="QComboBox" name="gainModeCombobox">
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="3">
-         <widget class="QDoubleSpinBox" name="biasVoltageSpinner">
-          <property name="toolTip">
-           <string>Sets internal bias. To disable set a value of 0V.</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="decimals">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <double>150.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>100.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="9">
-         <widget class="QComboBox" name="mpx3ClockComboBox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="3">
-         <widget class="QSpinBox" name="nTriggersSpinner">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="keyboardTracking">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>999999999</number>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="9">
-         <widget class="QComboBox" name="csmSpmCombo">
-          <property name="toolTip">
-           <string>CSM SPM</string>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0" colspan="2">
-         <widget class="QLabel" name="label_20">
-          <property name="toolTip">
-           <string>Sets internal bias. To disable set a value of 0V.</string>
-          </property>
-          <property name="text">
-           <string>Bias voltage (V)</string>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="0">
-         <widget class="QLabel" name="label_11">
-          <property name="text">
-           <string>Detector IP Address</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_9">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of frames/triggers&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Number of Frames</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0" colspan="3">
-         <widget class="QCheckBox" name="readBothCountersCheckBox">
-          <property name="toolTip">
-           <string>Get either 2 thresholds per pixel or twice the acquisition speed per pixel</string>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-          <property name="text">
-           <string>Both counters</string>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="3">
-         <widget class="QLineEdit" name="ipLineEdit">
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-          <property name="frame">
-           <bool>true</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="placeholderText">
-           <string>0.0.0.0:0</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="5" colspan="3">
-         <widget class="QLabel" name="label_22">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Clock (MHz)</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="3">
-         <widget class="QComboBox" name="operationModeComboBox">
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="label_7">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>Trigger Mode</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="9">
-         <widget class="QSpinBox" name="triggerDowntimeSpinner">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>999999999</number>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="5">
-         <widget class="QCheckBox" name="LUTCheckbox">
-          <property name="toolTip">
-           <string>Lookup Table. Should be enabled by default.
-
-Moves the load of the LUT unit from the Desktop application to the FPGA.  This results in better performance</string>
-          </property>
-          <property name="text">
-           <string>LUT</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="9">
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
-          <item>
-           <widget class="QRadioButton" name="radioButtonS">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="layoutDirection">
-             <enum>Qt::RightToLeft</enum>
-            </property>
-            <property name="text">
-             <string>s</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioButtonMS">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="layoutDirection">
-             <enum>Qt::RightToLeft</enum>
-            </property>
-            <property name="text">
-             <string>ms</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioButtonUS">
-            <property name="layoutDirection">
-             <enum>Qt::RightToLeft</enum>
-            </property>
-            <property name="text">
-             <string>μs</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="9" column="0" colspan="10">
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QCheckBox" name="IncludeDacsCheck">
-            <property name="text">
-             <string>Include DACs in config</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="LoadButton">
-            <property name="text">
-             <string>Load Config</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="SaveButton">
-            <property name="text">
-             <string>Save Config</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="8" column="5">
-         <widget class="QLabel" name="label_13">
-          <property name="text">
-           <string>Log level</string>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="9">
-         <widget class="QSpinBox" name="logLevelSpinner">
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="maximum">
-           <number>2</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
-       <zorder>label_3</zorder>
-       <zorder>operationModeComboBox</zorder>
-       <zorder>label_16</zorder>
-       <zorder>polarityComboBox</zorder>
-       <zorder>label_2</zorder>
-       <zorder>label_9</zorder>
-       <zorder>nTriggersSpinner</zorder>
-       <zorder>label_8</zorder>
-       <zorder>triggerLengthSpinner</zorder>
-       <zorder>label_23</zorder>
-       <zorder>contRWFreq</zorder>
-       <zorder>label_17</zorder>
-       <zorder>triggerDowntimeSpinner</zorder>
-       <zorder>label_6</zorder>
-       <zorder>gainModeCombobox</zorder>
-       <zorder>label_7</zorder>
-       <zorder>label_20</zorder>
-       <zorder>biasVoltageSpinner</zorder>
-       <zorder>label_22</zorder>
-       <zorder>mpx3ClockComboBox</zorder>
-       <zorder>readBothCountersCheckBox</zorder>
-       <zorder>ColourModeCheckBox</zorder>
-       <zorder>label_11</zorder>
-       <zorder>ipLineEdit</zorder>
-       <zorder>label_5</zorder>
-       <zorder>decodeFramesCheckbox</zorder>
-       <zorder>LUTCheckbox</zorder>
-       <zorder>horizontalSpacer</zorder>
-       <zorder>pixelDepthCombo</zorder>
-       <zorder>triggerModeCombo</zorder>
-       <zorder>csmSpmCombo</zorder>
-       <zorder>label_19</zorder>
-       <zorder></zorder>
-       <zorder>label_13</zorder>
-       <zorder>logLevelSpinner</zorder>
-      </widget>
-     </item>
      <item row="0" column="2">
       <widget class="QGroupBox" name="groupBoxMonitoring">
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
         <string>Detector monitoring</string>
        </property>
@@ -537,6 +53,12 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
         <set>Qt::AlignCenter</set>
        </property>
        <layout class="QGridLayout" name="gridLayout_2">
+        <property name="topMargin">
+         <number>15</number>
+        </property>
+        <property name="bottomMargin">
+         <number>14</number>
+        </property>
         <item row="11" column="5">
          <widget class="QLineEdit" name="dvddmwatt">
           <property name="enabled">
@@ -903,6 +425,11 @@ A word added to each command - controls some functionality that changes regularl
      </item>
      <item row="1" column="2">
       <widget class="QGroupBox" name="groupBoxCamera">
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
         <string>External camera</string>
        </property>
@@ -913,6 +440,12 @@ A word added to each command - controls some functionality that changes regularl
         <set>Qt::AlignCenter</set>
        </property>
        <layout class="QGridLayout" name="gridLayout_4">
+        <property name="topMargin">
+         <number>15</number>
+        </property>
+        <property name="bottomMargin">
+         <number>15</number>
+        </property>
         <item row="0" column="0">
          <widget class="QCheckBox" name="cameraCheckBox">
           <property name="toolTip">
@@ -961,86 +494,530 @@ A word added to each command - controls some functionality that changes regularl
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QGroupBox" name="groupBoxNetwork">
-       <property name="toolTip">
-        <string>Network activity</string>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
        </property>
-       <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="0" column="0" rowspan="2">
+      <widget class="QGroupBox" name="groupBoxConfiguration">
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+        </font>
+       </property>
+       <property name="toolTip">
+        <string>Detector configuration</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
        </property>
        <property name="title">
-        <string>Load</string>
+        <string>Configuration</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <layout class="QGridLayout" name="gridLayout_6">
-          <item row="0" column="1">
-           <widget class="QLabel" name="label_26">
-            <property name="toolTip">
-             <string>Buffers load</string>
-            </property>
-            <property name="text">
-             <string>B</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_25">
-            <property name="toolTip">
-             <string>Network activity</string>
-            </property>
-            <property name="text">
-             <string>N</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QProgressBar" name="progressBar">
-            <property name="toolTip">
-             <string>Network activity (Upload)</string>
-            </property>
-            <property name="value">
-             <number>0</number>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QProgressBar" name="progressBar_2">
-            <property name="toolTip">
-             <string>Network activity (Download)</string>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <layout class="QGridLayout" name="gridLayout">
+        <property name="topMargin">
+         <number>15</number>
+        </property>
+        <property name="rightMargin">
+         <number>15</number>
+        </property>
+        <item row="7" column="9">
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QRadioButton" name="radioButtonS">
+            <property name="enabled">
+             <bool>false</bool>
             </property>
             <property name="layoutDirection">
-             <enum>Qt::LeftToRight</enum>
+             <enum>Qt::RightToLeft</enum>
             </property>
-            <property name="value">
-             <number>0</number>
+            <property name="text">
+             <string>s</string>
             </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonMS">
+            <property name="enabled">
+             <bool>false</bool>
             </property>
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
+            <property name="layoutDirection">
+             <enum>Qt::RightToLeft</enum>
+            </property>
+            <property name="text">
+             <string>ms</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonUS">
+            <property name="layoutDirection">
+             <enum>Qt::RightToLeft</enum>
+            </property>
+            <property name="text">
+             <string>μs</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
          </layout>
         </item>
+        <item row="5" column="5">
+         <widget class="QLabel" name="label_5">
+          <property name="toolTip">
+           <string>CSM SPM</string>
+          </property>
+          <property name="text">
+           <string>Charge Summing Mode</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="5">
+         <widget class="QCheckBox" name="LUTCheckbox">
+          <property name="toolTip">
+           <string>Lookup Table. Should be enabled by default.
+
+Moves the load of the LUT unit from the Desktop application to the FPGA.  This results in better performance</string>
+          </property>
+          <property name="text">
+           <string>LUT</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_7">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>Trigger Mode</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="9">
+         <widget class="QComboBox" name="polarityComboBox">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="5" colspan="3">
+         <widget class="QLabel" name="label_23">
+          <property name="toolTip">
+           <string>Continuous Read/Write frequency (Hz)</string>
+          </property>
+          <property name="text">
+           <string>CRW freq (Hz)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="9">
+         <widget class="QSpinBox" name="triggerDowntimeSpinner">
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>999999999</number>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="3">
+         <widget class="QCheckBox" name="ColourModeCheckBox">
+          <property name="toolTip">
+           <string>Fine pitch or spectroscopic (colour) mode.
+
+Detector dependant. If incorrect, you will see very obvious artifacts, 3/4 of the pixels exactly will be 0 if you select colour mode when using fine mode.</string>
+          </property>
+          <property name="text">
+           <string>Colour mode</string>
+          </property>
+          <property name="shortcut">
+           <string>C, M</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QSpinBox" name="triggerLengthSpinner">
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="keyboardTracking">
+           <bool>false</bool>
+          </property>
+          <property name="maximum">
+           <number>999999999</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_8">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shutter closed length in selected time units&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Shutter open length</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0" colspan="2">
+         <widget class="QLabel" name="label_20">
+          <property name="toolTip">
+           <string>Sets internal bias. To disable set a value of 0V.</string>
+          </property>
+          <property name="text">
+           <string>Bias voltage (V)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="5">
+         <widget class="QLabel" name="label_13">
+          <property name="text">
+           <string>Log level</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="9">
+         <widget class="QSpinBox" name="contRWFreq">
+          <property name="toolTip">
+           <string>ContinuousRW frequency (Hz)</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="maximum">
+           <number>1300</number>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="5">
+         <widget class="QLabel" name="label_2">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pixel bitrate depth&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Pixel Depth</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="9">
+         <widget class="QComboBox" name="pixelDepthCombo">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="3">
+         <widget class="QComboBox" name="gainModeCombobox">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Gain Mode</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="5">
+         <widget class="QLabel" name="label_19">
+          <property name="text">
+           <string>Time units</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="4">
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="7" column="3">
+         <widget class="QLineEdit" name="ipLineEdit">
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="frame">
+           <bool>true</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="placeholderText">
+           <string>0.0.0.0:0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0" colspan="3">
+         <widget class="QCheckBox" name="readBothCountersCheckBox">
+          <property name="toolTip">
+           <string>Get either 2 thresholds per pixel or twice the acquisition speed per pixel</string>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="text">
+           <string>Both counters</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="5">
+         <widget class="QLabel" name="label_16">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Detector polarity. Normally positive for silicon.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If incorrectly set, you will get nearly no signal.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Polarity</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="5" colspan="3">
+         <widget class="QLabel" name="label_22">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Clock (MHz)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3">
+         <widget class="QComboBox" name="operationModeComboBox">
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Operation Mode</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="9">
+         <widget class="QComboBox" name="csmSpmCombo">
+          <property name="toolTip">
+           <string>CSM SPM</string>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="3">
+         <widget class="QComboBox" name="triggerModeCombo">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0">
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>Detector IP Address</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QSpinBox" name="nTriggersSpinner">
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="keyboardTracking">
+           <bool>false</bool>
+          </property>
+          <property name="maximum">
+           <number>999999999</number>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_9">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of frames/triggers&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Number of Frames</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="5" colspan="2">
+         <widget class="QLabel" name="label_17">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shutter closed length in selected time units&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Shutter down length</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="9">
+         <widget class="QCheckBox" name="decodeFramesCheckbox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>There's no reason to ever disable this.</string>
+          </property>
+          <property name="text">
+           <string>Decode frames</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="9">
+         <widget class="QComboBox" name="mpx3ClockComboBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="9">
+         <widget class="QSpinBox" name="logLevelSpinner">
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="maximum">
+           <number>2</number>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="0" colspan="10">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QCheckBox" name="IncludeDacsCheck">
+            <property name="text">
+             <string>Include DACs in config</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="LoadButton">
+            <property name="text">
+             <string>Load Config</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="SaveButton">
+            <property name="text">
+             <string>Save Config</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="5" column="3">
+         <widget class="QDoubleSpinBox" name="biasVoltageSpinner">
+          <property name="toolTip">
+           <string>Sets internal bias. To disable set a value of 0V.</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="decimals">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <double>150.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>100.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="1">
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
        </layout>
+       <zorder>label_3</zorder>
+       <zorder>operationModeComboBox</zorder>
+       <zorder>label_16</zorder>
+       <zorder>polarityComboBox</zorder>
+       <zorder>label_2</zorder>
+       <zorder>label_9</zorder>
+       <zorder>nTriggersSpinner</zorder>
+       <zorder>label_8</zorder>
+       <zorder>triggerLengthSpinner</zorder>
+       <zorder>label_23</zorder>
+       <zorder>contRWFreq</zorder>
+       <zorder>label_17</zorder>
+       <zorder>triggerDowntimeSpinner</zorder>
+       <zorder>label_6</zorder>
+       <zorder>gainModeCombobox</zorder>
+       <zorder>label_7</zorder>
+       <zorder>label_20</zorder>
+       <zorder>biasVoltageSpinner</zorder>
+       <zorder>label_22</zorder>
+       <zorder>mpx3ClockComboBox</zorder>
+       <zorder>readBothCountersCheckBox</zorder>
+       <zorder>ColourModeCheckBox</zorder>
+       <zorder>label_11</zorder>
+       <zorder>ipLineEdit</zorder>
+       <zorder>label_5</zorder>
+       <zorder>decodeFramesCheckbox</zorder>
+       <zorder>LUTCheckbox</zorder>
+       <zorder>horizontalSpacer</zorder>
+       <zorder>pixelDepthCombo</zorder>
+       <zorder>triggerModeCombo</zorder>
+       <zorder>csmSpmCombo</zorder>
+       <zorder>label_19</zorder>
+       <zorder></zorder>
+       <zorder>label_13</zorder>
+       <zorder>logLevelSpinner</zorder>
+       <zorder>verticalSpacer</zorder>
       </widget>
      </item>
     </layout>

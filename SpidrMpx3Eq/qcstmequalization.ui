@@ -46,7 +46,7 @@
          </property>
          <property name="font">
           <font>
-           <pointsize>12</pointsize>
+           <pointsize>14</pointsize>
           </font>
          </property>
          <property name="text">
@@ -122,36 +122,7 @@
        <property name="toolTipDuration">
         <number>-1</number>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,1,0">
-        <item>
-         <widget class="QLabel" name="label_frameSelector">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frame selector&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Frame selector</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSpinBox" name="frameSpinner">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frame selector&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="toolTipDuration">
-           <number>-1</number>
-          </property>
-          <property name="maximum">
-           <number>99999</number>
-          </property>
-         </widget>
-        </item>
+       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1,0">
         <item>
          <widget class="QLabel" name="label_equalisationHeatmap">
           <property name="sizePolicy">
@@ -159,6 +130,11 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>12</pointsize>
+           </font>
           </property>
           <property name="toolTip">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Equalisation heatmap&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -231,6 +207,13 @@
             </property>
             <property name="text">
              <string>Start All</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="_startEqAllSequential">
+            <property name="text">
+             <string>Start all sequential</string>
             </property>
            </widget>
           </item>
@@ -674,7 +657,6 @@
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>frameSpinner</tabstop>
   <tabstop>equalizationTHLTHHCombo</tabstop>
   <tabstop>equalizationTypeCombo</tabstop>
   <tabstop>equalizationSelectTHLTHHCombo</tabstop>
