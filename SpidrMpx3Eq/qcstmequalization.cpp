@@ -74,6 +74,7 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     nbc->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
     _chart.push_back( nbc ); // set as parent the same as the one delivered in the UI
     _ui->horizontalLayoutEqHistos->addWidget( nbc );
+    nbc->setHidden(true);
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     _checkBoxes.clear();
@@ -720,6 +721,29 @@ void QCstmEqualization::StartEqualizationAllChips() {
         return;
     }
 
+}
+
+void QCstmEqualization::StartEqualizationSequentialSingleChips()
+{
+    //! TODO: Link it to _startEqAllSequential
+    //!
+    //! TODO: Make this work and connect to new button
+    /*if(makeTeaCoffeeDialog()){
+        // Get busy !
+        _busy = true;
+        _scanAllChips = false;
+        _deviceIndex = 0;
+
+        // Init
+        if ( ! InitEqualization( _deviceIndex ) ) return;
+
+        KeepOtherChipsQuiet();
+
+        StartEqualization( );
+
+    } else {
+        return;
+    }*/
 }
 
 void QCstmEqualization::StartEqualization() {

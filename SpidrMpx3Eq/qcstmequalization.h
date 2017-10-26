@@ -338,6 +338,9 @@ private slots:
     void ScanThreadFinished();
     void StartEqualizationSingleChip();
     void StartEqualizationAllChips();
+    void StartEqualizationSequentialSingleChips(); //! Navrit: Added on 25/10/17 to address the bad
+                                                   //! behaviour when equalising all chips
+                                                   //! simultaneously
     void ChangeNTriggers(int);
     void ChangeDeviceIndex(int);
     void ChangeSpacing(int);
