@@ -75,7 +75,7 @@ void QCstmDQE::SetMpx3GUI(Mpx3GUI *p){
 
     _optionsDialog->SetMpx3GUI(_mpx3gui);
 
-    connect( _mpx3gui,SIGNAL(returnFilename(QString)), this, SLOT(on_maindata_changed(QString)) );
+    connect( _mpx3gui, SIGNAL(returnFilename(QString)), this, SLOT(on_maindata_changed(QString)) );
 }
 
 void QCstmDQE::setRegion(QPoint pixel_begin, QPoint pixel_end)

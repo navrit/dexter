@@ -849,7 +849,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     // Defaults
     emit mode_changed( ui->summingCheckbox->isChecked() );
 
-    connect( ui->saveCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_saveCheckBox_toggled()));
+    connect( ui->saveCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_saveCheckBox_clicked()));
 
     // CT stuff
     connect( this, SIGNAL(sig_resumeCT()), _mpx3gui->getCT(), SLOT(resumeCT()));
