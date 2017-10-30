@@ -13,7 +13,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 } else {
         QT += core gui
 }
-QT += network opengl multimedia multimediawidgets
+QT += network opengl multimedia multimediawidgets concurrent
 CONFIG   +=  c++14 debug_and_release
 
 # Testing visualization:

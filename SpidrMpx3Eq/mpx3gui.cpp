@@ -1011,6 +1011,7 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
 
     //! Send data to be saved by the relevant function with the correct arguments etc.
 
+    //! TODO MAke this work with QtConcurrent::run( this, &...::saveImage32, Image, ... );
     if (selectedFilter == BIN_FILES) {
         getDataset()->saveBIN(filename);
     } else if (selectedFilter == SPATIAL_TIFF_FILES) {
