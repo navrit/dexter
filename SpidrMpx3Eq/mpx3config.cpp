@@ -274,8 +274,8 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
 //    }
     if ( item == __ALL || item == __pixelDepth || item == __readBothCounters) {
         spidrdaq->setPixelDepth( getPixelDepth() );
-        spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), false, getReadBothCounters() );
-        qDebug() << "Both counters : " << getReadBothCounters() << " - Pixel depth:" << getPixelDepth();
+        spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters(), false );
+        qDebug() << "Both counters (HW) : " << getReadBothCounters() << " - Pixel depth:" << getPixelDepth();
     }
 
     // Packet size reports NOT IMPLEMENTED in the Leon software
