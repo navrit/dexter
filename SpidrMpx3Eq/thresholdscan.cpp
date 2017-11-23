@@ -161,7 +161,7 @@ void thresholdScan::resumeTHScan()
     if (_stop)
         return;
 
-    //! Main loop through thresholds using 1 counter (TH0)
+    //! Main loop through thresholds using all 8 counters (0-7)
 
     if (iteration <= maxTH) {
         //qDebug() << "LOOP " << iteration << maxTH;
@@ -171,28 +171,9 @@ void thresholdScan::resumeTHScan()
             if ( ! _mpx3gui->getConfig()->detectorResponds(i) ) {
                 qDebug() << "[ERR ] Device " << i << " not responding.";
             } else {
-                //! Check if 0 < iteration < 512
-                if  (iteration < 511) {
-                    //qDebug() << "[INFO] 1/2 Set DACs on dev:" << i << "DAC:" << dacCodeToScan << " Val:" << iteration;
-//                    SetDAC_propagateInGUI(i, dacCodeToScan, iteration);
-                    _mpx3gui->GetSpidrController()->setDac(i, dacCodeToScan, iteration);
-
-                    connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
-                    int dacIndex = _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_THRESH_0 );
-                    slideAndSpin( dacIndex,  iteration );
-                    disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
-                    _mpx3gui->getDACs()->SetDACValueLocalConfig(i, dacCodeToScan, iteration);
-
-
-                    //qDebug() << "[INFO] 2/2 Set DACs on dev:" << i << "DAC:" << dacCodeToScan+1 << " Val:" << iteration+1;
-//                    SetDAC_propagateInGUI(i, dacCodeToScan+1, iteration+1);
-                    _mpx3gui->GetSpidrController()->setDac(i, dacCodeToScan+1, iteration+1);
-
-                    connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
-                    dacIndex = _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_THRESH_1 );
-                    slideAndSpin( dacIndex,  iteration+1 );
-                    disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
-                    _mpx3gui->getDACs()->SetDACValueLocalConfig(i, dacCodeToScan+1, iteration+1);
+                //! Check if iteration <= 512
+                if  (iteration <= 512) {
+                    changeAllDACs(i);
                 }
             }
         }
@@ -290,6 +271,86 @@ void thresholdScan::SetDAC_propagateInGUI(int devId, int dac_code, int dac_val)
     _mpx3gui->getDACs()->SetDACValueLocalConfig( devId, dacIndex, dac_val);
 }
 
+void thresholdScan::changeAllDACs(int i)
+{
+    _mpx3gui->GetSpidrController()->setDac(i, MPX3RX_DAC_THRESH_0, i);
+    connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    int dacIndex = _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_THRESH_0 );
+    slideAndSpin( dacIndex,  i );
+    disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    _mpx3gui->getDACs()->SetDACValueLocalConfig(i, MPX3RX_DAC_THRESH_0, i);
+
+
+    if( i == 512 )
+        i = 511;
+    _mpx3gui->GetSpidrController()->setDac(i, MPX3RX_DAC_THRESH_1, i+1);
+    connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    dacIndex = _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_THRESH_1 );
+    slideAndSpin( dacIndex,  i+1 );
+    disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    _mpx3gui->getDACs()->SetDACValueLocalConfig(i, MPX3RX_DAC_THRESH_1, i+1);
+
+
+    if( i == 511 )
+        i = 510;
+    _mpx3gui->GetSpidrController()->setDac(i, MPX3RX_DAC_THRESH_2, i+2);
+    connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    dacIndex = _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_THRESH_2 );
+    slideAndSpin( dacIndex,  i+2 );
+    disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    _mpx3gui->getDACs()->SetDACValueLocalConfig(i, MPX3RX_DAC_THRESH_2, i+2);
+
+
+    if( i == 510 )
+        i = 509;
+    _mpx3gui->GetSpidrController()->setDac(i, MPX3RX_DAC_THRESH_3, i+3);
+    connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    dacIndex = _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_THRESH_3 );
+    slideAndSpin( dacIndex,  i+3 );
+    disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    _mpx3gui->getDACs()->SetDACValueLocalConfig(i, MPX3RX_DAC_THRESH_3, i+3);
+
+
+    if( i == 509 )
+        i = 508;
+    _mpx3gui->GetSpidrController()->setDac(i, MPX3RX_DAC_THRESH_4, i+4);
+    connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    dacIndex = _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_THRESH_4 );
+    slideAndSpin( dacIndex,  i+4 );
+    disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    _mpx3gui->getDACs()->SetDACValueLocalConfig(i, MPX3RX_DAC_THRESH_4, i+4);
+
+
+    if( i == 508 )
+        i = 507;
+    _mpx3gui->GetSpidrController()->setDac(i, MPX3RX_DAC_THRESH_5, i+5);
+    connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    dacIndex = _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_THRESH_5 );
+    slideAndSpin( dacIndex,  i+5 );
+    disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    _mpx3gui->getDACs()->SetDACValueLocalConfig(i, MPX3RX_DAC_THRESH_5, i+5);
+
+
+    if( i == 507 )
+        i = 506;
+    _mpx3gui->GetSpidrController()->setDac(i, MPX3RX_DAC_THRESH_6, i+6);
+    connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    dacIndex = _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_THRESH_6 );
+    slideAndSpin( dacIndex,  i+6 );
+    disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    _mpx3gui->getDACs()->SetDACValueLocalConfig(i, MPX3RX_DAC_THRESH_6, i+6);
+
+
+    if( i == 506 )
+        i = 505;
+    _mpx3gui->GetSpidrController()->setDac(i, MPX3RX_DAC_THRESH_7, i+7);
+    connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    dacIndex = _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_THRESH_7 );
+    slideAndSpin( dacIndex,  i+7 );
+    disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    _mpx3gui->getDACs()->SetDACValueLocalConfig(i, MPX3RX_DAC_THRESH_7, i+7);
+}
+
 void thresholdScan::on_button_startStop_clicked()
 {
     if (_running) {
@@ -367,7 +428,7 @@ void ThresholdScanThread::run()
 {
     // Open a new temporary connection to the SPIDR to avoid collisions to the main one
     // Extract the ip address
-    int ipaddr[4] = { 1, 1, 168, 192 };
+    const int ipaddr[4] = { 1, 1, 168, 192 };
     if ( _srcAddr != 0 ) {
         ipaddr[3] = (_srcAddr >> 24) & 0xFF;
         ipaddr[2] = (_srcAddr >> 16) & 0xFF;
@@ -393,17 +454,16 @@ void ThresholdScanThread::run()
     int minScan = _ui->spinBox_minimum->value();
     int maxScan = _ui->spinBox_maximum->value();
      // --------------------------------------------------
-    int stepScan = _ui->spinBox_spacing->value()+1;
-    int dacCodeToScan = MPX3RX_DAC_THRESH_0;
+    const int stepScan = _ui->spinBox_spacing->value()+1;
     bool doReadFrames = true;
     int counter = minScan;
     int lastTH = counter-1;
-    int threshold = 0;
+    const QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
     // ---------------------------------------------------
 
-    int activeDevices = _mpx3gui->getConfig()->getNActiveDevices();
-    int y = _mpx3gui->getDataset()->y();
-    int x = _mpx3gui->getDataset()->x();
+    const int activeDevices = _mpx3gui->getConfig()->getNActiveDevices();
+    const int y = _mpx3gui->getDataset()->y();
+    const int x = _mpx3gui->getDataset()->x();
     int framesPerStep = _mpx3gui->getTHScan()->getFramesPerStep();
     if (framesPerStep == 0) {
         _mpx3gui->getTHScan()->setFramesPerStep(1);
@@ -413,6 +473,7 @@ void ThresholdScanThread::run()
     bool summing = false;
     if (framesPerStep > 1){
         summing = true;
+        //! TODO Check this works for multiple thresholds
         _summedData = new int [x*y*activeDevices];
         //qDebug() << "[INFO] Allocating bytes :" << sizeof(_summedData) << " " << x*y*activeDevices;
         if (_summedData == nullptr) {
@@ -421,6 +482,7 @@ void ThresholdScanThread::run()
         }
     }
 
+    //! TODO Check this works for multiple thresholds
     _data = new int [x*y*activeDevices];
 
     QString newPath = _ui->textEdit_path->toPlainText();
@@ -430,7 +492,6 @@ void ThresholdScanThread::run()
     }
     _mpx3gui->getTHScan()->setOriginalPath(newPath);
 
-
     for ( ; scanContinue ; ) {
 
         // Set DACs on all chips
@@ -438,17 +499,27 @@ void ThresholdScanThread::run()
             if ( !_thresholdScan->GetMpx3GUI()->getConfig()->detectorResponds( i ) ) {
                 qDebug() << "[ERR ] Device " << i << " not responding.";
             } else {
-                //! Check if 0 < counter < 512
-                if  (counter < 511) {
-                    //qDebug() << "[INFO] 1/2 Set DACs on dev:" << i << "DAC:" << dacCodeToScan << " Val:" << counter;
-                    spidrcontrol->setDac( i, dacCodeToScan, counter );
-                    //qDebug() << "[INFO] 2/2 Set DACs on dev:" << i << "DAC:" << dacCodeToScan+1 << " Val:" << counter+1;
-                    spidrcontrol->setDac( i, dacCodeToScan+1, counter+1 );
+                //! Check if counter <= 512
+                if  (counter <= 512) {
+//                    //qDebug() << "[INFO] 1/2 Set DACs on dev:" << i << "DAC:" << MPX3RX_DAC_THRESH_0 << " Val:" << counter;
+//                    spidrcontrol->setDac( i, MPX3RX_DAC_THRESH_0, counter );
+//                    //qDebug() << "[INFO] 2/2 Set DACs on dev:" << i << "DAC:" << MPX3RX_DAC_THRESH_1 << " Val:" << counter+1;
+//                    if (counter == 511)
+//                        j = 510;
+//                    spidrcontrol->setDac( i, MPX3RX_DAC_THRESH_1, counter+1 );
+//                    spidrcontrol->setDac( i, MPX3RX_DAC_THRESH_2, counter+2 );
+//                    spidrcontrol->setDac( i, MPX3RX_DAC_THRESH_3, counter+3 );
+//                    spidrcontrol->setDac( i, MPX3RX_DAC_THRESH_4, counter+4 );
+//                    spidrcontrol->setDac( i, MPX3RX_DAC_THRESH_5, counter+5 );
+//                    spidrcontrol->setDac( i, MPX3RX_DAC_THRESH_6, counter+6 );
+//                    spidrcontrol->setDac( i, MPX3RX_DAC_THRESH_7, counter+7 );
+                    _thresholdScan->changeAllDACs(counter);
                 }
             }
         }
 
         //! Reset all of _summedData to 0 for the next threshold
+        //! TODO Check this works for multiple thresholds
         if (summing){
             memset(_summedData, 0, (x*y*activeDevices));
         }
@@ -463,7 +534,7 @@ void ThresholdScanThread::run()
                 _mpx3gui->getConfig()->getTriggerLength_ms()
                 + _mpx3gui->getConfig()->getTriggerDowntime_ms()
                 + 1; // ms
-        //! TODO The extra ms is a combination of delay in the network plus
+        //! The extra ms is a combination of delay in the network plus
         //! system overhead.  This should be predicted and not hard-coded.
 
         while ( spidrdaq->hasFrame( timeOutTime ) ) {
@@ -480,9 +551,15 @@ void ThresholdScanThread::run()
 
             if ( doReadFrames ) {
 
+                //! TODO fix this for scan using N thresholds
+                //! Iterate through existing thresholds
+                for (const int &th : thresholds) {
+                    qDebug() << ">>>>>>>>>> Threshold in existance: " << th;
+                }
+
                 int tmp;
 
-                threshold = 0;
+                int threshold = 0;
                 for (int i=0; i < y; i++) {
                     for (int j=0; j < x; j++) {
                         //qDebug() << "(x, y):" << j << "," << i << i*x+j;
@@ -539,7 +616,7 @@ void ThresholdScanThread::run()
         // increment
         counter += stepScan;
 
-        // See the termination condition
+        // Check the termination condition
         if ( counter <= maxScan && !abort ) {
             scanContinue = true;
         }

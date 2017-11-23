@@ -68,6 +68,8 @@ private:
 
     void SetDAC_propagateInGUI(int devId, int dac_code, int dac_val );
 
+    void changeAllDACs(int i);
+
 public slots:
     void resumeTHScan();
 
