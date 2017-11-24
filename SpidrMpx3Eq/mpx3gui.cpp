@@ -1246,6 +1246,7 @@ void Mpx3GUI::clear_configuration(){
     if ( _ui->equalizationWidget ) {
 
         int ndev = config->getNDevicesSupported();
+        qDebug() << "[INFO] Number of devices:" << ndev;
 
         QProgressDialog pd("Clear adjustment bits ... ", "Cancel", 0, ndev, this);
         pd.setCancelButton( 0 ); // no cancel button

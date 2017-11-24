@@ -138,13 +138,13 @@
      <item row="5" column="1">
       <widget class="QSpinBox" name="spinBox_spacing">
        <property name="minimum">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="maximum">
         <number>510</number>
        </property>
        <property name="value">
-        <number>0</number>
+        <number>1</number>
        </property>
       </widget>
      </item>
