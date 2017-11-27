@@ -728,6 +728,16 @@ void QCstmEqualization::StartEqualizationSequentialSingleChips()
     //! TODO: Link it to _startEqAllSequential
     //!
     //! TODO: Make this work and connect to new button
+
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Information");
+    msgBox.setText("This isn't connected to anything yet, do it manually :P ...");
+    msgBox.addButton(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+
+    return;
+
+
     /*if(makeTeaCoffeeDialog()){
         // Get busy !
         _busy = true;
@@ -2079,6 +2089,7 @@ void QCstmEqualization::SetupSignalsAndSlots() {
 
     connect( _ui->_startEq, SIGNAL(clicked()), this, SLOT(StartEqualizationSingleChip()) );
     connect( _ui->_startEqAll, SIGNAL(clicked()), this, SLOT(StartEqualizationAllChips()) );
+    connect( _ui->_startEqAllSequential, SIGNAL(clicked()), this, SLOT(StartEqualizationSequentialSingleChips()) );
     connect( _ui->_stopEq, SIGNAL(clicked()), this, SLOT(StopEqualization()) );
 
     //connect(_ui->_intermediatePlot, SIGNAL(mouseOverChanged(QString)), _ui->mouseHoveLabel, SLOT(setText(QString)));
