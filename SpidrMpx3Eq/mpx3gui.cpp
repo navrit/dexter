@@ -280,20 +280,21 @@ bool Mpx3GUI::equalizationLoaded(){
 
 bool Mpx3GUI::setTestPulses() {
 
+    SpidrController * spidrcontrol = GetSpidrController();
     QVector<int> activeDevices = getConfig()->getActiveDevices();
     qDebug() << "[TEST PULSES] activeDevices length" << activeDevices.length();
+
 
     if ( _ui->equalizationWidget->equalizationHasBeenLoaded() ) {
         QMap<int, Mpx3EqualizationResults *>  eqMap_L = _ui->equalizationWidget->getEqMap();
         QMap<int, Mpx3EqualizationResults *>  eqMap_H = _ui->equalizationWidget->getEqMap();
 
-        for ( int devId = 0 ; devId < activeDevices.length(); devId++ ) { //! TODO Make it work for quad
+        for ( int devId = 0 ; devId < activeDevices.length(); devId++ ) {
 
-            SpidrController * spidrcontrol = GetSpidrController();
             spidrcontrol->setInternalTestPulse(devId, true);
 
             pair<int, int> pix;
-            bool testbit = true;
+            bool testbit = false;
             int testBitsOn = 0;
 
             Mpx3EqualizationResults * eqResults_L = eqMap_L[devId];
@@ -305,18 +306,25 @@ bool Mpx3GUI::setTestPulses() {
 
                 pix = XtoXY(i, __array_size_x);
 
-                testBitsOn++;
-                if (pix.second == 0) {
+                //! TODO Extend this elsewhere so it cycles through all pixels instead of 1/16
+                if ( pix.first % 4 == 0 && pix.second % 4 == 0 ) {
+                    testbit = true;
+                    if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
                     //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
-                    spidrcontrol->configCtpr( devId, pix.first, 1 );
+                } else {
+                    testbit = false;
+                    if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
                 }
+
 
                 spidrcontrol->configPixelMpx3rx(pix.first,
                                                 pix.second,
                                                 eqResults_L->GetPixelAdj(i),
                                                 eqResults_H->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
                                                 testbit);
+                if ( testbit ) testBitTrue++;
             }
+
             spidrcontrol->setCtpr( devId );
             qDebug() << "[TEST PULSES] CTPRs set on dev" << devId;
 
@@ -329,6 +337,10 @@ bool Mpx3GUI::setTestPulses() {
         return true;
 
     } else {
+        for ( int devId = 0 ; devId < activeDevices.length(); devId++ ) {
+
+            spidrcontrol->setInternalTestPulse(devId, false);
+        }
         return false; // equalization missing
     }
 

@@ -39,7 +39,7 @@ void TestPulses::on_activateCheckBox_clicked(bool checked)
         if ( ! _mpx3gui->setTestPulses() ) {
             QMessageBox::warning(this, tr("Test pulses error"),
                                  tr("You need to be connected to the detector"
-                                    "\nand the Equalization needs to be loaded."));
+                                    "\n and the Equalization needs to be loaded."));
             ui->pushButton_setLength->setChecked(false);
 
 
