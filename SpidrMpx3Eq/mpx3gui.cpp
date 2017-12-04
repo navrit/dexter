@@ -278,9 +278,8 @@ bool Mpx3GUI::equalizationLoaded(){
     return _ui->equalizationWidget->equalizationHasBeenLoaded();
 }
 
-bool Mpx3GUI::setTestPulses() {
+bool Mpx3GUI::setTestPulses(int pixelSpacing) {
 
-    SpidrController * spidrcontrol = GetSpidrController();
     QVector<int> activeDevices = getConfig()->getActiveDevices();
     qDebug() << "[TEST PULSES] activeDevices length" << activeDevices.length();
 
@@ -290,9 +289,6 @@ bool Mpx3GUI::setTestPulses() {
         QMap<int, Mpx3EqualizationResults *>  eqMap_H = _ui->equalizationWidget->getEqMap();
 
         for ( int devId = 0 ; devId < activeDevices.length(); devId++ ) {
-
-            spidrcontrol->setInternalTestPulse(devId, true);
-
             pair<int, int> pix;
             bool testbit = false;
             int testBitsOn = 0;
@@ -300,20 +296,38 @@ bool Mpx3GUI::setTestPulses() {
             Mpx3EqualizationResults * eqResults_L = eqMap_L[devId];
             Mpx3EqualizationResults * eqResults_H = eqMap_H[devId];
 
+            SpidrController * spidrcontrol = GetSpidrController();
+            spidrcontrol->setInternalTestPulse(devId, true);
+
+            //! Turn all CTPRs off by default ????????
+            for (int column = 0; column < __array_size_x; column++ ) {
+                spidrcontrol->configCtpr( devId, column, 0 );
+            }
+            //! Do I need to set the CTPR here as well?
+            spidrcontrol->setCtpr( devId );
+
             spidrcontrol->setTpFrequency(true, TP_PERIOD, 40 ); //! Pulse frequency (millihertz) --> 200000 * 25 ns = 5 ms = 200 Hz  Pulse width: 40 --> 1us default
+
+
 
             for ( int i = 0 ; i < __matrix_size ; i++ ) {
 
                 pix = XtoXY(i, __array_size_x);
 
-                //! TODO Extend this elsewhere so it cycles through all pixels instead of 1/16
-                if ( pix.first % 4 == 0 && pix.second % 4 == 0 ) {
+                if ( pix.second == 0 ) {
+                    spidrcontrol->configCtpr( devId, pix.first, 1 );
+
+                //! Unmask all pixels that we are going to inject test pulses into.
+                //! --> mask all pixels that we aren't using (is this correct???)
+                if ( pix.first % pixelSpacing == 0 && pix.second % pixelSpacing == 0 ) {
                     testbit = true;
-                    if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
-                    //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
+                    spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+
+                        //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
+                    }
                 } else {
                     testbit = false;
-                    if ( pix.second == 0 ) spidrcontrol->configCtpr( devId, pix.first, 1 );
+                    spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
                 }
 
 
@@ -322,7 +336,7 @@ bool Mpx3GUI::setTestPulses() {
                                                 eqResults_L->GetPixelAdj(i),
                                                 eqResults_H->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
                                                 testbit);
-                if ( testbit ) testBitTrue++;
+                if ( testbit ) testBitsOn++;
             }
 
             spidrcontrol->setCtpr( devId );
@@ -339,7 +353,19 @@ bool Mpx3GUI::setTestPulses() {
     } else {
         for ( int devId = 0 ; devId < activeDevices.length(); devId++ ) {
 
+            SpidrController * spidrcontrol = GetSpidrController();
+
+            //! 1. Turn off test pulses
+            //! 2. Unmask all pixels
+            //! 3. Set Pixel config
+
             spidrcontrol->setInternalTestPulse(devId, false);
+            for (int i = 0; i < __array_size_x; i++ ) {
+                for(int j = 0; j < __array_size_y; j++ ) {
+                    spidrcontrol->setPixelMaskMpx3rx(i, j, false);
+                }
+            }
+            spidrcontrol->setPixelConfigMpx3rx( devId );
         }
         return false; // equalization missing
     }

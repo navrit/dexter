@@ -29,6 +29,8 @@ void TestPulses::on_activateCheckBox_clicked(bool checked)
 
     if ( checked ) {
 
+        int pixelSpacing = ui->spinBox_pixelSpacing->value();
+
         //! TODO Probably remove this.
 //        // 1) Configure pixels with testbit
 //        Mpx3Config::testpulses_config_parameters tp_conf;
@@ -36,7 +38,7 @@ void TestPulses::on_activateCheckBox_clicked(bool checked)
 
         //! See if there is an equalization present
         //! I have no idea why...
-        if ( ! _mpx3gui->setTestPulses() ) {
+        if ( ! _mpx3gui->setTestPulses(pixelSpacing) ) {
             QMessageBox::warning(this, tr("Test pulses error"),
                                  tr("You need to be connected to the detector"
                                     "\n and the Equalization needs to be loaded."));
