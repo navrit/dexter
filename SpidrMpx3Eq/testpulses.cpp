@@ -95,10 +95,8 @@ void TestPulses::on_pushButton_setLength_clicked()
 
 void TestPulses::on_pushButton_setIDELAY_clicked()
 {
-    int val = ui->spinBox_idelay->value();
-    qDebug() << "IDELAY Setting : " << val;
-    _mpx3gui->GetSpidrController()->setSpidrReg(0x10A0, val, true);
-    _mpx3gui->GetSpidrController()->setSpidrReg(0x10A4, val, true);
-    _mpx3gui->GetSpidrController()->setSpidrReg(0x10A8, val, true);
-    _mpx3gui->GetSpidrController()->setSpidrReg(0x10AC, val, true);
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x10A0, ui->spinBox_idelay_chip0->value(), true);
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x10A4, ui->spinBox_idelay_chip1->value(), true);
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x10A8, ui->spinBox_idelay_chip2->value(), true);
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x10AC, ui->spinBox_idelay_chip3->value(), true);
 }
