@@ -1882,7 +1882,7 @@ bool ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int devId, int
 }
 
 /**
- * Leave reworkPixels unmasked.  Returns number of un-maksed pixels.
+ * Leave reworkPixels unmasked.  Returns number of un-masked pixels.
  */
 int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, set<int> reworkPixels) {
 

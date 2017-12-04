@@ -2114,7 +2114,7 @@ void QCstmEqualization::SetupSignalsAndSlots() {
 
 void QCstmEqualization::setEqualizationShowTHLTHH(int sel) {
 
-    cout << "react" << endl;
+    //cout << "react" << endl;
 
     if( (int)_equalizationShow == sel ) {
         ShowEqualization(_equalizationShow);
@@ -2125,7 +2125,7 @@ void QCstmEqualization::setEqualizationShowTHLTHH(int sel) {
     if ( sel == 0 ) _equalizationShow = Mpx3EqualizationResults::__ADJ_L;
     if ( sel == 1 ) _equalizationShow = Mpx3EqualizationResults::__ADJ_H;
 
-    cout << "draw : " << _equalizationShow << endl;
+    //cout << "draw : " << _equalizationShow << endl;
 
     // and show again
     ShowEqualization(_equalizationShow);
