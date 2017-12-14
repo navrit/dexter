@@ -299,12 +299,12 @@ bool Mpx3GUI::setTestPulses(int pixelSpacing) {
             SpidrController * spidrcontrol = GetSpidrController();
             spidrcontrol->setInternalTestPulse(devId, true);
 
-            //! Turn all CTPRs off by default ????????
-            for (int column = 0; column < __array_size_x; column++ ) {
-                spidrcontrol->configCtpr( devId, column, 0 );
-            }
-            //! Do I need to set the CTPR here as well?
-            spidrcontrol->setCtpr( devId );
+            //            //! Turn all CTPRs off by default ????????
+            //            for (int column = 0; column < __array_size_x; column++ ) {
+            //                spidrcontrol->configCtpr( devId, column, 0 );
+            //            }
+            //            //! Do I need to set the CTPR here as well?
+            //            spidrcontrol->setCtpr( devId );
 
             spidrcontrol->setTpFrequency(true, TP_PERIOD, 40 ); //! Pulse frequency (millihertz) --> 200000 * 25 ns = 5 ms = 200 Hz  Pulse width: 40 --> 1us default
 
@@ -314,20 +314,21 @@ bool Mpx3GUI::setTestPulses(int pixelSpacing) {
 
                 pix = XtoXY(i, __array_size_x);
 
-                if ( pix.second == 0 ) {
-                    spidrcontrol->configCtpr( devId, pix.first, 1 );
-
                 //! Unmask all pixels that we are going to inject test pulses into.
                 //! --> mask all pixels that we aren't using (is this correct???)
                 if ( pix.first % pixelSpacing == 0 && pix.second % pixelSpacing == 0 ) {
                     testbit = true;
                     spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
 
-                        //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
-                    }
+                    //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
                 } else {
                     testbit = false;
                     spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
+                }
+
+
+                if ( testbit && pix.second == 0 ) {
+                    spidrcontrol->configCtpr( devId, pix.first, 1 );
                 }
 
 

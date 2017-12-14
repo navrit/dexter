@@ -72,13 +72,13 @@
      <item row="3" column="1">
       <widget class="QSpinBox" name="spinBox_pixelSpacing">
        <property name="minimum">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="maximum">
-        <number>63</number>
+        <number>64</number>
        </property>
        <property name="value">
-        <number>0</number>
+        <number>1</number>
        </property>
       </widget>
      </item>
