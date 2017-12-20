@@ -310,7 +310,7 @@ bool Mpx3GUI::setTestPulses(int pixelSpacing, int startPixelOffset) {
 
 
 
-            for ( int i = 0 ; i < __matrix_size ; i++ ) {
+            for ( int i = startPixelOffset; i < __matrix_size; i++ ) {
 
                 pix = XtoXY(i, __array_size_x);
 
