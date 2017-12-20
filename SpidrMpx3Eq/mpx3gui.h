@@ -68,10 +68,10 @@ class thresholdScan;
 #define ASCII_FILES "ASCII (*.txt)"
 #define JSON_FILES "BH JSON file(*.json)"
 
-#define TP_PERIOD 200000 //! In units of 25 ns. 200000 * 25 ns = 5 ms = 200 Hz
+#define TP_PERIOD 40000 //! In units of 25 ns. 40000 * 25 ns = 1 ms = 1000 Hz
 
 const QString _softwareName = "ASI Dexter";
-const QString _softwareVersion = "1.6.3 TESTING";
+const QString _softwareVersion = "1.6.4";
 
 namespace Ui {
 class Mpx3GUI;
@@ -181,7 +181,7 @@ public:
 
     bool equalizationLoaded();
 
-    bool setTestPulses(int pixelSpacing);
+    bool setTestPulses(int pixelSpacing, int startPixelOffset);
 
     //! SPIDR information strings for About dialog
     QString m_SPIDRControllerVersion = "";

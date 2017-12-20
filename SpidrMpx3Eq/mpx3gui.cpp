@@ -278,7 +278,7 @@ bool Mpx3GUI::equalizationLoaded(){
     return _ui->equalizationWidget->equalizationHasBeenLoaded();
 }
 
-bool Mpx3GUI::setTestPulses(int pixelSpacing) {
+bool Mpx3GUI::setTestPulses(int pixelSpacing, int startPixelOffset) {
 
     QVector<int> activeDevices = getConfig()->getActiveDevices();
     qDebug() << "[TEST PULSES] activeDevices length" << activeDevices.length();

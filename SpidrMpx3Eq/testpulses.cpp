@@ -30,6 +30,7 @@ void TestPulses::on_activateCheckBox_clicked(bool checked)
     if ( checked ) {
 
         int pixelSpacing = ui->spinBox_pixelSpacing->value();
+        int startPixelOffset = ui->spinBox_pixelOffset->value();
 
         //! TODO Probably remove this.
 //        // 1) Configure pixels with testbit
@@ -38,7 +39,7 @@ void TestPulses::on_activateCheckBox_clicked(bool checked)
 
         //! See if there is an equalization present
         //! I have no idea why...
-        if ( ! _mpx3gui->setTestPulses(pixelSpacing) ) {
+        if ( ! _mpx3gui->setTestPulses(pixelSpacing, startPixelOffset) ) {
             QMessageBox::warning(this, tr("Test pulses error"),
                                  tr("You need to be connected to the detector"
                                     "\n and the Equalization needs to be loaded."));
@@ -46,10 +47,10 @@ void TestPulses::on_activateCheckBox_clicked(bool checked)
 
 
         }
-        _mpx3gui->GetSpidrController()->setSpidrReg(0x10C0, 40, true); //! Default 1 us
+        _mpx3gui->GetSpidrController()->setSpidrReg(0x10C0, 400, true); //! Default 10 us
         _mpx3gui->GetSpidrController()->setSpidrReg(0x10BC, TP_PERIOD, true);
 
-        qDebug() << "[TEST PULSES] SET Default 1 us length, 5 ms period (200 Hz)";
+        qDebug() << "[TEST PULSES] SET Default 10 us length, 1 ms period (1000 Hz)";
     }
 
 }
@@ -58,7 +59,7 @@ void TestPulses::on_pushButton_setPeriod_clicked()
 {
     int val = ui->spinBox_period->value();
     qDebug() << "TP Period:" << val *  (25.0/1000000000.0*1000.0) << "ms";
-    _mpx3gui->GetSpidrController()->setSpidrReg(0x10BC, val, true); // 200000 x 25ns = 5ms default. Period between TP Switch pulses in 25ns
+    _mpx3gui->GetSpidrController()->setSpidrReg(0x10BC, val, true); // 40000 x 25ns = 1ms default. Period between TP Switch pulses in 25ns
 }
 
 void TestPulses::on_pushButton_setLength_clicked()
