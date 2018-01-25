@@ -190,8 +190,8 @@ private:
     // Layout of the matrix. Each QPoint is a chip connected with X,Y sizes.
     QVector<QPoint> _devicePresenceLayout;
     QVector<QString> _deviceWaferIdMap;
-    int _nDevicesPresent;
-    int _nDevicesSupported;
+    int _nDevicesPresent = -1;
+    int _nDevicesSupported = -1;
 
 signals:
     void IpAdressChanged(QString);

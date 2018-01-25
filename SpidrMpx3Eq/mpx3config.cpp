@@ -654,8 +654,8 @@ void Mpx3Config::setPolarity(int newVal) {
 
 bool Mpx3Config::detectorResponds(int devIndx) {
 
-    if( devIndx >= _nDevicesSupported || devIndx < 0 || _responseChips.size() == 0) {
-        qDebug() << "[ERR ] device index out of range: " << devIndx;
+    if( devIndx >= _nDevicesSupported || devIndx < 0 || _responseChips.size() == 0 || _nDevicesSupported == -1) {
+        qDebug() << "[ERR ] device index out of range: " << devIndx << " nDevicesSupported - " << _nDevicesSupported << " response chips size" << _responseChips.size();
         return false;
     }
 
