@@ -20,13 +20,18 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     _timerId = -1;
     //ui->samplingSpinner->setValue( 1.0 );
 
-    ui->gainModeCombobox->addItem("Super Low Gain Mode");
-    ui->gainModeCombobox->addItem("Low Gain Mode");
-    ui->gainModeCombobox->addItem("High Gain Mode");
-    ui->gainModeCombobox->addItem("Super High Gain Mode");
+    // Gain
+    // 00: SHGM  0
+    // 10: HGM   2
+    // 01: LGM   1
+    // 11: SLGM  3
+    ui->gainModeCombobox->addItem("Super High Gain Mode - 0 7fF");
+    ui->gainModeCombobox->addItem("Low Gain Mode - 1 21fF");
+    ui->gainModeCombobox->addItem("High Gain Mode - 2 14fF");
+    ui->gainModeCombobox->addItem("Super Low Gain Mode - 3 28fF");
 
-    ui->polarityComboBox->addItem("Positive");
-    ui->polarityComboBox->addItem("Negative");
+    ui->polarityComboBox->addItem("Positive (hole collection)");
+    ui->polarityComboBox->addItem("Negative (electron collection)");
 
     ui->operationModeComboBox->addItem("Sequential R/W");
     ui->operationModeComboBox->addItem("Continuous R/W");
@@ -330,22 +335,26 @@ void QCstmConfigMonitoring::on_idling_gui()
 
 void QCstmConfigMonitoring::shortcutGainModeSLGM()
 {
-    ui->gainModeCombobox->setCurrentIndex(0);
+    // 11: SLGM  3
+    ui->gainModeCombobox->setCurrentIndex(3);
 }
 
 void QCstmConfigMonitoring::shortcutGainModeLGM()
 {
+    // 01: LGM   1
     ui->gainModeCombobox->setCurrentIndex(1);
 }
 
 void QCstmConfigMonitoring::shortcutGainModeHGM()
 {
+    // 10: HGM   2
     ui->gainModeCombobox->setCurrentIndex(2);
 }
 
 void QCstmConfigMonitoring::shortcutGainModeSHGM()
 {
-    ui->gainModeCombobox->setCurrentIndex(3);
+    // 00: SHGM  0
+    ui->gainModeCombobox->setCurrentIndex(0);
 }
 
 void QCstmConfigMonitoring::shortcutCSMOff()

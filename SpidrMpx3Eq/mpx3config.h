@@ -310,8 +310,9 @@ public slots:
 
     void setGainMode(int newVal){
         if(newVal != GainMode){
-            GainMode = newVal; emit gainModeChanged(newVal);
+            GainMode = newVal; emit gainModeChanged(GainMode);
             //updateGainMode();
+            qDebug() << "Gain mode: " << newVal;
             SendConfiguration( __gainMode );
         }
     }

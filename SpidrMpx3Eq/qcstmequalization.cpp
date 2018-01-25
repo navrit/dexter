@@ -1673,7 +1673,6 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     spidrcontrol->setColourMode( devId, _mpx3gui->getConfig()->getColourMode() ); 		// false = Fine Pitch
     spidrcontrol->setCsmSpm( devId, 0 );                    // Single Pixel mode
 
-    // Gain ?!
     // 00: SHGM  0
     // 10: HGM   2
     // 01: LGM   1
