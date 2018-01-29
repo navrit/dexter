@@ -161,13 +161,13 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     connect(shortcutFrameNumber, SIGNAL(activated()), _ui->visualizationGL, SLOT(shortcutFrameNumber()));
 
     // Connections to Configuration and settings
-    QShortcut *shortcutGainModeSLGM = new QShortcut(QKeySequence("g, 1"), this);
+    QShortcut *shortcutGainModeSLGM = new QShortcut(QKeySequence("g, 4"), this);
     connect(shortcutGainModeSLGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeSLGM()));
-    QShortcut *shortcutGainModeLGM = new QShortcut(QKeySequence("g, 2"), this);
+    QShortcut *shortcutGainModeLGM = new QShortcut(QKeySequence("g, 3"), this);
     connect(shortcutGainModeLGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeLGM()));
-    QShortcut *shortcutGainModeHGM = new QShortcut(QKeySequence("g, 3"), this);
+    QShortcut *shortcutGainModeHGM = new QShortcut(QKeySequence("g, 2"), this);
     connect(shortcutGainModeHGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeHGM()));
-    QShortcut *shortcutGainModeSHGM = new QShortcut(QKeySequence("g, 4"), this);
+    QShortcut *shortcutGainModeSHGM = new QShortcut(QKeySequence("g, 1"), this);
     connect(shortcutGainModeSHGM, SIGNAL(activated()), _ui->CnMWidget, SLOT(shortcutGainModeSHGM()));
 
     QShortcut *shortcutCSMOff = new QShortcut(QKeySequence("c, 0"), this);

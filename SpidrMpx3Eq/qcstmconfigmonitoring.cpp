@@ -21,14 +21,15 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     //ui->samplingSpinner->setValue( 1.0 );
 
     // Gain
+    // LSB FIRST for NO REASON !!!
     // 00: SHGM  0
-    // 10: HGM   2
-    // 01: LGM   1
+    // 10: HGM   1
+    // 01: LGM   2
     // 11: SLGM  3
-    ui->gainModeCombobox->addItem("Super High Gain Mode - 0 7fF");
-    ui->gainModeCombobox->addItem("Low Gain Mode - 1 21fF");
-    ui->gainModeCombobox->addItem("High Gain Mode - 2 14fF");
-    ui->gainModeCombobox->addItem("Super Low Gain Mode - 3 28fF");
+    ui->gainModeCombobox->addItem("Super High Gain Mode - 7fF");
+    ui->gainModeCombobox->addItem("High Gain Mode - 14fF");
+    ui->gainModeCombobox->addItem("Low Gain Mode - 21fF");
+    ui->gainModeCombobox->addItem("Super Low Gain Mode - 28fF");
 
     ui->polarityComboBox->addItem("Positive (hole collection)");
     ui->polarityComboBox->addItem("Negative (electron collection)");
@@ -341,14 +342,14 @@ void QCstmConfigMonitoring::shortcutGainModeSLGM()
 
 void QCstmConfigMonitoring::shortcutGainModeLGM()
 {
-    // 01: LGM   1
-    ui->gainModeCombobox->setCurrentIndex(1);
+    // 01: LGM   2
+    ui->gainModeCombobox->setCurrentIndex(2);
 }
 
 void QCstmConfigMonitoring::shortcutGainModeHGM()
 {
-    // 10: HGM   2
-    ui->gainModeCombobox->setCurrentIndex(2);
+    // 10: HGM   1
+    ui->gainModeCombobox->setCurrentIndex(1);
 }
 
 void QCstmConfigMonitoring::shortcutGainModeSHGM()
