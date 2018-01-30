@@ -43,7 +43,7 @@ uint thresholdScan::getFramesPerStep()
 
 void thresholdScan::setFramesPerStep(uint val)
 {
-    ui->spinBox_framesPerStep->setValue(val);
+    ui->spinBox_framesPerStep->setValue(int(val));
 }
 
 void thresholdScan::finishedScan()
@@ -227,6 +227,16 @@ QString thresholdScan::makePath()
     return path;
 }
 
+bool thresholdScan::get_changeOtherThresholds()
+{
+    return changeOtherThresholds;
+}
+
+void thresholdScan::set_changeOtherThresholds(bool arg)
+{
+    changeOtherThresholds = arg;
+}
+
 void thresholdScan::enableSpinBoxes()
 {
     ui->spinBox_minimum->setEnabled(1);
@@ -277,50 +287,57 @@ void thresholdScan::SetDAC_propagateInGUI(int devId, int dac_code, int dac_val)
 void thresholdScan::changeAllDACs(int val)
 {
     const int activeDevices = _mpx3gui->getConfig()->getNActiveDevices();
-    //! Set all thresholds sequentially within one chip at a time
+    //! Set all thresholds sequentially within one chip at a time unless the checkbox tells you otherwise
+    //!    The output of THL0 is very different if the other thresholds TH1-7 are in the noise...
+
     for (int chipID = 0; chipID < activeDevices; chipID++) {
         for (int dacCode = MPX3RX_DAC_THRESH_0; dacCode <= MPX3RX_DAC_THRESH_7; dacCode++ ) {
             int i = val;
 
-            if ( dacCode == MPX3RX_DAC_THRESH_0 ) {
-                SetDAC_propagateInGUI(chipID, dacCode, i);
-            } else if ( dacCode == MPX3RX_DAC_THRESH_1 ) {
-                if ( i == 512 ) {
-                    i = 511;
+            if (get_changeOtherThresholds() == true) {
+                if ( dacCode == MPX3RX_DAC_THRESH_0 ) {
+                    SetDAC_propagateInGUI(chipID, dacCode, i);
+                } else if ( dacCode == MPX3RX_DAC_THRESH_1 ) {
+                    if ( i == 512 ) {
+                        i = 511;
+                    }
+                    SetDAC_propagateInGUI(chipID, dacCode, i+1);
+                } else if ( dacCode == MPX3RX_DAC_THRESH_2 ) {
+                    if ( i >= 511 ) {
+                        i = 510;
+                    }
+                    SetDAC_propagateInGUI(chipID, dacCode, i+2);
+                } else if ( dacCode == MPX3RX_DAC_THRESH_3 ) {
+                    if ( i >= 510 ) {
+                        i = 509;
+                    }
+                    SetDAC_propagateInGUI(chipID, dacCode, i+3);
+                } else if ( dacCode == MPX3RX_DAC_THRESH_4 ) {
+                    if ( i >= 509 ) {
+                        i = 508;
+                    }
+                    SetDAC_propagateInGUI(chipID, dacCode, i+4);
+                } else if ( dacCode == MPX3RX_DAC_THRESH_5 ) {
+                    if ( i >= 508 ) {
+                        i = 507;
+                    }
+                    SetDAC_propagateInGUI(chipID, dacCode, i+5);
+                } else if ( dacCode == MPX3RX_DAC_THRESH_6 ) {
+                    if ( i >= 507 ) {
+                        i = 506;
+                    }
+                    SetDAC_propagateInGUI(chipID, dacCode, i+6);
+                } else if ( dacCode == MPX3RX_DAC_THRESH_7 ) {
+                    if ( i >= 506 ) {
+                        i = 505;
+                    }
+                    SetDAC_propagateInGUI(chipID, dacCode, i+7);
                 }
-                SetDAC_propagateInGUI(chipID, dacCode, i+1);
-            } else if ( dacCode == MPX3RX_DAC_THRESH_2 ) {
-                if ( i >= 511 ) {
-                    i = 510;
+            } else {
+                if ( dacCode == MPX3RX_DAC_THRESH_0 ) {
+                    SetDAC_propagateInGUI(chipID, dacCode, i);
                 }
-                SetDAC_propagateInGUI(chipID, dacCode, i+2);
-            } else if ( dacCode == MPX3RX_DAC_THRESH_3 ) {
-                if ( i >= 510 ) {
-                    i = 509;
-                }
-                SetDAC_propagateInGUI(chipID, dacCode, i+3);
-            } else if ( dacCode == MPX3RX_DAC_THRESH_4 ) {
-                if ( i >= 509 ) {
-                    i = 508;
-                }
-                SetDAC_propagateInGUI(chipID, dacCode, i+4);
-            } else if ( dacCode == MPX3RX_DAC_THRESH_5 ) {
-                if ( i >= 508 ) {
-                    i = 507;
-                }
-                SetDAC_propagateInGUI(chipID, dacCode, i+5);
-            } else if ( dacCode == MPX3RX_DAC_THRESH_6 ) {
-                if ( i >= 507 ) {
-                    i = 506;
-                }
-                SetDAC_propagateInGUI(chipID, dacCode, i+6);
-            } else if ( dacCode == MPX3RX_DAC_THRESH_7 ) {
-                if ( i >= 506 ) {
-                    i = 505;
-                }
-                SetDAC_propagateInGUI(chipID, dacCode, i+7);
             }
-
         }
     }
 }
@@ -608,5 +625,14 @@ void ThresholdScanThread::sumArrays(int nx, int ny)
         for(unsigned x = 0; x < (unsigned)nx; x++) {
              _summedData[y*nx+x] += _data[y*nx+x];
         }
+    }
+}
+
+void thresholdScan::on_checkBox_incrementOtherThresholds_stateChanged()
+{
+    if (ui->checkBox_incrementOtherThresholds->isChecked()) {
+        set_changeOtherThresholds(true);
+    } else {
+        set_changeOtherThresholds(false);
     }
 }

@@ -71,7 +71,7 @@ class thresholdScan;
 #define TP_PERIOD 40000 //! In units of 25 ns. 40000 * 25 ns = 1 ms = 1000 Hz
 
 const QString _softwareName = "ASI Dexter";
-const QString _softwareVersion = "1.7.0";
+const QString _softwareVersion = "1.7.1";
 
 namespace Ui {
 class Mpx3GUI;

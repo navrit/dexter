@@ -59,9 +59,13 @@ private:
     int dacCodeToScan = 0; //! Need to change this if trying to use more than one threshold to scan with
     int height;
     int width;
+    bool changeOtherThresholds = false;
     QString newPath;
 
     QString makePath();
+
+    bool get_changeOtherThresholds();
+    void set_changeOtherThresholds(bool arg);
 
     void enableSpinBoxes();
     void disableSpinBoxes();
@@ -86,6 +90,8 @@ private slots:
     void on_spinBox_maximum_valueChanged(int val);
 
     void on_spinBox_framesPerStep_valueChanged(int val);
+
+    void on_checkBox_incrementOtherThresholds_stateChanged();
 
 signals:
     void slideAndSpin(int, int);
