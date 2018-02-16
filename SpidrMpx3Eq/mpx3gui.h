@@ -27,7 +27,6 @@ class Mpx3Config;
 #include "mpx3eq_common.h"
 #include "qcstmvoxeltab.h"
 #include "mpx3config.h"
-#include "qcstmsteppermotor.h"
 #include "thresholdscan.h"
 
 class Mpx3Config;
@@ -43,8 +42,6 @@ class BarChartProperties;
 class QCstmEqualization;
 class QCstmGLVisualization;
 class QCstmConfigMonitoring;
-//class QcstmDQE;
-class QCstmStepperMotor;
 class thresholdScan;
 
 // Change me when adding extra views
@@ -53,8 +50,6 @@ class thresholdScan;
 #define __dacs_page_Id              2
 #define __equalization_page_Id      3
 #define __scans_page_Id             5
-#define __ct_page_Id                6
-#define __stepperMotor_page_Id      7
 #define __thresholdScan_page_Id     9
 
 #define BIN_FILES "Binary (*.bin)"
@@ -144,8 +139,6 @@ public:
     QCstmGLVisualization * getVisualization();
     QCstmDacs * getDACs();
     QCstmConfigMonitoring * getConfigMonitoring();
-//    QCstmDQE * getDQE();
-    QCstmStepperMotor * getStepperMotor();
     thresholdScan * getTHScan();
 
     SpidrController * GetSpidrController();
@@ -186,8 +179,6 @@ public:
     QString m_numberOfChipsFound = "";
 
     QString compileDateTime = QDate::currentDate().toString("yyyy-MM-dd") + QString(" ") + QString(__TIME__);
-
-    int getStepperMotorPageID();
 
 signals:
     void dataChanged();
@@ -258,7 +249,6 @@ private slots:
     void on_actionDefibrillator_triggered(bool checked);
     void on_actionRevert_triggered(bool checked);
     void on_actionAbout_triggered(bool checked);
-    void on_actionStepper_Motor_triggered(bool checked);
     void on_actionThreshold_Scan_triggered(bool);
 };
 

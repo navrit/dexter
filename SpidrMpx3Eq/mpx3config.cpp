@@ -54,7 +54,7 @@ bool Mpx3Config::RequiredOnGlobalConfig(Mpx3Config::config_items item)
 
 QJsonDocument Mpx3Config::buildConfigJSON(bool includeDacs)
 {
-    QJsonObject JSobjectParent, objIp, objDetector, objStepper;
+    QJsonObject JSobjectParent, objIp, objDetector;
     QJsonArray objDacsArray;
     objIp.insert("SpidrControllerIp", SpidrAddress.toString());
     objIp.insert("SpidrControllerPort", this->port);
@@ -86,17 +86,8 @@ QJsonDocument Mpx3Config::buildConfigJSON(bool includeDacs)
     objDetector.insert("DecodeFrames", this->decodeFrames);
     objDetector.insert("BiasVoltage", this->biasVolt);
 
-    objStepper.insert("Acceleration", this->stepperAcceleration);
-    objStepper.insert("Speed", this->stepperSpeed);
-    objStepper.insert("UseCalib", this->stepperUseCalib);
-    objStepper.insert("CalibPos0", this->stepperCalibPos0);
-    objStepper.insert("CalibAngle0", this->stepperCalibAngle0);
-    objStepper.insert("CalibPos1", this->stepperCalibPos1);
-    objStepper.insert("CalibAngle1", this->stepperCalibAngle1);
-
     JSobjectParent.insert("IPConfig", objIp);
     JSobjectParent.insert("DetectorConfig", objDetector);
-    JSobjectParent.insert("StepperConfig", objStepper);
 
     if(includeDacs){
         for(int j = 0; j < this->getDacCount(); j++){
@@ -763,42 +754,6 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
 
     }
 
-    itParent = JSobjectParent.find("StepperConfig");
-    if ( itParent != JSobjectParent.end() ) {
-
-        QJsonObject JSobject = itParent.value().toObject();
-
-        it = JSobject.find("Acceleration");
-        //double t1 = it.value().toDouble();
-        if(it != JSobject.end())
-            setStepperConfigAcceleration(it.value().toDouble());
-
-        it = JSobject.find("Speed");
-        if(it != JSobject.end())
-            setStepperConfigSpeed(it.value().toDouble());
-
-        it = JSobject.find("UseCalib");
-        if(it != JSobject.end())
-            setStepperConfigUseCalib(it.value().toBool());
-
-        it = JSobject.find("CalibPos0");
-        if(it != JSobject.end())
-            setStepperConfigCalibPos0(it.value().toDouble());
-
-        it = JSobject.find("CalibAngle0");
-        if(it != JSobject.end())
-            setStepperConfigCalibAngle0(it.value().toDouble());
-
-        it = JSobject.find("CalibPos1");
-        if(it != JSobject.end())
-            setStepperConfigCalibPos1(it.value().toDouble());
-
-        it = JSobject.find("CalibAngle1");
-        if(it != JSobject.end())
-            setStepperConfigCalibAngle1(it.value().toDouble());
-
-    }
-
     if(includeDacs){
         for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++)
             _dacVals[i].clear();
@@ -876,39 +831,4 @@ bool Mpx3Config::toJsonFile(QString filename, bool includeDacs){
     loadFile.write(doc.toJson());
 
     return true;
-}
-
-void  Mpx3Config::setStepperConfigCalib(QStandardItem * item) {
-
-    int row = item->row();
-    int col = item->column();
-
-    // Check value integrity. Needs to convert to a double.
-    QVariant val = item->data(Qt::DisplayRole);
-    double dval = 0.0;
-    QString posS;
-    if ( val.canConvert<QString>() ) {
-
-        posS = val.toString();
-        cout << posS.toStdString() << endl;
-        bool valok = false;
-        double dval = posS.toDouble( &valok );
-        cout << dval << endl;
-
-        if( ! valok ) return;
-
-    }
-
-    // If the value is ok check where it goes
-
-    if        ( row == 0 && col == 0 ) {
-        setStepperConfigCalibPos0( dval );
-    } else if ( row == 0 && col == 1 ) {
-        setStepperConfigCalibAngle0( dval );
-    } else if ( row == 1 && col == 0 ) {
-        setStepperConfigCalibPos1( dval );
-    } else if ( row == 1 && col == 1 ) {
-        setStepperConfigCalibAngle1( dval );
-    }
-
 }

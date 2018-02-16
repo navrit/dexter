@@ -112,9 +112,6 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _ui->CnMWidget->SetMpx3GUI(this);
     _ui->CnMWidget->widgetInfoPropagation();
 
-    // Stepper Motor control view
-    _ui->stepperMotorTab->SetMpx3GUI(this);
-
     // Threshold scan
     _ui->THScan->SetMpx3GUI( this );
 
@@ -137,7 +134,6 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+6", "Switch to Scans") ), this)  );
 
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+7", "Switch to CT") ), this)  );
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+8", "Switch to Stepper Motor Control") ), this)  );
 
     // Make Dexter somewhat scriptable via the GUI
 
@@ -366,10 +362,6 @@ bool Mpx3GUI::setTestPulses(int pixelSpacing, int startPixelOffset) {
 
 }
 
-int Mpx3GUI::getStepperMotorPageID()
-{
-    return __stepperMotor_page_Id;
-}
 
 void Mpx3GUI::SetupSignalsAndSlots(){
 
@@ -396,7 +388,6 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged(bool) ) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->CnMWidget , SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, &Mpx3GUI::ConnectionStatusChanged, this, &Mpx3GUI::onConnectionStatusChanged );
 
@@ -408,8 +399,6 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     // Connect signal from QCstmEqualization widget to slot here
     connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend);
     connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarClean, this, &Mpx3GUI::statusBarClean);
-
-    connect( _ui->stepperMotorTab, &QCstmStepperMotor::sig_statusBarAppend , this, &Mpx3GUI::statusBarAppend);
 
 
     for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {
@@ -456,14 +445,6 @@ void Mpx3GUI::on_shortcutsSwithPages() {
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
         //_ui->actionScans->setChecked(1);
-    } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+7")) ) ){
-        uncheckAllToolbarButtons();
-        _ui->stackedWidget->setCurrentIndex( __ct_page_Id );
-        //_ui-> actionXXX ->setChecked(1);
-    } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+8")) ) ){
-        uncheckAllToolbarButtons();
-        _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
-        _ui->actionStepper_Motor->setChecked(1);
     }
 
 }
@@ -1311,7 +1292,6 @@ QCstmEqualization * Mpx3GUI::getEqualization(){return _ui->equalizationWidget;}
 QCstmGLVisualization * Mpx3GUI::getVisualization() { return _ui->visualizationGL; }
 QCstmDacs * Mpx3GUI::getDACs() { return _ui->DACsWidget; }
 QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; }
-QCstmStepperMotor * Mpx3GUI::getStepperMotor() {return _ui->stepperMotorTab; }
 thresholdScan * Mpx3GUI::getTHScan() { return _ui->THScan; }
 
 void Mpx3GUI::on_actionExit_triggered()
@@ -1349,7 +1329,6 @@ void Mpx3GUI::uncheckAllToolbarButtons(){
     _ui->actionDACs->setChecked(0);
     _ui->actionEqualization->setChecked(0);
     _ui->actionThreshold_Scan->setChecked(0);
-    _ui->actionStepper_Motor->setChecked(0);
     //TODO _ui-> NEW ACTION ->setChecked(0);
 }
 
@@ -1456,13 +1435,6 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
     msgBox.setText( msg );
     msgBox.exec();
 }
-
-void Mpx3GUI::on_actionStepper_Motor_triggered(bool)
-{
-    uncheckAllToolbarButtons();
-    _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
-}
-
 
 void Mpx3GUI::on_actionDisconnect_triggered(bool checked){
 

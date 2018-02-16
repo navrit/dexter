@@ -97,7 +97,6 @@ SOURCES += main.cpp \
     dataconsumerthread.cpp \
     mtrDialog.cpp\
     optionsdialog.cpp \
-    qcstmsteppermotor.cpp \
     imagecalculator.cpp \
     thresholdscan.cpp \
     mpx3gui.cpp \
@@ -106,7 +105,6 @@ SOURCES += main.cpp \
     DataTakingThread.cpp \
     qcstmBHWindow.cpp \
     qcstmBHdialog.cpp \
-    StepperMotorController.cpp \
     qcustomplot.cpp
 
 HEADERS += mpx3gui.h \
@@ -136,7 +134,6 @@ HEADERS += mpx3gui.h \
     dataconsumerthread.h \
     mtrDialog.h\
     optionsdialog.h \
-    qcstmsteppermotor.h \
     imagecalculator.h \
     thresholdscan.h \
     barchart.h  \
@@ -144,7 +141,6 @@ HEADERS += mpx3gui.h \
     DataTakingThread.h \
     qcstmBHWindow.h \
     qcstmBHdialog.h \
-    StepperMotorController.h \
     qcustomplot.h
 
 FORMS    += mpx3gui.ui \
@@ -166,7 +162,6 @@ FORMS    += mpx3gui.ui \
     testpulses.ui \
     mtrDialog.ui\
     optionsdialog.ui \
-    qcstmsteppermotor.ui \
     imagecalculator.ui \
     thresholdscan.ui
 

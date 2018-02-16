@@ -40,7 +40,6 @@
       <widget class="QCstmDacs" name="DACsWidget"/>
       <widget class="QCstmEqualization" name="equalizationWidget"/>
       <widget class="QCstmThreshold" name="ThresholdTab"/>
-      <widget class="QCstmStepperMotor" name="stepperMotorTab"/>
       <widget class="QCstmVoxeltab" name="voxelTab"/>
       <widget class="thresholdScan" name="THScan"/>
      </widget>
@@ -425,24 +424,6 @@
     <string>Ctrl+H</string>
    </property>
   </action>
-  <action name="actionStepper_Motor">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/motor.png</normaloff>:/icons/motor.png</iconset>
-   </property>
-   <property name="text">
-    <string>Stepper Motor</string>
-   </property>
-   <property name="toolTip">
-    <string>Stepper Motor</string>
-   </property>
-  </action>
   <action name="actionLoad_equalisation_from_folder">
    <property name="icon">
     <iconset resource="icons.qrc">
@@ -516,12 +497,6 @@ adj_* and mask_*</string>
    <class>QCstmConfigMonitoring</class>
    <extends>QWidget</extends>
    <header>qcstmconfigmonitoring.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QCstmStepperMotor</class>
-   <extends>QWidget</extends>
-   <header>qcstmsteppermotor.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
