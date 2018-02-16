@@ -179,33 +179,6 @@
            </property>
           </widget>
          </item>
-         <item row="7" column="1" colspan="2">
-          <widget class="QPushButton" name="CTPushButton">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>32</height>
-            </size>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
-           <property name="text">
-            <string>Connect to motors</string>
-           </property>
-           <property name="checkable">
-            <bool>false</bool>
-           </property>
-           <property name="autoDefault">
-            <bool>true</bool>
-           </property>
-           <property name="default">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
          <item row="8" column="1" colspan="2">
           <widget class="QProgressBar" name="progressBar">
            <property name="enabled">
@@ -232,7 +205,6 @@
   <tabstop>spinBox_rotationAngle</tabstop>
   <tabstop>spinBox_ExposureTimePerPosition</tabstop>
   <tabstop>correctionMethod</tabstop>
-  <tabstop>CTPushButton</tabstop>
   <tabstop>textEdit</tabstop>
  </tabstops>
  <resources/>

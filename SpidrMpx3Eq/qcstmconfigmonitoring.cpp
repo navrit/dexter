@@ -82,8 +82,6 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     ui->radioButtonS->setEnabled( false );
     ui->radioButtonMS->setEnabled( false );
 
-//    ui->motorDial->setNotchesVisible( true );
-
 //    // Set inactive whatever is needed to be inactive
 //    activeInGUI();
 
