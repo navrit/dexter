@@ -39,7 +39,6 @@
       <widget class="QCstmConfigMonitoring" name="CnMWidget"/>
       <widget class="QCstmDacs" name="DACsWidget"/>
       <widget class="QCstmEqualization" name="equalizationWidget"/>
-      <widget class="QCstmDQE" name="dqeTab"/>
       <widget class="QCstmThreshold" name="ThresholdTab"/>
       <widget class="QCstmCT" name="ctTab"/>
       <widget class="QCstmStepperMotor" name="stepperMotorTab"/>
@@ -524,12 +523,6 @@ adj_* and mask_*</string>
    <class>QCstmCT</class>
    <extends>QWidget</extends>
    <header>qcstmct.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QCstmDQE</class>
-   <extends>QWidget</extends>
-   <header>qcstmdqe.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

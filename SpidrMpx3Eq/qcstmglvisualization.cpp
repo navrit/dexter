@@ -1521,10 +1521,6 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     //QAction calcProY(QString("ProfileY (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&calcProY);
 
-    QAction gotoDQE(QString("Use for DQE"),&contextMenu);
-    //QAction gotoDQE(QString("Use for DQE (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
-    contextMenu.addAction(&gotoDQE);
-
     contextMenu.setMinimumWidth(300);
 
     // Show the menu
@@ -1542,18 +1538,6 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _statsdialog->SetMpx3GUI(_mpx3gui);
         _statsdialog->changeText();
         _statsdialog->show();
-
-    }
-
-    else if (selectedItem == &gotoDQE){
-        _mpx3gui->GetUI()->dqeTab->clearDataAndPlots(false);
-        _mpx3gui->GetUI()->dqeTab->setRegion(pixel_begin_checked, pixel_end_checked);
-        _mpx3gui->GetUI()->dqeTab->setSelectedThreshold(threshold);
-
-        _mpx3gui->GetUI()->stackedWidget->setCurrentIndex(__dqe_page_Id);
-        _mpx3gui->GetUI()->actionVisualization->setChecked(false);
-
-        _mpx3gui->GetUI()->dqeTab->plotESF();
 
     }
 
@@ -1844,7 +1828,6 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
     ui->glPlot->getPlot()->setActive(layer);
     ui->histPlot->setActive(layer);
     ui->layerSelector->setCurrentIndex(layer);
-    _mpx3gui->GetUI()->dqeTab->setSelectedThreshold(threshold);
     //_mpx3gui->set_active_frame(threshold);
     this->active_frame_changed();
 }

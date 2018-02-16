@@ -112,9 +112,6 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _ui->CnMWidget->SetMpx3GUI(this);
     _ui->CnMWidget->widgetInfoPropagation();
 
-    // DQE
-    _ui->dqeTab->SetMpx3GUI(this);
-
     // Stepper Motor control view
     _ui->stepperMotorTab->SetMpx3GUI(this);
 
@@ -140,7 +137,6 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+3", "Switch to DAC control") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+4", "Switch to Equalization") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+5", "Switch to Threshold Scan") ), this)  );
-    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+5", "Switch to DQE calculation") ), this)  );
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+6", "Switch to Scans") ), this)  );
 
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+7", "Switch to CT") ), this)  );
@@ -403,7 +399,6 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged(bool) ) );
-    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->dqeTab, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->CnMWidget , SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, &Mpx3GUI::ConnectionStatusChanged, this, &Mpx3GUI::onConnectionStatusChanged );
@@ -459,11 +454,6 @@ void Mpx3GUI::on_shortcutsSwithPages() {
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __thresholdScan_page_Id );
         _ui->actionThreshold_Scan->setChecked(1);
-
-    } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+5")) ) ){
-        uncheckAllToolbarButtons();
-        _ui->stackedWidget->setCurrentIndex( __dqe_page_Id );
-        //_ui->actionDQE->setChecked(1);
 
     } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+6")) ) ){
         uncheckAllToolbarButtons();
@@ -1177,23 +1167,10 @@ void Mpx3GUI::open_data(bool saveOriginal){
 
     this->setWindowTitle( _softwareName + QString(": ")+ filename);
 
-    // DQE ! ... this is on the way here !!!
-    //    // If not in DQE - change back to Visualisation
-    //    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
-
-    //if(!_ui->dqeTab->openingNPSfile){       //CHECK ME >>>>>>>>>>>>>>
-    //    uncheckAllToolbarButtons();
-    //    _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
-    //    _ui->actionVisualization->setChecked(1);
-    //}
-
     //Ask whether the loaded data is already OBcorrected or not.
     QMessageBox::StandardButton reply = QMessageBox::question( this, tr("Specify data"), tr("Is this data corrected?"), QMessageBox::Yes | QMessageBox::No);
     if(reply == QMessageBox::Yes) getDataset()->setCorrected(true);
     else getDataset()->setCorrected(false);
-
-    // DQE ! ... this is on the way here !!!
-    //emit returnFilename(filename);
 
     return;
 }
@@ -1241,16 +1218,6 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
 
     if(!requestPath) {
         emit returnFilename(filename);
-    }
-
-    // If not in DQE - change back to Visualisation
-    //    if (!(_ui->stackedWidget->currentIndex() == __dqe_page_Id)){
-    //        _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
-    //    }
-    if(!_ui->dqeTab->openingNPSfile){
-        uncheckAllToolbarButtons();
-        _ui->stackedWidget->setCurrentIndex(__visualization_page_Id);
-        _ui->actionVisualization->setChecked(1);
     }
 
     return;
@@ -1326,7 +1293,6 @@ void Mpx3GUI::clear_configuration(){
 void Mpx3GUI::clear_data(bool clearStatusBar) {
 
     getDataset()->clear();
-    //    _ui->dqeTab->clearDataAndPlots(true);
     emit data_cleared();
     this->setWindowTitle( _softwareName);
 
@@ -1348,7 +1314,6 @@ QCstmEqualization * Mpx3GUI::getEqualization(){return _ui->equalizationWidget;}
 QCstmGLVisualization * Mpx3GUI::getVisualization() { return _ui->visualizationGL; }
 QCstmDacs * Mpx3GUI::getDACs() { return _ui->DACsWidget; }
 QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; }
-//QCstmDQE * Mpx3GUI::getDQE(){ return _ui->dqeTab; }
 QCstmStepperMotor * Mpx3GUI::getStepperMotor() {return _ui->stepperMotorTab; }
 QCstmCT * Mpx3GUI::getCT() { return _ui->ctTab; }
 thresholdScan * Mpx3GUI::getTHScan() { return _ui->THScan; }

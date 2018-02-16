@@ -2,7 +2,6 @@
 #include "ui_optionsdialog.h"
 #include "mpx3gui.h"
 #include "ui_mpx3gui.h"
-#include "qcstmdqe.h"
 #include <QDialogButtonBox>
 
 optionsDialog::optionsDialog(QWidget *parent) :
@@ -21,9 +20,6 @@ optionsDialog::optionsDialog(QWidget *parent) :
 void optionsDialog::SetMpx3GUI(Mpx3GUI * p )
 {
     _mpx3gui = p;
-
-    connect( this, SIGNAL(close_optionsDialog()), _mpx3gui->GetUI()->dqeTab, SLOT(on_close_optionsDialog()) );
-    connect( this, SIGNAL(apply_options(QHash<QString, int>)), _mpx3gui->GetUI()->dqeTab, SLOT(on_apply_options(QHash<QString, int>)) );
 }
 
 QString optionsDialog::getCurrentTab()
@@ -252,16 +248,6 @@ void optionsDialog::on_roiYsizeSpinBox_editingFinished()
 
 void optionsDialog::on_selectedRoIRadioButton_toggled(bool checked)
 {
-    if(checked){
-        //Check if a region of interest is selected.
-        if(!_mpx3gui->GetUI()->dqeTab->isValidRegionSelected()){
-            ui->selectedRoIRadioButton->setChecked( false );
-            ui->fullImageRadioButton->setChecked(   true  );
-
-            QMessageBox::warning ( this, tr("No valid region selected"), tr( "Please select a region of interest that lies within the image." ) );
-            _mpx3gui->GetUI()->stackedWidget->setCurrentIndex( __visualization_page_Id );
-        }
-    }
     ui->edgeSpinBox->setEnabled(checked);
 }
 
