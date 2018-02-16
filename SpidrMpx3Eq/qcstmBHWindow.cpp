@@ -38,7 +38,6 @@ void QCstmBHWindow::SetMpx3GUI(Mpx3GUI *p){
     connect(this, &QCstmBHWindow::openData2, _mpx3gui, &Mpx3GUI::open_data_with_path);
     connect(this, SIGNAL(reload()),_mpx3gui->getVisualization(),SLOT(reload_all_layers()));
     connect(_mpx3gui, SIGNAL(open_data_failed()), this, SLOT(on_open_data_failed())); //! Ignore no matching signal error - it's whiny
-    connect(_mpx3gui->getCT(), SIGNAL(doBHCorrection()), this, SLOT(on_doBHCorrection()));
     connect(this,SIGNAL(applyCorrection()), this, SLOT(on_applyBHCorrection()));
     connect(_corr, SIGNAL(applyBHCorrection()), this, SLOT(on_applyBHCorrection()));
 

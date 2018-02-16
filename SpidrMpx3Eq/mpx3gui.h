@@ -28,7 +28,6 @@ class Mpx3Config;
 #include "qcstmvoxeltab.h"
 #include "mpx3config.h"
 #include "qcstmsteppermotor.h"
-#include "qcstmct.h"
 #include "thresholdscan.h"
 
 class Mpx3Config;
@@ -46,7 +45,6 @@ class QCstmGLVisualization;
 class QCstmConfigMonitoring;
 //class QcstmDQE;
 class QCstmStepperMotor;
-class QCstmCT;
 class thresholdScan;
 
 // Change me when adding extra views
@@ -148,7 +146,6 @@ public:
     QCstmConfigMonitoring * getConfigMonitoring();
 //    QCstmDQE * getDQE();
     QCstmStepperMotor * getStepperMotor();
-    QCstmCT * getCT();
     thresholdScan * getTHScan();
 
     SpidrController * GetSpidrController();

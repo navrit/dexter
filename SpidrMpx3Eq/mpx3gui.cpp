@@ -115,9 +115,6 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     // Stepper Motor control view
     _ui->stepperMotorTab->SetMpx3GUI(this);
 
-    // CT
-    _ui->ctTab->SetMpx3GUI( this );
-
     // Threshold scan
     _ui->THScan->SetMpx3GUI( this );
 
@@ -1315,7 +1312,6 @@ QCstmGLVisualization * Mpx3GUI::getVisualization() { return _ui->visualizationGL
 QCstmDacs * Mpx3GUI::getDACs() { return _ui->DACsWidget; }
 QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; }
 QCstmStepperMotor * Mpx3GUI::getStepperMotor() {return _ui->stepperMotorTab; }
-QCstmCT * Mpx3GUI::getCT() { return _ui->ctTab; }
 thresholdScan * Mpx3GUI::getTHScan() { return _ui->THScan; }
 
 void Mpx3GUI::on_actionExit_triggered()

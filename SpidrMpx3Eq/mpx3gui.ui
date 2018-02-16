@@ -40,7 +40,6 @@
       <widget class="QCstmDacs" name="DACsWidget"/>
       <widget class="QCstmEqualization" name="equalizationWidget"/>
       <widget class="QCstmThreshold" name="ThresholdTab"/>
-      <widget class="QCstmCT" name="ctTab"/>
       <widget class="QCstmStepperMotor" name="stepperMotorTab"/>
       <widget class="QCstmVoxeltab" name="voxelTab"/>
       <widget class="thresholdScan" name="THScan"/>
@@ -517,12 +516,6 @@ adj_* and mask_*</string>
    <class>QCstmConfigMonitoring</class>
    <extends>QWidget</extends>
    <header>qcstmconfigmonitoring.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QCstmCT</class>
-   <extends>QWidget</extends>
-   <header>qcstmct.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

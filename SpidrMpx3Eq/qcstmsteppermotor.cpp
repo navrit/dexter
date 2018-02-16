@@ -60,8 +60,6 @@ void QCstmStepperMotor::SetMpx3GUI(Mpx3GUI *p)
     // When the slider released, talk to the hardware
     QObject::connect( ui->motorDial, SIGNAL(sliderReleased()), this, SLOT(motorDialReleased()) );
     QObject::connect( ui->motorDial, SIGNAL(sliderMoved(int)), this, SLOT(motorDialMoved(int)) );
-
-    connect( this, SIGNAL(sig_motorsConnected()), _mpx3gui->GetUI()->ctTab, SLOT(slot_connectedToMotors()) );
 }
 
 //TODO Maybe use this???
@@ -425,7 +423,6 @@ void QCstmStepperMotor::on_motorGoToTargetButton_clicked()
     if ( ! _stepperThread ) {
         _stepperThread = new ConfigStepperThread( _mpx3gui, ui, this );
         connect(_stepperThread, SIGNAL(finished()), this, SLOT(stepperGotoTargetFinished()) );
-        connect(_stepperThread, SIGNAL(finished()), _mpx3gui->getCT(), SLOT(slot_motorReachedTarget()) );
     }
 
     _stepperThread->start();
@@ -574,7 +571,6 @@ void QCstmStepperMotor::on_motorTestButton_clicked()
 
         _stepperThread = new ConfigStepperThread( _mpx3gui, ui, this );
         connect(_stepperThread, SIGNAL(finished()), this, SLOT(stepperGotoTargetFinished()) );
-        connect(_stepperThread, SIGNAL(finished()), _mpx3gui->getCT(), SLOT(slot_motorReachedTarget()) );
 
     }
 
@@ -610,7 +606,6 @@ void QCstmStepperMotor::stepperGotoTargetFinished()
 
             _stepperThread = new ConfigStepperThread( _mpx3gui, ui, this );
             connect(_stepperThread, SIGNAL(finished()), this, SLOT(stepperGotoTargetFinished()) );
-            connect(_stepperThread, SIGNAL(finished()), _mpx3gui->getCT(), SLOT(slot_motorReachedTarget()) );
         }
 
         // go !
