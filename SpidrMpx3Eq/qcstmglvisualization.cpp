@@ -11,9 +11,6 @@
 #include "qcstmconfigmonitoring.h"
 #include "ui_qcstmconfigmonitoring.h"
 
-#include "thresholdscan.h"
-#include "ui_thresholdscan.h"
-
 #include "color2drecoguided.h"
 
 //#include "mpx3gui.h"
@@ -300,12 +297,6 @@ void QCstmGLVisualization::saveImage(QString filename, QString corrMethod)
 
 void QCstmGLVisualization::StartDataTaking(QString mode) {
 
-    if (mode == "CT") {
-        runningCT = true;
-    } else if (mode == "THScan") {
-        runningTHScan = true;
-    }
-
     if ( !_dataTakingThread ) {
 
         _dataConsumerThread = new DataConsumerThread(_mpx3gui, this);
@@ -552,13 +543,6 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
 
     _takingData = false;
 
-    if (runningCT) {
-        emit sig_resumeCT();
-    }
-    if (runningTHScan) {
-        emit sig_resumeTHScan();
-    }
-
     // inform the consumer that the data taking is finished
     if ( _dataConsumerThread->isRunning() ) {
         _dataConsumerThread->dataTakingSaysIFinished();
@@ -795,7 +779,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect(ui->binCountSpinner, SIGNAL(valueChanged(int)), this, SLOT(changeBinCount(int)));
     connect(ui->glPlot->getPlot(), SIGNAL(hovered_pixel_changed(QPoint)),this, SLOT(hover_changed(QPoint)));
     connect(ui->glPlot->getPlot(), SIGNAL(pixel_selected(QPoint,QPoint)), this, SLOT(pixel_selected(QPoint,QPoint)));
-    connect(ui->glPlot->getPlot(), SIGNAL(region_selected(QPoint,QPoint,QPoint)), this, SLOT(region_selected(QPoint,QPoint,QPoint)));
+    //connect(ui->glPlot->getPlot(), SIGNAL(region_selected(QPoint,QPoint,QPoint)), this, SLOT(region_selected(QPoint,QPoint,QPoint)));
 
     connect(this, SIGNAL(change_hover_text(QString)), ui->mouseOverLabel, SLOT(setText(QString)));
     //connect(ui->fullRangeRadio, SIGNAL(pressed()), ui->histPlot, SLOT(set_scale_full()));
@@ -847,9 +831,6 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     emit mode_changed( ui->summingCheckbox->isChecked() );
 
     connect( ui->saveCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_saveCheckBox_clicked()));
-
-    // TH Scan
-    connect( this, SIGNAL(sig_resumeTHScan()), _mpx3gui->getTHScan(), SLOT(resumeTHScan()));
 }
 
 void QCstmGLVisualization::ntriggers_edit() {
@@ -858,10 +839,6 @@ void QCstmGLVisualization::ntriggers_edit() {
     _mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner->setValue(
                 ui->nTriggersSpinBox->value()
                 );
-
-    _mpx3gui->getTHScan()->GetUI()->spinBox_framesPerStep->setValue(
-            ui->nTriggersSpinBox->value()
-            );
 
     // And try to send the new config
     _mpx3gui->getConfig()->setNTriggers(

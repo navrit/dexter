@@ -28,8 +28,6 @@
 
 #include "qcustomplot.h"
 
-#include "ui_thresholdscan.h"
-
 
 QCstmDacs::QCstmDacs(QWidget *parent) :
     QWidget(parent),
