@@ -445,7 +445,7 @@ void QCstmGLPlot::mouseReleaseEvent(QMouseEvent * event){
         if (clickedLocation == clickReleaseLocation) {
             emit( pixel_selected( pixelAt(event->pos()), event->globalPos()) );
         } else {
-            emit( region_selected( pixelAt(clickedLocation), pixelAt(clickReleaseLocation), event->globalPos()) );
+            //emit( region_selected( pixelAt(clickedLocation), pixelAt(clickReleaseLocation), event->globalPos()) );
         }
 
         rightClicked = false;

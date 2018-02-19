@@ -89,7 +89,6 @@ SOURCES += main.cpp \
     heatmapdisplay.cpp \
     color2drecoguided.cpp \
     qcstmcorrectionsdialog.cpp \
-    statsdialog.cpp \
     dataconsumerthread.cpp \
     mtrDialog.cpp\
     imagecalculator.cpp \
@@ -119,7 +118,6 @@ HEADERS += mpx3gui.h \
     heatmapdisplay.h \
     color2drecoguided.h \
     qcstmcorrectionsdialog.h \
-    statsdialog.h \
     dataconsumerthread.h \
     mtrDialog.h\
     imagecalculator.h \
@@ -138,7 +136,6 @@ FORMS    += mpx3gui.ui \
     qcstmconfigmonitoring.ui \
     heatmapdisplay.ui \
     qcstmcorrectionsdialog.ui \
-    statsdialog.ui \
     mtrDialog.ui\
     imagecalculator.ui \
     thresholdscan.ui
