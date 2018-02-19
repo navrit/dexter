@@ -627,39 +627,6 @@ void Dataset::toASCII(QString filename)
     } // end of for loop that cycles through the layers (threshold)
 }
 
-QVector<QVector<int> > Dataset::collectPointsROI(int threshold, QPoint pixel_init, QPoint pixel_end)
-{
-    //The data is made so that:
-    //      - Each row represents an horizontal row of pixels, starting from the bottom of the selected RoI.
-    //      - The elements in each row represent the pixels in the row, starting from the left.
-    //The data can thus be seen as a normal cartesian system, where the left side of each pixel is the index.
-    //To get datapoints in the middle of each pixel, a correction of +0.5 pixel has to be added in both the x and y direction, when working with the data..
-
-    int Ny = abs( pixel_end.y() - pixel_init.y() ) + 1;//Number of pixels in the y-direction.
-    int Nx = abs( pixel_end.x() - pixel_init.x() ) + 1;
-
-    //Setup data matrix of size x*y.
-    if(!valuesinRoI.empty()){
-        valuesinRoI.clear();
-        //valuesinRoI.squeeze();//Release all memory previously reserved (??)
-    }
-    valuesinRoI.resize(Ny);
-    for(int i = 0; i < Ny; i++){
-        valuesinRoI[i].resize(Nx);
-    }
-
-    //Fill data matrix with values within the RoI.
-    for(int y = 0; y < Ny; y++){
-        for(int x = 0; x < Nx; x++){
-            //Let y go from bottom to top and let x go from left to right in valuesinRoI.
-            //y = 0 is bottom row and is filled last in this loop.
-            valuesinRoI[Ny - 1 - y][x] = sample( pixel_init.x() + x, pixel_init.y() - y, threshold);
-        }
-    }
-
-    return valuesinRoI;
-}
-
 QPointF Dataset::XtoXY(int X, int dimX){
     return QPointF(X % dimX, X/dimX);
 }
@@ -729,46 +696,6 @@ void Dataset::calcBasicStats(QPoint pixel_init, QPoint pixel_end) {
     }
 }
 
-double Dataset::calcRegionMean(int begin, int end, QMap<int, int> Axismap){
-
-    double mean =0.;
-    double nMean = 0.;
-
-    QMap<int,int>::const_iterator i = Axismap.constBegin();
-    while(i != Axismap.constEnd())
-    {
-        if(i.key() >= begin && i.key() <= end){
-            mean +=   i.value();
-            nMean++;
-        }
-        i++;
-    }
-    if(nMean != 0) mean /= nMean;
-
-
-    return mean;
-}
-
-double Dataset::calcRegionStdev(int begin, int end, QMap<int, int> Axismap, double mean){
-
-    double stdev = 0.;
-    double N = 0.;
-
-    QMap<int,int>::const_iterator i = Axismap.constBegin();
-    while(i != Axismap.constEnd())
-    {
-        if(i.key() >= begin && i.key() <= end){
-            stdev += (i.value() - mean)*(i.value() - mean);
-            N++;
-        }
-        i++;
-    }
-    if ( N != 0 ) stdev /= N;
-    stdev = sqrt(stdev);
-
-    return stdev;
-}
-
 bool Dataset::isBorderPixel(int p, QSize isize) {
 
     if (
@@ -792,48 +719,6 @@ bool Dataset::isBorderPixel(int x, int y, QSize isize) {
     if ( x >= isize.width()  - 1 ) return true;	// right edge
 
     return false;
-}
-
-double Dataset::calcPadMean(int thlkey, QSize isize) {
-
-    double mean = 0.0;
-    int meanCntr = 0;
-
-    for(int y = 0 ; y < isize.height() ; y++) {
-
-        for(int x = 0 ; x < isize.width() ; x++) {
-
-            // Around pixel (29,30)(dead) for info
-            /*
-            if ( x == 29 && y == 30 ) {
-                cout
-                        << sample(x, y+1, thlkey)
-                        << ", " << sample(x+1, y, thlkey)
-                        << ", " << sample(x, y-1, thlkey)
-                        << ", " << sample(x-1, y, thlkey)
-                        << endl;
-            }
-            */
-
-            // sample and skip if it's a dead pixel
-            int sampling = sample(x, y, thlkey);
-            if ( sampling <= 0 ) continue;
-
-            // skip borders
-            if ( isBorderPixel(x,y, isize) ) continue;
-
-            // calculate the mean
-            mean += sampling;
-            meanCntr++;
-
-
-        }
-
-    }
-    // no borders !
-    mean /= (double)meanCntr;
-
-    return mean;
 }
 
 //! Interhigh interpolation
@@ -1117,37 +1002,6 @@ map< pair<int, int>, int > Dataset::activeNeighbors(int x, int y, int thl, QSize
 
     return activeNeighbors;
 }
-
-QMap<int, double> Dataset::GetPadMean() {
-
-    QMap<int, double> meanvals;
-
-    QList<int> keys = m_thresholdsToIndices.keys();
-    QSize isize = QSize(computeBoundingBox().size().width()*this->x(), computeBoundingBox().size().height()*this->y());
-    for ( int i = 0; i < keys.length(); i++ ) {
-        meanvals[keys[i]] = calcPadMean(keys[i], isize); // this function is CPU consuming and this scope is blocking !
-    }
-
-    // Print
-    cout << '\t';
-    for(int i = 0; i < keys.length(); i++) {
-        cout <<  "[" << keys[i] << "]" << '\t';
-    }
-    cout << endl;
-
-    cout << fixed;
-    cout.precision(0);
-    cout << "mean:" << '\t';
-    for(int i = 0; i < keys.length(); i++) {
-        cout << meanvals[ keys[i] ] << '\t';
-    }
-    cout << endl;
-
-
-
-    return meanvals;
-}
-
 
 void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
 

@@ -92,7 +92,6 @@ SOURCES += main.cpp \
     statsdialog.cpp \
     dataconsumerthread.cpp \
     mtrDialog.cpp\
-    optionsdialog.cpp \
     imagecalculator.cpp \
     thresholdscan.cpp \
     mpx3gui.cpp \
@@ -123,7 +122,6 @@ HEADERS += mpx3gui.h \
     statsdialog.h \
     dataconsumerthread.h \
     mtrDialog.h\
-    optionsdialog.h \
     imagecalculator.h \
     thresholdscan.h \
     barchart.h  \
@@ -139,11 +137,9 @@ FORMS    += mpx3gui.ui \
     qcstmthreshold.ui \
     qcstmconfigmonitoring.ui \
     heatmapdisplay.ui \
-    qcstmct.ui \
     qcstmcorrectionsdialog.ui \
     statsdialog.ui \
     mtrDialog.ui\
-    optionsdialog.ui \
     imagecalculator.ui \
     thresholdscan.ui
 

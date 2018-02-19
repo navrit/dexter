@@ -109,9 +109,6 @@ private:
     int getLayerIndex(int threshold);
     void rewindScores();
 
-    QVector<QVector<int> > valuesinRoI;//!A matrix of the values of the pixels contained in the region of interest. Each row corresponds to a row of pixels (LtR), from Bottom to Top.
-
-
 public:
     Dataset(int x, int y, int framesPerLayer = 1, int pixelDepthBits = 12);
     Dataset();
@@ -150,7 +147,6 @@ public:
     void calcBasicStats(QPoint pixel_init, QPoint pixel_end); //!Calculates the Mean and standard deviation of the pixel values in the selected region.
     double calcRegionMean(int begin, int end, QMap<int, int> Axismap); //!Calculates the mean of a region.
     double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);   //!Calculates the standard deviation of a region.
-    QVector<QVector<int> > collectPointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end); //!Collects the data of a region of interest. for a specific layer/threshold.
 
     QPointF XtoXY(int X, int dimX);
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
@@ -215,11 +211,8 @@ public:
     int vectorAverage(std::vector<int> v);
     int averageValues(map< pair<int, int>, int > m1);
     void appendSelection(int x, int y, int thl, int compareto, comp c, map< pair<int, int>, int > & );
-    double calcPadMean(int thlkey, QSize isize);
     std::vector<int> getIntersection(map< pair<int, int>, int > m1, map< pair<int, int>, int > m2);
     void DumpSmallMap(map< pair<int, int>, int > m1);
-
-    QMap<int, double> GetPadMean();
 
     int newLayer(int layer);//!<Adds a new layer at the specified threshold.
 
