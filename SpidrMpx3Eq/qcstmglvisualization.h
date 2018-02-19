@@ -35,7 +35,6 @@ class DataConsumerThread;
 class QCstmCorrectionsDialog;
 class StatsDialog;
 class ProfileDialog;
-class TestPulses;
 class ImageCalculator;
 
 namespace Ui {
@@ -156,7 +155,6 @@ private:
     bool _dropFrames = true;
 
     MTRDialog * _mtrDialog = nullptr;
-    TestPulses * _testPulsesDialog = nullptr;
 
     typedef struct {
         unsigned int nFramesReceived;
@@ -250,10 +248,6 @@ private slots:
     void on_multiThresholdAnalysisPushButton_clicked();
 
     void on_MTRClosed();
-
-    void on_testPulsesClosed();
-
-    void on_testPulsesPushButton_clicked();
 
     void on_dropFramesCheckBox_clicked(bool checked);
 

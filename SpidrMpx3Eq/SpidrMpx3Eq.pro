@@ -91,7 +91,6 @@ SOURCES += main.cpp \
     qcstmcorrectionsdialog.cpp \
     statsdialog.cpp \
     profiledialog.cpp \
-    testpulses.cpp \
     dataconsumerthread.cpp \
     mtrDialog.cpp\
     optionsdialog.cpp \
@@ -126,7 +125,6 @@ HEADERS += mpx3gui.h \
     qcstmcorrectionsdialog.h \
     statsdialog.h \
     profiledialog.h \
-    testpulses.h \
     dataconsumerthread.h \
     mtrDialog.h\
     optionsdialog.h \
@@ -154,7 +152,6 @@ FORMS    += mpx3gui.ui \
     statsdialog.ui \
     profiledialog.ui \
     qcstmBHdialog.ui \
-    testpulses.ui \
     mtrDialog.ui\
     optionsdialog.ui \
     imagecalculator.ui \

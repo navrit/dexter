@@ -132,13 +132,6 @@ public:
         int DiscCsmSpm;
     } extra_config_parameters;
 
-    typedef struct {
-        int V_TP_Ref;
-        int V_TP_RefA;
-        int V_TP_RefB;
-    } testpulses_config_parameters;
-
-
     void SendConfiguration(config_items item = __ALL);
     void PickupStaticConfigurationFigures();
     void Configuration(bool reset, int deviceIndex, config_items item = __ALL);

@@ -9,7 +9,6 @@
 #include "qcstmcorrectionsdialog.h"
 #include "statsdialog.h"
 #include "profiledialog.h"
-#include "testpulses.h"
 
 #include "qcstmconfigmonitoring.h"
 #include "ui_qcstmconfigmonitoring.h"
@@ -1088,7 +1087,6 @@ void QCstmGLVisualization::developerMode(bool enabled)
     if (enabled){
         //! Enable a bunch of 'advanced' buttons
         ui->multiThresholdAnalysisPushButton->show();
-        ui->testPulsesPushButton->show();
         ui->line->show();
         ui->generateDataButton->show();
         ui->imageCalculatorPushButton->show();
@@ -1104,7 +1102,6 @@ void QCstmGLVisualization::developerMode(bool enabled)
     } else {
         //! Disable a bunch of 'advanced' buttons
         ui->multiThresholdAnalysisPushButton->hide();
-        ui->testPulsesPushButton->hide();
         ui->line->hide();
         ui->generateDataButton->hide();
         ui->imageCalculatorPushButton->hide();
@@ -2064,24 +2061,6 @@ void QCstmGLVisualization::on_MTRClosed(){
         delete _mtrDialog;
         _mtrDialog = nullptr;
     }
-}
-
-void QCstmGLVisualization::on_testPulsesClosed(){
-    if ( _testPulsesDialog ) {
-        disconnect(_mtrDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
-        delete _testPulsesDialog;
-        _testPulsesDialog = nullptr;
-    }
-}
-
-void QCstmGLVisualization::on_testPulsesPushButton_clicked(){
-    if ( ! _testPulsesDialog ) {
-
-        _testPulsesDialog = new TestPulses(_mpx3gui, this);
-        connect(_testPulsesDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
-    }
-
-    _testPulsesDialog->show(); // modeless
 }
 
 void QCstmGLVisualization::on_dropFramesCheckBox_clicked(bool checked){
