@@ -25,7 +25,6 @@ class Mpx3Config;
 #include "gradient.h"
 #include "histogram.h"
 #include "mpx3eq_common.h"
-#include "qcstmvoxeltab.h"
 #include "mpx3config.h"
 #include "thresholdscan.h"
 

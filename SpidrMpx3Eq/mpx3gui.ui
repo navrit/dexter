@@ -40,7 +40,6 @@
       <widget class="QCstmDacs" name="DACsWidget"/>
       <widget class="QCstmEqualization" name="equalizationWidget"/>
       <widget class="QCstmThreshold" name="ThresholdTab"/>
-      <widget class="QCstmVoxeltab" name="voxelTab"/>
       <widget class="thresholdScan" name="THScan"/>
      </widget>
     </item>
@@ -485,12 +484,6 @@ adj_* and mask_*</string>
    <class>QCstmThreshold</class>
    <extends>QWidget</extends>
    <header>qcstmthreshold.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QCstmVoxeltab</class>
-   <extends>QWidget</extends>
-   <header>qcstmvoxeltab.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

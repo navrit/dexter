@@ -80,11 +80,9 @@ SOURCES += main.cpp \
     gradientwidget.cpp \
     qcstmglvisualization.cpp \
     qcstmglplot.cpp \
-    qcstmvoxeltab.cpp \
     gradient.cpp \
     dataset.cpp \
     qcstmthreshold.cpp \
-    voxelwidget.cpp \
     mpx3config.cpp \
     qcstmconfigmonitoring.cpp \
     qcstmruler.cpp \
@@ -116,12 +114,10 @@ HEADERS += mpx3gui.h \
     gradientwidget.h \
     qcstmglvisualization.h \
     qcstmglplot.h \
-    qcstmvoxeltab.h \
     gradient.h \
     mpx3eq_common.h \
     dataset.h \
     qcstmthreshold.h \
-    voxelwidget.h \
     mpx3config.h \
     qcstmconfigmonitoring.h \
     qcstmruler.h \
@@ -149,7 +145,6 @@ FORMS    += mpx3gui.ui \
     gradientwidget.ui \
     qcstmglvisualization.ui \
     qcstmthreshold.ui \
-    qcstmvoxeltab.ui \
     qcstmconfigmonitoring.ui \
     heatmapdisplay.ui \
     qcstmct.ui \
