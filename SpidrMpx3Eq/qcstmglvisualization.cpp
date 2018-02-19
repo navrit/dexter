@@ -1949,17 +1949,6 @@ void QCstmGLVisualization::consumerBufferFull(int)
 
 }
 
-void QCstmGLVisualization::on_imageCalculatorPushButton_clicked()
-{
-    if ( ! _imageCalcDialog ) {
-
-        _imageCalcDialog = new ImageCalculator(_mpx3gui, this);
-        //connect(_imageCalcDialog, SIGNAL(), this, SLOT());
-    }
-
-    _imageCalcDialog->show(); // modeless
-}
-
 void QCstmGLVisualization::on_saveAllCheckBox_toggled(bool checked)
 {
     if ( checked ) {
