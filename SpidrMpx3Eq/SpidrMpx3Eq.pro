@@ -90,7 +90,6 @@ SOURCES += main.cpp \
     color2drecoguided.cpp \
     qcstmcorrectionsdialog.cpp \
     statsdialog.cpp \
-    profiledialog.cpp \
     dataconsumerthread.cpp \
     mtrDialog.cpp\
     optionsdialog.cpp \
@@ -122,7 +121,6 @@ HEADERS += mpx3gui.h \
     color2drecoguided.h \
     qcstmcorrectionsdialog.h \
     statsdialog.h \
-    profiledialog.h \
     dataconsumerthread.h \
     mtrDialog.h\
     optionsdialog.h \
@@ -144,7 +142,6 @@ FORMS    += mpx3gui.ui \
     qcstmct.ui \
     qcstmcorrectionsdialog.ui \
     statsdialog.ui \
-    profiledialog.ui \
     mtrDialog.ui\
     optionsdialog.ui \
     imagecalculator.ui \

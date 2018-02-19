@@ -109,7 +109,6 @@ private:
     int getLayerIndex(int threshold);
     void rewindScores();
 
-    QList<int> Profilepoints = QList<int>() << -1 << -1 << -1 << -1 << -1 << -1; //!The points on a profile that are used to calculate the CNR. Initialized to -1 to indicate that no value has been specified (yet).
     QVector<QVector<int> > valuesinRoI;//!A matrix of the values of the pixels contained in the region of interest. Each row corresponds to a row of pixels (LtR), from Bottom to Top.
 
 
@@ -149,22 +148,12 @@ public:
     void applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
     int applyColor2DRecoGuided(Color2DRecoGuided * );
     void calcBasicStats(QPoint pixel_init, QPoint pixel_end); //!Calculates the Mean and standard deviation of the pixel values in the selected region.
-    QMap<int, int> calcProfile(QString axis, int threshold, QPoint pixel_init, QPoint pixel_end); //!Calculates the profile of the pixelvalues in the selected region in the direction of the specified axis.
-    QString calcCNR(QMap<int,int> Axismap); //!Calculates the contrast to noise ratio of the region indicated by the Profilepoints.
     double calcRegionMean(int begin, int end, QMap<int, int> Axismap); //!Calculates the mean of a region.
     double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);   //!Calculates the standard deviation of a region.
     QVector<QVector<int> > collectPointsROI(int layerIndex, QPoint pixel_init, QPoint pixel_end); //!Collects the data of a region of interest. for a specific layer/threshold.
-    QVector<QVector<double> > calcESFdata();
-    //QVector<QVector<double> > calcESFfitData(parameter_vector params, double start, int length, double stepsize);
-    //QVector<QVector<double> > calcPSFdata(parameter_vector params, double start, int length, double stepsize);
-    QPair<double, double> calcMidLine(double bright, double dark, bool BtD);
-    //parameter_vector fitESFparams(QVector<QVector<double> > esfdata);
-    int calcMaxNroi(int xroi, int yroi);
 
     QPointF XtoXY(int X, int dimX);
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
-    int countProfilePoints();
-    int countProfileRegions();
     QPair<double, double> LinearRegression(QVector<double> x, QVector<double> y);
 
     void setOrientation(QVector<int> orientations){for(int i = 0; i < orientations.length();i++)setOrientation(i, orientations[i]);}
@@ -179,15 +168,11 @@ public:
     void setPixel(int x, int y, int threshold, int val);//!< Set a pixel value for a given threshold (x,y) (assembly coordinates !)
     unsigned int sumFrame(int *frame, int index, int threshold);//!< Adds the data pointed to by frame to the data of chip index at the specified threshold.
     void toJson(); //!<Saves JSON log file with measurement settings
-    void setProfilepoint(int index, QString pos);
-    void setProfilepoint(int index, int pos){ if(pos > 0 && pos < 256) setProfilepoint(index, QString("%1").arg(pos));}
-    void clearProfilepoints();
     void setCorrected(bool status){corrected = status;}
 
     QVector<QPoint> getLayoutVector(){return m_frameLayouts;}
     QList<int> getThresholds(){return m_thresholdsToIndices.keys();}
     QVector<int> getOrientationVector(){return m_frameOrientation;}
-    QList<int> getProfilepoints(){return Profilepoints;}
     int getFrameCount() const{return m_nFrames;}
     int getLayerCount() const{return m_layers.count();}
     int getLayerSize() const{return m_nFrames*m_nx*m_ny;}

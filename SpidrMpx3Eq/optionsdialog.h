@@ -42,10 +42,6 @@ private slots:
 
     void on_manualRadioButton_toggled(bool checked);
 
-    void on_roiXsizeSpinBox_editingFinished();
-
-    void on_roiYsizeSpinBox_editingFinished();
-
     void on_selectedRoIRadioButton_toggled(bool checked);
 
     void on_zeroFreqCheckBox_toggled(bool checked);
