@@ -8,7 +8,6 @@ namespace Ui {
 class QCstmCorrectionsDialog;
 }
 
-class QCstmBHWindow;
 class QCstmGLVisualization;
 
 class QCstmCorrectionsDialog : public QDialog
@@ -24,20 +23,15 @@ public:
     bool isSelectedOBCorr();
     bool isSelectedDeadPixelsInter();
     bool isSelectedHighPixelsInter();
-    bool isSelectedBHCorr();
 
 //    void setCorrectionsActive(bool s){ _correctionsActive = s; } //Not used!
     double getNoisyPixelMeanMultiplier();
 
-    void callBHCorrection();
-
 public slots:
     void receiveFilename(QString filename);
-    void setChecked_BHCorrCheckbox(bool b);
 
 private slots:
     void on_obcorrCheckbox_toggled(bool checked);
-    void on_bhcorrCheckbox_toggled(bool checked);
     //!Apply corrections manually
     void on_applyCorr_clicked();
 
@@ -45,11 +39,8 @@ private:
     Ui::QCstmCorrectionsDialog *ui;
     QCstmGLVisualization * _vis;
     Mpx3GUI * _mpx3gui;
-    QCstmBHWindow * _bhwindow = nullptr;
 //    bool _correctionsActive = false;
 
-signals:
-    void applyBHCorrection();
 };
 
 #endif // QCSTMCORRECTIONSDIALOG_H

@@ -100,8 +100,6 @@ SOURCES += main.cpp \
     barchart.cpp \
     ThlScan.cpp \
     DataTakingThread.cpp \
-    qcstmBHWindow.cpp \
-    qcstmBHdialog.cpp \
     qcustomplot.cpp
 
 HEADERS += mpx3gui.h \
@@ -133,8 +131,6 @@ HEADERS += mpx3gui.h \
     barchart.h  \
     ThlScan.h \
     DataTakingThread.h \
-    qcstmBHWindow.h \
-    qcstmBHdialog.h \
     qcustomplot.h
 
 FORMS    += mpx3gui.ui \
@@ -146,12 +142,9 @@ FORMS    += mpx3gui.ui \
     qcstmconfigmonitoring.ui \
     heatmapdisplay.ui \
     qcstmct.ui \
-    qcstmBHWindow.ui \
-    qcstmBHdialog.ui \
     qcstmcorrectionsdialog.ui \
     statsdialog.ui \
     profiledialog.ui \
-    qcstmBHdialog.ui \
     mtrDialog.ui\
     optionsdialog.ui \
     imagecalculator.ui \

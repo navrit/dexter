@@ -87,22 +87,6 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
-         <widget class="QCheckBox" name="bhcorrCheckbox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="toolTip">
-           <string>Beam hardening correction</string>
-          </property>
-          <property name="text">
-           <string>BH correction</string>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="0" colspan="3">
          <widget class="Line" name="line">
           <property name="sizePolicy">
@@ -126,22 +110,6 @@
             <width>150</width>
             <height>0</height>
            </size>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1" colspan="2">
-         <widget class="QLineEdit" name="bhcorrLineEdit">
-          <property name="minimumSize">
-           <size>
-            <width>150</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="dragEnabled">
-           <bool>false</bool>
           </property>
           <property name="readOnly">
            <bool>true</bool>
@@ -279,8 +247,6 @@
   <tabstop>noisyPixelMeanMultiplier</tabstop>
   <tabstop>obcorrCheckbox</tabstop>
   <tabstop>obcorrLineEdit</tabstop>
-  <tabstop>bhcorrCheckbox</tabstop>
-  <tabstop>bhcorrLineEdit</tabstop>
   <tabstop>applyCorr</tabstop>
  </tabstops>
  <resources/>
