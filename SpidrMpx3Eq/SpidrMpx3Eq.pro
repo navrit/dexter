@@ -87,7 +87,6 @@ SOURCES += main.cpp \
     qcstmconfigmonitoring.cpp \
     qcstmruler.cpp \
     heatmapdisplay.cpp \
-    color2drecoguided.cpp \
     qcstmcorrectionsdialog.cpp \
     dataconsumerthread.cpp \
     mtrDialog.cpp\
@@ -114,7 +113,6 @@ HEADERS += mpx3gui.h \
     qcstmconfigmonitoring.h \
     qcstmruler.h \
     heatmapdisplay.h \
-    color2drecoguided.h \
     qcstmcorrectionsdialog.h \
     dataconsumerthread.h \
     mtrDialog.h\

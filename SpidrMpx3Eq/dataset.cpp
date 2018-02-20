@@ -1,6 +1,5 @@
 #include "dataset.h"
 #include "mpx3gui.h"
-#include "color2drecoguided.h"
 #include "spline.h"
 #include "qcstmcorrectionsdialog.h"
 //#include "dlib/all/source.cpp"
@@ -1017,103 +1016,6 @@ void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
     if ( corrdiag->isSelectedOBCorr() ) {
         applyOBCorrection();
     }
-}
-
-
-int Dataset::applyColor2DRecoGuided(Color2DRecoGuided * reco) {
-
-    // Following the approach
-    //  lambda = Mu \prod t
-    //  Mu^-1 \prod lambda = 1 \prod t --> which yields every thickness for every material
-
-    // Check that the OB correction data has been loaded by the user
-    if (obCorrection == nullptr) {
-        QMessageBox::information(0,"applyColor2DRecoGuided","You must load an OB file first.");
-        return EXIT_FAILURE;
-    }
-
-    QList<int> keys = m_thresholdsToIndices.keys();
-    int nThresholds = keys.size();
-    if ( nThresholds == 0 ) {
-        QMessageBox::information(0,"applyColor2DRecoGuided","No data available.");
-        return EXIT_FAILURE;
-    }
-
-    int ** currentLayers = new int*[nThresholds];
-    int ** correctionLayers = new int*[nThresholds];
-
-    // Retrieve pointers to data of all thresholds
-    for (int i = 0; i < nThresholds; i++) {
-        currentLayers[i] = getLayer(keys[i]);
-        correctionLayers[i] = obCorrection->getLayer(keys[i]);
-        if (correctionLayers[i] == nullptr) {
-            qDebug() << "[WARN] flat-field correction does not contain threshold: " << keys[i];
-            return EXIT_SUCCESS;
-        }
-    }
-
-    // Calculate -log(I/Io) := lambda
-    double ** normFrame = new double*[nThresholds];
-    for (int i = 0; i < nThresholds; i++) {
-        // work on this one layer
-        normFrame[i] = new double[getPixelsPerLayer()];
-
-        // Calculate -log(I/Io)
-        for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
-            if (currentLayers[i][j] != 0 && correctionLayers[i][j] > 0) {
-                normFrame[i][j] = -1 * log ( ((double)currentLayers[i][j]) / ((double)correctionLayers[i][j]) );
-            } else {
-                normFrame[i][j] = 0;
-            }
-        }
-
-    }
-
-    // Now make use of all layers at the same time
-
-    // Mu^-1 \prod lambda for every pixel
-    boost::numeric::ublas::matrix<double> * muInv = reco->getMuInvMatrix();
-    boost::numeric::ublas::vector<double> lambda(nThresholds);
-    boost::numeric::ublas::vector<double> t(nThresholds);
-
-    cout << "MuInv(rep) = " << *muInv << endl;
-
-    // Go pixel per pixel
-    for (unsigned int j = 0; j < getPixelsPerLayer(); j++) {
-
-        // Build lambda matrix size 1*Nenergies.  Now go over energies
-        //int invCntr = nThresholds - 1;
-        //invCntr--
-        for (int i = 0; i < nThresholds; i++) {
-            lambda(i) = normFrame[i][j];
-        }
-        // Now having lambda calculate Mu^-1 \prod lambda
-        axpy_prod( (*muInv) , lambda, t );
-        //cout << "[muInv]  | " << (*muInv) << endl;
-        //cout << "[lambda] | " << lambda << endl;
-        //cout << "[t]      | " << t << endl;
-
-        // Show the content of t.  Coming from Energy to Materials
-        for (int i = 0; i < nThresholds; i++) {
-            int val = qRound( t(i) * 1.0E6 );
-            if ( val < 0 ) val = 0;
-            currentLayers[i][j] = val;
-        }
-
-    }
-
-    // Take care of deleting local structures
-    for (int i = 0; i < nThresholds; i++) {
-        delete [] normFrame[i];
-    }
-    // currentLayers and correctionLayers live in the data set.
-    // I just erase the references I made here.
-    delete [] currentLayers;
-    delete [] correctionLayers;
-    // normFrame needs full treatment
-    delete [] normFrame;
-
-    return EXIT_SUCCESS;
 }
 
 void Dataset::applyOBCorrection() {

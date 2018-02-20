@@ -58,9 +58,6 @@ class QCstmGLVisualization : public QWidget
     //Statistics
     StatsDialog * _statsdialog = nullptr;
 
-    // Reco
-    Color2DRecoGuided * _reco_Color2DRecoGuided = nullptr;
-
 public:
     explicit QCstmGLVisualization(QWidget *parent = 0);
     ~QCstmGLVisualization();
@@ -219,8 +216,6 @@ private slots:
     void on_noisyPixelMeanMultiplier_valueChanged(double arg1);
 
     void on_correctionsDialogPushButton_clicked();
-
-    void on_recoPushButton_clicked();
 
     void on_saveWithScaleCheckBox_toggled(bool checked);
 

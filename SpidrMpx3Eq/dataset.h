@@ -143,7 +143,6 @@ public:
     void dumpAllActivePixels(); //!< for testing purposes
     void applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
     void applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
-    int applyColor2DRecoGuided(Color2DRecoGuided * );
     void calcBasicStats(QPoint pixel_init, QPoint pixel_end); //!Calculates the Mean and standard deviation of the pixel values in the selected region.
     double calcRegionMean(int begin, int end, QMap<int, int> Axismap); //!Calculates the mean of a region.
     double calcRegionStdev(int begin, int end, QMap<int,int> AxisMap, double mean);   //!Calculates the standard deviation of a region.

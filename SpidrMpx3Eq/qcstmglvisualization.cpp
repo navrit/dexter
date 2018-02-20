@@ -11,8 +11,6 @@
 #include "qcstmconfigmonitoring.h"
 #include "ui_qcstmconfigmonitoring.h"
 
-#include "color2drecoguided.h"
-
 //#include "mpx3gui.h"
 #include "ui_mpx3gui.h"
 
@@ -1715,37 +1713,6 @@ void QCstmGLVisualization::on_correctionsDialogPushButton_clicked(){
     _corrdialog->show();
     _corrdialog->raise();
     _corrdialog->activateWindow();
-
-}
-
-void QCstmGLVisualization::on_recoPushButton_clicked(){
-
-    _mpx3gui->rewindToOriginalDataset();
-
-    // TODO, the location of the corrections will be moved to a separate window
-    // Try the reconstruction
-
-    // If previous reco available, delete.
-    if ( _reco_Color2DRecoGuided ) delete _reco_Color2DRecoGuided;
-
-    // Prepare the reconstruction handler
-    _reco_Color2DRecoGuided = new Color2DRecoGuided( _mpx3gui );
-    _reco_Color2DRecoGuided->LoadCrossSectionData();
-    _reco_Color2DRecoGuided->BuildAndInvertMuMatrix();
-    // Send off for reco
-    _mpx3gui->getDataset()->applyColor2DRecoGuided( _reco_Color2DRecoGuided );
-
-    // Now change layer names
-    // This maps indx to material name
-    QMap<int, QString> materials =_reco_Color2DRecoGuided->getMaterialMap();
-    // This is the list of thresholds
-    QList<int> thls = _mpx3gui->getDataset()->getThresholds();
-
-    for ( int i = 0 ; i < thls.size() ; i++ ) {
-        changeThresholdToNameAndUpdateSelector( thls[i], materials[i] );
-    }
-
-    reload_all_layers();
 
 }
 
