@@ -1077,10 +1077,7 @@
       </layout>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0,0">
-       <item>
-        <widget class="QCustomPlot" name="plotScan" native="true"/>
-       </item>
+      <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0">
        <item>
         <widget class="QProgressBar" name="progressBar">
          <property name="toolTip">
@@ -1140,62 +1137,6 @@
            </property>
           </widget>
          </item>
-         <item>
-          <spacer name="horizontalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>17</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>17</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLabel" name="labelStep">
-           <property name="toolTip">
-            <string>Step for a DAC scan</string>
-           </property>
-           <property name="text">
-            <string>Step</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="scanStepSpinBox">
-           <property name="toolTip">
-            <string>Step for a DAC scan</string>
-           </property>
-           <property name="keyboardTracking">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="startScanButton">
-           <property name="toolTip">
-            <string>Start scan</string>
-           </property>
-           <property name="text">
-            <string>Start scan</string>
-           </property>
-          </widget>
-         </item>
         </layout>
        </item>
       </layout>
@@ -1204,14 +1145,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QCustomPlot</class>
-   <extends>QWidget</extends>
-   <header>qcustomplot.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

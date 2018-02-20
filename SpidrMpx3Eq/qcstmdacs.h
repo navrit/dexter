@@ -37,7 +37,6 @@ class QSlider;
 class QLabel;
 class QCheckBox;
 class SenseDACsThread;
-class ScanDACsThread;
 class UpdateDACsThread;
 class QSignalMapper;
 class ModuleConnection;
@@ -72,9 +71,6 @@ public:
     QCheckBox ** GetCheckBoxList() { return _dacCheckBoxes; };
     int GetDeviceIndex() { return _deviceIndex; };
     int GetNSamples() { return _nSamples; };
-    int GetScanStep() { return _scanStep; };
-    QCPGraph * GetGraph(int idx);
-    //QCustomPlot * GetQCustomPlotPtr() { return _dacScanPlot; };
     void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
     Mpx3GUI * GetMpx3GUI() { return _mpx3gui; };
 
@@ -100,7 +96,6 @@ private:
 
     //
     SenseDACsThread * _senseThread;
-    ScanDACsThread * _scanThread;
     UpdateDACsThread * _updateDACsThread;
 
     // Vectors of Widgets
@@ -110,19 +105,12 @@ private:
     QLabel    * _dacLabels[MPX3RX_DAC_COUNT];
     QCheckBox * _dacCheckBoxes[MPX3RX_DAC_COUNT];
 
-    // Scan
-    int _scanStep;
     // Current device Id
     int _deviceIndex;
     // Samples
     int _nSamples;
     // Simultaneous settings
     bool _dacsSimultaneous;
-
-    // In case only a subset of the DACs are selected
-    //  to produce the scan, keep track of the id's
-    map<int, int> _plotIdxMap;
-    int _plotIdxCntr;
 
     QSignalMapper * _signalMapperSliderSpinBoxConn;
     QSignalMapper * _signalMapperSlider;
@@ -140,17 +128,12 @@ private slots:
     void UncheckAllDACs();
     void CheckAllDACs();
     void setValueDAC(int);
-    void StartDACScan();
     void SetupSignalsAndSlots();
     void FromSpinBoxUpdateSlider(int);
     void FromSliderUpdateSpinBox(int);
     void SenseDACs();
     void ChangeDeviceIndex(int);
     void ChangeNSamples(int);
-    void ChangeScanStep(int);
-    void addData(int, int, double);
-    void addData(int);
-    void scanFinished();
     void updateFinished();
     void slideAndSpin(int, int);
     void openWriteMenu();
@@ -184,39 +167,6 @@ signals:
     void fillText(QString);
 
 };
-
-class ScanDACsThread : public QThread {
-
-    Q_OBJECT
-
-public:
-
-    explicit ScanDACsThread (int devIndx, QCstmDacs * dacs, SpidrController * sc);
-
-private:
-
-    SpidrController * _spidrcontrol;
-    QCstmDacs * _dacs;
-    int _deviceIndex;
-    // IP source address (SPIDR network interface)
-    int _srcAddr;
-
-    void run();
-
-signals:
-
-    // These are used in the parent class as a signal to thread-safe feed
-    //  widgets in the ui
-    void progress(int);
-    void fillText(QString);
-    void fillTextWithIdx(QString, int);
-    void addData(int, int, double);
-    void addData(int);
-    void scanFinished();
-    void slideAndSpin(int, int);
-
-};
-
 
 class UpdateDACsThread : public QThread {
 
