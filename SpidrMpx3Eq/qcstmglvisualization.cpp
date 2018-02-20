@@ -1059,7 +1059,6 @@ void QCstmGLVisualization::developerMode(bool enabled)
 {
     if (enabled){
         //! Enable a bunch of 'advanced' buttons
-        ui->multiThresholdAnalysisPushButton->show();
         ui->line->show();
         ui->generateDataButton->show();
         ui->imageCalculatorPushButton->show();
@@ -1074,7 +1073,6 @@ void QCstmGLVisualization::developerMode(bool enabled)
         ui->completeFramesCheckBox->show();
     } else {
         //! Disable a bunch of 'advanced' buttons
-        ui->multiThresholdAnalysisPushButton->hide();
         ui->line->hide();
         ui->generateDataButton->hide();
         ui->imageCalculatorPushButton->hide();
@@ -1830,26 +1828,6 @@ void QCstmGLVisualization::on_infDataTakingCheckBox_toggled(bool checked)
         ui->nTriggersSpinBox->setEnabled( true );
     }
 
-}
-
-void QCstmGLVisualization::on_multiThresholdAnalysisPushButton_clicked()
-{
-
-    if ( ! _mtrDialog ) {
-        _mtrDialog = new MTRDialog(_mpx3gui, this);
-        connect(_mtrDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_MTRClosed);
-    }
-
-    _mtrDialog->show(); // modeless
-
-}
-
-void QCstmGLVisualization::on_MTRClosed(){
-    if ( _mtrDialog ) {
-        disconnect(_mtrDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_MTRClosed);
-        delete _mtrDialog;
-        _mtrDialog = nullptr;
-    }
 }
 
 void QCstmGLVisualization::on_dropFramesCheckBox_clicked(bool checked){

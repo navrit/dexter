@@ -89,7 +89,6 @@ SOURCES += main.cpp \
     heatmapdisplay.cpp \
     qcstmcorrectionsdialog.cpp \
     dataconsumerthread.cpp \
-    mtrDialog.cpp\
     mpx3gui.cpp \
     barchart.cpp \
     ThlScan.cpp \
@@ -115,7 +114,6 @@ HEADERS += mpx3gui.h \
     heatmapdisplay.h \
     qcstmcorrectionsdialog.h \
     dataconsumerthread.h \
-    mtrDialog.h\
     barchart.h  \
     ThlScan.h \
     DataTakingThread.h \
@@ -129,8 +127,7 @@ FORMS    += mpx3gui.ui \
     qcstmthreshold.ui \
     qcstmconfigmonitoring.ui \
     heatmapdisplay.ui \
-    qcstmcorrectionsdialog.ui \
-    mtrDialog.ui
+    qcstmcorrectionsdialog.ui
 
     copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/\" &
     first.depends = $(first) copydata

@@ -16,8 +16,6 @@
 #include "gradient.h"
 #include "histogram.h"
 
-#include "mtrDialog.h"
-
 #include <QQueue>
 #include <QVector>
 
@@ -144,8 +142,6 @@ private:
     unsigned int _nTriggersSave;
     bool _dropFrames = true;
 
-    MTRDialog * _mtrDialog = nullptr;
-
     typedef struct {
         unsigned int nFramesReceived;
         unsigned int nFramesKept;
@@ -232,10 +228,6 @@ private slots:
     void ntriggers_edit();
 
     void triggerLength_edit();
-
-    void on_multiThresholdAnalysisPushButton_clicked();
-
-    void on_MTRClosed();
 
     void on_dropFramesCheckBox_clicked(bool checked);
 

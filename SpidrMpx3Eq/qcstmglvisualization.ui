@@ -753,31 +753,6 @@ If you run too fast this feature should not be used.</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="0">
-             <widget class="QPushButton" name="multiThresholdAnalysisPushButton">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>94</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="toolTip">
-               <string>Multi-threshold reconstruction input summary</string>
-              </property>
-              <property name="text">
-               <string>MTR</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="1" rowspan="6">
              <widget class="Line" name="line">
               <property name="orientation">
@@ -1069,7 +1044,6 @@ If you run too fast this feature should not be used.</string>
   <tabstop>operationModeComboBox_Vis</tabstop>
   <tabstop>nTriggersSpinBox</tabstop>
   <tabstop>triggerLengthSpinBox</tabstop>
-  <tabstop>multiThresholdAnalysisPushButton</tabstop>
   <tabstop>fullRangeRadio</tabstop>
   <tabstop>manualRangeRadio</tabstop>
   <tabstop>percentileRangeRadio</tabstop>
