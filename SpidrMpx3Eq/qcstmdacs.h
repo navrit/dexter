@@ -11,7 +11,7 @@
 #include <QThread>
 #include <QJsonObject>
 
-#include "mpx3gui.h"
+#include "mpx3eq_common.h"
 #include "mpx3defs.h"
 
 #include <map>

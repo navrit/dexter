@@ -1,5 +1,4 @@
 #include "dataset.h"
-#include "mpx3gui.h"
 #include "spline.h"
 #include "qcstmcorrectionsdialog.h"
 //#include "dlib/all/source.cpp"

@@ -33,8 +33,6 @@ namespace Ui {
 class QCstmGLVisualization;
 }
 
-class Mpx3GUI;
-class Color2DRecoGuided;
 class CorrectionItem;
 class QCstmCorrectionsDialog;
 
