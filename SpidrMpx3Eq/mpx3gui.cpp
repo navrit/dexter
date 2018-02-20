@@ -10,12 +10,10 @@
 #include "ui_qcstmconfigmonitoring.h"
 #include "DataTakingThread.h"
 
-#include "qcustomplot.h"
 #include "mpx3eq_common.h"
 #include "mpx3defs.h"
 #include "SpidrController.h"
 #include "SpidrDaq.h"
-#include "barchart.h"
 #include "ThlScan.h"
 #include "gradient.h"
 #include "dataset.h"

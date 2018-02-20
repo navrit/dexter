@@ -34,8 +34,6 @@ class SpidrDaq;
 //class DACs;
 class QCstmDacs;
 class ThlScan;
-class BarChart;
-class BarChartProperties;
 // Change me when adding extra views
 class QCstmEqualization;
 class QCstmGLVisualization;
