@@ -39,7 +39,6 @@
       <widget class="QCstmConfigMonitoring" name="CnMWidget"/>
       <widget class="QCstmDacs" name="DACsWidget"/>
       <widget class="QCstmEqualization" name="equalizationWidget"/>
-      <widget class="QCstmThreshold" name="ThresholdTab"/>
      </widget>
     </item>
    </layout>
@@ -465,12 +464,6 @@ adj_* and mask_*</string>
    <slots>
     <slot>on_frame_added()</slot>
    </slots>
-  </customwidget>
-  <customwidget>
-   <class>QCstmThreshold</class>
-   <extends>QWidget</extends>
-   <header>qcstmthreshold.h</header>
-   <container>1</container>
   </customwidget>
   <customwidget>
    <class>QCstmConfigMonitoring</class>
