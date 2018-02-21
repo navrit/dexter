@@ -7,7 +7,6 @@
 #ifndef MPX3GUI_H
 #define MPX3GUI_H
 
-//#include <QImage>
 #include <QMainWindow>
 
 #include <QVector>
@@ -31,7 +30,6 @@ class Mpx3Config;
 class QCustomPlot;
 class SpidrController;
 class SpidrDaq;
-//class DACs;
 class QCstmDacs;
 class ThlScan;
 // Change me when adding extra views
@@ -56,7 +54,7 @@ class QCstmConfigMonitoring;
 #define TP_PERIOD 40000 //! In units of 25 ns. 40000 * 25 ns = 1 ms = 1000 Hz
 
 const QString _softwareName = "ASI Dexter";
-const QString _softwareVersion = "1.7.1";
+const QString _softwareVersion = "0.0.0";
 
 namespace Ui {
 class Mpx3GUI;
