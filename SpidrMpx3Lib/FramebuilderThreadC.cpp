@@ -136,7 +136,7 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
   u64  pixelword;
   u64  type;
   int  i, j;
-  for( i=0; i<int(nbytes/sizeof(u64)); ++i, ++pixelpkt )
+  for( i=0; i<nbytes/sizeof(u64); ++i, ++pixelpkt )
     {
       pixelword = *pixelpkt;
       type = pixelword & PKT_TYPE_MASK;
@@ -147,8 +147,6 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
           //++rownr;
           //pixelrow = &pixels[rownr * MPX_PIXEL_COLUMNS];
           index = 0;
-          #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-          #pragma GCC diagnostic ignored "-Wmemset-elt-size"
           memset( temp, 0, MPX_PIXEL_COLUMNS );
           // 'break' left out intentionally;
           // continue unpacking the pixel packet
@@ -193,7 +191,7 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
               // These frame pixels contains the upper 12 bits from CounterH
               // of the 24-bit pixels, already containing 12 bits from CounterL
               int *p = &pixels[rownr * MPX_PIXEL_COLUMNS];
-              for( j=0; j<MPX_PIXEL_COLUMNS; ++j )
+              for( j=0; j<MPX_PIXEL_COLUMNS; ++j, ++p )
                 *p |= (temp[j] << 12);
             }
           else
