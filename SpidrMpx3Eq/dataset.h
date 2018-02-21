@@ -24,10 +24,7 @@
 #include "spline.h"
 #include <tiffio.h> /* Sam Leffler's libtiff library. */
 
-#include <dlib/optimization.h>
-
 using namespace std;
-//using namespace dlib;
 
 namespace Ui {
 class QCstmGLVisualization;

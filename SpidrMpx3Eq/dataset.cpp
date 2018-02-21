@@ -1,7 +1,6 @@
 #include "dataset.h"
 #include "spline.h"
 #include "qcstmcorrectionsdialog.h"
-//#include "dlib/all/source.cpp"
 
 #include <QDataStream>
 #include <QDebug>
@@ -12,22 +11,12 @@
 #include <iostream>
 #include <iomanip>
 
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/lu.hpp>
-#include <boost/numeric/ublas/io.hpp>
-
-#include <dlib/optimization.h>
-//#include <iostream>
 #include <vector>
 #include <fstream>      // std::ofstream
 
 #include <tiffio.h> /* Sam Leffler's libtiff library. */
 
 using namespace std;
-using namespace boost::numeric::ublas;
-
-//#include "ui_qcstmglvisualization.h"
-
 
 Dataset::Dataset(int x, int y, int framesPerLayer, int pixelDepthBits)
 {
