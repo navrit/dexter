@@ -16,12 +16,6 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 QT += network opengl multimedia multimediawidgets concurrent
 CONFIG   +=  c++14 debug_and_release
 
-# Testing visualization:
-QT += datavisualization
-#greaterThan(QT_MAJOR_VERSION, 5.7) {
-#    QT += datavisualization
-#}
-
 CONFIG(debug, debug|release) {
     OBJECTS_DIR = debug
     MOC_DIR     = debug
