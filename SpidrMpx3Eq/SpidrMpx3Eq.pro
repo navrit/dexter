@@ -52,22 +52,15 @@ INCLUDEPATH += ../SpidrMpx3Lib
 
 win32 {
     message(Win32)
-    INCLUDEPATH += C:/boost_1_60_0
-    LIBS        += "-LC:/boost_1_60_0/stage/lib"
-    INCLUDEPATH += "C:/Program Files/Phidgets/"
-    LIBS        += "-LC:/Program Files/Phidgets"
-    INCLUDEPATH += "C:/dlib/dlib-19.0"
 }
 
 unix {
     message(Unix)
-    LIBS += -licuuc -licui18n -licudata -lopenblas -llapack -ltiff
-    #LIBS += -licuuc -licui -licudata -lopenblas -llapack
+    LIBS += -ltiff
 }
 
 LIBS += -lSpidrMpx3Lib
 #LIBS += -lQCustomPlot
-LIBS += -lphidget21
 
 SOURCES += main.cpp \
     qcstmplotheatmap.cpp \

@@ -1289,11 +1289,6 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
                         + QString("<ul>")
                         + QString("<li> Qt - Commercial - <a href='https://doc.qt.io/qt-5/licensing.html'>doc.qt.io/qt-5/licensing.html</a> </li>")
                         + QString("<li> Boost - Boost - <a href='http://www.boost.org/LICENSE_1_0.txt'>boost.org/LICENSE_1_0.txt</a> </li>")
-                        + QString("<li> Dlib - Boost - <a href='http://dlib.net/license.html'>dlib.net/license.html</a> </li>")
-                        + QString("<li> Phidgets - GNU LGPL - <a href='http://phidgets.com/docs/Software_License'>phidgets.com/docs/Software_License</a> </li>")
-                        + QString("<li> OpenBLAS - BSD - <a href='http://openblas.net'>openblas.net</a> </li>")
-                        + QString("<li> LAPACK - BSD-new - <a href='http://netlib.org/lapack/#_licensing'>netlib.org/lapack/#_licensing</a> </li>")
-                        + QString("<li> ICU - BSD - <a href='http://unicode.org/copyright.html#License'>unicode.org/copyright.html#License</a> </li>")
                         + QString("<li> LibTiff - BSD like - <a href='http://simplesystems.org/libtiff/misc.html'>simplesystems.org/libtiff/misc.html</a> </li>")
                         + QString("</ul>")
                         + newLine
