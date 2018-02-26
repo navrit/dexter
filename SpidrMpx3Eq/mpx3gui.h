@@ -81,7 +81,6 @@ private:
     std::vector<int> _MPX3RX_ORIENTATION = std::vector< int > {Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL, Dataset::orientationTtBRtL};
     std::vector<QPoint> _MPX3RX_LAYOUT = std::vector<QPoint> {QPoint(1, 1), QPoint(1, 0), QPoint(0, 0), QPoint(0, 1)};
     int mode = 0; //! Summing/integral or 'normal' mode
-    //QApplication * _coreApp;
     Ui::Mpx3GUI * _ui;
     QVector<QShortcut *> _shortcutsSwitchPages;
 
@@ -93,14 +92,12 @@ private:
     bool _armedOk = true; //! It won't let the application go into the event loop if set to false
 
     QVector<Gradient*>  gradients;
-    //QVector<istogram*> hists;
     void updateHistogram(int layer);
 
     QLabel m_statusBarMessageLabel;
     QString m_statusBarMessageString;
 
     bool m_appActiveFirstTime = false;
-    //bool m_fileOpen = false;
 
     void uncheckAllToolbarButtons();
 

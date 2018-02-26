@@ -1,7 +1,6 @@
 #include "dataset.h"
 #include "spline.h"
 #include "qcstmcorrectionsdialog.h"
-//#include "dlib/all/source.cpp"
 
 #include <QDataStream>
 #include <QDebug>
@@ -11,27 +10,15 @@
 
 #include <iostream>
 #include <iomanip>
-
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/lu.hpp>
-#include <boost/numeric/ublas/io.hpp>
-
-#include <dlib/optimization.h>
-//#include <iostream>
 #include <vector>
 #include <fstream>      // std::ofstream
 
 #include <tiffio.h> /* Sam Leffler's libtiff library. */
 
 using namespace std;
-using namespace boost::numeric::ublas;
-
-//#include "ui_qcstmglvisualization.h"
-
 
 Dataset::Dataset(int x, int y, int framesPerLayer, int pixelDepthBits)
 {
-
     m_nx = x; m_ny = y;
     m_pixelDepthBits = pixelDepthBits;
     m_pixelDepthCntr = ((int)pow(2, m_pixelDepthBits)) - 1;
@@ -42,8 +29,6 @@ Dataset::Dataset(int x, int y, int framesPerLayer, int pixelDepthBits)
     obCorrection = 0x0;
 
     rewindScores();
-
-
 }
 
 Dataset::Dataset() : Dataset(1,1,1) {
@@ -59,7 +44,7 @@ Dataset::~Dataset()
 void Dataset::loadCorrection(QByteArray serialized) {
     delete obCorrection;
     obCorrection  = new Dataset(0,0,0);
-    obCorrection->fromByteArray(serialized);//TODO: add error checking on correction to see if it is relevant to the data.
+    obCorrection->fromByteArray(serialized); //TODO: add error checking on correction to see if it is relevant to the data.
 }
 
 void Dataset::rewindScores() {

@@ -24,7 +24,7 @@
 #include "spline.h"
 #include <tiffio.h> /* Sam Leffler's libtiff library. */
 
-#include <dlib/optimization.h>
+//#include <dlib/optimization.h>
 
 using namespace std;
 //using namespace dlib;
