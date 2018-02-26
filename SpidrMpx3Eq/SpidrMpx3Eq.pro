@@ -13,7 +13,11 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 } else {
         QT += core gui
 }
-QT += network opengl multimedia multimediawidgets concurrent
+contains(QT_MAJOR_VERSION,5) {
+  QT += concurrent
+}
+
+QT += network opengl multimedia multimediawidgets
 CONFIG   +=  c++14 debug_and_release
 
 CONFIG(debug, debug|release) {
@@ -86,7 +90,9 @@ SOURCES += main.cpp \
     barchart.cpp \
     ThlScan.cpp \
     DataTakingThread.cpp \
-    qcustomplot.cpp
+    qcustomplot.cpp \
+    TiffFile.cpp \
+    datacontrollerthread.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -109,7 +115,9 @@ HEADERS += mpx3gui.h \
     barchart.h  \
     ThlScan.h \
     DataTakingThread.h \
-    qcustomplot.h
+    qcustomplot.h \
+    TiffFile.h \
+    datacontrollerthread.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \

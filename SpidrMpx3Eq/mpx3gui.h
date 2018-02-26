@@ -25,6 +25,7 @@ class Mpx3Config;
 #include "histogram.h"
 #include "mpx3eq_common.h"
 #include "mpx3config.h"
+#include "datacontrollerthread.h"
 
 class Mpx3Config;
 class QCustomPlot;
@@ -36,6 +37,7 @@ class ThlScan;
 class QCstmEqualization;
 class QCstmGLVisualization;
 class QCstmConfigMonitoring;
+class DataControllerThread;
 
 // Change me when adding extra views
 #define __visualization_page_Id     0
@@ -45,10 +47,10 @@ class QCstmConfigMonitoring;
 #define __scans_page_Id             5
 
 #define BIN_FILES "Binary (*.bin)"
-#define TIFF_FILES "TIFF (*.tif)"
-#define SPATIAL_TIFF_FILES "TIFF (*_spatialCorrected.tif)"
-#define RAW_TIFF_FILES "TIFF (*_raw.tif)"
-#define BOTH_TIFF_FILES "Corrected and uncorrected TIFFs (*.tif)"
+#define TIFF_FILES "TIFF (*.tiff)"
+#define SPATIAL_TIFF_FILES "TIFF (*_spatialCorrected.tiff)"
+#define RAW_TIFF_FILES "TIFF (*_raw.tiff)"
+#define BOTH_TIFF_FILES "Corrected and uncorrected TIFFs (*.tiff)"
 #define ASCII_FILES "ASCII (*.txt)"
 
 #define TP_PERIOD 40000 //! In units of 25 ns. 40000 * 25 ns = 1 ms = 1000 Hz
@@ -108,11 +110,14 @@ private:
 
     bool devMode = false;
 
+    DataControllerThread *dataControllerThread = nullptr;
+
 public:
 
     Mpx3Config* getConfig();
     Dataset* getDataset(){return workingSet;}
     Dataset* getOriginalDataset(){return originalSet;}
+    DataControllerThread* getDataControllerThread(){return dataControllerThread;}
     void rebuildCurrentSets(int x, int y, int framesPerLayer);
 
     bool isArmedOk(){ return _armedOk; }

@@ -18,6 +18,7 @@
 #include "gradient.h"
 #include "dataset.h"
 #include "mpx3config.h"
+#include "datacontrollerthread.h"
 
 #include <QMessageBox>
 #include <QDebug>
@@ -26,6 +27,8 @@
 #include <boost/uuid/uuid.hpp>            // uuid class
 #include <boost/uuid/uuid_generators.hpp> // generators
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
+
+#include <QtConcurrent/QtConcurrent>
 
 #include <stdlib.h>
 #include <time.h>
@@ -47,7 +50,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     config = new Mpx3Config;
     config->SetMpx3GUI( this );
 
-    //workingSet->setFramesPerGroup(1,1)
+    dataControllerThread = new DataControllerThread(this);
 
     // The orientations carry the information of how the information
     //  from a given chip should be drawn in the screen.
@@ -715,12 +718,12 @@ QString Mpx3GUI::getLoadButtonFilename() {
 void Mpx3GUI::saveMetadataToJSON(QString filename){
     if (filename.toLower().contains(".bin")){
         filename = filename.replace(".bin",".json");
-    } else if (filename.toLower().contains(".tif")){
-        filename = filename.replace(".tif",".json");
+    } else if (filename.toLower().contains(".tiff")){
+        filename = filename.replace(".tiff",".json");
     } else if (filename.toLower().contains(".txt")) {
         filename = filename.replace(".txt",".json");
     } else {
-        qDebug() << "[ERROR] failed writing the JSON file, input name didn't include .bin or .tif";
+        qDebug() << "[ERROR] failed writing the JSON file, input name didn't include .bin or .tiff";
         return;
     }
 
@@ -854,14 +857,14 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         }
         if (selectedFilter == BIN_FILES && !filename.toLower().toLatin1().contains(".bin")){
             filename.append(".bin");
-        } else if (selectedFilter == SPATIAL_TIFF_FILES && !filename.toLower().toLatin1().contains("_spatialCorrected.tif")){
-            filename.append("_spatialCorrected.tif");
-        } else if (selectedFilter == RAW_TIFF_FILES && !filename.toLower().toLatin1().contains("_raw.tif")){
-            filename.append("_raw.tif");
-        } else if (selectedFilter == BOTH_TIFF_FILES && !filename.toLower().toLatin1().contains(".tif")){
+        } else if (selectedFilter == SPATIAL_TIFF_FILES && !filename.toLower().toLatin1().contains("_spatialCorrected.tiff")){
+            filename.append("_spatialCorrected.tiff");
+        } else if (selectedFilter == RAW_TIFF_FILES && !filename.toLower().toLatin1().contains("_raw.tiff")){
+            filename.append("_raw.tiff");
+        } else if (selectedFilter == BOTH_TIFF_FILES && !filename.toLower().toLatin1().contains(".tiff")){
             qDebug() << "[INFO] Writing both uncorrected and corrected TIFF files.";
-        } else if (selectedFilter == TIFF_FILES && !filename.toLower().toLatin1().contains(".tif")){
-            filename.append(".tif");
+        } else if (selectedFilter == TIFF_FILES && !filename.toLower().toLatin1().contains(".tiff")){
+            filename.append(".tiff");
         } else if (selectedFilter == ASCII_FILES && !filename.toLower().toLatin1().contains(".txt")){
             filename.append(".txt");
         }
@@ -891,10 +894,10 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
             filename.append(".txt");
             selectedFilter = ASCII_FILES;
         } else if (selectedFileType == "TIFF"){
-            filename.append(".tif");
+            filename.append(".tiff");
             selectedFilter = TIFF_FILES;
         } else if (selectedFileType == "Raw TIFF"){
-            filename.append("_raw.tif");
+            filename.append("_raw.tiff");
             selectedFilter = RAW_TIFF_FILES;
         } else if (selectedFileType == "Text"){
             filename.append(".txt");
@@ -908,18 +911,24 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
 
     //! Send data to be saved by the relevant function with the correct arguments etc.
 
-    //! TODO MAke this work with QtConcurrent::run( this, &...::saveImage32, Image, ... );
     if (selectedFilter == BIN_FILES) {
         getDataset()->saveBIN(filename);
     } else if (selectedFilter == SPATIAL_TIFF_FILES) {
         getDataset()->toTIFF(filename, true, true);
     } else if (selectedFilter == RAW_TIFF_FILES) {
-        getDataset()->toTIFF(filename, false);
+//        int index = 0;
+
+        //QVector<int> frame = getDataset()->toQVector();
+        QVector<int> frame = getDataset()->makeFrameForSaving();
+        QList<int> thresholds = getDataset()->getThresholds();
+
+        QtConcurrent::run( dataControllerThread, &DataControllerThread::saveTIFFParallel, filename, thresholds, frame);
+        //getDataset()->toTIFF(filename, false);
     } else if (selectedFilter == TIFF_FILES) {
         getDataset()->toTIFF(filename);
     } else if (selectedFilter == BOTH_TIFF_FILES) {
-        getDataset()->toTIFF(filename+".tif");
-        getDataset()->toTIFF(filename+"_raw.tif", false);
+        getDataset()->toTIFF(filename+".tiff");
+        getDataset()->toTIFF(filename+"_raw.tiff", false);
     } else if (selectedFilter == ASCII_FILES) {
         getDataset()->toASCII(filename);
     } else {

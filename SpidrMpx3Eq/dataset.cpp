@@ -325,7 +325,7 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
                         image[y*width + x] = sample(x, y, thresholds[i]);
                     }
                 }
-                tmpFilename.replace(".tif", "-thl" + QString::number(thresholds[i]) + ".tif");
+                tmpFilename.replace(".tiff", "-thl" + QString::number(thresholds[i]) + ".tiff");
             }
 
             //! Phase 1
@@ -521,7 +521,7 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
                 }
             }
             if (getThresholds().count() > 1){
-                tmpFilename.replace(".tif", "-thl" + QString::number(thresholds[i]) + ".tif");
+                tmpFilename.replace(".tiff", "-thl" + QString::number(thresholds[i]) + ".tiff");
             }
         }
 
@@ -568,6 +568,22 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
         }
     }
 
+}
+
+QVector<int> Dataset::makeFrameForSaving()
+{
+    int width  = getWidth();
+    int height = getHeight();
+    QList<int> thresholds = m_thresholdsToIndices.keys();
+    QVector<int> image;
+
+    for (int y=0; y < height; y++) {
+        for (int x=0; x < width; x++) {
+            image.append(sample(x, y, thresholds[0]));
+        }
+    }
+
+   return image;
 }
 
 void Dataset::toASCII(QString filename)
