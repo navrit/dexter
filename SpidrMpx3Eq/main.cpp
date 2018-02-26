@@ -1,19 +1,26 @@
 #include "mpx3gui.h"
 #include <QApplication>
 #include <QtGui/QOpenGLFunctions>
+#include <QLoggingCategory>
 
 int main(int argc, char *argv[])
 {
 
-    //
     QApplication a(argc, argv);
+
+    QLoggingCategory::setFilterRules("*.debug=true\nqt.*.debug=false");
+
+#ifdef QT_DEBUG
+    qDebug() << "INFO\tDEBUGGING BUILD";
+#else
+    qDebug() << "INFO\tRelease mode";
+#endif
 
     //! Set main application icon
     a.setWindowIcon( QIcon("://icons/ASI/ASI_sq_1100x1100.png"));
 
     QSurfaceFormat format;
     format.setDepthBufferSize(24);
-    //format.setStencilBufferSize(8);
     format.setVersion(3, 3 );
     QSurfaceFormat::setDefaultFormat(format);
 
@@ -33,7 +40,6 @@ int main(int argc, char *argv[])
     QObject::connect( &w, &Mpx3GUI::exitApp,
                       &a, &QApplication::exit);
 
-    //qRegisterMetaType<QVector<int> >("QVector<int>");
 
     return a.exec();
 }
