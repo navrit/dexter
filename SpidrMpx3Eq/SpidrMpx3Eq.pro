@@ -46,8 +46,6 @@ CONFIG(release, debug|release) {
     CONFIG += warn_off
 }
 
-DEFINES    += EXPERT_MODE
-
 INCLUDEPATH += ../SpidrMpx3Lib
 
 win32 {

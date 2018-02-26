@@ -98,9 +98,7 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     ui->cameraComboBox->setHidden(1);
     ui->videoDockWidget->setHidden(1);
 
-    #ifndef EXPERT_MODE
-        ui->readOMRPushButton->setHidden(1);
-    #endif
+    ui->readOMRPushButton->setHidden(1);
 
     ///////////////////////////////////////////////
     // Camera
@@ -207,8 +205,6 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
 
 void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 
-    #ifdef EXPERT_MODE
-
     QMessageBox::StandardButton ans = QMessageBox::warning(this, tr("Warning"), tr("This will set the device to a mode unsuitable for imaging, you will have to power cycle to image again. Continue?"));
     if ( ans == QMessageBox::No ) {
             return;
@@ -309,9 +305,7 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 
     ui->omrDisplayLabel->setText( toDisplay );
 
-    #else
-        return;
-    #endif
+    return;
 }
 
 void QCstmConfigMonitoring::on_taking_data_gui()
