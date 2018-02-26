@@ -1088,17 +1088,17 @@ void QCstmGLVisualization::developerMode(bool enabled)
     }
 }
 
-void QCstmGLVisualization::on_user_accepted_stats()
-{
-    // delete the corresponding window
-    if ( _statsdialog ) {
-        delete _statsdialog;
-        _statsdialog = nullptr;
-        _mpx3gui->getDataset()->bstats.mean_v.clear();
-        _mpx3gui->getDataset()->bstats.stdev_v.clear();
-    }
+//void QCstmGLVisualization::on_user_accepted_stats()
+//{
+//    // delete the corresponding window
+//    if ( _statsdialog ) {
+//        delete _statsdialog;
+//        _statsdialog = nullptr;
+//        _mpx3gui->getDataset()->bstats.mean_v.clear();
+//        _mpx3gui->getDataset()->bstats.stdev_v.clear();
+//    }
 
-}
+//}
 
 void QCstmGLVisualization::OperationModeSwitched(int indx)
 {
@@ -1690,11 +1690,6 @@ void QCstmGLVisualization::on_saveBitmapPushButton_clicked(){
         histogramDat.write(QString("%1 %2\n").arg(hist->keyAt(i)).arg(hist->atIndex(i)).toStdString().c_str());
     }
 
-}
-
-// Unused argument and function
-void QCstmGLVisualization::on_noisyPixelMeanMultiplier_valueChanged(double arg1){
-    qDebug() << "void QCstmGLVisualization::on_noisyPixelMeanMultiplier_valueChanged(double arg1): " << arg1;
 }
 
 void QCstmGLVisualization::on_correctionsDialogPushButton_clicked(){

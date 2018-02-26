@@ -208,9 +208,6 @@ private slots:
     //!Temporary save button for images and data.
     void on_saveBitmapPushButton_clicked();
 
-    //!Spinbox for noisyPixelMeanMultiplier parameter
-    void on_noisyPixelMeanMultiplier_valueChanged(double arg1);
-
     void on_correctionsDialogPushButton_clicked();
 
     void on_saveWithScaleCheckBox_toggled(bool checked);
@@ -272,7 +269,7 @@ public slots:
     void overflow_update(int);
 
     //Deleting stats dialog
-    void on_user_accepted_stats();
+//    void on_user_accepted_stats();
     void OperationModeSwitched(int);
 
     void on_scoring(int, int, int, int, int, int, bool);

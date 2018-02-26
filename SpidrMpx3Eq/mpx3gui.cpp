@@ -1265,11 +1265,11 @@ void Mpx3GUI::on_actionEqualization_triggered(){
     _ui->actionEqualization->setChecked(1);
 }
 
-void Mpx3GUI::on_actionScans_triggered(){
-    uncheckAllToolbarButtons();
-    _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
-    //TODO ->setChecked(1);
-}
+//void Mpx3GUI::on_actionScans_triggered(){
+//    uncheckAllToolbarButtons();
+//    _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
+//    //TODO ->setChecked(1);
+//}
 
 //! TODO: Implement revert more fully?
 void Mpx3GUI::on_actionRevert_triggered(bool) {

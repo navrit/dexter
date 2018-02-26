@@ -234,7 +234,7 @@ private slots:
     void on_actionConfiguration_triggered();
     void on_actionDACs_triggered();
     void on_actionEqualization_triggered();
-    void on_actionScans_triggered();
+//    void on_actionScans_triggered();
     void on_actionDisconnect_triggered(bool checked);
     void on_actionDefibrillator_triggered(bool checked);
     void on_actionRevert_triggered(bool checked);
