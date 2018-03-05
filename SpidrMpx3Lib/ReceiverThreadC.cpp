@@ -113,7 +113,7 @@ void ReceiverThreadC::readDatagrams()
 	      break;
 
 	    case PIXEL_DATA_EOR:
-	      _rowPixels += pix_per_word;
+	      _rowPixels += MPX_PIXEL_COLUMNS - (MPX_PIXEL_COLUMNS/pix_per_word)*pix_per_word;
 	      if( _rowPixels < MPX_PIXEL_COLUMNS )
 		{
 		  // Lost some pixels of this row?
