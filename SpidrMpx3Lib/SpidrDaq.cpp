@@ -13,7 +13,7 @@
 //   processFrame() functions.
 // - Fix for SPIDR-LUT decoded row counter (firmware bug) in
 //   FramebuilderThreadC::mpx3RawToPixel(): just count EOR pixelpackets instead.
-const int   VERSION_ID = 0x17092900;
+const int   VERSION_ID = 0x17092901;
 
 // - Fix 24-bit bug in ReceiverThread::setPixelDepth().
 // - Tolerate SOF out-of-order in ReceiverThreadC::readDatagrams().

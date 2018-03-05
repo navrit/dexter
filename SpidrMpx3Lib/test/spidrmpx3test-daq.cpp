@@ -123,7 +123,7 @@ int main( int argc, char *argv[] )
   // ----------------------------------------------------------
   //spidrcontrol.setMaxPacketSize( 9000 ); // Not available on Compact-SPIDR
 
-  int  pixdepth = 24;
+  int  pixdepth = 12;
   bool two_counter_readout = false;
   bool two_counter_readout_soft = true;
 
@@ -169,12 +169,14 @@ int main( int argc, char *argv[] )
           cout << "### Pixel mask row " << row << endl;*/
 
       for( row = 0; row < 256; ++row ) {
+		if( row > 2 ) spidrcontrol.setPixelMaskMpx3rx(row - 3, row);
         if( row > 1 ) spidrcontrol.setPixelMaskMpx3rx(row - 2, row);
         if( row > 0 ) spidrcontrol.setPixelMaskMpx3rx(row - 1, row);
         spidrcontrol.setPixelMaskMpx3rx(row, row);
         if( row < 255 ) spidrcontrol.setPixelMaskMpx3rx(row + 1, row);
-        if( row < 254 ) spidrcontrol.setPixelMaskMpx3rx(row + 2, row);
-      }
+		if( row < 254 ) spidrcontrol.setPixelMaskMpx3rx(row + 2, row);
+		if( row < 253 ) spidrcontrol.setPixelMaskMpx3rx(row + 3, row);
+	  }
         
       // Set test-bit on a number of pixels
       bool testbit = true;
@@ -277,11 +279,11 @@ int main( int argc, char *argv[] )
 	spidrcontrol.setPs( i, 3 );
 	spidrcontrol.setPolarity( i, true );
 	spidrcontrol.setEqThreshH( i, 0 );
-	//spidrcontrol.setColourMode( i, 1 );
+	spidrcontrol.setColourMode( i, 0 );
 	spidrcontrol.setCsmSpm( i, 0 );
 	spidrcontrol.setGainMode( i, 1 );
       }
-  spidrcontrol.setLutEnable( false );
+  //spidrcontrol.setLutEnable( false );
   //spidrcontrol.setTpFrequency( true, 10000*1000 );
   //return 0;
 
@@ -289,9 +291,9 @@ int main( int argc, char *argv[] )
   int trig_mode        = SHUTTERMODE_AUTO; // Auto-trigger mode
   int nr_of_triggers   = ntrigs;
   int trig_freq_hz     = freq_hz;
-  int trig_deadtime_us = 50000;// 4000;
-  int trig_width_us = 1000;
-    //(int) ((double)1000000.0/(double)trig_freq_hz - (double)trig_deadtime_us);
+  int trig_deadtime_us = 4000; // 50000;
+  int trig_width_us    = //100000;
+    (int) ((double)1000000.0/(double)trig_freq_hz - (double)trig_deadtime_us);
   if( trig_width_us <= 0 )
     cout << "### Frequency too high for current deadtime="
          << trig_deadtime_us << " us" << endl;
