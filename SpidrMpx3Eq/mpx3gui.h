@@ -58,6 +58,12 @@ class DataControllerThread;
 const QString _softwareName = "ASI Dexter";
 const QString _softwareVersion = "0.0.0";
 
+#include <stdio.h>
+#include <QCoreApplication>
+#include <QTimer>
+#include "qzmqreqmessage.h"
+#include "qzmqreprouter.h"
+
 namespace Ui {
 class Mpx3GUI;
 }
@@ -108,6 +114,7 @@ private:
     bool devMode = false;
 
     DataControllerThread *dataControllerThread = nullptr;
+    QZmq::RepRouter sock;
 
 public:
 
@@ -197,6 +204,7 @@ signals:
     void sig_statusBarClean();
 
     void exitApp(int);
+    void quit();
 
 public slots:
     void on_shortcutsSwithPages();
@@ -225,6 +233,8 @@ public slots:
 
     void developerMode();
 
+    void start();
+
 private slots:
     void LoadEqualization();
     void loadEqualisationFromPath();
@@ -239,6 +249,9 @@ private slots:
     void on_actionDefibrillator_triggered(bool checked);
     void on_actionRevert_triggered(bool checked);
     void on_actionAbout_triggered(bool checked);
+
+    void sock_readyRead();
+    void sock_messagesWritten(int count);
 };
 
 

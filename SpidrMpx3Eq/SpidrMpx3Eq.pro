@@ -83,7 +83,11 @@ SOURCES += main.cpp \
     DataTakingThread.cpp \
     qcustomplot.cpp \
     TiffFile.cpp \
-    datacontrollerthread.cpp
+    datacontrollerthread.cpp \
+    qzmqcontext.cpp \
+    qzmqreprouter.cpp \
+    qzmqsocket.cpp \
+    qzmqvalve.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -108,7 +112,12 @@ HEADERS += mpx3gui.h \
     DataTakingThread.h \
     qcustomplot.h \
     TiffFile.h \
-    datacontrollerthread.h
+    datacontrollerthread.h \
+    qzmqcontext.h \
+    qzmqreprouter.h \
+    qzmqreqmessage.h \
+    qzmqsocket.h \
+    qzmqvalve.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \

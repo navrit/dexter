@@ -36,8 +36,11 @@
 #include <fstream>
 #include <iostream>
 
-#include "zmq.hpp"
-#include <string>
+#include <stdio.h>
+#include <QCoreApplication>
+#include <QTimer>
+#include "qzmqreqmessage.h"
+#include "qzmqreprouter.h"
 
 //Mpx3GUI::Mpx3GUI(QWidget * parent) :	QMainWindow(parent), _coreApp(coreApp), _ui(new Ui::Mpx3GUI)
 Mpx3GUI::Mpx3GUI(QWidget * parent) :
@@ -183,6 +186,8 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     //_ui->statusBar->set
     //m_statusBarMessageLabel.setAlignment( Qt::AlignLeft );
     m_statusBarMessageString.clear( );
+
+    QTimer::singleShot(0, this, SLOT(start()));
 
 }
 
@@ -666,28 +671,6 @@ void Mpx3GUI::on_applicationStateChanged(Qt::ApplicationState s) {
 
 //Debugging function to generate data when not connected
 void Mpx3GUI::generateFrame(){//TODO: put into Dataset
-
-    //  Prepare our context and socket
-    zmq::context_t context (1);
-    zmq::socket_t socket (context, ZMQ_REP);
-    socket.bind ("tcp://*:5555");
-
-    while (true) {
-        zmq::message_t request;
-
-        //  Wait for next request from client
-        socket.recv (&request);
-        std::cout << "Received Hello" << std::endl;
-
-        //  Do some 'work'
-        sleep(1);
-
-        //  Send reply back to client
-        zmq::message_t reply (5);
-        memcpy (reply.data (), "World", 5);
-        socket.send (reply);
-    }
-
     //int thresholds[] = {0,1,2,3};
     QVector<int> data(getDataset()->x()*getDataset()->y()*getDataset()->getFrameCount());
     for(int t = 0; t < config->getNTriggers();t++){
@@ -864,6 +847,13 @@ void Mpx3GUI::developerMode()
         _ui->actionDefibrillator->setVisible(true);
         devMode = true;
     }
+}
+
+void Mpx3GUI::start()
+{
+    connect(&sock, SIGNAL(readyRead()), SLOT(sock_readyRead()));
+    connect(&sock, SIGNAL(messagesWritten(int)), SLOT(sock_messagesWritten(int)));
+    sock.bind("tcp://*:5555");
 }
 
 void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType) {
@@ -1348,6 +1338,26 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
             QString("ASI B.V. All rights reserved.") ;
     msgBox.setText( msg );
     msgBox.exec();
+}
+
+void Mpx3GUI::sock_readyRead()
+{
+    QZmq::ReqMessage msg = sock.read();
+    if(msg.content().isEmpty())
+    {
+        printf("error: received empty message\n");
+        return;
+    }
+
+    qDebug() << ("read: %s\n", msg.content()[0].data());
+    QByteArray out = "world";
+    qDebug() << ("writing: %s\n", out.data());
+    sock.write(msg.createReply(QList<QByteArray>() << out));
+}
+
+void Mpx3GUI::sock_messagesWritten(int count)
+{
+    qDebug() << ("messages written: %d\n", count);
 }
 
 void Mpx3GUI::on_actionDisconnect_triggered(bool checked){
