@@ -54,7 +54,7 @@ win32 {
 
 unix {
     message(Unix)
-    LIBS += -ltiff
+    LIBS += -ltiff -lzmq
 }
 
 LIBS += -lSpidrMpx3Lib
