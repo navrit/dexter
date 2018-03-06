@@ -204,7 +204,6 @@ signals:
     void sig_statusBarClean();
 
     void exitApp(int);
-    void quit();
 
 public slots:
     void on_shortcutsSwithPages();

@@ -853,7 +853,9 @@ void Mpx3GUI::start()
 {
     connect(&sock, SIGNAL(readyRead()), SLOT(sock_readyRead()));
     connect(&sock, SIGNAL(messagesWritten(int)), SLOT(sock_messagesWritten(int)));
-    sock.bind("tcp://*:5555");
+    const QString addr = "tcp://*:5555";
+    sock.bind(addr);
+    qDebug() << "[INFO]\tZMQ Binding to socket:" << addr;
 }
 
 void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType) {
@@ -1345,19 +1347,29 @@ void Mpx3GUI::sock_readyRead()
     QZmq::ReqMessage msg = sock.read();
     if(msg.content().isEmpty())
     {
-        printf("error: received empty message\n");
+        qDebug() << "[ERROR]\tZMQ Received empty message\n";
         return;
     }
 
-    qDebug() << ("read: %s\n", msg.content()[0].data());
+    qDebug() << ("[INFO]\tRead: %s\n", msg.content()[0].data());
     QByteArray out = "world";
-    qDebug() << ("writing: %s\n", out.data());
+    qDebug() << ("[INFO]\tZMQ Writing: %s\n", out.data());
     sock.write(msg.createReply(QList<QByteArray>() << out));
+
+    const QString message = msg.content()[0].data();
+
+    if (message == "hello") {
+        qDebug() << "[INFO]\tZMQ Yes, hello worked...";
+    } else if (message == "medipix take image") {
+        qDebug() << "[INFO]\tZMQ Let's take an image now. Just send a message to the status bar since I'm not connected to a SPIDR right now ;)";
+        const QString some_string = "ZMQ message received: " + message;
+        emit sig_statusBarAppend(some_string, "green");
+    }
 }
 
 void Mpx3GUI::sock_messagesWritten(int count)
 {
-    qDebug() << ("messages written: %d\n", count);
+    qDebug() << ("[INFO]\tZMQ Messages written: %d\n", count);
 }
 
 void Mpx3GUI::on_actionDisconnect_triggered(bool checked){
