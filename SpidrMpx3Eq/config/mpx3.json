@@ -125,7 +125,7 @@
         "CsmSpm": 0,
         "DecodeFrames": true,
         "GainMode": 1,
-        "LUTEnable": true,
+        "LUTEnable": false,
         "MaxPacketSize": 9000,
         "OperationMode": 0,
         "PixelDepth": 12,
@@ -137,7 +137,7 @@
         "LogLevel" : 1
     },
     "IPConfig": {
-        "SpidrControllerIp": "192.168.100.10",
+        "SpidrControllerIp": "192.168.1.10",
         "SpidrControllerPort": 50000
     },
     "StepperConfig": {
