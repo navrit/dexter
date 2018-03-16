@@ -129,6 +129,7 @@ signals:
     void size_changed(QPoint size);
     void bounds_changed(QRectF bounds);
     void double_click(bool with_corrections = false);
+
 };
 
 #endif // QCSTMGLPLOT_H

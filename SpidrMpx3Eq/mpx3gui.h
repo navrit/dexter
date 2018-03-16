@@ -26,6 +26,7 @@ class Mpx3Config;
 #include "mpx3eq_common.h"
 #include "mpx3config.h"
 #include "datacontrollerthread.h"
+#include "zmqcontroller.h"
 
 class Mpx3Config;
 class QCustomPlot;
@@ -38,6 +39,7 @@ class QCstmEqualization;
 class QCstmGLVisualization;
 class QCstmConfigMonitoring;
 class DataControllerThread;
+class zmqController;
 
 // Change me when adding extra views
 #define __visualization_page_Id     0
@@ -61,8 +63,6 @@ const QString _softwareVersion = "0.0.0";
 #include <stdio.h>
 #include <QCoreApplication>
 #include <QTimer>
-#include "qzmqreqmessage.h"
-#include "qzmqreprouter.h"
 
 namespace Ui {
 class Mpx3GUI;
@@ -114,7 +114,7 @@ private:
     bool devMode = false;
 
     DataControllerThread *dataControllerThread = nullptr;
-    QZmq::RepRouter sock;
+    zmqController *m_zmqController = nullptr;
 
 public:
 
@@ -122,6 +122,8 @@ public:
     Dataset* getDataset(){return workingSet;}
     Dataset* getOriginalDataset(){return originalSet;}
     DataControllerThread* getDataControllerThread(){return dataControllerThread;}
+    zmqController* getZmqController(){return m_zmqController;}
+
     void rebuildCurrentSets(int x, int y, int framesPerLayer);
 
     bool isArmedOk(){ return _armedOk; }
@@ -232,8 +234,6 @@ public slots:
 
     void developerMode();
 
-    void start();
-
 private slots:
     void LoadEqualization();
     void loadEqualisationFromPath();
@@ -248,9 +248,6 @@ private slots:
     void on_actionDefibrillator_triggered(bool checked);
     void on_actionRevert_triggered(bool checked);
     void on_actionAbout_triggered(bool checked);
-
-    void sock_readyRead();
-    void sock_messagesWritten(int count);
 };
 
 

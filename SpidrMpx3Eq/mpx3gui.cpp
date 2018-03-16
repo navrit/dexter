@@ -39,10 +39,7 @@
 #include <stdio.h>
 #include <QCoreApplication>
 #include <QTimer>
-#include "qzmqreqmessage.h"
-#include "qzmqreprouter.h"
 
-//Mpx3GUI::Mpx3GUI(QWidget * parent) :	QMainWindow(parent), _coreApp(coreApp), _ui(new Ui::Mpx3GUI)
 Mpx3GUI::Mpx3GUI(QWidget * parent) :
     QMainWindow(parent),
     _ui(new Ui::Mpx3GUI)
@@ -57,6 +54,10 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     config->SetMpx3GUI( this );
 
     dataControllerThread = new DataControllerThread(this);
+
+    m_zmqController = new zmqController(this);
+    m_zmqController->sendZmqMessage();
+    m_zmqController->SetMpx3GUI(this);
 
     // The orientations carry the information of how the information
     //  from a given chip should be drawn in the screen.
@@ -186,9 +187,6 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     //_ui->statusBar->set
     //m_statusBarMessageLabel.setAlignment( Qt::AlignLeft );
     m_statusBarMessageString.clear( );
-
-    QTimer::singleShot(0, this, SLOT(start()));
-
 }
 
 
@@ -670,7 +668,7 @@ void Mpx3GUI::on_applicationStateChanged(Qt::ApplicationState s) {
 }
 
 //Debugging function to generate data when not connected
-void Mpx3GUI::generateFrame(){//TODO: put into Dataset
+void Mpx3GUI::generateFrame(){//TODO: put into Dataset 
     //int thresholds[] = {0,1,2,3};
     QVector<int> data(getDataset()->x()*getDataset()->y()*getDataset()->getFrameCount());
     for(int t = 0; t < config->getNTriggers();t++){
@@ -847,15 +845,6 @@ void Mpx3GUI::developerMode()
         _ui->actionDefibrillator->setVisible(true);
         devMode = true;
     }
-}
-
-void Mpx3GUI::start()
-{
-    connect(&sock, SIGNAL(readyRead()), SLOT(sock_readyRead()));
-    connect(&sock, SIGNAL(messagesWritten(int)), SLOT(sock_messagesWritten(int)));
-    const QString addr = "tcp://*:5555";
-    sock.bind(addr);
-    qDebug() << "[INFO]\tZMQ Binding to socket:" << addr;
 }
 
 void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType) {
@@ -1340,36 +1329,6 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
             QString("ASI B.V. All rights reserved.") ;
     msgBox.setText( msg );
     msgBox.exec();
-}
-
-void Mpx3GUI::sock_readyRead()
-{
-    QZmq::ReqMessage msg = sock.read();
-    if(msg.content().isEmpty())
-    {
-        qDebug() << "[ERROR]\tZMQ Received empty message\n";
-        return;
-    }
-
-    qDebug() << ("[INFO]\tRead: %s\n", msg.content()[0].data());
-    QByteArray out = "world";
-    qDebug() << ("[INFO]\tZMQ Writing: %s\n", out.data());
-    sock.write(msg.createReply(QList<QByteArray>() << out));
-
-    const QString message = msg.content()[0].data();
-
-    if (message == "hello") {
-        qDebug() << "[INFO]\tZMQ Yes, hello worked...";
-    } else if (message == "medipix take image") {
-        qDebug() << "[INFO]\tZMQ Let's take an image now. Just send a message to the status bar since I'm not connected to a SPIDR right now ;)";
-        const QString some_string = "ZMQ message received: " + message;
-        emit sig_statusBarAppend(some_string, "green");
-    }
-}
-
-void Mpx3GUI::sock_messagesWritten(int count)
-{
-    qDebug() << ("[INFO]\tZMQ Messages written: %d\n", count);
 }
 
 void Mpx3GUI::on_actionDisconnect_triggered(bool checked){

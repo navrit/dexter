@@ -22,4 +22,4 @@ private:
 
 };
 
-#endif // DATACONTROLLERTHREAD_H
+#endif DATACONTROLLERTHREAD_H
