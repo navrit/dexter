@@ -14,6 +14,7 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
     SetMpx3GUI(p);
     config = _mpx3gui->getConfig();
     timer = new QTimer(this);
+    eventProcessTimer = new QTimer(this);
 
     initialise();
 
@@ -23,7 +24,8 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
     connect(QZmq_PUB_socket, SIGNAL(messagesWritten(int)), SLOT(sock_messagesWritten(int)));
     connect(QZmq_SUB_socket, SIGNAL(readyRead()), SLOT(sock_readyRead())); //! TODO This signal never seems to be triggered...
 
-    connect(timer, SIGNAL(timeout()), this, SLOT(sendZmqMessage()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(tryToProcessEvents()));
+    connect(eventProcessTimer, SIGNAL(timeout()), this, SLOT(tryToSendFeedback());
     //! Don't need to connect the failed attempts to change the address here. That's taken care of elsewhere
 
 }
@@ -33,12 +35,19 @@ zmqController::~zmqController()
     delete QZmq_context;
     delete QZmq_PUB_socket;
     delete QZmq_SUB_socket;
+    delete eventQueue;
     QZmq_context = nullptr;
     QZmq_PUB_socket = nullptr;
     QZmq_SUB_socket = nullptr;
+    eventQueue = nullptr;
+
     timer->stop();
     delete timer;
     timer = nullptr;
+
+    eventProcessTimer->stop();
+    delete eventProcessTimer;
+    eventProcessTimer = nullptr;
 }
 
 QZmq::Context *zmqController::getZmqContext()
@@ -82,6 +91,7 @@ void zmqController::initialise()
     QZmq_context = new QZmq::Context();
     QZmq_PUB_socket = new QZmq::Socket(QZmq::Socket::Type::Pub, QZmq_context, this);
     QZmq_SUB_socket = new QZmq::Socket(QZmq::Socket::Type::Sub, QZmq_context, this);
+    eventQueue = new QQueue<QJsonDocument>();
 
     QZmq_PUB_socket->connectToAddress(PUB_addr);
     qDebug() << "[INFO]\tZMQ Connected to PUB socket:" << PUB_addr;
@@ -90,8 +100,8 @@ void zmqController::initialise()
     QZmq_SUB_socket->subscribe("");
     qDebug() << "[INFO]\tZMQ Connected to SUB socket:" << SUB_addr;
 
-    // msec
-    timer->start(1000);
+    initialiseJsonResponse();
+
 }
 
 void zmqController::addressChanged_PUB(QString addr)
@@ -113,26 +123,63 @@ void zmqController::addressChanged()
     //! Reinitialise with new addresses
     initialise();
 
-    qDebug() << "[INFO]\tZMQ address changed, context and sockets reinitialised";
+    qDebug() << "[INFO]\tZMQ address changed, everything is reinitialised\n";
+}
+
+void zmqController::initialiseJsonResponse()
+{
+    QJsonObject root_obj;
+    root_obj.insert("component","medipix");
+    root_obj.insert("comp_type","others");
+    root_obj.insert("comp_phys","medipix");
+    root_obj.insert("command","");
+    root_obj.insert("arg1","");
+    root_obj.insert("arg2","");
+    root_obj.insert("reply","");
+    root_obj.insert("reply type","");
+    root_obj.insert("tick count",0);
+    root_obj.insert("UUID",0);
+    JsonDocument = QJsonDocument(root_obj);
+}
+
+void zmqController::processEvents()
+{
+    //! Received a SEND event --> if reply_types == ""
+    //! Send REPLY event(s) in response to thats specific SEND event.
+    //!    Do not process other events until the first is complete
+
+    JsonDocument = eventQueue->pop_front();
+    processingEvents = true;
+    QJsonObject root_obj = JsonDocument.object();
+
+    if (root_obj.value("reply_type") == "") {
+        //! 1. Received a SEND event from server
+        //! 2. REPLY with RCV immediately
+        //! 3. if it's taking a while, REPLY with FDB events at least at 1Hz
+        //! 4. emit relevant signals to trigger whatever we want elsewhere
+        //!    This must not be blocking
+        //! 5. when it's processed, REPLY with a ACK event via signals/slots
+
+        JsonDocument.value("reply_type") = "RCV";
+        sendZmqMessage();
+
+        //! FDB response sent at 10Hz indepenent of this.
+        //!    It just checks to see if this is still processing events
+
+        if (root_obj.value("command") == "take image") {
+
+        } else if (root_obj.value("command") == "save image") {
+
+        } else if (root_obj.value("command") == "something cool") {
+
+        }
+    }
+
+    processingEvents = false; //! TODO move this to a SLOT + ACK reply
 }
 
 void zmqController::sendZmqMessage()
 {
-    QJsonObject root_obj;
-    root_obj.insert("component","medipix");
-    root_obj.insert("comp_phys","medipix");
-    root_obj.insert("command","take image");
-    root_obj.insert("arg1","");
-    root_obj.insert("arg2","");
-    root_obj.insert("reply","got it");
-    root_obj.insert("reply type","");
-    root_obj.insert("comp_type","other");
-    root_obj.insert("tick count",0);
-    root_obj.insert("UUID",0);
-    QJsonDocument json_doc(root_obj);
-    QString json_string = json_doc.toJson();
-
-
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ Writing:" << json_string;
 
@@ -143,8 +190,23 @@ void zmqController::sendZmqMessage()
     }
 #endif
 
-    const QList<QByteArray> outList = QList<QByteArray>() << json_string.toLocal8Bit();
+    const QList<QByteArray> outList = QList<QByteArray>() << JsonDocument.toJson().toLocal8Bit();
     QZmq_PUB_socket->write(outList);
+}
+
+void zmqController::tryToProcessEvents()
+{
+    if (!processingEvents && ) {
+        processEvents();
+    }
+}
+
+void zmqController::tryToSendFeedback()
+{
+    if(!processEvents()) {
+        JsonDocument.value("reply_type") = "FDB";
+        sendZmqMessage();
+    }
 }
 
 void zmqController::sock_readyRead()
@@ -163,17 +225,21 @@ void zmqController::sock_readyRead()
     qDebug() << "[INFO]\tZMQ JSON document length:" << msg.length() << "\n";
 #endif
 
-    QJsonDocument json_doc = QJsonDocument::fromJson( msg.first() );
+    eventQueue->push_back( QJsonDocument::fromJson( msg.first()) );
+
+    if (!timer->isActive() && !eventProcessTimer->isActive()) {
+        timer->start(1); //! milliseconds
+        eventProcessTimer->start(100); //! milliseconds
+    }
 
 #ifdef QT_DEBUG
+    QJsonDocument json_doc = QJsonDocument::fromJson( msg.first() );
     if (json_doc.object().value("command").toString() == "take image") {
         qDebug() << "[INFO]\tZMQ CHECK - Received command to TAKE IMAGE!";
     } else {
         qDebug() << "[INFO]\tZMQ CHECK - DID NOT receive command to take image";
     }
 #endif
-
-    sendZmqMessage();
 }
 
 void zmqController::sock_messagesWritten(int count)
