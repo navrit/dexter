@@ -26,8 +26,8 @@ public:
 private:
     Mpx3GUI * _mpx3gui;
 
-    const QString PUB_addr = "tcp://127.0.0.1:5557";
-    const QString SUB_addr = "tcp://127.0.0.1:5555";
+    const QString PUB_addr = "tcp://127.0.0.1:5555";
+    const QString SUB_addr = "tcp://127.0.0.1:5556";
 
     QZmq::Context * QZmq_context;
     QZmq::Socket * QZmq_PUB_socket;

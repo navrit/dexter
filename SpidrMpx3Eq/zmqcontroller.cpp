@@ -21,8 +21,8 @@ zmqController::zmqController(Mpx3GUI *, QObject *parent) : QObject(parent)
     connect(QZmq_SUB_socket, SIGNAL(readyRead()), SLOT(sock_readyRead()));
 
 
-    QZmq_PUB_socket->bind(PUB_addr);
-    qDebug() << "[INFO]\tZMQ Bound to PUB socket:" << PUB_addr;
+    QZmq_PUB_socket->connectToAddress(PUB_addr);
+    qDebug() << "[INFO]\tZMQ Connected to PUB socket:" << PUB_addr;
 
     QZmq_PUB_socket->connectToAddress(SUB_addr);
     qDebug() << "[INFO]\tZMQ Connected to SUB socket:" << SUB_addr;
