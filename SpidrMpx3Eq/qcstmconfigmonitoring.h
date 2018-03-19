@@ -69,6 +69,8 @@ private slots:
     void csmSpmChangedByValue(int val);
 
     void IpAddressEditFinished();
+    void IpZmqPubAddressEditFinished(); // Nearly the same as IpAddressEditFinished, this could be refactored
+    void IpZmqSubAddressEditFinished(); // Nearly the same as IpAddressEditFinished, this could be refactored
 
     void nTriggersEdited();
     void ContRWFreqEdited();

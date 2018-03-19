@@ -77,6 +77,8 @@ private:
     SpidrController * _controller = nullptr;
     bool connected = false;
     QHostAddress SpidrAddress;
+    QString Zmq_Pub_address; // Not using QHostAddress because I need more flexibility, eg. using *, tcp://, inproc://, ipc:// etc.
+    QString Zmq_Sub_address;
     uint16_t port;
     int _trigPeriod_ms;
     //Operation stuff
@@ -102,7 +104,11 @@ public:
     bool fromJsonFile(QString filename, bool includeDacs = true);
     bool toJsonFile(QString filename, bool includeDacs = true);
     QString getIpAddress(){return SpidrAddress.toString();}
+    QString getIpZmqPubAddress(){return Zmq_Pub_address;}
+    QString getIpZmqSubAddress(){return Zmq_Sub_address;}
     QString getIpAddressPortString();
+    QString getIpZmqPubAddressPortString();
+    QString getIpZmqSubAddressPortString();
     SpidrController * getController(){return _controller;}
     SpidrController * establishConnection();
     void closeConnection();
@@ -177,6 +183,10 @@ private:
 
 signals:
     void IpAdressChanged(QString);
+    void IpZmqPubAddressChanged(QString);
+    void IpZmqSubAddressChanged(QString);
+    void IpZmqPubAddressChangedFailed(QString);
+    void IpZmqSubAddressChangedFailed(QString);
     void colourModeChanged(bool);
     void LUTEnableChanged(bool);
     void readBothCountersChanged(bool);
@@ -214,6 +224,9 @@ public slots:
 
     void setIpAddress(QString ipn);
     void updateIpAddress(){}
+
+    void setIpZmqPubAddress(QString ip_and_port);
+    void setIpZmqSubAddress(QString ip_and_port);
 
     void setColourMode(bool mode);
     void updateColourMode(){}

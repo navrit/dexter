@@ -1,7 +1,7 @@
 #include "zmqcontroller.h"
 #include "QDebug"
 #include "QMessageBox"
-
+#include "mpx3config.h"
 
 #include "../Qzmq/qzmqcontext.h"
 #include "../Qzmq/qzmqsocket.h"
@@ -9,41 +9,34 @@
 #include "qjsonobject.h"
 #include "qjsondocument.h"
 
-zmqController::zmqController(Mpx3GUI *, QObject *parent) : QObject(parent)
+zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
 {
-    QZmq_context = new QZmq::Context();
+    SetMpx3GUI(p);
+    config = _mpx3gui->getConfig();
+    timer = new QTimer(this);
 
-    QZmq_PUB_socket = new QZmq::Socket(QZmq::Socket::Type::Pub, QZmq_context, this);
-    QZmq_SUB_socket = new QZmq::Socket(QZmq::Socket::Type::Sub, QZmq_context, this);
+    initialise();
+
+    connect(config, SIGNAL(IpZmqPubAddressChanged(QString)), this, SLOT(addressChanged_PUB(QString)));
+    connect(config, SIGNAL(IpZmqSubAddressChanged(QString)), this, SLOT(addressChanged_SUB(QString)));
 
     connect(QZmq_PUB_socket, SIGNAL(messagesWritten(int)), SLOT(sock_messagesWritten(int)));
+    connect(QZmq_SUB_socket, SIGNAL(readyRead()), SLOT(sock_readyRead())); //! TODO This signal never seems to be triggered...
 
-    connect(QZmq_SUB_socket, SIGNAL(readyRead()), SLOT(sock_readyRead()));
-
-
-    QZmq_PUB_socket->connectToAddress(PUB_addr);
-    qDebug() << "[INFO]\tZMQ Connected to PUB socket:" << PUB_addr;
-
-    QZmq_PUB_socket->connectToAddress(SUB_addr);
-    qDebug() << "[INFO]\tZMQ Connected to SUB socket:" << SUB_addr;
-
-    timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(sendZmqMessage()));
-    // msec
-    timer->start(1000);
+    //! Don't need to connect the failed attempts to change the address here. That's taken care of elsewhere
+
 }
 
 zmqController::~zmqController()
 {
     delete QZmq_context;
-    QZmq_context = nullptr;
-
     delete QZmq_PUB_socket;
-    QZmq_PUB_socket = nullptr;
-
     delete QZmq_SUB_socket;
+    QZmq_context = nullptr;
+    QZmq_PUB_socket = nullptr;
     QZmq_SUB_socket = nullptr;
-
+    timer->stop();
     delete timer;
     timer = nullptr;
 }
@@ -84,6 +77,45 @@ QZmq::Socket *zmqController::getZmq_SUB_socket()
     }
 }
 
+void zmqController::initialise()
+{
+    QZmq_context = new QZmq::Context();
+    QZmq_PUB_socket = new QZmq::Socket(QZmq::Socket::Type::Pub, QZmq_context, this);
+    QZmq_SUB_socket = new QZmq::Socket(QZmq::Socket::Type::Sub, QZmq_context, this);
+
+    QZmq_PUB_socket->connectToAddress(PUB_addr);
+    qDebug() << "[INFO]\tZMQ Connected to PUB socket:" << PUB_addr;
+
+    QZmq_SUB_socket->connectToAddress(SUB_addr);
+    QZmq_SUB_socket->subscribe("");
+    qDebug() << "[INFO]\tZMQ Connected to SUB socket:" << SUB_addr;
+
+    // msec
+    timer->start(1000);
+}
+
+void zmqController::addressChanged_PUB(QString addr)
+{
+    PUB_addr = addr;
+    qDebug() << "[INFO]\tZMQ PUB address changed:" << addr;
+    addressChanged();
+}
+
+void zmqController::addressChanged_SUB(QString addr)
+{
+    SUB_addr = addr;
+    qDebug() << "[INFO]\tZMQ SUB address changed:" << addr;
+    addressChanged();
+}
+
+void zmqController::addressChanged()
+{
+    //! Reinitialise with new addresses
+    initialise();
+
+    qDebug() << "[INFO]\tZMQ address changed, context and sockets reinitialised";
+}
+
 void zmqController::sendZmqMessage()
 {
     QJsonObject root_obj;
@@ -117,32 +149,29 @@ void zmqController::sendZmqMessage()
 
 void zmqController::sock_readyRead()
 {
+#ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ Reading a message from the ZMQ server";
+#endif
     const QList<QByteArray> msg = QZmq_SUB_socket->read();
     if(msg.isEmpty()){
         qDebug() << "[ERROR]\tZMQ Received empty message\n";
         return;
     }
 
-    qDebug() << "[INFO]\tRead: %s\n" << msg.first();
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ First message read: " << msg.first();
+    qDebug() << "[INFO]\tZMQ JSON document length:" << msg.length() << "\n";
+#endif
 
-    QJsonDocument json_doc = QJsonDocument::fromBinaryData( msg.first() );
+    QJsonDocument json_doc = QJsonDocument::fromJson( msg.first() );
 
+#ifdef QT_DEBUG
     if (json_doc.object().value("command").toString() == "take image") {
         qDebug() << "[INFO]\tZMQ CHECK - Received command to TAKE IMAGE!";
     } else {
         qDebug() << "[INFO]\tZMQ CHECK - DID NOT receive command to take image";
     }
-
-//    const QString message = QString(msg.first());
-
-//    if (message == "hello") {
-//        qDebug() << "[INFO]\tZMQ Yes, hello worked...";
-//    } else if (message == "medipix take image") {
-//        qDebug() << "[INFO]\tZMQ Let's take an image now.";
-//        const QString some_string = "ZMQ message received: " + message;
-//        qDebug() << "[INFO]\tZMQ Message received:" << some_string;
-//    }
+#endif
 
     sendZmqMessage();
 }

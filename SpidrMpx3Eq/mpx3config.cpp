@@ -8,6 +8,7 @@
 
 #include <QFile>
 #include <QDebug>
+#include <QRegExp>
 
 #include "SpidrController.h"
 #include "SpidrDaq.h"
@@ -58,6 +59,8 @@ QJsonDocument Mpx3Config::buildConfigJSON(bool includeDacs)
     QJsonArray objDacsArray;
     objIp.insert("SpidrControllerIp", SpidrAddress.toString());
     objIp.insert("SpidrControllerPort", this->port);
+    objIp.insert("ZmqPubAddress", Zmq_Pub_address);
+    objIp.insert("ZmqSubAddress", Zmq_Sub_address);
 
     objDetector.insert("OperationMode", this->OperationMode);
     objDetector.insert("PixelDepth", this->PixelDepth);
@@ -109,7 +112,6 @@ void Mpx3Config::PickupStaticConfigurationFigures() {
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     if ( spidrcontrol == nullptr ) return;
 
-    //
     int clockMHz;
     if ( spidrcontrol->getMpx3Clock( &clockMHz ) ) {
         SystemClock = clockMHz;
@@ -672,6 +674,12 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
         it = JSobject.find("SpidrControllerIp");
         if(it != JSobject.end())
             setIpAddress(it.value().toString());
+        it = JSobject.find("ZmqPubAddress");
+        if(it != JSobject.end())
+            setIpZmqPubAddress(it.value().toString());
+        it = JSobject.find("ZmqSubAddress");
+        if(it != JSobject.end())
+            setIpZmqSubAddress(it.value().toString());
     }
     itParent = JSobjectParent.find("DetectorConfig");
     if(itParent != JSobjectParent.end()){
@@ -811,10 +819,59 @@ void Mpx3Config::setIpAddress(QString ipn) {
 
 }
 
+void Mpx3Config::setIpZmqPubAddress(QString ip_and_port)
+{
+    if (ip_and_port == ""){
+        return;
+    }
+
+    QString string = ip_and_port.toLower();
+
+    if (string.contains(QRegExp("(tcp:\/\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
+        Zmq_Pub_address = ip_and_port;
+
+        emit IpZmqPubAddressChanged( this->getIpZmqPubAddressPortString() );
+    } else {
+        qDebug() << "[ERROR] ZMQ IP PUB address could not be set, this is a valid example: tcp://192.168.1.1:5555 \
+                    \n You need to match the following Regex: '(tcp:\/\/)([0-9]+.|(.+[0-9]))+:[0-9]+'";
+        emit IpZmqPubAddressChangedFailed( "Eg.: tcp://192.168.1.1:5555 - Invalid input" );
+    }
+}
+
+void Mpx3Config::setIpZmqSubAddress(QString ip_and_port)
+{
+    if (ip_and_port == ""){
+        return;
+    }
+
+    QString string = ip_and_port.toLower();
+
+    if (string.contains(QRegExp("(tcp:\/\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
+        Zmq_Sub_address = ip_and_port;
+
+        emit IpZmqSubAddressChanged( this->getIpZmqSubAddressPortString() );
+    } else {
+        qDebug() << "[ERROR] ZMQ IP SUB address could not be set, this is a valid example: tcp://192.168.1.1:5555 \
+                    \n You need to match the following Regex: '(tcp:\/\/)([0-9]+.|(.+[0-9]))+:[0-9]+'";
+        emit IpZmqSubAddressChangedFailed( "Eg.: tcp://192.168.1.1:5555 - Invalid input" );
+    }
+
+}
+
 QString Mpx3Config::getIpAddressPortString() {
     QString fullS = this->getIpAddress();
     fullS += QString(":%1").arg(this->getIpAddressPort());
     return fullS;
+}
+
+QString Mpx3Config::getIpZmqPubAddressPortString()
+{
+    return Zmq_Pub_address;
+}
+
+QString Mpx3Config::getIpZmqSubAddressPortString()
+{
+    return Zmq_Sub_address;
 }
 
 bool Mpx3Config::toJsonFile(QString filename, bool includeDacs){

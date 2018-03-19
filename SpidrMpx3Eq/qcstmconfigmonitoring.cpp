@@ -460,6 +460,15 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(ui->ipLineEdit, SIGNAL( editingFinished() ), this, SLOT( IpAddressEditFinished() ) );// config, SLOT(setIpAddress(QString)) );
     connect(config, SIGNAL(IpAdressChanged(QString)), ui->ipLineEdit, SLOT(setText(QString)) );
 
+    // ZMQ IP and Port (x2)
+    connect(ui->IP_ZMQ_PUB_lineEdit, SIGNAL( editingFinished() ), this, SLOT( IpZmqPubAddressEditFinished() ) );
+    connect(ui->IP_ZMQ_SUB_lineEdit, SIGNAL( editingFinished() ), this, SLOT( IpZmqSubAddressEditFinished() ) );
+
+    connect(config, SIGNAL(IpZmqPubAddressChanged(QString)), ui->IP_ZMQ_PUB_lineEdit, SLOT(setText(QString)) );
+    connect(config, SIGNAL(IpZmqSubAddressChanged(QString)), ui->IP_ZMQ_SUB_lineEdit, SLOT(setText(QString)) );
+    connect(config, SIGNAL(IpZmqPubAddressChangedFailed(QString)), ui->IP_ZMQ_PUB_lineEdit, SLOT(setText(QString)) );
+    connect(config, SIGNAL(IpZmqSubAddressChangedFailed(QString)), ui->IP_ZMQ_SUB_lineEdit, SLOT(setText(QString)) );
+
     // Log level
     connect(ui->logLevelSpinner, SIGNAL( editingFinished() ), this, SLOT( setLogLevel() ) );
     connect(config, SIGNAL(logLevelChanged(int)), ui->logLevelSpinner, SLOT(setValue(int)) );
@@ -582,6 +591,18 @@ void QCstmConfigMonitoring::IpAddressEditFinished()
     QString ipLine = ui->ipLineEdit->text();
     _mpx3gui->getConfig()->setIpAddress( ipLine );
 
+}
+
+void QCstmConfigMonitoring::IpZmqPubAddressEditFinished()
+{
+    QString ip_and_port = ui->IP_ZMQ_PUB_lineEdit->text();
+    _mpx3gui->getConfig()->setIpZmqPubAddress( ip_and_port );
+}
+
+void QCstmConfigMonitoring::IpZmqSubAddressEditFinished()
+{
+    QString ip_and_port = ui->IP_ZMQ_SUB_lineEdit->text();
+    _mpx3gui->getConfig()->setIpZmqSubAddress( ip_and_port );
 }
 
 void QCstmConfigMonitoring::pixelDepthChangedByValue(int val)
