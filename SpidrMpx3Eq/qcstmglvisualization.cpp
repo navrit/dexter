@@ -546,6 +546,8 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
         _dataConsumerThread->dataTakingSaysIFinished();
     }
 
+    emit dataTakingFinishedAndSaved();
+
     /*
     if ( _takingData ) {
 

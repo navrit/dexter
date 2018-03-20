@@ -308,6 +308,9 @@ signals:
     //! Used to run TH Scan (threshold scan)
     void sig_resumeTHScan();
 
+    //! Used for ZMQ
+    void dataTakingFinishedAndSaved();
+
 };
 
 #endif // QCSTMGLVISUALIZATION_H

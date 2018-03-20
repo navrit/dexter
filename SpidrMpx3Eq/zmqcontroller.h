@@ -101,6 +101,7 @@ private:
     QTimer * eventProcessTimer;
 
 signals:
+    void takeImage();
 
 public slots:
     void addressChanged_PUB(QString addr);
@@ -111,7 +112,8 @@ public slots:
 
 private slots:
     void sock_readyRead(); //! Just read all the events coming in, parse, caste and push to back of eventQueue
-    void sock_messagesWritten(int count); //! Mainly for debugginp purposes
+    void sock_messagesWritten(int count); //! Mainly for debugging purposes
+    void dataTakingFinishedAndSaved();
 };
 
 #endif ZMQCONTROLLER_H
