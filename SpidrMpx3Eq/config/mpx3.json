@@ -133,20 +133,12 @@
         "TriggerDeadtime_us": 2000,
         "TriggerLength_us": 2000,
         "TriggerMode": 4,
-        "nTriggers": 100,
-        "LogLevel" : 1
+        "nTriggers": 100
     },
     "IPConfig": {
         "SpidrControllerIp": "192.168.1.10",
-        "SpidrControllerPort": 50000
-    },
-    "StepperConfig": {
-        "Acceleration": 128000,
-        "CalibAngle0": 360,
-        "CalibAngle1": 0,
-        "CalibPos0": 576000,
-        "CalibPos1": 0,
-        "Speed": 20000,
-        "UseCalib": true
+        "SpidrControllerPort": 50000,
+        "ZmqPubAddress": "tcp://127.0.0.1:5555",
+        "ZmqSubAddress": "tcp://127.0.0.1:5556"
     }
 }

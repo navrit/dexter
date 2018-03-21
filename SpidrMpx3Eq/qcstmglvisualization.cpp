@@ -282,6 +282,9 @@ QString QCstmGLVisualization::getStatsString_deviceId()
 
 void QCstmGLVisualization::saveImage(QString filename)
 {
+    if (filename == "") {
+        filename = QDir::homePath();
+    }
     _mpx3gui->getDataset()->toTIFF(filename);
 }
 
@@ -1390,6 +1393,89 @@ void QCstmGLVisualization::shortcutFrameLength()
 void QCstmGLVisualization::shortcutFrameNumber()
 {
     ui->nTriggersSpinBox->setFocus();
+}
+
+void QCstmGLVisualization::takeImage()
+{
+    //! Delete current image
+    //! Trigger start data taking
+    //! Turn off autosave
+    qDebug() << ("[INFO]\tZMQ \n\t+ Delete current image \n\t+ Trigger start data taking \n\t+ Turn off autosave");
+}
+
+void QCstmGLVisualization::takeAndSaveImageSequence()
+{
+    //! Activate autosave to home directory or whatever
+    //! Trigger data taking
+    qDebug() << ("[INFO]\tZMQ \n\+ tActivate autosave to home directory or whatever \n\t+ Trigger data taking");
+}
+
+void QCstmGLVisualization::saveImageSlot(QString filePath)
+{
+    qDebug() << "[INFO]\tZMQ \n\tSave raw image as tiff to :" << filePath;
+    saveImage(filePath);
+}
+
+void QCstmGLVisualization::setExposure(uint64_t microseconds)
+{
+    //! Switch to Sequential RW, then set open and closed time
+    //!    Always 2ms for down time
+    int index = -1;
+    index = ui->operationModeComboBox_Vis->findText("Sequential R/W");
+    ui->operationModeComboBox_Vis->setCurrentIndex(index);
+    _mpx3gui->getConfig()->setTriggerDowntime(2000);
+
+    ui->triggerLengthSpinBox->setValue(microseconds);
+    triggerLength_edit();
+}
+
+void QCstmGLVisualization::setNumberOfFrames(uint64_t number_of_frames)
+{
+
+}
+
+void QCstmGLVisualization::setThreshold(uint16_t threshold, uint16_t value)
+{
+    //! Set specified threshold to value
+}
+
+void QCstmGLVisualization::setGainMode(QString mode)
+{
+    //! Set by name
+}
+
+void QCstmGLVisualization::setCSM(bool active)
+{
+    //! True --> CSM ON
+    //! False -> CSM OFF
+}
+
+void QCstmGLVisualization::loadEqualisation(QString filePath)
+{
+    //! From default location unless specified
+}
+
+void QCstmGLVisualization::setReadoutMode(QString mode)
+{
+    //! Sequential or CRW
+}
+
+void QCstmGLVisualization::setReadoutFrequency(uint16_t frequency)
+{
+    //! Will switch to CRW, then set the frequency
+}
+
+void QCstmGLVisualization::loadConfiguration(QString filePath)
+{
+    //! From default location unless otherwise specfied
+}
+
+void QCstmGLVisualization::setNumberOfAverages(uint64_t number_of_averages)
+{
+    //! Delete current image
+    //! Set integrate ON
+    //! Set number of frames
+    //! Normalise image to 12 bit?
 }
 
 void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){

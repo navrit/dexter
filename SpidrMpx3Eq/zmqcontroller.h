@@ -34,7 +34,7 @@
 //!
 //! --> component : medipix (only this in our case)
 //! --> comp_phys : physical name of the addressed component (as described in the Acquila settings file)
-//! --> comp_type : possible values are tube, motor, camera or other (camera or medipix for us?)
+//! --> comp_type : possible values are tube, motor, camera or other (other for us only, it's relatively arbitrary)
 //! --> command : the command issued
 //! --> arg1 : the first argument field (optional, empty if no arguments are needed)
 //! --> arg2 : the second argument field (optional, empty if no arguments are needed)
@@ -69,11 +69,12 @@ public:
 
     void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
 
+    /*
     //! Currently unused
     QZmq::Context *getZmqContext();
     QZmq::Socket *getZmq_PUB_socket();
     QZmq::Socket *getZmq_SUB_socket();
-
+    */
 
 private:
     Mpx3GUI * _mpx3gui = nullptr;
@@ -92,8 +93,7 @@ private:
 
     QJsonDocument JsonDocument; //! Unique current JSON document
 
-    void initialise();
-    void addressChanged();
+    //void initialise();
     void initialiseJsonResponse();
 
     void processEvents();
@@ -102,6 +102,18 @@ private:
 
 signals:
     void takeImage();
+    void takeAndSaveImageSequence();
+    void saveImageSignal(QString filePath);
+    void setExposure(uint64_t microseconds);
+    void setNumberOfFrames(uint64_t number_of_frames);
+    void setThreshold(uint16_t threshold, uint16_t value);
+    void setGainMode(QString mode);
+    void setCSM(bool active);
+    void loadEqualisation(QString filePath);
+    void setReadoutMode(QString mode);
+    void setReadoutFrequency(uint16_t frequency); //! in Hz
+    void loadConfiguration(QString filePath);
+    void setNumberOfAverages(uint64_t number_of_averages); //! Should I really do this?
 
 public slots:
     void addressChanged_PUB(QString addr);

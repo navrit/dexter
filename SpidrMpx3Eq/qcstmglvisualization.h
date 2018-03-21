@@ -288,6 +288,21 @@ public slots:
     void shortcutFrameLength();
     void shortcutFrameNumber();
 
+    //! Used for ZMQ
+    void takeImage();
+    void takeAndSaveImageSequence();
+    void saveImageSlot(QString filePath);
+    void setExposure(uint64_t microseconds);
+    void setNumberOfFrames(uint64_t number_of_frames);
+    void setThreshold(uint16_t threshold, uint16_t value);
+    void setGainMode(QString mode);
+    void setCSM(bool active);
+    void loadEqualisation(QString filePath);
+    void setReadoutMode(QString mode);
+    void setReadoutFrequency(uint16_t frequency); //! in Hz
+    void loadConfiguration(QString filePath);
+    void setNumberOfAverages(uint64_t number_of_averages); //! Should I really do this?
+
 signals:
     void taking_data_gui();
     void idling_gui();
