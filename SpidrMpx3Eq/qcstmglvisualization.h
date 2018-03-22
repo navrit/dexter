@@ -324,7 +324,8 @@ signals:
     void sig_resumeTHScan();
 
     //! Used for ZMQ
-    void dataTakingFinishedAndSaved();
+    void someCommandHasFinished_Successfully();
+    void someCommandHasFailed();
 
 };
 

@@ -69,19 +69,12 @@ public:
 
     void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
 
-    /*
-    //! Currently unused
-    QZmq::Context *getZmqContext();
-    QZmq::Socket *getZmq_PUB_socket();
-    QZmq::Socket *getZmq_SUB_socket();
-    */
-
 private:
     Mpx3GUI * _mpx3gui = nullptr;
     Mpx3Config * config = nullptr;
 
-    QString PUB_addr = "tcp://127.0.0.1:5556";
-    QString SUB_addr = "tcp://127.0.0.1:5555";
+    QString PUB_addr = "tcp://127.0.0.1:50001"; //! Eg. "tcp://192.168.178.9:50001";
+    QString SUB_addr = "tcp://127.0.0.1:50000"; //! Eg. "tcp://192.168.178.9:50000";
 
     QZmq::Context * QZmq_context;
     QZmq::Socket * QZmq_PUB_socket;
@@ -116,7 +109,7 @@ signals:
     void setNumberOfAverages(uint64_t number_of_averages); //! Should I really do this?
 
 public slots:
-    void addressChanged_PUB(QString addr);
+    void addressChanged_PUB(QString addr); //! Apparently you cannot change addresses for an existing socket or something ???
     void addressChanged_SUB(QString addr);
     void sendZmqMessage();
     void tryToProcessEvents();
@@ -125,7 +118,8 @@ public slots:
 private slots:
     void sock_readyRead(); //! Just read all the events coming in, parse, caste and push to back of eventQueue
     void sock_messagesWritten(int count); //! Mainly for debugging purposes
-    void dataTakingFinishedAndSaved();
+    void someCommandHasFinished_Successfully();
+    void someCommandHasFailed();
 };
 
 #endif ZMQCONTROLLER_H

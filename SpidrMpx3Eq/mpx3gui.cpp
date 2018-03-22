@@ -56,7 +56,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     dataControllerThread = new DataControllerThread(this);
 
     m_zmqController = new zmqController(this);
-    m_zmqController->sendZmqMessage();
+    //m_zmqController->sendZmqMessage();
     m_zmqController->SetMpx3GUI(this);
 
     // The orientations carry the information of how the information
@@ -668,7 +668,7 @@ void Mpx3GUI::on_applicationStateChanged(Qt::ApplicationState s) {
 }
 
 //Debugging function to generate data when not connected
-void Mpx3GUI::generateFrame(){//TODO: put into Dataset 
+void Mpx3GUI::generateFrame(){//TODO: put into Dataset
     //int thresholds[] = {0,1,2,3};
     QVector<int> data(getDataset()->x()*getDataset()->y()*getDataset()->getFrameCount());
     for(int t = 0; t < config->getNTriggers();t++){

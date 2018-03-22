@@ -20,6 +20,7 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
     QZmq_context = new QZmq::Context();
     QZmq_PUB_socket = new QZmq::Socket(QZmq::Socket::Type::Pub, QZmq_context, this);
     QZmq_SUB_socket = new QZmq::Socket(QZmq::Socket::Type::Sub, QZmq_context, this);
+
     eventQueue = new QQueue<QJsonDocument>();
 
     QZmq_PUB_socket->connectToAddress(PUB_addr);
@@ -46,8 +47,10 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
 
     //  ---------------------- External class signals ---------------------
     //! This is logically connected to takeImage and takeAndSaveImageSequence
-    connect(_mpx3gui->getVisualization(), SIGNAL(dataTakingFinishedAndSaved()),
-            this, SLOT(dataTakingFinishedAndSaved()));
+    connect(_mpx3gui->getVisualization(), SIGNAL(someCommandHasFinished_Successfully()),
+            this, SLOT(someCommandHasFinished_Successfully()));
+    connect(_mpx3gui->getVisualization(), SIGNAL(someCommandHasFailed()),
+            this, SLOT(someCommandHasFailed()));
 
     //! Straight name mapping to appropriate slots in visualisation, could go anywhere
     connect(this, SIGNAL(takeImage()), _mpx3gui->getVisualization(), SLOT(takeImage()));
@@ -69,15 +72,6 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
 
 zmqController::~zmqController()
 {
-    delete QZmq_context;
-    delete QZmq_PUB_socket;
-    delete QZmq_SUB_socket;
-    delete eventQueue;
-    QZmq_context = nullptr;
-    QZmq_PUB_socket = nullptr;
-    QZmq_SUB_socket = nullptr;
-    eventQueue = nullptr;
-
     timer->stop();
     delete timer;
     timer = nullptr;
@@ -85,45 +79,20 @@ zmqController::~zmqController()
     eventProcessTimer->stop();
     delete eventProcessTimer;
     eventProcessTimer = nullptr;
-}
 
-/*
-QZmq::Context *zmqController::getZmqContext()
-{
-    if (QZmq_context != nullptr){
-        return QZmq_context;
-    }
-    else {
-        qDebug() << "[ERROR] Could not make a ZMQ Context, is the port bound by another program?";
-        QMessageBox::warning ( _mpx3gui, tr("Error"), "Could not make a ZMQ Context, is the port bound by another program?" );
-        return nullptr;
-    }
-}
+    delete eventQueue;
+    delete QZmq_PUB_socket;
+    QZmq_SUB_socket->unsubscribe("");
+    QZmq_SUB_socket->setTcpKeepAliveEnabled(false);
+    delete QZmq_SUB_socket;
+    delete QZmq_context;
+    QZmq_context = nullptr;
+    QZmq_PUB_socket = nullptr;
+    QZmq_SUB_socket = nullptr;
+    eventQueue = nullptr;
 
-QZmq::Socket *zmqController::getZmq_PUB_socket()
-{
-    if (QZmq_PUB_socket != nullptr){
-        return QZmq_PUB_socket;
-    }
-    else {
-        qDebug() << "[ERROR] ZMQ Could not make a ZMQ PUB socket, is the port bound by another program?";
-        qDebug() << "[ERROR] ZMQ I cannot send any messages";
-        return nullptr;
-    }
-}
 
-QZmq::Socket *zmqController::getZmq_SUB_socket()
-{
-    if (QZmq_SUB_socket != nullptr){
-        return QZmq_SUB_socket;
-    }
-    else {
-        qDebug() << "[ERROR] Could not make a ZMQ SUB Socket, is the port bound by another program?";
-        qDebug() << "[ERROR] ZMQ I cannot receive any messages";
-        return nullptr;
-    }
 }
-*/
 
 /*void zmqController::initialise()
 {
@@ -145,20 +114,43 @@ QZmq::Socket *zmqController::getZmq_SUB_socket()
 
 void zmqController::addressChanged_PUB(QString addr)
 {
-    PUB_addr = addr;
-    qDebug() << "[INFO]\tZMQ PUB address changed:" << addr;
+    if ( addr == PUB_addr ) {
+        return;
+    } else {
+        PUB_addr = addr;
+        qDebug() << "[INFO]\tZMQ PUB address changed:" << addr;
+    }
 
+//    if (QZmq_PUB_socket != nullptr) {
+//        delete QZmq_PUB_socket;
+//        QZmq_PUB_socket = nullptr;
+//    }
+
+//    QZmq_PUB_socket = new QZmq::Socket(QZmq::Socket::Type::Pub, QZmq_context, this);
     QZmq_PUB_socket->connectToAddress(PUB_addr);
     qDebug() << "[INFO]\tZMQ Connected to PUB socket:" << PUB_addr;
 
     initialiseJsonResponse();
+
 }
 
 void zmqController::addressChanged_SUB(QString addr)
 {
-    SUB_addr = addr;
-    qDebug() << "[INFO]\tZMQ SUB address changed:" << addr;
+    if ( addr == SUB_addr ) {
+        return;
+    } else {
+        SUB_addr = addr;
+        qDebug() << "[INFO]\tZMQ SUB address changed:" << addr;
+    }
 
+    if (QZmq_SUB_socket != nullptr) {
+        QZmq_SUB_socket->unsubscribe("");
+//        QZmq_SUB_socket->setTcpKeepAliveEnabled(false);
+//        delete QZmq_SUB_socket;
+//        QZmq_SUB_socket = nullptr;
+    }
+
+//    QZmq_SUB_socket = new QZmq::Socket(QZmq::Socket::Type::Sub, QZmq_context, this);
     QZmq_SUB_socket->connectToAddress(SUB_addr);
     QZmq_SUB_socket->subscribe("");
     qDebug() << "[INFO]\tZMQ Connected to SUB socket:" << SUB_addr;
@@ -223,19 +215,26 @@ void zmqController::processEvents()
         } else if (root_obj["command"].toString().contains(QString("set exposure"), Qt::CaseInsensitive)) {
             qDebug() << "[INFO]\tZMQ SET EXPOSURE :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
             bool ok;
-            int arg1 = root_obj["arg1"].toString().toInt(&ok);
-            if (ok){
+            uint64_t arg1 = root_obj["arg1"].toString().toDouble(&ok);
+            if (ok) {
                 emit setExposure(arg1);
             }
 
         } else if (root_obj["command"].toString().contains(QString("set number of frames"), Qt::CaseInsensitive)) {
-            qDebug() << "[INFO]\tZMQ SET NUMBER OF FRAMES :"  << root_obj["command"].toString();
+            qDebug() << "[INFO]\tZMQ SET NUMBER OF FRAMES :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
+            bool ok;
+            uint64_t arg1 = root_obj["arg1"].toString().toDouble(&ok);
+            if (ok) {
+                emit setNumberOfFrames(arg1);
+            }
 
         } else if (root_obj["command"].toString().contains(QString("set threshold"), Qt::CaseInsensitive)) {
             qDebug() << "[INFO]\tZMQ SET THRESHOLD :"  << root_obj["command"].toString();
 
         } else if (root_obj["command"].toString().contains(QString("set gain mode"), Qt::CaseInsensitive)) {
-            qDebug() << "[INFO]\tZMQ SET GAIN MODE :"  << root_obj["command"].toString();
+            qDebug() << "[INFO]\tZMQ SET GAIN MODE :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
+
+            emit setGainMode(root_obj["arg1"].toString());
 
         } else if (root_obj["command"].toString().contains(QString("set csm"), Qt::CaseInsensitive)) {
             qDebug() << "[INFO]\tZMQ SET CSM :"  << root_obj["command"].toString();
@@ -291,7 +290,7 @@ void zmqController::tryToProcessEvents()
 void zmqController::tryToSendFeedback()
 {
     //! Doesn't matter if the eventQueue is empty
-    if(!processingEvents) {
+    if(processingEvents) {
         QJsonObject root_obj = JsonDocument.object();
         root_obj["reply_type"] = QString("FDB");
         JsonDocument = QJsonDocument(root_obj);
@@ -307,7 +306,7 @@ void zmqController::sock_readyRead()
 #endif
     //! This is just the format that you need to use with QZmq
     const QList<QByteArray> msg = QZmq_SUB_socket->read();
-    if(msg.isEmpty()){
+    if (msg.isEmpty()){
         qDebug() << "[ERROR]\tZMQ Received empty message\n";
         return;
     }
@@ -317,11 +316,16 @@ void zmqController::sock_readyRead()
     qDebug() << "[INFO]\tZMQ JSON document length:" << msg.length() << "\n";
 #endif
 
-    eventQueue->push_back( QJsonDocument::fromJson( msg.first()) );
+    QJsonDocument tmp = QJsonDocument::fromJson(msg.first());
+    if (tmp.object()["component"].toString() != "medipix") {
+        return;
+    }
+
+    eventQueue->push_back( tmp );
 
     if (!timer->isActive() && !eventProcessTimer->isActive()) {
-        timer->start(100); //! milliseconds
-        eventProcessTimer->start(100); //! milliseconds
+        timer->start(1); //! milliseconds
+        eventProcessTimer->start(500); //! milliseconds
     }
 
 #ifdef QT_DEBUG
@@ -341,12 +345,22 @@ void zmqController::sock_messagesWritten(int count)
 #endif
 }
 
-void zmqController::dataTakingFinishedAndSaved()
+void zmqController::someCommandHasFinished_Successfully()
 {
     QJsonObject root_obj = JsonDocument.object();
     root_obj["reply_type"] = QString("ACK");
     JsonDocument = QJsonDocument(root_obj);
     qDebug() << "[INFO]\tZMQ Trying to send ACK";
+    sendZmqMessage();
+    processingEvents = false;
+}
+
+void zmqController::someCommandHasFailed()
+{
+    QJsonObject root_obj = JsonDocument.object();
+    root_obj["reply_type"] = QString("ERR");
+    JsonDocument = QJsonDocument(root_obj);
+    qDebug() << "[INFO]\tZMQ Trying to send ERR";
     sendZmqMessage();
     processingEvents = false;
 }

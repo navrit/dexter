@@ -549,7 +549,7 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
         _dataConsumerThread->dataTakingSaysIFinished();
     }
 
-    emit dataTakingFinishedAndSaved();
+    emit someCommandHasFinished_Successfully();
 
     /*
     if ( _takingData ) {
@@ -1427,11 +1427,15 @@ void QCstmGLVisualization::setExposure(uint64_t microseconds)
 
     ui->triggerLengthSpinBox->setValue(microseconds);
     triggerLength_edit();
+
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::setNumberOfFrames(uint64_t number_of_frames)
 {
-
+    ui->nTriggersSpinBox->setValue(number_of_frames);
+    ntriggers_edit();
+    someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::setThreshold(uint16_t threshold, uint16_t value)
@@ -1442,6 +1446,24 @@ void QCstmGLVisualization::setThreshold(uint16_t threshold, uint16_t value)
 void QCstmGLVisualization::setGainMode(QString mode)
 {
     //! Set by name
+    int val = -1;
+    if (mode.toLower() == "super high gain mode") {
+        val = 0;
+    } else if (mode.toLower() == "high gain mode") {
+        val = 1;
+    } else if (mode.toLower() == "low gain mode") {
+        val = 2;
+    } else if (mode.toLower() == "super low gain mode") {
+        val = 3;
+    }
+
+    if (val >= 0 && val <= 3) {
+        _mpx3gui->getConfig()->setGainMode(val);
+        emit someCommandHasFinished_Successfully();
+    } else {
+        emit someCommandHasFailed();
+    }
+
 }
 
 void QCstmGLVisualization::setCSM(bool active)
