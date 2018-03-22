@@ -23,12 +23,12 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
 
     eventQueue = new QQueue<QJsonDocument>();
 
-    QZmq_PUB_socket->connectToAddress(PUB_addr);
-    qDebug() << "[INFO]\tZMQ Connected to PUB socket:" << PUB_addr;
+//    QZmq_PUB_socket->connectToAddress(PUB_addr);
+//    qDebug() << "[INFO]\tZMQ Connected to PUB socket:" << PUB_addr;
 
-    QZmq_SUB_socket->connectToAddress(SUB_addr);
-    QZmq_SUB_socket->subscribe("");
-    qDebug() << "[INFO]\tZMQ Connected to SUB socket:" << SUB_addr;
+//    QZmq_SUB_socket->connectToAddress(SUB_addr);
+//    QZmq_SUB_socket->subscribe("");
+//    qDebug() << "[INFO]\tZMQ Connected to SUB socket:" << SUB_addr;
 
     initialiseJsonResponse();
 
@@ -90,27 +90,7 @@ zmqController::~zmqController()
     QZmq_PUB_socket = nullptr;
     QZmq_SUB_socket = nullptr;
     eventQueue = nullptr;
-
-
 }
-
-/*void zmqController::initialise()
-{
-    QZmq_context = new QZmq::Context();
-    QZmq_PUB_socket = new QZmq::Socket(QZmq::Socket::Type::Pub, QZmq_context, this);
-    QZmq_SUB_socket = new QZmq::Socket(QZmq::Socket::Type::Sub, QZmq_context, this);
-    eventQueue = new QQueue<QJsonDocument>();
-
-    QZmq_PUB_socket->connectToAddress(PUB_addr);
-    qDebug() << "[INFO]\tZMQ Connected to PUB socket:" << PUB_addr;
-
-    QZmq_SUB_socket->connectToAddress(SUB_addr);
-    QZmq_SUB_socket->subscribe("");
-    qDebug() << "[INFO]\tZMQ Connected to SUB socket:" << SUB_addr;
-
-    initialiseJsonResponse();
-}
-*/
 
 void zmqController::addressChanged_PUB(QString addr)
 {
@@ -350,8 +330,8 @@ void zmqController::someCommandHasFinished_Successfully()
     QJsonObject root_obj = JsonDocument.object();
     root_obj["reply_type"] = QString("ACK");
     JsonDocument = QJsonDocument(root_obj);
-    qDebug() << "[INFO]\tZMQ Trying to send ACK";
     sendZmqMessage();
+    qDebug() << "[INFO]\tZMQ Sent ACK";
     processingEvents = false;
 }
 
@@ -360,7 +340,7 @@ void zmqController::someCommandHasFailed()
     QJsonObject root_obj = JsonDocument.object();
     root_obj["reply_type"] = QString("ERR");
     JsonDocument = QJsonDocument(root_obj);
-    qDebug() << "[INFO]\tZMQ Trying to send ERR";
     sendZmqMessage();
+    qDebug() << "[INFO]\tZMQ Sent ERR";
     processingEvents = false;
 }

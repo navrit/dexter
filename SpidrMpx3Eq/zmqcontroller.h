@@ -73,8 +73,8 @@ private:
     Mpx3GUI * _mpx3gui = nullptr;
     Mpx3Config * config = nullptr;
 
-    QString PUB_addr = "tcp://127.0.0.1:50001"; //! Eg. "tcp://192.168.178.9:50001";
-    QString SUB_addr = "tcp://127.0.0.1:50000"; //! Eg. "tcp://192.168.178.9:50000";
+    QString PUB_addr = ""; //!tcp://127.0.0.1:50001"; //! Eg. "tcp://192.168.178.9:50001";
+    QString SUB_addr = ""; //! tcp://127.0.0.1:50000"; //! Eg. "tcp://192.168.178.9:50000";
 
     QZmq::Context * QZmq_context;
     QZmq::Socket * QZmq_PUB_socket;
@@ -86,7 +86,6 @@ private:
 
     QJsonDocument JsonDocument; //! Unique current JSON document
 
-    //void initialise();
     void initialiseJsonResponse();
 
     void processEvents();
