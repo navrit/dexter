@@ -39,7 +39,7 @@
 //! --> arg1 : the first argument field (optional, empty if no arguments are needed)
 //! --> arg2 : the second argument field (optional, empty if no arguments are needed)
 //! --> reply : always empty for SEND events (this field is used for the content of replies, see below)
-//! --> reply_types :
+//! --> reply type :
 //!         Possible values are:
 //!             RCV (confirmation of reception of the command by the code that will execute the command)
 //!             FDB (optional intermediate feedback on the progress of execution)
@@ -53,7 +53,7 @@
 //! It is critical that both the tick count and UUID which arrived in the SEND event are copied to any REPLY event that relates to this particular command.
 //!
 //! SEND events:
-//! + reply_type is always empty
+//! + "reply type" is always empty
 //!
 //! REPLY events:
 //! + When executing a command progress is reported back to the sender through REPLY events.
@@ -68,6 +68,11 @@ public:
     ~zmqController();
 
     void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
+
+    //! Helper functions
+    bool JsonContains(QJsonObject obj, QString key, QString string);
+    bool folderExists(QString path);
+    bool fileExists(QString path);
 
 private:
     Mpx3GUI * _mpx3gui = nullptr;
@@ -96,11 +101,12 @@ signals:
     void takeImage();
     void takeAndSaveImageSequence();
     void saveImageSignal(QString filePath);
-    void setExposure(uint64_t microseconds);
+    void setExposure(int microseconds);
     void setNumberOfFrames(uint64_t number_of_frames);
     void setThreshold(uint16_t threshold, uint16_t value);
     void setGainMode(QString mode);
     void setCSM(bool active);
+    void loadDefaultEqualisation();
     void loadEqualisation(QString filePath);
     void setReadoutMode(QString mode);
     void setReadoutFrequency(uint16_t frequency); //! in Hz

@@ -3,6 +3,7 @@
 #include "QMessageBox"
 #include "mpx3config.h"
 #include "qcstmglvisualization.h"
+#include <QFileInfo>
 
 #include "../Qzmq/qzmqcontext.h"
 #include "../Qzmq/qzmqsocket.h"
@@ -56,11 +57,12 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
     connect(this, SIGNAL(takeImage()), _mpx3gui->getVisualization(), SLOT(takeImage()));
     connect(this, SIGNAL(takeAndSaveImageSequence()), _mpx3gui->getVisualization(), SLOT(takeAndSaveImageSequence()));
     connect(this, SIGNAL(saveImageSignal(QString)), _mpx3gui->getVisualization(), SLOT(saveImageSlot(QString)));
-    connect(this, SIGNAL(setExposure(uint64_t)), _mpx3gui->getVisualization(), SLOT(setExposure(uint64_t)));
+    connect(this, SIGNAL(setExposure(int)), _mpx3gui->getVisualization(), SLOT(setExposure(int)));
     connect(this, SIGNAL(setNumberOfFrames(uint64_t)), _mpx3gui->getVisualization(), SLOT(setNumberOfFrames(uint64_t)));
     connect(this, SIGNAL(setThreshold(uint16_t,uint16_t)), _mpx3gui->getVisualization(), SLOT(setThreshold(uint16_t,uint16_t)));
     connect(this, SIGNAL(setGainMode(QString)), _mpx3gui->getVisualization(), SLOT(setGainMode(QString)));
     connect(this, SIGNAL(setCSM(bool)), _mpx3gui->getVisualization(), SLOT(setCSM(bool)));
+    connect(this, SIGNAL(loadDefaultEqualisation()), _mpx3gui->getVisualization(), SLOT(loadDefaultEqualisation()));
     connect(this, SIGNAL(loadEqualisation(QString)), _mpx3gui->getVisualization(), SLOT(loadEqualisation(QString)));
     connect(this, SIGNAL(setReadoutMode(QString)), _mpx3gui->getVisualization(), SLOT(setReadoutMode(QString)));
     connect(this, SIGNAL(setReadoutFrequency(uint16_t)), _mpx3gui->getVisualization(), SLOT(setReadoutFrequency(uint16_t)));
@@ -82,8 +84,8 @@ zmqController::~zmqController()
 
     delete eventQueue;
     delete QZmq_PUB_socket;
-    QZmq_SUB_socket->unsubscribe("");
-    QZmq_SUB_socket->setTcpKeepAliveEnabled(false);
+    QZmq_SUB_socket->unsubscribe(""); //! This may not be necessary
+    QZmq_SUB_socket->setTcpKeepAliveEnabled(false); //! This may not be necessary
     delete QZmq_SUB_socket;
     delete QZmq_context;
     QZmq_context = nullptr;
@@ -158,7 +160,7 @@ void zmqController::processEvents()
 {
     //!                     Overview
     //!
-    //! Received a SEND event --> if reply_types == ""
+    //! Received a SEND event --> if reply type == ""
     //! Send REPLY event(s) in response to thats specific SEND event.
     //!    Do not process other events until the first is complete
 
@@ -167,10 +169,10 @@ void zmqController::processEvents()
     QJsonObject root_obj = JsonDocument.object();
 
     //! 1. Received a SEND event from server
-    if (root_obj["reply_type"].toString() == "") {
+    if (root_obj["reply type"].toString() == "") {
 
         //! 2. REPLY with RCV immediately
-        root_obj["reply_type"] = "RCV";
+        root_obj["reply type"] = "RCV";
         JsonDocument.setObject( root_obj );
         sendZmqMessage();
 
@@ -180,58 +182,86 @@ void zmqController::processEvents()
 
         //! 4. Emit relevant signals to trigger whatever we want elsewhere
         //!    This must not be blocking
-        if (root_obj["command"].toString().contains(QString("take image"), Qt::CaseInsensitive)) {
+        if ( JsonContains(root_obj, "command", "take image") ) {
             qDebug() << "[INFO]\tZMQ TAKE IMAGE :"  << root_obj["command"].toString();
             emit takeImage();
 
-        } else if (root_obj["command"].toString().contains(QString("take and save image sequence"), Qt::CaseInsensitive)) {
+        } else if ( JsonContains(root_obj, "command", "take and save image sequence") ) {
             qDebug() << "[INFO]\tZMQ TAKE AND SAVE IMAGE SEQUENCE :"  << root_obj["command"].toString();
             emit takeAndSaveImageSequence();
 
-        } else if (root_obj["command"].toString().contains(QString("save image"), Qt::CaseInsensitive)) {
+        } else if ( JsonContains(root_obj, "command", "save image") ) {
             qDebug() << "[INFO]\tZMQ SAVE IMAGE :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
             emit saveImageSignal(root_obj["arg1"].toString());
 
-        } else if (root_obj["command"].toString().contains(QString("set exposure"), Qt::CaseInsensitive)) {
-            qDebug() << "[INFO]\tZMQ SET EXPOSURE :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
+        } else if ( JsonContains(root_obj, "command", "set exposure") ) {
+            qDebug() << "[INFO]\tZMQ SET EXPOSURE :"  << root_obj["command"].toString() << root_obj["arg1"].toString().toInt();
+
             bool ok;
-            uint64_t arg1 = root_obj["arg1"].toString().toDouble(&ok);
+            int arg1 = root_obj["arg1"].toString().toInt(&ok);
             if (ok) {
                 emit setExposure(arg1);
             }
 
-        } else if (root_obj["command"].toString().contains(QString("set number of frames"), Qt::CaseInsensitive)) {
+            emit setExposure(arg1);
+
+        } else if ( JsonContains(root_obj, "command", "set number of frames") ) {
             qDebug() << "[INFO]\tZMQ SET NUMBER OF FRAMES :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
             bool ok;
-            uint64_t arg1 = root_obj["arg1"].toString().toDouble(&ok);
+            uint64_t arg1 = root_obj["arg1"].toString().toInt(&ok);
             if (ok) {
                 emit setNumberOfFrames(arg1);
             }
 
-        } else if (root_obj["command"].toString().contains(QString("set threshold"), Qt::CaseInsensitive)) {
+        } else if ( JsonContains(root_obj, "command", "set threshold") ) {
             qDebug() << "[INFO]\tZMQ SET THRESHOLD :"  << root_obj["command"].toString();
 
-        } else if (root_obj["command"].toString().contains(QString("set gain mode"), Qt::CaseInsensitive)) {
+            //! TODO
+
+        } else if ( JsonContains(root_obj, "command", "set gain mode") ) {
             qDebug() << "[INFO]\tZMQ SET GAIN MODE :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
 
             emit setGainMode(root_obj["arg1"].toString());
 
-        } else if (root_obj["command"].toString().contains(QString("set csm"), Qt::CaseInsensitive)) {
-            qDebug() << "[INFO]\tZMQ SET CSM :"  << root_obj["command"].toString();
+        } else if ( JsonContains(root_obj, "command", "set csm")) {
+            qDebug() << "[INFO]\tZMQ SET CSM :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
 
-        } else if (root_obj["command"].toString().contains(QString("load equalisation"), Qt::CaseInsensitive)) {
-            qDebug() << "[INFO]\tZMQ LOAD EQUALISAITON :"  << root_obj["command"].toString();
+            QString arg1 = root_obj["arg1"].toString().toLower();
+            if (arg1.contains("true") || arg1.contains("on")) {
+                emit setCSM(true);
+            } else if (arg1.contains("false") || arg1.contains("off")) {
+                emit setCSM(false);
+            } else {
+                qDebug() << "[INFO]";
+            }
 
-        } else if (root_obj["command"].toString().contains(QString("set readout mode"), Qt::CaseInsensitive)) {
+        } else if ( JsonContains(root_obj, "command", "load default equalisation") ) {
+            qDebug() << "[INFO]\tZMQ LOAD DEFAULT EQUALISATION :"  << root_obj["command"].toString();
+
+            emit loadDefaultEqualisation();
+
+        } else if ( JsonContains(root_obj, "command", "load equalisation from folder") ) {
+            qDebug() << "[INFO]\tZMQ LOAD EQUALISATION FROM FOLDER:"  << root_obj["command"].toString() << root_obj["arg1"].toString();
+
+            QString arg1 = root_obj["arg1"].toString(); //! You actually need to keep the case here, Linux filesystems are mostly case sensitive of course!
+
+            if ( folderExists(arg1) && fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "adj_0"))) && fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "mask_0"))) ) {
+                //! Probably fine to proceed to loading the equalisation
+                emit loadEqualisation(arg1);
+            } else {
+                qDebug() << "[ERROR]\tZMQ failed to load non-default equalisation from :" << arg1;
+            }
+
+        } else if ( JsonContains(root_obj, "command", "set readout mode") ) {
             qDebug() << "[INFO]\tZMQ SET READOUT MODE :"  << root_obj["command"].toString();
 
-        } else if (root_obj["command"].toString().contains(QString("set readout frequency"), Qt::CaseInsensitive)) {
+        } else if ( JsonContains(root_obj, "command", "set readout frequency") ) {
             qDebug() << "[INFO]\tZMQ SET READOUT FREQUENCY :"  << root_obj["command"].toString();
 
-        } else if (root_obj["command"].toString().contains(QString("load configuration file"), Qt::CaseInsensitive)) {
+        } else if ( JsonContains(root_obj, "command", "load configuration") ) {
             qDebug() << "[INFO]\tZMQ LOAD CONFIGURATION FILE :"  << root_obj["command"].toString();
 
-        } else if (root_obj["command"].toString().contains(QString("set number of averages"), Qt::CaseInsensitive)) {
+        } else if ( JsonContains(root_obj, "command", "set number of averages") ) {
             qDebug() << "[INFO]\tZMQ SET NUMBER OF AVERAGES :" << root_obj["command"].toString();
 
         } else {
@@ -240,6 +270,27 @@ void zmqController::processEvents()
         }
     }
     //! 5. when it's processed, REPLY with a ACK event --> see the SLOT dataTakingFinishedAndSaved()
+}
+
+bool zmqController::JsonContains(QJsonObject obj, QString key, QString string)
+{
+    if ( obj[key].toString().toLower().contains(string) ) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool zmqController::folderExists(QString path)
+{
+    QFileInfo check_file(path);
+    return check_file.exists() && check_file.isReadable();
+}
+
+bool zmqController::fileExists(QString path)
+{
+    QFileInfo check_file(path);
+    return check_file.exists() && check_file.isFile() && check_file.isReadable();
 }
 
 void zmqController::sendZmqMessage()
@@ -272,7 +323,7 @@ void zmqController::tryToSendFeedback()
     //! Doesn't matter if the eventQueue is empty
     if(processingEvents) {
         QJsonObject root_obj = JsonDocument.object();
-        root_obj["reply_type"] = QString("FDB");
+        root_obj["reply type"] = QString("FDB");
         JsonDocument = QJsonDocument(root_obj);
         qDebug() << "[INFO]\tZMQ Trying to send FDB";
         sendZmqMessage();
@@ -304,8 +355,8 @@ void zmqController::sock_readyRead()
     eventQueue->push_back( tmp );
 
     if (!timer->isActive() && !eventProcessTimer->isActive()) {
-        timer->start(1); //! milliseconds
-        eventProcessTimer->start(500); //! milliseconds
+        timer->start(10); //! milliseconds
+        eventProcessTimer->start(1000); //! milliseconds
     }
 
 #ifdef QT_DEBUG
@@ -328,7 +379,7 @@ void zmqController::sock_messagesWritten(int count)
 void zmqController::someCommandHasFinished_Successfully()
 {
     QJsonObject root_obj = JsonDocument.object();
-    root_obj["reply_type"] = QString("ACK");
+    root_obj["reply type"] = QString("ACK");
     JsonDocument = QJsonDocument(root_obj);
     sendZmqMessage();
     qDebug() << "[INFO]\tZMQ Sent ACK";
@@ -338,7 +389,7 @@ void zmqController::someCommandHasFinished_Successfully()
 void zmqController::someCommandHasFailed()
 {
     QJsonObject root_obj = JsonDocument.object();
-    root_obj["reply_type"] = QString("ERR");
+    root_obj["reply type"] = QString("ERR");
     JsonDocument = QJsonDocument(root_obj);
     sendZmqMessage();
     qDebug() << "[INFO]\tZMQ Sent ERR";

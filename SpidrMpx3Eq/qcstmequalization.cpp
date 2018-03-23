@@ -1899,9 +1899,11 @@ bool QCstmEqualization::makeTeaCoffeeDialog()
     }
 }
 
-void QCstmEqualization::LoadEqualization(bool getPath) {
+void QCstmEqualization::LoadEqualization(bool getPath, QString path) {
 
-    QString path = "config/";
+    if (path == "") {
+        path = "config/";
+    } //! Else leave it
 
     //! Non-default path, get the folder from a QFileDialog
     if (getPath){

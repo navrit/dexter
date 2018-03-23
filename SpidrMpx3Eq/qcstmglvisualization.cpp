@@ -1416,7 +1416,7 @@ void QCstmGLVisualization::saveImageSlot(QString filePath)
     saveImage(filePath);
 }
 
-void QCstmGLVisualization::setExposure(uint64_t microseconds)
+void QCstmGLVisualization::setExposure(int microseconds)
 {
     //! Switch to Sequential RW, then set open and closed time
     //!    Always 2ms for down time
@@ -1447,13 +1447,14 @@ void QCstmGLVisualization::setGainMode(QString mode)
 {
     //! Set by name
     int val = -1;
-    if (mode.toLower() == "super high gain mode") {
+    mode = mode.toLower();
+    if (mode == "super high gain mode") {
         val = 0;
-    } else if (mode.toLower() == "high gain mode") {
+    } else if (mode == "high gain mode") {
         val = 1;
-    } else if (mode.toLower() == "low gain mode") {
+    } else if (mode == "low gain mode") {
         val = 2;
-    } else if (mode.toLower() == "super low gain mode") {
+    } else if (mode == "super low gain mode") {
         val = 3;
     }
 
@@ -1470,21 +1471,47 @@ void QCstmGLVisualization::setCSM(bool active)
 {
     //! True --> CSM ON
     //! False -> CSM OFF
+    int index = -1;
+    if ( active ) {
+        index = _mpx3gui->getConfigMonitoring()->getUI()->csmSpmCombo->findText("ON");
+    } else {
+        index = _mpx3gui->getConfigMonitoring()->getUI()->csmSpmCombo->findText("OFF");
+    }
+    _mpx3gui->getConfigMonitoring()->getUI()->csmSpmCombo->setCurrentIndex(index);
 }
 
-void QCstmGLVisualization::loadEqualisation(QString filePath)
+void QCstmGLVisualization::loadDefaultEqualisation()
 {
-    //! From default location unless specified
+    _mpx3gui->getEqualization()->LoadEqualization(false);
+}
+
+void QCstmGLVisualization::loadEqualisation(QString path)
+{
+    _mpx3gui->getEqualization()->LoadEqualization(false, path);
 }
 
 void QCstmGLVisualization::setReadoutMode(QString mode)
 {
     //! Sequential or CRW
+    int index = -1;
+    if ( mode.contains( "Sequential" ) ) {
+        index = _mpx3gui->getConfigMonitoring()->getUI()->operationModeComboBox->findText("Sequential");
+    } else if ( mode.contains( "Continuous" ) ) {
+        index = _mpx3gui->getConfigMonitoring()->getUI()->operationModeComboBox->findText("Continuous");
+    } else {
+        qDebug() << "[ERROR]\tZMQ could not set readout mode : " << mode;
+        return;
+    }
+
+    _mpx3gui->getConfigMonitoring()->getUI()->operationModeComboBox->setCurrentIndex(index);
 }
 
 void QCstmGLVisualization::setReadoutFrequency(uint16_t frequency)
 {
     //! Will switch to CRW, then set the frequency
+    setReadoutMode("Continuous");
+    _mpx3gui->getConfigMonitoring()->getUI()->contRWFreq->setValue(frequency);
+    _mpx3gui->getConfig()->setContRWFreq(frequency);
 }
 
 void QCstmGLVisualization::loadConfiguration(QString filePath)

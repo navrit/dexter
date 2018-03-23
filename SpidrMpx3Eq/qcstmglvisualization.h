@@ -292,12 +292,13 @@ public slots:
     void takeImage();
     void takeAndSaveImageSequence();
     void saveImageSlot(QString filePath);
-    void setExposure(uint64_t microseconds);
+    void setExposure(int microseconds);
     void setNumberOfFrames(uint64_t number_of_frames);
     void setThreshold(uint16_t threshold, uint16_t value);
     void setGainMode(QString mode);
     void setCSM(bool active);
-    void loadEqualisation(QString filePath);
+    void loadDefaultEqualisation();
+    void loadEqualisation(QString path);
     void setReadoutMode(QString mode);
     void setReadoutFrequency(uint16_t frequency); //! in Hz
     void loadConfiguration(QString filePath);

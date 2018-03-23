@@ -344,12 +344,14 @@ void QCstmConfigMonitoring::shortcutGainModeSHGM()
 
 void QCstmConfigMonitoring::shortcutCSMOff()
 {
-    ui->csmSpmCombo->setCurrentIndex(0);
+    int index = ui->csmSpmCombo->findText("OFF");
+    ui->csmSpmCombo->setCurrentIndex(index);
 }
 
 void QCstmConfigMonitoring::shortcutCSMOn()
 {
-    ui->csmSpmCombo->setCurrentIndex(1);
+    int index = ui->csmSpmCombo->findText("ON");
+    ui->csmSpmCombo->setCurrentIndex(index);
 }
 
 void QCstmConfigMonitoring::ConnectionStatusChanged(bool conn) {

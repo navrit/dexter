@@ -232,7 +232,7 @@ public:
 
     string BuildChartName(int val, QString leg);
 
-    void LoadEqualization(bool getPath = false);
+    void LoadEqualization(bool getPath = false, QString path ="");
     void ShowEqualization(Mpx3EqualizationResults::lowHighSel sel);
 
     void InitializeEqualizationStructure(); //<! on a normal run, when the user load the equalization after connecting
