@@ -90,6 +90,7 @@ private:
     QQueue<QJsonDocument> *eventQueue;
 
     QJsonDocument JsonDocument; //! Unique current JSON document
+    QString currentUUID = "";
 
     void initialiseJsonResponse();
 

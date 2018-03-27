@@ -11,6 +11,8 @@
 #include "qjsonobject.h"
 #include "qjsondocument.h"
 
+#include <QRegExp>
+
 zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
 {
     SetMpx3GUI(p);
@@ -151,8 +153,8 @@ void zmqController::initialiseJsonResponse()
     root_obj.insert("arg2","");
     root_obj.insert("reply","");
     root_obj.insert("reply type","");
-    root_obj.insert("tick count",0);
-    root_obj.insert("UUID",0);
+    root_obj.insert("tick count",-1);
+    root_obj.insert("UUID",-1);
     JsonDocument = QJsonDocument(root_obj);
 }
 
@@ -165,11 +167,12 @@ void zmqController::processEvents()
     //!    Do not process other events until the first is complete
 
     JsonDocument = eventQueue->dequeue(); //! This is checked to have at least one event otherwise this event will not be called
-    processingEvents = true; //! Used as a controller level lock
     QJsonObject root_obj = JsonDocument.object();
 
     //! 1. Received a SEND event from server
     if (root_obj["reply type"].toString() == "") {
+
+        processingEvents = true; //! Used as a controller level lock
 
         //! 2. REPLY with RCV immediately
         root_obj["reply type"] = "RCV";
@@ -200,10 +203,11 @@ void zmqController::processEvents()
             bool ok;
             int arg1 = root_obj["arg1"].toString().toInt(&ok);
             if (ok) {
+                root_obj["reply"] = QString::number( arg1 );
+                JsonDocument = QJsonDocument(root_obj);
                 emit setExposure(arg1);
             }
 
-            emit setExposure(arg1);
 
         } else if ( JsonContains(root_obj, "command", "set number of frames") ) {
             qDebug() << "[INFO]\tZMQ SET NUMBER OF FRAMES :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
@@ -295,8 +299,13 @@ bool zmqController::fileExists(QString path)
 
 void zmqController::sendZmqMessage()
 {
+    QJsonObject root_obj = JsonDocument.object();
+    root_obj["UUID"] = currentUUID;
+    JsonDocument = QJsonDocument(root_obj);
+
 #ifdef QT_DEBUG
-    qDebug() << "[INFO]\tZMQ Writing:" <<  QString(JsonDocument.toJson());
+    QString doc = QString(JsonDocument.toJson()).toLocal8Bit().replace("\n","").replace("    ","").replace(": ",":");
+    qDebug() << "[INFO]\tZMQ Writing:" <<  doc;
 
 //    if (JsonDocument.object()["component"].toString() == "medipix") {
 //        qDebug() << "[INFO]\tZMQ CHECK - JSON successfully encoded: component =" << json_doc.object().value("component").toString();
@@ -306,7 +315,8 @@ void zmqController::sendZmqMessage()
 #endif
 
     //! This is just how you construct the QList of QByteArrays, super weird
-    const QList<QByteArray> outList = QList<QByteArray>() << QString(JsonDocument.toJson()).toLocal8Bit();
+    const QList<QByteArray> outList = QList<QByteArray>() << QString(JsonDocument.toJson()).toLocal8Bit().replace("\n","").replace("    ","").replace(": ",":");
+    QZmq_PUB_socket->setWriteQueueEnabled(false);
     QZmq_PUB_socket->write(outList);
 }
 
@@ -324,16 +334,19 @@ void zmqController::tryToSendFeedback()
     if(processingEvents) {
         QJsonObject root_obj = JsonDocument.object();
         root_obj["reply type"] = QString("FDB");
+        root_obj["UUID"] = currentUUID;
         JsonDocument = QJsonDocument(root_obj);
-        qDebug() << "[INFO]\tZMQ Trying to send FDB";
         sendZmqMessage();
+#ifdef QT_DEBUG
+        qDebug() << "[INFO]\tZMQ Sent FDB";
+#endif
     }
 }
 
 void zmqController::sock_readyRead()
 {
 #ifdef QT_DEBUG
-    qDebug() << "[INFO]\tZMQ Reading a message from the ZMQ server";
+    //qDebug() << "[INFO]\tZMQ Reading a message from the ZMQ server";
 #endif
     //! This is just the format that you need to use with QZmq
     const QList<QByteArray> msg = QZmq_SUB_socket->read();
@@ -342,16 +355,40 @@ void zmqController::sock_readyRead()
         return;
     }
 
-#ifdef QT_DEBUG
-    qDebug() << "[INFO]\tZMQ First message read: " << msg.first();
-    qDebug() << "[INFO]\tZMQ JSON document length:" << msg.length() << "\n";
-#endif
-
     QJsonDocument tmp = QJsonDocument::fromJson(msg.first());
     if (tmp.object()["component"].toString() != "medipix") {
         return;
     }
 
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ RECEIVED message 1 /" << msg.length() << "\n\t --> " << msg.first() << "\n";
+#endif
+
+    if (tmp.object()["reply type"].toString() != "") {
+        return;
+    }
+
+    //! Extract current UUID before QJson screws this up...
+    QTextCodec *codec = QTextCodec::codecForName("KOI8-R");
+    QString str = codec->toUnicode( msg.first());
+    QRegExp rx("(\\\"UUID\\\":)(\\d+)");
+
+    int pos = 0;
+    while ((pos = rx.indexIn(str, pos)) != -1) {
+        if ( rx.cap(1) != "\"UUID\":") {
+            qDebug() << "[ERROR]\tZMQ FAIL \t Could not find the UUID based on regex: (\\\"UUID\\\":)(\\d+) \t Found content =" << rx.cap(1) << "\n";
+            return;
+        }
+#ifdef QT_DEBUG
+        else {
+            qDebug() << "[INFO]\tZMQ SUCCESS \t Got the UUID :" << rx.cap(1) << "," << rx.cap(2);
+        }
+#endif
+        currentUUID = rx.cap(2);
+        pos += rx.matchedLength();
+    }
+
+    tmp.object()["UUID"] = currentUUID;
     eventQueue->push_back( tmp );
 
     if (!timer->isActive() && !eventProcessTimer->isActive()) {
@@ -359,14 +396,6 @@ void zmqController::sock_readyRead()
         eventProcessTimer->start(1000); //! milliseconds
     }
 
-#ifdef QT_DEBUG
-    QJsonDocument json_doc = QJsonDocument::fromJson( msg.first() );
-    if (json_doc.object().value("command").toString() == "take image") {
-        qDebug() << "[INFO]\tZMQ CHECK - Received command to TAKE IMAGE!";
-    } else {
-        qDebug() << "[INFO]\tZMQ CHECK - DID NOT receive command to take image";
-    }
-#endif
 }
 
 void zmqController::sock_messagesWritten(int count)
@@ -380,9 +409,12 @@ void zmqController::someCommandHasFinished_Successfully()
 {
     QJsonObject root_obj = JsonDocument.object();
     root_obj["reply type"] = QString("ACK");
+    root_obj["UUID"] = currentUUID;
     JsonDocument = QJsonDocument(root_obj);
     sendZmqMessage();
+#ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ Sent ACK";
+#endif
     processingEvents = false;
 }
 
@@ -390,6 +422,7 @@ void zmqController::someCommandHasFailed()
 {
     QJsonObject root_obj = JsonDocument.object();
     root_obj["reply type"] = QString("ERR");
+    root_obj["UUID"] = currentUUID;
     JsonDocument = QJsonDocument(root_obj);
     sendZmqMessage();
     qDebug() << "[INFO]\tZMQ Sent ERR";
