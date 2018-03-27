@@ -80,3 +80,5 @@ SpidrMpx3Eq/hola/config/
 *.Release
 
 SpidrMpx3Lib/build-spidrmpx3test-Desktop_Qt_5_7_1_GCC_64bit-Debug/Makefile
+
+SpidrMpx3Eq/config/mpx3-XRE\.json
