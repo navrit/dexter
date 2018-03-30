@@ -60,8 +60,8 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
     connect(this, SIGNAL(takeAndSaveImageSequence()), _mpx3gui->getVisualization(), SLOT(takeAndSaveImageSequence()));
     connect(this, SIGNAL(saveImageSignal(QString)), _mpx3gui->getVisualization(), SLOT(saveImageSlot(QString)));
     connect(this, SIGNAL(setExposure(int)), _mpx3gui->getVisualization(), SLOT(setExposure(int)));
-    connect(this, SIGNAL(setNumberOfFrames(uint64_t)), _mpx3gui->getVisualization(), SLOT(setNumberOfFrames(uint64_t)));
-    connect(this, SIGNAL(setThreshold(uint16_t,uint16_t)), _mpx3gui->getVisualization(), SLOT(setThreshold(uint16_t,uint16_t)));
+    connect(this, SIGNAL(setNumberOfFrames(int)), _mpx3gui->getVisualization(), SLOT(setNumberOfFrames(int)));
+    connect(this, SIGNAL(setThreshold(int,int)), _mpx3gui->getVisualization(), SLOT(setThreshold(int,int)));
     connect(this, SIGNAL(setGainMode(QString)), _mpx3gui->getVisualization(), SLOT(setGainMode(QString)));
     connect(this, SIGNAL(setCSM(bool)), _mpx3gui->getVisualization(), SLOT(setCSM(bool)));
     connect(this, SIGNAL(loadDefaultEqualisation()), _mpx3gui->getVisualization(), SLOT(loadDefaultEqualisation()));
@@ -71,7 +71,6 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
     connect(this, SIGNAL(loadConfiguration(QString)), _mpx3gui->getVisualization(), SLOT(loadConfiguration(QString)));
     connect(this, SIGNAL(setNumberOfAverages(uint64_t)), _mpx3gui->getVisualization(), SLOT(setNumberOfAverages(uint64_t)));
     // -------------------------------------------------------------------
-
 }
 
 zmqController::~zmqController()
@@ -179,6 +178,17 @@ void zmqController::processEvents()
         JsonDocument.setObject( root_obj );
         sendZmqMessage();
 
+        //! If not connected to a SPIDR at this point, you should really connect
+        //! However, not all commands need this obviously
+        //! Blocking is acceptable because the other commands probably cannot run without being connected
+        if (!_mpx3gui->getConfig()->isConnected()) {
+            if ( _mpx3gui->establish_connection() ) {
+                qDebug() << "[INFO]\tZMQ Connected to SPIDR via remote command";
+            } else {
+                qDebug() << "[ERROR]\tZMQ Failed to connect to a SPIDR via a remote command";
+            }
+        }
+
         //! 3. If it's taking a while, REPLY with FDB events at least at 1Hz independently
         //!    Done eleswhere via a QTimer --> eventProcessTimer
         //!    It just checks to see if this is still processing events
@@ -186,46 +196,25 @@ void zmqController::processEvents()
         //! 4. Emit relevant signals to trigger whatever we want elsewhere
         //!    This must not be blocking
         if ( JsonContains(root_obj, "command", "take image") ) {
-            qDebug() << "[INFO]\tZMQ TAKE IMAGE :"  << root_obj["command"].toString();
-            emit takeImage();
+            takeImage(root_obj);
 
         } else if ( JsonContains(root_obj, "command", "take and save image sequence") ) {
-            qDebug() << "[INFO]\tZMQ TAKE AND SAVE IMAGE SEQUENCE :"  << root_obj["command"].toString();
-            emit takeAndSaveImageSequence();
+            takeAndSaveImageSequence(root_obj);
 
         } else if ( JsonContains(root_obj, "command", "save image") ) {
-            qDebug() << "[INFO]\tZMQ SAVE IMAGE :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
-            emit saveImageSignal(root_obj["arg1"].toString());
+            saveImage(root_obj);
 
         } else if ( JsonContains(root_obj, "command", "set exposure") ) {
-            qDebug() << "[INFO]\tZMQ SET EXPOSURE :"  << root_obj["command"].toString() << root_obj["arg1"].toString().toInt();
-
-            bool ok;
-            int arg1 = root_obj["arg1"].toString().toInt(&ok);
-            if (ok) {
-                root_obj["reply"] = QString::number( arg1 );
-                JsonDocument = QJsonDocument(root_obj);
-                emit setExposure(arg1);
-            }
-
+            setExposure(root_obj);
 
         } else if ( JsonContains(root_obj, "command", "set number of frames") ) {
-            qDebug() << "[INFO]\tZMQ SET NUMBER OF FRAMES :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
-            bool ok;
-            uint64_t arg1 = root_obj["arg1"].toString().toInt(&ok);
-            if (ok) {
-                emit setNumberOfFrames(arg1);
-            }
+            setNumberOfFrames(root_obj);
 
         } else if ( JsonContains(root_obj, "command", "set threshold") ) {
-            qDebug() << "[INFO]\tZMQ SET THRESHOLD :"  << root_obj["command"].toString();
-
-            //! TODO
+            setThreshold(root_obj);
 
         } else if ( JsonContains(root_obj, "command", "set gain mode") ) {
-            qDebug() << "[INFO]\tZMQ SET GAIN MODE :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
-
-            emit setGainMode(root_obj["arg1"].toString());
+            setGainMode(root_obj);
 
         } else if ( JsonContains(root_obj, "command", "set csm")) {
             qDebug() << "[INFO]\tZMQ SET CSM :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
@@ -254,6 +243,7 @@ void zmqController::processEvents()
                 emit loadEqualisation(arg1);
             } else {
                 qDebug() << "[ERROR]\tZMQ failed to load non-default equalisation from :" << arg1;
+                someCommandHasFailed();
             }
 
         } else if ( JsonContains(root_obj, "command", "set readout mode") ) {
@@ -270,10 +260,128 @@ void zmqController::processEvents()
 
         } else {
             qDebug() << "[ERROR]\tZMQ Unrecognised command... : " << root_obj["command"].toString();
+            someCommandHasFailed();
             processingEvents = false;
         }
     }
     //! 5. when it's processed, REPLY with a ACK event --> see the SLOT dataTakingFinishedAndSaved()
+}
+
+void zmqController::takeImage(QJsonObject obj)
+{
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ TAKE IMAGE :"  << obj["command"].toString();
+#endif
+    emit takeImage();
+}
+
+void zmqController::takeAndSaveImageSequence(QJsonObject obj)
+{
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ TAKE AND SAVE IMAGE SEQUENCE :"  << obj["command"].toString();
+#endif
+    emit takeAndSaveImageSequence();
+}
+
+void zmqController::saveImage(QJsonObject obj)
+{
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ SAVE IMAGE :"  << obj["command"].toString() << obj["arg1"].toString();
+#endif
+    emit saveImageSignal(obj["arg1"].toString());
+}
+
+void zmqController::setExposure(QJsonObject obj)
+{
+#ifdef QT_DEBUG
+
+    qDebug() << "[INFO]\tZMQ SET EXPOSURE :"  << obj["command"].toString() << obj["arg1"].toString().toInt();
+#endif
+
+    bool ok;
+    int arg1 = obj["arg1"].toString().toInt(&ok);
+
+    //! 1 microsecond is the shortest exposure time that's reasonable
+    if (ok && arg1 >= 1) {
+        obj["reply"] = QString::number( arg1 );
+        JsonDocument = QJsonDocument(obj);
+        emit setExposure(arg1);
+    } else {
+        someCommandHasFailed();
+    }
+}
+
+void zmqController::setNumberOfFrames(QJsonObject obj)
+{
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ SET NUMBER OF FRAMES :"  << obj["command"].toString() << obj["arg1"].toString();
+#endif
+
+    bool ok;
+    int arg1 = obj["arg1"].toString().toInt(&ok);
+    if (ok && arg1 >= 0) {
+        emit setNumberOfFrames(arg1);
+    } else {
+        someCommandHasFailed();
+    }
+}
+
+void zmqController::setThreshold(QJsonObject obj)
+{
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ SET THRESHOLD :"  << obj["command"].toString() << obj["arg1"].toString() << obj["arg2"].toString();
+#endif
+
+    //! TODO Test it
+    //! Arg1: Which threshold to change
+    //! Arg2: Threshold value (DAC units)
+
+    bool ok;
+    int arg1 = obj["arg1"].toString().toInt(&ok);
+    bool ok2;
+    int arg2 = obj["arg2"].toString().toInt(&ok2);
+
+    //! May want to handle the failures better
+
+    if (ok && ok2) {
+        if (arg1 >= 0 && arg1 <= 7) {
+            if (arg2 >= 0 && arg2 <= 511) {
+                //! SUCCESS, this is actually valid input
+                emit setThreshold(arg1, arg2);
+            } else {
+                //! Threshold value set to a dumb value
+                someCommandHasFailed();
+            }
+        } else {
+            //! Specified threshold does not exist, what a fool
+            someCommandHasFailed();
+        }
+    } else {
+        //! Could not even parse the arguments, such epic failure!
+        someCommandHasFailed();
+    }
+}
+
+void zmqController::setGainMode(QJsonObject obj)
+{
+    qDebug() << "[INFO]\tZMQ SET GAIN MODE :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
+
+    int val = -1;
+    mode = mode.toLower();
+    if (mode == "super high") {
+        val = 0;
+    } else if (mode == "high") {
+        val = 1;
+    } else if (mode == "low") {
+        val = 2;
+    } else if (mode == "super low") {
+        val = 3;
+    }
+
+    emit setGainMode(val);
+
+    //! Validation done in visualisation
+    emit setGainMode(root_obj["arg1"].toString());
 }
 
 bool zmqController::JsonContains(QJsonObject obj, QString key, QString string)
@@ -316,7 +424,7 @@ void zmqController::sendZmqMessage()
 
     //! This is just how you construct the QList of QByteArrays, super weird
     const QList<QByteArray> outList = QList<QByteArray>() << QString(JsonDocument.toJson()).toLocal8Bit().replace("\n","").replace("    ","").replace(": ",":");
-    QZmq_PUB_socket->setWriteQueueEnabled(false);
+    QZmq_PUB_socket->setWriteQueueEnabled(false); //! This probably isn't necessary
     QZmq_PUB_socket->write(outList);
 }
 

@@ -1412,8 +1412,14 @@ void QCstmGLVisualization::takeAndSaveImageSequence()
 
 void QCstmGLVisualization::saveImageSlot(QString filePath)
 {
-    qDebug() << "[INFO]\tZMQ \n\tSave raw image as tiff to :" << filePath;
-    saveImage(filePath);
+    if (saveImage(filePath)) {
+#ifdef QT_DEBUG
+        qDebug() << "[INFO]\tZMQ \n\tSaved raw image as tiff to :" << filePath;
+#endif
+        emit someCommandHasFinished_Successfully();
+    } else {
+        emit someCommandHasFailed();
+    }
 }
 
 void QCstmGLVisualization::setExposure(int microseconds)
@@ -1422,44 +1428,42 @@ void QCstmGLVisualization::setExposure(int microseconds)
     //!    Always 2ms for down time
     int index = -1;
     index = ui->operationModeComboBox_Vis->findText("Sequential R/W");
-    ui->operationModeComboBox_Vis->setCurrentIndex(index);
-    _mpx3gui->getConfig()->setTriggerDowntime(2000);
+    if (index >= 0) {
+        ui->operationModeComboBox_Vis->setCurrentIndex(index);
+        _mpx3gui->getConfig()->setTriggerDowntime(2000);
 
-    ui->triggerLengthSpinBox->setValue(microseconds);
-    triggerLength_edit();
+        ui->triggerLengthSpinBox->setValue(microseconds);
+        triggerLength_edit();
 
-    emit someCommandHasFinished_Successfully();
-}
-
-void QCstmGLVisualization::setNumberOfFrames(uint64_t number_of_frames)
-{
-    ui->nTriggersSpinBox->setValue(number_of_frames);
-    ntriggers_edit();
-    someCommandHasFinished_Successfully();
-}
-
-void QCstmGLVisualization::setThreshold(uint16_t threshold, uint16_t value)
-{
-    //! Set specified threshold to value
-}
-
-void QCstmGLVisualization::setGainMode(QString mode)
-{
-    //! Set by name
-    int val = -1;
-    mode = mode.toLower();
-    if (mode == "super high gain mode") {
-        val = 0;
-    } else if (mode == "high gain mode") {
-        val = 1;
-    } else if (mode == "low gain mode") {
-        val = 2;
-    } else if (mode == "super low gain mode") {
-        val = 3;
+        emit someCommandHasFinished_Successfully();
+    } else {
+        emit someCommandHasFailed();
     }
 
-    if (val >= 0 && val <= 3) {
-        _mpx3gui->getConfig()->setGainMode(val);
+}
+
+void QCstmGLVisualization::setNumberOfFrames(int number_of_frames)
+{
+    if ( ui->nTriggersSpinBox->setValue(number_of_frames) ) {
+        ntriggers_edit();
+        emit someCommandHasFinished_Successfully();
+    } else {
+        someCommandHasFailed();
+    }
+
+}
+
+void QCstmGLVisualization::setThreshold(int threshold, int value)
+{
+    //! Set specified threshold to value
+
+}
+
+void QCstmGLVisualization::setGainMode(int mode)
+{
+    //! Set by value
+
+    if ( _mpx3gui->getConfig()->setGainMode(mode) ) {
         emit someCommandHasFinished_Successfully();
     } else {
         emit someCommandHasFailed();

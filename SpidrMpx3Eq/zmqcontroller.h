@@ -98,13 +98,21 @@ private:
     bool processingEvents = false;
     QTimer * eventProcessTimer;
 
+    void takeImage(QJsonObject obj);
+    void takeAndSaveImageSequence(QJsonObject obj);
+    void saveImage(QJsonObject obj);
+    void setExposure(QJsonObject obj);
+    void setNumberOfFrames(QJsonObject obj);
+    void setThreshold(QJsonObject obj);
+    void setGainMode(QJsonObject obj);
+
 signals:
     void takeImage();
     void takeAndSaveImageSequence();
     void saveImageSignal(QString filePath);
     void setExposure(int microseconds);
-    void setNumberOfFrames(uint64_t number_of_frames);
-    void setThreshold(uint16_t threshold, uint16_t value);
+    void setNumberOfFrames(int number_of_frames);
+    void setThreshold(int threshold, int value);
     void setGainMode(QString mode);
     void setCSM(bool active);
     void loadDefaultEqualisation();
