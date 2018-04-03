@@ -249,8 +249,6 @@ void DataConsumerThread::run()
             }
 
             // Move the reading descriptor
-            //if ( _bothCounters ) readdescriptor += 2*_bufferSizeOneFrame;
-            //else readdescriptor += _bufferSizeOneFrame;
             // or rewind
             if ( readdescriptor >= _bufferSize ) readdescriptor = 0;
 

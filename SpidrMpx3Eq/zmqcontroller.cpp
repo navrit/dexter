@@ -62,7 +62,7 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
     connect(this, SIGNAL(setExposure(int)), _mpx3gui->getVisualization(), SLOT(setExposure(int)));
     connect(this, SIGNAL(setNumberOfFrames(int)), _mpx3gui->getVisualization(), SLOT(setNumberOfFrames(int)));
     connect(this, SIGNAL(setThreshold(int,int)), _mpx3gui->getVisualization(), SLOT(setThreshold(int,int)));
-    connect(this, SIGNAL(setGainMode(QString)), _mpx3gui->getVisualization(), SLOT(setGainMode(QString)));
+    connect(this, SIGNAL(setGainMode(int)), _mpx3gui->getVisualization(), SLOT(setGainMode(int)));
     connect(this, SIGNAL(setCSM(bool)), _mpx3gui->getVisualization(), SLOT(setCSM(bool)));
     connect(this, SIGNAL(loadDefaultEqualisation()), _mpx3gui->getVisualization(), SLOT(loadDefaultEqualisation()));
     connect(this, SIGNAL(loadEqualisation(QString)), _mpx3gui->getVisualization(), SLOT(loadEqualisation(QString)));
@@ -364,10 +364,10 @@ void zmqController::setThreshold(QJsonObject obj)
 
 void zmqController::setGainMode(QJsonObject obj)
 {
-    qDebug() << "[INFO]\tZMQ SET GAIN MODE :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
+    qDebug() << "[INFO]\tZMQ SET GAIN MODE :"  << obj["command"].toString() << obj["arg1"].toString();
 
     int val = -1;
-    mode = mode.toLower();
+    QString mode = obj["arg1"].toString().toLower();
     if (mode == "super high") {
         val = 0;
     } else if (mode == "high") {
@@ -379,9 +379,6 @@ void zmqController::setGainMode(QJsonObject obj)
     }
 
     emit setGainMode(val);
-
-    //! Validation done in visualisation
-    emit setGainMode(root_obj["arg1"].toString());
 }
 
 bool zmqController::JsonContains(QJsonObject obj, QString key, QString string)

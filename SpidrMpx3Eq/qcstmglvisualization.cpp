@@ -1400,26 +1400,23 @@ void QCstmGLVisualization::takeImage()
     //! Delete current image
     //! Trigger start data taking
     //! Turn off autosave
-    qDebug() << ("[INFO]\tZMQ \n\t+ Delete current image \n\t+ Trigger start data taking \n\t+ Turn off autosave");
+    qDebug() << ("[INFO]\tZMQ \n\t + Delete current image \n\t + Trigger start data taking \n\t + Turn off autosave");
 }
 
 void QCstmGLVisualization::takeAndSaveImageSequence()
 {
     //! Activate autosave to home directory or whatever
     //! Trigger data taking
-    qDebug() << ("[INFO]\tZMQ \n\+ tActivate autosave to home directory or whatever \n\t+ Trigger data taking");
+    qDebug() << ("[INFO]\tZMQ NOT IMPLEMENTED \n\t + Activate autosave to home directory or whatever \n\t + Trigger data taking");
 }
 
 void QCstmGLVisualization::saveImageSlot(QString filePath)
 {
-    if (saveImage(filePath)) {
+    saveImage(filePath);
 #ifdef QT_DEBUG
-        qDebug() << "[INFO]\tZMQ \n\tSaved raw image as tiff to :" << filePath;
+    qDebug() << "[INFO]\tZMQ \n\tSaved raw image as tiff to :" << filePath;
 #endif
-        emit someCommandHasFinished_Successfully();
-    } else {
-        emit someCommandHasFailed();
-    }
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::setExposure(int microseconds)
@@ -1444,31 +1441,22 @@ void QCstmGLVisualization::setExposure(int microseconds)
 
 void QCstmGLVisualization::setNumberOfFrames(int number_of_frames)
 {
-    if ( ui->nTriggersSpinBox->setValue(number_of_frames) ) {
-        ntriggers_edit();
-        emit someCommandHasFinished_Successfully();
-    } else {
-        someCommandHasFailed();
-    }
-
+    ui->nTriggersSpinBox->setValue(number_of_frames);
+    ntriggers_edit();
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::setThreshold(int threshold, int value)
 {
     //! Set specified threshold to value
-
+    qDebug() << "[INFO]\tZMQ NOT IMPLEMENTED \n\t Set threshold " << threshold << "to value " << value;
 }
 
 void QCstmGLVisualization::setGainMode(int mode)
 {
     //! Set by value
-
-    if ( _mpx3gui->getConfig()->setGainMode(mode) ) {
-        emit someCommandHasFinished_Successfully();
-    } else {
-        emit someCommandHasFailed();
-    }
-
+    _mpx3gui->getConfig()->setGainMode(mode);
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::setCSM(bool active)
@@ -1482,6 +1470,9 @@ void QCstmGLVisualization::setCSM(bool active)
         index = _mpx3gui->getConfigMonitoring()->getUI()->csmSpmCombo->findText("OFF");
     }
     _mpx3gui->getConfigMonitoring()->getUI()->csmSpmCombo->setCurrentIndex(index);
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ Set CSM:" << active;
+#endif
 }
 
 void QCstmGLVisualization::loadDefaultEqualisation()
@@ -1508,6 +1499,9 @@ void QCstmGLVisualization::setReadoutMode(QString mode)
     }
 
     _mpx3gui->getConfigMonitoring()->getUI()->operationModeComboBox->setCurrentIndex(index);
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ Set Readout mode:" << mode;
+#endif
 }
 
 void QCstmGLVisualization::setReadoutFrequency(uint16_t frequency)
@@ -1516,11 +1510,15 @@ void QCstmGLVisualization::setReadoutFrequency(uint16_t frequency)
     setReadoutMode("Continuous");
     _mpx3gui->getConfigMonitoring()->getUI()->contRWFreq->setValue(frequency);
     _mpx3gui->getConfig()->setContRWFreq(frequency);
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ Set CRW frequency:" << frequency;
+#endif
 }
 
 void QCstmGLVisualization::loadConfiguration(QString filePath)
 {
     //! From default location unless otherwise specfied
+    qDebug() << "[INFO]\tZMQ NOT IMPLEMENTED \n\t Load configuration from:" << filePath;
 }
 
 void QCstmGLVisualization::setNumberOfAverages(uint64_t number_of_averages)
@@ -1529,6 +1527,7 @@ void QCstmGLVisualization::setNumberOfAverages(uint64_t number_of_averages)
     //! Set integrate ON
     //! Set number of frames
     //! Normalise image to 12 bit?
+    qDebug() << "[INFO]\tZMQ NOT IMPLEMENTED \n\t set number of averages:" << number_of_averages;
 }
 
 void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
