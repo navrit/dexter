@@ -25,7 +25,7 @@ public:
     void dataTakingSaysIFinished();
 
     void consume();
-    void SeparateThresholds(int /*id*/,
+    void SeparateThresholds(int th,
                        int * data,
                        int chipOffset
                        );

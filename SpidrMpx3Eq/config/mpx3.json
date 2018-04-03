@@ -119,24 +119,24 @@
     ],
     "DetectorConfig": {
         "BiasVoltage": 100,
-        "BothCounters": false,
-        "ColourMode": false,
+        "BothCounters": true,
+        "ColourMode": true,
         "ContRWFreq": 100,
         "CsmSpm": 0,
         "DecodeFrames": true,
-        "GainMode": 1,
+        "GainMode": 0,
         "LUTEnable": false,
         "MaxPacketSize": 9000,
         "OperationMode": 0,
         "PixelDepth": 12,
         "Polarity": "Positive",
-        "TriggerDeadtime_us": 2000,
-        "TriggerLength_us": 2000,
+        "TriggerDeadtime_us": 20000,
+        "TriggerLength_us": 20000,
         "TriggerMode": 4,
-        "nTriggers": 100
+        "nTriggers": 10
     },
     "IPConfig": {
-        "SpidrControllerIp": "192.168.1.10",
+        "SpidrControllerIp": "192.168.100.10",
         "SpidrControllerPort": 50000,
         "ZmqPubAddress": "tcp://127.0.0.1:50001",
         "ZmqSubAddress": "tcp://127.0.0.1:50000"

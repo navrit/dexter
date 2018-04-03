@@ -382,7 +382,9 @@ void zmqController::someCommandHasFinished_Successfully()
     root_obj["reply type"] = QString("ACK");
     JsonDocument = QJsonDocument(root_obj);
     sendZmqMessage();
+#ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ Sent ACK";
+#endif
     processingEvents = false;
 }
 

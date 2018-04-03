@@ -15,6 +15,8 @@
 #include "mpx3gui.h"
 #include "ui_mpx3gui.h"
 
+#include <chrono>
+
 DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, DataConsumerThread * consumer, QObject * parent)
     : QThread( parent )
 {
@@ -127,7 +129,7 @@ void DataTakingThread::run() {
     bool emergencyStop = false;
     bool bothCounters = false;
     int totalFramesExpected = 0;
-    unsigned int cntrLH = 0;
+    uint64_t cntrLH = 0; //! Odd is Counter Low, even is Counter High
 
     unsigned int oneFrameChipCntr = 0;
     uint halfSemaphoreSize = 0;
@@ -148,7 +150,7 @@ void DataTakingThread::run() {
         datataking_score_info score = _score;
         timeOutTime = _mpx3gui->getConfig()->getTriggerLength_ms()
                 +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
-                + 100; // ms
+                + 10; // ms
         //! May wish to use 10000 for trigger mode testing
         opMode = _mpx3gui->getConfig()->getOperationMode();
         contRWFreq = _mpx3gui->getConfig()->getContRWFreq();
@@ -182,8 +184,16 @@ void DataTakingThread::run() {
             // When using both counters keep track of which Counter we are reading now
             // cntrLH%2 == 0  Cntr0 (THL0)
             // cntrLH%2 == 1  Cntr1 (THL1)
-            cntrLH++;
-            //qDebug() << cntrLH;
+
+            if (bothCounters) {
+                cntrLH++;
+//                if ( cntrLH%2 == 0) {
+//                    qDebug() << "Counter LOW" << cntrLH;
+//                } else {
+//                    qDebug() << "Counter HIGH" << cntrLH;
+//                }
+            }
+
 
             // 2) User stop condition
             if ( _stop ||  _restart  ) {
@@ -259,7 +269,7 @@ void DataTakingThread::run() {
 
             // If we are working with 2 counters, go get
             // the second frame associated before it continues.
-            //qDebug() << "cntrLH : " << cntrLH;
+//            qDebug() << "bothCounters & cntrLH : " << bothCounters << cntrLH << "\t Counter Low" << bool(cntrLH%2 == 0);
             if ( bothCounters && (cntrLH%2 == 0) ) continue;
 
             // Awake the consumer thread
@@ -327,6 +337,7 @@ void DataTakingThread::run() {
         _restart = false;
         _mutex.unlock();
         //qDebug() << "   +++ unlock DataTakingThread";
+
 
     } // forever
 

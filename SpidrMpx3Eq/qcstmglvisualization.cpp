@@ -1772,12 +1772,13 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
     QStringList split = arg1.split(' ');
     int threshold = split.last().toInt();
     int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
-    //cout << "[INDEX] " << threshold << " --> " << layer << endl;
+#ifdef QT_DEBUG
+    qDebug() << "[DEBUG] INDEX" << threshold << "-->" << layer << "from list" << _mpx3gui->getDataset()->getThresholds() << "\n";
+#endif
 
     ui->glPlot->getPlot()->setActive(layer);
     ui->histPlot->setActive(layer);
     ui->layerSelector->setCurrentIndex(layer);
-    //_mpx3gui->set_active_frame(threshold);
     this->active_frame_changed();
 }
 
@@ -1787,45 +1788,46 @@ void QCstmGLVisualization::on_summingCheckbox_toggled(bool checked){
 }
 
 void QCstmGLVisualization::on_saveBitmapPushButton_clicked(){
-    QString filename = QFileDialog::getSaveFileName(this,
-                                                    tr("Save as image"),
-                                                    ".",
-                                                    tr("Image files (*.png)"));
+    _mpx3gui->getDataset()->debugPrintThesholds(9);
+//    QString filename = QFileDialog::getSaveFileName(this,
+//                                                    tr("Save as image"),
+//                                                    ".",
+//                                                    tr("Image files (*.png)"));
 
-    //! Fixes a bug where if you tried to save but cancelled, it would save empty files called _histogram.dat, _histogram.png and _.png
-    if (filename.isEmpty()){
-        qDebug() << "[INFO] User tried to save and cancelled or input an empty string somehow";
-        return;
-    }
+//    //! Fixes a bug where if you tried to save but cancelled, it would save empty files called _histogram.dat, _histogram.png and _.png
+//    if (filename.isEmpty()){
+//        qDebug() << "[INFO] User tried to save and cancelled or input an empty string somehow";
+//        return;
+//    }
 
-    //! Force the .bin in the data filename
-    if ( ! filename.toLower().contains(".png")) {
-        filename.append(".png");
-    }
+//    //! Force the .png in the data filename
+//    if ( ! filename.toLower().contains(".png")) {
+//        filename.append(".png");
+//    }
 
-    //! Get the image
-    if ( _savePNGWithScales ) {
-        ui->glPlot->grab().save(filename); // with all children
-    }
-    else {
-        ui->glPlot->getPlot()->grabFramebuffer().save(filename); // only image
-    }
+//    //! Get the image
+//    if ( _savePNGWithScales ) {
+//        ui->glPlot->grab().save(filename); // with all children
+//    }
+//    else {
+//        ui->glPlot->getPlot()->grabFramebuffer().save(filename); // only image
+//    }
 
-    //! Save and get the histogram
-    filename.remove(".png");
-    ui->histPlot->savePng(filename+"_histogram.png");
-    QFile histogramDat(filename+"_histogram.dat");
+//    //! Save and get the histogram
+//    filename.remove(".png");
+//    ui->histPlot->savePng(filename+"_histogram.png");
+//    QFile histogramDat(filename+"_histogram.dat");
 
-    //! Error handling for histogram dat file
-    if(!histogramDat.open(QIODevice::WriteOnly)) {
-        sig_statusBarAppend("Histogram dat file cannot be written to","red");
-        qDebug() << histogramDat.errorString();
-        return;
-    }
-    Histogram *hist = ui->histPlot->getHistogram(getActiveThreshold());
-    for(int i = 0; i < hist->size();i++) {
-        histogramDat.write(QString("%1 %2\n").arg(hist->keyAt(i)).arg(hist->atIndex(i)).toStdString().c_str());
-    }
+//    //! Error handling for histogram dat file
+//    if(!histogramDat.open(QIODevice::WriteOnly)) {
+//        sig_statusBarAppend("Histogram dat file cannot be written to","red");
+//        qDebug() << histogramDat.errorString();
+//        return;
+//    }
+//    Histogram *hist = ui->histPlot->getHistogram(getActiveThreshold());
+//    for(int i = 0; i < hist->size();i++) {
+//        histogramDat.write(QString("%1 %2\n").arg(hist->keyAt(i)).arg(hist->atIndex(i)).toStdString().c_str());
+//    }
 
 }
 

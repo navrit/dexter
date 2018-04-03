@@ -2,7 +2,7 @@
 #include "ReceiverThreadC.h"
 #include "mpx3defs.h"
 
-//#define _USE_QTCONCURRENT
+#define _USE_QTCONCURRENT
 #ifdef _USE_QTCONCURRENT
 #if QT_VERSION >= 0x050000
 #include <QtConcurrent>
@@ -43,6 +43,7 @@ void FramebuilderThreadC::processFrame()
       _mutex.lock();
       if( _hasFrame ) _outputCondition.wait( &_mutex );
       _mutex.unlock();
+
 
       if( _abortFrame ) return; // Bail out
 
