@@ -111,7 +111,6 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     _scanIndex = 0;
     _stepDone = new bool[__EQStatus_Count];
     for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
-
 }
 
 Ui::QCstmEqualization * QCstmEqualization::GetUI() {
@@ -737,23 +736,31 @@ void QCstmEqualization::StartEqualizationSequentialSingleChips()
 
     return;
 
+    // Try to go through all chips
+    if( _deviceIndex < _nChips - 1 && _deviceIndex >= 0) {
 
-    /*if(makeTeaCoffeeDialog()){
-        // Get busy !
-        _busy = true;
-        _scanAllChips = false;
-        _deviceIndex = 0;
+        // Next chip
+        _deviceIndex++;
+        _ui->devIdSpinBox->setValue( _deviceIndex );
 
-        // Init
-        if ( ! InitEqualization( _deviceIndex ) ) return;
+        // Initialise
+        if ( ! InitEqualization( -1 ) ) return;
 
         KeepOtherChipsQuiet();
 
-        StartEqualization( );
+        // Clear the previous scans!
+        _scans.clear();
 
-    } else {
-        return;
-    }*/
+        StartEqualizationSingleChip();
+
+        // Save results separately for now. Maybe merge and then save one config file later
+        SaveEqualization( QDir::homePath() );
+
+    } else { // when done
+
+        AppendToTextBrowser( qPrintable( QString("-- Results for chip %1 saved to %2").arg(_deviceIndex).arg(QDir::homePath()) ) );
+        AppendToTextBrowser( qPrintable(QString("-- DONE chip %1 ----------------").arg(_deviceIndex)) );
+    }
 }
 
 void QCstmEqualization::StartEqualization() {
@@ -955,6 +962,7 @@ void QCstmEqualization::StartEqualization() {
             NewRunInitEqualization();
 
             // Good for single ship equalization
+            //! Oooooh, well this would have been amazing to know before...
             if ( ! _scanAllChips ) KeepOtherChipsQuiet();
 
             // Start again
@@ -963,11 +971,10 @@ void QCstmEqualization::StartEqualization() {
         } else {
 
             // Write the results
-            SaveEqualization( );
+            SaveEqualization();
 
             // done
-            QString doneS =  "[DONE]";
-            AppendToTextBrowser( doneS );
+            AppendToTextBrowser( "[DONE]" );
 
             QString msg = "Finished equalisation on: " + _mpx3gui->getVisualization()->getStatsString_deviceId();
             emit sig_statusBarAppend(msg, "green");
@@ -1240,36 +1247,46 @@ void QCstmEqualization::DAC_Disc_Optimization (int devId, ScanResults * res_100,
 
 }
 
-void QCstmEqualization::SaveEqualization() {
+void QCstmEqualization::SaveEqualization(QString path) {
 
     // TODO CHECK THIS untested
     qDebug() << "[DISABLED] TODO CHECK THIS untested: QCstmEqualization::SaveEqualization \n _mpx3gui->getConfig()->toJsonFile(filename)...";
 
-    //! Get folder to save equalisation files to
-    QString path = QFileDialog::getExistingDirectory(this, tr("Open Directory to save equalisations to"),
-                                                     QDir::currentPath(),
-                                                     QFileDialog::ShowDirsOnly);
-    //! User pressed cancel, offer another go at saving
-    if (path.isEmpty()){
-        QMessageBox::StandardButton reply;
-        reply = QMessageBox::warning(this,
-                                     tr("Warning"),
-                                     tr("Are you sure you do not want to save equalisations and config files?"),
-                                     QMessageBox::Save|QMessageBox::Cancel);
-        if (reply == QMessageBox::Save) {
-            path = QFileDialog::getExistingDirectory(this,
-                                                     tr("Open Directory to save equalisations to"),
-                                                     QDir::currentPath(),
-                                                     QFileDialog::ShowDirsOnly);
-        } else {
-            sig_statusBarAppend(tr("Equalisation not saved, you may save them manually"),"red");
-            return;
-        }
+    QString filenameEqualisation;
 
+    if (path == "") {
+        //! Get folder to save equalisation files to
+        QString path = QFileDialog::getExistingDirectory(this, tr("Open Directory to save equalisations to"),
+                                                         QDir::currentPath(),
+                                                         QFileDialog::ShowDirsOnly);
+        //! User pressed cancel, offer another go at saving
+        if (path.isEmpty()){
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::warning(this,
+                                         tr("Warning"),
+                                         tr("Are you sure you do not want to save equalisations and config files?"),
+                                         QMessageBox::Save|QMessageBox::Cancel);
+            if (reply == QMessageBox::Save) {
+                path = QFileDialog::getExistingDirectory(this,
+                                                         tr("Open Directory to save equalisations to"),
+                                                         QDir::currentPath(),
+                                                         QFileDialog::ShowDirsOnly);
+            } else {
+                sig_statusBarAppend(tr("Equalisation not saved, you may save them manually"),"red");
+                return;
+            }
+
+        }
+        path.append(QDir::separator());
+        filenameEqualisation = path;
+        filenameEqualisation.append("config.json");
+    } else {
+        path.append(QDir::separator());
+        filenameEqualisation = path;
+        filenameEqualisation.append( QString("config-chip%1.json").arg(_deviceIndex) );
     }
-    path.append("/");
-    QString filenameEqualisation = path;
-    filenameEqualisation.append("config.json");
+
+
 
     resetThresholds();
 

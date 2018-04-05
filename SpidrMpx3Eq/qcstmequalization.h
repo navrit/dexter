@@ -328,7 +328,7 @@ private:
     bool makeTeaCoffeeDialog();
 
 public slots:
-    void SaveEqualization();
+    void SaveEqualization(QString path="");
     void on_logYCheckBox_toggled(bool checked);
 
 private slots:
