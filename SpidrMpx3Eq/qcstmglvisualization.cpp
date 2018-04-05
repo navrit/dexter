@@ -1398,21 +1398,21 @@ void QCstmGLVisualization::takeImage()
     //! Delete current image
     //! Trigger start data taking
     //! Turn off autosave
-    qDebug() << ("[INFO]\tZMQ \n\t+ Delete current image \n\t+ Trigger start data taking \n\t+ Turn off autosave");
+    qDebug() << ("[INFO]\tZMQ \n\t + Delete current image \n\t + Trigger start data taking \n\t + Turn off autosave");
 }
 
 void QCstmGLVisualization::takeAndSaveImageSequence()
 {
     //! Activate autosave to home directory or whatever
     //! Trigger data taking
-    qDebug() << ("[INFO]\tZMQ \n\+ tActivate autosave to home directory or whatever \n\t+ Trigger data taking");
+    qDebug() << ("[INFO]\tZMQ NOT IMPLEMENTED \n\t + Activate autosave to home directory or whatever \n\t + Trigger data taking");
 }
 
 void QCstmGLVisualization::saveImageSlot(QString filePath)
 {
     saveImage(filePath);
 #ifdef QT_DEBUG
-        qDebug() << "[INFO]\tZMQ \n\tSaved raw image as tiff to :" << filePath;
+    qDebug() << "[INFO]\tZMQ \n\tSaved raw image as tiff to :" << filePath;
 #endif
     emit someCommandHasFinished_Successfully();
 }
@@ -1447,13 +1447,12 @@ void QCstmGLVisualization::setNumberOfFrames(int number_of_frames)
 void QCstmGLVisualization::setThreshold(int threshold, int value)
 {
     //! Set specified threshold to value
-
+    qDebug() << "[INFO]\tZMQ NOT IMPLEMENTED \n\t Set threshold " << threshold << "to value " << value;
 }
 
 void QCstmGLVisualization::setGainMode(int mode)
 {
     //! Set by value
-
     _mpx3gui->getConfig()->setGainMode(mode);
     emit someCommandHasFinished_Successfully();
 }
@@ -1469,6 +1468,9 @@ void QCstmGLVisualization::setCSM(bool active)
         index = _mpx3gui->getConfigMonitoring()->getUI()->csmSpmCombo->findText("OFF");
     }
     _mpx3gui->getConfigMonitoring()->getUI()->csmSpmCombo->setCurrentIndex(index);
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ Set CSM:" << active;
+#endif
 }
 
 void QCstmGLVisualization::loadDefaultEqualisation()
@@ -1495,6 +1497,9 @@ void QCstmGLVisualization::setReadoutMode(QString mode)
     }
 
     _mpx3gui->getConfigMonitoring()->getUI()->operationModeComboBox->setCurrentIndex(index);
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ Set Readout mode:" << mode;
+#endif
 }
 
 void QCstmGLVisualization::setReadoutFrequency(uint16_t frequency)
@@ -1503,11 +1508,15 @@ void QCstmGLVisualization::setReadoutFrequency(uint16_t frequency)
     setReadoutMode("Continuous");
     _mpx3gui->getConfigMonitoring()->getUI()->contRWFreq->setValue(frequency);
     _mpx3gui->getConfig()->setContRWFreq(frequency);
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ Set CRW frequency:" << frequency;
+#endif
 }
 
 void QCstmGLVisualization::loadConfiguration(QString filePath)
 {
     //! From default location unless otherwise specfied
+    qDebug() << "[INFO]\tZMQ NOT IMPLEMENTED \n\t Load configuration from:" << filePath;
 }
 
 void QCstmGLVisualization::setNumberOfAverages(uint64_t number_of_averages)
@@ -1516,6 +1525,7 @@ void QCstmGLVisualization::setNumberOfAverages(uint64_t number_of_averages)
     //! Set integrate ON
     //! Set number of frames
     //! Normalise image to 12 bit?
+    qDebug() << "[INFO]\tZMQ NOT IMPLEMENTED \n\t set number of averages:" << number_of_averages;
 }
 
 void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
@@ -1763,12 +1773,13 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
     QStringList split = arg1.split(' ');
     int threshold = split.last().toInt();
     int layer = _mpx3gui->getDataset()->thresholdToIndex(threshold);
-    //cout << "[INDEX] " << threshold << " --> " << layer << endl;
+#ifdef QT_DEBUG
+    qDebug() << "[DEBUG] INDEX" << threshold << "-->" << layer << "from list" << _mpx3gui->getDataset()->getThresholds() << "\n";
+#endif
 
     ui->glPlot->getPlot()->setActive(layer);
     ui->histPlot->setActive(layer);
     ui->layerSelector->setCurrentIndex(layer);
-    //_mpx3gui->set_active_frame(threshold);
     this->active_frame_changed();
 }
 
@@ -1778,45 +1789,46 @@ void QCstmGLVisualization::on_summingCheckbox_toggled(bool checked){
 }
 
 void QCstmGLVisualization::on_saveBitmapPushButton_clicked(){
-    QString filename = QFileDialog::getSaveFileName(this,
-                                                    tr("Save as image"),
-                                                    ".",
-                                                    tr("Image files (*.png)"));
+    _mpx3gui->getDataset()->debugPrintThesholds(9);
+//    QString filename = QFileDialog::getSaveFileName(this,
+//                                                    tr("Save as image"),
+//                                                    ".",
+//                                                    tr("Image files (*.png)"));
 
-    //! Fixes a bug where if you tried to save but cancelled, it would save empty files called _histogram.dat, _histogram.png and _.png
-    if (filename.isEmpty()){
-        qDebug() << "[INFO] User tried to save and cancelled or input an empty string somehow";
-        return;
-    }
+//    //! Fixes a bug where if you tried to save but cancelled, it would save empty files called _histogram.dat, _histogram.png and _.png
+//    if (filename.isEmpty()){
+//        qDebug() << "[INFO] User tried to save and cancelled or input an empty string somehow";
+//        return;
+//    }
 
-    //! Force the .bin in the data filename
-    if ( ! filename.toLower().contains(".png")) {
-        filename.append(".png");
-    }
+//    //! Force the .png in the data filename
+//    if ( ! filename.toLower().contains(".png")) {
+//        filename.append(".png");
+//    }
 
-    //! Get the image
-    if ( _savePNGWithScales ) {
-        ui->glPlot->grab().save(filename); // with all children
-    }
-    else {
-        ui->glPlot->getPlot()->grabFramebuffer().save(filename); // only image
-    }
+//    //! Get the image
+//    if ( _savePNGWithScales ) {
+//        ui->glPlot->grab().save(filename); // with all children
+//    }
+//    else {
+//        ui->glPlot->getPlot()->grabFramebuffer().save(filename); // only image
+//    }
 
-    //! Save and get the histogram
-    filename.remove(".png");
-    ui->histPlot->savePng(filename+"_histogram.png");
-    QFile histogramDat(filename+"_histogram.dat");
+//    //! Save and get the histogram
+//    filename.remove(".png");
+//    ui->histPlot->savePng(filename+"_histogram.png");
+//    QFile histogramDat(filename+"_histogram.dat");
 
-    //! Error handling for histogram dat file
-    if(!histogramDat.open(QIODevice::WriteOnly)) {
-        sig_statusBarAppend("Histogram dat file cannot be written to","red");
-        qDebug() << histogramDat.errorString();
-        return;
-    }
-    Histogram *hist = ui->histPlot->getHistogram(getActiveThreshold());
-    for(int i = 0; i < hist->size();i++) {
-        histogramDat.write(QString("%1 %2\n").arg(hist->keyAt(i)).arg(hist->atIndex(i)).toStdString().c_str());
-    }
+//    //! Error handling for histogram dat file
+//    if(!histogramDat.open(QIODevice::WriteOnly)) {
+//        sig_statusBarAppend("Histogram dat file cannot be written to","red");
+//        qDebug() << histogramDat.errorString();
+//        return;
+//    }
+//    Histogram *hist = ui->histPlot->getHistogram(getActiveThreshold());
+//    for(int i = 0; i < hist->size();i++) {
+//        histogramDat.write(QString("%1 %2\n").arg(hist->keyAt(i)).arg(hist->atIndex(i)).toStdString().c_str());
+//    }
 
 }
 

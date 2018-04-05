@@ -41,6 +41,7 @@ DataConsumerThread::DataConsumerThread(Mpx3GUI * mpx3gui, QObject * parent)
     _colordata = new int*[ __max_colors ]; // 8 thresholds(colors)
     for (int i = 0 ; i < __max_colors ; i++) {
         _colordata[i] = new int[ __matrix_size_color * _nChips ];
+        memset(_colordata[i], 0, (sizeof(int) * __matrix_size_color * _nChips ));
     }
 
 }
@@ -194,7 +195,21 @@ void DataConsumerThread::run()
             // Colour Mode //
             if ( _mpx3gui->getConfig()->getColourMode() ) {
 
-                for ( int i = 0 ; i < bothCountersMod ; i++ ) {
+                if (_bothCounters) {
+                    for ( int i = 0 ; i < bothCountersMod ; i++ ) {
+                        // SeparateThresholds -> I can do it on a chip per chip basis
+                        for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
+                            usedFrames->acquire();
+                            SeparateThresholds(i,
+                                               buffer + readdescriptor,
+                                               ci);
+                            freeFrames->release();
+                        }
+                        // Move the reading descriptor
+                        readdescriptor += _bufferSizeOneFrame;
+
+                    }
+                } else {
                     // SeparateThresholds -> I can do it on a chip per chip basis
                     for ( uint ci = 0 ; ci < _nChips ; ci++ ) {
                         usedFrames->acquire();
@@ -208,7 +223,7 @@ void DataConsumerThread::run()
                 }
 
                 // Add the corresponding layers
-                if ( _colordata != 0 ) { //! TODO Yeah?
+                if ( _colordata != 0 ) {
                     for ( int i = 0 ; i < __max_colors ; i+= delvrCounters ) {
                         _mpx3gui->addLayer( _colordata[i], i );
                     }
@@ -224,7 +239,7 @@ void DataConsumerThread::run()
                     // I need the info for ALL the 4 chips acquired first
                     for ( uint ci = 0 ; ci < _nChips ; ci++ ) usedFrames->acquire();
                     // Now I can work on the layer
-                    _mpx3gui->addLayer( buffer + readdescriptor, i ); //! TODO fix this bug
+                    _mpx3gui->addLayer( buffer + readdescriptor, i );
                     // Move the reading descriptor
                     readdescriptor += _bufferSizeOneFrame;
                     // Then I can release
@@ -234,8 +249,6 @@ void DataConsumerThread::run()
             }
 
             // Move the reading descriptor
-            //if ( _bothCounters ) readdescriptor += 2*_bufferSizeOneFrame;
-            //else readdescriptor += _bufferSizeOneFrame;
             // or rewind
             if ( readdescriptor >= _bufferSize ) readdescriptor = 0;
 
@@ -281,7 +294,7 @@ void DataConsumerThread::dataTakingSaysIFinished()
     _mutex.unlock();
 }
 
-void DataConsumerThread::SeparateThresholds(int /*id*/,
+void DataConsumerThread::SeparateThresholds(int th,
                                             int * data,
                                             int chipOffset) {
 
@@ -305,7 +318,7 @@ void DataConsumerThread::SeparateThresholds(int /*id*/,
         for (int i = 0 ; i < __matrix_size_x  ; i++) {
 
             // Depending on which chip are we taking care of, consider the offset.
-            // 'data' bring the informatio nof all 4 chips
+            // 'data' bring the information of all 4 chips
             indx = XYtoX( i, j, __matrix_size_x);
             indx += chipOffset*__matrix_size;
 
@@ -313,16 +326,16 @@ void DataConsumerThread::SeparateThresholds(int /*id*/,
             indxRed += chipOffset*__matrix_size_color;
 
             if( (i % 2) == 0 && (j % 2) == 0) {
-                _colordata[2][indxRed] = data[indx]; // P2 // TH2 !
+                _colordata[2+th][indxRed] = data[indx]; // P2 // TH2 !
             }
             if( (i % 2) == 0 && (j % 2) == 1) {
-                _colordata[0][indxRed] = data[indx]; // P1 // TH0 !
+                _colordata[0+th][indxRed] = data[indx]; // P1 // TH0 !
             }
             if( (i % 2) == 1 && (j % 2) == 0) {
-                _colordata[6][indxRed] = data[indx]; // P4 // TH6 !
+                _colordata[6+th][indxRed] = data[indx]; // P4 // TH6 !
             }
             if( (i % 2) == 1 && (j % 2) == 1) {
-                _colordata[4][indxRed] = data[indx]; // P3 // TH4 !
+                _colordata[4+th][indxRed] = data[indx]; // P3 // TH4 !
             }
 
             if (i % 2 == 1) redi++;

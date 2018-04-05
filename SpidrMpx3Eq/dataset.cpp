@@ -1423,6 +1423,25 @@ void Dataset::calcAllEnergyBins()
     qDebug() << "[INFO] Dataset::calcAllEnergyBins() : Calculate all energy bins";
 }
 
+void Dataset::debugPrintThesholds(int n)
+{
+    QList<int> keys = m_thresholdsToIndices.keys();
+
+    for (int i = 0; i < keys.length(); i++) {
+        QString filename = "test" + QString::number( keys[i] ) + ".txt";
+        std::ofstream ofs ( qPrintable(filename), std::ofstream::out);
+
+        int * currentLayer = getLayer(keys[i]);
+
+        for (unsigned int i = 0; i < n; i++) {
+
+            ofs << i << "\t" << currentLayer[i] << "\n";
+
+        }
+
+    }
+}
+
 unsigned int Dataset::setFrame(int *frame, int index, int threshold){
 
     if(!m_thresholdsToIndices.contains(threshold))

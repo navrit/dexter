@@ -378,7 +378,6 @@ void zmqController::setGainMode(QJsonObject obj)
         val = 3;
     }
 
-    //! Validation done in visualisation
     emit setGainMode(val);
 }
 

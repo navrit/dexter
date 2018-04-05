@@ -1314,7 +1314,9 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
             QString("C++: ") + QString::fromStdString(to_string(__cplusplus)) +
             newLine +
             m_SPIDRControllerVersion +
+            newLine +
             m_SPIDRFirmwareVersion +
+            newLine +
             m_SPIDRSoftwareVersion +
             newLine +
             m_numberOfChipsFound +
