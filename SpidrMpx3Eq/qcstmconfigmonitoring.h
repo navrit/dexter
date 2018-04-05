@@ -46,8 +46,8 @@ public:
 public slots:
 
     void OperationModeSwitched(int indx);
-    void on_taking_data_gui();
-    void on_idling_gui();
+    void when_taking_data_gui();
+    void when_idling_gui();
 
     void shortcutGainModeSLGM();
     void shortcutGainModeLGM();

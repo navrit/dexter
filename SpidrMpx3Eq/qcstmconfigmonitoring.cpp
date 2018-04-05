@@ -308,12 +308,12 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
     return;
 }
 
-void QCstmConfigMonitoring::on_taking_data_gui()
+void QCstmConfigMonitoring::when_taking_data_gui()
 {
     ui->groupBoxConfiguration->setEnabled( false );
 }
 
-void QCstmConfigMonitoring::on_idling_gui()
+void QCstmConfigMonitoring::when_idling_gui()
 {
     ui->groupBoxConfiguration->setEnabled( true );
 }
