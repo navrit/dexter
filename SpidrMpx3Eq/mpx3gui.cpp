@@ -865,7 +865,7 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         } else if (selectedFilter == RAW_TIFF_FILES && !filename.toLower().toLatin1().contains("_raw.tiff")){
             filename.append("_raw.tiff");
         } else if (selectedFilter == BOTH_TIFF_FILES && !filename.toLower().toLatin1().contains(".tiff")){
-            qDebug() << "[INFO] Writing both uncorrected and corrected TIFF files.";
+            filename.append("_both.tiff");
         } else if (selectedFilter == TIFF_FILES && !filename.toLower().toLatin1().contains(".tiff")){
             filename.append(".tiff");
         } else if (selectedFilter == ASCII_FILES && !filename.toLower().toLatin1().contains(".txt")){
@@ -913,32 +913,50 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
     }
 
     //! Send data to be saved by the relevant function with the correct arguments etc.
+    const QString unmodifiedFilename = filename;
+    const int extraPixels = 2;
 
     if (selectedFilter == BIN_FILES) {
         getDataset()->saveBIN(filename);
-    } else if (selectedFilter == SPATIAL_TIFF_FILES) {
-        getDataset()->toTIFF(filename, true, true);
-    } else if (selectedFilter == RAW_TIFF_FILES) {
-        const QString unmodifiedFilename = filename;
-        const int imageWidth = getDataset()->getWidth();
+    } else if (selectedFilter == SPATIAL_TIFF_FILES || selectedFilter == RAW_TIFF_FILES || selectedFilter == TIFF_FILES || selectedFilter == BOTH_TIFF_FILES) {
 
         //! This is a shitty way of doing it but whatever the disk is still the bottleneck... maybe fix it later
+
         QList<int> thresholds = getDataset()->getThresholds();
         for (int i = 0; i < thresholds.length(); i++) {
-            QVector<int> frame = getDataset()->makeFrameForSaving(i);
+            int imageWidth = getDataset()->getWidth();
             QString tmpFilename = unmodifiedFilename;
-            tmpFilename = tmpFilename.replace("_raw.tiff", QString("-th"+ QString::number(thresholds[i]) +"_raw.tiff"));
+            QVector<int> frame;
+
+            if (selectedFilter == SPATIAL_TIFF_FILES) {
+                frame = getDataset()->makeFrameForSaving(i, true, true);
+                imageWidth += 2*extraPixels;
+                tmpFilename = tmpFilename.replace("_spatialCorrected.tiff", QString("-th"+ QString::number(thresholds[i]) +"_spatialCorrected.tiff"));
+
+            } else if (selectedFilter == RAW_TIFF_FILES) {
+                frame = getDataset()->makeFrameForSaving(i, false);
+                tmpFilename = tmpFilename.replace("_raw.tiff", QString("-th"+ QString::number(thresholds[i]) +"_raw.tiff"));
+
+            } else if (selectedFilter == TIFF_FILES) {
+                frame = getDataset()->makeFrameForSaving(i);
+                imageWidth += 2*extraPixels;
+                tmpFilename = tmpFilename.replace(".tiff", QString("-th"+ QString::number(thresholds[i]) +".tiff"));
+
+            } else if (selectedFilter == BOTH_TIFF_FILES) {
+                frame = getDataset()->makeFrameForSaving(i, false);
+                tmpFilename = tmpFilename.replace("_both.tiff", QString("-th"+ QString::number(thresholds[i]) +"_raw.tiff"));
+                QtConcurrent::run( dataControllerThread, &DataControllerThread::saveTIFFParallel, tmpFilename, imageWidth, frame);
+
+                tmpFilename = unmodifiedFilename;
+
+                frame = getDataset()->makeFrameForSaving(i);
+                imageWidth += 2*extraPixels;
+                tmpFilename = tmpFilename.replace("_both.tiff", QString("-th"+ QString::number(thresholds[i]) +".tiff"));
+            }
+
             //tmpFilename = "/dev/null";
             QtConcurrent::run( dataControllerThread, &DataControllerThread::saveTIFFParallel, tmpFilename, imageWidth, frame);
         }
-
-
-        //getDataset()->toTIFF(filename, false);
-    } else if (selectedFilter == TIFF_FILES) {
-        getDataset()->toTIFF(filename);
-    } else if (selectedFilter == BOTH_TIFF_FILES) {
-        getDataset()->toTIFF(filename+".tiff");
-        getDataset()->toTIFF(filename+"_raw.tiff", false);
     } else if (selectedFilter == ASCII_FILES) {
         getDataset()->toASCII(filename);
     } else {
