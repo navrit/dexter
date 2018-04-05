@@ -824,10 +824,8 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
             this, SLOT(on_resetViewPushButton_clicked()));
 
     // DataTaking / idling actions
-    connect( this, &QCstmGLVisualization::taking_data_gui,
-             _mpx3gui->getConfigMonitoring(), &QCstmConfigMonitoring::on_taking_data_gui );
-    connect( this, &QCstmGLVisualization::idling_gui,
-             _mpx3gui->getConfigMonitoring(), &QCstmConfigMonitoring::on_idling_gui );
+    connect(this, SIGNAL(taking_data_gui()), _mpx3gui->getConfigMonitoring(), SLOT(when_taking_data_gui()));
+    connect(this, SIGNAL(idling_gui()), _mpx3gui->getConfigMonitoring(), SLOT(when_idling_gui()));
 
 
     // Defaults
@@ -1441,13 +1439,9 @@ void QCstmGLVisualization::setExposure(int microseconds)
 
 void QCstmGLVisualization::setNumberOfFrames(int number_of_frames)
 {
-    if ( ui->nTriggersSpinBox->setValue(number_of_frames) ) {
-        ntriggers_edit();
-        emit someCommandHasFinished_Successfully();
-    } else {
-        someCommandHasFailed();
-    }
-
+    ui->nTriggersSpinBox->setValue(number_of_frames);
+    ntriggers_edit();
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::setThreshold(int threshold, int value)
@@ -1460,12 +1454,8 @@ void QCstmGLVisualization::setGainMode(int mode)
 {
     //! Set by value
 
-    if ( _mpx3gui->getConfig()->setGainMode(mode) ) {
-        emit someCommandHasFinished_Successfully();
-    } else {
-        emit someCommandHasFailed();
-    }
-
+    _mpx3gui->getConfig()->setGainMode(mode);
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::setCSM(bool active)

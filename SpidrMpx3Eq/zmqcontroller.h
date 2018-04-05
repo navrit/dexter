@@ -113,7 +113,7 @@ signals:
     void setExposure(int microseconds);
     void setNumberOfFrames(int number_of_frames);
     void setThreshold(int threshold, int value);
-    void setGainMode(QString mode);
+    void setGainMode(int mode);
     void setCSM(bool active);
     void loadDefaultEqualisation();
     void loadEqualisation(QString filePath);
