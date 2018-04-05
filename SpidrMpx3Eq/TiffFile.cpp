@@ -7,7 +7,7 @@ TiffFile::TiffFile(QObject *parent) : QObject(parent)
 
 }
 
-bool TiffFile::saveToTiff32(const char* filePath, const uint size, const int *pixels, const QList<int> thresholds)
+bool TiffFile::saveToTiff32(const char* filePath, const uint size, const int *pixels)
 {
     uint width, height;
     width = size;

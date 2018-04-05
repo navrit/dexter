@@ -555,7 +555,8 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
 
 }
 
-QVector<int> Dataset::makeFrameForSaving()
+//! TODO Could do corrections here
+QVector<int> Dataset::makeFrameForSaving(int threshold)
 {
     int width  = getWidth();
     int height = getHeight();
@@ -564,7 +565,7 @@ QVector<int> Dataset::makeFrameForSaving()
 
     for (int y=0; y < height; y++) {
         for (int x=0; x < width; x++) {
-            image.append(sample(x, y, thresholds[0]));
+            image.append(sample(x, y, thresholds[threshold]));
         }
     }
 

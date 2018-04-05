@@ -1412,14 +1412,11 @@ void QCstmGLVisualization::takeAndSaveImageSequence()
 
 void QCstmGLVisualization::saveImageSlot(QString filePath)
 {
-    if (saveImage(filePath)) {
+    saveImage(filePath);
 #ifdef QT_DEBUG
         qDebug() << "[INFO]\tZMQ \n\tSaved raw image as tiff to :" << filePath;
 #endif
-        emit someCommandHasFinished_Successfully();
-    } else {
-        emit someCommandHasFailed();
-    }
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::setExposure(int microseconds)

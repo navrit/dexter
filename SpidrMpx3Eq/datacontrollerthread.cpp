@@ -12,10 +12,10 @@ DataControllerThread::~DataControllerThread()
 
 }
 
-void DataControllerThread::saveTIFFParallel(QString filename, QList<int> thresholds, const QVector<int>& pixels)
+void DataControllerThread::saveTIFFParallel(QString filename, const int imageWidth, const QVector<int>& pixels)
 {
 //    qDebug() << "[INFO] Saving in parallel - TIFF";
-    if ( !TiffFile::saveToTiff32( filename.toUtf8().data(), 256, &pixels[0], thresholds ) )
+    if ( !TiffFile::saveToTiff32( filename.toUtf8().data(), imageWidth, &pixels[0] ) )
     {
         qDebug() << "[ERROR] Failed to save TIFF:" << filename;
     }

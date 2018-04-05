@@ -919,13 +919,20 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
     } else if (selectedFilter == SPATIAL_TIFF_FILES) {
         getDataset()->toTIFF(filename, true, true);
     } else if (selectedFilter == RAW_TIFF_FILES) {
-//        int index = 0;
+        const QString unmodifiedFilename = filename;
+        const int imageWidth = getDataset()->getWidth();
 
-        //QVector<int> frame = getDataset()->toQVector();
-        QVector<int> frame = getDataset()->makeFrameForSaving();
+        //! This is a shitty way of doing it but whatever the disk is still the bottleneck... maybe fix it later
         QList<int> thresholds = getDataset()->getThresholds();
+        for (int i = 0; i < thresholds.length(); i++) {
+            QVector<int> frame = getDataset()->makeFrameForSaving(i);
+            QString tmpFilename = unmodifiedFilename;
+            tmpFilename = tmpFilename.replace("_raw.tiff", QString("-th"+ QString::number(thresholds[i]) +"_raw.tiff"));
+            //tmpFilename = "/dev/null";
+            QtConcurrent::run( dataControllerThread, &DataControllerThread::saveTIFFParallel, tmpFilename, imageWidth, frame);
+        }
 
-        QtConcurrent::run( dataControllerThread, &DataControllerThread::saveTIFFParallel, filename, thresholds, frame);
+
         //getDataset()->toTIFF(filename, false);
     } else if (selectedFilter == TIFF_FILES) {
         getDataset()->toTIFF(filename);
