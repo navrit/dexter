@@ -827,13 +827,13 @@ void Mpx3Config::setIpZmqPubAddress(QString ip_and_port)
 
     QString string = ip_and_port.toLower();
 
-    if (string.contains(QRegExp("(tcp:\/\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
+    if (string.contains(QRegExp("(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+"))) {
         Zmq_Pub_address = ip_and_port;
 
         emit IpZmqPubAddressChanged( this->getIpZmqPubAddressPortString() );
     } else {
         qDebug() << "[ERROR] ZMQ IP PUB address could not be set, this is a valid example: tcp://192.168.1.1:5555 \
-                    \n You need to match the following Regex: '(tcp:\/\/)([0-9]+.|(.+[0-9]))+:[0-9]+'";
+                    \n You need to match the following Regex: '(tcp:\\/\\/)([0-9]+.|(.+[0-9]))+:[0-9]+'";
         emit IpZmqPubAddressChangedFailed( "Eg.: tcp://192.168.1.1:5555 - Invalid input" );
     }
 }

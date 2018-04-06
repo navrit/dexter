@@ -136,4 +136,4 @@ private slots:
     void someCommandHasFailed();
 };
 
-#endif ZMQCONTROLLER_H
+#endif

@@ -65,7 +65,7 @@ int64_t Dataset::getTotal(int threshold) {
 }
 
 //! Overflow is checked on a frame per frame basis, not on the integral
-int64_t Dataset::getOverflow(int threshold)
+int64_t Dataset::getOverflow(int /*threshold*/)
 {
     /*
     int index = thresholdToIndex(threshold);
@@ -438,7 +438,7 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
                             x < (width/2)+extraPixels &&
                             y >= (height/2)-extraPixels &&
                             y < (height/2)+extraPixels){                                     // central square
-                        int tmp = sample(x,y, thresholds[i]) / edgePixelMagicNumber;
+                        //int tmp = sample(x,y, thresholds[i]) / edgePixelMagicNumber;
                         //                        qDebug() << "[CENTRAL]" << tmp << x << y;
                         if        (x == (width/2)-extraPixels && y == (height/2)-extraPixels){      //TL
                             //qDebug() << "[TL]" << image[y*width + x] << x << y;
@@ -1476,7 +1476,7 @@ void Dataset::fromASCIIMatrixGetSizeAndLayers(QFile * file, int *x, int *y, int 
     QString line;
     int rowCntr = 0, colCntr = 0;
     int cols = 0;
-    bool ok = false;
+//    bool ok = false;
 
     while ( in.readLineInto( &line ) ) {
         QStringList values = line.split('\t',QString::SkipEmptyParts);
