@@ -11,9 +11,9 @@ int main(int argc, char *argv[])
     QLoggingCategory::setFilterRules("*.debug=true\nqt.*.debug=false");
 
 #ifdef QT_DEBUG
-    qDebug() << "INFO\tDEBUGGING BUILD";
+    qDebug() << "[INFO]\tDEBUGGING BUILD";
 #else
-    qDebug() << "INFO\tRelease mode";
+    qDebug() << "[INFO]\tRelease mode";
 #endif
 
     //! Set main application icon
