@@ -98,6 +98,8 @@ private:
     bool processingEvents = false;
     QTimer * eventProcessTimer;
 
+    bool isConnectedToSPIDR = false;
+
     void takeImage(QJsonObject obj);
     void takeAndSaveImageSequence(QJsonObject obj);
     void saveImage(QJsonObject obj);
@@ -133,7 +135,7 @@ private slots:
     void sock_readyRead(); //! Just read all the events coming in, parse, caste and push to back of eventQueue
     void sock_messagesWritten(int count); //! Mainly for debugging purposes
     void someCommandHasFinished_Successfully();
-    void someCommandHasFailed();
+    void someCommandHasFailed(QString reply="");
 };
 
 #endif

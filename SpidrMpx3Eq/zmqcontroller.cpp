@@ -182,11 +182,15 @@ void zmqController::processEvents()
         //! However, not all commands need this obviously
         //! Blocking is acceptable because the other commands probably cannot run without being connected
         if (!_mpx3gui->getConfig()->isConnected()) {
-            if ( _mpx3gui->establish_connection() ) {
+            /*if ( _mpx3gui->establish_connection() ) {
                 qDebug() << "[INFO]\tZMQ Connected to SPIDR via remote command";
             } else {
                 qDebug() << "[ERROR]\tZMQ Failed to connect to a SPIDR via a remote command";
-            }
+            }*/
+//            qDebug() << "[ERROR]\tZMQ Not connected to the SPIDR. Subsequent commands may or may not complete successfully.";
+            isConnectedToSPIDR = false;
+        } else {
+            isConnectedToSPIDR = true;
         }
 
         //! 3. If it's taking a while, REPLY with FDB events at least at 1Hz independently
@@ -195,10 +199,10 @@ void zmqController::processEvents()
 
         //! 4. Emit relevant signals to trigger whatever we want elsewhere
         //!    This must not be blocking
-        if ( JsonContains(root_obj, "command", "take image") ) {
+        if ( JsonContains(root_obj, "command", "take image")) {
             takeImage(root_obj);
 
-        } else if ( JsonContains(root_obj, "command", "take and save image sequence") ) {
+        } else if ( JsonContains(root_obj, "command", "take and save image sequence")) {
             takeAndSaveImageSequence(root_obj);
 
         } else if ( JsonContains(root_obj, "command", "save image") ) {
@@ -228,12 +232,12 @@ void zmqController::processEvents()
                 qDebug() << "[INFO]";
             }
 
-        } else if ( JsonContains(root_obj, "command", "load default equalisation") ) {
+        } else if ( JsonContains(root_obj, "command", "load default equalisation")) {
             qDebug() << "[INFO]\tZMQ LOAD DEFAULT EQUALISATION :"  << root_obj["command"].toString();
 
             emit loadDefaultEqualisation();
 
-        } else if ( JsonContains(root_obj, "command", "load equalisation from folder") ) {
+        } else if ( JsonContains(root_obj, "command", "load equalisation from folder")) {
             qDebug() << "[INFO]\tZMQ LOAD EQUALISATION FROM FOLDER:"  << root_obj["command"].toString() << root_obj["arg1"].toString();
 
             QString arg1 = root_obj["arg1"].toString(); //! You actually need to keep the case here, Linux filesystems are mostly case sensitive of course!
@@ -259,7 +263,8 @@ void zmqController::processEvents()
             qDebug() << "[INFO]\tZMQ SET NUMBER OF AVERAGES :" << root_obj["command"].toString();
 
         } else {
-            qDebug() << "[ERROR]\tZMQ Unrecognised command... : " << root_obj["command"].toString();
+            qDebug() << "[ERROR]\tZMQ Failed to parse command or something else... : " << root_obj["UUID"].toString() << root_obj["command"].toString() << "\targ1: " << root_obj["arg1"].toString();
+
             someCommandHasFailed();
             processingEvents = false;
         }
@@ -272,7 +277,13 @@ void zmqController::takeImage(QJsonObject obj)
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ TAKE IMAGE :"  << obj["command"].toString();
 #endif
-    emit takeImage();
+    if (isConnectedToSPIDR) {
+        emit takeImage();
+    } else {
+        qDebug() << "[ERROR]\tZMQ Is not connected to a SPIDR, could not execute : " << obj["UUID"].toString() << obj["command"].toString() << "\targ1: " << obj["arg1"].toString();
+        emit someCommandHasFailed();
+    }
+
 }
 
 void zmqController::takeAndSaveImageSequence(QJsonObject obj)
@@ -280,7 +291,13 @@ void zmqController::takeAndSaveImageSequence(QJsonObject obj)
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ TAKE AND SAVE IMAGE SEQUENCE :"  << obj["command"].toString();
 #endif
-    emit takeAndSaveImageSequence();
+    if (isConnectedToSPIDR) {
+        emit takeAndSaveImageSequence();
+    } else {
+        qDebug() << "[ERROR]\tZMQ Is not connected to a SPIDR, could not execute : " << obj["UUID"].toString() << obj["command"].toString() << "\targ1: " << obj["arg1"].toString();
+        emit someCommandHasFailed();
+    }
+
 }
 
 void zmqController::saveImage(QJsonObject obj)
@@ -288,11 +305,18 @@ void zmqController::saveImage(QJsonObject obj)
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ SAVE IMAGE :"  << obj["command"].toString() << obj["arg1"].toString();
 #endif
-    emit saveImageSignal(obj["arg1"].toString());
+    if (isConnectedToSPIDR) {
+        emit saveImageSignal(obj["arg1"].toString());
+    } else {
+        qDebug() << "[ERROR]\tZMQ Is not connected to a SPIDR, could not execute : " << obj["UUID"].toString() << obj["command"].toString() << "\targ1: " << obj["arg1"].toString();
+        emit someCommandHasFailed( QString("DEXTER --> ACQUILA : Is not connected to a SPIDR, could not execute command : " + obj["UUID"].toString() + "  " +  obj["command"].toString()));
+    }
+
 }
 
 void zmqController::setExposure(QJsonObject obj)
 {
+    Q_UNUSED(obj);
 #ifdef QT_DEBUG
 
     qDebug() << "[INFO]\tZMQ SET EXPOSURE :"  << obj["command"].toString() << obj["arg1"].toString().toInt();
@@ -307,7 +331,7 @@ void zmqController::setExposure(QJsonObject obj)
         JsonDocument = QJsonDocument(obj);
         emit setExposure(arg1);
     } else {
-        someCommandHasFailed();
+        someCommandHasFailed("DEXTER --> ACQUILA : Invalid exposure time requested" + QString::number(arg1));
     }
 }
 
@@ -322,7 +346,7 @@ void zmqController::setNumberOfFrames(QJsonObject obj)
     if (ok && arg1 >= 0) {
         emit setNumberOfFrames(arg1);
     } else {
-        someCommandHasFailed();
+        someCommandHasFailed( QString("DEXTER --> ACQUILA : Invalid number of frames requested" + QString::number(arg1)));
     }
 }
 
@@ -350,21 +374,23 @@ void zmqController::setThreshold(QJsonObject obj)
                 emit setThreshold(arg1, arg2);
             } else {
                 //! Threshold value set to a dumb value
-                someCommandHasFailed();
+                someCommandHasFailed("DEXTER --> ACQUILA : Threshold value set to an invalid value");
             }
         } else {
             //! Specified threshold does not exist, what a fool
-            someCommandHasFailed();
+            someCommandHasFailed("DEXTER --> ACQUILA : Specified threshold does not exist");
         }
     } else {
         //! Could not even parse the arguments, such epic failure!
-        someCommandHasFailed();
+        someCommandHasFailed("DEXTER --> ACQUILA : Could not even parse the arguments");
     }
 }
 
 void zmqController::setGainMode(QJsonObject obj)
 {
+#ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ SET GAIN MODE :"  << obj["command"].toString() << obj["arg1"].toString();
+#endif
 
     int val = -1;
     QString mode = obj["arg1"].toString().toLower();
@@ -376,6 +402,10 @@ void zmqController::setGainMode(QJsonObject obj)
         val = 2;
     } else if (mode == "super low") {
         val = 3;
+    } else {
+        qDebug() << "[ERROR]\tZMQ Could not parse gain mode, should be 'super high', 'high', 'low' or 'super low'";
+        emit someCommandHasFailed("DEXTER --> ACQUILA : Could not parse gain mode, should be 'super high', 'high', 'low' or 'super low'");
+        return;
     }
 
     emit setGainMode(val);
@@ -505,6 +535,7 @@ void zmqController::sock_readyRead()
 
 void zmqController::sock_messagesWritten(int count)
 {
+    Q_UNUSED(count);
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ Messages written:" << count << "\n";
 #endif
@@ -523,9 +554,10 @@ void zmqController::someCommandHasFinished_Successfully()
     processingEvents = false;
 }
 
-void zmqController::someCommandHasFailed()
+void zmqController::someCommandHasFailed(QString reply)
 {
     QJsonObject root_obj = JsonDocument.object();
+    root_obj["reply"] = reply;
     root_obj["reply type"] = QString("ERR");
     root_obj["UUID"] = currentUUID;
     JsonDocument = QJsonDocument(root_obj);
