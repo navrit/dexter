@@ -111,7 +111,7 @@ private:
 signals:
     void takeImage();
     void takeAndSaveImageSequence();
-    void saveImageSignal(QString filePath);
+    void saveImageSignal(QString filePath); //! TODO more error checking
     void setExposure(int microseconds);
     void setNumberOfFrames(int number_of_frames);
     void setThreshold(int threshold, int value);
@@ -119,10 +119,10 @@ signals:
     void setCSM(bool active);
     void loadDefaultEqualisation();
     void loadEqualisation(QString filePath);
-    void setReadoutMode(QString mode);
-    void setReadoutFrequency(uint16_t frequency); //! in Hz
-    void loadConfiguration(QString filePath);
-    void setNumberOfAverages(uint64_t number_of_averages); //! Should I really do this?
+    void setReadoutMode(QString mode); //! TODO IMPLEMENT
+    void setReadoutFrequency(uint16_t frequency); //! in Hz //! TODO IMPLEMENT
+    void loadConfiguration(QString filePath); //! TODO IMPLEMENT
+    void setNumberOfAverages(uint64_t number_of_averages); //! Should I really do this? //! TODO IMPLEMENT
 
 public slots:
     void addressChanged_PUB(QString addr); //! Apparently you cannot change addresses for an existing socket or something ???

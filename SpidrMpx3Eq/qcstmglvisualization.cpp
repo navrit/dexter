@@ -284,7 +284,7 @@ QString QCstmGLVisualization::getStatsString_deviceId()
 void QCstmGLVisualization::saveImage(QString filename)
 {
     if (filename == "") {
-        filename = QDir::homePath() + QString::number( QDateTime::currentDateTime().toTime_t() );
+        filename = QDir::homePath() + QDir::separator() + QString::number( QDateTime::currentDateTime().toTime_t() );
     }
     _mpx3gui->getDataset()->toTIFF(filename);
 }
@@ -1419,14 +1419,17 @@ void QCstmGLVisualization::takeAndSaveImageSequence()
 #endif
 
     ui->saveCheckBox->setChecked(true);
-    ui->saveLineEdit->setText(QDir::homePath());
+    ui->saveLineEdit->setText(QDir::homePath() + QDir::separator());
     ui->saveAllCheckBox->setChecked(true);
+    _mpx3gui->zero_data();
+    StartDataTaking();
 
     emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::saveImageSlot(QString filePath)
 {
+    //! TODO More error checking here
     saveImage(filePath);
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ \n\tSaved raw image as tiff to :" << filePath;

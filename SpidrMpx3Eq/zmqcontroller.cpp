@@ -253,8 +253,14 @@ void zmqController::processEvents()
         } else if ( JsonContains(root_obj, "command", "set readout mode") ) {
             qDebug() << "[INFO]\tZMQ SET READOUT MODE :"  << root_obj["command"].toString();
 
+            QString arg1 = root_obj["arg1"].toString();
+            emit setReadoutMode(arg1);
+
         } else if ( JsonContains(root_obj, "command", "set readout frequency") ) {
             qDebug() << "[INFO]\tZMQ SET READOUT FREQUENCY :"  << root_obj["command"].toString();
+
+            QString arg1 = root_obj["arg1"].toInt();
+            setReadoutFrequency(root_obj);
 
         } else if ( JsonContains(root_obj, "command", "load configuration") ) {
             qDebug() << "[INFO]\tZMQ LOAD CONFIGURATION FILE :"  << root_obj["command"].toString();
