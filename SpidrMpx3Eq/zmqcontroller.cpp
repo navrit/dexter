@@ -449,8 +449,12 @@ void zmqController::sendZmqMessage()
 //    }
 #endif
 
+    QRegExp rx("(\\\"UUID\\\":)\"(\\d+)\"");
+    QString response = QString(JsonDocument.toJson()).replace("\n","").replace("    ","").replace(": ",":").replace(rx,"\\1\\2");
+
     //! This is just how you construct the QList of QByteArrays, super weird
-    const QList<QByteArray> outList = QList<QByteArray>() << QString(JsonDocument.toJson()).toLocal8Bit().replace("\n","").replace("    ","").replace(": ",":");
+    const QList<QByteArray> outList = QList<QByteArray>() << response.toLocal8Bit();
+
     QZmq_PUB_socket->setWriteQueueEnabled(false); //! This probably isn't necessary
     QZmq_PUB_socket->write(outList);
 }
