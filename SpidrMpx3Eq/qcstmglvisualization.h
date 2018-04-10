@@ -326,7 +326,7 @@ signals:
 
     //! Used for ZMQ
     void someCommandHasFinished_Successfully();
-    void someCommandHasFailed();
+    void someCommandHasFailed(QString reply="");
 
 };
 

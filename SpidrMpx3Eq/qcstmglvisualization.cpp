@@ -18,6 +18,7 @@
 #include <QDialog>
 #include <QDebug>
 #include <QMessageBox>
+#include <QDateTime>
 
 QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     QWidget(parent),
@@ -283,7 +284,7 @@ QString QCstmGLVisualization::getStatsString_deviceId()
 void QCstmGLVisualization::saveImage(QString filename)
 {
     if (filename == "") {
-        filename = QDir::homePath();
+        filename = QDir::homePath() + QString::number( QDateTime::currentDateTime().toTime_t() );
     }
     _mpx3gui->getDataset()->toTIFF(filename);
 }
@@ -1396,16 +1397,32 @@ void QCstmGLVisualization::shortcutFrameNumber()
 void QCstmGLVisualization::takeImage()
 {
     //! Delete current image
-    //! Trigger start data taking
     //! Turn off autosave
+    //! Trigger start data taking
+#ifdef QT_DEBUG
     qDebug() << ("[INFO]\tZMQ \n\t + Delete current image \n\t + Trigger start data taking \n\t + Turn off autosave");
+#endif
+
+    _mpx3gui->zero_data();
+    ui->saveCheckBox->setChecked(false);
+    StartDataTaking();
+
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::takeAndSaveImageSequence()
 {
     //! Activate autosave to home directory or whatever
     //! Trigger data taking
-    qDebug() << ("[INFO]\tZMQ NOT IMPLEMENTED \n\t + Activate autosave to home directory or whatever \n\t + Trigger data taking");
+#ifdef QT_DEBUG
+    qDebug() << ("[INFO]\tZMQ Activate autosave to home directory or whatever \n\t + Trigger data taking");
+#endif
+
+    ui->saveCheckBox->setChecked(true);
+    ui->saveLineEdit->setText(QDir::homePath());
+    ui->saveAllCheckBox->setChecked(true);
+
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::saveImageSlot(QString filePath)
@@ -1432,7 +1449,7 @@ void QCstmGLVisualization::setExposure(int microseconds)
 
         emit someCommandHasFinished_Successfully();
     } else {
-        emit someCommandHasFailed();
+        emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : Could not set exposure"));
     }
 
 }
@@ -1448,6 +1465,8 @@ void QCstmGLVisualization::setThreshold(int threshold, int value)
 {
     //! Set specified threshold to value
     qDebug() << "[INFO]\tZMQ NOT IMPLEMENTED \n\t Set threshold " << threshold << "to value " << value;
+
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::setGainMode(int mode)
@@ -1471,16 +1490,22 @@ void QCstmGLVisualization::setCSM(bool active)
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ Set CSM:" << active;
 #endif
+
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::loadDefaultEqualisation()
 {
     _mpx3gui->getEqualization()->LoadEqualization(false);
+
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::loadEqualisation(QString path)
 {
     _mpx3gui->getEqualization()->LoadEqualization(false, path);
+
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::setReadoutMode(QString mode)
@@ -1493,6 +1518,7 @@ void QCstmGLVisualization::setReadoutMode(QString mode)
         index = _mpx3gui->getConfigMonitoring()->getUI()->operationModeComboBox->findText("Continuous");
     } else {
         qDebug() << "[ERROR]\tZMQ could not set readout mode : " << mode;
+        emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : Could not set readout mode"));
         return;
     }
 
@@ -1500,6 +1526,8 @@ void QCstmGLVisualization::setReadoutMode(QString mode)
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ Set Readout mode:" << mode;
 #endif
+
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::setReadoutFrequency(uint16_t frequency)
@@ -1511,12 +1539,16 @@ void QCstmGLVisualization::setReadoutFrequency(uint16_t frequency)
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ Set CRW frequency:" << frequency;
 #endif
+
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::loadConfiguration(QString filePath)
 {
     //! From default location unless otherwise specfied
     qDebug() << "[INFO]\tZMQ NOT IMPLEMENTED \n\t Load configuration from:" << filePath;
+
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::setNumberOfAverages(uint64_t number_of_averages)
@@ -1526,6 +1558,8 @@ void QCstmGLVisualization::setNumberOfAverages(uint64_t number_of_averages)
     //! Set number of frames
     //! Normalise image to 12 bit?
     qDebug() << "[INFO]\tZMQ NOT IMPLEMENTED \n\t set number of averages:" << number_of_averages;
+
+    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){

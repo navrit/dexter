@@ -229,7 +229,7 @@ void zmqController::processEvents()
             } else if (arg1.contains("false") || arg1.contains("off")) {
                 emit setCSM(false);
             } else {
-                qDebug() << "[INFO]";
+                emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : Could not set CSM"));
             }
 
         } else if ( JsonContains(root_obj, "command", "load default equalisation")) {
@@ -247,7 +247,7 @@ void zmqController::processEvents()
                 emit loadEqualisation(arg1);
             } else {
                 qDebug() << "[ERROR]\tZMQ failed to load non-default equalisation from :" << arg1;
-                someCommandHasFailed();
+                emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : failed to load non-default equalisation from") + arg1);
             }
 
         } else if ( JsonContains(root_obj, "command", "set readout mode") ) {
@@ -275,7 +275,7 @@ void zmqController::processEvents()
 void zmqController::takeImage(QJsonObject obj)
 {
 #ifdef QT_DEBUG
-    qDebug() << "[INFO]\tZMQ TAKE IMAGE :"  << obj["command"].toString();
+    qDebug() << "[INFO]\tZMQ TAKE IMAGE : "  << obj["command"].toString();
 #endif
     if (isConnectedToSPIDR) {
         emit takeImage();
@@ -289,7 +289,7 @@ void zmqController::takeImage(QJsonObject obj)
 void zmqController::takeAndSaveImageSequence(QJsonObject obj)
 {
 #ifdef QT_DEBUG
-    qDebug() << "[INFO]\tZMQ TAKE AND SAVE IMAGE SEQUENCE :"  << obj["command"].toString();
+    qDebug() << "[INFO]\tZMQ TAKE AND SAVE IMAGE SEQUENCE : "  << obj["command"].toString();
 #endif
     if (isConnectedToSPIDR) {
         emit takeAndSaveImageSequence();
@@ -303,7 +303,7 @@ void zmqController::takeAndSaveImageSequence(QJsonObject obj)
 void zmqController::saveImage(QJsonObject obj)
 {
 #ifdef QT_DEBUG
-    qDebug() << "[INFO]\tZMQ SAVE IMAGE :"  << obj["command"].toString() << obj["arg1"].toString();
+    qDebug() << "[INFO]\tZMQ SAVE IMAGE : "  << obj["command"].toString() << obj["arg1"].toString();
 #endif
     if (isConnectedToSPIDR) {
         emit saveImageSignal(obj["arg1"].toString());
@@ -319,7 +319,7 @@ void zmqController::setExposure(QJsonObject obj)
     Q_UNUSED(obj);
 #ifdef QT_DEBUG
 
-    qDebug() << "[INFO]\tZMQ SET EXPOSURE :"  << obj["command"].toString() << obj["arg1"].toString().toInt();
+    qDebug() << "[INFO]\tZMQ SET EXPOSURE : "  << obj["command"].toString() << obj["arg1"].toString().toInt();
 #endif
 
     bool ok;
@@ -338,7 +338,7 @@ void zmqController::setExposure(QJsonObject obj)
 void zmqController::setNumberOfFrames(QJsonObject obj)
 {
 #ifdef QT_DEBUG
-    qDebug() << "[INFO]\tZMQ SET NUMBER OF FRAMES :"  << obj["command"].toString() << obj["arg1"].toString();
+    qDebug() << "[INFO]\tZMQ SET NUMBER OF FRAMES : "  << obj["command"].toString() << obj["arg1"].toString();
 #endif
 
     bool ok;
@@ -346,14 +346,14 @@ void zmqController::setNumberOfFrames(QJsonObject obj)
     if (ok && arg1 >= 0) {
         emit setNumberOfFrames(arg1);
     } else {
-        someCommandHasFailed( QString("DEXTER --> ACQUILA : Invalid number of frames requested" + QString::number(arg1)));
+        someCommandHasFailed( QString("DEXTER --> ACQUILA : Invalid number of frames requested : " + QString::number(arg1)));
     }
 }
 
 void zmqController::setThreshold(QJsonObject obj)
 {
 #ifdef QT_DEBUG
-    qDebug() << "[INFO]\tZMQ SET THRESHOLD :"  << obj["command"].toString() << obj["arg1"].toString() << obj["arg2"].toString();
+    qDebug() << "[INFO]\tZMQ SET THRESHOLD : "  << obj["command"].toString() << obj["arg1"].toString() << obj["arg2"].toString();
 #endif
 
     //! TODO Test it
