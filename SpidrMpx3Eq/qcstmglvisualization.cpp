@@ -1467,7 +1467,12 @@ void QCstmGLVisualization::setNumberOfFrames(int number_of_frames)
 void QCstmGLVisualization::setThreshold(int threshold, int value)
 {
     //! Set specified threshold to value
-    qDebug() << "[INFO]\tZMQ NOT IMPLEMENTED \n\t Set threshold " << threshold << "to value " << value;
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ Set threshold " << threshold << "to value " << value;
+#endif
+
+    //! TODO this operates on all chips simultaneously (check this), make is operate on a specified chip
+    _mpx3gui->getDACs()->changeDAC(threshold, value);
 
     emit someCommandHasFinished_Successfully();
 }
@@ -1517,9 +1522,9 @@ void QCstmGLVisualization::setReadoutMode(QString mode)
     int index = -1;
     mode = mode.toLower();
     if ( ( mode.contains( "srw" )) || ( mode.contains("seq") ) ) {
-        index = _mpx3gui->getConfigMonitoring()->getUI()->operationModeComboBox->findText("Sequential");
+        index = _mpx3gui->getConfigMonitoring()->getUI()->operationModeComboBox->findText("Sequential R/W");
     } else if ( ( mode.contains("crw") ) || ( mode.contains("cont")) ) {
-        index = _mpx3gui->getConfigMonitoring()->getUI()->operationModeComboBox->findText("Continuous");
+        index = _mpx3gui->getConfigMonitoring()->getUI()->operationModeComboBox->findText("Continuous R/W");
     } else {
         qDebug() << "[ERROR]\tZMQ could not set readout mode : " << mode;
         emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : Could not set readout mode"));
@@ -1537,22 +1542,30 @@ void QCstmGLVisualization::setReadoutMode(QString mode)
 void QCstmGLVisualization::setReadoutFrequency(uint16_t frequency)
 {
     //! Will switch to CRW, then set the frequency
-    setReadoutMode("Continuous");
-    _mpx3gui->getConfigMonitoring()->getUI()->contRWFreq->setValue(frequency);
     _mpx3gui->getConfig()->setContRWFreq(frequency);
+    _mpx3gui->getConfigMonitoring()->getUI()->contRWFreq->setValue(frequency);
+    setReadoutMode("Continuous R/W");
+
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ Set CRW frequency:" << frequency;
 #endif
 
-    emit someCommandHasFinished_Successfully();
+    //! Don't need a command has finished here since it calls setReadoutMode()
+//    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::loadConfiguration(QString filePath)
 {
     //! From default location unless otherwise specfied
-    qDebug() << "[INFO]\tZMQ NOT IMPLEMENTED \n\t Load configuration from:" << filePath;
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ Load configuration from:" << filePath;
+#endif
 
-    emit someCommandHasFinished_Successfully();
+    if (_mpx3gui->getConfig()->fromJsonFile(filePath, true)) {
+        emit someCommandHasFinished_Successfully();
+    } else {
+        emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : Could not load configuration JSON file from" + filePath));
+    }
 }
 
 void QCstmGLVisualization::setNumberOfAverages(uint64_t number_of_averages)

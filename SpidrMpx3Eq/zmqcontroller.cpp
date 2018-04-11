@@ -350,14 +350,17 @@ void zmqController::setThreshold(QJsonObject obj)
                 emit setThreshold(arg1, arg2);
             } else {
                 //! Threshold value set to a dumb value
+                qDebug() << "[ERROR]\tZMQ Threshold value set to an invalid value : " << obj["command"].toString() << obj["arg1"].toString() << obj["arg2"].toString();
                 someCommandHasFailed("DEXTER --> ACQUILA : Threshold value set to an invalid value");
             }
         } else {
             //! Specified threshold does not exist, what a fool
+            qDebug() << "[ERROR]\tZMQ Specified threshold does not exist : " << obj["command"].toString() << obj["arg1"].toString() << obj["arg2"].toString();
             someCommandHasFailed("DEXTER --> ACQUILA : Specified threshold does not exist");
         }
     } else {
         //! Could not even parse the arguments, such epic failure!
+        qDebug() << "[ERROR]\tZMQ Could not even parse the arguments : " << obj["command"].toString() << obj["arg1"].toString() << obj["arg2"].toString();
         someCommandHasFailed("DEXTER --> ACQUILA : Could not even parse the arguments");
     }
 }
@@ -409,7 +412,12 @@ void zmqController::loadDefaultEqualisation(QJsonObject obj)
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ LOAD DEFAULT EQUALISATION :"  << obj["command"].toString();
 #endif
-    emit loadDefaultEqualisation();
+    if (isConnectedToSPIDR) {
+        emit loadDefaultEqualisation();
+    } else {
+        emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : Could not load default equalisation, connect to the SPIDR!"));
+    }
+
 }
 
 void zmqController::loadEqualisationFromFolder(QJsonObject obj)
@@ -418,15 +426,20 @@ void zmqController::loadEqualisationFromFolder(QJsonObject obj)
     qDebug() << "[INFO]\tZMQ LOAD EQUALISATION FROM FOLDER:"  << obj["command"].toString() << obj["arg1"].toString();
 #endif
 
-    QString arg1 = obj["arg1"].toString(); //! You actually need to keep the case here, Linux filesystems are mostly case sensitive of course!
+    if (isConnectedToSPIDR) {
+        QString arg1 = obj["arg1"].toString(); //! You actually need to keep the case here, Linux filesystems are mostly case sensitive of course!
 
-    if ( folderExists(arg1) && fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "adj_0"))) && fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "mask_0"))) ) {
-        //! Probably fine to proceed to loading the equalisation
-        emit loadEqualisation(arg1);
+        if ( folderExists(arg1) && fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "adj_0"))) && fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "mask_0"))) ) {
+            //! Probably fine to proceed to loading the equalisation
+            emit loadEqualisation(arg1);
+        } else {
+            qDebug() << "[ERROR]\tZMQ failed to load non-default equalisation from :" << arg1;
+            emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : failed to load non-default equalisation from") + arg1);
+        }
     } else {
-        qDebug() << "[ERROR]\tZMQ failed to load non-default equalisation from :" << arg1;
-        emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : failed to load non-default equalisation from") + arg1);
+        emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : Could not load equalisation from folder, connect to the SPIDR!"));
     }
+
 }
 
 void zmqController::setReadoutMode(QJsonObject obj)
@@ -463,12 +476,12 @@ void zmqController::loadConfiguration(QJsonObject obj)
 
     QString arg1 = obj["arg1"].toString(); //! You actually need to keep the case here, Linux filesystems are mostly case sensitive of course!
 
-    if ( folderExists(arg1) && ( fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "config.json"))) || fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "mpx3.json")))) ) {
+    if ( fileExists( QDir::cleanPath( QString(arg1))) )  {
         //! Probably fine to proceed
         emit loadConfiguration(arg1);
     } else {
         qDebug() << "[ERROR]\tZMQ failed to load configuration from :" << arg1;
-        emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : failed to load configuration from") + arg1);
+        emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : failed to load configuration from : ") + arg1);
     }
 }
 
