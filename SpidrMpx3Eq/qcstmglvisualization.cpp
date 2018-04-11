@@ -1515,9 +1515,10 @@ void QCstmGLVisualization::setReadoutMode(QString mode)
 {
     //! Sequential or CRW
     int index = -1;
-    if ( mode.contains( "Sequential" ) ) {
+    mode = mode.toLower();
+    if ( ( mode.contains( "srw" )) || ( mode.contains("seq") ) ) {
         index = _mpx3gui->getConfigMonitoring()->getUI()->operationModeComboBox->findText("Sequential");
-    } else if ( mode.contains( "Continuous" ) ) {
+    } else if ( ( mode.contains("crw") ) || ( mode.contains("cont")) ) {
         index = _mpx3gui->getConfigMonitoring()->getUI()->operationModeComboBox->findText("Continuous");
     } else {
         qDebug() << "[ERROR]\tZMQ could not set readout mode : " << mode;

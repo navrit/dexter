@@ -221,52 +221,22 @@ void zmqController::processEvents()
             setGainMode(root_obj);
 
         } else if ( JsonContains(root_obj, "command", "set csm")) {
-            qDebug() << "[INFO]\tZMQ SET CSM :"  << root_obj["command"].toString() << root_obj["arg1"].toString();
-
-            QString arg1 = root_obj["arg1"].toString().toLower();
-            if (arg1.contains("true") || arg1.contains("on")) {
-                emit setCSM(true);
-            } else if (arg1.contains("false") || arg1.contains("off")) {
-                emit setCSM(false);
-            } else {
-                emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : Could not set CSM"));
-            }
+            setCsm(root_obj);
 
         } else if ( JsonContains(root_obj, "command", "load default equalisation")) {
-            qDebug() << "[INFO]\tZMQ LOAD DEFAULT EQUALISATION :"  << root_obj["command"].toString();
-
-            emit loadDefaultEqualisation();
+            loadDefaultEqualisation(root_obj);
 
         } else if ( JsonContains(root_obj, "command", "load equalisation from folder")) {
-            qDebug() << "[INFO]\tZMQ LOAD EQUALISATION FROM FOLDER:"  << root_obj["command"].toString() << root_obj["arg1"].toString();
-
-            QString arg1 = root_obj["arg1"].toString(); //! You actually need to keep the case here, Linux filesystems are mostly case sensitive of course!
-
-            if ( folderExists(arg1) && fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "adj_0"))) && fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "mask_0"))) ) {
-                //! Probably fine to proceed to loading the equalisation
-                emit loadEqualisation(arg1);
-            } else {
-                qDebug() << "[ERROR]\tZMQ failed to load non-default equalisation from :" << arg1;
-                emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : failed to load non-default equalisation from") + arg1);
-            }
+            loadEqualisationFromFolder(root_obj);
 
         } else if ( JsonContains(root_obj, "command", "set readout mode") ) {
-            qDebug() << "[INFO]\tZMQ SET READOUT MODE :"  << root_obj["command"].toString();
-
-            QString arg1 = root_obj["arg1"].toString();
-            emit setReadoutMode(arg1);
+            setReadoutMode(root_obj);
 
         } else if ( JsonContains(root_obj, "command", "set readout frequency") ) {
-            qDebug() << "[INFO]\tZMQ SET READOUT FREQUENCY :"  << root_obj["command"].toString();
-
-            QString arg1 = root_obj["arg1"].toInt();
             setReadoutFrequency(root_obj);
 
         } else if ( JsonContains(root_obj, "command", "load configuration") ) {
-            qDebug() << "[INFO]\tZMQ LOAD CONFIGURATION FILE :"  << root_obj["command"].toString();
-
-        } else if ( JsonContains(root_obj, "command", "set number of averages") ) {
-            qDebug() << "[INFO]\tZMQ SET NUMBER OF AVERAGES :" << root_obj["command"].toString();
+            loadConfiguration(root_obj);
 
         } else {
             qDebug() << "[ERROR]\tZMQ Failed to parse command or something else... : " << root_obj["UUID"].toString() << root_obj["command"].toString() << "\targ1: " << root_obj["arg1"].toString();
@@ -415,6 +385,91 @@ void zmqController::setGainMode(QJsonObject obj)
     }
 
     emit setGainMode(val);
+}
+
+void zmqController::setCsm(QJsonObject obj)
+{
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ SET CSM :"  << obj["command"].toString() << obj["arg1"].toString();
+#endif
+
+    QString arg1 = obj["arg1"].toString().toLower();
+    if (arg1.contains("true") || arg1.contains("on")) {
+        emit setCSM(true);
+    } else if (arg1.contains("false") || arg1.contains("off")) {
+        emit setCSM(false);
+    } else {
+        emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : Could not set CSM"));
+    }
+}
+
+void zmqController::loadDefaultEqualisation(QJsonObject obj)
+{
+    Q_UNUSED(obj);
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ LOAD DEFAULT EQUALISATION :"  << obj["command"].toString();
+#endif
+    emit loadDefaultEqualisation();
+}
+
+void zmqController::loadEqualisationFromFolder(QJsonObject obj)
+{
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ LOAD EQUALISATION FROM FOLDER:"  << obj["command"].toString() << obj["arg1"].toString();
+#endif
+
+    QString arg1 = obj["arg1"].toString(); //! You actually need to keep the case here, Linux filesystems are mostly case sensitive of course!
+
+    if ( folderExists(arg1) && fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "adj_0"))) && fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "mask_0"))) ) {
+        //! Probably fine to proceed to loading the equalisation
+        emit loadEqualisation(arg1);
+    } else {
+        qDebug() << "[ERROR]\tZMQ failed to load non-default equalisation from :" << arg1;
+        emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : failed to load non-default equalisation from") + arg1);
+    }
+}
+
+void zmqController::setReadoutMode(QJsonObject obj)
+{
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ SET READOUT MODE :"  << obj["command"].toString();
+#endif
+    QString arg1 = obj["arg1"].toString();
+
+    //! Error handling etc done in qcstmglvisualisation
+    emit setReadoutMode(arg1);
+}
+
+void zmqController::setReadoutFrequency(QJsonObject obj)
+{
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ SET READOUT FREQUENCY :"  << obj["command"].toString();
+#endif
+
+    bool ok;
+    int arg1 = obj["arg1"].toString().toInt(&ok);
+    if (ok && arg1 >= 0) {
+        emit setReadoutFrequency(uint16_t(arg1));
+    } else {
+        someCommandHasFailed( QString("DEXTER --> ACQUILA : Invalid readout frequency requested : " + QString::number(arg1)));
+    }
+}
+
+void zmqController::loadConfiguration(QJsonObject obj)
+{
+#ifdef QT_DEBUG
+    qDebug() << "[INFO]\tZMQ LOAD CONFIGURATION FILE :"  << obj["command"].toString();
+#endif
+
+    QString arg1 = obj["arg1"].toString(); //! You actually need to keep the case here, Linux filesystems are mostly case sensitive of course!
+
+    if ( folderExists(arg1) && ( fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "config.json"))) || fileExists( QDir::cleanPath( QString(arg1 + QDir::separator() + "mpx3.json")))) ) {
+        //! Probably fine to proceed
+        emit loadConfiguration(arg1);
+    } else {
+        qDebug() << "[ERROR]\tZMQ failed to load configuration from :" << arg1;
+        emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : failed to load configuration from") + arg1);
+    }
 }
 
 bool zmqController::JsonContains(QJsonObject obj, QString key, QString string)

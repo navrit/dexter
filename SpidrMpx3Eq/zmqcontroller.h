@@ -107,6 +107,12 @@ private:
     void setNumberOfFrames(QJsonObject obj);
     void setThreshold(QJsonObject obj);
     void setGainMode(QJsonObject obj);
+    void setCsm(QJsonObject obj);
+    void loadDefaultEqualisation(QJsonObject obj);
+    void loadEqualisationFromFolder(QJsonObject obj);
+    void setReadoutMode(QJsonObject obj);
+    void setReadoutFrequency(QJsonObject obj);
+    void loadConfiguration(QJsonObject obj);
 
 signals:
     void takeImage();
@@ -122,7 +128,6 @@ signals:
     void setReadoutMode(QString mode); //! TODO IMPLEMENT
     void setReadoutFrequency(uint16_t frequency); //! in Hz //! TODO IMPLEMENT
     void loadConfiguration(QString filePath); //! TODO IMPLEMENT
-    void setNumberOfAverages(uint64_t number_of_averages); //! Should I really do this? //! TODO IMPLEMENT
 
 public slots:
     void addressChanged_PUB(QString addr); //! Apparently you cannot change addresses for an existing socket or something ???
