@@ -284,9 +284,10 @@ QString QCstmGLVisualization::getStatsString_deviceId()
 void QCstmGLVisualization::saveImage(QString filename)
 {
     if (filename == "") {
-        filename = QDir::homePath() + QDir::separator() + QString::number( QDateTime::currentDateTime().toTime_t() );
+        filename = QDir::homePath();
     }
-    _mpx3gui->getDataset()->toTIFF(filename);
+    _mpx3gui->getVisualization()->GetUI()->saveLineEdit->setText(filename);
+    _mpx3gui->save_data(true, 0, "TIFF");
 }
 
 void QCstmGLVisualization::saveImage(QString filename, QString corrMethod)
@@ -297,7 +298,7 @@ void QCstmGLVisualization::saveImage(QString filename, QString corrMethod)
     }
 }
 
-void QCstmGLVisualization::StartDataTaking(QString mode) {
+void QCstmGLVisualization::StartDataTaking() {
 
     if ( !_dataTakingThread ) {
 
@@ -1403,11 +1404,13 @@ void QCstmGLVisualization::takeImage()
     qDebug() << ("[INFO]\tZMQ \n\t + Delete current image \n\t + Trigger start data taking \n\t + Turn off autosave");
 #endif
 
+    zmqRunning = true;
+
     _mpx3gui->zero_data();
     ui->saveCheckBox->setChecked(false);
     StartDataTaking();
 
-    emit someCommandHasFinished_Successfully();
+    //! Emit someCommandHasFinished_Successfully() in dataTakingFinished
 }
 
 void QCstmGLVisualization::takeAndSaveImageSequence()
@@ -1418,13 +1421,15 @@ void QCstmGLVisualization::takeAndSaveImageSequence()
     qDebug() << ("[INFO]\tZMQ Activate autosave to home directory or whatever \n\t + Trigger data taking");
 #endif
 
+    zmqRunning = true;
+
     ui->saveCheckBox->setChecked(true);
     ui->saveLineEdit->setText(QDir::homePath() + QDir::separator());
     ui->saveAllCheckBox->setChecked(true);
     _mpx3gui->zero_data();
     StartDataTaking();
 
-    emit someCommandHasFinished_Successfully();
+    //! Emit someCommandHasFinished_Successfully() in dataTakingFinished
 }
 
 void QCstmGLVisualization::saveImageSlot(QString filePath)
@@ -1511,6 +1516,10 @@ void QCstmGLVisualization::loadDefaultEqualisation()
 
 void QCstmGLVisualization::loadEqualisation(QString path)
 {
+    if (path[path.length()-1] != QDir::separator()) {
+        path = path.append(QDir::separator());
+    }
+
     _mpx3gui->getEqualization()->LoadEqualization(false, path);
 
     emit someCommandHasFinished_Successfully();
@@ -1539,12 +1548,13 @@ void QCstmGLVisualization::setReadoutMode(QString mode)
     emit someCommandHasFinished_Successfully();
 }
 
-void QCstmGLVisualization::setReadoutFrequency(uint16_t frequency)
+void QCstmGLVisualization::setReadoutFrequency(int frequency)
 {
     //! Will switch to CRW, then set the frequency
-    _mpx3gui->getConfig()->setContRWFreq(frequency);
-    _mpx3gui->getConfigMonitoring()->getUI()->contRWFreq->setValue(frequency);
     setReadoutMode("Continuous R/W");
+    _mpx3gui->getConfig()->setContRWFreq(frequency);
+    _mpx3gui->getConfigMonitoring()->setReadoutFrequency(frequency);
+    ui->triggerLengthSpinBox->setValue(frequency);
 
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ Set CRW frequency:" << frequency;
@@ -1566,17 +1576,6 @@ void QCstmGLVisualization::loadConfiguration(QString filePath)
     } else {
         emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : Could not load configuration JSON file from" + filePath));
     }
-}
-
-void QCstmGLVisualization::setNumberOfAverages(uint64_t number_of_averages)
-{
-    //! Delete current image
-    //! Set integrate ON
-    //! Set number of frames
-    //! Normalise image to 12 bit?
-    qDebug() << "[INFO]\tZMQ NOT IMPLEMENTED \n\t set number of averages:" << number_of_averages;
-
-    emit someCommandHasFinished_Successfully();
 }
 
 void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
@@ -2046,29 +2045,29 @@ void QCstmGLVisualization::on_resetViewPushButton_clicked(){
 
 //! Clear saveLineEdit on_saveCheckBox_clicked by a user, every time
 void QCstmGLVisualization::on_saveCheckBox_clicked(){
-    ui->saveLineEdit->clear();
-
-    //qDebug() << ui->saveCheckBox->isChecked();
-
-    //! Open file dialog, get path and set saveLineEdit to given path and continue
-    if(ui->saveCheckBox->isChecked()){
-
-        //! Get the Absolute folder path
-        QString msg = tr("Select a directory to auto-save recorded files to");
-        QString path = getPath(msg);
-
-        //! GUI update - save LineEdit set to path from dialog
-        ui->saveLineEdit->setText(path);
-
-        //! If user selected nothing, path comes back empty (or "/" ?)
-        if(path.isEmpty()){
-            ui->saveCheckBox->setChecked(0);
-            ui->saveLineEdit->clear();
-        }
-
-        //! When finished, see data_taking_finished() where the data is saved
-
+    if ( zmqRunning ) {
         return;
+    } else {
+        ui->saveLineEdit->clear();
+
+        //! Open file dialog, get path and set saveLineEdit to given path and continue
+        if(ui->saveCheckBox->isChecked()){
+
+            //! Get the Absolute folder path
+            QString msg = tr("Select a directory to auto-save recorded files to");
+            QString path = getPath(msg);
+
+            //! GUI update - save LineEdit set to path from dialog
+            ui->saveLineEdit->setText(path);
+
+            //! If user selected nothing, path comes back empty (or "/" ?)
+            if(path.isEmpty()){
+                ui->saveCheckBox->setChecked(0);
+                ui->saveLineEdit->clear();
+            }
+
+            //! When finished, see data_taking_finished() where the data is saved
+        }
     }
 }
 
@@ -2082,6 +2081,10 @@ void QCstmGLVisualization::consumerBufferFull(int)
 
 void QCstmGLVisualization::on_saveAllCheckBox_toggled(bool checked)
 {
+    if ( zmqRunning ) {
+        ui->saveCheckBox->setChecked( true );
+        return;
+    }
     if ( checked ) {
         if ( ! ui->saveCheckBox->isChecked() ) {
             ui->saveCheckBox->setChecked( true );

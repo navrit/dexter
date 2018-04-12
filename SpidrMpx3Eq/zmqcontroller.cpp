@@ -67,9 +67,8 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
     connect(this, SIGNAL(loadDefaultEqualisation()), _mpx3gui->getVisualization(), SLOT(loadDefaultEqualisation()));
     connect(this, SIGNAL(loadEqualisation(QString)), _mpx3gui->getVisualization(), SLOT(loadEqualisation(QString)));
     connect(this, SIGNAL(setReadoutMode(QString)), _mpx3gui->getVisualization(), SLOT(setReadoutMode(QString)));
-    connect(this, SIGNAL(setReadoutFrequency(uint16_t)), _mpx3gui->getVisualization(), SLOT(setReadoutFrequency(uint16_t)));
+    connect(this, SIGNAL(setReadoutFrequency(int)), _mpx3gui->getVisualization(), SLOT(setReadoutFrequency(int)));
     connect(this, SIGNAL(loadConfiguration(QString)), _mpx3gui->getVisualization(), SLOT(loadConfiguration(QString)));
-    connect(this, SIGNAL(setNumberOfAverages(uint64_t)), _mpx3gui->getVisualization(), SLOT(setNumberOfAverages(uint64_t)));
     // -------------------------------------------------------------------
 }
 
@@ -336,32 +335,24 @@ void zmqController::setThreshold(QJsonObject obj)
     //! Arg1: Which threshold to change
     //! Arg2: Threshold value (DAC units)
 
-    bool ok;
-    int arg1 = obj["arg1"].toString().toInt(&ok);
-    bool ok2;
-    int arg2 = obj["arg2"].toString().toInt(&ok2);
+    int arg1 = obj["arg1"].toInt(-1);
+    int arg2 = obj["arg2"].toInt(-1);
 
     //! May want to handle the failures better
 
-    if (ok && ok2) {
-        if (arg1 >= 0 && arg1 <= 7) {
-            if (arg2 >= 0 && arg2 <= 511) {
-                //! SUCCESS, this is actually valid input
-                emit setThreshold(arg1, arg2);
-            } else {
-                //! Threshold value set to a dumb value
-                qDebug() << "[ERROR]\tZMQ Threshold value set to an invalid value : " << obj["command"].toString() << obj["arg1"].toString() << obj["arg2"].toString();
-                someCommandHasFailed("DEXTER --> ACQUILA : Threshold value set to an invalid value");
-            }
+    if (arg1 >= 0 && arg1 <= 7) {
+        if (arg2 >= 0 && arg2 <= 511) {
+            //! SUCCESS, this is actually valid input
+            emit setThreshold(arg1, arg2);
         } else {
-            //! Specified threshold does not exist, what a fool
-            qDebug() << "[ERROR]\tZMQ Specified threshold does not exist : " << obj["command"].toString() << obj["arg1"].toString() << obj["arg2"].toString();
-            someCommandHasFailed("DEXTER --> ACQUILA : Specified threshold does not exist");
+            //! Threshold value set to a dumb value
+            qDebug() << "[ERROR]\tZMQ Threshold value set to an invalid value : " << obj["command"].toString() << obj["arg1"].toString() << obj["arg2"].toString();
+            someCommandHasFailed("DEXTER --> ACQUILA : Threshold value set to an invalid value");
         }
     } else {
-        //! Could not even parse the arguments, such epic failure!
-        qDebug() << "[ERROR]\tZMQ Could not even parse the arguments : " << obj["command"].toString() << obj["arg1"].toString() << obj["arg2"].toString();
-        someCommandHasFailed("DEXTER --> ACQUILA : Could not even parse the arguments");
+        //! Specified threshold does not exist, what a fool
+        qDebug() << "[ERROR]\tZMQ Specified threshold does not exist : " << obj["command"].toString() << obj["arg1"].toString() << obj["arg2"].toString();
+        someCommandHasFailed("DEXTER --> ACQUILA : Specified threshold does not exist");
     }
 }
 
@@ -459,10 +450,9 @@ void zmqController::setReadoutFrequency(QJsonObject obj)
     qDebug() << "[INFO]\tZMQ SET READOUT FREQUENCY :"  << obj["command"].toString();
 #endif
 
-    bool ok;
-    int arg1 = obj["arg1"].toString().toInt(&ok);
-    if (ok && arg1 >= 0) {
-        emit setReadoutFrequency(uint16_t(arg1));
+    int arg1 = obj["arg1"].toInt(-1);
+    if (arg1 >= 0 && arg1 <= 2000) {
+        emit setReadoutFrequency(arg1);
     } else {
         someCommandHasFailed( QString("DEXTER --> ACQUILA : Invalid readout frequency requested : " + QString::number(arg1)));
     }

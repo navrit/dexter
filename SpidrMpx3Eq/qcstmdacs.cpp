@@ -96,6 +96,11 @@ void QCstmDacs::SetDACValueLocalConfig(int chip, int dacIndex, int val) {
     _mpx3gui->getConfig()->setDACValue(chip, dacIndex, val);
 }
 
+void QCstmDacs::changeDAC(int threshold, int value)
+{
+    slideAndSpin(threshold, value);
+}
+
 UpdateDACsThread * QCstmDacs::FillDACValues( int devId, bool updateInTheChip ) {
 
 

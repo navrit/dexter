@@ -118,6 +118,11 @@ unsigned int QCstmConfigMonitoring::getPixelDepthFromIndex(int indx) {
     return __pixelDepthMap[indx];
 }
 
+void QCstmConfigMonitoring::setReadoutFrequency(int frequency)
+{
+    ui->contRWFreq->setValue(frequency);
+}
+
 QCstmConfigMonitoring::~QCstmConfigMonitoring()
 {
     if( _imageCapture ) delete _imageCapture;

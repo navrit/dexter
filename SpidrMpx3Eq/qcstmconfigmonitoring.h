@@ -43,6 +43,8 @@ public:
     unsigned int getPixelDepthFromIndex(int indx);
     unsigned int getPixelDepth12BitsIndex() { return __pixelDepth12BitsIndex; }
 
+    void setReadoutFrequency(int frequency);
+
 public slots:
 
     void OperationModeSwitched(int indx);

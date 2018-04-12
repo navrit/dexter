@@ -2037,8 +2037,10 @@ void QCstmEqualization::LoadEqualization(bool getPath, QString path) {
 
     //! Part 3: Send equalisation loaded from ... to mpx3gui status bar
     //! Actually send the equalisation data to the status bar
-    emit sig_statusBarClean();
-    emit sig_statusBarAppend(msg, "green");
+    //emit sig_statusBarClean();
+    qDebug() << msg;
+    emit sig_statusBarAppend("Equalisation loaded", "green");
+    //emit sig_statusBarAppend(msg, "green");
 
     // And show
     ShowEqualization( _equalizationShow );

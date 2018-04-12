@@ -81,6 +81,8 @@ public:
     int GetDACValueFromConfig(int chip, int dacIndex);
     void SetDACValueLocalConfig(int chip, int dacIndex, int val);
 
+    void changeDAC(int threshold, int value); //! For all chips
+
 private:
 
     Ui::QCstmDacs * ui;

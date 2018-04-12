@@ -8,13 +8,27 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
+    QPalette p;
+    p = qApp->palette();
+    p.setColor(QPalette::Window, QColor(65,65,65));
+    p.setColor(QPalette::Highlight, QColor(15,90,140));
+    p.setColor(QPalette::ButtonText, QColor(255,255,255));
+    p.setColor(QPalette::Text, QColor(255,255,255));
+    p.setColor(QPalette::WindowText, QColor(255,255,255));
+    p.setColor(QPalette::Base, QColor(40,40,40));
+
     QLoggingCategory::setFilterRules("*.debug=true\nqt.*.debug=false");
 
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tDEBUGGING BUILD";
+    p.setColor(QPalette::Button, QColor(150,0,0));
+    p.setColor(QPalette::Base, QColor(120,0,0));
 #else
     qDebug() << "[INFO]\tRelease mode";
+    p.setColor(QPalette::Button, QColor(60,60,70));
 #endif
+
+    qApp->setPalette(p);
 
     //! Set main application icon
     a.setWindowIcon( QIcon("://icons/ASI/ASI_sq_1100x1100.png"));

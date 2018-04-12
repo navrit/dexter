@@ -58,7 +58,7 @@ class zmqController;
 #define TP_PERIOD 40000 //! In units of 25 ns. 40000 * 25 ns = 1 ms = 1000 Hz
 
 const QString _softwareName = "ASI Dexter";
-const QString _softwareVersion = "0.0.0";
+const QString _softwareVersion = "0.0.0 ZMQ";
 
 #include <stdio.h>
 #include <QCoreApplication>

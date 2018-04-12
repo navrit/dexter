@@ -138,7 +138,7 @@
     "IPConfig": {
         "SpidrControllerIp": "192.168.100.10",
         "SpidrControllerPort": 50000,
-        "ZmqPubAddress": "tcp://192.168.178.9:50001",
-        "ZmqSubAddress": "tcp://192.168.178.9:50000"
+        "ZmqPubAddress": "tcp://127.0.0.1:50001",
+        "ZmqSubAddress": "tcp://127.0.0.1:50000"
     }
 }

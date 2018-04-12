@@ -185,6 +185,8 @@ private:
 
     QString getPath(QString msg);
 
+    bool zmqRunning = false;
+
 private slots:
     void ConnectionStatusChanged(bool connecting);
     void on_percentileRangeRadio_toggled(bool checked);
@@ -236,7 +238,7 @@ private slots:
 
 public slots:
 
-    void StartDataTaking(QString mode = "");
+    void StartDataTaking();
     void setGradient(int index);
     //!Used to inform this object of the availible gradients and their names.
     void availible_gradients_changed(QStringList gradients);
@@ -300,9 +302,8 @@ public slots:
     void loadDefaultEqualisation();
     void loadEqualisation(QString path);
     void setReadoutMode(QString mode);
-    void setReadoutFrequency(uint16_t frequency); //! in Hz
+    void setReadoutFrequency(int frequency); //! in Hz
     void loadConfiguration(QString filePath);
-    void setNumberOfAverages(uint64_t number_of_averages); //! Should I really do this?
 
 signals:
     void taking_data_gui();
