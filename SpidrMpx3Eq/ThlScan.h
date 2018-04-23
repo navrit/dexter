@@ -50,9 +50,7 @@ class ThlScan : public QThread {
 
 public:
 
-	//explicit ThlScan();
 	explicit ThlScan(Mpx3GUI *, QCstmEqualization *);
-	//~ThlScan();
 
 	typedef enum {
 		__adjust_to_global = 0,
@@ -63,7 +61,7 @@ public:
 
 	typedef enum {
 		__BASIC_SCAN = 0,
-		__FINE_TUNNING1_SCAN
+        __FINE_TUNING1_SCAN
 	} scan_type;
 
 	void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
@@ -134,7 +132,7 @@ private:
 	SpidrDaq * _spidrdaq;
 	QCstmPlotHeatmap * _heatmap;
 
-	vector<ScanResults *> _results;		//<! results for all chips
+    vector<ScanResults *> _results;		//! results for all chips
 	vector<int> _workChipsIndx;
 	Dataset * _dataset;
 
@@ -144,7 +142,7 @@ private:
 	map<int, int> _pixelReactiveTHL;
 	set<int> _maskedSet;
 	// Holder for pixels ready.  Used at the beginning of the fine tuning procedure
-	set<int> _fineTunningPixelsEqualized;
+    set<int> _fineTuningPixelsEqualized;
 	set<int> _scheduledForFineTuning;
 
 	// Dedicated to Fine Tuning

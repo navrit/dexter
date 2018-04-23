@@ -35,7 +35,7 @@ ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
     _adjType = __adjust_to_global;
     _stop = false;
     _scanType = __BASIC_SCAN;
-    _fineTunningPixelsEqualized.clear();
+    _fineTuningPixelsEqualized.clear();
     _results.clear();
     _maskedSet.clear();
     _plotdata = 0x0;
@@ -209,11 +209,8 @@ void ThlScan::run() {
     // The normal scan starting from scratch
     if(_scanType == __BASIC_SCAN) EqualizationScan( );
 
-    // This one is a fine tunning scan
-    if(_scanType == __FINE_TUNNING1_SCAN) {
-
-        //string messg = "This may take some time depending on the number of pixels off target.";
-        //QMessageBox::warning ( _equalization, tr("Fine tuning"), tr( messg.c_str() ) );
+    // This one is a fine tuning scan
+    if(_scanType == __FINE_TUNING1_SCAN) {
         FineTuning( );
     }
 }
@@ -245,7 +242,7 @@ void ThlScan::FineTuning() {
     // Rewind local counters
     if ( !_dataset ) _dataset = new Dataset ( __matrix_size_x, __matrix_size_y, _nchipsX*_nchipsY );
     _dataset->clear();
-    // NO REWINDATA IN FINE TUNNING !!!
+    // NO REWINDATA IN FINE TUNING !!!
 
     // Send configuration to the chip
     for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
@@ -331,12 +328,6 @@ void ThlScan::FineTuning() {
                 cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y
                      <<  " | N pixels unmasked = " << ((int)_workChipsIndx.size()*__matrix_size) - nMasked << endl;
 
-                // Decide when to stop trying different adj values for this particular mask
-                //int adjLoops = 0;
-                //while ( ! AdjScanCompleted(_scheduledForFineTuning, _maskedSet) && (adjLoops < _equalization->GetFineTuningLoops()) ) {
-
-
-
                 QString ftLoopProgressS;
                 ftLoopProgressS =  QString::number( adjLoops, 'd', 0 );
                 ftLoopProgressS += "/";
@@ -354,9 +345,6 @@ void ThlScan::FineTuning() {
                 // Rewind reactions counters after making the shift of adjustments
                 RewindReactionCounters( _scheduledForFineTuning );
 
-                // Do THL scans keeping track of the reactive threshold for every adj value
-                //  Using: pixId ---> < (adj,reactTHL) ... > : map<int, vector< pair<int, int> > > _adjReactiveTHLFineTuning;
-
                 // Use the limits detected in the previous scan
                 _minScan = GetDetectedLowScanBoundary(); // _equalization->GetUI()->eqMinSpinBox->value();
                 _maxScan = GetDetectedHighScanBoundary(); // _equalization->GetUI()->eqMaxSpinBox->value();
@@ -373,7 +361,6 @@ void ThlScan::FineTuning() {
 
                     QString thlLabelS;
                     thlLabelS = QString::number( _thlItr, 'd', 0 );
-                    //if ( accelerationApplied ) thlLabelS += " acc";
                     // Send signal to Labels.  Making connections one by one.
                     connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
                     fillText( thlLabelS );
@@ -1151,7 +1138,7 @@ bool ThlScan::OutsideTargetRegion(int devId, int pix, double Nsigma){
 
 /**
  * As the fine tunig is started.  Tag the pixels in order to know who needs rework.
- * The vetolist has been obtained through ExtractFineTunningVetoList and lists the
+ * The vetolist has been obtained through ExtractFineTuningVetoList and lists the
  *   pixels which don't need rework.
  */
 
@@ -1169,7 +1156,7 @@ void ThlScan::TagPixelsEqualizationStatus(set<int> vetoList) {
             // if it is found in the veto-list this pixel is well equalized
             _equalization->GetEqualizationResults(_deviceIndex)->SetStatus( i, Mpx3EqualizationResults::__EQUALIZED );
             // These can be send to the histogram immediately
-            _fineTunningPixelsEqualized.insert( i );
+            _fineTuningPixelsEqualized.insert( i );
         }
 
     }
@@ -1784,16 +1771,16 @@ void ThlScan::UpdateChartPixelsReady(int devId, int setId) {
 
     // <thl, cntr>
     map<int, int> thlCntr;
-    set<int>::iterator i = _fineTunningPixelsEqualized.begin();
-    set<int>::iterator iE = _fineTunningPixelsEqualized.end();
+    set<int>::iterator i = _fineTuningPixelsEqualized.begin();
+    set<int>::iterator iE = _fineTuningPixelsEqualized.end();
 
     // initialize
-    for (i = _fineTunningPixelsEqualized.begin() ; i != iE ; i++ ) {
+    for (i = _fineTuningPixelsEqualized.begin() ; i != iE ; i++ ) {
         thlCntr[  _pixelReactiveTHL[*i] ] = 0;
     }
 
     // build the histogram
-    for (i = _fineTunningPixelsEqualized.begin() ; i != iE ; i++ ) {
+    for (i = _fineTuningPixelsEqualized.begin() ; i != iE ; i++ ) {
         thlCntr[  _pixelReactiveTHL[*i] ]++;
     }
 
