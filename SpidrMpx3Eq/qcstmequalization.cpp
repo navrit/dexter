@@ -299,7 +299,7 @@ void QCstmEqualization::NewRunInitEqualization() {
 bool QCstmEqualization::InitEqualization(int chipId) {
 
     // Rewind state machine variables
-    _eqStatus = __INIT;
+    _eqStatus = QCstmEqualization::__INIT; //! Important state machine variable
     _scanIndex = 0;
     for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
 

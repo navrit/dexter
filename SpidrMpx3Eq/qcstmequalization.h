@@ -292,7 +292,7 @@ private:
     int _fullsize_x;
     int _fullsize_y;
     vector<int> _workChipsIndx;
-    unsigned int _eqStatus;
+    unsigned int _eqStatus; //! Important state machine variable
     unsigned int _scanIndex;
     enum {
         __THLandTHH = 0,

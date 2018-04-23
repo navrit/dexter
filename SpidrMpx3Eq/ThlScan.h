@@ -102,7 +102,7 @@ public:
 	int ExtractReworkSubsetSpacingAware(set<int> & reworkPixelsSet, set<int> & reworkSubset, int spacing);
 	bool TwoPixelsRespectMinimumSpacing(int pix1, int pix2, int spacing);
 	void SelectBestAdjFromHistory(int showHeadAndTail);
-	int ShiftAdjustments(SpidrController * spidrcontrol, set<int> reworkSubset, set<int> activeMask);
+    int ShiftAdjustments(set<int> reworkSubset, set<int> activeMask);
 	bool AdjScanCompleted(set<int> reworkSubset, set<int> activeMask);
 	void TagPixelsEqualizationStatus(set<int> vetoList);
 	void RewindReactionCounters(set<int> reworkPixelsSet);
