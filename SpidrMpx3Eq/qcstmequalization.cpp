@@ -42,7 +42,7 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
 
     // Some defaults
     _deviceIndex = 2;
-    _nTriggers = 1;
+    _nTriggers = 10;
     _spacing = 4;
 
     // This will be recalculated
@@ -79,7 +79,7 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
 
     _checkBoxes.clear();
 
-    _fineTuningLoops = 32;
+    _fineTuningLoops = 30;
     _ui->fineTuningLoopsSpinBox->setValue( _fineTuningLoops );
 
     _ui->equalizationTHLTHHCombo->addItem( QString("THL and THH") );

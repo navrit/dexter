@@ -252,7 +252,7 @@
             <item row="0" column="1">
              <widget class="QSpinBox" name="nTriggersSpinBox">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of frames per threshold taken&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>Number of counts, above this value pixels are considered to be ON</string>
               </property>
               <property name="toolTipDuration">
                <number>-1</number>
@@ -414,13 +414,13 @@
             <item row="0" column="0">
              <widget class="QLabel" name="eqLabelnTriggers">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of frames per threshold taken&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>Number of counts, above this value pixels are considered to be ON</string>
               </property>
               <property name="toolTipDuration">
                <number>-1</number>
               </property>
               <property name="text">
-               <string>nFrames</string>
+               <string>nTriggers</string>
               </property>
              </widget>
             </item>

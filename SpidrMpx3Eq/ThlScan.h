@@ -82,22 +82,22 @@ public:
 	int NumberOfNonReactingPixels();
 	vector<int> GetNonReactingPixels();
 	void SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj);
-	void SetStopWhenPlateau(bool b) { _stopWhenPlateau = b; };
+    void SetStopWhenPlateau(bool b) { _stopWhenPlateau = b; }
 
 	void DeliverPreliminaryEqualization(int devId, int currentDAC_DISC, Mpx3EqualizationResults *, int global_adj);
 
 	int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
 	pair<int, int> XtoXY(int X, int dimX) { return make_pair(X % dimX, X/dimX); }
 
-	int GetDetectedLowScanBoundary() { return _detectedScanBoundary_L; };
-	int GetDetectedHighScanBoundary() { return _detectedScanBoundary_H; };
+    int GetDetectedLowScanBoundary() { return _detectedScanBoundary_L; }
+    int GetDetectedHighScanBoundary() { return _detectedScanBoundary_H; }
 
 	void FineTuning();
 	void EqualizationScan();
 	void SetDAC_propagateInGUI(SpidrController * spidrcontrol, int devId, int dac_code, int dac_val );
 
-	void SetScanType(scan_type st) { _scanType = st; };
-	scan_type GetScanType() { return _scanType; };
+    void SetScanType(scan_type st) { _scanType = st; }
+    scan_type GetScanType() { return _scanType; }
 	set<int> ExtractPixelsNotOnTarget();
 	int ExtractReworkSubsetSpacingAware(set<int> & reworkPixelsSet, set<int> & reworkSubset, int spacing);
 	bool TwoPixelsRespectMinimumSpacing(int pix1, int pix2, int spacing);
@@ -109,7 +109,7 @@ public:
 	void DumpSet(set<int> reworkSubset, QString name, int max = 100);
 	void FillAdjReactTHLHistory();
 	void DumpAdjReactTHLHistory(int showHeadAndTail);
-	int PixelBelonsToChip(int pix);
+    int PixelBelongsToChip(int pix);
 	bool ThereIsAFalse(vector<bool> v);
 
 	void SetSetId(int si) { _setId = si; };

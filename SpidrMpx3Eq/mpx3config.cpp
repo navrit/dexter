@@ -564,11 +564,9 @@ void Mpx3Config::destroyController()
     }
 }
 
-/*
-                * If there is only one device connected, no matter what the devIndx is, the data is always at DataBuffer 0
-                * Otherwise, for instance if only devices 0 and 2 are connected.  The data will be found in 0,1.
-                * This member computes that transform using the detected status of the chips.
-                */
+//! If there is only one device connected, no matter what the devIndx is, the data is always at DataBuffer 0
+//! Otherwise, for instance if only devices 0 and 2 are connected.  The data will be found in 0,1.
+//! This member computes that transform using the detected status of the chips.
 int Mpx3Config::getDataBufferId(int devIndx) {
 
     // If there is only one device connected, no matter what the devIndx is, the data is always at DataBuffer 0
