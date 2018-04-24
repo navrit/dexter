@@ -1553,7 +1553,7 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     //! OMR bit
     //! 0 : Single pixel mode
     //! 1 : Charge summing mode
-    spidrcontrol->setCsmSpm( devId, 0 );
+    //spidrcontrol->setCsmSpm( devId, 0 );
 
     //! Important defaults
     //! bits flipped below
@@ -1570,8 +1570,8 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     // -------------------------------------------------------------------------
 
     //! OMR bit
-    //! When equalizing any of the high thresholds
-    if ( THx == MPX3RX_DAC_THRESH_1 || THx == MPX3RX_DAC_THRESH_3 || THx == MPX3RX_DAC_THRESH_5 || THx == MPX3RX_DAC_THRESH_7) {
+    //! When equalizing the high thresholds
+    if ( THx == MPX3RX_DAC_THRESH_1 ) {
         spidrcontrol->setDiscCsmSpm( devId, 1 );		//! Use DiscH
     } else {
         spidrcontrol->setDiscCsmSpm( devId, 0 );		//! Use DiscL
