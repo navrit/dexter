@@ -222,9 +222,18 @@ void ThlScan::run() {
 void ThlScan::FineTuning() {
 
     //! Initialisation ---------------------------------------------------------
-    //! Is the SPIDR conncted still?
+    //! Is the SPIDR connected still?
 
-    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+    // Open a new temporary connection to the spider to avoid collisions to the main one
+    // Extract the ip address
+    int ipaddr[4] = { 1, 1, 168, 192 };
+    if ( _srcAddr != 0 ) {
+        ipaddr[3] = (_srcAddr >> 24) & 0xFF;
+        ipaddr[2] = (_srcAddr >> 16) & 0xFF;
+        ipaddr[1] = (_srcAddr >>  8) & 0xFF;
+        ipaddr[0] = (_srcAddr >>  0) & 0xFF;
+    }
+    SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
         qDebug() << "[ERR ] Device not connected !" << endl;
@@ -745,7 +754,18 @@ bool ThlScan::ThereIsAFalse(vector<bool> v){
 
 void ThlScan::EqualizationScan() {
 
-    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+    // Open a new temporary connection to the spider to avoid collisions to the main one
+    // Extract the ip address
+    int ipaddr[4] = { 1, 1, 168, 192 };
+    if ( _srcAddr != 0 ) {
+        ipaddr[3] = (_srcAddr >> 24) & 0xFF;
+        ipaddr[2] = (_srcAddr >> 16) & 0xFF;
+        ipaddr[1] = (_srcAddr >>  8) & 0xFF;
+        ipaddr[0] = (_srcAddr >>  0) & 0xFF;
+    }
+
+    SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
+
     // 0 : DEBUG
     // 1 : INFO
     // 2 : WARNINGS, ERROR, FATAL

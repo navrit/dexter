@@ -21,8 +21,8 @@ int main(int argc, char *argv[])
 
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tDEBUGGING BUILD";
-    p.setColor(QPalette::Button, QColor(150,0,0));
-    p.setColor(QPalette::Base, QColor(120,0,0));
+//    p.setColor(QPalette::Button, QColor(150,0,0));
+//    p.setColor(QPalette::Base, QColor(120,0,0));
 #else
     qDebug() << "[INFO]\tRelease mode";
 //    p.setColor(QPalette::Button, QColor(60,60,70));
