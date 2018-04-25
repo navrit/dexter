@@ -230,6 +230,22 @@ void optionsDialog::on_manualRadioButton_toggled(bool checked)
     }
 }
 
+void optionsDialog::on_roiXsizeSpinBox_editingFinished()
+{
+    int Nmax = _mpx3gui->getDataset()->calcMaxNroi( ui->roiXsizeSpinBox->value(), ui->roiYsizeSpinBox->value());
+    ui->roiNumberSpinBox->setMaximum( Nmax );
+    ui->roiNumberSpinBox->setValue( Nmax );
+}
+
+void optionsDialog::on_roiYsizeSpinBox_editingFinished()
+{
+    int x = ui->roiXsizeSpinBox->value();
+    int y = ui->roiYsizeSpinBox->value();
+    int Nmax = _mpx3gui->getDataset()->calcMaxNroi( ui->roiXsizeSpinBox->value(), ui->roiYsizeSpinBox->value() );
+    ui->roiNumberSpinBox->setMaximum( Nmax );
+    ui->roiNumberSpinBox->setValue( Nmax );
+}
+
 void optionsDialog::on_selectedRoIRadioButton_toggled(bool checked)
 {
     ui->edgeSpinBox->setEnabled(checked);

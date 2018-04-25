@@ -8,6 +8,7 @@
 
 #include "qcstmcorrectionsdialog.h"
 #include "statsdialog.h"
+#include "profiledialog.h"
 
 #include "qcstmconfigmonitoring.h"
 #include "ui_qcstmconfigmonitoring.h"
@@ -1128,6 +1129,19 @@ void QCstmGLVisualization::developerMode(bool enabled)
 
 //}
 
+void QCstmGLVisualization::on_user_accepted_profile()
+{
+    //Delete the corresponding window
+    if ( _profiledialog ) {
+        delete _profiledialog;
+        _profiledialog = nullptr;
+
+        //Re-initialize the Profilepoints list for new CNR calculation in new dialog
+        _mpx3gui->getDataset()->clearProfilepoints();
+    }
+
+}
+
 void QCstmGLVisualization::OperationModeSwitched(int indx)
 {
     // Swith the triggerLengthSpinBox into ContRWFreq if in ContinuousRW mode
@@ -1664,6 +1678,14 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
     //QAction calcStats(QString("Calculate statistics (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
     contextMenu.addAction(&calcStats);
 
+    QAction calcProX(QString("ProfileX"), &contextMenu);
+    //QAction calcProX(QString("ProfileX (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    contextMenu.addAction(&calcProX);
+
+    QAction calcProY(QString("ProfileY"), &contextMenu);
+    //QAction calcProY(QString("ProfileY (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    contextMenu.addAction(&calcProY);
+
     contextMenu.setMinimumWidth(300);
 
     // Show the menu
@@ -1684,6 +1706,41 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
 
     }
 
+    else if(selectedItem == &calcProX || selectedItem == &calcProY) {
+        //else if(selectedItem != nullptr) {
+
+        QString axis;
+        if(selectedItem == &calcProX) axis = "X";
+        if(selectedItem == &calcProY) axis = "Y";
+
+        //Display
+        _profiledialog = new ProfileDialog(this);
+        _profiledialog->SetMpx3GUI(_mpx3gui);
+        _profiledialog->setRegion(pixel_begin_checked, pixel_end_checked);
+        _profiledialog->setAxis(axis);
+        _profiledialog->changeTitle();
+
+        //QList<int> thresholdlist = _mpx3gui->getDataset()->getThresholds();
+        //QStringList combolist;
+        //for(int i = 0; i < thresholdlist.length(); i++)
+        //    combolist.append(QString("Threshold %1").arg(thresholdlist[i]));
+
+        //Calculate the profile of the selected region of the selected layer
+
+        //_profiledialog->setSelectedThreshold(threshold);
+        //_profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, threshold, pixel_begin_checked, pixel_end_checked));
+
+        int layerIndex = getActiveThreshold();
+        _profiledialog->setLayer(layerIndex);
+        _profiledialog->setAxisMap(_mpx3gui->getDataset()->calcProfile(axis, layerIndex, pixel_begin_checked, pixel_end_checked));
+        _profiledialog->plotProfile();
+
+        _profiledialog->show();
+
+    }
+
+    //    delete label;
+    //    delete a;
 }
 
 void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){

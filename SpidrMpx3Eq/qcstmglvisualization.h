@@ -31,6 +31,7 @@ class DataConsumerThread;
 
 class QCstmCorrectionsDialog;
 class StatsDialog;
+class ProfileDialog;
 class ImageCalculator;
 
 namespace Ui {
@@ -56,6 +57,7 @@ class QCstmGLVisualization : public QWidget
     //Statistics
     StatsDialog * _statsdialog = nullptr;
 
+    ProfileDialog * _profiledialog = nullptr;
 public:
     explicit QCstmGLVisualization(QWidget *parent = 0);
     ~QCstmGLVisualization();
@@ -271,8 +273,9 @@ public slots:
     void fps_update(int);
     void overflow_update(int);
 
-    //Deleting stats dialog
-//    void on_user_accepted_stats();
+    //Deleting stats dialog and profile dialog
+    void on_user_accepted_stats();
+    void on_user_accepted_profile();
     void OperationModeSwitched(int);
 
     void on_scoring(int, int, int, int, int, int, bool);

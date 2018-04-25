@@ -77,6 +77,7 @@ SOURCES += main.cpp \
     heatmapdisplay.cpp \
     qcstmcorrectionsdialog.cpp \
     statsdialog.cpp \
+    profiledialog.cpp \
     dataconsumerthread.cpp \
     optionsdialog.cpp \
     thresholdscan.cpp \
@@ -114,6 +115,7 @@ HEADERS += mpx3gui.h \
     heatmapdisplay.h \
     qcstmcorrectionsdialog.h \
     statsdialog.h \
+    profiledialog.h \
     dataconsumerthread.h \
     optionsdialog.h \
     thresholdscan.h \
