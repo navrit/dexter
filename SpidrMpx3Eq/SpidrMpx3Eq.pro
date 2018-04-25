@@ -77,6 +77,7 @@ SOURCES += main.cpp \
     qcstmruler.cpp \
     heatmapdisplay.cpp \
     qcstmcorrectionsdialog.cpp \
+    statsdialog.cpp \
     dataconsumerthread.cpp \
     thresholdscan.cpp \
     mpx3gui.cpp \
@@ -110,6 +111,7 @@ HEADERS += mpx3gui.h \
     qcstmruler.h \
     heatmapdisplay.h \
     qcstmcorrectionsdialog.h \
+    statsdialog.h \
     dataconsumerthread.h \
     thresholdscan.h \
     barchart.h  \
@@ -133,6 +135,8 @@ FORMS    += mpx3gui.ui \
     qcstmthreshold.ui \
     qcstmconfigmonitoring.ui \
     heatmapdisplay.ui \
+    qcstmcorrectionsdialog.ui \
+    statsdialog.ui \
     thresholdscan.ui
 
     copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/\" &

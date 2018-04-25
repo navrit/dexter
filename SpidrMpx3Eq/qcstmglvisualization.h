@@ -251,6 +251,7 @@ public slots:
     //!Called when a pixel has been selected with the right mouse-button. Pixel is assembly-coordinates, position is screenspace (used to determine where to create the context menu).
     //!Position could possibly be removed and simply query the cursor location from here.
     void pixel_selected(QPoint pixel, QPoint position);
+    void region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position);
     //!Called when the data is cleared. Clears all the plots and relevant combo-boxes.
     void on_clear();
     //!Called when the data is zeroed out, the layers remain the same.

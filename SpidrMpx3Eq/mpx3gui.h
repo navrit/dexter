@@ -48,8 +48,8 @@ class zmqController;
 #define __configuration_page_Id     1
 #define __dacs_page_Id              2
 #define __equalization_page_Id      3
-#define __scans_page_Id             5
-#define __thresholdScan_page_Id     9
+#define __scans_page_Id             4
+#define __thresholdScan_page_Id     5
 
 #define BIN_FILES "Binary (*.bin)"
 #define TIFF_FILES "TIFF (*.tiff)"

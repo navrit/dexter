@@ -124,6 +124,7 @@ private slots:
 signals:
     void hovered_pixel_changed(QPoint); //!< The pixel hovered by the mouse-cursor has changed. Passes the coordinate of the hovered pixel.
     void pixel_selected(QPoint, QPoint);//!< A pixel has been clicked. Passes the coordinate in the chip and position of the relevant chip.
+    void region_selected(QPoint, QPoint, QPoint);//!< A right-button mouse drag selects a region. Passes the coordinate in the chip and position of the relevant chip.
     void offset_changed(QPointF offset);
     void zoom_changed(float zoom);
     void size_changed(QPoint size);

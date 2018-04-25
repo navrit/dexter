@@ -7,6 +7,7 @@
 #include "dataconsumerthread.h"
 
 #include "qcstmcorrectionsdialog.h"
+#include "statsdialog.h"
 
 #include "qcstmconfigmonitoring.h"
 #include "ui_qcstmconfigmonitoring.h"
@@ -1598,6 +1599,91 @@ void QCstmGLVisualization::loadConfiguration(QString filePath)
     } else {
         emit someCommandHasFailed(QString("DEXTER --> ACQUILA ZMQ : Could not load configuration JSON file from" + filePath));
     }
+}
+
+void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end, QPoint position){
+
+    int threshold = getActiveThreshold();
+
+    QMenu contextMenu;
+    QPoint pixel_begin_checked = pixel_begin;
+    QPoint pixel_end_checked = pixel_end;
+
+    //##################################
+    // Do basic out-of-bounds type check
+    if (pixel_begin.x() < 0) {
+        pixel_begin_checked.setX(0);
+    }
+    if (pixel_begin.y() < 0) {
+        pixel_begin_checked.setY(0);
+    }
+    // User is for sure trying to break the program...
+    if (pixel_end.x() < 0 || pixel_end.y() < 0) {
+        // Negative end pixel input - try again;
+        QMessageBox *msgBox = new QMessageBox(this);
+        msgBox->setWindowTitle("Input error");
+        msgBox->setInformativeText("You selected a pixel range with at least one negative end coordinate. \n\n Try again by ending your selection within the image.");
+        msgBox->setDefaultButton(QMessageBox::Cancel);
+
+        QSpacerItem* horizontalSpacer = new QSpacerItem(400, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
+        QGridLayout* layout = (QGridLayout*)msgBox->layout();
+        layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+
+        msgBox->exec();
+        return;
+    }
+
+    int xImageLength = _mpx3gui->getDataset()->x()*_mpx3gui->getDataset()->getNChipsX();
+    int yImageLength = _mpx3gui->getDataset()->y()*_mpx3gui->getDataset()->getNChipsY();
+    if (pixel_begin.x() > xImageLength || pixel_begin.y() > yImageLength) {
+        // Stop being an idiot
+        return;
+    }
+    if (pixel_begin.x() > xImageLength) {
+        pixel_begin_checked.setX(xImageLength);
+    }
+    if (pixel_begin.y() > yImageLength) {
+        pixel_begin_checked.setY(yImageLength);
+    }
+    if (pixel_end.x() > xImageLength) {
+        pixel_end_checked.setX(xImageLength);
+    }
+    if (pixel_end.y() > yImageLength) {
+        pixel_end_checked.setY(yImageLength);
+    }
+    //##################################
+
+    //Have the region only in the header:
+    QLabel* label = new QLabel(QString("\n    For region (%1, %2) --> (%3, %4) \n").arg(pixel_begin_checked.x()).arg(pixel_begin_checked.y()).arg(pixel_end_checked.x()).arg(pixel_end_checked.y())
+                               , this);
+    QWidgetAction wid(&contextMenu);
+    wid.setDefaultWidget(label);
+    contextMenu.addAction(&wid);
+
+    QAction calcStats(QString("Calculate statistics"), &contextMenu);
+    //QAction calcStats(QString("Calculate statistics (%1, %2)-->(%3, %4)").arg(pixel_begin.x()).arg(pixel_begin.y()).arg(pixel_end.x()).arg(pixel_end.y()), &contextMenu);
+    contextMenu.addAction(&calcStats);
+
+    contextMenu.setMinimumWidth(300);
+
+    // Show the menu
+    QAction * selectedItem = contextMenu.exec(position);
+
+    // Selected item
+    if (selectedItem == &calcStats) {
+
+        // Calc basic stats
+        _mpx3gui->getDataset()->calcBasicStats(pixel_begin_checked, pixel_end_checked);
+
+        // Now display it
+
+        _statsdialog = new StatsDialog(this);
+        _statsdialog->SetMpx3GUI(_mpx3gui);
+        _statsdialog->changeText();
+        _statsdialog->show();
+
+    }
+
 }
 
 void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
