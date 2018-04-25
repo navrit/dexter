@@ -481,6 +481,12 @@ adj_* and mask_*</string>
    </slots>
   </customwidget>
   <customwidget>
+   <class>QCstmThreshold</class>
+   <extends>QWidget</extends>
+   <header>qcstmthreshold.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>QCstmConfigMonitoring</class>
    <extends>QWidget</extends>
    <header>qcstmconfigmonitoring.h</header>

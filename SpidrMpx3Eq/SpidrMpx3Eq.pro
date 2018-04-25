@@ -71,6 +71,7 @@ SOURCES += main.cpp \
     qcstmglplot.cpp \
     gradient.cpp \
     dataset.cpp \
+    qcstmthreshold.cpp \
     mpx3config.cpp \
     qcstmconfigmonitoring.cpp \
     qcstmruler.cpp \
@@ -103,6 +104,7 @@ HEADERS += mpx3gui.h \
     gradient.h \
     mpx3eq_common.h \
     dataset.h \
+    qcstmthreshold.h \
     mpx3config.h \
     qcstmconfigmonitoring.h \
     qcstmruler.h \
@@ -128,6 +130,7 @@ FORMS    += mpx3gui.ui \
     qcstmdacs.ui \
     gradientwidget.ui \
     qcstmglvisualization.ui \
+    qcstmthreshold.ui \
     qcstmconfigmonitoring.ui \
     heatmapdisplay.ui \
     thresholdscan.ui

@@ -110,6 +110,9 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     }
     //_ui->visualizationGL->ConfigureGUIForIdling();
 
+    // Prepare THL Calibration
+    _ui->ThresholdTab->SetMpx3GUI(this);
+
     //Config & monitoring
     _ui->CnMWidget->SetMpx3GUI(this);
     _ui->CnMWidget->widgetInfoPropagation();
