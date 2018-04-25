@@ -52,8 +52,10 @@ class zmqController;
 #define __configuration_page_Id     1
 #define __dacs_page_Id              2
 #define __equalization_page_Id      3
-#define __scans_page_Id             4
-#define __thresholdScan_page_Id     5
+#define __scans_page_Id             5
+#define __ct_page_Id                6
+#define __stepperMotor_page_Id      7
+#define __thresholdScan_page_Id     9
 
 #define BIN_FILES "Binary (*.bin)"
 #define TIFF_FILES "TIFF (*.tiff)"
@@ -190,6 +192,8 @@ public:
 
     QString compileDateTime = QDate::currentDate().toString("yyyy-MM-dd") + QString(" ") + QString(__TIME__);
 
+    int getStepperMotorPageID();
+
 signals:
     void dataChanged();
     void data_cleared();
@@ -259,6 +263,7 @@ private slots:
     void on_actionDefibrillator_triggered(bool checked);
     void on_actionRevert_triggered(bool checked);
     void on_actionAbout_triggered(bool checked);
+    void on_actionStepper_Motor_triggered(bool checked);
     void on_actionThreshold_Scan_triggered(bool);
 };
 

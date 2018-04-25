@@ -145,6 +145,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+6", "Switch to Scans") ), this)  );
 
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+7", "Switch to CT") ), this)  );
+    _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+D, Ctrl+Alt+8", "Switch to Stepper Motor Control") ), this)  );
 
     // Make Dexter somewhat scriptable via the GUI
 
@@ -277,6 +278,106 @@ bool Mpx3GUI::equalizationLoaded(){
     return _ui->equalizationWidget->equalizationHasBeenLoaded();
 }
 
+bool Mpx3GUI::setTestPulses(int pixelSpacing, int startPixelOffset) {
+
+    QVector<int> activeDevices = getConfig()->getActiveDevices();
+    qDebug() << "[TEST PULSES] activeDevices length" << activeDevices.length();
+
+
+    if ( _ui->equalizationWidget->equalizationHasBeenLoaded() ) {
+        QMap<int, Mpx3EqualizationResults *>  eqMap_L = _ui->equalizationWidget->getEqMap();
+        QMap<int, Mpx3EqualizationResults *>  eqMap_H = _ui->equalizationWidget->getEqMap();
+
+        for ( int devId = 0 ; devId < activeDevices.length(); devId++ ) {
+            pair<int, int> pix;
+            bool testbit = false;
+            int testBitsOn = 0;
+
+            Mpx3EqualizationResults * eqResults_L = eqMap_L[devId];
+            Mpx3EqualizationResults * eqResults_H = eqMap_H[devId];
+
+            SpidrController * spidrcontrol = GetSpidrController();
+            spidrcontrol->setInternalTestPulse(devId, true);
+
+            //            //! Turn all CTPRs off by default ????????
+            //            for (int column = 0; column < __array_size_x; column++ ) {
+            //                spidrcontrol->configCtpr( devId, column, 0 );
+            //            }
+            //            //! Do I need to set the CTPR here as well?
+            //            spidrcontrol->setCtpr( devId );
+
+            spidrcontrol->setTpFrequency(true, TP_PERIOD, 40 ); //! Pulse frequency (millihertz) --> 200000 * 25 ns = 5 ms = 200 Hz  Pulse width: 40 --> 1us default
+
+
+
+            for ( int i = startPixelOffset; i < __matrix_size; i++ ) {
+
+                pix = XtoXY(i, __array_size_x);
+
+                //! Unmask all pixels that we are going to inject test pulses into.
+                //! --> mask all pixels that we aren't using (is this correct???)
+                if ( pix.first % pixelSpacing == 0 && pix.second % pixelSpacing == 0 ) {
+                    testbit = true;
+                    spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+
+                    //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
+                } else {
+                    testbit = false;
+                    spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
+                }
+
+
+                if ( testbit && pix.second == 0 ) {
+                    spidrcontrol->configCtpr( devId, pix.first, 1 );
+                }
+
+
+                spidrcontrol->configPixelMpx3rx(pix.first,
+                                                pix.second,
+                                                eqResults_L->GetPixelAdj(i),
+                                                eqResults_H->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
+                                                testbit);
+                if ( testbit ) testBitsOn++;
+            }
+
+            spidrcontrol->setCtpr( devId );
+            qDebug() << "[TEST PULSES] CTPRs set on dev" << devId;
+
+            qDebug() << "[TEST PULSES] Number of pixels testBit ON :"<< testBitsOn;
+
+            spidrcontrol->setPixelConfigMpx3rx( devId );
+
+        }
+
+        return true;
+
+    } else {
+        for ( int devId = 0 ; devId < activeDevices.length(); devId++ ) {
+
+            SpidrController * spidrcontrol = GetSpidrController();
+
+            //! 1. Turn off test pulses
+            //! 2. Unmask all pixels
+            //! 3. Set Pixel config
+
+            spidrcontrol->setInternalTestPulse(devId, false);
+            for (int i = 0; i < __array_size_x; i++ ) {
+                for(int j = 0; j < __array_size_y; j++ ) {
+                    spidrcontrol->setPixelMaskMpx3rx(i, j, false);
+                }
+            }
+            spidrcontrol->setPixelConfigMpx3rx( devId );
+        }
+        return false; // equalization missing
+    }
+
+}
+
+int Mpx3GUI::getStepperMotorPageID()
+{
+    return __stepperMotor_page_Id;
+}
+
 void Mpx3GUI::SetupSignalsAndSlots(){
 
     connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );
@@ -302,6 +403,7 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->DACsWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->equalizationWidget, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->visualizationGL, SLOT( ConnectionStatusChanged(bool) ) );
+    connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->stepperMotorTab, SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, SIGNAL( ConnectionStatusChanged(bool) ), _ui->CnMWidget , SLOT( ConnectionStatusChanged(bool) ) );
     connect( this, &Mpx3GUI::ConnectionStatusChanged, this, &Mpx3GUI::onConnectionStatusChanged );
 
@@ -313,6 +415,8 @@ void Mpx3GUI::SetupSignalsAndSlots(){
     // Connect signal from QCstmEqualization widget to slot here
     connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarAppend, this, &Mpx3GUI::statusBarAppend);
     connect( _ui->equalizationWidget, &QCstmEqualization::sig_statusBarClean, this, &Mpx3GUI::statusBarClean);
+
+    connect( _ui->stepperMotorTab, &QCstmStepperMotor::sig_statusBarAppend , this, &Mpx3GUI::statusBarAppend);
 
 
     for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {
@@ -359,6 +463,14 @@ void Mpx3GUI::on_shortcutsSwithPages() {
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
         //_ui->actionScans->setChecked(1);
+    } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+7")) ) ){
+        uncheckAllToolbarButtons();
+        _ui->stackedWidget->setCurrentIndex( __ct_page_Id );
+        //_ui-> actionXXX ->setChecked(1);
+    } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+8")) ) ){
+        uncheckAllToolbarButtons();
+        _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
+        _ui->actionStepper_Motor->setChecked(1);
     }
 
 }
@@ -1276,6 +1388,7 @@ void Mpx3GUI::uncheckAllToolbarButtons(){
     _ui->actionDACs->setChecked(0);
     _ui->actionEqualization->setChecked(0);
     _ui->actionThreshold_Scan->setChecked(0);
+    _ui->actionStepper_Motor->setChecked(0);
     //TODO _ui-> NEW ACTION ->setChecked(0);
 }
 
@@ -1379,6 +1492,13 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
     msgBox.setText( msg );
     msgBox.exec();
 }
+
+void Mpx3GUI::on_actionStepper_Motor_triggered(bool)
+{
+    uncheckAllToolbarButtons();
+    _ui->stackedWidget->setCurrentIndex( __stepperMotor_page_Id );
+}
+
 
 void Mpx3GUI::on_actionDisconnect_triggered(bool checked){
 

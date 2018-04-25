@@ -88,6 +88,9 @@ private:
     // The following are static characteristics read from the SPIDR, not configurable.
     int SystemClock = -1;
     QVector<int> _dacVals[MPX3RX_DAC_COUNT];
+    // Stepper
+    bool stepperUseCalib = false;
+    double stepperAcceleration = -1., stepperSpeed = -1., stepperCalibPos0 = -1., stepperCalibAngle0 = -1., stepperCalibPos1 = -1., stepperCalibAngle1 = -1.;
 
     // Bias
     double biasVolt = 0.;
@@ -167,6 +170,14 @@ public:
 
     int getNTriggers(){ return nTriggers; }
 
+    bool getStepperUseCalib() { return stepperUseCalib; }
+    double getStepperAcceleration() { return stepperAcceleration; }
+    double getStepperSpeed() { return stepperSpeed; }
+    double getStepperCalibPos0() { return stepperCalibPos0; }
+    double getStepperCalibAngle0() { return stepperCalibAngle0; }
+    double getStepperCalibPos1() { return stepperCalibPos1; }
+    double getStepperCalibAngle1() { return stepperCalibAngle1; }
+
     bool RequiredOnEveryChipConfig(config_items);
     bool RequiredOnGlobalConfig(config_items item);
 
@@ -203,6 +214,14 @@ signals:
     void ContRWFreqChanged(int);
     void TriggerDowntimeChanged(int);
     void nTriggersChanged(int);
+    // stepper
+    void UseCalibChanged(bool);
+    void AccelerationChanged(double);
+    void SpeedChanged(double);
+    void CalibPos0Changed(double);
+    void CalibAngle0Changed(double);
+    void CalibPos1Changed(double);
+    void CalibAngle1Changed(double);
     void BiasVoltageChanged(double);
 
 public slots:
@@ -369,6 +388,78 @@ public slots:
 
     }
     void updateNTriggers(){}
+
+    ////////////////////////////////////////////////////////////
+    // Stepper
+    // The messages to the hardware won't be sent from here in
+    //  the case of the stepper.  It has it's own interface in
+    //  qctsmconfigmonitoring.cpp
+    void setStepperConfigUseCalib(bool newVal) {
+
+        if ( newVal != stepperUseCalib ) {
+            stepperUseCalib = newVal;
+            //emit UseCalibChanged(newVal);
+        }
+
+    }
+
+    void setStepperConfigAcceleration(double newVal) {
+
+        if ( newVal != stepperAcceleration ) {
+            stepperAcceleration = newVal;
+            //emit AccelerationChanged(newVal);
+        }
+
+    }
+
+    void setStepperConfigSpeed(double newVal) {
+
+        if ( newVal != stepperSpeed ) {
+            stepperSpeed = newVal;
+            //emit SpeedChanged(newVal);
+        }
+
+    }
+
+    void setStepperConfigCalib(QStandardItem * item);
+
+
+    void setStepperConfigCalibPos0(double newVal) {
+
+        if ( newVal != stepperCalibPos0 ) {
+            stepperCalibPos0 = newVal;
+            //emit CalibPos0Changed(newVal);
+        }
+
+    }
+
+    void setStepperConfigCalibAngle0(double newVal) {
+
+        if ( newVal != stepperCalibAngle0 ) {
+            stepperCalibAngle0 = newVal;
+            //emit CalibAngle0Changed(newVal);
+        }
+
+    }
+
+    void setStepperConfigCalibPos1(double newVal) {
+
+        if ( newVal != stepperCalibPos1 ) {
+            stepperCalibPos1 = newVal;
+            //emit CalibPos1Changed(newVal);
+        }
+
+    }
+
+    void setStepperConfigCalibAngle1(double newVal) {
+
+        if ( newVal != stepperCalibAngle1 ) {
+            stepperCalibAngle1 = newVal;
+            //emit CalibAngle1Changed(newVal);
+        }
+
+    }
+
 };
 
 
