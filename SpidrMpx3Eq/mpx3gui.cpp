@@ -9,6 +9,7 @@
 #include "ui_mpx3gui.h"
 #include "ui_qcstmconfigmonitoring.h"
 #include "DataTakingThread.h"
+#include "thresholdscan.h"
 
 #include "mpx3eq_common.h"
 #include "mpx3defs.h"
@@ -112,6 +113,9 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     //Config & monitoring
     _ui->CnMWidget->SetMpx3GUI(this);
     _ui->CnMWidget->widgetInfoPropagation();
+
+    // Threshold scan
+    _ui->THScan->SetMpx3GUI( this );
 
     // Read the configuration
     QString configFile = "./config/mpx3.json";
@@ -336,6 +340,11 @@ void Mpx3GUI::on_shortcutsSwithPages() {
         uncheckAllToolbarButtons();
         _ui->stackedWidget->setCurrentIndex( __equalization_page_Id );
         _ui->actionEqualization->setChecked(1);
+
+    } else if ( k.matches( QKeySequence(tr("Ctrl+5")) ) ) {
+        uncheckAllToolbarButtons();
+        _ui->stackedWidget->setCurrentIndex( __thresholdScan_page_Id );
+        _ui->actionThreshold_Scan->setChecked(1);
 
     } else if ( k.matches( QKeySequence(tr("Ctrl+D, Ctrl+Alt+6")) ) ){
         uncheckAllToolbarButtons();
@@ -1219,6 +1228,7 @@ QCstmEqualization * Mpx3GUI::getEqualization(){return _ui->equalizationWidget;}
 QCstmGLVisualization * Mpx3GUI::getVisualization() { return _ui->visualizationGL; }
 QCstmDacs * Mpx3GUI::getDACs() { return _ui->DACsWidget; }
 QCstmConfigMonitoring * Mpx3GUI::getConfigMonitoring() { return _ui->CnMWidget; }
+thresholdScan * Mpx3GUI::getTHScan() { return _ui->THScan; }
 
 void Mpx3GUI::on_actionExit_triggered()
 {
@@ -1254,6 +1264,7 @@ void Mpx3GUI::uncheckAllToolbarButtons(){
     _ui->actionConfiguration->setChecked(0);
     _ui->actionDACs->setChecked(0);
     _ui->actionEqualization->setChecked(0);
+    _ui->actionThreshold_Scan->setChecked(0);
     //TODO _ui-> NEW ACTION ->setChecked(0);
 }
 
@@ -1433,4 +1444,12 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked){
         pd.setValue( 3 );
 
     }
+
+}
+
+void Mpx3GUI::on_actionThreshold_Scan_triggered(bool)
+{
+    uncheckAllToolbarButtons();
+    _ui->stackedWidget->setCurrentIndex( __thresholdScan_page_Id );
+    _ui->actionThreshold_Scan->setChecked(1);
 }

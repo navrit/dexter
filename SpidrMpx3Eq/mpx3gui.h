@@ -25,6 +25,7 @@ class Mpx3Config;
 #include "histogram.h"
 #include "mpx3eq_common.h"
 #include "mpx3config.h"
+#include "thresholdscan.h"
 #include "datacontrollerthread.h"
 #include "zmqcontroller.h"
 
@@ -38,6 +39,7 @@ class ThlScan;
 class QCstmEqualization;
 class QCstmGLVisualization;
 class QCstmConfigMonitoring;
+class thresholdScan;
 class DataControllerThread;
 class zmqController;
 
@@ -47,6 +49,7 @@ class zmqController;
 #define __dacs_page_Id              2
 #define __equalization_page_Id      3
 #define __scans_page_Id             5
+#define __thresholdScan_page_Id     9
 
 #define BIN_FILES "Binary (*.bin)"
 #define TIFF_FILES "TIFF (*.tiff)"
@@ -141,6 +144,7 @@ public:
     QCstmGLVisualization * getVisualization();
     QCstmDacs * getDACs();
     QCstmConfigMonitoring * getConfigMonitoring();
+    thresholdScan * getTHScan();
 
     SpidrController * GetSpidrController();
     SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
@@ -248,6 +252,7 @@ private slots:
     void on_actionDefibrillator_triggered(bool checked);
     void on_actionRevert_triggered(bool checked);
     void on_actionAbout_triggered(bool checked);
+    void on_actionThreshold_Scan_triggered(bool);
 };
 
 
