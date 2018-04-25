@@ -58,7 +58,6 @@ unix {
 }
 
 LIBS += -lSpidrMpx3Lib
-#LIBS += -lQCustomPlot
 
 SOURCES += main.cpp \
     qcstmplotheatmap.cpp \
@@ -91,7 +90,7 @@ SOURCES += main.cpp \
     ../Qzmq/qzmqreprouter.cpp \
     ../Qzmq/qzmqsocket.cpp \
     ../Qzmq/qzmqvalve.cpp \
-    zmqcontroller.cpp
+    zmqcontroller.cpp \
     qcstmBHWindow.cpp \
     qcstmBHdialog.cpp \
     qcustomplot.cpp
@@ -128,7 +127,7 @@ HEADERS += mpx3gui.h \
     ../Qzmq/qzmqreqmessage.h \
     ../Qzmq/qzmqsocket.h \
     ../Qzmq/qzmqvalve.h \
-    zmqcontroller.h
+    zmqcontroller.h \
     qcstmBHWindow.h \
     qcstmBHdialog.h \
     qcustomplot.h
