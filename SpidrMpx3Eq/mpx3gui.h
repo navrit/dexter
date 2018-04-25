@@ -184,6 +184,8 @@ public:
 
     bool equalizationLoaded();
 
+    bool setTestPulses(int pixelSpacing, int startPixelOffset);
+
     //! SPIDR information strings for About dialog
     QString m_SPIDRControllerVersion = "";
     QString m_SPIDRFirmwareVersion = "";

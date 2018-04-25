@@ -785,6 +785,22 @@ If you run too fast this feature should not be used.</string>
               </property>
              </widget>
             </item>
+            <item row="4" column="0">
+             <widget class="QPushButton" name="testPulsesPushButton">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>94</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Test pulses</string>
+              </property>
+             </widget>
+            </item>
             <item row="1" column="3" colspan="3">
              <widget class="QComboBox" name="operationModeComboBox_Vis">
               <property name="sizePolicy">
@@ -1044,6 +1060,7 @@ If you run too fast this feature should not be used.</string>
   <tabstop>operationModeComboBox_Vis</tabstop>
   <tabstop>nTriggersSpinBox</tabstop>
   <tabstop>triggerLengthSpinBox</tabstop>
+  <tabstop>testPulsesPushButton</tabstop>
   <tabstop>fullRangeRadio</tabstop>
   <tabstop>manualRangeRadio</tabstop>
   <tabstop>percentileRangeRadio</tabstop>

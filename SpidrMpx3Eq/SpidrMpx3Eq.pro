@@ -79,6 +79,7 @@ SOURCES += main.cpp \
     qcstmcorrectionsdialog.cpp \
     statsdialog.cpp \
     profiledialog.cpp \
+    testpulses.cpp \
     dataconsumerthread.cpp \
     optionsdialog.cpp \
     qcstmsteppermotor.cpp \
@@ -120,6 +121,7 @@ HEADERS += mpx3gui.h \
     qcstmcorrectionsdialog.h \
     statsdialog.h \
     profiledialog.h \
+    testpulses.h \
     dataconsumerthread.h \
     optionsdialog.h \
     qcstmsteppermotor.h \
@@ -155,6 +157,7 @@ FORMS    += mpx3gui.ui \
     statsdialog.ui \
     profiledialog.ui \
     qcstmBHdialog.ui \
+    testpulses.ui \
     optionsdialog.ui \
     qcstmsteppermotor.ui \
     thresholdscan.ui \

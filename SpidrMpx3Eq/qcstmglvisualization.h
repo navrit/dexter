@@ -32,6 +32,7 @@ class DataConsumerThread;
 class QCstmCorrectionsDialog;
 class StatsDialog;
 class ProfileDialog;
+class TestPulses;
 class ImageCalculator;
 
 namespace Ui {
@@ -144,6 +145,7 @@ private:
     unsigned int _nTriggersSave;
     bool _dropFrames = true;
 
+    TestPulses * _testPulsesDialog = nullptr;
     typedef struct {
         unsigned int nFramesReceived;
         unsigned int nFramesKept;
@@ -229,6 +231,10 @@ private slots:
     void ntriggers_edit();
 
     void triggerLength_edit();
+
+    void on_testPulsesClosed();
+
+    void on_testPulsesPushButton_clicked();
 
     void on_dropFramesCheckBox_clicked(bool checked);
 
