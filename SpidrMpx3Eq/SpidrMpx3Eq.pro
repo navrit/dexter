@@ -57,7 +57,7 @@ unix {
     LIBS += -ltiff -lzmq
 }
 
-LIBS += -lSpidrMpx3Lib
+LIBS += -lSpidrMpx3Lib  -lphidget21
 
 SOURCES += main.cpp \
     qcstmplotheatmap.cpp \

@@ -20,14 +20,14 @@ void StatsDialog::SetMpx3GUI(Mpx3GUI * p )
 {
     _mpx3gui = p;
 
-    connect( this, &StatsDialog::user_accepted_stats,
+    /*connect( this, &StatsDialog::user_accepted_stats,
              _mpx3gui->getVisualization(),
-             &QCstmGLVisualization::on_user_accepted_stats );
+             &QCstmGLVisualization::on_user_accepted_stats );*/
 }
 
 void StatsDialog::on_buttonBox_accepted() {
     // talk back to the main gui
-    emit user_accepted_stats();
+    //emit user_accepted_stats();
 }
 
 

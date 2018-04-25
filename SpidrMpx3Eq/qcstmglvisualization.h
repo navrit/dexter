@@ -280,7 +280,7 @@ public slots:
     void overflow_update(int);
 
     //Deleting stats dialog and profile dialog
-    void on_user_accepted_stats();
+//    void on_user_accepted_stats();
     void on_user_accepted_profile();
     void OperationModeSwitched(int);
 

@@ -52,10 +52,10 @@ class zmqController;
 #define __configuration_page_Id     1
 #define __dacs_page_Id              2
 #define __equalization_page_Id      3
-#define __scans_page_Id             5
-#define __ct_page_Id                6
-#define __stepperMotor_page_Id      7
-#define __thresholdScan_page_Id     9
+#define __scans_page_Id             4
+#define __ct_page_Id                5
+#define __stepperMotor_page_Id      6
+#define __thresholdScan_page_Id     7
 
 #define BIN_FILES "Binary (*.bin)"
 #define TIFF_FILES "TIFF (*.tiff)"
@@ -68,7 +68,7 @@ class zmqController;
 #define TP_PERIOD 40000 //! In units of 25 ns. 40000 * 25 ns = 1 ms = 1000 Hz
 
 const QString _softwareName = "ASI Dexter";
-const QString _softwareVersion = "0.0.0 ZMQ";
+const QString _softwareVersion = "1.8.0";
 
 #include <stdio.h>
 #include <QCoreApplication>

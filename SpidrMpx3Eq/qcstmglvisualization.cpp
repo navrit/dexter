@@ -2188,7 +2188,7 @@ void QCstmGLVisualization::on_infDataTakingCheckBox_toggled(bool checked)
 
 void QCstmGLVisualization::on_testPulsesClosed(){
     if ( _testPulsesDialog ) {
-        disconnect(_mtrDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
+//        disconnect(_mtrDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
         delete _testPulsesDialog;
         _testPulsesDialog = nullptr;
     }
@@ -2198,7 +2198,7 @@ void QCstmGLVisualization::on_testPulsesPushButton_clicked(){
 
 
         _testPulsesDialog = new TestPulses(_mpx3gui, this);
-        connect(_testPulsesDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
+//        connect(_testPulsesDialog, &MTRDialog::finished, this, &QCstmGLVisualization::on_testPulsesClosed);
 
     }
     _testPulsesDialog->show(); // modeless

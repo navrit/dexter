@@ -27,7 +27,7 @@ private slots:
     void on_buttonBox_accepted();
 
 signals:
-    void user_accepted_stats();
+    //void user_accepted_stats();
 
 };
 
