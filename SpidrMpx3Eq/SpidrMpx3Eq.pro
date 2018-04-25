@@ -141,7 +141,8 @@ FORMS    += mpx3gui.ui \
     qcstmcorrectionsdialog.ui \
     statsdialog.ui \
     optionsdialog.ui \
-    thresholdscan.ui
+    thresholdscan.ui \
+    qcstmct.ui
 
     copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/\" &
     first.depends = $(first) copydata
