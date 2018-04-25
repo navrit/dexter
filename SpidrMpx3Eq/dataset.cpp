@@ -1,4 +1,6 @@
 #include "dataset.h"
+#include "mpx3gui.h"
+#include "qcstmBHWindow.h"
 #include "spline.h"
 #include "qcstmcorrectionsdialog.h"
 
@@ -1403,6 +1405,10 @@ void Dataset::applyCorrections(QCstmCorrectionsDialog * corrdiag) {
     if ( corrdiag->isSelectedOBCorr() ) {
         applyOBCorrection();
     }
+    if ( corrdiag->isSelectedBHCorr()) {
+        corrdiag->callBHCorrection();
+    }
+
 }
 
 void Dataset::applyOBCorrection() {
@@ -1592,6 +1598,43 @@ void Dataset::dumpAllActivePixels() {
     }
 
 }
+
+/*
+void Dataset::applyBHCorrection(QVector<double> thickness, Dataset* originalSet, QMap<double, Dataset> map)
+//Makes signal to thickness conversion
+{
+    QList<int> keys = m_thresholdsToIndices.keys();
+    if(m_spline==nullptr) m_spline = new tk::spline;  // instantiate spline if not defined
+
+    //Loop over layers
+    for (int i = 0; i < keys.length(); i++)
+    {
+        //Create data structure
+        QVector<QVector<double>> bhData(getPixelsPerLayer());
+        sort(thickness.begin(), thickness.end());
+        for(int j = 0; j<thickness.size(); j++)
+        {
+                int * layer = map[thickness[j]].getLayer(keys[i]);
+                for(unsigned int k = 0; k<getPixelsPerLayer(); k++){ bhData[k].push_back(layer[k]); }
+        }
+        //Apply correction
+        int * currentLayer = originalSet->getLayer(keys[i]);
+        for(unsigned int j = 0; j< getPixelsPerLayer(); j++)
+        {
+            QVector<double> temp = bhData[j];
+            m_spline->set_points(thickness.toStdVector(), temp.toStdVector(), false);
+            currentLayer[j] = (*m_spline)(currentLayer[j]); //Do the interpolation
+
+            if(j % (getPixelsPerLayer() / 100) == 0)
+            {
+                emit Dataset::updateProgressBar( (100 / keys.size()) * (i+1) * j / getPixelsPerLayer() );
+            }
+        }
+    }
+    }
+
+}
+*/
 
 void Dataset::fromByteArray(QByteArray serialized){
     QDataStream in(&serialized, QIODevice::ReadOnly);

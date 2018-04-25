@@ -57,6 +57,7 @@ class zmqController;
 #define RAW_TIFF_FILES "TIFF (*_raw.tiff)"
 #define BOTH_TIFF_FILES "Corrected and uncorrected TIFFs (*.tiff)"
 #define ASCII_FILES "ASCII (*.txt)"
+#define JSON_FILES "BH JSON file(*.json)"
 
 #define TP_PERIOD 40000 //! In units of 25 ns. 40000 * 25 ns = 1 ms = 1000 Hz
 

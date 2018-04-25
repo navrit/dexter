@@ -142,6 +142,7 @@ public:
     void applyCorrections(QCstmCorrectionsDialog * corrdiag);//<!Handles all corrections.  This function is blocking for the moment !
     void applyOBCorrection();//!< Computes and applies the flat-field correction
     void dumpAllActivePixels(); //!< for testing purposes
+    //void applyBHCorrection(QVector<double> thickness, Dataset* originalSet, QMap<double, Dataset> map);//!< Computes and applies a beam-hardening correction
     void applyDeadPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
     void applyHighPixelsInterpolation(double meanMultiplier, QMap<int, double> meanvals);
     void calcBasicStats(QPoint pixel_init, QPoint pixel_end); //!Calculates the Mean and standard deviation of the pixel values in the selected region.

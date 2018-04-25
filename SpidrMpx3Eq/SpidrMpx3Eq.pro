@@ -85,7 +85,6 @@ SOURCES += main.cpp \
     barchart.cpp \
     ThlScan.cpp \
     DataTakingThread.cpp \
-    qcustomplot.cpp \
     TiffFile.cpp \
     datacontrollerthread.cpp \
     ../Qzmq/qzmqcontext.cpp \
@@ -93,6 +92,9 @@ SOURCES += main.cpp \
     ../Qzmq/qzmqsocket.cpp \
     ../Qzmq/qzmqvalve.cpp \
     zmqcontroller.cpp
+    qcstmBHWindow.cpp \
+    qcstmBHdialog.cpp \
+    qcustomplot.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -119,7 +121,6 @@ HEADERS += mpx3gui.h \
     barchart.h  \
     ThlScan.h \
     DataTakingThread.h \
-    qcustomplot.h \
     TiffFile.h \
     datacontrollerthread.h \
     ../Qzmq/qzmqcontext.h \
@@ -128,6 +129,9 @@ HEADERS += mpx3gui.h \
     ../Qzmq/qzmqsocket.h \
     ../Qzmq/qzmqvalve.h \
     zmqcontroller.h
+    qcstmBHWindow.h \
+    qcstmBHdialog.h \
+    qcustomplot.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \
@@ -138,8 +142,12 @@ FORMS    += mpx3gui.ui \
     qcstmconfigmonitoring.ui \
     heatmapdisplay.ui \
     qcstmct.ui \
+    qcstmBHWindow.ui \
+    qcstmBHdialog.ui \
     qcstmcorrectionsdialog.ui \
     statsdialog.ui \
+    profiledialog.ui \
+    qcstmBHdialog.ui \
     optionsdialog.ui \
     thresholdscan.ui \
     qcstmct.ui
