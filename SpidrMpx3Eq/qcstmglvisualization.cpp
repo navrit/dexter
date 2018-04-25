@@ -300,7 +300,7 @@ void QCstmGLVisualization::saveImage(QString filename, QString corrMethod)
     }
 }
 
-void QCstmGLVisualization::StartDataTaking() {
+void QCstmGLVisualization::StartDataTaking(QString mode="") {
 
     if (mode == "CT") {
         runningCT = true;

@@ -26,7 +26,7 @@
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 
-//#include "qcustomplot.h"
+#include "qcustomplot.h"
 
 #include "ui_thresholdscan.h"
 
@@ -39,12 +39,20 @@ QCstmDacs::QCstmDacs(QWidget *parent) :
 
     //_ui = ui;
     _senseThread = 0x0;
+    _scanThread = 0x0;
     _updateDACsThread = 0x0;
     _signalMapperSliderSpinBoxConn = 0x0;
     _signalMapperSlider = 0x0;
     _signalMapperSpinBox = 0x0;
 
+    // Number of plots added to the Scan
+    _plotIdxCntr = 0;
+
     // Defaults
+    _scanStep = 16;
+    ui->scanStepSpinBox->setMaximum( 256 );
+    ui->scanStepSpinBox->setMinimum( 1 );
+    ui->scanStepSpinBox->setValue( _scanStep );
     _deviceIndex = 2;
     ui->deviceIdSpinBox->setMaximum(3);
     ui->deviceIdSpinBox->setMinimum(0);
@@ -70,7 +78,38 @@ QCstmDacs::QCstmDacs(QWidget *parent) :
     SetupSignalsAndSlots();
 
     // Leave a few things unnactivated
+    ui->startScanButton->setDisabled( true );
     ui->senseDACsPushButton->setDisabled( true );
+
+
+
+    // Prepare plot
+    // Prepare the plot
+    //ui->plotScan = new QCustomPlot();
+    ui->plotScan->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
+    // The legend
+    ui->plotScan->legend->setVisible( false ); // Nothing there yet...
+    QFont f = ui->plotScan->font();
+    f.setPointSize( 7 ); // and make a bit smaller for legend
+    ui->plotScan->legend->setFont( f );
+    ui->plotScan->legend->setBrush( QBrush(QColor(255,255,255,230)) );
+    // The axes
+    ui->plotScan->xAxis->setRange( 0, __max_DAC_range ); // Maximum DAC range
+    ui->plotScan->yAxis->setRange( 0, __voltage_DACS_MAX );
+    f = ui->plotScan->font();  // Start out with Dialog's font..
+    f.setBold( true );
+    ui->plotScan->xAxis->setLabelFont( f );
+    ui->plotScan->yAxis->setLabelFont( f );
+    // The labels:
+    ui->plotScan->xAxis->setLabel("DAC setting");
+    ui->plotScan->yAxis->setLabel("DAC out [V]");
+
+    // Insert the plot in the dialog window
+    //ui->plotScan->setParent( ui->_DACScanFrame_2 );
+
+    //QRect hrect = ui->_DACScanFrame_2->geometry();
+    //ui->plotScan->resize( hrect.size().rwidth() , hrect.size().rheight() );
+
 
     //ReadDACsFile("asda"); //TODO: shouldn't exist, doesn't throw an error.
     //PopulateDACValues();
@@ -96,6 +135,39 @@ int QCstmDacs::GetDACValueFromConfig(int chip, int dacIndex) {
 
 void QCstmDacs::SetDACValueLocalConfig(int chip, int dacIndex, int val) {
     _mpx3gui->getConfig()->setDACValue(chip, dacIndex, val);
+}
+
+void QCstmDacs::StartDACScan() {
+
+    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
+    if ( ! spidrcontrol ) {
+        QMessageBox::information(this, tr("MPX3"), tr("Connect to hardware first.") );
+        return;
+    }
+
+    // Replot to start
+    ui->plotScan->clearGraphs();
+    ui->plotScan->legend->setVisible( false );
+    ui->plotScan->replot();
+
+    // Threads
+    if ( _scanThread ) {
+        if ( _scanThread->isRunning() ) {
+            return;
+        }
+        //disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
+        delete _scanThread;
+        _scanThread = 0x0;
+    }
+
+    // Create the thread
+    _scanThread = new ScanDACsThread(_deviceIndex, this, spidrcontrol);
+    // Connect to the progress bar
+    connect( _scanThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
+
+    _scanThread->start();
+
 }
 
 void QCstmDacs::changeDAC(int threshold, int value)
@@ -451,9 +523,11 @@ void QCstmDacs::SetupSignalsAndSlots() {
     // Buttons
     connect( ui->clearAllPushButton, SIGNAL(clicked()), this, SLOT( UncheckAllDACs() ) );
     connect( ui->selectAllPushButton, SIGNAL(clicked()), this, SLOT( CheckAllDACs() ) );
+    connect( ui->startScanButton, SIGNAL(clicked()), this, SLOT( StartDACScan() ) );
     connect( ui->senseDACsPushButton, SIGNAL(clicked()), this, SLOT( SenseDACs() ) );
     connect( ui->deviceIdSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeDeviceIndex(int) ) );
     connect( ui->samplesSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeNSamples(int) ) );
+    connect( ui->scanStepSpinBox, SIGNAL(valueChanged(int)), this, SLOT( ChangeScanStep(int) ) );
 
     // Sliders and SpinBoxes
 
@@ -662,6 +736,17 @@ void QCstmDacs::ChangeNSamples( int index )
     _nSamples = index;
 }
 
+void QCstmDacs::ChangeScanStep( int index )
+{
+    if( index < 0 ) return; // can't really happen cause the SpinBox has been limited
+    _scanStep = index;
+}
+
+QCPGraph * QCstmDacs::GetGraph(int idx) {
+    return ui->plotScan->graph( idx );
+}
+
+
 void QCstmDacs::setWindowWidgetsStatus(win_status s)
 {
 
@@ -670,12 +755,14 @@ void QCstmDacs::setWindowWidgetsStatus(win_status s)
     case win_status::startup:
 
         this->setEnabled( false );
+        ui->startScanButton->setDisabled( true );
         ui->senseDACsPushButton->setDisabled( true );
 
         break;
 
     case win_status::connected:
         this->setEnabled( true );
+        ui->startScanButton->setDisabled( false );
         ui->senseDACsPushButton->setDisabled( false );
 
         break;
@@ -688,12 +775,37 @@ void QCstmDacs::setWindowWidgetsStatus(win_status s)
 
 }
 
+
+void QCstmDacs::scanFinished() {
+
+    _plotIdxCntr = 0;
+    _plotIdxMap.clear();
+
+    // clear plots
+    //ui->plotScan->clearGraphs();
+    //ui->plotScan->legend->setVisible( false );
+
+}
+
 void QCstmDacs::updateFinished() {
 
     // What needs to be done when an update has been requested ? TODO
 
 }
 
+
+void QCstmDacs::addData(int dacIdx, int dacVal, double adcVal ) {
+
+    _graph = ui->plotScan->graph( _plotIdxMap[dacIdx] ); // the right vector index
+    _graph->addData( dacVal, adcVal );
+    ui->plotScan->replot();
+
+    // Actualize Slider, SpinBoxes, and Labels
+    //_dacSpinBoxes[dacIdx]->setValue( dacVal );
+    //_dacSliders[dacIdx]->setValue( dacVal );
+    // Labels are updated already through a SIGNAL/SLOT from the thread.
+
+}
 
 void QCstmDacs::setTextWithIdx(QString s, int i) {
 
@@ -741,7 +853,39 @@ void QCstmDacs::slideAndSpin(int i, int val) {
 
 }
 
+void QCstmDacs::addData(int dacIdx) {
+
+    _plotIdxMap[dacIdx] = _plotIdxCntr;
+    _plotIdxCntr++;
+
+    // If starting a plot, create it first
+    ui->plotScan->addGraph();
+    _graph = ui->plotScan->graph( _plotIdxMap[dacIdx] ); // the right vector index
+
+    QPen pen( COLOR_TABLE[ dacIdx ] );
+    pen.setWidth( 0.1 );
+    _graph->setPen( pen );
+    _graph->setName( QString(MPX3RX_DAC_TABLE[dacIdx].name) ); // the dac index
+
+    // Do not use legend.  I will color the text boxes instead.
+    //_graph->addToLegend();
+    //ui->plotScan->legend->setVisible( true );
+
+}
+
 SenseDACsThread::SenseDACsThread (int devIdx, QCstmDacs * dacs, SpidrController * sc) {
+
+    _dacs = dacs;
+    _spidrcontrol = sc;
+    _deviceIndex = devIdx;
+    // I need to do this here and not when already running the thread
+    // Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
+    if( _spidrcontrol ) { _spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
+    else { _srcAddr = 0; }
+
+}
+
+ScanDACsThread::ScanDACsThread (int devIdx, QCstmDacs * dacs, SpidrController * sc) {
 
     _dacs = dacs;
     _spidrcontrol = sc;
@@ -927,6 +1071,217 @@ void UpdateDACsThread::run(){
     disconnect( this, SIGNAL( updateFinished() ), _dacs, SLOT( updateFinished() ) );
 
     // Get rid of this connection
+    delete spidrcontrol;
+}
+
+void ScanDACsThread::run() {
+
+    // Check if the device is alive
+    if ( ! _dacs->GetMpx3GUI()->getConfig()->detectorResponds( _dacs->GetDeviceIndex() ) ) {
+        qDebug() << "[ERR ] Device " << _dacs->GetDeviceIndex() << " not responding.";
+        return;
+    }
+
+    // Open a new temporary connection to the spider to avoid collisions to the main one
+    // Extract the ip address
+    int ipaddr[4] = { 1, 1, 168, 192 };
+    if( _srcAddr != 0 ) {
+        ipaddr[3] = (_srcAddr >> 24) & 0xFF;
+        ipaddr[2] = (_srcAddr >> 16) & 0xFF;
+        ipaddr[1] = (_srcAddr >>  8) & 0xFF;
+        ipaddr[0] = (_srcAddr >>  0) & 0xFF;
+    }
+
+    SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
+
+    if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
+        qDebug() << "Device not connected !";
+        return;
+    }
+
+    // Store starting values in order to replace them later
+    vector<int> currentDACs;
+    int dac_val = 0;
+    for (int i = 0 ; i < MPX3RX_DAC_COUNT ; i++) {
+        spidrcontrol->getDac(  _dacs->GetDeviceIndex(), MPX3RX_DAC_TABLE[i].code, &dac_val);
+        currentDACs.push_back( dac_val );
+    }
+
+    // Make it update the Tab so the drawing is smooth
+    connect( this, SIGNAL( fillText(QString) ), _dacs, SLOT( update() ) );
+
+    // Connect the plots on DACs
+    connect( this, SIGNAL( addData(int, int, double) ), _dacs, SLOT( addData(int, int, double) ) );
+    // This SLOT will be taking care of creating the new plot
+    connect( this, SIGNAL( addData(int) ), _dacs, SLOT( addData(int) ) );
+    connect( this, SIGNAL( scanFinished() ), _dacs, SLOT( scanFinished() ) );
+
+    // For the progress bar verify how many DACs are scheduled for scanning
+    // and calculate the number of steps.
+    int nStepsToScan = 0;
+    for (int i = 0 ; i < MPX3RX_DAC_COUNT ; i++) {
+        if ( _dacs->GetCheckBoxList()[i]->isChecked() ) {
+            nStepsToScan += (MPX3RX_DAC_TABLE[i].dflt * 2) / _dacs->GetScanStep();
+        }
+    }
+
+    int adc_val = 0;
+    progress( 0 );
+    int progressBarCntr = 0;
+
+    for (int i = 0 ; i < MPX3RX_DAC_COUNT ; i++) {
+
+        if ( ! _dacs->GetCheckBoxList()[i]->isChecked() ) continue;
+
+        // Create the plot coming
+        addData(i);
+
+        // Clean up the corresponding label
+        connect( this, SIGNAL( fillText(QString) ), _dacs->GetLabelsList()[i], SLOT( setText(QString)) );
+        fillText("");
+        disconnect( this, SIGNAL( fillText(QString) ), _dacs->GetLabelsList()[i], SLOT( setText(QString)) );
+
+        // Scan !
+        for ( int dacValI = 0 ; dacValI < (1<<MPX3RX_DAC_TABLE[i].bits) ; dacValI += _dacs->GetScanStep() ) {
+
+
+            if ( !spidrcontrol->setDac( _dacs->GetDeviceIndex(), MPX3RX_DAC_TABLE[i].code, dacValI ) ) {
+
+                qDebug() << "setDac[" << i << "] | " << spidrcontrol->errorString().c_str();
+
+
+            } else {
+
+                // Adjust the sliders and the SpinBoxes to the new value
+                connect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
+                slideAndSpin( i, dacValI );
+                disconnect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
+
+                if ( !spidrcontrol->setSenseDac( _dacs->GetDeviceIndex(), MPX3RX_DAC_TABLE[i].code ) ) {
+
+                    qDebug() << "setSenseDac[" << i << "] | " << spidrcontrol->errorString().c_str();
+
+                } else {
+
+                    adc_val = 0;
+
+                    if ( !spidrcontrol->getDacOut( _dacs->GetDeviceIndex(), &adc_val, _dacs->GetNSamples() ) ) {
+
+                        qDebug() << "getDacOut : " << i << " | " << spidrcontrol->errorString().c_str();
+
+                    } else {
+
+                        // Here we completed the chain: setDac --> setSenseDac --> getDacOut
+
+                        adc_val /= _dacs->GetNSamples();
+                        QString dacOut;
+                        double adc_volt = 0.;
+                        if ( adc_val > __maxADCCounts || adc_val < 0 ) { // FIXME .. handle the clipping properly
+                            dacOut = "clip'ng";
+                        } else {
+
+                            adc_volt = (__voltage_DACS_MAX/(double)__maxADCCounts) * (double)adc_val;
+                            dacOut = QString::number( adc_volt, 'f', 2 );
+                            dacOut += "V";
+                            addData(i, dacValI, adc_volt);
+
+                        }
+
+                        // Send signal to Labels.  Making connections one by one.
+                        connect( this, SIGNAL( fillTextWithIdx(QString, int) ), _dacs, SLOT(setTextWithIdx(QString,int)) );
+                        fillTextWithIdx( dacOut, i );
+                        disconnect( this, SIGNAL( fillTextWithIdx(QString, int) ), _dacs, SLOT(setTextWithIdx(QString,int) ) );
+                        //connect( this, SIGNAL( fillText(QString) ), _dacs->GetLabelsList()[i], SLOT( setText(QString)) );
+                        //fillText( dacOut );
+                        //disconnect( this, SIGNAL( fillText(QString) ), _dacs->GetLabelsList()[i], SLOT( setText(QString)) );
+
+                        // Send signal to progress bar
+                        progress( floor( ( (double)progressBarCntr / (double)nStepsToScan) * 100 ) );
+                        progressBarCntr++;
+
+
+                    }
+
+                }
+
+            }
+
+        }
+
+        //////////////////////////////////////////////////////////////////////////////
+        // And bring back the DAC to it's original value
+        int retryCntr = __N_RETRY_ORIGINAL_SETTING;
+
+        if( !spidrcontrol->setDac( _dacs->GetDeviceIndex(), MPX3RX_DAC_TABLE[i].code, currentDACs[i] ) ) {
+
+            if( retryCntr == 0 ) {
+                retryCntr = __N_RETRY_ORIGINAL_SETTING;
+                qDebug() << "setDac[" << i << "] | " << spidrcontrol->errorString().c_str() << " ... tried 3 times, giving up." << endl;
+                continue;
+            }
+            qDebug() << "setDac[" << i << "] | " << spidrcontrol->errorString().c_str() << " ... retry " << __N_RETRY_ORIGINAL_SETTING - retryCntr + 1 << endl;
+            retryCntr--;
+
+        } else {
+
+            // setDac successful
+            // Bring the slider and spinBox to the right position
+            // Adjust the sliders and the SpinBoxes to the new value
+            connect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
+            slideAndSpin( i, currentDACs[i] );
+            disconnect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
+
+            //////////////////////////////////////////////////////////////////////////////
+            // And sense it in the original position
+            if ( !spidrcontrol->setSenseDac( _dacs->GetDeviceIndex(), MPX3RX_DAC_TABLE[i].code ) ) {
+
+                qDebug() << "setSenseDac[" << i << "] | " << spidrcontrol->errorString().c_str() << endl;
+
+            } else {
+
+                adc_val = 0;
+
+                if ( !spidrcontrol->getDacOut( _dacs->GetDeviceIndex(), &adc_val, _dacs->GetNSamples() ) ) {
+
+                    qDebug() << "getDacOut : " << i << " | " << spidrcontrol->errorString().c_str();
+
+                } else {
+
+                    adc_val /= _dacs->GetNSamples();
+                    QString dacOut;
+                    if ( adc_val > __maxADCCounts || adc_val < 0 ) { // FIXME .. handle the clipping properly
+                        dacOut = "clip'ng";
+                    } else {
+                        dacOut = QString::number( (__voltage_DACS_MAX/(double)__maxADCCounts) * (double)adc_val, 'f', 2 );
+                        dacOut += "V";
+                    }
+
+                    // Send signal to Labels.  Making connections one by one.
+                    connect( this, SIGNAL( fillText(QString) ), _dacs->GetLabelsList()[i], SLOT( setText(QString)) );
+                    fillText( dacOut );
+                    disconnect( this, SIGNAL( fillText(QString) ), _dacs->GetLabelsList()[i], SLOT( setText(QString)) );
+
+                }
+
+            } //////////////////////////////////////////////////////////////////////////////
+
+        } //////////////////////////////////////////////////////////////////////////////
+
+    }
+
+    progress( 100 );
+
+    scanFinished();
+
+    disconnect( this, SIGNAL( fillText(QString) ), _dacs, SLOT( update() ) );
+    disconnect( this, SIGNAL( addData(int, int, double) ), _dacs, SLOT( addData(int, int, double) ) );
+    disconnect( this, SIGNAL( addData(int) ), _dacs, SLOT( addData(int) ) );
+    disconnect( this, SIGNAL( scanFinished() ), _dacs, SLOT( scanFinished() ) );
+
+    // Disconnect the progress bar
+    //disconnect( this, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
+
+
     delete spidrcontrol;
 }
 
