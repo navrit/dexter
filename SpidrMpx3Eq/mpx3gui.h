@@ -25,6 +25,8 @@ class Mpx3Config;
 #include "histogram.h"
 #include "mpx3eq_common.h"
 #include "mpx3config.h"
+#include "qcstmsteppermotor.h"
+#include "qcstmct.h"
 #include "thresholdscan.h"
 #include "datacontrollerthread.h"
 #include "zmqcontroller.h"
@@ -39,6 +41,8 @@ class ThlScan;
 class QCstmEqualization;
 class QCstmGLVisualization;
 class QCstmConfigMonitoring;
+class QCstmStepperMotor;
+class QCstmCT;
 class thresholdScan;
 class DataControllerThread;
 class zmqController;
@@ -145,6 +149,8 @@ public:
     QCstmGLVisualization * getVisualization();
     QCstmDacs * getDACs();
     QCstmConfigMonitoring * getConfigMonitoring();
+    QCstmStepperMotor * getStepperMotor();
+    QCstmCT * getCT();
     thresholdScan * getTHScan();
 
     SpidrController * GetSpidrController();

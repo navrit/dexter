@@ -75,6 +75,7 @@ SOURCES += main.cpp \
     qcstmconfigmonitoring.cpp \
     qcstmruler.cpp \
     heatmapdisplay.cpp \
+    qcstmct.cpp \
     qcstmcorrectionsdialog.cpp \
     statsdialog.cpp \
     profiledialog.cpp \
@@ -113,6 +114,7 @@ HEADERS += mpx3gui.h \
     qcstmconfigmonitoring.h \
     qcstmruler.h \
     heatmapdisplay.h \
+    qcstmct.h \
     qcstmcorrectionsdialog.h \
     statsdialog.h \
     profiledialog.h \

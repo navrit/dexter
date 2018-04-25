@@ -852,6 +852,9 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 
     connect( ui->saveCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_saveCheckBox_clicked()));
 
+    // CT stuff
+    connect( this, SIGNAL(sig_resumeCT()), _mpx3gui->getCT(), SLOT(resumeCT()));
+
     // TH Scan
     connect( this, SIGNAL(sig_resumeTHScan()), _mpx3gui->getTHScan(), SLOT(resumeTHScan()));
 }
