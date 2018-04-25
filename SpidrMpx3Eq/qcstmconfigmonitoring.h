@@ -123,6 +123,7 @@ private slots:
     void on_cameraCheckBox_toggled(bool checked);
     void changeCamera(int);
 
+//    void on_motorTestButton_clicked();
     void biasVoltageChanged();
     void setLogLevel();
 
