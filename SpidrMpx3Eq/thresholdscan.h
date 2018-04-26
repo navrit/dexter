@@ -10,7 +10,6 @@ class thresholdScan;
 
 class ThresholdScanThread;
 class SpidrController;
-class QCstmPlotHeatmap;
 
 class thresholdScan : public QWidget
 {
@@ -117,7 +116,6 @@ private:
     Mpx3GUI * _mpx3gui;
     thresholdScan * _thresholdScan;
     Ui::thresholdScan * _ui;
-    QCstmPlotHeatmap * _heatmap;
 
     SpidrController * _spidrcontrol;
 
@@ -130,14 +128,6 @@ private:
 
     bool scanContinue = true;
     bool abort = false; // Not used...
-
-public slots:
-    void UpdateHeatMap(int, int);
-
-signals:
-    //void addData(int, int, double);
-    //void addData(int);
-    void UpdateHeatMapSignal(int, int);
 
 };
 

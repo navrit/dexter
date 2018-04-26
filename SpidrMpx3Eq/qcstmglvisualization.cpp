@@ -303,7 +303,7 @@ void QCstmGLVisualization::saveImage(QString filename, QString corrMethod)
     }
 }
 
-void QCstmGLVisualization::StartDataTaking(QString mode="") {
+void QCstmGLVisualization::StartDataTaking(QString mode) {
 
     if (mode == "CT") {
         runningCT = true;
@@ -724,7 +724,6 @@ void QCstmGLVisualization::ConnectionStatusChanged(bool connecting) {
 
         ui->startButton->setEnabled( true ); // Enable or disable the button depending on the connection status.
         ui->singleshotPushButton->setEnabled( true );
-        ui->recoPushButton->setEnabled( true );
 
         // Report the chip ID's
         // Make space in the dataTakingGridLayout
@@ -757,13 +756,7 @@ void QCstmGLVisualization::ConnectionStatusChanged(bool connecting) {
 
         ui->startButton->setEnabled( false );
         ui->singleshotPushButton->setEnabled( false );
-        ui->recoPushButton->setEnabled( false );
     }
-
-    // TODO
-    // Configure the chip, provided that the Adj mask is loaded
-    // now done from the configuration
-    //Configuration( false );
 
 }
 
@@ -777,9 +770,6 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     setGradient(0);
     changeBinCount(ui->binCountSpinner->value());
 
-    //connect(_mpx3gui, SIGNAL(ConnectionStatusChanged(bool)), ui->startButton, SLOT(setEnabled(bool))); //enable the button on connection
-    //connect(_mpx3gui, SIGNAL(ConnectionStatusChanged(bool)), ui->singleshotPushButton, SLOT(setEnabled(bool))); //enable the button on connection
-
     connect(_mpx3gui, SIGNAL(sizeChanged(int, int)), ui->glPlot, SLOT(setSize(int, int)));
     connect(ui->startButton, SIGNAL(clicked(bool)), this, SLOT(StartDataTaking()));
     connect(this, SIGNAL(mode_changed(bool)), _mpx3gui, SLOT(set_summing(bool)));
@@ -788,9 +778,6 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect(ui->generateDataButton, SIGNAL(clicked()), _mpx3gui, SLOT(generateFrame()));
     connect(_mpx3gui, SIGNAL(data_cleared()), this, SLOT(on_clear()));
     connect(_mpx3gui, SIGNAL(data_zeroed()), this, SLOT(on_zero()));
-    //connect(_mpx3gui, SIGNAL(frame_added(int)), this, SLOT(on_frame_added(int)));//TODO specify which layer.
-    //connect(_mpx3gui, SIGNAL(hist_added(int)), this, SLOT(on_hist_added(int)));
-    //connect(_mpx3gui, SIGNAL(hist_changed(int)),this, SLOT(on_hist_changed(int)));
     connect(_mpx3gui, SIGNAL(reload_layer(int)), this, SLOT( reload_layer(int)));
     connect(_mpx3gui, SIGNAL(reload_all_layers()), this, SLOT(reload_all_layers()));
     //connect(_mpx3gui, SIGNAL(frames_reload()),this, SLOT(on_frame_updated()));
@@ -805,7 +792,6 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect(ui->glPlot->getPlot(), SIGNAL(region_selected(QPoint,QPoint,QPoint)), this, SLOT(region_selected(QPoint,QPoint,QPoint)));
 
     connect(this, SIGNAL(change_hover_text(QString)), ui->mouseOverLabel, SLOT(setText(QString)));
-    //connect(ui->fullRangeRadio, SIGNAL(pressed()), ui->histPlot, SLOT(set_scale_full()));
     connect(ui->histPlot, SIGNAL(new_range_dragged(QCPRange)), this, SLOT(new_range_dragged(QCPRange)));
 
     connect( this, &QCstmGLVisualization::sig_statusBarAppend, _mpx3gui, &Mpx3GUI::statusBarAppend );
@@ -1095,11 +1081,7 @@ void QCstmGLVisualization::developerMode(bool enabled)
         ui->testPulsesPushButton->show();
         ui->line->show();
         ui->generateDataButton->show();
-        ui->imageCalculatorPushButton->show();
-        ui->recoPushButton->show();
         ui->dropFramesCheckBox->show();
-        ui->saveBitmapPushButton->show();
-        ui->saveWithScaleCheckBox->show();
         ui->bufferOccupancy->show();
         ui->label->show();
         ui->progressBar->show();
@@ -1110,11 +1092,7 @@ void QCstmGLVisualization::developerMode(bool enabled)
         ui->testPulsesPushButton->hide();
         ui->line->hide();
         ui->generateDataButton->hide();
-        ui->imageCalculatorPushButton->hide();
-        ui->recoPushButton->hide();
         ui->dropFramesCheckBox->hide();
-        ui->saveBitmapPushButton->hide();
-        ui->saveWithScaleCheckBox->hide();
         ui->bufferOccupancy->hide();
         ui->label->hide();
         ui->progressBar->hide();
@@ -1123,19 +1101,7 @@ void QCstmGLVisualization::developerMode(bool enabled)
     }
 }
 
-//void QCstmGLVisualization::on_user_accepted_stats()
-//{
-//    // delete the corresponding window
-//    if ( _statsdialog ) {
-//        delete _statsdialog;
-//        _statsdialog = nullptr;
-//        _mpx3gui->getDataset()->bstats.mean_v.clear();
-//        _mpx3gui->getDataset()->bstats.stdev_v.clear();
-//    }
-
-//}
-
-void QCstmGLVisualization::on_user_accepted_profile()
+void QCstmGLVisualization::user_accepted_profile()
 {
     //Delete the corresponding window
     if ( _profiledialog ) {
@@ -1213,9 +1179,6 @@ void QCstmGLVisualization::on_clear(){
     ui->histPlot->clear();
     ui->layerSelector->clear();
     ui->glPlot->getPlot()->readData(*_mpx3gui->getDataset());
-
-    // Why can't I call reload_all_layers() here without it crsahing? !??!?!??!?!?!
-    //on_reload_all_layers();
 }
 
 void QCstmGLVisualization::on_zero()
@@ -2006,51 +1969,6 @@ void QCstmGLVisualization::on_layerSelector_activated(const QString &arg1)
 
 void QCstmGLVisualization::on_summingCheckbox_toggled(bool checked){
     emit mode_changed(checked);
-    //on_reload_all_layers();
-}
-
-void QCstmGLVisualization::on_saveBitmapPushButton_clicked(){
-    _mpx3gui->getDataset()->debugPrintThesholds(9);
-//    QString filename = QFileDialog::getSaveFileName(this,
-//                                                    tr("Save as image"),
-//                                                    ".",
-//                                                    tr("Image files (*.png)"));
-
-//    //! Fixes a bug where if you tried to save but cancelled, it would save empty files called _histogram.dat, _histogram.png and _.png
-//    if (filename.isEmpty()){
-//        qDebug() << "[INFO] User tried to save and cancelled or input an empty string somehow";
-//        return;
-//    }
-
-//    //! Force the .png in the data filename
-//    if ( ! filename.toLower().contains(".png")) {
-//        filename.append(".png");
-//    }
-
-//    //! Get the image
-//    if ( _savePNGWithScales ) {
-//        ui->glPlot->grab().save(filename); // with all children
-//    }
-//    else {
-//        ui->glPlot->getPlot()->grabFramebuffer().save(filename); // only image
-//    }
-
-//    //! Save and get the histogram
-//    filename.remove(".png");
-//    ui->histPlot->savePng(filename+"_histogram.png");
-//    QFile histogramDat(filename+"_histogram.dat");
-
-//    //! Error handling for histogram dat file
-//    if(!histogramDat.open(QIODevice::WriteOnly)) {
-//        sig_statusBarAppend("Histogram dat file cannot be written to","red");
-//        qDebug() << histogramDat.errorString();
-//        return;
-//    }
-//    Histogram *hist = ui->histPlot->getHistogram(getActiveThreshold());
-//    for(int i = 0; i < hist->size();i++) {
-//        histogramDat.write(QString("%1 %2\n").arg(hist->keyAt(i)).arg(hist->atIndex(i)).toStdString().c_str());
-//    }
-
 }
 
 void QCstmGLVisualization::on_correctionsDialogPushButton_clicked(){
@@ -2068,11 +1986,6 @@ void QCstmGLVisualization::on_correctionsDialogPushButton_clicked(){
     _corrdialog->raise();
     _corrdialog->activateWindow();
 
-}
-
-void QCstmGLVisualization::on_saveWithScaleCheckBox_toggled(bool checked)
-{
-    _savePNGWithScales = checked;
 }
 
 void QCstmGLVisualization::on_singleshotPushButton_clicked()

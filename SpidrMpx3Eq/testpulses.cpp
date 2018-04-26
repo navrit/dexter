@@ -91,6 +91,7 @@ void TestPulses::on_pushButton_setLength_clicked()
     }
 
     // This can be used as the voltage reference
+    //! TODO This is wrong, fix it...
     double adc_volt = (__voltage_DACS_MAX/(double)__maxADCCounts) * (((double)adc_val)/nSamples);
     qDebug() << "ADC value - RPZ[255] : " << adc_val << " | ADC Voltage : " << adc_volt;
 }

@@ -303,7 +303,7 @@ public slots:
     void setPixelDepth(int newVal) {
 
         if ( newVal != PixelDepth ) {
-            qDebug() << "Pixel depth : " << newVal;
+//            qDebug() << "Pixel depth : " << newVal;
             PixelDepth = newVal; emit pixelDepthChanged( newVal );
             //updatePixelDepth();
             SendConfiguration( __pixelDepth );
@@ -326,7 +326,7 @@ public slots:
         if(newVal != GainMode){
             GainMode = newVal; emit gainModeChanged(GainMode);
             //updateGainMode();
-            qDebug() << "Gain mode: " << newVal;
+//            qDebug() << "Gain mode: " << newVal;
             SendConfiguration( __gainMode );
         }
     }

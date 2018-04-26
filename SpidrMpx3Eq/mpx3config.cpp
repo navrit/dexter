@@ -667,11 +667,15 @@ bool Mpx3Config::detectorResponds(int devIndx) {
 
 bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
 
-    qDebug() << "[INFO] reading the configuration from the Json file: " << filename.toStdString().c_str();
+    if (filename == "./config/mpx3.json") {
+        qDebug() << "[INFO]\tReading the configuration from the DEFAULT JSON file: " << filename.toStdString().c_str();
+    } else {
+        qDebug() << "[INFO]\tReading the configuration from the JSON file: " << filename.toStdString().c_str();
+    }
 
     QFile loadFile(filename);
     if(!loadFile.open(QIODevice::ReadOnly)){
-        printf("Couldn't open configuration file %s\n", filename.toStdString().c_str());
+        qDebug() << QString(("Couldn't open configuration file %s\n", filename.toStdString().c_str()));
         return false;
     }
     QByteArray binaryData = loadFile.readAll();

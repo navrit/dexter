@@ -29,7 +29,7 @@ void ProfileDialog::SetMpx3GUI(Mpx3GUI * p )
 
     connect( this, &ProfileDialog::user_accepted_profile,
              _mpx3gui->getVisualization(),
-             &QCstmGLVisualization::on_user_accepted_profile );
+             &QCstmGLVisualization::user_accepted_profile );
 
     connect( ui->profilePlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mousePressEvent(QMouseEvent*)));
 }
@@ -49,8 +49,6 @@ void ProfileDialog::changeTitle(){
 
 void ProfileDialog::changeText(QString text){
     ui->textBrowser->setText(text);
-    //update();
-
 }
 
 void ProfileDialog::plotProfile()

@@ -132,7 +132,6 @@ private:
     Ui::QCstmGLVisualization * ui = nullptr;
     DataTakingThread * _dataTakingThread = nullptr;
     DataConsumerThread * _dataConsumerThread = nullptr;
-    bool _savePNGWithScales = false;
     bool _singleShot = false;
     int _singleShotSaveCurrentNTriggers = 0;
     QCPRange _manualRange;
@@ -211,12 +210,7 @@ private slots:
 
     void UnlockWaitingForFrame();
 
-    //!Temporary save button for images and data.
-    void on_saveBitmapPushButton_clicked();
-
     void on_correctionsDialogPushButton_clicked();
-
-    void on_saveWithScaleCheckBox_toggled(bool checked);
 
     void on_singleshotPushButton_clicked();
 
@@ -246,7 +240,7 @@ private slots:
 
 public slots:
 
-    void StartDataTaking(QString mode);
+    void StartDataTaking(QString mode="");
     void setGradient(int index);
     //!Used to inform this object of the availible gradients and their names.
     void availible_gradients_changed(QStringList gradients);
@@ -268,8 +262,7 @@ public slots:
     void range_changed(QCPRange);
     void data_taking_finished(int);
     void progress_signal(int);
-    //!Called when the user request a different bin-count. Recomputes the histograms for each threshold.
-    void changeBinCount(int count);
+    void changeBinCount(int count); //! user requested a different bin-count. Recomputes the histograms for each threshold.
     void updateETA();
 
     void data_misaligned(bool);
@@ -279,9 +272,7 @@ public slots:
     void fps_update(int);
     void overflow_update(int);
 
-    //Deleting stats dialog and profile dialog
-//    void on_user_accepted_stats();
-    void on_user_accepted_profile();
+    void user_accepted_profile(); //! Deleting profile dialog
     void OperationModeSwitched(int);
 
     void on_scoring(int, int, int, int, int, int, bool);

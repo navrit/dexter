@@ -25,10 +25,6 @@
 #include <QDebug>
 #include <QStatusBar>
 
-#include <boost/uuid/uuid.hpp>            // uuid class
-#include <boost/uuid/uuid_generators.hpp> // generators
-#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
-
 #include <QtConcurrent/QtConcurrent>
 
 #include <stdlib.h>
@@ -57,7 +53,6 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     dataControllerThread = new DataControllerThread(this);
 
     m_zmqController = new zmqController(this);
-    //m_zmqController->sendZmqMessage();
     m_zmqController->SetMpx3GUI(this);
 
     // The orientations carry the information of how the information
@@ -104,11 +99,8 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
         // Prepare Visualization
         _ui->visualizationGL->SetMpx3GUI(this);
 
-        //_ui->CTTab->SetMpx3GUI(this);
         emit availible_gradients_changed(gradientNames);
-
     }
-    //_ui->visualizationGL->ConfigureGUIForIdling();
 
     // Prepare THL Calibration
     _ui->ThresholdTab->SetMpx3GUI(this);
@@ -892,10 +884,6 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     */
 
     //-----------
-    boost::uuids::uuid uuid = boost::uuids::random_generator()();
-    QString uuid_str = boost::uuids::to_string(uuid).c_str();
-    objParent.insert("Measurement_UUID", uuid_str);
-    //-----------
     objParent.insert("Build_ABI", QSysInfo::buildAbi());
     objParent.insert("CPU_arch_current", QSysInfo::currentCpuArchitecture());
     objParent.insert("CPU_arch_build", QSysInfo::buildCpuArchitecture());
@@ -1221,7 +1209,7 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
         loadButtonFilenamePath = path;
     }
 
-    qDebug() << "[INFO] loading image: " << filename;
+//    qDebug() << "[INFO] loading image: " << filename;
 
     QFile saveFile(filename);
     if ( ! saveFile.open(QIODevice::ReadOnly) ) {

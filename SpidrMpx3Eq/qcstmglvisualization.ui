@@ -78,46 +78,7 @@ QGroupBox::title {
        </property>
        <item>
         <layout class="QGridLayout" name="gridLayout_2">
-         <item row="2" column="1">
-          <widget class="QPushButton" name="resetViewPushButton">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Reset visualisation to default view&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Reset View</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QComboBox" name="gradientSelector">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Colouring modes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QComboBox" name="layerSelector">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>130</width>
-             <height>0</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0" colspan="7">
+         <item row="1" column="0" colspan="6">
           <widget class="HeatmapDisplay" name="glPlot" native="true"/>
          </item>
          <item row="3" column="0" colspan="2">
@@ -136,28 +97,21 @@ QGroupBox::title {
            </property>
           </widget>
          </item>
-         <item row="3" column="5">
-          <widget class="QCheckBox" name="saveWithScaleCheckBox">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save image including the scale&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <item row="0" column="0">
+          <widget class="QComboBox" name="layerSelector">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
-           <property name="text">
-            <string>With scale</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="3" colspan="3">
-          <spacer name="horizontalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
+           <property name="minimumSize">
             <size>
-             <width>120</width>
-             <height>20</height>
+             <width>130</width>
+             <height>0</height>
             </size>
            </property>
-          </spacer>
+          </widget>
          </item>
          <item row="0" column="2">
           <widget class="QLabel" name="mouseOverLabel">
@@ -181,7 +135,43 @@ QGroupBox::title {
            </property>
           </widget>
          </item>
-         <item row="2" column="2">
+         <item row="2" column="0">
+          <widget class="QComboBox" name="gradientSelector">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Colouring modes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="3" colspan="2">
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>120</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="2" column="1">
+          <widget class="QPushButton" name="resetViewPushButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Reset visualisation to default view&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Reset View</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2" colspan="4">
           <spacer name="horizontalSpacer_5">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -193,23 +183,6 @@ QGroupBox::title {
             </size>
            </property>
           </spacer>
-         </item>
-         <item row="2" column="4">
-          <widget class="QPushButton" name="imageCalculatorPushButton">
-           <property name="text">
-            <string>Image Calculator</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="5">
-          <widget class="QPushButton" name="saveBitmapPushButton">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save image to your computer&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Save image</string>
-           </property>
-          </widget>
          </item>
         </layout>
        </item>
@@ -411,8 +384,8 @@ If you run too fast this feature should not be used.</string>
           </item>
           <item>
            <layout class="QGridLayout" name="dataTakingGridLayout">
-            <item row="0" column="2">
-             <widget class="QLabel" name="etaCntr">
+            <item row="0" column="1">
+             <widget class="QLabel" name="fpsLabel">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -420,10 +393,29 @@ If you run too fast this feature should not be used.</string>
                </sizepolicy>
               </property>
               <property name="toolTip">
-               <string>ETA</string>
+               <string>fps</string>
               </property>
               <property name="text">
-               <string>---:--:--</string>
+               <string>--</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="frameCntr">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string>progress</string>
+              </property>
+              <property name="text">
+               <string>--/--</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -454,8 +446,8 @@ If you run too fast this feature should not be used.</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="frameCntr">
+            <item row="0" column="2">
+             <widget class="QLabel" name="etaCntr">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -463,15 +455,28 @@ If you run too fast this feature should not be used.</string>
                </sizepolicy>
               </property>
               <property name="toolTip">
-               <string>progress</string>
+               <string>ETA</string>
               </property>
               <property name="text">
-               <string>--/--</string>
+               <string>---:--:--</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
               </property>
              </widget>
+            </item>
+            <item row="0" column="3">
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
             </item>
             <item row="0" column="4" colspan="3">
              <widget class="QPushButton" name="startButton">
@@ -502,56 +507,6 @@ If you run too fast this feature should not be used.</string>
                <bool>true</bool>
               </property>
              </widget>
-            </item>
-            <item row="0" column="8">
-             <widget class="QPushButton" name="recoPushButton">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
-              <property name="toolTip">
-               <string>magic !</string>
-              </property>
-              <property name="text">
-               <string>Star Trek !</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLabel" name="fpsLabel">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>fps</string>
-              </property>
-              <property name="text">
-               <string>--</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="3">
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
             </item>
            </layout>
           </item>
@@ -1046,7 +1001,6 @@ If you run too fast this feature should not be used.</string>
   <tabstop>gradientSelector</tabstop>
   <tabstop>outOfBoundsCheckbox</tabstop>
   <tabstop>resetViewPushButton</tabstop>
-  <tabstop>saveWithScaleCheckBox</tabstop>
   <tabstop>saveCheckBox</tabstop>
   <tabstop>saveLineEdit</tabstop>
   <tabstop>summingCheckbox</tabstop>
@@ -1056,7 +1010,6 @@ If you run too fast this feature should not be used.</string>
   <tabstop>correctionsDialogPushButton</tabstop>
   <tabstop>startButton</tabstop>
   <tabstop>singleshotPushButton</tabstop>
-  <tabstop>recoPushButton</tabstop>
   <tabstop>operationModeComboBox_Vis</tabstop>
   <tabstop>nTriggersSpinBox</tabstop>
   <tabstop>triggerLengthSpinBox</tabstop>

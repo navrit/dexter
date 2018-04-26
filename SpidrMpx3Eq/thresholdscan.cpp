@@ -152,9 +152,6 @@ void thresholdScan::stopScan()
 
 void thresholdScan::resetScan()
 {
-//    _mpx3gui->getDataset()->clear();
-//    _mpx3gui->getVisualization()->reload_all_layers();
-//    _mpx3gui->addLayer(0,0);
     _stop = false;
     _running = false;
 }
@@ -395,13 +392,6 @@ void ThresholdScanThread::ConnectToHardware()
     if( spidrcontrol ) { spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
     else { _srcAddr = 0; }
 
-    _heatmap = _thresholdScan->GetUI()->framePlot;
-
-}
-
-void ThresholdScanThread::UpdateHeatMap(int sizex, int sizey)
-{
-    _heatmap->setData( _data, sizex, sizey);
 }
 
 bool ThresholdScanThread::getAbort()
@@ -438,9 +428,6 @@ void ThresholdScanThread::run()
     Sleep( 100 );
 
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
-
-    //! Updates heatmap on GUI
-    connect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
 
     int minScan = _ui->spinBox_minimum->value();
     int maxScan = _ui->spinBox_maximum->value();
@@ -549,12 +536,6 @@ void ThresholdScanThread::run()
                     }
                 }
 
-//                int size_in_bytes = -1;
-//                // On all active chips
-//                for(int i = 0 ; i < activeDevices.size() ; i++) {
-//                    _data = spidrdaq->frameData(i, &size_in_bytes);
-//                }
-
                 //qDebug() << "Last: " << lastTH <<  "   Now:" << counter;
                 if (summing && lastTH != counter) {
                     sumArrays(x, y);
@@ -567,7 +548,6 @@ void ThresholdScanThread::run()
 
             // Report to heatmap
             if (doReadFrames) {
-                emit UpdateHeatMapSignal(x, y);
 
                 //! Replace current frame data with summedData if we're summing
                 if (summing) {
@@ -606,8 +586,6 @@ void ThresholdScanThread::run()
     }
 
     spidrcontrol->stopAutoTrigger();
-
-    disconnect( this, SIGNAL( UpdateHeatMapSignal(int, int) ), this, SLOT( UpdateHeatMap(int, int) ) );
 
     delete spidrcontrol;
 }

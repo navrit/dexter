@@ -26,12 +26,6 @@ zmqController::zmqController(Mpx3GUI * p, QObject *parent) : QObject(parent)
 
     eventQueue = new QQueue<QJsonDocument>();
 
-//    QZmq_PUB_socket->connectToAddress(PUB_addr);
-//    qDebug() << "[INFO]\tZMQ Connected to PUB socket:" << PUB_addr;
-
-//    QZmq_SUB_socket->connectToAddress(SUB_addr);
-//    QZmq_SUB_socket->subscribe("");
-//    qDebug() << "[INFO]\tZMQ Connected to SUB socket:" << SUB_addr;
 
     initialiseJsonResponse();
 
@@ -100,15 +94,12 @@ void zmqController::addressChanged_PUB(QString addr)
         return;
     } else {
         PUB_addr = addr;
-        qDebug() << "[INFO]\tZMQ PUB address changed:" << addr;
+#ifdef QT_DEBUG
+        qDebug() << "[INFO]\tZMQ PUB address set:" << addr;
+#endif
+
     }
 
-//    if (QZmq_PUB_socket != nullptr) {
-//        delete QZmq_PUB_socket;
-//        QZmq_PUB_socket = nullptr;
-//    }
-
-//    QZmq_PUB_socket = new QZmq::Socket(QZmq::Socket::Type::Pub, QZmq_context, this);
     QZmq_PUB_socket->connectToAddress(PUB_addr);
     qDebug() << "[INFO]\tZMQ Connected to PUB socket:" << PUB_addr;
 
@@ -122,17 +113,15 @@ void zmqController::addressChanged_SUB(QString addr)
         return;
     } else {
         SUB_addr = addr;
-        qDebug() << "[INFO]\tZMQ SUB address changed:" << addr;
+#ifdef QT_DEBUG
+        qDebug() << "[INFO]\tZMQ SUB address set:" << addr;
+#endif
     }
 
     if (QZmq_SUB_socket != nullptr) {
         QZmq_SUB_socket->unsubscribe("");
-//        QZmq_SUB_socket->setTcpKeepAliveEnabled(false);
-//        delete QZmq_SUB_socket;
-//        QZmq_SUB_socket = nullptr;
     }
 
-//    QZmq_SUB_socket = new QZmq::Socket(QZmq::Socket::Type::Sub, QZmq_context, this);
     QZmq_SUB_socket->connectToAddress(SUB_addr);
     QZmq_SUB_socket->subscribe("");
     qDebug() << "[INFO]\tZMQ Connected to SUB socket:" << SUB_addr;
