@@ -791,7 +791,7 @@ void QCstmEqualization::StartEqualization() {
         // Correct in case not all chips are active
         nNonReactive -= (_mpx3gui->getConfig()->getNDevicesSupported() - chipListSize)*__matrix_size;
         if ( nNonReactive > 0 ) {
-            cout << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
+            qDebug() << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
         }
 
         for ( int i = 0 ; i < chipListSize ; i++ ) {
@@ -810,7 +810,7 @@ void QCstmEqualization::StartEqualization() {
         // Correct in case not all chips are active
         nNonReactive -= (_mpx3gui->getConfig()->getNDevicesSupported() - chipListSize)*__matrix_size;
         if ( nNonReactive > 0 ) {
-            cout << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
+            qDebug() << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
         }
 
         // Use a data set to put the adj matrixes together
@@ -849,7 +849,7 @@ void QCstmEqualization::StartEqualization() {
         nNonReactive -= (_mpx3gui->getConfig()->getNDevicesSupported() - chipListSize)*__matrix_size;
 
         if ( nNonReactive > 0 ) {
-            cout << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
+            qDebug() << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
         }
 
         for ( int i = 0 ; i < chipListSize ; i++ ) {
@@ -1516,44 +1516,53 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
 
     SetAllAdjustmentBits(spidrcontrol, devId, 0x0, 0x0);
 
+    //! ------------------------------------------------------------------------
     //! This is important that they're opposite
     spidrcontrol->setLutEnable( ! _mpx3gui->getConfig()->getLUTEnable() );
     spidrdaq->setLutEnable( _mpx3gui->getConfig()->getLUTEnable() );
 
+    //! ------------------------------------------------------------------------
     //! OMR bit
     //! Force operation mode to sequential, continuous may be implemented elsewhere eventually
     spidrcontrol->setContRdWr( _deviceIndex, false );
 
+    //! ------------------------------------------------------------------------
     //! OMR bit
     //! True  : Holes collection (positive polarity)
     //! False : Electron collection (negative polarity)
     spidrcontrol->setPolarity( _deviceIndex, _mpx3gui->getConfig()->getPolarity() );
+    qDebug() << "[Equalisation]\tPolarity = " << _mpx3gui->getConfig()->getPolarity() << "\tTrue = + False = -";
 
+    //! ------------------------------------------------------------------------
     //! OMR bit for Equalization
     //! Must always be true since we are equalising a chip
-    //! Make it false when done
+    //! Make it false when done?
     spidrcontrol->setEqThreshH( devId, true );
 
+    //! ------------------------------------------------------------------------
     //! OMR bit
     //! False : default
     //! True  : if doing a test pulse based equalisation
-    spidrcontrol->setInternalTestPulse( devId, false );
+    bool testPulseMode = false;
+    spidrcontrol->setInternalTestPulse( devId, testPulseMode );
+    qDebug() << "[Equalisation]\tTest pulses = " << testPulseMode;
 
     //! ------------------------------------------------------------------------
     //! OMR bit
     //! Use colour mode depending on GUI
     //! True  : Colour mode
-    //! False : Fine pitch
+    //! False : Fine pitch (FPM)
+    //! Always set it to FPM
     spidrcontrol->setColourMode( devId, _mpx3gui->getConfig()->getColourMode() );
+    qDebug() << "[Equalisation]\tColour mode = " << _mpx3gui->getConfig()->getColourMode();
 
-    //! TODO Setting colour mode to true may be a bad idea since it complicates
-    //! the code, check with Rafa
     //! ------------------------------------------------------------------------
 
     //! OMR bit
     //! 0 : Single pixel mode
     //! 1 : Charge summing mode
-    //spidrcontrol->setCsmSpm( devId, 0 );
+    spidrcontrol->setCsmSpm( devId, _mpx3gui->getConfig()->getCsmSpm() );
+    qDebug() << "[Equalisation]\tCsm_Spm = " << _mpx3gui->getConfig()->getCsmSpm();
 
     //! Important defaults
     //! bits flipped below
@@ -1561,23 +1570,27 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     // b10: HGM   1
     // b01: LGM   2
     // b11: SLGM  3
-    spidrcontrol->setGainMode( devId, 3 ); //! SLGM for equalisation
-                                           //! ALWAYS for noise equalisations
+    int gainMode = 3;
+    spidrcontrol->setGainMode( devId, gainMode ); //! SLGM for equalisation
+                                                  //! ALWAYS for noise equalisations
+    qDebug() << "[Equalisation]\tGain mode = " << gainMode << "\tAlways 3 (SLGM) for noise based equalisations";
     spidrdaq->setDecodeFrames( true );
     spidrcontrol->setPixelDepth( devId, 12 );
     spidrdaq->setPixelDepth( 12 );
 
-    // -------------------------------------------------------------------------
+    //! -------------------------------------------------------------------------
 
     //! OMR bit
     //! When equalizing the high thresholds
     if ( THx == MPX3RX_DAC_THRESH_1 ) {
         spidrcontrol->setDiscCsmSpm( devId, 1 );		//! Use DiscH
+        qDebug() << "[Equalisation]\tDisc_Csm_Spm = " << "DiscH";
     } else {
         spidrcontrol->setDiscCsmSpm( devId, 0 );		//! Use DiscL
+        qDebug() << "[Equalisation]\tDisc_Csm_Spm = " << "DiscL";
     }
 
-    // -------------------------------------------------------------------------
+    //! -------------------------------------------------------------------------
     // Trigger config
     // Sequential R/W
     int trig_mode      = SHUTTERMODE_AUTO;     // Auto-trigger mode
@@ -1589,7 +1602,7 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
                                            trig_freq_hz,
                                            nr_of_triggers );
 
-    // -------------------------------------------------------------------------
+    //! -------------------------------------------------------------------------
     // CRW - Continuous R/W
     // One counter at a time, but no dead-time
     // To implement?
@@ -1923,8 +1936,6 @@ void QCstmEqualization::SetupSignalsAndSlots() {
 
 void QCstmEqualization::setEqualizationShowTHLTHH(int sel) {
 
-    //cout << "react" << endl;
-
     if( (int)_equalizationShow == sel ) {
         ShowEqualization(_equalizationShow);
         return;
@@ -1934,11 +1945,8 @@ void QCstmEqualization::setEqualizationShowTHLTHH(int sel) {
     if ( sel == 0 ) _equalizationShow = Mpx3EqualizationResults::__ADJ_L;
     if ( sel == 1 ) _equalizationShow = Mpx3EqualizationResults::__ADJ_H;
 
-    //cout << "draw : " << _equalizationShow << endl;
-
     // and show again
     ShowEqualization(_equalizationShow);
-
 }
 
 void QCstmEqualization::setEqualizationTHLTHH(int sel) {
