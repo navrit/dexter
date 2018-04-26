@@ -70,7 +70,7 @@ void TestPulses::on_pushButton_setLength_clicked()
 
     // Get the voltage reference
     int devId = 0, nSamples = 10;
-    int adc_val;
+    int adc_val = 0;
     _mpx3gui->GetSpidrController()->setDac(
                 devId,
                 MPX3RX_DAC_RPZ,
@@ -93,7 +93,7 @@ void TestPulses::on_pushButton_setLength_clicked()
     // This can be used as the voltage reference
     //! TODO This is wrong, fix it...
     double adc_volt = (__voltage_DACS_MAX/(double)__maxADCCounts) * (((double)adc_val)/nSamples);
-    qDebug() << "ADC value - RPZ[255] : " << adc_val << " | ADC Voltage : " << adc_volt;
+    qDebug() << "ADC value - RPZ[255] : " << adc_val/nSamples << " | ADC Voltage : " << adc_volt;
 }
 
 

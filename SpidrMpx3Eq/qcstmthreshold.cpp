@@ -27,7 +27,7 @@ QCstmThreshold::QCstmThreshold(QWidget *parent) :
     }
     ui->splitter->setSizes(defaultSizesMain);
 
-    _scanThread = 0x0;
+    _scanThread = nullptr;
     _plotIdxCntr = 0;
 
     // Signals & Slots
@@ -212,7 +212,6 @@ void QCstmThreshold::StartCalibration() {
     Mpx3Config::extra_config_parameters expars;
     expars.nTriggers = ui->nTriggersSpinBox->value();
     expars.equalizationBit = false;
-    //! TODO: What are these debug bits?
     // Debug bits in this context.  Disc_CSM_SPM.
     if ( ui->setDiscCsmSpmBitCheckBox->isChecked() ) { expars.DiscCsmSpm = 0x1; }
     else { expars.DiscCsmSpm = 0x0; }
@@ -493,7 +492,8 @@ void CustomScanThread::run() {
 
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
-    // Send the existing equalization
+    //! Send the existing equalization
+    //! You actually need this for some reason...
     _mpx3gui->getEqualization()->SetAllAdjustmentBits(spidrcontrol);
 
     // Configure, no reset
@@ -521,6 +521,8 @@ void CustomScanThread::run() {
     bool turnonReached = false;
 
     int nReps = 0;
+
+
 
     // Scan iterator observing direction
     int dacItr = minScan;
@@ -702,7 +704,7 @@ int CustomScanThread::PixelsReactive(int * data, int size_in_bytes, int /*thl*/)
     // Each 32 bits corresponds to the counts in each pixel already
     // in 'int' representation as the decoding has been requested
     for(int i = 0 ; i < nPixels ; i++) {
-        if ( data[i] != 0 ) {
+        if ( data[i] > minimumTurnOnValue ) {
             pixelsActive++;
         }
     }

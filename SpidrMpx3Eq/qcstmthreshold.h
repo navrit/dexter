@@ -19,7 +19,7 @@ class QCstmThreshold : public QWidget
 
 public:
 
-    explicit QCstmThreshold(QWidget *parent = 0);
+    explicit QCstmThreshold(QWidget *parent = nullptr);
     ~QCstmThreshold();
     Ui::QCstmThreshold * GetUI(){ return ui; }
 
@@ -97,7 +97,7 @@ class CustomScanThread : public QThread {
 public:
     explicit CustomScanThread(Mpx3GUI *, QCstmThreshold *);
     void ConnectToHardware();
-    int PixelsReactive(int * data, int size_in_bytes, int thl);
+    int PixelsReactive(int * data, int size_in_bytes, int );
 
     bool getAbort();
     void setAbort(bool);
@@ -117,6 +117,8 @@ private:
 
     bool scanContinue = true;
     bool abort = false;
+
+    int minimumTurnOnValue = 2;
 
 public slots:
     void UpdateHeatMap(int, int);

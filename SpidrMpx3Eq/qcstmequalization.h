@@ -152,7 +152,7 @@ class QCstmEqualization : public QWidget
 
 public:
 
-    explicit QCstmEqualization(QWidget *parent = 0);
+    explicit QCstmEqualization(QWidget *parent = nullptr);
     ~QCstmEqualization();
     void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
     Ui::QCstmEqualization * GetUI();
@@ -317,8 +317,8 @@ private:
     int _nChips;
     bool _scanDescendant;
 
-    int **data = 0;
-    unsigned *nx =0, *ny =0, nData =0;
+    int **data = nullptr;
+    unsigned *nx = nullptr, *ny = nullptr, nData = 0;
 
     // Object in charge of performing Thl scans
     QVector<ThlScan * > _scans;
