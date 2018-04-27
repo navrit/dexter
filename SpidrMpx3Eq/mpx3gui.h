@@ -186,6 +186,8 @@ public:
 
     bool setTestPulses(int pixelSpacing, int startPixelOffset);
 
+    const QString settingsFile = QApplication::applicationDirPath() + QDir::separator() + "last_configuration.ini";
+
     //! SPIDR information strings for About dialog
     QString m_SPIDRControllerVersion = "";
     QString m_SPIDRFirmwareVersion = "";
@@ -195,6 +197,8 @@ public:
     QString compileDateTime = QDate::currentDate().toString("yyyy-MM-dd") + QString(" ") + QString(__TIME__);
 
     int getStepperMotorPageID();
+
+    void loadLastConfiguration();
 
 signals:
     void dataChanged();

@@ -320,7 +320,6 @@ void zmqController::setThreshold(QJsonObject obj)
     qDebug() << "[INFO]\tZMQ SET THRESHOLD : "  << obj["command"].toString() << obj["arg1"].toString() << obj["arg2"].toString();
 #endif
 
-    //! TODO Test it
     //! Arg1: Which threshold to change
     //! Arg2: Threshold value (DAC units)
 

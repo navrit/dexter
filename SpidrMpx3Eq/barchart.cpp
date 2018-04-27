@@ -175,13 +175,6 @@ void BarChart::SetValueInSet(unsigned int setId, double val, double weight) {
     // And put it back in the bin
     (*(GetDataSet(setId)->data()))[val] = bin_content;
 
-    // Revisit limits // TODO .. not working yet
-    //QCPRange rangeY = this->yAxis->range();
-    //if ( rangeY.upper < bin_content.value + weight ) {
-    //    this->yAxis->setRange(0, ( bin_content.value + weight) * 1.1 );
-    //}
-
-    //replot( QCustomPlot::rpQueued );
 }
 
 void BarChart::SetValueInSetNonAcc(unsigned int setId, double val, double weight)
@@ -194,30 +187,10 @@ void BarChart::SetValueInSetNonAcc(unsigned int setId, double val, double weight
     // And put it back in the bin
     (*(GetDataSet(setId)->data()))[val] = bin_content;
 
-    // Revisit limits // TODO .. not working yet
-    //QCPRange rangeY = this->yAxis->range();
-    //if ( rangeY.upper < bin_content.value + weight ) {
-    //    this->yAxis->setRange(0, ( bin_content.value + weight) * 1.1 );
-    //}
-
     replot( QCustomPlot::rpQueued );
 }
 
 /*
-void BarChart::PushBackToSet(unsigned int setId, double val, double weight) {
-
-    if ( setId >= _nSets ) {
-        cout << "[ERRO] Trying to fit a set out of range (BarChart::PushBackToSet)" << endl;
-        return;
-    }
-
-    // Increase the value at the particular location
-    double a = _dataVals->at(setId)->at( val );
-    a += weight;
-    (*(_dataVals->at(setId)))[val] = a;
-
-}
-
 void BarChart::DumpData() {
 
     QVector< QVector<double> * >::iterator itr = _dataVals->begin();

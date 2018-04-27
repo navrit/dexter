@@ -33,7 +33,7 @@ class QCstmGLVisualization;
 class CorrectionItem;
 class QCstmCorrectionsDialog;
 
-class Dataset//TODO: specify starting corner?
+class Dataset
 {
 public:
     ///Enumerations to define the coordinate system of the chips. (L)eft, (R)ight, (t)o, (T)op, and (B)ottom.

@@ -226,7 +226,7 @@ void Dataset::saveBIN(QString filename)
  * \brief Dataset::toTIFF
  * \param filename - absolute file path to save to
  * \remark Writes a 32 bit, greyscale, dynamic sized, vertically flipped TIFF image to `filename`,
- *          writes all thresholds (TODO: check this writes all thresholds)
+ *          writes all thresholds
  *
  *          Does cross correction for non spectroscopic mode ONLY - spectroscopic images have a non constant ratio??? #SpecialPixels
  */
@@ -557,7 +557,6 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
 
 }
 
-//! TODO Could do corrections here
 QVector<int> Dataset::makeFrameForSaving(int threshold, bool crossCorrection, bool spatialOnly)
 {
     //----------------------------------------------------

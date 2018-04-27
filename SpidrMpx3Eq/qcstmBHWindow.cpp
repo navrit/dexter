@@ -124,8 +124,6 @@ void QCstmBHWindow::on_clearAllButton_clicked(){
     //! UI update - Correction Dialog
     emit sendFilename(QString("No file loaded"));
     emit sendChecked_BHCorrCheckbox(false);
-
-    //TODO BUG Why does this close the window?
 }
 
 void QCstmBHWindow::on_loadButton_clicked(){

@@ -32,11 +32,6 @@ void TestPulses::on_activateCheckBox_clicked(bool checked)
         int pixelSpacing = ui->spinBox_pixelSpacing->value();
         int startPixelOffset = ui->spinBox_pixelOffset->value();
 
-        //! TODO Probably remove this.
-//        // 1) Configure pixels with testbit
-//        Mpx3Config::testpulses_config_parameters tp_conf;
-//        tp_conf
-
         //! See if there is an equalization present
         //! I have no idea why...
         if ( ! _mpx3gui->setTestPulses(pixelSpacing, startPixelOffset) ) {
@@ -91,7 +86,6 @@ void TestPulses::on_pushButton_setLength_clicked()
     }
 
     // This can be used as the voltage reference
-    //! TODO This is wrong, fix it...
     double adc_volt = (__voltage_DACS_MAX/(double)__maxADCCounts) * (((double)adc_val)/nSamples);
     qDebug() << "ADC value - RPZ[255] : " << adc_val/nSamples << " | ADC Voltage : " << adc_volt;
 }

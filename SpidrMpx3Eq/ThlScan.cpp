@@ -56,7 +56,7 @@ ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
 
     _nchipsX = 2; //_mpx3gui->getDataset()->getNChipsX();
     _nchipsY = 2; //_mpx3gui->getDataset()->getNChipsY();
-    // TODO.  When one chips is connected the dataset returns 2,1 (which is good)
+    // When one chips is connected the dataset returns 2,1 (which is good)
     _fullsize_x = __matrix_size_x * _nchipsX;
     _fullsize_y = __matrix_size_y * _nchipsY;
 
@@ -375,6 +375,7 @@ void ThlScan::FineTuning() {
 
                 // ---------------------------------------------
                 //!   TODO CHECK THIS or FIXME _maxScan = 35;
+                //! This doesn't appear to be an issue
                 // ---------------------------------------------
 
                 if ( _equalization->isScanDescendant() ) _thlItr = _maxScan;
@@ -879,7 +880,7 @@ void ThlScan::EqualizationScan() {
             vector<bool> doReadFrames;
             accelerationApplied = false;
 
-            // limits from the GUI (no signals on them) TODO
+            // limits from the GUI (no signals on them)
             _stepScan = _equalization->GetUI()->eqStepSpinBox->value();
 
             // THx scan

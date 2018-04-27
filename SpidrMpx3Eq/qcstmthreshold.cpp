@@ -579,8 +579,8 @@ void CustomScanThread::run() {
                 _mpx3gui->getConfig()->getTriggerLength_ms()
                 + _mpx3gui->getConfig()->getTriggerDowntime_ms()
                 + 50; // ms
-        // TODO ! The extra 500ms is a combination of delay in the network plus
-        // system overhead.  This should be predicted and not hard-coded. TODO !
+        // TODO ! The extra 50ms is a combination of delay in the network plus
+        // system overhead.  This should be predicted and not hard-coded.
 
         while ( spidrdaq->hasFrame( timeOutTime ) ) {
 

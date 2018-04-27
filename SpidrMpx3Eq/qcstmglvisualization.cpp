@@ -266,11 +266,11 @@ void QCstmGLVisualization::CalcETA() {
 
     if ( _mpx3gui->getConfig()->getOperationMode() == Mpx3Config::__operationMode_SequentialRW ) {
         _estimatedETA = _mpx3gui->getConfig()->getTriggerPeriodMS() *  _mpx3gui->getConfig()->getNTriggers(); // ETA in ms.
-        _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.  TODO to be calculated at startup.
+        _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.
     } else {
         double period_ms =  (1. / (double)(_mpx3gui->getConfig()->getContRWFreq())) * 1000;
         _estimatedETA = period_ms * _mpx3gui->getConfig()->getNTriggers(); // ETA in ms.
-        _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.  TODO to be calculated at startup.
+        _estimatedETA += _estimatedETA * __networkOverhead; // add ~10% network overhead.
     }
 
 }
@@ -1440,7 +1440,7 @@ void QCstmGLVisualization::takeAndSaveImageSequence()
 
 void QCstmGLVisualization::saveImageSlot(QString filePath)
 {
-    //! TODO More error checking here
+    //! TODO More error checking here?
     saveImage(filePath);
 #ifdef QT_DEBUG
     qDebug() << "[INFO]\tZMQ \n\tSaved raw image as tiff to :" << filePath;

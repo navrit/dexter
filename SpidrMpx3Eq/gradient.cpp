@@ -99,7 +99,7 @@ void Gradient::fillArray(){
             interpolated.setRedF(a1*prev.value().redF()+a0*next.value().redF());
             interpolated.setGreenF(a1*prev.value().greenF()+a0*next.value().greenF());
             interpolated.setBlueF(a1*prev.value().blueF()+a0*next.value().blueF());
-         }//TODO: other mdoes of interpolation
+         }
           colorArray[i*3+0]  = interpolated.redF();//a1*prev.value().redF()+a0*next.value().redF();
           colorArray[i*3+1]  = interpolated.greenF();//a1*prev.value().greenF()+a0*next.value().greenF();
           colorArray[i*3+2]  = interpolated.blueF();//a1*prev.value().blueF()+a0*next.value().blueF();

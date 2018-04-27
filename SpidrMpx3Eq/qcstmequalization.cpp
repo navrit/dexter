@@ -1598,7 +1598,7 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
 
 Mpx3EqualizationResults * QCstmEqualization::GetEqualizationResults(int chipIndex) {
     int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
-    if ( chipIndex < 0 || chipIndex > nChips - 1) return 0x0;
+    if ( chipIndex < 0 || chipIndex > nChips - 1) return nullptr;
 
     return _eqMap[chipIndex];
 }

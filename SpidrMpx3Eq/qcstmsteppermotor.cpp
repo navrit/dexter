@@ -64,7 +64,7 @@ void QCstmStepperMotor::SetMpx3GUI(Mpx3GUI *p)
     connect( this, SIGNAL(sig_motorsConnected()), _mpx3gui->GetUI()->ctTab, SLOT(slot_connectedToMotors()) );
 }
 
-//TODO Maybe use this???
+//! This could be removed
 void QCstmStepperMotor::setWindowWidgetsStatus(win_status s)
 {
     switch (s) {
@@ -217,7 +217,7 @@ void QCstmStepperMotor::on_stepperMotorCheckBox_toggled(bool checked)
 
         // CurrentI limit
         ui->currentISpinBox->setMinimum( 0 );
-        ui->currentISpinBox->setMaximum( 1.0 ); // TODO ... is this Amps ?
+        ui->currentISpinBox->setMaximum( 1.0 ); // is this Amps ?
         ui->currentISpinBox->setValue( parsMap[motorid].currentILimit );
         QString clS = "Set current limit from ";
         clS += QString::number( 0 , 'f', 1 );

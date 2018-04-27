@@ -103,17 +103,6 @@ QCstmDacs::QCstmDacs(QWidget *parent) :
     // The labels:
     ui->plotScan->xAxis->setLabel("DAC setting");
     ui->plotScan->yAxis->setLabel("DAC out [V]");
-
-    // Insert the plot in the dialog window
-    //ui->plotScan->setParent( ui->_DACScanFrame_2 );
-
-    //QRect hrect = ui->_DACScanFrame_2->geometry();
-    //ui->plotScan->resize( hrect.size().rwidth() , hrect.size().rheight() );
-
-
-    //ReadDACsFile("asda"); //TODO: shouldn't exist, doesn't throw an error.
-    //PopulateDACValues();
-
 }
 
 QCstmDacs::~QCstmDacs() {
@@ -690,7 +679,6 @@ bool QCstmDacs::GetDACsFromConfiguration() {
 }
 
 bool QCstmDacs::WriteDACsFile(string fn){
-    setConfig();
     if(fn.empty()) { // default
         fn = __default_DACs_filename;
     }
@@ -704,12 +692,7 @@ bool QCstmDacs::WriteDACsFile(string fn){
     }
     QFileInfo fInfo(saveFile.fileName());
     qDebug() << "[INFO] Opened " <<fInfo.absoluteFilePath().toStdString().c_str();
-    //++i
-    //QJsonDocument jsDoc(configJson);
-    //if(-1 == saveFile.write(jsDoc.toJson())){
-    //	std::cout << "Write error!";
-    //	return false;
-    //}
+
     return true;
 }
 
@@ -789,7 +772,7 @@ void QCstmDacs::scanFinished() {
 
 void QCstmDacs::updateFinished() {
 
-    // What needs to be done when an update has been requested ? TODO
+    // What needs to be done when an update has been requested ?
 
 }
 
@@ -1278,40 +1261,7 @@ void ScanDACsThread::run() {
     disconnect( this, SIGNAL( addData(int) ), _dacs, SLOT( addData(int) ) );
     disconnect( this, SIGNAL( scanFinished() ), _dacs, SLOT( scanFinished() ) );
 
-    // Disconnect the progress bar
-    //disconnect( this, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
-
-
     delete spidrcontrol;
-}
-
-void QCstmDacs::setConfig(){
-    for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
-        //++i
-        //configJson[MPX3RX_DAC_TABLE[i].name] = _dacVals[i];
-    }
-    /*for(int i = 0; i < Thresholds.length();i++){
-      configJson[QString("Threshold%1").arg(i)] = Thresholds[i];
-   }
-  configJson["I_Preamp"] = I_Preamp;
-  configJson["I_Ikrum"] = I_Ikrum;
-  configJson["I_Shaper"] = I_Shaper;
-  configJson["I_Disc"] = I_Disc;
-  configJson["I_Disc_LS"] = I_Disc_LS;
-  configJson["I_Shaper_test"] = I_Shaper_test;
-  configJson["I_DAC_DiscL"] = I_DAC_DiscL;
-  configJson["I_DAC_test"] = I_DAC_test;
-  configJson["I_DAC_DiscH"] = I_DAC_DiscH;
-  configJson["I_Delay"] = I_Delay;
-  configJson["I_TP_BufferIn"] = I_TP_BufferIn;
-  configJson["I_TP_BufferOut"] = I_TP_BufferOut;
-  configJson["V_Rpz"] = V_Rpz;
-  configJson["V_Gnd"] = V_Gnd;
-  configJson["V_Tp_ref"] = V_Tp_ref;
-  configJson["V_Fbk"] = V_Fbk;
-  configJson["V_Cas"] = V_Cas;
-  configJson["V_Tp_refA"] = V_Tp_refA;
-  configJson["V_Tp_refB"] = V_Tp_refB;*/
 }
 
 void QCstmDacs::openWriteMenu(){//TODO: change to signal slot method

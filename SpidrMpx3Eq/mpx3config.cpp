@@ -826,6 +826,12 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
         }
     }
 
+    QSettings settings(_mpx3gui->settingsFile, QSettings::NativeFormat);
+    QString path = filename.section("/",0,-2);
+    if (path != "./config") {
+        settings.setValue("last_configuration_path", path);
+    }
+
     return true;
 }
 

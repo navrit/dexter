@@ -370,6 +370,77 @@ int Mpx3GUI::getStepperMotorPageID()
     return __stepperMotor_page_Id;
 }
 
+void Mpx3GUI::loadLastConfiguration()
+{
+    //! If ./last_configuration.ini file exists, try to load it.
+    //!
+    //! Prompt user to choose to always auto-load last configuration or not.
+    //! Save the auto-load parameter in the .ini file
+
+    QFileInfo check_file(settingsFile);
+
+    if (check_file.exists() && check_file.isFile() && check_file.isReadable() ) {
+        QSettings settings(settingsFile, QSettings::NativeFormat);
+        QString lastConfigurationPath = settings.value("last_configuration_path", "").toString();
+        QString autoLoad = settings.value("auto_load_last_configuration", "").toString();
+
+        //! Check folder exists before continuing
+        QFileInfo check_folder(lastConfigurationPath);
+        if (check_folder.exists() && check_folder.isReadable()) {
+            autoLoad = autoLoad.toLower();
+
+            //! The file has just been made, force the user to make a decision
+            if (autoLoad == "") {
+                //! Make dialog asking if you want to always auto-load the last configuration
+                QMessageBox::StandardButton reply;
+                reply = QMessageBox::question(this, "Question", "Always auto-load the last configuration?",
+                                              QMessageBox::Yes|QMessageBox::No);
+                if (reply == QMessageBox::Yes) {
+                    settings.setValue("auto_load_last_configuration", "true");
+                } else {
+                    settings.setValue("auto_load_last_configuration", "false");
+                }
+
+            //! Let's check autoLoad now
+            } else {
+                if (autoLoad == "true" || autoLoad == "yes" || autoLoad == "1") {
+                    //! Load the last configuration
+                    config->fromJsonFile(lastConfigurationPath + QDir::separator() + "config.json");
+                    _ui->DACsWidget->PopulateDACValues();
+                    emit sig_statusBarClean();
+                    emit sig_statusBarAppend(QString("Autoloading last configuration file from " + lastConfigurationPath), "green");
+
+                } else {
+                    //! Don't autoLoad, do nothing. Just tell the user nothing was changed
+                    emit sig_statusBarClean();
+                    emit sig_statusBarAppend(QString("Not autoloading last configuration file from " + lastConfigurationPath), "black");
+                }
+            }
+        } else {
+            QString msg;
+            if (lastConfigurationPath == "") {
+                msg = QString("last_configuration_path is unset in " + settingsFile);
+            } else {
+                msg = QString("Auto-load configuration folder does not exist : " + lastConfigurationPath);
+            }
+            qDebug() << msg;
+            emit sig_statusBarClean();
+            emit sig_statusBarAppend(msg, "red");
+        }
+
+    } else {
+        //! File doesn't exist, let's make it?
+        QString msg = QString(settingsFile + " does not exist. Making it now.");
+        qDebug() << msg;
+        emit sig_statusBarAppend(msg, "red");
+        QSettings settings(settingsFile, QSettings::NativeFormat);
+        settings.setValue("last_configuration_path", "");
+        settings.setValue("auto_load_last_configuration", "");
+
+        loadLastConfiguration();
+    }
+}
+
 void Mpx3GUI::SetupSignalsAndSlots(){
 
     connect( _ui->actionLoad_Equalization, SIGNAL(triggered()), this, SLOT( LoadEqualization() ) );
@@ -665,8 +736,6 @@ bool Mpx3GUI::establish_connection() {
     int chipSize = config->getColourMode()? __matrix_size_x /2: __matrix_size_x ;
     workingSet = new Dataset(chipSize, chipSize, config->getNActiveDevices(), config->getPixelDepth()); //TODO: get framesize from config, load offsets & orientation from config
     originalSet = new Dataset(chipSize, chipSize, config->getNActiveDevices(), config->getPixelDepth());
-    //KoreaHack workingSet = new Dataset(chipSize, chipSize, 4, config->getPixelDepth()); //TODO: get framesize from config, load offsets & orientation from config
-    //KoreaHack originalSet = new Dataset(chipSize, chipSize, 4, config->getPixelDepth());
 
     clear_data( false );
 
@@ -676,18 +745,6 @@ bool Mpx3GUI::establish_connection() {
         getDataset()->setLayout(i, _MPX3RX_LAYOUT[activeDevices[i]]);
         getDataset()->setOrientation(i, _MPX3RX_ORIENTATION[activeDevices[i]]);
     }
-
-    //KoreaHack
-    /*
-    for ( int i = 0 ; i < 4 ; i++ ) {
-        getDataset()->setLayout(i, _MPX3RX_LAYOUT[i]);
-        getDataset()->setOrientation(i, _MPX3RX_ORIENTATION[i]);
-    }
-    */
-
-    /*for(int i = 0; i < workingSet->getLayerCount();i++)
-    updateHistogram(i);*/
-    //emit frames_reload();
 
     return true;
 }
@@ -790,8 +847,7 @@ void Mpx3GUI::on_applicationStateChanged(Qt::ApplicationState s) {
 }
 
 //Debugging function to generate data when not connected
-void Mpx3GUI::generateFrame(){//TODO: put into Dataset
-    //int thresholds[] = {0,1,2,3};
+void Mpx3GUI::generateFrame(){
     QVector<int> data(getDataset()->x()*getDataset()->y()*getDataset()->getFrameCount());
     for(int t = 0; t < config->getNTriggers();t++){
         for(int k = 0; k < getDataset()->getFrameCount();k++){
@@ -799,13 +855,11 @@ void Mpx3GUI::generateFrame(){//TODO: put into Dataset
                 double fx = ((double)8*rand()/RAND_MAX)/(getDataset()->x()), fy = (8*(double)rand()/RAND_MAX)/getDataset()->y();
                 for(int i = 0; i < getDataset()->y(); i++)
                     for(int j = 0; j < getDataset()->x(); j++)
-                        //data[k*workingSet->x()*workingSet->y()+i*workingSet->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
                         data[i*getDataset()->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
                 addFrame(data.data(), k, t);
             }
         }
     }
-    //reloadLayer(0);reloadLayer(1);reloadLayer(2);reloadLayer(3);
     emit reload_all_layers();
 }
 
@@ -1000,9 +1054,8 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         filename = path;
         filename.append("/");
         filename.append( QString::number( QDateTime::currentMSecsSinceEpoch()) );
+
         //! if saving all frames, append the frame Id too (more than 1 frame may be saved within 1 ms)
-        //!
-        //! TODO extend this using QRunnable (QThreadPool) and a buffer so it works at >1000Hz
         if ( getVisualization()->isSaveAllFramesChecked() ) {
             filename.append( QString("_%1").arg(frameId) );
         }
@@ -1377,7 +1430,7 @@ void Mpx3GUI::uncheckAllToolbarButtons(){
     _ui->actionEqualization->setChecked(0);
     _ui->actionThreshold_Scan->setChecked(0);
     _ui->actionStepper_Motor->setChecked(0);
-    //TODO _ui-> NEW ACTION ->setChecked(0);
+    // _ui-> NEW ACTION ->setChecked(0);
 }
 
 
@@ -1386,6 +1439,7 @@ void Mpx3GUI::on_actionConnect_triggered() {
     // The connection status signal will be sent from establish_connection
     if ( establish_connection() ) {
         emit sig_statusBarAppend( "Connected", "green" );
+        loadLastConfiguration();
     } else {
         emit sig_statusBarAppend( "Connection failed", "red" );
     }
@@ -1419,10 +1473,10 @@ void Mpx3GUI::on_actionEqualization_triggered(){
 //void Mpx3GUI::on_actionScans_triggered(){
 //    uncheckAllToolbarButtons();
 //    _ui->stackedWidget->setCurrentIndex( __scans_page_Id );
-//    //TODO ->setChecked(1);
+//    // ->setChecked(1);
 //}
 
-//! TODO: Implement revert more fully?
+//! Implement revert more fully?
 void Mpx3GUI::on_actionRevert_triggered(bool) {
     rewindToOriginalDataset();
     _ui->visualizationGL->reload_all_layers(false);

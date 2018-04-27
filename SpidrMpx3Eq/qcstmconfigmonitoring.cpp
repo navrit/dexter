@@ -823,7 +823,7 @@ void QCstmConfigMonitoring::readMonitoringInfo() {
 
 }
 
-void QCstmConfigMonitoring::on_SaveButton_clicked()//TODO: automatically append .json
+void QCstmConfigMonitoring::on_SaveButton_clicked()
 {
     QFileDialog saveDialog(this, tr("Save configuration"), tr("./config"), tr("Json files (*.json)"));
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
