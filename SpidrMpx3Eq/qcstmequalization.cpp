@@ -42,8 +42,8 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
 
     // Some defaults
     _deviceIndex = 2;
-    _nTriggers = 10;
-    _spacing = 4;
+    _nTriggers = 2;
+    _spacing = 2;
 
     // This will be recalculated
     _nchipsX = 2;
@@ -53,7 +53,7 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
 
     // Suggest a descendant scan
     _maxScanTHL = 0;
-    _minScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].bits) / 2;
+    _minScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].bits) / 2; //! Isn't this the same as MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt
     _scanDescendant = true;
     _busy = false;
     _resdataset = 0x0;
@@ -79,7 +79,7 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
 
     _checkBoxes.clear();
 
-    _fineTuningLoops = 30;
+    _fineTuningLoops = 10;
     _ui->fineTuningLoopsSpinBox->setValue( _fineTuningLoops );
 
     _ui->equalizationTHLTHHCombo->addItem( QString("THL and THH") );
@@ -129,21 +129,22 @@ void QCstmEqualization::setNHits(int val){
 void QCstmEqualization::SetLimits(){
 
     _ui->nHitsSpinBox->setMinimum( 1 );
-    _ui->nHitsSpinBox->setMaximum( 100 );
-    _ui->nHitsSpinBox->setValue( 3 );
-    _nHits = 3;
+    _ui->nHitsSpinBox->setMaximum( 1000 );
+    _ui->nHitsSpinBox->setValue( 10 );
+    _nHits = 10;
 
-    //
+    //! Which chip index
     _ui->devIdSpinBox->setMinimum( 0 );
     _ui->devIdSpinBox->setMaximum( 3 );
     _ui->devIdSpinBox->setValue( _deviceIndex );
 
+    //! Number of frames
     _ui->nTriggersSpinBox->setMinimum( 1 );
     _ui->nTriggersSpinBox->setMaximum( 1000 );
     _ui->nTriggersSpinBox->setValue( _nTriggers );
 
     _ui->spacingSpinBox->setMinimum( 0 );
-    _ui->spacingSpinBox->setMaximum( 64 );
+    _ui->spacingSpinBox->setMaximum( 15 );
     _ui->spacingSpinBox->setValue( _spacing );
 
     _ui->eqMinSpinBox->setMinimum( 0 );
@@ -589,18 +590,10 @@ void QCstmEqualization::KeepOtherChipsQuiet() {
         //  apply the high thresholds
         for ( int i = 0 ; i < chipListSize ; i++ ) if ( _workChipsIndx[i] == idx ) continue;
 
-        //
-        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_0,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0-1].bits) / 2);
-        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_1,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1-1].bits) / 2);
-        // Work with all the thresholds if operating in Colour mode
-        //if ( _mpx3gui->getConfig()->getColourMode() ) {
-        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_2,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_2-1].bits) / 2);
-        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_3,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_3-1].bits) / 2);
-        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_4,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_4-1].bits) / 2);
-        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_5,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5-1].bits) / 2);
-        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_6,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_6-1].bits) / 2);
-        SetDAC_propagateInGUI( spidrcontrol, idx, MPX3RX_DAC_THRESH_7,  (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7-1].bits) / 2);
-        //}
+        //! Set all the thresholds to the same value. If we're not in colour mode then they aren't connected anyway so it doesn't matter
+        for (int i = 1; i <= MPX3RX_DAC_THRESH_7; i++) {
+            SetDAC_propagateInGUI( spidrcontrol, idx, i, __low_but_above_noise_threshold);
+        }
     }
 
 }
@@ -1218,6 +1211,8 @@ void QCstmEqualization::SaveEqualization(QString path) {
         // Masked pixels
         _eqMap[_workChipsIndx[i]]->WriteMaskBinaryFile( maskfn );
     }
+
+    resetForNewEqualisation();
 }
 
 void QCstmEqualization::PrepareInterpolation_0x0() {
@@ -1543,7 +1538,6 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     //! OMR bit
     //! False : default
     //! True  : if doing a test pulse based equalisation
-    bool testPulseMode = false;
     spidrcontrol->setInternalTestPulse( devId, testPulseMode );
     qDebug() << "[Equalisation]\tTest pulses = " << testPulseMode;
 
@@ -1565,12 +1559,7 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     qDebug() << "[Equalisation]\tCsm_Spm = " << _mpx3gui->getConfig()->getCsmSpm();
 
     //! Important defaults
-    //! bits flipped below
-    // b00: SHGM  0
-    // b10: HGM   1
-    // b01: LGM   2
-    // b11: SLGM  3
-    int gainMode = 3;
+
     spidrcontrol->setGainMode( devId, gainMode ); //! SLGM for equalisation
                                                   //! ALWAYS for noise equalisations
     qDebug() << "[Equalisation]\tGain mode = " << gainMode << "\tAlways 3 (SLGM) for noise based equalisations";
@@ -1582,7 +1571,7 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
 
     //! OMR bit
     //! When equalizing the high thresholds
-    if ( THx == MPX3RX_DAC_THRESH_1 ) {
+    if ( THx == MPX3RX_DAC_THRESH_1 || THx == MPX3RX_DAC_THRESH_3 || THx == MPX3RX_DAC_THRESH_5 || THx == MPX3RX_DAC_THRESH_7 ) {
         spidrcontrol->setDiscCsmSpm( devId, 1 );		//! Use DiscH
         qDebug() << "[Equalisation]\tDisc_Csm_Spm = " << "DiscH";
     } else {
@@ -1601,11 +1590,6 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
                                            trig_length_us,
                                            trig_freq_hz,
                                            nr_of_triggers );
-
-    //! -------------------------------------------------------------------------
-    // CRW - Continuous R/W
-    // One counter at a time, but no dead-time
-    // To implement?
 
 }
 
@@ -1751,6 +1735,28 @@ void QCstmEqualization::setWindowWidgetsStatus(win_status s)
         break;
 
     }
+}
+
+//! New and untested feature so you can run multiple equalisations without closing the program
+void QCstmEqualization::resetForNewEqualisation()
+{
+    _eqStatus = __INIT;
+    _scanIndex = 0;
+
+    _maxScanTHL = 0;
+    _minScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].bits) / 2; //! Isn't this the same as MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt
+    _scanDescendant = true;
+    _busy = false;
+
+    _eqMap.clear();
+    _workChipsIndx.clear();
+
+    _chart.clear();
+    BarChart * nbc = new BarChart( GetUI()->layoutWidget );
+    nbc->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
+    _chart.push_back( nbc ); // set as parent the same as the one delivered in the UI
+    _ui->horizontalLayoutEqHistos->addWidget( nbc );
+    nbc->setHidden(true);
 }
 
 bool QCstmEqualization::makeTeaCoffeeDialog()

@@ -29,7 +29,8 @@ using namespace std;
 #include "ThlScan.h"
 
 #define __equalization_target	10
-#define __default_step_scan		2
+#define __default_step_scan		1
+#define __low_but_above_noise_threshold 50      //! This is for an equalised chip, should be valid for all gain modes
 
 #define EQ_NEXT_STEP(x) ( _eqStatus == x && ! _stepDone[x] )
 
@@ -274,6 +275,18 @@ private:
     QStringList files;
 
     QApplication * _coreApp;
+
+    // -------------------------- Recent changes  ------------------------------
+    //! bits flipped below
+    // b00: SHGM  0
+    // b10: HGM   1
+    // b01: LGM   2
+    // b11: SLGM  3
+    int gainMode = 3;
+    bool testPulseMode = false;
+
+    void resetForNewEqualisation();
+    // -------------------------------------------------------------------------
 
     bool _equalizationLoaded = false;
     int _setId;
