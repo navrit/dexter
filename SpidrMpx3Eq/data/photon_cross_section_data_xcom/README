@@ -1,8 +1,0 @@
-Photon cross section data taken from http://www.nist.gov/pml/data/xcom/
-
-There are 8 columns in each file.  They correspond to
-
-Photon   	Coherent	Incoher.	Photoel.	Nuclear 	Electron	Tot. w/ 	Tot. wo/	
-Energy   	Scatter.	Scatter.	Absorb. 	Pr. Prd.	Pr. Prd.	Coherent	Coherent	
-[MeV]		[cm^2/g]	[cm^2/g]	[cm^2/g]	[cm^2/g]	[cm^2/g]	[cm^2/g]	[cm^2/g]
-
