@@ -734,6 +734,9 @@ void QCstmEqualization::StartEqualization() {
             _steeringInfo[i]->currentDAC_DISC_OptValue = 100; // for now make the opt value equal to the test value
         }
 
+        _spacing = 0; //! Need to have _spacing = 0 until __PrepareInterpolation_0x0
+        qDebug() << "[INFO] \tEqualisation setting pixel spacing to 0 until Prepare Interpolation for 0x0";
+
         // Prepare and launch the thread
         DAC_Disc_Optimization_100( );
 
@@ -741,7 +744,7 @@ void QCstmEqualization::StartEqualization() {
     } else if ( EQ_NEXT_STEP(__DAC_Disc_Optimization_100 ) ) {
 
         // Check if the previous scan has been stopped by the user
-        //		_scans
+
         for ( int i = 0 ; i < chipListSize ; i++ ) {
             // Extract results from immediately previous scan. Calc the stats now (this is quick)
             _scans[_scanIndex - 1]->ExtractStatsOnChart(_workChipsIndx[i], _setId - 1);
@@ -774,6 +777,8 @@ void QCstmEqualization::StartEqualization() {
         // ------ //
         // STEP 2 //
         // ------ //
+        ChangeSpacing(_ui->spacingSpinBox->value()); //! Change the spacing back to the GUI content
+
         AppendToTextBrowser("2) Test adj-bits sensibility and extrapolate to target ...");
         PrepareInterpolation_0x0();
 
@@ -864,6 +869,7 @@ void QCstmEqualization::StartEqualization() {
         } else {
 
             AppendToTextBrowser("3) Fine tuning ...");
+
 
             // 5) Attempt fine tuning
             FineTuning( );
