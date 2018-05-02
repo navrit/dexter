@@ -4,6 +4,7 @@
 #include "mpx3gui.h"
 #include "ui_mpx3gui.h"
 
+#include "mpx3dacsdescr.h"
 #include "SpidrController.h"
 #include "SpidrDaq.h"
 
@@ -19,6 +20,11 @@ thresholdScan::thresholdScan(QWidget *parent) :
     ui(new Ui::thresholdScan)
 {
     ui->setupUi(this);
+
+    QStringList items;
+    items << MPX3RX_DAC_TABLE[0].name << MPX3RX_DAC_TABLE[1].name;
+    ui->comboBox_thresholdToScan->addItems(items);
+    ui->comboBox_thresholdToScan->setCurrentIndex(0);
 }
 
 thresholdScan::~thresholdScan()
@@ -240,6 +246,8 @@ void thresholdScan::enableSpinBoxes()
     ui->spinBox_maximum->setEnabled(1);
     ui->spinBox_spacing->setEnabled(1);
     ui->spinBox_framesPerStep->setEnabled(1);
+
+    ui->comboBox_thresholdToScan->setEnabled(1);
 }
 
 void thresholdScan::disableSpinBoxes()
@@ -248,6 +256,8 @@ void thresholdScan::disableSpinBoxes()
     ui->spinBox_maximum->setDisabled(1);
     ui->spinBox_spacing->setDisabled(1);
     ui->spinBox_framesPerStep->setDisabled(1);
+
+    ui->comboBox_thresholdToScan->setDisabled(1);
 }
 
 QString thresholdScan::getPath(QString msg)
@@ -405,6 +415,7 @@ void ThresholdScanThread::setAbort(bool arg)
     return;
 }
 
+//! TODO Make this work for multiple thresholds
 void ThresholdScanThread::run()
 {
     // Open a new temporary connection to the SPIDR to avoid collisions to the main one
@@ -437,6 +448,7 @@ void ThresholdScanThread::run()
     int counter = minScan;
     int lastTH = counter-1;
     const QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
+    const int thresholdToScan = _ui->comboBox_thresholdToScan->currentIndex();
     // ---------------------------------------------------
 
     const int activeDevices = _mpx3gui->getConfig()->getNActiveDevices();
@@ -451,7 +463,7 @@ void ThresholdScanThread::run()
     bool summing = false;
     if (framesPerStep > 1){
         summing = true;
-        //! TODO Check this works for multiple thresholds
+        //! TODO Make this work for multiple thresholds
         _summedData = new int [x*y*activeDevices];
         //qDebug() << "[INFO] Allocating bytes :" << sizeof(_summedData) << " " << x*y*activeDevices;
         if (_summedData == nullptr) {
@@ -460,7 +472,7 @@ void ThresholdScanThread::run()
         }
     }
 
-    //! TODO Check this works for multiple thresholds
+    //! TODO Make this work for multiple thresholds
     _data = new int [x*y*activeDevices];
 
     QString newPath = _ui->textEdit_path->toPlainText();
@@ -485,7 +497,7 @@ void ThresholdScanThread::run()
         }
 
         //! Reset all of _summedData to 0 for the next threshold
-        //! TODO Check this works for multiple thresholds
+        //! TODO Make this work for multiple thresholds
         if (summing){
             memset(_summedData, 0, (x*y*activeDevices));
         }
@@ -546,7 +558,6 @@ void ThresholdScanThread::run()
             // Release
             spidrdaq->releaseFrame();
 
-            // Report to heatmap
             if (doReadFrames) {
 
                 //! Replace current frame data with summedData if we're summing
@@ -613,4 +624,24 @@ void thresholdScan::on_checkBox_incrementOtherThresholds_stateChanged()
     } else {
         set_changeOtherThresholds(false);
     }
+}
+
+void thresholdScan::slot_colourModeChanged(bool)
+{
+    ui->comboBox_thresholdToScan->clear();
+    QStringList items;
+    int maxThreshold = 0;
+
+    if (_mpx3gui->getConfig()->getColourMode()) {
+        maxThreshold = MPX3RX_DAC_THRESH_7;
+    } else {
+        maxThreshold = MPX3RX_DAC_THRESH_1;
+    }
+
+    for (int i = 0; i < maxThreshold; i++) {
+        items << MPX3RX_DAC_TABLE[i].name;
+    }
+
+    ui->comboBox_thresholdToScan->addItems(items);
+    ui->comboBox_thresholdToScan->setCurrentIndex(0);
 }

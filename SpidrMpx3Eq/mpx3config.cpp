@@ -25,7 +25,6 @@ Mpx3Config::Mpx3Config()
     _trigPeriod_ms = 0;
 
     _controller = nullptr;
-
 }
 
 bool Mpx3Config::RequiredOnEveryChipConfig(Mpx3Config::config_items item) {

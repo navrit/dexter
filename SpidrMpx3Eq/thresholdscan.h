@@ -92,6 +92,8 @@ private slots:
 
     void on_checkBox_incrementOtherThresholds_stateChanged();
 
+    void slot_colourModeChanged(bool);
+
 signals:
     void slideAndSpin(int, int);
 };
