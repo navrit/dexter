@@ -30,7 +30,7 @@ using namespace std;
 
 #define __equalization_target	10
 #define __default_step_scan		1
-#define __low_but_above_noise_threshold 50      //! This is for an equalised chip, should be valid for all gain modes
+#define __low_but_above_noise_threshold 100      //! This is for an equalised chip, should be valid for all gain modes
 
 #define EQ_NEXT_STEP(x) ( _eqStatus == x && ! _stepDone[x] )
 

@@ -41,8 +41,8 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     _ui->mainSplitter->setSizes(defaultSizesMain);
 
     // Some defaults
-    _deviceIndex = 2;
-    _nTriggers = 2;
+    _deviceIndex = 0;
+    _nTriggers = 1;
     _spacing = 2;
 
     // This will be recalculated
@@ -53,7 +53,7 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
 
     // Suggest a descendant scan
     _maxScanTHL = 0;
-    _minScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].bits) / 2; //! Isn't this the same as MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt
+    _minScanTHL = MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt;
     _scanDescendant = true;
     _busy = false;
     _resdataset = 0x0;
@@ -214,7 +214,7 @@ void QCstmEqualization::ShowEqualizationForChip(bool /*checked*/) {
 void QCstmEqualization::NewRunInitEqualization() {
 
     // Rewind min and max suggesting a descendant scan.
-    SetMinScan( (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].bits) / 2 );
+    SetMinScan( MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt );
     SetMaxScan( 0 );
 
     // Delete scans
@@ -224,7 +224,7 @@ void QCstmEqualization::NewRunInitEqualization() {
     _ui->eqLabelFineTuningLoopProgress->setText("-/-");
 
     // Rewind state machine variables
-    _eqStatus = __INIT;
+    _eqStatus = QCstmEqualization::__INIT;
     _scanIndex = 0;
     for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
 
@@ -232,9 +232,7 @@ void QCstmEqualization::NewRunInitEqualization() {
     _setId = 0;
 
     // And step
-    _stepScan = __default_step_scan;
-    _ui->eqStepSpinBox->setValue( _stepScan );
-
+    ChangeStep( __default_step_scan );
 
     int chipListSize = (int)_workChipsIndx.size();
     for ( int i = 0 ; i < chipListSize ; i++ ) {
@@ -311,8 +309,8 @@ bool QCstmEqualization::InitEqualization(int chipId) {
     _setId = 0;
 
     // And step
-    _stepScan = __default_step_scan;
-    _ui->eqStepSpinBox->setValue( _stepScan );
+    ChangeStep( __default_step_scan );
+
     // Clear the list of chips
     Rewind();
 
@@ -442,7 +440,6 @@ void QCstmEqualization::InitializeBarChartsEqualization() {
         _ui->horizontalLayoutEqHistos->addWidget( nbc );
 
         _chart.push_back( nbc ); // set as parent the same as the one delivered in the UI
-
     }
 
     // Add the legend for the chip check boxes, and the check boxes
@@ -734,8 +731,8 @@ void QCstmEqualization::StartEqualization() {
             _steeringInfo[i]->currentDAC_DISC_OptValue = 100; // for now make the opt value equal to the test value
         }
 
-        _spacing = 0; //! Need to have _spacing = 0 until __PrepareInterpolation_0x0
-        qDebug() << "[INFO] \tEqualisation setting pixel spacing to 0 until Prepare Interpolation for 0x0";
+        _spacing = 1; //! Need to have _spacing = 1 until __PrepareInterpolation_0x0
+        qDebug() << "[INFO] \tEqualisation setting pixel spacing to 1 until Fine tuning";
 
         // Prepare and launch the thread
         DAC_Disc_Optimization_100( );
@@ -777,7 +774,6 @@ void QCstmEqualization::StartEqualization() {
         // ------ //
         // STEP 2 //
         // ------ //
-        ChangeSpacing(_ui->spacingSpinBox->value()); //! Change the spacing back to the GUI content
 
         AppendToTextBrowser("2) Test adj-bits sensibility and extrapolate to target ...");
         PrepareInterpolation_0x0();
@@ -833,10 +829,14 @@ void QCstmEqualization::StartEqualization() {
         int * fulladjdata = _resdataset->getLayer( 0 );
         UpdateHeatMap(fulladjdata, _fullsize_x, _fullsize_y);
 
+        ChangeSpacing(_ui->spacingSpinBox->value()); //! Change the spacing back to the GUI content
+
         // Perform now a scan with the extrapolated adjustments
         //    Here there's absolutely no need to go through the THL range.
         // New limits --> ask the last scan
         ScanOnInterpolation();
+        ChangeSpacing(_ui->spacingSpinBox->value()); //! Change the spacing back to the GUI content
+
 
 
     } else if ( EQ_NEXT_STEP( __ScanOnInterpolation) ) {
@@ -867,9 +867,7 @@ void QCstmEqualization::StartEqualization() {
             StartEqualization( );
 
         } else {
-
             AppendToTextBrowser("3) Fine tuning ...");
-
 
             // 5) Attempt fine tuning
             FineTuning( );
@@ -1750,7 +1748,7 @@ void QCstmEqualization::resetForNewEqualisation()
     _scanIndex = 0;
 
     _maxScanTHL = 0;
-    _minScanTHL = (1 << MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].bits) / 2; //! Isn't this the same as MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt
+    _minScanTHL = MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt;
     _scanDescendant = true;
     _busy = false;
 
@@ -2022,6 +2020,8 @@ void QCstmEqualization::ChangeMax(int max) {
 void QCstmEqualization::ChangeStep(int step) {
     if( step < 0 ) return;
     _stepScan = step;
+
+    _ui->eqStepSpinBox->setValue( _stepScan );
 }
 
 void QCstmEqualization::StopEqualization() {

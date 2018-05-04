@@ -260,18 +260,18 @@ void ThlScan::FineTuning() {
         //!   to keep that circuit from reacting.  Set it at ~100
         //! TODO Check this number with Rafa
         if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
-            SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1].bits)/4 );
+            SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, __low_but_above_noise_threshold );
             if ( _mpx3gui->getConfig()->getColourMode() ) {
-                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_3, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_3].bits)/4 );
-                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_5, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5].bits)/4 );
-                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_7, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7].bits)/4 );
+                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_3, __low_but_above_noise_threshold );
+                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_5, __low_but_above_noise_threshold );
+                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_7, __low_but_above_noise_threshold );
             }
         } else if (  _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
-            SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_0, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].bits)/4 );
+            SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_0, __low_but_above_noise_threshold );
             if ( _mpx3gui->getConfig()->getColourMode() ) {
-                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_2, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_2].bits)/4 );
-                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_4, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_4].bits)/4 );
-                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_6, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_6].bits)/4 );
+                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_2, __low_but_above_noise_threshold );
+                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_4, __low_but_above_noise_threshold );
+                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_6, __low_but_above_noise_threshold );
             }
         }
 
@@ -340,8 +340,8 @@ void ThlScan::FineTuning() {
                     }
                     nMasked += pmasked;
                 }
-                qDebug() << "[INFO] [Fine Tuning] offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y
-                     <<  " | N pixels unmasked = " << ((int)_workChipsIndx.size()*__matrix_size) - nMasked << "\n";
+                //qDebug() << "[INFO] [Fine Tuning] offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y
+                //     <<  " | N pixels unmasked = " << ((int)_workChipsIndx.size()*__matrix_size) - nMasked << "\n";
 
                 // GUI stuff ---------------------------------------------------
                 QString ftLoopProgressS;
@@ -804,22 +804,22 @@ void ThlScan::EqualizationScan() {
 
         // While equalizing one threshold the other should be set at a very high value
         //   to keep that circuit from reacting.  Set it at ~100
-        qDebug() << "presettings : " << (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5-1].bits)/4 << ", " <<  (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7-1].bits)/4 << endl;
-        qDebug() << "              " << MPX3RX_DAC_THRESH_5 << ", " << MPX3RX_DAC_THRESH_7 << endl;
+        //qDebug() << "presettings : " << (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5-1].bits)/4 << ", " <<  (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7-1].bits)/4 << endl;
+        //qDebug() << "              " << MPX3RX_DAC_THRESH_5 << ", " << MPX3RX_DAC_THRESH_7 << endl;
 
         if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
-            SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_1-1].bits)/4 );
+            SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, __low_but_above_noise_threshold );
             if ( _mpx3gui->getConfig()->getColourMode() ) {
-                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_3, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_3-1].bits)/4 );
-                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_5, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5-1].bits)/4 );
-                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_7, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7-1].bits)/4 );
+                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_3, __low_but_above_noise_threshold );
+                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_5, __low_but_above_noise_threshold );
+                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_7, __low_but_above_noise_threshold );
             }
         } else if (  _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
-            SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_0, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0-1].bits)/4 );
+            SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_0, __low_but_above_noise_threshold );
             if ( _mpx3gui->getConfig()->getColourMode() ) {
-                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_2, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_2-1].bits)/4 );
-                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_4, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_4-1].bits)/4 );
-                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_6, (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_6-1].bits)/4 );
+                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_2, __low_but_above_noise_threshold );
+                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_4, __low_but_above_noise_threshold );
+                SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_6, __low_but_above_noise_threshold );
             }
         }
 
@@ -871,7 +871,7 @@ void ThlScan::EqualizationScan() {
 
                 nMasked += pmasked;
             }
-            cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  " | N pixels unmasked = " << ((int)_workChipsIndx.size()*__matrix_size) - nMasked << endl;
+            //cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  " | N pixels unmasked = " << ((int)_workChipsIndx.size()*__matrix_size) - nMasked << endl;
 
             // Start the Scan for one mask
             _pixelReactiveInScan = 0;
@@ -924,7 +924,7 @@ void ThlScan::EqualizationScan() {
                 int timeOutTime =
                         _mpx3gui->getConfig()->getTriggerLength_ms()
                         +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
-                        + 10; // 10ms extra, this is about twice the time a frame needs to come in (1Gbit)
+                        + 50; // 50ms extra, this is about twice the time a frame needs to come in (1Gbit)
 
                 while ( _spidrdaq->hasFrame( timeOutTime ) ) {
 
