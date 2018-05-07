@@ -981,7 +981,7 @@ int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, Th
     // 7) Extrapolate to the target using the last scan information and the knowledge
     //    on the Adj_THL dependency.
     _scans[_scanIndex - 1]->DeliverPreliminaryEqualization(devId, GetSteeringInfo(devId)->currentDAC_DISC, _eqMap[devId],  GetSteeringInfo(devId)->globalAdj );
-    _eqMap[devId]->ExtrapolateAdjToTarget( __equalization_target, GetSteeringInfo(devId)->currentEta_Adj_THx, sel );
+    _eqMap[devId]->ExtrapolateAdjToTarget( getCurrentEqualisationTarget(), GetSteeringInfo(devId)->currentEta_Adj_THx, sel );
 
     int * adj_matrix = 0x0;
     if ( GetSteeringInfo(devId)->currentDAC_DISC == MPX3RX_DAC_DISC_L ) adj_matrix = _eqMap[devId]->GetAdjustementMatrix();
@@ -1136,11 +1136,11 @@ void QCstmEqualization::DAC_Disc_Optimization (int devId, ScanResults * res_100,
 
     // -------------------------------------------------------------------------
     // 4) Now IDAC_DISC optimal is such that:
-    //    With an adj-bit of 00101[5] the optimal mean is at __equalization_target + 3.2 sigma
+    //    With an adj-bit of 00101[5] the optimal mean is at _equalization->getCurrentEqualisationTarget() + 3.2 sigma
 
-    // Desired mean value = __equalization_target + 3.2 sigma
+    // Desired mean value = _equalization->getCurrentEqualisationTarget() + 3.2 sigma
     // Taking sigma from the first scan.
-    double meanTHL_for_opt_IDAC_DISC = __equalization_target + 3.2*res_100->sigma;
+    double meanTHL_for_opt_IDAC_DISC = getCurrentEqualisationTarget() + 3.2*res_100->sigma;
 
     // Using the relation DAC_Disc[L/H](THL) we can find the value of DAC_Disc
     GetSteeringInfo(devId)->currentDAC_DISC_OptValue = (int) EvalLinear(GetSteeringInfo(devId)->currentEta_THx_DAC_Disc, GetSteeringInfo(devId)->currentCut_THx_DAC_Disc, meanTHL_for_opt_IDAC_DISC);
@@ -1741,7 +1741,8 @@ void QCstmEqualization::setWindowWidgetsStatus(win_status s)
     }
 }
 
-//! New and untested feature so you can run multiple equalisations without closing the program
+//! TODO New and untested feature so you can run multiple equalisations without closing the program
+//! Doesn't work...
 void QCstmEqualization::resetForNewEqualisation()
 {
     _eqStatus = __INIT;

@@ -28,7 +28,6 @@ using namespace std;
 #include "histogram.h"
 #include "ThlScan.h"
 
-#define __equalization_target	10
 #define __default_step_scan		1
 #define __low_but_above_noise_threshold 100      //! This is for an equalised chip, should be valid for all gain modes
 
@@ -255,6 +254,9 @@ public:
 
     QMap<int, Mpx3EqualizationResults *> getEqMap(){ return _eqMap; }
 
+    // -------------------------- Recent changes  ------------------------------
+    int getCurrentEqualisationTarget() { return equalisationTarget; }
+
 private:
 
     Ui::QCstmEqualization * _ui;
@@ -284,6 +286,9 @@ private:
     // b11: SLGM  3
     int gainMode = 3;
     bool testPulseMode = false;
+
+    int equalisationTarget = 10; //! Should really have this as one per chip,
+        //! but let's just make it for single chip equalisation for now
 
     void resetForNewEqualisation();
     // -------------------------------------------------------------------------

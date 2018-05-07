@@ -565,7 +565,7 @@ void ThlScan::SelectBestAdjFromHistory(int showHeadAndTail) {
         // Calculate first all distances to target in history and see if this happens
         vector<int> distancesToTarget;
         for (int hI = 0 ; hI < historySize ; hI++ ) {
-            distancesToTarget.push_back( pixHistory[hI].second - __equalization_target );
+            distancesToTarget.push_back( pixHistory[hI].second - _equalization->getCurrentEqualisationTarget() );
         }
         // Check if there is more than one point at the same distance and at opposite sides
         // I will use a simple sort algorithm (these vectors have at most a size of 31).
@@ -1117,8 +1117,9 @@ bool ThlScan::OutsideTargetRegion(int devId, int pix, double Nsigma) {
     int offset =  floor( Nsigma * GetScanResults(devId)->sigma );
     if ( offset < 1 ) offset = 1;
 
-    int lowLim = __equalization_target - offset;
-    int highLim = __equalization_target + offset;
+    int currentEqualisationTarget = _equalization->getCurrentEqualisationTarget();
+    int lowLim = currentEqualisationTarget - offset;
+    int highLim = currentEqualisationTarget + offset;
 
     return ( _pixelReactiveTHL[pix] < lowLim  ||
              _pixelReactiveTHL[pix] > highLim ||
@@ -1172,7 +1173,7 @@ set<int> ThlScan::ExtractPixelsNotOnTarget() {
         // consider the pixel only if it belongs in the _workChipsIndx
         if ( ! _equalization->pixelInScheduledChips( i ) ) continue;
 
-        if ( _pixelReactiveTHL[i] != __equalization_target ) {
+        if ( _pixelReactiveTHL[i] != _equalization->getCurrentEqualisationTarget() ) {
             reworkList.insert( i );
             // WARNING: the numbering is per chip in the EqualizationResults
             _equalization->GetEqualizationResults( chipId )->SetStatus( i % __matrix_size, Mpx3EqualizationResults::__SCHEDULED_FOR_FINETUNING, sel );
@@ -1279,10 +1280,11 @@ bool ThlScan::AdjScanCompleted(set<int> reworkSubset, set<int> /*activeMask*/) {
             // Check the limits
             if ( (*adjI).first == 0x0 ||  (*adjI).first == __max_adj_val ) pixelsLimitsReached++; // TODO, probably i shouldn't consider here the high extreme = 31
 
+            int currentEqualisationTarget = _equalization->getCurrentEqualisationTarget();
             // Check if it's passing over the target
-            if ( (*adjI).second  > __equalization_target ) passedUpTarget = true;
-            if ( (*adjI).second == __equalization_target ) passedOnTarget = true;
-            if ( (*adjI).second  < __equalization_target ) passedUnderTarget = true;
+            if ( (*adjI).second  > currentEqualisationTarget) passedUpTarget = true;
+            if ( (*adjI).second == currentEqualisationTarget) passedOnTarget = true;
+            if ( (*adjI).second  < currentEqualisationTarget) passedUnderTarget = true;
         }
 
         // See if it passed over the target or right on the target
@@ -1377,14 +1379,16 @@ int ThlScan::ShiftAdjustments(set<int> reworkSubset, set<int> activeMask) {
             specialCase = true;
         }
 
+        int currentEqualisationTarget = _equalization->getCurrentEqualisationTarget();
+
         if ( ! specialCase ) {
             // take a decision on next adjustment
             if ( _pixelReactiveTHL[ *i ] == __UNDEFINED ) {
                 // If the pixel is not at the right corner (this has been considered just before)
                 newadj = adj - 1;
-            } else if ( _pixelReactiveTHL[ *i ] > __equalization_target ) {
+            } else if ( _pixelReactiveTHL[ *i ] > currentEqualisationTarget ) {
                 newadj = adj + 1;
-            } else if ( _pixelReactiveTHL[ *i ] < __equalization_target ) {
+            } else if ( _pixelReactiveTHL[ *i ] < currentEqualisationTarget ) {
                 newadj = adj - 1;
             }
 
