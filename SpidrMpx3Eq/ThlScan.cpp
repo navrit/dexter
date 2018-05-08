@@ -105,7 +105,7 @@ void ThlScan::InitializeScanResults(vector<equalizationSteeringInfo *> st) {
 ScanResults * ThlScan::GetScanResults(int chipIdx) {
 
     // There should be as results objects as chips to be equalized
-    if ( _workChipsIndx.size() != _results.size() ) return 0x0;
+    if ( _workChipsIndx.size() != _results.size() ) return nullptr;
 
     // Find the index
     for (int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
@@ -113,7 +113,7 @@ ScanResults * ThlScan::GetScanResults(int chipIdx) {
         if ( _workChipsIndx[i] == chipIdx ) return _results[i];
     }
 
-    return 0x0;
+    return nullptr;
 }
 
 void ThlScan::ConnectToHardware(SpidrController * sc, SpidrDaq * sd) {

@@ -65,10 +65,8 @@ class zmqController;
 #define ASCII_FILES "ASCII (*.txt)"
 #define JSON_FILES "BH JSON file(*.json)"
 
-#define TP_PERIOD 40000 //! In units of 25 ns. 40000 * 25 ns = 1 ms = 1000 Hz
-
 const QString _softwareName = "ASI Dexter";
-const QString _softwareVersion = "1.8.0";
+const QString _softwareVersion = "1.8.1";
 
 #include <stdio.h>
 #include <QCoreApplication>
@@ -163,7 +161,6 @@ public:
 
     Gradient* getGradient(int index);
     void resize(int x, int y);
-    //histogram* getHist(int index){return hists[index];}
 
     std::vector<int> getOrientation() { return _MPX3RX_ORIENTATION; }
     std::vector<QPoint> getLayout() { return _MPX3RX_LAYOUT; }
@@ -183,8 +180,6 @@ public:
     bool establish_connection();
 
     bool equalizationLoaded();
-
-    bool setTestPulses(int pixelSpacing, int startPixelOffset);
 
     const QString settingsFile = QApplication::applicationDirPath() + QDir::separator() + "last_configuration.ini";
 
@@ -206,10 +201,6 @@ signals:
     void data_zeroed();
     void hist_added(int);
     void hist_changed(int);
-    /*void reload_layer(int layer);
-    void frame_added(int layer);
-    void frame_changed(int layer);
-    void frames_reload();*/
     void active_frame_changed(int);
     void availible_gradients_changed(QStringList gradients);
     void gradient_added(QString gradient);

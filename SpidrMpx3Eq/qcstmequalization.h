@@ -28,6 +28,8 @@ using namespace std;
 #include "histogram.h"
 #include "ThlScan.h"
 
+#include "testpulseequalisation.h"
+
 #define __default_step_scan		1
 #define __low_but_above_noise_threshold 100      //! This is for an equalised chip, should be valid for all gain modes
 
@@ -41,8 +43,7 @@ class ThlScan;
 class BarChart;
 class BarChartProperties;
 class ModuleConnection;
-
-
+class testPulseEqualisation;
 
 class Mpx3EqualizationResults {
 
@@ -151,7 +152,6 @@ class QCstmEqualization : public QWidget
     Q_OBJECT
 
 public:
-
     explicit QCstmEqualization(QWidget *parent = nullptr);
     ~QCstmEqualization();
     void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
@@ -256,6 +256,7 @@ public:
 
     // -------------------------- Recent changes  ------------------------------
     int getCurrentEqualisationTarget() { return equalisationTarget; }
+    testPulseEqualisation * testPulseEqualisationDialog = nullptr;
 
 private:
 
@@ -287,10 +288,14 @@ private:
     int gainMode = 3;
     bool testPulseMode = false;
 
+    const int defaultNoiseEqualisationTarget = 10;
+
     int equalisationTarget = 10; //! Should really have this as one per chip,
         //! but let's just make it for single chip equalisation for now
 
     void resetForNewEqualisation();
+
+    void estimateEqualisationTarget();
     // -------------------------------------------------------------------------
 
     bool _equalizationLoaded = false;
@@ -369,6 +374,8 @@ private slots:
     void setEqualizationShowTHLTHH(int);
     void setEqualizationTHLType(int);
     void ShowEqualizationForChip(bool checked);
+
+    void on_pushButton_testPulses_clicked();
 
 signals:
     void slideAndSpin(int, int);

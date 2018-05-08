@@ -120,6 +120,7 @@ Ui::QCstmEqualization * QCstmEqualization::GetUI() {
 QCstmEqualization::~QCstmEqualization()
 {
     delete _ui;
+    delete testPulseEqualisationDialog;
 }
 
 void QCstmEqualization::setNHits(int val){
@@ -960,7 +961,7 @@ void QCstmEqualization::UpdateHeatMap(int * data, int sizex, int sizey) {
 }
 
 
-int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, ThlScan * scan_x5 ) { //ScanResults * res_x0, ScanResults * res_x5) {
+int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, ThlScan * scan_x5 ) {
 
     // -------------------------------------------------------------------------
     // 6) Establish the dependency THL(Adj). It will be used to extrapolate to the
@@ -981,6 +982,9 @@ int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, Th
     // 7) Extrapolate to the target using the last scan information and the knowledge
     //    on the Adj_THL dependency.
     _scans[_scanIndex - 1]->DeliverPreliminaryEqualization(devId, GetSteeringInfo(devId)->currentDAC_DISC, _eqMap[devId],  GetSteeringInfo(devId)->globalAdj );
+
+    estimateEqualisationTarget(); //! Will change from the default of 10 if test pulses are being used
+
     _eqMap[devId]->ExtrapolateAdjToTarget( getCurrentEqualisationTarget(), GetSteeringInfo(devId)->currentEta_Adj_THx, sel );
 
     int * adj_matrix = 0x0;
@@ -1764,6 +1768,21 @@ void QCstmEqualization::resetForNewEqualisation()
     nbc->setHidden(true);
 }
 
+//! TODO Fill this in
+void QCstmEqualization::estimateEqualisationTarget()
+{
+    //! If test pulses are being used, then we want to start a the test pulse scanning procedure.
+    //! Otherwise, set it to the default value
+
+    if (testPulseMode) {
+
+    } else {
+        equalisationTarget = defaultNoiseEqualisationTarget;
+    }
+
+    return;
+}
+
 bool QCstmEqualization::makeTeaCoffeeDialog()
 {
     QMessageBox msgBox;
@@ -2371,4 +2390,12 @@ void QCstmEqualization::SetDAC_propagateInGUI(SpidrController * spidrcontrol, in
     // Set in the local config.  This function also takes the dac_index and not the dac_code
     _mpx3gui->getDACs()->SetDACValueLocalConfig( devId, dacIndex, dac_val);
 
+}
+
+void QCstmEqualization::on_pushButton_testPulses_clicked()
+{
+    if (!testPulseEqualisationDialog) {
+        testPulseEqualisationDialog = new testPulseEqualisation(_mpx3gui, this);
+    }
+    testPulseEqualisationDialog->show();
 }

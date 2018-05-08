@@ -103,7 +103,6 @@ public:
 
     Mpx3Config();
     void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
-    //void setIpAddress(QString ip, uint16_t port);
     bool isConnected() { return connected; }
     bool fromJsonFile(QString filename, bool includeDacs = true);
     bool toJsonFile(QString filename, bool includeDacs = true);
@@ -129,8 +128,6 @@ public:
     QString getDeviceWaferId(int id){return _deviceWaferIdMap.at(id); }
     int getIndexFromID(int id){return _activeChips.indexOf(id);}
     int getTriggerPeriodMS(){return _trigPeriod_ms;}
-    //unsigned int getPixelDepthFromIndex(int indx);
-    //unsigned int getPixelDepth12BitsIndex() { return __pixelDepth12BitsIndex; }
     double getBiasVoltage() { return biasVolt; }
 
     void checkChipResponse(int devIndx, detector_response dr);
@@ -141,13 +138,6 @@ public:
         bool equalizationBit;
         int DiscCsmSpm;
     } extra_config_parameters;
-
-    typedef struct {
-        int V_TP_Ref;
-        int V_TP_RefA;
-        int V_TP_RefB;
-    } testpulses_config_parameters;
-
 
     void SendConfiguration(config_items item = __ALL);
     void PickupStaticConfigurationFigures();

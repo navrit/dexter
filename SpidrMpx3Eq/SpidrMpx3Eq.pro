@@ -79,7 +79,6 @@ SOURCES += main.cpp \
     qcstmcorrectionsdialog.cpp \
     statsdialog.cpp \
     profiledialog.cpp \
-    testpulses.cpp \
     dataconsumerthread.cpp \
     optionsdialog.cpp \
     qcstmsteppermotor.cpp \
@@ -98,7 +97,8 @@ SOURCES += main.cpp \
     qcstmBHWindow.cpp \
     qcstmBHdialog.cpp \
     StepperMotorController.cpp \
-    qcustomplot.cpp
+    qcustomplot.cpp \
+    testpulseequalisation.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -121,7 +121,6 @@ HEADERS += mpx3gui.h \
     qcstmcorrectionsdialog.h \
     statsdialog.h \
     profiledialog.h \
-    testpulses.h \
     dataconsumerthread.h \
     optionsdialog.h \
     qcstmsteppermotor.h \
@@ -140,7 +139,8 @@ HEADERS += mpx3gui.h \
     qcstmBHWindow.h \
     qcstmBHdialog.h \
     StepperMotorController.h \
-    qcustomplot.h
+    qcustomplot.h \
+    testpulseequalisation.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \
@@ -157,11 +157,11 @@ FORMS    += mpx3gui.ui \
     statsdialog.ui \
     profiledialog.ui \
     qcstmBHdialog.ui \
-    testpulses.ui \
     optionsdialog.ui \
     qcstmsteppermotor.ui \
     thresholdscan.ui \
-    qcstmct.ui
+    qcstmct.ui \
+    testpulseequalisation.ui
 
     copydata.commands += $(COPY_DIR)  \"$$PWD/config\" \"$$DESTDIR/\" &
     first.depends = $(first) copydata
