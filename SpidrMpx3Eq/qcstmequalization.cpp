@@ -1775,6 +1775,33 @@ void QCstmEqualization::estimateEqualisationTarget()
     //! Otherwise, set it to the default value
 
     if (testPulseMode) {
+        //! Activate test pulses with the configuration from the GUI or the defaults
+        testPulseEqualisationDialog->activate(); //! Could have a pixel offset here if I wanted
+
+        _mpx3gui->getTHScan()->setTestPulseEqualisation(true);
+        _mpx3gui->getTHScan()->startScan();
+
+        //! Wait until it's finished
+        while ( !_mpx3gui->getTHScan()->getTestPulseEqualisation() ) {
+            qApp->processEvents();
+        }
+
+        //! Make a QVector of floats for the 'turn-on' thresholds
+        //!     It will be at most 4 * 256 * 256, so initialise it with that size
+        QVector<int> turnOnThresholds(4*__matrix_size);
+
+
+        //! Results of a threshold scan over all pixels and full range of thresholds
+        //! TODO testPulseEqualisation this will run over all pixels, we only want to look at the chip(s) we're equalising
+        turnOnThresholds = _mpx3gui->getTHScan()->getTurnOnThresholds();
+
+
+        uint32_t sum_of_elems = 0;
+        for (auto& n : turnOnThresholds) {
+            sum_of_elems += n;
+        }
+        //! The mean of turnOnThresholds is the new equalisationTarget
+        equalisationTarget = sum_of_elems / turnOnThresholds.size();
 
     } else {
         equalisationTarget = defaultNoiseEqualisationTarget;

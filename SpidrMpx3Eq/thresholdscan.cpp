@@ -60,7 +60,6 @@ void thresholdScan::finishedScan()
 
     ui->textEdit_log->append("Finished Threshold scan @ " +
                             stopTime + "\n");
-    resetScan();
 
     //! Print footer to log box and end timer with relevant units
 
@@ -71,6 +70,8 @@ void thresholdScan::finishedScan()
         ui->textEdit_log->append("Elapsed time: " + QString::number(timer.elapsed()/1000) + "s");
     }
     ui->textEdit_log->append("\n------------------------------------------");
+
+    resetScan();
 }
 
 void thresholdScan::startScan()
@@ -154,12 +155,14 @@ void thresholdScan::stopScan()
 
     _stop = true;
     _running = false;
+    _testPulseEqualisation = false;
 }
 
 void thresholdScan::resetScan()
 {
     _stop = false;
     _running = false;
+    _testPulseEqualisation = false;
 }
 
 void thresholdScan::resumeTHScan()
@@ -184,8 +187,13 @@ void thresholdScan::resumeTHScan()
             }
         }
 
-        //! Save the current dataset ----------------------------------------------
-        _mpx3gui->getDataset()->toTIFF(makePath(), false); //! Save raw TIFF
+        if ( !_testPulseEqualisation ) {
+            //! Save the current dataset ------------------------------------------
+            _mpx3gui->getDataset()->toTIFF(makePath(), false); //! Save raw TIFF
+        } else {
+            //! Doing a testPulseEqualisation, so no saving...
+        }
+
 
         //! Clear the dataset -----------------------------------------------------
         _mpx3gui->getDataset()->zero();
@@ -430,7 +438,7 @@ void ThresholdScanThread::run()
     SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
-        qDebug() << "[ERR ] Device not connected !";
+        qDebug() << "[ERR]\tDevice not connected !";
         return;
     }
 
@@ -465,9 +473,9 @@ void ThresholdScanThread::run()
         summing = true;
         //! TODO Make this work for multiple thresholds
         _summedData = new int [x*y*activeDevices];
-        //qDebug() << "[INFO] Allocating bytes :" << sizeof(_summedData) << " " << x*y*activeDevices;
+        //qDebug() << "[INFO]\tAllocating bytes :" << sizeof(_summedData) << " " << x*y*activeDevices;
         if (_summedData == nullptr) {
-            qDebug() << "\n[WARN] summedData could not be allocated memory...\n";
+            qDebug() << "\n[WARN]\tsummedData could not be allocated memory...\n";
             return;
         }
     }
@@ -482,12 +490,20 @@ void ThresholdScanThread::run()
     }
     _mpx3gui->getTHScan()->setOriginalPath(newPath);
 
+
+    const bool isTestPulseEqualisation = _thresholdScan->getTestPulseEqualisation();
+    if (isTestPulseEqualisation) {
+        qDebug() << "[INFO]\tStarting a threshold scan for test pulse equalisation.";
+        _turnOnThresholds.reserve(x*y*activeDevices);
+        std::fill(_turnOnThresholds.begin(), _turnOnThresholds.end(), -1);
+    }
+
     for ( ; scanContinue ; ) {
 
         // Set DACs on all chips
         for(int i = 0 ; i < activeDevices ; i++) {
             if ( !_thresholdScan->GetMpx3GUI()->getConfig()->detectorResponds( i ) ) {
-                qDebug() << "[ERR ] Device " << i << " not responding.";
+                qDebug() << "[ERR]\tDevice " << i << " not responding.";
             } else {
                 //! Check if counter <= 512
                 if  (counter <= 512) {
@@ -511,13 +527,11 @@ void ThresholdScanThread::run()
         int timeOutTime =
                 _mpx3gui->getConfig()->getTriggerLength_ms()
                 + _mpx3gui->getConfig()->getTriggerDowntime_ms()
-                + 1; // ms
-        //! The extra ms is a combination of delay in the network plus
+                + 10; // ms
+        //! The extra 10 ms is a combination of delay in the network plus
         //! system overhead.  This should be predicted and not hard-coded.
 
         while ( spidrdaq->hasFrame( timeOutTime ) ) {
-
-            //QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
 
             // A frame is here
             doReadFrames = true;
@@ -531,6 +545,8 @@ void ThresholdScanThread::run()
 
                 //! TODO fix this for scan using N thresholds
                 //! Iterate through existing thresholds
+
+                /*
                 for (const int &th : thresholds) {
                     qDebug() << ">>>>>>>>>> Threshold in existance: " << th;
                 }
@@ -547,12 +563,12 @@ void ThresholdScanThread::run()
                             qDebug() << "[DATA]: " << tmp;
                     }
                 }
+                */
 
                 //qDebug() << "Last: " << lastTH <<  "   Now:" << counter;
                 if (summing && lastTH != counter) {
                     sumArrays(x, y);
                 }
-
             }
 
             // Release
@@ -569,17 +585,27 @@ void ThresholdScanThread::run()
                     _mpx3gui->getDataset()->setFrame(_data, idx, 0);
                 }
 
-                QString path = newPath;
-                path.append("/");
-                //path.append(QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
-                path.append("th-");
-                path.append(QString::number(counter));
-                path.append("_raw.tiff");
+                if (!isTestPulseEqualisation) {
+                    QString path = newPath;
+                    path.append("/");
+                    //path.append(QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
+                    path.append("th-");
+                    path.append(QString::number(counter));
+                    path.append("_raw.tiff");
 
-                //qDebug() << "[INFO] Writing to " << path;
-                _mpx3gui->getDataset()->toTIFF(path, false); //! Save raw TIFF
+                    //qDebug() << "[INFO] Writing to " << path;
+                    _mpx3gui->getDataset()->toTIFF(path, false); //! Save raw TIFF
+                } else {
+                    //! Doing a testPulseEqualisation
+                    QVector<int> frame = _mpx3gui->getDataset()->makeFrameForSaving(thresholdToScan, false, false);
+                    for (int i=0; i < frame.size(); i++ ){
+                        if ( frame[i] >= 10 && _turnOnThresholds[i] > i) {
+                            _turnOnThresholds[i] = i;
+                            qDebug() << "turnOnThresholds updated:" << _turnOnThresholds[i] << i << frame[i];
+                        }
+                    }
+                }
             }
-
         }
 
         lastTH = counter;

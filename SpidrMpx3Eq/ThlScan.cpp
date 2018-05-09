@@ -28,9 +28,9 @@ ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
     // keep these pointers
     _mpx3gui = mpx3gui;
     _equalization = ptr;
-    _heatmap = 0x0;
-    _spidrcontrol = 0x0; // Assuming no connection yet
-    _spidrdaq = 0x0;     // Assuming no connection yet
+    _heatmap = nullptr;
+    _spidrcontrol = nullptr; // Assuming no connection yet
+    _spidrdaq = nullptr;     // Assuming no connection yet
     _frameId = 0;
     _adjType = __adjust_to_global;
     _stop = false;
@@ -38,8 +38,8 @@ ThlScan::ThlScan(Mpx3GUI * mpx3gui, QCstmEqualization * ptr) {
     _fineTuningPixelsEqualized.clear();
     _results.clear();
     _maskedSet.clear();
-    _plotdata = 0x0;
-    _dataset = 0x0;
+    _plotdata = nullptr;
+    _dataset = nullptr;
 
     // Results of the scan
     //_results.weighted_arithmetic_mean = 0.;

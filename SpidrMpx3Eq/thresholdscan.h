@@ -23,6 +23,8 @@ public:
     void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
     Mpx3GUI * GetMpx3GUI() { return _mpx3gui; }
 
+    void startScan();
+
     QString getOriginalPath();
     void setOriginalPath(QString);
 
@@ -31,18 +33,20 @@ public:
 
     void changeAllDACs(int val);
 
+    bool getTestPulseEqualisation() { return _testPulseEqualisation; }
+    void setTestPulseEqualisation( bool val ) { _testPulseEqualisation = val; }
+    QVector<int> getTurnOnThresholds() { return turnOnThresholds; }
+
 private:
     Ui::thresholdScan *ui;
     Mpx3GUI * _mpx3gui;
 
-    //ThresholdScanThread * _thresholdScanThread;
-
-    void startScan();
     void stopScan();
     void resetScan();
     void startDataTakingThread();
     bool _stop = false;
     bool _running = false;
+    bool _testPulseEqualisation = false;
 
     void update_timeGUI();
     QElapsedTimer timer;
@@ -73,6 +77,8 @@ private:
 
     void SetDAC_propagateInGUI(int devId, int dac_code, int dac_val );
 
+    QVector<int> turnOnThresholds;
+
 public slots:
     void resumeTHScan();
 
@@ -96,6 +102,8 @@ private slots:
 
 signals:
     void slideAndSpin(int, int);
+
+    void finishedTestPulseEqualisationScan();
 };
 
 class ThresholdScanThread : public QThread {
@@ -115,16 +123,18 @@ private:
 
     void run();
 
-    Mpx3GUI * _mpx3gui;
-    thresholdScan * _thresholdScan;
-    Ui::thresholdScan * _ui;
+    Mpx3GUI * _mpx3gui = nullptr;
+    thresholdScan * _thresholdScan = nullptr;
+    Ui::thresholdScan * _ui = nullptr;
 
-    SpidrController * _spidrcontrol;
+    SpidrController * _spidrcontrol = nullptr;
 
     // IP source address (SPIDR network interface)
     int _srcAddr;
-    int * _data;
-    int * _summedData;
+    int * _data = nullptr;
+    int * _summedData = nullptr;
+
+    QVector<int> _turnOnThresholds;
 
     void sumArrays(int, int);
 
