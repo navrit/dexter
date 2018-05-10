@@ -189,14 +189,14 @@ private:
     // control
     bool _stop;
 
-    private slots:
+private slots:
     //void UpdateChart(int setId, int thlValue);
     void UpdateChart(int devId, int setId, int thlValue);
     void UpdateChartPixelsReady(int devId, int setId);
     void UpdateHeatMap(int sizex, int sizey);
     void on_stop_data_taking_thread();
 
-    signals:
+signals:
     void UpdateChartSignal(int devId, int setId, int thlValue);
     void UpdateChartPixelsReadySignal(int devId, int setId);
     void UpdateHeatMapSignal(int sizex, int sizey);

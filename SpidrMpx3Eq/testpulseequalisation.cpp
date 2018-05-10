@@ -1,7 +1,10 @@
 #include "testpulseequalisation.h"
 #include "ui_testpulseequalisation.h"
 
+#include "ui_mpx3gui.h"
 #include "mpx3config.h"
+#include "testpulseequalisation.h"
+#include "testpulseequalisation.h"
 
 testPulseEqualisation::testPulseEqualisation(Mpx3GUI * mg, QWidget *parent) :
     _mpx3gui(mg),
@@ -19,6 +22,8 @@ testPulseEqualisation::testPulseEqualisation(Mpx3GUI * mg, QWidget *parent) :
     ui->spinBox_testPulsePeriod->setValue( config.testPulsePeriod );
     ui->spinBox_pixelSpacing->setValue( config.pixelSpacing );
     ui->comboBox_verbosity->setCurrentIndex( verbosity );
+
+    ui->spinBox_injectionCharge->setMaximum( maximumInjectionElectrons );
 
     //! Seems redundant but isn't because it's not relying on the signal slot joining up by name... this is more robust to name changing
     connect(ui->spinBox_injectionCharge, SIGNAL(valueChanged(int)), this, SLOT(on_spinBox_injectionCharge_valueChanged(int)));
@@ -41,7 +46,7 @@ bool testPulseEqualisation::activate(int startPixelOffset)
         return false;
     }
 
-    if ( ! estimate_V_TP_REF_AB( config.injectionChargeInElectrons ) ) {
+    if ( ! ( config.injectionChargeInElectrons ) ) {
          return false;
     }
 
@@ -49,7 +54,7 @@ bool testPulseEqualisation::activate(int startPixelOffset)
 
     if ( _mpx3gui->equalizationLoaded() ) {
 
-        SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+        spidrcontrol = _mpx3gui->GetSpidrController();
         QCstmEqualization * _equalisation = _mpx3gui->getEqualization();
 
         //! Very basic error check
@@ -148,18 +153,6 @@ void testPulseEqualisation::on_spinBox_injectionCharge_valueChanged(int arg1)
     config.injectionChargeInElectrons = arg1;
 }
 
-void testPulseEqualisation::on_comboBox_injectionChargeUnits_currentIndexChanged(int index)
-{
-    if (index == 0 ){
-        injectionChargeUnits = electrons;
-    } else if (index == 1 ){
-        injectionChargeUnits = KeV_Si;
-    } else {
-        injectionChargeUnits = electrons;
-    }
-    ui->spinBox_injectionCharge->setValue( config.injectionChargeInElectrons );
-}
-
 void testPulseEqualisation::on_spinBox_testPulseLength_valueChanged(int arg1)
 {
     config.testPulseLength = arg1;
@@ -189,9 +182,107 @@ void testPulseEqualisation::on_comboBox_verbosity_currentIndexChanged(int index)
 
 bool testPulseEqualisation::estimate_V_TP_REF_AB(uint electrons)
 {
-    //! TODO DO THIS
-    //! Set V_TP_REF and V_TP_REF(A/B) to values based on measurements
+    //! Set V_TP_REF and V_TP_REF(A/B) based on measurements
+    //!
     //! Fail if it cannot be set to the requested injection charge
+    //!
+    //!    I should limit the GUI input so you can't enter a value above the maximum injection voltage for the linear range of V_TP_REF (300 mV - 1275 mV)
+    //!    Ie. 1.275 V (max value) - 0.300 V = 0.975 V is the maximum injection voltage.
+    //!
+    //!    Design specification claims C_test = ~5fF.
+    //!         Rafa: Typical tolerances are ~20% for this.
+    //!         Speculation: Actual value should be very similar over the whole chip. Don't know how to confim this...
+    //!
+    //!    Electron to V conversion --> Q = CV
+    //!                                 # of electrons * e = 5 fF * V
+    //!
+    //!    Maximum number of electrons is therefore:
+    //!         # of electrons = 5 fF * 0.975 V / e
+    //!                        = 30430.7...
+    //!                        = 30431 (rounded up)
+    //!
+
+    //! Set V_TP_REF   to 300 mV
+    //!     V_TP_REF_A to 300 mV + (# of electrons * e / 5fF)
+    //!     V_TP_REF_B to 300 mV + (# of electrons * e / 5fF)
+
+    const float requestedInjectionVoltage = 0.3 + (electrons * e_dividedBy_c_test);
+
+    if ( requestedInjectionVoltage < 0.3 || requestedInjectionVoltage >= 1.275 ) {
+        qDebug() << "[FAIL]\tRequested injection voltage out of range";
+        return false;
+    }
+
+    for (int chipID=0; chipID < _mpx3gui->getConfig()->getNActiveDevices(); chipID++) {
+        //! We need to scan for these
+        setDACToVoltage(chipID, MPX3RX_DAC_TP_REF, 0.3);
+        setDACToVoltage(chipID, MPX3RX_DAC_TP_REF_A, requestedInjectionVoltage);
+        setDACToVoltage(chipID, MPX3RX_DAC_TP_REF_B, requestedInjectionVoltage);
+
+        //! Always just set these to defaults
+        SetDAC_propagateInGUI(chipID, MPX3RX_DAC_TP_BUF_IN, dacConfig.V_TP_BufferIn);
+        SetDAC_propagateInGUI(chipID, MPX3RX_DAC_TP_BUF_OUT, dacConfig.V_TP_BufferOut);
+    }
+}
+
+uint testPulseEqualisation::setDACToVoltage(int chipID, int dacCode, float V)
+{
+    uint dac_val = 0;
+    bool foundTarget = false;
+    int adc_val = 0;
+    double adc_volt = 0;
+    int nSamples = 1;
+    double lowerVboundary = V - 0.01;
+    double upperVboundary = V + 0.01;
+
+    //! Give them some reasonable starting values to save time
+    if (dacCode == MPX3RX_DAC_TP_REF)   dac_val = 60;
+    if (dacCode == MPX3RX_DAC_TP_REF_A) dac_val = 250;
+    if (dacCode == MPX3RX_DAC_TP_REF_B) dac_val = 250;
+
+    spidrcontrol->setSenseDac(chipID, dacCode);
+
+    while (!foundTarget) {
+        spidrcontrol->setDac(chipID, dacCode, dac_val);
+        spidrcontrol->getDacOut(chipID, &adc_val, nSamples);
+
+        adc_val /= nSamples;
+        adc_volt = (__voltage_DACS_MAX/(double)__maxADCCounts) * (double)adc_val;
+
+        if ( adc_volt <= lowerVboundary ) {
+            dac_val += 1;
+        } else if (adc_volt >= upperVboundary) {
+            dac_val -= 1;
+        } else if ( adc_volt >= lowerVboundary && adc_val <= upperVboundary ) {
+            foundTarget = true;
+        } else {
+            qDebug() << "[FAIL]\tFix this... Could not find dac value to match given voltage" << dac_val << dacCode << V;
+        }
+    }
+
+    SetDAC_propagateInGUI(chipID, dacCode, dac_val);
+
+    return dac_val;
+}
+
+void testPulseEqualisation::SetDAC_propagateInGUI(int devId, int dac_code, int dac_val ) {
+
+    // Set Dac
+    spidrcontrol->setDac( devId, dac_code, dac_val );
+    // Adjust the sliders and the SpinBoxes to the new value
+    connect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+    // Get the DAC back just to be sure and then slide&spin
+    //int dacVal = 0;
+    //spidrcontrol->getDac( devId,  dac_code, &dacVal);
+    // SlideAndSpin works with the DAC index, no the code.
+    int dacIndex = _mpx3gui->getDACs()->GetDACIndex( dac_code );
+    //slideAndSpin( dacIndex,  dacVal );
+    emit slideAndSpin( dacIndex,  dac_val );
+    disconnect( this, SIGNAL( slideAndSpin(int, int) ), _mpx3gui->GetUI()->DACsWidget, SLOT( slideAndSpin(int, int) ) );
+
+    // Set in the local config.  This function also takes the dac_index and not the dac_code
+    _mpx3gui->getDACs()->SetDACValueLocalConfig( devId, dacIndex, dac_val);
+
 }
 
 void testPulseEqualisation::turnOffAllCTPRs(SpidrController *spidrcontrol, int chipID, bool submit)
@@ -209,11 +300,11 @@ void testPulseEqualisation::turnOffAllCTPRs(SpidrController *spidrcontrol, int c
 void testPulseEqualisation::on_buttonBox_accepted()
 {
     _mpx3gui->getEqualization()->setTestPulseMode(true);
-    qDebug() << "[INFO]\tTest pulse mode is ON";
+    qDebug() << "[INFO]\tTest pulse mode is ON, may or may not be activated";
 }
 
 void testPulseEqualisation::on_buttonBox_rejected()
 {
     _mpx3gui->getEqualization()->setTestPulseMode(false);
-    qDebug() << "[INFO]\tTest pulse mode is OFF";
+    qDebug() << "[INFO]\tTest pulse mode is OFF, may or may not be activated";
 }

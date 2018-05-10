@@ -77,11 +77,6 @@
          <string>Electrons</string>
         </property>
        </item>
-       <item>
-        <property name="text">
-         <string>KeV (Si)</string>
-        </property>
-       </item>
       </widget>
      </item>
      <item row="5" column="0">
@@ -104,7 +99,7 @@
         <number>1</number>
        </property>
        <property name="maximum">
-        <number>1000000</number>
+        <number>30431</number>
        </property>
       </widget>
      </item>

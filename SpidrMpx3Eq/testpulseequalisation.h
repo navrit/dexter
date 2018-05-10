@@ -21,10 +21,12 @@ public:
     bool activate(int startPixelOffset = 0);
     bool deactivate();
 
+signals:
+    void slideAndSpin(int, int);
+
 private slots:
 
     void on_spinBox_injectionCharge_valueChanged(int arg1);
-    void on_comboBox_injectionChargeUnits_currentIndexChanged(int index);
     void on_spinBox_testPulseLength_valueChanged(int arg1);
     void on_spinBox_testPulsePeriod_valueChanged(int arg1);
     void on_spinBox_pixelSpacing_valueChanged(int arg1);
@@ -37,6 +39,15 @@ private slots:
 private:
     Mpx3GUI * _mpx3gui = nullptr;
     Ui::testPulseEqualisation *ui = nullptr;
+    SpidrController * spidrcontrol = nullptr;
+
+    const float maximumInjectionVoltage = 0.975; //! over linear range
+    const int maximumInjectionElectrons = 30431; //! over linear range, assuming 5fF exactly and maximum voltage injection (over linear range)
+    const int maximumInjectionKeV = maximumInjectionElectrons / 3.62; //! Assuming near room temperature
+
+    const double e = 1.6021766208e-19;
+    const double c_test = 5e-15;
+    const double e_dividedBy_c_test = 3.20435324e-5; //! Just so there aren't any weird overflow/underflow issues...
 
     struct testPulseConfig {
         uint injectionChargeInElectrons = 3000;     //! Electrons by default
@@ -56,9 +67,8 @@ private:
     } dacConfig;                                    //! All Test Pulse related DACs are in here
 
     enum {
-        electrons,
-        KeV_Si
-    } injectionChargeUnits;
+        electrons
+    } injectionChargeUnits; //! Could add units more here
 
     enum {
         LOW,
@@ -66,6 +76,8 @@ private:
     } verbosity;                     //! LOW for text only, HIGH for text + ASCII graph output
 
     bool estimate_V_TP_REF_AB(uint electrons);      //! This should fail if requested charge cannot be injected.
+    uint setDACToVoltage(int chipID, int dacCode, float V);
+    void SetDAC_propagateInGUI(int devId, int dac_code, int dac_val );
     void turnOffAllCTPRs(SpidrController *spidrcontrol, int chipID, bool submit);
 };
 
