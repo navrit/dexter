@@ -257,6 +257,7 @@ public:
     // -------------------------- Recent changes  ------------------------------
     int getCurrentEqualisationTarget() { return equalisationTarget; }
     testPulseEqualisation * testPulseEqualisationDialog = nullptr;
+    void setTestPulseMode(bool arg) { testPulseMode = arg; }
 
 private:
 
@@ -351,6 +352,7 @@ private:
 public slots:
     void SaveEqualization(QString path="");
     void on_logYCheckBox_toggled(bool checked);
+    void turnOnThresholdsFound();
 
 private slots:
 

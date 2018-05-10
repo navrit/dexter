@@ -30,6 +30,10 @@ private slots:
     void on_spinBox_pixelSpacing_valueChanged(int arg1);
     void on_comboBox_verbosity_currentIndexChanged(int index);
 
+    void on_buttonBox_accepted();
+
+    void on_buttonBox_rejected();
+
 private:
     Mpx3GUI * _mpx3gui = nullptr;
     Ui::testPulseEqualisation *ui = nullptr;

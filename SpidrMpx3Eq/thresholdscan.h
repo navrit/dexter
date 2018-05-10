@@ -38,8 +38,8 @@ public:
     QVector<int> getTurnOnThresholds() { return turnOnThresholds; }
 
 private:
-    Ui::thresholdScan *ui;
-    Mpx3GUI * _mpx3gui;
+    Ui::thresholdScan *ui = nullptr;
+    Mpx3GUI * _mpx3gui = nullptr;
 
     void stopScan();
     void resetScan();
@@ -103,7 +103,7 @@ private slots:
 signals:
     void slideAndSpin(int, int);
 
-    void finishedTestPulseEqualisationScan();
+    void testPulseScanComplete();
 };
 
 class ThresholdScanThread : public QThread {

@@ -41,6 +41,10 @@ bool testPulseEqualisation::activate(int startPixelOffset)
         return false;
     }
 
+    if ( ! estimate_V_TP_REF_AB( config.injectionChargeInElectrons ) ) {
+         return false;
+    }
+
     QVector<int> activeChips = _mpx3gui->getConfig()->getActiveDevices();
 
     if ( _mpx3gui->equalizationLoaded() ) {
@@ -185,7 +189,9 @@ void testPulseEqualisation::on_comboBox_verbosity_currentIndexChanged(int index)
 
 bool testPulseEqualisation::estimate_V_TP_REF_AB(uint electrons)
 {
-
+    //! TODO DO THIS
+    //! Set V_TP_REF and V_TP_REF(A/B) to values based on measurements
+    //! Fail if it cannot be set to the requested injection charge
 }
 
 void testPulseEqualisation::turnOffAllCTPRs(SpidrController *spidrcontrol, int chipID, bool submit)
@@ -198,4 +204,16 @@ void testPulseEqualisation::turnOffAllCTPRs(SpidrController *spidrcontrol, int c
     if (submit) {
         spidrcontrol->setCtpr( chipID );
     }
+}
+
+void testPulseEqualisation::on_buttonBox_accepted()
+{
+    _mpx3gui->getEqualization()->setTestPulseMode(true);
+    qDebug() << "[INFO]\tTest pulse mode is ON";
+}
+
+void testPulseEqualisation::on_buttonBox_rejected()
+{
+    _mpx3gui->getEqualization()->setTestPulseMode(false);
+    qDebug() << "[INFO]\tTest pulse mode is OFF";
 }

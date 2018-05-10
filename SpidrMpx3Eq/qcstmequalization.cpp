@@ -178,6 +178,29 @@ void QCstmEqualization::on_logYCheckBox_toggled(bool checked) {
 
 }
 
+void QCstmEqualization::turnOnThresholdsFound()
+{
+    //! Unnecessary ...
+    // bool isTestPulseEqualisation = _mpx3gui->getTHScan()->getTestPulseEqualisation();
+
+    //! Make a QVector of floats for the 'turn-on' thresholds
+    //!     It will be at most 4 * 256 * 256, so initialise it with that size
+    QVector<int> turnOnThresholds(4*__matrix_size);
+
+
+    //! Results of a threshold scan over all pixels and full range of thresholds
+    //! TODO testPulseEqualisation this will run over all pixels, we only want to look at the chip(s) we're equalising
+    turnOnThresholds = _mpx3gui->getTHScan()->getTurnOnThresholds();
+
+
+    uint32_t sum_of_elems = 0;
+    for (auto& n : turnOnThresholds) {
+        sum_of_elems += n;
+    }
+    //! The mean of turnOnThresholds is the new equalisationTarget
+    equalisationTarget = sum_of_elems / turnOnThresholds.size();
+}
+
 void QCstmEqualization::setFineTuningLoops(int nLoops) {
     _fineTuningLoops = nLoops;
 }
@@ -1781,28 +1804,7 @@ void QCstmEqualization::estimateEqualisationTarget()
         _mpx3gui->getTHScan()->setTestPulseEqualisation(true);
         _mpx3gui->getTHScan()->startScan();
 
-        //! Wait until it's finished
-        while ( !_mpx3gui->getTHScan()->getTestPulseEqualisation() ) {
-            qApp->processEvents();
-        }
-
-        //! Make a QVector of floats for the 'turn-on' thresholds
-        //!     It will be at most 4 * 256 * 256, so initialise it with that size
-        QVector<int> turnOnThresholds(4*__matrix_size);
-
-
-        //! Results of a threshold scan over all pixels and full range of thresholds
-        //! TODO testPulseEqualisation this will run over all pixels, we only want to look at the chip(s) we're equalising
-        turnOnThresholds = _mpx3gui->getTHScan()->getTurnOnThresholds();
-
-
-        uint32_t sum_of_elems = 0;
-        for (auto& n : turnOnThresholds) {
-            sum_of_elems += n;
-        }
-        //! The mean of turnOnThresholds is the new equalisationTarget
-        equalisationTarget = sum_of_elems / turnOnThresholds.size();
-
+        //! Logically, the next step to occur should be the SLOT turnOnThresholdsFound()
     } else {
         equalisationTarget = defaultNoiseEqualisationTarget;
     }

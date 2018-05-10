@@ -388,6 +388,8 @@ void Mpx3GUI::SetupSignalsAndSlots(){
 
     connect( getConfig(), SIGNAL(colourModeChanged(bool)), getTHScan(), SLOT(slot_colourModeChanged(bool)));
 
+    connect( getTHScan(), SIGNAL(testPulseScanComplete()), getEqualization(), SLOT(turnOnThresholdsFound()));
+
 
     for ( int i = 0 ; i < _shortcutsSwitchPages.size() ; i++ ) {
         connect( _shortcutsSwitchPages[i], &QShortcut::activated,

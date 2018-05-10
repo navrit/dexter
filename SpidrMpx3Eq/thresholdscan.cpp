@@ -71,6 +71,10 @@ void thresholdScan::finishedScan()
     }
     ui->textEdit_log->append("\n------------------------------------------");
 
+    if( _testPulseEqualisation ) {
+        emit testPulseScanComplete();
+    }
+
     resetScan();
 }
 
