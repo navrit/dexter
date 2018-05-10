@@ -60,6 +60,11 @@ bool testPulseEqualisation::activate(int startPixelOffset)
         //! Very basic error check
         if (spidrcontrol == nullptr || _equalisation == nullptr) return false;
 
+        if ( !estimate_V_TP_REF_AB( config.injectionChargeInElectrons ) ) {
+            qDebug() << "[FAIL]\tCould not set TP DAC values by voltage by scanning";
+            return false;
+        }
+
         //! Set some SPIDR registers, these should match the setTpFrequency call
         spidrcontrol->setSpidrReg(0x10C0, config.testPulseLength, true);
         spidrcontrol->setSpidrReg(0x10BC, config.testPulsePeriod, true);
@@ -213,6 +218,8 @@ bool testPulseEqualisation::estimate_V_TP_REF_AB(uint electrons)
         return false;
     }
 
+    qDebug() << "[INFO]\tTest pulse equalisation --> Requested injection voltage:" << requestedInjectionVoltage;
+
     for (int chipID=0; chipID < _mpx3gui->getConfig()->getNActiveDevices(); chipID++) {
         //! We need to scan for these
         setDACToVoltage(chipID, MPX3RX_DAC_TP_REF, 0.3);
@@ -261,6 +268,8 @@ uint testPulseEqualisation::setDACToVoltage(int chipID, int dacCode, float V)
     }
 
     SetDAC_propagateInGUI(chipID, dacCode, dac_val);
+
+    qDebug() << "[INFO]\tTest pulse equalisation --> found DAC value with voltage: " << dac_val << adc_volt;
 
     return dac_val;
 }
