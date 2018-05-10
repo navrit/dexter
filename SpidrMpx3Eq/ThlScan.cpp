@@ -548,7 +548,7 @@ void ThlScan::SelectBestAdjFromHistory(int showHeadAndTail) {
     set<int>::iterator i = _scheduledForFineTuning.begin();
     set<int>::iterator iE = _scheduledForFineTuning.end();
 
-    qDebug() << "[INFO] Selecting bests adjustments" << endl << "       ";
+    //qDebug() << "[INFO] Selecting bests adjustments" << endl << "       ";
     int cntr = 0;
     int chipId = 0;
     for ( ; i != iE ; i++ ) {
@@ -606,12 +606,12 @@ void ThlScan::SelectBestAdjFromHistory(int showHeadAndTail) {
         _equalization->GetEqualizationResults( chipId )->SetStatus( (*i)%__matrix_size, Mpx3EqualizationResults::__EQUALIZED, sel);
 
         if ( cntr < showHeadAndTail || cntr >= (int)_scheduledForFineTuning.size() - showHeadAndTail ) {
-            qDebug() << "[" << *i << "](" << pixHistory[minDistanceIndx].first << ") ";
+            //qDebug() << "[" << *i << "](" << pixHistory[minDistanceIndx].first << ") ";
         }
 
         cntr++;
     }
-    qDebug() << "\n";
+    //qDebug() << "\n";
 
 }
 
@@ -667,7 +667,7 @@ void ThlScan::DumpAdjReactTHLHistory(int showHeadAndTail) {
     vector< pair<int, int> >::iterator viE;
     int fullHistorySize = (int) _adjReactiveTHLFineTuning.size();
 
-    qDebug() << "[INFO] adjReactiveTHL history : [pix]{ (adj,reactTHL), ... } " << endl;
+    //qDebug() << "[INFO] adjReactiveTHL history : [pix]{ (adj,reactTHL), ... } " << endl;
     int cntr = 0;
     for ( ; i != iE ; i++ ) {
 
@@ -677,28 +677,28 @@ void ThlScan::DumpAdjReactTHLHistory(int showHeadAndTail) {
                 ( cntr >= (fullHistorySize - showHeadAndTail)  )
 
                 ) {
-            qDebug() << "       " << "[" << (*i).first << "]{";
+            //qDebug() << "       " << "[" << (*i).first << "]{";
 
             vi  = (*i).second.begin();
             viE = (*i).second.end();
             for ( ; vi != viE ; vi++ ) {
 
-                qDebug() << "(" << (*vi).first << "," << (*vi).second << ")";
+                //qDebug() << "(" << (*vi).first << "," << (*vi).second << ")";
                 if ( (vi+1) != viE ) cout << ", ";
 
             }
-            qDebug() << "}" << endl;
+            //qDebug() << "}" << endl;
         }
 
         if ( cntr == showHeadAndTail ) {
             int skipping = fullHistorySize - 2*showHeadAndTail;
-            qDebug() << " ... skip " << skipping << " ... " << endl;
+            //qDebug() << " ... skip " << skipping << " ... " << endl;
         }
 
         cntr++;
 
     }
-    qDebug() << "\n" << "       And a list of pixels stuck non-reactive (if any) --> " << "\n";
+    //qDebug() << "\n" << "       And a list of pixels stuck non-reactive (if any) --> " << "\n";
 
     // search for a few special non-reactive pixels
     i  = _adjReactiveTHLFineTuning.begin();
@@ -708,14 +708,14 @@ void ThlScan::DumpAdjReactTHLHistory(int showHeadAndTail) {
         vi  = (*i).second.begin();
         viE = (*i).second.end();
         if( (*vi).second == __UNDEFINED ) { // interesting pixel
-            qDebug() << "       " << "[" << (*i).first << "]{";
+            //qDebug() << "       " << "[" << (*i).first << "]{";
             for ( ; vi != viE ; vi++ ) {
 
-                qDebug() << "(" << (*vi).first << "," << (*vi).second << ")";
-                if ( (vi+1) != viE ) qDebug() << ", ";
+                //qDebug() << "(" << (*vi).first << "," << (*vi).second << ")";
+                //if ( (vi+1) != viE ) qDebug() << ", ";
 
             }
-            qDebug() << "}" << endl;
+            //qDebug() << "}" << endl;
             if(cntrROI++ > 5) break; // only a few of these pixels, finish here
         }
     }
@@ -1183,7 +1183,7 @@ set<int> ThlScan::ExtractPixelsNotOnTarget() {
         }
 
     }
-    qDebug() << "[INFO] " << reworkList.size() << " pixels found out of target" << endl;
+    //qDebug() << "[INFO] " << reworkList.size() << " pixels found out of target" << endl;
 
     return reworkList;
 }

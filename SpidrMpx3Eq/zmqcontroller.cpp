@@ -491,8 +491,8 @@ void zmqController::sendZmqMessage()
     JsonDocument = QJsonDocument(root_obj);
 
 #ifdef QT_DEBUG
-    QString doc = QString(JsonDocument.toJson()).toLocal8Bit().replace("\n","").replace("    ","").replace(": ",":");
-    qDebug() << "[INFO]\tZMQ Writing:" <<  doc;
+//    QString doc = QString(JsonDocument.toJson()).toLocal8Bit().replace("\n","").replace("    ","").replace(": ",":");
+//    qDebug() << "[INFO]\tZMQ Writing:" <<  doc;
 
 //    if (JsonDocument.object()["component"].toString() == "medipix") {
 //        qDebug() << "[INFO]\tZMQ CHECK - JSON successfully encoded: component =" << json_doc.object().value("component").toString();
@@ -593,7 +593,7 @@ void zmqController::sock_messagesWritten(int count)
 {
     Q_UNUSED(count);
 #ifdef QT_DEBUG
-    qDebug() << "[INFO]\tZMQ Messages written:" << count << "\n";
+//    qDebug() << "[INFO]\tZMQ Messages written:" << count << "\n";
 #endif
 }
 
@@ -605,7 +605,7 @@ void zmqController::someCommandHasFinished_Successfully()
     JsonDocument = QJsonDocument(root_obj);
     sendZmqMessage();
 #ifdef QT_DEBUG
-    qDebug() << "[INFO]\tZMQ Sent ACK";
+//    qDebug() << "[INFO]\tZMQ Sent ACK";
 #endif
     processingEvents = false;
 }
