@@ -924,7 +924,7 @@ void ThlScan::EqualizationScan() {
                 int timeOutTime =
                         _mpx3gui->getConfig()->getTriggerLength_ms()
                         +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
-                        + 50; // 50ms extra, this is about twice the time a frame needs to come in (1Gbit)
+                        + 100; // 100ms extra
 
                 while ( _spidrdaq->hasFrame( timeOutTime ) ) {
 

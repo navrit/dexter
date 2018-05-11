@@ -22,12 +22,12 @@ testPulseEqualisation::testPulseEqualisation(Mpx3GUI * mg, QWidget *parent) :
     ui->spinBox_testPulsePeriod->setValue( config.testPulsePeriod );
     ui->spinBox_pixelSpacing->setValue( config.pixelSpacing );
     ui->comboBox_verbosity->setCurrentIndex( verbosity );
+    ui->checkBox_setDACs->setChecked( setDACs );
 
     ui->spinBox_injectionCharge->setMaximum( maximumInjectionElectrons );
 
     //! Seems redundant but isn't because it's not relying on the signal slot joining up by name... this is more robust to name changing
     connect(ui->spinBox_injectionCharge, SIGNAL(valueChanged(int)), this, SLOT(on_spinBox_injectionCharge_valueChanged(int)));
-    connect(ui->comboBox_injectionChargeUnits, SIGNAL(currentIndexChanged(int)), this, SLOT(on_comboBox_injectionChargeUnits_currentIndexChanged(int)));
     connect(ui->spinBox_testPulseLength, SIGNAL(valueChanged(int)), this, SLOT(on_spinBox_testPulseLength_valueChanged(int)));
     connect(ui->spinBox_testPulsePeriod, SIGNAL(valueChanged(int)), this, SLOT(on_spinBox_testPulsePeriod_valueChanged(int)));
     connect(ui->spinBox_pixelSpacing, SIGNAL(valueChanged(int)), this, SLOT(on_spinBox_pixelSpacing_valueChanged(int)));
@@ -60,7 +60,7 @@ bool testPulseEqualisation::activate(int startPixelOffset)
         //! Very basic error check
         if (spidrcontrol == nullptr || _equalisation == nullptr) return false;
 
-        if ( !estimate_V_TP_REF_AB( config.injectionChargeInElectrons ) ) {
+        if ( !estimate_V_TP_REF_AB( config.injectionChargeInElectrons, true ) ) {
             qDebug() << "[FAIL]\tCould not set TP DAC values by voltage by scanning";
             return false;
         }
@@ -185,7 +185,7 @@ void testPulseEqualisation::on_comboBox_verbosity_currentIndexChanged(int index)
     }
 }
 
-bool testPulseEqualisation::estimate_V_TP_REF_AB(uint electrons)
+bool testPulseEqualisation::estimate_V_TP_REF_AB(uint electrons, bool makeDialog)
 {
     //! Set V_TP_REF and V_TP_REF(A/B) based on measurements
     //!
@@ -194,6 +194,8 @@ bool testPulseEqualisation::estimate_V_TP_REF_AB(uint electrons)
     //!    I should limit the GUI input so you can't enter a value above the maximum injection voltage for the linear range of V_TP_REF (300 mV - 1275 mV)
     //!    Ie. 1.275 V (max value) - 0.300 V = 0.975 V is the maximum injection voltage.
     //!
+    //!       Checked this, it seems like ~880 mV is the practical limit for real chips
+    //!
     //!    Design specification claims C_test = ~5fF.
     //!         Rafa: Typical tolerances are ~20% for this.
     //!         Speculation: Actual value should be very similar over the whole chip. Don't know how to confim this...
@@ -201,75 +203,130 @@ bool testPulseEqualisation::estimate_V_TP_REF_AB(uint electrons)
     //!    Electron to V conversion --> Q = CV
     //!                                 # of electrons * e = 5 fF * V
     //!
-    //!    Maximum number of electrons is therefore:
+    //!    Maximum number of electrons is therefore (for the chips):
     //!         # of electrons = 5 fF * 0.975 V / e
     //!                        = 30430.7...
     //!                        = 30431 (rounded up)
+    //!    If you check this, the SPIDR only allows you to set up to ~28000, so that's the maximum you can set.
     //!
 
     //! Set V_TP_REF   to 300 mV
     //!     V_TP_REF_A to 300 mV + (# of electrons * e / 5fF)
     //!     V_TP_REF_B to 300 mV + (# of electrons * e / 5fF)
 
-    const float requestedInjectionVoltage = 0.3 + (electrons * e_dividedBy_c_test);
 
-    if ( requestedInjectionVoltage < 0.3 || requestedInjectionVoltage >= 1.275 ) {
+    const double requestedInjectionVoltage = 0.3 + (electrons * e_dividedBy_c_test);
+
+    if ( requestedInjectionVoltage < 0.3 || requestedInjectionVoltage >= 1.20 ) {
         qDebug() << "[FAIL]\tRequested injection voltage out of range";
         return false;
     }
+    if ( requestedInjectionVoltage >= 1.15 ) {
+        qDebug() << "[WARN]\tThis could fail, try setting a lower value";
+    }
 
-    qDebug() << "[INFO]\tTest pulse equalisation --> Requested injection voltage:" << requestedInjectionVoltage;
+    qDebug() << "[INFO]\tTest pulse equalisation --> Requested injection voltage for TP_REF_A and TP_REF_B:" << requestedInjectionVoltage;
 
+    //! Make a modal progress bar as well for visual updates
+    int totalDACsToSet = _mpx3gui->getConfig()->getNActiveDevices() * 3;
+    int numberOfDACsSet = 0;
+    QProgressDialog progress("Setting test pulse DACs...", QString(), 0, totalDACsToSet, this);
+    progress.setModal(true);
+    progress.setMinimum(0);
+    progress.setMaximum( totalDACsToSet );
+    progress.show();
+
+    //! We need to scan for these
     for (int chipID=0; chipID < _mpx3gui->getConfig()->getNActiveDevices(); chipID++) {
-        //! We need to scan for these
-        setDACToVoltage(chipID, MPX3RX_DAC_TP_REF, 0.3);
+        qApp->processEvents();
+
+        setDACToVoltage(chipID, MPX3RX_DAC_TP_REF, float(0.3));
+        numberOfDACsSet++;
+        progress.setValue( numberOfDACsSet );
+        qApp->processEvents();
+
         setDACToVoltage(chipID, MPX3RX_DAC_TP_REF_A, requestedInjectionVoltage);
+        numberOfDACsSet++;
+        progress.setValue( numberOfDACsSet );
+        qApp->processEvents();
+
         setDACToVoltage(chipID, MPX3RX_DAC_TP_REF_B, requestedInjectionVoltage);
+        numberOfDACsSet++;
+        progress.setValue( numberOfDACsSet );
+        qApp->processEvents();
 
         //! Always just set these to defaults
-        SetDAC_propagateInGUI(chipID, MPX3RX_DAC_TP_BUF_IN, dacConfig.V_TP_BufferIn);
-        SetDAC_propagateInGUI(chipID, MPX3RX_DAC_TP_BUF_OUT, dacConfig.V_TP_BufferOut);
+        SetDAC_propagateInGUI(chipID, MPX3RX_DAC_TP_BUF_IN, int(dacConfig.V_TP_BufferIn));
+        SetDAC_propagateInGUI(chipID, MPX3RX_DAC_TP_BUF_OUT, int(dacConfig.V_TP_BufferOut));
     }
+    progress.setValue( totalDACsToSet );
+
+    return true;
 }
 
-uint testPulseEqualisation::setDACToVoltage(int chipID, int dacCode, float V)
+uint testPulseEqualisation::setDACToVoltage(int chipID, int dacCode, double V)
 {
     uint dac_val = 0;
     bool foundTarget = false;
     int adc_val = 0;
     double adc_volt = 0;
     int nSamples = 1;
-    double lowerVboundary = V - 0.01;
-    double upperVboundary = V + 0.01;
+    double lowerVboundary = V * 0.99;
+    double upperVboundary = V * 1.01;
+
+    if ( !spidrcontrol ) {
+        spidrcontrol = _mpx3gui->GetSpidrController();
+    }
 
     //! Give them some reasonable starting values to save time
+    //! Get these from this existing values in the config unless I know better ;)
     if (dacCode == MPX3RX_DAC_TP_REF)   dac_val = 60;
-    if (dacCode == MPX3RX_DAC_TP_REF_A) dac_val = 250;
-    if (dacCode == MPX3RX_DAC_TP_REF_B) dac_val = 250;
-
-    spidrcontrol->setSenseDac(chipID, dacCode);
+    if (dacCode == MPX3RX_DAC_TP_REF_A) dac_val = _mpx3gui->getConfig()->getDACValue(chipID, MPX3RX_DAC_TP_REF_A-1);
+    if (dacCode == MPX3RX_DAC_TP_REF_B) dac_val = _mpx3gui->getConfig()->getDACValue(chipID, MPX3RX_DAC_TP_REF_B-1);
 
     while (!foundTarget) {
-        spidrcontrol->setDac(chipID, dacCode, dac_val);
+        if (dac_val >= 511) {
+            qDebug() << "[FAIL]\tReached maximum DAC value, cannot find target. Set to maximum";
+            dac_val = 511;
+            foundTarget = true;
+
+        }
+
+        spidrcontrol->setDac(chipID, dacCode, int(dac_val));
+        spidrcontrol->setSenseDac(chipID, dacCode);
         spidrcontrol->getDacOut(chipID, &adc_val, nSamples);
 
         adc_val /= nSamples;
         adc_volt = (__voltage_DACS_MAX/(double)__maxADCCounts) * (double)adc_val;
 
+        //qDebug() << "adc_volt :" << adc_volt;
+
         if ( adc_volt <= lowerVboundary ) {
-            dac_val += 1;
+            if ( adc_volt < V*0.8 ) {
+                dac_val += 5;
+            } else {
+                dac_val += 1;
+            }
         } else if (adc_volt >= upperVboundary) {
-            dac_val -= 1;
-        } else if ( adc_volt >= lowerVboundary && adc_val <= upperVboundary ) {
+            if ( adc_volt > V*1.2 ) {
+                dac_val -= 5;
+            } else {
+                dac_val -= 1;
+            }
+        } else if ( adc_volt >= lowerVboundary && adc_volt <= upperVboundary ) {
             foundTarget = true;
         } else {
-            qDebug() << "[FAIL]\tFix this... Could not find dac value to match given voltage" << dac_val << dacCode << V;
+            qDebug() << "[FAIL]\tFix this... Could not find dac value to match given voltage within 1%" << dac_val << V;
+
+            qDebug() << "\t Increasing tolerance to 5% and scanning again";
+            lowerVboundary = V * 0.95;
+            upperVboundary = V * 1.05;
         }
     }
 
-    SetDAC_propagateInGUI(chipID, dacCode, dac_val);
+    SetDAC_propagateInGUI(chipID, dacCode, int(dac_val));
 
-    qDebug() << "[INFO]\tTest pulse equalisation --> found DAC value with voltage: " << dac_val << adc_volt;
+    qDebug() << "[INFO]\tTest pulse equalisation --> found DAC value with voltage: " << dacCode << dac_val << adc_volt;
 
     return dac_val;
 }
@@ -307,7 +364,15 @@ void testPulseEqualisation::turnOffAllCTPRs(SpidrController *spidrcontrol, int c
 }
 
 void testPulseEqualisation::on_buttonBox_accepted()
-{
+{   
+    if (setDACs) {
+        if ( estimate_V_TP_REF_AB( config.injectionChargeInElectrons, true ) ) {
+            qDebug() << "[INFO]\tDACs set according to test pulse equalisation GUI";
+        } else {
+            qDebug() << "[FAIL]\tCould not set DACs according to test pulse equalisation GUI";
+        }
+    }
+
     _mpx3gui->getEqualization()->setTestPulseMode(true);
     qDebug() << "[INFO]\tTest pulse mode is ON, may or may not be activated";
 }
@@ -316,4 +381,9 @@ void testPulseEqualisation::on_buttonBox_rejected()
 {
     _mpx3gui->getEqualization()->setTestPulseMode(false);
     qDebug() << "[INFO]\tTest pulse mode is OFF, may or may not be activated";
+}
+
+void testPulseEqualisation::on_checkBox_setDACs_toggled(bool checked)
+{
+    setDACs = checked;
 }

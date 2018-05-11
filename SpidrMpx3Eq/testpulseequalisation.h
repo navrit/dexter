@@ -33,8 +33,9 @@ private slots:
     void on_comboBox_verbosity_currentIndexChanged(int index);
 
     void on_buttonBox_accepted();
-
     void on_buttonBox_rejected();
+
+    void on_checkBox_setDACs_toggled(bool checked);
 
 private:
     Mpx3GUI * _mpx3gui = nullptr;
@@ -48,6 +49,8 @@ private:
     const double e = 1.6021766208e-19;
     const double c_test = 5e-15;
     const double e_dividedBy_c_test = 3.20435324e-5; //! Just so there aren't any weird overflow/underflow issues...
+
+    bool setDACs = true;
 
     struct testPulseConfig {
         uint injectionChargeInElectrons = 3000;     //! Electrons by default
@@ -75,8 +78,8 @@ private:
         HIGH
     } verbosity;                     //! LOW for text only, HIGH for text + ASCII graph output
 
-    bool estimate_V_TP_REF_AB(uint electrons);      //! This should fail if requested charge cannot be injected.
-    uint setDACToVoltage(int chipID, int dacCode, float V);
+    bool estimate_V_TP_REF_AB(uint electrons, bool makeDialog);      //! This should fail if requested charge cannot be injected.
+    uint setDACToVoltage(int chipID, int dacCode, double V);
     void SetDAC_propagateInGUI(int devId, int dac_code, int dac_val );
     void turnOffAllCTPRs(SpidrController *spidrcontrol, int chipID, bool submit);
 };
