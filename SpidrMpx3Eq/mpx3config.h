@@ -23,7 +23,6 @@ class Mpx3GUI;
 #define __default_matrixSizePerChip_Y 	256
 
 #define __efuse_Nnibbles 8
-#define __IDELAY 15                         //2017-03-15 On 128 MHz firmware and above, shit hits the fan with IDELAY roughly < 10
 
 //#define __operationMode_SequentialRW  0
 //#define __operationMode_ContinuousRW  1
@@ -98,6 +97,7 @@ private:
 
     QVector<detector_response> _responseChips;
     QVector<int> _activeChips;
+    QVector<uint8_t> _chipIDELAYS = {15, 15, 15, 10};
 
 public:
 
