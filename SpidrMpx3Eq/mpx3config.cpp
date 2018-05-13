@@ -54,8 +54,15 @@ bool Mpx3Config::RequiredOnGlobalConfig(Mpx3Config::config_items item)
 
 QJsonDocument Mpx3Config::buildConfigJSON(bool includeDacs)
 {
-    QJsonObject JSobjectParent, objIp, objDetector, objStepper;
+    QJsonObject JSobjectParent, objIp, objDetector, objStepper, objIDELAY;
     QJsonArray objDacsArray;
+
+    for (int i = 0; i < _chipIDELAYS.size(); ++i) {
+        QString field_name = "chip_";
+        field_name.append(QString::number(i));
+        objIDELAY.insert(field_name, _chipIDELAYS[i]);
+    }
+
     objIp.insert("SpidrControllerIp", SpidrAddress.toString());
     objIp.insert("SpidrControllerPort", this->port);
     objIp.insert("ZmqPubAddress", Zmq_Pub_address);
@@ -96,6 +103,7 @@ QJsonDocument Mpx3Config::buildConfigJSON(bool includeDacs)
     objStepper.insert("CalibPos1", this->stepperCalibPos1);
     objStepper.insert("CalibAngle1", this->stepperCalibAngle1);
 
+    JSobjectParent.insert("IDELAYConfig", objIDELAY);
     JSobjectParent.insert("IPConfig", objIp);
     JSobjectParent.insert("DetectorConfig", objDetector);
     JSobjectParent.insert("StepperConfig", objStepper);
@@ -135,10 +143,10 @@ void Mpx3Config::SendConfiguration( config_items item ) {
 
     // This are configuration bits which are not settable like the system clock
     if ( item == __ALL ) {
-        _mpx3gui->GetSpidrController()->setSpidrReg(0x10A0, __IDELAY, true);
-        _mpx3gui->GetSpidrController()->setSpidrReg(0x10A4, __IDELAY, true);
-        _mpx3gui->GetSpidrController()->setSpidrReg(0x10A8, __IDELAY, true);
-        _mpx3gui->GetSpidrController()->setSpidrReg(0x10AC, __IDELAY, true);
+        _mpx3gui->GetSpidrController()->setSpidrReg(0x10A0, _chipIDELAYS[0], true);
+        _mpx3gui->GetSpidrController()->setSpidrReg(0x10A4, _chipIDELAYS[1], true);
+        _mpx3gui->GetSpidrController()->setSpidrReg(0x10A8, _chipIDELAYS[2], true);
+        _mpx3gui->GetSpidrController()->setSpidrReg(0x10AC, _chipIDELAYS[3], true);
         PickupStaticConfigurationFigures();
 
     }
@@ -693,6 +701,24 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
         if(it != JSobject.end())
             setIpZmqSubAddress(it.value().toString());
     }
+
+    itParent = JSobjectParent.find("IDELAYConfig");
+    if(itParent != JSobjectParent.end()){
+        QJsonObject JSobject = itParent.value().toObject();
+        it = JSobject.find("chip_0");
+        if(it != JSobject.end());
+            _chipIDELAYS[0] = uint8_t (it.value().toInt());
+        it = JSobject.find("chip_1");
+        if(it != JSobject.end());
+            _chipIDELAYS[1] = uint8_t (it.value().toInt());
+        it = JSobject.find("chip_2");
+        if(it != JSobject.end());
+            _chipIDELAYS[2] = uint8_t (it.value().toInt());
+        it = JSobject.find("chip_3");
+        if(it != JSobject.end());
+            _chipIDELAYS[3] = uint8_t (it.value().toInt());
+    }
+
     itParent = JSobjectParent.find("DetectorConfig");
     if(itParent != JSobjectParent.end()){
 
