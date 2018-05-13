@@ -1076,6 +1076,9 @@ void QCstmGLVisualization::developerMode(bool enabled)
 {
     if (enabled){
         //! Enable a bunch of 'advanced' buttons
+        ui->binCountSpinner->show();
+        ui->binWidthLabel->show();
+        ui->outOfBoundsCheckbox->show();
         ui->generateDataButton->show();
         ui->dropFramesCheckBox->show();
         ui->bufferOccupancy->show();
@@ -1085,6 +1088,9 @@ void QCstmGLVisualization::developerMode(bool enabled)
         ui->completeFramesCheckBox->show();
     } else {
         //! Disable a bunch of 'advanced' buttons
+        ui->binCountSpinner->hide();
+        ui->binWidthLabel->hide();
+        ui->outOfBoundsCheckbox->hide();
         ui->generateDataButton->hide();
         ui->dropFramesCheckBox->hide();
         ui->bufferOccupancy->hide();

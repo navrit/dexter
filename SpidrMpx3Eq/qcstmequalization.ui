@@ -216,7 +216,7 @@
              <bool>false</bool>
             </property>
             <property name="text">
-             <string>Start all sequential</string>
+             <string>Start all seq.</string>
             </property>
            </widget>
           </item>

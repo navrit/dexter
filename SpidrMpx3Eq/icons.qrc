@@ -22,5 +22,11 @@
         <file>icons/startupimage.bin</file>
         <file>icons/ASI/ASI_sq_1100x1100.png</file>
         <file>icons/rainbow.png</file>
+        <file>icons/UI/chevron-down.svg</file>
+        <file>icons/UI/chevron-up.svg</file>
+        <file>icons/UI/toggle-off.svg</file>
+        <file>icons/UI/toggle-on.svg</file>
+        <file>icons/UI/circle.svg</file>
+        <file>icons/UI/circle-solid.svg</file>
     </qresource>
 </RCC>

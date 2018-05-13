@@ -107,7 +107,7 @@ QGroupBox::title {
            </property>
            <property name="minimumSize">
             <size>
-             <width>130</width>
+             <width>150</width>
              <height>0</height>
             </size>
            </property>
@@ -263,6 +263,9 @@ If you run too fast this feature should not be used.</string>
             </item>
             <item>
              <widget class="QComboBox" name="saveFileComboBox">
+              <property name="toolTip">
+               <string>File format to auto-save to</string>
+              </property>
               <item>
                <property name="text">
                 <string>TIFF</string>
