@@ -1153,9 +1153,9 @@ void QCstmEqualization::DAC_Disc_Optimization (int devId, ScanResults * res_100,
     // 4) Now IDAC_DISC optimal is such that:
     //    With an adj-bit of 00101[5] the optimal mean is at _equalization->getCurrentEqualisationTarget() + 3.2 sigma
 
-    // Desired mean value = _equalization->getCurrentEqualisationTarget() + 3.2 sigma
+    // Desired mean value = defaultNoiseEqualisationTarget + 3.2 sigma
     // Taking sigma from the first scan.
-    double meanTHL_for_opt_IDAC_DISC = getCurrentEqualisationTarget() + 3.2*res_100->sigma;
+    double meanTHL_for_opt_IDAC_DISC = defaultNoiseEqualisationTarget + 3.2*res_100->sigma;
 
     // Using the relation DAC_Disc[L/H](THL) we can find the value of DAC_Disc
     GetSteeringInfo(devId)->currentDAC_DISC_OptValue = (int) EvalLinear(GetSteeringInfo(devId)->currentEta_THx_DAC_Disc, GetSteeringInfo(devId)->currentCut_THx_DAC_Disc, meanTHL_for_opt_IDAC_DISC);
@@ -1837,7 +1837,6 @@ void QCstmEqualization::estimateEqualisationTarget()
         }
 
     } else {
-        equalisationTarget = defaultNoiseEqualisationTarget;
         //! Tell the state machine we've done a scan, oooooh cheeky
         ScanThreadFinished();
     }
