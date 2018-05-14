@@ -140,6 +140,8 @@ public:
     double currentEta_Adj_THx; //! Eta and Cut for the Adj Vs. THx function (Adj extrapolation)
     double currentCut_Adj_THx;
 
+    int equalisationTarget = 10;
+
 };
 
 
@@ -170,7 +172,7 @@ public:
     void DAC_Disc_Optimization(int devId, ScanResults * res_100, ScanResults * res_150);
     void PrepareInterpolation_0x0();
     void PrepareInterpolation_0x5();
-    int * CalculateInterpolation(int devId, ThlScan * scan_x0, ThlScan * scan_x5); // ScanResults * res_x0, ScanResults * res_x5);
+    int * CalculateInterpolation(int devId, ThlScan * scan_x0, ThlScan * scan_x5, ThlScan *scan_testPulses); // ScanResults * res_x0, ScanResults * res_x5);
     void ScanOnInterpolation();
     void Rewind();
     bool InitEqualization(int chipId);      //! chipId = -1  will equalize all available chips at once
@@ -256,7 +258,6 @@ public:
     QMap<int, Mpx3EqualizationResults *> getEqMap(){ return _eqMap; }
 
     // -------------------------- Recent changes  ------------------------------
-    int getCurrentEqualisationTarget() { return equalisationTarget; }
     testPulseEqualisation * testPulseEqualisationDialog = nullptr;
     void setTestPulseMode(bool arg) { testPulseMode = arg; }
 
@@ -291,9 +292,6 @@ private:
     bool testPulseMode = false;
 
     const int defaultNoiseEqualisationTarget = 10;
-
-    int equalisationTarget = 10; //! Should really have this as one per chip,
-        //! but let's just make it for single chip equalisation for now
 
     void resetForNewEqualisation();
 

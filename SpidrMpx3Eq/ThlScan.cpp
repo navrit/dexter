@@ -96,6 +96,8 @@ void ThlScan::InitializeScanResults(vector<equalizationSteeringInfo *> st) {
         // set global adjustment
         sr->global_adj = st[i]->globalAdj;
 
+        sr->equalisationTarget = st[i]->defaultEqualisationTarget;
+
         _results.push_back( sr );
 
     }
@@ -185,13 +187,14 @@ void ThlScan::DeliverPreliminaryEqualization(int devId, int currentDAC_DISC, Mpx
 
 }
 
-void ThlScan::DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops, bool blindScan) {
+void ThlScan::DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops, bool blindScan, bool testPulses) {
 
     _dac_code = dac_code;
     _setId = setId;
-    _blindScan = blindScan;
-    _numberOfLoops = numberOfLoops;
     _DAC_Disc_code = DAC_Disc_code;
+    _numberOfLoops = numberOfLoops;
+    _blindScan = blindScan;
+    _testPulses = testPulses;
 
 }
 
@@ -213,6 +216,41 @@ void ThlScan::run() {
     if(_scanType == __FINE_TUNING1_SCAN) {
         FineTuning( );
     }
+}
+
+void ThlScan::setEqualisationTarget()
+{
+    //! Find the mean of the thresholds from the map _pixelReactiveTHL
+    //! Set class variable to new equalisation target
+
+    std::map<int, int>::iterator it = _pixelReactiveTHL.begin();
+    int sum = 0;
+
+    while (it != _pixelReactiveTHL.end())
+    {
+        // Accessing KEY from element pointed by it.
+        int pixelID = it->first;
+        // If I wanted to get the pixelIDs as well
+
+        // Accessing VALUE from element pointed by it.
+        int turnOnThreshold = it->second;
+        // The turn on thresholds
+
+        qDebug() << pixelID << " :: " << turnOnThreshold << "\n";
+
+        sum += turnOnThreshold;
+        it++;
+    }
+
+    vector<ScanResults *>::iterator i  = _results.begin();
+    vector<ScanResults *>::iterator iE = _results.end();
+    int equalisationTarget = int(sum/_pixelReactiveTHL.size());
+
+    for ( ; i != iE ; i++ ) {
+        (*i)->equalisationTarget = equalisationTarget;
+    }
+
+    qDebug() << "[INFO]\tTest pulses average turn on threshold :" << equalisationTarget;
 }
 
 /**
@@ -1023,8 +1061,7 @@ void ThlScan::EqualizationScan() {
                     finishTHLLoop = true;
                 }
 
-                if( finishScan ) break;
-                if( finishTHLLoop ) break;
+                if( finishScan || finishTHLLoop) break;
 
                 /*
                 if( ! _equalization->isScanDescendant() ) {
@@ -1076,18 +1113,20 @@ void ThlScan::EqualizationScan() {
             processedLoops++;
             if( _numberOfLoops > 0 && _numberOfLoops == processedLoops ) finishScan = true;
 
-            if( finishScan ) break;
-            if ( _stop ) break;
+            if( finishScan || _stop ) break;
         }
 
-        if( finishScan ) break;
-        if ( _stop ) break;
+        if( finishScan || _stop ) break;
     }
 
     // -------------------------------------------------------------------------
     // Scan finished
 
     // Here's on Scan completed.  Do the stats on it.
+
+    if (_testPulses) {
+        setEqualisationTargets();
+    }
 
     // Signals to draw out of the thread
     disconnect( this, SIGNAL( UpdateChartSignal(int, int, int) ), this, SLOT( UpdateChart(int, int, int) ) );
@@ -1555,9 +1594,7 @@ int ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl) {
                 _nReactivePixels++;
                 pixelsActive++;
             }
-
         }
-
     }
 
     return pixelsActive;
@@ -1594,10 +1631,7 @@ int ThlScan::ExtractScanInfo(int * data, int size_in_bytes, int thl, int interes
                 _nReactivePixels++;
                 pixelsActive++;
             }
-
-
         }
-
     }
 
     return pixelsActive;
@@ -1631,6 +1665,7 @@ vector<int> ThlScan::GetNonReactingPixels() {
     return nonReactive;
 }
 
+//! UNUSED FUNCTION
 void ThlScan::SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj) {
 
     // Work on all chips

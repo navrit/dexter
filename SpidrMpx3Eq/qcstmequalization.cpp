@@ -822,9 +822,12 @@ void QCstmEqualization::StartEqualization() {
             DisplayStatsInTextBrowser(_steeringInfo[i]->globalAdj, _steeringInfo[i]->currentDAC_DISC_OptValue, _scans[_scanIndex - 1]->GetScanResults(_workChipsIndx[i]));
 
             // Interpolate now
-            ThlScan * scan_x0 = _scans[_scanIndex - 2];
-            ThlScan * scan_x5 = _scans[_scanIndex - 1];
-            int * adjdata = CalculateInterpolation( _workChipsIndx[i], scan_x0, scan_x5 );
+            ThlScan * scan_x0 = _scans[_scanIndex - 3];
+            ThlScan * scan_x5 = _scans[_scanIndex - 2];
+            ThlScan * scan_testPulses = _scans[_scanIndex - 1];
+
+            //! The equalisation target is picked up here
+            int * adjdata = CalculateInterpolation( _workChipsIndx[i], scan_x0, scan_x5, scan_testPulses );
             // Stack
             _resdataset->setFrame(adjdata, _workChipsIndx[i], 0);
 
@@ -965,15 +968,21 @@ void QCstmEqualization::UpdateHeatMap(int * data, int sizex, int sizey) {
 }
 
 
-int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, ThlScan * scan_x5 ) {
+int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, ThlScan * scan_x5, ThlScan * scan_testPulses ) {
 
     // -------------------------------------------------------------------------
     // 6) Establish the dependency THL(Adj). It will be used to extrapolate to the
     //    Equalization target for every pixel
+
+    // 6.5) Also get the equalisation target here. If test pulses have been used, it won't be 10
+
     ScanResults * res_x0 = scan_x0->GetScanResults( devId );
     ScanResults * res_x5 = scan_x5->GetScanResults( devId );
+    ScanResults * res_testPulses = scan_testPulses->GetScanResults( devId );
 
     double eta = 0., cut = 0.;
+    int equalisationTarget = res_testPulses->equalisationTarget;
+
     GetSlopeAndCut_Adj_THL(res_x0, res_x5, eta, cut);
     GetSteeringInfo(devId)->currentEta_Adj_THx = eta;
     GetSteeringInfo(devId)->currentCut_Adj_THx = cut;
@@ -987,13 +996,9 @@ int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, Th
     //    on the Adj_THL dependency.
     _scans[_scanIndex - 1]->DeliverPreliminaryEqualization(devId, GetSteeringInfo(devId)->currentDAC_DISC, _eqMap[devId],  GetSteeringInfo(devId)->globalAdj );
 
-    qDebug() << "[INFO\tEstimating equalisation target";
-    estimateEqualisationTarget(); //! Will change from the default of 10 if test pulses are being used
-    qDebug() << "[INFO]\tFinished estimateEqualisationTarget()";
+    _eqMap[devId]->ExtrapolateAdjToTarget( equalisationTarget, GetSteeringInfo(devId)->currentEta_Adj_THx, sel );
 
-    _eqMap[devId]->ExtrapolateAdjToTarget( getCurrentEqualisationTarget(), GetSteeringInfo(devId)->currentEta_Adj_THx, sel );
-
-    int * adj_matrix = 0x0;
+    int * adj_matrix = nullptr;
     if ( GetSteeringInfo(devId)->currentDAC_DISC == MPX3RX_DAC_DISC_L ) adj_matrix = _eqMap[devId]->GetAdjustementMatrix();
     if ( GetSteeringInfo(devId)->currentDAC_DISC == MPX3RX_DAC_DISC_H ) adj_matrix = _eqMap[devId]->GetAdjustementMatrix(Mpx3EqualizationResults::__ADJ_H);
 
@@ -1076,9 +1081,9 @@ void QCstmEqualization::DAC_Disc_Optimization_150() {
     cprop_150.min_x = 0;
     cprop_150.max_x = 200;
     cprop_150.nBins = 512;
-    cprop_150.color_r = 127;
-    cprop_150.color_g = 127;
-    cprop_150.color_b = 10;
+    cprop_150.color_r = 255;
+    cprop_150.color_g = 149;
+    cprop_150.color_b = 0;
     for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
         cprop_150.name = BuildChartName( _workChipsIndx[i], legend );
         GetBarChart( _workChipsIndx[i] )->AppendSet( cprop_150 );
@@ -1106,9 +1111,9 @@ int QCstmEqualization::FineTuning() {
     cprop_opt.min_x = 0;
     cprop_opt.max_x = 511;
     cprop_opt.nBins = 512;
-    cprop_opt.color_r = 0;
-    cprop_opt.color_g = 0;
-    cprop_opt.color_b = 0;
+    cprop_opt.color_r = 88;
+    cprop_opt.color_g = 86;
+    cprop_opt.color_b = 214;
 
     // The step goes down to 1 here
     _stepScan = 1;
@@ -1250,8 +1255,8 @@ void QCstmEqualization::PrepareInterpolation_0x0() {
     cprop_opt_adj0.max_x = 511;
     cprop_opt_adj0.nBins = 512;
     cprop_opt_adj0.color_r = 0;
-    cprop_opt_adj0.color_g = 10;
-    cprop_opt_adj0.color_b = 127;
+    cprop_opt_adj0.color_g = 122;
+    cprop_opt_adj0.color_b = 255;
 
     for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
         cprop_opt_adj0.name = BuildChartName( _workChipsIndx[i], legend );
@@ -1294,9 +1299,9 @@ void QCstmEqualization::ScanOnInterpolation() {
     cprop_opt_ext.min_x = 0;
     cprop_opt_ext.max_x = 511;
     cprop_opt_ext.nBins = 512;
-    cprop_opt_ext.color_r = 192;
-    cprop_opt_ext.color_g = 192;
-    cprop_opt_ext.color_b = 192;
+    cprop_opt_ext.color_r = 76;
+    cprop_opt_ext.color_g = 217;
+    cprop_opt_ext.color_b = 100;
 
     for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
         cprop_opt_ext.name = BuildChartName( _workChipsIndx[i], legend );
@@ -1340,8 +1345,8 @@ void QCstmEqualization::PrepareInterpolation_0x5() {
     cprop_opt_adj5.min_x = 0;
     cprop_opt_adj5.max_x = 511;
     cprop_opt_adj5.nBins = 512;
-    cprop_opt_adj5.color_r = 127;
-    cprop_opt_adj5.color_g = 10;
+    cprop_opt_adj5.color_r = 255;
+    cprop_opt_adj5.color_g = 204;
     cprop_opt_adj5.color_b = 0;
 
     for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
@@ -1674,8 +1679,8 @@ void QCstmEqualization::InitializeBarChartsAdjustements(){
                 cprop.max_x = 31;
                 cprop.nBins = 32;
                 cprop.color_r = 0;
-                cprop.color_g = 0;
-                cprop.color_b = 127;
+                cprop.color_g = 122;
+                cprop.color_b = 255;
 
                 nbc->AppendSet( cprop );
 
@@ -1691,9 +1696,9 @@ void QCstmEqualization::InitializeBarChartsAdjustements(){
                 cprop.min_x = 0;
                 cprop.max_x = 31;
                 cprop.nBins = 32;
-                cprop.color_r = 127;
-                cprop.color_g = 0;
-                cprop.color_b = 0;
+                cprop.color_r = 255;
+                cprop.color_g = 59;
+                cprop.color_b = 48;
 
                 nbc->AppendSet( cprop );
 
@@ -1788,48 +1793,49 @@ void QCstmEqualization::estimateEqualisationTarget()
 
     if (testPulseMode) {
         //! Activate test pulses with the configuration from the GUI or the defaults
-        testPulseEqualisationDialog->activate(); //! Could have a pixel offset here if I wanted
+        bool testPulsesActuallyActivated = testPulseEqualisationDialog->activate(); //! Could have a pixel offset here if I wanted
 
+        if ( testPulsesActuallyActivated ) {
+            qDebug() << "[INFO]\tTest pulse mode SET for equalisation threshold scanning";
 
-        qDebug() << "[INFO]\tTest pulse mode SET for equalisation threshold scanning";
+            SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+            SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
-        SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-        SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+            QString legend = _steeringInfo[0]->currentDAC_DISC_String;
+            legend += "_Opt_testPulses";
+            // legend += QString::number(_steeringInfo[0]->globalAdj, 'd', 0);
 
-        QString legend = _steeringInfo[0]->currentDAC_DISC_String;
-        legend += "_Opt_testPulses";
-        // legend += QString::number(_steeringInfo[0]->globalAdj, 'd', 0);
+            //! New limits
+            //! Complete scan of all pixels over all thresholds, slower but more robust
+            SetMinScan( 511 );
+            SetMaxScan( 0 );
 
-        //! New limits
-        //! Complete scan of all pixels over all thresholds, slower but more robust
-        SetMinScan( 511 );
-        SetMaxScan( 0 );
+            ThlScan * tscan_opt_testPulses = new ThlScan(_mpx3gui, this);
+            tscan_opt_testPulses->ConnectToHardware(spidrcontrol, spidrdaq);
+            BarChartProperties cprop_opt_testPulses;
+            cprop_opt_testPulses.min_x = 0;
+            cprop_opt_testPulses.max_x = 511;
+            cprop_opt_testPulses.nBins = 512;
+            cprop_opt_testPulses.color_r = 255;
+            cprop_opt_testPulses.color_g = 45;
+            cprop_opt_testPulses.color_b = 85;
 
-        ThlScan * tscan_opt_testPulses = new ThlScan(_mpx3gui, this);
-        tscan_opt_testPulses->ConnectToHardware(spidrcontrol, spidrdaq);
-        BarChartProperties cprop_opt_testPulses;
-        cprop_opt_testPulses.min_x = 0;
-        cprop_opt_testPulses.max_x = 511;
-        cprop_opt_testPulses.nBins = 512;
-        cprop_opt_testPulses.color_r = 255;
-        cprop_opt_testPulses.color_g = 45;
-        cprop_opt_testPulses.color_b = 85;
+            for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
+                cprop_opt_testPulses.name = BuildChartName( _workChipsIndx[i], legend );
+                GetBarChart( _workChipsIndx[i] )->AppendSet( cprop_opt_testPulses );
+            }
 
-        for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
-            cprop_opt_testPulses.name = BuildChartName( _workChipsIndx[i], legend );
-            GetBarChart( _workChipsIndx[i] )->AppendSet( cprop_opt_testPulses );
+            //tscan_opt_testPulses->SetStopWhenPlateau(true);
+            //! Note the last flag here
+            tscan_opt_testPulses->DoScan(  _steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1, false, true ); // -1: Do all loops
+            tscan_opt_testPulses->SetWorkChipIndexes( _workChipsIndx, _steeringInfo );
+
+            // Launch as thread.  Connect the slot which signals when it's done
+            _scans.push_back( tscan_opt_testPulses ); _scanIndex++;
+            connect( tscan_opt_testPulses, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
+            tscan_opt_testPulses->start();
         }
 
-        //tscan_opt_testPulses->SetStopWhenPlateau(true);
-        tscan_opt_testPulses->DoScan(  _steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1 ); // -1: Do all loops
-        tscan_opt_testPulses->SetWorkChipIndexes( _workChipsIndx, _steeringInfo );
-
-        // Launch as thread.  Connect the slot which signals when it's done
-        _scans.push_back( tscan_opt_testPulses ); _scanIndex++;
-        connect( tscan_opt_testPulses, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
-        tscan_opt_testPulses->start();
-
-        //! Logically, the next step to occur should be the SLOT turnOnThresholdsFound()
     } else {
         equalisationTarget = defaultNoiseEqualisationTarget;
         //! Tell the state machine we've done a scan, oooooh cheeky

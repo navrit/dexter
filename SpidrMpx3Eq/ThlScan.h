@@ -41,6 +41,7 @@ public:
     int DAC_DISC_setting;
     int global_adj;
     int chipIndx;
+    int equalisationTarget;
 };
 
 
@@ -66,7 +67,7 @@ public:
 
     void ConnectToHardware(SpidrController * sc, SpidrDaq * sd);
     void RewindData(int full_sizex, int full_sizey);
-    void DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops = -1, bool blindScan = false);
+    void DoScan(int dac_code, int setId, int DAC_Disc_code, int numberOfLoops = -1, bool blindScan = false, testPulses = false);
     bool SetEqualizationMask(SpidrController * sc, int devId, int spacing, int offset_x, int offset_y, int * nmasked);
     int SetEqualizationMask(SpidrController * sc, set<int> reworkPixels);
     set<int> GetReworkSubset(set<int> reworkSet, int spacing, int offset_x, int offset_y);
@@ -81,6 +82,8 @@ public:
     void ExtractStatsOnChart(int devId, int setId);
     int NumberOfNonReactingPixels();
     vector<int> GetNonReactingPixels();
+
+    //! UNUSED FUNCTION
     void SetConfigurationToScanResults(int DAC_DISC_setting, int global_adj);
     void SetStopWhenPlateau(bool b) { _stopWhenPlateau = b; }
 
@@ -178,6 +181,9 @@ private:
     int _srcAddr;
     int _fullsize_x;
     int _fullsize_y;
+
+    bool _testPulses = false;
+    void setEqualisationTarget();
 
     // For data taking
     int * _data;
