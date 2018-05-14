@@ -33,10 +33,6 @@ public:
 
     void changeAllDACs(int val);
 
-    bool getTestPulseEqualisation() { return _testPulseEqualisation; }
-    void setTestPulseEqualisation( bool val ) { _testPulseEqualisation = val; }
-    QVector<int> getTurnOnThresholds() { return turnOnThresholds; }
-
 private:
     Ui::thresholdScan *ui = nullptr;
     Mpx3GUI * _mpx3gui = nullptr;
@@ -46,13 +42,11 @@ private:
     void startDataTakingThread();
     bool _stop = false;
     bool _running = false;
-    bool _testPulseEqualisation = false;
 
     void update_timeGUI();
     QElapsedTimer timer;
 
     int thresholdSpacing = 1;
-    bool saveFrames = true;
     int minTH = 0;
     int maxTH = 511;
     int framesPerStep = 1;
@@ -102,8 +96,6 @@ private slots:
 
 signals:
     void slideAndSpin(int, int);
-
-    void testPulseScanComplete();
 };
 
 class ThresholdScanThread : public QThread {

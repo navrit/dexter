@@ -242,6 +242,7 @@ public:
         __DAC_Disc_Optimization_150,
         __PrepareInterpolation_0x0,
         __PrepareInterpolation_0x5,
+        __EstimateEqualisationTarget,
         __ScanOnInterpolation,
         __FineTuning,
         __EQStatus_Count
@@ -352,7 +353,6 @@ private:
 public slots:
     void SaveEqualization(QString path="");
     void on_logYCheckBox_toggled(bool checked);
-    void turnOnThresholdsFound();
 
 private slots:
 

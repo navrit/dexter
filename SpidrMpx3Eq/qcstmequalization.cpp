@@ -178,31 +178,6 @@ void QCstmEqualization::on_logYCheckBox_toggled(bool checked) {
 
 }
 
-void QCstmEqualization::turnOnThresholdsFound()
-{
-    //! Unnecessary ...
-    // bool isTestPulseEqualisation = _mpx3gui->getTHScan()->getTestPulseEqualisation();
-
-    //! Make a QVector of floats for the 'turn-on' thresholds
-    //!     It will be at most 4 * 256 * 256, so initialise it with that size
-    QVector<int> turnOnThresholds(4*__matrix_size);
-
-
-    //! Results of a threshold scan over all pixels and full range of thresholds
-    //! TODO testPulseEqualisation this will run over all pixels, we only want to look at the chip(s) we're equalising
-    turnOnThresholds = _mpx3gui->getTHScan()->getTurnOnThresholds();
-
-
-    uint32_t sum_of_elems = 0;
-    for (auto& n : turnOnThresholds) {
-        sum_of_elems += n;
-    }
-    //! The mean of turnOnThresholds is the new equalisationTarget
-    equalisationTarget = sum_of_elems / turnOnThresholds.size();
-
-    qDebug() << "[INFO]\tEqualisation target =" << equalisationTarget;
-}
-
 void QCstmEqualization::setFineTuningLoops(int nLoops) {
     _fineTuningLoops = nLoops;
 }
@@ -837,6 +812,10 @@ void QCstmEqualization::StartEqualization() {
         if ( ! _resdataset ) _resdataset = new Dataset ( __matrix_size_x, __matrix_size_y, _nchipsX*_nchipsY );
         _resdataset->clear();
 
+        estimateEqualisationTarget();
+
+    } else if ( EQ_NEXT_STEP(__EstimateEqualisationTarget) ) {
+
         for ( int i = 0 ; i < chipListSize ; i++ ) {
 
             _scans[_scanIndex - 1]->ExtractStatsOnChart(_workChipsIndx[i], _setId - 1);
@@ -1008,7 +987,7 @@ int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, Th
     //    on the Adj_THL dependency.
     _scans[_scanIndex - 1]->DeliverPreliminaryEqualization(devId, GetSteeringInfo(devId)->currentDAC_DISC, _eqMap[devId],  GetSteeringInfo(devId)->globalAdj );
 
-    qDebug() << "[INFO\tEstimating equalisation target]";
+    qDebug() << "[INFO\tEstimating equalisation target";
     estimateEqualisationTarget(); //! Will change from the default of 10 if test pulses are being used
     qDebug() << "[INFO]\tFinished estimateEqualisationTarget()";
 
@@ -1802,9 +1781,8 @@ void QCstmEqualization::resetForNewEqualisation()
     nbc->setHidden(true);
 }
 
-//! TODO Fill this in
 void QCstmEqualization::estimateEqualisationTarget()
-{
+{    
     //! If test pulses are being used, then we want to start a the test pulse scanning procedure.
     //! Otherwise, set it to the default value
 
@@ -1812,15 +1790,50 @@ void QCstmEqualization::estimateEqualisationTarget()
         //! Activate test pulses with the configuration from the GUI or the defaults
         testPulseEqualisationDialog->activate(); //! Could have a pixel offset here if I wanted
 
-        _mpx3gui->getTHScan()->setTestPulseEqualisation(true);
-        if ( _mpx3gui->getTHScan()->getTestPulseEqualisation() ) {
-            qDebug() << "[INFO]\tTest pulse mode SET for equalisation threshold scanning";
-            _mpx3gui->getTHScan()->startScan();
+
+        qDebug() << "[INFO]\tTest pulse mode SET for equalisation threshold scanning";
+
+        SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+        SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+
+        QString legend = _steeringInfo[0]->currentDAC_DISC_String;
+        legend += "_Opt_testPulses";
+        // legend += QString::number(_steeringInfo[0]->globalAdj, 'd', 0);
+
+        //! New limits
+        //! Complete scan of all pixels over all thresholds, slower but more robust
+        SetMinScan( 511 );
+        SetMaxScan( 0 );
+
+        ThlScan * tscan_opt_testPulses = new ThlScan(_mpx3gui, this);
+        tscan_opt_testPulses->ConnectToHardware(spidrcontrol, spidrdaq);
+        BarChartProperties cprop_opt_testPulses;
+        cprop_opt_testPulses.min_x = 0;
+        cprop_opt_testPulses.max_x = 511;
+        cprop_opt_testPulses.nBins = 512;
+        cprop_opt_testPulses.color_r = 255;
+        cprop_opt_testPulses.color_g = 45;
+        cprop_opt_testPulses.color_b = 85;
+
+        for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
+            cprop_opt_testPulses.name = BuildChartName( _workChipsIndx[i], legend );
+            GetBarChart( _workChipsIndx[i] )->AppendSet( cprop_opt_testPulses );
         }
+
+        //tscan_opt_testPulses->SetStopWhenPlateau(true);
+        tscan_opt_testPulses->DoScan(  _steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1 ); // -1: Do all loops
+        tscan_opt_testPulses->SetWorkChipIndexes( _workChipsIndx, _steeringInfo );
+
+        // Launch as thread.  Connect the slot which signals when it's done
+        _scans.push_back( tscan_opt_testPulses ); _scanIndex++;
+        connect( tscan_opt_testPulses, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
+        tscan_opt_testPulses->start();
 
         //! Logically, the next step to occur should be the SLOT turnOnThresholdsFound()
     } else {
         equalisationTarget = defaultNoiseEqualisationTarget;
+        //! Tell the state machine we've done a scan, oooooh cheeky
+        ScanThreadFinished();
     }
 
     return;
@@ -2411,7 +2424,7 @@ void Mpx3EqualizationResults::ExtrapolateAdjToTarget(int target, double eta_Adj_
             if ( int(_pixId_Adj_H[i]) == 0x0 ) atmin++;
         }
     }
-    qDebug() << "Mpx3EqualizationResults::ExtrapolateAdjToTarget [INFO] Extrapolation formula used. Pixels set at max adj : " << atmax << ". Pixels set at min adj : " << atmin << "\n";
+    qDebug() << "[INFO]\tExtrapolation formula used. Pixels set at max adj : " << atmax << ". Pixels set at min adj : " << atmin << "\n";
 
 }
 

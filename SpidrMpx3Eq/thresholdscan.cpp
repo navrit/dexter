@@ -71,10 +71,6 @@ void thresholdScan::finishedScan()
     }
     ui->textEdit_log->append("\n------------------------------------------");
 
-    if( _testPulseEqualisation ) {
-        emit testPulseScanComplete();
-    }
-
     resetScan();
 }
 
@@ -160,14 +156,12 @@ void thresholdScan::stopScan()
 
     _stop = true;
     _running = false;
-    _testPulseEqualisation = false;
 }
 
 void thresholdScan::resetScan()
 {
     _stop = false;
     _running = false;
-    _testPulseEqualisation = false;
 }
 
 void thresholdScan::resumeTHScan()
@@ -192,12 +186,8 @@ void thresholdScan::resumeTHScan()
             }
         }
 
-        if ( !_testPulseEqualisation ) {
-            //! Save the current dataset ------------------------------------------
-            _mpx3gui->getDataset()->toTIFF(makePath(), false); //! Save raw TIFF
-        } else {
-            //! Doing a testPulseEqualisation, so no saving...
-        }
+        //! Save the current dataset ------------------------------------------
+        _mpx3gui->getDataset()->toTIFF(makePath(), false); //! Save raw TIFF
 
 
         //! Clear the dataset -----------------------------------------------------
@@ -495,14 +485,6 @@ void ThresholdScanThread::run()
     }
     _mpx3gui->getTHScan()->setOriginalPath(newPath);
 
-
-    const bool isTestPulseEqualisation = _thresholdScan->getTestPulseEqualisation();
-    if (isTestPulseEqualisation) {
-        qDebug() << "[INFO]\tStarting a threshold scan for test pulse equalisation.";
-        _turnOnThresholds.reserve(x*y*activeDevices);
-        std::fill(_turnOnThresholds.begin(), _turnOnThresholds.end(), -1);
-    }
-
     for ( ; scanContinue ; ) {
 
         // Set DACs on all chips
@@ -590,26 +572,15 @@ void ThresholdScanThread::run()
                     _mpx3gui->getDataset()->setFrame(_data, idx, 0);
                 }
 
-                if (!isTestPulseEqualisation) {
-                    QString path = newPath;
-                    path.append("/");
-                    //path.append(QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
-                    path.append("th-");
-                    path.append(QString::number(counter));
-                    path.append("_raw.tiff");
+                QString path = newPath;
+                path.append("/");
+                //path.append(QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
+                path.append("th-");
+                path.append(QString::number(counter));
+                path.append("_raw.tiff");
 
-                    //qDebug() << "[INFO] Writing to " << path;
-                    _mpx3gui->getDataset()->toTIFF(path, false); //! Save raw TIFF
-                } else {
-                    //! Doing a testPulseEqualisation
-                    QVector<int> frame = _mpx3gui->getDataset()->makeFrameForSaving(thresholdToScan, false, false);
-                    for (int i=0; i < frame.size(); i++ ){
-                        if ( frame[i] >= 10 && _turnOnThresholds[i] > i) {
-                            _turnOnThresholds[i] = i;
-                            qDebug() << "turnOnThresholds updated:" << _turnOnThresholds[i] << i << frame[i];
-                        }
-                    }
-                }
+                //qDebug() << "[INFO] Writing to " << path;
+                _mpx3gui->getDataset()->toTIFF(path, false); //! Save raw TIFF
             }
         }
 
