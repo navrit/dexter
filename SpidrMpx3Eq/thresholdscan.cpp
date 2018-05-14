@@ -80,6 +80,7 @@ void thresholdScan::finishedScan()
 
 void thresholdScan::startScan()
 {
+    qDebug() << "[INFO]\tStarting a threshold scan";
     //! Use acquisition settings from other view
     resetScan();
 

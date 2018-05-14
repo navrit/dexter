@@ -199,6 +199,8 @@ void QCstmEqualization::turnOnThresholdsFound()
     }
     //! The mean of turnOnThresholds is the new equalisationTarget
     equalisationTarget = sum_of_elems / turnOnThresholds.size();
+
+    qDebug() << "[INFO]\tEqualisation target =" << equalisationTarget;
 }
 
 void QCstmEqualization::setFineTuningLoops(int nLoops) {
@@ -1006,7 +1008,9 @@ int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, Th
     //    on the Adj_THL dependency.
     _scans[_scanIndex - 1]->DeliverPreliminaryEqualization(devId, GetSteeringInfo(devId)->currentDAC_DISC, _eqMap[devId],  GetSteeringInfo(devId)->globalAdj );
 
+    qDebug() << "[INFO\tEstimating equalisation target]";
     estimateEqualisationTarget(); //! Will change from the default of 10 if test pulses are being used
+    qDebug() << "[INFO]\tFinished estimateEqualisationTarget()";
 
     _eqMap[devId]->ExtrapolateAdjToTarget( getCurrentEqualisationTarget(), GetSteeringInfo(devId)->currentEta_Adj_THx, sel );
 
@@ -1133,7 +1137,7 @@ int QCstmEqualization::FineTuning() {
 
     // Start from the last scan.
     int lastScanIndex = (int)_scans.size() - 1;
-    ThlScan * lastScan = 0x0;
+    ThlScan * lastScan = nullptr;
     if( lastScanIndex > 0 ) {
         lastScan = _scans[lastScanIndex];
     } else {
@@ -1589,11 +1593,18 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     spidrcontrol->setCsmSpm( devId, _mpx3gui->getConfig()->getCsmSpm() );
     qDebug() << "[Equalisation]\tCsm_Spm = " << _mpx3gui->getConfig()->getCsmSpm();
 
-    //! Important defaults
+    //! Set gainMode based on if this is a test pulse scan or noise
+    if (testPulseMode) {
+        gainMode = _mpx3gui->getConfig()->getGainMode();
+    } else {
+        gainMode = 3; // SLGM
+    }
 
     spidrcontrol->setGainMode( devId, gainMode ); //! SLGM for equalisation
                                                   //! ALWAYS for noise equalisations
     qDebug() << "[Equalisation]\tGain mode = " << gainMode << "\tAlways 3 (SLGM) for noise based equalisations";
+
+    //! Important defaults
     spidrdaq->setDecodeFrames( true );
     spidrcontrol->setPixelDepth( devId, 12 );
     spidrdaq->setPixelDepth( 12 );
@@ -1802,7 +1813,10 @@ void QCstmEqualization::estimateEqualisationTarget()
         testPulseEqualisationDialog->activate(); //! Could have a pixel offset here if I wanted
 
         _mpx3gui->getTHScan()->setTestPulseEqualisation(true);
-        _mpx3gui->getTHScan()->startScan();
+        if ( _mpx3gui->getTHScan()->getTestPulseEqualisation() ) {
+            qDebug() << "[INFO]\tTest pulse mode SET for equalisation threshold scanning";
+            _mpx3gui->getTHScan()->startScan();
+        }
 
         //! Logically, the next step to occur should be the SLOT turnOnThresholdsFound()
     } else {

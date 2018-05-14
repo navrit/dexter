@@ -491,13 +491,11 @@ void ThlScan::FineTuning() {
                 processedLoops++;
                 if( _numberOfLoops > 0 && _numberOfLoops == processedLoops ) finishScan = true;
 
-                if( finishScan ) break;
-                if ( _stop ) break;
+                if( finishScan || _stop ) break;
 
             } // AdjScanCompleted
 
-            if( finishScan ) break;
-            if ( _stop ) break;
+            if( finishScan || _stop ) break;
         }
     }
 
