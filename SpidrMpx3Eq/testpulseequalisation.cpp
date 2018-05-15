@@ -39,11 +39,9 @@ testPulseEqualisation::~testPulseEqualisation()
     delete ui;
 }
 
-bool testPulseEqualisation::activate(int startPixelOffset, bool equalisationCheck)
+bool testPulseEqualisation::activate(int startPixelOffset)
 {
-    bool isEqualisationLoaded = _mpx3gui->equalizationLoaded();
-
-    if (equalisationCheck && isEqualisationLoaded) {
+    if (_mpx3gui->equalizationLoaded()) {
 
         if (!initialise()) {
             qDebug() << "[FAIL]\tCould not initialise test pulses";
@@ -95,7 +93,7 @@ bool testPulseEqualisation::activate(int startPixelOffset, bool equalisationChec
             }
             spidrcontrol->setCtpr( chipID );
 
-            qDebug() << "[TEST PULSES] CTPRs set on dev" << chipID;
+            qDebug() << "[TEST PULSES] CTPRs set on chip" << chipID;
             qDebug() << "[TEST PULSES] Number of pixels testBit ON :"<< testBitsOn;
 
             spidrcontrol->setPixelConfigMpx3rx( chipID );
