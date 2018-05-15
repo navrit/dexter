@@ -335,9 +335,6 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
 
     if ( item == __ALL || item == __polarity ) spidrcontrol->setPolarity( deviceIndex, getPolarity() );		// true: Holes collection
 
-    // All adjustment bits to zero
-    //SetAllAdjustmentBits(0x0, 0x0);
-
     // OMR
     //spidrcontrol->setPolarity( true );		// Holes collection
     //_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used

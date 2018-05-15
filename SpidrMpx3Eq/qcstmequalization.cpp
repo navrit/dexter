@@ -486,7 +486,7 @@ void QCstmEqualization::InitializeBarChartsEqualization() {
 QCheckBox * QCstmEqualization::GetCheckBox(int chipIdx) {
 
     // There should be as results objects as chips to be equalized
-    if ( _workChipsIndx.size() != _checkBoxes.size() ) return 0x0;
+    if ( _workChipsIndx.size() != _checkBoxes.size() ) return nullptr;
 
     // Find the index
     for (int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
@@ -496,13 +496,13 @@ QCheckBox * QCstmEqualization::GetCheckBox(int chipIdx) {
         }
     }
 
-    return 0x0; // otherwise
+    return nullptr; // otherwise
 }
 
 equalizationSteeringInfo * QCstmEqualization::GetSteeringInfo(int chipIdx) {
 
     // There should be as results objects as chips to be equalized
-    if ( _workChipsIndx.size() != _steeringInfo.size() ) return 0x0;
+    if ( _workChipsIndx.size() != _steeringInfo.size() ) return nullptr;
 
     // Find the index
     for (int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
@@ -512,7 +512,7 @@ equalizationSteeringInfo * QCstmEqualization::GetSteeringInfo(int chipIdx) {
         }
     }
 
-    return 0x0; // otherwise
+    return nullptr; // otherwise
 }
 
 BarChart * QCstmEqualization::GetAdjBarChart(int chipIdx, Mpx3EqualizationResults::lowHighSel sel) {
@@ -800,6 +800,10 @@ void QCstmEqualization::StartEqualization() {
 
     } else if ( EQ_NEXT_STEP(__PrepareInterpolation_0x5) ) {
 
+        estimateEqualisationTarget();
+
+    } else if ( EQ_NEXT_STEP(__EstimateEqualisationTarget) ) {
+
         // Results
         int nNonReactive = _scans[_scanIndex - 1]->NumberOfNonReactingPixels();
         // Correct in case not all chips are active
@@ -812,19 +816,24 @@ void QCstmEqualization::StartEqualization() {
         if ( ! _resdataset ) _resdataset = new Dataset ( __matrix_size_x, __matrix_size_y, _nchipsX*_nchipsY );
         _resdataset->clear();
 
-        estimateEqualisationTarget();
-
-    } else if ( EQ_NEXT_STEP(__EstimateEqualisationTarget) ) {
-
         for ( int i = 0 ; i < chipListSize ; i++ ) {
 
             _scans[_scanIndex - 1]->ExtractStatsOnChart(_workChipsIndx[i], _setId - 1);
             DisplayStatsInTextBrowser(_steeringInfo[i]->globalAdj, _steeringInfo[i]->currentDAC_DISC_OptValue, _scans[_scanIndex - 1]->GetScanResults(_workChipsIndx[i]));
 
             // Interpolate now
-            ThlScan * scan_x0 = _scans[_scanIndex - 3];
-            ThlScan * scan_x5 = _scans[_scanIndex - 2];
-            ThlScan * scan_testPulses = _scans[_scanIndex - 1];
+            ThlScan * scan_x0 = nullptr;
+            ThlScan * scan_x5 = nullptr;
+            ThlScan * scan_testPulses = nullptr;
+
+            if (testPulseMode) {
+                scan_x0 = _scans[_scanIndex - 3];
+                scan_x5 = _scans[_scanIndex - 2];
+                scan_testPulses = _scans[_scanIndex - 1];
+            } else {
+                scan_x0 = _scans[_scanIndex - 2];
+                scan_x5 = _scans[_scanIndex - 1];
+            }
 
             //! The equalisation target is picked up here
             int * adjdata = CalculateInterpolation( _workChipsIndx[i], scan_x0, scan_x5, scan_testPulses );
@@ -978,10 +987,17 @@ int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, Th
 
     ScanResults * res_x0 = scan_x0->GetScanResults( devId );
     ScanResults * res_x5 = scan_x5->GetScanResults( devId );
-    ScanResults * res_testPulses = scan_testPulses->GetScanResults( devId );
+    ScanResults * res_testPulses = nullptr;
+    int equalisationTarget = 10;
+
+    if (testPulseMode) {
+        res_testPulses = scan_testPulses->GetScanResults( devId );
+        equalisationTarget = res_testPulses->equalisationTarget;
+    }
 
     double eta = 0., cut = 0.;
-    int equalisationTarget = res_testPulses->equalisationTarget;
+
+    qDebug() << "[INFO]\tEqualisation target =" << equalisationTarget;
 
     GetSlopeAndCut_Adj_THL(res_x0, res_x5, eta, cut);
     GetSteeringInfo(devId)->currentEta_Adj_THx = eta;
@@ -994,9 +1010,16 @@ int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, Th
     // -------------------------------------------------------------------------
     // 7) Extrapolate to the target using the last scan information and the knowledge
     //    on the Adj_THL dependency.
-    _scans[_scanIndex - 1]->DeliverPreliminaryEqualization(devId, GetSteeringInfo(devId)->currentDAC_DISC, _eqMap[devId],  GetSteeringInfo(devId)->globalAdj );
+    if (testPulseMode) {
+        _scans[_scanIndex - 2]->DeliverPreliminaryEqualization(devId, GetSteeringInfo(devId)->currentDAC_DISC, _eqMap[devId],  GetSteeringInfo(devId)->globalAdj );
+    } else {
+        _scans[_scanIndex - 1]->DeliverPreliminaryEqualization(devId, GetSteeringInfo(devId)->currentDAC_DISC, _eqMap[devId],  GetSteeringInfo(devId)->globalAdj );
+
+    }
 
     _eqMap[devId]->ExtrapolateAdjToTarget( equalisationTarget, GetSteeringInfo(devId)->currentEta_Adj_THx, sel );
+
+    //! PROBLEM STARTS HERE
 
     int * adj_matrix = nullptr;
     if ( GetSteeringInfo(devId)->currentDAC_DISC == MPX3RX_DAC_DISC_L ) adj_matrix = _eqMap[devId]->GetAdjustementMatrix();
@@ -1439,7 +1462,26 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol) {
     }
 }
 
-//! TODO Merge test pulses into this.
+void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int devId, int val_L, int val_H) {
+
+    //SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
+    if( !spidrcontrol ) {
+        QMessageBox::information(this, tr("Clear configuration"), tr("The system is disconnected. Nothing to clear.") );
+        return;
+    }
+
+
+    // Adjustment bits
+    pair<int, int> pix;
+    for ( int i = 0 ; i < __matrix_size ; i++ ) {
+        pix = XtoXY(i, __array_size_x);
+        spidrcontrol->configPixelMpx3rx(pix.first, pix.second, val_L, val_H, testPulseMode ); // 0x1F = 31 is the max adjustment for 5 bits
+    }
+    spidrcontrol->setPixelConfigMpx3rx( devId );
+
+}
+
 void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int chipIndex, bool applymask) {
     // Adj bits
     pair<int, int> pix;
@@ -1465,16 +1507,20 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
         //! Turn test pulse bit on for that chip
         spidrcontrol->setInternalTestPulse(chipIndex, true);
 
-        //! This could be moved here
-        testPulseEqualisationDialog->turnOffAllCTPRs(spidrcontrol, chipIndex, false);
+        //! Turn off all CTPRs by default and submit to chip for a guaranteed clean start
+        for (int column = 0; column < __array_size_x; column++ ) {
+            spidrcontrol->configCtpr( chipIndex, column, 0 );
+        }
 
-        if ( !testPulseEqualisationDialog->initialise() ) {
+        if ( !initialiseTestPulses() ) {
             qDebug() << "[FAIL]\tCould not initialise test pulses";
-            return false;
+            return;
+        } else {
+            qDebug() << "[INFO]\tInitialised test pulses";
         }
     }
 
-
+    //! PROBLEM IS BEFORE HERE
 
     for ( int i = 0 ; i < __matrix_size ; i++ ) {
         pix = XtoXY(i, __array_size_x);
@@ -1556,25 +1602,6 @@ void QCstmEqualization::ClearAllAdjustmentBits(int devId) {
     _eqMap[devId]->ClearReactiveThresholds();
 
     SetAllAdjustmentBits();
-
-}
-
-void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int devId, int val_L, int val_H) {
-
-    //SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-
-    if( !spidrcontrol ) {
-        QMessageBox::information(this, tr("Clear configuration"), tr("The system is disconnected. Nothing to clear.") );
-        return;
-    }
-
-    // Adjustment bits
-    pair<int, int> pix;
-    for ( int i = 0 ; i < __matrix_size ; i++ ) {
-        pix = XtoXY(i, __array_size_x);
-        spidrcontrol->configPixelMpx3rx(pix.first, pix.second, val_L, val_H ); // 0x1F = 31 is the max adjustment for 5 bits
-    }
-    spidrcontrol->setPixelConfigMpx3rx( devId );
 
 }
 
@@ -1821,6 +1848,205 @@ void QCstmEqualization::setWindowWidgetsStatus(win_status s)
     }
 }
 
+bool QCstmEqualization::estimate_V_TP_REF_AB(uint electrons, bool makeDialog)
+{
+    const double e_dividedBy_c_test = 3.20435324e-5;
+    const double requestedInjectionVoltage = 0.3 + (electrons * e_dividedBy_c_test);
+
+    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
+    if ( requestedInjectionVoltage < 0.3 || requestedInjectionVoltage >= 1.20 ) {
+        qDebug() << "[FAIL]\tRequested injection voltage out of range";
+        return false;
+    }
+    if ( requestedInjectionVoltage >= 1.15 ) {
+        qDebug() << "[WARN]\tThis could fail, try setting a lower value";
+    }
+
+    qDebug() << "[INFO]\tTest pulse equalisation --> Requested injection voltage for TP_REF_A and TP_REF_B:" << requestedInjectionVoltage;
+
+    //! Make a modal progress bar as well for visual updates
+    int totalDACsToSet = _mpx3gui->getConfig()->getNActiveDevices() * 3;
+    int numberOfDACsSet = 0;
+    QProgressDialog progress("Setting test pulse DACs...", QString(), 0, totalDACsToSet, this);
+    progress.setModal(true);
+    progress.setMinimum(0);
+    progress.setMaximum( totalDACsToSet );
+    progress.show();
+
+    //! We need to scan for these
+    for (int chipID=0; chipID < _mpx3gui->getConfig()->getNActiveDevices(); chipID++) {
+        qApp->processEvents();
+
+        setDACToVoltage(chipID, MPX3RX_DAC_TP_REF, double(0.3));
+        numberOfDACsSet++;
+        progress.setValue( numberOfDACsSet );
+        qApp->processEvents();
+
+        setDACToVoltage(chipID, MPX3RX_DAC_TP_REF_A, requestedInjectionVoltage);
+        numberOfDACsSet++;
+        progress.setValue( numberOfDACsSet );
+        qApp->processEvents();
+
+        setDACToVoltage(chipID, MPX3RX_DAC_TP_REF_B, requestedInjectionVoltage);
+        numberOfDACsSet++;
+        progress.setValue( numberOfDACsSet );
+        qApp->processEvents();
+
+        //! Always just set these to defaults
+        SetDAC_propagateInGUI(spidrcontrol, chipID, MPX3RX_DAC_TP_BUF_IN, 128);
+        SetDAC_propagateInGUI(spidrcontrol, chipID, MPX3RX_DAC_TP_BUF_OUT, 4);
+    }
+    progress.setValue( totalDACsToSet );
+
+    return true;
+}
+
+uint QCstmEqualization::setDACToVoltage(int chipID, int dacCode, double V)
+{
+    uint dac_val = 0;
+    bool foundTarget = false;
+    int adc_val = 0;
+    double adc_volt = 0;
+    int nSamples = 1;
+    double lowerVboundary = V * 0.99;
+    double upperVboundary = V * 1.01;
+
+    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
+    //! Give them some reasonable starting values to save time
+    //! Get these from this existing values in the config unless I know better ;)
+    if (dacCode == MPX3RX_DAC_TP_REF)   dac_val = 60;
+    if (dacCode == MPX3RX_DAC_TP_REF_A) dac_val = _mpx3gui->getConfig()->getDACValue(chipID, MPX3RX_DAC_TP_REF_A-1);
+    if (dacCode == MPX3RX_DAC_TP_REF_B) dac_val = _mpx3gui->getConfig()->getDACValue(chipID, MPX3RX_DAC_TP_REF_B-1);
+
+    while (!foundTarget) {
+        if (dac_val >= 511) {
+            qDebug() << "[FAIL]\tReached maximum DAC value, cannot find target. Set to maximum";
+            dac_val = 511;
+            foundTarget = true;
+
+        }
+
+        spidrcontrol->setDac(chipID, dacCode, int(dac_val));
+        spidrcontrol->setSenseDac(chipID, dacCode);
+        spidrcontrol->getDacOut(chipID, &adc_val, nSamples);
+
+        adc_val /= nSamples;
+        adc_volt = (__voltage_DACS_MAX/(double)__maxADCCounts) * (double)adc_val;
+
+        //qDebug() << "adc_volt :" << adc_volt;
+
+        if ( adc_volt <= lowerVboundary ) {
+            if ( adc_volt < V*0.8 ) {
+                dac_val += 5;
+            } else {
+                dac_val += 1;
+            }
+        } else if (adc_volt >= upperVboundary) {
+            if ( adc_volt > V*1.2 ) {
+                dac_val -= 5;
+            } else {
+                dac_val -= 1;
+            }
+        } else if ( adc_volt >= lowerVboundary && adc_volt <= upperVboundary ) {
+            foundTarget = true;
+        } else {
+            qDebug() << "[FAIL]\tFix this... Could not find dac value to match given voltage within 1%" << dac_val << V;
+
+            qDebug() << "\t Increasing tolerance to 5% and scanning again";
+            lowerVboundary = V * 0.95;
+            upperVboundary = V * 1.05;
+        }
+    }
+
+    SetDAC_propagateInGUI(spidrcontrol, chipID, dacCode, int(dac_val));
+
+    qDebug() << "[INFO]\tFound DAC value with voltage: " << dacCode << dac_val << adc_volt;
+
+    return dac_val;
+}
+
+bool QCstmEqualization::initialiseTestPulses()
+{
+    if ( ! _mpx3gui->getConfig()->isConnected() ) {
+        QMessageBox::warning ( this, tr("Activate Test Pulses"), tr( "No device connected." ) );
+        return false;
+    }
+
+    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+
+    //! Very basic error check
+    if (spidrcontrol == nullptr) return false;
+
+    /*if ( !estimate_V_TP_REF_AB( testPulseEqualisationDialog->getInjectionChargInElectrons(), true ) ) {
+        qDebug() << "[FAIL]\tCould not set TP DAC values by voltage by scanning";
+        return false;
+    }*/
+
+    //! Set some SPIDR registers, these should match the setTpFrequency call
+    spidrcontrol->setSpidrReg(0x10C0, int(testPulseEqualisationDialog->getTestPulseLength()), true);
+    spidrcontrol->setSpidrReg(0x10BC, int(testPulseEqualisationDialog->getTestPulsePeriod()), true);
+
+    //! Set Test Pulse frequency (millihertz!) Eg. --> 40000 * 25 ns = 1 ms = 1000 Hz
+    //! Set Pulse width: 400 --> 10 us default
+    spidrcontrol->setTpFrequency(true, int(testPulseEqualisationDialog->getTestPulsePeriod()), int(testPulseEqualisationDialog->getTestPulseLength()));
+
+    return true;
+}
+
+bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int chipID)
+{
+    pair<int, int> pix;
+    bool testbit = false;
+    int testBitsOn = 0;
+
+    //! Turn test pulse bit on for that chip
+    spidrcontrol->setInternalTestPulse(chipID, true);
+
+    //! Turn off all CTPRs by default and submit to chip for a clean start
+    for (int column = 0; column < __array_size_x; column++ ) {
+        spidrcontrol->configCtpr( chipID, column, 0 );
+    }
+
+    uint pixelSpacing = testPulseEqualisationDialog->getPixelSpacing();
+
+    for ( int i = 0; i < __matrix_size; i++ ) {
+        pix = _mpx3gui->XtoXY(i, __array_size_x);
+
+        //! Unmask all pixels that we are going to inject test pulses into.
+        //! --> mask all pixels that we aren't using
+
+        if ( uint(pix.first) % pixelSpacing == 0 && uint(pix.second) % pixelSpacing == 0 ) {
+            testbit = true;
+            spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+            //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
+        } else {
+            testbit = false;
+            spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
+        }
+
+        if ( testbit && pix.second == 0 ) {
+            spidrcontrol->configCtpr( chipID, pix.first, 1 );
+        }
+
+        spidrcontrol->configPixelMpx3rx(pix.first,
+                                        pix.second,
+                                        _eqMap[chipID]->GetPixelAdj(i),
+                                        _eqMap[chipID]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
+                                        testbit);
+        if ( testbit ) testBitsOn++;
+    }
+    spidrcontrol->setCtpr( chipID );
+
+    qDebug() << "[TEST PULSES] CTPRs set on chip" << chipID;
+    qDebug() << "[TEST PULSES] Number of pixels testBit ON :"<< testBitsOn;
+
+    spidrcontrol->setPixelConfigMpx3rx( chipID );
+
+    return true;
+}
+
 //! TODO New and untested feature so you can run multiple equalisations without closing the program
 //! Doesn't work...
 void QCstmEqualization::resetForNewEqualisation()
@@ -1849,52 +2075,56 @@ void QCstmEqualization::estimateEqualisationTarget()
     //! If test pulses are being used, then we want to start a the test pulse scanning procedure.
     //! Otherwise, set it to the default value
 
+    qDebug() << "[INFO]\tEstimating equalisation target...";
+
     if (testPulseMode) {
         //! Activate test pulses with the configuration from the GUI or the defaults
-        bool testPulsesActuallyActivated = testPulseEqualisationDialog->activate(); //! Could have a pixel offset here if I wanted
 
-        if ( testPulsesActuallyActivated ) {
-            qDebug() << "[INFO]\tTest pulse mode SET for equalisation threshold scanning";
+        SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+        SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
-            SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-            SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+        initialiseTestPulses();
+        qDebug() << "[INFO]\tTest pulse mode for equalisation threshold scanning";
 
-            QString legend = _steeringInfo[0]->currentDAC_DISC_String;
-            legend += "_Opt_testPulses";
-            // legend += QString::number(_steeringInfo[0]->globalAdj, 'd', 0);
 
-            //! New limits
-            //! Complete scan of all pixels over all thresholds, slower but more robust
-            SetMinScan( 511 );
-            SetMaxScan( 0 );
+        QString legend = _steeringInfo[0]->currentDAC_DISC_String;
+        legend += "_Opt_testPulses";
+        // legend += QString::number(_steeringInfo[0]->globalAdj, 'd', 0);
 
-            ThlScan * tscan_opt_testPulses = new ThlScan(_mpx3gui, this);
-            tscan_opt_testPulses->ConnectToHardware(spidrcontrol, spidrdaq);
-            BarChartProperties cprop_opt_testPulses;
-            cprop_opt_testPulses.min_x = 0;
-            cprop_opt_testPulses.max_x = 511;
-            cprop_opt_testPulses.nBins = 512;
-            cprop_opt_testPulses.color_r = 255;
-            cprop_opt_testPulses.color_g = 45;
-            cprop_opt_testPulses.color_b = 85;
+        //! New limits
+        //! Complete scan of all pixels over all thresholds, slower but more robust
+        SetMinScan( 511 );
+        SetMaxScan( 0 );
 
-            for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
-                cprop_opt_testPulses.name = BuildChartName( _workChipsIndx[i], legend );
-                GetBarChart( _workChipsIndx[i] )->AppendSet( cprop_opt_testPulses );
-            }
+        ThlScan * tscan_opt_testPulses = new ThlScan(_mpx3gui, this);
+        tscan_opt_testPulses->ConnectToHardware(spidrcontrol, spidrdaq);
+        BarChartProperties cprop_opt_testPulses;
+        cprop_opt_testPulses.min_x = 0;
+        cprop_opt_testPulses.max_x = 511;
+        cprop_opt_testPulses.nBins = 512;
+        cprop_opt_testPulses.color_r = 255;
+        cprop_opt_testPulses.color_g = 45;
+        cprop_opt_testPulses.color_b = 85;
 
-            //tscan_opt_testPulses->SetStopWhenPlateau(true);
-            //! Note the last flag here
-            tscan_opt_testPulses->DoScan(  _steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1, false, true ); // -1: Do all loops
-            tscan_opt_testPulses->SetWorkChipIndexes( _workChipsIndx, _steeringInfo );
-
-            // Launch as thread.  Connect the slot which signals when it's done
-            _scans.push_back( tscan_opt_testPulses ); _scanIndex++;
-            connect( tscan_opt_testPulses, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
-            tscan_opt_testPulses->start();
-        } else {
-            qDebug() << "[FAIL]\tCould not activate test pulses. FIX ME";
+        for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
+            cprop_opt_testPulses.name = BuildChartName( _workChipsIndx[i], legend );
+            GetBarChart( _workChipsIndx[i] )->AppendSet( cprop_opt_testPulses );
+            activateTestPulses(spidrcontrol, _workChipsIndx[i] );
         }
+
+        //tscan_opt_testPulses->SetStopWhenPlateau(true);
+        //! Note the last flag here
+        tscan_opt_testPulses->DoScan(  _steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1, false, true ); // -1: Do all loops
+        tscan_opt_testPulses->SetWorkChipIndexes( _workChipsIndx, _steeringInfo );
+
+        // Launch as thread.  Connect the slot which signals when it's done
+        _scans.push_back( tscan_opt_testPulses );
+        _scanIndex++;
+        connect( tscan_opt_testPulses, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
+        tscan_opt_testPulses->start();
+        //} else {
+        //   qDebug() << "[FAIL]\tCould not activate test pulses. FIX ME";
+        //}
 
     } else {
         //! Tell the state machine we've done a scan, oooooh cheeky
@@ -2448,8 +2678,8 @@ void Mpx3EqualizationResults::ExtrapolateAdjToTarget(int target, double eta_Adj_
             // Now I can throw the extrapolation for every pixel to the equalisation target
             int adj = floor( (eta_Adj_THL * (double)target)  +  pixel_cut );
 
-            if ( i < 2 ) {
-                qDebug() << eta_Adj_THL << ", " << pixel_cut << ", " << adj << endl;
+            if ( i < 5 ) {
+                qDebug() << "ExtrapolateAdjToTarget eta_Adj_THL :" << eta_Adj_THL << ", pixel cut :" << pixel_cut << ", adj :" << adj << "\n";
             }
 
             // Replace the old matrix with this adjustment

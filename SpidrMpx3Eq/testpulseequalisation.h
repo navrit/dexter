@@ -25,6 +25,9 @@ public:
     bool deactivate();
 
     uint getPixelSpacing() { return config.pixelSpacing; }
+    uint getInjectionChargInElectrons() { return config.injectionChargeInElectrons; }
+    uint getTestPulseLength() { return config.testPulseLength; }
+    uint getTestPulsePeriod() { return config.testPulsePeriod; }
     void turnOffAllCTPRs(SpidrController *spidrcontrol, int chipID, bool submit);
 
 signals:

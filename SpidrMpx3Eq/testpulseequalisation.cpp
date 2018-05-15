@@ -246,7 +246,7 @@ bool testPulseEqualisation::estimate_V_TP_REF_AB(uint electrons, bool makeDialog
     for (int chipID=0; chipID < _mpx3gui->getConfig()->getNActiveDevices(); chipID++) {
         qApp->processEvents();
 
-        setDACToVoltage(chipID, MPX3RX_DAC_TP_REF, float(0.3));
+        setDACToVoltage(chipID, MPX3RX_DAC_TP_REF, double(0.3));
         numberOfDACsSet++;
         progress.setValue( numberOfDACsSet );
         qApp->processEvents();

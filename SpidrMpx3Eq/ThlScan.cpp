@@ -829,21 +829,21 @@ void ThlScan::EqualizationScan() {
 
         if ( ! _mpx3gui->getConfig()->detectorResponds( _workChipsIndx[di] ) ) continue;
 
-        if (!_testPulses) {
-            // Send all the adjustment bits to a global value
-            if ( _adjType == __adjust_to_global ) {
-                if( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
-                    _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj, 0x0);
-                    //cout << "setting global L =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
-                }
-                if( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
-                    _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], 0x0, _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj);
-                    //cout << "setting global H =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
-                }
-            } else if ( _adjType == __adjust_to_equalizationMatrix ) {
-                _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di]); //
+
+        // Send all the adjustment bits to a global value
+        if ( _adjType == __adjust_to_global ) {
+            if( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
+                _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj, 0x0);
+                //cout << "setting global L =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
             }
+            if( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
+                _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], 0x0, _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj);
+                //cout << "setting global H =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
+            }
+        } else if ( _adjType == __adjust_to_equalizationMatrix ) {
+            _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di]); //
         }
+
 
         // While equalizing one threshold the other should be set at a very high value
         //   to keep that circuit from reacting.  Set it at ~100
