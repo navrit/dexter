@@ -1441,6 +1441,12 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol) {
 
 //! TODO Merge test pulses into this.
 void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int chipIndex, bool applymask) {
+    // Adj bits
+    pair<int, int> pix;
+
+    uint testPulsePixelSpacing;
+    bool testbit = false;
+    int testBitsOn = 0;
 
     if( !spidrcontrol ) {
         QMessageBox::information(this, tr("Clear configuration"), tr("The system is disconnected. Nothing to clear.") );
@@ -1453,37 +1459,88 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
         return;
     }
 
-    // Adj bits
-    pair<int, int> pix;
+    if ( testPulseMode ) {
+        testPulsePixelSpacing = testPulseEqualisationDialog->getPixelSpacing();
+
+        //! Turn test pulse bit on for that chip
+        spidrcontrol->setInternalTestPulse(chipIndex, true);
+
+        //! This could be moved here
+        testPulseEqualisationDialog->turnOffAllCTPRs(spidrcontrol, chipIndex, false);
+
+        if ( !testPulseEqualisationDialog->initialise() ) {
+            qDebug() << "[FAIL]\tCould not initialise test pulses";
+            return false;
+        }
+    }
+
+
 
     for ( int i = 0 ; i < __matrix_size ; i++ ) {
         pix = XtoXY(i, __array_size_x);
         //qDebug() << _eqMap[chipIndex]->GetPixelAdj(i) << _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H);
-        spidrcontrol->configPixelMpx3rx(pix.first,
-                                        pix.second,
-                                        _eqMap[chipIndex]->GetPixelAdj(i),
-                                        _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H)
-                                        );
+
+        if ( testPulseMode ) {
+            if ( uint(pix.first) % testPulsePixelSpacing == 0 && uint(pix.second) % testPulsePixelSpacing == 0 ) {
+                testbit = true;
+                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+                //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
+            } else {
+                testbit = false;
+                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
+            }
+
+            if ( testbit && pix.second == 0 ) {
+                spidrcontrol->configCtpr( chipIndex, pix.first, 1 );
+            }
+
+            spidrcontrol->configPixelMpx3rx(
+                pix.first,
+                pix.second,
+                _eqMap[chipIndex]->GetPixelAdj(i),
+                _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
+                testbit
+            );
+
+            if ( testbit ) testBitsOn++;
+
+        } else {
+            spidrcontrol->configPixelMpx3rx(
+                pix.first,
+                pix.second,
+                _eqMap[chipIndex]->GetPixelAdj(i),
+                _eqMap[chipIndex]->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H)
+            );
+        }
+
     }
 
-    // This may not the moment for a mask
-    if ( applymask ) {
-        // Mask
-        if ( _eqMap[chipIndex]->GetNMaskedPixels() > 0 ) {
-            QSet<int> tomask = _eqMap[chipIndex]->GetMaskedPixels();
-            QSet<int>::iterator i = tomask.begin();
-            QSet<int>::iterator iE = tomask.end();
-            pair<int, int> pix;
-            qDebug() << "[INFO] Masking ...";
-            for ( ; i != iE ; i++ ) {
-                pix = XtoXY( (*i), __matrix_size_x );
-                qDebug() << "     devid:" << chipIndex << " | " << pix.first << "," << pix.second << " | " << XYtoX(pix.first, pix.second, _mpx3gui->getDataset()->x());
-                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second);
-            }
-        } else { // When the mask is empty go ahead and set all to zero
-            for ( int i = 0 ; i < __matrix_size ; i++ ) {
-                pix = XtoXY(i, __array_size_x);
-                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+    //! Don't apply a mask if it's test pulse mode, a mask is already applied before
+    if (testPulseMode) {
+        spidrcontrol->setCtpr( chipIndex );
+
+        qDebug() << "[TEST PULSES] CTPRs set on chip" << chipIndex;
+        qDebug() << "[TEST PULSES] Number of pixels testBit ON :"<< testBitsOn;
+    } else {
+        // This may not be the moment for a mask
+        if ( applymask ) {
+            // Mask
+            if ( _eqMap[chipIndex]->GetNMaskedPixels() > 0 ) {
+                QSet<int> tomask = _eqMap[chipIndex]->GetMaskedPixels();
+                QSet<int>::iterator i = tomask.begin();
+                QSet<int>::iterator iE = tomask.end();
+                pair<int, int> pix;
+                qDebug() << "[INFO] Masking ...";
+                for ( ; i != iE ; i++ ) {
+                    pix = XtoXY( (*i), __matrix_size_x );
+                    // qDebug() << "     devid:" << chipIndex << " | " << pix.first << "," << pix.second << " | " << XYtoX(pix.first, pix.second, _mpx3gui->getDataset()->x());
+                    spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second);
+                }
+            } else { // When the mask is empty go ahead and set all to zero
+                for ( int i = 0 ; i < __matrix_size ; i++ ) {
+                    pix = XtoXY(i, __array_size_x);
+                    spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+                }
             }
         }
     }

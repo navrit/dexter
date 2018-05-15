@@ -39,35 +39,16 @@ testPulseEqualisation::~testPulseEqualisation()
     delete ui;
 }
 
-bool testPulseEqualisation::activate(int startPixelOffset)
+bool testPulseEqualisation::activate(int startPixelOffset, bool equalisationCheck)
 {
-    if ( ! _mpx3gui->getConfig()->isConnected() ) {
-        QMessageBox::warning ( this, tr("Activate Test Pulses"), tr( "No device connected." ) );
-        return false;
-    }
+    bool isEqualisationLoaded = _mpx3gui->equalizationLoaded();
 
-    QVector<int> activeChips = _mpx3gui->getConfig()->getActiveDevices();
+    if (equalisationCheck && isEqualisationLoaded) {
 
-    if ( _mpx3gui->equalizationLoaded() ) {
-
-        spidrcontrol = _mpx3gui->GetSpidrController();
-        QCstmEqualization * _equalisation = _mpx3gui->getEqualization();
-
-        //! Very basic error check
-        //if (spidrcontrol == nullptr || _equalisation == nullptr) return false;
-
-        if ( !estimate_V_TP_REF_AB( config.injectionChargeInElectrons, true ) ) {
-            qDebug() << "[FAIL]\tCould not set TP DAC values by voltage by scanning";
+        if (!initialise()) {
+            qDebug() << "[FAIL]\tCould not initialise test pulses";
             return false;
         }
-
-        //! Set some SPIDR registers, these should match the setTpFrequency call
-        spidrcontrol->setSpidrReg(0x10C0, int(config.testPulseLength), true);
-        spidrcontrol->setSpidrReg(0x10BC, int(config.testPulsePeriod), true);
-
-        //! Set Test Pulse frequency (millihertz!) Eg. --> 40000 * 25 ns = 1 ms = 1000 Hz
-        //! Set Pulse width: 400 --> 10 us default
-        spidrcontrol->setTpFrequency(true, int(config.testPulsePeriod), int(config.testPulseLength));
 
         QMap<int, Mpx3EqualizationResults *>  eqMap_L = _equalisation->getEqMap();
         QMap<int, Mpx3EqualizationResults *>  eqMap_H = _equalisation->getEqMap();
@@ -125,6 +106,37 @@ bool testPulseEqualisation::activate(int startPixelOffset)
         deactivate();
         return false;
     }
+}
+
+bool testPulseEqualisation::initialise()
+{
+    if ( ! _mpx3gui->getConfig()->isConnected() ) {
+        QMessageBox::warning ( this, tr("Activate Test Pulses"), tr( "No device connected." ) );
+        return false;
+    }
+
+    spidrcontrol = _mpx3gui->GetSpidrController();
+    _equalisation = _mpx3gui->getEqualization();
+
+    //! Very basic error check
+    //if (spidrcontrol == nullptr || _equalisation == nullptr) return false;
+
+    if ( !estimate_V_TP_REF_AB( config.injectionChargeInElectrons, true ) ) {
+        qDebug() << "[FAIL]\tCould not set TP DAC values by voltage by scanning";
+        return false;
+    }
+
+    activeChips = _mpx3gui->getConfig()->getActiveDevices();
+
+    //! Set some SPIDR registers, these should match the setTpFrequency call
+    spidrcontrol->setSpidrReg(0x10C0, int(config.testPulseLength), true);
+    spidrcontrol->setSpidrReg(0x10BC, int(config.testPulsePeriod), true);
+
+    //! Set Test Pulse frequency (millihertz!) Eg. --> 40000 * 25 ns = 1 ms = 1000 Hz
+    //! Set Pulse width: 400 --> 10 us default
+    spidrcontrol->setTpFrequency(true, int(config.testPulsePeriod), int(config.testPulseLength));
+
+    return true;
 }
 
 bool testPulseEqualisation::deactivate()

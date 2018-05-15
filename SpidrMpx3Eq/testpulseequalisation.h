@@ -10,6 +10,8 @@ namespace Ui {
 class testPulseEqualisation;
 }
 
+//! Only functions I want to access externally are public,
+//! the rest are private by default
 class testPulseEqualisation : public QDialog
 {
     Q_OBJECT
@@ -19,7 +21,11 @@ public:
     ~testPulseEqualisation();
 
     bool activate(int startPixelOffset = 0);
+    bool initialise();
     bool deactivate();
+
+    uint getPixelSpacing() { return config.pixelSpacing; }
+    void turnOffAllCTPRs(SpidrController *spidrcontrol, int chipID, bool submit);
 
 signals:
     void slideAndSpin(int, int);
@@ -41,6 +47,7 @@ private:
     Mpx3GUI * _mpx3gui = nullptr;
     Ui::testPulseEqualisation *ui = nullptr;
     SpidrController * spidrcontrol = nullptr;
+    QCstmEqualization * _equalisation = nullptr;
 
     const float maximumInjectionVoltage = 0.975; //! over linear range
     const int maximumInjectionElectrons = 30431; //! over linear range, assuming 5fF exactly and maximum voltage injection (over linear range)
@@ -78,10 +85,12 @@ private:
         HIGH
     } verbosity;                     //! LOW for text only, HIGH for text + ASCII graph output
 
+    QVector<int> activeChips;
+
     bool estimate_V_TP_REF_AB(uint electrons, bool makeDialog);      //! This should fail if requested charge cannot be injected.
     uint setDACToVoltage(int chipID, int dacCode, double V);
     void SetDAC_propagateInGUI(int devId, int dac_code, int dac_val );
-    void turnOffAllCTPRs(SpidrController *spidrcontrol, int chipID, bool submit);
+
 };
 
 #endif // TESTPULSEEQUALISATION_H
