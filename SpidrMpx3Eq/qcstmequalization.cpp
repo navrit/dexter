@@ -1494,7 +1494,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
     bool testbit = false;
     int testBitsOn = 0;
 
-    if( !spidrcontrol ) {
+    if( !spidrcontrol || spidrcontrol == nullptr ) {
         QMessageBox::information(this, tr("Clear configuration"), tr("The system is disconnected. Nothing to clear.") );
         return;
     }
@@ -1507,14 +1507,17 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 
     if ( testPulseMode ) {
         testPulsePixelSpacing = testPulseEqualisationDialog->getPixelSpacing();
+        qDebug() << "[INFO]\tTestpulse pixel spacing :" << testPulsePixelSpacing;
 
         //! Turn test pulse bit on for that chip
         spidrcontrol->setInternalTestPulse(chipIndex, true);
+        qDebug() << "[INFO]\tSPIDR internal test pulses activated";
 
         //! Turn off all CTPRs by default and submit to chip for a guaranteed clean start
         for (int column = 0; column < __array_size_x; column++ ) {
             spidrcontrol->configCtpr( chipIndex, column, 0 );
         }
+        qDebug() << "[INFO]\tAll CTPRs reset";
 
         if ( !initialiseTestPulses() ) {
             qDebug() << "[FAIL]\tCould not initialise test pulses";
