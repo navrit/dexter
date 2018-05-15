@@ -267,8 +267,7 @@ void ThlScan::FineTuning() {
     //! Initialisation ---------------------------------------------------------
     //! Is the SPIDR connected still?
 
-    // Open a new temporary connection to the spider to avoid collisions to the main one
-    // Extract the ip address
+    // Open a new temporary connection to the SPIDR to avoid collisions to the main one
     int ipaddr[4] = { 1, 1, 168, 192 };
     if ( _srcAddr != 0 ) {
         ipaddr[3] = (_srcAddr >> 24) & 0xFF;
@@ -459,8 +458,8 @@ void ThlScan::FineTuning() {
                     //! Assume the frame won't come
                     doReadFrames = false;
 
-                    //! 5ms for eq + <2ms transfer over the network
-                    while ( _spidrdaq->hasFrame( 7 ) ) {
+                    //! This needs to be high because of Debug mode running slow AF
+                    while ( _spidrdaq->hasFrame( 100 ) ) {
 
                         doReadFrames = true;// A frame is here
 
@@ -796,8 +795,7 @@ bool ThlScan::ThereIsAFalse(vector<bool> v){
 
 void ThlScan::EqualizationScan() {
 
-    // Open a new temporary connection to the spider to avoid collisions to the main one
-    // Extract the ip address
+    // Open a new temporary connection to the SPIDR to avoid collisions to the main one
     int ipaddr[4] = { 1, 1, 168, 192 };
     if ( _srcAddr != 0 ) {
         ipaddr[3] = (_srcAddr >> 24) & 0xFF;
@@ -834,14 +832,15 @@ void ThlScan::EqualizationScan() {
         if ( _adjType == __adjust_to_global ) {
             if( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
                 _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj, 0x0);
-                //cout << "setting global L =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
+                qDebug() << "[INFO]\tSetting global L =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
             }
             if( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
                 _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], 0x0, _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj);
-                //cout << "setting global H =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
+                qDebug() << "[INFO]\tSetting global H =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
             }
         } else if ( _adjType == __adjust_to_equalizationMatrix ) {
-            _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di]); //
+            qDebug() << "[INFO]\tSetting adjustment bits on chip:" << _workChipsIndx[di];
+            _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di]);
         }
 
 

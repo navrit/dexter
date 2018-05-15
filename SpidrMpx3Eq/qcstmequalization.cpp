@@ -1300,9 +1300,7 @@ void QCstmEqualization::PrepareInterpolation_0x0() {
 
 void QCstmEqualization::ScanOnInterpolation() {
 
-    // The step goes down to 1 here
-    _stepScan = 1;
-    _ui->eqStepSpinBox->setValue( _stepScan );
+    ChangeStep(1);
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
@@ -1311,7 +1309,12 @@ void QCstmEqualization::ScanOnInterpolation() {
     legend += "_Opt_adjX";
 
     // Note that this suggests a descending scan.
-    ThlScan * scan_adj5 = _scans[_scanIndex - 1];
+    ThlScan * scan_adj5 = nullptr;
+    if ( testPulseMode ) {
+        scan_adj5 = _scans[_scanIndex - 2];
+    } else {
+        scan_adj5 = _scans[_scanIndex - 1];
+    }
 
     ThlScan * tscan_opt_ext = new ThlScan(_mpx3gui, this);
     tscan_opt_ext->SetMinScan( scan_adj5->GetDetectedHighScanBoundary() );
@@ -1332,13 +1335,14 @@ void QCstmEqualization::ScanOnInterpolation() {
     }
 
     // Let's assume the mean falls at the equalization target
-    tscan_opt_ext->DoScan( _steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1 ); // -1: Do all loops
+    tscan_opt_ext->DoScan( _steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1, false, testPulseMode ); // -1: Do all loops
     tscan_opt_ext->SetAdjustmentType( ThlScan::__adjust_to_equalizationMatrix );
     // A global_adj doesn't apply here anymore.  Passing -1.
     tscan_opt_ext->SetWorkChipIndexes( _workChipsIndx, _steeringInfo );
 
     // Launch as thread.  Connect the slot which signals when it's done
-    _scans.push_back( tscan_opt_ext); _scanIndex++;
+    _scans.push_back( tscan_opt_ext);
+    _scanIndex++;
     connect( tscan_opt_ext, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
     tscan_opt_ext->start();
 
