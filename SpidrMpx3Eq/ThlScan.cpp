@@ -221,30 +221,35 @@ void ThlScan::run() {
 void ThlScan::setEqualisationTargets()
 {
     //! Find the mean of the thresholds from the map _pixelReactiveTHL
-    //! Set class variable to new equalisation target
+    //! Set class variable (ScanResults->equalisationTarget to new equalisation target
 
     std::map<int, int>::iterator it = _pixelReactiveTHL.begin();
     int sum = 0;
+    int activePixels = 0;
 
     while (it != _pixelReactiveTHL.end())
     {
         // Accessing KEY from element pointed by it.
-        int pixelID = it->first;
+        //int pixelID = it->first;
         // If I wanted to get the pixelIDs as well
 
         // Accessing VALUE from element pointed by it.
         int turnOnThreshold = it->second;
         // The turn on thresholds
 
-        qDebug() << pixelID << " :: " << turnOnThreshold << "\n";
+        //qDebug() << pixelID << " :: " << turnOnThreshold << "\n";
 
-        sum += turnOnThreshold;
+        //! Ignore my initialised shitty -1 values
+        if (turnOnThreshold >= 0) {
+            sum += turnOnThreshold;
+            activePixels++;
+        }
         it++;
     }
 
     vector<ScanResults *>::iterator i  = _results.begin();
     vector<ScanResults *>::iterator iE = _results.end();
-    int equalisationTarget = int(sum/_pixelReactiveTHL.size());
+    int equalisationTarget = int(sum/activePixels);
 
     for ( ; i != iE ; i++ ) {
         (*i)->equalisationTarget = equalisationTarget;
@@ -824,18 +829,20 @@ void ThlScan::EqualizationScan() {
 
         if ( ! _mpx3gui->getConfig()->detectorResponds( _workChipsIndx[di] ) ) continue;
 
-        // Send all the adjustment bits to a global value
-        if ( _adjType == __adjust_to_global ) {
-            if( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
-                _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj, 0x0);
-                //cout << "setting global L =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
+        if (!_testPulses) {
+            // Send all the adjustment bits to a global value
+            if ( _adjType == __adjust_to_global ) {
+                if( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
+                    _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj, 0x0);
+                    //cout << "setting global L =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
+                }
+                if( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
+                    _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], 0x0, _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj);
+                    //cout << "setting global H =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
+                }
+            } else if ( _adjType == __adjust_to_equalizationMatrix ) {
+                _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di]); //
             }
-            if( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
-                _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], 0x0, _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj);
-                //cout << "setting global H =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
-            }
-        } else if ( _adjType == __adjust_to_equalizationMatrix ) {
-            _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di]); //
         }
 
         // While equalizing one threshold the other should be set at a very high value
@@ -900,9 +907,12 @@ void ThlScan::EqualizationScan() {
             pmasked = 0;
             for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
 
-                if ( ! SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
-                    // something went wrong
-                    return;
+                //! I do my own masking elsewhere for test pulses
+                if (! _testPulses) {
+                    if ( ! SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
+                        // something went wrong
+                        return;
+                    }
                 }
 
                 nMasked += pmasked;
@@ -1139,12 +1149,12 @@ void ThlScan::EqualizationScan() {
     // delete the extra space to plot.
     if ( _plotdata ) {
         delete [] _plotdata;
-        _plotdata = 0x0;
+        _plotdata = nullptr;
     }
 
     // the dataset used here for frames stichting
     delete _dataset;
-    _dataset = 0x0;
+    _dataset = nullptr;
 
     delete spidrcontrol;
 }

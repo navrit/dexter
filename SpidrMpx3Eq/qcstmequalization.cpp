@@ -1439,6 +1439,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol) {
     }
 }
 
+//! TODO Merge test pulses into this.
 void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int chipIndex, bool applymask) {
 
     if( !spidrcontrol ) {
@@ -1834,10 +1835,13 @@ void QCstmEqualization::estimateEqualisationTarget()
             _scans.push_back( tscan_opt_testPulses ); _scanIndex++;
             connect( tscan_opt_testPulses, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
             tscan_opt_testPulses->start();
+        } else {
+            qDebug() << "[FAIL]\tCould not activate test pulses. FIX ME";
         }
 
     } else {
         //! Tell the state machine we've done a scan, oooooh cheeky
+        qDebug() << "[INFO]\tEqualisation target left at default value";
         ScanThreadFinished();
     }
 

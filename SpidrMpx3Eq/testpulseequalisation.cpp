@@ -46,10 +46,6 @@ bool testPulseEqualisation::activate(int startPixelOffset)
         return false;
     }
 
-    if ( ! ( config.injectionChargeInElectrons ) ) {
-         return false;
-    }
-
     QVector<int> activeChips = _mpx3gui->getConfig()->getActiveDevices();
 
     if ( _mpx3gui->equalizationLoaded() ) {
@@ -58,7 +54,7 @@ bool testPulseEqualisation::activate(int startPixelOffset)
         QCstmEqualization * _equalisation = _mpx3gui->getEqualization();
 
         //! Very basic error check
-        if (spidrcontrol == nullptr || _equalisation == nullptr) return false;
+        //if (spidrcontrol == nullptr || _equalisation == nullptr) return false;
 
         if ( !estimate_V_TP_REF_AB( config.injectionChargeInElectrons, true ) ) {
             qDebug() << "[FAIL]\tCould not set TP DAC values by voltage by scanning";
@@ -66,12 +62,12 @@ bool testPulseEqualisation::activate(int startPixelOffset)
         }
 
         //! Set some SPIDR registers, these should match the setTpFrequency call
-        spidrcontrol->setSpidrReg(0x10C0, config.testPulseLength, true);
-        spidrcontrol->setSpidrReg(0x10BC, config.testPulsePeriod, true);
+        spidrcontrol->setSpidrReg(0x10C0, int(config.testPulseLength), true);
+        spidrcontrol->setSpidrReg(0x10BC, int(config.testPulsePeriod), true);
 
         //! Set Test Pulse frequency (millihertz!) Eg. --> 40000 * 25 ns = 1 ms = 1000 Hz
         //! Set Pulse width: 400 --> 10 us default
-        spidrcontrol->setTpFrequency(true, config.testPulsePeriod, config.testPulseLength );
+        spidrcontrol->setTpFrequency(true, int(config.testPulsePeriod), int(config.testPulseLength));
 
         QMap<int, Mpx3EqualizationResults *>  eqMap_L = _equalisation->getEqMap();
         QMap<int, Mpx3EqualizationResults *>  eqMap_H = _equalisation->getEqMap();
@@ -96,7 +92,7 @@ bool testPulseEqualisation::activate(int startPixelOffset)
                 //! Unmask all pixels that we are going to inject test pulses into.
                 //! --> mask all pixels that we aren't using
 
-                if ( pix.first % config.pixelSpacing == 0 && pix.second % config.pixelSpacing == 0 ) {
+                if ( uint(pix.first) % config.pixelSpacing == 0 && uint(pix.second) % config.pixelSpacing == 0 ) {
                     testbit = true;
                     spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
                     //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
