@@ -786,7 +786,7 @@ void QCstmEqualization::StartEqualization() {
         // Correct in case not all chips are active
         nNonReactive -= (_mpx3gui->getConfig()->getNDevicesSupported() - chipListSize)*__matrix_size;
         if ( nNonReactive > 0 ) {
-            qDebug() << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
+            qDebug() << "[WARNING] there are non reactive (dead) pixels : " << nNonReactive << endl;
         }
 
         for ( int i = 0 ; i < chipListSize ; i++ ) {
@@ -799,6 +799,15 @@ void QCstmEqualization::StartEqualization() {
         PrepareInterpolation_0x5();
 
     } else if ( EQ_NEXT_STEP(__PrepareInterpolation_0x5) ) {
+
+        // Results
+        int nNonReactive = _scans[_scanIndex - 1]->NumberOfNonReactingPixels();
+        // Correct in case not all chips are active
+        nNonReactive -= (_mpx3gui->getConfig()->getNDevicesSupported() - chipListSize)*__matrix_size;
+        if ( nNonReactive > 0 ) {
+            qDebug() << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
+        }
+
 
         estimateEqualisationTarget();
 
@@ -817,7 +826,6 @@ void QCstmEqualization::StartEqualization() {
         _resdataset->clear();
 
         for ( int i = 0 ; i < chipListSize ; i++ ) {
-
             _scans[_scanIndex - 1]->ExtractStatsOnChart(_workChipsIndx[i], _setId - 1);
             DisplayStatsInTextBrowser(_steeringInfo[i]->globalAdj, _steeringInfo[i]->currentDAC_DISC_OptValue, _scans[_scanIndex - 1]->GetScanResults(_workChipsIndx[i]));
 
@@ -995,13 +1003,13 @@ int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, Th
         equalisationTarget = res_testPulses->equalisationTarget;
     }
 
-    double eta = 0., cut = 0.;
+    double gradient = 0., y_intercept = 0.;
 
     qDebug() << "[INFO]\tEqualisation target =" << equalisationTarget;
 
-    GetSlopeAndCut_Adj_THL(res_x0, res_x5, eta, cut);
-    GetSteeringInfo(devId)->currentEta_Adj_THx = eta;
-    GetSteeringInfo(devId)->currentCut_Adj_THx = cut;
+    GetSlopeAndCut_Adj_THL(res_x0, res_x5, gradient, y_intercept);
+    GetSteeringInfo(devId)->currentEta_Adj_THx = gradient;
+    GetSteeringInfo(devId)->currentCut_Adj_THx = y_intercept;
 
     Mpx3EqualizationResults::lowHighSel sel = Mpx3EqualizationResults::__ADJ_L;
     if ( GetSteeringInfo(devId)->currentDAC_DISC == MPX3RX_DAC_DISC_L ) sel = Mpx3EqualizationResults::__ADJ_L;
@@ -1014,12 +1022,9 @@ int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, Th
         _scans[_scanIndex - 2]->DeliverPreliminaryEqualization(devId, GetSteeringInfo(devId)->currentDAC_DISC, _eqMap[devId],  GetSteeringInfo(devId)->globalAdj );
     } else {
         _scans[_scanIndex - 1]->DeliverPreliminaryEqualization(devId, GetSteeringInfo(devId)->currentDAC_DISC, _eqMap[devId],  GetSteeringInfo(devId)->globalAdj );
-
     }
 
     _eqMap[devId]->ExtrapolateAdjToTarget( equalisationTarget, GetSteeringInfo(devId)->currentEta_Adj_THx, sel );
-
-    //! PROBLEM STARTS HERE
 
     int * adj_matrix = nullptr;
     if ( GetSteeringInfo(devId)->currentDAC_DISC == MPX3RX_DAC_DISC_L ) adj_matrix = _eqMap[devId]->GetAdjustementMatrix();
@@ -1062,9 +1067,9 @@ void QCstmEqualization::DAC_Disc_Optimization_100() {
     cprop.min_x = 0;
     cprop.max_x = 511;
     cprop.nBins = 512;
-    cprop.color_r = 0;
-    cprop.color_g = 127;
-    cprop.color_b = 0;
+    cprop.color_r = 90;
+    cprop.color_g = 200;
+    cprop.color_b = 250;
 
     for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
         cprop.name = BuildChartName( _workChipsIndx[i], legend );
@@ -1104,9 +1109,9 @@ void QCstmEqualization::DAC_Disc_Optimization_150() {
     cprop_150.min_x = 0;
     cprop_150.max_x = 200;
     cprop_150.nBins = 512;
-    cprop_150.color_r = 255;
-    cprop_150.color_g = 149;
-    cprop_150.color_b = 0;
+    cprop_150.color_r = 0;
+    cprop_150.color_g = 122;
+    cprop_150.color_b = 255;
     for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
         cprop_150.name = BuildChartName( _workChipsIndx[i], legend );
         GetBarChart( _workChipsIndx[i] )->AppendSet( cprop_150 );
@@ -1277,9 +1282,9 @@ void QCstmEqualization::PrepareInterpolation_0x0() {
     cprop_opt_adj0.min_x = 0;
     cprop_opt_adj0.max_x = 511;
     cprop_opt_adj0.nBins = 512;
-    cprop_opt_adj0.color_r = 0;
-    cprop_opt_adj0.color_g = 122;
-    cprop_opt_adj0.color_b = 255;
+    cprop_opt_adj0.color_r = 88;
+    cprop_opt_adj0.color_g = 86;
+    cprop_opt_adj0.color_b = 214;
 
     for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
         cprop_opt_adj0.name = BuildChartName( _workChipsIndx[i], legend );
@@ -1373,8 +1378,8 @@ void QCstmEqualization::PrepareInterpolation_0x5() {
     cprop_opt_adj5.max_x = 511;
     cprop_opt_adj5.nBins = 512;
     cprop_opt_adj5.color_r = 255;
-    cprop_opt_adj5.color_g = 204;
-    cprop_opt_adj5.color_b = 0;
+    cprop_opt_adj5.color_g = 45;
+    cprop_opt_adj5.color_b = 85;
 
     for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
         cprop_opt_adj5.name = BuildChartName( _workChipsIndx[i], legend );
@@ -1572,34 +1577,34 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 
         qDebug() << "[TEST PULSES] CTPRs set on chip" << chipIndex;
         qDebug() << "[TEST PULSES] Number of pixels testBit ON :"<< testBitsOn;
-    }
+    } else {
+        //! Note : this masking is only used outside of the equalisation procedure
+        //!         Eg. loading equalisation files or masking pixels from the visualisation
+        //! It isn't used in the equalisation procedure itself so it's totally independent
+        //!   to the test pulse code
 
-    //! ---------------------------------------------------------
-    //!   TODO MERGE NORMAL MASKING WITH TEST PULSE MASKING ETC
-    //! ---------------------------------------------------------
-
-    // This may not be the moment for a mask
-    if ( applymask ) {
-        // Mask
-        if ( _eqMap[chipIndex]->GetNMaskedPixels() > 0 ) {
-            QSet<int> tomask = _eqMap[chipIndex]->GetMaskedPixels();
-            QSet<int>::iterator i = tomask.begin();
-            QSet<int>::iterator iE = tomask.end();
-            pair<int, int> pix;
-            qDebug() << "[INFO] Masking ...";
-            for ( ; i != iE ; i++ ) {
-                pix = XtoXY( (*i), __matrix_size_x );
-                // qDebug() << "     devid:" << chipIndex << " | " << pix.first << "," << pix.second << " | " << XYtoX(pix.first, pix.second, _mpx3gui->getDataset()->x());
-                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
-            }
-        } else { // When the mask is empty go ahead and set all to zero
-            for ( int i = 0 ; i < __matrix_size ; i++ ) {
-                pix = XtoXY(i, __array_size_x);
-                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+        if ( applymask ) {
+            // Mask
+            if ( _eqMap[chipIndex]->GetNMaskedPixels() > 0 ) {
+                QSet<int> tomask = _eqMap[chipIndex]->GetMaskedPixels();
+                QSet<int>::iterator i = tomask.begin();
+                QSet<int>::iterator iE = tomask.end();
+                pair<int, int> pix;
+                qDebug() << "[INFO] Masking pixels :";
+                for ( ; i != iE ; i++ ) {
+                    pix = XtoXY( (*i), __matrix_size_x );
+                    qDebug() << "     chipID:" << chipIndex << " | " << pix.first << "," << pix.second << " | " << XYtoX(pix.first, pix.second, _mpx3gui->getDataset()->x());
+                    spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
+                }
+            } else {
+                //! When the mask is empty go ahead and unmask all pixels
+                for ( int i = 0 ; i < __matrix_size ; i++ ) {
+                    pix = XtoXY(i, __array_size_x);
+                    spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+                }
             }
         }
     }
-
 
     spidrcontrol->setPixelConfigMpx3rx( chipIndex );
 }
@@ -1648,12 +1653,12 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     //! Make it false when done?
     spidrcontrol->setEqThreshH( devId, true );
 
-    //! ------------------------------------------------------------------------
-    //! OMR bit
-    //! False : default
-    //! True  : if doing a test pulse based equalisation
-    spidrcontrol->setInternalTestPulse( devId, testPulseMode );
-    qDebug() << "[Equalisation]\tTest pulses = " << testPulseMode;
+//    //! ------------------------------------------------------------------------
+//    //! OMR bit
+//    //! False : default
+//    //! True  : if doing a test pulse based equalisation
+//    spidrcontrol->setInternalTestPulse( devId, testPulseMode );
+//    qDebug() << "[Equalisation]\tSPIDR Internal Test pulses = " << testPulseMode;
 
     //! ------------------------------------------------------------------------
     //! OMR bit
@@ -2003,7 +2008,7 @@ bool QCstmEqualization::initialiseTestPulses(SpidrController * spidrcontrol)
     return true;
 }
 
-bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int chipID)
+bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int chipID, int offset_x, int offset_y, int * maskedPixels)
 {
     pair<int, int> pix;
     bool testbit = false;
@@ -2012,10 +2017,10 @@ bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int c
     //! Turn test pulse bit on for that chip
     spidrcontrol->setInternalTestPulse(chipID, true);
 
-    //! Turn off all CTPRs by default and submit to chip for a clean start
-    for (int column = 0; column < __array_size_x; column++ ) {
-        spidrcontrol->configCtpr( chipID, column, 0 );
-    }
+//    //! Turn off all CTPRs by default and submit to chip for a clean start
+//    for (int column = 0; column < __array_size_x; column++ ) {
+//        spidrcontrol->configCtpr( chipID, column, 0 );
+//    }
 
     uint pixelSpacing = testPulseEqualisationDialog->getPixelSpacing();
 
@@ -2025,7 +2030,7 @@ bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int c
         //! Unmask all pixels that we are going to inject test pulses into.
         //! --> mask all pixels that we aren't using
 
-        if ( uint(pix.first) % pixelSpacing == 0 && uint(pix.second) % pixelSpacing == 0 ) {
+        if ( (uint(pix.first) + offset_x) % pixelSpacing == 0 && (uint(pix.second + offset_y) % pixelSpacing == 0) ) {
             testbit = true;
             spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
             //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
@@ -2050,7 +2055,12 @@ bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int c
     qDebug() << "[TEST PULSES] CTPRs set on chip" << chipID;
     qDebug() << "[TEST PULSES] Number of pixels testBit ON :"<< testBitsOn;
 
-    spidrcontrol->setPixelConfigMpx3rx( chipID );
+    if ( ! spidrcontrol->setPixelConfigMpx3rx( chipID ) ) {
+        qDebug() << "[FAIL]\tCould not set pixel config... FIX ME";
+        return false;
+    }
+
+    *maskedPixels = __matrix_size - testBitsOn;
 
     return true;
 }
@@ -2111,13 +2121,12 @@ void QCstmEqualization::estimateEqualisationTarget()
         cprop_opt_testPulses.max_x = 511;
         cprop_opt_testPulses.nBins = 512;
         cprop_opt_testPulses.color_r = 255;
-        cprop_opt_testPulses.color_g = 45;
-        cprop_opt_testPulses.color_b = 85;
+        cprop_opt_testPulses.color_g = 59;
+        cprop_opt_testPulses.color_b = 48;
 
         for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
             cprop_opt_testPulses.name = BuildChartName( _workChipsIndx[i], legend );
             GetBarChart( _workChipsIndx[i] )->AppendSet( cprop_opt_testPulses );
-            activateTestPulses(spidrcontrol, _workChipsIndx[i] );
         }
 
         //tscan_opt_testPulses->SetStopWhenPlateau(true);

@@ -883,8 +883,12 @@ void ThlScan::EqualizationScan() {
     int idDataFetch = -1;
     bool accelerationApplied = false;
     int accelerationFlagCntr = 0; //The compiler thinks this is unused, it is used...
-    //int oldStep = _equalization->GetUI()->eqStepSpinBox->value();
     int nMasked = 0, pmasked = 0;
+
+    //! TODO Make this not hard coded
+    if (_testPulses) {
+        _spacing = 4;
+    }
 
     int progressMax = _numberOfLoops;
     if ( _numberOfLoops < 0 ) progressMax = _spacing * _spacing;
@@ -906,10 +910,15 @@ void ThlScan::EqualizationScan() {
             pmasked = 0;
             for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
 
-                //! I do my own masking elsewhere for test pulses
-                if (! _testPulses) {
+                if (_testPulses) {
+                    if ( ! _equalization->activateTestPulses(spidrcontrol, _workChipsIndx[devId], maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
+                        qDebug() << "[FAIL]\tCould not activate test pulses and do masking etc.";
+                        return;
+                    }
+
+                } else {
                     if ( ! SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
-                        // something went wrong
+                        qDebug() << "[FAIL]\tCould not set equalisation mask";
                         return;
                     }
                 }
@@ -1009,7 +1018,6 @@ void ThlScan::EqualizationScan() {
 
                     }
 
-                    // Release
                     _spidrdaq->releaseFrame();
 
                     if ( doReadFrames[framesCntr] ) {
@@ -1845,13 +1853,13 @@ bool ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, int devId, int
             for (int j = 0 ; j < __array_size_y ; j++) {
 
                 if( (j + offset_y) % spacing != 0 ) { // This one should be masked
-                    spidrcontrol->setPixelMaskMpx3rx(i, j);
+                    spidrcontrol->setPixelMaskMpx3rx(i, j, true);
                     _maskedSet.insert( XYtoX(i, j, __array_size_x ) + chipIdOffset );
                 } // leaving unmasked (j + offset_x) % spacing == 0
             }
         } else { // mask the entire column
             for (int j = 0 ; j < __array_size_y ; j++) {
-                spidrcontrol->setPixelMaskMpx3rx(i, j);
+                spidrcontrol->setPixelMaskMpx3rx(i, j, true);
                 _maskedSet.insert( XYtoX(i, j, __array_size_x ) + chipIdOffset );
             }
         }
@@ -1903,6 +1911,7 @@ int ThlScan::SetEqualizationMask(SpidrController * spidrcontrol, set<int> rework
 
 void ThlScan::ClearMask(SpidrController * spidrcontrol, int devId, bool sendToChip){
 
+    //! Unmask everything
     for (int i = 0 ; i < __array_size_x ; i++) {
         for (int j = 0 ; j < __array_size_y ; j++) {
             spidrcontrol->setPixelMaskMpx3rx(i, j, false);

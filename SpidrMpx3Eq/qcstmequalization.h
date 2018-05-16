@@ -127,6 +127,9 @@ public:
 
     void SetCurrentEta_Adj_THx(double v) { currentEta_Adj_THx = v; }
 
+    //! Eta is the gradient (ie. m in y = mx +c)
+    //! Cut is the y intercept (ie. c in y = mx +c)
+
     int equalizationCombination;
     int equalizationType;
     int globalAdj;
@@ -264,7 +267,7 @@ public:
     bool estimate_V_TP_REF_AB(uint electrons, bool makeDialog);      //! This should fail if requested charge cannot be injected.
     uint setDACToVoltage(int chipID, int dacCode, double V);
     bool initialiseTestPulses(SpidrController * spidrcontrol);
-    bool activateTestPulses(SpidrController * spidrcontrol, int chipID);
+    bool activateTestPulses(SpidrController * spidrcontrol, int chipID, int offset_x, int offset_y, int *maskedPixels);
 
 private:
 
