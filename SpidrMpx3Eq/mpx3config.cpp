@@ -256,7 +256,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
     // OMR
     if ( item == __ALL || item == __polarity ) spidrcontrol->setPolarity( deviceIndex, getPolarity() );		// true: Holes collection
     //_spidrcontrol->setDiscCsmSpm( 0 );		   // DiscL used
-    //_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
+    //spidrcontrol->setInternalTestPulse( deviceIndex, true ); // Internal tests pulse
 
     // Not an equalization
     if ( item == __ALL ) spidrcontrol->setEqThreshH( deviceIndex, false );
@@ -338,7 +338,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
     // OMR
     //spidrcontrol->setPolarity( true );		// Holes collection
     //_spidrcontrol->setDiscCsmSpm( 0 );		// DiscL used
-    //_spidrcontrol->setInternalTestPulse( true ); // Internal tests pulse
+    //spidrcontrol->setInternalTestPulse( deviceIndex, true ); // Internal tests pulse
 
     // Not an equalization
     if( item == __ALL ) spidrcontrol->setEqThreshH( deviceIndex, extrapars.equalizationBit );

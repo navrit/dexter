@@ -43,13 +43,12 @@ bool testPulseEqualisation::activate(int startPixelOffset)
 {
     if (_mpx3gui->equalizationLoaded()) {
 
-        if (!initialise()) {
-            qDebug() << "[FAIL]\tCould not initialise test pulses";
-            return false;
-        }
-
         QMap<int, Mpx3EqualizationResults *>  eqMap_L = _equalisation->getEqMap();
         QMap<int, Mpx3EqualizationResults *>  eqMap_H = _equalisation->getEqMap();
+
+        spidrcontrol->setTpFrequency(true, config.testPulsePeriod, config.testPulseLength);
+        spidrcontrol->setSpidrReg(0x10C0, config.testPulsePeriod, true);
+        spidrcontrol->setSpidrReg(0x10BC, config.testPulseLength, true);
 
         for ( int chipID = 0; chipID < activeChips.size(); chipID++ ) {
             pair<int, int> pix;
@@ -63,7 +62,7 @@ bool testPulseEqualisation::activate(int startPixelOffset)
             //! Turn test pulse bit on for that chip
             spidrcontrol->setInternalTestPulse(chipID, true);
 
-            turnOffAllCTPRs(spidrcontrol, chipID, false);
+            //turnOffAllCTPRs(spidrcontrol, chipID, false);
 
             for ( int i = startPixelOffset; i < __matrix_size; i++ ) {
                 pix = _mpx3gui->XtoXY(i, __array_size_x);
@@ -71,8 +70,9 @@ bool testPulseEqualisation::activate(int startPixelOffset)
                 //! Unmask all pixels that we are going to inject test pulses into.
                 //! --> mask all pixels that we aren't using
 
-                if ( uint(pix.first) % config.pixelSpacing == 0 && uint(pix.second) % config.pixelSpacing == 0 ) {
+                if ( pix.first % config.pixelSpacing == 0 && pix.second % config.pixelSpacing == 0 ) {
                     testbit = true;
+                    testBitsOn ++;
                     spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
                     //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
                 } else {
@@ -80,7 +80,7 @@ bool testPulseEqualisation::activate(int startPixelOffset)
                     spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
                 }
 
-                if ( testbit && pix.second == 0 ) {
+                if ( pix.second == 0 ) {
                     spidrcontrol->configCtpr( chipID, pix.first, 1 );
                 }
 
@@ -89,7 +89,6 @@ bool testPulseEqualisation::activate(int startPixelOffset)
                                                 eqResults_L->GetPixelAdj(i),
                                                 eqResults_H->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
                                                 testbit);
-                if ( testbit ) testBitsOn++;
             }
             spidrcontrol->setCtpr( chipID );
 
@@ -98,10 +97,11 @@ bool testPulseEqualisation::activate(int startPixelOffset)
 
             spidrcontrol->setPixelConfigMpx3rx( chipID );
         }
+
         return true;
 
     } else {
-        deactivate();
+        qDebug() << "[FAIL]\tNo equalisation loaded...";
         return false;
     }
 }
@@ -139,23 +139,43 @@ bool testPulseEqualisation::initialise()
 
 bool testPulseEqualisation::deactivate()
 {
-    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+    if (_mpx3gui->equalizationLoaded()) {
+        SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
-    for ( int chipID = 0; chipID < _mpx3gui->getConfig()->getActiveDevices().size(); chipID++ ) {
+        QMap<int, Mpx3EqualizationResults *>  eqMap_L = _equalisation->getEqMap();
+        QMap<int, Mpx3EqualizationResults *>  eqMap_H = _equalisation->getEqMap();
 
-        //! 1. Turn off test pulses
-        //! 2. Unmask all pixels
-        //! 3. Turn off all CTPRs
-        //! 4. Set Pixel config
+        for ( int chipID = 0; chipID < _mpx3gui->getConfig()->getActiveDevices().size(); chipID++ ) {
 
-        spidrcontrol->setInternalTestPulse(chipID, false);
-        for (int i = 0; i < __array_size_x; i++ ) {
-            for(int j = 0; j < __array_size_y; j++ ) {
-                spidrcontrol->setPixelMaskMpx3rx(i, j, false);
+            Mpx3EqualizationResults * eqResults_L = eqMap_L[chipID];
+            Mpx3EqualizationResults * eqResults_H = eqMap_H[chipID];
+
+            pair<int, int> pix;
+
+            //! 1. Turn off test pulses
+            //! 2. Unmask all pixels
+            //! 3. Turn off all CTPRs
+            //! 4. Set Pixel config
+
+            spidrcontrol->setInternalTestPulse(chipID, false);
+
+            for ( int i = 0; i < __matrix_size; i++ ) {
+                pix = _mpx3gui->XtoXY(i, __array_size_x);
+                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
+                spidrcontrol->configPixelMpx3rx(pix.first,
+                                                pix.second,
+                                                eqResults_L->GetPixelAdj(i),
+                                                eqResults_H->GetPixelAdj(i, Mpx3EqualizationResults::__ADJ_H),
+                                                false);
             }
+            turnOffAllCTPRs(spidrcontrol, chipID, true);
+            spidrcontrol->setPixelConfigMpx3rx( chipID );
         }
-        turnOffAllCTPRs(spidrcontrol, chipID, true);
-        spidrcontrol->setPixelConfigMpx3rx( chipID );
+
+        return true;
+    } else {
+        qDebug() << "[FAIL]\tNo equalisation loaded...";
+        return false;
     }
 }
 
@@ -396,34 +416,18 @@ void testPulseEqualisation::on_checkBox_setDACs_toggled(bool checked)
 
 void testPulseEqualisation::on_pushButton_activate_clicked()
 {
-    if (activate()) {
-        qDebug() << "[INFO]\tActivated test pulses";
-        ui->pushButton_activate->setStyleSheet("QPushButton { \
-                                               background-color : rgb(76,217,100); \
-                                               color : #ffffff; \
-                                               }");
-    } else {
-        qDebug() << "[FAIL]\tCould not activate test pulses...";
-        ui->pushButton_activate->setStyleSheet("QPushButton { \
-                                               background-color : rgb(255,59,48); \
-                                               color : #ffffff; \
-                                               }");
-    }
+    //initialise();
+    spidrcontrol = _mpx3gui->GetSpidrController();
+    _equalisation = _mpx3gui->getEqualization();
+    activeChips = _mpx3gui->getConfig()->getActiveDevices();
+    activate();
+    qDebug() << "[INFO]\tActivated test pulses";
 }
 
 void testPulseEqualisation::on_pushButton_deactivate_clicked()
 {
-    if (deactivate()) {
-        qDebug() << "[INFO]\tDeactivated test pulses";
-        ui->pushButton_activate->setStyleSheet("QPushButton { \
-                                               background-color : rgb(76,217,100); \
-                                               color : #ffffff; \
-                                               }");
-    } else {
-        qDebug() << "[FAIL]\tCould not deactivate test pulses...";
-        ui->pushButton_activate->setStyleSheet("QPushButton { \
-                                               background-color : rgb(255,59,48); \
-                                               color : #ffffff; \
-                                               }");
-    }
+    spidrcontrol = _mpx3gui->GetSpidrController();
+    _equalisation = _mpx3gui->getEqualization();
+    deactivate();
+    qDebug() << "[INFO]\tDeactivated test pulses";
 }

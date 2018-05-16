@@ -32,28 +32,10 @@
       <property name="toolTipDuration">
        <number>-1</number>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayoutBarChartEq" stretch="0,0,0">
+      <layout class="QVBoxLayout" name="verticalLayoutBarChartEq" stretch="0,0">
        <property name="rightMargin">
         <number>6</number>
        </property>
-       <item>
-        <widget class="QLabel" name="label_equalisationHistogram">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>14</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>Equalisation histogram</string>
-         </property>
-        </widget>
-       </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayoutEqHistos"/>
        </item>
@@ -122,28 +104,7 @@
        <property name="toolTipDuration">
         <number>-1</number>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1,0">
-        <item>
-         <widget class="QLabel" name="label_equalisationHeatmap">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>12</pointsize>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Equalisation heatmap&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Equalisation heatmap</string>
-          </property>
-         </widget>
-        </item>
+       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,0">
         <item>
          <widget class="QCstmPlotHeatmap" name="_intermediatePlot" native="true">
           <property name="toolTip">
@@ -251,9 +212,40 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_9">
           <item>
+           <widget class="QPushButton" name="pushButton_testPulses">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Test pulse configuration</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <layout class="QGridLayout" name="gridLayout">
             <item row="1" column="1">
              <widget class="QSpinBox" name="nTriggersSpinBox">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>Number of frames</string>
               </property>
@@ -267,6 +259,12 @@
             </item>
             <item row="3" column="6">
              <widget class="QLabel" name="eqSigmaMaskingSpinBox">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fine tuning - sigma masking&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -296,6 +294,12 @@
             </item>
             <item row="4" column="0">
              <widget class="QLabel" name="thxLabel">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Threshold Low&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -309,6 +313,12 @@
             </item>
             <item row="4" column="3">
              <widget class="QLabel" name="label_6">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>Mask loop progress</string>
               </property>
@@ -322,6 +332,12 @@
             </item>
             <item row="1" column="6">
              <widget class="QLabel" name="eqLabelSpacing">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>Pixel spacing</string>
               </property>
@@ -335,6 +351,12 @@
             </item>
             <item row="4" column="6">
              <widget class="QLabel" name="label_4">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>Fine tuning loop progress</string>
               </property>
@@ -348,6 +370,12 @@
             </item>
             <item row="3" column="3">
              <widget class="QLabel" name="label_8">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>Number of counts, above this value pixels are considered to be ON</string>
               </property>
@@ -361,6 +389,12 @@
             </item>
             <item row="2" column="7">
              <widget class="QSpinBox" name="eqStepSpinBox">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Step&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -374,6 +408,12 @@
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="eqLabelnTriggers">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>Number of frames</string>
               </property>
@@ -387,6 +427,12 @@
             </item>
             <item row="4" column="4">
              <widget class="QLabel" name="eqLabelLoopProgress">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>Mask loop progress</string>
               </property>
@@ -416,6 +462,12 @@
             </item>
             <item row="3" column="4">
              <widget class="QSpinBox" name="nHitsSpinBox">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>Number of counts, above this value pixels are considered to be ON</string>
               </property>
@@ -442,6 +494,12 @@
             </item>
             <item row="2" column="4">
              <widget class="QSpinBox" name="eqMaxSpinBox">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ending threshold&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -455,6 +513,12 @@
             </item>
             <item row="3" column="1">
              <widget class="QLabel" name="eqLabelNPixelsReactive">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>Number of pixels reacting</string>
               </property>
@@ -471,6 +535,12 @@
             </item>
             <item row="3" column="7">
              <widget class="QSpinBox" name="fineTuningLoopsSpinBox">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fine tuning - sigma masking&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -490,6 +560,12 @@
             </item>
             <item row="2" column="6">
              <widget class="QLabel" name="label_3">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>Threshold step</string>
               </property>
@@ -503,6 +579,12 @@
             </item>
             <item row="3" column="0">
              <widget class="QLabel" name="label_5">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>Number of pixels reacting</string>
               </property>
@@ -516,6 +598,12 @@
             </item>
             <item row="2" column="0">
              <widget class="QLabel" name="label">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Starting threshold&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -529,6 +617,12 @@
             </item>
             <item row="4" column="7">
              <widget class="QLabel" name="eqLabelFineTuningLoopProgress">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>Fine tuning loop progress</string>
               </property>
@@ -542,6 +636,12 @@
             </item>
             <item row="4" column="1">
              <widget class="QLabel" name="eqLabelTHLCurrentValue">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Threshold Low&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -558,6 +658,12 @@
             </item>
             <item row="1" column="3">
              <widget class="QLabel" name="eqLabelDevId">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Device ID&lt;/p&gt;&lt;p&gt;See &amp;quot;Data recording&amp;quot; under visualiser (Ctrl+1) for which chip this corresponds to&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -571,6 +677,12 @@
             </item>
             <item row="2" column="1">
              <widget class="QSpinBox" name="eqMinSpinBox">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Starting threshold&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -584,6 +696,12 @@
             </item>
             <item row="1" column="7">
              <widget class="QSpinBox" name="spacingSpinBox">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>Pixel spacing</string>
               </property>
@@ -597,6 +715,12 @@
             </item>
             <item row="1" column="4">
              <widget class="QSpinBox" name="devIdSpinBox">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Device ID&lt;/p&gt;&lt;p&gt;See &amp;quot;Data recording&amp;quot; under visualiser (Ctrl+1) for which chip this corresponds to&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -610,6 +734,12 @@
             </item>
             <item row="2" column="3">
              <widget class="QLabel" name="label_2">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>20</height>
+               </size>
+              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ending threshold&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -618,31 +748,6 @@
               </property>
               <property name="text">
                <string>End</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0" colspan="3">
-             <widget class="QPushButton" name="pushButton_testPulses">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>180</width>
-                <height>28</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>180</width>
-                <height>28</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Test pulse configuration</string>
               </property>
              </widget>
             </item>
