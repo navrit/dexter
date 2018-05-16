@@ -376,9 +376,17 @@ void ThlScan::FineTuning() {
                 // Set a mask
                 int nMasked = 0, pmasked = 0;
                 for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
-                    if ( ! SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
-                        // Something went wrong! Could not set the equalisation mask
-                        return;
+                    if (_testPulses) {
+                        if ( ! _equalization->activateTestPulses(spidrcontrol, _workChipsIndx[devId], maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
+                            qDebug() << "[FAIL]\tCould not activate test pulses and do masking etc.";
+                            return;
+                        }
+
+                    } else {
+                        if ( ! SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
+                            qDebug() << "[FAIL]\tCould not set equalisation mask";
+                            return;
+                        }
                     }
                     nMasked += pmasked;
                 }
@@ -884,11 +892,6 @@ void ThlScan::EqualizationScan() {
     bool accelerationApplied = false;
     int accelerationFlagCntr = 0; //The compiler thinks this is unused, it is used...
     int nMasked = 0, pmasked = 0;
-
-    //! TODO Make this not hard coded
-    if (_testPulses) {
-        _spacing = 4;
-    }
 
     int progressMax = _numberOfLoops;
     if ( _numberOfLoops < 0 ) progressMax = _spacing * _spacing;

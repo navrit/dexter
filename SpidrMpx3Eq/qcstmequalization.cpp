@@ -808,19 +808,6 @@ void QCstmEqualization::StartEqualization() {
             qDebug() << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
         }
 
-
-        estimateEqualisationTarget();
-
-    } else if ( EQ_NEXT_STEP(__EstimateEqualisationTarget) ) {
-
-        // Results
-        int nNonReactive = _scans[_scanIndex - 1]->NumberOfNonReactingPixels();
-        // Correct in case not all chips are active
-        nNonReactive -= (_mpx3gui->getConfig()->getNDevicesSupported() - chipListSize)*__matrix_size;
-        if ( nNonReactive > 0 ) {
-            qDebug() << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
-        }
-
         // Use a data set to put the adj matrixes together
         if ( ! _resdataset ) _resdataset = new Dataset ( __matrix_size_x, __matrix_size_y, _nchipsX*_nchipsY );
         _resdataset->clear();
@@ -830,21 +817,11 @@ void QCstmEqualization::StartEqualization() {
             DisplayStatsInTextBrowser(_steeringInfo[i]->globalAdj, _steeringInfo[i]->currentDAC_DISC_OptValue, _scans[_scanIndex - 1]->GetScanResults(_workChipsIndx[i]));
 
             // Interpolate now
-            ThlScan * scan_x0 = nullptr;
-            ThlScan * scan_x5 = nullptr;
-            ThlScan * scan_testPulses = nullptr;
+            ThlScan * scan_x0 = _scans[_scanIndex - 2];
+            ThlScan * scan_x5 = _scans[_scanIndex - 1];
 
-            if (testPulseMode) {
-                scan_x0 = _scans[_scanIndex - 3];
-                scan_x5 = _scans[_scanIndex - 2];
-                scan_testPulses = _scans[_scanIndex - 1];
-            } else {
-                scan_x0 = _scans[_scanIndex - 2];
-                scan_x5 = _scans[_scanIndex - 1];
-            }
-
-            //! The equalisation target is picked up here
-            int * adjdata = CalculateInterpolation( _workChipsIndx[i], scan_x0, scan_x5, scan_testPulses );
+            //! The equalisation target is noise based at this point
+            int * adjdata = CalculateInterpolation( _workChipsIndx[i], scan_x0, scan_x5 );
             // Stack
             _resdataset->setFrame(adjdata, _workChipsIndx[i], 0);
 
@@ -863,8 +840,19 @@ void QCstmEqualization::StartEqualization() {
         ChangeSpacing(_ui->spacingSpinBox->value()); //! Change the spacing back to the GUI content
 
 
-
     } else if ( EQ_NEXT_STEP( __ScanOnInterpolation) ) {
+
+        // Results
+        int nNonReactive = _scans[_scanIndex - 1]->NumberOfNonReactingPixels();
+        // Correct in case not all chips are active
+        nNonReactive -= (_mpx3gui->getConfig()->getNDevicesSupported() - chipListSize)*__matrix_size;
+        if ( nNonReactive > 0 ) {
+            qDebug() << "[WARNING] there are non reactive pixels : " << nNonReactive << endl;
+        }
+
+        estimateEqualisationTarget();
+
+    } else if ( EQ_NEXT_STEP(__EstimateEqualisationTarget) ) {
 
         // Results
         int nNonReactive = _scans[_scanIndex - 1]->NumberOfNonReactingPixels();
@@ -985,23 +973,16 @@ void QCstmEqualization::UpdateHeatMap(int * data, int sizex, int sizey) {
 }
 
 
-int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, ThlScan * scan_x5, ThlScan * scan_testPulses ) {
+int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, ThlScan * scan_x5 ) {
 
     // -------------------------------------------------------------------------
     // 6) Establish the dependency THL(Adj). It will be used to extrapolate to the
     //    Equalization target for every pixel
 
-    // 6.5) Also get the equalisation target here. If test pulses have been used, it won't be 10
 
     ScanResults * res_x0 = scan_x0->GetScanResults( devId );
     ScanResults * res_x5 = scan_x5->GetScanResults( devId );
-    ScanResults * res_testPulses = nullptr;
-    int equalisationTarget = 10;
-
-    if (testPulseMode) {
-        res_testPulses = scan_testPulses->GetScanResults( devId );
-        equalisationTarget = res_testPulses->equalisationTarget;
-    }
+    int equalisationTarget = defaultNoiseEqualisationTarget;
 
     double gradient = 0., y_intercept = 0.;
 
@@ -1018,11 +999,7 @@ int * QCstmEqualization::CalculateInterpolation(int devId, ThlScan * scan_x0, Th
     // -------------------------------------------------------------------------
     // 7) Extrapolate to the target using the last scan information and the knowledge
     //    on the Adj_THL dependency.
-    if (testPulseMode) {
-        _scans[_scanIndex - 2]->DeliverPreliminaryEqualization(devId, GetSteeringInfo(devId)->currentDAC_DISC, _eqMap[devId],  GetSteeringInfo(devId)->globalAdj );
-    } else {
-        _scans[_scanIndex - 1]->DeliverPreliminaryEqualization(devId, GetSteeringInfo(devId)->currentDAC_DISC, _eqMap[devId],  GetSteeringInfo(devId)->globalAdj );
-    }
+    _scans[_scanIndex - 1]->DeliverPreliminaryEqualization(devId, GetSteeringInfo(devId)->currentDAC_DISC, _eqMap[devId],  GetSteeringInfo(devId)->globalAdj );
 
     _eqMap[devId]->ExtrapolateAdjToTarget( equalisationTarget, GetSteeringInfo(devId)->currentEta_Adj_THx, sel );
 
@@ -1160,7 +1137,7 @@ int QCstmEqualization::FineTuning() {
     lastScan->SetMinScan( lastScan->GetDetectedHighScanBoundary() );
     lastScan->SetMaxScan( lastScan->GetDetectedLowScanBoundary() );
 
-    lastScan->DoScan( _steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1 ); // -1: Do all loops
+    lastScan->DoScan( _steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1, testPulseMode ); // -1: Do all loops
     lastScan->SetScanType( ThlScan::__FINE_TUNING1_SCAN );
     connect( lastScan, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
     lastScan->start();

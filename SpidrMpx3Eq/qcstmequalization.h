@@ -175,7 +175,7 @@ public:
     void DAC_Disc_Optimization(int devId, ScanResults * res_100, ScanResults * res_150);
     void PrepareInterpolation_0x0();
     void PrepareInterpolation_0x5();
-    int * CalculateInterpolation(int devId, ThlScan * scan_x0, ThlScan * scan_x5, ThlScan *scan_testPulses); // ScanResults * res_x0, ScanResults * res_x5);
+    int * CalculateInterpolation(int devId, ThlScan * scan_x0, ThlScan * scan_x5); // ScanResults * res_x0, ScanResults * res_x5);
     void ScanOnInterpolation();
     void Rewind();
     bool InitEqualization(int chipId);      //! chipId = -1  will equalize all available chips at once
@@ -247,8 +247,8 @@ public:
         __DAC_Disc_Optimization_150,
         __PrepareInterpolation_0x0,
         __PrepareInterpolation_0x5,
-        __EstimateEqualisationTarget,
         __ScanOnInterpolation,
+        __EstimateEqualisationTarget,
         __FineTuning,
         __EQStatus_Count
     } eqStatus;
