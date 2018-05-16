@@ -1519,15 +1519,13 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
         }
         qDebug() << "[INFO]\tAll CTPRs reset";
 
-        if ( !initialiseTestPulses() ) {
+        if ( !initialiseTestPulses(spidrcontrol) ) {
             qDebug() << "[FAIL]\tCould not initialise test pulses";
             return;
         } else {
             qDebug() << "[INFO]\tInitialised test pulses";
         }
     }
-
-    //! PROBLEM IS BEFORE HERE
 
     for ( int i = 0 ; i < __matrix_size ; i++ ) {
         pix = XtoXY(i, __array_size_x);
@@ -1574,29 +1572,34 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 
         qDebug() << "[TEST PULSES] CTPRs set on chip" << chipIndex;
         qDebug() << "[TEST PULSES] Number of pixels testBit ON :"<< testBitsOn;
-    } else {
-        // This may not be the moment for a mask
-        if ( applymask ) {
-            // Mask
-            if ( _eqMap[chipIndex]->GetNMaskedPixels() > 0 ) {
-                QSet<int> tomask = _eqMap[chipIndex]->GetMaskedPixels();
-                QSet<int>::iterator i = tomask.begin();
-                QSet<int>::iterator iE = tomask.end();
-                pair<int, int> pix;
-                qDebug() << "[INFO] Masking ...";
-                for ( ; i != iE ; i++ ) {
-                    pix = XtoXY( (*i), __matrix_size_x );
-                    // qDebug() << "     devid:" << chipIndex << " | " << pix.first << "," << pix.second << " | " << XYtoX(pix.first, pix.second, _mpx3gui->getDataset()->x());
-                    spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second);
-                }
-            } else { // When the mask is empty go ahead and set all to zero
-                for ( int i = 0 ; i < __matrix_size ; i++ ) {
-                    pix = XtoXY(i, __array_size_x);
-                    spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
-                }
+    }
+
+    //! ---------------------------------------------------------
+    //!   TODO MERGE NORMAL MASKING WITH TEST PULSE MASKING ETC
+    //! ---------------------------------------------------------
+
+    // This may not be the moment for a mask
+    if ( applymask ) {
+        // Mask
+        if ( _eqMap[chipIndex]->GetNMaskedPixels() > 0 ) {
+            QSet<int> tomask = _eqMap[chipIndex]->GetMaskedPixels();
+            QSet<int>::iterator i = tomask.begin();
+            QSet<int>::iterator iE = tomask.end();
+            pair<int, int> pix;
+            qDebug() << "[INFO] Masking ...";
+            for ( ; i != iE ; i++ ) {
+                pix = XtoXY( (*i), __matrix_size_x );
+                // qDebug() << "     devid:" << chipIndex << " | " << pix.first << "," << pix.second << " | " << XYtoX(pix.first, pix.second, _mpx3gui->getDataset()->x());
+                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
+            }
+        } else { // When the mask is empty go ahead and set all to zero
+            for ( int i = 0 ; i < __matrix_size ; i++ ) {
+                pix = XtoXY(i, __array_size_x);
+                spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
             }
         }
     }
+
 
     spidrcontrol->setPixelConfigMpx3rx( chipIndex );
 }
@@ -1974,14 +1977,12 @@ uint QCstmEqualization::setDACToVoltage(int chipID, int dacCode, double V)
     return dac_val;
 }
 
-bool QCstmEqualization::initialiseTestPulses()
+bool QCstmEqualization::initialiseTestPulses(SpidrController * spidrcontrol)
 {
     if ( ! _mpx3gui->getConfig()->isConnected() ) {
         QMessageBox::warning ( this, tr("Activate Test Pulses"), tr( "No device connected." ) );
         return false;
     }
-
-    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
     //! Very basic error check
     if (spidrcontrol == nullptr) return false;
@@ -2090,7 +2091,7 @@ void QCstmEqualization::estimateEqualisationTarget()
         SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
         SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
-        initialiseTestPulses();
+        initialiseTestPulses(spidrcontrol);
         qDebug() << "[INFO]\tTest pulse mode for equalisation threshold scanning";
 
 
