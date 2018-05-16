@@ -2066,7 +2066,6 @@ void QCstmEqualization::estimateEqualisationTarget()
     //! If test pulses are being used, then we want to start a the test pulse scanning procedure.
     //! Otherwise, set it to the default value
 
-    qDebug() << "[INFO]\tEstimating equalisation target...";
 
     if (testPulseMode) {
         //! Activate test pulses with the configuration from the GUI or the defaults
@@ -2075,7 +2074,7 @@ void QCstmEqualization::estimateEqualisationTarget()
         SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
         initialiseTestPulses(spidrcontrol);
-        qDebug() << "[INFO]\tTest pulse mode for equalisation threshold scanning";
+        qDebug() << "[INFO]\tInitialised test pulse mode for equalisation threshold scanning";
 
 
         QString legend = _steeringInfo[0]->currentDAC_DISC_String;
@@ -2112,9 +2111,6 @@ void QCstmEqualization::estimateEqualisationTarget()
         _scanIndex++;
         connect( tscan_opt_testPulses, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
         tscan_opt_testPulses->start();
-        //} else {
-        //   qDebug() << "[FAIL]\tCould not activate test pulses. FIX ME";
-        //}
 
     } else {
         //! Tell the state machine we've done a scan, oooooh cheeky

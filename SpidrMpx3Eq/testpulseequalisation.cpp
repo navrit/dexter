@@ -393,3 +393,37 @@ void testPulseEqualisation::on_checkBox_setDACs_toggled(bool checked)
 {
     setDACs = checked;
 }
+
+void testPulseEqualisation::on_pushButton_activate_clicked()
+{
+    if (activate()) {
+        qDebug() << "[INFO]\tActivated test pulses";
+        ui->pushButton_activate->setStyleSheet("QPushButton { \
+                                               background-color : rgb(76,217,100); \
+                                               color : #ffffff; \
+                                               }");
+    } else {
+        qDebug() << "[FAIL]\tCould not activate test pulses...";
+        ui->pushButton_activate->setStyleSheet("QPushButton { \
+                                               background-color : rgb(255,59,48); \
+                                               color : #ffffff; \
+                                               }");
+    }
+}
+
+void testPulseEqualisation::on_pushButton_deactivate_clicked()
+{
+    if (deactivate()) {
+        qDebug() << "[INFO]\tDeactivated test pulses";
+        ui->pushButton_activate->setStyleSheet("QPushButton { \
+                                               background-color : rgb(76,217,100); \
+                                               color : #ffffff; \
+                                               }");
+    } else {
+        qDebug() << "[FAIL]\tCould not deactivate test pulses...";
+        ui->pushButton_activate->setStyleSheet("QPushButton { \
+                                               background-color : rgb(255,59,48); \
+                                               color : #ffffff; \
+                                               }");
+    }
+}

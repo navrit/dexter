@@ -46,6 +46,10 @@ private slots:
 
     void on_checkBox_setDACs_toggled(bool checked);
 
+    void on_pushButton_activate_clicked();
+
+    void on_pushButton_deactivate_clicked();
+
 private:
     Mpx3GUI * _mpx3gui = nullptr;
     Ui::testPulseEqualisation *ui = nullptr;
