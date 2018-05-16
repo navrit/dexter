@@ -30,7 +30,7 @@ using namespace std;
 
 #include "testpulseequalisation.h"
 
-#define __default_step_scan		1
+#define __default_step_scan		2
 #define __low_but_above_noise_threshold 100      //! This is for an equalised chip, should be valid for all gain modes
 
 #define EQ_NEXT_STEP(x) ( _eqStatus == x && ! _stepDone[x] )

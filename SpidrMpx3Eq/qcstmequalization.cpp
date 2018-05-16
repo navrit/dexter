@@ -2121,8 +2121,8 @@ void QCstmEqualization::estimateEqualisationTarget()
         cprop_opt_testPulses.max_x = 511;
         cprop_opt_testPulses.nBins = 512;
         cprop_opt_testPulses.color_r = 255;
-        cprop_opt_testPulses.color_g = 59;
-        cprop_opt_testPulses.color_b = 48;
+        cprop_opt_testPulses.color_g = 149;
+        cprop_opt_testPulses.color_b = 0;
 
         for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
             cprop_opt_testPulses.name = BuildChartName( _workChipsIndx[i], legend );
