@@ -1292,11 +1292,7 @@ void QCstmEqualization::ScanOnInterpolation() {
 
     // Note that this suggests a descending scan.
     ThlScan * scan_adj5 = nullptr;
-    if ( testPulseMode ) {
-        scan_adj5 = _scans[_scanIndex - 2];
-    } else {
-        scan_adj5 = _scans[_scanIndex - 1];
-    }
+    scan_adj5 = _scans[_scanIndex - 1];
 
     ThlScan * tscan_opt_ext = new ThlScan(_mpx3gui, this);
     tscan_opt_ext->SetMinScan( scan_adj5->GetDetectedHighScanBoundary() );
