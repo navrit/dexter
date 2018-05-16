@@ -43,6 +43,11 @@ bool testPulseEqualisation::activate(int startPixelOffset)
 {
     if (_mpx3gui->equalizationLoaded()) {
 
+        spidrcontrol = _mpx3gui->GetSpidrController();
+        _equalisation = _mpx3gui->getEqualization();
+
+        activeChips = _mpx3gui->getConfig()->getActiveDevices();
+
         QMap<int, Mpx3EqualizationResults *>  eqMap_L = _equalisation->getEqMap();
         QMap<int, Mpx3EqualizationResults *>  eqMap_H = _equalisation->getEqMap();
 
@@ -72,7 +77,7 @@ bool testPulseEqualisation::activate(int startPixelOffset)
 
                 if ( pix.first % config.pixelSpacing == 0 && pix.second % config.pixelSpacing == 0 ) {
                     testbit = true;
-                    testBitsOn ++;
+                    testBitsOn++;
                     spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
                     //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
                 } else {
@@ -104,37 +109,6 @@ bool testPulseEqualisation::activate(int startPixelOffset)
         qDebug() << "[FAIL]\tNo equalisation loaded...";
         return false;
     }
-}
-
-bool testPulseEqualisation::initialise()
-{
-    if ( ! _mpx3gui->getConfig()->isConnected() ) {
-        QMessageBox::warning ( this, tr("Activate Test Pulses"), tr( "No device connected." ) );
-        return false;
-    }
-
-    spidrcontrol = _mpx3gui->GetSpidrController();
-    _equalisation = _mpx3gui->getEqualization();
-
-    //! Very basic error check
-    //if (spidrcontrol == nullptr || _equalisation == nullptr) return false;
-
-    if ( !estimate_V_TP_REF_AB( config.injectionChargeInElectrons, true ) ) {
-        qDebug() << "[FAIL]\tCould not set TP DAC values by voltage by scanning";
-        return false;
-    }
-
-    activeChips = _mpx3gui->getConfig()->getActiveDevices();
-
-    //! Set some SPIDR registers, these should match the setTpFrequency call
-    spidrcontrol->setSpidrReg(0x10C0, int(config.testPulseLength), true);
-    spidrcontrol->setSpidrReg(0x10BC, int(config.testPulsePeriod), true);
-
-    //! Set Test Pulse frequency (millihertz!) Eg. --> 40000 * 25 ns = 1 ms = 1000 Hz
-    //! Set Pulse width: 400 --> 10 us default
-    spidrcontrol->setTpFrequency(true, int(config.testPulsePeriod), int(config.testPulseLength));
-
-    return true;
 }
 
 bool testPulseEqualisation::deactivate()

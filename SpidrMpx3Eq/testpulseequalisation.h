@@ -21,7 +21,6 @@ public:
     ~testPulseEqualisation();
 
     bool activate(int startPixelOffset = 0);
-    bool initialise();
     bool deactivate();
 
     uint getPixelSpacing() { return config.pixelSpacing; }
@@ -45,9 +44,7 @@ private slots:
     void on_buttonBox_rejected();
 
     void on_checkBox_setDACs_toggled(bool checked);
-
     void on_pushButton_activate_clicked();
-
     void on_pushButton_deactivate_clicked();
 
 private:

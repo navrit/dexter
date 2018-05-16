@@ -1965,18 +1965,13 @@ bool QCstmEqualization::initialiseTestPulses(SpidrController * spidrcontrol)
     //! Very basic error check
     if (spidrcontrol == nullptr) return false;
 
-    /*if ( !estimate_V_TP_REF_AB( testPulseEqualisationDialog->getInjectionChargInElectrons(), true ) ) {
-        qDebug() << "[FAIL]\tCould not set TP DAC values by voltage by scanning";
-        return false;
-    }*/
+    //! Set Test Pulse frequency (millihertz!) Eg. --> 40000 * 25 ns = 1 ms = 1000 Hz
+    //! Set Pulse width: 400 --> 10 us default
+    spidrcontrol->setTpFrequency(true, int(testPulseEqualisationDialog->getTestPulsePeriod()), int(testPulseEqualisationDialog->getTestPulseLength()));
 
     //! Set some SPIDR registers, these should match the setTpFrequency call
     spidrcontrol->setSpidrReg(0x10C0, int(testPulseEqualisationDialog->getTestPulseLength()), true);
     spidrcontrol->setSpidrReg(0x10BC, int(testPulseEqualisationDialog->getTestPulsePeriod()), true);
-
-    //! Set Test Pulse frequency (millihertz!) Eg. --> 40000 * 25 ns = 1 ms = 1000 Hz
-    //! Set Pulse width: 400 --> 10 us default
-    spidrcontrol->setTpFrequency(true, int(testPulseEqualisationDialog->getTestPulsePeriod()), int(testPulseEqualisationDialog->getTestPulseLength()));
 
     return true;
 }
@@ -1990,11 +1985,6 @@ bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int c
     //! Turn test pulse bit on for that chip
     spidrcontrol->setInternalTestPulse(chipID, true);
 
-//    //! Turn off all CTPRs by default and submit to chip for a clean start
-//    for (int column = 0; column < __array_size_x; column++ ) {
-//        spidrcontrol->configCtpr( chipID, column, 0 );
-//    }
-
     uint pixelSpacing = testPulseEqualisationDialog->getPixelSpacing();
 
     for ( int i = 0; i < __matrix_size; i++ ) {
@@ -2003,8 +1993,9 @@ bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int c
         //! Unmask all pixels that we are going to inject test pulses into.
         //! --> mask all pixels that we aren't using
 
-        if ( (uint(pix.first) + offset_x) % pixelSpacing == 0 && (uint(pix.second + offset_y) % pixelSpacing == 0) ) {
+        if ( (pix.first + offset_x) % pixelSpacing == 0 && (pix.second + offset_y) % pixelSpacing == 0 ) {
             testbit = true;
+            testBitsOn++;
             spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, false);
             //qDebug() << "[TEST PULSES] Config CTPR on (x,y): (" << pix.first << "," << pix.second << ")";
         } else {
@@ -2012,7 +2003,7 @@ bool QCstmEqualization::activateTestPulses(SpidrController * spidrcontrol, int c
             spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
         }
 
-        if ( testbit && pix.second == 0 ) {
+        if ( pix.second == 0 ) {
             spidrcontrol->configCtpr( chipID, pix.first, 1 );
         }
 
