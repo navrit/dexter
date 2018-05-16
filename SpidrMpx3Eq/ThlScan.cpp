@@ -913,17 +913,9 @@ void ThlScan::EqualizationScan() {
             pmasked = 0;
             for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
 
-                if (_testPulses) {
-                    if ( ! _equalization->activateTestPulses(spidrcontrol, _workChipsIndx[devId], maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
-                        qDebug() << "[FAIL]\tCould not activate test pulses and do masking etc.";
-                        return;
-                    }
-
-                } else {
-                    if ( ! SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
-                        qDebug() << "[FAIL]\tCould not set equalisation mask";
-                        return;
-                    }
+                if ( ! SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
+                    qDebug() << "[FAIL]\tCould not set equalisation mask";
+                    return;
                 }
 
                 nMasked += pmasked;

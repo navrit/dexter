@@ -1317,7 +1317,7 @@ void QCstmEqualization::ScanOnInterpolation() {
     }
 
     // Let's assume the mean falls at the equalization target
-    tscan_opt_ext->DoScan( _steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1, false, testPulseMode ); // -1: Do all loops
+    tscan_opt_ext->DoScan( _steeringInfo[0]->currentTHx, _setId++, _steeringInfo[0]->currentDAC_DISC, -1 ); // -1: Do all loops
     tscan_opt_ext->SetAdjustmentType( ThlScan::__adjust_to_equalizationMatrix );
     // A global_adj doesn't apply here anymore.  Passing -1.
     tscan_opt_ext->SetWorkChipIndexes( _workChipsIndx, _steeringInfo );
