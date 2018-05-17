@@ -406,9 +406,15 @@ void ThlScan::FineTuning() {
                 //! Shift adjustment bits around according to if they're above or below the target
                 int nNotInMask = ShiftAdjustments( _scheduledForFineTuning, _maskedSet );
 
-                //! Set the all the adjustment bits, including the shifted ones
-                for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
-                    _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di]);
+                if (!_testPulses) {
+                    //! Set the all the adjustment bits, including the shifted ones
+                    for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
+                        _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di]);
+                    }
+                } else {
+                    for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
+                        _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], false, true);
+                    }
                 }
 
                 //! Reset reactions counters to Thl_Status::__NOT_TESTED_YET
@@ -570,12 +576,12 @@ void ThlScan::FineTuning() {
     // delete the extra space to plot.
     if ( _plotdata ) {
         delete [] _plotdata;
-        _plotdata = 0x0;
+        _plotdata = nullptr;
     }
 
     // the dataset used here for frames stichting
     delete _dataset;
-    _dataset = 0x0;
+    _dataset = nullptr;
 
     // close the connection
     delete spidrcontrol;
@@ -913,9 +919,17 @@ void ThlScan::EqualizationScan() {
             pmasked = 0;
             for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
 
-                if ( ! SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
-                    qDebug() << "[FAIL]\tCould not set equalisation mask";
-                    return;
+                if (_testPulses) {
+                    if ( ! _equalization->activateTestPulses(spidrcontrol, _workChipsIndx[devId], maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
+                        qDebug() << "[FAIL]\tCould not activate test pulses and do masking etc.";
+                        return;
+                    }
+
+                } else {
+                    if ( ! SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
+                        qDebug() << "[FAIL]\tCould not set equalisation mask";
+                        return;
+                    }
                 }
 
                 nMasked += pmasked;
@@ -1429,6 +1443,10 @@ int ThlScan::ShiftAdjustments(set<int> reworkSubset, set<int> activeMask) {
         }
 
         int currentEqualisationTarget = _results[chipId]->equalisationTarget;
+        if (lastEqualisationTarget != currentEqualisationTarget) {
+            lastEqualisationTarget = currentEqualisationTarget;
+            qDebug() << "[INFO]\tCurrent equalisation target =" << currentEqualisationTarget;
+        }
 
         if ( ! specialCase ) {
             // take a decision on next adjustment

@@ -95,6 +95,7 @@ public:
     int GetDetectedLowScanBoundary() { return _detectedScanBoundary_L; }
     int GetDetectedHighScanBoundary() { return _detectedScanBoundary_H; }
 
+    int lastEqualisationTarget = 0;
     void FineTuning();
     void EqualizationScan();
     void SetDAC_propagateInGUI(SpidrController * spidrcontrol, int devId, int dac_code, int dac_val );

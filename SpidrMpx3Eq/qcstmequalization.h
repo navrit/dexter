@@ -195,7 +195,7 @@ public:
     void SetLimits();
     void Configuration(int devId, int THx, bool reset);
     void SetAllAdjustmentBits(SpidrController * spidrcontrol, int devId, int val_L, int val_H);
-    void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId, bool applymask = false);
+    void SetAllAdjustmentBits(SpidrController * spidrcontrol, int deviceId, bool applymask = false, bool testbit = false);
     void SetAllAdjustmentBits(SpidrController * spidrcontrol);
     void SetAllAdjustmentBits();
     void ClearAllAdjustmentBits(int devId = 0);
@@ -248,7 +248,7 @@ public:
         __PrepareInterpolation_0x0,
         __PrepareInterpolation_0x5,
         __ScanOnInterpolation,
-        __EstimateEqualisationTarget,
+         __EstimateEqualisationTarget,
         __FineTuning,
         __EQStatus_Count
     } eqStatus;
