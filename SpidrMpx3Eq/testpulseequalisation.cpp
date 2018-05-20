@@ -3,8 +3,6 @@
 
 #include "ui_mpx3gui.h"
 #include "mpx3config.h"
-#include "testpulseequalisation.h"
-#include "testpulseequalisation.h"
 
 testPulseEqualisation::testPulseEqualisation(Mpx3GUI * mg, QWidget *parent) :
     _mpx3gui(mg),

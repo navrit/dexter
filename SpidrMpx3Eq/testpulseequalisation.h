@@ -64,12 +64,12 @@ private:
     bool setDACs = true;
 
     struct testPulseConfig {
-        uint injectionChargeInElectrons = 3000;     //! Electrons by default
+        uint injectionChargeInElectrons = 2222;     //! Electrons by default
         uint testPulseLength = 400;                 //! DAC units, so 40 x 25 ns = 10 microseconds
                                                     //!    Length of the test pulses in 25 ns units
-        uint testPulsePeriod = 40000;               //! DAC units, so 40000 x 25ns = 1ms.
+        uint testPulsePeriod = 1000;               //! DAC units, so 40000 x 25ns = 1ms.
                                                     //!    Period between TP Switch pulses in 25 ns units
-        uint pixelSpacing = 4;                      //! Pixel spacing, where 1 is the minimum --> no gaps
+        uint pixelSpacing = 2;                      //! Pixel spacing, where 1 is the minimum --> no gaps
     } config;
 
     struct testPulseDACconfig {

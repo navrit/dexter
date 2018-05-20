@@ -2025,7 +2025,7 @@ void QCstmEqualization::estimateEqualisationTarget()
         legend += "_Opt_testPulses";
 
         //! New limits
-        SetMinScan( 511 );
+        SetMinScan( 200 );
         SetMaxScan( 0 );
 
         ChangeStep( 2 );

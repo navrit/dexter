@@ -406,15 +406,9 @@ void ThlScan::FineTuning() {
                 //! Shift adjustment bits around according to if they're above or below the target
                 int nNotInMask = ShiftAdjustments( _scheduledForFineTuning, _maskedSet );
 
-                if (!_testPulses) {
-                    //! Set the all the adjustment bits, including the shifted ones
-                    for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
-                        _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di]);
-                    }
-                } else {
-                    for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
-                        _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], false, true);
-                    }
+
+                for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
+                    _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], false, _testPulses);
                 }
 
                 //! Reset reactions counters to Thl_Status::__NOT_TESTED_YET
@@ -422,8 +416,8 @@ void ThlScan::FineTuning() {
                 RewindReactionCounters( _scheduledForFineTuning );
 
                 //! Use the limits detected in the previous scan
-                _minScan = GetDetectedLowScanBoundary();
-                _maxScan = GetDetectedHighScanBoundary();
+                _minScan = 0;   //GetDetectedLowScanBoundary();
+                _maxScan = 120; //GetDetectedHighScanBoundary();
 
                 //! Scan iterator observing direction
                 _pixelReactiveInScan = 0;
@@ -541,7 +535,7 @@ void ThlScan::FineTuning() {
                     }
                 }
 
-                DumpAdjReactTHLHistory( 10 );
+                //DumpAdjReactTHLHistory( 10 );
 
                 //! Check finish condition - a full 'spacing loop' completion
                 processedLoops++;
@@ -721,7 +715,7 @@ void ThlScan::DumpAdjReactTHLHistory(int showHeadAndTail) {
     vector< pair<int, int> >::iterator viE;
     int fullHistorySize = (int) _adjReactiveTHLFineTuning.size();
 
-    //qDebug() << "[INFO] adjReactiveTHL history : [pix]{ (adj,reactTHL), ... } " << endl;
+    qDebug() << "[INFO] adjReactiveTHL history : [pix]{ (adj,reactTHL), ... } " << endl;
     int cntr = 0;
     for ( ; i != iE ; i++ ) {
 
@@ -731,28 +725,30 @@ void ThlScan::DumpAdjReactTHLHistory(int showHeadAndTail) {
                 ( cntr >= (fullHistorySize - showHeadAndTail)  )
 
                 ) {
-            //qDebug() << "       " << "[" << (*i).first << "]{";
+            qDebug() << "       " << "[" << (*i).first << "]{";
 
             vi  = (*i).second.begin();
             viE = (*i).second.end();
             for ( ; vi != viE ; vi++ ) {
 
-                //qDebug() << "(" << (*vi).first << "," << (*vi).second << ")";
-                if ( (vi+1) != viE ) cout << ", ";
+                qDebug() << "(" << (*vi).first << "," << (*vi).second << ")";
+                if ( (vi+1) != viE ) qDebug() << ", ";
 
             }
-            //qDebug() << "}" << endl;
+            qDebug() << "}" << endl;
         }
 
         if ( cntr == showHeadAndTail ) {
             int skipping = fullHistorySize - 2*showHeadAndTail;
-            //qDebug() << " ... skip " << skipping << " ... " << endl;
+            qDebug() << " ... skip " << skipping << " ... " << "\n";
         }
 
         cntr++;
 
     }
-    //qDebug() << "\n" << "       And a list of pixels stuck non-reactive (if any) --> " << "\n";
+    qDebug() << "\n" << "       And a list of pixels stuck non-reactive (if any) --> " << "\n";
+
+
 
     // search for a few special non-reactive pixels
     i  = _adjReactiveTHLFineTuning.begin();
@@ -762,18 +758,15 @@ void ThlScan::DumpAdjReactTHLHistory(int showHeadAndTail) {
         vi  = (*i).second.begin();
         viE = (*i).second.end();
         if( (*vi).second == __UNDEFINED ) { // interesting pixel
-            //qDebug() << "       " << "[" << (*i).first << "]{";
+            qDebug() << "       " << "[" << (*i).first << "]{";
             for ( ; vi != viE ; vi++ ) {
-
-                //qDebug() << "(" << (*vi).first << "," << (*vi).second << ")";
-                //if ( (vi+1) != viE ) qDebug() << ", ";
-
+                qDebug() << "(" << (*vi).first << "," << (*vi).second << ")";
+                if ( (vi+1) != viE ) qDebug() << ", ";
             }
-            //qDebug() << "}" << endl;
+            qDebug() << "}" << "\n";
             if(cntrROI++ > 5) break; // only a few of these pixels, finish here
         }
     }
-
 }
 
 void ThlScan::SetDAC_propagateInGUI(SpidrController * spidrcontrol, int devId, int dac_code, int dac_val ){
@@ -1414,7 +1407,7 @@ int ThlScan::ShiftAdjustments(set<int> reworkSubset, set<int> activeMask) {
     for( ; i != iE ; i++ ) {
 
         // First see if the pixel is in the mask.
-        // If it is found in the mask (maske pixels, i.e. not reacting) the pixel doesn't need an adjustment shift yet.
+        // If it is found in the mask (masked pixels, i.e. not reacting) the pixel doesn't need an adjustment shift yet.
         if ( activeMask.find( *i ) != activeMask.end() ) continue;
 
         chipId = PixelBelongsToChip( *i );
