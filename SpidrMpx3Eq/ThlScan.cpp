@@ -394,8 +394,7 @@ void ThlScan::FineTuning() {
                 //     <<  " | N pixels unmasked = " << ((int)_workChipsIndx.size()*__matrix_size) - nMasked << "\n";
 
                 // GUI stuff ---------------------------------------------------
-                QString ftLoopProgressS;
-                ftLoopProgressS =  QString::number( adjLoops, 'd', 0 );
+                QString ftLoopProgressS = QString::number( adjLoops, 'd', 0 );
                 ftLoopProgressS += "/";
                 ftLoopProgressS += QString::number( _equalization->GetFineTuningLoops(), 'd', 0 );
                 connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelFineTuningLoopProgress, SLOT( setText(QString)) );
@@ -407,7 +406,7 @@ void ThlScan::FineTuning() {
                 int nNotInMask = ShiftAdjustments( _scheduledForFineTuning, _maskedSet );
 
 
-                for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
+                for ( unsigned long di = 0 ; di < _workChipsIndx.size(); di++ ) {
                     _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], false, _testPulses);
                 }
 
@@ -423,10 +422,6 @@ void ThlScan::FineTuning() {
                 _pixelReactiveInScan = 0;
                 _thlItr = _minScan;
 
-                // ---------------------------------------------
-                //!   TODO CHECK THIS or FIXME _maxScan = 35;
-                //! This doesn't appear to be an issue
-                // ---------------------------------------------
 
                 if ( _equalization->isScanDescendant() ) _thlItr = _maxScan;
                 bool scanContinue = true;
@@ -435,18 +430,15 @@ void ThlScan::FineTuning() {
                 for ( ; scanContinue ; ) {
 
                     // GUI stuff -----------------------------------------------
-                    QString thlLabelS;
-                    thlLabelS = QString::number( _thlItr, 'd', 0 );
+                    QString thlLabelS = QString::number( _thlItr, 'd', 0 );
                     // Send signal to Labels.  Making connections one by one.
-                    connect( this, SIGNAL( fillText(QString) ),
-                             _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
+                    connect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
                     fillText( thlLabelS );
-                    disconnect( this, SIGNAL( fillText(QString) ),
-                                _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
+                    disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
                     // ---------------------------------------------------------
 
                     // Set the threshold on all chips
-                    for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
+                    for ( unsigned long devId = 0 ; devId < _workChipsIndx.size() ; devId++ ) {
                         SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], _dac_code, _thlItr );
                         if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_0 ) {
                             SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_2, _thlItr );
@@ -499,12 +491,8 @@ void ThlScan::FineTuning() {
 
                         _spidrdaq->releaseFrame(); // Release frame
 
-                        // Keep track of the <adj, reactTHL> pairs
                         if ( doReadFrames ) {
-                            FillAdjReactTHLHistory();
-                        }
-
-                        if ( doReadFrames ) {
+                            FillAdjReactTHLHistory(); // Keep track of the <adj, reactTHL> pairs
                             UpdateHeatMapSignal(_fullsize_x, _fullsize_y);
                         }
                     }
@@ -927,7 +915,7 @@ void ThlScan::EqualizationScan() {
 
                 nMasked += pmasked;
             }
-            //cout << "offset_x: " << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  " | N pixels unmasked = " << ((int)_workChipsIndx.size()*__matrix_size) - nMasked << endl;
+            qDebug() << "[INFO] [Equalisation] offset_x:" << maskOffsetItr_x << ", offset_y:" << maskOffsetItr_y <<  "| N pixels unmasked = " << int(_workChipsIndx.size()*__matrix_size) - nMasked << "\n";
 
             // Start the Scan for one mask
             _pixelReactiveInScan = 0;

@@ -1128,11 +1128,10 @@ int QCstmEqualization::FineTuning() {
     cprop_opt.color_b = 214;
 
     // The step goes down to 1 here
-    _stepScan = 1;
-    _ui->eqStepSpinBox->setValue( _stepScan );
+    ChangeStep(1);
 
     // Start from the last scan.
-    int lastScanIndex = (int)_scans.size() - 1;
+    int lastScanIndex = _scans.size() - 1;
     ThlScan * lastScan = nullptr;
     if( lastScanIndex > 0 ) {
         lastScan = _scans[lastScanIndex];
@@ -1382,7 +1381,7 @@ void QCstmEqualization::DisplayStatsInTextBrowser(int adj, int dac_disc, ScanRes
 
     QString statsString = "[";
     statsString += QString::number(res->chipIndx, 'd', 0);
-    statsString += "] Adj=0x";
+    statsString += "] Adj=";
     if (adj >= 0) statsString += QString::number(adj, 'd', 0);
     else {
         if (_eqStatus >= __EstimateEqualisationTarget) {
@@ -1392,6 +1391,7 @@ void QCstmEqualization::DisplayStatsInTextBrowser(int adj, int dac_disc, ScanRes
         }
     }
 
+    statsString += " | ";
     statsString += _steeringInfo[0]->currentDAC_DISC_String;
     statsString += QString::number(dac_disc, 'd', 0);
     statsString += " | Mean = ";
@@ -2073,6 +2073,23 @@ bool QCstmEqualization::makeTeaCoffeeDialog()
     msgBox.addButton(QMessageBox::Ok);
     msgBox.addButton(QMessageBox::Cancel);
     msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.setStyleSheet("QPushButton { \
+            background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgb(0,127,255), stop:1 rgb(0, 110, 200)); \
+            font : 16px 'Helvetica Neue'; \
+            border-radius : 10px; \
+            padding : 5px; \
+            margin : 3px; \
+            color : white; \
+        }\
+        QPushButton:hover { \
+            color : #f9f9f9; \
+            border : 1px solid transparent; \
+            font : bold; \
+        } \
+        QPushButton:pressed { \
+            background-color : #007acc; \
+        } \
+    ");
 
     if (msgBox.exec() == QMessageBox::Ok){
         return true;

@@ -372,13 +372,13 @@ void testPulseEqualisation::on_buttonBox_accepted()
     }
 
     _mpx3gui->getEqualization()->setTestPulseMode(true);
-    qDebug() << "[INFO]\tTest pulse mode is ON, may or may not be activated";
+    qDebug() << "[INFO]\tEqualisation -> Test pulse mode is ON, may or may not be activated";
 }
 
 void testPulseEqualisation::on_buttonBox_rejected()
 {
     _mpx3gui->getEqualization()->setTestPulseMode(false);
-    qDebug() << "[INFO]\tTest pulse mode is OFF, may or may not be activated";
+    qDebug() << "[INFO]\tEqualisation -> Test pulse mode is OFF, may or may not be activated";
 }
 
 void testPulseEqualisation::on_checkBox_setDACs_toggled(bool checked)

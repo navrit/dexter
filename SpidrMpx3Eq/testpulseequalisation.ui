@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>403</width>
-    <height>400</height>
+    <width>410</width>
+    <height>340</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,14 +18,14 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>403</width>
-    <height>400</height>
+    <width>410</width>
+    <height>340</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>403</width>
-    <height>400</height>
+    <width>410</width>
+    <height>350</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -34,14 +34,26 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="5" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Verbosity</string>
+     <item row="2" column="1">
+      <widget class="QSpinBox" name="spinBox_testPulsePeriod">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>1000000</number>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="0" column="2">
+      <widget class="QComboBox" name="comboBox_injectionChargeUnits">
+       <item>
+        <property name="text">
+         <string>Electrons</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="1" column="1">
       <widget class="QSpinBox" name="spinBox_testPulseLength">
        <property name="minimum">
         <number>1</number>
@@ -54,17 +66,40 @@
        </property>
       </widget>
      </item>
-     <item row="9" column="2">
+     <item row="1" column="2">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>x 25 ns</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Pixel spacing</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="2">
       <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="minimumSize">
+        <size>
+         <width>120</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="standardButtons">
         <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
        </property>
+       <property name="centerButtons">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
-     <item row="4" column="1">
+     <item row="3" column="1">
       <widget class="QSpinBox" name="spinBox_pixelSpacing">
        <property name="minimum">
         <number>1</number>
@@ -74,19 +109,21 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="0" colspan="2">
-      <widget class="QLabel" name="label_4">
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-        </font>
-       </property>
+     <item row="2" column="2">
+      <widget class="QLabel" name="label_8">
        <property name="text">
-        <string>Configuration parameters</string>
+        <string>x 25 ns</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
+     <item row="6" column="0" colspan="2">
+      <widget class="QPushButton" name="pushButton_activate">
+       <property name="text">
+        <string>Activate (debug)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
       <widget class="QComboBox" name="comboBox_verbosity">
        <item>
         <property name="text">
@@ -100,78 +137,35 @@
        </item>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QSpinBox" name="spinBox_injectionCharge">
-       <property name="minimum">
-        <number>1</number>
-       </property>
-       <property name="maximum">
-        <number>28000</number>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
+     <item row="2" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>Test pulse period</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="2">
-      <widget class="QLabel" name="label_8">
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>x 25 ns</string>
+        <string>Verbosity</string>
        </property>
       </widget>
      </item>
      <item row="1" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Injection charge</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QSpinBox" name="spinBox_testPulsePeriod">
-       <property name="minimum">
-        <number>1</number>
-       </property>
-       <property name="maximum">
-        <number>1000000</number>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <widget class="QComboBox" name="comboBox_injectionChargeUnits">
-       <item>
-        <property name="text">
-         <string>Electrons</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Pixel spacing</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2">
-      <widget class="QLabel" name="label_7">
-       <property name="text">
-        <string>x 25 ns</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
       <widget class="QLabel" name="label_6">
        <property name="text">
         <string>Test pulse length</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="0" colspan="2">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Injection charge</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0" colspan="2">
       <widget class="QCheckBox" name="checkBox_setDACs">
        <property name="layoutDirection">
         <enum>Qt::RightToLeft</enum>
@@ -184,14 +178,26 @@
        </property>
       </widget>
      </item>
-     <item row="7" column="0" colspan="2">
-      <widget class="QPushButton" name="pushButton_activate">
-       <property name="text">
-        <string>Activate (debug)</string>
+     <item row="0" column="1">
+      <widget class="QSpinBox" name="spinBox_injectionCharge">
+       <property name="toolTip">
+        <string>SLGM : ~4000 electrons minimum
+LGM   : ~2000 electrons minimum
+HGM   : ~1000 electrons minimum
+SHGM : ~1000 electrons minimum</string>
+       </property>
+       <property name="minimum">
+        <number>100</number>
+       </property>
+       <property name="maximum">
+        <number>28000</number>
+       </property>
+       <property name="singleStep">
+        <number>100</number>
        </property>
       </widget>
      </item>
-     <item row="8" column="0" colspan="2">
+     <item row="7" column="0" colspan="2">
       <widget class="QPushButton" name="pushButton_deactivate">
        <property name="text">
         <string>Deactivate (debug)</string>
