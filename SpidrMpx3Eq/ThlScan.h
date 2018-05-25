@@ -186,6 +186,8 @@ private:
     bool _testPulses = false;
     void setEqualisationTargets();
 
+    ofstream file_fineTuningStats;
+
     // For data taking
     int * _data;
     int * _plotdata;
