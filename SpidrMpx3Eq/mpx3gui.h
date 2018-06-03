@@ -66,7 +66,7 @@ class zmqController;
 #define JSON_FILES "BH JSON file(*.json)"
 
 const QString _softwareName = "ASI Dexter";
-const QString _softwareVersion = "1.8.1";
+const QString _softwareVersion = "1.9.2";
 
 #include <stdio.h>
 #include <QCoreApplication>

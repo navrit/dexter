@@ -23,7 +23,7 @@ QComboBox {
     margin-right: 20px;
 }
 QComboBox:down-arrow {
-    image: url(://icons/UI/chevron-down.svg);
+    /*image: url(://icons/UI/chevron-down.svg);*/
     width: 10px;
     height: 10px;
 }
@@ -93,7 +93,7 @@ QSpinBox:up-button, QDoubleSpinBox:up-button {
     border-top-width: 0;
 }
 QSpinBox:up-arrow, QDoubleSpinBox:up-arrow {
-    image: url(://icons/UI/chevron-up.svg);
+    /*image: url(://icons/UI/chevron-up.svg);*/
     width: 10px;
     height: 10px;
 }
@@ -106,7 +106,7 @@ QSpinBox:down-button, QDoubleSpinBox:down-button {
     border-top-width: 0;
 }
 QSpinBox:down-arrow, QDoubleSpinBox:down-arrow {
-    image: url(://icons/UI/chevron-down.svg);
+    /*image: url(://icons/UI/chevron-down.svg);*/
     width: 10px;
     height: 10px;
 }
@@ -116,10 +116,10 @@ QCheckBox:indicator, QRadioButton::indicator {
     height: 12px;
 }
 QCheckBox:indicator:checked, QRadioButton::indicator::checked {
-    image: url(://icons/UI/circle-solid.svg);
+    /*image: url(://icons/UI/circle-solid.svg);*/
 }
 QCheckBox:indicator:unchecked, QRadioButton::indicator::unchecked {
-    image: url(://icons/UI/circle.svg);
+    /*image: url(://icons/UI/circle.svg);*/
 }
 
 QComboBox {

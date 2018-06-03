@@ -514,8 +514,8 @@ void ThresholdScanThread::run()
         int timeOutTime =
                 _mpx3gui->getConfig()->getTriggerLength_ms()
                 + _mpx3gui->getConfig()->getTriggerDowntime_ms()
-                + 10; // ms
-        //! The extra 10 ms is a combination of delay in the network plus
+                + 100; // ms
+        //! The extra 100 ms is a combination of delay in the network plus
         //! system overhead.  This should be predicted and not hard-coded.
 
         while ( spidrdaq->hasFrame( timeOutTime ) ) {
