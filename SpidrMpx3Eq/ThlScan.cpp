@@ -344,6 +344,7 @@ void ThlScan::FineTuning() {
     qDebug() << "[INFO] [Fine Tuning] Run a Scan. devIndex:" << _deviceIndex << " | databuffer:" << idDataFetch << "\n";
 
     file_fineTuningStats.open("log_fineTuningStats.csv", std::ios::app);
+    file_fineTuningStats << "Changed adj bits, Not equalised, Scheduled, Done, Adj OoB, Non-reactive, Stuck left, Never react, adj-1, > target, < target, OoB \n";
 
     //! End of initialisation --------------------------------------------------
 
@@ -360,7 +361,10 @@ void ThlScan::FineTuning() {
         //! Compared to the GUI box value.
         adjLoops++;
 
-        file_fineTuningStats << "Changed adj bits, Not equalised, Scheduled, Done, Adj OoB, Non-reactive, Stuck left, Never react, adj-1, > target, < target, OoB \n";
+        file_fineTuningStats << adjLoops;
+        if (_testPulses) {
+            _spacing = int(_equalization->testPulseEqualisationDialog->getPixelSpacing());
+        }
 
         //! Iterate through x then y
         for ( int maskOffsetItr_x = 0 ; maskOffsetItr_x < _spacing ; maskOffsetItr_x++ ) {
@@ -378,9 +382,7 @@ void ThlScan::FineTuning() {
 
                 // Set a mask
                 int nMasked = 0, pmasked = 0;
-                if (_testPulses) {
-                    _spacing = int(_equalization->testPulseEqualisationDialog->getPixelSpacing());
-                }
+
                 for ( unsigned long devId = 0 ; devId < _workChipsIndx.size() ; devId++ ) {
                     if ( ! SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
                             qDebug() << "[FAIL]\tCould not set equalisation mask";
@@ -491,6 +493,13 @@ void ThlScan::FineTuning() {
                         if ( doReadFrames ) {
                             FillAdjReactTHLHistory(); // Keep track of the <adj, reactTHL> pairs
                             UpdateHeatMapSignal(_fullsize_x, _fullsize_y);
+
+                            // Last scan boundaries
+                            // This information could be useful for a next scan
+                            if ( _pixelReactiveInScan != 0 ) {
+                                if ( _thlItr < _detectedScanBoundary_L ) _detectedScanBoundary_L = _thlItr;
+                                if ( _thlItr > _detectedScanBoundary_H ) _detectedScanBoundary_H = _thlItr;
+                            }
                         }
                     }
 
