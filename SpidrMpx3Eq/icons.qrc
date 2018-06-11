@@ -28,5 +28,9 @@
         <file>icons/UI/toggle-on.svg</file>
         <file>icons/UI/circle.svg</file>
         <file>icons/UI/circle-solid.svg</file>
+        <file>icons/UI/chevron-down.png</file>
+        <file>icons/UI/chevron-up.png</file>
+        <file>icons/UI/circle.png</file>
+        <file>icons/UI/circle-solid.png</file>
     </qresource>
 </RCC>
