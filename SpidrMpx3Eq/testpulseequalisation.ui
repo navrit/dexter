@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>410</width>
-    <height>340</height>
+    <height>350</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -34,117 +34,66 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="2" column="1">
-      <widget class="QSpinBox" name="spinBox_testPulsePeriod">
-       <property name="minimum">
-        <number>1</number>
-       </property>
+     <item row="4" column="1">
+      <widget class="QSpinBox" name="spinBox_equalisationTarget">
        <property name="maximum">
-        <number>1000000</number>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QComboBox" name="comboBox_injectionChargeUnits">
-       <item>
-        <property name="text">
-         <string>Electrons</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QSpinBox" name="spinBox_testPulseLength">
-       <property name="minimum">
-        <number>1</number>
-       </property>
-       <property name="maximum">
-        <number>1000000</number>
+        <number>511</number>
        </property>
        <property name="value">
-        <number>400</number>
+        <number>10</number>
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
-      <widget class="QLabel" name="label_7">
+     <item row="5" column="1">
+      <widget class="QSpinBox" name="spinBox_1st_DAC_DISC">
+       <property name="maximum">
+        <number>511</number>
+       </property>
+       <property name="value">
+        <number>100</number>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="0" colspan="2">
+      <widget class="QPushButton" name="pushButton_deactivate">
        <property name="text">
-        <string>x 25 ns</string>
+        <string>Deactivate (debug)</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_3">
+     <item row="12" column="1">
+      <widget class="QCheckBox" name="checkBox_setDACs">
+       <property name="layoutDirection">
+        <enum>Qt::RightToLeft</enum>
+       </property>
        <property name="text">
-        <string>Pixel spacing</string>
+        <string>Set DACs</string>
        </property>
-      </widget>
-     </item>
-     <item row="8" column="2">
-      <widget class="QDialogButtonBox" name="buttonBox">
-       <property name="minimumSize">
-        <size>
-         <width>120</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="standardButtons">
-        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-       </property>
-       <property name="centerButtons">
+       <property name="checked">
         <bool>true</bool>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QSpinBox" name="spinBox_pixelSpacing">
-       <property name="minimum">
-        <number>1</number>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_9">
+       <property name="toolTip">
+        <string>Equalisation target for the noise calculation.
+Eg. SLGM SPM : 10
+      SLGM CSM : 15</string>
        </property>
-       <property name="maximum">
-        <number>31</number>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2">
-      <widget class="QLabel" name="label_8">
        <property name="text">
-        <string>x 25 ns</string>
+        <string>Equalisation target</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="0" colspan="2">
+     <item row="10" column="2">
       <widget class="QPushButton" name="pushButton_activate">
        <property name="text">
         <string>Activate (debug)</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
-      <widget class="QComboBox" name="comboBox_verbosity">
-       <item>
-        <property name="text">
-         <string>Low</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>High</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>Test pulse period</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Verbosity</string>
@@ -162,19 +111,6 @@
       <widget class="QLabel" name="label">
        <property name="text">
         <string>Injection charge</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0" colspan="2">
-      <widget class="QCheckBox" name="checkBox_setDACs">
-       <property name="layoutDirection">
-        <enum>Qt::RightToLeft</enum>
-       </property>
-       <property name="text">
-        <string>Set DACs</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -197,10 +133,128 @@ SHGM : ~1000 electrons minimum</string>
        </property>
       </widget>
      </item>
-     <item row="7" column="0" colspan="2">
-      <widget class="QPushButton" name="pushButton_deactivate">
+     <item row="0" column="2">
+      <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>Deactivate (debug)</string>
+        <string>electrons</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QSpinBox" name="spinBox_testPulsePeriod">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>1000000</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="spinBox_testPulseLength">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>1000000</number>
+       </property>
+       <property name="value">
+        <number>400</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>x 25 ns = ... ms</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Pixel spacing</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QSpinBox" name="spinBox_pixelSpacing">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>31</number>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="2">
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="minimumSize">
+        <size>
+         <width>120</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+       </property>
+       <property name="centerButtons">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>x 25 ns = ... ms</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QComboBox" name="comboBox_verbosity">
+       <item>
+        <property name="text">
+         <string>Low</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>High</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Test pulse period</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>1st DAC DISC</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>2nd DAC DISC</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QSpinBox" name="spinBox_2nd_DAC_DISC">
+       <property name="maximum">
+        <number>511</number>
+       </property>
+       <property name="value">
+        <number>150</number>
        </property>
       </widget>
      </item>
@@ -210,7 +264,6 @@ SHGM : ~1000 electrons minimum</string>
  </widget>
  <tabstops>
   <tabstop>spinBox_injectionCharge</tabstop>
-  <tabstop>comboBox_injectionChargeUnits</tabstop>
   <tabstop>spinBox_testPulseLength</tabstop>
   <tabstop>spinBox_testPulsePeriod</tabstop>
   <tabstop>spinBox_pixelSpacing</tabstop>

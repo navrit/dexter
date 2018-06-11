@@ -716,6 +716,13 @@ void QCstmEqualization::StartEqualization() {
     // how many chips to equalize
     unsigned long chipListSize = _workChipsIndx.size();
 
+    if (testPulseEqualisationDialog != nullptr) {
+         defaultNoiseEqualisationTarget = testPulseEqualisationDialog->getEqualisationTarget();
+         DAC_DISC_1_value = testPulseEqualisationDialog->get_1st_DAC_DISC_val();
+         DAC_DISC_2_value = testPulseEqualisationDialog->get_2nd_DAC_DISC_val();
+    }
+
+
     // Preliminary) Find out the equalization range
 
     // First) DAC_Disc Optimization
@@ -733,7 +740,9 @@ void QCstmEqualization::StartEqualization() {
         for ( unsigned long i = 0 ; i < chipListSize ; i++ ) {
             Configuration(_workChipsIndx[i], _steeringInfo[i]->currentTHx, true);
             _steeringInfo[i]->globalAdj = 0;
-            _steeringInfo[i]->currentDAC_DISC_OptValue = 100; // for now make the opt value equal to the test value
+            _steeringInfo[i]->currentDAC_DISC_OptValue = int(DAC_DISC_1_value); // for now make the opt value equal to the test value
+            //! Default = 100 for noise (SLGM)
+            qDebug() << "[INFO]\tCurrent DAC DISC Value [" << i << "] =" << _steeringInfo[i]->currentDAC_DISC_OptValue;
         }
 
         _spacing = 1; //! Need to have _spacing = 1 until __PrepareInterpolation_0x0
@@ -753,8 +762,9 @@ void QCstmEqualization::StartEqualization() {
             // Show the results
             DAC_Disc_Optimization_DisplayResults( _scans[_scanIndex - 1]->GetScanResults(_workChipsIndx[i]) );
             // New text value
-            _steeringInfo[i]->currentDAC_DISC_OptValue = 150; // for now make the opt value equal to the test value
-
+            _steeringInfo[i]->currentDAC_DISC_OptValue = int(DAC_DISC_2_value); // for now make the opt value equal to the test value
+            //! Default = 150 for noise (SLGM)
+            qDebug() << "[INFO]\tCurrent DAC DISC Value [" << i << "] =" << _steeringInfo[i]->currentDAC_DISC_OptValue;
         }
 
         // And go for next scan
@@ -2055,7 +2065,7 @@ void QCstmEqualization::estimateEqualisationTarget()
         SetMinScan( 511 );
         SetMaxScan( 0 );
 
-        ChangeStep( 1 );
+        ChangeStep( 2 );
 
         ThlScan * tscan_opt_testPulses = new ThlScan(_mpx3gui, this);
         tscan_opt_testPulses->ConnectToHardware(spidrcontrol, spidrdaq);

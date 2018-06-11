@@ -339,6 +339,8 @@ void ThlScan::FineTuning() {
     int progressMax = _numberOfLoops;
     int idDataFetch = _mpx3gui->getConfig()->getDataBufferId( _deviceIndex ); // Note: The data buffer id doesn't necessarily corresponds to _deviceIndex
 
+    _stepScan = 1;
+
     if ( _numberOfLoops < 0 ) progressMax = _spacing * _spacing;
 
     qDebug() << "[INFO] [Fine Tuning] Run a Scan. devIndex:" << _deviceIndex << " | databuffer:" << idDataFetch << "\n";
@@ -364,6 +366,7 @@ void ThlScan::FineTuning() {
         file_fineTuningStats << adjLoops;
         if (_testPulses) {
             _spacing = int(_equalization->testPulseEqualisationDialog->getPixelSpacing());
+            progressMax = _spacing * _spacing;
         }
 
         //! Iterate through x then y
@@ -414,9 +417,28 @@ void ThlScan::FineTuning() {
                 //!    after making the adjustment bit shift
                 RewindReactionCounters( _scheduledForFineTuning );
 
-                //! Use the limits detected in the previous scan
-                _minScan = GetDetectedLowScanBoundary();
-                _maxScan = GetDetectedHighScanBoundary();
+                //! Use the limits based on chips
+                QList<int> scanEqTargets;
+                QList<double> scanSigmas;
+
+                for ( int devId = 0 ; devId < int(_workChipsIndx.size()) ; devId++ ) {
+                    if (GetScanResults(devId) != nullptr ) {
+                        scanEqTargets.append(GetScanResults(devId)->equalisationTarget);
+                        scanSigmas.append(GetScanResults(devId)->sigma);
+                    }
+                }
+                qSort(scanEqTargets.begin(), scanEqTargets.end());
+                qSort(scanSigmas.begin(), scanSigmas.end());
+
+                _minScan =  scanEqTargets.first() - int(ceil(3.7*scanSigmas.last()));
+                _maxScan =  scanEqTargets.last()  + int(ceil(3.7*scanSigmas.last()));
+                if ( _minScan < 0 ) {
+                    _minScan = 0;
+                }
+                if (_maxScan > 511 ) {
+                    _maxScan = 511;
+                }
+                //qDebug() << "[INFO]\t Scanning range" << _minScan << "-" << _maxScan;
 
                 //! Scan iterator observing direction
                 _pixelReactiveInScan = 0;
@@ -493,13 +515,6 @@ void ThlScan::FineTuning() {
                         if ( doReadFrames ) {
                             FillAdjReactTHLHistory(); // Keep track of the <adj, reactTHL> pairs
                             UpdateHeatMapSignal(_fullsize_x, _fullsize_y);
-
-                            // Last scan boundaries
-                            // This information could be useful for a next scan
-                            if ( _pixelReactiveInScan != 0 ) {
-                                if ( _thlItr < _detectedScanBoundary_L ) _detectedScanBoundary_L = _thlItr;
-                                if ( _thlItr > _detectedScanBoundary_H ) _detectedScanBoundary_H = _thlItr;
-                            }
                         }
                     }
 
@@ -514,6 +529,12 @@ void ThlScan::FineTuning() {
                     disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelNPixelsReactive, SLOT( setText(QString)) );
                     // ---------------------------------------------------------
 
+                    // Last scan boundaries
+                    // This information is for the next scan
+                    if ( _pixelReactiveInScan != 0 ) {
+                        if ( _thlItr < _detectedScanBoundary_L ) _detectedScanBoundary_L = _thlItr;
+                        if ( _thlItr > _detectedScanBoundary_H ) _detectedScanBoundary_H = _thlItr;
+                    }
 
                     //! Increment or decrement
                     if( _equalization->isScanDescendant() ) _thlItr -= _stepScan;

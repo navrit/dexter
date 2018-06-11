@@ -299,7 +299,9 @@ private:
     int gainMode = 3;
     bool testPulseMode = false;
 
-    const int defaultNoiseEqualisationTarget = 10;
+    uint defaultNoiseEqualisationTarget = 10;
+    uint DAC_DISC_1_value = 100;
+    uint DAC_DISC_2_value = 150;
 
     void resetForNewEqualisation();
 

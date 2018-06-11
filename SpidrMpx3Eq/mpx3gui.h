@@ -66,7 +66,7 @@ class zmqController;
 #define JSON_FILES "BH JSON file(*.json)"
 
 const QString _softwareName = "ASI Dexter";
-const QString _softwareVersion = "1.9.2";
+const QString _softwareVersion = "1.9.3";
 
 #include <stdio.h>
 #include <QCoreApplication>
@@ -82,7 +82,7 @@ class Mpx3GUI : public QMainWindow {
 
 public:
 
-    explicit Mpx3GUI(QWidget *parent = 0);
+    explicit Mpx3GUI(QWidget *parent = nullptr);
     ~Mpx3GUI();
     void SetupSignalsAndSlots();
     Ui::Mpx3GUI * GetUI() { return _ui; }

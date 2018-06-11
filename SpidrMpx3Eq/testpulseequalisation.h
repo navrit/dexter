@@ -27,6 +27,9 @@ public:
     uint getInjectionChargInElectrons() { return config.injectionChargeInElectrons; }
     uint getTestPulseLength() { return config.testPulseLength; }
     uint getTestPulsePeriod() { return config.testPulsePeriod; }
+    uint getEqualisationTarget() { return config.equalisationTarget; }
+    uint get_1st_DAC_DISC_val() { return config.DAC_DISC_1; }
+    uint get_2nd_DAC_DISC_val() { return config.DAC_DISC_2; }
     void turnOffAllCTPRs(SpidrController *spidrcontrol, int chipID, bool submit);
 
 signals:
@@ -47,6 +50,10 @@ private slots:
     void on_pushButton_activate_clicked();
     void on_pushButton_deactivate_clicked();
 
+    void on_spinBox_equalisationTarget_valueChanged(int arg1);
+    void on_spinBox_1st_DAC_DISC_valueChanged(int arg1);
+    void on_spinBox_2nd_DAC_DISC_valueChanged(int arg1);
+
 private:
     Mpx3GUI * _mpx3gui = nullptr;
     Ui::testPulseEqualisation *ui = nullptr;
@@ -55,7 +62,7 @@ private:
 
     const float maximumInjectionVoltage = 0.975; //! over linear range
     const int maximumInjectionElectrons = 30431; //! over linear range, assuming 5fF exactly and maximum voltage injection (over linear range)
-    const int maximumInjectionKeV = maximumInjectionElectrons / 3.62; //! Assuming near room temperature
+    const int maximumInjectionKeV = maximumInjectionElectrons / 3.62; //! Assuming near room temperature for Si
 
     const double e = 1.6021766208e-19;
     const double c_test = 5e-15;
@@ -67,9 +74,15 @@ private:
         uint injectionChargeInElectrons = 2222;     //! Electrons by default
         uint testPulseLength = 400;                 //! DAC units, so 40 x 25 ns = 10 microseconds
                                                     //!    Length of the test pulses in 25 ns units
-        uint testPulsePeriod = 1000;               //! DAC units, so 40000 x 25ns = 1ms.
+        uint testPulsePeriod = 1000;                //! DAC units, so 40000 x 25ns = 1ms.
                                                     //!    Period between TP Switch pulses in 25 ns units
-        uint pixelSpacing = 2;                      //! Pixel spacing, where 1 is the minimum --> no gaps
+        uint pixelSpacing = 4;                      //! Pixel spacing, where 1 is the minimum --> no gaps
+
+                                                    //! These defaults give 200 test pulses per pixel
+
+        uint equalisationTarget = 10;
+        uint DAC_DISC_1 = 100;
+        uint DAC_DISC_2 = 150;
     } config;
 
     struct testPulseDACconfig {
@@ -87,11 +100,11 @@ private:
     enum {
         LOW,
         HIGH
-    } verbosity;                     //! LOW for text only, HIGH for text + ASCII graph output
+    } verbosity;                     //! LOW for text only or none?, HIGH for text + ASCII graph output
 
     QVector<int> activeChips;
 
-    bool estimate_V_TP_REF_AB(uint electrons, bool makeDialog);      //! This should fail if requested charge cannot be injected.
+    bool estimate_V_TP_REF_AB(uint electrons);      //! This should fail if requested charge cannot be injected.
     uint setDACToVoltage(int chipID, int dacCode, double V);
     void SetDAC_propagateInGUI(int devId, int dac_code, int dac_val );
 

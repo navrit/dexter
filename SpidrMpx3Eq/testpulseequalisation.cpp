@@ -14,11 +14,11 @@ testPulseEqualisation::testPulseEqualisation(Mpx3GUI * mg, QWidget *parent) :
     this->setWindowTitle( tr("Test pulses configuration") );
 
     //! Set UI to whatever the header file initialises them as
-    ui->spinBox_injectionCharge->setValue( config.injectionChargeInElectrons );
-    ui->comboBox_injectionChargeUnits->setCurrentIndex( injectionChargeUnits );
-    ui->spinBox_testPulseLength->setValue( config.testPulseLength );
-    ui->spinBox_testPulsePeriod->setValue( config.testPulsePeriod );
-    ui->spinBox_pixelSpacing->setValue( config.pixelSpacing );
+    ui->spinBox_injectionCharge->setValue( int(config.injectionChargeInElectrons) );
+    ui->spinBox_testPulseLength->setValue( int(config.testPulseLength) );
+    ui->spinBox_testPulsePeriod->setValue( int(config.testPulsePeriod) );
+    ui->spinBox_pixelSpacing->setValue( int(config.pixelSpacing) );
+    ui->spinBox_equalisationTarget->setValue( int(config.equalisationTarget) );
     ui->comboBox_verbosity->setCurrentIndex( verbosity );
     ui->checkBox_setDACs->setChecked( setDACs );
 
@@ -49,9 +49,9 @@ bool testPulseEqualisation::activate(int startPixelOffset)
         QMap<int, Mpx3EqualizationResults *>  eqMap_L = _equalisation->getEqMap();
         QMap<int, Mpx3EqualizationResults *>  eqMap_H = _equalisation->getEqMap();
 
-        spidrcontrol->setTpFrequency(true, config.testPulsePeriod, config.testPulseLength);
-        spidrcontrol->setSpidrReg(0x10C0, config.testPulsePeriod, true);
-        spidrcontrol->setSpidrReg(0x10BC, config.testPulseLength, true);
+        spidrcontrol->setTpFrequency(true, int(config.testPulsePeriod), int(config.testPulseLength));
+        spidrcontrol->setSpidrReg(0x10C0, int(config.testPulsePeriod), true);
+        spidrcontrol->setSpidrReg(0x10BC, int(config.testPulseLength), true);
 
         for ( int chipID = 0; chipID < activeChips.size(); chipID++ ) {
             pair<int, int> pix;
@@ -153,24 +153,38 @@ bool testPulseEqualisation::deactivate()
 
 void testPulseEqualisation::on_spinBox_injectionCharge_valueChanged(int arg1)
 {
-    config.injectionChargeInElectrons = arg1;
+    config.injectionChargeInElectrons = uint(arg1);
 }
 
 void testPulseEqualisation::on_spinBox_testPulseLength_valueChanged(int arg1)
 {
-    config.testPulseLength = arg1;
+    config.testPulseLength = uint(arg1);
 }
 
 void testPulseEqualisation::on_spinBox_testPulsePeriod_valueChanged(int arg1)
 {
-    config.testPulsePeriod = arg1;
+    config.testPulsePeriod = uint(arg1);
 }
 
 void testPulseEqualisation::on_spinBox_pixelSpacing_valueChanged(int arg1)
 {
-    config.pixelSpacing = arg1;
+    config.pixelSpacing = uint(arg1);
 }
 
+void testPulseEqualisation::on_spinBox_equalisationTarget_valueChanged(int arg1)
+{
+    config.equalisationTarget = uint(arg1);
+}
+
+void testPulseEqualisation::on_spinBox_1st_DAC_DISC_valueChanged(int arg1)
+{
+    config.DAC_DISC_1 = uint(arg1);
+}
+
+void testPulseEqualisation::on_spinBox_2nd_DAC_DISC_valueChanged(int arg1)
+{
+    config.DAC_DISC_2 = uint(arg1);
+}
 void testPulseEqualisation::on_comboBox_verbosity_currentIndexChanged(int index)
 {
     qDebug() << "[INFO]\tChanged test pulse verbosity to :" << index << "--> 0 is LOW, 1 is HIGH";
@@ -183,7 +197,7 @@ void testPulseEqualisation::on_comboBox_verbosity_currentIndexChanged(int index)
     }
 }
 
-bool testPulseEqualisation::estimate_V_TP_REF_AB(uint electrons, bool makeDialog)
+bool testPulseEqualisation::estimate_V_TP_REF_AB(uint electrons)
 {
     //! Set V_TP_REF and V_TP_REF(A/B) based on measurements
     //!
@@ -364,7 +378,7 @@ void testPulseEqualisation::turnOffAllCTPRs(SpidrController *spidrcontrol, int c
 void testPulseEqualisation::on_buttonBox_accepted()
 {   
     if (setDACs) {
-        if ( estimate_V_TP_REF_AB( config.injectionChargeInElectrons, true ) ) {
+        if ( estimate_V_TP_REF_AB( config.injectionChargeInElectrons ) ) {
             qDebug() << "[INFO]\tDACs set according to test pulse equalisation GUI";
         } else {
             qDebug() << "[FAIL]\tCould not set DACs according to test pulse equalisation GUI";
@@ -388,7 +402,6 @@ void testPulseEqualisation::on_checkBox_setDACs_toggled(bool checked)
 
 void testPulseEqualisation::on_pushButton_activate_clicked()
 {
-    //initialise();
     spidrcontrol = _mpx3gui->GetSpidrController();
     _equalisation = _mpx3gui->getEqualization();
     activeChips = _mpx3gui->getConfig()->getActiveDevices();
