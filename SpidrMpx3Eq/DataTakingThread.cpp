@@ -79,6 +79,9 @@ void DataTakingThread::ConnectToHardware() {
 
 void DataTakingThread::run() {
 
+    typedef std::chrono::high_resolution_clock Time;
+    typedef std::chrono::nanoseconds ns;
+
     // Open a new temporary connection to the spider to avoid collisions to the main one
     int ipaddr[4] = { 1, 1, 168, 192 };
     if( _srcAddr != 0 ) {
@@ -214,6 +217,8 @@ void DataTakingThread::run() {
                 continue;
             }
 
+            //! T0 - Start of while loop to here : < 0.1% time
+            //! --------------------------
             // An emergency stop when the consumer thread can't keep up
             if ( _consumer->freeFrames->available() < halfSemaphoreSize ) {
                 qDebug() << " ... try to stop ";
@@ -228,18 +233,35 @@ void DataTakingThread::run() {
                 }
                 emergencyStop = true;
             }
+            //! T0-T1 < 0.1% time
+            //! --------------------------
 
+            QVector<int> v1;
+            QVector<int> v2;
+            QVector<int> v3;
+            QVector<int> v4;
             // Read data
-            oneFrameChipCntr = 0;
-            for ( int i = 0 ; i < nChips ; i++ ) {
+            oneFrameChipCntr = 0;          
+            for ( uint i = 0 ; i < nChips ; i++ ) {
                 // retreive data for a given chip
-                framedata = spidrdaq->frameData(i, &size_in_bytes);
+                //auto t1 = Time::now();
+                framedata = spidrdaq->frameData(i, &size_in_bytes); //! < 0.1% time
                 //clearToCopy = true;
-                _consumer->freeFrames->acquire();
-                _consumer->copydata( framedata, size_in_bytes );
-                _consumer->usedFrames->release();
+                //auto t2 = Time::now(); v1.append( std::chrono::duration_cast<ns>(t2 - t1).count());
+
+                _consumer->freeFrames->acquire(); //! < 0.1% time
+                //auto t3 = Time::now(); v2.append( std::chrono::duration_cast<ns>(t3 - t2).count());
+
+                _consumer->copydata( framedata, size_in_bytes ); //! 99+% time
+                //auto t4 = Time::now(); v3.append( std::chrono::duration_cast<ns>(t4 - t3).count());
+
+                _consumer->usedFrames->release(); //! < 0.1% time
+                //auto t5 = Time::now(); v4.append( std::chrono::duration_cast<ns>(t5 - t4).count());
+
                 oneFrameChipCntr++;
             }
+            //! T1-T2  93-98% time
+            //! --------------------------
 
             // Release frame
             spidrdaq->releaseFrame();
@@ -255,17 +277,18 @@ void DataTakingThread::run() {
 
             lostPackets += spidrdaq->lostCount();
 
-            //! TODO Make this work as intended
-//            if ( (oneFrameChipCntr != nChips) || (lostPackets > 0 && _vis->getDropFrames()) ) {
-//                for ( unsigned int i = 0 ; i < oneFrameChipCntr ; i++ ) {
-//                    qDebug() << "Rewind >> " << i; // 0,1,2,3
-//                    // Free the resources and rewind descriptor
-//                    _consumer->usedFrames->acquire();
-//                    _consumer->rewindcopydata(size_in_bytes);
-//                    _consumer->freeFrames->release();
-//                }
-//                //qDebug() << " !!! REWIND !!! [" << oneFrameChipCntr << "]";
-//            }
+            if ( (oneFrameChipCntr != nChips) || (lostPackets > 0 && _vis->getDropFrames()) ) {
+                for ( unsigned int i = 0 ; i < oneFrameChipCntr ; i++ ) {
+                    //qDebug() << "Rewind >> " << i; // 0,1,2,3
+                    // Free the resources and rewind descriptor
+                    _consumer->usedFrames->acquire();
+                    _consumer->rewindcopydata(size_in_bytes);
+                    _consumer->freeFrames->release();
+                }
+                //qDebug() << " !!! REWIND !!! [" << oneFrameChipCntr << "]";
+            }
+            //! T2-T3  ~0.4-2.2% time
+            //! --------------------------
 
             // If we are working with 2 counters, go get
             // the second frame associated before it continues.
@@ -274,6 +297,9 @@ void DataTakingThread::run() {
 
             // Awake the consumer thread
             _consumer->consume();
+
+            //! T3-T4  ~0.1-0.2% time
+            //! --------------------------
 
             // Keep a local count of number of frames
             nFramesReceived++;
@@ -293,7 +319,9 @@ void DataTakingThread::run() {
 
             spidrdaq->resetLostCount();
 
-            /////////////////////////////////////////////
+            //! T4-T5  ~1-5% time
+            //! --------------------------
+
             // How to stop in ContRW
             // 1) See Note 1 at the bottom
             //  note than score.framesRequested=0 when asking for infinite frames
@@ -304,6 +332,16 @@ void DataTakingThread::run() {
                 reachLimitStop = true;
             }
 
+            //! T5-T6 < 0.1% time
+            //! --------------------------
+
+            /*for (int i=0; i< v1.size(); i++){
+              double sum = v1[i] + v2[i] + v3[i] + v4[i];
+              qDebug() << v1[i]/sum*100 << "%  "
+                       << v2[i]/sum*100 << "%  "
+                       << v3[i]/sum*100 << "%  "
+                       << v4[i]/sum*100 << "%";
+            }*/
         }
 
         _consumer->consume();

@@ -171,7 +171,7 @@ int Dataset::getLayerIndex(int threshold){
 QByteArray Dataset::toByteArray() {
 
     // 68 bit header start offset
-    QByteArray ret(0);
+    QByteArray ret(nullptr);
     ret += QByteArray::fromRawData((const char*)&m_nx, (int)sizeof(m_nx));
     ret += QByteArray::fromRawData((const char*)&m_ny, (int)sizeof(m_ny));
     ret += QByteArray::fromRawData((const char*)&m_nFrames, (int)sizeof(m_nFrames));

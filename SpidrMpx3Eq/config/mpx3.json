@@ -119,7 +119,7 @@
     ],
     "DetectorConfig": {
         "BiasVoltage": 100,
-        "BothCounters": true,
+        "BothCounters": false,
         "ColourMode": false,
         "ContRWFreq": 100,
         "CsmSpm": 0,
@@ -134,6 +134,12 @@
         "TriggerLength_us": 20000,
         "TriggerMode": 4,
         "nTriggers": 100
+    },
+    "IDELAYConfig": {
+        "chip_0": 15,
+        "chip_1": 15,
+        "chip_2": 15,
+        "chip_3": 10
     },
     "IPConfig": {
         "SpidrControllerIp": "192.168.100.10",

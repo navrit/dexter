@@ -87,7 +87,7 @@ void DataConsumerThread::consume()
                   );
 
         // Start !
-        start( TimeCriticalPriority );
+        start( HighestPriority );
 
     } else {
         _restart = true;
@@ -99,12 +99,13 @@ void DataConsumerThread::copydata(int * source, size_t num )
 {
 
     memcpy( buffer + descriptor, source, num );
+
     descriptor += num/4;            // 4 bytes per integer
 
     // rewind descriptor -- circular buffer
     if ( descriptor >= _bufferSize ) {
         descriptor = 0;
-        //qDebug() << " ... circ buffer ... ";
+        qDebug() << " ... circ buffer ... ";
     }
 }
 
@@ -170,8 +171,8 @@ void DataConsumerThread::run()
             if ( descriptor >= readdescriptor) descriptorDistance = descriptor - readdescriptor;
             //
             else {  // This should only happen when we went around the circ buffer
-                //descriptorDistance = _bufferSize - readdescriptor + descriptor;
-                //qDebug() << " ACK CIRC ";
+                descriptorDistance = _bufferSize - readdescriptor + descriptor;
+                qDebug() << " ACK CIRC ";
             }
 
             // If the distance is not a full frame, the consumer needs to wait until
@@ -223,7 +224,7 @@ void DataConsumerThread::run()
                 }
 
                 // Add the corresponding layers
-                if ( _colordata != 0 ) {
+                if ( _colordata != nullptr ) {
                     for ( int i = 0 ; i < __max_colors ; i+= delvrCounters ) {
                         _mpx3gui->addLayer( _colordata[i], i );
                     }
