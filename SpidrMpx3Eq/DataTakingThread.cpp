@@ -120,10 +120,10 @@ void DataTakingThread::run() {
     connect( this, &DataTakingThread::bufferFull,
              _vis, &QCstmGLVisualization::consumerBufferFull );
 
-    int timeOutTime = 0;
+    unsigned long timeOutTime = 0;
     int contRWFreq = 0;
     QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
-    unsigned int nChips = activeDevices.size();
+    int nChips = activeDevices.size();
     int * framedata = nullptr;
     int opMode = Mpx3Config::__operationMode_SequentialRW;
 
@@ -151,15 +151,24 @@ void DataTakingThread::run() {
         // After a start or restart
         _mutex.lock();
         datataking_score_info score = _score;
-        timeOutTime = _mpx3gui->getConfig()->getTriggerLength_ms()
-                +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
-                + 10; // ms
-        //! May wish to use 10000 for trigger mode testing
         opMode = _mpx3gui->getConfig()->getOperationMode();
         contRWFreq = _mpx3gui->getConfig()->getContRWFreq();
+
+        //! May wish to use 10000 for trigger mode testing
+        int overhead = 20; // ms
+
+        if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
+            timeOutTime = uint((1/contRWFreq) //! Eg. 100 Hz --> 1/100 s = 10 ms
+                                + overhead);
+        } else {
+            timeOutTime = uint(_mpx3gui->getConfig()->getTriggerLength_ms()
+                                +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
+                                + overhead);
+        }
+
         // dropFrames --> will use --> _vis->getDropFrames();
         //  since the user may want to activate/deactivate during data taking.
-        halfSemaphoreSize = _consumer->getSemaphoreSize()/2.;
+        halfSemaphoreSize = uint(_consumer->getSemaphoreSize()/2.);
         bothCounters = _mpx3gui->getConfig()->getReadBothCounters();
         //qDebug() << score.framesRequested << " | " << opMode << " | " << contRWFreq;
         totalFramesExpected = score.framesRequested;
@@ -202,7 +211,7 @@ void DataTakingThread::run() {
             if ( _stop ||  _restart  ) {
                 if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
                     spidrcontrol->stopContReadout();
-                } else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
+                } else { //if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
                     spidrcontrol->stopAutoTrigger();
                 }
             }
@@ -219,6 +228,7 @@ void DataTakingThread::run() {
 
             //! T0 - Start of while loop to here : < 0.1% time
             //! --------------------------
+
             // An emergency stop when the consumer thread can't keep up
             if ( _consumer->freeFrames->available() < halfSemaphoreSize ) {
                 qDebug() << " ... try to stop ";
@@ -240,6 +250,7 @@ void DataTakingThread::run() {
             QVector<int> v2;
             QVector<int> v3;
             QVector<int> v4;
+
             // Read data
             oneFrameChipCntr = 0;          
             for ( uint i = 0 ; i < nChips ; i++ ) {
