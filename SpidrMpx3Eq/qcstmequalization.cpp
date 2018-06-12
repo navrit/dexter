@@ -1204,22 +1204,23 @@ void QCstmEqualization::DAC_Disc_Optimization (int devId, ScanResults * res_100,
 
 void QCstmEqualization::SaveEqualization(QString path) {
 
-    QString filenameEqualisation;
+    QString filenameEqualisation = "";
+    QString _path = path;
 
-    if (path == "") {
+    if (_path == "") {
         //! Get folder to save equalisation files to
-        QString path = QFileDialog::getExistingDirectory(this, tr("Open Directory to save equalisations to"),
+        _path = QFileDialog::getExistingDirectory(this, tr("Open Directory to save equalisations to"),
                                                          QDir::currentPath(),
                                                          QFileDialog::ShowDirsOnly);
         //! User pressed cancel, offer another go at saving
-        if (path.isEmpty()){
+        if (_path.isEmpty()){
             QMessageBox::StandardButton reply;
             reply = QMessageBox::warning(this,
                                          tr("Warning"),
                                          tr("Are you sure you do not want to save equalisations and config files?"),
                                          QMessageBox::Save|QMessageBox::Cancel);
             if (reply == QMessageBox::Save) {
-                path = QFileDialog::getExistingDirectory(this,
+                _path = QFileDialog::getExistingDirectory(this,
                                                          tr("Open Directory to save equalisations to"),
                                                          QDir::currentPath(),
                                                          QFileDialog::ShowDirsOnly);
@@ -1228,12 +1229,14 @@ void QCstmEqualization::SaveEqualization(QString path) {
                 return;
             }
         }
-        path.append(QDir::separator());
-        filenameEqualisation = path;
-        filenameEqualisation.append("config.json");
+    }
+
+    _path.append(QDir::separator());
+    filenameEqualisation = _path;
+
+    if (path == "") {
+        filenameEqualisation.append("config.json"); //! Ie. all chips
     } else {
-        path.append(QDir::separator());
-        filenameEqualisation = path;
         filenameEqualisation.append( QString("config-chip%1.json").arg(_deviceIndex) );
     }
 
@@ -1242,23 +1245,15 @@ void QCstmEqualization::SaveEqualization(QString path) {
     //! Save equalisations with DACs when you run an equalisation
     _mpx3gui->getConfig()->toJsonFile(filenameEqualisation, true);
 
-    int chipListSize = (int)_workChipsIndx.size();
+    unsigned long chipListSize = _workChipsIndx.size();
 
-    //! Build adj and mask filename+path strings and save them
-    for ( int i = 0 ; i < chipListSize ; i++ ) {
-
-        QString adjfn = path;
-        adjfn += "adj_";
-        adjfn += QString::number(_workChipsIndx[i], 10);
-
-        QString maskfn = path;
-        maskfn += "mask_";
-        maskfn += QString::number(_workChipsIndx[i], 10);
-
+    //! Save adj and mask path+filename strings and save them
+    for ( unsigned long i = 0 ; i < chipListSize ; i++ ) {
         // Binary file
-        _eqMap[_workChipsIndx[i]]->WriteAdjBinaryFile( adjfn );
+        _eqMap[_workChipsIndx[i]]->WriteAdjBinaryFile( QString( _path + "adj_" + QString::number(_workChipsIndx[i])) );
+
         // Masked pixels
-        _eqMap[_workChipsIndx[i]]->WriteMaskBinaryFile( maskfn );
+        _eqMap[_workChipsIndx[i]]->WriteMaskBinaryFile( QString( _path + "mask_" + QString::number(_workChipsIndx[i])) );
     }
 
     resetForNewEqualisation();
