@@ -835,8 +835,6 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     // Defaults
     emit mode_changed( ui->summingCheckbox->isChecked() );
 
-    connect( ui->saveCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_saveCheckBox_clicked()));
-
     // CT stuff
     connect( this, SIGNAL(sig_resumeCT()), _mpx3gui->getCT(), SLOT(resumeCT()));
 
@@ -2147,6 +2145,7 @@ void QCstmGLVisualization::on_saveCheckBox_clicked(){
             //! If user selected nothing, path comes back empty (or "/" ?)
             if(path.isEmpty()){
                 ui->saveCheckBox->setChecked(0);
+                ui->saveAllCheckBox->setChecked(0);
                 ui->saveLineEdit->clear();
             }
 
