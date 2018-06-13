@@ -47,7 +47,7 @@ DataTakingThread::~DataTakingThread() {
 
     wait(); // wait 'til run has exited before the base class destructor is invoked
 
-    qDebug() << "   DataTakingThread finished";
+    //qDebug() << "   DataTakingThread finished";
 
 }
 
@@ -57,7 +57,7 @@ void DataTakingThread::takedata() {
 
     if ( ! isRunning() ) {
         _stop = false;
-        start( TimeCriticalPriority );
+        start( HighestPriority );
     } else {
         _stop = false;
         _restart = true;
@@ -246,14 +246,14 @@ void DataTakingThread::run() {
             //! T0-T1 < 0.1% time
             //! --------------------------
 
-            QVector<int> v1;
+            /*QVector<int> v1;
             QVector<int> v2;
             QVector<int> v3;
-            QVector<int> v4;
+            QVector<int> v4;*/
 
             // Read data
             oneFrameChipCntr = 0;          
-            for ( uint i = 0 ; i < nChips ; i++ ) {
+            for ( int i = 0 ; i < nChips ; i++ ) {
                 // retreive data for a given chip
                 //auto t1 = Time::now();
                 framedata = spidrdaq->frameData(i, &size_in_bytes); //! < 0.1% time

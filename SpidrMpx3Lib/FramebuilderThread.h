@@ -32,7 +32,7 @@ class FramebuilderThread : public QThread
 
  public:
   FramebuilderThread( std::vector<ReceiverThread *> recvrs,
-                    QObject *parent = 0 );
+                    QObject *parent = nullptr );
   virtual ~FramebuilderThread();
 
   void   stop();

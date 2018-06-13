@@ -119,7 +119,7 @@ Dataset::Dataset( const Dataset& other ):
         for(unsigned int j = 0; j < getPixelsPerLayer(); j++)
             m_layers[i][j] = other.m_layers[i][j];
     }
-    obCorrection = 0x0;
+    obCorrection = nullptr;
 }
 
 /*!

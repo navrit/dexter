@@ -53,7 +53,7 @@ class MY_LIB_API SpidrDaq
   bool      hasFrame            ( unsigned long timeout_ms = 0 );
   int      *frameData           ( int  index,
                                   int *size_in_bytes,
-                                  int *lost_count = 0 );
+                                  int *lost_count = nullptr );
   void      releaseFrame        ( );
   void      clearFrameData      ( int index );
   int       frameShutterCounter ( int index = -1 );

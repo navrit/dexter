@@ -58,7 +58,6 @@ public:
 
     QVector<int> getData(int layer);
 
-    void run2();
 
     void takedata();
 

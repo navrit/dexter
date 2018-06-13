@@ -9,7 +9,7 @@ class FramebuilderThreadC : public FramebuilderThread
 
  public:
   FramebuilderThreadC( std::vector<ReceiverThread *> recvrs,
-                    QObject *parent = 0 );
+                    QObject *parent = nullptr );
   virtual ~FramebuilderThreadC();
 
   virtual void processFrame();

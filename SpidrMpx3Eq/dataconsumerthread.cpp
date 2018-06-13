@@ -172,12 +172,12 @@ void DataConsumerThread::run()
                 descriptorDistance = descriptor - readdescriptor;
 
                 // If the distance is not a full frame, the consumer needs to wait until
-                //  the produces wakes him up again.  It could be that the consumer is running
+                //  the producer wakes him up again.  It could be that the consumer is running
                 //  too fast.
                 // Or less than 4 chips have been produced in this loop...
-                // Maybe itshouldn't be triggered until a whole frame has been made???
+                // Maybe it shouldn't be triggered until a whole frame has been made???
                 uint8_t chipID = uint8_t(descriptorDistance >> 16);
-                if ( chipID == 1 || chipID ==2 || chipID == 3) {
+                if ( chipID == 1 || chipID == 2 || chipID == 3) {
                     break;
                 }
 
