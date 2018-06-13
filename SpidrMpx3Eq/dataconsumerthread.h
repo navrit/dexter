@@ -15,8 +15,8 @@ class DataConsumerThread : public QThread
 
 public:
 
-    explicit DataConsumerThread(Mpx3GUI *, QObject * parent = 0);
-    ~DataConsumerThread();
+    explicit DataConsumerThread(Mpx3GUI *, QObject * parent = nullptr);
+    virtual ~DataConsumerThread();
     void copydata(int * source, size_t num);
     void rewindcopydata(int nChipsRewind, size_t num);
     void rewindcopydata(size_t num);

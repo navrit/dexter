@@ -172,14 +172,14 @@ void DataConsumerThread::run()
             //
             else {  // This should only happen when we went around the circ buffer
                 descriptorDistance = _bufferSize - readdescriptor + descriptor;
-                qDebug() << " ACK CIRC ";
+                qDebug() << "[DEBUG] Went around ring buffer, dist:" << descriptorDistance;
             }
 
             // If the distance is not a full frame, the consumer needs to wait until
-            //  the produces wakes him up again.  It could be that the consumer is runing
+            //  the produces wakes him up again.  It could be that the consumer is running
             //  too fast.
             if ( descriptorDistance < _bufferSizeOneFrame ) {
-                //qDebug() << "   Shenkie in de koelkast !! --> " << descriptorDistance;
+                qDebug() << "   Shenkie in de koelkast !! --> " << descriptorDistance;
                 break;
             }
 
