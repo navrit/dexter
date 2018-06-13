@@ -28,7 +28,7 @@ class DataTakingThread : public QThread {
 
 public:
     explicit DataTakingThread(Mpx3GUI *, DataConsumerThread *, QObject * parent);
-    ~DataTakingThread();
+    virtual ~DataTakingThread();
     void ConnectToHardware();
     void SeparateThresholds(int id, int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
     pair<int, int> XtoXY(int X, int dimX);
