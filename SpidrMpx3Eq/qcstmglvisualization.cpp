@@ -1355,7 +1355,7 @@ void QCstmGLVisualization::active_frame_changed(){
     ui->glPlot->getPlot()->setActive(layer);
     ui->histPlot->setActive(layer);
 
-    BuildStatsStringCounts( _mpx3gui->getDataset()->getActivePixels(getActiveThreshold()) );
+    //! EXPENSIVE BuildStatsStringCounts( _mpx3gui->getDataset()->getActivePixels(getActiveThreshold()) );
     //ui->countsLabel->setText(QString("%1").arg(_mpx3gui->getDataset()->getActivePixels(getActiveThreshold())));
 
     if(ui->percentileRangeRadio->isChecked())

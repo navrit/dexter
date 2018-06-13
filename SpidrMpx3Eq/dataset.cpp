@@ -2401,9 +2401,11 @@ unsigned int Dataset::setLayer(int *data, int threshold){
 
     int layerIndex = getLayerIndex(threshold);
 
+    m_layers[layerIndex] = data;
+
     for(int i = 0; i < m_nFrames*m_nx*m_ny;i++) {
 
-        m_layers[layerIndex][i] = data[i];
+        //m_layers[layerIndex][i] = data[i];                                           //! EXPENSIVE line
         if ( data[i] >= m_pixelDepthCntr ) overflowCntr++;
 
     }
