@@ -33,7 +33,7 @@ public:
 
     QSemaphore * freeFrames;
     QSemaphore * usedFrames;
-    alignas (64) int * buffer = nullptr;
+    alignas (512) int * buffer = nullptr;
     uint descriptor = 0;
     uint readdescriptor = 0;
 
