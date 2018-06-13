@@ -168,20 +168,25 @@ void DataConsumerThread::run()
         while ( readdescriptor != descriptor ) {
 
             // Report how far are we from reaching the descriptor
-            if ( descriptor >= readdescriptor) descriptorDistance = descriptor - readdescriptor;
+            if ( descriptor >= readdescriptor) {
+                descriptorDistance = descriptor - readdescriptor;
+
+                // If the distance is not a full frame, the consumer needs to wait until
+                //  the produces wakes him up again.  It could be that the consumer is running
+                //  too fast.
+                // Or less than 4 chips have been produced in tihs run????
+                if ( descriptorDistance < _bufferSizeOneFrame ) {
+                    //qDebug() << "   Shenkie in de koelkast !! --> " << descriptorDistance << descriptorDistance/65536;
+                    break;
+                }
+            }
             //
             else {  // This should only happen when we went around the circ buffer
                 descriptorDistance = _bufferSize - readdescriptor + descriptor;
                 qDebug() << "[DEBUG] Went around ring buffer, dist:" << descriptorDistance;
             }
 
-            // If the distance is not a full frame, the consumer needs to wait until
-            //  the produces wakes him up again.  It could be that the consumer is running
-            //  too fast.
-            if ( descriptorDistance < _bufferSizeOneFrame ) {
-                qDebug() << "   Shenkie in de koelkast !! --> " << descriptorDistance;
-                break;
-            }
+
 
             // Check single or both counters
             if ( _mpx3gui->getConfig()->getReadBothCounters() ) {
