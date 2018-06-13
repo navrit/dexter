@@ -174,9 +174,15 @@ void DataConsumerThread::run()
                 // If the distance is not a full frame, the consumer needs to wait until
                 //  the produces wakes him up again.  It could be that the consumer is running
                 //  too fast.
-                // Or less than 4 chips have been produced in tihs run????
+                // Or less than 4 chips have been produced in this loop...
+                // Maybe itshouldn't be triggered until a whole frame has been made???
+                uint8_t chipID = uint8_t(descriptorDistance >> 16);
+                if ( chipID == 1 || chipID ==2 || chipID == 3) {
+                    break;
+                }
+
                 if ( descriptorDistance < _bufferSizeOneFrame ) {
-                    //qDebug() << "   Shenkie in de koelkast !! --> " << descriptorDistance << descriptorDistance/65536;
+                    qDebug() << "   Shenkie in de koelkast !! --> " << descriptorDistance;
                     break;
                 }
             }
