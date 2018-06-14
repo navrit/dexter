@@ -285,6 +285,9 @@ public slots:
             OperationMode = newVal; emit operationModeChanged(newVal);
             //updateOperationMode();
             SendConfiguration( __operationMode );
+            if (newVal == __operationMode_ContinuousRW) {
+                setReadBothCounters(false);
+            }
         }
 
     }

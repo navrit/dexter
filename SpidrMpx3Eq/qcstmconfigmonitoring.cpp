@@ -530,10 +530,15 @@ void QCstmConfigMonitoring::OperationModeSwitched(int indx)
         ui->triggerLengthSpinner->setEnabled( true );
         ui->triggerDowntimeSpinner->setEnabled( true );
         ui->contRWFreq->setEnabled( false );
+
+        ui->readBothCountersCheckBox->setEnabled( true );
     } else if ( indx == Mpx3Config::__operationMode_ContinuousRW ) {
         ui->triggerLengthSpinner->setEnabled( false );
         ui->triggerDowntimeSpinner->setEnabled( false );
         ui->contRWFreq->setEnabled( true );
+
+        ui->readBothCountersCheckBox->setChecked( false );
+        ui->readBothCountersCheckBox->setEnabled( false );
     }
 
 }
