@@ -113,7 +113,7 @@ private:
 
     // IP source address (SPIDR network interface)
     int _srcAddr;
-    int * _data;
+    int * _data = nullptr;
 
     bool scanContinue = true;
     bool abort = false;

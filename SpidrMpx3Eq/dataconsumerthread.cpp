@@ -189,7 +189,9 @@ void DataConsumerThread::run()
             //
             else {  // This should only happen when we went around the circ buffer
                 descriptorDistance = _bufferSize - readdescriptor + descriptor;
-                qDebug() << "[DEBUG] Went around ring buffer, dist:" << descriptorDistance;
+                /*if ( descriptorDistance != 262144 ) {
+                    qDebug() << "[DEBUG] Went around ring buffer, dist:" << descriptorDistance;
+                }*/
             }
 
 

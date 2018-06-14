@@ -1194,9 +1194,9 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
     // And keep a copy just as in QCstmGLVisualization::data_taking_finished
     if ( saveOriginal ) saveOriginalDataset();
 
-    if(getDataset()->getLayer(0)[0]==0) {
+    /*if(getDataset()->getLayer(0)[0] == 0) {
         qDebug() << "Mpx3GUI::open_data_with_path : "<< getDataset()->getLayer(0)[0];
-    }
+    }*/
 
     if(!requestPath) {
         emit returnFilename(filename);
