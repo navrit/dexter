@@ -28,7 +28,7 @@ Dataset::Dataset(int x, int y, int framesPerLayer, int pixelDepthBits)
     m_nFrames = 0;
     setFramesPerLayer(framesPerLayer);
 
-    obCorrection = 0x0;
+    obCorrection = nullptr;
 
     rewindScores();
 }
@@ -557,7 +557,8 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
 
 }
 
-QVector<int> Dataset::makeFrameForSaving(int threshold, bool crossCorrection, bool spatialOnly)
+//! Cheaper than expected
+int * Dataset::makeFrameForSaving(int threshold, bool crossCorrection, bool spatialOnly)
 {
     //----------------------------------------------------
     const int extraPixels       = 2;
@@ -569,8 +570,8 @@ QVector<int> Dataset::makeFrameForSaving(int threshold, bool crossCorrection, bo
     float edgePixelMagicNumberSpectroHorizontal = float(1.1);
 
     QList<int> thresholds = m_thresholdsToIndices.keys();
-    QVector<int> image(height*width);
-    QVector<int> imageCorrected(height*width);
+    int * image;//(height*width);
+    int * imageCorrected;//(height*width);
     //----------------------------------------------------
 
     if (spatialOnly){
@@ -794,6 +795,11 @@ QVector<int> Dataset::makeFrameForSaving(int threshold, bool crossCorrection, bo
             }
         }
     } else {
+
+        //! THIS METHOD SERIOUSLY SUCKS
+        //! BYPASS it with getFullImageAsArrayWithLayout()
+        //! for raw output
+
         width  = getWidth();
         height = getHeight();
 
@@ -2305,10 +2311,12 @@ int* Dataset::getFrame(int index, int threshold){
     }
 }
 
+//! Relatively cheap
 int* Dataset::getFrameAt(int index, int layer){
     return &m_layers[layer][index*m_nx*m_ny];
 }
 
+//! Can get EXPENSIVE
 int Dataset::getContainingFrame(QPoint pixel){
     QPoint layoutSample((pixel.x()+m_nx)/m_nx -1, (pixel.y()+m_ny)/m_ny-1);
     for(int i = 0; i < m_frameLayouts.length();i++){
@@ -2318,6 +2326,7 @@ int Dataset::getContainingFrame(QPoint pixel){
     return -1;
 }
 
+//! Can get EXPENSIVE
 QPoint Dataset::getNaturalCoordinates(QPoint pixel, int index){
     int x = pixel.x() % m_nx;
     int y = pixel.y() % m_ny;
@@ -2334,6 +2343,7 @@ QPoint Dataset::getNaturalCoordinates(QPoint pixel, int index){
     return QPoint(x,y);
 }
 
+//! Can get very EXPENSIVE
 int Dataset::sample(int x, int y, int threshold){
     int layerIndex = thresholdToIndex(threshold);
     if(layerIndex == -1)
@@ -2436,17 +2446,20 @@ int * Dataset::getLayer(int threshold){
     return m_layers[layerIndex];
 }
 
-/*int * Dataset::getFullImageAsArrayWithLayout(int threshold, Mpx3GUI * mpx3gui) {
+int * Dataset::getFullImageAsArrayWithLayout(int threshold,
+                                             std::vector<QPoint> frameLayouts,
+                                             std::vector<int> frameOrientation,
+                                             Mpx3Config * config) {
 
     // This two members carry all the information about the layout
-    // QVector<QPoint>  m_frameLayouts // positions in the pad
-    // QVector<int> m_frameOrientation // orientations
+    //QVector<QPoint>  m_frameLayouts // positions in the pad
+    //QVector<int> m_frameOrientation // orientations
 
     // I want the layout of the whole chip.  I will build it again
 
     int nChips = getNChipsX() * getNChipsY();
-    std::vector<QPoint> frameLayouts = mpx3gui->getLayout(); // Positions in the pad
-    std::vector<int> frameOrientation = mpx3gui->getOrientation(); // Orientations
+    //std::vector<QPoint> frameLayouts = mpx3gui->getLayout(); // Positions in the pad
+    //std::vector<int> frameOrientation = mpx3gui->getOrientation(); // Orientations
 
     // - Now work out the offsets
     QVector<QPoint> offsets;
@@ -2498,7 +2511,7 @@ int * Dataset::getLayer(int threshold){
 
         // - Get the layer
         // The data comes organized per chip.
-        dataIndx = mpx3gui->getConfig()->getIndexFromID(i);
+        dataIndx = config->getIndexFromID(i);
         if ( dataIndx >= 0 ) chipdata = getFrame( dataIndx , threshold);
         else chipdata = nullptr;
 
@@ -2564,7 +2577,7 @@ int * Dataset::getLayer(int threshold){
 
     return m_plainImageBuff;
 }
-*/
+
 
 
 /*

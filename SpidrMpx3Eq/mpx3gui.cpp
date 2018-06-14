@@ -1003,7 +1003,7 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
         for (int i = 0; i < thresholds.length(); i++) {
             int imageWidth = getDataset()->getWidth();
             QString tmpFilename = unmodifiedFilename;
-            QVector<int> frame;
+            int * frame;
 
             if (selectedFilter == SPATIAL_TIFF_FILES) {
                 frame = getDataset()->makeFrameForSaving(i, true, true);
@@ -1011,7 +1011,8 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
                 tmpFilename = tmpFilename.replace("_spatialCorrected.tiff", QString("-th"+ QString::number(thresholds[i]) +"_spatialCorrected.tiff"));
 
             } else if (selectedFilter == RAW_TIFF_FILES) {
-                frame = getDataset()->makeFrameForSaving(i, false);
+                //frame = getDataset()->makeFrameForSaving(i, false);
+                frame = getDataset()->getFullImageAsArrayWithLayout(i, getLayout(), getOrientation(), getConfig());
                 tmpFilename = tmpFilename.replace("_raw.tiff", QString("-th"+ QString::number(thresholds[i]) +"_raw.tiff"));
 
             } else if (selectedFilter == TIFF_FILES) {
@@ -1020,7 +1021,7 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
                 tmpFilename = tmpFilename.replace(".tiff", QString("-th"+ QString::number(thresholds[i]) +".tiff"));
 
             } else if (selectedFilter == BOTH_TIFF_FILES) {
-                frame = getDataset()->makeFrameForSaving(i, false);
+                frame = getDataset()->getFullImageAsArrayWithLayout(i, getLayout(), getOrientation(), getConfig());
                 tmpFilename = tmpFilename.replace("_both.tiff", QString("-th"+ QString::number(thresholds[i]) +"_raw.tiff"));
                 QtConcurrent::run( dataControllerThread, &DataControllerThread::saveTIFFParallel, tmpFilename, imageWidth, frame);
 

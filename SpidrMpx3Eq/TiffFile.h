@@ -11,6 +11,8 @@ public:
     explicit TiffFile(QObject *parent = nullptr);
     static bool saveToTiff32_512(const char* filePath, const int* pixels);
     static bool saveToTiff32_256(const char* filePath, const int* pixels);
+    static bool saveToTiff32_516(const char* filePath, const int* pixels);
+    static bool saveToTiff32_260(const char* filePath, const int* pixels);
     // const QList<int> thresholds, const bool crossCorrection, const bool spatialCorrectionOnly
 
 private:

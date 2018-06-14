@@ -23,6 +23,7 @@
 #include <vector>
 #include "spline.h"
 #include <tiffio.h> /* Sam Leffler's libtiff library. */
+#include "mpx3config.h"
 
 using namespace std;
 
@@ -32,6 +33,7 @@ class QCstmGLVisualization;
 
 class CorrectionItem;
 class QCstmCorrectionsDialog;
+class Mpx3Config;
 
 class Dataset
 {
@@ -84,6 +86,11 @@ public:
         std::vector<double> stdev_v;
     } bstats;//!Calculated mean and stdev of the selected region of interest.
 
+    int * getFullImageAsArrayWithLayout(int threshold,
+                                        std::vector<QPoint> frameLayouts,
+                                        std::vector<int> frameOrientation,
+                                        Mpx3Config *config);
+
 private:
     int m_nx, m_ny; //!<Pixel size in the x and y direction, per detector.
     int m_pixelDepthBits;
@@ -91,6 +98,8 @@ private:
     QRectF m_boundingBox;//!<A rectangular box which encompasses all the chips. Hence the name.
     int m_nFrames; //!< The amount of chips, a.k.a. frames here.
     score_info m_scores; //!< some 'score' info about this frame. A bunch of counters.
+
+
     int * m_plainImageBuff = nullptr;
 
     QVector<QPoint>  m_frameLayouts; //!<A vector containing the bottom-left corners of the detectors, (0,0) is bottom, left , (1,0) is to the right, (0,1) above.
@@ -132,7 +141,7 @@ public:
     QVector<int> toQVector(); //!< Serializes the dataset for saving.
     void saveBIN(QString filename);   //! Puts the dataset into a BIN format and saves.
     void toTIFF(QString filename, bool crossCorrection = true , bool spatialOnly = false);  //! Puts the dataset into a TIFF format and saves.
-    QVector<int> makeFrameForSaving(int threshold, bool crossCorrection = true, bool spatialOnly = false);
+    int *makeFrameForSaving(int threshold, bool crossCorrection = true, bool spatialOnly = false);
     void toASCII(QString filename); //! Puts the dataset into ASCII format and saves.
 
     void fromByteArray(QByteArray serialized); //!< Restores the dataset from a previously serialized set.

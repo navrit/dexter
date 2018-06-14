@@ -12,19 +12,26 @@ DataControllerThread::~DataControllerThread()
 
 }
 
-void DataControllerThread::saveTIFFParallel(QString filename, const uint imageWidth, const QVector<int>& pixels)
+void DataControllerThread::saveTIFFParallel(QString filename, const uint imageWidth, const int *pixels)
 {
 //    qDebug() << "[INFO] Saving in parallel - TIFF" << filename << imageWidth;
-    if (imageWidth == 512) {
-        if ( !TiffFile::saveToTiff32_512( filename.toUtf8().data(), &pixels[0] ) ) {
+    if        (imageWidth == 512) {
+        if ( !TiffFile::saveToTiff32_512( filename.toUtf8().data(), pixels ) ) {
             qDebug() << "[ERROR] Failed to save TIFF:" << filename;
         }
     } else if (imageWidth == 256) {
-        if ( !TiffFile::saveToTiff32_256( filename.toUtf8().data(), &pixels[0] ) ) {
+        if ( !TiffFile::saveToTiff32_256( filename.toUtf8().data(), pixels ) ) {
+            qDebug() << "[ERROR] Failed to save TIFF:" << filename;
+        }
+    } else if (imageWidth == 516) {
+        if ( !TiffFile::saveToTiff32_516( filename.toUtf8().data(), pixels ) ) {
+            qDebug() << "[ERROR] Failed to save TIFF:" << filename;
+        }
+    } else if (imageWidth == 260) {
+        if ( !TiffFile::saveToTiff32_260( filename.toUtf8().data(), pixels ) ) {
             qDebug() << "[ERROR] Failed to save TIFF:" << filename;
         }
     }
-
 
 }
 
