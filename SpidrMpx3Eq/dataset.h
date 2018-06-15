@@ -99,14 +99,22 @@ private:
     int m_nFrames; //!< The amount of chips, a.k.a. frames here.
     score_info m_scores; //!< some 'score' info about this frame. A bunch of counters.
 
-
+    bool firstHighSpeedImageSave = true;
+    int nChips = 0;
+    QVector<int> directionx;
+    QVector<int> directiony;
+    QVector<int> startx;
+    QVector<int> starty;
+    QVector<int> endx;
+    QVector<int> endy;
+    void initVariablesForHighSpeedSaving(std::vector<QPoint> frameLayouts, std::vector<int> frameOrientation);
     int * m_plainImageBuff = nullptr;
 
     QVector<QPoint>  m_frameLayouts; //!<A vector containing the bottom-left corners of the detectors, (0,0) is bottom, left , (1,0) is to the right, (0,1) above.
     QVector<int> m_frameOrientation;//!<The orientation of the detectors. see the enum.
 
     QMap <int, int> m_thresholdsToIndices;//!<Translate threshold values to indices in the vectors.
-    QVector<int*>  m_layers;//!<Actual data, one pointer per threshold.
+    QVector<int*>  m_layers;    //!< [Chip, layer(threshold)] Actual data, one pointer per threshold.
     Dataset * obCorrection = nullptr;//!< A pointer to the Dataset used for the flat-field correction.
     bool corrected; //!indicates whether or not an image has been corrected.
     int getLayerIndex(int threshold);

@@ -152,7 +152,7 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
           // 'break' left out intentionally;
           // continue unpacking the pixel packet
 
-        case PIXEL_DATA_MID:
+        [[fallthrough]]; case PIXEL_DATA_MID:
           // Unpack the pixel packet
           for( j=0; j<pix_per_word; ++j, ++index )
             {

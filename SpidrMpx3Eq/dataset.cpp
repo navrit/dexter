@@ -570,8 +570,8 @@ int * Dataset::makeFrameForSaving(int threshold, bool crossCorrection, bool spat
     float edgePixelMagicNumberSpectroHorizontal = float(1.1);
 
     QList<int> thresholds = m_thresholdsToIndices.keys();
-    int * image;//(height*width);
-    int * imageCorrected;//(height*width);
+    int * image = nullptr;//(height*width);
+    int * imageCorrected = nullptr;//(height*width);
     //----------------------------------------------------
 
     if (spatialOnly){
@@ -2446,18 +2446,17 @@ int * Dataset::getLayer(int threshold){
     return m_layers[layerIndex];
 }
 
-int * Dataset::getFullImageAsArrayWithLayout(int threshold,
-                                             std::vector<QPoint> frameLayouts,
-                                             std::vector<int> frameOrientation,
-                                             Mpx3Config * config) {
 
+void Dataset::initVariablesForHighSpeedSaving(std::vector<QPoint> frameLayouts,
+                                              std::vector<int> frameOrientation)
+{
     // This two members carry all the information about the layout
     //QVector<QPoint>  m_frameLayouts // positions in the pad
     //QVector<int> m_frameOrientation // orientations
 
     // I want the layout of the whole chip.  I will build it again
 
-    int nChips = getNChipsX() * getNChipsY();
+    nChips = getNChipsX() * getNChipsY();
     //std::vector<QPoint> frameLayouts = mpx3gui->getLayout(); // Positions in the pad
     //std::vector<int> frameOrientation = mpx3gui->getOrientation(); // Orientations
 
@@ -2469,12 +2468,13 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold,
     }
     // - Work out the orientation
     //   Here we decide where the loop starts and in which direction
-    QVector<int> directionx;
+    /*QVector<int> directionx;
     QVector<int> directiony;
     QVector<int> startx;
     QVector<int> starty;
     QVector<int> endx;
-    QVector<int> endy;
+    QVector<int> endy;*/
+    // Now class globals because they'll never change during runtime for the same settings...
 
     for ( int i = 0 ; i < nChips ; i++ ) {
         if ( frameOrientation[i] == orientationTtBRtL ) {
@@ -2495,10 +2495,28 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold,
             endy.push_back( 0 + offsets[i].y() );
         }
     }
+}
+
+int * Dataset::getFullImageAsArrayWithLayout(int threshold,
+                                             std::vector<QPoint> frameLayouts,
+                                             std::vector<int> frameOrientation,
+                                             Mpx3Config * config) {
+
+    /*if (firstHighSpeedImageSave) {
+        initVariablesForHighSpeedSaving(frameLayouts, frameOrientation);
+    }
+
+    firstHighSpeedImageSave = false;
 
     // - Create a buffer for the whole image
-    if ( m_plainImageBuff ) delete [] m_plainImageBuff;
-    m_plainImageBuff = new int[nChips * x() * y()];
+    if ( !m_plainImageBuff ) {
+        m_plainImageBuff = new int[nChips * x() * y()];
+    }
+    m_plainImageBuff[nChips * x() * y()] = {0};*/
+
+    return getFrame(0, 0);
+    //memset(m_plainImageBuff, 0, sizeof(int)*nChips * x() * y());
+
 
     // - Fill it according to layout
     // - Take one chip
@@ -2534,14 +2552,10 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold,
                 pixIdTranslate = XYtoX(x, y, sizex_full);
 
                 if ( chipdata ) { // There's data for this chip
-
                     //qDebug() << "[" << i << "]" << x << "," << y << " : " << pixIdTranslate << " | " << pixCntr;
-
                     m_plainImageBuff[pixIdTranslate] = chipdata[pixCntr++];
                 } else {
-
                     m_plainImageBuff[pixIdTranslate] = 0;
-
                 }
 
                 // direction and stop
@@ -2564,20 +2578,10 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold,
                 if ( x < endx[i] ) gox = false;
             }
         }
-
-
     }
-
-
-//    for ( int i = 0 ; i < getPixelsPerLayer() ; i++ ) {
-//        if ( i<10 || (i>127&&i<137) ) qDebug() << "[" << i << "] " << layer[i];
-//        if ( i>=16384 && i<(16384+10) ) qDebug() << "[" << i << "] " << layer[i];
-//    }
-
 
     return m_plainImageBuff;
 }
-
 
 
 /*
