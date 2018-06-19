@@ -27,12 +27,12 @@ void setReadoutModeHandler()
     if(CommandHandler::getInstance()->cmdTable["SetReadoutMode"].args.at(0) == "seq"){ //set readout mode to sequential
         // here code for setting the readout mode to sequential
         Mpx3GUI::getInstance()->getConfig()->setOperationMode(0);
-        CommandHandler::getInstance()->setData("Readou mode is set to sequential");
+        CommandHandler::getInstance()->setData("Readout mode is set to sequential");
     }
-    else if(CommandHandler::getInstance()->cmdTable["SetReadoutMode"].args.at(0) == "cont"){ //set readout mode to continous
-        // here code for setting the readout mode to continous
+    else if(CommandHandler::getInstance()->cmdTable["SetReadoutMode"].args.at(0) == "cont"){ //set readout mode to continuous
+        // here code for setting the readout mode to continuous
         Mpx3GUI::getInstance()->getConfig()->setOperationMode(1);
-        CommandHandler::getInstance()->setData("Readou mode is set to continous");
+        CommandHandler::getInstance()->setData("Readout mode is set to continuous");
     }
     else
         CommandHandler::getInstance()->setData("Invalid argument...!");
@@ -65,23 +65,23 @@ void setCounterDepthHandler()
     if(CommandHandler::getInstance()->cmdTable["SetCounterDepth"].args.at(0) == "1"){
         //here code to set depth
         Mpx3GUI::getInstance()->getConfig()->setPixelDepth(1);
-        CommandHandler::getInstance()->setData("Couter depth is set to 1 bit...!");
+        CommandHandler::getInstance()->setData("Counter depth is set to 1 bit...!");
     }
     else if(CommandHandler::getInstance()->cmdTable["SetCounterDepth"].args.at(0) == "6"){
         //here code to set depth
         Mpx3GUI::getInstance()->getConfig()->setPixelDepth(6);
-        CommandHandler::getInstance()->setData("Couter depth is set to 6 bit...!");
+        CommandHandler::getInstance()->setData("Counter depth is set to 6 bit...!");
     }
     else if(CommandHandler::getInstance()->cmdTable["SetCounterDepth"].args.at(0) == "12"){
         //here code to set depth
         Mpx3GUI::getInstance()->getConfig()->setPixelDepth(12);
-        CommandHandler::getInstance()->setData("Couter depth is set to 12 bit...!");
+        CommandHandler::getInstance()->setData("Counter depth is set to 12 bit...!");
     }
     else if(CommandHandler::getInstance()->cmdTable["SetCounterDepth"].args.at(0) == "24"){
         //here code to set depth
 
         Mpx3GUI::getInstance()->getConfig()->setPixelDepth(24);
-        CommandHandler::getInstance()->setData("Couter depth is set to 24 bit...!");
+        CommandHandler::getInstance()->setData("Counter depth is set to 24 bit...!");
     }
     else
         CommandHandler::getInstance()->setData("Invalid argument...!");
@@ -255,12 +255,12 @@ void setShutterLengthHandler(){
     if(CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(0) == "open"){
         //here code to set operational mode
         Mpx3GUI::getInstance()->getConfig()->setTriggerLength(CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1).toInt());
-        CommandHandler::getInstance()->setData("Shutter Open Length is set to " + CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1));
+        CommandHandler::getInstance()->setData("Shutter open length is set to " + CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1));
     }
     else if(CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(0) == "down"){
         //here code to set operational mode
         Mpx3GUI::getInstance()->getConfig()->setTriggerDowntime(CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1).toInt());
-        CommandHandler::getInstance()->setData("Shutter down Length is set to " + CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1));
+        CommandHandler::getInstance()->setData("Shutter down length is set to " + CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1));
     }
     else
         CommandHandler::getInstance()->setData("Invalid argument...!");
@@ -292,7 +292,7 @@ void setBothCountersHandler(){
     }
     else if(CommandHandler::getInstance()->cmdTable["SetBothCounters"].args.at(0) == "disable"){
         Mpx3GUI::getInstance()->getConfig()->setReadBothCounters(false);
-        CommandHandler::getInstance()->setData("Both counters is diabled");
+        CommandHandler::getInstance()->setData("Both counters is disabled");
     }
     else
         CommandHandler::getInstance()->setData("Invalid argument...!");
