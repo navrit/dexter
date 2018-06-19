@@ -181,7 +181,7 @@ void setTriggerModeHandler(){
 void getTriggerModeHandler(){
 
 }
-void setsakuraModeHandler(){
+void setGainModeHandler(){
     if(!CommandHandler::getInstance()->enoughArguments(1,"SetGainMode"))  //this command comes with one argument
         return;
     if(CommandHandler::getInstance()->cmdTable["SetGainMode"].args.at(0) == "high"){
@@ -226,7 +226,7 @@ void setPolarityHandler(){
     else if(CommandHandler::getInstance()->cmdTable["SetPolarity"].args.at(0) == "pos"){
         //here code to set operational mode
         Mpx3GUI::getInstance()->getConfig()->setPolarity(0);
-        CommandHandler::getInstance()->setData("Polarity is set to super positive...!");
+        CommandHandler::getInstance()->setData("Polarity is set to positive...!");
     }
     else
         CommandHandler::getInstance()->setData("Invalid argument...!");
@@ -315,7 +315,7 @@ void setColourModeHandler(){
     }
     else if(CommandHandler::getInstance()->cmdTable["SetColourMode"].args.at(0) == "disable"){
         Mpx3GUI::getInstance()->getConfig()->setColourMode(false);
-        CommandHandler::getInstance()->setData("Colour mode is diabled");
+        CommandHandler::getInstance()->setData("Colour mode is disabled");
     }
     else
         CommandHandler::getInstance()->setData("Invalid argument...!");
@@ -335,7 +335,7 @@ void setLutTableHandler(){
     }
     else if(CommandHandler::getInstance()->cmdTable["SetLutTable"].args.at(0) == "disable"){
         Mpx3GUI::getInstance()->getConfig()->setLUTEnable(false);
-        CommandHandler::getInstance()->setData("LUT table is diabled");
+        CommandHandler::getInstance()->setData("LUT table is disabled");
     }
     else
         CommandHandler::getInstance()->setData("Invalid argument...!");

@@ -70,8 +70,8 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("SetRecordFormat",setRecordFormat);
     cmd_struct getImage{getImageHandler};
     cmdTable.insert("GetImage",getImage);
-    //cmd_struct setGainMode {setGainModeHandler};
-    //cmdTable.insert("SetGainMode",setGainMode);
+    cmd_struct setGainMode {setGainModeHandler};
+    cmdTable.insert("SetGainMode",setGainMode);
     cmd_struct getGainMode {getGainModeHandler};
     cmdTable.insert("GetGainMode",getGainMode);
     cmd_struct setPolarity {setPolarityHandler};
