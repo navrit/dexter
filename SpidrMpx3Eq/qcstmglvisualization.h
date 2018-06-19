@@ -190,6 +190,9 @@ private:
     QString getPath(QString msg);
     bool zmqRunning = false;
 
+    //! TCP server
+    bool autosaveFromServer = false;
+
 private slots:
     void ConnectionStatusChanged(bool connecting);
     void on_percentileRangeRadio_toggled(bool checked);
@@ -334,6 +337,7 @@ signals:
     //! Used for ZMQ
     void someCommandHasFinished_Successfully();
     void someCommandHasFailed(QString reply="");
+
     //! All related functions are commented out, should this stay?
     //void infDataTakingToggeled(bool);
 

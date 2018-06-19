@@ -1073,11 +1073,13 @@ void QCstmGLVisualization::BuildStatsStringOverflow(bool overflow)
 QString QCstmGLVisualization::getPath(QString msg)
 {
     QString path = "";
-//    path = QFileDialog::getExistingDirectory(
-//                this,
-//                msg,
-//                QDir::currentPath(),
-//                QFileDialog::ShowDirsOnly);
+    if (!autosaveFromServer) {
+        path = QFileDialog::getExistingDirectory(
+                    this,
+                    msg,
+                    QDir::currentPath(),
+                    QFileDialog::ShowDirsOnly);
+    }
     path = ui-> saveLineEdit->text();
     // We WILL get a path before exiting this function
     return path;
@@ -1597,8 +1599,11 @@ void QCstmGLVisualization::loadConfiguration(QString filePath)
 
 void QCstmGLVisualization::onRequestForAutoSaveFromServer(bool val)
 {
+    autosaveFromServer = true; //! This is so I don't have to modify on_saveCheckBox_clicked()
     ui->saveCheckBox->setChecked(val);
     ui->saveAllCheckBox->setChecked(val);
+    autosaveFromServer = false; //! So it only skips the GUI call to get the
+    //! path if it's being called by the TCP server
 }
 
 void QCstmGLVisualization::onRequestForSettingPathFromServer(QString path)
@@ -2160,7 +2165,7 @@ void QCstmGLVisualization::on_saveCheckBox_clicked(){
     if ( zmqRunning ) {
         return;
     } else {
-        //ui->saveLineEdit->clear();
+        ui->saveLineEdit->clear();
 
         //! Open file dialog, get path and set saveLineEdit to given path and continue
         if(ui->saveCheckBox->isChecked()){
@@ -2174,7 +2179,8 @@ void QCstmGLVisualization::on_saveCheckBox_clicked(){
 
             //! If user selected nothing, path comes back empty (or "/" ?)
             if(path.isEmpty()){
-               // ui->saveCheckBox->setChecked(0);
+                ui->saveCheckBox->setChecked(0);
+                ui->saveAllCheckBox->setChecked(0);
                 ui->saveLineEdit->clear();
             }
 
