@@ -18,7 +18,7 @@ public:
 protected:
     QTcpSocket *m_socket;
     QTcpSocket *getSocket();
-    //handel the incomming command
+    //handle the incomming command
     CommandHandler *cmdHandler;
 
 signals:
