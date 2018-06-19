@@ -85,7 +85,7 @@ void TcpConnecton::error(QAbstractSocket::SocketError socketError)
 
 void TcpConnecton::on_dataIsDecoded(QString data,QByteArray im,bool isImage)
 {
-    sendData(data);
+    sendData(QString(data+"\n"));
     if(isImage)
         sendData(im);
 }

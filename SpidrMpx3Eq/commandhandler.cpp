@@ -108,7 +108,7 @@ bool CommandHandler::enoughArguments(int argsNum,QString command)
     }
     if(argsNum != cmdTable[command].args.size())
     {
-        data = "Too less or many arguments....boz.";
+        data = "Too many or too few arguments...";
         return false;
     }
     return true;
@@ -176,13 +176,18 @@ void CommandHandler::fetchCmd()
 
 void CommandHandler::setCmd(char* command)
 {
-    arguments.clear();
+   arguments.clear();
    QString stringCmd;
    stringCmd.sprintf("%s",command);
    QStringList cmdList = stringCmd.split(";");
    cmd = cmdList.at(0); //core command
+
    for(int i=1; i<cmdList.size(); i++){
-       arguments.push_back(cmdList.at(i));
+       QString str = cmdList.at(i);
+
+       //! Tolerate new lines sent from netcat
+       QStringList list = str.split(QRegularExpression("(\\n)"));
+       arguments.push_back(list.join(""));
    }
 }
 
