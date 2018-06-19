@@ -51,7 +51,7 @@ void TcpConnecton::readyRead()
     if(!sender()) return;
     qDebug() << this << " readyRead " << getSocket();
     //recieve the commands
-    char rcv_data[100];
+    char rcv_data[4096];
     memset(rcv_data,0,sizeof(rcv_data));
     int len = getSocket()->read(rcv_data,sizeof(rcv_data));
     qDebug() << " Data Length is : " <<len;
