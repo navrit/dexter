@@ -60,6 +60,7 @@ class QCstmGLVisualization : public QWidget
 public:
     explicit QCstmGLVisualization(QWidget *parent = 0);
     ~QCstmGLVisualization();
+    static QCstmGLVisualization* getInstance();
 
     void timerEvent( QTimerEvent * );
     void refreshScoringInfo();
@@ -124,6 +125,7 @@ public:
 
     //! Called from Mpx3GUI to disable/enable specific GUI element for developer mode
     void developerMode(bool enabled = false);
+    //void setInfDataTaking(bool val){_infDataTaking = val; emit infDataTakingToggeled(_infDataTaking);}
 
 private:
 
@@ -231,6 +233,8 @@ private slots:
 
     void on_saveAllCheckBox_toggled(bool checked);
 
+    void on_tstPb_clicked();
+
 public slots:
 
     void StartDataTaking(QString mode="");
@@ -298,6 +302,12 @@ public slots:
     void setReadoutMode(QString mode);
     void setReadoutFrequency(int frequency); //! in Hz
     void loadConfiguration(QString filePath);
+    //autosave from server
+    void onRequestForAutoSaveFromServer(bool);
+    //saving path from server
+    void onRequestForSettingPathFromServer(QString);
+    //saving format from server
+    void onRequestForSettingFormatFromServer(int);
 
 signals:
     void taking_data_gui();
@@ -322,6 +332,7 @@ signals:
     //! Used for ZMQ
     void someCommandHasFinished_Successfully();
     void someCommandHasFailed(QString reply="");
+    //void infDataTakingToggeled(bool);
 
 };
 

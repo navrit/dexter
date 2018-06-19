@@ -111,6 +111,7 @@ public:
     Dataset(int x, int y, int framesPerLayer = 1, int pixelDepthBits = 12);
     Dataset();
     ~Dataset();
+    QVector<int*> getActualData() {return m_layers;}
     Dataset( const Dataset& other );
     Dataset& operator=( const Dataset& rhs );
     void removeCorrection(){ delete obCorrection; obCorrection = nullptr;}

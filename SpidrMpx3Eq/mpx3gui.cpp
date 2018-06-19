@@ -37,6 +37,8 @@
 #include <QCoreApplication>
 #include <QTimer>
 
+Mpx3GUI *mpx3GuiInstance;
+
 Mpx3GUI::Mpx3GUI(QWidget * parent) :
     QMainWindow(parent),
     _ui(new Ui::Mpx3GUI)
@@ -193,6 +195,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     //_ui->statusBar->set
     //m_statusBarMessageLabel.setAlignment( Qt::AlignLeft );
     m_statusBarMessageString.clear( );
+    mpx3GuiInstance = this;
 }
 
 
@@ -393,6 +396,11 @@ void Mpx3GUI::SetupSignalsAndSlots(){
                  this, &Mpx3GUI::on_shortcutsSwithPages );
     }
 
+}
+
+Mpx3GUI *Mpx3GUI::getInstance()
+{
+  return mpx3GuiInstance;
 }
 
 // Change me when adding extra views
@@ -1449,7 +1457,6 @@ void Mpx3GUI::on_actionStepper_Motor_triggered(bool)
 
 
 void Mpx3GUI::on_actionDisconnect_triggered(bool checked){
-
     // See if there is anything running
     // Check if something is running
     if ( getVisualization()->DataTakingThreadIsRunning() ) { // This means there's a thread ongoing

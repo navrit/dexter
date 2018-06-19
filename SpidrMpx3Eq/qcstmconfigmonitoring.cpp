@@ -9,6 +9,8 @@
 
 #include "qtableview.h"
 #include "qstandarditemmodel.h"
+#include "mpx3gui.h"
+#include "SpidrDaq.h"
 
 
 QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
@@ -760,4 +762,23 @@ void QCstmConfigMonitoring::on_ColourModeCheckBox_toggled(bool checked) {
         _mpx3gui->resize(_mpx3gui->getDataset()->x()/2, _mpx3gui->getDataset()->y()/2);
     else
         _mpx3gui->resize(_mpx3gui->getDataset()->x()*2, _mpx3gui->getDataset()->y()*2);
+}
+
+void QCstmConfigMonitoring::on_startServerPb_clicked()
+{
+    server = new TcpServer;
+    if(!server->listen(QHostAddress::Any,6000))
+    {
+        qDebug()<< "Server can not be started...!";
+        return;
+    }
+
+
+
+    //    int* frame;
+//    int s,l;
+//    frame = Mpx3GUI::getInstance()->GetSpidrDaq()->frameData(0,&s,&l);
+//    Mpx3GUI::getInstance()->GetSpidrDaq()->releaseFrame();
+//    qDebug()<<"Frame size is : " << l;
+  //  Mpx3GUI::getInstance()->establish_connection();
 }

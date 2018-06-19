@@ -236,7 +236,7 @@ void DataTakingThread::run() {
                 framedata = spidrdaq->frameData(i, &size_in_bytes);
                 //clearToCopy = true;
                 _consumer->freeFrames->acquire();
-                _consumer->copydata( framedata, size_in_bytes );
+                _consumer->copydata( framedata, size_in_bytes );  //! 99% time of this for loop - it calls a memcpy of the image from the framebuilder
                 _consumer->usedFrames->release();
                 oneFrameChipCntr++;
             }

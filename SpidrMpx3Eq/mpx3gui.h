@@ -86,6 +86,7 @@ public:
     ~Mpx3GUI();
     void SetupSignalsAndSlots();
     Ui::Mpx3GUI * GetUI() { return _ui; }
+    static Mpx3GUI* getInstance();
 
 private:
     // ML605 layout
@@ -127,6 +128,7 @@ private:
 public:
 
     Mpx3Config* getConfig();
+    void closeRemotely(){on_actionDisconnect_triggered(false);}
     Dataset* getDataset(){return workingSet;}
     Dataset* getOriginalDataset(){return originalSet;}
     DataControllerThread* getDataControllerThread(){return dataControllerThread;}
