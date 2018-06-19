@@ -30,6 +30,7 @@ class Mpx3Config;
 #include "thresholdscan.h"
 #include "datacontrollerthread.h"
 #include "zmqcontroller.h"
+#include "tcpserver.h"
 
 class Mpx3Config;
 class QCustomPlot;
@@ -46,6 +47,7 @@ class QCstmCT;
 class thresholdScan;
 class DataControllerThread;
 class zmqController;
+class TcpServer;
 
 // Change me when adding extra views
 #define __visualization_page_Id     0
@@ -87,6 +89,7 @@ public:
     void SetupSignalsAndSlots();
     Ui::Mpx3GUI * GetUI() { return _ui; }
     static Mpx3GUI* getInstance();
+    TcpServer *tcpServer = nullptr;
 
 private:
     // ML605 layout

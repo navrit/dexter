@@ -10,6 +10,7 @@
 #include "ui_qcstmconfigmonitoring.h"
 #include "DataTakingThread.h"
 #include "thresholdscan.h"
+#include "tcpserver.h"
 
 #include "mpx3eq_common.h"
 #include "mpx3defs.h"
@@ -56,6 +57,13 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
 
     m_zmqController = new zmqController(this);
     m_zmqController->SetMpx3GUI(this);
+
+    tcpServer = new TcpServer;
+    if(!tcpServer->listen(QHostAddress::Any,6000))
+    {
+        qDebug()<< "Server can not be started...!";
+        return;
+    }
 
     // The orientations carry the information of how the information
     //  from a given chip should be drawn in the screen.
