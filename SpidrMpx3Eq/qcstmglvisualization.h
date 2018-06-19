@@ -125,7 +125,9 @@ public:
 
     //! Called from Mpx3GUI to disable/enable specific GUI element for developer mode
     void developerMode(bool enabled = false);
-    //void setInfDataTaking(bool val){_infDataTaking = val; emit infDataTakingToggeled(_infDataTaking);}
+
+    //! Should this remain?
+    //void setInfDataTaking(bool val){_infDataTaking = val; emit infDataTakingToggled(_infDataTaking);}
 
 private:
 
@@ -232,6 +234,7 @@ private slots:
 
     void on_saveAllCheckBox_toggled(bool checked);
 
+    //! Remove this before merging
     void on_tstPb_clicked();
 
 public slots:
@@ -331,6 +334,7 @@ signals:
     //! Used for ZMQ
     void someCommandHasFinished_Successfully();
     void someCommandHasFailed(QString reply="");
+    //! All related functions are commented out, should this stay?
     //void infDataTakingToggeled(bool);
 
 };
