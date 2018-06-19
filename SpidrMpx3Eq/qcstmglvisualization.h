@@ -58,7 +58,7 @@ class QCstmGLVisualization : public QWidget
 
     ProfileDialog * _profiledialog = nullptr;
 public:
-    explicit QCstmGLVisualization(QWidget *parent = 0);
+    explicit QCstmGLVisualization(QWidget *parent = nullptr);
     ~QCstmGLVisualization();
     static QCstmGLVisualization* getInstance();
 

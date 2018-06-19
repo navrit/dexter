@@ -957,13 +957,6 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
           </property>
          </widget>
         </item>
-        <item row="10" column="5">
-         <widget class="QPushButton" name="startServerPb">
-          <property name="text">
-           <string>Start Server</string>
-          </property>
-         </widget>
-        </item>
        </layout>
        <zorder>label_3</zorder>
        <zorder>operationModeComboBox</zorder>
@@ -1004,7 +997,6 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
        <zorder>label_18</zorder>
        <zorder>IP_ZMQ_PUB_lineEdit</zorder>
        <zorder>IP_ZMQ_SUB_lineEdit</zorder>
-       <zorder>startServerPb</zorder>
       </widget>
      </item>
     </layout>

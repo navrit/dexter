@@ -94,8 +94,6 @@ private slots:
     void biasVoltageChanged();
     void setLogLevel();
 
-    void on_startServerPb_clicked();
-
 private:
     Ui::QCstmConfigMonitoring *ui;
     int _timerId;
@@ -107,7 +105,6 @@ private:
     vector<unsigned int> __triggerModeMap;
 
     vector<unsigned int> __csmSpmMap;
-    TcpServer *server;
 
 };
 
