@@ -15,8 +15,8 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestForInfDataTracking(bool)),QCstmGLVisualization::getInstance(),SLOT(on_infDataTakingCheckBox_toggled(bool)));
     connect(this,SIGNAL(requestForSnap()),QCstmGLVisualization::getInstance(),SLOT(on_singleshotPushButton_clicked()));
     connect(this,SIGNAL(requestForAutoSave(bool)),QCstmGLVisualization::getInstance(),SLOT(onRequestForAutoSaveFromServer(bool)));
-    connect(this,SIGNAL(requestForSesttingSavePath(QString)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingPathFromServer(QString)));
-    connect(this,SIGNAL(requestForSesttingSaveTag(int)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingFormatFromServer(int)));
+    connect(this,SIGNAL(requestForSettingSavePath(QString)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingPathFromServer(QString)));
+    connect(this,SIGNAL(requestForSettingSaveTag(int)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingFormatFromServer(int)));
     cmdInst = this;
     initializeCmdTable();
 }
@@ -138,12 +138,12 @@ void CommandHandler::setAutoSave(bool val)
 
 void CommandHandler::setRecordPath(QString path)
 {
-    emit requestForSesttingSavePath(path);
+    emit requestForSettingSavePath(path);
 }
 
 void CommandHandler::setRecordFormat(int idx)
 {
-    emit requestForSesttingSaveFormat(idx);
+    emit requestForSettingSaveFormat(idx);
 }
 
 

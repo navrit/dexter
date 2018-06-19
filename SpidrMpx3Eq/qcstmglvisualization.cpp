@@ -2239,11 +2239,11 @@ void QCstmGLVisualization::on_tstPb_clicked()
 //    }
 //    qDebug()<<"Actual size : " << qt.length();
 
-    QByteArray ba = Mpx3GUI::getInstance()->getDataset()->toByteArray();
-    qDebug()<<"Actual size : " << ba.length();
+    QByteArray ba = _mpx3gui->getDataset()->toByteArray();
+    qDebug() << "Actual size : " << ba.length();
     QByteArray header = ba.left(9*4);
     for (int i = 0; i < header.length(); ++i) {
-        qDebug()<<i<<"'th = " << (uint8)header.at(i);
+        qDebug() << i << "'th = " << (uint8)header.at(i);
     }
 
 }

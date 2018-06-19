@@ -186,7 +186,6 @@ private:
     void addThresholdToSelector(int threshold);
 
     QString getPath(QString msg);
-
     bool zmqRunning = false;
 
 private slots:

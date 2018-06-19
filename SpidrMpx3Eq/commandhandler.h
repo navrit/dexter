@@ -21,7 +21,6 @@ class CommandHandler : public QObject
     Q_OBJECT
 public:
     explicit CommandHandler(QObject *parent = nullptr);
-public:
     QString getData(void);
     void fetchCmd();
     void setCmd(char*);
@@ -45,8 +44,8 @@ signals:
     void requestForInfDataTracking(bool);
     void requestForSnap(void);
     void requestForAutoSave(bool);
-    void requestForSesttingSavePath(QString);
-    void requestForSesttingSaveFormat(int);
+    void requestForSettingSavePath(QString);
+    void requestForSettingSaveFormat(int);
 public slots:
     void on_cmdRecieved(char*);
 
