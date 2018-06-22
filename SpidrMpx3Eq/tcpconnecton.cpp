@@ -129,6 +129,7 @@ void TcpConnecton::sendData(QByteArray image)
 {
     const int chunk = 8 * 1024;
     const int imageSize = image.length();
+    const QByteArray eof = "\n";
     int remainSize = imageSize;
     int idx = 0;
     int sum = 0;
@@ -142,7 +143,14 @@ void TcpConnecton::sendData(QByteArray image)
         sum += sndSize;
         remainSize -= chunk;
     }
-    qDebug()<<"Total Size = "<< imageSize;
+
+    int sndSize = m_socket->write(eof);
+    m_socket->flush();
+    m_socket->waitForBytesWritten();
+    qDebug()<<"size:"<<sndSize;
+    sum += sndSize;
+
+    qDebug()<<"Total Size = "<< imageSize + sizeof(eof);
     qDebug()<<"Total Sent Size = "<< sum;
    // QByteArray ba = image.
 //    int sndSize = m_socket->write(image);
