@@ -265,6 +265,9 @@ def snap_test():
     global skipped
 
     print(str(skipped) + " TEST INCOMPLETE \t\t" + sys._getframe().f_code.co_name)
+#    sock.send(b"Snap;\n")
+#    msg, ancdata, flags, addr = sock.recvmsg(rcv_buffer_size)
+#    print(str(msg))
     # done += 1
     skipped += 1
 
@@ -275,6 +278,7 @@ def autosave_test():
 
     sock.send(b"SetAutoSave;enable\n")
     msg, ancdata, flags, addr = sock.recvmsg(rcv_buffer_size)
+#    print(str(msg))
     assert "enabled" in str(msg)
     done += 1
 
