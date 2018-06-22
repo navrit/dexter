@@ -182,9 +182,56 @@ def get_image_test():
     global done
     global skipped
 
-    print(str(skipped) + " TEST INCOMPLETE \t\t" + sys._getframe().f_code.co_name)
-    # done += 1
-    skipped += 1
+#    print(str(skipped) + " TEST INCOMPLETE \t\t" + sys._getframe().f_code.co_name)
+
+    sock.send(b"GetImage;\n")
+    # 1. Header data
+    msg, ancdata, flags, addr = sock.recvmsg(42)  # This could be bigger
+    msg = str(msg).replace("b'", "").replace("\\n'", "").split(";")[:-1]
+    n_x = abs(int(msg[0]))
+    n_y = abs(int(msg[1]))
+    n_chips = int(msg[2])
+    n_layers = int(msg[3])
+
+    # Valid for a quad only
+    n_chipLayout = (int(msg[4]), int(msg[5])), (int(msg[6]), int(msg[7])), (int(msg[8]), int(msg[9])), (int(msg[10]), int(msg[11]))
+
+    # Based on the following ENUM
+    '''
+    Enumerations to define the coordinate system of the chips.
+    (L)eft, (R)ight, (t)o, (T)op, and (B)ottom.
+
+    enum globals {
+        orientationLtRTtB = 0,
+        orientationRtLTtB = 1,
+        orientationLtRBtT = 2,
+        orientationRtLBtT = 3,
+        orientationTtBLtR = 4,
+        orientationTtBRtL = 5,
+        orientationBtTLtR = 6,
+        orientationBtTRtL = 7
+    };
+    '''
+    n_chipOrientation = (int(msg[12]), int(msg[13]), int(msg[14]), int(msg[15]))
+
+    n_keys = [int(msg[16])] # 2 4 and 6 come later in colour mode...
+    '''
+        This is a bit weird, the next 3 ints come in the next msg always...
+    '''
+#    print(n_x, n_y, n_chips, n_layers, n_chipLayout, n_chipOrientation)
+#    print("\n")
+
+    ''' Total image size of n_x * n_y * n_chips '''
+
+    assert (n_x * n_y * n_chips) % 2 == 0
+    assert n_x == 128 or n_x == 256
+    assert n_y == 128 or n_y == 256
+    assert n_chips >= 0 and n_chips <= 4
+
+    # These next 2 are VERY unlikely to be changed on the server
+    assert n_chipLayout == ((1, 1), (1, 0), (0, 0), (0, 1))
+    assert n_chipOrientation == (6, 6, 5, 5)
+
 
 
 def snap_test():
