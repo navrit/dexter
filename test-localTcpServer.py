@@ -200,8 +200,9 @@ def get_image_test():
 
     sock.send(b"GetImage;\n")
     # 1. Header data
-    msg, ancdata, flags, addr = sock.recvmsg(42)  # This could be bigger
+    msg, ancdata, flags, addr = sock.recvmsg(46)  # This could be bigger
     msg = str(msg).replace("b'", "").replace("\\n'", "").split(";")[:-1]
+
     n_x = abs(int(msg[0]))
     n_y = abs(int(msg[1]))
     n_chips = int(msg[2])
@@ -227,6 +228,8 @@ def get_image_test():
     };
     '''
     n_chipOrientation = (int(msg[12]), int(msg[13]), int(msg[14]), int(msg[15]))
+    # This is only valid for colour mode...
+    n_keys = [int(msg[16]), int(msg[17]), int(msg[18]), int(msg[19])]
 
 #    print(n_x, n_y, n_chips, n_layers, n_chipLayout, n_chipOrientation, n_keys)
 #    print("\n")
@@ -237,6 +240,7 @@ def get_image_test():
     assert n_x == 128 or n_x == 256
     assert n_y == 128 or n_y == 256
     assert n_chips >= 0 and n_chips <= 4
+    assert n_keys == [0, 2, 4, 6]
 
     # These next 2 are VERY unlikely to be changed on the server
     assert n_chipLayout == ((1, 1), (1, 0), (0, 0), (0, 1))
@@ -250,9 +254,15 @@ def get_image_test():
 
     size = 128
     data = data[:(size*size)]
-    if (data.shape[0] % (size*size) ):
+
+    assert data[0] == 32  # Test data in the most basic way
+    assert data[-1] == 99
+    assert data[1] == 35   # Orientation isn't screwed up
+
+    if (data.shape[0] % (size*size)):
         print("\n\tNETWORK FRAGMENTATION?")
         print(data.shape)
+    print("\n[INFO]\tCHIP 0 - test data shown below")
     plt.imshow(data.reshape(size, size), vmin=0, vmax=100)
 
     done += 1

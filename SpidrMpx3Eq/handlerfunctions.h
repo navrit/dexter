@@ -402,15 +402,15 @@ void getImageHandler(){
 //    }
     QByteArray im = Mpx3GUI::getInstance()->getDataset()->toByteArray();
     QString strData = "";
-    for(int i = 0; i<17; i++){
+    for(int i = 0; i<20; i++){
         int value = 0;
         value |= im.at(i*4) | (im.at((i*4)+1)<<8) | (im.at((i*4)+2)<<16) | (im.at((i*4)+3)<<32);
         strData += QString::number(value) + ";";
     }
   //  CommandHandler::getInstance()->setImage();
 
-    QByteArray pixels = im.mid(17*4); //17*4 = 68 bytes header later this must become dynamic // 18*4 = 72 bytes for double counter
-   // qDebug()<<"pixel length = "<<pixels.length();
+    QByteArray pixels = im.mid(20*4); //17*4 = 68 bytes header later this must become dynamic // 18*4 = 72 bytes for double counter
+    qDebug()<<"pixel length = "<<pixels.length();
 
     CommandHandler::getInstance()->setData(strData);
     CommandHandler::getInstance()->setImage(pixels);
