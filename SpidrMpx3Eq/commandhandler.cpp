@@ -16,7 +16,7 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestForSnap()),QCstmGLVisualization::getInstance(),SLOT(on_singleshotPushButton_clicked()));
     connect(this,SIGNAL(requestForAutoSave(bool)),QCstmGLVisualization::getInstance(),SLOT(onRequestForAutoSaveFromServer(bool)));
     connect(this,SIGNAL(requestForSettingSavePath(QString)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingPathFromServer(QString)));
-    connect(this,SIGNAL(requestForSettingSaveTag(int)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingFormatFromServer(int)));
+//    connect(this,SIGNAL(requestForSettingSaveTag(int)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingFormatFromServer(int)));
     cmdInst = this;
     initializeCmdTable();
 }
