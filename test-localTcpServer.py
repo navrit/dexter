@@ -10,6 +10,8 @@ import sys
 import traceback
 import socket
 import time
+import numpy as np
+import matplotlib.pyplot as plt
 
 address = "127.0.0.1"
 port = 6000
@@ -232,6 +234,30 @@ def get_image_test():
     assert n_chipLayout == ((1, 1), (1, 0), (0, 0), (0, 1))
     assert n_chipOrientation == (6, 6, 5, 5)
 
+    # This does not handle fragmented packets, hence all the error crap below
+    msg, ancdata, flags, addr = sock.recvmsg( n_x*n_y*n_chips*n_layers)
+
+#    msg, ancdata, flags, addr = sock.recvmsg(4*4*256*256 + 3)
+    #print("RAW MESSAGE :\n", msg, "\n")
+
+    data = np.asarray(memoryview(bytearray(msg)).cast('i'))
+#    n_keys.append(data[0])
+#    n_keys.append(data[1])
+#    n_keys.append(data[2])
+#    print(n_keys)
+
+    size = 128
+    data = data[:(size*size)]
+    if (data.shape[0] % (size*size) ):
+        print("\n\tNETWORK FRAGMENTATION?")
+        print(data.shape)
+    plt.imshow(data.reshape(size, size), vmin=0, vmax=100)
+#    data = int.from_bytes(QByteArray(msg), byteorder='little')
+#    data = struct.unpack('<B', QByteArray(msg))
+#    print(data)
+
+    done += 1
+#        skipped += 1
 
 
 def snap_test():
@@ -556,7 +582,7 @@ try:
 
 except BrokenPipeError:
     print("\nBroken Pipe error")
-except AssertionError:
+except (AssertionError, ValueError, TypeError):
     _, _, tb = sys.exc_info()
     traceback.print_tb(tb)  # Fixed format
     tb_info = traceback.extract_tb(tb)
