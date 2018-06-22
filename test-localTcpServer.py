@@ -180,6 +180,18 @@ def operation_mode_test():
     skipped += 1
 
 
+def recvall(sock):
+    rcv_buff_size = 8191
+    data = b''
+    while True:
+        part = sock.recv(rcv_buff_size)
+        data += part
+        if len(part) < rcv_buff_size:
+            # either 0 or end of data
+            break
+    return data
+
+
 def get_image_test():
     global done
     global skipped
@@ -235,10 +247,8 @@ def get_image_test():
     assert n_chipOrientation == (6, 6, 5, 5)
 
     # This does not handle fragmented packets, hence all the error crap below
-    msg, ancdata, flags, addr = sock.recvmsg( n_x*n_y*n_chips*n_layers)
-
-#    msg, ancdata, flags, addr = sock.recvmsg(4*4*256*256 + 3)
-    #print("RAW MESSAGE :\n", msg, "\n")
+    msg = recvall(sock)  # total size = n_x * n_y * n_chips * n_layers
+#    msg, ancdata, flags, addr = sock.recvmsg(n_x * n_y * n_chips * n_layers)
 
     data = np.asarray(memoryview(bytearray(msg)).cast('i'))
 #    n_keys.append(data[0])
@@ -252,9 +262,6 @@ def get_image_test():
         print("\n\tNETWORK FRAGMENTATION?")
         print(data.shape)
     plt.imshow(data.reshape(size, size), vmin=0, vmax=100)
-#    data = int.from_bytes(QByteArray(msg), byteorder='little')
-#    data = struct.unpack('<B', QByteArray(msg))
-#    print(data)
 
     done += 1
 #        skipped += 1
