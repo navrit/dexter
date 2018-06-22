@@ -2128,6 +2128,14 @@ void Dataset::clear() {
     //setFramesPerLayer(1);
 }
 
+void Dataset::resize(int nx, int ny, bool connected){
+    if (connected) {
+        clear();
+    }
+    m_nx = nx;
+    m_ny = ny;
+}
+
 int Dataset::getNChipsX() {
     QRectF cb = computeBoundingBox();
     return (int)cb.width();

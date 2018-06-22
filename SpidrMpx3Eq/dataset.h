@@ -170,7 +170,7 @@ public:
     void setOrientation(int index, int orientation){m_frameOrientation[index] = orientation;}
     void setLayout(int index, QPoint layout){m_frameLayouts[index] = layout;}
     void clear();//!< Removes all data
-    void resize(int nx, int ny){clear(); m_nx = nx; m_ny = ny;}//!< Changes the size of each chip. Also calls clear().
+    void resize(int nx, int ny, bool connected=true);//!< Changes the size of each chip. Also calls clear().
     void setFramesPerLayer(int newFrameCount); //!<Sets the amount of chips. New Chips get initialized with location (0,0) and a LtRTtB orientation.
     unsigned int setLayer(int *data, int threshold);//!<Overwrites a specific layer with the values pointed to by data.
     unsigned int addLayer(int* data, int threshold);//!<Adds the values pointed to by data to the specified layer.

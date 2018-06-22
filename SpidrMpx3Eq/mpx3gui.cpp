@@ -217,7 +217,7 @@ Mpx3GUI::~Mpx3GUI()
 }
 
 void Mpx3GUI::resize(int x, int y) {
-    getDataset()->resize(x, y);
+    getDataset()->resize(x, y, getConfig()->isConnected());
     QRectF bbox = getDataset()->computeBoundingBox();
     emit sizeChanged(bbox.width() * x, bbox.height() * y); // goes to qcstmglplot
 }
