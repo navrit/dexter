@@ -50,10 +50,10 @@ public slots:
     void on_cmdRecieved(char*);
 
 private:
-    QString cmd;         //core command
-    QVector<QString> arguments; //command's arguments
-    QString data;               //data string to repond to commands excepts 'GetImage'
-    QByteArray imageToSend;    // iamge to be sent when 'GetImage' recieved
+    QString cmd;         // core command
+    QVector<QString> arguments; // command's arguments
+    QString data;               // command data string to repond to commands excepts 'GetImage'
+    QByteArray imageToSend;    // image to be sent when 'GetImage' recieved
     void initializeCmdTable(void);
 
 

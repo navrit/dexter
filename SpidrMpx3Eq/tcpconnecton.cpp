@@ -83,15 +83,17 @@ void TcpConnecton::error(QAbstractSocket::SocketError socketError)
     qDebug() << this << " error " << getSocket() << " error = " << socketError;
 }
 
-void TcpConnecton::on_dataIsDecoded(QString data,QByteArray im,bool isImage)
+void TcpConnecton::on_dataIsDecoded(QString command, QByteArray im, bool isImage)
 {
-    sendData(QString(data+"\n"));
-    if(isImage)
+    sendData(QString(command + "\n"));
+    if(isImage) {
         sendData(im);
+    }
 }
 
 void TcpConnecton::sendData(QString data)
 {
+
 //        QByteArray ba = data.toLatin1();
 //        int sizeToWrite = data.length();
 //        int byteIndex = 0;
@@ -115,12 +117,6 @@ void TcpConnecton::sendData(QString data)
 
 //        }
 
-
-
-
-
-
-
     QByteArray ba = data.toLatin1();
     qDebug()<<"size:"<<ba.size();
     int sndSize = m_socket->write(ba);
@@ -136,13 +132,11 @@ void TcpConnecton::sendData(QByteArray image)
     int remainSize = imageSize;
     int idx = 0;
     int sum = 0;
-    while(remainSize >= 0)
-    {
+    while(remainSize >= 0) {
         QByteArray imageToSend = image.mid(idx,chunk);
         int sndSize = m_socket->write(imageToSend);
         m_socket->flush();
         m_socket->waitForBytesWritten();
-       // QThread::msleep(500);
         qDebug()<<"size:"<<sndSize;
         idx += chunk;
         sum += sndSize;
