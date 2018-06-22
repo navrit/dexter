@@ -228,14 +228,10 @@ def get_image_test():
     '''
     n_chipOrientation = (int(msg[12]), int(msg[13]), int(msg[14]), int(msg[15]))
 
-    n_keys = [int(msg[16])] # 2 4 and 6 come later in colour mode...
-    '''
-        This is a bit weird, the next 3 ints come in the next msg always...
-    '''
-#    print(n_x, n_y, n_chips, n_layers, n_chipLayout, n_chipOrientation)
+#    print(n_x, n_y, n_chips, n_layers, n_chipLayout, n_chipOrientation, n_keys)
 #    print("\n")
 
-    ''' Total image size of n_x * n_y * n_chips '''
+    ''' Total image size of n_x * n_y * n_chips * n_layers '''
 
     assert (n_x * n_y * n_chips) % 2 == 0
     assert n_x == 128 or n_x == 256
@@ -251,10 +247,6 @@ def get_image_test():
 #    msg, ancdata, flags, addr = sock.recvmsg(n_x * n_y * n_chips * n_layers)
 
     data = np.asarray(memoryview(bytearray(msg)).cast('i'))
-#    n_keys.append(data[0])
-#    n_keys.append(data[1])
-#    n_keys.append(data[2])
-#    print(n_keys)
 
     size = 128
     data = data[:(size*size)]
@@ -264,7 +256,6 @@ def get_image_test():
     plt.imshow(data.reshape(size, size), vmin=0, vmax=100)
 
     done += 1
-#        skipped += 1
 
 
 def snap_test():
@@ -316,6 +307,7 @@ def record_path_test():
     skipped += 1
 
 
+# Get Record Format does not exist on the server yet
 def record_format_test():
     global done
     global skipped
@@ -574,16 +566,14 @@ try:
     readout_mode_test()
     counter_depth_test()
     operation_mode_test()  # Incomplete server code x2
-    get_image_test()       # Incomplete
     snap_test()            # Incomplete
     autosave_test()        # Incomplete server code
     record_path_test()     # Incomplete server code
     record_format_test()   # Incomplete server code x3
-
-    # I had to add 1ms sleeps here otherwise it hasn't updated it time
-    # it reports the previous value
+#    ''' I had to add 1ms sleeps here otherwise it hasn't updated it time
+#     it reports the previous value '''
     gain_mode_test()
-
+    get_image_test()       # Incomplete
     polarity_test()
     continuous_RW_frequency_test()
     shutter_length_test()

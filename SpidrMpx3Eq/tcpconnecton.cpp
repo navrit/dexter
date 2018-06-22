@@ -85,7 +85,7 @@ void TcpConnecton::error(QAbstractSocket::SocketError socketError)
 
 void TcpConnecton::on_dataIsDecoded(QString command, QByteArray im, bool isImage)
 {
-    sendData(QString(command + "\n"));
+    sendData(QString(command));
     if(isImage) {
         sendData(im);
     }
@@ -127,9 +127,9 @@ void TcpConnecton::sendData(QString data)
 
 void TcpConnecton::sendData(QByteArray image)
 {
-    const int chunk = 8 * 1024;
+    const int chunk = 256*256;//8 * 1024;
     const int imageSize = image.length();
-    const QByteArray eof = "\n";
+//    const QByteArray eof = "\n";
     int remainSize = imageSize;
     int idx = 0;
     int sum = 0;
@@ -144,18 +144,13 @@ void TcpConnecton::sendData(QByteArray image)
         remainSize -= chunk;
     }
 
-    int sndSize = m_socket->write(eof);
-    m_socket->flush();
-    m_socket->waitForBytesWritten();
-    qDebug()<<"size:"<<sndSize;
-    sum += sndSize;
-
-    qDebug()<<"Total Size = "<< imageSize + sizeof(eof);
-    qDebug()<<"Total Sent Size = "<< sum;
-   // QByteArray ba = image.
-//    int sndSize = m_socket->write(image);
+//    int sndSize = m_socket->write(eof);
 //    m_socket->flush();
 //    m_socket->waitForBytesWritten();
 //    qDebug()<<"size:"<<sndSize;
+//    sum += sndSize;
+
+    qDebug()<<"Total Size = "<< imageSize;// + sizeof(eof);
+    qDebug()<<"Total Sent Size = "<< sum;
 }
 

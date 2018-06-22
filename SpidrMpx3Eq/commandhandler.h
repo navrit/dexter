@@ -56,13 +56,6 @@ private:
     QByteArray imageToSend;    // image to be sent when 'GetImage' recieved
     void initializeCmdTable(void);
 
-
-
-
-
-
-
-
 };
 
 
