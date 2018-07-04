@@ -664,6 +664,13 @@ Detector dependant. If incorrect, you will see very obvious artifacts, 3/4 of th
           </property>
          </widget>
         </item>
+        <item row="3" column="3">
+         <widget class="QComboBox" name="gainModeCombobox">
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+         </widget>
+        </item>
         <item row="4" column="5" colspan="3">
          <widget class="QLabel" name="label_22">
           <property name="enabled">
@@ -687,8 +694,11 @@ Detector dependant. If incorrect, you will see very obvious artifacts, 3/4 of th
           </property>
          </widget>
         </item>
-        <item row="3" column="3">
-         <widget class="QComboBox" name="gainModeCombobox">
+        <item row="4" column="9">
+         <widget class="QComboBox" name="mpx3ClockComboBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="layoutDirection">
            <enum>Qt::LeftToRight</enum>
           </property>
@@ -701,16 +711,6 @@ Detector dependant. If incorrect, you will see very obvious artifacts, 3/4 of th
           </property>
           <property name="text">
            <string>Bias voltage (V)</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="9">
-         <widget class="QComboBox" name="mpx3ClockComboBox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
           </property>
          </widget>
         </item>
@@ -847,6 +847,13 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
           </property>
          </widget>
         </item>
+        <item row="2" column="3">
+         <widget class="QComboBox" name="operationModeComboBox">
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="0">
          <widget class="QLabel" name="label_8">
           <property name="toolTip">
@@ -859,13 +866,6 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
         </item>
         <item row="3" column="9">
          <widget class="QComboBox" name="pixelDepthCombo">
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="3">
-         <widget class="QComboBox" name="operationModeComboBox">
           <property name="layoutDirection">
            <enum>Qt::LeftToRight</enum>
           </property>
@@ -911,6 +911,13 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
           </property>
          </widget>
         </item>
+        <item row="10" column="0">
+         <widget class="QLabel" name="label_18">
+          <property name="text">
+           <string>ZMQ SUB address</string>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="5" colspan="2">
          <widget class="QLabel" name="label_17">
           <property name="toolTip">
@@ -934,13 +941,6 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
           </property>
          </widget>
         </item>
-        <item row="10" column="0">
-         <widget class="QLabel" name="label_18">
-          <property name="text">
-           <string>ZMQ SUB address</string>
-          </property>
-         </widget>
-        </item>
         <item row="10" column="3">
          <widget class="QLineEdit" name="IP_ZMQ_SUB_lineEdit">
           <property name="text">
@@ -954,6 +954,20 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
           </property>
           <property name="placeholderText">
            <string>0.0.0.0:0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="6">
+         <widget class="QPushButton" name="tstBtn">
+          <property name="text">
+           <string>tst</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="4" colspan="5">
+         <widget class="QLineEdit" name="tstLe">
+          <property name="text">
+           <string>MPX,0000000025,SET,COLOURMODE,1</string>
           </property>
          </widget>
         </item>
@@ -997,6 +1011,8 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
        <zorder>label_18</zorder>
        <zorder>IP_ZMQ_PUB_lineEdit</zorder>
        <zorder>IP_ZMQ_SUB_lineEdit</zorder>
+       <zorder>tstBtn</zorder>
+       <zorder>tstLe</zorder>
       </widget>
      </item>
     </layout>

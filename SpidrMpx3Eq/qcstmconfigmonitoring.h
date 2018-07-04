@@ -94,6 +94,8 @@ private slots:
     void biasVoltageChanged();
     void setLogLevel();
 
+    void on_tstBtn_clicked();
+
 private:
     Ui::QCstmConfigMonitoring *ui;
     int _timerId;

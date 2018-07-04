@@ -102,7 +102,8 @@ SOURCES += main.cpp \
     tcpserver.cpp \
     tcpconnecton.cpp \
     tcpconnections.cpp \
-    commandhandler.cpp
+    commandhandler.cpp \
+    MerlinInterface.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -149,7 +150,9 @@ HEADERS += mpx3gui.h \
     tcpconnecton.h \
     tcpconnections.h \
     commandhandler.h \
-    handlerfunctions.h
+    handlerfunctions.h \
+    MerlinInterface.h \
+    merlinCommandsDef.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \

@@ -166,6 +166,7 @@ void CommandHandler::fetchCmd()
     else
     {
         data = "Command does not exist...!";
+        emit commandIsDecoded(data,imageToSend,false);
         return;
     }
     if(cmd == "GetImage")
