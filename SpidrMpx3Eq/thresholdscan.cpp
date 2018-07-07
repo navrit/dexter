@@ -345,6 +345,7 @@ void thresholdScan::changeAllDACs(int val)
                 }
             } else { //! Only change the threshold from the dropdown menu
                 if ( dacCode == thresholdToScan ) { //! This comes from the comboBox_thresholdToScan
+                    qDebug() << "dacCode + thresholdToScan:" << dacCode << "," << thresholdToScan;
                     SetDAC_propagateInGUI(chipID, dacCode, i);
                 }
             }
@@ -355,6 +356,7 @@ void thresholdScan::changeAllDACs(int val)
 void thresholdScan::setThresholdToScan(uint val)
 {
     thresholdToScan = val+1; //! +1 because MPX3RX_DAC_THRESH_0 = 1, not 0
+    qDebug() << ">> Threshold to scan:" << thresholdToScan;
 }
 
 void thresholdScan::on_button_startStop_clicked()
