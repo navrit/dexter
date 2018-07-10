@@ -16,7 +16,7 @@ class thresholdScan : public QWidget
     Q_OBJECT
 
 public:
-    explicit thresholdScan(QWidget *parent = 0);
+    explicit thresholdScan(QWidget *parent = nullptr);
     ~thresholdScan();
     Ui::thresholdScan *GetUI(){ return ui; }
 
@@ -33,7 +33,8 @@ public:
 
     void changeAllDACs(int val);
 
-    void setThresholdToScan(uint val);
+    void setThresholdToScan();
+    int getThresholdToScan() {return thresholdToScan;}
 
 private:
     Ui::thresholdScan *ui = nullptr;
@@ -75,7 +76,7 @@ private:
 
     QVector<int> turnOnThresholds;
 
-    uint thresholdToScan = 0;
+    int thresholdToScan = 0;
 
 public slots:
     void resumeTHScan();
