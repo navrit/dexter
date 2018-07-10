@@ -68,7 +68,7 @@ class TcpServer;
 #define JSON_FILES "BH JSON file(*.json)"
 
 const QString _softwareName = "ASI Dexter";
-const QString _softwareVersion = "1.9.4";
+const QString _softwareVersion = "1.9.5";
 
 #include <stdio.h>
 #include <QCoreApplication>
