@@ -768,20 +768,51 @@ void Mpx3GUI::on_applicationStateChanged(Qt::ApplicationState s) {
 
 }
 
-//Debugging function to generate data when not connected
+//! Debugging function to generate test patterns, used to verify files are being saved correctly
+//! Note: This is configured for the current orientation scheme for 4 chips.
 void Mpx3GUI::generateFrame(){
-    QVector<int> data(getDataset()->x()*getDataset()->y()*getDataset()->getFrameCount());
-    for(int t = 0; t < config->getNTriggers();t++){
-        for(int k = 0; k < getDataset()->getFrameCount();k++){
-            for(int t = 0; t < 4;t++){
-                double fx = ((double)8*rand()/RAND_MAX)/(getDataset()->x()), fy = (8*(double)rand()/RAND_MAX)/getDataset()->y();
-                for(int i = 0; i < getDataset()->y(); i++)
-                    for(int j = 0; j < getDataset()->x(); j++)
-                        data[i*getDataset()->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
-                addFrame(data.data(), k, t);
+
+    int y = getDataset()->y();
+    int x = getDataset()->x();
+
+    //int thresholds = getDataset()->getLayerCount();
+    int chips = getDataset()->getFrameCount();
+
+    //! Total data - chip dimensions * number of chips
+    QVector<int> data(x * y * chips);
+
+//    for(int t=0; t < thresholds; ++t) {
+        for(int k=0; k < chips; ++k) {
+            //! Only do this for the first threshold (layer) because it will always be there
+            //! and cannot mess with the other thresholds if they exist...
+            //!
+            //! This could be improved later if desired
+            //for(int t=0; t < 4; ++t) {
+
+            for(int i = 0; i < y; i++) {
+                for(int j = 0; j < x; j++) {
+                    //! Generate border pixels
+                    if ( (k==0 || k==2) && (i==0 || j==0) ) {
+                        data[i*x+j] = k+1;
+                    } else if ( (k==1 || k==3) && (i==0 || j==x-1) ) {
+                        data[i*x+j] = k+1;
+                    //! Generate centre pixels
+                    } else if ( ((k==0 || k==2) && (i==x-1 && j==x-1)) ||
+                                ((k==1 || k==3) && (i==x-1 && j==0  )) ) {
+                        data[i*x+j] = 5;
+                    } else {
+                        data[i*x+j] = int((k+1)*((int(m_offset)+i+j)%2));
+                    }
+                }
             }
+            addFrame(data.data(), k, 0);
+
+            //}
         }
-    }
+//    }
+
+    m_offset = !m_offset;
+
     emit reload_all_layers();
 }
 

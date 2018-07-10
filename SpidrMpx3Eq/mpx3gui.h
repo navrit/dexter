@@ -128,6 +128,7 @@ private:
     DataControllerThread *dataControllerThread = nullptr;
     zmqController *m_zmqController = nullptr;
 
+    bool m_offset = false; //! Used for generating different patterns per test pattern
 public:
 
     Mpx3Config* getConfig();
