@@ -94,8 +94,6 @@ void QCstmPlotHistogram::setHistogram(int threshold, QVector<int> data, int min,
 //! EXPENSIVE FUNCTION
 void QCstmPlotHistogram::setHistogram(int threshold, int *data, int size, int min, int max){
 
-    return;
-
     if ( data == nullptr ) return;
 
     if ( threshold < 0 ) return;
