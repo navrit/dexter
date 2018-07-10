@@ -10,6 +10,7 @@
 #include "ui_qcstmconfigmonitoring.h"
 #include "DataTakingThread.h"
 #include "thresholdscan.h"
+#include "tcpserver.h"
 
 #include "mpx3eq_common.h"
 #include "mpx3defs.h"
@@ -37,6 +38,8 @@
 #include <QCoreApplication>
 #include <QTimer>
 
+Mpx3GUI *mpx3GuiInstance;
+
 Mpx3GUI::Mpx3GUI(QWidget * parent) :
     QMainWindow(parent),
     _ui(new Ui::Mpx3GUI)
@@ -54,6 +57,13 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
 
     m_zmqController = new zmqController(this);
     m_zmqController->SetMpx3GUI(this);
+
+    tcpServer = new TcpServer;
+    if(!tcpServer->listen(QHostAddress::Any,6000))
+    {
+        qDebug()<< "Server can not be started...!";
+        return;
+    }
 
     // The orientations carry the information of how the information
     //  from a given chip should be drawn in the screen.
@@ -193,6 +203,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     //_ui->statusBar->set
     //m_statusBarMessageLabel.setAlignment( Qt::AlignLeft );
     m_statusBarMessageString.clear( );
+    mpx3GuiInstance = this;
 }
 
 
@@ -206,7 +217,7 @@ Mpx3GUI::~Mpx3GUI()
 }
 
 void Mpx3GUI::resize(int x, int y) {
-    getDataset()->resize(x, y);
+    getDataset()->resize(x, y, getConfig()->isConnected());
     QRectF bbox = getDataset()->computeBoundingBox();
     emit sizeChanged(bbox.width() * x, bbox.height() * y); // goes to qcstmglplot
 }
@@ -393,6 +404,11 @@ void Mpx3GUI::SetupSignalsAndSlots(){
                  this, &Mpx3GUI::on_shortcutsSwithPages );
     }
 
+}
+
+Mpx3GUI *Mpx3GUI::getInstance()
+{
+  return mpx3GuiInstance;
 }
 
 // Change me when adding extra views
@@ -752,20 +768,51 @@ void Mpx3GUI::on_applicationStateChanged(Qt::ApplicationState s) {
 
 }
 
-//Debugging function to generate data when not connected
+//! Debugging function to generate test patterns, used to verify files are being saved correctly
+//! Note: This is configured for the current orientation scheme for 4 chips.
 void Mpx3GUI::generateFrame(){
-    QVector<int> data(getDataset()->x()*getDataset()->y()*getDataset()->getFrameCount());
-    for(int t = 0; t < config->getNTriggers();t++){
-        for(int k = 0; k < getDataset()->getFrameCount();k++){
-            for(int t = 0; t < 4;t++){
-                double fx = ((double)8*rand()/RAND_MAX)/(getDataset()->x()), fy = (8*(double)rand()/RAND_MAX)/getDataset()->y();
-                for(int i = 0; i < getDataset()->y(); i++)
-                    for(int j = 0; j < getDataset()->x(); j++)
-                        data[i*getDataset()->x()+j] = (int)((1<<14)*sin(fx*j)*(cos(fy*i)));
-                addFrame(data.data(), k, t);
+
+    int y = getDataset()->y();
+    int x = getDataset()->x();
+
+    //int thresholds = getDataset()->getLayerCount();
+    int chips = getDataset()->getFrameCount();
+
+    //! Total data - chip dimensions * number of chips
+    QVector<int> data(x * y * chips);
+
+//    for(int t=0; t < thresholds; ++t) {
+        for(int k=0; k < chips; ++k) {
+            //! Only do this for the first threshold (layer) because it will always be there
+            //! and cannot mess with the other thresholds if they exist...
+            //!
+            //! This could be improved later if desired
+            //for(int t=0; t < 4; ++t) {
+
+            for(int i = 0; i < y; i++) {
+                for(int j = 0; j < x; j++) {
+                    //! Generate border pixels
+                    if ( (k==0 || k==2) && (i==0 || j==0) ) {
+                        data[i*x+j] = k+1;
+                    } else if ( (k==1 || k==3) && (i==0 || j==x-1) ) {
+                        data[i*x+j] = k+1;
+                    //! Generate centre pixels
+                    } else if ( ((k==0 || k==2) && (i==x-1 && j==x-1)) ||
+                                ((k==1 || k==3) && (i==x-1 && j==0  )) ) {
+                        data[i*x+j] = 5;
+                    } else {
+                        data[i*x+j] = int((k+1)*((int(m_offset)+i+j)%2));
+                    }
+                }
             }
+            addFrame(data.data(), k, 0);
+
+            //}
         }
-    }
+//    }
+
+    m_offset = !m_offset;
+
     emit reload_all_layers();
 }
 
@@ -1450,7 +1497,6 @@ void Mpx3GUI::on_actionStepper_Motor_triggered(bool)
 
 
 void Mpx3GUI::on_actionDisconnect_triggered(bool checked){
-
     // See if there is anything running
     // Check if something is running
     if ( getVisualization()->DataTakingThreadIsRunning() ) { // This means there's a thread ongoing

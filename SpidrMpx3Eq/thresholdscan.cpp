@@ -343,13 +343,20 @@ void thresholdScan::changeAllDACs(int val)
                     }
                     SetDAC_propagateInGUI(chipID, dacCode, i+7);
                 }
-            } else {
-                if ( dacCode == MPX3RX_DAC_THRESH_0 ) {
+            } else { //! Only change the threshold from the dropdown menu
+                if ( dacCode == thresholdToScan ) { //! This comes from the comboBox_thresholdToScan
+                    qDebug() << "dacCode + thresholdToScan:" << dacCode << "," << thresholdToScan;
                     SetDAC_propagateInGUI(chipID, dacCode, i);
                 }
             }
         }
     }
+}
+
+void thresholdScan::setThresholdToScan(uint val)
+{
+    thresholdToScan = val+1; //! +1 because MPX3RX_DAC_THRESH_0 = 1, not 0
+    qDebug() << ">> Threshold to scan:" << thresholdToScan;
 }
 
 void thresholdScan::on_button_startStop_clicked()
@@ -452,6 +459,7 @@ void ThresholdScanThread::run()
     int lastTH = counter-1;
     const QList<int> thresholds = _mpx3gui->getDataset()->getThresholds();
     const int thresholdToScan = _ui->comboBox_thresholdToScan->currentIndex();
+    _thresholdScan->setThresholdToScan(thresholdToScan);
     // ---------------------------------------------------
 
     const int activeDevices = _mpx3gui->getConfig()->getNActiveDevices();
@@ -536,21 +544,20 @@ void ThresholdScanThread::run()
                 /*
                 for (const int &th : thresholds) {
                     qDebug() << ">>>>>>>>>> Threshold in existance: " << th;
-                }
+                }*/
 
-                int tmp;
+                //int tmp;
 
-                int threshold = 0;
                 for (int i=0; i < y; i++) {
                     for (int j=0; j < x; j++) {
                         //qDebug() << "(x, y):" << j << "," << i << i*x+j;
-//                        _data[i*x + j] = _mpx3gui->getDataset()->sample(j, i, threshold);
-                        tmp = _mpx3gui->getDataset()->sample(j, i, threshold);
-                        if (tmp > 0)
-                            qDebug() << "[DATA]: " << tmp;
+                        _data[i*x + j] = _mpx3gui->getDataset()->sample(j, i, thresholdToScan);
+                        //tmp = _mpx3gui->getDataset()->sample(j, i, thresholdToScan);
+                        //if (tmp > 0)
+                        //    qDebug() << "[DATA]: " << tmp;
                     }
                 }
-                */
+
 
                 //qDebug() << "Last: " << lastTH <<  "   Now:" << counter;
                 if (summing && lastTH != counter) {

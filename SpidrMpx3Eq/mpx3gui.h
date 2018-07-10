@@ -30,6 +30,7 @@ class Mpx3Config;
 #include "thresholdscan.h"
 #include "datacontrollerthread.h"
 #include "zmqcontroller.h"
+#include "tcpserver.h"
 
 class Mpx3Config;
 class QCustomPlot;
@@ -46,6 +47,7 @@ class QCstmCT;
 class thresholdScan;
 class DataControllerThread;
 class zmqController;
+class TcpServer;
 
 // Change me when adding extra views
 #define __visualization_page_Id     0
@@ -59,8 +61,8 @@ class zmqController;
 
 #define BIN_FILES "Binary (*.bin)"
 #define TIFF_FILES "TIFF (*.tiff)"
-#define SPATIAL_TIFF_FILES "TIFF (*_spatialCorrected.tiff)"
-#define RAW_TIFF_FILES "TIFF (*_raw.tiff)"
+#define SPATIAL_TIFF_FILES "Spatial corrected TIFF (*_spatialCorrected.tiff)"
+#define RAW_TIFF_FILES "Raw TIFF (*_raw.tiff)"
 #define BOTH_TIFF_FILES "Corrected and uncorrected TIFFs (*.tiff)"
 #define ASCII_FILES "ASCII (*.txt)"
 #define JSON_FILES "BH JSON file(*.json)"
@@ -86,6 +88,8 @@ public:
     ~Mpx3GUI();
     void SetupSignalsAndSlots();
     Ui::Mpx3GUI * GetUI() { return _ui; }
+    static Mpx3GUI* getInstance();
+    TcpServer *tcpServer = nullptr;
 
 private:
     // ML605 layout
@@ -124,9 +128,11 @@ private:
     DataControllerThread *dataControllerThread = nullptr;
     zmqController *m_zmqController = nullptr;
 
+    bool m_offset = false; //! Used for generating different patterns per test pattern
 public:
 
     Mpx3Config* getConfig();
+    void closeRemotely(){on_actionDisconnect_triggered(false);}
     Dataset* getDataset(){return workingSet;}
     Dataset* getOriginalDataset(){return originalSet;}
     DataControllerThread* getDataControllerThread(){return dataControllerThread;}

@@ -258,6 +258,7 @@ void DataTakingThread::run() {
                 //auto t1 = Time::now();
                 framedata = spidrdaq->frameData(i, &size_in_bytes); //! < 0.1% time
                 //clearToCopy = true;
+
                 //auto t2 = Time::now(); v1.append( std::chrono::duration_cast<ns>(t2 - t1).count());
 
                 _consumer->freeFrames->acquire(); //! < 0.1% time

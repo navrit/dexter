@@ -33,6 +33,8 @@ public:
 
     void changeAllDACs(int val);
 
+    void setThresholdToScan(uint val);
+
 private:
     Ui::thresholdScan *ui = nullptr;
     Mpx3GUI * _mpx3gui = nullptr;
@@ -72,6 +74,8 @@ private:
     void SetDAC_propagateInGUI(int devId, int dac_code, int dac_val );
 
     QVector<int> turnOnThresholds;
+
+    uint thresholdToScan = 0;
 
 public slots:
     void resumeTHScan();

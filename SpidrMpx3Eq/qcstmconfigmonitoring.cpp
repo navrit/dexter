@@ -9,6 +9,9 @@
 
 #include "qtableview.h"
 #include "qstandarditemmodel.h"
+#include "mpx3gui.h"
+#include "SpidrDaq.h"
+#include "MerlinInterface.h"
 
 
 QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
@@ -760,9 +763,23 @@ void QCstmConfigMonitoring::on_LoadButton_clicked() {
 }
 
 void QCstmConfigMonitoring::on_ColourModeCheckBox_toggled(bool checked) {
-    _mpx3gui->clear_data();
+    bool conn = _mpx3gui->getConfig()->isConnected();
+    if (conn) {
+        _mpx3gui->clear_data();
+    }
     if(checked)
         _mpx3gui->resize(_mpx3gui->getDataset()->x()/2, _mpx3gui->getDataset()->y()/2);
     else
         _mpx3gui->resize(_mpx3gui->getDataset()->x()*2, _mpx3gui->getDataset()->y()*2);
+}
+
+void QCstmConfigMonitoring::on_tstBtn_clicked()
+{
+    MerlinInterface mi;
+    QByteArray ba = ui->tstLe->text().toLatin1();
+    char* cmdChar = ba.data();
+    char *res = mi.parseCommand(cmdChar);
+    QString result;
+    result.sprintf("%s",res);
+    qDebug() << result;
 }

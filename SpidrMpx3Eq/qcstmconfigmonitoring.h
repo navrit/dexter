@@ -5,6 +5,10 @@
 #include "mpx3gui.h"
 
 #include <QtWidgets>
+//server
+#include "tcpserver.h"
+
+
 
 namespace Ui {
 class QCstmConfigMonitoring;
@@ -89,6 +93,8 @@ private slots:
 
     void biasVoltageChanged();
     void setLogLevel();
+
+    void on_tstBtn_clicked();
 
 private:
     Ui::QCstmConfigMonitoring *ui;

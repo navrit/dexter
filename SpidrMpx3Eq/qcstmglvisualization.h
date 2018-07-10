@@ -58,8 +58,9 @@ class QCstmGLVisualization : public QWidget
 
     ProfileDialog * _profiledialog = nullptr;
 public:
-    explicit QCstmGLVisualization(QWidget *parent = 0);
+    explicit QCstmGLVisualization(QWidget *parent = nullptr);
     ~QCstmGLVisualization();
+    static QCstmGLVisualization* getInstance();
 
     void timerEvent( QTimerEvent * );
     void refreshScoringInfo();
@@ -125,6 +126,9 @@ public:
     //! Called from Mpx3GUI to disable/enable specific GUI element for developer mode
     void developerMode(bool enabled = false);
 
+    //! Should this remain?
+    //void setInfDataTaking(bool val){_infDataTaking = val; emit infDataTakingToggled(_infDataTaking);}
+
 private:
 
     Ui::QCstmGLVisualization * ui = nullptr;
@@ -184,8 +188,10 @@ private:
     void addThresholdToSelector(int threshold);
 
     QString getPath(QString msg);
-
     bool zmqRunning = false;
+
+    //! TCP server
+    bool autosaveFromServer = false;
 
 private slots:
     void ConnectionStatusChanged(bool connecting);
@@ -230,6 +236,9 @@ private slots:
     void on_saveCheckBox_clicked();
 
     void on_saveAllCheckBox_toggled(bool checked);
+
+    //! Remove this before merging
+    void on_tstPb_clicked();
 
 public slots:
 
@@ -298,6 +307,12 @@ public slots:
     void setReadoutMode(QString mode);
     void setReadoutFrequency(int frequency); //! in Hz
     void loadConfiguration(QString filePath);
+    //autosave from server
+    void onRequestForAutoSaveFromServer(bool);
+    //saving path from server
+    void onRequestForSettingPathFromServer(QString);
+    //saving format from server
+    void onRequestForSettingFormatFromServer(int);
 
 signals:
     void taking_data_gui();
@@ -322,6 +337,9 @@ signals:
     //! Used for ZMQ
     void someCommandHasFinished_Successfully();
     void someCommandHasFailed(QString reply="");
+
+    //! All related functions are commented out, should this stay?
+    //void infDataTakingToggeled(bool);
 
 };
 
