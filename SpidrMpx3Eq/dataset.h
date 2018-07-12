@@ -108,6 +108,7 @@ private:
 
 
 public:
+
     Dataset(int x, int y, int framesPerLayer = 1, int pixelDepthBits = 12);
     Dataset();
     ~Dataset();

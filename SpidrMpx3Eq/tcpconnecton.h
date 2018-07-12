@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QTcpSocket>
 #include "commandhandler.h"
+#include "MerlinInterface.h"
 
 class TcpConnecton : public QObject
 {
@@ -20,6 +21,8 @@ protected:
     QTcpSocket *getSocket();
     //handle the incoming command
     CommandHandler *cmdHandler;
+    MerlinInterface *mi;
+
 
 signals:
     void cmdRecieved(char*);
@@ -36,6 +39,7 @@ public slots:
 private:
     void sendData(QString);     //to send regular data
     void sendData(QByteArray);  //to send image
+
 
 };
 

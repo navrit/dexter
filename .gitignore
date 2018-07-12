@@ -30,6 +30,7 @@ build-spidrflash-Desktop_Qt_5_7_0_GCC_64bit-Release/
 /Release/*
 build-SpidrMpx3Eq-Desktop_Qt_5_7_0_GCC_64bit-Release/
 build-SpidrMpx3Eq-Desktop_Qt_5_7_0_GCC_64bit-Debug/
+/build*
 
 # Ignore temporary files
 *~

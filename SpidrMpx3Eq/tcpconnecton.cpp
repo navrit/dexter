@@ -6,6 +6,7 @@ TcpConnecton::TcpConnecton(QObject *parent) : QObject(parent)
 {
     qDebug() << this << "Created";
     cmdHandler = new CommandHandler;
+    mi = new MerlinInterface;
     connect(this,SIGNAL(cmdRecieved(char*)),cmdHandler,SLOT(on_cmdRecieved(char*)));
     //just for now; it could be changed
     connect(cmdHandler,SIGNAL(commandIsDecoded(QString,QByteArray,bool)),this,SLOT(on_dataIsDecoded(QString,QByteArray,bool)));
@@ -56,7 +57,9 @@ void TcpConnecton::readyRead()
     int len = getSocket()->read(rcv_data,sizeof(rcv_data));
     qDebug() << " Data Length is : " <<len;
     qDebug() << " Data is : " << rcv_data;
-    cmdHandler->setCmd(rcv_data);
+    char* psiCmd = mi->parseCommand(rcv_data);
+    //cmdHandler->setCmd(rcv_data);
+    cmdHandler->setCmd(psiCmd);
     cmdHandler->fetchCmd();
    // qDebug()<<"decoded data is: " << cmdHandler->getData();
 
@@ -85,7 +88,14 @@ void TcpConnecton::error(QAbstractSocket::SocketError socketError)
 
 void TcpConnecton::on_dataIsDecoded(QString command, QByteArray im, bool isImage)
 {
-    sendData(QString(command));
+    QString sndStr = command;
+    mi->setErrorExternally(cmdHandler->getError());
+    if(mi->getCommandType() == "SET" || mi->getCommandType() == "CMD" )
+        sndStr = mi->makeSetCmdResponse();
+    if(mi->getCommandType() == "GET")
+        sndStr = mi->makeGetResponse(command);
+
+    sendData(QString(sndStr));
     if(isImage) {
         sendData(im);
     }
@@ -153,4 +163,6 @@ void TcpConnecton::sendData(QByteArray image)
     qDebug()<<"Total Size = "<< imageSize;// + sizeof(eof);
     qDebug()<<"Total Sent Size = "<< sum;
 }
+
+
 

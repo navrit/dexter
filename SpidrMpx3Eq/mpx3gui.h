@@ -90,6 +90,7 @@ public:
     Ui::Mpx3GUI * GetUI() { return _ui; }
     static Mpx3GUI* getInstance();
     TcpServer *tcpServer = nullptr;
+    TcpServer *dataServer = nullptr;
 
 private:
     // ML605 layout

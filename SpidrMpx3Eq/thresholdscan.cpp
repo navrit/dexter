@@ -15,6 +15,9 @@
 #include "ui_qcstmdacs.h"
 #include "ui_qcstmglvisualization.h"
 
+
+thresholdScan *thresholdScanInst;
+
 thresholdScan::thresholdScan(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::thresholdScan)
@@ -25,11 +28,17 @@ thresholdScan::thresholdScan(QWidget *parent) :
     items << MPX3RX_DAC_TABLE[0].name << MPX3RX_DAC_TABLE[1].name;
     ui->comboBox_thresholdToScan->addItems(items);
     ui->comboBox_thresholdToScan->setCurrentIndex(0);
+    thresholdScanInst = this;
 }
 
 thresholdScan::~thresholdScan()
 {
     delete ui;
+}
+
+thresholdScan *thresholdScan::getInstance()
+{
+    return thresholdScanInst;
 }
 
 QString thresholdScan::getOriginalPath()

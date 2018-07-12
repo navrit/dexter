@@ -19,6 +19,7 @@ public:
     explicit thresholdScan(QWidget *parent = 0);
     ~thresholdScan();
     Ui::thresholdScan *GetUI(){ return ui; }
+    static thresholdScan *getInstance();
 
     void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
     Mpx3GUI * GetMpx3GUI() { return _mpx3gui; }
