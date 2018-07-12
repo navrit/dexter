@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QHash>
 #include <QVector>
+#include "MerlinInterface.h"
 
 
 
@@ -20,6 +21,7 @@ class CommandHandler : public QObject
 {
     Q_OBJECT
 public:
+    enum ERROR_TYPE{NO_ERROR = 0, UNKWON_ERROR = -1, UNKWON_COMMAND = -2 , ARG_NUM_OUT_RANGE = -3, ARG_VAL_OUT_RANGE = -4};
     explicit CommandHandler(QObject *parent = nullptr);
     QString getData(void);
     void fetchCmd();
@@ -28,11 +30,28 @@ public:
     void setImage(QByteArray);
     bool enoughArguments(int, QString);
     static CommandHandler* getInstance();
+    ERROR_TYPE getError(void);
+    void setError(ERROR_TYPE);
     void startLiveCamera(void);
     void startSnap(void);
     void setAutoSave(bool);
     void setRecordPath(QString);
     void setRecordFormat(int);
+    int setThreshold(int,int);
+    int getThreshold(int);
+    int setStartScan(int);
+    int setStopScan(int);
+    int setStepScan(int);
+    int setThreholdScan(int);
+    int getStartScan(void);
+    int getStopScan(void);
+    int getStepScan(void);
+    int getThreholdScan(void);
+    int startScan(int);
+    int stopScan(int);
+    void merlinErrorToPslError(int errNum);
+
+    QString generateMerlinFrameHeader(FrameHeaderDataStruct);
     //test
     void print(void);
     QHash<QString,cmd_struct> cmdTable;
@@ -55,6 +74,9 @@ private:
     QString data;               // command data string to repond to commands excepts 'GetImage'
     QByteArray imageToSend;    // image to be sent when 'GetImage' recieved
     void initializeCmdTable(void);
+    ERROR_TYPE _error = NO_ERROR;
+    char* getTimeStamp();
+    void setMerlinFrameHeader(FrameHeaderDataStruct&);
 
 };
 

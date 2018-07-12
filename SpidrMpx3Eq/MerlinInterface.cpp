@@ -1,41 +1,97 @@
 #include "MerlinInterface.h"
-
+#include <QDebug>
+#include <QRegularExpression>
 MerlinInterface::MerlinInterface(QObject *parent) : QObject(parent)
 {
     initializeTables();
 }
 
+void MerlinInterface::setErrorExternally(int error)
+{
+    //{NO_ERROR = 0, UNKWON_ERROR = -1, UNKWON_COMMAND = -2 , ARG_NUM_OUT_RANGE = -3, ARG_VAL_OUT_RANGE = -4};
+
+    if(error == 0)
+    {
+        _error = NO_ERROR;
+        return;
+    }
+    if(error == -1)
+    {
+        _error = UNKOWN_ERROR;
+        return;
+    }
+    if(error == -2)
+    {
+        _error = UNKOWN_COMMAND;
+        return;
+    }
+    if(error == -3)
+    {
+        _error = PARAM_OUT_OF_RANGE;
+        return;
+    }
+    if(error == -4)
+    {
+        _error = UNKOWN_COMMAND;
+        return;
+    }
+
+}
+
 char *MerlinInterface::parseCommand(char *command)
 {
+    _cmdLength = 0;
+    _cmdType = "";
+    _cmdName = "";
+    _cmdValue = "";
     QString stringCmd;
     stringCmd.sprintf("%s",command);
     QStringList items = stringCmd.split(",");
+    QStringList itemsTemp ;
+
+    for(int i=0; i<items.size(); i++){
+        QString str = items.at(i);
+
+        //! Tolerate new lines sent from netcat
+        QStringList list = str.split(QRegularExpression("(\\n)"));
+        itemsTemp.push_back(list.join(""));
+    }
+
+    items.clear();
+    items = itemsTemp;
+
+
     //check the header
     if(items.at(HEADER_INDEX) != HEADER){
-        _error = UNKOWN_ERROR;
-        return "error";
+        _error = UNKOWN_COMMAND;
+        return QString::number(UNKOWN_COMMAND).toLatin1().data();
     }
     //check the range of the command
-    if(items.length() < CMD_GET_PARTS && items.length() > SET_PARTS)
+    if(items.length() < CMD_GET_PARTS || items.length() > SET_PARTS)
     {
         _error = PARAM_OUT_OF_RANGE;
-        return "error";
+        return QString::number(PARAM_OUT_OF_RANGE).toLatin1().data();;
     }
     if(items.at(TYPE_INDEX) == SET_TYPE && items.length() != SET_PARTS){
         _error = PARAM_OUT_OF_RANGE;
-        return "error";
+        return QString::number(PARAM_OUT_OF_RANGE).toLatin1().data();;
     }
     if((items.at(TYPE_INDEX) == CMD_TYPE || items.at(TYPE_INDEX) == GET_TYPE) && items.length() != CMD_GET_PARTS){
         _error = PARAM_OUT_OF_RANGE;
-        return "error";
+        return QString::number(PARAM_OUT_OF_RANGE).toLatin1().data();;
     }
-
+    //copy to local variables
+    _cmdLength = items.at(LENGTH_INDEX).toInt();
+    _cmdType = items.at(TYPE_INDEX);
+    _cmdName = items.at(NAME_INDEX);
+    if(items.at(TYPE_INDEX) == SET_TYPE)
+        _cmdValue = items.at(VALUE_INDEX);
     //check the length of the following command
     if(items.at(LENGTH_INDEX).length() != 10){
         _error = PARAM_OUT_OF_RANGE;
-        return "error";
+        return QString::number(PARAM_OUT_OF_RANGE).toLatin1().data();;
     }
-    _cmdLength = items.at(LENGTH_INDEX).toInt();
+
     int cmdLength = items.length() - 2;
     for(int i = TYPE_INDEX; i < items.length(); ++i){
         cmdLength += items.at(i).length();
@@ -43,100 +99,259 @@ char *MerlinInterface::parseCommand(char *command)
     if(cmdLength != _cmdLength)
     {
         _error = PARAM_OUT_OF_RANGE;
-        return "error";
+        return QString::number(PARAM_OUT_OF_RANGE).toLatin1().data();
     }
-    _cmdType = items.at(TYPE_INDEX);
+
     //convert the command
     //set commands
     if( _cmdType == SET_TYPE){
         if(setTable.contains(items.at(NAME_INDEX))){
-            _cmdName = items.at(NAME_INDEX);
-            _cmdValue = items.at(VALUE_INDEX).toDouble();
+
+
             QString psiCmd = setTable[_cmdName];
             QStringList psiCmdList = psiCmd.split(";");
-            if(psiCmdList.length() > 1){
-                PSI_ARG_TYPES psiType = (PSI_ARG_TYPES) psiCmdList.at(1).toInt();
+            QString sndCmd = psiCmdList.at(0);
+            for (int i = 1; i < psiCmdList.length(); ++i) {
+                PSI_ARG_TYPES psiType = (PSI_ARG_TYPES) psiCmdList.at(i).toInt();
                 QString arg = argParser(psiType);
-                psiCmd = psiCmdList.at(0) + ";" + arg;
-                return psiCmd.toLatin1().data();
+                sndCmd += ";" + arg;
             }
-            return psiCmdList.at(0).toLatin1().data();
+            _error = NO_ERROR;
+            return sndCmd.toLatin1().data();
+//            if(psiCmdList.length() > 1){
+//                PSI_ARG_TYPES psiType = (PSI_ARG_TYPES) psiCmdList.at(1).toInt();
+//                QString arg = argParser(psiType);
+//                _error = NO_ERROR;
+//                psiCmd = psiCmdList.at(0) + ";" + arg;
+//                return psiCmd.toLatin1().data();
+//            }
+            //_error = NO_ERROR;
+           // return psiCmdList.at(0).toLatin1().data();
         }
+        _error = UNKOWN_COMMAND;
+        return "";
     }
     //get commands
     if( _cmdType == GET_TYPE){
         if(getTable.contains(items.at(NAME_INDEX))){
-            _cmdName = items.at(NAME_INDEX);
             QString psiCmd = getTable[_cmdName];
             QStringList psiCmdList = psiCmd.split(";");
             if(psiCmdList.length() > 1){
                 PSI_ARG_TYPES psiType = (PSI_ARG_TYPES) psiCmdList.at(1).toInt();
                 QString arg = argParser(psiType);
+                _error = NO_ERROR;
                 psiCmd = psiCmdList.at(0) + ";" + arg;
                 return psiCmd.toLatin1().data();
             }
+            _error = NO_ERROR;
             return psiCmdList.at(0).toLatin1().data();
         }
+        _error = UNKOWN_COMMAND;
+        return "";
+    }
+    //cmd commands
+    if( _cmdType == CMD_TYPE){
+        if(cmdTable.contains(items.at(NAME_INDEX))){
+            QString psiCmd = cmdTable[_cmdName];
+            QStringList psiCmdList = psiCmd.split(";");
+            if(psiCmdList.length() > 1){
+                PSI_ARG_TYPES psiType = (PSI_ARG_TYPES) psiCmdList.at(1).toInt();
+                QString arg = argParser(psiType);
+                _error = NO_ERROR;
+                psiCmd = psiCmdList.at(0) + ";" + arg;
+                return psiCmd.toLatin1().data();
+            }
+            _error = NO_ERROR;
+            return psiCmdList.at(0).toLatin1().data();
+        }
+        _error = UNKOWN_COMMAND;
+        return "";
     }
 
+
+
+
+
+    _error = UNKOWN_ERROR;
     return "";
 
 
 }
 
+QString MerlinInterface::makeSetCmdResponse()
+{
+    QString detail = "," + _cmdType + "," + _cmdName + "," +  QString::number(_error);
+    QString len = QString::number(detail.length());
+    //add leading zeros to len
+    QString zeros ="";
+    for (int i = 0; i < 10 - len.length(); ++i) {
+        zeros += "0";
+    }
+    len = zeros + len;
+    return HEADER + "," + len + detail;
+}
+
+QString MerlinInterface::makeGetResponse(QString val)
+{
+    QString detail = "," + _cmdType + "," + _cmdName + "," + val +"," +QString::number(_error);
+    QString len = QString::number(detail.length());
+    //add leading zeros to len
+    QString zeros ="";
+    for (int i = 0; i < 10 - len.length(); ++i) {
+        zeros += "0";
+    }
+    len = zeros + len;
+    return HEADER + "," + len + detail;
+
+}
+
+QString MerlinInterface::getCommandType()
+{
+    return _cmdType;
+}
+
+void MerlinInterface::setFrameHeader()
+{
+    QString headerId = "MQ1";
+    uint32_t acqSeqNum = 0;
+}
+
+FrameHeaderDataStruct MerlinInterface::getFrameHeader()
+{
+    return _frameHeader;
+}
+
 void MerlinInterface::initializeTables()
 {
     //initialize getTable
-    getTable.insert(GETSOFTWAREREVISION,"Hello");
+    getTable.insert(SOFTWAREVERSION,"Hello");
     getTable.insert(COLOURMODE,"GetColourMode");
     getTable.insert(CHARGESUMMING,"GetOperationalMode");
     getTable.insert(GAIN,"GetGainMode");
     getTable.insert(CONTINUOUSRW,"GetReadoutMode");
+    getTable.insert(ENABLECOUNTER1,"GetBothCounters");
+    getTable.insert(COUNTERDEPTH,"GetCounterDepth");
+    getTable.insert(ACQUISITIONPERIOD,"GetShutterPeriod");
+    getTable.insert(NUMFRAMESPERTRIGGER,"GetNumberOfFrame");
+    getTable.insert(THRESHOLD0,"GetThreshold;"+QString::number(TH0));
+    getTable.insert(THRESHOLD1,"GetThreshold;"+QString::number(TH1));
+    getTable.insert(THRESHOLD2,"GetThreshold;"+QString::number(TH2));
+    getTable.insert(THRESHOLD3,"GetThreshold;"+QString::number(TH3));
+    getTable.insert(THRESHOLD4,"GetThreshold;"+QString::number(TH4));
+    getTable.insert(THRESHOLD5,"GetThreshold;"+QString::number(TH5));
+    getTable.insert(THRESHOLD6,"GetThreshold;"+QString::number(TH6));
+    getTable.insert(THRESHOLD7,"GetThreshold;"+QString::number(TH7));
+    getTable.insert(THSTART,"GetStartScan");
+    getTable.insert(THSTOP,"GetStopScan");
+    getTable.insert(THSTEP,"GetStepScan");
+    getTable.insert(THSCAN,"GetThresholdScan");
+    getTable.insert(THSCAN,"GetThresholdScan");
+    getTable.insert(OPERATINGENERGY,"GetOperatingEnergy");
+    getTable.insert(PROFILES,"GetProfile");
+    getTable.insert(TRIGGERSTOP,"GetTriggerMode");
+    getTable.insert(TRIGGERSTART,"GetTriggerMode");
+    getTable.insert(FILEDIRECTORY,"GetRecordPath");
     //initialize setTable
     setTable.insert(COLOURMODE,"SetColourMode;" + QString::number(ENABLE_DISABLE));
     setTable.insert(CHARGESUMMING,"SetOperationalMode;" + QString::number(CSM_SPM));
     setTable.insert(GAIN,"SetGainMode;" + QString::number(HIGH_LOW));
     setTable.insert(CONTINUOUSRW,"SetReadoutMode;" + QString::number(CONT_SEQ));
+    setTable.insert(ENABLECOUNTER1,"SetBothCounters;" + QString::number(ENABLE_DISABLE));
+    setTable.insert(COUNTERDEPTH,"SetCounterDepth;" + QString::number(N));
+    setTable.insert(ACQUISITIONTIME,"SetShutterLength;"+ QString::number(OPEN) + ";" + QString::number(N));
+    setTable.insert(ACQUISITIONPERIOD,"SetShutterPeriod;" + QString::number(N));
+    setTable.insert(NUMFRAMESPERTRIGGER,"SetNumberOfFrame;" + QString::number(N));
+    setTable.insert(THRESHOLD0,"SetThreshold;"+QString::number(TH0)+";" +QString::number(N));
+    setTable.insert(THRESHOLD1,"SetThreshold;"+QString::number(TH1)+";" +QString::number(N));
+    setTable.insert(THRESHOLD2,"SetThreshold;"+QString::number(TH2)+";" +QString::number(N));
+    setTable.insert(THRESHOLD3,"SetThreshold;"+QString::number(TH3)+";" +QString::number(N));
+    setTable.insert(THRESHOLD4,"SetThreshold;"+QString::number(TH4)+";" +QString::number(N));
+    setTable.insert(THRESHOLD5,"SetThreshold;"+QString::number(TH5)+";" +QString::number(N));
+    setTable.insert(THRESHOLD6,"SetThreshold;"+QString::number(TH6)+";" +QString::number(N));
+    setTable.insert(THRESHOLD7,"SetThreshold;"+QString::number(TH7)+";" +QString::number(N));
+    setTable.insert(THSTART,"SetStartScan;" + QString::number(N));
+    setTable.insert(THSTOP,"SetStopScan;" + QString::number(N));
+    setTable.insert(THSTEP,"SetStepScan;" + QString::number(N));
+    setTable.insert(THSCAN,"SetThresholdScan;" + QString::number(N));
+    setTable.insert(THSCAN,"SetThresholdScan;" + QString::number(N));
+    setTable.insert(OPERATINGENERGY,"SetOperatingEnergy;" +  QString::number(N));
+    setTable.insert(PROFILES,"SetProfile;" +  QString::number(N) );
+    setTable.insert(TRIGGERSTOP,"SetTriggerMode;"  +  QString::number(N));
+    setTable.insert(TRIGGERSTART,"SetTriggerMode;"  +  QString::number(N));
+    setTable.insert(FILEDIRECTORY,"SetRecordPath;" + QString::number(STRING));
+    setTable.insert(FILEENABLE,"SetAutoSave;" + QString::number(ENABLE_DISABLE));
     //initialize cmdTable
+    cmdTable.insert(STOPACQUISITION,"Stop");
+    cmdTable.insert(STARTACQUISITION,"Start");
 }
 
 QString MerlinInterface::argParser(MerlinInterface::PSI_ARG_TYPES argType)
 {
     switch (argType) {
     case N:
-        return  QString::number((int)_cmdValue);
+        return  _cmdValue;
+        break;
+    case STRING:
+        return _cmdValue;
         break;
     case N_INF:
-        return QString::number((int)_cmdValue);
+        return _cmdValue;
         break;
     case ENABLE_DISABLE:
-        if((int)_cmdValue == 1)
+        if(_cmdValue.toInt() == 1)
             return "enable";
         else {
             return "disable";
         }
         break;
     case CSM_SPM:
-        if((int)_cmdValue == 1)
+        if(_cmdValue.toInt() == 1)
             return "csm";
         else
             return "spm";
         break;
     case HIGH_LOW:
-        if((int)_cmdValue == 0)
+        if(_cmdValue.toInt() == 0)
             return "shigh";
-        else if((int)_cmdValue == 1)
+        else if(_cmdValue.toInt()== 1)
             return "low";
-        else if((int)_cmdValue == 2)
+        else if(_cmdValue.toInt() == 2)
             return "high";
-        else if((int)_cmdValue == 3)
+        else if(_cmdValue.toInt()== 3)
             return "slow";
         break;
     case CONT_SEQ:
-        if((int)_cmdValue == 0)
+        if(_cmdValue.toInt()== 0)
             return "seq";
-        if((int)_cmdValue == 1)
+        if(_cmdValue.toInt()== 1)
             return "cont";
+        break;
+    case OPEN:
+        return "open";
+        break;
+    case TH0:
+        return "0";
+        break;
+    case TH1:
+        return "1";
+        break;
+    case TH2:
+        return "2";
+        break;
+    case TH3:
+        return "3";
+        break;
+    case TH4:
+        return "4";
+        break;
+    case TH5:
+        return "5";
+        break;
+    case TH6:
+        return "6";
+        break;
+    case TH7:
+        return "7";
         break;
     default:
         break;

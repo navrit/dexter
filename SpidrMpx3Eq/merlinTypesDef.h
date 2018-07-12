@@ -1,0 +1,9 @@
+#ifndef MERLINTYPESDEF_H
+#define MERLINTYPESDEF_H
+
+
+
+
+
+
+#endif // MERLINTYPESDEF_H

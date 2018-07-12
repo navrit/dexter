@@ -30,6 +30,7 @@
 
 #include "ui_thresholdscan.h"
 
+QCstmDacs *qCstmDacsInst;
 
 QCstmDacs::QCstmDacs(QWidget *parent) :
     QWidget(parent),
@@ -103,6 +104,7 @@ QCstmDacs::QCstmDacs(QWidget *parent) :
     // The labels:
     ui->plotScan->xAxis->setLabel("DAC setting");
     ui->plotScan->yAxis->setLabel("DAC out [V]");
+    qCstmDacsInst = this;
 }
 
 QCstmDacs::~QCstmDacs() {
@@ -694,6 +696,11 @@ bool QCstmDacs::WriteDACsFile(string fn){
     qDebug() << "[INFO] Opened " <<fInfo.absoluteFilePath().toStdString().c_str();
 
     return true;
+}
+
+QCstmDacs *QCstmDacs::getInstance()
+{
+    return qCstmDacsInst;
 }
 
 void QCstmDacs::ChangeDeviceIndex( int index )

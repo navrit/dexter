@@ -13,6 +13,7 @@ TcpServer::~TcpServer()
 bool TcpServer::listen(const QHostAddress &address, quint16 port)
 {
     if(!QTcpServer::listen(address,port)) return false;
+    //if(!QTcpServer::listen(address,port)) return false;
 
     m_thread = new QThread(this);
     m_connections = new TcpConnections();

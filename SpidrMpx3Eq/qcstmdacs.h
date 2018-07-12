@@ -59,6 +59,7 @@ public:
 
     bool GetDACsFromConfiguration();
     bool WriteDACsFile(string);
+    static QCstmDacs *getInstance();
 
 
 public:

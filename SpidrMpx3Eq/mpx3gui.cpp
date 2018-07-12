@@ -64,6 +64,14 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
         qDebug()<< "Server can not be started...!";
         return;
     }
+    dataServer = new TcpServer;
+
+    if(!dataServer->listen(QHostAddress::Any,7000))
+    {
+        qDebug()<< "Data Server can not be started...!";
+        return;
+    }
+
 
     // The orientations carry the information of how the information
     //  from a given chip should be drawn in the screen.
@@ -1475,7 +1483,7 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
             newLine +
             newLine +
             QString("Authors: ") +
-            QString("Navrit Bal (2016-), John Idarraga (2014-2017), Amber van Keeken (2016), Roel Deckers, Cyrano Chatziantoniou") +
+            QString("Navrit Bal (2016-) ,Kiavash Mortezavi Matin (2018-)(S-Dexter) ,John Idarraga (2014-2017), Amber van Keeken (2016), Roel Deckers, Cyrano Chatziantoniou") +
             newLine +
             newLine +
             QString("Contributors: ") +

@@ -661,7 +661,6 @@ void QCstmConfigMonitoring::setWindowWidgetsStatus(win_status s){
 void QCstmConfigMonitoring::readMonitoringInfo() {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-
     if ( spidrcontrol ) {
 
         int mdegrees, clockMHz;
@@ -782,4 +781,13 @@ void QCstmConfigMonitoring::on_tstBtn_clicked()
     QString result;
     result.sprintf("%s",res);
     qDebug() << result;
+    qDebug() << "Response : " << mi.makeSetCmdResponse();
+    QString pad ;
+    for (int var = 0; var < 99; ++var) {
+        pad.append(' ');
+    }
+    pad.append('e');
+    qDebug()<<" Pad len = " <<pad.length();
+    qDebug()<<" Pad len byte= " <<pad.toLatin1().length();
+    qDebug()<<" Pad data = " <<pad;
 }
