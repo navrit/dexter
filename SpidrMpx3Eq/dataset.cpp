@@ -2513,7 +2513,7 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold,
                                              std::vector<int> frameOrientation,
                                              Mpx3Config * config) {
 
-    /*if (firstHighSpeedImageSave) {
+    if (firstHighSpeedImageSave) {
         initVariablesForHighSpeedSaving(frameLayouts, frameOrientation);
     }
 
@@ -2523,9 +2523,12 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold,
     if ( !m_plainImageBuff ) {
         m_plainImageBuff = new int[nChips * x() * y()];
     }
-    m_plainImageBuff[nChips * x() * y()] = {0};*/
 
-    return getFrame(0, 0);
+    m_plainImageBuff[nChips * x() * y()] = {0};
+
+    //! FIXME - COME BACK TO THIS LATER
+    //! return getFrame(0, 0);
+
     //memset(m_plainImageBuff, 0, sizeof(int)*nChips * x() * y());
 
 
