@@ -1599,8 +1599,11 @@ void QCstmGLVisualization::onRequestForAutoSaveFromServer(bool val)
     ui->saveCheckBox->setChecked(val);
     ui->saveAllCheckBox->setChecked(val);
     autosaveFromServer = false; //! So it only skips the GUI call to get the
-    //! path if it's being called by the TCP server
-    qDebug()<<"Iam invoked";
+                                //! path if it's being called by the TCP server
+
+#ifdef QT_DEBUG
+    qDebug() << "[INFO] QCstmGLVisualization::onRequestForAutoSaveFromServer =" << val;
+#endif
 }
 
 void QCstmGLVisualization::onRequestForSettingPathFromServer(QString path)

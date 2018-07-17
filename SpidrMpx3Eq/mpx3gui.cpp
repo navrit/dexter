@@ -59,14 +59,14 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     m_zmqController->SetMpx3GUI(this);
 
     tcpServer = new TcpServer;
-    if(!tcpServer->listen(QHostAddress::Any,6000))
+    if(!tcpServer->listen(QHostAddress::Any, 6351))
     {
         qDebug()<< "Server can not be started...!";
         return;
     }
     dataServer = new TcpServer;
 
-    if(!dataServer->listen(QHostAddress::Any,7000))
+    if(!dataServer->listen(QHostAddress::Any, 6352))
     {
         qDebug()<< "Data Server can not be started...!";
         return;
@@ -78,7 +78,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     getDataset()->setOrientation(0, _MPX3RX_ORIENTATION[0]);
     getDataset()->setOrientation(1, _MPX3RX_ORIENTATION[1]);
     getDataset()->setOrientation(2, _MPX3RX_ORIENTATION[2]);
-    getDataset()->setOrientation(3,_MPX3RX_ORIENTATION[3]);
+    getDataset()->setOrientation(3, _MPX3RX_ORIENTATION[3]);
 
     // The layout is the position of the chip in the assembly.
     getDataset()->setLayout(0,  _MPX3RX_LAYOUT[0]);
@@ -1483,7 +1483,7 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
             newLine +
             newLine +
             QString("Authors: ") +
-            QString("Navrit Bal (2016-) ,Kiavash Mortezavi Matin (2018-)(S-Dexter) ,John Idarraga (2014-2017), Amber van Keeken (2016), Roel Deckers, Cyrano Chatziantoniou") +
+            QString("Navrit Bal (2016-), Kiavash Mortezavi Matin (2018-)(S-Dexter), John Idarraga (2014-2017), Amber van Keeken (2016), Roel Deckers, Cyrano Chatziantoniou") +
             newLine +
             newLine +
             QString("Contributors: ") +

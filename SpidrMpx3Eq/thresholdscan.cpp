@@ -16,7 +16,7 @@
 #include "ui_qcstmglvisualization.h"
 
 
-thresholdScan *thresholdScanInst;
+thresholdScan *thresholdScanInst = nullptr;
 
 thresholdScan::thresholdScan(QWidget *parent) :
     QWidget(parent),

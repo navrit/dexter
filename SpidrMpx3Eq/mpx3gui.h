@@ -89,8 +89,8 @@ public:
     void SetupSignalsAndSlots();
     Ui::Mpx3GUI * GetUI() { return _ui; }
     static Mpx3GUI* getInstance();
-    TcpServer *tcpServer = nullptr;
-    TcpServer *dataServer = nullptr;
+    TcpServer *tcpServer = nullptr;  //! Diamond - Merlin interface. TCP, Port 6351
+    TcpServer *dataServer = nullptr; //! Diamond - Merlin interface. TCP, Port 6352
 
 private:
     // ML605 layout

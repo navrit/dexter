@@ -465,56 +465,20 @@ A word added to each command - controls some functionality that changes regularl
         <property name="rightMargin">
          <number>15</number>
         </property>
-        <item row="13" column="1">
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
+        <item row="3" column="9">
+         <widget class="QComboBox" name="pixelDepthCombo">
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
           </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
+         </widget>
         </item>
-        <item row="0" column="5" colspan="3">
-         <widget class="QLabel" name="label_23">
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_8">
           <property name="toolTip">
-           <string>Continuous Read/Write frequency (Hz)</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shutter closed length in selected time units&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string>CRW freq (Hz)</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="9">
-         <widget class="QSpinBox" name="contRWFreq">
-          <property name="toolTip">
-           <string>ContinuousRW frequency (Hz)</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-          </property>
-          <property name="maximum">
-           <number>1300</number>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0" colspan="2">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Operation Mode</string>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="9">
-         <widget class="QSpinBox" name="logLevelSpinner">
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-          </property>
-          <property name="maximum">
-           <number>2</number>
+           <string>Shutter open length</string>
           </property>
          </widget>
         </item>
@@ -854,23 +818,6 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_8">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shutter closed length in selected time units&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Shutter open length</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="9">
-         <widget class="QComboBox" name="pixelDepthCombo">
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-         </widget>
-        </item>
         <item row="4" column="0">
          <widget class="QLabel" name="label_7">
           <property name="enabled">
@@ -957,17 +904,86 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
           </property>
          </widget>
         </item>
-        <item row="10" column="6">
-         <widget class="QPushButton" name="tstBtn">
+        <item row="15" column="1">
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="0" column="5" colspan="3">
+         <widget class="QLabel" name="label_23">
+          <property name="toolTip">
+           <string>Continuous Read/Write frequency (Hz)</string>
+          </property>
           <property name="text">
-           <string>tst</string>
+           <string>CRW freq (Hz)</string>
           </property>
          </widget>
         </item>
-        <item row="9" column="4" colspan="5">
+        <item row="0" column="9">
+         <widget class="QSpinBox" name="contRWFreq">
+          <property name="toolTip">
+           <string>ContinuousRW frequency (Hz)</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+          <property name="maximum">
+           <number>1300</number>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Operation Mode</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="9">
+         <widget class="QSpinBox" name="logLevelSpinner">
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+          <property name="maximum">
+           <number>2</number>
+          </property>
+         </widget>
+        </item>
+        <item row="14" column="9">
+         <widget class="QPushButton" name="tstBtn">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>50</weight>
+            <italic>false</italic>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(164, 0, 0);
+color: rgb(255, 255, 255);
+</string>
+          </property>
+          <property name="text">
+           <string>Merlin interface test</string>
+          </property>
+         </widget>
+        </item>
+        <item row="14" column="0" colspan="8">
          <widget class="QLineEdit" name="tstLe">
           <property name="text">
            <string>MPX,0000000025,SET,COLOURMODE,1</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>

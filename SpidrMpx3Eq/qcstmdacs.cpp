@@ -10,27 +10,21 @@
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QVector>
-//#include <QtWidgets>
 #include <QPen>
 #include <QSignalMapper>
-//#include <QVector>
 
 #include "qcstmdacs.h"
 #include "ui_qcstmdacs.h"
 #include "mpx3eq_common.h"
 #include "mpx3dacsdescr.h"
 #include "mpx3gui.h"
-
 #include "qcstmequalization.h"
-
 #include "SpidrController.h"
 #include "SpidrDaq.h"
-
 #include "qcustomplot.h"
-
 #include "ui_thresholdscan.h"
 
-QCstmDacs *qCstmDacsInst;
+QCstmDacs *qCstmDacsInst = nullptr;
 
 QCstmDacs::QCstmDacs(QWidget *parent) :
     QWidget(parent),
@@ -39,12 +33,12 @@ QCstmDacs::QCstmDacs(QWidget *parent) :
     ui->setupUi(this);
 
     //_ui = ui;
-    _senseThread = 0x0;
-    _scanThread = 0x0;
-    _updateDACsThread = 0x0;
-    _signalMapperSliderSpinBoxConn = 0x0;
-    _signalMapperSlider = 0x0;
-    _signalMapperSpinBox = 0x0;
+    _senseThread = nullptr;
+    _scanThread = nullptr;
+    _updateDACsThread = nullptr;
+    _signalMapperSliderSpinBoxConn = nullptr;
+    _signalMapperSlider = nullptr;
+    _signalMapperSpinBox = nullptr;
 
     // Number of plots added to the Scan
     _plotIdxCntr = 0;

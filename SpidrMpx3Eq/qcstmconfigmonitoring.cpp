@@ -776,7 +776,7 @@ void QCstmConfigMonitoring::on_tstBtn_clicked()
 {
     MerlinInterface mi;
     QByteArray ba = ui->tstLe->text().toLatin1();
-    char* cmdChar = ba.data();
+    char *cmdChar = ba.data();
     char *res = mi.parseCommand(cmdChar);
     QString result;
     result.sprintf("%s",res);
