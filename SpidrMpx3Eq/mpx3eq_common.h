@@ -58,9 +58,11 @@ typedef enum {
 #endif
 
 // DACs
-// #define __voltage_DACS_MAX 	(3.3/2.) // This is how it's setup in hardware
 // #define __maxADCCounts	       65535 // 16 bits
-#define __voltage_DACS_MAX 	     1.6  //1.5 // This is how it's setup in hardware
+#define __voltage_DACS_MAX 	     (3.3/2.) // This is how it's setup in hardware
+                                    //! This is screwed up on W521 F9 E9 H9 G9, needs to be 3.4 V for that one for some reason
+                                    //! Also chips 2 and 3 (last 2) have flat DACs but they can be set
+                                    //!
                                     //! This is the reference voltage - not passed to the analog circuit (it gets ~1.6V)
 #define __maxADCCounts	        4095 // 12 bits
 #define __max_DAC_range			 512
