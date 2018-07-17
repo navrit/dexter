@@ -1070,17 +1070,15 @@ void QCstmGLVisualization::BuildStatsStringOverflow(bool overflow)
 
 QString QCstmGLVisualization::getPath(QString msg)
 {
-    QString path = "";
-    if (!autosaveFromServer) {
-        path = QFileDialog::getExistingDirectory(
+    if (autosaveFromServer) {
+        return ui->saveLineEdit->text();
+    } else {
+        return QFileDialog::getExistingDirectory(
                     this,
                     msg,
                     QDir::currentPath(),
                     QFileDialog::ShowDirsOnly);
     }
-    path = ui-> saveLineEdit->text();
-    // We WILL get a path before exiting this function
-    return path;
 }
 
 void QCstmGLVisualization::developerMode(bool enabled)
@@ -2176,11 +2174,13 @@ void QCstmGLVisualization::on_saveCheckBox_clicked(){
             ui->saveLineEdit->setText(path);
 
             //! If user selected nothing, path comes back empty (or "/" ?)
-            if(path.isEmpty()){
+            if(path.isEmpty()) {
                 ui->saveCheckBox->setChecked(0);
                 ui->saveAllCheckBox->setChecked(0);
                 ui->saveLineEdit->clear();
             }
+
+            //qDebug() << "[INFO]\tSelected path:" << path;
 
             //! When finished, see data_taking_finished() where the data is saved
         }
