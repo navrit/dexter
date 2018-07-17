@@ -32,6 +32,10 @@ class Mpx3Config;
 #include "zmqcontroller.h"
 #include "tcpserver.h"
 
+#include <stdio.h>
+#include <QCoreApplication>
+#include <QTimer>
+
 class Mpx3Config;
 class QCustomPlot;
 class SpidrController;
@@ -70,9 +74,8 @@ class TcpServer;
 const QString _softwareName = "ASI Dexter";
 const QString _softwareVersion = "1.9.5";
 
-#include <stdio.h>
-#include <QCoreApplication>
-#include <QTimer>
+const int tcpCommandPort = 6351;            //! Diamond - Merlin interface
+const int tcpDataPort = 6352;               //! Diamond - Merlin interface
 
 namespace Ui {
 class Mpx3GUI;
@@ -128,6 +131,8 @@ private:
 
     DataControllerThread *dataControllerThread = nullptr;
     zmqController *m_zmqController = nullptr;
+
+    void initialiseServers();
 
     bool m_offset = false; //! Used for generating different patterns per test pattern
 public:

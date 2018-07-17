@@ -12,7 +12,7 @@ class TcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit TcpServer(QObject *parent = 0);
+    explicit TcpServer(QObject *parent = nullptr);
     ~TcpServer();
 
     virtual bool listen(const QHostAddress &address, quint16 port);

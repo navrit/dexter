@@ -14,7 +14,7 @@ class TcpConnections : public QObject
 {
     Q_OBJECT
 public:
-    explicit TcpConnections(QObject *parent = 0);
+    explicit TcpConnections(QObject *parent = nullptr);
     ~TcpConnections();
 
     virtual int count();

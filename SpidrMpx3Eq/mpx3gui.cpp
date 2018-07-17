@@ -38,7 +38,7 @@
 #include <QCoreApplication>
 #include <QTimer>
 
-Mpx3GUI *mpx3GuiInstance;
+Mpx3GUI *mpx3GuiInstance = nullptr;
 
 Mpx3GUI::Mpx3GUI(QWidget * parent) :
     QMainWindow(parent),
@@ -48,30 +48,16 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     // Instantiate everything in the UI
     _ui->setupUi(this);
     this->setWindowTitle(_softwareName);
-    workingSet = new Dataset(128,128, 4);
-    originalSet = new Dataset(128,128, 4);
+    workingSet = new Dataset(128, 128, 4);
+    originalSet = new Dataset(128, 128, 4);
     config = new Mpx3Config;
     config->SetMpx3GUI( this );
 
     dataControllerThread = new DataControllerThread(this);
 
+    //! FleXray - ZMQ to XRE/TeSCAN Acquila interface
     m_zmqController = new zmqController(this);
     m_zmqController->SetMpx3GUI(this);
-
-    tcpServer = new TcpServer;
-    if(!tcpServer->listen(QHostAddress::Any, 6351))
-    {
-        qDebug()<< "Server can not be started...!";
-        return;
-    }
-    dataServer = new TcpServer;
-
-    if(!dataServer->listen(QHostAddress::Any, 6352))
-    {
-        qDebug()<< "Data Server can not be started...!";
-        return;
-    }
-
 
     // The orientations carry the information of how the information
     //  from a given chip should be drawn in the screen.
@@ -211,6 +197,9 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     //_ui->statusBar->set
     //m_statusBarMessageLabel.setAlignment( Qt::AlignLeft );
     m_statusBarMessageString.clear( );
+
+    initialiseServers();
+
     mpx3GuiInstance = this;
 }
 
@@ -959,6 +948,29 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
     saveFile.close();
 
     qDebug() << "[INFO] JSON File saved";
+}
+
+void Mpx3GUI::initialiseServers()
+{
+    //! Diamond - Merlin interface
+    tcpServer = new TcpServer;
+    if (!tcpServer->listen(QHostAddress::Any, tcpCommandPort)) {
+        qWarning() << "[ERROR]\tTCP Command server cannot listen on port:" << tcpCommandPort;
+        qDebug() << "[ERROR]\tCheck if there is another process already bound to port:" << tcpCommandPort;
+        return;
+    } else {
+        qDebug().nospace() << "[INFO]\tTCP Command server listening on \"tcp://*:" << tcpCommandPort << "\"";
+    }
+
+    //! Diamond - Merlin interface
+    dataServer = new TcpServer;
+    if(!dataServer->listen(QHostAddress::Any, tcpDataPort)) {
+        qWarning() << "[ERROR]\tTCP Data server cannot listen on port:" << tcpDataPort;
+        qDebug() << "[ERROR]\tCheck if there is another process already bound to port:" << tcpDataPort;
+        return;
+    } else {
+        qDebug().nospace() << "[INFO]\tTCP Data server listening on \"tcp://*:" << tcpDataPort << "\"";
+    }
 }
 
 void Mpx3GUI::developerMode()

@@ -2,12 +2,12 @@
 
 TcpServer::TcpServer(QObject *parent) : QTcpServer(parent)
 {
-    qDebug() <<  this << "created on" << QThread::currentThread();
+    //qDebug() << "[INFO]\t" << this << "created"; // on" << QThread::currentThread();
 }
 
 TcpServer::~TcpServer()
 {
-    qDebug() <<  this << "destroyed";
+    qDebug() << "[INFO]\t" << this << "destroyed";
 }
 
 bool TcpServer::listen(const QHostAddress &address, quint16 port)
@@ -31,26 +31,23 @@ bool TcpServer::listen(const QHostAddress &address, quint16 port)
 
 void TcpServer::close()
 {
-    qDebug() << this << "closing server";
+    qDebug() << "[INFO]\t" << this << "CLOSE";
     emit finished();
     QTcpServer::close();
 }
 
 qint64 TcpServer::port()
 {
-    if(isListening())
-    {
+    if (isListening()) {
         return this->serverPort();
-    }
-    else
-    {
+    } else {
         return 1000;
     }
 }
 
 void TcpServer::incomingConnection(qintptr descriptor)
 {
-    qDebug() << this << "attempting to accept connection" << descriptor;
+    qDebug() << "[INFO]\t" << this << "attempting to accept connection" << descriptor;
     TcpConnecton *connection = new TcpConnecton();
     accept(descriptor, connection);
 
@@ -58,7 +55,7 @@ void TcpServer::incomingConnection(qintptr descriptor)
 
 void TcpServer::accept(qintptr descriptor, TcpConnecton *connection)
 {
-    qDebug() << this << "accepting the connection" << descriptor;
+    qDebug() << "[INFO]\t" << this << "accepting the connection" << descriptor;
     connection->moveToThread(m_thread);
     emit accepting(descriptor, connection);
 }
@@ -67,20 +64,20 @@ void TcpServer::complete()
 {
     if(!m_thread)
     {
-        qWarning() << this << "exiting complete there was no thread!";
+        qWarning() << "[INFO]\t" << this << "exiting complete there was no thread!";
         return;
     }
 
-    qDebug() << this << "Complete called, destroying thread";
+    qDebug() << "[INFO]\t" << this << "Complete called, destroying thread";
     delete m_connections;
 
-    qDebug() << this << "Quitting thread";
+    qDebug() << "[INFO]\t" << this << "Quitting thread";
     m_thread->quit();
     m_thread->wait();
 
     delete m_thread;
 
-    qDebug() << this << "complete";
+    qDebug() << "[INFO]\t" << this << "complete";
 
 }
 
