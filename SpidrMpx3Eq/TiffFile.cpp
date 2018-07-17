@@ -16,6 +16,12 @@ bool TiffFile::saveToTiff32_512(const char* filePath, const int *pixels)
 
     const uint16_t size = 512;
 
+    //! FIXME BUG Unresolved, unknown cause
+    if (pixels == nullptr) {
+        qDebug() << "[ERROR] TiffFile::saveToTiff32_512, pixels == nullptr. pixels ==" << pixels;
+        return false;
+    }
+
     TIFF * m_pTiff = nullptr;
 
     //! Open the TIFF file, write mode
