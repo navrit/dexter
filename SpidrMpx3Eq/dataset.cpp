@@ -2123,7 +2123,9 @@ void Dataset::fromASCIIMatrix(QFile * file, int x, int y, int framesPerLayer)
 void Dataset::clear() {
 
     for(int i =0; i < m_layers.size(); i++){
-        delete[] m_layers[i];
+        if (i != 0) {
+            delete[] m_layers[i];
+        }
     }
     m_layers.clear();
     m_thresholdsToIndices.clear();
@@ -2458,6 +2460,7 @@ int * Dataset::getLayer(int threshold){
 void Dataset::initVariablesForHighSpeedSaving(std::vector<QPoint> frameLayouts,
                                               std::vector<int> frameOrientation)
 {
+
     // This two members carry all the information about the layout
     //QVector<QPoint>  m_frameLayouts // positions in the pad
     //QVector<int> m_frameOrientation // orientations
