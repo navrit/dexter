@@ -77,9 +77,7 @@ QCstmDacs::QCstmDacs(QWidget *parent) :
     ui->senseDACsPushButton->setDisabled( true );
 
 
-
     // Prepare plot
-    // Prepare the plot
     //ui->plotScan = new QCustomPlot();
     ui->plotScan->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
     // The legend
