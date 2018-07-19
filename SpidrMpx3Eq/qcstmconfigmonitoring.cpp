@@ -770,12 +770,9 @@ void QCstmConfigMonitoring::on_ColourModeCheckBox_toggled(bool checked) {
 void QCstmConfigMonitoring::on_tstBtn_clicked()
 {
     MerlinInterface mi;
-    QByteArray ba = ui->tstLe->text().toLatin1();
-    char* cmdChar = ba.data();
-    char *res = mi.parseCommand(cmdChar);
-    QString result;
-    result.sprintf("%s",res);
-    qDebug() << result;
+    QString ba = ui->tstLe->text();
+    QString res = mi.parseCommand(ba);
+    qDebug() << res;
     qDebug() << "Response : " << mi.makeSetCmdResponse();
     QString pad ;
     for (int var = 0; var < 99; ++var) {

@@ -29,9 +29,19 @@ protected:
 signals:
     void accepting(qintptr handle, TcpConnecton *connection);
     void finished();
+    //inform outside world about the recieved data at socket
+    void dataRecieved(QString);
+    //pass the response to tcpconnections
+    void responseIsReady(QString);
+
+
 
 public slots:
     void complete();
+    //recieve data from tcp connections
+    void on_dataRecieved(QString);
+    //get response from outside world
+    void on_responseIsReady(QString);
 };
 
 #endif // TCPSERVER_H

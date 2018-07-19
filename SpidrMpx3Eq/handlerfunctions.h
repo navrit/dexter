@@ -205,25 +205,39 @@ void snapHandler(){
 void startHandler(){
 
     if(!isStarted){
+
         CommandHandler::getInstance()->startLiveCamera();
         isStarted = true;
+
     }
     int d = (isStarted) ? 0 : -1;
     CommandHandler::getInstance()->setData(QString::number(d));
     if(d == 0)
+    {
         CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        QThread::usleep(20000);
+//        CommandHandler::getInstance()->startSendingImage(true);
+//        CommandHandler::getInstance()-> sendMerlinImage();
+        CommandHandler::getInstance()->emitrequestForAnotherSocket(6352);
+        isStarted = false;
+    }
     else
         CommandHandler::getInstance()->setError(CommandHandler::UNKWON_ERROR);
+
+
 }
 void stopHandler(){
     if(isStarted){
-        CommandHandler::getInstance()->startLiveCamera();
+       // CommandHandler::getInstance()->
         isStarted = false;
     }
     int d = (isStarted) ? -1 : 0;
     CommandHandler::getInstance()->setData(QString::number(d));
     if(d == 0)
+    {
         CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        CommandHandler::getInstance()->startSendingImage(false);
+    }
     else
         CommandHandler::getInstance()->setError(CommandHandler::UNKWON_ERROR);
 }
@@ -415,7 +429,8 @@ void setShutterPeriodHandler(){
         return;
     }
     int open = Mpx3GUI::getInstance()->getConfig()->getTriggerLength();
-    Mpx3GUI::getInstance()->getConfig()->setTriggerDowntime(CommandHandler::getInstance()->cmdTable["SetShutterPeriod"].args.at(0).toInt() - open);
+    Mpx3GUI::getInstance()->getConfig()->setTriggerDowntime(CommandHandler::getInstance()->cmdTable["SetShutterPeriod"].args.at(0).toDouble() - open);
+    qDebug()<<"dodododod:" << CommandHandler::getInstance()->cmdTable["SetShutterPeriod"].args.at(0).toDouble();
     CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
 }
 void getShutterPeriodHandler(){
@@ -651,7 +666,9 @@ void setThresholdHandler(){
         return;
     }
     int idx = CommandHandler::getInstance()->cmdTable["SetThreshold"].args.at(0).toInt();
-    int val = CommandHandler::getInstance()->cmdTable["SetThreshold"].args.at(1).toInt();
+    int val = CommandHandler::getInstance()->cmdTable["SetThreshold"].args.at(1).toDouble();
+   // qDebug() <<"Double: " << CommandHandler::getInstance()->cmdTable["SetThreshold"].args.at(1).toDouble() << "..." << idx;
+    //qDebug() << "Int : " << CommandHandler::getInstance()->cmdTable["SetThreshold"].args.at(1).toInt();
     CommandHandler::getInstance()->setThreshold(idx,val);
     CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
 }

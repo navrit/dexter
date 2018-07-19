@@ -173,28 +173,41 @@ QByteArray Dataset::toByteArray() {
     // 68 bit header start offset
     QByteArray ret(0);
     ret += QByteArray::fromRawData((const char*)&m_nx, (int)sizeof(m_nx));
-    qDebug()<<"ba 1: "<<ret.length();
+
     ret += QByteArray::fromRawData((const char*)&m_ny, (int)sizeof(m_ny));
-    qDebug()<<"ba 2: "<<ret.length();
+
     ret += QByteArray::fromRawData((const char*)&m_nFrames, (int)sizeof(m_nFrames));
-    qDebug()<<"ba 3: "<<ret.length();
+
     int layerCount = m_layers.size();
     ret += QByteArray::fromRawData((const char*)&layerCount, (int)sizeof(layerCount));
-    qDebug()<<"ba 4: "<<ret.length();
+
     ret += QByteArray::fromRawData((const char*)m_frameLayouts.data(),(int)(m_nFrames*sizeof(*m_frameLayouts.data())));
-    qDebug()<<"ba 5: "<<ret.length();
+
     ret += QByteArray::fromRawData((const char*)m_frameOrientation.data(), (int)(m_nFrames*sizeof(*m_frameOrientation.data())));
-    qDebug()<<"ba 6: "<<ret.length();
+
     // Keys are Thresholds
     QList<int> keys = m_thresholdsToIndices.keys();
     ret += QByteArray::fromRawData((const char*)keys.toVector().data(),(int)(keys.size()*sizeof(int))); //thresholds
 
-    qDebug()<<"ba 7: "<<ret.length();
     // 68 bit header end offset
     for(int i = 0; i < keys.length(); i++)
         ret += QByteArray::fromRawData((const char*)this->getLayer(keys[i]), (int)(sizeof(float)*getLayerSize()));
 
     return ret;
+}
+
+QByteArray Dataset::toSocketData()
+{
+    QByteArray ret(0);
+    QList<int> keys = m_thresholdsToIndices.keys();
+    if(keys.length() < 1)
+        return ret;
+
+    ret += QByteArray::fromRawData((const char*)this->getLayer(0), (int)(sizeof(float)*getLayerSize()));
+
+
+    return ret;
+
 }
 
 /**

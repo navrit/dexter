@@ -4,8 +4,7 @@
 #include <QObject>
 #include <QDebug>
 #include <QTcpSocket>
-#include "commandhandler.h"
-#include "MerlinInterface.h"
+#include <QRegularExpression>
 
 class TcpConnecton : public QObject
 {
@@ -19,13 +18,10 @@ public:
 protected:
     QTcpSocket *m_socket;
     QTcpSocket *getSocket();
-    //handle the incoming command
-    CommandHandler *cmdHandler;
-    MerlinInterface *mi;
-
 
 signals:
-    void cmdRecieved(char*);
+    void dataRecieved(QString);
+
 public slots:
     virtual void connected();
     virtual void disconnected();
@@ -33,14 +29,8 @@ public slots:
     virtual void bytesWritten(qint64 bytes);
     virtual void stateChanged(QAbstractSocket::SocketState socketState);
     virtual void error(QAbstractSocket::SocketError socketError);
-    //added slots
-    void on_dataIsDecoded(QString, QByteArray, bool);
-
-private:
-    void sendData(QString);     //to send regular data
-    void sendData(QByteArray);  //to send image
-
-
+    //for sending the response to the client(get response from tcpconnections)
+    void on_responseIsReady(QString);
 };
 
 #endif // TCPCONNECTON_H

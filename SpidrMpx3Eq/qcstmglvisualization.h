@@ -340,7 +340,8 @@ signals:
 
     //! All related functions are commented out, should this stay?
     //void infDataTakingToggeled(bool);
-
+public:
+    scoring getScoring(){return _score;}
 };
 
 #endif // QCSTMGLVISUALIZATION_H

@@ -2219,7 +2219,13 @@ void QCstmGLVisualization::on_tstPb_clicked()
 //    qDebug()<<"Actual size : " << qt.length();
 
 //    QByteArray ba = _mpx3gui->getDataset()->toByteArray();
-//    qDebug() << "Actual size : " << ba.length();
+//    qDebug() << "Actual size with header: " << ba.length();
+//    QString str = _mpx3gui->getDataset()->toSocketData("MPX3,kia");
+//    QStringList lst = str.split(",");
+//    qDebug() << "Actual size without header: " << lst.length();
+//    qDebug() << "all data >> :" << str;
+    //qDebug() << "Data without header: " << str;
+
 //    QByteArray header = ba.left(9*4);
 //    for (int i = 0; i < 72; ++i) {
 //        qDebug() << i << "'th = " << (uint8)ba.at(i);
@@ -2230,23 +2236,23 @@ void QCstmGLVisualization::on_tstPb_clicked()
 //       qDebug()<<"Ther " << i << ":" << *Mpx3GUI::getInstance()->getDataset()->getLayer(i);
 //    }
 
-    QVector<int> dev = Mpx3GUI::getInstance()->getConfig()->getActiveDevices();
-    qDebug()<<"Num DEV : " << dev.count(); //num chips;
+//    QVector<int> dev = Mpx3GUI::getInstance()->getConfig()->getActiveDevices();
+//    qDebug()<<"Num DEV : " << dev.count(); //num chips;
 
-    int pixdepth = Mpx3GUI::getInstance()->getConfig()->getPixelDepth();
-    qDebug()<<"Num PIXDEPTH : " << pixdepth; //pixel depth;
+//    int pixdepth = Mpx3GUI::getInstance()->getConfig()->getPixelDepth();
+//    qDebug()<<"Num PIXDEPTH : " << pixdepth; //pixel depth;
 
-    int ntrigg = Mpx3GUI::getInstance()->getConfig()->getNTriggers();
-    qDebug()<<"Num TRIGG : " << ntrigg; //num trigg;
+//    int ntrigg = Mpx3GUI::getInstance()->getConfig()->getNTriggers();
+//    qDebug()<<"Num TRIGG : " << ntrigg; //num trigg;
 
-    QPoint pnt = _mpx3gui->getDataset()->getSize();
-    qDebug()<<"X : " << pnt.x() << " Y : "<< pnt.y(); //num trigg;
+//    QPoint pnt = _mpx3gui->getDataset()->getSize();
+//    qDebug()<<"X : " << pnt.x() << " Y : "<< pnt.y(); //num trigg;
 
-    double open =(double)  Mpx3GUI::getInstance()->getConfig()-> getTriggerLength_ms() / (double)1000;
-    qDebug()<<"Num OPEN : " << open; //open
+//    double open =(double)  Mpx3GUI::getInstance()->getConfig()-> getTriggerLength_ms() / (double)1000;
+//    qDebug()<<"Num OPEN : " << open; //open
 
-    QDateTime dateTime = QDateTime::currentDateTime();
-    qDebug() << dateTime.toString("yyyy-dd-MM hh:mm:ss.ssssss").length();
+//    QDateTime dateTime = QDateTime::currentDateTime();
+//    qDebug() << dateTime.toString("yyyy-dd-MM hh:mm:ss.ssssss").length();
 
 
 

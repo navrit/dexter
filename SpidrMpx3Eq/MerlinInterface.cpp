@@ -38,47 +38,45 @@ void MerlinInterface::setErrorExternally(int error)
 
 }
 
-char *MerlinInterface::parseCommand(char *command)
+QString MerlinInterface::parseCommand(QString command)
 {
     _cmdLength = 0;
     _cmdType = "";
     _cmdName = "";
     _cmdValue = "";
-    QString stringCmd;
-    stringCmd.sprintf("%s",command);
-    QStringList items = stringCmd.split(",");
-    QStringList itemsTemp ;
+    QStringList items = command.split(",");
+//    QStringList itemsTemp ;
 
-    for(int i=0; i<items.size(); i++){
-        QString str = items.at(i);
+//    for(int i=0; i<items.size(); i++){
+//        QString str = items.at(i);
 
-        //! Tolerate new lines sent from netcat
-        QStringList list = str.split(QRegularExpression("(\\n)"));
-        itemsTemp.push_back(list.join(""));
-    }
+//        //! Tolerate new lines sent from netcat
+//        QStringList list = str.split(QRegularExpression("(\\n)"));
+//        itemsTemp.push_back(list.join(""));
+//    }
 
-    items.clear();
-    items = itemsTemp;
+//    items.clear();
+//    items = itemsTemp;
 
 
     //check the header
     if(items.at(HEADER_INDEX) != HEADER){
         _error = UNKOWN_COMMAND;
-        return QString::number(UNKOWN_COMMAND).toLatin1().data();
+        return QString::number(UNKOWN_COMMAND);
     }
     //check the range of the command
     if(items.length() < CMD_GET_PARTS || items.length() > SET_PARTS)
     {
         _error = PARAM_OUT_OF_RANGE;
-        return QString::number(PARAM_OUT_OF_RANGE).toLatin1().data();;
+        return QString::number(PARAM_OUT_OF_RANGE);
     }
     if(items.at(TYPE_INDEX) == SET_TYPE && items.length() != SET_PARTS){
         _error = PARAM_OUT_OF_RANGE;
-        return QString::number(PARAM_OUT_OF_RANGE).toLatin1().data();;
+        return QString::number(PARAM_OUT_OF_RANGE);
     }
     if((items.at(TYPE_INDEX) == CMD_TYPE || items.at(TYPE_INDEX) == GET_TYPE) && items.length() != CMD_GET_PARTS){
         _error = PARAM_OUT_OF_RANGE;
-        return QString::number(PARAM_OUT_OF_RANGE).toLatin1().data();;
+        return QString::number(PARAM_OUT_OF_RANGE);
     }
     //copy to local variables
     _cmdLength = items.at(LENGTH_INDEX).toInt();
@@ -89,7 +87,7 @@ char *MerlinInterface::parseCommand(char *command)
     //check the length of the following command
     if(items.at(LENGTH_INDEX).length() != 10){
         _error = PARAM_OUT_OF_RANGE;
-        return QString::number(PARAM_OUT_OF_RANGE).toLatin1().data();;
+        return QString::number(PARAM_OUT_OF_RANGE);
     }
 
     int cmdLength = items.length() - 2;
@@ -99,7 +97,7 @@ char *MerlinInterface::parseCommand(char *command)
     if(cmdLength != _cmdLength)
     {
         _error = PARAM_OUT_OF_RANGE;
-        return QString::number(PARAM_OUT_OF_RANGE).toLatin1().data();
+        return QString::number(PARAM_OUT_OF_RANGE);
     }
 
     //convert the command
@@ -117,7 +115,8 @@ char *MerlinInterface::parseCommand(char *command)
                 sndCmd += ";" + arg;
             }
             _error = NO_ERROR;
-            return sndCmd.toLatin1().data();
+            qDebug() << "built cmd :" << sndCmd;
+            return sndCmd;
 //            if(psiCmdList.length() > 1){
 //                PSI_ARG_TYPES psiType = (PSI_ARG_TYPES) psiCmdList.at(1).toInt();
 //                QString arg = argParser(psiType);
@@ -141,10 +140,10 @@ char *MerlinInterface::parseCommand(char *command)
                 QString arg = argParser(psiType);
                 _error = NO_ERROR;
                 psiCmd = psiCmdList.at(0) + ";" + arg;
-                return psiCmd.toLatin1().data();
+                return psiCmd;
             }
             _error = NO_ERROR;
-            return psiCmdList.at(0).toLatin1().data();
+            return psiCmdList.at(0);
         }
         _error = UNKOWN_COMMAND;
         return "";
@@ -159,10 +158,10 @@ char *MerlinInterface::parseCommand(char *command)
                 QString arg = argParser(psiType);
                 _error = NO_ERROR;
                 psiCmd = psiCmdList.at(0) + ";" + arg;
-                return psiCmd.toLatin1().data();
+                return psiCmd;
             }
             _error = NO_ERROR;
-            return psiCmdList.at(0).toLatin1().data();
+            return psiCmdList.at(0);
         }
         _error = UNKOWN_COMMAND;
         return "";
@@ -188,7 +187,7 @@ QString MerlinInterface::makeSetCmdResponse()
         zeros += "0";
     }
     len = zeros + len;
-    return HEADER + "," + len + detail;
+    return HEADER + "," + len + detail +"\n";
 }
 
 QString MerlinInterface::makeGetResponse(QString val)
@@ -201,7 +200,7 @@ QString MerlinInterface::makeGetResponse(QString val)
         zeros += "0";
     }
     len = zeros + len;
-    return HEADER + "," + len + detail;
+    return HEADER + "," + len + detail +"\n";
 
 }
 

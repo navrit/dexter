@@ -10,7 +10,7 @@
 #include "ui_qcstmconfigmonitoring.h"
 #include "DataTakingThread.h"
 #include "thresholdscan.h"
-#include "tcpserver.h"
+
 
 #include "mpx3eq_common.h"
 #include "mpx3defs.h"
@@ -59,18 +59,23 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     m_zmqController->SetMpx3GUI(this);
 
     tcpServer = new TcpServer;
-    if(!tcpServer->listen(QHostAddress::Any,6000))
+    if(!tcpServer->listen(QHostAddress::Any,6351))
     {
         qDebug()<< "Server can not be started...!";
         return;
     }
-    dataServer = new TcpServer;
+    commandHandlerWrapper = new CommandHandlerWrapper;
+    connect(tcpServer,SIGNAL(dataRecieved(QString)),commandHandlerWrapper,SLOT(on_dataRecieved(QString)));
+    connect(commandHandlerWrapper,SIGNAL(responseIsReady(QString)),tcpServer,SLOT(on_responseIsReady(QString)));
+//    dataServer = new DataServer;
 
-    if(!dataServer->listen(QHostAddress::Any,7000))
-    {
-        qDebug()<< "Data Server can not be started...!";
-        return;
-    }
+//    if(!dataServer->listen(QHostAddress::Any,6352))
+//    {
+//        qDebug()<< "Data Server can not be started...!";
+//        return;
+//    }
+
+    //connect(tcpServer,SIGNAL(requestAnotherServer(int)),dataServer,SLOT(on_requestAnotherServer(int)));
 
 
     // The orientations carry the information of how the information

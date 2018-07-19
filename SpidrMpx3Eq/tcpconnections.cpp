@@ -34,6 +34,9 @@ void TcpConnections::removeSocket(QTcpSocket *socket)
         socket->close();
     }
 
+    disconnect(m_connections[socket],SIGNAL(dataRecieved(QString)),this,SLOT(on_dataRecieved(QString)));
+    disconnect(this,SIGNAL(responseIsReady(QString)),m_connections[socket],SLOT(on_responseIsReady(QString)));
+
     qDebug() << this << "deleting socket" << socket;
     m_connections.remove(socket);
     socket->deleteLater();
@@ -104,10 +107,35 @@ void TcpConnections::accept(qintptr handle, TcpConnecton *connection)
 
     connection->moveToThread(QThread::currentThread());
     connection->setSocket(socket);
+    //connect to data_recived
+    connect(connection,SIGNAL(dataRecieved(QString)),this,SLOT(on_dataRecieved(QString)));
+    connect(this,SIGNAL(responseIsReady(QString)),connection,SLOT(on_responseIsReady(QString)));
+    //always accept one connection
+    if(this->count() <= 0)
+        m_connections.insert(socket,connection);
+    else
+    {
+        QList<QTcpSocket*> keys = m_connections.keys();
+        for (int i = 0; i < keys.length(); ++i) {
+            this->removeSocket(keys[i]);
+        }
+        m_connections.insert(socket,connection);
+    }
 
-    m_connections.insert(socket,connection);
     qDebug() << this << "clients = " << m_connections.count();
     emit socket->connected();
 
+}
+
+void TcpConnections::on_dataRecieved(QString data)
+{
+    qDebug() << "Recieved at tcpconnections : " << data;
+    emit dataRecieved(data);
+}
+
+void TcpConnections::on_responseIsReady(QString response)
+{
+    qDebug() << "Response recieved at the tcpconnections : " << response;
+    emit responseIsReady(response);
 }
 
