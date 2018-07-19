@@ -1072,10 +1072,9 @@ void QCstmGLVisualization::BuildStatsStringOverflow(bool overflow)
 
 QString QCstmGLVisualization::getPath(QString msg)
 {
-    if (autosaveFromServer) {
-        return ui->saveLineEdit->text();
-    } else {
-        return QFileDialog::getExistingDirectory(
+    QString path = "";
+    if (!autosaveFromServer) {
+        path = QFileDialog::getExistingDirectory(
                     this,
                     msg,
                     QDir::currentPath(),
@@ -1877,7 +1876,6 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
         }
 
     }
-    else if(selectedItem == &maskAllActive){
 
     if (selectedItem == nullptr) {
         return;

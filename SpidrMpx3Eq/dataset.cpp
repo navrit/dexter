@@ -2588,14 +2588,10 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold,
                 pixIdTranslate = XYtoX(x, y, sizex_full);
 
                 if ( chipdata ) { // There's data for this chip
-
                     //qDebug() << "[" << i << "]" << x << "," << y << " : " << pixIdTranslate << " | " << pixCntr;
-
                     m_plainImageBuff[pixIdTranslate] = chipdata[pixCntr++];
                 } else {
-
                     m_plainImageBuff[pixIdTranslate] = 0;
-
                 }
 
                 // direction and stop
@@ -2618,20 +2614,10 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold,
                 if ( x < endx[i] ) gox = false;
             }
         }
-
-
     }
-
-
-//    for ( int i = 0 ; i < getPixelsPerLayer() ; i++ ) {
-//        if ( i<10 || (i>127&&i<137) ) qDebug() << "[" << i << "] " << layer[i];
-//        if ( i>=16384 && i<(16384+10) ) qDebug() << "[" << i << "] " << layer[i];
-//    }
-
 
     return m_plainImageBuff;
 }
-*/
 
 
 /*

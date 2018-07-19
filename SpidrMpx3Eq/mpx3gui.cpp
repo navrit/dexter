@@ -983,14 +983,14 @@ void Mpx3GUI::initialiseServers()
     }
 
     //! Diamond - Merlin interface
-    dataServer = new TcpServer;
-    if(!dataServer->listen(QHostAddress::Any, tcpDataPort)) {
-        qWarning() << "[ERROR]\tTCP Data server cannot listen on port:" << tcpDataPort;
-        qDebug() << "[ERROR]\tCheck if there is another process already bound to port:" << tcpDataPort;
-        return;
-    } else {
-        qDebug().nospace() << "[INFO]\tTCP Data server listening on \"tcp://*:" << tcpDataPort << "\"";
-    }
+//    dataServer = new TcpServer;
+//    if(!dataServer->listen(QHostAddress::Any, tcpDataPort)) {
+//        qWarning() << "[ERROR]\tTCP Data server cannot listen on port:" << tcpDataPort;
+//        qDebug() << "[ERROR]\tCheck if there is another process already bound to port:" << tcpDataPort;
+//        return;
+//    } else {
+//        qDebug().nospace() << "[INFO]\tTCP Data server listening on \"tcp://*:" << tcpDataPort << "\"";
+//    }
 }
 
 void Mpx3GUI::developerMode()

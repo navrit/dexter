@@ -80,7 +80,7 @@ private:
     int     _cmdLength = 0;
     QString _cmdType   = "";
     QString _cmdName   = "";
-    double  _cmdValue  = 0.0;
+    QString  _cmdValue  = "";
     int     _error     = NO_ERROR;
     QString _response  = "";
     FrameHeaderDataStruct _frameHeader;

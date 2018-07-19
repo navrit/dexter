@@ -18,8 +18,6 @@ public:
 protected:
     QTcpSocket *m_socket;
     QTcpSocket *getSocket();
-    //handle the incoming command
-    CommandHandler *cmdHandler;
 
 signals:
     void dataRecieved(QString);
