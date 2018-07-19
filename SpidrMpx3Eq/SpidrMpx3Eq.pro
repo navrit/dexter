@@ -99,11 +99,12 @@ SOURCES += main.cpp \
     StepperMotorController.cpp \
     qcustomplot.cpp \
     testpulseequalisation.cpp \
+    commandhandler.cpp \
+    MerlinInterface.cpp \
     tcpserver.cpp \
     tcpconnecton.cpp \
     tcpconnections.cpp \
-    commandhandler.cpp \
-    MerlinInterface.cpp
+    commandhandlerwrapper.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -146,13 +147,14 @@ HEADERS += mpx3gui.h \
     StepperMotorController.h \
     qcustomplot.h \
     testpulseequalisation.h \
-    tcpserver.h \
-    tcpconnecton.h \
-    tcpconnections.h \
     commandhandler.h \
     handlerfunctions.h \
     MerlinInterface.h \
-    merlinCommandsDef.h
+    merlinCommandsDef.h \
+    tcpserver.h \
+    tcpconnecton.h \
+    tcpconnections.h \
+    commandhandlerwrapper.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \

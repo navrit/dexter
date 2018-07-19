@@ -26,6 +26,10 @@ protected:
 signals:
     void quitting();
     void finished();
+    //pass recieved data to tcp server
+    void dataRecieved(QString);
+    //pass the response to tcpconnection
+    void responseIsReady(QString);
 
 protected slots:
     void disconnected();
@@ -36,6 +40,10 @@ public slots:
     void start();
     void quit();
     void accept(qintptr handle, TcpConnecton *connection);
+    //recieve data from tcp connection
+    void on_dataRecieved(QString);
+    //get response from tcpserver
+    void on_responseIsReady(QString);
 };
 
 #endif // TCPCONNECTIONS_H

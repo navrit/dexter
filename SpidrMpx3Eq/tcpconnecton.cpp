@@ -5,11 +5,6 @@
 TcpConnecton::TcpConnecton(QObject *parent) : QObject(parent)
 {
     qDebug() << this << "Created";
-    cmdHandler = new CommandHandler;
-    mi = new MerlinInterface;
-    connect(this,SIGNAL(cmdRecieved(char*)),cmdHandler,SLOT(on_cmdRecieved(char*)));
-    //just for now; it could be changed
-    connect(cmdHandler,SIGNAL(commandIsDecoded(QString,QByteArray,bool)),this,SLOT(on_dataIsDecoded(QString,QByteArray,bool)));
 }
 
 TcpConnecton::~TcpConnecton()
@@ -51,21 +46,17 @@ void TcpConnecton::readyRead()
 {
     if(!sender()) return;
     qDebug() << this << " readyRead " << getSocket();
-    //recieve the commands
+    QTcpSocket *socket = getSocket();
     char rcv_data[4096];
     memset(rcv_data,0,sizeof(rcv_data));
-    int len = getSocket()->read(rcv_data,sizeof(rcv_data));
-    qDebug() << " Data Length is : " <<len;
-    qDebug() << " Data is : " << rcv_data;
-    char* psiCmd = mi->parseCommand(rcv_data);
-    //cmdHandler->setCmd(rcv_data);
-    cmdHandler->setCmd(psiCmd);
-    cmdHandler->fetchCmd();
-   // qDebug()<<"decoded data is: " << cmdHandler->getData();
-
-//    QTcpSocket *socket = getSocket();
-//    if(!socket) return;
-//    socket->close();
+    socket->read(rcv_data,sizeof(rcv_data));
+    QString recievedData;
+    recievedData.sprintf("%s",rcv_data);
+    //for debg purpose
+    qDebug() << "Recieved data from client : " << recievedData;
+    emit dataRecieved(recievedData.split("\n").at(0).split("\r").at(0));
+    if(!socket) return;
+    //socket->close();
 }
 
 void TcpConnecton::bytesWritten(qint64 bytes)
@@ -86,83 +77,13 @@ void TcpConnecton::error(QAbstractSocket::SocketError socketError)
     qDebug() << this << " error " << getSocket() << " error = " << socketError;
 }
 
-void TcpConnecton::on_dataIsDecoded(QString command, QByteArray im, bool isImage)
+void TcpConnecton::on_responseIsReady(QString response)
 {
-    QString sndStr = command;
-    mi->setErrorExternally(cmdHandler->getError());
-    if(mi->getCommandType() == "SET" || mi->getCommandType() == "CMD" )
-        sndStr = mi->makeSetCmdResponse();
-    if(mi->getCommandType() == "GET")
-        sndStr = mi->makeGetResponse(command);
-
-    sendData(QString(sndStr));
-    if(isImage) {
-        sendData(im);
-    }
-}
-
-void TcpConnecton::sendData(QString data)
-{
-
-//        QByteArray ba = data.toLatin1();
-//        int sizeToWrite = data.length();
-//        int byteIndex = 0;
-//        const int sizeToSend = 1024;
-//        while(sizeToWrite > 0){
-//            QString sendStr ="";
-//            for(int i = 0; i<sizeToSend;i++){
-//                //if(byteIndex + i >= sizeToWrite)
-//                   // break;
-//                QString castStr(ba.at(byteIndex + i));
-//                sendStr += castStr;
-//            }
-//            sizeToWrite -= sizeToSend;
-//            byteIndex += sizeToSend;
-//            QByteArray ba2 = sendStr.toLatin1();
-//            char *snd_data = ba2.data();
-//            qDebug()<<"size:"<<ba2.size();
-//            m_socket->write(snd_data,sizeToSend);
-//            m_socket->flush();
-//            m_socket->waitForBytesWritten();
-
-//        }
-
-    QByteArray ba = data.toLatin1();
+    qDebug() << "Response recieved at the tcpconnection : " << response;
+    QByteArray ba = response.toLatin1();
     qDebug()<<"size:"<<ba.size();
     int sndSize = m_socket->write(ba);
     m_socket->flush();
     m_socket->waitForBytesWritten();
     qDebug()<<"size:"<<sndSize;
 }
-
-void TcpConnecton::sendData(QByteArray image)
-{
-    const int chunk = 256*256;//8 * 1024;
-    const int imageSize = image.length();
-//    const QByteArray eof = "\n";
-    int remainSize = imageSize;
-    int idx = 0;
-    int sum = 0;
-    while(remainSize >= 0) {
-        QByteArray imageToSend = image.mid(idx,chunk);
-        int sndSize = m_socket->write(imageToSend);
-        m_socket->flush();
-        m_socket->waitForBytesWritten();
-        qDebug()<<"size:"<<sndSize;
-        idx += chunk;
-        sum += sndSize;
-        remainSize -= chunk;
-    }
-
-//    int sndSize = m_socket->write(eof);
-//    m_socket->flush();
-//    m_socket->waitForBytesWritten();
-//    qDebug()<<"size:"<<sndSize;
-//    sum += sndSize;
-
-    qDebug()<<"Total Size = "<< imageSize;// + sizeof(eof);
-    qDebug()<<"Total Sent Size = "<< sum;
-}
-
-
-

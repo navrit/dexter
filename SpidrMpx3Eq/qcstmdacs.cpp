@@ -10,18 +10,24 @@
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QVector>
+//#include <QtWidgets>
 #include <QPen>
 #include <QSignalMapper>
+//#include <QVector>
 
 #include "qcstmdacs.h"
 #include "ui_qcstmdacs.h"
 #include "mpx3eq_common.h"
 #include "mpx3dacsdescr.h"
 #include "mpx3gui.h"
+
 #include "qcstmequalization.h"
+
 #include "SpidrController.h"
 #include "SpidrDaq.h"
+
 #include "qcustomplot.h"
+
 #include "ui_thresholdscan.h"
 
 QCstmDacs *qCstmDacsInst = nullptr;
@@ -77,7 +83,9 @@ QCstmDacs::QCstmDacs(QWidget *parent) :
     ui->senseDACsPushButton->setDisabled( true );
 
 
+
     // Prepare plot
+    // Prepare the plot
     //ui->plotScan = new QCustomPlot();
     ui->plotScan->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
     // The legend

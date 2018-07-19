@@ -38,7 +38,7 @@
 #include <QCoreApplication>
 #include <QTimer>
 
-Mpx3GUI *mpx3GuiInstance = nullptr;
+Mpx3GUI *mpx3GuiInstance;
 
 Mpx3GUI::Mpx3GUI(QWidget * parent) :
     QMainWindow(parent),
@@ -58,6 +58,26 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     //! FleXray - ZMQ to XRE/TeSCAN Acquila interface
     m_zmqController = new zmqController(this);
     m_zmqController->SetMpx3GUI(this);
+
+    tcpServer = new TcpServer;
+    if(!tcpServer->listen(QHostAddress::Any,6351))
+    {
+        qDebug()<< "Server can not be started...!";
+        return;
+    }
+    commandHandlerWrapper = new CommandHandlerWrapper;
+    connect(tcpServer,SIGNAL(dataRecieved(QString)),commandHandlerWrapper,SLOT(on_dataRecieved(QString)));
+    connect(commandHandlerWrapper,SIGNAL(responseIsReady(QString)),tcpServer,SLOT(on_responseIsReady(QString)));
+//    dataServer = new DataServer;
+
+//    if(!dataServer->listen(QHostAddress::Any,6352))
+//    {
+//        qDebug()<< "Data Server can not be started...!";
+//        return;
+//    }
+
+    //connect(tcpServer,SIGNAL(requestAnotherServer(int)),dataServer,SLOT(on_requestAnotherServer(int)));
+
 
     // The orientations carry the information of how the information
     //  from a given chip should be drawn in the screen.

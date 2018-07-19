@@ -6,7 +6,7 @@
 
 #include <QtWidgets>
 //server
-#include "tcpserver.h"
+
 
 
 

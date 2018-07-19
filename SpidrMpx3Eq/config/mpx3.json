@@ -148,12 +148,12 @@
         "ZmqSubAddress": "tcp://192.168.178.9:50000"
     },
     "StepperConfig": {
-        "Acceleration": -1,
-        "CalibAngle0": -1,
-        "CalibAngle1": -1,
-        "CalibPos0": -1,
-        "CalibPos1": -1,
-        "Speed": -1,
-        "UseCalib": false
+        "Acceleration": 20000,
+        "CalibAngle0": 360,
+        "CalibAngle1": 0,
+        "CalibPos0": 576000,
+        "CalibPos1": 0,
+        "Speed": 10000,
+        "UseCalib": true
     }
 }

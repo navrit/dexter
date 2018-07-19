@@ -197,6 +197,20 @@ QByteArray Dataset::toByteArray() {
     return ret;
 }
 
+QByteArray Dataset::toSocketData()
+{
+    QByteArray ret(0);
+    QList<int> keys = m_thresholdsToIndices.keys();
+    if(keys.length() < 1)
+        return ret;
+
+    ret += QByteArray::fromRawData((const char*)this->getLayer(0), (int)(sizeof(float)*getLayerSize()));
+
+
+    return ret;
+
+}
+
 /**
  * This serializes all the layers in a single vector of integers.
  */
@@ -2574,10 +2588,14 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold,
                 pixIdTranslate = XYtoX(x, y, sizex_full);
 
                 if ( chipdata ) { // There's data for this chip
+
                     //qDebug() << "[" << i << "]" << x << "," << y << " : " << pixIdTranslate << " | " << pixCntr;
+
                     m_plainImageBuff[pixIdTranslate] = chipdata[pixCntr++];
                 } else {
+
                     m_plainImageBuff[pixIdTranslate] = 0;
+
                 }
 
                 // direction and stop
@@ -2600,10 +2618,20 @@ int * Dataset::getFullImageAsArrayWithLayout(int threshold,
                 if ( x < endx[i] ) gox = false;
             }
         }
+
+
     }
+
+
+//    for ( int i = 0 ; i < getPixelsPerLayer() ; i++ ) {
+//        if ( i<10 || (i>127&&i<137) ) qDebug() << "[" << i << "] " << layer[i];
+//        if ( i>=16384 && i<(16384+10) ) qDebug() << "[" << i << "] " << layer[i];
+//    }
+
 
     return m_plainImageBuff;
 }
+*/
 
 
 /*

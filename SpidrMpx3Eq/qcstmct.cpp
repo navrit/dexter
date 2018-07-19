@@ -198,11 +198,11 @@ void QCstmCT::resumeCT()
         applyCorrection( corrMethod );
 
         // Save/send file?
-        QString filename = CTfolder +
+        QString filename = CTfolder; /*+
                 //QDateTime::currentDateTimeUtc().toString(Qt::ISODate) +
                 "img_" +
                 QString::number(iteration) +
-                ".tif";
+                ".tif";*/
 
         //qDebug() << "[CT] Saving TIFF:" << filename;
         if (corrMethod == "Beam Hardening"){

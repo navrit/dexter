@@ -69,7 +69,7 @@ public:
     enum ERROR_TYPE{NO_ERROR = 0, UNKOWN_ERROR = 1, UNKOWN_COMMAND = 2, PARAM_OUT_OF_RANGE = 3};
     explicit MerlinInterface(QObject *parent = 0);
     void setErrorExternally(int);
-    char *parseCommand(char *); //get the merlin command and parse it to PSI command
+    QString parseCommand(QString); //get the merlin command and parse it to PSI command
                                 //e.g MPX,0000000024,GET,SOFTWAREVERSION  ==> Hello
     QString makeSetCmdResponse(void);
     QString makeGetResponse(QString);
@@ -80,7 +80,7 @@ private:
     int     _cmdLength = 0;
     QString _cmdType   = "";
     QString _cmdName   = "";
-    QString  _cmdValue  = "";
+    double  _cmdValue  = 0.0;
     int     _error     = NO_ERROR;
     QString _response  = "";
     FrameHeaderDataStruct _frameHeader;

@@ -24,17 +24,17 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestForAutoSave(bool)),QCstmGLVisualization::getInstance(),SLOT(onRequestForAutoSaveFromServer(bool)));
     connect(this,SIGNAL(requestForSettingSavePath(QString)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingPathFromServer(QString)));
 //    connect(this,SIGNAL(requestForSettingSaveTag(int)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingFormatFromServer(int)));
+   //if(cmdInst == nullptr)
     cmdInst = this;
     initializeCmdTable();
 }
 
-void CommandHandler::on_cmdRecieved(char *command)
+void CommandHandler::on_cmdRecieved(QString command)
 {
-//    QString str;
-//    str.sprintf("%s",command);
-//    cmd = str;
-//    qDebug()<<"from de :"<<cmd;
-//    fetchCmd();
+//    qDebug() << "This command recieved at commandhndler : " << command;
+//    this->setCmd(command);
+//    qDebug() << "after : " << cmd;
+//    this->fetchCmd();
 
 }
 
@@ -182,7 +182,7 @@ void CommandHandler::setError(CommandHandler::ERROR_TYPE et)
 
 void CommandHandler::startLiveCamera()
 {
-    emit requestForInfDataTracking(true);
+    //emit requestForInfDataTracking(true);
     emit requestForDataTaking();
     //QCstmGLVisualization::getInstance()->setInfDataTaking(true);
 }
@@ -286,6 +286,13 @@ int CommandHandler::getThreholdScan()
 {
     return thresholdScan::getInstance()->GetUI()->comboBox_thresholdToScan->currentIndex();
 }
+
+void CommandHandler::startSendingImage(bool send)
+{
+    _sendingImage = send;
+}
+
+
 
 void CommandHandler::merlinErrorToPslError(int errNum)
 {
@@ -402,6 +409,43 @@ QString CommandHandler::generateMerlinFrameHeader(FrameHeaderDataStruct frameHea
     return header;
 }
 
+void CommandHandler::sendMerlinImage()
+{
+    int len = 2044+3+2;
+    QString file = "HDR,	Chip ID:	W117_E7,W117_H7,W117_I7,W117_G7Chip Type (Medipix 3.0, Medipix 3.1, Medipix RX):	Medipix3RXAssembly Size (1X1, 2X2):	   2x2Chip Mode  (SPM, CSM, CM, CSCM):	SPM Counter Depth (number):	12Gain:	HGMActive Counters:	Counter 0Thresholds (keV):	0.000000E+0,1.000000E+1,1.500000E+1,2.000000E+1,2.500000E+1,3.000000E+1,3.500000E+1,4.000000E+1DACs:	030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,148,128,203,189,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,142,128,192,180,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,151,128,205,191,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,138,128,189,181,417,417bpc File:	c:\MERLIN Quad Host\Config\W117_E7\W117_E7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_H7\W117_H7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_I7\W117_I7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_G7\W117_G7_SPM.bpcDAC File:	c:\MERLIN Quad Host\Config\W117_E7\W117_E7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_H7\W117_H7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_I7\W117_I7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_G7\W117_G7_SPM.dacsGap Fill Mode:	NoneFlat Field File:	Dummy (C:\<NUL>\Temp.ffc)Dead Time File:	Dummy (C:\<NUL>\Temp.dtc)Acquisition Type (Normal, Th_scan, Config):	NormalFrames in Acquisition (Number):	  1000Trigger Start (Positive, Negative, Internal):	InternalTrigger Stop (Positive, Negative, Internal):	InternalFrames per Trigger (Number):	1Time and Date Stamp (yr, mnth, day, hr, min, s):	10/12/2013 17:36:32Sensor Bias (V, µA)	20 VSensor Polarity (Positive, Negative):	PositiveTemperature (C):	FPGA Temp 37.250000 Deg CMedipix Clock (MHz):	120MHzReadout System:	Merlin QuadSoftware Version:	DevelopmentEnd";
+    int fileLen = file.length();
+    if(fileLen < 2044){
+        int s = 2044 - fileLen;
+        for (int i = 0; i <s ; ++i) {
+            file.append(' ');
+        }
+    }
+    QString acqHeader = "MPX,"+QString::number(len)+",HDR,"+file;
+    commandIsDecoded(acqHeader,nullptr,false);
+    int nFrames = Mpx3GUI::getInstance()->getConfig()->getNTriggers();
+    int frameCounter = 0;
+
+    while(frameCounter <nFrames){
+
+        FrameHeaderDataStruct frameHeader;
+        QByteArray ba = generateMerlinFrameHeader(frameHeader).toLatin1().data();
+        ba += Mpx3GUI::getInstance()->getDataset()->toSocketData();
+        commandIsDecoded("",ba,true);
+        frameCounter++;
+
+    }
+//    FrameHeaderDataStruct frameHeader;
+//    QByteArray ba = generateMerlinFrameHeader(frameHeader).toLatin1().data();
+//    ba += Mpx3GUI::getInstance()->getDataset()->toSocketData();
+//    commandIsDecoded("",ba,true);
+    return;
+}
+
+void CommandHandler::emitrequestForAnotherSocket(int port)
+{
+    emit requestAnotherSocket(port);
+}
+
 
 
 
@@ -425,21 +469,19 @@ void CommandHandler::fetchCmd()
         data = cmd; //"Command does not exist...!";
         merlinErrorToPslError(cmd.toInt());
         qDebug()<<"No Matched...."<<cmd.toInt();
-        emit commandIsDecoded(data,imageToSend,false);
+        emit commandIsDecoded(data,nullptr,false);
         return;
     }
     if(cmd == "GetImage")
-        emit commandIsDecoded(data,imageToSend,true);
+        emit commandIsDecoded(data,nullptr,true);
     else
-        emit commandIsDecoded(data,imageToSend,false);
+        emit commandIsDecoded(data,nullptr,false);
 }
 
-void CommandHandler::setCmd(char* command)
+void CommandHandler::setCmd(QString command)
 {
    arguments.clear();
-   QString stringCmd;
-   stringCmd.sprintf("%s",command);
-   QStringList cmdList = stringCmd.split(";");
+   QStringList cmdList = command.split(";");
    cmd = cmdList.at(0); //core command
 
    for(int i=1; i<cmdList.size(); i++){

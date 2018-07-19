@@ -846,6 +846,8 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     // Defaults
     emit mode_changed( ui->summingCheckbox->isChecked() );
 
+    connect( ui->saveCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_saveCheckBox_clicked()));
+
     // CT stuff
     connect( this, SIGNAL(sig_resumeCT()), _mpx3gui->getCT(), SLOT(resumeCT()));
 
@@ -1079,6 +1081,9 @@ QString QCstmGLVisualization::getPath(QString msg)
                     QDir::currentPath(),
                     QFileDialog::ShowDirsOnly);
     }
+    path = ui-> saveLineEdit->text();
+    // We WILL get a path before exiting this function
+    return path;
 }
 
 void QCstmGLVisualization::developerMode(bool enabled)
@@ -1737,7 +1742,11 @@ void QCstmGLVisualization::region_selected(QPoint pixel_begin, QPoint pixel_end,
         _profiledialog->plotProfile();
 
         _profiledialog->show();
+
     }
+
+    //    delete label;
+    //    delete a;
 }
 
 //! TODO BUG The maths on this is incorrect, apparently opposing chips have pixels masked when they should not be...
@@ -1864,8 +1873,11 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
                     _mpx3gui->getEqualization()->GetEqualizationResults( chip )->maskPixel( (*itrM).value(iv) );
                 }
             }
+
         }
+
     }
+    else if(selectedItem == &maskAllActive){
 
     if (selectedItem == nullptr) {
         return;
@@ -2216,40 +2228,44 @@ void QCstmGLVisualization::on_saveAllCheckBox_toggled(bool checked)
 //! Remove this before merging
 void QCstmGLVisualization::on_tstPb_clicked()
 {
+//    qDebug()<<"Frame hi::";
+//    QVector<int> frame0 = Mpx3GUI::getInstance()->getDataset()->makeFrameForSaving(0,false);
+//    qDebug()<<"Frame size0 ::" << frame0.length();
+//    QVector<int> frame1 = Mpx3GUI::getInstance()->getDataset()->makeFrameForSaving(1,false);
+//    qDebug()<<"Frame size1 ::" << frame1.length();
+//    QVector<int> frame2 = Mpx3GUI::getInstance()->getDataset()->makeFrameForSaving(2,false);
+//    qDebug()<<"Frame size2 ::" << frame2.length();
+//    QVector<int> frame3 = Mpx3GUI::getInstance()->getDataset()->makeFrameForSaving(3,false);
+//    qDebug()<<"Frame size3 ::" << frame3.length();
+//    QVector<int> frame4 = Mpx3GUI::getInstance()->getDataset()->makeFrameForSaving(4,false);
+//    qDebug()<<"Frame size4 ::" << frame4.length();
+//    QVector<int> frame20 = Mpx3GUI::getInstance()->getDataset()->makeFrameForSaving(20,false);
+//    qDebug()<<"Frame size20 ::" << Mpx3GUI::getInstance()->getDataset()->getThresholds().length();
 
+
+
+//    QVector<int*> qt = Mpx3GUI::getInstance()->getDataset()->getActualData();
+//    int* a = qt.at(0);
+
+//    QString strData ="";
+//    QFile file("./thisfile.txt");
+//    if (file.open(QIODevice::ReadWrite | QIODevice::Text)) {
+//        QTextStream stream(&file);
+//        for(int x = 0; x<frame0.length();x++){
+
+//            stream << frame0.at(x) << endl;
+//        }
+//         file.close();
+
+//    }
 //    qDebug()<<"Actual size : " << qt.length();
 
-//    QByteArray ba = _mpx3gui->getDataset()->toByteArray();
-//    qDebug() << "Actual size : " << ba.length();
-//    QByteArray header = ba.left(9*4);
-//    for (int i = 0; i < 72; ++i) {
-//        qDebug() << i << "'th = " << (uint8)ba.at(i);
-//    }
-//    qDebug()<<"Num Thershold : " << Mpx3GUI::getInstance()->getDataset()->getThresholds().count();
-
-//    for (int i = 0; i < Mpx3GUI::getInstance()->getDataset()->getThresholds().count(); ++i) {
-//       qDebug()<<"Ther " << i << ":" << *Mpx3GUI::getInstance()->getDataset()->getLayer(i);
-//    }
-
-    QVector<int> dev = Mpx3GUI::getInstance()->getConfig()->getActiveDevices();
-    qDebug()<<"Num DEV : " << dev.count(); //num chips;
-
-    int pixdepth = Mpx3GUI::getInstance()->getConfig()->getPixelDepth();
-    qDebug()<<"Num PIXDEPTH : " << pixdepth; //pixel depth;
-
-    int ntrigg = Mpx3GUI::getInstance()->getConfig()->getNTriggers();
-    qDebug()<<"Num TRIGG : " << ntrigg; //num trigg;
-
-    QPoint pnt = _mpx3gui->getDataset()->getSize();
-    qDebug()<<"X : " << pnt.x() << " Y : "<< pnt.y(); //num trigg;
-
-    double open =(double)  Mpx3GUI::getInstance()->getConfig()-> getTriggerLength_ms() / (double)1000;
-    qDebug()<<"Num OPEN : " << open; //open
-
-    QDateTime dateTime = QDateTime::currentDateTime();
-    qDebug() << dateTime.toString("yyyy-dd-MM hh:mm:ss.ssssss").length();
-
-
+    QByteArray ba = _mpx3gui->getDataset()->toByteArray();
+    qDebug() << "Actual size : " << ba.length();
+    QByteArray header = ba.left(9*4);
+    for (int i = 0; i < header.length(); ++i) {
+        qDebug() << i << "'th = " << (uint8)header.at(i);
+    }
 
 }
 

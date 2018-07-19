@@ -25,7 +25,7 @@ public:
     explicit CommandHandler(QObject *parent = nullptr);
     QString getData(void);
     void fetchCmd();
-    void setCmd(char*);
+    void setCmd(QString);
     void setData(QString);
     void setImage(QByteArray);
     bool enoughArguments(int, QString);
@@ -49,9 +49,12 @@ public:
     int getThreholdScan(void);
     int startScan(int);
     int stopScan(int);
+    void startSendingImage(bool);
     void merlinErrorToPslError(int errNum);
-
     QString generateMerlinFrameHeader(FrameHeaderDataStruct);
+    void sendMerlinImage();
+    //data
+    void emitrequestForAnotherSocket(int);
     //test
     void print(void);
     QHash<QString,cmd_struct> cmdTable;
@@ -65,8 +68,10 @@ signals:
     void requestForAutoSave(bool);
     void requestForSettingSavePath(QString);
     void requestForSettingSaveFormat(int);
+    void requestAnotherSocket(int);
+
 public slots:
-    void on_cmdRecieved(char*);
+    void on_cmdRecieved(QString);
 
 private:
     QString cmd;         // core command
@@ -77,6 +82,8 @@ private:
     ERROR_TYPE _error = NO_ERROR;
     char* getTimeStamp();
     void setMerlinFrameHeader(FrameHeaderDataStruct&);
+    bool _sendingImage = false;
+
 
 };
 

@@ -18,6 +18,9 @@ bool TcpServer::listen(const QHostAddress &address, quint16 port)
     m_thread = new QThread(this);
     m_connections = new TcpConnections();
 
+    connect(m_connections,SIGNAL(dataRecieved(QString)),this,SLOT(on_dataRecieved(QString)));
+    connect(this,SIGNAL(responseIsReady(QString)),m_connections,SLOT(on_responseIsReady(QString)));
+
     connect(m_thread,&QThread::started,m_connections,&TcpConnections::start, Qt::QueuedConnection);
     connect(this, &TcpServer::accepting,m_connections,&TcpConnections::accept, Qt::QueuedConnection);
     connect(this,&TcpServer::finished,m_connections,&TcpConnections::quit, Qt::QueuedConnection);
@@ -79,5 +82,18 @@ void TcpServer::complete()
 
     qDebug() << "[INFO]\t" << this << "complete";
 
+}
+
+void TcpServer::on_dataRecieved(QString data)
+{
+    qDebug() << "Recieved at tcpserver : " << data;
+    emit dataRecieved(data);
+
+}
+
+void TcpServer::on_responseIsReady(QString response)
+{
+    qDebug() << "Response recieved at the tcpserver : " << response;
+    emit responseIsReady(response);
 }
 
