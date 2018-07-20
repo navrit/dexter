@@ -237,9 +237,6 @@ private slots:
 
     void on_saveAllCheckBox_toggled(bool checked);
 
-    //! Remove this before merging
-    void on_tstPb_clicked();
-
 public slots:
 
     void StartDataTaking(QString mode="");
