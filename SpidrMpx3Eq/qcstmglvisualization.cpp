@@ -39,8 +39,8 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     _takingData = false;
 
     _busyDrawing = false;
-    _etatimer = 0x0;
-    _timer = 0x0;
+    _etatimer = nullptr;
+    _timer = nullptr;
     _estimatedETA = 0;
 
     // Defaults from GUI
@@ -668,9 +668,9 @@ void QCstmGLVisualization::DestroyTimer() {
     // timer
     disconnect(_timer, SIGNAL(timeout()), this, SLOT(updateETA()));
     if( _timer ) delete _timer;
-    _timer = 0x0;
+    _timer = nullptr;
     if( _etatimer ) delete _etatimer;
-    _etatimer = 0x0;
+    _etatimer = nullptr;
 
 }
 
