@@ -143,7 +143,6 @@
    <addaction name="actionOpen_data"/>
    <addaction name="actionSave_data"/>
    <addaction name="separator"/>
-   <addaction name="actionRevert"/>
    <addaction name="actionClear_data"/>
    <addaction name="separator"/>
    <addaction name="actionLoad_DACs"/>
@@ -380,21 +379,6 @@
    </property>
    <property name="toolTip">
     <string>Equalisation (Ctrl+4)</string>
-   </property>
-  </action>
-  <action name="actionRevert">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/undo-button.png</normaloff>:/icons/undo-button.png</iconset>
-   </property>
-   <property name="text">
-    <string>Revert</string>
-   </property>
-   <property name="toolTip">
-    <string>Revert back to uncorrected previous dataset</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Z</string>
    </property>
   </action>
   <action name="actionAbout">

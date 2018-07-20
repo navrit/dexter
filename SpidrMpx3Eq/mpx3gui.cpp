@@ -1473,12 +1473,6 @@ void Mpx3GUI::on_actionEqualization_triggered(){
 //    // ->setChecked(1);
 //}
 
-//! Implement revert more fully?
-void Mpx3GUI::on_actionRevert_triggered(bool) {
-    rewindToOriginalDataset();
-    _ui->visualizationGL->reload_all_layers(false);
-}
-
 void Mpx3GUI::on_actionAbout_triggered(bool){
     QMessageBox msgBox;
     msgBox.setWindowTitle("About");
