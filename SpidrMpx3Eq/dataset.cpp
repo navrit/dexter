@@ -154,10 +154,15 @@ Dataset& Dataset::operator=( const Dataset& tocopy){
     return *this;
 }
 
-void Dataset::zero(){
-    for(int i = 0; i < m_layers.size(); i++){
-        for(unsigned int j = 0; j < getPixelsPerLayer(); j++)
-            m_layers[i][j] = 0;
+void Dataset::zero() {
+    uint64_t pixelsPerLayer = getPixelsPerLayer();
+    for (int i = 0; i < m_layers.size(); i++){
+        for (unsigned int j = 0; j < pixelsPerLayer; ++j) {
+            //! This check may be unnecessary
+            if (m_layers[i] != nullptr) {
+                m_layers[i][j] = 0;
+            }
+        }
     }
 }
 
