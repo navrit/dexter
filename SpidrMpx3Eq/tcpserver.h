@@ -33,6 +33,8 @@ signals:
     void dataRecieved(QString);
     //pass the response to tcpconnections
     void responseIsReady(QString);
+    //pass the image to tcpconnections
+    void imageIsReady(QByteArray);
 
 
 
@@ -42,6 +44,8 @@ public slots:
     void on_dataRecieved(QString);
     //get response from outside world
     void on_responseIsReady(QString);
+    //get image from outside world
+    void on_imageIsReady(QByteArray);
 };
 
 #endif // TCPSERVER_H

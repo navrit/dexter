@@ -59,15 +59,15 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     m_zmqController = new zmqController(this);
     m_zmqController->SetMpx3GUI(this);
 
-    tcpServer = new TcpServer;
-    if(!tcpServer->listen(QHostAddress::Any,6351))
-    {
-        qDebug()<< "Server can not be started...!";
-        return;
-    }
-    commandHandlerWrapper = new CommandHandlerWrapper;
-    connect(tcpServer,SIGNAL(dataRecieved(QString)),commandHandlerWrapper,SLOT(on_dataRecieved(QString)));
-    connect(commandHandlerWrapper,SIGNAL(responseIsReady(QString)),tcpServer,SLOT(on_responseIsReady(QString)));
+//    tcpServer = new TcpServer;
+//    if(!tcpServer->listen(QHostAddress::Any,6351))
+//    {
+//        qDebug()<< "Server can not be started...!";
+//        return;
+//    }
+//    commandHandlerWrapper = new CommandHandlerWrapper;
+//    connect(tcpServer,SIGNAL(dataRecieved(QString)),commandHandlerWrapper,SLOT(on_dataRecieved(QString)));
+//    connect(commandHandlerWrapper,SIGNAL(responseIsReady(QString)),tcpServer,SLOT(on_responseIsReady(QString)));
 //    dataServer = new DataServer;
 
 //    if(!dataServer->listen(QHostAddress::Any,6352))
@@ -972,7 +972,7 @@ void Mpx3GUI::saveMetadataToJSON(QString filename){
 
 void Mpx3GUI::initialiseServers()
 {
-    //! Diamond - Merlin interface
+    //! Diamond - Merlin interface commands socket
     tcpServer = new TcpServer;
     if (!tcpServer->listen(QHostAddress::Any, tcpCommandPort)) {
         qWarning() << "[ERROR]\tTCP Command server cannot listen on port:" << tcpCommandPort;
@@ -981,16 +981,21 @@ void Mpx3GUI::initialiseServers()
     } else {
         qDebug().nospace() << "[INFO]\tTCP Command server listening on \"tcp://*:" << tcpCommandPort << "\"";
     }
+    commandHandlerWrapper = new CommandHandlerWrapper;
+    connect(tcpServer,SIGNAL(dataRecieved(QString)),commandHandlerWrapper,SLOT(on_dataRecieved(QString)));
+    connect(commandHandlerWrapper,SIGNAL(responseIsReady(QString)),tcpServer,SLOT(on_responseIsReady(QString)));
 
-    //! Diamond - Merlin interface
-//    dataServer = new TcpServer;
-//    if(!dataServer->listen(QHostAddress::Any, tcpDataPort)) {
-//        qWarning() << "[ERROR]\tTCP Data server cannot listen on port:" << tcpDataPort;
-//        qDebug() << "[ERROR]\tCheck if there is another process already bound to port:" << tcpDataPort;
-//        return;
-//    } else {
-//        qDebug().nospace() << "[INFO]\tTCP Data server listening on \"tcp://*:" << tcpDataPort << "\"";
-//    }
+    //! Diamond - Merlin interface data socket
+    dataServer = new TcpServer;
+    if(!dataServer->listen(QHostAddress::Any, tcpDataPort)) {
+        qWarning() << "[ERROR]\tTCP Data server cannot listen on port:" << tcpDataPort;
+        qDebug() << "[ERROR]\tCheck if there is another process already bound to port:" << tcpDataPort;
+        return;
+    } else {
+        qDebug().nospace() << "[INFO]\tTCP Data server listening on \"tcp://*:" << tcpDataPort << "\"";
+    }
+    connect(commandHandlerWrapper,SIGNAL(imageIsReady(QByteArray)),dataServer,SLOT(on_imageIsReady(QByteArray)));
+
 }
 
 void Mpx3GUI::developerMode()

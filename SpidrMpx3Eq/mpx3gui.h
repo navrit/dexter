@@ -107,6 +107,7 @@ private:
     //server
 
     TcpServer *tcpServer = nullptr;
+    TcpServer *dataServer = nullptr;
     CommandHandlerWrapper *commandHandlerWrapper = nullptr;
     //server
     std::vector<int> _MPX3RX_ORIENTATION = std::vector< int > {Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL, Dataset::orientationTtBRtL};

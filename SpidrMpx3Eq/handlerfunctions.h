@@ -215,10 +215,10 @@ void startHandler(){
     if(d == 0)
     {
         CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-        QThread::usleep(20000);
-//        CommandHandler::getInstance()->startSendingImage(true);
-//        CommandHandler::getInstance()-> sendMerlinImage();
-        CommandHandler::getInstance()->emitrequestForAnotherSocket(6352);
+//        QThread::usleep(20000);
+////        CommandHandler::getInstance()->startSendingImage(true);
+   //    CommandHandler::getInstance()-> sendMerlinImage();
+//        CommandHandler::getInstance()->emitrequestForAnotherSocket(6352);
         isStarted = false;
     }
     else

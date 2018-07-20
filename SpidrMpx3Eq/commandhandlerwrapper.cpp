@@ -4,6 +4,7 @@ CommandHandlerWrapper::CommandHandlerWrapper(QObject *parent) : QObject(parent)
 {
     commandHandler = new CommandHandler;
     merlinInterface = new MerlinInterface;
+    connect(commandHandler,SIGNAL(requestForDataTaking(void)),this,SLOT(on_requestForDataTaking(void)));
 }
 
 void CommandHandlerWrapper::on_dataRecieved(QString command)
@@ -25,4 +26,14 @@ void CommandHandlerWrapper::on_dataRecieved(QString command)
     emit responseIsReady(response); //must be passed to command socket in order to send it to the client
     qDebug() << "response from handler : " << response;
 
+
+}
+
+void CommandHandlerWrapper::on_requestForDataTaking()
+{
+    //dummy image data for test
+    QString acqHeader = commandHandler->getAcquisitionHeader();
+    QByteArray image;
+    image = QString("This is an test imageeeeeeeeeeeeeee....!").toLatin1();
+    emit imageIsReady(acqHeader.toLatin1());
 }

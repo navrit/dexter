@@ -17,10 +17,16 @@ private:
     MerlinInterface *merlinInterface;
 
 signals:
+    //pass response to command server
     void responseIsReady(QString);
+    //pass image to data server
+    void imageIsReady(QByteArray);
 
 public slots:
+    //recive commands from command socket(server)
     void on_dataRecieved(QString);
+    //provide image data for image socket(server) when is requested.
+    void on_requestForDataTaking(void);
 };
 
 #endif // COMMANDHANDLERWRAPPER_H

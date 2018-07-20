@@ -52,6 +52,7 @@ public:
     void startSendingImage(bool);
     void merlinErrorToPslError(int errNum);
     QString generateMerlinFrameHeader(FrameHeaderDataStruct);
+    QString getAcquisitionHeader(void);
     void sendMerlinImage();
     //data
     void emitrequestForAnotherSocket(int);

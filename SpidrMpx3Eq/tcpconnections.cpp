@@ -40,6 +40,7 @@ void TcpConnections::removeSocket(QTcpSocket *socket)
 
     disconnect(m_connections[socket],SIGNAL(dataRecieved(QString)),this,SLOT(on_dataRecieved(QString)));
     disconnect(this,SIGNAL(responseIsReady(QString)),m_connections[socket],SLOT(on_responseIsReady(QString)));
+    disconnect(this,SIGNAL(imageIsReady(QByteArray)),m_connections[socket],SLOT(on_imageIsReady(QByteArray)));
 
     qDebug() << this << "deleting socket" << socket;
     m_connections.remove(socket);
@@ -114,6 +115,7 @@ void TcpConnections::accept(qintptr handle, TcpConnecton *connection)
     //connect to data_recived
     connect(connection,SIGNAL(dataRecieved(QString)),this,SLOT(on_dataRecieved(QString)));
     connect(this,SIGNAL(responseIsReady(QString)),connection,SLOT(on_responseIsReady(QString)));
+    connect(this,SIGNAL(imageIsReady(QByteArray)),connection,SLOT(on_imageIsReady(QByteArray)));
     //always accept one connection
     if(this->count() <= 0)
         m_connections.insert(socket,connection);
@@ -142,5 +144,12 @@ void TcpConnections::on_responseIsReady(QString response)
 {
     qDebug() << "Response recieved at the tcpconnections : " << response;
     emit responseIsReady(response);
+}
+
+void TcpConnections::on_imageIsReady(QByteArray image)
+{
+     qDebug() << "Image recieved at the tcpconnections, size: " << image.size();
+     emit imageIsReady(image);
+
 }
 
