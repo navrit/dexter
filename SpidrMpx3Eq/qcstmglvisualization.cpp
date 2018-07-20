@@ -952,8 +952,13 @@ void QCstmGLVisualization::overflow_update(int ovf_cntr) {
 void QCstmGLVisualization::BuildStatsString() {
 
     // Build the string to show
-    _statsString.displayString  = "fired: ";
-    _statsString.displayString += _statsString.counts;
+
+    //! Renable this if it turns out that the calculating the number of active pixels can be made faster
+    //! See "BuildStatsStringCounts( _mpx3gui->getDataset()->getActivePixels(getActiveThreshold()) );"
+    // _statsString.displayString  = "fired: ";
+    //_statsString.displayString += _statsString.counts;
+
+    _statsString.displayString  = "Online";
 
     if ( ! _statsString.lostFrames.isEmpty() ) {
         _statsString.displayString += " | lf: ";
@@ -1369,7 +1374,9 @@ void QCstmGLVisualization::active_frame_changed(){
     ui->glPlot->getPlot()->setActive(layer);
     ui->histPlot->setActive(layer);
 
-    //! EXPENSIVE BuildStatsStringCounts( _mpx3gui->getDataset()->getActivePixels(getActiveThreshold()) );
+    //! EXPENSIVE function. Maybe reimplement this later
+    //! BuildStatsStringCounts( _mpx3gui->getDataset()->getActivePixels(getActiveThreshold()) );
+
     //ui->countsLabel->setText(QString("%1").arg(_mpx3gui->getDataset()->getActivePixels(getActiveThreshold())));
 
     if(ui->percentileRangeRadio->isChecked())
