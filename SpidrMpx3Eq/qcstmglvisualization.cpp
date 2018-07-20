@@ -115,7 +115,6 @@ void QCstmGLVisualization::refreshScoringInfo()
     //
     BuildStatsStringLostPackets( _score.lostPackets );
 
-
     //
     BuildStatsString();
 
@@ -542,7 +541,7 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
         _mpx3gui->getConfig()->setNTriggers( _singleShotSaveCurrentNTriggers );
     }
 
-    _mpx3gui->saveOriginalDataset();
+//    _mpx3gui->saveOriginalDataset();
 
     DestroyTimer();
     ETAToZero();
