@@ -53,7 +53,7 @@ public:
     void merlinErrorToPslError(int errNum);
     QString generateMerlinFrameHeader(FrameHeaderDataStruct);
     QString getAcquisitionHeader(void);
-    void sendMerlinImage();
+    void getImage(void);
     //data
     void emitrequestForAnotherSocket(int);
     //test
@@ -62,7 +62,8 @@ public:
 
 
 signals:
-    void commandIsDecoded(QString,QByteArray,bool);
+    //void commandIsDecoded(QString,QByteArray,bool);
+    void imageIsReady(QByteArray);
     void requestForDataTaking(void);
     void requestForInfDataTracking(bool);
     void requestForSnap(void);

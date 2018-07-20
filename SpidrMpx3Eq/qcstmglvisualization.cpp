@@ -533,7 +533,7 @@ void QCstmGLVisualization::initStatsString()
     _statsString.displayString = "Offline";
 }
 
-void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
+void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) { //when acquisition is done,
 
     // Recover from single shot if it was requested
     if ( _singleShot ) {
@@ -572,6 +572,8 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) {
         emit sig_resumeTHScan();
     }
 
+
+    qDebug() << "$ I am done...";
     // inform the consumer that the data taking is finished
     if ( _dataConsumerThread->isRunning() ) {
         _dataConsumerThread->dataTakingSaysIFinished();

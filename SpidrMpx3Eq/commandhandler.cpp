@@ -430,18 +430,33 @@ QString CommandHandler::getAcquisitionHeader()
     return acqHeader;
 }
 
-void CommandHandler::sendMerlinImage()
+void CommandHandler::getImage()
 {
 
     int nFrames = Mpx3GUI::getInstance()->getConfig()->getNTriggers();
     int frameCounter = 0;
+    int size = 5;
+    QString len = "";
 
     while(frameCounter <nFrames){
 
         FrameHeaderDataStruct frameHeader;
-        QByteArray ba = generateMerlinFrameHeader(frameHeader).toLatin1().data();
-        ba += Mpx3GUI::getInstance()->getDataset()->toSocketData();
-        commandIsDecoded("",ba,true);
+        QByteArray ba;
+        QString hd = generateMerlinFrameHeader(frameHeader);
+        QByteArray frame = Mpx3GUI::getInstance()->getDataset()->toSocketData();
+        size = hd.length();
+        size += frame.length();
+        len = QString::number(size);
+
+        QString zeros ="";
+        for (int i = 0; i < 10 - len.length(); ++i) {
+            zeros += "0";
+        }
+        len = zeros + len;
+        QString firstPart = "MPX,"+ len + ",MQ1," + hd;
+        ba += firstPart.toLatin1();
+        ba += frame;
+        emit imageIsReady(ba);
         frameCounter++;
 
     }
@@ -480,13 +495,13 @@ void CommandHandler::fetchCmd()
         data = cmd; //"Command does not exist...!";
         merlinErrorToPslError(cmd.toInt());
         qDebug()<<"No Matched...."<<cmd.toInt();
-        emit commandIsDecoded(data,nullptr,false);
+       // emit commandIsDecoded(data,nullptr,false);
         return;
     }
-    if(cmd == "GetImage")
-        emit commandIsDecoded(data,nullptr,true);
-    else
-        emit commandIsDecoded(data,nullptr,false);
+   // if(cmd == "GetImage")
+        //emit commandIsDecoded(data,nullptr,true);
+    //else
+        //emit commandIsDecoded(data,nullptr,false);
 }
 
 void CommandHandler::setCmd(QString command)

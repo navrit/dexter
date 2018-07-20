@@ -209,8 +209,16 @@ QByteArray Dataset::toSocketData()
     if(keys.length() < 1)
         return ret;
 
-    ret += QByteArray::fromRawData((const char*)this->getLayer(0), (int)(sizeof(float)*getLayerSize()));
+    //! Reenable this later
+     ret += QByteArray::fromRawData((const char*)this->getLayer(0), (int)(sizeof(float)*getLayerSize()));
+//    QVector<int> v = toQVector();
+//    double sum = std::accumulate(v.begin(), v.end(), 0.0);
+//    double mean = sum / v.size();
 
+//    ret += QString::number(sum).toLatin1();
+//    ret += QString(" ").toLatin1();
+//    ret += QString::number(mean).toLatin1();
+//    ret += QString("------------------------------------\n\n").toLatin1();
 
     return ret;
 
