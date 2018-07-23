@@ -335,8 +335,8 @@ void CommandHandler::setMerlinFrameHeader(FrameHeaderDataStruct &frameHeader)
     }
     frameHeader.shutterOpen = (double)  Mpx3GUI::getInstance()->getConfig()-> getTriggerLength_ms() / (double)1000;
     QPoint pnt = Mpx3GUI::getInstance()->getDataset()->getSize();
-    frameHeader.xDim = (uint32_t)pnt.x();
-    frameHeader.yDim =(uint32_t) pnt.y();
+    frameHeader.xDim = (uint32_t)pnt.x()*2;
+    frameHeader.yDim =(uint32_t) pnt.y()*2;
     QDateTime time = QDateTime::currentDateTime();
     char *d = time.toString("yyyy-dd-MM hh:mm:ss.ssssss").toLatin1().data();
     for (int i = 0; i < 25; ++i) {
