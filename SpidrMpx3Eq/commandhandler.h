@@ -74,7 +74,8 @@ signals:
 
 public slots:
     void on_cmdRecieved(QString);
-
+    void on_doneWithOneFrame(int);
+    void on_someCommandHasFinished_Successfully(void);
 private:
     QString cmd;         // core command
     QVector<QString> arguments; // command's arguments

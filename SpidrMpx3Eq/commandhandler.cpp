@@ -8,6 +8,7 @@
 #include "thresholdscan.h"
 #include "ui_thresholdscan.h"
 #include "mpx3gui.h"
+#include "dataconsumerthread.h"
 
 
 
@@ -23,7 +24,8 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestForSnap()),QCstmGLVisualization::getInstance(),SLOT(on_singleshotPushButton_clicked()));
     connect(this,SIGNAL(requestForAutoSave(bool)),QCstmGLVisualization::getInstance(),SLOT(onRequestForAutoSaveFromServer(bool)));
     connect(this,SIGNAL(requestForSettingSavePath(QString)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingPathFromServer(QString)));
-//    connect(this,SIGNAL(requestForSettingSaveTag(int)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingFormatFromServer(int)));
+    connect(QCstmGLVisualization::getInstance(),SIGNAL(someCommandHasFinished_Successfully()),this,SLOT(on_someCommandHasFinished_Successfully()));
+    //    connect(this,SIGNAL(requestForSettingSaveTag(int)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingFormatFromServer(int)));
    //if(cmdInst == nullptr)
     cmdInst = this;
     initializeCmdTable();
@@ -37,6 +39,8 @@ void CommandHandler::on_cmdRecieved(QString command)
 //    this->fetchCmd();
 
 }
+
+
 
 
 
@@ -432,39 +436,72 @@ QString CommandHandler::getAcquisitionHeader()
 
 void CommandHandler::getImage()
 {
+    connect(QCstmGLVisualization::getInstance()->getDataConsumerThread(),SIGNAL(doneWithOneFrame(int)),this,SLOT(on_doneWithOneFrame(int)));
+//    int nFrames = Mpx3GUI::getInstance()->getConfig()->getNTriggers();
+//    int frameCounter = 0;
+//    int size = 5;
+//    QString len = "";
 
-    int nFrames = Mpx3GUI::getInstance()->getConfig()->getNTriggers();
-    int frameCounter = 0;
-    int size = 5;
-    QString len = "";
+//    while(frameCounter <nFrames){
 
-    while(frameCounter <nFrames){
+//        FrameHeaderDataStruct frameHeader;
+//        QByteArray ba;
+//        QString hd = generateMerlinFrameHeader(frameHeader);
+//        QByteArray frame = Mpx3GUI::getInstance()->getDataset()->toSocketData();
+//        size = hd.length();
+//        size += frame.length();
+//        len = QString::number(size);
 
-        FrameHeaderDataStruct frameHeader;
-        QByteArray ba;
-        QString hd = generateMerlinFrameHeader(frameHeader);
-        QByteArray frame = Mpx3GUI::getInstance()->getDataset()->toSocketData();
-        size = hd.length();
-        size += frame.length();
-        len = QString::number(size);
+//        QString zeros ="";
+//        for (int i = 0; i < 10 - len.length(); ++i) {
+//            zeros += "0";
+//        }
+//        len = zeros + len;
+//        QString firstPart = "MPX,"+ len + ",MQ1," + hd;
+//        ba += firstPart.toLatin1();
+//        ba += frame;
+//        emit imageIsReady(ba);
+//        frameCounter++;
 
-        QString zeros ="";
-        for (int i = 0; i < 10 - len.length(); ++i) {
-            zeros += "0";
-        }
-        len = zeros + len;
-        QString firstPart = "MPX,"+ len + ",MQ1," + hd;
-        ba += firstPart.toLatin1();
-        ba += frame;
-        emit imageIsReady(ba);
-        frameCounter++;
-
-    }
+//    }
 //    FrameHeaderDataStruct frameHeader;
 //    QByteArray ba = generateMerlinFrameHeader(frameHeader).toLatin1().data();
 //    ba += Mpx3GUI::getInstance()->getDataset()->toSocketData();
 //    commandIsDecoded("",ba,true);
     return;
+}
+
+
+void CommandHandler::on_doneWithOneFrame(int frameid)
+{
+
+    int size = 5;
+    QString len = "";
+    FrameHeaderDataStruct frameHeader;
+    QByteArray ba;
+    QString hd = generateMerlinFrameHeader(frameHeader);
+    QByteArray frame = Mpx3GUI::getInstance()->getDataset()->toSocketData();
+    size = hd.length();
+    size += frame.length();
+    len = QString::number(size);
+
+    QString zeros ="";
+    for (int i = 0; i < 10 - len.length(); ++i) {
+        zeros += "0";
+    }
+    len = zeros + len;
+    QString firstPart = "MPX,"+ len + ",MQ1," + hd;
+    ba += firstPart.toLatin1();
+    ba += frame;
+    emit imageIsReady(ba);
+
+    return;
+
+}
+
+void CommandHandler::on_someCommandHasFinished_Successfully()
+{
+    disconnect(QCstmGLVisualization::getInstance()->getDataConsumerThread(),SIGNAL(doneWithOneFrame(int)),this,SLOT(on_doneWithOneFrame(int)));
 }
 
 void CommandHandler::emitrequestForAnotherSocket(int port)
