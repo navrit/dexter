@@ -204,21 +204,66 @@ QByteArray Dataset::toByteArray() {
 
 QByteArray Dataset::toSocketData()
 {
-    QByteArray ret(0);
+//    QByteArray ret(0);
+//    QList<int> keys = m_thresholdsToIndices.keys();
+//    if(keys.length() < 1)
+//        return ret;
+
+//    //! Reenable this later
+//     ret += QByteArray::fromRawData((const char*)this->getLayer(0) , (int)(sizeof(float)*getLayerSize()));
+//     uint32 pixel[10] = {0};
+//     int idx = 0;
+//     for (int i = 0; i < 10; ++i) {
+//         pixel[i] = ret.at(idx) | (ret.at(idx) << 8) | (ret.at(idx+2) << 16) | (ret.at(idx+3) << 24);
+//         idx+=4;
+//         qDebug() <<"pixel : " << (pixel[i] );
+//     }
+
+
+//    return ret;
+
+
+
+    QByteArray ret;
     QList<int> keys = m_thresholdsToIndices.keys();
-    if(keys.length() < 1)
-        return ret;
+    int * layer = this->getLayer(keys[0]);
+    for ( uint64_t j = 0 ; j < this->getPixelsPerLayer() ; j++) {
+        // ret +=  QByteArray::fromRawData((const char*)(layer[j] >> 20), (int)sizeof(layer[j]));
+        //qDebug() <<"pixel : " <<  (layer[j] );
+        ret.append((layer[j] & 0x000000FF));
+        ret.append((layer[j] & 0x0000FF00) >> 8);
+        ret.append((layer[j] & 0x00FF0000) >> 16);
+        ret.append((layer[j] & 0xFF000000) >> 27);
 
-    //! Reenable this later
-     ret += QByteArray::fromRawData((const char*)this->getLayer(0), (int)(sizeof(float)*getLayerSize()));
-//    QVector<int> v = toQVector();
-//    double sum = std::accumulate(v.begin(), v.end(), 0.0);
-//    double mean = sum / v.size();git
+    }
 
-//    ret += QString::number(sum).toLatin1();
-//    ret += QString(" ").toLatin1();
-//    ret += QString::number(mean).toLatin1();
-//    ret += QString("------------------------------------\n\n").toLatin1();
+
+    uint32 pixel = 0;
+    pixel |= (uint8)ret.at(0);
+    qDebug() << "first pixel is : " << pixel;
+    pixel |= (uint8)ret.at(1) << 8;
+    qDebug() << "first pixel is : " << pixel;
+
+    pixel |= (uint8)ret.at(2) << 16;
+    qDebug() << "first pixel is : " << pixel;
+
+    pixel |= (uint8)ret.at(3) << 24;
+    qDebug() << "first pixel is : " << pixel;
+
+
+
+//         uint32 pixel[10] = {0};
+//         int idx = 0;
+//         for (int i = 0; i < 10; ++i) {
+//             pixel[i] |= ret.at(idx) | (ret.at(idx+1) << 8) | (ret.at(idx+2) << 16) | (ret.at(idx+3) << 24);
+
+//             qDebug() <<"pixel : " << (pixel[i] );
+//             qDebug() <<"org pixel and 1 : " << (uint8)ret.at(idx);
+//             qDebug() <<"org pixel and 2 : " << (uint8)ret.at(idx+1);
+//             qDebug() <<"org pixel and 3 : " << (uint8)ret.at(idx+2);
+//             qDebug() <<"org pixel and 4 : " << (uint8)ret.at(idx+3);
+//             idx+=4;
+//         }
 
     return ret;
 
