@@ -380,7 +380,7 @@ void CommandHandler::setMerlinFrameHeader(FrameHeaderDataStruct &frameHeader)
 QString CommandHandler::generateMerlinFrameHeader(FrameHeaderDataStruct frameHeader)
 {
     setMerlinFrameHeader(frameHeader);
-    QString header = frameHeader.headerID + "," + QString::number(frameHeader.frameNumbers) + "," + QString::number(frameHeader.dataOffset) + "," +
+    QString header =  QString::number(frameHeader.frameNumbers) + "," + QString::number(frameHeader.dataOffset) + "," +
              QString::number(frameHeader.numberOfChips) +","+ QString::number(frameHeader.xDim) +","+ QString::number(frameHeader.yDim) +","+ frameHeader.pixelDepth
             + "," + frameHeader.sensorLayout + "," + QString::number(frameHeader.chipSelect) + "," + frameHeader.timeStamp + "," +
             QString::number(frameHeader.shutterOpen) + "," + QString::number(frameHeader.counter) + "," + QString::number(frameHeader.colorMode) + "," +

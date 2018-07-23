@@ -7,7 +7,6 @@
 
 
 struct FrameHeaderDataStruct{
-    const QString headerID = "MQ1";
     uint32_t frameNumbers = 0;
     uint16_t dataOffset = 0;
     uint8_t numberOfChips = 0;

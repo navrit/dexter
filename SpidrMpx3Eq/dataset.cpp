@@ -213,7 +213,7 @@ QByteArray Dataset::toSocketData()
      ret += QByteArray::fromRawData((const char*)this->getLayer(0), (int)(sizeof(float)*getLayerSize()));
 //    QVector<int> v = toQVector();
 //    double sum = std::accumulate(v.begin(), v.end(), 0.0);
-//    double mean = sum / v.size();
+//    double mean = sum / v.size();git
 
 //    ret += QString::number(sum).toLatin1();
 //    ret += QString(" ").toLatin1();
