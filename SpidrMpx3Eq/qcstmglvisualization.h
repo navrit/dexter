@@ -126,6 +126,8 @@ public:
     //! Called from Mpx3GUI to disable/enable specific GUI element for developer mode
     void developerMode(bool enabled = false);
 
+    DataConsumerThread* getDataConsumerThread(){ return _dataConsumerThread;}
+
     //! Should this remain?
     //void setInfDataTaking(bool val){_infDataTaking = val; emit infDataTakingToggled(_infDataTaking);}
 
