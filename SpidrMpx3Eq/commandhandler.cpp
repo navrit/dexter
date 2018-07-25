@@ -480,6 +480,7 @@ void CommandHandler::on_doneWithOneFrame(int frameid)
     FrameHeaderDataStruct frameHeader;
     QByteArray ba;
     QString hd = generateMerlinFrameHeader(frameHeader);
+
     QByteArray frame = Mpx3GUI::getInstance()->getDataset()->toSocketData();
     size = hd.length();
     size += frame.length();

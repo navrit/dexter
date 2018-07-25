@@ -202,70 +202,97 @@ QByteArray Dataset::toByteArray() {
     return ret;
 }
 
+
+enum FLIP_TYPE {Horizontal_Flip,Vertical_Flip};
+uint64_t getFlipIndex(FLIP_TYPE flipType,int dim,int c,int r,int offset){
+    if(flipType == Vertical_Flip)
+        return offset + ((((dim-1) + (r*dim))) -c);
+    if(flipType == Horizontal_Flip)
+        return offset + ((((dim-1) - r) * dim) + c);
+    return 0; //formulas are otherway around
+}
+
 QByteArray Dataset::toSocketData()
 {
-//    QByteArray ret(0);
-//    QList<int> keys = m_thresholdsToIndices.keys();
-//    if(keys.length() < 1)
-//        return ret;
 
-//    //! Reenable this later
-//     ret += QByteArray::fromRawData((const char*)this->getLayer(0) , (int)(sizeof(float)*getLayerSize()));
-//     uint32 pixel[10] = {0};
-//     int idx = 0;
-//     for (int i = 0; i < 10; ++i) {
-//         pixel[i] = ret.at(idx) | (ret.at(idx) << 8) | (ret.at(idx+2) << 16) | (ret.at(idx+3) << 24);
-//         idx+=4;
-//         qDebug() <<"pixel : " << (pixel[i] );
-//     }
+    const int dim = 256;
+    int r= 0,c=0;
 
 
-//    return ret;
-
-
-
-    QByteArray ret;
+    QByteArray first,second,third,fourth;
     QList<int> keys = m_thresholdsToIndices.keys();
     int * layer = this->getLayer(keys[0]);
     for ( uint64_t j = 0 ; j < this->getPixelsPerLayer() ; j++) {
-        // ret +=  QByteArray::fromRawData((const char*)(layer[j] >> 20), (int)sizeof(layer[j]));
-        //qDebug() <<"pixel : " <<  (layer[j] );
-        ret.append((layer[j] & 0x000000FF));
-        ret.append((layer[j] & 0x0000FF00) >> 8);
-        ret.append((layer[j] & 0x00FF0000) >> 16);
-        ret.append((layer[j] & 0xFF000000) >> 27);
+        if(j >= 0 && j < 65536)
+        {
+            if(j == 0){
+                //counters reset
+                c = 0;
+                r = 0;
+            }
+            fourth.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,0)] & 0x000000FF));
+            fourth.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,0)] & 0x0000FF00) >> 8);
+            fourth.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,0)] & 0x00FF0000) >> 16);
+            fourth.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,0)] & 0xFF000000) >> 27);
+
+        }
+        if(j >= 65536 && j < 131072)
+        {
+            if(j == 65536){
+                //counters reset
+                c = 0;
+                r = 0;
+            }
+            second.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,65536)] & 0x000000FF));
+            second.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,65536)] & 0x0000FF00) >> 8);
+            second.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,65536)] & 0x00FF0000) >> 16);
+            second.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,65536)] & 0xFF000000) >> 27);
+        }
+        if(j >= 131072 && j < 196608)
+        {
+            if(j == 131072){
+                //counters reset
+                c = 0;
+                r = 0;
+            }
+            first.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,131072)] & 0x000000FF));
+            first.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,131072)] & 0x0000FF00) >> 8);
+            first.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,131072)] & 0x00FF0000) >> 16);
+            first.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,131072)] & 0xFF000000) >> 27);
+        }
+        if(j >= 196608 && j < 262144)
+        {
+            if(j == 196608){
+                //counters reset
+                c = 0;
+                r = 0;
+            }
+            third.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,196608)] & 0x000000FF));
+            third.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,196608)] & 0x0000FF00) >> 8);
+            third.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,196608)] & 0x00FF0000) >> 16);
+            third.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,196608)] & 0xFF000000) >> 27);
+
+        }
+        //counters
+        if(c == 255){
+            if(r < 255)
+                r++;
+            else
+                r = 0;
+        }
+        if(c < 255)
+            c++;
+        else
+            c = 0;
+
+//        ret.append((layer[j] & 0x000000FF));
+//        ret.append((layer[j] & 0x0000FF00) >> 8);
+//        ret.append((layer[j] & 0x00FF0000) >> 16);
+//        ret.append((layer[j] & 0xFF000000) >> 27);
 
     }
 
-
-    uint32 pixel = 0;
-    pixel |= (uint8)ret.at(0);
-    qDebug() << "first pixel is : " << pixel;
-    pixel |= (uint8)ret.at(1) << 8;
-    qDebug() << "first pixel is : " << pixel;
-
-    pixel |= (uint8)ret.at(2) << 16;
-    qDebug() << "first pixel is : " << pixel;
-
-    pixel |= (uint8)ret.at(3) << 24;
-    qDebug() << "first pixel is : " << pixel;
-
-
-
-//         uint32 pixel[10] = {0};
-//         int idx = 0;
-//         for (int i = 0; i < 10; ++i) {
-//             pixel[i] |= ret.at(idx) | (ret.at(idx+1) << 8) | (ret.at(idx+2) << 16) | (ret.at(idx+3) << 24);
-
-//             qDebug() <<"pixel : " << (pixel[i] );
-//             qDebug() <<"org pixel and 1 : " << (uint8)ret.at(idx);
-//             qDebug() <<"org pixel and 2 : " << (uint8)ret.at(idx+1);
-//             qDebug() <<"org pixel and 3 : " << (uint8)ret.at(idx+2);
-//             qDebug() <<"org pixel and 4 : " << (uint8)ret.at(idx+3);
-//             idx+=4;
-//         }
-
-    return ret;
+    return first+second+third+fourth;
 
 }
 

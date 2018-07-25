@@ -833,6 +833,8 @@ void Mpx3GUI::generateFrame(){
     emit reload_all_layers();
 }
 
+
+
 int Mpx3GUI::getPixelAt(int x, int y, int layer){
     return getDataset()->sample(x,y, layer);
     //if(layer >= data.length() || x >= nx || y >= ny)
