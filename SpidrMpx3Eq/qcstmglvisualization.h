@@ -239,6 +239,8 @@ private slots:
 
     void on_saveAllCheckBox_toggled(bool checked);
 
+    void on_testBtn_clicked();
+
 public slots:
 
     void StartDataTaking(QString mode="");

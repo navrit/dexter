@@ -2230,3 +2230,43 @@ void QCstmGLVisualization::on_saveAllCheckBox_toggled(bool checked)
         }
     }
 }
+
+
+uint32 assembleData(uint8 a,uint8 b,uint8 c,uint8 d){
+    uint32 res = 0;
+    res = a | (b << 8)| (c << 16)  | (d << 24);
+    return res;
+}
+
+void QCstmGLVisualization::on_testBtn_clicked()
+{
+
+    QByteArray image = Mpx3GUI::getInstance()->getDataset()->toSocketData();
+    qDebug() << "Image size is : " << image.size();
+
+    QString filename = "Pixel.txt";
+    QFile file(filename);
+    file.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text);
+    QTextStream stream(&file);
+
+    QString filename2 = "Pixel2.txt";
+    QFile file2(filename2);
+    file2.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text);
+    QTextStream stream2(&file2);
+
+
+
+
+    int idx = 0;
+
+    while(idx < image.length()){
+        uint32 pixel = assembleData((uint8)image.at(idx),(uint8)image.at(idx+1),(uint8)image.at(idx+2),(uint8)image.at(idx+3));
+        stream << pixel << endl;
+        idx = idx + 4;
+    }
+    file.close();
+    qDebug() << "Save is done.";
+
+
+
+}
