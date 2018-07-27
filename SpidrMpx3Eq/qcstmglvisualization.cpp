@@ -2267,6 +2267,19 @@ void QCstmGLVisualization::on_testBtn_clicked()
     file.close();
     qDebug() << "Save is done.";
 
-
-
+    QByteArray testBa(100,'0');
+    qDebug() << "Size of testba : " << testBa.length();
+    QByteArray rep;
+    rep.append((255 & 0x000000FF));
+    rep.append((155 & 0x000000FF));
+    rep.append((25 & 0x000000FF));
+    rep.append((205 & 0x000000FF));
+    testBa.replace(10,4,rep);
+    qDebug() << "Size of testba : " << testBa.length();
+    qDebug() << "testba : " << (uint8_t) testBa.at(9);
+    qDebug() << "testba : " << (uint8_t) testBa.at(10);
+    qDebug() << "testba : " << (uint8_t) testBa.at(11);
+    qDebug() << "testba : " << (uint8_t) testBa.at(12);
+    qDebug() << "testba : " << (uint8_t) testBa.at(13);
+    qDebug() << "testba : " << (uint8_t) testBa.at(14);
 }

@@ -203,14 +203,7 @@ QByteArray Dataset::toByteArray() {
 }
 
 
-enum FLIP_TYPE {Horizontal_Flip,Vertical_Flip};
-uint64_t getFlipIndex(FLIP_TYPE flipType,int dim,int c,int r,int offset){
-    if(flipType == Vertical_Flip)
-        return offset + ((((dim-1) + (r*dim))) -c);
-    if(flipType == Horizontal_Flip)
-        return offset + ((((dim-1) - r) * dim) + c);
-    return 0; //formulas are otherway around
-}
+
 
 QByteArray Dataset::toSocketData()
 {
@@ -219,35 +212,32 @@ QByteArray Dataset::toSocketData()
     int r= 0,c=0;
 
 
-    QByteArray first,second,third,fourth;
+    QByteArray first,second,third,fourth,ret;
+    // QByteArray part1(256*256*2*4,'0');
+    // QByteArray part2(256*256*2*4,'0');
+    int part1[256*256*2] = {0};
+    int part2[256*256*2] = {0};
+
     QList<int> keys = m_thresholdsToIndices.keys();
     int * layer = this->getLayer(keys[0]);
     for ( uint64_t j = 0 ; j < this->getPixelsPerLayer() ; j++) {
-        if(j >= 0 && j < 65536)
-        {
-            if(j == 0){
-                //counters reset
-                c = 0;
-                r = 0;
-            }
-            fourth.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,0)] & 0x000000FF));
-            fourth.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,0)] & 0x0000FF00) >> 8);
-            fourth.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,0)] & 0x00FF0000) >> 16);
-            fourth.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,0)] & 0xFF000000) >> 27);
 
-        }
-        if(j >= 65536 && j < 131072)
+        if(j >= 65536 && j < 131072) //65536-131072, 131072-196608
         {
             if(j == 65536){
                 //counters reset
                 c = 0;
                 r = 0;
             }
-            second.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,65536)] & 0x000000FF));
-            second.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,65536)] & 0x0000FF00) >> 8);
-            second.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,65536)] & 0x00FF0000) >> 16);
-            second.append((layer[getFlipIndex(Horizontal_Flip,dim,c,r,65536)] & 0xFF000000) >> 27);
+
+
+            uint64_t idx = (j+((dim*dim) - 1) - (dim*c) - (c) - (dim*r) - (r));
+            int a = (idx / (dim))-dim;
+            part1[(idx-65280)+(a*dim)] = layer[j];
+
         }
+
+
         if(j >= 131072 && j < 196608)
         {
             if(j == 131072){
@@ -255,11 +245,29 @@ QByteArray Dataset::toSocketData()
                 c = 0;
                 r = 0;
             }
-            first.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,131072)] & 0x000000FF));
-            first.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,131072)] & 0x0000FF00) >> 8);
-            first.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,131072)] & 0x00FF0000) >> 16);
-            first.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,131072)] & 0xFF000000) >> 27);
+
+            int idx = ((c*dim) + r) + 131072;
+            int a = (idx / (dim))-(2*dim);
+            part1[(idx-131072) + (a*dim)] = layer[j];
         }
+
+        if(j >= 0 && j < 65536)
+        {
+            if(j == 0){
+                //counters reset
+                c = 0;
+                r = 0;
+            }
+
+
+            uint64_t idx = (j+((dim*dim) - 1) - (dim*c) - (c) - (dim*r) - (r));
+            int a = idx / (dim);
+
+            part2[idx + dim*(a+1)] = layer[j];
+
+
+        }
+
         if(j >= 196608 && j < 262144)
         {
             if(j == 196608){
@@ -267,10 +275,10 @@ QByteArray Dataset::toSocketData()
                 c = 0;
                 r = 0;
             }
-            third.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,196608)] & 0x000000FF));
-            third.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,196608)] & 0x0000FF00) >> 8);
-            third.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,196608)] & 0x00FF0000) >> 16);
-            third.append((layer[getFlipIndex(Vertical_Flip,dim,c,r,196608)] & 0xFF000000) >> 27);
+
+            int idx = ((c*dim) + r) + 196608;
+            int a = (idx / (dim))-(3*dim);
+            part2[(idx-196608) + (a*dim)] = layer[j];
 
         }
         //counters
@@ -284,15 +292,11 @@ QByteArray Dataset::toSocketData()
             c++;
         else
             c = 0;
-
-//        ret.append((layer[j] & 0x000000FF));
-//        ret.append((layer[j] & 0x0000FF00) >> 8);
-//        ret.append((layer[j] & 0x00FF0000) >> 16);
-//        ret.append((layer[j] & 0xFF000000) >> 27);
-
     }
 
-    return first+second+third+fourth;
+    first = QByteArray::fromRawData((const char*)part1, (int)sizeof(part1));
+    second = QByteArray::fromRawData((const char*)part2, (int)sizeof(part2));
+    return first + second;
 
 }
 
@@ -365,12 +369,12 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
 
     //! Error checking
     // Should always be an exact multiple of 256x256 (128kB) or 260x260 (~130kB) (256+2*extraPixels)^2 exactly
-//    tsize_t tTotalDataSize = width * height * SAMPLES_PER_PIXEL * sizeof( uint32_t );
-//    if (!((tTotalDataSize % 131072) == 0 || (tTotalDataSize % 133128) == 0)){
-//        qDebug() << "[ERROR] TIFF size check FAILED : " <<  tTotalDataSize;
-//    } /*else {
-//        qDebug() << "[INFO] TIFF size check passed : " <<  tTotalDataSize;
-//    }*/
+    //    tsize_t tTotalDataSize = width * height * SAMPLES_PER_PIXEL * sizeof( uint32_t );
+    //    if (!((tTotalDataSize % 131072) == 0 || (tTotalDataSize % 133128) == 0)){
+    //        qDebug() << "[ERROR] TIFF size check FAILED : " <<  tTotalDataSize;
+    //    } /*else {
+    //        qDebug() << "[INFO] TIFF size check passed : " <<  tTotalDataSize;
+    //    }*/
 
     if (spatialOnly){
         edgePixelMagicNumber = 1;
@@ -391,7 +395,7 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
         //! Default mode - do cross and spatial corrections
         if (crossCorrection){
             //! Normal Fine Pitch mode - do cross correction
-//            qDebug() << getThresholds().count();
+            //            qDebug() << getThresholds().count();
             if (getThresholds().count() == 1) {
                 for (int y=0; y < height; y++) {
                     for (int x=0; x < width; x++) {
@@ -606,7 +610,7 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
         } else {
             width  = getWidth();
             height = getHeight();
-//            qDebug() << getThresholds().count();
+            //            qDebug() << getThresholds().count();
 
             for (int y=0; y < height; y++) {
                 for (int x=0; x < width; x++) {
@@ -639,14 +643,14 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
                 for (int r=0; r < height; r++) {
                     TIFFWriteScanline(m_pTiff, &imageCorrected[r*width], r, 0);
                 }
-//                qDebug() << "[INFO] Written corrected TIFF";
+                //                qDebug() << "[INFO] Written corrected TIFF";
             } else {
                 TIFFSetField(m_pTiff, TIFFTAG_IMAGEWIDTH,      getWidth());                  // set the width of the image
                 TIFFSetField(m_pTiff, TIFFTAG_IMAGELENGTH,     getHeight());                 // set the height of the image
                 for (int r=0; r < getHeight(); r++) {
                     TIFFWriteScanline(m_pTiff, &image[r*getWidth()], r, 0);
                 }
-//                qDebug() << "[INFO] Written raw TIFF";
+                //                qDebug() << "[INFO] Written raw TIFF";
             }
 
 
@@ -935,7 +939,7 @@ void Dataset::toASCII(QString filename)
     int len = sizex * sizey * nchipsx * nchipsy;
 
     QList <int> thresholds = getThresholds();
-//    qDebug() << thresholds;
+    //    qDebug() << thresholds;
     QList<int>::iterator it = thresholds.begin();
     QList<int>::iterator itE = thresholds.end();
 
@@ -2159,7 +2163,7 @@ void Dataset::fromASCIIMatrixGetSizeAndLayers(QFile * file, int *x, int *y, int 
     QString line;
     int rowCntr = 0, colCntr = 0;
     int cols = 0;
-//    bool ok = false;
+    //    bool ok = false;
 
     while ( in.readLineInto( &line ) ) {
         QStringList values = line.split('\t',QString::SkipEmptyParts);
@@ -2342,12 +2346,12 @@ void Dataset::runImageCalculator(QString imgOperator, int index1, int index2, in
     //setPixel(0,0,0,1);
 
 
-//    //! Loop over different layers in the Dataset.
-//    for (int i = 0; i < keys.length(); i++){
+    //    //! Loop over different layers in the Dataset.
+    //    for (int i = 0; i < keys.length(); i++){
 
-//    }
+    //    }
 
-//    _ui->visualizationGL->setThreshold(keys.last()+1);
+    //    _ui->visualizationGL->setThreshold(keys.last()+1);
     //    _ui->visualizationGL->active_frame_changed();
 }
 
