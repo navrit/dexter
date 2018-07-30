@@ -539,6 +539,7 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) { //when a
     if ( _singleShot ) {
         _singleShot = false;
         _mpx3gui->getConfig()->setNTriggers( _singleShotSaveCurrentNTriggers );
+        reload_all_layers();
     }
 
 //    _mpx3gui->saveOriginalDataset();
