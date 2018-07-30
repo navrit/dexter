@@ -539,9 +539,9 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) { //when a
     if ( _singleShot ) {
         _singleShot = false;
         _mpx3gui->getConfig()->setNTriggers( _singleShotSaveCurrentNTriggers );
-        reload_all_layers();
     }
 
+    reload_all_layers(); //! Only update the 0th threshold for speed?
 //    _mpx3gui->saveOriginalDataset();
 
     DestroyTimer();
@@ -573,8 +573,6 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) { //when a
         emit sig_resumeTHScan();
     }
 
-
-    qDebug() << "$ I am done...";
     // inform the consumer that the data taking is finished
     if ( _dataConsumerThread->isRunning() ) {
         _dataConsumerThread->dataTakingSaysIFinished();
