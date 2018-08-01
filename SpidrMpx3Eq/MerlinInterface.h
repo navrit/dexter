@@ -12,7 +12,7 @@ struct FrameHeaderDataStruct{
     uint8_t numberOfChips = 0;
     uint32_t xDim = 0;
     uint32_t yDim = 0;
-    const QString pixelDepth = "U32";
+    QString pixelDepth = "U32";
     const QString sensorLayout = "   2x2";
     uint8_t chipSelect = 0x00;
     char timeStamp[26] = "";

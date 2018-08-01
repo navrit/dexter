@@ -323,6 +323,11 @@ void CommandHandler::merlinErrorToPslError(int errNum)
 
 void CommandHandler::setMerlinFrameHeader(FrameHeaderDataStruct &frameHeader)
 {
+    if(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 24)
+        frameHeader.pixelDepth = "U32";
+    else
+        frameHeader.pixelDepth = "U16";
+
     frameHeader.colorMode = (uint8_t) Mpx3GUI::getInstance()->getConfig()->getColourMode();
     frameHeader.counter = 0;/// to be set
     frameHeader.dataOffset = 256 + (128 * 4);
@@ -480,8 +485,10 @@ void CommandHandler::on_doneWithOneFrame(int frameid)
     FrameHeaderDataStruct frameHeader;
     QByteArray ba;
     QString hd = generateMerlinFrameHeader(frameHeader);
-
-    QByteArray frame = Mpx3GUI::getInstance()->getDataset()->toSocketData();
+    bool twentyfourbits = false;
+    if(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 24)
+        twentyfourbits = true;
+    QByteArray frame = Mpx3GUI::getInstance()->getDataset()->toSocketData(twentyfourbits);
     size = hd.length();
     size += frame.length();
     len = QString::number(size);

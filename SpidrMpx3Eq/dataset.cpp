@@ -205,24 +205,33 @@ QByteArray Dataset::toByteArray() {
 
 
 
-QByteArray Dataset::toSocketData()
+QByteArray Dataset::toSocketData(bool twentyfourbits)
 {
 
     const int dim = 256;
     int r= 0,c=0;
 
+    /*
+           |
+    chip1  | chip0
+    _______________
+           |
+    chip3  | chip4
 
-    QByteArray first,second,third,fourth,ret;
-    // QByteArray part1(256*256*2*4,'0');
-    // QByteArray part2(256*256*2*4,'0');
-    int part1[256*256*2] = {0};
-    int part2[256*256*2] = {0};
+    */
+
+    QByteArray first,second;
+    int part1[dim*dim*2] = {0};
+    int part2[dim*dim*2] = {0};
+    uint16_t part1_16[dim*dim*2] = {0};
+    uint16_t part2_16[dim*dim*2] = {0};
+
 
     QList<int> keys = m_thresholdsToIndices.keys();
     int * layer = this->getLayer(keys[0]);
     for ( uint64_t j = 0 ; j < this->getPixelsPerLayer() ; j++) {
 
-        if(j >= 65536 && j < 131072) //65536-131072, 131072-196608
+        if(j >= 65536 && j < 131072)
         {
             if(j == 65536){
                 //counters reset
@@ -231,9 +240,12 @@ QByteArray Dataset::toSocketData()
             }
 
 
-            uint64_t idx = (j+((dim*dim) - 1) - (dim*c) - (c) - (dim*r) - (r));
+            uint64_t idx = (j+((dim*dim) - 1) - (dim*c) - (c) - (dim*r) - (r));//calculate rotation index
             int a = (idx / (dim))-dim;
-            part1[(idx-65280)+(a*dim)] = layer[j];
+            if(twentyfourbits)
+                part1[(idx-65280)+(a*dim)] = layer[j]; //calculate concat index
+            else
+                part1_16[(idx-65280)+(a*dim)] = layer[j]; //calculate concat index
 
         }
 
@@ -248,7 +260,10 @@ QByteArray Dataset::toSocketData()
 
             int idx = ((c*dim) + r) + 131072;
             int a = (idx / (dim))-(2*dim);
-            part1[(idx-131072) + (a*dim)] = layer[j];
+            if(twentyfourbits)
+                part1[(idx-131072) + (a*dim)] = layer[j];
+            else
+                part1_16[(idx-131072) + (a*dim)] = layer[j];
         }
 
         if(j >= 0 && j < 65536)
@@ -262,8 +277,10 @@ QByteArray Dataset::toSocketData()
 
             uint64_t idx = (j+((dim*dim) - 1) - (dim*c) - (c) - (dim*r) - (r));
             int a = idx / (dim);
-
-            part2[idx + dim*(a+1)] = layer[j];
+            if(twentyfourbits)
+                part2[idx + dim*(a+1)] = layer[j];
+            else
+                part2_16[idx + dim*(a+1)] = layer[j];
 
 
         }
@@ -278,7 +295,10 @@ QByteArray Dataset::toSocketData()
 
             int idx = ((c*dim) + r) + 196608;
             int a = (idx / (dim))-(3*dim);
-            part2[(idx-196608) + (a*dim)] = layer[j];
+            if(twentyfourbits)
+                part2[(idx-196608) + (a*dim)] = layer[j];
+            else
+                part2_16[(idx-196608) + (a*dim)] = layer[j];
 
         }
         //counters
@@ -293,9 +313,15 @@ QByteArray Dataset::toSocketData()
         else
             c = 0;
     }
-
-    first = QByteArray::fromRawData((const char*)part1, (int)sizeof(part1));
-    second = QByteArray::fromRawData((const char*)part2, (int)sizeof(part2));
+    if(twentyfourbits){
+        first = QByteArray::fromRawData((const char*)part1, (int)sizeof(part1));
+        second = QByteArray::fromRawData((const char*)part2, (int)sizeof(part2));
+    }
+    else
+    {
+        first = QByteArray::fromRawData((const char*)part1_16, (int)sizeof(part1_16));
+        second = QByteArray::fromRawData((const char*)part2_16, (int)sizeof(part2_16));
+    }
     return first + second;
 
 }

@@ -2240,8 +2240,10 @@ uint32 assembleData(uint8 a,uint8 b,uint8 c,uint8 d){
 void QCstmGLVisualization::on_testBtn_clicked()
 {
 
-    QByteArray image = Mpx3GUI::getInstance()->getDataset()->toSocketData();
+    QByteArray image = Mpx3GUI::getInstance()->getDataset()->toSocketData(true);
+    QByteArray image2 = Mpx3GUI::getInstance()->getDataset()->toSocketData(false);
     qDebug() << "Image size is : " << image.size();
+    qDebug() << "Image2 size is : " << image2.size();
 
     QString filename = "Pixel.txt";
     QFile file(filename);
@@ -2281,4 +2283,10 @@ void QCstmGLVisualization::on_testBtn_clicked()
     qDebug() << "testba : " << (uint8_t) testBa.at(12);
     qDebug() << "testba : " << (uint8_t) testBa.at(13);
     qDebug() << "testba : " << (uint8_t) testBa.at(14);
+
+
+    int big = 0xFFFFFFF0;
+    uint16_t small = big;
+    qDebug()<< " big == " << big;
+    qDebug()<< " small == " << small;
 }
