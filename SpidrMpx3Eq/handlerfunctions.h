@@ -405,7 +405,7 @@ void setShutterLengthHandler(){
     }
     if(CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(0) == "open"){
         //here code to set operational mode
-        Mpx3GUI::getInstance()->getConfig()->setTriggerLength(CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1).toInt());
+        Mpx3GUI::getInstance()->getConfig()->setTriggerLength(CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1).toDouble());
         CommandHandler::getInstance()->setData("Shutter open length is set to " + CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1));
         CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
     }
