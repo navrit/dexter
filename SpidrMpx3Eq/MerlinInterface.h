@@ -64,11 +64,11 @@ class MerlinInterface : public QObject
 {
     Q_OBJECT
 public:
-    enum PSI_ARG_TYPES{N,N_INF,CONT_SEQ,CSM_SPM,ENABLE_DISABLE,STRING,OPEN,DOWN,HIGH_LOW,TH0,TH1,TH2,TH3,TH4,TH5,TH6,TH7};
+    enum PSL_ARG_TYPES{N,N_INF,CONT_SEQ,CSM_SPM,ENABLE_DISABLE,STRING,OPEN,DOWN,HIGH_LOW,TH0,TH1,TH2,TH3,TH4,TH5,TH6,TH7};
     enum ERROR_TYPE{NO_ERROR = 0, UNKOWN_ERROR = 1, UNKOWN_COMMAND = 2, PARAM_OUT_OF_RANGE = 3};
     explicit MerlinInterface(QObject *parent = 0);
     void setErrorExternally(int);
-    QString parseCommand(QString); //get the merlin command and parse it to PSI command
+    QString parseCommand(QString); //get the merlin command and parse it to PSL command
                                 //e.g MPX,0000000024,GET,SOFTWAREVERSION  ==> Hello
     QString makeSetCmdResponse(void);
     QString makeGetResponse(QString);
@@ -83,11 +83,11 @@ private:
     int     _error     = NO_ERROR;
     QString _response  = "";
     FrameHeaderDataStruct _frameHeader;
-    QHash<QString,QString> setTable; //key => merlin's command name; value => PSI's command name
+    QHash<QString,QString> setTable; //key => merlin's command name; value => PSL's command name
     QHash<QString,QString> getTable;
     QHash<QString,QString> cmdTable;
     void initializeTables(void);
-    QString argParser(PSI_ARG_TYPES);
+    QString argParser(PSL_ARG_TYPES);
 
 private: //constants
     const int SET_PARTS = 5;

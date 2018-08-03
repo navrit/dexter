@@ -645,12 +645,12 @@ void getImageHandler(){
 }
 
 void setNumberOfFrameHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetNumberOfFrame"))  //this command comes with one argument
+    if(!CommandHandler::getInstance()->enoughArguments(1,"SetFrameNumber"))  //this command comes with one argument
     {
         CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
         return;
     }
-    Mpx3GUI::getInstance()->getConfig()->setNTriggers(CommandHandler::getInstance()->cmdTable["SetNumberOfFrame"].args.at(0).toInt() );
+    Mpx3GUI::getInstance()->getConfig()->setNTriggers(CommandHandler::getInstance()->cmdTable["SetFrameNumber"].args.at(0).toInt() );
     CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
 }
 

@@ -114,9 +114,9 @@ void CommandHandler::initializeCmdTable()
     cmd_struct getShutterPeriod{getShutterPeriodHandler};
     cmdTable.insert("GetShutterPeriod",getShutterPeriod);
     cmd_struct setNumberOfFrame {setNumberOfFrameHandler};
-    cmdTable.insert("SetNumberOfFrame",setNumberOfFrame);
+    cmdTable.insert("SetFrameNumber",setNumberOfFrame);
     cmd_struct getNumberOfFrame {getNumberOfFrameHandler};
-    cmdTable.insert("GetNumberOfFrame",getNumberOfFrame);
+    cmdTable.insert("GetFrameNumber",getNumberOfFrame);
     cmd_struct setThreshold {setThresholdHandler};
     cmdTable.insert("SetThreshold",setThreshold);
     cmd_struct getThreshold {getThresholdHandler};
