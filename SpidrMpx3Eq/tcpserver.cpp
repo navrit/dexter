@@ -100,8 +100,8 @@ void TcpServer::on_responseIsReady(QString response)
 
 void TcpServer::on_imageIsReady(QByteArray header,QByteArray image)
 {
-    qDebug() << "Image recieved at the tcpserver, size: " << image.size();
+    //qDebug() << "Image recieved at the tcpserver, size: " << image.size();
     emit imageIsReady(header,image);
-    qDebug() << "lalalalal";
+
 }
 
