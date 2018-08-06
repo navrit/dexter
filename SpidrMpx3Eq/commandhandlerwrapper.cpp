@@ -33,9 +33,10 @@ void CommandHandlerWrapper::on_dataRecieved(QString command)
 void CommandHandlerWrapper::on_requestForDataTaking()
 {
     QString acqHeader = commandHandler->getAcquisitionHeader();
-    QByteArray dummy = {"dummy"};
+    QByteArray dummy;
     emit imageIsReady(dummy,acqHeader.toLatin1());
     commandHandler->getImage();
+
 //    QByteArray image;
 //    image = QString("This is an test imageeeeeeeeeeeeeee....!").toLatin1();
 
