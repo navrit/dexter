@@ -88,12 +88,14 @@ void TcpConnecton::on_responseIsReady(QString response)
     qDebug()<<"size:"<<sndSize;
 }
 
-void TcpConnecton::on_imageIsReady(QByteArray image)
+void TcpConnecton::on_imageIsReady(QByteArray header,QByteArray image)
 {
 
     qDebug() << "Data recieved at the tcpconnection.";
-    qDebug()<<"size:"<<image.size();
-    int sndSize = m_socket->write(image);
+    qDebug()<<"header size:"<<header.size();
+    qDebug()<<"Image size:"<<image.size();
+    int sndSize = m_socket->write(header);
+    sndSize = m_socket->write(image);
     m_socket->flush();
     m_socket->waitForBytesWritten();
     qDebug()<<"size:"<<sndSize;

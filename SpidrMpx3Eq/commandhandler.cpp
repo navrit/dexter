@@ -483,7 +483,7 @@ void CommandHandler::on_doneWithOneFrame(int frameid)
     int size = 5;
     QString len = "";
     FrameHeaderDataStruct frameHeader;
-    QByteArray ba;
+    //QByteArray ba;
     QString hd = generateMerlinFrameHeader(frameHeader);
     bool twentyfourbits = false;
     if(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 24)
@@ -499,9 +499,9 @@ void CommandHandler::on_doneWithOneFrame(int frameid)
     }
     len = zeros + len;
     QString firstPart = "MPX,"+ len + ",MQ1," + hd;
-    ba += firstPart.toLatin1();
-    ba += frame;
-    emit imageIsReady(ba);
+   // ba += firstPart.toLatin1();
+   // ba += frame;
+    emit imageIsReady(firstPart.toLatin1(),frame);
 
     return;
 

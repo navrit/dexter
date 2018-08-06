@@ -20,7 +20,7 @@ signals:
     //pass response to command server
     void responseIsReady(QString);
     //pass image to data server
-    void imageIsReady(QByteArray);
+    void imageIsReady(QByteArray,QByteArray);
 
 public slots:
     //recive commands from command socket(server)
@@ -28,7 +28,7 @@ public slots:
     //provide image data for image socket(server) when is requested.
     void on_requestForDataTaking(void);
     //recive image from commandHandler
-    void on_ImageIsReady(QByteArray);
+    void on_ImageIsReady(QByteArray,QByteArray);
 };
 
 #endif // COMMANDHANDLERWRAPPER_H
