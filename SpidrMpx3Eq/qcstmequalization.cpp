@@ -56,8 +56,8 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     _minScanTHL = MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt;
     _scanDescendant = true;
     _busy = false;
-    _resdataset = 0x0;
-    _gridLayoutHistograms = 0x0;
+    _resdataset = nullptr;
+    _gridLayoutHistograms = nullptr;
 
     _stepScan = __default_step_scan;
     _setId = 0;
@@ -221,7 +221,6 @@ void QCstmEqualization::NewRunInitEqualization() {
     // Delete scans
     _scans.clear();
 
-    //
     _ui->eqLabelFineTuningLoopProgress->setText("-/-");
 
     // Rewind state machine variables
@@ -1067,13 +1066,13 @@ void QCstmEqualization::DAC_Disc_Optimization_100() {
     cprop.color_g = 200;
     cprop.color_b = 250;
 
-    for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
+    for ( int i = 0 ; i < int(_workChipsIndx.size()); i++ ) {
         cprop.name = BuildChartName( _workChipsIndx[i], legend );
         GetBarChart( _workChipsIndx[i] )->AppendSet( cprop );
     }
 
     // DAC_DiscL=100
-    for ( int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
+    for ( int i = 0 ; i < int(_workChipsIndx.size()); i++ ) {
         SetDAC_propagateInGUI(spidrcontrol, _workChipsIndx[i], _steeringInfo[i]->currentDAC_DISC, _steeringInfo[i]->currentDAC_DISC_OptValue);
         spidrcontrol->setInternalTestPulse(_workChipsIndx[i], false);
     }
@@ -1087,7 +1086,6 @@ void QCstmEqualization::DAC_Disc_Optimization_100() {
     _scans.push_back( tscan ); _scanIndex++;
     connect( tscan, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
     tscan->start();
-
 }
 
 void QCstmEqualization::DAC_Disc_Optimization_150() {
@@ -1125,7 +1123,6 @@ void QCstmEqualization::DAC_Disc_Optimization_150() {
     _scans.push_back( tscan ); _scanIndex++;
     connect( tscan, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
     tscan->start();
-
 }
 
 int QCstmEqualization::FineTuning() {
@@ -1344,7 +1341,6 @@ void QCstmEqualization::ScanOnInterpolation() {
     _scanIndex++;
     connect( tscan_opt_ext, SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
     tscan_opt_ext->start();
-
 }
 
 void QCstmEqualization::PrepareInterpolation_0x5() {
