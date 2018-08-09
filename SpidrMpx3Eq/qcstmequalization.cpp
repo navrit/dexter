@@ -2056,7 +2056,7 @@ void QCstmEqualization::estimateEqualisationTarget()
         SetMinScan( 511 );
         SetMaxScan( 0 );
 
-        ChangeStep( 2 );
+        ChangeStep( 1 );
 
         ThlScan * tscan_opt_testPulses = new ThlScan(_mpx3gui, this);
         tscan_opt_testPulses->ConnectToHardware(spidrcontrol, spidrdaq);
