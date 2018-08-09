@@ -144,7 +144,6 @@ public:
     double currentCut_Adj_THx;
 
     int equalisationTarget = 10;
-
 };
 
 
@@ -306,6 +305,8 @@ private:
     void resetForNewEqualisation();
 
     void estimateEqualisationTarget();
+
+    int _firstMinScanTHL; //! Set at the beginning of StartEqualisation
     // -------------------------------------------------------------------------
 
     bool _equalizationLoaded = false;

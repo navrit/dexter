@@ -215,7 +215,7 @@ void QCstmEqualization::ShowEqualizationForChip(bool /*checked*/) {
 void QCstmEqualization::NewRunInitEqualization() {
 
     // Rewind min and max suggesting a descendant scan.
-    SetMinScan( MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt );
+    SetMinScan( _firstMinScanTHL ); //! This is needed really for noisy sensor/chip combinations, like GaAs MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt;
     SetMaxScan( 0 );
 
     // Delete scans
@@ -726,6 +726,11 @@ void QCstmEqualization::StartEqualization() {
 
     // First) DAC_Disc Optimization
     if( EQ_NEXT_STEP( __INIT) ) {
+        //! We only want to update this the first time
+        if (_steeringInfo[0]->currentDAC_DISC_String == "DAC_DISC_L") {
+            _firstMinScanTHL = _minScanTHL; //! This is used exclusively to guide the THH scan for noisy chip/sensor combos
+        }
+        ChangeMin( _firstMinScanTHL );
 
         // ------ //
         // STEP 1 //
@@ -2019,7 +2024,7 @@ void QCstmEqualization::resetForNewEqualisation()
     _scanIndex = 0;
 
     _maxScanTHL = 0;
-    _minScanTHL = MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt;
+    _minScanTHL = _firstMinScanTHL; //! This is needed really for noisy sensor/chip combinations, like GaAs MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt;
     _scanDescendant = true;
     _busy = false;
 
