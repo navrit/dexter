@@ -114,9 +114,9 @@ void CommandHandler::initializeCmdTable()
     cmd_struct getShutterPeriod{getShutterPeriodHandler};
     cmdTable.insert("GetShutterPeriod",getShutterPeriod);
     cmd_struct setNumberOfFrame {setNumberOfFrameHandler};
-    cmdTable.insert("SetNumberOfFrame",setNumberOfFrame);
+    cmdTable.insert("SetFrameNumber",setNumberOfFrame);
     cmd_struct getNumberOfFrame {getNumberOfFrameHandler};
-    cmdTable.insert("GetNumberOfFrame",getNumberOfFrame);
+    cmdTable.insert("GetFrameNumber",getNumberOfFrame);
     cmd_struct setThreshold {setThresholdHandler};
     cmdTable.insert("SetThreshold",setThreshold);
     cmd_struct getThreshold {getThresholdHandler};
@@ -323,6 +323,11 @@ void CommandHandler::merlinErrorToPslError(int errNum)
 
 void CommandHandler::setMerlinFrameHeader(FrameHeaderDataStruct &frameHeader)
 {
+    if(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 24)
+        frameHeader.pixelDepth = "U32";
+    else
+        frameHeader.pixelDepth = "U16";
+
     frameHeader.colorMode = (uint8_t) Mpx3GUI::getInstance()->getConfig()->getColourMode();
     frameHeader.counter = 0;/// to be set
     frameHeader.dataOffset = 256 + (128 * 4);
@@ -478,10 +483,12 @@ void CommandHandler::on_doneWithOneFrame(int frameid)
     int size = 5;
     QString len = "";
     FrameHeaderDataStruct frameHeader;
-    QByteArray ba;
+    //QByteArray ba;
     QString hd = generateMerlinFrameHeader(frameHeader);
-
-    QByteArray frame = Mpx3GUI::getInstance()->getDataset()->toSocketData();
+    bool twentyfourbits = false;
+    if(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 24)
+        twentyfourbits = true;
+    QByteArray frame = Mpx3GUI::getInstance()->getDataset()->toSocketData(twentyfourbits);
     size = hd.length();
     size += frame.length();
     len = QString::number(size);
@@ -492,9 +499,9 @@ void CommandHandler::on_doneWithOneFrame(int frameid)
     }
     len = zeros + len;
     QString firstPart = "MPX,"+ len + ",MQ1," + hd;
-    ba += firstPart.toLatin1();
-    ba += frame;
-    emit imageIsReady(ba);
+   // ba += firstPart.toLatin1();
+   // ba += frame;
+    emit imageIsReady(firstPart.toLatin1(),frame);
 
     return;
 

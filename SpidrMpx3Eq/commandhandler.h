@@ -63,7 +63,7 @@ public:
 
 signals:
     //void commandIsDecoded(QString,QByteArray,bool);
-    void imageIsReady(QByteArray);
+    void imageIsReady(QByteArray,QByteArray);
     void requestForDataTaking(void);
     void requestForInfDataTracking(bool);
     void requestForSnap(void);

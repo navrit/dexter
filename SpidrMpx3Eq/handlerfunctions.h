@@ -405,7 +405,7 @@ void setShutterLengthHandler(){
     }
     if(CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(0) == "open"){
         //here code to set operational mode
-        Mpx3GUI::getInstance()->getConfig()->setTriggerLength(CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1).toInt());
+        Mpx3GUI::getInstance()->getConfig()->setTriggerLength(CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1).toDouble());
         CommandHandler::getInstance()->setData("Shutter open length is set to " + CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1));
         CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
     }
@@ -645,12 +645,12 @@ void getImageHandler(){
 }
 
 void setNumberOfFrameHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetNumberOfFrame"))  //this command comes with one argument
+    if(!CommandHandler::getInstance()->enoughArguments(1,"SetFrameNumber"))  //this command comes with one argument
     {
         CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
         return;
     }
-    Mpx3GUI::getInstance()->getConfig()->setNTriggers(CommandHandler::getInstance()->cmdTable["SetNumberOfFrame"].args.at(0).toInt() );
+    Mpx3GUI::getInstance()->getConfig()->setNTriggers(CommandHandler::getInstance()->cmdTable["SetFrameNumber"].args.at(0).toInt() );
     CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
 }
 

@@ -204,100 +204,55 @@ QByteArray Dataset::toByteArray() {
 
 
 
-
-QByteArray Dataset::toSocketData()
+QByteArray Dataset::toSocketData(bool twentyfourbits)
 {
 
     const int dim = 256;
-    int r= 0,c=0;
 
+    /*
+           |
+    chip1  | chip0
+    _______________
+           |
+    chip2  | chip3
 
-    QByteArray first,second,third,fourth,ret;
-    // QByteArray part1(256*256*2*4,'0');
-    // QByteArray part2(256*256*2*4,'0');
-    int part1[256*256*2] = {0};
-    int part2[256*256*2] = {0};
+    */
+
+    uint32_t image_32[dim*dim*4] = {0};
+    uint16_t image_16[dim*dim*4] = {0};
 
     QList<int> keys = m_thresholdsToIndices.keys();
     int * layer = this->getLayer(keys[0]);
-    for ( uint64_t j = 0 ; j < this->getPixelsPerLayer() ; j++) {
 
-        if(j >= 65536 && j < 131072) //65536-131072, 131072-196608
-        {
-            if(j == 65536){
-                //counters reset
-                c = 0;
-                r = 0;
-            }
+    static int param[12] = { 262143, -512, -1,
+                             131071, -512, -1,
+                                  0,  512,  1,
+                             131072,  512,  1};
 
-
-            uint64_t idx = (j+((dim*dim) - 1) - (dim*c) - (c) - (dim*r) - (r));
-            int a = (idx / (dim))-dim;
-            part1[(idx-65280)+(a*dim)] = layer[j];
-
-        }
-
-
-        if(j >= 131072 && j < 196608)
-        {
-            if(j == 131072){
-                //counters reset
-                c = 0;
-                r = 0;
-            }
-
-            int idx = ((c*dim) + r) + 131072;
-            int a = (idx / (dim))-(2*dim);
-            part1[(idx-131072) + (a*dim)] = layer[j];
-        }
-
-        if(j >= 0 && j < 65536)
-        {
-            if(j == 0){
-                //counters reset
-                c = 0;
-                r = 0;
-            }
-
-
-            uint64_t idx = (j+((dim*dim) - 1) - (dim*c) - (c) - (dim*r) - (r));
-            int a = idx / (dim);
-
-            part2[idx + dim*(a+1)] = layer[j];
-
-
-        }
-
-        if(j >= 196608 && j < 262144)
-        {
-            if(j == 196608){
-                //counters reset
-                c = 0;
-                r = 0;
-            }
-
-            int idx = ((c*dim) + r) + 196608;
-            int a = (idx / (dim))-(3*dim);
-            part2[(idx-196608) + (a*dim)] = layer[j];
-
-        }
-        //counters
-        if(c == 255){
-            if(r < 255)
-                r++;
+    int* pp = param;
+    for (int chip = 0; chip < 4; chip++) {
+        int startix = *(pp++);
+        int cs = *(pp++);
+        int rs = *(pp++);
+        for (int i = 0; i < dim; i++) {
+            int ix = startix;
+            if(twentyfourbits)
+                for (int j = 0; j < dim; j++) {
+                    image_32[ix] = *(layer++);
+                    ix += cs;
+                }
             else
-                r = 0;
+                for (int j = 0; j < dim; j++) {
+                    image_16[ix] = *(layer++);
+                    ix += cs;
+                }
+            startix += rs;
         }
-        if(c < 255)
-            c++;
-        else
-            c = 0;
     }
 
-    first = QByteArray::fromRawData((const char*)part1, (int)sizeof(part1));
-    second = QByteArray::fromRawData((const char*)part2, (int)sizeof(part2));
-    return first + second;
-
+    return twentyfourbits
+        ? QByteArray::fromRawData((const char*)image_32, (int)sizeof(image_32))
+        : QByteArray::fromRawData((const char*)image_16, (int)sizeof(image_16));
 }
 
 /**

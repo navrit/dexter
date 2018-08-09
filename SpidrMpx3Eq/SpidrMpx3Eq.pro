@@ -17,7 +17,7 @@ contains(QT_MAJOR_VERSION,5) {
   QT += concurrent
 }
 
-QT += network opengl multimedia multimediawidgets
+QT += network opengl
 CONFIG   +=  c++14 debug_and_release
 
 CONFIG(debug, debug|release) {

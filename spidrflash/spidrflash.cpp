@@ -55,7 +55,7 @@ int main( int argc, char **argv )
   int     portnr = 50000;
   ipaddr = get_addr_and_port( argv[1], &portnr );
   int flash_i = my_atoi( argv[3] );
-  if( !(flash_i == 1 || flash_i == 2) )
+  if( !(flash_i == 1 || flash_i == 2 ||flash_i == 52) )
     {
       cout << "### Illegal flash ID" << endl;
       usage();
@@ -66,20 +66,20 @@ int main( int argc, char **argv )
   if( argc == 5 )
     {
       if( string(argv[4]) == "prog" )
-	program_it = true;
+    program_it = true;
     }
   else
     {
       // Instead of file name, there may be a special option...
       if( string(argv[2]) == "dump" )
-	dump_it = true;
+    dump_it = true;
     }
 
   // Open a control connection to the SPIDR module
   SpidrController spidrctrl( (ipaddr>>24) & 0xFF,
-			     (ipaddr>>16) & 0xFF,
-			     (ipaddr>> 8) & 0xFF,
-			     (ipaddr>> 0) & 0xFF, portnr );
+                 (ipaddr>>16) & 0xFF,
+                 (ipaddr>> 8) & 0xFF,
+                 (ipaddr>> 0) & 0xFF, portnr );
   // Are we connected ?
   if( !spidrctrl.isConnected() ) {
     cout << spidrctrl.ipAddressString() << ": "
@@ -96,20 +96,20 @@ int main( int argc, char **argv )
     {
       // Read the MCS/HEX file
       try
-	{
-	  mcs.setFile( filename );
-	}
+    {
+      mcs.setFile( filename );
+    }
       catch( McsException &exc )
-	{
-	  string msg;
-	  msg += filename;
-	  msg += ": ";
-	  msg += exc.toString();
-	  cout << msg;
-	  return 1;
-	}
+    {
+      string msg;
+      msg += filename;
+      msg += ": ";
+      msg += exc.toString();
+      cout << msg;
+      return 1;
+    }
       cout << "MCS-file " << filename << ": min addr " << mcs.minAddr()
-	   << ", max addr: " << mcs.maxAddr() << endl << endl;
+       << ", max addr: " << mcs.maxAddr() << endl << endl;
     }
 
   unsigned char *flashmem = mcs.mem();
@@ -127,30 +127,30 @@ int main( int argc, char **argv )
       bytes_todo = 0x1000000; // 16 MByte
       cout << hex << uppercase << setfill('0');
       while( bytes_done < bytes_todo )
-	{
-	  if( spidrctrl.readFlash( flash_i, address, &nbytes, databytes ) )
-	    {
-	      int i;
-	      for( i=0; i<nbytes; ++i, ++address )
-		{
-		  if( (address & 0x0F) == 0 )
-		    cout << endl << setw(6) << address << ' ';
-		  cout << ' ' << setw(2) << (unsigned int) databytes[i];
-		}
-	      address    += nbytes;
-	      bytes_done += nbytes;
+    {
+      if( spidrctrl.readFlash( flash_i, address, &nbytes, databytes ) )
+        {
+          int i;
+          for( i=0; i<nbytes; ++i, ++address )
+        {
+          if( (address & 0x0F) == 0 )
+            cout << endl << setw(6) << address << ' ';
+          cout << ' ' << setw(2) << (unsigned int) databytes[i];
+        }
+          address    += nbytes;
+          bytes_done += nbytes;
 
-	      cout << endl;
-	      char ch;
-	      cin >> ch;
-	      if( ch == 'q' || ch == 'Q' ) return 0;
-	    }
-	  else
-	    {
-	      error_out( "readFlash()" );
-	      break;
-	    }
-	}
+          cout << endl;
+          char ch;
+          cin >> ch;
+          if( ch == 'q' || ch == 'Q' ) return 0;
+        }
+      else
+        {
+          error_out( "readFlash()" );
+          break;
+        }
+    }
     }
   else if( program_it )
     {
@@ -159,103 +159,103 @@ int main( int argc, char **argv )
       // (to make sure SPIDR erases this (sub)sector)
       //if( (address & 0xFFFF) != 0 ) // N25Q128 sector size is 64 KByte
       if( (address & 0xFFF) != 0 )    // N25Q128 subsector size is 4 KByte
-	{
-	  bytes_todo += (address & 0xFFF);
-	  address    &= 0xFFFFF000;
-	}
+    {
+      bytes_todo += (address & 0xFFF);
+      address    &= 0xFFFFF000;
+    }
       flashmem += address;
 
       cout << "Programming...     ";
       while( bytes_done < bytes_todo )
-	{
-	  if( spidrctrl.writeFlash(flash_i, address, bytes_per_pkt, flashmem) )
-	    {
-	      /* DEBUG
-	      cout << hex << uppercase << setfill('0');
-	      int i;
-	      for( i=0; i<128; ++i )
-		{
-		  if( ((address+i) & 0x0F) == 0 )
-		    cout << endl << setw(6) << address+i << ' ';
-		  cout << ' ' << setw(2) << (unsigned int) flashmem[i];
-		}
-	      cout << endl << dec;
-	      */
-	      flashmem   += bytes_per_pkt;
-	      address    += bytes_per_pkt;
-	      bytes_done += bytes_per_pkt;
+    {
+      if( spidrctrl.writeFlash(flash_i, address, bytes_per_pkt, flashmem) )
+        {
+          /* DEBUG
+          cout << hex << uppercase << setfill('0');
+          int i;
+          for( i=0; i<128; ++i )
+        {
+          if( ((address+i) & 0x0F) == 0 )
+            cout << endl << setw(6) << address+i << ' ';
+          cout << ' ' << setw(2) << (unsigned int) flashmem[i];
+        }
+          cout << endl << dec;
+          */
+          flashmem   += bytes_per_pkt;
+          address    += bytes_per_pkt;
+          bytes_done += bytes_per_pkt;
 
-	      // Display percentage done
-	      if( (100*bytes_done)/bytes_todo != percentage )
-		{
-		  int p = (100*bytes_done)/bytes_todo;
-		  cout << "\b\b\b\b\b    \b\b\b\b" << setw(3) << p << "% ";
-		  cout.flush();
-		  percentage = p;
-		}
-	    }
-	  else
-	    {
-	      error_out( "writeFlash()" );
-	      break;
-	    }
-	}
+          // Display percentage done
+          if( (100*bytes_done)/bytes_todo != percentage )
+        {
+          int p = (100*bytes_done)/bytes_todo;
+          cout << "\b\b\b\b\b    \b\b\b\b" << setw(3) << p << "% ";
+          cout.flush();
+          percentage = p;
+        }
+        }
+      else
+        {
+          error_out( "writeFlash()" );
+          break;
+        }
+    }
     }
   else
     {
       cout << "Verifying...     ";
       flashmem += address;
       while( bytes_done < bytes_todo )
-	{
-	  if( spidrctrl.readFlash( flash_i, address, &nbytes, databytes ) )
-	    {
-	      // Check data retrieved against file contents
-	      // and stop as soon as a difference is found
-	      if( memcmp( flashmem, databytes, nbytes ) != 0 )
-		{
-		  cout << hex << uppercase << endl;
-		  cout << "### Mismatch in datablock at address "
-		       << address << endl;
+    {
+      if( spidrctrl.readFlash( flash_i, address, &nbytes, databytes ) )
+        {
+          // Check data retrieved against file contents
+          // and stop as soon as a difference is found
+          if( memcmp( flashmem, databytes, nbytes ) != 0 )
+        {
+          cout << hex << uppercase << endl;
+          cout << "### Mismatch in datablock at address "
+               << address << endl;
 
-		  // Display a number of differences in more detail
-		  int i, cnt = 0;
-		  for( i=0; i<nbytes; ++i )
-		    {
-		      if( databytes[i] != flashmem[i] )
-			{
-			  cout << "addr " << setw(6) << (address+i)
-			       << ": " << setw(2)
-			       << (unsigned int) databytes[i]
-			       << " vs " << setw(2)
-			       << (unsigned int) flashmem[i] << endl;
-			  ++cnt;
-			  if( cnt == 10 ) break; // for-loop
-			}
-		    }
-		  break; // while-loop
-		}
+          // Display a number of differences in more detail
+          int i, cnt = 0;
+          for( i=0; i<nbytes; ++i )
+            {
+              if( databytes[i] != flashmem[i] )
+            {
+              cout << "addr " << setw(6) << (address+i)
+                   << ": " << setw(2)
+                   << (unsigned int) databytes[i]
+                   << " vs " << setw(2)
+                   << (unsigned int) flashmem[i] << endl;
+              ++cnt;
+              if( cnt == 10 ) break; // for-loop
+            }
+            }
+          break; // while-loop
+        }
 
-	      flashmem   += nbytes;
-	      address    += nbytes;
-	      bytes_done += nbytes;
+          flashmem   += nbytes;
+          address    += nbytes;
+          bytes_done += nbytes;
 
-	      // Display percentage done
-	      if( (100*bytes_done)/bytes_todo != percentage )
-		{
-		  int p = (100*bytes_done)/bytes_todo;
-		  cout << "\b\b\b\b\b    \b\b\b\b" << setw(3) << p << "% ";
-		  cout.flush();
-		  percentage = p;
-		}
-	    }
-	  else
-	    {
-	      error_out( "readFlash()" );
-	      break;
-	    }
-	}
+          // Display percentage done
+          if( (100*bytes_done)/bytes_todo != percentage )
+        {
+          int p = (100*bytes_done)/bytes_todo;
+          cout << "\b\b\b\b\b    \b\b\b\b" << setw(3) << p << "% ";
+          cout.flush();
+          percentage = p;
+        }
+        }
+      else
+        {
+          error_out( "readFlash()" );
+          break;
+        }
+    }
       if( bytes_done >= bytes_todo )
-	cout << endl << "Verified OKAY!" << endl;
+    cout << endl << "Verified OKAY!" << endl;
     }
   return 0;
 }
@@ -271,16 +271,16 @@ quint32 get_addr_and_port( const char *str, int *portnr )
       bool ok;
       int p = qstr.section( ':', 1, 1).toInt( &ok );
       if( !ok )
-	{
-	  cout << "### Invalid port number: "
-	       << qstr.section( ':', 1, 1 ).toStdString() << endl;
-	  usage();
-	  exit( 0 );
-	}
+    {
+      cout << "### Invalid port number: "
+           << qstr.section( ':', 1, 1 ).toStdString() << endl;
+      usage();
+      exit( 0 );
+    }
       else
-	{
-	  *portnr = p;
-	}
+    {
+      *portnr = p;
+    }
       // Remove the port number from the string
       qstr = qstr.section( ':', 0, 0 );
     }

@@ -106,26 +106,26 @@ QString MerlinInterface::parseCommand(QString command)
         if(setTable.contains(items.at(NAME_INDEX))){
 
 
-            QString psiCmd = setTable[_cmdName];
-            QStringList psiCmdList = psiCmd.split(";");
-            QString sndCmd = psiCmdList.at(0);
-            for (int i = 1; i < psiCmdList.length(); ++i) {
-                PSI_ARG_TYPES psiType = (PSI_ARG_TYPES) psiCmdList.at(i).toInt();
-                QString arg = argParser(psiType);
+            QString pslCmd = setTable[_cmdName];
+            QStringList pslCmdList = pslCmd.split(";");
+            QString sndCmd = pslCmdList.at(0);
+            for (int i = 1; i < pslCmdList.length(); ++i) {
+                PSL_ARG_TYPES pslType = (PSL_ARG_TYPES) pslCmdList.at(i).toInt();
+                QString arg = argParser(pslType);
                 sndCmd += ";" + arg;
             }
             _error = NO_ERROR;
             qDebug() << "built cmd :" << sndCmd;
             return sndCmd;
-//            if(psiCmdList.length() > 1){
-//                PSI_ARG_TYPES psiType = (PSI_ARG_TYPES) psiCmdList.at(1).toInt();
-//                QString arg = argParser(psiType);
+//            if(pslCmdList.length() > 1){
+//                PSL_ARG_TYPES pslType = (PSL_ARG_TYPES) pslCmdList.at(1).toInt();
+//                QString arg = argParser(pslType);
 //                _error = NO_ERROR;
-//                psiCmd = psiCmdList.at(0) + ";" + arg;
-//                return psiCmd.toLatin1().data();
+//                pslCmd = pslCmdList.at(0) + ";" + arg;
+//                return pslCmd.toLatin1().data();
 //            }
             //_error = NO_ERROR;
-           // return psiCmdList.at(0).toLatin1().data();
+           // return pslCmdList.at(0).toLatin1().data();
         }
         _error = UNKOWN_COMMAND;
         return "";
@@ -133,17 +133,17 @@ QString MerlinInterface::parseCommand(QString command)
     //get commands
     if( _cmdType == GET_TYPE){
         if(getTable.contains(items.at(NAME_INDEX))){
-            QString psiCmd = getTable[_cmdName];
-            QStringList psiCmdList = psiCmd.split(";");
-            if(psiCmdList.length() > 1){
-                PSI_ARG_TYPES psiType = (PSI_ARG_TYPES) psiCmdList.at(1).toInt();
-                QString arg = argParser(psiType);
+            QString pslCmd = getTable[_cmdName];
+            QStringList pslCmdList = pslCmd.split(";");
+            if(pslCmdList.length() > 1){
+                PSL_ARG_TYPES pslType = (PSL_ARG_TYPES) pslCmdList.at(1).toInt();
+                QString arg = argParser(pslType);
                 _error = NO_ERROR;
-                psiCmd = psiCmdList.at(0) + ";" + arg;
-                return psiCmd;
+                pslCmd = pslCmdList.at(0) + ";" + arg;
+                return pslCmd;
             }
             _error = NO_ERROR;
-            return psiCmdList.at(0);
+            return pslCmdList.at(0);
         }
         _error = UNKOWN_COMMAND;
         return "";
@@ -151,17 +151,17 @@ QString MerlinInterface::parseCommand(QString command)
     //cmd commands
     if( _cmdType == CMD_TYPE){
         if(cmdTable.contains(items.at(NAME_INDEX))){
-            QString psiCmd = cmdTable[_cmdName];
-            QStringList psiCmdList = psiCmd.split(";");
-            if(psiCmdList.length() > 1){
-                PSI_ARG_TYPES psiType = (PSI_ARG_TYPES) psiCmdList.at(1).toInt();
-                QString arg = argParser(psiType);
+            QString pslCmd = cmdTable[_cmdName];
+            QStringList pslCmdList = pslCmd.split(";");
+            if(pslCmdList.length() > 1){
+                PSL_ARG_TYPES pslType = (PSL_ARG_TYPES) pslCmdList.at(1).toInt();
+                QString arg = argParser(pslType);
                 _error = NO_ERROR;
-                psiCmd = psiCmdList.at(0) + ";" + arg;
-                return psiCmd;
+                pslCmd = pslCmdList.at(0) + ";" + arg;
+                return pslCmd;
             }
             _error = NO_ERROR;
-            return psiCmdList.at(0);
+            return pslCmdList.at(0);
         }
         _error = UNKOWN_COMMAND;
         return "";
@@ -231,7 +231,7 @@ void MerlinInterface::initializeTables()
     getTable.insert(ENABLECOUNTER1,"GetBothCounters");
     getTable.insert(COUNTERDEPTH,"GetCounterDepth");
     getTable.insert(ACQUISITIONPERIOD,"GetShutterPeriod");
-    getTable.insert(NUMFRAMESPERTRIGGER,"GetNumberOfFrame");
+    getTable.insert(NUMFRAMESTOACQUIRE,"GetFrameNumber");
     getTable.insert(THRESHOLD0,"GetThreshold;"+QString::number(TH0));
     getTable.insert(THRESHOLD1,"GetThreshold;"+QString::number(TH1));
     getTable.insert(THRESHOLD2,"GetThreshold;"+QString::number(TH2));
@@ -259,7 +259,7 @@ void MerlinInterface::initializeTables()
     setTable.insert(COUNTERDEPTH,"SetCounterDepth;" + QString::number(N));
     setTable.insert(ACQUISITIONTIME,"SetShutterLength;"+ QString::number(OPEN) + ";" + QString::number(N));
     setTable.insert(ACQUISITIONPERIOD,"SetShutterPeriod;" + QString::number(N));
-    setTable.insert(NUMFRAMESPERTRIGGER,"SetNumberOfFrame;" + QString::number(N));
+    setTable.insert(NUMFRAMESTOACQUIRE,"SetFrameNumber;" + QString::number(N));
     setTable.insert(THRESHOLD0,"SetThreshold;"+QString::number(TH0)+";" +QString::number(N));
     setTable.insert(THRESHOLD1,"SetThreshold;"+QString::number(TH1)+";" +QString::number(N));
     setTable.insert(THRESHOLD2,"SetThreshold;"+QString::number(TH2)+";" +QString::number(N));
@@ -284,7 +284,7 @@ void MerlinInterface::initializeTables()
     cmdTable.insert(STARTACQUISITION,"Start");
 }
 
-QString MerlinInterface::argParser(MerlinInterface::PSI_ARG_TYPES argType)
+QString MerlinInterface::argParser(MerlinInterface::PSL_ARG_TYPES argType)
 {
     switch (argType) {
     case N:
