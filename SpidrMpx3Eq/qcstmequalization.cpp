@@ -176,6 +176,7 @@ void QCstmEqualization::on_logYCheckBox_toggled(bool checked) {
         GetBarChart(_workChipsIndx[i])->replot( QCustomPlot::rpQueued );
     }
 
+
 }
 
 void QCstmEqualization::setFineTuningLoops(int nLoops) {
@@ -1073,6 +1074,7 @@ void QCstmEqualization::DAC_Disc_Optimization_100() {
     for ( int i = 0 ; i < int(_workChipsIndx.size()); i++ ) {
         cprop.name = BuildChartName( _workChipsIndx[i], legend );
         GetBarChart( _workChipsIndx[i] )->AppendSet( cprop );
+        GetBarChart( _workChipsIndx[i] )->rescaleX( double(_ui->eqMaxSpinBox->value()), double(_ui->eqMinSpinBox->value()));
     }
 
     // DAC_DiscL=100

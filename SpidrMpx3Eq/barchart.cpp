@@ -31,6 +31,12 @@ void BarChart::SetLogX(bool setl) {
     else xAxis->setScaleType( QCPAxis::stLinear );
 }
 
+void BarChart::rescaleX(double lower, double upper)
+{
+    xAxis->setRange(lower, upper);
+    replot();
+}
+
 void BarChart::Clean() {
 
     //int nCleared = this->clearPlottables();

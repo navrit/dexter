@@ -49,6 +49,8 @@ public:
 	void SetLogY(bool setl);
 	void SetLogX(bool setl);
 
+    void rescaleX(double lower, double upper);
+
 	void SetValueInSet(unsigned int setId, double val, double weight = 1);
     void SetValueInSetNonAcc(unsigned int setId, double val, double weight = 1);
 
