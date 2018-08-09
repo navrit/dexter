@@ -721,7 +721,6 @@ void QCstmEqualization::StartEqualization() {
          DAC_DISC_2_value = testPulseEqualisationDialog->get_2nd_DAC_DISC_val();
     }
 
-
     // Preliminary) Find out the equalization range
 
     // First) DAC_Disc Optimization
@@ -1318,8 +1317,16 @@ void QCstmEqualization::ScanOnInterpolation() {
     scan_last = _scans[_scanIndex - 1];
 
     ThlScan * tscan_opt_ext = new ThlScan(_mpx3gui, this);
-    tscan_opt_ext->SetMinScan( scan_last->GetDetectedHighScanBoundary() );
-    tscan_opt_ext->SetMaxScan( scan_last->GetDetectedLowScanBoundary() );
+
+    if (_steeringInfo[0]->equalisationTarget == 10) {
+        tscan_opt_ext->SetMinScan( 30 );
+        tscan_opt_ext->SetMaxScan( 0 );
+        qDebug() << "[INFO]\tUsing fast scanning, hardcoded 30 to 0";
+    } else {
+        tscan_opt_ext->SetMinScan( scan_last->GetDetectedHighScanBoundary() );
+        tscan_opt_ext->SetMaxScan( scan_last->GetDetectedLowScanBoundary() );
+    }
+
 
     tscan_opt_ext->ConnectToHardware(spidrcontrol, spidrdaq);
     BarChartProperties cprop_opt_ext;
