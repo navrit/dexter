@@ -330,8 +330,8 @@ void ThlScan::FineTuning() {
     connect(_equalization, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
 
     //! Start with the adjustments currently reacting
-    FillAdjReactTHLHistory();
-    DumpAdjReactTHLHistory( 10 );
+    //FillAdjReactTHLHistory();
+    //DumpAdjReactTHLHistory( 10 );
 
     int processedLoops = 0;
     bool finishScan = false;
@@ -438,7 +438,7 @@ void ThlScan::FineTuning() {
                 if (_maxScan > 511 ) {
                     _maxScan = 511;
                 }
-                //qDebug() << "[INFO]\t Scanning range" << _minScan << "-" << _maxScan;
+                // qDebug() << "[INFO]\t Scanning range" << _minScan << "-" << _maxScan;
 
                 //! Scan iterator observing direction
                 _pixelReactiveInScan = 0;
@@ -738,7 +738,7 @@ void ThlScan::DumpAdjReactTHLHistory(int showHeadAndTail) {
     for ( ; i != iE ; i++ ) {
 
         if ( ( cntr < showHeadAndTail ) || ( cntr >= (fullHistorySize - showHeadAndTail)  )) {
-            qDebug() << "\t[" << (*i).first << "]{";
+            //qDebug() << "\t[" << (*i).first << "]{";
 
             vi  = (*i).second.begin();
             viE = (*i).second.end();
@@ -758,8 +758,6 @@ void ThlScan::DumpAdjReactTHLHistory(int showHeadAndTail) {
         cntr++;
     }
     qDebug() << "\n" << "       And a list of pixels stuck non-reactive (if any) --> " << "\n";
-
-
 
     // search for a few special non-reactive pixels
     i  = _adjReactiveTHLFineTuning.begin();
