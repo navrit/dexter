@@ -205,6 +205,13 @@ void DataConsumerThread::run()
                 delvrCounters = 2; // do 0,2,4,6
             }
 
+            // Move the reading descriptor
+            // or rewind
+            if ( readdescriptor >= _bufferSize ) readdescriptor = 0;
+
+            // Too loaded
+            //if ( descriptorDistance >= _bufferSizeHalf ) emit bufferFull( 0 );
+
             /////////////////
             // Colour Mode //
             if ( _mpx3gui->getConfig()->getColourMode() ) {
@@ -261,13 +268,6 @@ void DataConsumerThread::run()
                 }
 
             }
-
-            // Move the reading descriptor
-            // or rewind
-            if ( readdescriptor >= _bufferSize ) readdescriptor = 0;
-
-            // Too loaded
-            //if ( descriptorDistance >= _bufferSizeHalf ) emit bufferFull( 0 );
 
             // Fraction
             emit bufferOccupancySig( (int)(100*(usedFrames->available()/ (double)(_semaphoreSize) ) ) );
