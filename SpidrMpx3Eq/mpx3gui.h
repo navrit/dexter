@@ -74,7 +74,7 @@ class TcpServer;
 #define JSON_FILES "BH JSON file(*.json)"
 
 const QString _softwareName = "ASI Dexter";
-const QString _softwareVersion = "1.9.5 - af163a022769d202fcfe8cbc03617a965a5e075a";
+const QString _softwareVersion = "1.9.6 - 0009769376e2d92521c040b69e1d237164b0bdb6";
 
 const int tcpCommandPort = 6351;            //! Diamond - Merlin interface
 const int tcpDataPort = 6352;               //! Diamond - Merlin interface
