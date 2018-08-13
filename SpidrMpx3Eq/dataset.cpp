@@ -224,10 +224,10 @@ QByteArray Dataset::toSocketData(bool twentyfourbits)
     QList<int> keys = m_thresholdsToIndices.keys();
     int * layer = this->getLayer(keys[0]);
 
-    static int param[12] = { 262143, -512, -1,
-                             131071, -512, -1,
-                                  0,  512,  1,
-                             131072,  512,  1};
+    static int param[12] = {    511,  512, -1,
+                             131583,  512, -1,
+                             261632, -512,  1,
+                             130560, -512,  1};
 
     int* pp = param;
     for (int chip = 0; chip < 4; chip++) {
