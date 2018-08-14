@@ -137,6 +137,7 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
   u64  pixelword;
   u64  type;
   int  i, j;
+  int *temp2 = temp;
   for( i=0; i<nbytes/sizeof(u64); ++i, ++pixelpkt )
     {
       pixelword = *pixelpkt;
@@ -148,20 +149,25 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
           //++rownr;
           //pixelrow = &pixels[rownr * MPX_PIXEL_COLUMNS];
           index = 0;
-          memset( temp, 0, MPX_PIXEL_COLUMNS );
+          if( counter_depth == 24 && is_counterh )
+              memset( temp, 0, MPX_PIXEL_COLUMNS );
+          else
+              temp2 = &pixels[rownr * MPX_PIXEL_COLUMNS];
           // 'break' left out intentionally;
           // continue unpacking the pixel packet
 
         [[fallthrough]]; case PIXEL_DATA_MID:
           // Unpack the pixel packet
-          for( j=0; j<pix_per_word; ++j, ++index )
+          // Make sure not to write outside the current pixel row
+        { int maxj = MPX_PIXEL_COLUMNS - index;
+          if (maxj > pix_per_word) maxj = pix_per_word;
+          for( j=0; j<maxj; ++j, ++index )
             {
-              // Make sure not to write outside the current pixel row
-              if( index < MPX_PIXEL_COLUMNS )
-                //pixelrow[index] = pixelword & pixel_mask;
-                temp[index] = pixelword & pixel_mask;
+              //pixelrow[index] = pixelword & pixel_mask;
+              temp2[index] = pixelword & pixel_mask;
               pixelword >>= counter_bits;
             }
+         }
           break;
 
         case PIXEL_DATA_EOR:
@@ -180,7 +186,7 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
               // Make sure not to write outside the current pixel row
               if( index < MPX_PIXEL_COLUMNS )
                 //pixelrow[index] = pixelword & pixel_mask;
-                temp[index] = pixelword & pixel_mask;
+                temp2[index] = pixelword & pixel_mask;
               pixelword >>= counter_bits;
             }
 
@@ -197,8 +203,8 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
             }
           else
             {
-              memcpy( &pixels[rownr * MPX_PIXEL_COLUMNS], temp,
-                      MPX_PIXEL_COLUMNS * sizeof(int) );
+              //memcpy( &pixels[rownr * MPX_PIXEL_COLUMNS], temp,
+                      //MPX_PIXEL_COLUMNS * sizeof(int) );
             }
           break;
 
