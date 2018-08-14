@@ -202,9 +202,7 @@ QByteArray Dataset::toByteArray() {
     return ret;
 }
 
-
-
-QByteArray Dataset::toSocketData(bool twentyfourbits)
+template <typename INTTYPE> QByteArray toSocketData2(Dataset *ds, INTTYPE key)
 {
 
     const int dim = 256;
@@ -218,11 +216,9 @@ QByteArray Dataset::toSocketData(bool twentyfourbits)
 
     */
 
-    uint32_t image_32[dim*dim*4] = {0};
-    uint16_t image_16[dim*dim*4] = {0};
+    static INTTYPE image[dim*dim*4] = {0};
 
-    QList<int> keys = m_thresholdsToIndices.keys();
-    int * layer = this->getLayer(keys[0]);
+    int * layer = ds->getLayer(key);
 
     static int param[12] = {    511,  512, -1,
                              131583,  512, -1,
@@ -236,23 +232,29 @@ QByteArray Dataset::toSocketData(bool twentyfourbits)
         int rs = *(pp++);
         for (int i = 0; i < dim; i++) {
             int ix = startix;
-            if(twentyfourbits)
-                for (int j = 0; j < dim; j++) {
-                    image_32[ix] = *(layer++);
-                    ix += cs;
-                }
-            else
-                for (int j = 0; j < dim; j++) {
-                    image_16[ix] = *(layer++);
-                    ix += cs;
-                }
+                if (cs == 1)
+                    for (int j = 0; j < dim; j++) {
+                        image[ix] = *(layer++);
+                        ++ix;
+                    }
+                else
+                    for (int j = 0; j < dim; j++) {
+                        image[ix] = *(layer++);
+                        --ix;
+                    }
             startix += rs;
         }
     }
 
+    return
+        QByteArray::fromRawData((const char*)image, (int)sizeof(image));
+}
+
+QByteArray Dataset::toSocketData(bool twentyfourbits) {
+    QList<int> keys = m_thresholdsToIndices.keys();
     return twentyfourbits
-        ? QByteArray::fromRawData((const char*)image_32, (int)sizeof(image_32))
-        : QByteArray::fromRawData((const char*)image_16, (int)sizeof(image_16));
+            ? toSocketData2(this, (uint32) keys[0])
+            : toSocketData2(this, (uint16) keys[0]);
 }
 
 /**
