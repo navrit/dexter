@@ -220,10 +220,17 @@ template <typename INTTYPE> QByteArray toSocketData2(Dataset *ds, INTTYPE key)
 
     int * layer = ds->getLayer(key);
 
-    static int param[12] = {    511,  512, -1,
-                             131583,  512, -1,
-                             261632, -512,  1,
-                             130560, -512,  1};
+    /*
+    static int param[12] = {    511,  512, -1, // right top, go down
+                             131583,  512, -1, // right middle, go down
+                             261632, -512,  1, // left bottom, go up
+                             130560, -512,  1}; // left middle, go up
+     */
+
+    static int param[12] = {      0,  1,  512, // top left, go right
+                                256,  1,  512, // top middle, go right
+                             262143, -1, -512, // bottom right, go left
+                             261887, -1, -512}; // bottom middle, go left
 
     int* pp = param;
     for (int chip = 0; chip < 4; chip++) {
