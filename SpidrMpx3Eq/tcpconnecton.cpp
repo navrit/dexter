@@ -18,7 +18,7 @@ void TcpConnecton::setSocket(QTcpSocket *socket)
     connect(m_socket,&QTcpSocket::connected, this, &TcpConnecton::connected);
     connect(m_socket,&QTcpSocket::disconnected, this, &TcpConnecton::disconnected);
     connect(m_socket,&QTcpSocket::readyRead, this, &TcpConnecton::readyRead);
-    connect(m_socket,&QTcpSocket::bytesWritten, this, &TcpConnecton::bytesWritten);
+    //connect(m_socket,&QTcpSocket::bytesWritten, this, &TcpConnecton::bytesWritten);
     connect(m_socket,&QTcpSocket::stateChanged, this, &TcpConnecton::stateChanged);
     connect(m_socket,static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error),this,&TcpConnecton::error);
 
@@ -90,14 +90,13 @@ void TcpConnecton::on_responseIsReady(QString response)
 
 void TcpConnecton::on_imageIsReady(QByteArray header,QByteArray image)
 {
-
     //qDebug() << "Data recieved at the tcpconnection.";
     //qDebug()<<"header size:"<<header.size();
    // qDebug()<<"Image size:"<<image.size();
     int sndSize = m_socket->write(header);
     sndSize = m_socket->write(image);
     m_socket->flush();
-    m_socket->waitForBytesWritten();
+    //m_socket->waitForBytesWritten();
 
 
 }
