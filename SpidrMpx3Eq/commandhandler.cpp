@@ -389,7 +389,7 @@ void CommandHandler::setMerlinFrameHeader(FrameHeaderDataStruct &frameHeader)
 QString CommandHandler::generateMerlinFrameHeader(FrameHeaderDataStruct frameHeader)
 {
     setMerlinFrameHeader(frameHeader);
-    QString header =  QString::number(frameHeader.frameNumbers) + "," + QString::number(frameHeader.dataOffset) + "," +
+    QString header = "MQ1," + QString::number(frameHeader.frameNumbers) + "," + QString::number(frameHeader.dataOffset) + "," +
              QString::number(frameHeader.numberOfChips) +","+ QString::number(frameHeader.xDim) +","+ QString::number(frameHeader.yDim) +","+ frameHeader.pixelDepth
             + "," + frameHeader.sensorLayout + "," + QString::number(frameHeader.chipSelect) + "," + frameHeader.timeStamp + "," +
             QString::number(frameHeader.shutterOpen) + "," + QString::number(frameHeader.counter) + "," + QString::number(frameHeader.colorMode) + "," +
@@ -479,15 +479,12 @@ void CommandHandler::getImage()
 
 void CommandHandler::on_doneWithOneFrame(int frameid)
 {
-
     int size = 5;
     QString len = "";
     FrameHeaderDataStruct frameHeader;
     //QByteArray ba;
     QString hd = generateMerlinFrameHeader(frameHeader);
-    bool twentyfourbits = false;
-    if(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 24)
-        twentyfourbits = true;
+    bool twentyfourbits =(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 24);
     QByteArray frame = Mpx3GUI::getInstance()->getDataset()->toSocketData(twentyfourbits);
     size = hd.length();
     size += frame.length();
@@ -498,12 +495,10 @@ void CommandHandler::on_doneWithOneFrame(int frameid)
         zeros += "0";
     }
     len = zeros + len;
-    QString firstPart = "MPX,"+ len + ",MQ1," + hd;
+    QString firstPart = "MPX,"+ len + "," + hd;
    // ba += firstPart.toLatin1();
    // ba += frame;
     emit imageIsReady(firstPart.toLatin1(),frame);
-
-    return;
 
 }
 
