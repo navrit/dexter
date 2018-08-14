@@ -63,6 +63,9 @@ QGroupBox::title {
         <pointsize>14</pointsize>
        </font>
       </property>
+      <property name="toolTip">
+       <string>Visualisation</string>
+      </property>
       <property name="title">
        <string>Visualisation</string>
       </property>
@@ -205,6 +208,9 @@ QGroupBox::title {
           <font>
            <pointsize>14</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Data recording</string>
          </property>
          <property name="title">
           <string>Data recording</string>
@@ -563,6 +569,9 @@ If you run too fast this feature should not be used.</string>
           <font>
            <pointsize>14</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>Configuration &amp; Statistics</string>
          </property>
          <property name="title">
           <string>Configuration &amp;&amp; Statistics</string>
