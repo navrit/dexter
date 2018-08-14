@@ -115,7 +115,7 @@ void TcpConnections::accept(qintptr handle, TcpConnecton *connection)
     //connect to data_recived
     connect(connection,SIGNAL(dataRecieved(QString)),this,SLOT(on_dataRecieved(QString)));
     connect(this,SIGNAL(responseIsReady(QString)),connection,SLOT(on_responseIsReady(QString)));
-    connect(this,SIGNAL(imageIsReady(QByteArray,QByteArray)),connection,SLOT(on_imageIsReady(QByteArray,QByteArray)));
+    connect(this,SIGNAL(imageIsReady(QByteArray,QByteArray)),connection,SLOT(on_imageIsReady(QByteArray,QByteArray)),Qt::DirectConnection);
     //always accept one connection
     if(this->count() <= 0)
         m_connections.insert(socket,connection);
