@@ -389,23 +389,24 @@ void CommandHandler::setMerlinFrameHeader(FrameHeaderDataStruct &frameHeader)
 QString CommandHandler::generateMerlinFrameHeader(FrameHeaderDataStruct frameHeader)
 {
     setMerlinFrameHeader(frameHeader);
-    QString header = "MQ1," + QString::number(frameHeader.frameNumbers) + "," + QString::number(frameHeader.dataOffset) + "," +
-             QString::number(frameHeader.numberOfChips) +","+ QString::number(frameHeader.xDim) +","+ QString::number(frameHeader.yDim) +","+ frameHeader.pixelDepth
-            + "," + frameHeader.sensorLayout + "," + QString::number(frameHeader.chipSelect) + "," + frameHeader.timeStamp + "," +
-            QString::number(frameHeader.shutterOpen) + "," + QString::number(frameHeader.counter) + "," + QString::number(frameHeader.colorMode) + "," +
-            QString::number(frameHeader.gainMode) + "," + QString::number(frameHeader.threshold0) + "," +QString::number(frameHeader.threshold1) +
-            "," + QString::number(frameHeader.threshold2) + "," + QString::number(frameHeader.threshold3) + "," + QString::number(frameHeader.threshold4)
-            + "," + QString::number(frameHeader.threshold5) + "," + QString::number(frameHeader.threshold6) + "," + QString::number(frameHeader.threshold7)+","+
-            frameHeader.dacFormat + "," + QString::number(frameHeader.dacThreshold0) + "," + QString::number(frameHeader.dacThreshold1)
-            + "," + QString::number(frameHeader.dacThreshold2) + "," + QString::number(frameHeader.dacThreshold3) + "," + QString::number(frameHeader.dacThreshold4)
-            + "," + QString::number(frameHeader.dacThreshold5)+ "," + QString::number(frameHeader.dacThreshold6)+ "," + QString::number(frameHeader.dacThreshold7)
-            + "," + QString::number(frameHeader.preamp) + "," + QString::number(frameHeader.ikrum) + "," + QString::number(frameHeader.shaper)
-            + "," + QString::number(frameHeader.disc) + "," + QString::number(frameHeader.discLs) + "," + QString::number(frameHeader.shaperTest)
-            + "," + QString::number(frameHeader.dacDiscL) + "," + QString::number(frameHeader.dacTest) + "," + QString::number(frameHeader.dacDiscH)
-            + "," + QString::number(frameHeader.delay) + "," + QString::number(frameHeader.tpBuffIn) + "," + QString::number(frameHeader.tpBuffOut)
-            + "," + QString::number(frameHeader.rpz) + "," + QString::number(frameHeader.gnd) + "," + QString::number(frameHeader.tpRef)
-            + "," + QString::number(frameHeader.fpk) + "," + QString::number(frameHeader.cas) + "," + QString::number(frameHeader.tpRefA)
-            + "," + QString::number(frameHeader.tpRefB);
+    QString header = "MQ1," % QString::number(frameHeader.frameNumbers) % "," % QString::number(frameHeader.dataOffset) % "," %
+             QString::number(frameHeader.numberOfChips) %","% QString::number(frameHeader.xDim) %","% QString::number(frameHeader.yDim) %","% frameHeader.pixelDepth
+            % "," % frameHeader.sensorLayout % "," % QString::number(frameHeader.chipSelect) % "," % frameHeader.timeStamp % "," %
+            QString::number(frameHeader.shutterOpen) % "," % QString::number(frameHeader.counter) % "," % QString::number(frameHeader.colorMode) % "," %
+            QString::number(frameHeader.gainMode) % "," % QString::number(frameHeader.threshold0) % "," %QString::number(frameHeader.threshold1) %
+            "," % QString::number(frameHeader.threshold2) % "," % QString::number(frameHeader.threshold3) % "," % QString::number(frameHeader.threshold4)
+            % "," % QString::number(frameHeader.threshold5) % "," % QString::number(frameHeader.threshold6) % "," % QString::number(frameHeader.threshold7)%","%
+            frameHeader.dacFormat % "," % QString::number(frameHeader.dacThreshold0) % "," % QString::number(frameHeader.dacThreshold1)
+            % "," % QString::number(frameHeader.dacThreshold2) % "," % QString::number(frameHeader.dacThreshold3) % "," % QString::number(frameHeader.dacThreshold4)
+            % "," % QString::number(frameHeader.dacThreshold5)% "," % QString::number(frameHeader.dacThreshold6)% "," % QString::number(frameHeader.dacThreshold7)
+            % "," % QString::number(frameHeader.preamp) % "," % QString::number(frameHeader.ikrum) % "," % QString::number(frameHeader.shaper)
+            % "," % QString::number(frameHeader.disc) % "," % QString::number(frameHeader.discLs) % "," % QString::number(frameHeader.shaperTest)
+            % "," % QString::number(frameHeader.dacDiscL) % "," % QString::number(frameHeader.dacTest) % "," % QString::number(frameHeader.dacDiscH)
+            % "," % QString::number(frameHeader.delay) % "," % QString::number(frameHeader.tpBuffIn) % "," % QString::number(frameHeader.tpBuffOut)
+            % "," % QString::number(frameHeader.rpz) % "," % QString::number(frameHeader.gnd) % "," % QString::number(frameHeader.tpRef)
+            % "," % QString::number(frameHeader.fpk) % "," % QString::number(frameHeader.cas) % "," % QString::number(frameHeader.tpRefA)
+            % "," % QString::number(frameHeader.tpRefB);
+    /*
     if(header.length() > frameHeader.dataOffset)
         header = header.mid(0,frameHeader.dataOffset);
     else if(header.length() < frameHeader.dataOffset)
@@ -414,8 +415,8 @@ QString CommandHandler::generateMerlinFrameHeader(FrameHeaderDataStruct frameHea
         for (int i = 0; i < diff; ++i) {
             header.append(' ');
         }
-    }
-    return header;
+    }*/
+    return header.leftJustified(frameHeader.dataOffset, ' ', true);
 }
 
 QString CommandHandler::getAcquisitionHeader()
@@ -479,13 +480,16 @@ void CommandHandler::getImage()
 
 void CommandHandler::on_doneWithOneFrame(int frameid)
 {
+  QElapsedTimer tim; tim.start();
     int size = 5;
     QString len = "";
     FrameHeaderDataStruct frameHeader;
     //QByteArray ba;
     QString hd = generateMerlinFrameHeader(frameHeader);
+    qint64 nano1 = tim.nsecsElapsed();
     bool twentyfourbits =(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 24);
     QByteArray frame = Mpx3GUI::getInstance()->getDataset()->toSocketData(twentyfourbits);
+    qint64 nano2 = tim.nsecsElapsed();
     size = hd.length();
     size += frame.length();
     len = QString::number(size);
@@ -496,9 +500,14 @@ void CommandHandler::on_doneWithOneFrame(int frameid)
     }
     len = zeros + len;
     QString firstPart = "MPX,"+ len + "," + hd;
+    qint64 nano3 = tim.nsecsElapsed();
    // ba += firstPart.toLatin1();
    // ba += frame;
     emit imageIsReady(firstPart.toLatin1(),frame);
+
+    qint64 nanos = tim.nsecsElapsed();
+    if (nanos > 600000)
+        qDebug() << "How Long " << nanos << " " << (nano1) << " " << (nano2 - nano1) << " " << (nano3 - nano2) << " " << (nanos - nano3);
 
 }
 
