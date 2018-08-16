@@ -207,29 +207,25 @@ template <typename INTTYPE> QByteArray toSocketData2(Dataset *ds, INTTYPE key)
 
     const int dim = 256;
 
-    /*
-           |
-    chip1  | chip0
-    _______________
-           |
-    chip2  | chip3
+    // use double buffer, toggle between them
+    static INTTYPE image2[2][dim*dim*4] = {0};
+    static QAtomicInteger<int> bufferToggle;
 
-    */
-
-    static INTTYPE image[dim*dim*4] = {0};
+    int buffIndex = bufferToggle.fetchAndXorRelaxed(1);
+    auto image = image2[buffIndex];
 
     int * layer = ds->getLayer(key);
 
     /*
-    static int param[12] = {    511,  512, -1, // right top, go down
-                             131583,  512, -1, // right middle, go down
-                             261632, -512,  1, // left bottom, go up
+    static int param[12] = {    511,  512, -1, // right top, go down		//   3  |  0
+                             131583,  512, -1, // right middle, go down		//   ---+---
+                             261632, -512,  1, // left bottom, go up		//   2  |  1
                              130560, -512,  1}; // left middle, go up
      */
 
-    static int param[12] = {      0,  1,  512, // top left, go right
-                                256,  1,  512, // top middle, go right
-                             262143, -1, -512, // bottom right, go left
+    static int param[12] = {      0,  1,  512, // top left, go right		//   0  |  1
+                                256,  1,  512, // top middle, go right		//   ---+---
+                             262143, -1, -512, // bottom right, go left		//   3  |  2
                              261887, -1, -512}; // bottom middle, go left
 
     int* pp = param;
