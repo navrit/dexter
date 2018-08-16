@@ -212,7 +212,7 @@ template <typename INTTYPE> QByteArray toSocketData2(Dataset *ds, INTTYPE key)
     static QAtomicInteger<int> bufferToggle;
 
     int buffIndex = bufferToggle.fetchAndXorRelaxed(1);
-    auto image = image2[buffIndex];
+    INTTYPE* image = image2[buffIndex];
 
     int * layer = ds->getLayer(key);
 
@@ -250,12 +250,12 @@ template <typename INTTYPE> QByteArray toSocketData2(Dataset *ds, INTTYPE key)
     }
 
     return
-        QByteArray::fromRawData((const char*)image, (int)sizeof(image));
+        QByteArray::fromRawData((const char*)image, (int) dim * dim * 4 * sizeof(INTTYPE));
 }
 
-QByteArray Dataset::toSocketData(bool twentyfourbits) {
+QByteArray Dataset::toSocketData() {
     QList<int> keys = m_thresholdsToIndices.keys();
-    return twentyfourbits
+    return (m_pixelDepthBits == 24)
             ? toSocketData2(this, (uint32) keys[0])
             : toSocketData2(this, (uint16) keys[0]);
 }

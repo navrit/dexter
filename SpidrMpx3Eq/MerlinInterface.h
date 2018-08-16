@@ -7,7 +7,6 @@
 
 
 struct FrameHeaderDataStruct{
-    uint32_t frameNumbers = 0;
     uint16_t dataOffset = 0;
     uint8_t numberOfChips = 0;
     uint32_t xDim = 0;
@@ -73,8 +72,6 @@ public:
     QString makeSetCmdResponse(void);
     QString makeGetResponse(QString);
     QString getCommandType(void);
-    void setFrameHeader();
-    FrameHeaderDataStruct getFrameHeader(void);
 private:
     int     _cmdLength = 0;
     QString _cmdType   = "";
@@ -82,7 +79,6 @@ private:
     QString  _cmdValue  = "";
     int     _error     = NO_ERROR;
     QString _response  = "";
-    FrameHeaderDataStruct _frameHeader;
     QHash<QString,QString> setTable; //key => merlin's command name; value => PSL's command name
     QHash<QString,QString> getTable;
     QHash<QString,QString> cmdTable;

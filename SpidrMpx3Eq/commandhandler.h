@@ -51,7 +51,7 @@ public:
     int stopScan(int);
     void startSendingImage(bool);
     void merlinErrorToPslError(int errNum);
-    QString generateMerlinFrameHeader(FrameHeaderDataStruct);
+    QString generateMerlinFrameHeader(int frameid);
     QString getAcquisitionHeader(void);
     void getImage(void);
     //data
@@ -84,7 +84,7 @@ private:
     void initializeCmdTable(void);
     ERROR_TYPE _error = NO_ERROR;
     char* getTimeStamp();
-    void setMerlinFrameHeader(FrameHeaderDataStruct&);
+    void fillMerlinFrameHeader(FrameHeaderDataStruct&);
     bool _sendingImage = false;
 
 

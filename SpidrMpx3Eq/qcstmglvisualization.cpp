@@ -2240,10 +2240,8 @@ uint32 assembleData(uint8 a,uint8 b,uint8 c,uint8 d){
 void QCstmGLVisualization::on_testBtn_clicked()
 {
 
-    QByteArray image = Mpx3GUI::getInstance()->getDataset()->toSocketData(true);
-    QByteArray image2 = Mpx3GUI::getInstance()->getDataset()->toSocketData(false);
+    QByteArray image = Mpx3GUI::getInstance()->getDataset()->toSocketData();
     qDebug() << "Image size is : " << image.size();
-    qDebug() << "Image2 size is : " << image2.size();
 
     QString filename = "Pixel.txt";
     QFile file(filename);

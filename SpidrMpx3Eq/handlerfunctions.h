@@ -12,8 +12,7 @@ void helloHandler()
 {
     CommandHandler::getInstance()->setData("Hello From Dexter Server");
     CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-    FrameHeaderDataStruct frameHeader;
-    QString hd = CommandHandler::getInstance()->generateMerlinFrameHeader(frameHeader);
+    QString hd = CommandHandler::getInstance()->generateMerlinFrameHeader(1);
     qDebug() <<"header is" << hd;
     qDebug() << "header size is : " << hd.length();
 }

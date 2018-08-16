@@ -209,17 +209,6 @@ QString MerlinInterface::getCommandType()
     return _cmdType;
 }
 
-void MerlinInterface::setFrameHeader()
-{
-    QString headerId = "MQ1";
-    uint32_t acqSeqNum = 0;
-}
-
-FrameHeaderDataStruct MerlinInterface::getFrameHeader()
-{
-    return _frameHeader;
-}
-
 void MerlinInterface::initializeTables()
 {
     //initialize getTable

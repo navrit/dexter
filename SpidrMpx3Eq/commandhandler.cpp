@@ -321,7 +321,7 @@ void CommandHandler::merlinErrorToPslError(int errNum)
     }
 }
 
-void CommandHandler::setMerlinFrameHeader(FrameHeaderDataStruct &frameHeader)
+void CommandHandler::fillMerlinFrameHeader(FrameHeaderDataStruct &frameHeader)
 {
     if(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 24)
         frameHeader.pixelDepth = "U32";
@@ -331,7 +331,6 @@ void CommandHandler::setMerlinFrameHeader(FrameHeaderDataStruct &frameHeader)
     frameHeader.colorMode = (uint8_t) Mpx3GUI::getInstance()->getConfig()->getColourMode();
     frameHeader.counter = 0;/// to be set
     frameHeader.dataOffset = 256 + (128 * 4);
-    frameHeader.frameNumbers = (uint32_t)Mpx3GUI::getInstance()->getConfig()->getNTriggers();
     uint8_t  gainMap[] = {3,2,1,0};
     frameHeader.gainMode =  gainMap[Mpx3GUI::getInstance()->getConfig()->getGainMode()];
     frameHeader.numberOfChips = (uint32_t)Mpx3GUI::getInstance()->getConfig()->getActiveDevices().count();
@@ -386,10 +385,11 @@ void CommandHandler::setMerlinFrameHeader(FrameHeaderDataStruct &frameHeader)
     frameHeader.tpRefB = QCstmDacs::getInstance()->GetSpinBoxList()[26]->value();
 }
 
-QString CommandHandler::generateMerlinFrameHeader(FrameHeaderDataStruct frameHeader)
+QString CommandHandler::generateMerlinFrameHeader(int frameid)
 {
-    setMerlinFrameHeader(frameHeader);
-    QString header = "MQ1," % QString::number(frameHeader.frameNumbers) % "," % QString::number(frameHeader.dataOffset) % "," %
+    FrameHeaderDataStruct frameHeader;
+    fillMerlinFrameHeader(frameHeader);
+    QString header = "MQ1," % QString::number(frameid) % "," % QString::number(frameHeader.dataOffset) % "," %
              QString::number(frameHeader.numberOfChips) %","% QString::number(frameHeader.xDim) %","% QString::number(frameHeader.yDim) %","% frameHeader.pixelDepth
             % "," % frameHeader.sensorLayout % "," % QString::number(frameHeader.chipSelect) % "," % frameHeader.timeStamp % "," %
             QString::number(frameHeader.shutterOpen) % "," % QString::number(frameHeader.counter) % "," % QString::number(frameHeader.colorMode) % "," %
@@ -481,28 +481,14 @@ void CommandHandler::getImage()
 void CommandHandler::on_doneWithOneFrame(int frameid)
 {
   QElapsedTimer tim; tim.start();
-    int size = 5;
-    QString len = "";
-    FrameHeaderDataStruct frameHeader;
-    //QByteArray ba;
-    QString hd = generateMerlinFrameHeader(frameHeader);
+    QString hd = generateMerlinFrameHeader(frameid);
     qint64 nano1 = tim.nsecsElapsed();
-    bool twentyfourbits =(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 24);
-    QByteArray frame = Mpx3GUI::getInstance()->getDataset()->toSocketData(twentyfourbits);
+    QByteArray frame = Mpx3GUI::getInstance()->getDataset()->toSocketData();
     qint64 nano2 = tim.nsecsElapsed();
-    size = hd.length();
-    size += frame.length();
-    len = QString::number(size);
-
-    QString zeros ="";
-    for (int i = 0; i < 10 - len.length(); ++i) {
-        zeros += "0";
-    }
-    len = zeros + len;
-    QString firstPart = "MPX,"+ len + "," + hd;
+    auto size = hd.length() + frame.length();
+    auto len = QString("%1").arg(size, 10, 10, QChar('0'));
+    QString firstPart = "MPX," + len + "," + hd;
     qint64 nano3 = tim.nsecsElapsed();
-   // ba += firstPart.toLatin1();
-   // ba += frame;
     emit imageIsReady(firstPart.toLatin1(),frame);
 
     qint64 nanos = tim.nsecsElapsed();
