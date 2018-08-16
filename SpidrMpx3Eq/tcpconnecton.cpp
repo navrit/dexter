@@ -1,6 +1,6 @@
 #include "tcpconnecton.h"
 #include <iostream>
-#include <QThread>
+#include <QMutex>
 
 TcpConnecton::TcpConnecton(QObject *parent) : QObject(parent)
 {
@@ -82,9 +82,11 @@ void TcpConnecton::on_responseIsReady(QString response)
     qDebug() << "Response recieved at the tcpconnection : " << response;
     QByteArray ba = response.toLatin1();
     qDebug()<<"size:"<<ba.size();
+    mutex.lock();
     int sndSize = m_socket->write(ba);
     m_socket->flush();
     m_socket->waitForBytesWritten();
+    mutex.unlock();
     qDebug()<<"size:"<<sndSize;
 }
 
@@ -93,10 +95,12 @@ void TcpConnecton::on_imageIsReady(QByteArray header,QByteArray image)
     //qDebug() << "Data recieved at the tcpconnection.";
     //qDebug()<<"header size:"<<header.size();
    // qDebug()<<"Image size:"<<image.size();
+    mutex.lock();
     int sndSize = m_socket->write(header);
     sndSize = m_socket->write(image);
     m_socket->flush();
     //m_socket->waitForBytesWritten();
+    mutex.unlock();
 
 
 }

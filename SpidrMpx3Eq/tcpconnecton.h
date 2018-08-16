@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QTcpSocket>
 #include <QRegularExpression>
+#include <QMutex>
 
 class TcpConnecton : public QObject
 {
@@ -18,6 +19,7 @@ public:
 protected:
     QTcpSocket *m_socket;
     QTcpSocket *getSocket();
+    QMutex mutex;
 
 signals:
     void dataRecieved(QString);
