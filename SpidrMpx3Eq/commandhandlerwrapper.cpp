@@ -2,7 +2,7 @@
 
 CommandHandlerWrapper::CommandHandlerWrapper(QObject *parent) : QObject(parent)
 {
-    commandHandler = new CommandHandler;
+    commandHandler = new CommandHandler(parent);
     merlinInterface = new MerlinInterface;
     connect(commandHandler,SIGNAL(requestForDataTaking(void)),this,SLOT(on_requestForDataTaking(void)));
     connect(commandHandler,SIGNAL(imageIsReady(QByteArray,QByteArray)),this,SLOT(on_ImageIsReady(QByteArray,QByteArray)));

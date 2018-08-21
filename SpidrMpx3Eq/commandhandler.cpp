@@ -323,22 +323,23 @@ void CommandHandler::merlinErrorToPslError(int errNum)
 
 void CommandHandler::fillMerlinFrameHeader(FrameHeaderDataStruct &frameHeader)
 {
-    if(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 24)
+    Mpx3GUI* gui = (Mpx3GUI*) parent();
+    if(gui->getConfig()->getPixelDepth() == 24)
         frameHeader.pixelDepth = "U32";
     else
         frameHeader.pixelDepth = "U16";
 
-    frameHeader.colorMode = (uint8_t) Mpx3GUI::getInstance()->getConfig()->getColourMode();
+    frameHeader.colorMode = (uint8_t) gui->getConfig()->getColourMode();
     frameHeader.counter = 0;/// to be set
     frameHeader.dataOffset = 256 + (128 * 4);
     uint8_t  gainMap[] = {3,2,1,0};
-    frameHeader.gainMode =  gainMap[Mpx3GUI::getInstance()->getConfig()->getGainMode()];
-    frameHeader.numberOfChips = (uint32_t)Mpx3GUI::getInstance()->getConfig()->getActiveDevices().count();
+    frameHeader.gainMode =  gainMap[gui->getConfig()->getGainMode()];
+    frameHeader.numberOfChips = (uint32_t)gui->getConfig()->getActiveDevices().count();
     for (int i = 0; i < frameHeader.numberOfChips; ++i) {
         frameHeader.chipSelect |= 1 << i;
     }
-    frameHeader.shutterOpen = (double)  Mpx3GUI::getInstance()->getConfig()-> getTriggerLength_ms() / (double)1000;
-    QPoint pnt = Mpx3GUI::getInstance()->getDataset()->getSize();
+    frameHeader.shutterOpen = (double)  gui->getConfig()-> getTriggerLength_ms() / (double)1000;
+    QPoint pnt = gui->getDataset()->getSize();
     frameHeader.xDim = (uint32_t)pnt.x()*2;
     frameHeader.yDim =(uint32_t) pnt.y()*2;
     QDateTime time = QDateTime::currentDateTime();
@@ -421,8 +422,11 @@ QString CommandHandler::generateMerlinFrameHeader(int frameid)
 
 QString CommandHandler::getAcquisitionHeader()
 {
+    Mpx3GUI* gui = (Mpx3GUI*) parent();
+    Mpx3Config* config = gui->getConfig();
     QString len = QString::number(2044+3+2);
-    QString file = "HDR,	Chip ID:	W117_E7,W117_H7,W117_I7,W117_G7Chip Type (Medipix 3.0, Medipix 3.1, Medipix RX):	Medipix3RXAssembly Size (1X1, 2X2):	   2x2Chip Mode  (SPM, CSM, CM, CSCM):	SPM Counter Depth (number):	12Gain:	HGMActive Counters:	Counter 0Thresholds (keV):	0.000000E+0,1.000000E+1,1.500000E+1,2.000000E+1,2.500000E+1,3.000000E+1,3.500000E+1,4.000000E+1DACs:	030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,148,128,203,189,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,142,128,192,180,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,151,128,205,191,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,138,128,189,181,417,417bpc File:	c:\MERLIN Quad Host\Config\W117_E7\W117_E7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_H7\W117_H7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_I7\W117_I7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_G7\W117_G7_SPM.bpcDAC File:	c:\MERLIN Quad Host\Config\W117_E7\W117_E7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_H7\W117_H7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_I7\W117_I7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_G7\W117_G7_SPM.dacsGap Fill Mode:	NoneFlat Field File:	Dummy (C:\<NUL>\Temp.ffc)Dead Time File:	Dummy (C:\<NUL>\Temp.dtc)Acquisition Type (Normal, Th_scan, Config):	NormalFrames in Acquisition (Number):	  1000Trigger Start (Positive, Negative, Internal):	InternalTrigger Stop (Positive, Negative, Internal):	InternalFrames per Trigger (Number):	1Time and Date Stamp (yr, mnth, day, hr, min, s):	10/12/2013 17:36:32Sensor Bias (V, µA)	20 VSensor Polarity (Positive, Negative):	PositiveTemperature (C):	FPGA Temp 37.250000 Deg CMedipix Clock (MHz):	120MHzReadout System:	Merlin QuadSoftware Version:	DevelopmentEnd";
+    QString file = "HDR,\nChip ID:	" % config->getDeviceWaferId(0) % "," % config->getDeviceWaferId(1) % "," % config->getDeviceWaferId(2) % "," % config->getDeviceWaferId(3) % ","
+            % "\nChip Type (Medipix 3.0, Medipix 3.1, Medipix RX):	Medipix3RXAssembly Size (1X1, 2X2):	   2x2Chip Mode  (SPM, CSM, CM, CSCM):	SPM Counter Depth (number):	12Gain:	HGMActive Counters:	Counter 0Thresholds (keV):	0.000000E+0,1.000000E+1,1.500000E+1,2.000000E+1,2.500000E+1,3.000000E+1,3.500000E+1,4.000000E+1DACs:	030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,148,128,203,189,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,142,128,192,180,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,151,128,205,191,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,138,128,189,181,417,417bpc File:	c:\MERLIN Quad Host\Config\W117_E7\W117_E7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_H7\W117_H7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_I7\W117_I7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_G7\W117_G7_SPM.bpcDAC File:	c:\MERLIN Quad Host\Config\W117_E7\W117_E7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_H7\W117_H7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_I7\W117_I7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_G7\W117_G7_SPM.dacsGap Fill Mode:	NoneFlat Field File:	Dummy (C:\<NUL>\Temp.ffc)Dead Time File:	Dummy (C:\<NUL>\Temp.dtc)Acquisition Type (Normal, Th_scan, Config):	NormalFrames in Acquisition (Number):	  1000Trigger Start (Positive, Negative, Internal):	InternalTrigger Stop (Positive, Negative, Internal):	InternalFrames per Trigger (Number):	1Time and Date Stamp (yr, mnth, day, hr, min, s):	10/12/2013 17:36:32Sensor Bias (V, µA)	20 VSensor Polarity (Positive, Negative):	PositiveTemperature (C):	FPGA Temp 37.250000 Deg CMedipix Clock (MHz):	120MHzReadout System:	Merlin QuadSoftware Version:	DevelopmentEnd";
     int fileLen = file.length();
     if(fileLen < 2044){
         int s = 2044 - fileLen;
@@ -436,7 +440,7 @@ QString CommandHandler::getAcquisitionHeader()
         zeros += "0";
     }
     len = zeros + len;
-    QString acqHeader = "MPX,"+len+",HDR,"+file + "\n";
+    QString acqHeader = "MPX,"+len+file + "\n";
     return acqHeader;
 }
 
@@ -480,10 +484,11 @@ void CommandHandler::getImage()
 
 void CommandHandler::on_doneWithOneFrame(int frameid)
 {
-  QElapsedTimer tim; tim.start();
+    Mpx3GUI* gui = (Mpx3GUI*) parent();
+    QElapsedTimer tim; tim.start();
     QString hd = generateMerlinFrameHeader(frameid);
     qint64 nano1 = tim.nsecsElapsed();
-    QByteArray frame = Mpx3GUI::getInstance()->getDataset()->toSocketData();
+    QByteArray frame = gui->getDataset()->toSocketData();
     qint64 nano2 = tim.nsecsElapsed();
     auto size = hd.length() + frame.length();
     auto len = QString("%1").arg(size, 10, 10, QChar('0'));

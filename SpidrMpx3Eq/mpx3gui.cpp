@@ -983,7 +983,7 @@ void Mpx3GUI::initialiseServers()
     } else {
         qDebug().nospace() << "[INFO]\tTCP Command server listening on \"tcp://*:" << tcpCommandPort << "\"";
     }
-    commandHandlerWrapper = new CommandHandlerWrapper;
+    commandHandlerWrapper = new CommandHandlerWrapper(this);
     connect(tcpServer,SIGNAL(dataRecieved(QString)),commandHandlerWrapper,SLOT(on_dataRecieved(QString)));
     connect(commandHandlerWrapper,SIGNAL(responseIsReady(QString)),tcpServer,SLOT(on_responseIsReady(QString)));
 
