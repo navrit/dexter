@@ -146,17 +146,18 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
         {
         case PIXEL_DATA_SOR:
         case PIXEL_DATA_SOF:
-          //++rownr;
+          ++rownr;
           //pixelrow = &pixels[rownr * MPX_PIXEL_COLUMNS];
           index = 0;
           if( counter_depth == 24 && is_counterh )
-              memset( temp, 0, MPX_PIXEL_COLUMNS );
+              memset( temp, 0, MPX_PIXEL_COLUMNS * sizeof(int));
           else
               temp2 = &pixels[rownr * MPX_PIXEL_COLUMNS];
           // 'break' left out intentionally;
           // continue unpacking the pixel packet
 
-        [[fallthrough]]; case PIXEL_DATA_MID:
+        [[fallthrough]]
+        case PIXEL_DATA_MID:
           // Unpack the pixel packet
           // Make sure not to write outside the current pixel row
         { int maxj = MPX_PIXEL_COLUMNS - index;
@@ -172,13 +173,10 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
 
         case PIXEL_DATA_EOR:
         case PIXEL_DATA_EOF:
-          if( _applyLut )
-            // Extract the row counter from the data
-            rownr = (int) ((pixelword & ROW_COUNT_MASK) >> ROW_COUNT_SHIFT);
-          else
-            // The SPIDR LUT erroneously 'decodes' the row counter too..
-            // (firmware to be fixed?), so just keep a counter
-            ++rownr;
+            // We could extract the row counter from the data
+            // except some old firmware versions have a LUT that
+            // erroneously 'decodes' the row counter too..
+            // assert rownr === (int) ((pixelword & ROW_COUNT_MASK) >> ROW_COUNT_SHIFT);
 
           // Unpack the pixel packet
           for( j=0; j<pix_per_word; ++j, ++index )
