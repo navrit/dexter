@@ -426,7 +426,32 @@ QString CommandHandler::getAcquisitionHeader()
     Mpx3Config* config = gui->getConfig();
     QString len = QString::number(2044+3+2);
     QString file = "HDR,\nChip ID:	" % config->getDeviceWaferId(0) % "," % config->getDeviceWaferId(1) % "," % config->getDeviceWaferId(2) % "," % config->getDeviceWaferId(3) % ","
-            % "\nChip Type (Medipix 3.0, Medipix 3.1, Medipix RX):	Medipix3RXAssembly Size (1X1, 2X2):	   2x2Chip Mode  (SPM, CSM, CM, CSCM):	SPM Counter Depth (number):	12Gain:	HGMActive Counters:	Counter 0Thresholds (keV):	0.000000E+0,1.000000E+1,1.500000E+1,2.000000E+1,2.500000E+1,3.000000E+1,3.500000E+1,4.000000E+1DACs:	030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,148,128,203,189,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,142,128,192,180,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,151,128,205,191,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,138,128,189,181,417,417bpc File:	c:\MERLIN Quad Host\Config\W117_E7\W117_E7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_H7\W117_H7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_I7\W117_I7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_G7\W117_G7_SPM.bpcDAC File:	c:\MERLIN Quad Host\Config\W117_E7\W117_E7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_H7\W117_H7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_I7\W117_I7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_G7\W117_G7_SPM.dacsGap Fill Mode:	NoneFlat Field File:	Dummy (C:\<NUL>\Temp.ffc)Dead Time File:	Dummy (C:\<NUL>\Temp.dtc)Acquisition Type (Normal, Th_scan, Config):	NormalFrames in Acquisition (Number):	  1000Trigger Start (Positive, Negative, Internal):	InternalTrigger Stop (Positive, Negative, Internal):	InternalFrames per Trigger (Number):	1Time and Date Stamp (yr, mnth, day, hr, min, s):	10/12/2013 17:36:32Sensor Bias (V, µA)	20 VSensor Polarity (Positive, Negative):	PositiveTemperature (C):	FPGA Temp 37.250000 Deg CMedipix Clock (MHz):	120MHzReadout System:	Merlin QuadSoftware Version:	DevelopmentEnd";
+            % "\nChip Type (Medipix 3.0, Medipix 3.1, Medipix RX):	Medipix3RXAssembly"
+            % "\nSize (1X1, 2X2):	   2x2"
+            % "\nChip Mode  (SPM, CSM, CM, CSCM):	" % (config->getCsmSpm() == 0 ? "SPM" : "CSM")
+            % "\nCounter Depth (number):	" % QString::number(config->getPixelDepth())
+            % "\nGain:	HGM"
+            % "\nActive Counters:	Counter 0"
+            % "\nThresholds (keV):	0.000000E+0,1.000000E+1,1.500000E+1,2.000000E+1,2.500000E+1,3.000000E+1,3.500000E+1,4.000000E+1"
+            % "\nDACs:	030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,148,128,203,189,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,142,128,192,180,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,151,128,205,191,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,138,128,189,181,417,417"
+            % "\nbpc File:	c:\MERLIN Quad Host\Config\W117_E7\W117_E7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_H7\W117_H7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_I7\W117_I7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_G7\W117_G7_SPM.bpc"
+            % "\nDAC File:	c:\MERLIN Quad Host\Config\W117_E7\W117_E7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_H7\W117_H7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_I7\W117_I7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_G7\W117_G7_SPM.dacs"
+            % "\nGap Fill Mode:	None"
+            % "\nFlat Field File:	Dummy (C:\<NUL>\Temp.ffc)"
+            % "\nDead Time File:	Dummy (C:\<NUL>\Temp.dtc)"
+            % "\nAcquisition Type (Normal, Th_scan, Config):	Normal"
+            % "\nFrames in Acquisition (Number):  " % QString::number(config->getNTriggers())
+            % "\nTrigger Start (Positive, Negative, Internal):	Internal"
+            % "\nTrigger Stop (Positive, Negative, Internal):	Internal"
+            % "\nFrames per Trigger (Number):	1"
+            % "\nTime and Date Stamp (yr, mnth, day, hr, min, s):	10/12/2013 17:36:32"
+            % "\nSensor Bias (V, µA)	20 V"
+            % "\nSensor Polarity (Positive, Negative):	Positive"
+            % "\nTemperature (C):	FPGA Temp 37.250000 Deg C"
+            % "\nMedipix Clock (MHz):	" % QString::number(config->getSystemClock())
+            % "\nReadout System:	Cheetah 1800"
+            % "\nSoftware Version:	" % _softwareVersion
+            % "\nEnd";
     int fileLen = file.length();
     if(fileLen < 2044){
         int s = 2044 - fileLen;

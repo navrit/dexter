@@ -127,6 +127,7 @@ public:
     QVector<int>  getActiveDevices(){return _activeChips;}
     QString getDeviceWaferId(int id){return _deviceWaferIdMap.at(id); }
     int getIndexFromID(int id){return _activeChips.indexOf(id);}
+    int getSystemClock() { return SystemClock; }
     int getTriggerPeriodMS(){return _trigPeriod_ms;}
     double getBiasVoltage() { return biasVolt; }
 
