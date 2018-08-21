@@ -1600,10 +1600,12 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
 
     SetAllAdjustmentBits(spidrcontrol, devId, 0x0, 0x0);
 
+    auto config = _mpx3gui->getConfig();
     //! ------------------------------------------------------------------------
     //! This is important that they're opposite
-    spidrcontrol->setLutEnable( ! _mpx3gui->getConfig()->getLUTEnable() );
-    spidrdaq->setLutEnable( _mpx3gui->getConfig()->getLUTEnable() );
+    bool lutOnSPIDR = config->getLUTEnable();
+    spidrcontrol->setLutEnable(lutOnSPIDR);
+    spidrdaq->setLutEnable(! lutOnSPIDR);
 
     //! ------------------------------------------------------------------------
     //! OMR bit
@@ -1614,8 +1616,8 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     //! OMR bit
     //! True  : Holes collection (positive polarity)
     //! False : Electron collection (negative polarity)
-    spidrcontrol->setPolarity( _deviceIndex, _mpx3gui->getConfig()->getPolarity() );
-    qDebug() << "[Equalisation]\tPolarity = " << _mpx3gui->getConfig()->getPolarity() << "\tTrue = + False = -";
+    spidrcontrol->setPolarity( _deviceIndex, config->getPolarity() );
+    qDebug() << "[Equalisation]\tPolarity = " << config->getPolarity() << "\tTrue = + False = -";
 
     //! ------------------------------------------------------------------------
     //! OMR bit for Equalization
@@ -1636,20 +1638,20 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     //! True  : Colour mode
     //! False : Fine pitch (FPM)
     //! Always set it to FPM
-    spidrcontrol->setColourMode( devId, _mpx3gui->getConfig()->getColourMode() );
-    qDebug() << "[Equalisation]\tColour mode = " << _mpx3gui->getConfig()->getColourMode();
+    spidrcontrol->setColourMode( devId, config->getColourMode() );
+    qDebug() << "[Equalisation]\tColour mode = " << config->getColourMode();
 
     //! ------------------------------------------------------------------------
 
     //! OMR bit
     //! 0 : Single pixel mode
     //! 1 : Charge summing mode
-    spidrcontrol->setCsmSpm( devId, _mpx3gui->getConfig()->getCsmSpm() );
-    qDebug() << "[Equalisation]\tCsm_Spm = " << _mpx3gui->getConfig()->getCsmSpm();
+    spidrcontrol->setCsmSpm( devId, config->getCsmSpm() );
+    qDebug() << "[Equalisation]\tCsm_Spm = " << config->getCsmSpm();
 
     //! Set gainMode based on if this is a test pulse scan or noise
     if (testPulseMode) {
-        gainMode = _mpx3gui->getConfig()->getGainMode();
+        gainMode = config->getGainMode();
     } else {
         gainMode = 3; // SLGM
     }
