@@ -430,7 +430,7 @@ QString CommandHandler::getAcquisitionHeader()
             % "\nSize (1X1, 2X2):	   2x2"
             % "\nChip Mode  (SPM, CSM, CM, CSCM):	" % (config->getCsmSpm() == 0 ? "SPM" : "CSM")
             % "\nCounter Depth (number):	" % QString::number(config->getPixelDepth())
-            % "\nGain:	HGM"
+            % "\nGain:	" % config->getGainModeString()
             % "\nActive Counters:	Counter 0"
             % "\nThresholds (keV):	0.000000E+0,1.000000E+1,1.500000E+1,2.000000E+1,2.500000E+1,3.000000E+1,3.500000E+1,4.000000E+1"
             % "\nDACs:	030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,148,128,203,189,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,142,128,192,180,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,151,128,205,191,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,138,128,189,181,417,417"
@@ -444,28 +444,15 @@ QString CommandHandler::getAcquisitionHeader()
             % "\nTrigger Start (Positive, Negative, Internal):	Internal"
             % "\nTrigger Stop (Positive, Negative, Internal):	Internal"
             % "\nFrames per Trigger (Number):	1"
-            % "\nTime and Date Stamp (yr, mnth, day, hr, min, s):	10/12/2013 17:36:32"
-            % "\nSensor Bias (V, µA)	20 V"
-            % "\nSensor Polarity (Positive, Negative):	Positive"
+            % "\nTime and Date Stamp (yr, mnth, day, hr, min, s):	" % QDateTime::toString(Qt::ISODate)
+            % "\nSensor Bias (V, µA)	" % QString::number(config->getBiasVoltage())
+            % "\nSensor Polarity (Positive, Negative):	" % config->getPolarityString()
             % "\nTemperature (C):	FPGA Temp 37.250000 Deg C"
             % "\nMedipix Clock (MHz):	" % QString::number(config->getSystemClock())
             % "\nReadout System:	Cheetah 1800"
             % "\nSoftware Version:	" % _softwareVersion
-            % "\nEnd";
-    int fileLen = file.length();
-    if(fileLen < 2044){
-        int s = 2044 - fileLen;
-        for (int i = 0; i <s ; ++i) {
-            file.append(' ');
-        }
-    }
-    //add leading zeros to len
-    QString zeros ="";
-    for (int i = 0; i < 10 - len.length(); ++i) {
-        zeros += "0";
-    }
-    len = zeros + len;
-    QString acqHeader = "MPX,"+len+file + "\n";
+            % "\nEnd\n";
+    QString acqHeader = "MPX,0000002048," + file.leftJustified(2048, ' ', true);
     return acqHeader;
 }
 

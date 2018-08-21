@@ -154,8 +154,15 @@ public:
     int getOperationMode(){return OperationMode;}
     int getPixelDepth(){return PixelDepth;}
     bool getPolarity(){return Polarity;}
+    QString getPolarityString() {
+        return QString(Polarity ? "Positive" : "Negative");
+    }
     int getCsmSpm(){return CsmSpm;  }
     int getGainMode(){return GainMode;}
+    QString getGainModeString() {
+        auto modes = {"SHGM", "LGM", "HGM", "SLGM"};
+        return QString(modes[GainMode]);
+    }
     int getMaxPacketSize(){return MaxPacketSize;}
     int getTriggerMode(){return TriggerMode;}
     int getLogLevel(){return LogLevel;}
