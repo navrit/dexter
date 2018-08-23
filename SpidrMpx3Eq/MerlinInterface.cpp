@@ -221,6 +221,7 @@ void MerlinInterface::initializeTables()
     getTable.insert(ENABLECOUNTER1,"GetBothCounters");
     getTable.insert(COUNTERDEPTH,"GetCounterDepth");
     getTable.insert(TEMPERATURE,"GetTemperature");
+    getTable.insert(ACQUISITIONTIME,"GetShutterLength;"+QString::number(OPEN));
     getTable.insert(ACQUISITIONPERIOD,"GetShutterPeriod");
     getTable.insert(NUMFRAMESTOACQUIRE,"GetFrameNumber");
     getTable.insert(THRESHOLD0,"GetThreshold;"+QString::number(TH0));

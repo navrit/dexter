@@ -382,71 +382,85 @@ void getCounterSelectFrequencyHandler(){
     CommandHandler::getInstance()->setData(QString::number(freq));
     CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
 }
+
 void setShutterLengthHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(2,"SetShutterLength"))  //this command comes with two argument {SetShutterLength;{open,down};value
+    CommandHandler* commandHandler = CommandHandler::getInstance();
+    if(!commandHandler->enoughArguments(2,"SetShutterLength"))  //this command comes with two argument {SetShutterLength;{open,down};value
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        commandHandler->setError(CommandHandler::ARG_NUM_OUT_RANGE);
         return;
     }
-    if(CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(0) == "open"){
+    auto args = commandHandler->cmdTable["SetShutterLength"].args;
+    auto openOrClose = args.at(0);
+    auto length = args.at(1); //ms
+    auto config = Mpx3GUI::getInstance()->getConfig();
+    if (openOrClose == "open"){
         //here code to set operational mode
-        Mpx3GUI::getInstance()->getConfig()->setTriggerLength(CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1).toDouble());
-        CommandHandler::getInstance()->setData("Shutter open length is set to " + CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1));
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        config->setTriggerLength((int) (1000. * length.toDouble()));    // us
+        commandHandler->setData("Shutter open length is set to " + length);
+        commandHandler->setError(CommandHandler::NO_ERROR);
     }
-    else if(CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(0) == "down"){
+    else if(openOrClose == "down"){
         //here code to set operational mode
-        Mpx3GUI::getInstance()->getConfig()->setTriggerDowntime(CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1).toInt());
-        CommandHandler::getInstance()->setData("Shutter down length is set to " + CommandHandler::getInstance()->cmdTable["SetShutterLength"].args.at(1));
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        config->setTriggerDowntime((int) (1000. * length.toDouble()));  // us
+        commandHandler->setData("Shutter down length is set to " + length);
+        commandHandler->setError(CommandHandler::NO_ERROR);
     }
     else
     {
-        CommandHandler::getInstance()->setData("Invalid argument...!");
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
+        commandHandler->setData("Invalid argument...!");
+        commandHandler->setError(CommandHandler::UNKNOWN_COMMAND);
     }
-
 }
+
 void setShutterPeriodHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetShutterPeriod"))  //this command comes with one argument
+    CommandHandler* commandHandler = CommandHandler::getInstance();
+    if (!commandHandler->enoughArguments(1,"SetShutterPeriod"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        commandHandler->setError(CommandHandler::ARG_NUM_OUT_RANGE);
         return;
     }
-    int open = Mpx3GUI::getInstance()->getConfig()->getTriggerLength();
-    Mpx3GUI::getInstance()->getConfig()->setTriggerDowntime(CommandHandler::getInstance()->cmdTable["SetShutterPeriod"].args.at(0).toDouble() - open);
-    qDebug()<<"dodododod:" << CommandHandler::getInstance()->cmdTable["SetShutterPeriod"].args.at(0).toDouble();
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    auto config = Mpx3GUI::getInstance()->getConfig();
+    auto length = commandHandler->cmdTable["SetShutterPeriod"].args.at(0); //ms
+    int open = config->getTriggerLength();
+    config->setTriggerDowntime(1000. * length.toDouble() - open);   // us
+    qDebug()<<"dodododod:" << length.toDouble();
+    commandHandler->setError(CommandHandler::NO_ERROR);
 }
+
 void getShutterPeriodHandler(){
-   CommandHandler::getInstance()->setData(QString::number(Mpx3GUI::getInstance()->getConfig()->getTriggerDowntime() + Mpx3GUI::getInstance()->getConfig()->getTriggerLength()));
-   CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    CommandHandler* commandHandler = CommandHandler::getInstance();
+    auto config = Mpx3GUI::getInstance()->getConfig();
+    commandHandler->setData(QString::number((config->getTriggerDowntime() + config->getTriggerLength()) * 0.001)); //ms
+    commandHandler->setError(CommandHandler::NO_ERROR);
 }
 
 void getShutterLengthHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"GetShutterLength"))  //this command comes with two argument {GetShutterLength;{open,down}
+    CommandHandler* commandHandler = CommandHandler::getInstance();
+    if (!commandHandler->enoughArguments(1,"GetShutterLength"))  //this command comes with two argument {GetShutterLength;{open,down}
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        commandHandler->setError(CommandHandler::ARG_NUM_OUT_RANGE);
         return;
     }
-    if(CommandHandler::getInstance()->cmdTable["GetShutterLength"].args.at(0) == "open"){
-       int trig =  Mpx3GUI::getInstance()->getConfig()->getTriggerLength();
-       CommandHandler::getInstance()->setData(QString::number(trig));
-       CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    auto args = commandHandler->cmdTable["SetShutterLength"].args;
+    auto openOrClose = args.at(0);
+    auto config = Mpx3GUI::getInstance()->getConfig();
+    if(openOrClose == "open"){
+       double trig =  config->getTriggerLength() * 0.001; //ms
+       commandHandler->setData(QString::number(trig));
+       commandHandler->setError(CommandHandler::NO_ERROR);
     }
-    else if(CommandHandler::getInstance()->cmdTable["GetShutterLength"].args.at(0) == "down"){
-        int trig = Mpx3GUI::getInstance()->getConfig()->getTriggerDowntime();
-        CommandHandler::getInstance()->setData(QString::number(trig));
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    else if(openOrClose == "down"){
+        double trig = config->getTriggerDowntime() * 0.001; //ms
+        commandHandler->setData(QString::number(trig));
+        commandHandler->setError(CommandHandler::NO_ERROR);
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
-        CommandHandler::getInstance()->setData("Invalid argument...!");
+        commandHandler->setError(CommandHandler::UNKNOWN_COMMAND);
+        commandHandler->setData("Invalid argument...!");
     }
-
 }
-
 
 void setBothCountersHandler(){
     if(!CommandHandler::getInstance()->enoughArguments(1,"SetBothCounters"))  //this command comes with one argument
