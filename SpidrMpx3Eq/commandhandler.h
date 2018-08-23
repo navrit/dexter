@@ -59,7 +59,7 @@ public:
     //test
     void print(void);
     QHash<QString,cmd_struct> cmdTable;
-
+    QString gainModeStrTable[4] = {"shigh","high","low","slow"};
 
 signals:
     //void commandIsDecoded(QString,QByteArray,bool);

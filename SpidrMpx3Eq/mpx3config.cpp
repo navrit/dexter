@@ -351,11 +351,11 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
     if( item == __ALL ) spidrcontrol->setDiscCsmSpm( deviceIndex, extrapars.DiscCsmSpm );		// In Eq mode using 0: Selects DiscL, 1: Selects DiscH
     //_spidrcontrol->setGainMode( 1 );
 
-    // Gain modes
-    // 00: SHGM  0
-    // 10: HGM   2
-    // 01: LGM   1
-    // 11: SLGM  3
+    // Gain modes[0:1]  .. but that is backwards, so the values are in logical order!
+    // 00: SHGM  = 0
+    // 10: HGM   = 1 !!
+    // 01: LGM   = 2 !!
+    // 11: SLGM  = 3
     if( item == __ALL || item == __gainMode ) spidrcontrol->setGainMode( deviceIndex, getGainMode() );
 
     // Other OMR

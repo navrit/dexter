@@ -277,72 +277,42 @@ void getTriggerModeHandler(){
         CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
         CommandHandler::getInstance()->setData("-1");
     }
-
 }
+
+QString gainModeStrTable[] = {"shigh","high","low","slow"};
 void setGainModeHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetGainMode"))  //this command comes with one argument
+    auto commandHandler = CommandHandler::getInstance();
+    if(!commandHandler->enoughArguments(1,"SetGainMode"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        commandHandler->setError(CommandHandler::ARG_NUM_OUT_RANGE);
         return;
     }
-    if(CommandHandler::getInstance()->cmdTable["SetGainMode"].args.at(0) == "high"){
-        //here code to set operational mode
-        Mpx3GUI::getInstance()->getConfig()->setGainMode(1);
-        CommandHandler::getInstance()->setData("Gain mode is set to high...!");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    auto arg = commandHandler->cmdTable["SetGainMode"].args.at(0);
+    for (int i = 0; i < 3; i++) {
+        if (arg == commandHandler->gainModeStrTable[i]) {
+            Mpx3GUI::getInstance()->getConfig()->setGainMode(i);
+            commandHandler->setData("Gain mode is set to " + arg + "...!");
+            commandHandler->setError(CommandHandler::NO_ERROR);
+            return;
+        }
     }
-    else if(CommandHandler::getInstance()->cmdTable["SetGainMode"].args.at(0) == "shigh"){
-        //here code to set operational mode
-        Mpx3GUI::getInstance()->getConfig()->setGainMode(0);
-        CommandHandler::getInstance()->setData("Gain mode is set to super high...!");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-    }
-    else if(CommandHandler::getInstance()->cmdTable["SetGainMode"].args.at(0) == "low"){
-        //here code to set operational mode
-        Mpx3GUI::getInstance()->getConfig()->setGainMode(2);
-        CommandHandler::getInstance()->setData("Gain mode is set to low...!");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-    }
-    else if(CommandHandler::getInstance()->cmdTable["SetGainMode"].args.at(0) == "slow"){
-        //here code to set operational mode
-        Mpx3GUI::getInstance()->getConfig()->setGainMode(3);
-        CommandHandler::getInstance()->setData("Gain mode is set to super low...!");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-    }
-    else
-    {
-        CommandHandler::getInstance()->setData("Invalid argument...!");
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
-    }
+    commandHandler->setData("Invalid argument...!");
+    commandHandler->setError(CommandHandler::UNKWON_COMMAND);
 }
+
 void getGainModeHandler(){
     int gainMode = Mpx3GUI::getInstance()->getConfig()->getGainMode();
     //QString gainModeStrTable[] = {"SuperHigh","High","Low","SuperLow"};
-    if(gainMode == 0){
+    if(gainMode >= 0 && gainMode <= 3){
         CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-        CommandHandler::getInstance()->setData("3");
-        return;
-    }
-    if(gainMode == 1){
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-        CommandHandler::getInstance()->setData("2");
-        return;
-    }
-    if(gainMode == 2){
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-        CommandHandler::getInstance()->setData("1");
-        return;
-    }
-    if(gainMode == 3){
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-        CommandHandler::getInstance()->setData("0");
+        CommandHandler::getInstance()->setData(QString::number(3-gainMode));
         return;
     }
     CommandHandler::getInstance()->setError(CommandHandler::UNKWON_ERROR);
     CommandHandler::getInstance()->setData("-1");
     return;
-
 }
+
 void setPolarityHandler(){
     if(!CommandHandler::getInstance()->enoughArguments(1,"SetPolarity"))  //this command comes with one argument
     {

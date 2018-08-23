@@ -160,7 +160,7 @@ public:
     int getCsmSpm(){return CsmSpm;  }
     int getGainMode(){return GainMode;}
     QString getGainModeString() {
-        QString modes[] = {"SHGM", "LGM", "HGM", "SLGM"};
+        QString modes[] = {"SHGM", "HGM", "LGM", "SLGM"};       // in the right order, read the manual carefully...
         return modes[GainMode];
     }
     int getMaxPacketSize(){return MaxPacketSize;}

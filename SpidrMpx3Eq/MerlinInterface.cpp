@@ -1,3 +1,4 @@
+#include "commandhandler.h"
 #include "MerlinInterface.h"
 #include <QDebug>
 #include <QRegularExpression>
@@ -299,14 +300,10 @@ QString MerlinInterface::argParser(MerlinInterface::PSL_ARG_TYPES argType)
             return "spm";
         break;
     case HIGH_LOW:
-        if(_cmdValue.toInt() == 0)
-            return "shigh";
-        else if(_cmdValue.toInt()== 1)
-            return "low";
-        else if(_cmdValue.toInt() == 2)
-            return "high";
-        else if(_cmdValue.toInt()== 3)
-            return "slow";
+        { auto ival = _cmdValue.toInt();
+            if (ival >= 0 && ival <= 3)
+            return CommandHandler::getInstance()->gainModeStrTable[3-ival];
+        }
         break;
     case CONT_SEQ:
         if(_cmdValue.toInt()== 0)
