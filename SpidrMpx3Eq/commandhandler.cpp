@@ -444,7 +444,7 @@ QString CommandHandler::getAcquisitionHeader()
             % "\nTrigger Start (Positive, Negative, Internal):	Internal"
             % "\nTrigger Stop (Positive, Negative, Internal):	Internal"
             % "\nFrames per Trigger (Number):	1"
-            % "\nTime and Date Stamp (yr, mnth, day, hr, min, s):	" % QDateTime::toString(Qt::ISODate)
+            % "\nTime and Date Stamp (yr, mnth, day, hr, min, s):	" % QDateTime::currentDateTime().toString(Qt::ISODate)
             % "\nSensor Bias (V, µA)	" % QString::number(config->getBiasVoltage())
             % "\nSensor Polarity (Positive, Negative):	" % config->getPolarityString()
             % "\nTemperature (C):	FPGA Temp 37.250000 Deg C"
