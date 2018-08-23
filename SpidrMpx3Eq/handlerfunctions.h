@@ -143,6 +143,22 @@ void getCounterDepthHandler(){
     CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_ERROR);
 }
 
+void getTemperatureHandler() {
+    CommandHandler* commandHandler = CommandHandler::getInstance();
+    SpidrController* spidrcontrol = Mpx3GUI::getInstance()->GetSpidrController();
+
+    if (spidrcontrol) {
+        int mdegrees;
+        if (spidrcontrol->getRemoteTemp(&mdegrees)) {
+            commandHandler->setData(QString::number((int) (mdegrees/1000)));
+            commandHandler->setError(CommandHandler::NO_ERROR);
+        }
+    } else {
+        commandHandler->setData(QString::number(-1));
+        commandHandler->setError(CommandHandler::UNKNOWN_ERROR);
+    }
+}
+
 void setOperationalModeHandler(){
     if(!CommandHandler::getInstance()->enoughArguments(1,"SetOperationalMode"))  //this command comes with one argument
     {

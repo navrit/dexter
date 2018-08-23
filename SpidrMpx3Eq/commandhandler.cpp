@@ -43,8 +43,6 @@ void CommandHandler::on_cmdRecieved(QString command)
 
 
 
-
-
 void CommandHandler::initializeCmdTable()
 {
     cmd_struct hello {helloHandler};
@@ -59,6 +57,8 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("SetCounterDepth",setCounterDepth);
     cmd_struct getCounterDepth{getCounterDepthHandler};
     cmdTable.insert("GetCounterDepth",getCounterDepth);
+    cmd_struct getTemperature{getTemperatureHandler};
+    cmdTable.insert("GetTemperature",getTemperature);
     cmd_struct setOperationalMode{setOperationalModeHandler};
     cmdTable.insert("SetOperationalMode",setOperationalMode);
     cmd_struct getOperationalMode{getOperationalModeHandler};
