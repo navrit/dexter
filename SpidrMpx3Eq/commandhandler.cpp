@@ -222,7 +222,7 @@ int CommandHandler::setThreshold(int idx, int val)
         QCstmDacs::getInstance()->GetSpinBoxList()[idx]->setValue(val);
         return NO_ERROR;
     }
-    return UNKWON_ERROR;
+    return UNKNOWN_ERROR;
 }
 
 int CommandHandler::getThreshold(int idx)
@@ -232,7 +232,7 @@ int CommandHandler::getThreshold(int idx)
             return QCstmDacs::getInstance()->GetSpinBoxList()[idx]->value();
         return NO_ERROR;
     }
-    return UNKWON_ERROR;
+    return UNKNOWN_ERROR;
 }
 
 int CommandHandler::setStartScan(int val)
@@ -259,7 +259,7 @@ int CommandHandler::setStepScan(int val)
     return NO_ERROR;
 }
 
-int CommandHandler::setThreholdScan(int val)
+int CommandHandler::setThresholdScan(int val)
 {
     if(val == 0)
     {
@@ -290,7 +290,7 @@ int CommandHandler::getStepScan()
     return thresholdScan::getInstance()->GetUI()->spinBox_spacing->value();
 }
 
-int CommandHandler::getThreholdScan()
+int CommandHandler::getThresholdScan()
 {
     return thresholdScan::getInstance()->GetUI()->comboBox_thresholdToScan->currentIndex();
 }
@@ -304,23 +304,23 @@ void CommandHandler::startSendingImage(bool send)
 
 void CommandHandler::merlinErrorToPslError(int errNum)
 {
-    //ERROR_TYPE{NO_ERROR = 0, UNKOWN_ERROR = 1, UNKOWN_COMMAND = 2, PARAM_OUT_OF_RANGE = 3};
-    //ERROR_TYPE{NO_ERROR = 0, UNKWON_ERROR = -1, UNKWON_COMMAND = -2 , ARG_NUM_OUT_RANGE = -3, ARG_VAL_OUT_RANGE = -4};
+    //ERROR_TYPE{NO_ERROR = 0, UNKNOWN_ERROR = 1, UNKNOWN_COMMAND = 2, PARAM_OUT_OF_RANGE = 3};
+    //ERROR_TYPE{NO_ERROR = 0, UNKNOWN_ERROR = -1, UNKNOWN_COMMAND = -2 , ARG_NUM_OUT_RANGE = -3, ARG_VAL_OUT_RANGE = -4};
     switch (errNum) {
     case 0:
         _error = NO_ERROR;
         break;
     case 1:
-        _error = UNKWON_ERROR;
+        _error = UNKNOWN_ERROR;
         break;
     case 2:
-        _error = UNKWON_COMMAND;
+        _error = UNKNOWN_COMMAND;
         break;
     case 3:
         _error = ARG_NUM_OUT_RANGE;
         break;
     default:
-        _error = UNKWON_ERROR;
+        _error = UNKNOWN_ERROR;
         break;
     }
 }

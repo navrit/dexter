@@ -46,7 +46,7 @@ void setReadoutModeHandler()
     else
     {
         CommandHandler::getInstance()->setData("Invalid argument...!");
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
     }
 
 }
@@ -68,7 +68,7 @@ void getReadoutModeHandler()
     }
 
     CommandHandler::getInstance()->setData("-1");
-    CommandHandler::getInstance()->setError(CommandHandler::UNKWON_ERROR);
+    CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_ERROR);
 
 
 }
@@ -108,7 +108,7 @@ void setCounterDepthHandler()
     else
     {
         CommandHandler::getInstance()->setData("Invalid argument...!");
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
     }
 
 }
@@ -140,7 +140,7 @@ void getCounterDepthHandler(){
         return;
     }
     CommandHandler::getInstance()->setData("-1");//-1
-    CommandHandler::getInstance()->setError(CommandHandler::UNKWON_ERROR);
+    CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_ERROR);
 }
 
 void setOperationalModeHandler(){
@@ -163,7 +163,7 @@ void setOperationalModeHandler(){
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
         CommandHandler::getInstance()->setData("Invalid argument...!");
     }
 }
@@ -180,7 +180,7 @@ void openHandler(){
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
         CommandHandler::getInstance()->setData("-1");
     }
 }
@@ -198,7 +198,7 @@ void snapHandler(){
        return;
     }
     CommandHandler::getInstance()->setData(QString::number(-1));
-    CommandHandler::getInstance()->setError(CommandHandler::UNKWON_ERROR);
+    CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_ERROR);
 }
 
 void startHandler(){
@@ -221,7 +221,7 @@ void startHandler(){
         isStarted = false;
     }
     else
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_ERROR);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_ERROR);
 
 
 }
@@ -238,7 +238,7 @@ void stopHandler(){
         CommandHandler::getInstance()->startSendingImage(false);
     }
     else
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_ERROR);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_ERROR);
 }
 
 void setTriggerModeHandler(){
@@ -262,7 +262,7 @@ void setTriggerModeHandler(){
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
         CommandHandler::getInstance()->setData("-1");
     }
 }
@@ -274,7 +274,7 @@ void getTriggerModeHandler(){
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
         CommandHandler::getInstance()->setData("-1");
     }
 }
@@ -297,7 +297,7 @@ void setGainModeHandler(){
         }
     }
     commandHandler->setData("Invalid argument...!");
-    commandHandler->setError(CommandHandler::UNKWON_COMMAND);
+    commandHandler->setError(CommandHandler::UNKNOWN_COMMAND);
 }
 
 void getGainModeHandler(){
@@ -308,7 +308,7 @@ void getGainModeHandler(){
         CommandHandler::getInstance()->setData(QString::number(3-gainMode));
         return;
     }
-    CommandHandler::getInstance()->setError(CommandHandler::UNKWON_ERROR);
+    CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_ERROR);
     CommandHandler::getInstance()->setData("-1");
     return;
 }
@@ -333,7 +333,7 @@ void setPolarityHandler(){
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
         CommandHandler::getInstance()->setData("Invalid argument...!");
     }
 }
@@ -387,7 +387,7 @@ void setShutterLengthHandler(){
     else
     {
         CommandHandler::getInstance()->setData("Invalid argument...!");
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
     }
 
 }
@@ -425,7 +425,7 @@ void getShutterLengthHandler(){
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
         CommandHandler::getInstance()->setData("Invalid argument...!");
     }
 
@@ -450,7 +450,7 @@ void setBothCountersHandler(){
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
         CommandHandler::getInstance()->setData("Invalid argument...!");
     }
 
@@ -481,7 +481,7 @@ void setColourModeHandler(){
         CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
     }
     else{
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
         CommandHandler::getInstance()->setData("Invalid argument...!");
     }
 }
@@ -509,7 +509,7 @@ void setChargeSummingHandler(){
         CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
     }
     else{
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
         CommandHandler::getInstance()->setData("Invalid argument...!");
     }
 }
@@ -538,7 +538,7 @@ void setLutTableHandler(){
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
         CommandHandler::getInstance()->setData("Invalid argument...!");
     }
 }
@@ -568,7 +568,7 @@ void setAutoSaveHandler(){
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
         CommandHandler::getInstance()->setData("Invalid argument...!");
     }
 
@@ -608,7 +608,7 @@ void setRecordFormatHandler(){
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
         CommandHandler::getInstance()->setData("Invalid argument...!");
     }
 }
@@ -742,13 +742,13 @@ void setThresholdScanHandler()
         return;
     }
     int val = CommandHandler::getInstance()->cmdTable["SetThresholdScan"].args.at(0).toInt();
-    int ret = CommandHandler::getInstance()->setThreholdScan(val);
+    int ret = CommandHandler::getInstance()->setThresholdScan(val);
     CommandHandler::getInstance()->setData(QString::number(ret));
     CommandHandler::getInstance()->setError((CommandHandler::ERROR_TYPE)ret);
 }
 void getThresholdScanHandler()
 {
-    int ret = CommandHandler::getInstance()->getThreholdScan();
+    int ret = CommandHandler::getInstance()->getThresholdScan();
     CommandHandler::getInstance()->setData(QString::number(ret));
     CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
 }

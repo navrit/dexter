@@ -21,7 +21,7 @@ class CommandHandler : public QObject
 {
     Q_OBJECT
 public:
-    enum ERROR_TYPE{NO_ERROR = 0, UNKWON_ERROR = -1, UNKWON_COMMAND = -2 , ARG_NUM_OUT_RANGE = -3, ARG_VAL_OUT_RANGE = -4};
+    enum ERROR_TYPE{NO_ERROR = 0, UNKNOWN_ERROR = -1, UNKNOWN_COMMAND = -2 , ARG_NUM_OUT_RANGE = -3, ARG_VAL_OUT_RANGE = -4};
     explicit CommandHandler(QObject *parent = nullptr);
     QString getData(void);
     void fetchCmd();
@@ -42,11 +42,11 @@ public:
     int setStartScan(int);
     int setStopScan(int);
     int setStepScan(int);
-    int setThreholdScan(int);
+    int setThresholdScan(int);
     int getStartScan(void);
     int getStopScan(void);
     int getStepScan(void);
-    int getThreholdScan(void);
+    int getThresholdScan(void);
     int startScan(int);
     int stopScan(int);
     void startSendingImage(bool);

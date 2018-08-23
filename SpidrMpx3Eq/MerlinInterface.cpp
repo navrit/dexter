@@ -9,7 +9,7 @@ MerlinInterface::MerlinInterface(QObject *parent) : QObject(parent)
 
 void MerlinInterface::setErrorExternally(int error)
 {
-    //{NO_ERROR = 0, UNKWON_ERROR = -1, UNKWON_COMMAND = -2 , ARG_NUM_OUT_RANGE = -3, ARG_VAL_OUT_RANGE = -4};
+    //{NO_ERROR = 0, UNKNOWN_ERROR = -1, UNKNOWN_COMMAND = -2 , ARG_NUM_OUT_RANGE = -3, ARG_VAL_OUT_RANGE = -4};
 
     if(error == 0)
     {
@@ -18,12 +18,12 @@ void MerlinInterface::setErrorExternally(int error)
     }
     if(error == -1)
     {
-        _error = UNKOWN_ERROR;
+        _error = UNKNOWN_ERROR;
         return;
     }
     if(error == -2)
     {
-        _error = UNKOWN_COMMAND;
+        _error = UNKNOWN_COMMAND;
         return;
     }
     if(error == -3)
@@ -33,7 +33,7 @@ void MerlinInterface::setErrorExternally(int error)
     }
     if(error == -4)
     {
-        _error = UNKOWN_COMMAND;
+        _error = UNKNOWN_COMMAND;
         return;
     }
 
@@ -62,8 +62,8 @@ QString MerlinInterface::parseCommand(QString command)
 
     //check the header
     if(items.at(HEADER_INDEX) != HEADER){
-        _error = UNKOWN_COMMAND;
-        return QString::number(UNKOWN_COMMAND);
+        _error = UNKNOWN_COMMAND;
+        return QString::number(UNKNOWN_COMMAND);
     }
     //check the range of the command
     if(items.length() < CMD_GET_PARTS || items.length() > SET_PARTS)
@@ -128,7 +128,7 @@ QString MerlinInterface::parseCommand(QString command)
             //_error = NO_ERROR;
            // return pslCmdList.at(0).toLatin1().data();
         }
-        _error = UNKOWN_COMMAND;
+        _error = UNKNOWN_COMMAND;
         return "";
     }
     //get commands
@@ -146,7 +146,7 @@ QString MerlinInterface::parseCommand(QString command)
             _error = NO_ERROR;
             return pslCmdList.at(0);
         }
-        _error = UNKOWN_COMMAND;
+        _error = UNKNOWN_COMMAND;
         return "";
     }
     //cmd commands
@@ -164,7 +164,7 @@ QString MerlinInterface::parseCommand(QString command)
             _error = NO_ERROR;
             return pslCmdList.at(0);
         }
-        _error = UNKOWN_COMMAND;
+        _error = UNKNOWN_COMMAND;
         return "";
     }
 
@@ -172,7 +172,7 @@ QString MerlinInterface::parseCommand(QString command)
 
 
 
-    _error = UNKOWN_ERROR;
+    _error = UNKNOWN_ERROR;
     return "";
 
 
