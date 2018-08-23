@@ -214,7 +214,7 @@ void MerlinInterface::initializeTables()
     //initialize getTable
     getTable.insert(SOFTWAREVERSION,"Hello");
     getTable.insert(COLOURMODE,"GetColourMode");
-    getTable.insert(CHARGESUMMING,"GetOperationalMode");
+    getTable.insert(CHARGESUMMING,"GetChargeSumming");
     getTable.insert(GAIN,"GetGainMode");
     getTable.insert(CONTINUOUSRW,"GetReadoutMode");
     getTable.insert(ENABLECOUNTER1,"GetBothCounters");
@@ -241,7 +241,7 @@ void MerlinInterface::initializeTables()
     getTable.insert(FILEDIRECTORY,"GetRecordPath");
     //initialize setTable
     setTable.insert(COLOURMODE,"SetColourMode;" + QString::number(ENABLE_DISABLE));
-    setTable.insert(CHARGESUMMING,"SetOperationalMode;" + QString::number(CSM_SPM));
+    setTable.insert(CHARGESUMMING,"SetChargeSumming;" + QString::number(CSM_SPM));
     setTable.insert(GAIN,"SetGainMode;" + QString::number(HIGH_LOW));
     setTable.insert(CONTINUOUSRW,"SetReadoutMode;" + QString::number(CONT_SEQ));
     setTable.insert(ENABLECOUNTER1,"SetBothCounters;" + QString::number(ENABLE_DISABLE));

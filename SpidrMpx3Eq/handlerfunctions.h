@@ -522,6 +522,34 @@ void getColourModeHandler(){
         CommandHandler::getInstance()->setData("0");
     CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
 }
+void setChargeSummingHandler(){
+    if(!CommandHandler::getInstance()->enoughArguments(1,"SetChargeSumming"))  //this command comes with one argument
+    {
+        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        return;
+    }
+    if(CommandHandler::getInstance()->cmdTable["SetChargeSumming"].args.at(0) == "csm"){
+        Mpx3GUI::getInstance()->getConfig()->setCsmSpm(true);
+        CommandHandler::getInstance()->setData("Charge summing is enabled");
+        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    }
+    else if(CommandHandler::getInstance()->cmdTable["SetChargeSumming"].args.at(0) == "spm"){
+        Mpx3GUI::getInstance()->getConfig()->setCsmSpm(false);
+        CommandHandler::getInstance()->setData("Charge summing is disabled");
+        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    }
+    else{
+        CommandHandler::getInstance()->setError(CommandHandler::UNKWON_COMMAND);
+        CommandHandler::getInstance()->setData("Invalid argument...!");
+    }
+}
+void getChargeSummingHandler(){
+    if(Mpx3GUI::getInstance()->getConfig()->getCsmSpm())
+        CommandHandler::getInstance()->setData("1");
+    else
+        CommandHandler::getInstance()->setData("0");
+    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+}
 void setLutTableHandler(){
     if(!CommandHandler::getInstance()->enoughArguments(1,"SetLutTable"))  //this command comes with one argument
     {

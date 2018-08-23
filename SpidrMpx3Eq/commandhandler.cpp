@@ -105,6 +105,10 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("SetColourMode",setColourMode);
     cmd_struct getColourMode{getColourModeHandler};
     cmdTable.insert("GetColourMode",getColourMode);
+    cmd_struct setChargeSumming{setChargeSummingHandler};
+    cmdTable.insert("SetChargeSumming",setChargeSumming);
+    cmd_struct getChargeSumming{getChargeSummingHandler};
+    cmdTable.insert("GetChargeSumming",getChargeSumming);
     cmd_struct setLutTable{setLutTableHandler};
     cmdTable.insert("SetLutTable",setLutTable);
     cmd_struct getLutTable{getLutTableHandler};
