@@ -139,6 +139,8 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("GetStepScan",getStepScan);
     cmd_struct setThresholdScan{setThresholdScanHandler};
     cmdTable.insert("SetThresholdScan",setThresholdScan);
+    cmd_struct getThresholdScan{getThresholdScanHandler};
+    cmdTable.insert("GetThresholdScan",getThresholdScan);
     cmd_struct startScan {startScanHandler};
     cmdTable.insert("StartScan",startScan);
     cmd_struct stopScan{stopScanHandler};
@@ -252,18 +254,14 @@ int CommandHandler::setStepScan(int val)
 
 int CommandHandler::setThresholdScan(int val)
 {
-    if(val == 0)
+    QComboBox* comboBox = thresholdScan::getInstance()->GetUI()->comboBox_thresholdToScan;
+    int max = comboBox->count();
+    if (val >= 0 && val < max)
     {
-       thresholdScan::getInstance()->GetUI()->comboBox_thresholdToScan->setCurrentIndex(0);
-       return NO_ERROR;
-    }
-    if(val == 1)
-    {
-       thresholdScan::getInstance()->GetUI()->comboBox_thresholdToScan->setCurrentIndex(1);
+       comboBox->setCurrentIndex(val);
        return NO_ERROR;
     }
     return ARG_VAL_OUT_RANGE;
-
 }
 
 int CommandHandler::getStartScan()

@@ -236,7 +236,6 @@ void MerlinInterface::initializeTables()
     getTable.insert(THSTOP,"GetStopScan");
     getTable.insert(THSTEP,"GetStepScan");
     getTable.insert(THSCAN,"GetThresholdScan");
-    getTable.insert(THSCAN,"GetThresholdScan");
     getTable.insert(OPERATINGENERGY,"GetOperatingEnergy");
     getTable.insert(PROFILES,"GetProfile");
     getTable.insert(TRIGGERSTOP,"GetTriggerMode");
@@ -263,7 +262,6 @@ void MerlinInterface::initializeTables()
     setTable.insert(THSTART,"SetStartScan;" + QString::number(N));
     setTable.insert(THSTOP,"SetStopScan;" + QString::number(N));
     setTable.insert(THSTEP,"SetStepScan;" + QString::number(N));
-    setTable.insert(THSCAN,"SetThresholdScan;" + QString::number(N));
     setTable.insert(THSCAN,"SetThresholdScan;" + QString::number(N));
     setTable.insert(OPERATINGENERGY,"SetOperatingEnergy;" +  QString::number(N));
     setTable.insert(PROFILES,"SetProfile;" +  QString::number(N) );
