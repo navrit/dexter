@@ -8,256 +8,255 @@
 
 
 //handler functions
-void helloHandler()
+void helloHandler(CommandHandler* ch, Command* cmd)
 {
-    CommandHandler::getInstance()->setData("Hello From Dexter Server");
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-    QString hd = CommandHandler::getInstance()->generateMerlinFrameHeader(1);
+    cmd->setData("Hello From Dexter Server");
+    cmd->setError(NO_ERROR);
+    QString hd = ch->generateMerlinFrameHeader(1);
     qDebug() <<"header is" << hd;
     qDebug() << "header size is : " << hd.length();
 }
 
-void byeHandler()
+void byeHandler(CommandHandler* ch, Command* cmd)
 {
     QString tstData = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type ki";
-    if(CommandHandler::getInstance()->enoughArguments(1,"Bye"))
-        CommandHandler::getInstance()->setData(tstData);
+    if(cmd->enoughArguments(1,"Bye"))
+        cmd->setData(tstData);
 }
 
-void setReadoutModeHandler()
+void setReadoutModeHandler(CommandHandler* ch, Command* cmd)
 {
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetReadoutMode")) //this command comes with one argument
+    if(!cmd->enoughArguments(1,"SetReadoutMode")) //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    if(CommandHandler::getInstance()->cmdTable["SetReadoutMode"].args.at(0) == "seq"){ //set readout mode to sequential
+    if(cmd->arguments.at(0) == "seq"){ //set readout mode to sequential
         // here code for setting the readout mode to sequential
         Mpx3GUI::getInstance()->getConfig()->setOperationMode(0);
-        CommandHandler::getInstance()->setData("Readout mode is set to sequential");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Readout mode is set to sequential");
+        cmd->setError(NO_ERROR);
     }
-    else if(CommandHandler::getInstance()->cmdTable["SetReadoutMode"].args.at(0) == "cont"){ //set readout mode to continuous
+    else if(cmd->arguments.at(0) == "cont"){ //set readout mode to continuous
         // here code for setting the readout mode to continuous
         Mpx3GUI::getInstance()->getConfig()->setOperationMode(1);
-        CommandHandler::getInstance()->setData("Readout mode is set to continuous");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Readout mode is set to continuous");
+        cmd->setError(NO_ERROR);
     }
     else
     {
-        CommandHandler::getInstance()->setData("Invalid argument...!");
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
+        cmd->setData("Invalid argument...!");
+        cmd->setError(UNKNOWN_COMMAND);
     }
 
 }
 
-void getReadoutModeHandler()
+void getReadoutModeHandler(CommandHandler* ch, Command* cmd)
 {
     //here code to get the readout mode
     if(Mpx3GUI::getInstance()->getConfig()->getOperationMode() == 0)
     {
-        CommandHandler::getInstance()->setData("0");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("0");
+        cmd->setError(NO_ERROR);
         return;
     }
     if(Mpx3GUI::getInstance()->getConfig()->getOperationMode() == 1)
     {
-        CommandHandler::getInstance()->setData("1");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("1");
+        cmd->setError(NO_ERROR);
         return;
     }
 
-    CommandHandler::getInstance()->setData("-1");
-    CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_ERROR);
+    cmd->setData("-1");
+    cmd->setError(UNKNOWN_ERROR);
 
 
 }
 
-void setCounterDepthHandler()
+void setCounterDepthHandler(CommandHandler* ch, Command* cmd)
 {
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetCounterDepth"))  //this command comes with one argument
+    if(!cmd->enoughArguments(1,"SetCounterDepth"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    if(CommandHandler::getInstance()->cmdTable["SetCounterDepth"].args.at(0) == "1"){
+    if(cmd->arguments.at(0) == "1"){
         //here code to set depth
         Mpx3GUI::getInstance()->getConfig()->setPixelDepth(1);
-        CommandHandler::getInstance()->setData("Counter depth is set to 1 bit...!");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Counter depth is set to 1 bit...!");
+        cmd->setError(NO_ERROR);
     }
-    else if(CommandHandler::getInstance()->cmdTable["SetCounterDepth"].args.at(0) == "6"){
+    else if(cmd->arguments.at(0) == "6"){
         //here code to set depth
         Mpx3GUI::getInstance()->getConfig()->setPixelDepth(6);
-        CommandHandler::getInstance()->setData("Counter depth is set to 6 bit...!");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Counter depth is set to 6 bit...!");
+        cmd->setError(NO_ERROR);
     }
-    else if(CommandHandler::getInstance()->cmdTable["SetCounterDepth"].args.at(0) == "12"){
+    else if(cmd->arguments.at(0) == "12"){
         //here code to set depth
         Mpx3GUI::getInstance()->getConfig()->setPixelDepth(12);
-        CommandHandler::getInstance()->setData("Counter depth is set to 12 bit...!");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Counter depth is set to 12 bit...!");
+        cmd->setError(NO_ERROR);
     }
-    else if(CommandHandler::getInstance()->cmdTable["SetCounterDepth"].args.at(0) == "24"){
+    else if(cmd->arguments.at(0) == "24"){
         //here code to set depth
 
         Mpx3GUI::getInstance()->getConfig()->setPixelDepth(24);
-        CommandHandler::getInstance()->setData("Counter depth is set to 24 bit...!");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Counter depth is set to 24 bit...!");
+        cmd->setError(NO_ERROR);
     }
     else
     {
-        CommandHandler::getInstance()->setData("Invalid argument...!");
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
+        cmd->setData("Invalid argument...!");
+        cmd->setError(UNKNOWN_COMMAND);
     }
 
 }
 
-void getCounterDepthHandler(){
+void getCounterDepthHandler(CommandHandler* ch, Command* cmd){
     //here code to get the readout mode
     if(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 1)
     {
-        CommandHandler::getInstance()->setData("1");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("1");
+        cmd->setError(NO_ERROR);
         return;
     }
     if(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 6)
     {
-        CommandHandler::getInstance()->setData("6");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("6");
+        cmd->setError(NO_ERROR);
         return;
     }
     if(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 12)
     {
-        CommandHandler::getInstance()->setData("12");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("12");
+        cmd->setError(NO_ERROR);
         return;
     }
     if(Mpx3GUI::getInstance()->getConfig()->getPixelDepth() == 24)
     {
-        CommandHandler::getInstance()->setData("24");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("24");
+        cmd->setError(NO_ERROR);
         return;
     }
-    CommandHandler::getInstance()->setData("-1");//-1
-    CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_ERROR);
+    cmd->setData("-1");//-1
+    cmd->setError(UNKNOWN_ERROR);
 }
 
-void getTemperatureHandler() {
-    CommandHandler* commandHandler = CommandHandler::getInstance();
+void getTemperatureHandler(CommandHandler* ch, Command* cmd) {
     SpidrController* spidrcontrol = Mpx3GUI::getInstance()->GetSpidrController();
 
     if (spidrcontrol) {
         int mdegrees;
         if (spidrcontrol->getRemoteTemp(&mdegrees)) {
-            commandHandler->setData(QString::number((int) (mdegrees/1000)));
-            commandHandler->setError(CommandHandler::NO_ERROR);
+            cmd->setData(QString::number((int) (mdegrees/1000)));
+            cmd->setError(NO_ERROR);
         }
     } else {
-        commandHandler->setData(QString::number(-1));
-        commandHandler->setError(CommandHandler::UNKNOWN_ERROR);
+        cmd->setData(QString::number(-1));
+        cmd->setError(UNKNOWN_ERROR);
     }
 }
 
-void setOperationalModeHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetOperationalMode"))  //this command comes with one argument
+void setOperationalModeHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetOperationalMode"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    if(CommandHandler::getInstance()->cmdTable["SetOperationalMode"].args.at(0) == "spm"){
+    if(cmd->arguments.at(0) == "spm"){
         //here code to set operational mode
         Mpx3GUI::getInstance()->getConfig()->setCsmSpm(0);
-        CommandHandler::getInstance()->setData("Operational mode is set to spm...!");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Operational mode is set to spm...!");
+        cmd->setError(NO_ERROR);
     }
-    else if(CommandHandler::getInstance()->cmdTable["SetOperationalMode"].args.at(0) == "csm"){
+    else if(cmd->arguments.at(0) == "csm"){
         //here code to set operational mode
         Mpx3GUI::getInstance()->getConfig()->setCsmSpm(1);
-        CommandHandler::getInstance()->setData("Operational mode is set to csm...!");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Operational mode is set to csm...!");
+        cmd->setError(NO_ERROR);
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
-        CommandHandler::getInstance()->setData("Invalid argument...!");
+        cmd->setError(UNKNOWN_COMMAND);
+        cmd->setData("Invalid argument...!");
     }
 }
 
-void getOperationalModeHandler(){
+void getOperationalModeHandler(CommandHandler* ch, Command* cmd){
     //here code to get the operational mode
-    CommandHandler::getInstance()->setData("Getting the operational mode....!");
+    cmd->setData("Getting the operational mode....!");
 
 }
-void openHandler(){
+void openHandler(CommandHandler* ch, Command* cmd){
     if(Mpx3GUI::getInstance()->establish_connection()){
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-        CommandHandler::getInstance()->setData("0");
+        cmd->setError(NO_ERROR);
+        cmd->setData("0");
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
-        CommandHandler::getInstance()->setData("-1");
+        cmd->setError(UNKNOWN_COMMAND);
+        cmd->setData("-1");
     }
 }
-void closeHandler(){
+void closeHandler(CommandHandler* ch, Command* cmd){
     Mpx3GUI::getInstance()->closeRemotely();
-    CommandHandler::getInstance()->setData("0");
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    cmd->setData("0");
+    cmd->setError(NO_ERROR);
 }
 bool isStarted = false;
-void snapHandler(){
+void snapHandler(CommandHandler* ch, Command* cmd){
     if(!isStarted){
-       CommandHandler::getInstance()->startSnap();
-       CommandHandler::getInstance()->setData(QString::number(0));
-       CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+       ch->startSnap();
+       cmd->setData(QString::number(0));
+       cmd->setError(NO_ERROR);
        return;
     }
-    CommandHandler::getInstance()->setData(QString::number(-1));
-    CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_ERROR);
+    cmd->setData(QString::number(-1));
+    cmd->setError(UNKNOWN_ERROR);
 }
 
-void startHandler(){
+void startHandler(CommandHandler* ch, Command* cmd){
 
     if(!isStarted){
 
-        CommandHandler::getInstance()->startLiveCamera();
+        ch->startLiveCamera();
         isStarted = true;
 
     }
     int d = (isStarted) ? 0 : -1;
-    CommandHandler::getInstance()->setData(QString::number(d));
+    cmd->setData(QString::number(d));
     if(d == 0)
     {
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setError(NO_ERROR);
 //        QThread::usleep(20000);
-////        CommandHandler::getInstance()->startSendingImage(true);
-   //    CommandHandler::getInstance()-> sendMerlinImage();
-//        CommandHandler::getInstance()->emitrequestForAnotherSocket(6352);
+////        ch->startSendingImage(true);
+   //    ch-> sendMerlinImage();
+//        ch->emitrequestForAnotherSocket(6352);
         isStarted = false;
     }
     else
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_ERROR);
+        cmd->setError(UNKNOWN_ERROR);
 
 
 }
-void stopHandler(){
+void stopHandler(CommandHandler* ch, Command* cmd){
     if(isStarted){
-       // CommandHandler::getInstance()->
+       // ch->
         isStarted = false;
     }
     int d = (isStarted) ? -1 : 0;
-    CommandHandler::getInstance()->setData(QString::number(d));
+    cmd->setData(QString::number(d));
     if(d == 0)
     {
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-        CommandHandler::getInstance()->startSendingImage(false);
+        cmd->setError(NO_ERROR);
+        ch->startSendingImage(false);
     }
     else
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_ERROR);
+        cmd->setError(UNKNOWN_ERROR);
 }
 
-void setTriggerModeHandler(){
+void setTriggerModeHandler(CommandHandler* ch, Command* cmd){
     /*
     #define SHUTTERMODE_POS_EXT        0
     #define SHUTTERMODE_NEG_EXT        1
@@ -266,384 +265,376 @@ void setTriggerModeHandler(){
     #define SHUTTERMODE_AUTO           4
     #define SHUTTERTRIG_POS_EXT_CNTR   5
      */
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetTriggerMode"))  //this command comes with one argument
+    if(!cmd->enoughArguments(1,"SetTriggerMode"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    if(CommandHandler::getInstance()->cmdTable["SetTriggerMode"].args.at(0) == "0")
+    if(cmd->arguments.at(0) == "0")
     {
         Mpx3GUI::getInstance()->getConfig()->setTriggerMode(4);
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setError(NO_ERROR);
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
-        CommandHandler::getInstance()->setData("-1");
+        cmd->setError(UNKNOWN_COMMAND);
+        cmd->setData("-1");
     }
 }
-void getTriggerModeHandler(){
+void getTriggerModeHandler(CommandHandler* ch, Command* cmd){
     int val = Mpx3GUI::getInstance()->getConfig()->getTriggerMode();
     if(val == 4){
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-        CommandHandler::getInstance()->setData("0");
+        cmd->setError(NO_ERROR);
+        cmd->setData("0");
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
-        CommandHandler::getInstance()->setData("-1");
+        cmd->setError(UNKNOWN_COMMAND);
+        cmd->setData("-1");
     }
 }
 
-QString gainModeStrTable[] = {"shigh","high","low","slow"};
-void setGainModeHandler(){
-    auto commandHandler = CommandHandler::getInstance();
-    if(!commandHandler->enoughArguments(1,"SetGainMode"))  //this command comes with one argument
+void setGainModeHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetGainMode"))  //this command comes with one argument
     {
-        commandHandler->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    auto arg = commandHandler->cmdTable["SetGainMode"].args.at(0);
+    auto arg = cmd->arguments.at(0);
     for (int i = 0; i < 3; i++) {
-        if (arg == commandHandler->gainModeStrTable[i]) {
+        if (arg == gainModeStrTable[i]) {
             Mpx3GUI::getInstance()->getConfig()->setGainMode(i);
-            commandHandler->setData("Gain mode is set to " + arg + "...!");
-            commandHandler->setError(CommandHandler::NO_ERROR);
+            cmd->setData("Gain mode is set to " + arg + "...!");
+            cmd->setError(NO_ERROR);
             return;
         }
     }
-    commandHandler->setData("Invalid argument...!");
-    commandHandler->setError(CommandHandler::UNKNOWN_COMMAND);
+    cmd->setData("Invalid argument...!");
+    cmd->setError(UNKNOWN_COMMAND);
 }
 
-void getGainModeHandler(){
+void getGainModeHandler(CommandHandler* ch, Command* cmd){
     int gainMode = Mpx3GUI::getInstance()->getConfig()->getGainMode();
     //QString gainModeStrTable[] = {"SuperHigh","High","Low","SuperLow"};
     if(gainMode >= 0 && gainMode <= 3){
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-        CommandHandler::getInstance()->setData(QString::number(3-gainMode));
+        cmd->setError(NO_ERROR);
+        cmd->setData(QString::number(3-gainMode));
         return;
     }
-    CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_ERROR);
-    CommandHandler::getInstance()->setData("-1");
+    cmd->setError(UNKNOWN_ERROR);
+    cmd->setData("-1");
     return;
 }
 
-void setPolarityHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetPolarity"))  //this command comes with one argument
+void setPolarityHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetPolarity"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    if(CommandHandler::getInstance()->cmdTable["SetPolarity"].args.at(0) == "neg"){
+    if(cmd->arguments.at(0) == "neg"){
         //here code to set operational mode
         Mpx3GUI::getInstance()->getConfig()->setPolarity(1);
-        CommandHandler::getInstance()->setData("Polarity is set to negative...!");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Polarity is set to negative...!");
+        cmd->setError(NO_ERROR);
     }
-    else if(CommandHandler::getInstance()->cmdTable["SetPolarity"].args.at(0) == "pos"){
+    else if(cmd->arguments.at(0) == "pos"){
         //here code to set operational mode
         Mpx3GUI::getInstance()->getConfig()->setPolarity(0);
-        CommandHandler::getInstance()->setData("Polarity is set to positive...!");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Polarity is set to positive...!");
+        cmd->setError(NO_ERROR);
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
-        CommandHandler::getInstance()->setData("Invalid argument...!");
+        cmd->setError(UNKNOWN_COMMAND);
+        cmd->setData("Invalid argument...!");
     }
 }
-void getPolarityHandler(){
+void getPolarityHandler(CommandHandler* ch, Command* cmd){
     if(Mpx3GUI::getInstance()->getConfig()->getPolarity())
     {
-        CommandHandler::getInstance()->setData("1");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("1");
+        cmd->setError(NO_ERROR);
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-        CommandHandler::getInstance()->setData("0");
+        cmd->setError(NO_ERROR);
+        cmd->setData("0");
     }
 }
-void setCounterSelectFrequencyHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetCounterSelectFrequency"))  //this command comes with one argument
+void setCounterSelectFrequencyHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetCounterSelectFrequency"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int freq = CommandHandler::getInstance()->cmdTable["SetCounterSelectFrequency"].args.at(0).toInt();
+    int freq = cmd->arguments.at(0).toInt();
     Mpx3GUI::getInstance()->getConfig()->setContRWFreq(freq);
-    CommandHandler::getInstance()->setData("CRW frequency is set to " + QString::number(freq));
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    cmd->setData("CRW frequency is set to " + QString::number(freq));
+    cmd->setError(NO_ERROR);
 
 }
-void getCounterSelectFrequencyHandler(){
+void getCounterSelectFrequencyHandler(CommandHandler* ch, Command* cmd){
     int freq = Mpx3GUI::getInstance()->getConfig()->getContRWFreq();
-    CommandHandler::getInstance()->setData(QString::number(freq));
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    cmd->setData(QString::number(freq));
+    cmd->setError(NO_ERROR);
 }
 
-void setShutterLengthHandler(){
-    CommandHandler* commandHandler = CommandHandler::getInstance();
-    if(!commandHandler->enoughArguments(2,"SetShutterLength"))  //this command comes with two argument {SetShutterLength;{open,down};value
+void setShutterLengthHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(2,"SetShutterLength"))  //this command comes with two argument {SetShutterLength;{open,down};value
     {
-        commandHandler->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    auto args = commandHandler->cmdTable["SetShutterLength"].args;
-    auto openOrClose = args.at(0);
-    auto length = args.at(1); //ms
+    auto openOrClose = cmd->arguments.at(0);
+    auto length = cmd->arguments.at(1); //ms
     auto config = Mpx3GUI::getInstance()->getConfig();
     if (openOrClose == "open"){
         //here code to set operational mode
         config->setTriggerLength((int) (1000. * length.toDouble()));    // us
-        commandHandler->setData("Shutter open length is set to " + length);
-        commandHandler->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Shutter open length is set to " + length);
+        cmd->setError(NO_ERROR);
     }
     else if(openOrClose == "down"){
         //here code to set operational mode
         config->setTriggerDowntime((int) (1000. * length.toDouble()));  // us
-        commandHandler->setData("Shutter down length is set to " + length);
-        commandHandler->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Shutter down length is set to " + length);
+        cmd->setError(NO_ERROR);
     }
     else
     {
-        commandHandler->setData("Invalid argument...!");
-        commandHandler->setError(CommandHandler::UNKNOWN_COMMAND);
+        cmd->setData("Invalid argument...!");
+        cmd->setError(UNKNOWN_COMMAND);
     }
 }
 
-void setShutterPeriodHandler(){
-    CommandHandler* commandHandler = CommandHandler::getInstance();
-    if (!commandHandler->enoughArguments(1,"SetShutterPeriod"))  //this command comes with one argument
+void setShutterPeriodHandler(CommandHandler* ch, Command* cmd){
+    if (!cmd->enoughArguments(1,"SetShutterPeriod"))  //this command comes with one argument
     {
-        commandHandler->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
     auto config = Mpx3GUI::getInstance()->getConfig();
-    auto length = commandHandler->cmdTable["SetShutterPeriod"].args.at(0); //ms
+    auto length = cmd->arguments.at(0); //ms
     int open = config->getTriggerLength();
     config->setTriggerDowntime(1000. * length.toDouble() - open);   // us
     qDebug()<<"dodododod:" << length.toDouble();
-    commandHandler->setError(CommandHandler::NO_ERROR);
+    cmd->setError(NO_ERROR);
 }
 
-void getShutterPeriodHandler(){
-    CommandHandler* commandHandler = CommandHandler::getInstance();
+void getShutterPeriodHandler(CommandHandler* ch, Command* cmd){
     auto config = Mpx3GUI::getInstance()->getConfig();
-    commandHandler->setData(QString::number((config->getTriggerDowntime() + config->getTriggerLength()) * 0.001)); //ms
-    commandHandler->setError(CommandHandler::NO_ERROR);
+    cmd->setData(QString::number((config->getTriggerDowntime() + config->getTriggerLength()) * 0.001)); //ms
+    cmd->setError(NO_ERROR);
 }
 
-void getShutterLengthHandler(){
-    CommandHandler* commandHandler = CommandHandler::getInstance();
-    if (!commandHandler->enoughArguments(1,"GetShutterLength"))  //this command comes with two argument {GetShutterLength;{open,down}
+void getShutterLengthHandler(CommandHandler* ch, Command* cmd){
+    if (!cmd->enoughArguments(1,"GetShutterLength"))  //this command comes with two argument {GetShutterLength;{open,down}
     {
-        commandHandler->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    auto args = commandHandler->cmdTable["SetShutterLength"].args;
-    auto openOrClose = args.at(0);
+    auto openOrClose = cmd->arguments.at(0);
     auto config = Mpx3GUI::getInstance()->getConfig();
     if(openOrClose == "open"){
        double trig =  config->getTriggerLength() * 0.001; //ms
-       commandHandler->setData(QString::number(trig));
-       commandHandler->setError(CommandHandler::NO_ERROR);
+       cmd->setData(QString::number(trig));
+       cmd->setError(NO_ERROR);
     }
     else if(openOrClose == "down"){
         double trig = config->getTriggerDowntime() * 0.001; //ms
-        commandHandler->setData(QString::number(trig));
-        commandHandler->setError(CommandHandler::NO_ERROR);
+        cmd->setData(QString::number(trig));
+        cmd->setError(NO_ERROR);
     }
     else
     {
-        commandHandler->setError(CommandHandler::UNKNOWN_COMMAND);
-        commandHandler->setData("Invalid argument...!");
+        cmd->setError(UNKNOWN_COMMAND);
+        cmd->setData("Invalid argument...!");
     }
 }
 
-void setBothCountersHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetBothCounters"))  //this command comes with one argument
+void setBothCountersHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetBothCounters"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    if(CommandHandler::getInstance()->cmdTable["SetBothCounters"].args.at(0) == "enable"){
+    if(cmd->arguments.at(0) == "enable"){
         Mpx3GUI::getInstance()->getConfig()->setReadBothCounters(true);
-        CommandHandler::getInstance()->setData("Both counters is enabled");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Both counters is enabled");
+        cmd->setError(NO_ERROR);
     }
-    else if(CommandHandler::getInstance()->cmdTable["SetBothCounters"].args.at(0) == "disable"){
+    else if(cmd->arguments.at(0) == "disable"){
         Mpx3GUI::getInstance()->getConfig()->setReadBothCounters(false);
-        CommandHandler::getInstance()->setData("Both counters is disabled");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Both counters is disabled");
+        cmd->setError(NO_ERROR);
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
-        CommandHandler::getInstance()->setData("Invalid argument...!");
+        cmd->setError(UNKNOWN_COMMAND);
+        cmd->setData("Invalid argument...!");
     }
 
 }
-void getBothCountersHandler(){
+void getBothCountersHandler(CommandHandler* ch, Command* cmd){
     if(Mpx3GUI::getInstance()->getConfig()->getReadBothCounters())
-        CommandHandler::getInstance()->setData("1");
+        cmd->setData("1");
     else
-        CommandHandler::getInstance()->setData("0");
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("0");
+    cmd->setError(NO_ERROR);
 
 }
 
-void setColourModeHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetColourMode"))  //this command comes with one argument
+void setColourModeHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetColourMode"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    if(CommandHandler::getInstance()->cmdTable["SetColourMode"].args.at(0) == "enable"){
+    if(cmd->arguments.at(0) == "enable"){
         Mpx3GUI::getInstance()->getConfig()->setColourMode(true);
-        CommandHandler::getInstance()->setData("Colour mode is enabled");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Colour mode is enabled");
+        cmd->setError(NO_ERROR);
     }
-    else if(CommandHandler::getInstance()->cmdTable["SetColourMode"].args.at(0) == "disable"){
+    else if(cmd->arguments.at(0) == "disable"){
         Mpx3GUI::getInstance()->getConfig()->setColourMode(false);
-        CommandHandler::getInstance()->setData("Colour mode is disabled");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Colour mode is disabled");
+        cmd->setError(NO_ERROR);
     }
     else{
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
-        CommandHandler::getInstance()->setData("Invalid argument...!");
+        cmd->setError(UNKNOWN_COMMAND);
+        cmd->setData("Invalid argument...!");
     }
 }
-void getColourModeHandler(){
+void getColourModeHandler(CommandHandler* ch, Command* cmd){
     if(Mpx3GUI::getInstance()->getConfig()->getColourMode())
-        CommandHandler::getInstance()->setData("1");
+        cmd->setData("1");
     else
-        CommandHandler::getInstance()->setData("0");
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("0");
+    cmd->setError(NO_ERROR);
 }
-void setChargeSummingHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetChargeSumming"))  //this command comes with one argument
+void setChargeSummingHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetChargeSumming"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    if(CommandHandler::getInstance()->cmdTable["SetChargeSumming"].args.at(0) == "csm"){
+    if(cmd->arguments.at(0) == "csm"){
         Mpx3GUI::getInstance()->getConfig()->setCsmSpm(true);
-        CommandHandler::getInstance()->setData("Charge summing is enabled");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Charge summing is enabled");
+        cmd->setError(NO_ERROR);
     }
-    else if(CommandHandler::getInstance()->cmdTable["SetChargeSumming"].args.at(0) == "spm"){
+    else if(cmd->arguments.at(0) == "spm"){
         Mpx3GUI::getInstance()->getConfig()->setCsmSpm(false);
-        CommandHandler::getInstance()->setData("Charge summing is disabled");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("Charge summing is disabled");
+        cmd->setError(NO_ERROR);
     }
     else{
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
-        CommandHandler::getInstance()->setData("Invalid argument...!");
+        cmd->setError(UNKNOWN_COMMAND);
+        cmd->setData("Invalid argument...!");
     }
 }
-void getChargeSummingHandler(){
+void getChargeSummingHandler(CommandHandler* ch, Command* cmd){
     if(Mpx3GUI::getInstance()->getConfig()->getCsmSpm())
-        CommandHandler::getInstance()->setData("1");
+        cmd->setData("1");
     else
-        CommandHandler::getInstance()->setData("0");
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("0");
+    cmd->setError(NO_ERROR);
 }
-void setLutTableHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetLutTable"))  //this command comes with one argument
+void setLutTableHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetLutTable"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    if(CommandHandler::getInstance()->cmdTable["SetLutTable"].args.at(0) == "enable"){
+    if(cmd->arguments.at(0) == "enable"){
         Mpx3GUI::getInstance()->getConfig()->setLUTEnable(true);
-        CommandHandler::getInstance()->setData("LUT table is enabled");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("LUT table is enabled");
+        cmd->setError(NO_ERROR);
     }
-    else if(CommandHandler::getInstance()->cmdTable["SetLutTable"].args.at(0) == "disable"){
+    else if(cmd->arguments.at(0) == "disable"){
         Mpx3GUI::getInstance()->getConfig()->setLUTEnable(false);
-        CommandHandler::getInstance()->setData("LUT table is disabled");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("LUT table is disabled");
+        cmd->setError(NO_ERROR);
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
-        CommandHandler::getInstance()->setData("Invalid argument...!");
+        cmd->setError(UNKNOWN_COMMAND);
+        cmd->setData("Invalid argument...!");
     }
 }
-void getLutTableHandler(){
+void getLutTableHandler(CommandHandler* ch, Command* cmd){
     if(Mpx3GUI::getInstance()->getConfig()->getLUTEnable())
-        CommandHandler::getInstance()->setData("1");
+        cmd->setData("1");
     else
-        CommandHandler::getInstance()->setData("0");
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+        cmd->setData("0");
+    cmd->setError(NO_ERROR);
 }
 
-void setAutoSaveHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetAutoSave"))  //this command comes with one argument
+void setAutoSaveHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetAutoSave"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    if(CommandHandler::getInstance()->cmdTable["SetAutoSave"].args.at(0) == "enable"){
-        CommandHandler::getInstance()->setAutoSave(true);
-        CommandHandler::getInstance()->setData("enabled");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    if(cmd->arguments.at(0) == "enable"){
+        ch->setAutoSave(true);
+        cmd->setData("enabled");
+        cmd->setError(NO_ERROR);
     }
-    else if(CommandHandler::getInstance()->cmdTable["SetAutoSave"].args.at(0) == "disable"){
-        CommandHandler::getInstance()->setAutoSave(false);
-        CommandHandler::getInstance()->setData("disabled");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-    }
-    else
-    {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
-        CommandHandler::getInstance()->setData("Invalid argument...!");
-    }
-
-}
-
-void setRecordPathHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetRecordPath"))  //this command comes with one argument
-    {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
-        return;
-    }
-    CommandHandler::getInstance()->setRecordPath(CommandHandler::getInstance()->cmdTable["SetRecordPath"].args.at(0));
-    CommandHandler::getInstance()->setData("Path is set");
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-}
-
-void setRecordFormatHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetRecordFormat"))  //this command comes with one argument
-    {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
-        return;
-    }
-    if(CommandHandler::getInstance()->cmdTable["SetRecordFormat"].args.at(0) == "txt"){
-        CommandHandler::getInstance()->setRecordFormat(2);
-        CommandHandler::getInstance()->setData("Format is set to txt");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-    }
-    else if(CommandHandler::getInstance()->cmdTable["SetRecordFormat"].args.at(0) == "tiff"){
-        CommandHandler::getInstance()->setRecordFormat(0);
-        CommandHandler::getInstance()->setData("Format is set to tiff");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
-    }
-    else if(CommandHandler::getInstance()->cmdTable["SetRecordFormat"].args.at(0) == "rawtiff"){
-        CommandHandler::getInstance()->setRecordFormat(1);
-        CommandHandler::getInstance()->setData("Format is set to rawtiff");
-        CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    else if(cmd->arguments.at(0) == "disable"){
+        ch->setAutoSave(false);
+        cmd->setData("disabled");
+        cmd->setError(NO_ERROR);
     }
     else
     {
-        CommandHandler::getInstance()->setError(CommandHandler::UNKNOWN_COMMAND);
-        CommandHandler::getInstance()->setData("Invalid argument...!");
+        cmd->setError(UNKNOWN_COMMAND);
+        cmd->setData("Invalid argument...!");
+    }
+
+}
+
+void setRecordPathHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetRecordPath"))  //this command comes with one argument
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    ch->setRecordPath(cmd->arguments.at(0));
+    cmd->setData("Path is set");
+    cmd->setError(NO_ERROR);
+}
+
+void setRecordFormatHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetRecordFormat"))  //this command comes with one argument
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    if(cmd->arguments.at(0) == "txt"){
+        ch->setRecordFormat(2);
+        cmd->setData("Format is set to txt");
+        cmd->setError(NO_ERROR);
+    }
+    else if(cmd->arguments.at(0) == "tiff"){
+        ch->setRecordFormat(0);
+        cmd->setData("Format is set to tiff");
+        cmd->setError(NO_ERROR);
+    }
+    else if(cmd->arguments.at(0) == "rawtiff"){
+        ch->setRecordFormat(1);
+        cmd->setData("Format is set to rawtiff");
+        cmd->setError(NO_ERROR);
+    }
+    else
+    {
+        cmd->setError(UNKNOWN_COMMAND);
+        cmd->setData("Invalid argument...!");
     }
 }
 
-void getImageHandler(){
+void getImageHandler(CommandHandler* ch, Command* cmd){
 //    QVector<int> frame0 = Mpx3GUI::getInstance()->getDataset()->makeFrameForSaving(0,false);
 //   // QVector<int> frame0 = Mpx3GUI::getInstance()->getDataset()->getActualData();
 
@@ -661,161 +652,161 @@ void getImageHandler(){
         value |= im.at(i*4) | (im.at((i*4)+1)<<8) | (im.at((i*4)+2)<<16) | (im.at((i*4)+3)<<32);
         strData += QString::number(value) + ";";
     }
-  //  CommandHandler::getInstance()->setImage();
+  //  cmd->setImage();
 
     QByteArray pixels = im.mid(20*4); //17*4 = 68 bytes header later this must become dynamic // 18*4 = 72 bytes for double counter
     qDebug()<<"pixel length = "<<pixels.length();
 
-    CommandHandler::getInstance()->setData(strData);
-    CommandHandler::getInstance()->setImage(pixels);
+    cmd->setData(strData);
+    cmd->setImage(pixels);
 
 }
 
-void setNumberOfFrameHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetFrameNumber"))  //this command comes with one argument
+void setNumberOfFrameHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetFrameNumber"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    Mpx3GUI::getInstance()->getConfig()->setNTriggers(CommandHandler::getInstance()->cmdTable["SetFrameNumber"].args.at(0).toInt() );
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    Mpx3GUI::getInstance()->getConfig()->setNTriggers(cmd->arguments.at(0).toInt() );
+    cmd->setError(NO_ERROR);
 }
 
-void getNumberOfFrameHandler(){
-    CommandHandler::getInstance()->setData(QString::number(Mpx3GUI::getInstance()->getConfig()->getNTriggers()));
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+void getNumberOfFrameHandler(CommandHandler* ch, Command* cmd){
+    cmd->setData(QString::number(Mpx3GUI::getInstance()->getConfig()->getNTriggers()));
+    cmd->setError(NO_ERROR);
 }
 
-void setThresholdHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(2,"SetThreshold"))  //this command comes with two argument{SetThreshold;0;100}
+void setThresholdHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(2,"SetThreshold"))  //this command comes with two argument{SetThreshold;0;100}
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int idx = CommandHandler::getInstance()->cmdTable["SetThreshold"].args.at(0).toInt();
-    int val = CommandHandler::getInstance()->cmdTable["SetThreshold"].args.at(1).toDouble();
-   // qDebug() <<"Double: " << CommandHandler::getInstance()->cmdTable["SetThreshold"].args.at(1).toDouble() << "..." << idx;
-    //qDebug() << "Int : " << CommandHandler::getInstance()->cmdTable["SetThreshold"].args.at(1).toInt();
-    CommandHandler::getInstance()->setThreshold(idx,val);
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    int idx = cmd->arguments.at(0).toInt();
+    int val = cmd->arguments.at(1).toDouble();
+   // qDebug() <<"Double: " << cmd->arguments.at(1).toDouble() << "..." << idx;
+    //qDebug() << "Int : " << cmd->arguments.at(1).toInt();
+    ch->setThreshold(idx,val);
+    cmd->setError(NO_ERROR);
 }
-void getThresholdHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"GetThreshold"))  //this command comes with one argument
+void getThresholdHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"GetThreshold"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int idx = CommandHandler::getInstance()->cmdTable["GetThreshold"].args.at(0).toInt();
-    int thr = CommandHandler::getInstance()->getThreshold(idx);
-    CommandHandler::getInstance()->setData(QString::number(thr));
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    int idx = cmd->arguments.at(0).toInt();
+    int thr = ch->getThreshold(idx);
+    cmd->setData(QString::number(thr));
+    cmd->setError(NO_ERROR);
 }
 
 
-void setStartScanHandler()
+void setStartScanHandler(CommandHandler* ch, Command* cmd)
 {
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetStartScan"))  //this command comes with one argument
+    if(!cmd->enoughArguments(1,"SetStartScan"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int val = CommandHandler::getInstance()->cmdTable["SetStartScan"].args.at(0).toInt();
-    int ret = CommandHandler::getInstance()->setStartScan(val);
-    CommandHandler::getInstance()->setData(QString::number(ret));
-    CommandHandler::getInstance()->setError((CommandHandler::ERROR_TYPE)ret);
+    int val = cmd->arguments.at(0).toInt();
+    int ret = ch->setStartScan(val);
+    cmd->setData(QString::number(ret));
+    cmd->setError((ERROR_TYPE)ret);
 }
 
-void getStartScanHandler()
+void getStartScanHandler(CommandHandler* ch, Command* cmd)
 {
-    int ret = CommandHandler::getInstance()->getStartScan();
-    CommandHandler::getInstance()->setData(QString::number(ret));
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    int ret = ch->getStartScan();
+    cmd->setData(QString::number(ret));
+    cmd->setError(NO_ERROR);
 }
-void setStopScanHandler()
+void setStopScanHandler(CommandHandler* ch, Command* cmd)
 {
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetStopScan"))  //this command comes with one argument
+    if(!cmd->enoughArguments(1,"SetStopScan"))  //this command comes with one argument
         return;
-    int val = CommandHandler::getInstance()->cmdTable["SetStopScan"].args.at(0).toInt();
-    int ret = CommandHandler::getInstance()->setStopScan(val);
-    CommandHandler::getInstance()->setData(QString::number(ret));
-    CommandHandler::getInstance()->setError((CommandHandler::ERROR_TYPE)ret);
+    int val = cmd->arguments.at(0).toInt();
+    int ret = ch->setStopScan(val);
+    cmd->setData(QString::number(ret));
+    cmd->setError((ERROR_TYPE)ret);
 }
-void getStopScanHandler()
+void getStopScanHandler(CommandHandler* ch, Command* cmd)
 {
-    int ret = CommandHandler::getInstance()->getStopScan();
-    CommandHandler::getInstance()->setData(QString::number(ret));
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    int ret = ch->getStopScan();
+    cmd->setData(QString::number(ret));
+    cmd->setError(NO_ERROR);
 }
-void setStepScanHandler()
+void setStepScanHandler(CommandHandler* ch, Command* cmd)
 {
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetStepScan"))  //this command comes with one argument
+    if(!cmd->enoughArguments(1,"SetStepScan"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int val = CommandHandler::getInstance()->cmdTable["SetStepScan"].args.at(0).toInt();
-    int ret = CommandHandler::getInstance()->setStepScan(val);
-    CommandHandler::getInstance()->setData(QString::number(ret));
-    CommandHandler::getInstance()->setError((CommandHandler::ERROR_TYPE)ret);
+    int val = cmd->arguments.at(0).toInt();
+    int ret = ch->setStepScan(val);
+    cmd->setData(QString::number(ret));
+    cmd->setError((ERROR_TYPE)ret);
 }
-void getStepScanHandler()
+void getStepScanHandler(CommandHandler* ch, Command* cmd)
 {
-    int ret = CommandHandler::getInstance()->getStepScan();
-    CommandHandler::getInstance()->setData(QString::number(ret));
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    int ret = ch->getStepScan();
+    cmd->setData(QString::number(ret));
+    cmd->setError(NO_ERROR);
 }
-void setThresholdScanHandler()
+void setThresholdScanHandler(CommandHandler* ch, Command* cmd)
 {
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetThresholdScan"))  //this command comes with one argument
+    if(!cmd->enoughArguments(1,"SetThresholdScan"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int val = CommandHandler::getInstance()->cmdTable["SetThresholdScan"].args.at(0).toInt();
-    int ret = CommandHandler::getInstance()->setThresholdScan(val);
-    CommandHandler::getInstance()->setData(QString::number(ret));
-    CommandHandler::getInstance()->setError((CommandHandler::ERROR_TYPE)ret);
+    int val = cmd->arguments.at(0).toInt();
+    int ret = ch->setThresholdScan(val);
+    cmd->setData(QString::number(ret));
+    cmd->setError((ERROR_TYPE)ret);
 }
-void getThresholdScanHandler()
+void getThresholdScanHandler(CommandHandler* ch, Command* cmd)
 {
-    int ret = CommandHandler::getInstance()->getThresholdScan();
-    CommandHandler::getInstance()->setData(QString::number(ret));
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    int ret = ch->getThresholdScan();
+    cmd->setData(QString::number(ret));
+    cmd->setError(NO_ERROR);
 }
-void startScanHandler(){
+void startScanHandler(CommandHandler* ch, Command* cmd){
 
 }
-void stopScanHandler(){
+void stopScanHandler(CommandHandler* ch, Command* cmd){
 
 }
 
-void setOperatingEnergyHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetOperatingEnergy"))  //this command comes with one argument
+void setOperatingEnergyHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetOperatingEnergy"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    CommandHandler::getInstance()->setData(QString::number(0));
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    cmd->setData(QString::number(0));
+    cmd->setError(NO_ERROR);
 }
 
-void getOperatingEnergyHandler(){
-    CommandHandler::getInstance()->setData(QString::number(20));
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+void getOperatingEnergyHandler(CommandHandler* ch, Command* cmd){
+    cmd->setData(QString::number(20));
+    cmd->setError(NO_ERROR);
 }
 
-void setProfileHandler(){
-    if(!CommandHandler::getInstance()->enoughArguments(1,"SetProfile"))  //this command comes with one argument
+void setProfileHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetProfile"))  //this command comes with one argument
     {
-        CommandHandler::getInstance()->setError(CommandHandler::ARG_NUM_OUT_RANGE);
+        cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    CommandHandler::getInstance()->setData(QString::number(0));
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+    cmd->setData(QString::number(0));
+    cmd->setError(NO_ERROR);
 }
-void getProfileHandler(){
-    CommandHandler::getInstance()->setData(QString::number(1));
-    CommandHandler::getInstance()->setError(CommandHandler::NO_ERROR);
+void getProfileHandler(CommandHandler* ch, Command* cmd){
+    cmd->setData(QString::number(1));
+    cmd->setError(NO_ERROR);
 }
 
 //end of handler functions

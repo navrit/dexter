@@ -304,7 +304,7 @@ QString MerlinCommand::argParser(PSL_ARG_TYPES argType)
     case HIGH_LOW:
         { auto ival = _cmdValue.toInt();
             if (ival >= 0 && ival <= 3)
-            return CommandHandler::getInstance()->gainModeStrTable[3-ival];
+            return gainModeStrTable[3-ival];
         }
         break;
     case CONT_SEQ:

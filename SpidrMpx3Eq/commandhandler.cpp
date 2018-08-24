@@ -157,13 +157,9 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("GetTriggerMode",getTriggerMode);
 }
 
-bool CommandHandler::enoughArguments(int argsNum,QString command)
+bool Command::enoughArguments(int argsNum,QString command)
 {
-    if(!cmdTable.contains(command)){
-        data = "Command does not exist...!";
-        return false;
-    }
-    if(argsNum != cmdTable[command].args.size())
+    if(argsNum != arguments.size())
     {
         data = "Too many or too few arguments...";
         return false;
@@ -171,17 +167,12 @@ bool CommandHandler::enoughArguments(int argsNum,QString command)
     return true;
 }
 
-CommandHandler *CommandHandler::getInstance()
-{
-    return cmdInst;
-}
-
-CommandHandler::ERROR_TYPE CommandHandler::getError()
+ERROR_TYPE Command::getError()
 {
     return _error;
 }
 
-void CommandHandler::setError(CommandHandler::ERROR_TYPE et)
+void Command::setError(ERROR_TYPE et)
 {
     _error = et;
 }
@@ -302,7 +293,7 @@ void CommandHandler::startSendingImage(bool send)
 
 
 
-void CommandHandler::merlinErrorToPslError(int errNum)
+void Command::merlinErrorToPslError(int errNum)
 {
     //ERROR_TYPE{NO_ERROR = 0, UNKNOWN_ERROR = 1, UNKNOWN_COMMAND = 2, PARAM_OUT_OF_RANGE = 3};
     //ERROR_TYPE{NO_ERROR = 0, UNKNOWN_ERROR = -1, UNKNOWN_COMMAND = -2 , ARG_NUM_OUT_RANGE = -3, ARG_VAL_OUT_RANGE = -4};
@@ -525,22 +516,19 @@ void CommandHandler::emitrequestForAnotherSocket(int port)
 
 
 
-QString CommandHandler::getData()
+QString Command::getData()
 {
     return data;
 }
 
-void CommandHandler::fetchCmd()
+void Command::invoke(CommandHandler *ch)
 {
-    if(cmdTable.contains(cmd))
+    if(ch->cmdTable.contains(cmd))
     {
-
-        cmdTable[cmd].args = arguments;
-        cmdTable[cmd].handler();
+        ch->cmdTable[cmd].handler(ch, this);
     }
     else
     {
-
         data = cmd; //"Command does not exist...!";
         merlinErrorToPslError(cmd.toInt());
         qDebug()<<"No Matched...."<<cmd.toInt();
@@ -553,7 +541,7 @@ void CommandHandler::fetchCmd()
         //emit commandIsDecoded(data,nullptr,false);
 }
 
-void CommandHandler::setCmd(QString command)
+Command::Command(QString command)
 {
    arguments.clear();
    QStringList cmdList = command.split(";");
@@ -568,17 +556,17 @@ void CommandHandler::setCmd(QString command)
    }
 }
 
-void CommandHandler::setData(QString d)
+void Command::setData(QString d)
 {
     data = d;
 }
 
-void CommandHandler::setImage(QByteArray im)
+void Command::setImage(QByteArray im)
 {
     imageToSend = im;
 }
 
-void CommandHandler::print()
+void Command::print()
 {
     qDebug() << "Core command: " << cmd;
     for(int i=0; i<arguments.size(); i++){

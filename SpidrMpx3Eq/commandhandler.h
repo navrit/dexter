@@ -8,30 +8,22 @@
 #include "MerlinInterface.h"
 
 
+class CommandHandler;
+class Command;
 
 struct cmd_struct
 {
-    void (*handler) (void);
-    QVector<QString> args;
-
+    void (*handler) (CommandHandler*, Command*);
 };
 
+enum ERROR_TYPE{NO_ERROR = 0, UNKNOWN_ERROR = -1, UNKNOWN_COMMAND = -2 , ARG_NUM_OUT_RANGE = -3, ARG_VAL_OUT_RANGE = -4};
+static const QString gainModeStrTable[] = {"shigh","high","low","slow"};
 
 class CommandHandler : public QObject
 {
     Q_OBJECT
 public:
-    enum ERROR_TYPE{NO_ERROR = 0, UNKNOWN_ERROR = -1, UNKNOWN_COMMAND = -2 , ARG_NUM_OUT_RANGE = -3, ARG_VAL_OUT_RANGE = -4};
     explicit CommandHandler(QObject *parent = nullptr);
-    QString getData(void);
-    void fetchCmd();
-    void setCmd(QString);
-    void setData(QString);
-    void setImage(QByteArray);
-    bool enoughArguments(int, QString);
-    static CommandHandler* getInstance();
-    ERROR_TYPE getError(void);
-    void setError(ERROR_TYPE);
     void startLiveCamera(void);
     void startSnap(void);
     void setAutoSave(bool);
@@ -50,16 +42,12 @@ public:
     int startScan(int);
     int stopScan(int);
     void startSendingImage(bool);
-    void merlinErrorToPslError(int errNum);
     QString generateMerlinFrameHeader(int frameid);
     QString getAcquisitionHeader(void);
     void getImage(void);
     //data
     void emitrequestForAnotherSocket(int);
-    //test
-    void print(void);
     QHash<QString,cmd_struct> cmdTable;
-    QString gainModeStrTable[4] = {"shigh","high","low","slow"};
 
 signals:
     //void commandIsDecoded(QString,QByteArray,bool);
@@ -77,18 +65,31 @@ public slots:
     void on_doneWithOneFrame(int);
     void on_someCommandHasFinished_Successfully(void);
 private:
-    QString cmd;         // core command
-    QVector<QString> arguments; // command's arguments
-    QString data;               // command data string to repond to commands excepts 'GetImage'
     QByteArray imageToSend;    // image to be sent when 'GetImage' recieved
     void initializeCmdTable(void);
-    ERROR_TYPE _error = NO_ERROR;
     char* getTimeStamp();
-    void fillMerlinFrameHeader(FrameHeaderDataStruct&);
     bool _sendingImage = false;
-
-
 };
 
+class Command {
+public:
+    Command(QString command);
+    void invoke(CommandHandler* ch);
+    QString getData(void);
+    void setData(QString);
+    void setImage(QByteArray);
+    bool enoughArguments(int, QString);
+    ERROR_TYPE getError(void);
+    void setError(ERROR_TYPE);
+    void merlinErrorToPslError(int errNum);
+    QVector<QString> arguments; // command's arguments
+private:
+    QString cmd;         // core command
+    QString data;               // command data string to repond to commands excepts 'GetImage'
+    QByteArray imageToSend;    // image to be sent when 'GetImage' recieved
+    ERROR_TYPE _error = NO_ERROR;
+    //test
+    void print(void);
+};
 
 #endif // COMMANDHANDLER_H

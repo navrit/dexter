@@ -5,7 +5,6 @@
 #include <QHash>
 #include "merlinCommandsDef.h"
 
-
 class Mpx3GUI;
 
 class FrameHeaderDataStruct{
