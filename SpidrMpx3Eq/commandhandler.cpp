@@ -325,103 +325,96 @@ void CommandHandler::merlinErrorToPslError(int errNum)
     }
 }
 
-void CommandHandler::fillMerlinFrameHeader(FrameHeaderDataStruct &frameHeader)
+FrameHeaderDataStruct::FrameHeaderDataStruct(Mpx3GUI *gui)
 {
-    Mpx3GUI* gui = (Mpx3GUI*) parent();
     if(gui->getConfig()->getPixelDepth() == 24)
-        frameHeader.pixelDepth = "U32";
+        pixelDepth = "U32";
     else
-        frameHeader.pixelDepth = "U16";
+        pixelDepth = "U16";
 
-    frameHeader.colorMode = (uint8_t) gui->getConfig()->getColourMode();
-    frameHeader.counter = 0;/// to be set
-    frameHeader.dataOffset = 256 + (128 * 4);
+    colorMode = (uint8_t) gui->getConfig()->getColourMode();
+    counter = 0;/// to be set
+    dataOffset = 256 + (128 * 4);
     uint8_t  gainMap[] = {3,2,1,0};
-    frameHeader.gainMode =  gainMap[gui->getConfig()->getGainMode()];
-    frameHeader.numberOfChips = (uint32_t)gui->getConfig()->getActiveDevices().count();
-    for (int i = 0; i < frameHeader.numberOfChips; ++i) {
-        frameHeader.chipSelect |= 1 << i;
+    gainMode =  gainMap[gui->getConfig()->getGainMode()];
+    numberOfChips = (uint32_t)gui->getConfig()->getActiveDevices().count();
+    for (int i = 0; i < numberOfChips; ++i) {
+        chipSelect |= 1 << i;
     }
-    frameHeader.shutterOpen = (double)  gui->getConfig()-> getTriggerLength_ms() / (double)1000;
+    shutterOpen = (double)  gui->getConfig()-> getTriggerLength_ms() / (double)1000;
     QPoint pnt = gui->getDataset()->getSize();
-    frameHeader.xDim = (uint32_t)pnt.x()*2;
-    frameHeader.yDim =(uint32_t) pnt.y()*2;
+    xDim = (uint32_t)pnt.x()*2;
+    yDim =(uint32_t) pnt.y()*2;
     QDateTime time = QDateTime::currentDateTime();
     char *d = time.toString("yyyy-dd-MM hh:mm:ss.ssssss").toLatin1().data();
     for (int i = 0; i < 25; ++i) {
-        frameHeader.timeStamp[i] = d[i];
+        timeStamp[i] = d[i];
     }
-    frameHeader.threshold0 = QCstmDacs::getInstance()->GetSpinBoxList()[0]->value();
-    frameHeader.threshold1 = QCstmDacs::getInstance()->GetSpinBoxList()[1]->value();
-    frameHeader.threshold2 = QCstmDacs::getInstance()->GetSpinBoxList()[2]->value();
-    frameHeader.threshold3 = QCstmDacs::getInstance()->GetSpinBoxList()[3]->value();
-    frameHeader.threshold4 = QCstmDacs::getInstance()->GetSpinBoxList()[4]->value();
-    frameHeader.threshold5 = QCstmDacs::getInstance()->GetSpinBoxList()[5]->value();
-    frameHeader.threshold6 = QCstmDacs::getInstance()->GetSpinBoxList()[6]->value();
-    frameHeader.threshold7 = QCstmDacs::getInstance()->GetSpinBoxList()[7]->value();
+    auto dacs = gui->getDACs();
+    threshold0 = dacs->GetSpinBoxList()[0]->value();
+    threshold1 = dacs->GetSpinBoxList()[1]->value();
+    threshold2 = dacs->GetSpinBoxList()[2]->value();
+    threshold3 = dacs->GetSpinBoxList()[3]->value();
+    threshold4 = dacs->GetSpinBoxList()[4]->value();
+    threshold5 = dacs->GetSpinBoxList()[5]->value();
+    threshold6 = dacs->GetSpinBoxList()[6]->value();
+    threshold7 = dacs->GetSpinBoxList()[7]->value();
 
     //dac
-    frameHeader.dacThreshold0 = QCstmDacs::getInstance()->GetSpinBoxList()[0]->value();
-    frameHeader.dacThreshold1 = QCstmDacs::getInstance()->GetSpinBoxList()[1]->value();
-    frameHeader.dacThreshold2 = QCstmDacs::getInstance()->GetSpinBoxList()[2]->value();
-    frameHeader.dacThreshold3 = QCstmDacs::getInstance()->GetSpinBoxList()[3]->value();
-    frameHeader.dacThreshold4 = QCstmDacs::getInstance()->GetSpinBoxList()[4]->value();
-    frameHeader.dacThreshold5 = QCstmDacs::getInstance()->GetSpinBoxList()[5]->value();
-    frameHeader.dacThreshold6 = QCstmDacs::getInstance()->GetSpinBoxList()[6]->value();
-    frameHeader.dacThreshold7 = QCstmDacs::getInstance()->GetSpinBoxList()[7]->value();
-    frameHeader.preamp = QCstmDacs::getInstance()->GetSpinBoxList()[8]->value();
-    frameHeader.ikrum = QCstmDacs::getInstance()->GetSpinBoxList()[9]->value();
-    frameHeader.shaper = QCstmDacs::getInstance()->GetSpinBoxList()[10]->value();
-    frameHeader.disc = QCstmDacs::getInstance()->GetSpinBoxList()[11]->value();
-    frameHeader.discLs = QCstmDacs::getInstance()->GetSpinBoxList()[12]->value();
-    frameHeader.shaperTest = QCstmDacs::getInstance()->GetSpinBoxList()[13]->value();
-    frameHeader.dacDiscL = QCstmDacs::getInstance()->GetSpinBoxList()[14]->value();
-    frameHeader.dacTest = QCstmDacs::getInstance()->GetSpinBoxList()[15]->value();
-    frameHeader.dacDiscH = QCstmDacs::getInstance()->GetSpinBoxList()[16]->value();
-    frameHeader.delay = QCstmDacs::getInstance()->GetSpinBoxList()[17]->value();
-    frameHeader.tpBuffIn = QCstmDacs::getInstance()->GetSpinBoxList()[18]->value();
-    frameHeader.tpBuffOut = QCstmDacs::getInstance()->GetSpinBoxList()[19]->value();
-    frameHeader.rpz = QCstmDacs::getInstance()->GetSpinBoxList()[20]->value();
-    frameHeader.gnd = QCstmDacs::getInstance()->GetSpinBoxList()[21]->value();
-    frameHeader.tpRef = QCstmDacs::getInstance()->GetSpinBoxList()[22]->value();
-    frameHeader.fpk = QCstmDacs::getInstance()->GetSpinBoxList()[23]->value();
-    frameHeader.cas = QCstmDacs::getInstance()->GetSpinBoxList()[24]->value();
-    frameHeader.tpRefA = QCstmDacs::getInstance()->GetSpinBoxList()[25]->value();
-    frameHeader.tpRefB = QCstmDacs::getInstance()->GetSpinBoxList()[26]->value();
+    dacThreshold0 = dacs->GetSpinBoxList()[0]->value();
+    dacThreshold1 = dacs->GetSpinBoxList()[1]->value();
+    dacThreshold2 = dacs->GetSpinBoxList()[2]->value();
+    dacThreshold3 = dacs->GetSpinBoxList()[3]->value();
+    dacThreshold4 = dacs->GetSpinBoxList()[4]->value();
+    dacThreshold5 = dacs->GetSpinBoxList()[5]->value();
+    dacThreshold6 = dacs->GetSpinBoxList()[6]->value();
+    dacThreshold7 = dacs->GetSpinBoxList()[7]->value();
+    preamp = dacs->GetSpinBoxList()[8]->value();
+    ikrum = dacs->GetSpinBoxList()[9]->value();
+    shaper = dacs->GetSpinBoxList()[10]->value();
+    disc = dacs->GetSpinBoxList()[11]->value();
+    discLs = dacs->GetSpinBoxList()[12]->value();
+    shaperTest = dacs->GetSpinBoxList()[13]->value();
+    dacDiscL = dacs->GetSpinBoxList()[14]->value();
+    dacTest = dacs->GetSpinBoxList()[15]->value();
+    dacDiscH = dacs->GetSpinBoxList()[16]->value();
+    delay = dacs->GetSpinBoxList()[17]->value();
+    tpBuffIn = dacs->GetSpinBoxList()[18]->value();
+    tpBuffOut = dacs->GetSpinBoxList()[19]->value();
+    rpz = dacs->GetSpinBoxList()[20]->value();
+    gnd = dacs->GetSpinBoxList()[21]->value();
+    tpRef = dacs->GetSpinBoxList()[22]->value();
+    fpk = dacs->GetSpinBoxList()[23]->value();
+    cas = dacs->GetSpinBoxList()[24]->value();
+    tpRefA = dacs->GetSpinBoxList()[25]->value();
+    tpRefB = dacs->GetSpinBoxList()[26]->value();
+}
+
+QString FrameHeaderDataStruct::toQString(int frameid) {
+    QString header = "MQ1," % QString::number(frameid) % "," % QString::number(dataOffset) % "," %
+             QString::number(numberOfChips) %","% QString::number(xDim) %","% QString::number(yDim) %","% pixelDepth
+            % "," % sensorLayout % "," % QString::number(chipSelect) % "," % timeStamp % "," %
+            QString::number(shutterOpen) % "," % QString::number(counter) % "," % QString::number(colorMode) % "," %
+            QString::number(gainMode) % "," % QString::number(threshold0) % "," %QString::number(threshold1) %
+            "," % QString::number(threshold2) % "," % QString::number(threshold3) % "," % QString::number(threshold4)
+            % "," % QString::number(threshold5) % "," % QString::number(threshold6) % "," % QString::number(threshold7)%","%
+            dacFormat % "," % QString::number(dacThreshold0) % "," % QString::number(dacThreshold1)
+            % "," % QString::number(dacThreshold2) % "," % QString::number(dacThreshold3) % "," % QString::number(dacThreshold4)
+            % "," % QString::number(dacThreshold5)% "," % QString::number(dacThreshold6)% "," % QString::number(dacThreshold7)
+            % "," % QString::number(preamp) % "," % QString::number(ikrum) % "," % QString::number(shaper)
+            % "," % QString::number(disc) % "," % QString::number(discLs) % "," % QString::number(shaperTest)
+            % "," % QString::number(dacDiscL) % "," % QString::number(dacTest) % "," % QString::number(dacDiscH)
+            % "," % QString::number(delay) % "," % QString::number(tpBuffIn) % "," % QString::number(tpBuffOut)
+            % "," % QString::number(rpz) % "," % QString::number(gnd) % "," % QString::number(tpRef)
+            % "," % QString::number(fpk) % "," % QString::number(cas) % "," % QString::number(tpRefA)
+            % "," % QString::number(tpRefB);
+    return header.leftJustified(dataOffset, ' ', true);
 }
 
 QString CommandHandler::generateMerlinFrameHeader(int frameid)
 {
-    FrameHeaderDataStruct frameHeader;
-    fillMerlinFrameHeader(frameHeader);
-    QString header = "MQ1," % QString::number(frameid) % "," % QString::number(frameHeader.dataOffset) % "," %
-             QString::number(frameHeader.numberOfChips) %","% QString::number(frameHeader.xDim) %","% QString::number(frameHeader.yDim) %","% frameHeader.pixelDepth
-            % "," % frameHeader.sensorLayout % "," % QString::number(frameHeader.chipSelect) % "," % frameHeader.timeStamp % "," %
-            QString::number(frameHeader.shutterOpen) % "," % QString::number(frameHeader.counter) % "," % QString::number(frameHeader.colorMode) % "," %
-            QString::number(frameHeader.gainMode) % "," % QString::number(frameHeader.threshold0) % "," %QString::number(frameHeader.threshold1) %
-            "," % QString::number(frameHeader.threshold2) % "," % QString::number(frameHeader.threshold3) % "," % QString::number(frameHeader.threshold4)
-            % "," % QString::number(frameHeader.threshold5) % "," % QString::number(frameHeader.threshold6) % "," % QString::number(frameHeader.threshold7)%","%
-            frameHeader.dacFormat % "," % QString::number(frameHeader.dacThreshold0) % "," % QString::number(frameHeader.dacThreshold1)
-            % "," % QString::number(frameHeader.dacThreshold2) % "," % QString::number(frameHeader.dacThreshold3) % "," % QString::number(frameHeader.dacThreshold4)
-            % "," % QString::number(frameHeader.dacThreshold5)% "," % QString::number(frameHeader.dacThreshold6)% "," % QString::number(frameHeader.dacThreshold7)
-            % "," % QString::number(frameHeader.preamp) % "," % QString::number(frameHeader.ikrum) % "," % QString::number(frameHeader.shaper)
-            % "," % QString::number(frameHeader.disc) % "," % QString::number(frameHeader.discLs) % "," % QString::number(frameHeader.shaperTest)
-            % "," % QString::number(frameHeader.dacDiscL) % "," % QString::number(frameHeader.dacTest) % "," % QString::number(frameHeader.dacDiscH)
-            % "," % QString::number(frameHeader.delay) % "," % QString::number(frameHeader.tpBuffIn) % "," % QString::number(frameHeader.tpBuffOut)
-            % "," % QString::number(frameHeader.rpz) % "," % QString::number(frameHeader.gnd) % "," % QString::number(frameHeader.tpRef)
-            % "," % QString::number(frameHeader.fpk) % "," % QString::number(frameHeader.cas) % "," % QString::number(frameHeader.tpRefA)
-            % "," % QString::number(frameHeader.tpRefB);
-    /*
-    if(header.length() > frameHeader.dataOffset)
-        header = header.mid(0,frameHeader.dataOffset);
-    else if(header.length() < frameHeader.dataOffset)
-    {
-        int diff = frameHeader.dataOffset - header.length();
-        for (int i = 0; i < diff; ++i) {
-            header.append(' ');
-        }
-    }*/
-    return header.leftJustified(frameHeader.dataOffset, ' ', true);
+    FrameHeaderDataStruct frameHeader((Mpx3GUI*) parent());
+    return frameHeader.toQString(frameid);
 }
 
 QString CommandHandler::getAcquisitionHeader()

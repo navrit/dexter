@@ -6,7 +6,13 @@
 #include "merlinCommandsDef.h"
 
 
-struct FrameHeaderDataStruct{
+class Mpx3GUI;
+
+class FrameHeaderDataStruct{
+public:
+    FrameHeaderDataStruct(Mpx3GUI *gui);
+    QString toQString(int frameid);
+
     uint16_t dataOffset = 0;
     uint8_t numberOfChips = 0;
     uint32_t xDim = 0;
