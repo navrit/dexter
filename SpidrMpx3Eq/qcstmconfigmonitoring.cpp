@@ -777,9 +777,10 @@ void QCstmConfigMonitoring::on_tstBtn_clicked()
 {
     MerlinInterface mi;
     QString ba = ui->tstLe->text();
-    QString res = mi.parseCommand(ba);
+    MerlinCommand mc(ba, mi);
+    QString res = mc.parseResult;
     qDebug() << res;
-    qDebug() << "Response : " << mi.makeSetCmdResponse();
+    qDebug() << "Response : " << mc.makeSetCmdResponse();
     QString pad ;
     for (int var = 0; var < 99; ++var) {
         pad.append(' ');

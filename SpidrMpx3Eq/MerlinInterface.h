@@ -59,31 +59,53 @@ struct FrameHeaderDataStruct{
 
 };
 
+enum PSL_ARG_TYPES{N,N_INF,CONT_SEQ,CSM_SPM,ENABLE_DISABLE,STRING,OPEN,DOWN,HIGH_LOW,TH0,TH1,TH2,TH3,TH4,TH5,TH6,TH7};
+
 class MerlinInterface : public QObject
 {
     Q_OBJECT
+
 public:
-    enum PSL_ARG_TYPES{N,N_INF,CONT_SEQ,CSM_SPM,ENABLE_DISABLE,STRING,OPEN,DOWN,HIGH_LOW,TH0,TH1,TH2,TH3,TH4,TH5,TH6,TH7};
-    enum ERROR_TYPE{NO_ERROR = 0, UNKNOWN_ERROR = 1, UNKNOWN_COMMAND = 2, PARAM_OUT_OF_RANGE = 3};
     explicit MerlinInterface(QObject *parent = 0);
-    void setErrorExternally(int);
-    QString parseCommand(QString); //get the merlin command and parse it to PSL command
+private:
+    QHash<QString,QString> setTable; //key => merlin's command name; value => PSL's command name
+    QHash<QString,QString> getTable;
+    QHash<QString,QString> cmdTable;
+    void initializeTables(void);
+
+    const int CHIPS_NUM = 4;
+    const int FRAME_HEADER_SIZE = 256 + (128*CHIPS_NUM);
+
+    friend class MerlinCommand;
+
+
+
+
+signals:
+
+public slots:
+};
+
+class MerlinCommand {
+
+    enum ERROR_TYPE{NO_ERROR = 0, UNKNOWN_ERROR = 1, UNKNOWN_COMMAND = 2, PARAM_OUT_OF_RANGE = 3};
+
+public:
+    MerlinCommand(QString, MerlinInterface&); //get the merlin command and parse it to PSL command
                                 //e.g MPX,0000000024,GET,SOFTWAREVERSION  ==> Hello
+    QString argParser(PSL_ARG_TYPES);
     QString makeSetCmdResponse(void);
     QString makeGetResponse(QString);
     QString getCommandType(void);
-private:
+    void setErrorExternally(int);
+
     int     _cmdLength = 0;
+    QString parseResult;
     QString _cmdType   = "";
     QString _cmdName   = "";
     QString  _cmdValue  = "";
     int     _error     = NO_ERROR;
     QString _response  = "";
-    QHash<QString,QString> setTable; //key => merlin's command name; value => PSL's command name
-    QHash<QString,QString> getTable;
-    QHash<QString,QString> cmdTable;
-    void initializeTables(void);
-    QString argParser(PSL_ARG_TYPES);
 
 private: //constants
     const int SET_PARTS = 5;
@@ -97,16 +119,7 @@ private: //constants
     const int NAME_INDEX = 3;
     const int VALUE_INDEX = 4;
     const QString HEADER = "MPX";
-    const int CHIPS_NUM = 4;
-    const int FRAME_HEADER_SIZE = 256 + (128*CHIPS_NUM);
-
-
-
-
-
-signals:
-
-public slots:
 };
+
 
 #endif // MERLININTERFACE_H

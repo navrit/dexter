@@ -12,15 +12,15 @@ void CommandHandlerWrapper::on_dataRecieved(QString command)
 {
     qDebug() << "This command recieved at commandhandlerWrapper : " << command;
 
-    QString merlinCmd = merlinInterface->parseCommand(command);
-    commandHandler->setCmd(merlinCmd);
+    MerlinCommand merlinCmd (command, *merlinInterface);
+    commandHandler->setCmd(merlinCmd.parseResult);
     commandHandler->fetchCmd();
     //get response
     QString response = "";
-    if(merlinInterface->getCommandType() == "SET" || merlinInterface->getCommandType() == "CMD")
-        response = merlinInterface->makeSetCmdResponse();
-    else if(merlinInterface->getCommandType() == "GET")
-        response = merlinInterface->makeGetResponse(commandHandler->getData());
+    if(merlinCmd.getCommandType() == "SET" || merlinCmd.getCommandType() == "CMD")
+        response = merlinCmd.makeSetCmdResponse();
+    else if(merlinCmd.getCommandType() == "GET")
+        response = merlinCmd.makeGetResponse(commandHandler->getData());
     else
         response = "Invalid command type";
 
