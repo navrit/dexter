@@ -335,10 +335,7 @@ FrameHeaderDataStruct::FrameHeaderDataStruct(Mpx3GUI *gui)
     xDim = (uint32_t)pnt.x()*2;
     yDim =(uint32_t) pnt.y()*2;
     QDateTime time = QDateTime::currentDateTime();
-    char *d = time.toString("yyyy-dd-MM hh:mm:ss.ssssss").toLatin1().data();
-    for (int i = 0; i < 25; ++i) {
-        timeStamp[i] = d[i];
-    }
+    timeStamp = time.toString("yyyy-dd-MM hh:mm:ss.ssssss");
     auto dacs = gui->getDACs();
     threshold0 = dacs->GetSpinBoxList()[0]->value();
     threshold1 = dacs->GetSpinBoxList()[1]->value();

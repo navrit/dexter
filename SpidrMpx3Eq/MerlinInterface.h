@@ -19,7 +19,7 @@ public:
     QString pixelDepth = "U32";
     const QString sensorLayout = "   2x2";
     uint8_t chipSelect = 0x00;
-    char timeStamp[26] = "";
+    QString timeStamp;
     double shutterOpen = 0.0;
     uint8_t counter = 0;
     uint8_t colorMode = 0;
