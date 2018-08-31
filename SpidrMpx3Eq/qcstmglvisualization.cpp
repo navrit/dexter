@@ -104,10 +104,7 @@ void QCstmGLVisualization::refreshScoringInfo()
     ui->frameCntr->setText( prog );
 
     // Fps
-    double fpsVal = ((double)_score.nFramesReceived) / ((double)_etatimer->elapsed() / 1000.); // elapsed() comes in milliseconds
-    QString fpsS = QString::number( round( fpsVal ) , 'd', 0 );
-    fpsS += " fps";
-    ui->fpsLabel->setText( fpsS );
+    fps_update(_score.nFramesReceived);
 
     //
     BuildStatsStringLostFrames( _score.lostFrames );
@@ -544,6 +541,7 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) { //when a
     reload_all_layers(); //! Only update the 0th threshold for speed?
 //    _mpx3gui->saveOriginalDataset();
 
+    refreshScoringInfo();
     DestroyTimer();
     ETAToZero();
 
@@ -922,6 +920,7 @@ void QCstmGLVisualization::fps_update(int nframes_done) {
 
     // check if there is a datataking thread is running
     if ( ! _dataTakingThread->isRunning() ) return;
+    if (! _etatimer) return;
 
     double fpsVal = ((double)nframes_done) / ((double)_etatimer->elapsed() / 1000.); // elapsed() comes in milliseconds
 
