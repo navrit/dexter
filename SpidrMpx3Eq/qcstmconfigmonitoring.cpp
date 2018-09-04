@@ -397,9 +397,7 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
             _mpx3gui->getVisualization()->GetUI()->triggerLengthSpinBox,
             SLOT(setValue(int)));
 
-    connect(_mpx3gui->getVisualization()->GetUI()->triggerLengthSpinBox,
-            SIGNAL(valueChanged(int)),ui->triggerLengthSpinner, SLOT(setValue(int))
-            );
+
 
     // Shutter Length
     connect(ui->triggerLengthSpinner, SIGNAL(editingFinished()), this, SLOT(TriggerLengthEdited()) );
