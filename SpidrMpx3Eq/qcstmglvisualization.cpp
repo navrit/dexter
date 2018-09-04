@@ -24,7 +24,7 @@
 #include <QDateTime>
 
 
-QCstmGLVisualization* qCstmGLVisualizationInst;
+
 
 QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     QWidget(parent),
@@ -65,7 +65,7 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     ui->splitter->setStretchFactor(1, 1);
 
     developerMode(false);
-    qCstmGLVisualizationInst = this;
+
    // connect(this,SIGNAL(infDataTakingToggeled(bool)),this->ui->infDataTakingCheckBox,SLOT(setChecked(bool)));
 }
 
@@ -73,10 +73,6 @@ QCstmGLVisualization::~QCstmGLVisualization() {
     delete ui;
 }
 
-QCstmGLVisualization *QCstmGLVisualization::getInstance()
-{
-    return qCstmGLVisualizationInst;
-}
 
 void QCstmGLVisualization::timerEvent(QTimerEvent *)
 {

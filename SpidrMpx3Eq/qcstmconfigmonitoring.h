@@ -22,10 +22,12 @@ class QCstmConfigMonitoring : public QWidget
     Mpx3GUI * _mpx3gui;
 
 public:
+
     void SetMpx3GUI(Mpx3GUI * p);
     void widgetInfoPropagation();
     explicit QCstmConfigMonitoring(QWidget *parent = 0);
     ~QCstmConfigMonitoring();
+    static QCstmConfigMonitoring *getInstance();
     Ui::QCstmConfigMonitoring * getUI() { return ui; }
 
     void timerEvent( QTimerEvent * );

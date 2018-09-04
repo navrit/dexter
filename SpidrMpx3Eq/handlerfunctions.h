@@ -414,12 +414,27 @@ void setShutterPeriodHandler(CommandHandler* ch, Command* cmd){
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    auto config = Mpx3GUI::getInstance()->getConfig();
-    auto length = cmd->arguments.at(0); //ms
-    int open = config->getTriggerLength();
-    config->setTriggerDowntime(1000. * length.toDouble() - open);   // us
-    qDebug()<<"dodododod:" << length.toDouble();
-    cmd->setError(NO_ERROR);
+    if(Mpx3GUI::getInstance()->getConfig()->getOperationMode() == 0)//sequential mode
+    {
+        auto config = Mpx3GUI::getInstance()->getConfig();
+        auto length = cmd->arguments.at(0); //ms
+        int open = config->getTriggerLength();
+        config->setTriggerDowntime(1000. * length.toDouble() - open);   // us
+        //qDebug()<<"dodododod:" << length.toDouble();
+        cmd->setError(NO_ERROR);
+        return;
+    }
+    if(Mpx3GUI::getInstance()->getConfig()->getOperationMode() == 1)//continous mode
+    {
+        auto length = cmd->arguments.at(0); //ms;
+        double freq = 1./(length.toDouble()*2) * 1000.;
+        Mpx3GUI::getInstance()->getConfig()->setContRWFreq(freq);
+        cmd->setError(NO_ERROR);
+        return;
+    }
+    cmd->setError(UNKNOWN_ERROR);
+    return;
+
 }
 
 void getShutterPeriodHandler(CommandHandler* ch, Command* cmd){

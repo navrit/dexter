@@ -13,6 +13,7 @@
 #include "SpidrDaq.h"
 #include "MerlinInterface.h"
 
+QCstmConfigMonitoring* qCstmConfigMonitoring;
 
 QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     QWidget(parent),
@@ -104,6 +105,7 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     ui->omrDisplayLabel->setTextFormat( Qt::RichText );
 
     ui->readOMRPushButton->setHidden(1);
+    qCstmConfigMonitoring = this;
 
 }
 
@@ -123,6 +125,11 @@ void QCstmConfigMonitoring::setReadoutFrequency(int frequency)
 QCstmConfigMonitoring::~QCstmConfigMonitoring()
 {
     delete ui;
+}
+
+QCstmConfigMonitoring *QCstmConfigMonitoring::getInstance()
+{
+    return qCstmConfigMonitoring;
 }
 
 
@@ -389,6 +396,10 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(ui->triggerLengthSpinner, SIGNAL(valueChanged(int)),
             _mpx3gui->getVisualization()->GetUI()->triggerLengthSpinBox,
             SLOT(setValue(int)));
+
+    connect(_mpx3gui->getVisualization()->GetUI()->triggerLengthSpinBox,
+            SIGNAL(valueChanged(int)),ui->triggerLengthSpinner, SLOT(setValue(int))
+            );
 
     // Shutter Length
     connect(ui->triggerLengthSpinner, SIGNAL(editingFinished()), this, SLOT(TriggerLengthEdited()) );
