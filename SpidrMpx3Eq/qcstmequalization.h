@@ -395,6 +395,9 @@ signals:
     //! Status bar signal functions
     void sig_statusBarClean();
     void sig_statusBarAppend(QString mess, QString colorString);
+
+    void pixelsMasked(int devID,int idx);
+    void equalizationPathExported(QString path);
 };
 
 #endif // QCSTMEQUALIZATION_H

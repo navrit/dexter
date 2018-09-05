@@ -147,6 +147,7 @@ private:
     bool _infDataTaking = false;
     unsigned int _nTriggersSave;
     bool _dropFrames = true;
+    QString _equalizationPath = "";
 
     typedef struct {
         unsigned int nFramesReceived;
@@ -240,6 +241,10 @@ private slots:
     void on_saveAllCheckBox_toggled(bool checked);
 
     void on_testBtn_clicked();
+
+    void onPixelsMasked(int devID,int idx);
+
+    void onEqualizationPathExported(QString path);
 
 public slots:
 

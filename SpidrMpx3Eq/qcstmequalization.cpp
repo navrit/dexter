@@ -1564,8 +1564,11 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
             qDebug() << "[INFO] Masking pixels :";
             for ( ; i != iE ; i++ ) {
                 pix = XtoXY( (*i), __matrix_size_x );
-                qDebug() << "     chipID:" << chipIndex << " | " << pix.first << "," << pix.second << " | " << XYtoX(pix.first, pix.second, _mpx3gui->getDataset()->x());
+                int xToXy = XYtoX(pix.first, pix.second, _mpx3gui->getDataset()->x());
+                qDebug() << "     chipID:" << chipIndex << " | " << pix.first << "," << pix.second << " | " << xToXy;
                 spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
+
+                emit pixelsMasked(chipIndex,xToXy);
             }
         } else {
             //! When the mask is empty go ahead and unmask all pixels
@@ -2051,7 +2054,7 @@ void QCstmEqualization::resetForNewEqualisation()
 }
 
 void QCstmEqualization::estimateEqualisationTarget()
-{    
+{
     //! If test pulses are being used, then we want to start a the test pulse scanning procedure.
     //! Otherwise, set it to the default value
 
@@ -2159,6 +2162,7 @@ void QCstmEqualization::LoadEqualization(bool getPath, QString path) {
                     QDir::currentPath(),
                     QFileDialog::ShowDirsOnly);
         path += "/";
+        emit equalizationPathExported(path);
         if( !path.isNull() ) {
             //! Very basic check to proceed or not by seeing if the bare minimum files exist (adj_0 and mask_0) in the given path
             QString testAdjFile = path + QString("adj_0");

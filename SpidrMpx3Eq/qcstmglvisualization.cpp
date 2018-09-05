@@ -31,6 +31,8 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     ui(new Ui::QCstmGLVisualization)
 {
 
+
+
     ui->setupUi(this);
     _dataTakingThread = nullptr;
     _dataConsumerThread = nullptr;
@@ -67,6 +69,7 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     developerMode(false);
     qCstmGLVisualizationInst = this;
    // connect(this,SIGNAL(infDataTakingToggeled(bool)),this->ui->infDataTakingCheckBox,SLOT(setChecked(bool)));
+
 }
 
 QCstmGLVisualization::~QCstmGLVisualization() {
@@ -851,6 +854,11 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
 
     // TH Scan
     connect( this, SIGNAL(sig_resumeTHScan()), _mpx3gui->getTHScan(), SLOT(resumeTHScan()));
+
+    //pixel mask saving
+    connect(_mpx3gui->getEqualization(),SIGNAL(pixelsMasked(int,int)),this,SLOT(onPixelsMasked(int,int)));
+    //getting equalization path
+    connect(_mpx3gui->getEqualization(),SIGNAL(equalizationPathExported(QString)),SLOT(onEqualizationPathExported(QString)));
 }
 
 void QCstmGLVisualization::ntriggers_edit() {
@@ -1779,6 +1787,7 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
     contextMenu.addAction(&maskAllOverflow);
     contextMenu.addAction(&maskAllActive);
 
+
     QAction* selectedItem = contextMenu.exec(position);
     if(!_mpx3gui->getConfig()->isConnected())
         return;
@@ -2286,4 +2295,22 @@ void QCstmGLVisualization::on_testBtn_clicked()
     uint16_t small = big;
     qDebug()<< " big == " << big;
     qDebug()<< " small == " << small;
+}
+
+void QCstmGLVisualization::onPixelsMasked(int devID, int idx)
+{
+    QFile file(_equalizationPath + QString("mask_") + QString::number(devID));
+    if (file.open(QIODevice::ReadWrite | QIODevice::Append)) {
+        QTextStream stream(&file);
+        stream << QString::number(idx) << endl;
+        file.close();
+    }
+    else
+        qDebug() << "Cannot open the mask file.";
+
+}
+
+void QCstmGLVisualization::onEqualizationPathExported(QString path)
+{
+    _equalizationPath = path;
 }
