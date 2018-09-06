@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 TEMPLATE = app
-TARGET = Mpx3GUI
+TARGET = Dexter
 
 # QT       += core gui network
 greaterThan(QT_MAJOR_VERSION, 4) {
@@ -19,6 +19,11 @@ contains(QT_MAJOR_VERSION,5) {
 
 QT += network opengl
 CONFIG   +=  c++14 debug_and_release
+
+message("Explicitly enabling AVX2 instructions")
+QMAKE_CFLAGS          *= -mavx2
+QMAKE_CXXFLAGS        *= -mavx2
+
 
 CONFIG(debug, debug|release) {
     OBJECTS_DIR = debug
@@ -35,13 +40,8 @@ CONFIG(release, debug|release) {
     DESTDIR     = ../Release
     LIBS       += -L../Release
 
-    QMAKE_CFLAGS_RELEASE -= -O1
-    QMAKE_CFLAGS_RELEASE -= -O2
-    QMAKE_CFLAGS_RELEASE *= -O3
-
-    QMAKE_CXXFLAGS_RELEASE -= -O1
-    QMAKE_CXXFLAGS_RELEASE -= -O2
-    QMAKE_CXXFLAGS_RELEASE *= -O3
+    message("Enabling all optimisation flags as qmake sees fit")
+    CONFIG *= optimize_full
 
     CONFIG += warn_off
 }
