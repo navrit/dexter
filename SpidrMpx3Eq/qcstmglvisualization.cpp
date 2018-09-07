@@ -1110,6 +1110,7 @@ void QCstmGLVisualization::developerMode(bool enabled)
         ui->progressBar->show();
         ui->label_2->show();
         ui->completeFramesCheckBox->show();
+        ui->testBtn->show();
     } else {
         //! Disable a bunch of 'advanced' buttons
         ui->binCountSpinner->hide();
@@ -1122,6 +1123,7 @@ void QCstmGLVisualization::developerMode(bool enabled)
         ui->progressBar->hide();
         ui->label_2->hide();
         ui->completeFramesCheckBox->hide();
+        ui->testBtn->hide();
     }
 }
 
