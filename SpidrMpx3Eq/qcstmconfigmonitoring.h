@@ -98,6 +98,8 @@ private slots:
 
     void on_tstBtn_clicked();
 
+    void setContRWFreqFromConfig(int val);
+
 private:
     Ui::QCstmConfigMonitoring *ui;
     int _timerId;

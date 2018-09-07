@@ -847,8 +847,6 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     // Defaults
     emit mode_changed( ui->summingCheckbox->isChecked() );
 
-    connect( ui->saveCheckBox, SIGNAL(toggled(bool)), this, SLOT(on_saveCheckBox_clicked()));
-
     // CT stuff
     connect( this, SIGNAL(sig_resumeCT()), _mpx3gui->getCT(), SLOT(resumeCT()));
 
@@ -1085,15 +1083,16 @@ void QCstmGLVisualization::BuildStatsStringOverflow(bool overflow)
 QString QCstmGLVisualization::getPath(QString msg)
 {
     QString path = "";
-    if (!autosaveFromServer) {
+    if (autosaveFromServer) {
+        path = ui-> saveLineEdit->text();
+    } else {
         path = QFileDialog::getExistingDirectory(
                     this,
                     msg,
                     QDir::currentPath(),
                     QFileDialog::ShowDirsOnly);
     }
-    path = ui-> saveLineEdit->text();
-    // We WILL get a path before exiting this function
+
     return path;
 }
 
@@ -1111,6 +1110,7 @@ void QCstmGLVisualization::developerMode(bool enabled)
         ui->progressBar->show();
         ui->label_2->show();
         ui->completeFramesCheckBox->show();
+        ui->testBtn->show();
     } else {
         //! Disable a bunch of 'advanced' buttons
         ui->binCountSpinner->hide();
@@ -1123,6 +1123,7 @@ void QCstmGLVisualization::developerMode(bool enabled)
         ui->progressBar->hide();
         ui->label_2->hide();
         ui->completeFramesCheckBox->hide();
+        ui->testBtn->hide();
     }
 }
 
@@ -2190,14 +2191,12 @@ void QCstmGLVisualization::on_saveCheckBox_clicked(){
     if ( zmqRunning ) {
         return;
     } else {
-        //ui->saveLineEdit->clear();
 
         //! Open file dialog, get path and set saveLineEdit to given path and continue
         if(ui->saveCheckBox->isChecked()){
 
             //! Get the Absolute folder path
-            QString msg = tr("Select a directory to auto-save recorded files to");
-            QString path = getPath(msg);
+            QString path = getPath("Select a directory to auto-saved files to");
 
             //! GUI update - save LineEdit set to path from dialog
             ui->saveLineEdit->setText(path);
@@ -2212,6 +2211,8 @@ void QCstmGLVisualization::on_saveCheckBox_clicked(){
             //qDebug() << "[INFO]\tSelected path:" << path;
 
             //! When finished, see data_taking_finished() where the data is saved
+        } else {
+            ui->saveLineEdit->clear();
         }
     }
 }
@@ -2231,8 +2232,8 @@ void QCstmGLVisualization::on_saveAllCheckBox_toggled(bool checked)
         return;
     }
     if ( checked ) {
-        if ( ! ui->saveCheckBox->isChecked() ) {
-            ui->saveCheckBox->setChecked( true );
+        ui->saveCheckBox->setChecked( true );
+        if ( getsaveLineEdit_Text() == "" ) {
             on_saveCheckBox_clicked();
         }
     }

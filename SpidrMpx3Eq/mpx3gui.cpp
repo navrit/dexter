@@ -1011,7 +1011,6 @@ void Mpx3GUI::developerMode()
         _ui->actionDefibrillator->setVisible(false);
         devMode = false;
     } else {
-        // Default
         qDebug() << "[INFO] Enabling items";
         _ui->visualizationGL->developerMode(true);
         _ui->actionDefibrillator->setVisible(true);
