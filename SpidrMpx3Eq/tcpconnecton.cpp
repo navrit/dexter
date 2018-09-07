@@ -45,7 +45,7 @@ void TcpConnecton::disconnected()
 void TcpConnecton::readyRead()
 {
     if(!sender()) return;
-    qDebug() << this << " readyRead " << getSocket();
+    //qDebug() << this << " readyRead " << getSocket();
     QTcpSocket *socket = getSocket();
     char rcv_data[4096];
     memset(rcv_data,0,sizeof(rcv_data));
@@ -53,7 +53,7 @@ void TcpConnecton::readyRead()
     QString recievedData;
     recievedData.sprintf("%s",rcv_data);
     //for debg purpose
-    qDebug() << "Recieved data from client : " << recievedData;
+    //qDebug() << "Recieved data from client : " << recievedData;
     emit dataRecieved(recievedData.split("\n").at(0).split("\r").at(0));
     if(!socket) return;
     //socket->close();
@@ -79,9 +79,9 @@ void TcpConnecton::error(QAbstractSocket::SocketError socketError)
 
 void TcpConnecton::on_responseIsReady(QString response)
 {
-    qDebug() << "Response recieved at the tcpconnection : " << response;
+    //qDebug() << "Response recieved at the tcpconnection : " << response;
     QByteArray ba = response.toLatin1();
-    qDebug()<<"size:"<<ba.size();
+    //qDebug()<<"size:"<<ba.size();
     mutex.lock();
     int sndSize = m_socket->write(ba);
     m_socket->flush();

@@ -136,13 +136,13 @@ void TcpConnections::accept(qintptr handle, TcpConnecton *connection)
 
 void TcpConnections::on_dataRecieved(QString data)
 {
-    qDebug() << "Recieved at tcpconnections : " << data;
+    //qDebug() << "Recieved at tcpconnections : " << data;
     emit dataRecieved(data);
 }
 
 void TcpConnections::on_responseIsReady(QString response)
 {
-    qDebug() << "Response recieved at the tcpconnections : " << response;
+    //qDebug() << "Response recieved at the tcpconnections : " << response;
     emit responseIsReady(response);
 }
 

@@ -87,14 +87,14 @@ void TcpServer::complete()
 
 void TcpServer::on_dataRecieved(QString data)
 {
-    qDebug() << "Recieved at tcpserver : " << data;
+    //qDebug() << "Recieved at tcpserver : " << data;
     emit dataRecieved(data);
 
 }
 
 void TcpServer::on_responseIsReady(QString response)
 {
-    qDebug() << "Response recieved at the tcpserver : " << response;
+    qDebug() << "Response: " << response;
     emit responseIsReady(response);
 }
 

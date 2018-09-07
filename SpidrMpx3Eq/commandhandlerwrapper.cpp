@@ -10,9 +10,10 @@ CommandHandlerWrapper::CommandHandlerWrapper(QObject *parent) : QObject(parent)
 
 void CommandHandlerWrapper::on_dataRecieved(QString command)
 {
-    qDebug() << "This command recieved at commandhandlerWrapper : " << command;
+    qDebug() << "command: " << command;
 
     MerlinCommand merlinCmd (command, *merlinInterface);
+    qDebug() << "mapped : " << merlinCmd.parseResult;
     Command cmd(merlinCmd.parseResult);
     cmd.invoke(commandHandler);
     //get response
