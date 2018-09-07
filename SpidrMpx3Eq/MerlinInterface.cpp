@@ -116,7 +116,6 @@ MerlinCommand::MerlinCommand(QString command, MerlinInterface &mi)
                 sndCmd += ";" + arg;
             }
             _error = NO_ERROR;
-            qDebug() << "built cmd :" << sndCmd;
             parseResult = sndCmd; return;
 //            if(pslCmdList.length() > 1){
 //                PSL_ARG_TYPES pslType = (PSL_ARG_TYPES) pslCmdList.at(1).toInt();
