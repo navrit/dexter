@@ -233,7 +233,6 @@ void startHandler(CommandHandler* ch, Command* cmd){
 ////        ch->startSendingImage(true);
    //    ch-> sendMerlinImage();
 //        ch->emitrequestForAnotherSocket(6352);
-        isStarted = false;
     }
     else
         cmd->setError(UNKNOWN_ERROR);
@@ -242,7 +241,7 @@ void startHandler(CommandHandler* ch, Command* cmd){
 }
 void stopHandler(CommandHandler* ch, Command* cmd){
     if(isStarted){
-       // ch->
+        ch->startLiveCamera();
         isStarted = false;
     }
     int d = (isStarted) ? -1 : 0;
