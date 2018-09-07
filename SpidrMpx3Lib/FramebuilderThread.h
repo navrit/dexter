@@ -122,6 +122,7 @@ class FramebuilderThread : public QThread
   i64           _timeStamp;
   i64           _timeStampSpidr;
   int           _frameSz[NR_OF_DEVICES];
+  int           _frameId[NR_OF_DEVICES];
   bool          _isCounterhFrame[NR_OF_DEVICES];
   SpidrHeader_t _spidrHeader[NR_OF_DEVICES];
 

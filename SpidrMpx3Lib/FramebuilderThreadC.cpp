@@ -50,11 +50,14 @@ void FramebuilderThreadC::processFrame()
       // The following decoding operations could be done
       // in separate threads (i.e. by QtConcurrent)
 #ifdef _USE_QTCONCURRENT
-      if( _n > 1 )
-        {
+      int chipmask = (1 << _n) - 1;
+
+      if( _n > 1 ) do {
+
           QFuture<int> qf[4];
           for( i=0; i<_n; ++i )
-            qf[i] = QtConcurrent::run( this,
+              if (((1 << i) & chipmask) != 0)
+                qf[i] = QtConcurrent::run( this,
                                        &FramebuilderThreadC::mpx3RawToPixel,
                                        _receivers[i]->frameData(),
                                        _receivers[i]->dataSizeFrame(),
@@ -65,8 +68,43 @@ void FramebuilderThreadC::processFrame()
                                        _receivers[i]->isCounterhFrame() );
           // Wait for threads to finish and get the results...
           for( i=0; i<_n; ++i )
-            _frameSz[i] = qf[i].result();
-        }
+              if (((1 << i) & chipmask) != 0) {
+                _frameId[i] = qf[i].result();
+                _frameSz[i] = MPX_PIXELS * sizeof(int);
+          }
+
+          bool different = false;
+          int maxid = -1;
+          for (int i = 0; i < _n; ++i) {
+
+            int fid = _frameId[i];
+            if (fid != maxid) {
+                if (maxid == -1) {
+                    maxid = fid;
+                    different = i>0;
+                } else {
+                    if (fid >= 0 && ((short) (fid - maxid)) > 0) maxid = fid;
+                    different = true;
+                }
+            }
+          }
+          chipmask = 0;
+          if (different) {
+              qDebug() << "[WARNING] FrameIds " << _frameId[0] << ' ' << _frameId[1] << ' ' << _frameId[2] << ' ' << _frameId[3] << '\n';
+              for (int i = 0; i < _n; ++i) {
+                  if (_frameId[i] != maxid) {
+                      _receivers[i]->releaseFrame();
+                      _mutex.lock();
+                      while( !_receivers[i]->hasFrame() ) _inputCondition.wait( &_mutex );
+                      _mutex.unlock();
+                      chipmask |= (1 << i);
+                  }
+              }
+          } else if (maxid == -1) {
+              chipmask = (1 << _n) - 1;
+          }
+      }
+          while (chipmask != 0);
       else
 #endif // _USE_QTCONCURRENT
         {
@@ -142,6 +180,7 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
   u64  type;
   int  i, j;
   int *temp2 = temp;
+  int frameId = -1;
   for( i=0; i<nbytes/sizeof(u64); ++i, ++pixelpkt )
     {
       pixelword = *pixelpkt;
@@ -175,8 +214,10 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
          }
           break;
 
-        case PIXEL_DATA_EOR:
         case PIXEL_DATA_EOF:
+          frameId = (int) ((pixelword & FRAME_FLAGS_MASK) >> FRAME_FLAGS_SHIFT);
+
+        case PIXEL_DATA_EOR:
             // We could extract the row counter from the data
             // except some old firmware versions have a LUT that
             // erroneously 'decodes' the row counter too..
@@ -286,7 +327,7 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
   //       }
   //     size = MPX_PIXELS / 8;
   //   }
-  return size;
+  return frameId;
 }
 
 // ----------------------------------------------------------------------------
