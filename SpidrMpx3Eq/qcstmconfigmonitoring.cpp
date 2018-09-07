@@ -392,6 +392,8 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     // contRW
     connect(ui->contRWFreq, SIGNAL( valueChanged(int) ), this, SLOT( ContRWFreqEdited() ) );
     connect(config, SIGNAL(ContRWFreqChanged(int)), ui->contRWFreq, SLOT(setValue(int)));
+    connect(ui->contRWFreq, SIGNAL(valueChanged(int)), this, SLOT(setContRWFreqFromConfig(int)));
+
     // connection in the viewer
     connect(ui->triggerLengthSpinner, SIGNAL(valueChanged(int)),
             _mpx3gui->getVisualization()->GetUI()->triggerLengthSpinBox,
@@ -798,4 +800,13 @@ void QCstmConfigMonitoring::on_tstBtn_clicked()
     qDebug()<<" Pad len = " <<pad.length();
     qDebug()<<" Pad len byte= " <<pad.toLatin1().length();
     qDebug()<<" Pad data = " <<pad;
+}
+
+void QCstmConfigMonitoring::setContRWFreqFromConfig(int val)
+{
+    if ( _mpx3gui->getConfig()->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW ) {
+        _mpx3gui->getVisualization()->GetUI()->triggerLengthSpinBox->setValue(val);
+    } /* else {
+        Do nothing because we don't want to set the trigger length to the continuous readout frequency...
+    } */
 }
