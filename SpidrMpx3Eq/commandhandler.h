@@ -61,7 +61,6 @@ signals:
     void requestAnotherSocket(int);
 
 public slots:
-    void on_cmdRecieved(QString);
     void on_doneWithOneFrame(int);
     void on_someCommandHasFinished_Successfully(void);
 private:
