@@ -29,7 +29,6 @@ FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
     _decode( false ),
     _compress( false ),
     _flush( false ),
-    _hasFrame( false ),
     _abortFrame( false ),
     _fileOpen( false ),
     _applyLut( true ),
@@ -194,7 +193,7 @@ void FramebuilderThread::processFrame()
     {
       // If necessary wait until the previous frame has been consumed
       _mutex.lock();
-      if( _hasFrame ) _outputCondition.wait( &_mutex );
+      if( _under_construction == _with_client ) _outputCondition.wait( &_mutex );
       _mutex.unlock();
 
       if( _abortFrame ) return; // Bail out
@@ -210,7 +209,7 @@ void FramebuilderThread::processFrame()
                                        &FramebuilderThread::mpx3RawToPixel,
                                        _receivers[i]->frameData(),
                                        _receivers[i]->dataSizeFrame(),
-                                       &_decodedFrame[i][0],
+                                       &_decodedFrames[_under_construction][i][0],
                                        _evtHdr.pixelDepth,
                                        //_devHdr[i].deviceType,
                                        //_compress );
@@ -226,7 +225,7 @@ void FramebuilderThread::processFrame()
             _frameSz[i] =
               this->mpx3RawToPixel( _receivers[i]->frameData(),
                                     _receivers[i]->dataSizeFrame(),
-                                    _decodedFrame[i],
+                                    &_decodedFrames[_under_construction][i][0],
                                     _evtHdr.pixelDepth,
                                     //_devHdr[i].deviceType,
                                     //_compress );
@@ -252,9 +251,13 @@ void FramebuilderThread::processFrame()
       if( _evtHdr.pixelDepth != 24 ||
           (_evtHdr.pixelDepth == 24 && this->isCounterhFrame()) )
         {
-          _hasFrame = true;
+          _mutex.lock();
+          int temp = _under_construction;
+          _under_construction = 1 - temp;
+          _with_client = temp;
           //if( _callbackFunc ) _callbackFunc( _id );
           _frameAvailableCondition.wakeOne();
+          _mutex.unlock();
         }
     }
 }
@@ -332,7 +335,7 @@ void FramebuilderThread::writeDecodedFrameToFile()
   for( i=0; i<_n; ++i )
     frame_sz[i] = this->mpx3RawToPixel( _receivers[i]->frameData(),
                                         _receivers[i]->dataSizeFrame(),
-                                        _decodedFrame[i],
+                                        _decodedFrames[_under_construction][i],
                                         _evtHdr.pixelDepth,
                                         //_devHdr[i].deviceType,
                                         //_compress );
@@ -372,7 +375,7 @@ void FramebuilderThread::writeDecodedFrameToFile()
       _file.write( (const char *) p_devhdr, DEV_HEADER_SIZE );
 
       // Write the decoded frame data of this device
-      _file.write( (const char *) _decodedFrame[i], frame_sz[i] );
+      _file.write( (const char *) _decodedFrames[_under_construction][i], frame_sz[i] );
     }
 }
 
@@ -380,14 +383,13 @@ void FramebuilderThread::writeDecodedFrameToFile()
 
 bool FramebuilderThread::hasFrame( unsigned long timeout_ms )
 {
-  if( timeout_ms == 0 ) return _hasFrame;
+  if (timeout_ms == 0) return _with_client >= 0;
 
   // For timeout_ms > 0
-  _mutex.lock();
-  if( !_hasFrame )
+  QMutexLocker lock(&_mutex);
+  if (_with_client < 0)
     _frameAvailableCondition.wait( &_mutex, timeout_ms );
-  _mutex.unlock();
-  return _hasFrame;
+  return _with_client >= 0;
 }
 
 // ----------------------------------------------------------------------------
@@ -396,14 +398,15 @@ int *FramebuilderThread::frameData( int  index,
                                     int *size,
                                     int *lost_count )
 {
-  if( _hasFrame )
+    int mine = _with_client;
+  if (mine >= 0)
     *size = _frameSz[index];
   else
     *size = 0;
 
   if( lost_count ) *lost_count = _lostCountFrame[index];
 
-  return &_decodedFrame[index][0];
+  return mine >= 0 ? _decodedFrames[mine][index] : nullptr;
 }
 
 // ----------------------------------------------------------------------------
@@ -411,7 +414,9 @@ int *FramebuilderThread::frameData( int  index,
 void FramebuilderThread::clearFrameData( int index )
 {
   index &= 0x3;
-  memset( static_cast<void *> (_decodedFrame[index]),
+  int mine = _with_client;
+  if (mine >= 0)
+      memset( static_cast<void *> (_decodedFrames[mine][index]),
           0, MPX_PIXELS * sizeof(int) );
 }
 
@@ -420,7 +425,7 @@ void FramebuilderThread::clearFrameData( int index )
 void FramebuilderThread::releaseFrame()
 {
   _mutex.lock();
-  _hasFrame = false;
+  _with_client = -1;
   _outputCondition.wakeOne();
   _mutex.unlock();
 }

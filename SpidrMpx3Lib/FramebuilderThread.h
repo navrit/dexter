@@ -105,7 +105,6 @@ class FramebuilderThread : public QThread
   bool  _decode;
   bool  _compress;
   bool  _flush;
-  bool  _hasFrame;
   bool  _abortFrame;
 
   QFile _file;
@@ -128,7 +127,9 @@ class FramebuilderThread : public QThread
 
   // Intermediate buffers for a (decoded) set of frames;
   // one from each of up to 4 receivers
-  int           _decodedFrame[NR_OF_DEVICES][256*256];
+  int           _decodedFrames[2][NR_OF_DEVICES][256*256];
+  std::atomic_int _under_construction{0};
+  std::atomic_int _with_client{-1};
 
   virtual int mpx3RawToPixel( unsigned char *raw_bytes,
                               int            nbytes,

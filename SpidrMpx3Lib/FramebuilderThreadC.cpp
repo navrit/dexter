@@ -41,7 +41,7 @@ void FramebuilderThreadC::processFrame()
     {
       // If necessary wait until the previous frame has been consumed
       _mutex.lock();
-      if( _hasFrame ) _outputCondition.wait( &_mutex );
+      if( _under_construction == _with_client ) _outputCondition.wait( &_mutex );
       _mutex.unlock();
 
 
@@ -58,7 +58,7 @@ void FramebuilderThreadC::processFrame()
                                        &FramebuilderThreadC::mpx3RawToPixel,
                                        _receivers[i]->frameData(),
                                        _receivers[i]->dataSizeFrame(),
-                                       &_decodedFrame[i][0],
+                                       &_decodedFrames[_under_construction][i][0],
                                        _evtHdr.pixelDepth,
                                        //_devHdr[i].deviceType,
                                        //_compress );
@@ -74,7 +74,7 @@ void FramebuilderThreadC::processFrame()
             _frameSz[i] =
               this->mpx3RawToPixel( _receivers[i]->frameData(),
                                     _receivers[i]->dataSizeFrame(),
-                                    _decodedFrame[i],
+                                    &_decodedFrames[_under_construction][i][0],
                                     _evtHdr.pixelDepth,
                                     //_devHdr[i].deviceType,
                                     //_compress );
@@ -100,9 +100,13 @@ void FramebuilderThreadC::processFrame()
       if( _evtHdr.pixelDepth != 24 ||
           (_evtHdr.pixelDepth == 24 && this->isCounterhFrame()) )
         {
-          _hasFrame = true;
+          _mutex.lock();
+          int temp = _under_construction;
+          _under_construction = 1 - temp;
+          _with_client = temp;
           //if( _callbackFunc ) _callbackFunc( _id );
           _frameAvailableCondition.wakeOne();
+          _mutex.unlock();
         }
     }
 }
