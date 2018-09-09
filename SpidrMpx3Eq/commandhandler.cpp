@@ -27,6 +27,7 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(QCstmGLVisualization::getInstance(),SIGNAL(someCommandHasFinished_Successfully()),this,SLOT(on_someCommandHasFinished_Successfully()));
     //    connect(this,SIGNAL(requestForSettingSaveTag(int)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingFormatFromServer(int)));
    //if(cmdInst == nullptr)
+    connect(this,SIGNAL(requestToMaskPixelRemotely(int,int)),QCstmGLVisualization::getInstance(),SLOT(onReuestToMaskPixelRemotely(int,int)));
     cmdInst = this;
     initializeCmdTable();
 }
@@ -157,6 +158,10 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("SetTriggerMode",setTriggerMode);
     cmd_struct getTriggerMode{getTriggerModeHandler};
     cmdTable.insert("GetTriggerMode",getTriggerMode);
+    cmd_struct setMaskPixel{setMaskPixelHandler};
+    cmdTable.insert("SetMaskPixel",setMaskPixel);
+    cmd_struct setUnmaskPixel{setUnmaskPixelHandler};
+    cmdTable.insert("SetUnmaskPixel",setUnmaskPixel);
 }
 
 bool Command::enoughArguments(int argsNum,QString command)
@@ -474,6 +479,11 @@ void CommandHandler::getImage()
 //    ba += Mpx3GUI::getInstance()->getDataset()->toSocketData();
 //    commandIsDecoded("",ba,true);
     return;
+}
+
+int CommandHandler::setPixelMask(int x, int y)
+{
+    emit requestToMaskPixelRemotely(x,y);
 }
 
 

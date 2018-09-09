@@ -71,9 +71,11 @@ public:
     int GetPixelReactiveThl(int pixId, lowHighSel = __ADJ_L);
     void maskPixel(int pixId) {
         maskedPixels.insert(pixId);
+        //qDebug() << "Mask size after add : " << maskedPixels.size();
     }
     void unmaskPixel(int pixId) {
         if(maskedPixels.contains(pixId)) maskedPixels.remove(pixId);
+        //qDebug() << "Mask size after del : " << maskedPixels.size();
     }
     int GetNMaskedPixels() {
         return maskedPixels.size();
@@ -396,8 +398,9 @@ signals:
     void sig_statusBarClean();
     void sig_statusBarAppend(QString mess, QString colorString);
 
-    void pixelsMasked(int devID,int idx);
+
     void equalizationPathExported(QString path);
+    void pixelsMasked(int devId,QSet<int> pixelSet);
 };
 
 #endif // QCSTMEQUALIZATION_H
