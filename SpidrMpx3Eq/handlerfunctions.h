@@ -388,16 +388,26 @@ void setShutterLengthHandler(CommandHandler* ch, Command* cmd){
     auto openOrClose = cmd->arguments.at(0);
     auto length = cmd->arguments.at(1); //ms
     auto config = Mpx3GUI::getInstance()->getConfig();
+    bool cont = (config->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW);
     if (openOrClose == "open"){
         //here code to set operational mode
-        config->setTriggerLength((int) (1000. * length.toDouble()));    // us
+        if (cont) {
+            double freq = 1000./length.toDouble();
+            config->setContRWFreq(freq);
+        } else {
+            config->setTriggerLength((int) (1000. * length.toDouble()));    // us
+        }
         cmd->setData("Shutter open length is set to " + length);
         cmd->setError(NO_ERROR);
     }
-    else if(openOrClose == "down"){
+    else if (openOrClose == "down"){
         //here code to set operational mode
-        config->setTriggerDowntime((int) (1000. * length.toDouble()));  // us
-        cmd->setData("Shutter down length is set to " + length);
+        if (cont) {
+            cmd->setData("Shutter down length is 0");
+        } else {
+            config->setTriggerDowntime((int) (1000. * length.toDouble()));  // us
+            cmd->setData("Shutter down length is set to " + length);
+        }
         cmd->setError(NO_ERROR);
     }
     else
@@ -413,32 +423,30 @@ void setShutterPeriodHandler(CommandHandler* ch, Command* cmd){
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    if(Mpx3GUI::getInstance()->getConfig()->getOperationMode() == 0)//sequential mode
-    {
-        auto config = Mpx3GUI::getInstance()->getConfig();
+    auto config = Mpx3GUI::getInstance()->getConfig();
+    bool cont = (config->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW);
+
+    if (cont) {
+        auto length = cmd->arguments.at(0); //ms;
+        double freq = 1000./length.toDouble();
+        //config->setContRWFreq(freq);
+        qDebug() << "shutter period -> *not* set freq to " << freq;
+        cmd->setError(NO_ERROR);
+    } else {
         auto length = cmd->arguments.at(0); //ms
         int open = config->getTriggerLength();
         config->setTriggerDowntime(1000. * length.toDouble() - open);   // us
-        //qDebug()<<"dodododod:" << length.toDouble();
         cmd->setError(NO_ERROR);
-        return;
     }
-    if(Mpx3GUI::getInstance()->getConfig()->getOperationMode() == 1)//continous mode
-    {
-        auto length = cmd->arguments.at(0); //ms;
-        double freq = 1./(length.toDouble()*2) * 1000.;
-        Mpx3GUI::getInstance()->getConfig()->setContRWFreq(freq);
-        cmd->setError(NO_ERROR);
-        return;
-    }
-    cmd->setError(UNKNOWN_ERROR);
-    return;
-
 }
 
 void getShutterPeriodHandler(CommandHandler* ch, Command* cmd){
     auto config = Mpx3GUI::getInstance()->getConfig();
-    cmd->setData(QString::number((config->getTriggerDowntime() + config->getTriggerLength()) * 0.001)); //ms
+    if (config->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW) {
+        cmd->setData(QString::number(1000.0 / config->getContRWFreq())); //ms
+    } else {
+        cmd->setData(QString::number((config->getTriggerDowntime() + config->getTriggerLength()) * 0.001)); //ms
+    }
     cmd->setError(NO_ERROR);
 }
 
@@ -450,13 +458,16 @@ void getShutterLengthHandler(CommandHandler* ch, Command* cmd){
     }
     auto openOrClose = cmd->arguments.at(0);
     auto config = Mpx3GUI::getInstance()->getConfig();
+    bool cont = (config->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW);
     if(openOrClose == "open"){
-       double trig =  config->getTriggerLength() * 0.001; //ms
+       double trig = cont ? 1000.0 / config->getContRWFreq()
+               : config->getTriggerLength() * 0.001; //ms
        cmd->setData(QString::number(trig));
        cmd->setError(NO_ERROR);
     }
     else if(openOrClose == "down"){
-        double trig = config->getTriggerDowntime() * 0.001; //ms
+        double trig = cont ? 0.0
+               : config->getTriggerDowntime() * 0.001; //ms
         cmd->setData(QString::number(trig));
         cmd->setError(NO_ERROR);
     }

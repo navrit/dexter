@@ -12,37 +12,20 @@
 
 
 
-CommandHandler *cmdInst;
-
-
-
 CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
 {
-
-    connect(this,SIGNAL(requestForDataTaking()),QCstmGLVisualization::getInstance(),SLOT(StartDataTaking()));
-    connect(this,SIGNAL(requestForInfDataTracking(bool)),QCstmGLVisualization::getInstance(),SLOT(on_infDataTakingCheckBox_toggled(bool)));
-    connect(this,SIGNAL(requestForSnap()),QCstmGLVisualization::getInstance(),SLOT(on_singleshotPushButton_clicked()));
-    connect(this,SIGNAL(requestForAutoSave(bool)),QCstmGLVisualization::getInstance(),SLOT(onRequestForAutoSaveFromServer(bool)));
-    connect(this,SIGNAL(requestForSettingSavePath(QString)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingPathFromServer(QString)));
-    connect(QCstmGLVisualization::getInstance(),SIGNAL(someCommandHasFinished_Successfully()),this,SLOT(on_someCommandHasFinished_Successfully()));
-    //    connect(this,SIGNAL(requestForSettingSaveTag(int)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingFormatFromServer(int)));
-   //if(cmdInst == nullptr)
-    connect(this,SIGNAL(requestToMaskPixelRemotely(int,int)),QCstmGLVisualization::getInstance(),SLOT(onReuestToMaskPixelRemotely(int,int)));
-    connect(this,SIGNAL(requestToUnmaskPixelRemotely(int,int)),QCstmGLVisualization::getInstance(),SLOT(onReuestToUnmaskPixelRemotely(int,int)));
-    cmdInst = this;
+    QCstmGLVisualization * visualisation = ((Mpx3GUI*) parent)-> getVisualization();
+    connect(this,SIGNAL(requestForDataTaking()),visualisation,SLOT(StartDataTaking()));
+    connect(this,SIGNAL(requestForInfDataTracking(bool)),visualisation,SLOT(on_infDataTakingCheckBox_toggled(bool)));
+    connect(this,SIGNAL(requestForSnap()),visualisation,SLOT(on_singleshotPushButton_clicked()));
+    connect(this,SIGNAL(requestForAutoSave(bool)),visualisation,SLOT(onRequestForAutoSaveFromServer(bool)));
+    connect(this,SIGNAL(requestForSettingSavePath(QString)),visualisation,SLOT(onRequestForSettingPathFromServer(QString)));
+    connect(visualisation,SIGNAL(someCommandHasFinished_Successfully()),this,SLOT(on_someCommandHasFinished_Successfully()));
+    //    connect(this,SIGNAL(requestForSettingSaveTag(int)),visualisation,SLOT(onRequestForSettingFormatFromServer(int)));
+    connect(this,SIGNAL(requestToMaskPixelRemotely(int,int)),visualisation,SLOT(onReuestToMaskPixelRemotely(int,int)));
+    connect(this,SIGNAL(requestToUnmaskPixelRemotely(int,int)),visualisation,SLOT(onReuestToUnmaskPixelRemotely(int,int)));
     initializeCmdTable();
 }
-
-void CommandHandler::on_cmdRecieved(QString command)
-{
-//    qDebug() << "This command recieved at commandhndler : " << command;
-//    this->setCmd(command);
-//    qDebug() << "after : " << cmd;
-//    this->fetchCmd();
-
-}
-
-
 
 
 void CommandHandler::initializeCmdTable()
