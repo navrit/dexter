@@ -1568,7 +1568,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
                 qDebug() << "     chipID:" << chipIndex << " | " << pix.first << "," << pix.second << " | " << xToXy;
                 spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
 
-                emit pixelsMasked(chipIndex,xToXy);
+
             }
         } else {
             //! When the mask is empty go ahead and unmask all pixels
@@ -1580,6 +1580,7 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
     }
 
     spidrcontrol->setPixelConfigMpx3rx( chipIndex );
+    emit pixelsMasked(chipIndex,GetEqualizationResults(chipIndex)->GetMaskedPixels());
 }
 
 void QCstmEqualization::ClearAllAdjustmentBits(int devId) {

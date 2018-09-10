@@ -834,6 +834,25 @@ void getProfileHandler(CommandHandler* ch, Command* cmd){
     cmd->setError(NO_ERROR);
 }
 
+void setMaskPixelHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(2,"SetMaskPixel"))  //this command comes with two argument x,y
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    int x = cmd->arguments.at(0).toInt();
+    int y = cmd->arguments.at(1).toInt();
+    if( x < 0 || x > 511 || y < 0 || y > 511 ){
+        cmd->setError(ARG_VAL_OUT_RANGE);
+        return;
+    }
+    ch->setPixelMask(x,y);
+}
+
+void setUnmaskPixelHandler(CommandHandler* ch, Command* cmd){
+
+}
+
 //end of handler functions
 
 

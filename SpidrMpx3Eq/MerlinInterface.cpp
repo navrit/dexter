@@ -268,6 +268,8 @@ void MerlinInterface::initializeTables()
     setTable.insert(TRIGGERSTART,"SetTriggerMode;"  +  QString::number(N));
     setTable.insert(FILEDIRECTORY,"SetRecordPath;" + QString::number(STRING));
     setTable.insert(FILEENABLE,"SetAutoSave;" + QString::number(ENABLE_DISABLE));
+    setTable.insert(MASKPIXEL,"SetMaskPixel;"+QString::number(N)+";"+QString::number(N));
+
     //initialize cmdTable
     cmdTable.insert(STOPACQUISITION,"Stop");
     cmdTable.insert(STARTACQUISITION,"Start");

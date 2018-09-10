@@ -39,6 +39,7 @@ class QCstmGLVisualization;
 
 class QCstmGLVisualization : public QWidget
 {
+    enum MASK_OPERATION { MASK,UNMASK,MASK_ALL_OVERFLOW,MASK_ALL_ACTIVE, NULL_MASK };
     Q_OBJECT
     Mpx3GUI * _mpx3gui = nullptr;
     bool _takingData;
@@ -148,6 +149,8 @@ private:
     unsigned int _nTriggersSave;
     bool _dropFrames = true;
     QString _equalizationPath = "";
+    MASK_OPERATION _maskOpration = MASK;
+    bool _maskingRequestFromServer = false;
 
     typedef struct {
         unsigned int nFramesReceived;
@@ -242,9 +245,11 @@ private slots:
 
     void on_testBtn_clicked();
 
-    void onPixelsMasked(int devID,int idx);
+    void onPixelsMasked(int devID,QSet<int> pixelSet);
 
     void onEqualizationPathExported(QString path);
+
+
 
 public slots:
 
@@ -319,6 +324,8 @@ public slots:
     void onRequestForSettingPathFromServer(QString);
     //saving format from server
     void onRequestForSettingFormatFromServer(int);
+    //masking pixels remotely
+    void onReuestToMaskPixelRemotely(int,int);
 
 signals:
     void taking_data_gui();
@@ -343,6 +350,7 @@ signals:
     //! Used for ZMQ
     void someCommandHasFinished_Successfully();
     void someCommandHasFailed(QString reply="");
+
 
     //! All related functions are commented out, should this stay?
     //void infDataTakingToggeled(bool);

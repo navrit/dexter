@@ -45,6 +45,7 @@ public:
     QString generateMerlinFrameHeader(int frameid);
     QString getAcquisitionHeader(void);
     void getImage(void);
+    int setPixelMask(int,int);
     //data
     void emitrequestForAnotherSocket(int);
     QHash<QString,cmd_struct> cmdTable;
@@ -59,6 +60,7 @@ signals:
     void requestForSettingSavePath(QString);
     void requestForSettingSaveFormat(int);
     void requestAnotherSocket(int);
+    void requestToMaskPixelRemotely(int,int);
 
 public slots:
     void on_doneWithOneFrame(int);

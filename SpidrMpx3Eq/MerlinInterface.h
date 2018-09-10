@@ -113,7 +113,7 @@ public:
     QString _response  = "";
 
 private: //constants
-    const int SET_PARTS = 5;
+    const int SET_PARTS = 6;
     const int CMD_GET_PARTS = 4;
     const QString SET_TYPE = "SET";
     const QString GET_TYPE = "GET";

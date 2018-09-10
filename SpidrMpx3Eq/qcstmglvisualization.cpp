@@ -854,9 +854,10 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect( this, SIGNAL(sig_resumeTHScan()), _mpx3gui->getTHScan(), SLOT(resumeTHScan()));
 
     //pixel mask saving
-    connect(_mpx3gui->getEqualization(),SIGNAL(pixelsMasked(int,int)),this,SLOT(onPixelsMasked(int,int)));
+    connect(_mpx3gui->getEqualization(),SIGNAL(pixelsMasked(int,QSet<int>)),this,SLOT(onPixelsMasked(int,QSet<int>)));
     //getting equalization path
     connect(_mpx3gui->getEqualization(),SIGNAL(equalizationPathExported(QString)),SLOT(onEqualizationPathExported(QString)));
+
 }
 
 void QCstmGLVisualization::ntriggers_edit() {
@@ -1777,26 +1778,43 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
         naturalFlatCoord = 4*naturalCoords.y()*_mpx3gui->getDataset()->x() + 2*naturalCoords.x();
     }
     int deviceID = _mpx3gui->getConfig()->getActiveDevices()[frameIndex];
-    QMenu contextMenu;
-    QAction mask(QString("Mask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu),
-            unmask(QString("Unmask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu),
-            maskAllOverflow(QString("Mask all pixels in overflow (per chip)"), &contextMenu),
-            maskAllActive(QString("Mask all active pixels (per chip)"), &contextMenu);
 
-    contextMenu.addAction(&mask);
-    contextMenu.addAction(&unmask);
-    contextMenu.addAction(&maskAllOverflow);
-    contextMenu.addAction(&maskAllActive);
-
-
-    QAction* selectedItem = contextMenu.exec(position);
-    if(!_mpx3gui->getConfig()->isConnected())
-        return;
-    if (!_mpx3gui->equalizationLoaded()) {
-        QMessageBox::information(nullptr, "Error", "An equalisation must be loaded in order to mask a pixel. Failed operation/");
-        return;
+    if(_maskingRequestFromServer)
+    {
+        _maskingRequestFromServer = false;
     }
-    if(selectedItem == &mask) {
+
+    else{//for interactive use
+        QMenu contextMenu;
+        QAction mask(QString("Mask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu),
+                unmask(QString("Unmask pixel @ %1, %2").arg(pixel.x()).arg(pixel.y()), &contextMenu),
+                maskAllOverflow(QString("Mask all pixels in overflow (per chip)"), &contextMenu),
+                maskAllActive(QString("Mask all active pixels (per chip)"), &contextMenu);
+
+        contextMenu.addAction(&mask);
+        contextMenu.addAction(&unmask);
+        contextMenu.addAction(&maskAllOverflow);
+        contextMenu.addAction(&maskAllActive);
+
+
+        QAction* selectedItem = contextMenu.exec(position);
+        if(!_mpx3gui->getConfig()->isConnected())
+            return;
+        if (!_mpx3gui->equalizationLoaded()) {
+            QMessageBox::information(nullptr, "Error", "An equalisation must be loaded in order to mask a pixel. Failed operation/");
+            return;
+        }
+
+
+        if(selectedItem == &mask) _maskOpration = MASK;
+        else if(selectedItem == &unmask) _maskOpration = UNMASK;
+        else if(selectedItem == &maskAllOverflow) _maskOpration = MASK_ALL_OVERFLOW;
+        else if(selectedItem == &maskAllActive) _maskOpration = MASK_ALL_ACTIVE;
+        else _maskOpration = NULL_MASK;
+    }
+
+
+    if(_maskOpration == MASK) {
         if ( _mpx3gui->getConfig()->getColourMode() ) {
 
             //qDebug() << "Nat[" << deviceID << "]:"
@@ -1806,24 +1824,38 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
             //       << naturalFlatCoord+1+_mpx3gui->getX()*2;
 
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord);
+
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord+1);
+
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord+_mpx3gui->getX()*2);
+
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord+1+_mpx3gui->getX()*2);
+
         }
-        else
+        else{
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->maskPixel(naturalFlatCoord);
+
+        }
     }
-    else if(selectedItem == &unmask) {
+    else if(_maskOpration == UNMASK) {
         if(_mpx3gui->getConfig()->getColourMode()){
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord);
+
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord+1);
+
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord+_mpx3gui->getX()*2);
+
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord+1+_mpx3gui->getX()*2);
+
+
         }
-        else
+        else{
             _mpx3gui->getEqualization()->GetEqualizationResults(deviceID)->unmaskPixel(naturalFlatCoord);
+
+
+        }
     }
-    else if((selectedItem == &maskAllOverflow) || (selectedItem == &maskAllActive)){
+    else if((_maskOpration == MASK_ALL_OVERFLOW) || (_maskOpration == MASK_ALL_ACTIVE)){
 
         //! Find all pixels in overflow or active depending on what is selected
         int nx = _mpx3gui->getDataset()->x();
@@ -1837,11 +1869,11 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
         QVector<QPoint> toMask;
         for ( int xi = 0 ; xi < nx*nChipsX ; xi++ ) {
             for ( int yi = 0 ; yi < ny*nChipsY ; yi++ ) {
-                if (selectedItem == &maskAllOverflow) {
+                if (_maskOpration == MASK_ALL_OVERFLOW) {
                     if ( _mpx3gui->getDataset()->sample(xi, yi, activeThreshold) == overflowval ) {
                         toMask.push_back( QPoint(xi, yi) );
                     }
-                } else if (selectedItem == &maskAllActive) {
+                } else if (_maskOpration == MASK_ALL_ACTIVE) {
                     if ( _mpx3gui->getDataset()->sample(xi, yi, activeThreshold) > 0 ) {
                         toMask.push_back( QPoint(xi, yi) );
                     }
@@ -1893,7 +1925,7 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
     }
 
-    if (selectedItem == nullptr) {
+    if (_maskOpration == NULL_MASK) {
         return;
     }
 
@@ -2298,12 +2330,14 @@ void QCstmGLVisualization::on_testBtn_clicked()
     qDebug()<< " small == " << small;
 }
 
-void QCstmGLVisualization::onPixelsMasked(int devID, int idx)
+void QCstmGLVisualization::onPixelsMasked(int devID, QSet<int> pixelSet)
 {
     QFile file(_equalizationPath + QString("mask_") + QString::number(devID));
-    if (file.open(QIODevice::ReadWrite | QIODevice::Append)) {
+    if (file.open(QIODevice::ReadWrite)) {
         QTextStream stream(&file);
-        stream << QString::number(idx) << endl;
+        QSetIterator<int> i(pixelSet);
+        while (i.hasNext())
+            stream << QString::number(i.next()) << endl;
         file.close();
     }
     else
@@ -2314,4 +2348,12 @@ void QCstmGLVisualization::onPixelsMasked(int devID, int idx)
 void QCstmGLVisualization::onEqualizationPathExported(QString path)
 {
     _equalizationPath = path;
+}
+
+void QCstmGLVisualization::onReuestToMaskPixelRemotely(int x , int y)
+{
+    _maskingRequestFromServer = true;
+    _maskOpration = MASK;
+
+    pixel_selected(QPoint(x,y),QPoint());
 }
