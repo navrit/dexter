@@ -2333,7 +2333,7 @@ void QCstmGLVisualization::on_testBtn_clicked()
 void QCstmGLVisualization::onPixelsMasked(int devID, QSet<int> pixelSet)
 {
     QFile file(_equalizationPath + QString("mask_") + QString::number(devID));
-    if (file.open(QIODevice::ReadWrite)) {
+    if (file.open(QIODevice::ReadWrite | QFile::Truncate)) {
         QTextStream stream(&file);
         QSetIterator<int> i(pixelSet);
         while (i.hasNext())
@@ -2355,5 +2355,12 @@ void QCstmGLVisualization::onReuestToMaskPixelRemotely(int x , int y)
     _maskingRequestFromServer = true;
     _maskOpration = MASK;
 
+    pixel_selected(QPoint(x,y),QPoint());
+}
+
+void QCstmGLVisualization::onReuestToUnmaskPixelRemotely(int x, int y)
+{
+    _maskingRequestFromServer = true;
+    _maskOpration = UNMASK;
     pixel_selected(QPoint(x,y),QPoint());
 }

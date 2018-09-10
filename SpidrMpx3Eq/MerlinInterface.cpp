@@ -270,6 +270,7 @@ void MerlinInterface::initializeTables()
     setTable.insert(FILEDIRECTORY,"SetRecordPath;" + QString::number(STRING));
     setTable.insert(FILEENABLE,"SetAutoSave;" + QString::number(ENABLE_DISABLE));
     setTable.insert(MASKPIXEL,"SetMaskPixel;"+QString::number(N)+";"+QString::number(N));
+    setTable.insert(UNMASKPIXEL,"SetUnmaskPixel;"+QString::number(N)+";"+QString::number(N));
 
     //initialize cmdTable
     cmdTable.insert(STOPACQUISITION,"Stop");

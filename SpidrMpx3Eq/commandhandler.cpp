@@ -28,6 +28,7 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     //    connect(this,SIGNAL(requestForSettingSaveTag(int)),QCstmGLVisualization::getInstance(),SLOT(onRequestForSettingFormatFromServer(int)));
    //if(cmdInst == nullptr)
     connect(this,SIGNAL(requestToMaskPixelRemotely(int,int)),QCstmGLVisualization::getInstance(),SLOT(onReuestToMaskPixelRemotely(int,int)));
+    connect(this,SIGNAL(requestToUnmaskPixelRemotely(int,int)),QCstmGLVisualization::getInstance(),SLOT(onReuestToUnmaskPixelRemotely(int,int)));
     cmdInst = this;
     initializeCmdTable();
 }
@@ -484,6 +485,11 @@ void CommandHandler::getImage()
 int CommandHandler::setPixelMask(int x, int y)
 {
     emit requestToMaskPixelRemotely(x,y);
+}
+
+int CommandHandler::setPixelUnmask(int x , int y)
+{
+    emit requestToUnmaskPixelRemotely(x,y);
 }
 
 

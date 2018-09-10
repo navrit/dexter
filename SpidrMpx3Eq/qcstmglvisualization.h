@@ -326,6 +326,8 @@ public slots:
     void onRequestForSettingFormatFromServer(int);
     //masking pixels remotely
     void onReuestToMaskPixelRemotely(int,int);
+    //unmasking pixels remotely
+    void onReuestToUnmaskPixelRemotely(int,int);
 
 signals:
     void taking_data_gui();

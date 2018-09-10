@@ -831,7 +831,8 @@ void setMaskPixelHandler(CommandHandler* ch, Command* cmd){
     }
     int x = cmd->arguments.at(0).toInt();
     int y = cmd->arguments.at(1).toInt();
-    if( x < 0 || x > 511 || y < 0 || y > 511 ){
+    const int COLUMN = 511 , ROW = 511;
+    if( x < 0 || x > COLUMN || y < 0 || y > ROW ){
         cmd->setError(ARG_VAL_OUT_RANGE);
         return;
     }
@@ -839,7 +840,19 @@ void setMaskPixelHandler(CommandHandler* ch, Command* cmd){
 }
 
 void setUnmaskPixelHandler(CommandHandler* ch, Command* cmd){
-
+    if(!cmd->enoughArguments(2,"SetUnmaskPixel"))  //this command comes with two argument x,y
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    int x = cmd->arguments.at(0).toInt();
+    int y = cmd->arguments.at(1).toInt();
+    const int COLUMN = 511 , ROW = 511;
+    if( x < 0 || x > COLUMN || y < 0 || y > ROW ){
+        cmd->setError(ARG_VAL_OUT_RANGE);
+        return;
+    }
+    ch->setPixelUnmask(x,y);
 }
 
 //end of handler functions
