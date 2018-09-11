@@ -496,52 +496,14 @@ SpidrController * Mpx3Config::establishConnection(){
 
         if ( id != 0 ) {
 
-            QString idStr = QString::number( id, 16 ).toUpper();
+            QString idStr = "0x" + QString("%1").arg(id, 8, 16, QChar('0')).toUpper();
+            QString decodedId = "W"
+                + QString::number((id >> 8) & 0xfff)
+                + "_"
+                + ((uchar) (0x40 + ((id >> 4) & 0xf)))
+                + QString::number(id & 0xf);
 
-            // I need 8 nibbles in the idStr (hex number).
-            // If it's all zeroes they may not come in the string.
-            // Fill with zeroes the most significant bits if needed.
-            while ( idStr.size() < __efuse_Nnibbles ) {
-                idStr.prepend( '0' );
-            }
-
-            QString idStrCpy(idStr); idStrCpy.prepend("0x");
-
-            ///////////////////////////////////////////////
-            // Correction first three nibbles
-            // NU[0:1] + MOD_VAL[0:7] + MOD[0:1]
-            //
-            for ( int i = 3 ; i > 0 ; i-- ) {
-                // TODO ! work out the correction here, see manual !
-                idStr = idStr.remove(0, 1);
-            }
-
-            ///////////////////////////////////////////////
-            // Wafer number next three nibbles
-            int waferId = 0;
-            bool okw = false;
-            for ( int i = 3 ; i > 0 ; i-- ) {
-                waferId += ( idStr.left(1).toInt(&okw, 16) ) * pow(16, i-1);
-                idStr = idStr.remove(0, 1);
-            }
-
-            // 4th is X (by letter id in the alphabet)
-            QString XStr = idStr.left(1);
-            idStr = idStr.remove(0, 1);
-            QChar xQC = *(XStr.data()); // use an uchar and offter to the alphabet
-            uchar xC = xQC.cell();
-            xC += 0x10; // offset to get to the alphabet in ascii
-
-            // 5th is Y
-            int Ycoor = 0;
-            Ycoor = (idStr.left(1).toInt(&okw, 16));
-            QString decodedId = "W";
-            decodedId.append( QString::number( waferId ) );
-            decodedId.append( "_" );
-            decodedId.append( xC );
-            decodedId.append( QString::number( Ycoor ) );
-
-            dbg.noquote().nospace() << "ID : " << decodedId << " (" << idStrCpy << ") | ";
+            dbg.noquote().nospace() << "ID : " << decodedId << " (" << idStr << ") | ";
             _devicePresenceLayout.push_back( QPoint(__default_matrixSizePerChip_X, __default_matrixSizePerChip_Y) );
             _deviceWaferIdMap.push_back( decodedId );
             _nDevicesPresent++;
