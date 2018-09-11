@@ -10,6 +10,7 @@
 
 class CommandHandler;
 class Command;
+class Mpx3GUI;
 
 struct cmd_struct
 {
@@ -24,6 +25,7 @@ class CommandHandler : public QObject
     Q_OBJECT
 public:
     explicit CommandHandler(QObject *parent = nullptr);
+    Mpx3GUI* getGui();
     void startLiveCamera(void);
     void startSnap(void);
     void setAutoSave(bool);

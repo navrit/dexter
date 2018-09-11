@@ -61,6 +61,8 @@ public slots:
     void shortcutGainModeSHGM();
     void shortcutCSMOff();
     void shortcutCSMOn();
+    void setTriggerModeByIndex(int newValIndx);
+    int getTriggerModeIndex();
 
 private slots:
     void ConnectionStatusChanged(bool);
@@ -68,7 +70,6 @@ private slots:
     void setPixelDepthByIndex(int newValIndx);
     void pixelDepthChangedByValue(int val);
 
-    void setTriggerModeByIndex(int newValIndx);
     void triggerModeChangedByValue(int val);
 
     void setCsmSpmByIndex(int newValIndx);
@@ -109,6 +110,7 @@ private:
     const unsigned int __pixelDepth12BitsIndex = 2;
 
     vector<unsigned int> __triggerModeMap;
+    int findTriggerModeIndex(int val);
 
     vector<unsigned int> __csmSpmMap;
 

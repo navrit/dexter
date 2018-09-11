@@ -71,10 +71,10 @@ MerlinCommand::MerlinCommand(QString command, MerlinInterface &mi)
         _error = PARAM_OUT_OF_RANGE;
         parseResult = QString::number(PARAM_OUT_OF_RANGE); return;
     }
-    if(items.at(TYPE_INDEX) == SET_TYPE && items.length() != SET_PARTS){
-        _error = PARAM_OUT_OF_RANGE;
-        parseResult = QString::number(PARAM_OUT_OF_RANGE); return;
-    }
+    //if(items.at(TYPE_INDEX) == SET_TYPE && items.length() != SET_PARTS){
+        //_error = PARAM_OUT_OF_RANGE;
+        //parseResult = QString::number(PARAM_OUT_OF_RANGE); return;
+    //}
     if((items.at(TYPE_INDEX) == CMD_TYPE || items.at(TYPE_INDEX) == GET_TYPE) && items.length() != CMD_GET_PARTS){
         _error = PARAM_OUT_OF_RANGE;
         parseResult = QString::number(PARAM_OUT_OF_RANGE); return;
@@ -237,8 +237,7 @@ void MerlinInterface::initializeTables()
     getTable.insert(THSCAN,"GetThresholdScan");
     getTable.insert(OPERATINGENERGY,"GetOperatingEnergy");
     getTable.insert(PROFILES,"GetProfile");
-    getTable.insert(TRIGGERSTOP,"GetTriggerMode");
-    getTable.insert(TRIGGERSTART,"GetTriggerMode");
+    getTable.insert(TRIGGERMODE,"GetTriggerMode");
     getTable.insert(FILEDIRECTORY,"GetRecordPath");
     //initialize setTable
     setTable.insert(COLOURMODE,"SetColourMode;" + QString::number(ENABLE_DISABLE));
@@ -264,8 +263,7 @@ void MerlinInterface::initializeTables()
     setTable.insert(THSCAN,"SetThresholdScan;" + QString::number(N));
     setTable.insert(OPERATINGENERGY,"SetOperatingEnergy;" +  QString::number(N));
     setTable.insert(PROFILES,"SetProfile;" +  QString::number(N) );
-    setTable.insert(TRIGGERSTOP,"SetTriggerMode;"  +  QString::number(N));
-    setTable.insert(TRIGGERSTART,"SetTriggerMode;"  +  QString::number(N));
+    setTable.insert(TRIGGERMODE,"SetTriggerMode;"  +  QString::number(N));
     setTable.insert(FILEDIRECTORY,"SetRecordPath;" + QString::number(STRING));
     setTable.insert(FILEENABLE,"SetAutoSave;" + QString::number(ENABLE_DISABLE));
     setTable.insert(MASKPIXEL,"SetMaskPixel;"+QString::number(N)+";"+QString::number(N));

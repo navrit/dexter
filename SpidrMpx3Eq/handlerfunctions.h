@@ -4,6 +4,7 @@
 #include "commandhandler.h"
 #include "mpx3gui.h"
 #include "qcstmglvisualization.h"
+#include "qcstmconfigmonitoring.h"
 #include "MerlinInterface.h"
 
 
@@ -269,28 +270,12 @@ void setTriggerModeHandler(CommandHandler* ch, Command* cmd){
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    if(cmd->arguments.at(0) == "0")
-    {
-        Mpx3GUI::getInstance()->getConfig()->setTriggerMode(4);
-        cmd->setError(NO_ERROR);
-    }
-    else
-    {
-        cmd->setError(UNKNOWN_COMMAND);
-        cmd->setData("-1");
-    }
+    ch->getGui()->getConfigMonitoring()->setTriggerModeByIndex(cmd->arguments.at(0).toInt());
 }
 void getTriggerModeHandler(CommandHandler* ch, Command* cmd){
-    int val = Mpx3GUI::getInstance()->getConfig()->getTriggerMode();
-    if(val == 4){
-        cmd->setError(NO_ERROR);
-        cmd->setData("0");
-    }
-    else
-    {
-        cmd->setError(UNKNOWN_COMMAND);
-        cmd->setData("-1");
-    }
+    int val = ch->getGui()->getConfigMonitoring()->getTriggerModeIndex();
+    cmd->setError(NO_ERROR);
+    cmd->setData(QString::number(val));
 }
 
 void setGainModeHandler(CommandHandler* ch, Command* cmd){

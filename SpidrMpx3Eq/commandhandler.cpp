@@ -27,6 +27,9 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     initializeCmdTable();
 }
 
+Mpx3GUI* CommandHandler::getGui() {
+    return (Mpx3GUI*) parent();
+}
 
 void CommandHandler::initializeCmdTable()
 {

@@ -570,6 +570,20 @@ void QCstmConfigMonitoring::setTriggerModeByIndex(int newValIndx) {
                 );
 }
 
+int QCstmConfigMonitoring::findTriggerModeIndex(int val) {
+    int sizea = __triggerModeMap.size();
+    for (int i = 0 ; i < sizea ; i++) {
+        if ( __triggerModeMap[i] == val ) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int QCstmConfigMonitoring::getTriggerModeIndex() {
+    return findTriggerModeIndex(_mpx3gui->getConfig()->getTriggerMode());
+}
+
 void QCstmConfigMonitoring::setCsmSpmByIndex(int newValIndx)
 {
     _mpx3gui->getConfig()->setCsmSpm(
@@ -623,16 +637,9 @@ void QCstmConfigMonitoring::pixelDepthChangedByValue(int val)
 }
 
 void QCstmConfigMonitoring::triggerModeChangedByValue(int val) {
-    int sizea = __triggerModeMap.size();
-    for ( int i = 0 ; i < sizea ; i++ ) {
-        if ( __triggerModeMap[i] == val ) {
-            ui->triggerModeCombo->setCurrentIndex( i );
-            return;
-        }
-    }
-    ui->triggerModeCombo->setCurrentIndex( 0 );
+    int i = findTriggerModeIndex(val);
+    ui->triggerModeCombo->setCurrentIndex(i >= 0 ? i : 0);
 }
-
 
 void QCstmConfigMonitoring::widgetInfoPropagation()
 {
