@@ -67,12 +67,19 @@ void FramebuilderThreadC::processFrame()
                                        //_compress );
                                        _receivers[i]->isCounterhFrame() );
           // Wait for threads to finish and get the results...
+          short deltas[4];
+          bool jump = false;
           for( i=0; i<_n; ++i )
               if (((1 << i) & chipmask) != 0) {
-                _frameId[i] = qf[i].result();
+                int oldId = _frameId[i];
+                int newId = _frameId[i] = qf[i].result();
+                short delta = deltas[i] = (short) (newId - oldId);
+                if (delta != 1) jump = true;
                 _frameSz[i] = MPX_PIXELS * sizeof(int);
           }
-
+          if (jump) {
+              qDebug() << "[WARNING] FrameIds jump: " << deltas[0] << ' ' << deltas[1] << ' ' << deltas[2] << ' ' << deltas[3];
+          }
           bool different = false;
           int maxid = -1;
           for (int i = 0; i < _n; ++i) {
@@ -90,7 +97,7 @@ void FramebuilderThreadC::processFrame()
           }
           chipmask = 0;
           if (different) {
-              qDebug() << "[WARNING] FrameIds " << _frameId[0] << ' ' << _frameId[1] << ' ' << _frameId[2] << ' ' << _frameId[3] << '\n';
+              qDebug() << "[WARNING] FrameIds " << _frameId[0] << ' ' << _frameId[1] << ' ' << _frameId[2] << ' ' << _frameId[3];
               for (int i = 0; i < _n; ++i) {
                   if (_frameId[i] != maxid) {
                       _receivers[i]->releaseFrame();
