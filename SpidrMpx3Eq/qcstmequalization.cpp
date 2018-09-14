@@ -1556,17 +1556,31 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 
     if ( applymask ) {
         // Mask
+//        if(_eqMap[chipIndex]->GetNMaskedPixels2D() > 0){
+//            QSet<QPair<int,int>> tomask = _eqMap[chipIndex]->GetMaskedPixels2D();
+//            QSet<QPair<int,int>>::iterator i = tomask.begin();
+//            QSet<QPair<int,int>>::iterator iE = tomask.end();
+//            qDebug() << "[INFO] Masking pixels :";
+//            for ( ; i != iE ; i++ ) {
+//                spidrcontrol->setPixelMaskMpx3rx((*i).first, (*i).second, true);
+//                qDebug() << "     chipID:" << chipIndex << " | " <<(*i).first << "," << (*i).second;
+//            }
+
         if ( _eqMap[chipIndex]->GetNMaskedPixels() > 0 ) {
             QSet<int> tomask = _eqMap[chipIndex]->GetMaskedPixels();
             QSet<int>::iterator i = tomask.begin();
             QSet<int>::iterator iE = tomask.end();
             pair<int, int> pix;
             qDebug() << "[INFO] Masking pixels :";
+            resetMaskMatrix(chipIndex);
             for ( ; i != iE ; i++ ) {
                 pix = XtoXY( (*i), __matrix_size_x );
                 int xToXy = XYtoX(pix.first, pix.second, _mpx3gui->getDataset()->x());
                 qDebug() << "     chipID:" << chipIndex << " | " << pix.first << "," << pix.second << " | " << xToXy;
                 spidrcontrol->setPixelMaskMpx3rx(pix.first, pix.second, true);
+                QPoint previewIndx = chipIndexToPreviewIndex(QPoint(pix.first,pix.second),chipIndex);
+                if(previewIndx.x() >= 0 && previewIndx.x() < 512 && previewIndx.y() >= 0 && previewIndx.y() < 512)
+                    maskMatrix[previewIndx.x()][previewIndx.y()] = true;
 
 
             }
@@ -1580,7 +1594,14 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
     }
 
     spidrcontrol->setPixelConfigMpx3rx( chipIndex );
+    for(int i = 0; i <512; i++){
+        for(int j = 0; j <512; j++){
+            if(maskMatrix[i][j])
+                qDebug() << "[Test] : masked @ x = " << i << " y = " << j;
+        }
+    }
     emit pixelsMasked(chipIndex,GetEqualizationResults(chipIndex)->GetMaskedPixels());
+
 }
 
 void QCstmEqualization::ClearAllAdjustmentBits(int devId) {
@@ -2115,6 +2136,29 @@ void QCstmEqualization::estimateEqualisationTarget()
     return;
 }
 
+QPoint QCstmEqualization::chipIndexToPreviewIndex(QPoint chipIndex, int chipId)
+{
+    const int COL_SIZE = 512 , ROW_SIZE = 512;
+    QPoint previewIndex;
+    if(chipId == 0){
+        previewIndex.setX(ROW_SIZE - 1 - chipIndex.y());
+        previewIndex.setY(COL_SIZE - 1 - chipIndex.x());
+    }
+    else if(chipId == 1){ //needto be fixed
+        previewIndex.setX((ROW_SIZE/2) - 1 - chipIndex.y());
+        previewIndex.setY(COL_SIZE - 1 - chipIndex.x());
+    }
+    else if(chipId == 2){
+        previewIndex.setX(chipIndex.y());
+        previewIndex.setY(chipIndex.x());
+    }
+    else if(chipId == 3){//needto be fixed
+        previewIndex.setX(chipIndex.x() + (ROW_SIZE/2));
+        previewIndex.setY(chipIndex.y());
+    }
+    return previewIndex;
+}
+
 bool QCstmEqualization::makeTeaCoffeeDialog()
 {
     QMessageBox msgBox;
@@ -2169,7 +2213,8 @@ void QCstmEqualization::LoadEqualization(bool getPath, QString path) {
             QString testAdjFile = path + QString("adj_0");
             QString testMaskFile = path + QString("mask_0");
 
-            if (!(QFileInfo::exists(testAdjFile) && QFileInfo::exists(testMaskFile))){
+        if (!(QFileInfo::exists(testAdjFile) && QFileInfo::exists(testMaskFile))){
+           //if (!(QFileInfo::exists(testAdjFile))){
                 //! Failed to find adj_0 and mask_0, the bare minimum for this to work
                 //! Return with no warnings or prompts
                 emit sig_statusBarAppend(tr("Nothing loaded from equalisation"), "orange");
@@ -2242,6 +2287,7 @@ void QCstmEqualization::LoadEqualization(bool getPath, QString path) {
         pd.setValue( i+1 );
 
     }
+
 
     //! Part 2.2: Send equalisation loaded from ... to mpx3gui status bar
     //! Append new equalisation path
@@ -2599,6 +2645,7 @@ bool Mpx3EqualizationResults::WriteMaskBinaryFile(QString fn) {
 }
 
 bool Mpx3EqualizationResults::ReadMaskBinaryFile(QString fn) {
+
 
     ifstream fd;
     fd.open (fn.toStdString().c_str(), ios::out);

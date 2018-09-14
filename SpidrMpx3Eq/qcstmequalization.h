@@ -71,18 +71,36 @@ public:
     int GetPixelReactiveThl(int pixId, lowHighSel = __ADJ_L);
     void maskPixel(int pixId) {
         maskedPixels.insert(pixId);
-        //qDebug() << "Mask size after add : " << maskedPixels.size();
     }
+    void maskPixel2D(QPair<int,int> pixId){
+        maskedPixels2D.insert(pixId);
+    }
+
     void unmaskPixel(int pixId) {
         if(maskedPixels.contains(pixId)) maskedPixels.remove(pixId);
-        //qDebug() << "Mask size after del : " << maskedPixels.size();
+
     }
+    void unmaskPixel2D( QPair<int,int> pixId) {
+        if(maskedPixels2D.contains(pixId)) maskedPixels2D.remove(pixId);
+
+    }
+
     int GetNMaskedPixels() {
         return maskedPixels.size();
     }
+
+    int GetNMaskedPixels2D() {
+        return maskedPixels2D.size();
+    }
+
     QSet<int> GetMaskedPixels() {
         return maskedPixels;
     }
+
+    QSet<QPair<int,int>> GetMaskedPixels2D() {
+        return maskedPixels2D;
+    }
+
     int * GetAdjustementMatrix(lowHighSel sel = __ADJ_L);
 
     void ExtrapolateAdjToTarget(int target, double eta_Adj_THL, lowHighSel sel = __ADJ_L);
@@ -109,6 +127,8 @@ private:
 
     // Masked pixels
     QSet<int> maskedPixels;
+    //masked pixels 2D
+    QSet< QPair<int,int> > maskedPixels2D;
 
     // pixel Id, reactive thlValue
     map<int, int> _pixId_Thl_L;
@@ -117,6 +137,8 @@ private:
     // status
     map<int, eq_status> _eqStatus_L;
     map<int, eq_status> _eqStatus_H;
+
+
 
 };
 
@@ -359,6 +381,43 @@ private:
     // Object in charge of performing Thl scans
     QVector<ThlScan * > _scans;
 
+    bool maskMatrix[512][512] = {{false}};    //false = unmasked, true = masked
+    void resetMaskMatrix(int chipid){
+        if(chipid == 0)
+        {
+            for(int i = 256; i <512; i++){
+                for(int j = 256; j <512; j++){
+                    maskMatrix[i][j] = false;
+                }
+            }
+        }
+        if(chipid == 1)
+        {
+            for(int i = 256; i <512; i++){
+                for(int j = 0; j <256; j++){
+                    maskMatrix[i][j] = false;
+                }
+            }
+        }
+        if(chipid == 2)
+        {
+            for(int i = 0; i <256; i++){
+                for(int j =0 ; j <256; j++){
+                    maskMatrix[i][j] = false;
+                }
+            }
+        }
+        if(chipid == 3)
+        {
+            for(int i = 0; i <256; i++){
+                for(int j = 256 ; j <512; j++){
+                    maskMatrix[i][j] = false;
+                }
+            }
+        }
+    }
+    //convert chip index to preview index
+    QPoint chipIndexToPreviewIndex(QPoint chipIndex,int chipId);
     bool makeTeaCoffeeDialog();
 
 public slots:
@@ -401,6 +460,7 @@ signals:
 
     void equalizationPathExported(QString path);
     void pixelsMasked(int devId,QSet<int> pixelSet);
+
 };
 
 #endif // QCSTMEQUALIZATION_H

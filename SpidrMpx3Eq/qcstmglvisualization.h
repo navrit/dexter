@@ -199,6 +199,9 @@ private:
     //! TCP server
     bool autosaveFromServer = false;
 
+    //convert preview index to chip index
+    QPoint previewIndexToChipIndex(QPoint previewPixel,int *chipId);
+
 private slots:
     void ConnectionStatusChanged(bool connecting);
     void on_percentileRangeRadio_toggled(bool checked);
@@ -248,6 +251,8 @@ private slots:
     void onPixelsMasked(int devID,QSet<int> pixelSet);
 
     void onEqualizationPathExported(QString path);
+
+
 
 
 
