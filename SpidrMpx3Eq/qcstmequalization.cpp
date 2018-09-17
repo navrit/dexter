@@ -2192,7 +2192,7 @@ bool QCstmEqualization::makeTeaCoffeeDialog()
     }
 }
 
-void QCstmEqualization::LoadEqualization(bool getPath, QString path) {
+void QCstmEqualization::LoadEqualization(bool getPath,bool remotely ,QString path) {
 
     if (path == "") {
         path = "config/";
@@ -2201,11 +2201,18 @@ void QCstmEqualization::LoadEqualization(bool getPath, QString path) {
     //! Non-default path, get the folder from a QFileDialog
     if (getPath){
         // Absolute folder path
-        path = QFileDialog::getExistingDirectory(
-                    this,
-                    tr("Select a directory containing equalisation files (adj_* and mask_*)"),
-                    QDir::currentPath(),
-                    QFileDialog::ShowDirsOnly);
+        if(!remotely){
+            path = QFileDialog::getExistingDirectory(
+                        this,
+                        tr("Select a directory containing equalisation files (adj_* and mask_*)"),
+                        QDir::currentPath(),
+                        QFileDialog::ShowDirsOnly);
+        }
+        //from server
+        else
+        {
+
+        }
         path += "/";
         emit equalizationPathExported(path);
         if( !path.isNull() ) {

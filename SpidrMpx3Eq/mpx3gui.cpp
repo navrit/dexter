@@ -291,7 +291,13 @@ void Mpx3GUI::LoadEqualization(){
 
 void Mpx3GUI::loadEqualisationFromPath(){
     bool getPath = true;
-    _ui->equalizationWidget->LoadEqualization(getPath);
+    _ui->equalizationWidget->LoadEqualization(getPath,false);
+}
+
+void Mpx3GUI::loadEqualisationFromPathRemotely(QString path)
+{
+    bool getPath = true;
+    _ui->equalizationWidget->LoadEqualization(getPath,true,path);
 }
 
 bool Mpx3GUI::equalizationLoaded(){

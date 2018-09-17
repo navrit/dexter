@@ -294,13 +294,16 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
     // HDMI cable config
     if ( item == __ALL ) {
         // Good configuration for external shutter
-        unsigned int val1 = 0x5; // External shutter IN | Connector 1, signal 1
+        unsigned int val1 = 0x4;//0x5; // External shutter IN | Connector 1, signal 1
         val1 = val1;
+       //  val1 = val1 << 12;
         unsigned int val2 = 0x4; // Debug shutter OUT (read back) | Connector 1, signal 3
         val2 = val2 << 8;
+        //val2 = val2 << 16;
         //unsigned int val1 = 0xB; // Debug shutter OUT (read back) | Connector 1, signal 3
-        unsigned int val3 = 0x9; // Debug shutter OUT (read back) | Connector 1, signal 3
+        unsigned int val3 = 0x4;//0x9; // Debug shutter OUT (read back) | Connector 1, signal 3
         val3 = val3 << 4;
+       // val3 = val3 << 20;
         // mask
         // mask
         // mask

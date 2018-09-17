@@ -49,6 +49,7 @@ public:
     void getImage(void);
     int setPixelMask(int,int);
     int setPixelUnmask(int,int);
+    void loadEqualizationRemotely(QString path);
     //data
     void emitrequestForAnotherSocket(int);
     QHash<QString,cmd_struct> cmdTable;
@@ -65,6 +66,7 @@ signals:
     void requestAnotherSocket(int);
     void requestToMaskPixelRemotely(int,int);
     void requestToUnmaskPixelRemotely(int,int);
+    void requestToLoadEqualizationRemotely(QString);
 
 public slots:
     void on_doneWithOneFrame(int);

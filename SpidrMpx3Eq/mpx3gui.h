@@ -269,6 +269,8 @@ public slots:
 
     void developerMode();
 
+    void loadEqualisationFromPathRemotely(QString path);
+
 private slots:
     void LoadEqualization();
     void loadEqualisationFromPath();

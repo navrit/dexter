@@ -851,6 +851,17 @@ void setUnmaskPixelHandler(CommandHandler* ch, Command* cmd){
     ch->setPixelUnmask(x,y);
 }
 
+
+void setEqualizationHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetUnmaskPixel"))  //this command comes with one argument
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    QString path = cmd->arguments.at(0);
+    ch->loadEqualizationRemotely(path);
+}
+
 //end of handler functions
 
 

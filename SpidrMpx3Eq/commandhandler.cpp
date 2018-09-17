@@ -24,6 +24,7 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     //    connect(this,SIGNAL(requestForSettingSaveTag(int)),visualisation,SLOT(onRequestForSettingFormatFromServer(int)));
     connect(this,SIGNAL(requestToMaskPixelRemotely(int,int)),visualisation,SLOT(onReuestToMaskPixelRemotely(int,int)));
     connect(this,SIGNAL(requestToUnmaskPixelRemotely(int,int)),visualisation,SLOT(onReuestToUnmaskPixelRemotely(int,int)));
+    connect(this,SIGNAL(requestToLoadEqualizationRemotely(QString)),getGui(),SLOT(loadEqualisationFromPathRemotely(QString)));
     initializeCmdTable();
 }
 
@@ -149,6 +150,8 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("SetMaskPixel",setMaskPixel);
     cmd_struct setUnmaskPixel{setUnmaskPixelHandler};
     cmdTable.insert("SetUnmaskPixel",setUnmaskPixel);
+    cmd_struct setEqualizationPath {setEqualizationHandler};
+    cmdTable.insert("SetEqualizationPath",setEqualizationPath);
 }
 
 bool Command::enoughArguments(int argsNum,QString command)
@@ -476,6 +479,11 @@ int CommandHandler::setPixelMask(int x, int y)
 int CommandHandler::setPixelUnmask(int x , int y)
 {
     emit requestToUnmaskPixelRemotely(x,y);
+}
+
+void CommandHandler::loadEqualizationRemotely(QString path)
+{
+    emit requestToLoadEqualizationRemotely(path);
 }
 
 

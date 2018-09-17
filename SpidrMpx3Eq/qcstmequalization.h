@@ -259,14 +259,14 @@ public:
 
     string BuildChartName(int val, QString leg);
 
-    void LoadEqualization(bool getPath = false, QString path ="");
+    void LoadEqualization(bool getPath = false, bool remotely = false, QString path ="");
     void ShowEqualization(Mpx3EqualizationResults::lowHighSel sel);
 
     void InitializeEqualizationStructure(); //! on a normal run, when the user load the equalization after connecting
 
     typedef enum {
         __INIT = 0,
-        __DAC_Disc_Optimization_100,
+        __DAC_Disc_OptimizatioSET,EQUALIZATIONFILE,kian_100,
         __DAC_Disc_Optimization_150,
         __PrepareInterpolation_0x0,
         __PrepareInterpolation_0x5,
