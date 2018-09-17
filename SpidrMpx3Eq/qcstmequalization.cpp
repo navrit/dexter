@@ -756,7 +756,7 @@ void QCstmEqualization::StartEqualization() {
         DAC_Disc_Optimization_100( );
 
 
-    } else if ( EQ_NEXT_STEP(__DAC_Disc_Optimization_100 ) ) {
+    } else if ( true ) {
 
         // Check if the previous scan has been stopped by the user
 
@@ -2209,10 +2209,7 @@ void QCstmEqualization::LoadEqualization(bool getPath,bool remotely ,QString pat
                         QFileDialog::ShowDirsOnly);
         }
         //from server
-        else
-        {
 
-        }
         path += "/";
         emit equalizationPathExported(path);
         if( !path.isNull() ) {
