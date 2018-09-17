@@ -16,7 +16,7 @@
 CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
 {
     QCstmGLVisualization * visualisation = ((Mpx3GUI*) parent)-> getVisualization();
-    connect(this,SIGNAL(requestForDataTaking()),visualisation,SLOT(StartDataTaking()));
+    connect(this,SIGNAL(requestForDataTaking(bool)),visualisation,SLOT(StartDataTakingRemotely(bool)));
     connect(this,SIGNAL(requestForInfDataTracking(bool)),visualisation,SLOT(on_infDataTakingCheckBox_toggled(bool)));
     connect(this,SIGNAL(requestForSnap()),visualisation,SLOT(on_singleshotPushButton_clicked()));
     connect(this,SIGNAL(requestForAutoSave(bool)),visualisation,SLOT(onRequestForAutoSaveFromServer(bool)));
@@ -181,10 +181,10 @@ void Command::setError(ERROR_TYPE et)
 
 
 
-void CommandHandler::startLiveCamera()
+void CommandHandler::startLiveCamera(bool takingDataFlag)
 {
     //emit requestForInfDataTracking(true);
-    emit requestForDataTaking();
+    emit requestForDataTaking(!takingDataFlag);
     //QCstmGLVisualization::getInstance()->setInfDataTaking(true);
 }
 

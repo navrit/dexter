@@ -259,6 +259,7 @@ private slots:
 public slots:
 
     void StartDataTaking(QString mode="");
+    void StartDataTakingRemotely(bool);
     void setGradient(int index);
     //!Used to inform this object of the availible gradients and their names.
     void availible_gradients_changed(QStringList gradients);

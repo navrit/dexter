@@ -459,6 +459,12 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
 
 }
 
+void QCstmGLVisualization::StartDataTakingRemotely(bool flag)
+{
+    _takingData = flag;
+    StartDataTaking();
+}
+
 void QCstmGLVisualization::ETAToZero() {
 
     QString textT = QTime(0,0,0).toString("hh:mm:ss");

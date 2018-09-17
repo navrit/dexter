@@ -26,7 +26,7 @@ class CommandHandler : public QObject
 public:
     explicit CommandHandler(QObject *parent = nullptr);
     Mpx3GUI* getGui();
-    void startLiveCamera(void);
+    void startLiveCamera(bool);
     void startSnap(void);
     void setAutoSave(bool);
     void setRecordPath(QString);
@@ -59,7 +59,7 @@ public:
 signals:
     //void commandIsDecoded(QString,QByteArray,bool);
     void imageIsReady(QByteArray,QByteArray);
-    void requestForDataTaking(void);
+    void requestForDataTaking(bool);
     void requestForInfDataTracking(bool);
     void requestForSnap(void);
     void requestForAutoSave(bool);

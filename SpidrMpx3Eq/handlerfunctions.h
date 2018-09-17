@@ -205,55 +205,26 @@ void closeHandler(CommandHandler* ch, Command* cmd){
     cmd->setData("0");
     cmd->setError(NO_ERROR);
 }
-bool isStarted = false;
 void snapHandler(CommandHandler* ch, Command* cmd){
-    if(!isStarted){
-       ch->startSnap();
-       cmd->setData(QString::number(0));
-       cmd->setError(NO_ERROR);
-       return;
-    }
+
+    ch->startSnap();
+    cmd->setData(QString::number(0));
+    cmd->setError(NO_ERROR);
+
     cmd->setData(QString::number(-1));
     cmd->setError(UNKNOWN_ERROR);
 }
 
 void startHandler(CommandHandler* ch, Command* cmd){
-
-    if(!isStarted){
-
-        ch->startLiveCamera();
-        isStarted = true;
-
-    }
-    int d = (isStarted) ? 0 : -1;
-    cmd->setData(QString::number(d));
-    if(d == 0)
-    {
-        cmd->setError(NO_ERROR);
-//        QThread::usleep(20000);
-////        ch->startSendingImage(true);
-   //    ch-> sendMerlinImage();
-//        ch->emitrequestForAnotherSocket(6352);
-    }
-    else
-        cmd->setError(UNKNOWN_ERROR);
-
-
+    ch->startLiveCamera(true);
+    cmd->setData(QString::number(0));
+    cmd->setError(NO_ERROR);
 }
 void stopHandler(CommandHandler* ch, Command* cmd){
-    if(isStarted){
-        ch->startLiveCamera();
-        isStarted = false;
-    }
-    int d = (isStarted) ? -1 : 0;
-    cmd->setData(QString::number(d));
-    if(d == 0)
-    {
-        cmd->setError(NO_ERROR);
-        ch->startSendingImage(false);
-    }
-    else
-        cmd->setError(UNKNOWN_ERROR);
+    ch->startLiveCamera(false);
+    cmd->setData(QString::number(0));
+    cmd->setError(NO_ERROR);
+    ch->startSendingImage(false);
 }
 
 void setTriggerModeHandler(CommandHandler* ch, Command* cmd){
