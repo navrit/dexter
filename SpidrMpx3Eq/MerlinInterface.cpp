@@ -239,6 +239,7 @@ void MerlinInterface::initializeTables()
     getTable.insert(PROFILES,"GetProfile");
     getTable.insert(TRIGGERMODE,"GetTriggerMode");
     getTable.insert(FILEDIRECTORY,"GetRecordPath");
+    getTable.insert(EQUALIZATIONFILES,"GetEqualizationPath");
     //initialize setTable
     setTable.insert(COLOURMODE,"SetColourMode;" + QString::number(ENABLE_DISABLE));
     setTable.insert(CHARGESUMMING,"SetChargeSumming;" + QString::number(CSM_SPM));

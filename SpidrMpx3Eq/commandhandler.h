@@ -50,6 +50,8 @@ public:
     int setPixelMask(int,int);
     int setPixelUnmask(int,int);
     void loadEqualizationRemotely(QString path);
+    QString getEqualizationPath();
+
     //data
     void emitrequestForAnotherSocket(int);
     QHash<QString,cmd_struct> cmdTable;
@@ -71,11 +73,13 @@ signals:
 public slots:
     void on_doneWithOneFrame(int);
     void on_someCommandHasFinished_Successfully(void);
+    void on_equalizationPathExported(QString path);
 private:
     QByteArray imageToSend;    // image to be sent when 'GetImage' recieved
     void initializeCmdTable(void);
     char* getTimeStamp();
     bool _sendingImage = false;
+    QString _equalizationPath = "";
 };
 
 class Command {

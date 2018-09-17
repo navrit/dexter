@@ -862,6 +862,11 @@ void setEqualizationHandler(CommandHandler* ch, Command* cmd){
     ch->loadEqualizationRemotely(path);
 }
 
+void getEqualizationHandler(CommandHandler* ch, Command* cmd){
+    cmd->setData(ch->getEqualizationPath());
+    cmd->setError(NO_ERROR);
+}
+
 //end of handler functions
 
 

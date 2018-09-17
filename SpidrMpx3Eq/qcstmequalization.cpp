@@ -15,6 +15,8 @@
 #include <QString>
 
 
+QCstmEqualization* eqInstance;
+
 QCstmEqualization::QCstmEqualization(QWidget *parent) :
     QWidget(parent),
     _ui(new Ui::QCstmEqualization)
@@ -111,10 +113,16 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     _scanIndex = 0;
     _stepDone = new bool[__EQStatus_Count];
     for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
+    eqInstance = this;
 }
 
 Ui::QCstmEqualization * QCstmEqualization::GetUI() {
     return _ui;
+}
+
+QCstmEqualization *QCstmEqualization::getInstance()
+{
+    return eqInstance;
 }
 
 QCstmEqualization::~QCstmEqualization()

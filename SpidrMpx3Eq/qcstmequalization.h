@@ -140,6 +140,8 @@ private:
 
 
 
+
+
 };
 
 
@@ -184,7 +186,7 @@ public:
     ~QCstmEqualization();
     void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
     Ui::QCstmEqualization * GetUI();
-
+    static QCstmEqualization* getInstance();
     void PrintFraction(int * buffer, int size, int first_last);
     int GetNPixelsActive(int * buffer, int size, verblev verbose);
     void GetSlopeAndCut_IDAC_DISC_THL(ScanResults *, ScanResults *, double &, double &);

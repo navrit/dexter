@@ -9,6 +9,7 @@
 #include "ui_thresholdscan.h"
 #include "mpx3gui.h"
 #include "dataconsumerthread.h"
+#include "qcstmequalization.h"
 
 
 
@@ -25,6 +26,8 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestToMaskPixelRemotely(int,int)),visualisation,SLOT(onReuestToMaskPixelRemotely(int,int)));
     connect(this,SIGNAL(requestToUnmaskPixelRemotely(int,int)),visualisation,SLOT(onReuestToUnmaskPixelRemotely(int,int)));
     connect(this,SIGNAL(requestToLoadEqualizationRemotely(QString)),getGui(),SLOT(loadEqualisationFromPathRemotely(QString)));
+    connect(QCstmEqualization::getInstance(),SIGNAL(equalizationPathExported(QString)),this,SLOT(on_equalizationPathExported(QString)));
+
     initializeCmdTable();
 }
 
@@ -152,6 +155,8 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("SetUnmaskPixel",setUnmaskPixel);
     cmd_struct setEqualizationPath {setEqualizationHandler};
     cmdTable.insert("SetEqualizationPath",setEqualizationPath);
+    cmd_struct getEqualizationPath {getEqualizationHandler};
+    cmdTable.insert("GetEqualizationPath",getEqualizationPath);
 }
 
 bool Command::enoughArguments(int argsNum,QString command)
@@ -486,6 +491,11 @@ void CommandHandler::loadEqualizationRemotely(QString path)
     emit requestToLoadEqualizationRemotely(path);
 }
 
+QString CommandHandler::getEqualizationPath()
+{
+    return _equalizationPath;
+}
+
 
 void CommandHandler::on_doneWithOneFrame(int frameid)
 {
@@ -510,6 +520,11 @@ void CommandHandler::on_doneWithOneFrame(int frameid)
 void CommandHandler::on_someCommandHasFinished_Successfully()
 {
     disconnect(QCstmGLVisualization::getInstance()->getDataConsumerThread(),SIGNAL(doneWithOneFrame(int)),this,SLOT(on_doneWithOneFrame(int)));
+}
+
+void CommandHandler::on_equalizationPathExported(QString path)
+{
+    _equalizationPath = path;
 }
 
 void CommandHandler::emitrequestForAnotherSocket(int port)
