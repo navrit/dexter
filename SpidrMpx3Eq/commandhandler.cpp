@@ -27,6 +27,7 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestToUnmaskPixelRemotely(int,int)),visualisation,SLOT(onReuestToUnmaskPixelRemotely(int,int)));
     connect(this,SIGNAL(requestToLoadEqualizationRemotely(QString)),getGui(),SLOT(loadEqualisationFromPathRemotely(QString)));
     connect(QCstmEqualization::getInstance(),SIGNAL(equalizationPathExported(QString)),this,SLOT(on_equalizationPathExported(QString)));
+    connect(this,SIGNAL(requestToStartStopThresholdScan()),thresholdScan::getInstance(),SLOT(on_button_startStop_clicked_remotely()));
 
     initializeCmdTable();
 }
@@ -133,10 +134,20 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("SetThresholdScan",setThresholdScan);
     cmd_struct getThresholdScan{getThresholdScanHandler};
     cmdTable.insert("GetThresholdScan",getThresholdScan);
+    cmd_struct setFramesPerScan{setFramesPerScanHandler};
+    cmdTable.insert("SetFramesPerScan",setFramesPerScan);
+    cmd_struct getFramesPerScan{getFramesPerScanHandler};
+    cmdTable.insert("GetFramesPerScan",getFramesPerScan);
+    cmd_struct setScanPath{setScanPathHandler};
+    cmdTable.insert("SetScanPath",setScanPath);
+    cmd_struct getScanPath{getScanPathHandler};
+    cmdTable.insert("GetScanPath",getScanPath);
+
+
     cmd_struct startScan {startScanHandler};
-    cmdTable.insert("StartScan",startScan);
-    cmd_struct stopScan{stopScanHandler};
-    cmdTable.insert("StopScan",stopScan);
+    cmdTable.insert("StarStoptScan",startScan);
+
+
     cmd_struct setOperatingEnergy {setOperatingEnergyHandler};
     cmdTable.insert("SetOperatingEnergy",setOperatingEnergy);
     cmd_struct getOperatingEnergy{getOperatingEnergyHandler};
@@ -264,6 +275,29 @@ int CommandHandler::setThresholdScan(int val)
     return ARG_VAL_OUT_RANGE;
 }
 
+int CommandHandler::setFramesPerScan(int val)
+{
+    QSpinBox* spinBox = thresholdScan::getInstance()->GetUI()->spinBox_framesPerStep;
+    int max = spinBox->maximum();
+    int min = spinBox->minimum();
+    if (val >= min && val < max)
+    {
+       spinBox->setValue(val);
+       return NO_ERROR;
+    }
+    return ARG_VAL_OUT_RANGE;
+}
+
+int CommandHandler::setScanPath(QString path)
+{
+    QFileInfo outputDir(path);
+    if(!outputDir.exists())
+        return UNKNOWN_COMMAND;
+    thresholdScan::getInstance()->GetUI()->textEdit_path->setText(path);
+    return NO_ERROR;
+
+}
+
 int CommandHandler::getStartScan()
 {
     return thresholdScan::getInstance()->GetUI()->spinBox_minimum->value();
@@ -283,6 +317,24 @@ int CommandHandler::getThresholdScan()
 {
     return thresholdScan::getInstance()->GetUI()->comboBox_thresholdToScan->currentIndex();
 }
+
+int CommandHandler::getFramesPerScan()
+{
+    return thresholdScan::getInstance()->GetUI()->spinBox_framesPerStep->value();
+}
+
+QString CommandHandler::getScanPath()
+{
+    return thresholdScan::getInstance()->GetUI()->textEdit_path->toPlainText();
+}
+
+void CommandHandler::startScan()
+{
+    emit requestToStartStopThresholdScan();
+}
+
+
+
 
 void CommandHandler::startSendingImage(bool send)
 {

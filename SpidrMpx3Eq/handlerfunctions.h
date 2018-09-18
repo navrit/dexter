@@ -754,12 +754,53 @@ void getThresholdScanHandler(CommandHandler* ch, Command* cmd)
     cmd->setData(QString::number(ret));
     cmd->setError(NO_ERROR);
 }
+void setFramesPerScanHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetFramesPerScan"))  //this command comes with one argument
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    int val = cmd->arguments.at(0).toInt();
+    int ret = ch->setFramesPerScan(val);
+    cmd->setData(QString::number(ret));
+    cmd->setError((ERROR_TYPE)ret);
+}
+
+void getFramesPerScanHandler(CommandHandler* ch, Command* cmd)
+{
+    int ret = ch->getFramesPerScan();
+    cmd->setData(QString::number(ret));
+    cmd->setError(NO_ERROR);
+}
+
+
+void setScanPathHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetScanPath"))  //this command comes with one argument
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    QString path = cmd->arguments.at(0);
+    int ret = ch->setScanPath(path);
+    cmd->setData(QString::number(ret));
+    cmd->setError((ERROR_TYPE)ret);
+}
+
+void getScanPathHandler(CommandHandler* ch, Command* cmd)
+{
+    QString path = ch->getScanPath();
+    cmd->setData(path);
+    cmd->setError(NO_ERROR);
+}
+
+
+
 void startScanHandler(CommandHandler* ch, Command* cmd){
-
+    ch->startScan();
+    cmd->setData(QString::number(0));
+    cmd->setError(NO_ERROR);
 }
-void stopScanHandler(CommandHandler* ch, Command* cmd){
 
-}
 
 void setOperatingEnergyHandler(CommandHandler* ch, Command* cmd){
     if(!cmd->enoughArguments(1,"SetOperatingEnergy"))  //this command comes with one argument

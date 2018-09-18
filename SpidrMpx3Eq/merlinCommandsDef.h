@@ -29,16 +29,24 @@
 #define ACQUISITIONTIME "ACQUISITIONTIME"
 #define ACQUISITIONPERIOD "ACQUISITIONPERIOD"
 #define NUMFRAMESTOACQUIRE "NUMFRAMESTOACQUIRE"
+//threshold scan
 #define THSTART "THSTART"
-#define THSTOP "THSTOP"
-#define THSTEP "THSTEP"
-#define THSCAN "THSCAN"
+#define THSTOP  "THSTOP"
+#define THSTEP  "THSTEP"
+#define THSCAN  "THSCAN"
+#define THFRAMES "THFRAMES"  //does not exist in M doc
+#define THPATH   "THPATH"    //does not exist in M doc
+#define THSCAN   "THSCAN"    //does not exist in M doc (this is an CMD)
+//end of threshold scan
 #define PROFILES "PROFILES"
 #define TRIGGERMODE  "TRIGGERMODE"
 #define FILEENABLE "FILEENABLE"
 #define FILEDIRECTORY "FILEDIRECTORY"
-#define MASKPIXEL "MASKPIXEL"
-#define UNMASKPIXEL "UNMASKPIXEL"
+//masking pixels
+#define MASKPIXEL "MASKPIXEL"       //does not exist in M doc
+#define UNMASKPIXEL "UNMASKPIXEL"   //does not exist in M doc
+#define MASKEDMATRIXPATH "MASKEDMATRIXPATH" //does not exist in M doc(set and get the path of masked pixel matrix)
+//end of masking pixels
 #define EQUALIZATIONFILES "EQUALIZATIONFILE"
 //#define EQUALIZATIONFILE  "EQUALIZATIONFILE"
 

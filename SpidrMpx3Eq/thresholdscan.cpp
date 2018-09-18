@@ -81,6 +81,8 @@ void thresholdScan::finishedScan()
     ui->textEdit_log->append("\n------------------------------------------");
 
     resetScan();
+    emit scanIsDone();
+
 }
 
 void thresholdScan::startScan()
@@ -220,6 +222,11 @@ void thresholdScan::resumeTHScan()
 //        qDebug() << "[INFO] Threshold scan finished -----------------";
         return;
     }
+}
+
+void thresholdScan::on_button_startStop_clicked_remotely()
+{
+    on_button_startStop_clicked();
 }
 
 void thresholdScan::startDataTakingThread()
@@ -598,6 +605,7 @@ void ThresholdScanThread::run()
                 _mpx3gui->getDataset()->toTIFF(path, false); //! Save raw TIFF
             }
         }
+
 
         lastTH = counter;
         // increment

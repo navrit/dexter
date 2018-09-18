@@ -81,6 +81,7 @@ private:
 
 public slots:
     void resumeTHScan();
+    void on_button_startStop_clicked_remotely();
 
 private slots:
 
@@ -102,6 +103,7 @@ private slots:
 
 signals:
     void slideAndSpin(int, int);
+    void scanIsDone(void);
 };
 
 class ThresholdScanThread : public QThread {

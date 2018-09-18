@@ -37,12 +37,17 @@ public:
     int setStopScan(int);
     int setStepScan(int);
     int setThresholdScan(int);
+    int setFramesPerScan(int);
+    int setScanPath(QString);
+    void startThrsholdScan(void);
     int getStartScan(void);
     int getStopScan(void);
     int getStepScan(void);
     int getThresholdScan(void);
-    int startScan(int);
-    int stopScan(int);
+    int getFramesPerScan(void);
+    QString getScanPath(void);
+    void startScan(void);
+
     void startSendingImage(bool);
     QString generateMerlinFrameHeader(int frameid);
     QString getAcquisitionHeader(void);
@@ -69,6 +74,7 @@ signals:
     void requestToMaskPixelRemotely(int,int);
     void requestToUnmaskPixelRemotely(int,int);
     void requestToLoadEqualizationRemotely(QString);
+    void requestToStartStopThresholdScan(void);
 
 public slots:
     void on_doneWithOneFrame(int);

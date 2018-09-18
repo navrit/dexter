@@ -235,6 +235,8 @@ void MerlinInterface::initializeTables()
     getTable.insert(THSTOP,"GetStopScan");
     getTable.insert(THSTEP,"GetStepScan");
     getTable.insert(THSCAN,"GetThresholdScan");
+    getTable.insert(THFRAMES,"GetFramesPerScan;");
+    getTable.insert(THPATH,"GetScanPath;");
     getTable.insert(OPERATINGENERGY,"GetOperatingEnergy");
     getTable.insert(PROFILES,"GetProfile");
     getTable.insert(TRIGGERMODE,"GetTriggerMode");
@@ -262,6 +264,8 @@ void MerlinInterface::initializeTables()
     setTable.insert(THSTOP,"SetStopScan;" + QString::number(N));
     setTable.insert(THSTEP,"SetStepScan;" + QString::number(N));
     setTable.insert(THSCAN,"SetThresholdScan;" + QString::number(N));
+    setTable.insert(THFRAMES,"SetFramesPerScan;" + QString::number(N));
+    setTable.insert(THPATH,"SetScanPath;" + QString::number(STRING));
     setTable.insert(OPERATINGENERGY,"SetOperatingEnergy;" +  QString::number(N));
     setTable.insert(PROFILES,"SetProfile;" +  QString::number(N) );
     setTable.insert(TRIGGERMODE,"SetTriggerMode;"  +  QString::number(N));
@@ -274,6 +278,7 @@ void MerlinInterface::initializeTables()
     //initialize cmdTable
     cmdTable.insert(STOPACQUISITION,"Stop");
     cmdTable.insert(STARTACQUISITION,"Start");
+    cmdTable.insert(THSCAN,"StarStoptScan");
 }
 
 QString MerlinCommand::argParser(PSL_ARG_TYPES argType)
