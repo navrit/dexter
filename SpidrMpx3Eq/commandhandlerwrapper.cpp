@@ -18,6 +18,7 @@ void CommandHandlerWrapper::on_dataRecieved(QString command)
     cmd.invoke(commandHandler);
     //get response
     QString response = "";
+    merlinCmd.setErrorExternally(cmd.getError());
     if(merlinCmd.getCommandType() == "SET" || merlinCmd.getCommandType() == "CMD")
         response = merlinCmd.makeSetCmdResponse();
     else if(merlinCmd.getCommandType() == "GET")
