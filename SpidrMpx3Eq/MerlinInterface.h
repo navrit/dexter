@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QHash>
+#include <QVector>
 #include "merlinCommandsDef.h"
 
 class Mpx3GUI;
@@ -108,9 +109,10 @@ public:
     QString parseResult;
     QString _cmdType   = "";
     QString _cmdName   = "";
-    QString  _cmdValue  = "";
+    QVector<QString>  _cmdValue;
     int     _error     = NO_ERROR;
     QString _response  = "";
+    int _ptrCmdValue = 0;
 
 private: //constants
     const int SET_PARTS = 6;

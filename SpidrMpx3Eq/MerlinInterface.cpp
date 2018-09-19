@@ -44,7 +44,8 @@ MerlinCommand::MerlinCommand(QString command, MerlinInterface &mi)
     _cmdLength = 0;
     _cmdType = "";
     _cmdName = "";
-    _cmdValue = "";
+    _cmdValue.clear();
+
     QStringList items = command.split(",");
 //    QStringList itemsTemp ;
 
@@ -84,7 +85,12 @@ MerlinCommand::MerlinCommand(QString command, MerlinInterface &mi)
     _cmdType = items.at(TYPE_INDEX);
     _cmdName = items.at(NAME_INDEX);
     if(items.at(TYPE_INDEX) == SET_TYPE)
-        _cmdValue = items.at(VALUE_INDEX);
+    {
+         _cmdValue.push_back(items.at(VALUE_INDEX));
+        if(items.length() == SET_PARTS) //means commands comes with two arguments
+            _cmdValue.push_back(items.at(VALUE_INDEX + 1));
+    }
+    _ptrCmdValue = 0;
     //check the length of the following command
     if(items.at(LENGTH_INDEX).length() != 10){
         _error = PARAM_OUT_OF_RANGE;
@@ -113,6 +119,7 @@ MerlinCommand::MerlinCommand(QString command, MerlinInterface &mi)
             for (int i = 1; i < pslCmdList.length(); ++i) {
                 PSL_ARG_TYPES pslType = (PSL_ARG_TYPES) pslCmdList.at(i).toInt();
                 QString arg = argParser(pslType);
+                //_ptrCmdValue++;
                 sndCmd += ";" + arg;
             }
             _error = NO_ERROR;
@@ -260,6 +267,17 @@ void MerlinInterface::initializeTables()
     setTable.insert(THRESHOLD5,"SetThreshold;"+QString::number(TH5)+";" +QString::number(N));
     setTable.insert(THRESHOLD6,"SetThreshold;"+QString::number(TH6)+";" +QString::number(N));
     setTable.insert(THRESHOLD7,"SetThreshold;"+QString::number(TH7)+";" +QString::number(N));
+
+    setTable.insert(THRESHOLD0CHIP,"SetThresholdPerChip;"+QString::number(TH0)+";" +QString::number(N)+";"+QString::number(N));
+    setTable.insert(THRESHOLD1CHIP,"SetThresholdPerChip;"+QString::number(TH1)+";" +QString::number(N)+";"+QString::number(N));
+    setTable.insert(THRESHOLD2CHIP,"SetThresholdPerChip;"+QString::number(TH2)+";" +QString::number(N)+";"+QString::number(N));
+    setTable.insert(THRESHOLD3CHIP,"SetThresholdPerChip;"+QString::number(TH3)+";" +QString::number(N)+";"+QString::number(N));
+    setTable.insert(THRESHOLD4CHIP,"SetThresholdPerChip;"+QString::number(TH4)+";" +QString::number(N)+";"+QString::number(N));
+    setTable.insert(THRESHOLD5CHIP,"SetThresholdPerChip;"+QString::number(TH5)+";" +QString::number(N)+";"+QString::number(N));
+    setTable.insert(THRESHOLD6CHIP,"SetThresholdPerChip;"+QString::number(TH6)+";" +QString::number(N)+";"+QString::number(N));
+    setTable.insert(THRESHOLD7CHIP,"SetThresholdPerChip;"+QString::number(TH7)+";" +QString::number(N) +";"+QString::number(N));
+
+
     setTable.insert(THSTART,"SetStartScan;" + QString::number(N));
     setTable.insert(THSTOP,"SetStopScan;" + QString::number(N));
     setTable.insert(THSTEP,"SetStepScan;" + QString::number(N));
@@ -285,38 +303,67 @@ QString MerlinCommand::argParser(PSL_ARG_TYPES argType)
 {
     switch (argType) {
     case N:
-        return  _cmdValue;
-        break;
+    {
+        QString ret =  _cmdValue.at(0);
+         _cmdValue.removeFirst();
+        return ret;
+    }
+
     case STRING:
-        return _cmdValue;
-        break;
+    {
+        QString ret =  _cmdValue.at(0);
+         _cmdValue.removeFirst();
+        return ret;
+    }
+
     case N_INF:
-        return _cmdValue;
-        break;
+    {
+        QString ret =  _cmdValue.at(0);
+         _cmdValue.removeFirst();
+        return ret;
+    }
     case ENABLE_DISABLE:
-        if(_cmdValue.toInt() == 1)
+    {
+        if(_cmdValue.at(0).toInt() == 1)
+        {
+            _cmdValue.removeFirst();
             return "enable";
+        }
         else {
+            _cmdValue.removeFirst();
             return "disable";
         }
-        break;
+
+    }
     case CSM_SPM:
-        if(_cmdValue.toInt() == 1)
+        if(_cmdValue.at(0).toInt() == 1)
+        {
+              _cmdValue.removeFirst();
             return "csm";
-        else
+        }
+        else{
+              _cmdValue.removeFirst();
             return "spm";
+       }
         break;
     case HIGH_LOW:
-        { auto ival = _cmdValue.toInt();
-            if (ival >= 0 && ival <= 3)
-            return gainModeStrTable[3-ival];
+        { auto ival = _cmdValue.at(0).toInt();
+            if (ival >= 0 && ival <= 3){
+                  _cmdValue.removeFirst();
+                return gainModeStrTable[3-ival];
+            }
+              _cmdValue.removeFirst();
         }
         break;
     case CONT_SEQ:
-        if(_cmdValue.toInt()== 0)
+        if(_cmdValue.at(0).toInt()== 0){
+              _cmdValue.removeFirst();
             return "seq";
-        if(_cmdValue.toInt()== 1)
+        }
+        if(_cmdValue.at(0).toInt()== 1){
+              _cmdValue.removeFirst();
             return "cont";
+        }
         break;
     case OPEN:
         return "open";
