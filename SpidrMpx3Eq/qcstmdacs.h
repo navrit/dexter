@@ -79,6 +79,9 @@ public:
     void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
     Mpx3GUI * GetMpx3GUI() { return _mpx3gui; };
 
+    QCheckBox* getAllDACSimultaneousCheckBox();
+    QSpinBox* getDeviceIdSpinBox();
+
     void setWindowWidgetsStatus(win_status s = win_status::startup );
 
     // Ask the config !

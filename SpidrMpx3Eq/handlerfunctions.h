@@ -684,6 +684,24 @@ void getThresholdHandler(CommandHandler* ch, Command* cmd){
 }
 
 
+void setThresholdPerChipHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(3,"SetThresholdPerChip"))  //this command comes with two argument{SetThresholdPerChip;th;chip;val}
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    int idx = cmd->arguments.at(0).toInt();
+    int val = cmd->arguments.at(2).toDouble();
+    int chipId = cmd->arguments.at(1).toInt();
+   // qDebug() <<"Double: " << cmd->arguments.at(1).toDouble() << "..." << idx;
+    //qDebug() << "Int : " << cmd->arguments.at(1).toInt();
+    ch->setThreshold(idx,val,chipId);
+    cmd->setError(NO_ERROR);
+}
+
+
+
+
 void setStartScanHandler(CommandHandler* ch, Command* cmd)
 {
     if(!cmd->enoughArguments(1,"SetStartScan"))  //this command comes with one argument

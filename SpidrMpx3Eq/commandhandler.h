@@ -32,6 +32,7 @@ public:
     void setRecordPath(QString);
     void setRecordFormat(int);
     int setThreshold(int,int);
+    int setThreshold(int,int,int);
     int getThreshold(int);
     int setStartScan(int);
     int setStopScan(int);

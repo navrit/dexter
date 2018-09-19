@@ -303,11 +303,18 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
         //unsigned int val1 = 0xB; // Debug shutter OUT (read back) | Connector 1, signal 3
         unsigned int val3 = 0x4;//0x9; // Debug shutter OUT (read back) | Connector 1, signal 3
         val3 = val3 << 4;
+
+        unsigned int val4 = 0x4;
+        val4 = val4 << 12;
+        unsigned int val5 = 0x4;
+        val5 = val5 << 16;
+        unsigned int val6 = 0x4;
+        val6 = val6 << 20;
        // val3 = val3 << 20;
         // mask
         // mask
         // mask
-        unsigned int val = val1 | val2 |val3;
+        unsigned int val = val1 | val2 |val3|val4|val5|val6;
         //qDebug() << "HDMI Setting : " << val;
         spidrcontrol->setSpidrReg(0x0810, val, true);
     }

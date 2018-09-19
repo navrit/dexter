@@ -736,6 +736,16 @@ QCPGraph * QCstmDacs::GetGraph(int idx) {
     return ui->plotScan->graph( idx );
 }
 
+QCheckBox *QCstmDacs::getAllDACSimultaneousCheckBox()
+{
+    return ui->allDACSimultaneousCheckBox;
+}
+
+QSpinBox *QCstmDacs::getDeviceIdSpinBox()
+{
+    return ui->deviceIdSpinBox;
+}
+
 
 void QCstmDacs::setWindowWidgetsStatus(win_status s)
 {
