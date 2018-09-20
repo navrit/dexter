@@ -4,7 +4,7 @@ CommandHandlerWrapper::CommandHandlerWrapper(QObject *parent) : QObject(parent)
 {
     commandHandler = new CommandHandler(parent);
     merlinInterface = new MerlinInterface;
-    connect(commandHandler,SIGNAL(requestForDataTaking(void)),this,SLOT(on_requestForDataTaking(void)));
+    connect(commandHandler,SIGNAL(requestForDataTaking(bool)),this,SLOT(on_requestForDataTaking(bool)));
     connect(commandHandler,SIGNAL(imageIsReady(QByteArray,QByteArray)),this,SLOT(on_ImageIsReady(QByteArray,QByteArray)));
 }
 
@@ -32,7 +32,7 @@ void CommandHandlerWrapper::on_dataRecieved(QString command)
 
 }
 
-void CommandHandlerWrapper::on_requestForDataTaking()
+void CommandHandlerWrapper::on_requestForDataTaking(bool)
 {
     QString acqHeader = commandHandler->getAcquisitionHeader();
     QByteArray dummy;

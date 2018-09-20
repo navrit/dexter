@@ -26,7 +26,7 @@ public slots:
     //recive commands from command socket(server)
     void on_dataRecieved(QString);
     //provide image data for image socket(server) when is requested.
-    void on_requestForDataTaking(void);
+    void on_requestForDataTaking(bool);
     //recive image from commandHandler
     void on_ImageIsReady(QByteArray,QByteArray);
 };
