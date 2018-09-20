@@ -65,7 +65,8 @@ typedef enum {
                                     //!
                                     //! This is the reference voltage - not passed to the analog circuit (it gets ~1.6V)
 #define __maxADCCounts	        4095 // 12 bits
-#define __max_DAC_range			 512
+#define __max_DAC_range         512
+#define __half_DAC_range        256
 
 // Trigger
 #define __min_trigger_deadtime_ms 1000

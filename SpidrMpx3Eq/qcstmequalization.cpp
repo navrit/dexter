@@ -61,7 +61,7 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     _resdataset = nullptr;
     _gridLayoutHistograms = nullptr;
 
-    _stepScan = __default_step_scan;
+    _stepScan = _ui->eqStepSpinBox->value(); //__default_step_scan;
     _setId = 0;
     _nChips = 1;
     _eqMap.clear();
@@ -88,6 +88,7 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     _ui->equalizationTHLTHHCombo->addItem( QString("Only THL") );
     _ui->equalizationTHLTHHCombo->addItem( QString("Only THH") );
     _equalizationCombination = __THLandTHH; // item 0
+    _prevEqualizationCombination = _equalizationCombination;
 
     _ui->equalizationTypeCombo->addItem( QString("Noise edge") );
     _ui->equalizationTypeCombo->addItem( QString("Noise centroid") );
@@ -317,8 +318,11 @@ bool QCstmEqualization::InitEqualization(int chipId) {
     // No sets available
     _setId = 0;
 
+    // Clear the previous scans!
+    _scans.clear();
+
     // And step
-    ChangeStep( __default_step_scan );
+    //ChangeStep( __default_step_scan );
 
     // Clear the list of chips
     Rewind();
@@ -511,8 +515,14 @@ QCheckBox * QCstmEqualization::GetCheckBox(int chipIdx) {
 
 equalizationSteeringInfo * QCstmEqualization::GetSteeringInfo(int chipIdx) {
 
+    //i//
     // There should be as results objects as chips to be equalized
-    if ( _workChipsIndx.size() != _steeringInfo.size() ) return nullptr;
+    //
+    //if ( _workChipsIndx.size() != _steeringInfo.size() ) return nullptr;
+
+    // There should be enough steering info objects for the chips requested to be equalized.
+    // If there are more steering info information objects, find the right one.
+    if ( _steeringInfo.size() < _workChipsIndx.size() ) return nullptr;
 
     // Find the index
     for (int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
@@ -699,7 +709,7 @@ void QCstmEqualization::StartEqualizationSequentialSingleChips()
         KeepOtherChipsQuiet();
 
         // Clear the previous scans!
-        _scans.clear();
+        //_scans.clear();
 
         StartEqualizationSingleChip();
 
@@ -757,14 +767,13 @@ void QCstmEqualization::StartEqualization() {
             qDebug() << "[INFO]\tCurrent DAC DISC Value [" << i << "] =" << _steeringInfo[i]->currentDAC_DISC_OptValue;
         }
 
-        _spacing = 1; //! Need to have _spacing = 1 until __PrepareInterpolation_0x0
+        //i//_spacing = 1; //! Need to have _spacing = 1 until __PrepareInterpolation_0x0
         qDebug() << "[INFO] \tEqualisation setting pixel spacing to 1 until Fine tuning";
 
         // Prepare and launch the thread
         DAC_Disc_Optimization_100( );
 
-
-    } else if ( true ) {
+    } else if ( EQ_NEXT_STEP(__DAC_Disc_Optimization_100) ) {
 
         // Check if the previous scan has been stopped by the user
 
@@ -935,6 +944,7 @@ void QCstmEqualization::StartEqualization() {
 
         if ( _equalizationCombination == __THLandTHH ) {
             // At this point we finished THL. Go for THH now
+            _prevEqualizationCombination = _equalizationCombination;
             _equalizationCombination = __OnlyTHH;
 
             // partial re-initialization
@@ -948,6 +958,9 @@ void QCstmEqualization::StartEqualization() {
             StartEqualization();
 
         } else {
+
+            // come back to the initial setting for equalization combination
+            _equalizationCombination = _prevEqualizationCombination;
 
             SaveEqualization();
             AppendToTextBrowser( "[DONE]" );
@@ -1064,6 +1077,11 @@ void QCstmEqualization::DAC_Disc_Optimization_100() {
     QString legend = _steeringInfo[0]->currentDAC_DISC_String; // is the same for all chips
     legend += QString::number(_steeringInfo[0]->currentDAC_DISC_OptValue, 'd', 0);
 
+    // arbitrary step for DAC_Disc_Optimization
+    ChangeStep( __DAC_Disc_Optimization_step, true );
+    ChangeMax( 0, true );
+    ChangeMin( __half_DAC_range-1, true );
+
     // -------------------------------------------------------------------------
     // 1) Scan with MPX3RX_DAC_DISC_L = 100
     ThlScan * tscan = new ThlScan(_mpx3gui, this);
@@ -1109,6 +1127,11 @@ void QCstmEqualization::DAC_Disc_Optimization_150() {
 
     QString legend = _steeringInfo[0]->currentDAC_DISC_String;
     legend += QString::number(_steeringInfo[0]->currentDAC_DISC_OptValue, 'd', 0);
+
+    // arbitrary step for DAC_Disc_Optimization
+    ChangeStep( __DAC_Disc_Optimization_step, true );
+    ChangeMax( 0, true );
+    ChangeMin( __half_DAC_range-1, true );
 
     // -------------------------------------------------------------------------
     // 2) Scan with MPX3RX_DAC_DISC_L = 150
@@ -1279,6 +1302,9 @@ void QCstmEqualization::PrepareInterpolation_0x0() {
     legend += "_Opt_adj";
     legend += QString::number(_steeringInfo[0]->globalAdj, 'd', 0);
 
+    // arbitrary step for DAC_Disc_Optimization
+    ChangeStep( __DAC_Disc_Optimization_step, true );
+
     // -------------------------------------------------------------------------
     // 5)  See where the pixels fall now for adj0 and keep the pixel information
     ThlScan * tscan_opt_adj0 = new ThlScan( _mpx3gui, this);
@@ -1314,13 +1340,14 @@ void QCstmEqualization::PrepareInterpolation_0x0() {
 
 void QCstmEqualization::ScanOnInterpolation() {
 
-    ChangeStep(1);
-
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
     QString legend = _steeringInfo[0]->currentDAC_DISC_String;
     legend += "_Opt_adjX";
+
+    // arbitrary step for DAC_Disc_Optimization
+    ChangeStep( 1, true );
 
     // Note that this suggests a descending scan.
     ThlScan * scan_last = nullptr;
@@ -1369,6 +1396,9 @@ void QCstmEqualization::PrepareInterpolation_0x5() {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
+
+    // arbitrary step for DAC_Disc_Optimization
+    ChangeStep( __DAC_Disc_Optimization_step, true );
 
     // -------------------------------------------------------------------------
     // 5)  See where the pixels fall now for adj5 and keep the pixel information
@@ -1714,12 +1744,12 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     // Trigger config
     // Sequential R/W
     int trig_mode      = SHUTTERMODE_AUTO;     // Auto-trigger mode
-    int trig_length_us = 5000;  // This time shouldn't be longer than the period defined by trig_freq_hz
-    int trig_freq_hz   = 200;   // One trigger every 5ms
+    int trig_length_us = 1000;  // This time shouldn't be longer than the period defined by trig_freq_hz
+    int trig_freq_mhz   = 10000;   //
     int nr_of_triggers = _nTriggers;    // This is the number of shutter open I get
     spidrcontrol->setShutterTriggerConfig( trig_mode,
                                            trig_length_us,
-                                           trig_freq_hz,
+                                           trig_freq_mhz,
                                            nr_of_triggers );
 
 }
@@ -2390,6 +2420,7 @@ void QCstmEqualization::setEqualizationShowTHLTHH(int sel) {
 void QCstmEqualization::setEqualizationTHLTHH(int sel) {
     if ( _equalizationCombination == sel ) return;
     _equalizationCombination = sel;
+    _prevEqualizationCombination = sel;
 }
 
 void QCstmEqualization::setEqualizationTHLType(int sel) {
@@ -2412,7 +2443,7 @@ void QCstmEqualization::ChangeSpacing( int spacing ) {
     _spacing = spacing;
 }
 
-void QCstmEqualization::ChangeMin(int min) {
+void QCstmEqualization::ChangeMin(int min, bool uisetting) {
 
     // Handle the mistakes
     // 1) Negative value
@@ -2425,12 +2456,14 @@ void QCstmEqualization::ChangeMin(int min) {
 
     _minScanTHL = min;
 
+    if ( uisetting ) _ui->eqMinSpinBox->setValue( _minScanTHL );
+
     // decide if the scan is descendant
     if ( _minScanTHL > _maxScanTHL ) _scanDescendant = true;
     else _scanDescendant = false;
 
 }
-void QCstmEqualization::ChangeMax(int max) {
+void QCstmEqualization::ChangeMax(int max, bool uisetting) {
 
     if( max < 0 || max == _minScanTHL || qAbs(max - _minScanTHL) <= _stepScan ) {
         _ui->eqMaxSpinBox->setValue( _maxScanTHL );
@@ -2439,17 +2472,21 @@ void QCstmEqualization::ChangeMax(int max) {
 
     _maxScanTHL = max;
 
+    if ( uisetting ) _ui->eqMaxSpinBox->setValue( _maxScanTHL );
+
     // decide if the scan is descendant
     if ( _maxScanTHL < _minScanTHL ) _scanDescendant = true;
     else _scanDescendant = false;
 
 }
 
-void QCstmEqualization::ChangeStep(int step) {
+void QCstmEqualization::ChangeStep(int step, bool uisetting) {
+
     if( step < 0 ) return;
+
     _stepScan = step;
 
-    _ui->eqStepSpinBox->setValue( _stepScan );
+    if ( uisetting ) _ui->eqStepSpinBox->setValue( _stepScan );
 }
 
 void QCstmEqualization::StopEqualization() {

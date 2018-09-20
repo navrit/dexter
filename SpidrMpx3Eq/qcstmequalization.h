@@ -31,7 +31,9 @@ using namespace std;
 #include "testpulseequalisation.h"
 
 #define __default_step_scan		1
-#define __low_but_above_noise_threshold 100      //! This is for an equalised chip, should be valid for all gain modes
+#define __DAC_Disc_Optimization_step    2
+
+#define __low_but_above_noise_threshold 511      //! This is for an equalised chip, should be valid for all gain modes
 
 #define EQ_NEXT_STEP(x) ( _eqStatus == x && ! _stepDone[x] )
 
@@ -268,7 +270,10 @@ public:
 
     typedef enum {
         __INIT = 0,
-        __DAC_Disc_OptimizatioSET,EQUALIZATIONFILE,kian_100,
+        __DAC_Disc_Optimization_100,
+        //__DAC_Disc_OptimizatioSET,
+        //EQUALIZATIONFILE,
+        //kian_100,
         __DAC_Disc_Optimization_150,
         __PrepareInterpolation_0x0,
         __PrepareInterpolation_0x5,
@@ -361,6 +366,8 @@ private:
         __nEQCombinations
     };
     int _equalizationCombination;
+    int _prevEqualizationCombination;
+
     enum {
         __NoiseEdge = 0,
         __NoiseCentroid,  // upper than this, fast equalizations
@@ -439,9 +446,9 @@ private slots:
     void ChangeNTriggers(int);
     void ChangeDeviceIndex(int);
     void ChangeSpacing(int);
-    void ChangeMin(int);
-    void ChangeMax(int);
-    void ChangeStep(int);
+    void ChangeMin(int, bool uisetting = false);
+    void ChangeMax(int, bool uisetting = false);
+    void ChangeStep(int, bool uisetting = false);
     void ConnectionStatusChanged(bool);
     void StopEqualization();
     void setEqualizationTHLTHH(int);

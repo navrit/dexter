@@ -339,7 +339,7 @@ void ThlScan::FineTuning() {
     int progressMax = _numberOfLoops;
     int idDataFetch = _mpx3gui->getConfig()->getDataBufferId( _deviceIndex ); // Note: The data buffer id doesn't necessarily corresponds to _deviceIndex
 
-    _stepScan = 1;
+    //_stepScan = 1;
 
     if ( _numberOfLoops < 0 ) progressMax = _spacing * _spacing;
 
@@ -851,7 +851,7 @@ void ThlScan::EqualizationScan() {
                 qDebug() << "[INFO]\tSetting global L =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
             }
             if( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
-                _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], 0x0, _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj);
+              _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], 0x0, _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj);
                 qDebug() << "[INFO]\tSetting global H =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
             }
         } else if ( _adjType == __adjust_to_equalizationMatrix ) {
@@ -864,6 +864,8 @@ void ThlScan::EqualizationScan() {
         //   to keep that circuit from reacting.  Set it at ~100
         //qDebug() << "presettings : " << (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_5-1].bits)/4 << ", " <<  (1<<MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_7-1].bits)/4 << endl;
         //qDebug() << "              " << MPX3RX_DAC_THRESH_5 << ", " << MPX3RX_DAC_THRESH_7 << endl;
+
+        qDebug() << " trigger ---> " << _mpx3gui->getConfig()->getTriggerLength();
 
         if ( _DAC_Disc_code == MPX3RX_DAC_DISC_L ) {
             SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[di], MPX3RX_DAC_THRESH_1, __low_but_above_noise_threshold );
@@ -957,35 +959,41 @@ void ThlScan::EqualizationScan() {
 
                 // Set the threshold on all chips
                 for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
+                    //qDebug() << devId;
                     SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], _dac_code, _thlItr );
-                    if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_0 ) {
-                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_2, _thlItr );
-                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_4, _thlItr );
-                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_6, _thlItr );
-                    } else if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_1 ) {
-                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_3, _thlItr );
-                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_5, _thlItr );
-                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_7, _thlItr );
-                    }
+//                    if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_0 ) {
+//                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_2, _thlItr );
+//                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_4, _thlItr );
+//                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_6, _thlItr );
+//                    } else if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_1 ) {
+//                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_3, _thlItr );
+//                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_5, _thlItr );
+//                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_7, _thlItr );
+//                    }
                 }
-
-                // Start the trigger as configured
-                spidrcontrol->startAutoTrigger();
 
                 // flush the history of good/bad frames
                 doReadFrames.clear();
 
                 // See if there is a frame available.  I should get as many frames as triggers
                 int framesCntr = 0;
-                int timeOutTime =
-                        _mpx3gui->getConfig()->getTriggerLength_ms()
-                        +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
-                        + 100; // 100ms extra
+                int timeOutTime = 100; //ms
+//                int timeOutTime =
+//                        _mpx3gui->getConfig()->getTriggerLength_ms()
+//                        +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
+//                        + 100; // 100ms extra
+
+//                // Set a minimum. Even though the user doesn't have control of this in equalization. Safe to have it.
+//                if ( timeOutTime < 100 ) timeOutTime = 100;
+
+                // Start the trigger as configured
+                spidrcontrol->startAutoTrigger();
 
                 while ( _spidrdaq->hasFrame( timeOutTime ) ) {
 
                     // assume a good frame
                     doReadFrames.push_back( true );
+
 
                     // Check quality
                     if ( _spidrdaq->lostCountFrame() != 0 ) { // The total number of lost packets/pixels detected in the current frame
@@ -1016,7 +1024,7 @@ void ThlScan::EqualizationScan() {
                         _data = _dataset->getLayer( 0 );
                         // I am assuming that all the frames have the same size in bytes
                         _pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes * _nchipsX*_nchipsY, _thlItr );
-
+                        //qDebug() << "reactive " << _pixelReactiveInScan;
 
                     }
 
