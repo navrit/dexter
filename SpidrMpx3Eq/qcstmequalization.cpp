@@ -116,6 +116,12 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     _stepDone = new bool[__EQStatus_Count];
     for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
     eqInstance = this;
+
+    // TODO
+    // These two buttons will come back as we progress improving the equalization
+    _ui->_startEqAll->setVisible( false );
+    _ui->_stopEq->setVisible( false );
+
 }
 
 Ui::QCstmEqualization * QCstmEqualization::GetUI() {
@@ -958,13 +964,15 @@ void QCstmEqualization::StartEqualization() {
             //        If all chips are installed there is no problem.
             if ( _isSequentialAllChipsEqualization && _deviceIndex < _mpx3gui->getConfig()->getNActiveDevices()-1 ) {
 
+                SaveEqualization( QDir::currentPath(), true );
+
                 resetForNewEqualisation();
 
                 StartEqualizationSequentialSingleChips();
 
             } else {
 
-                SaveEqualization();
+                SaveEqualization( "", false, true );
 
                 resetForNewEqualisation();
 
@@ -1243,25 +1251,25 @@ void QCstmEqualization::DAC_Disc_Optimization (int devId, ScanResults * res_100,
     AppendToTextBrowser(statsString);
 }
 
-void QCstmEqualization::SaveEqualization(QString path) {
+void QCstmEqualization::SaveEqualization(QString path, bool totempdir, bool fetchfromtempdir) {
 
     QString filenameEqualisation = "";
-    QString _path = path;
+    QString savepath = path;
 
-    if (_path == "") {
+    if ( savepath == "" ) {
         //! Get folder to save equalisation files to
-        _path = QFileDialog::getExistingDirectory(this, tr("Open Directory to save equalisations to"),
+        savepath = QFileDialog::getExistingDirectory(this, tr("Open Directory to save equalisations to"),
                                                   QDir::currentPath(),
                                                   QFileDialog::ShowDirsOnly);
         //! User pressed cancel, offer another go at saving
-        if (_path.isEmpty()){
+        if (savepath.isEmpty()){
             QMessageBox::StandardButton reply;
             reply = QMessageBox::warning(this,
                                          tr("Warning"),
                                          tr("Are you sure you do not want to save equalisations and config files?"),
                                          QMessageBox::Save|QMessageBox::Cancel);
             if (reply == QMessageBox::Save) {
-                _path = QFileDialog::getExistingDirectory(this,
+                savepath = QFileDialog::getExistingDirectory(this,
                                                           tr("Open Directory to save equalisations to"),
                                                           QDir::currentPath(),
                                                           QFileDialog::ShowDirsOnly);
@@ -1270,16 +1278,29 @@ void QCstmEqualization::SaveEqualization(QString path) {
                 return;
             }
         }
-    }
-
-    _path.append(QDir::separator());
-    filenameEqualisation = _path;
-
-    if (path == "") {
-        filenameEqualisation.append("config.json"); //! Ie. all chips
     } else {
-        filenameEqualisation.append( QString("config-chip%1.json").arg(_deviceIndex) );
+        savepath = path;
+        if ( totempdir ) {
+            savepath.append( QDir::separator() );
+            savepath += "tmp";
+            _tempEqSaveDir = savepath;
+        }
+        // Create the folder if it doesn't exist
+        if ( ! QDir( savepath ).exists() ) {
+            _tempEqSaveDir = savepath;
+            qDebug() << "[INFO] creating temporary directory : " << savepath;
+            QDir().mkdir( savepath );
+        }
     }
+
+    savepath.append( QDir::separator() );
+    filenameEqualisation = savepath;
+
+    //if ( path == "" ) {
+    filenameEqualisation.append("config.json"); //! Ie. all chips
+    //} else {
+    //    filenameEqualisation.append( QString("config-chip%1.json").arg(_deviceIndex) );
+    //}
 
     resetThresholds();
 
@@ -1291,10 +1312,35 @@ void QCstmEqualization::SaveEqualization(QString path) {
     //! Save adj and mask path+filename strings and save them
     for ( unsigned long i = 0 ; i < chipListSize ; i++ ) {
         // Binary file
-        _eqMap[_workChipsIndx[i]]->WriteAdjBinaryFile( QString( _path + "adj_" + QString::number(_workChipsIndx[i])) );
+        _eqMap[_workChipsIndx[i]]->WriteAdjBinaryFile( QString( savepath + "adj_" + QString::number(_workChipsIndx[i])) );
 
         // Masked pixels
-        _eqMap[_workChipsIndx[i]]->WriteMaskBinaryFile( QString( _path + "mask_" + QString::number(_workChipsIndx[i])) );
+        _eqMap[_workChipsIndx[i]]->WriteMaskBinaryFile( QString( savepath + "mask_" + QString::number(_workChipsIndx[i])) );
+    }
+
+    // use this when you need to get the rest from a temp dir
+    if ( fetchfromtempdir ) {
+
+        // move everything from temp dir to the current savepath(could be just selected by the user)
+        // except the config. Only the last one is interesting.
+        QString copyfrom = _tempEqSaveDir;
+        copyfrom.append( QDir::separator() );
+        copyfrom += "adj_*";
+
+        QString copyto = savepath;
+        copyto.append( QDir::separator() );
+
+        // copy adj
+        QFile::copy( copyfrom, copyto );
+
+
+        copyfrom = _tempEqSaveDir;
+        copyfrom.append( QDir::separator() );
+        copyfrom += "mask_*";
+
+        // copy masks
+        QFile::copy( copyfrom, copyto );
+
     }
 
 }

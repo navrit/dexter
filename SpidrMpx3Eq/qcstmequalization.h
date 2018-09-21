@@ -368,6 +368,7 @@ private:
     };
     int _equalizationCombination;
     int _prevEqualizationCombination;
+    QString _tempEqSaveDir;
 
     enum {
         __NoiseEdge = 0,
@@ -431,7 +432,7 @@ private:
     bool makeTeaCoffeeDialog();
 
 public slots:
-    void SaveEqualization(QString path="");
+    void SaveEqualization(QString path="", bool totempdir = false, bool fetchfromtempdir = false );
     void on_logYCheckBox_toggled(bool checked);
 
 private slots:
