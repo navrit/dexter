@@ -67,6 +67,7 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     _eqMap.clear();
     _workChipsIndx.clear();
     _scanAllChips = true;
+    _isSequentialAllChipsEqualization = false;
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     // The first BarChart is created immediately to avoid having the empty space before connection
@@ -312,7 +313,7 @@ bool QCstmEqualization::InitEqualization(int chipId) {
     _scanIndex = 0;
     for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
 
-    ClearTextBrowser();
+    //ClearTextBrowser();
     _ui->eqLabelFineTuningLoopProgress->setText("-/-");
 
     // No sets available
@@ -646,21 +647,52 @@ void QCstmEqualization::resetThresholds()
 
 void QCstmEqualization::StartEqualizationSingleChip() {
 
-    if(makeTeaCoffeeDialog()){
-        // Get busy !
-        _busy = true;
-        _scanAllChips = false;
-
-        // Init
-        if ( ! InitEqualization( _deviceIndex ) ) return;
-
-        KeepOtherChipsQuiet();
-
-        StartEqualization( );
-
-    } else {
-        return;
+    if ( ! _isSequentialAllChipsEqualization ) {
+        if ( ! makeTeaCoffeeDialog() ) return;
     }
+
+    // Get busy !
+    _busy = true;
+    _scanAllChips = false;
+
+    // Init
+    if ( ! InitEqualization( _deviceIndex ) ) return;
+
+    KeepOtherChipsQuiet();
+
+    StartEqualization( );
+
+}
+
+void QCstmEqualization::StartEqualizationSequentialSingleChips()
+{
+
+    // Only the first time
+    // start with chip 0
+    if ( ! _isSequentialAllChipsEqualization ) {
+        // ! artifact only for the first time we call this function
+        // if the user accepts to continue _deviceIndex will start at 0
+        _deviceIndex = -1;
+        _isSequentialAllChipsEqualization = true;
+        if ( ! makeTeaCoffeeDialog() ) {
+            ChangeDeviceIndex(0, true);
+            return;
+        }
+    }
+
+    // Next chip
+    ChangeDeviceIndex(++_deviceIndex, true);
+
+    // Initialise
+    //i//if ( ! InitEqualization( -1 ) ) return;
+    //i//KeepOtherChipsQuiet();
+
+    StartEqualizationSingleChip();
+
+    // Save results separately for now. Maybe merge and then save one config file later
+    //i//SaveEqualization( QDir::homePath() );
+    //i//AppendToTextBrowser( qPrintable(QString("-- Results for chip %1 saved to %2").arg(_deviceIndex).arg(QDir::homePath()) ) );
+    //i//AppendToTextBrowser( qPrintable(QString("-- DONE chip %1 ----------------").arg(_deviceIndex)) );
 
 }
 
@@ -682,47 +714,6 @@ void QCstmEqualization::StartEqualizationAllChips() {
 
 }
 
-void QCstmEqualization::StartEqualizationSequentialSingleChips()
-{
-    //! TODO: Link it to _startEqAllSequential
-    //!
-    //! TODO: Make this work and connect to new button...
-
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("Information");
-    msgBox.setText("This isn't connected to anything yet, do it manually :P ...");
-    msgBox.addButton(QMessageBox::Ok);
-    msgBox.setDefaultButton(QMessageBox::Ok);
-
-    return;
-
-    // Try to go through all chips
-    if( _deviceIndex < _nChips - 1 && _deviceIndex >= 0) {
-
-        // Next chip
-        _deviceIndex++;
-        _ui->devIdSpinBox->setValue( _deviceIndex );
-
-        // Initialise
-        if ( ! InitEqualization( -1 ) ) return;
-
-        KeepOtherChipsQuiet();
-
-        // Clear the previous scans!
-        //_scans.clear();
-
-        StartEqualizationSingleChip();
-
-        // Save results separately for now. Maybe merge and then save one config file later
-        SaveEqualization( QDir::homePath() );
-
-    } else { // when done
-
-        AppendToTextBrowser( qPrintable(QString("-- Results for chip %1 saved to %2").arg(_deviceIndex).arg(QDir::homePath()) ) );
-        AppendToTextBrowser( qPrintable(QString("-- DONE chip %1 ----------------").arg(_deviceIndex)) );
-    }
-}
-
 void QCstmEqualization::StartEqualization() {
 
     // I need to do this here and not when already running the thread
@@ -735,9 +726,9 @@ void QCstmEqualization::StartEqualization() {
     unsigned long chipListSize = _workChipsIndx.size();
 
     if (testPulseEqualisationDialog != nullptr) {
-         defaultNoiseEqualisationTarget = testPulseEqualisationDialog->getEqualisationTarget();
-         DAC_DISC_1_value = testPulseEqualisationDialog->get_1st_DAC_DISC_val();
-         DAC_DISC_2_value = testPulseEqualisationDialog->get_2nd_DAC_DISC_val();
+        defaultNoiseEqualisationTarget = testPulseEqualisationDialog->getEqualisationTarget();
+        DAC_DISC_1_value = testPulseEqualisationDialog->get_1st_DAC_DISC_val();
+        DAC_DISC_2_value = testPulseEqualisationDialog->get_2nd_DAC_DISC_val();
     }
 
     // Preliminary) Find out the equalization range
@@ -941,7 +932,6 @@ void QCstmEqualization::StartEqualization() {
         UpdateHeatMap(fulladjdata, _fullsize_x, _fullsize_y);
 
         // Decide if the equalization needs to be ran again for THH or if we are done
-
         if ( _equalizationCombination == __THLandTHH ) {
             // At this point we finished THL. Go for THH now
             _prevEqualizationCombination = _equalizationCombination;
@@ -962,8 +952,25 @@ void QCstmEqualization::StartEqualization() {
             // come back to the initial setting for equalization combination
             _equalizationCombination = _prevEqualizationCombination;
 
-            SaveEqualization();
-            AppendToTextBrowser( "[DONE]" );
+            // If we're done see if we need to continue with the next chip or
+            //  if we're really done.
+            // TODO ! If the active chips are not in a sequence this won't work.
+            //        If all chips are installed there is no problem.
+            if ( _isSequentialAllChipsEqualization && _deviceIndex < _mpx3gui->getConfig()->getNActiveDevices()-1 ) {
+
+                resetForNewEqualisation();
+
+                StartEqualizationSequentialSingleChips();
+
+            } else {
+
+                SaveEqualization();
+
+                resetForNewEqualisation();
+
+                AppendToTextBrowser( "[DONE]" );
+
+            }
 
             QString msg = "Finished equalisation on: " + _mpx3gui->getVisualization()->getStatsString_deviceId();
             emit sig_statusBarAppend(msg, "green");
@@ -1244,8 +1251,8 @@ void QCstmEqualization::SaveEqualization(QString path) {
     if (_path == "") {
         //! Get folder to save equalisation files to
         _path = QFileDialog::getExistingDirectory(this, tr("Open Directory to save equalisations to"),
-                                                         QDir::currentPath(),
-                                                         QFileDialog::ShowDirsOnly);
+                                                  QDir::currentPath(),
+                                                  QFileDialog::ShowDirsOnly);
         //! User pressed cancel, offer another go at saving
         if (_path.isEmpty()){
             QMessageBox::StandardButton reply;
@@ -1255,9 +1262,9 @@ void QCstmEqualization::SaveEqualization(QString path) {
                                          QMessageBox::Save|QMessageBox::Cancel);
             if (reply == QMessageBox::Save) {
                 _path = QFileDialog::getExistingDirectory(this,
-                                                         tr("Open Directory to save equalisations to"),
-                                                         QDir::currentPath(),
-                                                         QFileDialog::ShowDirsOnly);
+                                                          tr("Open Directory to save equalisations to"),
+                                                          QDir::currentPath(),
+                                                          QFileDialog::ShowDirsOnly);
             } else {
                 sig_statusBarAppend(tr("Equalisation not saved, you may save them manually"),"red");
                 return;
@@ -1290,7 +1297,6 @@ void QCstmEqualization::SaveEqualization(QString path) {
         _eqMap[_workChipsIndx[i]]->WriteMaskBinaryFile( QString( _path + "mask_" + QString::number(_workChipsIndx[i])) );
     }
 
-    resetForNewEqualisation();
 }
 
 void QCstmEqualization::PrepareInterpolation_0x0() {
@@ -1594,15 +1600,15 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
 
     if ( applymask ) {
         // Mask
-//        if(_eqMap[chipIndex]->GetNMaskedPixels2D() > 0){
-//            QSet<QPair<int,int>> tomask = _eqMap[chipIndex]->GetMaskedPixels2D();
-//            QSet<QPair<int,int>>::iterator i = tomask.begin();
-//            QSet<QPair<int,int>>::iterator iE = tomask.end();
-//            qDebug() << "[INFO] Masking pixels :";
-//            for ( ; i != iE ; i++ ) {
-//                spidrcontrol->setPixelMaskMpx3rx((*i).first, (*i).second, true);
-//                qDebug() << "     chipID:" << chipIndex << " | " <<(*i).first << "," << (*i).second;
-//            }
+        //        if(_eqMap[chipIndex]->GetNMaskedPixels2D() > 0){
+        //            QSet<QPair<int,int>> tomask = _eqMap[chipIndex]->GetMaskedPixels2D();
+        //            QSet<QPair<int,int>>::iterator i = tomask.begin();
+        //            QSet<QPair<int,int>>::iterator iE = tomask.end();
+        //            qDebug() << "[INFO] Masking pixels :";
+        //            for ( ; i != iE ; i++ ) {
+        //                spidrcontrol->setPixelMaskMpx3rx((*i).first, (*i).second, true);
+        //                qDebug() << "     chipID:" << chipIndex << " | " <<(*i).first << "," << (*i).second;
+        //            }
 
         if ( _eqMap[chipIndex]->GetNMaskedPixels() > 0 ) {
             QSet<int> tomask = _eqMap[chipIndex]->GetMaskedPixels();
@@ -1688,12 +1694,12 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     //! Make it false when done?
     spidrcontrol->setEqThreshH( devId, true );
 
-//    //! ------------------------------------------------------------------------
-//    //! OMR bit
-//    //! False : default
-//    //! True  : if doing a test pulse based equalisation
-//    spidrcontrol->setInternalTestPulse( devId, testPulseMode );
-//    qDebug() << "[Equalisation]\tSPIDR Internal Test pulses = " << testPulseMode;
+    //    //! ------------------------------------------------------------------------
+    //    //! OMR bit
+    //    //! False : default
+    //    //! True  : if doing a test pulse based equalisation
+    //    spidrcontrol->setInternalTestPulse( devId, testPulseMode );
+    //    qDebug() << "[Equalisation]\tSPIDR Internal Test pulses = " << testPulseMode;
 
     //! ------------------------------------------------------------------------
     //! OMR bit
@@ -1720,7 +1726,7 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     }
 
     spidrcontrol->setGainMode( devId, gainMode ); //! SLGM for equalisation
-                                                  //! ALWAYS for noise equalisations
+    //! ALWAYS for noise equalisations
     qDebug() << "[Equalisation]\tGain mode = " << gainMode << "\tAlways 3 (SLGM) for noise based equalisations";
 
     //! Important defaults
@@ -2206,28 +2212,28 @@ bool QCstmEqualization::makeTeaCoffeeDialog()
     msgBox.addButton(QMessageBox::Cancel);
     msgBox.setDefaultButton(QMessageBox::Ok);
     msgBox.setStyleSheet("QPushButton { \
-            background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgb(0,127,255), stop:1 rgb(0, 110, 200)); \
+                         background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgb(0,127,255), stop:1 rgb(0, 110, 200)); \
             font : 16px 'Helvetica Neue'; \
-            border-radius : 10px; \
-            padding : 5px; \
-            margin : 3px; \
-            color : white; \
-        }\
-        QPushButton:hover { \
-            color : #f9f9f9; \
-            border : 1px solid transparent; \
-            font : bold; \
-        } \
-        QPushButton:pressed { \
-            background-color : #007acc; \
-        } \
-    ");
+    border-radius : 10px; \
+padding : 5px; \
+margin : 3px; \
+color : white; \
+}\
+QPushButton:hover { \
+color : #f9f9f9; \
+border : 1px solid transparent; \
+font : bold; \
+} \
+QPushButton:pressed { \
+    background-color : #007acc; \
+} \
+");
 
-    if (msgBox.exec() == QMessageBox::Ok){
-        return true;
-    } else {
-        return false;
-    }
+if (msgBox.exec() == QMessageBox::Ok){
+    return true;
+} else {
+return false;
+}
 }
 
 void QCstmEqualization::LoadEqualization(bool getPath,bool remotely ,QString path) {
@@ -2255,8 +2261,8 @@ void QCstmEqualization::LoadEqualization(bool getPath,bool remotely ,QString pat
             QString testAdjFile = path + QString("adj_0");
             QString testMaskFile = path + QString("mask_0");
 
-        if (!(QFileInfo::exists(testAdjFile) && QFileInfo::exists(testMaskFile))){
-           //if (!(QFileInfo::exists(testAdjFile))){
+            if (!(QFileInfo::exists(testAdjFile) && QFileInfo::exists(testMaskFile))){
+                //if (!(QFileInfo::exists(testAdjFile))){
                 //! Failed to find adj_0 and mask_0, the bare minimum for this to work
                 //! Return with no warnings or prompts
                 emit sig_statusBarAppend(tr("Nothing loaded from equalisation"), "orange");
@@ -2433,9 +2439,10 @@ void QCstmEqualization::ChangeNTriggers( int nTriggers ) {
     _nTriggers = nTriggers;
 }
 
-void QCstmEqualization::ChangeDeviceIndex( int index ) {
+void QCstmEqualization::ChangeDeviceIndex( int index, bool uisetting ) {
     if( index < 0 ) return; // can't really happen cause the SpinBox has been limited
     _deviceIndex = index;
+    if( uisetting ) _ui->devIdSpinBox->setValue( _deviceIndex );
 }
 
 void QCstmEqualization::ChangeSpacing( int spacing ) {

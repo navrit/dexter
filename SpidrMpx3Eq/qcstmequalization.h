@@ -341,6 +341,7 @@ private:
     // -------------------------------------------------------------------------
 
     bool _equalizationLoaded = false;
+    bool _isSequentialAllChipsEqualization = false;
     int _setId;
     int _deviceIndex;
     int _nTriggers;
@@ -444,7 +445,7 @@ private slots:
                                                    //! behaviour when equalising all chips
                                                    //! simultaneously
     void ChangeNTriggers(int);
-    void ChangeDeviceIndex(int);
+    void ChangeDeviceIndex(int, bool uisetting = false);
     void ChangeSpacing(int);
     void ChangeMin(int, bool uisetting = false);
     void ChangeMax(int, bool uisetting = false);
