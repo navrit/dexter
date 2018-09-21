@@ -1328,18 +1328,26 @@ void QCstmEqualization::SaveEqualization(QString path, bool totempdir, bool fetc
         copyfrom += "adj_*";
 
         QString copyto = savepath;
-        copyto.append( QDir::separator() );
+        //copyto.append(QDir::separator() );
+        QString command = "cp -f " +copyfrom+" "+copyto;
+        qDebug() << command;
 
         // copy adj
-        QFile::copy( copyfrom, copyto );
-
+        QProcess proc;
+        proc.start("sh", QStringList() << "-c" << command);
+        proc.waitForFinished(5000);
+        //QFile::copy( copyfrom, copyto );
 
         copyfrom = _tempEqSaveDir;
         copyfrom.append( QDir::separator() );
         copyfrom += "mask_*";
+        command = "cp -f " +copyfrom+" "+copyto;
+        qDebug() << command;
 
         // copy masks
-        QFile::copy( copyfrom, copyto );
+        //QFile::copy( copyfrom, copyto );
+        proc.start("sh", QStringList() << "-c" << command);
+        proc.waitForFinished(5000);
 
     }
 
