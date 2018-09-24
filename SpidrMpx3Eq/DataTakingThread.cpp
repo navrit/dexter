@@ -158,7 +158,7 @@ void DataTakingThread::run() {
         int overhead = 200; // ms
 
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
-            timeOutTime = uint((1/contRWFreq) //! Eg. 100 Hz --> 1/100 s = 10 ms
+            timeOutTime = uint((1000/contRWFreq) //! Eg. 100 Hz --> 1/100 s = 10 ms
                                 + overhead);
         } else {
             timeOutTime = uint(_mpx3gui->getConfig()->getTriggerLength_ms()
