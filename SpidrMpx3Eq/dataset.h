@@ -234,6 +234,7 @@ public:
     int x() const{return m_nx;} // per chip
     int y() const{return m_ny;} // per chip
     int getPixelDepthBits() const { return m_pixelDepthBits; }
+    void setPixelDepthBits(int pixelDepthBits);
 
 
     // Simple tools

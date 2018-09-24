@@ -236,6 +236,8 @@ bool QCstmGLVisualization::DataTakingThreadIsIdling()
 
 void QCstmGLVisualization::ConfigureGUIForDataTaking() {
 
+    _mpx3gui->getDataset()->setPixelDepthBits(_mpx3gui->getConfig()->getPixelDepth());
+
     emit taking_data_gui();
 
     ui->startButton->setText( "Stop" );

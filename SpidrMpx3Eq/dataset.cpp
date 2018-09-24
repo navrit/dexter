@@ -22,8 +22,7 @@ using namespace std;
 Dataset::Dataset(int x, int y, int framesPerLayer, int pixelDepthBits)
 {
     m_nx = x; m_ny = y;
-    m_pixelDepthBits = pixelDepthBits;
-    m_pixelDepthCntr = ((int)pow(2, m_pixelDepthBits)) - 1;
+    setPixelDepthBits(pixelDepthBits);
 
     m_nFrames = 0;
     setFramesPerLayer(framesPerLayer);
@@ -31,6 +30,11 @@ Dataset::Dataset(int x, int y, int framesPerLayer, int pixelDepthBits)
     obCorrection = nullptr;
 
     rewindScores();
+}
+
+void Dataset::setPixelDepthBits(int pixelDepthBits) {
+    m_pixelDepthBits = pixelDepthBits;
+    m_pixelDepthCntr = (1 << m_pixelDepthBits) - 1;
 }
 
 Dataset::Dataset() : Dataset(1,1,1) {
@@ -110,7 +114,7 @@ Dataset::Dataset( const Dataset& other ):
 
     // copy the dimensions
     m_nx = other.x(); m_ny = other.y();
-    m_pixelDepthBits = other.getPixelDepthBits();
+    setPixelDepthBits(other.getPixelDepthBits());
     // And copy the layers
     m_nFrames = other.getFrameCount();
     m_layers = QVector<int *>( other.getLayerCount() );
@@ -146,7 +150,7 @@ Dataset& Dataset::operator=( const Dataset& tocopy){
                 this->m_nx = copy.x();
         this->m_ny = copy.y();
         this->m_nFrames = copy.getFrameCount();
-        this->m_pixelDepthBits = copy.getPixelDepthBits();
+        setPixelDepthBits(copy.getPixelDepthBits());
         //*this->obCorrection = *tocopy.obCorrection;
 
     }
@@ -202,7 +206,7 @@ QByteArray Dataset::toByteArray() {
     return ret;
 }
 
-template <typename INTTYPE> pair<const char*, int> toSocketData2(Dataset *ds, INTTYPE key)
+template <typename INTTYPE> pair<const char*, int> toSocketData2(Dataset *ds, int key)
 {
 
     const int dim = 256;
@@ -256,8 +260,8 @@ template <typename INTTYPE> pair<const char*, int> toSocketData2(Dataset *ds, IN
 pair<const char*, int> Dataset::toSocketData() {
     QList<int> keys = m_thresholdsToIndices.keys();
     return (m_pixelDepthBits == 24)
-            ? toSocketData2(this, (uint32) keys[0])
-            : toSocketData2(this, (uint16) keys[0]);
+            ? toSocketData2<uint32_t>(this, keys[0])
+            : toSocketData2<uint16_t>(this, keys[0]);
 }
 
 /**
