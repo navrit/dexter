@@ -90,14 +90,14 @@ void TcpConnecton::on_responseIsReady(QString response)
     qDebug()<<"size:"<<sndSize;
 }
 
-void TcpConnecton::on_imageIsReady(QByteArray header,QByteArray image)
+void TcpConnecton::on_imageIsReady(QByteArray header,std::pair<const char*,int> image)
 {
     //qDebug() << "Data recieved at the tcpconnection.";
     //qDebug()<<"header size:"<<header.size();
    // qDebug()<<"Image size:"<<image.size();
     mutex.lock();
     int sndSize = m_socket->write(header);
-    sndSize = m_socket->write(image);
+    sndSize = m_socket->write(image.first, image.second);
     m_socket->flush();
     //m_socket->waitForBytesWritten();
     mutex.unlock();

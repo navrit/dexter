@@ -35,8 +35,8 @@ void CommandHandlerWrapper::on_dataRecieved(QString command)
 void CommandHandlerWrapper::on_requestForDataTaking(bool)
 {
     QString acqHeader = commandHandler->getAcquisitionHeader();
-    QByteArray dummy;
-    emit imageIsReady(dummy,acqHeader.toLatin1());
+    const char* dummy="";
+    emit imageIsReady(acqHeader.toLatin1(), std::pair<const char*,int>(dummy,0));
     commandHandler->getImage();
 
 //    QByteArray image;
@@ -44,7 +44,7 @@ void CommandHandlerWrapper::on_requestForDataTaking(bool)
 
 }
 
-void CommandHandlerWrapper::on_ImageIsReady(QByteArray header,QByteArray image)
+void CommandHandlerWrapper::on_ImageIsReady(QByteArray header,std::pair<const char*,int> image)
 {
     emit imageIsReady(header,image);
 }

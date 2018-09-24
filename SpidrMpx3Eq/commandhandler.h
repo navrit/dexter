@@ -64,7 +64,7 @@ public:
 
 signals:
     //void commandIsDecoded(QString,QByteArray,bool);
-    void imageIsReady(QByteArray,QByteArray);
+    void imageIsReady(QByteArray,std::pair<const char*,int>);
     void requestForDataTaking(bool);
     void requestForInfDataTracking(bool);
     void requestForSnap(void);
@@ -82,7 +82,6 @@ public slots:
     void on_someCommandHasFinished_Successfully(void);
     void on_equalizationPathExported(QString path);
 private:
-    QByteArray imageToSend;    // image to be sent when 'GetImage' recieved
     void initializeCmdTable(void);
     char* getTimeStamp();
     bool _sendingImage = false;

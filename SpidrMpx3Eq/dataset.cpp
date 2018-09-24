@@ -202,7 +202,7 @@ QByteArray Dataset::toByteArray() {
     return ret;
 }
 
-template <typename INTTYPE> QByteArray toSocketData2(Dataset *ds, INTTYPE key)
+template <typename INTTYPE> pair<const char*, int> toSocketData2(Dataset *ds, INTTYPE key)
 {
 
     const int dim = 256;
@@ -250,10 +250,10 @@ template <typename INTTYPE> QByteArray toSocketData2(Dataset *ds, INTTYPE key)
     }
 
     return
-        QByteArray::fromRawData((const char*)image, (int) dim * dim * 4 * sizeof(INTTYPE));
+        pair<const char*,int>((const char*)image, (int) dim * dim * 4 * sizeof(INTTYPE));
 }
 
-QByteArray Dataset::toSocketData() {
+pair<const char*, int> Dataset::toSocketData() {
     QList<int> keys = m_thresholdsToIndices.keys();
     return (m_pixelDepthBits == 24)
             ? toSocketData2(this, (uint32) keys[0])

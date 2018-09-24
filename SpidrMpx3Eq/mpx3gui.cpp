@@ -1002,7 +1002,7 @@ void Mpx3GUI::initialiseServers()
     } else {
         qDebug().nospace() << "[INFO]\tTCP Data server listening on \"tcp://*:" << tcpDataPort << "\"";
     }
-    connect(commandHandlerWrapper,SIGNAL(imageIsReady(QByteArray,QByteArray)),dataServer,SLOT(on_imageIsReady(QByteArray,QByteArray)));
+    connect(commandHandlerWrapper,SIGNAL(imageIsReady(QByteArray,std::pair<const char*,int>)),dataServer,SLOT(on_imageIsReady(QByteArray,std::pair<const char*,int>)));
 
 }
 

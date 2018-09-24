@@ -31,7 +31,7 @@ signals:
     //pass the response to tcpconnection
     void responseIsReady(QString);
     //pass the image to tcpconnection
-    void imageIsReady(QByteArray,QByteArray);
+    void imageIsReady(QByteArray,std::pair<const char*,int>);
 
 protected slots:
     void disconnected();
@@ -47,7 +47,7 @@ public slots:
     //get response from tcpserver
     void on_responseIsReady(QString);
     //get image from tcpserver
-    void on_imageIsReady(QByteArray,QByteArray);
+    void on_imageIsReady(QByteArray,std::pair<const char*,int>);
 };
 
 #endif // TCPCONNECTIONS_H

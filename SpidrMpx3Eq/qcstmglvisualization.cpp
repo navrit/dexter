@@ -2320,8 +2320,8 @@ uint32 assembleData(uint8 a,uint8 b,uint8 c,uint8 d){
 void QCstmGLVisualization::on_testBtn_clicked()
 {
 
-    QByteArray image = Mpx3GUI::getInstance()->getDataset()->toSocketData();
-    qDebug() << "Image size is : " << image.size();
+    std::pair<const char*,int> image = Mpx3GUI::getInstance()->getDataset()->toSocketData();
+    qDebug() << "Image size is : " << image.second;
 
     QString filename = "Pixel.txt";
     QFile file(filename);
@@ -2337,10 +2337,11 @@ void QCstmGLVisualization::on_testBtn_clicked()
 
 
     int idx = 0;
-
-    while(idx < image.length()){
-        uint32 pixel = assembleData((uint8)image.at(idx),(uint8)image.at(idx+1),(uint8)image.at(idx+2),(uint8)image.at(idx+3));
+    uint32_t* pp = (uint32_t*) image.first;
+    while(idx < image.second){
+        uint32_t pixel = *pp;
         stream << pixel << endl;
+        pp++;
         idx = idx + 4;
     }
     file.close();
