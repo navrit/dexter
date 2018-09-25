@@ -209,10 +209,25 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
         [[fallthrough]]
         case PIXEL_DATA_MID:
           // Unpack the pixel packet
-          // Make sure not to write outside the current pixel row
-        { int maxj = MPX_PIXEL_COLUMNS - index;
-          if (maxj > pix_per_word) maxj = pix_per_word;
-          for( j=0; j<maxj; ++j, ++index )
+        {
+          if (counter_bits == 12) {
+              int avail = nbytes/sizeof(u64) - i;
+              int rowLeft = (MPX_PIXEL_COLUMNS - index) / 5;
+              if (avail < rowLeft) rowLeft = avail;
+              while (true) {
+                  temp2[index  ] =  pixelword        & pixel_mask;
+                  temp2[index+1] = (pixelword >> 12) & pixel_mask;
+                  temp2[index+2] = (pixelword >> 24) & pixel_mask;
+                  temp2[index+3] = (pixelword >> 36) & pixel_mask;
+                  temp2[index+4] = (pixelword >> 48) & pixel_mask;
+                  index += 5;
+                  if ((--rowLeft) == 0) break;
+                  pixelword = *(++pixelpkt);
+                  i++;
+              }
+              break;
+          }
+          for( j=0; j<pix_per_word; ++j, ++index )
             {
               //pixelrow[index] = pixelword & pixel_mask;
               temp2[index] = pixelword & pixel_mask;
