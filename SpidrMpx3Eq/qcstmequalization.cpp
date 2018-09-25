@@ -1720,7 +1720,8 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
                 qDebug() << "[Test] : masked @ x = " << i << " y = " << j;
         }
     }
-    emit pixelsMasked(chipIndex,GetEqualizationResults(chipIndex)->GetMaskedPixels());
+    _mpx3gui->getVisualization()->onPixelsMasked(chipIndex, GetEqualizationResults(chipIndex)->GetMaskedPixels());
+    //emit pixelsMasked(chipIndex,GetEqualizationResults(chipIndex)->GetMaskedPixels());
 
 }
 

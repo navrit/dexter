@@ -474,7 +474,7 @@ signals:
 
 
     void equalizationPathExported(QString path);
-    void pixelsMasked(int devId,QSet<int> pixelSet);
+    //void pixelsMasked(int devId,QSet<int> pixelSet);
 
 };
 

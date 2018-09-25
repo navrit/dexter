@@ -861,8 +861,8 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     // TH Scan
     connect( this, SIGNAL(sig_resumeTHScan()), _mpx3gui->getTHScan(), SLOT(resumeTHScan()));
 
-    //pixel mask saving
-    connect(_mpx3gui->getEqualization(),SIGNAL(pixelsMasked(int,QSet<int>)),this,SLOT(onPixelsMasked(int,QSet<int>)));
+    //pixel mask saving // BB: direct call now, see #119 and #117
+    //connect(_mpx3gui->getEqualization(),SIGNAL(pixelsMasked(int,QSet<int>)),this,SLOT(onPixelsMasked(int,QSet<int>)));
     //getting equalization path
     connect(_mpx3gui->getEqualization(),SIGNAL(equalizationPathExported(QString)),this,SLOT(onEqualizationPathExported(QString)));
 
