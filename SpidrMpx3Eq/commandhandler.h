@@ -57,6 +57,7 @@ public:
     int setPixelUnmask(int,int);
     void loadEqualizationRemotely(QString path);
     QString getEqualizationPath();
+    int doEqualizationRemotely(QString path);
 
     //data
     void emitrequestForAnotherSocket(int);
@@ -76,6 +77,7 @@ signals:
     void requestToUnmaskPixelRemotely(int,int);
     void requestToLoadEqualizationRemotely(QString);
     void requestToStartStopThresholdScan(void);
+    void requestToDoEqualizationRemotely(QString);
 
 public slots:
     void on_doneWithOneFrame(int);

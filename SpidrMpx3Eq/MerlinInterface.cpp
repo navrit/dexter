@@ -292,6 +292,8 @@ void MerlinInterface::initializeTables()
     setTable.insert(MASKPIXEL,"SetMaskPixel;"+QString::number(N)+";"+QString::number(N));
     setTable.insert(UNMASKPIXEL,"SetUnmaskPixel;"+QString::number(N)+";"+QString::number(N));
     setTable.insert(EQUALIZATIONFILES,"SetEqualizationPath;" + QString::number(STRING));
+    setTable.insert(EQUALIZATION,"SetDoEqualization;" + QString::number(STRING));
+
 
     //initialize cmdTable
     cmdTable.insert(STOPACQUISITION,"Stop");

@@ -28,6 +28,7 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestToLoadEqualizationRemotely(QString)),getGui(),SLOT(loadEqualisationFromPathRemotely(QString)));
     connect(QCstmEqualization::getInstance(),SIGNAL(equalizationPathExported(QString)),this,SLOT(on_equalizationPathExported(QString)));
     connect(this,SIGNAL(requestToStartStopThresholdScan()),thresholdScan::getInstance(),SLOT(on_button_startStop_clicked_remotely()));
+    connect(this,SIGNAL(requestToDoEqualizationRemotely(QString)),QCstmEqualization::getInstance(),SLOT(StartEqualizationSequentialSingleChipsRemotely(QString)));
 
     initializeCmdTable();
 }
@@ -171,6 +172,9 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("SetEqualizationPath",setEqualizationPath);
     cmd_struct getEqualizationPath {getEqualizationHandler};
     cmdTable.insert("GetEqualizationPath",getEqualizationPath);
+
+    cmd_struct setDoEqualization {setDoEqualizationHandler};
+    cmdTable.insert("SetDoEqualization",setDoEqualization);
 }
 
 bool Command::enoughArguments(int argsNum,QString command)
@@ -562,6 +566,17 @@ void CommandHandler::loadEqualizationRemotely(QString path)
 QString CommandHandler::getEqualizationPath()
 {
     return _equalizationPath;
+}
+
+int CommandHandler::doEqualizationRemotely(QString path)
+{
+    QDir dir(path);
+    if (!dir.exists())
+    {
+       return UNKNOWN_ERROR;
+    }
+    emit requestToDoEqualizationRemotely(path);
+    return NO_ERROR;
 }
 
 

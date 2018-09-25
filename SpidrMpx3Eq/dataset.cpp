@@ -210,7 +210,6 @@ template <typename INTTYPE> pair<const char*, int> toSocketData2(Dataset *ds, in
 {
 
     const int dim = 256;
-
     // use double buffer, toggle between them
     static INTTYPE image2[2][dim*dim*4] = {0};
     static QAtomicInteger<int> bufferToggle;
@@ -259,6 +258,7 @@ template <typename INTTYPE> pair<const char*, int> toSocketData2(Dataset *ds, in
 
 pair<const char*, int> Dataset::toSocketData() {
     QList<int> keys = m_thresholdsToIndices.keys();
+    qDebug() << "cnt depth : " << m_pixelDepthBits;
     return (m_pixelDepthBits == 24)
             ? toSocketData2<uint32_t>(this, keys[0])
             : toSocketData2<uint16_t>(this, keys[0]);

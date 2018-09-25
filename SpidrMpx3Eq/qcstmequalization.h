@@ -320,6 +320,9 @@ private:
 
     QApplication * _coreApp;
 
+    bool _isRemotePath = false;
+    QString _remotePath = "";
+
     // -------------------------- Recent changes  ------------------------------
     //! bits flipped below
     // b00: SHGM  0
@@ -445,6 +448,7 @@ private slots:
     void StartEqualizationSequentialSingleChips(); //! Navrit: Added on 25/10/17 to address the bad
                                                    //! behaviour when equalising all chips
                                                    //! simultaneously
+    void StartEqualizationSequentialSingleChipsRemotely(QString path);
     void ChangeNTriggers(int);
     void ChangeDeviceIndex(int, bool uisetting = false);
     void ChangeSpacing(int);

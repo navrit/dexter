@@ -680,9 +680,11 @@ void QCstmEqualization::StartEqualizationSequentialSingleChips()
         // if the user accepts to continue _deviceIndex will start at 0
         _deviceIndex = -1;
         _isSequentialAllChipsEqualization = true;
-        if ( ! makeTeaCoffeeDialog() ) {
-            ChangeDeviceIndex(0, true);
-            return;
+        if(!_isRemotePath){
+            if ( ! makeTeaCoffeeDialog() ) {
+                ChangeDeviceIndex(0, true);
+                return;
+            }
         }
     }
 
@@ -699,6 +701,14 @@ void QCstmEqualization::StartEqualizationSequentialSingleChips()
     //i//SaveEqualization( QDir::homePath() );
     //i//AppendToTextBrowser( qPrintable(QString("-- Results for chip %1 saved to %2").arg(_deviceIndex).arg(QDir::homePath()) ) );
     //i//AppendToTextBrowser( qPrintable(QString("-- DONE chip %1 ----------------").arg(_deviceIndex)) );
+
+}
+
+void QCstmEqualization::StartEqualizationSequentialSingleChipsRemotely(QString path)
+{
+    _isRemotePath = true;
+    _remotePath = path;
+    StartEqualizationSequentialSingleChips();
 
 }
 
@@ -1258,9 +1268,15 @@ void QCstmEqualization::SaveEqualization(QString path, bool totempdir, bool fetc
 
     if ( savepath == "" ) {
         //! Get folder to save equalisation files to
-        savepath = QFileDialog::getExistingDirectory(this, tr("Open Directory to save equalisations to"),
+        if(!_isRemotePath)
+            savepath = QFileDialog::getExistingDirectory(this, tr("Open Directory to save equalisations to"),
                                                   QDir::currentPath(),
                                                   QFileDialog::ShowDirsOnly);
+        else
+        {
+            savepath = _remotePath;
+            _isRemotePath = false;
+        }
         //! User pressed cancel, offer another go at saving
         if (savepath.isEmpty()){
             QMessageBox::StandardButton reply;
@@ -1350,6 +1366,12 @@ void QCstmEqualization::SaveEqualization(QString path, bool totempdir, bool fetc
         proc.waitForFinished(5000);
 
     }
+
+    for(int i = 0; i < _workChipsIndx.size(); i++){
+        if(GetBarChart(i) != nullptr)
+            GetBarChart(i)->savePng(savepath+"/chip_"+i);
+    }
+
 
 }
 
