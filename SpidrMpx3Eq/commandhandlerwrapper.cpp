@@ -5,7 +5,7 @@ CommandHandlerWrapper::CommandHandlerWrapper(QObject *parent) : QObject(parent)
     commandHandler = new CommandHandler(parent);
     merlinInterface = new MerlinInterface;
     connect(commandHandler,SIGNAL(requestForDataTaking(bool)),this,SLOT(on_requestForDataTaking(bool)));
-    connect(commandHandler,SIGNAL(imageIsReady(QByteArray,QByteArray)),this,SLOT(on_ImageIsReady(QByteArray,QByteArray)));
+    connect(commandHandler,SIGNAL(imageIsReady(QByteArray,std::pair<const char*,int>)),this,SLOT(on_ImageIsReady(QByteArray,std::pair<const char*,int>)));
 }
 
 void CommandHandlerWrapper::on_dataRecieved(QString command)
