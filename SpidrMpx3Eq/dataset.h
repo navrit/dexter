@@ -191,11 +191,10 @@ public:
     void clear();//!< Removes all data
     void resize(int nx, int ny, bool connected=true);//!< Changes the size of each chip. Also calls clear().
     void setFramesPerLayer(int newFrameCount); //!<Sets the amount of chips. New Chips get initialized with location (0,0) and a LtRTtB orientation.
-    unsigned int setLayer(int *data, int threshold);//!<Overwrites a specific layer with the values pointed to by data.
-    unsigned int addLayer(int* data, int threshold);//!<Adds the values pointed to by data to the specified layer.
-    unsigned int setFrame(int *frame, int index, int threshold);//!< Overwrites the data of chip index at the specified threshold with the data pointed to by frame.
+    void setLayer(int *data, int threshold);//!<Overwrites a specific layer with the values pointed to by data.
+    void addLayer(int* data, int threshold);//!<Adds the values pointed to by data to the specified layer.
+    void setFrame(int *frame, int index, int threshold);//!< Overwrites the data of chip index at the specified threshold with the data pointed to by frame.
     void setPixel(int x, int y, int threshold, int val);//!< Set a pixel value for a given threshold (x,y) (assembly coordinates !)
-    unsigned int sumFrame(int *frame, int index, int threshold);//!< Adds the data pointed to by frame to the data of chip index at the specified threshold.
     void toJson(); //!<Saves JSON log file with measurement settings
     void setProfilepoint(int index, QString pos);
     void setProfilepoint(int index, int pos){ if(pos > 0 && pos < 256) setProfilepoint(index, QString("%1").arg(pos));}

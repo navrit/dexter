@@ -178,9 +178,7 @@ public:
 
     SpidrController * GetSpidrController();
     SpidrDaq * GetSpidrDaq(){ return _spidrdaq; }
-    unsigned int addFrame(int * frame, int index, int layer);
-    unsigned int addLayer(int * data, int layer);
-    unsigned int addLayer(int * data);
+    void addLayer(int * data, int layer);
 
     Gradient* getGradient(int index);
     void resize(int x, int y);
@@ -257,7 +255,6 @@ public slots:
     void save_config();
     void load_config();
     void onConnectionStatusChanged(bool);
-    unsigned int dataReady(int layer);
 
     //! Status bar slot functions
     void statusBarAppend(QString mess, QString colorString);

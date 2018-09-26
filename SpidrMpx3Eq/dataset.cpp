@@ -2343,48 +2343,18 @@ void Dataset::debugPrintThesholds(int n)
     }
 }
 
-unsigned int Dataset::setFrame(int *frame, int index, int threshold){
+void Dataset::setFrame(int *frame, int index, int threshold){
 
     if(!m_thresholdsToIndices.contains(threshold))
         newLayer(threshold);
     int *newFrame = getFrame(index, threshold);
-
-    // and keep an eye on overflow frames
-    unsigned int overflowCntr = 0;
 
     for (int i = 0 ; i < m_nx*m_ny;i++) {
 
         //if ( frame[i] > 1 ) continue;
 
         newFrame[i] = frame[i];
-        // overflow check on the current single frame
-        if ( frame[i] >= m_pixelDepthCntr ) overflowCntr++;
     }
-
-    return overflowCntr;
-}
-
-unsigned int Dataset::sumFrame(int *frame, int index, int threshold){
-
-    if(!m_thresholdsToIndices.contains(threshold))
-        newLayer(threshold);
-    int * newFrame = getFrame(index, threshold);
-
-    // and keep an eye on overflow frames
-    unsigned int overflowCntr = 0;
-
-    for ( int i = 0 ; i < m_nx*m_ny ; i++ ) {
-
-        //if ( frame[i] > 1 ) continue;
-
-        newFrame[i] += frame[i];
-
-        // overflow check on the current single frame
-        if ( frame[i] >= m_pixelDepthCntr ) overflowCntr++;
-
-    }
-
-    return overflowCntr;
 }
 
 int* Dataset::getFrame(int index, int threshold){
@@ -2490,37 +2460,20 @@ void Dataset::setFramesPerLayer(int newFrameCount){
     }
 }
 
-unsigned int Dataset::setLayer(int *data, int threshold){
-
-    unsigned int overflowCntr = 0;
+void Dataset::setLayer(int *data, int threshold) {
 
     int layerIndex = getLayerIndex(threshold);
-
     m_layers[layerIndex] = data;
-
-    for(int i = 0; i < m_nFrames*m_nx*m_ny;i++) {
-
-        //m_layers[layerIndex][i] = data[i];                  //! EXPENSIVE line moved to above helps a bunch
-        if ( data[i] >= m_pixelDepthCntr ) overflowCntr++;
-
-    }
-
-    return overflowCntr;
 }
 
-unsigned int Dataset::addLayer(int *data, int threshold){
-
-    unsigned int overflowCntr = 0;
+void Dataset::addLayer(int *data, int threshold) {
 
     int layerIndex = getLayerIndex(threshold);
-    for(int i = 0; i < m_nFrames*m_nx*m_ny;i++) {
-
-        m_layers[layerIndex][i] += data[i];
-        if ( data[i] >= m_pixelDepthCntr ) overflowCntr++;
-
+    int *dest = m_layers[layerIndex];
+    int n = m_nFrames*m_nx*m_ny;
+    while (n--) {
+        *(dest++) += *(data++);
     }
-
-    return overflowCntr;
 }
 
 int * Dataset::getLayer(int threshold){

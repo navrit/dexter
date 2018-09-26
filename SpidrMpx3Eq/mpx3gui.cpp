@@ -239,42 +239,13 @@ void Mpx3GUI::resize(int x, int y) {
     emit sizeChanged(bbox.width() * x, bbox.height() * y); // goes to qcstmglplot
 }
 
-unsigned int Mpx3GUI::addLayer(int *data) {
-    return addLayer(data, -1);
-}
+void Mpx3GUI::addLayer(int * data, int layer) {
 
-unsigned int Mpx3GUI::dataReady(int layer)
-{
-
-    QVector<int> dataLayer = getVisualization()->dataTakingThread()->getData(layer);
-
-    unsigned int ovflcntr = addLayer( dataLayer.data(), layer );
-
-    return ovflcntr;
-}
-
-unsigned int Mpx3GUI::addFrame(int * frame, int index, int layer) {
-
-    //cout << "index : " << index << " | layer : " << layer << " | mode : " << mode << endl;
-
-    unsigned int ovfcntr = 0;
-    if ( mode == 1 ) { //! Summing/integral
-        ovfcntr = getDataset()->sumFrame(frame, index, layer);
-    } else { //! Not summing, normal mode
-        ovfcntr = getDataset()->setFrame(frame, index, layer);
-    }
-    return ovfcntr;
-}
-
-unsigned int Mpx3GUI::addLayer(int * data, int layer) {
-
-    unsigned int ovfcntr = 0;
     if (mode == 1) { //! Summing/integral
-        ovfcntr = getDataset()->addLayer(data, layer);
+        getDataset()->addLayer(data, layer);
     } else { //! Not summing, normal mode
-        ovfcntr = getDataset()->setLayer(data, layer);
+        getDataset()->setLayer(data, layer);
     }
-    return ovfcntr;
 }
 
 Gradient* Mpx3GUI::getGradient(int index){
@@ -811,27 +782,26 @@ void Mpx3GUI::generateFrame(){
             //!
             //! This could be improved later if desired
             //for(int t=0; t < 4; ++t) {
+            int offset = k * x * y;
 
             for(int i = 0; i < y; i++) {
                 for(int j = 0; j < x; j++) {
                     //! Generate border pixels
                     if ( (k==0 || k==2) && (i==0 || j==0) ) {
-                        data[i*x+j] = k+1;
+                        data[offset + i*x+j] = k+1;
                     } else if ( (k==1 || k==3) && (i==0 || j==x-1) ) {
-                        data[i*x+j] = k+1;
+                        data[offset + i*x+j] = k+1;
                     //! Generate centre pixels
                     } else if ( ((k==0 || k==2) && (i==x-1 && j==x-1)) ||
                                 ((k==1 || k==3) && (i==x-1 && j==0  )) ) {
-                        data[i*x+j] = 5;
+                        data[offset + i*x+j] = 5;
                     } else {
-                        data[i*x+j] = int((k+1)*((int(m_offset)+i+j)%2));
+                        data[offset + i*x+j] = int((k+1)*((int(m_offset)+i+j)%2));
                     }
                 }
             }
-            addFrame(data.data(), k, 0);
-
-            //}
         }
+        addLayer(data.data(), 0);
 //    }
 
     m_offset = !m_offset;
