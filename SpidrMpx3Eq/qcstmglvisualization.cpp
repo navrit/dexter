@@ -2321,55 +2321,57 @@ uint32 assembleData(uint8 a,uint8 b,uint8 c,uint8 d){
 
 void QCstmGLVisualization::on_testBtn_clicked()
 {
+    Mpx3GUI::getInstance()->getConfig()->setInhabitShutter(true);
+    Mpx3GUI::getInstance()->getConfig()->setInhabitShutter(false);
 
-    std::pair<const char*,int> image = Mpx3GUI::getInstance()->getDataset()->toSocketData();
-    qDebug() << "Image size is : " << image.second;
+//    std::pair<const char*,int> image = Mpx3GUI::getInstance()->getDataset()->toSocketData();
+//    qDebug() << "Image size is : " << image.second;
 
-    QString filename = "Pixel.txt";
-    QFile file(filename);
-    file.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text);
-    QTextStream stream(&file);
+//    QString filename = "Pixel.txt";
+//    QFile file(filename);
+//    file.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text);
+//    QTextStream stream(&file);
 
-    QString filename2 = "Pixel2.txt";
-    QFile file2(filename2);
-    file2.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text);
-    QTextStream stream2(&file2);
-
-
-
-
-    int idx = 0;
-    uint32_t* pp = (uint32_t*) image.first;
-    while(idx < image.second){
-        uint32_t pixel = *pp;
-        stream << pixel << endl;
-        pp++;
-        idx = idx + 4;
-    }
-    file.close();
-    qDebug() << "Save is done.";
-
-    QByteArray testBa(100,'0');
-    qDebug() << "Size of testba : " << testBa.length();
-    QByteArray rep;
-    rep.append((255 & 0x000000FF));
-    rep.append((155 & 0x000000FF));
-    rep.append((25 & 0x000000FF));
-    rep.append((205 & 0x000000FF));
-    testBa.replace(10,4,rep);
-    qDebug() << "Size of testba : " << testBa.length();
-    qDebug() << "testba : " << (uint8_t) testBa.at(9);
-    qDebug() << "testba : " << (uint8_t) testBa.at(10);
-    qDebug() << "testba : " << (uint8_t) testBa.at(11);
-    qDebug() << "testba : " << (uint8_t) testBa.at(12);
-    qDebug() << "testba : " << (uint8_t) testBa.at(13);
-    qDebug() << "testba : " << (uint8_t) testBa.at(14);
+//    QString filename2 = "Pixel2.txt";
+//    QFile file2(filename2);
+//    file2.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text);
+//    QTextStream stream2(&file2);
 
 
-    int big = 0xFFFFFFF0;
-    uint16_t small = big;
-    qDebug()<< " big == " << big;
-    qDebug()<< " small == " << small;
+
+
+//    int idx = 0;
+//    uint32_t* pp = (uint32_t*) image.first;
+//    while(idx < image.second){
+//        uint32_t pixel = *pp;
+//        stream << pixel << endl;
+//        pp++;
+//        idx = idx + 4;
+//    }
+//    file.close();
+//    qDebug() << "Save is done.";
+
+//    QByteArray testBa(100,'0');
+//    qDebug() << "Size of testba : " << testBa.length();
+//    QByteArray rep;
+//    rep.append((255 & 0x000000FF));
+//    rep.append((155 & 0x000000FF));
+//    rep.append((25 & 0x000000FF));
+//    rep.append((205 & 0x000000FF));
+//    testBa.replace(10,4,rep);
+//    qDebug() << "Size of testba : " << testBa.length();
+//    qDebug() << "testba : " << (uint8_t) testBa.at(9);
+//    qDebug() << "testba : " << (uint8_t) testBa.at(10);
+//    qDebug() << "testba : " << (uint8_t) testBa.at(11);
+//    qDebug() << "testba : " << (uint8_t) testBa.at(12);
+//    qDebug() << "testba : " << (uint8_t) testBa.at(13);
+//    qDebug() << "testba : " << (uint8_t) testBa.at(14);
+
+
+//    int big = 0xFFFFFFF0;
+//    uint16_t small = big;
+//    qDebug()<< " big == " << big;
+//    qDebug()<< " small == " << small;
 }
 
 void QCstmGLVisualization::onPixelsMasked(int devID, QSet<int> pixelSet)
