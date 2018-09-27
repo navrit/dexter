@@ -293,30 +293,39 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
 
     // HDMI cable config
     if ( item == __ALL ) {
-        // Good configuration for external shutter
-        unsigned int val1 = 0x4;//0x5; // External shutter IN | Connector 1, signal 1
+        //HDMI 1 configs
+        unsigned int val1 = 0x5;//external_shutter first lemo connector
         val1 = val1;
-       //  val1 = val1 << 12;
-        unsigned int val2 = 0x4; // Debug shutter OUT (read back) | Connector 1, signal 3
-        val2 = val2 << 8;
+
+        unsigned int val2 = 0xF; //reserved for inhibit shutter ( default is disable) second lemo connector
+        val2 = val2 << 4;
         //val2 = val2 << 16;
         //unsigned int val1 = 0xB; // Debug shutter OUT (read back) | Connector 1, signal 3
-        unsigned int val3 = 0x4;//0x9; // Debug shutter OUT (read back) | Connector 1, signal 3
-        val3 = val3 << 4;
+//        unsigned int val3 = 0x4;//0x9; // Debug shutter OUT (read back) | Connector 1, signal 3
+//        val3 = val3 << 8;
 
-        unsigned int val4 = 0x4;
+        //HDMI 2 configs  //outputs
+
+        unsigned int val4 = 0x4;  //shutter out  first lemo connector
         val4 = val4 << 12;
-        unsigned int val5 = 0x4;
+
+        unsigned int val5 = 0xA; //inhibit_shuter AND shutter second lemo connector
         val5 = val5 << 16;
-        unsigned int val6 = 0x4;
+
+
+        unsigned int val6 = 0xB; //counter_select in continous
         val6 = val6 << 20;
+
        // val3 = val3 << 20;
         // mask
         // mask
         // mask
-        unsigned int val = val1 | val2 |val3|val4|val5|val6;
+        unsigned int val = val1 | val2 |val4|val5|val6;
         //qDebug() << "HDMI Setting : " << val;
         spidrcontrol->setSpidrReg(0x0810, val, true);
+        int valout = 0;
+        spidrcontrol->getSpidrReg(0x0810,&valout);
+        qDebug() << "HDMI config : " << QString::number(valout,2);
     }
 
 }
@@ -977,4 +986,25 @@ void  Mpx3Config::setStepperConfigCalib(QStandardItem * item) {
         setStepperConfigCalibAngle1( dval );
     }
 
+}
+
+void Mpx3Config::setInhabitShutter(bool turnOn)
+{
+    SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
+    int val = 0;
+    spidrcontrol->getSpidrReg(0x0810,&val);
+    qDebug() << "Old HDMI config : " << QString::number(val,2);
+
+    uint8 inhibitShutterVal = 0xF;
+    if(turnOn)
+        inhibitShutterVal = 0x8;
+
+    inhibitShutterVal = inhibitShutterVal << 4;
+    val = (val & 0xFFFFFF0F) | inhibitShutterVal;
+
+    spidrcontrol->setSpidrReg(0x0810, val, true);
+    spidrcontrol->getSpidrReg(0x0810,&val);
+    qDebug() << "New HDMI config : " << QString::number(val,2);
+
+    emit inhibitShutterchanged(turnOn);
 }

@@ -230,6 +230,8 @@ signals:
     void CalibAngle1Changed(double);
     void BiasVoltageChanged(double);
 
+    void inhibitShutterchanged(bool);
+
 public slots:
 
     void setLogLevel(int newVal) {
@@ -468,6 +470,9 @@ public slots:
         }
 
     }
+
+    //slot to config inhibit_shutter signal
+   void setInhabitShutter(bool turnOn);
 
 };
 
