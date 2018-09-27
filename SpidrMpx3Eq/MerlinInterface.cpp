@@ -249,6 +249,8 @@ void MerlinInterface::initializeTables()
     getTable.insert(TRIGGERMODE,"GetTriggerMode");
     getTable.insert(FILEDIRECTORY,"GetRecordPath");
     getTable.insert(EQUALIZATIONFILES,"GetEqualizationPath");
+    getTable.insert(INHIBITSHUTTER,"GetInhibitShutter");
+
     //initialize setTable
     setTable.insert(COLOURMODE,"SetColourMode;" + QString::number(ENABLE_DISABLE));
     setTable.insert(CHARGESUMMING,"SetChargeSumming;" + QString::number(CSM_SPM));
@@ -293,6 +295,7 @@ void MerlinInterface::initializeTables()
     setTable.insert(UNMASKPIXEL,"SetUnmaskPixel;"+QString::number(N)+";"+QString::number(N));
     setTable.insert(EQUALIZATIONFILES,"SetEqualizationPath;" + QString::number(STRING));
     setTable.insert(EQUALIZATION,"SetDoEqualization;" + QString::number(STRING));
+    setTable.insert(INHIBITSHUTTER,"SetInhibitShutter;" + QString::number(ENABLE_DISABLE));
 
 
     //initialize cmdTable

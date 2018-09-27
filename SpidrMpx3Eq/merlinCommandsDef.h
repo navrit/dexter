@@ -52,6 +52,7 @@
 //end of threshold scan
 #define PROFILES "PROFILES"
 #define TRIGGERMODE  "TRIGGERMODE"
+#define INHIBITSHUTTER "INHIBITSHUTTER"
 #define FILEENABLE "FILEENABLE"
 #define FILEDIRECTORY "FILEDIRECTORY"
 //masking pixels

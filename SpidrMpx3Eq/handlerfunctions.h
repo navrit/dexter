@@ -911,7 +911,40 @@ void setDoEqualizationHandler(CommandHandler* ch, Command* cmd){
 
 
 
+void setInhibitShutterHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetInhibitShutter"))  //this command comes with one argument
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    if(cmd->arguments.at(0) == "enable"){
+        int error = ch->setInhibitShutter(true);
+        cmd->setData("Inhibit_shutter is enabled");
+        cmd->setError((ERROR_TYPE)error);
+    }
+    else if(cmd->arguments.at(0) == "disable"){
+        int error = ch->setInhibitShutter(false);
+        cmd->setData("Inhibit_shutter is disabled");
+        cmd->setError((ERROR_TYPE) error);
+    }
+    else
+    {
+        cmd->setError(UNKNOWN_COMMAND);
+        cmd->setData("Invalid argument...!");
+    }
 
+}
+
+void getInhibitShutterHandler(CommandHandler* ch, Command* cmd){
+    if(ch->getInhibitShutter()){
+        cmd->setData("1");
+        cmd->setError(NO_ERROR);
+        return;
+    }
+    cmd->setData("0");
+    cmd->setError(NO_ERROR);
+    return;
+}
 
 
 //end of handler functions

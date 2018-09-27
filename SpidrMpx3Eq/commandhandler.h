@@ -58,6 +58,8 @@ public:
     void loadEqualizationRemotely(QString path);
     QString getEqualizationPath();
     int doEqualizationRemotely(QString path);
+    int setInhibitShutter(bool);
+    bool getInhibitShutter();
 
     //data
     void emitrequestForAnotherSocket(int);
@@ -78,6 +80,7 @@ signals:
     void requestToLoadEqualizationRemotely(QString);
     void requestToStartStopThresholdScan(void);
     void requestToDoEqualizationRemotely(QString);
+    void requestToSetInhibitShutterRemotely(bool);
 
 public slots:
     void on_doneWithOneFrame(int);

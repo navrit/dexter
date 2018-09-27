@@ -175,6 +175,14 @@ void CommandHandler::initializeCmdTable()
 
     cmd_struct setDoEqualization {setDoEqualizationHandler};
     cmdTable.insert("SetDoEqualization",setDoEqualization);
+
+    cmd_struct setInhibitShutter { setInhibitShutterHandler};
+    cmdTable.insert("SetInhibitShutter",setInhibitShutter);
+
+    cmd_struct getInhibitShutter { getInhibitShutterHandler};
+    cmdTable.insert("GetInhibitShutter",getInhibitShutter);
+
+
 }
 
 bool Command::enoughArguments(int argsNum,QString command)
@@ -577,6 +585,25 @@ int CommandHandler::doEqualizationRemotely(QString path)
     }
     emit requestToDoEqualizationRemotely(path);
     return NO_ERROR;
+}
+
+int CommandHandler::setInhibitShutter(bool turnOn)
+{
+    connect(this,SIGNAL(requestToSetInhibitShutterRemotely(bool)),Mpx3GUI::getInstance()->getConfig(),SLOT(setInhabitShutter(bool)));
+    emit requestToSetInhibitShutterRemotely(turnOn);
+    return NO_ERROR;
+}
+
+bool CommandHandler::getInhibitShutter()
+{
+    int val = 0;
+    Mpx3GUI::getInstance()->GetSpidrController()->getSpidrReg(0x0810,&val);
+
+    if((val & (0xF << 4)) == (0X8 << 4))
+    {
+        return true;
+    }
+    return false;
 }
 
 
