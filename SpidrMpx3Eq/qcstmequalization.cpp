@@ -1334,6 +1334,39 @@ void QCstmEqualization::SaveEqualization(QString path, bool totempdir, bool fetc
         _eqMap[_workChipsIndx[i]]->WriteMaskBinaryFile( QString( savepath + "mask_" + QString::number(_workChipsIndx[i])) );
     }
 
+
+//    for (unsigned long i = 0 ; i < _workChipsIndx.size() ; i++ ) {
+//        if(GetBarChart(i) != nullptr){
+//            GetBarChart(i)->savePng(savepath+"chip_"+QString::number(i),500,500,2.0);
+//            qDebug() << "bar"<< i <<" is not null.";
+//            qDebug() << "save path0 : " << savepath;
+//        }
+//    }
+
+    if(GetBarChart(0) != nullptr){
+        GetBarChart(0)->savePng(savepath+"chip_0",500,500,2.0);
+        qDebug() << "bar 0 is not null.";
+        qDebug() << "save path0 : " << savepath;
+    }
+
+    if(GetBarChart(1) != nullptr){
+        GetBarChart(1)->savePng(savepath+"chip_1",500,500,2.0);
+        qDebug() << "bar 1 is not null.";
+        qDebug() << "save path1 : " << savepath;
+    }
+    if(GetBarChart(2) != nullptr){
+        GetBarChart(2)->savePng(savepath+"chip_2",500,500,2.0);
+        qDebug() << "bar 2 is not null.";
+        qDebug() << "save path2 : " << savepath;
+    }
+    if(GetBarChart(3) != nullptr){
+        GetBarChart(3)->savePng(savepath+"chip_3",500,500,2.0);
+        qDebug() << "bar 3 is not null.";
+        qDebug() << "save path3 : " << savepath;
+    }
+
+
+
     // use this when you need to get the rest from a temp dir
     if ( fetchfromtempdir ) {
 
@@ -1365,12 +1398,44 @@ void QCstmEqualization::SaveEqualization(QString path, bool totempdir, bool fetc
         proc.start("sh", QStringList() << "-c" << command);
         proc.waitForFinished(5000);
 
+
+
+        copyfrom = _tempEqSaveDir;
+        copyfrom.append( QDir::separator() );
+        copyfrom += "chip_*";
+        command = "cp -f " +copyfrom+" "+copyto;
+        qDebug() << command;
+
+
+
+        proc.start("sh", QStringList() << "-c" << command);
+        proc.waitForFinished(5000);
+
+//        if(GetBarChart(1) != nullptr){
+//            GetBarChart(1)->savePng(savepath+"/");
+//            qDebug() << "bar 1 is not null.";
+//            qDebug() << "save path1 : " << savepath;
+//        }
+//        if(GetBarChart(2) != nullptr){
+//            GetBarChart(2)->savePng(savepath+"/chip_2");
+//            qDebug() << "bar 2 is not null.";
+//            qDebug() << "save path2 : " << savepath;
+//        }
+//        if(GetBarChart(3) != nullptr){
+//            GetBarChart(3)->savePng(savepath+"/chip_3");
+//            qDebug() << "bar 3 is not null.";
+//            qDebug() << "save path3 : " << savepath;
+//        }
+
+
+
     }
 
-    for(int i = 0; i < _workChipsIndx.size(); i++){
-        if(GetBarChart(i) != nullptr)
-            GetBarChart(i)->savePng(savepath+"/chip_"+i);
-    }
+//    for(int i = 0; i < _workChipsIndx.size(); i++){
+//        if(GetBarChart(i) != nullptr)
+//            GetBarChart(i)->savePng(savepath+"/chip_"+i);
+//    }
+
 
 
 }
