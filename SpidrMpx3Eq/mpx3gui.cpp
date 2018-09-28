@@ -1084,7 +1084,7 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
 
                 //! Debugging function only
                 // generateFrame();
-                frame = getDataset()->getFullImageAsArrayWithLayout(i, getLayout(), getOrientation(), getConfig());
+                frame = getDataset()->getFullImageAsArrayWithLayout(i);
                 tmpFilename = tmpFilename.replace("_raw.tiff", QString("-th"+ QString::number(thresholds[i]) +"_raw.tiff"));
 
             } else if (selectedFilter == TIFF_FILES) {
@@ -1093,7 +1093,7 @@ void Mpx3GUI::save_data(bool requestPath, int frameId, QString selectedFileType)
                 tmpFilename = tmpFilename.replace(".tiff", QString("-th"+ QString::number(thresholds[i]) +".tiff"));
 
             } else if (selectedFilter == BOTH_TIFF_FILES) {
-                frame = getDataset()->getFullImageAsArrayWithLayout(i, getLayout(), getOrientation(), getConfig());
+                frame = getDataset()->getFullImageAsArrayWithLayout(i);
                 tmpFilename = tmpFilename.replace("_both.tiff", QString("-th"+ QString::number(thresholds[i]) +"_raw.tiff"));
                 QtConcurrent::run( dataControllerThread, &DataControllerThread::saveTIFFParallel, tmpFilename, imageWidth, frame);
 

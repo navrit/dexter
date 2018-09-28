@@ -206,42 +206,38 @@ QByteArray Dataset::toByteArray() {
     return ret;
 }
 
-template <typename INTTYPE> pair<const char*, int> toSocketData2(Dataset *ds, int key)
-{
+template <typename TYPE> TYPE* allocateBuffer(size_t size) {
+    // OK this is a quick hack, create a nicer version later
+    const int poolSize = 32;
+    static pair<void*, size_t> pool[poolSize] = {pair<void*,size_t>(nullptr, (size_t) 0)};
+    static QAtomicInteger<int> bufferCounter;
+    int buffIndex = (bufferCounter++) & (poolSize-1);
+    size_t scaledSize = size * sizeof(TYPE);
+    pair<void*, size_t> item = pool[buffIndex];
+    if (item.first == nullptr || item.second < scaledSize)
+        pool[buffIndex] = item = pair<void*,size_t>(new TYPE[size], scaledSize);
+    return (TYPE*) item.first;
+}
+
+template <typename INTTYPE> pair<const char*, int> toCanvas2(Dataset *ds, int key, int gap) {
 
     const int dim = 256;
-    // use double buffer, toggle between them
-    static INTTYPE image2[2][dim*dim*4] = {0};
-    static QAtomicInteger<int> bufferToggle;
+    int imgDim = 2 * dim + gap;
 
-    int buffIndex = bufferToggle.fetchAndXorRelaxed(1);
-    INTTYPE* image = image2[buffIndex];
+    INTTYPE* image = allocateBuffer<INTTYPE>((size_t) imgDim * imgDim);
 
     int * layer = ds->getLayer(key);
 
-    int gap = 0;
-    int imgDim = 2 * dim + gap;
 
-    /*
-    static int param[12] = { 1, 1, 6,  // right top, go down		//   3  |  0
-                             1, 0, 6,  // right middle, go down		//   ---+---
-                             0, 0, 5,  // left bottom, go up		//   2  |  1
-                             0, 1, 5}; // left middle, go up
-     */
-
-    static int param[12] = { 0, 1, 0,  // top left, go right		//   0  |  1
-                             1, 1, 0,  // top middle, go right		//   ---+---
-                             1, 0, 3,  // bottom right, go left		//   3  |  2
-                             0, 0, 3}; // bottom middle, go left
-
-    int* pp = param;
-    for (int chip = 0; chip < 4; chip++) {
-        int posx = *(pp++);
-        int posy = *(pp++); // NB: bottom to top
+    auto positions = ds->getLayoutVector();
+    auto orientations = ds->getOrientationVector();
+    int nChips = ds->getFrameCount();
+    for (int chip = 0; chip < nChips; chip++) {
+        int posx = positions[chip].x();
+        int posy = positions[chip].y(); // NB: bottom to top
         int base = (1 - posy) * (dim + gap) * imgDim + posx * (dim + gap);
 
-        int ori = *(pp++);
-        imgOrientation io = orientation[ori];
+        imgOrientation io = orientation[orientations[chip]];
 
         int cs = io.fast.ix - imgDim * io.fast.iy,
             rs = io.slow.ix - imgDim * io.slow.iy;
@@ -264,15 +260,15 @@ template <typename INTTYPE> pair<const char*, int> toSocketData2(Dataset *ds, in
     }
 
     return
-        pair<const char*,int>((const char*)image, (int) dim * dim * 4 * sizeof(INTTYPE));
+        pair<const char*,int>((const char*)image, (int) imgDim * imgDim * sizeof(INTTYPE));
 }
 
-pair<const char*, int> Dataset::toSocketData() {
+pair<const char*, int> Dataset::toCanvas() {
     QList<int> keys = m_thresholdsToIndices.keys();
     qDebug() << "cnt depth : " << m_pixelDepthBits;
     return (m_pixelDepthBits == 24)
-            ? toSocketData2<uint32_t>(this, keys[0])
-            : toSocketData2<uint16_t>(this, keys[0]);
+            ? toCanvas2<uint32_t>(this, keys[0], 0)
+            : toCanvas2<uint16_t>(this, keys[0], 0);
 }
 
 /**
@@ -656,8 +652,6 @@ int * Dataset::makeFrameForSaving(int threshold, bool crossCorrection, bool spat
     float edgePixelMagicNumberSpectroHorizontal = float(1.1);
 
     QList<int> thresholds = m_thresholdsToIndices.keys();
-    int * image = nullptr;//(height*width);
-    int * imageCorrected = nullptr;//(height*width);
     //----------------------------------------------------
 
     if (spatialOnly){
@@ -669,6 +663,10 @@ int * Dataset::makeFrameForSaving(int threshold, bool crossCorrection, bool spat
 
     //! Default mode - do cross and spatial corrections
     if (crossCorrection){
+        int * image = allocateBuffer<int>(height*width);
+        int * imageCorrected = allocateBuffer<int>(height*width);
+        //int * image = new int[height*width];
+        //int * imageCorrected = new int[height*width];
         //! Normal Fine Pitch mode - do cross correction
         if (getThresholds().count() == 1) {
             for (int y=0; y < height; y++) {
@@ -880,28 +878,9 @@ int * Dataset::makeFrameForSaving(int threshold, bool crossCorrection, bool spat
                 }
             }
         }
-    } else {
-
-        //! THIS METHOD SERIOUSLY SUCKS
-        //! BYPASS it with getFullImageAsArrayWithLayout()
-        //! for raw output
-
-        width  = getWidth();
-        height = getHeight();
-
-        for (int y=0; y < height; y++) {
-            for (int x=0; x < width; x++) {
-                //! Sample the pixels directly
-                image[y*width + x] = sample(x, y, thresholds[threshold]);
-            }
-        }
-    }
-
-    // -------------------------------------------------------------------
-    if (crossCorrection || spatialOnly) {
         return imageCorrected;
     } else {
-        return image;
+        return getFullImageAsArrayWithLayout(threshold);
     }
 }
 
@@ -2496,144 +2475,8 @@ int * Dataset::getLayer(int threshold){
 }
 
 
-void Dataset::initVariablesForHighSpeedSaving(std::vector<QPoint> frameLayouts,
-                                              std::vector<int> frameOrientation)
-{
-
-    // This two members carry all the information about the layout
-    //QVector<QPoint>  m_frameLayouts // positions in the pad
-    //QVector<int> m_frameOrientation // orientations
-
-    // I want the layout of the whole chip.  I will build it again
-
-    nChips = getNChipsX() * getNChipsY();
-    //std::vector<QPoint> frameLayouts = mpx3gui->getLayout(); // Positions in the pad
-    //std::vector<int> frameOrientation = mpx3gui->getOrientation(); // Orientations
-
-    // - Now work out the offsets
-    QVector<QPoint> offsets;
-    for ( int i = 0 ; i < nChips ; i++ ) {
-        QPoint point = frameLayouts[i];
-        offsets.push_back( QPoint( point.x() * x(), point.y() * y() ) );
-    }
-    // - Work out the orientation
-    //   Here we decide where the loop starts and in which direction
-    /*QVector<int> directionx;
-    QVector<int> directiony;
-    QVector<int> startx;
-    QVector<int> starty;
-    QVector<int> endx;
-    QVector<int> endy;*/
-    // Now class globals because they'll never change during runtime for the same settings...
-
-    for ( int i = 0 ; i < nChips ; i++ ) {
-        if ( frameOrientation[i] == orientationTtBRtL ) {
-            directionx.push_back(  1 );
-            directiony.push_back(  1 );
-            startx.push_back( 0 + offsets[i].x() );
-            starty.push_back( 0 + offsets[i].y() );
-            endx.push_back( x() + offsets[i].x() );
-            endy.push_back( y() + offsets[i].y() );
-
-        }
-        if ( frameOrientation[i] == orientationBtTLtR ) {
-            directionx.push_back( -1 );
-            directiony.push_back( -1 );
-            startx.push_back( x() + offsets[i].x() - 1 );
-            starty.push_back( y() + offsets[i].y() - 1 );
-            endx.push_back( 0 + offsets[i].x() );
-            endy.push_back( 0 + offsets[i].y() );
-        }
-    }
-}
-
-int * Dataset::getFullImageAsArrayWithLayout(int threshold,
-                                             std::vector<QPoint> frameLayouts,
-                                             std::vector<int> frameOrientation,
-                                             Mpx3Config * config) {
-
-    if (firstHighSpeedImageSave) {
-        initVariablesForHighSpeedSaving(frameLayouts, frameOrientation);
-    }
-
-    firstHighSpeedImageSave = false;
-
-    // - Create a buffer for the whole image
-    if ( !m_plainImageBuff ) {
-        m_plainImageBuff = new int[nChips * x() * y()];
-    }
-
-    m_plainImageBuff[nChips * x() * y()] = {0};
-
-    //! FIXME - COME BACK TO THIS LATER
-    //! return getFrame(0, 0);
-
-    //memset(m_plainImageBuff, 0, sizeof(int)*nChips * x() * y());
-
-
-    // - Fill it according to layout
-    // - Take one chip
-    int pixIdTranslate = 0, pixCntr = 0;
-    int sizex_full = getNChipsX() * x();
-    int dataIndx = 0;
-    int * chipdata = nullptr;
-
-    for ( int i = 0 ; i < nChips ; i++ ) {
-
-        // - Get the layer
-        // The data comes organized per chip.
-        dataIndx = config->getIndexFromID(i);
-        if ( dataIndx >= 0 ) chipdata = getFrame( dataIndx , threshold);
-        else chipdata = nullptr;
-
-        int x = startx[i];
-        int y = starty[i];
-        bool gox = true;
-        bool goy = true;
-        pixCntr = 0;
-
-        for ( ; gox ; ) {
-
-            // rewind
-            goy = true;
-            y = starty[i];
-
-            for ( ; goy ; ) {
-
-                //////////////////////
-                // Data !
-                pixIdTranslate = XYtoX(x, y, sizex_full);
-
-                if ( chipdata ) { // There's data for this chip
-                    //qDebug() << "[" << i << "]" << x << "," << y << " : " << pixIdTranslate << " | " << pixCntr;
-                    m_plainImageBuff[pixIdTranslate] = chipdata[pixCntr++];
-                } else {
-                    m_plainImageBuff[pixIdTranslate] = 0;
-                }
-
-                // direction and stop
-                if ( directiony[i] > 0 ) {
-                    y++;
-                    if ( y >= endy[i] ) goy = false;
-                }
-                if ( directiony[i] < 0 ) {
-                    y--;
-                    if ( y < endy[i] ) goy = false;
-                }
-            }
-            // direction and stop
-            if ( directionx[i] > 0 ) {
-                x++;
-                if ( x >= endx[i] ) gox = false;
-            }
-            if ( directionx[i] < 0 ) {
-                x--;
-                if ( x < endx[i] ) gox = false;
-            }
-        }
-    }
-
-    return m_plainImageBuff;
+int * Dataset::getFullImageAsArrayWithLayout(int threshold) {
+    return (int*) toCanvas2<int32_t>(this, m_thresholdsToIndices[threshold], 0).first;
 }
 
 

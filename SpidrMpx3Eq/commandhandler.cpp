@@ -613,7 +613,7 @@ void CommandHandler::on_doneWithOneFrame(int frameid)
     QElapsedTimer tim; tim.start();
     QString hd = generateMerlinFrameHeader(frameid);
     qint64 nano1 = tim.nsecsElapsed();
-    std::pair<const char*, int> frame = gui->getDataset()->toSocketData();
+    std::pair<const char*, int> frame = gui->getDataset()->toCanvas();
     qint64 nano2 = tim.nsecsElapsed();
     auto size = hd.length() + frame.second;
     auto len = QString("%1").arg(size, 10, 10, QChar('0'));

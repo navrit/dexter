@@ -104,10 +104,7 @@ public:
         std::vector<double> stdev_v;
     } bstats;//!Calculated mean and stdev of the selected region of interest.
 
-    int * getFullImageAsArrayWithLayout(int threshold,
-                                        std::vector<QPoint> frameLayouts,
-                                        std::vector<int> frameOrientation,
-                                        Mpx3Config *config);
+    int * getFullImageAsArrayWithLayout(int threshold);
 
 private:
     int m_nx, m_ny; //!<Pixel size in the x and y direction, per detector.
@@ -166,7 +163,7 @@ public:
     int getNChipsY();
 
     QByteArray toByteArray(); //!< Serializes the dataset for saving.
-    pair<const char*,int> toSocketData(); //!< Serializes the dataset for sending via socket to clients.
+    pair<const char*,int> toCanvas(); //!< Serializes the dataset for sending via socket to clients.
     QVector<int> toQVector(); //!< Serializes the dataset for saving.
     void saveBIN(QString filename);   //! Puts the dataset into a BIN format and saves.
     void toTIFF(QString filename, bool crossCorrection = true , bool spatialOnly = false);  //! Puts the dataset into a TIFF format and saves.
