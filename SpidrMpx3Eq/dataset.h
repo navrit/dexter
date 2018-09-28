@@ -134,6 +134,7 @@ private:
     bool corrected; //!indicates whether or not an image has been corrected.
     int getLayerIndex(int threshold);
     void rewindScores();
+    int *createCorrectedImage(int threshold, bool spatialOnly = false);
 
     QList<int> Profilepoints = QList<int>() << -1 << -1 << -1 << -1 << -1 << -1; //!The points on a profile that are used to calculate the CNR. Initialized to -1 to indicate that no value has been specified (yet).
     QVector<QVector<int> > valuesinRoI;//!A matrix of the values of the pixels contained in the region of interest. Each row corresponds to a row of pixels (LtR), from Bottom to Top.
