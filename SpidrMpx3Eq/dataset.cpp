@@ -219,36 +219,47 @@ template <typename INTTYPE> pair<const char*, int> toSocketData2(Dataset *ds, in
 
     int * layer = ds->getLayer(key);
 
+    int gap = 0;
+    int imgDim = 2 * dim + gap;
+
     /*
-    static int param[12] = {    511,  512, -1, // right top, go down		//   3  |  0
-                             131583,  512, -1, // right middle, go down		//   ---+---
-                             261632, -512,  1, // left bottom, go up		//   2  |  1
-                             130560, -512,  1}; // left middle, go up
+    static int param[12] = { 1, 1, 6,  // right top, go down		//   3  |  0
+                             1, 0, 6,  // right middle, go down		//   ---+---
+                             0, 0, 5,  // left bottom, go up		//   2  |  1
+                             0, 1, 5}; // left middle, go up
      */
 
-    static int param[12] = {      0,  1,  512, // top left, go right		//   0  |  1
-                                256,  1,  512, // top middle, go right		//   ---+---
-                             262143, -1, -512, // bottom right, go left		//   3  |  2
-                             261887, -1, -512}; // bottom middle, go left
+    static int param[12] = { 0, 1, 0,  // top left, go right		//   0  |  1
+                             1, 1, 0,  // top middle, go right		//   ---+---
+                             1, 0, 3,  // bottom right, go left		//   3  |  2
+                             0, 0, 3}; // bottom middle, go left
 
     int* pp = param;
     for (int chip = 0; chip < 4; chip++) {
-        int startix = *(pp++);
-        int cs = *(pp++);
-        int rs = *(pp++);
+        int posx = *(pp++);
+        int posy = *(pp++); // NB: bottom to top
+        int base = (1 - posy) * (dim + gap) * imgDim + posx * (dim + gap);
+
+        int ori = *(pp++);
+        imgOrientation io = orientation[ori];
+
+        int cs = io.fast.ix - imgDim * io.fast.iy,
+            rs = io.slow.ix - imgDim * io.slow.iy;
+        if (cs < 0) base += (dim-1)*imgDim;
+        if (rs < 0) base += dim-1;
+
         for (int i = 0; i < dim; i++) {
-            int ix = startix;
-                if (cs == 1)
-                    for (int j = 0; j < dim; j++) {
-                        image[ix] = *(layer++);
-                        ++ix;
-                    }
-                else
-                    for (int j = 0; j < dim; j++) {
-                        image[ix] = *(layer++);
-                        --ix;
-                    }
-            startix += rs;
+            int ix = base;
+            int j = dim;
+            switch (cs) {
+            case  1: while (j--) image[ix++] = *(layer++); break;
+            case -1: while (j--) image[ix--] = *(layer++); break;
+            default: while (j--) {
+                    image[ix] = *(layer++);
+                    ix += cs;
+                }
+            }
+            base += rs;
         }
     }
 
