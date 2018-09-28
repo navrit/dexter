@@ -290,20 +290,12 @@ void QCstmGLPlot::readLayouts(Dataset &data){
 void QCstmGLPlot::readOrientations(Dataset &data){
     QVector<int> orientations = data.getOrientationVector();
     QVector<GLfloat> orientationsGL(orientations.size()*4);
-    for(int i = 0; i < orientations.size();i++){
-        GLfloat x = 2*(orientations[i]&1)-1;
-        GLfloat y = 1-(orientations[i]&2);//      QVector2D(1,1/*1-2*(orientations[i]&1), 1-orientations[i]&2*/ );//little hack: first bit of orientations RtL or LtR, second if TtB or BtT.
-        if(orientations[i]&4){
-            orientationsGL[i*4+0]  = 0;
-            orientationsGL[i*4+1]  = y;
-            orientationsGL[i*4+2]  = x;
-            orientationsGL[i*4+3]  = 0;
-        }else{
-            orientationsGL[i*4+0]  = x;
-            orientationsGL[i*4+1]  = 0;
-            orientationsGL[i*4+2]  = 0;
-            orientationsGL[i*4+3]  = y;
-        }
+    for (int i = 0; i < orientations.size();i++) {
+        auto io = orientation[orientations[i]];
+        orientationsGL[i*4  ] = - io.fast.ix;   // yes, someone should figure out why we need a - sign here
+        orientationsGL[i*4+1] = - io.fast.iy;
+        orientationsGL[i*4+2] = - io.slow.ix;
+        orientationsGL[i*4+3] = - io.slow.iy;
     }
     glBindVertexArray (vao);
     glBindBuffer (GL_ARRAY_BUFFER, vbo[3]);

@@ -35,6 +35,25 @@ class CorrectionItem;
 class QCstmCorrectionsDialog;
 class Mpx3Config;
 
+typedef struct { int ix, iy; } imgDirection;
+
+#define dirL2R { 1,  0}
+#define dirR2L {-1,  0}
+#define dirB2T { 0,  1}
+#define dirT2B { 0, -1}
+
+typedef struct { imgDirection fast, slow; } imgOrientation;
+
+static constexpr imgOrientation orientation[8] = {
+         {dirL2R, dirT2B},
+         {dirR2L, dirT2B},
+         {dirL2R, dirB2T},
+         {dirR2L, dirB2T},
+         {dirT2B, dirL2R},
+         {dirT2B, dirR2L},
+         {dirB2T, dirL2R},
+         {dirB2T, dirR2L}};
+
 class Dataset
 {
 public:
@@ -49,7 +68,6 @@ public:
         orientationBtTLtR=6,
         orientationBtTRtL=7
     };
-
 
     enum cnr_constants {
         stepsize = 2,
