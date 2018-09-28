@@ -15,7 +15,7 @@
 #include <vector>
 #include <fstream>      // std::ofstream
 
-#include <tiffio.h> /* Sam Leffler's libtiff library. */
+#include "TiffFile.h"
 
 using namespace std;
 
@@ -593,47 +593,10 @@ void Dataset::toTIFF(QString filename, bool crossCorrection, bool spatialOnly)
                 tmpFilename.replace(".tiff", "-thl" + QString::number(thresholds[i]) + ".tiff");
             }
         }
-
-        //! Open the TIFF file, write mode
-        m_pTiff = TIFFOpen(tmpFilename.toLatin1().data(), "w");
-
-        if (m_pTiff) {
-            //! Write TIFF header tags
-
-            TIFFSetField(m_pTiff, TIFFTAG_SAMPLESPERPIXEL, SAMPLES_PER_PIXEL);      // set number of channels per pixel
-            TIFFSetField(m_pTiff, TIFFTAG_BITSPERSAMPLE,   BPP);                    // set the size of the channels
-            TIFFSetField(m_pTiff, TIFFTAG_ORIENTATION,     ORIENTATION_TOPLEFT);    // set the origin of the image.
-
-            TIFFSetField(m_pTiff, TIFFTAG_COMPRESSION,     COMPRESSION_NONE);
-            TIFFSetField(m_pTiff, TIFFTAG_PLANARCONFIG,    PLANARCONFIG_CONTIG);    // No idea what this does but it's necessary
-            TIFFSetField(m_pTiff, TIFFTAG_PHOTOMETRIC,     PHOTOMETRIC_MINISBLACK);
-
-            if (crossCorrection){
-                TIFFSetField(m_pTiff, TIFFTAG_IMAGEWIDTH,      width);                  // set the width of the image
-                TIFFSetField(m_pTiff, TIFFTAG_IMAGELENGTH,     height);                 // set the height of the image
-                for (int r=0; r < height; r++) {
-                    TIFFWriteScanline(m_pTiff, &imageCorrected[r*width], r, 0);
-                }
-                //                qDebug() << "[INFO] Written corrected TIFF";
-            } else {
-                TIFFSetField(m_pTiff, TIFFTAG_IMAGEWIDTH,      getWidth());                  // set the width of the image
-                TIFFSetField(m_pTiff, TIFFTAG_IMAGELENGTH,     getHeight());                 // set the height of the image
-                for (int r=0; r < getHeight(); r++) {
-                    TIFFWriteScanline(m_pTiff, &image[r*getWidth()], r, 0);
-                }
-                //                qDebug() << "[INFO] Written raw TIFF";
-            }
-
-
-        } else if (m_pTiff == nullptr) {
-            qDebug() << "[ERROR] Unable to write TIFF file";
+        if (crossCorrection) {
+            TiffFile::saveToTiff32(tmpFilename.toUtf8().data(), (const int*) imageCorrected, width, height);
         } else {
-            qDebug() << "[ERROR] Unknown TIFF file write failure.";
-        }
-
-        //! Cleanup code - close the file when done
-        if ( m_pTiff ) {
-            TIFFClose( m_pTiff );
+            TiffFile::saveToTiff32(tmpFilename.toUtf8().data(), (const int*) image, getWidth(), getHeight());
         }
     }
 
