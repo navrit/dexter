@@ -210,7 +210,7 @@ template <typename TYPE> TYPE* allocateBuffer(size_t size) {
     // OK this is a quick hack, create a nicer version later
     const int poolSize = 32;
     static pair<void*, size_t> pool[poolSize] = {pair<void*,size_t>(nullptr, (size_t) 0)};
-    static QAtomicInteger<int> bufferCounter;
+    static atomic_int bufferCounter;
     int buffIndex = (bufferCounter++) & (poolSize-1);
     size_t scaledSize = size * sizeof(TYPE);
     pair<void*, size_t> item = pool[buffIndex];
