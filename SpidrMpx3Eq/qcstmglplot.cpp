@@ -292,10 +292,10 @@ void QCstmGLPlot::readOrientations(Dataset &data){
     QVector<GLfloat> orientationsGL(orientations.size()*4);
     for (int i = 0; i < orientations.size();i++) {
         auto io = orientation[orientations[i]];
-        orientationsGL[i*4  ] = - io.fast.ix;   // yes, someone should figure out why we need a - sign here
-        orientationsGL[i*4+1] = - io.fast.iy;
-        orientationsGL[i*4+2] = - io.slow.ix;
-        orientationsGL[i*4+3] = - io.slow.iy;
+        orientationsGL[i*4  ] = io.fast.ix;
+        orientationsGL[i*4+1] = io.fast.iy;
+        orientationsGL[i*4+2] = io.slow.ix;
+        orientationsGL[i*4+3] = io.slow.iy;
     }
     glBindVertexArray (vao);
     glBindBuffer (GL_ARRAY_BUFFER, vbo[3]);

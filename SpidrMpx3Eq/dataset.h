@@ -50,8 +50,8 @@ static constexpr imgOrientation orientation[8] = {
          {dirL2R, dirB2T},
          {dirR2L, dirB2T},
          {dirT2B, dirL2R},
-         {dirT2B, dirR2L},
          {dirB2T, dirL2R},
+         {dirT2B, dirR2L},
          {dirB2T, dirR2L}};
 
 class Dataset
@@ -64,8 +64,8 @@ public:
         orientationLtRBtT = 2,
         orientationRtLBtT = 3,
         orientationTtBLtR=4,
-        orientationTtBRtL=5,
-        orientationBtTLtR=6,
+        orientationBtTLtR=5,
+        orientationTtBRtL=6,
         orientationBtTRtL=7
     };
 
