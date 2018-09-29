@@ -325,56 +325,27 @@ int * Dataset::createCorrectedImage(int threshold, bool spatialOnly)
         edgePixelMagicNumberSpectroVertical = 1;
     }
 
-    //! Default mode - do cross and spatial corrections
-    int image[height*width];
-    int * imageCorrected = allocateBuffer<int>(height*width);
-    //! Normal Fine Pitch mode - do cross correction
-    if (getThresholds().count() == 1) {
-        for (int y=0; y < height; y++) {
-            for (int x=0; x < width; x++) {
-                if (x==(width/2)-1 || x==(width/2) || y==(height/2)-1 || y==(height/2)){
-                    //! Hard coded cross correction
-                    image[y*width + x] = int (sample(x, y, thresholds[threshold]) / edgePixelMagicNumber );
-                } else {
-                    //! Default option, sample the pixels directly
-                    image[y*width + x] = sample(x, y, thresholds[threshold]);
-                }
-            }
-        }
-
-        //! Spectroscopic mode don't try cross correction - it doesn't work properly
-        //! due to a non constant factor between the edge pixels and the main pixels
-        //!
-        //! Ask Sammi for details. Some manufacturing BS
-        //!
-        //! Implement later if necessary
-
-    } else {
-        for (int y=0; y < height; y++) {
-            for (int x=0; x < width; x++) {
-                //! Sample the pixels directly
-                image[y*width + x] = sample(x, y, thresholds[threshold]);
-            }
-        }
-    }
-
     //! Phase 1
     //! Do spatial correction on quadrants, move to respective corners
-    for (int y=0; y < height; y++) {
-        for (int x=0; x < width; x++) {
 
-            if (y < (height/2)-extraPixels && x < (width/2)-extraPixels) {      // TL
-                imageCorrected[y*width + x] = sample(x, y, thresholds[threshold]);
-            } else if (y < (height/2)-extraPixels && x >= (width/2)+extraPixels) {      // TR
-                imageCorrected[y*width + x] = sample(x-2*extraPixels, y, thresholds[threshold]);
-            } else if (y >= (height/2)+extraPixels && x < (width/2)-extraPixels) {      // BL
-                imageCorrected[y*width + x] = sample(x, y-2*extraPixels, thresholds[threshold]);
-            } else if (y >= (height/2)+extraPixels && x >= (width/2)+extraPixels) {     // BR
-                imageCorrected[y*width + x] = sample(x-2*extraPixels, y-2*extraPixels, thresholds[threshold]);
-            }
-
+    int gap = 2 * extraPixels;
+    int * imageCorrected = (int*) toCanvas2<int>(this, thresholds[threshold], gap).first;
+    // mind the gap!
+    if (gap > 0) {
+        int ix = m_nx;
+        // gap columns of height
+        int n = height;
+        while (n-- > 0) {
+            for (int i2 = 0; i2 < gap; i2++)
+                imageCorrected[ix+i2] = 0;
+            ix += width;
         }
+        // gap rows of width
+        ix = m_ny * width;
+        n = gap * width;
+        while (n--) imageCorrected[ix++] = 0;
     }
+
     //! Phase 2
     //! Loop for cross
     for (int y=0; y < height; y++) {
