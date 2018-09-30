@@ -348,72 +348,65 @@ int * Dataset::createCorrectedImage(int threshold, bool spatialOnly) {
         while (n--) imageCorrected[ix++] = 0;
     } else {
         int edgeLo = m_nx - 1, edgeHi = m_nx + gap;
+        auto at = [imageCorrected, width](int i, int j) -> int & { return imageCorrected[i * width + j]; };
         // remember the corners
-        int tl = imageCorrected[edgeLo * width + edgeLo],
-            tr = imageCorrected[edgeLo * width + edgeHi],
-            bl = imageCorrected[edgeHi * width + edgeLo],
-            br = imageCorrected[edgeHi * width + edgeHi];
+        int tl = at(edgeLo, edgeLo),
+            tr = at(edgeLo, edgeHi),
+            bl = at(edgeHi, edgeLo),
+            br = at(edgeHi, edgeHi);
 
         float scale = 1.0 / (width == 260? edgePixelMagicNumberSpectroVertical : edgePixelMagicNumber);
-        int ix = edgeLo;
         for (int i = 0; i < height; i++) {
-            int tmp = round(imageCorrected[ix] * scale);
+            int tmp = round(at(i, edgeLo) * scale);
             for (int i2 = 0; i2 <= extraPixels; i2++)
-                imageCorrected[ix + i2] = tmp;
-            ix += width;
+                at(i, edgeLo + i2) = tmp;
         }
-        ix = edgeHi;
         for (int i = 0; i < height; i++) {
-            int tmp = round(imageCorrected[ix] * scale);
+            int tmp = round(at(i, edgeHi) * scale);
             for (int i2 = 0; i2 <= extraPixels; i2++)
-                imageCorrected[ix - i2] = tmp;
-            ix += width;
+                at(i, edgeHi - i2) = tmp;
         }
 
         // restore the corners
-        imageCorrected[edgeLo * width + edgeLo] = tl;
-        imageCorrected[edgeLo * width + edgeHi] = tr;
-        imageCorrected[edgeHi * width + edgeLo] = bl;
-        imageCorrected[edgeHi * width + edgeHi] = br;
+        at(edgeLo, edgeLo) = tl;
+        at(edgeLo, edgeHi) = tr;
+        at(edgeHi, edgeLo) = bl;
+        at(edgeHi, edgeHi) = br;
 
         scale = 1.0 / (width == 260 ? edgePixelMagicNumberSpectroHorizontal : edgePixelMagicNumber);
 
-        ix = width * edgeLo;
-        for (int i = 0; i < width; i++) {
-            int tmp = round(imageCorrected[ix] * scale);
+        for (int j = 0; j < width; j++) {
+            int tmp = round(at(edgeLo, j) * scale);
             for (int i2 = 0; i2 <= extraPixels; i2++)
-                imageCorrected[ix + i2 * width] = tmp;
-            ix++;
+                at(edgeLo + i2, j) = tmp;
         }
-        ix = width * edgeHi;
-        for (int i = 0; i < width; i++) {
-            int tmp = round(imageCorrected[ix] * scale);
+        for (int j = 0; j < width; j++) {
+            int tmp = round(at(edgeHi, j) * scale);
             for (int i2 = 0; i2 <= extraPixels; i2++)
-                imageCorrected[ix - i2 * width] = tmp;
-            ix++;
+                at(edgeHi - i2, j) = tmp;
         }
 
         //! Phase 3
         //! Separate loop for central region
-        int val = round(0.5 * (imageCorrected[edgeLo * width + edgeLo + 1] + imageCorrected[(edgeLo + 1) * width + edgeLo]));
+        int val = round(0.5 * (at(edgeLo, edgeLo + 1) + at(edgeLo + 1, edgeLo)));
         for (int i = edgeLo; i <= edgeLo + extraPixels; i++) {
             for (int j = edgeLo; j <= edgeLo + extraPixels; j++)
-                imageCorrected[i * width + j] = val;
+                at(i, j) = val;
         }
-        val = round(0.5 * (imageCorrected[edgeLo * width + edgeHi - 1] + imageCorrected[(edgeLo + 1) * width + edgeHi]));
+        val = round(0.5 * (at(edgeLo, edgeHi - 1) + at(edgeLo + 1, edgeHi)));
         for (int i = edgeLo; i <= edgeLo + extraPixels; i++) {
             for (int j = edgeHi - extraPixels; j <= edgeHi; j++)
-                imageCorrected[i * width + j] = val;
+                at(i, j) = val;
         }
-        val = round(0.5 * (imageCorrected[edgeHi * width + edgeLo + 1] + imageCorrected[(edgeHi - 1) * width + edgeLo]));
+        val = round(0.5 * (at(edgeHi, edgeLo + 1) + at(edgeHi - 1, edgeLo)));
         for (int i = edgeHi - extraPixels; i <= edgeHi; i++) {
             for (int j = edgeLo; j <= edgeLo + extraPixels; j++)
                 imageCorrected[i * width + j] = val;
         }
-        val = round(0.5 * (imageCorrected[edgeHi * width + edgeHi - 1] + imageCorrected[(edgeHi - 1) * width + edgeHi]));
+        val = round(0.5 * (at(edgeHi, edgeHi - 1) + at(edgeHi - 1, edgeHi)));
         for (int i = edgeHi - extraPixels; i <= edgeHi; i++) {
             for (int j = edgeHi - extraPixels; j <= edgeHi; j++)
-                imageCorrected[i * width + j] = val;
+                at(i, j) = val;
         }
     }
     return imageCorrected;
