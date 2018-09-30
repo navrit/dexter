@@ -304,8 +304,7 @@ void Dataset::saveBIN(QString filename)
     saveFile.close();
 }
 
-int * Dataset::createCorrectedImage(int threshold, bool spatialOnly)
-{
+int * Dataset::createCorrectedImage(int threshold, bool spatialOnly) {
     //----------------------------------------------------
     const int extraPixels       = 2;
     int width                   = getWidth()+2*extraPixels;  // Should always be 512 or 256 for a quad without spatial correction
@@ -330,8 +329,11 @@ int * Dataset::createCorrectedImage(int threshold, bool spatialOnly)
 
     int gap = 2 * extraPixels;
     int * imageCorrected = (int*) toCanvas2<int>(this, thresholds[threshold], gap).first;
-    // mind the gap!
-    if (gap > 0) {
+
+    //! Phase 2
+    //! Loop for cross
+
+    if (spatialOnly) {
         int ix = m_nx;
         // gap columns of height
         int n = height;
@@ -344,170 +346,74 @@ int * Dataset::createCorrectedImage(int threshold, bool spatialOnly)
         ix = m_ny * width;
         n = gap * width;
         while (n--) imageCorrected[ix++] = 0;
-    }
+    } else {
+        int edgeLo = m_nx - 1, edgeHi = m_nx + gap;
+        // remember the corners
+        int tl = imageCorrected[edgeLo * width + edgeLo],
+            tr = imageCorrected[edgeLo * width + edgeHi],
+            bl = imageCorrected[edgeHi * width + edgeLo],
+            br = imageCorrected[edgeHi * width + edgeHi];
 
-    //! Phase 2
-    //! Loop for cross
-    for (int y=0; y < height; y++) {
-        for (int x=0; x < width; x++) {
-            if (x >= (width/2)-extraPixels && x <= (width/2)+extraPixels){               // vertical centre
-                /*if (y > (height/2)-extraPixels-1 && y <= (height/2)+extraPixels ) {
-                        //qDebug() << "[CENTRAL] " << x << y;
-                        continue;
-
-                    } else*/ if (x == (width/2)-extraPixels ) {                              // L
-                    //Set 255, 256, 257 as 1/2.8 of 255
-                    // qDebug() << "[L]" << tmp << x << y;
-                    if (y <= height/2 - extraPixels || y >= height/2 + extraPixels + 1){
-
-                        int tmp;
-                        if (width == 260){ // If spectro mode
-                            tmp = int (imageCorrected[y*width + x-1] / edgePixelMagicNumberSpectroVertical);
-                        } else {
-                            tmp = int(imageCorrected[y*width + x-1] / edgePixelMagicNumber);
-                        }
-                        //qDebug() << tmp << x-1 << y << x << y;
-                        imageCorrected[y*width + x-1  ] = tmp;
-                        imageCorrected[y*width + x    ] = tmp;
-                        imageCorrected[y*width + x+1  ] = tmp;
-                    }
-
-                } else if (x == (width/2)+extraPixels ) {                                // R
-                    //qDebug() << "[R]" << tmp << x << y;
-
-                    if (y <= height/2 - extraPixels || y >= height/2 + extraPixels + 1) {
-
-                        int tmp;
-                        if (width == 260){ // If spectro mode
-                            tmp = int(imageCorrected[y*width + x] / edgePixelMagicNumberSpectroVertical);
-                        } else {
-                            tmp = int(imageCorrected[y*width + x] / edgePixelMagicNumber);
-                        }
-                        //                                qDebug() << tmp << x << y;
-                        imageCorrected[y*width + x-2  ] = tmp;
-                        imageCorrected[y*width + x-1  ] = tmp;
-                        imageCorrected[y*width + x    ] = tmp;
-                    }
-
-                }
-            } else if (y >= (height/2)-extraPixels && y <= (height/2)+extraPixels){      // horizontal centre
-                if        (y == (height/2)-extraPixels) {
-                    if (x <= width/2 - extraPixels ) {                                   // TL
-                        int tmp;
-                        if (width == 260){ // If spectro mode
-                            tmp = int(imageCorrected[(y-1)*width + x] / edgePixelMagicNumberSpectroHorizontal);
-                        } else {
-                            tmp = int(imageCorrected[(y-1)*width + x] / edgePixelMagicNumber);
-                        }
-
-                        //qDebug() << "[T]" << tmp << x << y;
-                        imageCorrected[(y-1)*width + x  ] = tmp;
-                        imageCorrected[(y )*width +  x  ] = tmp;
-                        imageCorrected[(y+1)*width + x  ] = tmp;
-                    } else if (x >= width/2 + extraPixels + 1) {                         // TR
-                        int tmp;
-                        if (width == 260){ // If spectro mode
-                            tmp = int(imageCorrected[(y-1)*width + x] / edgePixelMagicNumberSpectro);
-                        } else {
-                            tmp = int(imageCorrected[(y-1)*width + x] / edgePixelMagicNumber);
-                        }
-
-                        //qDebug() << "[T]" << tmp << x << y;
-                        imageCorrected[(y-1)*width + x  ] = tmp;
-                        imageCorrected[(y )*width +  x  ] = tmp;
-                        imageCorrected[(y+1)*width + x  ] = tmp;
-                    }
-                } else if (y == (height/2)+extraPixels) {
-                    if (x <= width/2 - extraPixels) {                                    // BL
-                        int tmp;
-                        if (width == 260){ // If spectro mode
-                            tmp = int(imageCorrected[(y)*width + x] / edgePixelMagicNumberSpectro);
-                        } else {
-                            tmp = int(imageCorrected[(y)*width + x] / edgePixelMagicNumber);
-                        }
-                        //qDebug() << "[B]" << tmp << x << y;
-                        imageCorrected[(y-2)*width + x  ] = tmp;
-                        imageCorrected[(y-1)*width + x  ] = tmp;
-                        imageCorrected[(y  )*width + x  ] = tmp;
-                    } else if (x >= width/2 + extraPixels + 1) {                         // BR
-                        int tmp;
-                        if (width == 260){ // If spectro mode
-                            tmp = int(imageCorrected[(y)*width + x] / edgePixelMagicNumberSpectroHorizontal);
-                        } else {
-                            tmp = int(imageCorrected[(y)*width + x] / edgePixelMagicNumber);
-                        }
-                        //qDebug() << "[B]" << tmp << x << y;
-                        imageCorrected[(y-2)*width + x  ] = tmp;
-                        imageCorrected[(y-1)*width + x  ] = tmp;
-                        imageCorrected[(y  )*width + x  ] = tmp;
-                    }
-
-                }
-            }
+        float scale = 1.0 / (width == 260? edgePixelMagicNumberSpectroVertical : edgePixelMagicNumber);
+        int ix = edgeLo;
+        for (int i = 0; i < height; i++) {
+            int tmp = round(imageCorrected[ix] * scale);
+            for (int i2 = 0; i2 <= extraPixels; i2++)
+                imageCorrected[ix + i2] = tmp;
+            ix += width;
         }
-    }
-    //! Phase 3
-    //! Separate loop for central region
-    for (int y=0; y < height; y++) {
-        for (int x=0; x < width; x++) {
-            if (x >= (width/2)-extraPixels &&
-                    x < (width/2)+extraPixels &&
-                    y >= (height/2)-extraPixels &&
-                    y < (height/2)+extraPixels){                                     // central square
-                //int tmp = int(sample(x,y, thresholds[threshold]) / edgePixelMagicNumber);
-                //                        qDebug() << "[CENTRAL]" << tmp << x << y;
-                if        (x == (width/2)-extraPixels && y == (height/2)-extraPixels){      //TL
-                    //qDebug() << "[TL]" << image[y*width + x] << x << y;
-                    //! Following commented code does this:
-                    //!     Makes central pixels the average of the adjacent 2 corners
-                    int tmp = (imageCorrected[(y-extraPixels)*width + x]+imageCorrected[y*width + x - extraPixels])/2;
-                    imageCorrected[ y   *width + x    ] = tmp;
-                    imageCorrected[(y-1)*width + x - 1] = tmp;
-                    imageCorrected[(y-1)*width + x    ] = tmp;
-                    imageCorrected[(y-1)*width + x + 1] = tmp;
-                    imageCorrected[(y+1)*width + x - 1] = tmp;
-                    imageCorrected[(y+1)*width + x    ] = tmp;
-                    imageCorrected[(y+1)*width + x + 1] = tmp;
-                    imageCorrected[ y   *width + x + 1] = tmp;
-                    imageCorrected[ y   *width + x - 1] = tmp;
-                } else if (x == (width/2)+extraPixels/2 && y == (height/2)-extraPixels) {     //TR
-                    //                            qDebug() << "[TR]" << tmp << x << y;
-                    int tmp = (imageCorrected[(y-extraPixels)*width + x]+imageCorrected[y*width + x + extraPixels])/2;
-                    imageCorrected[ y   *width + x    ] = tmp;
-                    imageCorrected[(y-1)*width + x - 1] = tmp;
-                    imageCorrected[(y-1)*width + x    ] = tmp;
-                    imageCorrected[(y-1)*width + x + 1] = tmp;
-                    imageCorrected[(y+1)*width + x - 1] = tmp;
-                    imageCorrected[(y+1)*width + x    ] = tmp;
-                    imageCorrected[(y+1)*width + x + 1] = tmp;
-                    imageCorrected[ y   *width + x + 1] = tmp;
-                    imageCorrected[ y   *width + x - 1] = tmp;
-                } else if (x == (width/2)-extraPixels && y == (height/2)+extraPixels/2) {     //BL
-                    //                            qDebug() << "[BL]" << tmp << x << y;
-                    int tmp = (imageCorrected[(y+extraPixels)*width + x]+imageCorrected[y*width + x - extraPixels])/2;
-                    imageCorrected[ y   *width + x    ] = tmp;
-                    imageCorrected[(y-1)*width + x - 1] = tmp;
-                    imageCorrected[(y-1)*width + x    ] = tmp;
-                    imageCorrected[(y-1)*width + x + 1] = tmp;
-                    imageCorrected[(y+1)*width + x - 1] = tmp;
-                    imageCorrected[(y+1)*width + x    ] = tmp;
-                    imageCorrected[(y+1)*width + x + 1] = tmp;
-                    imageCorrected[ y   *width + x + 1] = tmp;
-                    imageCorrected[ y   *width + x - 1] = tmp;
-                } else if (x == (width/2)+extraPixels/2 && y == (height/2)+extraPixels/2) {     //BR
-                    //                            qDebug() << "[BR]" << tmp << x << y;
-                    int tmp = (imageCorrected[(y+extraPixels)*width + x]+imageCorrected[y*width + x + extraPixels])/2;
-                    imageCorrected[ y   *width + x    ] = tmp;
-                    imageCorrected[(y-1)*width + x - 1] = tmp;
-                    imageCorrected[(y-1)*width + x    ] = tmp;
-                    imageCorrected[(y-1)*width + x + 1] = tmp;
-                    imageCorrected[(y+1)*width + x - 1] = tmp;
-                    imageCorrected[(y+1)*width + x    ] = tmp;
-                    imageCorrected[(y+1)*width + x + 1] = tmp;
-                    imageCorrected[ y   *width + x + 1] = tmp;
-                    imageCorrected[ y   *width + x - 1] = tmp;
-                }
-            }
+        ix = edgeHi;
+        for (int i = 0; i < height; i++) {
+            int tmp = round(imageCorrected[ix] * scale);
+            for (int i2 = 0; i2 <= extraPixels; i2++)
+                imageCorrected[ix - i2] = tmp;
+            ix += width;
+        }
+
+        // restore the corners
+        imageCorrected[edgeLo * width + edgeLo] = tl;
+        imageCorrected[edgeLo * width + edgeHi] = tr;
+        imageCorrected[edgeHi * width + edgeLo] = bl;
+        imageCorrected[edgeHi * width + edgeHi] = br;
+
+        scale = 1.0 / (width == 260 ? edgePixelMagicNumberSpectroHorizontal : edgePixelMagicNumber);
+
+        ix = width * edgeLo;
+        for (int i = 0; i < width; i++) {
+            int tmp = round(imageCorrected[ix] * scale);
+            for (int i2 = 0; i2 <= extraPixels; i2++)
+                imageCorrected[ix + i2 * width] = tmp;
+            ix++;
+        }
+        ix = width * edgeHi;
+        for (int i = 0; i < width; i++) {
+            int tmp = round(imageCorrected[ix] * scale);
+            for (int i2 = 0; i2 <= extraPixels; i2++)
+                imageCorrected[ix - i2 * width] = tmp;
+            ix++;
+        }
+
+        //! Phase 3
+        //! Separate loop for central region
+        int val = round(0.5 * (imageCorrected[edgeLo * width + edgeLo + 1] + imageCorrected[(edgeLo + 1) * width + edgeLo]));
+        for (int i = edgeLo; i <= edgeLo + extraPixels; i++) {
+            for (int j = edgeLo; j <= edgeLo + extraPixels; j++)
+                imageCorrected[i * width + j] = val;
+        }
+        val = round(0.5 * (imageCorrected[edgeLo * width + edgeHi - 1] + imageCorrected[(edgeLo + 1) * width + edgeHi]));
+        for (int i = edgeLo; i <= edgeLo + extraPixels; i++) {
+            for (int j = edgeHi - extraPixels; j <= edgeHi; j++)
+                imageCorrected[i * width + j] = val;
+        }
+        val = round(0.5 * (imageCorrected[edgeHi * width + edgeLo + 1] + imageCorrected[(edgeHi - 1) * width + edgeLo]));
+        for (int i = edgeHi - extraPixels; i <= edgeHi; i++) {
+            for (int j = edgeLo; j <= edgeLo + extraPixels; j++)
+                imageCorrected[i * width + j] = val;
+        }
+        val = round(0.5 * (imageCorrected[edgeHi * width + edgeHi - 1] + imageCorrected[(edgeHi - 1) * width + edgeHi]));
+        for (int i = edgeHi - extraPixels; i <= edgeHi; i++) {
+            for (int j = edgeHi - extraPixels; j <= edgeHi; j++)
+                imageCorrected[i * width + j] = val;
         }
     }
     return imageCorrected;
