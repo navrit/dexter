@@ -104,6 +104,8 @@ private:
     //vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
     //vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
     // compactSPIDR layout
+    std::vector<int> _MPX3RX_ORIENTATION = std::vector< int > {Dataset::orientationLtRTtB, Dataset::orientationLtRTtB, Dataset::orientationRtLBtT, Dataset::orientationRtLBtT};
+    std::vector<QPoint> _MPX3RX_LAYOUT = std::vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
 
     //! Kia - TCP Server - Diamond interface
     TcpServer *tcpServer = nullptr;
@@ -111,8 +113,6 @@ private:
     CommandHandlerWrapper *commandHandlerWrapper = nullptr;
 
 
-    std::vector<int> _MPX3RX_ORIENTATION = std::vector< int > {Dataset::orientationTtBRtL, Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR};
-    std::vector<QPoint> _MPX3RX_LAYOUT = std::vector<QPoint> {QPoint(1, 1), QPoint(1, 0), QPoint(0, 0), QPoint(0, 1)};
     int mode = 0; //! Summing/integral or 'normal' mode
     Ui::Mpx3GUI * _ui;
     QVector<QShortcut *> _shortcutsSwitchPages;
