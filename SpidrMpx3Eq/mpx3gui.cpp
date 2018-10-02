@@ -220,6 +220,9 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
 
     initialiseServers();
 
+    timer = new QTimer(this);
+    timer->start(500);
+    connect(timer,SIGNAL(timeout()),this,SLOT(onTimeout()));
     mpx3GuiInstance = this;
 }
 
@@ -1609,4 +1612,13 @@ void Mpx3GUI::on_actionThreshold_Scan_triggered(bool)
     uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __thresholdScan_page_Id );
     _ui->actionThreshold_Scan->setChecked(1);
+}
+
+void Mpx3GUI::onTimeout()
+{
+    qDebug() << "Connecting automatically to detector...!";
+    timer->stop();
+    disconnect(timer,SIGNAL(timeout()),this,SLOT(onTimeout()));
+    delete timer;
+    on_actionConnect_triggered();
 }

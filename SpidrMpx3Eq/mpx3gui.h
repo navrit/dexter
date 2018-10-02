@@ -100,6 +100,8 @@ public:
 
 
 private:
+
+    QTimer *timer; //timer to autoconnect
     // ML605 layout
     //vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
     //vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
@@ -288,6 +290,7 @@ private slots:
     void on_actionAbout_triggered(bool checked);
     void on_actionStepper_Motor_triggered(bool checked);
     void on_actionThreshold_Scan_triggered(bool);
+    void onTimeout(void);
 };
 
 
