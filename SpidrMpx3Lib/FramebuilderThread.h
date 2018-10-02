@@ -59,6 +59,7 @@ class FramebuilderThread : public QThread
   void   setDecodeFrames( bool decode );
   void   setCompressFrames( bool compress );
   void   setLutEnable( bool enable ) { _applyLut = enable; }
+  void   setLutBug( bool bug ) { _lutBug = bug; }
   void   setFlush( bool flush ) { _flush = flush; }
 
   void   setCallbackId( int id ) { _id = id; }
@@ -115,8 +116,11 @@ class FramebuilderThread : public QThread
 
   // Look-up tables for Medipix3RX pixel data decoding
   int           _mpx3Rx6BitsLut[64];
+  int           _mpx3Rx6BitsEnc[64];
   int           _mpx3Rx12BitsLut[4096];
+  int           _mpx3Rx12BitsEnc[4096];
   bool          _applyLut;
+  bool          _lutBug;
 
   // Info about the (decoded) set of frames
   i64           _timeStamp;

@@ -225,9 +225,44 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
           frameId = (int) ((pixelword & FRAME_FLAGS_MASK) >> FRAME_FLAGS_SHIFT);
 
         case PIXEL_DATA_EOR:
+          if (_lutBug && ! _applyLut) {
+              // the pixel word is mangled, un-mangle it
+              if (counter_bits == 12) {
+                  long mask0 = 0x0000000000000fffL,
+                       mask4 = 0x0fff000000000000L;
+                  long p0 = _mpx3Rx12BitsLut[pixelword & mask0],
+                       p4 = ((long) (_mpx3Rx12BitsEnc[(pixelword & mask4) >> 48])) << 48;
+                  pixelword = pixelword & (~(mask0 | mask4)) | p0 | p4;
+              } else if (counter_bits == 6) {
+                  // decode pixel 0 .. 3
+                  long mask0 = 0x000000000000003fL, maskShifted = mask0;
+                  long wordShifted = pixelword;
+                  for (int i = 0; i < 4; i++) {
+                      long pixel = _mpx3Rx6BitsLut[wordShifted & mask0];
+                      pixelword = pixelword & (~maskShifted) | (pixel << (6 * i));
+                      wordShifted >>= 6;
+                      maskShifted <<= 6;
+                  }
+                  // leave pixel 4 .. 5
+                  wordShifted >>= 12;
+                  maskShifted <<= 12;
+                  // encode pixel 6 .. 9
+                  for (int i = 6; i < 10; i++) {
+                      long pixel = _mpx3Rx6BitsEnc[wordShifted & mask0];
+                      pixelword = pixelword & (~maskShifted) | (pixel << (6 * i));
+                      wordShifted >>= 6;
+                      maskShifted <<= 6;
+                  }
+              }
+              if (type == PIXEL_DATA_EOF) {
+                  // redo that!
+                  frameId = (int) ((pixelword & FRAME_FLAGS_MASK) >> FRAME_FLAGS_SHIFT);
+              }
+          }
             // We could extract the row counter from the data
-            // except some old firmware versions have a LUT that
+            // except MOST old firmware versions have a LUT that
             // erroneously 'decodes' the row counter too..
+            // NB: the above is an old comment, the block above should actually work around that bug! (BB/181002)
             // assert rownr === (int) ((pixelword & ROW_COUNT_MASK) >> ROW_COUNT_SHIFT);
 
           // Unpack the pixel packet

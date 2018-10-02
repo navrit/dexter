@@ -195,9 +195,12 @@ void SpidrDaq::init( int             *ipaddr,
 
   // Create the file writer thread, providing it with a link to
   // the readout threads
-  if( is_cspidr )
+  if( is_cspidr ) {
     _frameBuilder = new FramebuilderThreadC( _frameReceivers );
-  else
+    int fwVersion;
+    spidrctrl->getFirmwVersion(&fwVersion);
+    _frameBuilder->setLutBug(fwVersion < 0x18100200);
+  } else
     _frameBuilder = new FramebuilderThread( _frameReceivers );
 
   // Let the first receiver notify the file writer about new data

@@ -68,6 +68,7 @@ FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
   for( i=0; i<64; i++ )
     {
       _mpx3Rx6BitsLut[pixcode] = i;
+      _mpx3Rx6BitsEnc[i] = pixcode;
       // Next code = (!b0 & !b1 & !b2 & !b3 & !b4) ^ b4 ^ b5
       bit = (pixcode & 0x01) ^ ((pixcode & 0x20)>>5);
       if( (pixcode & 0x1F) == 0 ) bit ^= 1;
@@ -79,6 +80,7 @@ FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
   for( i=0; i<4096; i++ )
     {
       _mpx3Rx12BitsLut[pixcode] = i;
+      _mpx3Rx12BitsEnc[i] = pixcode;
       // Next code = (!b0 & !b1 & !b2 & !b3 & !b4& !b5& !b6 & !b7 &
       //              !b8 & !b9 & !b10) ^ b0 ^ b3 ^ b5 ^ b11
       bit = ((pixcode & 0x001) ^ ((pixcode & 0x008)>>3) ^
