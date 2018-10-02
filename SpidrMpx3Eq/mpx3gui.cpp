@@ -1141,13 +1141,25 @@ void Mpx3GUI::save_config(){
 }
 
 void Mpx3GUI::load_config(){
-    QString filename = QFileDialog::getOpenFileName(this, tr("Load config (DACs)"), tr("."), tr("json files (*.json)"));
-    config->fromJsonFile(filename);
+
+    if(!_loadConfigRemotly){
+       _configPath  = QFileDialog::getOpenFileName(this, tr("Load config (DACs)"), tr("."), tr("json files (*.json)"));
+    }
+    config->fromJsonFile(_configPath);
 
     // update the dacs
     _ui->DACsWidget->PopulateDACValues();
 
+    _loadConfigRemotly = false; //reset the flag
+
     return;
+}
+
+void Mpx3GUI::load_config_remotely(QString path)
+{
+    _loadConfigRemotly = true;
+    _configPath = path;
+    load_config();
 }
 
 void Mpx3GUI::onConnectionStatusChanged(bool conn)

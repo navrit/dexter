@@ -249,6 +249,7 @@ void MerlinInterface::initializeTables()
     getTable.insert(TRIGGERMODE,"GetTriggerMode");
     getTable.insert(FILEDIRECTORY,"GetRecordPath");
     getTable.insert(EQUALIZATIONFILES,"GetEqualizationPath");
+    getTable.insert(CONFIGFILE,"GetConfig");
     getTable.insert(INHIBITSHUTTER,"GetInhibitShutter");
 
     //initialize setTable
@@ -294,6 +295,7 @@ void MerlinInterface::initializeTables()
     setTable.insert(MASKPIXEL,"SetMaskPixel;"+QString::number(N)+";"+QString::number(N));
     setTable.insert(UNMASKPIXEL,"SetUnmaskPixel;"+QString::number(N)+";"+QString::number(N));
     setTable.insert(EQUALIZATIONFILES,"SetEqualizationPath;" + QString::number(STRING));
+    setTable.insert(CONFIGFILE,"SetConfig;" + QString::number(STRING));
     setTable.insert(EQUALIZATION,"SetDoEqualization;" + QString::number(STRING));
     setTable.insert(INHIBITSHUTTER,"SetInhibitShutter;" + QString::number(ENABLE_DISABLE));
 

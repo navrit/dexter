@@ -61,6 +61,7 @@
 #define MASKEDMATRIXPATH "MASKEDMATRIXPATH" //does not exist in M doc(set and get the path of masked pixel matrix)
 //end of masking pixels
 #define EQUALIZATIONFILES "EQUALIZATIONFILE"
+#define CONFIGFILE  "CONFIGFILE"
 //#define EQUALIZATIONFILE  "EQUALIZATIONFILE"
 #define EQUALIZATION "EQUALIZATION"
 

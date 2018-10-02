@@ -128,7 +128,7 @@
         "LUTEnable": true,
         "MaxPacketSize": 9000,
         "OperationMode": 0,
-        "PixelDepth": 12,
+        "PixelDepth": 24,
         "Polarity": "Positive",
         "TriggerDeadtime_us": 5000,
         "TriggerLength_us": 20000,

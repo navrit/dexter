@@ -146,6 +146,9 @@ private:
     void initialiseServers();
 
     bool m_offset = false; //! Used for generating different patterns per test pattern
+
+    bool _loadConfigRemotly = false;
+    QString _configPath = "";
 public:
 
     Mpx3Config* getConfig();
@@ -215,6 +218,7 @@ public:
     int getStepperMotorPageID();
 
     void loadLastConfiguration();
+    QString getConfigPath(){ return _configPath;}
 
 signals:
     void dataChanged();
@@ -254,6 +258,7 @@ public slots:
     void set_summing(bool);
     void save_config();
     void load_config();
+    void load_config_remotely(QString path);
     void onConnectionStatusChanged(bool);
 
     //! Status bar slot functions

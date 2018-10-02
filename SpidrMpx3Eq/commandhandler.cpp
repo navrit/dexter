@@ -29,7 +29,7 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(QCstmEqualization::getInstance(),SIGNAL(equalizationPathExported(QString)),this,SLOT(on_equalizationPathExported(QString)));
     connect(this,SIGNAL(requestToStartStopThresholdScan()),thresholdScan::getInstance(),SLOT(on_button_startStop_clicked_remotely()));
     connect(this,SIGNAL(requestToDoEqualizationRemotely(QString)),QCstmEqualization::getInstance(),SLOT(StartEqualizationSequentialSingleChipsRemotely(QString)));
-
+    connect(this,SIGNAL(requestToLoadConfigRemotely(QString)),getGui(),SLOT(load_config_remotely(QString)));
     initializeCmdTable();
 }
 
@@ -172,6 +172,12 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("SetEqualizationPath",setEqualizationPath);
     cmd_struct getEqualizationPath {getEqualizationHandler};
     cmdTable.insert("GetEqualizationPath",getEqualizationPath);
+
+    cmd_struct setConfig {setConfigHandler};
+    cmdTable.insert("SetConfig",setConfig);
+    cmd_struct getConfig {getConfigHandler};
+    cmdTable.insert("GetConfig",getConfig);
+
 
     cmd_struct setDoEqualization {setDoEqualizationHandler};
     cmdTable.insert("SetDoEqualization",setDoEqualization);
@@ -574,6 +580,23 @@ void CommandHandler::loadEqualizationRemotely(QString path)
 QString CommandHandler::getEqualizationPath()
 {
     return _equalizationPath;
+}
+
+int CommandHandler::loadConfigRemotely(QString path)
+{
+
+    QFileInfo file(path);
+    if(!file.exists() || path.split(".").last() != "json" ){
+        return UNKNOWN_ERROR;
+    }
+
+    emit requestToLoadConfigRemotely(path);
+    return NO_ERROR;
+}
+
+QString CommandHandler::getConfigPath()
+{
+    return getGui()->getConfigPath();
 }
 
 int CommandHandler::doEqualizationRemotely(QString path)

@@ -104,7 +104,7 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     ui->omrDisplayLabel->setFont( font1 );
     ui->omrDisplayLabel->setTextFormat( Qt::RichText );
 
-    ui->readOMRPushButton->setHidden(1);
+    ui->readOMRPushButton->setHidden(0);
     qCstmConfigMonitoring = this;
 
 }
@@ -234,6 +234,8 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 
     // This will crash if not connected
     spidrcontrol->getOmr( dev_nr, omr );
+
+
 
     cout << "[OMR ]" << endl;
 

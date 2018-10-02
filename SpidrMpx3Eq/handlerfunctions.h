@@ -910,6 +910,24 @@ void setDoEqualizationHandler(CommandHandler* ch, Command* cmd){
 }
 
 
+void setConfigHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetConfig"))  //this command comes with one argument
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    QString path = cmd->arguments.at(0);
+    int error = ch->loadConfigRemotely(path);
+    cmd->setError(((ERROR_TYPE)error));
+
+}
+
+void getConfigHandler(CommandHandler* ch, Command* cmd){
+    cmd->setData(ch->getConfigPath());
+    cmd->setError(NO_ERROR);
+}
+
+
 
 void setInhibitShutterHandler(CommandHandler* ch, Command* cmd){
     if(!cmd->enoughArguments(1,"SetInhibitShutter"))  //this command comes with one argument

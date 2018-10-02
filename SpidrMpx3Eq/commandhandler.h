@@ -57,6 +57,8 @@ public:
     int setPixelUnmask(int,int);
     void loadEqualizationRemotely(QString path);
     QString getEqualizationPath();
+    int loadConfigRemotely(QString path);
+    QString getConfigPath(void);
     int doEqualizationRemotely(QString path);
     int setInhibitShutter(bool);
     bool getInhibitShutter();
@@ -81,6 +83,7 @@ signals:
     void requestToStartStopThresholdScan(void);
     void requestToDoEqualizationRemotely(QString);
     void requestToSetInhibitShutterRemotely(bool);
+    void requestToLoadConfigRemotely(QString);
 
 public slots:
     void on_doneWithOneFrame(int);
