@@ -928,6 +928,20 @@ void getConfigHandler(CommandHandler* ch, Command* cmd){
 }
 
 
+void saveConfigHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SaveConfig"))  //this command comes with one argument
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    QString path = cmd->arguments.at(0);
+    int error = ch->saveConfigRemotely(path);
+    cmd->setError(((ERROR_TYPE)error));
+
+}
+
+
+
 
 void setInhibitShutterHandler(CommandHandler* ch, Command* cmd){
     if(!cmd->enoughArguments(1,"SetInhibitShutter"))  //this command comes with one argument

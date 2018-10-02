@@ -30,6 +30,7 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestToStartStopThresholdScan()),thresholdScan::getInstance(),SLOT(on_button_startStop_clicked_remotely()));
     connect(this,SIGNAL(requestToDoEqualizationRemotely(QString)),QCstmEqualization::getInstance(),SLOT(StartEqualizationSequentialSingleChipsRemotely(QString)));
     connect(this,SIGNAL(requestToLoadConfigRemotely(QString)),getGui(),SLOT(load_config_remotely(QString)));
+    connect(this,SIGNAL(requestToSaveConfigRemotely(QString)),QCstmConfigMonitoring::getInstance(),SLOT(saveConfigFileRemotely(QString)));
     initializeCmdTable();
 }
 
@@ -177,6 +178,9 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("SetConfig",setConfig);
     cmd_struct getConfig {getConfigHandler};
     cmdTable.insert("GetConfig",getConfig);
+
+    cmd_struct saveConfig{saveConfigHandler};
+    cmdTable.insert("SaveConfig",saveConfig);
 
 
     cmd_struct setDoEqualization {setDoEqualizationHandler};
@@ -597,6 +601,28 @@ int CommandHandler::loadConfigRemotely(QString path)
 QString CommandHandler::getConfigPath()
 {
     return getGui()->getConfigPath();
+}
+
+int CommandHandler::saveConfigRemotely(QString path)
+{
+    QStringList pathList = path.split(QDir::separator());
+    QString filename = pathList.last();
+    //construct the path directory again
+    path.clear();
+    for (int i = 0; i < pathList.length() - 1; ++i) {
+         path += pathList.at(i) + QDir::separator();
+    }
+
+
+
+    qDebug() << "filename : " << filename;
+    qDebug() << "path : " << path;
+    QDir dir(path);
+    if(!dir.exists() || filename.split(".").last() != "json"){
+        return UNKNOWN_ERROR;
+    }
+    emit requestToSaveConfigRemotely(path + filename);
+    return NO_ERROR;
 }
 
 int CommandHandler::doEqualizationRemotely(QString path)

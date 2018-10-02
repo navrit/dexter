@@ -59,6 +59,7 @@ public:
     QString getEqualizationPath();
     int loadConfigRemotely(QString path);
     QString getConfigPath(void);
+    int saveConfigRemotely(QString);
     int doEqualizationRemotely(QString path);
     int setInhibitShutter(bool);
     bool getInhibitShutter();
@@ -84,6 +85,7 @@ signals:
     void requestToDoEqualizationRemotely(QString);
     void requestToSetInhibitShutterRemotely(bool);
     void requestToLoadConfigRemotely(QString);
+    void requestToSaveConfigRemotely(QString);
 
 public slots:
     void on_doneWithOneFrame(int);
