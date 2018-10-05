@@ -2494,6 +2494,7 @@ void QCstmEqualization::LoadEqualization(bool getPath,bool remotely ,QString pat
     //emit sig_statusBarAppend(msg, "green");
 
     ShowEqualization( _equalizationShow );
+
 }
 
 void QCstmEqualization::ShowEqualization(Mpx3EqualizationResults::lowHighSel sel) {

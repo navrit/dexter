@@ -37,6 +37,7 @@ class Mpx3Config;
 #include <stdio.h>
 #include <QCoreApplication>
 #include <QTimer>
+#include "GeneralSettings.h"
 
 class Mpx3Config;
 class QCustomPlot;
@@ -151,6 +152,10 @@ private:
 
     bool _loadConfigRemotly = false;
     QString _configPath = "";
+
+    GeneralSettings *_generalSettings;
+    void _loadGeneralSettings(void);
+
 public:
 
     Mpx3Config* getConfig();
@@ -274,6 +279,8 @@ public slots:
     void developerMode();
 
     void loadEqualisationFromPathRemotely(QString path);
+
+    void onEqualizationPathExported(QString path);
 
 private slots:
     void LoadEqualization();

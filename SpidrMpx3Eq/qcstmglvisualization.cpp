@@ -2321,8 +2321,17 @@ uint32 assembleData(uint8 a,uint8 b,uint8 c,uint8 d){
 
 void QCstmGLVisualization::on_testBtn_clicked()
 {
-    Mpx3GUI::getInstance()->getConfig()->setInhabitShutter(true);
-    Mpx3GUI::getInstance()->getConfig()->setInhabitShutter(false);
+    //Mpx3GUI::getInstance()->getConfig()->setInhabitShutter(true);
+   // Mpx3GUI::getInstance()->getConfig()->setInhabitShutter(false);
+
+//    GeneralSettings *settings = new GeneralSettings;
+//    //settings->setConfigPath("Kiavash");
+//    //settings->setEqualizationPath("Matin");
+//    //settings->writeSetting();
+//    settings->readSetting();
+//    qDebug() << "Equalization path : " << settings->getEqualizationPath();
+//    qDebug() << "Config path : " << settings->getConfigPath();
+
 
 //    std::pair<const char*,int> image = Mpx3GUI::getInstance()->getDataset()->toSocketData();
 //    qDebug() << "Image size is : " << image.second;

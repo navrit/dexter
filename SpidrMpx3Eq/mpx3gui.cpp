@@ -223,6 +223,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     timer = new QTimer(this);
     timer->start(500);
     connect(timer,SIGNAL(timeout()),this,SLOT(onTimeout()));
+    _generalSettings = new GeneralSettings;
     mpx3GuiInstance = this;
 }
 
@@ -272,6 +273,11 @@ void Mpx3GUI::loadEqualisationFromPathRemotely(QString path)
 {
     bool getPath = true;
     _ui->equalizationWidget->LoadEqualization(getPath,true,path);
+}
+
+void Mpx3GUI::onEqualizationPathExported(QString path)
+{
+    _generalSettings->setEqualizationPath(path);
 }
 
 bool Mpx3GUI::equalizationLoaded(){
@@ -979,6 +985,38 @@ void Mpx3GUI::initialiseServers()
 
 }
 
+void Mpx3GUI::_loadGeneralSettings()
+{
+
+    QDir eqDir(_generalSettings->getEqualizationPath());
+    if(eqDir.exists()){
+        getEqualization()->LoadEqualization(false,false,_generalSettings->getEqualizationPath());
+        qDebug() << "Equalization loaded from" << _generalSettings->getEqualizationPath();
+    }
+
+
+    QStringList pathList = _generalSettings->getConfigPath().split(QDir::separator());
+    QString filename = pathList.last();
+    //construct the path directory again
+    QString path; path.clear();
+    for (int i = 0; i < pathList.length() - 1; ++i) {
+         path += pathList.at(i) + QDir::separator();
+    }
+
+
+
+
+
+    QDir confDir(path);
+    if(confDir.exists() && filename.split(".").last() == "json"){
+        load_config_remotely(_generalSettings->getConfigPath());
+        qDebug() << "Config file loaded from : " << path + filename;
+    }
+
+
+
+}
+
 void Mpx3GUI::developerMode()
 {
     if (devMode){
@@ -1149,6 +1187,7 @@ void Mpx3GUI::load_config(){
        _configPath  = QFileDialog::getOpenFileName(this, tr("Load config (DACs)"), tr("."), tr("json files (*.json)"));
     }
     config->fromJsonFile(_configPath);
+    _generalSettings->setConfigPath(_configPath);
 
     // update the dacs
     _ui->DACsWidget->PopulateDACValues();
@@ -1621,4 +1660,9 @@ void Mpx3GUI::onTimeout()
     disconnect(timer,SIGNAL(timeout()),this,SLOT(onTimeout()));
     delete timer;
     on_actionConnect_triggered();
+    if(GetSpidrController() != nullptr && GetSpidrController()->isConnected()){
+        connect(getEqualization(),SIGNAL(equalizationPathExported(QString)),this,SLOT(onEqualizationPathExported(QString)));
+        _loadGeneralSettings();
+    }
+
 }
