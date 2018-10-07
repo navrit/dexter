@@ -576,9 +576,14 @@ int CommandHandler::setPixelUnmask(int x , int y)
     emit requestToUnmaskPixelRemotely(x,y);
 }
 
-void CommandHandler::loadEqualizationRemotely(QString path)
+int CommandHandler::loadEqualizationRemotely(QString path)
 {
+    QDir dir(path);
+    if(!dir.exists()){
+        return UNKNOWN_ERROR;
+    }
     emit requestToLoadEqualizationRemotely(path);
+    return NO_ERROR;
 }
 
 QString CommandHandler::getEqualizationPath()

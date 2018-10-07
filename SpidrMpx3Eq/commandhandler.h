@@ -55,7 +55,7 @@ public:
     void getImage(void);
     int setPixelMask(int,int);
     int setPixelUnmask(int,int);
-    void loadEqualizationRemotely(QString path);
+    int loadEqualizationRemotely(QString path);
     QString getEqualizationPath();
     int loadConfigRemotely(QString path);
     QString getConfigPath(void);
