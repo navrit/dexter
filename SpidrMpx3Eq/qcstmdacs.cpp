@@ -218,8 +218,10 @@ void QCstmDacs::PopulateDACValues() {
             } else {
             }
         }
-    } else { // Setting DACs at mid-range
 
+    } else { // Setting DACs at mid-range
+        if(spidrcontrol == nullptr)
+            return;
         for (int i = 0 ; i < 1; i++) {
 
             spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[i].code, MPX3RX_DAC_TABLE[i].dflt );
@@ -673,6 +675,7 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
 bool QCstmDacs::GetDACsFromConfiguration() {
 
     // See if there DAC information to work with
+
     if ( _mpx3gui->getConfig()->getDacCount() != 0 ) {
         return true;
     }
