@@ -100,6 +100,7 @@ public:
 
 
 
+
 private:
 
     QTimer *timer; //timer to autoconnect
@@ -158,6 +159,7 @@ private:
 
 public:
 
+    GeneralSettings* getGenralSettings(){ return _generalSettings;}
     Mpx3Config* getConfig();
     void closeRemotely(){on_actionDisconnect_triggered(false);}
     Dataset* getDataset(){return workingSet;}
