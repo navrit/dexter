@@ -192,6 +192,18 @@ void CommandHandler::initializeCmdTable()
     cmd_struct getInhibitShutter { getInhibitShutterHandler};
     cmdTable.insert("GetInhibitShutter",getInhibitShutter);
 
+    cmd_struct setSlope {setSlopeHandler};
+    cmdTable.insert("SetSlope",setSlope);
+
+    cmd_struct getSlope {getSlopeHandler};
+    cmdTable.insert("GetSlope",getSlope);
+
+    cmd_struct setOffset {setOffsetHandler};
+    cmdTable.insert("SetOffset",setOffset);
+
+    cmd_struct getOffset {getOffsetHandler};
+    cmdTable.insert("GetOffset",getOffset);
+
 
 }
 
@@ -659,6 +671,35 @@ bool CommandHandler::getInhibitShutter()
     }
     return false;
 }
+
+int CommandHandler::setSlope(int chipNum, double val)
+{
+
+    if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS)
+        return ARG_VAL_OUT_RANGE;
+    Mpx3GUI::getInstance()-> getGenralSettings()->setSlope(chipNum,val);
+    return NO_ERROR;
+}
+
+double CommandHandler::getSlope(int chipNum)
+{
+    return Mpx3GUI::getInstance()-> getGenralSettings()->getSlope(chipNum);
+}
+
+int CommandHandler::setOffset(int chipNum, double val)
+{
+    if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS)
+        return ARG_VAL_OUT_RANGE;
+    Mpx3GUI::getInstance()-> getGenralSettings()->setOffset(chipNum,val);
+    return NO_ERROR;
+
+}
+
+double CommandHandler::getOffset(int chipNum)
+{
+   return Mpx3GUI::getInstance()-> getGenralSettings()->getOffset(chipNum);
+}
+
 
 
 void CommandHandler::on_doneWithOneFrame(int frameid)

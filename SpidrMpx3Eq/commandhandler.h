@@ -64,6 +64,12 @@ public:
     int setInhibitShutter(bool);
     bool getInhibitShutter();
 
+    int setSlope(int chipNum,double val);
+    double getSlope(int chipNum);
+
+    int setOffset(int chipNum,double val);
+    double getOffset(int chipNum);
+
     //data
     void emitrequestForAnotherSocket(int);
     QHash<QString,cmd_struct> cmdTable;

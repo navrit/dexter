@@ -980,6 +980,63 @@ void getInhibitShutterHandler(CommandHandler* ch, Command* cmd){
 }
 
 
+void setSlopeHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(2,"SetSlope"))  //this command comes with two arguments (chipNum,val)
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    int error = ch->setSlope(cmd->arguments.at(0).toInt(),cmd->arguments.at(1).toDouble());
+    cmd->setData("1");
+    cmd->setError((ERROR_TYPE) error);
+}
+
+void getSlopeHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"GetSlope"))  //this command comes with one argument (chipNum)
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    int chipNum = cmd->arguments.at(0).toDouble();
+    if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS){
+        cmd->setError(ARG_VAL_OUT_RANGE );
+        return;
+    }
+    cmd->setData(QString::number(ch->getSlope(chipNum)));
+    cmd->setError(NO_ERROR);
+
+}
+
+
+void setOffsetHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(2,"SetOffset"))  //this command comes with two arguments (chipNum,val)
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    int error = ch->setOffset(cmd->arguments.at(0).toInt(),cmd->arguments.at(1).toDouble());
+    cmd->setData("1");
+    cmd->setError((ERROR_TYPE) error);
+}
+
+void getOffsetHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"GetSlope"))  //this command comes with one argument (chipNum)
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    int chipNum = cmd->arguments.at(0).toDouble();
+    if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS){
+        cmd->setError(ARG_VAL_OUT_RANGE );
+        return;
+    }
+    cmd->setData(QString::number(ch->getOffset(chipNum)));
+    cmd->setError(NO_ERROR);
+
+}
+
+
+
 //end of handler functions
 
 

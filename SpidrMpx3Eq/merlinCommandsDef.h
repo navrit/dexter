@@ -65,13 +65,21 @@
 #define SAVEGONFIGS "SAVECONFIGS"
 //#define EQUALIZATIONFILE  "EQUALIZATIONFILE"
 #define DOEQUALIZATION "DOEQUALIZATION"
-
+#define SLOPES "SLOPE"
+#define OFFSETS "OFFSET"
 //testpulses
 #define TPINJECTIONCHARGE "TPINJECTIONCHARGE"
 #define TPLENGTH          "TPLENGTH"
 #define TPPERIOD           "TPPERIOD"
 #define TPPIXELSPACING      "TPPIXELSPACING"
 //end of testpulses
+
+//enrgy calibration
+
+
+
+
+//end of energy calibration
 
 
 #endif // MERLINCOMMANDSDEF_H
