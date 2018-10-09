@@ -1,4 +1,5 @@
 #include "EnergyCalibrator.h"
+#include <QDebug>
 
 EnergyCalibrator::EnergyCalibrator(QObject *parent) : QObject(parent)
 {
@@ -14,7 +15,7 @@ void EnergyCalibrator::setSlope(int idx, double value)
 void EnergyCalibrator::setOffset(int idx, double value)
 {
     if(_indexChecker(idx))
-        _slopes[idx] = value;
+        _offsets[idx] = value;
 }
 
 double EnergyCalibrator::getSlope(int idx)
@@ -55,9 +56,10 @@ double EnergyCalibrator::calcEnergy(int idx, int dac)
 
 int EnergyCalibrator::calDac(int idx, double energy)
 {
-    if(_indexChecker(idx))
+    if(!_indexChecker(idx))
         return 0;
     _dacs[idx] = (int) ((energy - _offsets[idx]) / _slopes[idx]);
+    return _dacs[idx];
 }
 
 

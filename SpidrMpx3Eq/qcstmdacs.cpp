@@ -607,6 +607,7 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
                 continue;
             }
             spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[ i ].code, val );
+
             // Now I need to chage it in the local data base
             SetDACValueLocalConfig( chip, i, val);
         }

@@ -38,6 +38,7 @@ class Mpx3Config;
 #include <QCoreApplication>
 #include <QTimer>
 #include "GeneralSettings.h"
+#include "EnergyCalibrator.h"
 
 class Mpx3Config;
 class QCustomPlot;
@@ -104,6 +105,7 @@ public:
 private:
 
     QTimer *timer; //timer to autoconnect
+    EnergyCalibrator *_energyCalibrator;
     // ML605 layout
     //vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
     //vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
@@ -160,6 +162,8 @@ private:
 public:
 
     GeneralSettings* getGenralSettings(){ return _generalSettings;}
+    EnergyCalibrator* getEnergyCalibrator() {return _energyCalibrator;}
+    void updateEnergyCalibratorParameters(void);
     Mpx3Config* getConfig();
     void closeRemotely(){on_actionDisconnect_triggered(false);}
     Dataset* getDataset(){return workingSet;}

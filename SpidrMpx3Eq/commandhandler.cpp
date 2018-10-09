@@ -678,6 +678,7 @@ int CommandHandler::setSlope(int chipNum, double val)
     if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS)
         return ARG_VAL_OUT_RANGE;
     Mpx3GUI::getInstance()-> getGenralSettings()->setSlope(chipNum,val);
+    Mpx3GUI::getInstance()->updateEnergyCalibratorParameters();
     return NO_ERROR;
 }
 
@@ -691,6 +692,7 @@ int CommandHandler::setOffset(int chipNum, double val)
     if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS)
         return ARG_VAL_OUT_RANGE;
     Mpx3GUI::getInstance()-> getGenralSettings()->setOffset(chipNum,val);
+    Mpx3GUI::getInstance()->updateEnergyCalibratorParameters();
     return NO_ERROR;
 
 }

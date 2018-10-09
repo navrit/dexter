@@ -224,6 +224,8 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     timer->start(500);
     connect(timer,SIGNAL(timeout()),this,SLOT(onTimeout()));
     _generalSettings = new GeneralSettings;
+    _energyCalibrator = new EnergyCalibrator;
+    updateEnergyCalibratorParameters();
     mpx3GuiInstance = this;
 }
 
@@ -1014,6 +1016,17 @@ void Mpx3GUI::_loadGeneralSettings()
     }
 
 
+
+}
+
+void Mpx3GUI::updateEnergyCalibratorParameters()
+{
+    _generalSettings->readSetting();
+    for(int i = 0; i < NUMBER_OF_CHIPS; i++){
+        _energyCalibrator->setSlope(i,_generalSettings->getSlope(i));
+        qDebug() << "load slope " + QString::number(i) +" : " << _energyCalibrator->getSlope(i);
+        _energyCalibrator->setOffset(i,_generalSettings->getOffset(i));
+    }
 
 }
 
