@@ -1081,6 +1081,12 @@ void getOffsetHandler(CommandHandler* ch, Command* cmd){
 
 }
 
+void resetSlopesAndOffsetsHandler(CommandHandler* ch, Command* cmd){
+    int error = ch->resetSlopesAndOffsets();
+    cmd->setData("1");
+    cmd->setError((ERROR_TYPE)error);
+}
+
 
 
 //end of handler functions

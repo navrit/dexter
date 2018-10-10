@@ -204,6 +204,9 @@ void CommandHandler::initializeCmdTable()
     cmd_struct getOffset {getOffsetHandler};
     cmdTable.insert("GetOffset",getOffset);
 
+    cmd_struct resetSlopesAndOffsets{resetSlopesAndOffsetsHandler};
+    cmdTable.insert("ResetSlopesAndOffsets",resetSlopesAndOffsets);
+
 
 }
 
@@ -699,7 +702,18 @@ int CommandHandler::setOffset(int chipNum, double val)
 
 double CommandHandler::getOffset(int chipNum)
 {
-   return Mpx3GUI::getInstance()-> getGenralSettings()->getOffset(chipNum);
+    return Mpx3GUI::getInstance()-> getGenralSettings()->getOffset(chipNum);
+}
+
+int CommandHandler::resetSlopesAndOffsets()
+{
+    //this means energy = dac
+    for(int i = 0; i < NUMBER_OF_CHIPS; i++){
+        Mpx3GUI::getInstance()-> getGenralSettings()->setOffset(i,0);
+        Mpx3GUI::getInstance()-> getGenralSettings()->setSlope(i,1);
+    }
+    Mpx3GUI::getInstance()->updateEnergyCalibratorParameters();
+    return NO_ERROR;
 }
 
 

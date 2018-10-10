@@ -2322,12 +2322,19 @@ uint32 assembleData(uint8 a,uint8 b,uint8 c,uint8 d){
 
 void QCstmGLVisualization::on_testBtn_clicked()
 {
-    for(int i = 0; i< 4; i++)
-    {
-    int val22 = 0;
-    Mpx3GUI::getInstance()->GetSpidrController()->getDac(i,MPX3RX_DAC_TABLE[ 0 ].code,&val22);
-    qDebug() << "value : " << val22;
-    }
+//    for(int i = 0; i< 4; i++)
+//    {
+//    int val22 = 0;
+//    Mpx3GUI::getInstance()->GetSpidrController()->getDac(i,MPX3RX_DAC_TABLE[ 0 ].code,&val22);
+//    qDebug() << "value : " << val22;
+//    }
+
+    qDebug () << "SlOPE 0 :" << Mpx3GUI::getInstance()->getGenralSettings()->getSlope(0);
+    qDebug () << "SlOPE 1 :" << Mpx3GUI::getInstance()->getGenralSettings()->getSlope(1);
+    qDebug () << "SlOPE 2 :" << Mpx3GUI::getInstance()->getGenralSettings()->getSlope(2);
+    qDebug () << "SlOPE 3 :" << Mpx3GUI::getInstance()->getGenralSettings()->getSlope(3);
+
+
     //Mpx3GUI::getInstance()->getConfig()->setInhabitShutter(true);
    // Mpx3GUI::getInstance()->getConfig()->setInhabitShutter(false);
 

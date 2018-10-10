@@ -70,6 +70,8 @@ public:
     int setOffset(int chipNum,double val);
     double getOffset(int chipNum);
 
+    int resetSlopesAndOffsets(void);
+
     //data
     void emitrequestForAnotherSocket(int);
     QHash<QString,cmd_struct> cmdTable;
