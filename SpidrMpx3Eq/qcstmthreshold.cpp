@@ -600,29 +600,31 @@ void CustomScanThread::run() {
             //}
 
             if ( doReadFrames ) {
-                int size_in_bytes = -1;
+                int size_in_bytes = MPX_PIXELS*4;
 
+                FrameSet *frameSet = spidrdaq->getFrameSet();
+                int tmp[MPX_PIXELS];
                 // On all active chips
                 if ( _cstmThreshold->GetUI()->onAllChipsCheckBox->isChecked() ) {
                     for(int i = 0 ; i < activeDevices.size() ; i++) {
                         //cout << i << endl;
-                        _data = spidrdaq->frameData(i, &size_in_bytes);
-                        pixelsReactive += PixelsReactive( _data, size_in_bytes, dacItr );
+                        frameSet->copyTo32(i, reinterpret_cast<uint32_t*>(tmp));
+                        pixelsReactive += PixelsReactive( tmp, size_in_bytes, dacItr );
                     }
                 } else {
 
                     // On a single chip scan
                     int chipScanId = _cstmThreshold->GetUI()->devIdSpinBox->value();
                     int dataIdForChip = _mpx3gui->getConfig()->getIndexFromID( chipScanId );
-                    _data = spidrdaq->frameData(dataIdForChip, &size_in_bytes);
-                    pixelsReactive += PixelsReactive( _data, size_in_bytes, dacItr );
+                    frameSet->copyTo32(dataIdForChip, reinterpret_cast<uint32_t*>(tmp));
+                    pixelsReactive += PixelsReactive( tmp, size_in_bytes, dacItr );
 
                 }
 
                 // TEMP .. TODO
                 // Tring to find the turn-on point
                 if ( startReacting < 10 ) {
-                    startReacting += PixelsReactive( _data, size_in_bytes, dacItr );
+                    startReacting += PixelsReactive( tmp, size_in_bytes, dacItr );
                 } else {
                     if ( ! turnonReached ) {
                         turnonTHL = dacItr;

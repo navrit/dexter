@@ -495,13 +495,13 @@ void ThlScan::FineTuning() {
 
                             int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
                             // Go through all chips avoiding those not present
+                            FrameSet *frameSet = _spidrdaq->getFrameSet();
                             for ( int idx = 0 ; idx < nChips ; idx++ ) {
                                 if ( ! _mpx3gui->getConfig()->detectorResponds( idx ) ) continue;
 
                                 idDataFetch = _mpx3gui->getConfig()->getDataBufferId( idx );
-                                _data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
 
-                                _dataset->setFrame(_data, idx, 0); // Stack
+                                _dataset->setFrame(frameSet, idx, 0); // Stack
                             }
 
                             // Once the frame is complete, extract info
@@ -1006,15 +1006,15 @@ void ThlScan::EqualizationScan() {
 
                         int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
                         // Go through all chips avoiding those not present
+                        FrameSet *frameSet = _spidrdaq->getFrameSet();
                         for ( int idx = 0 ; idx < nChips ; idx++ ) {
 
                             if ( ! _mpx3gui->getConfig()->detectorResponds( idx ) ) continue;
 
                             idDataFetch = _mpx3gui->getConfig()->getDataBufferId( idx );
-                            _data = _spidrdaq->frameData(idDataFetch, &size_in_bytes);
 
                             // Stack
-                            _dataset->setFrame(_data, idx, 0);
+                            _dataset->setFrame(frameSet, idx, 0);
 
                         }
 

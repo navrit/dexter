@@ -7,6 +7,7 @@
 
 #include "mpx3gui.h"
 #include "mpx3defs.h"
+#include "FrameSet.h"
 
 class DataConsumerThread : public QThread
 {
@@ -17,6 +18,7 @@ public:
 
     explicit DataConsumerThread(Mpx3GUI *, QObject * parent = nullptr);
     virtual ~DataConsumerThread();
+    void copydata(FrameSet * source, int chipIndex);
     void copydata(int * source, size_t num);
     void rewindcopydata(int nChipsRewind, size_t num);
     void rewindcopydata(size_t num);
@@ -26,14 +28,14 @@ public:
 
     void consume();
     void SeparateThresholds(int th,
-                       int * data,
+                       uint32_t * data,
                        int chipOffset
                        );
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
 
     QSemaphore * freeFrames;
     QSemaphore * usedFrames;
-    int * buffer = nullptr;
+    uint32_t * buffer = nullptr;
     uint descriptor = 0;
     uint readdescriptor = 0;
 

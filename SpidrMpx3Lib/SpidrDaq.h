@@ -16,6 +16,8 @@
 #include <string>
 #include <vector>
 
+#include "FrameSet.h"
+
 class SpidrController;
 class ReceiverThread;
 class FramebuilderThread;
@@ -51,11 +53,8 @@ class MY_LIB_API SpidrDaq
   // Acquisition
   int       numberOfDevices     ( ) { return (int) _frameReceivers.size(); }
   bool      hasFrame            ( unsigned long timeout_ms = 0 );
-  int      *frameData           ( int  index,
-                                  int *size_in_bytes,
-                                  int *lost_count = nullptr );
+  FrameSet  *getFrameSet           ();
   void      releaseFrame        ( );
-  void      clearFrameData      ( int index );
   int       frameShutterCounter ( int index = -1 );
   bool      isCounterhFrame     ( int index = -1 );
   int       frameFlags          ( int index );

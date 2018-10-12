@@ -25,7 +25,7 @@ DataConsumerThread::DataConsumerThread(Mpx3GUI * mpx3gui, QObject * parent)
     _bufferSizeHalf = _bufferSize/2;
 
     // Circular buffer
-    buffer = new int[ _bufferSize ];
+    buffer = new uint32_t[ _bufferSize ];
     descriptor = 0;         // in number of integers
     qDebug() << "[INFO] Consumer. Buffer size: " << _bufferSize/1024.0/1024.0 << "Mb";
 
@@ -99,6 +99,21 @@ void DataConsumerThread::copydata(int * source, size_t num )
 {
 
     memcpy( buffer + descriptor, source, num );
+
+    descriptor += num/4;            // 4 bytes per integer
+
+    // rewind descriptor -- circular buffer
+    if ( descriptor >= _bufferSize ) {
+        descriptor = 0;
+        //qDebug() << " ... circ buffer ... ";
+    }
+}
+
+void DataConsumerThread::copydata(FrameSet * source, int chipIndex)
+{
+
+    size_t num = 4 * 256 * 256;
+    source->copyTo32(chipIndex, buffer + descriptor);
 
     descriptor += num/4;            // 4 bytes per integer
 
@@ -260,7 +275,7 @@ void DataConsumerThread::run()
                     // I need the info for ALL the 4 chips acquired first
                     for ( uint ci = 0 ; ci < _nChips ; ci++ ) usedFrames->acquire();
                     // Now I can work on the layer
-                    _mpx3gui->addLayer( buffer + readdescriptor, i );
+                    _mpx3gui->addLayer(reinterpret_cast<int*>(buffer + readdescriptor), i );
                     // Move the reading descriptor
                     readdescriptor += _bufferSizeOneFrame;
                     // Then I can release
@@ -309,7 +324,7 @@ void DataConsumerThread::dataTakingSaysIFinished()
 }
 
 void DataConsumerThread::SeparateThresholds(int th,
-                                            int * data,
+                                            uint32_t * data,
                                             int chipOffset) {
 
     // Layout of 110um pixel

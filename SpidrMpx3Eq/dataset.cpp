@@ -1914,6 +1914,15 @@ void Dataset::debugPrintThesholds(int n)
     }
 }
 
+void Dataset::setFrame(FrameSet *frame, int index, int threshold){
+
+    if(!m_thresholdsToIndices.contains(threshold))
+        newLayer(threshold);
+    uint32_t *newFrame = reinterpret_cast<uint32_t*>(getFrame(index, threshold));
+
+    frame->copyTo32(index, newFrame);
+}
+
 void Dataset::setFrame(int *frame, int index, int threshold){
 
     if(!m_thresholdsToIndices.contains(threshold))

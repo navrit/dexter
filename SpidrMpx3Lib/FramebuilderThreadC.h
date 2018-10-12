@@ -15,10 +15,8 @@ class FramebuilderThreadC : public FramebuilderThread
   virtual void processFrame();
   virtual int  mpx3RawToPixel( unsigned char *raw_bytes,
                                int            nbytes,
-                               int           *pixels,
-                               int            counter_depth,
-                               //int          device_type,
-                               bool           is_counterh ); //compress );
+                               FrameSet           *pixels,
+                               int            chipIndex);
 };
 
 #endif // FRAMEBUILDERTHREADC_H

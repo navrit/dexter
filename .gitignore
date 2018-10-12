@@ -84,7 +84,7 @@ SpidrMpx3Lib/build-spidrmpx3test-Desktop_Qt_5_7_1_GCC_64bit-Debug/Makefile
 
 SpidrMpx3Eq/config/mpx3-XRE\.json
 /Makefile
-/SpidrMpx3Eq/*
-/SpidrMpx3Lib/*
 /spidrflash/*
 /SpidrMpx3Eq/release/*
+*.rej
+*.orig

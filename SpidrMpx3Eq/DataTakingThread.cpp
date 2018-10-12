@@ -253,10 +253,10 @@ void DataTakingThread::run() {
 
             // Read data
             oneFrameChipCntr = 0;          
+            FrameSet *fs = spidrdaq->getFrameSet();
             for ( int i = 0 ; i < nChips ; i++ ) {
                 // retreive data for a given chip
                 //auto t1 = Time::now();
-                framedata = spidrdaq->frameData(i, &size_in_bytes); //! < 0.1% time
                 //clearToCopy = true;
 
                 //auto t2 = Time::now(); v1.append( std::chrono::duration_cast<ns>(t2 - t1).count());
@@ -264,7 +264,7 @@ void DataTakingThread::run() {
                 _consumer->freeFrames->acquire(); //! < 0.1% time
                 //auto t3 = Time::now(); v2.append( std::chrono::duration_cast<ns>(t3 - t2).count());
 
-                _consumer->copydata( framedata, size_in_bytes ); //! 99+% time
+                _consumer->copydata(fs, i); //! 99+% time
                 //auto t4 = Time::now(); v3.append( std::chrono::duration_cast<ns>(t4 - t3).count());
 
                 _consumer->usedFrames->release(); //! < 0.1% time

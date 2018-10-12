@@ -215,8 +215,8 @@ void ReceiverThreadC::readDatagrams()
 		    //  }
 		  }
 	      }
-	      // Skip this packet
-	      copy = false;
+          // KEEP this packet
+          copy = true;
 	      break;
 
 	    default:

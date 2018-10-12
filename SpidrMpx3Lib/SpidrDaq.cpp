@@ -358,9 +358,9 @@ bool SpidrDaq::hasFrame( unsigned long timeout_ms )
 
 // ----------------------------------------------------------------------------
 
-int *SpidrDaq::frameData( int index, int *size_in_bytes, int *lost_count )
+FrameSet *SpidrDaq::getFrameSet()
 {
-  return _frameBuilder->frameData( index, size_in_bytes, lost_count );
+  return _frameBuilder->frameData();
 }
 
 // ----------------------------------------------------------------------------
@@ -368,14 +368,6 @@ int *SpidrDaq::frameData( int index, int *size_in_bytes, int *lost_count )
 void SpidrDaq::releaseFrame()
 {
   _frameBuilder->releaseFrame();
-}
-
-// ----------------------------------------------------------------------------
-
-void SpidrDaq::clearFrameData( int index )
-{
-  // Utility function to set a frame data array to zero
-  _frameBuilder->clearFrameData( index );
 }
 
 // ----------------------------------------------------------------------------

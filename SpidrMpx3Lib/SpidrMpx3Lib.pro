@@ -42,14 +42,19 @@ unix {
   DEFINES -= WIN32
 }
 
-SOURCES += SpidrController.cpp
+SOURCES += SpidrController.cpp \
+    ChipFrame.cpp \
+    FrameSet.cpp
 SOURCES += SpidrDaq.cpp
 SOURCES += ReceiverThread.cpp
 SOURCES += ReceiverThreadC.cpp
 SOURCES += FramebuilderThread.cpp
 SOURCES += FramebuilderThreadC.cpp
 
-HEADERS += SpidrController.h
+HEADERS += SpidrController.h \
+    ChipFrame.h \
+    FrameSet.h \
+    OMR.h
 HEADERS += mpx3dacsdescr.h
 HEADERS += mpx3defs.h
 HEADERS += spidrmpx3cmds.h
