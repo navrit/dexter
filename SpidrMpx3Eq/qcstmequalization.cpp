@@ -1872,7 +1872,7 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     qDebug() << "[Equalisation]\tGain mode = " << gainMode << "\tAlways 3 (SLGM) for noise based equalisations";
 
     //! Important defaults
-    spidrdaq->setDecodeFrames( true );
+    //spidrdaq->setDecodeFrames( true );
     spidrcontrol->setPixelDepth( devId, 12 );
     spidrdaq->setPixelDepth( 12 );
 

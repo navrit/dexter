@@ -43,12 +43,12 @@ class MY_LIB_API SpidrDaq
 
   // Configuration
   void setPixelDepth            ( int nbits );
-  void setDecodeFrames          ( bool decode );
-  void setCompressFrames        ( bool compress );
+  //void setDecodeFrames          ( bool decode );
+  //void setCompressFrames        ( bool compress );
   void setLutEnable             ( bool enable );
-  bool openFile                 ( std::string filename,
-                                  bool overwrite = false );
-  bool closeFile                ( );
+  //bool openFile                 ( std::string filename,
+  //                                bool overwrite = false );
+  //bool closeFile                ( );
 
   // Acquisition
   int       numberOfDevices     ( ) { return (int) _frameReceivers.size(); }
@@ -56,39 +56,39 @@ class MY_LIB_API SpidrDaq
   FrameSet  *getFrameSet           ();
   void      releaseFrame        ( );
   int       frameShutterCounter ( int index = -1 );
-  bool      isCounterhFrame     ( int index = -1 );
+  //bool      isCounterhFrame     ( int index = -1 );
   int       frameFlags          ( int index );
-  long long frameTimestamp      ( );
-  long long frameTimestamp      ( int buf_i );        // For debugging
-  long long frameTimestampSpidr ( );
-  double    frameTimestampDouble( );                  // For Pixelman
-  void      setCallbackId       ( int id );           // For Pixelman
-  void      setCallback         ( CallbackFunc cbf ); // For Pixelman
+  //long long frameTimestamp      ( );
+  //long long frameTimestamp      ( int buf_i );        // For debugging
+  //long long frameTimestampSpidr ( );
+  //double    frameTimestampDouble( );                  // For Pixelman
+  //void      setCallbackId       ( int id );           // For Pixelman
+  //void      setCallback         ( CallbackFunc cbf ); // For Pixelman
 
   // Statistics and info
-  int  framesWrittenCount       ( );
-  int  framesProcessedCount     ( );
-  int  framesCount              ( int index );
+  //int  framesWrittenCount       ( );
+  //int  framesProcessedCount     ( );
+  //int  framesCount              ( int index );
   int  framesCount              ( );
-  int  framesLostCount          ( int index );
+  //int  framesLostCount          ( int index );
   int  framesLostCount          ( );
-  int  packetsReceivedCount     ( int index );
-  int  packetsReceivedCount     ( );
+  //int  packetsReceivedCount     ( int index );
+  //int  packetsReceivedCount     ( );
   int  lostCount                ( int index );
   int  lostCount                ( );
   void resetLostCount           ( );
-  int  lostCountFile            ( );
+  //int  lostCountFile            ( );
   int  lostCountFrame           ( );
 
-  int  packetsLostCountFrame    ( int index, int buf_i ); // For debugging
-  int  packetSize               ( int index );            // For debugging
-  int  expSequenceNr            ( int index );            // For debugging
+  //int  packetsLostCountFrame    ( int index, int buf_i ); // For debugging
+  //int  packetSize               ( int index );            // For debugging
+  //int  expSequenceNr            ( int index );            // For debugging
 
-  int  pixelsReceivedCount      ( int index );
-  int  pixelsReceivedCount      ( );
-  int  pixelsLostCount          ( int index );
-  int  pixelsLostCount          ( );
-  int  pixelsLostCountFrame     ( int index, int buf_i ); // For debugging
+  //int  pixelsReceivedCount      ( int index );
+  //int  pixelsReceivedCount      ( );
+  //int  pixelsLostCount          ( int index );
+  //int  pixelsLostCount          ( );
+  //int  pixelsLostCountFrame     ( int index, int buf_i ); // For debugging
 
  private:
   std::vector<ReceiverThread *> _frameReceivers;

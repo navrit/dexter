@@ -13,7 +13,7 @@
 //   processFrame() functions.
 // - Fix for SPIDR-LUT decoded row counter (firmware bug) in
 //   FramebuilderThreadC::mpx3RawToPixel(): just count EOR pixelpackets instead.
-const int   VERSION_ID = 0x17092901;
+const int   VERSION_ID = 0x18101200;
 
 // - Fix 24-bit bug in ReceiverThread::setPixelDepth().
 // - Tolerate SOF out-of-order in ReceiverThreadC::readDatagrams().
@@ -314,37 +314,9 @@ void SpidrDaq::setPixelDepth( int nbits )
 
 // ----------------------------------------------------------------------------
 
-void SpidrDaq::setDecodeFrames( bool decode )
-{
-  _frameBuilder->setDecodeFrames( decode );
-}
-
-// ----------------------------------------------------------------------------
-
-void SpidrDaq::setCompressFrames( bool compress )
-{
-  _frameBuilder->setCompressFrames( compress );
-}
-
-// ----------------------------------------------------------------------------
-
 void SpidrDaq::setLutEnable( bool enable )
 {
   _frameBuilder->setLutEnable( enable );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrDaq::openFile( std::string filename, bool overwrite )
-{
-  return _frameBuilder->openFile( filename, overwrite );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrDaq::closeFile()
-{
-  return _frameBuilder->closeFile();
 }
 
 // ----------------------------------------------------------------------------
@@ -379,13 +351,6 @@ int SpidrDaq::frameShutterCounter( int index )
 
 // ----------------------------------------------------------------------------
 
-bool SpidrDaq::isCounterhFrame( int index )
-{
-  return _frameBuilder->isCounterhFrame( index );
-}
-
-// ----------------------------------------------------------------------------
-
 int SpidrDaq::frameFlags( int index )
 {
   if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
@@ -393,75 +358,7 @@ int SpidrDaq::frameFlags( int index )
 }
 
 // ----------------------------------------------------------------------------
-
-long long SpidrDaq::frameTimestamp()
-{
-  return _frameBuilder->frameTimestamp();
-}
-
-// ----------------------------------------------------------------------------
-
-long long SpidrDaq::frameTimestamp( int buf_i )
-{
-  // DEBUG function:
-  return _frameReceivers[0]->timeStampFrame( buf_i );
-}
-
-// ----------------------------------------------------------------------------
-
-long long SpidrDaq::frameTimestampSpidr()
-{
-  return _frameBuilder->frameTimestampSpidr();
-}
-
-// ----------------------------------------------------------------------------
-
-double SpidrDaq::frameTimestampDouble()
-{
-  // For Pixelman
-  return _frameBuilder->frameTimestampDouble();
-}
-
-// ----------------------------------------------------------------------------
-
-void SpidrDaq::setCallbackId( int id )
-{
-  // For Pixelman
-  _frameBuilder->setCallbackId( id );
-}
-
-// ----------------------------------------------------------------------------
-
-void SpidrDaq::setCallback( CallbackFunc cbf )
-{
-  // For Pixelman
-  _frameBuilder->setCallback( cbf );
-}
-
-// ----------------------------------------------------------------------------
 // Statistics
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::framesWrittenCount()
-{
-  return _frameBuilder->framesWritten();
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::framesProcessedCount()
-{
-  return _frameBuilder->framesProcessed();
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::framesCount( int index )
-{
-  if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
-  return _frameReceivers[index]->framesReceived();
-}
-
 // ----------------------------------------------------------------------------
 
 int SpidrDaq::framesCount()
@@ -474,37 +371,11 @@ int SpidrDaq::framesCount()
 
 // ----------------------------------------------------------------------------
 
-int SpidrDaq::framesLostCount( int index )
-{
-  if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
-  return _frameReceivers[index]->framesLost();
-}
-
-// ----------------------------------------------------------------------------
-
 int SpidrDaq::framesLostCount()
 {
   int count = 0;
   for( int i=0; i<(int) _frameReceivers.size(); ++i )
     count += _frameReceivers[i]->framesLost();
-  return count;
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::packetsReceivedCount( int index )
-{
-  if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
-  return _frameReceivers[index]->packetsReceived();
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::packetsReceivedCount()
-{
-  int count = 0;
-  for( int i=0; i<(int) _frameReceivers.size(); ++i )
-    count += _frameReceivers[i]->packetsReceived();
   return count;
 }
 
@@ -536,93 +407,8 @@ void SpidrDaq::resetLostCount()
 
 // ----------------------------------------------------------------------------
 
-int SpidrDaq::lostCountFile()
-{
-  // The total number of lost packets/pixels detected in the frames written
-  // to the current or last closed file
-  return _frameBuilder->lostCount();
-}
-
-// ----------------------------------------------------------------------------
-
 int SpidrDaq::lostCountFrame()
 {
   // The total number of lost packets/pixels detected in the current frame
   return _frameBuilder->lostCountFrame();
 }
-
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::packetsLostCountFrame( int index, int buf_i )
-{
-  // DEBUG function:
-  if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
-  return _frameReceivers[index]->packetsLostFrame( buf_i );
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::packetSize( int index )
-{
-  // DEBUG function:
-  if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
-  return _frameReceivers[index]->packetSize();
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::expSequenceNr( int index )
-{
-  // DEBUG function:
-  if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
-  return _frameReceivers[index]->expSequenceNr();
-}
-
-// ----------------------------------------------------------------------------
-// For Compact-SPIDR type
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::pixelsReceivedCount( int index )
-{
-  if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
-  return _frameReceivers[index]->pixelsReceived();
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::pixelsReceivedCount()
-{
-  int count = 0;
-  for( int i=0; i<(int) _frameReceivers.size(); ++i )
-    count += _frameReceivers[i]->pixelsReceived();
-  return count;
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::pixelsLostCount( int index )
-{
-  if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
-  return _frameReceivers[index]->pixelsLost();
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::pixelsLostCount()
-{
-  int count = 0;
-  for( int i=0; i<(int) _frameReceivers.size(); ++i )
-    count += _frameReceivers[i]->pixelsLost();
-  return count;
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::pixelsLostCountFrame( int index, int buf_i )
-{
-  // DEBUG function:
-  if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
-  return _frameReceivers[index]->pixelsLostFrame( buf_i );
-}
-
-// ----------------------------------------------------------------------------
