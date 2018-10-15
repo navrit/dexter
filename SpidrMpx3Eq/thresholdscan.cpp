@@ -547,9 +547,10 @@ void ThresholdScanThread::run()
             doReadFrames = true;
 
             // Check quality, if packets lost don't consider the frame
-            if ( spidrdaq->lostCountFrame() != 0 ) {
-                doReadFrames = false;
-            }
+            // TODO: Navrit will fix this... we need to have the FrameSet to ask this question
+            //if ( spidrdaq->lostCountFrame() != 0 ) {
+                //doReadFrames = false;
+            //}
 
             if ( doReadFrames ) {
 
@@ -566,6 +567,7 @@ void ThresholdScanThread::run()
                 for (int i=0; i < y; i++) {
                     for (int j=0; j < x; j++) {
                         //qDebug() << "(x, y):" << j << "," << i << i*x+j;
+                        // TODO: fix the mysterious way the data ended up there!
                         _data[i*x + j] = _mpx3gui->getDataset()->sample(j, i, m_thresholdToScan);
                         //tmp = _mpx3gui->getDataset()->sample(j, i, m_thresholdToScan);
                         //if (tmp > 0)
@@ -581,6 +583,7 @@ void ThresholdScanThread::run()
             }
 
             // Release
+            // TODO: fix this: we didn't get the frame, so we cannot release it?
             spidrdaq->releaseFrame();
 
             if (doReadFrames) {

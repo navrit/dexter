@@ -64,3 +64,13 @@ void FrameSet::copyTo32(uint32_t *dest) {
         dest += MPX_PIXELS;
     }
 }
+
+int FrameSet::pixelsLost() {
+    int count = 0;
+    for (int j = 0; j < 2; j++)
+        for (int i = 0; i < number_of_chips; i++)
+            if (frame[j][i] != nullptr) count += frame[j][i]->pixelsLost;
+
+    return count;
+}
+

@@ -593,7 +593,8 @@ void CustomScanThread::run() {
             //for(int i = 0 ; i < _mpx3gui->getConfig()->getNActiveDevices() ; i++) {
             //if ( ! _cstmThreshold->GetMpx3GUI()->getConfig()->detectorResponds( i ) ) {
             //if ( spidrdaq->packetsLostCountFrame( ) != 0 ) { // from any of the chips connected
-            if ( spidrdaq->lostCountFrame() != 0 ) {
+            FrameSet *frameSet = spidrdaq->getFrameSet();
+            if (frameSet->pixelsLost() != 0) {
                 doReadFrames = false;
             }
             //}
@@ -602,7 +603,6 @@ void CustomScanThread::run() {
             if ( doReadFrames ) {
                 int size_in_bytes = MPX_PIXELS*4;
 
-                FrameSet *frameSet = spidrdaq->getFrameSet();
                 int tmp[MPX_PIXELS];
                 // On all active chips
                 if ( _cstmThreshold->GetUI()->onAllChipsCheckBox->isChecked() ) {

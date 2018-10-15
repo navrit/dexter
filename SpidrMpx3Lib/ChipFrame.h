@@ -11,6 +11,7 @@ class ChipFrame
 public:
     ChipFrame();
     uint8_t frameId;
+    int pixelsLost;
     OMR omr;
     int brokenRows;
     void clear() { memset(data, 0, sizeof(data));}

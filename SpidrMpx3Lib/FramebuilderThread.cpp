@@ -39,8 +39,6 @@ FramebuilderThread::FramebuilderThread( std::vector<ReceiverThread *> recvrs,
   _n = _receivers.size();
   for( i=0; i<NR_OF_DEVICES; ++i )
     {
-      _lostCountFrame[i] = 0;
-      _isCounterhFrame[i] = false;
       memset( static_cast<void *> (&_spidrHeader[i]), 0, SPIDR_HEADER_SIZE );
     }
   // Preset the headers
@@ -183,74 +181,6 @@ void FramebuilderThread::abortFrame()
 
 void FramebuilderThread::processFrame()
 {
-  // Not writing to file, so if not flushing it all,
-  // we expect at least to decode the pixel data
-  // otherwise just 'absorb' the frames...
-  unsigned int i;
-  if( !_flush && _decode )
-    {
-      // If necessary wait until the previous frame has been consumed
-      _mutex.lock();
-      if( _under_construction == _with_client ) _outputCondition.wait( &_mutex );
-      _mutex.unlock();
-
-      if( _abortFrame ) return; // Bail out
-
-      // The following decoding operations could be done
-      // in separate threads (i.e. by QtConcurrent)
-#ifdef _USE_QTCONCURRENT
-      if( _n > 1 )
-        {
-          QFuture<int> qf[4];
-          for( i=0; i<_n; ++i )
-            qf[i] = QtConcurrent::run( this,
-                                       &FramebuilderThread::mpx3RawToPixel,
-                                       _receivers[i]->frameData(),
-                                       _receivers[i]->dataSizeFrame(),
-                                       &frameSets[_under_construction],
-                                       i);
-          // Wait for threads to finish and get the results...
-          for( i=0; i<_n; ++i )
-             qf[i].result();
-        }
-      else
-#endif // _USE_QTCONCURRENT
-        {
-          for( i=0; i<_n; ++i )
-              this->mpx3RawToPixel( _receivers[i]->frameData(),
-                                    _receivers[i]->dataSizeFrame(),
-                                    &frameSets[_under_construction],
-                                    i);
-        }
-
-      // Collect various information on the frames from their receivers
-      _timeStamp = _receivers[0]->timeStampFrame();
-      _timeStampSpidr = _receivers[0]->timeStampFrameSpidr();
-      for( i=0; i<_n; ++i )
-        {
-          // Copy (part of) the SPIDR 'header' (6 short ints: 3 copied)
-          memcpy( (void *) &_spidrHeader[i],
-                  (void *) _receivers[i]->spidrHeaderFrame(),
-                  SPIDR_HEADER_SIZE/2 ); // Only half of it needed here
-
-          _isCounterhFrame[i] = _receivers[i]->isCounterhFrame();
-
-          _lostCountFrame[i] = _receivers[i]->packetsLostFrame();
-        }
-
-      ++_framesProcessed;
-      if( _evtHdr.pixelDepth != 24 ||
-          (_evtHdr.pixelDepth == 24 && this->isCounterhFrame()) )
-        {
-          _mutex.lock();
-          int temp = _under_construction;
-          _under_construction = 1 - temp;
-          _with_client = temp;
-          //if( _callbackFunc ) _callbackFunc( _id );
-          _frameAvailableCondition.wakeOne();
-          _mutex.unlock();
-        }
-    }
 }
 
 // ----------------------------------------------------------------------------
@@ -326,27 +256,6 @@ int FramebuilderThread::frameShutterCounter( int index )
     {
       index &= 0x3;
       return byteswap( (int) _spidrHeader[index].shutterCnt );
-    }
-}
-
-// ----------------------------------------------------------------------------
-
-bool FramebuilderThread::isCounterhFrame( int index )
-{
-  if( index < 0 )
-    {
-      // Return true if each device has a 'CounterH' frame,
-      // otherwise return false
-      bool b = _isCounterhFrame[0];
-      for( u32 i=1; i<_n; ++i )
-        if( b != _isCounterhFrame[i] )
-          return false;
-      return b;
-    }
-  else
-    {
-      index &= 0x3;
-      return _isCounterhFrame[index];
     }
 }
 
@@ -454,16 +363,6 @@ bool FramebuilderThread::closeFile()
       return true;
     }
   return false;
-}
-
-// ----------------------------------------------------------------------------
-
-int FramebuilderThread::lostCountFrame()
-{
-  int lost = 0;
-  for( u32 i=0; i<_n; ++i )
-    lost += _lostCountFrame[i];
-  return lost;
 }
 
 // ----------------------------------------------------------------------------

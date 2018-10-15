@@ -381,14 +381,6 @@ int SpidrDaq::framesLostCount()
 
 // ----------------------------------------------------------------------------
 
-int SpidrDaq::lostCount( int index )
-{
-  if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
-  return _frameReceivers[index]->lostCount();
-}
-
-// ----------------------------------------------------------------------------
-
 int SpidrDaq::lostCount()
 {
   int count = 0;
@@ -403,12 +395,4 @@ void SpidrDaq::resetLostCount()
 {
   for( int i=0; i<(int) _frameReceivers.size(); ++i )
     _frameReceivers[i]->resetLost();
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::lostCountFrame()
-{
-  // The total number of lost packets/pixels detected in the current frame
-  return _frameBuilder->lostCountFrame();
 }

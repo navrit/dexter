@@ -49,7 +49,6 @@ class FramebuilderThread : public QThread
   double frameTimestampDouble();
   i64    frameTimestampSpidr();
   int    frameShutterCounter( int index = -1 );
-  bool   isCounterhFrame( int index = -1 );
 
   void   setAddrInfo( int *ipaddr, int *ports );
   void   setDeviceIdsAndTypes( int *ids, int *types );
@@ -100,7 +99,6 @@ class FramebuilderThread : public QThread
   int   _framesWritten;
   int   _framesProcessed;
   int   _lostCountTotal;
-  int   _lostCountFrame[NR_OF_DEVICES];
   bool  _decode;
   bool  _compress;
   bool  _flush;
@@ -124,7 +122,6 @@ class FramebuilderThread : public QThread
   i64           _timeStamp;
   i64           _timeStampSpidr;
   int           _frameId[NR_OF_DEVICES];
-  bool          _isCounterhFrame[NR_OF_DEVICES];
   SpidrHeader_t _spidrHeader[NR_OF_DEVICES];
 
   // Intermediate buffers for a (decoded) set of frames;

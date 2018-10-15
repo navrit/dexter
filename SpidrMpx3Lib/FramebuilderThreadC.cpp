@@ -127,8 +127,6 @@ void FramebuilderThreadC::processFrame()
           memcpy( (void *) &_spidrHeader[i],
                   (void *) _receivers[i]->spidrHeaderFrame(),
                   SPIDR_HEADER_SIZE/2 ); // Only half of it needed here
-
-          _isCounterhFrame[i] = _receivers[i]->isCounterhFrame();
         }
 
       ++_framesProcessed;
@@ -253,6 +251,7 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
             }
           if (type == PIXEL_DATA_EOF) {
               frame->frameId = frameId;
+              frame->pixelsLost = _receivers[chipIndex]->pixelsLostFrame();
               frameSet->putChipFrame(chipIndex, frame);
           }
 

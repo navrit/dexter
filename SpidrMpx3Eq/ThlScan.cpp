@@ -486,7 +486,8 @@ void ThlScan::FineTuning() {
 
                         //! Check quality
                         //! The total number of lost packets/pixels detected in the current frame
-                        if ( _spidrdaq->lostCountFrame() != 0 ) {
+                        FrameSet *frameSet = _spidrdaq->getFrameSet();
+                        if  (frameSet->pixelsLost() != 0) {
                             doReadFrames = false;
                         }
 
@@ -495,7 +496,6 @@ void ThlScan::FineTuning() {
 
                             int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
                             // Go through all chips avoiding those not present
-                            FrameSet *frameSet = _spidrdaq->getFrameSet();
                             for ( int idx = 0 ; idx < nChips ; idx++ ) {
                                 if ( ! _mpx3gui->getConfig()->detectorResponds( idx ) ) continue;
 
@@ -994,7 +994,8 @@ void ThlScan::EqualizationScan() {
 
 
                     // Check quality
-                    if ( _spidrdaq->lostCountFrame() != 0 ) { // The total number of lost packets/pixels detected in the current frame
+                    FrameSet *frameSet = _spidrdaq->getFrameSet();
+                    if  (frameSet->pixelsLost() != 0 ) { // The total number of lost packets/pixels detected in the current frame
                         // schedule a bad frame.  Don't 'continue' the loop or release frame just yet !
                         qDebug() << "bad frame, thl: " << _thlItr;
                         doReadFrames[framesCntr] = false;
@@ -1006,7 +1007,6 @@ void ThlScan::EqualizationScan() {
 
                         int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
                         // Go through all chips avoiding those not present
-                        FrameSet *frameSet = _spidrdaq->getFrameSet();
                         for ( int idx = 0 ; idx < nChips ; idx++ ) {
 
                             if ( ! _mpx3gui->getConfig()->detectorResponds( idx ) ) continue;
