@@ -59,16 +59,6 @@ public:
 
   uint64_t packets = 0, frames = 0;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wfloat-conversion"
-  const int packets_per_frame = ceil(106560. / double(max_packet_size));
-/* Packets per frame = number of bytes without network headers (106560) for
-    one frame (one chip) for that acquisition (typically 1/4 of the final
-    image), divided by the MTU (9000 bytes).
-   Henk seems to think that this changes size even though it shouldn't unless
-    the link is lossy which it isn't obviously...*/
-#pragma GCC diagnostic pop
-
   FrameSetManager *getFrameSetManager() { return fsm; }
   uint64_t last_frame_number = 0;
 
@@ -76,18 +66,6 @@ private:
   unsigned int inet_addr(const char *str);
   bool initSocket(const char *inetIPAddr = "");
   bool initFileDescriptorsAndBindToPorts(int UDP_Port);
-  uint64_t calculateNumberOfFrames(uint64_t packets, int number_of_chips,
-                                   int packets_per_frame);
-  void printDebuggingOutput(uint64_t packets, uint64_t frames, time_point begin,
-                            uint64_t nr_of_triggers);
-  void printEndOfRunInformation(uint64_t frames, uint64_t packets,
-                                time_point begin, uint64_t triggers,
-                                int trig_length_us, int trig_deadtime_us,
-                                bool readoutMode_sequential);
-  void doEndOfRunTests(int number_of_chips, uint64_t pMID, uint64_t pSOR,
-                       uint64_t pEOR, uint64_t pSOF, uint64_t pEOF,
-                       uint64_t iMID, uint64_t iSOF, uint64_t iEOF,
-                       uint64_t def);
 
   std::shared_ptr<spdlog::logger> console;
 

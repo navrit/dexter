@@ -41,14 +41,6 @@ void UdpReceiver::run() {
 
   time_point begin = steady_clock::now();
 
-  int ret = 1;
-  //int tmp = 0;
-
-  printDebuggingOutput(
-      packets,
-      calculateNumberOfFrames(packets, config.number_of_chips, packets_per_frame),
-      begin, config.nr_of_triggers);
-
   int timeout_ms = int((timeout_us+0.5)/1000.); //! Round up
   spdlog::get("console")->debug("Poll timeout = {} us = {} ms", timeout_us, timeout_ms);
 
@@ -56,11 +48,7 @@ void UdpReceiver::run() {
 
   do {
 
-    do
-       ret = epoll_wait(epfd, events, 1024, timeout_ms);
-    while (ret == -1 && errno == EINTR); //! While not failed AND last error is "Interrupted system call"
-
-    //! TODO: THESE ret VARIABLES ARE MESSED UP NOW
+    int ret = epoll_wait(epfd, events, 1024, timeout_ms);
 
     // Success
     if (ret > 0) {
@@ -86,41 +74,8 @@ void UdpReceiver::run() {
           frameAssembler[i]->onEvent(inputQueues[i]);
       }
 
-      frames =
-          calculateNumberOfFrames(packets, config.number_of_chips, packets_per_frame);
-
-      if (frames == config.nr_of_triggers) {
-        //! This can never be triggered when it should if the emulator is
-        //! running and not pinned to a different physical CPU core than this
-        //! process.
-
-        uint64_t pSOR = 0, pEOR = 0, pSOF = 0, pEOF = 0, pMID = 0, iSOF = 0,
-                 iMID = 0, iEOF = 0, def = 0;
-        for (int i = 0; i < config.number_of_chips; ++i) {
-          pSOR += frameAssembler[i]->pSOR;
-          pEOR += frameAssembler[i]->pEOR;
-          pSOF += frameAssembler[i]->pSOF;
-          pEOF += frameAssembler[i]->pEOF;
-          pMID += frameAssembler[i]->pMID;
-          iSOF += frameAssembler[i]->iSOF;
-          iMID += frameAssembler[i]->iMID;
-          iEOF += frameAssembler[i]->iEOF;
-          def += frameAssembler[i]->def;
-        }
-
-        printDebuggingOutput(packets, frames, begin, config.nr_of_triggers);
-        printEndOfRunInformation(frames, packets, begin, config.nr_of_triggers,
-                                 config.trig_length_us, config.trig_deadtime_us,
-                                 config.readoutMode_sequential);
-        doEndOfRunTests(config.number_of_chips, pMID, pSOR, pEOR, pSOF, pEOF, iMID,
-                        iSOF, iEOF, def);
-
-        finished = true; //! Poll loop exit condition
-      } else {
-        printDebuggingOutput(packets, frames, begin, config.nr_of_triggers);
-      }
-    } else if (ret == -1) {
-      //! An error occurred, never actually seen this triggered
+    } else if (ret == -1 && errno != EINTR) {
+      spdlog::get("console")->error("epoll_wait: ret = {}", ret);
     }
   } while (!finished);
 }
@@ -129,9 +84,7 @@ int UdpReceiver::set_scheduler() {
   int policy;
   struct sched_param sp = {.sched_priority = 99};
   struct timespec tp;
-  int ret;
-
-  ret = sched_setscheduler(0, SCHED_FIFO, &sp);
+  int ret = sched_setscheduler(0, SCHED_FIFO, &sp);
 
   if (ret == -1) {
     spdlog::get("console")->error("Sched_setscheduler, ret = {}", ret);
@@ -301,130 +254,4 @@ bool UdpReceiver::initFileDescriptorsAndBindToPorts(int UDP_Port) {
     }
   }
   return true;
-}
-
-uint64_t UdpReceiver::calculateNumberOfFrames(uint64_t packets,
-                                                   int number_of_chips,
-                                                   int packets_per_frame) {
-  return uint64_t(packets / uint64_t(number_of_chips) /
-                  uint64_t(packets_per_frame));
-}
-
-void UdpReceiver::printDebuggingOutput(uint64_t packets, uint64_t frames,
-                                            time_point begin,
-                                            uint64_t nr_of_triggers) {
-  // Some debugging output during a run
-  // Print every 2%
-
-  uint number_of_prints = 50;
-
-  if ((frames % (nr_of_triggers / number_of_prints) == 0) &&
-      (frames != last_frame_number)) {
-    last_frame_number = frames;
-    time_point end = steady_clock::now();
-    auto t = std::chrono::duration_cast<us>(end - begin).count();
-
-    spdlog::get("console")->info(
-        "{:>10}/{:<10} {:>4}%  {:>.1f}s {:>10} pkts", frames, nr_of_triggers,
-        float(frames * 100. / nr_of_triggers), t / 1E6, packets);
-  }
-  return;
-}
-
-void UdpReceiver::printEndOfRunInformation(
-    uint64_t frames, uint64_t packets, time_point begin, uint64_t nr_of_triggers,
-    int trig_length_us, int trig_deadtime_us, bool readoutMode_sequential) {
-  spdlog::get("console")->info("Frames processed = {}", frames);
-  steady_clock::time_point end = steady_clock::now();
-  auto t = std::chrono::duration_cast<ns>(end - begin).count();
-  spdlog::get("console")->info("Time to process frames = {} μs = {} s", t / 1E3,
-                               t / 1E9);
-  float time_per_frame = float(t) / nr_of_triggers / 1E6;
-  float processing_overhead = -1;
-  if (readoutMode_sequential) {
-    processing_overhead = 1E3 * ((float(t / 1E3) / nr_of_triggers) -
-                                 trig_length_us - trig_deadtime_us);
-  } else {
-    // std::cout << "\nt = " << t << " triggers = " << nr_of_triggers << "
-    // cont_freq = " << continuousRW_frequency << " _ " << (double(t) / 1E3 /
-    // double(nr_of_triggers)) << " _ " << (1E6 *
-    // (1/double(continuousRW_frequency))) << "\n";
-    processing_overhead = 1E3 * ((double(t) / 1E3 / double(nr_of_triggers)) -
-                                 (1E6 * (1 / double(config.continuousRW_frequency))));
-  }
-  spdlog::get("console")->info("Time per frame = {} ms", time_per_frame);
-  if (processing_overhead > int(1E6)) {
-    spdlog::get("console")->error("Processing overhead = {} ms",
-                                  processing_overhead / int(1E6));
-  } else if (processing_overhead > int(1E3)) {
-    spdlog::get("console")->warn("Processing overhead = {} us",
-                                 processing_overhead / int(1E3));
-  } else {
-    spdlog::get("console")->info("Processing overhead = {} ns",
-                                 processing_overhead);
-  }
-  spdlog::get("console")->info("Packets received = {}", packets);
-}
-
-void UdpReceiver::doEndOfRunTests(int number_of_chips, uint64_t pMID,
-                                       uint64_t pSOR, uint64_t pEOR,
-                                       uint64_t pSOF, uint64_t pEOF,
-                                       uint64_t iMID, uint64_t iSOF,
-                                       uint64_t iEOF, uint64_t def) {
-  spdlog::get("console")->debug("Per chip packet statistics and tests:");
-  spdlog::get("console")->debug(
-      "----------------------------------------------------------------");
-  spdlog::get("console")->debug("{:<12} {:<12} {:<12} {:<12} {:<12}", "pMID",
-                                "pSOR", "pEOR", "pSOF", "pEOF");
-  spdlog::get("console")->debug("{:<12} {:<12} {:<12} {:<12} {:<12}",
-                                pMID / number_of_chips, pSOR / number_of_chips,
-                                pEOR / number_of_chips, pSOF / number_of_chips,
-                                pEOF / number_of_chips);
-
-  spdlog::get("console")->debug("{:<12} {:<12} {:<12} {:<12}", "iSOF", "iMID",
-                                "iEOF", "Def.");
-  spdlog::get("console")->debug("{:<12} {:<12} {:<12} {:<12}",
-                                iSOF / number_of_chips, iMID / number_of_chips,
-                                iEOF / number_of_chips, def / number_of_chips);
-
-  if (pSOR != pEOR) {
-    spdlog::get("console")->warn("[FAIL]\tpSOR != pEOR; {} != {}", pSOR, pEOR);
-  } else {
-    spdlog::get("console")->debug("[PASS]\tpSOR == pEOR");
-  }
-  if (pSOF != pEOF) {
-    spdlog::get("console")->warn("[FAIL]\tpSOF != pEOF; {} != {}", pSOF, pEOF);
-  } else {
-    spdlog::get("console")->debug("[PASS]\tpSOF == pEOF");
-  }
-  if (iEOF - iSOF != 0) {
-    spdlog::get("console")->warn(
-        "[FAIL]\tiEOF - iSOF != 0; {} - {} == {}", iEOF, iSOF,
-        (iEOF - iSOF));
-  } else {
-    spdlog::get("console")->debug("[PASS]\tiEOF - iSOF == 0");
-  }
-  if (iMID % 6 != 0) {
-    spdlog::get("console")->warn("[FAIL]\t iMID%%6 != 0; {} %% 6 != 0", iMID);
-  } else {
-    spdlog::get("console")->debug("[PASS] \t iMID%6 == 0");
-  }
-  if (pSOF / number_of_chips != config.nr_of_triggers ||
-      pEOF / number_of_chips != config.nr_of_triggers ||
-      iSOF / number_of_chips != config.nr_of_triggers ||
-      iEOF / number_of_chips != config.nr_of_triggers) {
-    spdlog::get("console")->warn(
-        "[FAIL]\tnr_of_triggers*number_of_chips != pSOF, pEOF, iSOF, iEOF; {} "
-        "!= {}, {}, {} or {}",
-        config.nr_of_triggers, pSOF / number_of_chips, pEOF / number_of_chips,
-        iSOF / number_of_chips, iEOF / number_of_chips);
-  } else {
-    // spdlog::get("console")->debug("[PASS]\tnr_of_triggers ==
-    // pSOF/number_of_chips,\n\t\t\t\tpEOF/number_of_chips,\n\t\t\t\tiSOF/number_of_chips,\n\t\t\t\tiEOF/number_of_chips");
-  }
-  if (def != 0) {
-    spdlog::get("console")->warn("[FAIL]\tdef != 0; def == {}", def);
-  } else {
-    spdlog::get("console")->debug("[PASS]\tdef == 0");
-  }
 }
