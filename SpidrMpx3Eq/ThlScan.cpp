@@ -510,7 +510,7 @@ void ThlScan::FineTuning() {
                             _pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes * _nchipsX*_nchipsY, _thlItr );
                         }
 
-                        _spidrdaq->releaseFrame(); // Release frame
+                        _spidrdaq->releaseFrame(frameSet); // Release frame
 
                         if ( doReadFrames ) {
                             FillAdjReactTHLHistory(); // Keep track of the <adj, reactTHL> pairs
@@ -1026,7 +1026,7 @@ void ThlScan::EqualizationScan() {
 
                     }
 
-                    _spidrdaq->releaseFrame();
+                    _spidrdaq->releaseFrame(frameSet);
 
                     if ( doReadFrames[framesCntr] ) {
 

@@ -276,7 +276,7 @@ void DataTakingThread::run() {
             //! --------------------------
 
             // Release frame
-            spidrdaq->releaseFrame();
+            spidrdaq->releaseFrame(fs);
 
             // The consumer thread is expecting N chips to be loaded
             // It can happen that the information from 1 or more chips

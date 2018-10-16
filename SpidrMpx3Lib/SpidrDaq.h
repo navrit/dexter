@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "FrameSet.h"
+#include "FrameSetManager.h"
 
 class SpidrController;
 class ReceiverThread;
@@ -54,10 +55,10 @@ class MY_LIB_API SpidrDaq
   int       numberOfDevices     ( ) { return (int) _frameReceivers.size(); }
   bool      hasFrame            ( unsigned long timeout_ms = 0 );
   FrameSet  *getFrameSet           ();
-  void      releaseFrame        ( );
-  int       frameShutterCounter ( int index = -1 );
+  void      releaseFrame        (FrameSet *fs = nullptr);
+  //int       frameShutterCounter ( int index = -1 );
   //bool      isCounterhFrame     ( int index = -1 );
-  int       frameFlags          ( int index );
+  //int       frameFlags          ( int index );
   //long long frameTimestamp      ( );
   //long long frameTimestamp      ( int buf_i );        // For debugging
   //long long frameTimestampSpidr ( );
@@ -91,6 +92,7 @@ class MY_LIB_API SpidrDaq
   //int  pixelsLostCountFrame     ( int index, int buf_i ); // For debugging
 
  private:
+  FrameSetManager frameSetManager;
   std::vector<ReceiverThread *> _frameReceivers;
   FramebuilderThread *_frameBuilder;
 

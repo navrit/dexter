@@ -187,32 +187,20 @@ void FramebuilderThread::processFrame()
 
 bool FramebuilderThread::hasFrame( unsigned long timeout_ms )
 {
-  if (timeout_ms == 0) return _with_client >= 0;
-
-  // For timeout_ms > 0
-  QMutexLocker lock(&_mutex);
-  if (_with_client < 0)
-    _frameAvailableCondition.wait( &_mutex, timeout_ms );
-  return _with_client >= 0;
+    return ! pFrameSetManager->isEmpty();
 }
 
 // ----------------------------------------------------------------------------
 
 FrameSet *FramebuilderThread::frameData() {
-    int mine = _with_client;
-
-  return mine >= 0 ? &frameSets[mine] : nullptr;
+    return pFrameSetManager->getFrameSet();
 }
 
 // ----------------------------------------------------------------------------
 
 
-void FramebuilderThread::releaseFrame()
-{
-  _mutex.lock();
-  _with_client = -1;
-  _outputCondition.wakeOne();
-  _mutex.unlock();
+void FramebuilderThread::releaseFrame(FrameSet * fs) {
+    pFrameSetManager->releaseFrameSet(fs);
 }
 
 // ----------------------------------------------------------------------------
@@ -236,27 +224,6 @@ double FramebuilderThread::frameTimestampDouble()
 i64 FramebuilderThread::frameTimestampSpidr()
 {
   return _timeStampSpidr;
-}
-
-// ----------------------------------------------------------------------------
-
-int FramebuilderThread::frameShutterCounter( int index )
-{
-  if( index < 0 )
-    {
-      // Return the shutter counter if identical for each device,
-      // otherwise return -1
-      int cnt = (int) _spidrHeader[0].shutterCnt;
-      for( u32 i=1; i<_n; ++i )
-        if( cnt != (int) _spidrHeader[i].shutterCnt )
-          return -1;
-      return byteswap( cnt );
-    }
-  else
-    {
-      index &= 0x3;
-      return byteswap( (int) _spidrHeader[index].shutterCnt );
-    }
 }
 
 // ----------------------------------------------------------------------------
@@ -378,7 +345,6 @@ std::string FramebuilderThread::errString()
 
 int FramebuilderThread::mpx3RawToPixel( unsigned char *raw_bytes,
                                         int            nbytes,
-                                        FrameSet      *frameSet,
                                         int            chipIndex)
 {
   return 0;

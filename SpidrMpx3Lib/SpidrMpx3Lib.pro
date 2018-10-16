@@ -44,7 +44,8 @@ unix {
 
 SOURCES += SpidrController.cpp \
     ChipFrame.cpp \
-    FrameSet.cpp
+    FrameSet.cpp \
+    FrameSetManager.cpp
 SOURCES += SpidrDaq.cpp
 SOURCES += ReceiverThread.cpp
 SOURCES += ReceiverThreadC.cpp
@@ -54,7 +55,8 @@ SOURCES += FramebuilderThreadC.cpp
 HEADERS += SpidrController.h \
     ChipFrame.h \
     FrameSet.h \
-    OMR.h
+    OMR.h \
+    FrameSetManager.h
 HEADERS += mpx3dacsdescr.h
 HEADERS += mpx3defs.h
 HEADERS += spidrmpx3cmds.h

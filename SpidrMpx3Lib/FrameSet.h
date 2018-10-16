@@ -11,9 +11,9 @@ public:
     FrameSet();
     ~FrameSet();
     void clear();
+    ChipFrame* takeChipFrame(int chipIndex, bool counterH);
     void putChipFrame(int chipIndex, ChipFrame * cf);
     bool isComplete();
-    bool isEmpty();
     void copyTo32(int chipIndex, uint32_t *dest);
     void copyTo32(uint32_t *dest);
     int pixelsLost();

@@ -39,11 +39,6 @@ void FramebuilderThreadC::processFrame()
   unsigned int i;
   if( !_flush && _decode )
     {
-      // If necessary wait until the previous frame has been consumed
-      _mutex.lock();
-      if( _under_construction == _with_client ) _outputCondition.wait( &_mutex );
-      _mutex.unlock();
-
 
       if( _abortFrame ) return; // Bail out
 
@@ -61,7 +56,6 @@ void FramebuilderThreadC::processFrame()
                                        &FramebuilderThreadC::mpx3RawToPixel,
                                        _receivers[i]->frameData(),
                                        _receivers[i]->dataSizeFrame(),
-                                       &frameSets[_under_construction],
                                        i);
           // Wait for threads to finish and get the results...
           int8_t deltas[4];
@@ -114,7 +108,6 @@ void FramebuilderThreadC::processFrame()
           for( i=0; i<_n; ++i )
               this->mpx3RawToPixel( _receivers[i]->frameData(),
                                     _receivers[i]->dataSizeFrame(),
-                                    &frameSets[_under_construction],
                                     i);
         }
 
@@ -130,15 +123,6 @@ void FramebuilderThreadC::processFrame()
         }
 
       ++_framesProcessed;
-      if (frameSets[_under_construction].isComplete()) {
-          _mutex.lock();
-          int temp = _under_construction;
-          _under_construction = 1 - temp;
-          _with_client = temp;
-          //if( _callbackFunc ) _callbackFunc( _id );
-          _frameAvailableCondition.wakeOne();
-          _mutex.unlock();
-        }
     }
 }
 
@@ -146,7 +130,6 @@ void FramebuilderThreadC::processFrame()
 
 int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
                                          int            nbytes,
-                                         FrameSet	   *frameSet,
                                          int            chipIndex)
 {
   // Translate Compact-SPIDR MPX3 data stream
@@ -164,7 +147,7 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
   int  i, j;
   uint16_t *temp2 = nullptr;
   int frameId = -1;
-  int infoIndex, chipId;
+  int infoIndex, chipId = 0;
   OMR omr;
   for( i=0; i<nbytes/sizeof(u64); ++i, ++pixelpkt )
     {
@@ -252,36 +235,38 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
           if (type == PIXEL_DATA_EOF) {
               frame->frameId = frameId;
               frame->pixelsLost = _receivers[chipIndex]->pixelsLostFrame();
-              frameSet->putChipFrame(chipIndex, frame);
+              pFrameSetManager->putChipFrame(chipIndex, frame);
           }
 
           break;
 
           case INFO_HEADER_SOF:
-            infoIndex = 0; break;
+            infoIndex = 0; chipId = 0; break;
           case INFO_HEADER_MID:
             if (infoIndex == 4)
               chipId = int((pixelword & 0xffffffff));
-            else if (infoIndex == 5 && chipId != 0) {
+            else if (infoIndex == 5 && chipId > 1000) {
               omr.setHighR(pixelword & 0xffff);
             }
             infoIndex++; break;
           case INFO_HEADER_EOF:
-            omr.setLowR(pixelword & 0xffffffff);
-            switch (omr.getCountL()) {
-              case 0: counter_depth = 1; break;
-              case 1: counter_depth = 6; break;
-              case 2: counter_depth = 12; break;
-              case 3: counter_depth = 24; break;
+            if (chipId > 1000) {
+                omr.setLowR(pixelword & 0xffffffff);
+                switch (omr.getCountL()) {
+                  case 0: counter_depth = 1; break;
+                  case 1: counter_depth = 6; break;
+                  case 2: counter_depth = 12; break;
+                  case 3: counter_depth = 24; break;
+                }
+                //qDebug() << " depth " << counter_depth << " mode " << omr.getMode();
+                counter_bits = counter_depth == 24 ? 12 : counter_depth;
+                pix_per_word = 60 / counter_bits;
+                pixel_mask = (1 << counter_bits) - 1;
+                //endCursor = MPX_PIXEL_COLUMNS - (MPX_PIXEL_COLUMNS % pix_per_word);
+                //assert (frame == nullptr);
+                frame = pFrameSetManager->newChipFrame(chipIndex);
+                frame->omr = omr;
             }
-            //qDebug() << " depth " << counter_depth << " mode " << omr.getMode();
-            counter_bits = counter_depth == 24 ? 12 : counter_depth;
-            pix_per_word = 60 / counter_bits;
-            pixel_mask = (1 << counter_bits) - 1;
-            //endCursor = MPX_PIXEL_COLUMNS - (MPX_PIXEL_COLUMNS % pix_per_word);
-            //assert (frame == nullptr);
-            frame = new ChipFrame();
-            frame->omr = omr;
             break;
 
         default:

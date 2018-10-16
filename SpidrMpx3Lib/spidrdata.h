@@ -43,7 +43,6 @@ typedef struct SpidrHeader
 {
   // NB: copy of header produced by the SPIDR module; values are big-endian
   u16 triggerCnt;
-  u16 shutterCnt;
   u16 sequenceNr;
   u16 timeLo;
   u16 timeMi;

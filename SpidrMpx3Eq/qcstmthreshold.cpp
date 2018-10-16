@@ -635,7 +635,7 @@ void CustomScanThread::run() {
             }
 
             // Release
-            spidrdaq->releaseFrame();
+            spidrdaq->releaseFrame(frameSet);
 
 
             // Report to heatmap

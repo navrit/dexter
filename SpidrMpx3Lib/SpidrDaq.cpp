@@ -203,6 +203,8 @@ void SpidrDaq::init( int             *ipaddr,
   } else
     _frameBuilder = new FramebuilderThread( _frameReceivers );
 
+  _frameBuilder->pFrameSetManager = &frameSetManager;
+
   // Let the first receiver notify the file writer about new data
   if( _frameReceivers.size() > 0 )
     _frameReceivers[0]->setFramebuilder( _frameBuilder );
@@ -325,36 +327,21 @@ void SpidrDaq::setLutEnable( bool enable )
 
 bool SpidrDaq::hasFrame( unsigned long timeout_ms )
 {
-  return _frameBuilder->hasFrame( timeout_ms );
+  return frameSetManager.wait(timeout_ms);
 }
 
 // ----------------------------------------------------------------------------
 
 FrameSet *SpidrDaq::getFrameSet()
 {
-  return _frameBuilder->frameData();
+  return frameSetManager.getFrameSet();
 }
 
 // ----------------------------------------------------------------------------
 
-void SpidrDaq::releaseFrame()
+void SpidrDaq::releaseFrame(FrameSet *fs)
 {
-  _frameBuilder->releaseFrame();
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::frameShutterCounter( int index )
-{
-  return _frameBuilder->frameShutterCounter( index );
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::frameFlags( int index )
-{
-  if( index < 0 || index >= (int) _frameReceivers.size() ) return -1;
-  return _frameReceivers[index]->frameFlags();
+  frameSetManager.releaseFrameSet(fs);
 }
 
 // ----------------------------------------------------------------------------

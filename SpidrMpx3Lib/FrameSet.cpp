@@ -14,8 +14,9 @@ void FrameSet::clear() {
     for (int i = 0; i < number_of_chips; i++)
       for (int j = 0; j < 2; j++)
         if (frame[j][i] != nullptr) {
-            delete frame[j][i];
-            frame[j][i] = nullptr;
+            //delete frame[j][i];
+            //frame[j][i] = nullptr;
+            frame[j][i]->clear();
         }
 }
 
@@ -30,10 +31,14 @@ bool FrameSet::isComplete() {
     return true;
 }
 
-bool FrameSet::isEmpty() {
-    for (int i = 0; i < number_of_chips; i++)
-        if (frame[0][i] != nullptr) return false;
-    return true;
+ChipFrame* FrameSet::takeChipFrame(int chipIndex, bool counterH) {
+    assert (chipIndex >= 0 && chipIndex < number_of_chips);
+    ChipFrame **spot = &(frame[counterH ? 1 : 0][chipIndex]);
+    ChipFrame *result = *spot;
+    if (result != nullptr) {
+        *spot = nullptr;
+    }
+    return result;
 }
 
 void FrameSet::putChipFrame(int chipIndex, ChipFrame *cf) {
