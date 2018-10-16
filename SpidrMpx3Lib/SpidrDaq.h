@@ -15,13 +15,14 @@
 
 #include <string>
 #include <vector>
+#include <thread>
 
 #include "FrameSet.h"
 #include "FrameSetManager.h"
 
 class SpidrController;
-class ReceiverThread;
-class FramebuilderThread;
+class UdpReceiver;
+class FrameAssembler;
 //class QCoreApplication;
 
 typedef void (*CallbackFunc)( int id );
@@ -52,7 +53,7 @@ class MY_LIB_API SpidrDaq
   //bool closeFile                ( );
 
   // Acquisition
-  int       numberOfDevices     ( ) { return (int) _frameReceivers.size(); }
+  //int       numberOfDevices     ( ) { return (int) _frameReceivers.size(); }
   bool      hasFrame            ( unsigned long timeout_ms = 0 );
   FrameSet  *getFrameSet           ();
   void      releaseFrame        (FrameSet *fs = nullptr);
@@ -92,9 +93,10 @@ class MY_LIB_API SpidrDaq
   //int  pixelsLostCountFrame     ( int index, int buf_i ); // For debugging
 
  private:
-  FrameSetManager frameSetManager;
-  std::vector<ReceiverThread *> _frameReceivers;
-  FramebuilderThread *_frameBuilder;
+  FrameSetManager *frameSetManager;
+  UdpReceiver * udpReceiver;
+  FrameAssembler *_frameBuilder;
+  std::thread th;
 
   // Functions used in c'tors
   void getIdsPortsTypes( SpidrController *spidrctrl,

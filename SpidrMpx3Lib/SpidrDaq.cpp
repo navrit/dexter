@@ -2,10 +2,8 @@
 
 #include "SpidrController.h"
 #include "SpidrDaq.h"
-#include "ReceiverThread.h"
-#include "ReceiverThreadC.h"
-#include "FramebuilderThread.h"
-#include "FramebuilderThreadC.h"
+#include "UdpReceiver.h"
+#include "FrameAssembler.h"
 
 // Version identifier: year, month, day, release number
 
@@ -150,79 +148,11 @@ void SpidrDaq::init( int             *ipaddr,
 		     int             *types,
 		     SpidrController *spidrctrl )
 {
-  _frameBuilder = 0;
-
-  ReceiverThread *recvr;
-
-  bool is_cspidr = false;
-  if( spidrctrl )
-    is_cspidr = spidrctrl->isCompactSpidr();
-  
-  // Use ports[] to determine what's there, in case we want
-  // to start with default parameters (which includes ID=0)
-  if( ports[0] != 0 )
-    {
-      if( is_cspidr )
-	recvr = new ReceiverThreadC( ipaddr, ports[0] );
-      else
-	recvr = new ReceiverThread( ipaddr, ports[0] );
-      _frameReceivers.push_back( recvr );
+    udpReceiver = new UdpReceiver();
+    if (udpReceiver->initThread("", ports[0]) == true) {
+        th = udpReceiver->spawn();
     }
-  if( ports[1] != 0 )
-    {
-      if( is_cspidr )
-	recvr = new ReceiverThreadC( ipaddr, ports[1] );
-      else
-	recvr = new ReceiverThread( ipaddr, ports[1] );
-      _frameReceivers.push_back( recvr );
-    }
-  if( ports[2] != 0 )
-    {
-      if( is_cspidr )
-	recvr = new ReceiverThreadC( ipaddr, ports[2] );
-      else
-	recvr = new ReceiverThread( ipaddr, ports[2] );
-      _frameReceivers.push_back( recvr );
-    }
-  if( ports[3] != 0 )
-    {
-      if( is_cspidr )
-	recvr = new ReceiverThreadC( ipaddr, ports[3] );
-      else
-	recvr = new ReceiverThread( ipaddr, ports[3] );
-      _frameReceivers.push_back( recvr );
-    }
-
-  // Create the file writer thread, providing it with a link to
-  // the readout threads
-  if( is_cspidr ) {
-    _frameBuilder = new FramebuilderThreadC( _frameReceivers );
-    int fwVersion;
-    spidrctrl->getFirmwVersion(&fwVersion);
-    _frameBuilder->setLutBug(fwVersion < 0x18100200);
-  } else
-    _frameBuilder = new FramebuilderThread( _frameReceivers );
-
-  _frameBuilder->pFrameSetManager = &frameSetManager;
-
-  // Let the first receiver notify the file writer about new data
-  if( _frameReceivers.size() > 0 )
-    _frameReceivers[0]->setFramebuilder( _frameBuilder );
-
-  // Provide the receivers with the possibility to control the module,
-  // for example to set and clear a busy/inhibit/frame-throttle signal
-  if( spidrctrl )
-    for( unsigned int i=0; i<_frameReceivers.size(); ++i )
-      _frameReceivers[i]->setController( spidrctrl );
-
-  // Provide the framebuilder with some info about the system
-  // for inclusion in the event and device headers (when writing to file):
-
-  // IP address and port numbers
-  _frameBuilder->setAddrInfo( ipaddr, ports );
-
-  // The device IDs and types
-  _frameBuilder->setDeviceIdsAndTypes( ids, types );
+    frameSetManager = udpReceiver->getFrameSetManager();
 }
 
 // ----------------------------------------------------------------------------
@@ -236,6 +166,7 @@ SpidrDaq::~SpidrDaq()
 
 void SpidrDaq::stop()
 {
+    /*
   if( _frameBuilder )
     {
       _frameBuilder->stop();
@@ -248,6 +179,7 @@ void SpidrDaq::stop()
       delete _frameReceivers[i];
     }
   _frameReceivers.clear();
+  */
 }
 
 // ----------------------------------------------------------------------------
@@ -263,9 +195,9 @@ int SpidrDaq::classVersion()
 
 std::string SpidrDaq::ipAddressString( int index )
 {
-  if( index < 0 || index >= (int) _frameReceivers.size() )
+  //if( index < 0 || index >= (int) _frameReceivers.size() )
     return std::string( "" );
-  return _frameReceivers[index]->ipAddressString();
+  //return _frameReceivers[index]->ipAddressString();
 }
 
 // ----------------------------------------------------------------------------
@@ -273,6 +205,7 @@ std::string SpidrDaq::ipAddressString( int index )
 std::string SpidrDaq::errorString()
 {
   std::string str;
+  /*
   for( unsigned int i=0; i<_frameReceivers.size(); ++i )
     {
       if( !str.empty() && !_frameReceivers[i]->errString().empty() )
@@ -287,19 +220,19 @@ std::string SpidrDaq::errorString()
   for( unsigned int i=0; i<_frameReceivers.size(); ++i )
     _frameReceivers[i]->clearErrString();
   _frameBuilder->clearErrString();
-
+ */
   return str;
 }
 
 // ----------------------------------------------------------------------------
 
 bool SpidrDaq::hasError()
-{
+{ /*
   for( unsigned int i=0; i<_frameReceivers.size(); ++i )
     if( !_frameReceivers[i]->errString().empty() )
       return true;
   if( !_frameBuilder->errString().empty() )
-    return true;
+    return true; */
   return false;
 }
 
@@ -308,17 +241,17 @@ bool SpidrDaq::hasError()
 // ----------------------------------------------------------------------------
 
 void SpidrDaq::setPixelDepth( int nbits )
-{
+{ /*
   for( unsigned int i=0; i<_frameReceivers.size(); ++i )
     _frameReceivers[i]->setPixelDepth( nbits );
-  _frameBuilder->setPixelDepth( nbits );
+  _frameBuilder->setPixelDepth( nbits ); */
 }
 
 // ----------------------------------------------------------------------------
 
 void SpidrDaq::setLutEnable( bool enable )
 {
-  _frameBuilder->setLutEnable( enable );
+  //_frameBuilder->setLutEnable( enable );
 }
 
 // ----------------------------------------------------------------------------
@@ -327,21 +260,21 @@ void SpidrDaq::setLutEnable( bool enable )
 
 bool SpidrDaq::hasFrame( unsigned long timeout_ms )
 {
-  return frameSetManager.wait(timeout_ms);
+  return frameSetManager->wait(timeout_ms);
 }
 
 // ----------------------------------------------------------------------------
 
 FrameSet *SpidrDaq::getFrameSet()
 {
-  return frameSetManager.getFrameSet();
+  return frameSetManager->getFrameSet();
 }
 
 // ----------------------------------------------------------------------------
 
 void SpidrDaq::releaseFrame(FrameSet *fs)
 {
-  frameSetManager.releaseFrameSet(fs);
+  frameSetManager->releaseFrameSet(fs);
 }
 
 // ----------------------------------------------------------------------------
@@ -351,8 +284,8 @@ void SpidrDaq::releaseFrame(FrameSet *fs)
 int SpidrDaq::framesCount()
 {
   int count = 0;
-  for( int i=0; i<(int) _frameReceivers.size(); ++i )
-    count += _frameReceivers[i]->framesReceived();
+  //for( int i=0; i<(int) _frameReceivers.size(); ++i )
+    //count += _frameReceivers[i]->framesReceived();
   return count;
 }
 
@@ -361,8 +294,8 @@ int SpidrDaq::framesCount()
 int SpidrDaq::framesLostCount()
 {
   int count = 0;
-  for( int i=0; i<(int) _frameReceivers.size(); ++i )
-    count += _frameReceivers[i]->framesLost();
+  //for( int i=0; i<(int) _frameReceivers.size(); ++i )
+    //count += _frameReceivers[i]->framesLost();
   return count;
 }
 
@@ -371,8 +304,8 @@ int SpidrDaq::framesLostCount()
 int SpidrDaq::lostCount()
 {
   int count = 0;
-  for( int i=0; i<(int) _frameReceivers.size(); ++i )
-    count += _frameReceivers[i]->lostCount();
+  //for( int i=0; i<(int) _frameReceivers.size(); ++i )
+    //count += _frameReceivers[i]->lostCount();
   return count;
 }
 
@@ -380,6 +313,6 @@ int SpidrDaq::lostCount()
 
 void SpidrDaq::resetLostCount()
 {
-  for( int i=0; i<(int) _frameReceivers.size(); ++i )
-    _frameReceivers[i]->resetLost();
+  //for( int i=0; i<(int) _frameReceivers.size(); ++i )
+    //_frameReceivers[i]->resetLost();
 }

@@ -97,8 +97,8 @@ void FrameSetManager::putChipFrame(int chipIndex, ChipFrame* cf) {
 ChipFrame *FrameSetManager::newChipFrame(int chipIndex) {
     std::cout << " newChipFrame for " << chipIndex << " head " << head_ << std::endl;
     std::lock_guard<std::mutex> lock(headMut);
-    //FrameSet *dest = &fs[head_ & FSM_MASK];
-    //ChipFrame *frame = dest->takeChipFrame(chipIndex, expectCounterH);
-    //return frame == nullptr ? new ChipFrame() : frame;
-    return  new ChipFrame();
+    FrameSet *dest = &fs[head_ & FSM_MASK];
+    ChipFrame *frame = dest->takeChipFrame(chipIndex, expectCounterH);
+    return frame == nullptr ? new ChipFrame() : frame;
+    //return  new ChipFrame();
 }
