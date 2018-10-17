@@ -39,20 +39,26 @@ void UdpReceiver::run() {
 
   spdlog::get("console")->debug("Run started");
 
-  time_point begin = steady_clock::now();
-
   int timeout_ms = int((timeout_us+0.5)/1000.); //! Round up
   spdlog::get("console")->debug("Poll timeout = {} us = {} ms", timeout_us, timeout_ms);
 
   struct epoll_event events[1024];
 
+  long poll_count = 0, ev_count = 0, sum_p = 0, sum_r = 0, sum_a = 0;
   do {
 
+    time_point begin = steady_clock::now();
+
     int ret = epoll_wait(epfd, events, 1024, timeout_ms);
+    time_point polled = steady_clock::now();
+    poll_count++;
+    sum_p += std::chrono::duration_cast<us>(polled - begin).count();
 
     // Success
     if (ret > 0) {
+        ev_count += ret;
       // An event on one of the fds has occurred.
+        time_point l0 = polled;
       for (int j = 0; j < ret; j++) {
           uint32_t etype = events[j].events;
           if (! (etype & EPOLLIN)) {
@@ -66,16 +72,29 @@ void UdpReceiver::run() {
              Assuming no packet loss, extra fragmentation or MTU changing size*/
           long received_size =
               recv(peer->fd, inputQueues[i].data, max_packet_size, 0);
+          time_point lr = steady_clock::now();
           inputQueues[i].chipIndex = i;
           inputQueues[i].size = received_size;
 
           ++packets; //! Count the number of packets received.
 
           frameAssembler[i]->onEvent(inputQueues[i]);
+          time_point la = steady_clock::now();
+
+          {
+              sum_r += std::chrono::duration_cast<us>(lr - l0).count();
+              sum_a += std::chrono::duration_cast<us>(la - lr).count();
+              l0 = la;
+          }
       }
 
     } else if (ret == -1 && errno != EINTR) {
       spdlog::get("console")->error("epoll_wait: ret = {}", ret);
+    }
+
+    if (poll_count == 1000) {
+      spdlog::get("console")->info("Polls {}, time {}, evts {}, rcv {}, ass {} ", poll_count, sum_p, ev_count, sum_r, sum_a);
+      poll_count = 0; ev_count = 0; sum_p = 0; sum_r = 0; sum_a = 0;
     }
   } while (!finished);
 }
