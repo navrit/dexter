@@ -388,6 +388,7 @@ private:
     int _srcAddr;
     int _nChips;
     bool _scanDescendant;
+    bool _stopEq = false;
 
     int **data = nullptr;
     unsigned *nx = nullptr, *ny = nullptr, nData = 0;

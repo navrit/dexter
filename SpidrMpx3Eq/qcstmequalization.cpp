@@ -120,7 +120,6 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     // TODO
     // These two buttons will come back as we progress improving the equalization
     _ui->_startEqAll->setVisible( false );
-    _ui->_stopEq->setVisible( false );
 
 }
 
@@ -1619,9 +1618,18 @@ void QCstmEqualization::ScanThreadFinished(){
     disconnect( _scans[_scanIndex-1], SIGNAL( finished() ), this, SLOT( ScanThreadFinished() ) );
     // Go to next step, except for fine tuning where I use the same previous scan
     _eqStatus++;
-    // Now revisit the equalization.
-    // It knows where to pick up.
-    StartEqualization( );
+
+    // 1) Now revisit the equalization. It knows where to pick up.
+    // 2) Handel when the equalization has been stopped by the user.
+    //    The thread will finish pematurely and then this function gets called.
+    if ( _stopEq ) {
+        // In this case do the big rewind.
+        qDebug() << "[INFO] Equalization stopped --> Rewind.";
+        _stopEq = false;
+        // Full rewind
+    } else {
+        StartEqualization( );
+    }
 }
 
 
@@ -2640,6 +2648,8 @@ void QCstmEqualization::ChangeStep(int step, bool uisetting) {
 }
 
 void QCstmEqualization::StopEqualization() {
+    qDebug() << "[INFO] attempting to stop the equalization ...";
+    _stopEq = true;
     emit stop_data_taking_thread();
 }
 

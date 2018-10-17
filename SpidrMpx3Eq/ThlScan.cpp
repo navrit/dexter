@@ -388,8 +388,8 @@ void ThlScan::FineTuning() {
 
                 for ( unsigned long devId = 0 ; devId < _workChipsIndx.size() ; devId++ ) {
                     if ( ! SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
-                            qDebug() << "[FAIL]\tCould not set equalisation mask";
-                            return;
+                        qDebug() << "[FAIL]\tCould not set equalisation mask";
+                        return;
                     }
                     nMasked += pmasked;
                 }
@@ -566,12 +566,16 @@ void ThlScan::FineTuning() {
 
     //------------------------------ Done --------------------------------------
     //! Now for the list of pixels which need rework, select the best adj value from the history
-    SelectBestAdjFromHistory( 10 );
+    if ( ! _stop ) {
 
-    //! Send the new configuration to the chip
-    for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
-        _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], false, false);
-        spidrcontrol->setInternalTestPulse(di, false);
+        SelectBestAdjFromHistory( 10 );
+
+        //! Send the new configuration to the chip
+        for ( int di = 0 ; di < (int)_workChipsIndx.size() ; di++ ) {
+            _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], false, false);
+            spidrcontrol->setInternalTestPulse(di, false);
+        }
+
     }
 
     //! Cleanup ----------------------------------------------------------------
@@ -851,7 +855,7 @@ void ThlScan::EqualizationScan() {
                 //qDebug() << "[INFO]\tSetting global L =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
             }
             if( _DAC_Disc_code == MPX3RX_DAC_DISC_H ) {
-              _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], 0x0, _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj);
+                _equalization->SetAllAdjustmentBits(spidrcontrol, _workChipsIndx[di], 0x0, _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj);
                 //qDebug() << "[INFO]\tSetting global H =  " << _equalization->GetSteeringInfo(_workChipsIndx[di])->globalAdj << endl;
             }
         } else if ( _adjType == __adjust_to_equalizationMatrix ) {
@@ -921,8 +925,8 @@ void ThlScan::EqualizationScan() {
             pmasked = 0;
             for ( unsigned int devId = 0 ; devId < _workChipsIndx.size() ; devId++ ) {
                 if ( ! SetEqualizationMask(spidrcontrol, _workChipsIndx[devId], _spacing, maskOffsetItr_x, maskOffsetItr_y, &pmasked) ) {
-                        qDebug() << "[FAIL]\tCould not set equalisation mask";
-                        return;
+                    qDebug() << "[FAIL]\tCould not set equalisation mask";
+                    return;
                 }
 
                 nMasked += pmasked;
@@ -959,15 +963,15 @@ void ThlScan::EqualizationScan() {
                 for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
                     //qDebug() << devId;
                     SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], _dac_code, _thlItr );
-//                    if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_0 ) {
-//                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_2, _thlItr );
-//                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_4, _thlItr );
-//                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_6, _thlItr );
-//                    } else if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_1 ) {
-//                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_3, _thlItr );
-//                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_5, _thlItr );
-//                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_7, _thlItr );
-//                    }
+                    //                    if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_0 ) {
+                    //                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_2, _thlItr );
+                    //                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_4, _thlItr );
+                    //                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_6, _thlItr );
+                    //                    } else if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_1 ) {
+                    //                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_3, _thlItr );
+                    //                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_5, _thlItr );
+                    //                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_7, _thlItr );
+                    //                    }
                 }
 
                 // flush the history of good/bad frames
@@ -976,13 +980,13 @@ void ThlScan::EqualizationScan() {
                 // See if there is a frame available.  I should get as many frames as triggers
                 int framesCntr = 0;
                 int timeOutTime = 100; //ms
-//                int timeOutTime =
-//                        _mpx3gui->getConfig()->getTriggerLength_ms()
-//                        +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
-//                        + 100; // 100ms extra
+                //                int timeOutTime =
+                //                        _mpx3gui->getConfig()->getTriggerLength_ms()
+                //                        +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
+                //                        + 100; // 100ms extra
 
-//                // Set a minimum. Even though the user doesn't have control of this in equalization. Safe to have it.
-//                if ( timeOutTime < 100 ) timeOutTime = 100;
+                //                // Set a minimum. Even though the user doesn't have control of this in equalization. Safe to have it.
+                //                if ( timeOutTime < 100 ) timeOutTime = 100;
 
                 // Start the trigger as configured
                 spidrcontrol->startAutoTrigger();
@@ -1186,7 +1190,7 @@ bool ThlScan::OutsideTargetRegion(int devId, int pix, double Nsigma) {
     return ( _pixelReactiveTHL[pix] < lowLim  ||
              _pixelReactiveTHL[pix] > highLim ||
              _pixelReactiveTHL[pix] < _equalization->GetNTriggers() // simply never responded
-           );
+             );
 }
 
 /**
@@ -1510,17 +1514,17 @@ int ThlScan::ShiftAdjustments(set<int> reworkSubset, set<int> activeMask) {
     }
 
     file_fineTuningStats << (changedAdj) << ", " <<
-                         (p)  << ", " <<
-                         (p0) << ", " <<
-                         (p1) << ", " <<
-                         (p2) << ", " <<
-                         (p3) << ", " <<
-                         (p4) << ", " <<
-                         (p5) << ", " <<
-                         (p6) << ", " <<
-                         (p7) << ", " <<
-                         (p8) << ", " <<
-                         (p9) << "\n";
+                            (p)  << ", " <<
+                            (p0) << ", " <<
+                            (p1) << ", " <<
+                            (p2) << ", " <<
+                            (p3) << ", " <<
+                            (p4) << ", " <<
+                            (p5) << ", " <<
+                            (p6) << ", " <<
+                            (p7) << ", " <<
+                            (p8) << ", " <<
+                            (p9) << "\n";
 
     return nPixelsNotInMask;
 }
