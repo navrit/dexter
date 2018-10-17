@@ -38,8 +38,6 @@ public:
   OMR omr;
 
   int chipIndex;
-  uint64_t pSOR = 0, pEOR = 0, pSOF = 0, pEOF = 0, pMID = 0, iSOF = 0, iMID = 0,
-           iEOF = 0, def = 0;
 
 private:
   FrameSetManager *fsm;

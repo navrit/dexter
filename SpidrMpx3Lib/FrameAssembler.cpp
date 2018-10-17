@@ -86,21 +86,16 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
 
     switch (type) {
     case PIXEL_DATA_SOF:
-      ++pSOF;
       row_counter = -1;
-      --pSOR;
       [[fallthrough]];
     case PIXEL_DATA_SOR:
-      ++pSOR;
       ++row_counter;
       ++rownr_SOR;
       assert (row_counter >= 0 && row_counter < 256);
       row = frame->getRow(row_counter);
       cursor = 0;
-      --pMID;
       [[fallthrough]];
     case PIXEL_DATA_MID:
-      ++pMID;
 #ifdef SKIPMOSTPIXELS
       cursor += pixels_per_word;
 #else
@@ -112,14 +107,11 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
       assert (cursor < 256);
       break;
     case PIXEL_DATA_EOF:
-      ++pEOF;
       frameId = extractFrameId(pixelword);
       row_counter = -1;
       cursor = 55555;
-      --pEOR;
       [[fallthrough]];
     case PIXEL_DATA_EOR:
-      ++pEOR;
       for (; cursor < 256; cursor++) {
         row[cursor] = uint16_t(pixelword & pixel_mask);
         pixelword >>= counter_bits;
@@ -132,12 +124,8 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
       ++rownr_EOR;
       break;
     case INFO_HEADER_SOF:
-      //! This is really iSOF (N*1) + iMID (N*6) + iEOF (N*1) = 8*N
-      ++iSOF;
       infoIndex = 0; break;
     case INFO_HEADER_MID:
-      //! This is really iMID (N*6) + iEOF (N*1) = 7*N
-      ++iMID;
       if (infoIndex == 4)
         chipId = int((pixelword & 0xffffffff));
       else if (infoIndex == 5 && chipId != 0) {
@@ -145,7 +133,6 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
       }
       infoIndex++; break;
     case INFO_HEADER_EOF:
-      ++iEOF;
       if (chipId < 5) break;
       omr.setLowR(pixelword & 0xffffffff);
       switch (omr.getCountL()) {
@@ -170,7 +157,6 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
                   << "\n";
         ++rubbish_counter;
       }
-      ++def;
       break;
     }
   }

@@ -7,7 +7,7 @@
 #include <condition_variable>
 #include "FrameSet.h"
 
-#define FSM_SIZE 256
+#define FSM_SIZE 1024
 #define FSM_MASK (FSM_SIZE-1)
 class FrameSetManager
 {
