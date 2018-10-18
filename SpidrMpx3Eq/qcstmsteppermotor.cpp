@@ -375,7 +375,7 @@ void QCstmStepperMotor::on_stepperUseCalibCheckBox_toggled(bool checked)
         //if ( currentPos !=  currentAng ) {
         ui->targetPosSpinBox->setValue( currentPos );
         //}
-        QString posS = QString::number( currentPos , 'ldd', 0 );
+        QString posS = QString::number( int(currentPos) );
         ui->motorCurrentPoslcdNumber->display( posS );
 
         // Do something about the range of the dial
@@ -468,7 +468,7 @@ void QCstmStepperMotor::on_stepperSetZeroPushButton_clicked()
         posS = QString::number( 0.0 , 'f', 1 );
         ui->motorCurrentPoslcdNumber->display( posS );
     } else {
-        posS = QString::number( 0 , 'lld', 0 );
+        posS = QString::number( 0 );
         ui->motorCurrentPoslcdNumber->display( posS );
     }
 
@@ -669,7 +669,7 @@ void ConfigStepperThread::run() {
 
         } else {
             // Update display
-            posS = QString::number( curr_pos , 'lld', 0 );
+            posS = QString::number( curr_pos );
             _ui->motorCurrentPoslcdNumber->display( posS );
         }
 

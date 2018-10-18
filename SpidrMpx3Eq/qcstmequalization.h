@@ -17,22 +17,18 @@
 #include "mpx3gui.h"
 #include "mpx3defs.h"
 #include "mpx3eq_common.h"
-#include <qcustomplot.h>
-
+#include "qcustomplot.h"
 
 #include <iostream>
 #include <vector>
-
 using namespace std;
 
 #include "histogram.h"
 #include "ThlScan.h"
-
 #include "testpulseequalisation.h"
 
 #define __default_step_scan		1
 #define __DAC_Disc_Optimization_step    2
-
 #define __low_but_above_noise_threshold 511      //! This is for an equalised chip, should be valid for all gain modes
 
 #define EQ_NEXT_STEP(x) ( _eqStatus == x && ! _stepDone[x] )
@@ -77,36 +73,26 @@ public:
     void maskPixel2D(QPair<int,int> pixId){
         maskedPixels2D.insert(pixId);
     }
-
     void unmaskPixel(int pixId) {
         if(maskedPixels.contains(pixId)) maskedPixels.remove(pixId);
-
     }
     void unmaskPixel2D( QPair<int,int> pixId) {
         if(maskedPixels2D.contains(pixId)) maskedPixels2D.remove(pixId);
-
     }
-
     int GetNMaskedPixels() {
         return maskedPixels.size();
     }
-
     int GetNMaskedPixels2D() {
         return maskedPixels2D.size();
     }
-
     QSet<int> GetMaskedPixels() {
         return maskedPixels;
     }
-
     QSet<QPair<int,int>> GetMaskedPixels2D() {
         return maskedPixels2D;
     }
-
     int * GetAdjustementMatrix(lowHighSel sel = __ADJ_L);
-
     void ExtrapolateAdjToTarget(int target, double eta_Adj_THL, lowHighSel sel = __ADJ_L);
-
     bool WriteAdjBinaryFile(QString fn);
     bool ReadAdjBinaryFile(QString fn);
     bool WriteMaskBinaryFile(QString fn);
@@ -119,7 +105,6 @@ public:
 
     void SetStatus(int pixId, eq_status st, lowHighSel sel = __ADJ_L);
     eq_status GetStatus(int pixId, lowHighSel = __ADJ_L);
-
 
 private:
 
@@ -140,24 +125,24 @@ private:
     map<int, eq_status> _eqStatus_L;
     map<int, eq_status> _eqStatus_H;
 
-
-
-
-
 };
 
+#define __default_equalizationtarget 10
 
 class equalizationSteeringInfo {
 
 public:
+
     equalizationSteeringInfo(){}
     ~equalizationSteeringInfo(){}
 
     void SetCurrentEta_Adj_THx(double v) { currentEta_Adj_THx = v; }
 
+    int  GetEqualizationTarget( ) { return _equalisationTarget; }
+    void SetEqualizationTarget( int et ) { _equalisationTarget = et; }
+
     //! Eta is the gradient (ie. m in y = mx +c)
     //! Cut is the y intercept (ie. c in y = mx +c)
-
     int equalizationCombination;
     int equalizationType;
     int globalAdj;
@@ -171,7 +156,11 @@ public:
     double currentEta_Adj_THx; //! Eta and Cut for the Adj Vs. THx function (Adj extrapolation)
     double currentCut_Adj_THx;
 
-    int equalisationTarget = 10;
+private:
+    // Target 10 is the recomended value from the CERN team.
+    // It is a good target for noise equalization
+    // The best target can be calculated if needed.
+    int _equalisationTarget = 10;
 };
 
 
@@ -184,6 +173,7 @@ class QCstmEqualization : public QWidget
     Q_OBJECT
 
 public:
+
     explicit QCstmEqualization(QWidget *parent = nullptr);
     ~QCstmEqualization();
     void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
@@ -210,9 +200,7 @@ public:
     bool pixelInScheduledChips(int);
 
     void DAC_Disc_Optimization_DisplayResults(ScanResults * res);
-
-    int FineTuning();
-
+    int  FineTuning();
     void DisplayStatsInTextBrowser(int adj, int dac_disc, ScanResults * res);
     void KeepOtherChipsQuiet();
     void resetThresholds();
@@ -259,7 +247,7 @@ public:
     BarChart * GetAdjBarChart(int chipIdx, Mpx3EqualizationResults::lowHighSel sel);
 
     int XYtoX(int x, int y, int dimX) { return y * dimX + x; }
-    void UpdateHeatMap(int * data, int sizex, int sizey);
+    void UpdateHeatMap(int * _data, int sizex, int sizey);
 
     string BuildChartName(int val, QString leg);
 
@@ -282,15 +270,15 @@ public:
         __FineTuning,
         __EQStatus_Count
     } eqStatus;
-    bool * _stepDone;
+    array<bool, __EQStatus_Count> _stepDone;
 
     void setWindowWidgetsStatus(win_status s = win_status::startup);
 
-    bool equalizationHasBeenLoaded(){return _equalizationLoaded; }
+    bool equalizationHasBeenLoaded(){ return _equalizationLoaded; }
 
     QMap<int, Mpx3EqualizationResults *> getEqMap(){ return _eqMap; }
 
-    // -------------------------- Recent changes  ------------------------------
+    // -------------------------- Test pulse equalization  ------------------------------
     testPulseEqualisation * testPulseEqualisationDialog = nullptr;
     void setTestPulseMode(bool arg) { testPulseMode = arg; }
 
@@ -302,8 +290,8 @@ public:
 private:
 
     Ui::QCstmEqualization * _ui;
-    bool _busy;
-    Dataset * _resdataset;
+    Mpx3GUI * _mpx3gui;
+    QApplication * _coreApp;
 
     // Equalization info
     QMap<int, Mpx3EqualizationResults *> _eqMap;
@@ -312,16 +300,7 @@ private:
     vector<BarChart * > _adjchart_L;            //! adjustment low bits charts
     vector<BarChart * > _adjchart_H;            //! adjustment high bits charts
     QGridLayout * _gridLayoutHistograms;
-
-    // Connectivity between modules
-    Mpx3GUI * _mpx3gui;
-
-    QStringList files;
-
-    QApplication * _coreApp;
-
-    bool _isRemotePath = false;
-    QString _remotePath = "";
+    Dataset * _resdataset;
 
     // -------------------------- Recent changes  ------------------------------
     //! bits flipped below
@@ -337,11 +316,15 @@ private:
     uint DAC_DISC_2_value = 150;
 
     void resetForNewEqualisation();
-
     void estimateEqualisationTarget();
 
     int _firstMinScanTHL; //! Set at the beginning of StartEqualisation
     // -------------------------------------------------------------------------
+
+    QStringList files;
+    bool _busy;
+    bool _isRemotePath = false;
+    QString _remotePath = "";
 
     bool _equalizationLoaded = false;
     bool _isSequentialAllChipsEqualization = false;
@@ -384,53 +367,19 @@ private:
     Mpx3EqualizationResults::lowHighSel _equalizationShow;
     vector<equalizationSteeringInfo *> _steeringInfo;
 
+    // Object in charge of performing Thl scans
+    QVector<ThlScan * > _scans;
+
     // IP source address (SPIDR network interface)
     int _srcAddr;
     int _nChips;
     bool _scanDescendant;
     bool _stopEq = false;
 
-    int **data = nullptr;
-    unsigned *nx = nullptr, *ny = nullptr, nData = 0;
-
-    // Object in charge of performing Thl scans
-    QVector<ThlScan * > _scans;
-
+    // TODO. Use 'Dataset' information to make this of the right size on heap memory.
+    // Or simply use an instance of Dataset for this purpose.
     bool maskMatrix[512][512] = {{false}};    //false = unmasked, true = masked
-    void resetMaskMatrix(int chipid){
-        if(chipid == 0)
-        {
-            for(int i = 256; i <512; i++){
-                for(int j = 256; j <512; j++){
-                    maskMatrix[i][j] = false;
-                }
-            }
-        }
-        if(chipid == 1)
-        {
-            for(int i = 256; i <512; i++){
-                for(int j = 0; j <256; j++){
-                    maskMatrix[i][j] = false;
-                }
-            }
-        }
-        if(chipid == 2)
-        {
-            for(int i = 0; i <256; i++){
-                for(int j =0 ; j <256; j++){
-                    maskMatrix[i][j] = false;
-                }
-            }
-        }
-        if(chipid == 3)
-        {
-            for(int i = 0; i <256; i++){
-                for(int j = 256 ; j <512; j++){
-                    maskMatrix[i][j] = false;
-                }
-            }
-        }
-    }
+    void resetMaskMatrix(int chipid);
     //convert chip index to preview index
     QPoint chipIndexToPreviewIndex(QPoint chipIndex,int chipId);
     bool makeTeaCoffeeDialog();

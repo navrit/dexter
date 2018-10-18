@@ -94,7 +94,7 @@ void ThlScan::InitializeScanResults(vector<equalizationSteeringInfo *> st) {
         // set global adjustment
         sr->global_adj = st[i]->globalAdj;
 
-        sr->equalisationTarget = st[i]->equalisationTarget;
+        sr->equalisationTarget = st[i]->GetEqualizationTarget();
 
         _results.push_back( sr );
 
