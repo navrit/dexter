@@ -55,37 +55,39 @@ void FrameSetManager::releaseFrameSet(FrameSet *fsUsed) {
 
 void FrameSetManager::putChipFrame(int chipIndex, ChipFrame* cf) {
     std::lock_guard<std::mutex> lock(headMut);
-    if (isFull()) {
-        std::cerr << " full" << std::endl;
-    } else {
-        if (headState == 0) {
-            frameId = cf->frameId;
-            headState = 1;
-        }
-        assert (headState == 1);
-        if (frameId != cf->frameId) {
-            // starting a new frame, after publishing this
+    if (headState == 0) {
+        frameId = cf->frameId;
+        headState = 1;
+    }
+    assert (headState == 1);
+    FrameSet *dest = &fs[head_ & FSM_MASK];
+    if (frameId != cf->frameId) {
+        // starting a new frame, after publishing this
+        if (isFull()) {
+            _framesLost++;
+            dest->clear();
+        } else {
             head_++;
+            _framesReceived++;
+            dest = &fs[head_ & FSM_MASK];
             _frameAvailableCondition.notify_one();
-            if (isFull()) {
-                std::cerr << " full" << std::endl;
-                headState = 0;
-                expectCounterH = false;
-                return;
-            }
         }
-        FrameSet *dest = &fs[head_ & FSM_MASK];
-        dest->putChipFrame(chipIndex, cf);
-        OMR omr = cf->omr;
-        if (omr.getCountL() == 3 && omr.getMode() == 0)
-            expectCounterH = true;
-        else if (dest->isComplete()) {
+    }
+    dest->putChipFrame(chipIndex, cf);
+    OMR omr = cf->omr;
+    if (omr.getCountL() == 3 && omr.getMode() == 0)
+        expectCounterH = true;
+    else if (dest->isComplete()) {
+        if (isFull()) {
+            _framesLost++;
+            dest->clear();
+        } else {
             head_++;
+            _framesReceived++;
             _frameAvailableCondition.notify_one();
-
-            expectCounterH = false;
-            headState = 0;
         }
+        expectCounterH = false;
+        headState = 0;
     }
 }
 

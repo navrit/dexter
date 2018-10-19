@@ -22,6 +22,10 @@ public:
     FrameSet *getFrameSet();
     void releaseFrameSet(FrameSet *);
 
+    // Statistics
+    int     _framesReceived = 0;
+    int     _framesLost = 0;
+
 private:
     FrameSet fs[FSM_SIZE];
     int dropped = 0;

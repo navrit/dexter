@@ -134,7 +134,6 @@ void DataTakingThread::run() {
     int totalFramesExpected = 0;
     uint64_t cntrLH = 0; //! Odd is Counter Low, even is Counter High
 
-    unsigned int oneFrameChipCntr = 0;
     uint halfSemaphoreSize = 0;
     bool reachLimitStop = false;
 
@@ -252,53 +251,44 @@ void DataTakingThread::run() {
             QVector<int> v4;*/
 
             // Read data
-            oneFrameChipCntr = 0;          
             FrameSet *fs = spidrdaq->getFrameSet();
-            for ( int i = 0 ; i < nChips ; i++ ) {
-                // retreive data for a given chip
-                //auto t1 = Time::now();
-                //clearToCopy = true;
 
-                //auto t2 = Time::now(); v1.append( std::chrono::duration_cast<ns>(t2 - t1).count());
+                // The consumer thread is expecting N chips to be loaded
+                // It can happen that the information from 1 or more chips
+                // doesn't come through. This will put the consumer out of
+                // sync since the descriptor can stay behind the readdescriptor.
+                // In this case we will drop the frame.
 
-                _consumer->freeFrames->acquire(); //! < 0.1% time
-                //auto t3 = Time::now(); v2.append( std::chrono::duration_cast<ns>(t3 - t2).count());
+            if (fs->isComplete() && ! (fs->pixelsLost() > 0 && _vis->getDropFrames())) {
 
-                _consumer->copydata(fs, i); //! 99+% time
-                //auto t4 = Time::now(); v3.append( std::chrono::duration_cast<ns>(t4 - t3).count());
+                for ( int i = 0 ; i < nChips ; i++ ) {
+                    // retreive data for a given chip
+                    //auto t1 = Time::now();
+                    //clearToCopy = true;
 
-                _consumer->usedFrames->release(); //! < 0.1% time
-                //auto t5 = Time::now(); v4.append( std::chrono::duration_cast<ns>(t5 - t4).count());
+                    //auto t2 = Time::now(); v1.append( std::chrono::duration_cast<ns>(t2 - t1).count());
 
-                oneFrameChipCntr++;
+                    _consumer->freeFrames->acquire(); //! < 0.1% time
+                    //auto t3 = Time::now(); v2.append( std::chrono::duration_cast<ns>(t3 - t2).count());
+
+                    _consumer->copydata(fs, i); //! 99+% time
+                    //auto t4 = Time::now(); v3.append( std::chrono::duration_cast<ns>(t4 - t3).count());
+
+                    _consumer->usedFrames->release(); //! < 0.1% time
+                    //auto t5 = Time::now(); v4.append( std::chrono::duration_cast<ns>(t5 - t4).count());
+                }
+                // Keep a track of frames actually kept
+                nFramesKept++;
             }
+
             //! T1-T2  93-98% time
             //! --------------------------
+
+            lostPackets += fs->pixelsLost();
 
             // Release frame
             spidrdaq->releaseFrame(fs);
 
-            // The consumer thread is expecting N chips to be loaded
-            // It can happen that the information from 1 or more chips
-            // doesn't come through. This will put the consumer out of
-            // sync since the descriptor can stay behind the readdescriptor.
-            // In this case we will drop the frame.
-
-            // Another reason to rewind is when there are lost packets
-            // and the user has picked to drop the frames with lost packets
-
-            lostPackets += spidrdaq->lostCount();
-
-            if ( (oneFrameChipCntr != nChips) || (lostPackets > 0 && _vis->getDropFrames()) ) {
-                for ( unsigned int i = 0 ; i < oneFrameChipCntr ; i++ ) {
-                    //qDebug() << "Rewind >> " << i; // 0,1,2,3
-                    // Free the resources and rewind descriptor
-                    _consumer->usedFrames->acquire();
-                    _consumer->rewindcopydata(size_in_bytes);
-                    _consumer->freeFrames->release();
-                }
-                //qDebug() << " !!! REWIND !!! [" << oneFrameChipCntr << "]";
-            }
             //! T2-T3  ~0.4-2.2% time
             //! --------------------------
 
@@ -315,10 +305,8 @@ void DataTakingThread::run() {
 
             // Keep a local count of number of frames
             nFramesReceived++;
-            // Keep a track of frames actually kept
-            if ( ! ( spidrdaq->lostCount() > 0 && _vis->getDropFrames() ) ) nFramesKept++;
             // lost
-            lostFrames += spidrdaq->framesLostCount() / nChips;
+            lostFrames += spidrdaq->framesLostCount();
 
             emit scoring_sig(nFramesReceived,
                              nFramesKept,
@@ -326,7 +314,7 @@ void DataTakingThread::run() {
                              lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
                              spidrdaq->framesCount(),               // ?
                              0,
-                             spidrdaq->framesLostCount() % nChips   // Data misaligned
+                             0										// Data misaligned?
                              );
 
             spidrdaq->resetLostCount();
@@ -337,7 +325,7 @@ void DataTakingThread::run() {
             // How to stop in ContRW
             // 1) See Note 1 at the bottom
             //  note than score.framesRequested=0 when asking for infinite frames
-            if ( (nFramesReceived + lostFrames == score.framesRequested) && score.framesRequested != 0 ) {
+            if ( (nFramesReceived >= score.framesRequested) && score.framesRequested > 0 ) {
                 if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
                     spidrcontrol->stopContReadout();
                 }
@@ -364,10 +352,10 @@ void DataTakingThread::run() {
         emit scoring_sig(nFramesReceived,
                          nFramesKept,
                          lostFrames,  //
-                         spidrdaq->lostCount(),                 // lost packets(ML605)/pixels(compactSPIDR)
+                         lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
                          spidrdaq->framesCount(),               // ?
                          0,
-                         spidrdaq->framesLostCount() % nChips   // Data misaligned
+                         0							// Data misaligned
                          );
 
         // If this was an emergency stop

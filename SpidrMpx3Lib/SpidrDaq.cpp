@@ -283,36 +283,19 @@ void SpidrDaq::releaseFrame(FrameSet *fs)
 
 int SpidrDaq::framesCount()
 {
-  int count = 0;
-  //for( int i=0; i<(int) _frameReceivers.size(); ++i )
-    //count += _frameReceivers[i]->framesReceived();
-  return count;
+  return frameSetManager->_framesReceived;
 }
 
 // ----------------------------------------------------------------------------
 
 int SpidrDaq::framesLostCount()
 {
-  int count = 0;
-  //for( int i=0; i<(int) _frameReceivers.size(); ++i )
-    //count += _frameReceivers[i]->framesLost();
-  return count;
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrDaq::lostCount()
-{
-  int count = 0;
-  //for( int i=0; i<(int) _frameReceivers.size(); ++i )
-    //count += _frameReceivers[i]->lostCount();
-  return count;
+  return frameSetManager->_framesLost;
 }
 
 // ----------------------------------------------------------------------------
 
 void SpidrDaq::resetLostCount()
 {
-  //for( int i=0; i<(int) _frameReceivers.size(); ++i )
-    //_frameReceivers[i]->resetLost();
+  frameSetManager->_framesLost = 0;
 }

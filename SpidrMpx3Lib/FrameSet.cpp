@@ -18,21 +18,20 @@ void FrameSet::clear() {
             //frame[j][i] = nullptr;
             frame[j][i]->clear();
         }
+    counters = 1;
 }
 
 bool FrameSet::isComplete() {
-    for (int i = 0; i < number_of_chips; i++)
-        if (frame[0][i] == nullptr) return false;
-
-    if (frame[0][0]->omr.getCountL() == 3) {
+    for (int j = 0; j < counters; j++)
         for (int i = 0; i < number_of_chips; i++)
-            if (frame[1][i] == nullptr) return false;
-    }
+            if (frame[j][i] == nullptr) return false;
+
     return true;
 }
 
 ChipFrame* FrameSet::takeChipFrame(int chipIndex, bool counterH) {
     assert (chipIndex >= 0 && chipIndex < number_of_chips);
+    assert (! counterH || counters == 2);
     ChipFrame **spot = &(frame[counterH ? 1 : 0][chipIndex]);
     ChipFrame *result = *spot;
     if (result != nullptr) {
@@ -44,7 +43,9 @@ ChipFrame* FrameSet::takeChipFrame(int chipIndex, bool counterH) {
 void FrameSet::putChipFrame(int chipIndex, ChipFrame *cf) {
     assert (chipIndex >= 0 && chipIndex < number_of_chips);
     assert (cf != nullptr);
+    if (cf->omr.getCountL() == 3) counters = 2;
     int hi = cf->omr.getMode() == 4 ? 1 : 0;
+    assert (hi == 0 || counters == 2);
     ChipFrame **spot = &(frame[hi][chipIndex]);
     if (*spot != nullptr) delete *spot;
     *spot = cf;
@@ -72,9 +73,12 @@ void FrameSet::copyTo32(uint32_t *dest) {
 
 int FrameSet::pixelsLost() {
     int count = 0;
-    for (int j = 0; j < 2; j++)
+    for (int j = 0; j < counters; j++)
         for (int i = 0; i < number_of_chips; i++)
-            if (frame[j][i] != nullptr) count += frame[j][i]->pixelsLost;
+            if (frame[j][i] == nullptr)
+                count += MPX_PIXELS;
+            else
+                count += frame[j][i]->pixelsLost;
 
     return count;
 }

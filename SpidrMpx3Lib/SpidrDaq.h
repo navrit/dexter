@@ -77,7 +77,7 @@ class MY_LIB_API SpidrDaq
   //int  packetsReceivedCount     ( int index );
   //int  packetsReceivedCount     ( );
   //int  lostCount                ( int index );
-  int  lostCount                ( );
+  //int  lostCount                ( );
   void resetLostCount           ( );
   //int  lostCountFile            ( );
   //int  lostCountFrame           ( );

@@ -19,6 +19,7 @@ public:
     int pixelsLost();
 
 private:
+    int counters = 1;
     ChipFrame* frame[2][number_of_chips];
 
 };
