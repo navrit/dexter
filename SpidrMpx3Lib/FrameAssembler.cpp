@@ -26,10 +26,13 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
     if (packetLoss) {
       // bugger, we lost something, find first special packet
       uint16_t i = 0;
+      int missing = MPX_PIXEL_COLUMNS - cursor;
+      int last_row = row_counter;
       switch (packetType(pixel_packet[i])) {
         case PIXEL_DATA_SOR :
           // OK, that can happen on position 0, store the row, claim we finished the previous
           row_counter = extractRow(pixel_packet[endCursor/pixels_per_word]) - 1;
+          missing = (row_counter - last_row) * MPX_PIXEL_COLUMNS;
           assert (row_counter >= 0 && row_counter < MPX_PIXEL_ROWS);
           break;
         case PIXEL_DATA_SOF :
@@ -37,7 +40,10 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
         case INFO_HEADER_MID:
         case INFO_HEADER_EOF:
           // somehow we found a new frame, store the current row/frame
-          fsm->putChipFrame(chipIndex, frame);
+          if (frame != nullptr) {
+              frame->pixelsLost += missing + (MPX_PIXEL_ROWS - last_row) * MPX_PIXEL_COLUMNS;
+              fsm->putChipFrame(chipIndex, frame);
+          }
           frame = nullptr;
           break;
         case PIXEL_DATA_MID:
@@ -50,9 +56,12 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
           assert (nextRow >= 0 && nextRow < MPX_PIXEL_ROWS);
           if (frame == nullptr || nextRow < row_counter) {
             // we lost the rest of the frame; finish the current and start a new one
-            if (frame != nullptr)
+            if (frame != nullptr) {
+                frame->pixelsLost += missing + (MPX_PIXEL_ROWS - last_row) * MPX_PIXEL_COLUMNS;
                 fsm->putChipFrame(chipIndex, frame);
+            }
             frame = fsm->newChipFrame(chipIndex);
+            missing = 0;
             if (counter_depth == 24) {
                 if (omr.getMode() == 1) {
                     // finished high, next frame
@@ -73,6 +82,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
           assert (cursor >= 0 && cursor < MPX_PIXEL_COLUMNS);
           assert (packetEndsRow(pixel_packet[(endCursor - cursor) / pixels_per_word]));
           row_counter = nextRow;
+          frame->pixelsLost += missing + (row_counter - 1 - last_row) * MPX_PIXEL_COLUMNS + cursor;
           row = frame->getRow(row_counter);
           break;
       }
