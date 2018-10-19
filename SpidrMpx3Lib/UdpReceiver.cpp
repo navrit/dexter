@@ -4,9 +4,10 @@
 #include <chrono>
 #include <errno.h>
 
-UdpReceiver::UdpReceiver() {
+UdpReceiver::UdpReceiver(bool lutBug) {
   console = spdlog::stdout_color_mt("console");
   spdlog::get("console")->set_level(spdlog::level::debug);
+  this->lutBug = lutBug;
 }
 
 UdpReceiver::~UdpReceiver() {
@@ -26,6 +27,8 @@ bool UdpReceiver::initThread(const char *ipaddr, int UDP_Port) {
   initSocket(); //! No arguments --> listens on all IP addresses
                 //! Arguments --> IP address as const char *
   initFileDescriptorsAndBindToPorts(UDP_Port);
+
+  FrameAssembler::lutInit(lutBug);
 
   for (int i = 0; i < config.number_of_chips; ++i) {
     frameAssembler[i] = new FrameAssembler(i);

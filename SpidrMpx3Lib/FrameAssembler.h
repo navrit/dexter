@@ -39,9 +39,10 @@ public:
 
   int chipIndex;
 
+  static void lutInit(bool lutBug);
+
 private:
   FrameSetManager *fsm;
-  int rownr_EOR = -1, rownr_SOR = -1;
   int sizeofuint64_t = sizeof(uint64_t);
   int row_counter = -1, rubbish_counter = 0;
   uint16_t cursor = 55555;
@@ -61,6 +62,12 @@ private:
   inline uint64_t packetType(uint64_t pixelword) { return (pixelword & PKT_TYPE_MASK); }
   inline bool packetEndsRow(uint64_t pixelword) { return (pixelword & 0x6000000000000000) == 0x6000000000000000; }
 
-  void hexdumpAndParsePacket(uint64_t* pixel_packet, int counter_bits, bool skip_data_packets, int chip);
+  // Look-up tables for Medipix3RX pixel data decoding
+  static int   _mpx3Rx6BitsLut[64];
+  static int   _mpx3Rx6BitsEnc[64];
+  static int   _mpx3Rx12BitsLut[4096];
+  static int   _mpx3Rx12BitsEnc[4096];
+  static bool  _lutBug;
+
 };
 #endif // FRAMEASSEMBLER_H

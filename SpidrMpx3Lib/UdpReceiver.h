@@ -35,7 +35,7 @@ struct peer_t {
 class UdpReceiver {
 
 public:
-  UdpReceiver(); //! TODO add parent pointer
+  UdpReceiver(bool lutBug); //! TODO add parent pointer
   virtual ~UdpReceiver();
   bool initThread(const char *ipaddr="", int UDP_Port=50000);
   void run();
@@ -80,6 +80,7 @@ private:
   int epfd = -1;
   peer_t peers[Config::number_of_chips];
 
+  bool lutBug = false;
   FrameSetManager *fsm = new FrameSetManager();
   PacketContainer inputQueues[Config::number_of_chips];
   FrameAssembler *frameAssembler[Config::number_of_chips];

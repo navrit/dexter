@@ -148,7 +148,9 @@ void SpidrDaq::init( int             *ipaddr,
 		     int             *types,
 		     SpidrController *spidrctrl )
 {
-    udpReceiver = new UdpReceiver();
+    int fwVersion;
+    spidrctrl->getFirmwVersion(&fwVersion);
+    udpReceiver = new UdpReceiver(fwVersion < 0x18100100);
     if (udpReceiver->initThread("", ports[0]) == true) {
         th = udpReceiver->spawn();
     }
