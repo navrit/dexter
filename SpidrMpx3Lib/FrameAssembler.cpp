@@ -27,13 +27,15 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
       // bugger, we lost something, find first special packet
       uint16_t i = 0;
       int missing = MPX_PIXEL_COLUMNS - cursor;
-      int last_row = row_counter;
+      int last_row = row_counter,
+              next_row = 0;
+      uint16_t next_cursor = 0;
       switch (packetType(pixel_packet[i])) {
         case PIXEL_DATA_SOR :
           // OK, that can happen on position 0, store the row, claim we finished the previous
-          row_counter = extractRow(pixel_packet[endCursor/pixels_per_word]) - 1;
-          missing = (row_counter - last_row) * MPX_PIXEL_COLUMNS;
-          assert (row_counter >= 0 && row_counter < MPX_PIXEL_ROWS);
+          next_row = extractRow(lutBugFix(pixel_packet[endCursor/pixels_per_word])) - 1;
+          missing = (next_row - last_row) * MPX_PIXEL_COLUMNS;
+          assert (next_row >= 0 && next_row < MPX_PIXEL_ROWS);
           break;
         case PIXEL_DATA_SOF :
         case INFO_HEADER_SOF:
@@ -52,9 +54,13 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
         case PIXEL_DATA_EOR :
         case PIXEL_DATA_EOF :
           assert (i < packetSize);
-          int nextRow = extractRow(pixel_packet[i]);
-          assert (nextRow >= 0 && nextRow < MPX_PIXEL_ROWS);
-          if (frame == nullptr || nextRow < row_counter) {
+          next_row = extractRow(lutBugFix(pixel_packet[i]));
+          assert (next_row > 0 && next_row < MPX_PIXEL_ROWS);
+          next_cursor = endCursor - i * pixels_per_word;
+      }
+
+      if (next_row > 0) {
+          if (frame == nullptr || next_row < row_counter) {
             // we lost the rest of the frame; finish the current and start a new one
             if (frame != nullptr) {
                 frame->pixelsLost += missing + (MPX_PIXEL_ROWS - last_row) * MPX_PIXEL_COLUMNS;
@@ -62,6 +68,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
             }
             frame = fsm->newChipFrame(chipIndex);
             missing = 0;
+            last_row = -1;
             if (counter_depth == 24) {
                 if (omr.getMode() == 1) {
                     // finished high, next frame
@@ -78,13 +85,17 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
           } else {
             // we lost part of this frame; store the row, start a new one
           }
-          cursor = endCursor - i * pixels_per_word;
+          cursor = next_cursor;
           assert (cursor >= 0 && cursor < MPX_PIXEL_COLUMNS);
           assert (packetEndsRow(pixel_packet[(endCursor - cursor) / pixels_per_word]));
-          row_counter = nextRow;
+          row_counter = next_row;
           frame->pixelsLost += missing + (row_counter - 1 - last_row) * MPX_PIXEL_COLUMNS + cursor;
-          row = frame->getRow(row_counter);
-          break;
+          if (cursor == 0) {
+            assert (packetType(pixel_packet[0]) == PIXEL_DATA_SOR);
+            row_counter--;	// the normal processing will start with incrementing and getting the row
+          } else {
+            row = frame->getRow(row_counter);
+          }
       }
     }
 
@@ -119,36 +130,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
       row_counter = -1;
       [[fallthrough]];
     case PIXEL_DATA_EOR:
-      if (_lutBug) {
-          // the pixel word is mangled, un-mangle it
-          if (counter_bits == 12) {
-              long mask0 = 0x0000000000000fffL,
-                   mask4 = 0x0fff000000000000L;
-              long p0 = _mpx3Rx12BitsLut[pixelword & mask0],
-                   p4 = ((long) (_mpx3Rx12BitsEnc[(pixelword & mask4) >> 48])) << 48;
-              pixelword = (pixelword & (~(mask0 | mask4))) | p0 | p4;
-          } else if (counter_bits == 6) {
-              // decode pixel 0 .. 3
-              long mask0 = 0x000000000000003fL, maskShifted = mask0;
-              long wordShifted = pixelword;
-              for (int i = 0; i < 4; i++) {
-                  long pixel = _mpx3Rx6BitsLut[wordShifted & mask0];
-                  pixelword = (pixelword & (~maskShifted)) | (pixel << (6 * i));
-                  wordShifted >>= 6;
-                  maskShifted <<= 6;
-              }
-              // leave pixel 4 .. 5
-              wordShifted >>= 12;
-              maskShifted <<= 12;
-              // encode pixel 6 .. 9
-              for (int i = 6; i < 10; i++) {
-                  long pixel = _mpx3Rx6BitsEnc[wordShifted & mask0];
-                  pixelword = (pixelword & (~maskShifted)) | (pixel << (6 * i));
-                  wordShifted >>= 6;
-                  maskShifted <<= 6;
-              }
-          }
-      }
+      pixelword = lutBugFix(pixelword);
       if (type == PIXEL_DATA_EOF) {
           frameId = extractFrameId(pixelword);
       }
@@ -201,6 +183,39 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
   }
 }
 
+uint64_t FrameAssembler::lutBugFix(uint64_t pixelword) {
+  if (_lutBug) {
+      // the pixel word is mangled, un-mangle it
+      if (counter_bits == 12) {
+          long mask0 = 0x0000000000000fffL,
+               mask4 = 0x0fff000000000000L;
+          long p0 = _mpx3Rx12BitsLut[pixelword & mask0],
+               p4 = ((long) (_mpx3Rx12BitsEnc[(pixelword & mask4) >> 48])) << 48;
+          pixelword = (pixelword & (~(mask0 | mask4))) | p0 | p4;
+      } else if (counter_bits == 6) {
+          // decode pixel 0 .. 3
+          long mask0 = 0x000000000000003fL, maskShifted = mask0;
+          long wordShifted = pixelword;
+          for (int i = 0; i < 4; i++) {
+              long pixel = _mpx3Rx6BitsLut[wordShifted & mask0];
+              pixelword = (pixelword & (~maskShifted)) | (pixel << (6 * i));
+              wordShifted >>= 6;
+              maskShifted <<= 6;
+          }
+          // leave pixel 4 .. 5
+          wordShifted >>= 12;
+          maskShifted <<= 12;
+          // encode pixel 6 .. 9
+          for (int i = 6; i < 10; i++) {
+              long pixel = _mpx3Rx6BitsEnc[wordShifted & mask0];
+              pixelword = (pixelword & (~maskShifted)) | (pixel << (6 * i));
+              wordShifted >>= 6;
+              maskShifted <<= 6;
+          }
+      }
+  }
+  return pixelword;
+}
 void FrameAssembler::lutInit(bool lutBug) {
 
     _lutBug = lutBug;

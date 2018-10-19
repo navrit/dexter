@@ -62,6 +62,8 @@ private:
   inline uint64_t packetType(uint64_t pixelword) { return (pixelword & PKT_TYPE_MASK); }
   inline bool packetEndsRow(uint64_t pixelword) { return (pixelword & 0x6000000000000000) == 0x6000000000000000; }
 
+  uint64_t lutBugFix(uint64_t pixelword);
+
   // Look-up tables for Medipix3RX pixel data decoding
   static int   _mpx3Rx6BitsLut[64];
   static int   _mpx3Rx6BitsEnc[64];
