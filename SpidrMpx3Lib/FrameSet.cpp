@@ -43,8 +43,10 @@ ChipFrame* FrameSet::takeChipFrame(int chipIndex, bool counterH) {
 void FrameSet::putChipFrame(int chipIndex, ChipFrame *cf) {
     assert (chipIndex >= 0 && chipIndex < number_of_chips);
     assert (cf != nullptr);
+    // in 24 bit mode use both counters, not in CRW;
+    // FOR NOW not in "both counters" mode!
     if (cf->omr.getCountL() == 3) counters = 2;
-    int hi = cf->omr.getMode() == 4 ? 1 : 0;
+    int hi = (counters == 2 && cf->omr.getMode() == 4) ? 1 : 0;
     assert (hi == 0 || counters == 2);
     ChipFrame **spot = &(frame[hi][chipIndex]);
     if (*spot != nullptr) delete *spot;
