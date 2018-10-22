@@ -21,6 +21,7 @@ const static uint64_t PIXEL_DATA_MID = 0x3000000000000000;  //! #1 Most frequent
 const static uint64_t INFO_HEADER_SOF = 0x9000000000000000; //! #6
 const static uint64_t INFO_HEADER_MID = 0x1000000000000000; //! #4
 const static uint64_t INFO_HEADER_EOF = 0xD000000000000000; //! #8
+const static uint64_t POLL_TIME_OUT   = 0xF000000000000000; //!
 //! End of Table 54
 const static uint64_t ROW_COUNT_MASK = 0x0FF0000000000000;
 const static uint64_t ROW_COUNT_SHIFT = 52;

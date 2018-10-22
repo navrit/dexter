@@ -15,13 +15,16 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
   }
   uint64_t *pixel_packet = reinterpret_cast<uint64_t *>(pc.data);
   uint64_t packetSize = uint64_t(pc.size / sizeofuint64_t);
+  uint64_t firstType = packetType(pixel_packet[0]);
   bool packetLoss;
     if (row_counter >= 0) {
       // we're in a frame
       int eorIndex = (endCursor - cursor) / pixels_per_word;
-      packetLoss = ! packetEndsRow(pixel_packet[eorIndex]);
+      packetLoss = firstType == POLL_TIME_OUT ||
+              eorIndex >= packetSize || ! packetEndsRow(pixel_packet[eorIndex]);
     } else {
-      packetLoss = packetType(pixel_packet[0]) != INFO_HEADER_SOF;
+      if (firstType == POLL_TIME_OUT) return;
+      packetLoss = firstType != INFO_HEADER_SOF;
     }
     if (packetLoss) {
       // bugger, we lost something, find first special packet
@@ -30,7 +33,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
       int last_row = row_counter,
               next_row = 0;
       uint16_t next_cursor = 0;
-      switch (packetType(pixel_packet[i])) {
+      switch (firstType) {
         case PIXEL_DATA_SOR :
           // OK, that can happen on position 0, store the row, claim we finished the previous
           next_row = extractRow(lutBugFix(pixel_packet[endCursor/pixels_per_word])) - 1;
@@ -42,11 +45,14 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
         case INFO_HEADER_MID:
         case INFO_HEADER_EOF:
           // somehow we found a new frame, store the current row/frame
+        case POLL_TIME_OUT:
+          // the end of the frame didn't arrive
           if (frame != nullptr) {
               frame->pixelsLost += missing + (MPX_PIXEL_ROWS - last_row) * MPX_PIXEL_COLUMNS;
               fsm->putChipFrame(chipIndex, frame);
           }
           frame = nullptr;
+          row_counter = -1;
           break;
         case PIXEL_DATA_MID:
           while (i < packetSize && packetType(pixel_packet[i]) == PIXEL_DATA_MID) i++;
@@ -170,6 +176,9 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
       frame = fsm->newChipFrame(chipIndex);
       frame->omr = omr;
       break;
+    case POLL_TIME_OUT:
+      // never mind, we finished the frame above
+      break;;
     default:
       // Rubbish packets - skip these
       // In theory, there should be none ever

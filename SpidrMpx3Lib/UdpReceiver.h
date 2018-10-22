@@ -83,6 +83,7 @@ private:
   bool lutBug = false;
   FrameSetManager *fsm = new FrameSetManager();
   PacketContainer inputQueues[Config::number_of_chips];
+  PacketContainer timeOut[Config::number_of_chips];
   FrameAssembler *frameAssembler[Config::number_of_chips];
 };
 #endif // RECEIVEUDPTHREAD_H

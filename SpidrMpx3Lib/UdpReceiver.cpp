@@ -33,6 +33,9 @@ bool UdpReceiver::initThread(const char *ipaddr, int UDP_Port) {
   for (int i = 0; i < config.number_of_chips; ++i) {
     frameAssembler[i] = new FrameAssembler(i);
     frameAssembler[i]->setFrameSetManager(fsm);
+    timeOut[i].chipIndex = i;
+    *reinterpret_cast<uint64_t*> (timeOut[i].data) = POLL_TIME_OUT;
+    timeOut[i].size = sizeof(uint64_t);
   }
 
   return true;
@@ -57,11 +60,16 @@ void UdpReceiver::run() {
     poll_count++;
     sum_p += std::chrono::duration_cast<us>(polled - begin).count();
 
-    // Success
-    if (ret > 0) {
-        ev_count += ret;
+    if (ret == 0) {
+        // time out
+        for (int i = 0; i < config.number_of_chips; ++i) {
+            frameAssembler[i]->onEvent(timeOut[i]);
+        }
+    } else if (ret > 0) {
+      // Success
+      ev_count += ret;
       // An event on one of the fds has occurred.
-        time_point l0 = polled;
+      time_point l0 = polled;
       for (int j = 0; j < ret; j++) {
           uint32_t etype = events[j].events;
           if (! (etype & EPOLLIN)) {
