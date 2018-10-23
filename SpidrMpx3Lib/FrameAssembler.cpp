@@ -49,7 +49,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
           // the end of the frame didn't arrive
           if (frame != nullptr) {
               frame->pixelsLost += missing + (MPX_PIXEL_ROWS - 1 - last_row) * MPX_PIXEL_COLUMNS;
-              fsm->putChipFrame(chipIndex, frame);
+              fsm->putChipFrameB(chipIndex, frame);
           }
           frame = nullptr;
           row_counter = -1;
@@ -70,7 +70,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
             // we lost the rest of the frame; finish the current and start a new one
             if (frame != nullptr) {
                 frame->pixelsLost += missing + (MPX_PIXEL_ROWS - 1 - last_row) * MPX_PIXEL_COLUMNS;
-                fsm->putChipFrame(chipIndex, frame);
+                fsm->putChipFrameB(chipIndex, frame);
             }
             frame = fsm->newChipFrame(chipIndex);
             missing = 0;
@@ -79,13 +79,10 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
                 if (omr.getMode() == 1) {
                     // finished high, next frame
                     omr.setMode(0);
-                    frameId++;
                 } else {
                     // finished low, expect high
                     omr.setMode(1);
                 }
-            } else {
-                frameId++;
             }
             frame->omr = omr;
           } else {
@@ -137,16 +134,13 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
       [[fallthrough]];
     case PIXEL_DATA_EOR:
       pixelword = lutBugFix(pixelword);
-      if (type == PIXEL_DATA_EOF) {
-          frameId = extractFrameId(pixelword);
-      }
-      for (; cursor < MPX_PIXEL_COLUMNS; cursor++) {
-        row[cursor] = uint16_t(pixelword & pixel_mask);
-        pixelword >>= counter_bits;
+      for (uint64_t pixels = pixelword; cursor < MPX_PIXEL_COLUMNS; cursor++) {
+        row[cursor] = uint16_t(pixels & pixel_mask);
+        pixels >>= counter_bits;
       }
       if (type == PIXEL_DATA_EOF) {
           // we're done with this one!
-          fsm->putChipFrame(chipIndex, frame);
+          fsm->putChipFrame(chipIndex, frame, extractFrameId(pixelword));
           frame = nullptr;
       }
       break;

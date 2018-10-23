@@ -235,7 +235,7 @@ int FramebuilderThreadC::mpx3RawToPixel( unsigned char *raw_bytes,
           if (type == PIXEL_DATA_EOF) {
               frame->frameId = frameId;
               frame->pixelsLost = _receivers[chipIndex]->pixelsLostFrame();
-              pFrameSetManager->putChipFrame(chipIndex, frame);
+              pFrameSetManager->putChipFrame(chipIndex, frame, frameId);
           }
 
           break;

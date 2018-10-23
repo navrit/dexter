@@ -54,7 +54,6 @@ private:
   uint32_t pixel_mask = 0xfff;
   uint16_t endCursor = 255;
 
-  uint8_t frameId = 0;
   ChipFrame *frame = nullptr;
   uint16_t *row;
 

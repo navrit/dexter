@@ -14,7 +14,8 @@ class FrameSetManager
 public:
     FrameSetManager();
 
-    void putChipFrame(int chipIndex, ChipFrame* cf);
+    void putChipFrame(int chipIndex, ChipFrame* cf, uint8_t frameId);
+    void putChipFrameB(int chipIndex, ChipFrame* cf);
     ChipFrame *newChipFrame(int chipIndex);
     bool isFull();
     bool isEmpty();
@@ -37,6 +38,8 @@ private:
     std::atomic_uint tail_{0};
     std::condition_variable _frameAvailableCondition;
     std::mutex headMut, tailMut;
+
+    void publish();
 };
 
 #endif // FRAMESETMANAGER_H
