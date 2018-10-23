@@ -1966,9 +1966,9 @@ QPoint Dataset::getNaturalCoordinates(QPoint pixel, int index){
     int x = pixel.x() % m_nx;
     int y = pixel.y() % m_ny;
     int orientation = m_frameOrientation[index];
-    if(!(orientation&1))
+    if(orientation&1)
         x = m_nx -x-1;
-    if(orientation&2)
+    if(!(orientation&2))
         y = m_ny -y-1;
     if(orientation&4){
         int tmp = x;
