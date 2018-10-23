@@ -52,7 +52,7 @@ private:
   uint16_t pixels_per_word =
       60 / counter_depth; //! TODO get or calculate pixel_depth
   uint32_t pixel_mask = 0xfff;
-  uint16_t endCursor = 256;
+  uint16_t endCursor = 255;
 
   uint8_t frameId = 0;
   ChipFrame *frame = nullptr;
@@ -66,10 +66,10 @@ private:
   uint64_t lutBugFix(uint64_t pixelword);
 
   // Look-up tables for Medipix3RX pixel data decoding
-  static int   _mpx3Rx6BitsLut[64];
-  static int   _mpx3Rx6BitsEnc[64];
-  static int   _mpx3Rx12BitsLut[4096];
-  static int   _mpx3Rx12BitsEnc[4096];
+  static uint   _mpx3Rx6BitsLut[64];
+  static uint   _mpx3Rx6BitsEnc[64];
+  static uint   _mpx3Rx12BitsLut[4096];
+  static uint   _mpx3Rx12BitsEnc[4096];
   static bool  _lutBug;
 
 };

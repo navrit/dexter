@@ -48,7 +48,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
         case POLL_TIME_OUT:
           // the end of the frame didn't arrive
           if (frame != nullptr) {
-              frame->pixelsLost += missing + (MPX_PIXEL_ROWS - last_row) * MPX_PIXEL_COLUMNS;
+              frame->pixelsLost += missing + (MPX_PIXEL_ROWS - 1 - last_row) * MPX_PIXEL_COLUMNS;
               fsm->putChipFrame(chipIndex, frame);
           }
           frame = nullptr;
@@ -69,7 +69,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
           if (frame == nullptr || next_row < row_counter) {
             // we lost the rest of the frame; finish the current and start a new one
             if (frame != nullptr) {
-                frame->pixelsLost += missing + (MPX_PIXEL_ROWS - last_row) * MPX_PIXEL_COLUMNS;
+                frame->pixelsLost += missing + (MPX_PIXEL_ROWS - 1 - last_row) * MPX_PIXEL_COLUMNS;
                 fsm->putChipFrame(chipIndex, frame);
             }
             frame = fsm->newChipFrame(chipIndex);
@@ -196,17 +196,17 @@ uint64_t FrameAssembler::lutBugFix(uint64_t pixelword) {
   if (_lutBug) {
       // the pixel word is mangled, un-mangle it
       if (counter_bits == 12) {
-          long mask0 = 0x0000000000000fffL,
-               mask4 = 0x0fff000000000000L;
-          long p0 = _mpx3Rx12BitsLut[pixelword & mask0],
-               p4 = ((long) (_mpx3Rx12BitsEnc[(pixelword & mask4) >> 48])) << 48;
+          uint64_t mask0 = 0x0000000000000fffL,
+                   mask4 = 0x0fff000000000000L;
+          uint64_t p0 = _mpx3Rx12BitsLut[pixelword & mask0],
+                   p4 = uint64_t(_mpx3Rx12BitsEnc[(pixelword & mask4) >> 48]) << 48;
           pixelword = (pixelword & (~(mask0 | mask4))) | p0 | p4;
       } else if (counter_bits == 6) {
           // decode pixel 0 .. 3
-          long mask0 = 0x000000000000003fL, maskShifted = mask0;
-          long wordShifted = pixelword;
+          uint64_t mask0 = 0x000000000000003fL, maskShifted = mask0;
+          uint64_t wordShifted = pixelword;
           for (int i = 0; i < 4; i++) {
-              long pixel = _mpx3Rx6BitsLut[wordShifted & mask0];
+              uint64_t pixel = _mpx3Rx6BitsLut[wordShifted & mask0];
               pixelword = (pixelword & (~maskShifted)) | (pixel << (6 * i));
               wordShifted >>= 6;
               maskShifted <<= 6;
@@ -216,7 +216,7 @@ uint64_t FrameAssembler::lutBugFix(uint64_t pixelword) {
           maskShifted <<= 12;
           // encode pixel 6 .. 9
           for (int i = 6; i < 10; i++) {
-              long pixel = _mpx3Rx6BitsEnc[wordShifted & mask0];
+              uint64_t pixel = _mpx3Rx6BitsEnc[wordShifted & mask0];
               pixelword = (pixelword & (~maskShifted)) | (pixel << (6 * i));
               wordShifted >>= 6;
               maskShifted <<= 6;
@@ -257,8 +257,8 @@ void FrameAssembler::lutInit(bool lutBug) {
     }
 }
 
-int   FrameAssembler::_mpx3Rx6BitsLut[64];
-int   FrameAssembler::_mpx3Rx6BitsEnc[64];
-int   FrameAssembler::_mpx3Rx12BitsLut[4096];
-int   FrameAssembler::_mpx3Rx12BitsEnc[4096];
+uint   FrameAssembler::_mpx3Rx6BitsLut[64];
+uint   FrameAssembler::_mpx3Rx6BitsEnc[64];
+uint   FrameAssembler::_mpx3Rx12BitsLut[4096];
+uint   FrameAssembler::_mpx3Rx12BitsEnc[4096];
 bool  FrameAssembler::_lutBug;
