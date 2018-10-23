@@ -11,6 +11,7 @@ UdpReceiver::UdpReceiver(bool lutBug) {
 }
 
 UdpReceiver::~UdpReceiver() {
+  spdlog::drop_all();
   // stop(); //! TODO implement, delete some pointers?
 }
 
@@ -108,6 +109,9 @@ void UdpReceiver::run() {
       poll_count = 0; ev_count = 0; sum_p = 0; sum_r = 0; sum_a = 0;
     }
   } while (!finished);
+  spdlog::get("console")->info("UdpReceiver finished");
+
+  closeFD();
 }
 
 int UdpReceiver::set_scheduler() {
@@ -284,4 +288,14 @@ bool UdpReceiver::initFileDescriptorsAndBindToPorts(int UDP_Port) {
     }
   }
   return true;
+}
+
+void UdpReceiver::closeFD() {
+    for (int i = 0; i < config.number_of_chips; i++) {
+        close(peers[i].fd);
+        delete frameAssembler[i];
+        frameAssembler[i] = nullptr;
+    }
+    spdlog::get("console")->error("sockets closed");
+    fsm = nullptr;
 }

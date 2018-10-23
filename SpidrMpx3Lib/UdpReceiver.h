@@ -42,6 +42,7 @@ public:
   std::thread spawn() {
       return std::thread(&UdpReceiver::run, this);
   }
+  void stop() { finished = true; }
 
   int set_scheduler();
   int print_affinity();
@@ -66,6 +67,7 @@ private:
   unsigned int inet_addr(const char *str);
   bool initSocket(const char *inetIPAddr = "");
   bool initFileDescriptorsAndBindToPorts(int UDP_Port);
+  void closeFD();
 
   std::shared_ptr<spdlog::logger> console;
 
@@ -85,5 +87,6 @@ private:
   PacketContainer inputQueues[Config::number_of_chips];
   PacketContainer timeOut[Config::number_of_chips];
   FrameAssembler *frameAssembler[Config::number_of_chips];
+
 };
 #endif // RECEIVEUDPTHREAD_H

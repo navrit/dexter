@@ -95,7 +95,6 @@ class MY_LIB_API SpidrDaq
  private:
   FrameSetManager *frameSetManager;
   UdpReceiver * udpReceiver;
-  FrameAssembler *_frameBuilder;
   std::thread th;
 
   // Functions used in c'tors

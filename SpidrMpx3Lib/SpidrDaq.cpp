@@ -161,27 +161,20 @@ void SpidrDaq::init( int             *ipaddr,
 
 SpidrDaq::~SpidrDaq()
 {
-  this->stop();
+    this->stop();
+    if (th.joinable()) th.join();
+    delete udpReceiver;
+    udpReceiver = nullptr;
+    delete frameSetManager;
+    frameSetManager = nullptr;
 }
 
 // ----------------------------------------------------------------------------
 
 void SpidrDaq::stop()
 {
-    /*
-  if( _frameBuilder )
-    {
-      _frameBuilder->stop();
-      delete _frameBuilder;
-      _frameBuilder = 0;
-    }
-  for( unsigned int i=0; i<_frameReceivers.size(); ++i )
-    {
-      _frameReceivers[i]->stop();
-      delete _frameReceivers[i];
-    }
-  _frameReceivers.clear();
-  */
+    if (udpReceiver != nullptr)
+        udpReceiver->stop();
 }
 
 // ----------------------------------------------------------------------------

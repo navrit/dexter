@@ -7,7 +7,11 @@ FrameSet::FrameSet()
 }
 
 FrameSet::~FrameSet() {
-    clear();
+    for (int i = 0; i < number_of_chips; i++)
+      for (int j = 0; j < 2; j++)
+        if (frame[j][i] != nullptr) {
+            delete frame[j][i];
+        }
 }
 
 void FrameSet::clear() {
