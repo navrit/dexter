@@ -42,49 +42,7 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     _ui->mainSplitter->setSizes(defaultSizesMain);
 
     // Defaults -> init and full-rewindable
-
-    // Initialized in:
-    // 1) InitEqualization
-    // 2) InitializeEqualizationStructure
-    _eqMap.clear();
-
-    _deviceIndex = 0;
-    _nTriggers = 1;
-    _spacing = 2;
-
-    // This will be recalculated
-    _nchipsX = 2;
-    _nchipsY = 2;
-    _fullsize_x = __matrix_size_x * _nchipsX;
-    _fullsize_y = __matrix_size_y * _nchipsY;
-
-    // Suggest a descendant scan
-    _maxScanTHL = 0;
-    _minScanTHL = MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt;
-    _scanDescendant = true;
-    _busy = false;
-    _resdataset = nullptr;
-    _gridLayoutHistograms = nullptr;
-
-    _stepScan = _ui->eqStepSpinBox->value(); //__default_step_scan;
-    _setId = 0;
-    _nChips = 1;
-    _workChipsIndx.clear();
-    _scanAllChips = true;
-    _isSequentialAllChipsEqualization = false;
-
-    //////////////////////////////////////////////////////////////////////////////////////////////
-    // The first BarChart is created immediately to avoid having the empty space before connection
-    _chart.clear();
-
-    BarChart * nbc = new BarChart( GetUI()->layoutWidget );
-    nbc->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
-    _chart.push_back( nbc ); // set as parent the same as the one delivered in the UI
-    _ui->horizontalLayoutEqHistos->addWidget( nbc );
-    nbc->setHidden(true);
-    //////////////////////////////////////////////////////////////////////////////////////////////
-
-    _checkBoxes.clear();
+    FullEqRewind();
 
     _fineTuningLoops = 10;
     _ui->fineTuningLoopsSpinBox->setValue( _fineTuningLoops );
@@ -115,9 +73,6 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     // Signals and slots
     SetupSignalsAndSlots();
 
-    _eqStatus = __INIT;
-    _scanIndex = 0;
-    for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
     eqInstance = this;
 
     // TODO
@@ -125,6 +80,80 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     _ui->_startEqAll->setVisible( false );
 
 }
+
+void QCstmEqualization::FullEqRewind()
+{
+
+    qDebug() << "[INFO] Eq rewind ...";
+    // Initialized in:
+    // 1) InitEqualization
+    // 2) InitializeEqualizationStructure
+    _eqMap.clear();
+
+    _deviceIndex = 0;
+    _nTriggers = 1;
+    _spacing = 2;
+
+    // This will be recalculated
+    _nchipsX = 2;
+    _nchipsY = 2;
+    _fullsize_x = __matrix_size_x * _nchipsX;
+    _fullsize_y = __matrix_size_y * _nchipsY;
+
+    // Suggest a descendant scan
+    _maxScanTHL = 0;
+    _minScanTHL = MPX3RX_DAC_TABLE[MPX3RX_DAC_THRESH_0].dflt;
+    _scanDescendant = true;
+    _busy = false;
+    _resdataset = nullptr;
+    _gridLayoutHistograms = nullptr;
+
+    _stepScan = _ui->eqStepSpinBox->value(); //__default_step_scan;
+    _setId = 0;
+    _nChips = 1;
+    // List of chip indexes to equalize
+    _workChipsIndx.clear();
+
+    _scanAllChips = true;
+    _isSequentialAllChipsEqualization = false;
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    // The first BarChart is created immediately to avoid having the empty space before connection
+    _chart.clear();
+
+    BarChart * nbc = new BarChart( GetUI()->layoutWidget );
+    nbc->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
+    _chart.push_back( nbc ); // set as parent the same as the one delivered in the UI
+    _ui->horizontalLayoutEqHistos->addWidget( nbc );
+    nbc->setHidden(true);
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    _checkBoxes.clear();
+
+    _eqStatus = __INIT;
+    _scanIndex = 0;
+    for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
+
+    // Clean up the left side
+    QLayoutItem * item = nullptr;
+    while ( (item = _ui->horizontalLayoutEqHistos->takeAt(0)) ) {
+        delete item;
+    }
+    while ( (item = _ui->horizontalLayout_3->takeAt(0)) ) {
+//        QWidget * wd = item->widget();
+//        if ( wd ) qDebug() << wd->objectName();
+        delete item;
+    }
+
+    //
+    _steeringInfo.clear();
+    _chart.clear();
+    _checkBoxes.clear();
+    //_ui->horizontalLayoutEqHistos->
+    //        remove
+
+}
+
 
 Ui::QCstmEqualization * QCstmEqualization::GetUI() {
     return _ui;
@@ -334,7 +363,7 @@ bool QCstmEqualization::InitEqualization(int chipId) {
     //ChangeStep( __default_step_scan );
 
     // Clear the list of chips
-    Rewind();
+    _workChipsIndx.clear();
 
     // Check if we can talk to the chip
     if ( chipId != -1 ) {
@@ -362,6 +391,8 @@ bool QCstmEqualization::InitEqualization(int chipId) {
     // Create a steering structure for each chip
     // How many chips to equalize
     int chipListSize = (int)_workChipsIndx.size();
+
+    // Check if the structures are already there. For instance after a stop.
     for ( int i = 0 ; i < chipListSize ; i++ ) {
 
         // Create the steering info for this chip
@@ -579,12 +610,6 @@ BarChart * QCstmEqualization::GetBarChart(int chipIdx) {
     return nullptr; // otherwise
 }
 
-void QCstmEqualization::Rewind() {
-
-    // List of chip indexes to equalize
-    _workChipsIndx.clear();
-}
-
 //! See if the pixel is in the list of chips scheduled to equalise
 bool QCstmEqualization::pixelInScheduledChips(int pix) {
 
@@ -741,6 +766,7 @@ void QCstmEqualization::StartEqualization() {
 
     // how many chips to equalize
     uint chipListSize = _workChipsIndx.size();
+    qDebug() << "... " << chipListSize;
 
     if (testPulseEqualisationDialog != nullptr) {
         defaultNoiseEqualisationTarget = testPulseEqualisationDialog->getEqualisationTarget();
@@ -1629,6 +1655,7 @@ void QCstmEqualization::ScanThreadFinished(){
         qDebug() << "[INFO] Equalization stopped --> Rewind.";
         _stopEq = false;
         // Full rewind
+        FullEqRewind();
     } else {
         StartEqualization( );
     }
@@ -1920,7 +1947,9 @@ Mpx3EqualizationResults * QCstmEqualization::GetEqualizationResults(int chipInde
 }
 
 void QCstmEqualization::InitializeEqualizationStructure(){
+
     int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
+
     for(int i = 0 ; i < nChips ; i++) {
 
         if ( ! _mpx3gui->getConfig()->detectorResponds( i ) ) continue;
@@ -1932,6 +1961,7 @@ void QCstmEqualization::InitializeEqualizationStructure(){
         _eqMap[ i ] = new Mpx3EqualizationResults;
 
     }
+
 }
 
 void QCstmEqualization::InitializeBarChartsAdjustements(){

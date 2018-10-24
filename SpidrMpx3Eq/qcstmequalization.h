@@ -194,7 +194,6 @@ public:
     void PrepareInterpolation_0x5();
     int * CalculateInterpolation(int devId, ThlScan * scan_x0, ThlScan * scan_x5); // ScanResults * res_x0, ScanResults * res_x5);
     void ScanOnInterpolation();
-    void Rewind();
     bool InitEqualization(int chipId);      //! chipId = -1  will equalize all available chips at once
     void NewRunInitEqualization();          //! partial initialization
     bool pixelInScheduledChips(int);
@@ -286,6 +285,8 @@ public:
     uint setDACToVoltage(int chipID, int dacCode, double V);
     bool initialiseTestPulses(SpidrController * spidrcontrol);
     bool activateTestPulses(SpidrController * spidrcontrol, int chipID, int offset_x, int offset_y, int *maskedPixels);
+
+    void FullEqRewind();
 
 private:
 
