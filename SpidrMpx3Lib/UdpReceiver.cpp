@@ -4,23 +4,12 @@
 #include <chrono>
 #include <errno.h>
 
-UdpReceiver::UdpReceiver(int ipaddr, bool lutBug) {
+UdpReceiver::UdpReceiver(int ipaddr, int UDP_Port, bool lutBug) {
   console = spdlog::stdout_color_mt("console");
   spdlog::get("console")->set_level(spdlog::level::debug);
   initSocket(ipaddr);
-  this->lutBug = lutBug;
-}
-
-UdpReceiver::~UdpReceiver() {
-  spdlog::drop_all();
-  // stop(); //! TODO implement, delete some pointers?
-}
-
-bool UdpReceiver::initThread(int UDP_Port) {
 
   initFileDescriptorsAndBindToPorts(UDP_Port);
-
-  FrameAssembler::lutInit(lutBug);
 
   for (int i = 0; i < config.number_of_chips; ++i) {
     frameAssembler[i] = new FrameAssembler(i);
@@ -30,7 +19,12 @@ bool UdpReceiver::initThread(int UDP_Port) {
     timeOut[i].size = sizeof(uint64_t);
   }
 
-  return true;
+  FrameAssembler::lutInit(lutBug);
+}
+
+UdpReceiver::~UdpReceiver() {
+  spdlog::drop_all();
+  // stop(); //! TODO implement, delete some pointers?
 }
 
 void UdpReceiver::run() {
@@ -220,17 +214,6 @@ int UdpReceiver::set_cpu_affinity() {
   return 0;
 }
 
-unsigned int UdpReceiver::inet_addr(const char *str) {
-  int a, b, c, d;
-  char arr[4];
-  sscanf(str, "%d.%d.%d.%d", &a, &b, &c, &d);
-  arr[0] = char(a);
-  arr[1] = char(b);
-  arr[2] = char(c);
-  arr[3] = char(d);
-  return *(unsigned int *)arr;
-}
-
 bool UdpReceiver::initSocket(int inetIPAddr) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -239,7 +222,6 @@ bool UdpReceiver::initSocket(int inetIPAddr) {
   listen_address.sin_family = AF_INET;
     listen_address.sin_addr.s_addr = htonl(inetIPAddr);
     spdlog::get("console")->info("Listening on {}", inetIPAddr);
-  std::memset(peers, 0, sizeof(peers));
   return true;
 }
 
@@ -249,6 +231,7 @@ bool UdpReceiver::initFileDescriptorsAndBindToPorts(int UDP_Port) {
      return false;
   }
 
+  std::memset(peers, 0, sizeof(peers));
   for (int i = 0; i < config.number_of_chips; i++) {
     int fd = socket(AF_INET, SOCK_DGRAM, 0);
 

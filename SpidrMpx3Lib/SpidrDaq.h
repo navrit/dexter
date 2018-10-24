@@ -98,13 +98,7 @@ class MY_LIB_API SpidrDaq
   std::thread th;
 
   // Functions used in c'tors
-  void getIdsPortsTypes( SpidrController *spidrctrl,
-                         int             *ids,
-                         int             *ports,
-                         int             *types );
-  void init( int             ipaddr,
-             int             *ports,
-             SpidrController *spidrctrl );
+  void getPorts( SpidrController *spidrctrl, int *ports);
 };
 
 #endif // SPIDRDAQ_H

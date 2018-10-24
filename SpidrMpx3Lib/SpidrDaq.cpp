@@ -11,7 +11,7 @@
 //   processFrame() functions.
 // - Fix for SPIDR-LUT decoded row counter (firmware bug) in
 //   FramebuilderThreadC::mpx3RawToPixel(): just count EOR pixelpackets instead.
-const int   VERSION_ID = 0x18101200;
+const int   VERSION_ID = 0x18102400;
 
 // - Fix 24-bit bug in ReceiverThread::setPixelDepth().
 // - Tolerate SOF out-of-order in ReceiverThreadC::readDatagrams().
@@ -52,9 +52,7 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl,
   // If a SpidrController object is provided use it to find out the SPIDR's
   // Medipix device configuration and IP destination address, or else assume
   // a default IP address and a single device with a default port number
-  int ids[4]    = { 0, 0, 0, 0 };
   int ports[4]  = { 8192, 0, 0, 0 };
-  int types[4]  = { 0, 0, 0, 0 };
   if( spidrctrl )
     {
       // Get the IP destination address (this host network interface)
@@ -62,33 +60,38 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl,
       int addr = 0;
       spidrctrl->getIpAddrDest( 0, &addr);
 
-      this->getIdsPortsTypes( spidrctrl, ids, ports, types );
+      this->getPorts( spidrctrl, ports);
 
       // Adjust SPIDR read-out mask if requested:
       // Reset unwanted ports/devices to 0
       for( int i=0; i<4; ++i )
-	if( (readout_mask & (1<<i)) == 0 ) ports[i] = 0;
+        if( (readout_mask & (1<<i)) == 0 ) ports[i] = 0;
       // Read out the remaining devices
       readout_mask = 0;
       for( int i=0; i<4; ++i )
-	if( ports[i] != 0 ) readout_mask |= (1<<i);
+        if( ports[i] != 0 ) readout_mask |= (1<<i);
 
       // Set the new read-out mask if required
       int device_mask;
       if( spidrctrl->getAcqEnable(&device_mask) && device_mask != readout_mask )
-	spidrctrl->setAcqEnable( readout_mask );
-          this->init(addr, ports, spidrctrl );
+        spidrctrl->setAcqEnable( readout_mask );
+
+        int fwVersion;
+        spidrctrl->getFirmwVersion(&fwVersion);
+        udpReceiver = new UdpReceiver(addr, ports[0], fwVersion < 0x18100100);
+        th = udpReceiver->spawn();
+        frameSetManager = udpReceiver->getFrameSetManager();
     }
 }
 
 // ----------------------------------------------------------------------------
 
-void SpidrDaq::getIdsPortsTypes( SpidrController *spidrctrl,
-				 int             *ids,
-				 int             *ports,
-				 int             *types )
+void SpidrDaq::getPorts( SpidrController *spidrctrl,
+                 int             *ports)
 {
   if( !spidrctrl ) return;
+
+  int ids[4]    = { 0, 0, 0, 0 };
 
   // Get the device IDs from the SPIDR module
   spidrctrl->getDeviceIds( ids );
@@ -98,28 +101,11 @@ void SpidrDaq::getIdsPortsTypes( SpidrController *spidrctrl,
   for( int i=0; i<4; ++i )
     {
       ports[i] = 0;
-      types[i] = 0;
       if( ids[i] != 0 )
-	{
-	  spidrctrl->getServerPort( i, &ports[i] );
-	  spidrctrl->getDeviceType( i, &types[i] );
-	}
+        {
+          spidrctrl->getServerPort( i, &ports[i] );
+        }
     }
-}
-
-// ----------------------------------------------------------------------------
-
-void SpidrDaq::init( int     ipaddr,
-		     int             *ports,
-		     SpidrController *spidrctrl )
-{
-    int fwVersion;
-    spidrctrl->getFirmwVersion(&fwVersion);
-    udpReceiver = new UdpReceiver(ipaddr, fwVersion < 0x18100100);
-    if (udpReceiver->initThread(ports[0]) == true) {
-        th = udpReceiver->spawn();
-    }
-    frameSetManager = udpReceiver->getFrameSetManager();
 }
 
 // ----------------------------------------------------------------------------
