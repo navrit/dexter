@@ -122,23 +122,28 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
 #ifdef SKIPMOSTPIXELS
       cursor += pixels_per_word;
 #else
+    {
+        uint16_t *dest = row + cursor;
+        uint64_t pixels = pixelword;
         switch (counter_bits) {
         case 12:  for(int k=0; k<5; ++k) {
-                    row[cursor++] = uint16_t(pixelword & 0xfff);
-                    pixelword >>= 12;
+                    *dest++ = uint16_t(pixels & 0xfff);
+                    pixels >>= 12;
                   }
             break;
         case 6:  for(int k=0; k<10; ++k) {
-                    row[cursor++] = uint16_t(pixelword & 0x3f);
-                    pixelword >>= 6;
+                    *dest++ = uint16_t(pixels & 0x3f);
+                    pixels >>= 6;
                   }
             break;
         case 1:  for(int k=0; k<60; ++k) {
-                    row[cursor++] = uint16_t(pixelword & 0x1);
-                    pixelword >>= 1;
+                    *dest++ = uint16_t(pixels & 0x1);
+                    pixels >>= 1;
                   }
             break;
         }
+        cursor += pixels_per_word;
+    }
 #endif
       assert (cursor < MPX_PIXEL_COLUMNS);
       break;
