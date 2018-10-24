@@ -4,9 +4,10 @@
 #include <chrono>
 #include <errno.h>
 
-UdpReceiver::UdpReceiver(bool lutBug) {
+UdpReceiver::UdpReceiver(int ipaddr, bool lutBug) {
   console = spdlog::stdout_color_mt("console");
   spdlog::get("console")->set_level(spdlog::level::debug);
+  initSocket(ipaddr);
   this->lutBug = lutBug;
 }
 
@@ -15,18 +16,8 @@ UdpReceiver::~UdpReceiver() {
   // stop(); //! TODO implement, delete some pointers?
 }
 
-bool UdpReceiver::initThread(const char *ipaddr, int UDP_Port) {
-  print_affinity();
-  set_cpu_affinity();
-  print_affinity();
-  if (set_scheduler() != 0) {
-    spdlog::get("console")->error("Could not set scheduler");
-  }
+bool UdpReceiver::initThread(int UDP_Port) {
 
-  (void) ipaddr; //! Purely to suppress the warning about ipaddr not being used.
-
-  initSocket(); //! No arguments --> listens on all IP addresses
-                //! Arguments --> IP address as const char *
   initFileDescriptorsAndBindToPorts(UDP_Port);
 
   FrameAssembler::lutInit(lutBug);
@@ -43,6 +34,13 @@ bool UdpReceiver::initThread(const char *ipaddr, int UDP_Port) {
 }
 
 void UdpReceiver::run() {
+
+  print_affinity();
+  set_cpu_affinity();
+  print_affinity();
+  if (set_scheduler() != 0) {
+    spdlog::get("console")->error("Could not set scheduler");
+  }
 
   spdlog::get("console")->debug("Run started");
 
@@ -233,21 +231,14 @@ unsigned int UdpReceiver::inet_addr(const char *str) {
   return *(unsigned int *)arr;
 }
 
-bool UdpReceiver::initSocket(const char *inetIPAddr) {
+bool UdpReceiver::initSocket(int inetIPAddr) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
   listen_address = {0};
 #pragma GCC diagnostic pop
   listen_address.sin_family = AF_INET;
-  if (strcmp(inetIPAddr, "")) {
-    listen_address.sin_addr.s_addr = inet_addr(inetIPAddr);
+    listen_address.sin_addr.s_addr = htonl(inetIPAddr);
     spdlog::get("console")->info("Listening on {}", inetIPAddr);
-  } else {
-    listen_address.sin_addr.s_addr =
-        htonl(INADDR_ANY); //! Address to accept any incoming messages
-    spdlog::get("console")->info("Listening on ANY ADDRESS");
-    //! Eg. inet_addr("127.0.0.1");
-  }
   std::memset(peers, 0, sizeof(peers));
   return true;
 }

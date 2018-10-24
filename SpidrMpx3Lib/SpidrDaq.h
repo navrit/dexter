@@ -31,8 +31,8 @@ class MY_LIB_API SpidrDaq
 {
  public:
   // C'tor, d'tor
-  SpidrDaq( int ipaddr3, int ipaddr2, int ipaddr1, int ipaddr0,
-	    int port, int readout_mask = 0xF );
+  //SpidrDaq( int ipaddr3, int ipaddr2, int ipaddr1, int ipaddr0,
+        //int port, int readout_mask = 0xF );
   SpidrDaq( SpidrController *spidrctrl, int readout_mask = 0xF );
   ~SpidrDaq();
 
@@ -102,10 +102,8 @@ class MY_LIB_API SpidrDaq
                          int             *ids,
                          int             *ports,
                          int             *types );
-  void init( int             *ipaddr,
-             int             *ids,
+  void init( int             ipaddr,
              int             *ports,
-             int             *types,
              SpidrController *spidrctrl );
 };
 

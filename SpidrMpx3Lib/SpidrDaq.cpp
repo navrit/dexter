@@ -44,32 +44,6 @@ const int   VERSION_ID = 0x18101200;
 // Constructor / destructor / info
 // ----------------------------------------------------------------------------
 
-SpidrDaq::SpidrDaq( int ipaddr3,
-		    int ipaddr2,
-		    int ipaddr1,
-		    int ipaddr0,
-		    int port,
-		    int readout_mask )
-{
-  // Start data-acquisition with the given read-out mask
-  // on the SPIDR module with the given IP address and port number
-  int ipaddr[4] = { ipaddr0, ipaddr1, ipaddr2, ipaddr3 };
-  int ids[4]    = { 0, 0, 0, 0 };
-  int ports[4]  = { port, port+1, port+2, port+3 };
-  int types[4]  = { 0, 0, 0, 0 };
-
-  // Adjust SPIDR read-out mask if requested:
-  // Reset unwanted ports/devices to 0
-  for( int i=0; i<4; ++i )
-    if( (readout_mask & (1<<i)) == 0 ) ports[i] = 0;
-  // Read out the remaining devices
-  readout_mask = 0;
-  for( int i=0; i<4; ++i )
-    if( ports[i] != 0 ) readout_mask |= (1<<i);
-
-  this->init( ipaddr, ids, ports, types, 0 );
-}
-
 // ----------------------------------------------------------------------------
 
 SpidrDaq::SpidrDaq( SpidrController *spidrctrl,
@@ -78,7 +52,6 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl,
   // If a SpidrController object is provided use it to find out the SPIDR's
   // Medipix device configuration and IP destination address, or else assume
   // a default IP address and a single device with a default port number
-  int ipaddr[4] = { 1, 1, 168, 192 };
   int ids[4]    = { 0, 0, 0, 0 };
   int ports[4]  = { 8192, 0, 0, 0 };
   int types[4]  = { 0, 0, 0, 0 };
@@ -87,13 +60,7 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl,
       // Get the IP destination address (this host network interface)
       // from the SPIDR module
       int addr = 0;
-      if( spidrctrl->getIpAddrDest( 0, &addr ) )
-	{
-	  ipaddr[3] = (addr >> 24) & 0xFF;
-	  ipaddr[2] = (addr >> 16) & 0xFF;
-	  ipaddr[1] = (addr >>  8) & 0xFF;
-	  ipaddr[0] = (addr >>  0) & 0xFF;
-	}
+      spidrctrl->getIpAddrDest( 0, &addr);
 
       this->getIdsPortsTypes( spidrctrl, ids, ports, types );
 
@@ -110,8 +77,8 @@ SpidrDaq::SpidrDaq( SpidrController *spidrctrl,
       int device_mask;
       if( spidrctrl->getAcqEnable(&device_mask) && device_mask != readout_mask )
 	spidrctrl->setAcqEnable( readout_mask );
+          this->init(addr, ports, spidrctrl );
     }
-  this->init( ipaddr, ids, ports, types, spidrctrl );
 }
 
 // ----------------------------------------------------------------------------
@@ -142,16 +109,14 @@ void SpidrDaq::getIdsPortsTypes( SpidrController *spidrctrl,
 
 // ----------------------------------------------------------------------------
 
-void SpidrDaq::init( int             *ipaddr,
-		     int             *ids,
+void SpidrDaq::init( int     ipaddr,
 		     int             *ports,
-		     int             *types,
 		     SpidrController *spidrctrl )
 {
     int fwVersion;
     spidrctrl->getFirmwVersion(&fwVersion);
-    udpReceiver = new UdpReceiver(fwVersion < 0x18100100);
-    if (udpReceiver->initThread("", ports[0]) == true) {
+    udpReceiver = new UdpReceiver(ipaddr, fwVersion < 0x18100100);
+    if (udpReceiver->initThread(ports[0]) == true) {
         th = udpReceiver->spawn();
     }
     frameSetManager = udpReceiver->getFrameSetManager();

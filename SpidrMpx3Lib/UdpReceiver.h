@@ -35,9 +35,9 @@ struct peer_t {
 class UdpReceiver {
 
 public:
-  UdpReceiver(bool lutBug); //! TODO add parent pointer
+  UdpReceiver(int ipaddr, bool lutBug); //! TODO add parent pointer
   virtual ~UdpReceiver();
-  bool initThread(const char *ipaddr="", int UDP_Port=50000);
+  bool initThread(int UDP_Port=50000);
   void run();
   std::thread spawn() {
       return std::thread(&UdpReceiver::run, this);
@@ -65,7 +65,7 @@ public:
 
 private:
   unsigned int inet_addr(const char *str);
-  bool initSocket(const char *inetIPAddr = "");
+  bool initSocket(int inetIPAddr);
   bool initFileDescriptorsAndBindToPorts(int UDP_Port);
   void closeFD();
 
