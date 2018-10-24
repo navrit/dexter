@@ -126,10 +126,11 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
         uint16_t *dest = row + cursor;
         uint64_t pixels = pixelword;
         switch (counter_bits) {
-        case 12:  for(int k=0; k<5; ++k) {
-                    *dest++ = uint16_t(pixels & 0xfff);
-                    pixels >>= 12;
-                  }
+        case 12:  *dest++ = uint16_t(pixels & 0xfff); pixels >>= 12;
+                  *dest++ = uint16_t(pixels & 0xfff); pixels >>= 12;
+                  *dest++ = uint16_t(pixels & 0xfff); pixels >>= 12;
+                  *dest++ = uint16_t(pixels & 0xfff); pixels >>= 12;
+                  *dest++ = uint16_t(pixels & 0xfff);
             break;
         case 6:  for(int k=0; k<10; ++k) {
                     *dest++ = uint16_t(pixels & 0x3f);
