@@ -116,7 +116,7 @@ void FrameSetManager::putChipFrame(int chipIndex, ChipFrame* cf, uint8_t frameId
 ChipFrame *FrameSetManager::newChipFrame(int chipIndex) {
     std::lock_guard<std::mutex> lock(headMut);
     uint ahead = head_;
-    if (headState == 1) ahead++;
+    if (headState == 1 && ! expectCounterH) ahead++;
     FrameSet *scratch = &fs[ahead & FSM_MASK];
     ChipFrame *frame = scratch->takeChipFrame(chipIndex, expectCounterH);
     return frame == nullptr ? new ChipFrame() : frame;
