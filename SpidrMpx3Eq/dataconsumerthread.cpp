@@ -96,20 +96,6 @@ void DataConsumerThread::consume()
     }
 }
 
-void DataConsumerThread::copydata(int * source, size_t num )
-{
-
-    memcpy( buffer + descriptor, source, num );
-
-    descriptor += num/4;            // 4 bytes per integer
-
-    // rewind descriptor -- circular buffer
-    if ( descriptor >= _bufferSize ) {
-        descriptor = 0;
-        //qDebug() << " ... circ buffer ... ";
-    }
-}
-
 void DataConsumerThread::copydata(FrameSet * source, int chipIndex)
 {
 
@@ -123,13 +109,6 @@ void DataConsumerThread::copydata(FrameSet * source, int chipIndex)
         descriptor = 0;
         //qDebug() << " ... circ buffer ... ";
     }
-}
-
-void DataConsumerThread::rewindcopydata(int nChipsRewind, size_t num) {
-    descriptor -= nChipsRewind * (num/4);
-}
-void DataConsumerThread::rewindcopydata(size_t num) {
-    descriptor -= num/4;
 }
 
 void DataConsumerThread::freeResources() {
