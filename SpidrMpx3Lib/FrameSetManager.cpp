@@ -18,38 +18,32 @@ bool FrameSetManager::isEmpty() {
 }
 
 bool FrameSetManager::wait(unsigned long timeout_ms) {
-    std::unique_lock<std::mutex> lock(tailMut);
-    auto duration = std::chrono::milliseconds(timeout_ms);
 
-    if (isEmpty())
+    if (isEmpty()) {
+        auto duration = std::chrono::milliseconds(timeout_ms);
+        std::unique_lock<std::mutex> lock(tailMut);
         return _frameAvailableCondition.wait_for( lock, duration ) == std::cv_status::no_timeout;
-    else
+    } else
         return true;
 }
 
 FrameSet * FrameSetManager::getFrameSet() {
     if (head_ == tail_) return nullptr;
-    std::lock_guard<std::mutex> lock(tailMut);
-    tailState = 3;
     return &fs[tail_ & FSM_MASK];
 }
 
 void FrameSetManager::releaseFrameSet(FrameSet *fsUsed) {
     std::lock_guard<std::mutex> lock(tailMut);
     if (fsUsed == &fs[tail_ & FSM_MASK]) {
-        assert (tailState == 3);
         fsUsed->clear();
         tail_++;
-        tailState = 0;
     } else if (fsUsed == nullptr) {
         if (tail_ != head_) {
             fs[tail_ & FSM_MASK].clear();
             tail_++;
         }
-        tailState = 0;
     } else {
         std::cerr << " spurious release of FrameSet" << std::endl;
-        tailState = 0;
     }
 }
 

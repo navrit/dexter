@@ -33,7 +33,7 @@ private:
     uint8_t frameId;
     bool expectCounterH = false;
     // for diagnostics: 0=unused, 1=draft, 2=published, 3=reading
-    int headState = 0, tailState = 0;
+    int headState = 0;
     std::atomic_uint head_{0};
     std::atomic_uint tail_{0};
     std::condition_variable _frameAvailableCondition;
