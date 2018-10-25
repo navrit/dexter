@@ -50,8 +50,8 @@ DataConsumerThread::~DataConsumerThread() {
 
     _mutex.lock();
     _abort = true;          // will stop run as soon as possible
-    _condition.wakeOne();   // wake up if sleeping
     _mutex.unlock();
+    _condition.wakeOne();   // wake up if sleeping
 
     wait(); // wait 'til run has exited before the base class destructor is invoked
 
@@ -91,6 +91,7 @@ void DataConsumerThread::consume()
 
     } else {
         _restart = true;
+        locker.unlock();
         _condition.wakeOne();
     }
 }
