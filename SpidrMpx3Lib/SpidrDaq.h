@@ -54,6 +54,7 @@ class MY_LIB_API SpidrDaq
 
   // Acquisition
   //int       numberOfDevices     ( ) { return (int) _frameReceivers.size(); }
+  int      framesAvailable      ();
   bool      hasFrame            ( unsigned long timeout_ms = 0 );
   FrameSet  *getFrameSet           ();
   void      releaseFrame        (FrameSet *fs = nullptr);

@@ -204,6 +204,11 @@ void SpidrDaq::setLutEnable( bool enable )
 // Acquisition
 // ----------------------------------------------------------------------------
 
+int SpidrDaq::framesAvailable()
+{
+  return frameSetManager->available();
+}
+
 bool SpidrDaq::hasFrame( unsigned long timeout_ms )
 {
   return frameSetManager->wait(timeout_ms);

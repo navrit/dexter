@@ -17,6 +17,10 @@ bool FrameSetManager::isEmpty() {
     return head_ == tail_;
 }
 
+int FrameSetManager::available() {
+    return int(head_ - tail_);
+}
+
 bool FrameSetManager::wait(unsigned long timeout_ms) {
 
     if (isEmpty()) {
