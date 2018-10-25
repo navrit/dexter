@@ -8,9 +8,6 @@ namespace Ui {
 class thresholdScan;
 }
 
-class ThresholdScanThread;
-class SpidrController;
-
 class thresholdScan : public QWidget
 {
     Q_OBJECT
@@ -104,43 +101,6 @@ private slots:
 signals:
     void slideAndSpin(int, int);
     void scanIsDone(void);
-};
-
-class ThresholdScanThread : public QThread {
-
-    Q_OBJECT
-
-public:
-    explicit ThresholdScanThread(Mpx3GUI *, thresholdScan *);
-    void SetMpx3GUI(Mpx3GUI *p);
-
-    void ConnectToHardware();
-
-    bool getAbort();
-    void setAbort(bool);
-
-private:
-
-    void run();
-
-    Mpx3GUI * _mpx3gui = nullptr;
-    thresholdScan * _thresholdScan = nullptr;
-    Ui::thresholdScan * _ui = nullptr;
-
-    SpidrController * _spidrcontrol = nullptr;
-
-    // IP source address (SPIDR network interface)
-    int _srcAddr;
-    int * _data = nullptr;
-    int * _summedData = nullptr;
-
-    QVector<int> _turnOnThresholds;
-
-    void sumArrays(int, int);
-
-    bool scanContinue = true;
-    bool abort = false; // Not used...
-
 };
 
 #endif // THRESHOLDSCAN_H
