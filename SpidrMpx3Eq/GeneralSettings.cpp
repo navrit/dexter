@@ -2,6 +2,10 @@
 
 GeneralSettings::GeneralSettings(QObject *parent) : QObject(parent)
 {
+    // set a default value for thl to energy calibration slope parameters
+    for(int i=0; i<NUMBER_OF_CHIPS; i++) {
+        _slopes[i] = 1;
+    }
 
 }
 

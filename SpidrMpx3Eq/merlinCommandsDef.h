@@ -62,7 +62,7 @@
 //end of masking pixels
 #define EQUALIZATIONFILES "EQUALIZATIONFILE"
 #define CONFIGFILE  "CONFIGFILE"
-#define SAVEGONFIGS "SAVECONFIGS"
+#define SAVECONFIGS "SAVECONFIGS"
 //#define EQUALIZATIONFILE  "EQUALIZATIONFILE"
 #define DOEQUALIZATION "DOEQUALIZATION"
 #define SLOPES "SLOPE"
@@ -75,7 +75,7 @@
 #define TPPIXELSPACING      "TPPIXELSPACING"
 //end of testpulses
 
-//enrgy calibration
+//energy calibration
 
 
 
