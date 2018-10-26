@@ -104,7 +104,7 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     ui->omrDisplayLabel->setFont( font1 );
     ui->omrDisplayLabel->setTextFormat( Qt::RichText );
 
-    ui->readOMRPushButton->setHidden(1);
+    ui->readOMRPushButton->setHidden(0);
     qCstmConfigMonitoring = this;
 
 }
@@ -234,6 +234,8 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 
     // This will crash if not connected
     spidrcontrol->getOmr( dev_nr, omr );
+
+
 
     cout << "[OMR ]" << endl;
 
@@ -766,17 +768,28 @@ void QCstmConfigMonitoring::readMonitoringInfo() {
 
 void QCstmConfigMonitoring::on_SaveButton_clicked()
 {
-    QFileDialog saveDialog(this, tr("Save configuration"), tr("./config"), tr("Json files (*.json)"));
-    saveDialog.setAcceptMode(QFileDialog::AcceptSave);
-    saveDialog.setDefaultSuffix("json");
-    //saveDialog.setDirectory("./config");
-    saveDialog.exec();
-    if( saveDialog.selectedFiles().empty() ) return; // the user hit Cancel
-    QString filename = saveDialog.selectedFiles().first();
+    if(!_saveConfigFileRemotely)
+    {
+
+        QFileDialog saveDialog(this, tr("Save configuration"), tr("./config"), tr("Json files (*.json)"));
+        saveDialog.setAcceptMode(QFileDialog::AcceptSave);
+        saveDialog.setDefaultSuffix("json");
+        //saveDialog.setDirectory("./config");
+        saveDialog.exec();
+        if( saveDialog.selectedFiles().empty() ) return; // the user hit Cancel
+        _conigFileDestination = saveDialog.selectedFiles().first();
+    }
+    _saveConfigFileRemotely = false; //reset the flag
     //QFileDialog dialog;
     //dialog.setDefaultSuffix("json");//Bugged under Linux?
     //QString filename = dialog.getSaveFileName(this, tr("Save configuration"), tr("./config"), tr("Json files (*.json)"));
-    _mpx3gui->getConfig()->toJsonFile(filename, ui->IncludeDacsCheck->isChecked());
+    _mpx3gui->getConfig()->toJsonFile(_conigFileDestination, ui->IncludeDacsCheck->isChecked());
+}
+
+void QCstmConfigMonitoring::saveConfigFileRemotely(QString path){
+    _saveConfigFileRemotely = true;
+    _conigFileDestination = path;
+    on_SaveButton_clicked();
 }
 
 void QCstmConfigMonitoring::on_LoadButton_clicked() {

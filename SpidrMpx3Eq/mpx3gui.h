@@ -37,6 +37,8 @@ class Mpx3Config;
 #include <stdio.h>
 #include <QCoreApplication>
 #include <QTimer>
+#include "GeneralSettings.h"
+#include "EnergyCalibrator.h"
 
 class Mpx3Config;
 class QCustomPlot;
@@ -99,7 +101,11 @@ public:
 
 
 
+
 private:
+
+    QTimer *timer; //timer to autoconnect
+    EnergyCalibrator *_energyCalibrator;
     // ML605 layout
     //vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
     //vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
@@ -146,8 +152,18 @@ private:
     void initialiseServers();
 
     bool m_offset = false; //! Used for generating different patterns per test pattern
+
+    bool _loadConfigRemotly = false;
+    QString _configPath = "";
+
+    GeneralSettings *_generalSettings;
+    void _loadGeneralSettings(void);
+
 public:
 
+    GeneralSettings* getGenralSettings(){ return _generalSettings;}
+    EnergyCalibrator* getEnergyCalibrator() {return _energyCalibrator;}
+    void updateEnergyCalibratorParameters(void);
     Mpx3Config* getConfig();
     void closeRemotely(){on_actionDisconnect_triggered(false);}
     Dataset* getDataset(){return workingSet;}
@@ -215,6 +231,7 @@ public:
     int getStepperMotorPageID();
 
     void loadLastConfiguration();
+    QString getConfigPath(){ return _configPath;}
 
 signals:
     void dataChanged();
@@ -254,6 +271,7 @@ public slots:
     void set_summing(bool);
     void save_config();
     void load_config();
+    void load_config_remotely(QString path);
     void onConnectionStatusChanged(bool);
 
     //! Status bar slot functions
@@ -267,6 +285,8 @@ public slots:
     void developerMode();
 
     void loadEqualisationFromPathRemotely(QString path);
+
+    void onEqualizationPathExported(QString path);
 
 private slots:
     void LoadEqualization();
@@ -283,6 +303,7 @@ private slots:
     void on_actionAbout_triggered(bool checked);
     void on_actionStepper_Motor_triggered(bool checked);
     void on_actionThreshold_Scan_triggered(bool);
+    void onTimeout(void);
 };
 
 

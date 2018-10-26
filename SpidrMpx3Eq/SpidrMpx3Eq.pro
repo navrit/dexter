@@ -104,7 +104,9 @@ SOURCES += main.cpp \
     tcpserver.cpp \
     tcpconnecton.cpp \
     tcpconnections.cpp \
-    commandhandlerwrapper.cpp
+    commandhandlerwrapper.cpp \
+    GeneralSettings.cpp \
+    EnergyCalibrator.cpp
 
 HEADERS += mpx3gui.h \
     qcstmplotheatmap.h \
@@ -154,7 +156,9 @@ HEADERS += mpx3gui.h \
     tcpserver.h \
     tcpconnecton.h \
     tcpconnections.h \
-    commandhandlerwrapper.h
+    commandhandlerwrapper.h \
+    GeneralSettings.h \
+    EnergyCalibrator.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \

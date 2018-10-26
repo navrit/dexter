@@ -55,11 +55,22 @@ public:
     void getImage(void);
     int setPixelMask(int,int);
     int setPixelUnmask(int,int);
-    void loadEqualizationRemotely(QString path);
+    int loadEqualizationRemotely(QString path);
     QString getEqualizationPath();
+    int loadConfigRemotely(QString path);
+    QString getConfigPath(void);
+    int saveConfigRemotely(QString);
     int doEqualizationRemotely(QString path);
     int setInhibitShutter(bool);
     bool getInhibitShutter();
+
+    int setSlope(int chipNum,double val);
+    double getSlope(int chipNum);
+
+    int setOffset(int chipNum,double val);
+    double getOffset(int chipNum);
+
+    int resetSlopesAndOffsets(void);
 
     //data
     void emitrequestForAnotherSocket(int);
@@ -81,6 +92,8 @@ signals:
     void requestToStartStopThresholdScan(void);
     void requestToDoEqualizationRemotely(QString);
     void requestToSetInhibitShutterRemotely(bool);
+    void requestToLoadConfigRemotely(QString);
+    void requestToSaveConfigRemotely(QString);
 
 public slots:
     void on_doneWithOneFrame(int);

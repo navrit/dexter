@@ -61,15 +61,26 @@
 #define MASKEDMATRIXPATH "MASKEDMATRIXPATH" //does not exist in M doc(set and get the path of masked pixel matrix)
 //end of masking pixels
 #define EQUALIZATIONFILES "EQUALIZATIONFILE"
+#define CONFIGFILE  "CONFIGFILE"
+#define SAVEGONFIGS "SAVECONFIGS"
 //#define EQUALIZATIONFILE  "EQUALIZATIONFILE"
-#define EQUALIZATION "EQUALIZATION"
-
+#define DOEQUALIZATION "DOEQUALIZATION"
+#define SLOPES "SLOPE"
+#define OFFSETS "OFFSET"
+#define RESETSLOPESANDOFFSETS "RESETSLOPESANDOFFSETS"
 //testpulses
 #define TPINJECTIONCHARGE "TPINJECTIONCHARGE"
 #define TPLENGTH          "TPLENGTH"
 #define TPPERIOD           "TPPERIOD"
 #define TPPIXELSPACING      "TPPIXELSPACING"
 //end of testpulses
+
+//enrgy calibration
+
+
+
+
+//end of energy calibration
 
 
 #endif // MERLINCOMMANDSDEF_H

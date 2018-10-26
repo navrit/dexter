@@ -22,6 +22,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QDateTime>
+#include "mpx3dacsdescr.h"
 
 
 QCstmGLVisualization* qCstmGLVisualizationInst;
@@ -2321,8 +2322,30 @@ uint32 assembleData(uint8 a,uint8 b,uint8 c,uint8 d){
 
 void QCstmGLVisualization::on_testBtn_clicked()
 {
-    Mpx3GUI::getInstance()->getConfig()->setInhabitShutter(true);
-    Mpx3GUI::getInstance()->getConfig()->setInhabitShutter(false);
+//    for(int i = 0; i< 4; i++)
+//    {
+//    int val22 = 0;
+//    Mpx3GUI::getInstance()->GetSpidrController()->getDac(i,MPX3RX_DAC_TABLE[ 0 ].code,&val22);
+//    qDebug() << "value : " << val22;
+//    }
+
+    qDebug () << "SlOPE 0 :" << Mpx3GUI::getInstance()->getGenralSettings()->getSlope(0);
+    qDebug () << "SlOPE 1 :" << Mpx3GUI::getInstance()->getGenralSettings()->getSlope(1);
+    qDebug () << "SlOPE 2 :" << Mpx3GUI::getInstance()->getGenralSettings()->getSlope(2);
+    qDebug () << "SlOPE 3 :" << Mpx3GUI::getInstance()->getGenralSettings()->getSlope(3);
+
+
+    //Mpx3GUI::getInstance()->getConfig()->setInhabitShutter(true);
+   // Mpx3GUI::getInstance()->getConfig()->setInhabitShutter(false);
+
+//    GeneralSettings *settings = new GeneralSettings;
+//    //settings->setConfigPath("Kiavash");
+//    //settings->setEqualizationPath("Matin");
+//    //settings->writeSetting();
+//    settings->readSetting();
+//    qDebug() << "Equalization path : " << settings->getEqualizationPath();
+//    qDebug() << "Config path : " << settings->getConfigPath();
+
 
 //    std::pair<const char*,int> image = Mpx3GUI::getInstance()->getDataset()->toSocketData();
 //    qDebug() << "Image size is : " << image.second;

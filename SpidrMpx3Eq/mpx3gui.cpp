@@ -220,6 +220,12 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
 
     initialiseServers();
 
+    timer = new QTimer(this);
+    timer->start(500);
+    connect(timer,SIGNAL(timeout()),this,SLOT(onTimeout()));
+    _generalSettings = new GeneralSettings;
+    _energyCalibrator = new EnergyCalibrator;
+    updateEnergyCalibratorParameters();
     mpx3GuiInstance = this;
 }
 
@@ -269,6 +275,11 @@ void Mpx3GUI::loadEqualisationFromPathRemotely(QString path)
 {
     bool getPath = true;
     _ui->equalizationWidget->LoadEqualization(getPath,true,path);
+}
+
+void Mpx3GUI::onEqualizationPathExported(QString path)
+{
+    _generalSettings->setEqualizationPath(path);
 }
 
 bool Mpx3GUI::equalizationLoaded(){
@@ -976,6 +987,49 @@ void Mpx3GUI::initialiseServers()
 
 }
 
+void Mpx3GUI::_loadGeneralSettings()
+{
+
+    QDir eqDir(_generalSettings->getEqualizationPath());
+    if(eqDir.exists()){
+        getEqualization()->LoadEqualization(false,false,_generalSettings->getEqualizationPath());
+        qDebug() << "Equalization loaded from" << _generalSettings->getEqualizationPath();
+    }
+
+
+    QStringList pathList = _generalSettings->getConfigPath().split(QDir::separator());
+    QString filename = pathList.last();
+    //construct the path directory again
+    QString path; path.clear();
+    for (int i = 0; i < pathList.length() - 1; ++i) {
+         path += pathList.at(i) + QDir::separator();
+    }
+
+
+
+
+
+    QDir confDir(path);
+    if(confDir.exists() && filename.split(".").last() == "json"){
+        load_config_remotely(_generalSettings->getConfigPath());
+        qDebug() << "Config file loaded from : " << path + filename;
+    }
+
+
+
+}
+
+void Mpx3GUI::updateEnergyCalibratorParameters()
+{
+    _generalSettings->readSetting();
+    for(int i = 0; i < NUMBER_OF_CHIPS; i++){
+        _energyCalibrator->setSlope(i,_generalSettings->getSlope(i));
+        qDebug() << "load slope " + QString::number(i) +" : " << _energyCalibrator->getSlope(i);
+        _energyCalibrator->setOffset(i,_generalSettings->getOffset(i));
+    }
+
+}
+
 void Mpx3GUI::developerMode()
 {
     if (devMode){
@@ -1141,13 +1195,26 @@ void Mpx3GUI::save_config(){
 }
 
 void Mpx3GUI::load_config(){
-    QString filename = QFileDialog::getOpenFileName(this, tr("Load config (DACs)"), tr("."), tr("json files (*.json)"));
-    config->fromJsonFile(filename);
+
+    if(!_loadConfigRemotly){
+       _configPath  = QFileDialog::getOpenFileName(this, tr("Load config (DACs)"), tr("."), tr("json files (*.json)"));
+    }
+    config->fromJsonFile(_configPath);
+    _generalSettings->setConfigPath(_configPath);
 
     // update the dacs
     _ui->DACsWidget->PopulateDACValues();
 
+    _loadConfigRemotly = false; //reset the flag
+
     return;
+}
+
+void Mpx3GUI::load_config_remotely(QString path)
+{
+    _loadConfigRemotly = true;
+    _configPath = path;
+    load_config();
 }
 
 void Mpx3GUI::onConnectionStatusChanged(bool conn)
@@ -1597,4 +1664,18 @@ void Mpx3GUI::on_actionThreshold_Scan_triggered(bool)
     uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __thresholdScan_page_Id );
     _ui->actionThreshold_Scan->setChecked(1);
+}
+
+void Mpx3GUI::onTimeout()
+{
+    qDebug() << "Connecting automatically to detector...!";
+    timer->stop();
+    disconnect(timer,SIGNAL(timeout()),this,SLOT(onTimeout()));
+    delete timer;
+    on_actionConnect_triggered();
+    if(GetSpidrController() != nullptr && GetSpidrController()->isConnected()){
+        connect(getEqualization(),SIGNAL(equalizationPathExported(QString)),this,SLOT(onEqualizationPathExported(QString)));
+        _loadGeneralSettings();
+    }
+
 }

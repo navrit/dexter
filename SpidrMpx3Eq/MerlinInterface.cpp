@@ -76,7 +76,8 @@ MerlinCommand::MerlinCommand(QString command, MerlinInterface &mi)
         //_error = PARAM_OUT_OF_RANGE;
         //parseResult = QString::number(PARAM_OUT_OF_RANGE); return;
     //}
-    if((items.at(TYPE_INDEX) == CMD_TYPE || items.at(TYPE_INDEX) == GET_TYPE) && items.length() != CMD_GET_PARTS){
+    bool isLengthCorrect = (items.length() == CMD_GET_PARTS || items.length() == CMD_GET_PARTS+1);
+    if((items.at(TYPE_INDEX) == CMD_TYPE || items.at(TYPE_INDEX) == GET_TYPE) && !isLengthCorrect ){
         _error = PARAM_OUT_OF_RANGE;
         parseResult = QString::number(PARAM_OUT_OF_RANGE); return;
     }
@@ -84,7 +85,7 @@ MerlinCommand::MerlinCommand(QString command, MerlinInterface &mi)
     _cmdLength = items.at(LENGTH_INDEX).toInt();
     _cmdType = items.at(TYPE_INDEX);
     _cmdName = items.at(NAME_INDEX);
-    if(items.at(TYPE_INDEX) == SET_TYPE)
+    if(items.at(TYPE_INDEX) == SET_TYPE || (items.at(TYPE_INDEX) == GET_TYPE && items.length() == CMD_GET_PARTS + 1))
     {
          _cmdValue.push_back(items.at(VALUE_INDEX));
         if(items.length() == SET_PARTS) //means commands comes with two arguments
@@ -141,6 +142,7 @@ MerlinCommand::MerlinCommand(QString command, MerlinInterface &mi)
     if( _cmdType == GET_TYPE){
         if(mi.getTable.contains(items.at(NAME_INDEX))){
             QString pslCmd = mi.getTable[_cmdName];
+
             QStringList pslCmdList = pslCmd.split(";");
             if(pslCmdList.length() > 1){
                 PSL_ARG_TYPES pslType = (PSL_ARG_TYPES) pslCmdList.at(1).toInt();
@@ -249,7 +251,10 @@ void MerlinInterface::initializeTables()
     getTable.insert(TRIGGERMODE,"GetTriggerMode");
     getTable.insert(FILEDIRECTORY,"GetRecordPath");
     getTable.insert(EQUALIZATIONFILES,"GetEqualizationPath");
+    getTable.insert(CONFIGFILE,"GetConfig");
     getTable.insert(INHIBITSHUTTER,"GetInhibitShutter");
+    getTable.insert(SLOPES,"GetSlope;" +  QString::number(N));
+    getTable.insert(OFFSETS,"GetOffset;" +  QString::number(N));
 
     //initialize setTable
     setTable.insert(COLOURMODE,"SetColourMode;" + QString::number(ENABLE_DISABLE));
@@ -294,14 +299,20 @@ void MerlinInterface::initializeTables()
     setTable.insert(MASKPIXEL,"SetMaskPixel;"+QString::number(N)+";"+QString::number(N));
     setTable.insert(UNMASKPIXEL,"SetUnmaskPixel;"+QString::number(N)+";"+QString::number(N));
     setTable.insert(EQUALIZATIONFILES,"SetEqualizationPath;" + QString::number(STRING));
-    setTable.insert(EQUALIZATION,"SetDoEqualization;" + QString::number(STRING));
+    setTable.insert(CONFIGFILE,"SetConfig;" + QString::number(STRING));
+    setTable.insert(SAVEGONFIGS,"SaveConfig;" + QString::number(STRING) );
+    setTable.insert(DOEQUALIZATION,"SetDoEqualization;" + QString::number(STRING));
     setTable.insert(INHIBITSHUTTER,"SetInhibitShutter;" + QString::number(ENABLE_DISABLE));
+    setTable.insert(SLOPES,"SetSlope;"+ QString::number(N)+";"+QString::number(N));
+    setTable.insert(OFFSETS,"SetOffset;"+ QString::number(N)+";"+QString::number(N));
+
 
 
     //initialize cmdTable
     cmdTable.insert(STOPACQUISITION,"Stop");
     cmdTable.insert(STARTACQUISITION,"Start");
     cmdTable.insert(THSCAN,"StarStoptScan");
+    cmdTable.insert(RESETSLOPESANDOFFSETS,"ResetSlopesAndOffsets");
 }
 
 QString MerlinCommand::argParser(PSL_ARG_TYPES argType)

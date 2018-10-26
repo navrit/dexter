@@ -63,6 +63,7 @@ public slots:
     void shortcutCSMOn();
     void setTriggerModeByIndex(int newValIndx);
     int getTriggerModeIndex();
+    void saveConfigFileRemotely(QString path);
 
 private slots:
     void ConnectionStatusChanged(bool);
@@ -113,6 +114,9 @@ private:
     int findTriggerModeIndex(int val);
 
     vector<unsigned int> __csmSpmMap;
+
+    bool _saveConfigFileRemotely = false;
+    QString _conigFileDestination = " ";
 
 };
 

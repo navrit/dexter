@@ -128,7 +128,7 @@
         "LUTEnable": true,
         "MaxPacketSize": 9000,
         "OperationMode": 0,
-        "PixelDepth": 12,
+        "PixelDepth": 24,
         "Polarity": "Positive",
         "TriggerDeadtime_us": 5000,
         "TriggerLength_us": 20000,
@@ -142,7 +142,7 @@
         "chip_3": 10
     },
     "IPConfig": {
-        "SpidrControllerIp": "127.0.0.10",
+        "SpidrControllerIp": "192.168.100.10",
         "SpidrControllerPort": 50000,
         "ZmqPubAddress": "tcp://192.168.178.9:50001",
         "ZmqSubAddress": "tcp://192.168.178.9:50000"

@@ -29,7 +29,8 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(QCstmEqualization::getInstance(),SIGNAL(equalizationPathExported(QString)),this,SLOT(on_equalizationPathExported(QString)));
     connect(this,SIGNAL(requestToStartStopThresholdScan()),thresholdScan::getInstance(),SLOT(on_button_startStop_clicked_remotely()));
     connect(this,SIGNAL(requestToDoEqualizationRemotely(QString)),QCstmEqualization::getInstance(),SLOT(StartEqualizationSequentialSingleChipsRemotely(QString)));
-
+    connect(this,SIGNAL(requestToLoadConfigRemotely(QString)),getGui(),SLOT(load_config_remotely(QString)));
+    connect(this,SIGNAL(requestToSaveConfigRemotely(QString)),QCstmConfigMonitoring::getInstance(),SLOT(saveConfigFileRemotely(QString)));
     initializeCmdTable();
 }
 
@@ -173,6 +174,15 @@ void CommandHandler::initializeCmdTable()
     cmd_struct getEqualizationPath {getEqualizationHandler};
     cmdTable.insert("GetEqualizationPath",getEqualizationPath);
 
+    cmd_struct setConfig {setConfigHandler};
+    cmdTable.insert("SetConfig",setConfig);
+    cmd_struct getConfig {getConfigHandler};
+    cmdTable.insert("GetConfig",getConfig);
+
+    cmd_struct saveConfig{saveConfigHandler};
+    cmdTable.insert("SaveConfig",saveConfig);
+
+
     cmd_struct setDoEqualization {setDoEqualizationHandler};
     cmdTable.insert("SetDoEqualization",setDoEqualization);
 
@@ -181,6 +191,21 @@ void CommandHandler::initializeCmdTable()
 
     cmd_struct getInhibitShutter { getInhibitShutterHandler};
     cmdTable.insert("GetInhibitShutter",getInhibitShutter);
+
+    cmd_struct setSlope {setSlopeHandler};
+    cmdTable.insert("SetSlope",setSlope);
+
+    cmd_struct getSlope {getSlopeHandler};
+    cmdTable.insert("GetSlope",getSlope);
+
+    cmd_struct setOffset {setOffsetHandler};
+    cmdTable.insert("SetOffset",setOffset);
+
+    cmd_struct getOffset {getOffsetHandler};
+    cmdTable.insert("GetOffset",getOffset);
+
+    cmd_struct resetSlopesAndOffsets{resetSlopesAndOffsetsHandler};
+    cmdTable.insert("ResetSlopesAndOffsets",resetSlopesAndOffsets);
 
 
 }
@@ -566,14 +591,58 @@ int CommandHandler::setPixelUnmask(int x , int y)
     emit requestToUnmaskPixelRemotely(x,y);
 }
 
-void CommandHandler::loadEqualizationRemotely(QString path)
+int CommandHandler::loadEqualizationRemotely(QString path)
 {
+    QDir dir(path);
+    if(!dir.exists()){
+        return UNKNOWN_ERROR;
+    }
     emit requestToLoadEqualizationRemotely(path);
+    return NO_ERROR;
 }
 
 QString CommandHandler::getEqualizationPath()
 {
     return _equalizationPath;
+}
+
+int CommandHandler::loadConfigRemotely(QString path)
+{
+
+    QFileInfo file(path);
+    if(!file.exists() || path.split(".").last() != "json" ){
+        return UNKNOWN_ERROR;
+    }
+
+    emit requestToLoadConfigRemotely(path);
+    return NO_ERROR;
+}
+
+QString CommandHandler::getConfigPath()
+{
+    return getGui()->getConfigPath();
+}
+
+int CommandHandler::saveConfigRemotely(QString path)
+{
+    QStringList pathList = path.split(QDir::separator());
+    QString filename = pathList.last();
+    //construct the path directory again
+    path.clear();
+    for (int i = 0; i < pathList.length() - 1; ++i) {
+         path += pathList.at(i) + QDir::separator();
+    }
+
+
+
+    qDebug() << "filename : " << filename;
+    qDebug() << "path : " << path;
+    QDir dir(path);
+    if(!dir.exists() || filename.split(".").last() != "json"){
+        return UNKNOWN_ERROR;
+    }
+    emit requestToSaveConfigRemotely(path + filename);
+    return NO_ERROR;
 }
 
 int CommandHandler::doEqualizationRemotely(QString path)
@@ -605,6 +674,48 @@ bool CommandHandler::getInhibitShutter()
     }
     return false;
 }
+
+int CommandHandler::setSlope(int chipNum, double val)
+{
+
+    if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS)
+        return ARG_VAL_OUT_RANGE;
+    Mpx3GUI::getInstance()-> getGenralSettings()->setSlope(chipNum,val);
+    Mpx3GUI::getInstance()->updateEnergyCalibratorParameters();
+    return NO_ERROR;
+}
+
+double CommandHandler::getSlope(int chipNum)
+{
+    return Mpx3GUI::getInstance()-> getGenralSettings()->getSlope(chipNum);
+}
+
+int CommandHandler::setOffset(int chipNum, double val)
+{
+    if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS)
+        return ARG_VAL_OUT_RANGE;
+    Mpx3GUI::getInstance()-> getGenralSettings()->setOffset(chipNum,val);
+    Mpx3GUI::getInstance()->updateEnergyCalibratorParameters();
+    return NO_ERROR;
+
+}
+
+double CommandHandler::getOffset(int chipNum)
+{
+    return Mpx3GUI::getInstance()-> getGenralSettings()->getOffset(chipNum);
+}
+
+int CommandHandler::resetSlopesAndOffsets()
+{
+    //this means energy = dac
+    for(int i = 0; i < NUMBER_OF_CHIPS; i++){
+        Mpx3GUI::getInstance()-> getGenralSettings()->setOffset(i,0);
+        Mpx3GUI::getInstance()-> getGenralSettings()->setSlope(i,1);
+    }
+    Mpx3GUI::getInstance()->updateEnergyCalibratorParameters();
+    return NO_ERROR;
+}
+
 
 
 void CommandHandler::on_doneWithOneFrame(int frameid)

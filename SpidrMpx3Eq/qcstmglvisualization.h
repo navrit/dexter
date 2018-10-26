@@ -15,6 +15,7 @@
 #include "mpx3gui.h"
 #include "gradient.h"
 #include "histogram.h"
+#include "GeneralSettings.h"
 
 #include <QQueue>
 #include <QVector>

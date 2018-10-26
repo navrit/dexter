@@ -295,7 +295,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
     if ( item == __ALL ) {
         //HDMI 1 configs
         unsigned int val1 = 0x5;//external_shutter first lemo connector
-        val1 = val1;
+
 
         unsigned int val2 = 0xF; //reserved for inhibit shutter ( default is disable) second lemo connector
         val2 = val2 << 4;

@@ -665,10 +665,52 @@ void setThresholdHandler(CommandHandler* ch, Command* cmd){
         return;
     }
     int idx = cmd->arguments.at(0).toInt();
-    int val = cmd->arguments.at(1).toDouble();
+    double val = cmd->arguments.at(1).toDouble(); //energy kev
    // qDebug() <<"Double: " << cmd->arguments.at(1).toDouble() << "..." << idx;
     //qDebug() << "Int : " << cmd->arguments.at(1).toInt();
-    ch->setThreshold(idx,val);
+//    for(int i = 0; i<NUMBER_OF_CHIPS; i++){
+//        int dac = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(i,val);
+
+//        ch->setThreshold(idx,dac,i);
+//        qDebug() << "converted to : " << dac;
+
+
+//    }
+
+    int dac = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(1,val);
+
+    //ch->setThreshold(idx,dac,1);
+    ch->setThreshold(idx,dac); //for some strange reason does not take the set threshold value for chip 1
+                                // this is why first we assign the correspondingthreshold  of chip 1 to all chips
+                                //then we set the correspondig threshold of chip0-2-3 seprately
+
+    qDebug() << "converted to : " << dac;
+
+    dac = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(0,val);
+
+    ch->setThreshold(idx,dac,0);
+
+    qDebug() << "converted to : " << dac;
+
+
+    dac = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(2,val);
+
+    ch->setThreshold(idx,dac,2);
+
+    qDebug() << "converted to : " << dac;
+    dac = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(3,val);
+
+    ch->setThreshold(idx,dac,3);
+
+    qDebug() << "converted to : " << dac;
+
+
+
+
+
+
+
+    //ch->setThreshold(idx,val);
     cmd->setError(NO_ERROR);
 }
 void getThresholdHandler(CommandHandler* ch, Command* cmd){
@@ -691,11 +733,15 @@ void setThresholdPerChipHandler(CommandHandler* ch, Command* cmd){
         return;
     }
     int idx = cmd->arguments.at(0).toInt();
-    int val = cmd->arguments.at(2).toDouble();
+    double val = cmd->arguments.at(2).toDouble(); //energy in Kev
+    qDebug() << "energy recieved : " << val;
     int chipId = cmd->arguments.at(1).toInt();
-   // qDebug() <<"Double: " << cmd->arguments.at(1).toDouble() << "..." << idx;
-    //qDebug() << "Int : " << cmd->arguments.at(1).toInt();
-    ch->setThreshold(idx,val,chipId);
+
+
+    int dac = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(chipId,val);
+
+    qDebug() << "converted to : " << dac;
+    ch->setThreshold(idx,dac,chipId);
     cmd->setError(NO_ERROR);
 }
 
@@ -889,7 +935,8 @@ void setEqualizationHandler(CommandHandler* ch, Command* cmd){
         return;
     }
     QString path = cmd->arguments.at(0);
-    ch->loadEqualizationRemotely(path);
+    int error = ch->loadEqualizationRemotely(path);
+    cmd->setError((ERROR_TYPE) error);
 }
 
 void getEqualizationHandler(CommandHandler* ch, Command* cmd){
@@ -908,6 +955,38 @@ void setDoEqualizationHandler(CommandHandler* ch, Command* cmd){
     QString path = cmd->arguments.at(0);
     ch->doEqualizationRemotely(path);
 }
+
+
+void setConfigHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SetConfig"))  //this command comes with one argument
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    QString path = cmd->arguments.at(0);
+    int error = ch->loadConfigRemotely(path);
+    cmd->setError(((ERROR_TYPE)error));
+
+}
+
+void getConfigHandler(CommandHandler* ch, Command* cmd){
+    cmd->setData(ch->getConfigPath());
+    cmd->setError(NO_ERROR);
+}
+
+
+void saveConfigHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"SaveConfig"))  //this command comes with one argument
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    QString path = cmd->arguments.at(0);
+    int error = ch->saveConfigRemotely(path);
+    cmd->setError(((ERROR_TYPE)error));
+
+}
+
 
 
 
@@ -945,6 +1024,69 @@ void getInhibitShutterHandler(CommandHandler* ch, Command* cmd){
     cmd->setError(NO_ERROR);
     return;
 }
+
+
+void setSlopeHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(2,"SetSlope"))  //this command comes with two arguments (chipNum,val)
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    int error = ch->setSlope(cmd->arguments.at(0).toInt(),cmd->arguments.at(1).toDouble());
+    cmd->setData("1");
+    cmd->setError((ERROR_TYPE) error);
+}
+
+void getSlopeHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"GetSlope"))  //this command comes with one argument (chipNum)
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    int chipNum = cmd->arguments.at(0).toDouble();
+    if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS){
+        cmd->setError(ARG_VAL_OUT_RANGE );
+        return;
+    }
+    cmd->setData(QString::number(ch->getSlope(chipNum)));
+    cmd->setError(NO_ERROR);
+
+}
+
+
+void setOffsetHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(2,"SetOffset"))  //this command comes with two arguments (chipNum,val)
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    int error = ch->setOffset(cmd->arguments.at(0).toInt(),cmd->arguments.at(1).toDouble());
+    cmd->setData("1");
+    cmd->setError((ERROR_TYPE) error);
+}
+
+void getOffsetHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(1,"GetSlope"))  //this command comes with one argument (chipNum)
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    int chipNum = cmd->arguments.at(0).toDouble();
+    if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS){
+        cmd->setError(ARG_VAL_OUT_RANGE );
+        return;
+    }
+    cmd->setData(QString::number(ch->getOffset(chipNum)));
+    cmd->setError(NO_ERROR);
+
+}
+
+void resetSlopesAndOffsetsHandler(CommandHandler* ch, Command* cmd){
+    int error = ch->resetSlopesAndOffsets();
+    cmd->setData("1");
+    cmd->setError((ERROR_TYPE)error);
+}
+
 
 
 //end of handler functions
