@@ -19,7 +19,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
   bool packetLoss;
     if (row_counter >= 0) {
       // we're in a frame
-      int eorIndex = (endCursor - cursor) / pixels_per_word;
+      int eorIndex = (endCursor - (cursor & 0xff)) / pixels_per_word;
       packetLoss = firstType == POLL_TIME_OUT ||
               eorIndex >= packetSize || ! packetEndsRow(pixel_packet[eorIndex]);
     } else {
@@ -36,7 +36,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
       switch (firstType) {
         case PIXEL_DATA_SOR :
           // OK, that can happen on position 0, store the row, claim we finished the previous
-          next_row = extractRow(lutBugFix(pixel_packet[endCursor/pixels_per_word])) - 1;
+          next_row = extractRow(lutBugFix(pixel_packet[endCursor/pixels_per_word]));
           missing = (next_row - last_row) * MPX_PIXEL_COLUMNS;
           assert (next_row >= 0 && next_row < MPX_PIXEL_ROWS);
           break;
