@@ -110,6 +110,9 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
 
     switch (type) {
     case PIXEL_DATA_SOF:
+      assert (frame == nullptr);
+      frame = fsm->newChipFrame(chipIndex);
+      frame->omr = omr;
       row_counter = -1;
       [[fallthrough]];
     case PIXEL_DATA_SOR:
@@ -185,9 +188,6 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
       pixels_per_word = 60 / counter_bits;
       pixel_mask = (1 << counter_bits) - 1;
       endCursor = MPX_PIXEL_COLUMNS - (MPX_PIXEL_COLUMNS % pixels_per_word);
-      assert (frame == nullptr);
-      frame = fsm->newChipFrame(chipIndex);
-      frame->omr = omr;
       break;
     case POLL_TIME_OUT:
       // never mind, we finished the frame above
