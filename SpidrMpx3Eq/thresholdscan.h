@@ -81,7 +81,7 @@ private:
 
 public slots:
     void resumeTHScan();
-    void on_button_startStop_clicked_remotely();
+    void button_startStop_clicked_remotely();
 
 private slots:
 

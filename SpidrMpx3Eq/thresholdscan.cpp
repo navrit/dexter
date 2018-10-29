@@ -224,7 +224,7 @@ void thresholdScan::resumeTHScan()
     }
 }
 
-void thresholdScan::on_button_startStop_clicked_remotely()
+void thresholdScan::button_startStop_clicked_remotely()
 {
     on_button_startStop_clicked();
 }
