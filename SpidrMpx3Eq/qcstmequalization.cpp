@@ -209,7 +209,7 @@ void QCstmEqualization::SetLimits(){
 
 }
 
-void QCstmEqualization::on_logYCheckBox_toggled(bool checked) {
+void QCstmEqualization::on_h1LogyCheckBox_toggled(bool checked) {
 
     // All of them
     int chipListSize = (int)_workChipsIndx.size();

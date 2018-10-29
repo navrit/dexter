@@ -387,7 +387,7 @@ private:
 
 public slots:
     void SaveEqualization(QString path="", bool totempdir = false, bool fetchfromtempdir = false );
-    void on_logYCheckBox_toggled(bool checked);
+    void on_h1LogyCheckBox_toggled(bool checked);
 
 private slots:
 
