@@ -209,7 +209,7 @@ void QCstmEqualization::SetLimits(){
 
 }
 
-void QCstmEqualization::on_logYCheckBox_toggled(bool checked) {
+void QCstmEqualization::on_h1LogyCheckBox_toggled(bool checked) {
 
     // All of them
     int chipListSize = (int)_workChipsIndx.size();
@@ -282,7 +282,7 @@ void QCstmEqualization::NewRunInitEqualization() {
     // And step
     ChangeStep( __default_step_scan );
 
-    int chipListSize = (int)_workChipsIndx.size();
+    int chipListSize = int(_workChipsIndx.size());
     for ( int i = 0 ; i < chipListSize ; i++ ) {
 
         // Decide on how many thresholds will be equalized
@@ -386,11 +386,11 @@ bool QCstmEqualization::InitEqualization(int chipId) {
     }
 
     // _workChipsIndx
-    _nChips = (int) _workChipsIndx.size();
+    _nChips = int(_workChipsIndx.size());
 
     // Create a steering structure for each chip
     // How many chips to equalize
-    int chipListSize = (int)_workChipsIndx.size();
+    int chipListSize = int(_workChipsIndx.size());
 
     // Check if the structures are already there. For instance after a stop.
     for ( int i = 0 ; i < chipListSize ; i++ ) {
@@ -542,7 +542,7 @@ QCheckBox * QCstmEqualization::GetCheckBox(int chipIdx) {
     if ( _workChipsIndx.size() != _checkBoxes.size() ) return nullptr;
 
     // Find the index
-    for (int i = 0 ; i < (int)_workChipsIndx.size() ; i++ ) {
+    for (int i = 0; i < int(_workChipsIndx.size()); i++ ) {
         // return the corresponding results Ptr
         if ( _workChipsIndx[i] == chipIdx ) {
             return _checkBoxes[i];
@@ -600,7 +600,7 @@ BarChart * QCstmEqualization::GetBarChart(int chipIdx) {
     }
 
     // Find the index
-    for (unsigned long i = 0 ; i < _workChipsIndx.size() ; i++ ) {
+    for (unsigned long i = 0; i < _workChipsIndx.size(); i++ ) {
         // return the corresponding results Ptr
         if ( _workChipsIndx[i] == chipIdx ) {
             return _chart[i];
@@ -632,7 +632,7 @@ void QCstmEqualization::KeepOtherChipsQuiet() {
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
     int ndevs = _mpx3gui->getConfig()->getNDevicesSupported();
-    int chipListSize = (int)_workChipsIndx.size();
+    int chipListSize = int(_workChipsIndx.size());
 
     for ( int idx = 0 ; idx < ndevs ; idx++ ) {
 
@@ -641,7 +641,7 @@ void QCstmEqualization::KeepOtherChipsQuiet() {
 
         // If the device is present and it is not in the schedule-for-eq list
         //  apply the high thresholds
-        for ( int i = 0 ; i < chipListSize ; i++ ) if ( _workChipsIndx[i] == idx ) continue;
+        for ( int i = 0; i < chipListSize; i++ ) if ( _workChipsIndx[i] == idx ) continue;
 
         //! Set all the thresholds to the same value. If we're not in colour mode then they aren't connected anyway so it doesn't matter
         for (int i = 1; i <= MPX3RX_DAC_THRESH_7; i++) {
@@ -1406,7 +1406,7 @@ void QCstmEqualization::SaveEqualization(QString path, bool totempdir, bool fetc
         QString copyto = savepath;
         //copyto.append(QDir::separator() );
         QString command = "cp -f " +copyfrom+" "+copyto;
-        qDebug() << command;
+        //qDebug() << command;
 
         // copy adj
         QProcess proc;
@@ -1418,7 +1418,7 @@ void QCstmEqualization::SaveEqualization(QString path, bool totempdir, bool fetc
         copyfrom.append( QDir::separator() );
         copyfrom += "mask_*";
         command = "cp -f " +copyfrom+" "+copyto;
-        qDebug() << command;
+        //qDebug() << command;
 
         // copy masks
         //QFile::copy( copyfrom, copyto );
@@ -1431,39 +1431,11 @@ void QCstmEqualization::SaveEqualization(QString path, bool totempdir, bool fetc
         copyfrom.append( QDir::separator() );
         copyfrom += "chip_*";
         command = "cp -f " +copyfrom+" "+copyto;
-        qDebug() << command;
-
-
+        //qDebug() << command;
 
         proc.start("sh", QStringList() << "-c" << command);
         proc.waitForFinished(5000);
-
-        //        if(GetBarChart(1) != nullptr){
-        //            GetBarChart(1)->savePng(savepath+"/");
-        //            qDebug() << "bar 1 is not null.";
-        //            qDebug() << "save path1 : " << savepath;
-        //        }
-        //        if(GetBarChart(2) != nullptr){
-        //            GetBarChart(2)->savePng(savepath+"/chip_2");
-        //            qDebug() << "bar 2 is not null.";
-        //            qDebug() << "save path2 : " << savepath;
-        //        }
-        //        if(GetBarChart(3) != nullptr){
-        //            GetBarChart(3)->savePng(savepath+"/chip_3");
-        //            qDebug() << "bar 3 is not null.";
-        //            qDebug() << "save path3 : " << savepath;
-        //        }
-
-
-
     }
-
-    //    for(int i = 0; i < _workChipsIndx.size(); i++){
-    //        if(GetBarChart(i) != nullptr)
-    //            GetBarChart(i)->savePng(savepath+"/chip_"+i);
-    //    }
-
-
 
 }
 
