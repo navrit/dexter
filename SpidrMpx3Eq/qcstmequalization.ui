@@ -42,7 +42,7 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <spacer name="horizontalSpacer_2">
+          <spacer name="h1spacer">
            <property name="toolTipDuration">
             <number>-1</number>
            </property>
@@ -58,7 +58,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="QCheckBox" name="logYCheckBox">
+          <widget class="QCheckBox" name="h1LogyCheckBox">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;y log scale&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -71,7 +71,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkBox">
+          <widget class="QCheckBox" name="h1CheckBox">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Adjust histogram&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -200,7 +200,7 @@
           <item>
            <widget class="QPushButton" name="_stopEq">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Stop equalisation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -811,8 +811,8 @@
   <tabstop>nHitsSpinBox</tabstop>
   <tabstop>fineTuningLoopsSpinBox</tabstop>
   <tabstop>eqTextBrowser</tabstop>
-  <tabstop>logYCheckBox</tabstop>
-  <tabstop>checkBox</tabstop>
+  <tabstop>h1LogyCheckBox</tabstop>
+  <tabstop>h1CheckBox</tabstop>
  </tabstops>
  <resources/>
  <connections/>
