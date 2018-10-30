@@ -161,7 +161,7 @@ private:
 
 public:
 
-    GeneralSettings* getGenralSettings(){ return _generalSettings;}
+    GeneralSettings* getGeneralSettings(){ return _generalSettings;}
     EnergyCalibrator* getEnergyCalibrator() {return _energyCalibrator;}
     void updateEnergyCalibratorParameters(void);
     Mpx3Config* getConfig();

@@ -2017,9 +2017,9 @@ void Dataset::setPixel(int x, int y, int threshold, int val) {
 int Dataset::sampleFrameAt(int index, int layer, int x, int y){
     int* frame = getFrameAt(index, layer);
     int orientation = m_frameOrientation[index];
-    if(!(orientation&1))
+    if(orientation&1)
         x = m_nx -x-1;
-    if(orientation&2)
+    if(!(orientation&2))
         y = m_ny -y-1;
     if(orientation&4){
         int tmp = x;

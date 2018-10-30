@@ -658,7 +658,7 @@ int CommandHandler::doEqualizationRemotely(QString path)
 
 int CommandHandler::setInhibitShutter(bool turnOn)
 {
-    connect(this,SIGNAL(requestToSetInhibitShutterRemotely(bool)),Mpx3GUI::getInstance()->getConfig(),SLOT(setInhibitShutter(bool)));
+    connect(this,SIGNAL(requestToSetInhibitShutterRemotely(bool)), Mpx3GUI::getInstance()->getConfig(), SLOT(setInhibitShutter(bool)));
     emit requestToSetInhibitShutterRemotely(turnOn);
     return NO_ERROR;
 }
@@ -666,7 +666,7 @@ int CommandHandler::setInhibitShutter(bool turnOn)
 bool CommandHandler::getInhibitShutter()
 {
     int val = 0;
-    Mpx3GUI::getInstance()->GetSpidrController()->getSpidrReg(0x0810,&val);
+    Mpx3GUI::getInstance()->GetSpidrController()->getSpidrReg(0x0810, &val);
 
     if((val & (0xF << 4)) == (0X8 << 4))
     {
@@ -680,21 +680,21 @@ int CommandHandler::setSlope(int chipNum, double val)
 
     if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS)
         return ARG_VAL_OUT_RANGE;
-    Mpx3GUI::getInstance()-> getGenralSettings()->setSlope(chipNum,val);
+    Mpx3GUI::getInstance()->getGeneralSettings()->setSlope(chipNum, val);
     Mpx3GUI::getInstance()->updateEnergyCalibratorParameters();
     return NO_ERROR;
 }
 
 double CommandHandler::getSlope(int chipNum)
 {
-    return Mpx3GUI::getInstance()-> getGenralSettings()->getSlope(chipNum);
+    return Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(chipNum);
 }
 
 int CommandHandler::setOffset(int chipNum, double val)
 {
     if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS)
         return ARG_VAL_OUT_RANGE;
-    Mpx3GUI::getInstance()-> getGenralSettings()->setOffset(chipNum,val);
+    Mpx3GUI::getInstance()->getGeneralSettings()->setOffset(chipNum, val);
     Mpx3GUI::getInstance()->updateEnergyCalibratorParameters();
     return NO_ERROR;
 
@@ -702,15 +702,15 @@ int CommandHandler::setOffset(int chipNum, double val)
 
 double CommandHandler::getOffset(int chipNum)
 {
-    return Mpx3GUI::getInstance()-> getGenralSettings()->getOffset(chipNum);
+    return Mpx3GUI::getInstance()->getGeneralSettings()->getOffset(chipNum);
 }
 
 int CommandHandler::resetSlopesAndOffsets()
 {
     //this means energy = dac
     for(int i = 0; i < NUMBER_OF_CHIPS; i++){
-        Mpx3GUI::getInstance()-> getGenralSettings()->setOffset(i,0);
-        Mpx3GUI::getInstance()-> getGenralSettings()->setSlope(i,1);
+        Mpx3GUI::getInstance()->getGeneralSettings()->setOffset(i, 0);
+        Mpx3GUI::getInstance()->getGeneralSettings()->setSlope(i, 1);
     }
     Mpx3GUI::getInstance()->updateEnergyCalibratorParameters();
     return NO_ERROR;
@@ -730,7 +730,7 @@ void CommandHandler::on_doneWithOneFrame(int frameid)
     auto len = QString("%1").arg(size, 10, 10, QChar('0'));
     QString firstPart = "MPX," + len + "," + hd;
     qint64 nano3 = tim.nsecsElapsed();
-    emit imageIsReady(firstPart.toLatin1(),frame);
+    emit imageIsReady(firstPart.toLatin1(), frame);
 
     qint64 nanos = tim.nsecsElapsed();
     if (nanos > 600000)

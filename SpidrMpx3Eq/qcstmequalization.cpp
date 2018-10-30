@@ -700,7 +700,7 @@ void QCstmEqualization::StartEqualizationSequentialSingleChips()
 {
 
     // Only the first time
-    // start with chip 0
+    // Start with chip 0
     if ( ! _isSequentialAllChipsEqualization ) {
         // ! artifact only for the first time we call this function
         // if the user accepts to continue _deviceIndex will start at 0
@@ -717,17 +717,7 @@ void QCstmEqualization::StartEqualizationSequentialSingleChips()
     // Next chip
     ChangeDeviceIndex(++_deviceIndex, true);
 
-    // Initialise
-    //i//if ( ! InitEqualization( -1 ) ) return;
-    //i//KeepOtherChipsQuiet();
-
     StartEqualizationSingleChip();
-
-    // Save results separately for now. Maybe merge and then save one config file later
-    //i//SaveEqualization( QDir::homePath() );
-    //i//AppendToTextBrowser( qPrintable(QString("-- Results for chip %1 saved to %2").arg(_deviceIndex).arg(QDir::homePath()) ) );
-    //i//AppendToTextBrowser( qPrintable(QString("-- DONE chip %1 ----------------").arg(_deviceIndex)) );
-
 }
 
 void QCstmEqualization::StartEqualizationSequentialSingleChipsRemotely(QString path)
@@ -735,7 +725,6 @@ void QCstmEqualization::StartEqualizationSequentialSingleChipsRemotely(QString p
     _isRemotePath = true;
     _remotePath = path;
     StartEqualizationSequentialSingleChips();
-
 }
 
 void QCstmEqualization::StartEqualizationAllChips() {
@@ -753,7 +742,6 @@ void QCstmEqualization::StartEqualizationAllChips() {
     } else {
         return;
     }
-
 }
 
 void QCstmEqualization::StartEqualization() {
@@ -766,7 +754,7 @@ void QCstmEqualization::StartEqualization() {
 
     // how many chips to equalize
     uint chipListSize = _workChipsIndx.size();
-    qDebug() << "... " << chipListSize;
+    //qDebug() << "... " << chipListSize;
 
     if (testPulseEqualisationDialog != nullptr) {
         defaultNoiseEqualisationTarget = testPulseEqualisationDialog->getEqualisationTarget();
@@ -943,7 +931,6 @@ void QCstmEqualization::StartEqualization() {
         for ( uint i = 0 ; i < chipListSize ; i++ ) {
             _scans[_scanIndex - 1]->ExtractStatsOnChart(_workChipsIndx[i], _setId - 1);
             DisplayStatsInTextBrowser(-1, _steeringInfo[i]->currentDAC_DISC_OptValue, _scans[_scanIndex - 1]->GetScanResults(_workChipsIndx[i]));
-
         }
 
         // If fast equalization, skip finetuning, same for all chips
@@ -1268,7 +1255,7 @@ void QCstmEqualization::DAC_Disc_Optimization (int devId, ScanResults * res_100,
     double meanTHL_for_opt_IDAC_DISC = defaultNoiseEqualisationTarget + 3.2*res_100->sigma;
 
     // Using the relation DAC_Disc[L/H](THL) we can find the value of DAC_Disc
-    GetSteeringInfo(devId)->currentDAC_DISC_OptValue = (int) EvalLinear(GetSteeringInfo(devId)->currentEta_THx_DAC_Disc, GetSteeringInfo(devId)->currentCut_THx_DAC_Disc, meanTHL_for_opt_IDAC_DISC);
+    GetSteeringInfo(devId)->currentDAC_DISC_OptValue = int(EvalLinear(GetSteeringInfo(devId)->currentEta_THx_DAC_Disc, GetSteeringInfo(devId)->currentCut_THx_DAC_Disc, meanTHL_for_opt_IDAC_DISC));
 
     // -----------------------
     // Same as (I have checked this) :
@@ -1331,19 +1318,14 @@ void QCstmEqualization::SaveEqualization(QString path, bool totempdir, bool fetc
         // Create the folder if it doesn't exist
         if ( ! QDir( savepath ).exists() ) {
             _tempEqSaveDir = savepath;
-            qDebug() << "[INFO] creating temporary directory : " << savepath;
+            qDebug() << "[INFO] [Equalisation] creating temporary directory : " << savepath;
             QDir().mkdir( savepath );
         }
     }
 
     savepath.append( QDir::separator() );
     filenameEqualisation = savepath;
-
-    //if ( path == "" ) {
     filenameEqualisation.append("config.json"); //! Ie. all chips
-    //} else {
-    //    filenameEqualisation.append( QString("config-chip%1.json").arg(_deviceIndex) );
-    //}
 
     resetThresholds();
 
@@ -1362,37 +1344,28 @@ void QCstmEqualization::SaveEqualization(QString path, bool totempdir, bool fetc
     }
 
 
-    //    for (unsigned long i = 0 ; i < _workChipsIndx.size() ; i++ ) {
-    //        if(GetBarChart(i) != nullptr){
-    //            GetBarChart(i)->savePng(savepath+"chip_"+QString::number(i),500,500,2.0);
-    //            qDebug() << "bar"<< i <<" is not null.";
-    //            qDebug() << "save path0 : " << savepath;
-    //        }
-    //    }
-
-    if(GetBarChart(0) != nullptr){
-        GetBarChart(0)->savePng(savepath+"chip_0",500,500,2.0);
-        qDebug() << "bar 0 is not null.";
-        qDebug() << "save path0 : " << savepath;
+    if(GetBarChart(0) == nullptr) {
+        qDebug() << "[Equalisation] Plot" << 0 << "does not exist. Could not save the equalisation plot :(";
+    } else {
+        GetBarChart(0)->savePng(savepath + "chip_" + QString::number(0) + ".png", 1024, 1024, 2.0);
+    }
+    if(GetBarChart(1) == nullptr) {
+        qDebug() << "[Equalisation] Plot" << 1 << "does not exist. Could not save the equalisation plot :(";
+    } else {
+        GetBarChart(1)->savePng(savepath + "chip_" + QString::number(1) + ".png", 1024, 1024, 2.0);
+    }
+    if(GetBarChart(2) == nullptr) {
+        qDebug() << "[Equalisation] Plot" << 2 << "does not exist. Could not save the equalisation plot :(";
+    } else {
+        GetBarChart(2)->savePng(savepath + "chip_" + QString::number(2) + ".png", 1024, 1024, 2.0);
+    }
+    if(GetBarChart(3) == nullptr) {
+        qDebug() << "[Equalisation] Plot" << 3 << "does not exist. Could not save the equalisation plot :(";
+    } else {
+        GetBarChart(3)->savePng(savepath + "chip_" + QString::number(3) + ".png", 1024, 1024, 2.0);
     }
 
-    if(GetBarChart(1) != nullptr){
-        GetBarChart(1)->savePng(savepath+"chip_1",500,500,2.0);
-        qDebug() << "bar 1 is not null.";
-        qDebug() << "save path1 : " << savepath;
-    }
-    if(GetBarChart(2) != nullptr){
-        GetBarChart(2)->savePng(savepath+"chip_2",500,500,2.0);
-        qDebug() << "bar 2 is not null.";
-        qDebug() << "save path2 : " << savepath;
-    }
-    if(GetBarChart(3) != nullptr){
-        GetBarChart(3)->savePng(savepath+"chip_3",500,500,2.0);
-        qDebug() << "bar 3 is not null.";
-        qDebug() << "save path3 : " << savepath;
-    }
-
-
+    qDebug() << "[Equalisation] Save path: " << savepath;
 
     // use this when you need to get the rest from a temp dir
     if ( fetchfromtempdir ) {
@@ -1404,39 +1377,30 @@ void QCstmEqualization::SaveEqualization(QString path, bool totempdir, bool fetc
         copyfrom += "adj_*";
 
         QString copyto = savepath;
-        //copyto.append(QDir::separator() );
         QString command = "cp -f " +copyfrom+" "+copyto;
-        //qDebug() << command;
 
         // copy adj
         QProcess proc;
         proc.start("sh", QStringList() << "-c" << command);
         proc.waitForFinished(5000);
-        //QFile::copy( copyfrom, copyto );
 
         copyfrom = _tempEqSaveDir;
         copyfrom.append( QDir::separator() );
         copyfrom += "mask_*";
         command = "cp -f " +copyfrom+" "+copyto;
-        //qDebug() << command;
 
         // copy masks
-        //QFile::copy( copyfrom, copyto );
         proc.start("sh", QStringList() << "-c" << command);
         proc.waitForFinished(5000);
-
-
 
         copyfrom = _tempEqSaveDir;
         copyfrom.append( QDir::separator() );
         copyfrom += "chip_*";
         command = "cp -f " +copyfrom+" "+copyto;
-        //qDebug() << command;
 
         proc.start("sh", QStringList() << "-c" << command);
         proc.waitForFinished(5000);
     }
-
 }
 
 void QCstmEqualization::PrepareInterpolation_0x0() {
