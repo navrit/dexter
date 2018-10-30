@@ -465,7 +465,7 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(config, SIGNAL(LUTEnableChanged(bool)), ui->LUTCheckbox, SLOT(setChecked(bool)));
 
     //inhibit_shutter enable
-    connect(ui->inhibitShutterCheckBox, SIGNAL(toggled(bool)), config, SLOT(setInhabitShutter(bool)));
+    connect(ui->inhibitShutterCheckBox, SIGNAL(toggled(bool)), config, SLOT(setInhibitShutter(bool)));
     connect(config,SIGNAL(inhibitShutterchanged(bool)),ui->inhibitShutterCheckBox,SLOT(setChecked(bool)));
 
     // DecodeFrames

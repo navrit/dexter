@@ -472,7 +472,7 @@ public slots:
     }
 
     //slot to config inhibit_shutter signal
-   void setInhabitShutter(bool turnOn);
+   void setInhibitShutter(bool turnOn);
 
 };
 

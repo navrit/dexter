@@ -18,8 +18,8 @@ public:
     uint32_t xDim = 0;
     uint32_t yDim = 0;
     QString pixelDepth = "U32";
-    const QString sensorLayout = "   2x2";
-    uint8_t chipSelect = 0x00;
+    const QString sensorLayout = "   2x2"; //! Are the whitespaces intentional?
+    uint8_t chipSelect = 0x00; //! could be just 0 instead, right?
     QString timeStamp;
     double shutterOpen = 0.0;
     uint8_t counter = 0;
@@ -62,7 +62,6 @@ public:
     uint8_t cas = 0;
     uint16_t tpRefA = 0;
     uint16_t tpRefB = 0;
-
 };
 
 enum PSL_ARG_TYPES{N,N_INF,CONT_SEQ,CSM_SPM,ENABLE_DISABLE,STRING,OPEN,DOWN,HIGH_LOW,TH0,TH1,TH2,TH3,TH4,TH5,TH6,TH7};
@@ -72,7 +71,7 @@ class MerlinInterface : public QObject
     Q_OBJECT
 
 public:
-    explicit MerlinInterface(QObject *parent = 0);
+    explicit MerlinInterface(QObject *parent = nullptr);
 private:
     QHash<QString,QString> setTable; //key => merlin's command name; value => PSL's command name
     QHash<QString,QString> getTable;
@@ -83,13 +82,6 @@ private:
     const int FRAME_HEADER_SIZE = 256 + (128*CHIPS_NUM);
 
     friend class MerlinCommand;
-
-
-
-
-signals:
-
-public slots:
 };
 
 class MerlinCommand {

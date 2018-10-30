@@ -48,17 +48,29 @@ int EnergyCalibrator::getDac(int idx)
 
 double EnergyCalibrator::calcEnergy(int idx, int dac)
 {
-    if(!_indexChecker(idx))
+    if(!_indexChecker(idx)) {
         return 0.0;
-    _energies[idx] = _slopes[idx] * dac + _offsets[idx];
+    }
+
+    _energies[idx] = double(_slopes[idx] * dac + _offsets[idx]);
+
     return _energies[idx];
 }
 
 int EnergyCalibrator::calDac(int idx, double energy)
 {
-    if(!_indexChecker(idx))
+    if(!_indexChecker(idx)) {
         return 0;
-    _dacs[idx] = (int) ((energy - _offsets[idx]) / _slopes[idx]);
+    }
+
+    /* This is how you rearrange a simple straight line linear equation */
+
+    /* 1. Starting equation:    energy = _slopes[idx] * _dacs[idx] + _offsets[idx] */
+    /* 2. Subtract offset:      energy - _offsets[idx] = _slopes[idx] * _dacs[idx] */
+    /* 3. Divide by slope:      _dacs[idx] = (energy - _offsets[idx])/_slopes[idx] */
+
+    _dacs[idx] = int(((energy - _offsets[idx]) / _slopes[idx]));
+
     return _dacs[idx];
 }
 

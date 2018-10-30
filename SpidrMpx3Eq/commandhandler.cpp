@@ -658,7 +658,7 @@ int CommandHandler::doEqualizationRemotely(QString path)
 
 int CommandHandler::setInhibitShutter(bool turnOn)
 {
-    connect(this,SIGNAL(requestToSetInhibitShutterRemotely(bool)),Mpx3GUI::getInstance()->getConfig(),SLOT(setInhabitShutter(bool)));
+    connect(this,SIGNAL(requestToSetInhibitShutterRemotely(bool)),Mpx3GUI::getInstance()->getConfig(),SLOT(setInhibitShutter(bool)));
     emit requestToSetInhibitShutterRemotely(turnOn);
     return NO_ERROR;
 }

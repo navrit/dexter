@@ -2329,14 +2329,14 @@ void QCstmGLVisualization::on_testBtn_clicked()
 //    qDebug() << "value : " << val22;
 //    }
 
-    qDebug () << "SlOPE 0 :" << Mpx3GUI::getInstance()->getGenralSettings()->getSlope(0);
-    qDebug () << "SlOPE 1 :" << Mpx3GUI::getInstance()->getGenralSettings()->getSlope(1);
-    qDebug () << "SlOPE 2 :" << Mpx3GUI::getInstance()->getGenralSettings()->getSlope(2);
-    qDebug () << "SlOPE 3 :" << Mpx3GUI::getInstance()->getGenralSettings()->getSlope(3);
+    qDebug () << "SlOPE 0 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(0);
+    qDebug () << "SlOPE 1 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(1);
+    qDebug () << "SlOPE 2 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(2);
+    qDebug () << "SlOPE 3 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(3);
 
 
-    //Mpx3GUI::getInstance()->getConfig()->setInhabitShutter(true);
-   // Mpx3GUI::getInstance()->getConfig()->setInhabitShutter(false);
+    //Mpx3GUI::getInstance()->getConfig()->setInhibitShutter(true);
+   // Mpx3GUI::getInstance()->getConfig()->setInhibitShutter(false);
 
 //    GeneralSettings *settings = new GeneralSettings;
 //    //settings->setConfigPath("Kiavash");

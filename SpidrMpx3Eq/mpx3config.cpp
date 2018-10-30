@@ -988,7 +988,7 @@ void  Mpx3Config::setStepperConfigCalib(QStandardItem * item) {
 
 }
 
-void Mpx3Config::setInhabitShutter(bool turnOn)
+void Mpx3Config::setInhibitShutter(bool turnOn)
 {
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     int val = 0;

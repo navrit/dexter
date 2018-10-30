@@ -959,18 +959,8 @@ void ThlScan::EqualizationScan() {
                 disconnect( this, SIGNAL( fillText(QString) ), _equalization->GetUI()->eqLabelTHLCurrentValue, SLOT( setText(QString)) );
 
                 // Set the threshold on all chips
-                for ( int devId = 0 ; devId < (int)_workChipsIndx.size() ; devId++ ) {
-                    //qDebug() << devId;
+                for ( int devId = 0; devId < int(_workChipsIndx.size()); devId++ ) {
                     SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], _dac_code, _thlItr );
-                    //                    if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_0 ) {
-                    //                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_2, _thlItr );
-                    //                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_4, _thlItr );
-                    //                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_6, _thlItr );
-                    //                    } else if ( _mpx3gui->getConfig()->getColourMode() && _dac_code == MPX3RX_DAC_THRESH_1 ) {
-                    //                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_3, _thlItr );
-                    //                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_5, _thlItr );
-                    //                        SetDAC_propagateInGUI( spidrcontrol, _workChipsIndx[devId], MPX3RX_DAC_THRESH_7, _thlItr );
-                    //                    }
                 }
 
                 // flush the history of good/bad frames
@@ -978,14 +968,7 @@ void ThlScan::EqualizationScan() {
 
                 // See if there is a frame available.  I should get as many frames as triggers
                 int framesCntr = 0;
-                int timeOutTime = 100; //ms
-                //                int timeOutTime =
-                //                        _mpx3gui->getConfig()->getTriggerLength_ms()
-                //                        +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
-                //                        + 100; // 100ms extra
-
-                //                // Set a minimum. Even though the user doesn't have control of this in equalization. Safe to have it.
-                //                if ( timeOutTime < 100 ) timeOutTime = 100;
+                unsigned long timeOutTime = 100; //ms
 
                 // Start the trigger as configured
                 spidrcontrol->startAutoTrigger();
@@ -1025,8 +1008,6 @@ void ThlScan::EqualizationScan() {
                         _data = _dataset->getLayer( 0 );
                         // I am assuming that all the frames have the same size in bytes
                         _pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes * _nchipsX*_nchipsY, _thlItr );
-                        //qDebug() << "reactive " << _pixelReactiveInScan;
-
                     }
 
                     _spidrdaq->releaseFrame(frameSet);
@@ -1611,7 +1592,7 @@ bool ThlScan::TwoPixelsRespectMinimumSpacing(int pix1, int pix2, int spacing) {
 
 void ThlScan::ExtractStatsOnChart(int devId, int setId) {
 
-    double weigtedSum = 0.;
+    double weightedSum = 0.;
     double weights = 0.;
     // Normalization value (p val) used later when calculating the variance
     double norm_val = 0.;
@@ -1623,7 +1604,7 @@ void ThlScan::ExtractStatsOnChart(int devId, int setId) {
     for( ; i != dataSet->end() ; i++) {
 
         if( (*i).value != 0 ) {
-            weigtedSum += ( (*i).key * (*i).value );
+            weightedSum += ( (*i).key * (*i).value );
             weights += (*i).value;
 
             norm_val += (*i).value;
@@ -1631,7 +1612,7 @@ void ThlScan::ExtractStatsOnChart(int devId, int setId) {
     }
     norm_val = 1. / norm_val;
 
-    if ( weights != 0.) GetScanResults(devId)->weighted_arithmetic_mean = weigtedSum / weights;
+    if ( weights != 0.) GetScanResults(devId)->weighted_arithmetic_mean = weightedSum / weights;
     else GetScanResults(devId)->weighted_arithmetic_mean = 0.;
 
     // Rewind the iterator and get the sigma
