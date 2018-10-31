@@ -244,8 +244,8 @@ void MerlinInterface::initializeTables()
     getTable.insert(THSTOP,"GetStopScan");
     getTable.insert(THSTEP,"GetStepScan");
     getTable.insert(THSCAN,"GetThresholdScan");
-    getTable.insert(THFRAMES,"GetFramesPerScan;");
-    getTable.insert(THPATH,"GetScanPath;");
+    getTable.insert(THFRAMES,"GetFramesPerScan");
+    getTable.insert(THPATH,"GetScanPath");
     getTable.insert(OPERATINGENERGY,"GetOperatingEnergy");
     getTable.insert(PROFILES,"GetProfile");
     getTable.insert(TRIGGERMODE,"GetTriggerMode");

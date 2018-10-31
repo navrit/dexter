@@ -832,6 +832,7 @@ void setFramesPerScanHandler(CommandHandler* ch, Command* cmd){
 
 void getFramesPerScanHandler(CommandHandler* ch, Command* cmd)
 {
+
     int ret = ch->getFramesPerScan();
     cmd->setData(QString::number(ret));
     cmd->setError(NO_ERROR);
