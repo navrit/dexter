@@ -2391,7 +2391,7 @@ return false;
 }
 }
 
-void QCstmEqualization::LoadEqualization(bool getPath,bool remotely ,QString path) {
+void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString path) {
 
     if (path == "") {
         path = "config/";
@@ -2407,7 +2407,6 @@ void QCstmEqualization::LoadEqualization(bool getPath,bool remotely ,QString pat
                         QDir::currentPath(),
                         QFileDialog::ShowDirsOnly);
         }
-        //from server
 
         path += "/";
         emit equalizationPathExported(path);
@@ -2417,7 +2416,6 @@ void QCstmEqualization::LoadEqualization(bool getPath,bool remotely ,QString pat
             QString testMaskFile = path + QString("mask_0");
 
             if (!(QFileInfo::exists(testAdjFile) && QFileInfo::exists(testMaskFile))){
-                //if (!(QFileInfo::exists(testAdjFile))){
                 //! Failed to find adj_0 and mask_0, the bare minimum for this to work
                 //! Return with no warnings or prompts
                 emit sig_statusBarAppend(tr("Nothing loaded from equalisation"), "orange");

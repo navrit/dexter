@@ -989,13 +989,11 @@ void Mpx3GUI::initialiseServers()
 
 void Mpx3GUI::_loadGeneralSettings()
 {
-
     QDir eqDir(_generalSettings->getEqualizationPath());
     if(eqDir.exists()){
-        getEqualization()->LoadEqualization(false,false,_generalSettings->getEqualizationPath());
+        getEqualization()->LoadEqualization(false, false, _generalSettings->getEqualizationPath());
         qDebug() << "Equalization loaded from" << _generalSettings->getEqualizationPath();
     }
-
 
     QStringList pathList = _generalSettings->getConfigPath().split(QDir::separator());
     QString filename = pathList.last();
@@ -1005,17 +1003,11 @@ void Mpx3GUI::_loadGeneralSettings()
          path += pathList.at(i) + QDir::separator();
     }
 
-
-
-
-
     QDir confDir(path);
     if(confDir.exists() && filename.split(".").last() == "json"){
         load_config_remotely(_generalSettings->getConfigPath());
         qDebug() << "Config file loaded from : " << path + filename;
     }
-
-
 
 }
 

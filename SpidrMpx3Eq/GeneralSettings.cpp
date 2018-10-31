@@ -71,8 +71,8 @@ double GeneralSettings::getSlope(int chipNum)
 void GeneralSettings::writeSetting()
 {
     QSettings settings(COMPANY_NAME, SOFTWARE_NAME);
-    settings.setValue(EQUALIZATION_PATH,_equalizationPath);
-    settings.setValue(CONFIG_PATH,_configPath);
+    settings.setValue(EQUALIZATION_PATH, _equalizationPath);
+    settings.setValue(CONFIG_PATH, _configPath);
 
     settings.beginGroup(SLOPE);
     settings.setValue("chip_0", _slopes[0]);
