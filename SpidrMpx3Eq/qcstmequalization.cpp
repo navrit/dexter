@@ -2393,14 +2393,17 @@ return false;
 
 void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString path) {
 
-    if (path == "") {
+    if (path == "" || path == "/") {
         path = "config/";
     } //! Else leave it
 
     //! Non-default path, get the folder from a QFileDialog
     if (getPath){
         // Absolute folder path
-        if(!remotely){
+        if(remotely) {
+            path += "/";
+            emit equalizationPathExported(path);
+        } else {
             path = QFileDialog::getExistingDirectory(
                         this,
                         tr("Select a directory containing equalisation files (adj_* and mask_*)"),
@@ -2408,25 +2411,25 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
                         QFileDialog::ShowDirsOnly);
         }
 
-        path += "/";
-        emit equalizationPathExported(path);
-        if( !path.isNull() ) {
+        if( path.isNull() || path == "/" ) {
+            //! Nothing selected, return with no prompt or warning
+            qDebug() << "[INFO] Null path input, doing nothing.";
+            return;
+
+        } else {
             //! Very basic check to proceed or not by seeing if the bare minimum files exist (adj_0 and mask_0) in the given path
             QString testAdjFile = path + QString("adj_0");
             QString testMaskFile = path + QString("mask_0");
 
             if (!(QFileInfo::exists(testAdjFile) && QFileInfo::exists(testMaskFile))){
+
                 //! Failed to find adj_0 and mask_0, the bare minimum for this to work
                 //! Return with no warnings or prompts
+
                 emit sig_statusBarAppend(tr("Nothing loaded from equalisation"), "orange");
                 qDebug() << "[INFO] Nothing loaded from equalisation, doing nothing.";
                 return;
             }
-
-        } else {
-            //! Nothing selected, return with no prompt or warning
-            qDebug() << "[INFO] Null path input, doing nothing.";
-            return;
         }
     }
 
