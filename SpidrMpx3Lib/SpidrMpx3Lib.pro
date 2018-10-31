@@ -33,6 +33,9 @@ CONFIG(release, debug|release) {
   MOC_DIR     = release
   UI_DIR      = release
   DESTDIR     = ../Release
+
+  message("Enabling all optimisation flags as qmake sees fit")
+  CONFIG *= optimize_full
 }
 
 win32 {
