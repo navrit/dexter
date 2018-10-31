@@ -47,6 +47,7 @@ CONFIG(release, debug|release) {
 }
 
 INCLUDEPATH += ../SpidrMpx3Lib
+INCLUDEPATH += $$PWD/../Qzmq
 
 win32 {
     message(Win32)
@@ -89,10 +90,6 @@ SOURCES += main.cpp \
     DataTakingThread.cpp \
     TiffFile.cpp \
     datacontrollerthread.cpp \
-    ../Qzmq/qzmqcontext.cpp \
-    ../Qzmq/qzmqreprouter.cpp \
-    ../Qzmq/qzmqsocket.cpp \
-    ../Qzmq/qzmqvalve.cpp \
     zmqcontroller.cpp \
     qcstmBHWindow.cpp \
     qcstmBHdialog.cpp \
@@ -138,11 +135,6 @@ HEADERS += mpx3gui.h \
     DataTakingThread.h \
     TiffFile.h \
     datacontrollerthread.h \
-    ../Qzmq/qzmqcontext.h \
-    ../Qzmq/qzmqreprouter.h \
-    ../Qzmq/qzmqreqmessage.h \
-    ../Qzmq/qzmqsocket.h \
-    ../Qzmq/qzmqvalve.h \
     zmqcontroller.h \
     qcstmBHWindow.h \
     qcstmBHdialog.h \
