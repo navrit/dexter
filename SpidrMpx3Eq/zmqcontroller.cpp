@@ -5,9 +5,6 @@
 #include "qcstmglvisualization.h"
 #include <QFileInfo>
 
-#include "../Qzmq/qzmqcontext.h"
-#include "../Qzmq/qzmqsocket.h"
-
 #include "qjsonobject.h"
 #include "qjsondocument.h"
 
@@ -97,14 +94,12 @@ void zmqController::addressChanged_PUB(QString addr)
 #ifdef QT_DEBUG
         qDebug() << "[INFO]\tZMQ PUB address set:" << addr;
 #endif
-
     }
 
     QZmq_PUB_socket->connectToAddress(PUB_addr);
     qDebug() << "[INFO]\tZMQ Connected to PUB socket:" << PUB_addr;
 
     initialiseJsonResponse();
-
 }
 
 void zmqController::addressChanged_SUB(QString addr)

@@ -7,47 +7,37 @@
 TEMPLATE = app
 TARGET = Dexter
 
-# QT       += core gui network
-greaterThan(QT_MAJOR_VERSION, 4) {
-        QT += widgets printsupport
-} else {
-        QT += core gui
-}
-contains(QT_MAJOR_VERSION,5) {
-  QT += concurrent
-}
-
-QT += network opengl
+QT += core gui concurrent network opengl printsupport
 CONFIG   +=  c++14 debug_and_release
 
 message("Explicitly enabling AVX2 instructions")
 QMAKE_CFLAGS          *= -mavx2
 QMAKE_CXXFLAGS        *= -mavx2
 
-
 CONFIG(debug, debug|release) {
-    OBJECTS_DIR = debug
-    MOC_DIR     = debug
-    UI_DIR      = debug
+    OBJECTS_DIR = objects
+    MOC_DIR     = moc
+    UI_DIR      = ui
     DESTDIR     = ../Debug
     LIBS       += -L../Debug
 }
 
 CONFIG(release, debug|release) {
-    OBJECTS_DIR = release
-    MOC_DIR     = release
-    UI_DIR      = release
+    OBJECTS_DIR = objects
+    MOC_DIR     = moc
+    UI_DIR      = ui
     DESTDIR     = ../Release
     LIBS       += -L../Release
 
     message("Enabling all optimisation flags as qmake sees fit")
     CONFIG *= optimize_full
-
     CONFIG += warn_off
 }
 
-INCLUDEPATH += ../SpidrMpx3Lib
+INCLUDEPATH += ../SpidrMpx3Lib/
+
 INCLUDEPATH += $$PWD/../Qzmq
+include($$PWD/../Qzmq/Qzmq.pri)
 
 win32 {
     message(Win32)
@@ -55,10 +45,10 @@ win32 {
 
 unix {
     message(Unix)
-    LIBS += -ltiff -lzmq
+    LIBS += -ltiff
 }
 
-LIBS += -lSpidrMpx3Lib  -lphidget21
+LIBS += -lSpidrMpx3Lib -lphidget21 -lzmq
 
 SOURCES += main.cpp \
     qcstmplotheatmap.cpp \

@@ -1,12 +1,10 @@
 #ifndef COMMANDHANDLER_H
 #define COMMANDHANDLER_H
 
-
 #include <QObject>
 #include <QHash>
 #include <QVector>
 #include "MerlinInterface.h"
-
 
 class CommandHandler;
 class Command;
