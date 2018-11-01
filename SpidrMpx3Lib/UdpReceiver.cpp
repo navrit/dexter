@@ -270,6 +270,6 @@ void UdpReceiver::closeFD() {
         delete frameAssembler[i];
         frameAssembler[i] = nullptr;
     }
-    spdlog::get("console")->error("sockets closed");
+    spdlog::get("console")->debug("sockets closed");
     fsm = nullptr;
 }
