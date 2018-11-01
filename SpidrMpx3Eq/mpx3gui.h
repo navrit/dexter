@@ -170,7 +170,7 @@ public:
     Dataset* getDataset(){return workingSet;}
     Dataset* getOriginalDataset(){return originalSet;}
     DataControllerThread* getDataControllerThread(){return dataControllerThread;}
- //   zmqController* getZmqController(){return m_zmqController;}
+    zmqController* getZmqController(){return m_zmqController;}
 
     void rebuildCurrentSets(int x, int y, int framesPerLayer);
 
