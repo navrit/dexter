@@ -33,7 +33,7 @@ public:
 
 private:
     QString _equalizationPath = "nc"; //default (not connected)
-    QString _configPath = "nc";
+    QString _configPath = "./config/mpx3.json";
     //energy calibration
     double _slopes[NUMBER_OF_CHIPS] = {1}; // set a default value for thl to energy calibration slope parameters
     double _offsets[NUMBER_OF_CHIPS] = {1}; // set a default value for thl to energy calibration offset parameters

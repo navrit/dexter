@@ -157,7 +157,8 @@ private:
     QString _configPath = "";
 
     GeneralSettings *_generalSettings;
-    void _loadGeneralSettings(void);
+    void _loadEqualizationFromGeneralSettings(void);
+    bool _loadConfigsFromGeneralSettings(void);
 
 public:
 
@@ -169,7 +170,7 @@ public:
     Dataset* getDataset(){return workingSet;}
     Dataset* getOriginalDataset(){return originalSet;}
     DataControllerThread* getDataControllerThread(){return dataControllerThread;}
-    zmqController* getZmqController(){return m_zmqController;}
+ //   zmqController* getZmqController(){return m_zmqController;}
 
     void rebuildCurrentSets(int x, int y, int framesPerLayer);
 
@@ -270,8 +271,8 @@ public slots:
     void clear_configuration();
     void set_summing(bool);
     void save_config();
-    void load_config();
-    void load_config_remotely(QString path);
+    bool load_config();
+    bool load_config_remotely(QString path);
     void onConnectionStatusChanged(bool);
 
     //! Status bar slot functions

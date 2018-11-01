@@ -54,6 +54,8 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     config->SetMpx3GUI( this );
 
     dataControllerThread = new DataControllerThread(this);
+    _generalSettings = new GeneralSettings;
+    _energyCalibrator = new EnergyCalibrator;
 
     //! FleXray - ZMQ to XRE/TeSCAN Acquila interface
     m_zmqController = new zmqController(this);
@@ -143,10 +145,12 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     _ui->THScan->SetMpx3GUI( this );
 
     // Read the configuration
-    QString configFile = "./config/mpx3.json";
-    if ( ! config->fromJsonFile( configFile ) ) {
+    //QString configFile = "./config/mpx3.json";
+
+    //if ( ! config->fromJsonFile( configFile ) ) {
+    if (! _loadConfigsFromGeneralSettings()) {
         QMessageBox::critical(this, "Loading configuration error",
-                              QString("Couldn't load the following configuration file: %1. The program won't start. Place the file in the suggested relative path and run again. You are running the program from \"%2\"").arg(configFile).arg(QDir::currentPath()));
+                              QString("Couldn't load the following configuration file: %1. The program won't start. Place the file in the suggested relative path and run again. You are running the program from \"%2\"").arg(_generalSettings->getConfigPath()).arg(QDir::currentPath()));
         _armedOk = false; // it won't let the application go into the event loop
         return;
     }
@@ -223,8 +227,6 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     timer = new QTimer(this);
     timer->start(500);
     connect(timer,SIGNAL(timeout()),this,SLOT(onTimeout()));
-    _generalSettings = new GeneralSettings;
-    _energyCalibrator = new EnergyCalibrator;
     updateEnergyCalibratorParameters();
     mpx3GuiInstance = this;
 }
@@ -987,14 +989,18 @@ void Mpx3GUI::initialiseServers()
 
 }
 
-void Mpx3GUI::_loadGeneralSettings()
+void Mpx3GUI::_loadEqualizationFromGeneralSettings()
 {
     QDir eqDir(_generalSettings->getEqualizationPath());
     if(eqDir.exists()){
         getEqualization()->LoadEqualization(false, false, _generalSettings->getEqualizationPath());
         qDebug() << "Equalization loaded from" << _generalSettings->getEqualizationPath();
     }
+}
 
+bool Mpx3GUI::_loadConfigsFromGeneralSettings()
+{
+    bool res = false;
     QStringList pathList = _generalSettings->getConfigPath().split(QDir::separator());
     QString filename = pathList.last();
     //construct the path directory again
@@ -1005,10 +1011,10 @@ void Mpx3GUI::_loadGeneralSettings()
 
     QDir confDir(path);
     if(confDir.exists() && filename.split(".").last() == "json"){
-        load_config_remotely(_generalSettings->getConfigPath());
+        res = load_config_remotely(_generalSettings->getConfigPath());
         qDebug() << "Config file loaded from : " << path + filename;
     }
-
+    return res;
 }
 
 void Mpx3GUI::updateEnergyCalibratorParameters()
@@ -1186,12 +1192,12 @@ void Mpx3GUI::save_config(){
     return;
 }
 
-void Mpx3GUI::load_config(){
+bool Mpx3GUI::load_config(){
 
     if(!_loadConfigRemotly){
        _configPath  = QFileDialog::getOpenFileName(this, tr("Load config (DACs)"), tr("."), tr("json files (*.json)"));
     }
-    config->fromJsonFile(_configPath);
+    bool res = config->fromJsonFile(_configPath);
     _generalSettings->setConfigPath(_configPath);
 
     // update the dacs
@@ -1199,14 +1205,14 @@ void Mpx3GUI::load_config(){
 
     _loadConfigRemotly = false; //reset the flag
 
-    return;
+    return res;
 }
 
-void Mpx3GUI::load_config_remotely(QString path)
+bool Mpx3GUI::load_config_remotely(QString path)
 {
     _loadConfigRemotly = true;
     _configPath = path;
-    load_config();
+    return load_config();
 }
 
 void Mpx3GUI::onConnectionStatusChanged(bool conn)
@@ -1667,7 +1673,7 @@ void Mpx3GUI::onTimeout()
     on_actionConnect_triggered();
     if(GetSpidrController() != nullptr && GetSpidrController()->isConnected()){
         connect(getEqualization(),SIGNAL(equalizationPathExported(QString)),this,SLOT(onEqualizationPathExported(QString)));
-        _loadGeneralSettings();
+        _loadEqualizationFromGeneralSettings();
     }
 
 }
