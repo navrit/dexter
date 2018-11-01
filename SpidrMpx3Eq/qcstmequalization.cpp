@@ -2437,7 +2437,7 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
     int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
     QCoreApplication::processEvents();
     QProgressDialog pd(tr("Loading adjustment bits..."), tr("Cancel"), 0, nChips, this);
-    pd.setCancelButton( 0 ); // No cancel button
+    pd.setCancelButton( nullptr ); // No cancel button
     pd.setWindowModality(Qt::WindowModal);
     pd.setMinimumDuration( 0 ); // show immediately
     pd.setWindowTitle(tr("Load equalisation"));
@@ -2463,7 +2463,7 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
             continue;
         }
 
-        //! Builg strings for adj and mask file paths
+        //! Build strings for adj and mask file paths
         QString adjfn = path + "adj_";
         adjfn += QString::number(i, 10);
         QString maskfn = path + "mask_";
