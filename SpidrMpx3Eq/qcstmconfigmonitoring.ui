@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1146</width>
+    <width>1187</width>
     <height>790</height>
    </rect>
   </property>
@@ -116,6 +116,12 @@ QGroupBox::title {
           <property name="enabled">
            <bool>false</bool>
           </property>
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
           </property>
@@ -128,6 +134,12 @@ QGroupBox::title {
          <widget class="QLineEdit" name="localTempMeasLineEdit">
           <property name="enabled">
            <bool>false</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>0</height>
+           </size>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -224,6 +236,12 @@ A word added to each command - controls some functionality that changes regularl
           <property name="enabled">
            <bool>false</bool>
           </property>
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
           </property>
@@ -235,7 +253,7 @@ A word added to each command - controls some functionality that changes regularl
         <item row="2" column="1">
          <widget class="QLabel" name="label_10">
           <property name="text">
-           <string>Board Temp:</string>
+           <string>Board Temp</string>
           </property>
          </widget>
         </item>
@@ -303,14 +321,14 @@ A word added to each command - controls some functionality that changes regularl
         <item row="1" column="1">
          <widget class="QLabel" name="label_0">
           <property name="text">
-           <string>Chip Temp:</string>
+           <string>Chip Temp</string>
           </property>
          </widget>
         </item>
         <item row="1" column="4">
          <widget class="QLabel" name="label_21">
           <property name="text">
-           <string>Bias V:</string>
+           <string>Bias V</string>
           </property>
          </widget>
         </item>
@@ -382,7 +400,7 @@ A word added to each command - controls some functionality that changes regularl
            <string>Sample every (s)</string>
           </property>
           <property name="text">
-           <string>Samples (s):</string>
+           <string>Samples (s)</string>
           </property>
          </widget>
         </item>
@@ -402,7 +420,7 @@ A word added to each command - controls some functionality that changes regularl
         <item row="3" column="1">
          <widget class="QLabel" name="label_4">
           <property name="text">
-           <string>FPGA Temp:</string>
+           <string>FPGA Temp</string>
           </property>
          </widget>
         </item>
@@ -411,8 +429,17 @@ A word added to each command - controls some functionality that changes regularl
           <property name="enabled">
            <bool>false</bool>
           </property>
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -430,6 +457,61 @@ A word added to each command - controls some functionality that changes regularl
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="2">
+         <widget class="QLineEdit" name="humidityMeasureLineEdit">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLabel" name="labelHumidity">
+          <property name="text">
+           <string>Humidity</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QLabel" name="labelPressure">
+          <property name="text">
+           <string>Pressure</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="2">
+         <widget class="QLineEdit" name="pressureMeasureLineEdit">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
           </property>
          </widget>
         </item>

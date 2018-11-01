@@ -146,6 +146,8 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
         ui->FpgaTempMeasLineEdit->setEnabled( true );
         ui->biasVoltageMeasLineEdit->setEnabled( true );
         ui->systemClockLineEdit->setEnabled( true );
+        ui->humidityMeasureLineEdit->setEnabled( true );
+        ui->pressureMeasureLineEdit->setEnabled( true );
 
         ui->avddmamp->setEnabled( true );
         ui->avddmvolt->setEnabled( true );
@@ -170,6 +172,8 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
         ui->FpgaTempMeasLineEdit->setText("");
         ui->biasVoltageMeasLineEdit->setText("");
         ui->systemClockLineEdit->setText("");
+        ui->humidityMeasureLineEdit->setText("");
+        ui->pressureMeasureLineEdit->setText("");
 
         ui->avddmamp->setText("");
         ui->avddmvolt->setText("");
@@ -188,6 +192,8 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
         ui->FpgaTempMeasLineEdit->setEnabled( false );
         ui->biasVoltageMeasLineEdit->setEnabled( false );
         ui->systemClockLineEdit->setEnabled( false );
+        ui->humidityMeasureLineEdit->setEnabled( false );
+        ui->pressureMeasureLineEdit->setEnabled( false );
 
         ui->avddmamp->setEnabled( false );
         ui->avddmvolt->setEnabled( false );
@@ -200,7 +206,6 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
         ui->dvddmamp->setEnabled( false );
         ui->dvddmvolt->setEnabled( false );
         ui->dvddmwatt->setEnabled( false );
-
     }
 
 }
@@ -729,6 +734,27 @@ void QCstmConfigMonitoring::readMonitoringInfo() {
             ui->biasVoltageMeasLineEdit->setText( qs );
         } else {
             ui->biasVoltageMeasLineEdit->setText( "--.-" );
+        }
+
+        int humidityPercentage = -1;
+        if ( spidrcontrol->getHumidity(&humidityPercentage)) {
+            QString qs = "---";
+            if (humidityPercentage >=0 && humidityPercentage <= 100) {
+                qs = QString("%1%").arg(humidityPercentage);
+            }
+            ui->humidityMeasureLineEdit->setText(qs);
+        }
+
+        int pressure_mbar = -1;
+        if ( spidrcontrol->getPressure(&pressure_mbar)) {
+            QString qs = "---";
+
+            //! TODO Add an upper acceptable limit?
+
+            if (pressure_mbar >=0) {
+                qs = QString("%1 mbar").arg(pressure_mbar);
+            }
+            ui->pressureMeasureLineEdit->setText(qs);
         }
 
         int mvolt, mamp, mwatt;
