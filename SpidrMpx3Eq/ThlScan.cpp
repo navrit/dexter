@@ -989,8 +989,6 @@ void ThlScan::EqualizationScan() {
 
                     if ( doReadFrames[framesCntr] ) {
 
-                        int size_in_bytes = -1;
-
                         int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
                         // Go through all chips avoiding those not present
                         for ( int idx = 0 ; idx < nChips ; idx++ ) {
@@ -1007,7 +1005,7 @@ void ThlScan::EqualizationScan() {
                         // Once the frame is complete, extract info
                         _data = _dataset->getLayer( 0 );
                         // I am assuming that all the frames have the same size in bytes
-                        _pixelReactiveInScan += ExtractScanInfo( _data, size_in_bytes * _nchipsX*_nchipsY, _thlItr );
+                        _pixelReactiveInScan += ExtractScanInfo( _data, MPX_PIXELS * 4 * _nchipsX*_nchipsY, _thlItr );
                     }
 
                     _spidrdaq->releaseFrame(frameSet);
