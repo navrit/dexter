@@ -226,7 +226,6 @@ public slots:
 
 private:
 
-    QTimer *timer; //timer to autoconnect
     EnergyCalibrator *_energyCalibrator;
     // ML605 layout
     //vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
@@ -239,7 +238,6 @@ private:
     TcpServer *tcpServer = nullptr;
     TcpServer *dataServer = nullptr;
     CommandHandlerWrapper *commandHandlerWrapper = nullptr;
-
 
     int mode = 0; //! Summing/integral or 'normal' mode
     Ui::Mpx3GUI * _ui;
@@ -296,7 +294,7 @@ private slots:
     void on_actionAbout_triggered(bool checked);
     void on_actionStepper_Motor_triggered(bool checked);
     void on_actionThreshold_Scan_triggered(bool);
-    void onTimeout(void);
+    void autoConnectToDetector(void);
 };
 
 #endif // MPX3GUI_H

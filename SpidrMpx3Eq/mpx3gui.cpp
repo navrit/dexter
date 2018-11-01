@@ -223,15 +223,11 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     m_statusBarMessageString.clear( );
 
     initialiseServers();
-
-    timer = new QTimer(this);
-    timer->start(500);
-    connect(timer,SIGNAL(timeout()),this,SLOT(onTimeout()));
     updateEnergyCalibratorParameters();
     mpx3GuiInstance = this;
+
+    QTimer::singleShot(0, this, SLOT(autoConnectToDetector()));
 }
-
-
 
 Mpx3GUI::~Mpx3GUI()
 {
@@ -1556,7 +1552,7 @@ void Mpx3GUI::on_actionAbout_triggered(bool){
             newLine +
             newLine +
             QString("Authors: ") +
-            QString("Navrit Bal (2016-), Kiavash Mortezavi Matin (2018-)(S-Dexter), John Idarraga (2014-2017), Amber van Keeken (2016), Roel Deckers, Cyrano Chatziantoniou") +
+            QString("Navrit Bal (2016-), Bram Bouwens (2018-), Kiavash Mortezavi Matin (2018-), John Idarraga (2014-2017), Amber van Keeken (2016), Roel Deckers, Cyrano Chatziantoniou") +
             newLine +
             newLine +
             QString("Contributors: ") +
@@ -1597,16 +1593,13 @@ void Mpx3GUI::on_actionDisconnect_triggered(bool checked){
     }
 
     // Go through the process of disconnecting
-    // SpidrDaq
     if ( _spidrdaq ) {
         _spidrdaq->stop();
         delete _spidrdaq;
         _spidrdaq = nullptr;
     }
-    // SpirdController
     getConfig()->closeConnection();
 
-    //
     emit ConnectionStatusChanged( checked ); // false when disconnecting
 
     emit sig_statusBarAppend( "Disconnected", "red" );
@@ -1621,11 +1614,6 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked){
         pd.setWindowModality(Qt::WindowModal);
         pd.setMinimumDuration( 0 ); // show immediately
         pd.setWindowTitle("Reset");
-        //pd.setAutoReset( false );
-        //pd.setAutoClose( false );
-
-        //pd.setWindowTitle("Reset");
-        //pd.show();
 
         // Hot reset
         pd.setValue( 0 );
@@ -1642,18 +1630,9 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked){
             sc->setSpidrReg( 0x814, 1 ); // write only register
         }
 
-        // Disconnect
-        //pd.setValue( 2 );
-        //on_actionDisconnect_triggered( false );
-        // Reconnnect
-        //pd.setValue( 3 );
-        //on_actionConnect_triggered();
-
         // Done
         pd.setValue( 3 );
-
     }
-
 }
 
 void Mpx3GUI::on_actionThreshold_Scan_triggered(bool)
@@ -1663,16 +1642,13 @@ void Mpx3GUI::on_actionThreshold_Scan_triggered(bool)
     _ui->actionThreshold_Scan->setChecked(1);
 }
 
-void Mpx3GUI::onTimeout()
+void Mpx3GUI::autoConnectToDetector()
 {
-    qDebug() << "Connecting automatically to detector...!";
-    timer->stop();
-    disconnect(timer,SIGNAL(timeout()),this,SLOT(onTimeout()));
-    delete timer;
+    qDebug() << "[INFO] Connecting automatically to detector...!";
+
     on_actionConnect_triggered();
     if(GetSpidrController() != nullptr && GetSpidrController()->isConnected()){
         connect(getEqualization(),SIGNAL(equalizationPathExported(QString)),this,SLOT(onEqualizationPathExported(QString)));
         _loadEqualizationFromGeneralSettings();
     }
-
 }
