@@ -11,11 +11,8 @@
 //handler functions
 void helloHandler(CommandHandler* ch, Command* cmd)
 {
-    cmd->setData("Hello From Dexter Server");
+    cmd->setData(_softwareVersion);
     cmd->setError(NO_ERROR);
-    QString hd = ch->generateMerlinFrameHeader(1);
-    qDebug() <<"header is" << hd;
-    qDebug() << "header size is : " << hd.length();
 }
 
 void byeHandler(CommandHandler* ch, Command* cmd)
