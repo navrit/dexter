@@ -97,71 +97,6 @@ public:
     Ui::Mpx3GUI * GetUI() { return _ui; }
     static Mpx3GUI* getInstance();
 
-
-
-
-
-
-private:
-
-    QTimer *timer; //timer to autoconnect
-    EnergyCalibrator *_energyCalibrator;
-    // ML605 layout
-    //vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
-    //vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
-    // compactSPIDR layout
-    std::vector<int> _MPX3RX_ORIENTATION = std::vector< int > {Dataset::orientationLtRTtB, Dataset::orientationLtRTtB, Dataset::orientationRtLBtT, Dataset::orientationRtLBtT};
-    std::vector<QPoint> _MPX3RX_LAYOUT = std::vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
-
-    //! Kia - TCP Server - Diamond interface
-    TcpServer *tcpServer = nullptr;
-    TcpServer *dataServer = nullptr;
-    CommandHandlerWrapper *commandHandlerWrapper = nullptr;
-
-
-    int mode = 0; //! Summing/integral or 'normal' mode
-    Ui::Mpx3GUI * _ui;
-    QVector<QShortcut *> _shortcutsSwitchPages;
-
-    Mpx3Config * config = nullptr;
-    Dataset * workingSet;
-    Dataset * originalSet;
-
-    SpidrDaq * _spidrdaq = nullptr;
-    bool _armedOk = true; //! It won't let the application go into the event loop if set to false
-
-    QVector<Gradient*>  gradients;
-    void updateHistogram(int layer);
-
-    QLabel m_statusBarMessageLabel;
-    QString m_statusBarMessageString;
-
-    bool m_appActiveFirstTime = false;
-
-    void uncheckAllToolbarButtons();
-
-    QString loadButtonFilenamePath = "";
-
-    void saveMetadataToJSON(QString);
-
-    bool devMode = false;
-
-    DataControllerThread *dataControllerThread = nullptr;
-    zmqController *m_zmqController = nullptr;
-
-    void initialiseServers();
-
-    bool m_offset = false; //! Used for generating different patterns per test pattern
-
-    bool _loadConfigRemotly = false;
-    QString _configPath = "";
-
-    GeneralSettings *_generalSettings;
-    void _loadEqualizationFromGeneralSettings(void);
-    bool _loadConfigsFromGeneralSettings(void);
-
-public:
-
     GeneralSettings* getGeneralSettings(){ return _generalSettings;}
     EnergyCalibrator* getEnergyCalibrator() {return _energyCalibrator;}
     void updateEnergyCalibratorParameters(void);
@@ -227,7 +162,7 @@ public:
     QString m_SPIDRSoftwareVersion = "";
     QString m_numberOfChipsFound = "";
 
-    QString compileDateTime = QDate::currentDate().toString("yyyy-MM-dd") + QString(" ") + QString(__TIME__);
+    QString compileDateTime = QDate::currentDate().toString("yyyy-MM-dd");
 
     int getStepperMotorPageID();
 
@@ -289,6 +224,64 @@ public slots:
 
     void onEqualizationPathExported(QString path);
 
+private:
+
+    QTimer *timer; //timer to autoconnect
+    EnergyCalibrator *_energyCalibrator;
+    // ML605 layout
+    //vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
+    //vector<QPoint> _MPX3RX_LAYOUT = vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
+    // compactSPIDR layout
+    std::vector<int> _MPX3RX_ORIENTATION = std::vector< int > {Dataset::orientationLtRTtB, Dataset::orientationLtRTtB, Dataset::orientationRtLBtT, Dataset::orientationRtLBtT};
+    std::vector<QPoint> _MPX3RX_LAYOUT = std::vector<QPoint> {QPoint(0, 1), QPoint(1, 1), QPoint(1, 0), QPoint(0, 0)};
+
+    //! Kia - TCP Server - Diamond interface
+    TcpServer *tcpServer = nullptr;
+    TcpServer *dataServer = nullptr;
+    CommandHandlerWrapper *commandHandlerWrapper = nullptr;
+
+
+    int mode = 0; //! Summing/integral or 'normal' mode
+    Ui::Mpx3GUI * _ui;
+    QVector<QShortcut *> _shortcutsSwitchPages;
+
+    Mpx3Config * config = nullptr;
+    Dataset * workingSet;
+    Dataset * originalSet;
+
+    SpidrDaq * _spidrdaq = nullptr;
+    bool _armedOk = true; //! It won't let the application go into the event loop if set to false
+
+    QVector<Gradient*>  gradients;
+    void updateHistogram(int layer);
+
+    QLabel m_statusBarMessageLabel;
+    QString m_statusBarMessageString;
+
+    bool m_appActiveFirstTime = false;
+
+    void uncheckAllToolbarButtons();
+
+    QString loadButtonFilenamePath = "";
+
+    void saveMetadataToJSON(QString);
+
+    bool devMode = false;
+
+    DataControllerThread *dataControllerThread = nullptr;
+    zmqController *m_zmqController = nullptr;
+
+    void initialiseServers();
+
+    bool m_offset = false; //! Used for generating different patterns per test pattern
+
+    bool _loadConfigRemotly = false;
+    QString _configPath = "";
+
+    GeneralSettings *_generalSettings;
+    void _loadEqualizationFromGeneralSettings(void);
+    bool _loadConfigsFromGeneralSettings(void);
+
 private slots:
     void LoadEqualization();
     void loadEqualisationFromPath();
@@ -298,7 +291,6 @@ private slots:
     void on_actionConfiguration_triggered();
     void on_actionDACs_triggered();
     void on_actionEqualization_triggered();
-//    void on_actionScans_triggered();
     void on_actionDisconnect_triggered(bool checked);
     void on_actionDefibrillator_triggered(bool checked);
     void on_actionAbout_triggered(bool checked);
@@ -306,6 +298,5 @@ private slots:
     void on_actionThreshold_Scan_triggered(bool);
     void onTimeout(void);
 };
-
 
 #endif // MPX3GUI_H

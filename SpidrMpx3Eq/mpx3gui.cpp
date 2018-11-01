@@ -38,7 +38,7 @@
 #include <QCoreApplication>
 #include <QTimer>
 
-Mpx3GUI *mpx3GuiInstance;
+static Mpx3GUI *mpx3GuiInstance;
 
 Mpx3GUI::Mpx3GUI(QWidget * parent) :
     QMainWindow(parent),
@@ -244,7 +244,7 @@ Mpx3GUI::~Mpx3GUI()
 void Mpx3GUI::resize(int x, int y) {
     getDataset()->resize(x, y, getConfig()->isConnected());
     QRectF bbox = getDataset()->computeBoundingBox();
-    emit sizeChanged(bbox.width() * x, bbox.height() * y); // goes to qcstmglplot
+    emit sizeChanged(int(bbox.width() * x), int(bbox.height() * y)); // goes to qcstmglplot
 }
 
 void Mpx3GUI::addLayer(int * data, int layer) {
@@ -671,8 +671,8 @@ bool Mpx3GUI::establish_connection() {
     QVector<int> activeDevices = config->getActiveDevices();
 
     for ( int i = 0 ; i < activeDevices.size() ; i++ ) {
-        getDataset()->setLayout(i, _MPX3RX_LAYOUT[activeDevices[i]]);
-        getDataset()->setOrientation(i, _MPX3RX_ORIENTATION[activeDevices[i]]);
+        getDataset()->setLayout(i, _MPX3RX_LAYOUT[std::size_t(activeDevices[i])]);
+        getDataset()->setOrientation(i, _MPX3RX_ORIENTATION[std::size_t(activeDevices[i])]);
     }
 
     return true;
@@ -1279,7 +1279,7 @@ void Mpx3GUI::open_data(bool saveOriginal){
 
     // required signals
     QRectF bbox = getDataset()->computeBoundingBox();
-    emit sizeChanged(bbox.width() * getDataset()->x(), bbox.height() * getDataset()->y() ); // goes to qcstmglplot
+    emit sizeChanged(int(bbox.width() * getDataset()->x()), int(bbox.height() * getDataset()->y())); // goes to qcstmglplot
     emit reload_all_layers();
 
     // And keep a copy just as in QCstmGLVisualization::data_taking_finished
@@ -1326,7 +1326,7 @@ void Mpx3GUI::open_data_with_path(bool saveOriginal, bool requestPath, QString p
 
     // required signals
     QRectF bbox = getDataset()->computeBoundingBox();
-    emit sizeChanged(bbox.width() * getDataset()->x(), bbox.height() * getDataset()->y() ); // goes to qcstmglplot
+    emit sizeChanged(int(bbox.width() * getDataset()->x()), int(bbox.height() * getDataset()->y())); // goes to qcstmglplot
     emit reload_all_layers();
 
     // And keep a copy just as in QCstmGLVisualization::data_taking_finished
@@ -1375,7 +1375,7 @@ void Mpx3GUI::clear_configuration(){
         qDebug() << "[INFO] Number of devices:" << ndev;
 
         QProgressDialog pd("Clear adjustment bits ... ", "Cancel", 0, ndev, this);
-        pd.setCancelButton( 0 ); // no cancel button
+        pd.setCancelButton( nullptr ); // no cancel button
         pd.setWindowModality(Qt::WindowModal);
         pd.setMinimumDuration( 0 ); // show immediately
         pd.setWindowTitle("Clear equalization");
@@ -1613,12 +1613,11 @@ void Mpx3GUI::on_actionDisconnect_triggered(bool checked){
 }
 
 void Mpx3GUI::on_actionDefibrillator_triggered(bool checked){
+    Q_UNUSED(checked);
 
     if ( getConfig()->isConnected() ) {
-
-
         QProgressDialog pd("System reset in progress ... ", "Cancel", 0, 3, this);
-        pd.setCancelButton( 0 ); // no cancel button
+        pd.setCancelButton( nullptr ); // no cancel button
         pd.setWindowModality(Qt::WindowModal);
         pd.setMinimumDuration( 0 ); // show immediately
         pd.setWindowTitle("Reset");
