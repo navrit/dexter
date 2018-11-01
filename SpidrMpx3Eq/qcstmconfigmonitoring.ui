@@ -687,19 +687,6 @@ color: rgb(255, 255, 255);
           </item>
          </layout>
         </item>
-        <item row="6" column="9">
-         <widget class="QCheckBox" name="decodeFramesCheckbox">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="toolTip">
-           <string>There's no reason to ever disable this.</string>
-          </property>
-          <property name="text">
-           <string>Decode frames</string>
-          </property>
-         </widget>
-        </item>
         <item row="11" column="3">
          <widget class="QLineEdit" name="IP_ZMQ_SUB_lineEdit">
           <property name="text">
@@ -822,13 +809,6 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
           </property>
           <property name="text">
            <string>Pixel Depth</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="6">
-         <widget class="QCheckBox" name="inhibitShutterCheckBox">
-          <property name="text">
-           <string>Inhibit_shutter</string>
           </property>
          </widget>
         </item>
@@ -994,6 +974,26 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
           </property>
          </widget>
         </item>
+        <item row="6" column="9">
+         <widget class="QCheckBox" name="inhibitShutterCheckBox">
+          <property name="text">
+           <string>Inhibit_shutter</string>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="9">
+         <widget class="QCheckBox" name="decodeFramesCheckbox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Decode frames</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
        </layout>
        <zorder>label_3</zorder>
        <zorder>operationModeComboBox</zorder>
@@ -1020,7 +1020,6 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
        <zorder>label_11</zorder>
        <zorder>ipLineEdit</zorder>
        <zorder>label_5</zorder>
-       <zorder>decodeFramesCheckbox</zorder>
        <zorder>LUTCheckbox</zorder>
        <zorder>horizontalSpacer</zorder>
        <zorder>pixelDepthCombo</zorder>
@@ -1037,6 +1036,7 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
        <zorder>tstLe</zorder>
        <zorder>triggerModeCombo</zorder>
        <zorder>inhibitShutterCheckBox</zorder>
+       <zorder>decodeFramesCheckbox</zorder>
       </widget>
      </item>
     </layout>

@@ -469,8 +469,10 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(config,SIGNAL(inhibitShutterchanged(bool)),ui->inhibitShutterCheckBox,SLOT(setChecked(bool)));
 
     // DecodeFrames
+    /* Always hide this, don't delete it in case we want to change it easily later. */
     connect(ui->decodeFramesCheckbox, SIGNAL(toggled(bool)), config, SLOT(setDecodeFrames(bool)));
     connect(config, SIGNAL(decodeFramesChanged(bool)), ui->decodeFramesCheckbox, SLOT(setChecked(bool)));
+    ui->decodeFramesCheckbox->setVisible(false);
 
     // IP and Port
     connect(ui->ipLineEdit, SIGNAL( editingFinished() ), this, SLOT( IpAddressEditFinished() ) );// config, SLOT(setIpAddress(QString)) );

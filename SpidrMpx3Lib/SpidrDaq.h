@@ -45,7 +45,6 @@ class MY_LIB_API SpidrDaq
 
   // Configuration
   void setPixelDepth            ( int nbits );
-  //void setDecodeFrames          ( bool decode );
   //void setCompressFrames        ( bool compress );
   void setLutEnable             ( bool enable );
   //bool openFile                 ( std::string filename,
