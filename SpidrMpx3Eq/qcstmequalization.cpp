@@ -2392,6 +2392,8 @@ return false;
 
 void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString path) {
 
+    QCoreApplication::processEvents();
+
     if (path == "" || path == "/") {
         path = "config/";
     } //! Else leave it
@@ -2433,6 +2435,7 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
     }
 
     int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
+    QCoreApplication::processEvents();
     QProgressDialog pd(tr("Loading adjustment bits..."), tr("Cancel"), 0, nChips, this);
     pd.setCancelButton( 0 ); // No cancel button
     pd.setWindowModality(Qt::WindowModal);
@@ -2453,6 +2456,7 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
     QString msg = QString(tr("Equalisations loaded from: "));
 
     for(int i = 0 ; i < nChips ; i++) {
+        QCoreApplication::processEvents();
 
         //! Check if the device is alive
         if ( ! _mpx3gui->getConfig()->detectorResponds( i ) ) {

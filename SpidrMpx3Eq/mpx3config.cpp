@@ -492,6 +492,7 @@ SpidrController * Mpx3Config::establishConnection(){
 
     // Run a simple reponse check by reaching a DAC setting
     for(int i = 0 ; i < _nDevicesSupported ; i++) {
+        QCoreApplication::processEvents();
 
         int id = 0;
         _controller->getDeviceId(i, &id);
