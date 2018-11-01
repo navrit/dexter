@@ -2411,6 +2411,7 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
                         QDir::currentPath(),
                         QFileDialog::ShowDirsOnly);
             path += "/";
+            emit equalizationPathExported(path);
         }
 
         if( path.isNull() || path == "/" ) {
@@ -2422,7 +2423,6 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
             //! Very basic check to proceed or not by seeing if the bare minimum files exist (adj_0 and mask_0) in the given path
             QString testAdjFile = path + QString("adj_0");
             QString testMaskFile = path + QString("mask_0");
-            qDebug() << "adj path :" << testAdjFile << ".... mask : " << testMaskFile;
 
             if (!(QFileInfo::exists(testAdjFile) && QFileInfo::exists(testMaskFile))){
 
