@@ -78,7 +78,8 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
     // TODO
     // These two buttons will come back as we progress improving the equalization
     _ui->_startEqAll->setVisible( false );
-
+    _ui->h1LogyCheckBox->setVisible( false );
+    _ui->h1CheckBox->setVisible( false );
 }
 
 void QCstmEqualization::FullEqRewind()
