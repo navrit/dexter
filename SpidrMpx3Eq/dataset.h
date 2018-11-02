@@ -158,7 +158,7 @@ public:
     int getNChipsY();
 
     QByteArray toByteArray(); //!< Serializes the dataset for saving.
-    pair<const char*,int> toCanvas(); //!< Serializes the dataset for sending via socket to clients.
+    pair<const char*,int> toCanvas(int threshold); //!< Serializes the dataset for sending via socket to clients.
     QVector<int> toQVector(); //!< Serializes the dataset for saving.
     void saveBIN(QString filename);   //! Puts the dataset into a BIN format and saves.
     void toTIFF(QString filename, bool crossCorrection = true , bool spatialOnly = false);  //! Puts the dataset into a TIFF format and saves.
