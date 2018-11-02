@@ -130,7 +130,8 @@ public:
 
     DataConsumerThread* getDataConsumerThread(){ return _dataConsumerThread;}
 
-    void onPixelsMasked(int devID,QSet<int> pixelSet);
+    void onPixelsMasked(int devID, QSet<int> pixelSet);
+    bool requestToSetSavePath(QString path);
 
     //! Should this remain?
     //void setInfDataTaking(bool val){_infDataTaking = val; emit infDataTakingToggled(_infDataTaking);}
@@ -250,6 +251,8 @@ private slots:
     void on_saveAllCheckBox_toggled(bool checked);
 
     void on_testBtn_clicked();
+
+    void on_saveLineEdit_editingFinished();
 
     void onEqualizationPathExported(QString path);
 

@@ -1664,7 +1664,8 @@ void QCstmGLVisualization::onRequestForAutoSaveFromServer(bool val)
 
 void QCstmGLVisualization::onRequestForSettingPathFromServer(QString path)
 {
-    ui->saveLineEdit->setText(path);
+    bool success = requestToSetSavePath(path);
+    Q_UNUSED(success);
 }
 
 void QCstmGLVisualization::onRequestForSettingFormatFromServer(int idx)
@@ -2397,6 +2398,12 @@ void QCstmGLVisualization::on_testBtn_clicked()
 //    qDebug()<< " small == " << small;
 }
 
+void QCstmGLVisualization::on_saveLineEdit_editingFinished()
+{
+    bool success = requestToSetSavePath(ui->saveLineEdit->text());
+    Q_UNUSED(success);
+}
+
 void QCstmGLVisualization::onPixelsMasked(int devID, QSet<int> pixelSet)
 {
     QFile file(_equalizationPath + QString("mask_") + QString::number(devID));
@@ -2409,15 +2416,40 @@ void QCstmGLVisualization::onPixelsMasked(int devID, QSet<int> pixelSet)
     }
     else
         qDebug() << "Cannot open the mask file.";
+}
 
+bool QCstmGLVisualization::requestToSetSavePath(QString path)
+{
+    /* Check the path exists, try to create it, otherwise set it to the home directory. */
+
+    QDir dir(path);
+
+    if (!dir.exists()) {
+        if (dir.mkpath(".")) {
+            const QString msg = "Folder did not exist, successfully created the requested folder";
+            emit sig_statusBarAppend(msg, "black");
+            qDebug().noquote() << "[INFO]\t" << msg;
+        }
+    }
+
+    path = ui->saveLineEdit->text();
+    QFileInfo dir_info(path);
+
+    if (!dir_info.isWritable()) {
+        ui->saveLineEdit->setText(QDir::homePath());
+
+        const QString msg = "Path was not writable, set autosave path to your home directory";
+        emit sig_statusBarAppend(msg, "black");
+        qDebug().noquote() << "[INFO]\t" << msg;
+    }
+
+    return true;
 }
 
 void QCstmGLVisualization::onEqualizationPathExported(QString path)
 {
     _equalizationPath = path;
 }
-
-
 
 void QCstmGLVisualization::onRequestToMaskPixelRemotely(int x , int y)
 {
