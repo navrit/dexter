@@ -213,7 +213,7 @@ void QCstmEqualization::SetLimits(){
 void QCstmEqualization::on_h1LogyCheckBox_toggled(bool checked) {
 
     // All of them
-    int chipListSize = int(_workChipsIndx.size();
+    int chipListSize = int(_workChipsIndx.size());
     // Report the pixels scheduled for equalization
     for ( int i = 0 ; i < chipListSize ; i++ ) {
         if ( checked ) {
@@ -235,7 +235,7 @@ void QCstmEqualization::ShowEqualizationForChip(bool /*checked*/) {
 
     // At least one has to be checked, otherwise refuse
     bool nothingChecked = true;
-    for ( int i = 0 ; i < int(_checkBoxes.size() ; i++ ) {
+    for ( int i = 0 ; i < int(_checkBoxes.size()); i++ ) {
         if ( _checkBoxes[i]->isChecked() ) {
             nothingChecked = false;
         }
@@ -250,12 +250,12 @@ void QCstmEqualization::ShowEqualizationForChip(bool /*checked*/) {
     }
 
     // And now go ahead. Hide all widgets
-    for ( int i = int(_workChipsIndx.size() - 1 ; i >= 0 ; i-- ) {
+    for ( int i = int(_workChipsIndx.size() - 1); i >= 0 ; i-- ) {
         GetBarChart( _workChipsIndx[i] )->hide();
     }
 
     // Show the new ones
-    for ( int i = 0 ; i < int(_checkBoxes.size() ; i++ ) {
+    for ( int i = 0 ; i < int(_checkBoxes.size()); i++ ) {
         if ( _checkBoxes[i]->isChecked() ) GetBarChart( _workChipsIndx[i] )->show();
     }
 
@@ -565,7 +565,7 @@ equalizationSteeringInfo * QCstmEqualization::GetSteeringInfo(int chipIdx) {
     if ( _steeringInfo.size() < _workChipsIndx.size() ) return nullptr;
 
     // Find the index
-    for (int i = 0 ; i < int(_workChipsIndx.size() ; i++ ) {
+    for (int i = 0 ; i < int(_workChipsIndx.size()); i++ ) {
         // return the corresponding results Ptr
         if ( _workChipsIndx[i] == chipIdx ) {
             return _steeringInfo[i];
@@ -582,7 +582,7 @@ BarChart * QCstmEqualization::GetAdjBarChart(int chipIdx, Mpx3EqualizationResult
     if ( _workChipsIndx.size() != _adjchart_L.size() ) return nullptr;
     if ( _workChipsIndx.size() != _adjchart_H.size() ) return nullptr;
 
-    for (int i = 0 ; i < int(_workChipsIndx.size() ; i++ ) {
+    for (int i = 0 ; i < int(_workChipsIndx.size()); i++ ) {
         // return the corresponding results Ptr
         if ( _workChipsIndx[i] == chipIdx ) {
             if ( sel == Mpx3EqualizationResults::__ADJ_L) return _adjchart_L[i];
@@ -1485,7 +1485,7 @@ void QCstmEqualization::ScanOnInterpolation() {
     cprop_opt_ext.color_g = 217;
     cprop_opt_ext.color_b = 100;
 
-    for ( int i = 0 ; i < int(_workChipsIndx.size() ; i++ ) {
+    for ( int i = 0 ; i < int(_workChipsIndx.size()); i++ ) {
         cprop_opt_ext.name = BuildChartName( _workChipsIndx[i], legend );
         GetBarChart( _workChipsIndx[i] )->AppendSet( cprop_opt_ext );
     }
