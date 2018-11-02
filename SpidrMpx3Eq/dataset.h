@@ -123,7 +123,6 @@ private:
     QVector<int> starty;
     QVector<int> endx;
     QVector<int> endy;
-    void initVariablesForHighSpeedSaving(std::vector<QPoint> frameLayouts, std::vector<int> frameOrientation);
     int * m_plainImageBuff = nullptr;
 
     QVector<QPoint>  m_frameLayouts; //!<A vector containing the bottom-left corners of the detectors, (0,0) is bottom, left , (1,0) is to the right, (0,1) above.
@@ -146,19 +145,13 @@ public:
     Dataset(int x, int y, int framesPerLayer = 1, int pixelDepthBits = 12);
     Dataset();
     ~Dataset();
-    QVector<int*> getActualData() {return m_layers;}
     Dataset( const Dataset& other );
     Dataset& operator=( const Dataset& rhs );
     void removeCorrection(){ delete obCorrection; obCorrection = nullptr;}
     void zero();//!< Set all layers to zero.
     QPoint getNaturalCoordinates(QPoint pixel, int index); //!< Used by sample to compute coordinates
     int thresholdToIndex(int threshold){return m_thresholdsToIndices.value(threshold, -1);}
-    uint64_t getActivePixels(int threshold); //!< Returns the amount of non-zero pixels for a specific threshold.
 
-    //! Unused function
-    int64_t getTotal(int threshold);//!< Returns the sum of all pixels for a specific threshold
-
-    int64_t getOverflow(int);//!< Returns the pixels in overflow for a specific threshold
     int getContainingFrame(QPoint pixel);//!< Returns the frame-index of the frame which contains the specified point. Returns -1 if no frame contains the point.
     QRectF computeBoundingBox(); //!< Computes the minimum bounding box of the set of chips. Returns coordinates and sizes in units of "chips", so e.g. (0,2)x(0,2) instead of (0,512)x(0,512) for a quad.
     int getNChipsX();
@@ -274,10 +267,7 @@ public:
 
     int newLayer(int layer);//!<Adds a new layer at the specified threshold.
 
-    void runImageCalculator(QString imgOperator, int index1, int index2, int threshold = 0);
     void calcAllEnergyBins();
-
-    void debugPrintThesholds(int n);
 
 };
 

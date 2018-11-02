@@ -256,6 +256,7 @@ private slots:
 
     void onEqualizationPathExported(QString path);
 
+
 public slots:
 
     void StartDataTaking(QString mode="");
