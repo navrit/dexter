@@ -154,7 +154,7 @@ void QCstmDacs::StartDACScan() {
         }
         //disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
         delete _scanThread;
-        _scanThread = 0x0;
+        _scanThread = nullptr;
     }
 
     // Create the thread

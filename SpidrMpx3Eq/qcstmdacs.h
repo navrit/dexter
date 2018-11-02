@@ -52,7 +52,7 @@ class QCstmDacs : public QWidget {
 
 public:
 
-    explicit QCstmDacs(QWidget *parent = 0);
+    explicit QCstmDacs(QWidget *parent = nullptr);
     ~QCstmDacs();
     void PopulateDACValues();
     UpdateDACsThread * FillDACValues(int devId = -1, bool updateInTheChip = true);
@@ -65,19 +65,18 @@ public:
 public:
 
     //Ui::Mpx3GUI
-    Ui::QCstmDacs  * GetUI() { return ui; };
-    QSpinBox ** GetSpinBoxList() { return _dacSpinBoxes; };
-    QSlider ** GetSliderList() { return _dacSliders; };
+    Ui::QCstmDacs  * GetUI() { return ui; }
+    QSpinBox ** GetSpinBoxList() { return _dacSpinBoxes; }
+    QSlider ** GetSliderList() { return _dacSliders; }
     int GetDACIndex(int dac_code);
-    QLabel ** GetLabelsList() { return _dacVLabels ; };
-    QCheckBox ** GetCheckBoxList() { return _dacCheckBoxes; };
-    int GetDeviceIndex() { return _deviceIndex; };
-    int GetNSamples() { return _nSamples; };
-    int GetScanStep() { return _scanStep; };
+    QLabel ** GetLabelsList() { return _dacVLabels ; }
+    QCheckBox ** GetCheckBoxList() { return _dacCheckBoxes; }
+    int GetDeviceIndex() { return _deviceIndex; }
+    int GetNSamples() { return _nSamples; }
+    int GetScanStep() { return _scanStep; }
     QCPGraph * GetGraph(int idx);
-    //QCustomPlot * GetQCustomPlotPtr() { return _dacScanPlot; };
-    void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; };
-    Mpx3GUI * GetMpx3GUI() { return _mpx3gui; };
+    void SetMpx3GUI(Mpx3GUI * p) { _mpx3gui = p; }
+    Mpx3GUI * GetMpx3GUI() { return _mpx3gui; }
 
     QCheckBox* getAllDACSimultaneousCheckBox();
     QSpinBox* getDeviceIdSpinBox();
@@ -92,21 +91,20 @@ public:
 
 private:
 
-    Ui::QCstmDacs * ui;
+    Ui::QCstmDacs * ui = nullptr;
 
     void FillWidgetVectors();
     void SetLimits();
 
     // Connectivity between modules
-    Mpx3GUI * _mpx3gui;
+    Mpx3GUI * _mpx3gui = nullptr;
 
     // Currently active graph
-    QCPGraph *_graph;
+    QCPGraph *_graph = nullptr;
 
-    //
-    SenseDACsThread * _senseThread;
-    ScanDACsThread * _scanThread;
-    UpdateDACsThread * _updateDACsThread;
+    SenseDACsThread * _senseThread = nullptr;
+    ScanDACsThread * _scanThread = nullptr;
+    UpdateDACsThread * _updateDACsThread = nullptr;
 
     // Vectors of Widgets
     QSpinBox  * _dacSpinBoxes[MPX3RX_DAC_COUNT];
@@ -173,8 +171,8 @@ public:
 
 private:
 
-    SpidrController * _spidrcontrol;
-    QCstmDacs * _dacs;
+    SpidrController * _spidrcontrol = nullptr;
+    QCstmDacs * _dacs = nullptr;
     int _deviceIndex;
     // IP source address (SPIDR network interface)
     int _srcAddr;
@@ -200,8 +198,8 @@ public:
 
 private:
 
-    SpidrController * _spidrcontrol;
-    QCstmDacs * _dacs;
+    SpidrController * _spidrcontrol = nullptr;
+    QCstmDacs * _dacs = nullptr;
     int _deviceIndex;
     // IP source address (SPIDR network interface)
     int _srcAddr;
@@ -234,8 +232,8 @@ public:
 
 private:
 
-    SpidrController * _spidrcontrol;
-    QCstmDacs * _dacs;
+    SpidrController * _spidrcontrol = nullptr;
+    QCstmDacs * _dacs = nullptr;
     int _deviceIndex;
     int _nDACConfigsAvailable;
     // IP source address (SPIDR network interface)
