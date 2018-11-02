@@ -382,15 +382,10 @@ void CommandHandler::startScan()
     emit requestToStartStopThresholdScan();
 }
 
-
-
-
 void CommandHandler::startSendingImage(bool send)
 {
     _sendingImage = send;
 }
-
-
 
 void Command::merlinErrorToPslError(int errNum)
 {
@@ -518,11 +513,11 @@ QString CommandHandler::getAcquisitionHeader()
             % "\nActive Counters:	Counter 0"
             % "\nThresholds (keV):	0.000000E+0,1.000000E+1,1.500000E+1,2.000000E+1,2.500000E+1,3.000000E+1,3.500000E+1,4.000000E+1"
             % "\nDACs:	030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,148,128,203,189,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,142,128,192,180,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,151,128,205,191,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,138,128,189,181,417,417"
-            % "\nbpc File:	c:\MERLIN Quad Host\Config\W117_E7\W117_E7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_H7\W117_H7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_I7\W117_I7_SPM.bpc,c:\MERLIN Quad Host\Config\W117_G7\W117_G7_SPM.bpc"
-            % "\nDAC File:	c:\MERLIN Quad Host\Config\W117_E7\W117_E7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_H7\W117_H7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_I7\W117_I7_SPM.dacs,c:\MERLIN Quad Host\Config\W117_G7\W117_G7_SPM.dacs"
+            % "\nbpc File:	c:\\MERLIN Quad Host\\Config\\W117_E7\\W117_E7_SPM.bpc,c:\\MERLIN Quad Host\\Config\\W117_H7\\W117_H7_SPM.bpc,c:\\MERLIN Quad Host\\Config\\W117_I7\\W117_I7_SPM.bpc,c:\\MERLIN Quad Host\\Config\\W117_G7\\W117_G7_SPM.bpc"
+            % "\nDAC File:	c:\\MERLIN Quad Host\\Config\\W117_E7\\W117_E7_SPM.dacs,c:\\MERLIN Quad Host\\Config\\W117_H7\\W117_H7_SPM.dacs,c:\\MERLIN Quad Host\\Config\\W117_I7\\W117_I7_SPM.dacs,c:\\MERLIN Quad Host\\Config\\W117_G7\\W117_G7_SPM.dacs"
             % "\nGap Fill Mode:	None"
-            % "\nFlat Field File:	Dummy (C:\<NUL>\Temp.ffc)"
-            % "\nDead Time File:	Dummy (C:\<NUL>\Temp.dtc)"
+            % "\nFlat Field File:	Dummy (C:\\Temp.ffc)"
+            % "\nDead Time File:	Dummy (C:\\<NUL>\\Temp.dtc)"
             % "\nAcquisition Type (Normal, Th_scan, Config):	Normal"
             % "\nFrames in Acquisition (Number):  " % QString::number(config->getNTriggers())
             % "\nTrigger Start (Positive, Negative, Internal):	Internal"
