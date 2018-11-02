@@ -575,11 +575,15 @@ void CommandHandler::getImage()
 int CommandHandler::setPixelMask(int x, int y)
 {
     emit requestToMaskPixelRemotely(x,y);
+
+    //! TODO return an int?
 }
 
 int CommandHandler::setPixelUnmask(int x , int y)
 {
     emit requestToUnmaskPixelRemotely(x,y);
+
+    //! TODO return an int?
 }
 
 int CommandHandler::loadEqualizationRemotely(QString path)
@@ -623,8 +627,6 @@ int CommandHandler::saveConfigRemotely(QString path)
     for (int i = 0; i < pathList.length() - 1; ++i) {
          path += pathList.at(i) + QDir::separator();
     }
-
-
 
     qDebug() << "filename : " << filename;
     qDebug() << "path : " << path;
@@ -744,10 +746,6 @@ void CommandHandler::emitrequestForAnotherSocket(int port)
     emit requestAnotherSocket(port);
 }
 
-
-
-
-
 QString Command::getData()
 {
     return data;
@@ -798,15 +796,10 @@ void Command::setImage(QByteArray im)
     imageToSend = im;
 }
 
-void Command::print()
+void Command::print() //! Consider changing this function name...
 {
     qDebug() << "Core command: " << cmd;
     for(int i=0; i<arguments.size(); i++){
         qDebug() << "argument: " << arguments.at(i);
     }
 }
-
-
-
-
-
