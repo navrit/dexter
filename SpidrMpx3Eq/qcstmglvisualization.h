@@ -253,10 +253,6 @@ private slots:
 
     void onEqualizationPathExported(QString path);
 
-
-
-
-
 public slots:
 
     void StartDataTaking(QString mode="");
@@ -332,9 +328,9 @@ public slots:
     //saving format from server
     void onRequestForSettingFormatFromServer(int);
     //masking pixels remotely
-    void onReuestToMaskPixelRemotely(int,int);
+    void onRequestToMaskPixelRemotely(int,int);
     //unmasking pixels remotely
-    void onReuestToUnmaskPixelRemotely(int,int);
+    void onRequestToUnmaskPixelRemotely(int,int);
 
 signals:
     void taking_data_gui();

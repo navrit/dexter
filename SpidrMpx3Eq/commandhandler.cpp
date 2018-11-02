@@ -23,8 +23,8 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestForSettingSavePath(QString)),visualisation,SLOT(onRequestForSettingPathFromServer(QString)));
     connect(visualisation,SIGNAL(someCommandHasFinished_Successfully()),this,SLOT(on_someCommandHasFinished_Successfully()));
     //    connect(this,SIGNAL(requestForSettingSaveTag(int)),visualisation,SLOT(onRequestForSettingFormatFromServer(int)));
-    connect(this,SIGNAL(requestToMaskPixelRemotely(int,int)),visualisation,SLOT(onReuestToMaskPixelRemotely(int,int)));
-    connect(this,SIGNAL(requestToUnmaskPixelRemotely(int,int)),visualisation,SLOT(onReuestToUnmaskPixelRemotely(int,int)));
+    connect(this,SIGNAL(requestToMaskPixelRemotely(int,int)),visualisation,SLOT(onRequestToMaskPixelRemotely(int,int)));
+    connect(this,SIGNAL(requestToUnmaskPixelRemotely(int,int)),visualisation,SLOT(onRequestToUnmaskPixelRemotely(int,int)));
     connect(this,SIGNAL(requestToLoadEqualizationRemotely(QString)),getGui(),SLOT(loadEqualisationFromPathRemotely(QString)));
     connect(QCstmEqualization::getInstance(),SIGNAL(equalizationPathExported(QString)),this,SLOT(on_equalizationPathExported(QString)));
     connect(this,SIGNAL(requestToStartStopThresholdScan()),thresholdScan::getInstance(),SLOT(button_startStop_clicked_remotely()));

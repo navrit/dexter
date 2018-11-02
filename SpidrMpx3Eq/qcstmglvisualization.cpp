@@ -25,7 +25,7 @@
 #include "mpx3dacsdescr.h"
 
 
-QCstmGLVisualization* qCstmGLVisualizationInst;
+static QCstmGLVisualization* qCstmGLVisualizationInst;
 
 QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     QWidget(parent),
@@ -2419,7 +2419,7 @@ void QCstmGLVisualization::onEqualizationPathExported(QString path)
 
 
 
-void QCstmGLVisualization::onReuestToMaskPixelRemotely(int x , int y)
+void QCstmGLVisualization::onRequestToMaskPixelRemotely(int x , int y)
 {
     _maskingRequestFromServer = true;
     _maskOpration = MASK;
@@ -2427,7 +2427,7 @@ void QCstmGLVisualization::onReuestToMaskPixelRemotely(int x , int y)
     pixel_selected(QPoint(x,y),QPoint());
 }
 
-void QCstmGLVisualization::onReuestToUnmaskPixelRemotely(int x, int y)
+void QCstmGLVisualization::onRequestToUnmaskPixelRemotely(int x, int y)
 {
     _maskingRequestFromServer = true;
     _maskOpration = UNMASK;
