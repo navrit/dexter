@@ -820,21 +820,6 @@ color: rgb(255, 255, 255);
           </property>
          </widget>
         </item>
-        <item row="6" column="5">
-         <widget class="QCheckBox" name="LUTCheckbox">
-          <property name="toolTip">
-           <string>Lookup Table. Should be enabled by default.
-
-Moves the load of the LUT unit from the Desktop application to the FPGA.  This results in better performance</string>
-          </property>
-          <property name="text">
-           <string>LUT</string>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="5" colspan="3">
          <widget class="QLabel" name="label_23">
           <property name="toolTip">
@@ -1102,7 +1087,6 @@ Moves the load of the LUT unit from the Desktop application to the FPGA.  This r
        <zorder>label_11</zorder>
        <zorder>ipLineEdit</zorder>
        <zorder>label_5</zorder>
-       <zorder>LUTCheckbox</zorder>
        <zorder>horizontalSpacer</zorder>
        <zorder>pixelDepthCombo</zorder>
        <zorder>csmSpmCombo</zorder>

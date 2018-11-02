@@ -519,35 +519,6 @@ void getChargeSummingHandler(CommandHandler* ch, Command* cmd){
         cmd->setData("0");
     cmd->setError(NO_ERROR);
 }
-void setLutTableHandler(CommandHandler* ch, Command* cmd){
-    if(!cmd->enoughArguments(1,"SetLutTable"))  //this command comes with one argument
-    {
-        cmd->setError(ARG_NUM_OUT_RANGE);
-        return;
-    }
-    if(cmd->arguments.at(0) == "enable"){
-        Mpx3GUI::getInstance()->getConfig()->setLUTEnable(true);
-        cmd->setData("LUT table is enabled");
-        cmd->setError(NO_ERROR);
-    }
-    else if(cmd->arguments.at(0) == "disable"){
-        Mpx3GUI::getInstance()->getConfig()->setLUTEnable(false);
-        cmd->setData("LUT table is disabled");
-        cmd->setError(NO_ERROR);
-    }
-    else
-    {
-        cmd->setError(UNKNOWN_COMMAND);
-        cmd->setData("Invalid argument...!");
-    }
-}
-void getLutTableHandler(CommandHandler* ch, Command* cmd){
-    if(Mpx3GUI::getInstance()->getConfig()->getLUTEnable())
-        cmd->setData("1");
-    else
-        cmd->setData("0");
-    cmd->setError(NO_ERROR);
-}
 
 void setAutoSaveHandler(CommandHandler* ch, Command* cmd){
     if(!cmd->enoughArguments(1,"SetAutoSave"))  //this command comes with one argument
@@ -570,7 +541,6 @@ void setAutoSaveHandler(CommandHandler* ch, Command* cmd){
         cmd->setError(UNKNOWN_COMMAND);
         cmd->setData("Invalid argument...!");
     }
-
 }
 
 void setRecordPathHandler(CommandHandler* ch, Command* cmd){

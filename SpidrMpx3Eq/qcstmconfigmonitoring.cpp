@@ -465,10 +465,6 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(ui->ColourModeCheckBox, SIGNAL(toggled(bool)), config, SLOT(setColourMode(bool)));
     connect(config, SIGNAL(colourModeChanged(bool)), ui->ColourModeCheckBox, SLOT(setChecked(bool)));
 
-    // LUTEnable
-    connect(ui->LUTCheckbox, SIGNAL(toggled(bool)), config, SLOT(setLUTEnable(bool)));
-    connect(config, SIGNAL(LUTEnableChanged(bool)), ui->LUTCheckbox, SLOT(setChecked(bool)));
-
     //inhibit_shutter enable
     connect(ui->inhibitShutterCheckBox, SIGNAL(toggled(bool)), config, SLOT(setInhibitShutter(bool)));
     connect(config,SIGNAL(inhibitShutterchanged(bool)),ui->inhibitShutterCheckBox,SLOT(setChecked(bool)));

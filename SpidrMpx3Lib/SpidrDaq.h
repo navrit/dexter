@@ -44,9 +44,9 @@ class MY_LIB_API SpidrDaq
   bool        hasError          ( );
 
   // Configuration
-  void setPixelDepth            ( int nbits );
+  //void setPixelDepth            ( int nbits );
   //void setCompressFrames        ( bool compress );
-  void setLutEnable             ( bool enable );
+  //void setLutEnable             ( bool enable );
   //bool openFile                 ( std::string filename,
   //                                bool overwrite = false );
   //bool closeFile                ( );

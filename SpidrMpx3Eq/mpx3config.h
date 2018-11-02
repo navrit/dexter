@@ -59,7 +59,6 @@ public:
         __CsmSpm,
         __readBothCounters,
         __colourMode,
-        __LUTEnable,
         __decodeFrames,
         __logLevel,
 
@@ -82,7 +81,7 @@ private:
     uint16_t port;
     int _trigPeriod_ms;
     //Operation stuff
-    bool colourMode = false, LUTEnable = false, decodeFrames = false, readBothCounters = false, Polarity = true;
+    bool colourMode = false, decodeFrames = false, readBothCounters = false, Polarity = true;
     int OperationMode = -1, PixelDepth = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, ContRWFreq = -1, TriggerMode =-1, TriggerLength_us = -1, TriggerDowntime_us = -1, nTriggers = -1;
     int LogLevel = -1;
     // The following are static characteristics read from the SPIDR, not configurable.
@@ -148,7 +147,6 @@ public:
     quint32 getIpAddressInt(){return SpidrAddress.toIPv4Address();}
     uint16_t getIpAddressPort(){return port;}
     bool getColourMode(){return colourMode;}
-    bool getLUTEnable(){return LUTEnable;}
     bool getDecodeFrames(){return decodeFrames;}
     bool getReadBothCounters() {return readBothCounters;}
     int getOperationMode(){return OperationMode;}
@@ -205,7 +203,6 @@ signals:
     void IpZmqPubAddressChangedFailed(QString);
     void IpZmqSubAddressChangedFailed(QString);
     void colourModeChanged(bool);
-    void LUTEnableChanged(bool);
     void readBothCountersChanged(bool);
     void decodeFramesChanged(bool);
     void operationModeChanged(int);
@@ -257,15 +254,6 @@ public slots:
 
     void setColourMode(bool mode);
     void updateColourMode(){}
-
-    void setLUTEnable(bool en) {
-        if(en != LUTEnable) {
-            LUTEnable = en ; emit LUTEnableChanged( en );
-            SendConfiguration( __LUTEnable );
-        }
-
-    }
-    void updateLUTEnable(){}
 
     void setReadBothCounters(bool rbc) {
         if(rbc != readBothCounters) {

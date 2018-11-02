@@ -183,24 +183,6 @@ bool SpidrDaq::hasError()
 }
 
 // ----------------------------------------------------------------------------
-// Configuration
-// ----------------------------------------------------------------------------
-
-void SpidrDaq::setPixelDepth( int nbits )
-{ /*
-  for( unsigned int i=0; i<_frameReceivers.size(); ++i )
-    _frameReceivers[i]->setPixelDepth( nbits );
-  _frameBuilder->setPixelDepth( nbits ); */
-}
-
-// ----------------------------------------------------------------------------
-
-void SpidrDaq::setLutEnable( bool enable )
-{
-  //_frameBuilder->setLutEnable( enable );
-}
-
-// ----------------------------------------------------------------------------
 // Acquisition
 // ----------------------------------------------------------------------------
 
