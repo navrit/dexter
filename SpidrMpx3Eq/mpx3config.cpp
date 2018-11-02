@@ -83,7 +83,6 @@ QJsonDocument Mpx3Config::buildConfigJSON(bool includeDacs)
     objDetector.insert("TriggerDeadtime_us", this->TriggerDowntime_us);
     objDetector.insert("nTriggers", this->nTriggers);
     objDetector.insert("ColourMode", this->colourMode);
-    objDetector.insert("LUTEnable", this->LUTEnable);
     objDetector.insert("BothCounters", this->readBothCounters);
     objDetector.insert("DecodeFrames", this->decodeFrames);
     objDetector.insert("BiasVoltage", this->biasVolt);
@@ -229,12 +228,6 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
     if ( item == __ALL ) {
         spidrcontrol->setPs( deviceIndex, 3 ); // 3: 8 links
     }
-    if ( item == __ALL || item == __LUTEnable ) {
-        // We need look up table decoding ether hadware or software
-        bool lutOnSPIDR = getLUTEnable();
-        spidrcontrol->setLutEnable(lutOnSPIDR);
-        spidrdaq->setLutEnable(! lutOnSPIDR);
-    }
 
     // Operation mode
     if ( item == __ALL || item == __operationMode ) {
@@ -276,7 +269,6 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
 //        qDebug() << "Both counters : " << getReadBothCounters() << " - Pixel depth:" << getPixelDepth();
 //    }
     if ( item == __ALL || item == __pixelDepth || item == __readBothCounters) {
-        spidrdaq->setPixelDepth( getPixelDepth() );
         if (OperationMode == __operationMode_SequentialRW) {
             spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters(), false );
             qDebug() << "Both counters (HW) : " << getReadBothCounters() << " - Pixel depth:" << getPixelDepth();
@@ -338,10 +330,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
 
     // Number of links
     if( item == __ALL ) spidrcontrol->setPs( deviceIndex, 3 );
-    if( item == __ALL || item == __LUTEnable ) {
-        spidrcontrol->setLutEnable( ! getLUTEnable() );
-        spidrdaq->setLutEnable( getLUTEnable() );
-    }
+
     // Reset pixel configuration
     if ( reset ) spidrcontrol->resetPixelConfig();
 
@@ -386,7 +375,6 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
         spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters(), false ); // third parameter : true = read two counters
         //qDebug() << "both cntr : " << getReadBothCounters();
     }
-    if( item == __ALL || item == __pixelDepth ) spidrdaq->setPixelDepth( getPixelDepth() );
 
     // Packet size reports NOT IMPLEMENTED in the Leon software
     //if( item == __ALL || item == __maxPacketSize ) spidrcontrol->setMaxPacketSize( getMaxPacketSize() );
@@ -759,10 +747,6 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
         it = JSobject.find("ColourMode");
         if(it != JSobject.end())
             setColourMode(it.value().toBool());
-
-        it = JSobject.find("LUTEnable");
-        if(it != JSobject.end())
-            setLUTEnable(it.value().toBool());
 
         it = JSobject.find("DecodeFrames");
         if(it != JSobject.end())

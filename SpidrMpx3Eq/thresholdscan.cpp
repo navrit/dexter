@@ -16,7 +16,7 @@
 #include "ui_qcstmglvisualization.h"
 
 
-thresholdScan *thresholdScanInst = nullptr;
+static thresholdScan *thresholdScanInst = nullptr;
 
 thresholdScan::thresholdScan(QWidget *parent) :
     QWidget(parent),
@@ -82,7 +82,6 @@ void thresholdScan::finishedScan()
 
     resetScan();
     emit scanIsDone();
-
 }
 
 void thresholdScan::startScan()
@@ -98,8 +97,8 @@ void thresholdScan::startScan()
     //! Get values from GUI
     minTH = ui->spinBox_minimum->value();
     maxTH = ui->spinBox_maximum->value();
-    thresholdSpacing = ui->spinBox_spacing->value();
-    framesPerStep = ui->spinBox_framesPerStep->value();
+    thresholdSpacing = uint(ui->spinBox_spacing->value());
+    framesPerStep = uint(ui->spinBox_framesPerStep->value()); /* Minimum of 0 is enforced in the ui code */
     activeDevices = _mpx3gui->getConfig()->getNActiveDevices();
 
     newPath = ui->textEdit_path->toPlainText();
@@ -144,7 +143,6 @@ void thresholdScan::startScan()
     setThresholdToScan();
 
     startDataTakingThread();
-
 }
 
 void thresholdScan::stopScan()
@@ -209,7 +207,7 @@ void thresholdScan::resumeTHScan()
 
         update_timeGUI();
         //! Increment iteration counter -------------------------------------------
-        iteration++;
+        iteration += thresholdSpacing;
 
         startDataTakingThread();
 
@@ -236,7 +234,8 @@ void thresholdScan::startDataTakingThread()
 
 void thresholdScan::update_timeGUI()
 {
-    ui->progressBar->setValue( (float(iteration-minTH) / float(maxTH-minTH)) * 100.0);
+    /* I know this looks excessive, it's not. */
+    ui->progressBar->setValue(int(double(float(iteration-minTH) / float(maxTH-minTH)) * 100.0));
 }
 
 QString thresholdScan::makePath()

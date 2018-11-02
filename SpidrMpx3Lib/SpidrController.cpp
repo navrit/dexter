@@ -938,8 +938,11 @@ bool SpidrController::setPixelDepth( int dev_nr, int bits,
   if( two_counter_readout )       pixelcounterdepth_id |= 0x10000;
   if( two_counter_readout_softw ) pixelcounterdepth_id |= 0x20000;
 
-  return this->requestSetInt( CMD_SET_COUNTERDEPTH, dev_nr,
+  bool result = this->requestSetInt( CMD_SET_COUNTERDEPTH, dev_nr,
 			      pixelcounterdepth_id );
+  // if we change the counter depth, LEON has to enable the other LUT
+  setLutEnable(true);
+  return result;
 }
 
 // ----------------------------------------------------------------------------

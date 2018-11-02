@@ -97,7 +97,6 @@ class MY_LIB_API SpidrController
   bool        setReady         ( );
   bool        setBiasSupplyEna ( bool enable );
   bool        setBiasVoltage   ( int  volts );
-  bool        setLutEnable     ( bool enable );
   bool        getMpx3Clock     ( int *megahertz );
   bool        setTpFrequency   ( bool enable,
                                  int  freq_mhz = -1,
@@ -225,6 +224,7 @@ class MY_LIB_API SpidrController
   int         dacMaxMpx3rx     ( int  dac_code );
 
  private:
+  bool setLutEnable     	( bool enable );
   bool loadOmr              ( int  dev_nr );
   bool setPixelBit          ( int  x, int y, unsigned int bitmask, bool b );
   bool get3Ints             ( int  cmd, int *data0, int *data1, int *data2 );

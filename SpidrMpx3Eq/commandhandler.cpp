@@ -104,10 +104,6 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("SetChargeSumming",setChargeSumming);
     cmd_struct getChargeSumming{getChargeSummingHandler};
     cmdTable.insert("GetChargeSumming",getChargeSumming);
-    cmd_struct setLutTable{setLutTableHandler};
-    cmdTable.insert("SetLutTable",setLutTable);
-    cmd_struct getLutTable{getLutTableHandler};
-    cmdTable.insert("GetLutTable",getLutTable);
     cmd_struct setShutterPeriod{setShutterPeriodHandler};
     cmdTable.insert("SetShutterPeriod",setShutterPeriod);
     cmd_struct getShutterPeriod{getShutterPeriodHandler};

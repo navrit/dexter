@@ -47,10 +47,10 @@ private:
     void update_timeGUI();
     QElapsedTimer timer;
 
-    int thresholdSpacing = 1;
+    uint thresholdSpacing = 1;
     int minTH = 0;
     int maxTH = 511;
-    int framesPerStep = 1;
+    uint framesPerStep = 1;
     QString originalPath;
     int iteration = 0;
     int activeDevices;

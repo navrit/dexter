@@ -130,6 +130,11 @@ void QCstmDacs::SetDACValueLocalConfig(int chip, int dacIndex, int val) {
 
 void QCstmDacs::StartDACScan() {
 
+    int progress = ui->progressBar->value();
+    if (progress > 0 && progress < 100) {
+        qDebug() << "[INFO] Scan running already, doing nothing";
+        return;
+    }
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
     if ( ! spidrcontrol ) {
@@ -149,7 +154,7 @@ void QCstmDacs::StartDACScan() {
         }
         //disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
         delete _scanThread;
-        _scanThread = 0x0;
+        _scanThread = nullptr;
     }
 
     // Create the thread

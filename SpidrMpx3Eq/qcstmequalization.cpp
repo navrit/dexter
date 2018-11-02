@@ -1785,11 +1785,6 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     SetAllAdjustmentBits(spidrcontrol, devId, 0x0, 0x0);
 
     auto config = _mpx3gui->getConfig();
-    //! ------------------------------------------------------------------------
-    //! This is important that they're opposite
-    bool lutOnSPIDR = config->getLUTEnable();
-    spidrcontrol->setLutEnable(lutOnSPIDR);
-    spidrdaq->setLutEnable(! lutOnSPIDR);
 
     //! ------------------------------------------------------------------------
     //! OMR bit
@@ -1846,7 +1841,6 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
 
     //! Important defaults
     spidrcontrol->setPixelDepth( devId, 12 );
-    spidrdaq->setPixelDepth( 12 );
 
     //! -------------------------------------------------------------------------
 
