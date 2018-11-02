@@ -213,7 +213,7 @@ void QCstmEqualization::SetLimits(){
 void QCstmEqualization::on_h1LogyCheckBox_toggled(bool checked) {
 
     // All of them
-    int chipListSize = int(_workChipsIndx.size();
+    int chipListSize = int(_workChipsIndx.size());
     // Report the pixels scheduled for equalization
     for ( int i = 0 ; i < chipListSize ; i++ ) {
         if ( checked ) {
