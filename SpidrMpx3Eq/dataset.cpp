@@ -60,45 +60,6 @@ void Dataset::rewindScores() {
     m_scores.mpx3ClockStops = 0;
 }
 
-int64_t Dataset::getTotal(int threshold) {
-    int index = thresholdToIndex(threshold);
-    if(index == -1)
-        return 0;
-    int64_t count = 0;
-    for(unsigned int j = 0; j < getPixelsPerLayer(); j++)
-        count += m_layers[index][j];
-    return count;
-}
-
-//! Overflow is checked on a frame per frame basis, not on the integral
-int64_t Dataset::getOverflow(int /*threshold*/)
-{
-    /*
-    int index = thresholdToIndex(threshold);
-    if(index == -1)
-        return 0;
-    int64_t count = 0;
-    int overflowval = 0;
-    for(unsigned int j = 0; j < getPixelsPerLayer(); j++) {
-        if ( m_layers[index][j] >= overflowval ) count ++;
-    }
-    return count;
-    */
-    return 0;
-}
-
-uint64_t Dataset::getActivePixels(int threshold){
-    int index = thresholdToIndex(threshold);
-    if(index == -1)
-        return 0;
-    uint64_t count  =0;
-    for(unsigned int j = 0; j <getPixelsPerLayer(); j++){
-        if(0 != m_layers[index][j])
-            count++;
-    }
-    return count;
-}
-
 /*!
  * \brief MyClass::MyClass
  *        The copy constructor
@@ -1826,92 +1787,9 @@ int Dataset::newLayer(int threshold){
     return m_layers.size()-1;
 }
 
-void Dataset::runImageCalculator(QString imgOperator, int index1, int index2, int threshold)
-{
-    int width = getWidth();
-    int height = getHeight();
-    QList<int> keys = getThresholds();
-    int nThresholds = keys.size();
-    uint64_t image[height*width];
-
-    //qDebug() << keys << nThresholds;
-
-    if ( nThresholds == 0 ) {
-        QMessageBox::information(0,"Error","No thresholds. Failed operation/");
-        return;
-    }
-
-    if (imgOperator == "-") {
-        for(int y = 0; y < height; y++) {
-            for(int x = 0; x < width; x++) {
-                image[y*width + x] = sample(x,y,keys[index1]) - sample(x,y,keys[index2]);
-                setPixel(x,y,keys[0],image[y*width + x]);
-            }
-        }
-    } else if (imgOperator == "+") {
-        for(int y = 0; y < height; y++) {
-            for(int x = 0; x < width; x++) {
-                image[y*width + x] = sample(x,y,keys[index1]) + sample(x,y,keys[index2]);
-                setPixel(x,y,keys[0],image[y*width + x]);
-            }
-        }
-    } else {
-        qDebug() << "[FAIL] Dataset::runImageCalculator --> selected image operator not implemented. Do it.";
-        return;
-    }
-
-
-    qDebug() << keys[0] << "-" << keys[1];
-
-
-    //threshold = 7;
-
-    //! This shiiiiieeet
-
-    /*
-    if(!m_thresholdsToIndices.contains(threshold))
-        newLayer(threshold);
-    int *newFrame = getFrame(index1, threshold);
-
-    for (int i = 0 ; i < m_nx*m_ny;i++) {
-
-        newFrame[i] = image[i];
-    }
-    */
-    //setPixel(0,0,0,1);
-
-
-    //    //! Loop over different layers in the Dataset.
-    //    for (int i = 0; i < keys.length(); i++){
-
-    //    }
-
-    //    _ui->visualizationGL->setThreshold(keys.last()+1);
-    //    _ui->visualizationGL->active_frame_changed();
-}
-
 void Dataset::calcAllEnergyBins()
 {
     qDebug() << "[INFO] Dataset::calcAllEnergyBins() : Calculate all energy bins";
-}
-
-void Dataset::debugPrintThesholds(int n)
-{
-    QList<int> keys = m_thresholdsToIndices.keys();
-
-    for (int i = 0; i < keys.length(); i++) {
-        QString filename = "test" + QString::number( keys[i] ) + ".txt";
-        std::ofstream ofs ( qPrintable(filename), std::ofstream::out);
-
-        int * currentLayer = getLayer(keys[i]);
-
-        for (unsigned int i = 0; i < n; i++) {
-
-            ofs << i << "\t" << currentLayer[i] << "\n";
-
-        }
-
-    }
 }
 
 void Dataset::setFrame(FrameSet *frame, int index, int threshold){
