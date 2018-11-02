@@ -422,19 +422,19 @@ FrameHeaderDataStruct::FrameHeaderDataStruct(Mpx3GUI *gui)
     else
         pixelDepth = "U16";
 
-    colorMode = (uint8_t) gui->getConfig()->getColourMode();
+    colorMode = uint8_t(gui->getConfig()->getColourMode());
     counter = 0;/// to be set
     dataOffset = 256 + (128 * 4);
     uint8_t  gainMap[] = {3,2,1,0};
     gainMode =  gainMap[gui->getConfig()->getGainMode()];
-    numberOfChips = (uint32_t)gui->getConfig()->getActiveDevices().count();
+    numberOfChips = uint8_t(gui->getConfig()->getActiveDevices().count());
     for (int i = 0; i < numberOfChips; ++i) {
         chipSelect |= 1 << i;
     }
-    shutterOpen = (double)  gui->getConfig()-> getTriggerLength_ms() / (double)1000;
+    shutterOpen = double(gui->getConfig()-> getTriggerLength_ms() / double(1000));
     QPoint pnt = gui->getDataset()->getSize();
-    xDim = (uint32_t)pnt.x()*2;
-    yDim =(uint32_t) pnt.y()*2;
+    xDim = uint32_t(pnt.x()*2);
+    yDim = uint32_t(pnt.y()*2);
     QDateTime time = QDateTime::currentDateTime();
     timeStamp = time.toString("yyyy-dd-MM hh:mm:ss.ssssss");
     auto dacs = gui->getDACs();
