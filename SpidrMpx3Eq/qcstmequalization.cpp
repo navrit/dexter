@@ -2403,7 +2403,7 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
         // Absolute folder path
         if(remotely) {
             path += "/";
-            emit equalizationPathExported(path);
+           // emit equalizationPathExported(path);
         } else {
             path = QFileDialog::getExistingDirectory(
                         this,
@@ -2411,7 +2411,7 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
                         QDir::currentPath(),
                         QFileDialog::ShowDirsOnly);
             path += "/";
-            emit equalizationPathExported(path);
+           // emit equalizationPathExported(path);
         }
 
         if( path.isNull() || path == "/" ) {
@@ -2435,7 +2435,7 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
             }
         }
     }
-
+    emit equalizationPathExported(path);
     int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
     QCoreApplication::processEvents();
     QProgressDialog pd(tr("Loading adjustment bits..."), tr("Cancel"), 0, nChips, this);

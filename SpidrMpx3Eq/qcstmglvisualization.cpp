@@ -1805,7 +1805,7 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
     int chipID;
     QPoint chipIndex = previewIndexToChipIndex(pixel,&chipID);
-    qDebug() << "[Kia info] : " << "chip ID : " <<chipID << " X : " <<chipIndex.x() << " Y: "<< chipIndex.y();
+   // qDebug() << "[Kia info] : " << "chip ID : " <<chipID << " X : " <<chipIndex.x() << " Y: "<< chipIndex.y();
 
 
     if(!_mpx3gui->getConfig()->isConnected())
@@ -2399,6 +2399,7 @@ void QCstmGLVisualization::on_testBtn_clicked()
 
 void QCstmGLVisualization::onPixelsMasked(int devID, QSet<int> pixelSet)
 {
+    qDebug() << "Writting to the file " <<"Eq path : " << _equalizationPath ;
     QFile file(_equalizationPath + QString("mask_") + QString::number(devID));
     if (file.open(QIODevice::ReadWrite | QFile::Truncate)) {
         QTextStream stream(&file);
@@ -2414,6 +2415,7 @@ void QCstmGLVisualization::onPixelsMasked(int devID, QSet<int> pixelSet)
 
 void QCstmGLVisualization::onEqualizationPathExported(QString path)
 {
+
     _equalizationPath = path;
 }
 

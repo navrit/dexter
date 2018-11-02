@@ -257,6 +257,7 @@ private slots:
 
 
 
+
 public slots:
 
     void StartDataTaking(QString mode="");
