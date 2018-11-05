@@ -35,7 +35,7 @@ QGroupBox::title {
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QGridLayout" name="gridLayout_5">
+    <layout class="QGridLayout" name="gridLayout_main">
      <item row="0" column="1">
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
@@ -577,7 +577,7 @@ A word added to each command - controls some functionality that changes regularl
          </widget>
         </item>
         <item row="15" column="0" colspan="8">
-         <widget class="QLineEdit" name="tstLe">
+         <widget class="QLineEdit" name="merlinInterfaceLineEdit">
           <property name="text">
            <string>MPX,0000000025,SET,COLOURMODE,1</string>
           </property>
@@ -619,7 +619,7 @@ Detector dependant. If incorrect, you will see very obvious artifacts, 3/4 of th
          </widget>
         </item>
         <item row="4" column="5" colspan="3">
-         <widget class="QLabel" name="label_22">
+         <widget class="QLabel" name="label_clockMHz">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -665,7 +665,7 @@ Detector dependant. If incorrect, you will see very obvious artifacts, 3/4 of th
          </widget>
         </item>
         <item row="15" column="9">
-         <widget class="QPushButton" name="tstBtn">
+         <widget class="QPushButton" name="merlinInterfaceTestButton">
           <property name="font">
            <font>
             <pointsize>9</pointsize>
@@ -685,7 +685,7 @@ color: rgb(255, 255, 255);
          </widget>
         </item>
         <item row="10" column="0">
-         <widget class="QLabel" name="label_15">
+         <widget class="QLabel" name="label_zmq_pub">
           <property name="text">
            <string>ZMQ PUB address</string>
           </property>
@@ -727,7 +727,7 @@ color: rgb(255, 255, 255);
          </spacer>
         </item>
         <item row="8" column="9">
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <layout class="QHBoxLayout" name="horizontalLayout_timeUnits">
           <item>
            <widget class="QRadioButton" name="radioButtonS">
             <property name="enabled">
@@ -786,7 +786,7 @@ color: rgb(255, 255, 255);
          </widget>
         </item>
         <item row="13" column="0" colspan="10">
-         <layout class="QHBoxLayout" name="horizontalLayout">
+         <layout class="QHBoxLayout" name="horizontalLayoutConfig">
           <item>
            <widget class="QCheckBox" name="IncludeDacsCheck">
             <property name="text">
@@ -814,7 +814,7 @@ color: rgb(255, 255, 255);
          </layout>
         </item>
         <item row="9" column="5">
-         <widget class="QLabel" name="label_13">
+         <widget class="QLabel" name="label_logLevel">
           <property name="text">
            <string>Log level</string>
           </property>
@@ -910,7 +910,7 @@ color: rgb(255, 255, 255);
          </widget>
         </item>
         <item row="11" column="0">
-         <widget class="QLabel" name="label_18">
+         <widget class="QLabel" name="label_zmq_sub">
           <property name="text">
            <string>ZMQ SUB address</string>
           </property>
@@ -1001,7 +1001,7 @@ color: rgb(255, 255, 255);
          </widget>
         </item>
         <item row="8" column="5">
-         <widget class="QLabel" name="label_19">
+         <widget class="QLabel" name="label_timeUnits">
           <property name="text">
            <string>Time units</string>
           </property>
@@ -1080,7 +1080,7 @@ color: rgb(255, 255, 255);
        <zorder>label_7</zorder>
        <zorder>label_20</zorder>
        <zorder>biasVoltageSpinner</zorder>
-       <zorder>label_22</zorder>
+       <zorder>label_clockMHz</zorder>
        <zorder>mpx3ClockComboBox</zorder>
        <zorder>readBothCountersCheckBox</zorder>
        <zorder>ColourModeCheckBox</zorder>
@@ -1090,16 +1090,16 @@ color: rgb(255, 255, 255);
        <zorder>horizontalSpacer</zorder>
        <zorder>pixelDepthCombo</zorder>
        <zorder>csmSpmCombo</zorder>
-       <zorder>label_19</zorder>
-       <zorder>label_13</zorder>
+       <zorder>label_timeUnits</zorder>
+       <zorder>label_logLevel</zorder>
        <zorder>logLevelSpinner</zorder>
        <zorder>verticalSpacer</zorder>
-       <zorder>label_15</zorder>
-       <zorder>label_18</zorder>
+       <zorder>label_zmq_pub</zorder>
+       <zorder>label_zmq_sub</zorder>
        <zorder>IP_ZMQ_PUB_lineEdit</zorder>
        <zorder>IP_ZMQ_SUB_lineEdit</zorder>
-       <zorder>tstBtn</zorder>
-       <zorder>tstLe</zorder>
+       <zorder>merlinInterfaceTestButton</zorder>
+       <zorder>merlinInterfaceLineEdit</zorder>
        <zorder>triggerModeCombo</zorder>
        <zorder>inhibitShutterCheckBox</zorder>
        <zorder>decodeFramesCheckbox</zorder>

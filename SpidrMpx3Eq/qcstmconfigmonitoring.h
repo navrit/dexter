@@ -7,25 +7,24 @@
 #include <QtWidgets>
 //server
 
-
-
+#define __nwords_OMR 6
+#define __nbits_OMR 48 // 6 words of 8 bits
 
 namespace Ui {
-class QCstmConfigMonitoring;
+    class QCstmConfigMonitoring;
 }
 
 class QCstmConfigMonitoring : public QWidget
 {
-
     Q_OBJECT
 
-    Mpx3GUI * _mpx3gui;
+    Mpx3GUI * _mpx3gui = nullptr;
 
 public:
 
     void SetMpx3GUI(Mpx3GUI * p);
     void widgetInfoPropagation();
-    explicit QCstmConfigMonitoring(QWidget *parent = 0);
+    explicit QCstmConfigMonitoring(QWidget *parent = nullptr);
     ~QCstmConfigMonitoring();
     static QCstmConfigMonitoring *getInstance();
     Ui::QCstmConfigMonitoring * getUI() { return ui; }
@@ -54,6 +53,7 @@ public slots:
     void OperationModeSwitched(int indx);
     void when_taking_data_gui();
     void when_idling_gui();
+    void developerMode(bool enabled);
 
     void shortcutGainModeSLGM();
     void shortcutGainModeLGM();
@@ -98,12 +98,12 @@ private slots:
     void biasVoltageChanged();
     void setLogLevel();
 
-    void on_tstBtn_clicked();
+    void on_merlinInterfaceTestButton_clicked();
 
     void setContRWFreqFromConfig(int val);
 
 private:
-    Ui::QCstmConfigMonitoring *ui;
+    Ui::QCstmConfigMonitoring *ui = nullptr;
     int _timerId;
 
     // Some constants in the configuration (MPX3 manual pag. 18)
@@ -117,9 +117,6 @@ private:
 
     bool _saveConfigFileRemotely = false;
     QString _conigFileDestination = " ";
-
-
 };
-
 
 #endif // QCSTMCONFIGMONITORING_H

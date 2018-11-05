@@ -182,11 +182,11 @@ UpdateDACsThread * QCstmDacs::FillDACValues( int devId, bool updateInTheChip ) {
     // Threads
     if ( _updateDACsThread ) {
         if ( _updateDACsThread->isRunning() ) {
-            return 0;
+            return nullptr;
         }
         //disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
         delete _updateDACsThread;
-        _updateDACsThread = 0x0;
+        _updateDACsThread = nullptr;
     }
 
     // Create the thread

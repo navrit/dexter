@@ -13,7 +13,7 @@
 #include "SpidrDaq.h"
 #include "MerlinInterface.h"
 
-QCstmConfigMonitoring* qCstmConfigMonitoring;
+static QCstmConfigMonitoring* qCstmConfigMonitoring;
 
 QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     QWidget(parent),
@@ -87,34 +87,29 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
     ui->radioButtonS->setEnabled( false );
     ui->radioButtonMS->setEnabled( false );
 
-//    ui->motorDial->setNotchesVisible( true );
-
-//    // Set inactive whatever is needed to be inactive
-//    activeInGUI();
-
-//    QStandardItemModel * tvmodel = new QStandardItemModel(3,2, this); // 3 Rows and 2 Columns
-//    tvmodel->setHorizontalHeaderItem( 0, new QStandardItem(QString("pos")) );
-//    tvmodel->setHorizontalHeaderItem( 1, new QStandardItem(QString("angle")) );
-
-//    ui->stepperCalibrationTableView->setModel( tvmodel );
-
-//    //ui->stepperMotorCheckBox
-
     QFont font1("Courier New");
     ui->omrDisplayLabel->setFont( font1 );
     ui->omrDisplayLabel->setTextFormat( Qt::RichText );
 
-    ui->readOMRPushButton->setHidden(0);
-    qCstmConfigMonitoring = this;
 
+    //! Disable a bunch of 'advanced' buttons
+    ui->readOMRPushButton->hide();
+    ui->IP_ZMQ_PUB_lineEdit->hide();
+    ui->IP_ZMQ_SUB_lineEdit->hide();
+    ui->label_zmq_pub->hide();
+    ui->label_zmq_sub->hide();
+    ui->merlinInterfaceLineEdit->hide();
+    ui->merlinInterfaceTestButton->hide();
+
+    qCstmConfigMonitoring = this;
 }
 
 unsigned int QCstmConfigMonitoring::getPixelDepthFromIndex(int indx) {
 
-    int sizev = __pixelDepthMap.size();
+    int sizev = int(__pixelDepthMap.size());
     if ( indx >= sizev ) return __pixelDepthMap[ __pixelDepth12BitsIndex ]; // 12 bits
 
-    return __pixelDepthMap[indx];
+    return __pixelDepthMap[std::size_t(indx)];
 }
 
 void QCstmConfigMonitoring::setReadoutFrequency(int frequency)
@@ -139,7 +134,7 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
         // Get a quick read first to let the user see immediately and start the timer.
         // The timer will keep refreshing periodically.
         readMonitoringInfo();
-        _timerId = this->startTimer( ui->samplingSpinner->value()*1000 ); // value comes in seconds from GUI.  Convert to ms.
+        _timerId = this->startTimer(int(ui->samplingSpinner->value()*1000)); // seconds from GUI. Convert to ms.
 
         ui->remoteTempMeasLineEdit->setEnabled( true );
         ui->localTempMeasLineEdit->setEnabled( true );
@@ -210,20 +205,20 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
 
 }
 
-#define __nwords_OMR 6
-#define __nbits_OMR 48 // 6 words of 8 bits
-
 void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 
-    QMessageBox::StandardButton ans = QMessageBox::warning(this, tr("Warning"), tr("This will set the device to a mode unsuitable for imaging, you will have to power cycle to image again. Continue?"));
+    QMessageBox::StandardButton ans =
+            QMessageBox::warning(this,
+                   tr("Warning"),
+                   tr("This will set the device to a mode unsuitable for imaging, you will have to power cycle to image again. Continue?"));
     if ( ans == QMessageBox::No ) {
             return;
     }
 
     int  dev_nr = 2;
-    unsigned char omr[6];
+    uchar omr[6];
 
-    unsigned char endMask = 0x100; // 1 00000000 (ninth bit)
+    uchar endMask = uchar(0x100); // 1 00000000 (ninth bit)
     char bits16Save[__nbits_OMR];
     int lateRunningBitCntr = 0;
     int bitCntr = 0;
@@ -236,11 +231,11 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
-
+    if (!spidrcontrol->isConnected()) {
+        return;
+    }
     // This will crash if not connected
     spidrcontrol->getOmr( dev_nr, omr );
-
-
 
     cout << "[OMR ]" << endl;
 
@@ -274,7 +269,7 @@ void QCstmConfigMonitoring::on_readOMRPushButton_clicked() {
                 printf(formatNoSpace_console.toStdString().c_str(), bitCntr, bitC); // console
             }
 
-            mask = mask << 1; // shift a bit to the left
+            mask = uchar(mask << 1); // shift a bit to the left
             bitCntr++;
         }
 
@@ -328,6 +323,45 @@ void QCstmConfigMonitoring::when_taking_data_gui()
 void QCstmConfigMonitoring::when_idling_gui()
 {
     ui->groupBoxConfiguration->setEnabled( true );
+}
+
+void QCstmConfigMonitoring::developerMode(bool enabled)
+{
+    if (enabled) {
+        //! Enable a bunch of 'advanced' buttons
+        ui->readOMRPushButton->show();
+        ui->logLevelSpinner->show();
+        ui->label_logLevel->show();
+        ui->label_timeUnits->show();
+        ui->radioButtonS->show();
+        ui->radioButtonMS->show();
+        ui->radioButtonUS->show();
+        ui->mpx3ClockComboBox->show();
+        ui->label_clockMHz->show();
+        ui->IP_ZMQ_PUB_lineEdit->show();
+        ui->IP_ZMQ_SUB_lineEdit->show();
+        ui->label_zmq_pub->show();
+        ui->label_zmq_sub->show();
+        ui->merlinInterfaceLineEdit->show();
+        ui->merlinInterfaceTestButton->show();
+    } else {
+        //! Disable a bunch of 'advanced' buttons
+        ui->readOMRPushButton->hide();
+        ui->logLevelSpinner->hide();
+        ui->label_logLevel->hide();
+        ui->label_timeUnits->hide();
+        ui->radioButtonS->hide();
+        ui->radioButtonMS->hide();
+        ui->mpx3ClockComboBox->hide();
+        ui->label_clockMHz->hide();
+        ui->radioButtonUS->hide();
+        ui->IP_ZMQ_PUB_lineEdit->hide();
+        ui->IP_ZMQ_SUB_lineEdit->hide();
+        ui->label_zmq_pub->hide();
+        ui->label_zmq_sub->hide();
+        ui->merlinInterfaceLineEdit->hide();
+        ui->merlinInterfaceTestButton->hide();
+    }
 }
 
 void QCstmConfigMonitoring::shortcutGainModeSLGM()
@@ -566,26 +600,19 @@ void QCstmConfigMonitoring::OperationModeSwitched(int indx)
 
 }
 
-void QCstmConfigMonitoring::setPixelDepthByIndex(int newValIndx)
-{
-    _mpx3gui->getConfig()->setPixelDepth (
-                __pixelDepthMap[ newValIndx ] // by index
-                );
+void QCstmConfigMonitoring::setPixelDepthByIndex(int newValIndx) {
+    _mpx3gui->getConfig()->setPixelDepth(int(__pixelDepthMap[std::size_t(newValIndx)]));
 }
 
 void QCstmConfigMonitoring::setTriggerModeByIndex(int newValIndx) {
-
-    _mpx3gui->getConfig()->setTriggerMode(
-                __triggerModeMap[ newValIndx ]
-                );
-
+    _mpx3gui->getConfig()->setTriggerMode(int(__triggerModeMap[std::size_t(newValIndx)]));
 }
 
 int QCstmConfigMonitoring::findTriggerModeIndex(int val) {
-    int sizea = __triggerModeMap.size();
-    for (int i = 0 ; i < sizea ; i++) {
-        if ( __triggerModeMap[i] == val ) {
-            return i;
+    std::size_t sizea = __triggerModeMap.size();
+    for (std::size_t i = 0 ; i < sizea ; i++) {
+        if ( __triggerModeMap[i] == std::size_t(val)) {
+            return int(i);
         }
     }
     return -1;
@@ -597,9 +624,7 @@ int QCstmConfigMonitoring::getTriggerModeIndex() {
 
 void QCstmConfigMonitoring::setCsmSpmByIndex(int newValIndx)
 {
-    _mpx3gui->getConfig()->setCsmSpm(
-                __csmSpmMap[newValIndx]
-                );
+    _mpx3gui->getConfig()->setCsmSpm(int(__csmSpmMap[std::size_t(newValIndx)]));
 }
 
 void QCstmConfigMonitoring::csmSpmChangedByValue(int val)
@@ -834,10 +859,10 @@ void QCstmConfigMonitoring::on_ColourModeCheckBox_toggled(bool checked) {
         _mpx3gui->resize(_mpx3gui->getDataset()->x()*2, _mpx3gui->getDataset()->y()*2);
 }
 
-void QCstmConfigMonitoring::on_tstBtn_clicked()
+void QCstmConfigMonitoring::on_merlinInterfaceTestButton_clicked()
 {
     MerlinInterface mi;
-    QString ba = ui->tstLe->text();
+    QString ba = ui->merlinInterfaceTestButton->text();
     MerlinCommand mc(ba, mi);
     QString res = mc.parseResult;
     qDebug() << res;
@@ -847,9 +872,9 @@ void QCstmConfigMonitoring::on_tstBtn_clicked()
         pad.append(' ');
     }
     pad.append('e');
-    qDebug()<<" Pad len = " <<pad.length();
-    qDebug()<<" Pad len byte= " <<pad.toLatin1().length();
-    qDebug()<<" Pad data = " <<pad;
+    qDebug()<<" Pad len = " << pad.length();
+    qDebug()<<" Pad len byte= " << pad.toLatin1().length();
+    qDebug()<<" Pad data = " << pad;
 }
 
 void QCstmConfigMonitoring::setContRWFreqFromConfig(int val)

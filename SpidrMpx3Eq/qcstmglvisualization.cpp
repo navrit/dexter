@@ -1162,6 +1162,7 @@ void QCstmGLVisualization::developerMode(bool enabled)
         ui->label_2->show();
         ui->completeFramesCheckBox->show();
         ui->testBtn->show();
+
     } else {
         //! Disable a bunch of 'advanced' buttons
         ui->binCountSpinner->hide();

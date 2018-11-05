@@ -76,7 +76,7 @@
        <item row="9" column="1">
         <widget class="QLabel" name="dac9Label">
          <property name="text">
-          <string>I_Ikrum</string>
+          <string>I_Krum</string>
          </property>
         </widget>
        </item>
@@ -1101,12 +1101,12 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="labelDeviceId">
+          <widget class="QLabel" name="labelChipId">
            <property name="toolTip">
             <string>Devide Id</string>
            </property>
            <property name="text">
-            <string>Dev Id</string>
+            <string>Chip</string>
            </property>
           </widget>
          </item>

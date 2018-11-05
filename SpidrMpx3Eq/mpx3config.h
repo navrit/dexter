@@ -299,7 +299,6 @@ public slots:
             //updatePixelDepth();
             SendConfiguration( __pixelDepth );
         }
-
     }
     void updatePixelDepth(){}
 

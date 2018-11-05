@@ -1027,13 +1027,15 @@ void Mpx3GUI::developerMode()
         //! Have to click on menu item to enable/disable buttons
         //! Disables a bunch of GUI items
 
-        qDebug() << "[INFO] Disabling items";
+        qDebug() << "[INFO]\tDisabling items";
         _ui->visualizationGL->developerMode(false);
+        getConfigMonitoring()->developerMode(false);
         _ui->actionDefibrillator->setVisible(false);
         devMode = false;
     } else {
-        qDebug() << "[INFO] Enabling items";
+        qDebug() << "[INFO]\tEnabling items";
         _ui->visualizationGL->developerMode(true);
+        getConfigMonitoring()->developerMode(true);
         _ui->actionDefibrillator->setVisible(true);
         devMode = true;
     }
