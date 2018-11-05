@@ -85,7 +85,7 @@ QCstmEqualization::QCstmEqualization(QWidget *parent) :
 void QCstmEqualization::FullEqRewind()
 {
 
-    qDebug() << "[INFO] Eq rewind ...";
+    //qDebug() << "[INFO] Eq rewind ...";
     // Initialized in:
     // 1) InitEqualization
     // 2) InitializeEqualizationStructure

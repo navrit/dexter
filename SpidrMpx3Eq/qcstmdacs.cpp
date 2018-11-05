@@ -209,24 +209,24 @@ void QCstmDacs::PopulateDACValues() {
     //   higher priority.
     string defaultDACsFn = __default_DACs_filename;
 
-    qDebug() << "[INFO] setting dacs from default DACs file.";
+    qDebug() << "[INFO]\tSetting DACs from default DACs file";
 
     int lastIndexToSet = 0;
     int nChipsToSet = 0;
     if ( GetDACsFromConfiguration() ) {
         QVector<QPoint> devices = _mpx3gui->getConfig()->getDevicePresenceLayout();
-        for(int i = 0; i < devices.length();i++) {
+        for(int i = 0; i < devices.length(); i++) {
             // The DAC setting threads
             if(devices[i] != QPoint(0,0)) {
                 nChipsToSet++;
                 lastIndexToSet = i;
-            } else {
             }
         }
 
     } else { // Setting DACs at mid-range
-        if(spidrcontrol == nullptr)
+        if (spidrcontrol == nullptr) {
             return;
+        }
         for (int i = 0 ; i < 1; i++) {
 
             spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[i].code, MPX3RX_DAC_TABLE[i].dflt );
@@ -926,7 +926,7 @@ void SenseDACsThread::run() {
     SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
-        qDebug() << "[ERR ] Device not connected !";
+        qDebug() << "[ERROR]\tDevice not connected\n";
         return;
     }
 
@@ -1033,7 +1033,7 @@ void UpdateDACsThread::run(){
     connect( this, SIGNAL( updateFinished() ), _dacs, SLOT( updateFinished() ) );
 
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
-        qDebug() << "Device not connected !";
+        qDebug() << "[ERROR]\tUpdateDACsThread --> Device not connected!";
         return;
     }
 
@@ -1104,7 +1104,7 @@ void ScanDACsThread::run() {
     SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
-        qDebug() << "Device not connected !";
+        qDebug() << "[ERROR]\tScanDACsThread --> Device not connected";
         return;
     }
 

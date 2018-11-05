@@ -44,6 +44,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     QMainWindow(parent),
     _ui(new Ui::Mpx3GUI)
 {
+    qDebug().noquote() << "[VERSION]\t" << _softwareVersion;
 
     // Instantiate everything in the UI
     _ui->setupUi(this);
@@ -531,18 +532,12 @@ void Mpx3GUI::set_summing(bool shouldSum){
 
 bool Mpx3GUI::establish_connection() {
 
-    qDebug() << "[INFO] Connecting ...";
-
     SpidrController * spidrcontrol = config->establishConnection();
-
-    QDebug * dbg = new QDebug(QtInfoMsg);
+    QString msg = "";
 
     // See if there is any chips connected
     if ( config->getActiveDevices().size() == 0 ) {
-
-        *dbg << "[ERROR] Could not find any devices";
-        // Dump the verbose here.
-        delete dbg;
+        msg = "[ERROR]\tCould not find any devices";
 
         QMessageBox::critical(this, "Connection error",
                               tr("Could not find any devices. Check the IP address is either 192.168.1.10 or 192.168.100.10")
@@ -550,31 +545,37 @@ bool Mpx3GUI::establish_connection() {
         config->destroyController();
         emit ConnectionStatusChanged(false);
 
+        qDebug().noquote().nospace() << msg;
         return false;
     }
 
     // Check if we are properly connected to the SPIDR module
     if ( spidrcontrol->isConnected() ) {
+        msg += "[INFO]\tConnected to SPIDR: ";
+        msg += QString::fromStdString(spidrcontrol->ipAddressString());
+        msg += " - [";
+        msg += QString::number(config->getNDevicesPresent());
 
-        *dbg << "Connected to SPIDR: " << spidrcontrol->ipAddressString().c_str() << "[" << config->getNDevicesPresent();
+        if(config->getNDevicesPresent() > 1) {
+            msg += " chips]";
+        } else {
+            msg += " chip]";
+        }
 
-        if(config->getNDevicesPresent() > 1) *dbg << " chips found] ";
-        else *dbg << " chip found] ";
-
-        m_numberOfChipsFound = QString("\nNumber of chips found: ")
+        m_numberOfChipsFound = QString("\nNumber of chips: ")
                 + QString::number( config->getNDevicesPresent() );
 
         int ipaddr;
-        // This call takes device number 0 'cause it is not really addressed to a chip in particular
-        if( spidrcontrol->getIpAddrDest( 0, &ipaddr ) )
-            *dbg << ", IP dest: "
-                 << ((ipaddr>>24) & 0xFF) << "."
-                 << ((ipaddr>>16) & 0xFF) << "."
-                 << ((ipaddr>> 8) & 0xFF) << "."
-                 << ((ipaddr>> 0) & 0xFF);
+        // This call takes device number 0 because it is not really addressed to a chip in particular
+        if( spidrcontrol->getIpAddrDest( 0, &ipaddr ) ){
+            msg += " - Computer IP: " +
+                    QString::number((ipaddr>>24) & 0xFF) + "." +
+                    QString::number(((ipaddr>>16) & 0xFF)) + "." +
+                    QString::number(((ipaddr>> 8) & 0xFF)) + "." +
+                    QString::number(((ipaddr>> 0) & 0xFF));
+        }
 
     } else {
-
         QMessageBox::critical(this, "Connection error",
                               tr("Could not establish a connection to the SPIDR controller.\n\nStatus: %1"
                                  "\nError message: %2"
@@ -583,12 +584,12 @@ bool Mpx3GUI::establish_connection() {
                                  "the power cycle through the USB port (8-N-1 115200)."
                                  ).
                               arg(QString::fromStdString(spidrcontrol->connectionStateString())).
-                              arg(QString::fromStdString(spidrcontrol->connectionErrString()))
-                              );
+                              arg(QString::fromStdString(spidrcontrol->connectionErrString())));
 
         config->destroyController();
         emit ConnectionStatusChanged(false);
 
+        qDebug().noquote().nospace() << msg;
         return false; // No use in continuing if we can't connect.
     }
 
@@ -611,15 +612,12 @@ bool Mpx3GUI::establish_connection() {
 
     // SpidrDaq
     _spidrdaq = new SpidrDaq( spidrcontrol );
-    *dbg << "SpidrDaq[" << _spidrdaq << "]";
 
-    for( int i=0; i<4; ++i ) *dbg << _spidrdaq->ipAddressString( i ).c_str() << " ";
-    *dbg << "\n";
+    for( int i=0; i<4; ++i ){
+        msg += " " + QString::fromStdString(_spidrdaq->ipAddressString(i)) + " ";
+    }
 
     if ( _spidrdaq->hasError() ) {
-        // Dump the verbose here.
-        delete dbg;
-
         QMessageBox::critical(this, "Connection error",
                               tr("Couldn't open an UDP connection. Error message:\n\n%1"
                                  "\n\nThis could be due to:\n- A program using the required UDP ports."
@@ -631,11 +629,10 @@ bool Mpx3GUI::establish_connection() {
         config->destroyController();
 
         emit ConnectionStatusChanged(false);
+        qDebug().noquote().nospace() << msg;
         return false; // No use in continuing if we can't connect.
     }
-
-    // Dump the verbose here.
-    delete dbg;
+    qDebug().noquote().nospace() << msg;
 
     ///////////////////////////////////////////////////
     // Done connecting.
@@ -666,7 +663,7 @@ bool Mpx3GUI::establish_connection() {
 
     QVector<int> activeDevices = config->getActiveDevices();
 
-    for ( int i = 0 ; i < activeDevices.size() ; i++ ) {
+    for ( int i = 0 ; i < activeDevices.size(); i++ ) {
         getDataset()->setLayout(i, _MPX3RX_LAYOUT[std::size_t(activeDevices[i])]);
         getDataset()->setOrientation(i, _MPX3RX_ORIENTATION[std::size_t(activeDevices[i])]);
     }
@@ -1008,7 +1005,7 @@ bool Mpx3GUI::_loadConfigsFromGeneralSettings()
     QDir confDir(path);
     if(confDir.exists() && filename.split(".").last() == "json"){
         res = load_config_remotely(_generalSettings->getConfigPath());
-        qDebug() << "Config file loaded from : " << path + filename;
+        qDebug() << "[INFO]\tConfig file loaded from : " << path + filename;
     }
     return res;
 }
@@ -1018,7 +1015,7 @@ void Mpx3GUI::updateEnergyCalibratorParameters()
     _generalSettings->readSetting();
     for(int i = 0; i < NUMBER_OF_CHIPS; i++){
         _energyCalibrator->setSlope(i,_generalSettings->getSlope(i));
-        qDebug() << "load slope " + QString::number(i) +" : " << _energyCalibrator->getSlope(i);
+        //qDebug() << "load slope " + QString::number(i) +" : " << _energyCalibrator->getSlope(i);
         _energyCalibrator->setOffset(i,_generalSettings->getOffset(i));
     }
 
@@ -1644,11 +1641,11 @@ void Mpx3GUI::on_actionThreshold_Scan_triggered(bool)
 
 void Mpx3GUI::autoConnectToDetector()
 {
-    qDebug() << "[INFO] Connecting automatically to detector...!";
+    qDebug() << "[INFO]\tConnecting automatically to detector";
 
     on_actionConnect_triggered();
     if(GetSpidrController() != nullptr && GetSpidrController()->isConnected()){
-        connect(getEqualization(),SIGNAL(equalizationPathExported(QString)),this,SLOT(onEqualizationPathExported(QString)));
+        connect(getEqualization(), SIGNAL(equalizationPathExported(QString)), this, SLOT(onEqualizationPathExported(QString)));
         //_loadEqualizationFromGeneralSettings();
     }
 }

@@ -36,12 +36,12 @@ void UdpReceiver::run() {
     spdlog::get("console")->error("Could not set scheduler");
   }
 
-  spdlog::get("console")->debug("Run started");
+  spdlog::get("console")->debug("UDP Receiver starting");
 
   int timeout_ms = int((timeout_us+0.5)/1000.); //! Round up
   spdlog::get("console")->debug("Poll timeout = {} us = {} ms", timeout_us, timeout_ms);
 
-  struct epoll_event events[1024];
+  struct epoll_event events[1024]; //! TODO This could be smaller, right?
 
   long poll_count = 0, ev_count = 0, sum_p = 0, sum_r = 0, sum_a = 0;
   do {
@@ -96,7 +96,7 @@ void UdpReceiver::run() {
       spdlog::get("console")->error("epoll_wait: ret = {}", ret);
     }
 
-    if (poll_count == 1000) {
+    if (poll_count == 1000 && (ev_count !=0 && sum_r != 0 && sum_a !=0)) {
       spdlog::get("console")->info("Polls {}, time {}, evts {}, rcv {}, ass {} ", poll_count, sum_p, ev_count, sum_r, sum_a);
       poll_count = 0; ev_count = 0; sum_p = 0; sum_r = 0; sum_a = 0;
     }
@@ -220,8 +220,12 @@ bool UdpReceiver::initSocket(int inetIPAddr) {
   listen_address = {0};
 #pragma GCC diagnostic pop
   listen_address.sin_family = AF_INET;
-    listen_address.sin_addr.s_addr = htonl(inetIPAddr);
-    spdlog::get("console")->info("Listening on {}", inetIPAddr);
+  listen_address.sin_addr.s_addr = htonl(uint(inetIPAddr));
+  spdlog::get("console")->info("Listening on {}.{}.{}.{}",
+                               ((inetIPAddr>>24) & 0xFF),
+                               ((inetIPAddr>>16) & 0xFF),
+                               ((inetIPAddr>>8) & 0xFF),
+                               ((inetIPAddr>>0) & 0xFF));
   return true;
 }
 

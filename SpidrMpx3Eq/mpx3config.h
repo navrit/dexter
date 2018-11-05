@@ -122,7 +122,7 @@ public:
     int getNDevicesPresent() { return _nDevicesPresent; }
     int getDataBufferId(int devIndx);
     int getNDevicesSupported() { return _nDevicesSupported; }
-    int getNActiveDevices(){return _activeChips.size();}
+    uint getNActiveDevices(){return uint(_activeChips.size());}
     QVector<int>  getActiveDevices(){return _activeChips;}
     QString getDeviceWaferId(int id){return _deviceWaferIdMap.at(id); }
     int getIndexFromID(int id){return _activeChips.indexOf(id);}

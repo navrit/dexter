@@ -27,7 +27,7 @@ DataConsumerThread::DataConsumerThread(Mpx3GUI * mpx3gui, QObject * parent)
     // Circular buffer
     buffer = new uint32_t[ _bufferSize ];
     descriptor = 0;         // in number of integers
-    qDebug() << "[INFO] Consumer. Buffer size: " << _bufferSize/1024.0/1024.0 << "Mb";
+    //qDebug() << "[INFO] Consumer. Buffer size: " << _bufferSize/1024.0/1024.0 << "Mb";
 
     // The Semaphores
     // _nFramesBuffer is the number of resources
@@ -53,7 +53,7 @@ DataConsumerThread::~DataConsumerThread() {
     _mutex.unlock();
     _condition.wakeOne();   // wake up if sleeping
 
-    wait(); // wait 'til run has exited before the base class destructor is invoked
+    wait(); // wait until run has exited before the base class destructor is invoked
 
     // Signals
     disconnect( this, &DataConsumerThread::bufferOccupancySig,
@@ -68,7 +68,7 @@ DataConsumerThread::~DataConsumerThread() {
     for (int i = 0 ; i < __max_colors ; i++) delete [] _colordata[i];
     delete [] _colordata;
 
-    qDebug() << "   DataConsumerThread finished";
+    qDebug() << "[DEBUG]\tDataConsumerThread finished";
 }
 
 void DataConsumerThread::consume()

@@ -276,7 +276,7 @@ void ThlScan::FineTuning() {
     SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
-        qDebug() << "[ERR ] Device not connected !" << endl;
+        qDebug() << "[ERROR]\tDevice not connected\n";
         return;
     }
 
@@ -831,7 +831,7 @@ void ThlScan::EqualizationScan() {
     spidrcontrol->setLogLevel( 2 );
 
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
-        qDebug() << "[ERR ] Device not connected !" << endl;
+        qDebug() << "[ERROR]\tDevice not connected\n";
         return;
     }
 

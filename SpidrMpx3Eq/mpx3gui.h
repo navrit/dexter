@@ -75,14 +75,13 @@ class TcpServer;
 #define ASCII_FILES "ASCII (*.txt)"
 #define JSON_FILES "BH JSON file(*.json)"
 
-const QString _softwareName = "ASI Dexter";
-const QString _softwareVersion = "1.9.8 - fe1cbc8a556f6ef096205e2fdc869fedcce0f721";
+const static QString _softwareName = "ASI Dexter";
 
-const int tcpCommandPort = 6351;            //! Diamond - Merlin interface
-const int tcpDataPort = 6352;               //! Diamond - Merlin interface
+const static int tcpCommandPort = 6351;            //! Diamond - Merlin interface
+const static int tcpDataPort = 6352;               //! Diamond - Merlin interface
 
 namespace Ui {
-class Mpx3GUI;
+    class Mpx3GUI;
 }
 
 class Mpx3GUI : public QMainWindow {

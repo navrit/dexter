@@ -477,7 +477,7 @@ void CustomScanThread::run() {
     SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
 
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
-        qDebug() << "[ERR ] Device not connected !";
+        qDebug() << "[ERROR]\tDevice not connected\n";
         return;
     }
 
@@ -488,7 +488,7 @@ void CustomScanThread::run() {
     //! the system failed to stop the data taking).  If this happens we ought
     //! to stop data taking, and give the system a bit of delay.
     spidrcontrol->stopAutoTrigger();
-    Sleep( 100 );
+    Sleep( 10 );
 
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 

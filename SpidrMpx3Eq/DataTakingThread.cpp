@@ -101,7 +101,7 @@ void DataTakingThread::run() {
     // New instance.  It belongs to this thread
     SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
-        qDebug() << "[ERR ] Device not connected !";
+        qDebug() << "[ERROR]\tDevice not connected\n";
         return;
     }
 

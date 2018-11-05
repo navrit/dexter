@@ -183,7 +183,7 @@ void Mpx3Config::SendConfiguration( config_items item ) {
                     trig_freq_mhz,
                     nr_of_triggers
                     );
-        qDebug() << "[GLOB] trig_mode:" << trig_mode
+        qDebug() << "[INFO]\ttrig_mode:" << trig_mode
                  << "| trig_length_us:" << trig_length_us
                  << "| trig_deadtime_us: " << trig_deadtime_us
                  << "| trig_freq_mhz:" <<  trig_freq_mhz
@@ -201,10 +201,10 @@ void Mpx3Config::SendConfiguration( config_items item ) {
 
             spidrcontrol->setBiasSupplyEna( true );
 
-            if ( spidrcontrol->setBiasVoltage( getBiasVoltage() ) ) {
-                qDebug() << "[CONF] setting bias voltage to: " << getBiasVoltage() << "(V)";
+            if ( spidrcontrol->setBiasVoltage(int(getBiasVoltage()))) {
+                qDebug() << "[CONF]\tSetting bias voltage to: " << getBiasVoltage() << "(V)";
             } else {
-                qDebug() << "[ERR ] error setting internal bias voltage";
+                qDebug() << "[ERROR]\tError setting internal bias voltage";
             }
 
         } else {
@@ -213,13 +213,11 @@ void Mpx3Config::SendConfiguration( config_items item ) {
     }
 
     // Done with globals
-
 }
 
 void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-    SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
     // Reset pixel configuration if requested
     if ( reset ) spidrcontrol->resetPixelConfig();
@@ -271,7 +269,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
     if ( item == __ALL || item == __pixelDepth || item == __readBothCounters) {
         if (OperationMode == __operationMode_SequentialRW) {
             spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), getReadBothCounters(), false );
-            qDebug() << "Both counters (HW) : " << getReadBothCounters() << " - Pixel depth:" << getPixelDepth();
+            //qDebug() << "Both counters (HW) : " << getReadBothCounters() << " - Pixel depth:" << getPixelDepth();
         } else if (OperationMode == __operationMode_ContinuousRW) {
             //! This isn't strictly necessary since it should be handled elsewhere
             spidrcontrol->setPixelDepth( deviceIndex, getPixelDepth(), false, false );
@@ -316,17 +314,16 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, config_items item) {
         spidrcontrol->setSpidrReg(0x0810, val, true);
         int valout = 0;
         spidrcontrol->getSpidrReg(0x0810,&valout);
-        qDebug() << "HDMI config : " << QString::number(valout,2);
+        qDebug().noquote() << "[INFO]\tHDMI config : " << QString::number(valout, 2);
     }
 
 }
 
 void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_parameters extrapars, config_items item) {
 
-    qDebug() << "[INFO] Configuring chip [" << deviceIndex << "] for equalization.";
+    qDebug() << "[INFO]\tConfiguring chip [" << deviceIndex << "] for equalization.";
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-    SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
     // Number of links
     if( item == __ALL ) spidrcontrol->setPs( deviceIndex, 3 );
@@ -387,11 +384,11 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
     int trig_length_us = getTriggerLength();  // This time shouldn't be longer than the period defined by trig_freq_hz
 
     //int trig_freq_mhz   = (int) 1000 * ( 1. / (2.*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
-    int trig_freq_mhz   = (int) 1000 * ( 1. / (1.1*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
+    int trig_freq_mhz   = int(1000 * ( 1. / (1.1*(double(trig_length_us/1000000)))));   // Make the period double the trig_len
     //int trig_freq_hz   = (int) ( 1. / (1.1*((double)trig_length_us/1000000)) );   // Make the period double the trig_len
 
     // Get the trigger period for information.  This is NOT the trigger length !
-    _trigPeriod_ms = (int) (1E6 * (1./(double)trig_freq_mhz));
+    _trigPeriod_ms = int((1E6 * (1./double(trig_freq_mhz))));
     //_trigPeriod_ms /= 1000;
     //int nr_of_triggers = getNTriggers();    // This is the number of shutter open i get
 
@@ -416,17 +413,15 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
 
             spidrcontrol->setBiasSupplyEna( true );
 
-            if ( spidrcontrol->setBiasVoltage( getBiasVoltage() ) ) {
-                qDebug() << "[CONF] setting bias voltage to: " << getBiasVoltage() << "(V)";
+            if ( spidrcontrol->setBiasVoltage(int(getBiasVoltage()))) {
+                qDebug() << "[CONF]\tSetting bias voltage to: " << getBiasVoltage() << "(V)";
             } else {
-                qDebug() << "[ERR ] error setting internal bias voltage";
+                qDebug() << "[ERROR]\tError setting internal bias voltage";
             }
-
         } else {
             spidrcontrol->setBiasSupplyEna( false );
         }
     }
-
 }
 
 void Mpx3Config::setColourMode(bool mode) {
@@ -473,7 +468,7 @@ SpidrController * Mpx3Config::establishConnection(){
     //! the system failed to stop the data taking).  If this happens we ought
     //! to stop data taking, and give the system a bit of delay.
     _controller->stopAutoTrigger();
-    Sleep( 100 );
+    Sleep( 10 );
 
     // Response
     _responseChips = QVector<detector_response>( _nDevicesSupported );
@@ -486,7 +481,7 @@ SpidrController * Mpx3Config::establishConnection(){
         _controller->getDeviceId(i, &id);
 
         QDebug dbg(QtInfoMsg);
-        dbg << "--- Device [" << i << "] ---";
+        dbg.noquote().nospace() << "[INFO]\tChip " << i << " - ";
 
         // This is how it goes (page 57 Medipix3RS manual v1.4)
         // Efuse [0:31]
@@ -509,7 +504,7 @@ SpidrController * Mpx3Config::establishConnection(){
                 + ((uchar) (0x40 + ((id >> 4) & 0xf)))
                 + QString::number(id & 0xf);
 
-            dbg.noquote().nospace() << "ID : " << decodedId << " (" << idStr << ") | ";
+            dbg.noquote().nospace() << "ID: " << decodedId << " (" << idStr << ") - ";
             _devicePresenceLayout.push_back( QPoint(__default_matrixSizePerChip_X, __default_matrixSizePerChip_Y) );
             _deviceWaferIdMap.push_back( decodedId );
             _nDevicesPresent++;
@@ -524,16 +519,13 @@ SpidrController * Mpx3Config::establishConnection(){
             }
 
         } else {
-
             dbg << "NOT RESPONDING !";
             _devicePresenceLayout.push_back( QPoint(0, 0) );
             // If not connected tag it immediately
             _responseChips[i] = __NOT_RESPONDING;
-
         }
 
         // the CR for the QDebug object is emmited when the object is destroyed
-
     }
 
     return _controller;
@@ -635,7 +627,7 @@ void Mpx3Config::setPolarity(int newVal) {
 bool Mpx3Config::detectorResponds(int devIndx) {
 
     if( devIndx >= _nDevicesSupported || devIndx < 0 || _responseChips.size() == 0 || _nDevicesSupported == -1) {
-        qDebug() << "[ERR ] device index out of range: " << devIndx << " nDevicesSupported - " << _nDevicesSupported << " response chips size" << _responseChips.size();
+        qDebug() << "[ERROR]\tDevice index out of range: " << devIndx << " nDevicesSupported - " << _nDevicesSupported << " response chips size" << _responseChips.size();
         return false;
     }
 
@@ -647,14 +639,14 @@ bool Mpx3Config::detectorResponds(int devIndx) {
 bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
 
     if (filename == "./config/mpx3.json") {
-        qDebug() << "[INFO]\tReading the configuration from the DEFAULT JSON file: " << filename.toStdString().c_str();
+        qDebug() << "[INFO]\tReading the configuration from the DEFAULT JSON file: " << filename;
     } else {
-        qDebug() << "[INFO]\tReading the configuration from the JSON file: " << filename.toStdString().c_str();
+        qDebug() << "[INFO]\tReading the configuration from the JSON file: " << filename;
     }
 
     QFile loadFile(filename);
     if(!loadFile.open(QIODevice::ReadOnly)){
-        qDebug() << QString(("Couldn't open configuration file %s\n", filename.toStdString().c_str()));
+        qDebug() << "Couldn't open configuration file:" << filename << "\n";
         return false;
     }
     QByteArray binaryData = loadFile.readAll();
@@ -976,7 +968,7 @@ void Mpx3Config::setInhibitShutter(bool turnOn)
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
     int val = 0;
     spidrcontrol->getSpidrReg(0x0810,&val);
-    qDebug() << "Old HDMI config : " << QString::number(val,2);
+    qDebug().noquote() << "[INFO]\tOld HDMI config : " << QString::number(val, 2);
 
     uint8 inhibitShutterVal = 0xF;
     if(turnOn)
@@ -987,7 +979,7 @@ void Mpx3Config::setInhibitShutter(bool turnOn)
 
     spidrcontrol->setSpidrReg(0x0810, val, true);
     spidrcontrol->getSpidrReg(0x0810,&val);
-    qDebug() << "New HDMI config : " << QString::number(val,2);
+    qDebug().noquote() << "[INFO]\tNew HDMI config : " << QString::number(val, 2);
 
     emit inhibitShutterchanged(turnOn);
 }
