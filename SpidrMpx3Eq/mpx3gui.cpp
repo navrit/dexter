@@ -987,7 +987,7 @@ void Mpx3GUI::_loadEqualizationFromGeneralSettings()
     QDir eqDir(_generalSettings->getEqualizationPath());
     if(eqDir.exists()){
         getEqualization()->LoadEqualization(false, false, _generalSettings->getEqualizationPath());
-        qDebug() << "Equalization loaded from" << _generalSettings->getEqualizationPath();
+        qDebug() << "[INFO]\tEqualization loaded from" << _generalSettings->getEqualizationPath();
     }
 }
 
@@ -1648,6 +1648,6 @@ void Mpx3GUI::autoConnectToDetector()
     on_actionConnect_triggered();
     if(GetSpidrController() != nullptr && GetSpidrController()->isConnected()){
         connect(getEqualization(), SIGNAL(equalizationPathExported(QString)), this, SLOT(onEqualizationPathExported(QString)));
-        //_loadEqualizationFromGeneralSettings();
+        _loadEqualizationFromGeneralSettings();
     }
 }
