@@ -574,9 +574,11 @@ void QCstmConfigMonitoring::setPixelDepthByIndex(int newValIndx)
 }
 
 void QCstmConfigMonitoring::setTriggerModeByIndex(int newValIndx) {
+
     _mpx3gui->getConfig()->setTriggerMode(
                 __triggerModeMap[ newValIndx ]
                 );
+
 }
 
 int QCstmConfigMonitoring::findTriggerModeIndex(int val) {

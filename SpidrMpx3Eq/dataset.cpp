@@ -183,13 +183,14 @@ template <typename TYPE> TYPE* allocateBuffer(size_t size) {
 
 template <typename INTTYPE> pair<const char*, int> toCanvas2(Dataset *ds, int key, int gap) {
 
+    int * layer = ds->getLayer(key);
+    if (layer == nullptr)
+        return pair<const char*,int>(nullptr, 0);
+
     const int dim = 256;
     int imgDim = 2 * dim + gap;
 
     INTTYPE* image = allocateBuffer<INTTYPE>((size_t) imgDim * imgDim);
-
-    int * layer = ds->getLayer(key);
-
 
     auto positions = ds->getLayoutVector();
     auto orientations = ds->getOrientationVector();
@@ -225,12 +226,10 @@ template <typename INTTYPE> pair<const char*, int> toCanvas2(Dataset *ds, int ke
         pair<const char*,int>((const char*)image, (int) imgDim * imgDim * sizeof(INTTYPE));
 }
 
-pair<const char*, int> Dataset::toCanvas() {
-    QList<int> keys = m_thresholdsToIndices.keys();
-    qDebug() << "cnt depth : " << m_pixelDepthBits;
+pair<const char*, int> Dataset::toCanvas(int threshold) {
     return (m_pixelDepthBits == 24)
-            ? toCanvas2<uint32_t>(this, keys[0], 0)
-            : toCanvas2<uint16_t>(this, keys[0], 0);
+            ? toCanvas2<uint32_t>(this, threshold, 0)
+            : toCanvas2<uint16_t>(this, threshold, 0);
 }
 
 /**

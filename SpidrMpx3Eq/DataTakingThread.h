@@ -51,6 +51,8 @@ public:
 
     void takedata();
 
+    void setTriggerType(bool external);
+
 protected:
 
     void run() Q_DECL_OVERRIDE;
@@ -71,6 +73,8 @@ private:
 
     // IP source address (SPIDR network interface)
     int _srcAddr;
+
+    bool _isExternalTrigger = false;
 
 public slots:
     void on_stop_data_taking_thread();

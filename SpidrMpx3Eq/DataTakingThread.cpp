@@ -35,6 +35,8 @@ DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, DataConsumerThread * consu
 
     rewindScoring();
 
+
+
 }
 
 DataTakingThread::~DataTakingThread() {
@@ -64,6 +66,11 @@ void DataTakingThread::takedata() {
         _condition.wakeOne();
     }
 
+}
+
+void DataTakingThread::setTriggerType(bool external)
+{
+    _isExternalTrigger = external;
 }
 
 void DataTakingThread::ConnectToHardware() {
@@ -119,6 +126,8 @@ void DataTakingThread::run() {
     connect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread()) ); // stop signal from qcstmglvis
     connect( this, &DataTakingThread::bufferFull,
              _vis, &QCstmGLVisualization::consumerBufferFull );
+
+
 
     unsigned long timeOutTime = 0;
     int contRWFreq = 0;
@@ -208,6 +217,10 @@ void DataTakingThread::run() {
 
             // 2) User stop condition
             if ( _stop ||  _restart  ) {
+
+                if(_isExternalTrigger)
+                    break;
+
                 if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
                     spidrcontrol->stopContReadout();
                 } else { //if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
@@ -305,6 +318,9 @@ void DataTakingThread::run() {
 
             // Keep a local count of number of frames
             nFramesReceived++;
+
+
+
             // lost
             lostFrames += spidrdaq->framesLostCount();
 
@@ -342,11 +358,22 @@ void DataTakingThread::run() {
                        << v3[i]/sum*100 << "%  "
                        << v4[i]/sum*100 << "%";
             }*/
+            if(_isExternalTrigger){
+                int externalCnt = 0;
+                spidrcontrol->getExtShutterCounter(&externalCnt);
+                if (externalCnt >= _mpx3gui->getConfig()->getNTriggers() && _mpx3gui->getConfig()->getNTriggers() != 0 ){
+                    externalCnt = 0;
+                    break;
+                }
+            }
+
+
+
         }
 
         _consumer->consume();
 
-        if ( ! _restart ) emit data_taking_finished( 0 );
+        if ( ! _restart ) {  emit data_taking_finished( 0 );}
 
         // Final report
         emit scoring_sig(nFramesReceived,
@@ -366,6 +393,7 @@ void DataTakingThread::run() {
 
         // Put the thread to wait
         //qDebug() << "   ... lock DataTakingThread";
+
         _mutex.lock();
         if ( !_restart ) {
             _idling = true;
@@ -373,6 +401,7 @@ void DataTakingThread::run() {
         }
         _idling = false;
         _restart = false;
+
         _mutex.unlock();
         //qDebug() << "   +++ unlock DataTakingThread";
 
@@ -435,3 +464,5 @@ void DataTakingThread::on_stop_data_taking_thread() {
     _stop = true;
 
 }
+
+

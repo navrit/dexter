@@ -334,10 +334,17 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
         _dataConsumerThread->setObjectName("Consumer thread");
 
         _dataTakingThread = new DataTakingThread(_mpx3gui, _dataConsumerThread, this);
+
+
         _dataTakingThread->setObjectName("Producer thread");
         _dataTakingThread->ConnectToHardware();
 
     }
+    if(_mpx3gui->getConfig()->getTriggerMode() == 4){ //if is Auto, it is internal otherwise is external
+        _dataTakingThread->setTriggerType(false);
+    }
+    else
+        _dataTakingThread->setTriggerType(true);
 
     if ( ! _takingData ) { // new data
 
@@ -2341,7 +2348,7 @@ void QCstmGLVisualization::on_testBtn_clicked()
     qDebug () << "SlOPE 1 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(1);
     qDebug () << "SlOPE 2 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(2);
     qDebug () << "SlOPE 3 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(3);
-
+    qDebug () << "Trigger Mode: " << Mpx3GUI::getInstance()->getConfig()->getTriggerMode();
 
     //Mpx3GUI::getInstance()->getConfig()->setInhibitShutter(true);
    // Mpx3GUI::getInstance()->getConfig()->setInhibitShutter(false);

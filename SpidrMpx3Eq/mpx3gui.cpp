@@ -1649,6 +1649,6 @@ void Mpx3GUI::autoConnectToDetector()
     on_actionConnect_triggered();
     if(GetSpidrController() != nullptr && GetSpidrController()->isConnected()){
         connect(getEqualization(),SIGNAL(equalizationPathExported(QString)),this,SLOT(onEqualizationPathExported(QString)));
-        _loadEqualizationFromGeneralSettings();
+        //_loadEqualizationFromGeneralSettings();
     }
 }

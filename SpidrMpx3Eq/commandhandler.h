@@ -48,7 +48,6 @@ public:
     void startScan(void);
 
     void startSendingImage(bool);
-    QString generateMerlinFrameHeader(int frameid);
     QString getAcquisitionHeader(void);
     void getImage(void);
     int setPixelMask(int,int);

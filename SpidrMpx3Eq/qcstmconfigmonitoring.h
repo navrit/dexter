@@ -118,6 +118,7 @@ private:
     bool _saveConfigFileRemotely = false;
     QString _conigFileDestination = " ";
 
+
 };
 
 

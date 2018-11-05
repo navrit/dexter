@@ -493,16 +493,9 @@ QString FrameHeaderDataStruct::toQString(int frameid) {
     return header.leftJustified(dataOffset, ' ', true);
 }
 
-QString CommandHandler::generateMerlinFrameHeader(int frameid)
-{
-    FrameHeaderDataStruct frameHeader((Mpx3GUI*) parent());
-    return frameHeader.toQString(frameid);
-}
-
 QString CommandHandler::getAcquisitionHeader()
 {
-    Mpx3GUI* gui = (Mpx3GUI*) parent();
-    Mpx3Config* config = gui->getConfig();
+    Mpx3Config* config = getGui()->getConfig();
     QString len = QString::number(2044+3+2);
     QString file = "HDR,\nChip ID:	" % config->getDeviceWaferId(0) % "," % config->getDeviceWaferId(1) % "," % config->getDeviceWaferId(2) % "," % config->getDeviceWaferId(3) % ","
             % "\nChip Type (Medipix 3.0, Medipix 3.1, Medipix RX):	Medipix3RXAssembly"
@@ -510,7 +503,7 @@ QString CommandHandler::getAcquisitionHeader()
             % "\nChip Mode  (SPM, CSM, CM, CSCM):	" % (config->getCsmSpm() == 0 ? "SPM" : "CSM")
             % "\nCounter Depth (number):	" % QString::number(config->getPixelDepth())
             % "\nGain:	" % config->getGainModeString()
-            % "\nActive Counters:	Counter 0"
+            % "\nActive Counters:	Counter 0" % (config -> getReadBothCounters() ? ", Counter 1" : "")
             % "\nThresholds (keV):	0.000000E+0,1.000000E+1,1.500000E+1,2.000000E+1,2.500000E+1,3.000000E+1,3.500000E+1,4.000000E+1"
             % "\nDACs:	030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,148,128,203,189,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,142,128,192,180,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,151,128,205,191,417,417; 030,056,083,111,139,167,194,222,100,010,125,125,100,100,080,100,090,050,128,004,255,138,128,189,181,417,417"
             % "\nbpc File:	c:\\MERLIN Quad Host\\Config\\W117_E7\\W117_E7_SPM.bpc,c:\\MERLIN Quad Host\\Config\\W117_H7\\W117_H7_SPM.bpc,c:\\MERLIN Quad Host\\Config\\W117_I7\\W117_I7_SPM.bpc,c:\\MERLIN Quad Host\\Config\\W117_G7\\W117_G7_SPM.bpc"
@@ -651,7 +644,7 @@ int CommandHandler::doEqualizationRemotely(QString path)
 
 int CommandHandler::setInhibitShutter(bool turnOn)
 {
-    connect(this,SIGNAL(requestToSetInhibitShutterRemotely(bool)), Mpx3GUI::getInstance()->getConfig(), SLOT(setInhibitShutter(bool)));
+    connect(this,SIGNAL(requestToSetInhibitShutterRemotely(bool)), getGui()->getConfig(), SLOT(setInhibitShutter(bool)));
     emit requestToSetInhibitShutterRemotely(turnOn);
     return NO_ERROR;
 }
@@ -659,7 +652,7 @@ int CommandHandler::setInhibitShutter(bool turnOn)
 bool CommandHandler::getInhibitShutter()
 {
     int val = 0;
-    Mpx3GUI::getInstance()->GetSpidrController()->getSpidrReg(0x0810, &val);
+    getGui()->GetSpidrController()->getSpidrReg(0x0810, &val);
 
     if((val & (0xF << 4)) == (0X8 << 4))
     {
@@ -673,39 +666,39 @@ int CommandHandler::setSlope(int chipNum, double val)
 
     if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS)
         return ARG_VAL_OUT_RANGE;
-    Mpx3GUI::getInstance()->getGeneralSettings()->setSlope(chipNum, val);
-    Mpx3GUI::getInstance()->updateEnergyCalibratorParameters();
+    getGui()->getGeneralSettings()->setSlope(chipNum, val);
+    getGui()->updateEnergyCalibratorParameters();
     return NO_ERROR;
 }
 
 double CommandHandler::getSlope(int chipNum)
 {
-    return Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(chipNum);
+    return getGui()->getGeneralSettings()->getSlope(chipNum);
 }
 
 int CommandHandler::setOffset(int chipNum, double val)
 {
     if(chipNum < 0 || chipNum >= NUMBER_OF_CHIPS)
         return ARG_VAL_OUT_RANGE;
-    Mpx3GUI::getInstance()->getGeneralSettings()->setOffset(chipNum, val);
-    Mpx3GUI::getInstance()->updateEnergyCalibratorParameters();
+    getGui()->getGeneralSettings()->setOffset(chipNum, val);
+    getGui()->updateEnergyCalibratorParameters();
     return NO_ERROR;
 
 }
 
 double CommandHandler::getOffset(int chipNum)
 {
-    return Mpx3GUI::getInstance()->getGeneralSettings()->getOffset(chipNum);
+    return getGui()->getGeneralSettings()->getOffset(chipNum);
 }
 
 int CommandHandler::resetSlopesAndOffsets()
 {
     //this means energy = dac
     for(int i = 0; i < NUMBER_OF_CHIPS; i++){
-        Mpx3GUI::getInstance()->getGeneralSettings()->setOffset(i, 0);
-        Mpx3GUI::getInstance()->getGeneralSettings()->setSlope(i, 1);
+        getGui()->getGeneralSettings()->setOffset(i, 0);
+        getGui()->getGeneralSettings()->setSlope(i, 1);
     }
-    Mpx3GUI::getInstance()->updateEnergyCalibratorParameters();
+    getGui()->updateEnergyCalibratorParameters();
     return NO_ERROR;
 }
 
@@ -713,22 +706,20 @@ int CommandHandler::resetSlopesAndOffsets()
 
 void CommandHandler::on_doneWithOneFrame(int frameid)
 {
-    Mpx3GUI* gui = (Mpx3GUI*) parent();
-    QElapsedTimer tim; tim.start();
-    QString hd = generateMerlinFrameHeader(frameid);
-    qint64 nano1 = tim.nsecsElapsed();
-    std::pair<const char*, int> frame = gui->getDataset()->toCanvas();
-    qint64 nano2 = tim.nsecsElapsed();
-    auto size = hd.length() + frame.second;
-    auto len = QString("%1").arg(size, 10, 10, QChar('0'));
-    QString firstPart = "MPX," + len + "," + hd;
-    qint64 nano3 = tim.nsecsElapsed();
-    emit imageIsReady(firstPart.toLatin1(), frame);
+    FrameHeaderDataStruct frameHeader(getGui());
+    auto dataset = getGui()->getDataset();
+    for (int threshold = 0; threshold < 8; threshold++) {
+        std::pair<const char*, int> frame = dataset->toCanvas(threshold);
+        auto size = frame.second;
+        if (size == 0) continue;
 
-    qint64 nanos = tim.nsecsElapsed();
-    if (nanos > 600000)
-        qDebug() << "How Long " << nanos << " " << (nano1) << " " << (nano2 - nano1) << " " << (nano3 - nano2) << " " << (nanos - nano3);
-
+        frameHeader.counter = threshold;
+        QString hd = frameHeader.toQString(frameid);
+        size += hd.length();
+        auto len = QString("%1").arg(size, 10, 10, QChar('0'));
+        QString firstPart = "MPX," + len + "," + hd;
+        emit imageIsReady(firstPart.toLatin1(), frame);
+    }
 }
 
 void CommandHandler::on_someCommandHasFinished_Successfully()
