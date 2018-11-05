@@ -324,14 +324,19 @@ void DataTakingThread::run() {
             // lost
             lostFrames += spidrdaq->framesLostCount();
 
-            emit scoring_sig(nFramesReceived,
-                             nFramesKept,
-                             lostFrames,                  //
-                             lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
-                             spidrdaq->framesCount(),               // ?
-                             0,
-                             0										// Data misaligned?
-                             );
+
+
+            if(!_isExternalTrigger)
+            {
+                emit scoring_sig(nFramesReceived,
+                                 nFramesKept,
+                                 lostFrames,                  //
+                                 lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
+                                 spidrdaq->framesCount(),               // ?
+                                 0,
+                                 0										// Data misaligned?
+                                 );
+            }
 
             spidrdaq->resetLostCount();
 
@@ -341,7 +346,7 @@ void DataTakingThread::run() {
             // How to stop in ContRW
             // 1) See Note 1 at the bottom
             //  note than score.framesRequested=0 when asking for infinite frames
-            if ( (nFramesReceived >= score.framesRequested) && score.framesRequested > 0 ) {
+            if ( (nFramesReceived >= score.framesRequested) && score.framesRequested > 0 && !_isExternalTrigger ) {
                 if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
                     spidrcontrol->stopContReadout();
                 }
@@ -361,8 +366,17 @@ void DataTakingThread::run() {
             if(_isExternalTrigger){
                 int externalCnt = 0;
                 spidrcontrol->getExtShutterCounter(&externalCnt);
+                //Debug() << "[Debug] ext count : " << externalCnt;
+                emit scoring_sig(externalCnt,
+                                 externalCnt,
+                                 lostFrames,                  //
+                                 lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
+                                 spidrdaq->framesCount(),               // ?
+                                 0,
+                                 0										// Data misaligned?
+                                 );
+
                 if (externalCnt >= _mpx3gui->getConfig()->getNTriggers() && _mpx3gui->getConfig()->getNTriggers() != 0 ){
-                    externalCnt = 0;
                     break;
                 }
             }
@@ -376,15 +390,30 @@ void DataTakingThread::run() {
         if ( ! _restart ) {  emit data_taking_finished( 0 );}
 
         // Final report
-        emit scoring_sig(nFramesReceived,
-                         nFramesKept,
-                         lostFrames,  //
-                         lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
-                         spidrdaq->framesCount(),               // ?
-                         0,
-                         0							// Data misaligned
-                         );
+//        if(_isExternalTrigger){
+//            //int externalCnt = 0;
+//            spidrcontrol->getExtShutterCounter(&externalCnt);
+//            emit scoring_sig(externalCnt,
+//                             nFramesKept,
+//                             lostFrames,  //
+//                             lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
+//                             spidrdaq->framesCount(),               // ?
+//                             0,
+//                             0							// Data misaligned
+//                             );
+//        }
+//        else
+//        {
 
+//            emit scoring_sig(nFramesReceived,
+//                             nFramesKept,
+//                             lostFrames,  //
+//                             lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
+//                             spidrdaq->framesCount(),               // ?
+//                             0,
+//                             0							// Data misaligned
+//                             );
+//        }
         // If this was an emergency stop
         // Have the consumer free resources
         if ( emergencyStop ) {
