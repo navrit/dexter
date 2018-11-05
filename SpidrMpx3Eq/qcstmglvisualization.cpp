@@ -241,33 +241,40 @@ void QCstmGLVisualization::ConfigureGUIForDataTaking() {
 
     emit taking_data_gui();
 
-    ui->startButton->setText( "Stop" );
-    ui->singleshotPushButton->setText( "Stop" );
+    if (_mpx3gui->getConfig()->getNTriggers() == 1) {
+        ui->singleshotPushButton->setVisible(true);
+        ui->singleshotPushButton->setText("Stop");
+        ui->startButton->setVisible(false);
+    } else {
+        ui->startButton->setVisible(true);
+        ui->startButton->setText("Stop");
+        ui->singleshotPushButton->setVisible(false);
+    }
+
     emit sig_statusBarAppend("Start","blue");
 
     // Config stats
     ui->groupBoxConfigAndStats->setEnabled( false );
     ui->statsLabel->setEnabled( true ); // keep the stats label alive
 
-    //ui->infDataTakingCheckBox->setEnabled( false );
-
     // Don't let the user change DACs while taking data
     _mpx3gui->getDACs()->setEnabled( false );
-
 }
 
 void QCstmGLVisualization::ConfigureGUIForIdling() {
 
     emit idling_gui();
 
-    ui->startButton->setText( "Start" );
-    ui->singleshotPushButton->setText( "Single" );
+    ui->startButton->setText("Start");
+    ui->singleshotPushButton->setText("Single");
+
+    ui->startButton->setVisible(true);
+    ui->singleshotPushButton->setVisible(true);
+
     emit sig_statusBarAppend("Done","blue");
 
     // Config stats
     ui->groupBoxConfigAndStats->setEnabled( true );
-
-    //ui->infDataTakingCheckBox->setEnabled( true );
 
     _mpx3gui->getDACs()->setEnabled( true );
 }
@@ -2406,7 +2413,7 @@ void QCstmGLVisualization::on_saveLineEdit_editingFinished()
 
 void QCstmGLVisualization::onPixelsMasked(int devID, QSet<int> pixelSet)
 {
-    qDebug() << "Writting to the file " <<"Eq path : " << _equalizationPath ;
+    qDebug() << "Writing to the file " <<"Eq path : " << _equalizationPath ;
     QFile file(_equalizationPath + QString("mask_") + QString::number(devID));
     if (file.open(QIODevice::ReadWrite | QFile::Truncate)) {
         QTextStream stream(&file);
