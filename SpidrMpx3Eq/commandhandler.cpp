@@ -493,6 +493,7 @@ QString FrameHeaderDataStruct::toQString(int frameid) {
     return header.leftJustified(dataOffset, ' ', true);
 }
 
+/* TODO correct the following text - issue #166 */
 QString CommandHandler::getAcquisitionHeader()
 {
     Mpx3Config* config = getGui()->getConfig();
@@ -530,7 +531,9 @@ QString CommandHandler::getAcquisitionHeader()
 
 void CommandHandler::getImage()
 {
-    connect(QCstmGLVisualization::getInstance()->getDataConsumerThread(),SIGNAL(doneWithOneFrame(int)),this,SLOT(on_doneWithOneFrame(int)));
+    /* TODO Pretty sure this is wrong... You connect a new signal every time this function is called? */
+    connect(QCstmGLVisualization::getInstance()->getDataConsumerThread(), SIGNAL(doneWithOneFrame(int)), this, SLOT(on_doneWithOneFrame(int)));
+
 //    int nFrames = Mpx3GUI::getInstance()->getConfig()->getNTriggers();
 //    int frameCounter = 0;
 //    int size = 5;

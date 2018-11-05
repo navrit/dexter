@@ -996,7 +996,7 @@ bool Mpx3GUI::_loadConfigsFromGeneralSettings()
     bool res = false;
     QStringList pathList = _generalSettings->getConfigPath().split(QDir::separator());
     QString filename = pathList.last();
-    //construct the path directory again
+    // Construct the path directory again
     QString path; path.clear();
     for (int i = 0; i < pathList.length() - 1; ++i) {
          path += pathList.at(i) + QDir::separator();
