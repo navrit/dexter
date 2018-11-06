@@ -1728,11 +1728,9 @@ void Dataset::fromASCIIMatrix(QFile * file, int x, int y, int framesPerLayer)
 
 void Dataset::clear() {
 
-    for(int i =0; i < m_layers.size(); i++){
-        if (i != 0) {
-            delete[] m_layers[i];
-        }
-    }
+    // NB: you cannot delete the layers themselves here as they are often
+    // just a slice of the buffer borrowed from the DataConsumerThread
+    // ..   it's a design flaw
     m_layers.clear();
     m_thresholdsToIndices.clear();
 

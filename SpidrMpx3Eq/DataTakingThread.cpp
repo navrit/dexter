@@ -86,8 +86,8 @@ void DataTakingThread::ConnectToHardware() {
 
 void DataTakingThread::run() {
 
-    typedef std::chrono::high_resolution_clock Time;
-    typedef std::chrono::nanoseconds ns;
+    //typedef std::chrono::high_resolution_clock Time;
+    //typedef std::chrono::nanoseconds ns;
 
     // Open a new temporary connection to the spider to avoid collisions to the main one
     int ipaddr[4] = { 1, 1, 168, 192 };
@@ -133,10 +133,8 @@ void DataTakingThread::run() {
     int contRWFreq = 0;
     QVector<int> activeDevices = _mpx3gui->getConfig()->getActiveDevices();
     int nChips = activeDevices.size();
-    int * framedata = nullptr;
     int opMode = Mpx3Config::__operationMode_SequentialRW;
 
-    int size_in_bytes = -1;
     int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0, lostPackets = 0;
     bool emergencyStop = false;
     bool bothCounters = false;
@@ -182,6 +180,7 @@ void DataTakingThread::run() {
         totalFramesExpected = score.framesRequested;
         if ( bothCounters ) totalFramesExpected *= 2;
         //qDebug() << "total = " << totalFramesExpected;
+        _mpx3gui->clear_data(false);
         _mutex.unlock();
 
         // Reset
