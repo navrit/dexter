@@ -468,7 +468,7 @@ SpidrController * Mpx3Config::establishConnection(){
     //! the system failed to stop the data taking).  If this happens we ought
     //! to stop data taking, and give the system a bit of delay.
     _controller->stopAutoTrigger();
-    Sleep( 10 );
+    Sleep( 50 );
 
     // Response
     _responseChips = QVector<detector_response>( _nDevicesSupported );
