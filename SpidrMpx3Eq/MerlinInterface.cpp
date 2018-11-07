@@ -142,13 +142,15 @@ MerlinCommand::MerlinCommand(QString command, MerlinInterface &mi)
     if( _cmdType == GET_TYPE){
         if(mi.getTable.contains(items.at(NAME_INDEX))){
             QString pslCmd = mi.getTable[_cmdName];
-
             QStringList pslCmdList = pslCmd.split(";");
             if(pslCmdList.length() > 1){
-                PSL_ARG_TYPES pslType = (PSL_ARG_TYPES) pslCmdList.at(1).toInt();
-                QString arg = argParser(pslType);
+                pslCmd = pslCmdList.at(0);
+                for (int i = 1; i < pslCmdList.size(); ++i) {
+                    PSL_ARG_TYPES pslType = (PSL_ARG_TYPES) pslCmdList.at(i).toInt();
+                    QString arg = argParser(pslType);
+                    pslCmd  += ";" + arg;
+                }
                 _error = NO_ERROR;
-                pslCmd = pslCmdList.at(0) + ";" + arg;
                 parseResult = pslCmd; return;
             }
             _error = NO_ERROR;
@@ -247,6 +249,19 @@ void MerlinInterface::initializeTables()
     getTable.insert(THRESHOLD5,"GetThreshold;"+QString::number(TH5));
     getTable.insert(THRESHOLD6,"GetThreshold;"+QString::number(TH6));
     getTable.insert(THRESHOLD7,"GetThreshold;"+QString::number(TH7));
+
+
+    getTable.insert(THRESHOLD0CHIP,"GetThresholdPerChip;"+QString::number(TH0)+";" +QString::number(N));
+    getTable.insert(THRESHOLD1CHIP,"GetThresholdPerChip;"+QString::number(TH1)+";" +QString::number(N));
+    getTable.insert(THRESHOLD2CHIP,"GetThresholdPerChip;"+QString::number(TH2)+";" +QString::number(N));
+    getTable.insert(THRESHOLD3CHIP,"GetThresholdPerChip;"+QString::number(TH3)+";" +QString::number(N));
+    getTable.insert(THRESHOLD4CHIP,"GetThresholdPerChip;"+QString::number(TH4)+";" +QString::number(N));
+    getTable.insert(THRESHOLD5CHIP,"GetThresholdPerChip;"+QString::number(TH5)+";" +QString::number(N));
+    getTable.insert(THRESHOLD6CHIP,"GetThresholdPerChip;"+QString::number(TH6)+";" +QString::number(N));
+    getTable.insert(THRESHOLD7CHIP,"GetThresholdPerChip;"+QString::number(TH7)+";" +QString::number(N));
+
+
+
     getTable.insert(THSTART,"GetStartScan");
     getTable.insert(THSTOP,"GetStopScan");
     getTable.insert(THSTEP,"GetStepScan");
