@@ -2354,6 +2354,10 @@ void QCstmGLVisualization::on_testBtn_clicked()
     qDebug () << "SlOPE 2 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(2);
     qDebug () << "SlOPE 3 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(3);
     qDebug () << "Trigger Mode: " << Mpx3GUI::getInstance()->getConfig()->getTriggerMode();
+    QList<int> th = _mpx3gui->getDataset()->getThresholds();
+    for (int i = 0; i < th.size(); ++i) {
+        qDebug() << "th ["<<i<<"] is :"<<th.at(i);
+    }
 
     //Mpx3GUI::getInstance()->getConfig()->setInhibitShutter(true);
    // Mpx3GUI::getInstance()->getConfig()->setInhibitShutter(false);

@@ -129,8 +129,11 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("SetThreshold",setThreshold);
     cmd_struct getThreshold {getThresholdHandler};
     cmdTable.insert("GetThreshold",getThreshold);
+
     cmd_struct setThresholdPerChip{setThresholdPerChipHandler};
     cmdTable.insert("SetThresholdPerChip",setThresholdPerChip);
+    cmd_struct getThresholdPerChip{getThresholdPerChipHandler};
+    cmdTable.insert("GetThresholdPerChip",getThresholdPerChip);
 
     cmd_struct setStartScan {setStartScanHandler};
     cmdTable.insert("SetStartScan",setStartScan);
@@ -296,6 +299,17 @@ int CommandHandler::getThreshold(int idx)
     if(idx >= 0 && idx <= 7){
         if(QCstmDacs::getInstance()->GetCheckBoxList()[idx]->isChecked())
             return QCstmDacs::getInstance()->GetSpinBoxList()[idx]->value();
+        return NO_ERROR;
+    }
+    return UNKNOWN_ERROR;
+}
+
+int CommandHandler::getThreshold(int idx,int chipId,int *val)
+{
+    if(idx >= 0 && idx <= 7 && chipId >= 0 && chipId < 4) {
+         QCstmDacs::getInstance()->getAllDACSimultaneousCheckBox()->setChecked(false);
+         QCstmDacs::getInstance()->getDeviceIdSpinBox()->setValue(chipId);
+         *val = QCstmDacs::getInstance()->GetSpinBoxList()[idx]->value();
         return NO_ERROR;
     }
     return UNKNOWN_ERROR;

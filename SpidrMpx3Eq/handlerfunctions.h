@@ -747,7 +747,7 @@ void getThresholdHandler(CommandHandler* ch, Command* cmd){
 
 
 void setThresholdPerChipHandler(CommandHandler* ch, Command* cmd){
-    if(!cmd->enoughArguments(3,"SetThresholdPerChip"))  //this command comes with two argument{SetThresholdPerChip;th;chip;val}
+    if(!cmd->enoughArguments(3,"SetThresholdPerChip"))  //this command comes with three argument{SetThresholdPerChip;th;chip;val}
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
@@ -766,7 +766,19 @@ void setThresholdPerChipHandler(CommandHandler* ch, Command* cmd){
     cmd->setError(NO_ERROR);
 }
 
-
+void getThresholdPerChipHandler(CommandHandler* ch, Command* cmd){
+    if(!cmd->enoughArguments(2,"GetThresholdPerChip"))  //this command comes with two argument{SetThresholdPerChip;th;chip}
+    {
+        cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    int idx = cmd->arguments.at(0).toInt();
+    int chipId = cmd->arguments.at(1).toInt();
+    int val =0;
+    int error = ch->getThreshold(idx,chipId,&val);
+    cmd->setData(QString::number(val));
+    cmd->setError((ERROR_TYPE)error);
+}
 
 
 
