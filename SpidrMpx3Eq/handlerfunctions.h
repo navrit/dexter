@@ -752,18 +752,21 @@ void setThresholdPerChipHandler(CommandHandler* ch, Command* cmd){
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int idx = cmd->arguments.at(1).toInt();
+    int idx = cmd->arguments.at(0).toInt();
     double val = cmd->arguments.at(2).toDouble(); //energy in Kev
     qDebug() << "energy recieved : " << val;
-    int chipId = cmd->arguments.at(0).toInt();
+    int chipId = cmd->arguments.at(1).toInt();
 
 
     int dac = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(chipId,val);
 
     qDebug() << "converted to : " << dac;
+
     ch->setThreshold(idx,dac,chipId);
     cmd->setError(NO_ERROR);
 }
+
+
 
 
 
