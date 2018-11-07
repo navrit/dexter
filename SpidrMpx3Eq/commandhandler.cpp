@@ -52,8 +52,21 @@ void CommandHandler::initializeCmdTable()
     cmdTable.insert("SetCounterDepth",setCounterDepth);
     cmd_struct getCounterDepth{getCounterDepthHandler};
     cmdTable.insert("GetCounterDepth",getCounterDepth);
-    cmd_struct getTemperature{getTemperatureHandler};
-    cmdTable.insert("GetTemperature",getTemperature);
+
+
+
+    //temperatures info
+    cmd_struct getChipTemperature{getChipTemperatureHandler};
+    cmdTable.insert("GetChipTemperature",getChipTemperature);
+    cmd_struct getBoardTemperature{getBoardTemperatureHandler};
+    cmdTable.insert("GetBoardTemperature",getBoardTemperature);
+    cmd_struct getFpgaTemperature{getFpgaTemperatureHandler};
+    cmdTable.insert("GetFpgaTemperature",getFpgaTemperature);
+    cmd_struct getHumidity{getHumidityHandler};
+    cmdTable.insert("GetHumidity",getHumidity);
+
+
+
     cmd_struct setOperationalMode{setOperationalModeHandler};
     cmdTable.insert("SetOperationalMode",setOperationalMode);
     cmd_struct getOperationalMode{getOperationalModeHandler};

@@ -228,7 +228,14 @@ void MerlinInterface::initializeTables()
     getTable.insert(CONTINUOUSRW,"GetReadoutMode");
     getTable.insert(ENABLECOUNTER1,"GetBothCounters");
     getTable.insert(COUNTERDEPTH,"GetCounterDepth");
-    getTable.insert(TEMPERATURE,"GetTemperature");
+
+    //temps and humidity
+    getTable.insert(FPGATEMPERATURE,"GetFpgaTemperature");
+    getTable.insert(BOARDTEMPERATURE,"GetBoardTemperature");
+    getTable.insert(CHIPTEMPERATURE,"GetChipTemperature");
+    getTable.insert(HUMIDITY,"GetHumidity");
+    //end temps and humidity
+
     getTable.insert(ACQUISITIONTIME,"GetShutterLength;"+QString::number(OPEN));
     getTable.insert(ACQUISITIONPERIOD,"GetShutterPeriod");
     getTable.insert(NUMFRAMESTOACQUIRE,"GetFrameNumber");

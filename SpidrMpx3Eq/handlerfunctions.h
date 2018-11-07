@@ -141,13 +141,13 @@ void getCounterDepthHandler(CommandHandler* ch, Command* cmd){
     cmd->setError(UNKNOWN_ERROR);
 }
 
-void getTemperatureHandler(CommandHandler* ch, Command* cmd) {
+void getChipTemperatureHandler(CommandHandler* ch, Command* cmd) {
     SpidrController* spidrcontrol = Mpx3GUI::getInstance()->GetSpidrController();
 
     if (spidrcontrol) {
         int mdegrees;
         if (spidrcontrol->getRemoteTemp(&mdegrees)) {
-            cmd->setData(QString::number((int) (mdegrees/1000)));
+            cmd->setData(QString::number(  ((double) mdegrees/1000)));
             cmd->setError(NO_ERROR);
         }
     } else {
@@ -155,6 +155,59 @@ void getTemperatureHandler(CommandHandler* ch, Command* cmd) {
         cmd->setError(UNKNOWN_ERROR);
     }
 }
+
+
+ void getBoardTemperatureHandler(CommandHandler* ch, Command* cmd) {
+     SpidrController* spidrcontrol = Mpx3GUI::getInstance()->GetSpidrController();
+
+     if (spidrcontrol) {
+         int mdegrees;
+         if (spidrcontrol->getLocalTemp( &mdegrees )) {
+             cmd->setData(QString::number(((double)mdegrees/1000)));
+             cmd->setError(NO_ERROR);
+         }
+     } else {
+         cmd->setData(QString::number(-1));
+         cmd->setError(UNKNOWN_ERROR);
+     }
+ }
+
+
+
+ void getFpgaTemperatureHandler(CommandHandler* ch, Command* cmd) {
+     SpidrController* spidrcontrol = Mpx3GUI::getInstance()->GetSpidrController();
+
+     if (spidrcontrol) {
+         int mdegrees;
+         if ( spidrcontrol->getFpgaTemp( &mdegrees )) {
+             cmd->setData(QString::number( ((double)mdegrees/1000)));
+             cmd->setError(NO_ERROR);
+         }
+     } else {
+         cmd->setData(QString::number(-1));
+         cmd->setError(UNKNOWN_ERROR);
+     }
+ }
+
+
+
+
+ void getHumidityHandler(CommandHandler* ch, Command* cmd) {
+     SpidrController* spidrcontrol = Mpx3GUI::getInstance()->GetSpidrController();
+
+     if (spidrcontrol) {
+         int humidityPercentage;
+         if (spidrcontrol->getHumidity(&humidityPercentage)) {
+             cmd->setData(QString::number((int) (humidityPercentage)));
+             cmd->setError(NO_ERROR);
+         }
+     } else {
+         cmd->setData(QString::number(-1));
+         cmd->setError(UNKNOWN_ERROR);
+     }
+ }
+
+
 
 void setOperationalModeHandler(CommandHandler* ch, Command* cmd){
     if(!cmd->enoughArguments(1,"SetOperationalMode"))  //this command comes with one argument
