@@ -51,7 +51,7 @@ public:
 
     void takedata();
 
-    void setTriggerType(bool external);
+    void setExternalTrigger(bool external);
 
 protected:
 

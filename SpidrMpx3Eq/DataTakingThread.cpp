@@ -68,7 +68,7 @@ void DataTakingThread::takedata() {
 
 }
 
-void DataTakingThread::setTriggerType(bool external)
+void DataTakingThread::setExternalTrigger(bool external)
 {
     _isExternalTrigger = external;
 }
@@ -149,7 +149,6 @@ void DataTakingThread::run() {
     ///////////////////////////////////////////////////////////////////////////////////
 
     forever {
-
         // When abort execution. Triggered as the destructor is called.
         if ( _abort ) return;
 
@@ -193,77 +192,77 @@ void DataTakingThread::run() {
 
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
             spidrcontrol->startContReadout( contRWFreq );
-        } else {
+        } else if(opMode == Mpx3Config::__operationMode_SequentialRW ){
             spidrcontrol->startAutoTrigger();
         }
 
         // Ask SpidrDaq for frames
-        while ( spidrdaq->hasFrame( timeOutTime ) ) {
+            while ( spidrdaq->hasFrame(timeOutTime)) {
 
-            // When using both counters keep track of which Counter we are reading now
-            // cntrLH%2 == 0  Cntr0 (THL0)
-            // cntrLH%2 == 1  Cntr1 (THL1)
+                // When using both counters keep track of which Counter we are reading now
+                // cntrLH%2 == 0  Cntr0 (THL0)
+                // cntrLH%2 == 1  Cntr1 (THL1)
 
-            if (bothCounters) {
-                cntrLH++;
-//                if ( cntrLH%2 == 0) {
-//                    qDebug() << "Counter LOW" << cntrLH;
-//                } else {
-//                    qDebug() << "Counter HIGH" << cntrLH;
-//                }
-            }
-
-
-            // 2) User stop condition
-            if ( _stop ||  _restart  ) {
-
-                if(_isExternalTrigger)
-                    break;
-
-                if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
-                    spidrcontrol->stopContReadout();
-                } else { //if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
-                    spidrcontrol->stopAutoTrigger();
+                if (bothCounters) {
+                    cntrLH++;
+                    //                if ( cntrLH%2 == 0) {
+                    //                    qDebug() << "Counter LOW" << cntrLH;
+                    //                } else {
+                    //                    qDebug() << "Counter HIGH" << cntrLH;
+                    //                }
                 }
-            }
 
-            // Three stopping conditions where I still need to let the SpidrDaq::hasFrame loop to finish
-            // 1) If trying to stop a ContRW
-            // 2) User stop
-            // 3) Restart
-            if ( reachLimitStop || _stop || _restart ) {
-                spidrdaq->releaseFrame();
-                _consumer->consume();
-                continue;
-            }
 
-            //! T0 - Start of while loop to here : < 0.1% time
-            //! --------------------------
+                // 2) User stop condition
+                if ( _stop ||  _restart  ) {
 
-            // An emergency stop when the consumer thread can't keep up
-            if ( _consumer->freeFrames->available() < halfSemaphoreSize ) {
-                qDebug() << " ... try to stop ";
-                if ( ! emergencyStop ) {
-                    emit bufferFull( 0 );
+                    if(_isExternalTrigger)
+                        break;
+
                     if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
                         spidrcontrol->stopContReadout();
-                    } else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
+                    } else { //if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
                         spidrcontrol->stopAutoTrigger();
                     }
-                    _consumer->consume();
                 }
-                emergencyStop = true;
-            }
-            //! T0-T1 < 0.1% time
-            //! --------------------------
 
-            /*QVector<int> v1;
+                // Three stopping conditions where I still need to let the SpidrDaq::hasFrame loop to finish
+                // 1) If trying to stop a ContRW
+                // 2) User stop
+                // 3) Restart
+                if ( reachLimitStop || _stop || _restart ) {
+                    spidrdaq->releaseFrame();
+                    _consumer->consume();
+                    continue;
+                }
+
+                //! T0 - Start of while loop to here : < 0.1% time
+                //! --------------------------
+
+                // An emergency stop when the consumer thread can't keep up
+                if ( _consumer->freeFrames->available() < halfSemaphoreSize ) {
+                    qDebug() << " ... try to stop ";
+                    if ( ! emergencyStop ) {
+                        emit bufferFull( 0 );
+                        if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
+                            spidrcontrol->stopContReadout();
+                        } else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
+                            spidrcontrol->stopAutoTrigger();
+                        }
+                        _consumer->consume();
+                    }
+                    emergencyStop = true;
+                }
+                //! T0-T1 < 0.1% time
+                //! --------------------------
+
+                /*QVector<int> v1;
             QVector<int> v2;
             QVector<int> v3;
             QVector<int> v4;*/
 
-            // Read data
-            FrameSet *fs = spidrdaq->getFrameSet();
+                // Read data
+                FrameSet *fs = spidrdaq->getFrameSet();
 
                 // The consumer thread is expecting N chips to be loaded
                 // It can happen that the information from 1 or more chips
@@ -271,118 +270,118 @@ void DataTakingThread::run() {
                 // sync since the descriptor can stay behind the readdescriptor.
                 // In this case we will drop the frame.
 
-            if (fs->isComplete() && ! (fs->pixelsLost() > 0 && _vis->getDropFrames())) {
+                if (fs->isComplete() && ! (fs->pixelsLost() > 0 && _vis->getDropFrames())) {
 
-                for ( int i = 0 ; i < nChips ; i++ ) {
-                    // retreive data for a given chip
-                    //auto t1 = Time::now();
-                    //clearToCopy = true;
+                    for ( int i = 0 ; i < nChips ; i++ ) {
+                        // retreive data for a given chip
+                        //auto t1 = Time::now();
+                        //clearToCopy = true;
 
-                    //auto t2 = Time::now(); v1.append( std::chrono::duration_cast<ns>(t2 - t1).count());
+                        //auto t2 = Time::now(); v1.append( std::chrono::duration_cast<ns>(t2 - t1).count());
 
-                    _consumer->freeFrames->acquire(); //! < 0.1% time
-                    //auto t3 = Time::now(); v2.append( std::chrono::duration_cast<ns>(t3 - t2).count());
+                        _consumer->freeFrames->acquire(); //! < 0.1% time
+                        //auto t3 = Time::now(); v2.append( std::chrono::duration_cast<ns>(t3 - t2).count());
 
-                    _consumer->copydata(fs, i); //! 99+% time
-                    //auto t4 = Time::now(); v3.append( std::chrono::duration_cast<ns>(t4 - t3).count());
+                        _consumer->copydata(fs, i); //! 99+% time
+                        //auto t4 = Time::now(); v3.append( std::chrono::duration_cast<ns>(t4 - t3).count());
 
-                    _consumer->usedFrames->release(); //! < 0.1% time
-                    //auto t5 = Time::now(); v4.append( std::chrono::duration_cast<ns>(t5 - t4).count());
+                        _consumer->usedFrames->release(); //! < 0.1% time
+                        //auto t5 = Time::now(); v4.append( std::chrono::duration_cast<ns>(t5 - t4).count());
+                    }
+                    // Keep a track of frames actually kept
+                    nFramesKept++;
                 }
-                // Keep a track of frames actually kept
-                nFramesKept++;
-            }
 
-            //! T1-T2  93-98% time
-            //! --------------------------
+                //! T1-T2  93-98% time
+                //! --------------------------
 
-            lostPackets += fs->pixelsLost();
+                lostPackets += fs->pixelsLost();
 
-            // Release frame
-            spidrdaq->releaseFrame(fs);
+                // Release frame
+                spidrdaq->releaseFrame(fs);
 
-            //! T2-T3  ~0.4-2.2% time
-            //! --------------------------
+                //! T2-T3  ~0.4-2.2% time
+                //! --------------------------
 
-            // If we are working with 2 counters, go get
-            // the second frame associated before it continues.
-//            qDebug() << "bothCounters & cntrLH : " << bothCounters << cntrLH << "\t Counter Low" << bool(cntrLH%2 == 0);
-            if ( bothCounters && (cntrLH%2 == 0) ) continue;
+                // If we are working with 2 counters, go get
+                // the second frame associated before it continues.
+                //            qDebug() << "bothCounters & cntrLH : " << bothCounters << cntrLH << "\t Counter Low" << bool(cntrLH%2 == 0);
+                if ( bothCounters && (cntrLH%2 == 0) ) continue;
 
-            // Awake the consumer thread
-            _consumer->consume();
+                // Awake the consumer thread
+                _consumer->consume();
 
-            //! T3-T4  ~0.1-0.2% time
-            //! --------------------------
+                //! T3-T4  ~0.1-0.2% time
+                //! --------------------------
 
-            // Keep a local count of number of frames
-            nFramesReceived++;
+                // Keep a local count of number of frames
+                nFramesReceived++;
 
 
 
-            // lost
-            lostFrames += spidrdaq->framesLostCount();
+                // lost
+                lostFrames += spidrdaq->framesLostCount();
 
 
 
-            if(!_isExternalTrigger)
-            {
-                emit scoring_sig(nFramesReceived,
-                                 nFramesKept,
-                                 lostFrames,                  //
-                                 lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
-                                 spidrdaq->framesCount(),               // ?
-                                 0,
-                                 0										// Data misaligned?
-                                 );
-            }
-
-            spidrdaq->resetLostCount();
-
-            //! T4-T5  ~1-5% time
-            //! --------------------------
-
-            // How to stop in ContRW
-            // 1) See Note 1 at the bottom
-            //  note than score.framesRequested=0 when asking for infinite frames
-            if ( (nFramesReceived >= score.framesRequested) && score.framesRequested > 0 && !_isExternalTrigger ) {
-                if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
-                    spidrcontrol->stopContReadout();
+                if(!_isExternalTrigger)
+                {
+                    emit scoring_sig(nFramesReceived,
+                                     nFramesKept,
+                                     lostFrames,                  //
+                                     lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
+                                     spidrdaq->framesCount(),               // ?
+                                     0,
+                                     0										// Data misaligned?
+                                     );
                 }
-                reachLimitStop = true;
-            }
 
-            //! T5-T6 < 0.1% time
-            //! --------------------------
+                spidrdaq->resetLostCount();
 
-            /*for (int i=0; i< v1.size(); i++){
+                //! T4-T5  ~1-5% time
+                //! --------------------------
+
+                // How to stop in ContRW
+                // 1) See Note 1 at the bottom
+                //  note than score.framesRequested=0 when asking for infinite frames
+                if ( (nFramesReceived >= score.framesRequested) && score.framesRequested > 0 && !_isExternalTrigger ) {
+                    if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
+                        spidrcontrol->stopContReadout();
+                    }
+                    reachLimitStop = true;
+                }
+
+                //! T5-T6 < 0.1% time
+                //! --------------------------
+
+                /*for (int i=0; i< v1.size(); i++){
               double sum = v1[i] + v2[i] + v3[i] + v4[i];
               qDebug() << v1[i]/sum*100 << "%  "
                        << v2[i]/sum*100 << "%  "
                        << v3[i]/sum*100 << "%  "
                        << v4[i]/sum*100 << "%";
             }*/
-            if(_isExternalTrigger){
-                int externalCnt = 0;
-                spidrcontrol->getExtShutterCounter(&externalCnt);
-                //Debug() << "[Debug] ext count : " << externalCnt;
-                emit scoring_sig(externalCnt,
-                                 externalCnt,
-                                 lostFrames,                  //
-                                 lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
-                                 spidrdaq->framesCount(),               // ?
-                                 0,
-                                 0										// Data misaligned?
-                                 );
+                if(_isExternalTrigger){
+                    int externalCnt = 0;
+                    spidrcontrol->getExtShutterCounter(&externalCnt);
+                    //Debug() << "[Debug] ext count : " << externalCnt;
+                    emit scoring_sig(externalCnt,
+                                     externalCnt,
+                                     lostFrames,                  //
+                                     lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
+                                     spidrdaq->framesCount(),               // ?
+                                     0,
+                                     0										// Data misaligned?
+                                     );
 
-                if (externalCnt >= _mpx3gui->getConfig()->getNTriggers() && _mpx3gui->getConfig()->getNTriggers() != 0 ){
-                    break;
+                    if (externalCnt >= _mpx3gui->getConfig()->getNTriggers() && _mpx3gui->getConfig()->getNTriggers() != 0 ){
+                        break;
+                    }
                 }
+
+
+
             }
-
-
-
-        }
 
         _consumer->consume();
 
