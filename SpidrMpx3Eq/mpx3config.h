@@ -116,8 +116,8 @@ public:
     void closeConnection();
     void destroyController();
     int getDacCount() { return _dacVals[0].length(); }
-    int getDACValue(int chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
-    void setDACValue(int chip, int dacIndex, int val) { _dacVals[dacIndex][chip] = val; }
+    int getDACValue(uint chip, int dacIndex) { return _dacVals[dacIndex][chip]; }
+    void setDACValue(uint chip, int dacIndex, int val) { _dacVals[dacIndex][chip] = val; }
     QVector<QPoint> getDevicePresenceLayout(){ return _devicePresenceLayout; }
     int getNDevicesPresent() { return _nDevicesPresent; }
     int getDataBufferId(int devIndx);
@@ -189,7 +189,7 @@ public:
 
 private:
 
-    Mpx3GUI * _mpx3gui;
+    Mpx3GUI * _mpx3gui = nullptr;
     // Layout of the matrix. Each QPoint is a chip connected with X,Y sizes.
     QVector<QPoint> _devicePresenceLayout;
     QVector<QString> _deviceWaferIdMap;

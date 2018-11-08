@@ -120,11 +120,11 @@ void QCstmDacs::on_allDACSimultaneousCheckBox_toggled(bool checked) {
 
 }
 
-int QCstmDacs::GetDACValueFromConfig(int chip, int dacIndex) {
+int QCstmDacs::GetDACValueFromConfig(uint chip, int dacIndex) {
     return _mpx3gui->getConfig()->getDACValue(chip, dacIndex);
 }
 
-void QCstmDacs::SetDACValueLocalConfig(int chip, int dacIndex, int val) {
+void QCstmDacs::SetDACValueLocalConfig(uint chip, int dacIndex, int val) {
     _mpx3gui->getConfig()->setDACValue(chip, dacIndex, val);
 }
 

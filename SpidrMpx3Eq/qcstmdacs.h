@@ -84,8 +84,8 @@ public:
     void setWindowWidgetsStatus(win_status s = win_status::startup );
 
     // Ask the config !
-    int GetDACValueFromConfig(int chip, int dacIndex);
-    void SetDACValueLocalConfig(int chip, int dacIndex, int val);
+    int GetDACValueFromConfig(uint chip, int dacIndex);
+    void SetDACValueLocalConfig(uint chip, int dacIndex, int val);
 
     void changeDAC(int threshold, int value); //! For all chips
 

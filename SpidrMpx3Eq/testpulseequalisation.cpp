@@ -249,7 +249,7 @@ bool testPulseEqualisation::estimate_V_TP_REF_AB(uint electrons)
     progress.show();
 
     //! We need to scan for these
-    for (int chipID=0; chipID < _mpx3gui->getConfig()->getNActiveDevices(); chipID++) {
+    for (uint chipID=0; chipID < _mpx3gui->getConfig()->getNActiveDevices(); chipID++) {
         qApp->processEvents();
 
         setDACToVoltage(chipID, MPX3RX_DAC_TP_REF, double(0.3));
@@ -276,7 +276,7 @@ bool testPulseEqualisation::estimate_V_TP_REF_AB(uint electrons)
     return true;
 }
 
-uint testPulseEqualisation::setDACToVoltage(int chipID, int dacCode, double V)
+uint testPulseEqualisation::setDACToVoltage(uint chipID, int dacCode, double V)
 {
     uint dac_val = 0;
     bool foundTarget = false;
@@ -309,7 +309,7 @@ uint testPulseEqualisation::setDACToVoltage(int chipID, int dacCode, double V)
         spidrcontrol->getDacOut(chipID, &adc_val, nSamples);
 
         adc_val /= nSamples;
-        adc_volt = (__voltage_DACS_MAX/(double)__maxADCCounts) * (double)adc_val;
+        adc_volt = (__voltage_DACS_MAX/double(__maxADCCounts)) * (double(adc_val));
 
         //qDebug() << "adc_volt :" << adc_volt;
 
@@ -343,7 +343,7 @@ uint testPulseEqualisation::setDACToVoltage(int chipID, int dacCode, double V)
     return dac_val;
 }
 
-void testPulseEqualisation::SetDAC_propagateInGUI(int devId, int dac_code, int dac_val ) {
+void testPulseEqualisation::SetDAC_propagateInGUI(uint devId, int dac_code, int dac_val ) {
 
     // Set Dac
     spidrcontrol->setDac( devId, dac_code, dac_val );
@@ -360,7 +360,6 @@ void testPulseEqualisation::SetDAC_propagateInGUI(int devId, int dac_code, int d
 
     // Set in the local config.  This function also takes the dac_index and not the dac_code
     _mpx3gui->getDACs()->SetDACValueLocalConfig( devId, dacIndex, dac_val);
-
 }
 
 void testPulseEqualisation::turnOffAllCTPRs(SpidrController *spidrcontrol, int chipID, bool submit)

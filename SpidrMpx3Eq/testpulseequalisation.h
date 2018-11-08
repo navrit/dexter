@@ -105,8 +105,8 @@ private:
     QVector<int> activeChips;
 
     bool estimate_V_TP_REF_AB(uint electrons);      //! This should fail if requested charge cannot be injected.
-    uint setDACToVoltage(int chipID, int dacCode, double V);
-    void SetDAC_propagateInGUI(int devId, int dac_code, int dac_val );
+    uint setDACToVoltage(uint chipID, int dacCode, double V);
+    void SetDAC_propagateInGUI(uint devId, int dac_code, int dac_val );
 
 };
 
