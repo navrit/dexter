@@ -101,6 +101,7 @@ private slots:
     void on_merlinInterfaceTestButton_clicked();
 
     void setContRWFreqFromConfig(int val);
+    void hideLabels();
 
 private:
     Ui::QCstmConfigMonitoring *ui = nullptr;

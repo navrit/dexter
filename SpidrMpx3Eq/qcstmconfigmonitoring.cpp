@@ -93,13 +93,7 @@ QCstmConfigMonitoring::QCstmConfigMonitoring(QWidget *parent) :
 
 
     //! Disable a bunch of 'advanced' buttons
-    ui->readOMRPushButton->hide();
-    ui->IP_ZMQ_PUB_lineEdit->hide();
-    ui->IP_ZMQ_SUB_lineEdit->hide();
-    ui->label_zmq_pub->hide();
-    ui->label_zmq_sub->hide();
-    ui->merlinInterfaceLineEdit->hide();
-    ui->merlinInterfaceTestButton->hide();
+    developerMode(false);
 
     qCstmConfigMonitoring = this;
 }
@@ -364,6 +358,20 @@ void QCstmConfigMonitoring::developerMode(bool enabled)
     }
 }
 
+
+void QCstmConfigMonitoring::hideLabels()
+{
+    if ( _mpx3gui->getConfig()->getOperationMode() == Mpx3Config::__operationMode_SequentialRW ) {
+        ui->label_23->hide();
+        ui->label_8->show();
+        ui->label_17->show();
+    } else {
+        ui->label_23->show();
+        ui->label_8->hide();
+        ui->label_17->hide();
+    }
+}
+
 void QCstmConfigMonitoring::shortcutGainModeSLGM()
 {
     // 11: SLGM  3
@@ -453,6 +461,8 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     // Operation Mode
     connect(ui->operationModeComboBox, SIGNAL(currentIndexChanged(int)), config, SLOT(setOperationMode(int)));
     connect(config, SIGNAL(operationModeChanged(int)), ui->operationModeComboBox, SLOT(setCurrentIndex(int)));
+    connect(config, SIGNAL(operationModeChanged(int)), this, SLOT(hideLabels()));
+
     // connection in the viewer
     connect(ui->operationModeComboBox, SIGNAL(currentIndexChanged(int)),
             _mpx3gui->getVisualization()->GetUI()->operationModeComboBox_Vis,
@@ -585,17 +595,34 @@ void QCstmConfigMonitoring::OperationModeSwitched(int indx)
 {
     if ( indx == Mpx3Config::__operationMode_SequentialRW ) {
         ui->triggerLengthSpinner->setEnabled( true );
+        ui->triggerLengthSpinner->show();
         ui->triggerDowntimeSpinner->setEnabled( true );
-        ui->contRWFreq->setEnabled( false );
+        ui->triggerDowntimeSpinner->show();
 
+        ui->label_23->hide();
+        ui->label_8->show();
+        ui->label_17->show();
+
+        ui->contRWFreq->setEnabled( false );
+        ui->contRWFreq->hide();
+
+        ui->readBothCountersCheckBox->show();
         ui->readBothCountersCheckBox->setEnabled( true );
     } else if ( indx == Mpx3Config::__operationMode_ContinuousRW ) {
         ui->triggerLengthSpinner->setEnabled( false );
+        ui->triggerLengthSpinner->hide();
         ui->triggerDowntimeSpinner->setEnabled( false );
+        ui->triggerDowntimeSpinner->hide();
+
+        ui->label_8->hide();
+        ui->label_17->hide();
+        ui->label_23->show();
+
         ui->contRWFreq->setEnabled( true );
+        ui->contRWFreq->show();
 
         ui->readBothCountersCheckBox->setChecked( false );
-        ui->readBothCountersCheckBox->setEnabled( false );
+        ui->readBothCountersCheckBox->hide();
     }
 
 }

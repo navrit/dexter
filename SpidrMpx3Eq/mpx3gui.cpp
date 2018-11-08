@@ -336,6 +336,7 @@ void Mpx3GUI::loadLastConfiguration()
                     emit sig_statusBarAppend(QString("Not autoloading last configuration file from " + lastConfigurationPath), "black");
                 }
             }
+
         } else {
             QString msg;
             if (lastConfigurationPath == "") {
@@ -343,7 +344,7 @@ void Mpx3GUI::loadLastConfiguration()
             } else {
                 msg = QString("Auto-load configuration folder does not exist : " + lastConfigurationPath);
             }
-            qDebug() << msg;
+            qDebug().noquote() << msg;
             emit sig_statusBarClean();
             emit sig_statusBarAppend(msg, "red");
         }
