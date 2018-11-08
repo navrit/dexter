@@ -617,139 +617,6 @@ void SpidrController::resetPixelConfig()
 
 // ----------------------------------------------------------------------------
 
-bool SpidrController::configPixelMpx3( int  x,
-				       int  y,
-				       int  configtha,
-				       int  configthb,
-				       bool configtha4,
-				       bool configthb4,
-				       bool gainmode,
-				       bool testbit )
-{
-  int xstart, xend;
-  int ystart, yend;
-  if( !this->validXandY( x, y, &xstart, &xend, &ystart, &yend ) )
-    return false;
-
-  // Check other parameters
-  bool invalid_parameter = false;
-  if( configtha < 0 || configtha > 15 ) invalid_parameter = true;
-  if( configthb < 0 || configthb > 15 ) invalid_parameter = true;
-  if( invalid_parameter )
-    {
-      this->clearErrorString();
-      _errString << "Invalid pixel config parameter";
-      return false;
-    }
-
-  // Set or reset the configuration bits in the requested pixels
-  int xi, yi;
-  unsigned int *pcfg;
-  for( yi=ystart; yi<yend; ++yi )
-    for( xi=xstart; xi<xend; ++xi )
-      {
-	pcfg = &_pixelConfig[yi][xi];
-	*pcfg &= MPX3_CFG_MASKBIT; // Set/reset elsewhere
-	if( configtha & 0x1 ) *pcfg |= MPX3_CFG_CONFIGTHA_0;
-	if( configtha & 0x2 ) *pcfg |= MPX3_CFG_CONFIGTHA_1;
-	if( configtha & 0x4 ) *pcfg |= MPX3_CFG_CONFIGTHA_2;
-	if( configtha & 0x8 ) *pcfg |= MPX3_CFG_CONFIGTHA_3;
-	if( configtha4 )      *pcfg |= MPX3_CFG_CONFIGTHA_4;
-	if( configthb & 0x1 ) *pcfg |= MPX3_CFG_CONFIGTHB_0;
-	if( configthb & 0x2 ) *pcfg |= MPX3_CFG_CONFIGTHB_1;
-	if( configthb & 0x4 ) *pcfg |= MPX3_CFG_CONFIGTHB_2;
-	if( configthb & 0x8 ) *pcfg |= MPX3_CFG_CONFIGTHB_3;
-	if( configthb4 )      *pcfg |= MPX3_CFG_CONFIGTHB_4;
-	if( gainmode )        *pcfg |= MPX3_CFG_GAINMODE;
-	if( testbit )         *pcfg |= MPX3_CFG_TESTBIT;
-      }
-
-  return true;
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setPixelMaskMpx3( int x, int y, bool b )
-{
-  return this->setPixelBit( x, y, MPX3_CFG_MASKBIT, b );
-}
-
-// ----------------------------------------------------------------------------
-
-bool SpidrController::setPixelConfigMpx3( int  dev_nr,
-					  bool with_replies )
-{
-  // To be done in 2 stages:
-  // 12 bits of configuration (bits 0-11) per pixel to 'Counter0', then
-  // 12 bits (bits 12-23) to 'Counter1' (using variable 'counter' for that)
-
-  // Space for one row (256 pixels) of Medipix-formatted
-  // pixel configuration data
-  unsigned char pixelrow[(256*12)/8];
-
-  unsigned int   *pconfig;
-  int             counter, row, column, pixelbit, pixelbitmask, bit;
-  unsigned char  *prow;
-  unsigned char   byte, bitmask;
-  for( counter=0; counter<2; ++counter )
-    {
-      int hi_bit = 11 + counter*12;
-      int lo_bit = counter*12;
-      int cmd    = CMD_PIXCONF_MPX3_0 + counter;
-      // ### Without replies doesn't work (yet) because -I think- TCP packets
-      //     are concatenated at the receiver end and need to be interpreted;
-      //     to be investigated...
-      //if( !with_replies ) cmd |= CMD_NOREPLY;
-
-      // Convert the data in _pixelConfig row-by-row into the format
-      // required by the Medipix device
-      for( row=0; row<256; ++row )
-	{
-	  // Next row
-	  pconfig = &_pixelConfig[row][0];
-	  // Refill pixelrow[]
-	  memset( static_cast<void *> (pixelrow), 0, sizeof(pixelrow) );
-	  // 12 bits of configuration data, starting from MSB
-	  prow = pixelrow;
-	  for( pixelbit=hi_bit; pixelbit>=lo_bit; --pixelbit )
-	    {
-	      pixelbitmask = (1 << pixelbit);
-	      for( column=0; column<256; column+=8 )
-		{
-		  // Fill a byte
-		  byte = 0;
-		  bitmask = 0x01;
-		  for( bit=0; bit<8; ++bit )
-		    {
-		      if( pconfig[column + bit] & pixelbitmask )
-			byte |= bitmask;
-		      bitmask <<= 1;
-		    }
-		  *prow = byte;
-		  ++prow;
-		}
-	    }
-
-	  // Even with 'with_replies' false, acknowledge first and last message
-	  /*
-	  if( row == 0 || row == 255 )
-	    cmd &= ~CMD_NOREPLY;
-	  else if( !with_replies )
-	    cmd |= CMD_NOREPLY;
-	  */
-	  // Send this row of formatted configuration data to the SPIDR module
-	  if( this->requestSetIntAndBytes( cmd, dev_nr,
-					   row, // Sequence number
-					   sizeof( pixelrow ),
-					   pixelrow ) == false )
-	    return false;
-	}
-    }
-  return true;
-}
-
-// ----------------------------------------------------------------------------
-
 bool SpidrController::configPixelMpx3rx( int  x,
 					 int  y,
 					 int  discl,
@@ -1451,29 +1318,11 @@ bool SpidrController::setSpidrReg( int addr, int val, bool verify )
 
 // ----------------------------------------------------------------------------
 
-std::string SpidrController::dacNameMpx3( int dac_code )
-{
-  int index = this->dacIndexMpx3( dac_code );
-  if( index < 0 ) return string( "????" ); 
-  return string( MPX3_DAC_TABLE[index].name );
-}
-
-// ----------------------------------------------------------------------------
-
 std::string SpidrController::dacNameMpx3rx( int dac_code )
 {
   int index = this->dacIndexMpx3rx( dac_code );
   if( index < 0 ) return string( "????" ); 
   return string( MPX3RX_DAC_TABLE[index].name );
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrController::dacMaxMpx3( int dac_code )
-{
-  int index = this->dacIndexMpx3( dac_code );
-  if( index < 0 ) return 0;
-  return( (1 << MPX3_DAC_TABLE[index].bits) - 1 );
 }
 
 // ----------------------------------------------------------------------------
@@ -1863,16 +1712,6 @@ std::string SpidrController::spidrErrString( int err )
     }
 
   return errstr;
-}
-
-// ----------------------------------------------------------------------------
-
-int SpidrController::dacIndexMpx3( int dac_code )
-{
-  int i;
-  for( i=0; i<MPX3_DAC_COUNT; ++i )
-    if( MPX3_DAC_TABLE[i].code == dac_code ) return i;
-  return -1;
 }
 
 // ----------------------------------------------------------------------------

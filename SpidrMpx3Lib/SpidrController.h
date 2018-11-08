@@ -104,19 +104,7 @@ class MY_LIB_API SpidrController
 
   // Configuration: pixels
   void resetPixelConfig        ( );
-  // Medipix3.1
-  bool configPixelMpx3         ( int  x,
-                                 int  y,
-                                 int  configtha,
-                                 int  configthb,
-                                 bool configtha4 = false,
-                                 bool configthb4 = false,
-                                 bool gainmode = false,
-                                 bool testbit = false );
-  bool setPixelMaskMpx3        ( int  x = ALL_PIXELS, int y = ALL_PIXELS,
-                                 bool b = true );
-  bool setPixelConfigMpx3      ( int  dev_nr,
-                                 bool with_replies = true );
+
   // Medipix3RX
   bool configPixelMpx3rx       ( int  x,
                                  int  y,
@@ -218,9 +206,7 @@ class MY_LIB_API SpidrController
   bool setSpidrReg             ( int  addr, int  val,   bool verify = false );
   bool setSpidrRegBit          ( int  addr, int  bitnr, bool set = true,
                                  bool verify = false );
-  std::string dacNameMpx3      ( int  dac_code );
   std::string dacNameMpx3rx    ( int  dac_code );
-  int         dacMaxMpx3       ( int  dac_code );
   int         dacMaxMpx3rx     ( int  dac_code );
 
  private:
@@ -246,7 +232,6 @@ class MY_LIB_API SpidrController
   bool request              ( int  cmd, int dev_nr,
                               int  req_len, int exp_reply_len );
   std::string spidrErrString( int  err );
-  int  dacIndexMpx3         ( int  dac_code );
   int  dacIndexMpx3rx       ( int  dac_code );
 
  private:
