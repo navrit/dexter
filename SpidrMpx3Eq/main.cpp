@@ -6,6 +6,10 @@
 int main(int argc, char *argv[])
 {
 
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling); // DPI support
+    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps); // HiDPI pixmaps
+    qputenv("QT_SCALE_FACTOR", "1"); // Must be >=1
+
     QApplication a(argc, argv);
 
     QLoggingCategory::setFilterRules("*.debug=true\nqt.*.debug=false");
