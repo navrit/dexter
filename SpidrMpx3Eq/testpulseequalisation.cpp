@@ -293,8 +293,8 @@ uint testPulseEqualisation::setDACToVoltage(uint chipID, int dacCode, double V)
     //! Give them some reasonable starting values to save time
     //! Get these from this existing values in the config unless I know better ;)
     if (dacCode == MPX3RX_DAC_TP_REF)   dac_val = 60;
-    if (dacCode == MPX3RX_DAC_TP_REF_A) dac_val = _mpx3gui->getConfig()->getDACValue(chipID, MPX3RX_DAC_TP_REF_A-1);
-    if (dacCode == MPX3RX_DAC_TP_REF_B) dac_val = _mpx3gui->getConfig()->getDACValue(chipID, MPX3RX_DAC_TP_REF_B-1);
+    if (dacCode == MPX3RX_DAC_TP_REF_A) dac_val = _mpx3gui->getConfig()->getDACValue(chipID, _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_TP_REF_A ));
+    if (dacCode == MPX3RX_DAC_TP_REF_B) dac_val = _mpx3gui->getConfig()->getDACValue(chipID, _mpx3gui->getDACs()->GetDACIndex( MPX3RX_DAC_TP_REF_B ));
 
     while (!foundTarget) {
         if (dac_val >= 511) {
