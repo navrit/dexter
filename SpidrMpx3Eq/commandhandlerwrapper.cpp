@@ -29,7 +29,6 @@ void CommandHandlerWrapper::on_dataRecieved(QString command)
     emit responseIsReady(response); //must be passed to command socket in order to send it to the client
     qDebug() << "response from handler : " << response;
 
-
 }
 
 void CommandHandlerWrapper::on_requestForDataTaking(bool)
@@ -40,7 +39,7 @@ void CommandHandlerWrapper::on_requestForDataTaking(bool)
     commandHandler->getImage();
 
 //    QByteArray image;
-//    image = QString("This is an test imageeeeeeeeeeeeeee....!").toLatin1();
+//    image = QString("This is a test imageeeeeeeeeeeeeee....!").toLatin1();
 
 }
 
