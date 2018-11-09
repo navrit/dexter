@@ -157,12 +157,12 @@ private:
     bool _maskingRequestFromServer = false;
 
     typedef struct {
-        unsigned int nFramesReceived;
-        unsigned int nFramesKept;
-        unsigned int lostFrames;
-        unsigned int lostPackets;
-        unsigned int framesCount;
-        unsigned int mpx3clock_stops;
+        uint nFramesReceived;
+        uint nFramesKept;
+        uint lostFrames;
+        uint lostPackets;
+        uint framesCount;
+        uint mpx3clock_stops;
         bool dataMisaligned;
     } scoring;
 

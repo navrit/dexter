@@ -91,14 +91,19 @@ void QCstmGLVisualization::timerEvent(QTimerEvent *)
 
 void QCstmGLVisualization::refreshScoringInfo()
 {
-
     updateETA();
 
     // Progress
+    QString prog = "";
+
     int nTriggers = _mpx3gui->getConfig()->getNTriggers();
-    QString prog;
+    uint nFramesKept = _score.nFramesKept;
+    if ( _mpx3gui->getConfig()->getReadBothCounters() ) {
+        nFramesKept /= 2;
+    }
+
     if ( nTriggers > 0 ) {
-        prog = QString("%1").arg( _score.nFramesKept );
+        prog = QString("%1").arg( nFramesKept );
         if ( _score.lostFrames != 0 ) prog += QString("<font color=\"red\">(%1)</font>").arg( _score.lostFrames );
         prog += QString("/%1").arg( nTriggers );
     } else {
@@ -107,22 +112,13 @@ void QCstmGLVisualization::refreshScoringInfo()
     }
     ui->frameCntr->setText( prog );
 
-    // Fps
-    fps_update(_score.nFramesReceived);
-
-    //
+    // FPS
+    fps_update(int(_score.nFramesReceived));
     BuildStatsStringLostFrames( _score.lostFrames );
-
-    //
     BuildStatsStringLostPackets( _score.lostPackets );
-
-    //
     BuildStatsString();
 
-    //qDebug() << "ref .. " << _score.nFramesReceived;
-
-    // Network comsuption
-
+    // Network consumption?
 }
 
 void QCstmGLVisualization::drawFrameImage()
@@ -956,13 +952,12 @@ void QCstmGLVisualization::fps_update(int nframes_done) {
     if ( ! _dataTakingThread->isRunning() ) return;
     if (! _etatimer) return;
 
-    double fpsVal = ((double)nframes_done) / ((double)_etatimer->elapsed() / 1000.); // elapsed() comes in milliseconds
+    double fpsVal = (double(nframes_done)) / (double(_etatimer->elapsed()) / 1000.); // elapsed() comes in milliseconds
 
     QString fpsS = QString::number( round( fpsVal ) , 'd', 0 );
-    fpsS += " fps";
+    fpsS += " FPS";
 
     ui->fpsLabel->setText( fpsS );
-
 }
 
 void QCstmGLVisualization::overflow_update(int ovf_cntr) {
@@ -1316,19 +1311,19 @@ void QCstmGLVisualization::on_scoring(int nFramesReceived,
                                       int mpx3clock_stops,
                                       bool dataMisaligned) {
 
-    _score.nFramesReceived = nFramesReceived;
-    _score.nFramesKept = nFramesKept;
-    _score.lostFrames = lostFrames;
-    _score.lostPackets = lostPackets;
-    _score.framesCount = framesCount;
-    _score.mpx3clock_stops = mpx3clock_stops;
-    _score.dataMisaligned = dataMisaligned;
+    _score.nFramesReceived = uint( nFramesReceived );
+    _score.nFramesKept = uint( nFramesKept );
+    _score.lostFrames = uint( lostFrames );
+    _score.lostPackets = uint( lostPackets );
+    _score.framesCount = uint( framesCount );
+    _score.mpx3clock_stops = uint( mpx3clock_stops );
+    _score.dataMisaligned = uint( dataMisaligned );
 
 }
 
 void QCstmGLVisualization::progress_signal(int framecntr) {
 
-    _score.nFramesReceived = framecntr;
+    _score.nFramesReceived = uint( framecntr );
 
     /*
     // framecntr: frames kept
