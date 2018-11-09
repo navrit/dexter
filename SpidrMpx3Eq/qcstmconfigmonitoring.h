@@ -118,6 +118,8 @@ private:
 
     bool _saveConfigFileRemotely = false;
     QString _conigFileDestination = " ";
+
+    bool _isDeveloperMode = false;
 };
 
 #endif // QCSTMCONFIGMONITORING_H

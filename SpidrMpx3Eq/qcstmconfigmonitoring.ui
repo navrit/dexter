@@ -826,7 +826,6 @@ Affects FBK DAC, see manual</string>
        <zorder>label_logLevel</zorder>
        <zorder>logLevelSpinner</zorder>
        <zorder>label_timeUnits</zorder>
-       <zorder></zorder>
        <zorder>label_20</zorder>
        <zorder>biasVoltageSpinner</zorder>
        <zorder>label_7</zorder>

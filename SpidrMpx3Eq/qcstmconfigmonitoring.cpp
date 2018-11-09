@@ -322,6 +322,8 @@ void QCstmConfigMonitoring::when_idling_gui()
 void QCstmConfigMonitoring::developerMode(bool enabled)
 {
     if (enabled) {
+        _isDeveloperMode = true;
+
         //! Enable a bunch of 'advanced' buttons
         ui->readOMRPushButton->show();
         ui->logLevelSpinner->show();
@@ -339,6 +341,8 @@ void QCstmConfigMonitoring::developerMode(bool enabled)
         ui->merlinInterfaceLineEdit->show();
         ui->merlinInterfaceTestButton->show();
     } else {
+        _isDeveloperMode = false;
+
         //! Disable a bunch of 'advanced' buttons
         ui->readOMRPushButton->hide();
         ui->logLevelSpinner->hide();
@@ -652,13 +656,44 @@ int QCstmConfigMonitoring::getTriggerModeIndex() {
 void QCstmConfigMonitoring::setCsmSpmByIndex(int newValIndx)
 {
     _mpx3gui->getConfig()->setCsmSpm(int(__csmSpmMap[std::size_t(newValIndx)]));
+
+    int idx_off = ui->csmSpmCombo->findText("OFF");
+    int idx_on = ui->csmSpmCombo->findText("ON");
+
+    if (_isDeveloperMode) {
+        /* FREEDOM!!! */
+        /* Make sure it's visible and enabled. */
+        /* The user gets to choose if they want to turn it off now */
+        /* Do not change the checked state */
+
+        ui->readBothCountersCheckBox->show();
+        ui->readBothCountersCheckBox->setEnabled(true);
+    } else {
+        /* Make sure it's visible and enabled. */
+        /* The user is assumed not to know everything */
+        /* So, double counter readout is automatically checked based on if it should be on or off */
+
+        ui->readBothCountersCheckBox->show();
+        ui->readBothCountersCheckBox->setEnabled(true);
+        if (newValIndx == idx_off) {
+            /* CSM = OFF */
+            ui->readBothCountersCheckBox->setChecked(false);
+        } else if (newValIndx == idx_on) {
+            /* CSM = ON */
+            ui->readBothCountersCheckBox->setChecked(true);
+        } else {
+            qDebug() << "[ERROR]\tWTF happened here, OFF or ON isn't in the csmSpmCombo box???";
+        }
+    }
+
+    return;
 }
 
 void QCstmConfigMonitoring::csmSpmChangedByValue(int val)
 {
-    int sizea = __csmSpmMap.size();
-    for ( int i = 0 ; i < sizea ; i++ ) {
-        if ( __csmSpmMap[i] == val ) {
+    int sizea = int(__csmSpmMap.size());
+    for ( int i = 0; i < sizea; i++ ) {
+        if ( __csmSpmMap[i] == val) {
             ui->csmSpmCombo->setCurrentIndex( i );
             return;
         }
