@@ -101,6 +101,10 @@ void QCstmGLVisualization::refreshScoringInfo()
     if ( _mpx3gui->getConfig()->getReadBothCounters() ) {
         nFramesKept /= 2;
     }
+    /* Not necessary to do this, nFramesKept is not modified in DataTakingThread for colour mode
+     * if ( _mpx3gui->getConfig()->getColourMode() ) {
+     *    nFramesKept /= 4;
+    }*/
 
     if ( nTriggers > 0 ) {
         prog = QString("%1").arg( nFramesKept );
@@ -681,7 +685,6 @@ void QCstmGLVisualization::ArmAndStartTimer(){
     _timer->start( __display_eta_granularity );
     // and start the elapsed timer
     _etatimer->start();
-
 }
 
 void QCstmGLVisualization::DestroyTimer() {
@@ -695,7 +698,6 @@ void QCstmGLVisualization::DestroyTimer() {
     _timer = nullptr;
     if( _etatimer ) delete _etatimer;
     _etatimer = nullptr;
-
 }
 
 void QCstmGLVisualization::SeparateThresholds(int * data, int /*size*/, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int /*sizeReduced*/) {

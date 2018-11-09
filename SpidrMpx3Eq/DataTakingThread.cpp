@@ -138,7 +138,9 @@ void DataTakingThread::run() {
     int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0, lostPackets = 0;
     bool emergencyStop = false;
     bool bothCounters = false;
-    int totalFramesExpected = 0;
+    /* Not necessary to track if it's colour mode of not
+     * bool colourMode = false;
+     */
     uint64_t cntrLH = 0; //! Odd is Counter Low, even is Counter High
 
     uint halfSemaphoreSize = 0;
