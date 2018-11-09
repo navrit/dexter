@@ -18,7 +18,6 @@
 #include <qcustomplot.h>
 
 using namespace std;
-class Mpx3Config;
 
 #include "dataset.h"
 #include "gradient.h"

@@ -23,7 +23,6 @@
 
 using namespace std;
 
-#define 	__nDACs_MPX3RX		27
 #define		__default_DACs_filename "mpx3_defaultDACs.json"
 #define		__N_RETRY_ORIGINAL_SETTING	3
 
@@ -44,7 +43,7 @@ class ModuleConnection;
 
 namespace Ui {
 class QCstmDacs;
-}
+} // namespace Ui
 
 class QCstmDacs : public QWidget {
 
@@ -53,7 +52,7 @@ class QCstmDacs : public QWidget {
 public:
 
     explicit QCstmDacs(QWidget *parent = nullptr);
-    ~QCstmDacs();
+    ~QCstmDacs() override;
     void PopulateDACValues();
     UpdateDACsThread * FillDACValues(int devId = -1, bool updateInTheChip = true);
 
@@ -116,7 +115,7 @@ private:
     // Scan
     int _scanStep;
     // Current device Id
-    int _deviceIndex;
+    uint _deviceIndex;
     // Samples
     int _nSamples;
     // Simultaneous settings
@@ -154,7 +153,6 @@ private slots:
     void addData(int, int, double);
     void addData(int);
     void scanFinished();
-    void updateFinished();
     void slideAndSpin(int, int);
     void openWriteMenu();
     void ConnectionStatusChanged(bool);
@@ -177,7 +175,7 @@ private:
     // IP source address (SPIDR network interface)
     int _srcAddr;
 
-    void run();
+    void run() override;
 
 signals:
 
@@ -185,7 +183,6 @@ signals:
     //  widgets in the ui
     void progress(int);
     void fillText(QString);
-
 };
 
 class ScanDACsThread : public QThread {
@@ -204,7 +201,7 @@ private:
     // IP source address (SPIDR network interface)
     int _srcAddr;
 
-    void run();
+    void run() override;
 
 signals:
 
@@ -217,7 +214,6 @@ signals:
     void addData(int);
     void scanFinished();
     void slideAndSpin(int, int);
-
 };
 
 
@@ -228,7 +224,7 @@ class UpdateDACsThread : public QThread {
 public:
 
     explicit UpdateDACsThread (int devIndx, int nDACConfigsAvailable, QCstmDacs * dacs, SpidrController * sc);
-    void SetUpdateInTheChip(bool f) { _updateInTheChip = f; } //<! true = send to the chip, false = only update guy
+    void SetUpdateInTheChip(bool f) { _updateInTheChip = f; } /* true = send to the chip, false = only update guy */
 
 private:
 
@@ -236,21 +232,17 @@ private:
     QCstmDacs * _dacs = nullptr;
     int _deviceIndex;
     int _nDACConfigsAvailable;
-    // IP source address (SPIDR network interface)
-    int _srcAddr;
+    int _srcAddr; /* IP source address (SPIDR network interface) */
     bool _updateInTheChip;
 
-    void run();
+    void run() override;
 
 signals:
 
-    // These are used in the parent class as a signal to thread-safe feed
-    //  widgets in the ui
+    // These are used in the parent class as a signal to thread-safe feed widgets in the ui
     void updateFinished();
     void slideAndSpin(int, int);
-
 };
 
 
 #endif
-

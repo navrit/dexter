@@ -6,7 +6,7 @@
 int main(int argc, char *argv[])
 {
 
-    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling); // DPI support
+    //QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling); // DPI support
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps); // HiDPI pixmaps
     qputenv("QT_SCALE_FACTOR", "1"); // Must be >=1
 
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 
     QSurfaceFormat format;
     format.setDepthBufferSize(24);
-    format.setVersion(3, 3 );
+    format.setVersion(3, 3);
     QSurfaceFormat::setDefaultFormat(format);
 
     //! Instantiate the main class
