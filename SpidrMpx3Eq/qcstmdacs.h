@@ -21,6 +21,7 @@
 #include <iostream>
 #include <fstream>
 
+
 using namespace std;
 
 #define 	__nDACs_MPX3RX		27
@@ -131,6 +132,8 @@ private:
     QSignalMapper * _signalMapperSlider;
     QSignalMapper * _signalMapperSpinBox;
 
+
+
 public slots:
     void shortcutTH0();
     void shortcutIkrum();
@@ -158,6 +161,11 @@ private slots:
     void slideAndSpin(int, int);
     void openWriteMenu();
     void ConnectionStatusChanged(bool);
+    void sendThresholdToDac(void);
+
+
+
+
 
 };
 

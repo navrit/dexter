@@ -554,6 +554,13 @@
          </property>
         </spacer>
        </item>
+       <item row="15" column="1">
+        <widget class="QPushButton" name="updateThresholdsPushButton">
+         <property name="text">
+          <string>UpdateThresholds</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>

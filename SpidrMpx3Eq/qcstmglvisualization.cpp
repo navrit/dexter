@@ -70,6 +70,8 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     developerMode(false);
     qCstmGLVisualizationInst = this;
    // connect(this,SIGNAL(infDataTakingToggeled(bool)),this->ui->infDataTakingCheckBox,SLOT(setChecked(bool)));
+    //_initializeThresholdsVector();
+    QTimer::singleShot(0, this, SLOT(_initializeThresholdsVector()));
 
 }
 
@@ -80,6 +82,21 @@ QCstmGLVisualization::~QCstmGLVisualization() {
 QCstmGLVisualization *QCstmGLVisualization::getInstance()
 {
     return qCstmGLVisualizationInst;
+}
+
+void QCstmGLVisualization::setThresholdsVector(int chipId, int idx, int value)
+{
+    if(chipId >=0 && chipId < NUMBER_OF_CHIPS && idx >=0 && idx < 8)
+        _thresholsdVector[chipId][idx] = value;
+}
+
+void QCstmGLVisualization::clearThresholdsVector()
+{
+    for (int chip = 0; chip < NUMBER_OF_CHIPS; ++chip) {
+        for (int idx = 0; idx < 8; ++idx) {
+            _thresholsdVector[chip][idx] = 0;
+        }
+    }
 }
 
 void QCstmGLVisualization::timerEvent(QTimerEvent *)
@@ -322,6 +339,8 @@ void QCstmGLVisualization::saveImage(QString filename, QString corrMethod)
 
 void QCstmGLVisualization::StartDataTaking(QString mode) {
 
+
+
     if (mode == "CT") {
         runningCT = true;
     } else if (mode == "THScan") {
@@ -351,7 +370,7 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
     }
 
     if ( ! _takingData ) { // new data
-
+         _loadFromThresholdsVector();
         _takingData = true;
 
         // ETA
@@ -2354,9 +2373,20 @@ void QCstmGLVisualization::on_testBtn_clicked()
     qDebug () << "SlOPE 2 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(2);
     qDebug () << "SlOPE 3 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(3);
     qDebug () << "Trigger Mode: " << Mpx3GUI::getInstance()->getConfig()->getTriggerMode();
-    QList<int> th = _mpx3gui->getDataset()->getThresholds();
-    for (int i = 0; i < th.size(); ++i) {
-        qDebug() << "th ["<<i<<"] is :"<<th.at(i);
+
+    for (int chip = 0; chip < 4; chip++) {
+        for (int idx = 0; idx < 8; idx++) {
+            int val = 0;
+            _mpx3gui->GetSpidrController()->getDac(chip,idx+1,&val);
+            qDebug() << "Chip ["<<chip<<"] ... Threshold ["<<idx<<"] : "<< val;
+        }
+    }
+
+    for (int chip = 0; chip < 4; chip++) {
+        for (int idx = 0; idx < 8; idx++) {
+            _thresholsdVector[chip][idx];
+            qDebug() << "[Matrix] : Chip ["<<chip<<"] ... Threshold ["<<idx<<"] : "<< _thresholsdVector[chip][idx];;
+        }
     }
 
     //Mpx3GUI::getInstance()->getConfig()->setInhibitShutter(true);
@@ -2468,6 +2498,27 @@ bool QCstmGLVisualization::requestToSetSavePath(QString path)
     }
 
     return true;
+}
+
+void QCstmGLVisualization::_loadFromThresholdsVector()
+{
+    for (int chipId = 0; chipId < NUMBER_OF_CHIPS; ++chipId) {
+        for (int idx = 0; idx < 9; ++idx) {
+            _mpx3gui->GetSpidrController()->setDac(chipId,idx+1,_thresholsdVector[chipId][idx]);
+
+        }
+    }
+}
+
+void QCstmGLVisualization::_initializeThresholdsVector()
+{
+    for (int chip = 0; chip < NUMBER_OF_CHIPS; ++chip) {
+        for (int idx = 0; idx < 8; ++idx) {
+            _thresholsdVector[chip][idx] = _mpx3gui->getConfig()->getDACValue(chip,idx);
+        }
+    }
+
+
 }
 
 void QCstmGLVisualization::onEqualizationPathExported(QString path)

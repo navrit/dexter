@@ -30,6 +30,8 @@
 
 #include "ui_thresholdscan.h"
 
+#include "qcstmglvisualization.h"
+
 QCstmDacs *qCstmDacsInst = nullptr;
 
 QCstmDacs::QCstmDacs(QWidget *parent) :
@@ -104,6 +106,7 @@ QCstmDacs::QCstmDacs(QWidget *parent) :
     // The labels:
     ui->plotScan->xAxis->setLabel("DAC setting");
     ui->plotScan->yAxis->setLabel("DAC out [V]");
+    connect(ui->updateThresholdsPushButton,SIGNAL(released()),this,SLOT(sendThresholdToDac()));
     qCstmDacsInst = this;
 }
 
@@ -170,6 +173,8 @@ void QCstmDacs::changeDAC(int threshold, int value)
 {
     slideAndSpin(threshold, value);
 }
+
+
 
 UpdateDACsThread * QCstmDacs::FillDACValues( int devId, bool updateInTheChip ) {
 
@@ -256,6 +261,25 @@ void QCstmDacs::ConnectionStatusChanged(bool conn) {
     if ( conn ) PopulateDACValues();
 
 }
+
+void QCstmDacs::sendThresholdToDac()
+{
+    if(ui->allDACSimultaneousCheckBox->isChecked()){
+        for (int chipId = 0; chipId < NUMBER_OF_CHIPS; ++chipId) {
+            for (int idx = 0; idx < 8; ++idx) {
+               QCstmGLVisualization::getInstance()->setThresholdsVector(chipId,idx,_dacSpinBoxes[idx]->value());
+            }
+        }
+
+        return;
+    }
+    for (int idx = 0; idx < 8; ++idx) {
+         QCstmGLVisualization::getInstance()->setThresholdsVector(ui->deviceIdSpinBox->value(),idx,_dacSpinBoxes[idx]->value());
+    }
+
+}
+
+
 
 void QCstmDacs::SenseDACs() {
 
