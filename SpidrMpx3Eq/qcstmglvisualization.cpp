@@ -913,25 +913,32 @@ void QCstmGLVisualization::triggerLength_edit() {
          == Mpx3Config::__operationMode_SequentialRW ) {
         // triggerLength
         _mpx3gui->getConfigMonitoring()->getUI()->triggerLengthSpinner->setValue(
-                    ui->triggerLengthSpinBox->value()
-                    );
+                    ui->triggerLengthSpinBox->value());
         // Send the new config
         _mpx3gui->getConfig()->setTriggerLength(
-                    ui->triggerLengthSpinBox->value()
-                    );
+                    ui->triggerLengthSpinBox->value());
 
     } else if ( _mpx3gui->getConfig()->getOperationMode()
                 == Mpx3Config::__operationMode_ContinuousRW )  {
-        // contRWFreq
-        _mpx3gui->getConfigMonitoring()->getUI()->contRWFreq->setValue(
-                    ui->triggerLengthSpinBox->value()
-                    );
-        // send the new config --> contRWFreq
-        _mpx3gui->getConfig()->setContRWFreq(
-                    ui->triggerLengthSpinBox->value()
-                    );
-    }
 
+        int pixelDepth = _mpx3gui->getConfig()->getPixelDepth();
+        if (pixelDepth == 1) {
+            setMaximumContRW_FPS(__maximumFPS_1_bit);
+        } else if (pixelDepth == 6) {
+            setMaximumContRW_FPS(__maximumFPS_6_bit);
+        } else if (pixelDepth == 12) {
+            setMaximumContRW_FPS(__maximumFPS_12_bit);
+        } else if (pixelDepth == 24) {
+            setMaximumContRW_FPS(__maximumFPS_24_bit);
+        } else {
+            setMaximumContRW_FPS(-1);
+        }
+
+        /* Send the new config --> contRWFreq */
+        _mpx3gui->getConfigMonitoring()->getUI()->contRWFreq->setValue(
+                    ui->triggerLengthSpinBox->value());
+        _mpx3gui->getConfig()->setContRWFreq( ui->triggerLengthSpinBox->value() );
+    }
 }
 
 void QCstmGLVisualization::startupActions()
@@ -2465,6 +2472,19 @@ bool QCstmGLVisualization::requestToSetSavePath(QString path)
     }
 
     return true;
+}
+
+void QCstmGLVisualization::setMaximumContRW_FPS(int FPS)
+{
+    if (FPS == -1) {
+        ui->triggerLengthSpinBox->setMaximum(int(0x7fffffff));
+        return;
+    } else if (_mpx3gui->getConfig()->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW) {
+        ui->triggerLengthSpinBox->setMaximum(FPS);
+        if (ui->triggerLengthSpinBox->value() > FPS) {
+            ui->triggerLengthSpinBox->setValue(FPS);
+        }
+    }
 }
 
 void QCstmGLVisualization::onEqualizationPathExported(QString path)

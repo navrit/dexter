@@ -99,6 +99,8 @@ private slots:
     void on_merlinInterfaceTestButton_clicked();
 
     void setContRWFreqFromConfig(int val);
+    void setMaximumFPSinVisualiation();
+
     void hideLabels();
 
 private:
@@ -116,6 +118,8 @@ private:
 
     bool _saveConfigFileRemotely = false;
     QString _conigFileDestination = " ";
+
+    void setMaximumFPSFromPixelDepth(int idx=-1, int val=-1);
 
     bool _isDeveloperMode = false;
 };

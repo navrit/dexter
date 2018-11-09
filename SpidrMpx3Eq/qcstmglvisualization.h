@@ -133,6 +133,7 @@ public:
     void onPixelsMasked(int devID, QSet<int> pixelSet);
     bool requestToSetSavePath(QString path);
 
+    void setMaximumContRW_FPS(int FPS);
 
 private:
 
