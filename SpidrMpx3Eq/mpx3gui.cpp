@@ -1479,7 +1479,7 @@ void Mpx3GUI::on_actionConnect_triggered() {
     // The connection status signal will be sent from establish_connection
     if ( establish_connection() ) {
         emit sig_statusBarAppend( "Connected", "green" );
-        loadLastConfiguration();
+        //loadLastConfiguration();
     } else {
         emit sig_statusBarAppend( "Connection failed", "red" );
     }
@@ -1649,6 +1649,6 @@ void Mpx3GUI::autoConnectToDetector()
     on_actionConnect_triggered();
     if(GetSpidrController() != nullptr && GetSpidrController()->isConnected()){
         connect(getEqualization(), SIGNAL(equalizationPathExported(QString)), this, SLOT(onEqualizationPathExported(QString)));
-        _loadEqualizationFromGeneralSettings();
+        //_loadEqualizationFromGeneralSettings();
     }
 }
