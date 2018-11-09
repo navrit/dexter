@@ -1195,7 +1195,7 @@ void QCstmGLVisualization::user_accepted_profile()
 
 void QCstmGLVisualization::OperationModeSwitched(int indx)
 {
-    // Swith the triggerLengthSpinBox into ContRWFreq if in ContinuousRW mode
+    // Switch the triggerLengthSpinBox into ContRWFreq if in ContinuousRW mode
     if ( indx == Mpx3Config::__operationMode_SequentialRW ) {
 
         ui->triggerLengthSpinBoxLabel->setText( "Length" );

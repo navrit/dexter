@@ -24,9 +24,6 @@ class Mpx3GUI;
 
 #define __efuse_Nnibbles 8
 
-//#define __operationMode_SequentialRW  0
-//#define __operationMode_ContinuousRW  1
-
 class Mpx3Config : public QObject {
 
     Q_OBJECT
@@ -61,7 +58,6 @@ public:
         __colourMode,
         __decodeFrames,
         __logLevel,
-
 
         __maxPacketSize,
 
@@ -155,7 +151,7 @@ public:
     QString getPolarityString() {
         return QString(Polarity ? "Positive" : "Negative");
     }
-    int getCsmSpm(){return CsmSpm;  }
+    int getCsmSpm(){return CsmSpm;}
     int getGainMode(){return GainMode;}
     QString getGainModeString() {
         QString modes[] = {"SHGM", "HGM", "LGM", "SLGM"};       // in the right order, read the manual carefully...

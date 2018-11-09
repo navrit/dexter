@@ -3,9 +3,7 @@
 
 #include <QWidget>
 #include "mpx3gui.h"
-
 #include <QtWidgets>
-//server
 
 #define __nwords_OMR 6
 #define __nbits_OMR 48 // 6 words of 8 bits

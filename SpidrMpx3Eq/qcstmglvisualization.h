@@ -133,8 +133,6 @@ public:
     void onPixelsMasked(int devID, QSet<int> pixelSet);
     bool requestToSetSavePath(QString path);
 
-    //! Should this remain?
-    //void setInfDataTaking(bool val){_infDataTaking = val; emit infDataTakingToggled(_infDataTaking);}
 
 private:
 

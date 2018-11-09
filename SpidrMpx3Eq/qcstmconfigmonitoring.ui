@@ -1334,7 +1334,7 @@ Affects FBK DAC, see manual</string>
            <string> Hz</string>
           </property>
           <property name="maximum">
-           <number>2000</number>
+           <number>24414</number>
           </property>
          </widget>
         </item>
@@ -1641,7 +1641,6 @@ color: rgb(255, 255, 255);
        <zorder>verticalSpacer_2</zorder>
        <zorder>decodeFramesCheckbox</zorder>
        <zorder>ColourModeCheckBox</zorder>
-       <zorder></zorder>
        <zorder>readBothCountersCheckBox</zorder>
        <zorder>inhibitShutterCheckBox</zorder>
        <zorder>merlinInterfaceTestButton</zorder>
