@@ -2,7 +2,6 @@
 #include <QDebug>
 #include <QTime>
 #include "handlerfunctions.h"
-//#include "qcstmconfigmonitoring.h"
 #include "qcstmglvisualization.h"
 #include "qcstmdacs.h"
 #include "thresholdscan.h"
@@ -11,7 +10,7 @@
 #include "dataconsumerthread.h"
 #include "qcstmequalization.h"
 
-
+//#include <QTimer> // For the test function
 
 CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
 {
@@ -22,7 +21,6 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestForAutoSave(bool)),visualisation,SLOT(onRequestForAutoSaveFromServer(bool)));
     connect(this,SIGNAL(requestForSettingSavePath(QString)),visualisation,SLOT(onRequestForSettingPathFromServer(QString)));
     connect(visualisation,SIGNAL(someCommandHasFinished_Successfully()),this,SLOT(on_someCommandHasFinished_Successfully()));
-    //    connect(this,SIGNAL(requestForSettingSaveTag(int)),visualisation,SLOT(onRequestForSettingFormatFromServer(int)));
     connect(this,SIGNAL(requestToMaskPixelRemotely(int,int)),visualisation,SLOT(onRequestToMaskPixelRemotely(int,int)));
     connect(this,SIGNAL(requestToUnmaskPixelRemotely(int,int)),visualisation,SLOT(onRequestToUnmaskPixelRemotely(int,int)));
     connect(this,SIGNAL(requestToLoadEqualizationRemotely(QString)),getGui(),SLOT(loadEqualisationFromPathRemotely(QString)));
@@ -32,6 +30,8 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestToLoadConfigRemotely(QString)),getGui(),SLOT(load_config_remotely(QString)));
     connect(this,SIGNAL(requestToSaveConfigRemotely(QString)),QCstmConfigMonitoring::getInstance(),SLOT(saveConfigFileRemotely(QString)));
     initializeCmdTable();
+
+    //QTimer::singleShot(10000, this, SLOT(testSetThreshold_idx_val_chipId())); // Test function to show setting thresholds does work
 }
 
 Mpx3GUI* CommandHandler::getGui() {
@@ -242,8 +242,6 @@ void Command::setError(ERROR_TYPE et)
     _error = et;
 }
 
-
-
 void CommandHandler::startLiveCamera(bool takingDataFlag)
 {
     //emit requestForInfDataTracking(true);
@@ -277,6 +275,9 @@ int CommandHandler::setThreshold(int idx, int val)
         QCstmDacs::getInstance()->GetCheckBoxList()[idx]->setChecked(true);
         QCstmDacs::getInstance()->GetSpinBoxList()[idx]->setValue(val);
         QCstmDacs::getInstance()->getAllDACSimultaneousCheckBox()->setChecked(true);
+
+        qApp->processEvents(); /* The GUI won't process events if they all occur in a very short timescale unless you make it */
+
         return NO_ERROR;
     }
     return UNKNOWN_ERROR;
@@ -288,24 +289,32 @@ int CommandHandler::setThreshold(int idx, int val, int chipId)
         // Update gui
         QCstmDacs::getInstance()->getAllDACSimultaneousCheckBox()->setChecked(false);
         QCstmDacs::getInstance()->getDeviceIdSpinBox()->setValue(chipId);
-
         QCstmDacs::getInstance()->GetCheckBoxList()[idx]->setChecked(true);
         QCstmDacs::getInstance()->GetSpinBoxList()[idx]->setValue(val);
 
-        // TODO Update the GUI from the config here
-
-        // Set Actual dac
+        // Set actual DAC
         QCstmGLVisualization::getInstance()->setThresholdsVector(chipId,idx,val);
+
+        qApp->processEvents(); /* The GUI won't process events if they all occur in a very short timescale unless you make it */
 
         return NO_ERROR;
     }
     return UNKNOWN_ERROR;
 }
 
+void CommandHandler::testSetThreshold_idx_val_chipId() {
+    setThreshold(0, 1, 0);
+    setThreshold(0, 2, 0);
+    setThreshold(0, 3, 1);
+    setThreshold(0, 4, 1);
+    setThreshold(0, 5, 1);
+    setThreshold(0, 6, 0);
+}
+
 int CommandHandler::getThreshold(int idx)
 {
-    if(idx >= 0 && idx <= 7){
-        if(QCstmDacs::getInstance()->GetCheckBoxList()[idx]->isChecked())
+    if (idx >= 0 && idx <= 7){
+        if (QCstmDacs::getInstance()->GetCheckBoxList()[idx]->isChecked())
             return QCstmDacs::getInstance()->GetSpinBoxList()[idx]->value();
         return NO_ERROR;
     }
@@ -314,7 +323,7 @@ int CommandHandler::getThreshold(int idx)
 
 int CommandHandler::getThreshold(int idx,int chipId,int *val)
 {
-    if(idx >= 0 && idx <= 7 && chipId >= 0 && chipId < 4) {
+    if (idx >= 0 && idx <= 7 && chipId >= 0 && chipId < 4) {
          QCstmDacs::getInstance()->getAllDACSimultaneousCheckBox()->setChecked(false);
          QCstmDacs::getInstance()->getDeviceIdSpinBox()->setValue(chipId);
          *val = QCstmDacs::getInstance()->GetSpinBoxList()[idx]->value();
@@ -325,7 +334,7 @@ int CommandHandler::getThreshold(int idx,int chipId,int *val)
 
 int CommandHandler::setStartScan(int val)
 {
-    if(val < 0 || val > 511)
+    if (val < 0 || val > 511)
         return ARG_VAL_OUT_RANGE;
     thresholdScan::getInstance()->GetUI()->spinBox_minimum->setValue(val);
     return NO_ERROR;

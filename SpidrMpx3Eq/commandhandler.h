@@ -97,6 +97,8 @@ public slots:
     void on_doneWithOneFrame(int);
     void on_someCommandHasFinished_Successfully(void);
     void on_equalizationPathExported(QString path);
+
+    void testSetThreshold_idx_val_chipId(); /* Test function for set threshold */
 private:
     void initializeCmdTable(void);
     char* getTimeStamp();

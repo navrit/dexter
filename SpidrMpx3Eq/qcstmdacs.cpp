@@ -10,10 +10,8 @@
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QVector>
-//#include <QtWidgets>
 #include <QPen>
 #include <QSignalMapper>
-//#include <QVector>
 
 #include "qcstmdacs.h"
 #include "ui_qcstmdacs.h"
@@ -22,17 +20,12 @@
 #include "mpx3gui.h"
 
 #include "qcstmequalization.h"
-
 #include "SpidrController.h"
 #include "SpidrDaq.h"
-
 #include "qcustomplot.h"
-
 #include "ui_thresholdscan.h"
 
-#include "qcstmglvisualization.h"
-
-QCstmDacs *qCstmDacsInst = nullptr;
+static QCstmDacs *qCstmDacsInst = nullptr;
 
 QCstmDacs::QCstmDacs(QWidget *parent) :
     QWidget(parent),
@@ -40,7 +33,6 @@ QCstmDacs::QCstmDacs(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    //_ui = ui;
     _senseThread = nullptr;
     _scanThread = nullptr;
     _updateDACsThread = nullptr;
@@ -84,11 +76,7 @@ QCstmDacs::QCstmDacs(QWidget *parent) :
     ui->startScanButton->setDisabled( true );
     ui->senseDACsPushButton->setDisabled( true );
 
-
-
-    // Prepare plot
     // Prepare the plot
-    //ui->plotScan = new QCustomPlot();
     ui->plotScan->setLocale( QLocale(QLocale::English, QLocale::UnitedKingdom) );
     // The legend
     ui->plotScan->legend->setVisible( false ); // Nothing there yet...
@@ -120,7 +108,6 @@ void QCstmDacs::on_allDACSimultaneousCheckBox_toggled(bool checked) {
 
     if ( _dacsSimultaneous ) ui->deviceIdSpinBox->setDisabled( true );
     else  ui->deviceIdSpinBox->setEnabled( true );
-
 }
 
 int QCstmDacs::GetDACValueFromConfig(uint chip, int dacIndex) {
@@ -135,7 +122,7 @@ void QCstmDacs::StartDACScan() {
 
     int progress = ui->progressBar->value();
     if (progress > 0 && progress < 100) {
-        qDebug() << "[INFO] Scan running already, doing nothing";
+        qDebug() << "[INFO]\tScan running already, doing nothing";
         return;
     }
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
@@ -155,7 +142,6 @@ void QCstmDacs::StartDACScan() {
         if ( _scanThread->isRunning() ) {
             return;
         }
-        //disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
         delete _scanThread;
         _scanThread = nullptr;
     }
@@ -166,7 +152,6 @@ void QCstmDacs::StartDACScan() {
     connect( _scanThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
 
     _scanThread->start();
-
 }
 
 void QCstmDacs::changeDAC(int threshold, int value)
@@ -174,12 +159,7 @@ void QCstmDacs::changeDAC(int threshold, int value)
     slideAndSpin(threshold, value);
 }
 
-
 UpdateDACsThread * QCstmDacs::FillDACValues( int devId, bool updateInTheChip ) {
-
-
-    // Switch to this dev id
-    //ChangeDeviceIndex( devId );
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
@@ -188,7 +168,6 @@ UpdateDACsThread * QCstmDacs::FillDACValues( int devId, bool updateInTheChip ) {
         if ( _updateDACsThread->isRunning() ) {
             return nullptr;
         }
-        //disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
         delete _updateDACsThread;
         _updateDACsThread = nullptr;
     }
@@ -232,19 +211,15 @@ void QCstmDacs::PopulateDACValues() {
             return;
         }
         for (int i = 0 ; i < 1; i++) {
-
             spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[i].code, MPX3RX_DAC_TABLE[i].dflt );
             _dacSpinBoxes[i]->setValue( MPX3RX_DAC_TABLE[i].dflt );
             _dacSliders[i]->setValue( MPX3RX_DAC_TABLE[i].dflt );
-
         }
-
     }
 
     // do multiple or only one
     if(nChipsToSet > 1) FillDACValues(-1);
     else FillDACValues(lastIndexToSet);
-
 }
 
 void QCstmDacs::ConnectionStatusChanged(bool conn) {
@@ -258,27 +233,7 @@ void QCstmDacs::ConnectionStatusChanged(bool conn) {
 
     // Fill the DACs
     if ( conn ) PopulateDACValues();
-
 }
-
-void QCstmDacs::sendThresholdToDac()
-{
-    if(ui->allDACSimultaneousCheckBox->isChecked()){
-        for (int chipId = 0; chipId < NUMBER_OF_CHIPS; ++chipId) {
-            for (int idx = 0; idx < 8; ++idx) {
-               QCstmGLVisualization::getInstance()->setThresholdsVector(chipId,idx,_dacSpinBoxes[idx]->value());
-            }
-        }
-
-        return;
-    }
-    for (int idx = 0; idx < 8; ++idx) {
-         QCstmGLVisualization::getInstance()->setThresholdsVector(ui->deviceIdSpinBox->value(),idx,_dacSpinBoxes[idx]->value());
-    }
-
-}
-
-
 
 void QCstmDacs::SenseDACs() {
 
@@ -289,14 +244,12 @@ void QCstmDacs::SenseDACs() {
         return;
     }
 
-    // Threads
     if ( _senseThread ) {
         if ( _senseThread->isRunning() ) {
             return;
         }
-        //disconnect(_senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
         delete _senseThread;
-        _senseThread = 0x0;
+        _senseThread = nullptr;
     }
 
     // Create the thread
@@ -305,9 +258,7 @@ void QCstmDacs::SenseDACs() {
     connect( _senseThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
 
     _senseThread->start();
-
 }
-
 
 void QCstmDacs::FillWidgetVectors() {
 
@@ -464,7 +415,6 @@ void QCstmDacs::FillWidgetVectors() {
         _dacSpinBoxes[i]->setToolTip( tooltip );
         _dacSliders[i]->setToolTip( tooltip );
 
-        //
         QString tooltipLabel = "[";
         tooltipLabel += MPX3RX_DAC_TABLE[i].name;
         tooltipLabel += "] index:";
@@ -476,7 +426,6 @@ void QCstmDacs::FillWidgetVectors() {
 
         QString tooltipLabelV = "16bits AD conversion (V)";
         _dacVLabels[i]->setToolTip( tooltipLabelV );
-
     }
 
     // Text in the DAC labels
@@ -484,7 +433,6 @@ void QCstmDacs::FillWidgetVectors() {
         QString DACname = MPX3RX_DAC_TABLE[i].name;
         _dacLabels[i]->setText( DACname );
     }
-
 }
 
 void QCstmDacs::SetLimits() {
@@ -499,14 +447,12 @@ void QCstmDacs::SetLimits() {
         _dacSliders[i]->setMaximum( (MPX3RX_DAC_TABLE[i].dflt * 2) - 1 );
         // Check all for scan
         _dacCheckBoxes[i]->setChecked(true);
-
     }
 
     // Leave by default the THL2 o THL7 uncheked by default
     for (int i = 2 ; i <= 7 ; i++ ) {
         _dacCheckBoxes[i]->setChecked( false );
     }
-
 }
 
 void QCstmDacs::shortcutTH0()
@@ -527,7 +473,6 @@ void QCstmDacs::UncheckAllDACs() {
         // Deselect all
         _dacCheckBoxes[i]->setChecked( false );
     }
-
 }
 
 void QCstmDacs::CheckAllDACs() {
@@ -536,7 +481,6 @@ void QCstmDacs::CheckAllDACs() {
         // Check all for scan
         _dacCheckBoxes[i]->setChecked(true);
     }
-
 }
 
 void QCstmDacs::SetupSignalsAndSlots() {
@@ -561,8 +505,6 @@ void QCstmDacs::SetupSignalsAndSlots() {
 
         // Connect slides to Spin Boxes back and forth
         // When the sliders move the SpinBoxes actualizes
-        //QObject::connect( _dacSliders[i], SIGNAL(sliderMoved(int)),
-        //_dacSpinBoxes[i], SLOT(setValueDAC(int)) );
 
         QObject::connect( _dacSliders[i], SIGNAL(sliderMoved(int)),
                           _signalMapperSliderSpinBoxConn, SLOT(map()) );
@@ -584,7 +526,6 @@ void QCstmDacs::SetupSignalsAndSlots() {
 
         // map the index
         _signalMapperSpinBox->setMapping( _dacSpinBoxes[i], i );
-
     }
 
     QObject::connect( _signalMapperSliderSpinBoxConn,  SIGNAL(mapped(int)), this, SLOT(setValueDAC(int)) );
@@ -592,7 +533,6 @@ void QCstmDacs::SetupSignalsAndSlots() {
     QObject::connect( _signalMapperSlider, SIGNAL(mapped(int)), this, SLOT( FromSliderUpdateSpinBox(int) ) );
 
     QObject::connect( _signalMapperSpinBox, SIGNAL(mapped(int)), this, SLOT( FromSpinBoxUpdateSlider(int) ) ); // SLOT( UpdateSliders(int) ) );
-
 }
 
 /**
@@ -611,7 +551,6 @@ void QCstmDacs::setValueDAC(int i) {
 
     // Connect it back
     QObject::connect( _signalMapperSpinBox, SIGNAL(mapped(int)), this, SLOT( FromSpinBoxUpdateSlider(int) ) );
-
 }
 
 void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
@@ -623,46 +562,35 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
     // Set the slider according to the new value in the Spin Box
     _dacSliders[i]->setValue( val );
 
-
-    //////////////////////////////////////
     // Set DAC
     // If the setting is global apply it
     if ( _dacsSimultaneous ) {
-        for( int chip = 0 ; chip < _mpx3gui->getConfig()->getNDevicesSupported() ; chip++) {
+        for( uint chip = 0; chip < uint(_mpx3gui->getConfig()->getNDevicesSupported()); chip++) {
             // Check if the device is alive
-            if ( ! _mpx3gui->getConfig()->detectorResponds( chip ) ) {
-                qDebug() << "[ERR ] Device " << chip << " not responding.";
+            if ( ! _mpx3gui->getConfig()->detectorResponds(int(chip))) {
+                qDebug() << "[ERROR]\tDevice " << chip << " not responding.";
                 continue;
             }
-            spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[ i ].code, val );
+            spidrcontrol->setDac( int(chip), MPX3RX_DAC_TABLE[ i ].code, val );
 
             // Now I need to change it in the local data base
             SetDACValueLocalConfig( chip, i, val);
         }
     } else {
-        spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
+        spidrcontrol->setDac( int(_deviceIndex), MPX3RX_DAC_TABLE[ i ].code, val );
         // Now I need to chage it in the local data base
         SetDACValueLocalConfig( _deviceIndex, i, val);
     }
 
-    // Clean up the corresponding labelV.  The dacOut won't be read right away.
-    // Only under user request
-    //++i
-    //_dacVals[i] = val;
     GetLabelsList()[i]->setText("");
-
 }
 
 void QCstmDacs::FromSliderUpdateSpinBox(int i) {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
-    //
     int val = _dacSliders[ i ]->value();
-    // Set the spin box according to the new value in the Slider
-    //_dacSpinBoxes[i]->setValue( val );
 
-    //////////////////////////////////////
     // Set DAC
     // If the setting is global apply it
     if ( _dacsSimultaneous ) {
@@ -682,33 +610,17 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
         SetDACValueLocalConfig( _deviceIndex, i, val);
     }
 
-    // Set DAC
-    //spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
-
-
-    //++i
-    //_dacVals[i] = val;
-    // Clean up the corresponding labelV.  The dacOut won't be read right away.
     // Only under user request
     GetLabelsList()[i]->setText("");
 
 }
 
-//void QCstmDacs::SetDAC(QObject * info) {
-//	// Verify first if the value changed at all
-//	int val = _dacSpinBoxes[ ((SignalSlotMapping *)info)->index ]->value();
-//	_spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ ((SignalSlotMapping *)info)->index ].code, val );
-//}
-
-
 bool QCstmDacs::GetDACsFromConfiguration() {
 
     // See if there DAC information to work with
-
     if ( _mpx3gui->getConfig()->getDacCount() != 0 ) {
         return true;
     }
-
     return false;
 }
 
@@ -749,7 +661,6 @@ void QCstmDacs::ChangeDeviceIndex( int index )
 
     // if busy, don't update in the chip
     FillDACValues( index, !busy );
-
 }
 
 void QCstmDacs::ChangeNSamples( int index )
@@ -778,69 +689,38 @@ QSpinBox *QCstmDacs::getDeviceIdSpinBox()
     return ui->deviceIdSpinBox;
 }
 
-
 void QCstmDacs::setWindowWidgetsStatus(win_status s)
 {
-
     switch (s) {
-
     case win_status::startup:
-
         this->setEnabled( false );
         ui->startScanButton->setDisabled( true );
         ui->senseDACsPushButton->setDisabled( true );
-
         break;
 
     case win_status::connected:
         this->setEnabled( true );
         ui->startScanButton->setDisabled( false );
         ui->senseDACsPushButton->setDisabled( false );
-
         break;
 
     default:
-
         break;
-
     }
-
 }
-
 
 void QCstmDacs::scanFinished() {
-
     _plotIdxCntr = 0;
     _plotIdxMap.clear();
-
-    // clear plots
-    //ui->plotScan->clearGraphs();
-    //ui->plotScan->legend->setVisible( false );
-
 }
-
-void QCstmDacs::updateFinished() {
-
-    // What needs to be done when an update has been requested ?
-
-}
-
 
 void QCstmDacs::addData(int dacIdx, int dacVal, double adcVal ) {
-
     _graph = ui->plotScan->graph( _plotIdxMap[dacIdx] ); // the right vector index
     _graph->addData( dacVal, adcVal );
     ui->plotScan->replot();
-
-    // Actualize Slider, SpinBoxes, and Labels
-    //_dacSpinBoxes[dacIdx]->setValue( dacVal );
-    //_dacSliders[dacIdx]->setValue( dacVal );
-    // Labels are updated already through a SIGNAL/SLOT from the thread.
-
 }
 
 void QCstmDacs::setTextWithIdx(QString s, int i) {
-
     // Get the color from the Color table
     // Create the style sheet string
     QPalette palette = GetLabelsList()[i]->palette();
@@ -848,20 +728,14 @@ void QCstmDacs::setTextWithIdx(QString s, int i) {
     palette.setColor(GetLabelsList()[i]->foregroundRole(), COLOR_TABLE[i]);
 
     GetLabelsList()[i]->setPalette(palette);
-
-    // The StyleSheet is the crossplatform solution but I am not using it here
-    //GetLabelsList()[i]->setStyleSheet("QLabel { background-color : Qt::red; color : Qt::black; }");
-
     // Finally set the text
     GetLabelsList()[i]->setText(s);
-
 }
 
 /**
  * In case I have the dac code and I want to know to which slider/spinBox it corresponds
  */
 int QCstmDacs::GetDACIndex(int dac_code) {
-
     for(int i = 0 ; i < MPX3RX_DAC_COUNT ; i++) {
         if ( MPX3RX_DAC_TABLE[i].code == dac_code ) return i;
     }
@@ -869,7 +743,6 @@ int QCstmDacs::GetDACIndex(int dac_code) {
 }
 
 void QCstmDacs::slideAndSpin(int i, int val) {
-
     // // Temporarily disconnect the signal that triggers the message to the hardware
     QObject::disconnect( _signalMapperSpinBox, SIGNAL(mapped(int)), this, SLOT( FromSpinBoxUpdateSlider(int) ) );
 
@@ -877,12 +750,8 @@ void QCstmDacs::slideAndSpin(int i, int val) {
     GetSpinBoxList()[i]->setValue( val );
     GetSliderList()[i]->setValue( val );
 
-    // Also change the value in the local database
-
-
     // Connect it back
     QObject::connect( _signalMapperSpinBox, SIGNAL(mapped(int)), this, SLOT( FromSpinBoxUpdateSlider(int) ) );
-
 }
 
 void QCstmDacs::addData(int dacIdx) {
@@ -895,14 +764,9 @@ void QCstmDacs::addData(int dacIdx) {
     _graph = ui->plotScan->graph( _plotIdxMap[dacIdx] ); // the right vector index
 
     QPen pen( COLOR_TABLE[ dacIdx ] );
-    pen.setWidth( 0.1 );
+    pen.setWidth( 1 );
     _graph->setPen( pen );
     _graph->setName( QString(MPX3RX_DAC_TABLE[dacIdx].name) ); // the dac index
-
-    // Do not use legend.  I will color the text boxes instead.
-    //_graph->addToLegend();
-    //ui->plotScan->legend->setVisible( true );
-
 }
 
 SenseDACsThread::SenseDACsThread (int devIdx, QCstmDacs * dacs, SpidrController * sc) {
@@ -914,7 +778,6 @@ SenseDACsThread::SenseDACsThread (int devIdx, QCstmDacs * dacs, SpidrController 
     // Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
     if( _spidrcontrol ) { _spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
     else { _srcAddr = 0; }
-
 }
 
 ScanDACsThread::ScanDACsThread (int devIdx, QCstmDacs * dacs, SpidrController * sc) {
@@ -926,7 +789,6 @@ ScanDACsThread::ScanDACsThread (int devIdx, QCstmDacs * dacs, SpidrController * 
     // Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
     if( _spidrcontrol ) { _spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
     else { _srcAddr = 0; }
-
 }
 
 void SenseDACsThread::run() {
@@ -954,7 +816,6 @@ void SenseDACsThread::run() {
     }
 
     // Make it update the Tab so the drawing is smooth
-    //connect( this, SIGNAL( fillText(QString) ), _dacs->GetUI()->tabDACs, SLOT( update() ) );
     connect( this, SIGNAL( fillText(QString) ), _dacs, SLOT( update() ) );
 
     // Clean up Labels first
@@ -963,31 +824,21 @@ void SenseDACsThread::run() {
         connect( this, SIGNAL( fillText(QString) ), _dacs->GetLabelsList()[i], SLOT( setText(QString)) );
         fillText("");
         disconnect( this, SIGNAL( fillText(QString) ), _dacs->GetLabelsList()[i], SLOT( setText(QString)) );
-
     }
 
     int adc_val = 0;
-
     progress( 0 );
 
     for (int i = 0 ; i < MPX3RX_DAC_COUNT ; i++) {
 
         if ( ! _dacs->GetCheckBoxList()[i]->isChecked() ) continue;
-
         if ( !spidrcontrol->setSenseDac( _dacs->GetDeviceIndex(), MPX3RX_DAC_TABLE[i].code ) ) {
-
             qDebug() << "setSenseDac[" << i << "] | " << spidrcontrol->errorString().c_str();
-
         } else {
-
             adc_val = 0;
-
             if ( !spidrcontrol->getDacOut( _dacs->GetDeviceIndex(), &adc_val, _dacs->GetNSamples() ) ) {
-
                 qDebug() << "getDacOut : " << i << " | " << spidrcontrol->errorString().c_str();
-
             } else {
-
                 adc_val /= _dacs->GetNSamples();
                 QString dacOut;
                 if ( adc_val > __maxADCCounts || adc_val < 0 ) { // FIXME .. handle the clipping properly
@@ -1004,22 +855,12 @@ void SenseDACsThread::run() {
 
                 // Send signal to progress bar
                 progress( floor( ( (double)i / MPX3RX_DAC_COUNT) * 100 ) );
-                //cout << i << " --> " << adc_val << endl;
-
             }
-
         }
-
     }
 
     progress( 100 );
-
     disconnect( this, SIGNAL( fillText(QString) ), _dacs, SLOT( update() ) );
-
-    // Disconnect the progress bar
-    //disconnect( this, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
-
-
     delete spidrcontrol;
 }
 
@@ -1035,7 +876,6 @@ UpdateDACsThread::UpdateDACsThread (int devIdx, int nDACConfigsAvailable, QCstmD
     // Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
     if( _spidrcontrol ) { _spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
     else { _srcAddr = 0; }
-
 }
 
 void UpdateDACsThread::run(){
@@ -1051,9 +891,6 @@ void UpdateDACsThread::run(){
     }
 
     SpidrController * spidrcontrol = new SpidrController( ipaddr[3], ipaddr[2], ipaddr[1], ipaddr[0] );
-
-    // Ready to take action when the scan is done
-    connect( this, SIGNAL( updateFinished() ), _dacs, SLOT( updateFinished() ) );
 
     if ( !spidrcontrol || !spidrcontrol->isConnected() ) {
         qDebug() << "[ERROR]\tUpdateDACsThread --> Device not connected!";
@@ -1079,30 +916,16 @@ void UpdateDACsThread::run(){
         }
 
         for(int i = 0 ; i < MPX3RX_DAC_COUNT; i++) { // DACs
-
-            //cout << "chip " << chip << " | " << MPX3RX_DAC_TABLE[i].name
-            //     << " | " << _dacs->GetDACValueFromConfig(chip, i) << endl;
-
             // If requested to send to the chip
             if ( _updateInTheChip ) spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[i].code,  _dacs->GetDACValueFromConfig(chip, i) );
 
-            //Sleep(10);
             // Adjust the sliders and the SpinBoxes to the new value
             connect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
             slideAndSpin( i, _dacs->GetDACValueFromConfig(chip, i) );
             disconnect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
-
-            //_dacSpinBoxes[i]->setValue( _dacVals[i][chip] );
-            //_dacSliders[i]->setValue( _dacVals[i][chip] );
-
         }
     }
-    // Send signal
-    updateFinished();
 
-    disconnect( this, SIGNAL( updateFinished() ), _dacs, SLOT( updateFinished() ) );
-
-    // Get rid of this connection
     delete spidrcontrol;
 }
 

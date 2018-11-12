@@ -2366,12 +2366,14 @@ uint32 assembleData(uint8 a,uint8 b,uint8 c,uint8 d){
 
 void QCstmGLVisualization::on_testBtn_clicked()
 {
+
 //    for(int i = 0; i< 4; i++)
 //    {
 //    int val22 = 0;
 //    Mpx3GUI::getInstance()->GetSpidrController()->getDac(i,MPX3RX_DAC_TABLE[ 0 ].code,&val22);
 //    qDebug() << "value : " << val22;
 //    }
+
 
     qDebug () << "SlOPE 0 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(0);
     qDebug () << "SlOPE 1 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(1);
