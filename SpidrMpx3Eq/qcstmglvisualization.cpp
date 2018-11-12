@@ -88,6 +88,7 @@ void QCstmGLVisualization::setThresholdsVector(int chipId, int idx, int value)
 {
     if(chipId >=0 && chipId < NUMBER_OF_CHIPS && idx >=0 && idx < 8)
         _thresholsdVector[chipId][idx] = value;
+  _loadFromThresholdsVector();
 }
 
 void QCstmGLVisualization::clearThresholdsVector()
@@ -345,7 +346,7 @@ void QCstmGLVisualization::saveImage(QString filename, QString corrMethod)
 void QCstmGLVisualization::StartDataTaking(QString mode) {
 
 
-    _loadFromThresholdsVector();
+
     if (mode == "CT") {
         runningCT = true;
     } else if (mode == "THScan") {
