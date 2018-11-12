@@ -95,7 +95,15 @@ QCstmDacs::QCstmDacs(QWidget *parent) :
     // The labels:
     ui->plotScan->xAxis->setLabel("DAC setting");
     ui->plotScan->yAxis->setLabel("DAC out [V]");
-    connect(ui->updateThresholdsPushButton,SIGNAL(released()),this,SLOT(sendThresholdToDac()));
+    //connect(ui->updateThresholdsPushButton,SIGNAL(released()),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac0SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac1SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac2SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac3SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac4SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac5SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac6SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac7SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
     qCstmDacsInst = this;
 }
 
