@@ -324,9 +324,10 @@ int CommandHandler::getThreshold(int idx)
 int CommandHandler::getThreshold(int idx,int chipId,int *val)
 {
     if (idx >= 0 && idx <= 7 && chipId >= 0 && chipId < 4) {
-         QCstmDacs::getInstance()->getAllDACSimultaneousCheckBox()->setChecked(false);
-         QCstmDacs::getInstance()->getDeviceIdSpinBox()->setValue(chipId);
-         *val = QCstmDacs::getInstance()->GetSpinBoxList()[idx]->value();
+//         QCstmDacs::getInstance()->getAllDACSimultaneousCheckBox()->setChecked(false);
+//         QCstmDacs::getInstance()->getDeviceIdSpinBox()->setValue(chipId);
+//         *val = QCstmDacs::getInstance()->GetSpinBoxList()[idx]->value();
+        *val = QCstmGLVisualization::getInstance()->getThresholdVector(chipId,idx);
         return NO_ERROR;
     }
     return UNKNOWN_ERROR;

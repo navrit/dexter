@@ -65,6 +65,7 @@ public:
     static QCstmGLVisualization* getInstance();
 
     void setThresholdsVector(int chipId,int idx, int value);
+    int getThresholdVector(int chipId,int idx);
     void clearThresholdsVector(void);
     void timerEvent( QTimerEvent * );
     void refreshScoringInfo();
