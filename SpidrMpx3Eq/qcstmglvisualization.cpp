@@ -345,7 +345,7 @@ void QCstmGLVisualization::saveImage(QString filename, QString corrMethod)
 void QCstmGLVisualization::StartDataTaking(QString mode) {
 
 
-
+    _loadFromThresholdsVector();
     if (mode == "CT") {
         runningCT = true;
     } else if (mode == "THScan") {
@@ -375,7 +375,7 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
     }
 
     if ( ! _takingData ) { // new data
-         _loadFromThresholdsVector();
+
         _takingData = true;
 
         // ETA
