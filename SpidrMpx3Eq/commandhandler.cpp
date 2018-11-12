@@ -284,15 +284,19 @@ int CommandHandler::setThreshold(int idx, int val)
 
 int CommandHandler::setThreshold(int idx, int val, int chipId)
 {
-    if(idx >= 0 && idx <= 7 && chipId >= 0 && chipId < 4) {
-        //update gui
+    if (idx >= 0 && idx <= 7 && chipId >= 0 && chipId < 4) {
+        // Update gui
         QCstmDacs::getInstance()->getAllDACSimultaneousCheckBox()->setChecked(false);
         QCstmDacs::getInstance()->getDeviceIdSpinBox()->setValue(chipId);
+
         QCstmDacs::getInstance()->GetCheckBoxList()[idx]->setChecked(true);
         QCstmDacs::getInstance()->GetSpinBoxList()[idx]->setValue(val);
-        //set Actual dac
+
+        // TODO Update the GUI from the config here
+
+        // Set Actual dac
         QCstmGLVisualization::getInstance()->setThresholdsVector(chipId,idx,val);
-       // Mpx3GUI::getInstance()->GetSpidrController()->setDac(chipId,idx+1,val);
+
         return NO_ERROR;
     }
     return UNKNOWN_ERROR;

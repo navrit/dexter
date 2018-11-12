@@ -112,10 +112,20 @@ void QCstmGLVisualization::refreshScoringInfo()
     updateETA();
 
     // Progress
+    QString prog = "";
+
     int nTriggers = _mpx3gui->getConfig()->getNTriggers();
-    QString prog;
+    uint nFramesKept = _score.nFramesKept;
+    if ( _mpx3gui->getConfig()->getReadBothCounters() ) {
+        nFramesKept /= 2;
+    }
+    /* Not necessary to do this, nFramesKept is not modified in DataTakingThread for colour mode
+     * if ( _mpx3gui->getConfig()->getColourMode() ) {
+     *    nFramesKept /= 4;
+    }*/
+
     if ( nTriggers > 0 ) {
-        prog = QString("%1").arg( _score.nFramesKept );
+        prog = QString("%1").arg( nFramesKept );
         if ( _score.lostFrames != 0 ) prog += QString("<font color=\"red\">(%1)</font>").arg( _score.lostFrames );
         prog += QString("/%1").arg( nTriggers );
     } else {
@@ -124,10 +134,8 @@ void QCstmGLVisualization::refreshScoringInfo()
     }
     ui->frameCntr->setText( prog );
 
-    // Fps
-    fps_update(_score.nFramesReceived);
-
-    //
+    // FPS
+    fps_update(int(_score.nFramesReceived));
     BuildStatsStringLostFrames( _score.lostFrames );
 
     //
@@ -136,10 +144,7 @@ void QCstmGLVisualization::refreshScoringInfo()
     //
     BuildStatsString();
 
-    //qDebug() << "ref .. " << _score.nFramesReceived;
-
-    // Network comsuption
-
+    // Network consumption?
 }
 
 void QCstmGLVisualization::drawFrameImage()
@@ -2498,6 +2503,19 @@ bool QCstmGLVisualization::requestToSetSavePath(QString path)
     }
 
     return true;
+}
+
+void QCstmGLVisualization::setMaximumContRW_FPS(int FPS)
+{
+    if (FPS == -1) {
+        ui->triggerLengthSpinBox->setMaximum(int(0x7fffffff));
+        return;
+    } else if (_mpx3gui->getConfig()->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW) {
+        ui->triggerLengthSpinBox->setMaximum(FPS);
+        if (ui->triggerLengthSpinBox->value() > FPS) {
+            ui->triggerLengthSpinBox->setValue(FPS);
+        }
+    }
 }
 
 void QCstmGLVisualization::_loadFromThresholdsVector()

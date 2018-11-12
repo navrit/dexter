@@ -415,17 +415,12 @@ void QCstmConfigMonitoring::shortcutCSMOn()
 void QCstmConfigMonitoring::ConnectionStatusChanged(bool conn) {
 
     if ( conn ) {
-
         setWindowWidgetsStatus( win_status::connected );
-
         ui->readOMRPushButton->setEnabled(true);
 
-
     } else {
-
         setWindowWidgetsStatus( win_status::disconnected );
         ui->readOMRPushButton->setEnabled(false);
-
     }
 }
 
@@ -443,16 +438,14 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
             SLOT(setValue(int)));
 
     // contRW
-    connect(ui->contRWFreq, SIGNAL( valueChanged(int) ), this, SLOT( ContRWFreqEdited() ) );
-    connect(config, SIGNAL(ContRWFreqChanged(int)), ui->contRWFreq, SLOT(setValue(int)));
-    connect(ui->contRWFreq, SIGNAL(valueChanged(int)), this, SLOT(setContRWFreqFromConfig(int)));
+    connect(config, SIGNAL(ContRWFreqChanged(int)), this, SLOT(setContRWFreqFromConfig(int)));
+    connect(config, SIGNAL(ContRWFreqChanged(int)), ui->contRWFreq, SLOT(setValue(int))); /* Links to ui->contRW valueChanged(int) */
+    connect(ui->contRWFreq, SIGNAL(valueChanged(int)), this, SLOT(ContRWFreqEdited()));
 
     // connection in the viewer
     connect(ui->triggerLengthSpinner, SIGNAL(valueChanged(int)),
             _mpx3gui->getVisualization()->GetUI()->triggerLengthSpinBox,
             SLOT(setValue(int)));
-
-
 
     // Shutter Length
     connect(ui->triggerLengthSpinner, SIGNAL(editingFinished()), this, SLOT(TriggerLengthEdited()) );
@@ -466,6 +459,7 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(ui->operationModeComboBox, SIGNAL(currentIndexChanged(int)), config, SLOT(setOperationMode(int)));
     connect(config, SIGNAL(operationModeChanged(int)), ui->operationModeComboBox, SLOT(setCurrentIndex(int)));
     connect(config, SIGNAL(operationModeChanged(int)), this, SLOT(hideLabels()));
+    connect(config, SIGNAL(operationModeChanged(int)), this, SLOT(setMaximumFPSinVisualiation()));
 
     // connection in the viewer
     connect(ui->operationModeComboBox, SIGNAL(currentIndexChanged(int)),
@@ -547,24 +541,34 @@ void QCstmConfigMonitoring::nTriggersEdited() {
     _mpx3gui->getConfig()->setNTriggers(
                 ui->nTriggersSpinner->value()
                 );
-
-    //else if ( _mpx3gui->getConfig()->getOperationMode()
-    //            == Mpx3Config::__operationMode_ContinuousRW ) {
-    //    // contRWFreq
-    //    _mpx3gui->getConfig()->setContRWFreq(
-    //                ui->nTriggersSpinner->value()
-    //                );
-    //}
-
 }
 
 void QCstmConfigMonitoring::ContRWFreqEdited()
 {
+    int idx = ui->pixelDepthCombo->currentIndex();
+    int idx_1_bit = ui->pixelDepthCombo->findText("1 bit");
+    int idx_6_bit = ui->pixelDepthCombo->findText("6 bits");
+    int idx_12_bit = ui->pixelDepthCombo->findText("12 bits");
+    int idx_24_bit = ui->pixelDepthCombo->findText("24 bits");
 
-    _mpx3gui->getConfig()->setContRWFreq(
-                ui->contRWFreq->value()
-                );
+    if (idx == idx_1_bit) {
+        ui->contRWFreq->setMaximum(__maximumFPS_1_bit);
+        _mpx3gui->getVisualization()->setMaximumContRW_FPS(__maximumFPS_1_bit);
 
+    } else if (idx == idx_6_bit) {
+        ui->contRWFreq->setMaximum(__maximumFPS_6_bit);
+        _mpx3gui->getVisualization()->setMaximumContRW_FPS(__maximumFPS_6_bit);
+
+    } else if (idx == idx_12_bit) {
+        ui->contRWFreq->setMaximum(__maximumFPS_12_bit);
+        _mpx3gui->getVisualization()->setMaximumContRW_FPS(__maximumFPS_12_bit);
+
+    } else if (idx == idx_24_bit) {
+        ui->contRWFreq->setMaximum(__maximumFPS_24_bit);
+        _mpx3gui->getVisualization()->setMaximumContRW_FPS(__maximumFPS_24_bit);
+    }
+
+    _mpx3gui->getConfig()->setContRWFreq( ui->contRWFreq->value() );
 }
 
 void QCstmConfigMonitoring::TriggerLengthEdited()
@@ -628,11 +632,11 @@ void QCstmConfigMonitoring::OperationModeSwitched(int indx)
         ui->readBothCountersCheckBox->setChecked( false );
         ui->readBothCountersCheckBox->hide();
     }
-
 }
 
 void QCstmConfigMonitoring::setPixelDepthByIndex(int newValIndx) {
     _mpx3gui->getConfig()->setPixelDepth(int(__pixelDepthMap[std::size_t(newValIndx)]));
+    setMaximumFPSFromPixelDepth(newValIndx, -1);
 }
 
 void QCstmConfigMonitoring::setTriggerModeByIndex(int newValIndx) {
@@ -647,6 +651,59 @@ int QCstmConfigMonitoring::findTriggerModeIndex(int val) {
         }
     }
     return -1;
+}
+
+void QCstmConfigMonitoring::setMaximumFPSFromPixelDepth(int idx, int val)
+{
+    if (idx == -1 && val == -1) {
+        /* Get the index from the GUI */
+
+        idx = ui->pixelDepthCombo->currentIndex();
+
+    } else if (idx == -1 && val != -1) {
+        /* Get the value directly */
+
+        if (val == 1) {
+            ui->contRWFreq->setMaximum(__maximumFPS_1_bit);
+            _mpx3gui->getVisualization()->setMaximumContRW_FPS(__maximumFPS_1_bit);
+        } else if (val == 6) {
+            ui->contRWFreq->setMaximum(__maximumFPS_6_bit);
+            _mpx3gui->getVisualization()->setMaximumContRW_FPS(__maximumFPS_6_bit);
+        } else if (val == 12) {
+            ui->contRWFreq->setMaximum(__maximumFPS_12_bit);
+            _mpx3gui->getVisualization()->setMaximumContRW_FPS(__maximumFPS_12_bit);
+        } else if (val == 24) {
+            ui->contRWFreq->setMaximum(__maximumFPS_24_bit);
+            _mpx3gui->getVisualization()->setMaximumContRW_FPS(__maximumFPS_24_bit);
+        }
+
+    } else if (val == -1 && idx != -1) {
+        /* Get the value by finding the item in the list */
+
+        int idx_1_bit = ui->pixelDepthCombo->findText("1 bit");
+        int idx_6_bit = ui->pixelDepthCombo->findText("6 bits");
+        int idx_12_bit = ui->pixelDepthCombo->findText("12 bits");
+        int idx_24_bit = ui->pixelDepthCombo->findText("24 bits");
+
+        if (idx == idx_1_bit) {
+            ui->contRWFreq->setMaximum(__maximumFPS_1_bit);
+            _mpx3gui->getVisualization()->setMaximumContRW_FPS(__maximumFPS_1_bit);
+
+        } else if (idx == idx_6_bit) {
+            ui->contRWFreq->setMaximum(__maximumFPS_6_bit);
+            _mpx3gui->getVisualization()->setMaximumContRW_FPS(__maximumFPS_6_bit);
+
+        } else if (idx == idx_12_bit) {
+            ui->contRWFreq->setMaximum(__maximumFPS_12_bit);
+            _mpx3gui->getVisualization()->setMaximumContRW_FPS(__maximumFPS_12_bit);
+
+        } else if (idx == idx_24_bit) {
+            ui->contRWFreq->setMaximum(__maximumFPS_24_bit);
+            _mpx3gui->getVisualization()->setMaximumContRW_FPS(__maximumFPS_24_bit);
+        }
+    }
+
+    return;
 }
 
 int QCstmConfigMonitoring::getTriggerModeIndex() {
@@ -724,8 +781,10 @@ void QCstmConfigMonitoring::IpZmqSubAddressEditFinished()
 
 void QCstmConfigMonitoring::pixelDepthChangedByValue(int val)
 {
-    int sizea = __pixelDepthMap.size();
-    for ( int i = 0 ; i < sizea ; i++ ) {
+    setMaximumFPSFromPixelDepth(-1, val);
+
+    int sizea = int(__pixelDepthMap.size());
+    for ( int i = 0; i < sizea; i++ ) {
         if ( __pixelDepthMap[i] == val ) {
             ui->pixelDepthCombo->setCurrentIndex( i );
             return;
@@ -943,7 +1002,14 @@ void QCstmConfigMonitoring::setContRWFreqFromConfig(int val)
 {
     if ( _mpx3gui->getConfig()->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW ) {
         _mpx3gui->getVisualization()->GetUI()->triggerLengthSpinBox->setValue(val);
+
+        setMaximumFPSFromPixelDepth();
     } /* else {
         Do nothing because we don't want to set the trigger length to the continuous readout frequency...
     } */
+}
+
+void QCstmConfigMonitoring::setMaximumFPSinVisualiation()
+{
+    _mpx3gui->getVisualization()->setMaximumContRW_FPS(-1);
 }

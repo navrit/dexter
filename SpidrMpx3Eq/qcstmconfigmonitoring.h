@@ -3,9 +3,7 @@
 
 #include <QWidget>
 #include "mpx3gui.h"
-
 #include <QtWidgets>
-//server
 
 #define __nwords_OMR 6
 #define __nbits_OMR 48 // 6 words of 8 bits
@@ -101,6 +99,8 @@ private slots:
     void on_merlinInterfaceTestButton_clicked();
 
     void setContRWFreqFromConfig(int val);
+    void setMaximumFPSinVisualiation();
+
     void hideLabels();
 
 private:
@@ -118,6 +118,8 @@ private:
 
     bool _saveConfigFileRemotely = false;
     QString _conigFileDestination = " ";
+
+    void setMaximumFPSFromPixelDepth(int idx=-1, int val=-1);
 
     bool _isDeveloperMode = false;
 };

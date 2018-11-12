@@ -138,14 +138,14 @@ void DataTakingThread::run() {
     int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0, lostPackets = 0;
     bool emergencyStop = false;
     bool bothCounters = false;
-    int totalFramesExpected = 0;
+    /* Not necessary to track if it's colour mode of not
+     * bool colourMode = false;
+     */
     uint64_t cntrLH = 0; //! Odd is Counter Low, even is Counter High
 
     uint halfSemaphoreSize = 0;
     bool reachLimitStop = false;
 
-    ///////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////
 
     forever {
@@ -175,10 +175,7 @@ void DataTakingThread::run() {
         //  since the user may want to activate/deactivate during data taking.
         halfSemaphoreSize = uint(_consumer->getSemaphoreSize()/2.);
         bothCounters = _mpx3gui->getConfig()->getReadBothCounters();
-        //qDebug() << score.framesRequested << " | " << opMode << " | " << contRWFreq;
-        totalFramesExpected = score.framesRequested;
-        if ( bothCounters ) totalFramesExpected *= 2;
-        //qDebug() << "total = " << totalFramesExpected;
+
         _mpx3gui->clear_data(false);
         _mutex.unlock();
 
@@ -205,13 +202,7 @@ void DataTakingThread::run() {
 
                 if (bothCounters) {
                     cntrLH++;
-                    //                if ( cntrLH%2 == 0) {
-                    //                    qDebug() << "Counter LOW" << cntrLH;
-                    //                } else {
-                    //                    qDebug() << "Counter HIGH" << cntrLH;
-                    //                }
                 }
-
 
                 // 2) User stop condition
                 if ( _stop ||  _restart  ) {
@@ -241,8 +232,8 @@ void DataTakingThread::run() {
 
                 // An emergency stop when the consumer thread can't keep up
                 if ( _consumer->freeFrames->available() < halfSemaphoreSize ) {
-                    qDebug() << " ... try to stop ";
-                    if ( ! emergencyStop ) {
+                    qDebug() << "[WARNING]\tConsumer trying to stop ";
+                    if ( !emergencyStop ) {
                         emit bufferFull( 0 );
                         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
                             spidrcontrol->stopContReadout();
@@ -255,11 +246,6 @@ void DataTakingThread::run() {
                 }
                 //! T0-T1 < 0.1% time
                 //! --------------------------
-
-                /*QVector<int> v1;
-            QVector<int> v2;
-            QVector<int> v3;
-            QVector<int> v4;*/
 
                 // Read data
                 FrameSet *fs = spidrdaq->getFrameSet();
@@ -274,19 +260,10 @@ void DataTakingThread::run() {
 
                     for ( int i = 0 ; i < nChips ; i++ ) {
                         // retreive data for a given chip
-                        //auto t1 = Time::now();
                         //clearToCopy = true;
-
-                        //auto t2 = Time::now(); v1.append( std::chrono::duration_cast<ns>(t2 - t1).count());
-
                         _consumer->freeFrames->acquire(); //! < 0.1% time
-                        //auto t3 = Time::now(); v2.append( std::chrono::duration_cast<ns>(t3 - t2).count());
-
                         _consumer->copydata(fs, i); //! 99+% time
-                        //auto t4 = Time::now(); v3.append( std::chrono::duration_cast<ns>(t4 - t3).count());
-
                         _consumer->usedFrames->release(); //! < 0.1% time
-                        //auto t5 = Time::now(); v4.append( std::chrono::duration_cast<ns>(t5 - t4).count());
                     }
                     // Keep a track of frames actually kept
                     nFramesKept++;
@@ -305,7 +282,6 @@ void DataTakingThread::run() {
 
                 // If we are working with 2 counters, go get
                 // the second frame associated before it continues.
-                //            qDebug() << "bothCounters & cntrLH : " << bothCounters << cntrLH << "\t Counter Low" << bool(cntrLH%2 == 0);
                 if ( bothCounters && (cntrLH%2 == 0) ) continue;
 
                 // Awake the consumer thread
@@ -317,12 +293,8 @@ void DataTakingThread::run() {
                 // Keep a local count of number of frames
                 nFramesReceived++;
 
-
-
                 // lost
                 lostFrames += spidrdaq->framesLostCount();
-
-
 
                 if(!_isExternalTrigger)
                 {
@@ -330,9 +302,9 @@ void DataTakingThread::run() {
                                      nFramesKept,
                                      lostFrames,                  //
                                      lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
-                                     spidrdaq->framesCount(),               // ?
+                                     spidrdaq->framesCount(),     // ?
                                      0,
-                                     0										// Data misaligned?
+                                     0							  // Data misaligned?
                                      );
                 }
 
@@ -354,14 +326,7 @@ void DataTakingThread::run() {
                 //! T5-T6 < 0.1% time
                 //! --------------------------
 
-                /*for (int i=0; i< v1.size(); i++){
-              double sum = v1[i] + v2[i] + v3[i] + v4[i];
-              qDebug() << v1[i]/sum*100 << "%  "
-                       << v2[i]/sum*100 << "%  "
-                       << v3[i]/sum*100 << "%  "
-                       << v4[i]/sum*100 << "%";
-            }*/
-                if(_isExternalTrigger){
+                if( _isExternalTrigger ) {
                     int externalCnt = 0;
                     spidrcontrol->getExtShutterCounter(&externalCnt);
                     //Debug() << "[Debug] ext count : " << externalCnt;
@@ -378,48 +343,17 @@ void DataTakingThread::run() {
                         break;
                     }
                 }
-
-
-
             }
 
         _consumer->consume();
 
         if ( ! _restart ) {  emit data_taking_finished( 0 );}
 
-        // Final report
-//        if(_isExternalTrigger){
-//            //int externalCnt = 0;
-//            spidrcontrol->getExtShutterCounter(&externalCnt);
-//            emit scoring_sig(externalCnt,
-//                             nFramesKept,
-//                             lostFrames,  //
-//                             lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
-//                             spidrdaq->framesCount(),               // ?
-//                             0,
-//                             0							// Data misaligned
-//                             );
-//        }
-//        else
-//        {
-
-//            emit scoring_sig(nFramesReceived,
-//                             nFramesKept,
-//                             lostFrames,  //
-//                             lostPackets,                 // lost packets(ML605)/pixels(compactSPIDR)
-//                             spidrdaq->framesCount(),               // ?
-//                             0,
-//                             0							// Data misaligned
-//                             );
-//        }
         // If this was an emergency stop
         // Have the consumer free resources
         if ( emergencyStop ) {
             _consumer->freeResources();
         }
-
-        // Put the thread to wait
-        //qDebug() << "   ... lock DataTakingThread";
 
         _mutex.lock();
         if ( !_restart ) {
@@ -430,15 +364,11 @@ void DataTakingThread::run() {
         _restart = false;
 
         _mutex.unlock();
-        //qDebug() << "   +++ unlock DataTakingThread";
-
 
     } // forever
 
+    ///////////////////////////////////////////////////////////////////////////////////
 
-    ///////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////
     disconnect(this, SIGNAL(scoring_sig(int,int,int,int,int,int,bool)),
                _vis,   SLOT( on_scoring(int,int,int,int,int,int,bool)) );
 
@@ -451,7 +381,7 @@ void DataTakingThread::run() {
     _idling = false;
     _stop = false;
 
-    // clear counters in SpidrDac
+    // clear counters in SpidrDaq
     spidrdaq->resetLostCount();
     delete spidrcontrol;
 

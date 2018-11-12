@@ -175,7 +175,6 @@ void QCstmDacs::changeDAC(int threshold, int value)
 }
 
 
-
 UpdateDACsThread * QCstmDacs::FillDACValues( int devId, bool updateInTheChip ) {
 
 

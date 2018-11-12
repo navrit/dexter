@@ -135,8 +135,7 @@ public:
     void onPixelsMasked(int devID, QSet<int> pixelSet);
     bool requestToSetSavePath(QString path);
 
-    //! Should this remain?
-    //void setInfDataTaking(bool val){_infDataTaking = val; emit infDataTakingToggled(_infDataTaking);}
+    void setMaximumContRW_FPS(int FPS);
 
 private:
 
@@ -163,12 +162,12 @@ private:
 
 
     typedef struct {
-        unsigned int nFramesReceived;
-        unsigned int nFramesKept;
-        unsigned int lostFrames;
-        unsigned int lostPackets;
-        unsigned int framesCount;
-        unsigned int mpx3clock_stops;
+        uint nFramesReceived;
+        uint nFramesKept;
+        uint lostFrames;
+        uint lostPackets;
+        uint framesCount;
+        uint mpx3clock_stops;
         bool dataMisaligned;
     } scoring;
 
