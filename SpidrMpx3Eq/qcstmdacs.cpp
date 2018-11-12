@@ -24,6 +24,7 @@
 #include "SpidrDaq.h"
 #include "qcustomplot.h"
 #include "ui_thresholdscan.h"
+#include "qcstmglvisualization.h"
 
 static QCstmDacs *qCstmDacsInst = nullptr;
 
@@ -233,6 +234,22 @@ void QCstmDacs::ConnectionStatusChanged(bool conn) {
 
     // Fill the DACs
     if ( conn ) PopulateDACValues();
+}
+
+void QCstmDacs::sendThresholdToDac()
+{
+    if (ui->allDACSimultaneousCheckBox->isChecked()) {
+        for (int chipId = 0; chipId < NUMBER_OF_CHIPS; ++chipId) {
+            for (int idx = 0; idx < 8; ++idx) {
+                QCstmGLVisualization::getInstance()->setThresholdsVector(chipId,idx,_dacSpinBoxes[idx]->value());
+            }
+        }
+
+        return;
+    }
+    for (int idx = 0; idx < 8; ++idx) {
+        QCstmGLVisualization::getInstance()->setThresholdsVector(ui->deviceIdSpinBox->value(),idx,_dacSpinBoxes[idx]->value());
+    }
 }
 
 void QCstmDacs::SenseDACs() {

@@ -2523,7 +2523,7 @@ void QCstmGLVisualization::setMaximumContRW_FPS(int FPS)
 void QCstmGLVisualization::_loadFromThresholdsVector()
 {
     for (int chipId = 0; chipId < NUMBER_OF_CHIPS; ++chipId) {
-        for (int idx = 0; idx < 9; ++idx) {
+        for (int idx = 0; idx < 8; ++idx) {
             _mpx3gui->GetSpidrController()->setDac(chipId,idx+1,_thresholsdVector[chipId][idx]);
 
         }
