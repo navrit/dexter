@@ -596,13 +596,13 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
                 qDebug() << "[ERROR]\tDevice " << chip << " not responding.";
                 continue;
             }
-            spidrcontrol->setDac( int(chip), MPX3RX_DAC_TABLE[ i ].code, val );
+            //spidrcontrol->setDac( int(chip), MPX3RX_DAC_TABLE[ i ].code, val );
 
             // Now I need to change it in the local data base
             SetDACValueLocalConfig( chip, i, val);
         }
     } else {
-        spidrcontrol->setDac( int(_deviceIndex), MPX3RX_DAC_TABLE[ i ].code, val );
+        //spidrcontrol->setDac( int(_deviceIndex), MPX3RX_DAC_TABLE[ i ].code, val );
         // Now I need to chage it in the local data base
         SetDACValueLocalConfig( _deviceIndex, i, val);
     }
