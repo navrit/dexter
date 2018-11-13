@@ -29,6 +29,7 @@ CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
     connect(this,SIGNAL(requestToDoEqualizationRemotely(QString)),QCstmEqualization::getInstance(),SLOT(StartEqualizationSequentialSingleChipsRemotely(QString)));
     connect(this,SIGNAL(requestToLoadConfigRemotely(QString)),getGui(),SLOT(load_config_remotely(QString)));
     connect(this,SIGNAL(requestToSaveConfigRemotely(QString)),QCstmConfigMonitoring::getInstance(),SLOT(saveConfigFileRemotely(QString)));
+    connect(this,SIGNAL(requestToChangeGuiforThreshold(int)),QCstmDacs::getInstance(),SLOT(onDevNumChanged(int)));
     initializeCmdTable();
 
     //QTimer::singleShot(10000, this, SLOT(testSetThreshold_idx_val_chipId())); // Test function to show setting thresholds does work
@@ -287,15 +288,18 @@ int CommandHandler::setThreshold(int idx, int val, int chipId)
 {
     if (idx >= 0 && idx <= 7 && chipId >= 0 && chipId < 4) {
         // Update gui
+        QCstmDacs::getInstance()->setRemoteRequestForSettingThreshold(true);
+        // Set actual DAC
+        QCstmGLVisualization::getInstance()->setThresholdsVector(chipId,idx,val);
         QCstmDacs::getInstance()->getAllDACSimultaneousCheckBox()->setChecked(false);
         QCstmDacs::getInstance()->getDeviceIdSpinBox()->setValue(chipId);
         QCstmDacs::getInstance()->GetCheckBoxList()[idx]->setChecked(true);
-        QCstmDacs::getInstance()->GetSpinBoxList()[idx]->setValue(val);
+       // QCstmDacs::getInstance()->GetSpinBoxList()[idx]->setValue(val);
+        emit requestToChangeGuiforThreshold(chipId);
 
-        // Set actual DAC
-        QCstmGLVisualization::getInstance()->setThresholdsVector(chipId,idx,val);
 
-        qApp->processEvents(); /* The GUI won't process events if they all occur in a very short timescale unless you make it */
+
+       // qApp->processEvents(); /* The GUI won't process events if they all occur in a very short timescale unless you make it */
 
         return NO_ERROR;
     }
