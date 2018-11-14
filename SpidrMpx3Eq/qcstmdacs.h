@@ -21,6 +21,7 @@
 #include <iostream>
 #include <fstream>
 
+
 using namespace std;
 
 #define		__default_DACs_filename "mpx3_defaultDACs.json"
@@ -87,6 +88,7 @@ public:
     void SetDACValueLocalConfig(uint chip, int dacIndex, int val);
 
     void changeDAC(int threshold, int value); //! For all chips
+    void setRemoteRequestForSettingThreshold(bool);
 
 private:
 
@@ -129,12 +131,17 @@ private:
     QSignalMapper * _signalMapperSliderSpinBoxConn;
     QSignalMapper * _signalMapperSlider;
     QSignalMapper * _signalMapperSpinBox;
+    bool _remoteRequestForSettingThreshold = false;
+
+
 
 public slots:
     void shortcutTH0();
     void shortcutIkrum();
 
 private slots:
+
+    void onDevNumChanged(int);
 
     void on_allDACSimultaneousCheckBox_toggled(bool checked);
 
@@ -156,6 +163,11 @@ private slots:
     void slideAndSpin(int, int);
     void openWriteMenu();
     void ConnectionStatusChanged(bool);
+    void sendThresholdToDac(void);
+
+
+
+
 
 };
 

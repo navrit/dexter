@@ -24,6 +24,7 @@
 #include "SpidrDaq.h"
 #include "qcustomplot.h"
 #include "ui_thresholdscan.h"
+#include "qcstmglvisualization.h"
 
 static QCstmDacs *qCstmDacsInst = nullptr;
 
@@ -94,7 +95,15 @@ QCstmDacs::QCstmDacs(QWidget *parent) :
     // The labels:
     ui->plotScan->xAxis->setLabel("DAC setting");
     ui->plotScan->yAxis->setLabel("DAC out [V]");
-
+    //connect(ui->updateThresholdsPushButton,SIGNAL(released()),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac0SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac1SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac2SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac3SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac4SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac5SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac6SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
+    connect(ui->dac7SpinBox,SIGNAL(valueChanged(int)),this,SLOT(sendThresholdToDac()));
     qCstmDacsInst = this;
 }
 
@@ -157,6 +166,12 @@ void QCstmDacs::StartDACScan() {
 void QCstmDacs::changeDAC(int threshold, int value)
 {
     slideAndSpin(threshold, value);
+}
+
+void QCstmDacs::setRemoteRequestForSettingThreshold(bool val)
+{
+    _remoteRequestForSettingThreshold = val;
+    //QTimer::singleShot(0,this,SLOT(updateThresholdFromServer()));
 }
 
 UpdateDACsThread * QCstmDacs::FillDACValues( int devId, bool updateInTheChip ) {
@@ -233,6 +248,27 @@ void QCstmDacs::ConnectionStatusChanged(bool conn) {
 
     // Fill the DACs
     if ( conn ) PopulateDACValues();
+}
+
+void QCstmDacs::sendThresholdToDac()
+{
+    if(_remoteRequestForSettingThreshold){ //if thresholds set remotely dont update the matrix. it was updated before
+        _remoteRequestForSettingThreshold = false;
+        return;
+    }
+
+    if (ui->allDACSimultaneousCheckBox->isChecked()) {
+        for (int chipId = 0; chipId < NUMBER_OF_CHIPS; ++chipId) {
+            for (int idx = 0; idx < 8; ++idx) {
+                QCstmGLVisualization::getInstance()->setThresholdsVector(chipId,idx,_dacSpinBoxes[idx]->value());
+            }
+        }
+
+        return;
+    }
+    for (int idx = 0; idx < 8; ++idx) {
+        QCstmGLVisualization::getInstance()->setThresholdsVector(ui->deviceIdSpinBox->value(),idx,_dacSpinBoxes[idx]->value());
+    }
 }
 
 void QCstmDacs::SenseDACs() {
@@ -467,6 +503,23 @@ void QCstmDacs::shortcutIkrum()
     ui->dac9SpinBox->setFocus();
 }
 
+void QCstmDacs::onDevNumChanged(int dev)
+{
+
+    ui->dac0SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,0));
+    ui->dac1SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,1));
+    ui->dac2SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,2));
+    ui->dac3SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,3));
+    ui->dac4SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,4));
+    ui->dac5SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,5));
+    ui->dac6SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,6));
+    ui->dac7SpinBox->setValue(QCstmGLVisualization::getInstance()->getThresholdVector(dev,7));
+
+
+}
+
+
+
 void QCstmDacs::UncheckAllDACs() {
 
     for (int i = 0 ; i < MPX3RX_DAC_COUNT; i++) {
@@ -571,13 +624,13 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
                 qDebug() << "[ERROR]\tDevice " << chip << " not responding.";
                 continue;
             }
-            spidrcontrol->setDac( int(chip), MPX3RX_DAC_TABLE[ i ].code, val );
+            //spidrcontrol->setDac( int(chip), MPX3RX_DAC_TABLE[ i ].code, val );
 
             // Now I need to change it in the local data base
             SetDACValueLocalConfig( chip, i, val);
         }
     } else {
-        spidrcontrol->setDac( int(_deviceIndex), MPX3RX_DAC_TABLE[ i ].code, val );
+        //spidrcontrol->setDac( int(_deviceIndex), MPX3RX_DAC_TABLE[ i ].code, val );
         // Now I need to chage it in the local data base
         SetDACValueLocalConfig( _deviceIndex, i, val);
     }
@@ -600,12 +653,12 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
                 qDebug() << "[ERR ] Device " << chip << " not responding.";
                 continue;
             }
-            spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[ i ].code, val );
+           // spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[ i ].code, val );
             // Now I need to chage it in the local data base
             SetDACValueLocalConfig( chip, i, val);
         }
     } else {
-        spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
+       // spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
         // Now I need to chage it in the local data base
         SetDACValueLocalConfig( _deviceIndex, i, val);
     }

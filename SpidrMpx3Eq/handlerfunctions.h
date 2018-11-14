@@ -776,7 +776,8 @@ void getThresholdPerChipHandler(CommandHandler* ch, Command* cmd){
     int chipId = cmd->arguments.at(1).toInt();
     int val =0;
     int error = ch->getThreshold(idx,chipId,&val);
-    cmd->setData(QString::number(val));
+    double energy = Mpx3GUI::getInstance()->getEnergyCalibrator()->calcEnergy(chipId,val);
+    cmd->setData(QString::number(energy));
     cmd->setError((ERROR_TYPE)error);
 }
 

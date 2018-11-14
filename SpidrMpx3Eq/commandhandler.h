@@ -92,6 +92,7 @@ signals:
     void requestToSetInhibitShutterRemotely(bool);
     void requestToLoadConfigRemotely(QString);
     void requestToSaveConfigRemotely(QString);
+    void requestToChangeGuiforThreshold(int);
 
 public slots:
     void on_doneWithOneFrame(int);

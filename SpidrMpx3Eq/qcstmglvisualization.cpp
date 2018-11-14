@@ -70,6 +70,8 @@ QCstmGLVisualization::QCstmGLVisualization(QWidget *parent) :
     developerMode(false);
     qCstmGLVisualizationInst = this;
    // connect(this,SIGNAL(infDataTakingToggeled(bool)),this->ui->infDataTakingCheckBox,SLOT(setChecked(bool)));
+    //_initializeThresholdsVector();
+    QTimer::singleShot(0, this, SLOT(_initializeThresholdsVector()));
 
 }
 
@@ -82,6 +84,29 @@ QCstmGLVisualization *QCstmGLVisualization::getInstance()
     return qCstmGLVisualizationInst;
 }
 
+void QCstmGLVisualization::setThresholdsVector(int chipId, int idx, int value)
+{
+    if(chipId >=0 && chipId < NUMBER_OF_CHIPS && idx >=0 && idx < 8)
+        _thresholsdVector[chipId][idx] = value;
+    //_loadFromThresholdsVector();
+}
+
+int QCstmGLVisualization::getThresholdVector(int chipId, int idx)
+{
+    if(chipId >=0 && chipId < NUMBER_OF_CHIPS && idx >=0 && idx < 8)
+        return _thresholsdVector[chipId][idx];
+    return -1;
+}
+
+void QCstmGLVisualization::clearThresholdsVector()
+{
+    for (int chip = 0; chip < NUMBER_OF_CHIPS; ++chip) {
+        for (int idx = 0; idx < 8; ++idx) {
+            _thresholsdVector[chip][idx] = 0;
+        }
+    }
+}
+
 void QCstmGLVisualization::timerEvent(QTimerEvent *)
 {
     refreshScoringInfo();
@@ -91,6 +116,7 @@ void QCstmGLVisualization::timerEvent(QTimerEvent *)
 
 void QCstmGLVisualization::refreshScoringInfo()
 {
+
     updateETA();
 
     // Progress
@@ -119,7 +145,11 @@ void QCstmGLVisualization::refreshScoringInfo()
     // FPS
     fps_update(int(_score.nFramesReceived));
     BuildStatsStringLostFrames( _score.lostFrames );
+
+    //
     BuildStatsStringLostPackets( _score.lostPackets );
+
+    //
     BuildStatsString();
 
     // Network consumption?
@@ -321,6 +351,8 @@ void QCstmGLVisualization::saveImage(QString filename, QString corrMethod)
 }
 
 void QCstmGLVisualization::StartDataTaking(QString mode) {
+
+    _loadFromThresholdsVector();
 
     if (mode == "CT") {
         runningCT = true;
@@ -685,6 +717,7 @@ void QCstmGLVisualization::ArmAndStartTimer(){
     _timer->start( __display_eta_granularity );
     // and start the elapsed timer
     _etatimer->start();
+
 }
 
 void QCstmGLVisualization::DestroyTimer() {
@@ -698,6 +731,7 @@ void QCstmGLVisualization::DestroyTimer() {
     _timer = nullptr;
     if( _etatimer ) delete _etatimer;
     _etatimer = nullptr;
+
 }
 
 void QCstmGLVisualization::SeparateThresholds(int * data, int /*size*/, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int /*sizeReduced*/) {
@@ -913,32 +947,25 @@ void QCstmGLVisualization::triggerLength_edit() {
          == Mpx3Config::__operationMode_SequentialRW ) {
         // triggerLength
         _mpx3gui->getConfigMonitoring()->getUI()->triggerLengthSpinner->setValue(
-                    ui->triggerLengthSpinBox->value());
+                    ui->triggerLengthSpinBox->value()
+                    );
         // Send the new config
         _mpx3gui->getConfig()->setTriggerLength(
-                    ui->triggerLengthSpinBox->value());
+                    ui->triggerLengthSpinBox->value()
+                    );
 
     } else if ( _mpx3gui->getConfig()->getOperationMode()
                 == Mpx3Config::__operationMode_ContinuousRW )  {
-
-        int pixelDepth = _mpx3gui->getConfig()->getPixelDepth();
-        if (pixelDepth == 1) {
-            setMaximumContRW_FPS(__maximumFPS_1_bit);
-        } else if (pixelDepth == 6) {
-            setMaximumContRW_FPS(__maximumFPS_6_bit);
-        } else if (pixelDepth == 12) {
-            setMaximumContRW_FPS(__maximumFPS_12_bit);
-        } else if (pixelDepth == 24) {
-            setMaximumContRW_FPS(__maximumFPS_24_bit);
-        } else {
-            setMaximumContRW_FPS(-1);
-        }
-
-        /* Send the new config --> contRWFreq */
+        // contRWFreq
         _mpx3gui->getConfigMonitoring()->getUI()->contRWFreq->setValue(
-                    ui->triggerLengthSpinBox->value());
-        _mpx3gui->getConfig()->setContRWFreq( ui->triggerLengthSpinBox->value() );
+                    ui->triggerLengthSpinBox->value()
+                    );
+        // send the new config --> contRWFreq
+        _mpx3gui->getConfig()->setContRWFreq(
+                    ui->triggerLengthSpinBox->value()
+                    );
     }
+
 }
 
 void QCstmGLVisualization::startupActions()
@@ -961,12 +988,13 @@ void QCstmGLVisualization::fps_update(int nframes_done) {
     if ( ! _dataTakingThread->isRunning() ) return;
     if (! _etatimer) return;
 
-    double fpsVal = (double(nframes_done)) / (double(_etatimer->elapsed()) / 1000.); // elapsed() comes in milliseconds
+    double fpsVal = ((double)nframes_done) / ((double)_etatimer->elapsed() / 1000.); // elapsed() comes in milliseconds
 
     QString fpsS = QString::number( round( fpsVal ) , 'd', 0 );
-    fpsS += " FPS";
+    fpsS += " fps";
 
     ui->fpsLabel->setText( fpsS );
+
 }
 
 void QCstmGLVisualization::overflow_update(int ovf_cntr) {
@@ -1202,7 +1230,7 @@ void QCstmGLVisualization::user_accepted_profile()
 
 void QCstmGLVisualization::OperationModeSwitched(int indx)
 {
-    // Switch the triggerLengthSpinBox into ContRWFreq if in ContinuousRW mode
+    // Swith the triggerLengthSpinBox into ContRWFreq if in ContinuousRW mode
     if ( indx == Mpx3Config::__operationMode_SequentialRW ) {
 
         ui->triggerLengthSpinBoxLabel->setText( "Length" );
@@ -1320,19 +1348,19 @@ void QCstmGLVisualization::on_scoring(int nFramesReceived,
                                       int mpx3clock_stops,
                                       bool dataMisaligned) {
 
-    _score.nFramesReceived = uint( nFramesReceived );
-    _score.nFramesKept = uint( nFramesKept );
-    _score.lostFrames = uint( lostFrames );
-    _score.lostPackets = uint( lostPackets );
-    _score.framesCount = uint( framesCount );
-    _score.mpx3clock_stops = uint( mpx3clock_stops );
-    _score.dataMisaligned = uint( dataMisaligned );
+    _score.nFramesReceived = nFramesReceived;
+    _score.nFramesKept = nFramesKept;
+    _score.lostFrames = lostFrames;
+    _score.lostPackets = lostPackets;
+    _score.framesCount = framesCount;
+    _score.mpx3clock_stops = mpx3clock_stops;
+    _score.dataMisaligned = dataMisaligned;
 
 }
 
 void QCstmGLVisualization::progress_signal(int framecntr) {
 
-    _score.nFramesReceived = uint( framecntr );
+    _score.nFramesReceived = framecntr;
 
     /*
     // framecntr: frames kept
@@ -2360,9 +2388,20 @@ void QCstmGLVisualization::on_testBtn_clicked()
     qDebug () << "SlOPE 2 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(2);
     qDebug () << "SlOPE 3 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(3);
     qDebug () << "Trigger Mode: " << Mpx3GUI::getInstance()->getConfig()->getTriggerMode();
-    QList<int> th = _mpx3gui->getDataset()->getThresholds();
-    for (int i = 0; i < th.size(); ++i) {
-        qDebug() << "th ["<<i<<"] is :"<<th.at(i);
+
+    for (int chip = 0; chip < 4; chip++) {
+        for (int idx = 0; idx < 8; idx++) {
+            int val = 0;
+            _mpx3gui->GetSpidrController()->getDac(chip,idx+1,&val);
+            qDebug() << "Chip ["<<chip<<"] ... Threshold ["<<idx<<"] : "<< val;
+        }
+    }
+
+    for (int chip = 0; chip < 4; chip++) {
+        for (int idx = 0; idx < 8; idx++) {
+            _thresholsdVector[chip][idx];
+            qDebug() << "[Matrix] : Chip ["<<chip<<"] ... Threshold ["<<idx<<"] : "<< _thresholsdVector[chip][idx];;
+        }
     }
 
     //Mpx3GUI::getInstance()->getConfig()->setInhibitShutter(true);
@@ -2487,6 +2526,27 @@ void QCstmGLVisualization::setMaximumContRW_FPS(int FPS)
             ui->triggerLengthSpinBox->setValue(FPS);
         }
     }
+}
+
+void QCstmGLVisualization::_loadFromThresholdsVector()
+{
+    for (int chipId = 0; chipId < NUMBER_OF_CHIPS; ++chipId) {
+        for (int idx = 0; idx < 8; ++idx) {
+            _mpx3gui->GetSpidrController()->setDac(chipId,idx+1,_thresholsdVector[chipId][idx]);
+
+        }
+    }
+}
+
+void QCstmGLVisualization::_initializeThresholdsVector()
+{
+    for (int chip = 0; chip < NUMBER_OF_CHIPS; ++chip) {
+        for (int idx = 0; idx < 8; ++idx) {
+            _thresholsdVector[chip][idx] = _mpx3gui->getConfig()->getDACValue(chip,idx);
+        }
+    }
+
+
 }
 
 void QCstmGLVisualization::onEqualizationPathExported(QString path)

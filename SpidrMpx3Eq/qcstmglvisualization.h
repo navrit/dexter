@@ -64,6 +64,9 @@ public:
     ~QCstmGLVisualization();
     static QCstmGLVisualization* getInstance();
 
+    void setThresholdsVector(int chipId,int idx, int value);
+    int getThresholdVector(int chipId,int idx);
+    void clearThresholdsVector(void);
     void timerEvent( QTimerEvent * );
     void refreshScoringInfo();
     void drawFrameImage();
@@ -154,6 +157,10 @@ private:
     QString _equalizationPath = "";
     MASK_OPERATION _maskOpration = MASK;
     bool _maskingRequestFromServer = false;
+    int _thresholsdVector [NUMBER_OF_CHIPS][8];
+    void _loadFromThresholdsVector(void);
+
+
 
     typedef struct {
         uint nFramesReceived;
@@ -208,7 +215,7 @@ private:
 private slots:
     void ConnectionStatusChanged(bool connecting);
     void on_percentileRangeRadio_toggled(bool checked);
-
+    void _initializeThresholdsVector(void);
 
     //! Gets called when a new data range was selected in the histogram plot.
     void new_range_dragged(QCPRange newRange);
