@@ -1220,7 +1220,7 @@ Affects FBK DAC, see manual</string>
            <string> µs</string>
           </property>
           <property name="minimum">
-           <number>1</number>
+           <number>1000</number>
           </property>
           <property name="maximum">
            <number>999999999</number>
