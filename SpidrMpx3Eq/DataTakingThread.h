@@ -28,7 +28,7 @@ class DataTakingThread : public QThread {
 
 public:
     explicit DataTakingThread(Mpx3GUI *, DataConsumerThread *, QObject * parent);
-    virtual ~DataTakingThread();
+    virtual ~DataTakingThread() override;
     void ConnectToHardware();
 
     typedef struct {
@@ -39,7 +39,6 @@ public:
         bool tocomplete;
     } datataking_score_info;
 
-    //datataking_score_info getScoreInfo() { return _score; }
     bool isIdling(){ return _idling; }
     void rewindScoring();
     void stop() { _stop = true; }
@@ -67,8 +66,8 @@ private:
     bool _idling;
     bool _stop;
 
-    Mpx3GUI * _mpx3gui;
-    QCstmGLVisualization * _vis;
+    Mpx3GUI * _mpx3gui = nullptr;
+    QCstmGLVisualization * _vis = nullptr;
     datataking_score_info _score;
 
     // IP source address (SPIDR network interface)
@@ -78,8 +77,6 @@ private:
 
 public slots:
     void on_stop_data_taking_thread();
-    //void on_busy_drawing();
-    //void on_free_to_draw();
 
 signals:
     // drawing signals calling back to QCstmGLVisualization
@@ -88,7 +85,6 @@ signals:
 
     void scoring_sig(int nFramesReceived, int nFramesKept, int lost_frames,
                      int lost_packets, int frames_count, int mpx3clock_stops, bool misaligned);
-
 };
 
 #endif

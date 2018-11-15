@@ -87,14 +87,14 @@ QCstmGLVisualization *QCstmGLVisualization::getInstance()
 void QCstmGLVisualization::setThresholdsVector(int chipId, int idx, int value)
 {
     if(chipId >=0 && chipId < NUMBER_OF_CHIPS && idx >=0 && idx < 8)
-        _thresholsdVector[chipId][idx] = value;
+        _thresholdsVector[chipId][idx] = value;
     //_loadFromThresholdsVector();
 }
 
 int QCstmGLVisualization::getThresholdVector(int chipId, int idx)
 {
     if(chipId >=0 && chipId < NUMBER_OF_CHIPS && idx >=0 && idx < 8)
-        return _thresholsdVector[chipId][idx];
+        return _thresholdsVector[chipId][idx];
     return -1;
 }
 
@@ -102,7 +102,7 @@ void QCstmGLVisualization::clearThresholdsVector()
 {
     for (int chip = 0; chip < NUMBER_OF_CHIPS; ++chip) {
         for (int idx = 0; idx < 8; ++idx) {
-            _thresholsdVector[chip][idx] = 0;
+            _thresholdsVector[chip][idx] = 0;
         }
     }
 }
@@ -849,11 +849,8 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect(_mpx3gui, SIGNAL(data_zeroed()), this, SLOT(on_zero()));
     connect(_mpx3gui, SIGNAL(reload_layer(int)), this, SLOT( reload_layer(int)));
     connect(_mpx3gui, SIGNAL(reload_all_layers()), this, SLOT(reload_all_layers()));
-    //connect(_mpx3gui, SIGNAL(frames_reload()),this, SLOT(on_frame_updated()));
     connect(_mpx3gui, SIGNAL(availible_gradients_changed(QStringList)), this, SLOT(availible_gradients_changed(QStringList)));
     connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), this, SLOT(range_changed(QCPRange)));
-    //connect(ui->histPlot, SIGNAL(rangeChanged(QCPRange)), this, SLOT(on_new_range_dragged(QCPRange)));
-    // connect(ui->layerSelector, SIGNAL(activated(QString)), ui->glPlot->getPlot(), SLOT()
 
     connect(ui->binCountSpinner, SIGNAL(valueChanged(int)), this, SLOT(changeBinCount(int)));
     connect(ui->glPlot->getPlot(), SIGNAL(hovered_pixel_changed(QPoint)),this, SLOT(hover_changed(QPoint)));
@@ -912,11 +909,8 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     // TH Scan
     connect( this, SIGNAL(sig_resumeTHScan()), _mpx3gui->getTHScan(), SLOT(resumeTHScan()));
 
-    //pixel mask saving // BB: direct call now, see #119 and #117
-    //connect(_mpx3gui->getEqualization(),SIGNAL(pixelsMasked(int,QSet<int>)),this,SLOT(onPixelsMasked(int,QSet<int>)));
-    //getting equalization path
+    // Getting equalization path
     connect(_mpx3gui->getEqualization(),SIGNAL(equalizationPathExported(QString)),this,SLOT(onEqualizationPathExported(QString)));
-
 }
 
 void QCstmGLVisualization::ntriggers_edit() {
@@ -2399,8 +2393,8 @@ void QCstmGLVisualization::on_testBtn_clicked()
 
     for (int chip = 0; chip < 4; chip++) {
         for (int idx = 0; idx < 8; idx++) {
-            _thresholsdVector[chip][idx];
-            qDebug() << "[Matrix] : Chip ["<<chip<<"] ... Threshold ["<<idx<<"] : "<< _thresholsdVector[chip][idx];;
+            _thresholdsVector[chip][idx];
+            qDebug() << "[Matrix] : Chip ["<<chip<<"] ... Threshold ["<<idx<<"] : "<< _thresholdsVector[chip][idx];;
         }
     }
 
@@ -2532,7 +2526,7 @@ void QCstmGLVisualization::_loadFromThresholdsVector()
 {
     for (int chipId = 0; chipId < NUMBER_OF_CHIPS; ++chipId) {
         for (int idx = 0; idx < 8; ++idx) {
-            _mpx3gui->GetSpidrController()->setDac(chipId,idx+1,_thresholsdVector[chipId][idx]);
+            _mpx3gui->GetSpidrController()->setDac(chipId,idx+1,_thresholdsVector[chipId][idx]);
 
         }
     }
@@ -2542,16 +2536,13 @@ void QCstmGLVisualization::_initializeThresholdsVector()
 {
     for (int chip = 0; chip < NUMBER_OF_CHIPS; ++chip) {
         for (int idx = 0; idx < 8; ++idx) {
-            _thresholsdVector[chip][idx] = _mpx3gui->getConfig()->getDACValue(chip,idx);
+            _thresholdsVector[chip][idx] = _mpx3gui->getConfig()->getDACValue(chip,idx);
         }
     }
-
-
 }
 
 void QCstmGLVisualization::onEqualizationPathExported(QString path)
 {
-
     _equalizationPath = path;
 }
 

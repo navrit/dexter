@@ -20,7 +20,6 @@
 DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, DataConsumerThread * consumer, QObject * parent)
     : QThread( parent )
 {
-
     _restart = false;
     _abort = false;
     _idling = false;
@@ -34,9 +33,6 @@ DataTakingThread::DataTakingThread(Mpx3GUI * mpx3gui, DataConsumerThread * consu
     _srcAddr = 0;
 
     rewindScoring();
-
-
-
 }
 
 DataTakingThread::~DataTakingThread() {

@@ -21,6 +21,7 @@ static const QString gainModeStrTable[] = {"shigh","high","low","slow"};
 class CommandHandler : public QObject
 {
     Q_OBJECT
+
 public:
     explicit CommandHandler(QObject *parent = nullptr);
     Mpx3GUI* getGui();
@@ -75,7 +76,6 @@ public:
     QHash<QString,cmd_struct> cmdTable;
 
 signals:
-    //void commandIsDecoded(QString,QByteArray,bool);
     void imageIsReady(QByteArray,std::pair<const char*,int>);
     void requestForDataTaking(bool);
     void requestForInfDataTracking(bool);
@@ -100,6 +100,7 @@ public slots:
     void on_equalizationPathExported(QString path);
 
     void testSetThreshold_idx_val_chipId(); /* Test function for set threshold */
+
 private:
     void initializeCmdTable(void);
     char* getTimeStamp();
@@ -108,6 +109,7 @@ private:
 };
 
 class Command {
+
 public:
     Command(QString command);
     void invoke(CommandHandler* ch);
@@ -119,13 +121,14 @@ public:
     void setError(ERROR_TYPE);
     void merlinErrorToPslError(int errNum);
     QVector<QString> arguments; // command's arguments
+
 private:
-    QString cmd;         // core command
+    QString cmd;                // core command
     QString data;               // command data string to repond to commands excepts 'GetImage'
-    QByteArray imageToSend;    // image to be sent when 'GetImage' recieved
+    QByteArray imageToSend;     // image to be sent when 'GetImage' recieved
     ERROR_TYPE _error = NO_ERROR;
-    //test
-    void print(void);
+
+    void print(void); //test
 };
 
 #endif // COMMANDHANDLER_H

@@ -754,7 +754,7 @@ void QCstmEqualization::StartEqualization() {
     else { _srcAddr = 0; }
 
     // how many chips to equalize
-    uint chipListSize = _workChipsIndx.size();
+    uint chipListSize = uint(_workChipsIndx.size());
     //qDebug() << "... " << chipListSize;
 
     if (testPulseEqualisationDialog != nullptr) {
@@ -2395,10 +2395,9 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
 
     //! Non-default path, get the folder from a QFileDialog
     if (getPath){
-        // Absolute folder path
+        //! Absolute folder path
         if(remotely) {
             path += "/";
-           // emit equalizationPathExported(path);
         } else {
             path = QFileDialog::getExistingDirectory(
                         this,
@@ -2406,12 +2405,11 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
                         QDir::currentPath(),
                         QFileDialog::ShowDirsOnly);
             path += "/";
-           // emit equalizationPathExported(path);
         }
 
         if( path.isNull() || path == "/" ) {
             //! Nothing selected, return with no prompt or warning
-            qDebug() << "[INFO] Null path input, doing nothing.";
+            qDebug() << "[WARN]\tNull path input, doing nothing.";
             return;
 
         } else {
@@ -2425,12 +2423,14 @@ void QCstmEqualization::LoadEqualization(bool getPath, bool remotely, QString pa
                 //! Return with no warnings or prompts
 
                 emit sig_statusBarAppend(tr("Nothing loaded from equalisation"), "orange");
-                qDebug() << "[INFO] Nothing loaded from equalisation, doing nothing.";
+                qDebug() << "[INFO]\tNothing loaded from equalisation, doing nothing.";
                 return;
             }
         }
     }
+
     emit equalizationPathExported(path);
+
     int nChips = _mpx3gui->getConfig()->getNDevicesSupported();
     QCoreApplication::processEvents();
     QProgressDialog pd(tr("Loading adjustment bits..."), tr("Cancel"), 0, nChips, this);

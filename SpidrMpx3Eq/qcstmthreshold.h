@@ -2,12 +2,11 @@
 #define QCSTMTHRESHOLD_H
 
 #include <QWidget>
+#include <QPointF>
 #include "mpx3gui.h"
 
-#include <QPointF>
-
 namespace Ui {
-class QCstmThreshold;
+    class QCstmThreshold;
 }
 
 class CustomScanThread;

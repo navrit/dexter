@@ -49,16 +49,11 @@ class QCstmGLVisualization : public QWidget
     QTimer * _timer = nullptr;
     int _estimatedETA;
 
-    //QMap<int, histogram> histograms;
     QMap<int, QString> layerNames;
-
-    // Corrections
     QCstmCorrectionsDialog * _corrdialog = nullptr;
-
-    //Statistics
     StatsDialog * _statsdialog = nullptr;
-
     ProfileDialog * _profiledialog = nullptr;
+
 public:
     explicit QCstmGLVisualization(QWidget *parent = nullptr);
     ~QCstmGLVisualization();
@@ -72,7 +67,6 @@ public:
     void drawFrameImage();
     void rewindScoring();
 
-    //void SeparateThresholds(int * data, int size, int * th0, int * th2, int * th4, int * th6, int sizeReduced);
     void SeparateThresholds(int * data, int size, QVector<int> * th0, QVector<int> * th2, QVector<int> * th4, QVector<int> * th6, int sizeReduced);
     bool isTakingData(){ return _takingData; }
 
@@ -112,12 +106,12 @@ public:
     QString getsaveLineEdit_Text();
     QString getStatsString_deviceId();
 
-    // Used in CT
+    //! Used in CT
     void saveImage(QString filename);
     void saveImage(QString filename, QString corrMethod);
     bool runningCT = false;
 
-    // Used in Threshold Scan
+    //! Used in Threshold Scan
     bool runningTHScan = false;
 
     //!Adds the specified threshold if it didn't exist yet. Then switches to it.
@@ -138,6 +132,18 @@ public:
 
     void setMaximumContRW_FPS(int FPS);
 
+    typedef struct {
+        uint nFramesReceived;
+        uint nFramesKept;
+        uint lostFrames;
+        uint lostPackets;
+        uint framesCount;
+        uint mpx3clock_stops;
+        bool dataMisaligned;
+    } scoring;
+
+    scoring getScoring(){ return _score; }
+
 private:
 
     Ui::QCstmGLVisualization * ui = nullptr;
@@ -155,22 +161,11 @@ private:
     unsigned int _nTriggersSave;
     bool _dropFrames = true;
     QString _equalizationPath = "";
+
     MASK_OPERATION _maskOpration = MASK;
     bool _maskingRequestFromServer = false;
-    int _thresholsdVector [NUMBER_OF_CHIPS][8];
+    int _thresholdsVector [NUMBER_OF_CHIPS][8];
     void _loadFromThresholdsVector(void);
-
-
-
-    typedef struct {
-        uint nFramesReceived;
-        uint nFramesKept;
-        uint lostFrames;
-        uint lostPackets;
-        uint framesCount;
-        uint mpx3clock_stops;
-        bool dataMisaligned;
-    } scoring;
 
     typedef struct {
         QString counts;
@@ -200,7 +195,7 @@ private:
     void BuildStatsStringMpx3ClockStops(uint64_t stops);
     void BuildStatsStringOverflow(bool overflow);
 
-    //!Adds the specified threshold to the layerselector combobox
+    //! Adds the specified threshold to the layerselector combobox
     void addThresholdToSelector(int threshold);
 
     QString getPath(QString msg);
@@ -209,7 +204,7 @@ private:
     //! TCP server
     bool autosaveFromServer = false;
 
-    //convert preview index to chip index
+    //! convert preview index to chip index
     QPoint previewIndexToChipIndex(QPoint previewPixel,int *chipId);
 
 private slots:
@@ -262,7 +257,6 @@ private slots:
 
     void onEqualizationPathExported(QString path);
 
-
 public slots:
 
     void StartDataTaking(QString mode="");
@@ -311,13 +305,14 @@ public slots:
     //! Gets called when the current display needs to be reloaded. Uses the layerselector combo-box to determine what layer to load.
     void active_frame_changed();
 
+    //! Handle GUI scripting shortcuts
     void shortcutStart();
     void shortcutIntegrate();
     void shortcutIntegrateToggle();
     void shortcutFrameLength();
     void shortcutFrameNumber();
 
-    //! Used for ZMQ
+    //! Used for ZMQ interface + TCP interface
     void takeImage();
     void takeAndSaveImageSequence();
     void saveImageSlot(QString filePath);
@@ -331,15 +326,12 @@ public slots:
     void setReadoutMode(QString mode);
     void setReadoutFrequency(int frequency); //! in Hz
     void loadConfiguration(QString filePath);
-    //autosave from server
+
+    //! Used only for TCP interface
     void onRequestForAutoSaveFromServer(bool);
-    //saving path from server
     void onRequestForSettingPathFromServer(QString);
-    //saving format from server
     void onRequestForSettingFormatFromServer(int);
-    //masking pixels remotely
     void onRequestToMaskPixelRemotely(int,int);
-    //unmasking pixels remotely
     void onRequestToUnmaskPixelRemotely(int,int);
 
 signals:
@@ -351,7 +343,7 @@ signals:
     void free_to_draw();
     void busy_drawing();
     void mode_changed(bool);
-    // status bar
+
     void sig_statusBarAppend(QString mess, QString colorString);
     void sig_statusBarWrite(QString mess, QString colorString);
     void sig_statusBarClean();
@@ -365,12 +357,6 @@ signals:
     //! Used for ZMQ
     void someCommandHasFinished_Successfully();
     void someCommandHasFailed(QString reply="");
-
-
-    //! All related functions are commented out, should this stay?
-    //void infDataTakingToggeled(bool);
-public:
-    scoring getScoring(){return _score;}
 };
 
 #endif // QCSTMGLVISUALIZATION_H
