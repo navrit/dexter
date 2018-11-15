@@ -2468,17 +2468,26 @@ void QCstmGLVisualization::on_saveLineEdit_editingFinished()
 
 void QCstmGLVisualization::onPixelsMasked(int devID, QSet<int> pixelSet)
 {
-    qDebug() << "Writing to the file " <<"Eq path : " << _equalizationPath ;
-    QFile file(_equalizationPath + QString("mask_") + QString::number(devID));
-    if (file.open(QIODevice::ReadWrite | QFile::Truncate)) {
-        QTextStream stream(&file);
-        QSetIterator<int> i(pixelSet);
-        while (i.hasNext())
-            stream << QString::number(i.next()) << endl;
-        file.close();
+    /* So that the equalisation won't save the mask file to the wrong folder during equalisation */
+    if ( _equalizationPath != "") {
+
+        qDebug() << "[INFO]\tPixels masked, making a file in " << _equalizationPath ;
+
+        QFile file(_equalizationPath + QString("mask_") + QString::number(devID));
+
+        if (file.open(QIODevice::ReadWrite | QFile::Truncate)) {
+            QTextStream stream(&file);
+            QSetIterator<int> i(pixelSet);
+            while (i.hasNext()) {
+                stream << QString::number(i.next()) << "\n";
+            }
+            file.close();
+        } else {
+            qDebug() << "[ERROR]\tCannot open the mask file.";
+        }
+    } else {
+        return;
     }
-    else
-        qDebug() << "Cannot open the mask file.";
 }
 
 bool QCstmGLVisualization::requestToSetSavePath(QString path)

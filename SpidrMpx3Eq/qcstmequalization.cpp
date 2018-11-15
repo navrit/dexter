@@ -746,6 +746,9 @@ void QCstmEqualization::StartEqualizationAllChips() {
 
 void QCstmEqualization::StartEqualization() {
 
+    /* So that the equalisation won't save the mask file to the wrong folder during equalisation */
+    emit equalizationPathExported("");
+
     // I need to do this here and not when already running the thread
     // Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
