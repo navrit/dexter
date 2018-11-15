@@ -30,8 +30,6 @@ QCstmStepperMotor::QCstmStepperMotor(QWidget *parent) :
     tvmodel->setHorizontalHeaderItem( 1, new QStandardItem(QString("angle")) );
 
     ui->stepperCalibrationTableView->setModel( tvmodel );
-
-    //ui->stepperMotorCheckBox
 }
 
 QCstmStepperMotor::~QCstmStepperMotor()
@@ -47,7 +45,7 @@ void QCstmStepperMotor::SetMpx3GUI(Mpx3GUI *p)
     Mpx3Config *config = _mpx3gui->getConfig();
 
     // Stepper Motor Controller
-    _stepper = 0x0;
+    _stepper = nullptr;
     connect(ui->stepperUseCalibCheckBox, SIGNAL(clicked(bool)), config, SLOT(setStepperConfigUseCalib(bool)));
     connect(config, SIGNAL(UseCalibChanged(bool)), ui->stepperUseCalibCheckBox, SLOT(setChecked(bool)));
 

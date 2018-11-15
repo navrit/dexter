@@ -133,7 +133,9 @@ void QCstmEqualization::FullEqRewind()
 
     _eqStatus = __INIT;
     _scanIndex = 0;
-    for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
+    for(int i = 0 ; i < __EQStatus_Count ; i++) {
+        _stepDone[std::size_t(i)] = false;
+    }
 
     // Clean up the left side
     QLayoutItem * item = nullptr;
@@ -141,18 +143,12 @@ void QCstmEqualization::FullEqRewind()
         delete item;
     }
     while ( (item = _ui->horizontalLayout_3->takeAt(0)) ) {
-//        QWidget * wd = item->widget();
-//        if ( wd ) qDebug() << wd->objectName();
         delete item;
     }
 
-    //
     _steeringInfo.clear();
     _chart.clear();
     _checkBoxes.clear();
-    //_ui->horizontalLayoutEqHistos->
-    //        remove
-
 }
 
 
@@ -217,11 +213,11 @@ void QCstmEqualization::on_h1LogyCheckBox_toggled(bool checked) {
     // Report the pixels scheduled for equalization
     for ( int i = 0 ; i < chipListSize ; i++ ) {
         if ( checked ) {
-            GetBarChart(_workChipsIndx[i])->SetLogY( true );
+            GetBarChart(_workChipsIndx[std::size_t(i)])->SetLogY( true );
         } else {
-            GetBarChart(_workChipsIndx[i])->SetLogY( false );
+            GetBarChart(_workChipsIndx[std::size_t(i)])->SetLogY( false );
         }
-        GetBarChart(_workChipsIndx[i])->replot( QCustomPlot::rpQueued );
+        GetBarChart(_workChipsIndx[std::size_t(i)])->replot( QCustomPlot::rpQueued );
     }
 
 
@@ -236,7 +232,7 @@ void QCstmEqualization::ShowEqualizationForChip(bool /*checked*/) {
     // At least one has to be checked, otherwise refuse
     bool nothingChecked = true;
     for ( int i = 0 ; i < int(_checkBoxes.size()); i++ ) {
-        if ( _checkBoxes[i]->isChecked() ) {
+        if ( _checkBoxes[std::size_t(i)]->isChecked() ) {
             nothingChecked = false;
         }
     }
@@ -251,12 +247,14 @@ void QCstmEqualization::ShowEqualizationForChip(bool /*checked*/) {
 
     // And now go ahead. Hide all widgets
     for ( int i = int(_workChipsIndx.size() - 1); i >= 0 ; i-- ) {
-        GetBarChart( _workChipsIndx[i] )->hide();
+        GetBarChart( _workChipsIndx[std::size_t(i)] )->hide();
     }
 
     // Show the new ones
     for ( int i = 0 ; i < int(_checkBoxes.size()); i++ ) {
-        if ( _checkBoxes[i]->isChecked() ) GetBarChart( _workChipsIndx[i] )->show();
+        if ( _checkBoxes[std::size_t(i)]->isChecked() ) {
+            GetBarChart( _workChipsIndx[std::size_t(i)] )->show();
+        }
     }
 
 }
@@ -275,7 +273,7 @@ void QCstmEqualization::NewRunInitEqualization() {
     // Rewind state machine variables
     _eqStatus = QCstmEqualization::__INIT;
     _scanIndex = 0;
-    for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
+    for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[std::size_t(i)] = false;
 
     // No sets available
     _setId = 0;
@@ -287,35 +285,35 @@ void QCstmEqualization::NewRunInitEqualization() {
     for ( int i = 0 ; i < chipListSize ; i++ ) {
 
         // Decide on how many thresholds will be equalized
-        _steeringInfo[i]->equalizationCombination = _equalizationCombination;
+        _steeringInfo[std::size_t(i)]->equalizationCombination = _equalizationCombination;
         // Type: Noise Edge, etc ....
-        _steeringInfo[i]->equalizationType = _equalizationType;
+        _steeringInfo[std::size_t(i)]->equalizationType = _equalizationType;
 
         // Global adj setting used for DAC_DISC_X optimization
-        _steeringInfo[i]->globalAdj = 0;
+        _steeringInfo[std::size_t(i)]->globalAdj = 0;
 
         // Which one to start with
         // If both ! --> start with TH0
         if ( _equalizationCombination == __OnlyTHL || _equalizationCombination == __THLandTHH ) {
-            _steeringInfo[i]->currentTHx = MPX3RX_DAC_THRESH_0;
-            _steeringInfo[i]->currentTHx_String = "THRESH_0";
-            _steeringInfo[i]->currentDAC_DISC = MPX3RX_DAC_DISC_L;
-            _steeringInfo[i]->currentDAC_DISC_String = "DAC_DISC_L";
+            _steeringInfo[std::size_t(i)]->currentTHx = MPX3RX_DAC_THRESH_0;
+            _steeringInfo[std::size_t(i)]->currentTHx_String = "THRESH_0";
+            _steeringInfo[std::size_t(i)]->currentDAC_DISC = MPX3RX_DAC_DISC_L;
+            _steeringInfo[std::size_t(i)]->currentDAC_DISC_String = "DAC_DISC_L";
         } else if ( _equalizationCombination == __OnlyTHH ) {
-            _steeringInfo[i]->currentTHx = MPX3RX_DAC_THRESH_1;
-            _steeringInfo[i]->currentTHx_String = "THRESH_1";
-            _steeringInfo[i]->currentDAC_DISC = MPX3RX_DAC_DISC_H;
-            _steeringInfo[i]->currentDAC_DISC_String = "DAC_DISC_H";
+            _steeringInfo[std::size_t(i)]->currentTHx = MPX3RX_DAC_THRESH_1;
+            _steeringInfo[std::size_t(i)]->currentTHx_String = "THRESH_1";
+            _steeringInfo[std::size_t(i)]->currentDAC_DISC = MPX3RX_DAC_DISC_H;
+            _steeringInfo[std::size_t(i)]->currentDAC_DISC_String = "DAC_DISC_H";
         }
 
         // optimization value for the corresponding DAC_DISC
-        _steeringInfo[i]->currentDAC_DISC_OptValue = 0;
+        _steeringInfo[std::size_t(i)]->currentDAC_DISC_OptValue = 0;
         // Eta and Cut for the THL_DACDisc function (DAC_DISC Optimization)
-        _steeringInfo[i]->currentEta_THx_DAC_Disc = 0.;
-        _steeringInfo[i]->currentCut_THx_DAC_Disc = 0.;
+        _steeringInfo[std::size_t(i)]->currentEta_THx_DAC_Disc = 0.;
+        _steeringInfo[std::size_t(i)]->currentCut_THx_DAC_Disc = 0.;
         // Eta and Cut for the Adj_THL function (Adj extrapolation)
-        _steeringInfo[i]->currentEta_Adj_THx = 0.;
-        _steeringInfo[i]->currentCut_Adj_THx = 0.;
+        _steeringInfo[std::size_t(i)]->currentEta_Adj_THx = 0.;
+        _steeringInfo[std::size_t(i)]->currentCut_Adj_THx = 0.;
 
     }
 
@@ -336,7 +334,7 @@ void QCstmEqualization::NewRunInitEqualization() {
     startS += " CHIP ";
     for ( int i = 0 ; i < chipListSize ; i++ ) {
         startS += "[";
-        startS += QString::number(_workChipsIndx[i], 'd', 0);
+        startS += QString::number(_workChipsIndx[std::size_t(i)], 'd', 0);
         startS += "] ";
     }
     startS += "-----------";
@@ -349,9 +347,10 @@ bool QCstmEqualization::InitEqualization(int chipId) {
     // Rewind state machine variables
     _eqStatus = QCstmEqualization::__INIT; //! Important state machine variable
     _scanIndex = 0;
-    for(int i = 0 ; i < __EQStatus_Count ; i++) _stepDone[i] = false;
+    for(int i = 0 ; i < __EQStatus_Count ; i++) {
+        _stepDone[std::size_t(i)] = false;
+    }
 
-    //ClearTextBrowser();
     _ui->eqLabelFineTuningLoopProgress->setText("-/-");
 
     // No sets available
@@ -400,35 +399,35 @@ bool QCstmEqualization::InitEqualization(int chipId) {
         _steeringInfo.push_back( new equalizationSteeringInfo );
 
         // Decide on how many thresholds will be equalized
-        _steeringInfo[i]->equalizationCombination = _equalizationCombination;
+        _steeringInfo[std::size_t(i)]->equalizationCombination = _equalizationCombination;
         // Type: Noise Edge, etc ....
-        _steeringInfo[i]->equalizationType = _equalizationType;
+        _steeringInfo[std::size_t(i)]->equalizationType = _equalizationType;
 
         // Global adj setting used for DAC_DISC_X optimization
-        _steeringInfo[i]->globalAdj = 0;
+        _steeringInfo[std::size_t(i)]->globalAdj = 0;
 
         // Which one to start with
         // If both ! --> start with TH0
         if ( _equalizationCombination == __OnlyTHL || _equalizationCombination == __THLandTHH ) {
-            _steeringInfo[i]->currentTHx = MPX3RX_DAC_THRESH_0;
-            _steeringInfo[i]->currentTHx_String = "THRESH_0";
-            _steeringInfo[i]->currentDAC_DISC = MPX3RX_DAC_DISC_L;
-            _steeringInfo[i]->currentDAC_DISC_String = "DAC_DISC_L";
+            _steeringInfo[std::size_t(i)]->currentTHx = MPX3RX_DAC_THRESH_0;
+            _steeringInfo[std::size_t(i)]->currentTHx_String = "THRESH_0";
+            _steeringInfo[std::size_t(i)]->currentDAC_DISC = MPX3RX_DAC_DISC_L;
+            _steeringInfo[std::size_t(i)]->currentDAC_DISC_String = "DAC_DISC_L";
         } else if ( _equalizationCombination == __OnlyTHH ) {
-            _steeringInfo[i]->currentTHx = MPX3RX_DAC_THRESH_1;
-            _steeringInfo[i]->currentTHx_String = "THRESH_1";
-            _steeringInfo[i]->currentDAC_DISC = MPX3RX_DAC_DISC_H;
-            _steeringInfo[i]->currentDAC_DISC_String = "DAC_DISC_H";
+            _steeringInfo[std::size_t(i)]->currentTHx = MPX3RX_DAC_THRESH_1;
+            _steeringInfo[std::size_t(i)]->currentTHx_String = "THRESH_1";
+            _steeringInfo[std::size_t(i)]->currentDAC_DISC = MPX3RX_DAC_DISC_H;
+            _steeringInfo[std::size_t(i)]->currentDAC_DISC_String = "DAC_DISC_H";
         }
 
         // optimization value for the corresponding DAC_DISC
-        _steeringInfo[i]->currentDAC_DISC_OptValue = 0;
+        _steeringInfo[std::size_t(i)]->currentDAC_DISC_OptValue = 0;
         // Eta and Cut for the THL_DACDisc function (DAC_DISC Optimization)
-        _steeringInfo[i]->currentEta_THx_DAC_Disc = 0.;
-        _steeringInfo[i]->currentCut_THx_DAC_Disc = 0.;
+        _steeringInfo[std::size_t(i)]->currentEta_THx_DAC_Disc = 0.;
+        _steeringInfo[std::size_t(i)]->currentCut_THx_DAC_Disc = 0.;
         // Eta and Cut for the Adj_THL function (Adj extrapolation)
-        _steeringInfo[i]->currentEta_Adj_THx = 0.;
-        _steeringInfo[i]->currentCut_Adj_THx = 0.;
+        _steeringInfo[std::size_t(i)]->currentEta_Adj_THx = 0.;
+        _steeringInfo[std::size_t(i)]->currentCut_Adj_THx = 0.;
     }
 
     // BarCharts !
@@ -446,7 +445,7 @@ bool QCstmEqualization::InitEqualization(int chipId) {
     startS += " CHIP ";
     for ( int i = 0 ; i < chipListSize ; i++ ) {
         startS += "[";
-        startS += QString::number(_workChipsIndx[i], 'd', 0);
+        startS += QString::number(_workChipsIndx[std::size_t(i)], 'd', 0);
         startS += "] ";
     }
     startS += "-----------";
@@ -465,7 +464,7 @@ bool QCstmEqualization::InitEqualization(int chipId) {
 
     // Create an equalization per chip
     for ( int i = 0 ; i < chipListSize ; i++ ) {
-        _eqMap[_workChipsIndx[i]] = new Mpx3EqualizationResults;
+        _eqMap[_workChipsIndx[std::size_t(i)]] = new Mpx3EqualizationResults;
     }
 
     return true;
@@ -545,8 +544,8 @@ QCheckBox * QCstmEqualization::GetCheckBox(int chipIdx) {
     // Find the index
     for (int i = 0; i < int(_workChipsIndx.size()); i++ ) {
         // return the corresponding results Ptr
-        if ( _workChipsIndx[i] == chipIdx ) {
-            return _checkBoxes[i];
+        if ( _workChipsIndx[std::size_t(i)] == chipIdx ) {
+            return _checkBoxes[std::size_t(i)];
         }
     }
 
@@ -567,8 +566,8 @@ equalizationSteeringInfo * QCstmEqualization::GetSteeringInfo(int chipIdx) {
     // Find the index
     for (int i = 0 ; i < int(_workChipsIndx.size()); i++ ) {
         // return the corresponding results Ptr
-        if ( _workChipsIndx[i] == chipIdx ) {
-            return _steeringInfo[i];
+        if ( _workChipsIndx[std::size_t(i)] == chipIdx ) {
+            return _steeringInfo[std::size_t(i)];
         }
     }
 
@@ -584,9 +583,9 @@ BarChart * QCstmEqualization::GetAdjBarChart(int chipIdx, Mpx3EqualizationResult
 
     for (int i = 0 ; i < int(_workChipsIndx.size()); i++ ) {
         // return the corresponding results Ptr
-        if ( _workChipsIndx[i] == chipIdx ) {
-            if ( sel == Mpx3EqualizationResults::__ADJ_L) return _adjchart_L[i];
-            if ( sel == Mpx3EqualizationResults::__ADJ_H) return _adjchart_H[i];
+        if ( _workChipsIndx[std::size_t(i)] == chipIdx ) {
+            if ( sel == Mpx3EqualizationResults::__ADJ_L) return _adjchart_L[std::size_t(i)];
+            if ( sel == Mpx3EqualizationResults::__ADJ_H) return _adjchart_H[std::size_t(i)];
         }
     }
 
@@ -603,8 +602,8 @@ BarChart * QCstmEqualization::GetBarChart(int chipIdx) {
     // Find the index
     for (unsigned long i = 0; i < _workChipsIndx.size(); i++ ) {
         // return the corresponding results Ptr
-        if ( _workChipsIndx[i] == chipIdx ) {
-            return _chart[i];
+        if ( _workChipsIndx[std::size_t(i)] == chipIdx ) {
+            return _chart[std::size_t(i)];
         }
     }
 
@@ -618,8 +617,8 @@ bool QCstmEqualization::pixelInScheduledChips(int pix) {
 
     for ( unsigned long i = 0 ; i < chipListSize ; i++ ) {
 
-        if ( pix >= ( _workChipsIndx[i] * __matrix_size )  &&
-             pix <  ( (_workChipsIndx[i] + 1) * __matrix_size )) {
+        if ( pix >= ( _workChipsIndx[std::size_t(i)] * __matrix_size )  &&
+             pix <  ( (_workChipsIndx[std::size_t(i)] + 1) * __matrix_size )) {
             return true;
         }
     }
@@ -642,7 +641,7 @@ void QCstmEqualization::KeepOtherChipsQuiet() {
 
         // If the device is present and it is not in the schedule-for-eq list
         //  apply the high thresholds
-        for ( int i = 0; i < chipListSize; i++ ) if ( _workChipsIndx[i] == idx ) continue;
+        for ( int i = 0; i < chipListSize; i++ ) if ( _workChipsIndx[std::size_t(i)] == idx ) continue;
 
         //! Set all the thresholds to the same value. If we're not in colour mode then they aren't connected anyway so it doesn't matter
         for (int i = 1; i <= MPX3RX_DAC_THRESH_7; i++) {
@@ -783,9 +782,9 @@ void QCstmEqualization::StartEqualization() {
 
         // CONFIG for all involved chips
         for ( uint i = 0 ; i < chipListSize ; i++ ) {
-            Configuration(_workChipsIndx[i], _steeringInfo[i]->currentTHx, true);
-            _steeringInfo[i]->globalAdj = 0;
-            _steeringInfo[i]->currentDAC_DISC_OptValue = int(DAC_DISC_1_value); // for now make the opt value equal to the test value
+            Configuration(_workChipsIndx[std::size_t(i)], _steeringInfo[std::size_t(i)]->currentTHx, true);
+            _steeringInfo[std::size_t(i)]->globalAdj = 0;
+            _steeringInfo[std::size_t(i)]->currentDAC_DISC_OptValue = int(DAC_DISC_1_value); // for now make the opt value equal to the test value
             //! Default = 100 for noise (SLGM)
             qDebug() << "[INFO]\tCurrent DAC DISC Value [" << i << "] =" << _steeringInfo[i]->currentDAC_DISC_OptValue;
         }
@@ -2781,7 +2780,7 @@ Mpx3EqualizationResults::eq_status Mpx3EqualizationResults::GetStatus(int pixId,
 //! The adj binary files come one per chip.  First 64k correspond to THL and next 64k to THH
 bool Mpx3EqualizationResults::ReadAdjBinaryFile(QString fn) {
 
-    qDebug() << "Mpx3EqualizationResults::ReadAdjBinaryFile   [INFO] Read Adj binary file: " << fn.toStdString().c_str();
+    qDebug() << "[INFO]\tRead Adj binary file: " << fn.toStdString().c_str();
     QFile file(fn);
     if ( !file.open(QIODevice::ReadOnly) ) {
         return false;
@@ -2792,7 +2791,7 @@ bool Mpx3EqualizationResults::ReadAdjBinaryFile(QString fn) {
     temp_pixId_Adj_X = file.readAll();
     file.close();
     int readSize = temp_pixId_Adj_X.size();
-    qDebug() << "Mpx3EqualizationResults::ReadAdjBinaryFile   [INFO] read " << temp_pixId_Adj_X.size() << " bytes";
+    qDebug() << "[INFO]\tRead " << temp_pixId_Adj_X.size() << " bytes";
 
     //! Now split in Low and High
     //!
@@ -2813,34 +2812,22 @@ bool Mpx3EqualizationResults::ReadAdjBinaryFile(QString fn) {
 
 bool Mpx3EqualizationResults::WriteAdjBinaryFile(QString fn) {
 
-    //ofstream fd;
-    cout << "Mpx3EqualizationResults::WriteAdjBinaryFile    [INFO] Writing adj file to: " << fn.toStdString() << endl;
+    qDebug() << "[INFO]\tWriting adj file to: " << fn;
 
     QFile file(fn);
-    if (!file.open(QIODevice::WriteOnly)) return false;
-    //if ( sel == __ADJ_L ) file.write(_pixId_Adj_L);
-    //if ( sel == __ADJ_H ) file.write(_pixId_Adj_H);
+    if (!file.open(QIODevice::WriteOnly)) {
+        return false;
+    }
 
-    qDebug() << "Mpx3EqualizationResults::WriteAdjBinaryFile       Write L: " << _pixId_Adj_L.size() << endl;
-    qDebug() << "Mpx3EqualizationResults::WriteAdjBinaryFile       Write H: " << _pixId_Adj_H.size() << endl;
+    qDebug() << "[INFO]\tWrite L: " << _pixId_Adj_L.size();
+    qDebug() << "[INFO]\tWrite H: " << _pixId_Adj_H.size();
 
     qint64 bytesWritten = file.write(_pixId_Adj_L);
     bytesWritten += file.write(_pixId_Adj_H);
 
-    qDebug() << "Mpx3EqualizationResults::WriteAdjBinaryFile       Bytes written: " << bytesWritten << endl;
+    qDebug() << "[INFO]\tBytes written: " << bytesWritten;
 
-    /*fd.open (fn.toStdString().c_str(), ios::out | ios::binary);
-    qDebug() << "Mpx3EqualizationResults::WriteAdjBinaryFile   Writing adjustment matrix to: " << fn.toStdString() << endl;
-    // Each adjustment value is written as 8 bits val.  Each value is actually 5 bits.
-    char buffer;
-    for( int j = 0 ; j < __matrix_size ; j++ ){
-        buffer = (char) ( _pixId_Adj[j] & 0xFF );
-        fd.write( &buffer, 1 );   // _pixId_Adj[j];
-    }
-
-    fd.close();*/
     file.close();
-
 
     return true;
 }
@@ -2849,7 +2836,7 @@ bool Mpx3EqualizationResults::WriteMaskBinaryFile(QString fn) {
 
     ofstream fd;
     fd.open (fn.toStdString().c_str(), ios::out);
-    cout << "Mpx3EqualizationResults::WriteMaskBinaryFile   Writing mask file to: " << fn.toStdString() << endl;
+    qDebug() << "[INFO]\tWriting mask file to: " << fn;
 
     for ( int i = 0 ; i < __matrix_size ; i++ ) {
         //! If equalisation status is failed, then write the flattened coordinate to file.
@@ -2861,20 +2848,15 @@ bool Mpx3EqualizationResults::WriteMaskBinaryFile(QString fn) {
 
 bool Mpx3EqualizationResults::ReadMaskBinaryFile(QString fn) {
 
-
     ifstream fd;
     fd.open (fn.toStdString().c_str(), ios::out);
-    qDebug() << "Mpx3EqualizationResults::ReadMaskBinaryFile   [MASK] Reading mask file from: " << fn.toStdString().c_str();
+    qDebug() << "[INFO]\tReading mask file from: " << fn;
 
     int val;
     while ( fd.good() ) {
-
         fd >> val;
-
         if ( fd.eof() ) break;
-
         maskedPixels.insert( val );
-
     }
 
     return true;
