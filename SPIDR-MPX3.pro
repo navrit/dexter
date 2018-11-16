@@ -16,7 +16,8 @@
 TEMPLATE = subdirs
 
 # Libraries
-SUBDIRS += SpidrMpx3Lib/SpidrMpx3Lib.pro
+SUBDIRS += SpidrMpx3Lib/SpidrMpx3Lib.pro \
+    S-DexterTester
 
 # Executables
 SUBDIRS += spidrflash/spidrflash.pro
