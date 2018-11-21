@@ -490,12 +490,12 @@ void setBothCountersHandler(CommandHandler* ch, Command* cmd){
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    if(cmd->arguments.at(0) == "enable"){
+    if(cmd->arguments.at(0) == "2"){ //we send the data of both counter
         Mpx3GUI::getInstance()->getConfig()->setReadBothCounters(true);
         cmd->setData("Both counters is enabled");
         cmd->setError(NO_ERROR);
     }
-    else if(cmd->arguments.at(0) == "disable"){
+    else if(cmd->arguments.at(0) == "0" || cmd->arguments.at(0) == "1"){ //we send the data of low counter
         Mpx3GUI::getInstance()->getConfig()->setReadBothCounters(false);
         cmd->setData("Both counters is disabled");
         cmd->setError(NO_ERROR);

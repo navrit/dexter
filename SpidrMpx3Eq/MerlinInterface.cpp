@@ -283,7 +283,7 @@ void MerlinInterface::initializeTables()
     setTable.insert(CHARGESUMMING,"SetChargeSumming;" + QString::number(CSM_SPM));
     setTable.insert(GAIN,"SetGainMode;" + QString::number(HIGH_LOW));
     setTable.insert(CONTINUOUSRW,"SetReadoutMode;" + QString::number(CONT_SEQ));
-    setTable.insert(ENABLECOUNTER1,"SetBothCounters;" + QString::number(ENABLE_DISABLE));
+    setTable.insert(ENABLECOUNTER1,"SetBothCounters;" + QString::number(N));
     setTable.insert(COUNTERDEPTH,"SetCounterDepth;" + QString::number(N));
     setTable.insert(ACQUISITIONTIME,"SetShutterLength;"+ QString::number(OPEN) + ";" + QString::number(N));
     setTable.insert(ACQUISITIONPERIOD,"SetShutterPeriod;" + QString::number(N));
