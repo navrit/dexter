@@ -149,13 +149,20 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     //QString configFile = "./config/mpx3.json";
 
     //if ( ! config->fromJsonFile( configFile ) ) {
-    if (! _loadConfigsFromGeneralSettings()) {
+    bool configFileLoaded =  _loadConfigsFromGeneralSettings();
+    if (!configFileLoaded)
+    {
+        qDebug() << "["<< _generalSettings->getConfigPath() << "] does not exist. Config file loaded from defualt path.";
+        configFileLoaded = load_config_remotely("./config/mpx3.json");
+
+    }
+
+    if (! configFileLoaded) {
         QMessageBox::critical(this, "Loading configuration error",
                               QString("Couldn't load the following configuration file: %1. The program won't start. Place the file in the suggested relative path and run again. You are running the program from \"%2\"").arg(_generalSettings->getConfigPath()).arg(QDir::currentPath()));
         _armedOk = false; // it won't let the application go into the event loop
         return;
     }
-
     // View keyboard shortcuts
     // NOTE: Change on_shortcutsSwithPages to match this
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+1", "Switch to viewer") ), this)  );
@@ -1002,7 +1009,6 @@ bool Mpx3GUI::_loadConfigsFromGeneralSettings()
     for (int i = 0; i < pathList.length() - 1; ++i) {
          path += pathList.at(i) + QDir::separator();
     }
-
     QDir confDir(path);
     if(confDir.exists() && filename.split(".").last() == "json"){
         res = load_config_remotely(_generalSettings->getConfigPath());
@@ -1190,14 +1196,20 @@ void Mpx3GUI::save_config(){
 
 bool Mpx3GUI::load_config(){
 
+     bool res = false;
     if(!_loadConfigRemotly){
        _configPath  = QFileDialog::getOpenFileName(this, tr("Load config (DACs)"), tr("."), tr("json files (*.json)"));
     }
-    bool res = config->fromJsonFile(_configPath);
-    _generalSettings->setConfigPath(_configPath);
+    QFileInfo configFileInfo(_configPath);
+    if (configFileInfo.exists() && configFileInfo.isFile()) {
+        res = config->fromJsonFile(_configPath);
+        _generalSettings->setConfigPath(_configPath);
+        // update the dacs
+        _ui->DACsWidget->PopulateDACValues();
+       } else {
+           res = false;
+       }
 
-    // update the dacs
-    _ui->DACsWidget->PopulateDACValues();
 
     _loadConfigRemotly = false; //reset the flag
 
