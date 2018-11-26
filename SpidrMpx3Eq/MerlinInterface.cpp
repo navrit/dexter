@@ -113,7 +113,6 @@ MerlinCommand::MerlinCommand(QString command, MerlinInterface &mi)
     if( _cmdType == SET_TYPE){
         if(mi.setTable.contains(items.at(NAME_INDEX))){
 
-
             QString pslCmd = mi.setTable[_cmdName];
             QStringList pslCmdList = pslCmd.split(";");
             QString sndCmd = pslCmdList.at(0);

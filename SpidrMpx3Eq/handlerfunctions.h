@@ -791,7 +791,7 @@ void setStartScanHandler(CommandHandler* ch, Command* cmd)
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int val = cmd->arguments.at(0).toInt();
+    int val = (int)cmd->arguments.at(0).toDouble();
     int ret = ch->setStartScan(val);
     cmd->setData(QString::number(ret));
     cmd->setError((ERROR_TYPE)ret);
@@ -807,7 +807,7 @@ void setStopScanHandler(CommandHandler* ch, Command* cmd)
 {
     if(!cmd->enoughArguments(1,"SetStopScan"))  //this command comes with one argument
         return;
-    int val = cmd->arguments.at(0).toInt();
+    int val = (int)cmd->arguments.at(0).toDouble();
     int ret = ch->setStopScan(val);
     cmd->setData(QString::number(ret));
     cmd->setError((ERROR_TYPE)ret);
@@ -825,7 +825,7 @@ void setStepScanHandler(CommandHandler* ch, Command* cmd)
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int val = cmd->arguments.at(0).toInt();
+    int val = (int) cmd->arguments.at(0).toDouble();
     int ret = ch->setStepScan(val);
     cmd->setData(QString::number(ret));
     cmd->setError((ERROR_TYPE)ret);
@@ -843,7 +843,7 @@ void setThresholdScanHandler(CommandHandler* ch, Command* cmd)
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int val = cmd->arguments.at(0).toInt();
+    int val = (int) cmd->arguments.at(0).toDouble();
     int ret = ch->setThresholdScan(val);
     cmd->setData(QString::number(ret));
     cmd->setError((ERROR_TYPE)ret);
@@ -860,7 +860,7 @@ void setFramesPerScanHandler(CommandHandler* ch, Command* cmd){
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    int val = cmd->arguments.at(0).toInt();
+    int val = (int)cmd->arguments.at(0).toDouble();
     int ret = ch->setFramesPerScan(val);
     cmd->setData(QString::number(ret));
     cmd->setError((ERROR_TYPE)ret);

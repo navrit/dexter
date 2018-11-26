@@ -357,6 +357,7 @@ int CommandHandler::setStepScan(int val)
 {
     if(val < 1 || val > 510)
         return ARG_VAL_OUT_RANGE;
+    qDebug() << "step : " << val;
     thresholdScan::getInstance()->GetUI()->spinBox_spacing->setValue(val);
     return NO_ERROR;
 }
@@ -796,6 +797,7 @@ QString Command::getData()
 
 void Command::invoke(CommandHandler *ch)
 {
+    qDebug() << "debug cmd :" << cmd;
     if(ch->cmdTable.contains(cmd))
     {
         ch->cmdTable[cmd].handler(ch, this);
