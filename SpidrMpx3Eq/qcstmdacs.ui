@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1009</width>
-    <height>555</height>
+    <height>682</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,134 +24,104 @@
     <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0,0,0">
      <item>
       <layout class="QGridLayout" name="gridLayout1">
-       <item row="7" column="2">
-        <widget class="QSlider" name="dac7hSlider">
+       <item row="1" column="2">
+        <widget class="QSlider" name="dac1hSlider">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="7" column="4">
-        <widget class="QLabel" name="dac7VLabel">
+       <item row="5" column="5">
+        <widget class="QLabel" name="dac5VLabel">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="7" column="3">
-        <widget class="QSpinBox" name="dac7SpinBox">
-         <property name="keyboardTracking">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="1">
-        <widget class="QLabel" name="dac8Label">
-         <property name="text">
-          <string>I_Preamp</string>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="2">
-        <widget class="QSlider" name="dac8hSlider">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="3">
-        <widget class="QSpinBox" name="dac8SpinBox">
-         <property name="keyboardTracking">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="4">
-        <widget class="QLabel" name="dac8VLabel">
+       <item row="4" column="5">
+        <widget class="QLabel" name="dac4VLabel">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="9" column="1">
-        <widget class="QLabel" name="dac9Label">
+       <item row="0" column="1">
+        <widget class="QLabel" name="dac0Label">
          <property name="text">
-          <string>I_Krum</string>
+          <string>Threshold0</string>
          </property>
         </widget>
        </item>
-       <item row="9" column="2">
-        <widget class="QSlider" name="dac9hSlider">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="3">
-        <widget class="QSpinBox" name="dac9SpinBox">
+       <item row="1" column="4">
+        <widget class="QSpinBox" name="dac1SpinBox">
          <property name="keyboardTracking">
           <bool>false</bool>
          </property>
         </widget>
        </item>
-       <item row="9" column="4">
-        <widget class="QLabel" name="dac9VLabel">
+       <item row="6" column="5">
+        <widget class="QLabel" name="dac6VLabel">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
-        <widget class="QLabel" name="dac10Label">
-         <property name="text">
-          <string>I_Shaper</string>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="2">
-        <widget class="QSlider" name="dac10hSlider">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="3">
-        <widget class="QSpinBox" name="dac10SpinBox">
-         <property name="keyboardTracking">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="4">
-        <widget class="QLabel" name="dac10VLabel">
+       <item row="13" column="5">
+        <widget class="QLabel" name="dac13VLabel">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
-        <widget class="QLabel" name="dac11Label">
-         <property name="text">
-          <string>I_Disc</string>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="2">
-        <widget class="QSlider" name="dac11hSlider">
+       <item row="15" column="2">
+        <spacer name="verticalSpacer_3">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Vertical</enum>
          </property>
-        </widget>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
-       <item row="11" column="3">
-        <widget class="QSpinBox" name="dac11SpinBox">
+       <item row="3" column="4">
+        <widget class="QSpinBox" name="dac3SpinBox">
          <property name="keyboardTracking">
           <bool>false</bool>
          </property>
         </widget>
        </item>
-       <item row="11" column="4">
-        <widget class="QLabel" name="dac11VLabel">
+       <item row="4" column="0">
+        <widget class="QCheckBox" name="dac4CheckBox">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="shortcut">
+          <string>T, 4</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QSlider" name="dac3hSlider">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QCheckBox" name="dac0CheckBox">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="shortcut">
+          <string>T, 0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="5">
+        <widget class="QLabel" name="dac3VLabel">
          <property name="text">
           <string/>
          </property>
@@ -171,15 +141,332 @@
          </property>
         </widget>
        </item>
-       <item row="12" column="3">
+       <item row="12" column="4">
         <widget class="QSpinBox" name="dac12SpinBox">
          <property name="keyboardTracking">
           <bool>false</bool>
          </property>
         </widget>
        </item>
-       <item row="12" column="4">
+       <item row="12" column="5">
         <widget class="QLabel" name="dac12VLabel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="4">
+        <widget class="QSpinBox" name="dac5SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0">
+        <widget class="QCheckBox" name="dac7CheckBox">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="shortcut">
+          <string>T, 7</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QLabel" name="dac7Label">
+         <property name="text">
+          <string>Threshold7</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="4">
+        <widget class="QSpinBox" name="dac2SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="2">
+        <widget class="QSlider" name="dac10hSlider">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="4">
+        <widget class="QSpinBox" name="dac10SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="5">
+        <widget class="QLabel" name="dac10VLabel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="4">
+        <widget class="QSpinBox" name="dac7SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="0">
+        <widget class="QCheckBox" name="dac11CheckBox">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="1">
+        <widget class="QLabel" name="dac11Label">
+         <property name="text">
+          <string>I_Disc</string>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="2">
+        <widget class="QSlider" name="dac11hSlider">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0">
+        <widget class="QCheckBox" name="dac8CheckBox">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="5">
+        <widget class="QLabel" name="dac7VLabel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QSlider" name="dac2hSlider">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QLabel" name="dac8Label">
+         <property name="text">
+          <string>I_Preamp</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="2">
+        <widget class="QSlider" name="dac4hSlider">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="2">
+        <widget class="QSlider" name="dac5hSlider">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="dac1Label">
+         <property name="text">
+          <string>Threshold1</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="5">
+        <widget class="QLabel" name="dac0VLabel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <widget class="QLabel" name="dac9Label">
+         <property name="text">
+          <string>I_Krum</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="2">
+        <widget class="QSlider" name="dac9hSlider">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="4">
+        <widget class="QSpinBox" name="dac9SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="4">
+        <widget class="QSpinBox" name="dac11SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="5">
+        <widget class="QLabel" name="dac11VLabel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="0">
+        <widget class="QCheckBox" name="dac12CheckBox">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="2">
+        <widget class="QSlider" name="dac6hSlider">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="4">
+        <widget class="QSpinBox" name="dac8SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="5">
+        <widget class="QLabel" name="dac8VLabel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0">
+        <widget class="QCheckBox" name="dac9CheckBox">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="shortcut">
+          <string>I, K</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QCheckBox" name="dac2CheckBox">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="shortcut">
+          <string>T, 2</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="4">
+        <widget class="QSpinBox" name="dac6SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLabel" name="dac4Label">
+         <property name="text">
+          <string>Threshold4</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="5">
+        <widget class="QLabel" name="dac9VLabel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="0">
+        <widget class="QCheckBox" name="dac10CheckBox">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="1">
+        <widget class="QLabel" name="dac10Label">
+         <property name="text">
+          <string>I_Shaper</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLabel" name="dac2Label">
+         <property name="text">
+          <string>Threshold2</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="5">
+        <widget class="QLabel" name="dac1VLabel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLabel" name="dac3Label">
+         <property name="text">
+          <string>Threshold3</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="5">
+        <widget class="QLabel" name="dac2VLabel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QLabel" name="dac6Label">
+         <property name="text">
+          <string>Threshold6</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLabel" name="dac5Label">
+         <property name="text">
+          <string>Threshold5</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="4">
+        <widget class="QSpinBox" name="dac4SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="2">
+        <widget class="QSlider" name="dac7hSlider">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="13" column="0">
+        <widget class="QCheckBox" name="dac13CheckBox">
          <property name="text">
           <string/>
          </property>
@@ -199,280 +486,17 @@
          </property>
         </widget>
        </item>
-       <item row="13" column="3">
+       <item row="13" column="4">
         <widget class="QSpinBox" name="dac13SpinBox">
          <property name="keyboardTracking">
           <bool>false</bool>
          </property>
         </widget>
        </item>
-       <item row="13" column="4">
-        <widget class="QLabel" name="dac13VLabel">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QCheckBox" name="dac0CheckBox">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="shortcut">
-          <string>T, 0</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QCheckBox" name="dac1CheckBox">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="shortcut">
-          <string>T, 1</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QCheckBox" name="dac2CheckBox">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="shortcut">
-          <string>T, 2</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QCheckBox" name="dac3CheckBox">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="shortcut">
-          <string>T, 3</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QCheckBox" name="dac4CheckBox">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="shortcut">
-          <string>T, 4</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="dac1Label">
-         <property name="text">
-          <string>Threshold1</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="dac0Label">
-         <property name="text">
-          <string>Threshold0</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QSlider" name="dac0hSlider">
+       <item row="8" column="2">
+        <widget class="QSlider" name="dac8hSlider">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="3">
-        <widget class="QSpinBox" name="dac0SpinBox">
-         <property name="keyboardTracking">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="4">
-        <widget class="QLabel" name="dac0VLabel">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="4">
-        <widget class="QLabel" name="dac1VLabel">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="3">
-        <widget class="QSpinBox" name="dac1SpinBox">
-         <property name="keyboardTracking">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QSlider" name="dac1hSlider">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLabel" name="dac2Label">
-         <property name="text">
-          <string>Threshold2</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="3">
-        <widget class="QSpinBox" name="dac2SpinBox">
-         <property name="keyboardTracking">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="4">
-        <widget class="QLabel" name="dac2VLabel">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <widget class="QSlider" name="dac2hSlider">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLabel" name="dac3Label">
-         <property name="text">
-          <string>Threshold3</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="2">
-        <widget class="QSlider" name="dac3hSlider">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="4">
-        <widget class="QLabel" name="dac3VLabel">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="3">
-        <widget class="QSpinBox" name="dac3SpinBox">
-         <property name="keyboardTracking">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QLabel" name="dac4Label">
-         <property name="text">
-          <string>Threshold4</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="2">
-        <widget class="QSlider" name="dac4hSlider">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="3">
-        <widget class="QSpinBox" name="dac4SpinBox">
-         <property name="keyboardTracking">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="4">
-        <widget class="QLabel" name="dac4VLabel">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <widget class="QLabel" name="dac5Label">
-         <property name="text">
-          <string>Threshold5</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="2">
-        <widget class="QSlider" name="dac5hSlider">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="3">
-        <widget class="QSpinBox" name="dac5SpinBox">
-         <property name="keyboardTracking">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="4">
-        <widget class="QLabel" name="dac5VLabel">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QLabel" name="dac6Label">
-         <property name="text">
-          <string>Threshold6</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="2">
-        <widget class="QSlider" name="dac6hSlider">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="3">
-        <widget class="QSpinBox" name="dac6SpinBox">
-         <property name="keyboardTracking">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="4">
-        <widget class="QLabel" name="dac6VLabel">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="1">
-        <widget class="QLabel" name="dac7Label">
-         <property name="text">
-          <string>Threshold7</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QCheckBox" name="dac5CheckBox">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="shortcut">
-          <string>T, 5</string>
          </property>
         </widget>
        </item>
@@ -486,73 +510,56 @@
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
-        <widget class="QCheckBox" name="dac7CheckBox">
+       <item row="0" column="4">
+        <widget class="QSpinBox" name="dac0SpinBox">
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QCheckBox" name="dac5CheckBox">
          <property name="text">
           <string/>
          </property>
          <property name="shortcut">
-          <string>T, 7</string>
+          <string>T, 5</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="0">
-        <widget class="QCheckBox" name="dac8CheckBox">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="0">
-        <widget class="QCheckBox" name="dac9CheckBox">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="shortcut">
-          <string>I, K</string>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="0">
-        <widget class="QCheckBox" name="dac10CheckBox">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="0">
-        <widget class="QCheckBox" name="dac11CheckBox">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="0">
-        <widget class="QCheckBox" name="dac12CheckBox">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="0">
-        <widget class="QCheckBox" name="dac13CheckBox">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="15" column="2">
-        <spacer name="verticalSpacer_3">
+       <item row="0" column="2">
+        <widget class="QSlider" name="dac0hSlider">
          <property name="orientation">
-          <enum>Qt::Vertical</enum>
+          <enum>Qt::Horizontal</enum>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QCheckBox" name="dac1CheckBox">
+         <property name="text">
+          <string/>
          </property>
-        </spacer>
+         <property name="shortcut">
+          <string>T, 1</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QCheckBox" name="dac3CheckBox">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="shortcut">
+          <string>T, 3</string>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="3">
+        <widget class="QPushButton" name="remoteThresholdpushButton">
+         <property name="text">
+          <string>Remote Threshold</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -1079,7 +1086,10 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0,0">
        <item>
-        <widget class="QCustomPlot" name="plotScan" native="true"/>
+        <widget class="QCustomPlot" name="plotScan" native="true">
+         <zorder>groupBox_2</zorder>
+         <zorder>groupBox_3</zorder>
+        </widget>
        </item>
        <item>
         <widget class="QProgressBar" name="progressBar">

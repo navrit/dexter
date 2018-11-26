@@ -626,11 +626,13 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
             }
             spidrcontrol->setDac( int(chip), MPX3RX_DAC_TABLE[ i ].code, val );
 
+            QCstmGLVisualization::getInstance()->setThresholdsVector(chip,i,val);
             // Now I need to change it in the local data base
             SetDACValueLocalConfig( chip, i, val);
         }
     } else {
          spidrcontrol->setDac( int(_deviceIndex), MPX3RX_DAC_TABLE[ i ].code, val );
+         QCstmGLVisualization::getInstance()->setThresholdsVector(int(_deviceIndex),i,val);
         // Now I need to chage it in the local data base
         SetDACValueLocalConfig( _deviceIndex, i, val);
     }
@@ -654,11 +656,14 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
                 continue;
             }
             spidrcontrol->setDac( chip, MPX3RX_DAC_TABLE[ i ].code, val );
+            QCstmGLVisualization::getInstance()->setThresholdsVector(chip,i,val);
+
             // Now I need to chage it in the local data base
             SetDACValueLocalConfig( chip, i, val);
         }
     } else {
          spidrcontrol->setDac( _deviceIndex, MPX3RX_DAC_TABLE[ i ].code, val );
+           QCstmGLVisualization::getInstance()->setThresholdsVector(int(_deviceIndex),i,val);
         // Now I need to chage it in the local data base
         SetDACValueLocalConfig( _deviceIndex, i, val);
     }
@@ -1194,4 +1199,17 @@ void QCstmDacs::openWriteMenu(){//TODO: change to signal slot method
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Config"), tr("."), tr("json Files (*.json)"));
     WriteDACsFile(fileName.toStdString());
     //this->WriteDACsFile()
+}
+
+void QCstmDacs::on_remoteThresholdpushButton_clicked()
+{
+    RemoteThresholdDlg *_remotThresholdDlg = new RemoteThresholdDlg;
+    for (int i = 0; i < NUMBER_OF_CHIPS; ++i) {
+        for (int j = 0; j < 8; ++j) {
+           _remotThresholdDlg->setThresholdInfo(i,j,_mpx3gui->getVisualization()->getThresholdVector(i,j));
+        }
+    }
+
+    _remotThresholdDlg->setModal(true);
+    _remotThresholdDlg->exec();
 }

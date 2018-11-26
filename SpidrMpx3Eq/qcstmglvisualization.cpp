@@ -91,6 +91,8 @@ void QCstmGLVisualization::setThresholdsVector(int chipId, int idx, int value)
     //_loadFromThresholdsVector();
 }
 
+
+
 int QCstmGLVisualization::getThresholdVector(int chipId, int idx)
 {
     if(chipId >=0 && chipId < NUMBER_OF_CHIPS && idx >=0 && idx < 8)

@@ -20,6 +20,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include "RemoteThresholdDlg.h"
 
 
 using namespace std;
@@ -89,6 +90,7 @@ public:
 
     void changeDAC(int threshold, int value); //! For all chips
     void setRemoteRequestForSettingThreshold(bool);
+
 
 private:
 
@@ -169,6 +171,7 @@ private slots:
 
 
 
+    void on_remoteThresholdpushButton_clicked();
 };
 
 class SenseDACsThread : public QThread {
