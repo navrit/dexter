@@ -290,12 +290,14 @@ int CommandHandler::setThreshold(int idx, int val, int chipId)
         // Update gui
         QCstmDacs::getInstance()->setRemoteRequestForSettingThreshold(true);
         // Set actual DAC
+        Mpx3GUI::getInstance()->GetSpidrController()->setDac(chipId,idx+1,val);
+        qDebug() << "thresholdiii ; chip : " << chipId << " idx : " << idx << " val : " << val;
         QCstmGLVisualization::getInstance()->setThresholdsVector(chipId,idx,val);
-        QCstmDacs::getInstance()->getAllDACSimultaneousCheckBox()->setChecked(false);
-        QCstmDacs::getInstance()->getDeviceIdSpinBox()->setValue(chipId);
-        QCstmDacs::getInstance()->GetCheckBoxList()[idx]->setChecked(true);
-       // QCstmDacs::getInstance()->GetSpinBoxList()[idx]->setValue(val);
-        emit requestToChangeGuiforThreshold(chipId);
+//        QCstmDacs::getInstance()->getAllDACSimultaneousCheckBox()->setChecked(false);
+//        QCstmDacs::getInstance()->getDeviceIdSpinBox()->setValue(chipId);
+//        QCstmDacs::getInstance()->GetCheckBoxList()[idx]->setChecked(true);
+//        QCstmDacs::getInstance()->GetSpinBoxList()[idx]->setValue(val);
+       // emit requestToChangeGuiforThreshold(chipId);
 
 
 

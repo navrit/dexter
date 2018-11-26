@@ -697,18 +697,20 @@ void setThresholdHandler(CommandHandler* ch, Command* cmd){
 
 //    }
 
-    int dac = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(1,val);
+    int dac = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(0,val);
 
-    //ch->setThreshold(idx,dac,1);
-    ch->setThreshold(idx,dac); //for some strange reason does not take the set threshold value for chip 1
+    ch->setThreshold(idx,dac,0);
+    //ch->setThreshold(idx,dac); //for some strange reason does not take the set threshold value for chip 1
                                 // this is why first we assign the correspondingthreshold  of chip 1 to all chips
                                 //then we set the correspondig threshold of chip0-2-3 seprately
 
+
     qDebug() << "converted to : " << dac;
 
-    dac = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(0,val);
+    dac = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(1,val);
 
-    ch->setThreshold(idx,dac,0);
+    ch->setThreshold(idx,dac,1);
+
 
     qDebug() << "converted to : " << dac;
 
