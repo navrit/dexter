@@ -25,6 +25,7 @@
 #include "qcustomplot.h"
 #include "ui_thresholdscan.h"
 #include "qcstmglvisualization.h"
+#include "qcstmconfigmonitoring.h"
 
 static QCstmDacs *qCstmDacsInst = nullptr;
 
@@ -617,7 +618,10 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
 
     // Set DAC
     // If the setting is global apply it
+    _currentTriggerMode = _mpx3gui->getConfigMonitoring()->protectTriggerMode();
+
     if ( _dacsSimultaneous ) {
+
         for( uint chip = 0; chip < uint(_mpx3gui->getConfig()->getNDevicesSupported()); chip++) {
             // Check if the device is alive
             if ( ! _mpx3gui->getConfig()->detectorResponds(int(chip))) {
@@ -630,18 +634,21 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
             // Now I need to change it in the local data base
             SetDACValueLocalConfig( chip, i, val);
         }
+
     } else {
          spidrcontrol->setDac( int(_deviceIndex), MPX3RX_DAC_TABLE[ i ].code, val );
          QCstmGLVisualization::getInstance()->setThresholdsVector(int(_deviceIndex),i,val);
         // Now I need to chage it in the local data base
         SetDACValueLocalConfig( _deviceIndex, i, val);
+
+
     }
+    _mpx3gui->getConfigMonitoring()->setTriggerComboBox(_currentTriggerMode);
 
     GetLabelsList()[i]->setText("");
 }
 
 void QCstmDacs::FromSliderUpdateSpinBox(int i) {
-
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
     int val = _dacSliders[ i ]->value();

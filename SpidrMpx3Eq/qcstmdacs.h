@@ -21,6 +21,7 @@
 #include <iostream>
 #include <fstream>
 #include "RemoteThresholdDlg.h"
+//#include "qcstmconfigmonitoring.h"
 
 
 using namespace std;
@@ -134,7 +135,7 @@ private:
     QSignalMapper * _signalMapperSlider;
     QSignalMapper * _signalMapperSpinBox;
     bool _remoteRequestForSettingThreshold = false;
-
+    int _currentTriggerMode = 0; //0 ==> auto
 
 
 public slots:
@@ -166,7 +167,6 @@ private slots:
     void openWriteMenu();
     void ConnectionStatusChanged(bool);
     void sendThresholdToDac(void);
-
 
 
 
