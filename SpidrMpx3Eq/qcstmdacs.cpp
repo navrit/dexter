@@ -655,6 +655,7 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
 
     // Set DAC
     // If the setting is global apply it
+    _currentTriggerMode = _mpx3gui->getConfigMonitoring()->protectTriggerMode();
     if ( _dacsSimultaneous ) {
         for( int chip = 0 ; chip < _mpx3gui->getConfig()->getNDevicesSupported() ; chip++) {
             // Check if the device is alive
@@ -675,6 +676,7 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
         SetDACValueLocalConfig( _deviceIndex, i, val);
     }
 
+    _mpx3gui->getConfigMonitoring()->setTriggerComboBox(_currentTriggerMode);
     // Only under user request
     GetLabelsList()[i]->setText("");
 
