@@ -286,23 +286,12 @@ int CommandHandler::setThreshold(int idx, int val)
 
 int CommandHandler::setThreshold(int idx, int val, int chipId)
 {
+
     if (idx >= 0 && idx <= 7 && chipId >= 0 && chipId < 4) {
-        // Update gui
         QCstmDacs::getInstance()->setRemoteRequestForSettingThreshold(true);
         // Set actual DAC
         Mpx3GUI::getInstance()->GetSpidrController()->setDac(chipId,idx+1,val);
-        qDebug() << "thresholdiii ; chip : " << chipId << " idx : " << idx << " val : " << val;
         QCstmGLVisualization::getInstance()->setThresholdsVector(chipId,idx,val);
-//        QCstmDacs::getInstance()->getAllDACSimultaneousCheckBox()->setChecked(false);
-//        QCstmDacs::getInstance()->getDeviceIdSpinBox()->setValue(chipId);
-//        QCstmDacs::getInstance()->GetCheckBoxList()[idx]->setChecked(true);
-//        QCstmDacs::getInstance()->GetSpinBoxList()[idx]->setValue(val);
-       // emit requestToChangeGuiforThreshold(chipId);
-
-
-
-       // qApp->processEvents(); /* The GUI won't process events if they all occur in a very short timescale unless you make it */
-
         return NO_ERROR;
     }
     return UNKNOWN_ERROR;
