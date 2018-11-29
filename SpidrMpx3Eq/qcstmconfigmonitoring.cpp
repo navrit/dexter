@@ -111,16 +111,15 @@ void QCstmConfigMonitoring::setReadoutFrequency(int frequency)
     ui->contRWFreq->setValue(frequency);
 }
 
-int QCstmConfigMonitoring::protectTriggerMode()
+void QCstmConfigMonitoring::protectTriggerMode()
 {
-    int curentTriggerMode = ui->triggerModeCombo->currentIndex();
+    _currentTriggerMode = ui->triggerModeCombo->currentIndex();
     ui->triggerModeCombo->setCurrentIndex(0); //set it to auto
-    return curentTriggerMode;
 }
 
-void QCstmConfigMonitoring::setTriggerComboBox(int val)
+void QCstmConfigMonitoring::returnLastTriggerMode(void)
 {
-    ui->triggerModeCombo->setCurrentIndex(val);
+    ui->triggerModeCombo->setCurrentIndex(_currentTriggerMode);
 }
 
 

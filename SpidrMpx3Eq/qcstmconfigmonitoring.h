@@ -46,11 +46,11 @@ public:
 
     void setReadoutFrequency(int frequency);
 
-    int protectTriggerMode(void); //this function firstreturn the current trigger mode and then set trigger mode to auto
+    void protectTriggerMode(void); //this function firstreturn the current trigger mode and then set trigger mode to auto
     //the purpose is to prevent the power drop after setting the dac when the trigger mode is external. after setting the dac(e.g. threshold)one
     //has to set the trigger mode to the return value of this function
 
-    void setTriggerComboBox(int val); //call after u set the dac , input should be the output of protetTriggerMode() function.
+    void returnLastTriggerMode(void); //call after u set the dac , input should be the output of protetTriggerMode() function.
 
 
 
@@ -130,6 +130,8 @@ private:
     void setMaximumFPSFromPixelDepth(int idx=-1, int val=-1);
 
     bool _isDeveloperMode = false;
+
+    int _currentTriggerMode = 0; // 0 ==> auto
 };
 
 #endif // QCSTMCONFIGMONITORING_H

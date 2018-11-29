@@ -135,7 +135,6 @@ private:
     QSignalMapper * _signalMapperSlider;
     QSignalMapper * _signalMapperSpinBox;
     bool _remoteRequestForSettingThreshold = false;
-    int _currentTriggerMode = 0; //0 ==> auto
 
 
 public slots:
