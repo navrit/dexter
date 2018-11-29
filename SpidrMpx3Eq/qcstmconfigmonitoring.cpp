@@ -118,7 +118,7 @@ void QCstmConfigMonitoring::protectTriggerMode(SpidrController *spidrController)
 
     spidrController->getShutterTriggerConfig(&shutterInfo.trigger_mode,&shutterInfo.trigger_width_us,&shutterInfo.trigger_freq_mhz,&shutterInfo.nr_of_triggers,&shutterInfo.trigger_pulse_count);
     spidrController->setShutterTriggerConfig(4,shutterInfo.trigger_width_us,shutterInfo.trigger_freq_mhz,shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
-    usleep(1000);
+    usleep(100000);
     qDebug() << "[Info] Trigger is set to : " << 4;
 }
 
