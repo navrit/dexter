@@ -111,15 +111,22 @@ void QCstmConfigMonitoring::setReadoutFrequency(int frequency)
     ui->contRWFreq->setValue(frequency);
 }
 
-void QCstmConfigMonitoring::protectTriggerMode()
+void QCstmConfigMonitoring::protectTriggerMode(SpidrController *spidrController)
 {
-    _currentTriggerMode = ui->triggerModeCombo->currentIndex();
-    ui->triggerModeCombo->setCurrentIndex(0); //set it to auto
+//    _currentTriggerMode = ui->triggerModeCombo->currentIndex();
+//    ui->triggerModeCombo->setCurrentIndex(0); //set it to auto
+
+    spidrController->getShutterTriggerConfig(&shutterInfo.trigger_mode,&shutterInfo.trigger_width_us,&shutterInfo.trigger_freq_mhz,&shutterInfo.nr_of_triggers,&shutterInfo.trigger_pulse_count);
+    spidrController->setShutterTriggerConfig(4,shutterInfo.trigger_width_us,shutterInfo.trigger_freq_mhz,shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
+    usleep(1000);
+    qDebug() << "[Info] Trigger is set to : " << 4;
 }
 
-void QCstmConfigMonitoring::returnLastTriggerMode(void)
+void QCstmConfigMonitoring::returnLastTriggerMode(SpidrController *spidrController)
 {
-    ui->triggerModeCombo->setCurrentIndex(_currentTriggerMode);
+    //ui->triggerModeCombo->setCurrentIndex(_currentTriggerMode);
+    spidrController->setShutterTriggerConfig(shutterInfo.trigger_mode,shutterInfo.trigger_width_us,shutterInfo.trigger_freq_mhz,shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
+    qDebug() << "[Info] Trigger is set back to : " << shutterInfo.trigger_mode;
 }
 
 

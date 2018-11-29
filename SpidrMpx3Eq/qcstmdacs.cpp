@@ -615,10 +615,9 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
     int val = _dacSpinBoxes[i]->value();
     // Set the slider according to the new value in the Spin Box
     _dacSliders[i]->setValue( val );
-
     // Set DAC
     // If the setting is global apply it
-    _mpx3gui->getConfigMonitoring()->protectTriggerMode();
+    _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
 
     if ( _dacsSimultaneous ) {
 
@@ -629,7 +628,7 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
                 continue;
             }
             spidrcontrol->setDac( int(chip), MPX3RX_DAC_TABLE[ i ].code, val );
-
+            //_mpx3gui->setDacWrapper(spidrcontrol,int(chip), MPX3RX_DAC_TABLE[ i ].code, val);
             QCstmGLVisualization::getInstance()->setThresholdsVector(chip,i,val);
             // Now I need to change it in the local data base
             SetDACValueLocalConfig( chip, i, val);
@@ -637,14 +636,12 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
 
     } else {
          spidrcontrol->setDac( int(_deviceIndex), MPX3RX_DAC_TABLE[ i ].code, val );
+        //_mpx3gui->setDacWrapper(spidrcontrol,int(_deviceIndex), MPX3RX_DAC_TABLE[ i ].code, val);
          QCstmGLVisualization::getInstance()->setThresholdsVector(int(_deviceIndex),i,val);
         // Now I need to chage it in the local data base
         SetDACValueLocalConfig( _deviceIndex, i, val);
-
-
     }
-    _mpx3gui->getConfigMonitoring()->returnLastTriggerMode();
-
+    _mpx3gui->getConfigMonitoring()->returnLastTriggerMode(spidrcontrol);
     GetLabelsList()[i]->setText("");
 }
 
@@ -655,7 +652,7 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
 
     // Set DAC
     // If the setting is global apply it
-    _mpx3gui->getConfigMonitoring()->protectTriggerMode();
+    _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
     if ( _dacsSimultaneous ) {
         for( int chip = 0 ; chip < _mpx3gui->getConfig()->getNDevicesSupported() ; chip++) {
             // Check if the device is alive
@@ -676,7 +673,7 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
         SetDACValueLocalConfig( _deviceIndex, i, val);
     }
 
-    _mpx3gui->getConfigMonitoring()->returnLastTriggerMode();
+    _mpx3gui->getConfigMonitoring()->returnLastTriggerMode(spidrcontrol);
     // Only under user request
     GetLabelsList()[i]->setText("");
 

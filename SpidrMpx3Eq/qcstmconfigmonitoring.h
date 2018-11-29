@@ -46,11 +46,11 @@ public:
 
     void setReadoutFrequency(int frequency);
 
-    void protectTriggerMode(void); //this function firstreturn the current trigger mode and then set trigger mode to auto
+    void protectTriggerMode(SpidrController* spidrController); //this function firstreturn the current trigger mode and then set trigger mode to auto
     //the purpose is to prevent the power drop after setting the dac when the trigger mode is external. after setting the dac(e.g. threshold)one
     //has to set the trigger mode to the return value of this function
 
-    void returnLastTriggerMode(void); //call after u set the dac , input should be the output of protetTriggerMode() function.
+    void returnLastTriggerMode(SpidrController *spidrController); //call after u set the dac , input should be the output of protetTriggerMode() function.
 
 
 
@@ -131,7 +131,15 @@ private:
 
     bool _isDeveloperMode = false;
 
-    int _currentTriggerMode = 0; // 0 ==> auto
+    struct SHUTTER_INFO{
+        int trigger_mode;
+        int trigger_width_us;
+        int trigger_freq_mhz;
+        int nr_of_triggers;
+        int trigger_pulse_count;
+    };
+
+    SHUTTER_INFO shutterInfo;
 };
 
 #endif // QCSTMCONFIGMONITORING_H
