@@ -946,6 +946,9 @@ void UpdateDACsThread::run(){
 
     // Open a new temporary connection to the spider to avoid collisions to the main one
     // Extract the ip address
+
+
+
     int ipaddr[4] = { 1, 1, 168, 192 };
     if( _srcAddr != 0 ) {
         ipaddr[3] = (_srcAddr >> 24) & 0xFF;
@@ -960,6 +963,8 @@ void UpdateDACsThread::run(){
         qDebug() << "[ERROR]\tUpdateDACsThread --> Device not connected!";
         return;
     }
+
+    Mpx3GUI::getInstance()->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
 
     int chipMin = 0;
     int chipMax = _nDACConfigsAvailable;
@@ -989,7 +994,7 @@ void UpdateDACsThread::run(){
             disconnect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
         }
     }
-
+    Mpx3GUI::getInstance()->getConfigMonitoring()->returnLastTriggerMode(spidrcontrol);
     delete spidrcontrol;
 }
 
