@@ -204,8 +204,10 @@ void DataTakingThread::run() {
                 // 2) User stop condition
                 if ( _stop ||  _restart  ) {
 
-                    if(_isExternalTrigger)
+                    if(_isExternalTrigger){
+                        _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
                         break;
+                    }
 
                     if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
                         spidrcontrol->stopContReadout();
