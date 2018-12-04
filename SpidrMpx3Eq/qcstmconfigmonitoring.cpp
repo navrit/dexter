@@ -115,7 +115,7 @@ void QCstmConfigMonitoring::protectTriggerMode(SpidrController *spidrController)
 {
 //    _currentTriggerMode = ui->triggerModeCombo->currentIndex();
 //    ui->triggerModeCombo->setCurrentIndex(0); //set it to auto
-
+    spidrController->stopAutoTrigger();
     spidrController->getShutterTriggerConfig(&shutterInfo.trigger_mode,&shutterInfo.trigger_width_us,&shutterInfo.trigger_freq_mhz,&shutterInfo.nr_of_triggers,&shutterInfo.trigger_pulse_count);
     spidrController->setShutterTriggerConfig(SHUTTERMODE_AUTO,shutterInfo.trigger_width_us,shutterInfo.trigger_freq_mhz,shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
     usleep(100000);
