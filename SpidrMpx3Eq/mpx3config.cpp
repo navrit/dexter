@@ -178,7 +178,7 @@ void Mpx3Config::SendConfiguration( config_items item ) {
         int nr_of_triggers = getNTriggers();    // This is the number of shutter open i get
 
         spidrcontrol->setShutterTriggerConfig (
-                    trig_mode,
+                    SHUTTERMODE_AUTO,
                     trig_length_us,
                     trig_freq_mhz,
                     nr_of_triggers
@@ -396,7 +396,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
 
     if( item == __ALL || item == __nTriggers ) {
 
-        spidrcontrol->setShutterTriggerConfig( trig_mode,
+        spidrcontrol->setShutterTriggerConfig( SHUTTERMODE_AUTO,
                                                trig_length_us,
                                                trig_freq_mhz,
                                                extrapars.nTriggers );
