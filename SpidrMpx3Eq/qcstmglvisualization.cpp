@@ -374,7 +374,7 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
         _dataTakingThread->ConnectToHardware();
 
     }
-    if(_mpx3gui->getConfig()->getTriggerMode() == 4){ //if is Auto, it is internal otherwise is external
+    if(_mpx3gui->getConfig()->getTriggerMode() == SHUTTERMODE_AUTO){ //if is Auto, it is internal otherwise is external
         _dataTakingThread->setExternalTrigger(false);
     //todo : disable/enable  ui->triggerLengthSpinBox->setReadOnly(false);
     }

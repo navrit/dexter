@@ -145,6 +145,7 @@ void DataTakingThread::run() {
     ///////////////////////////////////////////////////////////////////////////////////
 
     forever {
+        _mpx3gui->getConfigMonitoring()->returnLastTriggerMode2(spidrcontrol);
         // When abort execution. Triggered as the destructor is called.
         if ( _abort ) return;
 
@@ -336,6 +337,7 @@ void DataTakingThread::run() {
                                      );
 
                     if (externalCnt >= _mpx3gui->getConfig()->getNTriggers() && _mpx3gui->getConfig()->getNTriggers() != 0 ){
+                        _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
                         break;
                     }
                 }

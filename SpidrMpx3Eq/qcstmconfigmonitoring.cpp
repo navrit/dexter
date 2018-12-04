@@ -117,9 +117,9 @@ void QCstmConfigMonitoring::protectTriggerMode(SpidrController *spidrController)
 //    ui->triggerModeCombo->setCurrentIndex(0); //set it to auto
 
     spidrController->getShutterTriggerConfig(&shutterInfo.trigger_mode,&shutterInfo.trigger_width_us,&shutterInfo.trigger_freq_mhz,&shutterInfo.nr_of_triggers,&shutterInfo.trigger_pulse_count);
-    spidrController->setShutterTriggerConfig(4,shutterInfo.trigger_width_us,shutterInfo.trigger_freq_mhz,shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
+    spidrController->setShutterTriggerConfig(SHUTTERMODE_AUTO,shutterInfo.trigger_width_us,shutterInfo.trigger_freq_mhz,shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
     usleep(100000);
-    qDebug() << "[Info] Trigger is set to : " << 4;
+    qDebug() << "[Info] Trigger is set to : " << SHUTTERMODE_AUTO;
 }
 
 void QCstmConfigMonitoring::returnLastTriggerMode(SpidrController *spidrController)
@@ -127,6 +127,14 @@ void QCstmConfigMonitoring::returnLastTriggerMode(SpidrController *spidrControll
     //ui->triggerModeCombo->setCurrentIndex(_currentTriggerMode);
     spidrController->setShutterTriggerConfig(shutterInfo.trigger_mode,shutterInfo.trigger_width_us,shutterInfo.trigger_freq_mhz,shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
     qDebug() << "[Info] Trigger is set back to : " << shutterInfo.trigger_mode;
+}
+
+void QCstmConfigMonitoring::returnLastTriggerMode2(SpidrController *spidrController)
+{
+    spidrController->getShutterTriggerConfig(&shutterInfo.trigger_mode,&shutterInfo.trigger_width_us,&shutterInfo.trigger_freq_mhz,&shutterInfo.nr_of_triggers,&shutterInfo.trigger_pulse_count);
+    usleep(100000);
+    spidrController->setShutterTriggerConfig(_mpx3gui->getConfig()->getTriggerMode(),shutterInfo.trigger_width_us,shutterInfo.trigger_freq_mhz,shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
+    qDebug() << "[Info] Trigger mode is set to : " << _mpx3gui->getConfig()->getTriggerMode();
 }
 
 
@@ -660,7 +668,29 @@ void QCstmConfigMonitoring::setPixelDepthByIndex(int newValIndx) {
 }
 
 void QCstmConfigMonitoring::setTriggerModeByIndex(int newValIndx) {
-    _mpx3gui->getConfig()->setTriggerMode(int(__triggerModeMap[std::size_t(newValIndx)]));
+   // _mpx3gui->getConfig()->setTriggerMode(int(__triggerModeMap[std::size_t(newValIndx)]));
+    switch (newValIndx) {
+    case 0:
+        _mpx3gui->getConfig()->setTriggerMode(SHUTTERMODE_AUTO);
+        break;
+    case 1:
+        _mpx3gui->getConfig()->setTriggerMode(SHUTTERMODE_POS_EXT);
+        break;
+    case 2:
+        _mpx3gui->getConfig()->setTriggerMode(SHUTTERMODE_NEG_EXT);
+        break;
+    case 3:
+        _mpx3gui->getConfig()->setTriggerMode(SHUTTERMODE_POS_EXT_TIMER);
+        break;
+    case 4:
+        _mpx3gui->getConfig()->setTriggerMode(SHUTTERMODE_NEG_EXT_TIMER);
+        break;
+    case 5:
+        _mpx3gui->getConfig()->setTriggerMode(SHUTTERTRIG_POS_EXT_CNTR);
+        break;
+    default:
+        break;
+    }
 }
 
 int QCstmConfigMonitoring::findTriggerModeIndex(int val) {

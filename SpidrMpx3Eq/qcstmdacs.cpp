@@ -617,7 +617,7 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
     _dacSliders[i]->setValue( val );
     // Set DAC
     // If the setting is global apply it
-    _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
+    //_mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
 
     if ( _dacsSimultaneous ) {
 
@@ -641,7 +641,7 @@ void QCstmDacs::FromSpinBoxUpdateSlider(int i) {
         // Now I need to chage it in the local data base
         SetDACValueLocalConfig( _deviceIndex, i, val);
     }
-    _mpx3gui->getConfigMonitoring()->returnLastTriggerMode(spidrcontrol);
+   // _mpx3gui->getConfigMonitoring()->returnLastTriggerMode(spidrcontrol);
     GetLabelsList()[i]->setText("");
 }
 
@@ -652,7 +652,7 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
 
     // Set DAC
     // If the setting is global apply it
-    _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
+   // _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
     if ( _dacsSimultaneous ) {
         for( int chip = 0 ; chip < _mpx3gui->getConfig()->getNDevicesSupported() ; chip++) {
             // Check if the device is alive
@@ -673,7 +673,7 @@ void QCstmDacs::FromSliderUpdateSpinBox(int i) {
         SetDACValueLocalConfig( _deviceIndex, i, val);
     }
 
-    _mpx3gui->getConfigMonitoring()->returnLastTriggerMode(spidrcontrol);
+    //_mpx3gui->getConfigMonitoring()->returnLastTriggerMode(spidrcontrol);
     // Only under user request
     GetLabelsList()[i]->setText("");
 
@@ -964,7 +964,7 @@ void UpdateDACsThread::run(){
         return;
     }
 
-    Mpx3GUI::getInstance()->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
+   // Mpx3GUI::getInstance()->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
 
     int chipMin = 0;
     int chipMax = _nDACConfigsAvailable;
@@ -994,7 +994,7 @@ void UpdateDACsThread::run(){
             disconnect( this, SIGNAL( slideAndSpin(int, int) ), _dacs, SLOT( slideAndSpin(int, int) ) );
         }
     }
-    Mpx3GUI::getInstance()->getConfigMonitoring()->returnLastTriggerMode(spidrcontrol);
+   // Mpx3GUI::getInstance()->getConfigMonitoring()->returnLastTriggerMode(spidrcontrol);
     delete spidrcontrol;
 }
 

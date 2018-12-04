@@ -336,7 +336,7 @@ public slots:
         if(newVal != TriggerMode){
             TriggerMode = newVal; emit TriggerModeChanged(newVal);
             //updateTriggerMode();
-            SendConfiguration( __triggerMode );
+            //SendConfiguration( __triggerMode );
         }
     }
     void updateTriggerMode(){}
