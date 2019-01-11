@@ -644,8 +644,8 @@ void QCstmEqualization::KeepOtherChipsQuiet() {
         for ( int i = 0; i < chipListSize; i++ ) if ( _workChipsIndx[std::size_t(i)] == idx ) continue;
 
         //! Set all the thresholds to the same value. If we're not in colour mode then they aren't connected anyway so it doesn't matter
-        for (int i = 1; i <= MPX3RX_DAC_THRESH_7; i++) {
-            SetDAC_propagateInGUI( spidrcontrol, idx, i, __low_but_above_noise_threshold);
+        for (int DAC_CODE = MPX3RX_DAC_THRESH_0; DAC_CODE <= MPX3RX_DAC_THRESH_7; DAC_CODE++) {
+            SetDAC_propagateInGUI( spidrcontrol, idx, DAC_CODE, __low_but_above_noise_threshold);
         }
     }
 }
