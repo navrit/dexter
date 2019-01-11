@@ -279,7 +279,7 @@ void QCstmEqualization::NewRunInitEqualization() {
     _setId = 0;
 
     // And step
-    ChangeStep( __default_step_scan );
+    //ChangeStep( __default_step_scan );
 
     int chipListSize = int(_workChipsIndx.size());
     for ( int i = 0 ; i < chipListSize ; i++ ) {
@@ -648,7 +648,6 @@ void QCstmEqualization::KeepOtherChipsQuiet() {
             SetDAC_propagateInGUI( spidrcontrol, idx, i, __low_but_above_noise_threshold);
         }
     }
-
 }
 
 void QCstmEqualization::resetThresholds()
@@ -1120,7 +1119,7 @@ void QCstmEqualization::DAC_Disc_Optimization_100() {
     legend += QString::number(_steeringInfo[0]->currentDAC_DISC_OptValue, 'd', 0);
 
     // arbitrary step for DAC_Disc_Optimization
-    ChangeStep( __DAC_Disc_Optimization_step, true );
+//    ChangeStep( __DAC_Disc_Optimization_step, true );
     ChangeMax( 0, true );
     ChangeMin( __half_DAC_range-1, true );
 
@@ -1171,7 +1170,7 @@ void QCstmEqualization::DAC_Disc_Optimization_150() {
     legend += QString::number(_steeringInfo[0]->currentDAC_DISC_OptValue, 'd', 0);
 
     // arbitrary step for DAC_Disc_Optimization
-    ChangeStep( __DAC_Disc_Optimization_step, true );
+//    ChangeStep( __DAC_Disc_Optimization_step, true );
     ChangeMax( 0, true );
     ChangeMin( __half_DAC_range-1, true );
 
@@ -1416,7 +1415,7 @@ void QCstmEqualization::PrepareInterpolation_0x0() {
     legend += QString::number(_steeringInfo[0]->globalAdj, 'd', 0);
 
     // arbitrary step for DAC_Disc_Optimization
-    ChangeStep( __DAC_Disc_Optimization_step, true );
+//    ChangeStep( __DAC_Disc_Optimization_step, true );
 
     // -------------------------------------------------------------------------
     // 5)  See where the pixels fall now for adj0 and keep the pixel information
@@ -1511,7 +1510,7 @@ void QCstmEqualization::PrepareInterpolation_0x5() {
     SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
     // arbitrary step for DAC_Disc_Optimization
-    ChangeStep( __DAC_Disc_Optimization_step, true );
+//    ChangeStep( __DAC_Disc_Optimization_step, true );
 
     // -------------------------------------------------------------------------
     // 5)  See where the pixels fall now for adj5 and keep the pixel information
