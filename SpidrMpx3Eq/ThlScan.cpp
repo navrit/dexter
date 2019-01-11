@@ -421,12 +421,17 @@ void ThlScan::FineTuning() {
                 QList<int> scanEqTargets;
                 QList<double> scanSigmas;
 
-                for ( int devId = 0 ; devId < int(_workChipsIndx.size()) ; devId++ ) {
-                    if (GetScanResults(devId) != nullptr ) {
-                        scanEqTargets.append(GetScanResults(devId)->equalisationTarget);
-                        scanSigmas.append(GetScanResults(devId)->sigma);
+                const int __max_number_of_chips = 4; //! HOTFIX: Hardcoded a quad board, this is NOT really proper...
+
+                for ( int chip = 0 ; chip < __max_number_of_chips; chip++ ) {
+                    if (GetScanResults(chip) != nullptr ) {
+                        scanEqTargets.append(GetScanResults(chip)->equalisationTarget);
+                        scanSigmas.append(GetScanResults(chip)->sigma);
                     }
                 }
+                assert(scanEqTargets.length() > 0 && scanEqTargets.length() <= __max_number_of_chips);
+                assert(scanSigmas.length() > 0 && scanSigmas.length() <= __max_number_of_chips);
+
                 qSort(scanEqTargets.begin(), scanEqTargets.end());
                 qSort(scanSigmas.begin(), scanSigmas.end());
 
