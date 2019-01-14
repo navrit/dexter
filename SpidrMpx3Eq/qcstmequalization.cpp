@@ -1741,8 +1741,6 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
                 QPoint previewIndx = chipIndexToPreviewIndex(QPoint(pix.first,pix.second),chipIndex);
                 if(previewIndx.x() >= 0 && previewIndx.x() < 512 && previewIndx.y() >= 0 && previewIndx.y() < 512)
                     maskMatrix[previewIndx.x()][previewIndx.y()] = true;
-
-
             }
         } else {
             //! When the mask is empty go ahead and unmask all pixels
@@ -1754,15 +1752,8 @@ void QCstmEqualization::SetAllAdjustmentBits(SpidrController * spidrcontrol, int
     }
 
     spidrcontrol->setPixelConfigMpx3rx( chipIndex );
-    for(int i = 0; i <512; i++){
-        for(int j = 0; j <512; j++){
-            if(maskMatrix[i][j])
-                qDebug() << "[Test] : masked @ x = " << i << " y = " << j;
-        }
-    }
-    _mpx3gui->getVisualization()->onPixelsMasked(chipIndex, GetEqualizationResults(chipIndex)->GetMaskedPixels());
-    //emit pixelsMasked(chipIndex,GetEqualizationResults(chipIndex)->GetMaskedPixels());
 
+    _mpx3gui->getVisualization()->onPixelsMasked(chipIndex, GetEqualizationResults(chipIndex)->GetMaskedPixels());
 }
 
 void QCstmEqualization::ClearAllAdjustmentBits(int devId) {
@@ -1773,13 +1764,11 @@ void QCstmEqualization::ClearAllAdjustmentBits(int devId) {
     _eqMap[devId]->ClearReactiveThresholds();
 
     SetAllAdjustmentBits();
-
 }
 
 void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
-    SpidrDaq * spidrdaq = _mpx3gui->GetSpidrDaq();
 
     // Reset pixel configuration
     if ( reset ) spidrcontrol->resetPixelConfig();
