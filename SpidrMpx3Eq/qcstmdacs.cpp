@@ -179,6 +179,8 @@ UpdateDACsThread * QCstmDacs::FillDACValues( int devId, bool updateInTheChip ) {
 
     SpidrController * spidrcontrol = _mpx3gui->GetSpidrController();
 
+
+
     // Threads
     if ( _updateDACsThread ) {
         if ( _updateDACsThread->isRunning() ) {
@@ -190,6 +192,7 @@ UpdateDACsThread * QCstmDacs::FillDACValues( int devId, bool updateInTheChip ) {
 
     // Create the thread
     _updateDACsThread = new UpdateDACsThread(devId, _mpx3gui->getConfig()->getDacCount(), this, spidrcontrol);
+
     _updateDACsThread->SetUpdateInTheChip( updateInTheChip );
 
     // Run !
@@ -938,7 +941,7 @@ UpdateDACsThread::UpdateDACsThread (int devIdx, int nDACConfigsAvailable, QCstmD
 
     // I need to do this here and not when already running the thread
     // Get the IP source address (SPIDR network interface) from the already connected SPIDR module.
-    if( _spidrcontrol ) { _spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
+    if( _spidrcontrol != nullptr ) { _spidrcontrol->getIpAddrSrc( 0, &_srcAddr ); }
     else { _srcAddr = 0; }
 }
 
@@ -949,7 +952,7 @@ void UpdateDACsThread::run(){
 
 
 
-    int ipaddr[4] = { 1, 1, 168, 192 };
+    int ipaddr[4] = { 10, 100, 168, 192 };
     if( _srcAddr != 0 ) {
         ipaddr[3] = (_srcAddr >> 24) & 0xFF;
         ipaddr[2] = (_srcAddr >> 16) & 0xFF;
