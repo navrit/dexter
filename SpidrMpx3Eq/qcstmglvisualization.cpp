@@ -1853,8 +1853,6 @@ void QCstmGLVisualization::pixel_selected(QPoint pixel, QPoint position){
 
     int chipID;
     QPoint chipIndex = previewIndexToChipIndex(pixel,&chipID);
-   // qDebug() << "[Kia info] : " << "chip ID : " <<chipID << " X : " <<chipIndex.x() << " Y: "<< chipIndex.y();
-
 
     if(!_mpx3gui->getConfig()->isConnected())
         return;
