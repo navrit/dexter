@@ -126,9 +126,6 @@ void QCstmGLVisualization::refreshScoringInfo()
 
     int nTriggers = _mpx3gui->getConfig()->getNTriggers();
     uint nFramesKept = _score.nFramesKept;
-    if ( _mpx3gui->getConfig()->getReadBothCounters() ) {
-        nFramesKept /= 2;
-    }
     /* Not necessary to do this, nFramesKept is not modified in DataTakingThread for colour mode
      * if ( _mpx3gui->getConfig()->getColourMode() ) {
      *    nFramesKept /= 4;

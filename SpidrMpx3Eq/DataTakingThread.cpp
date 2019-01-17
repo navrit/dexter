@@ -133,11 +133,9 @@ void DataTakingThread::run() {
 
     int nFramesReceived = 0, nFramesKept = 0, lostFrames = 0, lostPackets = 0;
     bool emergencyStop = false;
-    bool bothCounters = false;
     /* Not necessary to track if it's colour mode of not
      * bool colourMode = false;
      */
-    uint64_t cntrLH = 0; //! Odd is Counter Low, even is Counter High
 
     uint halfSemaphoreSize = 0;
     bool reachLimitStop = false;
@@ -171,7 +169,7 @@ void DataTakingThread::run() {
         // dropFrames --> will use --> _vis->getDropFrames();
         //  since the user may want to activate/deactivate during data taking.
         halfSemaphoreSize = uint(_consumer->getSemaphoreSize()/2.);
-        bothCounters = _mpx3gui->getConfig()->getReadBothCounters();
+        bool bothCounters = _mpx3gui->getConfig()->getReadBothCounters();
 
         _mpx3gui->clear_data(false);
         _mutex.unlock();
@@ -182,7 +180,6 @@ void DataTakingThread::run() {
         nFramesReceived = 0; nFramesKept = 0; lostFrames = 0; lostPackets = 0;
         emergencyStop = false;
         reachLimitStop = false;
-        cntrLH = 1;
 
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
             spidrcontrol->startContReadout( contRWFreq );
@@ -192,14 +189,6 @@ void DataTakingThread::run() {
 
         // Ask SpidrDaq for frames
             while ( spidrdaq->hasFrame(timeOutTime)) {
-
-                // When using both counters keep track of which Counter we are reading now
-                // cntrLH%2 == 0  Cntr0 (THL0)
-                // cntrLH%2 == 1  Cntr1 (THL1)
-
-                if (bothCounters) {
-                    cntrLH++;
-                }
 
                 // 2) User stop condition
                 if ( _stop ||  _restart  ) {
@@ -261,9 +250,17 @@ void DataTakingThread::run() {
                         // retreive data for a given chip
                         //clearToCopy = true;
                         _consumer->freeFrames->acquire(); //! < 0.1% time
-                        _consumer->copydata(fs, i); //! 99+% time
+                        _consumer->copydata(fs, i, false); //! 99+% time
                         _consumer->usedFrames->release(); //! < 0.1% time
                     }
+                    if (bothCounters)
+                        for ( int i = 0 ; i < nChips ; i++ ) {
+                            // retreive data for a given chip
+                            //clearToCopy = true;
+                            _consumer->freeFrames->acquire(); //! < 0.1% time
+                            _consumer->copydata(fs, i, true); //! 99+% time
+                            _consumer->usedFrames->release(); //! < 0.1% time
+                        }
                     // Keep a track of frames actually kept
                     nFramesKept++;
                 }
@@ -278,10 +275,6 @@ void DataTakingThread::run() {
 
                 //! T2-T3  ~0.4-2.2% time
                 //! --------------------------
-
-                // If we are working with 2 counters, go get
-                // the second frame associated before it continues.
-                if ( bothCounters && (cntrLH%2 == 0) ) continue;
 
                 // Awake the consumer thread
                 _consumer->consume();

@@ -18,7 +18,7 @@ public:
 
     explicit DataConsumerThread(Mpx3GUI *, QObject * parent = nullptr);
     virtual ~DataConsumerThread();
-    void copydata(FrameSet * source, int chipIndex);
+    void copydata(FrameSet * source, int chipIndex, bool counterH);
     void freeResources();
     uint getSemaphoreSize(){return _semaphoreSize;}
     void dataTakingSaysIFinished();

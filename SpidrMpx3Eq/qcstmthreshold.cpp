@@ -608,7 +608,7 @@ void CustomScanThread::run() {
                 if ( _cstmThreshold->GetUI()->onAllChipsCheckBox->isChecked() ) {
                     for(int i = 0 ; i < activeDevices.size() ; i++) {
                         //cout << i << endl;
-                        frameSet->copyTo32(i, reinterpret_cast<uint32_t*>(tmp));
+                        frameSet->copyTo32(i, false, reinterpret_cast<uint32_t*>(tmp));
                         pixelsReactive += PixelsReactive( tmp, size_in_bytes, dacItr );
                     }
                 } else {
@@ -616,7 +616,7 @@ void CustomScanThread::run() {
                     // On a single chip scan
                     int chipScanId = _cstmThreshold->GetUI()->devIdSpinBox->value();
                     int dataIdForChip = _mpx3gui->getConfig()->getIndexFromID( chipScanId );
-                    frameSet->copyTo32(dataIdForChip, reinterpret_cast<uint32_t*>(tmp));
+                    frameSet->copyTo32(dataIdForChip, false, reinterpret_cast<uint32_t*>(tmp));
                     pixelsReactive += PixelsReactive( tmp, size_in_bytes, dacItr );
 
                 }

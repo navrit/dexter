@@ -11,11 +11,11 @@ public:
     FrameSet();
     ~FrameSet();
     void clear();
+    void setBothCounters(bool b);
     ChipFrame* takeChipFrame(int chipIndex, bool counterH);
     void putChipFrame(int chipIndex, ChipFrame * cf);
     bool isComplete();
-    void copyTo32(int chipIndex, uint32_t *dest);
-    void copyTo32(uint32_t *dest);
+    void copyTo32(int chipIndex, bool counterH, uint32_t *dest);
     int pixelsLost();
 
 private:

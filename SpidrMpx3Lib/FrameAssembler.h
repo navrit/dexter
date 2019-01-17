@@ -32,17 +32,19 @@ class FrameAssembler {
 public:
   FrameAssembler(int chipIndex);
   void setFrameSetManager (FrameSetManager * fsm) { this->fsm = fsm; }
+  void setBothCounters (bool b) { this->bothCounters = b; fsm->setBothCounters(b); }
   void onEvent(PacketContainer &pc);
-
-  int infoIndex = 0;
-  int chipId;
-  OMR omr;
-
-  int chipIndex;
 
   static void lutInit(bool lutBug);
 
 private:
+  int infoIndex = 0;
+  int chipId;
+  OMR omr;
+  bool bothCounters = false;
+
+  int chipIndex;
+
   FrameSetManager *fsm;
   int sizeofuint64_t = sizeof(uint64_t);
   int row_counter = -1, rubbish_counter = 0;

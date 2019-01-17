@@ -52,7 +52,7 @@ class MY_LIB_API SpidrDaq
   //bool closeFile                ( );
 
   // Acquisition
-  //int       numberOfDevices     ( ) { return (int) _frameReceivers.size(); }
+  void setBothCounters(bool b) { frameSetManager->setBothCounters(b); }
   int      framesAvailable      ();
   bool      hasFrame            ( unsigned long timeout_ms = 0 );
   FrameSet  *getFrameSet           ();

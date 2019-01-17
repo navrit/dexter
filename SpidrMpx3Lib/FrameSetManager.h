@@ -14,9 +14,10 @@ class FrameSetManager
 public:
     FrameSetManager();
 
+    void setBothCounters(bool b) { this->bothCounters = b; }
     void putChipFrame(int chipIndex, ChipFrame* cf, uint8_t frameId);
     void putChipFrameB(int chipIndex, ChipFrame* cf);
-    ChipFrame *newChipFrame(int chipIndex);
+    ChipFrame *newChipFrame(int chipIndex, OMR omr);
     bool isFull();
     bool isEmpty();
     int available();
@@ -30,6 +31,7 @@ public:
 
 private:
     FrameSet fs[FSM_SIZE];
+    bool bothCounters = false;
     int dropped = 0;
     uint8_t frameId;
     bool expectCounterH = false;

@@ -96,11 +96,11 @@ void DataConsumerThread::consume()
     }
 }
 
-void DataConsumerThread::copydata(FrameSet * source, int chipIndex)
+void DataConsumerThread::copydata(FrameSet * source, int chipIndex, bool counterH)
 {
 
     size_t num = 4 * 256 * 256;
-    source->copyTo32(chipIndex, buffer + descriptor);
+    source->copyTo32(chipIndex, counterH, buffer + descriptor);
 
     descriptor += num/4;            // 4 bytes per integer
 

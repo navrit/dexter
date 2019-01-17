@@ -1836,6 +1836,7 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
 
     //! Important defaults
     spidrcontrol->setPixelDepth( devId, 12 );
+    _mpx3gui->GetSpidrDaq()->setBothCounters(false);
 
     //! -------------------------------------------------------------------------
 

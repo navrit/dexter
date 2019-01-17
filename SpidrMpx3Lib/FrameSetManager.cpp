@@ -74,8 +74,7 @@ void FrameSetManager::putChipFrameB(int chipIndex, ChipFrame* cf) {
     assert (headState == 1);
     FrameSet *dest = &fs[head_ & FSM_MASK];
     dest->putChipFrame(chipIndex, cf);
-    OMR omr = cf->omr;
-    if (omr.getCountL() == 3 && omr.getMode() == 0)
+    if (bothCounters && cf->omr.getMode() == 0)
         expectCounterH = true;
     else if (dest->isComplete()) {
         publish();
@@ -107,7 +106,7 @@ void FrameSetManager::putChipFrame(int chipIndex, ChipFrame* cf, uint8_t frameId
     FrameSet *dest = &fs[head_ & FSM_MASK];
     dest->putChipFrame(chipIndex, cf);
     OMR omr = cf->omr;
-    if (omr.getCountL() == 3 && omr.getMode() == 0)
+    if (bothCounters && omr.getMode() == 0)
         expectCounterH = true;
     else if (dest->isComplete()) {
         publish();
@@ -117,12 +116,14 @@ void FrameSetManager::putChipFrame(int chipIndex, ChipFrame* cf, uint8_t frameId
 }
 
 
-ChipFrame *FrameSetManager::newChipFrame(int chipIndex) {
+ChipFrame *FrameSetManager::newChipFrame(int chipIndex, OMR omr) {
     std::lock_guard<std::mutex> lock(headMut);
     uint ahead = head_;
     if (headState == 1 && ! expectCounterH) ahead++;
     FrameSet *scratch = &fs[ahead & FSM_MASK];
     ChipFrame *frame = scratch->takeChipFrame(chipIndex, expectCounterH);
-    return frame == nullptr ? new ChipFrame() : frame;
+    if (frame == nullptr) frame = new ChipFrame();
+    frame->omr = omr;
+    return frame;
     //return  new ChipFrame();
 }

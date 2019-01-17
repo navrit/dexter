@@ -14,6 +14,10 @@ FrameSet::~FrameSet() {
         }
 }
 
+void FrameSet::setBothCounters(bool b) {
+    counters = b ? 2 : 1;
+}
+
 void FrameSet::clear() {
     for (int i = 0; i < number_of_chips; i++)
       for (int j = 0; j < 2; j++)
@@ -35,7 +39,7 @@ bool FrameSet::isComplete() {
 
 ChipFrame* FrameSet::takeChipFrame(int chipIndex, bool counterH) {
     assert (chipIndex >= 0 && chipIndex < number_of_chips);
-    assert (! counterH || counters == 2);
+    if (counterH) counters = 2;
     ChipFrame **spot = &(frame[counterH ? 1 : 0][chipIndex]);
     ChipFrame *result = *spot;
     if (result != nullptr) {
@@ -57,23 +61,18 @@ void FrameSet::putChipFrame(int chipIndex, ChipFrame *cf) {
     *spot = cf;
 }
 
-void FrameSet::copyTo32(int chipIndex, uint32_t *dest) {
+void FrameSet::copyTo32(int chipIndex, bool counterH, uint32_t *dest) {
     ChipFrame *f0 = frame[0][chipIndex];
     ChipFrame *f1 = frame[1][chipIndex];
-    uint16_t * src0 = f0->getRow(0);
+    bool mode24 = f0->omr.getCountL() == 3;
     int n = MPX_PIXELS;
-    if (f1 == nullptr) {
-        while (n--) *(dest++) = *(src0++);
-    } else {
+    if (mode24 && f1 != nullptr) {
+        uint16_t *src0 = f0->getRow(0);
         uint16_t *src1 = f1->getRow(0);
         while (n--) *(dest++) = (uint32_t(*(src1++)) << 12) | *(src0++) ;
-    }
-}
-
-void FrameSet::copyTo32(uint32_t *dest) {
-    for (int i = 0; i < number_of_chips; i++) {
-        copyTo32(i, dest);
-        dest += MPX_PIXELS;
+    } else {
+        uint16_t *src = (counterH ? f1 : f0)->getRow(0);
+        while (n--) *(dest++) = *(src++);
     }
 }
 

@@ -72,11 +72,10 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
                 frame->pixelsLost += missing + (MPX_PIXEL_ROWS - 1 - last_row) * MPX_PIXEL_COLUMNS;
                 fsm->putChipFrameB(chipIndex, frame);
             }
-            frame = fsm->newChipFrame(chipIndex);
             missing = 0;
             last_row = -1;
-            if (counter_depth == 24) {
-                if (omr.getMode() == 1) {
+            if (bothCounters) {
+                if (omr.getMode() == 4) {
                     // finished high, next frame
                     omr.setMode(0);
                 } else {
@@ -84,7 +83,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
                     omr.setMode(1);
                 }
             }
-            frame->omr = omr;
+            frame = fsm->newChipFrame(chipIndex, omr);
           } else {
             // we lost part of this frame; store the row, start a new one
           }
@@ -100,7 +99,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
             row = frame->getRow(row_counter);
           }
       }
-    }
+    }		// end if (packetLoss)
 
   //! Start processing the pixel packet
   //row_number_from_packet = -1;
@@ -111,8 +110,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
     switch (type) {
     case PIXEL_DATA_SOF:
       assert (frame == nullptr);
-      frame = fsm->newChipFrame(chipIndex);
-      frame->omr = omr;
+      frame = fsm->newChipFrame(chipIndex, omr);
       row_counter = -1;
       [[fallthrough]];
     case PIXEL_DATA_SOR:
@@ -182,7 +180,7 @@ void FrameAssembler::onEvent(PacketContainer &pc) {
         case 0: counter_depth = 1; break;
         case 1: counter_depth = 6; break;
         case 2: counter_depth = 12; break;
-        case 3: counter_depth = 24; break;
+        case 3: counter_depth = 24; setBothCounters(true); break;
       }
       counter_bits = counter_depth == 24 ? 12 : counter_depth;
       pixels_per_word = 60 / counter_bits;
