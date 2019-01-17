@@ -1818,15 +1818,15 @@ void QCstmEqualization::Configuration(int devId, int THx, bool reset) {
     //! 1 : Charge summing mode
     spidrcontrol->setCsmSpm( devId, config->getCsmSpm() );
 
-    bool is_CSM = config->getCsmSpm();
-
-    qDebug() << "[Equalisation]\tCsm_Spm = " << is_CSM;
-
+    qDebug() << "[Equalisation]\tCsm_Spm = " << config->getCsmSpm();
 
     //! Set gainMode based on if this is a test pulse scan or noise
-    if (testPulseMode || is_CSM) {
+    if (testPulseMode) {
         gainMode = config->getGainMode();
     } else {
+        //! ALWAYS SLGM FOR NOISE EQUALISATIONS
+        //! DO NOT CHANGE THIS!
+        //! IT DOES NOT MATTER IF IT IS CSM OR SPM
         gainMode = 3; // SLGM
     }
 
