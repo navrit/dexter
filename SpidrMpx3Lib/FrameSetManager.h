@@ -14,6 +14,7 @@ class FrameSetManager
 public:
     FrameSetManager();
 
+    void clear();
     void setBothCounters(bool b) { this->bothCounters = b; }
     void putChipFrame(int chipIndex, ChipFrame* cf, uint8_t frameId);
     void putChipFrameB(int chipIndex, ChipFrame* cf);

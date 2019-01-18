@@ -36,6 +36,15 @@ FrameSet * FrameSetManager::getFrameSet() {
     return &fs[tail_ & FSM_MASK];
 }
 
+void FrameSetManager::clear() {
+    std::lock_guard<std::mutex> lock(tailMut);
+    while (tail_ != head_) {
+        FrameSet *toTrash = &fs[tail_ & FSM_MASK];
+        toTrash->clear();
+        tail_++;
+    }
+}
+
 void FrameSetManager::releaseFrameSet(FrameSet *fsUsed) {
     std::lock_guard<std::mutex> lock(tailMut);
     if (fsUsed == &fs[tail_ & FSM_MASK]) {

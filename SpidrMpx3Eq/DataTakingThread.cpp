@@ -181,6 +181,8 @@ void DataTakingThread::run() {
         emergencyStop = false;
         reachLimitStop = false;
 
+        spidrdaq->releaseAll();
+
         if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
             spidrcontrol->startContReadout( contRWFreq );
         } else if(opMode == Mpx3Config::__operationMode_SequentialRW ){

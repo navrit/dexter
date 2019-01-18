@@ -57,6 +57,7 @@ class MY_LIB_API SpidrDaq
   bool      hasFrame            ( unsigned long timeout_ms = 0 );
   FrameSet  *getFrameSet           ();
   void      releaseFrame        (FrameSet *fs = nullptr);
+  void      releaseAll          ();
   //int       frameShutterCounter ( int index = -1 );
   //bool      isCounterhFrame     ( int index = -1 );
   //int       frameFlags          ( int index );
