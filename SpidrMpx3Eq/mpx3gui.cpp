@@ -149,6 +149,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     //QString configFile = "./config/mpx3.json";
 
     //if ( ! config->fromJsonFile( configFile ) ) {
+    _loadingBeforeConnecting = true;
     bool configFileLoaded =  _loadConfigsFromGeneralSettings();
     if (!configFileLoaded)
     {
@@ -163,6 +164,7 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
         _armedOk = false; // it won't let the application go into the event loop
         return;
     }
+    _loadingBeforeConnecting = false;
     // View keyboard shortcuts
     // NOTE: Change on_shortcutsSwithPages to match this
     _shortcutsSwitchPages.push_back( new QShortcut( QKeySequence( tr("Ctrl+1", "Switch to viewer") ), this)  );
@@ -1205,7 +1207,8 @@ bool Mpx3GUI::load_config(){
         res = config->fromJsonFile(_configPath);
         _generalSettings->setConfigPath(_configPath);
         // update the dacs
-        //_ui->DACsWidget->PopulateDACValues();
+        if(!_loadingBeforeConnecting)
+            _ui->DACsWidget->PopulateDACValues();
        } else {
            res = false;
        }

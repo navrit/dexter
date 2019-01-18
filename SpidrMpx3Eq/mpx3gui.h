@@ -224,7 +224,7 @@ public slots:
     void onEqualizationPathExported(QString path);
 
 private:
-
+    bool _loadingBeforeConnecting = false;
     EnergyCalibrator *_energyCalibrator;
     // ML605 layout
     //vector<int> _MPX3RX_ORIENTATION = vector< int > {Dataset::orientationTtBRtL, Dataset::orientationBtTLtR, Dataset::orientationBtTLtR, Dataset::orientationTtBRtL};
