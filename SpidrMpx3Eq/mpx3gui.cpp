@@ -1205,7 +1205,7 @@ bool Mpx3GUI::load_config(){
         res = config->fromJsonFile(_configPath);
         _generalSettings->setConfigPath(_configPath);
         // update the dacs
-        _ui->DACsWidget->PopulateDACValues();
+        //_ui->DACsWidget->PopulateDACValues();
        } else {
            res = false;
        }

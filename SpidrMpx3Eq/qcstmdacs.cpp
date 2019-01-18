@@ -952,7 +952,7 @@ void UpdateDACsThread::run(){
 
 
 
-    int ipaddr[4] = { 10, 100, 168, 192 };
+    int ipaddr[4] = { 1, 1, 168, 192 };
     if( _srcAddr != 0 ) {
         ipaddr[3] = (_srcAddr >> 24) & 0xFF;
         ipaddr[2] = (_srcAddr >> 16) & 0xFF;
