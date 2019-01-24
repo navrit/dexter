@@ -795,7 +795,7 @@ void Command::invoke(CommandHandler *ch, SERVER_BUSY_TYPE serverStatus)
     qDebug() << "debug cmd :" << cmd;
     if(ch->cmdTable.contains(cmd))
     {
-        if(serverStatus == SB_DATA_TAKING){
+        if(serverStatus == SB_DATA_TAKING && cmd != "Stop"){
             qDebug () << "Server is busy.";
             setError(SERVER_BUSY_DATA_TAKING);
             return;
