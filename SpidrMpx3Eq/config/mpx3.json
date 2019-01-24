@@ -125,7 +125,6 @@
         "CsmSpm": 0,
         "DecodeFrames": true,
         "GainMode": 1,
-        "LUTEnable": true,
         "MaxPacketSize": 9000,
         "OperationMode": 0,
         "PixelDepth": 24,
