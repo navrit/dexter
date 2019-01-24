@@ -357,6 +357,7 @@ signals:
     //! Used for ZMQ
     void someCommandHasFinished_Successfully();
     void someCommandHasFailed(QString reply="");
+    void busyByTakingData(bool); //true means it is taking data
 };
 
 #endif // QCSTMGLVISUALIZATION_H

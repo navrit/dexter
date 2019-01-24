@@ -1,4 +1,5 @@
 #include "commandhandlerwrapper.h"
+#include "qcstmglvisualization.h"
 
 CommandHandlerWrapper::CommandHandlerWrapper(QObject *parent) : QObject(parent)
 {
@@ -6,6 +7,7 @@ CommandHandlerWrapper::CommandHandlerWrapper(QObject *parent) : QObject(parent)
     merlinInterface = new MerlinInterface;
     connect(commandHandler,SIGNAL(requestForDataTaking(bool)),this,SLOT(on_requestForDataTaking(bool)));
     connect(commandHandler,SIGNAL(imageIsReady(QByteArray,std::pair<const char*,int>)),this,SLOT(on_ImageIsReady(QByteArray,std::pair<const char*,int>)));
+    connect(QCstmGLVisualization::getInstance(),SIGNAL(busyByTakingData(bool)),this,SLOT(on_serverIsBusy(bool)));
 }
 
 void CommandHandlerWrapper::on_dataRecieved(QString command)
@@ -14,10 +16,6 @@ void CommandHandlerWrapper::on_dataRecieved(QString command)
     MerlinCommand merlinCmd (command, *merlinInterface);
     qDebug() << "mapped : " << merlinCmd.parseResult;
     Command cmd(merlinCmd.parseResult);
-    if(_serverBusy)
-        _serverBusy = false;
-    else
-        _serverBusy = true;
     cmd.invoke(commandHandler,_serverBusy);
     //get response
     QString response = "";

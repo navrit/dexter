@@ -6,6 +6,7 @@
 #include "commandhandler.h"
 #include "MerlinInterface.h"
 
+
 class CommandHandlerWrapper : public QObject
 {
     Q_OBJECT

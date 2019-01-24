@@ -383,7 +383,9 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
 
     if ( ! _takingData ) { // new data
          //_loadFromThresholdsVector();
+        //qDebug() << "start taking data .. ";
         _takingData = true;
+        emit busyByTakingData(_takingData);
 
         // ETA
         CalcETA();
@@ -624,6 +626,7 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) { //when a
     }
 
     _takingData = false;
+    emit busyByTakingData(_takingData);
 
     if (runningCT) {
         emit sig_resumeCT();
