@@ -53,7 +53,7 @@
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>25</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMpx3Eq">
@@ -103,6 +103,7 @@
     <addaction name="actionConfiguration"/>
     <addaction name="actionDACs"/>
     <addaction name="actionEqualization"/>
+    <addaction name="actionThreshold_Scan"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
