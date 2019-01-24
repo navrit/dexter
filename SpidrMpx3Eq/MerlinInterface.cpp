@@ -36,9 +36,24 @@ void MerlinCommand::setErrorExternally(int error)
         _error = UNKNOWN_COMMAND;
         return;
     }
-    if(error == -5)
+    if(error == SERVER_BUSY_DATA_TAKING)
     {
-        _error = SERVER_BUSY;
+        _error = SB_DATA_TAKING;
+        return;
+    }
+    if(error == SERVER_BUSY_EQUALIZATION)
+    {
+        _error = SB_EQUALIZATION;
+        return;
+    }
+    if(error == SERVER_BUSY_DAC_SCAN)
+    {
+        _error = SB_DAC_SCAN;
+        return;
+    }
+    if(error == SERVER_BUSY_THRESHOLD_SCAN)
+    {
+        _error = SB_THRESHOLD_SCAN;
         return;
     }
 

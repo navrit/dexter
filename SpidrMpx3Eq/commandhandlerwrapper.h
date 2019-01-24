@@ -5,19 +5,21 @@
 #include <QDebug>
 #include "commandhandler.h"
 #include "MerlinInterface.h"
+#include "ServerStatus.h"
 
 
 class CommandHandlerWrapper : public QObject
 {
     Q_OBJECT
 public:
+
     explicit CommandHandlerWrapper(QObject *parent = 0);
 
 
 private:
     CommandHandler *commandHandler;
     MerlinInterface *merlinInterface;
-    bool _serverBusy = false;
+    SERVER_BUSY_TYPE _serverStatus = FREE;
 
 signals:
     //pass response to command server
@@ -33,7 +35,7 @@ public slots:
     //recive image from commandHandler
     void on_ImageIsReady(QByteArray, std::pair<const char*,int>);
     //get notified if server is busy or free e.g = data acquiring, equalization and etc.
-    void on_serverIsBusy(bool);
+    void on_serverStatusChanged(SERVER_BUSY_TYPE);
 };
 
 #endif // COMMANDHANDLERWRAPPER_H

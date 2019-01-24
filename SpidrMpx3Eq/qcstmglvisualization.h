@@ -16,6 +16,7 @@
 #include "gradient.h"
 #include "histogram.h"
 #include "GeneralSettings.h"
+#include "commandhandlerwrapper.h"
 
 #include <QQueue>
 #include <QVector>
@@ -357,7 +358,7 @@ signals:
     //! Used for ZMQ
     void someCommandHasFinished_Successfully();
     void someCommandHasFailed(QString reply="");
-    void busyByTakingData(bool); //true means it is taking data
+    void busyByTakingData(SERVER_BUSY_TYPE); //true means it is taking data
 };
 
 #endif // QCSTMGLVISUALIZATION_H

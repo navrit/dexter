@@ -10,6 +10,7 @@
 #include "dataconsumerthread.h"
 #include "qcstmequalization.h"
 
+
 //#include <QTimer> // For the test function
 
 CommandHandler::CommandHandler(QObject *parent) : QObject(parent)
@@ -789,14 +790,14 @@ QString Command::getData()
     return data;
 }
 
-void Command::invoke(CommandHandler *ch,bool serverIsBusy)
+void Command::invoke(CommandHandler *ch, SERVER_BUSY_TYPE serverStatus)
 {
     qDebug() << "debug cmd :" << cmd;
     if(ch->cmdTable.contains(cmd))
     {
-        if(serverIsBusy){
+        if(serverStatus == SB_DATA_TAKING){
             qDebug () << "Server is busy.";
-            setError(SERVER_BUSY);
+            setError(SERVER_BUSY_DATA_TAKING);
             return;
         }
         ch->cmdTable[cmd].handler(ch, this);

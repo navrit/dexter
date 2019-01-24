@@ -142,7 +142,8 @@ HEADERS += mpx3gui.h \
     commandhandlerwrapper.h \
     GeneralSettings.h \
     EnergyCalibrator.h \
-    RemoteThresholdDlg.h
+    RemoteThresholdDlg.h \
+    ServerStatus.h
 
 FORMS    += mpx3gui.ui \
     qcstmequalization.ui \

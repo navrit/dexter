@@ -5,6 +5,8 @@
 #include <QHash>
 #include <QVector>
 #include "MerlinInterface.h"
+#include "ServerStatus.h"
+
 
 class CommandHandler;
 class Command;
@@ -15,7 +17,8 @@ struct cmd_struct
     void (*handler) (CommandHandler*, Command*);
 };
 
-enum ERROR_TYPE{NO_ERROR = 0, UNKNOWN_ERROR = -1, UNKNOWN_COMMAND = -2 , ARG_NUM_OUT_RANGE = -3, ARG_VAL_OUT_RANGE = -4, SERVER_BUSY = -5};
+enum ERROR_TYPE{NO_ERROR = 0, UNKNOWN_ERROR = -1, UNKNOWN_COMMAND = -2 , ARG_NUM_OUT_RANGE = -3, ARG_VAL_OUT_RANGE = -4,
+                SERVER_BUSY_DATA_TAKING = -5,SERVER_BUSY_EQUALIZATION = -6,SERVER_BUSY_DAC_SCAN = -7, SERVER_BUSY_THRESHOLD_SCAN = -8 };
 static const QString gainModeStrTable[] = {"shigh","high","low","slow"};
 
 class CommandHandler : public QObject
@@ -112,7 +115,7 @@ class Command {
 
 public:
     Command(QString command);
-    void invoke(CommandHandler* ch, bool serverIsBusy);
+    void invoke(CommandHandler* ch, SERVER_BUSY_TYPE serverStatus);
     QString getData(void);
     void setData(QString);
     void setImage(QByteArray);
