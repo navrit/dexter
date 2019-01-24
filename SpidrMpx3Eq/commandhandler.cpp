@@ -789,11 +789,16 @@ QString Command::getData()
     return data;
 }
 
-void Command::invoke(CommandHandler *ch)
+void Command::invoke(CommandHandler *ch,bool serverIsBusy)
 {
     qDebug() << "debug cmd :" << cmd;
     if(ch->cmdTable.contains(cmd))
     {
+        if(serverIsBusy){
+            qDebug () << "Server is busy.";
+            setError(SERVER_BUSY);
+            return;
+        }
         ch->cmdTable[cmd].handler(ch, this);
     }
     else

@@ -36,6 +36,11 @@ void MerlinCommand::setErrorExternally(int error)
         _error = UNKNOWN_COMMAND;
         return;
     }
+    if(error == -5)
+    {
+        _error = SERVER_BUSY;
+        return;
+    }
 
 }
 

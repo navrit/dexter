@@ -14,7 +14,11 @@ void CommandHandlerWrapper::on_dataRecieved(QString command)
     MerlinCommand merlinCmd (command, *merlinInterface);
     qDebug() << "mapped : " << merlinCmd.parseResult;
     Command cmd(merlinCmd.parseResult);
-    cmd.invoke(commandHandler);
+    if(_serverBusy)
+        _serverBusy = false;
+    else
+        _serverBusy = true;
+    cmd.invoke(commandHandler,_serverBusy);
     //get response
     QString response = "";
     merlinCmd.setErrorExternally(cmd.getError());
@@ -45,4 +49,9 @@ void CommandHandlerWrapper::on_requestForDataTaking(bool)
 void CommandHandlerWrapper::on_ImageIsReady(QByteArray header,std::pair<const char*,int> image)
 {
     emit imageIsReady(header,image);
+}
+
+void CommandHandlerWrapper::on_serverIsBusy(bool flag)
+{
+    _serverBusy = flag;
 }

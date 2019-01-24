@@ -12,9 +12,11 @@ class CommandHandlerWrapper : public QObject
 public:
     explicit CommandHandlerWrapper(QObject *parent = 0);
 
+
 private:
     CommandHandler *commandHandler;
     MerlinInterface *merlinInterface;
+    bool _serverBusy = false;
 
 signals:
     //pass response to command server
@@ -29,6 +31,8 @@ public slots:
     void on_requestForDataTaking(bool);
     //recive image from commandHandler
     void on_ImageIsReady(QByteArray, std::pair<const char*,int>);
+    //get notified if server is busy or free e.g = data acquiring, equalization and etc.
+    void on_serverIsBusy(bool);
 };
 
 #endif // COMMANDHANDLERWRAPPER_H
