@@ -930,10 +930,12 @@ void QCstmGLVisualization::ntriggers_edit() {
     _mpx3gui->getConfigMonitoring()->getUI()->nTriggersSpinner->setValue(
                 ui->nTriggersSpinBox->value()
                 );
-
-    _mpx3gui->getTHScan()->GetUI()->spinBox_framesPerStep->setValue(
-            ui->nTriggersSpinBox->value()
-            );
+    if(ui->nTriggersSpinBox->value() == 0)
+        _mpx3gui->getTHScan()->GetUI()->spinBox_framesPerStep->setValue(1);
+    else
+        _mpx3gui->getTHScan()->GetUI()->spinBox_framesPerStep->setValue(
+                    ui->nTriggersSpinBox->value()
+                    );
 
     // And try to send the new config
     _mpx3gui->getConfig()->setNTriggers(
