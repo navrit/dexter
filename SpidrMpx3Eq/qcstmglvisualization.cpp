@@ -1238,7 +1238,7 @@ void QCstmGLVisualization::OperationModeSwitched(int indx)
     // Swith the triggerLengthSpinBox into ContRWFreq if in ContinuousRW mode
     if ( indx == Mpx3Config::__operationMode_SequentialRW ) {
 
-        ui->triggerLengthSpinBoxLabel->setText( "Length" );
+        ui->triggerLengthSpinBoxLabel->setText( "Length (µs)" );
         ui->triggerLengthSpinBox->setValue( _mpx3gui->getConfig()->getTriggerLength() );
 
         ui->triggerLengthSpinBoxLabel->setToolTip( tr("Trigger length") );
@@ -1246,7 +1246,7 @@ void QCstmGLVisualization::OperationModeSwitched(int indx)
 
     } else if ( indx == Mpx3Config::__operationMode_ContinuousRW ) {
 
-        ui->triggerLengthSpinBoxLabel->setText( "CRW(Hz)" );
+        ui->triggerLengthSpinBoxLabel->setText( "CRW (Hz)" );
         ui->triggerLengthSpinBox->setValue( _mpx3gui->getConfig()->getContRWFreq() );
 
         ui->triggerLengthSpinBoxLabel->setToolTip( tr("ContinuousRW Mode. Enter frequency in Hz.") );
