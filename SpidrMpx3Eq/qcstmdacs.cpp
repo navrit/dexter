@@ -160,7 +160,7 @@ void QCstmDacs::StartDACScan() {
     _scanThread = new ScanDACsThread(_deviceIndex, this, spidrcontrol);
     // Connect to the progress bar
     connect( _scanThread, SIGNAL( progress(int) ), ui->progressBar, SLOT( setValue(int)) );
-
+    emit busy(SB_DAC_SCAN);
     _scanThread->start();
 }
 
@@ -779,6 +779,7 @@ void QCstmDacs::setWindowWidgetsStatus(win_status s)
 void QCstmDacs::scanFinished() {
     _plotIdxCntr = 0;
     _plotIdxMap.clear();
+    emit busy(FREE);
 }
 
 void QCstmDacs::addData(int dacIdx, int dacVal, double adcVal ) {

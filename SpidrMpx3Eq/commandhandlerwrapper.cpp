@@ -1,5 +1,6 @@
 #include "commandhandlerwrapper.h"
 #include "qcstmglvisualization.h"
+#include "qcstmdacs.h"
 
 CommandHandlerWrapper::CommandHandlerWrapper(QObject *parent) : QObject(parent)
 {
@@ -9,6 +10,7 @@ CommandHandlerWrapper::CommandHandlerWrapper(QObject *parent) : QObject(parent)
     connect(commandHandler,SIGNAL(imageIsReady(QByteArray,std::pair<const char*,int>)),this,SLOT(on_ImageIsReady(QByteArray,std::pair<const char*,int>)));
     connect(QCstmGLVisualization::getInstance(),SIGNAL(busy(SERVER_BUSY_TYPE)),this,SLOT(on_serverStatusChanged(SERVER_BUSY_TYPE)));
     connect(thresholdScan::getInstance(),SIGNAL(busy(SERVER_BUSY_TYPE)),this,SLOT(on_serverStatusChanged(SERVER_BUSY_TYPE)));
+    connect(QCstmDacs::getInstance(),SIGNAL(busy(SERVER_BUSY_TYPE)),this,SLOT(on_serverStatusChanged(SERVER_BUSY_TYPE)));
 }
 
 void CommandHandlerWrapper::on_dataRecieved(QString command)

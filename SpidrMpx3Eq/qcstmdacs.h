@@ -21,6 +21,7 @@
 #include <iostream>
 #include <fstream>
 #include "RemoteThresholdDlg.h"
+#include "ServerStatus.h"
 //#include "qcstmconfigmonitoring.h"
 
 
@@ -166,11 +167,9 @@ private slots:
     void openWriteMenu();
     void ConnectionStatusChanged(bool);
     void sendThresholdToDac(void);
-
-
-
-
     void on_remoteThresholdpushButton_clicked();
+signals:
+    void busy(SERVER_BUSY_TYPE);
 };
 
 class SenseDACsThread : public QThread {

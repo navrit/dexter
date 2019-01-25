@@ -805,6 +805,11 @@ void Command::invoke(CommandHandler *ch, SERVER_BUSY_TYPE serverStatus)
             setError(SERVER_BUSY_THRESHOLD_SCAN);
             return;
         }
+        if(serverStatus == SB_DAC_SCAN){
+            qDebug () << "Server is busy." << serverStatus;
+            setError(SERVER_BUSY_DAC_SCAN);
+            return;
+        }
         ch->cmdTable[cmd].handler(ch, this);
     }
     else
