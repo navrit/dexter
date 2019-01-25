@@ -679,7 +679,12 @@ void QCstmEqualization::resetThresholds()
 void QCstmEqualization::StartEqualizationSingleChip() {
 
     if ( ! _isSequentialAllChipsEqualization ) {
-        if ( ! makeTeaCoffeeDialog() ) return;
+        if ( ! makeTeaCoffeeDialog() ){
+            _ui->_startEq->setEnabled(true);
+            _ui->_startEqAllSequential->setEnabled(true);
+            return;
+        }
+
     }
 
     // Get busy !
@@ -690,7 +695,8 @@ void QCstmEqualization::StartEqualizationSingleChip() {
     if ( ! InitEqualization( _deviceIndex ) ) return;
 
     KeepOtherChipsQuiet();
-
+    _ui->_startEq->setEnabled(false);
+    _ui->_startEqAllSequential->setEnabled(false);
     StartEqualization( );
 
 }
@@ -708,11 +714,14 @@ void QCstmEqualization::StartEqualizationSequentialSingleChips()
         if(!_isRemotePath){
             if ( ! makeTeaCoffeeDialog() ) {
                 ChangeDeviceIndex(0, true);
+                _ui->_startEq->setEnabled(true);
+                _ui->_startEqAllSequential->setEnabled(true);
                 return;
             }
         }
     }
-
+    _ui->_startEq->setEnabled(false);
+    _ui->_startEqAllSequential->setEnabled(false);
     // Next chip
     ChangeDeviceIndex(++_deviceIndex, true);
 
@@ -1003,6 +1012,8 @@ void QCstmEqualization::StartEqualization() {
                 resetForNewEqualisation();
 
                 AppendToTextBrowser( "[DONE]" );
+                _ui->_startEq->setEnabled(true);
+                _ui->_startEqAllSequential->setEnabled(true);
                 emit busy(FREE);
 
             }
@@ -2656,6 +2667,8 @@ void QCstmEqualization::StopEqualization() {
     _stopEq = true;
     emit stop_data_taking_thread();
     emit busy(FREE);
+    _ui->_startEq->setEnabled(true);
+    _ui->_startEqAllSequential->setEnabled(true);
 }
 
 void QCstmEqualization::ConnectionStatusChanged(bool conn) {
