@@ -358,6 +358,11 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
     } else if (mode == "THScan") {
         runningTHScan = true;
     }
+    else
+    {
+        runningCT = false;
+        runningTHScan = false;
+    }
 
     if ( !_dataTakingThread ) {
 
@@ -385,7 +390,8 @@ void QCstmGLVisualization::StartDataTaking(QString mode) {
          //_loadFromThresholdsVector();
         //qDebug() << "start taking data .. ";
         _takingData = true;
-        emit busyByTakingData(SB_DATA_TAKING);
+        if(!runningTHScan)
+            emit busy(SB_DATA_TAKING);
 
         // ETA
         CalcETA();
@@ -626,13 +632,16 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) { //when a
     }
 
     _takingData = false;
-    emit busyByTakingData(FREE);
+    if(!runningTHScan)
+        emit busy(FREE);
 
     if (runningCT) {
         emit sig_resumeCT();
+
     }
     if (runningTHScan) {
         emit sig_resumeTHScan();
+
     }
 
     // inform the consumer that the data taking is finished

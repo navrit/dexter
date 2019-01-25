@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <mpx3gui.h>
+#include "ServerStatus.h"
 
 namespace Ui {
 class thresholdScan;
@@ -101,6 +102,7 @@ private slots:
 signals:
     void slideAndSpin(int, int);
     void scanIsDone(void);
+    void busy(SERVER_BUSY_TYPE);
 };
 
 #endif // THRESHOLDSCAN_H

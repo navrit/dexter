@@ -167,12 +167,14 @@ void thresholdScan::stopScan()
 
     _stop = true;
     _running = false;
+    emit busy(FREE);
 }
 
 void thresholdScan::resetScan()
 {
     _stop = false;
     _running = false;
+    emit busy(FREE);
 }
 
 void thresholdScan::resumeTHScan()
@@ -229,6 +231,7 @@ void thresholdScan::button_startStop_clicked_remotely()
 
 void thresholdScan::startDataTakingThread()
 {
+     emit busy(SB_THRESHOLD_SCAN);
     _mpx3gui->getVisualization()->StartDataTaking("THScan");
 }
 

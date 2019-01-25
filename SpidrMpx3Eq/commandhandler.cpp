@@ -796,8 +796,13 @@ void Command::invoke(CommandHandler *ch, SERVER_BUSY_TYPE serverStatus)
     if(ch->cmdTable.contains(cmd))
     {
         if(serverStatus == SB_DATA_TAKING && cmd != "Stop"){
-            qDebug () << "Server is busy.";
+            qDebug () << "Server is busy." << serverStatus;
             setError(SERVER_BUSY_DATA_TAKING);
+            return;
+        }
+        if(serverStatus == SB_THRESHOLD_SCAN && cmd != "StarStoptScan"){
+            qDebug () << "Server is busy." << serverStatus;
+            setError(SERVER_BUSY_THRESHOLD_SCAN);
             return;
         }
         ch->cmdTable[cmd].handler(ch, this);
