@@ -744,7 +744,7 @@ void QCstmEqualization::StartEqualizationAllChips() {
 }
 
 void QCstmEqualization::StartEqualization() {
-
+    emit busy(SB_EQUALIZATION);
     /* So that the equalisation won't save the mask file to the wrong folder during equalisation */
     emit equalizationPathExported("");
 
@@ -1003,11 +1003,13 @@ void QCstmEqualization::StartEqualization() {
                 resetForNewEqualisation();
 
                 AppendToTextBrowser( "[DONE]" );
+                emit busy(FREE);
 
             }
 
             QString msg = "Finished equalisation on: " + _mpx3gui->getVisualization()->getStatsString_deviceId();
             emit sig_statusBarAppend(msg, "green");
+
         }
     }
 
@@ -1015,6 +1017,7 @@ void QCstmEqualization::StartEqualization() {
     // !!! ATTENTION !!!
     // THL1 Eq, set the Equalization for THL1 eq
     //  but the results comes in the counter 0 !!!
+
 
 }
 
@@ -2652,6 +2655,7 @@ void QCstmEqualization::StopEqualization() {
     qDebug() << "[INFO] attempting to stop the equalization ...";
     _stopEq = true;
     emit stop_data_taking_thread();
+    emit busy(FREE);
 }
 
 void QCstmEqualization::ConnectionStatusChanged(bool conn) {

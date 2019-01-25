@@ -26,6 +26,7 @@ using namespace std;
 #include "histogram.h"
 #include "ThlScan.h"
 #include "testpulseequalisation.h"
+#include "ServerStatus.h"
 
 #define __default_step_scan		1
 #define __DAC_Disc_Optimization_step    2
@@ -423,7 +424,7 @@ signals:
     void sig_statusBarClean();
     void sig_statusBarAppend(QString mess, QString colorString);
 
-
+    void busy(SERVER_BUSY_TYPE);
     void equalizationPathExported(QString path);
     //void pixelsMasked(int devId,QSet<int> pixelSet);
 

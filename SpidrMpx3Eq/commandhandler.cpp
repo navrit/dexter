@@ -810,6 +810,11 @@ void Command::invoke(CommandHandler *ch, SERVER_BUSY_TYPE serverStatus)
             setError(SERVER_BUSY_DAC_SCAN);
             return;
         }
+        if(serverStatus == SB_EQUALIZATION){
+            qDebug () << "Server is busy." << serverStatus;
+            setError(SERVER_BUSY_EQUALIZATION);
+            return;
+        }
         ch->cmdTable[cmd].handler(ch, this);
     }
     else
