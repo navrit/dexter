@@ -256,7 +256,7 @@ function verify_Qt() {
 
 # Argument: Qt_static_build_folder - where to install the static build of Qt
 function make_build_folder_for_static_Qt() {
-  mkdir -p ~/$1
+  mkdir -p ~/$1-static-build
   if [ $? -eq 0 ]; then
     echo "[INFO] Made static build folder: ~/$1"
   else
@@ -265,16 +265,77 @@ function make_build_folder_for_static_Qt() {
   fi
 }
 
+function configure_Qt_with_version() {
+  version="$1"
+  echo "Configuring for Qt $version"
+
+  if [[ $version == "5_12_0" ]]; then
+    ./configure -static \
+                -prefix ~/$Qt_static_build_folder-static-build \
+                -opensource \
+                -confirm-license \
+                -qt-xcb -qt-pcre -qt-libpng -qt-libjpeg -fontconfig \
+                -nomake tests -nomake examples -no-feature-accessibility \
+                -skip qt3d -skip qtactiveqt -skip qtandroidextras \
+                -skip qtcanvas3d -skip qtconnectivity \
+                -skip qtdatavis3d -skip qtdeclarative -skip qtdoc \
+                -skip qtgamepad -skip qtgraphicaleffects -skip qtimageformats \
+                -skip qtlocation -skip qtmacextras -skip qtmultimedia \
+                -skip qtnetworkauth \
+                -skip qtpurchasing -skip qtquickcontrols -skip qtquickcontrols2 \
+                -skip qtremoteobjects \
+                -skip qtscript -skip qtscxml -skip qtsensors -skip qtserialbus \
+                -skip qtserialport -skip qtsvg \
+                -skip qtspeech \
+                -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebengine \
+                -skip qtwebglplugin \
+                -skip qtwebview -skip qtwinextras -skip qtxmlpatterns
+  elif [[ $version == "5_7_1" ]]; then
+    ./configure -static \
+                -prefix ~/$Qt_static_build_folder-static-build \
+                -opensource \
+                -confirm-license \
+                -qt-xcb -qt-pcre -qt-libpng -qt-libjpeg -fontconfig \
+                -nomake tests -nomake examples -no-feature-accessibility \
+                -skip qt3d -skip qtactiveqt -skip qtandroidextras \
+                -skip qtcanvas3d -skip qtconnectivity \
+                -skip qtdatavis3d -skip qtdeclarative -skip qtdoc \
+                -skip qtgamepad -skip qtgraphicaleffects -skip qtimageformats \
+                -skip qtlocation -skip qtmacextras -skip qtmultimedia \
+                -skip qtpurchasing -skip qtquickcontrols -skip qtquickcontrols2 \
+                -skip qtscript -skip qtscxml -skip qtsensors -skip qtserialbus \
+                -skip qtserialport -skip qtsvg \
+                -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebengine \
+                -skip qtwebview -skip qtwinextras -skip qtxmlpatterns
+  else
+    "[FAIL] Internal script bug - unexpected Qt version supplied = $version"
+    exit 1
+  fi
+}
+
 function configure_Qt() {
+  local OS=$(get_OS)
   echo
   echo "[WARN] You need ~20GB free in order for this to expand"
   echo "$(df -h .)"
   echo
 
   cd /tmp/$tmp_working_folder/$Qt_static_build_folder
-  # Could use different compilers: -platform linux-clang, linux-g++, linux-g++-32, win32-g++, win32-msvc
+  # Could use different compilers: -platform linux-clang, linux-g++
   # Skipping pretty much everything I think it's possible to get away with
-  ./configure -static -prefix ~/$Qt_static_build_folder-static-build -opensource -confirm-license -qt-xcb -fontconfig -qt-pcre -qt-libpng -qt-libjpeg -nomake tests -nomake examples -no-feature-accessibility -skip qtactiveqt -skip qtandroidextras -skip qtconnectivity -skip qtdatavis3d -skip qtdeclarative -skip qtdoc -skip qtgamepad -skip qtgraphicaleffects -skip qtimageformats -skip qtlocation -skip qtmacextras -skip qtmultimedia -skip qtnetworkauth -skip qtpurchasing -skip qtquickcontrols -skip qtquickcontrols2 -skip qtremoteobjects -skip qtscript -skip qtscxml -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qtsvg -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebview -skip qtwinextras
+
+  if [[ $OS == *"Fedora"* ]]; then
+    configure_Qt_with_version "5_12_0"
+  elif [[ $OS == *"Ubuntu"* ]]; then
+    configure_Qt_with_version "5_12_0"
+  elif [[ $OS == *"CentOS"* ]] || [[ $OS == *"Red Hat Enterprise Linux"* ]]; then
+    configure_Qt_with_version "5_7_1"
+  else
+    echo
+    echo "[WARN] Not supported OS..."
+    exit 1
+  fi
+
   if [ $? -eq 0 ]; then
     echo "[INFO] Configuration successful"
   else
@@ -288,7 +349,7 @@ function make_Qt() {
   if [ $? -eq 0 ]; then
     echo "[INFO] Make successful"
   else
-    echo "[FAIL] Could not make? Make return code = $?"
+    echo "[WARN] Could not make? Make return code = $?"
     # exit 1 ?
   fi
 }
@@ -298,7 +359,7 @@ function install_Qt() {
   if [ $? -eq 0 ]; then
     echo "[INFO] make install successful"
   else
-    echo "[FAIL] Could not make install? Make install return code = $?"
+    echo "[WARN] Could not make install? Make install return code = $?"
     # exit 1 ?
   fi
 }
