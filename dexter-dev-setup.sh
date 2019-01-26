@@ -127,7 +127,7 @@ function install_CentOS_RHEL_packages() {
   local OS=$1
   echo "[INFO] Only confirmed for CentOS 7"
   sudo yum update
-  sudo yum install gcc-c++.x86_64 libxcb-devel.i686 qt5-qtbase-static.x86_64 qt5base gstreamer-plugins-base-devel.i686 gstreamer-plugins-base-devel.x86_64 gstreamer-devel.i686 gstreamer-devel.x86_64 boost-devel.i686 blas blas-devel lapack lapack-devel libxcb-devel.i686 libxcb.i686
+  sudo yum install gcc-c++.x86_64 libxcb-devel.i686 qt5-qtbase-static.x86_64 qt5base gstreamer-plugins-base-devel.i686 gstreamer-plugins-base-devel.x86_64 gstreamer-devel.i686 gstreamer-devel.x86_64 boost-devel.i686 blas blas-devel lapack lapack-devel libxcb-devel.i686 libxcb.i686 libusbx-devel
 }
 
 function install_debian_packages() {
@@ -296,7 +296,7 @@ function configure_Qt_with_version() {
                 -opensource \
                 -confirm-license \
                 -qt-xcb -qt-pcre -qt-libpng -qt-libjpeg -fontconfig \
-                -nomake tests -nomake examples -no-feature-accessibility \
+                -nomake tests -nomake examples \
                 -skip qt3d -skip qtactiveqt -skip qtandroidextras \
                 -skip qtcanvas3d -skip qtconnectivity \
                 -skip qtdatavis3d -skip qtdeclarative -skip qtdoc \
