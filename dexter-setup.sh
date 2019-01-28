@@ -1,8 +1,14 @@
 #!/bin/bash
 # Author: Navrit Bal
+# Company: Amsterdam Scientific Instruments B.V.
 # Created: 2019-01-24
-# Last modified: 2019-01-26
+# Last modified: 2019-01-28
 # Purpose: Prepare a linux machine for Dexter development
+
+function usage() {
+  printf '\n\t%s\n' "No arguments - user setup (dependencies only)"
+  printf '\t%s\n' "-m or --mode dev - full developer setup"
+}
 
 function get_OS() {
   local OS="$(hostnamectl | grep "Operating System: *")"
@@ -30,6 +36,17 @@ function print_introductory_messages() {
   echo "[START] -----------------------------------------------------------------"
   say_something "Starting Dexter installation"
   echo "[INFO] Starting Dexter developer setup BASH script - static build - $0 - PID = $$"
+}
+
+function handle_mode_option() {
+  local mode=$1
+
+  if [[ "$mode" == *"dev"* ]]; then
+  	printf '\n%s\n' "[INFO] Developer mode - continuing"
+  else
+    print_end_messages_user
+    exit 0
+  fi
 }
 
 function get_Qt_URL() {
@@ -140,6 +157,9 @@ function install_phidgets() {
   local file_string_Phidgets=libphidget_2.1.8.20170607
   local log_file_Phidgets=libphidget.log
 
+  mkdir -p /tmp/$tmp_working_folder && cd "$_"
+  echo "[INFO] Working temporary directory = $(pwd)"
+
   if [ -s "$file_string_Phidgets" ]; then
     echo "[INFO] Phidgets already downloaded - $file_string_Phidgets exists and is not empty"
   else
@@ -184,9 +204,6 @@ function install_phidgets() {
 
 function install_dependencies() {
   local OS=$(get_OS)
-
-  mkdir -p /tmp/$tmp_working_folder && cd "$_"
-  echo "[INFO] Working temporary directory = $(pwd)"
 
   echo "[INFO] From hostnamectl "$OS")"
   echo
@@ -364,7 +381,7 @@ function install_Qt() {
   fi
 }
 
-function print_end_messages() {
+function print_end_messages_dev() {
   echo
   echo "[INFO] Now you have a static build of Qt, note everything is hard-coded so do not move the folder"
   echo "[INFO] In QtCreator add a new kit with the new qmake (from ~/$Qt_static_build_folder-static-build)"
@@ -378,18 +395,43 @@ function print_end_messages() {
   say_something "Why are you not working"
 }
 
+function print_end_messages_user() {
+  printf '\n%s\n' "[INFO] Now the Dexter user setup has completed, you should be able to launch the Dexter executable now"
+  printf '\n%s\n' "[END] $(date) -----------------------------------------------------------"
+  say_something "Why are you not working"
+}
+
+# ------------------------------------------------------------------------------
 
 tmp_working_folder=dexter-dev-setup
 Qt_static_build_folder=uninitialised_variable
 
+while [ "$1" != "" ]; do
+    case $1 in
+        -m | --mode )   mode=$2
+                        shift
+                        shift
+                        ;;
+        -h | --help )   usage
+                        exit 0
+                        ;;
+        * )             usage
+                        exit 1
+                        ;;
+    esac
+done
+
+
 print_introductory_messages
+install_dependencies
+handle_mode_option "$mode"
+
 URL_Qt=$(get_Qt_URL)
 Qt_file_string=$(get_Qt_file_string)
-install_dependencies
 get_Qt
 extract_Qt
 verify_Qt # Note: this is a very weak check as of 2019-01-26
-make_build_folder_for_static_Qt $Qt_static_build_folder
+make_build_folder_for_static_Qt "$Qt_static_build_folder"
 configure_Qt
 make_Qt
 install_Qt
