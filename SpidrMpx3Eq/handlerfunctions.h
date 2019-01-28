@@ -96,9 +96,13 @@ void setCounterDepthHandler(CommandHandler* ch, Command* cmd)
         cmd->setData("Counter depth is set to 12 bit...!");
         cmd->setError(NO_ERROR);
     }
-    else if(cmd->arguments.at(0) == "24"){
+    else if(cmd->arguments.at(0) == "24"){ //if it is not continous
         //here code to set depth
-
+        if (Mpx3GUI::getInstance()->getConfig()->getOperationMode() == 1)
+        {
+            cmd->setError(INVALID_ARG);
+            return;
+        }
         Mpx3GUI::getInstance()->getConfig()->setPixelDepth(24);
         cmd->setData("Counter depth is set to 24 bit...!");
         cmd->setError(NO_ERROR);
