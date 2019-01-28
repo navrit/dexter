@@ -992,7 +992,8 @@ void setDoEqualizationHandler(CommandHandler* ch, Command* cmd){
         return;
     }
     QString path = cmd->arguments.at(0);
-    ch->doEqualizationRemotely(path);
+    cmd->setError((ERROR_TYPE)ch->doEqualizationRemotely(path));
+
 }
 void stopEqualizationHandler(CommandHandler *ch, Command *cmd){
     ch->stopEqualization();
