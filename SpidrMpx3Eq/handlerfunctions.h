@@ -697,7 +697,13 @@ void setNumberOfFrameHandler(CommandHandler* ch, Command* cmd){
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    Mpx3GUI::getInstance()->getConfig()->setNTriggers(cmd->arguments.at(0).toInt() );
+    int val = cmd->arguments.at(0).toInt();
+    if(val < 0 ){
+        cmd->setError(INVALID_ARG);
+        return;
+    }
+
+    Mpx3GUI::getInstance()->getConfig()->setNTriggers(val);
     cmd->setError(NO_ERROR);
 }
 
