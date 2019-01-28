@@ -18,7 +18,8 @@ struct cmd_struct
 };
 
 enum ERROR_TYPE{NO_ERROR = 0, UNKNOWN_ERROR = -1, UNKNOWN_COMMAND = -2 , ARG_NUM_OUT_RANGE = -3, ARG_VAL_OUT_RANGE = -4,
-                SERVER_BUSY_DATA_TAKING = -5,SERVER_BUSY_EQUALIZATION = -6,SERVER_BUSY_DAC_SCAN = -7, SERVER_BUSY_THRESHOLD_SCAN = -8 };
+                SERVER_BUSY_DATA_TAKING = -5,SERVER_BUSY_EQUALIZATION = -6,SERVER_BUSY_DAC_SCAN = -7,
+                SERVER_BUSY_THRESHOLD_SCAN = -8, INVALID_ARG = -9 };
 static const QString gainModeStrTable[] = {"shigh","high","low","slow"};
 
 class CommandHandler : public QObject

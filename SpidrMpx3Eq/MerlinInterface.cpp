@@ -56,6 +56,11 @@ void MerlinCommand::setErrorExternally(int error)
         _error = SB_THRESHOLD_SCAN;
         return;
     }
+    if(error == -9)
+    {
+        _error = INVALID_ARG;
+        return;
+    }
 
 }
 

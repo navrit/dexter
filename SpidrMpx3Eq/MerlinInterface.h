@@ -87,7 +87,7 @@ private:
 class MerlinCommand {
 
     enum ERROR_TYPE{NO_ERROR = 0, UNKNOWN_ERROR = 1, UNKNOWN_COMMAND = 2, PARAM_OUT_OF_RANGE = 3, SB_DATA_TAKING = 101
-                   ,SB_EQUALIZATION = 102,SB_DAC_SCAN = 103,SB_THRESHOLD_SCAN = 104};
+                   ,SB_EQUALIZATION = 102,SB_DAC_SCAN = 103,SB_THRESHOLD_SCAN = 104,INVALID_ARG = 200};
 
 public:
     MerlinCommand(QString, MerlinInterface&); //get the merlin command and parse it to PSL command
