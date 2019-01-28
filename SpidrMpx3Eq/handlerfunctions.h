@@ -424,7 +424,13 @@ void setShutterLengthHandler(CommandHandler* ch, Command* cmd){
                return;
             }
         } else {
-            config->setTriggerLength((int) (1000. * length.toDouble()));    // us
+            int val = (int) (1000. * length.toDouble());
+            if(val <= 0)
+            {
+                cmd->setError(INVALID_ARG);
+                return;
+            }
+            config->setTriggerLength(val);    // us
         }
         cmd->setData("Shutter open length is set to " + length);
         cmd->setError(NO_ERROR);
@@ -460,7 +466,8 @@ void setShutterPeriodHandler(CommandHandler* ch, Command* cmd){
         double freq = 1000./length.toDouble();
         //config->setContRWFreq(freq);
         qDebug() << "shutter period -> *not* set freq to " << freq;
-        cmd->setError(NO_ERROR);
+        cmd->setError(INVALID_ARG);
+        return;
     } else {
         auto length = cmd->arguments.at(0); //ms
         int open = config->getTriggerLength();
