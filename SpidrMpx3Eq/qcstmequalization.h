@@ -184,7 +184,7 @@ public:
     int GetNPixelsActive(int * buffer, int size, verblev verbose);
     void GetSlopeAndCut_IDAC_DISC_THL(ScanResults *, ScanResults *, double &, double &);
     void GetSlopeAndCut_Adj_THL(ScanResults *, ScanResults *, double &, double &);
-
+    void stopEqualizationRemotely(void);
     double EvalLinear(double eta, double cut, double x);
 
     // Equalization steps

@@ -51,6 +51,7 @@ public:
     int getFramesPerScan(void);
     QString getScanPath(void);
     void startScan(void);
+    void stopEqualization(void);
 
     void startSendingImage(bool);
     QString getAcquisitionHeader(void);

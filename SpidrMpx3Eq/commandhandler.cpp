@@ -200,6 +200,9 @@ void CommandHandler::initializeCmdTable()
     cmd_struct setDoEqualization {setDoEqualizationHandler};
     cmdTable.insert("SetDoEqualization",setDoEqualization);
 
+    cmd_struct stopEqualization {stopEqualizationHandler};
+    cmdTable.insert("StopEqualization",stopEqualization);
+
     cmd_struct setInhibitShutter { setInhibitShutterHandler};
     cmdTable.insert("SetInhibitShutter",setInhibitShutter);
 
@@ -425,6 +428,11 @@ QString CommandHandler::getScanPath()
 void CommandHandler::startScan()
 {
     emit requestToStartStopThresholdScan();
+}
+
+void CommandHandler::stopEqualization()
+{
+    QCstmEqualization::getInstance()->stopEqualizationRemotely();
 }
 
 void CommandHandler::startSendingImage(bool send)
@@ -810,7 +818,7 @@ void Command::invoke(CommandHandler *ch, SERVER_BUSY_TYPE serverStatus)
             setError(SERVER_BUSY_DAC_SCAN);
             return;
         }
-        if(serverStatus == SB_EQUALIZATION){
+        if(serverStatus == SB_EQUALIZATION && cmd != "StopEqualization"){
             qDebug () << "Server is busy." << serverStatus;
             setError(SERVER_BUSY_EQUALIZATION);
             return;

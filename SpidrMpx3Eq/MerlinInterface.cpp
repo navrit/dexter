@@ -354,6 +354,7 @@ void MerlinInterface::initializeTables()
     cmdTable.insert(STARTACQUISITION,"Start");
     cmdTable.insert(THSCAN,"StarStoptScan");
     cmdTable.insert(RESETSLOPESANDOFFSETS,"ResetSlopesAndOffsets");
+    cmdTable.insert(STOPEQUALIZATION,"StopEqualization");
 }
 
 QString MerlinCommand::argParser(PSL_ARG_TYPES argType)

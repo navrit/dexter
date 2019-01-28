@@ -1634,6 +1634,11 @@ void QCstmEqualization::GetSlopeAndCut_Adj_THL(ScanResults * r1, ScanResults * r
 
 }
 
+void QCstmEqualization::stopEqualizationRemotely()
+{
+    StopEqualization();
+}
+
 //! The way the next two functions relate looks redundant but I need
 //!    it for when this is called from inside a thread.
 void QCstmEqualization::SetAllAdjustmentBits() {
