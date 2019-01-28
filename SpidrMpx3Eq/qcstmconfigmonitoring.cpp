@@ -451,19 +451,39 @@ void QCstmConfigMonitoring::ConnectionStatusChanged(bool conn) {
     }
 }
 
-void QCstmConfigMonitoring::diable24BitMode(int idx)
+void QCstmConfigMonitoring:: setUpGuiForReadOutMode(int idx)
 {
-    QStandardItemModel *model = qobject_cast<QStandardItemModel *>(ui->pixelDepthCombo->model());
-    Q_ASSERT(model != nullptr);
-    QStandardItem *item = model->item(3);
-    qDebug() << "index is :"<<idx;
-    if(idx == 1){
-        if(ui->pixelDepthCombo->currentIndex() == 3)
+    QStandardItemModel *pixelDepthModel = qobject_cast<QStandardItemModel *>(ui->pixelDepthCombo->model());
+    Q_ASSERT(pixelDepthModel != nullptr);
+    QStandardItem *pixelDepthItem = pixelDepthModel->item(3);
+    QStandardItemModel *triggerModel = qobject_cast<QStandardItemModel *>(ui->triggerModeCombo->model());
+    Q_ASSERT(triggerModel != nullptr);
+    QStandardItem *triggerItems[5];
+    for(int i=0; i<5; i++){
+        triggerItems[i] = triggerModel->item(i+1);
+    }
+    if(idx == Mpx3Config::__operationMode_ContinuousRW){
+        if(ui->pixelDepthCombo->currentIndex() == 3){ //if readout mode is 24-bit set it to 12-bit
             ui->pixelDepthCombo->setCurrentIndex(2);
-        item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
+        }
+        ui->triggerModeCombo->setCurrentIndex(0); //trigger mode always must be auto
+        pixelDepthItem->setFlags(pixelDepthItem->flags() & ~Qt::ItemIsEnabled);
+        for(int i=0; i<5; i++){
+            triggerItems[i]->setFlags(triggerItems[i]->flags() & ~Qt::ItemIsEnabled);
+        }
+        ui->inhibitShutterCheckBox->setChecked(false);
+        ui->inhibitShutterCheckBox->setVisible(false);
     }
     else
-        item->setFlags(item->flags() |  Qt::ItemIsEnabled);
+    {
+        pixelDepthItem->setFlags(pixelDepthItem->flags() |  Qt::ItemIsEnabled);
+        for(int i=0; i<5; i++){
+            triggerItems[i]->setFlags(triggerItems[i]->flags() | Qt::ItemIsEnabled);
+        }
+        ui->inhibitShutterCheckBox->setVisible(true);
+    }
+
+
 }
 
 void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
@@ -499,7 +519,7 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
 
     // Operation Mode
     connect(ui->operationModeComboBox, SIGNAL(currentIndexChanged(int)), config, SLOT(setOperationMode(int)));
-    connect(ui->operationModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(diable24BitMode(int)));
+    connect(ui->operationModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setUpGuiForReadOutMode(int)));
     connect(config, SIGNAL(operationModeChanged(int)), ui->operationModeComboBox, SLOT(setCurrentIndex(int)));
     connect(config, SIGNAL(operationModeChanged(int)), this, SLOT(hideLabels()));
     connect(config, SIGNAL(operationModeChanged(int)), this, SLOT(setMaximumFPSinVisualiation()));

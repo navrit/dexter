@@ -295,7 +295,20 @@ void setTriggerModeHandler(CommandHandler* ch, Command* cmd){
         cmd->setError(ARG_NUM_OUT_RANGE);
         return;
     }
-    ch->getGui()->getConfigMonitoring()->setTriggerModeByIndex(cmd->arguments.at(0).toInt());
+    int val = cmd->arguments.at(0).toInt();
+    if(val < 0 && val <= 5)
+    {
+        cmd->setError(INVALID_ARG);
+        return;
+    }
+    auto config = Mpx3GUI::getInstance()->getConfig();
+    if(config->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW && val != 0)
+    {
+        cmd->setError(INVALID_ARG);
+        return;
+    }
+    ch->getGui()->getConfigMonitoring()->setTriggerModeByIndex(val);
+    cmd->setError(NO_ERROR);
 }
 void getTriggerModeHandler(CommandHandler* ch, Command* cmd){
     int val = ch->getGui()->getConfigMonitoring()->getTriggerModeIndex();
@@ -403,7 +416,13 @@ void setShutterLengthHandler(CommandHandler* ch, Command* cmd){
         //here code to set operational mode
         if (cont) {
             double freq = 1000./length.toDouble();
-            config->setContRWFreq(freq);
+            if(freq >= 1 && freq <= 2034)
+                config->setContRWFreq(freq);
+            else
+            {
+               cmd->setError(INVALID_ARG);
+               return;
+            }
         } else {
             config->setTriggerLength((int) (1000. * length.toDouble()));    // us
         }
@@ -492,6 +511,11 @@ void setBothCountersHandler(CommandHandler* ch, Command* cmd){
     if(!cmd->enoughArguments(1,"SetBothCounters"))  //this command comes with one argument
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    if (Mpx3GUI::getInstance()->getConfig()->getOperationMode() == 1)
+    {
+        cmd->setError(INVALID_ARG);
         return;
     }
     if(cmd->arguments.at(0) == "2"){ //we send the data of both counter
@@ -1042,6 +1066,12 @@ void setInhibitShutterHandler(CommandHandler* ch, Command* cmd){
     if(!cmd->enoughArguments(1,"SetInhibitShutter"))  //this command comes with one argument
     {
         cmd->setError(ARG_NUM_OUT_RANGE);
+        return;
+    }
+    auto config = Mpx3GUI::getInstance()->getConfig();
+    if(config->getOperationMode() == Mpx3Config::__operationMode_ContinuousRW)
+    {
+        cmd->setError(INVALID_ARG);
         return;
     }
     if(cmd->arguments.at(0) == "enable"){
