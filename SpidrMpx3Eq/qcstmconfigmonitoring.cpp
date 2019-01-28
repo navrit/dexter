@@ -451,6 +451,21 @@ void QCstmConfigMonitoring::ConnectionStatusChanged(bool conn) {
     }
 }
 
+void QCstmConfigMonitoring::diable24BitMode(int idx)
+{
+    QStandardItemModel *model = qobject_cast<QStandardItemModel *>(ui->pixelDepthCombo->model());
+    Q_ASSERT(model != nullptr);
+    QStandardItem *item = model->item(3);
+    qDebug() << "index is :"<<idx;
+    if(idx == 1){
+        if(ui->pixelDepthCombo->currentIndex() == 3)
+            ui->pixelDepthCombo->setCurrentIndex(2);
+        item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
+    }
+    else
+        item->setFlags(item->flags() |  Qt::ItemIsEnabled);
+}
+
 void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
 
     _mpx3gui = p;
@@ -484,6 +499,7 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
 
     // Operation Mode
     connect(ui->operationModeComboBox, SIGNAL(currentIndexChanged(int)), config, SLOT(setOperationMode(int)));
+    connect(ui->operationModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(diable24BitMode(int)));
     connect(config, SIGNAL(operationModeChanged(int)), ui->operationModeComboBox, SLOT(setCurrentIndex(int)));
     connect(config, SIGNAL(operationModeChanged(int)), this, SLOT(hideLabels()));
     connect(config, SIGNAL(operationModeChanged(int)), this, SLOT(setMaximumFPSinVisualiation()));

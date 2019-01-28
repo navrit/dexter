@@ -74,7 +74,7 @@ public slots:
 
 private slots:
     void ConnectionStatusChanged(bool);
-
+    void diable24BitMode(int);
     void setPixelDepthByIndex(int newValIndx);
     void pixelDepthChangedByValue(int val);
 
