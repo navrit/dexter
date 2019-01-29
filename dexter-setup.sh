@@ -2,12 +2,21 @@
 # Author: Navrit Bal
 # Company: Amsterdam Scientific Instruments B.V.
 # Created: 2019-01-24
-# Last modified: 2019-01-28
-# Purpose: Prepare a linux machine for Dexter development
 
 function usage() {
-  printf '\n\t%s\n' "No arguments - user setup (dependencies only)"
-  printf '\t%s\n' "-m or --mode dev - full developer setup"
+  printf '%s\n'   "Last modified: 2019-01-29"
+  printf '\n%s' "Usage: "${0##*/}": [-m dev]"
+  printf '\n%s'   "Purpose: Prepare a linux machine for using or development of Dexter"
+
+  printf '\n\n\t%s' "-m, --mode [dev]"
+  printf '\n\t\t%s' "Choose user only (default) or developer setup"
+  printf '\n\t%s'   "-h, --help"
+  printf '\n\t\t%s' "Display this message and exit (1)"
+
+
+  printf '\n\n%s'     "Examples:"
+  printf '\n\t%s'     ""${0##*/}"        - user setup (install packages only)"
+  printf '\n\t%s\n\n' ""${0##*/}" -m dev - full developer setup"
 }
 
 function get_OS() {
@@ -413,7 +422,7 @@ while [ "$1" != "" ]; do
                         shift
                         ;;
         -h | --help )   usage
-                        exit 0
+                        exit 1
                         ;;
         * )             usage
                         exit 1
