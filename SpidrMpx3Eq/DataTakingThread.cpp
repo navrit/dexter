@@ -314,6 +314,10 @@ void DataTakingThread::run() {
                     if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
                         spidrcontrol->stopContReadout();
                     }
+                    else{
+                        spidrcontrol->stopAutoTrigger();
+                        break;
+                    }
                     reachLimitStop = true;
                 }
 
