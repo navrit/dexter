@@ -9,8 +9,15 @@ Steps to get this repository up and running and developers information (formerly
 ### How do I get set up? ###
 
 * Use the dexter-setup.sh BASH script.
-   * ./dexter-setup.sh for user only setup
-   * ./dexter-setup.sh -m dev for the full developer setup
+    * ```./dexter-setup.sh``` for user only setup
+    * ```./dexter-setup.sh -m dev``` for the full developer setup
+* OpenGL libraries are required, these are typically installed as part of a graphics card driver. This means a GPU or integrated GPU is required.
+    * If you cannot run ```glxgears```, you will not be able to run Dexter
+* Example build command:
+```
+qmake SPIDR-MPX3.pro -spec linux-g++ && make qmake_all && make -j8
+Release/Dexter
+```
 
 ### Contribution guidelines ###
 
@@ -91,7 +98,7 @@ Is this section worth maintaining?
 -------------------------------------------------------------
 
 # Developers notes (only)
-Last change: 27-09-2016s
+Last change: 27-09-2016
 Author: Amber van Keeken (primary) & Navrit Bal (notes)
 
 ## Setting up a new view (eg. Configuration, DACs etc.) using QtCreator
@@ -156,9 +163,9 @@ is also used.
 ### Optimization – used in *fitESFparams()*
 
 For fitting the ESF data, a least squares method
-was used. Dlib provides a function that expects its own input _vector
+was used. Dlib provides a function that expects its own input vector
 and parameter_vector data types. Converting to these data types
-requires  small loops. Two prototype functions  (not memberfunctions)
+requires  small loops. Two prototype functions  (not member functions)
  have to be created: model and residual. The first describes the
 function that is to be fitted to the data, the second calculates the
 difference between the value that comes out of this model function
@@ -347,8 +354,8 @@ Three buttons are available.
 	way the user can see what options are used when calculating the MTF
 	and NPS. (These are also noted in the log (see LOG).)
 
-*The settings are saved in a private variable of
-the _optionsDialog_ called __currentSettings_.
+The settings are saved in a private variable of
+the optionsDialog_ called currentSettings_.
 This is a QHash, which is a container that stores values by a key (in
 this case a QString) and a value (in this case an int). This allows
 for intuitive looking up and setting of the settings. QHash is faster
@@ -377,7 +384,7 @@ To add an option, a few things have to be done:
 5. In _QCstmDQE.cpp,_ add an expression for setting the corresponding private variable in
 	_on_apply_options()_.
 	Or start some procedure.  
-    [For example: QCstmDQE has a variable called __windowW_
+    [For example: QCstmDQE has a variable called _windowW_
 	that is used to locally fit the data (smoothing). This is set by the
 	following expression:  
     > _windowW=options.value("windowW");  
