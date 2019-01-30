@@ -16,7 +16,8 @@ Steps to get this repository up and running and developers information (formerly
 * Example build command:
 ```
 qmake SPIDR-MPX3.pro -spec linux-g++ && make qmake_all && make -j8
-Release/Dexter
+cd Release
+./Dexter
 ```
 
 ### Contribution guidelines ###
