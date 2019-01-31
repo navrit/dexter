@@ -20,7 +20,7 @@ function usage() {
 }
 
 function get_OS() {
-  local OS="$(hostnamectl | grep "Operating System: *")"
+  local OS="$(hostnamectl | awk 'BEGIN { FS=":"; } /Operating System: (.*)/ { print $2; }')"
 
   echo "$OS"
 }
@@ -137,7 +137,7 @@ function install_ubuntu_packages() {
 
   # Ubuntu 18.04 or 18.10
   if [[ $OS == *"18"* ]]; then
-    sudo apt install -qy git curl make gcc libusb-dev libzmq5 libpng-tools libpcre16-3 libxkbcommon-dev
+    sudo apt install -qy git curl make gcc libusb-dev libtiff-dev libzmq5 libzmq3-dev libpng-tools libpcre16-3 libxkbcommon-dev libfontconfig1-dev libgl2ps-dev libgles2-mesa libgl2ps1.4 libx11-xcb-dev mesa-common-dev libgles2-mesa-dev
     install_ubuntu_libpng12
     # Ubuntu 17.04 or 17.10
   elif [[ $OS == *"17"* ]]; then
@@ -218,11 +218,11 @@ function install_dependencies() {
   echo
 
   if [[ $OS == *"Fedora"* ]]; then
-    install_fedora_packages $OS
+    install_fedora_packages "$OS"
   elif [[ $OS == *"Ubuntu"* ]]; then
-    install_ubuntu_packages $OS
+    install_ubuntu_packages "$OS"
   elif [[ $OS == *"CentOS"* ]] || [[ $OS == *"Red Hat Enterprise Linux"* ]]; then
-    install_CentOS_RHEL_packages $OS
+    install_CentOS_RHEL_packages "$OS"
   elif [[ $OS == *"Debian"* ]]; then
     install_debian_packages
     exit 1
@@ -300,8 +300,9 @@ function configure_Qt_with_version() {
                 -prefix ~/$Qt_static_build_folder-static-build \
                 -opensource \
                 -confirm-license \
-                -qt-xcb -qt-pcre -qt-libpng -qt-libjpeg -fontconfig \
+                -qt-xcb -qt-pcre -qt-libpng -qt-libjpeg -fontconfig -system-freetype \
                 -nomake tests -nomake examples -no-feature-accessibility \
+                -skip wayland \
                 -skip qt3d -skip qtactiveqt -skip qtandroidextras \
                 -skip qtcanvas3d -skip qtconnectivity \
                 -skip qtdatavis3d -skip qtdeclarative -skip qtdoc \
@@ -444,6 +445,6 @@ make_build_folder_for_static_Qt "$Qt_static_build_folder"
 configure_Qt
 make_Qt
 install_Qt
-print_end_messages
+print_end_messages_dev
 
 exit 0 # Exit with success
