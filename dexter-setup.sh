@@ -104,7 +104,7 @@ function install_fedora_packages() {
   local OS=$1
   echo "[INFO] Only confirmed for Fedora 29"
   sudo dnf update
-  sudo dnf install openblas-devel.x86_64 lapack.x86_64 gcc libusb-devel.x86_64 mesa-libGL-devel libtiff-devel.x86_64 dlib-devel.x86_64 boost-devel.x86_64 cppzmq-devel.x86_64 glib2-devel.x86_64 glibc-devel.x86_64 pulseaudio-libs-devel.x86_64
+  sudo dnf install openblas-devel.x86_64 lapack.x86_64 gcc libusb-devel.x86_64 mesa-libGL-devel libtiff-devel.x86_64 dlib-devel.x86_64 boost-devel.x86_64 cppzmq-devel.x86_64 glib2-devel.x86_64 glibc-devel.x86_64 pulseaudio-libs-devel.x86_64 make gcc-c++ fontconfig-devel freetype-devel
 }
 
 function install_ubuntu_libpng12() {
@@ -296,7 +296,7 @@ function configure_Qt_with_version() {
   echo "Configuring for Qt $version"
 
   if [[ $version == "5_12_0" ]]; then
-    ./configure -static \
+    ./configure --recheck-all -static \
                 -prefix ~/$Qt_static_build_folder-static-build \
                 -opensource \
                 -confirm-license \
