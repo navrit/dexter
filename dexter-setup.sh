@@ -2,16 +2,25 @@
 # Author: Navrit Bal
 # Company: Amsterdam Scientific Instruments B.V.
 # Created: 2019-01-24
-# Last modified: 2019-01-28
-# Purpose: Prepare a linux machine for Dexter development
 
 function usage() {
-  printf '\n\t%s\n' "No arguments - user setup (dependencies only)"
-  printf '\t%s\n' "-m or --mode dev - full developer setup"
+  printf '%s\n'   "Last modified: 2019-01-29"
+  printf '\n%s' "Usage: "${0##*/}": [-m dev]"
+  printf '\n%s'   "Purpose: Prepare a linux machine for using or development of Dexter"
+
+  printf '\n\n\t%s' "-m, --mode [dev]"
+  printf '\n\t\t%s' "Choose user only (default) or developer setup"
+  printf '\n\t%s'   "-h, --help"
+  printf '\n\t\t%s' "Display this message and exit (1)"
+
+
+  printf '\n\n%s'     "Examples:"
+  printf '\n\t%s'     ""${0##*/}"        - user setup (install packages only)"
+  printf '\n\t%s\n\n' ""${0##*/}" -m dev - full developer setup"
 }
 
 function get_OS() {
-  local OS="$(hostnamectl | grep "Operating System: *")"
+  local OS="$(hostnamectl | awk 'BEGIN { FS=":"; } /Operating System: (.*)/ { print $2; }')"
 
   echo "$OS"
 }
@@ -95,7 +104,7 @@ function install_fedora_packages() {
   local OS=$1
   echo "[INFO] Only confirmed for Fedora 29"
   sudo dnf update
-  sudo dnf install openblas-devel.x86_64 lapack.x86_64 gcc libusb-devel.x86_64 mesa-libGL-devel libtiff-devel.x86_64 dlib-devel.x86_64 boost-devel.x86_64 cppzmq-devel.x86_64 glib2-devel.x86_64 glibc-devel.x86_64 pulseaudio-libs-devel.x86_64
+  sudo dnf install openblas-devel.x86_64 lapack.x86_64 gcc libusb-devel.x86_64 mesa-libGL-devel libtiff-devel.x86_64 dlib-devel.x86_64 boost-devel.x86_64 cppzmq-devel.x86_64 glib2-devel.x86_64 glibc-devel.x86_64 pulseaudio-libs-devel.x86_64 make gcc-c++ fontconfig-devel freetype-devel
 }
 
 function install_ubuntu_libpng12() {
@@ -128,7 +137,7 @@ function install_ubuntu_packages() {
 
   # Ubuntu 18.04 or 18.10
   if [[ $OS == *"18"* ]]; then
-    sudo apt install -qy git curl make gcc libusb-dev libzmq5 libpng-tools libpcre16-3 libxkbcommon-dev
+    sudo apt install -qy git curl make gcc libusb-dev libtiff-dev libzmq5 libzmq3-dev libpng-tools libpcre16-3 libxkbcommon-dev libfontconfig1-dev libgl2ps-dev libgles2-mesa libgl2ps1.4 libx11-xcb-dev mesa-common-dev libgles2-mesa-dev
     install_ubuntu_libpng12
     # Ubuntu 17.04 or 17.10
   elif [[ $OS == *"17"* ]]; then
@@ -209,11 +218,11 @@ function install_dependencies() {
   echo
 
   if [[ $OS == *"Fedora"* ]]; then
-    install_fedora_packages $OS
+    install_fedora_packages "$OS"
   elif [[ $OS == *"Ubuntu"* ]]; then
-    install_ubuntu_packages $OS
+    install_ubuntu_packages "$OS"
   elif [[ $OS == *"CentOS"* ]] || [[ $OS == *"Red Hat Enterprise Linux"* ]]; then
-    install_CentOS_RHEL_packages $OS
+    install_CentOS_RHEL_packages "$OS"
   elif [[ $OS == *"Debian"* ]]; then
     install_debian_packages
     exit 1
@@ -287,12 +296,13 @@ function configure_Qt_with_version() {
   echo "Configuring for Qt $version"
 
   if [[ $version == "5_12_0" ]]; then
-    ./configure -static \
+    ./configure --recheck-all -static \
                 -prefix ~/$Qt_static_build_folder-static-build \
                 -opensource \
                 -confirm-license \
-                -qt-xcb -qt-pcre -qt-libpng -qt-libjpeg -fontconfig \
+                -qt-xcb -qt-pcre -qt-libpng -qt-libjpeg -fontconfig -system-freetype \
                 -nomake tests -nomake examples -no-feature-accessibility \
+                -skip wayland \
                 -skip qt3d -skip qtactiveqt -skip qtandroidextras \
                 -skip qtcanvas3d -skip qtconnectivity \
                 -skip qtdatavis3d -skip qtdeclarative -skip qtdoc \
@@ -413,7 +423,7 @@ while [ "$1" != "" ]; do
                         shift
                         ;;
         -h | --help )   usage
-                        exit 0
+                        exit 1
                         ;;
         * )             usage
                         exit 1
@@ -435,6 +445,6 @@ make_build_folder_for_static_Qt "$Qt_static_build_folder"
 configure_Qt
 make_Qt
 install_Qt
-print_end_messages
+print_end_messages_dev
 
 exit 0 # Exit with success
