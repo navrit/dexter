@@ -155,16 +155,16 @@ void DataTakingThread::run() {
         contRWFreq = _mpx3gui->getConfig()->getContRWFreq();
 
         //! May wish to use 10000 for trigger mode testing
-        int overhead = 200; // ms
+     //   int overhead = 200; // ms
 
-        if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
-            timeOutTime = uint((1000/contRWFreq) //! Eg. 100 Hz --> 1/100 s = 10 ms
-                                + overhead);
-        } else {
-            timeOutTime = uint(_mpx3gui->getConfig()->getTriggerLength_ms()
-                                +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
-                                + overhead);
-        }
+//        if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
+//            timeOutTime = uint((1000/contRWFreq) //! Eg. 100 Hz --> 1/100 s = 10 ms
+//                                + overhead);
+//        } else {
+//            timeOutTime = uint(_mpx3gui->getConfig()->getTriggerLength_ms()
+//                                +  _mpx3gui->getConfig()->getTriggerDowntime_ms()
+//                                + overhead);
+//        }
 
         // dropFrames --> will use --> _vis->getDropFrames();
         //  since the user may want to activate/deactivate during data taking.
@@ -188,13 +188,17 @@ void DataTakingThread::run() {
         } else if(opMode == Mpx3Config::__operationMode_SequentialRW ){
             spidrcontrol->startAutoTrigger();
         }
-
+        bool _break = false;
+        timeOutTime = 500;
+        while(!_break && !_stop){
         // Ask SpidrDaq for frames
             while ( spidrdaq->hasFrame(timeOutTime)) {
 
                 // 2) User stop condition
                 if ( _stop ||  _restart  ) {
 
+                    _break = true;
+                    qDebug()<< " break : " << _break;
                     if(_isExternalTrigger){
                         _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
                         break;
@@ -214,6 +218,7 @@ void DataTakingThread::run() {
                 if ( reachLimitStop || _stop || _restart ) {
                     spidrdaq->releaseFrame();
                     _consumer->consume();
+                    _break = true;
                     continue;
                 }
 
@@ -233,6 +238,7 @@ void DataTakingThread::run() {
                         _consumer->consume();
                     }
                     emergencyStop = true;
+                    _break = true;
                 }
                 //! T0-T1 < 0.1% time
                 //! --------------------------
@@ -311,6 +317,7 @@ void DataTakingThread::run() {
                 // 1) See Note 1 at the bottom
                 //  note than score.framesRequested=0 when asking for infinite frames
                 if ( (nFramesReceived >= score.framesRequested) && score.framesRequested > 0 && !_isExternalTrigger ) {
+                    _break = true;
                     if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
                         spidrcontrol->stopContReadout();
                     }
@@ -339,11 +346,14 @@ void DataTakingThread::run() {
 
                     if (externalCnt >= _mpx3gui->getConfig()->getNTriggers() && _mpx3gui->getConfig()->getNTriggers() != 0 ){
                         _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
+                        _break = true;
                         break;
                     }
                 }
             }
+        }
 
+        _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
         _consumer->consume();
 
         if ( ! _restart ) {  emit data_taking_finished( 0 );}
