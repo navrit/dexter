@@ -1217,7 +1217,7 @@ Affects FBK DAC, see manual</string>
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
           </property>
           <property name="suffix">
-           <string> µs</string>
+           <string> ms</string>
           </property>
           <property name="minimum">
            <number>1000</number>
@@ -1520,7 +1520,7 @@ Affects FBK DAC, see manual</string>
            <bool>false</bool>
           </property>
           <property name="suffix">
-           <string> µs</string>
+           <string> ms</string>
           </property>
           <property name="maximum">
            <number>999999999</number>

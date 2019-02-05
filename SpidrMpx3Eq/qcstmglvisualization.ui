@@ -594,7 +594,7 @@ If you run too fast this feature should not be used.</string>
                </sizepolicy>
               </property>
               <property name="text">
-               <string>Length (µs)</string>
+               <string>Length (ms)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

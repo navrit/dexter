@@ -351,8 +351,8 @@ public slots:
     void updateContRWFreq(){}
 
     void setTriggerLength(int newVal){
-        if(newVal != TriggerLength_us){
-            TriggerLength_us = newVal; emit TriggerLengthChanged(newVal);
+        if(newVal*1000 != TriggerLength_us){
+            TriggerLength_us = newVal*1000; emit TriggerLengthChanged(newVal);
             //updateTriggerLength();
             SendConfiguration( __triggerLength );
         }
@@ -364,8 +364,8 @@ public slots:
     // Pick the value from the spin-box directly.
 
     void setTriggerDowntime(int newVal) {
-        if ( newVal != TriggerDowntime_us ) {
-            TriggerDowntime_us = newVal; emit TriggerDowntimeChanged(newVal);
+        if ( newVal*1000 != TriggerDowntime_us ) {
+            TriggerDowntime_us = newVal*1000; emit TriggerDowntimeChanged(newVal);
             //updateTriggerLength();
             SendConfiguration( __triggerDowntime );
         }
