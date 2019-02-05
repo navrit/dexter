@@ -2380,6 +2380,13 @@ uint32 assembleData(uint8 a,uint8 b,uint8 c,uint8 d){
 void QCstmGLVisualization::on_testBtn_clicked()
 {
 
+    int per,freq;
+    _mpx3gui->GetSpidrController()->getSpidrReg(0x0298,&per);
+    qDebug()<< "PERIOD: " << per;
+    _mpx3gui->GetSpidrController()->getSpidrReg(0x029C,&freq);
+    qDebug()<< "SHUTTER OPEN: " << freq;
+
+
 //    for(int i = 0; i< 4; i++)
 //    {
 //    int val22 = 0;
@@ -2406,20 +2413,20 @@ void QCstmGLVisualization::on_testBtn_clicked()
 //    qDebug () << "SlOPE 3 :" << Mpx3GUI::getInstance()->getGeneralSettings()->getSlope(3);
 //    qDebug () << "Trigger Mode: " << Mpx3GUI::getInstance()->getConfig()->getTriggerMode();
     //Mpx3GUI::getInstance()->GetSpidrController()->setDac(1,0+1,16);
-    for (int chip = 0; chip < 4; chip++) {
-        for (int idx = 0; idx < 8; idx++) {
-            int val = 0;
-            _mpx3gui->GetSpidrController()->getDac(chip,idx+1,&val);
-            qDebug() << "Chip ["<<chip<<"] ... Threshold ["<<idx<<"] : "<< val;
-        }
-    }
+//    for (int chip = 0; chip < 4; chip++) {
+//        for (int idx = 0; idx < 8; idx++) {
+//            int val = 0;
+//            _mpx3gui->GetSpidrController()->getDac(chip,idx+1,&val);
+//            qDebug() << "Chip ["<<chip<<"] ... Threshold ["<<idx<<"] : "<< val;
+//        }
+//    }
 
-    for (int chip = 0; chip < 4; chip++) {
-        for (int idx = 0; idx < 8; idx++) {
-            _thresholdsVector[chip][idx];
-            qDebug() << "[Matrix] : Chip ["<<chip<<"] ... Threshold ["<<idx<<"] : "<< _thresholdsVector[chip][idx];;
-        }
-    }
+//    for (int chip = 0; chip < 4; chip++) {
+//        for (int idx = 0; idx < 8; idx++) {
+//            _thresholdsVector[chip][idx];
+//            qDebug() << "[Matrix] : Chip ["<<chip<<"] ... Threshold ["<<idx<<"] : "<< _thresholdsVector[chip][idx];;
+//        }
+//    }
 
     //Mpx3GUI::getInstance()->getConfig()->setInhibitShutter(true);
    // Mpx3GUI::getInstance()->getConfig()->setInhibitShutter(false);
