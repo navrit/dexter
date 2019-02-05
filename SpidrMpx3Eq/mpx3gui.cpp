@@ -235,7 +235,10 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     initialiseServers();
     updateEnergyCalibratorParameters();
     mpx3GuiInstance = this;
-
+    shutterOpenTimer  = new QTimer(this);
+    shutterCloseTimer = new QTimer(this);
+    connect(shutterOpenTimer,SIGNAL(timeout()),this,SLOT(on_shutterOpenTimer_timeout()));
+    connect(shutterCloseTimer,SIGNAL(timeout()),this,SLOT(on_shutterCloseTimer_timeout()));
     QTimer::singleShot(0, this, SLOT(autoConnectToDetector()));
 }
 
@@ -288,6 +291,19 @@ void Mpx3GUI::loadEqualisationFromPathRemotely(QString path)
 void Mpx3GUI::onEqualizationPathExported(QString path)
 {
     _generalSettings->setEqualizationPath(path);
+}
+
+void Mpx3GUI::on_sendingShutter()
+{
+    if(getConfig()->getTriggerDowntime_ms() + getConfig()->getTriggerLength_ms() > 1000){
+        qDebug() << "ShutterOpen_ms  : " << getConfig()->getTriggerLength_ms();
+        qDebug() << "ShutterClose_ms : " << getConfig()->getTriggerDowntime_ms();
+        //GetSpidrController()->setShutterTriggerConfig(SHUTTERMODE_AUTO,0,(int)((1./(double)getConfig()->getTriggerPeriodMS())*1000000),getConfig()->getNTriggers(),0);
+        //GetSpidrController()->startAutoTrigger(); //openshutter
+        _timerStop = false;
+        on_shutterCloseTimer_timeout();
+        qDebug() << "_timerStop on_sending: " << _timerStop;
+    }
 }
 
 bool Mpx3GUI::equalizationLoaded(){
@@ -369,6 +385,13 @@ void Mpx3GUI::loadLastConfiguration()
 
         loadLastConfiguration();
     }
+}
+
+void Mpx3GUI::stopTriggerTimers()
+{
+    GetSpidrController()->stopAutoTrigger();
+    _timerStop = true;
+    qDebug() << "_timerStop stopTriggerTimers: " << _timerStop;
 }
 
 void Mpx3GUI::SetupSignalsAndSlots(){
@@ -1667,3 +1690,32 @@ void Mpx3GUI::autoConnectToDetector()
         _loadEqualizationFromGeneralSettings();
     }
 }
+
+void Mpx3GUI::on_shutterOpenTimer_timeout()
+{
+    qDebug() << "_timerStop open : " << _timerStop;
+    if(_timerStop){
+        shutterCloseTimer->stop();
+        shutterOpenTimer->stop();
+        return;
+    }
+    GetSpidrController()->stopAutoTrigger(); //close shutter
+    shutterOpenTimer->stop(); //stop shutter open timer
+    shutterCloseTimer->start(getConfig()->getTriggerDowntime_ms()); //start shutter close timer
+}
+
+void Mpx3GUI::on_shutterCloseTimer_timeout()
+{
+    qDebug() << "_timerStop close : " << _timerStop;
+    if(_timerStop){
+        shutterCloseTimer->stop();
+        shutterOpenTimer->stop();
+        return;
+    }
+    GetSpidrController()->setShutterTriggerConfig(SHUTTERMODE_AUTO,0,(int)((1./(double)getConfig()->getTriggerPeriodMS())*1000000),getConfig()->getNTriggers(),0);
+    GetSpidrController()->startAutoTrigger(); //openshutter
+    shutterOpenTimer->start(getConfig()->getTriggerLength_ms());
+    shutterCloseTimer->stop();
+}
+
+

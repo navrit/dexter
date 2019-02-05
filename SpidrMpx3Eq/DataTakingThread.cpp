@@ -123,6 +123,8 @@ void DataTakingThread::run() {
     connect( this, &DataTakingThread::bufferFull,
              _vis, &QCstmGLVisualization::consumerBufferFull );
 
+    connect(this,SIGNAL(sendingShutter()),_mpx3gui,SLOT(on_sendingShutter()));
+
 
 
     unsigned long timeOutTime = 0;
@@ -183,22 +185,26 @@ void DataTakingThread::run() {
 
         spidrdaq->releaseAll();
 
-        if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
-            spidrcontrol->startContReadout( contRWFreq );
-        } else if(opMode == Mpx3Config::__operationMode_SequentialRW ){
-            spidrcontrol->startAutoTrigger();
-        }
+
+            if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
+                spidrcontrol->startContReadout( contRWFreq );
+            } else if(opMode == Mpx3Config::__operationMode_SequentialRW && (_mpx3gui->getConfig()->getTriggerLength_ms() + _mpx3gui->getConfig()->getTriggerDowntime_ms() < 1000)&&!_isExternalTrigger){
+                spidrcontrol->startAutoTrigger();
+            }
+
+
+
+
         bool _break = false;
         timeOutTime = 500;
+        emit sendingShutter();
         while(!_break && !_stop){
         // Ask SpidrDaq for frames
             while ( spidrdaq->hasFrame(timeOutTime)) {
 
                 // 2) User stop condition
                 if ( _stop ||  _restart  ) {
-
                     _break = true;
-                    qDebug()<< " break : " << _break;
                     if(_isExternalTrigger){
                         _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
                         break;
@@ -208,6 +214,7 @@ void DataTakingThread::run() {
                         spidrcontrol->stopContReadout();
                     } else { //if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
                         spidrcontrol->stopAutoTrigger();
+                        _mpx3gui->stopTriggerTimers();
                     }
                 }
 
@@ -234,6 +241,7 @@ void DataTakingThread::run() {
                             spidrcontrol->stopContReadout();
                         } else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
                             spidrcontrol->stopAutoTrigger();
+                            _mpx3gui->stopTriggerTimers();
                         }
                         _consumer->consume();
                     }
@@ -323,6 +331,7 @@ void DataTakingThread::run() {
                     }
                     else{
                         spidrcontrol->stopAutoTrigger();
+                        _mpx3gui->stopTriggerTimers();
                         break;
                     }
                     reachLimitStop = true;
@@ -353,6 +362,7 @@ void DataTakingThread::run() {
             }
         }
 
+        _mpx3gui->stopTriggerTimers();
         _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
         _consumer->consume();
 
@@ -384,6 +394,7 @@ void DataTakingThread::run() {
     disconnect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(data_taking_finished(int)));
     disconnect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
 
+    disconnect(this,SIGNAL(sendingShutter()),_mpx3gui,SLOT(on_sendingShutter()));
     // In case the thread is reused
     _restart = false;
     _abort = false;

@@ -167,6 +167,7 @@ public:
 
     void loadLastConfiguration();
     QString getConfigPath(){ return _configPath;}
+    void stopTriggerTimers(void);
 
 signals:
     void dataChanged();
@@ -222,6 +223,7 @@ public slots:
     void loadEqualisationFromPathRemotely(QString path);
 
     void onEqualizationPathExported(QString path);
+    void on_sendingShutter(void);
 
 private:
     bool _loadingBeforeConnecting = false;
@@ -278,6 +280,9 @@ private:
     GeneralSettings *_generalSettings;
     void _loadEqualizationFromGeneralSettings(void);
     bool _loadConfigsFromGeneralSettings(void);
+    QTimer *shutterOpenTimer; //used for periods longer than 100 seconds
+    QTimer *shutterCloseTimer; //used for periods longer than 100 seconds
+    bool _timerStop = false;
 
 private slots:
     void LoadEqualization();
@@ -294,6 +299,8 @@ private slots:
     void on_actionStepper_Motor_triggered(bool checked);
     void on_actionThreshold_Scan_triggered(bool);
     void autoConnectToDetector(void);
+    void on_shutterOpenTimer_timeout(void);
+    void on_shutterCloseTimer_timeout(void);
 };
 
 #endif // MPX3GUI_H
