@@ -80,6 +80,7 @@ private:
     bool colourMode = false, decodeFrames = false, readBothCounters = false, Polarity = true;
     int OperationMode = -1, PixelDepth = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, ContRWFreq = -1, TriggerMode =-1, TriggerLength_us = -1, TriggerDowntime_us = -1, nTriggers = -1;
     int LogLevel = -1;
+    uint64_t TriggerLength_us_64 = -1, TriggerDowntime_us_64 = -1;
     // The following are static characteristics read from the SPIDR, not configurable.
     int SystemClock = -1;
     QVector<int> _dacVals[MPX3RX_DAC_COUNT];
@@ -164,9 +165,11 @@ public:
     int getContRWFreq(){return ContRWFreq;}
     int getTriggerLength(){return TriggerLength_us;}
     int getTriggerLength_ms(){return (TriggerLength_us/1000);}
+    uint64_t getTriggerLength_ms_64(){return (TriggerLength_us_64/1000);}
 
     int getTriggerDowntime(){return TriggerDowntime_us;}
     int getTriggerDowntime_ms(){return TriggerDowntime_us/1000;}
+    uint64_t getTriggerDowntime_ms_64(){return TriggerDowntime_us_64/1000;}
 
     int getNTriggers(){ return nTriggers; }
 
@@ -352,7 +355,9 @@ public slots:
 
     void setTriggerLength(int newVal){
         if(newVal*1000 != TriggerLength_us){
-            TriggerLength_us = newVal*1000; emit TriggerLengthChanged(newVal);
+            TriggerLength_us = newVal*1000;
+            TriggerLength_us_64 = ((uint64_t) newVal)*1000;
+            emit TriggerLengthChanged(newVal);
             //updateTriggerLength();
             SendConfiguration( __triggerLength );
         }
@@ -365,7 +370,9 @@ public slots:
 
     void setTriggerDowntime(int newVal) {
         if ( newVal*1000 != TriggerDowntime_us ) {
-            TriggerDowntime_us = newVal*1000; emit TriggerDowntimeChanged(newVal);
+            TriggerDowntime_us = newVal*1000;
+            TriggerDowntime_us_64 = ((uint64_t) newVal)*1000;
+            emit TriggerDowntimeChanged(newVal);
             //updateTriggerLength();
             SendConfiguration( __triggerDowntime );
         }

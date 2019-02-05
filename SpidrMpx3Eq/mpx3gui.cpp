@@ -295,9 +295,9 @@ void Mpx3GUI::onEqualizationPathExported(QString path)
 
 void Mpx3GUI::on_sendingShutter()
 {
-    if(getConfig()->getTriggerDowntime_ms() + getConfig()->getTriggerLength_ms() > 1000){
-        qDebug() << "ShutterOpen_ms  : " << getConfig()->getTriggerLength_ms();
-        qDebug() << "ShutterClose_ms : " << getConfig()->getTriggerDowntime_ms();
+    if(getConfig()->getTriggerDowntime_ms_64() + getConfig()->getTriggerLength_ms_64() > 1000){
+        qDebug() << "ShutterOpen_ms  : " << getConfig()->getTriggerLength_ms_64();
+        qDebug() << "ShutterClose_ms : " << getConfig()->getTriggerDowntime_ms_64();
         //GetSpidrController()->setShutterTriggerConfig(SHUTTERMODE_AUTO,0,(int)((1./(double)getConfig()->getTriggerPeriodMS())*1000000),getConfig()->getNTriggers(),0);
         //GetSpidrController()->startAutoTrigger(); //openshutter
         _timerStop = false;
@@ -1701,7 +1701,7 @@ void Mpx3GUI::on_shutterOpenTimer_timeout()
     }
     GetSpidrController()->stopAutoTrigger(); //close shutter
     shutterOpenTimer->stop(); //stop shutter open timer
-    shutterCloseTimer->start(getConfig()->getTriggerDowntime_ms()); //start shutter close timer
+    shutterCloseTimer->start(getConfig()->getTriggerDowntime_ms_64()); //start shutter close timer
 }
 
 void Mpx3GUI::on_shutterCloseTimer_timeout()
@@ -1714,7 +1714,7 @@ void Mpx3GUI::on_shutterCloseTimer_timeout()
     }
     GetSpidrController()->setShutterTriggerConfig(SHUTTERMODE_AUTO,0,(int)((1./(double)getConfig()->getTriggerPeriodMS())*1000000),getConfig()->getNTriggers(),0);
     GetSpidrController()->startAutoTrigger(); //openshutter
-    shutterOpenTimer->start(getConfig()->getTriggerLength_ms());
+    shutterOpenTimer->start(getConfig()->getTriggerLength_ms_64());
     shutterCloseTimer->stop();
 }
 

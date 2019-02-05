@@ -188,7 +188,7 @@ void DataTakingThread::run() {
 
             if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
                 spidrcontrol->startContReadout( contRWFreq );
-            } else if(opMode == Mpx3Config::__operationMode_SequentialRW && (_mpx3gui->getConfig()->getTriggerLength_ms() + _mpx3gui->getConfig()->getTriggerDowntime_ms() < 1000)&&!_isExternalTrigger){
+            } else if(opMode == Mpx3Config::__operationMode_SequentialRW && (_mpx3gui->getConfig()->getTriggerLength_ms_64() + _mpx3gui->getConfig()->getTriggerDowntime_ms_64() < 1000)&&!_isExternalTrigger){
                 spidrcontrol->startAutoTrigger();
             }
 
