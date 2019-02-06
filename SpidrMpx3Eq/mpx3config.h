@@ -80,7 +80,7 @@ private:
     bool colourMode = false, decodeFrames = false, readBothCounters = false, Polarity = true;
     int OperationMode = -1, PixelDepth = -1, CsmSpm =-1, GainMode =-1, MaxPacketSize =-1, ContRWFreq = -1, TriggerMode =-1, TriggerLength_us = -1, TriggerDowntime_us = -1, nTriggers = -1;
     int LogLevel = -1;
-    uint64_t TriggerLength_us_64 = -1, TriggerDowntime_us_64 = -1;
+    uint64_t TriggerLength_us_64 = -1, TriggerDowntime_us_64 = -1; //! FIXME: this loses the sign instantly because it is an UNSIGNED 64 bit int, either make it a signed 64 bit int or change the initialisation value so it makes sense.
     // The following are static characteristics read from the SPIDR, not configurable.
     int SystemClock = -1;
     QVector<int> _dacVals[MPX3RX_DAC_COUNT];
@@ -343,10 +343,11 @@ public slots:
     // This is connected to QAbstractSpinBox::editingFinished() which takes no argument.
     // Pick the value from the spin-box directly.
 
+    // Units for newVal are now ms, hence the *1000
     void setTriggerDowntime(int newVal) {
-        if ( newVal*1000 != TriggerDowntime_us ) {
+        if ( newVal*1000 != TriggerDowntime_us ){
             TriggerDowntime_us = newVal*1000;
-            TriggerDowntime_us_64 = ((uint64_t) newVal)*1000;
+            TriggerDowntime_us_64 = (uint64_t(newVal))*1000;
             emit TriggerDowntimeChanged(newVal);
             SendConfiguration( __triggerDowntime );
         }

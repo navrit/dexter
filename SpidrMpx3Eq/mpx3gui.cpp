@@ -1690,31 +1690,52 @@ void Mpx3GUI::autoConnectToDetector() {
   }
 }
 
-{
-    qDebug() << "_timerStop open : " << _timerStop;
-    if(_timerStop){
-        shutterCloseTimer->stop();
-        shutterOpenTimer->stop();
-        return;
-    }
-    GetSpidrController()->stopAutoTrigger(); //close shutter
-    shutterOpenTimer->stop(); //stop shutter open timer
-    shutterCloseTimer->start(getConfig()->getTriggerDowntime_ms_64()); //start shutter close timer
 void Mpx3GUI::shutterOpenTimer_timeout() {
-}
-
-{
-    qDebug() << "_timerStop close : " << _timerStop;
-    if(_timerStop){
-        shutterCloseTimer->stop();
-        shutterOpenTimer->stop();
-        return;
-    }
-    GetSpidrController()->setShutterTriggerConfig(SHUTTERMODE_AUTO,0,(int)((1./(double)getConfig()->getTriggerPeriodMS())*1000000),getConfig()->getNTriggers(),0);
-    GetSpidrController()->startAutoTrigger(); //openshutter
-    shutterOpenTimer->start(getConfig()->getTriggerLength_ms_64());
-void Mpx3GUI::shutterCloseTimer_timeout() {
+  qDebug() << "[INFO]\tShutter timer stop open:" << _timerStop;
+  if (_timerStop) {
     shutterCloseTimer->stop();
+    shutterOpenTimer->stop();
+    return;
+  }
+  GetSpidrController()->stopAutoTrigger(); // Close shutter
+  shutterOpenTimer->stop();                // Stop shutter open timer
+
+  shutterCloseTimer->start(int(
+      getConfig()->getTriggerDowntime_ms_64())); // Start shutter close timer
+  //! NOTE 1. This loses precision (uint64_t to int)
+  //!      2. The maximum value will be not as intended, it will be clipped if
+  //!      over 2^32-1
+  //! Suboptimal solution: For clarity - cast as an int here, it is cast as
+  //! an int later anyway...
+
+  //! Not expecting this to happen
+  if (getConfig()->getTriggerDowntime_ms_64() >= INT_MAX) {
+      qDebug() << "[WARNING]\tShutter close timer argument has lost precision and the maximum value has been limited to" << INT_MAX;
+  }
 }
 
+void Mpx3GUI::shutterCloseTimer_timeout() {
+  qDebug() << "[INFO]\tShutter timer stop close:" << _timerStop;
+  if (_timerStop) {
+    shutterCloseTimer->stop();
+    shutterOpenTimer->stop();
+    return;
+  }
+  GetSpidrController()->setShutterTriggerConfig(
+      SHUTTERMODE_AUTO, 0,
+      int(((1. / double(getConfig()->getTriggerPeriodMS())) * 1000000)),
+      getConfig()->getNTriggers(), 0);
+  GetSpidrController()->startAutoTrigger(); // Open shutter
 
+  shutterOpenTimer->start(int(getConfig()->getTriggerLength_ms_64()));
+  //! NOTE 1. This loses precision (uint64_t to int)
+  //!      2. The maximum value will be not as intended, it will be clipped if
+  //!      over 2^32-1
+  //! Suboptimal solution: For clarity - cast as an int here, it is cast as
+  //! an int later anyway...
+  if (getConfig()->getTriggerDowntime_ms_64() >= INT_MAX) {
+      qDebug() << "[WARNING]\tShutter open timer argument has lost precision and the maximum value has been limited to" << INT_MAX;
+  }
+
+  shutterCloseTimer->stop();
+}
