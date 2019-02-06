@@ -25,18 +25,17 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QStatusBar>
-
 #include <QtConcurrent/QtConcurrent>
+#include <QCoreApplication>
+#include <QTimer>
 
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
+#include <climits>
 
-#include <stdio.h>
-#include <QCoreApplication>
-#include <QTimer>
 
 static Mpx3GUI *mpx3GuiInstance;
 
@@ -1673,22 +1672,22 @@ void Mpx3GUI::on_actionDefibrillator_triggered(bool checked){
     }
 }
 
-void Mpx3GUI::on_actionThreshold_Scan_triggered(bool)
+void Mpx3GUI::on_actionThreshold_Scan_triggered()
 {
     uncheckAllToolbarButtons();
     _ui->stackedWidget->setCurrentIndex( __thresholdScan_page_Id );
     _ui->actionThreshold_Scan->setChecked(1);
 }
 
-void Mpx3GUI::autoConnectToDetector()
-{
-    qDebug() << "[INFO]\tConnecting automatically to detector";
+void Mpx3GUI::autoConnectToDetector() {
+  qDebug() << "[INFO]\tConnecting automatically to detector";
 
-    on_actionConnect_triggered();
-    if(GetSpidrController() != nullptr && GetSpidrController()->isConnected()){
-        connect(getEqualization(), SIGNAL(equalizationPathExported(QString)), this, SLOT(onEqualizationPathExported(QString)));
-        _loadEqualizationFromGeneralSettings();
-    }
+  on_actionConnect_triggered();
+  if (GetSpidrController() != nullptr && GetSpidrController()->isConnected()) {
+    connect(getEqualization(), SIGNAL(equalizationPathExported(QString)), this,
+            SLOT(onEqualizationPathExported(QString)));
+    _loadEqualizationFromGeneralSettings();
+  }
 }
 
 {

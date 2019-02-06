@@ -297,8 +297,8 @@ private slots:
     void on_actionDefibrillator_triggered(bool checked);
     void on_actionAbout_triggered(bool checked);
     void on_actionStepper_Motor_triggered(bool checked);
-    void on_actionThreshold_Scan_triggered(bool);
-    void autoConnectToDetector(void);
+    void on_actionThreshold_Scan_triggered();
+    void autoConnectToDetector();
     void shutterOpenTimer_timeout();
     void shutterCloseTimer_timeout();
 };

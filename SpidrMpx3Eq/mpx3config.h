@@ -233,7 +233,6 @@ public slots:
     void setLogLevel(int newVal) {
         if ( newVal != LogLevel ) {
             LogLevel = newVal; emit logLevelChanged(newVal);
-            //updateCsmSpm();
             SendConfiguration( __logLevel );
         }
     }
@@ -246,13 +245,11 @@ public slots:
     }
 
     void setIpAddress(QString ipn);
-    void updateIpAddress(){}
 
     void setIpZmqPubAddress(QString ip_and_port);
     void setIpZmqSubAddress(QString ip_and_port);
 
     void setColourMode(bool mode);
-    void updateColourMode(){}
 
     void setReadBothCounters(bool rbc) {
         if(rbc != readBothCounters) {
@@ -260,16 +257,13 @@ public slots:
             SendConfiguration( __readBothCounters );
         }
     }
-    void updateReadBothCounters(){}
 
     void setDecodeFrames(bool decode){
         if(decode != decodeFrames){
             decodeFrames = decode; emit decodeFramesChanged(decode);
-            //updateDecodeFrames();
             SendConfiguration( __decodeFrames );
         }
     }
-    void updateDecodeFrames(){}
 
     void setOperationMode(int newVal){
 
@@ -280,70 +274,55 @@ public slots:
 
         if(newVal != OperationMode){
             OperationMode = newVal; emit operationModeChanged(newVal);
-            //updateOperationMode();
             SendConfiguration( __operationMode );
             if (newVal == __operationMode_ContinuousRW) {
                 setReadBothCounters(false);
             }
         }
-
     }
-    void updateOperationMode(){}
 
     void setPixelDepth(int newVal) {
 
         if ( newVal != PixelDepth ) {
 //            qDebug() << "Pixel depth : " << newVal;
             PixelDepth = newVal; emit pixelDepthChanged( newVal );
-            //updatePixelDepth();
             SendConfiguration( __pixelDepth );
         }
     }
-    void updatePixelDepth(){}
 
     void setCsmSpm(int newVal){
         if(newVal != CsmSpm){
             CsmSpm = newVal; emit csmSpmChanged(newVal);
-            //updateCsmSpm();
             SendConfiguration( __CsmSpm );
         }
     }
     void updateCsmSpm(){}
 
-
     void setGainMode(int newVal){
         if(newVal != GainMode){
             GainMode = newVal; emit gainModeChanged(GainMode);
-            //updateGainMode();
 //            qDebug() << "Gain mode: " << newVal;
             SendConfiguration( __gainMode );
         }
     }
-    void updateGainMode(){}
 
-    void setPolarity(int); // implemented in cpp
-    void setPolarityByString(QString itemS, int indx = -1); // implemented in cpp
-    void updatePolarity(){}
+    void setPolarity(int newVal);
+    void setPolarityByString(QString itemS, int indx = -1);
 
     void setMaxPacketSize(int newVal){
         if(newVal != MaxPacketSize){
             MaxPacketSize = newVal; emit MaxPacketSizeChanged(newVal);
-            //updateMaxPacketSize();
         }
         SendConfiguration( __maxPacketSize );
     }
     void updateMaxPacketSize(){_controller->setMaxPacketSize(MaxPacketSize);}
 
-
     void setTriggerMode(int newVal) {
         if(newVal != TriggerMode){
             TriggerMode = newVal; emit TriggerModeChanged(newVal);
-            //updateTriggerMode();
             //SendConfiguration( __triggerMode );
         }
     }
-    void updateTriggerMode(){}
-
 
     void setContRWFreq(int newVal) {
         if ( newVal != ContRWFreq ) {
@@ -351,20 +330,16 @@ public slots:
             SendConfiguration( __contRWFreq );
         }
     }
-    void updateContRWFreq(){}
 
     void setTriggerLength(int newVal){
         if(newVal*1000 != TriggerLength_us){
             TriggerLength_us = newVal*1000;
             TriggerLength_us_64 = ((uint64_t) newVal)*1000;
             emit TriggerLengthChanged(newVal);
-            //updateTriggerLength();
             SendConfiguration( __triggerLength );
         }
 
     }
-    void updateTriggerLength(){}
-
     // This is connected to QAbstractSpinBox::editingFinished() which takes no argument.
     // Pick the value from the spin-box directly.
 
@@ -373,22 +348,16 @@ public slots:
             TriggerDowntime_us = newVal*1000;
             TriggerDowntime_us_64 = ((uint64_t) newVal)*1000;
             emit TriggerDowntimeChanged(newVal);
-            //updateTriggerLength();
             SendConfiguration( __triggerDowntime );
         }
     }
-    void updateTriggerDowntime(){}
 
     void setNTriggers( int newVal ) {
-
         if (newVal != nTriggers) {
             nTriggers = newVal; emit nTriggersChanged(newVal);
-            //updateNTriggers();
             SendConfiguration( __nTriggers );
         }
-
     }
-    void updateNTriggers(){}
 
     ////////////////////////////////////////////////////////////
     // Stepper
@@ -461,9 +430,7 @@ public slots:
 
     }
 
-    //slot to config inhibit_shutter signal
-   void setInhibitShutter(bool turnOn);
-
+   void setInhibitShutter(bool turnOn); // Slot to config inhibit_shutter signal
 };
 
 
