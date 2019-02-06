@@ -299,8 +299,8 @@ private slots:
     void on_actionStepper_Motor_triggered(bool checked);
     void on_actionThreshold_Scan_triggered(bool);
     void autoConnectToDetector(void);
-    void on_shutterOpenTimer_timeout(void);
-    void on_shutterCloseTimer_timeout(void);
+    void shutterOpenTimer_timeout();
+    void shutterCloseTimer_timeout();
 };
 
 #endif // MPX3GUI_H

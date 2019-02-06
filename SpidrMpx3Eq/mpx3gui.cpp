@@ -237,8 +237,8 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     mpx3GuiInstance = this;
     shutterOpenTimer  = new QTimer(this);
     shutterCloseTimer = new QTimer(this);
-    connect(shutterOpenTimer,SIGNAL(timeout()),this,SLOT(on_shutterOpenTimer_timeout()));
-    connect(shutterCloseTimer,SIGNAL(timeout()),this,SLOT(on_shutterCloseTimer_timeout()));
+    connect(shutterOpenTimer,SIGNAL(timeout()),this,SLOT(shutterOpenTimer_timeout()));
+    connect(shutterCloseTimer,SIGNAL(timeout()),this,SLOT(shutterCloseTimer_timeout()));
     QTimer::singleShot(0, this, SLOT(autoConnectToDetector()));
 }
 
@@ -301,7 +301,7 @@ void Mpx3GUI::on_sendingShutter()
         //GetSpidrController()->setShutterTriggerConfig(SHUTTERMODE_AUTO,0,(int)((1./(double)getConfig()->getTriggerPeriodMS())*1000000),getConfig()->getNTriggers(),0);
         //GetSpidrController()->startAutoTrigger(); //openshutter
         _timerStop = false;
-        on_shutterCloseTimer_timeout();
+        shutterCloseTimer_timeout();
         qDebug() << "_timerStop on_sending: " << _timerStop;
     }
 }
@@ -1691,7 +1691,6 @@ void Mpx3GUI::autoConnectToDetector()
     }
 }
 
-void Mpx3GUI::on_shutterOpenTimer_timeout()
 {
     qDebug() << "_timerStop open : " << _timerStop;
     if(_timerStop){
@@ -1702,9 +1701,9 @@ void Mpx3GUI::on_shutterOpenTimer_timeout()
     GetSpidrController()->stopAutoTrigger(); //close shutter
     shutterOpenTimer->stop(); //stop shutter open timer
     shutterCloseTimer->start(getConfig()->getTriggerDowntime_ms_64()); //start shutter close timer
+void Mpx3GUI::shutterOpenTimer_timeout() {
 }
 
-void Mpx3GUI::on_shutterCloseTimer_timeout()
 {
     qDebug() << "_timerStop close : " << _timerStop;
     if(_timerStop){
@@ -1715,6 +1714,7 @@ void Mpx3GUI::on_shutterCloseTimer_timeout()
     GetSpidrController()->setShutterTriggerConfig(SHUTTERMODE_AUTO,0,(int)((1./(double)getConfig()->getTriggerPeriodMS())*1000000),getConfig()->getNTriggers(),0);
     GetSpidrController()->startAutoTrigger(); //openshutter
     shutterOpenTimer->start(getConfig()->getTriggerLength_ms_64());
+void Mpx3GUI::shutterCloseTimer_timeout() {
     shutterCloseTimer->stop();
 }
 
