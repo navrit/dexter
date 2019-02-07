@@ -197,7 +197,8 @@ void DataTakingThread::run() {
 
         bool _break = false;
         timeOutTime = 500;
-        emit sendingShutter();
+        if(opMode == Mpx3Config::__operationMode_SequentialRW)
+            emit sendingShutter();
         while(!_break && !_stop){
         // Ask SpidrDaq for frames
             while ( spidrdaq->hasFrame(timeOutTime)) {
