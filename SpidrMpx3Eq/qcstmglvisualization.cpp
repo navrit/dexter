@@ -2272,7 +2272,6 @@ void QCstmGLVisualization::on_logscale(bool checked)
 
 void QCstmGLVisualization::on_infDataTakingCheckBox_toggled(bool checked)
 {
-
     _infDataTaking = checked;
     ui->infDataTakingCheckBox->setChecked(checked);
 
@@ -2281,6 +2280,7 @@ void QCstmGLVisualization::on_infDataTakingCheckBox_toggled(bool checked)
         // In this case configure the system for 0 triggers.  It will do for both operation modes
         _mpx3gui->getConfig()->setNTriggers( 0 );
         //
+        ui->nTriggersSpinBox->setValue(0);
         ui->nTriggersSpinBox->setEnabled( false );
     } else {
         _mpx3gui->getConfig()->setNTriggers( _nTriggersSave );

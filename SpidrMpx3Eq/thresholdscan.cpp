@@ -405,7 +405,8 @@ void thresholdScan::on_spinBox_maximum_valueChanged(int val)
 
 void thresholdScan::on_spinBox_framesPerStep_valueChanged(int val)
 {
-    _mpx3gui->getVisualization()->GetUI()->nTriggersSpinBox->setValue(val);
+    if(!_mpx3gui->getVisualization()->GetUI()->infDataTakingCheckBox->isChecked())
+        _mpx3gui->getVisualization()->GetUI()->nTriggersSpinBox->setValue(val);
 }
 
 void thresholdScan::on_checkBox_incrementOtherThresholds_stateChanged()
