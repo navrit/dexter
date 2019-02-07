@@ -879,7 +879,7 @@ void QCstmGLVisualization::SetMpx3GUI(Mpx3GUI *p){
     connect( ui->nTriggersSpinBox, SIGNAL(valueChanged(int)),
              this, SLOT(ntriggers_edit()) );
 
-    connect( ui->triggerLengthSpinBox, SIGNAL(valueChanged(int)),
+    connect( ui->triggerLengthSpinBox, SIGNAL(valueChanged(double)),
              this, SLOT(triggerLength_edit()) );
 
     // This one need both the connection to the mirror combo box and the signal to the Configuration to take place

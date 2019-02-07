@@ -804,40 +804,6 @@ A word added to each command - controls some functionality that changes regularl
         <property name="rightMargin">
          <number>15</number>
         </property>
-        <item row="19" column="0">
-         <widget class="QLabel" name="label_logLevel">
-          <property name="text">
-           <string>Log level</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_17">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shutter closed length in selected time units&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Shutter down time</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_9">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of frames/triggers&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Number of Frames</string>
-          </property>
-         </widget>
-        </item>
-        <item row="25" column="0">
-         <widget class="QLabel" name="label_zmq_pub">
-          <property name="text">
-           <string>ZMQ PUB address</string>
-          </property>
-         </widget>
-        </item>
         <item row="9" column="4">
          <widget class="QCheckBox" name="inhibitShutterCheckBox">
           <property name="sizePolicy">
@@ -882,48 +848,39 @@ A word added to each command - controls some functionality that changes regularl
           </property>
          </widget>
         </item>
-        <item row="21" column="3">
-         <layout class="QHBoxLayout" name="horizontalLayout_timeUnits">
-          <item>
-           <widget class="QRadioButton" name="radioButtonS">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="layoutDirection">
-             <enum>Qt::RightToLeft</enum>
-            </property>
-            <property name="text">
-             <string>s</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioButtonMS">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="layoutDirection">
-             <enum>Qt::RightToLeft</enum>
-            </property>
-            <property name="text">
-             <string>ms</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioButtonUS">
-            <property name="layoutDirection">
-             <enum>Qt::RightToLeft</enum>
-            </property>
-            <property name="text">
-             <string>μs</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_9">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of frames/triggers&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Number of Frames</string>
+          </property>
+         </widget>
+        </item>
+        <item row="25" column="0">
+         <widget class="QLabel" name="label_zmq_pub">
+          <property name="text">
+           <string>ZMQ PUB address</string>
+          </property>
+         </widget>
+        </item>
+        <item row="26" column="0">
+         <widget class="QLabel" name="label_zmq_sub">
+          <property name="text">
+           <string>ZMQ SUB address</string>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="0">
+         <widget class="QLabel" name="label_20">
+          <property name="toolTip">
+           <string>Sets internal bias. To disable set a value of 0V.</string>
+          </property>
+          <property name="text">
+           <string>Bias voltage</string>
+          </property>
+         </widget>
         </item>
         <item row="12" column="3">
          <widget class="QDoubleSpinBox" name="biasVoltageSpinner">
@@ -1075,6 +1032,322 @@ Affects FBK DAC, see manual</string>
           </property>
          </widget>
         </item>
+        <item row="19" column="0">
+         <widget class="QLabel" name="label_logLevel">
+          <property name="text">
+           <string>Log level</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_17">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shutter closed length in selected time units&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Shutter down time</string>
+          </property>
+         </widget>
+        </item>
+        <item row="21" column="3">
+         <layout class="QHBoxLayout" name="horizontalLayout_timeUnits">
+          <item>
+           <widget class="QRadioButton" name="radioButtonS">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::RightToLeft</enum>
+            </property>
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonMS">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::RightToLeft</enum>
+            </property>
+            <property name="text">
+             <string>ms</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonUS">
+            <property name="layoutDirection">
+             <enum>Qt::RightToLeft</enum>
+            </property>
+            <property name="text">
+             <string>μs</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="23" column="0">
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>Detector IP Address</string>
+          </property>
+         </widget>
+        </item>
+        <item row="21" column="0">
+         <widget class="QLabel" name="label_timeUnits">
+          <property name="text">
+           <string>Time units</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Gain Mode</string>
+          </property>
+         </widget>
+        </item>
+        <item row="30" column="0" colspan="5">
+         <layout class="QHBoxLayout" name="horizontalLayoutConfig">
+          <item>
+           <widget class="QCheckBox" name="IncludeDacsCheck">
+            <property name="text">
+             <string>Include DACs in config</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="LoadButton">
+            <property name="text">
+             <string>Load Config</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="SaveButton">
+            <property name="text">
+             <string>Save Config</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_23">
+          <property name="toolTip">
+           <string>Continuous Read/Write frequency (Hz)</string>
+          </property>
+          <property name="text">
+           <string>CRW frequency</string>
+          </property>
+         </widget>
+        </item>
+        <item row="19" column="3">
+         <widget class="QSpinBox" name="logLevelSpinner">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>180</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+          <property name="maximum">
+           <number>2</number>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="3">
+         <widget class="QComboBox" name="polarityComboBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>180</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QComboBox" name="operationModeComboBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>180</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="25" column="3">
+         <widget class="QLineEdit" name="IP_ZMQ_PUB_lineEdit">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>180</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="cursorPosition">
+           <number>0</number>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="placeholderText">
+           <string>0.0.0.0:0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="toolTip">
+           <string>CSM SPM</string>
+          </property>
+          <property name="text">
+           <string>Charge Summing Mode</string>
+          </property>
+         </widget>
+        </item>
+        <item row="20" column="0">
+         <widget class="QLabel" name="label_clockMHz">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Clock (MHz)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QSpinBox" name="nTriggersSpinner">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>180</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+          <property name="keyboardTracking">
+           <bool>false</bool>
+          </property>
+          <property name="maximum">
+           <number>999999999</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
+         <widget class="QCheckBox" name="readBothCountersCheckBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>Get either 2 thresholds per pixel or twice the acquisition speed per pixel</string>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="text">
+           <string>Both counters</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0" colspan="4">
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="28" column="3">
+         <widget class="QPushButton" name="merlinInterfaceTestButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>160</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>50</weight>
+            <italic>false</italic>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(164, 0, 0);
+color: rgb(255, 255, 255);
+</string>
+          </property>
+          <property name="text">
+           <string>Merlin interface test</string>
+          </property>
+         </widget>
+        </item>
         <item row="2" column="0">
          <widget class="QLabel" name="label_8">
           <property name="toolTip">
@@ -1127,110 +1400,19 @@ Affects FBK DAC, see manual</string>
           </property>
          </widget>
         </item>
-        <item row="26" column="0">
-         <widget class="QLabel" name="label_zmq_sub">
-          <property name="text">
-           <string>ZMQ SUB address</string>
-          </property>
-         </widget>
-        </item>
-        <item row="12" column="0">
-         <widget class="QLabel" name="label_20">
-          <property name="toolTip">
-           <string>Sets internal bias. To disable set a value of 0V.</string>
-          </property>
-          <property name="text">
-           <string>Bias voltage</string>
-          </property>
-         </widget>
-        </item>
-        <item row="30" column="0" colspan="5">
-         <layout class="QHBoxLayout" name="horizontalLayoutConfig">
-          <item>
-           <widget class="QCheckBox" name="IncludeDacsCheck">
-            <property name="text">
-             <string>Include DACs in config</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="LoadButton">
-            <property name="text">
-             <string>Load Config</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="SaveButton">
-            <property name="text">
-             <string>Save Config</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="label_23">
-          <property name="toolTip">
-           <string>Continuous Read/Write frequency (Hz)</string>
-          </property>
-          <property name="text">
-           <string>CRW frequency</string>
-          </property>
-         </widget>
-        </item>
-        <item row="23" column="0">
-         <widget class="QLabel" name="label_11">
-          <property name="text">
-           <string>Detector IP Address</string>
-          </property>
-         </widget>
-        </item>
-        <item row="21" column="0">
-         <widget class="QLabel" name="label_timeUnits">
-          <property name="text">
-           <string>Time units</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="3">
-         <widget class="QSpinBox" name="triggerDowntimeSpinner">
+        <item row="27" column="0" colspan="5">
+         <widget class="QLineEdit" name="merlinInterfaceLineEdit">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="minimumSize">
-           <size>
-            <width>180</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
+          <property name="text">
+           <string>MPX,0000000025,SET,COLOURMODE,1</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-          </property>
-          <property name="suffix">
-           <string> ms</string>
-          </property>
-          <property name="minimum">
-           <number>1000</number>
-          </property>
-          <property name="maximum">
-           <number>999999999</number>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="0">
-         <widget class="QLabel" name="label_6">
-          <property name="text">
-           <string>Gain Mode</string>
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
          </widget>
         </item>
@@ -1307,6 +1489,25 @@ Affects FBK DAC, see manual</string>
           </property>
          </widget>
         </item>
+        <item row="7" column="3">
+         <widget class="QComboBox" name="gainModeCombobox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>180</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+         </widget>
+        </item>
         <item row="4" column="3">
          <widget class="QSpinBox" name="contRWFreq">
           <property name="sizePolicy">
@@ -1338,266 +1539,17 @@ Affects FBK DAC, see manual</string>
           </property>
          </widget>
         </item>
-        <item row="19" column="3">
-         <widget class="QSpinBox" name="logLevelSpinner">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>180</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-          </property>
-          <property name="maximum">
-           <number>2</number>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="3">
-         <widget class="QComboBox" name="gainModeCombobox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>180</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="25" column="3">
-         <widget class="QLineEdit" name="IP_ZMQ_PUB_lineEdit">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>180</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="cursorPosition">
-           <number>0</number>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-          <property name="placeholderText">
-           <string>0.0.0.0:0</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QComboBox" name="operationModeComboBox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>180</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="11" column="3">
-         <widget class="QComboBox" name="polarityComboBox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>180</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="10" column="0">
-         <widget class="QLabel" name="label_5">
-          <property name="toolTip">
-           <string>CSM SPM</string>
-          </property>
-          <property name="text">
-           <string>Charge Summing Mode</string>
-          </property>
-         </widget>
-        </item>
-        <item row="20" column="0">
-         <widget class="QLabel" name="label_clockMHz">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Clock (MHz)</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="3">
-         <widget class="QSpinBox" name="nTriggersSpinner">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>180</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-          </property>
-          <property name="keyboardTracking">
-           <bool>false</bool>
-          </property>
-          <property name="maximum">
-           <number>999999999</number>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="3">
-         <widget class="QSpinBox" name="triggerLengthSpinner">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>180</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-          </property>
-          <property name="keyboardTracking">
-           <bool>false</bool>
-          </property>
-          <property name="suffix">
-           <string> ms</string>
-          </property>
+         <widget class="QDoubleSpinBox" name="triggerLengthSpinner">
           <property name="maximum">
-           <number>999999999</number>
+           <double>4294967295.000000000000000</double>
           </property>
          </widget>
         </item>
-        <item row="1" column="4">
-         <widget class="QCheckBox" name="readBothCountersCheckBox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="toolTip">
-           <string>Get either 2 thresholds per pixel or twice the acquisition speed per pixel</string>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-          <property name="text">
-           <string>Both counters</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0" colspan="4">
-         <widget class="Line" name="line">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="28" column="3">
-         <widget class="QPushButton" name="merlinInterfaceTestButton">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>160</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>9</pointsize>
-            <weight>50</weight>
-            <italic>false</italic>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(164, 0, 0);
-color: rgb(255, 255, 255);
-</string>
-          </property>
-          <property name="text">
-           <string>Merlin interface test</string>
-          </property>
-         </widget>
-        </item>
-        <item row="27" column="0" colspan="5">
-         <widget class="QLineEdit" name="merlinInterfaceLineEdit">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>MPX,0000000025,SET,COLOURMODE,1</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <item row="3" column="3">
+         <widget class="QDoubleSpinBox" name="triggerDowntimeSpinner">
+          <property name="maximum">
+           <double>4294967295.000000000000000</double>
           </property>
          </widget>
         </item>
@@ -1605,7 +1557,6 @@ color: rgb(255, 255, 255);
        <zorder>label_9</zorder>
        <zorder>nTriggersSpinner</zorder>
        <zorder>label_8</zorder>
-       <zorder>triggerLengthSpinner</zorder>
        <zorder>label_zmq_pub</zorder>
        <zorder>label_zmq_sub</zorder>
        <zorder>IP_ZMQ_PUB_lineEdit</zorder>
@@ -1632,7 +1583,6 @@ color: rgb(255, 255, 255);
        <zorder>label_7</zorder>
        <zorder>triggerModeCombo</zorder>
        <zorder>label_17</zorder>
-       <zorder>triggerDowntimeSpinner</zorder>
        <zorder>label_clockMHz</zorder>
        <zorder>mpx3ClockComboBox</zorder>
        <zorder>merlinInterfaceLineEdit</zorder>
@@ -1644,6 +1594,8 @@ color: rgb(255, 255, 255);
        <zorder>readBothCountersCheckBox</zorder>
        <zorder>inhibitShutterCheckBox</zorder>
        <zorder>merlinInterfaceTestButton</zorder>
+       <zorder>triggerLengthSpinner</zorder>
+       <zorder>triggerDowntimeSpinner</zorder>
       </widget>
      </item>
      <item row="0" column="2">

@@ -134,8 +134,10 @@ void QCstmConfigMonitoring::returnLastTriggerMode2(SpidrController *spidrControl
 {
     //spidrController->getShutterTriggerConfig(&shutterInfo.trigger_mode,&shutterInfo.trigger_width_us,&shutterInfo.trigger_freq_mhz,&shutterInfo.nr_of_triggers,&shutterInfo.trigger_pulse_count);
     //spidrController->setShutterTriggerConfig(_mpx3gui->getConfig()->getTriggerMode(),shutterInfo.trigger_width_us,shutterInfo.trigger_freq_mhz,shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
-    spidrController->setShutterTriggerConfig(_mpx3gui->getConfig()->getTriggerMode(),_mpx3gui->getConfig()->getTriggerLength_ms()*1000,(int)((1./(double)_mpx3gui->getConfig()->getTriggerPeriodMS())*1000000),shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
+    spidrController->setShutterTriggerConfig(_mpx3gui->getConfig()->getTriggerMode(),_mpx3gui->getConfig()->getTriggerLength(),(int)((1./(double)_mpx3gui->getConfig()->getTriggerPeriodMS())*1000000),shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
     qDebug() << "[Info] Trigger mode is set to : " << _mpx3gui->getConfig()->getTriggerMode();
+    qDebug() << "_mpx3gui->getConfig()->getTriggerLength_ms()*1000" << _mpx3gui->getConfig()->getTriggerLength();
+    qDebug() << "(int)((1./(double)_mpx3gui->getConfig()->getTriggerPeriodMS())*1000000)" << (int)((1./(double)_mpx3gui->getConfig()->getTriggerPeriodMS())*1000000);
 }
 
 
@@ -507,17 +509,17 @@ void QCstmConfigMonitoring::SetMpx3GUI(Mpx3GUI *p) {
     connect(ui->contRWFreq, SIGNAL(valueChanged(int)), this, SLOT(ContRWFreqEdited()));
 
     // connection in the viewer
-    connect(ui->triggerLengthSpinner, SIGNAL(valueChanged(int)),
+    connect(ui->triggerLengthSpinner, SIGNAL(valueChanged(double)),
             _mpx3gui->getVisualization()->GetUI()->triggerLengthSpinBox,
-            SLOT(setValue(int)));
+            SLOT(setValue(double)));
 
     // Shutter Length
     connect(ui->triggerLengthSpinner, SIGNAL(editingFinished()), this, SLOT(TriggerLengthEdited()) );
-    connect(config, SIGNAL(TriggerLengthChanged(int)), ui->triggerLengthSpinner, SLOT(setValue(int)));
+    connect(config, SIGNAL(TriggerLengthChanged(double)), ui->triggerLengthSpinner, SLOT(setValue(double)));
 
     // Trigger Down
     connect(ui->triggerDowntimeSpinner, SIGNAL(editingFinished()), this, SLOT(TriggerDowntimeEdited()) );
-    connect(config, SIGNAL(TriggerDowntimeChanged(int)), ui->triggerDowntimeSpinner, SLOT(setValue(int)));
+    connect(config, SIGNAL(TriggerDowntimeChanged(double)), ui->triggerDowntimeSpinner, SLOT(setValue(double)));
 
     // Operation Mode
     connect(ui->operationModeComboBox, SIGNAL(currentIndexChanged(int)), config, SLOT(setOperationMode(int)));

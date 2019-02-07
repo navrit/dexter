@@ -166,11 +166,11 @@ public:
     int getTriggerLength(){return TriggerLength_us;}
     int getTriggerLength_ms(){return (TriggerLength_us/1000);}
     uint64_t getTriggerLength_ms_64(){return (TriggerLength_us_64/1000);}
-
+    uint64_t getTriggerLength_64(){return (TriggerLength_us_64);}
     int getTriggerDowntime(){return TriggerDowntime_us;}
     int getTriggerDowntime_ms(){return TriggerDowntime_us/1000;}
     uint64_t getTriggerDowntime_ms_64(){return TriggerDowntime_us_64/1000;}
-
+     uint64_t getTriggerDowntime_64(){return TriggerDowntime_us_64;}
     int getNTriggers(){ return nTriggers; }
 
     bool getStepperUseCalib() { return stepperUseCalib; }
@@ -212,9 +212,9 @@ signals:
     void gainModeChanged(int);
     void MaxPacketSizeChanged(int);
     void TriggerModeChanged(int);
-    void TriggerLengthChanged(int);
+    void TriggerLengthChanged(double);
     void ContRWFreqChanged(int);
-    void TriggerDowntimeChanged(int);
+    void TriggerDowntimeChanged(double);
     void nTriggersChanged(int);
     // stepper
     void UseCalibChanged(bool);
@@ -331,10 +331,10 @@ public slots:
         }
     }
 
-    void setTriggerLength(int newVal){
+    void setTriggerLength(double newVal){
         if(newVal*1000 != TriggerLength_us){
             TriggerLength_us = newVal*1000;
-            TriggerLength_us_64 = ((uint64_t) newVal)*1000;
+            TriggerLength_us_64 =  newVal *1000;
             emit TriggerLengthChanged(newVal);
             SendConfiguration( __triggerLength );
         }
@@ -344,10 +344,10 @@ public slots:
     // Pick the value from the spin-box directly.
 
     // Units for newVal are now ms, hence the *1000
-    void setTriggerDowntime(int newVal) {
+    void setTriggerDowntime(double newVal) {
         if ( newVal*1000 != TriggerDowntime_us ){
             TriggerDowntime_us = newVal*1000;
-            TriggerDowntime_us_64 = (uint64_t(newVal))*1000;
+            TriggerDowntime_us_64 = newVal*1000;
             emit TriggerDowntimeChanged(newVal);
             SendConfiguration( __triggerDowntime );
         }

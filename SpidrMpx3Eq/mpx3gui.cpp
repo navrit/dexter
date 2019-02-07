@@ -294,9 +294,9 @@ void Mpx3GUI::onEqualizationPathExported(QString path)
 
 void Mpx3GUI::on_sendingShutter()
 {
-    if(getConfig()->getTriggerDowntime_ms_64() + getConfig()->getTriggerLength_ms_64() > 1000){
-        qDebug() << "ShutterOpen_ms  : " << getConfig()->getTriggerLength_ms_64();
-        qDebug() << "ShutterClose_ms : " << getConfig()->getTriggerDowntime_ms_64();
+    if(getConfig()->getTriggerDowntime_64() + getConfig()->getTriggerLength_64() > 1000000){
+        qDebug() << "ShutterOpen_us  : " << getConfig()->getTriggerLength_64();
+        qDebug() << "ShutterClose_us : " << getConfig()->getTriggerDowntime_64();
         //GetSpidrController()->setShutterTriggerConfig(SHUTTERMODE_AUTO,0,(int)((1./(double)getConfig()->getTriggerPeriodMS())*1000000),getConfig()->getNTriggers(),0);
         //GetSpidrController()->startAutoTrigger(); //openshutter
         _timerStop = false;
