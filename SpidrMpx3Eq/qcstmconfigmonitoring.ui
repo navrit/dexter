@@ -1541,6 +1541,12 @@ color: rgb(255, 255, 255);
         </item>
         <item row="2" column="3">
          <widget class="QDoubleSpinBox" name="triggerLengthSpinner">
+          <property name="suffix">
+           <string> ms</string>
+          </property>
+          <property name="decimals">
+           <number>3</number>
+          </property>
           <property name="maximum">
            <double>4294967295.000000000000000</double>
           </property>
@@ -1548,6 +1554,12 @@ color: rgb(255, 255, 255);
         </item>
         <item row="3" column="3">
          <widget class="QDoubleSpinBox" name="triggerDowntimeSpinner">
+          <property name="suffix">
+           <string> ms</string>
+          </property>
+          <property name="decimals">
+           <number>3</number>
+          </property>
           <property name="maximum">
            <double>4294967295.000000000000000</double>
           </property>

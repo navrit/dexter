@@ -672,6 +672,7 @@ void QCstmConfigMonitoring::OperationModeSwitched(int indx)
         ui->triggerDowntimeSpinner->setEnabled( true );
         ui->triggerDowntimeSpinner->show();
 
+
         ui->label_23->hide();
         ui->label_8->show();
         ui->label_17->show();
@@ -681,6 +682,7 @@ void QCstmConfigMonitoring::OperationModeSwitched(int indx)
 
         ui->readBothCountersCheckBox->show();
         ui->readBothCountersCheckBox->setEnabled( true );
+
     } else if ( indx == Mpx3Config::__operationMode_ContinuousRW ) {
         ui->triggerLengthSpinner->setEnabled( false );
         ui->triggerLengthSpinner->hide();
@@ -702,6 +704,10 @@ void QCstmConfigMonitoring::OperationModeSwitched(int indx)
 void QCstmConfigMonitoring::setPixelDepthByIndex(int newValIndx) {
     _mpx3gui->getConfig()->setPixelDepth(int(__pixelDepthMap[std::size_t(newValIndx)]));
     setMaximumFPSFromPixelDepth(newValIndx, -1);
+    if(newValIndx == 3)
+        ui->triggerDowntimeSpinner->setMinimum(2);
+    else
+        ui->triggerDowntimeSpinner->setMinimum(1);
 }
 
 void QCstmConfigMonitoring::setTriggerModeByIndex(int newValIndx) {

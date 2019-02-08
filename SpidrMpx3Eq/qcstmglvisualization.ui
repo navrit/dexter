@@ -779,6 +779,9 @@ If you run too fast this feature should not be used.</string>
             </item>
             <item row="2" column="3">
              <widget class="QDoubleSpinBox" name="triggerLengthSpinBox">
+              <property name="decimals">
+               <number>3</number>
+              </property>
               <property name="maximum">
                <double>4294967295.000000000000000</double>
               </property>
