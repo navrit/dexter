@@ -714,11 +714,11 @@ bool Mpx3Config::fromJsonFile(QString filename, bool includeDacs){
 
         it = JSobject.find("TriggerLength_us");
         if(it != JSobject.end())
-            setTriggerLength(it.value().toInt());
+            setTriggerLength(it.value().toDouble()/1000);
 
         it = JSobject.find("TriggerDeadtime_us");
         if(it != JSobject.end())
-            setTriggerDowntime(it.value().toInt());
+            setTriggerDowntime(it.value().toDouble()/1000);
 
         it = JSobject.find("ContRWFreq");
         if(it != JSobject.end())
