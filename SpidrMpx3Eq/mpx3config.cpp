@@ -77,10 +77,10 @@ QJsonDocument Mpx3Config::buildConfigJSON(bool includeDacs)
     objDetector.insert("GainMode", this->GainMode);
     objDetector.insert("MaxPacketSize", this->MaxPacketSize);
     objDetector.insert("TriggerMode", this->TriggerMode);
-    objDetector.insert("TriggerLength_us", this->TriggerLength_us);
+    objDetector.insert("TriggerLength_us", (qint64)this->TriggerLength_us_64);
     objDetector.insert("ContRWFreq", this->ContRWFreq);
 
-    objDetector.insert("TriggerDeadtime_us", this->TriggerDowntime_us);
+    objDetector.insert("TriggerDeadtime_us",  (qint64)this->TriggerDowntime_us_64);
     objDetector.insert("nTriggers", this->nTriggers);
     objDetector.insert("ColourMode", this->colourMode);
     objDetector.insert("BothCounters", this->readBothCounters);
