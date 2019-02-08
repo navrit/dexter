@@ -184,7 +184,7 @@ void Mpx3Config::SendConfiguration( config_items item ) {
                     nr_of_triggers
                     );
         qDebug() << "[INFO]\ttrig_mode:" << trig_mode
-                 << "| trig_length_us:" << trig_length_us
+                 << "| trig_length_us:" << getTriggerLength_64()
                  << "| trig_deadtime_us: " << trig_deadtime_us
                  << "| trig_freq_mhz:" <<  trig_freq_mhz
                  << "| nr_of_triggers:" << nr_of_triggers;
@@ -395,7 +395,7 @@ void Mpx3Config::Configuration(bool reset, int deviceIndex, extra_config_paramet
 
         qDebug() << "[CONF] id:" << deviceIndex
                  << "| trig_mode:" << trig_mode
-                 << "| trig_length_us:" << trig_length_us
+                 << "| trig_length_us:" << getTriggerLength_64()
                  << "| trig_freq_mhz:" <<  trig_freq_mhz
                  << "| nr_of_triggers:" << extrapars.nTriggers;
     }
