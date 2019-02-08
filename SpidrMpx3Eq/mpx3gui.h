@@ -223,7 +223,7 @@ public slots:
     void loadEqualisationFromPathRemotely(QString path);
 
     void onEqualizationPathExported(QString path);
-    void on_sendingShutter(void);
+    void sendingShutter(void);
 
 private:
     bool _loadingBeforeConnecting = false;

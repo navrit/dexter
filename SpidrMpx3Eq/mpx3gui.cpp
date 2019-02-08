@@ -236,8 +236,6 @@ Mpx3GUI::Mpx3GUI(QWidget * parent) :
     mpx3GuiInstance = this;
     shutterOpenTimer  = new QTimer(this);
     shutterCloseTimer = new QTimer(this);
-    connect(shutterOpenTimer,SIGNAL(timeout()),this,SLOT(shutterOpenTimer_timeout()));
-    connect(shutterCloseTimer,SIGNAL(timeout()),this,SLOT(shutterCloseTimer_timeout()));
     QTimer::singleShot(0, this, SLOT(autoConnectToDetector()));
 }
 
@@ -292,13 +290,15 @@ void Mpx3GUI::onEqualizationPathExported(QString path)
     _generalSettings->setEqualizationPath(path);
 }
 
-void Mpx3GUI::on_sendingShutter()
+void Mpx3GUI::sendingShutter()
 {
     if(getConfig()->getTriggerDowntime_64() + getConfig()->getTriggerLength_64() > 1000000){
         qDebug() << "ShutterOpen_us  : " << getConfig()->getTriggerLength_64();
         qDebug() << "ShutterClose_us : " << getConfig()->getTriggerDowntime_64();
         //GetSpidrController()->setShutterTriggerConfig(SHUTTERMODE_AUTO,0,(int)((1./(double)getConfig()->getTriggerPeriodMS())*1000000),getConfig()->getNTriggers(),0);
         //GetSpidrController()->startAutoTrigger(); //openshutter
+        connect(shutterOpenTimer,SIGNAL(timeout()),this,SLOT(shutterOpenTimer_timeout()));
+        connect(shutterCloseTimer,SIGNAL(timeout()),this,SLOT(shutterCloseTimer_timeout()));
         _timerStop = false;
         shutterCloseTimer_timeout();
         qDebug() << "_timerStop on_sending: " << _timerStop;
@@ -389,6 +389,8 @@ void Mpx3GUI::loadLastConfiguration()
 void Mpx3GUI::stopTriggerTimers()
 {
     GetSpidrController()->stopAutoTrigger();
+    disconnect(shutterOpenTimer,SIGNAL(timeout()),this,SLOT(shutterOpenTimer_timeout()));
+    disconnect(shutterCloseTimer,SIGNAL(timeout()),this,SLOT(shutterCloseTimer_timeout()));
     _timerStop = true;
     qDebug() << "_timerStop stopTriggerTimers: " << _timerStop;
 }

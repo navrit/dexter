@@ -123,7 +123,7 @@ void DataTakingThread::run() {
     connect( this, &DataTakingThread::bufferFull,
              _vis, &QCstmGLVisualization::consumerBufferFull );
 
-    connect(this,SIGNAL(sendingShutter()),_mpx3gui,SLOT(on_sendingShutter()));
+    connect(this,SIGNAL(sendingShutter()),_mpx3gui,SLOT(sendingShutter()));
 
 
 
@@ -395,7 +395,7 @@ void DataTakingThread::run() {
     disconnect(this, SIGNAL(data_taking_finished(int)), _vis, SLOT(data_taking_finished(int)));
     disconnect(_vis, SIGNAL(stop_data_taking_thread()), this, SLOT(on_stop_data_taking_thread())); // stop signal from qcstmglvis
 
-    disconnect(this,SIGNAL(sendingShutter()),_mpx3gui,SLOT(on_sendingShutter()));
+    disconnect(this,SIGNAL(sendingShutter()),_mpx3gui,SLOT(sendingShutter()));
     // In case the thread is reused
     _restart = false;
     _abort = false;
