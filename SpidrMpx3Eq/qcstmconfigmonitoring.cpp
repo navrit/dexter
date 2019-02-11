@@ -119,7 +119,7 @@ void QCstmConfigMonitoring::protectTriggerMode(SpidrController *spidrController)
     //spidrController->getShutterTriggerConfig(&shutterInfo.trigger_mode,&shutterInfo.trigger_width_us,&shutterInfo.trigger_freq_mhz,&shutterInfo.nr_of_triggers,&shutterInfo.trigger_pulse_count);
     spidrController->setShutterTriggerConfig(SHUTTERMODE_AUTO,_mpx3gui->getConfig()->getTriggerLength(),(int)((1./(double)_mpx3gui->getConfig()->getTriggerPeriodMS())*1000000),shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
     usleep(100000);
-    qDebug() << "[Info] Trigger is set to : " << SHUTTERMODE_AUTO;
+    qDebug() << "[Info]\t Trigger is set to : " << SHUTTERMODE_AUTO;
 
 }
 
@@ -127,7 +127,7 @@ void QCstmConfigMonitoring::returnLastTriggerMode(SpidrController *spidrControll
 {
     //ui->triggerModeCombo->setCurrentIndex(_currentTriggerMode);
     spidrController->setShutterTriggerConfig(shutterInfo.trigger_mode,shutterInfo.trigger_width_us,shutterInfo.trigger_freq_mhz,shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
-    qDebug() << "[Info] Trigger is set back to : " << shutterInfo.trigger_mode;
+    qDebug() << "[Info]\t Trigger is set back to : " << shutterInfo.trigger_mode;
 }
 
 void QCstmConfigMonitoring::returnLastTriggerMode2(SpidrController *spidrController)
@@ -135,7 +135,7 @@ void QCstmConfigMonitoring::returnLastTriggerMode2(SpidrController *spidrControl
     //spidrController->getShutterTriggerConfig(&shutterInfo.trigger_mode,&shutterInfo.trigger_width_us,&shutterInfo.trigger_freq_mhz,&shutterInfo.nr_of_triggers,&shutterInfo.trigger_pulse_count);
     //spidrController->setShutterTriggerConfig(_mpx3gui->getConfig()->getTriggerMode(),shutterInfo.trigger_width_us,shutterInfo.trigger_freq_mhz,shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
     spidrController->setShutterTriggerConfig(_mpx3gui->getConfig()->getTriggerMode(),_mpx3gui->getConfig()->getTriggerLength(),(int)((1./(double)_mpx3gui->getConfig()->getTriggerPeriodMS())*1000000),shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
-    qDebug() << "[Info] Trigger mode is set to : " << _mpx3gui->getConfig()->getTriggerMode();
+    qDebug() << "[Info]\t Trigger mode is set to : " << _mpx3gui->getConfig()->getTriggerMode();
 }
 
 

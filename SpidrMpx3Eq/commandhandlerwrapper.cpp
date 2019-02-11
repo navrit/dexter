@@ -19,7 +19,7 @@ void CommandHandlerWrapper::on_dataRecieved(QString command)
 {
 
     MerlinCommand merlinCmd (command, *merlinInterface);
-    qDebug() << "mapped : " << merlinCmd.parseResult;
+    qDebug() << "[Info]\t Mapped : " << merlinCmd.parseResult;
     Command cmd(merlinCmd.parseResult);
     cmd.invoke(commandHandler,_serverStatus);
     //get response
@@ -30,10 +30,10 @@ void CommandHandlerWrapper::on_dataRecieved(QString command)
     else if(merlinCmd.getCommandType() == "GET")
         response = merlinCmd.makeGetResponse(cmd.getData());
     else
-        response = "Invalid command type";
+        response = "[Info]\t Invalid command type";
 
     emit responseIsReady(response); //must be passed to command socket in order to send it to the client
-    qDebug() << "response from handler : " << response;
+    qDebug() << "[Info]\t Response from handler : " << response;
 
 }
 
@@ -57,5 +57,5 @@ void CommandHandlerWrapper::on_ImageIsReady(QByteArray header,std::pair<const ch
 void CommandHandlerWrapper::on_serverStatusChanged(SERVER_BUSY_TYPE flag)
 {
     _serverStatus = flag;
-    qDebug() << "busy : " << flag;
+    qDebug() << "[Info]\t Busy state : " << flag;
 }
