@@ -185,11 +185,12 @@ void DataTakingThread::run() {
 
         spidrdaq->releaseAll();
 
-
+            bool stopTimers = true;
             if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
                 spidrcontrol->startContReadout( contRWFreq );
             } else if(opMode == Mpx3Config::__operationMode_SequentialRW && (_mpx3gui->getConfig()->getTriggerLength_ms_64() + _mpx3gui->getConfig()->getTriggerDowntime_ms_64() <= LONG_PERIOD_MS)&&!_isExternalTrigger){
                 spidrcontrol->startAutoTrigger();
+                stopTimers = false;
             }
 
 
@@ -215,7 +216,6 @@ void DataTakingThread::run() {
                         spidrcontrol->stopContReadout();
                     } else { //if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
                         spidrcontrol->stopAutoTrigger();
-                        _mpx3gui->stopTriggerTimers();
                     }
                 }
 
@@ -242,7 +242,6 @@ void DataTakingThread::run() {
                             spidrcontrol->stopContReadout();
                         } else if ( opMode == Mpx3Config::__operationMode_SequentialRW ) {
                             spidrcontrol->stopAutoTrigger();
-                            _mpx3gui->stopTriggerTimers();
                         }
                         _consumer->consume();
                     }
@@ -331,7 +330,6 @@ void DataTakingThread::run() {
                     }
                     else{
                         spidrcontrol->stopAutoTrigger();
-                        _mpx3gui->stopTriggerTimers();
                         break;
                     }
                     reachLimitStop = true;
@@ -361,8 +359,11 @@ void DataTakingThread::run() {
                 }
             }
         }
+        if(stopTimers){
+            _mpx3gui->stopTriggerTimers();
+            qDebug() << "was true;";
+        }
 
-        _mpx3gui->stopTriggerTimers();
         _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
         _consumer->consume();
 
