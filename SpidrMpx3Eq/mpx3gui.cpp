@@ -388,7 +388,7 @@ void Mpx3GUI::loadLastConfiguration()
 
 void Mpx3GUI::stopTriggerTimers()
 {
-    GetSpidrController()->stopAutoTrigger();
+    //GetSpidrController()->stopAutoTrigger();
     disconnect(shutterOpenTimer,SIGNAL(timeout()),this,SLOT(shutterOpenTimer_timeout()));
     disconnect(shutterCloseTimer,SIGNAL(timeout()),this,SLOT(shutterCloseTimer_timeout()));
     _timerStop = true;

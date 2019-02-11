@@ -188,6 +188,7 @@ void DataTakingThread::run() {
             bool stopTimers = true;
             if ( opMode == Mpx3Config::__operationMode_ContinuousRW ) {
                 spidrcontrol->startContReadout( contRWFreq );
+                stopTimers = false;
             } else if(opMode == Mpx3Config::__operationMode_SequentialRW && (_mpx3gui->getConfig()->getTriggerLength_ms_64() + _mpx3gui->getConfig()->getTriggerDowntime_ms_64() <= LONG_PERIOD_MS)&&!_isExternalTrigger){
                 spidrcontrol->startAutoTrigger();
                 stopTimers = false;
@@ -360,8 +361,9 @@ void DataTakingThread::run() {
             }
         }
         if(stopTimers){
+            spidrcontrol->stopAutoTrigger();
             _mpx3gui->stopTriggerTimers();
-            qDebug() << "was true;";
+            qDebug() << "[Info]\t software triggering stopped.";
         }
 
         _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
