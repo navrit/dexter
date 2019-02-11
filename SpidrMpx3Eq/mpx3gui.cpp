@@ -1043,16 +1043,17 @@ bool Mpx3GUI::_loadConfigsFromGeneralSettings()
     return res;
 }
 
-void Mpx3GUI::properDetectorForDataTaking()
+void Mpx3GUI::prepareDetectorForDataTaking()
 {
-    uint64_t closeShutterPeriod  = getConfig()-> getTriggerDowntime_64();
-    uint64_t openShutterPeriod   = getConfig()-> getTriggerLength_64();
-    int csmSpm = getConfig()->getCsmSpm();
-    int nframes = getConfig()->getNTriggers();
-    getConfig()->setTriggerDowntime(2.0);
-    getConfig()->setTriggerLength(2.0);
-    getConfig()->setCsmSpm(0);
-    getConfig()->setNTriggers(1);
+    Mpx3Config *config = getConfig();
+    uint64_t closeShutterPeriod  = config-> getTriggerDowntime_64();
+    uint64_t openShutterPeriod   = config-> getTriggerLength_64();
+    int csmSpm = config->getCsmSpm();
+    int nframes = config->getNTriggers();
+    config->setTriggerDowntime(2.0);
+    config->setTriggerLength(2.0);
+    config->setCsmSpm(0);
+    config->setNTriggers(1);
     getVisualization()->StartDataTaking();
     usleep(100000);
     zero_data();
@@ -1708,7 +1709,7 @@ void Mpx3GUI::autoConnectToDetector() {
     connect(getEqualization(), SIGNAL(equalizationPathExported(QString)), this,
             SLOT(onEqualizationPathExported(QString)));
     _loadEqualizationFromGeneralSettings();
-    properDetectorForDataTaking();
+    prepareDetectorForDataTaking();
   }
 }
 
