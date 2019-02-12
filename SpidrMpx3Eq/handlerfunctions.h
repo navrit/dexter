@@ -424,8 +424,8 @@ void setShutterLengthHandler(CommandHandler* ch, Command* cmd){
                return;
             }
         } else {
-            int val = (int) (1000. * length.toDouble());
-            if(val <= 0)
+            double val =  length.toDouble();
+            if(val < 0.001 && val != 0)
             {
                 cmd->setError(INVALID_ARG);
                 return;
@@ -470,8 +470,8 @@ void setShutterPeriodHandler(CommandHandler* ch, Command* cmd){
         return;
     } else {
         auto length = cmd->arguments.at(0); //ms
-        int open = config->getTriggerLength();
-        config->setTriggerDowntime(1000. * length.toDouble() - open);   // us
+        int open = config->getTriggerLength_64();
+        config->setTriggerDowntime( length.toDouble() - (double)(open)/1000.0);   // ms
         cmd->setError(NO_ERROR);
     }
 }
