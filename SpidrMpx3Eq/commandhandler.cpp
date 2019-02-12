@@ -330,6 +330,7 @@ int CommandHandler::getThreshold(int idx,int chipId,int *val)
 //         QCstmDacs::getInstance()->getDeviceIdSpinBox()->setValue(chipId);
 //         *val = QCstmDacs::getInstance()->GetSpinBoxList()[idx]->value();
         *val = QCstmGLVisualization::getInstance()->getThresholdVector(chipId,idx);
+         *val = Mpx3GUI::getInstance()->getEnergyCalibrator()->calDac(chipId,*val);
         return NO_ERROR;
     }
     return UNKNOWN_ERROR;
