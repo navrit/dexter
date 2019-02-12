@@ -76,6 +76,7 @@ private:
     QVector<int> turnOnThresholds;
 
     int thresholdToScan = 0;
+    double _shutterDownMem = 0;
 
 public slots:
     void resumeTHScan();
