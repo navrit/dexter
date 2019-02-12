@@ -237,6 +237,9 @@ QGroupBox::title {
         </item>
         <item row="2" column="4">
          <widget class="QDoubleSpinBox" name="samplingSpinner">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>

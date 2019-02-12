@@ -178,6 +178,7 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
         ui->dvddmamp->setEnabled( true );
         ui->dvddmvolt->setEnabled( true );
         ui->dvddmwatt->setEnabled( true );
+        ui->samplingSpinner->setEnabled(true);
 
     } else {
 
@@ -224,6 +225,7 @@ void QCstmConfigMonitoring::on_tempReadingActivateCheckBox_toggled(bool checked)
         ui->dvddmamp->setEnabled( false );
         ui->dvddmvolt->setEnabled( false );
         ui->dvddmwatt->setEnabled( false );
+        ui->samplingSpinner->setEnabled(false);
     }
 
 }
@@ -1105,4 +1107,12 @@ void QCstmConfigMonitoring::setContRWFreqFromConfig(int val)
 void QCstmConfigMonitoring::setMaximumFPSinVisualiation()
 {
     _mpx3gui->getVisualization()->setMaximumContRW_FPS(-1);
+}
+
+void QCstmConfigMonitoring::on_samplingSpinner_editingFinished()
+{
+    this->killTimer( _timerId );
+    _timerId = -1;
+    _timerId = this->startTimer(int(ui->samplingSpinner->value()*1000));
+
 }

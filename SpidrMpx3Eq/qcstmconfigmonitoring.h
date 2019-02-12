@@ -112,6 +112,8 @@ private slots:
 
     void hideLabels();
 
+    void on_samplingSpinner_editingFinished();
+
 private:
     Ui::QCstmConfigMonitoring *ui = nullptr;
     int _timerId;
