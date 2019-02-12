@@ -363,7 +363,7 @@ void DataTakingThread::run() {
         if(stopTimers){
             spidrcontrol->stopAutoTrigger();
             _mpx3gui->stopTriggerTimers();
-            qDebug() << "[Info]\t software triggering stopped.";
+            qDebug() << "[Info]\t Software triggering stopped.";
         }
 
         _mpx3gui->getConfigMonitoring()->protectTriggerMode(spidrcontrol);
