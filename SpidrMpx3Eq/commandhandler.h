@@ -36,7 +36,7 @@ public:
     void setRecordFormat(int);
     int setThreshold(int,int);
     int setThreshold(int,int,int);
-    int getThreshold(int);
+    int getThreshold(int, double *);
     int getThreshold(int,int,int*);
     int setStartScan(int);
     int setStopScan(int);

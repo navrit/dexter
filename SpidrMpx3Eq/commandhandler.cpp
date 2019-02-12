@@ -313,11 +313,12 @@ void CommandHandler::testSetThreshold_idx_val_chipId() {
     setThreshold(0, 6, 0);
 }
 
-int CommandHandler::getThreshold(int idx)
+int CommandHandler::getThreshold(int idx,double *val)
 {
     if (idx >= 0 && idx <= 7){
-        if (QCstmDacs::getInstance()->GetCheckBoxList()[idx]->isChecked())
-            return QCstmDacs::getInstance()->GetSpinBoxList()[idx]->value();
+//        if (QCstmDacs::getInstance()->GetCheckBoxList()[idx]->isChecked())
+//            return QCstmDacs::getInstance()->GetSpinBoxList()[idx]->value();
+        *val = QCstmGLVisualization::getInstance()->getThresholdVector(0,idx);
         return NO_ERROR;
     }
     return UNKNOWN_ERROR;

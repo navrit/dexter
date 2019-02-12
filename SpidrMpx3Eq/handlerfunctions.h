@@ -796,9 +796,10 @@ void getThresholdHandler(CommandHandler* ch, Command* cmd){
         return;
     }
     int idx = cmd->arguments.at(0).toInt();
-    int thr = ch->getThreshold(idx);
+    double thr = 0.0;
+    int error = ch->getThreshold(idx,&thr);
     cmd->setData(QString::number(thr));
-    cmd->setError(NO_ERROR);
+    cmd->setError((ERROR_TYPE)error);
 }
 
 
