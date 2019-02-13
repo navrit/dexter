@@ -287,6 +287,8 @@ private:
     bool _timerStop = false;
     void prepareDetectorForDataTaking();
 
+    QString _lastTriedIPAddress = "";
+
 private slots:
     void LoadEqualization();
     void loadEqualisationFromPath();
