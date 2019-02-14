@@ -601,6 +601,13 @@ void QCstmGLVisualization::initStatsString()
 
 void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) { //when acquisition is done,
 
+    int UDP_packetCounter = -1;
+     _mpx3gui->GetSpidrController()->getSpidrReg(0x384, &UDP_packetCounter);
+     qDebug() << "[DEBUG]\tUDP_packetCounter 0x384 =" << UDP_packetCounter;
+     int UDP_packetCounterMonitorStream = -1;
+     _mpx3gui->GetSpidrController()->getSpidrReg(0x388, &UDP_packetCounterMonitorStream);
+     qDebug() << "[DEBUG]\tUDP_packetCounterMonitorStream 0x388 =" << UDP_packetCounterMonitorStream;
+
     // Recover from single shot if it was requested
     if ( _singleShot ) {
         _singleShot = false;
