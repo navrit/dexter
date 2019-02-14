@@ -319,6 +319,7 @@ int CommandHandler::getThreshold(int idx,double *val)
 //        if (QCstmDacs::getInstance()->GetCheckBoxList()[idx]->isChecked())
 //            return QCstmDacs::getInstance()->GetSpinBoxList()[idx]->value();
         *val = QCstmGLVisualization::getInstance()->getThresholdVector(0,idx);
+        *val = Mpx3GUI::getInstance()->getEnergyCalibrator()->calcEnergy(0,*val);
         return NO_ERROR;
     }
     return UNKNOWN_ERROR;
@@ -586,6 +587,7 @@ QString CommandHandler::getAcquisitionHeader()
 
 void CommandHandler::getImage()
 {
+
     /* TODO Pretty sure this is wrong... You connect a new signal every time this function is called? */
     connect(QCstmGLVisualization::getInstance()->getDataConsumerThread(), SIGNAL(doneWithOneFrame(int)), this, SLOT(on_doneWithOneFrame(int)));
 
