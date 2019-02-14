@@ -573,9 +573,6 @@ bool Mpx3GUI::establish_connection() {
     if ( config->getActiveDevices().size() == 0 ) {
         msg = "[ERROR]\tCould not find any devices";
 
-        QMessageBox::critical(this, "Connection error",
-                              tr("Could not find any devices. Check the IP address is either 192.168.1.10 or 192.168.100.10")
-                              );
         config->destroyController();
         emit ConnectionStatusChanged(false);
 
@@ -1534,15 +1531,41 @@ void Mpx3GUI::uncheckAllToolbarButtons(){
 
 
 void Mpx3GUI::on_actionConnect_triggered() {
+    const QString ipAddr_10Gbit = "192.168.100.10";
+    const QString ipAddr_1Gbit  = "192.168.1.10";
+    const QString ipAddr_local  = "127.0.0.10";
 
     // The connection status signal will be sent from establish_connection
     if ( establish_connection() ) {
-        emit sig_statusBarAppend( "Connected", "green" );
-        //loadLastConfiguration();
+        emit sig_statusBarAppend( "Connected!", "green" );
+        // Can exit now
     } else {
-        emit sig_statusBarAppend( "Connection failed", "red" );
+        // Cycle through the 3 common and expected IP addresses
+        if ( _lastTriedIPAddress == "" ) {
+            getConfig()->setIpAddress(ipAddr_10Gbit);
+            _lastTriedIPAddress = ipAddr_10Gbit;
+            qDebug() << "[INFO]\tTry to connect to the 10 Gbit interface @" << ipAddr_10Gbit;
+            on_actionConnect_triggered();
+        } else if ( _lastTriedIPAddress == ipAddr_10Gbit ) {
+            getConfig()->setIpAddress(ipAddr_1Gbit);
+            _lastTriedIPAddress = ipAddr_1Gbit;
+            qDebug() << "[INFO]\tTry to connect to the 1 Gbit interface @" << ipAddr_1Gbit;
+            on_actionConnect_triggered();
+        } else if ( _lastTriedIPAddress == ipAddr_1Gbit ) {
+            getConfig()->setIpAddress(ipAddr_local);
+            _lastTriedIPAddress = ipAddr_local;
+            qDebug() << "[INFO]\tTry to connect to localhost @" << ipAddr_local;
+            on_actionConnect_triggered();
+        } else if ( _lastTriedIPAddress == ipAddr_local ) {
+            // All options failed, exit with the status bar error message
+            emit sig_statusBarAppend( "Auto connection failed", "red" );
+        }
     }
 
+    if ( getConfig()->isConnected() ) {
+    // Reset _lastTriedIPAddress so that this function can auto search IP Addresses without restarting the program
+        _lastTriedIPAddress = "";
+    }
 }
 
 void Mpx3GUI::on_actionVisualization_triggered(){

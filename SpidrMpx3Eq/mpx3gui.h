@@ -280,12 +280,14 @@ private:
     QString _configPath = "";
 
     GeneralSettings *_generalSettings;
-    void _loadEqualizationFromGeneralSettings(void);
-    bool _loadConfigsFromGeneralSettings(void);
+    void _loadEqualizationFromGeneralSettings();
+    bool _loadConfigsFromGeneralSettings();
     QTimer *shutterOpenTimer; //used for periods longer than 100 seconds
     QTimer *shutterCloseTimer; //used for periods longer than 100 seconds
     bool _timerStop = false;
-    void prepareDetectorForDataTaking(void);
+    void prepareDetectorForDataTaking();
+
+    QString _lastTriedIPAddress = "";
 
 private slots:
     void LoadEqualization();
