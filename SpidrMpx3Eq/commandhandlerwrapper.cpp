@@ -57,5 +57,5 @@ void CommandHandlerWrapper::on_ImageIsReady(QByteArray header,std::pair<const ch
 void CommandHandlerWrapper::on_serverStatusChanged(SERVER_BUSY_TYPE flag)
 {
     _serverStatus = flag;
-    qDebug() << "[Info]\t Busy state : " << flag;
+    qDebug() << "[DEBUG]\tBusy state : " << flag;
 }

@@ -135,7 +135,8 @@ void QCstmConfigMonitoring::returnLastTriggerMode2(SpidrController *spidrControl
     //spidrController->getShutterTriggerConfig(&shutterInfo.trigger_mode,&shutterInfo.trigger_width_us,&shutterInfo.trigger_freq_mhz,&shutterInfo.nr_of_triggers,&shutterInfo.trigger_pulse_count);
     //spidrController->setShutterTriggerConfig(_mpx3gui->getConfig()->getTriggerMode(),shutterInfo.trigger_width_us,shutterInfo.trigger_freq_mhz,shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
     spidrController->setShutterTriggerConfig(_mpx3gui->getConfig()->getTriggerMode(),_mpx3gui->getConfig()->getTriggerLength(),(int)((1./(double)_mpx3gui->getConfig()->getTriggerPeriodMS())*1000000),shutterInfo.nr_of_triggers,shutterInfo.trigger_pulse_count);
-    qDebug() << "[Info]\t Trigger mode is set to : " << _mpx3gui->getConfig()->getTriggerMode();
+
+    qDebug() << "[DEBUG]\tQCstmConfigMonitoring::returnLastTriggerMode2 Trigger mode is set to : " << _mpx3gui->getConfig()->getTriggerMode();
 }
 
 

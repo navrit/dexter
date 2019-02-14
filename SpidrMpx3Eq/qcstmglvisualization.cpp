@@ -608,25 +608,18 @@ void QCstmGLVisualization::data_taking_finished(int /*nFramesTaken*/) { //when a
     }
 
     reload_all_layers(); //! Only update the 0th threshold for speed?
-//    _mpx3gui->saveOriginalDataset();
-
     refreshScoringInfo();
     DestroyTimer();
     ETAToZero();
-
     ConfigureGUIForIdling();
-
     rewindScoring();
 
     //! If Save checkbox is checked and Save line edit is not empty,
     //!    Save the data to .bin file with path obtained from UI
-    if(
-            ui->saveCheckBox->isChecked()
-            &&
-            !(ui->saveLineEdit->text().isEmpty())
-            &&
-            !isSaveAllFramesChecked() // if it's checked the last was already saved
-            ) {
+    if( ui->saveCheckBox->isChecked() &&
+        !(ui->saveLineEdit->text().isEmpty()) &&
+        !isSaveAllFramesChecked() // if it's checked the last was already saved
+        ) {
         QString selectedFileType = ui->saveFileComboBox->currentText();
         _mpx3gui->save_data(true, 0, selectedFileType);
     }
